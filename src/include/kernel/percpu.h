@@ -9,11 +9,11 @@
 #ifndef KERNEL_PERCPU_H_
 #define KERNEL_PERCPU_H_
 
-#include <stddef.h>
-
 #include <kernel/cpu.h>
 
 #ifdef SMP
+
+#include <stddef.h>
 
 extern char _percpu_vma, _percpu_len;
 

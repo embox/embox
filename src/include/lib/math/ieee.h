@@ -18,6 +18,16 @@
 #define IEEE_DOUBLE_BIAS   0x3ff
 #define IEEE_EXTENDED_BIAS 0x3fff
 
+/**
+ * IEEE maximum exponent value for single, double and extended precision formats
+ */
+#define IEEE_SINGLE_EXP_MAX   0xff
+#define IEEE_DOUBLE_EXP_MAX   0x7ff
+#define IEEE_EXTENDED_EXP_MAX 0x7fff
+
+/**
+ * IEEE mantissa length for single, double and extended precision formats
+ */
 #define IEEE_SINGLE_MANT_LEN   23
 #define IEEE_DOUBLE_MANT_LEN   52
 #define IEEE_EXTENDED_MANT_LEN 64

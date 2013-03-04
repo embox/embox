@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <stddef.h>
 
 #include <hal/context.h>
 #include <asm/psr.h>

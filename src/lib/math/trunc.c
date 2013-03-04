@@ -1,8 +1,9 @@
-/*
- * trunc.c
+/**
+ * @file
+ * @brief
  *
- *  Created on: 1 feb 2013
- *      Author: fsulima
+ * @date 01.02.13
+ * @author fsulima
  */
 
 #include <math.h>

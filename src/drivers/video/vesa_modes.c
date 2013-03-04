@@ -7,11 +7,11 @@
  */
 
 #include <assert.h>
-#include <drivers/video/vesa.h>
 #include <stddef.h>
 #include <util/array.h>
+#include <drivers/video/vesa_modes.h>
 
-static struct vesa_mode_desc vesa_mode_text_descriptions[] = {
+static const struct video_resbpp vesa_mode_text_descriptions[] = {
 		{  40,  25, 4 }, /* 0x0 - VESA_MODE_TEXT_40x25x16_M */
 		{  40,  25, 4 }, /* 0x1 - VESA_MODE_TEXT_40x25x16 */
 		{  80,  25, 4 }, /* 0x2 - VESA_MODE_TEXT_80x25x16_M */
@@ -22,7 +22,7 @@ static struct vesa_mode_desc vesa_mode_text_descriptions[] = {
 		{  80,  25, 0 }  /* 0x7 - VESA_MODE_MDA_80x25 */
 };
 
-static struct vesa_mode_desc vesa_mode_vga_descriptions[] = {
+static const struct video_resbpp vesa_mode_vga_descriptions[] = {
 		{ 320, 200, 4 }, /* 0xD - VESA_MODE_EGA_320x200x16 */
 		{ 640, 200, 4 }, /* 0xE - VESA_MODE_EGA_640x200x16 */
 		{ 640, 350, 0 }, /* 0xF - VESA_MODE_EGA_640x350 */
@@ -32,7 +32,7 @@ static struct vesa_mode_desc vesa_mode_vga_descriptions[] = {
 		{ 320, 200, 8 }  /* 0x13 - VESA_MODE_VGA_320x200x256 */
 };
 
-static struct vesa_mode_desc vesa_mode_svga_descriptions[] = {
+static const struct video_resbpp vesa_mode_svga_descriptions[] = {
 		{  640,  480,  8 }, /* 0x101 - VESA_MODE_SVGA_640x480x256 */
 		{  800,  600,  4 }, /* 0x102 - VESA_MODE_SVGA_800x600x16 */
 		{  800,  600,  8 }, /* 0x103 - VESA_MODE_SVGA_800x600x256 */
@@ -63,7 +63,7 @@ static struct vesa_mode_desc vesa_mode_svga_descriptions[] = {
 		{ 1600, 1200,  8 }  /* 0x11C - VESA_MODE_SVGA_1600x1200x256 */
 };
 
-struct vesa_mode_desc * vesa_mode_get_desc(enum vesa_video_mode mode) {
+const struct video_resbpp * video_resbpp_by_vesamode (enum video_vesa_mode mode) {
 	static_assert(VESA_MODE_MDA_80x25 - VESA_MODE_TEXT_40x25x16_M
 			== ARRAY_SIZE(vesa_mode_text_descriptions) - 1);
 	if ((mode >= VESA_MODE_TEXT_40x25x16_M) && (mode <= VESA_MODE_MDA_80x25)) {

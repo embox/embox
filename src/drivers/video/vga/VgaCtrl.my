@@ -1,6 +1,0 @@
-package embox.driver.video.vga
-
-module vga_ctrl {
-	source "vga_ctrl.c"
-	depends embox.driver.video.vga.mode.repo
-}

@@ -16,7 +16,7 @@ module Bit {
 abstract module SList {
 }
 module SListDebug extends SList {
-	source "slist_debug.h"
+	source "slist_debug.c"
 	source "slist_impl.h"
 }
 module SListNDebug extends SList {

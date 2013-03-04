@@ -9,9 +9,9 @@
 #ifndef SPARC_SETJMP_H_
 #define SPARC_SETJMP_H_
 
-#include <stdint.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 typedef struct {
 	/* 0x0 */uint32_t fp;

@@ -54,3 +54,7 @@ module pic32mx_uart extends diag_api {
 module ns16550 extends diag_api {
 	source "ns16550.c"
 }
+
+module usermode extends diag_api {
+	source "usermode.c"
+}

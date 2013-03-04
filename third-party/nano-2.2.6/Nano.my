@@ -1,0 +1,22 @@
+package embox.third_party
+
+@Cmd(name = "nano",
+	help = "Text editor",
+	man = '''
+		NAME
+			nano - Nano's ANOther editor
+		SYNOPSIS
+			nano [OPTIONS] [[+LINE,COLUMN] FILE]...
+		AUTHORS
+			Ilia Vaprol - Adaptation for Embox
+	''')
+module nano {
+	source "browser.c", "chars.c", "color.c", "cut.c",
+			"files.c", "global.c", "help.c", "move.c",
+			"nano.c", "prompt.c", "rcfile.c", "search.c",
+			"text.c", "utils.c", "winio.c"
+
+	depends embox.lib.LibCurses
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

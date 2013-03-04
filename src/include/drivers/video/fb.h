@@ -18,6 +18,7 @@ struct fb_info;
 struct fb_copyarea;
 struct fb_fillrect;
 struct fb_image;
+struct fb_cursor;
 
 struct fb_fix_screeninfo {
 	const char *name;
@@ -94,6 +95,7 @@ struct fb_ops {
 	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
+	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
 };
 
 struct fb_info {
@@ -114,12 +116,16 @@ struct fb_copyarea {
 	uint32_t sy;
 };
 
+#define ROP_COPY 0
+#define ROP_XOR  1
+
 struct fb_fillrect {
 	uint32_t dx;
 	uint32_t dy;
 	uint32_t width;
 	uint32_t height;
 	uint32_t color;
+	uint32_t rop;
 };
 
 struct fb_image {
@@ -134,6 +140,20 @@ struct fb_image {
 //	struct fb_cmap cmap;
 };
 
+struct fbcurpos {
+	uint16_t x;
+	uint16_t y;
+};
+
+struct fb_cursor {
+//	uint16_t set;
+	uint16_t enable;
+	uint16_t rop;
+	const char *mask;
+	struct fbcurpos hot;
+	struct fb_image image;
+};
+
 extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
 extern int fb_register(struct fb_info *info);
@@ -143,6 +163,7 @@ extern struct fb_info * fb_lookup(const char *name);
 extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
 extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
 extern void fb_imageblit(struct fb_info *info, const struct fb_image *image);
+extern void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor);
 
 extern struct fb_info * fb_alloc(void);
 extern void fb_release(struct fb_info *info);
@@ -163,5 +184,8 @@ extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
 #define fb_memset            memset
 #define fb_memcpy_fromfb     memcpy
 #define fb_memcpy_tofb       memcpy
+
+struct video_resbpp;
+extern const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp);
 
 #endif /* DRIVERS_VIDEO_FB_H_ */

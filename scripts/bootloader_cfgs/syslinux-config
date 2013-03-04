@@ -1,0 +1,56 @@
+# Config file for Syslinux -
+# /boot/syslinux/syslinux.cfg
+#
+# Comboot modules:
+#   * menu.c32 - provides a text menu
+#   * vesamenu.c32 - provides a graphical menu
+#   * chain.c32 - chainload MBRs, partition boot sectors, Windows bootloaders
+#   * hdt.c32 - hardware detection tool
+#   * reboot.c32 - reboots the system
+#   * poweroff.com - shutdown the system
+#
+# To Use: Copy the respective files from /usr/lib/syslinux to /boot/syslinux.
+# If /usr and /boot are on the same file system, symlink the files instead
+# of copying them.
+#
+# If you do not use a menu, a 'boot:' prompt will be shown and the system
+# will boot automatically after 5 seconds.
+#
+# Please review the wiki: https://wiki.archlinux.org/index.php/Syslinux
+# The wiki provides further configuration examples
+
+PROMPT 0        # Set to 1 if you always want to display the boot: prompt
+TIMEOUT 0
+DEFAULT embox
+# You can create syslinux keymaps with the keytab-lilo tool
+#KBDMAP de.ktl
+
+# Menu Configuration
+# Either menu.c32 or vesamenu32.c32 must be copied to /boot/syslinux
+#UI menu.c32
+#UI vesamenu.c32
+
+# boot sections follow
+#
+# TIP: If you want a 1024x768 framebuffer, add "vga=773" to your kernel line.
+#
+#-*
+
+
+
+LABEL embox
+	MENU LABEL embox
+	COM32 mboot.c32 ../embox
+	APPEND ../embox
+
+LABEL hdt
+        MENU LABEL HDT (Hardware Detection Tool)
+        COM32 hdt.c32
+
+LABEL reboot
+        MENU LABEL Reboot
+        COM32 reboot.c32
+
+LABEL off
+        MENU LABEL Power Off
+        COMBOOT poweroff.com

@@ -6,6 +6,7 @@
  *
  * @date 10.11.11
  * @author Nikolay Korotky
+ * @author Alexander Lapshin
  */
 
 #include <stdlib.h>

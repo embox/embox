@@ -24,11 +24,9 @@
 #ifndef NANO_H
 #define NANO_H 1
 
-#include "embox.h"
-
-#ifdef HAVE_CONFIG_H
+//#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
+//#endif
 
 #ifdef NEED_XOPEN_SOURCE_EXTENDED
 #ifndef _XOPEN_SOURCE_EXTENDED

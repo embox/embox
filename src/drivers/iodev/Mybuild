@@ -18,6 +18,7 @@ module iodev_no_video extends video_api {
 module iodev_video extends video_api {
 	source "iodev_video.c"
 
+	depends embox.driver.video.fonts
 	/**
 	 * TODO cycle
 	depends embox.driver.video.fb
