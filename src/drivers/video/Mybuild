@@ -7,17 +7,7 @@ module fb {
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.fs.rootfs
-	depends modedb
-}
-
-module modedb {
-	source "modedb.c"
-}
-
-module display {
-	source "display.c"
-	depends embox.util.List
-	depends embox.lib.LibC
+	depends fb_videomodes
 }
 
 module bochs {
@@ -25,11 +15,26 @@ module bochs {
 	source "bochs.c"
 
 	depends fb
-	depends vesa
+	depends vesa_modes
 	depends embox.driver.pci
 	depends embox.lib.LibC
 }
 
 module cirrus_logic {
 	source "cirrus_logic.c"
+
+	depends fb
+	depends embox.driver.pci
+}
+
+module fb_videomodes {
+	source "fb_videomodes.c"
+}
+
+module vesa_modes {
+	source "vesa_modes.c"
+}
+
+module fonts {
+	source "fonts.c"
 }

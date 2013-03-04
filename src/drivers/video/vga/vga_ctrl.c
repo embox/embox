@@ -11,7 +11,7 @@
 #include <drivers/video/vga.h>
 #include <util/array.h>
 
-
+#if 0
 
 //http://wiki.osdev.org/VGA_Hardware
 //http://www.monstersoft.com/tutorial1/VESA_intro.html
@@ -89,9 +89,10 @@ void vga_write_regs(unsigned char *regs) {
 /* lock 16-color palette and unblank display */
 	vga_display_enable(1);
 }
+#endif
 
-
-struct display * vga_setup_mode(struct display *display, enum vesa_video_mode mode) {
+#if 0
+struct display * vga_setup_mode(struct display *display, enum video_vesanum mode) {
 	const struct vga_mode_description *mode_desc;
 
 	if (NULL == (mode_desc = vga_mode_description_lookup(mode))) {
@@ -112,7 +113,6 @@ struct display * vga_setup_mode(struct display *display, enum vesa_video_mode mo
 }
 
 
-#if 0
 static void dump(unsigned char *regs, unsigned count)
 {
 	unsigned i;

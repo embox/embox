@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file provides low-level video-mode routines for XWnd.
+ * @brief Vesa mode numbers
  *
  * @date 14.09.12
  * @author Alexandr Chernakov
@@ -9,7 +9,7 @@
 #ifndef DRIVERS_VIDEO_VESA_H_
 #define DRIVERS_VIDEO_VESA_H_
 
-enum vesa_video_mode {
+enum video_vesa_mode {
 	VESA_MODE_TEXT_40x25x16_M = 0x0,
 	VESA_MODE_TEXT_40x25x16 = 0x1,
 	VESA_MODE_TEXT_80x25x16_M = 0x2,
@@ -57,15 +57,12 @@ enum vesa_video_mode {
 	VESA_MODE_SVGA_1600x1200x256 = 0x11C
 };
 
-struct vesa_mode_desc {
-	int xres; /* horizontal resolution */
-	int yres; /* vertical resolution */
+struct video_resbpp {
+	int x; /* horizontal resolution */
+	int y; /* vertical resolution */
 	int bpp;  /* number of color bits per pixel */
 };
 
-struct dislay;
-extern struct display *vga_setup_mode(struct display *display, enum vesa_video_mode mode);
-
-extern const struct vesa_mode_desc * vesa_mode_get_desc(enum vesa_video_mode mode);
+extern const struct video_resbpp *video_resbpp_by_vesamode(enum video_vesa_mode mode);
 
 #endif /* DRIVERS_VIDEO_VESA_H_ */

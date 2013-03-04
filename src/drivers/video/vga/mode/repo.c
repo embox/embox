@@ -8,9 +8,10 @@
 #include <drivers/video/vesa_mode.h>
 #include <util/array.h>
 
+#if 0
 ARRAY_SPREAD_DEF(const struct vga_mode_description *, __vga_mode_descriptions);
 
-const struct vga_mode_description *vga_mode_description_lookup(enum vesa_video_mode mode) {
+const struct vga_mode_description *vga_mode_description_lookup(enum video_vesanum mode) {
 	const struct vga_mode_description *desc;
 
 	array_foreach(desc, __vga_mode_descriptions, ARRAY_SPREAD_SIZE(__vga_mode_descriptions)) {
@@ -21,3 +22,4 @@ const struct vga_mode_description *vga_mode_description_lookup(enum vesa_video_m
 
 	return NULL;
 }
+#endif

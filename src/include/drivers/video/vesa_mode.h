@@ -10,7 +10,7 @@
 
 #include <util/array.h>
 #include <drivers/video/vesa.h>
-
+#if 0
 struct display;
 struct vga_mode_description;
 
@@ -43,6 +43,6 @@ struct vga_mode_description {
 
 const struct vga_mode_description *vga_mode_description_lookup(enum vesa_video_mode);
 
-
+#endif
 
 #endif /* VESA_MODE_H_ */

@@ -6,8 +6,8 @@
  */
 
 #include <drivers/video/fb.h>
+#include <drivers/video/vesa_modes.h>
 #include <util/array.h>
-
 
 static const struct fb_videomode vesa_modes[] = {
 	/* 0 640x350-85 VESA */
@@ -133,28 +133,15 @@ static const struct fb_videomode vesa_modes[] = {
 	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
 };
 
-const struct fb_videomode * fb_desc_to_videomode(int x, int y, int depth) {
-	size_t i;
-
-	for (i = 0; i < ARRAY_SIZE(vesa_modes); ++i) {
-		if ((x == vesa_modes[i].xres) && (y == vesa_modes[i].yres)) {
+const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp) {
+	int i;
+	for(i = 0; i < ARRAY_SIZE(vesa_modes); i ++) {
+		if(resbpp->x == vesa_modes[i].xres
+				&& resbpp->y == vesa_modes[i].yres) {
 			return &vesa_modes[i];
 		}
 	}
-
 	return NULL;
-}
-
-int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-		const struct fb_videomode *mode, uint32_t bpp) {
-	fb_videomode_to_var(var, mode);
-	var->bits_per_pixel = bpp;
-
-	if (info->ops->fb_check_var != NULL) {
-		return info->ops->fb_check_var(var, info);
-	}
-
-	return 0;
 }
 
 void fb_videomode_to_var(struct fb_var_screeninfo *var,

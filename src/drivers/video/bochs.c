@@ -9,7 +9,7 @@
 #include <drivers/pci/pci.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
-#include <drivers/video/vesa.h>
+#include <drivers/video/vesa_modes.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 
@@ -52,7 +52,7 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	int ret;
 	struct fb_info *info;
-	const struct vesa_mode_desc *desc;
+	const struct video_resbpp *resbpp;
 	const struct fb_videomode *mode;
 
 	assert(pci_dev != NULL);
@@ -67,19 +67,19 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 	info->ops = &bochs_ops;
 	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
 
-	desc = vesa_mode_get_desc(MODOPS_DEFAULT_MODE);
-	if (desc == NULL) {
+	resbpp = video_resbpp_by_vesamode(MODOPS_DEFAULT_MODE);
+	if (resbpp == NULL) {
 		fb_release(info);
 		return -EINVAL;
 	}
 
-	mode = fb_desc_to_videomode(desc->xres, desc->yres, desc->bpp);
+	mode = video_fbmode_by_resbpp(resbpp);
 	if (mode == NULL) {
 		fb_release(info);
 		return -EINVAL;
 	}
 
-	ret = fb_try_mode(&info->var, info, mode, desc->bpp);
+	ret = fb_try_mode(&info->var, info, mode, resbpp->bpp);
 	if (ret != 0) {
 		fb_release(info);
 		return ret;
