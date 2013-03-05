@@ -90,7 +90,7 @@ static int serial_con_manager(int argc, char *argv[]) {
 		return -1;
 	}
 
-	tty_ng_manager(n, tty_serial_init, shell_lookup("tish")->exec);
+	tty_ng_manager(n, tty_serial_init, shell_lookup("tish")->run);
 
 	return 0;
 }

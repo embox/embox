@@ -18,7 +18,6 @@
 
 #include "console/console.h"
 
-
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);
 
@@ -105,7 +104,7 @@ static int shell_start(void) {
 	return 0;
 }
 
-static void shell_run(void) {
+static void diag_shell_run(void) {
 	static const char* prompt = OPTION_STRING_GET(prompt);
 
 	printf("\n%s", OPTION_STRING_GET(welcome_msg));
@@ -117,4 +116,8 @@ static int shell_stop(void) {
 	return 0;
 }
 
-SHELL_DEF(shell_run,"diag_shell");
+SHELL_DEF({
+	.name = "diag_shell",
+	.exec = NULL,
+	.run  = diag_shell_run,
+	});

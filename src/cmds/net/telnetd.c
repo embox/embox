@@ -176,7 +176,7 @@ static void *shell_hnd(void* args) {
 	dup2(msg[0], STDIN_FILENO);
 	dup2(msg[1], STDOUT_FILENO);
 
-	shell_lookup("tish")->exec();
+	shell_run(shell_lookup("tish"));
 
 	utmp_login(DEAD_PROCESS, "");
 
