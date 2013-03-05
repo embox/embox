@@ -54,8 +54,9 @@ module make_term {
 module diag_index_desc {
 	source "bs_posix_env.c"
 
-	depends embox.kernel.thread.thread_mode
-
-	//depends embox.kernel.task.api
+	/* performs fd manipulations, which implies any kind of task be
+	   initialized
+	*/
+	depends embox.kernel.task.api
 	depends embox.compat.posix.idx.dup
 }
