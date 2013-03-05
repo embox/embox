@@ -7,6 +7,7 @@
 
 #include <embox/unit.h>
 
+#include <alloca.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -21,27 +22,10 @@
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);
 
+static int diag_shell_exec(const char *cmdline);
+
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
-	const struct cmd *cmd;
-	int code;
-	/* In the worst case cmdline looks like "x x x x x x". */
-	char *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
-	int argc = 0;
-
-	if (0 == (argc = cmdline_tokenize(cmdline, argv))) {
-		/* Only spaces were entered */
-		return;
-	}
-
-	if (NULL == (cmd = cmd_lookup(argv[0]))) {
-		printf("%s: Command not found\n", argv[0]);
-		return;
-	}
-
-	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		printf("%s: Command returned with code %d: %s\n",
-				cmd_name(cmd), code, strerror(-code));
-	}
+	diag_shell_exec(cmdline);
 }
 
 /**
@@ -104,6 +88,36 @@ static int shell_start(void) {
 	return 0;
 }
 
+static int diag_shell_exec(const char *cmdline) {
+	const struct cmd *cmd;
+	int ret, argc;
+	/* In the worst case cmdline looks like "x x x x x x". */
+	char *cmdline_cp, *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
+
+	cmdline_cp = alloca(strlen(cmdline) + 1);
+	strcpy(cmdline_cp, cmdline);
+
+	argc = cmdline_tokenize(cmdline_cp, argv);
+	if (argc == 0) {
+		return -EINVAL; /* Only spaces were entered */
+	}
+
+	cmd = cmd_lookup(argv[0]);
+	if (cmd == NULL) {
+		printf("%s: Command not found\n", argv[0]);
+		return -ENOENT;
+	}
+
+	ret = cmd_exec(cmd, argc, argv);
+	if (ret != 0) {
+		printf("%s: Command returned with code %d: %s\n",
+				cmd_name(cmd), ret, strerror(-ret));
+		return ret;
+	}
+
+	return 0;
+}
+
 static void diag_shell_run(void) {
 	static const char* prompt = OPTION_STRING_GET(prompt);
 
@@ -118,6 +132,6 @@ static int shell_stop(void) {
 
 SHELL_DEF({
 	.name = "diag_shell",
-	.exec = NULL,
+	.exec = diag_shell_exec,
 	.run  = diag_shell_run,
 	});
