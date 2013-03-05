@@ -2,5 +2,6 @@
 package embox.driver.tty
 
 module tty {
-	source "tty.c"
+	source "vt/video_term.c"
+	source "vt/vtesc.c"
 }

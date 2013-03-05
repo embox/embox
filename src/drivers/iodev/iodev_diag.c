@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <drivers/video/vga.h>
 #include <drivers/iodev.h>
-#include <drivers/tty.h>
+#include <drivers/video_term.h>
 #include <string.h>
 
 typedef struct vchar {
@@ -26,7 +26,7 @@ struct diag_tty_data {
 	vchar_t *video;
 };
 
-static void diag_tty_init(struct tty *t) {
+static void diag_tty_init(struct video_term *t) {
 	/**
 	 * mode 3h (80x25 text mode)
 	 * 0x67 => 01100111
@@ -42,7 +42,7 @@ static void diag_tty_init(struct tty *t) {
 	out16(0x67, VGA_MISC_WRITE);
 }
 
-static void diag_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
+static void diag_tty_cursor(struct video_term *t, uint32_t x, uint32_t y) {
 	unsigned int pos;
 
 	pos = x + y * t->width;
@@ -50,14 +50,14 @@ static void diag_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
 	out16((pos <<     8) | 0x0f, VGA_CRTC_INDEX);
 }
 
-static void diag_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
+static void diag_tty_putc(struct video_term *t, char ch, uint32_t x, uint32_t y) {
 	struct diag_tty_data *data;
 
 	data = (struct diag_tty_data *)t->data;
 	data->video[x + y * t->width] = (vchar_t) { .c = ch, .a = data->attr };
 }
 
-static void diag_tty_clear(struct tty *t, uint32_t x, uint32_t y,
+static void diag_tty_clear(struct video_term *t, uint32_t x, uint32_t y,
 		uint32_t width, uint32_t height) {
 	uint32_t i, j;
 	struct diag_tty_data *data;
@@ -76,7 +76,7 @@ static void diag_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	}
 }
 
-static void diag_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
+static void diag_tty_move(struct video_term *t, uint32_t sx, uint32_t sy,
 		uint32_t width, uint32_t height, uint32_t dx, uint32_t dy) {
 	uint32_t i;
 	struct diag_tty_data *data;
@@ -107,7 +107,7 @@ static void diag_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
 	}
 }
 
-static const struct tty_ops diag_tty_ops = {
+static const struct vterm_ops diag_tty_ops = {
 	.init = &diag_tty_init,
 	.cursor = &diag_tty_cursor,
 	.putc = &diag_tty_putc,
@@ -121,7 +121,7 @@ static int iodev_diag_init(void) {
 		.video = (vchar_t *)VIDEO
 	};
 
-	tty_init(&diag_tty, 80, 24, &diag_tty_ops, &data);
+	vterm_init(&diag_tty, 80, 24, &diag_tty_ops, &data);
 	return 0;
 }
 
@@ -132,5 +132,5 @@ const struct iodev_ops iodev_diag_ops_struct = {
 	.kbhit = &diag_kbhit
 };
 
-struct tty diag_tty;
+struct video_term diag_tty;
 const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;

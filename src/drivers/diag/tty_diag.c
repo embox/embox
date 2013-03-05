@@ -8,11 +8,11 @@
  */
 
 #include <drivers/diag.h>
-#include <drivers/tty.h>
+#include <drivers/video_term.h>
 #include <drivers/iodev.h>
 
 void diag_putc(char ch) {
-	tty_putc(&diag_tty, ch);
+	vterm_putc(&diag_tty, ch);
 }
 
 void diag_init(void) {
