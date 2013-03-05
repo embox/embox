@@ -14,7 +14,7 @@
 #include <termios.h>
 
 #include <framework/mod/options.h>
-#include <module/embox/tty/tty.h>
+#include <module/embox/driver/tty/tty.h>
 
 #define TTY_QUEUE_SZ \
 	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, queue_sz)
@@ -24,11 +24,12 @@
 #define TTY_IOCTL_SETATTR  0x2
 #define TTY_IOCTL_SETBAUD  0x3
 
-struct tty;
+struct tty_ops;
 
 struct tty_queue {
-	char buff[TTY_QUEUE_SZ];
-	char *head, *tail;
+	char   buff[TTY_QUEUE_SZ];
+	size_t offset;
+	size_t count;
 };
 
 struct tty {
@@ -38,19 +39,23 @@ struct tty {
 };
 
 struct tty_ops {
-	void (*setup)(struct tty *t, struct termios *termios);
-	void (*start_tx)(struct tty *t, struct tty_queue *txq);
+	void (*setup)(struct tty *, struct termios *);
+	void (*tx_start)(struct tty *);
 };
 
-static inline size_t tty_queue_count(struct tty_queue *tq) {
-	return 0; // TODO
-}
+extern int tty_read(struct tty *, char *, size_t *);
+extern int tty_write(struct tty *, char *, size_t *);
+extern int tty_ioctl(struct tty *, unsigned long, void *);
 
-extern void tty_init(struct tty *t);
-extern void tty_scroll(struct tty *t, int32_t delta);
-extern void tty_clear(struct tty *t);
-extern void tty_cursor(struct tty *t);
-extern void tty_putc(struct tty *t, char ch);
+/* These functions can be called from IRQ context. */
 
+extern void tty_tx_done(struct tty *);
+extern void tty_rx_char(struct tty *, char);
+
+/* TTY RX/TX queues operations. */
+
+extern struct tty_queue *tty_queue_init(struct tty_queue *);
+extern int tty_enqueue(struct tty_queue *, char);
+extern int tty_dequeue(struct tty_queue *);
 
 #endif /* DRIVERS_TTY_H_ */
