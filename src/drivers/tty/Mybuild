@@ -4,4 +4,5 @@ package embox.driver.tty
 module tty {
 	source "vt/video_term.c"
 	source "vt/vtesc.c"
+	option number queue_sz = 8
 }

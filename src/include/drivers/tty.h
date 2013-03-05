@@ -6,59 +6,51 @@
  * @author Ilia Vaprol
  */
 
-#ifndef DRIVERS_VIDEO_TTY_H_
-#define DRIVERS_VIDEO_TTY_H_
+#ifndef DRIVERS_TTY_H_
+#define DRIVERS_TTY_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <termios.h>
 
-struct tty;
+#include <framework/mod/options.h>
+#include <module/embox/tty/tty.h>
 
-struct tty_ops {
-	void (*init)(struct tty *t);
-	void (*cursor)(struct tty *t, uint32_t x, uint32_t y);
-	void (*putc)(struct tty *t, char ch, uint32_t x, uint32_t y);
-	void (*clear)(struct tty *t, uint32_t x, uint32_t y,
-			uint32_t width, uint32_t height);
-	void (*move)(struct tty *t, uint32_t sx, uint32_t sy, uint32_t width,
-			uint32_t height, uint32_t dx, uint32_t dy);
-};
-
-struct win_size {
-	uint32_t x;
-	uint32_t y;
-	uint32_t width;
-	uint32_t height;
-};
-
-struct tty {
-	uint32_t cur_x;
-	uint32_t cur_y;
-	uint32_t back_cx, back_cy;
-	uint32_t width;
-	uint32_t height;
-
-	const struct tty_ops *ops;
-	void *data;
-
-	int esc_state;
-	int esc_args[5];
-	int esc_args_count;
-
-	struct termios termios;
-};
-
-extern void tty_init(struct tty *t, uint32_t width, uint32_t height,
-		const struct tty_ops *ops, void *data);
-extern void tty_scroll(struct tty *t, int32_t delta);
-extern void tty_clear(struct tty *t);
-extern void tty_cursor(struct tty *t);
-extern void tty_putc(struct tty *t, char ch);
+#define TTY_QUEUE_SZ \
+	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, queue_sz)
 
 /* tty ioctls */
 #define TTY_IOCTL_GETATTR  0x1
 #define TTY_IOCTL_SETATTR  0x2
 #define TTY_IOCTL_SETBAUD  0x3
 
+struct tty;
 
-#endif /* DRIVERS_VIDEO_TTY_H_ */
+struct tty_queue {
+	char buff[TTY_QUEUE_SZ];
+	char *head, *tail;
+};
+
+struct tty {
+	const struct tty_ops *ops;
+	struct termios termios;
+	struct tty_queue rx, tx;
+};
+
+struct tty_ops {
+	void (*setup)(struct tty *t, struct termios *termios);
+	void (*start_tx)(struct tty *t, struct tty_queue *txq);
+};
+
+static inline size_t tty_queue_count(struct tty_queue *tq) {
+	return 0; // TODO
+}
+
+extern void tty_init(struct tty *t);
+extern void tty_scroll(struct tty *t, int32_t delta);
+extern void tty_clear(struct tty *t);
+extern void tty_cursor(struct tty *t);
+extern void tty_putc(struct tty *t, char ch);
+
+
+#endif /* DRIVERS_TTY_H_ */
