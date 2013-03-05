@@ -26,6 +26,9 @@
 
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define OPOST           0x0001  /* perform output processing */
+#define ONLCR           0x0002  /* map NL to CR-NL (ala CRMOD) */
+#define OXTABS          0x0004  /* expand tabs to spaces */
+#define ONOEOT          0x0008  /* discard EOT's (^D) on output) */
 
 /* Values for termios c_cflag bit map.  POSIX Table 7-3. */
 #define CLOCAL          0x0001  /* ignore modem status lines */
@@ -50,6 +53,10 @@
 #define ISIG            0x0040  /* enable signals */
 #define NOFLSH          0x0080  /* disable flush after interrupt or quit */
 #define TOSTOP          0x0100  /* send SIGTTOU (job control, not implemented*/
+
+/*
+ * cc_c - Control characters array.
+ */
 
 /* Indices into c_cc array.  Default values in parentheses. POSIX Table 7-5. */
 #define VEOF                 0  /* cc_c[VEOF]   = EOF char (^D) */

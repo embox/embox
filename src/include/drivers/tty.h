@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <termios.h>
 
+#include <kernel/thread/event.h>
+
 #include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>
 
@@ -24,6 +26,31 @@
 #define TTY_IOCTL_SETATTR  0x2
 #define TTY_IOCTL_SETBAUD  0x3
 
+/* Defaults */
+
+#define TTY_TERMIOS_CC_INIT \
+	{ \
+		[VEOF]   = __TTY_CTRL('d'),  \
+		[VEOL]   = ((cc_t) ~0), /* undef */ \
+		[VERASE] = 0177,             \
+		[VINTR]  = __TTY_CTRL('c'),  \
+		[VKILL]  = __TTY_CTRL('u'),  \
+		[VMIN]   = 1,                \
+		[VQUIT]  = __TTY_CTRL('\\'), \
+		[VTIME]  = 0,                \
+		[VSUSP]  = __TTY_CTRL('z'),  \
+		[VSTART] = __TTY_CTRL('q'),  \
+		[VSTOP]  = __TTY_CTRL('s'),  \
+	}
+
+#define __TTY_CTRL(ch)  (cc_t) ((ch) & 0x1f)
+
+#define TTY_TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
+#define TTY_TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
+#define TTY_TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
+#define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
+			ECHO | ECHOE | ECHOK | ECHONL)
+
 struct tty_ops;
 
 struct tty_queue {
@@ -33,15 +60,18 @@ struct tty_queue {
 };
 
 struct tty {
-	const struct tty_ops *ops;
-	struct termios termios;
-	struct tty_queue rx, tx;
+	struct tty_ops   *ops;
+	struct termios    termios;
+	struct tty_queue  rx_queue, tx_queue;
+	struct event      rx_event, tx_event;
 };
 
 struct tty_ops {
 	void (*setup)(struct tty *, struct termios *);
 	void (*tx_start)(struct tty *);
 };
+
+extern struct tty *tty_init(struct tty *, struct tty_ops *);
 
 extern int tty_read(struct tty *, char *, size_t *);
 extern int tty_write(struct tty *, char *, size_t *);
