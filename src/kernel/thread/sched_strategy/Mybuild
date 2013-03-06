@@ -10,25 +10,19 @@ module simple_queue extends api {
 	depends embox.kernel.thread.sched_policy.queue.api
 }
 
-module priority_based extends api {
-	source "priority_based.c", "priority_based.h"
-
-	option number tick_interval = 100
-}
-
-module priority_based2 extends api {
-	source "priority_based2.c", "priority_based2.h"
-
-	option number tick_interval = 100
-}
-
-module trivial extends api {
-	source "trivial.c", "trivial.h"
-
-}
-
 module fixedtime extends api {
 	source "fixedtime_sched.c", "fixedtime_sched.h"
 
 	option number msec_priority_multiplier = 1
+}
+
+/* Meta modules for compatibility. Remove them? */
+module priority_based {
+	depends embox.kernel.thread.sched_policy.simple_queue
+	depends embox.kernel.thread.sched_policy.queue.prioq
+}
+
+module trivial {
+	depends embox.kernel.thread.sched_policy.simple_queue
+	depends embox.kernel.thread.sched_policy.queue.list
 }
