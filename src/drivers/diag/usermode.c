@@ -6,6 +6,8 @@
  * @date    01.03.2013
  */
 
+#include <kernel/host.h>
+
 int diag_kbhit(void) {
 	return 0;
 }
@@ -17,13 +19,9 @@ char diag_getc(void) {
 }
 
 void diag_putc(char ch) {
-	int ret;
-	__asm__ __volatile__(
-		"int $0x80"
-		: "=a"(ret)
-		: "a"(4), "b"(0), "c"(&ch), "d"(1)
-		:
-	);
+
+	emvisor_send(embox_getupstream(), EMVISOR_DIAG_OUT, &ch, 1);
+
 }
 
 void diag_init(void) {
