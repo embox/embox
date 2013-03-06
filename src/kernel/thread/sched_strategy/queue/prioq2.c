@@ -10,7 +10,10 @@
 #include <util/prioq.h>
 
 #include <kernel/thread.h>
+#include <kernel/task.h>
 #include <kernel/thread/sched_strategy.h>
+
+#include <kernel/cpu.h>
 
 void sched_strategy_init(struct sched_strategy_data *s) {
 	dlist_head_init(&s->link);
@@ -34,11 +37,21 @@ void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
 }
 
 struct thread *runq_queue_extract(runq_queue_t *queue) {
-	struct thread *thread = NULL;
+	struct thread *thread = NULL, *t, *nxt;
 
 	for (int i = THREAD_PRIORITY_MAX; i >= THREAD_PRIORITY_MIN; i--) {
-		if (!dlist_empty(&queue->list[i])) {
-			thread = dlist_entry(queue->list[i].next, struct thread, sched.link);
+		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
+#ifdef SMP
+			/* Checking the affinity */
+			if ((~t->task->affinity) | (cpu_get_id())) {
+				thread = t;
+			}
+#else
+			thread = t;
+#endif
+		}
+
+		if (thread) {
 			runq_queue_remove(queue, thread);
 			break;
 		}

@@ -16,6 +16,8 @@
 
 struct runq_queue {
 	struct dlist_head list[THREAD_PRIORITY_TOTAL];
+
+/* TODO: */
 //	int mask[MASK_LEN];
 };
 
