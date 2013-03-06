@@ -143,7 +143,7 @@ static int utmp_login(short ut_type, const char *host) {
 	utmp.ut_pid = getpid();
 	snprintf(utmp.ut_id, UT_IDSIZE, "/%hd", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	strcpy(utmp.ut_host, host);
+	strncpy(utmp.ut_host, host, UT_HOSTSIZE);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
 
 	gettimeofday(&tv, NULL);
@@ -166,9 +166,7 @@ static void *shell_hnd(void* args) {
 
 	struct sockaddr_in *addr_in = &clients[msg[2]].addr_in;
 
-	utmp_login(LOGIN_PROCESS, "");
-
-	addr_in = addr_in;
+	utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
 
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);

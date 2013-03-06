@@ -6,6 +6,7 @@
  * @date    07.02.2013
  */
 
+#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <utmp.h>
@@ -15,30 +16,32 @@
 EMBOX_CMD(who_cmd);
 
 const static char *login = "LOGIN";
+const static char *localhost = "(localhost)";
 
 static int who_cmd(int argc, char **argv) {
 	struct utmp *ut;
-	const char *user;
-	printf("%8s %8s %8s %4s\n", "NAME", "LINE", "TIME", "PID");
+	const char *user, *host;
+	printf("%8s %8s %16s %8s %4s\n", "NAME", "LINE", "HOST", "TIME", "PID");
 
 	setutent();
 
 	while (NULL != (ut = getutent())) {
-		if (ut->ut_type == USER_PROCESS) {
-			user = ut->ut_user;
-		} else if (ut->ut_type == DEAD_PROCESS) {
+		host = strlen(ut->ut_host) ? ut->ut_host : localhost;
+		user = ut->ut_user;
+
+		switch (ut->ut_type) {
+		case USER_PROCESS:
 			break;
-		} else {
-			switch(ut->ut_type) {
-			case LOGIN_PROCESS:
-				user = login;
-				break;
-			default:
-				user = "";
-			}
+		case LOGIN_PROCESS:
+			user = login;
+			break;
+		case DEAD_PROCESS:
+		default:
+			continue;
 		}
 
-		printf("%8s %8s %8s %4d\n", user, ut->ut_line, "", ut->ut_pid);
+		printf("%8s %8s %16s %8s %4d\n", user, ut->ut_line,
+				host, "", ut->ut_pid);
 	}
 
 	return 0;
