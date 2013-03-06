@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
 #include <stdint.h>
 #include <drivers/diag.h>
 
@@ -26,19 +27,24 @@ static int keyboard_havechar(void) {
 }
 
 static void keyboard_send_cmd(uint8_t cmd) {
-	keyboard_wait_write();
+	unsigned int status;
+	keyboard_wait_write(status);
 	outb(cmd, I8042_CMD_PORT);
 }
 
 static unsigned char keyboard_get_mode(void) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_READ_MODE);
-	keyboard_wait_read();
+	keyboard_wait_read(status);
 	return inb(I8042_DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
-	keyboard_wait_write();
+	keyboard_wait_write(status);
 	outb(mode, I8042_DATA_PORT);
 }
 
@@ -57,16 +63,21 @@ static void kbd_key_serv_press(int state, int flag) {
 }
 
 static int keyboard_get_input_event(struct input_dev *dev, struct input_event *event) {
-	uint8_t scan_code;
+	uint8_t scan_code, status;
 	int flag = 0;
-	keyboard_wait_read();
+
+	keyboard_wait_read(status);
 
 	scan_code = inb(I8042_DATA_PORT);
 
 	if(scan_code == KEYBOARD_SCAN_CODE_EXT) {
-		keyboard_wait_read();
-		scan_code = inb(I8042_DATA_PORT);
+		return -EAGAIN;
 	}
+
+	if (status & I8042_STS_AUXOBF) {
+		return -EAGAIN;
+	}
+
 	if(scan_code & 0x80) {
 		/* key unpressed */
 		event->type &= ~KEY_PRESSED;
@@ -118,7 +129,9 @@ static int keyboard_getc(void) {
 	ascii_len = 0;
 
 	do {
-		input_dev_event(kbd, &event);
+		while (0 != input_dev_event(kbd, &event)) {
+
+		}
 
 		if(key_is_pressed(&event)) {
 			ascii_len = keymap_to_ascii(&event, ascii_buff);
