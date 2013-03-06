@@ -1,5 +1,8 @@
 package embox.driver.console
 
-module mpx_simple {
+abstract module mpx {
+}
+
+module mpx_simple extends mpx {
 	source "mpx_simple.c"
 }
