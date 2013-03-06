@@ -74,12 +74,10 @@ static int run_script(void) {
 	}
 
 	printk("loading start script:\n");
-	assert(shell != NULL);
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		printk("> %s \n", command);
 
-		assert(shell->exec != NULL);
-		shell->exec(command);
+		shell_exec(shell, command);
 	}
 
 	shell_run(shell);
