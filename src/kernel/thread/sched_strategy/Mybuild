@@ -2,6 +2,14 @@ package embox.kernel.thread.sched_policy
 
 abstract module api { }
 
+module simple_queue extends api {
+	source "simple_queue.c", "simple_queue.h"
+
+	option number tick_interval = 100
+
+	depends embox.kernel.thread.sched_policy.queue.api
+}
+
 module priority_based extends api {
 	source "priority_based.c", "priority_based.h"
 
