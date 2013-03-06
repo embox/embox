@@ -13,7 +13,7 @@
 #include <drivers/vtparse.h>
 #include <assert.h>
 
-static void vterm_scroll(struct vterm *t, int32_t delta) {
+static void vterm_scroll(struct vterm *t, short delta) {
 	if (!t || !t->ops || !t->ops->scroll) {
 		return;
 	}
@@ -166,7 +166,7 @@ void vterm_putc(struct vterm *t, char ch) {
 	vterm_cursor(t);
 }
 
-void vterm_init(struct vterm *t, uint32_t width, uint32_t height,
+void vterm_init(struct vterm *t, unsigned short width, unsigned short height,
 		const struct vterm_ops *ops, void *data) {
 	t->cur_x = 0;
 	t->cur_y = 0;

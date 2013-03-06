@@ -42,7 +42,7 @@ static void diag_tty_init(struct vterm *t) {
 	out16(0x67, VGA_MISC_WRITE);
 }
 
-static void diag_tty_cursor(struct vterm *t, uint32_t x, uint32_t y) {
+static void diag_tty_cursor(struct vterm *t, unsigned short x, unsigned short y) {
 	unsigned int pos;
 
 	pos = x + y * t->width;
@@ -50,7 +50,7 @@ static void diag_tty_cursor(struct vterm *t, uint32_t x, uint32_t y) {
 	out16((pos << 8) | 0x0f, VGA_CRTC_INDEX);
 }
 
-static void diag_tty_putc(struct vterm *t, char ch, uint32_t x, uint32_t y) {
+static void diag_tty_putc(struct vterm *t, char ch, unsigned short x, unsigned short y) {
 	struct diag_tty_data *data;
 
 	data = (struct diag_tty_data *) t->data;
@@ -58,98 +58,31 @@ static void diag_tty_putc(struct vterm *t, char ch, uint32_t x, uint32_t y) {
 }
 
 
-static void diag_clear_strip(struct vterm *t, int32_t y1, int32_t y2){
-	int i, j;
-	struct diag_tty_data *data;
-	data = (struct diag_tty_data *) t->data;
+static void diag_clear_strip(struct vterm *t, short row, unsigned short count){
+	struct diag_tty_data *data = t->data;
 
-	for (i = 0; i < t->width; ++i) {
-		for (j = y1; j < y2; ++j) {
-			data->video[i + j * t->width] =
-			(vchar_t) {.c = 0x20, .a = data->attr};
-		}
+	for (int i = row * t->width; i < (row + count) * t->width; ++i){
+		data->video[i] = (vchar_t) {.c = ' ', .a = data->attr};
 	}
 }
 
-static void diag_vterm_scroll(struct vterm *t, int32_t delta) {
-	uint32_t i;
-	struct diag_tty_data *data;
-	data = (struct diag_tty_data *) t->data;
+static void diag_vterm_scroll(struct vterm *t, short delta) {
+	struct diag_tty_data *data = t->data;
 
 	if (delta > 0) {
-		uint32_t height = t->height - delta;
+		memmove(data->video,
+				data->video + delta * t->width,
+				t->width * (t->height - delta) * sizeof data->video[0]);
 
-		for (i = 0; i < height; ++i) {
-			memmove(&data->video[i * t->width],
-					&data->video[(delta + i) * t->width],
-					t->width * sizeof data->video[0]);
-		}
-
-		diag_clear_strip(t, t->cur_y - delta, t->cur_y);
+		diag_clear_strip(t, t->height - delta, delta);
 
 	} else {
-		uint32_t height = t->height;
 		delta = - delta;
-
-		while (height-- != 0) {
-			memmove(&data->video[(height + delta) * t->width],
-					&data->video[(height) * t->width],
-					t->width * sizeof data->video[0]);
-		}
+		memmove(data->video + delta * t->width,
+				data->video,
+				t->width * (t->height - delta) * sizeof data->video[0]);
 
 		diag_clear_strip(t, 0, delta);
-	}
-}
-
-static void diag_tty_clear(struct vterm *t, uint32_t x, uint32_t y,
-		uint32_t width, uint32_t height) {
-	uint32_t i, j;
-	struct diag_tty_data *data;
-
-	data = (struct diag_tty_data *) t->data;
-
-	width = x + width > t->width ? t->width - x : width;
-	height = y + height > t->height ? t->height - y : height;
-
-	if ((width == 0) || (height == 0))
-		return;
-
-	for (i = x; i < x + width; ++i) {
-		for (j = y; j < y + height; ++j) {
-			data->video[i + j * t->width] =
-					(vchar_t) {.c = 0x20, .a = data->attr};
-		}
-	}
-}
-
-static void diag_tty_move(struct vterm *t, uint32_t sx, uint32_t sy,
-		uint32_t width, uint32_t height, uint32_t dx, uint32_t dy) {
-	uint32_t i;
-	struct diag_tty_data *data;
-
-	data = (struct diag_tty_data *) t->data;
-
-	width = sx + width > t->width ? t->width - sx : width;
-	width = dx + width > t->width ? t->width - dx : width;
-
-	height = sy + height > t->height ? t->height - sy : height;
-	height = dy + height > t->height ? t->height - dy : height;
-
-	if ((width == 0) || (height == 0))
-		return;
-
-	if (sy <= dy) {
-		while (height-- != 0) {
-			memmove(&data->video[dx + (dy + height) * t->width],
-					&data->video[sx + (sy + height) * t->width],
-					width * sizeof data->video[0]);
-		}
-	} else {
-		for (i = 0; i < height; ++i) {
-			memmove(&data->video[dx + (dy + i) * t->width],
-					&data->video[sx + (sy + i) * t->width],
-					width * sizeof data->video[0]);
-		}
 	}
 }
 
@@ -157,8 +90,6 @@ static const struct vterm_ops diag_tty_ops = {
 		.init = &diag_tty_init,
 		.cursor = &diag_tty_cursor,
 		.putc = &diag_tty_putc,
-		.clear = &diag_tty_clear,
-		.move = &diag_tty_move,
 		.scroll = &diag_vterm_scroll
 };
 
