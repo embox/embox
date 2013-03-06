@@ -19,10 +19,10 @@ struct vterm_ops {
 	void (*init)(struct vterm *t);
 	void (*cursor)(struct vterm *t, unsigned short x, unsigned short y);
 	void (*putc)(struct vterm *t, char ch, unsigned short x, unsigned short y);
+	void (*clear_strip)(struct vterm *t, short row, unsigned short count);
+	void (*copy_rows)(struct vterm *t, unsigned short to, unsigned short from, short nrows);
 	void (*clear)(struct vterm *t, unsigned short x, unsigned short y,
 			unsigned short width, unsigned short height);
-	void (*move)(struct vterm *t, unsigned short sx, unsigned short sy, unsigned short width,
-			unsigned short height, unsigned short dx, unsigned short dy);
 	void (*scroll)(struct vterm *t, short delta);
 };
 
