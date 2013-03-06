@@ -3,12 +3,27 @@
  *
  * @date 20.01.13
  * @author Alexander Kalmuk
+ * @author Anton Kozlov:
+ * 	splitted with fs, simplifying
  */
 
+#include <errno.h>
+#include <string.h>
+#include <kernel/irq.h>
+#include <kernel/softirq.h>
+#include <util/dlist.h>
+#include <embox/unit.h>
+
+#include <drivers/input/input_dev.h>
+
+#define INPUT_SOFTIRQ 17
+
+EMBOX_UNIT_INIT(input_devfs_init);
+
+#if 0
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
 #include <fs/file_desc.h>
 #include <fs/node.h>
@@ -23,11 +38,6 @@
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched.h>
 
-#include <embox/unit.h>
-
-#include <drivers/input/input_dev.h>
-
-EMBOX_UNIT_INIT(input_devfs_init);
 
 #define MAX_OPEN_CNT      64
 #define EVENT_SIZE        sizeof(struct input_event)
@@ -47,7 +57,6 @@ static struct kfile_operations input_dev_file_op = {
 	.read = input_devfs_read
 };
 
-static DLIST_DEFINE(__input_devices);
 
 static struct input_subscriber *input_dev_find_subscriber(struct input_dev *dev, unsigned int handler_id) {
 	struct input_subscriber *cur, *nxt;
@@ -63,37 +72,99 @@ static struct input_subscriber *input_dev_find_subscriber(struct input_dev *dev,
 	return NULL;
 }
 
-void input_dev_register(struct input_dev *dev) {
-	assert(dev != NULL);
+#endif
 
-	dlist_init(&dev->subscribers); /* clean subscribers list */
+static DLIST_DEFINE(input_devices);
+static DLIST_DEFINE(post_indevs);
 
-	dlist_add_prev(dlist_head_init(&dev->global_indev_list), &__input_devices);
+static irq_return_t indev_irqhnd(unsigned int irq_nr, void *data) {
+	struct input_dev *dev = (struct input_dev *) data;
+
+	assert(dev);
+
+	irq_lock();
+
+	dlist_add_prev(&dev->post_link, &post_indevs);
+
+	irq_unlock();
+
+	return softirq_raise(INPUT_SOFTIRQ);
 }
 
-static irq_return_t input_irq_handler(unsigned int irq_nr, void *data) {
-	struct input_dev *dev;
-	char symbol;
-	struct input_subscriber *tmp;
-	struct input_subscriber *subsc;
+static void indev_softirqhnd(unsigned int nt, void* data) {
+	struct input_dev *dev, *nxt;
 
+	dlist_foreach_entry(dev, nxt, &post_indevs, post_link) {
+		dlist_del(&dev->post_link);
 
-	dev = (struct input_dev *)data;
-	assert(dev);
-	symbol = (char) dev->getc();
+		assert(dev->indev_event);
 
+		dev->indev_event(dev);
+	}
+}
 
-	dlist_foreach_entry(subsc, tmp, &dev->subscribers, subscribers) {
-		ring_buff_enqueue(&subsc->rbuff, &symbol, 1);
+static int evnt_noact(struct input_dev *dev) {
+	return 0;
+}
+
+int input_dev_register(struct input_dev *dev) {
+	if (dev == NULL) {
+		return -EINVAL;
 	}
 
-	return IRQ_HANDLED;
+
+	if (!dev->indev_get) {
+		return -EINVAL;
+	}
+
+	dev->indev_event = evnt_noact;
+
+	dlist_add_prev(dlist_head_init(&dev->global_indev_list), &input_devices);
+
+	return 0;
 }
 
+int input_dev_event(struct input_dev *dev, struct input_event *ev) {
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	assert(dev->indev_get);
+
+	return dev->indev_get(dev, ev);
+}
+
+int input_dev_open(struct input_dev *dev, indev_event_cb *event) {
+	int res;
+
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	dev->indev_event = event;
+
+	if ((res = irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd"))) {
+		return -EBUSY;
+	}
+
+	return 0;
+}
+
+int input_dev_close(struct input_dev *dev) {
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	dev->indev_event = evnt_noact;
+
+	return 0;
+}
+
+#if 0
 static struct input_dev *input_devfs_lookup(char *name) {
 	struct input_dev *dev, *nxt;
 
-	dlist_foreach_entry(dev, nxt, &__input_devices, global_indev_list) {
+	dlist_foreach_entry(dev, nxt, &input_devices, global_indev_list) {
 		if (0 == strcmp(dev->name, name)) {
 			return dev;
 		}
@@ -225,29 +296,12 @@ static int input_devfs_register(struct input_dev *dev) {
 	return 0;
 }
 
+#endif
+
 static int input_devfs_init(void) {
-	struct node *node;
-	struct input_dev *dev, *nxt;
-	mode_t mode;
 
-	mode = S_IFDIR | S_IRALL | S_IWALL;
-
-	node = vfs_lookup(NULL, "/dev");
-	if (!node) {
-		return -ENOENT;
-	}
-
-	node = vfs_create_child(node, "input", mode);
-	if (!node) {
-		return -ENOMEM;
-	}
-
-	input_devfs_root = node;
-
-	dlist_foreach_entry(dev, nxt, &__input_devices, global_indev_list) {
-		if (input_devfs_register(dev) < 0) {
-			return -1;
-		}
+	if(softirq_install(INPUT_SOFTIRQ, indev_softirqhnd, NULL)) {
+		return -EBUSY;
 	}
 
 	return 0;

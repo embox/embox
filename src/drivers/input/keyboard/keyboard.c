@@ -56,8 +56,7 @@ static void kbd_key_serv_press(int state, int flag) {
 	}
 }
 
-
-static int keyboard_get_input_event(struct input_event *event) {
+static int keyboard_get_input_event(struct input_dev *dev, struct input_event *event) {
 	uint8_t scan_code;
 	int flag = 0;
 	keyboard_wait_read();
@@ -99,8 +98,15 @@ static int keyboard_get_input_event(struct input_event *event) {
 	return 0;
 }
 
+static struct input_dev kbd_dev = {
+		.name = "keyboard",
+		.type = INPUT_DEV_KBD,
+		.irq = 1,
+		.indev_get = keyboard_get_input_event,
+};
 
 static int keyboard_getc(void) {
+	struct input_dev *kbd = &kbd_dev;
 	static unsigned char ascii_buff[4];
 	static int ascii_len;
 	static int seq_cnt = 0;
@@ -112,25 +118,18 @@ static int keyboard_getc(void) {
 	ascii_len = 0;
 
 	do {
-		keyboard_get_input_event(&event);
+		input_dev_event(kbd, &event);
+
 		if(key_is_pressed(&event)) {
 			ascii_len = keymap_to_ascii(&event, ascii_buff);
 		}
+
 	} while(ascii_len == 0);
 
 	seq_cnt = 0;
 
 	return ascii_buff[seq_cnt++];
 }
-
-
-
-static struct input_dev kbd_dev = {
-		.name = "keyboard",
-		.irq = 1,
-		.getc = keyboard_getc
-};
-
 
 static int keyboard_init(void) {
 	uint8_t mode;
@@ -163,7 +162,6 @@ static int keyboard_init(void) {
 
 	return 0;
 }
-
 
 /*
  * Diag interface
