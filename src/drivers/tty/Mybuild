@@ -1,13 +1,10 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.tty
 
-module vterm {
-	source "vt/video_term.c"
-	source "vt/vtesc.c"
-}
-
 module tty {
 	source "tty.c"
+	source "tty_file_ops.c"
+	source "tty_repo.c"
 	option number queue_sz = 8
 }
 

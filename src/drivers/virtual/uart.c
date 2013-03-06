@@ -98,6 +98,10 @@ static int dev_uart_close(struct file_desc *desc) {
 }
 
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
+	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+
+	return tty_read(&dev->tty, (char *) buff, size);
+#if 0
 	size_t cnt = size;
 
 	if (0 == ring_buff_get_cnt(&dev_buff)) {
@@ -122,6 +126,7 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 	}
 
 	return size - cnt;
+#endif
 }
 
 static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
@@ -142,11 +147,12 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
 	int speed;
 	va_list args;
-	struct termios *term;
+//	struct termios *term;
 
 	va_start(args, request);
 
 	switch(request) {
+#if 0
 	case TTY_IOCTL_GETATTR:
 		term = va_arg(args, struct termios *);
 
@@ -159,27 +165,32 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 
 		dev->operations->setup(dev, dev->params);
 		break;
+#endif
 	case TTY_IOCTL_SETBAUD:
 		speed = va_arg(args,int);
 		dev->params->baud_rate = speed;
 		break;
 	default:
-		va_end(args);
-		return -ENOSYS;
+		return tty_ioctl(&dev->tty, request, NULL);
 	}
 	va_end(args);
 	return ENOERR;
 }
 
 int uart_dev_register(struct uart_device *dev) {
-	struct node *node;
-	struct nas *nas;
-	mode_t mode;
+	//struct node *node;
+	//struct nas *nas;
+	//mode_t mode;
 
 	//TODO tmp (we can have only one device)
 	uart_dev = dev;
 
+
+	serial_register(dev);
+
+#if 0
 	mode = S_IFCHR | S_IRALL | S_IWALL;
+
 
 	/* register char device */
 	node = vfs_lookup(NULL, "/dev");
@@ -202,6 +213,7 @@ int uart_dev_register(struct uart_device *dev) {
 
 	memset(&dev->tty, 0, sizeof(dev->tty));
 	dev->tty.termios.c_cflag = CLOCAL | CREAD | CS8;
+#endif
 
 	return 0;
 }

@@ -73,9 +73,9 @@ struct tty_ops {
 
 extern struct tty *tty_init(struct tty *, struct tty_ops *);
 
-extern int tty_read(struct tty *, char *, size_t *);
-extern int tty_write(struct tty *, char *, size_t *);
-extern int tty_ioctl(struct tty *, unsigned long, void *);
+extern size_t tty_read(struct tty *, char *, size_t);
+extern size_t tty_write(struct tty *, char *, size_t);
+extern int tty_ioctl(struct tty *, int, void *);
 
 /* These functions can be called from IRQ context. */
 
@@ -87,5 +87,8 @@ extern void tty_rx_char(struct tty *, char);
 extern struct tty_queue *tty_queue_init(struct tty_queue *);
 extern int tty_enqueue(struct tty_queue *, char);
 extern int tty_dequeue(struct tty_queue *);
+
+struct kfile_operations;
+extern int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops);
 
 #endif /* DRIVERS_TTY_H_ */

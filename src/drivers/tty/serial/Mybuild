@@ -1,0 +1,5 @@
+package embox.driver.tty
+
+module serial {
+	source "serial_repo.c"
+}

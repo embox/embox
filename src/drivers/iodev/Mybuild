@@ -5,6 +5,8 @@ module core {
 
 	depends video_api
 	depends embox.driver.tty.tty
+	depends embox.driver.tty.vterm
+
 }
 
 @DefaultImpl(iodev_no_video)
