@@ -1,0 +1,5 @@
+package embox.driver.console
+
+module mpx_simple {
+	source "mpx_simple.c"
+}
