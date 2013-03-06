@@ -82,7 +82,7 @@ extern int tty_ioctl(struct tty *, int, void *);
 extern void tty_tx_done(struct tty *);
 extern void tty_rx_char(struct tty *, char);
 
-/* TTY RX/TX queues operations. */
+/* TTY RX/TX queues operations, IRQ-safe. */
 
 extern struct tty_queue *tty_queue_init(struct tty_queue *);
 extern int tty_enqueue(struct tty_queue *, char);
