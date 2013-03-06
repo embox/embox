@@ -13,19 +13,20 @@
 #include <termios.h>
 #include <drivers/vtesc.h>
 
-struct video_term;
+struct vterm;
 
 struct vterm_ops {
-	void (*init)(struct video_term *t);
-	void (*cursor)(struct video_term *t, uint32_t x, uint32_t y);
-	void (*putc)(struct video_term *t, char ch, uint32_t x, uint32_t y);
-	void (*clear)(struct video_term *t, uint32_t x, uint32_t y,
+	void (*init)(struct vterm *t);
+	void (*cursor)(struct vterm *t, uint32_t x, uint32_t y);
+	void (*putc)(struct vterm *t, char ch, uint32_t x, uint32_t y);
+	void (*clear)(struct vterm *t, uint32_t x, uint32_t y,
 			uint32_t width, uint32_t height);
-	void (*move)(struct video_term *t, uint32_t sx, uint32_t sy, uint32_t width,
+	void (*move)(struct vterm *t, uint32_t sx, uint32_t sy, uint32_t width,
 			uint32_t height, uint32_t dx, uint32_t dy);
+	void (*scroll)(struct vterm *t, int32_t delta);
 };
 
-struct video_term {
+struct vterm {
 	uint32_t cur_x;
 	uint32_t cur_y;
 	uint32_t back_cx, back_cy;
@@ -39,9 +40,9 @@ struct video_term {
 	struct vtesc_executor executor;
 };
 
-extern void vterm_init(struct video_term *t, uint32_t width, uint32_t height,
+extern void vterm_init(struct vterm *t, uint32_t width, uint32_t height,
 		const struct vterm_ops *ops, void *data);
-extern void vterm_putc(struct video_term *t, char ch);
+extern void vterm_putc(struct vterm *t, char ch);
 
 /* tty ioctls */
 #define TTY_IOCTL_GETATTR  0x1
