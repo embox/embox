@@ -10,3 +10,7 @@ module prioq extends api {
 module list extends api {
 	source "list.c", "list.h"
 }
+
+module prioq2 extends api {
+	source "prioq2.c", "prioq2.h"
+}
