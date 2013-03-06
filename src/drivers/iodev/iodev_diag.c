@@ -66,23 +66,32 @@ static void diag_clear_strip(struct vterm *t, short row, unsigned short count){
 	}
 }
 
-static void diag_vterm_scroll(struct vterm *t, short delta) {
+#if 0
+static void diag_vterm_copy_rows(struct vterm *t,
+		unsigned short to, unsigned short from, short nrows) {
+	memmove(data->video[to * t->width],
+			data->video[from * t->width],
+			sizeof(data->video[0]) * nrows * t->width);
+}
+#endif
+
+static void diag_vterm_scroll(struct vterm *t, short nrows) {
 	struct diag_tty_data *data = t->data;
 
-	if (delta > 0) {
+	if (nrows > 0) {
 		memmove(data->video,
-				data->video + delta * t->width,
-				t->width * (t->height - delta) * sizeof data->video[0]);
+				data->video + nrows * t->width,
+				t->width * (t->height - nrows) * sizeof data->video[0]);
 
-		diag_clear_strip(t, t->height - delta, delta);
+		diag_clear_strip(t, t->height - nrows, nrows);
 
 	} else {
-		delta = - delta;
-		memmove(data->video + delta * t->width,
+		nrows = - nrows;
+		memmove(data->video + nrows * t->width,
 				data->video,
-				t->width * (t->height - delta) * sizeof data->video[0]);
+				t->width * (t->height - nrows) * sizeof data->video[0]);
 
-		diag_clear_strip(t, 0, delta);
+		diag_clear_strip(t, 0, nrows);
 	}
 }
 
