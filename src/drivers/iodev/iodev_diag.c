@@ -66,35 +66,13 @@ static void diag_clear_strip(struct vterm *t, short row, unsigned short count){
 	}
 }
 
-#if 0
 static void diag_vterm_copy_rows(struct vterm *t,
 		unsigned short to, unsigned short from, short nrows) {
 	struct diag_tty_data *data = t->data;
 
-	memmove(data->video[to * t->width],
-			data->video[from * t->width],
+	memmove(&data->video[to * t->width],
+			&data->video[from * t->width],
 			sizeof(data->video[0]) * nrows * t->width);
-}
-#endif
-
-void diag_vterm_scroll(struct vterm *t, short nrows) {
-	struct diag_tty_data *data = t->data;
-
-	if (nrows > 0) {
-		memmove(data->video,
-				data->video + nrows * t->width,
-				t->width * (t->height - nrows) * sizeof data->video[0]);
-
-		diag_clear_strip(t, t->height - nrows, nrows);
-
-	} else {
-		nrows = - nrows;
-		memmove(data->video + nrows * t->width,
-				data->video,
-				t->width * (t->height - nrows) * sizeof data->video[0]);
-
-		diag_clear_strip(t, 0, nrows);
-	}
 }
 
 static void diag_tty_clear(struct vterm *t, unsigned short x, unsigned short y,
@@ -124,7 +102,7 @@ static const struct vterm_ops diag_tty_ops = {
 		.putc = &diag_tty_putc,
 		.clear_strip = &diag_clear_strip,
 		.clear = &diag_tty_clear,
-		.scroll = &diag_vterm_scroll
+		.copy_rows = &diag_vterm_copy_rows
 };
 
 static int iodev_diag_init(void) {

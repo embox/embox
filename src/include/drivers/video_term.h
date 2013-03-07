@@ -23,7 +23,6 @@ struct vterm_ops {
 	void (*copy_rows)(struct vterm *t, unsigned short to, unsigned short from, short nrows);
 	void (*clear)(struct vterm *t, unsigned short x, unsigned short y,
 			unsigned short width, unsigned short height);
-	void (*scroll)(struct vterm *t, short delta);
 };
 
 struct vterm {

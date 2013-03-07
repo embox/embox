@@ -14,11 +14,18 @@
 #include <assert.h>
 
 static void vterm_scroll(struct vterm *t, short delta) {
-	if (!t || !t->ops || !t->ops->scroll) {
+	if (!t || !t->ops || !t->ops->copy_rows || !t->ops->clear_strip) {
 		return;
 	}
 
-	t->ops->scroll(t, delta);
+	if (delta > 0){
+		t->ops->copy_rows(t, 0, delta, t->height - delta);
+		t->ops->clear_strip(t, t->height - delta, delta);
+	} else {
+		t->ops->copy_rows(t, -delta, 0, t->height + delta);
+		t->ops->clear_strip(t, 0, -delta);
+	}
+
 	t->cur_y -= delta;
 	t->back_cy -= delta;
 }
