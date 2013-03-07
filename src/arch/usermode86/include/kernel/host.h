@@ -1,7 +1,3 @@
-#define HOST_IRQ HOST_SIGUSR1
-
-#define HOST_IRQ HOST_SIGUSR1
-
 /**
  * @file
  * @brief
@@ -15,6 +11,8 @@
 
 typedef int host_pid_t;
 typedef void (*host_sighandler_t)(int);
+
+#include <uservisor_base.h>
 
 struct host_timeval {
 	int tv_sec;
@@ -71,34 +69,6 @@ typedef struct {
 #define NR_SELECT 142
 
 #define HOST_SIGUSR1 10
-#define HOST_IRQ HOST_SIGUSR1
-
-enum emvisor_msg {
-	EMVISOR_DIAG_OUT = 0,
-	EMVISOR_DIAG_IN,
-	EMVISOR_IRQ,
-	EMVISOR_IRQ_DIAG_IN,
-};
-
-struct emvisor_msghdr {
-	enum emvisor_msg type;
-	int dlen;
-};
-
-extern int embox_getupstream(void);
-extern int embox_getdownstream(void);
-extern int embox_getwdownstream(void);
-
-extern int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen);
-
-extern int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
-		const void *msg_data, int dlen);
-
-extern int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen);
-
-extern int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg);
-
-extern int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen);
 
 extern int host_read(int fd, void *buf, int len);
 

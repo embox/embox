@@ -22,11 +22,11 @@ static void ipl_lowest(int signal) {
 
 	ipl_disable();
 
-	if (signal != HOST_IRQ) {
+	if (signal != UV_IRQ) {
 		return;
 	}
 
-	assert(0 <= emvisor_recvmsg(embox_getdownstream(), &msg));
+	assert(0 <= emvisor_recvmsg(UV_PRDDOWNSTRM, &msg));
 
 	if (msg.type <= EMVISOR_IRQ) {
 		return;
@@ -43,20 +43,20 @@ static const host_sighandler_t ipl_table[] = {
 };
 
 void ipl_init(void) {
-	host_signal(HOST_IRQ, ipl_table[ipl_num = 1]);
+	host_signal(UV_IRQ, ipl_table[ipl_num = 1]);
 }
 
 ipl_t ipl_save(void) {
 	ipl_t ret = ipl_num;
 
-	host_signal(HOST_IRQ, ipl_table[ipl_num = 0]);
+	host_signal(UV_IRQ, ipl_table[ipl_num = 0]);
 
 	return ret;
 
 }
 
 void ipl_restore(ipl_t ipl) {
-	host_signal(HOST_IRQ, ipl_table[ipl_num = ipl]);
+	host_signal(UV_IRQ, ipl_table[ipl_num = ipl]);
 
 	/*TODO: flush downstream*/
 }

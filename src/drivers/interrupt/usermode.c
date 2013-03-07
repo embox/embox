@@ -7,8 +7,13 @@
  */
 
 #include <stddef.h>
+#include <assert.h>
 #include <kernel/host.h>
+#include <kernel/critical.h>
+#include <hal/ipl.h>
+#include <kernel/irq.h>
 #include <drivers/irqctrl.h>
+#include <kernel/umirq.h>
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 
@@ -23,5 +28,22 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 }
 
 void irqctrl_force(unsigned int interrupt_nr) {
-	emvisor_sendirq(host_getpid(), embox_getwdownstream(), EMVISOR_IRQ + interrupt_nr, NULL, 0);
+	emvisor_sendirq(host_getpid(), UV_PWRDOWNSTRM,
+			EMVISOR_IRQ + interrupt_nr, NULL, 0);
+}
+
+void irq_entry(int irq) {
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+
+		ipl_enable();
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+	}
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }

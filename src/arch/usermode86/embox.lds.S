@@ -2,7 +2,7 @@
 #include <asm-generic/embox.lds.h>
 #include <framework/mod/options.h>
 
-ENTRY(_start)
+ENTRY(kernel_start)
 
 MEMORY {
 	MEMORY_REGION(sdram)
