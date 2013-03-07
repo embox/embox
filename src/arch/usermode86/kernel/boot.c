@@ -50,6 +50,15 @@ static int recvd(host_pid_t emboxpid, int pdownstream, int pupstream) {
 		if (0 > (ret = host_write(1, buf, msg.dlen))) {
 			return ret;
 		}
+		return 0;
+
+	case EMVISOR_DIAG_IN:
+		if (0 > (ret = host_read(0, buf, 1))) {
+			return ret;
+		}
+
+		emvisor_send(pdownstream, EMVISOR_IRQ_DIAG_IN, buf, 1);
+		host_kill(emboxpid, HOST_IRQ);
 
 		return 0;
 	default:
@@ -62,7 +71,7 @@ static int recvd(host_pid_t emboxpid, int pdownstream, int pupstream) {
 
 static int emvisor(host_pid_t emboxpid, int pdownstream, int pupstream) {
 	host_fd_set rfds;
-	struct host_timeval tv = {10, 0};
+	struct host_timeval tv = {1, 0};
 	int ret;
 
 	HOST_FD_ZERO(&rfds);

@@ -1,3 +1,7 @@
+#define HOST_IRQ HOST_SIGUSR1
+
+#define HOST_IRQ HOST_SIGUSR1
+
 /**
  * @file
  * @brief
@@ -10,6 +14,7 @@
 #define ARCH_USERMODE86_HOST_H_
 
 typedef int host_pid_t;
+typedef void (*host_sighandler_t)(int);
 
 struct host_timeval {
 	int tv_sec;
@@ -61,12 +66,17 @@ typedef struct {
 #define NR_CLOSE  6
 #define NR_KILL   37
 #define NR_PIPE   42
+#define NR_SIGNAL 48
 #define NR_SELECT 142
 
-#define SIGUSR1 10
+#define HOST_SIGUSR1 10
+#define HOST_IRQ HOST_SIGUSR1
 
 enum emvisor_msg {
 	EMVISOR_DIAG_OUT = 0,
+	EMVISOR_DIAG_IN,
+	EMVISOR_IRQ,
+	EMVISOR_IRQ_DIAG_IN,
 };
 
 struct emvisor_msghdr {
@@ -82,9 +92,11 @@ extern int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen
 
 extern int host_read(int fd, void *buf, int len);
 
-extern int host_write(int fd, void *buf, int len);
+extern int host_write(int fd, const void *buf, int len);
 
 extern int host_kill(host_pid_t pid, int signal);
+
+extern int host_signal(int signum, host_sighandler_t handler);
 
 extern int host_pipe(int *pipe);
 

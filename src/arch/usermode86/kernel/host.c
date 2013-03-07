@@ -14,10 +14,15 @@ int emvisor_send(int fd, enum emvisor_msg type, void *msg_data, int dlen) {
 		.type = type,
 		.dlen = dlen,
 	};
+	int ret;
 
-	host_write(fd, &msg, sizeof(struct emvisor_msghdr));
+	if (0 >= (ret = host_write(fd, &msg, sizeof(struct emvisor_msghdr)))) {
+		return ret;
+	}
 
-	host_write(fd, msg_data, dlen);
+	if (0 >= (ret = host_write(fd, msg_data, dlen))) {
+		return ret;
+	}
 
 	return 0;
 }
@@ -65,12 +70,16 @@ int host_read(int fd, void *buf, int len) {
 	return syscall(NR_READ, fd, (int) buf, len, 0, 0);
 }
 
-int host_write(int fd, void *buf, int len) {
+int host_write(int fd, const void *buf, int len) {
 	return syscall(NR_WRITE, fd, (int) buf, len, 0, 0);
 }
 
 int host_kill(host_pid_t pid, int signal) {
 	return syscall(NR_KILL, pid, signal, 0, 0, 0);
+}
+
+int host_signal(int signum, host_sighandler_t handler) {
+	return syscall(NR_SIGNAL, signum, (int) handler, 0, 0, 0);
 }
 
 int host_pipe(int *pipe) {

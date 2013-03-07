@@ -2,8 +2,12 @@
 package embox.arch.usermode86
 
 module boot {
-	@IncludePath("$(SRC_DIR)/arch/usermode86/include")
 	source "boot.c",
 		"host.c"
 
+}
+
+module ipl extends embox.arch.interrupt {
+	source "ipl.c",
+		"ipl.h"
 }

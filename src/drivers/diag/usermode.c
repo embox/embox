@@ -13,8 +13,11 @@ int diag_kbhit(void) {
 }
 
 char diag_getc(void) {
-	while(1);
+	int len = 1;
 
+	emvisor_send(embox_getupstream(), EMVISOR_DIAG_IN, &len, sizeof(int));
+
+	while (1);
 	return '\0';
 }
 
@@ -25,4 +28,5 @@ void diag_putc(char ch) {
 }
 
 void diag_init(void) {
+
 }
