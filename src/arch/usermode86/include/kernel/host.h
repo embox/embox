@@ -64,6 +64,7 @@ typedef struct {
 #define NR_READ   3
 #define NR_WRITE  4
 #define NR_CLOSE  6
+#define NR_GETPID 20
 #define NR_KILL   37
 #define NR_PIPE   42
 #define NR_SIGNAL 48
@@ -86,9 +87,18 @@ struct emvisor_msghdr {
 
 extern int embox_getupstream(void);
 extern int embox_getdownstream(void);
+extern int embox_getwdownstream(void);
 
-extern int emvisor_send(int fd, enum emvisor_msg type, void *msg_data, int dlen);
+extern int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen);
+
+extern int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
+		const void *msg_data, int dlen);
+
 extern int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen);
+
+extern int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg);
+
+extern int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen);
 
 extern int host_read(int fd, void *buf, int len);
 
@@ -105,6 +115,8 @@ extern void host_exit(int ret);
 extern host_pid_t host_fork(void);
 
 extern int host_close(int fd);
+
+extern host_pid_t host_getpid(void);
 
 extern int host_select(int nfds, host_fd_set *readfds, host_fd_set *writefds,
 		host_fd_set *exceptfds, struct host_timeval *timeout);

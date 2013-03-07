@@ -8,8 +8,9 @@
 
 #include <errno.h>
 #include <kernel/host.h>
+#include <kernel/umirq.h>
 
-int emvisor_send(int fd, enum emvisor_msg type, void *msg_data, int dlen) {
+int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen) {
 	struct emvisor_msghdr msg = {
 		.type = type,
 		.dlen = dlen,
@@ -27,20 +28,36 @@ int emvisor_send(int fd, enum emvisor_msg type, void *msg_data, int dlen) {
 	return 0;
 }
 
-int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
-	void *pb;
-	int ret, ldata;
+int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
+		const void *msg_data, int dlen) {
+	int ret;
 
+	if (0 > (ret = emvisor_send(fd, type, msg_data, dlen))) {
+		return ret;
+	}
+
+	host_kill(pid, HOST_IRQ);
+
+	return 0;
+}
+
+int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
+	int ret;
 	if (0 > (ret = host_read(fd, msg, sizeof(struct emvisor_msghdr)))) {
 		return -EIO;
 	}
 
+	return 0;
+}
+
+int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
+	int ldata = msg->dlen;
+	void *pb = data;
+	int ret;
+
 	if (msg->dlen >= dlen) {
 		return -ERANGE;
 	}
-
-	ldata = msg->dlen;
-	pb = data;
 
 	while (ldata) {
 		if (0 > (ret = host_read(fd, data, ldata))) {
@@ -52,6 +69,17 @@ int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
 	}
 
 	return msg->dlen;
+}
+
+int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
+	int ret;
+
+	if (0 > (ret = emvisor_recvmsg(fd, msg))) {
+		return ret;
+	}
+
+	return emvisor_recvbody(fd, msg, data, dlen);
+
 }
 
 static int syscall(int eax, int ebx, int ecx, int edx, int esx, int edi) {
@@ -97,6 +125,10 @@ host_pid_t host_fork(void) {
 
 int host_close(int fd) {
 	return syscall(NR_CLOSE, fd, 0, 0, 0, 0);
+}
+
+host_pid_t host_getpid(void) {
+	return syscall(NR_GETPID, 0, 0, 0, 0, 0);
 }
 
 int host_select(int nfds, host_fd_set *readfds, host_fd_set *writefds,

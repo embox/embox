@@ -7,35 +7,35 @@
  */
 
 #include <assert.h>
-#include <prom/prom_printf.h>
 #include <kernel/host.h>
+#include <kernel/umirq.h>
 #include <hal/ipl.h>
 
 static int ipl_num;
 
 static void ipl_highest(int signal) {
 
-	prom_printf("Received in highest!\n");
 }
 
-#define IRQ_BUFLEN 16
 static void ipl_lowest(int signal) {
 	struct emvisor_msghdr msg;
-	char buf[IRQ_BUFLEN];
+
+	ipl_disable();
 
 	if (signal != HOST_IRQ) {
 		return;
 	}
 
-	assert(0 <= emvisor_recv(embox_getdownstream(), &msg,
-				buf, IRQ_BUFLEN));
+	assert(0 <= emvisor_recvmsg(embox_getdownstream(), &msg));
 
-	assert(EMVISOR_IRQ < msg.type);
+	if (msg.type <= EMVISOR_IRQ) {
+		return;
+	}
 
-	prom_printf("Received %d\n", msg.type);
+	irq_entry(msg.type - EMVISOR_IRQ);
 
+	ipl_enable();
 }
-
 
 static const host_sighandler_t ipl_table[] = {
 	ipl_highest,

@@ -9,5 +9,11 @@ module boot {
 
 module ipl extends embox.arch.interrupt {
 	source "ipl.c",
-		"ipl.h"
+		"ipl.h",
+		"irq.c"
+
+	depends embox.kernel.critical
+	depends embox.driver.interrupt.irqctrl_api
+	depends embox.kernel.irq
+
 }

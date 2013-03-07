@@ -14,20 +14,24 @@
 
 extern void kernel_start(void);
 
-static int embox_downstream, embox_upstream;
+static struct npipe {
+	int np_read;
+	int np_write;
+} ev_downstream, ev_upstream;
+
+int embox_getwdownstream(void) {
+	return ev_downstream.np_write;
+}
 
 int embox_getupstream(void) {
-	return embox_upstream;
+	return ev_upstream.np_write;
 }
 
 int embox_getdownstream(void) {
-	return embox_downstream;
+	return ev_downstream.np_read;
 }
 
 static void embox(int pdownstream, int pupstream) {
-
-	embox_downstream = pdownstream;
-	embox_upstream   = pupstream;
 
 	kernel_start();
 }
@@ -57,8 +61,7 @@ static int recvd(host_pid_t emboxpid, int pdownstream, int pupstream) {
 			return ret;
 		}
 
-		emvisor_send(pdownstream, EMVISOR_IRQ_DIAG_IN, buf, 1);
-		host_kill(emboxpid, HOST_IRQ);
+		emvisor_sendirq(emboxpid, pdownstream, EMVISOR_IRQ_DIAG_IN, buf, 1);
 
 		return 0;
 	default:
@@ -96,27 +99,22 @@ static int emvisor(host_pid_t emboxpid, int pdownstream, int pupstream) {
 }
 
 void _start(void) {
-	int pdownstream[2], pupstream[2];
 	host_pid_t pid;
 	int ret;
 
-	if (0 != host_pipe(pdownstream)) {
+	if (0 != host_pipe((int *) &ev_downstream)) {
 		host_exit(1);
 	}
 
-	if (0 != host_pipe(pupstream)) {
+	if (0 != host_pipe((int *) &ev_upstream)) {
 		host_exit(1);
 	}
 
 	if (0 == (pid = host_fork())) {
-		host_close(pdownstream[1]);
-		host_close(pupstream[0]);
-		embox(pdownstream[0], pupstream[1]);
+		embox(ev_downstream.np_read, ev_upstream.np_write);
 		ret = 0;
 	} else {
-		host_close(pdownstream[0]);
-		host_close(pupstream[1]);
-		ret = emvisor(pid, pdownstream[1], pupstream[0]);
+		ret = emvisor(pid, ev_downstream.np_write, ev_upstream.np_read);
 	}
 
 	host_exit(ret);
