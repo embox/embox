@@ -146,7 +146,7 @@ static int exec(int argc, char **argv) {
 			break;
 		default:
 			printf("ls: invalid option -- '%c'\n", optopt);
-			return -1;
+			return -EINVAL;
 		}
 	}
 

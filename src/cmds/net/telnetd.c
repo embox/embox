@@ -334,7 +334,7 @@ static int exec(int argc, char **argv) {
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		printf("can't create socket\n");
-		return -1;
+		return -errno;
 	}
 
 	if ((res = bind(listening_descr, (struct sockaddr *)&listening_socket,
@@ -404,6 +404,7 @@ static int exec(int argc, char **argv) {
 	return ENOERR;
 
 listen_failed:
+	res = -errno;
 	close(listening_descr);
-	return -1;
+	return res;
 }

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <security/smac.h>
 #include <fs/flags.h>
+#include <errno.h>
 
 #include <embox/cmd.h>
 
@@ -116,13 +117,13 @@ static int smac_adm(int argc, char *argv[]) {
 			break;
 		default:
 			printf("Unknown argument -- %c\n", optopt);
-			return -1;
+			return -EINVAL;
 		}
 
 		if (act != ACT_NONE) {
 			if (action != ACT_NONE) {
 				printf("Incorrect commmand line, multiplie action specified\n");
-				return -1;
+				return -EINVAL;
 			}
 
 			action = act;

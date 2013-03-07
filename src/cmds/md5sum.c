@@ -13,6 +13,7 @@
 #include <lib/md5.h>
 #include <sys/stat.h>
 #include <stdint.h>
+#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -45,7 +46,7 @@ static int exec(int argc, char **argv) {
 	/* Get size and file's base addr */
 	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
 		printf("Can't open file %s\n", argv[argc - 1]);
-		return -1;
+		return -errno;
 	}
 	fioctl(fd, 0, &addr);
 	fclose(fd);

@@ -503,11 +503,12 @@ static int exec(int argc, char **argv) {
 
 	if (elf_file == NULL) {
 		printf("Cannot open file %s\n", argv[argc - 1]);
-		return -1;
+		return -errno;
 	}
 
 	if ((err = elf_read_header(elf_file, &elf)) < 0) {
-		return -1;
+		fclose(elf_file);
+		return err;
 	}
 
 	if (show_sections || show_segments || show_reloc || show_symb || show_dyn) {

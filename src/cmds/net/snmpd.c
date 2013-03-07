@@ -16,7 +16,7 @@
 #include <string.h>
 #include <kernel/thread.h>
 #include <unistd.h>
-#include <unistd.h>
+#include <errno.h>
 
 #define SNMP_ADDR INADDR_ANY
 #define SNMP_AGENT_PORT 161
@@ -82,7 +82,7 @@ static int exec(int argc, char **argv) {
 			return 0;
 		default:
 			printf("error: unsupported option %c\n", optopt);
-			return -1;
+			return -EINVAL;
 		}
 	}
 
@@ -92,13 +92,13 @@ static int exec(int argc, char **argv) {
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		printf("can not allocate socket\n");
-		return -1;
+		return -errno;
 	}
 
 	if (bind(sock, (struct sockaddr *)&our, sizeof(our)) < 0) {
 		printf("can not bind socket\n");
 		close(sock);
-		return -1;
+		return -errno;
 	}
 
 	thread_create(&thread, 0, snmp_agent, NULL);
