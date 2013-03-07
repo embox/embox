@@ -27,19 +27,24 @@ static int keyboard_havechar(void) {
 }
 
 static void keyboard_send_cmd(uint8_t cmd) {
-	keyboard_wait_write();
+	unsigned int status;
+	keyboard_wait_write(status);
 	outb(cmd, I8042_CMD_PORT);
 }
 
 static unsigned char keyboard_get_mode(void) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_READ_MODE);
-	keyboard_wait_read();
+	keyboard_wait_read(status);
 	return inb(I8042_DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
-	keyboard_wait_write();
+	keyboard_wait_write(status);
 	outb(mode, I8042_DATA_PORT);
 }
 
@@ -50,7 +55,7 @@ int key_is_pressed(struct input_event *event) {
 }
 
 static void kbd_key_serv_press(int state, int flag) {
-	if(state & KEY_PRESSED) {
+	if (state & KEY_PRESSED) {
 		kbd_state |= flag;
 	} else {
 		kbd_state &= ~flag;
@@ -61,10 +66,9 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 	uint8_t scan_code, status;
 	int flag = 0;
 
-	keyboard_wait_read();
+	keyboard_wait_read(status);
 
 	scan_code = inb(I8042_DATA_PORT);
-	status = inb(I8042_STS_PORT);
 
 	if (scan_code == KEYBOARD_SCAN_CODE_EXT) {
 		return -EAGAIN;
