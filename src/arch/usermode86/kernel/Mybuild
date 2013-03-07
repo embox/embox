@@ -1,9 +1,8 @@
 
 package embox.arch.usermode86
 
-module boot {
-	source "boot.c",
-		"host.c",
+module host {
+	source "host.c",
 		"../uservisor_base.c"
 
 }
