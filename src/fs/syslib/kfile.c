@@ -117,6 +117,10 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		ops = nas->fs->file_op;
 	}
 
+	if(ops == NULL) {
+		SET_ERRNO(ENOSUPP);
+		return NULL;
+	}
 	/* allocate new descriptor */
 	if (NULL == (desc = file_desc_alloc())) {
 		SET_ERRNO(ENOMEM);

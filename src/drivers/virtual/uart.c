@@ -47,9 +47,9 @@ struct kfile_operations uart_dev_file_op = {
 	.ioctl = dev_uart_ioctl
 };
 
-RING_BUFFER_DEF(dev_buff, int, 0x20);
+//RING_BUFFER_DEF(dev_buff, int, 0x20);
 
-static struct event rx_happend;
+//static struct event rx_happend;
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	struct uart_device *dev;
@@ -59,8 +59,10 @@ static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 
 	while(dev->operations->hasrx(dev)) {
 		ch = dev->operations->get(dev);
-		ring_buff_enqueue(&dev_buff, &ch, 1);
-		event_notify(&rx_happend);
+		//ring_buff_enqueue(&dev_buff, &ch, 1);
+		//event_notify(&rx_happend);
+		tty_rx_char(&dev->tty, ch);
+		event_notify(&dev->tty.rx_event);
 	}
 
 	return 0;
@@ -73,9 +75,9 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart_device *uart_dev;
 	uart_dev = uart_dev_lookup((char *)node->name);
 
-	if(NULL == uart_dev || uart_dev->fops) {
-		return -1;
-	}
+//	if(NULL == uart_dev || uart_dev->fops) {
+//		return -1;
+//	}
 
 	if(uart_dev->operations->setup) {
 		uart_dev->operations->setup(uart_dev, uart_dev->params);
@@ -186,6 +188,7 @@ int uart_dev_register(struct uart_device *dev) {
 	uart_dev = dev;
 
 
+	dev->fops = &uart_dev_file_op;
 	serial_register(dev);
 
 #if 0
