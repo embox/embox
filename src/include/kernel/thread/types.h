@@ -18,7 +18,6 @@ typedef unsigned int __thread_state_t;
 #include <kernel/thread/sched_strategy.h>
 #include <util/slist.h>
 #include <util/list.h>
-#include <linux/list.h>
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -27,7 +26,7 @@ struct context;
 struct runq;
 struct sleepq;
 struct event;
-//struct list_head;
+struct list_head;
 
 struct thread {
 

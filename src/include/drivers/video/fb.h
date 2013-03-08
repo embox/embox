@@ -44,6 +44,7 @@ struct fb_var_screeninfo {
 	uint32_t vmode;
 };
 
+
 struct fb_videomode {
 	const char *name;	/* optional */
 	uint32_t refresh;		/* optional */
@@ -167,6 +168,9 @@ extern void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor);
 extern struct fb_info * fb_alloc(void);
 extern void fb_release(struct fb_info *info);
 
+extern const struct fb_videomode * fb_desc_to_videomode(int x, int y,
+		int depth);
+
 extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
 		const struct fb_videomode *mode);
 extern void fb_var_to_videomode(struct fb_videomode *mode,
@@ -183,8 +187,5 @@ extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
 #define fb_memset            memset
 #define fb_memcpy_fromfb     memcpy
 #define fb_memcpy_tofb       memcpy
-
-struct video_resbpp;
-extern const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp);
 
 #endif /* DRIVERS_VIDEO_FB_H_ */

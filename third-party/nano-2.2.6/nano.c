@@ -21,6 +21,9 @@
  *                                                                        *
  **************************************************************************/
 
+#include <embox/cmd.h>
+EMBOX_CMD(nano_main);
+
 #include "proto.h"
 
 #include <stdio.h>
@@ -2013,7 +2016,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 	update_line(openfile->current, openfile->current_x);
 }
 
-int nano_main(int argc, char **argv)
+static int nano_main(int argc, char **argv)
 {
     int optchr;
     ssize_t startline = 1;

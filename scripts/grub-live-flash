@@ -1,0 +1,60 @@
+
+EMBOX_MULTIBOOT=./build/base/bin/embox
+
+MOUNT_POINT=/media/embox-live
+
+DATA_DIR=$(dirname $0)/grub/
+
+usage() {
+	echo "Make grub live usb."
+	echo
+	echo "Usage:"
+	echo "    $0 <device>"
+	echo "<device> is dev file of flash."
+	echo
+	echo "Example:"
+	echo "    $0 /dev/sdb"
+}
+
+grub1_do () {
+	DRIVE=$1
+	grub-install --root-directory=$MOUNT_POINT $DRIVE
+
+	cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
+	cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
+
+}
+
+grub2_do () {
+	DRIVE=$1
+	grub-install --root-directory=$MOUNT_POINT $DRIVE
+
+	cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
+	cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
+
+}
+
+
+if [ ! $# = 1 ]; then
+	usage
+	exit 1
+fi
+
+DRIVE=$1
+PARTITION=${DRIVE}1
+[ -d $MOUNT_POINT ] || mkdir $MOUNT_POINT
+umount $PARTITION
+dd if=/dev/zero of=$DRIVE bs=4K count=16K
+echo "60,,L" | sfdisk $DRIVE
+mke2fs $PARTITION
+mount $PARTITION $MOUNT_POINT
+
+if [ z"$(grub-install --version | grep 2.0)" == z ]; then
+	grub1_do $1 $MOUNT_POINT
+else
+	grub2_do $1 $MOUNT_POINT
+fi
+
+umount $MOUNT_POINT
+rmdir $MOUNT_POINT
+

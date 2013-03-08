@@ -1,9 +1,5 @@
 package embox.lib
 
-static module LibCurses {
-	source "curses.c"
-}
-
 static module LibElf {
 	source "elf/elf.c"
 

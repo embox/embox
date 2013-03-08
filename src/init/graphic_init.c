@@ -8,21 +8,20 @@
 #include <assert.h>
 
 #include <drivers/iodev.h>
-#include <drivers/video/vesa_modes.h>
+#include <drivers/video/vesa.h>
 #include <drivers/video/fb.h>
 #include <embox/unit.h>
 
 #define VESA_MODE_NUMBER OPTION_GET(NUMBER,vesa_mode)
 #define FB_NAME OPTION_STRING_GET(fb_name)
-#define FB_INIT OPTION_GET(NUMBER,fb_init)
 
 EMBOX_UNIT_INIT(graphic_init);
 
-static int fb_init(void) {
-	struct fb_info *info;
-	const struct video_resbpp *resbpp;
-	const struct fb_videomode *mode;
+static int graphic_init(void) {
 	int ret;
+	struct fb_info *info;
+	const struct vesa_mode_desc *desc;
+	const struct fb_videomode *mode;
 
 	info = fb_lookup(FB_NAME);
 	if (info == NULL) {
@@ -32,30 +31,22 @@ static int fb_init(void) {
 	assert(info->ops != NULL);
 	assert(info->ops->fb_set_par != NULL);
 
-	resbpp = video_resbpp_by_vesamode(VESA_MODE_NUMBER);
-	mode = video_fbmode_by_resbpp(resbpp);
+	desc = vesa_mode_get_desc(VESA_MODE_NUMBER);
+	if (desc == NULL) {
+		return -EINVAL;
+	}
+
+	mode = fb_desc_to_videomode(desc->xres, desc->yres, desc->bpp);
 	if (mode == NULL) {
 		return -EINVAL;
 	}
 
-	ret = fb_try_mode(&info->var, info, mode, resbpp->bpp);
+	ret = fb_try_mode(&info->var, info, mode, desc->bpp);
 	if (ret != 0) {
 		return ret;
 	}
 
 	ret = info->ops->fb_set_par(info);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
-}
-
-static int graphic_init(void) {
-	int ret;
-
-	ret = FB_INIT ? fb_init() : 0;
-
 	if (ret != 0) {
 		return ret;
 	}

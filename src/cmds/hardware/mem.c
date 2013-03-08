@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -28,14 +27,14 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 	if ((optarg == NULL) || (*optarg == '\0')) {
 		printf("wmem -%c: option expected\n", opt);
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	*number = strtoul(optarg, &endptr, 0);
 	if (*endptr != '\0') {
 		printf("wmem -%c: invalid option: %s\n", opt, optarg);
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	return 0;
@@ -43,7 +42,7 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 
 static int exec(int argc, char **argv) {
 	bool a_flag = false;
-	int opt, i, ret;
+	int opt, i;
 	unsigned long int *address;
 	size_t length = DEFAULT_LENGTH;
 
@@ -51,17 +50,15 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "a:n:h"))) {
 		switch (opt) {
 		case 'a':
-			ret = parse_option(optarg, opt, (unsigned long int *) &address);
-			if (ret != 0) {
-				return ret;
+			if (0 != parse_option(optarg, opt, (unsigned long int *) &address)) {
+				return -1;
 			}
 			a_flag = true;
 			break;
 
 		case 'n':
-			ret = parse_option(optarg, opt, (unsigned long int *) &length);
-			if (ret != 0) {
-				return ret;
+			if (0 != parse_option(optarg, opt, (unsigned long int *) &length)) {
+				return -1;
 			}
 			break;
 
@@ -77,7 +74,7 @@ static int exec(int argc, char **argv) {
 	if (!a_flag) {
 		printf("mem: address required\n");
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	/*address = (unsigned int *) ((int) address & ~(sizeof(address) - 1));*/

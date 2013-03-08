@@ -24,7 +24,7 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt, src_file, dst_file, ret;
+	int opt, src_file, dst_file;
 	char buf[PAGE_SIZE()];
 	int bytesread;
 	const char *src_path,*dst_path;
@@ -41,7 +41,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc < 3) {
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	dst_path = argv[argc - 1];
@@ -53,10 +53,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (-1 == (dst_file = open(dst_path, O_WRONLY))) {
-		ret = -errno;
 		printf("can't open file %s\n",dst_path);
-		close(src_file);
-		return ret;
+		return -errno;
 	}
 
 	lseek(dst_file, 0, SEEK_SET);
@@ -71,10 +69,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (fsync(dst_file)) {
-		ret = -errno;
-		close(src_file);
-		close(dst_file);
-		return ret;
+		return -1;
 	}
 
 	close(src_file);

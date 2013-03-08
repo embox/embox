@@ -11,7 +11,6 @@
 #include <drivers/tty_ng.h>
 #include <embox/cmd.h>
 #include <cmd/shell.h>
-#include <errno.h>
 
 EMBOX_CMD(serial_con_manager);
 
@@ -81,17 +80,17 @@ static int serial_con_manager(int argc, char *argv[]) {
 
 	if (argc <= 1) {
 		printf("Must be run with n: count of virtual consoles\n");
-		return -EINVAL;
+		return -1;
 	}
 
 	sscanf(argv[1], "%d", &n);
 
 	if (n <= 0 || n > SERIAL_N_CON) {
 		printf("Invalid parameter\n");
-		return -EINVAL;
+		return -1;
 	}
 
-	tty_ng_manager(n, tty_serial_init, shell_lookup("tish")->run);
+	tty_ng_manager(n, tty_serial_init, shell_lookup("tish")->exec);
 
 	return 0;
 }

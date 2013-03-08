@@ -73,7 +73,7 @@ static int get_arg(int argc, char **argv, const char *mask, char *data) {
 			return 0;
 		}
 	}
-	return -ENOENT;
+	return -1;
 }
 
 #if 0
@@ -117,7 +117,7 @@ static int exec(int argc, char **argv) {
 			break;
 		default:
 			printf("dd: invalid option -- '%c'\n", optopt);
-			return -EINVAL;
+			return -1;
 		}
 	}
 

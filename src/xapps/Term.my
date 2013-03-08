@@ -1,0 +1,11 @@
+package embox.xwnd
+
+module xterm {
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "term.c"
+
+	depends embox.lib.LibC
+	depends embox.xwnd.application
+	depends embox.xwnd.fonts
+}
+

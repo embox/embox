@@ -13,7 +13,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <errno.h>
 
 #include <framework/test/api.h>
 
@@ -66,14 +65,14 @@ static int exec(int argc, char **argv) {
 			if ((optarg == NULL) || (!sscanf(optarg, "%d", &test_nr))) {
 				printf("test -n: number expected\n");
 				print_usage();
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case 't':
 			if ((optarg == NULL) || (!sscanf(optarg, "%s", test_name))) {
 				printf("test -t: test name expected\n");
 				print_usage();
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case '?':
@@ -87,13 +86,13 @@ static int exec(int argc, char **argv) {
 
 	if (test_nr != -1) {
 		if (NULL == (test = get_test_by_nr(test_nr))) {
-			return -ENOENT;
+			return -1;
 		}
 	}
 	if (*test_name != 0) {
 		if (NULL == (test = test_lookup(test_name))) {
 			printf("Can't find test named \"%s\"\n", test_name);
-			return -ENOENT;
+			return -1;
 		}
 	}
 

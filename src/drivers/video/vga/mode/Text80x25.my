@@ -1,0 +1,7 @@
+package embox.driver.video.vga.mode
+
+module text80x25 {
+	source "text80x25.c"
+
+	@NoRuntime depends embox.driver.video.vga.mode.repo
+}

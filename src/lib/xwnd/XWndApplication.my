@@ -1,0 +1,10 @@
+package embox.xwnd
+
+module application{
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "xwndapplication.c"
+
+	depends embox.x_event
+	depends embox.xwnd.xappreg
+	depends embox.lib.LibC
+}

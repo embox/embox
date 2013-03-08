@@ -10,16 +10,6 @@ module smac extends api {
 
 	option number max_entries = 64
 
-	/* valid are
-	   0 : no logging
-	   1 : log denied
-	   2 : log accepted
-	   3 : log denied & accepted
-	*/
-	option number audit=1
-	option string audit_file="/tmp/smac_log"
-
 	depends embox.fs.xattr
-	depends embox.lib.debug.Symbol
 
 }

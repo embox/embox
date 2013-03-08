@@ -5,7 +5,6 @@
  * @author Anton Bondarev
  */
 
-#include <errno.h>
 #include <drivers/pci/pci.h>
 #include <framework/mod/api.h>
 #include <kernel/printk.h>
@@ -33,16 +32,14 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 	drv = pci_driver_find(dev->vendor, dev->device);
 
 	if (NULL == drv) {
-		return -ENOENT;
+		return -1;
 	}
 
 	/* Enable mod (and dependencies) without cyclic detection error generating.
 	 * This introduced since some driver can be inited before pci_driver_load, then next lines
 	 * just ensure that other dependecies of driver are satisfied */
 	mod_foreach_requires(dep, drv->mod) {
-		if ((ret = mod_enable_rec_safe(dep, true))) {
-			return ret;
-		}
+		mod_enable_rec_safe(dep, true);
 	}
 
 	printk("\tpci: loading %s.%s: ", drv->mod->package->name, drv->mod->name);

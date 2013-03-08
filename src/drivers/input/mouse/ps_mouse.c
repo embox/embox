@@ -31,7 +31,7 @@ static int kmc_write_aux(unsigned char val) {
 }
 
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
-static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
+static int ps_mouse_get_input_event(void) {
 	unsigned char code;
 
 	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
@@ -41,16 +41,13 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 
 	code = inb(I8042_DATA_PORT);
 
-	ev->type = 0;
-	ev->value = code;
-
-	return 0;
+	return code;
 }
 
 static struct input_dev mouse_dev = {
 		.name = "mouse",
 		.irq = 12,
-		.indev_get = ps_mouse_get_input_event,
+		.getc = ps_mouse_get_input_event
 };
 
 static int ps_mouse_init(void) {

@@ -194,13 +194,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			if (sk->sk_socket->desc->flags & O_NONBLOCK) {
 				return -EAGAIN;
 			}
-			sock_unlock(sk);
-
 			event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
-
-			if (!sock_lock(&sk)) {
-				return -EINVAL;
-			}
 		}
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{

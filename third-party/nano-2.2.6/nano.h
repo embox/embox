@@ -24,8 +24,6 @@
 #ifndef NANO_H
 #define NANO_H 1
 
-#include "embox.h"
-
 //#ifdef HAVE_CONFIG_H
 #include "config.h"
 //#endif

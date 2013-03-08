@@ -113,18 +113,6 @@ int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	return 0;
 }
 
-int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-		const struct fb_videomode *mode, uint32_t bpp) {
-	fb_videomode_to_var(var, mode);
-	var->bits_per_pixel = bpp;
-
-	if (info->ops->fb_check_var != NULL) {
-		return info->ops->fb_check_var(var, info);
-	}
-
-	return 0;
-}
-
 static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 		uint32_t len) {
 	uint32_t mask1, mask2, loff, roff, lval, rval, left;

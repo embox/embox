@@ -122,14 +122,14 @@ int configure_server(const char *config_file) {
 	file = fopen(config_file, "r");
 	if (file == NULL) {
 		printf("File '%s` doesn't exists\n", config_file);
-		return -errno;
+		return -1;
 	}
 
 	memset(&buff[0], 0, sizeof buff);
 
 	if (fread(buff, 1, sizeof buff - 1, file) < 0) {
 		printf("Can't read from file '%s`\n", config_file);
-		return -errno;
+		return -1;
 	}
 
 	prev = buff;

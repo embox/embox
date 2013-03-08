@@ -1,9 +1,0 @@
-package embox.driver.input
-
-module core {
-	source "core.c"
-
-	depends embox.kernel.irq
-	depends embox.kernel.softirq
-	depends embox.util.DList
-}

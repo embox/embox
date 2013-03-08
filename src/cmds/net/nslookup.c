@@ -5,12 +5,10 @@
  * @date 31.08.12
  * @author Ilia Vaprol
  */
-
 #include <embox/cmd.h>
 #include <net/dns.h>
 #include <stdio.h>
 #include <arpa/inet.h>
-#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -22,7 +20,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc != 2) {
 		printf("Usage: %s name\n", argv[0]);
-		return -EINVAL;
+		return -1;
 	}
 
 	ret = dns_query(argv[1], DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &result);

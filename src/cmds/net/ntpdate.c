@@ -102,7 +102,7 @@ static int exec(int argc, char **argv) {
 		case 't': /* Maximum time waiting for a server response */
 			if (1 != sscanf(optarg, "%d", &ntp_server_timeout)) {
 				printf("wrong -t argument %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		default:  /* Set system clock */

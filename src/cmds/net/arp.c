@@ -7,7 +7,6 @@
  */
 
 #include <embox/cmd.h>
-#include <errno.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -59,11 +58,11 @@ static int exec(int argc, char **argv) {
 		case 'd':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			if (ifdev == NULL) {
 				printf("arp: please first specify the interface\n");
-				return -EINVAL;
+				return -1;
 			}
 			//TODO checked interface and use default
 			return neighbour_del(NULL, 0, (const unsigned char *)&addr,
@@ -71,20 +70,20 @@ static int exec(int argc, char **argv) {
 		case 's':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			if(argc <= optind) {
 				print_usage();
-				return -EINVAL;
+				return -1;
 			}
 			optarg = argv[optind++];
 			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			if (ifdev == NULL) {
 				printf("arp: please first specify the interface\n");
-				return -EINVAL;
+				return -1;
 			}
 			//TODO checked interface and use default
 			return neighbour_add(&hwaddr[0], sizeof hwaddr,
@@ -93,19 +92,19 @@ static int exec(int argc, char **argv) {
 		case 'a':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case 'm':
 			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case 'i':
 			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case '?':

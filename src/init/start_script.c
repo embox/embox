@@ -6,7 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-#include <errno.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <ctype.h>
@@ -31,6 +30,47 @@ EMBOX_UNIT_INIT(run_script);
 static const char *script_commands[] = {
 	#include <start_script.inc>
 };
+
+static int run_cmd(int argc, char *argv[]) {
+	const struct cmd *cmd;
+	int code;
+
+	if (argc == 0) {
+		return 0;
+	}
+
+	if (NULL == (cmd = cmd_lookup(argv[0]))) {
+		printk("%s: Command not found\n", argv[0]);
+		return 0;
+	}
+
+	if (0 != (code = cmd_exec(cmd, argc, argv))) {
+		printk("%s: Command returned with code %d: %s\n",
+			cmd_name(cmd), code, strerror(-code));
+	}
+	return code;
+}
+
+static int parse(const char *const_line) {
+	char *token_line[(BUF_INP_SIZE + 1) / 2];
+	char cline[BUF_INP_SIZE];
+	char *line = cline;
+	int tok_pos = 0;
+	int last_was_blank = 1;
+
+	strncpy(cline, const_line, BUF_INP_SIZE);
+	while (*line != '\0') {
+		if (last_was_blank && !isspace(*line)) {
+			token_line[tok_pos++] = line;
+		}
+		last_was_blank = isspace(*line);
+		if (isspace(*line)) {
+			*line = '\0';
+		}
+		line++;
+	}
+	return run_cmd(tok_pos, token_line);
+}
 
 static void setup_tty(const char *dev_name) {
 	int fd;
@@ -59,28 +99,23 @@ static void setup_tty(const char *dev_name) {
 static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
-
 	printk("\nStarting shell [%s] at device [%s]\n",
 		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
-	shell = shell_lookup(OPTION_STRING_GET(shell_name));
-	if (NULL == shell) {
-		shell = shell_any();
-
-		if (NULL == shell) {
-			return -ENOENT;
-		}
-	}
-
 	printk("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		printk("> %s \n", command);
-
-		shell_exec(shell, command);
+		parse(command);
 	}
 
-	shell_run(shell);
+	shell = shell_lookup(OPTION_STRING_GET(shell_name));
+	if (NULL == shell) {
+		shell = shell_any();
+		assert(shell);
+	}
+
+	shell->exec();
 
 	return 0;
 }

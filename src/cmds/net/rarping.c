@@ -47,13 +47,13 @@ static int exec(int argc, char **argv) {
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
 				printf("rarping: unknown iface %s\n", optarg);
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
 				printf("rarping: bad number of packets to transmit.\n");
-				return -EINVAL;
+				return -1;
 			}
 			break;
 		case '?':
@@ -75,7 +75,7 @@ static int exec(int argc, char **argv) {
 	/* Get destination hardware address. */
 	if (macaddr_scan((const unsigned char *)argv[argc - 1], &tha[0]) == NULL) {
 		printf("rarping: invalid MAC address: %s\n", argv[argc - 1]);
-		return -EINVAL;
+		return -1;
 	}
 
 	/* Get a source hardware and protocol address */

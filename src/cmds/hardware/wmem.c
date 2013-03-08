@@ -11,7 +11,6 @@
 
 #include <embox/cmd.h>
 
-#include <errno.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -29,14 +28,14 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 	if ((optarg == NULL) || (*optarg == '\0')) {
 		printf("wmem -%c: option expected\n", opt);
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	*number = strtoul(optarg, &endptr, 0);
 	if (*endptr != '\0') {
 		printf("wmem -%c: invalid option: %s\n", opt, optarg);
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	return 0;
@@ -44,7 +43,7 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 
 static int exec(int argc, char **argv) {
 	bool a_flag = false, v_flag = false;
-	int opt, ret;
+	int opt;
 	volatile unsigned int *address;
 	unsigned int value;
 
@@ -52,17 +51,15 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "a:v:h"))) {
 		switch (opt) {
 		case 'a':
-			ret = parse_option(optarg, opt, (unsigned long int *) &address);
-			if (ret != 0) {
-				return ret;
+			if (0 != parse_option(optarg, opt, (unsigned long int *) &address)) {
+				return -1;
 			}
 			a_flag = true;
 			break;
 
 		case 'v':
-			ret = parse_option(optarg, opt, (unsigned long int *) &value);
-			if (ret != 0) {
-				return ret;
+			if (0 != parse_option(optarg, opt, (unsigned long int *) &value)) {
+				return -1;
 			}
 			v_flag = true;
 			break;
@@ -79,7 +76,7 @@ static int exec(int argc, char **argv) {
 	if (!a_flag || !v_flag) {
 		printf("wmem: both -a and -v options required\n");
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	*address = value;

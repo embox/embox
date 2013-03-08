@@ -20,6 +20,10 @@
 #include <drivers/pci/pci_id.h>
 
 #include <drivers/video/vga.h>
+//#include <drivers/video/vesa.h>
+//#include <drivers/video/vesa_mode.h>
+
+#include <drivers/video/display.h>
 
 #include <drivers/video/fb.h>
 
@@ -393,8 +397,7 @@ static const struct fb_ops cl_ops = {
 	.fb_set_par = cl_set_par,
 	.fb_copyarea = fb_copyarea,
 	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit,
-	.fb_cursor    = fb_cursor,
+	.fb_imageblit = fb_imageblit
 };
 
 static const struct fb_fix_screeninfo cl_fix_screeninfo = {
@@ -431,5 +434,9 @@ static int cirrus_init(struct pci_slot_dev *pci_dev) {
 
 	return 0;
 }
+
+
+
+
 
 PCI_DRIVER("cl_gd5446", cirrus_init, PCI_VENDOR_ID_CIRRUS, PCI_DEV_ID_CIRRUS_5446);

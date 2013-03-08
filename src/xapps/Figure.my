@@ -1,0 +1,10 @@
+package embox.xwnd
+
+module xfigure {
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "figure.c"
+
+	depends embox.lib.LibC
+	depends embox.xwnd.application
+	depends embox.xwnd.fonts
+}

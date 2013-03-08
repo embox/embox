@@ -143,7 +143,7 @@ static int utmp_login(short ut_type, const char *host) {
 	utmp.ut_pid = getpid();
 	snprintf(utmp.ut_id, UT_IDSIZE, "/%hd", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	strncpy(utmp.ut_host, host, UT_HOSTSIZE);
+	strcpy(utmp.ut_host, host);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
 
 	gettimeofday(&tv, NULL);
@@ -166,7 +166,9 @@ static void *shell_hnd(void* args) {
 
 	struct sockaddr_in *addr_in = &clients[msg[2]].addr_in;
 
-	utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
+	utmp_login(LOGIN_PROCESS, "");
+
+	addr_in = addr_in;
 
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
@@ -174,7 +176,7 @@ static void *shell_hnd(void* args) {
 	dup2(msg[0], STDIN_FILENO);
 	dup2(msg[1], STDOUT_FILENO);
 
-	shell_run(shell_lookup("tish"));
+	shell_lookup("tish")->exec();
 
 	utmp_login(DEAD_PROCESS, "");
 
@@ -334,7 +336,7 @@ static int exec(int argc, char **argv) {
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		printf("can't create socket\n");
-		return -errno;
+		return -1;
 	}
 
 	if ((res = bind(listening_descr, (struct sockaddr *)&listening_socket,
@@ -404,7 +406,6 @@ static int exec(int argc, char **argv) {
 	return ENOERR;
 
 listen_failed:
-	res = -errno;
 	close(listening_descr);
-	return res;
+	return -1;
 }

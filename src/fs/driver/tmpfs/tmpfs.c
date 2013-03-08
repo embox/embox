@@ -111,6 +111,11 @@ static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	nas = node->nas;
 	fi = (tmpfs_file_info_t *)nas->fi->privdata;
 
+	fi->mode = flags;
+	if (O_WRONLY == fi->mode) {
+		nas->fi->ni.size = 0;
+	}
+
 	fi->pointer = desc->cursor;
 
 	return 0;
@@ -246,6 +251,11 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 	fsi = nas->fs->fsi;
 
 	bytecount = 0;
+
+	/* Don't allow writes to a file that's open as readonly */
+	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND)) {
+		return 0;
+	}
 
 	fi->pointer = desc->cursor;
 	len = size;

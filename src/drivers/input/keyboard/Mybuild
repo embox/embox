@@ -3,5 +3,5 @@ package embox.driver.input.keyboard
 module keyboard {
 	source "keyboard.c"
 	source "keymap.c"
-	depends embox.driver.input.core
+	@NoRuntime depends embox.driver.virtual.input_dev
 }

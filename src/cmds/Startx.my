@@ -1,0 +1,24 @@
+
+package embox.cmd
+
+@Cmd(name = "startx",
+	help = "XWindow-like thing for Embox",
+	man = '''
+		NAME
+			startx - window system for Embox
+		AUTHORS
+			Alexandr Chernakov
+	''')
+module startx{
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "startx.c"
+
+	depends embox.lib.LibC
+	depends embox.driver.video.vesadrv
+	depends embox.xwnd.xappreg
+	depends embox.xwnd.draw_helpers
+	depends embox.xwnd.application
+	depends embox.xwnd.xterm
+	depends embox.xwnd.xfigure
+	depends embox.compat.posix.util.sleep
+}

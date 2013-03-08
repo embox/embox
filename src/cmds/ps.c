@@ -8,7 +8,6 @@
 
 #include <embox/cmd.h>
 
-#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
@@ -40,7 +39,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc <= 1) {
 		print_usage();
-		return -EINVAL;
+		return -1;
 	}
 
 	getopt_init();

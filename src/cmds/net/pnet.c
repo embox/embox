@@ -476,7 +476,7 @@ static int exec(int argc, char **argv) {
 			if (!strcmp("--graph", argv[2])) {
 				if (NULL == pnet_graph_create(argv[3])) {
 					printf("%s: graph was not created \n", argv[3]);
-					return -ENOMEM;
+					return -1;
 				}
 				break;
 			}
@@ -491,7 +491,7 @@ static int exec(int argc, char **argv) {
 			if (!strcmp("--rule", argv[2])) {
 				if (rule_alloc(argv) < 0) {
 					printf("rule was not created \n");
-					return -ENOMEM;
+					return -1;
 				}
 				break;
 			}
@@ -528,7 +528,7 @@ static int exec(int argc, char **argv) {
 				break;
 			}
 			printf("%s: no such option \n", argv[2]);
-			return -EINVAL;
+			return -1;
 		default:
 			return 0;
 		}

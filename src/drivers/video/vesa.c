@@ -18,7 +18,6 @@
 //http://devotes.narod.ru/Books/3/ch05_10d.htm
 //http://src-code.net/registry-videokontrollera/
 
-#if 0
 
 /*****************************************************************************
 *****************************************************************************/
@@ -81,4 +80,3 @@ unsigned vpeekb(unsigned off)
 	return peekb(fb_seg, off);
 }
 
-#endif

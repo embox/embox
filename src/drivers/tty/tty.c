@@ -1,8 +1,6 @@
 /**
  * @file
  * @brief
- * 	http://sydney.edu.au/engineering/it/~tapted/ansi.html
- * 	http://www.inwap.com/pdp10/ansicode.txt
  *
  * @date 08.02.13
  * @author Ilia Vaprol
@@ -68,32 +66,15 @@ void tty_cursor(struct tty *t) {
 
 static void tty_esc_putc(struct tty *t, char ch) {
 	if (ch == '[') {
-		int i;
-
+		t->esc_args[0] = t->esc_args[1] = 0;
 		t->esc_args_count = 0;
-
-		for (i = 0; i < TTY_CSI_MAXOPTCNT; i++) {
-			t->esc_args[i] = 0;
-		}
-
-	} else if (ch == ';') {
-
-		++t->esc_args_count;
-
-	} else if (isdigit(ch)) {
-
-		if (!t->esc_args_count) {
-			++t->esc_args_count;
-		}
-
-		if (t->esc_args_count > TTY_CSI_MAXOPTCNT) {
-			t->esc_state = 0;
-			return;
-		}
-
-		t->esc_args[t->esc_args_count - 1] =
-			t->esc_args[t->esc_args_count - 1] * 10 + ch - '0';
-	} else {
+	}
+	else if (ch == ';') {
+		t->esc_args[++t->esc_args_count] = 0;
+	} else if (isdigit(ch) && (t->esc_args_count < ARRAY_SIZE(t->esc_args))) {
+		t->esc_args[t->esc_args_count] = t->esc_args[t->esc_args_count] * 10 + ch - '0';
+	}
+	else {
 		switch (ch) {
 		case 'f': /* Move cursor + blink cursor to location v,h */
 			t->cur_x = t->esc_args[1];
@@ -158,19 +139,6 @@ static void tty_esc_putc(struct tty *t, char ch) {
 		case 'D':
 			t->cur_x -= t->esc_args[0];
 			break;
-		case 'G':
-			if (t->esc_args_count == 0) {
-				t->esc_args[0] = 1;
-			}
-			t->cur_x = t->esc_args[0];
-			break;
-		case 'C':
-			if (t->esc_args_count == 0) {
-				t->esc_args[0] = 1;
-			}
-			t->cur_x += t->esc_args[0];
-			break;
-
 		}
 		t->esc_state = 0;
 	}

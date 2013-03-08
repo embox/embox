@@ -1,0 +1,11 @@
+package embox.xwnd
+
+module ximg {
+//	@IncludePath("$(SRC_DIR)/include/drivers")
+//	source "ximg.c"
+
+	depends embox.lib.LibC
+	depends embox.xwnd.application
+	depends embox.xwnd.bmp
+}
+

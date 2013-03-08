@@ -40,3 +40,11 @@ module uart {
 	@NoRuntime depends embox.driver.char_dev
 }
 
+module input_dev {
+	source "input_devfs.c"
+
+	depends embox.mem.objalloc
+	depends embox.mem.heap_api
+	depends embox.fs.rootfs
+	@NoRuntime depends embox.fs.driver.devfs
+}
