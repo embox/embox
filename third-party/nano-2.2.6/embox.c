@@ -10,14 +10,17 @@
 #include "embox.h"
 #include <assert.h>
 
-int nano_exit_ret = -1;
-int nano_exited = 0;
+int nano_exit_ret;
+int nano_exited;
 jmp_buf nano_exit_point;
 
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
 	int ret;
+
+	nano_exit_ret = -1;
+	nano_exited = 0;
 
 	ret = setjmp(nano_exit_point);
 	if (ret == 0) {
