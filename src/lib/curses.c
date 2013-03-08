@@ -46,6 +46,21 @@ static void window_init(WINDOW *win, uint16_t begy, uint16_t begx,
 	win->clearok = false;
 }
 
+static void window_setch(WINDOW *win, chtype ch, uint16_t cury,
+		uint16_t curx) {
+	assert(win != NULL);
+	assert(win->lines != NULL);
+
+	*(win->lines + cury * COLS + curx) = ch;
+}
+
+static chtype window_getch(WINDOW *win, uint16_t cury, uint16_t curx) {
+	assert(win != NULL);
+	assert(win->lines != NULL);
+
+	return *(win->lines + cury * COLS + curx);
+}
+
 static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
 		uint16_t begx, uint16_t endy, uint16_t endx) {
 	uint16_t y, x;
@@ -54,7 +69,7 @@ static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
 
 	for (y = begy; y < endy; ++y) {
 		for (x = begx; x < endx; ++x) {
-			*(win->lines + y * COLS + x) = win->bkgd;
+			window_setch(win, win->bkgd, y, x);
 		}
 	}
 }
@@ -145,7 +160,7 @@ int refresh(void) {
 }
 
 int wnoutrefresh(WINDOW *win) {
-	return ERR;
+	return OK;
 }
 
 int wrefresh(WINDOW *win) {
@@ -209,7 +224,7 @@ int waddch(WINDOW *win, const chtype ch) {
 		return ERR;
 	}
 
-	*(win->lines + win->curx + win->cury * COLS) = ch;
+	window_setch(win, ch, win->cury, win->curx);
 
 	++win->curx;
 	if (win->curx == win->endx) {
@@ -414,6 +429,32 @@ int wattrset(WINDOW *win, int attrs) {
 	return OK;
 }
 
+int insch(chtype ch) {
+	return winsch(stdscr, ch);
+}
+
+int mvinsch(int y, int x, chtype ch) {
+	return mvwinsch(stdscr, y, x, ch);
+}
+
+int mvwinsch(WINDOW *win, int y, int x, chtype ch) {
+	if (win == NULL) {
+		return ERR;
+	}
+
+	window_setch(win, ch, y, x);
+
+	return OK;
+}
+
+int winsch(WINDOW *win, chtype ch) {
+	if (win == NULL) {
+		return ERR;
+	}
+
+	return mvwinsch(win, win->cury, win->curx, ch);
+}
+
 int delch(void) {
 	return wdelch(stdscr);
 }
@@ -427,7 +468,7 @@ int mvwdelch(WINDOW *win, int y, int x) {
 		return ERR;
 	}
 
-	*(win->lines + y * COLS + x) = win->bkgd;
+	window_setch(win, win->bkgd, y, x);
 
 	return OK;
 }
@@ -487,8 +528,8 @@ int wbkgd(WINDOW *win, chtype ch) {
 
 	for (y = win->begy; y < win->endy; ++y) {
 		for (x = win->begx; x < win->endx; ++x) {
-			if (*(win->lines + y * COLS + x) == old_ch) {
-				*(win->lines + y * COLS + x) = ch;
+			if (window_getch(win, y, x) == old_ch) {
+				window_setch(win, ch, y, x);
 			}
 		}
 	}
