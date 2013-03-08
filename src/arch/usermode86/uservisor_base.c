@@ -43,12 +43,7 @@ int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
 }
 
 int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
-	int ret;
-	if (0 > (ret = host_read(fd, msg, sizeof(struct emvisor_msghdr)))) {
-		return -EIO;
-	}
-
-	return 0;
+	return host_read(fd, msg, sizeof(struct emvisor_msghdr));
 }
 
 int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {

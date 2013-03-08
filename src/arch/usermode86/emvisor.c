@@ -7,6 +7,8 @@
  */
 
 #include <errno.h>
+#include <assert.h>
+#include <string.h>
 #include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -14,29 +16,46 @@
 #include <uservisor_base.h>
 
 #define DATA_BUFLEN 64
+#define SELECT_TO_SEC 5
 
 extern void kernel_start(void);
-
-int host_write(int fd, const void *buf, size_t len) {
-	return write(fd, buf, len);
-}
-
-int host_read(int fd, void *buf, size_t len) {
-	return read(fd, buf, len);
-}
-
-int host_kill(pid_t pid, int sig) {
-	return kill(pid, sig);
-}
 
 static struct npipe {
 	int np_read;
 	int np_write;
 } ev_downstream, ev_upstream;
 
-static int embox(const char *file, int pdownstream, int pwdownstream,
-		int pupstream) {
+pid_t emboxpid;
 
+static int maxfd;
+typedef int (*fdact_t)(int fd);
+static fdact_t fdact[FD_SETSIZE];
+static fd_set refrfds;
+
+static int fdact_add(int fd, fdact_t act) {
+	if (FD_ISSET(fd, &refrfds)) {
+		return -EBUSY;
+	}
+
+	maxfd = fd > maxfd ? fd : maxfd;
+
+	FD_SET(fd, &refrfds);
+	fdact[fd] = act;
+
+	return 0;
+}
+
+static void fdact_del(int fd) {
+	FD_CLR(fd, &refrfds);
+	/*not updating maxfd is not fatal or even error,
+	 *just select will perform slower, than it could be
+	 */
+}
+
+static int embox(const char *file) {
+	int pdownstream = ev_downstream.np_read;
+	int pwdownstream = ev_downstream.np_write;
+	int pupstream = ev_upstream.np_write;
 	int ret;
 
 	dup2(pdownstream,  UV_PRDDOWNSTRM);
@@ -54,12 +73,14 @@ static int embox(const char *file, int pdownstream, int pwdownstream,
 	return ret;
 }
 
-static int recvd(pid_t emboxpid, int pdownstream, int pupstream) {
+static int act_upstrrd(int pupstream) {
 	struct emvisor_msghdr msg;
 	char buf[DATA_BUFLEN];
 	int ret;
 
-	if (0 > (ret = emvisor_recv(pupstream, &msg, buf, DATA_BUFLEN))) {
+	assert(pupstream == ev_upstream.np_read);
+
+	if (0 > (ret = emvisor_recvmsg(pupstream, &msg))) {
 		return ret;
 	}
 
@@ -69,17 +90,28 @@ static int recvd(pid_t emboxpid, int pdownstream, int pupstream) {
 
 	switch (msg.type) {
 	case EMVISOR_DIAG_OUT:
+		if (0 > (ret = emvisor_recvbody(pupstream, &msg,
+						buf, DATA_BUFLEN))) {
+			return ret;
+		}
+
 		if (0 > (ret = write(1, buf, msg.dlen))) {
 			return ret;
 		}
 		return 0;
 
 	case EMVISOR_DIAG_IN:
+		if (0 > (ret = emvisor_recvbody(pupstream, &msg,
+						buf, DATA_BUFLEN))) {
+			return ret;
+		}
+
 		if (0 > (ret = read(0, buf, 1))) {
 			return ret;
 		}
 
-		emvisor_sendirq(emboxpid, pdownstream, EMVISOR_IRQ_DIAG_IN, buf, 1);
+		emvisor_sendirq(emboxpid, ev_downstream.np_write,
+				EMVISOR_IRQ_DIAG_IN, buf, 1);
 
 		return 0;
 	default:
@@ -90,25 +122,37 @@ static int recvd(pid_t emboxpid, int pdownstream, int pupstream) {
 
 }
 
-static int emvisor(pid_t emboxpid, int pdownstream, int pupstream) {
+static int emvisor(pid_t emboxpid) {
 	fd_set rfds;
-	struct timeval tv = {1, 0};
-	int ret;
+	struct timeval tv = {SELECT_TO_SEC, 0};
+	int pupstream = ev_upstream.np_read;
+	int ret, i;
 
-	FD_ZERO(&rfds);
-	FD_SET(pupstream, &rfds);
+	if (0 > (ret = fdact_add(pupstream, act_upstrrd))) {
+		return ret;
+	}
 
-	while (0 <= (ret = select(pupstream + 1, &rfds, NULL, NULL, &tv))) {
-		if (FD_ISSET(pupstream, &rfds)) {
-			if (0 > (ret = recvd(emboxpid, pdownstream, pupstream))) {
-			       return ret;
-			}
+	memcpy(&rfds, &refrfds, sizeof(fd_set));
+
+	while (0 <= (ret = select(maxfd + 1, &rfds, NULL, NULL, &tv))) {
+		if (ret == 0) {
+			continue;
 		}
 
-		FD_ZERO(&rfds);
-		FD_SET(pupstream, &rfds);
+		for (i = 0; i <= maxfd; i++) {
+			if (!FD_ISSET(i, &rfds)) {
+				continue;
+			}
 
-		tv.tv_sec = 10;
+			if (fdact[i]) {
+				fdact[i](i);
+			}
+
+		}
+
+		memcpy(&rfds, &refrfds, sizeof(fd_set));
+
+		tv.tv_sec = SELECT_TO_SEC;
 		tv.tv_usec = 0;
 
 	}
@@ -117,7 +161,6 @@ static int emvisor(pid_t emboxpid, int pdownstream, int pupstream) {
 }
 
 int main(int argc, char **argv) {
-	pid_t pid;
 	int ret;
 
 	if (argc != 2) {
@@ -132,12 +175,24 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	if (0 == (pid = fork())) {
-		ret = embox(argv[1], ev_downstream.np_read, ev_downstream.np_write,
-				ev_upstream.np_write);
+	if (0 == (emboxpid = fork())) {
+		ret = embox(argv[1]);
 	} else {
-		ret = emvisor(pid, ev_downstream.np_write, ev_upstream.np_read);
+		ret = emvisor(emboxpid);
 	}
 
 	exit(ret);
 }
+
+int host_write(int fd, const void *buf, size_t len) {
+	return write(fd, buf, len);
+}
+
+int host_read(int fd, void *buf, size_t len) {
+	return read(fd, buf, len);
+}
+
+int host_kill(pid_t pid, int sig) {
+	return kill(pid, sig);
+}
+
