@@ -16,6 +16,7 @@
  */
 
 #include <embox/cmd.h>
+#include <errno.h>
 
 #include <unistd.h>
 #include <string.h>
@@ -265,19 +266,19 @@ static int exec(int argc, char **argv) {
 			if (NULL == (show_func = set_bus_type(optarg))) {
 				printf("Parsing: chose right bus type '-b'\n");
 				print_usage();
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'n':
 			if (show_all == show_func) {
 				printf("Parsing: chose bus type '-b'\n");
 				print_usage();
-				return -1;
+				return -EINVAL;
 			}
 			if (1 != sscanf(optarg,"%d", &dev_number)) {
 				printf("parsing: enter validly dev_number '-n'\n");
 				print_usage();
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		default:

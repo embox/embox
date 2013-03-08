@@ -1,5 +1,0 @@
-package embox.driver.video.vga.mode
-
-module vga640x480x16 {
-	source "vga640x480x16.c"
-}

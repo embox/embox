@@ -56,6 +56,8 @@ struct task {
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
+
+	int affinity;
 };
 
 struct task_resource_desc {

@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 
 #include <unistd.h>
 #include <embox/cmd.h>
@@ -77,7 +78,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc <= 1) {
 		print_usage();
-		return -1;
+		return -EINVAL;
 	}
 
 	getopt_init();

@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
 #include <stdint.h>
 #include <drivers/diag.h>
 
@@ -26,19 +27,24 @@ static int keyboard_havechar(void) {
 }
 
 static void keyboard_send_cmd(uint8_t cmd) {
-	keyboard_wait_write();
+	unsigned int status;
+	keyboard_wait_write(status);
 	outb(cmd, I8042_CMD_PORT);
 }
 
 static unsigned char keyboard_get_mode(void) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_READ_MODE);
-	keyboard_wait_read();
+	keyboard_wait_read(status);
 	return inb(I8042_DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
+	unsigned char status;
+
 	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
-	keyboard_wait_write();
+	keyboard_wait_write(status);
 	outb(mode, I8042_DATA_PORT);
 }
 
@@ -49,26 +55,30 @@ int key_is_pressed(struct input_event *event) {
 }
 
 static void kbd_key_serv_press(int state, int flag) {
-	if(state & KEY_PRESSED) {
+	if (state & KEY_PRESSED) {
 		kbd_state |= flag;
 	} else {
 		kbd_state &= ~flag;
 	}
 }
 
-
-static int keyboard_get_input_event(struct input_event *event) {
-	uint8_t scan_code;
+static int keyboard_get_input_event(struct input_dev *dev, struct input_event *event) {
+	uint8_t scan_code, status;
 	int flag = 0;
-	keyboard_wait_read();
+
+	keyboard_wait_read(status);
 
 	scan_code = inb(I8042_DATA_PORT);
 
-	if(scan_code == KEYBOARD_SCAN_CODE_EXT) {
-		keyboard_wait_read();
-		scan_code = inb(I8042_DATA_PORT);
+	if (scan_code == KEYBOARD_SCAN_CODE_EXT) {
+		return -EAGAIN;
 	}
-	if(scan_code & 0x80) {
+
+	if (status & I8042_STS_AUXOBF) {
+		return -EAGAIN;
+	}
+
+	if (scan_code & 0x80) {
 		/* key unpressed */
 		event->type &= ~KEY_PRESSED;
 	} else {
@@ -99,8 +109,15 @@ static int keyboard_get_input_event(struct input_event *event) {
 	return 0;
 }
 
+static struct input_dev kbd_dev = {
+		.name = "keyboard",
+		.type = INPUT_DEV_KBD,
+		.irq = 1,
+		.indev_get = keyboard_get_input_event,
+};
 
 static int keyboard_getc(void) {
+	struct input_dev *kbd = &kbd_dev;
 	static unsigned char ascii_buff[4];
 	static int ascii_len;
 	static int seq_cnt = 0;
@@ -112,25 +129,20 @@ static int keyboard_getc(void) {
 	ascii_len = 0;
 
 	do {
-		keyboard_get_input_event(&event);
+		while (0 != input_dev_event(kbd, &event)) {
+
+		}
+
 		if(key_is_pressed(&event)) {
 			ascii_len = keymap_to_ascii(&event, ascii_buff);
 		}
+
 	} while(ascii_len == 0);
 
 	seq_cnt = 0;
 
 	return ascii_buff[seq_cnt++];
 }
-
-
-
-static struct input_dev kbd_dev = {
-		.name = "keyboard",
-		.irq = 1,
-		.getc = keyboard_getc
-};
-
 
 static int keyboard_init(void) {
 	uint8_t mode;
@@ -163,7 +175,6 @@ static int keyboard_init(void) {
 
 	return 0;
 }
-
 
 /*
  * Diag interface

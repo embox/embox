@@ -1,0 +1,18 @@
+
+package embox.arch.usermode86
+
+module host {
+	source "host.c",
+		"../uservisor_base.c"
+
+}
+
+module ipl extends embox.arch.interrupt {
+	source "ipl.c",
+		"ipl.h"
+
+	depends embox.kernel.critical
+	depends embox.driver.interrupt.irqctrl_api
+	depends embox.kernel.irq
+
+}

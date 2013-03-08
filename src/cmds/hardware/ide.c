@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <drivers/ide.h>
+#include <errno.h>
 #include <embox/block_dev.h>
 
 EMBOX_CMD(exec);
@@ -55,7 +56,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return 0;
 		default:
-			return -1;
+			return -EINVAL;
 		}
 	}
 

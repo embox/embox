@@ -19,7 +19,11 @@ module multi extends api {
 
 	depends task_table
 
-	@NoRuntime depends embox.kernel.thread.core
+	/* uses task_self() to initialize resources, which implies
+	   to thread be already loaded, as task_self uses thread_self
+	   to determ current thread
+	*/
+	depends embox.kernel.thread.core
 }
 
 module task_environment { }
