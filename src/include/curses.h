@@ -100,15 +100,6 @@ extern chtype getbkgd(WINDOW *win);
 extern int wbkgd(WINDOW *win, chtype ch);
 extern void wbkgdset(WINDOW *win, chtype ch);
 
-static inline int beep(void) { return 0; }
-static inline int endwin(void) { return 0; }
-static inline int keypad(WINDOW *win, bool bf) { return 0; }
-static inline int curs_set(int visibility) { return 0; }
-static inline int raw(void) { return 0; }
-static inline int nonl(void) { return 0; }
-static inline int noecho(void) { return 0; }
-static inline int nodelay(WINDOW *win, bool bf) { return 0; }
-static inline bool isendwin(void) { return TRUE; }
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */

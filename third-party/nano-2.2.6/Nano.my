@@ -15,6 +15,7 @@ module nano {
 			"files.c", "global.c", "help.c", "move.c",
 			"nano.c", "prompt.c", "rcfile.c", "search.c",
 			"text.c", "utils.c", "winio.c"
+	source "embox.c"
 
 	depends embox.lib.LibCurses
 	depends embox.lib.LibC
