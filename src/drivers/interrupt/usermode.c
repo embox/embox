@@ -15,6 +15,8 @@
 #include <drivers/irqctrl.h>
 #include <kernel/umirq.h>
 
+#include <prom/prom_printf.h>
+
 void irqctrl_enable(unsigned int interrupt_nr) {
 
 }
@@ -28,7 +30,10 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 }
 
 void irqctrl_force(unsigned int interrupt_nr) {
-	emvisor_sendirq(host_getpid(), UV_PWRDOWNSTRM,
+
+	prom_printf("me is %d", host_getpid());
+
+	emvisor_sendirq(host_getpid(), 1, UV_PWRDOWNSTRM,
 			EMVISOR_IRQ + interrupt_nr, NULL, 0);
 }
 
@@ -37,10 +42,13 @@ void irq_entry(int irq) {
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-
 		ipl_enable();
 
+		prom_printf("received %d", irq);
+
 		irq_dispatch(irq);
+
+		emvisor_send(UV_PWRUPSTRM, EMVISOR_EOF_IRQ, NULL, 0);
 
 		ipl_disable();
 	}

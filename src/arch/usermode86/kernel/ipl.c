@@ -13,8 +13,10 @@
 
 static int ipl_num;
 
+#include <prom/prom_printf.h>
 static void ipl_highest(int signal) {
 
+	prom_printf("recv high\n");
 }
 
 static void ipl_lowest(int signal) {
@@ -43,13 +45,13 @@ static const host_sighandler_t ipl_table[] = {
 };
 
 void ipl_init(void) {
-	host_signal(UV_IRQ, ipl_table[ipl_num = 1]);
+	ipl_restore(1);
 }
 
 ipl_t ipl_save(void) {
 	ipl_t ret = ipl_num;
 
-	host_signal(UV_IRQ, ipl_table[ipl_num = 0]);
+	ipl_restore(0);
 
 	return ret;
 

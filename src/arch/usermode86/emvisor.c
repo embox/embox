@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/select.h>
+#include <sys/timerfd.h>
 #include <uservisor_base.h>
 
 #define DATA_BUFLEN 64
@@ -25,7 +26,19 @@ static struct npipe {
 	int np_write;
 } ev_downstream, ev_upstream;
 
-pid_t emboxpid;
+static pid_t emboxpid;
+static char need_signal = 1;
+
+static int sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
+		const void *data, int dlen) {
+	int sg = need_signal;
+
+	if (need_signal) {
+		need_signal = 0;
+	}
+
+	return emvisor_sendirq(pid, sg, fd, type, data, dlen);
+}
 
 static int maxfd;
 typedef int (*fdact_t)(int fd);
@@ -73,6 +86,58 @@ static int embox(const char *file) {
 	return ret;
 }
 
+static int act_tmr(int tmr) {
+	unsigned long long ovrn_count;
+
+	read(tmr, &ovrn_count, sizeof(ovrn_count));
+
+	sendirq(emboxpid, ev_downstream.np_write,
+			EMVISOR_IRQ_TMR, &ovrn_count, sizeof(ovrn_count));
+
+	return 0;
+}
+
+static int tmrset(int pupstream, const struct emvisor_msghdr *msg) {
+	struct emvisor_tmrset ts;
+	int tfd;
+	unsigned long long nsec;
+	int ret;
+
+	if (0 > (ret = emvisor_recvbody(pupstream, msg,
+					&ts, sizeof(ts)))) {
+		return ret;
+	}
+
+	if (0 > (tfd = timerfd_create(CLOCK_REALTIME, 0))) {
+		return tfd;
+	}
+
+	if (0 > (ret = fdact_add(tfd, act_tmr))) {
+		return ret;
+	}
+
+	nsec = 1000000000 / ts.overfl_fq;
+
+	{
+		struct itimerspec timespec = {
+			.it_interval = {
+				.tv_sec = 0,
+				.tv_nsec = nsec,
+			},
+			.it_value = {
+				.tv_sec = 0,
+				.tv_nsec = nsec,
+			},
+		};
+
+		if (0 > (ret = timerfd_settime(tfd, 0, &timespec, NULL))) {
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 static int act_upstrrd(int pupstream) {
 	struct emvisor_msghdr msg;
 	char buf[DATA_BUFLEN];
@@ -110,10 +175,17 @@ static int act_upstrrd(int pupstream) {
 			return ret;
 		}
 
-		emvisor_sendirq(emboxpid, ev_downstream.np_write,
+		sendirq(emboxpid, ev_downstream.np_write,
 				EMVISOR_IRQ_DIAG_IN, buf, 1);
 
 		return 0;
+	case EMVISOR_EOF_IRQ:
+
+		need_signal = 1;
+
+		return 0;
+	case EMVISOR_TIMER_SET:
+		return tmrset(pupstream, &msg);
 	default:
 		return -ENOENT;
 	}
@@ -136,7 +208,7 @@ static int emvisor(pid_t emboxpid) {
 
 	while (0 <= (ret = select(maxfd + 1, &rfds, NULL, NULL, &tv))) {
 		if (ret == 0) {
-			continue;
+			goto new_select;
 		}
 
 		for (i = 0; i <= maxfd; i++) {
@@ -150,6 +222,7 @@ static int emvisor(pid_t emboxpid) {
 
 		}
 
+	new_select:
 		memcpy(&rfds, &refrfds, sizeof(fd_set));
 
 		tv.tv_sec = SELECT_TO_SEC;

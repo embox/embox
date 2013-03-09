@@ -29,7 +29,7 @@ int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen) 
 	return 0;
 }
 
-int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
+int emvisor_sendirq(host_pid_t pid, char signal, int fd, enum emvisor_msg type,
 		const void *msg_data, int dlen) {
 	int ret;
 
@@ -37,7 +37,9 @@ int emvisor_sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
 		return ret;
 	}
 
-	host_kill(pid, UV_IRQ);
+	if (signal) {
+		host_kill(pid, UV_IRQ);
+	}
 
 	return 0;
 }
@@ -46,14 +48,10 @@ int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
 	return host_read(fd, msg, sizeof(struct emvisor_msghdr));
 }
 
-int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
-	int ldata = msg->dlen;
+int emvisor_recvnbody(int fd, void *data, int dlen) {
+	int ldata = dlen;
 	void *pb = data;
 	int ret;
-
-	if (msg->dlen >= dlen) {
-		return -ERANGE;
-	}
 
 	while (ldata) {
 		if (0 > (ret = host_read(fd, data, ldata))) {
@@ -64,7 +62,15 @@ int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int d
 		pb += ret;
 	}
 
-	return msg->dlen;
+	return dlen;
+}
+
+int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
+	if (msg->dlen > dlen) {
+		return -ERANGE;
+	}
+
+	return emvisor_recvnbody(fd, data, msg->dlen);
 }
 
 int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
