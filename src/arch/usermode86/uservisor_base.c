@@ -38,7 +38,7 @@ int emvisor_sendirq(host_pid_t pid, char signal, int fd, enum emvisor_msg type,
 	}
 
 	if (signal) {
-		host_kill(pid, UV_IRQ);
+		return host_kill(pid, UV_IRQ);
 	}
 
 	return 0;

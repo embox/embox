@@ -31,8 +31,6 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 
 void irqctrl_force(unsigned int interrupt_nr) {
 
-	prom_printf("me is %d", host_getpid());
-
 	emvisor_sendirq(host_getpid(), 1, UV_PWRDOWNSTRM,
 			EMVISOR_IRQ + interrupt_nr, NULL, 0);
 }
@@ -44,7 +42,7 @@ void irq_entry(int irq) {
 	{
 		ipl_enable();
 
-		prom_printf("received %d", irq);
+		/*prom_printf("received %d\n", irq);*/
 
 		irq_dispatch(irq);
 

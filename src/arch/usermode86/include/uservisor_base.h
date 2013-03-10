@@ -13,7 +13,7 @@
 #define UV_PWRUPSTRM 1
 #define UV_PWRDOWNSTRM 3
 
-#define UV_IRQ 10
+#define UV_IRQ 20
 
 #ifdef EMVISOR
 typedef pid_t host_pid_t;

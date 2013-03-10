@@ -13,6 +13,8 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/host.h>
 
+#include <prom/prom_printf.h>
+
 EMBOX_UNIT_INIT(umclock_init);
 
 #define CLOCK_IRQ  2
@@ -22,6 +24,9 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
 	emvisor_recvnbody(UV_PRDDOWNSTRM, &ovrn_count, sizeof(ovrn_count));
 
+	/*prom_printf("got ticks: %lld\n", ovrn_count);*/
+	prom_printf("%%");
+
 	while (ovrn_count--) {
 		clock_tick_handler(irq_nr, data);
 	}
@@ -29,15 +34,15 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int ppc_clk_config(struct time_dev_conf *conf);
+static int clk_config(struct time_dev_conf *conf);
 
 static cycle_t ppc_clk_read(void) {
 	return 0;
 }
 
 static struct time_event_device umclock_ev = {
-	.config = ppc_clk_config,
-	.resolution = 1000,
+	.config = clk_config,
+	.resolution = 5000,
 	.irq_nr = CLOCK_IRQ,
 };
 
@@ -53,7 +58,7 @@ static struct clock_source umclock_cs = {
 	.read = clock_source_read,
 };
 
-static int ppc_clk_config(struct time_dev_conf *conf) {
+static int clk_config(struct time_dev_conf *conf) {
 	struct emvisor_tmrset ts = {
 		.count_fq = umclock_cd.resolution,
 		.overfl_fq = umclock_ev.resolution

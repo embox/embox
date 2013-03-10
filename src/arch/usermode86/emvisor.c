@@ -11,7 +11,9 @@
 #include <string.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/select.h>
 #include <sys/timerfd.h>
 #include <uservisor_base.h>
@@ -88,11 +90,18 @@ static int embox(const char *file) {
 
 static int act_tmr(int tmr) {
 	unsigned long long ovrn_count;
+	int ret;
 
-	read(tmr, &ovrn_count, sizeof(ovrn_count));
+	if (0 > (ret = read(tmr, &ovrn_count, sizeof(ovrn_count)))) {
+		return ret;
+	}
 
-	sendirq(emboxpid, ev_downstream.np_write,
-			EMVISOR_IRQ_TMR, &ovrn_count, sizeof(ovrn_count));
+	/*fprintf(stdout, "ovrn is %lld\n", ovrn_count);*/
+
+	if (0 > (ret = sendirq(emboxpid, ev_downstream.np_write,
+			EMVISOR_IRQ_TMR, &ovrn_count, sizeof(ovrn_count)))) {
+		return ret;
+	}
 
 	return 0;
 }
@@ -175,12 +184,13 @@ static int act_upstrrd(int pupstream) {
 			return ret;
 		}
 
-		sendirq(emboxpid, ev_downstream.np_write,
+		return sendirq(emboxpid, ev_downstream.np_write,
 				EMVISOR_IRQ_DIAG_IN, buf, 1);
 
 		return 0;
 	case EMVISOR_EOF_IRQ:
 
+		fprintf(stdout, "got irq ack\n");
 		need_signal = 1;
 
 		return 0;
@@ -217,7 +227,9 @@ static int emvisor(pid_t emboxpid) {
 			}
 
 			if (fdact[i]) {
-				fdact[i](i);
+				if (0 > (ret = fdact[i](i))) {
+					return ret;
+				}
 			}
 
 		}
@@ -234,27 +246,29 @@ static int emvisor(pid_t emboxpid) {
 }
 
 int main(int argc, char **argv) {
-	int ret;
+	int fd, ret;
 
-	if (argc != 2) {
+	if (argc != 4) {
 		return -EINVAL;
 	}
 
-	if (0 != pipe((int *) &ev_downstream)) {
-		exit(1);
+	if (0 >= (sscanf(argv[1], "%d", &emboxpid))) {
+		return -EINVAL;
 	}
 
-	if (0 != pipe((int *) &ev_upstream)) {
-		exit(1);
-	}
 
-	if (0 == (emboxpid = fork())) {
-		ret = embox(argv[1]);
-	} else {
-		ret = emvisor(emboxpid);
+	if (0 > (fd = open(argv[2], O_WRONLY))) {
+		return -EINVAL;
 	}
+	ev_downstream.np_write = fd;
 
-	exit(ret);
+	if (0 > (fd = open(argv[3], O_RDONLY))) {
+		return -EINVAL;
+	}
+	ev_upstream.np_read = fd;
+
+	return emvisor(emboxpid);
+
 }
 
 int host_write(int fd, const void *buf, size_t len) {

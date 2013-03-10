@@ -22,6 +22,9 @@ static int syscall(int eax, int ebx, int ecx, int edx, int esx, int edi) {
 	return ret;
 }
 
+int host_open(const char *name, int flags, int mode) {
+	return syscall(NR_OPEN, (int) name, flags, mode, 0, 0);
+}
 int host_read(int fd, void *buf, int len) {
 	return syscall(NR_READ, fd, (int) buf, len, 0, 0);
 }
@@ -40,6 +43,10 @@ int host_signal(int signum, host_sighandler_t handler) {
 
 int host_pipe(int *pipe) {
 	return syscall(NR_PIPE, (int) pipe, 0, 0, 0, 0);
+}
+
+int host_dup2(int fd, int fd2) {
+	return syscall(NR_DUP2, fd, fd2, 0, 0, 0);
 }
 
 void host_exit(int ret) {

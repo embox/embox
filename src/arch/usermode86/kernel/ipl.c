@@ -7,34 +7,49 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <kernel/host.h>
 #include <kernel/umirq.h>
 #include <hal/ipl.h>
 
 static int ipl_num;
 
+static volatile int __iplhflag;
+
 #include <prom/prom_printf.h>
 static void ipl_highest(int signal) {
 
+	__iplhflag = 1;
 	prom_printf("recv high\n");
 }
 
-static void ipl_lowest(int signal) {
+static int irq_queue(void) {
 	struct emvisor_msghdr msg;
+	int ret;
 
+	if (0 >= (ret = emvisor_recvmsg(UV_PRDDOWNSTRM, &msg))) {
+		return ret;
+	}
+
+	if (msg.type <= EMVISOR_IRQ) {
+		return -ENOENT;
+	}
+
+	irq_entry(msg.type - EMVISOR_IRQ);
+
+	return ret;
+}
+
+
+
+static void ipl_lowest(int signal) {
 	ipl_disable();
 
 	if (signal != UV_IRQ) {
 		return;
 	}
 
-	assert(0 <= emvisor_recvmsg(UV_PRDDOWNSTRM, &msg));
-
-	if (msg.type <= EMVISOR_IRQ) {
-		return;
-	}
-
-	irq_entry(msg.type - EMVISOR_IRQ);
+	irq_queue();
 
 	ipl_enable();
 }
@@ -43,6 +58,11 @@ static const host_sighandler_t ipl_table[] = {
 	ipl_highest,
 	ipl_lowest,
 };
+
+void ipl_hnd(int signal) {
+	host_signal(UV_IRQ, ipl_hnd);
+	ipl_table[ipl_num](signal);
+}
 
 void ipl_init(void) {
 	ipl_restore(1);
@@ -58,7 +78,10 @@ ipl_t ipl_save(void) {
 }
 
 void ipl_restore(ipl_t ipl) {
-	host_signal(UV_IRQ, ipl_table[ipl_num = ipl]);
 
-	/*TODO: flush downstream*/
+	ipl_num = ipl;
+
+	/*if (ipl) {*/
+		/*irq_queue();*/
+	/*}*/
 }
