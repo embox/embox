@@ -6,8 +6,16 @@
  * @author Ilia Vaprol
  */
 
+#include <sys/resource.h>
 #include <unistd.h>
 
 int nice(int incr) {
-	return 0;
+	int prior;
+
+	prior = getpriority(PRIO_PROCESS, 0);
+	if (prior == -1) {
+		return -1;
+	}
+
+	return setpriority(PRIO_PROCESS, 0, prior + incr);
 }
