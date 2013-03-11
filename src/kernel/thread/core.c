@@ -311,6 +311,8 @@ void thread_yield(void) {
 }
 
 int thread_set_priority(struct thread *t, thread_priority_t new) {
+	assert(t);
+
 	if (new < THREAD_PRIORITY_MIN || THREAD_PRIORITY_MAX < new) {
 		return -EINVAL;
 	}
@@ -326,6 +328,12 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	sched_unlock();
 
 	return 0;
+}
+
+thread_priority_t thread_get_priority(struct thread *t) {
+	assert(t);
+
+	return t->priority;
 }
 
 clock_t thread_get_running_time(struct thread *thread) {

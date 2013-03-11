@@ -236,6 +236,8 @@ extern int thread_launch(struct thread *thread);
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
 
+extern thread_priority_t thread_get_priority(struct thread *thread);
+
 /**
  * Returns running time of the thread. To get better precision should be
  * called inside sched_lock().
