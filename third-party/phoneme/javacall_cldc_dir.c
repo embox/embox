@@ -47,7 +47,7 @@ javacall_utf16* javacall_dir_get_next(javacall_handle handle, int* /*OUT*/ outFi
 	node_t *item;
 	javacall_utf16* name;
 	javacall_int32 namelen;
-	bool get_this_item = false;
+	int get_this_item = 0;
 	struct java_dir *jdir = (struct java_dir *)handle;
 
 	/* FIXME look for basename. See javacall_dir.h */
@@ -60,7 +60,7 @@ javacall_utf16* javacall_dir_get_next(javacall_handle handle, int* /*OUT*/ outFi
 		}
 		if (jdir->cur_file == item) {
 			/* and get next file */
-			get_this_item = true;
+			get_this_item = 1;
 		}
 	}
 
