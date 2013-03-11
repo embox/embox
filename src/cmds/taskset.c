@@ -34,8 +34,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(1, argv, "ph"))) {
-		printf("\n");
+	while (-1 != (opt = getopt(argc, argv, "ph"))) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
@@ -44,25 +43,27 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return ENOERR;
 		case 'p':
-			break;
+			tid = atoi(argv[argc - 1]);
+			task = task_table_get(tid);
+
+			if (task == NULL) {
+				return -ENOENT;
+			}
+
+			printf("tid %d's current affinity mask: %x\n", tid, (~task->naffinity));
+
+			if (argc == 4) {
+				task->naffinity = ~(strtol(argv[argc - 2], NULL, 16));
+				printf("tid %d's new affinity mask: %x\n", tid, (~task->naffinity));
+			}
+
+			return ENOERR;
 		default:
+			print_usage();
 			return -EINVAL;
 		}
 	}
 
-	tid = atoi(argv[argc - 1]);
-	task = task_table_get(tid);
-
-	if (task == NULL) {
-		return -EINVAL;
-	}
-
-	printf("tid %d's current affinity mask: %x\n", tid, (~task->naffinity));
-
-	if (argc == 4) {
-		task->naffinity = ~(strtol(argv[argc - 2], NULL, 16));
-		printf("tid %d's new affinity mask: %x\n", tid, (~task->naffinity));
-	}
-
-	return 0;
+	print_usage();
+	return -EINVAL;
 }
