@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
@@ -226,6 +227,40 @@ static void *task_trampoline(void *arg) {
 	panic("Returning from task_trampoline()");
 
 	return res;
+}
+
+int task_set_priority(struct task *task, short prior) {
+	int ret;
+	thread_priority_t thread_prior;
+	struct thread *thread, *next;
+	short old_prior;
+
+	assert(task);
+
+	old_prior = task->priority;
+
+//	sched_lock();
+	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
+		/* get old priority */
+		task->priority = old_prior;
+		thread_prior = thread_get_priority(thread);
+
+		/* set new priority */
+		task->priority = prior;
+		ret = thread_set_priority(thread, thread_prior);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
+	task->priority = prior;
+
+	return 0;
+}
+
+short task_get_priority(struct task *task) {
+	assert(task);
+	return task->priority;
 }
 
 int unit_init(void) {
