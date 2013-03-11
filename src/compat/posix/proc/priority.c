@@ -60,7 +60,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->tid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
@@ -69,7 +70,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->u_area->regid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
@@ -78,7 +80,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->u_area->reuid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
