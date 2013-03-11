@@ -12,14 +12,15 @@ package embox.cmd
 		OPTIONS
 			-h	print help message
 			-n N
-				add N to the niceness
+				add N to the niceness (default 10)
 		AUTHORS
 			Ilia Vaprol
 	''')
 module nice {
 	source "nice.c"
 
-	depends embox.compat.posix.proc.nice
+	depends embox.compat.posix.proc.priority
 	depends embox.lib.LibC
 	depends embox.framework.cmd
+	depends embox.framework.LibFramework
 }
