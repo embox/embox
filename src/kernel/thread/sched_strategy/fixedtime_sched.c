@@ -11,6 +11,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+#include <kernel/task.h>
 
 #include <stdio.h>
 
@@ -25,7 +26,8 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 }
 
 static inline uint32_t thread_timeslice(struct thread *thread) {
-	return MSEC_PRIORITY_MULTIPLIER * thread->priority;
+	return MSEC_PRIORITY_MULTIPLIER * thread->priority
+			* (thread->task->priority - TASK_PRIORITY_MIN);
 }
 
 void runq_init(struct runq *runq, struct thread *current, struct thread *idle) {
