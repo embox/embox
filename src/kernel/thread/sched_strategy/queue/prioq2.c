@@ -43,7 +43,7 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
 #ifdef SMP
 			/* Checking the affinity */
-			if ((~t->task->affinity) | (cpu_get_id())) {
+			if ((~t->task->naffinity) | (cpu_get_id())) {
 				thread = t;
 			}
 #else

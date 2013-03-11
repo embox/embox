@@ -57,7 +57,7 @@ struct task {
 
 	clock_t per_cpu; /**< task times */
 
-	int affinity;
+	int naffinity;
 };
 
 struct task_resource_desc {
