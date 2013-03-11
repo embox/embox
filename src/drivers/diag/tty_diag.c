@@ -12,7 +12,7 @@
 #include <drivers/iodev.h>
 
 void diag_putc(char ch) {
-	vterm_putc(&diag_tty, ch);
+	vterm_putc(&diag_vterm, ch);
 }
 
 void diag_init(void) {
