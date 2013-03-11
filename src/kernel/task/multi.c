@@ -230,31 +230,10 @@ static void *task_trampoline(void *arg) {
 }
 
 int task_set_priority(struct task *task, short prior) {
-	int ret;
-	thread_priority_t thread_prior;
-	struct thread *thread, *next;
-	short old_prior;
-
 	assert(task);
 
 	if ((prior < TASK_PRIORITY_MIN) || (prior > TASK_PRIORITY_MAX)) {
 		return -EINVAL;
-	}
-
-	old_prior = task->priority;
-
-//	sched_lock();
-	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-		/* get old priority */
-		task->priority = old_prior;
-		thread_prior = thread_get_priority(thread);
-
-		/* set new priority */
-		task->priority = prior;
-		ret = thread_set_priority(thread, thread_prior);
-		if (ret != 0) {
-			return ret;
-		}
 	}
 
 	task->priority = prior;

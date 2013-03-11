@@ -29,7 +29,7 @@ void runq_queue_init(runq_queue_t *queue) {
 }
 
 void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched.link, &queue->list[thread->priority * \
+	dlist_add_prev(&thread->sched.link, &queue->list[thread->priority *
 		(thread->task->priority - TASK_PRIORITY_MIN)]);
 }
 
