@@ -3,7 +3,7 @@
  * @brief
  *
  * @date 08.02.13
- * @author Ilia Vaprol
+ * @author Ilia Vaprol, Vita Loginova
  */
 
 #include <stddef.h>
@@ -30,16 +30,12 @@ static void vterm_scroll(struct vterm *t, short delta) {
 	t->back_cy -= delta;
 }
 
-static void vterm_clearxy(struct vterm *t, int x, int y, int tx, int ty) {
-	if (!t || !t->ops || !t->ops->clear) {
-		return;
-	}
-
-	t->ops->clear(t, x, y, tx, ty);
-}
-
 void vterm_clear(struct vterm *t) {
-	vterm_clearxy(t, 0, 0, t->width, t->height);
+	if (!t || !t->ops || !t->ops->clear_rows) {
+			return;
+		}
+
+	t->ops->clear_rows(t, 0, t->height);
 }
 
 void vterm_cursor(struct vterm *t) {
@@ -108,7 +104,17 @@ static void execute_printable(struct vterm *t, char ch) {
 	}
 }
 
+static void erase_line_part(struct vterm *t, unsigned short column, unsigned short chars){
+	for (int i = column; i < column + chars; i++){
+		t->ops->putc(t, ' ', column, t->cur_y);
+	}
+}
+
 static void execute_token(struct vterm *t, struct vtesc_token *token) {
+	if (!t || !t->ops || !t->ops->clear_rows) {
+			return;
+		}
+
 	switch (token->type) {
 	case VTESC_CHARACTER:
 		execute_printable(t, token->ch);
@@ -124,33 +130,35 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 	case VTESC_ERASE_DATA:
 		switch (token->params.erase.n) {
 		default:
-		case 0:
-			t->ops->clear(t, 0, t->cur_y, t->width, t->height - t->cur_y);
+		case 0: /* from cursor to end of the screen */
+			erase_line_part(t, t->cur_x, t->width - t->cur_x);
+			t->ops->clear_rows(t, t->cur_y + 1, t->height - t->cur_y - 1);
 			break;
-		case 1:
-			t->ops->clear(t, 0, 0, t->width, t->cur_y);
+		case 1: /* from cursor to beginning of the screen */
+			erase_line_part(t, 0, t->cur_x);
+			t->ops->clear_rows(t, 0, t->cur_y - 1);
 			break;
-		case 2:
-			t->ops->clear(t, 0, 0, t->width, t->height);
+		case 2: /* entire screen */
+			t->ops->clear_rows(t, 0, t->height);
 			break;
 		}
 		break;
 	case VTESC_ERASE_LINE:
 		switch (token->params.erase.n) {
 		default:
-		case 0:
-			t->ops->clear(t, t->cur_x, t->cur_y, t->width - t->cur_x, 1);
+		case 0: /* from cursor to end of the line */
+			erase_line_part(t, t->cur_x, t->width - t->cur_x);
 			break;
-		case 1:
-			t->ops->clear(t, 0, t->cur_y, t->cur_x, 1);
+		case 1: /* from cursor to beginning of the line */
+			erase_line_part(t, 0, t->cur_x);
 			break;
-		case 2:
-			t->ops->clear(t, 0, t->cur_y, t->width, 1);
+		case 2: /* entire line */
+			t->ops->clear_rows(t, t->cur_y, 1);
 			break;
 		}
 		break;
-	case VTESC_ERASE_CHARASTER:
-		t->ops->clear(t, t->cur_x, t->cur_y, token->params.erase.n, 1);
+	case VTESC_ERASE_CHARACTER:
+		erase_line_part(t, t->cur_x, token->params.erase.n);
 		break;
 	case VTESC_SET_SGR: //TODO
 		break;

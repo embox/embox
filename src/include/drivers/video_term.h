@@ -3,7 +3,7 @@
  * @brief
  *
  * @date 08.02.13
- * @author Ilia Vaprol
+ * @author Ilia Vaprol, Vita Loginova
  */
 
 #ifndef DRIVERS_VIDEO_VTERM_H_
@@ -21,8 +21,6 @@ struct vterm_ops {
 	void (*putc)(struct vterm *t, char ch, unsigned short x, unsigned short y);
 	void (*clear_rows)(struct vterm *t, short row, unsigned short count);
 	void (*copy_rows)(struct vterm *t, unsigned short to, unsigned short from, short nrows);
-	void (*clear)(struct vterm *t, unsigned short x, unsigned short y,
-			unsigned short width, unsigned short height);
 };
 
 struct vterm {

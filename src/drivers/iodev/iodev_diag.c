@@ -75,33 +75,11 @@ static void diag_vterm_copy_rows(struct vterm *t,
 			sizeof(data->video[0]) * nrows * t->width);
 }
 
-static void diag_vterm_clear(struct vterm *t, unsigned short x, unsigned short y,
-		unsigned short width, unsigned short height) {
-        uint32_t i, j;
-        struct diag_vterm_data *data;
-
-        data = (struct diag_vterm_data *) t->data;
-
-        width = x + width > t->width ? t->width - x : width;
-        height = y + height > t->height ? t->height - y : height;
-
-        if ((width == 0) || (height == 0))
-                return;
-
-        for (i = x; i < x + width; ++i) {
-                for (j = y; j < y + height; ++j) {
-                        data->video[i + j * t->width] =
-                                        (vchar_t) {.c = 0x20, .a = data->attr};
-                }
-        }
-}
-
 static const struct vterm_ops diag_tty_ops = {
 		.init = &diag_vterm_init,
 		.cursor = &diag_vterm_cursor,
 		.putc = &diag_vterm_putc,
 		.clear_rows = &diag_vterm_clear_rows,
-		.clear = &diag_vterm_clear,
 		.copy_rows = &diag_vterm_copy_rows
 };
 

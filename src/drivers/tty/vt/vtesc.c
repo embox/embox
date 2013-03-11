@@ -36,7 +36,7 @@ static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 			executor->token.type = VTESC_SET_SGR;
 			break; //TODO
 		case 'X': //clear n characters
-			executor->token.type = VTESC_ERASE_CHARASTER;
+			executor->token.type = VTESC_ERASE_CHARACTER;
 			executor->token.params.erase.n = params[0];
 			break;
 		case 'K': //Clear line from cursor right
