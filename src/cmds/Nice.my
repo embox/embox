@@ -19,6 +19,7 @@ package embox.cmd
 module nice {
 	source "nice.c"
 
+	depends embox.compat.posix.proc.nice
 	depends embox.lib.LibC
 	depends embox.framework.cmd
 }

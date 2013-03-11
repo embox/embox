@@ -54,5 +54,9 @@ static int exec(int argc, char **argv) {
 		return -ENOENT;
 	}
 
+	if (nice(n + niceness) == -1) {
+		return -errno;
+	}
+
 	return cmd_exec(cmd, argc - i, argv + i);
 }

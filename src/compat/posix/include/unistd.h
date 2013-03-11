@@ -57,6 +57,8 @@ extern int fsync(int);
 
 extern pid_t fork(void);
 
+extern int nice(int incr);
+
 extern int execv(const char *path, char *const argv[]);
 extern int execve(const char *filename, char *const argv[], char *const envp[]);
 

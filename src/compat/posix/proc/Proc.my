@@ -8,7 +8,8 @@ module All {
 		wait,
 		signal,
 		exit,
-		uid
+		uid,
+		nice
 }
 
 static module exec {
@@ -46,4 +47,8 @@ static module uid {
 	source "uid.c"
 
 	depends embox.kernel.task.u_area
+}
+
+static module nice {
+	source "nice.c"
 }
