@@ -27,10 +27,11 @@ static int exec(int argc, char **argv) {
 
 	i = 1;
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "hn:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hn:"))
+			&& opt != '?') {
 		switch (opt) {
 		default:
-			goto after_opt_parse;
+			return -EINVAL;
 		case 'h':
 			printf("Usage: nice [-n <N>] <command> [args]\n");
 			return 0;
@@ -42,7 +43,6 @@ static int exec(int argc, char **argv) {
 			break;
 		}
 	}
-after_opt_parse:
 
 	if (i >= argc) {
 		return -EINVAL;

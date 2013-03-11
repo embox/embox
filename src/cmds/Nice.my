@@ -6,7 +6,7 @@ package embox.cmd
 		NAME
 			nice - run a program with modified scheduling priority.
 		SYNOPSIS
-			nice [-h] [-n <N>] <command> [args]]
+			nice [-h] [-n <N>] <command> [args]
 		DESCRIPTION
 			run a program with modified scheduling priority.
 		OPTIONS
