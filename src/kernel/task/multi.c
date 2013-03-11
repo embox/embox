@@ -237,6 +237,10 @@ int task_set_priority(struct task *task, short prior) {
 
 	assert(task);
 
+	if ((prior < TASK_PRIORITY_MIN) || (prior > TASK_PRIORITY_MAX)) {
+		return -EINVAL;
+	}
+
 	old_prior = task->priority;
 
 //	sched_lock();
