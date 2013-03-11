@@ -1,0 +1,24 @@
+package embox.cmd
+
+@Cmd(name = "nice",
+	help = "run a program with modified scheduling priority.",
+	man = '''
+		NAME
+			nice - run a program with modified scheduling priority.
+		SYNOPSIS
+			nice [-h] [-n <N>] <command> [args]]
+		DESCRIPTION
+			run a program with modified scheduling priority.
+		OPTIONS
+			-h	print help message
+			-n N
+				add N to the niceness
+		AUTHORS
+			Ilia Vaprol
+	''')
+module nice {
+	source "nice.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.cmd
+}
