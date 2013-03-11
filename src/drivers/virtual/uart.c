@@ -68,6 +68,19 @@ static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	return 0;
 }
 
+static void uart_tx_start(struct tty *tty) {
+
+}
+
+static void uart_term_setup(struct tty *tty, struct termios *termios) {
+
+}
+
+static struct tty_ops uart_tty_ops = {
+		.setup = uart_term_setup,
+		.tx_start = uart_tx_start
+};
+
 /*
  * file_operations
  */
@@ -78,6 +91,7 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 //	if(NULL == uart_dev || uart_dev->fops) {
 //		return -1;
 //	}
+	tty_init(&uart_dev->tty, &uart_tty_ops);
 
 	if(uart_dev->operations->setup) {
 		uart_dev->operations->setup(uart_dev, uart_dev->params);
@@ -99,8 +113,10 @@ static int dev_uart_close(struct file_desc *desc) {
 	return 0;
 }
 
+
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+
 
 	return tty_read(&dev->tty, (char *) buff, size);
 #if 0
