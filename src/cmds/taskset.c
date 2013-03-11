@@ -2,7 +2,7 @@
  * @file
  * @brief
  *
- * @date 25.02.2012
+ * @date 11.03.2013
  * @author Anton Bulychev
  */
 
@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <assert.h>
 #include <stdlib.h>
 
 #include <kernel/task.h>
