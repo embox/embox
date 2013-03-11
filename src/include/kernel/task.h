@@ -17,6 +17,12 @@
 
 #define MAX_TASK_NAME_LEN 20
 
+#define TASK_PRIORITY_DEFAULT   0
+#define TASK_PRIORITY_MIN     -20
+#define TASK_PRIORITY_MAX      19
+#define TASK_PRIORITY_TOTAL \
+	(TASK_PRIORITY_MAX - TASK_PRIORITY_MIN + 1)
+
 __BEGIN_DECLS
 
 struct task_signal_table;
@@ -51,11 +57,15 @@ struct task {
 
 	struct task_u_area *u_area;
 
+	short priority; /**< @brief Task priority */
+
 	void   *security;
 
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
+
+	int naffinity;
 };
 
 struct task_resource_desc {
@@ -98,6 +108,9 @@ extern struct task *task_self(void);
 static inline int task_getid(void) {
 	return task_self()->tid;
 }
+
+extern int task_set_priority(struct task *task, short prior);
+extern short task_get_priority(struct task *task);
 
 static inline void *task_self_security(void) {
 	return task_self()->security;

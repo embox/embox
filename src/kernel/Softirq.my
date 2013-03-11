@@ -4,4 +4,5 @@ module softirq {
 	option number nrs_total = 32
 	source "softirq.c"
 	@NoRuntime depends critical
+	@NoRuntime depends embox.util.Bit
 }

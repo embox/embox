@@ -43,6 +43,8 @@ typedef struct {
 
 typedef long time_t;
 
+typedef int id_t;
+
 typedef int pid_t;
 
 typedef int dev_t;

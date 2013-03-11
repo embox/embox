@@ -170,7 +170,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 
 	/* Should we send ICMP redirect */
 	if (skb->dev == best_route->dev) {
-		struct sk_buff *s_new = skb_duplicate(skb);
+		struct sk_buff *s_new = skb_share(skb, SKB_SHARE_NO);
 		if (s_new) {
 			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
 					  best_route->rt_gateway);

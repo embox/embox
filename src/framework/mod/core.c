@@ -137,24 +137,26 @@ static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_
 	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 
 	if (!op && (ret = mod_traverse_do(after_deps, op, 1))) {
-		return ret;
+		goto out;
 	}
 
 	if ((ret = mod_traverse_do(deps, op, 0))) {
-		return ret;
+		goto out;
 	}
 
 	if ((ret = (op ? do_enable(mod) : do_disable(mod)))) {
-		return ret;
+		goto out;
 	}
 
-	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 
 	if ((ret = mod_traverse_do(after_deps, op, 1))) {
-		return ret;
+		goto out;
 	}
 
-	return 0;
+	ret = 0;
+out:
+	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
+	return ret;
 }
 
 static int mod_traverse(const struct mod *mod, bool op) {

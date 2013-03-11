@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <string.h>
@@ -46,13 +45,13 @@ static int exec(int argc, char **argv) {
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
 				printf("arping: unknown iface %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
 				printf("arping: bad number of packets to transmit.\n");
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case '?':
@@ -74,7 +73,7 @@ static int exec(int argc, char **argv) {
 	/* Get destination address. */
 	if (0 == inet_aton(argv[argc - 1], &dst)) {
 		printf("arping: invalid IP address: %s\n", argv[argc - 1]);
-		return -1;
+		return -EINVAL;
 	}
 
 	strncpy(dst_b, inet_ntoa(dst), sizeof(dst_b));

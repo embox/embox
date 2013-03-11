@@ -26,10 +26,6 @@ char *crypt(const char *key, const char *salt) {
 	return embox_passwd.pw_passwd;
 }
 
-struct passwd *getpwuid(uid_t uid) {
-	return &embox_passwd;
-}
-
 int gethostname(char *name, size_t len) {
 	name = embox_passwd.pw_name;
 	return 0;

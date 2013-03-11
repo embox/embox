@@ -419,7 +419,7 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 
-	res = irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k");
+	res = irq_attach(pci_dev->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
 	if (res < 0) {
 		return res;
 	}

@@ -59,7 +59,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return 0;
 		default:
-			return -1;
+			return -EINVAL;
 		}
 	}
 

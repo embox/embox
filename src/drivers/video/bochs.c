@@ -5,12 +5,13 @@
  * @author Ilia Vaprol
  */
 
+#include <errno.h>
+#include <string.h>
 #include <assert.h>
 #include <drivers/pci/pci.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
 #include <drivers/video/vesa_modes.h>
-#include <errno.h>
 #include <framework/mod/options.h>
 
 #define MODOPS_DEFAULT_MODE OPTION_GET(NUMBER, default_mode)
@@ -49,11 +50,23 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 	.name = "Bochs framebuffer"
 };
 
+static void fill_var(struct fb_var_screeninfo *var) {
+
+	memset(var, 0, sizeof(struct fb_var_screeninfo));
+
+	var->xres           = vbe_read(VBE_DISPI_INDEX_XRES);
+	var->yres           = vbe_read(VBE_DISPI_INDEX_YRES);
+	var->bits_per_pixel = vbe_read(VBE_DISPI_INDEX_BPP);
+	var->xres_virtual   = vbe_read(VBE_DISPI_INDEX_VIRT_WIDTH);
+	var->yres_virtual   = vbe_read(VBE_DISPI_INDEX_VIRT_HEIGHT);
+	var->xoffset        = vbe_read(VBE_DISPI_INDEX_X_OFFSET);
+	var->yoffset        = vbe_read(VBE_DISPI_INDEX_Y_OFFSET);
+
+}
+
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	int ret;
 	struct fb_info *info;
-	const struct video_resbpp *resbpp;
-	const struct fb_videomode *mode;
 
 	assert(pci_dev != NULL);
 
@@ -63,27 +76,10 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 	}
 
 	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
+	fill_var(&info->var);
 
 	info->ops = &bochs_ops;
 	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-
-	resbpp = video_resbpp_by_vesamode(MODOPS_DEFAULT_MODE);
-	if (resbpp == NULL) {
-		fb_release(info);
-		return -EINVAL;
-	}
-
-	mode = video_fbmode_by_resbpp(resbpp);
-	if (mode == NULL) {
-		fb_release(info);
-		return -EINVAL;
-	}
-
-	ret = fb_try_mode(&info->var, info, mode, resbpp->bpp);
-	if (ret != 0) {
-		fb_release(info);
-		return ret;
-	}
 
 	ret = fb_register(info);
 	if (ret != 0) {

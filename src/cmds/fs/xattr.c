@@ -178,7 +178,7 @@ static int xattr_do_operation(const char *path, const char *name,
 		goto free_list;
 	}
 
-	return -1;
+	return -EINVAL;
 	free_list:page_free(__phymem_allocator, list,
 			XATTR_MAX_BSIZE / PAGE_SIZE() + 1);
 	if (0 != rc) {

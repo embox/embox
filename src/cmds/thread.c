@@ -18,6 +18,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/state.h>
 #include <kernel/task.h>
+#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -95,7 +96,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc <= 1) {
 		print_usage();
-		return -1;
+		return -EINVAL;
 	}
 
 	getopt_init();

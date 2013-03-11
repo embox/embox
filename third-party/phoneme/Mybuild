@@ -1,6 +1,5 @@
 package third_party.phoneme
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 module core {
 	depends embox.lib.LibC
 	depends embox.lib.cxx.lib
@@ -14,8 +13,11 @@ abstract module cldc {
 	@Rule(prerequisites="$(ROOT_DIR)/build/phoneme/build/amalgamated/bin/hello/dist/hello.jar")
 	source "hello.jar"
 	*/
+
+	source "core.c"
+
 	@InitFS
-	source "hello/hello.jar"
+	source "hello.jar" /* XXX bug in initfs. IT must be hello/hello.jar */
 
 	depends third_party.phoneme.core // this is to build hello.jar
 }
@@ -28,10 +30,15 @@ module cldc_standalone extends cldc {
 	source "cldc_standalone.c"
 	*/
 
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source "../../../../phoneme/build/amalgamated/lib/phoneme_cldc.a"
+
     depends third_party.phoneme.core
 }
 
 module midp extends cldc {
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source "../../../../phoneme/build/amalgamated/lib/phoneme_midp.a"
 	depends third_party.phoneme.core
 }
 

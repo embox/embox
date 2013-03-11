@@ -508,7 +508,7 @@ static int exec(int argc, char **argv) {
 		case '?':
 			fprintf(stderr, "%s: error: unrecognized option '%c`\n", argv[0], (char)optopt);
 			fprintf(stderr, "Try -h for more information\n");
-			return -1;
+			return -EINVAL;
 		case 'h':
 			fprintf(stdout, "Usage: %s [-hab] -[g|p] files destination\n", argv[0]);
 			return 0;
@@ -517,7 +517,7 @@ static int exec(int argc, char **argv) {
 			if (param_ascii || param_binary) {
 				fprintf(stderr, "%s: error: already using %s mode to transfer files\n",
 						argv[0], get_transfer_mode(!param_ascii));
-				return -1;
+				return -EINVAL;
 			}
 			*(ret == 'a' ? &param_ascii : &param_binary) = 1;
 			break;
@@ -526,7 +526,7 @@ static int exec(int argc, char **argv) {
 			if (param_get || param_put) {
 				fprintf(stderr, "%s: error: %s mode already was selected\n",
 						argv[0], param_get ? "forwarding" : "receiving");
-				return -1;
+				return -EINVAL;
 			}
 			*(ret == 'g' ? &param_get : &param_put) = 1;
 			break;
@@ -541,14 +541,14 @@ static int exec(int argc, char **argv) {
 	/* Check action flags */
 	if (!param_get && !param_put) {
 		fprintf(stderr, "%s: error: please specify action on files\n", argv[0]);
-		return -1;
+		return -EINVAL;
 	}
 
 	/* Check presence of files names and address of remote machine */
 	if (argc - (--optind) < 2) {
 		fprintf(stderr, "%s: erorr: please specify at least one file and address of remote host\n",
 				argv[0]);
-		return -1;
+		return -EINVAL;
 	}
 
 	/* Handling */

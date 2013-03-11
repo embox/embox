@@ -6,13 +6,14 @@
  * @author Ilia Vaprol
  */
 
-#ifndef COMPAT_POSIX_CURSES_H_
-#define COMPAT_POSIX_CURSES_H_
+#ifndef CURSES_H_
+#define CURSES_H_
 
 #include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 __BEGIN_DECLS
 
@@ -22,41 +23,87 @@ __BEGIN_DECLS
 #define OK   0
 #define ERR -1
 
-typedef int WINDOW;
 typedef unsigned long chtype;
+typedef unsigned long attr_t;
+
+typedef struct window {
+	uint16_t cury, curx; /* cursor position */
+	uint16_t begy, begx; /* left upper window corner */
+	uint16_t endy, endx; /* right lower window corner */
+	struct window *parent;
+	attr_t attrs;
+	chtype bkgd;         /* background color */
+	chtype *lines;
+	bool scrollok;       /* may scroll */
+	bool clearok;        /* clear screen on next refresh */
+} WINDOW;
+
 typedef unsigned long mmask_t;
+
 extern int COLS;
 extern int LINES;
 extern WINDOW *curscr;
+extern WINDOW *stdscr;
 
-static inline int beep(void) { return 0; }
-static inline int wrefresh(WINDOW *win) { return 0; }
-static inline int endwin(void) { return 0; }
-static inline int delwin(WINDOW *win) { return 0; }
-static inline WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x) { return NULL; }
-static inline int keypad(WINDOW *win, bool bf) { return 0; }
-static inline int doupdate(void) { return 0; }
-static inline int move(int y, int x) { return 0; }
-static inline int curs_set(int visibility) { return 0; }
-static inline int wnoutrefresh(WINDOW *win) { return 0; }
-static inline int raw(void) { return 0; }
-static inline int nonl(void) { return 0; }
-static inline int noecho(void) { return 0; }
-static inline WINDOW *initscr(void) { return NULL; }
-static inline int wmove(WINDOW *win, int y, int x) { return 0; }
-static inline int wattron(WINDOW *win, int attrs) { return 0; }
-static inline int mvwaddnstr(WINDOW *win, int y, int x, const char *str, int n) { return 0; }
-static inline int waddch(WINDOW *win, const chtype ch) { return 0; }
-static inline int waddstr(WINDOW *win, const char *str) { return 0; }
-static inline int wattroff(WINDOW *win, int attrs) { return 0; }
-static inline int wgetch(WINDOW *win) { return 0; }
-static inline int nodelay(WINDOW *win, bool bf) { return 0; }
-static inline int waddnstr(WINDOW *win, const char *str, int n) { return 0; }
-static inline bool isendwin(void) { return TRUE; }
-static inline int mvwaddstr(WINDOW *win, int y, int x, const char *str) { return 0; }
-static inline int mvwaddch(WINDOW *win, int y, int x, const chtype ch) { return 0; }
-static inline int scrollok(WINDOW *win, bool bf) { return 0; }
-static inline int wscrl(WINDOW *win, int n) { return 0; }
+extern WINDOW * initscr(void);
+extern WINDOW * newwin(int nlines, int ncols, int begin_y,
+		int begin_x);
+extern WINDOW * subwin(WINDOW *orig, int nlines, int ncols,
+		int begin_y, int begin_x);
+extern WINDOW * derwin(WINDOW *orig, int nlines, int ncols,
+		int begin_y, int begin_x);
+extern int delwin(WINDOW *win);
+extern int doupdate(void);
+extern int refresh(void);
+extern int wnoutrefresh(WINDOW *win);
+extern int wrefresh(WINDOW *win);
+extern int move(int y, int x);
+extern int wmove(WINDOW *win, int y, int x);
+extern int addch(const chtype ch);
+extern int mvaddch(int y, int x, const chtype ch);
+extern int mvwaddch(WINDOW *win, int y, int x, const chtype ch);
+extern int waddch(WINDOW *win, const chtype ch);
+extern int addnstr(const char *str, int n);
+extern int addstr(const char *str);
+extern int mvaddnstr(int y, int x, const char *str, int n);
+extern int mvaddstr(int y, int x, const char *str);
+extern int mvwaddnstr(WINDOW *win, int y, int x, const char *str, int n);
+extern int mvwaddstr(WINDOW *win, int y, int x, const char *str);
+extern int waddnstr(WINDOW *win, const char *str, int n);
+extern int waddstr(WINDOW *win, const char *str);
+extern int scrl(int n);
+extern int scroll(WINDOW *win);
+extern int wscrl(WINDOW *win, int n);
+extern int scrollok(WINDOW *win, bool bf);
+extern int clearok(WINDOW *win, bool bf);
+extern int clear(void);
+extern int erase(void);
+extern int wclear(WINDOW *win);
+extern int werase(WINDOW *win);
+extern int attroff(int attrs);
+extern int attron(int attrs);
+extern int attrset(int attrs);
+extern int wattroff(WINDOW *win, int attrs);
+extern int wattron(WINDOW *win, int attrs);
+extern int wattrset(WINDOW *win, int attrs);
+extern int insch(chtype ch);
+extern int mvinsch(int y, int x, chtype ch);
+extern int mvwinsch(WINDOW *win, int y, int x, chtype ch);
+extern int winsch(WINDOW *win, chtype ch);
+extern int delch(void);
+extern int mvdelch(int y, int x);
+extern int mvwdelch(WINDOW *win, int y, int x);
+extern int wdelch(WINDOW *win);
+extern int getch(void);
+extern int mvgetch(int y, int x);
+extern int mvwgetch(WINDOW *win, int y, int x);
+extern int wgetch(WINDOW *win);
+extern int bkgd(chtype ch);
+extern void bkgdset(chtype ch);
+extern chtype getbkgd(WINDOW *win);
+extern int wbkgd(WINDOW *win, chtype ch);
+extern void wbkgdset(WINDOW *win, chtype ch);
+
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */
@@ -156,4 +203,4 @@ static inline int wscrl(WINDOW *win, int n) { return 0; }
 
 __END_DECLS
 
-#endif /* COMPAT_POSIX_CURSES_H_ */
+#endif /* CURSES_H_ */

@@ -98,7 +98,7 @@ int raw_rcv(struct sk_buff *skb) {
 	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
 		sk = (struct sock *)raw_table[i];
 		if ((sk != NULL) && (sk->sk_protocol == skb->nh.iph->proto)) {
-			cloned = skb_duplicate(skb); // TODO without skb_clone()
+			cloned = skb_share(skb, SKB_SHARE_DATA); // TODO without skb_clone()
 			if (cloned == NULL) {
 				continue;
 				//return -ENOMEM;

@@ -168,12 +168,16 @@ extern void skb_shifthead(struct sk_buff *skb, int headshift);
 extern struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size);
 #endif
 
+#define SKB_SHARE_NO   0 /* make full copy of skb */
+#define SKB_SHARE_DATA 1 /* make skb copy with shared data */
+#define SKB_SHARE_ALL  2 /* make shared skb */
+
 /**
  * sk_buff duplicate it used as we want to queue sk_buff in several queue
  * In current implementation we don't have shared area for packets data,
  * so copy and clone are the same.
  */
-extern struct sk_buff *skb_duplicate(struct sk_buff *skb);
+extern struct sk_buff *skb_share(struct sk_buff *skb, int share);
 
 /**
  * Create copy of skb

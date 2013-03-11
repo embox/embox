@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <framework/mod/api.h>
+#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -47,7 +48,7 @@ static int exec(int argc, char **argv) {
 		case '?':
 			break;
 		default:
-			return -1;
+			return -EINVAL;
 		}
 	}
 

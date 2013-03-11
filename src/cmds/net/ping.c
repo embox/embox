@@ -77,7 +77,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 
 	if (rx_pack == NULL) {
 		printf("packet allocate fail");
-		return -1;
+		return -ENOMEM;
 
 	}
 	start = clock();
@@ -123,7 +123,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 	if (tx_pack == NULL) {
 		printf("packet allocate fail");
-		return -1;
+		return -ENOMEM;
 
 	}
 	cnt_resp = 0; cnt_err = 0;
@@ -151,7 +151,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	if (sk < 0) {
 		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
-		return -1;
+		return -errno;
 	}
 
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
@@ -229,7 +229,7 @@ static int exec(int argc, char **argv) {
 				in_dev = inet_dev_find_by_name(optarg);
 				if (NULL == in_dev) {
 					printf("ping: unknown Iface %s\n", optarg);
-					return -1;
+					return -EINVAL;
 				}
 				iface_set = 1; /* now it is set */
 			} else
@@ -242,7 +242,7 @@ static int exec(int argc, char **argv) {
 			if (!cnt_set) {
 				if ((sscanf(optarg, "%d", &pinfo.count) != 1) || (pinfo.count < 1)) {
 					printf("ping: bad number of packets to transmit\n");
-					return -1;
+					return -EINVAL;
 				}
 				cnt_set = 1;
 			} else
@@ -253,7 +253,7 @@ static int exec(int argc, char **argv) {
 			if (!ttl_set) {
 				if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
 					printf("ping: can't set unicast time-to-live: Invalid argument\n");
-					return -1;
+					return -EINVAL;
 				}
 				ttl_set = 1;
 			} else
@@ -265,7 +265,7 @@ static int exec(int argc, char **argv) {
 				if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
 						|| (pinfo.timeout < 0)) {
 					printf("ping: bad linger time\n");
-					return -1;
+					return -EINVAL;
 				}
 				tout_set = 1;
 			} else
@@ -277,7 +277,7 @@ static int exec(int argc, char **argv) {
 				if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
 						|| (pinfo.padding_size < 0)) {
 					printf("ping: bad padding size\n");
-					return -1;
+					return -EINVAL;
 				}
 				psize_set = 1;
 			} else
@@ -292,7 +292,7 @@ static int exec(int argc, char **argv) {
 				if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
 						(pinfo.interval < 0)) {
 					printf("ping: bad timing interval.\n");
-					return -1;
+					return -EINVAL;
 				}
 				int_set = 1;
 			} else
@@ -303,7 +303,7 @@ static int exec(int argc, char **argv) {
 			if (!pat_set) {
 				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
 					printf("ping: patterns must be specified as hex digits.\n");
-					return -1;
+					return -EINVAL;
 				}
 				pat_set = 1;
 			} else
@@ -319,7 +319,7 @@ static int exec(int argc, char **argv) {
 				if (NULL == he) {
 					printf("%s: %s %s\n",
 					    argv[0], hstrerror(h_errno), argv[i_opt + 1]);
-					return -1;
+					return -EINVAL;
 				}
 				hostname = argv[i_opt + 1];
 				pinfo.dst.s_addr = ((struct in_addr *)he->h_addr_list[0])->s_addr;
@@ -337,7 +337,7 @@ static int exec(int argc, char **argv) {
 		}
 		if (duplicate) { /* inform about duplicate options */
 			printf("ping: duplicate option '%c'\n", (char)opt);
-			return -1;
+			return -EINVAL;
 		}
 	}
 
