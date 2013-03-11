@@ -120,22 +120,23 @@ static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	}
 }
 
-struct sk_buff * skb_duplicate(struct sk_buff *skb) {
-	struct sk_buff *duplicate;
+struct sk_buff * skb_share(struct sk_buff *skb, int share) {
+	/* TODO */
+	struct sk_buff *shared;
 
 	assert(skb != NULL);
 
-	duplicate = skb_alloc(skb->len);
-	if (duplicate == NULL) {
+	shared = skb_alloc(skb->len);
+	if (shared == NULL) {
 		return NULL;
 	}
 
-	duplicate->sk = skb->sk;
-	duplicate->dev = skb->dev;
-	duplicate->protocol = skb->protocol;
-	skb_copy_data(duplicate, skb);
+	shared->sk = skb->sk;
+	shared->dev = skb->dev;
+	shared->protocol = skb->protocol;
+	skb_copy_data(shared, skb);
 
-	return duplicate;
+	return shared;
 }
 
 struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {

@@ -239,7 +239,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 }
 
 static int icmp_echo(sk_buff_t *skb) {
-	sk_buff_t *reply = skb_duplicate(skb);	/* We are going to fix the data */
+	sk_buff_t *reply = skb_share(skb, SKB_SHARE_NO);	/* We are going to fix the data */
 
 	if (!likely(reply))
 		return -1;
@@ -270,7 +270,7 @@ static int icmp_timestamp(sk_buff_t *skb) {
 		return -1;
 	}
 
-	if (!likely(reply = skb_duplicate(skb))) 	/* We are going to fix the data */
+	if (!likely(reply = skb_share(skb, SKB_SHARE_NO))) 	/* We are going to fix the data */
 		return -1;
 
 	/* Mark it as a reply */
