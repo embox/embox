@@ -134,7 +134,7 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 	return dev->indev_get(dev, ev);
 }
 
-int input_dev_open(struct input_dev *dev, indev_event_cb *event) {
+int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 	int res;
 
 	if (dev == NULL) {
@@ -160,8 +160,7 @@ int input_dev_close(struct input_dev *dev) {
 	return 0;
 }
 
-#if 0
-static struct input_dev *input_devfs_lookup(char *name) {
+struct input_dev *input_dev_lookup(char *name) {
 	struct input_dev *dev, *nxt;
 
 	dlist_foreach_entry(dev, nxt, &input_devices, global_indev_list) {
@@ -173,6 +172,8 @@ static struct input_dev *input_devfs_lookup(char *name) {
 	return NULL;
 }
 
+
+#if 0
 static int input_devfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct input_dev *dev;
 	struct input_subscriber *hnd;

@@ -66,6 +66,8 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 	uint8_t scan_code, status;
 	int flag = 0;
 
+	event->type = event->value = 0;
+
 	keyboard_wait_read(status);
 
 	scan_code = inb(I8042_DATA_PORT);

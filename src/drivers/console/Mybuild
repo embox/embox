@@ -6,3 +6,9 @@ abstract module mpx {
 module mpx_simple extends mpx {
 	source "mpx_simple.c"
 }
+
+module fbcon {
+	source "fbcon.c"
+
+	depends mpx_simple
+}

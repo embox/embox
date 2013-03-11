@@ -28,8 +28,8 @@ enum input_dev_type {
 
 struct input_dev;
 
-typedef int indev_event_cb(struct input_dev *indev);
-typedef int indev_event_get(struct input_dev *dev, struct input_event *ev);
+typedef int indev_event_cb_t(struct input_dev *indev);
+typedef int indev_event_get_t(struct input_dev *dev, struct input_event *ev);
 
 /*describe input device instance */
 struct input_dev {
@@ -41,8 +41,8 @@ struct input_dev {
 	struct dlist_head global_indev_list; /* global device list */
 	struct dlist_head post_link;
 
-	indev_event_cb *indev_event;
-	indev_event_get *indev_get;
+	indev_event_cb_t *indev_event;
+	indev_event_get_t *indev_get;
 #if 0
 	int (*getc)(void);
 
@@ -70,6 +70,10 @@ extern int input_dev_register(struct input_dev *dev);
 
 extern int input_dev_event(struct input_dev *dev, struct input_event *ev);
 
+extern struct input_dev *input_dev_lookup(char *name);
+
+extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
+extern int input_dev_close(struct input_dev *dev);
 #if 0
 extern void input_dev_inject_event(struct input_dev *dev, struct input_event e);
 
