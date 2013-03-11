@@ -1,0 +1,28 @@
+package embox.cmd
+
+@Cmd(name = "renice",
+	help = "alter priority of running processes.",
+	man = '''
+		NAME
+			renice - alter priority of running processes.
+		SYNOPSIS
+			renice [-h] [-n] priority [[-p] pid ...] [[-g] pgrp ...] [[-u] user ...]
+		DESCRIPTION
+			alter priority of running processes.
+		OPTIONS
+			-h	print help message
+			-n	increase current niceness
+			-p	force who parametrs to be interpreted as process id
+			-g	force who parametrs to be interpreted as group id
+			-u	force who parametrs to be interpreted as user name
+		AUTHORS
+			Ilia Vaprol
+	''')
+module renice {
+	source "renice.c"
+
+	depends embox.compat.posix.proc.priority
+	depends embox.compat.posix.passwd
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
