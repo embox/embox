@@ -23,6 +23,8 @@
 #include <net/socket_registry.h>
 #include <linux/in.h>
 #include <net/etherdevice.h>
+#include <net/netfilter.h>
+#include <kernel/printk.h>
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
@@ -66,6 +68,12 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
+	if (!nf_valid_skb(NF_CHAIN_OUTPUT, skb)) {
+		printk("ip_queue_xmit: skb %p dropped by netfilter\n", skb);
+		skb_free(skb);
+		return 0;
+	}
+
 	skb->protocol = ETH_P_IP;
 	return dev_queue_send(skb);
 }

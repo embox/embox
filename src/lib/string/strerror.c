@@ -44,6 +44,7 @@ char *strerror(int errnum) {
 	case EDEVNOSUPP:   return "Device does not support this operation";
 	case ETIMEDOUT:    return "Connection timed out";
 	case EACCES:       return "Access denied";
+	case EEXIST:       return "File exist";
 	default:           return "Unknown error code. PLEASE REPORT ISSUE 519!";
 	}
 }
