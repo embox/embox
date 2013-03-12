@@ -18,7 +18,9 @@
 struct mutex {
 	struct sleepq sq;
 	struct thread *holder;
+#if 0
 	int priority;
+#endif
 	int lock_count;
 };
 

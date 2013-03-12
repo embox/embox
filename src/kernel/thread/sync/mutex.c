@@ -32,7 +32,9 @@ void mutex_init(struct mutex *m) {
 	sleepq_init(&m->sq);
 	m->lock_count = 0;
 	m->holder = NULL;
+#if 0
 	m->priority = THREAD_PRIORITY_MIN;
+#endif
 }
 
 void mutex_lock(struct mutex *m) {
@@ -89,7 +91,9 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 
 	m->lock_count = 1;
 	m->holder = current;
+#if 0
 	m->priority = current->priority;
+#endif
 
 	return 0;
 }
