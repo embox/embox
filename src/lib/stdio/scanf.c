@@ -122,6 +122,7 @@ static int scan_int(char **in, int base, int widht) {
 
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
+		scanchar(in);
 	} else {
 		dst = 0;
 	}
