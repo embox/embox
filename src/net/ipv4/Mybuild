@@ -135,5 +135,6 @@ module netfilter {
 	source "netfilter.c"
 	option number amount_rules=10
 
+	depends embox.mem.pool
 	depends embox.util.List
 }
