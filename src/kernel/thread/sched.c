@@ -346,34 +346,41 @@ clock_t sched_get_running_time(struct thread *thread) {
 	return thread->running_time;
 }
 
-int sched_change_scheduling_priority(struct thread *t,
-		__thread_priority_t new_priority) {
+int sched_change_scheduling_priority(struct thread *thread,
+		sched_priority_t new_priority) {
+	assert((new_priority >= SCHED_PRIORITY_MIN)
+			&& (new_priority <= SCHED_PRIORITY_MAX));
+
 	sched_lock();
 	{
-		assert(!thread_state_exited(t->state));
+		assert(!thread_state_exited(thread->state));
 
-		if (thread_state_running(t->state)) {
-			post_switch_if(runq_change_priority(t->runq, t, new_priority));
-		} else if (thread_state_sleeping(t->state)) {
-			sleepq_change_priority(t->sleepq, t, new_priority);
+		if (thread_state_running(thread->state)) {
+			post_switch_if(runq_change_priority(thread->runq, thread, new_priority));
+		} else if (thread_state_sleeping(thread->state)) {
+			sleepq_change_priority(thread->sleepq, thread, new_priority);
 		} else {
-			t->priority = new_priority;
+			thread->sched_priority = new_priority;
 		}
 
-		assert(t->priority == new_priority);
+		assert(thread->sched_priority == new_priority);
 	}
 	sched_unlock();
 
 	return 0;
 }
 
-void sched_set_priority(struct thread *t, __thread_priority_t new) {
+void sched_set_priority(struct thread *thread,
+		sched_priority_t new_priority) {
+	assert((new_priority >= SCHED_PRIORITY_MIN)
+			&& (new_priority <= SCHED_PRIORITY_MAX));
+
 	sched_lock();
 	{
-		if (!thread_state_exited(t->state)) {
-			sched_change_scheduling_priority(t, new);
+		if (!thread_state_exited(thread->state)) {
+			sched_change_scheduling_priority(thread, new_priority);
 		}
-		t->initial_priority = new;
+		thread->initial_priority = new_priority;
 	}
 	sched_unlock();
 }

@@ -229,42 +229,37 @@ static void *task_trampoline(void *arg) {
 	return res;
 }
 
-int task_set_priority(struct task *task, short prior) {
-	int ret;
-	thread_priority_t thread_prior;
-	struct thread *thread, *next;
-	short old_prior;
+int task_set_priority(struct task *tsk, task_priority_t new_priority) {
+	struct thread *thread, *tmp;
 
-	assert(task);
+	assert(tsk);
 
-	if ((prior < TASK_PRIORITY_MIN) || (prior > TASK_PRIORITY_MAX)) {
+	if ((new_priority < TASK_PRIORITY_MIN)
+			|| (new_priority > TASK_PRIORITY_MAX)) {
 		return -EINVAL;
 	}
 
-	old_prior = task->priority;
-
-//	sched_lock();
-	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-		/* get old priority */
-		task->priority = old_prior;
-		thread_prior = thread_get_priority(thread);
-
-		/* set new priority */
-		task->priority = prior;
-		ret = thread_set_priority(thread, thread_prior);
-		if (ret != 0) {
-			return ret;
+	sched_lock();
+	{
+		if (tsk->priority == new_priority) {
+			return 0;
 		}
-	}
 
-	task->priority = prior;
+		list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
+			sched_set_priority(thread, get_sched_priority(new_priority,
+						thread->priority));
+		}
+
+		tsk->priority = new_priority;
+	}
+	sched_unlock();
 
 	return 0;
 }
 
-short task_get_priority(struct task *task) {
-	assert(task);
-	return task->priority;
+short task_get_priority(struct task *tsk) {
+	assert(tsk);
+	return tsk->priority;
 }
 
 int unit_init(void) {

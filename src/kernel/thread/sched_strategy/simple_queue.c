@@ -20,6 +20,8 @@
 #include <kernel/cpu.h>
 #include <kernel/time/timer.h>
 
+#include <kernel/task.h>
+
 #include "simple_queue.h"
 
 static void sched_tick(sys_timer_t *timer, void *param);
@@ -75,7 +77,7 @@ int runq_start(struct runq *rq, struct thread *t) {
 
 	runq_queue_insert(&rq->queue, t);
 
-	return (t->priority > current->priority);
+	return t->sched_priority > current->sched_priority;
 }
 
 int runq_finish(struct runq *rq, struct thread *t) {
@@ -110,7 +112,7 @@ int sleepq_wake_thread(struct runq *rq, struct sleepq *sq, struct thread *t) {
 		runq_queue_insert(&rq->queue, t);
 	}
 
-	return (t->priority > current->priority);
+	return t->sched_priority > current->sched_priority;
 }
 
 int sleepq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
@@ -156,21 +158,21 @@ void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	current->state = thread_state_do_sleep(current->state);
 }
 
-int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
+int runq_change_priority(struct runq *rq, struct thread *t, sched_priority_t new_priority) {
 	struct thread *current = thread_self();
 
 	assert(rq && t);
 
 	if (current == t) {
-		t->priority = new_priority;
+		t->sched_priority = new_priority;
 	} else {
 		/* FIXME: */
 		runq_queue_remove(&rq->queue, t);
-		t->priority = new_priority;
+		t->sched_priority = new_priority;
 		runq_queue_insert(&rq->queue, t);
 	}
 
-	return (new_priority > current->priority);
+	return new_priority > current->sched_priority;
 }
 
 struct thread *runq_switch(struct runq *rq) {
@@ -197,12 +199,12 @@ int sleepq_empty(struct sleepq *sq) {
 }
 
 void sleepq_change_priority(struct sleepq *sq, struct thread *t,
-		int new_priority) {
+		sched_priority_t new_priority) {
 	assert(sq && t);
 
 	/* FIXME: */
 	sleepq_queue_remove(&sq->queue, t);
-	t->priority = new_priority;
+	t->sched_priority = new_priority;
 	sleepq_queue_insert(&sq->queue, t);
 }
 

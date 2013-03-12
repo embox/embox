@@ -138,7 +138,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
 	} else {
-		t->priority = THREAD_PRIORITY_TO_GLB(THREAD_PRIORITY_DEFAULT);
+		t->priority = THREAD_PRIORITY_DEFAULT;
 	}
 
 	if (flags & THREAD_FLAG_PRIORITY_LOWER) {
@@ -151,9 +151,9 @@ static void thread_init(struct thread *t, unsigned int flags,
 	list_add(&t->task_link, &tsk->threads);
 
 	// TODO new priority range check, should fail on error. -- Eldar
-	t->initial_priority = clamp(t->priority, THREAD_GLB_PRIORITY_MIN,
-			THREAD_PRIORITY_TO_GLB(THREAD_PRIORITY_HIGH));
-	t->priority = t->initial_priority;
+	t->priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->initial_priority = get_sched_priority(t->task->priority, t->priority);
+	t->sched_priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
 	startq_init_thread(&t->startq_data);
@@ -310,22 +310,23 @@ void thread_yield(void) {
 	sched_post_switch();
 }
 
-int thread_set_priority(struct thread *t, thread_priority_t new) {
+int thread_set_priority(struct thread *t, thread_priority_t new_priority) {
 	assert(t);
 
-	if (new < THREAD_PRIORITY_MIN || THREAD_PRIORITY_MAX < new) {
+	if ((new_priority < THREAD_PRIORITY_MIN)
+			|| (new_priority > THREAD_PRIORITY_MAX)) {
 		return -EINVAL;
 	}
 
-	new = THREAD_PRIORITY_TO_GLB(new); /* convert to global priority */
-
 	sched_lock();
 	{
-		if (t->priority == new) {
+		if (t->priority == new_priority) {
 			sched_unlock();
 			return 0;
 		}
-		sched_set_priority(t, new);
+		sched_set_priority(t, get_sched_priority(t->task->priority,
+					new_priority));
+		t->priority = new_priority;
 	}
 	sched_unlock();
 
@@ -335,7 +336,7 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 thread_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return THREAD_PRIORITY_FROM_GLB(t->priority); /* convert from global priority */
+	return t->priority;
 }
 
 clock_t thread_get_running_time(struct thread *thread) {
@@ -381,7 +382,9 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	thread_init(thread, 0, NULL, NULL, kernel_task);
 
 	/* Priority setting up */
-	thread->priority = THREAD_PRIORITY_TO_GLB(priority);
+	thread->priority = priority;
+	thread->sched_priority = get_sched_priority(thread->task->priority,
+			thread->priority);
 
 	return thread;
 }
@@ -406,7 +409,9 @@ static int unit_init(void) {
 	thread_init(idle, 0, idle_run, NULL, kernel_task);
 	thread_context_init(idle);
 
-	idle->priority = THREAD_GLB_PRIORITY_MIN;
+	idle->priority = THREAD_PRIORITY_MIN;
+	idle->sched_priority = get_sched_priority(idle->task->priority,
+			idle->priority);
 
 	return sched_init(bootstrap, idle);
 }

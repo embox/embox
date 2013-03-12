@@ -125,11 +125,11 @@ static int priority_inherit(struct thread *t) {
 	struct mutex *m = t->mutex_waiting;
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-	if (m->holder->priority >= t->priority) {
+	if (m->holder->sched_priority >= t->sched_priority) {
 		return 0;
 	}
 
-	sched_change_scheduling_priority(m->holder, t->priority);
+	sched_change_scheduling_priority(m->holder, t->sched_priority);
 
 	return 0;
 }

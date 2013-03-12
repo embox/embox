@@ -21,6 +21,7 @@ typedef unsigned int __thread_state_t;
 #include <linux/list.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <kernel/thread/sched_priority.h>
 
 struct context;
 
@@ -46,8 +47,10 @@ struct thread {
 
 	struct sched_strategy_data sched;/**< Scheduler-private data. */
 
-	__thread_priority_t initial_priority; /**< Scheduling priority. */
-	__thread_priority_t priority;    /**< Current scheduling priority. */
+	__thread_priority_t priority;    /**< Pure thread priority excluding priority of the task */
+
+	sched_priority_t initial_priority; /**< Scheduling priority. */
+	sched_priority_t sched_priority; /**< Current scheduling priority. */
 
 	struct startq_data startq_data;   /**< Resuming the thread from critical. */
 

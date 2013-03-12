@@ -131,7 +131,7 @@ extern void sched_wake_all(struct sleepq *sleepq);
  *   New priority of the the thread.
  */
 extern void sched_set_priority(struct thread *thread,
-		__thread_priority_t new_priority);
+		sched_priority_t new_priority);
 
 /**
  * Changes scheduling priority of the thread.
@@ -141,8 +141,8 @@ extern void sched_set_priority(struct thread *thread,
  * @param new_priority
  *   New scheduling priority of the the thread.
  */
-extern int sched_change_scheduling_priority(struct thread *t,
-		__thread_priority_t new_priority);
+extern int sched_change_scheduling_priority(struct thread *thread,
+		sched_priority_t new_priority);
 
 /**
  * Returns running time of the thread. To get better precision should be
