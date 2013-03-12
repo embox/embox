@@ -3,45 +3,38 @@
  * @brief
  *
  * @date 08.02.13
- * @author Ilia Vaprol, Vita Loginova
+ * @author Ilia Vaprol
+ * @author Vita Loginova
  */
 
+#include <assert.h>
 #include <stddef.h>
 #include <util/array.h>
 #include <drivers/video_term.h>
 #include <drivers/vt.h>
 #include <drivers/vtparse.h>
-#include <assert.h>
 
-static void vterm_scroll(struct vterm *t, short delta) {
-	if (!t || !t->ops || !t->ops->copy_rows || !t->ops->clear_rows) {
-		return;
-	}
+#define VTERM_TAB_WIDTH 8
 
-	if (delta > 0){
-		t->ops->copy_rows(t, 0, delta, t->height - delta);
-		t->ops->clear_rows(t, t->height - delta, delta);
-	} else {
-		t->ops->copy_rows(t, -delta, 0, t->height + delta);
-		t->ops->clear_rows(t, 0, -delta);
-	}
+static void vterm_scroll_up(struct vterm *t, unsigned short delta) {
+	assert(t && t->ops && t->ops->copy_rows && t->ops->clear_rows);
+
+	t->ops->copy_rows(t, 0, delta, t->height - delta);
+	t->ops->clear_rows(t, t->height - delta, delta);
 
 	t->cur_y -= delta;
 	t->back_cy -= delta;
 }
 
-void vterm_clear(struct vterm *t) {
-	if (!t || !t->ops || !t->ops->clear_rows) {
-			return;
-		}
+static void vterm_clear(struct vterm *t) {
+	assert(t && t->ops && t->ops->clear_rows);
 
 	t->ops->clear_rows(t, 0, t->height);
 }
 
-void vterm_cursor(struct vterm *t) {
-	if (!t || !t->ops || !t->ops->cursor) {
-		return;
-	}
+static void vterm_cursor(struct vterm *t) {
+	assert(t && t->ops && t->ops->cursor);
+
 	t->ops->cursor(t, t->back_cx, t->back_cy);
 	t->back_cx = t->cur_x;
 	t->back_cy = t->cur_y;
@@ -68,7 +61,7 @@ static int setup_cursor(struct vterm *t, int x, int y) {
 static inline void inc_line(struct vterm *t) {
 	++t->cur_y;
 	if (t->cur_y >= t->height) {
-		vterm_scroll(t, t->cur_y - t->height + 1);
+		vterm_scroll_up(t, t->cur_y - t->height + 1);
 	}
 }
 
@@ -83,7 +76,7 @@ static void execute_printable(struct vterm *t, char ch) {
 		t->cur_x = 0;
 		break;
 	case '\t':
-		t->cur_x += 4;
+		t->cur_x += VTERM_TAB_WIDTH;
 		if (t->cur_x >= t->width) {
 			inc_line(t);
 			t->cur_x -= t->width;
@@ -104,16 +97,15 @@ static void execute_printable(struct vterm *t, char ch) {
 	}
 }
 
-static void erase_line_part(struct vterm *t, unsigned short column, unsigned short chars){
-	for (int i = column; i < column + chars; i++){
+static void erase_line_part(struct vterm *t, unsigned short column,
+		unsigned short chars) {
+	for (int i = column; i < column + chars; i++) {
 		t->ops->putc(t, ' ', column, t->cur_y);
 	}
 }
 
 static void execute_token(struct vterm *t, struct vtesc_token *token) {
-	if (!t || !t->ops || !t->ops->clear_rows) {
-			return;
-		}
+	assert(t && t->ops && t->ops->clear_rows);
 
 	switch (token->type) {
 	case VTESC_CHARACTER:
@@ -157,7 +149,7 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 			break;
 		}
 		break;
-	case VTESC_ERASE_CHARACTER:
+	case VTESC_ERASE_CHAR:
 		erase_line_part(t, t->cur_x, token->params.erase.n);
 		break;
 	case VTESC_SET_SGR: //TODO
@@ -170,9 +162,7 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 void vterm_putc(struct vterm *t, char ch) {
 	struct vtesc_token *token;
 
-	if (!t || !t->ops || !t->ops->putc) {
-		return;
-	}
+	assert(t && t->ops && t->ops->putc);
 
 	token = vtesc_consume(&t->executor, ch);
 	if (token) {
@@ -183,6 +173,8 @@ void vterm_putc(struct vterm *t, char ch) {
 
 void vterm_init(struct vterm *t, unsigned short width, unsigned short height,
 		const struct vterm_ops *ops, void *data) {
+	assert(ops && ops->init);
+
 	t->cur_x = 0;
 	t->cur_y = 0;
 	t->width = width;
@@ -191,10 +183,6 @@ void vterm_init(struct vterm *t, unsigned short width, unsigned short height,
 	t->data = data;
 
 	vtesc_init(&t->executor);
-
-	if (!ops || !ops->init) {
-		return;
-	}
 
 	t->ops->init(t);
 
