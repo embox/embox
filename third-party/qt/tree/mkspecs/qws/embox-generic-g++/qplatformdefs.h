@@ -578,11 +578,6 @@ struct __res_state {
 	return NULL;
 }*/
 
-static inline struct passwd *getpwnam(const char *name) {
-	printf(">>> getpwnam %s\n", name);
-	return NULL;
-}
-
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
