@@ -20,7 +20,7 @@ static int exec(int argc, char **argv) {
 	id_t who;
 	struct passwd *p;
 
-	if (argc < 3) {
+	if (argc == 1) {
 		return -EINVAL;
 	}
 
