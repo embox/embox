@@ -67,7 +67,7 @@ struct task {
 
 	clock_t per_cpu; /**< task times */
 
-	int naffinity;
+	unsigned int affinity;
 };
 
 struct task_resource_desc {
@@ -113,6 +113,9 @@ static inline int task_getid(void) {
 
 extern int task_set_priority(struct task *task, task_priority_t priority);
 extern task_priority_t task_get_priority(struct task *task);
+
+extern void task_set_affinity(struct task *task, unsigned int affinity);
+extern unsigned int task_get_affinity(struct task *task);
 
 static inline void *task_self_security(void) {
 	return task_self()->security;

@@ -262,6 +262,14 @@ short task_get_priority(struct task *tsk) {
 	return tsk->priority;
 }
 
+void task_set_affinity(struct task *task, unsigned int affinity) {
+	task->affinity = affinity;
+}
+
+unsigned int task_get_affinity(struct task *task) {
+	return task->affinity;
+}
+
 int unit_init(void) {
 	task_table_add(task_kernel_task());
 
