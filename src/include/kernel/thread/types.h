@@ -10,7 +10,6 @@
 #define KERNEL_THREAD_TYPES_H_
 
 typedef int __thread_id_t;
-typedef short __thread_priority_t;
 typedef unsigned int __thread_state_t;
 
 #include <hal/context.h>
@@ -22,6 +21,7 @@ typedef unsigned int __thread_state_t;
 #include <stddef.h>
 #include <sys/types.h>
 #include <kernel/thread/sched_priority.h>
+#include <kernel/thread/thread_priority.h>
 
 struct context;
 
