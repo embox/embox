@@ -328,66 +328,75 @@ int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-
-static void hd_dpc(void *arg) {
-	hdc_t *hdc = (hdc_t *) arg;
+static void hd_read_hndl(hdc_t *hdc) {
+	unsigned char error;
 	int nsects;
 	int n;
 
-	switch (hdc->dir) {
-	case HD_XFER_READ:
-		/* Check status */
-		hdc->status = inb(hdc->iobase + HDC_STATUS);
-		if (hdc->status & HDCS_ERR) {
-			unsigned char error;
+	/* Check status */
+	hdc->status = inb(hdc->iobase + HDC_STATUS);
+	if (hdc->status & HDCS_ERR) {
+		error = inb(hdc->iobase + HDC_ERR);
+		hd_error("hdread", error);
+		hdc->result = -EIO;
+	} else {
+	/* Read sector data */
+		nsects = hdc->active->multsect;
+		if (nsects > hdc->nsects) {
+			nsects = hdc->nsects;
+		}
+		for (n = 0; n < nsects; n++) {
+			pio_read_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
+			hdc->bufp += SECTOR_SIZE;
+		}
+		hdc->nsects -= nsects;
+	}
+}
 
-			error = inb(hdc->iobase + HDC_ERR);
-			hd_error("hdread", error);
-			hdc->result = -EIO;
-		} else {
-		/* Read sector data */
+static void hd_write_hndl(hdc_t *hdc) {
+	unsigned char error;
+	int nsects;
+	int n;
+
+	/* Check status */
+	hdc->status = inb(hdc->iobase + HDC_STATUS);
+	if (hdc->status & HDCS_ERR) {
+		error = inb(hdc->iobase + HDC_ERR);
+		hd_error("hdwrite", error);
+
+		hdc->result = -EIO;
+	} else {
+		/* Transfer next sector(s) or signal end of transfer */
+		nsects = hdc->active->multsect;
+		if (nsects > hdc->nsects) {
+			nsects = hdc->nsects;
+		}
+		hdc->nsects -= nsects;
+
+		if (hdc->nsects > 0) {
 			nsects = hdc->active->multsect;
 			if (nsects > hdc->nsects) {
 				nsects = hdc->nsects;
 			}
+
 			for (n = 0; n < nsects; n++) {
-				pio_read_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
+				pio_write_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
 				hdc->bufp += SECTOR_SIZE;
 			}
-			hdc->nsects -= nsects;
 		}
+	}
+}
+
+static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
+	hdc_t *hdc = (hdc_t *) arg;
+
+	switch (hdc->dir) {
+	case HD_XFER_READ:
+		hd_read_hndl(hdc);
 		break;
 
 	case HD_XFER_WRITE:
-		/* Check status */
-		hdc->status = inb(hdc->iobase + HDC_STATUS);
-		if (hdc->status & HDCS_ERR) {
-			unsigned char error;
-
-			error = inb(hdc->iobase + HDC_ERR);
-			hd_error("hdwrite", error);
-
-			hdc->result = -EIO;
-		} else {
-			/* Transfer next sector(s) or signal end of transfer */
-			nsects = hdc->active->multsect;
-			if (nsects > hdc->nsects) {
-				nsects = hdc->nsects;
-			}
-			hdc->nsects -= nsects;
-
-			if (hdc->nsects > 0) {
-				nsects = hdc->active->multsect;
-				if (nsects > hdc->nsects) {
-					nsects = hdc->nsects;
-				}
-
-				for (n = 0; n < nsects; n++) {
-					pio_write_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
-					hdc->bufp += SECTOR_SIZE;
-				}
-			}
-		}
+		hd_write_hndl(hdc);
 		break;
 
 	case HD_XFER_DMA:
@@ -413,10 +422,6 @@ static void hd_dpc(void *arg) {
 		hdc->result = 1;
 		event_notify(&hdc->event);
 	}
-}
-
-static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
-  	hd_dpc(arg);
 
 	return IRQ_HANDLED;
 }
