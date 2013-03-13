@@ -5,10 +5,13 @@ abstract module mpx {
 
 module mpx_simple extends mpx {
 	source "mpx_simple.c"
+
+	depends embox.driver.video.fb
 }
 
 module fbcon {
 	source "fbcon.c"
 
+	depends embox.driver.video.fonts
 	depends mpx_simple
 }

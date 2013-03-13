@@ -44,6 +44,4 @@ extern int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4
 
 extern int keymap_kbd(struct input_event *event);
 
-
-
 #endif /* KEYMAP_H_ */

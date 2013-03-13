@@ -34,6 +34,7 @@ static int bochs_set_par(struct fb_info *info) {
 	vbe_write(VBE_DISPI_INDEX_X_OFFSET, info->var.xoffset);
 	vbe_write(VBE_DISPI_INDEX_Y_OFFSET, info->var.yoffset);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
+
 	return 0;
 }
 

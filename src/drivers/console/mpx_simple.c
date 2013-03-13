@@ -11,6 +11,8 @@
 #include <drivers/console/mpx.h>
 #include <drivers/keyboard.h>
 #include <util/dlist.h>
+#include <drivers/video/vesa_modes.h>
+#include <drivers/video/fb.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(vc_mpx_init);
@@ -38,6 +40,24 @@ static void vc_init(struct vc *vc) {
 
 }
 
+static int mpx_visualize(struct vc *vc) {
+
+	if (postvc) {
+		return -EAGAIN;
+	}
+
+	postvc = vc;
+
+	if (curvc) {
+		curvc->callbacks->schedule_devisualization(curvc);
+	} else {
+		mpx_devisualized(curvc);
+	}
+
+	return 0;
+
+}
+
 int mpx_register_vc(struct vc *vc) {
 	struct vc **pvc = vcs_find(vcs, NULL);
 	const struct vc_callbacks *cbs;
@@ -51,14 +71,14 @@ int mpx_register_vc(struct vc *vc) {
 	vc_init(vc);
 
 	cbs = vc->callbacks;
-	if (!(cbs->handle_input_event
+	if (!(cbs && cbs->handle_input_event
 			&& cbs->visualized
 			&& cbs->schedule_devisualization)) {
 		return -EINVAL;
 	}
 
 	if (curvc == NULL) {
-		mpx_visualized(vc);
+		mpx_visualize(vc);
 	}
 
 	return 0;
@@ -80,34 +100,21 @@ int mpx_deregister_vc(struct vc *vc) {
 	return 0;
 }
 
-static void mpx_deviz_callback(struct vc *vc) {
+int mpx_devisualized(struct vc *vc) {
+
+	assert(curvc == vc);
+
+	if (curvc != vc) {
+		return -EINVAL;
+	}
 
 	postvc->fb = curfb;
 	postvc->callbacks->visualized(postvc, curfb);
 
+	curvc = postvc;
 	postvc = NULL;
-	curvc = vc;
-}
-
-
-int mpx_visualized(struct vc *vc) {
-	struct vc *tvc = curvc;
-	curvc = NULL;
-
-	if (postvc) {
-		return -EAGAIN;
-	}
-
-	postvc = vc;
-
-	if (tvc) {
-		tvc->callbacks->schedule_devisualization(tvc, mpx_deviz_callback);
-	} else {
-		mpx_deviz_callback(tvc);
-	}
 
 	return 0;
-
 }
 
 static int indev_event_cb(struct input_dev *indev) {
@@ -118,8 +125,8 @@ static int indev_event_cb(struct input_dev *indev) {
 
 	if (ev.type == KEY_PRESSED && (ev.value & CTRL_PRESSED)) {
 		int num = (ev.value & 0x7f) - f1;
-		if (num < VC_MPX_N && vcs[num] != NULL) {
-			mpx_visualized(vcs[num]);
+		if (num >= 0 && num < VC_MPX_N && vcs[num] != NULL) {
+			mpx_visualize(vcs[num]);
 			return 0;
 		}
 	}
@@ -133,6 +140,13 @@ static int indev_event_cb(struct input_dev *indev) {
 
 static int vc_mpx_init(void) {
 	struct input_dev *indev;
+	const struct fb_videomode *mode;
+	struct video_resbpp resbpp = {
+		.x = 1024,
+		.y = 768,
+		.bpp = 16,
+	};
+	int ret;
 
 	if (!(indev = input_dev_lookup("keyboard"))) {
 		return -ENOENT;
@@ -145,6 +159,22 @@ static int vc_mpx_init(void) {
 	if (NULL == (curfb = fb_lookup("fb0"))) {
 		return -ENOENT;
 	}
+
+	mode = video_fbmode_by_resbpp(&resbpp);
+	if (mode == NULL) {
+		return -EINVAL;
+	}
+
+	ret = fb_try_mode(&curfb->var, curfb, mode, resbpp.bpp);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = curfb->ops->fb_set_par(curfb);
+	if (ret != 0) {
+		return ret;
+	}
+
 
 	return 0;
 }
