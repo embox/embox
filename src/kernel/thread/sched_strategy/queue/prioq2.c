@@ -54,8 +54,9 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
 			/* Checking the affinity */
 			if ((thread_get_affinity(t) | cpu_get_id())
-				&& (task_get_affinity(t->task) | cpu_get_id()) {
+				&& (task_get_affinity(t->task) | cpu_get_id())) {
 				thread = t;
+				break;
 			}
 		}
 #endif

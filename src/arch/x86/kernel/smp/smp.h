@@ -8,6 +8,6 @@
 #ifndef ARCH_X86_SMP_H_
 #define ARCH_X86_SMP_H_
 
-#define __NCPU 2
+#define __NCPU 3
 
 #endif /* ARCH_X86_SMP_H_ */
