@@ -72,6 +72,8 @@ struct thread {
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
 	clock_t           running_time;  /**< Running time of thread in clocks. */
+	clock_t           last_sync;     /**< Last recalculation of running time. */
+
 	unsigned int      affinity;      /**< CPU affinity of the thread. */
 };
 

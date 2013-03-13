@@ -34,6 +34,7 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 	idle->runq = rq;
 
 	current->state = thread_state_do_activate(current->state);
+	current->state = thread_state_do_oncpu(current->state);
 
 	runq_start(rq, idle);
 
@@ -50,6 +51,7 @@ void runq_cpu_init(struct runq *rq, struct thread *current) {
 
 	current->runq = rq;
 	current->state = thread_state_do_activate(current->state);
+	current->state = thread_state_do_oncpu(current->state);
 }
 
 void runq_fini(struct runq *rq) {
@@ -189,6 +191,11 @@ struct thread *runq_switch(struct runq *rq) {
 
 	assert(next != NULL);
 	assert(thread_state_running(next->state));
+
+	if (next != current) {
+		current->state = thread_state_do_outcpu(current->state);
+		next->state = thread_state_do_oncpu(next->state);
+	}
 
 	return next;
 }
