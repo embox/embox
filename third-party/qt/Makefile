@@ -265,9 +265,10 @@ endef
 
 # plugins strictly before importing library both with ':install'
 # everything else before applications
-#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
+TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
+TARGET_COMPONENTS_EMBOX += src/plugins/platforms/emboxvc:install
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
 
 TARGET_QMAKE_EMBOX       =$(QT_INSTALL_DIR_EMBOX)/bin/qmake
