@@ -48,13 +48,13 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 			thread = dlist_entry(queue->list[i].next, struct thread,
 					sched.link);
 		}
-
 #else
 		struct thread *t, *nxt;
+		unsigned int mask = 1 << cpu_get_id();
 		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
 			/* Checking the affinity */
-			if ((thread_get_affinity(t) | cpu_get_id())
-				&& (task_get_affinity(t->task) | cpu_get_id())) {
+			if ((thread_get_affinity(t) & mask)
+				&& (task_get_affinity(t->task) & mask)) {
 				thread = t;
 				break;
 			}
