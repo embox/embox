@@ -63,9 +63,9 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 	sched_post_switch();
 
 #ifdef SMP
-	//for (int i = 0; i < NCPU; i++) {
-		smp_send_resched(1);
-	//}
+	for (int i = 0; i < NCPU; i++) {
+		smp_send_resched(i);
+	}
 #endif
 }
 

@@ -350,6 +350,14 @@ unsigned int thread_get_affinity(struct thread *thread) {
 	return thread->affinity;
 }
 
+/* FIXME: Replace it! */
+struct thread *idle __percpu__;
+
+void cpu_set_idle_thread(struct thread *thread) {
+	thread->affinity = 1 << cpu_get_id();
+	percpu_var(idle) = thread;
+}
+
 clock_t thread_get_running_time(struct thread *thread) {
 	return sched_get_running_time(thread);
 }
@@ -423,6 +431,8 @@ static int unit_init(void) {
 	idle->priority = THREAD_PRIORITY_MIN;
 	idle->sched_priority = get_sched_priority(idle->task->priority,
 			idle->priority);
+
+	cpu_set_idle_thread(idle);
 
 	return sched_init(bootstrap, idle);
 }

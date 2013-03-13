@@ -44,6 +44,7 @@ void startup_ap(void) {
 	bootstrap = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 			THREAD_PRIORITY_MIN);
 
+	cpu_set_idle_thread(bootstrap);
 	sched_cpu_init(bootstrap);
 
 	__asm__ __volatile__ ("sti");

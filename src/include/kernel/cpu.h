@@ -31,4 +31,12 @@ extern unsigned int cpu_get_id(void);
 
 #endif /* SMP */
 
+#ifndef __ASSEMBLER__
+
+struct thread;
+
+extern void cpu_set_idle_thread(struct thread *idle);
+
+#endif
+
 #endif /* KERNEL_CPU_H_ */
