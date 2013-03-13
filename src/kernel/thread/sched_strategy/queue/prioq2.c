@@ -39,22 +39,25 @@ void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
 }
 
 struct thread *runq_queue_extract(runq_queue_t *queue) {
-	struct thread *thread, *t, *nxt;
+	struct thread *thread = NULL;
 	int i;
 
-	thread = NULL;
-
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
+#ifndef SMP
+		if (!dlist_empty(&queue->list[i])) {
+			thread = dlist_entry(queue->list[i].next, struct thread,
+					sched.link);
+		}
+
+#else
+		struct thread *t, *nxt;
 		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
-#ifdef SMP
 			/* Checking the affinity */
-			if ((~t->task->naffinity) | (cpu_get_id())) {
+			if (t->affinity | cpu_get_id()) {
 				thread = t;
 			}
-#else
-			thread = t;
-#endif
 		}
+#endif
 
 		if (thread) {
 			runq_queue_remove(queue, thread);

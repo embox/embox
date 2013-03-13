@@ -72,6 +72,7 @@ struct thread {
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
 	clock_t           running_time;  /**< Running time of thread in clocks. */
+	unsigned int      affinity;      /**< CPU affinity of the thread. */
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

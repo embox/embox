@@ -36,6 +36,7 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
+#include <kernel/cpu.h>
 
 #include <hal/context.h>
 #include <hal/arch.h>
@@ -161,6 +162,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	sleepq_init(&t->exit_sleepq);
 
 	t->running_time = 0;
+	t->affinity = (1 << NCPU) - 1;
 }
 
 static void thread_context_init(struct thread *t) {
@@ -337,6 +339,15 @@ thread_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
 	return t->priority;
+}
+
+/* FIXME: This operations is only for SMP */
+void thread_set_affinity(struct thread *thread, unsigned int affinity) {
+	thread->affinity = affinity;
+}
+
+unsigned int thread_get_affinity(struct thread *thread) {
+	return thread->affinity;
 }
 
 clock_t thread_get_running_time(struct thread *thread) {
