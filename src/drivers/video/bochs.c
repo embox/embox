@@ -14,8 +14,6 @@
 #include <drivers/video/vesa_modes.h>
 #include <framework/mod/options.h>
 
-#define MODOPS_DEFAULT_MODE OPTION_GET(NUMBER, default_mode)
-
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
 static int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {

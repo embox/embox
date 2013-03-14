@@ -11,8 +11,6 @@
 #include <drivers/console/mpx.h>
 #include <drivers/keyboard.h>
 #include <util/dlist.h>
-#include <drivers/video/vesa_modes.h>
-#include <drivers/video/fb.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(vc_mpx_init);
@@ -140,13 +138,6 @@ static int indev_event_cb(struct input_dev *indev) {
 
 static int vc_mpx_init(void) {
 	struct input_dev *indev;
-	const struct fb_videomode *mode;
-	struct video_resbpp resbpp = {
-		.x = 1024,
-		.y = 768,
-		.bpp = 16,
-	};
-	int ret;
 
 	if (!(indev = input_dev_lookup("keyboard"))) {
 		return -ENOENT;
@@ -159,23 +150,6 @@ static int vc_mpx_init(void) {
 	if (NULL == (curfb = fb_lookup("fb0"))) {
 		return -ENOENT;
 	}
-
-	mode = video_fbmode_by_resbpp(&resbpp);
-	if (mode == NULL) {
-		return -EINVAL;
-	}
-
-	ret = fb_try_mode(&curfb->var, curfb, mode, resbpp.bpp);
-	if (ret != 0) {
-		return ret;
-	}
-
-	ret = curfb->ops->fb_set_par(curfb);
-	if (ret != 0) {
-		return ret;
-	}
-
-
 	return 0;
 }
 

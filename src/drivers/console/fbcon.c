@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
@@ -15,6 +16,7 @@
 #include <drivers/console/fbcon.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
+#include <drivers/video/vesa_modes.h>
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -25,7 +27,7 @@
 
 EMBOX_UNIT_INIT(fbcon_init);
 
-volatile struct fbcon *vc_fbcon_cur;
+#define SET_VIDEO_MODE OPTION_GET(NUMBER,set_video_mode)
 
 static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
@@ -71,10 +73,33 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	struct tty *tty;
+	struct fbcon *fbcon = (struct fbcon *) vc;
+#if SET_VIDEO_MODE
+	const struct fb_videomode *mode;
+	struct video_resbpp resbpp = {
+		.x = 1024,
+		.y = 768,
+		.bpp = 16,
+	};
+	int ret;
 
-	vc_fbcon_cur = (struct fbcon *) vc;
+	mode = video_fbmode_by_resbpp(&resbpp);
+	if (mode == NULL) {
+		return;
+	}
 
-	tty = (struct tty *) &vc_fbcon_cur->tty_this;
+	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, resbpp.bpp);
+	if (ret != 0) {
+		return;
+	}
+
+	ret = fbinfo->ops->fb_set_par(fbinfo);
+	if (ret != 0) {
+		return;
+	}
+#endif
+
+	tty = (struct tty *) &fbcon->tty_this;
 
 	tty->cur_x = tty->cur_y = 0;
 
@@ -321,7 +346,7 @@ static int make_task(int i, char innewtask) {
 static int fbcon_init(void) {
 
 	make_task(0, true);
-	make_task(1, false);
+	make_task(1, true);
 
 	return 0;
 }
