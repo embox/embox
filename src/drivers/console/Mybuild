@@ -17,4 +17,6 @@ module fbcon {
 	depends embox.driver.video.fonts
 	depends embox.driver.tty.tty
 	depends mpx_simple
+
+	depends embox.cmd.sh.tish
 }

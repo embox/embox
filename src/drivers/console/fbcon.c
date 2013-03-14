@@ -173,7 +173,7 @@ static const struct task_idx_ops this_idx_ops = {
 
 static void *run(void *data) {
 	int fd = task_self_idx_alloc(&this_idx_ops, data);
-	const struct shell *sh = shell_any();
+	const struct shell *sh = shell_lookup("tish");
 
 	close(0);
 	close(1);
@@ -186,7 +186,6 @@ static void *run(void *data) {
 	close(fd);
 
 	shell_run(sh);
-
 
 	return NULL;
 
