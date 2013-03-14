@@ -83,6 +83,8 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		self_task->main_thread = thd;
 		self_task->per_cpu = 0;
 
+		self_task->priority = task_self()->priority;
+
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;
 
