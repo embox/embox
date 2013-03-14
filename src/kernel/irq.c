@@ -124,6 +124,7 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 				objfree(&irq_actions, action);
 				irq_table[irq_nr] = NULL;
 				irqctrl_disable(irq_nr);
+				break;
 			} else {
 				objfree(&irq_actions, action);
 			}
