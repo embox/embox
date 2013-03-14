@@ -4,16 +4,49 @@
 
 QT_BEGIN_NAMESPACE
 
+static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
+
+static void __emboxVCsetMode(struct vc *vc, int mode) {
+	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
+		if (&(__emboxVCcollection.at(i)->emboxVC) == vc) {
+			__emboxVCcollection.at(i)->emboxVCvisualized = mode;
+		}
+	}
+}
+
+static void __visualization(struct vc *vc, struct fb_info *info) {
+	Q_UNUSED(info);
+	printf(">>__visualization\n");
+	__emboxVCsetMode(vc, 1);
+}
+
+static void __scheduleDevisualization(struct vc *vc) {
+	printf(">>__scheduleDevisualization\n");
+	__emboxVCsetMode(vc, 0);
+}
+
 QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
-    : QWindowSurface(window)
+    : QWindowSurface(window), emboxVCvisualized(1) /* XXX it is so? */
 {
-	emboxFB = fb_lookup("fb0");
-	printf("emboxFB - %p\n", emboxFB);
-    //qDebug() << "QMinimalWindowSurface::QMinimalWindowSurface:" << (long)this;
+
+	printf(">>QEmboxVCWindowSurface begin 2\n");
+
+	emboxVCcallbacks.visualized = __visualization;
+	emboxVCcallbacks.schedule_devisualization = __scheduleDevisualization;
+
+	emboxVC.fb = fb_lookup("fb0");
+	printf("emboxFB - %p\n", emboxVC.fb);
+	emboxVC.callbacks = &emboxVCcallbacks;
+	emboxVC.name = "emboxvc";
+
+	printf("mpx_register_vc return %d\n", mpx_register_vc(&emboxVC));
+	__emboxVCcollection.append(this);
+	printf(">>QEmboxVCWindowSurface end\n");
 }
 
 QEmboxVCWindowSurface::~QEmboxVCWindowSurface()
 {
+
 }
 
 QPaintDevice *QEmboxVCWindowSurface::paintDevice()
@@ -30,14 +63,15 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int shift, i;
 
-    //static int c = 0;
-    //QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
-    //qDebug() << "QMinimalWindowSurface::flush() saving contents to" << filename.toLocal8Bit().constData();
-    //qDebug() << "emboxvc";
-    //mImage.copy();
-    //mImage.save(filename);
+    if (!emboxVCvisualized) {
+    	printf(">>flush: !emboxVCvisualized\n");
+    	return;
+    }
+
+    printf(">>flush\n");
+
     for (i = 0, shift = 0; i < mImage.height(); i++ , shift += mImage.bytesPerLine()) {
-    	memcpy(emboxFB->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
+    	memcpy(emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
     }
 }
 

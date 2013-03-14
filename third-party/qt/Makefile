@@ -268,7 +268,7 @@ endef
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
-TARGET_COMPONENTS_EMBOX += src/plugins/platforms/emboxvc:install
+#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/emboxvc:install
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
 
 TARGET_QMAKE_EMBOX       =$(QT_INSTALL_DIR_EMBOX)/bin/qmake
@@ -391,7 +391,7 @@ $(TARGET_QMAKE_LINUX): linux_build_and_install
 
 .PHONY: target_apps_LINUX
 
-all: target_apps_LINUX
+#all: target_apps_LINUX
 
 
 

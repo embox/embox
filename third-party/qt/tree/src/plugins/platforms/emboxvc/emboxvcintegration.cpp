@@ -8,7 +8,7 @@ QEmboxVCIntegration::QEmboxVCIntegration()
 {
     QEmboxVCScreen *mPrimaryScreen = new QEmboxVCScreen();
 
-    mPrimaryScreen->mGeometry = QRect(0, 0, 1280, 720);
+    mPrimaryScreen->mGeometry = QRect(0, 0, 1024, 768);
     mPrimaryScreen->mDepth = 16;
     mPrimaryScreen->mFormat = QImage::Format_RGB16;
 

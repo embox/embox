@@ -5,6 +5,7 @@
 
 #include <QtGui/QPlatformWindow>
 #include <drivers/video/fb.h>
+#include <drivers/console/mpx.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -20,9 +21,12 @@ public:
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
 
+    struct vc emboxVC;
+    int emboxVCvisualized;
+
 private:
     QImage mImage;
-    struct fb_info *emboxFB;
+    struct vc_callbacks emboxVCcallbacks;
 };
 
 QT_END_NAMESPACE

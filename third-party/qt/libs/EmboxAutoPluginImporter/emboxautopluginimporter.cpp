@@ -1,7 +1,7 @@
 #include <QtPlugin>
 
 Q_IMPORT_PLUGIN(vnc)
-Q_IMPORT_PLUGIN(emboxvc)
+//Q_IMPORT_PLUGIN(emboxvc)
 Q_IMPORT_PLUGIN(minimal)
 
 extern "C" __attribute__((naked))
