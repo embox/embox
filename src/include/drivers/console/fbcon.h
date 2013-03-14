@@ -10,6 +10,7 @@
 #define CONSOLE_FBCON_H_
 
 #include <kernel/thread/event.h>
+#include <drivers/video/vesa_modes.h>
 #include <drivers/console/mpx.h>
 #include <drivers/tty.h>
 
@@ -18,6 +19,8 @@
 struct fbcon {
 	struct vc vc_this;
 	struct tty tty_this;
+
+	struct video_resbpp resbpp;
 
 	struct event inpevent;
 

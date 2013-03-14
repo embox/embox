@@ -16,7 +16,6 @@
 #include <drivers/console/fbcon.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
-#include <drivers/video/vesa_modes.h>
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -28,6 +27,8 @@
 EMBOX_UNIT_INIT(fbcon_init);
 
 #define SET_VIDEO_MODE OPTION_GET(NUMBER,set_video_mode)
+
+static void tty_reinit(struct tty *tty, int x, int y);
 
 static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
@@ -46,6 +47,13 @@ struct video_tty_data {
 	int fg_color;
 	int bg_color;
 	int cur_color;
+};
+
+static struct video_tty_data tty_data = {
+	.font = &font_vga_8x16,
+	.fg_color = 0x0000,
+	.bg_color = 0xFFFF,
+	.cur_color = 0x00F0,
 };
 
 static void inpevent(struct vc *vc, struct input_event *ev) {
@@ -76,19 +84,18 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
 #if SET_VIDEO_MODE
 	const struct fb_videomode *mode;
-	struct video_resbpp resbpp = {
-		.x = 1024,
-		.y = 768,
-		.bpp = 16,
-	};
 	int ret;
 
-	mode = video_fbmode_by_resbpp(&resbpp);
+	fbcon->resbpp.x = 1024;
+	fbcon->resbpp.y = 768;
+	fbcon->resbpp.bpp = 16;
+
+	mode = video_fbmode_by_resbpp(&fbcon->resbpp);
 	if (mode == NULL) {
 		return;
 	}
 
-	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, resbpp.bpp);
+	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, fbcon->resbpp.bpp);
 	if (ret != 0) {
 		return;
 	}
@@ -97,15 +104,21 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	if (ret != 0) {
 		return;
 	}
-#endif
+
+	assert(0 == 1);
+#else /* SET_VIDEO_MODE */
+
+	fbcon->resbpp.x = fbinfo->var.xres;
+	fbcon->resbpp.y = fbinfo->var.yres;
+	fbcon->resbpp.bpp = fbinfo->var.bits_per_pixel;
+
+#endif /* SET_VIDEO_MODE */
 
 	tty = (struct tty *) &fbcon->tty_this;
 
+	tty_reinit(tty, fbcon->resbpp.x / tty_data.font->width, fbcon->resbpp.y / tty_data.font->height);
 	tty->cur_x = tty->cur_y = 0;
-
 	tty_cursor(tty);
-
-	tty_clear(tty);
 
 }
 
@@ -311,12 +324,9 @@ static const struct tty_ops video_tty_ops = {
 	.move = &video_tty_move
 };
 
-static struct video_tty_data tty_data = {
-	.font = &font_vga_8x16,
-	.fg_color = 0x0000,
-	.bg_color = 0xFFFF,
-	.cur_color = 0x00F0,
-};
+static void tty_reinit(struct tty *tty, int x, int y) {
+	tty_init(tty, x, y, &video_tty_ops, &tty_data);
+}
 
 static int make_task(int i, char innewtask) {
 	struct fbcon *fbcon = &fbcons[i];

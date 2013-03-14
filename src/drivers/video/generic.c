@@ -11,11 +11,12 @@
 #include <assert.h>
 #include <drivers/pci/pci.h>
 #include <drivers/video/fb.h>
-#include <drivers/video/vbe.h>
 #include <drivers/video/vesa_modes.h>
 #include <framework/mod/options.h>
 
 #include <module/embox/arch/x86/boot/multiboot.h>
+
+#include <embox/unit.h>
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 
