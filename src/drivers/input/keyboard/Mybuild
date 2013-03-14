@@ -5,3 +5,8 @@ module keyboard {
 	source "keymap.c"
 	depends embox.driver.input.core
 }
+
+module diag {
+	source "diag.c"
+	depends keyboard
+}

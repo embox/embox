@@ -8,6 +8,7 @@
 #ifndef I8042_H_
 #define I8042_H_
 
+#include <asm/io.h>
 
 #define  I8042_CMD_PORT        0x64
 #define  I8042_STS_PORT        0x64
@@ -35,6 +36,9 @@
 #define keyboard_wait_write(status) do {} while (0 != ((status = inb(I8042_STS_PORT)) & 0x02))
 #define kmc_wait_ibe()	while (inb(I8042_STS_PORT) & I8042_STS_IBF)
 
-
+static inline int keyboard_havechar(void) {
+	unsigned char c = inb(I8042_STS_PORT);
+	return (c == 0xFF) ? 0 : c & 1;
+}
 
 #endif /* I8042_H_ */

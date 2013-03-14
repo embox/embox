@@ -8,9 +8,6 @@
 
 #include <errno.h>
 #include <stdint.h>
-#include <drivers/diag.h>
-
-#include <asm/io.h>
 
 #include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
@@ -20,11 +17,6 @@
 #include <drivers/i8042.h>
 
 EMBOX_UNIT_INIT(keyboard_init);
-
-static int keyboard_havechar(void) {
-	unsigned char c = inb(I8042_STS_PORT);
-	return (c == 0xFF) ? 0 : c & 1;
-}
 
 static void keyboard_send_cmd(uint8_t cmd) {
 	unsigned int status;
@@ -49,10 +41,6 @@ static void keyboard_set_mode(unsigned char mode) {
 }
 
 static int kbd_state;
-
-int key_is_pressed(struct input_event *event) {
-	return event->type & KEY_PRESSED;
-}
 
 static void kbd_key_serv_press(int state, int flag) {
 	if (state & KEY_PRESSED) {
@@ -118,34 +106,6 @@ static struct input_dev kbd_dev = {
 		.indev_get = keyboard_get_input_event,
 };
 
-static int keyboard_getc(void) {
-	struct input_dev *kbd = &kbd_dev;
-	static unsigned char ascii_buff[4];
-	static int ascii_len;
-	static int seq_cnt = 0;
-	struct input_event event;
-
-	if(ascii_len > seq_cnt) {
-		return ascii_buff[seq_cnt++];
-	}
-	ascii_len = 0;
-
-	do {
-		while (0 != input_dev_event(kbd, &event)) {
-
-		}
-
-		if(key_is_pressed(&event)) {
-			ascii_len = keymap_to_ascii(&event, ascii_buff);
-		}
-
-	} while(ascii_len == 0);
-
-	seq_cnt = 0;
-
-	return ascii_buff[seq_cnt++];
-}
-
 static int keyboard_init(void) {
 	uint8_t mode;
 
@@ -176,15 +136,4 @@ static int keyboard_init(void) {
 	kbd_state = 0;
 
 	return 0;
-}
-
-/*
- * Diag interface
- */
-char diag_getc(void) {
-	return keyboard_getc();
-}
-
-int diag_kbhit(void) {
-	return keyboard_havechar();
 }
