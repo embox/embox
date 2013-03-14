@@ -105,7 +105,6 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 		return;
 	}
 
-	assert(0 == 1);
 #else /* SET_VIDEO_MODE */
 
 	fbcon->resbpp.x = fbinfo->var.xres;

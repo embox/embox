@@ -16,8 +16,6 @@
 
 #include <module/embox/arch/x86/boot/multiboot.h>
 
-#include <embox/unit.h>
-
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 
 #define VID OPTION_GET(NUMBER,vendor_id)
