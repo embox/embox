@@ -18,10 +18,10 @@ static int exec(int argc, char **argv) {
 	int tid;
 	struct task *task;
 
-	printf("PID  USER   PR COMMAND\n");
+	printf("PID USER  PR COMMAND\n");
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
-		printf("%-4d %-5d % 2d %s\n", tid, task->u_area->reuid,
+		printf("%-3d %-4d % 3d %s\n", tid, task->u_area->reuid,
 				task_get_priority(task), task->name);
 	}
 
