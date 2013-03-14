@@ -37,10 +37,13 @@
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
 #include <kernel/cpu.h>
+#include <kernel/percpu.h>
 
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
+
+#include <time.h>
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
@@ -352,10 +355,20 @@ unsigned int thread_get_affinity(struct thread *thread) {
 
 /* FIXME: Replace it! */
 struct thread *idle __percpu__;
+clock_t cpu_started __percpu__;
 
 void cpu_set_idle_thread(struct thread *thread) {
 	thread->affinity = 1 << cpu_get_id();
 	percpu_var(idle) = thread;
+	percpu_var(cpu_started) = clock();
+}
+
+clock_t cpu_get_total_time(unsigned int cpu_id) {
+	return clock() - percpu_cpu_var(cpu_id, cpu_started);
+}
+
+clock_t cpu_get_idle_time(unsigned int cpu_id) {
+	return thread_get_running_time(percpu_cpu_var(cpu_id, idle));
 }
 
 clock_t thread_get_running_time(struct thread *thread) {
