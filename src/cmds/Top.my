@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "top",
+	help = "display processes",
+	man = '''
+		NAME
+			top - display processes
+		SYNOPSIS
+			top
+		DESCRIPTION
+			Display system processes.
+		AUTHORS
+			Ilia Vaprol
+	''')
+module top {
+	source "top.c"
+
+	depends embox.lib.LibC
+}
