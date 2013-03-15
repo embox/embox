@@ -9,7 +9,8 @@ module host {
 
 module locore extends embox.arch.locore {
 	source "boot.c",
-		"boot_asm.S"
+		"boot_asm.S",
+		"arch.c"
 }
 
 module ipl extends embox.arch.interrupt {

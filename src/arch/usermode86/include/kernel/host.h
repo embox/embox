@@ -69,6 +69,7 @@ typedef struct {
 #define NR_OPEN   5
 #define NR_CLOSE  6
 #define NR_GETPID 20
+#define NR_PAUSE  29
 #define NR_KILL   37
 #define NR_PIPE   42
 #define NR_SIGNAL 48
@@ -98,6 +99,8 @@ extern host_pid_t host_fork(void);
 extern int host_close(int fd);
 
 extern host_pid_t host_getpid(void);
+
+extern int host_pause(void);
 
 extern int host_select(int nfds, host_fd_set *readfds, host_fd_set *writefds,
 		host_fd_set *exceptfds, struct host_timeval *timeout);

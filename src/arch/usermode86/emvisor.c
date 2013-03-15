@@ -87,6 +87,10 @@ static int act_tmr(int tmr) {
 		return ret;
 	}
 
+	if (ovrn_count > 1000) {
+		fprintf(stdout, "ovrn is %lld\n", ovrn_count);
+	}
+
 	if (0 > (ret = sendirq(emboxpid, ev_downstream.np_write,
 			EMVISOR_IRQ_TMR, &ovrn_count, sizeof(ovrn_count)))) {
 		return ret;
@@ -188,12 +192,10 @@ static int upstrm_cmd(int pupstream) {
 			return ret;
 		}
 
-		if (0 > (ret = read(0, buf, 1))) {
-			return ret;
-		}
+		ret = read(0, buf, 1);
 
 		return sendirq(emboxpid, ev_downstream.np_write,
-				EMVISOR_IRQ_DIAG_IN, buf, 1);
+				EMVISOR_IRQ_DIAG_IN, buf, ret < 0 ? 0 : ret);
 
 		return 0;
 	case EMVISOR_EOF_IRQ:
@@ -268,6 +270,10 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
+	flags = fcntl(STDIN_FILENO, F_GETFL);
+	if (0 > (ret = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK))) {
+		return 0;
+	}
 
 	flags = fcntl(fd, F_GETFL);
 	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))) {
