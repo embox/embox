@@ -195,7 +195,7 @@ void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
 		usleep(0);
 
 		if (++tmp_bug_fix > 1000) {
-			printk("tcp_obj_lock: error: wake up from infinite loop\n");
+//			printk("tcp_obj_lock: error: wake up from infinite loop\n");
 			break;
 		}
 	}
@@ -319,14 +319,14 @@ static void rebuild_tcp_packet(__be32 ip_src, __be32 ip_dest,
 }
 
 static void tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
-	int ret;
+//	int ret;
 	rebuild_tcp_packet(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.tcp_sk->rem.seq, sock.tcp_sk->self.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
-	ret = ip_send_packet(sock.inet_sk, skb);
-	if (ret != 0) {
-		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
-	}
+	/*ret =*/ ip_send_packet(sock.inet_sk, skb);
+//	if (ret != 0) {
+//		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
+//	}
 }
 
 static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
