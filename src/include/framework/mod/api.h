@@ -157,6 +157,8 @@ extern int mod_disable_nodep(const struct mod *mod);
  */
 extern bool mod_is_running(const struct mod *mod);
 
+extern const struct mod *mod_lookup(const char *fqn);
+
 /**
  * Iterates over a list of all mods registered in the system
  * either running or not.
