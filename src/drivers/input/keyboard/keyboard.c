@@ -103,7 +103,7 @@ static struct input_dev kbd_dev = {
 		.name = "keyboard",
 		.type = INPUT_DEV_KBD,
 		.irq = 1,
-		.indev_get = keyboard_get_input_event,
+		.event_get = keyboard_get_input_event,
 };
 
 static int keyboard_init(void) {
