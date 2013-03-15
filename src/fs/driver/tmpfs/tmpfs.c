@@ -38,7 +38,7 @@ INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define FILESYSTEM_SIZE OPTION_GET(NUMBER,tmpfs_filesystem_size)
 
 #define TMPFS_NAME "tmpfs"
-#define TMPFS_DEV  "/dev/ram0"
+#define TMPFS_DEV  "/dev/ram#"
 #define TMPFS_DIR  "/tmp"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */

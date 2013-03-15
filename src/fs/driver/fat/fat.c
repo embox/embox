@@ -2281,8 +2281,13 @@ static int fatfs_mount(void *dev, void *dir) {
 static int fatfs_create(struct node *parent_node, struct node *node) {
 	struct fat_file_info *fi;
 	struct nas *parent_nas, *nas;
+	int rc;
 
 	assert(parent_node && node);
+
+	if (0 != (rc = fat_check_filename(node->name))) {
+		return -rc;
+	}
 
 	nas = node->nas;
 	parent_nas = parent_node->nas;
@@ -2292,7 +2297,9 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 		return -ENOMEM;
 	}
 
-	fat_create_file(parent_node, node);
+	if(0 != fat_create_file(parent_node, node)) {
+		return -EIO;
+	}
 
 	return 0;
 }
