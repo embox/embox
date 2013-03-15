@@ -11,19 +11,6 @@
 #include <drivers/tty.h>
 #include <kernel/thread/sched.h>
 
-size_t tty_read(struct tty *tty, char *buff, size_t size) {
-	sched_lock();
-		irq_lock();
-		if (0 == tty->rx_queue.count) {
-
-		}
-		irq_unlock();
-		event_wait_ms(&tty->rx_event, SCHED_TIMEOUT_INFINITE);
-	sched_unlock();
-
-	return 1;
-}
-
 size_t tty_write(struct tty *tty, char *buff, size_t size) {
 	return 0;
 }

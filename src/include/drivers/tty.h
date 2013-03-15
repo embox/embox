@@ -13,7 +13,9 @@
 #include <stdint.h>
 #include <termios.h>
 
+#include <kernel/irq_lock.h>
 #include <kernel/thread/event.h>
+#include <kernel/work.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>
@@ -62,13 +64,17 @@ struct tty_queue {
 struct tty {
 	struct tty_ops   *ops;
 	struct termios    termios;
-	struct tty_queue  rx_queue, tx_queue;
-	struct event      rx_event, tx_event;
+
+	struct work       rx_work;
+	struct event      read_event;
+
+	struct tty_queue  rx_queue;
+	struct tty_queue  local_queue;
 };
 
 struct tty_ops {
 	void (*setup)(struct tty *, struct termios *);
-	void (*tx_start)(struct tty *);
+	void (*start_tx)(struct tty *);
 };
 
 extern struct tty *tty_init(struct tty *, struct tty_ops *);
@@ -77,16 +83,37 @@ extern size_t tty_read(struct tty *, char *, size_t);
 extern size_t tty_write(struct tty *, char *, size_t);
 extern int tty_ioctl(struct tty *, int, void *);
 
-/* These functions can be called from IRQ context. */
-
-extern void tty_tx_done(struct tty *);
-extern void tty_rx_char(struct tty *, char);
-
-/* TTY RX/TX queues operations, IRQ-safe. */
+/* TTY RX/TX queues operations. */
 
 extern struct tty_queue *tty_queue_init(struct tty_queue *);
 extern int tty_enqueue(struct tty_queue *, char);
 extern int tty_dequeue(struct tty_queue *);
+
+static inline int tty_queue_full(struct tty_queue *tq) {
+	return tq->count == TTY_QUEUE_SZ;
+}
+static inline int tty_queue_empty(struct tty_queue *tq) {
+	return !tq->count;
+}
+
+/* These functions can be called from IRQ context. */
+
+extern void tty_tx_done(struct tty *);
+extern void tty_post_rx(struct tty *);
+
+static inline int tty_rx_putc(struct tty *t, char ch) {
+	int rc = IRQ_LOCKED_DO(tty_enqueue(&t->rx_queue, ch));
+	if (rc != -1) {
+		tty_post_rx(t);
+	}
+	return rc;
+}
+
+#if 0
+static inline int tty_tx_getc(struct tty *t) {
+	return IRQ_LOCKED_DO(tty_dequeue(&t->tx_queue));
+}
+#endif
 
 struct kfile_operations;
 extern int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops);
