@@ -51,7 +51,7 @@ static inline void irq_unlock(void) {
 /**
  * Evaluate a given @a expr inside an IRQ-protected block.
  */
-#define IRQ_LOCKED(expr) \
+#define IRQ_LOCKED_DO(expr) \
 	({                      \
 		typeof(expr) __ret; \
 		irq_lock();         \
