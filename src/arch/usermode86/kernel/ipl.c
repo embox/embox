@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <errno.h>
 #include <kernel/host.h>
 #include <kernel/umirq.h>
@@ -14,12 +15,9 @@
 
 static int ipl_num;
 
-static volatile int __iplhflag;
-
 #include <prom/prom_printf.h>
 static void ipl_highest(int signal) {
 
-	__iplhflag = 1;
 	prom_printf("recv high\n");
 }
 
@@ -49,9 +47,14 @@ static void ipl_lowest(int signal) {
 		return;
 	}
 
-	irq_queue();
+	while (0 < irq_queue()) {
+
+	}
 
 	ipl_enable();
+
+	emvisor_send(UV_PWRUPSTRM, EMVISOR_EOF_IRQ, NULL, 0);
+
 }
 
 static const host_sighandler_t ipl_table[] = {

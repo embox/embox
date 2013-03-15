@@ -24,7 +24,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
 	emvisor_recvnbody(UV_PRDDOWNSTRM, &ovrn_count, sizeof(ovrn_count));
 
-	/*prom_printf("got ticks: %lld\n", ovrn_count);*/
+	/*prom_printf("got: %lld\n", ovrn_count);*/
 	prom_printf("%%");
 
 	while (ovrn_count--) {
@@ -42,7 +42,7 @@ static cycle_t ppc_clk_read(void) {
 
 static struct time_event_device umclock_ev = {
 	.config = clk_config,
-	.resolution = 5000,
+	.resolution = 1000,
 	.irq_nr = CLOCK_IRQ,
 };
 

@@ -46,8 +46,6 @@ void irq_entry(int irq) {
 
 		irq_dispatch(irq);
 
-		emvisor_send(UV_PWRUPSTRM, EMVISOR_EOF_IRQ, NULL, 0);
-
 		ipl_disable();
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
