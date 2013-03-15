@@ -16,7 +16,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: lsmod [-dhpn]\n");
+	printf("Usage: lsmod [-qdhpn]\n");
 }
 
 static void mod_print(const struct mod *mod) {
@@ -31,7 +31,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "dhp:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "qdhp:n:"))) {
 		switch (opt) {
 		case 'd':
 			print_deps = 1;
