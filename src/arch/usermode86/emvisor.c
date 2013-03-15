@@ -34,12 +34,24 @@ static char need_signal = 1;
 static int sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
 		const void *data, int dlen) {
 	int sg = need_signal;
+	int ret;
 
 	if (need_signal) {
 		need_signal = 0;
 	}
 
-	return emvisor_sendirq(pid, sg, fd, type, data, dlen);
+	ret = emvisor_sendirq(pid, sg, fd, type, data, dlen);
+	if (-1 == ret) {
+		ret = -errno;
+	}
+
+	if (ret == -EAGAIN) {
+		fprintf(stderr, "Warning: downstream is full\n");
+		ret = 0;
+	}
+
+	return ret;
+
 }
 
 static int maxfd;
@@ -67,27 +79,6 @@ static void fdact_del(int fd) {
 	 */
 }
 
-static int embox(const char *file) {
-	int pdownstream = ev_downstream.np_read;
-	int pwdownstream = ev_downstream.np_write;
-	int pupstream = ev_upstream.np_write;
-	int ret;
-
-	dup2(pdownstream,  UV_PRDDOWNSTRM);
-	dup2(pwdownstream, UV_PWRDOWNSTRM);
-	dup2(pupstream,    UV_PWRUPSTRM);
-
-	close(pdownstream);
-	close(pwdownstream);
-	close(pupstream);
-
-	if (-1 == (ret = execlp(file, file, NULL))) {
-		ret = -errno;
-	}
-
-	return ret;
-}
-
 static int act_tmr(int tmr) {
 	unsigned long long ovrn_count;
 	int ret;
@@ -96,7 +87,9 @@ static int act_tmr(int tmr) {
 		return ret;
 	}
 
-	/*fprintf(stdout, "ovrn is %lld\n", ovrn_count);*/
+	if (ovrn_count > 1000) {
+		fprintf(stdout, "ovrn is %lld\n", ovrn_count);
+	}
 
 	if (0 > (ret = sendirq(emboxpid, ev_downstream.np_write,
 			EMVISOR_IRQ_TMR, &ovrn_count, sizeof(ovrn_count)))) {
@@ -147,16 +140,35 @@ static int tmrset(int pupstream, const struct emvisor_msghdr *msg) {
 	return 0;
 }
 
+static int upstrm_cmd(int pupstream);
+
 static int act_upstrrd(int pupstream) {
+	int ret;
+
+	while (0 > (ret = upstrm_cmd(pupstream))) {
+
+	}
+
+	if (ret == -EAGAIN) {
+		ret = 0;
+	}
+
+	return ret;
+}
+
+static int upstrm_cmd(int pupstream) {
 	struct emvisor_msghdr msg;
 	char buf[DATA_BUFLEN];
-	int ret;
+	int flags, ret;
 
 	assert(pupstream == ev_upstream.np_read);
 
+	flags = fcntl(pupstream, F_GETFL);
+	fcntl(pupstream, F_SETFL, flags | O_NONBLOCK);
 	if (0 > (ret = emvisor_recvmsg(pupstream, &msg))) {
-		return ret;
+		return -errno;
 	}
+	fcntl(pupstream, F_SETFL, flags);
 
 	if (!ret) {
 		return -EPIPE;
@@ -180,17 +192,15 @@ static int act_upstrrd(int pupstream) {
 			return ret;
 		}
 
-		if (0 > (ret = read(0, buf, 1))) {
-			return ret;
-		}
+		ret = read(0, buf, 1);
 
 		return sendirq(emboxpid, ev_downstream.np_write,
-				EMVISOR_IRQ_DIAG_IN, buf, 1);
+				EMVISOR_IRQ_DIAG_IN, buf, ret < 0 ? 0 : ret);
 
 		return 0;
 	case EMVISOR_EOF_IRQ:
 
-		fprintf(stdout, "got irq ack\n");
+		/*fprintf(stdout, "got irq ack\n");*/
 		need_signal = 1;
 
 		return 0;
@@ -246,7 +256,7 @@ static int emvisor(pid_t emboxpid) {
 }
 
 int main(int argc, char **argv) {
-	int fd, ret;
+	int fd, flags, ret;
 
 	if (argc != 4) {
 		return -EINVAL;
@@ -256,18 +266,31 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-
 	if (0 > (fd = open(argv[2], O_WRONLY))) {
-		return -EINVAL;
+		return -errno;
 	}
+
+	flags = fcntl(STDIN_FILENO, F_GETFL);
+	if (0 > (ret = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK))) {
+		return 0;
+	}
+
+	flags = fcntl(fd, F_GETFL);
+	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))) {
+		return 0;
+	}
+
 	ev_downstream.np_write = fd;
 
 	if (0 > (fd = open(argv[3], O_RDONLY))) {
-		return -EINVAL;
+		return -errno;
 	}
 	ev_upstream.np_read = fd;
 
-	return emvisor(emboxpid);
+	ret = emvisor(emboxpid);
+
+	printf("Emvisor exit: %d", ret);
+	return ret;
 
 }
 

@@ -17,7 +17,7 @@ int getpriority(int which, id_t who) {
 	int tid;
 	struct task *task;
 
-	while ((tid = task_table_get_first(tid)) != -1) {
+	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
 		switch (which) {
 		default:
@@ -41,7 +41,7 @@ int getpriority(int which, id_t who) {
 		}
 	}
 
-	SET_ERRNO(ESRCH);
+	SET_ERRNO(-tid);
 	return -1;
 }
 
@@ -50,7 +50,7 @@ int setpriority(int which, id_t who, int value) {
 	struct task *task;
 
 	exist = 0;
-	while ((tid = task_table_get_first(tid)) != -1) {
+	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
 		switch (which) {
 		default:
@@ -60,7 +60,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->tid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
@@ -69,7 +70,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->u_area->regid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
@@ -78,7 +80,8 @@ int setpriority(int which, id_t who, int value) {
 			if (task->u_area->reuid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
-					return ret;
+					SET_ERRNO(-ret);
+					return -1;
 				}
 				exist = 1;
 			}
@@ -87,7 +90,7 @@ int setpriority(int which, id_t who, int value) {
 	}
 
 	if (!exist) {
-		SET_ERRNO(ESRCH);
+		SET_ERRNO(-tid);
 		return -1;
 	}
 

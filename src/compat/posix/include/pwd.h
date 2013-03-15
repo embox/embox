@@ -31,7 +31,6 @@ extern int getpwuid_r(uid_t uid, struct passwd *pwd,
 		char *buf, size_t buflen, struct passwd **result);
 
 static inline struct passwd *getpwuid(uid_t uid) { return NULL; }
-static inline struct passwd *getpwnam(const char *name) { return NULL; }
 static inline void endpwent(void) { }
 static inline struct passwd * getpwent(void) { return NULL; }
 static inline void setpwent(void) { }

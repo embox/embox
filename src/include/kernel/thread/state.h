@@ -24,11 +24,14 @@ extern bool thread_state_detached(thread_state_t state);
 extern bool thread_state_started(thread_state_t state);
 extern bool thread_state_running(thread_state_t state);
 extern bool thread_state_dead(thread_state_t state);
+extern bool thread_state_oncpu(thread_state_t state);
 
 extern thread_state_t thread_state_do_activate(thread_state_t state);
 extern thread_state_t thread_state_do_sleep(thread_state_t state);
 extern thread_state_t thread_state_do_wake(thread_state_t state);
 extern thread_state_t thread_state_do_exit(thread_state_t state);
 extern thread_state_t thread_state_do_detach(thread_state_t state);
+extern thread_state_t thread_state_do_oncpu(thread_state_t state);
+extern thread_state_t thread_state_do_outcpu(thread_state_t state);
 
 #endif /* KERNEL_THREAD_STATE_H_ */

@@ -15,12 +15,15 @@
 
 EMBOX_CMD(exec);
 
+/* TODO remove this */
+static inline struct passwd *getpwnam(const char *name) { return NULL; }
+
 static int exec(int argc, char **argv) {
 	int with_incr, incr, ind, prior, with_n, which, ret;
 	id_t who;
 	struct passwd *p;
 
-	if (argc < 3) {
+	if (argc == 1) {
 		return -EINVAL;
 	}
 
@@ -74,8 +77,9 @@ static int exec(int argc, char **argv) {
 			}
 
 			if (with_n) {
+				errno = 0;
 				prior = getpriority(which, who);
-				if (prior == -1) {
+				if ((prior == -1) && (errno != 0)) {
 					return -errno;
 				}
 				prior += incr;

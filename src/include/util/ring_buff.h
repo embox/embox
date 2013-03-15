@@ -20,15 +20,68 @@ struct ring_buff {
 	size_t elem_size;     /**< size of element */
 };
 
-extern size_t ring_buff_enqueue(struct ring_buff *buf, void *elem, size_t cnt);
+/**
+ * @brief Enqueue elements from @a elem array of lenght @a cnt. It cannot enqueue more
+ * than buffer can hold.
+ *
+ * @param buf
+ * @param elem
+ * @param cnt
+ *
+ * @return Count of enqueued elements
+ */
+extern int ring_buff_enqueue(struct ring_buff *buf, void *elem, int cnt);
 
-extern size_t ring_buff_dequeue(struct ring_buff *buf, void *elem, size_t cnt);
+/**
+ * @brief Enqueue elements from @a elem array of length @a cnt, possibly overwriting
+ * oldest elements.
+ *
+ * @param buf
+ * @param elem
+ * @param cnt
+ *
+ * @return Count of enqueued elements
+ */
+extern int ring_buff_enqueueover(struct ring_buff *buf, void *elem, int cnt);
 
-extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, size_t count, void *storage);
+/**
+ * @brief Dequeue @a cnt elements from @a buf to array @a elem
+ *
+ * @param buf
+ * @param elem
+ * @param cnt
+ *
+ * @return Number of dequeued elements
+ */
+extern int ring_buff_dequeue(struct ring_buff *buf, void *elem, int cnt);
 
-extern size_t ring_buff_get_cnt(struct ring_buff *buf);
+/**
+ * @brief Alloc space in @a buf for @a n elements.
+ *
+ * @param buf
+ * @param n
+ * @param ret
+ *
+ * @return Number of elements that @a *ret can hold
+ */
+extern int ring_buff_alloc(struct ring_buff *buf, int n, void **ret);
 
-extern size_t ring_buff_get_space(struct ring_buff *buf);
+/**
+ * @brief Alloc space in @a buf, possible overwriting old elements
+ *
+ * @param buf
+ * @param n
+ * @param ret
+ *
+ * @return Number of elements that @a *ret can hold
+ */
+extern int ring_buff_allocover(struct ring_buff *buf, int n, void **ret);
+
+extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage);
+
+extern int ring_buff_get_cnt(struct ring_buff *buf);
+
+extern int ring_buff_get_space(struct ring_buff *buf);
 
 #define RING_BUFFER_DEF(name, elem_type, req_len) \
 	static elem_type name##_storage[req_len];     \

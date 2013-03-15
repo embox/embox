@@ -119,11 +119,11 @@ static int ext2_mount_entry(struct nas *nas);
 
 /* ext filesystem description pool */
 POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
-		OPTION_GET(NUMBER,ext_descriptor_quantity));
+		OPTION_GET(NUMBER,ext2_descriptor_quantity));
 
 /* ext file description pool */
 POOL_DEF(ext2_file_pool, struct ext2_file_info,
-		OPTION_GET(NUMBER,ext_inode_quantity));
+		OPTION_GET(NUMBER,inode_quantity));
 
 #define EXT_NAME "ext2"
 

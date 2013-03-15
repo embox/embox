@@ -281,5 +281,6 @@ typedef struct fat_file_info {
 
 void fat_set_filetime(dir_ent_t *de);
 void fat_get_filename(char *tmppath, char *filename);
+int fat_check_filename(char *filename);
 
 #endif /* FAT_H_ */

@@ -30,10 +30,13 @@ static int exec(int argc, char **argv) {
 		return ret;
 	}
 
+	/* lookup info */
 	printf("Server: %s\n", dns_get_nameserver());
 	printf("Address: %s#%d\n", dns_get_nameserver(), DNS_PORT_NUMBER);
 
-	printf("\nAnswers:\n");
+	/* answer */
+	printf("\n%s:\n", result.nscount != 0 ? "Authoritative answer"
+			: "Non-authoritative answer");
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
 		if (rr->rtype == DNS_RR_TYPE_A) {
 			printf("Name: %s\tAddress: %s\n", &rr->rname[0],
@@ -41,10 +44,13 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	printf("\nAuthoritative nameservers:\n");
-	for (i = 0, rr = result.ns; i < result.nscount; ++i, ++rr) {
-		printf("Name: %s\tNameserver: %s\n", &rr->rname[0],
-				&rr->rdata.ns.nsdname[0]);
+	/* authoritive */
+	if (result.nscount != 0) {
+		printf("\nAuthoritative nameservers:\n");
+		for (i = 0, rr = result.ns; i < result.nscount; ++i, ++rr) {
+			printf("Name: %s\tNameserver: %s\n", &rr->rname[0],
+					&rr->rdata.ns.nsdname[0]);
+		}
 	}
 
 	dns_result_free(&result);

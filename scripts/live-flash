@@ -1,5 +1,7 @@
 
-SYSLINUX_SYSPATH=/lib/syslinux/
+SYSLINUX_ROOT=$(dirname $0)/syslinux
+EXTLINUX=${SYSLINUX_ROOT}/sbin/extlinux
+SYSLINUX_SHARE=${SYSLINUX_ROOT}/usr/share/syslinux
 
 EMBOX_MULTIBOOT=./build/base/bin/embox
 
@@ -42,11 +44,11 @@ syslinux_do() {
 
 	[ -d $SYSLINUX_DIR ] || mkdir -p $SYSLINUX_DIR
 
-	extlinux -i $SYSLINUX_DIR
+	$EXTLINUX -i $SYSLINUX_DIR
 
-	dd if=$SYSLINUX_SYSPATH/mbr.bin of=$DRIVE
+	dd if=${SYSLINUX_ROOT}/usr/share/syslinux/mbr.bin of=$DRIVE
 
-	cp $SYSLINUX_SYSPATH/mboot.c32 $MP/boot/syslinux
+	cp $SYSLINUX_SHARE/{libcom32,mboot}.c32 $SYSLINUX_DIR/
 
 	cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
 

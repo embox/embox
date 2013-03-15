@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -266,3 +267,33 @@ opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }
+
+const struct mod *mod_lookup(const char *fqn) {
+	const struct mod *mod;
+	const char *mod_name = strrchr(fqn, '.');
+	size_t pkg_name_len;
+
+	if (!mod_name) {
+		mod_name = fqn;  /* no package, name starts from the beginning */
+	}
+
+	pkg_name_len = mod_name - fqn;
+
+	if (pkg_name_len) {
+		++mod_name;  /* skip '.' */
+	}
+
+	mod_foreach(mod) {
+		if (strcmp(mod->name, mod_name)) {
+			continue;
+		}
+		if (strncmp(mod->package->name, fqn, pkg_name_len) ||
+		    mod->package->name[pkg_name_len]) {
+			continue;
+		}
+		return mod;
+	}
+
+	return NULL;
+}
+

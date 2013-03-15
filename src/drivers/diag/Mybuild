@@ -33,7 +33,7 @@ module tty_diag extends diag_api {
 	source "tty_diag.c"
 
 	depends embox.driver.tty.tty
-	depends embox.driver.input.keyboard.keyboard
+	depends embox.driver.input.keyboard.diag
 }
 
 module xuartlite extends diag_api {

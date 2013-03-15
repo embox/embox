@@ -16,16 +16,17 @@
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
-	int incr, ind, prior;
+	int ret, ind, old_prior, prior;
 	const struct cmd *cmd;
 
-	prior = getpriority(PRIO_PROCESS, 0);
-	if (prior == -1) {
+	errno = 0;
+	old_prior = getpriority(PRIO_PROCESS, 0);
+	if ((old_prior == -1) && (errno != 0)) {
 		return -errno;
 	}
 
 	if (argc == 1) {
-		printf("%d\n", prior);
+		printf("%d\n", old_prior);
 		return 0;
 	}
 
@@ -36,10 +37,9 @@ static int exec(int argc, char **argv) {
 			return 0;
 		}
 		else if (strcmp(argv[ind], "-n") == 0) {
-			if ((++ind == argc) || (sscanf(argv[ind], "%d", &incr) != 1)) {
+			if ((++ind == argc) || (sscanf(argv[ind], "%d", &prior) != 1)) {
 				return -EINVAL;
 			}
-			prior += incr;
 		}
 		else {
 			break;
@@ -56,9 +56,13 @@ static int exec(int argc, char **argv) {
 		return -ENOENT;
 	}
 
-	if (-1 == setpriority(PRIO_PROCESS, 0, prior)) {
+	if (-1 == setpriority(PRIO_PROCESS, 0, old_prior + prior)) {
 		return -errno;
 	}
 
-	return cmd_exec(cmd, argc - ind, argv + ind);
+	ret = cmd_exec(cmd, argc - ind, argv + ind); /* TODO create new task */
+
+	setpriority(PRIO_PROCESS, 0, old_prior); /* restore old priority */
+
+	return ret;
 }

@@ -4,9 +4,9 @@ package embox.cmd
 	help = "Lists mod info emitted by EMBuild",
 	man = '''
 		NAME
-			lsmod [-qh] [-p <pkg_name>] [-n <mod_name>]
+			lsmod [-dh] [-p <pkg_name>] [-n <mod_name>]
 		OPTIONS
-			-q  - quiet output (no dependencies)
+			-d  - also print dependencies
 			-h  - print help
 			-p  - show mods with <pkg_name>
 			-n  - show mods with <mod_name>

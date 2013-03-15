@@ -1,5 +1,5 @@
 
-USERMODE_DIR := src/arch/usermode86/
+USERMODE_DIR := src/arch/usermode86
 
 SRCS := emvisor.c uservisor_base.c
 OBJS := $(SRCS:%.c=%.o)

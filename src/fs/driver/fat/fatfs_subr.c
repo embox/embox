@@ -9,11 +9,53 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <fs/fat.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
 
+
+int fat_check_filename(char *filename) {
+	char *point;
+	int len;
+	int extlen;
+	/* filename.ext <= 8 + 3 + dot */
+	if(MSDOS_NAME + 1 < (len = strlen(filename))) {
+		return ENAMETOOLONG;
+	}
+	point = filename + len;
+	extlen = 0;
+
+	/* set point to a dot */
+	do {
+		if(*point == '.') {
+			break;
+		}
+		point --;
+		extlen++;
+
+	} while (point > filename);
+
+	if(*point == '.') {
+		if(extlen > 4) {
+			/* normal only if name is .filename */
+			if(point != filename) {
+				return EINVAL;
+			}
+		} else {
+			if(len - extlen > 8) {
+				return ENAMETOOLONG;
+			}
+			if(1 >= extlen) {
+				return EINVAL;
+			}
+		}
+	} else if(len > 8) {
+		return ENAMETOOLONG;
+	}
+	return 0;
+}
 
 void fat_get_filename(char *tmppath, char *filename) {
 	char *p;

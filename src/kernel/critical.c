@@ -39,7 +39,7 @@ void critical_dispatch_pending(void) {
 }
 
 void critical_request_dispatch(struct critical_dispatcher *d) {
-	struct critical_dispatcher **pp = percpu_ptr(&dispatch_queue);
+	struct critical_dispatcher **pp;
 	critical_t inv_mask;
 	ipl_t ipl;
 
@@ -55,8 +55,9 @@ void critical_request_dispatch(struct critical_dispatcher *d) {
 
 	inv_mask = d->mask;
 
-	while (*pp && !((*pp)->mask & inv_mask)) {
-		pp = &(*pp)->next;
+	for (pp = percpu_ptr(&dispatch_queue); *pp; pp = &(*pp)->next) {
+		if ((*pp)->mask & inv_mask)
+			break;
 	}
 
 	d->next = *pp;

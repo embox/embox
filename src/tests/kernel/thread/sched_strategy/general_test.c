@@ -13,14 +13,14 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread.h>
 
-struct runq runq;
-struct thread idle, current;
+static struct runq runq;
+static struct thread idle, current;
 
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 
 TEST_SETUP(setup);
 TEST_TEARDOWN(teardown);
-
+#if 0
 static void make_switch(void);
 static void thread_initialize(struct thread* thread, __thread_priority_t priority);
 
@@ -153,12 +153,13 @@ static void make_switch(void) {
 		test_assert_true(runq_current(&runq) != prev);
 	}
 }
-
+#endif
 static void thread_initialize(struct thread* thread, __thread_priority_t priority) {
 	thread->state = thread_state_init();
 	thread->priority = priority;
 	sched_strategy_init(&thread->sched);
 }
+
 
 static int setup(void) {
 	thread_initialize(&idle, THREAD_PRIORITY_MIN);

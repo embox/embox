@@ -1,3 +1,7 @@
 root:_:::::::
 user:high_label:::::::
 guest:low_label:::::::
+unclassified:unclassified:::::::
+service:service:::::::
+secret:secret:::::::
+confidentally:confidentally:::::::

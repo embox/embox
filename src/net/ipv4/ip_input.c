@@ -21,6 +21,7 @@
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
+#include <net/netfilter.h>
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
@@ -61,6 +62,12 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		//LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
+		skb_free(skb);
+		return NET_RX_DROP;
+	}
+
+	if (!nf_valid_skb(NF_CHAIN_INPUT, skb)) {
+		stats->rx_dropped++;
 		skb_free(skb);
 		return NET_RX_DROP;
 	}

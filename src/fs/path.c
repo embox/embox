@@ -153,7 +153,7 @@ char *path_canonical_to_dir(char *dest, char *src) {
 			src++;
 			continue;
 		}
-		if (*src >= 'a' && *dest <='z') {
+		if (*src >= 'a' && *src <='z') {
 			*src = (*src - 'a') + 'A';
 		}
 

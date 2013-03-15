@@ -66,6 +66,10 @@ host_pid_t host_getpid(void) {
 	return syscall(NR_GETPID, 0, 0, 0, 0, 0);
 }
 
+int host_pause(void) {
+	return syscall(NR_PAUSE, 0, 0, 0, 0, 0);
+}
+
 int host_select(int nfds, host_fd_set *readfds, host_fd_set *writefds,
 		host_fd_set *exceptfds, struct host_timeval *timeout) {
 	return syscall(NR_SELECT, nfds, (int) readfds, (int) writefds,

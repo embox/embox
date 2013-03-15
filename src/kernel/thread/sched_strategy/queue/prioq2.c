@@ -23,13 +23,15 @@ void sched_strategy_init(struct sched_strategy_data *s) {
 /* runq operations */
 
 void runq_queue_init(runq_queue_t *queue) {
-	for (int i = THREAD_PRIORITY_MIN; i <= THREAD_PRIORITY_MAX; i++) {
+	int i;
+
+	for (i = SCHED_PRIORITY_MIN; i <= SCHED_PRIORITY_MAX; i++) {
 		dlist_init(&queue->list[i]);
 	}
 }
 
 void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched.link, &queue->list[thread->priority]);
+	dlist_add_prev(&thread->sched.link, &queue->list[thread->sched_priority]);
 }
 
 void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
@@ -37,19 +39,27 @@ void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
 }
 
 struct thread *runq_queue_extract(runq_queue_t *queue) {
-	struct thread *thread = NULL, *t, *nxt;
+	struct thread *thread = NULL;
+	int i;
 
-	for (int i = THREAD_PRIORITY_MAX; i >= THREAD_PRIORITY_MIN; i--) {
-		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
-#ifdef SMP
-			/* Checking the affinity */
-			if ((~t->task->naffinity) | (cpu_get_id())) {
-				thread = t;
-			}
-#else
-			thread = t;
-#endif
+	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
+#ifndef SMP
+		if (!dlist_empty(&queue->list[i])) {
+			thread = dlist_entry(queue->list[i].next, struct thread,
+					sched.link);
 		}
+#else
+		struct thread *t, *nxt;
+		unsigned int mask = 1 << cpu_get_id();
+		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
+			/* Checking the affinity */
+			if ((thread_get_affinity(t) & mask)
+				&& (task_get_affinity(t->task) & mask)) {
+				thread = t;
+				break;
+			}
+		}
+#endif
 
 		if (thread) {
 			runq_queue_remove(queue, thread);
@@ -66,7 +76,8 @@ static inline int thread_prio_comparator(struct prioq_link *first,
 		struct prioq_link *second) {
 	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
 	struct thread *t2 = prioq_element(second, struct thread, sched.pq_link);
-	return t1->priority - t2->priority;
+	return t1->sched_priority < t2->sched_priority ? -1
+			: t1->sched_priority > t2->sched_priority;
 }
 
 void sleepq_queue_init(sleepq_queue_t *queue) {

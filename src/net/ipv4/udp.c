@@ -92,6 +92,12 @@ static int udp_rcv(struct sk_buff *skb) {
 	iph = ip_hdr(skb);
 	udph = udp_hdr(skb);
 	sk = udp_lookup(iph->daddr, udph->dest);
+
+	/* FIXME for bootp; use raw socket */
+	if (sk == NULL) {
+		sk = udp_lookup(0, udph->dest);
+	}
+
 	if (sk != NULL) {
 		inet = inet_sk(sk);
 		inet->dport = udph->source;

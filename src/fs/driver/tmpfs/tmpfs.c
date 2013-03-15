@@ -29,16 +29,16 @@
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_info, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
 
 /* tmpfs file description pool */
-POOL_DEF(tmpfs_file_pool, struct tmpfs_file_info, OPTION_GET(NUMBER,tmpfs_inode_quantity));
+POOL_DEF(tmpfs_file_pool, struct tmpfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
-INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,tmpfs_inode_quantity));
+INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,tmpfs_file_size)
 #define FILESYSTEM_SIZE OPTION_GET(NUMBER,tmpfs_filesystem_size)
 
 #define TMPFS_NAME "tmpfs"
-#define TMPFS_DEV  "/dev/ram0"
+#define TMPFS_DEV  "/dev/ram#"
 #define TMPFS_DIR  "/tmp"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */

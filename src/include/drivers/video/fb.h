@@ -14,6 +14,8 @@
 #include <string.h>
 #include <stdint.h>
 
+__BEGIN_DECLS
+
 struct fb_info;
 struct fb_copyarea;
 struct fb_fillrect;
@@ -186,5 +188,7 @@ extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
 
 struct video_resbpp;
 extern const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp);
+
+__END_DECLS
 
 #endif /* DRIVERS_VIDEO_FB_H_ */

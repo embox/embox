@@ -11,6 +11,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+#include <kernel/task.h>
 
 #include <stdio.h>
 
@@ -25,7 +26,7 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 }
 
 static inline uint32_t thread_timeslice(struct thread *thread) {
-	return MSEC_PRIORITY_MULTIPLIER * thread->priority;
+	return MSEC_PRIORITY_MULTIPLIER * (TASK_PRIORITY_MAX - thread->task->priority);
 }
 
 void runq_init(struct runq *runq, struct thread *current, struct thread *idle) {
@@ -139,15 +140,17 @@ void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
 	current->state = thread_state_do_sleep(current->state);
 }
 
-int runq_change_priority(struct runq *runq, struct thread *thread, int new_priority) {
+int runq_change_priority(struct runq *runq, struct thread *thread,
+		sched_priority_t new_priority) {
 	assert(runq && thread);
-	thread->priority = new_priority;
+	thread->sched_priority = new_priority;
 	return 0;
 }
 
-void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread, int new_priority) {
+void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
+		sched_priority_t new_priority) {
 	assert(sleepq && thread);
-	thread->priority = new_priority;
+	thread->sched_priority = new_priority;
 }
 
 int runq_switch(struct runq *runq) {

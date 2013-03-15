@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <kernel/task.h>
+#include <kernel/cpu.h>
 #include <linux/list.h>
 #include "common.h"
 
@@ -71,6 +72,9 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 		res_desc->init(task, res_ptr);
 		res_ptr += res_desc->resource_size;
 	}
+
+	/* FIXME: This should be only in SMP */
+	task->affinity = (1 << NCPU) - 1;
 
 	return task;
 

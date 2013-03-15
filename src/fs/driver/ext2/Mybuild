@@ -3,8 +3,8 @@ package embox.fs.driver
 module ext2 {
 	source "ext2.c"
 	source "ext2_balloc.c"
-	option number ext_inode_quantity=64
-	option number ext_descriptor_quantity=4
+	option number inode_quantity=64
+	option number ext2_descriptor_quantity=4
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.driver.block

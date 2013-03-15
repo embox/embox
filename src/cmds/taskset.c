@@ -50,11 +50,18 @@ static int exec(int argc, char **argv) {
 				return -ENOENT;
 			}
 
-			printf("tid %d's current affinity mask: %x\n", tid, (~task->naffinity));
+			printf("tid %d's current affinity mask: %x\n",
+					tid, task_get_affinity(task));
 
 			if (argc == 4) {
-				task->naffinity = ~(strtol(argv[argc - 2], NULL, 16));
-				printf("tid %d's new affinity mask: %x\n", tid, (~task->naffinity));
+				if (task == task_kernel_task()) {
+					printf("Couldn't change affinity mask of kernel task\n");
+					return -EINVAL;
+				} else {
+					task_set_affinity(task, strtol(argv[argc - 2], NULL, 16));
+					printf("tid %d's new affinity mask: %x\n",
+						tid, task_get_affinity(task));
+				}
 			}
 
 			return ENOERR;

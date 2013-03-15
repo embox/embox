@@ -21,11 +21,17 @@ EMBOX_UNIT_INIT(umclock_init);
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	unsigned long long ovrn_count;
+	int ret;
 
-	emvisor_recvnbody(UV_PRDDOWNSTRM, &ovrn_count, sizeof(ovrn_count));
+	while (0 >= (ret = emvisor_recvnbody(UV_PRDDOWNSTRM,
+					&ovrn_count, sizeof(ovrn_count)))) {
 
-	/*prom_printf("got ticks: %lld\n", ovrn_count);*/
-	prom_printf("%%");
+	}
+
+	/* yep, reading a bit of 8 bytes is not supported and
+	 * hopefully will not occur.
+	 */
+	assert(ret == sizeof(ovrn_count));
 
 	while (ovrn_count--) {
 		clock_tick_handler(irq_nr, data);
@@ -42,7 +48,7 @@ static cycle_t ppc_clk_read(void) {
 
 static struct time_event_device umclock_ev = {
 	.config = clk_config,
-	.resolution = 5000,
+	.resolution = 1000,
 	.irq_nr = CLOCK_IRQ,
 };
 
