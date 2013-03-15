@@ -157,6 +157,13 @@ extern int mod_disable_nodep(const struct mod *mod);
  */
 extern bool mod_is_running(const struct mod *mod);
 
+/**
+ * Search for a module with a given FQN (fully.qualified.name)
+ * @param fqn
+ *   Module name, including packages.
+ * @return
+ *   Found module, if any, NULL otherwise.
+ */
 extern const struct mod *mod_lookup(const char *fqn);
 
 /**
