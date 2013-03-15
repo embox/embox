@@ -140,7 +140,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	tx_pack->hdr.ip_hdr.proto = IPPROTO_ICMP;
 	/* fill out icmp header */
 	tx_pack->hdr.icmp_hdr.type = ICMP_ECHO;
-	tx_pack->hdr.icmp_hdr.code = 1;
+	tx_pack->hdr.icmp_hdr.code = 0;
 	tx_pack->hdr.icmp_hdr.un.echo.id = 11; /* TODO: get unique id */
 	tx_pack->hdr.icmp_hdr.un.echo.sequence = 0;
 
