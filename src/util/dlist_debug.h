@@ -60,6 +60,7 @@ static inline int __is_linked(struct dlist_head *head) {
  * in any list
  */
 static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
+	head->next = head->prev = head;
 	head->list_id = (struct dlist_head *)NULL; /* mark it's not in a list */
 
 	return head;
