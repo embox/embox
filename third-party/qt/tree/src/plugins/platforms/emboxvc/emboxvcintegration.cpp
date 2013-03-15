@@ -25,20 +25,17 @@ bool QEmboxVCIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 
 QPixmapData *QEmboxVCIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-	printf(">>createPixmapData\n");
     return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QEmboxVCIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    printf(">>createPlatformWindow\n");
     return new QPlatformWindow(widget);
 }
 
 QWindowSurface *QEmboxVCIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    printf(">>createWindowSurface\n");
     return new QEmboxVCWindowSurface(widget);
 }
