@@ -189,9 +189,12 @@ static int login_cmd(int argc, char **argv) {
 	shell = shell_lookup(result->pw_shell);
 
 	if (NULL == shell) {
-		shell = shell_any();
+		shell = shell_lookup("tish");
 	}
 
+	if (NULL == shell) {
+		shell = shell_any();
+	}
 	if (NULL == shell) {
 		return -ENOENT;
 	}

@@ -89,6 +89,14 @@ static int process(int argc, char *argv[]) {
 		return 0;
 	}
 
+	if (!strcmp(argv[0], "exit")) {
+		return -1;
+	}
+
+	if (!strcmp(argv[0], "logout")) {
+		return -1;
+	}
+
 	if (!strcmp(argv[argc - 1], "&")) {
 		struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
 		char *p = m->buf;
@@ -105,10 +113,14 @@ static int process(int argc, char *argv[]) {
 
 		*p = '\0';
 
-		return new_task(argv[0], cmdtask, m);
+		new_task(argv[0], cmdtask, m);
+
+		return 0;
 	}
 
-	return run_cmd(argc, argv);
+	run_cmd(argc, argv);
+
+	return 0;
 }
 
 int shell_line_input(const char *cmdline) {
@@ -147,7 +159,9 @@ static void tish_run(void) {
 
 		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
-		shell_line_input(inp_buf);
+		if (0 > shell_line_input(inp_buf)) {
+			return;
+		}
 	}
 }
 
