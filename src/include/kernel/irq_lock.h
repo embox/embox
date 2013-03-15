@@ -32,7 +32,7 @@ static inline void irq_lock(void) {
 
 /**
  * Unlock hardirq and to came out from critical section.
- * Must be called on the previously locked irq only
+ * Must be called on the previously locked irq only.
  *
  * @see irq_lock()
  */
@@ -47,5 +47,17 @@ static inline void irq_unlock(void) {
 		critical_dispatch_pending();
 	}
 }
+
+/**
+ * Evaluate a given @a expr inside an IRQ-protected block.
+ */
+#define IRQ_LOCKED(expr) \
+	({                      \
+		typeof(expr) __ret; \
+		irq_lock();         \
+		__ret = (expr);     \
+		irq_unlock();       \
+		__ret;              \
+	})
 
 #endif /* KERNEL_IRQ_LOCK_H_ */
