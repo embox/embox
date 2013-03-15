@@ -52,9 +52,9 @@ static int route_show_all(struct route_args *args) {
 
 		printf("%-15s ", inet_ntoa(*(struct in_addr *)&rt->rt_mask));
 
-		if (rt->rt_flags & RTF_UP) printf("U");
-		if (rt->rt_flags & RTF_GATEWAY) printf("G");
-		printf("    ");
+		printf("%c", rt->rt_flags & RTF_UP ? 'U' : ' ');
+		printf("%c", rt->rt_flags & RTF_GATEWAY ? 'G' : ' ');
+		printf("   ");
 
 		printf(" %5s", rt->dev->name);
 
@@ -73,6 +73,8 @@ static int exec(int argc, char **argv) {
 
 	for (i = 1; i < argc; ++i) {
 		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i])) {
+			printf("%s {add|del} <target> [gw <Gw] [netmask <Nm>] [[dev] If]",
+					argv[0]);
 			return 0;
 		}
 		else if (!strcmp("-A", argv[i])) {
@@ -136,11 +138,18 @@ static int exec(int argc, char **argv) {
 			return -ENODEV;
 		}
 	}
+	else {
+		iface = NULL;
+	}
+
+	if (args.with_add_or_del && !args.with_tar) {
+		return -EINVAL;
+	}
 
 	return !route_args_not_empty(&args) ? route_show_all(&args)
-			: args.add ? rt_add_route(iface->dev, args.tar.s_addr,
-				args.netmask.s_addr, args.gw.s_addr,
+			: args.add ? rt_add_route(iface != NULL ? iface->dev : NULL,
+				args.tar.s_addr, args.netmask.s_addr, args.gw.s_addr,
 				args.gw.s_addr == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY)
-			: rt_del_route(iface->dev, args.tar.s_addr, args.netmask.s_addr,
+			: rt_del_route(iface != NULL ? iface->dev : NULL, args.tar.s_addr, args.netmask.s_addr,
 				args.gw.s_addr);
 }
