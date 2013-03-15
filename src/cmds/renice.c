@@ -74,8 +74,9 @@ static int exec(int argc, char **argv) {
 			}
 
 			if (with_n) {
+				errno = 0;
 				prior = getpriority(which, who);
-				if (prior == -1) {
+				if ((prior == -1) && (errno != 0)) {
 					return -errno;
 				}
 				prior += incr;

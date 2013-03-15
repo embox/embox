@@ -19,8 +19,9 @@ static int exec(int argc, char **argv) {
 	int ret, ind, old_prior, prior;
 	const struct cmd *cmd;
 
+	errno = 0;
 	old_prior = getpriority(PRIO_PROCESS, 0);
-	if (old_prior == -1) {
+	if ((old_prior == -1) && (errno != 0)) {
 		return -errno;
 	}
 
