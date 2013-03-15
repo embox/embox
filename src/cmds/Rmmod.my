@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "rmmod",
+	help = "Disables a given module",
+	man = '''
+		NAME
+			rmmod <mod_name>
+		AUTHORS
+			Eldar Abusalimov
+	''')
+module rmmod {
+	/* FIXME:
+	 * 1.it depends from embox.framework.mod (called from rmmod.c)
+	 */
+	source "rmmod.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
