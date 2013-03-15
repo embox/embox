@@ -39,7 +39,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 
 #define RAMFS_NAME "ramfs"
 #define RAMFS_DEV  "/dev/ram#"
-#define RAMFS_DIR  "/ram"
+#define RAMFS_DIR  "/mnt"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
