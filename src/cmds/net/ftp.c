@@ -883,7 +883,7 @@ int ftp_cmd(int argc, char **argv) {
 
 		cmd_name = fgets(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, stdin);
 		if (cmd_name == NULL) {
-			fprintf(stdout, "%s: fatal error: fgets return null.\n", argv[0]);
+			fprintf(stderr, "%s: fatal error: fgets return null.\n", argv[0]);
 			break;
 		}
 
