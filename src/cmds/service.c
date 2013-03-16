@@ -6,6 +6,7 @@
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
 #include <embox/cmd.h>
 #include <stdio.h>
 #include <util/array.h>
@@ -50,6 +51,8 @@ static const struct serv_info servs[] = {
 static const struct serv_info * serv_info_lookup(const char *serv) {
 	const struct serv_info *si;
 
+	assert(serv != NULL);
+
 	array_foreach_ptr(si, servs, ARRAY_SIZE(servs)) {
 		if (strcmp(serv, si->serv) == 0) {
 			return si;
@@ -62,6 +65,9 @@ static const struct serv_info * serv_info_lookup(const char *serv) {
 static const struct serv_cmd * serv_cmd_lookup(const char *name,
 		const struct serv_info *si) {
 	const struct serv_cmd *sc;
+
+	assert(name != NULL);
+	assert(si != NULL);
 
 	array_nullterm_foreach(sc, si->cmds) {
 		if (strcmp(name, sc->name) == 0) {
@@ -111,6 +117,8 @@ static int exec(int argc, char **argv) {
 			break;
 		}
 	}
+
+	assert(sinfo != NULL);
 
 	if (scmd == NULL) {
 		printf("Usage: %s %s COMMAND\n", argv[0],
