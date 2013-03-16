@@ -35,6 +35,7 @@ static struct vc **vcs_find(struct vc **vcs, struct vc *vc) {
 }
 
 static void vc_init(struct vc *vc) {
+	vc->fb = NULL;
 
 }
 
@@ -119,18 +120,18 @@ static int indev_event_cb(struct input_dev *indev) {
 	struct input_event ev;
 	const int f1 = 0x3b;
 
-	input_dev_event(indev, &ev);
-
-	if (ev.type == KEY_PRESSED && (ev.value & CTRL_PRESSED)) {
-		int num = (ev.value & 0x7f) - f1;
-		if (num >= 0 && num < VC_MPX_N && vcs[num] != NULL) {
-			mpx_visualize(vcs[num]);
-			return 0;
+	while (0 <= input_dev_event(indev, &ev)) {
+		if (ev.type == KEY_PRESSED && (ev.value & CTRL_PRESSED)) {
+			int num = (ev.value & 0x7f) - f1;
+			if (num >= 0 && num < VC_MPX_N && vcs[num] != NULL) {
+				mpx_visualize(vcs[num]);
+				return 0;
+			}
 		}
-	}
 
-	if (curvc) {
-		curvc->callbacks->handle_input_event(curvc, &ev);
+		if (curvc) {
+			curvc->callbacks->handle_input_event(curvc, &ev);
+		}
 	}
 
 	return 0;
@@ -138,13 +139,17 @@ static int indev_event_cb(struct input_dev *indev) {
 
 static int vc_mpx_init(void) {
 	struct input_dev *indev;
+	const char *devlist[] = {"keyboard", "mouse", NULL};
+	const char **p;
 
-	if (!(indev = input_dev_lookup("keyboard"))) {
-		return -ENOENT;
-	}
+	for (p = devlist; *p != NULL; p++) {
+		if (!(indev = input_dev_lookup(*p))) {
+			continue;
+		}
 
-	if (0 > input_dev_open(indev, indev_event_cb)) {
-		return -EAGAIN;
+		if (0 > input_dev_open(indev, indev_event_cb)) {
+			continue;
+		}
 	}
 
 	if (NULL == (curfb = fb_lookup("fb0"))) {

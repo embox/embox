@@ -73,7 +73,7 @@ extern int bit_clz(unsigned long x);
  *   or zero if @c x is zero.
  */
 static inline int bit_fls(unsigned long x) {
-	return x ? (sizeof(x) * CHAR_BIT - bit_clz(x)) : 0;
+	return x ? (LONG_BIT - bit_clz(x)) : 0;
 }
 
 /**
