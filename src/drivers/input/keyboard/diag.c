@@ -11,6 +11,7 @@
 #include <drivers/input/keymap.h>
 #include <drivers/i8042.h>
 #include <drivers/diag.h>
+#include <stddef.h>
 
 int key_is_pressed(struct input_event *event) {
 	return event->type & KEY_PRESSED;
@@ -19,29 +20,28 @@ int key_is_pressed(struct input_event *event) {
 static int keyboard_getc(void) {
 	static struct input_dev *kbd;
 	static unsigned char ascii_buff[4];
-	static int ascii_len;
+	static int ascii_len = 0;
 	static int seq_cnt = 0;
 	struct input_event event;
 
-	if (!kbd) {
+	if (kbd == NULL) {
 		kbd = input_dev_lookup("keyboard");
 	}
 
-	if(ascii_len > seq_cnt) {
+	if (ascii_len > seq_cnt) {
 		return ascii_buff[seq_cnt++];
 	}
+
 	ascii_len = 0;
 
 	do {
-		while (0 != input_dev_event(kbd, &event)) {
+		while (0 != input_dev_event(kbd, &event)) { /* nothing */ }
 
-		}
-
-		if(key_is_pressed(&event)) {
+		if (key_is_pressed(&event)) {
 			ascii_len = keymap_to_ascii(&event, ascii_buff);
 		}
 
-	} while(ascii_len == 0);
+	} while (ascii_len == 0);
 
 	seq_cnt = 0;
 

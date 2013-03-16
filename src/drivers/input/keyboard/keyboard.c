@@ -81,7 +81,6 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 	case KEYBOARD_SCAN_CODE_CTRL:
 		flag = CTRL_PRESSED;
 		break;
-
 	case KEYBOARD_SCAN_CODE_ALT:
 		flag = ALT_PRESSED;
 		break;
@@ -127,6 +126,8 @@ static int keyboard_init(void) {
 	mode |= I8042_MODE_XLATE;
 	/* Enable keyboard. */
 	mode &= ~I8042_MODE_DISABLE;
+	/* Enable interrupt */
+	mode |= I8042_MODE_INTERRUPT;
 	/* Write the new mode */
 	keyboard_set_mode(mode);
 
