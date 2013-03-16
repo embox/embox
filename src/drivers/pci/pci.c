@@ -75,7 +75,7 @@ static size_t dev_cnt = 0;
 /* insert information about pci device into the repository */
 static inline int pci_add_dev(struct pci_slot_dev *dev) {
 	slist_link_init(&dev->lst);
-	slist_add_first(dev, &__pci_devs_list, lst);
+	slist_add_first_link(&dev->lst, &__pci_devs_list);
 	dev_cnt ++;
 	return 0;
 }

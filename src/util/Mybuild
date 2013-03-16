@@ -16,12 +16,12 @@ module Bit {
 abstract module SList {
 }
 module SListDebug extends SList {
-	source "slist_debug.c"
-	source "slist_impl.h"
+//	source "slist_debug.c"
+//	source "slist_impl.h"
 }
 module SListNDebug extends SList {
-	source "slist_ndebug.h"
-	source "slist_impl.h"
+//	source "slist_ndebug.h"
+//	source "slist_impl.h"
 }
 
 @DefaultImpl(ListNDebug)
@@ -47,7 +47,7 @@ module DListNDebug extends DList {
 }
 
 static module LibUtil {
-	source "slist_debug.c"
+//	source "slist_debug.c"
 	source "list_debug.c"
 
 	source "tree_set.c"
