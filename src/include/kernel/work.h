@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Stub API for asynch kernel workers.
+ * @brief Async work interface.
  *
  * @date 15.03.13
  * @author Eldar Abusalimov
@@ -9,33 +9,26 @@
 #ifndef KERNEL_WORK_H_
 #define KERNEL_WORK_H_
 
-/* XXX Stubs below. */
-struct work;
+#include <util/slist.h>
 
-static inline struct work *work_init(struct work *w, void (*worker)(struct work *))
-	{ return NULL; }
-
-static inline void work_post(struct work *w) {}
-static inline int work_pending(struct work *w) { return 0; }
-static inline int work_pending_reset(struct work *w) { return 0; }
-
-static inline void work_disable(struct work *w) {}
-static inline void work_enable(struct work *w) {}
-
-/* XXX Stubs above. */
+#define WORK_F_DISABLED (0x1 << 0)  /**< Initially disabled work. */
 
 struct work {
-	int (*handler)(struct work *);
+	struct slist_link pending_link;
+	unsigned int state;
+	void (*handler)(struct work *);
 };
 
-extern struct work *work_init(struct work *, void (*worker)(struct work *));
-
-extern void work_post(struct work *);
-extern int work_pending(struct work *);
-extern int work_pending_reset(struct work *);
+extern struct work *work_init(struct work *, void (*worker)(struct work *),
+		unsigned int flags);
 
 extern void work_disable(struct work *);
 extern void work_enable(struct work *);
+extern int work_disabled(struct work *);
+
+extern void work_post(struct work *);
+extern unsigned int work_pending(struct work *);
+extern unsigned int work_pending_reset(struct work *);
 
 /**
  * Evaluate a given @a expr inside a block with the specified @a work disabled.
@@ -50,5 +43,5 @@ extern void work_enable(struct work *);
 		__ret;                     \
 	})
 
-
 #endif /* KERNEL_WORK_H_ */
+

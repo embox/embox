@@ -34,6 +34,7 @@
 	((unsigned int) (softirq_nr) < (unsigned int) SOFTIRQ_NRS_TOTAL)
 
 #define SOFTIRQ_NR_TIMER 0
+#define SOFTIRQ_NR_WORK  1
 #define SOFTIRQ_NR_UART 20
 
 #define SOFTIRQ_NR_TEST_HI 29
