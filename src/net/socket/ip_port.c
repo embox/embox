@@ -7,13 +7,13 @@
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <kernel/thread/sched_lock.h>
 #include <limits.h>
 #include <netinet/in.h>
-#include <stdlib.h>
-#include <util/bit.h>
+#include <stddef.h>
 
 #define PORTS_PER_PROTOCOL OPTION_GET(NUMBER, ports_per_protocol)
 #define PORTS_TABLE_SIZE ((PORTS_PER_PROTOCOL + LONG_BIT) / LONG_BIT)
@@ -126,14 +126,15 @@ unsigned short ip_port_get_free(int type) {
 	assert(word_n < size);
 
 	for (; word_n < size; ++word_n) {
-		if (~ports[word_n] != 0) {
-			bit_n = bit_ctz(~ports[word_n]);
+		if (~ports[word_n] == 0) continue;
+		for (; bit_n < LONG_BIT; ++bit_n) {
 			try_pnum = word_n * LONG_BIT + bit_n + 1;
 			ret = ip_port_lock(type, try_pnum);
 			if (ret == 0) {
 				return try_pnum;
 			}
 		}
+		bit_n = 0;
 	}
 
 	return 0;
