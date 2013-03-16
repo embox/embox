@@ -9,8 +9,9 @@
 #ifndef KERNEL_IRQ_LOCK_H_
 #define KERNEL_IRQ_LOCK_H_
 
-#include <kernel/critical.h>
 #include <hal/ipl.h>
+#include <kernel/critical.h>
+#include <util/lang.h>
 
 /**
  * Locks hardware interrupt.
@@ -52,12 +53,6 @@ static inline void irq_unlock(void) {
  * Evaluate a given @a expr inside an IRQ-protected block.
  */
 #define IRQ_LOCKED_DO(expr) \
-	({                      \
-		typeof(expr) __ret; \
-		irq_lock();         \
-		__ret = (expr);     \
-		irq_unlock();       \
-		__ret;              \
-	})
+	__lang_surround(expr, irq_lock(), irq_unlock())
 
 #endif /* KERNEL_IRQ_LOCK_H_ */
