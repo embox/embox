@@ -187,7 +187,7 @@ static int fs_execute(struct fs_info *session, const char *cmd_format, ...) {
 	va_list args;
 
 	va_start(args, cmd_format);
-	vsprintf(&session->buff[0], cmd_format, args);
+	vsnprintf(&session->buff[0], sizeof session->buff, cmd_format, args);
 	va_end(args);
 
 	ret = fs_snd_request(session, &session->buff[0]);
@@ -860,7 +860,7 @@ static int fs_cmd_bye(struct fs_info *session) {
 	return FTP_RET_EXIT;
 }
 
-static int exec(int argc, char **argv) {
+int ftp_cmd(int argc, char **argv) {
 	int ret;
 	size_t i;
 	struct fs_info fsi;
@@ -868,8 +868,18 @@ static int exec(int argc, char **argv) {
 
 	fsi.is_connected = 0; /* initialize FTP Session Information structure */
 
+	if (argc > 3) {
+		return -EINVAL;
+	}
+	if (argc > 1) {
+		cmd_name = &fsi.cmd_buff[0];
+		snprintf(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, "open %s %s",
+				argv[1], argc == 3 ? argv[2] : "");
+		goto parse_cmd;
+	}
+
 	while (1) {
-		fprintf(stdout, "ftp> ");
+		fprintf(stdout, "%s> ", argv[0]);
 
 		cmd_name = fgets(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, stdin);
 		if (cmd_name == NULL) {
@@ -877,6 +887,7 @@ static int exec(int argc, char **argv) {
 			break;
 		}
 
+parse_cmd:
 		/* Skip spaces */
 		skip_spaces(cmd_name);
 
@@ -932,4 +943,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	return 0;
+}
+
+static int exec(int argc, char **argv) {
+	return ftp_cmd(argc, argv);
 }
