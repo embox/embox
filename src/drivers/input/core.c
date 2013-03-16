@@ -166,10 +166,11 @@ int input_dev_register(struct input_dev *dev) {
 int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 	int cnt;
 
-
 	if (dev == NULL) {
 		return -EINVAL;
 	}
+
+	return dev->event_get(dev, ev); /* FIXME */
 
 	cnt = ring_buff_get_cnt(&dev->rbuf);
 	if ((cnt == 0)
