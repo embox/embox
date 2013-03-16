@@ -52,17 +52,10 @@ struct kfile_operations uart_dev_file_op = {
 //static struct event rx_happend;
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
-	struct uart_device *dev;
-	int ch;
+	struct uart_device *dev = data;
 
-	dev = (struct uart_device *)data;
-
-	while(dev->operations->hasrx(dev)) {
-		ch = dev->operations->get(dev);
-		//ring_buff_enqueue(&dev_buff, &ch, 1);
-		//event_notify(&rx_happend);
-		tty_rx_char(&dev->tty, ch);
-		event_notify(&dev->tty.rx_event);
+	while (dev->operations->hasrx(dev)) {
+		tty_rx_putc(&dev->tty, dev->operations->get(dev));
 	}
 
 	return 0;
@@ -78,7 +71,7 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 
 static struct tty_ops uart_tty_ops = {
 		.setup = uart_term_setup,
-		.tx_start = uart_tx_start
+		.start_tx = uart_tx_start
 };
 
 /*

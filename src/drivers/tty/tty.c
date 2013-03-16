@@ -177,10 +177,10 @@ struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
 		termios->c_lflag = TTY_TERMIOS_LFLAG_INIT;
 	}
 
-	tty_queue_init(&t->rx_queue);
-	work_init(&t->rx_work, tty_rx_worker);
-
 	event_init(&t->read_event, "tty read");
+
+	tty_queue_init(&t->rx_queue);
+	work_init(&t->rx_work, tty_rx_worker, 0);
 
 	return t;
 }
