@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <embox/cmd.h>
 #include <net/inetdevice.h>
+#include <net/netdevice.h>
 #include <net/etherdevice.h>
 #include <net/util.h>
 
@@ -252,7 +253,7 @@ static int ifconfig_show_one_iface(struct in_device *iface, char use_short_fmt) 
 			: ifconfig_print_long_info(iface);
 }
 
-static int ifconfig_show_all_iface(char use_short_fmt) {
+static int ifconfig_show_all_iface(char show_disabled, char use_short_fmt) {
 	int ret;
 	struct in_device *iface;
 
@@ -261,6 +262,7 @@ static int ifconfig_show_all_iface(char use_short_fmt) {
 
 	for (iface = inetdev_get_first(); iface != NULL;
 			iface = inetdev_get_next(iface)) {
+		if (!(iface->dev->flags & IFF_UP) && !show_disabled) continue;
 		ret = use_short_fmt ? ifconfig_print_short_info(iface)
 				: ifconfig_print_long_info(iface);
 		if (ret != 0) return ret;
@@ -417,5 +419,5 @@ static int exec(int argc, char *argv[]) {
 
 	return ifconfig_args_not_empty(&args) ? ifconfig_setup_iface(iface, &args)
 			: args.with_iface ? ifconfig_show_one_iface(iface, args.with_s)
-			: ifconfig_show_all_iface(args.with_s);
+			: ifconfig_show_all_iface(args.with_a, args.with_s);
 }
