@@ -1,0 +1,8 @@
+package embox.net
+
+module pop3 {
+	source "pop3.c"
+
+	depends embox.compat.posix.socket
+	depends embox.lib.LibC
+}
