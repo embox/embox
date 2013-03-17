@@ -43,7 +43,7 @@ static void process_options(struct in_device *in_dev, struct bootphdr *r) {
 			op += 2;
 			mask = *((in_addr_t*)op);
 			addr.s_addr = mask;
-			inet_dev_set_mask(in_dev, addr.s_addr);
+			inetdev_set_mask(in_dev, addr.s_addr);
 			rt_add_route(in_dev->dev, r->siaddr & mask, mask,
 						INADDR_ANY, 0);
 			op += IP_ADDR_LEN;
@@ -87,10 +87,10 @@ int bootp_receive(struct sock *sk, struct sk_buff *skb) {
 		if (!strncmp((void*)dev->dev_addr, (void*)skb->mac.raw, ETH_ALEN))
 			break;
 	}
-	in_dev = in_dev_get(dev);
+	in_dev = inetdev_get_by_dev(dev);
 
 	if (r->ciaddr == 0) {
-		inet_dev_set_ipaddr(in_dev, r->yiaddr);
+		inetdev_set_addr(in_dev, r->yiaddr);
 	}
 
 	process_options(in_dev, r);

@@ -14,6 +14,7 @@
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -281,5 +282,5 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

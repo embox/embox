@@ -132,7 +132,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (args.with_iface) {
-		iface = inet_dev_find_by_name(&args.iface[0]);
+		iface = inetdev_get_by_name(&args.iface[0]);
 		if (iface == NULL) {
 			printf("%s: unknown interface\n", &args.iface[0]);
 			return -ENODEV;

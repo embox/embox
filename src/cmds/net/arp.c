@@ -103,7 +103,7 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'i':
-			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
+			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);
 				return -EINVAL;
 			}

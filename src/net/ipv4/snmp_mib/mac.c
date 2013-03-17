@@ -17,7 +17,7 @@ static void mib_mac(void) {
 	char oid[] = {0x2b, 6, 1, 2, 1, 2, 2, 1, 6, 2};
 	mib_obj_t obj = mib_obj_addbyoid(oid, 10);
 
-	in_dev = inet_dev_find_by_name("eth0");
+	in_dev = inetdev_get_by_name("eth0");
 	if (in_dev) {
 		obj->data = &mac;
 		obj->name = "embox_eth0_mac";

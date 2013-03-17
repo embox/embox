@@ -16,6 +16,7 @@
 #include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <arpa/inet.h>
@@ -351,5 +352,5 @@ static int emaclite_init(void) {
 		return res;
 	}
 
-	return netdev_register(net_device);
+	return inetdev_register_dev(net_device);
 }

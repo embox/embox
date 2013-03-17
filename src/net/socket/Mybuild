@@ -48,11 +48,6 @@ module af_inet {
 	depends ipv4
 	depends embox.framework.LibFrameworkNet
 
-	source "ipconfig.c"
-
-	depends dev /* for dev.c */
-	depends core /* for devinet.c */
-
 	source "protocol.c"
 	depends embox.lib.LibC
 }

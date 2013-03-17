@@ -124,7 +124,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	assert(rte->dev != NULL);
 	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
 	skb->dev = rte->dev;
-	saddr = in_dev_get(skb->dev)->ifa_address;
+	saddr = inetdev_get_by_dev(skb->dev)->ifa_address;
 
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
@@ -133,7 +133,8 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 			|| (daddr == saddr)) {
 		/* FIXME it's the wrong check. need to check all interfaces
 		 * XXX even if saddr and skb->nh.iph->saddr are different? */
-		skb->dev = inet_get_loopback_dev();
+		assert(inetdev_get_loopback_dev() != NULL);
+		skb->dev = inetdev_get_loopback_dev()->dev;
 	}
 
 	/* if the packet should be sent using gateway

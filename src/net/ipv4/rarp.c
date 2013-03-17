@@ -131,7 +131,7 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 	unsigned char haddr_target[MAX_ADDR_LEN];
 	struct in_device *in_dev;
 
-	in_dev = in_dev_get(dev);
+	in_dev = inetdev_get_by_dev(dev);
 	assert(in_dev != NULL);
 
 	haddr_len = rarph->ha_len;

@@ -109,7 +109,7 @@ int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
 		return -ENETUNREACH;
 	}
 	else if ((best_route != NULL) && (sk != NULL)) {
-		sk->saddr = in_dev_get(best_route->dev)->ifa_address;
+		sk->saddr = inetdev_get_by_dev(best_route->dev)->ifa_address;
 	}
 
 	if (sk != NULL) {

@@ -226,7 +226,7 @@ static int exec(int argc, char **argv) {
 		switch (opt) {
 		case 'I': /* interface */
 			if (!iface_set) { /* is interface already set */
-				in_dev = inet_dev_find_by_name(optarg);
+				in_dev = inetdev_get_by_name(optarg);
 				if (NULL == in_dev) {
 					printf("ping: unknown Iface %s\n", optarg);
 					return -EINVAL;
@@ -349,14 +349,14 @@ static int exec(int argc, char **argv) {
 
 	/* Get source addr */
 	if (NULL != in_dev) {
-		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
+		pinfo.from.s_addr = inetdev_get_addr(in_dev);
 	} else {
 		struct rt_entry *rte = rt_fib_get_best(pinfo.dst.s_addr, NULL);
 		if (NULL == rte) {
 			return -EHOSTUNREACH;
 		}
-		assert(in_dev_get(rte->dev) != NULL);
-		pinfo.from.s_addr = in_dev_get(rte->dev)->ifa_address;
+		assert(inetdev_get_by_dev(rte->dev) != NULL);
+		pinfo.from.s_addr = inetdev_get_by_dev(rte->dev)->ifa_address;
 	}
 	/* ping! */
 	ping(&pinfo, hostname, he->h_name);

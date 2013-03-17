@@ -32,7 +32,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int cnt = 4, cnt_resp = 0, i;
-	struct in_device *in_dev = inet_dev_find_by_name("eth0");
+	struct in_device *in_dev = inetdev_get_by_name("eth0");
 	struct in_addr dst;
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";
@@ -43,7 +43,7 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */
-			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
+			if (NULL == (in_dev = inetdev_get_by_name(optarg))) {
 				printf("arping: unknown iface %s\n", optarg);
 				return -EINVAL;
 			}

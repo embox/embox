@@ -31,6 +31,7 @@
 #include <drivers/ethernet/ne2k_pci.h>
 
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 
 #include <embox/unit.h>
@@ -424,5 +425,5 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

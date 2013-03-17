@@ -106,7 +106,7 @@ static int exec(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if (NULL == (dev = inet_dev_find_by_name(argv[argc - 1]))) {
+	if (NULL == (dev = inetdev_get_by_name(argv[argc - 1]))) {
 		printf("can't find interface %s\n", argv[argc - 1]);
 		return -EINVAL;
 	}

@@ -54,6 +54,7 @@ static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 
 static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *args) {
 	int ret;
+	unsigned int flags;
 
 	assert(iface != NULL);
 	assert(args != NULL);
@@ -84,18 +85,18 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_addr) { /* set new IP address to iface */
-		ret = inet_dev_set_ipaddr(iface, args->addr.s_addr);
+		ret = inetdev_set_addr(iface, args->addr.s_addr);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_netmask) { /* set new mask to iface */
-		ret = inet_dev_set_mask(iface, args->netmask.s_addr);
+		ret = inetdev_set_mask(iface, args->netmask.s_addr);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_bcast) { /* set broadcast addr */
 		if (args->bcast && args->bcast_addr.s_addr) {
-			ret = inet_dev_set_bcast(iface, args->bcast_addr.s_addr);
+			ret = inetdev_set_bcast(iface, args->bcast_addr.s_addr);
 			if (ret != 0) return ret;
 		}
 		else {
@@ -125,13 +126,14 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_hw) { /* set new MAC address to iface */
-		ret = inet_dev_set_macaddr(iface, &args->hw_addr[0]);
+		ret = inetdev_set_macaddr(iface, &args->hw_addr[0]);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_up_or_down) { /* change device state */
-		if (iface->dev->flags & IFF_UP) return 0; /* TODO remove this */
-		ret = (args->up ? ifdev_up : ifdev_down)(&args->iface[0]);
+		flags = netdev_get_flags(iface->dev);
+		flags = args->up ? flags | IFF_UP : flags & ~IFF_UP;
+		ret = netdev_set_flags(iface->dev, flags);
 		if (ret != 0) return ret;
 	}
 
@@ -257,8 +259,8 @@ static int ifconfig_show_all_iface(char use_short_fmt) {
 	ret = use_short_fmt ? ifconfig_print_short_hdr() : ifconfig_print_long_hdr();
 	if (ret != 0) return ret;
 
-	for (iface = inet_dev_get_first_used(); iface != NULL;
-			iface = inet_dev_get_next_used(iface)) {
+	for (iface = inetdev_get_first(); iface != NULL;
+			iface = inetdev_get_next(iface)) {
 		ret = use_short_fmt ? ifconfig_print_short_info(iface)
 				: ifconfig_print_long_info(iface);
 		if (ret != 0) return ret;
@@ -405,11 +407,8 @@ static int exec(int argc, char *argv[]) {
 		}
 	}
 
-	if (args.with_iface && !inet_dev_find_by_name(&args.iface[0]))
-		ifdev_up(&args.iface[0]);
-
 	if (args.with_iface) {
-		iface = inet_dev_find_by_name(&args.iface[0]);
+		iface = inetdev_get_by_name(&args.iface[0]);
 		if (iface == NULL) {
 			printf("%s: unknown interface\n", &args.iface[0]);
 			return -ENODEV;
