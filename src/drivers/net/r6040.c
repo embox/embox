@@ -319,7 +319,7 @@ int r6040_wait_linkup(void) {
 	return 0;
 }
 
-int r6040_open(net_device_t *dev) {
+int r6040_open(struct net_device *dev) {
 #if INTERRUPTS_ENABLE
 	if (-1 == irq_attach(0x0a, irq_handler, 0, dev, "RDC r6040")) {
 		return -1;
@@ -332,7 +332,7 @@ int r6040_open(net_device_t *dev) {
 
 }
 #if INTERRUPTS_ENABLE
-static int r6040_stop(net_device_t *dev) {
+static int r6040_stop(struct net_device *dev) {
 	return 0;
 
 }

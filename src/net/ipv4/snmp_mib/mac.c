@@ -13,7 +13,7 @@
 static struct obj_data mac;
 
 static void mib_mac(void) {
-	in_device_t *in_dev = NULL;
+	struct in_device *in_dev = NULL;
 	char oid[] = {0x2b, 6, 1, 2, 1, 2, 2, 1, 6, 2};
 	mib_obj_t obj = mib_obj_addbyoid(oid, 10);
 

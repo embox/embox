@@ -36,7 +36,7 @@ struct rt_entry_info {
 POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
 static LIST_DEF(rt_entry_info_list);
 
-int rt_add_route(net_device_t *dev, in_addr_t dst,
+int rt_add_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw, int flags) {
 	struct rt_entry_info *rt_info;
 
@@ -59,7 +59,7 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 	return 0;
 }
 
-int rt_del_route(net_device_t *dev, in_addr_t dst,
+int rt_del_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
@@ -188,7 +188,7 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
  * Routes must be added into list with mask_len decrease.
  * In this case we'll simply take the first match
  */
-struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
+struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 	struct rt_entry_info *rt_info;
 	int mask_len, best_mask_len;
 	struct rt_entry *best_rte;

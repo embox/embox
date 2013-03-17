@@ -32,7 +32,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int cnt = 4, cnt_resp = 0, i;
-	in_device_t *in_dev = inet_dev_find_by_name("eth0");
+	struct in_device *in_dev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";

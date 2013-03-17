@@ -23,8 +23,8 @@
 #include <net/ip_fragment.h>
 #include <net/netfilter.h>
 
-int ip_rcv(sk_buff_t *skb, net_device_t *dev,
-			packet_type_t *pt, net_device_t *orig_dev) {
+int ip_rcv(sk_buff_t *skb, struct net_device *dev,
+			packet_type_t *pt, struct net_device *orig_dev) {
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
 	const struct net_proto *net_proto_ptr = NULL;
 	net_protocol_t *p_netproto;

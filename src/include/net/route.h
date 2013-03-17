@@ -51,7 +51,7 @@ typedef struct rt_entry {
  * @param mask Genmask
  * @param gw Gateway
  */
-extern int rt_add_route(net_device_t *dev, in_addr_t dst,
+extern int rt_add_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw, int flags);
 
 /**
@@ -61,7 +61,7 @@ extern int rt_add_route(net_device_t *dev, in_addr_t dst,
  * @param mask Genmask
  * @param gw Gateway
  */
-extern int rt_del_route(net_device_t *dev, in_addr_t dst,
+extern int rt_del_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw);
 
 /**
@@ -93,7 +93,7 @@ extern struct rt_entry * rt_fib_get_first(void);
  * @return pointer to best match entity for dst
  * @retval NULL if entity not found
  */
-extern struct rt_entry* rt_fib_get_best(in_addr_t dst, net_device_t *out_dev);
+extern struct rt_entry* rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
 
 /**
  * Get next element from route from table uses

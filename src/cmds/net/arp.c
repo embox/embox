@@ -51,7 +51,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];
-	in_device_t *ifdev = NULL;
+	struct in_device *ifdev = NULL;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hd:s:a:m:i:"))) {

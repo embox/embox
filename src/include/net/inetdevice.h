@@ -35,7 +35,7 @@ typedef struct in_device {
  * @param dev
  * @return pointer on in_device struct, NULL if error
  */
-extern in_device_t *in_dev_get(net_device_t *dev);
+extern struct in_device *in_dev_get(struct net_device *dev);
 
 /**
  * find known netdev device has pointed ip address
@@ -57,7 +57,7 @@ extern bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multica
  * Get inet_devive by name
  * @param if_name - interface name
  */
-extern in_device_t *inet_dev_find_by_name(const char *if_name);
+extern struct in_device *inet_dev_find_by_name(const char *if_name);
 
 /**
  * Get loopback device. Probably temporarily needed
@@ -78,35 +78,35 @@ extern int inet_dev_set_interface(const char *name, const in_addr_t ipaddr,
  * Set IP address (sw)
  * @param ipaddr - ip devices address
  */
-extern int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr);
+extern int inet_dev_set_ipaddr(struct in_device *in_dev, const in_addr_t ipaddr);
 
 /**
  * Set IP mask
  * @param mask - ip mask
  */
-extern int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask);
+extern int inet_dev_set_mask(struct in_device *in_dev, const in_addr_t mask);
 
 /**
  * Set broadcast addres
  * @param bcast - broadcast protocol address
  */
-extern int inet_dev_set_bcast(in_device_t *in_dev, const in_addr_t bcast);
+extern int inet_dev_set_bcast(struct in_device *in_dev, const in_addr_t bcast);
 
 /**
  * Set MAC address
  * @param macaddr - MAC devices address
  */
-extern int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr);
+extern int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr);
 
 /**
  * Get interface's IP address
  * @param in_dev interface handler
  */
-extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
+extern in_addr_t inet_dev_get_ipaddr(struct in_device *in_dev);
 
 /* iterator functions */
-extern in_device_t * inet_dev_get_first_used(void);
-extern in_device_t * inet_dev_get_next_used(in_device_t *);
+extern struct in_device * inet_dev_get_first_used(void);
+extern struct in_device * inet_dev_get_next_used(struct in_device *);
 
 extern int inet_dev_add_dev(struct net_device *dev);
 
@@ -115,7 +115,7 @@ extern int inet_dev_remove_dev(struct in_device *in_dev);
 /**
  * generate new id for requiered interface
  */
-static inline uint32_t inet_dev_get_id(in_device_t *in_dev) {
+static inline uint32_t inet_dev_get_id(struct in_device *in_dev) {
 	return ++in_dev->ip_id_generator;
 }
 

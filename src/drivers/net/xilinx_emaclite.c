@@ -255,7 +255,7 @@ static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
 const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
 		0xCE };
 
-static int emaclite_open(net_device_t *dev) {
+static int emaclite_open(struct net_device *dev) {
 	if (NULL == dev) {
 		return -EINVAL;
 	}
@@ -291,7 +291,7 @@ static int emaclite_open(net_device_t *dev) {
 	return ENOERR;
 }
 
-static int emaclite_stop(net_device_t *dev) {
+static int emaclite_stop(struct net_device *dev) {
 	if (NULL == dev) {
 		return -EINVAL;
 	}
@@ -319,7 +319,7 @@ static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
 /*
  * Get RX/TX stats
  */
-static net_device_stats_t *emaclite_get_eth_stat(net_device_t *dev) {
+static net_device_stats_t *emaclite_get_eth_stat(struct net_device *dev) {
 	return &(dev->stats);
 }
 
@@ -334,7 +334,7 @@ static const struct net_device_ops _netdev_ops = {
 static int emaclite_init(void) {
 	/*if some module lock irq number we break initializing*/
 	int res;
-	net_device_t *net_device;
+	struct net_device *net_device;
 	/*initialize net_device structures and save
 	 * information about them to local massive */
 	net_device = etherdev_alloc();

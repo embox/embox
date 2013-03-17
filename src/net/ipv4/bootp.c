@@ -16,7 +16,7 @@
 #include <errno.h>
 #include <util/hashtable.h>
 
-static void process_options(in_device_t *in_dev, struct bootphdr *r) {
+static void process_options(struct in_device *in_dev, struct bootphdr *r) {
 	struct in_addr addr;
 	in_addr_t mask;
 	unsigned char *op = r->options;
@@ -55,7 +55,7 @@ static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 	}
 }
 
-int bootp_client_send(int sock, bootphdr_t *bphdr, net_device_t *dev, struct sockaddr_in *dst) {
+int bootp_client_send(int sock, bootphdr_t *bphdr, struct net_device *dev, struct sockaddr_in *dst) {
 	bphdr->op = BOOTPREQUEST;
 	bphdr->htype = HTYPE_ETHERNET;
 	bphdr->hlen = ETH_ALEN;
@@ -68,8 +68,8 @@ int bootp_client_send(int sock, bootphdr_t *bphdr, net_device_t *dev, struct soc
 
 int bootp_receive(struct sock *sk, struct sk_buff *skb) {
 	struct bootphdr *r;
-	in_device_t *in_dev;
-	net_device_t *dev;
+	struct in_device *in_dev;
+	struct net_device *dev;
 	udphdr_t *udph = udp_hdr(skb);
 	struct inet_sock *inet = inet_sk(sk);
 

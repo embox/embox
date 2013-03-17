@@ -26,7 +26,7 @@ static void print_usage(void) {
 	printf("Usage: bootp <ifname>");
 }
 
-int bootp_client(int bootp_server_timeout, in_device_t *dev) {
+int bootp_client(int bootp_server_timeout, struct in_device *dev) {
 	int res, bootp_sock;
 	struct bootphdr bphdr;
 	struct sockaddr_in our, dst;
@@ -86,7 +86,7 @@ exit:
 
 static int exec(int argc, char **argv) {
 	int opt;
-	in_device_t *dev;
+	struct in_device *dev;
 	uint32_t bootp_server_timeout = DEFAULT_WAIT_TIME;
 
 	getopt_init();

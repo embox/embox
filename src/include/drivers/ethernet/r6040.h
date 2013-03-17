@@ -19,7 +19,7 @@ extern void r6040_init(void);
 
 extern void r6040_rx_enable(void);
 
-extern int r6040_open(net_device_t *dev);
+extern int r6040_open(struct net_device *dev);
 
 #if 0
 /* Disable packet reception */

@@ -202,7 +202,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 static int exec(int argc, char **argv) {
 	int opt, i_opt;
-	in_device_t *in_dev;
+	struct in_device *in_dev;
 	struct ping_info pinfo;
 	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
 	int garbage, duplicate;
