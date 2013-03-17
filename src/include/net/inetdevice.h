@@ -13,8 +13,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef void (*devinet_callback_t)(void *pack);
-
 struct net_device;
 
 /**
@@ -38,14 +36,6 @@ typedef struct in_device {
  * @return pointer on in_device struct, NULL if error
  */
 extern in_device_t *in_dev_get(net_device_t *dev);
-
-/**
- * set callback function for all incoming packet throw interface
- * use it in sniffer program
- * not need set interface to PROMISC mode now
- */
-extern int inet_dev_listen(in_device_t *in_dev, unsigned short type,
-					    devinet_callback_t callback);
 
 /**
  * find known netdev device has pointed ip address

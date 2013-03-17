@@ -20,73 +20,17 @@
 
 #include <linux/list.h>
 
-
-struct callback_info {
-	struct list_head lnk;
-	unsigned short type;
-	devinet_callback_t func;
-};
-
 struct inetdev_info {
 	struct list_head lnk;
 	struct in_device in_dev;
-	struct list_head cb_info_list;
 };
 
 POOL_DEF(indev_info_pool, struct inetdev_info, OPTION_GET(NUMBER,net_interfaces_quantity));
-POOL_DEF(callback_info_pool, struct callback_info, OPTION_GET(NUMBER,net_callback_quantity));
 static LIST_HEAD(indev_info_list);
-
-static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
-	struct inetdev_info *indev_info;
-	struct list_head *tmp;
-
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
-		if (&indev_info->in_dev == in_dev) {
-			return indev_info;
-		}
-	}
-
-	return NULL;
-}
-
-static int alloc_callback(struct in_device *in_dev, unsigned int type,
-				devinet_callback_t callback) {
-	struct inetdev_info *indev_info;
-	struct callback_info *cb_info;
-
-	assert(in_dev != NULL);
-	assert(callback != NULL);
-
-	indev_info = find_indev_info_entry(in_dev);
-	if (indev_info == NULL) {
-		return -ENOENT;
-	}
-
-	cb_info = (struct callback_info *)pool_alloc(&callback_info_pool);
-	if (cb_info == NULL) {
-		return -ENOMEM;
-	}
-
-	cb_info->type = type;
-	cb_info->func = callback;
-
-	list_add_tail(&cb_info->lnk, &indev_info->cb_info_list);
-
-	return ENOERR;
-}
 
 struct in_device * in_dev_get(struct net_device *dev) {
 	assert(dev != NULL);
 	return inet_dev_find_by_name(dev->name);
-}
-
-int inet_dev_listen(struct in_device *in_dev, unsigned short type,
-		devinet_callback_t callback) {
-	assert(in_dev != NULL);
-	assert(callback != NULL);
-	return alloc_callback(in_dev, type, callback);
 }
 
 struct net_device * ip_dev_find(in_addr_t addr) {
@@ -269,7 +213,6 @@ int inet_dev_add_dev(struct net_device *dev) {
 	}
 
 	indev_info->in_dev.dev = dev;
-	INIT_LIST_HEAD(&indev_info->cb_info_list);
 	list_add_tail(&indev_info->lnk, &indev_info_list);
 
 	return ENOERR;
@@ -277,9 +220,7 @@ int inet_dev_add_dev(struct net_device *dev) {
 
 int inet_dev_remove_dev(struct in_device *in_dev) {
 	int res;
-	struct callback_info *cb_info;
 	struct inetdev_info *indev_info;
-	struct list_head *tmp, *safe;
 
 	assert(in_dev != NULL);
 
@@ -292,12 +233,6 @@ int inet_dev_remove_dev(struct in_device *in_dev) {
 	if (res < 0) {
 		list_add_tail(&indev_info->lnk, &indev_info_list);
 		return res;
-	}
-
-	list_for_each_safe(tmp, safe, &indev_info->cb_info_list) {
-		cb_info = member_cast_out(tmp, struct callback_info, lnk);
-		list_del(&cb_info->lnk);
-		pool_free(&callback_info_pool, cb_info);
 	}
 
 	pool_free(&indev_info_pool, indev_info);
