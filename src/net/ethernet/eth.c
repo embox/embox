@@ -134,8 +134,7 @@ uint8_t eth_packet_type(struct sk_buff *skb) {
 
 	eth = eth_hdr(skb);
 
-	assert(inetdev_get_loopback_dev() != NULL);
-	if (dev == inetdev_get_loopback_dev()->dev) {
+	if (dev->flags & IFF_LOOPBACK) {
 		return PACKET_LOOPBACK;
 	}
 

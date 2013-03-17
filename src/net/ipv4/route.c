@@ -124,6 +124,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	assert(rte->dev != NULL);
 	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
 	skb->dev = rte->dev;
+	assert(inetdev_get_by_dev(skb->dev) != NULL);
 	saddr = inetdev_get_by_dev(skb->dev)->ifa_address;
 
 	/* if source and destination addresses are equal send via LB interface
