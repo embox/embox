@@ -19,7 +19,8 @@ struct pop3_session {
 	char *status;
 };
 
-extern int pop3_session_create(struct pop3_session *p3s);
+extern int pop3_session_create(struct pop3_session *p3s,
+		const char *server, unsigned short int port);
 extern int pop3_session_destroy(struct pop3_session *p3s);
 
 extern int pop3_stat(struct pop3_session *p3s);
