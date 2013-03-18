@@ -15,7 +15,7 @@
 
 struct pop3_session {
 	int sock;
-	char buff[POP3_DATA_LEN];
+	char buff[POP3_BUFF_SZ];
 	char *status;
 };
 
@@ -39,6 +39,6 @@ extern int pop3_user(struct pop3_session *p3s,
 extern int pop3_pass(struct pop3_session *p3s,
 		const char *str);
 extern int pop3_apop(struct pop3_session *p3s,
-		const char *name, const char *salt);
+		const char *name, const char *str, const char *salt);
 
 #endif /* NET_POP3_H_ */
