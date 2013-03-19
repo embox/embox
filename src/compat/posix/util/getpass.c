@@ -13,8 +13,7 @@
 char * getpass(const char *prompt) {
 	static char pass[PASS_MAX + 1];
 
-	fprintf(stdout, "%s: ", prompt);
+	fprintf(stdout, "%s", prompt);
 
-	return NULL == fgets(&pass[0], PASS_MAX, stdin)
-			? &pass[0] : NULL;
+	return fgets(&pass[0], PASS_MAX, stdin);
 }
