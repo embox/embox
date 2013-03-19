@@ -120,13 +120,6 @@ struct termios {
 	cc_t c_cc[NCCS];  /* control characters */
 };
 
-// TODO part of tty_ioctl, not termios -- Eldar
-struct winsize {
-	unsigned short ws_row;
-	unsigned short ws_col;
-	unsigned short ws_xpixel;   /* unused */
-	unsigned short ws_ypixel;   /* unused */
-};
 
 extern int tcgetattr(int fd, struct termios *termios);
 extern int tcsetattr(int fd, int optional_actions, struct termios *termios);

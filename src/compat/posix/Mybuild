@@ -8,8 +8,12 @@ module LibPosix {
 	depends file
 	depends fs
 	depends sched
+	depends termios
 }
 
+static module termios {
+	source "termios.c"
+}
 static module fs {
 	source "fs.c"
 

@@ -138,7 +138,7 @@ static module LibCStdio {
 
 	depends LibCMath
 	depends LibCString
-	depends embox.driver.iodev.core
+	//depends embox.driver.iodev.core
 	depends embox.compat.posix.file
 
 	/**

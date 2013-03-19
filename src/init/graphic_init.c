@@ -51,6 +51,15 @@ static int fb_init(void) {
 	return 0;
 }
 
+static int iodev_setup_video(void) {
+	if (iodev_video_ops == NULL) {
+		return -ENOSYS;
+	}
+
+	iodev_setup(iodev_video_ops);
+	return 0;
+}
+
 static int graphic_init(void) {
 	int ret;
 

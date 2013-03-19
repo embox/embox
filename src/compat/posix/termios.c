@@ -4,9 +4,10 @@
  * @date Feb 28, 2013
  * @author: Anton Bondarev
  */
-#include <termios.h>
+#include <sys/ioctl.h>
 #include <errno.h>
 #include <drivers/tty.h>
+#include <termios.h>
 
 
 int tcgetattr(int fd, struct termios *termios_p) {
