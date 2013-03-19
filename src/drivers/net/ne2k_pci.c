@@ -362,10 +362,8 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
-#if 0
-		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
-#endif
 	}
+
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;

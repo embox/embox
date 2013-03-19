@@ -55,10 +55,15 @@ static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 
 static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *args) {
 	int ret;
-	unsigned int flags;
 
 	assert(iface != NULL);
 	assert(args != NULL);
+
+	if (args->with_up_or_down && !args->up) { /* down device */
+		ret = netdev_set_flags(iface->dev,
+				netdev_get_flags(iface->dev) & ~IFF_UP);
+		if (ret != 0) return ret;
+	}
 
 	if (args->with_arp) { /* set flag IFF_NOARP (default 0 means ARP enabled) */
 		ret = (!args->arp ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_NOARP);
@@ -131,10 +136,9 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 		if (ret != 0) return ret;
 	}
 
-	if (args->with_up_or_down) { /* change device state */
-		flags = netdev_get_flags(iface->dev);
-		flags = args->up ? flags | IFF_UP : flags & ~IFF_UP;
-		ret = netdev_set_flags(iface->dev, flags);
+	if (args->with_up_or_down && args->up) { /* up device */
+		ret = netdev_set_flags(iface->dev,
+				netdev_get_flags(iface->dev) | IFF_UP);
 		if (ret != 0) return ret;
 	}
 
@@ -148,7 +152,7 @@ static int ifconfig_print_long_hdr(void) {
 
 static int ifconfig_print_long_info(struct in_device *iface) {
 	struct net_device_stats *stat;
-	unsigned char mac[18];
+	unsigned char mac[] = "xx:xx:xx:xx:xx:xx";
 	struct in_addr ip, bcast, mask;
 	char s_ip[] = "xxx.xxx.xxx.xxx";
 	char s_bcast[] = "xxx.xxx.xxx.xxx";
@@ -156,11 +160,11 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 
 	stat = iface->dev->netdev_ops->ndo_get_stats(iface->dev);
 
-	printf("%s\tLink encap:", iface->dev->name);
+	printf("%s\tLink encap:", &iface->dev->name[0]);
 	if (iface->dev->flags & IFF_LOOPBACK) {
 		printf("Local Loopback");
 	} else {
-		macaddr_print(mac, iface->dev->dev_addr);
+		macaddr_print(mac, &iface->dev->dev_addr[0]);
 		printf("Ethernet  HWaddr %s", mac);
 	}
 
