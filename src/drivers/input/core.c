@@ -170,8 +170,6 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 		return -EINVAL;
 	}
 
-	return dev->event_get(dev, ev); /* FIXME */
-
 	cnt = ring_buff_get_cnt(&dev->rbuf);
 	if ((cnt == 0)
 			|| ((dev->curprocessd != NULL) && (cnt == 1))) {
@@ -189,7 +187,9 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 		return -EINVAL;
 	}
 
-	dev->event_cb = event;
+	if (event) {
+		dev->event_cb = event;
+	}
 
 	dlist_head_init(&dev->post_link);
 

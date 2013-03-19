@@ -127,7 +127,6 @@ void diag_putc(char ch) {
 	tty_putc(&diag_tty, ch);
 }
 
-
 void diag_init(void) {
 	static struct diag_tty_data data = {
 		.attr = 0x7,
