@@ -33,6 +33,8 @@ module start_script {
 	depends embox.compat.posix.file
 	depends embox.compat.posix.idx.dup
 
+	depends embox.cmd.sh.shell
+
 	requires embox.cmd.Shell.commandLine
 
 	option string shell_name=""
