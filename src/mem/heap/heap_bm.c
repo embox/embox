@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -298,7 +299,7 @@ void free(void *ptr) {
 		return; /* if we try to free block more than once */
 	}
 
-	/* assert(block_is_busy(block) */;
+	assert(block_is_busy(block));
 
 	/* Free block */
 	block_link(block);
