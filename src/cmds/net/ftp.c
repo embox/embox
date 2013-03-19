@@ -159,23 +159,36 @@ static int fs_check_stat(struct fs_info *session) {
 /* Receive reply in the current session */
 static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	int ret;
+	char *status;
 
-	ret = recvfrom(session->cmd_sock, buff, buff_sz, 0, NULL, NULL);
+	ret = recvfrom(session->cmd_sock, buff, buff_sz - 1, 0, NULL, NULL);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
 	}
+	*(buff + ret) = '\0';
 
 	fwrite(buff, 1, ret, stdout);
 
-	ret = sscanf(buff, "%d", &session->stat_code);
-	if (ret != 1) {
-		return FTP_RET_ERROR;
-	}
+	for (status = buff - 2; (status != NULL) && (*status != '\0');
+			status = strstr(status, "\r\n")) {
+		status += 2;
 
-	ret = fs_check_stat(session);
-	if (ret != FTP_RET_OK) {
-		return ret;
+		if (!isdigit(*status)) {
+			continue;
+		}
+
+		ret = sscanf(status, "%d", &session->stat_code);
+		if (ret != 1) {
+			return FTP_RET_ERROR;
+		}
+
+		ret = fs_check_stat(session);
+		if (ret != FTP_RET_OK) {
+			return ret;
+		}
+
+		status = strstr(status, "\r\n");
 	}
 
 	return FTP_RET_OK;
@@ -659,9 +672,12 @@ static int fs_cmd_ls(struct fs_info *session) {
 
 	close(data_sock);
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
-	if (ret != FTP_RET_OK) {
-		return ret;
+	if (FTP_STAT_TYPE_POSITIVE_PRELIMINARY
+			== FTP_STAT_TYPE(session->stat_code)) {
+		ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+		if (ret != FTP_RET_OK) {
+			return ret;
+		}
 	}
 
 	return FTP_RET_OK;
