@@ -12,25 +12,30 @@
 #include <errno.h>
 #include <stddef.h>
 #include <net/pop3.h>
+#include <unistd.h>
 
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
 	int ret;
 	struct pop3_session p3s;
+	char *password;
 
-	if (argc != 4) {
-		printf("Usage: %s user password server\n", argv[0]);
+	if (argc != 3) {
+		printf("Usage: %s user server\n", argv[0]);
 		return -EINVAL;
 	}
 
-	ret = pop3_open(&p3s, argv[3], POP3_PORT);
+	ret = pop3_open(&p3s, argv[2], POP3_PORT);
 	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_user(&p3s, argv[1]);
 	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
-	ret = pop3_pass(&p3s, argv[2]);
+	password = getpass("Password: ");
+	if (password == NULL) { ret = -EINVAL; goto error; }
+
+	ret = pop3_pass(&p3s, password);
 	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_retr(&p3s, 1);

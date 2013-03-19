@@ -420,7 +420,7 @@ static int fs_cmd_close(struct fs_info *session) {
 static int fs_cmd_user(struct fs_info *session) {
 	/* Usage: user <user-name> */
 	int ret;
-	char *tmp, *arg_username;
+	char *tmp, *arg_username, *password;
 
 	if (!session->is_connected) {
 		fprintf(stderr, "Not connected.\n");
@@ -446,12 +446,14 @@ static int fs_cmd_user(struct fs_info *session) {
 		return ret;
 	}
 
-	fprintf(stdout, "Password: ");
-	if (fgets(&session->cmd_buff[0], sizeof session->cmd_buff, stdin) == NULL) {
-		return FTP_RET_FAIL;
+	password = getpass("Password: ");
+	if (password == NULL) {
+		fprintf(stderr, "Cant get password for %s.\n", arg_username);
+		errno = EINVAL;
+		return FTP_RET_ERROR;
 	}
 
-	ret = fs_execute(session, "PASS %s\r\n", &session->cmd_buff[0]);
+	ret = fs_execute(session, "PASS %s\r\n", password);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}

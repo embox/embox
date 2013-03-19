@@ -6,11 +6,11 @@ package embox.cmd.net
 		NAME
 			getmail - get email from mail server
 		SYNOPSIS
-			getmail <user> <password> <server>
+			getmail <user> <server>
 		DESCRIPTION
 			get mail from mail server
 		EXAMPLES
-			getmail nick 123456 pop.mail.ru
+			getmail nick pop.mail.ru
 		SEE ALSO
 			sendmail
 		AUTHORS
@@ -19,6 +19,7 @@ package embox.cmd.net
 module getmail {
 	source "getmail.c"
 
+	depends embox.compat.posix.util.getpass
 	depends embox.net.pop3
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
