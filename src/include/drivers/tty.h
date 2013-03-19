@@ -16,12 +16,10 @@
 #include <kernel/irq_lock.h>
 #include <kernel/thread/event.h>
 #include <kernel/work.h>
+#include <util/ring.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>
-
-#define TTY_QUEUE_SZ \
-	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, queue_sz)
 
 /* tty ioctls */
 #define TTY_IOCTL_GETATTR  0x1
@@ -53,28 +51,35 @@
 #define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
 			ECHO | ECHOE | ECHOK | ECHONL)
 
-struct tty_ops;
+#define TTY_IO_BUFF_SZ \
+	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, io_buff_sz)
 
-struct tty_queue {
-	char   buff[TTY_QUEUE_SZ];
-	size_t offset;
-	size_t count;
-};
+#define TTY_RX_BUFF_SZ \
+	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, rx_buff_sz)
+
+struct tty_ops;
 
 struct tty {
 	struct tty_ops   *ops;
 	struct termios    termios;
 
 	struct work       rx_work;
-	struct event      read_event;
+	struct ring       rx_ring;
+	uint16_t          rx_buff[TTY_RX_BUFF_SZ]; /* flag (MSB) and char (LSB) */
 
-	struct tty_queue  rx_queue;
-	struct tty_queue  local_queue;
+	struct event      i_event;
+	struct ring       i_ring;
+	char              i_buff[TTY_IO_BUFF_SZ];
+	struct ring       i_canon_ring; /* cooked range inside the ring buffer */
+
+	struct event      o_event;
+	struct ring       o_ring;
+	char              o_buff[TTY_IO_BUFF_SZ];
 };
 
 struct tty_ops {
 	void (*setup)(struct tty *, struct termios *);
-	void (*start_tx)(struct tty *);
+	void (*tx_char)(struct tty *, char);
 };
 
 extern struct tty *tty_init(struct tty *, struct tty_ops *);
@@ -83,37 +88,22 @@ extern size_t tty_read(struct tty *, char *, size_t);
 extern size_t tty_write(struct tty *, char *, size_t);
 extern int tty_ioctl(struct tty *, int, void *);
 
-/* TTY RX/TX queues operations. */
+/* TTY RX queue operations, must be explicitly IRQ-protected. */
 
-extern struct tty_queue *tty_queue_init(struct tty_queue *);
-extern int tty_enqueue(struct tty_queue *, char);
-extern int tty_dequeue(struct tty_queue *);
-
-static inline int tty_queue_full(struct tty_queue *tq) {
-	return tq->count == TTY_QUEUE_SZ;
-}
-static inline int tty_queue_empty(struct tty_queue *tq) {
-	return !tq->count;
-}
+extern int tty_rx_enqueue(struct tty *, char ch, unsigned char flag);
+extern int tty_rx_dequeue(struct tty *);
 
 /* These functions can be called from IRQ context. */
 
-extern void tty_tx_done(struct tty *);
 extern void tty_post_rx(struct tty *);
 
-static inline int tty_rx_putc(struct tty *t, char ch) {
-	int rc = IRQ_LOCKED_DO(tty_enqueue(&t->rx_queue, ch));
+static inline int tty_rx_putc(struct tty *t, char ch, unsigned char flag) {
+	int rc = IRQ_LOCKED_DO(tty_rx_enqueue(t, ch, flag));
 	if (rc != -1) {
 		tty_post_rx(t);
 	}
 	return rc;
 }
-
-#if 0
-static inline int tty_tx_getc(struct tty *t) {
-	return IRQ_LOCKED_DO(tty_dequeue(&t->tx_queue));
-}
-#endif
 
 struct kfile_operations;
 extern int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops);
