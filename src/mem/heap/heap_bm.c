@@ -362,7 +362,7 @@ static int heap_init(void) {
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + block->size);
+	block = (void *) ((char *) pool + get_clear_size(block->size));
 	mark_block(block);
 
 	pool_end = block;
