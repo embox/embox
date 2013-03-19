@@ -2,8 +2,8 @@
  * @file
  * @brief Basic numeric operations
  *
- * @date 04.06.10
- * @author Eldar Abusalimov
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef MATH_H_
@@ -13,7 +13,6 @@
 
 __BEGIN_DECLS
 
-//#include <../lib/fdlibm/fdlibm.h>
 /**
  * First 1 in val
  * @param val Value
@@ -133,10 +132,5 @@ extern int finitel(long double);
 extern int finitef(float);
 
 __END_DECLS
-
-
-
-/* FIXME max, min and clamp not a part of C Standard Library */
-
 
 #endif /* MATH_H_ */
