@@ -20,15 +20,16 @@
 #include <kernel/work.h>
 #include <util/math.h>
 
+/* Called in worker-protected context. */
 static void tty_output(struct tty *t, char ch) {
 	tcflag_t lflag = t->termios.c_lflag;
 	tcflag_t oflag = t->termios.c_oflag;
 
 	if ((lflag & ICANON) && (oflag & ONLCR) && ch == '\n') {
-		// IRQ_LOCKED_DO(tty_rx_enqueue(&t->tx_queue, '\r'));
+		ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, "\r", 1);
 	}
 
-	// IRQ_LOCKED_DO(tty_rx_enqueue(&t->tx_queue, ch));
+	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
 }
 
 static void tty_echo(struct tty *t, char ch) {
@@ -93,6 +94,9 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	cc_t *cc = t->termios.c_cc;
 	int got_data;
 
+	if (ring_full(&t->i_ring, TTY_IO_BUFF_SZ))
+		return 0;
+
 	/* Newline control: IGNCR, ICRNL, INLCR */
 	if ((iflag & IGNCR) && ch == '\r')
 		goto done;
@@ -125,7 +129,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	t->i_buff[t->i_ring.head] = ch;
 
 	if (!ring_write(&t->i_ring, TTY_IO_BUFF_SZ, 1))
-		assert(0, "Caller must check for possible i_ring overflow");
+		assert(0, "ring_full?");
 
 	tty_echo(t, ch);
 
@@ -145,16 +149,24 @@ done:
 
 static void tty_rx_worker(struct work *w) {
 	struct tty *t = member_cast_out(w, struct tty, rx_work);
+	int ich;
 
-	/* no lock if workers are serialized. TODO is it true? -- Eldar */
-	while (!ring_full(&t->i_ring, TTY_IO_BUFF_SZ)) {
-		int ich = IRQ_LOCKED_DO(tty_rx_dequeue(t));
-		if (ich == -1)
+	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
+
+	irq_lock();
+	while ((ich = tty_rx_dequeue(t)) != -1) {
+		irq_unlock();
+
+		if (ring_full(&t->i_ring, TTY_IO_BUFF_SZ))
 			break;
 
 		if (tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT)))
 			event_notify(&t->i_event);
+
+		irq_lock();
 	}
+	work_pending_reset(w);
+	irq_unlock();
 }
 
 void tty_post_rx(struct tty *t) {
