@@ -131,14 +131,18 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 		if (ret != 0) return ret;
 	}
 
-	if (args->with_hw) { /* set new MAC address to iface */
-		ret = inetdev_set_macaddr(iface, &args->hw_addr[0]);
-		if (ret != 0) return ret;
-	}
-
 	if (args->with_up_or_down && args->up) { /* up device */
 		ret = netdev_set_flags(iface->dev,
 				netdev_get_flags(iface->dev) | IFF_UP);
+		if (ret != 0) return ret;
+	}
+
+	/**
+	 * FIXME it must be before upping device but
+	 * in this case device reset hardware addrress
+	 */
+	if (args->with_hw) { /* set new MAC address to iface */
+		ret = inetdev_set_macaddr(iface, &args->hw_addr[0]);
 		if (ret != 0) return ret;
 	}
 
