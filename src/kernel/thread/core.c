@@ -509,7 +509,7 @@ static struct thread *thread_alloc(void) {
 
 	t = &block->thread;
 
-	t->stack = &block->stack + sizeof(struct thread);
+	t->stack = block->stack + sizeof(struct thread);
 	t->stack_sz = STACK_SZ - sizeof(struct thread);
 
 	return t;
