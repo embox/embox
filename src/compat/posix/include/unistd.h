@@ -129,6 +129,9 @@ extern void getopt_init(void); /* TODO remove this */
 
 extern char **environ;
 
+#define PASS_MAX 32
+extern char *getpass(const char *prompt);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */

@@ -4,7 +4,8 @@ package embox.compat.posix.util
 module All {
 	depends Time,
 		getopt,
-		utsname
+		utsname,
+		getpass
 }
 
 module Time {
@@ -43,4 +44,10 @@ static module gettimeofday {
 	source "gettimeofday.c"
 
 	depends embox.kernel.time.timekeeper
+}
+
+static module getpass {
+	source "getpass.c"
+
+	depends embox.lib.LibC
 }
