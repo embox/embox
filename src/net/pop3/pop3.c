@@ -6,41 +6,45 @@
  * @author Ilia Vaprol
  */
 
-#include <stdarg.h>
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
 #include <arpa/inet.h>
+#include <assert.h>
+#include <errno.h>
+#include <netdb.h>
+#include <net/pop3.h>
 #include <netinet/in.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <net/pop3.h>
-#include <stddef.h>
 #include <util/array.h>
-#include <stdio.h>
-#include <netdb.h>
 
-static int format_req(char *buff, size_t buff_sz, const char *fmt,
-		va_list args, size_t *out_len) {
+#define BUFF_SZ 1024 /* more than POP3_STATUS_LEN */
+static char buff[BUFF_SZ];
+
+static int send_req(struct pop3_session *p3s,
+		const char *command_fmt, va_list command_args) {
 	int res;
+	char *req;
+	size_t req_len;
 
-	res = vsnprintf(buff, buff_sz, fmt, args);
+	assert(p3s != NULL);
+	assert(command_fmt != NULL);
+
+	res = vsnprintf(&buff[0], ARRAY_SIZE(buff), command_fmt,
+			command_args);
 	if (res < 0) {
 		return -errno;
 	}
 
-	*out_len = res;
-	return 0;
-}
+	req = &buff[0];
+	req_len = res;
 
-static int send_req(int sock, const char *req,
-		size_t req_len) {
-	int res;
-
-	puts(req);
+	printf("pop3> %s", req);
 
 	do {
-		res = send(sock, req, req_len, 0);
+		res = send(p3s->sock, req, req_len, 0);
 		if (res == -1) {
 			return -errno;
 		}
@@ -52,40 +56,83 @@ static int send_req(int sock, const char *req,
 	return 0;
 }
 
-static int receive_rep(int sock, char *buff, size_t size,
-		int multiline, size_t *out_len) {
+static int recv_rep(struct pop3_session *p3s, int multiline) {
 	int res;
-	char *curr;
+	char *rep, *end;
+	size_t rep_len;
 
-	curr = buff;
-	size -= 1; /* for null-terminated string */
+	assert(p3s != NULL);
+
+	/* get status */
+	rep = &p3s->status[0];
+	rep_len = ARRAY_SIZE(p3s->status) - 1;
 
 	do {
-//		if (size == 0) {
-//			return -ENOMEM;
-//		}
-
-		res = recv(sock, curr, size, 0);
+		res = recv(p3s->sock, rep, rep_len, 0);
 		if (res == -1) {
 			return -errno;
 		}
-		curr[res] = '\0';
-		printf("%s", curr);
 
-//		curr += res;
-//		size -= res;
+		rep += res;
+		rep_len -= res;
 
-//		*curr = '\0';
-	} while (strstr(buff, multiline ? "\r\n.\r\n" : "\r\n") == NULL);
+		*rep = '\0';
+		end = strstr(buff, "\r\n");
+	} while ((end == NULL) && (rep_len != 0));
 
-	if (out_len != NULL) {
-		*out_len = curr - buff;
+	if (rep_len == 0) {
+		p3s->ok = 0;
+		p3s->status[0] = '\0';
+		return 0;
 	}
-	return 0;
-}
 
-static int parse_rep(const char *rep, size_t rep_sz) {
-	puts(rep);
+	assert(end != NULL);
+	*end = '\0';
+
+	if (0 == strncmp("+OK ", &buff[0], strlen("+OK "))) {
+		p3s->ok = 1;
+	}
+	else if (0 == strncmp("-ERR ", &buff[0], strlen("-ERR "))) {
+		p3s->ok = 0;
+		return 0;
+	}
+	else {
+		p3s->ok = 0;
+		p3s->status[0] = '\0';
+		return 0;
+	}
+
+	/* get data */
+	if (!multiline) {
+		return 0;
+	}
+
+	rep = &buff[0];
+	rep_len = ARRAY_SIZE(buff) - 1;
+
+	end += 2;
+	strcpy(rep, end);
+	rep_len -= strlen(end);
+
+	do {
+		res = recv(p3s->sock, rep, rep_len, 0);
+		if (res == -1) {
+			return -errno;
+		}
+
+		rep += res;
+		rep_len -= res;
+
+		*rep = '\0';
+		end = strstr(&buff[0], "\r\n.\r\n");
+
+		if (rep_len == 0) {
+			fprintf(stdin, "%s", &buff[0]);
+			rep = &buff[0];
+			rep_len = ARRAY_SIZE(buff) - 1;
+		}
+	} while (end == NULL);
+
 	return 0;
 }
 
@@ -93,32 +140,21 @@ static int execute_cmd(struct pop3_session *p3s, int multiline,
 		const char *command_fmt, ...) {
 	int ret;
 	va_list command_args;
-	size_t str_len;
 
-	if ((p3s == NULL) || (command_fmt == NULL)) {
+	if (p3s == NULL) {
 		return -EINVAL;
 	}
 
+	assert(command_fmt != NULL);
+
 	va_start(command_args, command_fmt);
-	ret = format_req(&p3s->buff[0], ARRAY_SIZE(p3s->buff),
-			command_fmt, command_args, &str_len);
+	ret = send_req(p3s, command_fmt, command_args);
 	va_end(command_args);
 	if (ret != 0) {
 		return ret;
 	}
 
-	ret = send_req(p3s->sock, &p3s->buff[0], str_len);
-	if (ret != 0) {
-		return ret;
-	}
-
-	ret = receive_rep(p3s->sock, &p3s->buff[0],
-			ARRAY_SIZE(p3s->buff), multiline, &str_len);
-	if (ret != 0) {
-		return ret;
-	}
-
-	ret = parse_rep(&p3s->buff[0], str_len);
+	ret = recv_rep(p3s, multiline);
 	if (ret != 0) {
 		return ret;
 	}
@@ -126,18 +162,18 @@ static int execute_cmd(struct pop3_session *p3s, int multiline,
 	return 0;
 }
 
-int pop3_session_create(struct pop3_session *p3s, const char *server,
-		unsigned short int port) {
+int pop3_open(struct pop3_session *p3s, const char *host,
+		unsigned short port) {
 	int ret, sock;
-	struct hostent *hostinfo;
+	struct hostent *host_info;
 	struct sockaddr_in addr;
 
-	if (p3s == NULL) {
+	if ((p3s == NULL) || (host == NULL)) {
 		return -EINVAL;
 	}
 
-	hostinfo = gethostbyname(server);
-	if (hostinfo == NULL) {
+	host_info = gethostbyname(host);
+	if (host_info == NULL) {
 		return -ESRCH;
 	}
 
@@ -147,9 +183,10 @@ int pop3_session_create(struct pop3_session *p3s, const char *server,
 	}
 
 	memset(&addr, 0, sizeof addr);
-	addr.sin_family = hostinfo->h_addrtype;
+	addr.sin_family = host_info->h_addrtype;
 	addr.sin_port = htons(port);
-	memcpy(&addr.sin_addr, hostinfo->h_addr_list[0], hostinfo->h_length);
+	memcpy(&addr.sin_addr, host_info->h_addr_list[0],
+			host_info->h_length);
 
 	if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof addr)) {
 		close(sock);
@@ -157,17 +194,11 @@ int pop3_session_create(struct pop3_session *p3s, const char *server,
 	}
 
 	p3s->sock = sock;
-	p3s->buff[0] = '\0';
-	p3s->status = &p3s->buff[0];
+	p3s->ok = 0;
+	p3s->status[0] = '\0';
+	p3s->data = NULL;
 
-	ret = receive_rep(sock, &p3s->buff[0], ARRAY_SIZE(p3s->buff),
-			0, NULL);
-	if (ret != 0) {
-		close(sock);
-		return ret;
-	}
-
-	ret = parse_rep(&p3s->buff[0], 0);
+	ret = recv_rep(p3s, 0);
 	if (ret != 0) {
 		close(sock);
 		return ret;
@@ -176,22 +207,44 @@ int pop3_session_create(struct pop3_session *p3s, const char *server,
 	return 0;
 }
 
-int pop3_session_destroy(struct pop3_session *p3s) {
+int pop3_close(struct pop3_session *p3s) {
 	if (p3s == NULL) {
 		return -EINVAL;
 	}
 
-	return close(p3s->sock);
+	close(p3s->sock);
+
+	return 0;
+}
+
+int pop3_ok(struct pop3_session *p3s) {
+	return p3s != NULL ? p3s->ok : 0;
+}
+
+const char * pop3_status(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return NULL;
+	}
+
+	return p3s->status[0] != '\0' ? &p3s->status[0] : NULL;
+}
+
+const char * pop3_data(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return NULL;
+	}
+
+	return p3s->data;
 }
 
 int pop3_stat(struct pop3_session *p3s) {
 	return execute_cmd(p3s, 0, "STAT\r\n");
 }
 
-int pop3_list(struct pop3_session *p3s, int msg_or_none) {
-	return msg_or_none == POP3_MSG_NONE
+int pop3_list(struct pop3_session *p3s, int msg_or_any) {
+	return msg_or_any == POP3_MSG_ANY
 			? execute_cmd(p3s, 1, "LIST\r\n")
-			: execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_none);
+			: execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
 }
 
 int pop3_retr(struct pop3_session *p3s, int msg) {
@@ -218,10 +271,10 @@ int pop3_top(struct pop3_session *p3s, int msg, unsigned int n) {
 	return execute_cmd(p3s, 1, "TOP %d %u\r\n", msg, n);
 }
 
-int pop3_uidl(struct pop3_session *p3s, int msg_or_none) {
-	return msg_or_none == POP3_MSG_NONE
+int pop3_uidl(struct pop3_session *p3s, int msg_or_any) {
+	return msg_or_any == POP3_MSG_ANY
 			? execute_cmd(p3s, 1, "UIDL\r\n")
-			: execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_none);
+			: execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
 }
 
 int pop3_user(struct pop3_session *p3s, const char *name) {

@@ -24,28 +24,32 @@ static int exec(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	ret = pop3_session_create(&p3s, argv[3], POP3_PORT);
-	if (ret != 0) goto error;
+	ret = pop3_open(&p3s, argv[3], POP3_PORT);
+	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_user(&p3s, argv[1]);
-	if (ret != 0) goto error;
+	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_pass(&p3s, argv[2]);
-	if (ret != 0) goto error;
+	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_retr(&p3s, 1);
-	if (ret != 0) goto error;
+	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
 	ret = pop3_quit(&p3s);
-	if (ret != 0) goto error;
+	if ((ret != 0) || !pop3_ok(&p3s)) goto error;
 
-	ret = pop3_session_destroy(&p3s);
+	ret = pop3_close(&p3s);
 	if (ret != 0) {
 		return ret;
 	}
 
 	return 0;
 error:
-	pop3_session_destroy(&p3s);
+	if (ret == 0) {
+		assert(!pop3_ok(&p3s));
+		printf("server error: %s\n", pop3_status(&p3s));
+	}
+	pop3_close(&p3s);
 	return ret;
 }
