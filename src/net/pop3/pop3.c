@@ -77,7 +77,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 		rep_len -= res;
 
 		*rep = '\0';
-		end = strstr(buff, "\r\n");
+		end = strstr(&p3s->status[0], "\r\n");
 	} while ((end == NULL) && (rep_len != 0));
 
 	if (rep_len == 0) {
@@ -89,10 +89,10 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 	assert(end != NULL);
 	*end = '\0';
 
-	if (0 == strncmp("+OK ", &buff[0], strlen("+OK "))) {
+	if (0 == strncmp("+OK ", &p3s->status[0], strlen("+OK "))) {
 		p3s->ok = 1;
 	}
-	else if (0 == strncmp("-ERR ", &buff[0], strlen("-ERR "))) {
+	else if (0 == strncmp("-ERR ", &p3s->status[0], strlen("-ERR "))) {
 		p3s->ok = 0;
 		return 0;
 	}
