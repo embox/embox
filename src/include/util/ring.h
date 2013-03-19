@@ -38,6 +38,11 @@ static inline struct ring *ring_init(struct ring *r) {
 	return r;
 }
 
+static inline void __ring_assert_invariants(struct ring *r, size_t r_size) {
+	assert(r->head < r_size, "Did you forget to call %s?", "ring_fixup_head");
+	assert(r->tail < r_size, "Did you forget to call %s?", "ring_fixup_tail");
+}
+
 /**
  * Buffer is considered empty when two pointers are the same: tail == head
 @verbatim
@@ -46,18 +51,21 @@ static inline struct ring *ring_init(struct ring *r) {
 @endverbatim
  */
 static inline int ring_empty(struct ring *r) {
-	return r->head == r->tail;
+	return (r->head == r->tail);
 }
 
 /**
  * Buffer is full when tail == (head-1), maybe wrapped.
 @verbatim
+        [************************************-]
+         ^-tail                         head-^
         [*************-***********************]
                  head-^^-tail
 @endverbatim
  */
 static inline int ring_full(struct ring *r, size_t r_size) {
-	return r->head == (r->tail ? r->tail - 1 : r_size);
+	__ring_assert_invariants(r, r_size);
+	return r->head == (r->tail ?: r_size) - 1;
 }
 
 /**
@@ -68,9 +76,26 @@ static inline int ring_full(struct ring *r, size_t r_size) {
 @endverbatim
  */
 static inline int ring_wraps(struct ring *r, size_t r_size) {
-	assert(r->head <= r_size, "Did you forget to call %s?", "ring_fixup_head");
-	assert(r->tail <  r_size, "Did you forget to call %s?", "ring_fixup_tail");
+	__ring_assert_invariants(r, r_size);
 	return (r->head < r->tail);
+}
+
+/*
+ * ring_xxx_size get total amount of data available for reading or writing.
+ */
+
+static inline size_t ring_data_size(struct ring *r, size_t r_size) {
+	size_t data_size = (r->head - r->tail);
+	if (ring_wraps(r, r_size))
+		data_size += r_size;
+	return data_size;
+}
+
+static inline size_t ring_room_size(struct ring *r, size_t r_size) {
+	size_t room_size = (r->tail - r->head - 1);
+	if (!ring_wraps(r, r_size))
+		room_size += r_size;
+	return room_size;
 }
 
 /*
@@ -90,9 +115,9 @@ static inline size_t ring_can_read(struct ring *r, size_t r_size,
 static inline size_t ring_can_write(struct ring *r, size_t r_size,
 		size_t write_size) {
 	size_t nwrap_room_end = !ring_wraps(r, r_size)
-			? r_size - (!r->tail)
-			: r->tail - 1;
-	return min(write_size, nwrap_room_end - r->head);
+			? r_size
+			: r->tail;
+	return min(write_size, nwrap_room_end - r->head - 1);
 }
 
 /* Mutator methods. */
@@ -110,8 +135,7 @@ static inline size_t ring_fixup_tail(struct ring *r, size_t r_size) {
 
 /** @return New value of head. */
 static inline size_t ring_fixup_head(struct ring *r, size_t r_size) {
-	/* unlike ring_fixup_tail, a strict comparison is used here */
-	if (r->head > r_size)
+	if (r->head >= r_size)
 		r->head -= r_size;
 	return r->head;
 }
