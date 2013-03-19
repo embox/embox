@@ -9,6 +9,8 @@
 #ifndef KEYBOARD_H_
 #define KEYBOARD_H_
 
+#include <drivers/input/input_dev.h>
+
 enum KBD_EVENT_CODE {
 	KEY_PRESSED = 0x8000,
 };
@@ -30,5 +32,6 @@ enum KBD_EVENT_CODE {
 #define KEYBOARD_SCAN_CODE_SHIFT  0x2A
 #define KEYBOARD_SCAN_CODE_CAPS   0x3A
 
+extern int key_is_pressed(struct input_event *event);
 
 #endif /* KEYBOARD_H_ */

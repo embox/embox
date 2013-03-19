@@ -40,6 +40,7 @@ struct vterm {
 extern void vterm_init(struct vterm *t, unsigned short width, unsigned short height,
 		const struct vterm_ops *ops, void *data);
 extern void vterm_putc(struct vterm *t, char ch);
+extern void vterm_open_indev(struct vterm *t, const char *name);
 
 /* tty ioctls */
 #define TTY_IOCTL_GETATTR  0x1

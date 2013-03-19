@@ -12,6 +12,7 @@
 #include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
+#include <drivers/indev_manager.h>
 #include <embox/unit.h>
 
 #include <drivers/i8042.h>
@@ -134,6 +135,8 @@ static int keyboard_init(void) {
 
 	input_dev_register(&kbd_dev);
 	kbd_state = 0;
+
+	indev_manager_init_report(kbd_dev.name);
 
 	return 0;
 }

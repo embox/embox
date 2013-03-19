@@ -8,11 +8,13 @@
  */
 
 #include <assert.h>
-#include <stddef.h>
+#include <string.h>
+#include <stdint.h>
 #include <util/array.h>
 #include <drivers/video_term.h>
-#include <drivers/vt.h>
-#include <drivers/vtparse.h>
+#include <drivers/keyboard.h>
+#include <drivers/input/input_dev.h>
+#include <drivers/input/keymap.h>
 
 #define VTERM_TAB_WIDTH 8
 
@@ -83,8 +85,10 @@ static void execute_printable(struct vterm *t, char ch) {
 		}
 		break;
 	case '\b': /* back space */
-		if (t->cur_x != 0)
+		if (t->cur_x != 0) {
 			--t->cur_x;
+			t->ops->putc(t, ' ', t->cur_x, t->cur_y);
+		}
 		break;
 	default:
 		if (t->cur_x >= t->width) {
@@ -156,6 +160,121 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 		break;
 	default:
 		break;
+	}
+}
+
+static const unsigned char esc_start[] = { 0x1B, 0x5B }; /* esc, '[' */
+
+int event(struct input_dev *indev) {
+	unsigned char ascii_buff[4];
+	struct input_event event;
+	int keycode;
+	int seq_len = 0;
+
+	if (0 != input_dev_event(indev, &event)){
+		return 0;
+	}
+	if (!key_is_pressed(&event)) {
+		return 0;
+	}
+	keycode = keymap_kbd(&event);
+
+	if (keycode < 0) {
+		return 0;
+	}
+
+	switch (keycode) {
+	case 0:
+	case KEY_CAPS:
+	case KEY_SHFT:
+	case KEY_CTRL:
+	case KEY_ALT:
+		return 0; /* no ascii symbols */
+
+	case KEY_F1:
+	case KEY_F2:
+	case KEY_F3:
+	case KEY_F4:
+	case KEY_F5:
+	case KEY_F6:
+	case KEY_F7:
+	case KEY_F8:
+	case KEY_F9:
+	case KEY_F10:
+	case KEY_F11:
+	case KEY_F12:
+		return 0; /* no ascii symbols */
+
+	case KEY_INS:
+		/*0x7e325b1b */
+		seq_len = 4;
+		ascii_buff[2] = 0x32;
+		ascii_buff[3] = 0x7e;
+		break;
+	case KEY_HOME:
+		/* 0x485b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x48;
+		break;
+	case KEY_END:
+		/* 0x465b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x46;
+		break;
+	case KEY_PGUP:
+		/* 0x7e355b1b */
+		seq_len = 4;
+		ascii_buff[2] = 0x35;
+		ascii_buff[3] = 0x7e;
+		break;
+	case KEY_PGDN:
+		/* 0x7e365b1b */
+		seq_len = 4;
+		ascii_buff[2] = 0x36;
+		ascii_buff[3] = 0x7e;
+		break;
+	case KEY_UP:
+		/* 0x415b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x41;
+		break;
+	case KEY_DOWN:
+		/* 0x425b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x42;
+		break;
+	case KEY_LEFT:
+		/* 0x445b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x44;
+		break;
+	case KEY_RGHT:
+		/* 0x435b1b */
+		seq_len = 3;
+		ascii_buff[2] = 0x43;
+		break;
+
+	default:
+		seq_len = 1;
+		ascii_buff[0] = (unsigned char) keycode;
+		break;
+	}
+	if (seq_len > 1) {
+		memcpy(ascii_buff, esc_start, sizeof(esc_start));
+	}
+	for (int i = 0; i < seq_len; i++) {
+		vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
+	}
+	return 0;
+}
+
+void vterm_open_indev(struct vterm *t, const char *name) {
+	struct input_dev *dev;
+
+	dev = input_dev_lookup(name);
+	if (dev) {
+		dev->data = t;
+		input_dev_open(dev, &event);
 	}
 }
 

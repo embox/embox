@@ -41,6 +41,7 @@ struct input_dev {
 	enum input_dev_type type;
 	int proto;
 	int irq;
+	void *data;
 
 	indev_event_cb_t *event_cb;
 	struct dlist_head global_indev_list; /* global device list */

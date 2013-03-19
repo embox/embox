@@ -53,24 +53,24 @@ static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 			executor->token.type = VTESC_MOVE_CURSOR;
 			executor->token.params.move_cursor.x = 0;
 			executor->token.params.move_cursor.y =
-					token->params_len == 1 ? params[0] : 0;
+					token->params_len == 1 ? -params[0] : -1;
 			break;
 		case 'B':
 			executor->token.type = VTESC_MOVE_CURSOR;
 			executor->token.params.move_cursor.x = 0;
 			executor->token.params.move_cursor.y =
-					token->params_len == 1 ? -params[0] : 0;
+					token->params_len == 1 ? params[0] : 1;
 			break;
 		case 'C':
 			executor->token.type = VTESC_MOVE_CURSOR;
 			executor->token.params.move_cursor.x =
-					token->params_len == 1 ? params[0] : 0;
+					token->params_len == 1 ? params[0] : 1;
 			executor->token.params.move_cursor.y = 0;
 			break;
 		case 'D':
 			executor->token.type = VTESC_MOVE_CURSOR;
 			executor->token.params.move_cursor.x =
-					token->params_len == 1 ? -params[0] : 0;
+					token->params_len == 1 ? -params[0] : -1;
 			executor->token.params.move_cursor.y = 0;
 			break;
 		}
