@@ -142,7 +142,7 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	 * in this case device reset hardware addrress
 	 */
 	if (args->with_hw) { /* set new MAC address to iface */
-		ret = inetdev_set_macaddr(iface, &args->hw_addr[0]);
+		ret = netdev_set_macaddr(iface->dev, &args->hw_addr[0]);
 		if (ret != 0) return ret;
 	}
 

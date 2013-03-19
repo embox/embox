@@ -155,6 +155,21 @@ int netdev_set_flags(struct net_device *dev, unsigned int flags) {
 	return res;
 }
 
+int netdev_set_macaddr(struct net_device *dev,
+		const unsigned char *mac_addr) {
+	if ((dev == NULL) || (mac_addr == NULL)) {
+		return -EINVAL;
+	}
+
+	assert(dev->netdev_ops != NULL);
+	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
+		return -ENOSUPP;
+	}
+
+	return dev->netdev_ops->ndo_set_mac_address(dev,
+			(void *)mac_addr);
+}
+
 static size_t netdev_hash(const char *name) {
 	size_t hash;
 	hash = 0;

@@ -78,12 +78,6 @@ extern int inetdev_set_mask(struct in_device *in_dev, in_addr_t mask);
 extern int inetdev_set_bcast(struct in_device *in_dev, in_addr_t bcast);
 
 /**
- * Set MAC address
- * @param macaddr - MAC devices address
- */
-extern int inetdev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr);
-
-/**
  * Get interface's IP address
  * @param in_dev interface handler
  */

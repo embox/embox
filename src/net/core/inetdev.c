@@ -146,23 +146,6 @@ int inetdev_set_bcast(struct in_device *in_dev, in_addr_t bcast) {
 	return 0;
 }
 
-int inetdev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
-	struct net_device *dev;
-
-	if ((in_dev == NULL) || (macaddr == NULL)) {
-		return -EINVAL;
-	}
-
-	dev = in_dev->dev;
-	assert(dev != NULL);
-
-	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
-		return -ENOSUPP;
-	}
-
-	return dev->netdev_ops->ndo_set_mac_address(dev, (void *)macaddr);
-}
-
 in_addr_t inetdev_get_addr(struct in_device *in_dev) {
 	return in_dev != NULL ? in_dev->ifa_address : 0;
 }
