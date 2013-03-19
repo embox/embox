@@ -14,7 +14,7 @@
 #include <errno.h>
 
 EMBOX_CMD(serial_con_manager);
-
+h
 #define SERIAL_N_CON 10
 #define BUF_SIZE (80 * 30)
 

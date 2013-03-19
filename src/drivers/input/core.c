@@ -178,7 +178,7 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 
 	ring_buff_dequeue(&dev->rbuf, ev, 1);
 
-	return ret;
+	return 0;
 
 }
 
@@ -189,7 +189,9 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 		return -EINVAL;
 	}
 
-	dev->event_cb = event;
+	if (event) {
+		dev->event_cb = event;
+	}
 
 	dlist_head_init(&dev->post_link);
 

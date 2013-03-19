@@ -83,6 +83,8 @@ static const struct vterm_ops diag_tty_ops = {
 		.copy_rows = &diag_vterm_copy_rows
 };
 
+struct vterm diag_vterm;
+
 static int iodev_diag_init(void) {
 	static struct diag_vterm_data data =
 			{ .attr = 0x7, .video = (vchar_t *) VIDEO };
@@ -91,12 +93,12 @@ static int iodev_diag_init(void) {
 	return 0;
 }
 
-const struct iodev_ops iodev_diag_ops_struct = {
+static const struct iodev_ops iodev_diag_ops_struct = {
 	.init = &iodev_diag_init,
 	.getc = &diag_getc,
 	.putc = &diag_putc,
 	.kbhit = &diag_kbhit,
 };
 
-struct vterm diag_vterm;
-const struct iodev_ops * const iodev_diag_ops = &iodev_diag_ops_struct;
+const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;
+

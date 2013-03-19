@@ -1,12 +1,16 @@
 package embox.driver.iodev
 
 module core {
-	source "iodev.c", "iodev_diag.c"
+	source "iodev.c"
 
 	depends video_api
 	depends embox.driver.tty.tty
 	depends embox.driver.tty.vterm
 
+}
+
+module vterm {
+	source "iodev_diag.c"
 }
 
 @DefaultImpl(iodev_no_video)

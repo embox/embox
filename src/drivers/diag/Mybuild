@@ -7,26 +7,31 @@ module apbuart extends diag_api {
 	option number baud_rate
 
 	source "apbuart.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module at91_uart extends diag_api {
 	option number baud_rate
 
 	source "at91_uart.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module mem_diag extends diag_api {
 	source "mem_diag.c"
 	depends embox.lib.LibC
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module no_diag extends diag_api {
 	source "no_diag.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module i8250 extends diag_api {
 	option number baud_rate
 	source "8250.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module tty_diag extends diag_api {
@@ -34,27 +39,34 @@ module tty_diag extends diag_api {
 
 	depends embox.driver.tty.tty
 	depends embox.driver.input.keyboard.diag
+
+	@NoRuntime depends embox.driver.diag.console.vterm
 }
 
 module xuartlite extends diag_api {
 	option number xuartlite_base
 
 	source "xuartlite.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module stm32_usart extends diag_api {
 	source "stm32_usart.c"
 	depends embox.driver.gpio.stm32
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module pic32mx_uart extends diag_api {
 	source "pic32mx_uart.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module ns16550 extends diag_api {
 	source "ns16550.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module usermode extends diag_api {
 	source "usermode.c"
+	@NoRuntime depends embox.driver.diag.console.serial
 }
