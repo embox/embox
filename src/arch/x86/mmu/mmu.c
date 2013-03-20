@@ -77,7 +77,11 @@ void mmu_enable(void) {
 }*/
 
 void mmu_on(void) {
-	set_cr0(get_cr0() | X86_CR0_PG);
+	set_cr0(get_cr0() | X86_CR0_PG | X86_CR0_WP);
+}
+
+void mmu_off(void) {
+	set_cr0(get_cr0() & ~X86_CR0_PG);
 }
 
 void mmu_flush_tlb_single(unsigned long addr) {

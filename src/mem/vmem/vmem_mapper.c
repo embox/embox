@@ -15,7 +15,6 @@
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
-
 static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags);
 static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
