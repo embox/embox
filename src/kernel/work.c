@@ -64,6 +64,7 @@ static void work_softirq_handler(unsigned int softirq_nr, void *data) {
 		} while	(w->state & WS_PENDING);
 	}
 
+	last->next = &workq.sentinel;
 	workq_tail = last;
 
 	irq_unlock();
