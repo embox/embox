@@ -118,8 +118,8 @@ static inline size_t ring_can_write(struct ring *r, size_t r_size,
 		size_t write_size) {
 	size_t nwrap_room_end = !ring_wraps(r, r_size)
 			? r_size
-			: r->tail;
-	return min(write_size, nwrap_room_end - r->head - 1);
+			: r->tail - 1;
+	return min(write_size, nwrap_room_end - r->head);
 }
 
 /* Mutator methods. */
