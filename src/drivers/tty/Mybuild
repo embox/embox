@@ -5,8 +5,8 @@ module tty {
 	source "tty.c"
 	source "tty_file_ops.c"
 	source "tty_repo.c"
-	option number io_buff_sz = 8
-	option number rx_buff_sz = 128
+	option number io_buff_sz = 128
+	option number rx_buff_sz = 8
 	depends embox.kernel.work
 }
 

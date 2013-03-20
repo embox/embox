@@ -95,16 +95,20 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	tcflag_t iflag = t->termios.c_iflag;
 	tcflag_t lflag = t->termios.c_lflag;
 	cc_t *cc = t->termios.c_cc;
+	int ignore_cr;
+	int raw_or_eol;
 	int got_data;
 
-	if (ring_full(&t->i_ring, TTY_IO_BUFF_SZ))
-		return 0;
-
 	/* Newline control: IGNCR, ICRNL, INLCR */
-	if ((iflag & IGNCR) && ch == '\r')
+	ignore_cr = (iflag & IGNCR) && ch == '\r';
+	if (!ignore_cr) {
+		if ((iflag & ICRNL) && ch == '\r') ch = '\n';
+		if ((iflag & INLCR) && ch == '\n') ch = '\r';
+	}
+	raw_or_eol = !(lflag & ICANON) || ch == '\n' || ch == cc[VEOL];
+
+	if (ignore_cr)
 		goto done;
-	else if ((iflag & ICRNL) && ch == '\r') ch = '\n';
-	else if ((iflag & INLCR) && ch == '\n') ch = '\r';
 
 	/* Handle erase/kill */
 	if (lflag & ICANON) {
@@ -115,36 +119,40 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 			size_t erase_len = ring_data_size(
 						tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
 
-			if (erase_len && !erase_all)
-				erase_len = 1;
+			if (erase_len) {
+				if (!erase_all)
+					erase_len = 1;
 
-			t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
-			ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
+				t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
+				ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
 
-			while (erase_len--)
-				tty_echo_erase(t);
+				while (erase_len--)
+					tty_echo_erase(t);
+			}
 
 			goto done;
 		}
 	}
 
-	/* Finally, store the char. */
-	t->i_buff[t->i_ring.head] = ch;
+	/* Finally, store and echo the char.
+	 *
+	 * When i_ring is near to become full, only raw or a line ending chars are
+	 * handled. This lets canonical read to see the whole line with \n or EOL
+	 * at the end. */
 
-	if (!ring_write(&t->i_ring, TTY_IO_BUFF_SZ, 1))
-		assert(0, "ring_full?");
-
-	tty_echo(t, ch);
+	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > (raw_or_eol ? 0 : 1))
+		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1))
+			tty_echo(t, ch);
 
 done:
-	got_data = !(lflag & ICANON) ||
-				ch == '\n' || ch == cc[VEOL] || ch == cc[VEOF];
+	got_data = (raw_or_eol || ch == cc[VEOF]);
 
 	if (got_data) {
 		t->i_canon_ring.head = t->i_ring.head;
 
 		if (!(lflag & ICANON))
-			t->i_canon_ring.tail = t->i_ring.tail;
+			/* maintain it empty */
+			t->i_canon_ring.tail = t->i_canon_ring.head;
 	}
 
 	return got_data;
