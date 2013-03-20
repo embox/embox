@@ -10,6 +10,7 @@
 #include <drivers/iodev_diag.h>
 
 struct vterm diag_vterm;
+struct tty *diag_tty = &diag_vterm.tty;
 
 int diag_console_init(void) {
 	vterm_init(&diag_vterm, &diag_vga.video, NULL);

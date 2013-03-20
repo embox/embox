@@ -59,8 +59,7 @@ static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
 		memcpy(data, &tty->termios, sizeof(struct termios));
 		break;
 	case TTY_IOCTL_SETATTR:
-
-		memcpy(data, &tty->termios, sizeof(struct termios));
+		memcpy(&tty->termios, data, sizeof(struct termios));
 		break;
 	default:
 		break;
@@ -94,23 +93,14 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
-static void bs_tty_setup(struct tty *tty, struct termios *termios) {
-	return;
-}
-
-static struct tty_ops bs_tty_ops = {
-	.setup = bs_tty_setup
-};
-
-static struct tty bs_tty;
+extern struct tty *diag_tty;
 
 static int iodev_env_init(void) {
 	int fd;
 	int res = 0;
 
-	tty_init(&bs_tty, &bs_tty_ops);
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, &bs_tty);
+	fd = task_self_idx_alloc(&iodev_idx_ops, diag_tty);
 	if ((res = check_valid(fd, 0)) != 0) {
 		return res;
 	}

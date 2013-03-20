@@ -15,5 +15,5 @@ int tcgetattr(int fd, struct termios *termios_p) {
 }
 
 int tcsetattr(int fd, int optional_actions, struct termios *termios_p) {
-	return ioctl(fd, TTY_IOCTL_GETATTR, termios_p);
+	return ioctl(fd, TTY_IOCTL_SETATTR, termios_p);
 }
