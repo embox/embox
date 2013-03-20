@@ -622,11 +622,9 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
         }
 
         switch(c) {
-        case 10:    /* enter */
+        case '\n':    /* enter */
             history_len--;
             free(history[history_len]);
-    	    buf[l.len++] = '\n';
-    	    buf[l.len] = '\0';
             return (int)l.len;
         case 3:     /* ctrl-c */
             errno = EAGAIN;

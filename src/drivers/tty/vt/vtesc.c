@@ -73,7 +73,7 @@ static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 					token->params_len == 1 ? -params[0] : -1;
 			executor->token.params.move_cursor.y = 0;
 			break;
-		case 'G':
+		case 'G'://move cursor to x position
 			executor->token.type = VTESC_CURSOR_COLOMN;
 			executor->token.params.cursor_position.column = params[0];
 			break;

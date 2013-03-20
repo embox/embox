@@ -12,8 +12,10 @@
 char *strdup(const char *s) {
 	char *new;
 
-	new = malloc(strlen(s));
-	strcpy(new, s);
+	new = malloc(strlen(s) + 1);
+	if(new) {
+		strcpy(new, s);
+	}
 
 	return new;
 }
