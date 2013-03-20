@@ -10,16 +10,21 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
+#include <termios.h>
 #include <util/array.h>
+#include <util/member.h>
 #include <drivers/video_term.h>
 #include <drivers/keyboard.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/input/keymap.h>
+#include <drivers/tty.h>
 
 #define VTERM_TAB_WIDTH 8
 
 static void vterm_scroll_up(struct vterm *t, unsigned short delta) {
-	assert(t && t->video && t->video->ops && t->video->ops->copy_rows && t->video->ops->clear_rows);
+	assert(
+			t && t->video && t->video->ops && t->video->ops->copy_rows
+					&& t->video->ops->clear_rows);
 
 	t->video->ops->copy_rows(t->video, 0, delta, t->video->height - delta);
 	t->video->ops->clear_rows(t->video, t->video->height - delta, delta);
@@ -87,7 +92,6 @@ static void execute_printable(struct vterm *t, char ch) {
 	case '\b': /* back space */
 		if (t->cur_x != 0) {
 			--t->cur_x;
-			t->video->ops->putc(t->video, ' ', t->cur_x, t->cur_y);
 		}
 		break;
 	default:
@@ -128,7 +132,8 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 		default:
 		case 0: /* from cursor to end of the screen */
 			erase_line_part(t, t->cur_x, t->video->width - t->cur_x);
-			t->video->ops->clear_rows(t->video, t->cur_y + 1, t->video->height - t->cur_y - 1);
+			t->video->ops->clear_rows(t->video, t->cur_y + 1,
+					t->video->height - t->cur_y - 1);
 			break;
 		case 1: /* from cursor to beginning of the screen */
 			erase_line_part(t, 0, t->cur_x);
@@ -171,7 +176,7 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 	int keycode;
 	int seq_len = 0;
 
-	if (0 != input_dev_event(indev, &event)){
+	if (0 != input_dev_event(indev, &event)) {
 		return 0;
 	}
 	if (!key_is_pressed(&event)) {
@@ -263,7 +268,8 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 		memcpy(ascii_buff, esc_start, sizeof(esc_start));
 	}
 	for (int i = 0; i < seq_len; i++) {
-		vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
+		//vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
+		tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], ICANON);
 	}
 	return 0;
 }
@@ -291,7 +297,25 @@ void vterm_putc(struct vterm *t, char ch) {
 	vterm_cursor(t);
 }
 
-void vterm_init(struct vterm *t, struct vterm_video *video, struct input_dev *indev) {
+void vterm_tty_tx_char(struct tty * tty, char ch) {
+	struct vtesc_token *token;
+	struct vterm *vterm = member_cast_out(tty, struct vterm, tty);
+
+	assert(vterm && vterm->video && vterm->video->ops && vterm->video->ops->putc);
+
+	token = vtesc_consume(&vterm->executor, ch);
+	if (token) {
+		execute_token(vterm, token);
+	}
+	vterm_cursor(vterm);
+}
+
+struct tty_ops vterm_tty_ops = {
+	.tx_char = &vterm_tty_tx_char
+};
+
+void vterm_init(struct vterm *t, struct vterm_video *video,
+		struct input_dev *indev) {
 	assert(video && video->ops && video->ops->init);
 
 	t->cur_x = 0;
@@ -303,6 +327,8 @@ void vterm_init(struct vterm *t, struct vterm_video *video, struct input_dev *in
 	t->indev = indev;
 
 	t->video->ops->init(t->video);
+
+	tty_init(&t->tty, &vterm_tty_ops);
 
 	vterm_clear(t);
 }

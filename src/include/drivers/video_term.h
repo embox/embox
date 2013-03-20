@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <termios.h>
+#include <drivers/tty.h>
 #include <drivers/vtesc.h>
 
 struct vterm_video;
@@ -38,6 +39,7 @@ struct vterm {
 	struct input_dev *indev;
 
 	struct termios termios;
+	struct tty tty;
 	struct vtesc_executor executor;
 };
 
