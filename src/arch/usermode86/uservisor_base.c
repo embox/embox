@@ -44,18 +44,24 @@ int emvisor_sendirq(host_pid_t pid, char signal, int fd, enum emvisor_msg type,
 	return 0;
 }
 
-int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
-	return host_read(fd, msg, sizeof(struct emvisor_msghdr));
-}
-
-int emvisor_recvnbody(int fd, void *data, int dlen) {
+int emvisor_recvn(int fd, void *data, int dlen) {
 	int ldata = dlen;
 	void *pb = data;
 	int ret;
 
+	if (0 >= (ret = host_read(fd, data, ldata))) {
+		return ret;
+	}
+
+	ldata -= ret;
+	pb += ret;
+
 	while (ldata) {
-		if (0 > (ret = host_read(fd, data, ldata))) {
-			return -EIO;
+		if (0 > (ret = host_read(fd, pb, ldata))) {
+			if (ret == -EAGAIN) {
+				continue;
+			}
+			return ret;
 		}
 
 		ldata -= ret;
@@ -65,12 +71,25 @@ int emvisor_recvnbody(int fd, void *data, int dlen) {
 	return dlen;
 }
 
+int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
+	return emvisor_recvn(fd, msg, sizeof(struct emvisor_msghdr));
+}
+
 int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
+	int ret;
+
 	if (msg->dlen > dlen) {
 		return -ERANGE;
 	}
 
-	return emvisor_recvnbody(fd, data, msg->dlen);
+	while (0 >= (ret = emvisor_recvn(fd, data, msg->dlen))) {
+		if (ret && ret != -EAGAIN) {
+			break;
+		}
+
+	}
+
+	return ret;
 }
 
 int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {

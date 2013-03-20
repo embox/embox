@@ -6,6 +6,8 @@
  * @date    01.03.2013
  */
 
+#include <stddef.h>
+#include <hal/ipl.h>
 #include <kernel/host.h>
 
 int diag_kbhit(void) {
@@ -21,10 +23,16 @@ char diag_getc(void) {
 	return '\0';
 }
 
+extern int ipl_num;
+
 void diag_putc(char ch) {
+	ipl_t ipl = ipl_save();
+	int ret;
 
-	emvisor_send(UV_PWRUPSTRM, EMVISOR_DIAG_OUT, &ch, 1);
+	if (0 > (ret = emvisor_send(UV_PWRUPSTRM, EMVISOR_DIAG_OUT, &ch, 1))) {
+	}
 
+	ipl_restore(ipl);
 }
 
 void diag_init(void) {

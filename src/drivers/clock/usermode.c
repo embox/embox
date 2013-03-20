@@ -18,12 +18,11 @@
 EMBOX_UNIT_INIT(umclock_init);
 
 #define CLOCK_IRQ  2
-
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	unsigned long long ovrn_count;
 	int ret;
 
-	while (0 >= (ret = emvisor_recvnbody(UV_PRDDOWNSTRM,
+	while (0 >= (ret = emvisor_recvn(UV_PRDDOWNSTRM,
 					&ovrn_count, sizeof(ovrn_count)))) {
 
 	}
