@@ -18,10 +18,10 @@ size_t tty_write(struct tty *tty, char *buff, size_t size) {
 int tty_ioctl(struct tty *tty, int request, void *data) {
 	switch(request) {
 	case TTY_IOCTL_GETATTR:
-		memcpy(&tty->termios, tty, sizeof(struct termios));
+		memcpy(&tty->termios, data, sizeof(struct termios));
 		break;
 	case TTY_IOCTL_SETATTR:
-		memcpy(tty, &tty->termios, sizeof(struct termios));
+		memcpy(data, &tty->termios, sizeof(struct termios));
 		break;
 	default:
 		return -ENOSYS;

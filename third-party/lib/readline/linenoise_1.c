@@ -204,10 +204,11 @@ static void disableRawMode(int fd) {
 /* Try to get the number of columns in the current terminal, or assume 80
  * if it fails. */
 static int getColumns(void) {
-    struct winsize ws;
+   // struct winsize ws;
 
-    if (ioctl(1, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) return 80;
-    return ws.ws_col;
+	return 80;
+ //   if (ioctl(1, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) return 80;
+  //  return ws.ws_col;
 }
 
 /* Clear the screen. Used to handle ctrl+l */
@@ -624,6 +625,8 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
         case 10:    /* enter */
             history_len--;
             free(history[history_len]);
+    	    buf[l.len++] = '\n';
+    	    buf[l.len] = '\0';
             return (int)l.len;
         case 3:     /* ctrl-c */
             errno = EAGAIN;

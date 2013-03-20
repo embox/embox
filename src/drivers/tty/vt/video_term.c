@@ -124,6 +124,9 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 		setup_cursor(t, token->params.cursor_position.row,
 				token->params.cursor_position.column);
 		break;
+	case VTESC_CURSOR_COLOMN:
+		setup_cursor(t, token->params.cursor_position.column, t->cur_y+1);
+		break;
 	case VTESC_ERASE_DATA:
 		switch (token->params.erase.n) {
 		default:
@@ -265,8 +268,8 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 		memcpy(ascii_buff, esc_start, sizeof(esc_start));
 	}
 	for (int i = 0; i < seq_len; i++) {
-		vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
-		//tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], 0);
+		//vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
+		tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], 0);
 	}
 	return 0;
 }

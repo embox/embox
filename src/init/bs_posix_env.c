@@ -54,18 +54,7 @@ static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
 		return -EINVAL;
 	}
 
-	switch (request) {
-	case TTY_IOCTL_GETATTR:
-		memcpy(data, &tty->termios, sizeof(struct termios));
-		break;
-	case TTY_IOCTL_SETATTR:
-		memcpy(&tty->termios, data, sizeof(struct termios));
-		break;
-	default:
-		break;
-	}
-
-	return 0;
+	return tty_ioctl(tty, request, data);
 }
 
 static const struct task_idx_ops iodev_idx_ops = {
