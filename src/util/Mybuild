@@ -53,6 +53,7 @@ static module LibUtil {
 	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
+	source "ring.c"
 	source "ring_buff.c"
 	source "sys_log.c"
 
