@@ -20,6 +20,11 @@
 #include <kernel/work.h>
 #include <util/math.h>
 
+#define TC_I(t, flag) ((t)->termios.c_iflag & (flag))
+#define TC_O(t, flag) ((t)->termios.c_oflag & (flag))
+#define TC_C(t, flag) ((t)->termios.c_cflag & (flag))
+#define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
+
 static void tty_tx_char(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
 	t->ops->tx_char(t, ch);
@@ -27,18 +32,14 @@ static void tty_tx_char(struct tty *t, char ch) {
 
 /* Called in worker-protected context. */
 static void tty_output(struct tty *t, char ch) {
-	if ((t->termios.c_lflag & ICANON) && (t->termios.c_oflag & ONLCR) &&
-			ch == '\n') {
+	if (TC_L(t, ICANON) && TC_O(t, ONLCR) && ch == '\n')
 		tty_tx_char(t, '\r');
-	}
 
 	tty_tx_char(t, ch);
 }
 
 static void tty_echo(struct tty *t, char ch) {
-	tcflag_t lflag = t->termios.c_lflag;
-
-	if (!((lflag & ECHO) || ((lflag & ECHONL) && ch == '\n')))
+	if (!(TC_L(t, ECHO) || (TC_L(t, ECHONL) && ch == '\n')))
 		return;
 
 	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
@@ -50,13 +51,12 @@ static void tty_echo(struct tty *t, char ch) {
 }
 
 static void tty_echo_erase(struct tty *t) {
-	tcflag_t lflag = t->termios.c_lflag;
 	cc_t *cc = t->termios.c_cc;
 
-	if (!(lflag & ECHO))
+	if (!TC_L(t, ECHO))
 		return;
 
-	if (lflag & ECHOE)
+	if (TC_L(t, ECHOE))
 		tty_output(t, cc[VERASE]);
 
 	else
@@ -92,26 +92,24 @@ static struct ring *tty_edit_ring(struct tty *t, struct ring *r) {
 
 /* Called in worker context. */
 static int tty_input(struct tty *t, char ch, unsigned char flag) {
-	tcflag_t iflag = t->termios.c_iflag;
-	tcflag_t lflag = t->termios.c_lflag;
 	cc_t *cc = t->termios.c_cc;
 	int ignore_cr;
 	int raw_or_eol;
 	int got_data;
 
 	/* Newline control: IGNCR, ICRNL, INLCR */
-	ignore_cr = (iflag & IGNCR) && ch == '\r';
+	ignore_cr = TC_I(t, IGNCR) && ch == '\r';
 	if (!ignore_cr) {
-		if ((iflag & ICRNL) && ch == '\r') ch = '\n';
-		if ((iflag & INLCR) && ch == '\n') ch = '\r';
+		if (TC_I(t, ICRNL) && ch == '\r') ch = '\n';
+		if (TC_I(t, INLCR) && ch == '\n') ch = '\r';
 	}
-	raw_or_eol = !(lflag & ICANON) || ch == '\n' || ch == cc[VEOL];
+	raw_or_eol = !TC_L(t, ICANON) || ch == '\n' || ch == cc[VEOL];
 
 	if (ignore_cr)
 		goto done;
 
 	/* Handle erase/kill */
-	if (lflag & ICANON) {
+	if (TC_L(t, ICANON)) {
 		int erase_all = (ch == cc[VKILL]);
 		if (erase_all || ch == cc[VERASE] || ch == '\b') {
 
@@ -150,7 +148,7 @@ done:
 	if (got_data) {
 		t->i_canon_ring.head = t->i_ring.head;
 
-		if (!(lflag & ICANON))
+		if (!TC_L(t, ICANON))
 			/* maintain it empty */
 			t->i_canon_ring.tail = t->i_canon_ring.head;
 	}
@@ -224,7 +222,7 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 	cc_t eol, eof;
 	size_t block_size;
 
-	assert(t->termios.c_lflag & ICANON);
+	assert(TC_L(t, ICANON));
 
 	eol = t->termios.c_cc[VEOL];
 	eof = t->termios.c_cc[VEOF];
@@ -298,7 +296,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		buff = tty_read_raw(t, buff, end);
 
 		/* TODO serialize termios access with ioctl. -- Eldar */
-		if (t->termios.c_lflag & ICANON) {
+		if (TC_L(t, ICANON)) {
 			buff = tty_read_cooked(t, buff, end);
 		}
 	}
