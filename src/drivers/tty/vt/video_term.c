@@ -30,7 +30,6 @@ static void vterm_scroll_up(struct vterm *t, unsigned short delta) {
 	t->video->ops->clear_rows(t->video, t->video->height - delta, delta);
 
 	t->cur_y -= delta;
-	t->back_cy -= delta;
 }
 
 static void vterm_clear(struct vterm *t) {
@@ -42,9 +41,7 @@ static void vterm_clear(struct vterm *t) {
 static void vterm_cursor(struct vterm *t) {
 	assert(t && t->video && t->video->ops && t->video->ops->cursor);
 
-	t->video->ops->cursor(t->video, t->back_cx, t->back_cy);
-	t->back_cx = t->cur_x;
-	t->back_cy = t->cur_y;
+	t->video->ops->cursor(t->video, t->cur_x, t->cur_y);
 }
 
 static int setup_cursor(struct vterm *t, int x, int y) {
@@ -213,50 +210,50 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 	case KEY_INS:
 		/*0x7e325b1b */
 		seq_len = 4;
-		ascii_buff[2] = 0x32;
-		ascii_buff[3] = 0x7e;
+		ascii_buff[2] = '2';
+		ascii_buff[3] = '~';
 		break;
 	case KEY_HOME:
 		/* 0x485b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x48;
+		ascii_buff[2] = 'H';
 		break;
 	case KEY_END:
 		/* 0x465b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x46;
+		ascii_buff[2] = 'F';
 		break;
 	case KEY_PGUP:
 		/* 0x7e355b1b */
 		seq_len = 4;
-		ascii_buff[2] = 0x35;
-		ascii_buff[3] = 0x7e;
+		ascii_buff[2] = '5';;
+		ascii_buff[3] = '~';
 		break;
 	case KEY_PGDN:
 		/* 0x7e365b1b */
 		seq_len = 4;
-		ascii_buff[2] = 0x36;
-		ascii_buff[3] = 0x7e;
+		ascii_buff[2] = '6';
+		ascii_buff[3] = '~';
 		break;
 	case KEY_UP:
 		/* 0x415b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x41;
+		ascii_buff[2] = 'A';
 		break;
 	case KEY_DOWN:
 		/* 0x425b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x42;
+		ascii_buff[2] = 'B';
 		break;
 	case KEY_LEFT:
 		/* 0x445b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x44;
+		ascii_buff[2] = 'D';
 		break;
 	case KEY_RGHT:
 		/* 0x435b1b */
 		seq_len = 3;
-		ascii_buff[2] = 0x43;
+		ascii_buff[2] = 'C';
 		break;
 
 	default:
@@ -268,8 +265,8 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 		memcpy(ascii_buff, esc_start, sizeof(esc_start));
 	}
 	for (int i = 0; i < seq_len; i++) {
-		//vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
-		tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], ICANON);
+		vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
+		//tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], 0);
 	}
 	return 0;
 }

@@ -33,7 +33,6 @@ struct vterm_video {
 struct vterm {
 	unsigned short cur_x;
 	unsigned short cur_y;
-	unsigned short back_cx, back_cy;
 
 	struct vterm_video *video;
 	struct input_dev *indev;
