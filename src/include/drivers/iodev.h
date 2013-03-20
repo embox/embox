@@ -9,6 +9,8 @@
 #ifndef DRIVERS_IODEV_H_
 #define DRIVERS_IODEV_H_
 
+#include <drivers/video_term.h>
+
 struct iodev_ops {
 	int (*init)(void);
 	char (*getc)(void);
@@ -18,9 +20,9 @@ struct iodev_ops {
 
 extern struct vterm diag_vterm;
 
-
 extern const struct iodev_ops *const iodev_diag_ops;
 extern const struct iodev_ops *const iodev_video_ops;
+extern const struct vga diag_vga;
 
 extern void iodev_setup(const struct iodev_ops *iodev);
 //extern int iodev_setup_diag(void);

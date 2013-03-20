@@ -19,25 +19,25 @@
 #define VTERM_TAB_WIDTH 8
 
 static void vterm_scroll_up(struct vterm *t, unsigned short delta) {
-	assert(t && t->ops && t->ops->copy_rows && t->ops->clear_rows);
+	assert(t && t->video && t->video->ops && t->video->ops->copy_rows && t->video->ops->clear_rows);
 
-	t->ops->copy_rows(t, 0, delta, t->height - delta);
-	t->ops->clear_rows(t, t->height - delta, delta);
+	t->video->ops->copy_rows(t->video, 0, delta, t->video->height - delta);
+	t->video->ops->clear_rows(t->video, t->video->height - delta, delta);
 
 	t->cur_y -= delta;
 	t->back_cy -= delta;
 }
 
 static void vterm_clear(struct vterm *t) {
-	assert(t && t->ops && t->ops->clear_rows);
+	assert(t && t->video && t->video->ops && t->video->ops->clear_rows);
 
-	t->ops->clear_rows(t, 0, t->height);
+	t->video->ops->clear_rows(t->video, 0, t->video->height);
 }
 
 static void vterm_cursor(struct vterm *t) {
-	assert(t && t->ops && t->ops->cursor);
+	assert(t && t->video && t->video->ops && t->video->ops->cursor);
 
-	t->ops->cursor(t, t->back_cx, t->back_cy);
+	t->video->ops->cursor(t->video, t->back_cx, t->back_cy);
 	t->back_cx = t->cur_x;
 	t->back_cy = t->cur_y;
 }
@@ -51,19 +51,19 @@ static int setup_cursor(struct vterm *t, int x, int y) {
 	if (t->cur_y) {
 		--t->cur_y;
 	}
-	if (t->cur_x >= t->width) {
-		t->cur_x = t->width - 1;
+	if (t->cur_x >= t->video->width) {
+		t->cur_x = t->video->width - 1;
 	}
-	if (t->cur_y >= t->height) {
-		t->cur_y = t->height - 1;
+	if (t->cur_y >= t->video->height) {
+		t->cur_y = t->video->height - 1;
 	}
 	return 0;
 }
 
 static inline void inc_line(struct vterm *t) {
 	++t->cur_y;
-	if (t->cur_y >= t->height) {
-		vterm_scroll_up(t, t->cur_y - t->height + 1);
+	if (t->cur_y >= t->video->height) {
+		vterm_scroll_up(t, t->cur_y - t->video->height + 1);
 	}
 }
 
@@ -79,23 +79,23 @@ static void execute_printable(struct vterm *t, char ch) {
 		break;
 	case '\t':
 		t->cur_x += VTERM_TAB_WIDTH;
-		if (t->cur_x >= t->width) {
+		if (t->cur_x >= t->video->width) {
 			inc_line(t);
-			t->cur_x -= t->width;
+			t->cur_x -= t->video->width;
 		}
 		break;
 	case '\b': /* back space */
 		if (t->cur_x != 0) {
 			--t->cur_x;
-			t->ops->putc(t, ' ', t->cur_x, t->cur_y);
+			t->video->ops->putc(t->video, ' ', t->cur_x, t->cur_y);
 		}
 		break;
 	default:
-		if (t->cur_x >= t->width) {
+		if (t->cur_x >= t->video->width) {
 			t->cur_x = 0;
 			inc_line(t);
 		}
-		t->ops->putc(t, ch, t->cur_x, t->cur_y);
+		t->video->ops->putc(t->video, ch, t->cur_x, t->cur_y);
 		++t->cur_x;
 		break;
 	}
@@ -104,12 +104,12 @@ static void execute_printable(struct vterm *t, char ch) {
 static void erase_line_part(struct vterm *t, unsigned short column,
 		unsigned short chars) {
 	for (int i = column; i < column + chars; i++) {
-		t->ops->putc(t, ' ', column, t->cur_y);
+		t->video->ops->putc(t->video, ' ', column, t->cur_y);
 	}
 }
 
 static void execute_token(struct vterm *t, struct vtesc_token *token) {
-	assert(t && t->ops && t->ops->clear_rows);
+	assert(t && t->video && t->video->ops && t->video->ops->clear_rows);
 
 	switch (token->type) {
 	case VTESC_CHARACTER:
@@ -127,15 +127,15 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 		switch (token->params.erase.n) {
 		default:
 		case 0: /* from cursor to end of the screen */
-			erase_line_part(t, t->cur_x, t->width - t->cur_x);
-			t->ops->clear_rows(t, t->cur_y + 1, t->height - t->cur_y - 1);
+			erase_line_part(t, t->cur_x, t->video->width - t->cur_x);
+			t->video->ops->clear_rows(t->video, t->cur_y + 1, t->video->height - t->cur_y - 1);
 			break;
 		case 1: /* from cursor to beginning of the screen */
 			erase_line_part(t, 0, t->cur_x);
-			t->ops->clear_rows(t, 0, t->cur_y - 1);
+			t->video->ops->clear_rows(t->video, 0, t->cur_y - 1);
 			break;
 		case 2: /* entire screen */
-			t->ops->clear_rows(t, 0, t->height);
+			t->video->ops->clear_rows(t->video, 0, t->video->height);
 			break;
 		}
 		break;
@@ -143,13 +143,13 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 		switch (token->params.erase.n) {
 		default:
 		case 0: /* from cursor to end of the line */
-			erase_line_part(t, t->cur_x, t->width - t->cur_x);
+			erase_line_part(t, t->cur_x, t->video->width - t->cur_x);
 			break;
 		case 1: /* from cursor to beginning of the line */
 			erase_line_part(t, 0, t->cur_x);
 			break;
 		case 2: /* entire line */
-			t->ops->clear_rows(t, t->cur_y, 1);
+			t->video->ops->clear_rows(t->video, t->cur_y, 1);
 			break;
 		}
 		break;
@@ -165,7 +165,7 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 
 static const unsigned char esc_start[] = { 0x1B, 0x5B }; /* esc, '[' */
 
-int event(struct input_dev *indev) {
+static int vterm_indev_eventhnd(struct input_dev *indev) {
 	unsigned char ascii_buff[4];
 	struct input_event event;
 	int keycode;
@@ -274,14 +274,15 @@ void vterm_open_indev(struct vterm *t, const char *name) {
 	dev = input_dev_lookup(name);
 	if (dev) {
 		dev->data = t;
-		input_dev_open(dev, &event);
+		t->indev = dev;
+		input_dev_open(dev, &vterm_indev_eventhnd);
 	}
 }
 
 void vterm_putc(struct vterm *t, char ch) {
 	struct vtesc_token *token;
 
-	assert(t && t->ops && t->ops->putc);
+	assert(t && t->video && t->video->ops && t->video->ops->putc);
 
 	token = vtesc_consume(&t->executor, ch);
 	if (token) {
@@ -290,20 +291,18 @@ void vterm_putc(struct vterm *t, char ch) {
 	vterm_cursor(t);
 }
 
-void vterm_init(struct vterm *t, unsigned short width, unsigned short height,
-		const struct vterm_ops *ops, void *data) {
-	assert(ops && ops->init);
+void vterm_init(struct vterm *t, const struct vterm_video *video, struct input_dev *indev) {
+	assert(video && video->ops && video->ops->init);
 
 	t->cur_x = 0;
 	t->cur_y = 0;
-	t->width = width;
-	t->height = height;
-	t->ops = ops;
-	t->data = data;
 
 	vtesc_init(&t->executor);
 
-	t->ops->init(t);
+	t->video = video;
+	t->indev = indev;
+
+	t->video->ops->init(t->video);
 
 	vterm_clear(t);
 }
