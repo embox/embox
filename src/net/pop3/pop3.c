@@ -80,7 +80,8 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 		end = strstr(&p3s->status[0], "\r\n");
 	} while ((end == NULL) && (rep_len != 0));
 
-	if (rep_len == 0) {
+	if ((rep_len == 0) && (end == NULL)) {
+		fprintf(stderr, "pop3: recv_rep: buffer is full\n");
 		p3s->ok = 0;
 		p3s->status[0] = '\0';
 		return 0;
@@ -97,6 +98,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 		return 0;
 	}
 	else {
+		fprintf(stderr, "pop3: recv_rep: illegal status code '%s`\n", &p3s->status[0]);
 		p3s->ok = 0;
 		p3s->status[0] = '\0';
 		return 0;
@@ -112,6 +114,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 
 	end += 2;
 	strcpy(rep, end);
+	rep += strlen(end);
 	rep_len -= strlen(end);
 
 	do {
@@ -126,7 +129,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 		*rep = '\0';
 		end = strstr(&buff[0], "\r\n.\r\n");
 
-		if (rep_len == 0) {
+		if ((rep_len == 0) || (end != NULL)) {
 			fprintf(stdin, "%s", &buff[0]);
 			rep = &buff[0];
 			rep_len = ARRAY_SIZE(buff) - 1;
