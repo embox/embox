@@ -1,0 +1,25 @@
+package embox.cmd.net
+
+@Cmd(name = "sftp",
+	help = "secure file transfer program",
+	man = '''
+		NAME
+			sftp - secure file transfer program
+		SYNOPSIS
+			sftp
+		DESCRIPTION
+			Simple implimentation of Secure File Transfer Program
+		OPTIONS
+			Without options, yet
+		EXAMPLES
+			sftp
+		SEE ALSO
+			ftp, tftp
+		AUTHORS
+			Ilia Vaprol
+	''')
+module sftp {
+	source "sftp.c"
+	depends embox.cmd.net.ftp
+	depends embox.framework.LibFramework
+}

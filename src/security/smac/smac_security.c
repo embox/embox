@@ -16,26 +16,32 @@
 
 int security_node_create(struct node *dir, mode_t mode) {
 	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
 	int res;
+
+	smac_audit_prepare(&audit, __func__);
 
 	if (0 > (res = kfile_xattr_get(dir, smac_xattrkey, label,
 					SMAC_LABELLEN))) {
 		return 0;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_WRITE);
+	return smac_access(task_self_security(), label, FS_MAY_WRITE, &audit);
 }
 
 int security_node_permissions(struct node *node, int flags) {
 	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
 	int res;
+
+	smac_audit_prepare(&audit, __func__);
 
 	if (0 > (res = kfile_xattr_get(node, smac_xattrkey, label,
 					SMAC_LABELLEN))) {
 		return 0;
 	}
 
-	return smac_access(task_self_security(), label, flags);
+	return smac_access(task_self_security(), label, flags, &audit);
 }
 
 int security_node_delete(struct node *dir, struct node *node) {
@@ -53,11 +59,14 @@ int security_umount(struct node *mountpoint) {
 int security_xattr_get(struct node *node, const char *name, char *value,
 		size_t len) {
 	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
 	int res;
+
+	smac_audit_prepare(&audit, __func__);
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
-				FS_MAY_READ);
+				FS_MAY_READ, &audit);
 	}
 
 	if (0 > (res = kfile_xattr_get(node, smac_xattrkey, label,
@@ -65,17 +74,20 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 		return 0;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ);
+	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
 }
 
 int security_xattr_set(struct node *node, const char *name,
 			const char *value, size_t len, int flags) {
 	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
 	int res;
+
+	smac_audit_prepare(&audit, __func__);
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
-				FS_MAY_WRITE);
+				FS_MAY_WRITE, &audit);
 	}
 
 	if (0 > (res = kfile_xattr_get(node, smac_xattrkey, label,
@@ -83,17 +95,20 @@ int security_xattr_set(struct node *node, const char *name,
 		return 0;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_WRITE);
+	return smac_access(task_self_security(), label, FS_MAY_WRITE, &audit);
 }
 
 int security_xattr_list(struct node *node, char *list, size_t len) {
 	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
 	int res;
+
+	smac_audit_prepare(&audit, __func__);
 
 	if (0 > (res = kfile_xattr_get(node, smac_xattrkey, label,
 					SMAC_LABELLEN))) {
 		return 0;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ);
+	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
 }

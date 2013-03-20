@@ -7,6 +7,7 @@
  */
 
 #include <embox/cmd.h>
+#include <errno.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +51,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];
-	in_device_t *ifdev = NULL;
+	struct in_device *ifdev = NULL;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hd:s:a:m:i:"))) {
@@ -58,11 +59,11 @@ static int exec(int argc, char **argv) {
 		case 'd':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			if (ifdev == NULL) {
 				printf("arp: please first specify the interface\n");
-				return -1;
+				return -EINVAL;
 			}
 			//TODO checked interface and use default
 			return neighbour_del(NULL, 0, (const unsigned char *)&addr,
@@ -70,20 +71,20 @@ static int exec(int argc, char **argv) {
 		case 's':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			if(argc <= optind) {
 				print_usage();
-				return -1;
+				return -EINVAL;
 			}
 			optarg = argv[optind++];
 			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			if (ifdev == NULL) {
 				printf("arp: please first specify the interface\n");
-				return -1;
+				return -EINVAL;
 			}
 			//TODO checked interface and use default
 			return neighbour_add(&hwaddr[0], sizeof hwaddr,
@@ -92,19 +93,19 @@ static int exec(int argc, char **argv) {
 		case 'a':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'm':
 			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'i':
-			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
+			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case '?':

@@ -38,4 +38,9 @@ static inline void vbe_write(uint16_t index, uint16_t value) {
 	out16(value, VBE_DISPI_IOPORT_DATA);
 }
 
+static inline unsigned short vbe_read(uint16_t index) {
+	out16(index, VBE_DISPI_IOPORT_INDEX);
+	return in16(VBE_DISPI_IOPORT_DATA);
+}
+
 #endif /* DRIVERS_VIDEO_VBE_H_ */

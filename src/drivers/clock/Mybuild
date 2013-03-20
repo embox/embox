@@ -75,3 +75,10 @@ module lapic_timer extends embox.arch.clock {
 
 	depends embox.driver.interrupt.lapic
 }
+
+module usermode extends embox.arch.clock {
+	source "usermode.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+}

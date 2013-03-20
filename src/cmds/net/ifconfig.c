@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <embox/cmd.h>
 #include <net/inetdevice.h>
+#include <net/netdevice.h>
 #include <net/etherdevice.h>
 #include <net/util.h>
 
@@ -58,6 +59,12 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	assert(iface != NULL);
 	assert(args != NULL);
 
+	if (args->with_up_or_down && !args->up) { /* down device */
+		ret = netdev_set_flags(iface->dev,
+				netdev_get_flags(iface->dev) & ~IFF_UP);
+		if (ret != 0) return ret;
+	}
+
 	if (args->with_arp) { /* set flag IFF_NOARP (default 0 means ARP enabled) */
 		ret = (!args->arp ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_NOARP);
 		if (ret != 0) return ret;
@@ -84,18 +91,18 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_addr) { /* set new IP address to iface */
-		ret = inet_dev_set_ipaddr(iface, args->addr.s_addr);
+		ret = inetdev_set_addr(iface, args->addr.s_addr);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_netmask) { /* set new mask to iface */
-		ret = inet_dev_set_mask(iface, args->netmask.s_addr);
+		ret = inetdev_set_mask(iface, args->netmask.s_addr);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_bcast) { /* set broadcast addr */
 		if (args->bcast && args->bcast_addr.s_addr) {
-			ret = inet_dev_set_bcast(iface, args->bcast_addr.s_addr);
+			ret = inetdev_set_bcast(iface, args->bcast_addr.s_addr);
 			if (ret != 0) return ret;
 		}
 		else {
@@ -124,14 +131,18 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 		if (ret != 0) return ret;
 	}
 
-	if (args->with_hw) { /* set new MAC address to iface */
-		ret = inet_dev_set_macaddr(iface, &args->hw_addr[0]);
+	if (args->with_up_or_down && args->up) { /* up device */
+		ret = netdev_set_flags(iface->dev,
+				netdev_get_flags(iface->dev) | IFF_UP);
 		if (ret != 0) return ret;
 	}
 
-	if (args->with_up_or_down) { /* change device state */
-		if (iface->dev->flags & IFF_UP) return 0; /* TODO remove this */
-		ret = (args->up ? ifdev_up : ifdev_down)(&args->iface[0]);
+	/**
+	 * FIXME it must be before upping device but
+	 * in this case device reset hardware addrress
+	 */
+	if (args->with_hw) { /* set new MAC address to iface */
+		ret = netdev_set_macaddr(iface->dev, &args->hw_addr[0]);
 		if (ret != 0) return ret;
 	}
 
@@ -145,7 +156,7 @@ static int ifconfig_print_long_hdr(void) {
 
 static int ifconfig_print_long_info(struct in_device *iface) {
 	struct net_device_stats *stat;
-	unsigned char mac[18];
+	unsigned char mac[] = "xx:xx:xx:xx:xx:xx";
 	struct in_addr ip, bcast, mask;
 	char s_ip[] = "xxx.xxx.xxx.xxx";
 	char s_bcast[] = "xxx.xxx.xxx.xxx";
@@ -153,11 +164,11 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 
 	stat = iface->dev->netdev_ops->ndo_get_stats(iface->dev);
 
-	printf("%s\tLink encap:", iface->dev->name);
+	printf("%s\tLink encap:", &iface->dev->name[0]);
 	if (iface->dev->flags & IFF_LOOPBACK) {
 		printf("Local Loopback");
 	} else {
-		macaddr_print(mac, iface->dev->dev_addr);
+		macaddr_print(mac, &iface->dev->dev_addr[0]);
 		printf("Ethernet  HWaddr %s", mac);
 	}
 
@@ -250,15 +261,16 @@ static int ifconfig_show_one_iface(struct in_device *iface, char use_short_fmt) 
 			: ifconfig_print_long_info(iface);
 }
 
-static int ifconfig_show_all_iface(char use_short_fmt) {
+static int ifconfig_show_all_iface(char show_disabled, char use_short_fmt) {
 	int ret;
 	struct in_device *iface;
 
 	ret = use_short_fmt ? ifconfig_print_short_hdr() : ifconfig_print_long_hdr();
 	if (ret != 0) return ret;
 
-	for (iface = inet_dev_get_first_used(); iface != NULL;
-			iface = inet_dev_get_next_used(iface)) {
+	for (iface = inetdev_get_first(); iface != NULL;
+			iface = inetdev_get_next(iface)) {
+		if (!(iface->dev->flags & IFF_UP) && !show_disabled) continue;
 		ret = use_short_fmt ? ifconfig_print_short_info(iface)
 				: ifconfig_print_long_info(iface);
 		if (ret != 0) return ret;
@@ -405,11 +417,8 @@ static int exec(int argc, char *argv[]) {
 		}
 	}
 
-	if (args.with_iface && !inet_dev_find_by_name(&args.iface[0]))
-		ifdev_up(&args.iface[0]);
-
 	if (args.with_iface) {
-		iface = inet_dev_find_by_name(&args.iface[0]);
+		iface = inetdev_get_by_name(&args.iface[0]);
 		if (iface == NULL) {
 			printf("%s: unknown interface\n", &args.iface[0]);
 			return -ENODEV;
@@ -418,5 +427,5 @@ static int exec(int argc, char *argv[]) {
 
 	return ifconfig_args_not_empty(&args) ? ifconfig_setup_iface(iface, &args)
 			: args.with_iface ? ifconfig_show_one_iface(iface, args.with_s)
-			: ifconfig_show_all_iface(args.with_s);
+			: ifconfig_show_all_iface(args.with_a, args.with_s);
 }

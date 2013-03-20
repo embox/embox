@@ -12,12 +12,13 @@
 #define inportb(P)	      in8(P)
 #define outportb(P,V)	   out8(V, P)
 
-
+#if 0
 extern void set_plane(unsigned p);
 extern unsigned char reverse_bits(unsigned char arg);
 extern void vpokeb(unsigned off, unsigned val);
 extern void set_text_mode(int hi_res);
 extern void vmemwr(unsigned dst_off, unsigned char *src, unsigned count);
+#endif
 
 /*****************************************************************************
 8X8 AND 8X16 FONTS
@@ -542,7 +543,7 @@ static unsigned char g_8x16_font[4096] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-
+#if 0
 /*****************************************************************************
 write font to plane P4 (assuming planes are named P1, P2, P4, P8)
 *****************************************************************************/
@@ -602,7 +603,6 @@ assume: chain-4 addressing already off */
 	outportb(VGA_GC_INDEX, 6);
 	outportb(VGA_GC_DATA, gc6);
 }
-#if 0
 
 /*****************************************************************************
 *****************************************************************************/
@@ -712,6 +712,7 @@ so attribute bit b3 is no longer used for 'intense' */
 }
 #endif
 
+#if 0
 void setup_font(unsigned font_height) {
 	if(font_height == 8) {
 		write_font(g_8x8_font, font_height);
@@ -719,6 +720,7 @@ void setup_font(unsigned font_height) {
 		write_font(g_8x16_font, font_height);
 	}
 }
+#endif
 
 const struct font_desc font_vga_8x8 = {
 	.idx = VGA8x8_IDX,

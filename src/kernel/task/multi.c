@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
@@ -81,6 +82,8 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 
 		self_task->main_thread = thd;
 		self_task->per_cpu = 0;
+
+		self_task->priority = task_self()->priority;
 
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;
@@ -226,6 +229,47 @@ static void *task_trampoline(void *arg) {
 	panic("Returning from task_trampoline()");
 
 	return res;
+}
+
+int task_set_priority(struct task *tsk, task_priority_t new_priority) {
+	struct thread *thread, *tmp;
+
+	assert(tsk);
+
+	if ((new_priority < TASK_PRIORITY_MIN)
+			|| (new_priority > TASK_PRIORITY_MAX)) {
+		return -EINVAL;
+	}
+
+	sched_lock();
+	{
+		if (tsk->priority == new_priority) {
+			return 0;
+		}
+
+		list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
+			sched_set_priority(thread, get_sched_priority(new_priority,
+						thread->priority));
+		}
+
+		tsk->priority = new_priority;
+	}
+	sched_unlock();
+
+	return 0;
+}
+
+short task_get_priority(struct task *tsk) {
+	assert(tsk);
+	return tsk->priority;
+}
+
+void task_set_affinity(struct task *task, unsigned int affinity) {
+	task->affinity = affinity;
+}
+
+unsigned int task_get_affinity(struct task *task) {
+	return task->affinity;
 }
 
 int unit_init(void) {

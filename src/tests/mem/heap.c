@@ -33,15 +33,6 @@ TEST_CASE("Allocates small object") {
 	free(obj);
 }
 
-TEST_CASE("free twice") {
-	void *obj = malloc(sizeof(struct small_struct));
-	test_assert_not_null(obj);
-	free(obj);
-	free(obj);
-	obj = malloc(sizeof(struct small_struct));
-	test_assert_not_null(obj);
-}
-
 TEST_CASE("Allocates big object") {
 	void *obj = malloc(sizeof(struct big_struct));
 	test_assert_not_null(obj);

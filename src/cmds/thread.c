@@ -18,6 +18,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/state.h>
 #include <kernel/task.h>
+#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -49,7 +50,7 @@ static void print_stat(void) {
 			}
 
 			printf(" %4d%c %4d  %8d %18s %9lds\n",
-				thread->id, thread == thread_self() ? '*' : ' ',
+				thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
 				thread->task->tid,
 				thread->priority,
 				state,
@@ -95,7 +96,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc <= 1) {
 		print_usage();
-		return -1;
+		return -EINVAL;
 	}
 
 	getopt_init();

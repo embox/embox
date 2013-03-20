@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "modprobe",
+	help = "Enables a given module",
+	man = '''
+		NAME
+			modprobe <mod_name>
+		AUTHORS
+			Eldar Abusalimov
+	''')
+module modprobe {
+	/* FIXME:
+	 * 1.it depends from embox.framework.mod (called from modprobe.c)
+	 */
+	source "modprobe.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

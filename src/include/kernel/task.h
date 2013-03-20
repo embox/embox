@@ -25,6 +25,14 @@ struct thread;
 struct mmap;
 struct task_u_area;
 
+#define TASK_PRIORITY_DEFAULT   0
+#define TASK_PRIORITY_MIN     -20
+#define TASK_PRIORITY_MAX      19
+#define TASK_PRIORITY_TOTAL \
+	(TASK_PRIORITY_MAX - TASK_PRIORITY_MIN + 1)
+
+typedef short task_priority_t;
+
 /**
  * @brief Task resources container
  */
@@ -51,11 +59,15 @@ struct task {
 
 	struct task_u_area *u_area;
 
+	task_priority_t priority; /**< @brief Task priority */
+
 	void   *security;
 
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
+
+	unsigned int affinity;
 };
 
 struct task_resource_desc {
@@ -98,6 +110,12 @@ extern struct task *task_self(void);
 static inline int task_getid(void) {
 	return task_self()->tid;
 }
+
+extern int task_set_priority(struct task *task, task_priority_t priority);
+extern task_priority_t task_get_priority(struct task *task);
+
+extern void task_set_affinity(struct task *task, unsigned int affinity);
+extern unsigned int task_get_affinity(struct task *task);
 
 static inline void *task_self_security(void) {
 	return task_self()->security;

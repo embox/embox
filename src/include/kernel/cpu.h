@@ -31,4 +31,16 @@ extern unsigned int cpu_get_id(void);
 
 #endif /* SMP */
 
+#ifndef __ASSEMBLER__
+
+#include <sys/types.h>
+
+struct thread;
+
+extern void cpu_set_idle_thread(struct thread *idle);
+extern clock_t cpu_get_total_time(unsigned int cpu_id);
+extern clock_t cpu_get_idle_time(unsigned int cpu_id);
+
+#endif
+
 #endif /* KERNEL_CPU_H_ */

@@ -11,6 +11,8 @@ module tish {
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
+	option number amp_support = 1
+
 	provides embox.cmd.Shell.commandLine
 
 	@IncludePath("$(THIRDPARTY_DIR)/include")
@@ -20,4 +22,5 @@ module tish {
 	depends third_party.lib.linenoise
 	depends embox.framework.LibFramework
 	depends embox.cmd.sh.shell
+	depends embox.kernel.task.api
 }

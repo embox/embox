@@ -13,30 +13,46 @@
 #include <util/ring_buff.h>
 #include <kernel/thread/event.h>
 
+#define INPUT_DEV_EVENT_QUEUE_LEN 16
+
+enum input_dev_type {
+	INPUT_DEV_KBD,
+	INPUT_DEV_MOUSE,
+	INPUT_DEV_APB,
+};
 
 struct input_event {
+	enum input_dev_type devtype;
 	/* e.g. KEY_PRESSED. Device-dependent */
 	int type;
 	/* e.g. REL_X for mouse, or pressed key for keyboard */
 	int value;
 };
 
+struct input_dev;
+
+typedef int indev_event_cb_t(struct input_dev *indev);
+typedef int indev_event_get_t(struct input_dev *dev, struct input_event *ev);
+
 /*describe input device instance */
 struct input_dev {
 	const char *name; /* registered name /dev/input/<name> */
+	indev_event_get_t *event_get;
+	enum input_dev_type type;
+	int proto;
 	int irq;
-	int (*getc)(void);
-	struct dlist_head subscribers; /* subscribers */
 
+	indev_event_cb_t *event_cb;
 	struct dlist_head global_indev_list; /* global device list */
+	struct dlist_head post_link;
 
+	struct ring_buff rbuf;
+	struct input_event event_buf[INPUT_DEV_EVENT_QUEUE_LEN];
+	struct input_event *curprocessd;
 
-	/* file operations without file system*/
-	int (*open)(struct input_dev *);
-	void (*close)(struct input_dev *);
 };
 
-
+#if 0
 struct input_subscriber {
 	unsigned int id; /* subscriber ID */
 	struct dlist_head subscribers; /* link to subscribers */
@@ -47,9 +63,15 @@ struct input_subscriber {
 	char inbuff[0x20];
 	struct event rx_happend;
 };
+#endif
+extern int input_dev_register(struct input_dev *dev);
 
-extern void input_dev_register(struct input_dev *dev);
+extern int input_dev_event(struct input_dev *dev, struct input_event *ev);
 
+extern struct input_dev *input_dev_lookup(const char *name);
+
+extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
+extern int input_dev_close(struct input_dev *dev);
 #if 0
 extern void input_dev_inject_event(struct input_dev *dev, struct input_event e);
 

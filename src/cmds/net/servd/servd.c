@@ -19,6 +19,7 @@
 #include <kernel/task.h>
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 EMBOX_CMD(servd);
 
@@ -30,7 +31,7 @@ static void welcome_message(void) {
 	struct in_addr local_addr;
 	struct in_device *in_dev;
 
-	in_dev = inet_dev_find_by_name("eth0");
+	in_dev = inetdev_get_by_name("eth0");
 	local_addr.s_addr = in_dev ? in_dev->ifa_address : 0;
 	printf("Welcome to http://%s\n", inet_ntoa(local_addr));
 }
@@ -97,11 +98,20 @@ static void * start_server(void *unused) {
 		return (void *)ret;
 	}
 
+	ret = fcntl(host, F_SETFD, O_NONBLOCK);
+	if (ret == -1) {
+		printf("Error.. listen() failed. errno=%d\n", errno);
+		web_server_started = 0;
+		close(host);
+		return (void *)ret;
+	}
+
 	welcome_message();
 
 	while (web_server_started) {
 		client = ret = accept(host, (struct sockaddr *) &addr, &addr_len);
-		if (ret < 0) {
+		if (ret == -1) {
+			if (errno == EAGAIN) continue;
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			web_server_started = 0;
 			close(host);
@@ -122,14 +132,14 @@ int configure_server(const char *config_file) {
 	file = fopen(config_file, "r");
 	if (file == NULL) {
 		printf("File '%s` doesn't exists\n", config_file);
-		return -1;
+		return -errno;
 	}
 
 	memset(&buff[0], 0, sizeof buff);
 
 	if (fread(buff, 1, sizeof buff - 1, file) < 0) {
 		printf("Can't read from file '%s`\n", config_file);
-		return -1;
+		return -errno;
 	}
 
 	prev = buff;

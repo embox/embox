@@ -9,13 +9,19 @@
 #include <stdio.h>
 
 int puts(const char *s) {
-	char *ptr = (char*) s;
-	while (*ptr) {
-		putchar(*ptr++);
+	if (EOF == fputs(s, stdout)) {
+		return EOF;
 	}
+
 	return putchar('\n');
 }
 
 int fputs(const char *s, FILE *f) {
-	return puts(s);
+	while (*s != '\0') {
+		if (EOF == fputc(*s++, f)) {
+			return EOF;
+		}
+	}
+
+	return 0;
 }

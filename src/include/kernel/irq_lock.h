@@ -9,8 +9,9 @@
 #ifndef KERNEL_IRQ_LOCK_H_
 #define KERNEL_IRQ_LOCK_H_
 
-#include <kernel/critical.h>
 #include <hal/ipl.h>
+#include <kernel/critical.h>
+#include <util/lang.h>
 
 /**
  * Locks hardware interrupt.
@@ -32,7 +33,7 @@ static inline void irq_lock(void) {
 
 /**
  * Unlock hardirq and to came out from critical section.
- * Must be called on the previously locked irq only
+ * Must be called on the previously locked irq only.
  *
  * @see irq_lock()
  */
@@ -47,5 +48,11 @@ static inline void irq_unlock(void) {
 		critical_dispatch_pending();
 	}
 }
+
+/**
+ * Evaluate a given @a expr inside an IRQ-protected block.
+ */
+#define IRQ_LOCKED_DO(expr) \
+	__lang_surround(expr, irq_lock(), irq_unlock())
 
 #endif /* KERNEL_IRQ_LOCK_H_ */

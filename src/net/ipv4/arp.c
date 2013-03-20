@@ -150,7 +150,7 @@ int arp_resolve(struct sk_buff *skb) {
 
 #if 0
 	/* our machine on our device? */
-	if (ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
+	if (ip->daddr == inetdev_get_addr(inetdev_get_by_dev(dev))){
 		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
 		return 0;
 	}
@@ -237,7 +237,7 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		return 0;
 	}
 
-	in_dev = in_dev_get(dev);
+	in_dev = inetdev_get_by_dev(dev);
 	assert(in_dev != NULL);
 
 	if (target_ip != in_dev->ifa_address) {

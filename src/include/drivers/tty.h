@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#define TTY_CSI_MAXOPTCNT 5
+
 struct tty;
 
 struct tty_ops {
@@ -33,7 +35,7 @@ struct tty {
 	void *data;
 
 	int esc_state;
-	int esc_args[5];
+	int esc_args[TTY_CSI_MAXOPTCNT];
 	int esc_args_count;
 };
 

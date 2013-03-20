@@ -29,16 +29,16 @@
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_info, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
 
 /* tmpfs file description pool */
-POOL_DEF(tmpfs_file_pool, struct tmpfs_file_info, OPTION_GET(NUMBER,tmpfs_inode_quantity));
+POOL_DEF(tmpfs_file_pool, struct tmpfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
-INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,tmpfs_inode_quantity));
+INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,tmpfs_file_size)
 #define FILESYSTEM_SIZE OPTION_GET(NUMBER,tmpfs_filesystem_size)
 
 #define TMPFS_NAME "tmpfs"
-#define TMPFS_DEV  "/dev/ram0"
+#define TMPFS_DEV  "/dev/ram#"
 #define TMPFS_DIR  "/tmp"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
@@ -110,11 +110,6 @@ static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	nas = desc->node->nas;
 	fi = (tmpfs_file_info_t *)nas->fi->privdata;
-
-	fi->mode = flags;
-	if (O_WRONLY == fi->mode) {
-		nas->fi->ni.size = 0;
-	}
 
 	fi->pointer = desc->cursor;
 
@@ -251,11 +246,6 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 	fsi = nas->fs->fsi;
 
 	bytecount = 0;
-
-	/* Don't allow writes to a file that's open as readonly */
-	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND)) {
-		return 0;
-	}
 
 	fi->pointer = desc->cursor;
 	len = size;

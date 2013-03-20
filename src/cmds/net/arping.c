@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <string.h>
@@ -33,7 +32,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int cnt = 4, cnt_resp = 0, i;
-	in_device_t *in_dev = inet_dev_find_by_name("eth0");
+	struct in_device *in_dev = inetdev_get_by_name("eth0");
 	struct in_addr dst;
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";
@@ -44,15 +43,15 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */
-			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
+			if (NULL == (in_dev = inetdev_get_by_name(optarg))) {
 				printf("arping: unknown iface %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
 				printf("arping: bad number of packets to transmit.\n");
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case '?':
@@ -74,7 +73,7 @@ static int exec(int argc, char **argv) {
 	/* Get destination address. */
 	if (0 == inet_aton(argv[argc - 1], &dst)) {
 		printf("arping: invalid IP address: %s\n", argv[argc - 1]);
-		return -1;
+		return -EINVAL;
 	}
 
 	strncpy(dst_b, inet_ntoa(dst), sizeof(dst_b));

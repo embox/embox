@@ -21,8 +21,8 @@
  * when arp packet has been received
  * @param pack net_packet
  */
-extern int arp_rcv(sk_buff_t *pack, net_device_t *dev,
-			packet_type_t *pt, net_device_t *orig_dev);
+extern int arp_rcv(sk_buff_t *pack, struct net_device *dev,
+			packet_type_t *pt, struct net_device *orig_dev);
 
 /**
  * resolve ip address and rebuild net_packet

@@ -34,7 +34,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt, ret;
 	size_t cnt = 4, cnt_resp = 0;
-	in_device_t *in_dev = inet_dev_find_by_name("eth0");
+	struct in_device *in_dev = inetdev_get_by_name("eth0");
 	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN;
 	unsigned char sha[MAX_ADDR_LEN], tha[MAX_ADDR_LEN];
 	unsigned char spa[MAX_ADDR_LEN], tpa[MAX_ADDR_LEN];
@@ -45,15 +45,15 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */
-			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
+			if (NULL == (in_dev = inetdev_get_by_name(optarg))) {
 				printf("rarping: unknown iface %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
 				printf("rarping: bad number of packets to transmit.\n");
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case '?':
@@ -75,7 +75,7 @@ static int exec(int argc, char **argv) {
 	/* Get destination hardware address. */
 	if (macaddr_scan((const unsigned char *)argv[argc - 1], &tha[0]) == NULL) {
 		printf("rarping: invalid MAC address: %s\n", argv[argc - 1]);
-		return -1;
+		return -EINVAL;
 	}
 
 	/* Get a source hardware and protocol address */

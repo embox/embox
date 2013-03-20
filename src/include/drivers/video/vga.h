@@ -8,14 +8,17 @@
 #ifndef VIDEO_VGA_H_
 #define VIDEO_VGA_H_
 
+#include <stddef.h>
+#include <asm/io.h>
 
-
+#if 0
 //FIXME this is temporary
 /* CauseWay DOS extender only */
 #define peekb(S,O)	      *(unsigned char *)(16uL * (S) + (O))
 #define pokeb(S,O,V)	    *(unsigned char *)(16uL * (S) + (O)) = (V)
 #define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
+#endif
 
 #define VGA_PEL_MSK    0x3C6   /* PEL mask register */
 
@@ -114,8 +117,7 @@
 #define VGA_ATC_PLANE_ENABLE   0x12 /* Color Plane Enable */
 #define VGA_ATC_COLOR_PAGE     0x14 /* Color Select */
 
-
-
+#if 0
 #define VGA_NUM_SEQ_REGS   5
 #define VGA_NUM_CRTC_REGS  25
 #define VGA_NUM_GC_REGS    9
@@ -139,6 +141,7 @@ struct vga_registers {
 extern void vga_read_regs(unsigned char *regs);
 
 extern void vga_write_regs(unsigned char *regs);
+#endif
 
 
 

@@ -37,7 +37,7 @@ module vga extends diag_api {
 	depends embox.lib.LibC
 	 */
 	depends embox.driver.tty.tty
-	depends embox.driver.input.keyboard.keyboard
+	depends embox.driver.input.keyboard.diag
 }
 
 module xuartlite extends diag_api {

@@ -57,6 +57,8 @@ extern int fsync(int);
 
 extern pid_t fork(void);
 
+extern int nice(int incr);
+
 extern int execv(const char *path, char *const argv[]);
 extern int execve(const char *filename, char *const argv[], char *const envp[]);
 
@@ -126,6 +128,9 @@ extern int opterr;   /**< flag:error message on unrecognzed options */
 extern void getopt_init(void); /* TODO remove this */
 
 extern char **environ;
+
+#define PASS_MAX 32
+extern char *getpass(const char *prompt);
 
 __END_DECLS
 

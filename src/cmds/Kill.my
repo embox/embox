@@ -1,0 +1,28 @@
+
+package embox.cmd
+
+@Cmd(name = "kill",
+	help = "Sends signal to task",
+	man = '''
+		NAME
+			kill -- send signal to task
+		SYNOPSIS
+			kill [-s SIGNUM] pid
+		DESCRIPTION
+			Send signal to specified task. Signal by default is
+			SIGKILL (9), but may be override with -s key
+		OPTIONS
+			pid - task number
+
+			-s - signal number
+		AUTHORS
+			Anton Kozlov
+	''')
+module kill {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "kill.c"
+
+	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.util.getopt
+	depends embox.lib.LibC
+}

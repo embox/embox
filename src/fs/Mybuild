@@ -7,7 +7,7 @@ module node {
 
 module filesystem {
 	source "file_system.c"
-	option number fs_quantity=16
+	option number fs_quantity=32
 
 	depends embox.fs.driver.repo
 }

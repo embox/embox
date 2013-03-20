@@ -20,7 +20,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <string.h>
+#include <stdint.h>
 
 #include <embox/unit.h>
 
@@ -36,10 +36,14 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
+#include <kernel/cpu.h>
+#include <kernel/percpu.h>
 
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
+
+#include <time.h>
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
@@ -151,9 +155,9 @@ static void thread_init(struct thread *t, unsigned int flags,
 	list_add(&t->task_link, &tsk->threads);
 
 	// TODO new priority range check, should fail on error. -- Eldar
-	t->initial_priority = clamp(t->priority,
-			THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
-	t->priority = t->initial_priority;
+	t->priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->initial_priority = get_sched_priority(t->task->priority, t->priority);
+	t->sched_priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
 	startq_init_thread(&t->startq_data);
@@ -161,6 +165,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	sleepq_init(&t->exit_sleepq);
 
 	t->running_time = 0;
+	t->affinity = (1 << NCPU) - 1;
 }
 
 static void thread_context_init(struct thread *t) {
@@ -310,22 +315,60 @@ void thread_yield(void) {
 	sched_post_switch();
 }
 
-int thread_set_priority(struct thread *t, thread_priority_t new) {
-	if (new < THREAD_PRIORITY_MIN || THREAD_PRIORITY_MAX < new) {
+int thread_set_priority(struct thread *t, thread_priority_t new_priority) {
+	assert(t);
+
+	if ((new_priority < THREAD_PRIORITY_MIN)
+			|| (new_priority > THREAD_PRIORITY_MAX)) {
 		return -EINVAL;
 	}
 
 	sched_lock();
 	{
-		if (t->priority == new) {
+		if (t->priority == new_priority) {
 			sched_unlock();
 			return 0;
 		}
-		sched_set_priority(t, new);
+		sched_set_priority(t, get_sched_priority(t->task->priority,
+					new_priority));
+		t->priority = new_priority;
 	}
 	sched_unlock();
 
 	return 0;
+}
+
+thread_priority_t thread_get_priority(struct thread *t) {
+	assert(t);
+
+	return t->priority;
+}
+
+/* FIXME: This operations is only for SMP */
+void thread_set_affinity(struct thread *thread, unsigned int affinity) {
+	thread->affinity = affinity;
+}
+
+unsigned int thread_get_affinity(struct thread *thread) {
+	return thread->affinity;
+}
+
+/* FIXME: Replace it! */
+struct thread *idle __percpu__;
+clock_t cpu_started __percpu__;
+
+void cpu_set_idle_thread(struct thread *thread) {
+	thread->affinity = 1 << cpu_get_id();
+	percpu_var(idle) = thread;
+	percpu_var(cpu_started) = clock();
+}
+
+clock_t cpu_get_total_time(unsigned int cpu_id) {
+	return clock() - percpu_cpu_var(cpu_id, cpu_started);
+}
+
+clock_t cpu_get_idle_time(unsigned int cpu_id) {
+	return thread_get_running_time(percpu_cpu_var(cpu_id, idle));
 }
 
 clock_t thread_get_running_time(struct thread *thread) {
@@ -372,6 +415,8 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 
 	/* Priority setting up */
 	thread->priority = priority;
+	thread->sched_priority = get_sched_priority(thread->task->priority,
+			thread->priority);
 
 	return thread;
 }
@@ -397,6 +442,10 @@ static int unit_init(void) {
 	thread_context_init(idle);
 
 	idle->priority = THREAD_PRIORITY_MIN;
+	idle->sched_priority = get_sched_priority(idle->task->priority,
+			idle->priority);
+
+	cpu_set_idle_thread(idle);
 
 	return sched_init(bootstrap, idle);
 }
@@ -460,7 +509,7 @@ static struct thread *thread_alloc(void) {
 
 	t = &block->thread;
 
-	t->stack = &block->stack + sizeof(struct thread);
+	t->stack = block->stack + sizeof(struct thread);
 	t->stack_sz = STACK_SZ - sizeof(struct thread);
 
 	return t;

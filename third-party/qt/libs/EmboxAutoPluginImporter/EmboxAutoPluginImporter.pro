@@ -15,6 +15,7 @@ SOURCES += emboxautopluginimporter.cpp
 
 LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
 QTPLUGIN          += qvncgraphicssystem
+QTPLUGIN          += qminimal
 
 unix:!symbian {
     target.path = $$[QT_INSTALL_LIBS]

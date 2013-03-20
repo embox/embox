@@ -15,6 +15,7 @@
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 
 #include <unistd.h>
@@ -223,5 +224,5 @@ static int greth_init(void) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

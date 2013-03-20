@@ -181,7 +181,7 @@ static int login_cmd(int argc, char **argv) {
 
 		snprintf(smac_cmd, BUF_LEN, "smac_adm -S %s", smac_label);
 
-		if (0 != shell_line_input(smac_cmd)) {
+		if (0 != shell_exec(shell_any(), smac_cmd)) {
 			printf("login: cannot initialize SMAC label\n");
 		}
 	}
@@ -189,9 +189,12 @@ static int login_cmd(int argc, char **argv) {
 	shell = shell_lookup(result->pw_shell);
 
 	if (NULL == shell) {
-		shell = shell_any();
+		shell = shell_lookup("tish");
 	}
 
+	if (NULL == shell) {
+		shell = shell_any();
+	}
 	if (NULL == shell) {
 		return -ENOENT;
 	}
@@ -200,7 +203,7 @@ static int login_cmd(int argc, char **argv) {
 		/* */
 	}
 
-	shell->exec();
+	shell_run(shell);
 
 	res = utmp_login(DEAD_PROCESS, "");
 

@@ -195,7 +195,7 @@ struct sk_buff;
 struct sock;
 
 extern int bootp_receive(struct sock *sk, struct sk_buff *skb);
-extern int bootp_client_send(int sock,bootphdr_t *bootp, net_device_t *dev,
+extern int bootp_client_send(int sock,bootphdr_t *bootp, struct net_device *dev,
 		struct sockaddr_in *dst);
 
 /**

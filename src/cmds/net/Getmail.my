@@ -1,0 +1,26 @@
+package embox.cmd.net
+
+@Cmd(name = "getmail",
+	help = "Get email",
+	man = '''
+		NAME
+			getmail - get email from mail server
+		SYNOPSIS
+			getmail <user> <server>
+		DESCRIPTION
+			get mail from mail server
+		EXAMPLES
+			getmail nick pop.mail.ru
+		SEE ALSO
+			sendmail
+		AUTHORS
+			Ilia Vaprol
+	''')
+module getmail {
+	source "getmail.c"
+
+	depends embox.compat.posix.util.getpass
+	depends embox.net.pop3
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

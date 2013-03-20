@@ -15,6 +15,8 @@
 
 #include <module/embox/kernel/thread/sched_policy/api.h>
 
+#include <kernel/thread/sched_priority.h>
+
 struct thread;
 
 struct sched_strategy_data; /* Strategy data of thread   */
@@ -175,7 +177,7 @@ extern struct thread *runq_switch(struct runq *runq);
  *   Switching of current thread is required.
  */
 extern int runq_change_priority(struct runq *runq, struct thread *thread,
-		int new_priority);
+		sched_priority_t new_priority);
 
 /**
  * Sets scheduling priority of sleeping thread.
@@ -188,7 +190,7 @@ extern int runq_change_priority(struct runq *runq, struct thread *thread,
  *   New priority.
  */
 extern void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
-		int new_priority);
+		sched_priority_t new_priority);
 
 /**
  * Returns is empty queue.

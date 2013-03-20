@@ -66,6 +66,7 @@ module ipv4 {
 	depends raw_sock
 	depends embox.lib.LibC
 	/* depends from ip_fragment.c */
+	depends netfilter
 
 	source "ip_options.c"
 
@@ -82,6 +83,7 @@ module route {
 
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
+	depends embox.util.List
 }
 
 module tcp {
@@ -128,4 +130,12 @@ module snmp {
 	source "snmp.c"
 
 	depends embox.net.mib.snmp_mib
+}
+
+module netfilter {
+	source "netfilter.c"
+	option number amount_rules=10
+
+	depends embox.mem.pool
+	depends embox.util.List
 }

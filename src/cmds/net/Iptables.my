@@ -1,0 +1,18 @@
+package embox.cmd.net
+
+@Cmd(name = "iptables",
+	help = "Administration tools for filtering IPv4 packets",
+	man = '''
+		NAME
+			iptables - tools for packet filtering
+		AUTHORS
+			Ilia Vaprol
+	''')
+module iptables {
+	source "iptables.c"
+
+	depends embox.util.List
+	depends embox.net.netfilter
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

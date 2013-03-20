@@ -5,6 +5,7 @@ module irq {
 	depends irq_lock
 	depends embox.mem.objalloc, embox.driver.interrupt.irqctrl_api
 	depends embox.profiler.trace
+	depends embox.util.DList
 }
 
 module irq_lock {

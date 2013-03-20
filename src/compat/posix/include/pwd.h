@@ -8,6 +8,7 @@
 #ifndef PWD_H_
 #define PWD_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 struct passwd {
@@ -19,11 +20,6 @@ struct passwd {
 	char *pw_dir;
 	char *pw_shell;
 };
-
-#if 0
-extern struct passwd *getpwuid(uid_t uid);
-extern struct passwd *getpwnam(const char *name);
-#endif
 
 extern int fgetpwent_r(FILE *file, struct passwd *pwd, char *buf,
 		size_t buflen, struct passwd **result);

@@ -439,10 +439,15 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 
 	/* Parse Question section */
 	amount = htons(dm->msg.hdr.qdcount);
-	qs = malloc(amount * sizeof *qs);
-	if (qs == NULL) {
-		ret = -ENOMEM;
-		goto error;
+	if (amount != 0) {
+		qs = malloc(amount * sizeof *qs);
+		if (qs == NULL) {
+			ret = -ENOMEM;
+			goto error;
+		}
+	}
+	else {
+		qs = NULL;
 	}
 
 	out_result->qdcount = amount;
@@ -458,10 +463,15 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 
 	/* Parse Answer section */
 	amount = htons(dm->msg.hdr.ancount);
-	rrs = malloc(amount * sizeof *rrs);
-	if (rrs == NULL) {
-		ret = -ENOMEM;
-		goto error;
+	if (amount != 0) {
+		rrs = malloc(amount * sizeof *rrs);
+		if (rrs == NULL) {
+			ret = -ENOMEM;
+			goto error;
+		}
+	}
+	else {
+		rrs = NULL;
 	}
 
 	out_result->ancount = amount;
@@ -477,10 +487,15 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 
 	/* Parse Authority section */
 	amount = htons(dm->msg.hdr.nscount);
-	rrs = malloc(amount * sizeof *rrs);
-	if (rrs == NULL) {
-		ret = -ENOMEM;
-		goto error;
+	if (amount != 0) {
+		rrs = malloc(amount * sizeof *rrs);
+		if (rrs == NULL) {
+			ret = -ENOMEM;
+			goto error;
+		}
+	}
+	else {
+		rrs = NULL;
 	}
 
 	out_result->nscount = amount;
@@ -496,10 +511,15 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 
 	/* Parse Additional section */
 	amount = htons(dm->msg.hdr.arcount);
-	rrs = malloc(amount * sizeof *rrs);
-	if (rrs == NULL) {
-		ret = -ENOMEM;
-		goto error;
+	if (amount != 0) {
+		rrs = malloc(amount * sizeof *rrs);
+		if (rrs == NULL) {
+			ret = -ENOMEM;
+			goto error;
+		}
+	}
+	else {
+		rrs = NULL;
 	}
 
 	out_result->arcount = amount;

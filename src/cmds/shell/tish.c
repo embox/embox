@@ -11,8 +11,11 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <lib/linenoise.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <kernel/task.h>
+#include <lib/linenoise.h>
+#include <cmd/cmdline.h>
 #include <embox/unit.h>
 
 #include <framework/cmd/api.h>
@@ -20,6 +23,13 @@
 #include <cmd/shell.h>
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER, prompt_len)
+
+#define AMP_SUPPORT  OPTION_GET(NUMBER, amp_support)
+
+struct cmdtask_data {
+	int argc;
+	char buf[BUF_INP_SIZE];
+};
 
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
@@ -44,10 +54,6 @@ static int run_cmd(int argc, char *argv[]) {
 	const struct cmd *cmd;
 	int code;
 
-	if (argc == 0) {
-		return 0;
-	}
-
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
 		printf("%s: Command not found\n", argv[0]);
 		return -ENOENT;
@@ -60,42 +66,96 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
-int shell_line_input(const char *const_line) {
-	char *token_line[(BUF_INP_SIZE + 1) / 2];
-	char cline[BUF_INP_SIZE];
-	char *line = cline;
-	char quote;
-	int tok_pos = 0;
-	int last_was_blank = 1;
+#if AMP_SUPPORT
+static void *cmdtask(void *data) {
+	struct cmdtask_data *m = (struct cmdtask_data *) data;
+	char *argv[(BUF_INP_SIZE + 1) / 2], **pp, *p;
 
+	pp = argv;
+	p = m->buf;
 
-        strncpy(cline, const_line, BUF_INP_SIZE);
-
-	while (*line != '\0') {
-		char is_space = isspace(*line);
-		if (last_was_blank && !is_space) {
-			if (*line == '\'' || *line == '\"') {
-				quote = *line;
-				line++;
-				token_line[tok_pos++] = line;
-				while (*line != quote) {
-					line++;
-				}
-				*line = '\0';
-			} else {
-				token_line[tok_pos++] = line;
-			}
-		}
-		last_was_blank = is_space;
-		if (is_space) {
-			*line = '\0';
-		}
-		line++;
+	while (*p != '\0') {
+		*pp++ = p;
+		p += strlen(p) + 1;
 	}
-	return run_cmd(tok_pos, token_line);
+
+	run_cmd(m->argc, argv);
+
+	free(m);
+
+	return NULL;
+
 }
 
-static void shell_run(void) {
+static int process_amp(int argc, char *argv[]) {
+	struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
+	char *p = m->buf;
+
+	if (!m) {
+		return -ENOMEM;
+	}
+
+	m->argc = argc - 1;
+	for (int i = 0; i < argc - 1; i++) {
+		strcpy(p, argv[i]);
+		p += strlen(p) + 1;
+	}
+
+	*p = '\0';
+
+	new_task(argv[0], cmdtask, m);
+
+	return 0;
+}
+#else
+static int process_amp(int argc, char *argv[]) {
+	return -EINVAL;
+}
+#endif
+
+
+static int process(int argc, char *argv[]) {
+	if (argc == 0) {
+		return 0;
+	}
+
+	if (!strcmp(argv[0], "exit")) {
+		return -1;
+	}
+
+	if (!strcmp(argv[0], "logout")) {
+		return -1;
+	}
+
+	if (!strcmp(argv[argc - 1], "&")) {
+		return process_amp(argc, argv);
+	}
+
+	run_cmd(argc, argv);
+
+	return 0;
+}
+
+int shell_line_input(const char *cmdline) {
+	char cmdl[BUF_INP_SIZE];
+	/* In the worst case cmdline looks like "x x x x x x". */
+	char *argv[(BUF_INP_SIZE + 1) / 2];
+	int argc;
+
+	if (strlen(cmdline) >= BUF_INP_SIZE) {
+		return -ERANGE;
+	}
+
+	strcpy(cmdl, cmdline);
+
+	if (0 == (argc = cmdline_tokenize(cmdl, argv))) {
+		return 0;
+	}
+
+	return process(argc, argv);
+}
+
+static void tish_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
@@ -112,8 +172,15 @@ static void shell_run(void) {
 
 		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
-		shell_line_input(inp_buf);
+		if (0 > shell_line_input(inp_buf)) {
+			return;
+		}
 	}
 }
 
-SHELL_DEF(shell_run,"tish");
+SHELL_DEF({
+	.name = "tish",
+	.exec = shell_line_input,
+	.run  = tish_run,
+	});
+

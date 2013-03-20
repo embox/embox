@@ -221,8 +221,8 @@ static int icmp_redirect(sk_buff_t *skb) {
  */
 static int icmp_prepare_reply(sk_buff_t *reply) {
 	/* Fix IP header */
-	in_device_t *idev = in_dev_get(reply->dev); /* Requires symmetric routing */
-	__be16 ip_id = inet_dev_get_id(idev);
+	struct in_device *idev = inetdev_get_by_dev(reply->dev); /* Requires symmetric routing */
+	__be16 ip_id = inetdev_get_ip_id(idev);
 	__be16 tot_len = reply->nh.iph->tot_len;
 
 	/* Replace not unicast addresses */
@@ -239,7 +239,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 }
 
 static int icmp_echo(sk_buff_t *skb) {
-	sk_buff_t *reply = skb_duplicate(skb);	/* We are going to fix the data */
+	sk_buff_t *reply = skb_share(skb, SKB_SHARE_NO);	/* We are going to fix the data */
 
 	if (!likely(reply))
 		return -1;
@@ -270,7 +270,7 @@ static int icmp_timestamp(sk_buff_t *skb) {
 		return -1;
 	}
 
-	if (!likely(reply = skb_duplicate(skb))) 	/* We are going to fix the data */
+	if (!likely(reply = skb_share(skb, SKB_SHARE_NO))) 	/* We are going to fix the data */
 		return -1;
 
 	/* Mark it as a reply */
@@ -377,8 +377,8 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 
 		/* Assemble IP header */
 		{
-			in_device_t *idev = in_dev_get(skb->dev); /* Requires symmetric routing */
-			__be16 ip_id = inet_dev_get_id(idev);
+			struct in_device *idev = inetdev_get_by_dev(skb->dev); /* Requires symmetric routing */
+			__be16 ip_id = inetdev_get_ip_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
 			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos,

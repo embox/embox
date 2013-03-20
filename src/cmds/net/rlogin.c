@@ -16,6 +16,7 @@
 
 #include <net/ip.h>
 #include <embox/cmd.h>
+#include <stdio.h>
 
 
 EMBOX_CMD(exec);
@@ -77,7 +78,7 @@ static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
 			*mode = MODE_COOKED;
 			break;
 		}
-		return -1;
+		return -EINVAL;
 	case R_WINDOW_SZ:
 		break;
 	case R_START:
@@ -85,16 +86,16 @@ static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
 			*state = R_START;
 			break;
 		}
-		return -1;
+		return -EINVAL;
 	case R_STOP:
 		if (*mode != MODE_RAW) {
 			*state = R_STOP;
 		} else {
-			return -1;
+			return -EINVAL;
 		}
 		break;
 	default:
-		return -1;
+		return -EINVAL;
 	}
 
 	return 0;
@@ -165,7 +166,7 @@ static int exec(int argc, char **argv) {
 			break;
 		default:
 			printf("error: unsupported option %c\n", optopt);
-			return -1;
+			return -EINVAL;
 		}
 	}
 
@@ -226,6 +227,7 @@ static int exec(int argc, char **argv) {
 	rlogin_handle(sock);
 
 exit:
+	res = -errno;
 	free(buf);
 	close(sock);
 	return res;

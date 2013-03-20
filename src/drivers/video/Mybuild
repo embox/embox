@@ -5,31 +5,46 @@ module fb {
 	source "fb.c"
 	option number fb_amount=2
 	depends embox.mem.pool
-	depends embox.lib.LibC
+	@NoRuntime depends embox.lib.LibC
 	depends embox.fs.rootfs
-	depends modedb
-}
-
-module modedb {
-	source "modedb.c"
-}
-
-module display {
-	source "display.c"
-	depends embox.util.List
-	depends embox.lib.LibC
+	depends fb_videomodes
 }
 
 module bochs {
-	option number default_mode=0x114
 	source "bochs.c"
 
 	depends fb
-	depends vesa
 	depends embox.driver.pci
-	depends embox.lib.LibC
+	@NoRuntime depends embox.lib.LibC
 }
 
 module cirrus_logic {
 	source "cirrus_logic.c"
+
+	depends fb
+	depends embox.driver.pci
+}
+
+module generic {
+	source "generic.c"
+
+	option number vendor_id
+	option number product_id
+
+	option number fb_bar = 0
+
+	depends fb
+	depends embox.driver.pci
+}
+
+module fb_videomodes {
+	source "fb_videomodes.c"
+}
+
+module vesa_modes {
+	source "vesa_modes.c"
+}
+
+module fonts {
+	source "fonts.c"
 }

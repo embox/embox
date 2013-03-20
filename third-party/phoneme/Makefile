@@ -42,7 +42,10 @@ PATCH_TXT = phoneme_patch.txt
 TOOLS_DIR           := $(PHONEME_DIR)/tools
 JAVACALL_DIR        := $(PHONEME_DIR)/javacall
 JAVACALL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/javacall
+#ubuntu jdk_dir
 JDK_DIR             := /usr/lib/jvm/java-6-openjdk-i386
+#redhat jdk_dir
+#JDK_DIR             := /usr/java/jdk1.6.0_35
 
 PCSL_DIR            := $(PHONEME_DIR)/pcsl
 PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl

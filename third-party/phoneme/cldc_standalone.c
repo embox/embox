@@ -50,7 +50,7 @@ static void *phoneme_run(void *data) {
 	p->argc --;
 	p->argv ++;
 
-	while (true) {
+	while (1) {
 	    int n = JVM_ParseOneArg(p->argc, p->argv);
 	    if (n < 0) {
 	    	printf("Unknown argument: %s\n", p->argv[0]);

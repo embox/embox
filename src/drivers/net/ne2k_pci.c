@@ -31,6 +31,7 @@
 #include <drivers/ethernet/ne2k_pci.h>
 
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 
 #include <embox/unit.h>
@@ -361,10 +362,8 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
-#if 0
-		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
-#endif
 	}
+
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
@@ -419,10 +418,10 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 
-	res = irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k");
+	res = irq_attach(pci_dev->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
 	if (res < 0) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

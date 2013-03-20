@@ -26,13 +26,14 @@ static void print_usage(void) {
 	printf("Usage: bootp <ifname>");
 }
 
-int bootp_client(int bootp_server_timeout, in_device_t *dev) {
+int bootp_client(int bootp_server_timeout, struct in_device *dev) {
 	int res, bootp_sock;
 	struct bootphdr bphdr;
 	struct sockaddr_in our, dst;
 	if (0 > (bootp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
+		res = -errno;
 		printf("Can't to alloc socket\n");
-		return bootp_sock;
+		return res;
 	}
 
 	socket_set_encap_recv(bootp_sock, bootp_receive);
@@ -44,6 +45,7 @@ int bootp_client(int bootp_server_timeout, in_device_t *dev) {
 	res = bind(bootp_sock, (struct sockaddr *) &our, sizeof(our));
 
 	if (res < 0) {
+		res = -errno;
 		printf("error at bind()\n");
 		goto exit;
 	}
@@ -67,7 +69,16 @@ int bootp_client(int bootp_server_timeout, in_device_t *dev) {
 	}
 
 	/* TODO set O_NONBLOCK on socket's file descriptor */
-	res = recvfrom(bootp_sock, &bphdr, sizeof(bphdr), 0, NULL, NULL);
+	do {
+		res = recvfrom(bootp_sock, &bphdr, sizeof(bphdr), 0, NULL, NULL);
+	} while (res == 0);
+	if (res == -1) {
+		res = -errno;
+	}
+	else {
+		res = 0;
+	}
+
 exit:
 	close(bootp_sock);
 	return res;
@@ -75,7 +86,7 @@ exit:
 
 static int exec(int argc, char **argv) {
 	int opt;
-	in_device_t *dev;
+	struct in_device *dev;
 	uint32_t bootp_server_timeout = DEFAULT_WAIT_TIME;
 
 	getopt_init();
@@ -92,15 +103,13 @@ static int exec(int argc, char **argv) {
 
 	if (argc < 2) {
 		printf("no interface was specified\n");
-		return 0;
+		return -EINVAL;
 	}
 
-	if (NULL == (dev = inet_dev_find_by_name(argv[argc - 1]))) {
+	if (NULL == (dev = inetdev_get_by_name(argv[argc - 1]))) {
 		printf("can't find interface %s\n", argv[argc - 1]);
-		return 0;
+		return -EINVAL;
 	}
 
-	bootp_client(bootp_server_timeout, dev);
-
-	return 0;
+	return bootp_client(bootp_server_timeout, dev);
 }

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/uio.h>
 #include <util/array.h>
+#include <util/math.h>
 
 #include <net/tcp.h>
 #include <sys/socket.h>
@@ -106,8 +107,8 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 				ret = -EHOSTUNREACH;
 				break;
 			}
-			assert(in_dev_get(rte->dev) != NULL);
-			sock.inet_sk->saddr = in_dev_get(rte->dev)->ifa_address; // TODO remove this
+			assert(inetdev_get_by_dev(rte->dev) != NULL);
+			sock.inet_sk->saddr = inetdev_get_by_dev(rte->dev)->ifa_address; // TODO remove this
 			sock.inet_sk->daddr = addr_in->sin_addr.s_addr;
 			sock.inet_sk->dport = addr_in->sin_port;
 			/* make skb with options */
@@ -194,7 +195,13 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			if (sk->sk_socket->desc->flags & O_NONBLOCK) {
 				return -EAGAIN;
 			}
+			sock_unlock(sk);
+
 			event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
+
+			if (!sock_lock(&sk)) {
+				return -EINVAL;
+			}
 		}
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
@@ -255,7 +262,15 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 				TCP_MAX_DATA_LEN : sock.tcp_sk->rem.wind);
 		buff = (char *)msg->msg_iov->iov_base;
 		while (len != 0) {
-			bytes = (len > max_len ? max_len : len);
+			/* Maximum size of data that can be send without tcp window size overflowing */
+			int upper_bound;
+
+			while (!(upper_bound = sock.tcp_sk->rem.wind - (sock.tcp_sk->self.seq - sock.tcp_sk->last_ack)));
+
+			assert(upper_bound >= 0, "wind - %d, (self.seq - last_ack) - %d\n",
+					sock.tcp_sk->rem.wind, sock.tcp_sk->self.seq - sock.tcp_sk->last_ack);
+
+			bytes = min(upper_bound, (len > max_len ? max_len : len));
 			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
 			skb = alloc_prep_skb(0, bytes);
 			if (skb == NULL) {

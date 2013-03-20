@@ -16,7 +16,8 @@
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>
 #include <util/bit.h>
-#include <linux/list.h>
+#include <util/list.h>
+#include <util/member.h>
 
 #include <framework/mod/options.h>
 
@@ -28,18 +29,20 @@
  */
 
 struct rt_entry_info {
-	struct list_head lnk;
+	struct list_link lnk;
 	struct rt_entry entry;
 };
 
 POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
-static LIST_HEAD(rt_entry_info_list);
+static LIST_DEF(rt_entry_info_list);
 
-int rt_add_route(net_device_t *dev, in_addr_t dst,
+int rt_add_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw, int flags) {
 	struct rt_entry_info *rt_info;
 
-	assert(dev != NULL);
+	if (dev == NULL) {
+		return -EINVAL;
+	}
 
 	rt_info = (struct rt_entry_info *)pool_alloc(&rt_entry_info_pool);
 	if (rt_info == NULL) {
@@ -51,24 +54,23 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 	rt_info->entry.rt_gateway = gw;
 	rt_info->entry.rt_flags = RTF_UP | flags;
 
-	list_add_tail(&rt_info->lnk, &rt_entry_info_list);
+	list_add_last_element(rt_info, &rt_entry_info_list, lnk);
 
-	return ENOERR;
+	return 0;
 }
 
-int rt_del_route(net_device_t *dev, in_addr_t dst,
+int rt_del_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
-	assert(dev != NULL);
-
-	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
-		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
+	list_foreach(rt_info, &rt_entry_info_list, lnk) {
+		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
-    			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
-    		list_del(&rt_info->lnk);
+    			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
+    			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
+			list_unlink_element(rt_info, lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
-			return ENOERR;
+			return 0;
 		}
 	}
 
@@ -76,7 +78,7 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 }
 
 /* svv: ToDo:
- *      1) this function returns -ENOENT/ENOERR, but arp_resolve -1/0
+ *      1) this function returns -ENOENT/0, but arp_resolve -1/0
  *         style must be the same
  *      2) Carrier without ARP can't be supported
  */
@@ -107,7 +109,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	/* SO_BROADCAST assert. */
 	if (daddr == INADDR_BROADCAST) {
 		skb->dev = wanna_dev;
-		return ENOERR;
+		return 0;
 	}
 
 	/* route destanation address */
@@ -122,7 +124,8 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	assert(rte->dev != NULL);
 	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
 	skb->dev = rte->dev;
-	saddr = in_dev_get(skb->dev)->ifa_address;
+	assert(inetdev_get_by_dev(skb->dev) != NULL);
+	saddr = inetdev_get_by_dev(skb->dev)->ifa_address;
 
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
@@ -131,13 +134,14 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 			|| (daddr == saddr)) {
 		/* FIXME it's the wrong check. need to check all interfaces
 		 * XXX even if saddr and skb->nh.iph->saddr are different? */
-		skb->dev = inet_get_loopback_dev();
+		assert(inetdev_get_loopback_dev() != NULL);
+		skb->dev = inetdev_get_loopback_dev()->dev;
 	}
 
 	/* if the packet should be sent using gateway
 	 * nothing todo there. all will be done in arp_resolve */
 
-	return ENOERR;
+	return 0;
 }
 
 int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
@@ -145,7 +149,7 @@ int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
 
 	if (source_addr == INADDR_BROADCAST) {
 		*new_addr = source_addr;
-		return ENOERR;
+		return 0;
 	}
 
 	rte = rt_fib_get_best(source_addr, NULL);
@@ -155,43 +159,45 @@ int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
 
 	*new_addr = (rte->rt_gateway == INADDR_ANY ? source_addr : rte->rt_gateway);
 
-	return ENOERR;
+	return 0;
 }
 
 struct rt_entry * rt_fib_get_first(void) {
-	struct rt_entry_info *rt_info;
-
-	if (list_empty(&rt_entry_info_list)) {
+	if (list_is_empty(&rt_entry_info_list)) {
 		return NULL;
 	}
 
-	rt_info = member_cast_out(rt_entry_info_list.next, struct rt_entry_info, lnk);
-
-	return &rt_info->entry;
+	return &list_first_element(&rt_entry_info_list,
+			struct rt_entry_info, lnk)->entry;
 }
 
 struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 	struct rt_entry_info *rt_info;
 
+	assert(entry != NULL);
+
 	rt_info = member_cast_out(entry, struct rt_entry_info, entry);
+	if (rt_info == list_last_element(&rt_entry_info_list,
+			struct rt_entry_info, lnk)) {
+		return NULL;
+	}
 
-	rt_info = member_cast_out(rt_info->lnk.next, struct rt_entry_info, lnk);
-
-	return (&rt_info->lnk == &rt_entry_info_list) ? NULL : &rt_info->entry;
+	return &list_element(rt_info->lnk.next,
+			struct rt_entry_info, lnk)->entry;
 }
 
 /* ToDo: It's too ugly to perform sorting for every packet.
  * Routes must be added into list with mask_len decrease.
  * In this case we'll simply take the first match
  */
-struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
+struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 	struct rt_entry_info *rt_info;
 	int mask_len, best_mask_len;
 	struct rt_entry *best_rte;
 
 	best_rte = NULL;
 	best_mask_len = -1;
-	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
+	list_foreach(rt_info, &rt_entry_info_list, lnk) {
 		mask_len = ~rt_info->entry.rt_mask
 			? bit_clz(~rt_info->entry.rt_mask) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)

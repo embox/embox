@@ -1,0 +1,23 @@
+package embox.driver.console
+
+abstract module mpx {
+}
+
+module mpx_simple extends mpx {
+	source "mpx_simple.c"
+
+	depends embox.driver.video.fb
+	depends embox.driver.input.core
+}
+
+module fbcon {
+	source "fbcon.c"
+
+	option number set_video_mode = 1
+	depends embox.driver.video.fonts
+	depends embox.driver.tty.tty
+	depends embox.driver.input.keyboard.keyboard
+	depends mpx_simple
+
+	depends embox.cmd.sh.tish
+}

@@ -6,6 +6,7 @@
  * @author Nikolay Korotky
  */
 
+#include <errno.h>
 #include <embox/cmd.h>
 #include <unistd.h>
 #include <drivers/irqctrl.h>
@@ -99,13 +100,13 @@ static int exec(int argc, char **argv) {
 		case 'f':
 			if (1 != sscanf(optarg, "%c", &format)) {
 				printf("wrong format %s\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'a':
 			if (sscanf(optarg, "0x%x", &load_addr) < 0) {
 				printf("invalid value \"%s\"\n", optarg);
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'h':
@@ -126,7 +127,7 @@ static int exec(int argc, char **argv) {
 		entry_point = (void (*)(void)) LOAD_ADDR;
 		break;
 	default:
-		return -1;
+		return -EINVAL;
 	}
 
 #if 0

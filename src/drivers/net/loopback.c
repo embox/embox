@@ -13,6 +13,7 @@
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -75,5 +76,5 @@ static int unit_init(void) {
 		return -ENOMEM;
 	}
 
-	return netdev_register(loopback_dev);
+	return inetdev_register_dev(loopback_dev);
 }

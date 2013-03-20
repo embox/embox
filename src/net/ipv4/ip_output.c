@@ -23,6 +23,8 @@
 #include <net/socket_registry.h>
 #include <linux/in.h>
 #include <net/etherdevice.h>
+#include <net/netfilter.h>
+#include <kernel/printk.h>
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
@@ -66,6 +68,12 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
+	if (!nf_valid_skb(NF_CHAIN_OUTPUT, skb)) {
+		printk("ip_queue_xmit: skb %p dropped by netfilter\n", skb);
+		skb_free(skb);
+		return 0;
+	}
+
 	skb->protocol = ETH_P_IP;
 	return dev_queue_send(skb);
 }
@@ -101,7 +109,7 @@ int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
 		return -ENETUNREACH;
 	}
 	else if ((best_route != NULL) && (sk != NULL)) {
-		sk->saddr = in_dev_get(best_route->dev)->ifa_address;
+		sk->saddr = inetdev_get_by_dev(best_route->dev)->ifa_address;
 	}
 
 	if (sk != NULL) {
@@ -170,7 +178,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 
 	/* Should we send ICMP redirect */
 	if (skb->dev == best_route->dev) {
-		struct sk_buff *s_new = skb_duplicate(skb);
+		struct sk_buff *s_new = skb_share(skb, SKB_SHARE_NO);
 		if (s_new) {
 			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
 					  best_route->rt_gateway);
