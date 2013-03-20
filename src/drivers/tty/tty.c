@@ -160,9 +160,6 @@ static void tty_rx_worker(struct work *w) {
 	while ((ich = tty_rx_dequeue(t)) != -1) {
 		irq_unlock();
 
-		if (ring_full(&t->i_ring, TTY_IO_BUFF_SZ))
-			break;
-
 		if (tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT)))
 			event_notify(&t->i_event);
 
