@@ -621,7 +621,7 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
         }
 
         switch(c) {
-        case 13:    /* enter */
+        case 10:    /* enter */
             history_len--;
             free(history[history_len]);
             return (int)l.len;

@@ -163,7 +163,8 @@ static void tish_run(void) {
         if (line[0] != '\0' && line[0] != '/') {
             printf("echo: '%s'\n", line);
             linenoiseHistoryAdd(line); /* Add to the history. */
-            linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+    		shell_line_input(line);
+
         } else if (!strncmp(line,"/historylen",11)) {
             /* The "/historylen" command will change the history len. */
             int len = atoi(line+11);
