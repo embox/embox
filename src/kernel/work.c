@@ -39,8 +39,8 @@ static void work_softirq_handler(unsigned int softirq_nr, void *data) {
 
 	irq_lock();
 
-	for (struct slist_link *head = &workq.sentinel, *link = head;
-			link->next != head; link = link->next) {
+	for (struct slist_link *head = &workq.sentinel, *link = head->next;
+			link != head; link = link->next) {
 		struct work *w = member_to_object(link, work_pending_t);
 
 		if (w->state & WS_DISABLED) {
