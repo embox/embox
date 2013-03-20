@@ -24,6 +24,7 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
+#define SECTOR_SIZE		512		/* sector size in bytes */
 
 typedef struct block_dev {
 	dev_t id;
