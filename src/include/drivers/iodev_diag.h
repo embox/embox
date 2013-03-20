@@ -19,7 +19,7 @@ struct diag_vterm_data {
 	vchar_t *video;
 };
 
-struct vga {
+struct vga_vterm_video {
 	struct vterm_video video;
 	struct diag_vterm_data data;
 };

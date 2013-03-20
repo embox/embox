@@ -22,7 +22,7 @@ extern struct vterm diag_vterm;
 
 extern const struct iodev_ops *const iodev_diag_ops;
 extern const struct iodev_ops *const iodev_video_ops;
-extern const struct vga diag_vga;
+extern struct vga_vterm_video diag_vga;
 
 extern void iodev_setup(const struct iodev_ops *iodev);
 //extern int iodev_setup_diag(void);

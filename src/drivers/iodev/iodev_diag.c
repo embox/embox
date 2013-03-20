@@ -18,7 +18,7 @@
 /* The video memory address. */
 #define VIDEO          0xB8000
 
-static void diag_vterm_init(const struct vterm_video *t) {
+static void diag_vterm_init(struct vterm_video *t) {
 	/**
 	 * mode 3h (80x25 text mode)
 	 * 0x67 => 01100111
@@ -34,7 +34,7 @@ static void diag_vterm_init(const struct vterm_video *t) {
 	out16(0x67, VGA_MISC_WRITE);
 }
 
-static void diag_vterm_cursor(const struct vterm_video *t, unsigned short x, unsigned short y) {
+static void diag_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned short y) {
 	unsigned int pos;
 
 	pos = x + y * t->width;
@@ -42,30 +42,31 @@ static void diag_vterm_cursor(const struct vterm_video *t, unsigned short x, uns
 	out16((pos << 8) | 0x0f, VGA_CRTC_INDEX);
 }
 
-static void diag_vterm_putc(const struct vterm_video *t, char ch, unsigned short x, unsigned short y) {
-	struct diag_vterm_data data = member_cast_out(t, struct vga, video)->data;
-	data.video[x + y * t->width] = (vchar_t) {.c = ch, .a = data.attr};
+static void diag_vterm_putc(struct vterm_video *t, char ch, unsigned short x, unsigned short y) {
+	struct diag_vterm_data *data = &member_cast_out(t, struct vga_vterm_video, video)->data;
+
+	data->video[x + y * t->width] = (vchar_t) {.c = ch, .a = data->attr};
 }
 
 
-static void diag_vterm_clear_rows(const struct vterm_video *t, short row, unsigned short count){
-	struct diag_vterm_data data = member_cast_out(t, struct vga, video)->data;
+static void diag_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count){
+	struct diag_vterm_data *data = &member_cast_out(t, struct vga_vterm_video, video)->data;
 
 	for (int i = row * t->width; i < (row + count) * t->width; ++i){
-		data.video[i] = (vchar_t) {.c = ' ', .a = data.attr};
+		data->video[i] = (vchar_t) {.c = ' ', .a = data->attr};
 	}
 }
 
-static void diag_vterm_copy_rows(const struct vterm_video *t,
+static void diag_vterm_copy_rows(struct vterm_video *t,
 		unsigned short to, unsigned short from, short nrows) {
-	struct diag_vterm_data data = member_cast_out(t, struct vga, video)->data;
+	struct diag_vterm_data *data = &member_cast_out(t, struct vga_vterm_video, video)->data;
 
-	memmove(&data.video[to * t->width],
-			&data.video[from * t->width],
-			sizeof(data.video[0]) * nrows * t->width);
+	memmove(&data->video[to * t->width],
+			&data->video[from * t->width],
+			sizeof(data->video[0]) * nrows * t->width);
 }
 
-static const struct vterm_ops diag_tty_ops = {
+static const struct vterm_video_ops diag_tty_ops = {
 		.init = &diag_vterm_init,
 		.cursor = &diag_vterm_cursor,
 		.putc = &diag_vterm_putc,
@@ -84,12 +85,8 @@ static const struct iodev_ops iodev_diag_ops_struct = {
 	.kbhit = &diag_kbhit,
 };
 
-const struct vterm_ops *ops;
-	unsigned short width;
-	unsigned short height;
-
 const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;
-const struct vga diag_vga = {
+struct vga_vterm_video diag_vga = {
 		.video = {
 				.ops = &diag_tty_ops,
 				.width = 80,

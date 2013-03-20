@@ -291,7 +291,7 @@ void vterm_putc(struct vterm *t, char ch) {
 	vterm_cursor(t);
 }
 
-void vterm_init(struct vterm *t, const struct vterm_video *video, struct input_dev *indev) {
+void vterm_init(struct vterm *t, struct vterm_video *video, struct input_dev *indev) {
 	assert(video && video->ops && video->ops->init);
 
 	t->cur_x = 0;
