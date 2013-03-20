@@ -20,16 +20,19 @@
 #include <kernel/work.h>
 #include <util/math.h>
 
+static void tty_tx_char(struct tty *t, char ch) {
+	// TODO locks? context? -- Eldar
+	t->ops->tx_char(t, ch);
+}
+
 /* Called in worker-protected context. */
 static void tty_output(struct tty *t, char ch) {
-	tcflag_t lflag = t->termios.c_lflag;
-	tcflag_t oflag = t->termios.c_oflag;
-
-	if ((lflag & ICANON) && (oflag & ONLCR) && ch == '\n') {
-		ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, "\r", 1);
+	if ((t->termios.c_lflag & ICANON) && (t->termios.c_oflag & ONLCR) &&
+			ch == '\n') {
+		tty_tx_char(t, '\r');
 	}
 
-	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
+	tty_tx_char(t, ch);
 }
 
 static void tty_echo(struct tty *t, char ch) {
@@ -62,7 +65,7 @@ static void tty_echo_erase(struct tty *t) {
 }
 
 /*
- * Input is laid out as follows:
+ * Input layout is the following:
  *
  *                     raw-raw-raw-raw-cooked|cooked|cooked|cooked|editing
  *
@@ -323,7 +326,7 @@ struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
 	ring_init(&t->i_canon_ring);
 
 	event_init(&t->o_event, "tty output");
-	ring_init(&t->o_ring);
+	// ring_init(&t->o_ring);
 
 	return t;
 }

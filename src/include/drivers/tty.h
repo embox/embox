@@ -73,8 +73,8 @@ struct tty {
 	struct ring       i_canon_ring; /* cooked range inside the ring buffer */
 
 	struct event      o_event;
-	struct ring       o_ring;
-	char              o_buff[TTY_IO_BUFF_SZ];
+	// struct ring       o_ring;
+	// char              o_buff[TTY_IO_BUFF_SZ];
 };
 
 struct tty_ops {
