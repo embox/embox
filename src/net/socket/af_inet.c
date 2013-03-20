@@ -48,6 +48,7 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	/* TODO really port type is inet->sport_type, but this not matter, yet */
 	inet->sport = htons(ip_port_get_free(protocol)); /* inet->sport at network bytes order  */
 
+	inet->rcv_saddr = 0;
 	inet->daddr = 0; // TODO it's required?
 	inet->dport = 0;
 
