@@ -73,8 +73,9 @@ void work_post(struct work *w) {
 	irq_lock();
 
 	if (!(w->state & (WS_PENDING | WS_INPROGRESS))) {
-		workq_tail->next = workq_tail;
-		workq_tail = member_of_object(w, work_pending_t);
+		struct slist_link *link = member_of_object(w, work_pending_t);
+		slist_insert_after_link(link, workq_tail);
+		workq_tail = link;
 	}
 
 	w->state += __COUNT(WS_PENDING);
