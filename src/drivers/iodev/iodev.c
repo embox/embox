@@ -11,14 +11,14 @@
 
 #include <drivers/iodev.h>
 
-//extern const struct iodev_ops iodev_diag_ops_struct;
-static const struct iodev_ops *curr_iodev;// = &iodev_diag_ops_struct;
+
+static const struct iodev_ops *curr_iodev;
 
 int iodev_init(void) {
 	return curr_iodev->init();
 }
 
-const struct iodev_ops *iodev_current(void) {
+struct iodev_ops const*iodev_current(void) {
 	return curr_iodev;
 }
 

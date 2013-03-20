@@ -50,9 +50,12 @@ static int iodev_close(struct idx_desc *idx) {
 static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
 	struct tty *tty = desc->data->fd_struct;
 
+	if(NULL == tty) {
+		return -EINVAL;
+	}
+
 	switch (request) {
 	case TTY_IOCTL_GETATTR:
-		//term = va_arg(args, struct termios *);
 		memcpy(data, &tty->termios, sizeof(struct termios));
 		break;
 	case TTY_IOCTL_SETATTR:
@@ -104,8 +107,6 @@ static struct tty bs_tty;
 static int iodev_env_init(void) {
 	int fd;
 	int res = 0;
-
-
 
 	tty_init(&bs_tty, &bs_tty_ops);
 

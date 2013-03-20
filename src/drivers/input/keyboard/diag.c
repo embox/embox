@@ -15,7 +15,7 @@
 int key_is_pressed(struct input_event *event) {
 	return event->type & KEY_PRESSED;
 }
-
+#if 0
 static struct input_dev *kbd;
 
 static struct input_dev *kbd_get(void) {
@@ -30,7 +30,7 @@ static struct input_dev *kbd_get(void) {
 	return kbd;
 }
 
-static int keyboard_getc(void) {
+int keyboard_getc(struct input_dev *indev) {
 
 	static unsigned char ascii_buff[4];
 	static int ascii_len;
@@ -65,3 +65,4 @@ char diag_getc(void) {
 int diag_kbhit(void) {
 	return keyboard_havechar();
 }
+#endif
