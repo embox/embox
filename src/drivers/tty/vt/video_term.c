@@ -170,19 +170,15 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 
 static const unsigned char esc_start[] = { 0x1B, 0x5B }; /* esc, '[' */
 
-static int vterm_indev_eventhnd(struct input_dev *indev) {
+static int vterm_input(struct vterm *vt, struct input_event *event) {
 	unsigned char ascii_buff[4];
-	struct input_event event;
 	int keycode;
 	int seq_len = 0;
 
-	if (0 != input_dev_event(indev, &event)) {
+	if (!key_is_pressed(event)) {
 		return 0;
 	}
-	if (!key_is_pressed(&event)) {
-		return 0;
-	}
-	keycode = keymap_kbd(&event);
+	keycode = keymap_kbd(event);
 
 	if (keycode < 0) {
 		return 0;
@@ -269,7 +265,17 @@ static int vterm_indev_eventhnd(struct input_dev *indev) {
 	}
 	for (int i = 0; i < seq_len; i++) {
 		//vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
-		tty_rx_putc(&((struct vterm *) indev->data)->tty, ascii_buff[i], 0);
+		tty_rx_putc(&vt->tty, ascii_buff[i], 0);
+	}
+
+	return 0;
+}
+
+static int vterm_indev_eventhnd(struct input_dev *indev) {
+	struct input_event event;
+
+	while (0 == input_dev_event(indev, &event)) {
+		vterm_input(indev->data, &event);
 	}
 	return 0;
 }
