@@ -29,8 +29,8 @@ module i8250 extends diag_api {
 	source "8250.c"
 }
 
-module vga extends diag_api {
-	source "vga.c"
+module tty_vga extends diag_api {
+	source "tty_vga.c"
 
 	/**
 	 * TODO cycle
