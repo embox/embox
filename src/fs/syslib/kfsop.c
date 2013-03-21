@@ -289,6 +289,192 @@ skip_dev_lookup:
 	return drv->fsop->mount(dev_node, dir_node);
 }
 
+/**
+ * Simple util function to copy file in oldpath to newpath
+ * @param Should be regular file to copy
+ * @param Name of new copy
+ * @return ENOERR if file successfully copied -1 and set errno in other way
+ */
+int copy_file(const char *oldpath, const char *newpath) {
+	int oldfd, newfd, rc;
+	char buf[BUFSIZ];
+
+	oldfd = open(oldpath, O_RDONLY);
+	if (-1 == oldfd) {
+		return -1;
+	}
+	newfd = open(newpath, O_CREAT|O_WRONLY|O_TRUNC, 0);
+	if (-1 == newfd) {
+		return -1;
+	}
+
+	/* Copy bytes */
+	while ((rc = read(oldfd, buf, sizeof(buf))) > 0) {
+		if (write(newfd, buf, rc) <= 0) {
+			SET_ERRNO(EIO);
+			return -1;
+		}
+	}
+
+	/* Close files and free memory*/
+	rc = close(oldfd);
+	if (0 != rc) {
+		return -1;
+	}
+	rc = close(newfd);
+	if (0 != rc) {
+		return -1;
+	}
+
+	return ENOERR;
+}
+
+/**
+ * Rename oldpath to newpath
+ * @param Path to file or directory to rename
+ * @param Destination path, could not be existent file
+ * @return ENOERR if file successfully copied -1 and set errno in other way
+ */
+int krename(const char *oldpath, const char *newpath) {
+	int rc, newpathlen, diritemlen;
+	char *oldpathcopy, *newpathcopy;
+	char *opc_free, *npc_free;
+	char *name, *newpathbuf = NULL;
+	char *newpatharg, *oldpatharg;
+	node_t *oldnode, *newnode, *diritem;
+	/* We use custom tree traversal while I can't
+	 * get success with tree_foreach_children */
+	struct tree_link *link, *end_link;
+
+	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
+			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
+		SET_ERRNO(ENAMETOOLONG);
+		return -1;
+	}
+
+	/* Check if source file exists */
+	oldpathcopy = strdup(oldpath);
+	opc_free = oldpathcopy;
+	rc = fs_perm_lookup(NULL, (const char *) oldpathcopy,
+			(const char **) &oldpathcopy, &oldnode);
+	free(opc_free);
+	if (0 != rc) {
+		SET_ERRNO(-rc);
+		return -1;
+	}
+
+	/* Check if destination file already exists or if directory were
+	 * provided as destination path */
+	newpathcopy = strdup(newpath);
+	npc_free = newpathcopy;
+	rc = fs_perm_lookup(NULL, (const char *) newpathcopy,
+			(const char **) &newpathcopy, &newnode);
+	free(npc_free);
+	if (0 == rc) {
+		if (node_is_directory(newnode)) {
+			/* Directory was passed as destination */
+			name = strrchr(oldpath, '/') + 1;
+			newpathlen = strlen(newpath) + strlen(name);
+			if (newpathlen > MAX_LENGTH_PATH_NAME) {
+				SET_ERRNO(ENAMETOOLONG);
+				return -1;
+			}
+			newpathbuf = calloc(newpathlen + 2, sizeof(char));
+			if (NULL == newpathbuf) {
+				SET_ERRNO(ENOMEM);
+				return -1;
+			}
+			strcat(newpathbuf, newpath);
+			if (newpathbuf[strlen(newpathbuf) - 1] != '/') {
+				strcat(newpathbuf, "/");
+			}
+			strcat(newpathbuf, name);
+			newpath = newpathbuf;
+		} else {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
+	}
+
+	/**
+	 * TODO:
+	 * Here we should check if we move within one filesystem and don't copy
+	 * data in such case. Instead of that just make new hardlink
+	 * and remove old one.
+	 */
+
+	/* If oldpath is directory, copy it recursively */
+	if (node_is_directory(oldnode)) {
+		rc = mkdir(newpath, oldnode->mode);
+		if (-1 == rc) {
+			return -1;
+		}
+
+		/**
+		 * Following line should be here:
+		 *  tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
+		 * But it's not working with it.
+		 */
+		link = tree_children_begin(&oldnode->tree_link);
+		end_link = tree_children_end(&oldnode->tree_link);
+
+		while (link != end_link) {
+			diritem = tree_element(link, typeof(*diritem), tree_link);
+			link = tree_children_next(link);
+
+			if (0 != strcmp(".", diritem->name) &&
+					0 != strcmp("..", diritem->name)) {
+				diritemlen = strlen(diritem->name);
+				oldpatharg =
+						calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
+				newpatharg =
+						calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
+				if (NULL == oldpatharg || NULL == newpatharg) {
+					SET_ERRNO(ENOMEM);
+					return -1;
+				}
+
+				strcat(oldpatharg, oldpath);
+				if (oldpatharg[strlen(oldpatharg) - 1] != '/') {
+					strcat(oldpatharg, "/");
+				}
+				strcat(oldpatharg, diritem->name);
+				strcat(newpatharg, newpath);
+				if (newpatharg[strlen(newpatharg) - 1] != '/') {
+					strcat(newpatharg, "/");
+				}
+				strcat(newpatharg, diritem->name);
+
+				/* Call itself recursively */
+				if (-1 == krename(oldpatharg, newpatharg)) {
+					return -1;
+				}
+
+				free(newpatharg);
+				free(oldpatharg);
+			}
+		}
+	/* Or copy file */
+	} else {
+		rc = copy_file(oldpath, newpath);
+		if (-1 == rc) {
+			return -1;
+		}
+	}
+
+	if (NULL != newpathbuf) {
+		free(newpathbuf);
+	}
+
+	/* Delete file in old path */
+	rc = remove(oldpath);
+	if (0 != rc) {
+		return -1;
+	}
+
+	return ENOERR;
+}
+
 int kumount(const char *dir) {
 	struct node *dir_node;
 	struct fs_driver *drv;
