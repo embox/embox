@@ -84,3 +84,10 @@ module io_sync extends io_sync_api {
 	source "io_sync.c"
 	depends embox.kernel.thread.event
 }
+
+module waitpid {
+	source "waitpid.c"
+
+	depends task_table
+	depends embox.kernel.thread.core
+}

@@ -26,6 +26,7 @@ struct task_idx_table;
 struct thread;
 struct mmap;
 struct task_u_area;
+struct sleepq;
 
 /**
  * @brief Task resources container
@@ -60,6 +61,8 @@ struct task {
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
+
+	struct sleepq *wait_sq;
 
 	unsigned int affinity;
 };
@@ -130,6 +133,8 @@ extern void __attribute__((noreturn)) task_exit(void *res);
 extern struct task *task_kernel_task(void);
 
 extern int task_notify_switch(struct thread *prev, struct thread *next);
+
+extern int task_waitpid(unsigned int pid);
 
 __END_DECLS
 
