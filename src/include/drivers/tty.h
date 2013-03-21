@@ -21,11 +21,6 @@
 #include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>
 
-/* tty ioctls */
-#define TTY_IOCTL_GETATTR  0x1
-#define TTY_IOCTL_SETATTR  0x2
-#define TTY_IOCTL_SETBAUD  0x3
-
 /* Defaults */
 
 #define TTY_TERMIOS_CC_INIT \

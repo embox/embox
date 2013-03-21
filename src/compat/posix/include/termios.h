@@ -11,6 +11,8 @@
 #ifndef TERMIOS_H_
 #define TERMIOS_H_
 
+#include <sys/ioctl.h>
+
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT          0x0001  /* signal interrupt on break */
 #define ICRNL           0x0002  /* map CR to NL on input */
@@ -112,22 +114,53 @@ typedef unsigned int    speed_t;
 typedef unsigned int    tcflag_t;
 
 struct termios {
-	tcflag_t c_iflag; /* input mode flags */
-	tcflag_t c_oflag; /* output mode flags */
-	tcflag_t c_cflag; /* control mode flags */
-	tcflag_t c_lflag; /* local mode flags */
-	cc_t c_line;      /* line discipline */
-	cc_t c_cc[NCCS];  /* control characters */
+	tcflag_t c_iflag;     /* input mode flags */
+	tcflag_t c_oflag;     /* output mode flags */
+	tcflag_t c_cflag;     /* control mode flags */
+	tcflag_t c_lflag;     /* local mode flags */
+	cc_t     c_cc[NCCS];  /* control characters */
+
+	/* TODO non-standard fields. */
+	cc_t     c_line;      /* line discipline */
+	speed_t  c_ispeed;
+	speed_t  c_ospeed;
 };
 
+// TODO part of tty_ioctl, not termios -- Eldar
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;   /* unused */
+	unsigned short ws_ypixel;   /* unused */
+};
 
-extern int tcgetattr(int fd, struct termios *termios);
-extern int tcsetattr(int fd, int optional_actions, struct termios *termios);
+extern int tcgetattr(int fd, struct termios *);
+extern int tcsetattr(int fd, int opt, const struct termios *);
 
-extern speed_t cfgetispeed(const struct termios *termios);
-extern speed_t cfgetospeed(const struct termios *termios);
+static inline speed_t cfgetispeed(const struct termios *termios) {
+	return termios->c_ispeed;
+}
+static inline speed_t cfgetospeed(const struct termios *termios) {
+	return termios->c_ospeed;
+}
 
-extern int cfsetispeed(struct termios *termios, speed_t speed);
-extern int cfsetospeed(struct termios *termios, speed_t speed);
+static inline int cfsetispeed(struct termios *termios, speed_t speed) {
+	termios->c_ispeed = speed;
+	return 0;
+}
+static inline int cfsetospeed(struct termios *termios, speed_t speed) {
+	termios->c_ospeed = speed;
+	return 0;
+}
+
+/* TODO IOCTL numbers are not included in standard <termios.h>.  -- Eldar */
+
+#define	TIOCGETA	_IOR('t', 1, struct termios)  /* get termios struct */
+#define	TIOCSETA	_IOW('t', 2, struct termios)  /* set termios struct */
+#define	TIOCSETAW	_IOW('t', 3, struct termios)  /* drain output, set */
+#define	TIOCSETAF	_IOW('t', 4, struct termios)  /* drn out, fls in, set */
+
+#define	TIOCGWINSZ	_IOR('t', 5, struct winsize)  /* get window size */
+#define	TIOCSWINSZ	_IOW('t', 6, struct winsize)  /* set window size */
 
 #endif /* TERMIOS_H_ */

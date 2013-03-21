@@ -46,10 +46,4 @@ extern void vterm_init(struct vterm *t, struct vterm_video *video, struct input_
 extern void vterm_putc(struct vterm *t, char ch);
 extern void vterm_open_indev(struct vterm *t, const char *name);
 
-/* tty ioctls */
-#define TTY_IOCTL_GETATTR  0x1
-#define TTY_IOCTL_SETATTR  0x2
-#define TTY_IOCTL_SETBAUD  0x3
-
-
 #endif /* DRIVERS_VIDEO_VTERM_H_ */

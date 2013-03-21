@@ -16,11 +16,13 @@ size_t tty_write(struct tty *tty, char *buff, size_t size) {
 }
 
 int tty_ioctl(struct tty *tty, int request, void *data) {
-	switch(request) {
-	case TTY_IOCTL_GETATTR:
+	switch (request) {
+	case TIOCGETA:
 		memcpy(&tty->termios, data, sizeof(struct termios));
 		break;
-	case TTY_IOCTL_SETATTR:
+	case TIOCSETA:
+	case TIOCSETAF:
+	case TIOCSETAW:
 		memcpy(data, &tty->termios, sizeof(struct termios));
 		break;
 	default:
