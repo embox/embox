@@ -297,7 +297,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 
-	res = irq_attach(pci_dev->irq, e1000_interrupt, 0, nic, "e1000");
+	res = irq_attach(pci_dev->irq, e1000_interrupt, IF_SHARESUP, nic, "e1000");
 	if (res < 0) {
 		return res;
 	}
