@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <netdb.h>
-#include <net/pop3.h>
+#include <net/mail/pop3.h>
 #include <netinet/in.h>
 #include <stdarg.h>
 #include <stddef.h>

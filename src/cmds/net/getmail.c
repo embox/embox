@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stddef.h>
-#include <net/pop3.h>
+#include <net/mail/pop3.h>
 #include <unistd.h>
 
 EMBOX_CMD(exec);
