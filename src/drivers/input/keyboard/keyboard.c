@@ -16,6 +16,9 @@
 #include <drivers/iodev.h>
 #include <embox/unit.h>
 #include <drivers/diag.h>
+#include <drivers/tty.h>
+#include <drivers/video_term.h>
+
 
 #include <drivers/i8042.h>
 

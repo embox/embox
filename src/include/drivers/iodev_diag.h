@@ -9,6 +9,8 @@
 #ifndef IODEV_DIAG_H_
 #define IODEV_DIAG_H_
 
+#include <drivers/video_term.h>
+
 typedef struct vchar {
 	char c;
 	char a;
