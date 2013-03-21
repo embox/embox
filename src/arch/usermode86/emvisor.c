@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <termios.h>
 #include <sys/select.h>
 #include <sys/timerfd.h>
 #include <uservisor_base.h>
@@ -46,7 +47,7 @@ static int sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
 	}
 
 	if (ret == -EAGAIN) {
-		fprintf(stderr, "Warning: downstream is full\n");
+		/*fprintf(stderr, "Warning: downstream is full\n");*/
 		ret = 0;
 	}
 
@@ -140,6 +141,46 @@ static int tmrset(int pupstream, const struct emvisor_msghdr *msg) {
 	return 0;
 }
 
+#define MAX_STDIN_RD_REQ 64
+static int act_stdin_rd_req, act_stdin_rd_req_len;
+char act_stdin_rd_buf[MAX_STDIN_RD_REQ], *act_stdin_rd_pb;
+
+static int act_stdin_rd(int pupstream) {
+	int ret;
+
+	ret = read(STDIN_FILENO, act_stdin_rd_pb, act_stdin_rd_req);
+
+	if (ret == -1) {
+		ret = -errno;
+	}
+
+	if (ret == 0 || ret == -EAGAIN) {
+		return 0;
+	}
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	act_stdin_rd_req -= ret;
+	act_stdin_rd_pb += ret;
+
+	if (act_stdin_rd_req) {
+		return 0;
+	}
+
+	if (0 > (ret = sendirq(emboxpid, ev_downstream.np_write,
+					EMVISOR_IRQ_DIAG_IN, act_stdin_rd_buf,
+					act_stdin_rd_req_len))) {
+		return ret;
+	}
+
+	fdact_del(STDIN_FILENO);
+
+	return 0;
+
+}
+
 static int upstrm_cmd(int pupstream);
 
 static int act_upstrrd(int pupstream) {
@@ -204,10 +245,14 @@ static int upstrm_cmd(int pupstream) {
 			return ret;
 		}
 
-		ret = read(0, buf, 1);
+		if (0 != (ret = fdact_add(STDIN_FILENO, act_stdin_rd))) {
+			return ret;
+		}
 
-		return sendirq(emboxpid, ev_downstream.np_write,
-				EMVISOR_IRQ_DIAG_IN, buf, ret < 0 ? 0 : ret);
+		act_stdin_rd_pb = act_stdin_rd_buf;
+		act_stdin_rd_req = act_stdin_rd_req_len = 1;
+
+		return 0;
 
 	case EMVISOR_EOF_IRQ:
 
@@ -268,13 +313,21 @@ static int emvisor(void) {
 
 int main(int argc, char **argv) {
 	int fd, flags, ret;
+	struct termios tc_old, tc_this;
 
 	if (argc != 3) {
 		return -EINVAL;
 	}
 
-	flags = fcntl(STDIN_FILENO, F_GETFL);
-	if (0 > (ret = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK))) {
+	if (0 > tcgetattr(STDIN_FILENO, &tc_old)) {
+		return -errno;
+	}
+
+	memcpy(&tc_this, &tc_old, sizeof(struct termios));
+
+	tc_this.c_lflag &= ~(ICANON | ECHO);
+
+	if (0 > tcsetattr(STDIN_FILENO, TCSANOW, &tc_this)) {
 		return -errno;
 	}
 
@@ -301,6 +354,8 @@ int main(int argc, char **argv) {
 	ev_upstream.np_read = fd;
 
 	ret = emvisor();
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &tc_old);
 
 	printf("Emvisor exit: %d\n", ret);
 	return ret;

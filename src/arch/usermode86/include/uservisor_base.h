@@ -50,6 +50,8 @@ extern int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen
 
 extern int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg);
 
+extern int emvisor_recvnbody(int fd, void *data, int dlen);
+
 extern int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen);
 
 extern int emvisor_recvn(int fd, void *data, int dlen);

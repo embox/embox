@@ -17,15 +17,13 @@
 
 EMBOX_UNIT_INIT(umclock_init);
 
-#define CLOCK_IRQ  2
+#define CLOCK_IRQ  (EMVISOR_IRQ_TMR - EMVISOR_IRQ)
+
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	unsigned long long ovrn_count;
 	int ret;
 
-	while (0 >= (ret = emvisor_recvn(UV_PRDDOWNSTRM,
-					&ovrn_count, sizeof(ovrn_count)))) {
-
-	}
+	ret = emvisor_recvnbody(UV_PRDDOWNSTRM, &ovrn_count, sizeof(ovrn_count));
 
 	/* yep, reading a bit of 8 bytes is not supported and
 	 * hopefully will not occur.

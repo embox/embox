@@ -75,14 +75,10 @@ int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg) {
 	return emvisor_recvn(fd, msg, sizeof(struct emvisor_msghdr));
 }
 
-int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
+int emvisor_recvnbody(int fd, void *data, int dlen) {
 	int ret;
 
-	if (msg->dlen > dlen) {
-		return -ERANGE;
-	}
-
-	while (0 >= (ret = emvisor_recvn(fd, data, msg->dlen))) {
+	while (0 >= (ret = emvisor_recvn(fd, data, dlen))) {
 		if (ret && ret != -EAGAIN) {
 			break;
 		}
@@ -90,6 +86,15 @@ int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int d
 	}
 
 	return ret;
+}
+
+int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen) {
+	if (msg->dlen > dlen) {
+		return -ERANGE;
+	}
+
+	return emvisor_recvnbody(fd, data, msg->dlen);
+
 }
 
 int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
@@ -102,5 +107,3 @@ int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen) {
 	return emvisor_recvbody(fd, msg, data, dlen);
 
 }
-
-
