@@ -11,7 +11,8 @@ QEmboxCursor::QEmboxCursor()
 	cursor = QImage(QSize(cursor_W, cursor_H), QImage::Format_RGB16);
 	cursor.fill(Qt::red);
 
-	dirtyRect = new unsigned char[cursor_H * cursor_W];
+	/* 4 is the upper bound for bytes per pixel */
+	dirtyRect = new unsigned char[cursor_H * cursor_W * 4];
 }
 
 QEmboxCursor::~QEmboxCursor() {
@@ -51,7 +52,7 @@ void QEmboxCursor::storeDirtyRect(struct fb_info *fb, unsigned char *begin) {
     int bpp = fb->var.bits_per_pixel / 8;
 
     for (i = 0, shift = 0; i < cursor_H; i++ , shift += fb->var.xres * bpp) {
-    	memcpy(dirtyRect + i * cursor_W, (const void *)(begin + shift), cursor_W);
+    	memcpy(dirtyRect + i * cursor_W * bpp, (const void *)(begin + shift), cursor_W * bpp);
     }
 }
 
@@ -61,7 +62,7 @@ void QEmboxCursor::flushDirtyRect(struct fb_info *fb, unsigned char *begin) {
     int bpp = fb->var.bits_per_pixel / 8;
 
     for (i = 0, shift = 0; i < cursor_H; i++, shift += fb->var.xres * bpp) {
-    	memcpy(begin + shift, (const void *)(dirtyRect + i * cursor_W), cursor_W);
+    	memcpy(begin + shift, (const void *)(dirtyRect + i * cursor_W * bpp), cursor_W * bpp);
     }
 }
 

@@ -132,7 +132,7 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     }
 
     /* Draw cursor */
-    //cursor->emboxCursorRedraw(emboxVC.fb, mouseX, mouseY);
+    cursor->emboxCursorRedraw(emboxVC.fb, mouseX, mouseY);
 }
 
 void QEmboxVCWindowSurface::resize(const QSize &size)
