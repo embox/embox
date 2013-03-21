@@ -6,4 +6,6 @@ module linenoise {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.file
+	depends embox.compat.posix.idx.isatty
+	depends embox.compat.posix.termios
 }

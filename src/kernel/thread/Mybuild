@@ -21,7 +21,17 @@ module core extends thread_mode {
 	depends embox.kernel.task.kernel_task
 }
 
-module sched {
+@DefaultImpl(sched_none)
+abstract module sched_api {
+
+}
+
+module sched_none extends sched_api {
+	source "sched_none.c"
+
+}
+
+module sched extends sched_api {
 	source "sched.c", "startq.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
@@ -36,6 +46,6 @@ module sched {
 module event {
 	source "event.c"
 
-	depends sched
+	depends sched_api
 	depends embox.mem.objalloc
 }
