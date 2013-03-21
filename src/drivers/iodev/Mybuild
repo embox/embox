@@ -3,7 +3,7 @@ package embox.driver.iodev
 module core {
 	source "iodev.c"
 
-	depends video_api
+	//depends video_api
 	depends embox.driver.tty.tty
 }
 

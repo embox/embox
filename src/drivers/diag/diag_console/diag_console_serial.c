@@ -11,6 +11,7 @@
 
 struct uart_device diag_uart;
 struct tty *diag_tty = &diag_uart.tty;
+
 static int init_diag(void) {
 	diag_init();
 	return 0;
