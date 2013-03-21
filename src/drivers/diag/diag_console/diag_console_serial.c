@@ -6,7 +6,11 @@
  */
 #include <drivers/diag.h>
 #include <drivers/iodev.h>
+#include <drivers/uart_device.h>
 
+
+struct uart_device diag_uart;
+struct tty *diag_tty = &diag_uart.tty;
 static int init_diag(void) {
 	diag_init();
 	return 0;
