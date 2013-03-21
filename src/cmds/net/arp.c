@@ -34,7 +34,7 @@ static int print_arp_entity(const struct neighbour *n,
 	if ((in_dev->dev == n->dev) || (in_dev == NULL)) {
 		macaddr_print(mac, &n->haddr[0]);
 		addr.s_addr = *(in_addr_t *)&n->paddr[0];
-		printf("%15s %6s %17s %5s %5s\n", inet_ntoa(addr),
+		printf("%-15s %-6s  %-17s %-5s %-5s\n", inet_ntoa(addr),
 			(n->dev->type == ARPG_HRD_ETHERNET) ? "ether" : "",
 			mac, (!(n->flags & NEIGHBOUR_FLAG_PERMANENT) ? "C" : "P"),
 			n->dev->name);
