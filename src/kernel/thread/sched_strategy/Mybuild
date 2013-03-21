@@ -1,6 +1,18 @@
 package embox.kernel.thread.sched_policy
 
-abstract module api { }
+@DefaultImpl(nosched)
+abstract module api {
+}
+
+module nocontext extends embox.arch.context {
+	source "nocontext.h"
+}
+
+module nosched extends api {
+	source "nosched.h"
+	depends embox.kernel.thread.current.api
+	depends nocontext
+}
 
 module simple_queue extends api {
 	source "simple_queue.c", "simple_queue.h"
@@ -9,6 +21,8 @@ module simple_queue extends api {
 
 	depends embox.kernel.thread.sched_policy.queue.api
 }
+
+
 
 module fixedtime extends api {
 	source "fixedtime_sched.c", "fixedtime_sched.h"
