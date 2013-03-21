@@ -80,6 +80,11 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 		 * any of own addresses, retransmit packet according to the routing table.
 		 */
 		if (!ip_is_local(iph->daddr, true, false)) {
+			if (!nf_valid_skb(NF_CHAIN_FORWARD, skb)) {
+				stats->rx_dropped++;
+				skb_free(skb);
+				return NET_RX_DROP;
+			}
 			if (ip_forward_packet(skb) <= 0) {
 				return NET_RX_DROP;
 			}

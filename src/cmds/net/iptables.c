@@ -29,6 +29,15 @@ static int show_rules(void) {
 	}
 	printf("\n");
 
+	printf("Chain FORWARD\n");
+	printf("target    prot source          destination\n");
+	list_foreach(r, &nf_forward_rules, lnk) {
+		printf("%-6s    all  %-15s anywhere\n",
+				r->policy == NF_POLICY_DROP ? "DROP" : "ACCEPT",
+				inet_ntoa(r->addr.in));
+	}
+	printf("\n");
+
 	printf("Chain OUTPUT\n");
 	printf("target    prot source          destination\n");
 	list_foreach(r, &nf_output_rules, lnk) {
@@ -74,6 +83,9 @@ static int exec(int argc, char **argv) {
 			oper = opt;
 			if (strcmp("INPUT", optarg) == 0) {
 				chain = NF_CHAIN_INPUT;
+			}
+			else if (strcmp("FORWARD", optarg) == 0) {
+				chain = NF_CHAIN_FORWARD;
 			}
 			else if (strcmp("OUTPUT", optarg) == 0) {
 				chain = NF_CHAIN_OUTPUT;

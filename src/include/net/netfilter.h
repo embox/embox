@@ -13,8 +13,9 @@
 #include <netinet/in.h>
 #include <net/skbuff.h>
 
-#define NF_CHAIN_INPUT  0
-#define NF_CHAIN_OUTPUT 1
+#define NF_CHAIN_INPUT   0
+#define NF_CHAIN_FORWARD 1
+#define NF_CHAIN_OUTPUT  2
 
 #define NF_POLICY_DROP   0
 #define NF_POLICY_ACCEPT 1
@@ -31,6 +32,7 @@ struct nf_rule {
 };
 
 extern struct list nf_input_rules;
+extern struct list nf_forward_rules;
 extern struct list nf_output_rules;
 
 extern int nf_add_rule(int type, const struct nf_rule *r, int overwrite);

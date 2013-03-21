@@ -21,12 +21,15 @@
 POOL_DEF(nf_rule_pool, struct nf_rule, MODOPS_NETFILTER_AMOUNT_RULES);
 
 LIST_DEF(nf_input_rules);
+LIST_DEF(nf_forward_rules);
 LIST_DEF(nf_output_rules);
 
 static struct nf_rule * nf_lookup(struct list *rules,
 		const struct nf_inet_addr *addr) {
 	int addr_is_eq;
 	struct nf_rule *r;
+
+	assert((rules != NULL) && (addr != NULL));
 
 	list_foreach(r, rules, lnk) {
 		addr_is_eq = memcmp(addr, &r->addr, sizeof addr) == 0;
@@ -43,7 +46,11 @@ int nf_add_rule(int type, const struct nf_rule *r,
 	struct nf_rule *new_r;
 	struct list *rules;
 
+	assert(((type == NF_CHAIN_INPUT) || (type == NF_CHAIN_FORWARD)
+			|| (type == NF_CHAIN_OUTPUT)) && (r != NULL));
+
 	rules = type == NF_CHAIN_INPUT ? &nf_input_rules
+			: type == NF_CHAIN_FORWARD ? &nf_forward_rules
 			: &nf_output_rules;
 
 	new_r = nf_lookup(rules, &r->addr);
@@ -74,7 +81,11 @@ int nf_del_rule(int type, const struct nf_rule *r) {
 	struct nf_rule *rule;
 	struct list *rules;
 
+	assert(((type == NF_CHAIN_INPUT) || (type == NF_CHAIN_FORWARD)
+			|| (type == NF_CHAIN_OUTPUT)) && (r != NULL));
+
 	rules = type == NF_CHAIN_INPUT ? &nf_input_rules
+			: type == NF_CHAIN_FORWARD ? &nf_forward_rules
 			: &nf_output_rules;
 
 	rule = nf_lookup(rules, &r->addr);
@@ -96,6 +107,11 @@ int nf_clear(void) {
 		pool_free(&nf_rule_pool, r);
 	}
 
+	list_foreach(r, &nf_forward_rules, lnk) {
+		list_unlink_element(r, lnk);
+		pool_free(&nf_rule_pool, r);
+	}
+
 	list_foreach(r, &nf_output_rules, lnk) {
 		list_unlink_element(r, lnk);
 		pool_free(&nf_rule_pool, r);
@@ -106,19 +122,19 @@ int nf_clear(void) {
 
 int nf_valid_skb(int type, const struct sk_buff *skb) {
 	struct list *rules;
-	struct nf_inet_addr addr;
+	struct nf_inet_addr saddr;
 	struct nf_rule *r;
 
-	if (type == NF_CHAIN_INPUT) {
-		rules = &nf_input_rules;
-		addr.in.s_addr = skb->nh.iph->saddr;
-	}
-	else {
-		rules = &nf_output_rules;
-		addr.in.s_addr = skb->nh.iph->saddr;
-	}
+	assert(((type == NF_CHAIN_INPUT) || (type == NF_CHAIN_FORWARD)
+			|| (type == NF_CHAIN_OUTPUT)) && (skb != NULL));
 
-	r = nf_lookup(rules, &addr);
+	saddr.in.s_addr = skb->nh.iph->saddr;
+	rules = type == NF_CHAIN_INPUT ? &nf_input_rules
+			: type == NF_CHAIN_FORWARD ? &nf_forward_rules
+			: &nf_output_rules;
+
+
+	r = nf_lookup(rules, &saddr);
 	if (r == NULL) {
 		return 1;
 	}

@@ -67,13 +67,17 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	return;
 }
 
-int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
+int ip_queue_send(struct sk_buff *skb) {
 	if (!nf_valid_skb(NF_CHAIN_OUTPUT, skb)) {
-		printk("ip_queue_xmit: skb %p dropped by netfilter\n", skb);
+		printk("ip_queue_send: skb %p dropped by netfilter\n", skb);
 		skb_free(skb);
 		return 0;
 	}
+	return ip_queue_xmit(skb);
+}
 
+
+int ip_queue_xmit(struct sk_buff *skb) {
 	skb->protocol = ETH_P_IP;
 	return dev_queue_send(skb);
 }
@@ -90,7 +94,7 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	skb_free(skb);
 	while ((res >= 0) && (s_tmp = skb_queue_pop(tx_buf))) {
 		s_tmp->dev = dev;
-		res = min(ip_queue_xmit(s_tmp, 0), res);
+		res = min(ip_queue_send(s_tmp), res);
 	}
 	skb_queue_free(tx_buf);
 	return res;
@@ -134,7 +138,7 @@ int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
 		}
 	}
 
-	return ip_queue_xmit(skb, 0);
+	return ip_queue_send(skb);
 }
 
 int ip_forward_packet(sk_buff_t *skb) {
@@ -209,7 +213,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		}
 	}
 
-	return ip_queue_xmit(skb, 0);
+	return ip_queue_xmit(skb);
 }
 
 void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
