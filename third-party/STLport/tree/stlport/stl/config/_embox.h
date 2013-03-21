@@ -16,4 +16,8 @@
 #define _STLP_NO_CWCHAR
 //#define _STLP_NO_LONG_DOUBLE
 
+#define _STLP_NO_VENDOR_STDLIB_L
+
+// ToDo: endianness
+
 #endif /* __STL_CONFIG_EMBOX_H_ */
