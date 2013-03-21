@@ -80,7 +80,7 @@ static void execute_printable(struct vterm *t, char ch) {
 		t->cur_x = 0;
 		break;
 	case '\t':
-		t->cur_x += VTERM_TAB_WIDTH;
+		t->cur_x += VTERM_TAB_WIDTH - t->cur_x % VTERM_TAB_WIDTH;
 		if (t->cur_x >= t->video->width) {
 			inc_line(t);
 			t->cur_x -= t->video->width;
