@@ -121,16 +121,10 @@ static int utmp_login(short ut_type, const char *ut_user) {
 	return 0;
 }
 
-struct subshell_data {
-	const struct passwd *result;
-	struct event *event;
-};
-
 static void *taskshell(void *data) {
 	const struct shell *shell;
 	const struct spwd *spwd;
-	struct subshell_data *subdata = (struct subshell_data *) data;
-	const struct passwd *result = subdata->result;
+	const struct passwd *result = data;
 
 	printf("Welcome, %s!\n", result->pw_gecos);
 
@@ -169,8 +163,6 @@ static void *taskshell(void *data) {
 
 	utmp_login(DEAD_PROCESS, "");
 
-	event_notify(subdata->event);
-
 	return NULL;
 
 }
@@ -180,8 +172,6 @@ static int login_cmd(int argc, char **argv) {
 	struct passwd pwd, *result = NULL;
 	struct spwd *spwd = NULL;
 	char namebuf[BUF_LEN], pwdbuf[BUF_LEN], passbuf[BUF_LEN];
-	struct event subshell_event;
-	struct subshell_data subdata;
 	int tid;
 
 	do {
@@ -222,18 +212,12 @@ static int login_cmd(int argc, char **argv) {
 
 		}
 
-		event_init(&subshell_event, "subshell event");
-
-		subdata.event = &subshell_event;
-		subdata.result = result;
-
-		if (0 > (tid = new_task("sh", taskshell, &subdata))) {
+		if (0 > (tid = new_task("sh", taskshell, result))) {
 			return tid;
 		}
 
-		while(0 > event_wait_ms(&subshell_event, EVENT_TIMEOUT_INFINITE)) {
+		task_waitpid(tid);
 
-		}
 	} while(1);
 
 	return 0;
