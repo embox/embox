@@ -19,6 +19,8 @@
 #include <shadow.h>
 #include <utmp.h>
 
+#include <kernel/thread/event.h>
+
 #include <embox/cmd.h>
 
 EMBOX_CMD(login_cmd);
@@ -75,6 +77,25 @@ static int passw_prompt(const char *prompt, char *buf, int buflen) {
 	return 0;
 }
 
+static struct spwd *spwd_find(const char *spwd_path, const char *name) {
+	struct spwd *spwd;
+	FILE *shdwf;
+
+	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
+		return NULL;
+	}
+
+	while (NULL != (spwd = fgetspent(shdwf))) {
+		if (0 == strcmp(spwd->sp_namp, name)) {
+			break;
+		}
+	}
+
+	fclose(shdwf);
+
+	return spwd;
+}
+
 static int utmp_login(short ut_type, const char *ut_user) {
 	struct utmp utmp;
 	struct timeval tv;
@@ -100,72 +121,16 @@ static int utmp_login(short ut_type, const char *ut_user) {
 	return 0;
 }
 
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
-	struct spwd *spwd;
-	FILE *shdwf;
+struct subshell_data {
+	const struct passwd *result;
+	struct event *event;
+};
 
-	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
-		return NULL;
-	}
-
-	while (NULL != (spwd = fgetspent(shdwf))) {
-		if (0 == strcmp(spwd->sp_namp, name)) {
-			break;
-		}
-	}
-
-	fclose(shdwf);
-
-	return spwd;
-}
-
-static int login_cmd(int argc, char **argv) {
-	int res, len;
-	struct passwd pwd, *result = NULL;
-	struct spwd *spwd = NULL;
-	char namebuf[BUF_LEN], pwdbuf[BUF_LEN], passbuf[BUF_LEN];
+static void *taskshell(void *data) {
 	const struct shell *shell;
-
-	if (0 != (res = utmp_login(LOGIN_PROCESS, ""))) {
-		/* */
-	}
-
-	while (1) {
-		printf("\n\n");
-		if (0 > (res = linenoise(LOGIN_PROMPT, namebuf, BUF_LEN, NULL, NULL))) {
-			continue;
-		}
-
-		len = strlen(namebuf);
-		if (namebuf[len - 1] == '\n') {
-			namebuf[--len] = '\0';
-		}
-
-		res = getpwnam_r(namebuf, &pwd, pwdbuf, BUF_LEN, &result);
-
-		if (result) {
-			spwd = spwd_find(SHADOW_FILE, result->pw_name);
-		}
-
-		if (result == NULL || spwd == NULL) {
-			printf("login: no such user found\n");
-			continue;
-		}
-
-
-		if (0 > (res = passw_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
-			continue;
-		}
-
-		if (0 == (res = strcmp(passbuf, spwd->sp_pwdp))) {
-			break;
-		}
-
-	}
-
-	if (res != 0) {
-		return res;
-	}
+	const struct spwd *spwd;
+	struct subshell_data *subdata = (struct subshell_data *) data;
+	const struct passwd *result = subdata->result;
 
 	printf("Welcome, %s!\n", result->pw_gecos);
 
@@ -196,16 +161,80 @@ static int login_cmd(int argc, char **argv) {
 		shell = shell_any();
 	}
 	if (NULL == shell) {
-		return -ENOENT;
+		return NULL;
 	}
 
-	if (0 != (res = utmp_login(USER_PROCESS, namebuf))) {
-		/* */
-	}
-
+	utmp_login(USER_PROCESS, result->pw_name);
 	shell_run(shell);
 
-	res = utmp_login(DEAD_PROCESS, "");
+	utmp_login(DEAD_PROCESS, "");
+
+	event_notify(subdata->event);
+
+	return NULL;
+
+}
+
+static int login_cmd(int argc, char **argv) {
+	int res, len;
+	struct passwd pwd, *result = NULL;
+	struct spwd *spwd = NULL;
+	char namebuf[BUF_LEN], pwdbuf[BUF_LEN], passbuf[BUF_LEN];
+	struct event subshell_event;
+	struct subshell_data subdata;
+	int tid;
+
+	do {
+		if (0 != (res = utmp_login(LOGIN_PROCESS, ""))) {
+			/* */
+		}
+
+		while (1) {
+			printf("\n\n");
+			if (0 > (res = linenoise(LOGIN_PROMPT, namebuf, BUF_LEN, NULL, NULL))) {
+				continue;
+			}
+
+			len = strlen(namebuf);
+			if (namebuf[len - 1] == '\n') {
+				namebuf[--len] = '\0';
+			}
+
+			res = getpwnam_r(namebuf, &pwd, pwdbuf, BUF_LEN, &result);
+
+			if (result) {
+				spwd = spwd_find(SHADOW_FILE, result->pw_name);
+			}
+
+			if (result == NULL || spwd == NULL) {
+				printf("login: no such user found\n");
+				continue;
+			}
+
+
+			if (0 > (res = passw_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
+				continue;
+			}
+
+			if (0 == (res = strcmp(passbuf, spwd->sp_pwdp))) {
+				break;
+			}
+
+		}
+
+		event_init(&subshell_event, "subshell event");
+
+		subdata.event = &subshell_event;
+		subdata.result = result;
+
+		if (0 > (tid = new_task("sh", taskshell, &subdata))) {
+			return tid;
+		}
+
+		while(0 > event_wait_ms(&subshell_event, EVENT_TIMEOUT_INFINITE)) {
+
+		}
+	} while(1);
 
 	return 0;
 }
