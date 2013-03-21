@@ -8,9 +8,8 @@
 
 #include <kernel/task.h>
 
-extern size_t task_kernel_size(void);
-
 extern size_t task_resource_sum_size(void);
+extern size_t task_size(void);
 
 extern struct task *task_init(void *task_n_res_space, size_t size);
 

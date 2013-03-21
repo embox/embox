@@ -1,9 +1,19 @@
 package embox.mem
 
 module vmem {
-	source "vmem.c", "vmem_alloc.c", "vmem_mapper.c", "vmem_unmapper.c"
+	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
 
 	depends embox.arch.mmu
-	depends embox.mem.page_api
+	depends vmem_alloc
+}
+
+module vmem_alloc {
+	option number virual_tables_count = 2000
+	option number virual_pages_count = 20
+
+	source "vmem_alloc.c"
+
 	depends embox.mem.phymem
+	depends embox.mem.page_api
+	depends embox.arch.mmu
 }

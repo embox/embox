@@ -16,6 +16,7 @@
 #include <net/if_ether.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -220,5 +221,5 @@ static int rtl8139_init(struct pci_slot_dev *pci_dev) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

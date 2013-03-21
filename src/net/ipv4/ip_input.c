@@ -23,8 +23,8 @@
 #include <net/ip_fragment.h>
 #include <net/netfilter.h>
 
-int ip_rcv(sk_buff_t *skb, net_device_t *dev,
-			packet_type_t *pt, net_device_t *orig_dev) {
+int ip_rcv(sk_buff_t *skb, struct net_device *dev,
+			packet_type_t *pt, struct net_device *orig_dev) {
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
 	const struct net_proto *net_proto_ptr = NULL;
 	net_protocol_t *p_netproto;
@@ -72,6 +72,32 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		return NET_RX_DROP;
 	}
 
+	/* Forwarding */
+	assert(skb->dev);
+	assert(inetdev_get_by_dev(skb->dev));
+	if (inetdev_get_by_dev(skb->dev)->ifa_address != 0) {
+		/**
+		 * FIXME
+		 * This check needed for BOOTP protocol
+		 * disable forwarding if interface is not set yet
+		 */
+		/**
+		 * Check the destination address, and if it doesn't match
+		 * any of own addresses, retransmit packet according to the routing table.
+		 */
+		if (!ip_is_local(iph->daddr, true, false)) {
+			if (!nf_valid_skb(NF_CHAIN_FORWARD, skb)) {
+				stats->rx_dropped++;
+				skb_free(skb);
+				return NET_RX_DROP;
+			}
+			if (ip_forward_packet(skb) <= 0) {
+				return NET_RX_DROP;
+			}
+			return NET_RX_SUCCESS;
+		}
+	}
+
 	optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
 	if (optlen > 0) {
 		/* NOTE : maybe it'd be better to copy skb here,
@@ -115,22 +141,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
-
-#if 0	/* Forwarding */
-	/* TODO check for BOOTP packet. It is special case, when */
-	if (1/*is_not_bootp(skb)*/) {
-		/**
-		 * Check the destination address, and if it doesn't match
-		 * any of own addresses, retransmit packet according to the routing table.
-		 */
-		if (!ip_is_local(iph->daddr, true, false)) {
-			if (ip_forward_packet(skb) <= 0) {
-				return NET_RX_DROP;
-			}
-			return NET_RX_SUCCESS;
-		}
-	}
-#endif
 
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;

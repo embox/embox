@@ -229,6 +229,14 @@ extern unsigned int netdev_get_flags(const struct net_device *dev);
 extern int netdev_set_flags(struct net_device *dev, unsigned flags);
 
 /**
+ * Set MAC address
+ * @param dev device
+ * @param macaddr - MAC devices address
+ */
+extern int netdev_set_macaddr(struct net_device *dev,
+		const unsigned char *macaddr);
+
+/**
  * this function call ip protocol,
  * it call rebuild mac header function,
  * if can resolve dest addr else it send arp packet,

@@ -14,11 +14,12 @@ usage() {
 	echo
 	echo "Usage:"
 	echo "    $0 <type> <device>"
+	echo
 	echo "<type> is bootloader type: grub or syslinux"
 	echo "<device> is dev file of flash."
 	echo
 	echo "Example:"
-	echo "    $0 /dev/sdb"
+	echo "    $0 grub /dev/sdb"
 }
 
 grub1_do () {

@@ -109,6 +109,8 @@ inline long sysconf(int name) {
 
 #include <unistd.h>
 
+#include <errno.h>
+
 
 
 /* inline int putenv(char *x) {
@@ -168,7 +170,7 @@ static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
 static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
                               pthread_mutex_t *__restrict __mutex){
 	DPRINT();
-	return -1;
+	return ETIMEDOUT;
 }
 static inline int pthread_cond_signal (pthread_cond_t *__cond){
 	//DPRINT();
@@ -179,7 +181,7 @@ static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    __const struct timespec *__restrict
                                    __abstime){
 	DPRINT();
-	return -1;
+	return ETIMEDOUT;
 }
 
 
@@ -588,6 +590,8 @@ static inline struct group *getgrgid(gid_t gid) {
 // this is for FILESYSTEMWATCHER
 #define pathconf(path,name) \
 	printf(">>> pathconf(%s,%s)\n",#path,#name),32
+
+static inline struct passwd *getpwnam(const char *name) { return NULL; }
 
 #endif // __QEMBOX__
 

@@ -164,15 +164,15 @@ int input_dev_register(struct input_dev *dev) {
 }
 
 int input_dev_event(struct input_dev *dev, struct input_event *ev) {
-	int ret;
-
+	int cnt;
 
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
-	ret = ring_buff_get_cnt(&dev->rbuf);
-	if (!ret || (dev->curprocessd && ret == 1)) {
+	cnt = ring_buff_get_cnt(&dev->rbuf);
+	if ((cnt == 0)
+			|| ((dev->curprocessd != NULL) && (cnt == 1))) {
 		return -ENOENT;
 	}
 
@@ -183,8 +183,6 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 }
 
 int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
-	int res;
-
 	if (dev == NULL) {
 		return -EINVAL;
 	}
@@ -195,11 +193,7 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 
 	dlist_head_init(&dev->post_link);
 
-	if ((res = irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd"))) {
-		return -EBUSY;
-	}
-
-	return 0;
+	return irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd");
 }
 
 int input_dev_close(struct input_dev *dev) {
@@ -352,11 +346,5 @@ static int input_devfs_register(struct input_dev *dev) {
 #endif
 
 static int input_devfs_init(void) {
-
-	if(softirq_install(INPUT_SOFTIRQ, indev_softirqhnd, NULL)) {
-		return -EBUSY;
-	}
-
-	return 0;
+	return softirq_install(INPUT_SOFTIRQ, indev_softirqhnd, NULL);
 }
-

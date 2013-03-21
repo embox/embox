@@ -24,6 +24,8 @@
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER, prompt_len)
 
+#define AMP_SUPPORT  OPTION_GET(NUMBER, amp_support)
+
 struct cmdtask_data {
 	int argc;
 	char buf[BUF_INP_SIZE];
@@ -79,6 +81,7 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
+#if AMP_SUPPORT
 static void *cmdtask(void *data) {
 	struct cmdtask_data *m = (struct cmdtask_data *) data;
 	char *argv[(BUF_INP_SIZE + 1) / 2], **pp, *p;
@@ -99,6 +102,33 @@ static void *cmdtask(void *data) {
 
 }
 
+static int process_amp(int argc, char *argv[]) {
+	struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
+	char *p = m->buf;
+
+	if (!m) {
+		return -ENOMEM;
+	}
+
+	m->argc = argc - 1;
+	for (int i = 0; i < argc - 1; i++) {
+		strcpy(p, argv[i]);
+		p += strlen(p) + 1;
+	}
+
+	*p = '\0';
+
+	new_task(argv[0], cmdtask, m);
+
+	return 0;
+}
+#else
+static int process_amp(int argc, char *argv[]) {
+	return -EINVAL;
+}
+#endif
+
+
 static int process(int argc, char *argv[]) {
 	if (argc == 0) {
 		return 0;
@@ -113,24 +143,7 @@ static int process(int argc, char *argv[]) {
 	}
 
 	if (!strcmp(argv[argc - 1], "&")) {
-		struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
-		char *p = m->buf;
-
-		if (!m) {
-			return -ENOMEM;
-		}
-
-		m->argc = argc - 1;
-		for (int i = 0; i < argc - 1; i++) {
-			strcpy(p, argv[i]);
-			p += strlen(p) + 1;
-		}
-
-		*p = '\0';
-
-		new_task(argv[0], cmdtask, m);
-
-		return 0;
+		return process_amp(argc, argv);
 	}
 
 	run_cmd(argc, argv);

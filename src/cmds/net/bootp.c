@@ -26,7 +26,7 @@ static void print_usage(void) {
 	printf("Usage: bootp <ifname>");
 }
 
-int bootp_client(int bootp_server_timeout, in_device_t *dev) {
+int bootp_client(int bootp_server_timeout, struct in_device *dev) {
 	int res, bootp_sock;
 	struct bootphdr bphdr;
 	struct sockaddr_in our, dst;
@@ -86,7 +86,7 @@ exit:
 
 static int exec(int argc, char **argv) {
 	int opt;
-	in_device_t *dev;
+	struct in_device *dev;
 	uint32_t bootp_server_timeout = DEFAULT_WAIT_TIME;
 
 	getopt_init();
@@ -106,7 +106,7 @@ static int exec(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if (NULL == (dev = inet_dev_find_by_name(argv[argc - 1]))) {
+	if (NULL == (dev = inetdev_get_by_name(argv[argc - 1]))) {
 		printf("can't find interface %s\n", argv[argc - 1]);
 		return -EINVAL;
 	}

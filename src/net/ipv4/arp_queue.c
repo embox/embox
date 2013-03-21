@@ -24,6 +24,7 @@
 #include <kernel/softirq_lock.h>
 #include <net/route.h>
 #include <kernel/printk.h>
+#include <net/inetdevice.h>
 
 
 EMBOX_UNIT_INIT(arp_queue_init);
@@ -131,9 +132,16 @@ free_item:
 int arp_queue_add(struct sk_buff *skb) {
 	int ret;
 	struct arp_queue_item *waiting_item;
-	in_addr_t daddr;
+	in_addr_t saddr, daddr;
+	struct in_device *in_dev;
 
 	assert(skb != NULL);
+	assert(skb->dev != NULL);
+
+	in_dev = inetdev_get_by_dev(skb->dev);
+	assert(in_dev != NULL);
+
+	saddr = in_dev->ifa_address;
 
 	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
 	if (ret != 0) {
@@ -159,7 +167,7 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	softirq_unlock();
 
-	ret = arp_send(ARP_OPER_REQUEST, ETH_P_ARP, skb->dev, daddr, skb->nh.iph->saddr, NULL,
+	ret = arp_send(ARP_OPER_REQUEST, ETH_P_ARP, skb->dev, daddr, saddr, NULL,
 			skb->dev->dev_addr, NULL);
 	if (ret != 0) {
 		return ret;

@@ -57,7 +57,7 @@ static void *high_run(void *arg) {
 }
 
 static int setup(void) {
-	thread_priority_t l = 10, m = 20, h = 30;
+	thread_priority_t l = 200, m = 210, h = 220;
 
 	rwlock_init(&r);
 	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));

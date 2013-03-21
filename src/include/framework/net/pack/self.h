@@ -20,9 +20,9 @@
  */
 #define EMBOX_NET_PACK(_type, _func, _init)  	\
 	int _func(sk_buff_t *skb, 					\
-			  net_device_t *dev, 				\
+			  struct net_device *dev, 				\
 			  packet_type_t *pt,				\
-			  net_device_t *orig_dev);			\
+			  struct net_device *orig_dev);			\
 	static int _init(void); 					\
 	static packet_type_t _##_type = { 			\
 			.type = _type,						\

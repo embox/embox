@@ -242,6 +242,8 @@ extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
 
 extern unsigned int thread_get_affinity(struct thread *thread);
 
+extern void *thread_stack_malloc(struct thread *thread, size_t size);
+
 /**
  * Returns running time of the thread. To get better precision should be
  * called inside sched_lock().

@@ -48,6 +48,7 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	/* TODO really port type is inet->sport_type, but this not matter, yet */
 	inet->sport = htons(ip_port_get_free(protocol)); /* inet->sport at network bytes order  */
 
+	inet->rcv_saddr = 0;
 	inet->daddr = 0; // TODO it's required?
 	inet->dport = 0;
 
@@ -365,7 +366,7 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 
 static int inet_setsockopt(struct socket *sock, int level, int optname,
 		char *optval, int optlen) {
-	net_device_t *dev;
+	struct net_device *dev;
 	struct socket_opt_state *ops;
 	struct sock *sk;
 	int res;

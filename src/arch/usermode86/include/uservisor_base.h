@@ -20,14 +20,14 @@ typedef pid_t host_pid_t;
 #endif
 
 enum emvisor_msg {
-	EMVISOR_DIAG_OUT = 0,
+	EMVISOR_BUDDY_PID,
+	EMVISOR_DIAG_OUT,
 	EMVISOR_DIAG_IN,
 	EMVISOR_TIMER_SET,
 	EMVISOR_EOF_IRQ,
 	EMVISOR_IRQ,
 	EMVISOR_IRQ_DIAG_IN,
 	EMVISOR_IRQ_TMR,
-	EMVISOR_O
 };
 
 struct emvisor_msghdr {
@@ -50,9 +50,11 @@ extern int emvisor_recv(int fd, struct emvisor_msghdr *msg, void *data, int dlen
 
 extern int emvisor_recvmsg(int fd, struct emvisor_msghdr *msg);
 
+extern int emvisor_recvnbody(int fd, void *data, int dlen);
+
 extern int emvisor_recvbody(int fd, const struct emvisor_msghdr *msg, void *data, int dlen);
 
-extern int emvisor_recvnbody(int fd, void *data, int dlen);
+extern int emvisor_recvn(int fd, void *data, int dlen);
 
 #endif /* USERVISOR_BASE_H_ */
 

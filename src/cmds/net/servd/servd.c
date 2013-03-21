@@ -31,7 +31,7 @@ static void welcome_message(void) {
 	struct in_addr local_addr;
 	struct in_device *in_dev;
 
-	in_dev = inet_dev_find_by_name("eth0");
+	in_dev = inetdev_get_by_name("eth0");
 	local_addr.s_addr = in_dev ? in_dev->ifa_address : 0;
 	printf("Welcome to http://%s\n", inet_ntoa(local_addr));
 }

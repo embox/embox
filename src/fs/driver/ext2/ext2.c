@@ -617,7 +617,219 @@ static int ext2fs_delete(struct node *node) {
 	return 0;
 }
 
+static void ext2_dflt_sb(struct ext2sb *sb,
+							size_t dev_size, float dev_factor) {
+	int i;
+
+	sb->s_first_data_block = 1;  /* First Data Block */
+	sb->s_blocks_per_group = 8192;  /* # Blocks per group */
+	sb->s_frags_per_group = 8192;   /* # Fragments per group */
+	sb->s_wtime = 1363591930;             /* Write time */
+	sb->s_mnt_count = 2;            /* Mount count */
+	sb->s_max_mnt_count = 65535;        /* Maximal mount count */
+	sb->s_magic = 61267;                /* Magic signature */
+	sb->s_state = 1;                /* File system state */
+	sb->s_errors = 1;               /* Behaviour when detecting errors */
+	sb->s_lastcheck = 1363591830;         /* time of last check */
+	sb->s_rev_level = 1;         /* Revision level */
+	sb->s_first_ino = 11;         /* First non-reserved inode */
+	sb->s_inode_size = 128;           /* size of inode structure */
+	sb->s_block_group_nr = 0;       /* block group # of this superblock */
+	sb->s_feature_compat = 56;    /* compatible feature set */
+	sb->s_feature_incompat = 2;  /* incompatible feature set */
+	sb->s_feature_ro_compat = 1; /* readonly-compatible feature set */
+	sb->s_uuid[0] = 153;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[1] = 36;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[2] = 151;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[3] = 255;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[4] = 11;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[5] = 115;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[6] = 66;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[7] = 126;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[8] = 147;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 28;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 214;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 168;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 199;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 53;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 165;             /* 128-bit uuid for volume  16*/
+	sb->s_uuid[0] = 3;             /* 128-bit uuid for volume  16*/
+	strcpy((char *) sb->s_volume_name, "ext2");      /* volume name  16 */
+
+	sb->s_blocks_count = dev_size / dev_factor;
+	sb->s_inodes_count = sb->s_blocks_count / 4;      /* Inodes count */
+	sb->s_r_blocks_count = sb->s_blocks_count / 20;    /* Reserved blocks count */
+	sb->s_inodes_per_group =  /* # Inodes per group */
+		(sb->s_inodes_count > (sb->s_blocks_per_group / 4) ?
+				1900 : sb->s_inodes_count);
+	sb->s_free_inodes_count = sb->s_inodes_count - 10; /* Free inodes count */
+	sb->s_padding1 = sb->s_inodes_count / 65;
+	i = sb->s_padding1 + 5 + (sb->s_inodes_count * sb->s_inode_size) / SBSIZE;
+	i += 2;/* blocks for root*/
+	sb->s_free_blocks_count = sb->s_blocks_count - i; /* Free blocks count */
+}
+
+static void ext2_dflt_gd(struct ext2sb *sb, struct ext2_gd *gd) {
+
+	gd->block_bitmap = sb->s_padding1 + 3; /* Blocks bitmap block */
+	gd->inode_bitmap = gd->block_bitmap + 1;     /* Inodes bitmap block */
+	gd->inode_table = gd->inode_bitmap + 1; /* Inodes table block */
+	gd->free_blocks_count = sb->s_free_blocks_count;   /* Free blocks count */
+	gd->free_inodes_count = sb->s_free_inodes_count;   /* Free inodes count */
+	gd->used_dirs_count = 1;     /* Directories count */
+	gd->pad = 0;
+}
+
+static void ext2_dflt_root_inode(struct ext2fs_dinode *di) {
+
+	di->i_mode = 040755;
+	di->i_uid = di->i_gid = 1000;
+	di->i_size = 1024;
+	di->i_atime = di->i_ctime = di->i_mtime = 1683851637;
+	di->i_dtime = 0;
+	di->i_links_count = 2;
+	di->i_blocks = 2;
+}
+
+static void ext2_dflt_root_entry(char *point) {
+	struct	ext2fs_direct *dir;
+
+	dir = (struct ext2fs_direct *) point;
+	dir->e2d_ino = 2;
+	dir->e2d_reclen = 12;
+	dir->e2d_namlen = 1;
+	dir->e2d_type = 2;
+	strcpy(dir->e2d_name, ".");
+
+	dir = (struct ext2fs_direct *) (point + dir->e2d_reclen);
+	dir->e2d_ino = 2;
+	dir->e2d_reclen = 1012;
+	dir->e2d_namlen = 2;
+	dir->e2d_type = 2;
+	strcpy(dir->e2d_name, "..");
+}
+
+static int ext2_mark_bitmap(void *bdev, struct ext2sb *sb,
+							struct ext2_gd *gd, char *buff, float dev_factor) {
+	char *point;
+	int i, last, mask;
+	int sector;
+
+	i = sb->s_blocks_count - sb->s_free_blocks_count;
+
+	sector = gd->block_bitmap * dev_factor;
+	memset(buff, 0xFF, SBSIZE);
+	point = buff;
+
+	mask = i % 8;
+	i /= 8;
+	point += i;
+	last = gd->free_blocks_count / 8 + i;
+	if(mask) {
+		*point++ = 0xff >> (8 - mask);
+		last--;
+	}
+	for( ; i < last && i < SBSIZE; i++) {
+		*point++ = 0;
+	}
+	if(i < SBSIZE) {
+		mask = gd->free_blocks_count % 8;
+		*point = 0xff << (8 - mask);
+	}
+	if (0 > block_dev_write(bdev, buff, SBSIZE, sector)) {
+		return -1;
+	}
+
+	sector = gd->inode_bitmap * dev_factor;
+	memset(buff, 0xFF, SBSIZE);
+	/* preset special inodes */
+	*(buff + 1) = 0x03;
+
+	point = buff + 2;
+	i = 0;
+	last = gd->free_inodes_count / 8;
+	for( ; i < last && i < SBSIZE; i++) {
+		*point++ = 0;
+	}
+	if(i < SBSIZE) {
+		/* preset special inodes contains 6 preset tables*/
+		mask = (gd->free_inodes_count - 6) % 8;
+		*point = 0xff << mask;
+	}
+
+	if (0 > block_dev_write(bdev, buff, SBSIZE, sector)) {
+		return -1;
+	}
+
+	return 0;
+}
+
+
 static int ext2fs_format(void *dev) {
+	int rc;
+	struct node *dev_node;
+	struct nas *dev_nas;
+	struct node_fi *dev_fi;
+	struct block_dev *bdev;
+	struct ext2sb sb;
+	struct ext2_gd gd;
+	struct ext2fs_dinode *di;
+	char buff[SBSIZE];
+	size_t dev_size, dev_bsize;
+	int sector;
+	float dev_factor;
+
+	dev_node = dev;
+	dev_nas = dev_node->nas;
+
+	if (NULL == (dev_fi = dev_nas->fi)) {
+		rc = ENODEV;
+		return -rc;
+	}
+
+	memset(&sb, 0, sizeof(struct ext2sb));
+	memset(&gd, 0, sizeof(struct ext2_gd));
+
+	bdev = (struct block_dev *) dev_fi->privdata;
+	dev_size = block_dev_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
+	dev_bsize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	dev_factor = SBSIZE / dev_bsize;
+
+	ext2_dflt_sb(&sb, dev_size, dev_factor);
+	ext2_dflt_gd(&sb, &gd);
+
+	sector = 1 * dev_factor;
+	if (0 > block_dev_write(bdev, (char *) &sb, SBSIZE, sector)) {
+		return -1;
+	}
+
+	memset(buff, 0, SBSIZE);
+	memcpy(buff, &gd, sizeof(struct ext2_gd));
+	sector = START_BLOCK * dev_factor;
+	if (0 > block_dev_write(bdev, buff, SBSIZE, sector)) {
+		return -1;
+	}
+
+	ext2_mark_bitmap(bdev, &sb, &gd, buff, dev_factor);
+
+	/* set root inode */
+	memset(buff, 0, SBSIZE);
+	di = (struct ext2fs_dinode *) (buff + sb.s_inode_size);
+	ext2_dflt_root_inode(di);
+	di->i_block[0] = sb.s_blocks_count - sb.s_free_blocks_count - 2;
+	sector = gd.inode_table * dev_factor;
+	if (0 > block_dev_write(bdev, buff, SBSIZE, sector)) {
+		return -1;
+	}
+
+	/* write root entry */
+	sector = di->i_block[0] * dev_factor;
+	memset(buff, 0, SBSIZE);
+	ext2_dflt_root_entry(buff);
+
+	if (0 > block_dev_write(bdev, buff, SBSIZE, sector)) {
+		return -1;
+	}
 
 	return 0;
 }
@@ -1205,7 +1417,7 @@ int ext2_write_gdblock(struct nas *nas) {
 		buff = (char *) &fsi->e2fs_gd[i * gdpb];
 
 		if (1 != ext2_write_sector(nas, buff, 1,
-						fsi->e2sb.s_first_data_block + 1 + i)) {
+						fsi->e2sb.s_first_data_block + 1 + i / gdpb)) {
 			return EIO;
 		}
 	}

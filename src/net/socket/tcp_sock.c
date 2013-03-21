@@ -107,8 +107,8 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 				ret = -EHOSTUNREACH;
 				break;
 			}
-			assert(in_dev_get(rte->dev) != NULL);
-			sock.inet_sk->saddr = in_dev_get(rte->dev)->ifa_address; // TODO remove this
+			assert(inetdev_get_by_dev(rte->dev) != NULL);
+			sock.inet_sk->saddr = inetdev_get_by_dev(rte->dev)->ifa_address; // TODO remove this
 			sock.inet_sk->daddr = addr_in->sin_addr.s_addr;
 			sock.inet_sk->dport = addr_in->sin_port;
 			/* make skb with options */

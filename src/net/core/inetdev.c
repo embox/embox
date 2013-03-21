@@ -5,106 +5,173 @@
  *
  * @date 18.07.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
+
+#include <net/inetdevice.h>
+#include <net/netdevice.h>
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
-
-#include <util/array.h>
-#include <util/member.h>
 #include <mem/misc/pool.h>
-
-#include <net/inetdevice.h>
-#include <linux/in.h>
 #include <framework/mod/options.h>
+#include <util/list.h>
 
-#include <linux/list.h>
+#define MODOPS_AMOUNT_INTERFACE OPTION_GET(NUMBER, amount_interface)
 
+POOL_DEF(inetdev_pool, struct in_device, MODOPS_AMOUNT_INTERFACE);
+static LIST_DEF(inetdev_list);
 
-struct callback_info {
-	struct list_head lnk;
-	unsigned short type;
-	devinet_callback_t func;
-};
+int inetdev_register_dev(struct net_device *dev) {
+	int ret;
+	struct in_device *in_dev;
 
-struct inetdev_info {
-	struct list_head lnk;
-	struct in_device in_dev;
-	struct list_head cb_info_list;
-};
-
-POOL_DEF(indev_info_pool, struct inetdev_info, OPTION_GET(NUMBER,net_interfaces_quantity));
-POOL_DEF(callback_info_pool, struct callback_info, OPTION_GET(NUMBER,net_callback_quantity));
-static LIST_HEAD(indev_info_list);
-
-static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
-	struct inetdev_info *indev_info;
-	struct list_head *tmp;
-
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
-		if (&indev_info->in_dev == in_dev) {
-			return indev_info;
-		}
+	if (dev == NULL) {
+		return -EINVAL;
 	}
 
-	return NULL;
-}
-
-static int alloc_callback(struct in_device *in_dev, unsigned int type,
-				devinet_callback_t callback) {
-	struct inetdev_info *indev_info;
-	struct callback_info *cb_info;
-
-	assert(in_dev != NULL);
-	assert(callback != NULL);
-
-	indev_info = find_indev_info_entry(in_dev);
-	if (indev_info == NULL) {
-		return -ENOENT;
-	}
-
-	cb_info = (struct callback_info *)pool_alloc(&callback_info_pool);
-	if (cb_info == NULL) {
+	in_dev = (struct in_device *)pool_alloc(&inetdev_pool);
+	if (in_dev == NULL) {
 		return -ENOMEM;
 	}
 
-	cb_info->type = type;
-	cb_info->func = callback;
+	ret = netdev_register(dev);
+	if (ret != 0) {
+		pool_free(&inetdev_pool, in_dev);
+		return ret;
+	}
 
-	list_add_tail(&cb_info->lnk, &indev_info->cb_info_list);
+	memset(in_dev, 0, sizeof *in_dev);
+	list_link_init(&in_dev->lnk);
+	in_dev->dev = dev;
 
-	return ENOERR;
+	list_add_last_element(in_dev, &inetdev_list, lnk);
+
+	return 0;
 }
 
-struct in_device * in_dev_get(struct net_device *dev) {
-	assert(dev != NULL);
-	return inet_dev_find_by_name(dev->name);
+int inetdev_unregister_dev(struct net_device *dev) {
+	int ret;
+	struct in_device *in_dev;
+
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	in_dev = inetdev_get_by_dev(dev);
+	if (in_dev == NULL) {
+		return -ESRCH;
+	}
+
+	ret = netdev_unregister(dev);
+	if (ret != 0) {
+		pool_free(&inetdev_pool, in_dev);
+		return ret;
+	}
+
+	list_unlink_element(in_dev, lnk);
+	pool_free(&inetdev_pool, in_dev);
+
+	return 0;
 }
 
-int inet_dev_listen(struct in_device *in_dev, unsigned short type,
-		devinet_callback_t callback) {
-	assert(in_dev != NULL);
-	assert(callback != NULL);
-	return alloc_callback(in_dev, type, callback);
-}
+struct in_device * inetdev_get_by_name(const char *name) {
+	struct in_device *in_dev;
 
-struct net_device * ip_dev_find(in_addr_t addr) {
-	struct inetdev_info *indev_info;
-	struct list_head *tmp;
+	if (name == NULL) {
+		return NULL;
+	}
 
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
-		if (indev_info->in_dev.ifa_address == addr) {
-			return indev_info->in_dev.dev;
+	list_foreach(in_dev, &inetdev_list, lnk) {
+		if (strcmp(name, &in_dev->dev->name[0]) == 0) {
+			return in_dev;
 		}
 	}
 
 	return NULL;
 }
 
+struct in_device * inetdev_get_by_dev(struct net_device *dev) {
+	if (dev == NULL) {
+		return NULL;
+	}
+
+	return inetdev_get_by_name(&dev->name[0]);
+}
+
+struct in_device * inetdev_get_by_addr(in_addr_t addr) {
+	struct in_device *in_dev;
+
+	list_foreach(in_dev, &inetdev_list, lnk) {
+		if (in_dev->ifa_address == addr) {
+			return in_dev;
+		}
+	}
+
+	return NULL;
+}
+
+struct in_device * inetdev_get_loopback_dev(void) {
+	return inetdev_get_by_name("lo");
+}
+
+int inetdev_set_addr(struct in_device *in_dev, in_addr_t addr) {
+	if (in_dev == NULL) {
+		return -EINVAL;
+	}
+
+	in_dev->ifa_address = addr;
+
+	return 0;
+}
+
+int inetdev_set_mask(struct in_device *in_dev, in_addr_t mask) {
+	if (in_dev == NULL) {
+		return -EINVAL;
+	}
+
+	in_dev->ifa_mask = mask;
+	in_dev->ifa_broadcast = in_dev->ifa_address | ~in_dev->ifa_mask;
+
+	return 0;
+}
+
+int inetdev_set_bcast(struct in_device *in_dev, in_addr_t bcast) {
+	if (in_dev == NULL) {
+		return -EINVAL;
+	}
+
+	in_dev->ifa_broadcast = bcast;
+
+	return 0;
+}
+
+in_addr_t inetdev_get_addr(struct in_device *in_dev) {
+	return in_dev != NULL ? in_dev->ifa_address : 0;
+}
+
+struct in_device * inetdev_get_first(void) {
+	return list_first_element(&inetdev_list, struct in_device, lnk);
+}
+
+struct in_device * inetdev_get_next(struct in_device *in_dev) {
+	if (in_dev == NULL) {
+		return NULL;
+	}
+
+	if (in_dev == list_last_element(&inetdev_list,
+				struct in_device, lnk)) {
+		return NULL;
+	}
+
+	return list_element(in_dev->lnk.next, struct in_device, lnk);
+}
+
+
+
+#include <arpa/inet.h>
+#include <linux/in.h>
 bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
-	struct inetdev_info *indev_info;
 	struct in_device *in_dev;
 	in_addr_t indev_anycast, indev_subnet, indev_broadcast;
 
@@ -131,12 +198,11 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 		return true;
 	}
 
-	list_for_each_entry(indev_info, &indev_info_list, lnk) {
-		if (indev_info->in_dev.ifa_address == addr) {
+	list_foreach(in_dev, &inetdev_list, lnk) {
+		if (in_dev->ifa_address == addr) {
 			return true;
 		}
 		if (check_broadcast) {
-			in_dev = &indev_info->in_dev;
 			indev_anycast = in_dev->ifa_anycast; /* It MUST be init to INADDR_BROADCAST by default */
 			indev_subnet = in_dev->ifa_address & in_dev->ifa_mask; /* Obsoleted broadcast, not used any more */
 			indev_broadcast = in_dev->ifa_broadcast; /* If someone inited it to something strange */
@@ -147,185 +213,4 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 	}
 
 	return false;
-}
-
-struct in_device * inet_dev_find_by_name(const char *if_name) {
-	struct inetdev_info *indev_info;
-	struct list_head *tmp;
-
-	assert(if_name != NULL);
-
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
-		assert(indev_info->in_dev.dev != NULL);
-		if (strncmp(if_name, indev_info->in_dev.dev->name,
-				ARRAY_SIZE(indev_info->in_dev.dev->name)) == 0) {
-			return &indev_info->in_dev;
-		}
-	}
-
-	return NULL;
-}
-
-struct net_device * inet_get_loopback_dev(void) {
-	assert(inet_dev_find_by_name("lo") != NULL);
-	return inet_dev_find_by_name("lo")->dev;
-}
-
-int inet_dev_set_interface(const char *if_name, in_addr_t ipaddr,
-		in_addr_t mask, const unsigned char *macaddr) {
-	int res;
-	struct inetdev_info *indev_info;
-	struct list_head *tmp;
-
-	assert(if_name != NULL);
-	assert(macaddr != NULL);
-
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
-		if (strncmp(if_name, indev_info->in_dev.dev->name,
-				ARRAY_SIZE(indev_info->in_dev.dev->name)) == 0) {
-			res = inet_dev_set_ipaddr(&indev_info->in_dev, ipaddr);
-			if (res < 0) {
-				return res;
-			}
-			res = inet_dev_set_mask(&indev_info->in_dev, mask);
-			if (res < 0) {
-				return res;
-			}
-			res = inet_dev_set_macaddr(&indev_info->in_dev, macaddr);
-			if (res < 0) {
-				return res;
-			}
-			return ENOERR;
-		}
-	}
-
-	return -ENOENT;
-}
-
-int inet_dev_set_ipaddr(struct in_device *in_dev, in_addr_t ipaddr) {
-	assert(in_dev != NULL);
-
-	in_dev->ifa_address = ipaddr;
-
-	return ENOERR;
-}
-
-int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
-	assert(in_dev != NULL);
-
-	in_dev->ifa_mask = mask;
-	in_dev->ifa_broadcast = in_dev->ifa_address | ~in_dev->ifa_mask;
-
-	return ENOERR;
-}
-
-int inet_dev_set_bcast(struct in_device *in_dev, in_addr_t bcast) {
-	assert(in_dev != NULL);
-
-	in_dev->ifa_broadcast = bcast;
-
-	return ENOERR;
-}
-
-int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
-	struct net_device *dev;
-
-	assert(in_dev != NULL);
-	assert(macaddr != NULL);
-
-	dev = in_dev->dev;
-	assert(dev != NULL);
-
-	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
-		/* driver doesn't support setting mac address */
-		return -ENOSUPP;
-	}
-
-	return dev->netdev_ops->ndo_set_mac_address(dev, (void *)macaddr);
-}
-
-in_addr_t inet_dev_get_ipaddr(struct in_device *in_dev) {
-	assert(in_dev != NULL);
-	return in_dev->ifa_address;
-}
-
-int inet_dev_add_dev(struct net_device *dev) {
-	int res;
-	struct inetdev_info *indev_info;
-
-	assert(dev != NULL);
-
-	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
-	if (indev_info == NULL) {
-		return -ENOMEM;
-	}
-
-	res = netdev_open(dev);
-	if (res < 0) {
-		pool_free(&indev_info_pool, indev_info);
-		return res;
-	}
-
-	indev_info->in_dev.dev = dev;
-	INIT_LIST_HEAD(&indev_info->cb_info_list);
-	list_add_tail(&indev_info->lnk, &indev_info_list);
-
-	return ENOERR;
-}
-
-int inet_dev_remove_dev(struct in_device *in_dev) {
-	int res;
-	struct callback_info *cb_info;
-	struct inetdev_info *indev_info;
-	struct list_head *tmp, *safe;
-
-	assert(in_dev != NULL);
-
-	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
-	list_del(&indev_info->lnk);
-
-	assert(indev_info->in_dev.dev != NULL);
-
-	res = netdev_close(indev_info->in_dev.dev);
-	if (res < 0) {
-		list_add_tail(&indev_info->lnk, &indev_info_list);
-		return res;
-	}
-
-	list_for_each_safe(tmp, safe, &indev_info->cb_info_list) {
-		cb_info = member_cast_out(tmp, struct callback_info, lnk);
-		list_del(&cb_info->lnk);
-		pool_free(&callback_info_pool, cb_info);
-	}
-
-	pool_free(&indev_info_pool, indev_info);
-
-	return ENOERR;
-}
-
-
-struct in_device * inet_dev_get_first_used(void) {
-	struct inetdev_info *indev_info;
-
-	if (list_empty(&indev_info_list)) {
-		return NULL;
-	}
-
-	indev_info = member_cast_out(indev_info_list.next, struct inetdev_info, lnk);
-
-	return &indev_info->in_dev;
-}
-
-struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
-	struct inetdev_info *indev_info;
-
-	assert(in_dev != NULL);
-
-	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
-
-	indev_info = member_cast_out(indev_info->lnk.next, struct inetdev_info, lnk);
-
-	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
 }

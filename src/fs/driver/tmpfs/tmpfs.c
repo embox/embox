@@ -108,7 +108,7 @@ static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	tmpfs_file_info_t *fi;
 
-	nas = node->nas;
+	nas = desc->node->nas;
 	fi = (tmpfs_file_info_t *)nas->fi->privdata;
 
 	fi->pointer = desc->cursor;

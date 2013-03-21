@@ -14,6 +14,12 @@
 
 EMBOX_UNIT_INIT(ps_mouse_init);
 
+#define MSTAT_BUTMASK 0x07
+#define MSTAT_XSIGN   0x10
+#define MSTAT_YSIGN   0x20
+#define MSTAT_XOVER   0x40
+#define MSTAT_YOVER   0x80
+
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
 	char byteseq_state;
@@ -55,12 +61,13 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 		ret = -EAGAIN;
 		break;
 	case 1:
-		ev->value = data;
+		ev->value = (ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data;
 		ret = -EAGAIN;
 		break;
 	case 2:
-		ev->value <<= 8;
-	       	ev->value |= data;
+		ev->value <<= 16;
+	       	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+		ev->type  &= MSTAT_BUTMASK;
 		ret = 0;
 		break;
 	}

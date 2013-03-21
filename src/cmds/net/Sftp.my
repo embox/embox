@@ -20,6 +20,6 @@ package embox.cmd.net
 	''')
 module sftp {
 	source "sftp.c"
-	depends embox.cmd.ftp
+	depends embox.cmd.net.ftp
 	depends embox.framework.LibFramework
 }

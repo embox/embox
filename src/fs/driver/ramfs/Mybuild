@@ -1,8 +1,6 @@
 package embox.fs.driver
 
 module ramfs {
-	@InitFS source "mnt"
-
 	source "ramfs.c"
 	option number inode_quantity=64
 	option number ramfs_descriptor_quantity=4

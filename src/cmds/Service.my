@@ -17,6 +17,7 @@ package embox.cmd
 module service {
 	source "service.c"
 
+	depends embox.cmd.net.servd
 	depends embox.util.Array
 	depends embox.cmd.sh.shell
 	depends embox.lib.LibC

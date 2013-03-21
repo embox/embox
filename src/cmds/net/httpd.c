@@ -380,7 +380,7 @@ process_again:
 static void welcome_message(void){
 	/* FIXME cheat to get local ip */
 	struct in_addr localAddr;
-	struct in_device *in_dev = inet_dev_find_by_name("eth0");
+	struct in_device *in_dev = inetdev_get_by_name("eth0");
 	localAddr.s_addr = in_dev->ifa_address;
 	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
 }

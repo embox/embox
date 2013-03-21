@@ -273,8 +273,6 @@ static int hd_identify(hd_t *hd) {
 			return -EIO;
 		}
 	}
-	/* size in Mb */
-	hd->size = hd->blks / (1024 * 1024 / SECTOR_SIZE);
 
 	return 0;
 }

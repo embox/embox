@@ -41,7 +41,7 @@ static void *high_run(void *arg) {
 }
 
 static int setup(void) {
-	thread_priority_t l = 10, h = 20;
+	thread_priority_t l = 200, h = 210;
 
 	barrier_init(&b, 2);
 	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));

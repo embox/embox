@@ -47,7 +47,8 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
-	const int task_sz = task_resource_sum_size() + sizeof(struct task);
+	const int task_sz = task_size();
+	void *addr;
 
 	sched_lock();
 	{
@@ -75,7 +76,9 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 
 		/* alloc space for task & resources on top of created thread's stack */
 
-		if ((self_task = task_init(thd->stack, thd->stack_sz)) == NULL) {
+		addr = thread_stack_malloc(thd, task_sz);
+
+		if ((self_task = task_init(addr, task_sz)) == NULL) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
@@ -84,9 +87,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		self_task->per_cpu = 0;
 
 		self_task->priority = task_self()->priority;
-
-		thd->stack += task_sz;
-		thd->stack_sz -= task_sz;
 
 		/* init new task */
 

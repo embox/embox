@@ -25,16 +25,20 @@ static char *pipeopen(char *argv, int pipe, int flags) {
 }
 
 void _start2(int argc, char *argv) {
+	host_pid_t thispid = host_getpid();
 
 	assert(argc == 1 + 2);
 
 	argv += strlen(argv) + 1;
 
-	pipeopen(argv, UV_PRDDOWNSTRM, HOST_O_RDONLY|HOST_O_NONBLOCK);
-	argv = pipeopen(argv, UV_PWRDOWNSTRM, HOST_O_WRONLY);
+	argv = pipeopen(argv, UV_PRDDOWNSTRM, HOST_O_RDWR|HOST_O_NONBLOCK);
+	host_dup2(UV_PRDDOWNSTRM, UV_PWRDOWNSTRM);
 	argv = pipeopen(argv, UV_PWRUPSTRM, HOST_O_WRONLY);
 
 	host_signal(UV_IRQ, ipl_hnd);
+
+	emvisor_send(UV_PWRUPSTRM, EMVISOR_BUDDY_PID, &thispid,
+			sizeof(thispid));
 
 	kernel_start();
 }

@@ -7,6 +7,7 @@
  * @author Anton Bondarev
  */
 
+#include <stdint.h>
 #include <embox/unit.h>
 #include <asm/mipsregs.h>
 #include <asm/entry.h>

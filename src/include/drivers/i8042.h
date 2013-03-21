@@ -1,12 +1,13 @@
 /**
  * @file
+ * @brief
  *
- * @date Feb 14, 2013
- * @author: Anton Bondarev
+ * @date 14.02.13
+ * @author Anton Bondarev
  */
 
-#ifndef I8042_H_
-#define I8042_H_
+#ifndef DRIVERS_I8042_H_
+#define DRIVERS_I8042_H_
 
 #include <asm/io.h>
 
@@ -21,6 +22,7 @@
 
 #define  I8042_MODE_XLATE      0x40
 #define  I8042_MODE_DISABLE    0x10
+#define  I8042_MODE_INTERRUPT  0x01
 
 
 /* Status */
@@ -32,13 +34,15 @@
 #define I8042_STS_IBF       0x02    /* Input (to kbd) buffer full */
 #define I8042_STS_OBF       0x01    /* Output (from kbd) buffer full */
 
-#define keyboard_wait_read(status)  do {} while (0 == ((status = inb(I8042_STS_PORT)) & 0x01))
-#define keyboard_wait_write(status) do {} while (0 != ((status = inb(I8042_STS_PORT)) & 0x02))
+#define keyboard_wait_read(status) \
+	do {} while (0 == ((status = inb(I8042_STS_PORT)) & I8042_STS_OBF))
+#define keyboard_wait_write(status) \
+	do {} while (0 != ((status = inb(I8042_STS_PORT)) & I8042_STS_IBF))
 #define kmc_wait_ibe()	while (inb(I8042_STS_PORT) & I8042_STS_IBF)
 
 static inline int keyboard_havechar(void) {
 	unsigned char c = inb(I8042_STS_PORT);
-	return (c == 0xFF) ? 0 : c & 1;
+	return (c == 0xFF) ? 0 : c & I8042_STS_OBF;
 }
 
-#endif /* I8042_H_ */
+#endif /* DRIVERS_I8042_H_ */

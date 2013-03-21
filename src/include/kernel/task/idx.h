@@ -201,7 +201,11 @@ static inline struct task_idx_table *task_self_idx_table(void) {
 static inline struct idx_desc *task_self_idx_get(int fd) {
 	struct task_idx_table *res = task_self_idx_table();
 	assert(res);
-	assert(task_valid_fd(fd));
+
+	if (! task_valid_fd(fd)) {
+		return NULL;
+	}
+
 	return task_idx_table_get(task_self_idx_table(), fd);
 }
 

@@ -332,7 +332,6 @@ typedef struct hd {
 	 * Geometry
 	 */
 	unsigned int blks;                    /* Number of blocks on drive */
-	unsigned int size;                    /* Size in MB */
 
 	unsigned int cyls;                    /* Number of cylinders */
 	unsigned int heads;                   /* Number of heads */

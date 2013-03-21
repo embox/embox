@@ -27,12 +27,6 @@ extern char _text_len, _rodata_len, _bss_len, _data_len, _reserve_len, _stack_le
 
 static inline int vmem_map_kernel(mmu_ctx_t ctx);
 
-static inline int vmem_map_on_itself(mmu_ctx_t ctx, void *addr, size_t size, vmem_page_flags_t flags) {
-	/* Considering that address was aligned, but size may be not */
-	size = (size + MMU_PAGE_MASK) & (~MMU_PAGE_MASK);
-	return vmem_map_region(ctx, (mmu_paddr_t) addr, (mmu_vaddr_t) addr, (size_t) size, flags);
-}
-
 static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	int err = 0;
 
@@ -62,12 +56,26 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	return err;
 }
 
-int vmem_init_context(mmu_ctx_t *ctx) {
+int vmem_create_context(mmu_ctx_t *ctx) {
 	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
+
 	if (!pgd) {
 		return -ENOMEM;
 	}
+
 	*ctx = mmu_create_context(pgd);
+
+	return ENOERR;
+}
+
+/* FIXME: remove create context from here */
+int vmem_init_context(mmu_ctx_t *ctx) {
+	int err;
+
+	if ((err = vmem_create_context(ctx))) {
+		return err;
+	}
+
 	return vmem_map_kernel(*ctx);
 }
 
@@ -86,21 +94,3 @@ void vmem_free_context(mmu_ctx_t ctx) {
 	}
 	sched_unlock();
 }
-
-/*
-static inline void vmem_print_info(void) {
-	printk("\n");
-	printk("MMU_PTE_MASK = 0x%08x\n", (unsigned int) MMU_PTE_MASK);
-	printk("MMU_PMD_MASK = 0x%08x\n", (unsigned int) MMU_PMD_MASK);
-	printk("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
-
-	printk("\n");
-	printk("   text: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_text_vma, (unsigned int) &_text_len);
-	printk(" rodata: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_rodata_vma, (unsigned int) &_rodata_len);
-	printk("    bss: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_bss_vma, (unsigned int) &_bss_len);
-	printk("   data: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_data_vma, (unsigned int) &_data_len);
-	printk("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_reserve_vma, (unsigned int) &_reserve_len);
-	printk("  stack: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_stack_vma, (unsigned int) &_stack_len);
-	printk("   heap: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_heap_vma, (unsigned int) &_heap_len);
-}
-*/

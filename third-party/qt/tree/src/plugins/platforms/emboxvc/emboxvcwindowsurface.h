@@ -2,6 +2,7 @@
 #define QWINDOWSURFACE_MINIMAL_H
 
 #include <QtGui/private/qwindowsurface_p.h>
+#include "emboxvccursor.h"
 
 #include <QtGui/QPlatformWindow>
 #include <drivers/video/fb.h>
@@ -23,6 +24,8 @@ public:
 
     struct vc emboxVC;
     int emboxVCvisualized;
+    QEmboxCursor *cursor;
+    int mouseX, mouseY;
 
 private:
     QImage mImage;

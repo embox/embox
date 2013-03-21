@@ -14,6 +14,7 @@
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -141,6 +142,25 @@ static void e1000_rx(struct net_device *dev) {
 			/*stat->rx_packets++;*/
 			/*stat->rx_bytes += skb->len;*/
 
+#if 0
+			{
+				unsigned char *p = skb->mac.raw;
+				int cnt = len > 64 ? 64 : len;
+				const unsigned char pat[] = { 0xaa, 0xbb, 0xcc, 0xdd};
+				if (!memcmp(p, pat, 4)) {
+
+					prom_printf("rx:\n");
+					while (cnt) {
+						int tcnt = 16;
+						while (--tcnt && --cnt) {
+							prom_printf("%02x ", *p++);
+						}
+						prom_printf("\n");
+					}
+				}
+			}
+
+#endif
 			netif_rx(skb);
 		} else {
 			/*stat->rx_dropped++;*/
@@ -171,6 +191,7 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 }
 
 static int e1000_open(struct net_device *dev) {
+
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
 
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_SLU | E1000_REG_CTRL_ASDE);
@@ -276,10 +297,10 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 
-	res = irq_attach(pci_dev->irq, e1000_interrupt, 0, nic, "e1000");
+	res = irq_attach(pci_dev->irq, e1000_interrupt, IF_SHARESUP, nic, "e1000");
 	if (res < 0) {
 		return res;
 	}
 
-	return netdev_register(nic);
+	return inetdev_register_dev(nic);
 }

@@ -41,8 +41,7 @@ module skbuff {
 
 module core {
 	source "inetdev.c"
-	option number net_callback_quantity=16
-	option number net_interfaces_quantity=4
+	option number amount_interface=4
 
 	depends dev /* for dev.c */
 	depends embox.mem.pool

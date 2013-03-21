@@ -13,12 +13,14 @@
 #include <kernel/umirq.h>
 #include <hal/ipl.h>
 
-static int ipl_num;
-
 #include <prom/prom_printf.h>
+
+int ipl_num;
+static int ipl_pending;
+
 static void ipl_highest(int signal) {
 
-	prom_printf("recv high\n");
+	ipl_pending ++;
 }
 
 static int irq_queue(void) {
@@ -38,8 +40,6 @@ static int irq_queue(void) {
 	return ret;
 }
 
-
-
 static void ipl_lowest(int signal) {
 	ipl_disable();
 
@@ -47,9 +47,7 @@ static void ipl_lowest(int signal) {
 		return;
 	}
 
-	while (0 < irq_queue()) {
-
-	}
+	while (0 < irq_queue());
 
 	ipl_enable();
 
@@ -84,7 +82,10 @@ void ipl_restore(ipl_t ipl) {
 
 	ipl_num = ipl;
 
-	/*if (ipl) {*/
-		/*irq_queue();*/
-	/*}*/
+	if (ipl_pending) {
+		ipl_pending = 0;
+
+		ipl_lowest(UV_IRQ);
+	}
+
 }

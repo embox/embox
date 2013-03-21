@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <termios.h>
 #include <sys/select.h>
 #include <sys/timerfd.h>
 #include <uservisor_base.h>
@@ -28,7 +29,7 @@ static struct npipe {
 	int np_write;
 } ev_downstream, ev_upstream;
 
-static pid_t emboxpid;
+static pid_t emboxpid = -1;
 static char need_signal = 1;
 
 static int sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
@@ -46,7 +47,7 @@ static int sendirq(host_pid_t pid, int fd, enum emvisor_msg type,
 	}
 
 	if (ret == -EAGAIN) {
-		fprintf(stderr, "Warning: downstream is full\n");
+		/*fprintf(stderr, "Warning: downstream is full\n");*/
 		ret = 0;
 	}
 
@@ -140,12 +141,52 @@ static int tmrset(int pupstream, const struct emvisor_msghdr *msg) {
 	return 0;
 }
 
+#define MAX_STDIN_RD_REQ 64
+static int act_stdin_rd_req, act_stdin_rd_req_len;
+char act_stdin_rd_buf[MAX_STDIN_RD_REQ], *act_stdin_rd_pb;
+
+static int act_stdin_rd(int pupstream) {
+	int ret;
+
+	ret = read(STDIN_FILENO, act_stdin_rd_pb, act_stdin_rd_req);
+
+	if (ret == -1) {
+		ret = -errno;
+	}
+
+	if (ret == 0 || ret == -EAGAIN) {
+		return 0;
+	}
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	act_stdin_rd_req -= ret;
+	act_stdin_rd_pb += ret;
+
+	if (act_stdin_rd_req) {
+		return 0;
+	}
+
+	if (0 > (ret = sendirq(emboxpid, ev_downstream.np_write,
+					EMVISOR_IRQ_DIAG_IN, act_stdin_rd_buf,
+					act_stdin_rd_req_len))) {
+		return ret;
+	}
+
+	fdact_del(STDIN_FILENO);
+
+	return 0;
+
+}
+
 static int upstrm_cmd(int pupstream);
 
 static int act_upstrrd(int pupstream) {
 	int ret;
 
-	while (0 > (ret = upstrm_cmd(pupstream))) {
+	while (0 < (ret = upstrm_cmd(pupstream))) {
 
 	}
 
@@ -163,25 +204,37 @@ static int upstrm_cmd(int pupstream) {
 
 	assert(pupstream == ev_upstream.np_read);
 
-	flags = fcntl(pupstream, F_GETFL);
-	fcntl(pupstream, F_SETFL, flags | O_NONBLOCK);
-	if (0 > (ret = emvisor_recvmsg(pupstream, &msg))) {
-		return -errno;
+	if (0 >= (ret = emvisor_recvmsg(pupstream, &msg))) {
+		return ret;
 	}
-	fcntl(pupstream, F_SETFL, flags);
+
+	/*fprintf(stderr, "msg: %d, %d\n", msg.type, msg.dlen);*/
+
+	assert(ret == sizeof(struct emvisor_msghdr));
 
 	if (!ret) {
 		return -EPIPE;
 	}
 
+	assert(msg.type < EMVISOR_IRQ);
+	assert(msg.dlen <= 8);
+
 	switch (msg.type) {
+	case EMVISOR_BUDDY_PID:
+		if (0 > (ret = emvisor_recvbody(pupstream, &msg,
+						&emboxpid, sizeof(emboxpid)))) {
+			return ret;
+		}
+
+		fprintf(stderr, "New embox pid is %d\n", emboxpid);
+		return 0;
 	case EMVISOR_DIAG_OUT:
 		if (0 > (ret = emvisor_recvbody(pupstream, &msg,
 						buf, DATA_BUFLEN))) {
 			return ret;
 		}
 
-		if (0 > (ret = write(1, buf, msg.dlen))) {
+		if (0 > (ret = write(2, buf, msg.dlen))) {
 			return ret;
 		}
 		return 0;
@@ -192,12 +245,15 @@ static int upstrm_cmd(int pupstream) {
 			return ret;
 		}
 
-		ret = read(0, buf, 1);
+		if (0 != (ret = fdact_add(STDIN_FILENO, act_stdin_rd))) {
+			return ret;
+		}
 
-		return sendirq(emboxpid, ev_downstream.np_write,
-				EMVISOR_IRQ_DIAG_IN, buf, ret < 0 ? 0 : ret);
+		act_stdin_rd_pb = act_stdin_rd_buf;
+		act_stdin_rd_req = act_stdin_rd_req_len = 1;
 
 		return 0;
+
 	case EMVISOR_EOF_IRQ:
 
 		/*fprintf(stdout, "got irq ack\n");*/
@@ -214,7 +270,7 @@ static int upstrm_cmd(int pupstream) {
 
 }
 
-static int emvisor(pid_t emboxpid) {
+static int emvisor(void) {
 	fd_set rfds;
 	struct timeval tv = {SELECT_TO_SEC, 0};
 	int pupstream = ev_upstream.np_read;
@@ -257,52 +313,67 @@ static int emvisor(pid_t emboxpid) {
 
 int main(int argc, char **argv) {
 	int fd, flags, ret;
+	struct termios tc_old, tc_this;
 
-	if (argc != 4) {
+	if (argc != 3) {
 		return -EINVAL;
 	}
 
-	if (0 >= (sscanf(argv[1], "%d", &emboxpid))) {
-		return -EINVAL;
-	}
-
-	if (0 > (fd = open(argv[2], O_WRONLY))) {
+	if (0 > tcgetattr(STDIN_FILENO, &tc_old)) {
 		return -errno;
 	}
 
-	flags = fcntl(STDIN_FILENO, F_GETFL);
-	if (0 > (ret = fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK))) {
-		return 0;
+	memcpy(&tc_this, &tc_old, sizeof(struct termios));
+
+	tc_this.c_lflag &= ~(ICANON | ECHO);
+
+	if (0 > tcsetattr(STDIN_FILENO, TCSANOW, &tc_this)) {
+		return -errno;
+	}
+
+	if (0 > (fd = open(argv[1], O_WRONLY))) {
+		return -errno;
 	}
 
 	flags = fcntl(fd, F_GETFL);
 	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))) {
-		return 0;
+		return -errno;
 	}
 
 	ev_downstream.np_write = fd;
 
-	if (0 > (fd = open(argv[3], O_RDONLY))) {
+	if (0 > (fd = open(argv[2], O_RDONLY))) {
 		return -errno;
 	}
+
+	flags = fcntl(fd, F_GETFL);
+	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))){
+		return -errno;
+	}
+
 	ev_upstream.np_read = fd;
 
-	ret = emvisor(emboxpid);
+	ret = emvisor();
 
-	printf("Emvisor exit: %d", ret);
+	tcsetattr(STDIN_FILENO, TCSANOW, &tc_old);
+
+	printf("Emvisor exit: %d\n", ret);
 	return ret;
 
 }
 
 int host_write(int fd, const void *buf, size_t len) {
-	return write(fd, buf, len);
+	int ret = write(fd, buf, len);
+	return -1 == ret ? -errno : ret;
 }
 
 int host_read(int fd, void *buf, size_t len) {
-	return read(fd, buf, len);
+	int ret = read(fd, buf, len);
+	return -1 == ret ? -errno : ret;
 }
 
 int host_kill(pid_t pid, int sig) {
-	return kill(pid, sig);
+	int ret = kill(pid, sig);
+	return -1 == ret ? -errno : ret;
 }
 

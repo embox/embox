@@ -177,6 +177,11 @@ extern long int ftell(FILE *stream);
 extern void rewind(FILE *stream);
 
 /**
+ * Change the name or location of a file.
+ */
+extern int rename(const char *oldpath, const char *newpath);
+
+/**
  * Manipulate the underlying device parameters of special files.
  */
 extern int fioctl(FILE *fp, int request, ...);

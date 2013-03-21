@@ -3,6 +3,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include <../fb_base/fb_base.h>
 
 QT_BEGIN_NAMESPACE
 

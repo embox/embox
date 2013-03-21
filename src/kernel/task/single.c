@@ -28,9 +28,3 @@ void __attribute__((noreturn)) task_exit(void *res) {
 int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
-
-int task_kernel_task_init(void) {
-	task_init(task_kernel_task(), task_kernel_size());
-
-	return 0;
-}

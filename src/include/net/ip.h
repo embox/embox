@@ -152,7 +152,8 @@ extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
  */
 extern int ip_forward_packet(struct sk_buff *skb);
 
-extern int ip_queue_xmit(struct sk_buff *skb, int ipfragok);
+extern int ip_queue_send(struct sk_buff *skb);
+extern int ip_queue_xmit(struct sk_buff *skb);
 
 extern int rebuild_ip_header(struct sk_buff *pack, unsigned char ttl,
 			unsigned char proto, unsigned short id, unsigned short len,

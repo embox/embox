@@ -15,6 +15,8 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
+#include <kernel/task/task_priority.h>
+
 #define MAX_TASK_NAME_LEN 20
 
 __BEGIN_DECLS
@@ -24,14 +26,7 @@ struct task_idx_table;
 struct thread;
 struct mmap;
 struct task_u_area;
-
-#define TASK_PRIORITY_DEFAULT   0
-#define TASK_PRIORITY_MIN     -20
-#define TASK_PRIORITY_MAX      19
-#define TASK_PRIORITY_TOTAL \
-	(TASK_PRIORITY_MAX - TASK_PRIORITY_MIN + 1)
-
-typedef short task_priority_t;
+struct sleepq;
 
 /**
  * @brief Task resources container
@@ -66,6 +61,8 @@ struct task {
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
+
+	struct sleepq *wait_sq;
 
 	unsigned int affinity;
 };
@@ -136,6 +133,8 @@ extern void __attribute__((noreturn)) task_exit(void *res);
 extern struct task *task_kernel_task(void);
 
 extern int task_notify_switch(struct thread *prev, struct thread *next);
+
+extern int task_waitpid(unsigned int pid);
 
 __END_DECLS
 

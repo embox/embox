@@ -4,8 +4,11 @@
 /sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
 /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
 
-echo "Enable IP Forwarding"
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-echo 1 > /proc/sys/net/ipv4/ip_forward
-
+#Enable IP Forwarding for gateway interface
+gw=`route -n | grep "UG" | sed 's/^.* //'`
+if [ "$gw"  ]; then
+echo "Enable IP Forwarding for $gw"
+iptables -t nat -A POSTROUTING -o $gw -j MASQUERADE
+sysctl net.ipv4.ip_forward=1
+fi
 

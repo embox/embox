@@ -17,6 +17,10 @@
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 
+/* For command testing */
+#include <cmd/cmdline.h>
+#include <framework/cmd/api.h>
+
 #include <mem/page.h>
 #include <embox/test.h>
 
@@ -26,18 +30,35 @@ TEST_SETUP_SUITE(setup_suite);
 
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-#define FS_NAME  "vfat"
-#define FS_DEV  "/dev/ramdisk"
-#define FS_DIR  "/tmp"
-#define FS_TYPE  12
-#define FS_BLOCKS  124
-
-#define FS_FILE1  "/tmp/1/2/3/1.txt"
-#define FS_FILE2  "/tmp/1/2/3/2.txt"
-#define FS_DIR3  "/tmp/1/2/3"
-#define FS_DIR2  "/tmp/1/2"
-#define FS_DIR1  "/tmp/1"
-#define FS_TESTDATA  "qwerty\n"
+#define FS_NAME			"vfat"
+#define FS_DEV			"/dev/ramdisk"
+#define FS_TYPE			12
+#define FS_BLOCKS		124
+#define MKDIR_PERM		0700
+#define FS_DIR			"/tmp"
+#define FS_DIR			"/tmp"
+#define FS_FILE1		"/tmp/1/2/3/1.txt"
+#define FS_FILE2		"/tmp/1/2/3/2.txt"
+#define FS_DIR3			"/tmp/1/2/3"
+#define FS_DIR2			"/tmp/1/2"
+#define FS_DIR1			"/tmp/1"
+#define FS_TESTDATA		"qwerty\n"
+#define FS_DTR			"/tmp/dtr"
+#define FS_MV_SUB		"/tmp/dtr/sub"
+#define FS_MV_SUB_F1	"/tmp/dtr/sub/file1"
+#define FS_MV_F1		"/tmp/dtr/file1"
+#define FS_MV_F2		"/tmp/dtr/sub/file2"
+#define FS_MV_F2_NAME	"file2"
+#define FS_MV_F3		"/tmp/dtr/sub/file3"
+#define FS_MV_F3_NAME	"file3"
+#define FS_MV_RENAMED	"/tmp/renamed"
+#define FS_TESTDATA		"qwerty\n"
+#define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnam"
 
 TEST_CASE("Write file") {
 	int file;
@@ -102,7 +123,132 @@ TEST_CASE("stat and fstat should return same stats") {
 }
 */
 
-#define MKDIR_PERM 0700
+TEST_CASE("Rename file") {
+	/* Prepare directories and files for tests */
+	test_assert_zero(mkdir(FS_DTR, MKDIR_PERM));
+	test_assert_zero(mkdir(FS_MV_SUB, MKDIR_PERM));
+	test_assert(-1 != creat(FS_MV_F1, S_IRUSR | S_IWUSR));
+	test_assert(-1 != creat(FS_MV_F2, S_IRUSR | S_IWUSR));
+
+	/* Check error code for non-existent file */
+	test_assert(-1 == rename("no_such_file", FS_MV_F3));
+	test_assert(ENOENT == errno);
+
+	/* Check error code if destination file exists */
+	test_assert(-1 == rename(FS_MV_F1, FS_MV_F2));
+	test_assert(EINVAL == errno);
+
+	/* Check error code with too long source file name */
+	test_assert(-1 == rename(FS_MV_LONGNAME, "no_matter"));
+	test_assert(ENAMETOOLONG == errno);
+
+	/* Check error code with too long destination file name */
+	test_assert(-1 == rename("no_matter", FS_MV_LONGNAME));
+	test_assert(ENAMETOOLONG == errno);
+
+	/* Test with relative paths */
+#ifdef ENABLE_RELATIVE_PATH
+	test_assert_zero(rename(FS_MV_F2, FS_MV_F3_NAME));
+	test_assert_zero(rename(FS_MV_F3, FS_MV_F2_NAME));
+#endif
+
+	/* Renaming one file and renaming it back */
+	test_assert_zero(rename(FS_MV_F2, FS_MV_F3));
+	test_assert_zero(rename(FS_MV_F3, FS_MV_F2));
+
+	/* Add test with recursive renaming */
+	test_assert_zero(rename(FS_DTR, FS_MV_RENAMED));
+	test_assert_zero(rename(FS_MV_RENAMED, FS_DTR));
+
+	/* Add tests with directory as destination */
+	test_assert_zero(rename(FS_MV_F1, FS_MV_SUB));
+	test_assert_zero(rename(FS_MV_SUB_F1, FS_DTR));
+
+	/* Test cleanup */
+	test_assert_zero(remove(FS_DTR));
+}
+
+/* Exec shell command and return it's exit code */
+static int exec_shell_cmd(char *cmdline) {
+	const struct cmd *cmd;
+	int argc = 0, code;
+	/* In the worst case cmdline looks like "x x x x x x". */
+	char *argv[(80 + 1) / 2];
+
+	/* Test simple move */
+	if (0 == (argc = cmdline_tokenize(cmdline, argv))) {
+		/* Only spaces were entered */
+		return -1;
+	}
+
+	if (NULL == (cmd = cmd_lookup(argv[0]))) {
+		printf("%s: Command not found\n", argv[0]);
+		return -1;
+	}
+
+	if (0 != (code = cmd_exec(cmd, argc, argv))) {
+		printf("%s: Command returned with code %d: %s\n",
+				cmd_name(cmd), code, strerror(-code));
+	}
+
+	return code;
+}
+
+TEST_CASE("Move file") {
+	/* This should be improved to not use hard-coded paths */
+	char *cmd_recursive_err = "mv /tmp/dtr /tmp/tmpdtr";
+	char *cmd_force_err = "mv /tmp/dtr/file1 /tmp/dtr/sub/file2";
+	char *cmd_multi_err =
+				"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp/file";
+
+	char *cmd_simple = "mv /tmp/dtr/file1 /tmp/dtr/sub/tmpfile";
+	char *cmd_simple_back = "mv /tmp/dtr/sub/tmpfile /tmp/dtr/file1";
+	char *cmd_recursive = "mv -r /tmp/dtr /tmp/tmpdtr";
+	char *cmd_recursive_back =  "mv -r /tmp/tmpdtr /tmp/dtr";
+	char *cmd_multi =
+			"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp";
+	char *cmd_force = "mv -f /tmp/file1 /tmp/file2";
+
+	/* Prepare directories and files for tests */
+	test_assert_zero(mkdir(FS_DTR, MKDIR_PERM));
+	test_assert_zero(mkdir(FS_MV_SUB, MKDIR_PERM));
+	test_assert(-1 != creat(FS_MV_F1, S_IRUSR | S_IWUSR));
+	test_assert(-1 != creat(FS_MV_F2, S_IRUSR | S_IWUSR));
+
+	/**
+	 * Error codes tests
+	 */
+
+	/* Move directory without recursive key */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_recursive_err));
+
+	/* Overwrite without force key */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_force_err));
+
+	/* Multi-source with not directory as destination */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_multi_err));
+
+	/**
+	 * Valid tests
+	 */
+
+	/* Simple test */
+	test_assert_zero(exec_shell_cmd(cmd_simple));
+	test_assert_zero(exec_shell_cmd(cmd_simple_back));
+
+	/* Recursive test */
+	test_assert_zero(exec_shell_cmd(cmd_recursive));
+	test_assert_zero(exec_shell_cmd(cmd_recursive_back));
+
+	/* Multi-source test */
+	test_assert_zero(exec_shell_cmd(cmd_multi));
+
+	/* Force test */
+	test_assert_zero(exec_shell_cmd(cmd_force));
+
+	/* Test cleanup */
+	test_assert_zero(remove(FS_DTR));
+}
 
 static int setup_suite(void) {
 	int fd, res;

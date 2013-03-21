@@ -40,6 +40,7 @@ typedef __mmu_pte_t mmu_pte_t;
 #define MMU_PTE_SIZE      (1UL << MMU_PTE_SHIFT)
 
 extern void mmu_on(void);
+extern void mmu_off(void);
 
 extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);
 extern void mmu_set_context(mmu_ctx_t ctx);

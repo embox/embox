@@ -121,6 +121,7 @@ static int indev_event_cb(struct input_dev *indev) {
 	const int f1 = 0x3b;
 
 	while (0 <= input_dev_event(indev, &ev)) {
+
 		if (ev.type == KEY_PRESSED && (ev.value & CTRL_PRESSED)) {
 			int num = (ev.value & 0x7f) - f1;
 			if (num >= 0 && num < VC_MPX_N && vcs[num] != NULL) {

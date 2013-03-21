@@ -29,6 +29,8 @@
 
 #include <embox/net/pack.h>
 
+#define DEBUG_ARP 0 /* 1 to debug */
+
 
 /*
  * FIXME:
@@ -92,7 +94,31 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 	return ENOERR;
 }
 
+#if DEBUG_ARP
+#include <kernel/printk.h>
+static void print_arp_packet(const char *hdr, const struct sk_buff *skb) {
+	struct arpghdr *arph;
+	struct arpg_stuff arph_stuff;
+
+	arph = skb->nh.arpgh;
+	arpg_make_stuff(arph, &arph_stuff);
+
+	printk("%s %p:\n", hdr, skb);
+	printk("\toper %s\n", ntohs(arph->oper) == ARP_OPER_REPLY ? "REPLY" : "REQUEST");
+	printk("\tsha %02X:%02X:%02X:%02X:%02X:%02X\n\r", arph_stuff.sha[0], arph_stuff.sha[1],
+			arph_stuff.sha[2], arph_stuff.sha[3], arph_stuff.sha[4], arph_stuff.sha[5]);
+	printk("\tspa %s\n", inet_ntoa(*(struct in_addr *)arph_stuff.spa));
+	printk("\ttha %02X:%02X:%02X:%02X:%02X:%02X\n\r", arph_stuff.tha[0], arph_stuff.tha[1],
+			arph_stuff.tha[2], arph_stuff.tha[3], arph_stuff.tha[4], arph_stuff.tha[5]);
+	printk("\ttpa %s\n", inet_ntoa(*(struct in_addr *)arph_stuff.tpa));
+	printk(".\n");
+}
+#endif
+
 static int arp_xmit(struct sk_buff *skb) {
+#if DEBUG_ARP
+	print_arp_packet("arp_xmit", skb);
+#endif
 	return dev_queue_xmit(skb);
 }
 
@@ -150,7 +176,7 @@ int arp_resolve(struct sk_buff *skb) {
 
 #if 0
 	/* our machine on our device? */
-	if (ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
+	if (ip->daddr == inetdev_get_addr(inetdev_get_by_dev(dev))){
 		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
 		return 0;
 	}
@@ -237,7 +263,7 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		return 0;
 	}
 
-	in_dev = in_dev_get(dev);
+	in_dev = inetdev_get_by_dev(dev);
 	assert(in_dev != NULL);
 
 	if (target_ip != in_dev->ifa_address) {
@@ -248,6 +274,10 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		skb_free(skb);
 		return -1;
 	}
+
+#if DEBUG_ARP
+	print_arp_packet("arp_process", skb);
+#endif
 
 	switch (ntohs(arph->oper)) {
 	case ARP_OPER_REPLY:

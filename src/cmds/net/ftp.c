@@ -159,23 +159,36 @@ static int fs_check_stat(struct fs_info *session) {
 /* Receive reply in the current session */
 static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	int ret;
+	char *status;
 
-	ret = recvfrom(session->cmd_sock, buff, buff_sz, 0, NULL, NULL);
+	ret = recvfrom(session->cmd_sock, buff, buff_sz - 1, 0, NULL, NULL);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
 	}
+	*(buff + ret) = '\0';
 
 	fwrite(buff, 1, ret, stdout);
 
-	ret = sscanf(buff, "%d", &session->stat_code);
-	if (ret != 1) {
-		return FTP_RET_ERROR;
-	}
+	for (status = buff - 2; (status != NULL) && (*status != '\0');
+			status = strstr(status, "\r\n")) {
+		status += 2;
 
-	ret = fs_check_stat(session);
-	if (ret != FTP_RET_OK) {
-		return ret;
+		if (!isdigit(*status)) {
+			continue;
+		}
+
+		ret = sscanf(status, "%d", &session->stat_code);
+		if (ret != 1) {
+			return FTP_RET_ERROR;
+		}
+
+		ret = fs_check_stat(session);
+		if (ret != FTP_RET_OK) {
+			return ret;
+		}
+
+		status = strstr(status, "\r\n");
 	}
 
 	return FTP_RET_OK;
@@ -420,7 +433,7 @@ static int fs_cmd_close(struct fs_info *session) {
 static int fs_cmd_user(struct fs_info *session) {
 	/* Usage: user <user-name> */
 	int ret;
-	char *tmp, *arg_username;
+	char *tmp, *arg_username, *password;
 
 	if (!session->is_connected) {
 		fprintf(stderr, "Not connected.\n");
@@ -446,12 +459,14 @@ static int fs_cmd_user(struct fs_info *session) {
 		return ret;
 	}
 
-	fprintf(stdout, "Password: ");
-	if (fgets(&session->cmd_buff[0], sizeof session->cmd_buff, stdin) == NULL) {
-		return FTP_RET_FAIL;
+	password = getpass("Password: ");
+	if (password == NULL) {
+		fprintf(stderr, "Cant get password for %s.\n", arg_username);
+		errno = EINVAL;
+		return FTP_RET_ERROR;
 	}
 
-	ret = fs_execute(session, "PASS %s\r\n", &session->cmd_buff[0]);
+	ret = fs_execute(session, "PASS %s\r\n", password);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -657,9 +672,12 @@ static int fs_cmd_ls(struct fs_info *session) {
 
 	close(data_sock);
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
-	if (ret != FTP_RET_OK) {
-		return ret;
+	if (FTP_STAT_TYPE_POSITIVE_PRELIMINARY
+			== FTP_STAT_TYPE(session->stat_code)) {
+		ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+		if (ret != FTP_RET_OK) {
+			return ret;
+		}
 	}
 
 	return FTP_RET_OK;
@@ -883,7 +901,7 @@ int ftp_cmd(int argc, char **argv) {
 
 		cmd_name = fgets(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, stdin);
 		if (cmd_name == NULL) {
-			fprintf(stdout, "%s: fatal error: fgets return null.\n", argv[0]);
+			fprintf(stderr, "%s: fatal error: fgets return null.\n", argv[0]);
 			break;
 		}
 
