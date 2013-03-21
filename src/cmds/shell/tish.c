@@ -48,6 +48,21 @@ static int cmd_compl(char *buf, char *out_buf) {
 
 }
 #endif
+
+void completion(const char *buf, struct linenoiseCompletions *lc) {
+	const struct cmd *cmd = NULL;
+	int buf_len = strlen(buf);
+
+	cmd_foreach(cmd) {
+		if (strlen(cmd_name(cmd)) < buf_len) {
+			continue;
+		}
+		if (strncmp(buf, cmd_name(cmd), buf_len) == 0) {
+			linenoiseAddCompletion(lc, (char*)cmd_name(cmd));
+		}
+	}
+}
+
 static int run_cmd(int argc, char *argv[]) {
 	const struct cmd *cmd;
 	int code;
@@ -146,7 +161,7 @@ static void tish_run(void) {
 
     /* Set the completion callback. This will be called every time the
      * user uses the <tab> key. */
-    //linenoiseSetCompletionCallback(cmd_compl);
+    linenoiseSetCompletionCallback(completion);
 
     /* Load history from file. The history file is just a plain text file
      * where entries are separated by newlines. */
