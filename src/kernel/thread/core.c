@@ -387,6 +387,19 @@ struct thread *thread_lookup(thread_id_t id) {
 	return NULL;
 }
 
+void *thread_stack_malloc(struct thread *thread, size_t size) {
+	void *res;
+
+	assert(thread->stack_sz > size);
+
+	res = thread->stack;
+
+	thread->stack    += size;
+	thread->stack_sz -= size;
+
+	return res;
+}
+
 /**
  * Function, which does nothing. For idle_thread.
  */

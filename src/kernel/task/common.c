@@ -23,7 +23,9 @@ EMBOX_UNIT_INIT(kernel_task_init);
 
 #define MAX_RES_SUM_SIZE OPTION_MODULE_GET(embox__kernel__task__api, NUMBER, max_resource_size)
 
-static char kernel_task[sizeof(struct task) + MAX_RES_SUM_SIZE];
+#define KERNEL_TASK_SIZE sizeof(struct task) + MAX_RES_SUM_SIZE
+
+static char kernel_task[KERNEL_TASK_SIZE];
 
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
@@ -34,8 +36,8 @@ size_t task_resource_sum_size(void) {
 	return resource_sum_size;
 }
 
-size_t task_kernel_size(void) {
-	return sizeof(struct task) + MAX_RES_SUM_SIZE;
+size_t task_size(void) {
+	return sizeof(struct task) + resource_sum_size;
 }
 
 struct task *task_kernel_task(void) {
@@ -46,19 +48,13 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 	struct task *task = (struct task *) task_n_res_space;
 	void *res_ptr = task_n_res_space + sizeof(struct task);
 	const struct task_resource_desc *res_desc;
+	size_t task_sz = task_size();
 
-	if (resource_sum_size == 0) {
-		task_resource_foreach(res_desc) {
-			resource_sum_size += res_desc->resource_size;
-		}
-
-	}
-
-	if (size <= resource_sum_size) {
+	if (size < task_sz) {
 		return NULL;
 	}
 
-	memset(task_n_res_space, 0, sizeof(struct task) + resource_sum_size);
+	memset(task_n_res_space, 0, task_sz);
 
 	INIT_LIST_HEAD(&task->threads);
 	INIT_LIST_HEAD(&task->children);
@@ -80,8 +76,19 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 }
 
+static inline void resource_sum_size_calc(void) {
+	const struct task_resource_desc *res_desc;
+
+	task_resource_foreach(res_desc) {
+		resource_sum_size += res_desc->resource_size;
+	}
+}
+
+
 static int kernel_task_init(void) {
-	if (!task_init(task_kernel_task(), task_kernel_size())) {
+	resource_sum_size_calc();
+
+	if (!task_init(task_kernel_task(), KERNEL_TASK_SIZE)) {
 		return -ENOMEM;
 	}
 
