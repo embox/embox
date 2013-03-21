@@ -27,7 +27,8 @@
 
 static void tty_tx_char(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
-	t->ops->tx_char(t, ch);
+	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
+	// t->ops->tx_char(t, ch);
 }
 
 /* Called in worker-protected context. */
@@ -159,6 +160,7 @@ done:
 static void tty_rx_worker(struct work *w) {
 	struct tty *t = member_cast_out(w, struct tty, rx_work);
 	int ich;
+	char ch;
 
 	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
 
@@ -173,6 +175,10 @@ static void tty_rx_worker(struct work *w) {
 	}
 	work_pending_reset(w);
 	irq_unlock();
+
+	while (ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+		t->ops->tx_char(t, ch);
+	}
 }
 
 void tty_post_rx(struct tty *t) {
@@ -305,6 +311,23 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	return buff - (end - size);
 }
 
+int tty_ioctl(struct tty *tty, int request, void *data) {
+	switch (request) {
+	case TIOCGETA:
+		memcpy(&tty->termios, data, sizeof(struct termios));
+		break;
+	case TIOCSETAF:
+	case TIOCSETAW:
+	case TIOCSETA:
+		memcpy(data, &tty->termios, sizeof(struct termios));
+		break;
+	default:
+		return -ENOSYS;
+	}
+
+	return ENOERR;
+}
+
 struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
 	assert(t && ops);
 
@@ -329,7 +352,7 @@ struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
 	ring_init(&t->i_canon_ring);
 
 	event_init(&t->o_event, "tty output");
-	// ring_init(&t->o_ring);
+	ring_init(&t->o_ring);
 
 	return t;
 }
