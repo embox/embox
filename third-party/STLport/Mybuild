@@ -7,6 +7,6 @@ module core {
 
 	source "empty.c" // FIXME: workaround
 
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/STLport MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/STLport MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source "../../../../stlport/lib/libstlportg.a"
 }

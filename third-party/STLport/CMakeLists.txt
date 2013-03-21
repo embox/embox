@@ -7,7 +7,10 @@ ExternalProject_Add(
    UPDATE_COMMAND ""
    PATCH_COMMAND ""
    BUILD_IN_SOURCE 1
+   LOG_CONFIGURE 1
    CONFIGURE_COMMAND
-      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-static --disable-shared --without-thread --without-rtti
+      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-static --disable-shared --without-thread --without-rtti \\
+         ""--with-extra-cflags=$ENV{EMBOX_DERIVED_CFLAGS}"" ""--with-extra-cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
    #	BUILD_COMMAND
+   LOG_BUILD 1
 )
