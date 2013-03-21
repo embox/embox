@@ -22,6 +22,11 @@ module priority_based {
 	depends embox.kernel.thread.sched_policy.queue.prioq
 }
 
+module priority_based_smp {
+	depends embox.kernel.thread.sched_policy.simple_queue
+	depends embox.kernel.thread.sched_policy.queue.prioq2
+}
+
 module trivial {
 	depends embox.kernel.thread.sched_policy.simple_queue
 	depends embox.kernel.thread.sched_policy.queue.list
