@@ -73,8 +73,14 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 	}
 
 	/* Forwarding */
-	/* TODO check for BOOTP packet. It is special case, when */
-	if (1/*is_not_bootp(skb)*/) {
+	assert(skb->dev);
+	assert(inetdev_get_by_dev(skb->dev));
+	if (inetdev_get_by_dev(skb->dev)->ifa_address != 0) {
+		/**
+		 * FIXME
+		 * This check needed for BOOTP protocol
+		 * disable forwarding if interface is not set yet
+		 */
 		/**
 		 * Check the destination address, and if it doesn't match
 		 * any of own addresses, retransmit packet according to the routing table.
