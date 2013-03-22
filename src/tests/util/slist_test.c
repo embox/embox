@@ -33,6 +33,7 @@ static int setup(void) {
 	return 0;
 }
 
+#if 0
 
 TEST_CASE("slist_element should cast link member out to its container") {
 	struct slist_link *link = &x.lnk;
@@ -155,3 +156,6 @@ TEST_CASE("slist_insert_after: inserting a new element after the first one "
 
 	test_assert_equal(slist_first_link(&m), &z.lnk);
 }
+
+#endif
+

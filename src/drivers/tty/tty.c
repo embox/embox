@@ -1,254 +1,380 @@
 /**
  * @file
  * @brief
- * 	http://sydney.edu.au/engineering/it/~tapted/ansi.html
- * 	http://www.inwap.com/pdp10/ansicode.txt
  *
- * @date 08.02.13
- * @author Ilia Vaprol
+ * @date 05.03.13
+ * @author Eldar Abusalimov
  */
 
-#include <stdint.h>
-#include <ctype.h>
-#include <util/array.h>
 #include <drivers/tty.h>
 
-void tty_init(struct tty *t, uint32_t width, uint32_t height,
-		const struct tty_ops *ops, void *data) {
-	t->cur_x = 0;
-	t->cur_y = 0;
-	t->width = width;
-	t->height = height;
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <kernel/irq_lock.h>
+#include <kernel/thread/sched.h>
+#include <kernel/thread/event.h>
+#include <kernel/work.h>
+#include <util/math.h>
+
+#define TC_I(t, flag) ((t)->termios.c_iflag & (flag))
+#define TC_O(t, flag) ((t)->termios.c_oflag & (flag))
+#define TC_C(t, flag) ((t)->termios.c_cflag & (flag))
+#define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
+
+static void tty_tx_char(struct tty *t, char ch) {
+	// TODO locks? context? -- Eldar
+	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
+	// t->ops->tx_char(t, ch);
+}
+
+/* Called in worker-protected context. */
+static void tty_output(struct tty *t, char ch) {
+	if (TC_L(t, ICANON) && TC_O(t, ONLCR) && ch == '\n')
+		tty_tx_char(t, '\r');
+
+	tty_tx_char(t, ch);
+}
+
+static void tty_echo(struct tty *t, char ch) {
+	if (!(TC_L(t, ECHO) || (TC_L(t, ECHONL) && ch == '\n')))
+		return;
+
+	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
+		tty_output(t, '^');
+		ch = toascii(ch + 'A');
+	}
+
+	tty_output(t, ch);
+}
+
+static void tty_echo_erase(struct tty *t) {
+	cc_t *cc = t->termios.c_cc;
+
+	if (!TC_L(t, ECHO))
+		return;
+
+	if (TC_L(t, ECHOE))
+		tty_output(t, cc[VERASE]);
+
+	else
+		for (char *ch = "\b \b"; *ch; ++ch)
+			tty_output(t, *ch);
+}
+
+/*
+ * Input layout is the following:
+ *
+ *                     raw-raw-raw-raw-cooked|cooked|cooked|cooked|editing
+ *
+ * TTY struct manages two internal rings:
+ *       i_ring  [-----***************************************************---]
+ * i_canon_ring  [---------------------***************************-----------]
+ *
+ * Two syntetic rings are also constructed from ends of the two rings above:
+ *     raw_ring  [-----****************--------------------------------------]
+ *    edit_ring  [------------------------------------------------********---]
+ */
+
+static struct ring *tty_raw_ring(struct tty *t, struct ring *r) {
+	r->tail = t->i_ring.tail;
+	r->head = t->i_canon_ring.tail;
+	return r;
+}
+
+static struct ring *tty_edit_ring(struct tty *t, struct ring *r) {
+	r->tail = t->i_canon_ring.head;
+	r->head = t->i_ring.head;
+	return r;
+}
+
+/* Called in worker context. */
+static int tty_input(struct tty *t, char ch, unsigned char flag) {
+	cc_t *cc = t->termios.c_cc;
+	int ignore_cr;
+	int raw_or_eol;
+	int got_data;
+
+	/* Newline control: IGNCR, ICRNL, INLCR */
+	ignore_cr = TC_I(t, IGNCR) && ch == '\r';
+	if (!ignore_cr) {
+		if (TC_I(t, ICRNL) && ch == '\r') ch = '\n';
+		if (TC_I(t, INLCR) && ch == '\n') ch = '\r';
+	}
+	raw_or_eol = !TC_L(t, ICANON) || ch == '\n' || ch == cc[VEOL];
+
+	if (ignore_cr)
+		goto done;
+
+	/* Handle erase/kill */
+	if (TC_L(t, ICANON)) {
+		int erase_all = (ch == cc[VKILL]);
+		if (erase_all || ch == cc[VERASE] || ch == '\b') {
+
+			struct ring edit_ring;
+			size_t erase_len = ring_data_size(
+						tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
+
+			if (erase_len) {
+				if (!erase_all)
+					erase_len = 1;
+
+				t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
+				ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
+
+				while (erase_len--)
+					tty_echo_erase(t);
+			}
+
+			goto done;
+		}
+	}
+
+	/* Finally, store and echo the char.
+	 *
+	 * When i_ring is near to become full, only raw or a line ending chars are
+	 * handled. This lets canonical read to see the whole line with \n or EOL
+	 * at the end. */
+
+	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > (raw_or_eol ? 0 : 1))
+		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1))
+			tty_echo(t, ch);
+
+done:
+	got_data = (raw_or_eol || ch == cc[VEOF]);
+
+	if (got_data) {
+		t->i_canon_ring.head = t->i_ring.head;
+
+		if (!TC_L(t, ICANON))
+			/* maintain it empty */
+			t->i_canon_ring.tail = t->i_canon_ring.head;
+	}
+
+	return got_data;
+}
+
+static void tty_rx_worker(struct work *w) {
+	struct tty *t = member_cast_out(w, struct tty, rx_work);
+	int ich;
+	char ch;
+
+	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
+
+	irq_lock();
+	while ((ich = tty_rx_dequeue(t)) != -1) {
+		irq_unlock();
+
+		if (tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT)))
+			event_notify(&t->i_event);
+
+		irq_lock();
+	}
+	work_pending_reset(w);
+	irq_unlock();
+
+	while (ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+		t->ops->tx_char(t, ch);
+	}
+}
+
+void tty_post_rx(struct tty *t) {
+	work_post(&t->rx_work);
+}
+
+/* Must only be called with rx_work disabled */
+static char *tty_read_raw(struct tty *t, char *buff, char *end) {
+	struct ring raw_ring;
+	size_t block_size;
+
+	while ((block_size = ring_can_read(
+				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
+
+		work_enable(&t->rx_work);
+
+		/* No processing is required to read raw data. */
+		memcpy(buff, t->i_buff + raw_ring.tail, block_size);
+		buff += block_size;
+
+		work_disable(&t->rx_work);
+
+		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
+	}
+
+	return buff;
+}
+
+static size_t find_line_len(cc_t eol, cc_t eof,
+		const char *buff, size_t size, int *is_eof) {
+	size_t offset = 0;
+
+	*is_eof = 0;
+	for (; offset < size; ++offset) {
+		char ch = buff[offset];
+		if (ch == '\n' || ch == eol || ch == eof) {
+			*is_eof = (ch == eof);
+			break;
+		}
+	}
+
+	return offset;
+}
+
+/* Must only be called with rx_work disabled */
+static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
+	cc_t eol, eof;
+	size_t block_size;
+
+	assert(TC_L(t, ICANON));
+
+	eol = t->termios.c_cc[VEOL];
+	eof = t->termios.c_cc[VEOF];
+
+	while ((block_size = ring_can_read(
+				&t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
+		char *line_start = t->i_buff + t->i_canon_ring.tail;
+		size_t line_len;
+		int got_line;
+		int is_eof;
+
+		work_enable(&t->rx_work);
+
+		line_len = find_line_len(eol, eof, line_start, block_size, &is_eof);
+
+		got_line = (line_len < block_size);
+		block_size = line_len;
+
+		if (got_line) {
+ 			++block_size;  /* Line end char is always consumed... */
+
+			if (!is_eof)  /* ...but EOF is discarded and not copied to user. */
+	 			++line_len;
+		}
+
+		memcpy(buff, line_start, line_len);
+		buff += line_len;
+
+		work_disable(&t->rx_work);
+
+		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
+		ring_just_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, block_size);
+
+		if (got_line)
+			break;
+	}
+
+	return buff;
+}
+
+static int tty_wait_input(struct tty *t) {
+	int rc;
+
+	sched_lock();
+
+	while (WORK_DISABLED_DO(&t->rx_work, ring_empty(&t->i_ring))) {
+
+		rc = event_wait_ms(&t->i_event, SCHED_TIMEOUT_INFINITE);
+		if (rc)
+			break;
+	}
+
+	sched_unlock();
+
+	return rc;
+}
+
+size_t tty_read(struct tty *t, char *buff, size_t size) {
+	char *end = buff + size;
+	int rc;
+
+	/* TODO what if size is 0? -- Eldar */
+
+	rc = tty_wait_input(t);
+	if (rc == -EINTR)
+		/* TODO then what? -- Eldar */
+		return 0;
+
+	work_disable(&t->rx_work);
+	{
+		buff = tty_read_raw(t, buff, end);
+
+		/* TODO serialize termios access with ioctl. -- Eldar */
+		if (TC_L(t, ICANON)) {
+			buff = tty_read_cooked(t, buff, end);
+		}
+	}
+	work_enable(&t->rx_work);
+
+	return buff - (end - size);
+}
+
+int tty_ioctl(struct tty *tty, int request, void *data) {
+	switch (request) {
+	case TIOCGETA:
+		memcpy(&tty->termios, data, sizeof(struct termios));
+		break;
+	case TIOCSETAF:
+	case TIOCSETAW:
+	case TIOCSETA:
+		memcpy(data, &tty->termios, sizeof(struct termios));
+		break;
+	default:
+		return -ENOSYS;
+	}
+
+	return ENOERR;
+}
+
+struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
+	assert(t && ops);
+
 	t->ops = ops;
-	t->data = data;
 
-	if (!ops) {
-		return;
+	{
+		struct termios *termios = &t->termios;
+		cc_t cc_init[NCCS] = TTY_TERMIOS_CC_INIT;
+
+		memcpy(termios->c_cc, cc_init, sizeof(cc_init));
+		termios->c_iflag = TTY_TERMIOS_IFLAG_INIT;
+		termios->c_oflag = TTY_TERMIOS_OFLAG_INIT;
+		termios->c_cflag = TTY_TERMIOS_CFLAG_INIT;
+		termios->c_lflag = TTY_TERMIOS_LFLAG_INIT;
 	}
 
-	t->ops->init(t);
-	tty_clear(t);
+	work_init(&t->rx_work, tty_rx_worker, 0);
+	ring_init(&t->rx_ring);
+
+	event_init(&t->i_event, "tty input");
+	ring_init(&t->i_ring);
+	ring_init(&t->i_canon_ring);
+
+	event_init(&t->o_event, "tty output");
+	ring_init(&t->o_ring);
+
+	return t;
 }
 
-void tty_scroll(struct tty *t, int32_t delta) {
-	if (!t || !t->ops || !t->ops->move || !t->ops->clear) {
-		return;
-	}
 
-	if (delta > 0) {
-		t->ops->move(t, 0, delta, t->width, t->cur_y - delta, 0, 0);
-		t->ops->clear(t, 0, t->cur_y - delta, t->width, delta);
-	}
-	else {
-		t->ops->move(t, 0, 0, t->width, t->cur_y + delta, 0, -delta);
-		t->ops->clear(t, 0, 0, t->width, -delta);
-	}
-	t->cur_y -= delta;
-	t->back_cy -= delta;
+int tty_rx_enqueue(struct tty *t, char ch, unsigned char flag) {
+	uint16_t *slot = t->rx_buff + t->rx_ring.head;
+
+	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
+		return -1;
+
+	*slot = (flag<<CHAR_BIT) | (unsigned char) ch;
+	return 0;
 }
 
-static void tty_clearxy(struct tty *t, int x, int y, int tx, int ty) {
-	if (!t || !t->ops || !t->ops->clear) {
-		return;
-	}
+int tty_rx_dequeue(struct tty *t) {
+	uint16_t *slot = t->rx_buff + t->rx_ring.tail;
 
-	t->ops->clear(t, x, y, tx, ty);
+	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
+		return -1;
+
+	return (int) *slot;
 }
 
-void tty_clear(struct tty *t) {
-	tty_clearxy(t, 0, 0, t->width, t->height);
-}
 
-void tty_cursor(struct tty *t) {
-	if (!t || !t->ops || !t->ops->cursor) {
-		return;
-	}
-	t->ops->cursor(t, t->cur_x, t->cur_y);
-}
-
-static void tty_esc_putc(struct tty *t, char ch) {
-	if (ch == '[') {
-		int i;
-
-		t->esc_args_count = 0;
-
-		for (i = 0; i < TTY_CSI_MAXOPTCNT; i++) {
-			t->esc_args[i] = 0;
-		}
-
-	} else if (ch == ';') {
-
-		++t->esc_args_count;
-
-	} else if (isdigit(ch)) {
-
-		if (!t->esc_args_count) {
-			++t->esc_args_count;
-		}
-
-		if (t->esc_args_count > TTY_CSI_MAXOPTCNT) {
-			t->esc_state = 0;
-			return;
-		}
-
-		t->esc_args[t->esc_args_count - 1] =
-			t->esc_args[t->esc_args_count - 1] * 10 + ch - '0';
-	} else {
-		switch (ch) {
-		case 'f': /* Move cursor + blink cursor to location v,h */
-			t->cur_x = t->esc_args[1];
-			if (t->cur_x != 0) {
-				--t->cur_y;
-			}
-			t->cur_y = t->esc_args[0];
-			if (t->cur_y) {
-				--t->cur_x;
-			}
-			tty_cursor(t);
-			break;
-		case 'H': /* Move cursor to screen location v,h */
-			t->cur_x = t->esc_args[1];
-			if (t->cur_x) {
-				--t->cur_x;
-			}
-			t->cur_y = t->esc_args[0];
-			if (t->cur_y) {
-				--t->cur_y;
-			}
-			if (t->cur_x >= t->width) {
-				t->cur_x = t->width - 1;
-			}
-			if (t->cur_y >= t->height) {
-				t->cur_y = t->height - 1;
-			}
-			break;
-		case 'm': /* color */
-			break; /* TODO */
-		case 'X': /* clear n characters */
-			tty_clearxy(t, t->cur_x, t->cur_y, t->esc_args[0], 1);
-			break;
-		case 'K': /* Clear line from cursor right */
-			switch (t->esc_args[0]) {
-			default:
-			case 0:
-				tty_clearxy(t, t->cur_x, t->cur_y, t->width - t->cur_x, 1);
-				break;
-			case 1:
-				tty_clearxy(t, 0, t->cur_y, t->cur_x, 1);
-				break;
-			case 2:
-				tty_clearxy(t, 0, t->cur_y, t->width, 1);
-				break;
-			}
-			break;
-		case 'J': /* Clear screen from cursor */
-			switch (t->esc_args[0]) {
-			default:
-			case 0:
-				tty_clearxy(t, 0, t->cur_y, t->width, t->height - t->cur_y);
-				break;
-			case 1:
-				tty_clearxy(t, 0, 0, t->width, t->cur_y);
-				break;
-			case 2:
-				tty_clearxy(t, 0, 0, t->width, t->height);
-				break;
-			}
-			break;
-		case 'D':
-			t->cur_x -= t->esc_args[0];
-			break;
-		case 'G':
-			if (t->esc_args_count == 0) {
-				t->esc_args[0] = 1;
-			}
-			t->cur_x = t->esc_args[0];
-			break;
-		case 'C':
-			if (t->esc_args_count == 0) {
-				t->esc_args[0] = 1;
-			}
-			t->cur_x += t->esc_args[0];
-			break;
-
-		}
-		t->esc_state = 0;
-	}
-}
-
-void tty_putc(struct tty *t, char ch) {
-	if (!t || !t->ops || !t->ops->putc) {
-		return;
-	}
-
-	tty_cursor(t); /* erase cursor */
-
-	if (t->esc_state) {
-		tty_esc_putc(t, ch);
-	}
-	else {
-		switch (ch) {
-		case '\n':
-		case '\f':
-			t->cur_x = 0;
-			++t->cur_y;
-			if (t->cur_y >= t->height) {
-				tty_scroll(t, t->cur_y - t->height + 1);
-			}
-			break;
-		case '\r':
-			t->cur_x = 0;
-			break;
-		case '\t':
-			t->cur_x += 4;
-			if (t->cur_x >= t->width) {
-				++t->cur_y;
-				if (t->cur_y >= t->height) {
-					tty_scroll(t, t->cur_y - t->height + 1);
-				}
-				t->cur_x -= t->width;
-			}
-			break;
-		case 27: /* ESC */
-			t->esc_state = 1;
-			break;
-		case 6: /* cursor */
-			++t->cur_y;
-			t->cur_x += 2;
-			if (t->cur_y >= t->height) {
-				t->cur_y = t->height - 1;
-			}
-			if (t->cur_x >= t->width) {
-				t->cur_x = t->width - 1;
-			}
-			break;
-		case 1: /* home */
-			t->cur_x = 0;
-			break;
-		case 5: /* clear to end of line */
-			tty_clearxy(t, t->cur_x, t->cur_y, t->width - t->cur_x - 1, 1);
-			break;
-		case 8: /* back space */
-			if (t->cur_x != 0)
-				--t->cur_x;
-			break;
-		default:
-			if ((unsigned char)ch >= 32) {
-				if (t->cur_x >= t->width) {
-					t->cur_x = 0;
-					++t->cur_y;
-				}
-				if (t->cur_y >= t->height) {
-					tty_scroll(t, t->cur_y - t->height + 1);
-				}
-				t->ops->putc(t, ch == '\265' ? '\346' : ch, t->cur_x, t->cur_y);
-				++t->cur_x;
-			}
-			break;
-		}
-	}
-
-	tty_cursor(t); /* draw cursor */
-	t->back_cx = t->cur_x;
-	t->back_cy = t->cur_y;
-}

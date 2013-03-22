@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <kernel/task.h>
-#include <lib/linenoise.h>
+#include <lib/linenoise_1.h>
 #include <cmd/cmdline.h>
 #include <embox/unit.h>
 
@@ -30,7 +30,7 @@ struct cmdtask_data {
 	int argc;
 	char buf[BUF_INP_SIZE];
 };
-
+#if 0
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
@@ -48,6 +48,21 @@ static int cmd_compl(char *buf, char *out_buf) {
 	}
 	return ret;
 
+}
+#endif
+
+void completion(const char *buf, struct linenoiseCompletions *lc) {
+	const struct cmd *cmd = NULL;
+	int buf_len = strlen(buf);
+
+	cmd_foreach(cmd) {
+		if (strlen(cmd_name(cmd)) < buf_len) {
+			continue;
+		}
+		if (strncmp(buf, cmd_name(cmd), buf_len) == 0) {
+			linenoiseAddCompletion(lc, (char*)cmd_name(cmd));
+		}
+	}
 }
 
 static int run_cmd(int argc, char *argv[]) {
@@ -154,7 +169,41 @@ int shell_line_input(const char *cmdline) {
 
 	return process(argc, argv);
 }
+static void tish_run(void) {
+    char *line;
 
+    /* Set the completion callback. This will be called every time the
+     * user uses the <tab> key. */
+    linenoiseSetCompletionCallback(completion);
+
+    /* Load history from file. The history file is just a plain text file
+     * where entries are separated by newlines. */
+    //linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+
+    /* Now this is the main loop of the typical linenoise-based application.
+     * The call to linenoise() will block as long as the user types something
+     * and presses enter.
+     *
+     * The typed string is returned as a malloc() allocated string by
+     * linenoise, so the user needs to free() it. */
+    while((line = linenoise("hello> ")) != NULL) {
+        /* Do something with the string. */
+        if (line[0] != '\0' && line[0] != '/') {
+            //printf("echo: '%s'\n", line);
+            linenoiseHistoryAdd(line); /* Add to the history. */
+    		shell_line_input(line);
+        } else if (!strncmp(line,"/historylen",11)) {
+            /* The "/historylen" command will change the history len. */
+            int len = atoi(line+11);
+            linenoiseHistorySetMaxLen(len);
+        } else if (line[0] == '/') {
+            printf("Unreconized command: %s\n", line);
+        }
+        free(line);
+    }
+}
+
+#if 0
 static void tish_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
@@ -177,6 +226,7 @@ static void tish_run(void) {
 		}
 	}
 }
+#endif
 
 SHELL_DEF({
 	.name = "tish",

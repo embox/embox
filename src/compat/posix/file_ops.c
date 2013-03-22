@@ -132,7 +132,9 @@ int ioctl(int fd, int request, ...) {
 	if (NULL == ops->ioctl) {
 		ret = -1;
 	} else {
-		ret = ops->ioctl(desc, request, args);
+		void *data = va_arg(args, void*);
+		ret = ops->ioctl(desc, request, data);
+
 	}
 
 	va_end(args);

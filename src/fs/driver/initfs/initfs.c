@@ -62,14 +62,15 @@ static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static int initfs_ioctl(struct file_desc *desc, int request, va_list arg) {
+static int initfs_ioctl(struct file_desc *desc, int request, ...) {
 	struct nas *nas;
 	struct initfs_file_info *fi;
 	char **p_addr;
 	va_list args;
 
 	//TODO: switch through "request" ID.
-	va_copy(args, arg);
+	//va_copy(args, arg);
+	va_start(args, request);
 	p_addr = va_arg(args, char **);
 	va_end(args);
 

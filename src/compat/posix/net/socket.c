@@ -32,7 +32,7 @@
 
 static ssize_t this_read(struct idx_desc *socket, void *buf, size_t nbyte);
 static ssize_t this_write(struct idx_desc *socket, const void *buf, size_t nbyte);
-static int this_ioctl(struct idx_desc *socket, int request, va_list args);
+static int this_ioctl(struct idx_desc *socket, int request, void *);
 static int this_close(struct idx_desc *socket);
 
 const struct task_idx_ops task_idx_ops_socket = {
@@ -381,7 +381,7 @@ static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) 
 	return sendto_sock(task_idx_desc_data(data), buf, nbyte, 0, NULL, 0);
 }
 
-static int this_ioctl(struct idx_desc *socket, int request, va_list args) {
+static int this_ioctl(struct idx_desc *socket, int request, void *data) {
 	return 0;
 }
 

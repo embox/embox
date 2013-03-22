@@ -16,6 +16,7 @@
 
 static void kernel_init(void);
 static int init(void);
+extern int diag_console_init(void);
 
 /**
  * The setup of the system, the run level and execution of the idle function.
@@ -31,6 +32,7 @@ void kernel_start(void) {
 	}
 }
 
+
 /**
  * The initialization functions are called to set up interrupts, perform
  * further memory configuration, initialization of drivers, devices.
@@ -40,7 +42,7 @@ static void kernel_init(void) {
 
 	ipl_init();
 
-	iodev_init();
+	diag_console_init();
 }
 
 /**

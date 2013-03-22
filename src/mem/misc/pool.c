@@ -11,9 +11,11 @@
  *
  */
 
+#include <mem/misc/pool.h>
+
+#include <assert.h>
 #include <stdio.h>
 #include <stddef.h>
-#include <mem/misc/pool.h>
 
 void *pool_alloc(struct pool* pool) {
 	void * addr;

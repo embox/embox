@@ -1950,7 +1950,7 @@ static int    fatfs_open(struct node *node, struct file_desc *file_desc, int fla
 static int    fatfs_close(struct file_desc *desc);
 static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    fatfs_ioctl(struct file_desc *desc, int request, va_list args);
+static int    fatfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations fatfs_fop = {
 	.open = fatfs_open,
@@ -2153,7 +2153,7 @@ static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return rezult;
 }
 
-static int fatfs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

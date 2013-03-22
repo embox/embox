@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <drivers/tty.h>
 
 struct uart_params {
 	uint32_t baud_rate;
@@ -41,10 +42,13 @@ struct uart_device {
 	struct kfile_operations *fops;
 	struct uart_params *params;
 	struct uart_ops *operations;
+	struct tty tty;
 };
 
 extern int uart_dev_register(struct uart_device *dev);
 
 extern struct kfile_operations uart_dev_file_op;
+
+extern int serial_register(struct uart_device *dev);
 
 #endif /* UART_DEVICE_H_ */

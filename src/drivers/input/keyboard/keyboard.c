@@ -12,7 +12,13 @@
 #include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
+#include <drivers/indev_manager.h>
+#include <drivers/iodev.h>
 #include <embox/unit.h>
+#include <drivers/diag.h>
+#include <drivers/tty.h>
+#include <drivers/video_term.h>
+
 
 #include <drivers/i8042.h>
 
@@ -97,13 +103,31 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 
 	return 0;
 }
-
 static struct input_dev kbd_dev = {
 		.name = "keyboard",
 		.type = INPUT_DEV_KBD,
 		.irq = 1,
 		.event_get = keyboard_get_input_event,
 };
+
+
+
+static char kbd_getc(void) {
+	char ch;
+	tty_read(&diag_vterm.tty, &ch, 1);
+	return ch;
+}
+
+
+static const struct iodev_ops iodev_diag_ops_struct = {
+	.getc = kbd_getc,//&diag_getc,
+	.putc = &diag_putc,
+	.kbhit = NULL,
+};
+
+static void register_diag_input(void) {
+	iodev_setup(&iodev_diag_ops_struct);
+}
 
 static int keyboard_init(void) {
 	uint8_t mode;
@@ -135,6 +159,10 @@ static int keyboard_init(void) {
 
 	input_dev_register(&kbd_dev);
 	kbd_state = 0;
+
+	indev_manager_init_report(kbd_dev.name);
+
+	register_diag_input();
 
 	return 0;
 }

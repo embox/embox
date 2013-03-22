@@ -11,20 +11,7 @@
 #ifndef TERMIOS_H_
 #define TERMIOS_H_
 
-typedef unsigned char   cc_t;
-typedef unsigned int    speed_t;
-typedef unsigned int    tcflag_t;
-
-#define NCCS      8 /* Size of the array c_cc for control characters.*/
-
-typedef struct termios {
-	tcflag_t c_iflag; /* input mode flags */
-	tcflag_t c_oflag; /* output mode flags */
-	tcflag_t c_cflag; /* control mode flags */
-	tcflag_t c_lflag; /* local mode flags */
-	cc_t c_line;      /* line discipline */
-	cc_t c_cc[NCCS];  /* control characters */
-} termios_t;
+#include <sys/ioctl.h>
 
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT          0x0001  /* signal interrupt on break */
@@ -41,6 +28,9 @@ typedef struct termios {
 
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define OPOST           0x0001  /* perform output processing */
+#define ONLCR           0x0002  /* map NL to CR-NL (ala CRMOD) */
+#define OXTABS          0x0004  /* expand tabs to spaces */
+#define ONOEOT          0x0008  /* discard EOT's (^D) on output) */
 
 /* Values for termios c_cflag bit map.  POSIX Table 7-3. */
 #define CLOCAL          0x0001  /* ignore modem status lines */
@@ -66,18 +56,24 @@ typedef struct termios {
 #define NOFLSH          0x0080  /* disable flush after interrupt or quit */
 #define TOSTOP          0x0100  /* send SIGTTOU (job control, not implemented*/
 
+/*
+ * cc_c - Control characters array.
+ */
+
 /* Indices into c_cc array.  Default values in parentheses. POSIX Table 7-5. */
-#define VEOF                 0  /* cc_c[VEOF] = EOF char (^D) */
-#define VEOL                 1  /* cc_c[VEOL] = EOL char (undef) */
+#define VEOF                 0  /* cc_c[VEOF]   = EOF char (^D) */
+#define VEOL                 1  /* cc_c[VEOL]   = EOL char (undef) */
 #define VERASE               2  /* cc_c[VERASE] = ERASE char (^H) */
-#define VINTR                3  /* cc_c[VINTR] = INTR char (DEL) */
-#define VKILL                4  /* cc_c[VKILL] = KILL char (^U) */
-#define VMIN                 5  /* cc_c[VMIN] = MIN value for timer */
-#define VQUIT                6  /* cc_c[VQUIT] = QUIT char (^\) */
-#define VTIME                7  /* cc_c[VTIME] = TIME value for timer */
-#define VSUSP                8  /* cc_c[VSUSP] = SUSP (^Z, ignored) */
+#define VINTR                3  /* cc_c[VINTR]  = INTR char (DEL) */
+#define VKILL                4  /* cc_c[VKILL]  = KILL char (^U) */
+#define VMIN                 5  /* cc_c[VMIN]   = MIN value for timer */
+#define VQUIT                6  /* cc_c[VQUIT]  = QUIT char (^\) */
+#define VTIME                7  /* cc_c[VTIME]  = TIME value for timer */
+#define VSUSP                8  /* cc_c[VSUSP]  = SUSP (^Z, ignored) */
 #define VSTART               9  /* cc_c[VSTART] = START char (^S) */
-#define VSTOP               10  /* cc_c[VSTOP] = STOP char (^Q) */
+#define VSTOP               10  /* cc_c[VSTOP]  = STOP char (^Q) */
+
+#define NCCS                11  /* Size of the array of control characters.*/
 
 /* Values for the baud rate settings.  POSIX Table 7-6. */
 #define B0              0x0000  /* hang up the line */
@@ -113,7 +109,58 @@ typedef struct termios {
 #define TCIOFF             3    /* transmit a STOP character on the line */
 #define TCION              4    /* transmit a START character on the line */
 
-static inline int tcgetattr(int fd, struct termios *termios_p) { return 0; }
-static inline int tcsetattr(int fd, int optional_actions, struct termios *termios_p) { return 0; }
+typedef unsigned char   cc_t;
+typedef unsigned int    speed_t;
+typedef unsigned int    tcflag_t;
+
+struct termios {
+	tcflag_t c_iflag;     /* input mode flags */
+	tcflag_t c_oflag;     /* output mode flags */
+	tcflag_t c_cflag;     /* control mode flags */
+	tcflag_t c_lflag;     /* local mode flags */
+	cc_t     c_cc[NCCS];  /* control characters */
+
+	/* TODO non-standard fields. */
+	cc_t     c_line;      /* line discipline */
+	speed_t  c_ispeed;
+	speed_t  c_ospeed;
+};
+
+// TODO part of tty_ioctl, not termios -- Eldar
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;   /* unused */
+	unsigned short ws_ypixel;   /* unused */
+};
+
+extern int tcgetattr(int fd, struct termios *);
+extern int tcsetattr(int fd, int opt, const struct termios *);
+
+static inline speed_t cfgetispeed(const struct termios *termios) {
+	return termios->c_ispeed;
+}
+static inline speed_t cfgetospeed(const struct termios *termios) {
+	return termios->c_ospeed;
+}
+
+static inline int cfsetispeed(struct termios *termios, speed_t speed) {
+	termios->c_ispeed = speed;
+	return 0;
+}
+static inline int cfsetospeed(struct termios *termios, speed_t speed) {
+	termios->c_ospeed = speed;
+	return 0;
+}
+
+/* TODO IOCTL numbers are not included in standard <termios.h>.  -- Eldar */
+
+#define	TIOCGETA	_IOR('t', 1, struct termios)  /* get termios struct */
+#define	TIOCSETA	_IOW('t', 2, struct termios)  /* set termios struct */
+#define	TIOCSETAW	_IOW('t', 3, struct termios)  /* drain output, set */
+#define	TIOCSETAF	_IOW('t', 4, struct termios)  /* drn out, fls in, set */
+
+#define	TIOCGWINSZ	_IOR('t', 5, struct winsize)  /* get window size */
+#define	TIOCSWINSZ	_IOW('t', 6, struct winsize)  /* set window size */
 
 #endif /* TERMIOS_H_ */

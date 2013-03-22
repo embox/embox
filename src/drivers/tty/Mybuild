@@ -3,4 +3,15 @@ package embox.driver.tty
 
 module tty {
 	source "tty.c"
+	source "tty_file_ops.c"
+	source "tty_repo.c"
+	option number io_buff_sz = 128
+	option number rx_buff_sz = 8
+	depends embox.kernel.work
+	depends embox.kernel.thread.event
+}
+
+module ttyfs {
+	source "ttyfs.c"
+	depends embox.fs.driver.devfs
 }

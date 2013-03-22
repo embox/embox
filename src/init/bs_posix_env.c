@@ -9,8 +9,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <string.h>
+#include <errno.h>
+#include <stdarg.h>
 
 #include <drivers/iodev.h>
+#include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
@@ -43,10 +47,22 @@ static int iodev_close(struct idx_desc *idx) {
 	return 0;
 }
 
+static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
+	struct tty *tty = desc->data->fd_struct;
+
+	if(NULL == tty) {
+		return -EINVAL;
+	}
+
+	return tty_ioctl(tty, request, data);
+}
+
 static const struct task_idx_ops iodev_idx_ops = {
 	.read = iodev_read,
 	.write = iodev_write,
-	.close = iodev_close
+	.close = iodev_close,
+	.ioctl = iodev_ioctl,
+	.type = TASK_RES_OPS_TTY
 };
 
 static int check_valid(int fd, int reference_fd) {
@@ -66,10 +82,14 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
+extern struct tty *diag_tty;
+
 static int iodev_env_init(void) {
-	int fd = task_self_idx_alloc(&iodev_idx_ops, NULL);
+	int fd;
 	int res = 0;
 
+
+	fd = task_self_idx_alloc(&iodev_idx_ops, diag_tty);
 	if ((res = check_valid(fd, 0)) != 0) {
 		return res;
 	}

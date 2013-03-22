@@ -1,0 +1,6 @@
+package embox.driver.tty
+
+module vterm {
+	source "video_term.c", "indev_manager.c"
+	source "vtesc.c"
+}

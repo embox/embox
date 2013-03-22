@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <errno.h>
+#include <stdarg.h>
 
 #include <util/ring_buff.h>
 
@@ -16,6 +18,7 @@
 #include <fs/file_operation.h>
 
 #include <drivers/uart_device.h>
+#include <drivers/tty.h>
 
 #include <kernel/irq.h>
 
@@ -34,7 +37,7 @@ static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 static int dev_uart_close(struct file_desc *desc);
 static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
-static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args);
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
 
 struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
@@ -44,24 +47,32 @@ struct kfile_operations uart_dev_file_op = {
 	.ioctl = dev_uart_ioctl
 };
 
-RING_BUFFER_DEF(dev_buff, int, 0x20);
+//RING_BUFFER_DEF(dev_buff, int, 0x20);
 
-static struct event rx_happend;
+//static struct event rx_happend;
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
-	struct uart_device *dev;
-	int ch;
+	struct uart_device *dev = data;
 
-	dev = (struct uart_device *)data;
-
-	while(dev->operations->hasrx(dev)) {
-		ch = dev->operations->get(dev);
-		ring_buff_enqueue(&dev_buff, &ch, 1);
-		event_notify(&rx_happend);
+	while (dev->operations->hasrx(dev)) {
+		tty_rx_putc(&dev->tty, dev->operations->get(dev), 0);
 	}
 
 	return 0;
 }
+
+static void uart_tx_start(struct tty *tty, char ch) {
+
+}
+
+static void uart_term_setup(struct tty *tty, struct termios *termios) {
+
+}
+
+static struct tty_ops uart_tty_ops = {
+		.setup = uart_term_setup,
+		.tx_char = uart_tx_start
+};
 
 /*
  * file_operations
@@ -70,9 +81,10 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart_device *uart_dev;
 	uart_dev = uart_dev_lookup((char *)node->name);
 
-	if(NULL == uart_dev || uart_dev->fops) {
-		return -1;
-	}
+//	if(NULL == uart_dev || uart_dev->fops) {
+//		return -1;
+//	}
+	tty_init(&uart_dev->tty, &uart_tty_ops);
 
 	if(uart_dev->operations->setup) {
 		uart_dev->operations->setup(uart_dev, uart_dev->params);
@@ -94,7 +106,13 @@ static int dev_uart_close(struct file_desc *desc) {
 	return 0;
 }
 
+
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
+	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+
+
+	return tty_read(&dev->tty, (char *) buff, size);
+#if 0
 	size_t cnt = size;
 
 	if (0 == ring_buff_get_cnt(&dev_buff)) {
@@ -119,6 +137,7 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 	}
 
 	return size - cnt;
+#endif
 }
 
 static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
@@ -135,19 +154,41 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 	return 0;
 }
 
-static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args) {
-	return 0;
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
+#if 0
+	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+	int speed;
+	va_list args;
+	va_start(args, request);
+
+	switch(request) {
+	case TTY_IOCTL_SETBAUD:
+		speed = va_arg(args,int);
+		dev->params->baud_rate = speed;
+		break;
+	default:
+		return tty_ioctl(&dev->tty, request, NULL);
+	}
+	va_end(args);
+#endif
+	return ENOERR;
 }
 
 int uart_dev_register(struct uart_device *dev) {
-	struct node *node;
-	struct nas *nas;
-	mode_t mode;
+	//struct node *node;
+	//struct nas *nas;
+	//mode_t mode;
 
 	//TODO tmp (we can have only one device)
 	uart_dev = dev;
 
+
+	dev->fops = &uart_dev_file_op;
+	serial_register(dev);
+
+#if 0
 	mode = S_IFCHR | S_IRALL | S_IWALL;
+
 
 	/* register char device */
 	node = vfs_lookup(NULL, "/dev");
@@ -164,9 +205,13 @@ int uart_dev_register(struct uart_device *dev) {
 	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
 		return -1;
 	}
-	//strncpy((char*)node->name, dev->dev_name, sizeof(node->name) - 1);
 
 	nas->fs->file_op = &uart_dev_file_op;
+	nas->fi = (void *)dev;
+
+	memset(&dev->tty, 0, sizeof(dev->tty));
+	dev->tty.termios.c_cflag = CLOCAL | CREAD | CS8;
+#endif
 
 	return 0;
 }

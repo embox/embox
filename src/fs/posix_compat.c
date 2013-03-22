@@ -39,8 +39,8 @@ static int this_stat(struct idx_desc *data, void *buff) {
 	return kfstat(from_data(data), buff);
 }
 
-static int this_ioctl(struct idx_desc *data, int request, va_list args) {
-	return kioctl(from_data(data), request, args);
+static int this_ioctl(struct idx_desc *desc, int request, void *data) {
+	return kioctl(from_data(desc), request, data);
 }
 
 static int this_truncate(struct idx_desc *data, off_t length) {

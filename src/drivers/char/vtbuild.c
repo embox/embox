@@ -16,11 +16,6 @@
 /* Enough to hold decimal numbers up to 99999. */
 #define PARAM_PRINT_BUFF_SIZE 5
 
-/** ANSI Escape */
-#define ESC		'\033'
-
-/** ANSI Control Sequence Introducer */
-#define CSI		'['
 
 struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb) {
 	if (builder == NULL) {

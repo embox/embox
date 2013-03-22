@@ -6,44 +6,101 @@
  * @author Ilia Vaprol
  */
 
-#ifndef DRIVERS_VIDEO_TTY_H_
-#define DRIVERS_VIDEO_TTY_H_
+#ifndef DRIVERS_TTY_H_
+#define DRIVERS_TTY_H_
 
+#include <stddef.h>
 #include <stdint.h>
+#include <termios.h>
 
-#define TTY_CSI_MAXOPTCNT 5
+#include <kernel/irq_lock.h>
+#include <kernel/thread/event.h>
+#include <kernel/work.h>
+#include <util/ring.h>
 
-struct tty;
+#include <framework/mod/options.h>
+#include <module/embox/driver/tty/tty.h>
 
-struct tty_ops {
-	void (*init)(struct tty *t);
-	void (*cursor)(struct tty *t, uint32_t x, uint32_t y);
-	void (*putc)(struct tty *t, char ch, uint32_t x, uint32_t y);
-	void (*clear)(struct tty *t, uint32_t x, uint32_t y,
-			uint32_t width, uint32_t height);
-	void (*move)(struct tty *t, uint32_t sx, uint32_t sy, uint32_t width,
-			uint32_t height, uint32_t dx, uint32_t dy);
-};
+/* Defaults */
+
+#define TTY_TERMIOS_CC_INIT \
+	{ \
+		[VEOF]   = __TTY_CTRL('d'),  \
+		[VEOL]   = ((cc_t) ~0), /* undef */ \
+		[VERASE] = 0177,             \
+		[VINTR]  = __TTY_CTRL('c'),  \
+		[VKILL]  = __TTY_CTRL('u'),  \
+		[VMIN]   = 1,                \
+		[VQUIT]  = __TTY_CTRL('\\'), \
+		[VTIME]  = 0,                \
+		[VSUSP]  = __TTY_CTRL('z'),  \
+		[VSTART] = __TTY_CTRL('q'),  \
+		[VSTOP]  = __TTY_CTRL('s'),  \
+	}
+
+#define __TTY_CTRL(ch)  (cc_t) ((ch) & 0x1f)
+
+#define TTY_TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
+#define TTY_TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
+#define TTY_TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
+#define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
+			ECHO | ECHOE | ECHOK | ECHONL)
+
+#define TTY_IO_BUFF_SZ \
+	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, io_buff_sz)
+
+#define TTY_RX_BUFF_SZ \
+	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, rx_buff_sz)
+
+struct tty_ops;
 
 struct tty {
-	uint32_t cur_x;
-	uint32_t cur_y;
-	uint32_t back_cx, back_cy;
-	uint32_t width;
-	uint32_t height;
-	const struct tty_ops *ops;
-	void *data;
+	struct tty_ops   *ops;
+	struct termios    termios;
 
-	int esc_state;
-	int esc_args[TTY_CSI_MAXOPTCNT];
-	int esc_args_count;
+	struct work       rx_work;
+	struct ring       rx_ring;
+	uint16_t          rx_buff[TTY_RX_BUFF_SZ]; /* flag (MSB) and char (LSB) */
+
+	struct event      i_event;
+	struct ring       i_ring;
+	char              i_buff[TTY_IO_BUFF_SZ];
+	struct ring       i_canon_ring; /* cooked range inside the ring buffer */
+
+	struct event      o_event;
+	struct ring       o_ring;
+	char              o_buff[TTY_IO_BUFF_SZ];
 };
 
-extern void tty_init(struct tty *t, uint32_t width, uint32_t height,
-		const struct tty_ops *ops, void *data);
-extern void tty_scroll(struct tty *t, int32_t delta);
-extern void tty_clear(struct tty *t);
-extern void tty_cursor(struct tty *t);
-extern void tty_putc(struct tty *t, char ch);
+struct tty_ops {
+	void (*setup)(struct tty *, struct termios *);
+	void (*tx_char)(struct tty *, char);
+};
 
-#endif /* DRIVERS_VIDEO_TTY_H_ */
+extern struct tty *tty_init(struct tty *, struct tty_ops *);
+
+extern size_t tty_read(struct tty *, char *, size_t);
+extern size_t tty_write(struct tty *, char *, size_t);
+extern int tty_ioctl(struct tty *, int, void *);
+
+/* TTY RX queue operations, must be explicitly IRQ-protected. */
+
+extern int tty_rx_enqueue(struct tty *, char ch, unsigned char flag);
+extern int tty_rx_dequeue(struct tty *);
+
+/* These functions can be called from IRQ context. */
+
+extern void tty_post_rx(struct tty *);
+
+static inline int tty_rx_putc(struct tty *t, char ch, unsigned char flag) {
+	int rc = IRQ_LOCKED_DO(tty_rx_enqueue(t, ch, flag));
+	if (rc != -1) {
+		tty_post_rx(t);
+	}
+	return rc;
+}
+
+struct kfile_operations;
+extern int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops);
+
+#endif /* DRIVERS_TTY_H_ */

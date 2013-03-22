@@ -99,24 +99,5 @@ static inline void __slist_insert_link(struct __slist_link *link,
 #define __slist_remove_first(slist, type, m_link) \
 	__slist_link_safe_cast(slist_remove_first_link(slist), type, m_link)
 
-#define __slist_foreach_cast_assign(_iter, element, member) \
-	element = member_cast_out(_iter, typeof(*element), member.l)
-
-#define __slist_foreach(element, slist, m_link) \
-	__slist_foreach__(element, slist, __slist_foreach_cast_assign, m_link)
-
-#define __slist_foreach__(node, slist, iter_cast, cast_arg) \
-	__slist_foreach_guarded(node, slist, iter_cast, cast_arg, \
-			MACRO_GUARD(__iter), \
-			MACRO_GUARD(__head), \
-			MACRO_GUARD(__next))
-
-#define __slist_foreach_guarded(node, slist, iter_cast_assign, cast_arg, \
-		_iter, _head, _next) \
-	for (struct __slist_link *_head = &__slist_check(slist)->l, \
-				*_iter = (_head)->next, *_next = _iter->next; \
-			_iter != _head && (iter_cast_assign(_iter, node, cast_arg)); \
-			_iter = _next, _next = _iter->next)
-
 
 #endif /* UTIL_SLIST_IMPL_H_ */

@@ -11,8 +11,11 @@
 #include <drivers/input/keymap.h>
 #include <drivers/i8042.h>
 #include <drivers/diag.h>
-#include <stddef.h>
 
+int key_is_pressed(struct input_event *event) {
+	return event->type & KEY_PRESSED;
+}
+#if 0
 static struct input_dev *kbd;
 
 static struct input_dev *kbd_get(void) {
@@ -24,35 +27,31 @@ static struct input_dev *kbd_get(void) {
 			input_dev_open(kbd, NULL);
 		}
 	}
-
 	return kbd;
-
 }
 
-int key_is_pressed(struct input_event *event) {
-	return event->type & KEY_PRESSED;
-}
+int keyboard_getc(struct input_dev *indev) {
 
-static int keyboard_getc(void) {
 	static unsigned char ascii_buff[4];
-	static int ascii_len = 0;
+	static int ascii_len;
 	static int seq_cnt = 0;
 	struct input_event event;
 
-	if (ascii_len > seq_cnt) {
+	if(ascii_len > seq_cnt) {
 		return ascii_buff[seq_cnt++];
 	}
-
 	ascii_len = 0;
 
 	do {
-		while (0 != input_dev_event(kbd_get(), &event)) { /* nothing */ }
+		while (0 != input_dev_event(kbd_get(), &event)) {
 
-		if (key_is_pressed(&event)) {
+		}
+
+		if(key_is_pressed(&event)) {
 			ascii_len = keymap_to_ascii(&event, ascii_buff);
 		}
 
-	} while (ascii_len == 0);
+	} while(ascii_len == 0);
 
 	seq_cnt = 0;
 
@@ -66,3 +65,4 @@ char diag_getc(void) {
 int diag_kbhit(void) {
 	return keyboard_havechar();
 }
+#endif

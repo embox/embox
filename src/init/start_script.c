@@ -7,17 +7,22 @@
  */
 
 #include <errno.h>
-#include <util/array.h>
-#include <embox/unit.h>
-#include <ctype.h>
-#include <framework/cmd/api.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
-#include <cmd/shell.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
+
+#include <util/array.h>
+#include <embox/unit.h>
+
+#include <framework/cmd/api.h>
+
+#include <cmd/shell.h>
+
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -35,6 +40,8 @@ static const char *script_commands[] = {
 static void setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[MAX_LENGTH_PATH_NAME];
+
+	putenv("TERM=emterm");
 
 	if (strlen(dev_name) == 0) {
 		return;
@@ -66,11 +73,14 @@ static int run_script(void) {
 
 	shell = shell_lookup(OPTION_STRING_GET(shell_name));
 	if (NULL == shell) {
+		char env[20];
 		shell = shell_any();
 
 		if (NULL == shell) {
 			return -ENOENT;
 		}
+		sprintf(env, "shell=%s", shell->name);
+		putenv(env);
 	}
 
 	printk("loading start script:\n");

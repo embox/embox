@@ -7,17 +7,21 @@
  */
 
 #include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+#include <string.h>
+#include <limits.h>
+
 #include <drivers/diag.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
-#include <errno.h>
+#include <drivers/tty.h>
+
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/node.h>
-#include <stddef.h>
-#include <string.h>
+
 #include <embox/device.h>
-#include <limits.h>
 
 #define TTY_DEV_NAME "tty0"
 #define DEFAULT_FRAMEBUFFER "fb0"
@@ -61,11 +65,24 @@ static size_t tty_device_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
+static int tty_device_ioctl(struct file_desc *desc, int request, va_list args) {
+	switch(request) {
+	case TTY_IOCTL_GETATTR:
+		break;
+	case TTY_IOCTL_SETATTR:
+		break;
+	default:
+		return -ENOSYS;
+	}
+	return ENOERR;
+}
+
 static const struct kfile_operations tty_device_ops = {
 	.open = tty_device_open,
 	.close = tty_device_close,
 	.read = tty_device_read,
 	.write = tty_device_write,
+	.ioctl = tty_device_ioctl
 };
 
 static int tty_device_init(void) {
