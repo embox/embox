@@ -1020,7 +1020,7 @@ static int fat_create_file(struct node * parent_node, struct node *node) {
 	vfs_get_path_by_node(node, tmppath);
 
 	/* set relative path in this file system */
-	path_cut_mount_dir(tmppath, (char *) fsi->mntto);
+	path_cut_mount_dir(tmppath, (char *) nas->fs->mntto);
 
 	fat_get_filename(tmppath, (char *) filename);
 
@@ -1846,12 +1846,9 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	char full_path[MAX_LENGTH_PATH_NAME];
 	struct nas *nas;
 	struct fat_file_info  *fi;
-	struct fat_fs_info *fsi;
 	node_t *node;
 	mode_t mode;
 	int rc = 0;
-
-	fsi = parent_nas->fs->fsi;
 
 	if (NULL == (rcv_buf = page_alloc(__phymem_allocator, 1))) {
 		rc = -ENOMEM;
@@ -1862,7 +1859,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 
 	/* set relative path in this file system */
 	vfs_get_path_by_node(parent_nas->node, full_path);
-	path_cut_mount_dir(full_path, (char *) fsi->mntto);
+	path_cut_mount_dir(full_path, (char *) parent_nas->fs->mntto);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
 		rc = -ENODEV;
@@ -1971,16 +1968,14 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	struct nas *nas;
 	uint8_t path [MAX_LENGTH_PATH_NAME];
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
 
 	node = nod;
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
 	vfs_get_path_by_node (nod, (char *) path);
 	/* set relative path in this file system */
-	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
+	path_cut_mount_dir((char *) path, (char *) nas->fs->mntto);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -2257,8 +2252,8 @@ static int fatfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct fat_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
-	vfs_get_path_by_node(dev_node, fsi->mntfrom);
+	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
+	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
@@ -2320,7 +2315,7 @@ static int fatfs_delete(struct node *node) {
 	 * remove the root name to give a name to fat file system name
 	 * and set relative path in this file system
 	 */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
+	path_cut_mount_dir(path, (char *) nas->fs->mntto);
 	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fsi);
@@ -2359,18 +2354,15 @@ static int fatfs_truncate(struct node *node, off_t length) {
 static int fatfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
-	struct fat_fs_info *fsi;
 	void *prev_fi, *prev_fs;
 	char path[MAX_LENGTH_PATH_NAME];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	fsi = dir_nas->fs->fsi;
-
 	/* check if dir not a root dir */
 	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(fsi->mntto, path)) {
+	if(0 != strcmp(dir_nas->fs->mntto, path)) {
 		return -EINVAL;
 	}
 	/*TODO check if it has a opened files */

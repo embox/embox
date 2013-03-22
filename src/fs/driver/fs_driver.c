@@ -16,6 +16,7 @@
 
 #include <util/array.h>
 #include <fs/fs_driver.h>
+#include <util/member.h>
 
 EMBOX_UNIT_INIT(fs_driver_init);
 
@@ -37,13 +38,13 @@ static fs_driver_head_t *fs_driver_alloc(struct fs_driver *drv) {
 	head = pool_alloc(&fs_driver_pool);
 	head->drv = drv;
 
-	dlist_add_next(dlist_head_init((struct dlist_head*)head), &file_systems);
+	dlist_add_next(dlist_head_init(&head->link), &file_systems);
 
 	return head;
 }
 
 static void fs_driver_free(struct fs_driver *drv) {
-	fs_driver_head_t *head = (fs_driver_head_t *)drv;
+	fs_driver_head_t *head = member_cast_out(drv, fs_driver_head_t, drv);
 
 	dlist_del((struct dlist_head *)head);
 	pool_free(&fs_driver_pool, head);

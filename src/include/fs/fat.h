@@ -261,8 +261,6 @@ typedef struct dirinfo {
 } dir_info_t, *p_dir_info_t;
 
 typedef struct fat_fs_info {
-	char mntfrom[MAX_LENGTH_PATH_NAME];
-	char mntto[MAX_LENGTH_PATH_NAME];
 	vol_info_t vi;
 } fat_fs_info_t;
 

@@ -25,6 +25,7 @@ int vfs_get_path_by_node(node_t *nod, char *path) {
 	*path = *buff= 0;
 	node = nod;
 	strncpy((char *) buff, (const char *) &node->name, MAX_LENGTH_FILE_NAME);
+	strncpy(path, (const char *) &node->name, MAX_LENGTH_FILE_NAME);
 
 	while(NULL !=
 			(parent = vfs_get_parent(node))) {

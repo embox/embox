@@ -159,8 +159,6 @@ typedef struct cdfs {
 } cdfs_t;
 
 typedef struct cdfs_fs_info {
-	char mntfrom[MAX_LENGTH_PATH_NAME];
-	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
 	void *data;
 } cdfs_fs_info_t;
