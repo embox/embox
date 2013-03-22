@@ -13,6 +13,8 @@
 
 #include <embox/cmd.h>
 #include <fs/sys/fsop.h>
+#include <fs/file_system.h>
+#include <mem/phymem.h>
 
 EMBOX_CMD(exec);
 
@@ -25,6 +27,7 @@ static int exec(int argc, char **argv) {
 	int opt_cnt;
 	char *dev, *dir;
 	char *fs_type;
+	char *buff;
 
 	opt_cnt = 0;
 	fs_type = 0;
@@ -64,5 +67,11 @@ static int exec(int argc, char **argv) {
 
 		return mount(dev, dir, fs_type);
 	}
+
+	buff = page_alloc(__phymem_allocator, 1);
+	filesystem_get_mount_list(buff);
+	printf("%s", buff);
+	page_free(__phymem_allocator, buff, 1);
+
 	return 0;
 }

@@ -525,8 +525,6 @@ struct ext2fs_dinode {
 
 /* in-memory data for ext2fs */
 typedef struct ext2_fs_info {
-	char mntfrom[MAX_LENGTH_PATH_NAME];
-	char mntto[MAX_LENGTH_PATH_NAME];
 	struct ext2sb e2sb;
 	struct	ext2_gd *e2fs_gd; /* group descripors */
 	/* The following items are only used when the super_block is in memory. */

@@ -783,17 +783,15 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	char path [MAX_LENGTH_PATH_NAME];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
 	fi->flags = flags;
 
 	vfs_get_path_by_node(node, path);
 	/* set relative path in this file system */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
+	path_cut_mount_dir(path, (char *) nas->fs->mntto);
 
 	if(0 == cdfs_open(node->nas, path)) {
 		return 0;
@@ -917,8 +915,8 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
-	vfs_get_path_by_node(dev_node, fsi->mntfrom);
+	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
+	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
@@ -971,7 +969,7 @@ static int cdfsfs_umount(void *dir) {
 
 	/* check if dir not a root dir */
 	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(fsi->mntto, path)) {
+	if(0 != strcmp(dir_nas->fs->mntto, path)) {
 		return -EINVAL;
 	}
 	/*TODO check if it has a opened files */

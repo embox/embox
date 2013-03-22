@@ -18,7 +18,7 @@ TEST_SETUP(mmu_case_setup);
 TEST_TEARDOWN(mmu_case_teardown);
 
 static mmu_ctx_t ctx;
-static int exception_flag;
+static volatile int exception_flag;
 
 static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
 //static char PAGE2[VMEM_PAGE_SIZE];

@@ -65,6 +65,10 @@ TEST_CASE("Delete file") {
 	test_assert_zero(remove(FS_DIR1));
 }
 
+TEST_CASE("Umount fat filesystem") {
+	test_assert_zero(umount(FS_DIR));
+}
+
 static int setup_suite(void) {
 	return ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE());
 }

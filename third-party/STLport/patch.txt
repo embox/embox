@@ -1,0 +1,13 @@
+diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
+--- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
++++ STLport/stlport/stl/config/_system.h	2013-03-21 18:30:19.197504928 +0400
+@@ -158,6 +158,9 @@
+ #  endif
+ 
+ #  include <stl/config/_windows.h>
++#elif defined(__EMBOX__)
++#include <stl/config/_embox.h>
++#include <stl/config/_gcc.h>
+ #else
+ #  error Unknown platform !!
+ #endif

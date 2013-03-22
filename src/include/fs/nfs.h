@@ -307,7 +307,6 @@ typedef struct nfs_fs_info {
 	char srv_dir[MAX_LENGTH_PATH_NAME];
 	export_dir_t export;
 	nfs_filehandle_t fh;
-	char mnt_point[MAX_LENGTH_PATH_NAME];
 	struct client *mnt;
 	struct client *nfs;
 } nfs_fs_info_t;
