@@ -27,8 +27,12 @@
 
 #include <mem/misc/pool.h>
 
+#include <prom/prom_printf.h>
+
 PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM);
 PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
+
+#define MDELAY 1000
 
 /** Number of receive descriptors per card. */
 #define E1000_RXDESC_NR 16
@@ -65,6 +69,13 @@ struct e1000_tx_desc {
 
 static struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
 static struct e1000_tx_desc tx_descs[E1000_TXDESC_NR] __attribute__((aligned(16)));
+
+static void mdelay(int value) {
+	volatile int delay = value;
+
+	while (delay --);
+
+}
 
 static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 	return (volatile uint32_t *) (dev->base_addr + offset);
@@ -192,8 +203,10 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 static int e1000_open(struct net_device *dev) {
 
+	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
 
+	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_SLU | E1000_REG_CTRL_ASDE);
 	REG_ANDIN(e1000_reg(dev, E1000_REG_CTRL), ~E1000_REG_CTRL_LRST);
 	REG_ANDIN(e1000_reg(dev, E1000_REG_CTRL), ~E1000_REG_CTRL_PHY_RST);
@@ -204,12 +217,15 @@ static int e1000_open(struct net_device *dev) {
 	REG_STORE(e1000_reg(dev, E1000_REG_FCTTV), 0);
 	REG_ANDIN(e1000_reg(dev, E1000_REG_CTRL), ~E1000_REG_CTRL_VME);
 
+	mdelay(MDELAY);
 	/* Clear Multicast Table Array (MTA). */
 	for (int i = 0; i < 128; i++) {
 		volatile uint32_t *r = i + e1000_reg(dev, E1000_REG_MTA);
 		REG_STORE(r, 0);
 	}
 
+	mdelay(MDELAY);
+	/* Clear Multicast Table Array (MTA). */
 #if 0 /*cleaned up on init */
 	/* Initialize statistics registers. */
 	for (int i = 0; i < 64; i++) {
@@ -218,6 +234,7 @@ static int e1000_open(struct net_device *dev) {
 		REG_LOAD(r);
 	}
 #endif
+	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
@@ -228,6 +245,7 @@ static int e1000_open(struct net_device *dev) {
 		tx_descs[i].buffer_address = (uint32_t) rx_buf[i];
 	}
 
+	mdelay(MDELAY);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDBAL), (uint32_t) rx_descs);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDBAH), 0);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDLEN), sizeof(struct e1000_rx_desc) * E1000_RXDESC_NR);
@@ -235,6 +253,7 @@ static int e1000_open(struct net_device *dev) {
 	REG_STORE(e1000_reg(dev, E1000_REG_RDT), E1000_RXDESC_NR - 1);
 	REG_ORIN( e1000_reg(dev, E1000_REG_RCTL), E1000_REG_RCTL_EN);
 
+	mdelay(MDELAY);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDBAL), (uint32_t) tx_descs);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDBAH), 0);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDLEN), sizeof(struct e1000_tx_desc) * E1000_TXDESC_NR);
@@ -242,13 +261,13 @@ static int e1000_open(struct net_device *dev) {
 	REG_STORE(e1000_reg(dev, E1000_REG_TDT), 0);
 	REG_ORIN(e1000_reg(dev, E1000_REG_TCTL), E1000_REG_TCTL_EN | E1000_REG_TCTL_PSP);
 
+	mdelay(MDELAY);
 	/* Enable interrupts. */
 	REG_STORE(e1000_reg(dev, E1000_REG_IMS),
 				      E1000_REG_IMS_RXO  |
 				      E1000_REG_IMS_RXT  |
 				      E1000_REG_IMS_TXQE |
 				      E1000_REG_IMS_TXDW);
-
 	return ENOERR;
 }
 
