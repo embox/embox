@@ -73,10 +73,6 @@ void QEmboxVCMouseHandler::readMouseData() {
 
 		emvc = __emboxVC(vc);
 
-		if (ev.devtype != INPUT_DEV_MOUSE) {
-			return;
-		}
-
 		bstate = Qt::NoButton;
 
 		if (ev.type & 1) {
@@ -111,11 +107,73 @@ void QEmboxVCMouseHandler::readMouseData() {
 	}
 }
 
+QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
+	int pipefd[2];
+
+	if (pipe(pipefd) < 0) {
+		return;
+	}
+
+	keyboardFD = pipefd[0];
+	inputFD = pipefd[1];
+
+	fcntl(keyboardFD, F_SETFD, O_NONBLOCK);
+	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+
+    keyboardNotifier = new QSocketNotifier(keyboardFD, QSocketNotifier::Read, this);
+    connect(keyboardNotifier, SIGNAL(activated(int)),this, SLOT(readKeyboardData()));
+}
+
+QEmboxVCKeyboardHandler::~QEmboxVCKeyboardHandler() {
+
+}
+
+void QEmboxVCKeyboardHandler::storeData(void *data, int datalen) {
+	write(inputFD, data, datalen);
+}
+
+void QEmboxVCKeyboardHandler::readKeyboardData() {
+	struct vc *vc;
+	struct input_event ev;
+
+	while (read(keyboardFD, &vc, sizeof(struct vc *)) > 0) {
+		QEvent::Type type;
+		unsigned char ascii[4];
+		Qt::KeyboardModifiers modifier = 0;
+
+		read(keyboardFD, &ev, sizeof(struct input_event));
+
+		type = ev.type & KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
+
+		if (ev.value & SHIFT_PRESSED) {
+			modifier = Qt::ShiftModifier;
+		} else if (ev.value & ALT_PRESSED) {
+			modifier = Qt::AltModifier;
+		} else if (ev.value & CTRL_PRESSED) {
+			modifier = Qt::ControlModifier;
+		}
+
+		int len = keymap_to_ascii(&ev, ascii);
+
+//		QString key
+//		for (int i = 0; i < len; i++) {
+//			key += QChar(ascii[i]);
+//		}
+
+		QWindowSystemInterface::handleKeyEvent(0, type, ascii[0], modifier, QString(QChar(ascii[0])));
+	}
+}
+
 static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 	QEmboxVCWindowSurface *emvc = __emboxVC(vc);
 
-	emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
-	emvc->mouseHandler->storeData(ev, sizeof(struct input_event));
+	if (ev->devtype == INPUT_DEV_MOUSE) {
+		emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
+		emvc->mouseHandler->storeData(ev, sizeof(struct input_event));
+	} else if (ev->devtype == INPUT_DEV_KBD) {
+		emvc->keyboardHandler->storeData(&vc, sizeof(struct vc *));
+		emvc->keyboardHandler->storeData(ev, sizeof(struct input_event));
+	}
 }
 
 static void __scheduleDevisualization(struct vc *vc) {
@@ -133,6 +191,7 @@ QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
 	cursor = new QEmboxCursor();
 
 	mouseHandler = new QEmboxVCMouseHandler();
+	keyboardHandler = new QEmboxVCKeyboardHandler();
 
 	emboxVCcallbacks.visualized = __visualization;
 	emboxVCcallbacks.schedule_devisualization = __scheduleDevisualization;

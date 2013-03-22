@@ -8,7 +8,9 @@
 #ifndef KEYMAP_H_
 #define KEYMAP_H_
 
+#include <sys/cdefs.h>
 
+__BEGIN_DECLS
 
 #define KEY_CTRL 0x80
 #define KEY_SHFT 0x81
@@ -43,5 +45,7 @@ struct input_event;
 extern int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]);
 
 extern int keymap_kbd(struct input_event *event);
+
+__END_DECLS
 
 #endif /* KEYMAP_H_ */

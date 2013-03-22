@@ -7,7 +7,10 @@
 #include <QtGui/QPlatformWindow>
 
 #include <drivers/video/fb.h>
+#include <drivers/input/keymap.h>
+#include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -31,6 +34,23 @@ private:
     QSocketNotifier *mouseNotifier;
 };
 
+class QEmboxVCKeyboardHandler : public QObject
+{
+    Q_OBJECT
+public:
+    QEmboxVCKeyboardHandler();
+    ~QEmboxVCKeyboardHandler();
+
+    void storeData(void *data, int datalen);
+
+private slots:
+    void readKeyboardData();
+
+private:
+    int keyboardFD, inputFD;
+    QSocketNotifier *keyboardNotifier;
+};
+
 class QEmboxVCWindowSurface : public QWindowSurface
 {
 public:
@@ -46,6 +66,7 @@ public:
     QEmboxCursor *cursor;
     int mouseX, mouseY;
     QEmboxVCMouseHandler *mouseHandler;
+    QEmboxVCKeyboardHandler *keyboardHandler;
 
 private:
     QImage mImage;
