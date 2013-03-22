@@ -168,12 +168,43 @@ static void execute_token(struct vterm *t, struct vtesc_token *token) {
 	}
 }
 
-static const unsigned char esc_start[] = { 0x1B, 0x5B }; /* esc, '[' */
+static const char *vterm_get_esc(int keycode){
+	switch (keycode) {
+
+	case KEY_INS: return "2~";
+	case KEY_HOME: return "H";
+	case KEY_END: return "F";
+	case KEY_PGUP: return "5~";
+	case KEY_PGDN: return "6~";
+	case KEY_UP: return "A";
+	case KEY_DOWN: return "B";
+	case KEY_LEFT: return "D";
+	case KEY_RGHT: return "C";
+
+	default: return 0;
+	}
+}
+
+static unsigned char vterm_get_char(int keycode) {
+	switch (keycode) {
+	case 0:
+	case KEY_CAPS:
+	case KEY_SHFT:
+	case KEY_CTRL:
+	case KEY_ALT:
+		return 0; /* no ascii symbols */
+
+	case KEY_F1 ... KEY_F12:
+		return 0; /* no ascii symbols */
+
+	default: return (unsigned char)keycode;
+	}
+}
 
 static int vterm_input(struct vterm *vt, struct input_event *event) {
-	unsigned char ascii_buff[4];
+	const char *ascii_buff;
+	unsigned char ch;
 	int keycode;
-	int seq_len = 0;
 
 	if (!key_is_pressed(event)) {
 		return 0;
@@ -184,89 +215,21 @@ static int vterm_input(struct vterm *vt, struct input_event *event) {
 		return 0;
 	}
 
-	switch (keycode) {
-	case 0:
-	case KEY_CAPS:
-	case KEY_SHFT:
-	case KEY_CTRL:
-	case KEY_ALT:
-		return 0; /* no ascii symbols */
+    ascii_buff = vterm_get_esc(keycode);
 
-	case KEY_F1:
-	case KEY_F2:
-	case KEY_F3:
-	case KEY_F4:
-	case KEY_F5:
-	case KEY_F6:
-	case KEY_F7:
-	case KEY_F8:
-	case KEY_F9:
-	case KEY_F10:
-	case KEY_F11:
-	case KEY_F12:
-		return 0; /* no ascii symbols */
+    if (ascii_buff){
+    	tty_rx_putc(&vt->tty, 0x1B, 0);
+    	tty_rx_putc(&vt->tty, '[', 0);
+    	for (int i = 0; i < strlen((const char *)ascii_buff); i++) {
+    		tty_rx_putc(&vt->tty, ascii_buff[i], 0);
+    	}
+    } else {
+    	ch = vterm_get_char(keycode);
 
-	case KEY_INS:
-		/*0x7e325b1b */
-		seq_len = 4;
-		ascii_buff[2] = '2';
-		ascii_buff[3] = '~';
-		break;
-	case KEY_HOME:
-		/* 0x485b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'H';
-		break;
-	case KEY_END:
-		/* 0x465b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'F';
-		break;
-	case KEY_PGUP:
-		/* 0x7e355b1b */
-		seq_len = 4;
-		ascii_buff[2] = '5';;
-		ascii_buff[3] = '~';
-		break;
-	case KEY_PGDN:
-		/* 0x7e365b1b */
-		seq_len = 4;
-		ascii_buff[2] = '6';
-		ascii_buff[3] = '~';
-		break;
-	case KEY_UP:
-		/* 0x415b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'A';
-		break;
-	case KEY_DOWN:
-		/* 0x425b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'B';
-		break;
-	case KEY_LEFT:
-		/* 0x445b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'D';
-		break;
-	case KEY_RGHT:
-		/* 0x435b1b */
-		seq_len = 3;
-		ascii_buff[2] = 'C';
-		break;
-
-	default:
-		seq_len = 1;
-		ascii_buff[0] = (unsigned char) keycode;
-		break;
-	}
-	if (seq_len > 1) {
-		memcpy(ascii_buff, esc_start, sizeof(esc_start));
-	}
-	for (int i = 0; i < seq_len; i++) {
-		//vterm_putc((struct vterm *) indev->data, ascii_buff[i]);
-		tty_rx_putc(&vt->tty, ascii_buff[i], 0);
-	}
+    	if(ch){
+    		tty_rx_putc(&vt->tty, ch, 0);
+    	}
+    }
 
 	return 0;
 }
