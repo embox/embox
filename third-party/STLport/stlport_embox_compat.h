@@ -115,6 +115,11 @@ namespace std {
 		return -1;
 	}
 
+	extern int ecvt_r(double number, int ndigits, int *decpt,
+	           int *sign, char *buf, size_t len);
+
+	extern int fcvt_r(double number, int ndigits, int *decpt,
+	           int *sign, char *buf, size_t len);
 }
 
 #endif /* STLPORT_EMBOX_COMPAT_H_ */
