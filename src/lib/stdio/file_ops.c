@@ -158,12 +158,12 @@ long int ftell(FILE *file) {
 int fgetpos(FILE *stream, fpos_t *pos) {
 	off_t mypos;
 
-	if (NULL == file) {
+	if (NULL == stream) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	mypos = lseek(file->fd, 0L, SEEK_CUR);
+	mypos = lseek(stream->fd, 0L, SEEK_CUR);
 
 	if (-1 == mypos) {
 		return -1;
@@ -177,12 +177,12 @@ int fgetpos(FILE *stream, fpos_t *pos) {
 int fsetpos(FILE *stream, const fpos_t *pos) {
 	off_t ret;
 
-	if (NULL == file) {
+	if (NULL == stream) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = lseek(file->fd, *pos, SEEK_SET);
+	ret = lseek(stream->fd, *pos, SEEK_SET);
 	if (ret == (off_t)-1) {
 		return -1;
 	}
