@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <util/array.h>
 
-#define BUFF_SZ 1024 /* more than POP3_STATUS_LEN */
+#define BUFF_SZ 1024
 static char buff[BUFF_SZ];
 
 static int send_req(struct pop3_session *p3s,
@@ -144,10 +144,7 @@ static int execute_cmd(struct pop3_session *p3s, int multiline,
 	int ret;
 	va_list command_args;
 
-	if (p3s == NULL) {
-		return -EINVAL;
-	}
-
+	assert(p3s != NULL);
 	assert(command_fmt != NULL);
 
 	va_start(command_args, command_fmt);
@@ -221,6 +218,10 @@ int pop3_close(struct pop3_session *p3s) {
 }
 
 int pop3_ok(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return p3s != NULL ? p3s->ok : 0;
 }
 
@@ -241,54 +242,103 @@ const char * pop3_data(struct pop3_session *p3s) {
 }
 
 int pop3_stat(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "STAT\r\n");
 }
 
 int pop3_list(struct pop3_session *p3s, int msg_or_any) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return msg_or_any == POP3_MSG_ANY
 			? execute_cmd(p3s, 1, "LIST\r\n")
 			: execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
 }
 
 int pop3_retr(struct pop3_session *p3s, int msg) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 1, "RETR %d\r\n", msg);
 }
 
 int pop3_dele(struct pop3_session *p3s, int msg) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "DELE %d\r\n", msg);
 }
 
 int pop3_noop(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "NOOP\r\n");
 }
 
 int pop3_rset(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "RSET\r\n");
 }
 
 int pop3_quit(struct pop3_session *p3s) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "QUIT\r\n");
 }
 
 int pop3_top(struct pop3_session *p3s, int msg, unsigned int n) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 1, "TOP %d %u\r\n", msg, n);
 }
 
 int pop3_uidl(struct pop3_session *p3s, int msg_or_any) {
+	if (p3s == NULL) {
+		return -EINVAL;
+	}
+
 	return msg_or_any == POP3_MSG_ANY
 			? execute_cmd(p3s, 1, "UIDL\r\n")
 			: execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
 }
 
 int pop3_user(struct pop3_session *p3s, const char *name) {
+	if ((p3s == NULL) || (name == NULL)) {
+		return -EINVAL;
+	}
+
 	return execute_cmd(p3s, 0, "USER %s\r\n", name);
 }
 
-int pop3_pass(struct pop3_session *p3s, const char *str) {
-	return execute_cmd(p3s, 0, "PASS %s\r\n", str);
+int pop3_pass(struct pop3_session *p3s, const char *secret) {
+	if ((p3s == NULL) || (secret == NULL)) {
+		return -EINVAL;
+	}
+
+	return execute_cmd(p3s, 0, "PASS %s\r\n", secret);
 }
 
 int pop3_apop(struct pop3_session *p3s, const char *name,
-		const char *str, const char *salt) {
+		const char *secret, const char *salt) {
+	if ((p3s == NULL) || (name == NULL) || (secret == NULL)
+			|| (salt == NULL)) {
+		return -EINVAL;
+	}
+
 	return -ENOSYS;
 }

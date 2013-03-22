@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef NET_POP3_H_
-#define NET_POP3_H_
+#ifndef NET_MAIL_POP3_H_
+#define NET_MAIL_POP3_H_
 
 #define POP3_PORT       110
 #define POP3_MSG_ANY     -1
@@ -43,8 +43,8 @@ extern int pop3_uidl(struct pop3_session *p3s,
 extern int pop3_user(struct pop3_session *p3s,
 		const char *name);
 extern int pop3_pass(struct pop3_session *p3s,
-		const char *str);
+		const char *secret);
 extern int pop3_apop(struct pop3_session *p3s,
-		const char *name, const char *str, const char *salt);
+		const char *name, const char *secret, const char *salt);
 
-#endif /* NET_POP3_H_ */
+#endif /* NET_MAIL_POP3_H_ */
