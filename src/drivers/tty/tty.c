@@ -311,6 +311,20 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	return buff - (end - size);
 }
 
+size_t tty_write(struct tty *tty, char *buff, size_t size) {
+	size_t count;
+
+	work_disable(&t->rx_work);
+
+	count = ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ,
+			 buff, size);
+	work_post(&t->rx_work);
+
+	work_enable(&t->rx_work);
+
+	return count;
+}
+
 int tty_ioctl(struct tty *tty, int request, void *data) {
 	switch (request) {
 	case TIOCGETA:
