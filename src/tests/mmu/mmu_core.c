@@ -10,6 +10,7 @@
 #include <framework/test/assert.h>
 
 #include <mem/vmem.h>
+#include <hal/ipl.h>
 #include <hal/test/traps_core.h>
 
 EMBOX_TEST_SUITE("Complex MMU core support test suite");
@@ -85,7 +86,12 @@ TEST_CASE("Pagefault should be considered right.") {
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
 }
 
+/* TODO: Remove this. */
+ipl_t ipl;
+
 static int mmu_case_setup(void) {
+	ipl = ipl_save();
+
 	test_assert_zero(vmem_create_context(&ctx));
 	test_assert_zero(vmem_map_on_itself(ctx, (void *) 0, REGION_SIZE, VMEM_PAGE_WRITABLE));
 	vmem_set_context(ctx);
@@ -97,6 +103,8 @@ static int mmu_case_setup(void) {
 static int mmu_case_teardown(void) {
 	vmem_off();
 	vmem_free_context(ctx);
+
+	ipl_restore(ipl);
 
 	return 0;
 }
