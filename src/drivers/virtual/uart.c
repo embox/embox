@@ -123,13 +123,13 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 }
 
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
-
 	return ENOERR;
 }
 
 int uart_dev_register(struct uart_device *dev) {
 	//TODO tmp (we can have only one device)
-	uart_dev = dev;
+	extern struct uart_device diag_uart;
+	uart_dev = &diag_uart;
 
 	dev->fops = &uart_dev_file_op;
 	serial_register(dev);

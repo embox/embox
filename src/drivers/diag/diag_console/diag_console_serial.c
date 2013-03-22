@@ -23,9 +23,10 @@ static const struct iodev_ops iodev_diag_ops_struct = {
 	.putc = &diag_putc,
 	.kbhit = &diag_kbhit,
 };
-
+static struct tty_ops tty_ops;
 int diag_console_init(void) {
 	iodev_setup(&iodev_diag_ops_struct);
 	iodev_init();
+	tty_init(diag_tty, &tty_ops);
 	return 0;
 }
