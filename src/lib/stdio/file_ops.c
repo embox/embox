@@ -17,6 +17,7 @@
 
 #include <fs/kfile.h>
 #include <stdio.h>
+#include <stddef.h>
 
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
@@ -58,11 +59,33 @@ FILE *fopen(const char *path, const char *mode) {
 
 	if ((fd = open(path, flags, DEFAULT_MODE)) > 0) {
 		file = pool_alloc(&file_pool);
+		if (file == NULL) {
+			close(fd);
+			SET_ERRNO(ENOMEM);
+			return NULL;
+		}
 		file->fd = fd;
 	}
 
 	return file;
 
+}
+
+FILE *fdopen(int fd, const char *mode) {
+	/**
+	 * FIXME mode ignored now
+	 */
+	FILE *file;
+
+	file = pool_alloc(&file_pool);
+	if (file == NULL) {
+		SET_ERRNO(ENOMEM);
+		return NULL;
+	}
+
+	file->fd = fd;
+
+	return file;
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {

@@ -126,8 +126,9 @@ extern FILE *fopen(const char *path, const char *mode);
 /**
  * Opens the file whose file descriptor is the fd
  * and associates a stream with it.
+ * FIXME mode ignored
  */
-static inline FILE *fdopen(int fd, const char *mode) { return NULL; }
+extern FILE *fdopen(int fd, const char *mode);
 
 /**
  * Opens the file whose name is the string pointed to by
