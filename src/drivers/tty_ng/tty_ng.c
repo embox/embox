@@ -39,7 +39,7 @@ struct param {
 
 static int _canon_read(struct idx_desc *data, void *buf, size_t size);
 static int _write(struct idx_desc *data, const void *buf, size_t nbyte);
-static int _ioctl(struct idx_desc *data, int request, va_list args);
+static int _ioctl(struct idx_desc *data, int request, void *);
 static int _close (struct idx_desc *data);
 
 const struct task_idx_ops task_idx_ops_tty = {
@@ -131,8 +131,9 @@ static void *task_handler(void* args) {
 	return NULL;
 }
 
-static int _ioctl(struct idx_desc *data, int request, va_list args) {
+static int _ioctl(struct idx_desc *data, int request, void *t) {
 	struct tty_buf *tty = data2tty_buf(data);
+
 	switch (request) {
 	case TTY_IOCTL_SET_RAW:
 		tty->canonical = 0;
@@ -145,6 +146,7 @@ static int _ioctl(struct idx_desc *data, int request, va_list args) {
 	default:
 		break;
 	}
+
 	return 0;
 }
 

@@ -35,7 +35,7 @@ static int ffsfs_open(struct node *node, struct file_desc *file_desc,
 static int ffsfs_close(struct file_desc *desc);
 static size_t ffsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ffsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int ffsfs_ioctl(struct file_desc *desc, int request, va_list args);
+static int ffsfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ffs_fop = {
 	.open = ffsfs_open,
@@ -88,7 +88,7 @@ static size_t ffsfs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int ffsfs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int ffsfs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

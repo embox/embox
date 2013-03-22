@@ -90,7 +90,7 @@ static int    ramfs_open(struct node *node, struct file_desc *file_desc, int fla
 static int    ramfs_close(struct file_desc *desc);
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    ramfs_ioctl(struct file_desc *desc, int request, va_list args);
+static int    ramfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ramfs_fop = {
 	.open = ramfs_open,
@@ -314,7 +314,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return bytecount;
 }
 
-static int ramfs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int ramfs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

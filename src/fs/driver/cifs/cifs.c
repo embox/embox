@@ -35,7 +35,7 @@ static int cifsfs_open(struct node *node, struct file_desc *file_desc,
 static int cifsfs_close(struct file_desc *desc);
 static size_t cifsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t cifsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int cifsfs_ioctl(struct file_desc *desc, int request, va_list args);
+static int cifsfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations cifs_fop = {
 	.open = cifsfs_open,
@@ -88,7 +88,7 @@ static size_t cifsfs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int cifsfs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int cifsfs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

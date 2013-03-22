@@ -36,7 +36,7 @@ static int ext4fs_open(struct node *node, struct file_desc *file_desc,
 static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext4fs_ioctl(struct file_desc *desc, int request, va_list args);
+static int ext4fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ext4_fop = {
 	.open = ext4fs_open,
@@ -89,7 +89,7 @@ static size_t ext4fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int ext4fs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int ext4fs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

@@ -134,7 +134,7 @@ static int ext2fs_open(struct node *node, struct file_desc *file_desc,
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args);
+static int ext2fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ext2_fop = {
 	.open = ext2fs_open,
@@ -509,7 +509,7 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return bytecount;
 }
 
-static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args) {
+static int ext2fs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 

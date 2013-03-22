@@ -5,7 +5,7 @@
  * @date 23.11.2012
  * @author Alexander Kalmuk
  */
-
+#if 0
 #define TIOCSWINSZ 0 /*third-party/dropbear-2012.55/sshpty.c:352:*/
 
 struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
@@ -15,7 +15,7 @@ struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
   unsigned short ws_xpixel;	/* horizontal size, pixels */
   unsigned short ws_ypixel;	/* vertical size, pixels */
 };
-
+#endif
 #define WNOHANG 0 /*third-party/dropbear-2012.55/svr-chansession.c:91:*/
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:983:*/
