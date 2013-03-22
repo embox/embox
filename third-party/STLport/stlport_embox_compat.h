@@ -75,6 +75,46 @@ namespace std {
 		DPRINT();
 		return -1;
 	}
+
+#define _SC_PAGESIZE 0
+	inline long sysconf(int name) {
+		printf(">>> sysconf(%d)\n", name);
+		switch (name) {
+		case _SC_PAGESIZE: return 4096;
+		default: break;
+		}
+		return -1;
+	}
+
+//#define MAP_SHARED    0x00
+#define MAP_PRIVATE   0x01
+#define PROT_READ     0x10
+//#define PROT_WRITE    0x20
+//#define MAP_FAILED    (-1)
+#include <errno.h>
+	static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
+		// ToDo: implement for InitFS files
+		(void)addr;
+		(void)len;
+		(void)prot;
+		(void)flags;
+		(void)off;
+		printf(">>> mmap(%i)\n",fd);
+		errno = EPERM;
+		return NULL;
+	}
+	static inline int munmap(void *addr, size_t size) {
+		(void)size;
+		printf(">>> munmap(%p)\n",addr);
+		errno = EPERM;
+		return -1;
+	}
+
+	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+		DPRINT();
+		return -1;
+	}
+
 }
 
 #endif /* STLPORT_EMBOX_COMPAT_H_ */
