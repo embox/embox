@@ -33,12 +33,13 @@ static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 }
 #endif
-
+#if 1
 static int iodev_read(struct idx_desc *desc, void *buf, size_t nbyte) {
 	struct tty *tty = desc->data->fd_struct;
 
 	return tty_read(tty, buf, nbyte);
 }
+#endif
 
 static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;

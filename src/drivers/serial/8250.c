@@ -52,6 +52,8 @@ static int uart_setup(struct uart_device *dev, struct uart_params *params) {
 
 	line_stat = calc_line_stat(params);
 
+	line_stat = UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT;
+
 	/* Turn off the interrupt */
 	out8(0x0, dev->base_addr + UART_IER);
 	/* Set DLAB */

@@ -127,12 +127,21 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 }
 
 int uart_dev_register(struct uart_device *dev) {
+	struct node node;
+
 	//TODO tmp (we can have only one device)
 	extern struct uart_device diag_uart;
 	uart_dev = &diag_uart;
+	uart_dev->operations = dev->operations;
+	uart_dev->base_addr = dev->base_addr;
+	uart_dev->params = dev->params;
+	uart_dev->irq_num = dev->irq_num;
 
-	dev->fops = &uart_dev_file_op;
-	serial_register(dev);
+	uart_dev->fops = &uart_dev_file_op;
+	serial_register(uart_dev);
+
+	memcpy(node.name, dev->dev_name, 6);
+	dev_uart_open(&node, NULL, 0);
 
 	return 0;
 }
