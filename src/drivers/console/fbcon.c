@@ -28,11 +28,11 @@ EMBOX_UNIT_INIT(fbcon_init);
 
 #define SET_VIDEO_MODE OPTION_GET(NUMBER,set_video_mode)
 
-static void tty_reinit(struct tty *tty, int x, int y);
-
 static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
 static void devisn(struct vc *vc);
+
+static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count);
 
 const struct vc_callbacks thiscbs = {
 	.handle_input_event = inpevent,
@@ -42,14 +42,7 @@ const struct vc_callbacks thiscbs = {
 
 static struct fbcon fbcons[VC_MPX_N];
 
-struct video_tty_data {
-	const struct font_desc *font;
-	int fg_color;
-	int bg_color;
-	int cur_color;
-};
-
-static struct video_tty_data tty_data = {
+static struct fbcon_displ_data fbcon_displ_data = {
 	.font = &font_vga_8x16,
 	.fg_color = 0x0000,
 	.bg_color = 0xFFFF,
@@ -130,8 +123,10 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 
 }
 
+static void vterm_reinit(struct vterm_video *t, int x, int y);
+
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
-	struct tty *tty;
+	/*struct tty *tty;*/
 	struct fbcon *fbcon = (struct fbcon *) vc;
 #if SET_VIDEO_MODE
 	const struct fb_videomode *mode;
@@ -164,11 +159,18 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 
 #endif /* SET_VIDEO_MODE */
 
+
+	vterm_reinit(&fbcon->vterm_video, fbcon->resbpp.x / fbcon_displ_data.font->width,
+		       	fbcon->resbpp.y / fbcon_displ_data.font->height);
+
+	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
+#if 0
 	tty = (struct tty *) &fbcon->tty_this;
 
-	tty_reinit(tty, fbcon->resbpp.x / tty_data.font->width, fbcon->resbpp.y / tty_data.font->height);
 	tty->cur_x = tty->cur_y = 0;
 	tty_cursor(tty);
+
+#endif
 
 }
 
@@ -195,11 +197,11 @@ static char fbcon_getc(struct fbcon *fbcon) {
 	return ret;
 }
 
-static struct fbcon *data2fbcon(struct idx_desc *data) {
+static inline struct fbcon *data2fbcon(struct idx_desc *data) {
 	return (struct fbcon *) (data->data->fd_struct);
 }
 
-static int tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
+static int this_tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(data);
 	char *cbuf = (char *) buf;
 
@@ -213,25 +215,31 @@ static int tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 }
 
-static int tty_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(data);
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		tty_putc(&fbcon->tty_this, *cbuf++);
+		vterm_putc(&fbcon->vterm, *cbuf++);
 	}
 
 	return (int) cbuf - (int) buf;
 }
 
-static int tty_close(struct idx_desc *idx) {
+static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
+	return tty_ioctl(&data2fbcon(data)->vterm.tty, request, data);
+}
+
+static int this_tty_close(struct idx_desc *idx) {
 	return 0;
 }
 
 static const struct task_idx_ops this_idx_ops = {
-	.read = tty_read,
-	.write = tty_write,
-	.close = tty_close,
+	.read  = this_tty_read,
+	.write = this_tty_write,
+	.close = this_tty_close,
+	.ioctl = this_tty_ioctl,
+	.type  = TASK_RES_OPS_TTY,
 };
 
 static void *run(void *data) {
@@ -254,14 +262,17 @@ static void *run(void *data) {
 
 }
 
-static void video_tty_init(struct tty *t) { }
+static void fbcon_vterm_init(struct vterm_video *t) {
+}
 
-static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
+static unsigned short prev_x = -1, prev_y = -1;
+
+static void fbcon_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned short y) {
+	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
+	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
 	struct fb_cursor cursor;
-	struct video_tty_data *data;
 	struct fb_info *fb;
 
-	data = (struct video_tty_data *)t->data;
 	assert(data != NULL);
 
 	assert(data->font != NULL);
@@ -272,24 +283,33 @@ static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
 	cursor.image.height = data->font->height;
 	cursor.image.fg_color = data->cur_color;
 
-	cursor.hot.x = x;
-	cursor.hot.y = y;
+	cursor.hot.x = prev_x;
+	cursor.hot.y = prev_y;
 
-	fb = member_cast_out(t, struct fbcon, tty_this)->vc_this.fb;
+	fb = fbcon->vc_this.fb;
 	if (!fb) {
 		return;
 	}
 	assert(fb->ops != NULL);
 	assert(fb->ops->fb_cursor != NULL);
+
+	if (prev_x != -1 && prev_y != -1) {
+		fb->ops->fb_cursor(fb, &cursor);
+	}
+
+	prev_x = cursor.hot.x = x;
+	prev_y = cursor.hot.y = y;
+
 	fb->ops->fb_cursor(fb, &cursor);
+
 }
 
-static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
+static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, unsigned short y) {
+	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_image symbol;
-	struct video_tty_data *data;
+	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
 	struct fb_info *fb;
 
-	data = (struct video_tty_data *)t->data;
 	assert(data != NULL);
 
 	assert(data->font != NULL);
@@ -303,34 +323,39 @@ static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
 	symbol.depth = 1;
 	symbol.data = data->font->data + (unsigned char)ch * data->font->height * data->font->width / 8;
 
-	fb = member_cast_out(t, struct fbcon, tty_this)->vc_this.fb;
+	fb = fbcon->vc_this.fb;
 	if (!fb) {
 		return;
 	}
+
+	if (prev_x == x && prev_y == y) {
+		prev_x = prev_y = -1;
+	}
+
 	assert(fb->ops != NULL);
 	assert(fb->ops->fb_imageblit != NULL);
 	fb->ops->fb_imageblit(fb, &symbol);
 }
 
-static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
-		uint32_t width, uint32_t height) {
+
+static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count){
+	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_fillrect rect;
-	struct video_tty_data *data;
+	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
 	struct fb_info *fb;
 
-	data = (struct video_tty_data *)t->data;
 	assert(data != NULL);
 
 	assert(data->font != NULL);
 
-	rect.dx = x * data->font->width;
-	rect.dy = y * data->font->height;
-	rect.width = width * data->font->width;
-	rect.height = height * data->font->height;
+	rect.dx = 0;
+	rect.dy = row * data->font->height;
+	rect.width = t->width * data->font->width;
+	rect.height = count * data->font->height;
 	rect.color = data->bg_color;
 	rect.rop = ROP_COPY;
 
-	fb = member_cast_out(t, struct fbcon, tty_this)->vc_this.fb;
+	fb = fbcon->vc_this.fb;
 	if (!fb) {
 		return;
 	}
@@ -339,52 +364,57 @@ static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	fb->ops->fb_fillrect(fb, &rect);
 }
 
-static void video_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
-		uint32_t width, uint32_t height, uint32_t dx, uint32_t dy) {
+static void fbcon_vterm_copy_rows(struct vterm_video *t,
+		unsigned short to, unsigned short from, short nrows) {
+	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_copyarea area;
-	struct video_tty_data *data;
+	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
 	struct fb_info *fb;
 
-	data = (struct video_tty_data *)t->data;
 	assert(data != NULL);
 
 	assert(data->font != NULL);
 
-	area.dx = dx * data->font->width;
-	area.dy = dy * data->font->height;
-	area.width = width * data->font->width;
-	area.height = height * data->font->height;
-	area.sx = sx * data->font->width;
-	area.sy = sy * data->font->height;
+	area.dx = 0;
+	area.dy = to * data->font->height;
+	area.width = t->width * data->font->width;
+	area.height = nrows * data->font->height;
+	area.sx = 0;
+	area.sy = from * data->font->height;
 
-	fb = member_cast_out(t, struct fbcon, tty_this)->vc_this.fb;
+	fb = fbcon->vc_this.fb;
 	if (!fb) {
 		return;
 	}
+
 	assert(fb->ops != NULL);
 	assert(fb->ops->fb_copyarea != NULL);
 	fb->ops->fb_copyarea(fb, &area);
 }
 
-static const struct tty_ops video_tty_ops = {
-	.init = &video_tty_init,
-	.cursor = &video_tty_cursor,
-	.putc = &video_tty_putc,
-	.clear = &video_tty_clear,
-	.move = &video_tty_move
+static const struct vterm_video_ops fbcon_vterm_video_ops = {
+		.init = &fbcon_vterm_init,
+		.cursor = &fbcon_vterm_cursor,
+		.putc = &fbcon_vterm_putc,
+		.clear_rows = &fbcon_vterm_clear_rows,
+		.copy_rows = &fbcon_vterm_copy_rows
 };
 
-static void tty_reinit(struct tty *tty, int x, int y) {
-	tty_init(tty, x, y, &video_tty_ops, &tty_data);
-}
+static void vterm_reinit(struct vterm_video *t, int x, int y) {
+	t->width = x;
+	t->height = y;
+};
 
 static int make_task(int i, char innewtask) {
 	struct fbcon *fbcon = &fbcons[i];
 	int ret;
 
 	fbcon->vc_this.callbacks = &thiscbs;
+	fbcon->fbcon_disdata = &fbcon_displ_data;
 
-	tty_init(&fbcon->tty_this, 80, 24, &video_tty_ops, &tty_data);
+	fbcon->vterm_video.ops = &fbcon_vterm_video_ops;
+
+	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
 
 	event_init(&fbcon->inpevent, "fbcon input event");
 

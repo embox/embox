@@ -8,6 +8,7 @@ module fb {
 	@NoRuntime depends embox.lib.LibC
 	depends embox.fs.rootfs
 	depends fb_videomodes
+	depends embox.driver.virtual.fb_device
 }
 
 module bochs {

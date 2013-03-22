@@ -9,7 +9,7 @@ module tty_device {
 module fb_device {
 	source "fb_device.c"
 
-	depends embox.driver.video.fb
+	/*depends embox.driver.video.fb*/
 }
 
 module diag_device {
