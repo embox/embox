@@ -4,14 +4,9 @@ package embox.kernel.thread.sched_policy
 abstract module api {
 }
 
-module nocontext extends embox.arch.context {
-	source "nocontext.h"
-}
-
 module nosched extends api {
 	source "nosched.h"
 	depends embox.kernel.thread.current.api
-	depends nocontext
 }
 
 module simple_queue extends api {

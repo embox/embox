@@ -24,7 +24,6 @@ module core extends thread_mode {
 
 @DefaultImpl(sched_none)
 abstract module sched_api {
-
 }
 
 module sched_none extends sched_api {

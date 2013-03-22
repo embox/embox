@@ -23,3 +23,7 @@ module nousermode extends embox.arch.usermode {
 module nosmp extends embox.arch.smp {
 	source "nosmp.h"
 }
+
+module nocontext extends embox.arch.context {
+	source "nocontext.h"
+}
