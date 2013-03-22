@@ -206,7 +206,7 @@ static inline struct idx_desc *task_self_idx_get(int fd) {
 		return NULL;
 	}
 
-	return task_idx_table_get(task_self_idx_table(), fd);
+	return task_idx_table_get(res, fd);
 }
 
 /**
