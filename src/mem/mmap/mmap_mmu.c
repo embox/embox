@@ -43,11 +43,11 @@ static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t f
 	return marea;
 }
 
-static inline void add_marea_to_mmap(struct mmap *mmap, struct marea *marea) {
+static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
-void mmap_init(struct mmap *mmap) {
+void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
 
@@ -64,12 +64,12 @@ void mmap_init(struct mmap *mmap) {
 	}
 }
 
-void mmap_free(struct mmap *mmap) {
+void mmap_free(struct emmap *mmap) {
 	mmap_clear(mmap);
 	vmem_free_context(mmap->ctx);
 }
 
-void mmap_clear(struct mmap *mmap) {
+void mmap_clear(struct emmap *mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
@@ -84,7 +84,7 @@ void mmap_clear(struct mmap *mmap) {
 }
 
 
-struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
+struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
@@ -117,7 +117,7 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 	return marea;
 }
 
-struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
+struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) {
 	struct dlist_head *item = &mmap->marea_list;
 	uint32_t s_ptr = mem_start;
 	struct marea *marea;
@@ -141,7 +141,7 @@ struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
 	return NULL;
 }
 
-uint32_t mmap_create_stack(struct mmap *mmap) {
+uint32_t mmap_create_stack(struct emmap *mmap) {
 	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
 
 	if (!mmap->stack_marea) {
@@ -151,7 +151,7 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
-int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
+int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea, *new_marea;
 	int res;
@@ -184,7 +184,7 @@ static int fini() {
 }
 
 static int task_switch_handler(struct thread *prev, struct thread *next) {
-	mmu_set_context(next->task->mmap->ctx);
+	mmu_set_context(next->task->emmap->ctx);
 	return 0;
 }
 

@@ -24,7 +24,7 @@ __BEGIN_DECLS
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
-struct mmap;
+struct emmap;
 struct task_u_area;
 struct sleepq;
 
@@ -48,7 +48,7 @@ struct task {
 
 	struct task_signal_table *signal_table;
 
-	struct mmap *mmap;
+	struct emmap *mmap;
 
 	struct thread *main_thread;
 

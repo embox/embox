@@ -26,16 +26,16 @@ static uint32_t mem_start;
 static uint32_t mem_end;
 static uint32_t mem_page_count;
 
-void mmap_init(struct mmap *mmap) {
+void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
 }
 
-void mmap_free(struct mmap *mmap) {
+void mmap_free(struct emmap *mmap) {
 	mmap_clear(mmap);
 }
 
-void mmap_clear(struct mmap *mmap) {
+void mmap_clear(struct emmap *mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
@@ -48,7 +48,7 @@ void mmap_clear(struct mmap *mmap) {
 	}
 }
 
-struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
+struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
@@ -84,7 +84,7 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 	return marea;
 }
 
-struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
+struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) {
 	struct dlist_head *item = &glob_list;
 	uint32_t s_ptr = mem_start;
 	struct marea *marea;
@@ -108,7 +108,7 @@ struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
 	return NULL;
 }
 
-uint32_t mmap_create_stack(struct mmap *mmap) {
+uint32_t mmap_create_stack(struct emmap *mmap) {
 	mmap->stack_marea = mmap_alloc_marea(mmap, 1024, 0);
 
 	if (!mmap->stack_marea) {
@@ -118,7 +118,7 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
-int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
+int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;
 }
 
