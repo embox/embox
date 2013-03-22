@@ -13,13 +13,14 @@
 #include <util/math.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdio.h>
 
 /**
  * Screen info
  * TODO make SCREEN structure
  */
 #define SCREEN_WIDTH  80
-#define SCREEN_HEIGHT 32
+#define SCREEN_HEIGHT 24
 static chtype screen[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 #define WINDOW_AMOUNT 0x10
@@ -86,7 +87,7 @@ WINDOW * initscr(void) {
 	curscr = &current;
 	window_init(curscr, 0, 0, LINES, COLS, NULL);
 
-	memset(&screen[0][0], 0, sizeof screen);
+	memset(&screen[0][0], ' ', sizeof screen);
 
 	res = doupdate();
 	if (res != OK) {
@@ -154,7 +155,16 @@ int delwin(WINDOW *win) {
 }
 
 int doupdate(void) {
-	return ERR;
+	uint16_t y, x;
+
+
+	for (y = 0; y < LINES; ++y) {
+		for (x = 0; x < COLS; ++x) {
+			printf("\x1b[%hu;%huH%c", y + 1, x + 1, (int)window_getch(stdscr, y, x));
+		}
+	}
+
+	return OK;
 }
 
 int refresh(void) {
@@ -503,7 +513,16 @@ int mvwgetch(WINDOW *win, int y, int x) {
 }
 
 int wgetch(WINDOW *win) {
-	return ERR;
+	int c;
+
+	printf("\x1b[%d;%dH", win->cury + 1, win->curx + 1); /* FIXME setup cursor*/
+
+	c = getchar();
+	if (c == '\n') {
+		return KEY_ENTER;
+	}
+
+	return c;
 }
 
 int bkgd(chtype ch) {
