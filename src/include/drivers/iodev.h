@@ -9,16 +9,12 @@
 #ifndef DRIVERS_IODEV_H_
 #define DRIVERS_IODEV_H_
 
-//#include <drivers/video_term.h>
-
 struct iodev_ops {
 	int (*init)(void);
 	char (*getc)(void);
 	void (*putc)(char ch);
 	int (*kbhit)(void);
 };
-
-
 
 extern const struct iodev_ops *const iodev_diag_ops;
 extern const struct iodev_ops *const iodev_video_ops;
