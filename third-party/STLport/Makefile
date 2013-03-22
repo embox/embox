@@ -11,6 +11,7 @@ STLPORT_LIB       = $(ROOT_DIR)/lib/libstlportg.a
 STLPORT_FLAGS     = $(STLPORT_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I../../stlport
+EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/stlport_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))

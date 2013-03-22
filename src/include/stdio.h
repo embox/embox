@@ -171,6 +171,12 @@ extern int fseek(FILE *stream, long int offset, int origin);
 
 extern long int ftell(FILE *stream);
 
+typedef long int fpos_t;
+
+extern int fgetpos(FILE *stream, fpos_t *pos);
+
+extern int fsetpos(FILE *stream, const fpos_t *pos);
+
 /**
  * Sets the file position indicator for the stream pointed to by stream to the beginning of the file.
  */

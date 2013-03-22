@@ -155,6 +155,41 @@ long int ftell(FILE *file) {
 	return lseek(file->fd, 0L, SEEK_CUR);
 }
 
+int fgetpos(FILE *stream, fpos_t *pos) {
+	off_t mypos;
+
+	if (NULL == file) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	mypos = lseek(file->fd, 0L, SEEK_CUR);
+
+	if (-1 == mypos) {
+		return -1;
+	}
+
+	*pos = mypos;
+
+	return 0;
+}
+
+int fsetpos(FILE *stream, const fpos_t *pos) {
+	off_t ret;
+
+	if (NULL == file) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	ret = lseek(file->fd, *pos, SEEK_SET);
+	if (ret == (off_t)-1) {
+		return -1;
+	}
+
+	return 0;
+}
+
 void rewind(FILE *file) {
 	fseek(file, 0L, SEEK_SET);
 }
