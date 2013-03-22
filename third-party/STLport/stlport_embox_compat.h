@@ -31,6 +31,8 @@
 #include_next <stdio.h>
 #include_next <time.h>
 
+#ifdef __cplusplus
+
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
 	static inline char *asctime(const struct tm *tm) {
@@ -121,5 +123,7 @@ namespace std {
 //	extern int fcvt_r(double number, int ndigits, int *decpt,
 //	           int *sign, char *buf, size_t len);
 }
+
+#endif // __cplusplus
 
 #endif /* STLPORT_EMBOX_COMPAT_H_ */

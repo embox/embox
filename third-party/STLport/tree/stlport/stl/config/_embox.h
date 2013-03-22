@@ -27,6 +27,8 @@
 //        To resolve later...
 #define _STLP_NO_OWN_NAMESPACE
 
+#define _NOTHREADS
+
 // ToDo: endianness
 
 #endif /* __STL_CONFIG_EMBOX_H_ */
