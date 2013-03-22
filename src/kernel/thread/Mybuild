@@ -47,5 +47,5 @@ module event {
 	source "event.c"
 
 	depends sched_api
-	depends embox.mem.objalloc
+	//depends embox.mem.objalloc
 }

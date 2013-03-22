@@ -11,3 +11,7 @@ module tty {
 	depends embox.kernel.thread.event
 }
 
+module ttyfs {
+	source "ttyfs.c"
+	depends embox.fs.driver.devfs
+}

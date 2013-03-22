@@ -9,36 +9,32 @@
 #include <stddef.h>
 #include <util/dlist.h>
 #include <sys/stat.h>
+#include <mem/misc/pool.h>
 
 #include <fs/file_operation.h>
 #include <fs/vfs.h>
 
+struct tty_repo_item {
+	struct dlist_head list;
+	void *dev;
+	const struct kfile_operations *file_ops;
+	const char *name;
+};
+
+static DLIST_DEFINE(tty_repo);
+
+POOL_DEF(tty_pool, struct tty_repo_item, 0x4);
 
 int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops) {
-	struct node *node;
-	struct nas *nas;
-	mode_t mode;
-
-	/* register char device */
-	node = vfs_lookup(NULL, "/dev");
-	if (!node) {
-		return -1;
+	struct tty_repo_item *item;
+	if(NULL == (item = pool_alloc(&tty_pool))) {
+		return -ENOMEM;
 	}
+	item->dev = dev;
+	item->file_ops = file_ops;
+	item->name = name;
 
-	mode = S_IFCHR | S_IRALL | S_IWALL;
-
-	node = vfs_create_child(node, name, mode);
-	if (!node) {
-		return -1;
-	}
-
-	nas = node->nas;
-	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
-		return -1;
-	}
-
-	nas->fs->file_op = file_ops;
-	nas->fi = dev;
+	dlist_add_next(dlist_head_init(&item->list) ,&tty_repo);
 
 	return ENOERR;
 }
