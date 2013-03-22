@@ -1,6 +1,44 @@
+diff -aur STLport-5.2.1/src/time_facets.cpp STLport/src/time_facets.cpp
+--- STLport-5.2.1/src/time_facets.cpp	2008-12-10 12:56:51.000000000 +0300
++++ STLport/src/time_facets.cpp	2013-03-22 20:23:41.503790874 +0400
+@@ -165,17 +165,21 @@
+ static void __append(__iostring &buf, const string& name)
+ { buf.append(name.data(), name.data() + name.size()); }
+ 
++#if !defined (_STLP_NO_WCHAR_T)
+ static void __append(__iowstring &buf, const wstring& name)
+ { buf.append(name.data(), name.data() + name.size()); }
++#endif
+ 
+ static void __append(__iostring &buf, char *first, char *last, const ctype<char>& /* ct */)
+ { buf.append(first, last); }
+ 
++#if !defined (_STLP_NO_WCHAR_T)
+ static void __append(__iowstring &buf, char *first, char *last, const ctype<wchar_t>& ct) {
+   wchar_t _wbuf[64];
+   ct.widen(first, last, _wbuf);
+   buf.append(_wbuf, _wbuf + (last - first));
+ }
++#endif
+ 
+ #if defined (__GNUC__)
+ /* The number of days from the first day of the first ISO week of this
+@@ -456,10 +460,12 @@
+                                        const _Time_Info& table, const tm* t)
+ { __write_formatted_timeT(buf, ct, format, modifier, table, t); }
+ 
++#if !defined (_STLP_NO_WCHAR_T)
+ void _STLP_CALL __write_formatted_time(__iowstring &buf, const ctype<wchar_t>& ct,
+                                        char format, char modifier,
+                                        const _WTime_Info& table, const tm* t)
+ { __write_formatted_timeT(buf, ct, format, modifier, table, t); }
++#endif
+ 
+ static time_base::dateorder __get_date_order(_Locale_time* time) {
+   const char * fmt = _Locale_d_fmt(time);
 diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
 --- STLport-5.2.1/src/num_put_float.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/num_put_float.cpp	2013-03-22 20:04:26.499763135 +0400
++++ STLport/src/num_put_float.cpp	2013-03-22 20:18:00.375782500 +0400
 @@ -126,7 +126,7 @@
  #  elif defined (__DJGPP) || (defined (_STLP_USE_GLIBC) && ! defined (__MSL__)) || \
        defined (__CYGWIN__) || \
@@ -10,6 +48,15 @@ diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
  static inline bool _Stl_is_nan_or_inf(double x)
  #    if defined (isfinite)
  { return !isfinite(x); }
+@@ -275,6 +275,8 @@
+ { return _ldfcvt(*(long_double*)&x, n, pt, sign); }
+ #    endif
+ #    define _STLP_CVT_NEED_SYNCHRONIZATION
++#  elif defined(__EMBOX__)
++#    define _STLP_EMULATE_LONG_DOUBLE_CVT
+ #  elif defined (__unix) && !defined (__APPLE__) && !defined (_CRAY)
+ static inline char* _Stl_ecvtR(double x, int n, int* pt, int* sign, char* buf)
+ { return ecvt_r(x, n, pt, sign, buf); }
 diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
 --- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
 +++ STLport/stlport/stl/config/_system.h	2013-03-21 18:30:19.197504928 +0400
