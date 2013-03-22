@@ -131,6 +131,8 @@ extern int finite(double);
 extern int finitel(long double);
 extern int finitef(float);
 
+extern double hypot(double x, double y);
+
 __END_DECLS
 
 #endif /* MATH_H_ */

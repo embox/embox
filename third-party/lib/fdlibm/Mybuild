@@ -21,4 +21,6 @@ static module Fdlibm {
 	source "e_atan2.c"
 	source "w_atan2.c"
 	source "s_atan.c"
+	source "e_hypot.c"
+	source "w_hypot.c"
 }
