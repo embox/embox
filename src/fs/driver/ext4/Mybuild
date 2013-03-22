@@ -1,0 +1,13 @@
+package embox.fs.driver
+
+module ext4 {
+	source "ext4.c"
+	option number inode_quantity=64
+	option number ext4_descriptor_quantity=4
+
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.ext2
+	depends embox.driver.block
+	depends embox.mem.page_api
+	depends embox.mem.pool
+}
