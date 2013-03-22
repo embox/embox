@@ -155,28 +155,13 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 }
 
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
+#if 0
 	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
 	int speed;
 	va_list args;
-//	struct termios *term;
-
 	va_start(args, request);
 
 	switch(request) {
-#if 0
-	case TTY_IOCTL_GETATTR:
-		term = va_arg(args, struct termios *);
-
-		memcpy(term, &dev->tty, sizeof(struct termios));
-		break;
-	case TTY_IOCTL_SETATTR:
-		term = va_arg(args, struct termios *);
-
-		memcpy(&dev->tty, term, sizeof(struct termios));
-
-		dev->operations->setup(dev, dev->params);
-		break;
-#endif
 	case TTY_IOCTL_SETBAUD:
 		speed = va_arg(args,int);
 		dev->params->baud_rate = speed;
@@ -185,6 +170,7 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 		return tty_ioctl(&dev->tty, request, NULL);
 	}
 	va_end(args);
+#endif
 	return ENOERR;
 }
 
