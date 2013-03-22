@@ -11,6 +11,8 @@
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <util/math.h>
+#include <termios.h>
+#include <unistd.h>
 
 /**
  * Screen info
@@ -540,4 +542,115 @@ int wbkgd(WINDOW *win, chtype ch) {
 void wbkgdset(WINDOW *win, chtype ch) {
 	assert(win != NULL);
 	win->bkgd = ch;
+}
+
+int cbreak(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_lflag &= ~ICANON;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int nocbreak(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_lflag |= ICANON;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int raw(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_iflag &= ~IXON;
+	t.c_lflag &= ~(ICANON | ISIG | IXON);
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int noraw(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_iflag |= IXON;
+	t.c_lflag |= ICANON | ISIG;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int echo(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_lflag |= ECHO;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int noecho(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_lflag &= ~ECHO;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int nl(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_iflag |= ICRNL;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int nonl(void) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+	t.c_iflag &= ~ICRNL;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+}
+
+int nodelay(WINDOW *win, bool bf) {
+    struct termios t;
+
+	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+		return ERR;
+	}
+
+    t.c_cc[VMIN] = bf ? 0 : 1;
+	t.c_cc[VTIME] = 0;
+
+	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
 }

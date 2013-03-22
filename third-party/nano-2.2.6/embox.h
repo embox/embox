@@ -27,14 +27,4 @@ extern int nano_main(int argc, char **argv);
 		longjmp(nano_exit_point, NANO_EXIT_JMP_VALUE); \
 	} while(0);
 
-static inline int beep(void) { return 0; }
-static inline int endwin(void) { return 0; }
-static inline int keypad(WINDOW *win, bool bf) { return 0; }
-static inline int curs_set(int visibility) { return 0; }
-static inline int raw(void) { return 0; }
-static inline int nonl(void) { return 0; }
-static inline int noecho(void) { return 0; }
-static inline int nodelay(WINDOW *win, bool bf) { return 0; }
-static inline bool isendwin(void) { return TRUE; }
-
 #endif /* EMBOX_H_ */

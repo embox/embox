@@ -38,8 +38,6 @@ typedef struct window {
 	bool clearok;        /* clear screen on next refresh */
 } WINDOW;
 
-typedef unsigned long mmask_t;
-
 extern int COLS;
 extern int LINES;
 extern WINDOW *curscr;
@@ -103,7 +101,21 @@ extern void bkgdset(chtype ch);
 extern chtype getbkgd(WINDOW *win);
 extern int wbkgd(WINDOW *win, chtype ch);
 extern void wbkgdset(WINDOW *win, chtype ch);
+extern int cbreak(void);
+extern int nocbreak(void);
+extern int raw(void);
+extern int noraw(void);
+extern int echo(void);
+extern int noecho(void);
+extern int nl(void);
+extern int nonl(void);
+extern int nodelay(WINDOW *win, bool bf);
 
+static inline int beep(void) { return 0; }
+static inline int endwin(void) { return 0; }
+static inline int keypad(WINDOW *win, bool bf) { return 0; }
+static inline int curs_set(int visibility) { return 0; }
+static inline bool isendwin(void) { return TRUE; }
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */
