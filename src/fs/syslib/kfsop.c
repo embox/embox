@@ -295,7 +295,7 @@ skip_dev_lookup:
  * @param Name of new copy
  * @return ENOERR if file successfully copied -1 and set errno in other way
  */
-int copy_file(const char *oldpath, const char *newpath) {
+static int copy_file(const char *oldpath, const char *newpath) {
 	int oldfd, newfd, rc;
 	char buf[BUFSIZ];
 
