@@ -1,16 +1,35 @@
 #ifndef QWINDOWSURFACE_MINIMAL_H
 #define QWINDOWSURFACE_MINIMAL_H
 
-#include <QtGui/private/qwindowsurface_p.h>
 #include "emboxvccursor.h"
-
+#include <QtGui/private/qwindowsurface_p.h>
+#include <QtCore/QSocketNotifier>
 #include <QtGui/QPlatformWindow>
+
 #include <drivers/video/fb.h>
 #include <drivers/console/mpx.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 QT_BEGIN_NAMESPACE
+
+class QEmboxVCMouseHandler : public QObject
+{
+    Q_OBJECT
+public:
+    QEmboxVCMouseHandler();
+    ~QEmboxVCMouseHandler();
+
+    void storeData(void *data, int datalen);
+
+private slots:
+    void readMouseData();
+
+private:
+    int mouseFD, inputFD;
+    QSocketNotifier *mouseNotifier;
+};
 
 class QEmboxVCWindowSurface : public QWindowSurface
 {
@@ -26,6 +45,7 @@ public:
     int emboxVCvisualized;
     QEmboxCursor *cursor;
     int mouseX, mouseY;
+    QEmboxVCMouseHandler *mouseHandler;
 
 private:
     QImage mImage;

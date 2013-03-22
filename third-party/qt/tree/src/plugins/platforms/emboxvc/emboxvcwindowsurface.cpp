@@ -35,46 +35,87 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	surf->flush(NULL, region, point);
 }
 
-static void __handle_input_event(struct vc *vc, struct input_event *ev) {
-	short x, y;
-	int bstate;
-	QEmboxVCWindowSurface *emvc = __emboxVC(vc);
+QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
+	int pipefd[2];
 
-	if (ev->devtype != INPUT_DEV_MOUSE) {
+	if (pipe(pipefd) < 0) {
 		return;
 	}
 
-	bstate = Qt::NoButton;
+	mouseFD = pipefd[0];
+	inputFD = pipefd[1];
 
-	if (ev->type & 1) {
-		bstate = Qt::LeftButton;
-	} else if (ev->type & 2) {
-		bstate = Qt::RightButton;
+	fcntl(mouseFD, F_SETFD, O_NONBLOCK);
+	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+
+    mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
+    connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
+}
+
+QEmboxVCMouseHandler::~QEmboxVCMouseHandler() {
+
+}
+
+void QEmboxVCMouseHandler::storeData(void *data, int datalen) {
+	write(inputFD, data, datalen);
+}
+
+void QEmboxVCMouseHandler::readMouseData() {
+	struct vc *vc;
+	struct input_event ev;
+	short x, y;
+	int bstate;
+	QEmboxVCWindowSurface *emvc;
+
+	while (read(mouseFD, &vc, sizeof(struct vc *)) > 0) {
+
+		read(mouseFD, &ev, sizeof(struct input_event));
+
+		emvc = __emboxVC(vc);
+
+		if (ev.devtype != INPUT_DEV_MOUSE) {
+			return;
+		}
+
+		bstate = Qt::NoButton;
+
+		if (ev.type & 1) {
+			bstate = Qt::LeftButton;
+		} else if (ev.type & 2) {
+			bstate = Qt::RightButton;
+		}
+
+		x = ev.value >> 16;
+		y = ev.value & 0xffff;
+
+		emvc->mouseX += x;
+		emvc->mouseY += -y;
+
+		QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
+				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
+
+		int xres = emvc->emboxVC.fb->var.xres;
+		int yres = emvc->emboxVC.fb->var.yres;
+
+		emvc->mouseX = emvc->mouseX > 0 ? emvc->mouseX : 0;
+		emvc->mouseY = emvc->mouseY > 0 ? emvc->mouseY : 0;
+
+		emvc->mouseX = emvc->mouseX > xres ? xres : emvc->mouseX;
+		emvc->mouseY = emvc->mouseY > yres ? yres : emvc->mouseY;
+
+		if (!emvc->emboxVC.fb || !emvc->emboxVCvisualized) {
+			return;
+		}
+
+		emvc->cursor->emboxCursorRedraw(emvc->emboxVC.fb, emvc->mouseX, emvc->mouseY);
 	}
+}
 
-	x = ev->value >> 16;
-	y = ev->value & 0xffff;
+static void __handle_input_event(struct vc *vc, struct input_event *ev) {
+	QEmboxVCWindowSurface *emvc = __emboxVC(vc);
 
-	emvc->mouseX += x;
-	emvc->mouseY += -y;
-
-	QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
-			QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
-
-	int xres = emvc->emboxVC.fb->var.xres;
-	int yres = emvc->emboxVC.fb->var.yres;
-
-	emvc->mouseX = emvc->mouseX > 0 ? emvc->mouseX : 0;
-	emvc->mouseY = emvc->mouseY > 0 ? emvc->mouseY : 0;
-
-	emvc->mouseX = emvc->mouseX > xres ? xres : emvc->mouseX;
-	emvc->mouseY = emvc->mouseY > yres ? yres : emvc->mouseY;
-
-    if (!emvc->emboxVC.fb || !emvc->emboxVCvisualized) {
-    	return;
-    }
-
-	emvc->cursor->emboxCursorRedraw(emvc->emboxVC.fb, emvc->mouseX, emvc->mouseY);
+	emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
+	emvc->mouseHandler->storeData(ev, sizeof(struct input_event));
 }
 
 static void __scheduleDevisualization(struct vc *vc) {
@@ -90,6 +131,8 @@ QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
 	mImage = QImage(QSize(1024, 768), QImage::Format_RGB16);
 
 	cursor = new QEmboxCursor();
+
+	mouseHandler = new QEmboxVCMouseHandler();
 
 	emboxVCcallbacks.visualized = __visualization;
 	emboxVCcallbacks.schedule_devisualization = __scheduleDevisualization;

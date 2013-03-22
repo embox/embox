@@ -170,7 +170,7 @@ static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
 static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
                               pthread_mutex_t *__restrict __mutex){
 	DPRINT();
-	return ETIMEDOUT;
+	return 0;
 }
 static inline int pthread_cond_signal (pthread_cond_t *__cond){
 	//DPRINT();
@@ -181,7 +181,7 @@ static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    __const struct timespec *__restrict
                                    __abstime){
 	DPRINT();
-	return ETIMEDOUT;
+	return 0;
 }
 
 
