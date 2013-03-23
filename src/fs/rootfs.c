@@ -28,9 +28,9 @@ static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
 		fsdrv->fsop->mount("/dev", NULL);
 	}
 
-	if(0 == strlen((char *) dev)) {
-		return 0;
-	}
+//	if(0 == strlen((char *) dev)) {
+//		return 0;
+//	}
 
 	return mount((char *) dev, (char *) dir, (char *) fs_type);
 }
