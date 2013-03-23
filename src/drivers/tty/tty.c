@@ -311,7 +311,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	return buff - (end - size);
 }
 
-size_t tty_write(struct tty *t, char *buff, size_t size) {
+size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
 
 	work_disable(&t->rx_work);
