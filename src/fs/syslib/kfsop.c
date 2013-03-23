@@ -31,6 +31,9 @@ static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 		return -ENOMEM;
 	}
 
+	if(NULL == parent->nas->fs) {
+		return -EINVAL;
+	}
 	/* check drv of parents */
 	drv = parent->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
