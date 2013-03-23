@@ -6,7 +6,7 @@ module All {
 	depends exec,
 		fork,
 		wait,
-		signal,
+		//signal,
 		exit,
 		uid,
 		nice,

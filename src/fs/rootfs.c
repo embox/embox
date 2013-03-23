@@ -8,6 +8,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 
 #include <fs/sys/fsop.h> /* mount */
 #include <fs/fs_driver.h>
@@ -25,6 +26,10 @@ static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
 	fsdrv = fs_driver_find_drv("devfs");
 	if (fsdrv) {
 		fsdrv->fsop->mount("/dev", NULL);
+	}
+
+	if(0 == strlen((char *) dev)) {
+		return 0;
 	}
 
 	return mount((char *) dev, (char *) dir, (char *) fs_type);
