@@ -71,6 +71,8 @@ static void work_softirq_handler(unsigned int softirq_nr, void *data) {
 }
 
 void work_post(struct work *w) {
+	int disabled;
+
 	irq_lock();
 
 	if (!(w->state & (WS_PENDING | WS_INPROGRESS))) {
@@ -79,11 +81,13 @@ void work_post(struct work *w) {
 		workq_tail = link;
 	}
 
+	disabled = w->state & WS_DISABLED;
 	w->state += __COUNT(WS_PENDING);
 
 	irq_unlock();
 
-	softirq_raise(SOFTIRQ_NR_WORK);
+	if (!disabled)
+		softirq_raise(SOFTIRQ_NR_WORK);
 }
 
 unsigned int work_pending(struct work *w) {
@@ -96,11 +100,23 @@ unsigned int work_pending_reset(struct work *w) {
 }
 
 void work_disable(struct work *w) {
+	irq_lock();
 	w->state += __COUNT(WS_DISABLED);
+	irq_unlock();
 }
 
 void work_enable(struct work *w) {
+	int pending;
+
+	irq_lock();
+
+	pending = w->state & WS_PENDING;
 	w->state -= __COUNT(WS_DISABLED);
+
+	irq_unlock();
+
+	if (pending)
+		softirq_raise(SOFTIRQ_NR_WORK);
 }
 
 int work_disabled(struct work *w) {
