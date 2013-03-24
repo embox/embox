@@ -45,7 +45,10 @@ static void tty_echo(struct tty *t, char ch) {
 
 	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
 		tty_output(t, '^');
-		ch = toascii(ch + 'A');
+		if (ch != 0377)
+			ch += 'A' - 1;  /* ('A' - 1) == ('@') == ('\0' + 0x40). */
+		else
+			ch = '?';  /* ASCII DEL */
 	}
 
 	tty_output(t, ch);
@@ -68,7 +71,7 @@ static void tty_echo_erase(struct tty *t) {
 /*
  * Input layout is the following:
  *
- *                     raw-raw-raw-raw-cooked|cooked|cooked|cooked|editing
+ *       i_buff  [     raw-raw-raw-raw-cooked|cooked|cooked|cooked|editing   ]
  *
  * TTY struct manages two internal rings:
  *       i_ring  [-----***************************************************---]
@@ -95,8 +98,11 @@ static struct ring *tty_edit_ring(struct tty *t, struct ring *r) {
 static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	cc_t *cc = t->termios.c_cc;
 	int ignore_cr;
-	int raw_or_eol;
+	int raw_mode;
+	int is_eol;
 	int got_data;
+
+	raw_mode = !TC_L(t, ICANON);
 
 	/* Newline control: IGNCR, ICRNL, INLCR */
 	ignore_cr = TC_I(t, IGNCR) && ch == '\r';
@@ -104,13 +110,13 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 		if (TC_I(t, ICRNL) && ch == '\r') ch = '\n';
 		if (TC_I(t, INLCR) && ch == '\n') ch = '\r';
 	}
-	raw_or_eol = !TC_L(t, ICANON) || ch == '\n' || ch == cc[VEOL];
+	is_eol = (ch == '\n' || ch == cc[VEOL]);
 
 	if (ignore_cr)
 		goto done;
 
 	/* Handle erase/kill */
-	if (TC_L(t, ICANON)) {
+	if (!raw_mode) {
 		int erase_all = (ch == cc[VKILL]);
 		if (erase_all || ch == cc[VERASE] || ch == '\b') {
 
@@ -136,20 +142,20 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	/* Finally, store and echo the char.
 	 *
 	 * When i_ring is near to become full, only raw or a line ending chars are
-	 * handled. This lets canonical read to see the whole line with \n or EOL
-	 * at the end. */
+	 * handled. This lets canonical read to see the line with \n or EOL at the
+	 * end, even when some chars are missing. */
 
-	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > (raw_or_eol ? 0 : 1))
+	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol))
 		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1))
 			tty_echo(t, ch);
 
 done:
-	got_data = (raw_or_eol || ch == cc[VEOF]);
+	got_data = (raw_mode || is_eol || ch == cc[VEOF]);
 
 	if (got_data) {
 		t->i_canon_ring.head = t->i_ring.head;
 
-		if (!TC_L(t, ICANON))
+		if (raw_mode)
 			/* maintain it empty */
 			t->i_canon_ring.tail = t->i_canon_ring.head;
 	}
