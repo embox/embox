@@ -164,7 +164,6 @@ done:
 static void tty_rx_worker(struct work *w) {
 	struct tty *t = member_cast_out(w, struct tty, rx_work);
 	int ich;
-	char ch;
 
 	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
 
@@ -180,9 +179,7 @@ static void tty_rx_worker(struct work *w) {
 	work_pending_reset(w);
 	irq_unlock();
 
-	while (ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
-		t->ops->tx_char(t, ch);
-	}
+	t->ops->out_wake(t);
 }
 
 void tty_post_rx(struct tty *t) {
@@ -294,13 +291,15 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	char *end = buff + size;
 	int rc;
 
-	/* TODO what if size is 0? -- Eldar */
+	if (!size)
+		return 0;
 
 	rc = tty_wait_input(t);
 	if (rc == -EINTR)
 		/* TODO then what? -- Eldar */
 		return 0;
 
+	// mutex_lock(&t->lock);
 	work_disable(&t->rx_work);
 	{
 		buff = tty_read_raw(t, buff, end);
@@ -311,6 +310,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		}
 	}
 	work_enable(&t->rx_work);
+	// mutex_unlock(&t->lock);
 
 	return buff - (end - size);
 }
@@ -318,6 +318,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
 
+	// mutex_lock(&t->lock);
 	work_disable(&t->rx_work);
 
 	for (count = size; count > 0; count --) {
@@ -327,25 +328,33 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	work_post(&t->rx_work);
 
 	work_enable(&t->rx_work);
+	// mutex_unlock(&t->lock);
 
 	return size;
 }
 
-int tty_ioctl(struct tty *tty, int request, void *data) {
+int tty_ioctl(struct tty *t, int request, void *data) {
+	int ret = 0;
+
+	// mutex_lock(&t->lock);
+
 	switch (request) {
 	case TIOCGETA:
-		memcpy(data, &tty->termios, sizeof(struct termios));
+		memcpy(data, &t->termios, sizeof(struct termios));
 		break;
 	case TIOCSETAF:
 	case TIOCSETAW:
 	case TIOCSETA:
-		memcpy(&tty->termios, data, sizeof(struct termios));
+		memcpy(&t->termios, data, sizeof(struct termios));
 		break;
 	default:
-		return -ENOSYS;
+		ret = -ENOSYS;
+		break;
 	}
 
-	return ENOERR;
+	// mutex_unlock(&t->lock);
+
+	return ret;
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {

@@ -57,10 +57,12 @@ static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	return 0;
 }
 
-static void uart_tx_char(struct tty *t, char ch) {
+static void uart_out_wake(struct tty *t) {
 	struct uart_device *uart_dev = member_cast_out(t, struct uart_device, tty);
+	int ich;
 
-	uart_dev->operations->put(uart_dev, ch);
+	while ((ich = tty_out_getc(t)) != -1)
+		uart_dev->operations->put(uart_dev, (char) ich);
 }
 
 static void uart_term_setup(struct tty *tty, struct termios *termios) {
@@ -69,7 +71,7 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 
 static struct tty_ops uart_tty_ops = {
 	.setup = uart_term_setup,
-	.tx_char = uart_tx_char,
+	.out_wake = uart_out_wake,
 };
 
 /*

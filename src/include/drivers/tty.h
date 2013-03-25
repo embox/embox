@@ -60,7 +60,7 @@ struct tty {
 
 	struct termios    termios;
 
-	struct mutex      lock; /* serialize operations on tty, also used in pty */
+	// struct mutex      lock; /* serialize operations on tty, also used in pty */
 
 	struct work       rx_work;
 	struct ring       rx_ring;
@@ -78,7 +78,7 @@ struct tty {
 
 struct tty_ops {
 	void (*setup)(struct tty *, struct termios *);
-	void (*tx_char)(struct tty *, char);
+	void (*out_wake)(struct tty *);
 };
 
 extern struct tty *tty_init(struct tty *, const struct tty_ops *);
@@ -102,6 +102,13 @@ static inline int tty_rx_putc(struct tty *t, char ch, unsigned char flag) {
 		tty_post_rx(t);
 	}
 	return rc;
+}
+
+static inline int tty_out_getc(struct tty *t) {
+	char ch;
+	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1))
+		return -1;
+	return (int) ch;
 }
 
 struct kfile_operations;
