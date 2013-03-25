@@ -12,19 +12,26 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <kernel/task.h>
 #include <lib/linenoise_1.h>
 #include <cmd/cmdline.h>
 #include <embox/unit.h>
+#include <pwd.h>
 
 #include <framework/cmd/api.h>
 
 #include <cmd/shell.h>
 
-#define BUF_INP_SIZE OPTION_GET(NUMBER, prompt_len)
+#define BUF_INP_SIZE OPTION_GET(NUMBER, input_buf_size)
+
+#define PROMPT_FMT OPTION_STRING_GET(prompt)
 
 #define AMP_SUPPORT  OPTION_GET(NUMBER, amp_support)
+#define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
+
+#define PROMPT_BUF_LEN 32
 
 struct cmdtask_data {
 	int argc;
@@ -169,38 +176,109 @@ int shell_line_input(const char *cmdline) {
 
 	return process(argc, argv);
 }
+
+#define PWDBUF_LEN 64
+
+static int rich_prompt(const char *fmt, char *buf, size_t len) {
+	struct passwd pwdbuf, *pwd;
+	char cpwdbuf[PWDBUF_LEN];
+	const int uid = getuid();
+	int state = 0;
+	int ret;
+
+	getpwuid_r(uid, &pwdbuf, cpwdbuf, PWDBUF_LEN, &pwd);
+
+	for (; *fmt; fmt++) {
+		if (len <= 0) {
+			return -ERANGE;
+		}
+
+		if (!state) {
+			if (*fmt != '%') {
+				*buf++ = *fmt;
+				len --;
+			} else {
+				state = 1;
+			}
+			continue;
+		}
+
+		state = 0;
+
+		switch(*fmt) {
+		case 'u':
+			if (!pwd) {
+				ret = snprintf(buf, len, "%d", uid);
+				break;
+			}
+
+			ret = snprintf(buf, len, "%s", pwd->pw_name);
+			break;
+		case 'h':
+			ret = snprintf(buf, len, "embox");
+			break;
+		case '$':
+			ret = snprintf(buf, len, "%c", uid ? '$' : '#');
+			break;
+		default:
+			ret = snprintf(buf, len, "%c", *fmt);
+		}
+
+		if (ret >= len) {
+			return -ERANGE;
+		}
+
+		len -=ret;
+		buf += ret;
+	}
+
+	return 0;
+}
+
 static void tish_run(void) {
-    char *line;
+	char *line;
+	char prompt_buf[PROMPT_BUF_LEN];
+	const char *prompt;
 
-    /* Set the completion callback. This will be called every time the
-     * user uses the <tab> key. */
-    linenoiseSetCompletionCallback(completion);
+	if (RICH_PROMPT_SUPPORT) {
+		if (0 > rich_prompt(PROMPT_FMT, prompt_buf, PROMPT_BUF_LEN)) {
+		    return;
+		}
+		prompt = prompt_buf;
+	} else {
+		prompt = PROMPT_FMT;
+	}
 
-    /* Load history from file. The history file is just a plain text file
-     * where entries are separated by newlines. */
-    //linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+	/* Set the completion callback. This will be called every time the
+	* user uses the <tab> key. */
+	linenoiseSetCompletionCallback(completion);
 
-    /* Now this is the main loop of the typical linenoise-based application.
-     * The call to linenoise() will block as long as the user types something
-     * and presses enter.
-     *
-     * The typed string is returned as a malloc() allocated string by
-     * linenoise, so the user needs to free() it. */
-    while((line = linenoise("hello> ")) != NULL) {
-        /* Do something with the string. */
-        if (line[0] != '\0' && line[0] != '/') {
-            //printf("echo: '%s'\n", line);
-            linenoiseHistoryAdd(line); /* Add to the history. */
-    		shell_line_input(line);
-        } else if (!strncmp(line,"/historylen",11)) {
-            /* The "/historylen" command will change the history len. */
-            int len = atoi(line+11);
-            linenoiseHistorySetMaxLen(len);
-        } else if (line[0] == '/') {
-            printf("Unreconized command: %s\n", line);
-        }
-        free(line);
-    }
+	/* Load history from file. The history file is just a plain text file
+	* where entries are separated by newlines. */
+	//linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+
+	/* Now this is the main loop of the typical linenoise-based application.
+	* The call to linenoise() will block as long as the user types something
+	* and presses enter.
+	*
+	* The typed string is returned as a malloc() allocated string by
+	* linenoise, so the user needs to free() it. */
+	while((line = linenoise(prompt)) != NULL) {
+		/* Do something with the string. */
+		if (line[0] != '\0' && line[0] != '/') {
+			linenoiseHistoryAdd(line); /* Add to the history. */
+			if (0 > shell_line_input(line)) {
+				return;
+			}
+		} else if (!strncmp(line,"/historylen",11)) {
+			/* The "/historylen" command will change the history len. */
+			int len = atoi(line+11);
+			linenoiseHistorySetMaxLen(len);
+		} else if (line[0] == '/') {
+			printf("Unreconized command: %s\n", line);
+		}
+		free(line);
+	}
 }
 
 #if 0
