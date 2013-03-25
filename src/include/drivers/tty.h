@@ -56,7 +56,8 @@
 struct tty_ops;
 
 struct tty {
-	struct tty_ops   *ops;
+	const struct tty_ops *ops;
+
 	struct termios    termios;
 
 	struct mutex      lock; /* serialize operations on tty, also used in pty */
@@ -80,7 +81,7 @@ struct tty_ops {
 	void (*tx_char)(struct tty *, char);
 };
 
-extern struct tty *tty_init(struct tty *, struct tty_ops *);
+extern struct tty *tty_init(struct tty *, const struct tty_ops *);
 
 extern size_t tty_read(struct tty *, char *, size_t);
 extern size_t tty_write(struct tty *, const char *, size_t);

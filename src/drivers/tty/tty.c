@@ -346,7 +346,7 @@ int tty_ioctl(struct tty *tty, int request, void *data) {
 	return ENOERR;
 }
 
-struct tty *tty_init(struct tty *t, struct tty_ops *ops) {
+struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	assert(t && ops);
 
 	t->ops = ops;
