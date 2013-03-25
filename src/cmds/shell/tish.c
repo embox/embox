@@ -268,6 +268,7 @@ static void tish_run(void) {
 		if (line[0] != '\0' && line[0] != '/') {
 			linenoiseHistoryAdd(line); /* Add to the history. */
 			if (0 > shell_line_input(line)) {
+				free(line);
 				return;
 			}
 		} else if (!strncmp(line,"/historylen",11)) {
