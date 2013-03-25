@@ -53,6 +53,13 @@ int keymap_kbd(struct input_event *event) {
 
 	if(event->value & SHIFT_PRESSED) {
 		return (int)shift_map[event->value & 0xFFFF];
+	} else if (event->value & CTRL_PRESSED){
+		uint8_t val = shift_map[event->value & 0xFFFF];
+		if (val > 0x3f) {
+			return (int)shift_map[event->value & 0xFFFF]  & 0x1f;
+		} else {
+			return 0;
+		}
 	} else {
 		return (int)key_map[event->value & 0xFFFF];
 	}
