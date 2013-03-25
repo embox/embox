@@ -22,7 +22,7 @@ static void pty_out_wake(struct tty *t) {
 
 size_t pty_read(struct pty *pt, char *buff, size_t size) {
 	struct tty *t = pty_to_tty(pt);
-	size_t saved_size = size;
+	const char *saved_buff = buff;
 	size_t block_size;
 	int rc;
 
@@ -51,11 +51,17 @@ size_t pty_read(struct pty *pt, char *buff, size_t size) {
 			break;
 	}
 
-	return saved_size - size;
+	return buff - saved_buff;
 }
 
 size_t pty_write(struct pty *pt, const char *buff, size_t size) {
-	return 0;
+	struct tty *t = pty_to_tty(pt);
+	const char *saved_buff = buff;
+
+	while (size--)
+		tty_rx_putc(t, *buff++, 0);
+
+	return buff - saved_buff;
 }
 
 const struct tty_ops pty_ops = {
