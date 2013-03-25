@@ -7,16 +7,22 @@
  */
 
 #include <assert.h>
-#include <drivers/video/fb.h>
-#include <embox/device.h>
-#include <errno.h>
-#include <framework/mod/options.h>
-#include <mem/misc/pool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <errno.h>
+
 #include <util/math.h>
+#include <util/dlist.h>
+
+#include <embox/device.h>
+#include <drivers/video/fb.h>
+
+#include <framework/mod/options.h>
+#include <mem/misc/pool.h>
+
+
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
@@ -42,9 +48,17 @@ void fb_release(struct fb_info *info) {
 	pool_free(&fb_pool, info);
 }
 
+struct fb_list_item {
+	struct dlist_head list;
+	struct fb_info *fb_info;
+};
+
+static DLIST_DEFINE(fb_repo);
+POOL_DEF(fb_repo_pool, struct fb_list_item, 0x4);
+
 int fb_register(struct fb_info *info) {
 	unsigned int num;
-	char name[] = "fbXX";
+	struct fb_list_item *item;
 
 	assert(info != NULL);
 
@@ -56,11 +70,15 @@ int fb_register(struct fb_info *info) {
 
 	for (num = 0; (num < num_registered_fb) && (registered_fb[num] != NULL); ++num);
 
-	info->node = num;
 	registered_fb[num] = info;
+	info->node = num;
 
-	snprintf(&name[0], sizeof name, "fb%u", num);
-	return char_dev_register(&name[0], &fb_device_ops);
+	if(NULL == (item = pool_alloc(&fb_repo_pool))) {
+		return -ENOMEM;
+	}
+	dlist_add_next(dlist_head_init(&item->list), &fb_repo);
+
+	return ENOERR;
 }
 
 int fb_unregister(struct fb_info *info) {

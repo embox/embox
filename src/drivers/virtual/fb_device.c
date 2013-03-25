@@ -115,3 +115,9 @@ const struct kfile_operations fb_device_ops = {
 	.write = fb_device_write,
 	.ioctl = fb_device_ioctl
 };
+
+
+int fb_device_mount(void) {
+//	return char_dev_register(&name[0], &fb_device_ops);
+	return ENOERR;
+}
