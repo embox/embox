@@ -320,24 +320,26 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 
 	work_disable(&t->rx_work);
 
-	count = ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ,
-			 buff, size);
+	for (count = size; count > 0; count --) {
+		tty_output(t, *buff++);
+	}
+
 	work_post(&t->rx_work);
 
 	work_enable(&t->rx_work);
 
-	return count;
+	return size;
 }
 
 int tty_ioctl(struct tty *tty, int request, void *data) {
 	switch (request) {
 	case TIOCGETA:
-		memcpy(&tty->termios, data, sizeof(struct termios));
+		memcpy(data, &tty->termios, sizeof(struct termios));
 		break;
 	case TIOCSETAF:
 	case TIOCSETAW:
 	case TIOCSETA:
-		memcpy(data, &tty->termios, sizeof(struct termios));
+		memcpy(&tty->termios, data, sizeof(struct termios));
 		break;
 	default:
 		return -ENOSYS;
