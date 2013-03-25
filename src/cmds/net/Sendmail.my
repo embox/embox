@@ -1,0 +1,26 @@
+package embox.cmd.net
+
+@Cmd(name = "sendmail",
+	help = "Send email",
+	man = '''
+		NAME
+			sendmail - get email from mail server
+		SYNOPSIS
+			sendmail <user> <server>
+		DESCRIPTION
+			send mail somebody else
+		EXAMPLES
+			sendmail nick smtp.mail.ru
+		SEE ALSO
+			getmail
+		AUTHORS
+			Ilia Vaprol
+	''')
+module sendmail {
+	source "sendmail.c"
+
+	depends embox.compat.posix.util.getpass
+	depends embox.net.smtp
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
