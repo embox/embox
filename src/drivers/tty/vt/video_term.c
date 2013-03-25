@@ -105,7 +105,7 @@ static void execute_printable(struct vterm *t, char ch) {
 static void erase_line_part(struct vterm *t, unsigned short column,
 		unsigned short chars) {
 	for (int i = column; i < column + chars; i++) {
-		t->video->ops->putc(t->video, ' ', column, t->cur_y);
+		t->video->ops->putc(t->video, ' ', i, t->cur_y);
 	}
 }
 
