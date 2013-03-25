@@ -69,13 +69,14 @@ static int exec(int argc, char *argv[]) {
 	uname(&info);
 	processor = NULL;
 	platform = NULL;
-	system = NULL;
+	system = OPTION_STRING_GET(hostname);
 
 	if (args.with_a || args.with_s) printf("%s ", info.sysname);
 	if (args.with_a || args.with_n) printf("%s ", info.nodename);
 	if (args.with_a || args.with_r) printf("%s ", info.release);
 	if (args.with_a || args.with_v) printf("%s ", info.version);
 	if (args.with_a || args.with_m) printf("%s ", info.machine);
+
 	if ((args.with_a && processor) || args.with_p)
 		printf("%s ", processor ? processor : "unknown");
 	if ((args.with_a && platform) || args.with_i)

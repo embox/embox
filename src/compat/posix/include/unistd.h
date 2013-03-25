@@ -132,6 +132,8 @@ extern char **environ;
 #define PASS_MAX 32
 extern char *getpass(const char *prompt);
 
+int gethostname(char *name, size_t len);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */

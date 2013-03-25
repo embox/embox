@@ -3,3 +3,4 @@
 #endif /* HAL_ARCH_H_ */
 
 #define __BIG_ENDIAN 0
+#define __PLATFORM_ARCH "mps430"

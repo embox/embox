@@ -57,7 +57,7 @@ static inline int sigemptyset(sigset_t *set) {
 	return -1;
 }
 
-extern int gethostname(char *name, size_t len);
+//extern int gethostname(char *name, size_t len);
 
 static inline int initgroups(const char *user, gid_t group) {
 	return -1;

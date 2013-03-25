@@ -5,7 +5,8 @@ module All {
 	depends Time,
 		getopt,
 		utsname,
-		getpass
+		getpass,
+		gethostname
 }
 
 module Time {
@@ -22,7 +23,8 @@ static module getopt {
 
 static module utsname {
 	option string release="0.3.3"
-	option string platform
+	option string system="Embox"
+	option string hostname="embox"
 	source "utsname.c"
 
 	depends embox.lib.LibC
@@ -50,4 +52,8 @@ static module getpass {
 	source "getpass.c"
 
 	depends embox.lib.LibC
+}
+
+static module gethostname {
+	source "gethostname.c"
 }

@@ -3,3 +3,4 @@
 #endif /* HAL_ARCH_H_ */
 
 #define __BIG_ENDIAN 1
+#define __PLATFORM_ARCH "sparc"

@@ -26,9 +26,10 @@ char *crypt(const char *key, const char *salt) {
 	return embox_passwd.pw_passwd;
 }
 
+#if 0
 int gethostname(char *name, size_t len) {
 	name = embox_passwd.pw_name;
 	return 0;
 }
-
+#endif
 
