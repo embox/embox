@@ -7,6 +7,5 @@ module keyboard {
 }
 
 module diag {
-	source "diag.c"
 	depends keyboard
 }
