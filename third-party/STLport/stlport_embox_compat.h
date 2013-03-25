@@ -30,6 +30,7 @@
 
 #include_next <stdio.h>
 #include_next <time.h>
+#include <errno.h>
 
 #ifdef __cplusplus
 
