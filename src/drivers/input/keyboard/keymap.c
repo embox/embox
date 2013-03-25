@@ -47,22 +47,22 @@ static const uint8_t shift_map[] = {
 };
 
 int keymap_kbd(struct input_event *event) {
-	if((event->value & 0xFFFF) > KEY_MAX) {
+	const uint8_t *cur_map;
+	uint8_t val;
+	int key_index = event->value & KEYBOARD_KEY_MASK;
+
+	if (key_index > KEY_MAX) {
 		return -1;
 	}
 
-	if(event->value & SHIFT_PRESSED) {
-		return (int)shift_map[event->value & 0xFFFF];
-	} else if (event->value & CTRL_PRESSED){
-		uint8_t val = shift_map[event->value & 0xFFFF];
-		if (val > 0x3f) {
-			return (int)shift_map[event->value & 0xFFFF]  & 0x1f;
-		} else {
-			return 0;
-		}
-	} else {
-		return (int)key_map[event->value & 0xFFFF];
+	cur_map = event->value & SHIFT_PRESSED ? shift_map : key_map;
+	val = cur_map[key_index];
+
+	if (event->value & CTRL_PRESSED){
+		val = val < 0x40 ? 0 : val & KEYBOARD_CTRL_MASK;
 	}
+
+	return val;
 }
 
 static const unsigned char esc_start[] = {0x1B, 0x5B}; /* esc, '[' */
