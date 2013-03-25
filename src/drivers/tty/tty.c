@@ -236,7 +236,7 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 
 	while ((block_size = ring_can_read(
 				&t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
-		char *line_start = t->i_buff + t->i_canon_ring.tail;
+		const char *line_start = t->i_buff + t->i_canon_ring.tail;
 		size_t line_len;
 		int got_line;
 		int is_eof;
@@ -322,6 +322,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	work_disable(&t->rx_work);
 
 	for (count = size; count > 0; count --) {
+		// TODO handle output buffer overflow
 		tty_output(t, *buff++);
 	}
 
