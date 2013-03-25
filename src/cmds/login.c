@@ -7,13 +7,14 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#include <lib/linenoise.h>
+#include <lib/linenoise_1.h>
 #include <cmd/shell.h>
 #include <pwd.h>
 #include <shadow.h>
@@ -168,10 +169,10 @@ static void *taskshell(void *data) {
 }
 
 static int login_cmd(int argc, char **argv) {
-	int res, len;
+	int res;
 	struct passwd pwd, *result = NULL;
 	struct spwd *spwd = NULL;
-	char namebuf[BUF_LEN], pwdbuf[BUF_LEN], passbuf[BUF_LEN];
+	char *name, pwdbuf[BUF_LEN], passbuf[BUF_LEN];
 	int tid;
 
 	do {
@@ -181,16 +182,13 @@ static int login_cmd(int argc, char **argv) {
 
 		while (1) {
 			printf("\n\n");
-			if (0 > (res = linenoise(LOGIN_PROMPT, namebuf, BUF_LEN, NULL, NULL))) {
+			if (NULL == (name = linenoise(LOGIN_PROMPT))) {
 				continue;
 			}
 
-			len = strlen(namebuf);
-			if (namebuf[len - 1] == '\n') {
-				namebuf[--len] = '\0';
-			}
+			res = getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result);
 
-			res = getpwnam_r(namebuf, &pwd, pwdbuf, BUF_LEN, &result);
+			free(name);
 
 			if (result) {
 				spwd = spwd_find(SHADOW_FILE, result->pw_name);
