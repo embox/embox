@@ -7,11 +7,12 @@ module shell {
 abstract module shell_api { }
 
 module tish {
-	option number prompt_len = 80
+	option number input_buf_size = 80
+	option number rich_prompt_support = 0
+	option number amp_support = 1
+
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
-
-	option number amp_support = 1
 
 	provides embox.cmd.Shell.commandLine
 
