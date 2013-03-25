@@ -7,3 +7,12 @@ module pop3 {
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 }
+
+module smtp {
+	source "smtp.c"
+
+	depends embox.lib.LibCMisc
+	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.net.socket
+	depends embox.lib.LibC
+}
