@@ -9,13 +9,13 @@ module tty {
 	option number rx_buff_sz = 8
 	depends embox.kernel.work
 	depends embox.kernel.thread.event
-	depends embox.kernel.thread.sync /* mutex */
+//	depends embox.kernel.thread.sync /* mutex */
 }
 
 module pty {
 	source "pty.c"
 	depends tty
-	depends embox.kernel.thread.sync /* cond */
+//	depends embox.kernel.thread.sync /* cond */
 }
 
 module ttyfs {
