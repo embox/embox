@@ -41,10 +41,14 @@ static int iodev_read(struct idx_desc *desc, void *buf, size_t nbyte) {
 }
 #endif
 
-static int iodev_write(struct idx_desc *desc, const void *buf, size_t nbyte) {
-	struct tty *tty = desc->data->fd_struct;
+static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+	char *cbuf = (char *) buf;
 
-	return tty_write(tty, buf, nbyte);
+	while (nbyte--) {
+		iodev_putc(*cbuf++);
+	}
+
+	return (int) cbuf - (int) buf;
 }
 
 static int iodev_close(struct idx_desc *idx) {
@@ -86,20 +90,6 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
-static void make_mode(int fd) {
-	struct termios tios;
-
-	if (tcgetattr(fd, &tios) == -1) {
-		return;
-	}
-
-	tios.c_oflag |= ONLCR;
-	tios.c_lflag |= ICANON;
-
-	tcsetattr(fd, TCSAFLUSH, &tios);
-}
-
-
 extern struct tty *diag_tty;
 
 static int iodev_env_init(void) {
@@ -117,8 +107,6 @@ static int iodev_env_init(void) {
 		if ((res = check_valid(fd, i)) != 0) {
 			return res;
 		}
-
-		make_mode(i);
 	}
 
 	return 0;
