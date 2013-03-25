@@ -161,7 +161,9 @@ void irq_dispatch(unsigned int irq_nr) {
 				}
 			}
 			assert(handler != NULL);
+			ipl_restore(ipl);
 			handler(irq_nr, dev_id);
+			ipl = ipl_save();
 		}
 		ipl_restore(ipl);
 	}
