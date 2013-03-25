@@ -30,6 +30,7 @@ static module LibCDiagnostic {
 static module LibCMisc {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
+	source "crypt/b64.c"
 	source "ctype/ctype.c"
 }
 
