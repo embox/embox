@@ -53,10 +53,12 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (-1 == (dst_file = open(dst_path, O_WRONLY))) {
-		ret = -errno;
-		printf("can't open file %s\n",dst_path);
-		close(src_file);
-		return ret;
+		if(0 > (dst_file = creat(dst_path, 0))) {
+			ret = -errno;
+			printf("can't open file %s\n",dst_path);
+			close(src_file);
+			return ret;
+		}
 	}
 
 	lseek(dst_file, 0, SEEK_SET);
@@ -70,14 +72,12 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
+	ret = 0;
 	if (fsync(dst_file)) {
 		ret = -errno;
-		close(src_file);
-		close(dst_file);
-		return ret;
 	}
 
 	close(src_file);
 	close(dst_file);
-	return 0;
+	return ret;
 }
