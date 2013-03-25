@@ -150,8 +150,9 @@ void irq_dispatch(unsigned int irq_nr) {
 	trace_block_enter(&interrupt_tb);
 
 	if (irq_table[irq_nr]) {
+		ipl = ipl_save();
 		dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
-			ipl = ipl_save();
+
 			{
 				if ((entry =
 						dlist_entry(item, struct irq_entry, action_link))) {
@@ -159,12 +160,11 @@ void irq_dispatch(unsigned int irq_nr) {
 					dev_id = entry->dev_id;
 				}
 			}
-			ipl_restore(ipl);
-
-			trace_block_leave(&interrupt_tb);
-
 			assert(handler != NULL);
 			handler(irq_nr, dev_id);
 		}
+		ipl_restore(ipl);
 	}
+
+	trace_block_leave(&interrupt_tb);
 }
