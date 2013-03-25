@@ -15,7 +15,7 @@ module fbcon {
 
 	option number set_video_mode = 1
 	depends embox.driver.video.fonts
-	depends embox.driver.tty.tty
+	depends embox.driver.tty.vterm
 	depends embox.driver.input.keyboard.keyboard
 	depends mpx_simple
 
