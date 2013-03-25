@@ -51,6 +51,23 @@ private:
     QSocketNotifier *keyboardNotifier;
 };
 
+class QEmboxVC
+{
+public:
+	QEmboxVC();
+    ~QEmboxVC();
+
+    struct vc emboxVC;
+    int emboxVCvisualized;
+    QEmboxCursor *cursor;
+    int mouseX, mouseY;
+    QEmboxVCMouseHandler *mouseHandler;
+    QEmboxVCKeyboardHandler *keyboardHandler;
+
+private:
+    struct vc_callbacks emboxVCcallbacks;
+};
+
 class QEmboxVCWindowSurface : public QWindowSurface
 {
 public:
@@ -61,12 +78,7 @@ public:
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
 
-    struct vc emboxVC;
-    int emboxVCvisualized;
-    QEmboxCursor *cursor;
-    int mouseX, mouseY;
-    QEmboxVCMouseHandler *mouseHandler;
-    QEmboxVCKeyboardHandler *keyboardHandler;
+    QEmboxVC *vc;
 
 private:
     QImage mImage;

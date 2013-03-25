@@ -4,6 +4,8 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
 
+QEmboxVC *globalEmboxVC;
+
 QEmboxVCIntegration::QEmboxVCIntegration()
 {
     QEmboxVCScreen *mPrimaryScreen = new QEmboxVCScreen();
@@ -11,6 +13,8 @@ QEmboxVCIntegration::QEmboxVCIntegration()
     mPrimaryScreen->mGeometry = QRect(0, 0, 1024, 768);
     mPrimaryScreen->mDepth = 16;
     mPrimaryScreen->mFormat = QImage::Format_RGB16;
+
+    globalEmboxVC = new QEmboxVC();
 
     mScreens.append(mPrimaryScreen);
 }

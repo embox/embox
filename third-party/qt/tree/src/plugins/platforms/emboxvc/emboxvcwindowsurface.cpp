@@ -7,32 +7,41 @@
 QT_BEGIN_NAMESPACE
 
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
+extern QEmboxVC *globalEmboxVC;
 
-static QEmboxVCWindowSurface * __emboxVC(struct vc *vc) {
+//static QEmboxVCWindowSurface * __emboxVC(struct vc *vc) {
+//	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
+//		QEmboxVCWindowSurface *emvc = __emboxVCcollection.at(i);
+//		if (&(emvc->emboxVC) == vc) {
+//			return emvc;
+//		}
+//	}
+//
+//	return NULL;
+//}
+
+static void flushAll() {
+	QRegion region;
+	QPoint point;
+
 	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
-		QEmboxVCWindowSurface *emvc = __emboxVCcollection.at(i);
-		if (&(emvc->emboxVC) == vc) {
-			return emvc;
-		}
+		__emboxVCcollection.at(i)->flush(0, region, point);
 	}
-
-	return NULL;
 }
 
 static void __emboxVCsetMode(struct vc *vc, int mode) {
-	(__emboxVC(vc))->emboxVCvisualized = mode;
+	globalEmboxVC->emboxVCvisualized = mode;
 }
 
 static void __visualization(struct vc *vc, struct fb_info *info) {
 	Q_UNUSED(info);
 
-	QRegion region;
-	QPoint point;
 	QEmboxVCWindowSurface *surf;
 
 	__emboxVCsetMode(vc, 1);
-	surf = __emboxVC(vc);
-	surf->flush(NULL, region, point);
+	//surf = __emboxVC(vc);
+	//surf->flush(NULL, region, point);
+	flushAll();
 }
 
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
@@ -65,13 +74,13 @@ void QEmboxVCMouseHandler::readMouseData() {
 	struct input_event ev;
 	short x, y;
 	int bstate;
-	QEmboxVCWindowSurface *emvc;
+	QEmboxVC *emvc;
 
 	while (read(mouseFD, &vc, sizeof(struct vc *)) > 0) {
 
 		read(mouseFD, &ev, sizeof(struct input_event));
 
-		emvc = __emboxVC(vc);
+		emvc = globalEmboxVC;
 
 		bstate = Qt::NoButton;
 
@@ -165,7 +174,7 @@ void QEmboxVCKeyboardHandler::readKeyboardData() {
 }
 
 static void __handle_input_event(struct vc *vc, struct input_event *ev) {
-	QEmboxVCWindowSurface *emvc = __emboxVC(vc);
+	QEmboxVC *emvc = globalEmboxVC;
 
 	if (ev->devtype == INPUT_DEV_MOUSE) {
 		emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
@@ -183,11 +192,9 @@ static void __scheduleDevisualization(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
-QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
-    : QWindowSurface(window), emboxVCvisualized(0), mouseX(0), mouseY(0)
+QEmboxVC::QEmboxVC()
+    : emboxVCvisualized(0), mouseX(0), mouseY(0)
 {
-	mImage = QImage(QSize(1024, 768), QImage::Format_RGB16);
-
 	cursor = new QEmboxCursor();
 
 	mouseHandler = new QEmboxVCMouseHandler();
@@ -200,8 +207,28 @@ QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
 	emboxVC.callbacks = &emboxVCcallbacks;
 	emboxVC.name = "emboxvc";
 
-	__emboxVCcollection.append(this);
 	mpx_register_vc(&emboxVC);
+}
+
+QEmboxVC::~QEmboxVC() {
+}
+
+static int tmp = 0;
+
+QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
+    : QWindowSurface(window)
+{
+	if (tmp == 1) {
+		mImage = QImage(QSize(window->width(), window->height()), QImage::Format_RGB16);
+	} else {
+		mImage = QImage(QSize(1024, 768), QImage::Format_RGB16);
+	}
+
+	tmp++;
+
+	vc = globalEmboxVC;
+
+	__emboxVCcollection.append(this);
 }
 
 QEmboxVCWindowSurface::~QEmboxVCWindowSurface()
@@ -222,19 +249,19 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int i, shift, bpp;
 
-    if (!emboxVC.fb || !emboxVCvisualized) {
+    if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
     }
 
-    bpp = emboxVC.fb->var.bits_per_pixel / 8;
+    bpp = vc->emboxVC.fb->var.bits_per_pixel / 8;
 
     /* Draw image */
-    for (i = 0, shift = 0; i < mImage.height(); i++ , shift += emboxVC.fb->var.xres * bpp) {
-    	memcpy(emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
+    for (i = 0, shift = 0; i < mImage.height(); i++ , shift += vc->emboxVC.fb->var.xres * bpp) {
+    	memcpy(vc->emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
     }
 
     /* Draw cursor */
-    cursor->emboxCursorRedraw(emboxVC.fb, mouseX, mouseY);
+    vc->cursor->emboxCursorRedraw(vc->emboxVC.fb, vc->mouseX, vc->mouseY);
 }
 
 void QEmboxVCWindowSurface::resize(const QSize &size)
