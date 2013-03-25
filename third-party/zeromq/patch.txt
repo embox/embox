@@ -1,6 +1,6 @@
 diff -aur zeromq-3.2.2/configure zeromq/configure
 --- zeromq-3.2.2/configure	2012-11-23 11:58:54.000000000 +0400
-+++ zeromq/configure	2013-03-25 15:50:51.829746929 +0400
++++ zeromq/configure	2013-03-25 16:29:04.465802913 +0400
 @@ -16387,6 +16387,7 @@
    return 0;
  }
@@ -9,6 +9,15 @@ diff -aur zeromq-3.2.2/configure zeromq/configure
  if ac_fn_c_try_link "$LINENO"; then :
    libzmq_cv_c_compiler_works="yes" ;
  else
+@@ -16903,7 +16904,7 @@
+ libzmq_pedantic="yes"
+ 
+ # By default compiling with -Werror except OSX.
+-libzmq_werror="yes"
++libzmq_werror="no"
+ 
+ # By default use DSO visibility
+ libzmq_dso_visibility="yes"
 @@ -17664,6 +17665,8 @@
              as_fn_error $? "Building static libraries is not supported under Cygwin" "$LINENO" 5
          fi
