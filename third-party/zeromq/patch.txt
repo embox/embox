@@ -36,3 +36,19 @@ diff -aur zeromq-3.2.2/configure zeromq/configure
      *)
          as_fn_error $? "unsupported system: ${host_os}." "$LINENO" 5
          ;;
+diff -aur zeromq-3.2.2/Makefile.in zeromq/Makefile.in
+--- zeromq-3.2.2/Makefile.in	2012-11-23 11:58:57.000000000 +0400
++++ zeromq/Makefile.in	2013-03-25 19:31:45.042071799 +0400
+@@ -256,9 +256,9 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I config
+-@BUILD_PGM_FALSE@SUBDIRS = src doc perf tests
+-@BUILD_PGM_TRUE@SUBDIRS = foreign/openpgm src doc perf tests
+-DIST_SUBDIRS = foreign/openpgm src doc perf tests builds/msvc
++@BUILD_PGM_FALSE@SUBDIRS = src doc perf
++@BUILD_PGM_TRUE@SUBDIRS = foreign/openpgm src doc perf
++DIST_SUBDIRS = foreign/openpgm src doc perf builds/msvc
+ EXTRA_DIST = \
+ 	autogen.sh	\
+ 	version.sh	\

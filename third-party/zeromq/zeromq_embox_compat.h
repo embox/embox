@@ -36,9 +36,13 @@ struct sockaddr_in6 {
 	unsigned long			sin6_scope_id;  /* scope id (new in RFC2553) */
 };
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 	extern const struct sockaddr_in6 in6addr_any;
+#ifdef __cplusplus
 }
+#endif
 
 struct sockaddr_un {
     unsigned short sun_family;  /* AF_UNIX */
