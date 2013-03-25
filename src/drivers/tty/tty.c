@@ -44,11 +44,9 @@ static void tty_echo(struct tty *t, char ch) {
 		return;
 
 	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
+		/* ASCII table magic:  CTRL(ch) -> ^ch;  ASCII DEL -> ^? */
 		tty_output(t, '^');
-		if (ch != 0377)
-			ch += 'A' - 1;  /* ('A' - 1) == ('@') == ('\0' + 0x40). */
-		else
-			ch = '?';  /* ASCII DEL */
+		ch = toascii(ch + 'A' - 1);  /* ('A' - 1) == ('@') == ('\0' + 0x40). */
 	}
 
 	tty_output(t, ch);

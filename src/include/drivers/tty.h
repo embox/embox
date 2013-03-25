@@ -3,7 +3,7 @@
  * @brief
  *
  * @date 08.02.13
- * @author Ilia Vaprol
+ * @author Eldar Abusalimov
  */
 
 #ifndef DRIVERS_TTY_H_
@@ -15,6 +15,7 @@
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/event.h>
+#include <kernel/thread/sync/mutex.h>
 #include <kernel/work.h>
 #include <util/ring.h>
 
@@ -57,6 +58,8 @@ struct tty_ops;
 struct tty {
 	struct tty_ops   *ops;
 	struct termios    termios;
+
+	struct mutex      lock; /* serialize operations on tty, also used in pty */
 
 	struct work       rx_work;
 	struct ring       rx_ring;
