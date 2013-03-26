@@ -283,3 +283,50 @@ static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
 	}
 	sched_unlock();
 }
+
+static int inject_ops(int fd, const struct task_idx_ops *ops, const struct task_idx_ops **backup) {
+	struct idx_desc *idx_desc = task_self_idx_get(fd);
+
+	if (!idx_desc) {
+		return -EBADF;
+	}
+
+	if (backup) {
+		*backup = idx_desc->data->res_ops;
+	}
+
+	idx_desc->data->res_ops = ops;
+
+	return 0;
+}
+
+static int pipe_pty_ioctl(struct idx_desc *desc, int request, void *data) {
+	return 0;
+}
+
+static const struct task_idx_ops pipe_pty_ops = {
+		.write = pipe_write,
+		.read  = pipe_read,
+		.close = pipe_close,
+		.fcntl = pipe_fcntl,
+		.ioctl = pipe_pty_ioctl,
+		.type = TASK_RES_OPS_TTY,
+};
+
+int pipe_pty(int pipe[2]) {
+	int res;
+	const struct task_idx_ops *backup1, *backup2;
+
+	if (0 > (res = inject_ops(pipe[0], &pipe_pty_ops, &backup1))) {
+		return res;
+	}
+
+	if (0 > (res = inject_ops(pipe[1], &pipe_pty_ops, &backup2))) {
+		inject_ops(pipe[0], backup1, NULL);
+
+		return res;
+	}
+
+	return 0;
+}
+

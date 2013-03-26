@@ -199,6 +199,8 @@ static size_t buf_copy(unsigned char *dst, const unsigned char *src, size_t n) {
 	return len;
 }
 
+extern int pipe_pty(int pipe[2]);
+
 /* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
@@ -225,6 +227,9 @@ static void *telnet_thread_handler(void* args) {
 	/* Send our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
+
+	pipe_pty(pipefd1);
+	pipe_pty(pipefd2);
 
 	msg[0] = sock;
 	msg[1] = pipefd1[1];
