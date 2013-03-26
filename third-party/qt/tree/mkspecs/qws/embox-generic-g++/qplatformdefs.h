@@ -585,13 +585,15 @@ static inline struct group *getgrgid(gid_t gid) {
 	return NULL;
 }
 
+static inline struct passwd *getpwnam(const char *name) { return NULL; }
+
 //uid_t getuid(void);
 
 // this is for FILESYSTEMWATCHER
 #define pathconf(path,name) \
 	printf(">>> pathconf(%s,%s)\n",#path,#name),32
 
-static inline struct passwd *getpwnam(const char *name) { return NULL; }
+//static inline struct passwd *getpwnam(const char *name) { return NULL; }
 
 #endif // __QEMBOX__
 

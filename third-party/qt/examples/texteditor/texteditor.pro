@@ -10,3 +10,7 @@ HEADERS += \
     openfiledialog.h \
     createfiledialog.h \
     savefiledialog.h
+
+RESOURCES = texteditor.qrc
+
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS texteditor.pro desktopImage.jpg

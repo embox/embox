@@ -49,6 +49,7 @@ static struct fbcon_displ_data fbcon_displ_data = {
 	.cur_color = 0x00F0,
 };
 
+#if 0
 static void cursor(struct fb_info *fb, struct input_event *ev) {
 	static int x, y;
 	const int len = 20;
@@ -86,12 +87,13 @@ static void cursor(struct fb_info *fb, struct input_event *ev) {
 		start += xres * bpp;
 	}
 }
-
+#endif
 static void inpevent(struct vc *vc, struct input_event *ev) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
 	unsigned char ascii[4];
 	int len;
 
+#if 0
 	if (ev->devtype == INPUT_DEV_MOUSE) {
 		if (!vc->fb) {
 			return;
@@ -104,6 +106,7 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 	if (ev->devtype != INPUT_DEV_KBD) {
 		return;
 	}
+#endif
 
 	if (!(ev->type & KEY_PRESSED)) {
 		return;

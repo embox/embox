@@ -3,6 +3,7 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
+#include <QtGui/QGraphicsView>
 
 QEmboxVC *globalEmboxVC;
 
@@ -42,4 +43,9 @@ QWindowSurface *QEmboxVCIntegration::createWindowSurface(QWidget *widget, WId wi
 {
     Q_UNUSED(winId);
     return new QEmboxVCWindowSurface(widget);
+}
+
+QPixmap QEmboxVCIntegration::grabWindow(WId window, int x, int y, int width, int height) const
+{
+	return QPixmap();
 }

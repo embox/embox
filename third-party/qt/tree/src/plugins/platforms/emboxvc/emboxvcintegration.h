@@ -35,6 +35,8 @@ public:
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
 private:
