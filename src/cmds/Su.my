@@ -1,0 +1,26 @@
+
+package embox.cmd
+
+@Cmd(name = "su",
+	help = "Asks for superuser password and on success gives his shell",
+	man = '''
+		NAME
+			su - Asks for superuser password and on success gives his shell
+		SYNOPSIS
+			su
+		DESCRIPTION
+
+		AUTHOR
+			Anton Kozlov
+	''')
+module su {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "su.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.passwd
+	depends third_party.lib.linenoise
+
+	requires embox.cmd.Shell.commandLine
+
+}
