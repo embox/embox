@@ -123,7 +123,8 @@ char **history = NULL;
  * We pass this state to functions implementing specific editing
  * functionalities. */
 struct linenoiseState {
-    int fd;             /* Terminal file descriptor. */
+    int fdin;             /* Terminal file descriptor. */
+    int fdout;             /* Terminal file descriptor. */
     char *buf;          /* Edited line buffer. */
     size_t buflen;      /* Edited line buffer size. */
     const char *prompt; /* Prompt to display. */
@@ -268,7 +269,7 @@ static int completeLine(struct linenoiseState *ls) {
                 refreshLine(ls);
             }
 
-            nread = read(ls->fd,&c,1);
+            nread = read(ls->fdin,&c,1);
             if (nread <= 0) {
                 freeCompletions(&lc);
                 return -1;
@@ -326,7 +327,8 @@ void linenoiseAddCompletion(linenoiseCompletions_t *lc, char *str) {
 static void refreshSingleLine(struct linenoiseState *l) {
     char seq[64];
     size_t plen = strlen(l->prompt);
-    int fd = l->fd;
+    /*int fdin = l->fdin;*/
+    int fdout = l->fdout;
     char *buf = l->buf;
     size_t len = l->len;
     size_t pos = l->pos;
@@ -342,16 +344,16 @@ static void refreshSingleLine(struct linenoiseState *l) {
 
     /* Cursor to left edge */
     snprintf(seq,64,"\x1b[0G");
-    if (write(fd,seq,strlen(seq)) == -1) return;
+    if (write(fdout,seq,strlen(seq)) == -1) return;
     /* Write the prompt and the current buffer content */
-    if (write(fd,l->prompt,strlen(l->prompt)) == -1) return;
-    if (write(fd,buf,len) == -1) return;
+    if (write(fdout,l->prompt,strlen(l->prompt)) == -1) return;
+    if (write(fdout,buf,len) == -1) return;
     /* Erase to right */
     snprintf(seq,64,"\x1b[0K");
-    if (write(fd,seq,strlen(seq)) == -1) return;
+    if (write(fdout,seq,strlen(seq)) == -1) return;
     /* Move cursor to original position. */
     snprintf(seq,64,"\x1b[0G\x1b[%dC", (int)(pos+plen));
-    if (write(fd,seq,strlen(seq)) == -1) return;
+    if (write(fdout,seq,strlen(seq)) == -1) return;
 }
 
 /* Multi line low level line refresh.
@@ -365,7 +367,9 @@ static void refreshMultiLine(struct linenoiseState *l) {
     int rpos = (plen+l->oldpos+l->cols)/l->cols; /* cursor relative row. */
     int rpos2; /* rpos after refresh. */
     int old_rows = l->maxrows;
-    int fd = l->fd, j;
+    int j;
+    /*int fdin = l->fdin;*/
+    int fdout = l->fdout;
 
     /* Update maxrows if needed. */
     if (rows > (int)l->maxrows) l->maxrows = rows;
@@ -383,7 +387,7 @@ static void refreshMultiLine(struct linenoiseState *l) {
         fprintf(fp,", go down %d", old_rows-rpos);
 #endif
         snprintf(seq,64,"\x1b[%dB", old_rows-rpos);
-        if (write(fd,seq,strlen(seq)) == -1) return;
+        if (write(fdout,seq,strlen(seq)) == -1) return;
     }
 
     /* Now for every row clear it, go up. */
@@ -392,7 +396,7 @@ static void refreshMultiLine(struct linenoiseState *l) {
         fprintf(fp,", clear+up");
 #endif
         snprintf(seq,64,"\x1b[0G\x1b[0K\x1b[1A");
-        if (write(fd,seq,strlen(seq)) == -1) return;
+        if (write(fdout,seq,strlen(seq)) == -1) return;
     }
 
     /* Clean the top line. */
@@ -400,11 +404,11 @@ static void refreshMultiLine(struct linenoiseState *l) {
     fprintf(fp,", clear");
 #endif
     snprintf(seq,64,"\x1b[0G\x1b[0K");
-    if (write(fd,seq,strlen(seq)) == -1) return;
+    if (write(fdout,seq,strlen(seq)) == -1) return;
 
     /* Write the prompt and the current buffer content */
-    if (write(fd,l->prompt,strlen(l->prompt)) == -1) return;
-    if (write(fd,l->buf,l->len) == -1) return;
+    if (write(fdout,l->prompt,strlen(l->prompt)) == -1) return;
+    if (write(fdout,l->buf,l->len) == -1) return;
 
     /* If we are at the very end of the screen with our prompt, we need to
      * emit a newline and move the prompt to the first column. */
@@ -415,9 +419,9 @@ static void refreshMultiLine(struct linenoiseState *l) {
 #ifdef LN_DEBUG
         fprintf(fp,", <newline>");
 #endif
-        if (write(fd,"\n",1) == -1) return;
+        if (write(fdout,"\n",1) == -1) return;
         snprintf(seq,64,"\x1b[0G");
-        if (write(fd,seq,strlen(seq)) == -1) return;
+        if (write(fdout,seq,strlen(seq)) == -1) return;
         rows++;
         if (rows > (int)l->maxrows) l->maxrows = rows;
     }
@@ -433,14 +437,14 @@ static void refreshMultiLine(struct linenoiseState *l) {
         fprintf(fp,", go-up %d", rows-rpos2);
 #endif
         snprintf(seq,64,"\x1b[%dA", rows-rpos2);
-        if (write(fd,seq,strlen(seq)) == -1) return;
+        if (write(fdout,seq,strlen(seq)) == -1) return;
     }
     /* Set column. */
 #ifdef LN_DEBUG
     fprintf(fp,", set col %d", 1+((plen+(int)l->pos) % (int)l->cols));
 #endif
     snprintf(seq,64,"\x1b[%dG", 1+((plen+(int)l->pos) % (int)l->cols));
-    if (write(fd,seq,strlen(seq)) == -1) return;
+    if (write(fdout,seq,strlen(seq)) == -1) return;
 
     l->oldpos = l->pos;
 
@@ -472,7 +476,7 @@ int linenoiseEditInsert(struct linenoiseState *l, int c) {
             if ((!mlmode && l->plen+l->len < l->cols) /* || mlmode */) {
                 /* Avoid a full update of the line in the
                  * trivial case. */
-                if (write(l->fd,&c,1) == -1) return -1;
+                if (write(l->fdout,&c,1) == -1) return -1;
             } else {
                 refreshLine(l);
             }
@@ -576,13 +580,14 @@ void linenoiseEditDeletePrevWord(struct linenoiseState *l) {
  * when ctrl+d is typed.
  *
  * The function returns the length of the current buffer. */
-static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
+static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const char *prompt)
 {
     struct linenoiseState l;
 
     /* Populate the linenoise state that we pass to functions implementing
      * specific editing functionalities. */
-    l.fd = fd;
+    l.fdin = fdin;
+    l.fdout = fdout;
     l.buf = buf;
     l.buflen = buflen;
     l.prompt = prompt;
@@ -601,14 +606,17 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
      * initially is just an empty string. */
     linenoiseHistoryAdd("");
 
-    if (write(fd,prompt,l.plen) == -1) return -1;
+    if (write(fdout,prompt,l.plen) == -1) return -1;
     while(1) {
-        char c;
+        char c = 0;
         int nread;
         char seq[2], seq2[2];
 
-        nread = read(fd,&c,1);
-        if (nread <= 0) return l.len;
+	while (!c) {
+	    nread = read(fdin,&c,1);
+	    if (nread <= 0) return l.len;
+	}
+
 
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
@@ -667,7 +675,7 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
             break;
         case 27:    /* escape sequence */
             /* Read the next two bytes representing the escape sequence. */
-            if (read(fd,seq,2) == -1) break;
+            if (read(fdin,seq,2) == -1) break;
 
             if (seq[0] == 91 && seq[1] == 68) {
                 /* Left arrow */
@@ -682,7 +690,7 @@ static int linenoiseEdit(int fd, char *buf, size_t buflen, const char *prompt)
                                      LINENOISE_HISTORY_NEXT);
             } else if (seq[0] == 91 && seq[1] > 48 && seq[1] < 55) {
                 /* extended escape, read additional two bytes. */
-                if (read(fd,seq2,2) == -1) break;
+                if (read(fdin,seq2,2) == -1) break;
                 if (seq[1] == 51 && seq2[0] == 126) {
                     /* Delete key. */
                     linenoiseEditDelete(&l);
@@ -741,7 +749,7 @@ static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
         }
     } else {
         if (enableRawMode(fd) == -1) return -1;
-        count = linenoiseEdit(fd, buf, buflen, prompt);
+        count = linenoiseEdit(fd, STDOUT_FILENO, buf, buflen, prompt);
         disableRawMode(fd);
         printf("\n");
     }
