@@ -51,6 +51,7 @@ static module gettimeofday {
 static module getpass {
 	source "getpass.c"
 
+	depends embox.compat.posix.termios
 	depends embox.lib.LibC
 }
 
