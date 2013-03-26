@@ -79,3 +79,12 @@ $(ZEROMQ_LIB): $(ZEROMQ_CMAKE_DIR)/Makefile
 
 all: $(ZEROMQ_LIB)
 
+
+ZEROMQ_HWSERVER_O = $(ZEROMQ_DIR)/obj/hwserver.o
+
+all: $(ZEROMQ_HWSERVER_O)
+
+VPATH           += .
+
+$(ZEROMQ_DIR)/obj/%.o: %.cpp
+	$(AT)g++ $(EMBOX_DERIVED_CXXFLAGS) -o $@ -c $<
