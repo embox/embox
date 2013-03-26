@@ -58,6 +58,7 @@ static int exec(int argc, char **argv) {
 
 	ret = smtp_mail_from(&ss, &from[0]);
 	if ((ret != 0) || !smtp_ok(&ss)) goto error;
+//	printf("%s: server: %s\n", argv[0], smtp_status(&ss));
 
 	/* To */
 	fprintf(stdout, "To: ");
@@ -66,6 +67,7 @@ static int exec(int argc, char **argv) {
 
 	ret = smtp_rcpt_to(&ss, &to[0]);
 	if ((ret != 0) || !smtp_ok(&ss)) goto error;
+//	printf("%s: server: %s\n", argv[0], smtp_status(&ss));
 
 	/* Data */
 	ret = smtp_data(&ss);
@@ -126,6 +128,7 @@ error:
 		assert(!smtp_ok(&ss));
 		printf("%s: server error: %s\n", argv[0], smtp_status(&ss));
 	}
+	smtp_quit(&ss);
 	smtp_close(&ss);
 	return ret;
 }

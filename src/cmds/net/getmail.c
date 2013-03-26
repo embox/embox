@@ -59,6 +59,7 @@ error:
 		assert(!pop3_ok(&p3s));
 		printf("%s: server error: %s\n", argv[0], pop3_status(&p3s));
 	}
+	pop3_quit(&p3s);
 	pop3_close(&p3s);
 	return ret;
 }
