@@ -7,25 +7,24 @@
  */
 
 #include <errno.h>
+#include <hal/arch.h>
 #include <lib/b64.h>
 #include <stddef.h>
 
-union b64_unit {
-	struct {
-		unsigned char c1,
-			c2,
-			c3;
-	} c;
-	struct {
-		unsigned char b1:6,
-			b2:6,
-			b3:6,
-			b4:6;
-	} b;
+struct b64_char {
+	unsigned char c1,
+		c2,
+		c3;
 };
 
+struct b64_b {
+	unsigned char b1:6,
+		b2:6,
+		b3:6,
+		b4:6;
+};
 
-static const char b2c[64] = {
+static const char b2char[64] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
 	'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -36,7 +35,7 @@ static const char b2c[64] = {
 	'4', '5', '6', '7', '8', '9', '+', '/'
 };
 
-static const char c2b[256] = {
+static const char char2b[256] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, -1, 63,
@@ -55,16 +54,33 @@ static const char c2b[256] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-#define B2C(b, out) \
-	out = b2c[b]
-#define C2B(c, out) \
+#define B_TO_CHAR(b, out) \
+	out = b2char[(b)]
+
+#define CHAR_TO_B(ch, out) \
 	do { \
-		char b = c2b[(unsigned char)c]; \
+		char b = char2b[(unsigned char)(ch)]; \
 		if (b == -1) { \
 			return -EINVAL; \
 		} \
 		out = (unsigned char)b; \
 	} while (0)
+
+#define MAKE_B1(b64c) \
+	(b64c.c1 >> 2)
+#define MAKE_B2(b64c) \
+	(((b64c.c1 & 0x03) << 4) | (b64c.c2 >> 4))
+#define MAKE_B3(b64c) \
+	(((b64c.c2 & 0x0F) << 2) | (b64c.c3 >> 6))
+#define MAKE_B4(b64c) \
+	(b64c.c3 & 0x3F)
+
+#define MAKE_CHAR1(b64b) \
+	((b64b.b1 << 2) | (b64b.b2 >> 4))
+#define MAKE_CHAR2(b64b) \
+	(((b64b.b2 & 0x0F) << 4) | (b64b.b3 >> 2))
+#define MAKE_CHAR3(b64b) \
+	(((b64b.b3 & 0x03) << 6) | b64b.b2)
 
 size_t b64_coded_len(const char *plain, size_t plain_sz) {
 	return ((plain_sz + 2) / 3) * 4;
@@ -78,7 +94,7 @@ int b64_encode(const char *plain, size_t plain_sz,
 		char *buff, size_t buff_sz, size_t *out_coded_sz) {
 	size_t i;
 	char *out;
-	union b64_unit b64u;
+	struct b64_char b64c;
 
 	if ((plain == NULL) || (buff == NULL)
 			|| (out_coded_sz == NULL)) {
@@ -91,33 +107,33 @@ int b64_encode(const char *plain, size_t plain_sz,
 
 	out = buff;
 
-	for (i = 0; i + 3 <= plain_sz; i += 3) {
-		b64u.c.c1 = *plain++;
-		b64u.c.c2 = *plain++;
-		b64u.c.c3 = *plain++;
+	for (i = 2; i < plain_sz; i += 3) {
+		b64c.c1 = (unsigned char)*plain++;
+		b64c.c2 = (unsigned char)*plain++;
+		b64c.c3 = (unsigned char)*plain++;
 
-		B2C(b64u.b.b1, *out++);
-		B2C(b64u.b.b2, *out++);
-		B2C(b64u.b.b3, *out++);
-		B2C(b64u.b.b4, *out++);
+		B_TO_CHAR(MAKE_B1(b64c), *out++);
+		B_TO_CHAR(MAKE_B2(b64c), *out++);
+		B_TO_CHAR(MAKE_B3(b64c), *out++);
+		B_TO_CHAR(MAKE_B4(b64c), *out++);
 	}
 
-	if (i + 2 == plain_sz) {
-		b64u.c.c1 = *plain++;
-		b64u.c.c2 = *plain++;
-		b64u.c.c3 = 0;
+	if (i == plain_sz) {
+		b64c.c1 = (unsigned char)*plain++;
+		b64c.c2 = (unsigned char)*plain++;
+		b64c.c3 = 0;
 
-		B2C(b64u.b.b1, *out++);
-		B2C(b64u.b.b2, *out++);
-		B2C(b64u.b.b3, *out++);
+		B_TO_CHAR(MAKE_B1(b64c), *out++);
+		B_TO_CHAR(MAKE_B2(b64c), *out++);
+		B_TO_CHAR(MAKE_B3(b64c), *out++);
 		*out++ = '=';
 	}
-	else if (i + 1 == plain_sz) {
-		b64u.c.c1 = *plain++;
-		b64u.c.c2 = 0;
+	else if (i - 1 == plain_sz) {
+		b64c.c1 = (unsigned char)*plain++;
+		b64c.c2 = 0;
 
-		B2C(b64u.b.b1, *out++);
-		B2C(b64u.b.b2, *out++);
+		B_TO_CHAR(MAKE_B1(b64c), *out++);
+		B_TO_CHAR(MAKE_B2(b64c), *out++);
 		*out++ = '=';
 		*out++ = '=';
 	}
@@ -131,7 +147,7 @@ int b64_decode(const char *coded, size_t coded_sz,
 		char *buff, size_t buff_sz, size_t *out_plain_sz) {
 	size_t i;
 	char *out;
-	union b64_unit b64u;
+	struct b64_b b64b;
 
 	if ((coded == NULL) || (buff == NULL) || (coded_sz % 4 != 0)
 			|| (out_plain_sz == NULL)) {
@@ -149,26 +165,26 @@ int b64_decode(const char *coded, size_t coded_sz,
 
 	out = buff;
 
-	for (i = 0; i + 4 < coded_sz; i += 4) {
-		C2B(*coded++, b64u.b.b1);
-		C2B(*coded++, b64u.b.b2);
-		C2B(*coded++, b64u.b.b3);
-		C2B(*coded++, b64u.b.b4);
+	for (i = 7; i < coded_sz; i += 4) {
+		CHAR_TO_B(*coded++, b64b.b1);
+		CHAR_TO_B(*coded++, b64b.b2);
+		CHAR_TO_B(*coded++, b64b.b3);
+		CHAR_TO_B(*coded++, b64b.b4);
 
-		*out++ = b64u.c.c1;
-		*out++ = b64u.c.c2;
-		*out++ = b64u.c.c3;
+		*out++ = MAKE_CHAR1(b64b);
+		*out++ = MAKE_CHAR2(b64b);
+		*out++ = MAKE_CHAR3(b64b);
 	}
 
-	C2B(*coded++, b64u.b.b1);
-	C2B(*coded++, b64u.b.b2);
-	*out++ = b64u.c.c1;
+	CHAR_TO_B(*coded++, b64b.b1);
+	CHAR_TO_B(*coded++, b64b.b2);
+	*out++ = MAKE_CHAR1(b64b);
 	if (*coded != '=') {
-		C2B(*coded++, b64u.b.b3);
-		*out++ = b64u.c.c2;
+		CHAR_TO_B(*coded++, b64b.b3);
+		*out++ = MAKE_CHAR2(b64b);
 		if (*coded != '=') {
-			C2B(*coded++, b64u.b.b4);
-			*out++ = b64u.c.c3;
+			CHAR_TO_B(*coded++, b64b.b4);
+			*out++ = MAKE_CHAR3(b64b);
 		}
 	}
 
