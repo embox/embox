@@ -62,7 +62,9 @@ static int send_req(struct smtp_session *ss,
 	req = &buff[0];
 	req_len = res;
 
+#if 0
 	printf("smtp> %s", req);
+#endif
 
 	return send_data(ss, req, req_len);
 }

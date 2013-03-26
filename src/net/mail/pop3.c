@@ -41,7 +41,9 @@ static int send_req(struct pop3_session *p3s,
 	req = &buff[0];
 	req_len = res;
 
+#if 0
 	printf("pop3> %s", req);
+#endif
 
 	do {
 		res = send(p3s->sock, req, req_len, 0);
