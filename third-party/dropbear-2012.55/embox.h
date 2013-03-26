@@ -20,9 +20,9 @@ struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:983:*/
 //---------------------------------------------------
-
+#if 0
 typedef int sigset_t;
-
+#endif
 //-------------------------------------------------------
 
 static inline pid_t setsid(void) {
