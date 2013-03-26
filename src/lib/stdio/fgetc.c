@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 #include <fs/file_operation.h>
-#include <ctype.h>
 
 int fgetc(FILE *file) {
 	unsigned char ch;
@@ -25,12 +24,7 @@ int getc(FILE *f) {
 }
 
 int getchar(void) {
-	int c;
-	c = getc(stdin);
-	if (!iscntrl(c) || isspace(c)) {
-		putchar(c);
-	}
-	return c;
+	return getc(stdin);
 }
 
 int ungetchar(int ch) {
