@@ -12,6 +12,7 @@
 #include <drivers/input/input_dev.h>
 #include <drivers/input/keymap.h>
 
+#define KEY_MAX (sizeof(key_map) / sizeof(char))
 
 /*
  * Key map
@@ -29,8 +30,6 @@ static const uint8_t key_map[] = {
 	KEY_UP,   KEY_PGUP, 0,      KEY_LEFT, 0,      KEY_RGHT, 0,      KEY_END,
 	KEY_DOWN, KEY_PGDN, KEY_INS,  0x7f,   KEY_F11,  KEY_F12
 };
-
-#define KEY_MAX (sizeof(key_map) / sizeof(char))
 
 static const uint8_t shift_map[] = {
 	0,      0x1b,   '!',    '@',    '#',    '$',    '%',    '^',

@@ -21,43 +21,43 @@
 
 #define VTERM_TAB_WIDTH 8
 
-static void vterm_scroll_up(struct vterm *t, unsigned short delta) {
+static void vterm_scroll_up(struct vterm *vt, unsigned short delta) {
 	assert(
-			t && t->video && t->video->ops && t->video->ops->copy_rows
-					&& t->video->ops->clear_rows);
+			vt && vt->video && vt->video->ops && vt->video->ops->copy_rows
+					&& vt->video->ops->clear_rows);
 
-	t->video->ops->copy_rows(t->video, 0, delta, t->video->height - delta);
-	t->video->ops->clear_rows(t->video, t->video->height - delta, delta);
+	vt->video->ops->copy_rows(vt->video, 0, delta, vt->video->height - delta);
+	vt->video->ops->clear_rows(vt->video, vt->video->height - delta, delta);
 
-	t->cur_y -= delta;
+	vt->cur_y -= delta;
 }
 
-static void vterm_clear(struct vterm *t) {
-	assert(t && t->video && t->video->ops && t->video->ops->clear_rows);
+static void vterm_clear(struct vterm *vt) {
+	assert(vt && vt->video && vt->video->ops && vt->video->ops->clear_rows);
 
-	t->video->ops->clear_rows(t->video, 0, t->video->height);
+	vt->video->ops->clear_rows(vt->video, 0, vt->video->height);
 }
 
-static void vterm_cursor(struct vterm *t) {
-	assert(t && t->video && t->video->ops && t->video->ops->cursor);
+static void vterm_cursor(struct vterm *vt) {
+	assert(vt && vt->video && vt->video->ops && vt->video->ops->cursor);
 
-	t->video->ops->cursor(t->video, t->cur_x, t->cur_y);
+	vt->video->ops->cursor(vt->video, vt->cur_x, vt->cur_y);
 }
 
-static int setup_cursor(struct vterm *t, int x, int y) {
-	t->cur_x = x;
-	if (t->cur_x) {
-		--t->cur_x;
+static int setup_cursor(struct vterm *vt, int x, int y) {
+	vt->cur_x = x;
+	if (vt->cur_x) {
+		--vt->cur_x;
 	}
-	t->cur_y = y;
-	if (t->cur_y) {
-		--t->cur_y;
+	vt->cur_y = y;
+	if (vt->cur_y) {
+		--vt->cur_y;
 	}
-	if (t->cur_x >= t->video->width) {
-		t->cur_x = t->video->width - 1;
+	if (vt->cur_x >= vt->video->width) {
+		vt->cur_x = vt->video->width - 1;
 	}
-	if (t->cur_y >= t->video->height) {
-		t->cur_y = t->video->height - 1;
+	if (vt->cur_y >= vt->video->height) {
+		vt->cur_y = vt->video->height - 1;
 	}
 	return 0;
 }
@@ -117,15 +117,15 @@ static void execute_token(struct vterm *vt, struct vtesc_token *token) {
 		execute_printable(vt, token->ch);
 		break;
 	case VTESC_MOVE_CURSOR:
-		vt->cur_x += token->params.move_cursor.x;
-		vt->cur_y += token->params.move_cursor.y;
+		setup_cursor(vt, vt->cur_x + token->params.move_cursor.x + 1,
+						vt->cur_y + token->params.move_cursor.y + 1);
 		break;
 	case VTESC_CURSOR_POSITION:
 		setup_cursor(vt, token->params.cursor_position.row,
 				token->params.cursor_position.column);
 		break;
 	case VTESC_CURSOR_COLOMN:
-		setup_cursor(vt, token->params.cursor_position.column, vt->cur_y+1);
+		setup_cursor(vt, token->params.cursor_position.column, vt->cur_y + 1);
 		break;
 	case VTESC_ERASE_DATA:
 		switch (token->params.erase.n) {
@@ -172,18 +172,17 @@ static void execute_token(struct vterm *vt, struct vtesc_token *token) {
 
 static const char *vterm_key_to_esc(int keycode){
 	switch (keycode) {
+		case KEY_INS: return "2~";
+		case KEY_HOME: return "H";
+		case KEY_END: return "F";
+		case KEY_PGUP: return "5~";
+		case KEY_PGDN: return "6~";
+		case KEY_UP: return "A";
+		case KEY_DOWN: return "B";
+		case KEY_LEFT: return "D";
+		case KEY_RGHT: return "C";
 
-	case KEY_INS: return "2~";
-	case KEY_HOME: return "H";
-	case KEY_END: return "F";
-	case KEY_PGUP: return "5~";
-	case KEY_PGDN: return "6~";
-	case KEY_UP: return "A";
-	case KEY_DOWN: return "B";
-	case KEY_LEFT: return "D";
-	case KEY_RGHT: return "C";
-
-	default: return 0;
+		default: return 0;
 	}
 }
 
