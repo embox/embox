@@ -24,4 +24,6 @@ module tish {
 	depends embox.framework.LibFramework
 	depends embox.cmd.sh.shell
 	depends embox.kernel.task.api
+	depends embox.compat.posix.proc.uid
+	depends embox.compat.posix.passwd
 }
