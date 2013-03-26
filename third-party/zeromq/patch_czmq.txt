@@ -1,0 +1,29 @@
+diff -aur czmq-1.3.2/configure czmq/configure
+--- czmq-1.3.2/configure	2012-10-27 14:03:29.000000000 +0400
++++ czmq/configure	2013-03-26 15:14:11.139812900 +0400
+@@ -12293,6 +12293,7 @@
+     fi
+ fi
+ 
++rm -rf conftest
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for zmq_init in -lzmq" >&5
+ $as_echo_n "checking for zmq_init in -lzmq... " >&6; }
+ if ${ac_cv_lib_zmq_zmq_init+:} false; then :
+@@ -12564,6 +12565,8 @@
+ $as_echo "#define CZMQ_HAVE_CYGWIN 1" >>confdefs.h
+ 
+         ;;
++    *none*)
++        ;;
+     *)
+         as_fn_error $? "unsupported system: ${host_os}." "$LINENO" 5
+         ;;
+@@ -13067,7 +13070,7 @@
+ 
+ # These options are GNU compiler specific.
+ if test "x$GCC" = "xyes"; then
+-    CPPFLAGS="-pedantic -Werror -Wall ${CPPFLAGS}"
++    CPPFLAGS="-pedantic -Wall ${CPPFLAGS}"
+ fi
+ 
+  if test "x$czmq_on_mingw32" = "xyes"; then

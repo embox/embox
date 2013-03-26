@@ -37,6 +37,9 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CFLAGS   += -I$(abspath .)/include
 EMBOX_IMPORTED_CXXFLAGS += -I$(abspath .)/include
 
+EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/zeromq/include
+EMBOX_IMPORTED_CXXFLAGS += -I$(ROOT_DIR)/build/zeromq/include
+
 #EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
 #EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
 
@@ -52,7 +55,7 @@ EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
 
 EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib
-
+EMBOX_DERIVED_LDFLAGS   += -L$(ROOT_DIR)/build/zeromq/lib
 all:
 
 .PHONY: all $(ZEROMQ_LIB)
