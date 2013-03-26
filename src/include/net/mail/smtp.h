@@ -30,9 +30,9 @@ extern int smtp_code(struct smtp_session *ss);
 extern const char * smtp_status(struct smtp_session *ss);
 
 extern int smtp_mail_from(struct smtp_session *ss,
-		const char *addr);
+		const char *addr); /* FIXME addr with <> brackets */
 extern int smtp_rcpt_to(struct smtp_session *ss,
-		const char *addr);
+		const char *addr); /* FIXME addr with <> brackets */
 extern int smtp_helo(struct smtp_session *ss,
 		const char *domain);
 extern int smtp_ehlo(struct smtp_session *ss,

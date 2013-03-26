@@ -244,7 +244,7 @@ int smtp_mail_from(struct smtp_session *ss, const char *addr) {
 		return -EINVAL;
 	}
 
-	return execute_cmd(ss, 0, "MAIL FROM:<%s>\r\n", addr);
+	return execute_cmd(ss, 0, "MAIL FROM:%s\r\n", addr);
 }
 
 int smtp_rcpt_to(struct smtp_session *ss, const char *addr) {
@@ -252,7 +252,7 @@ int smtp_rcpt_to(struct smtp_session *ss, const char *addr) {
 		return -EINVAL;
 	}
 
-	return execute_cmd(ss, 0, "RCPT TO:<%s>\r\n", addr);
+	return execute_cmd(ss, 0, "RCPT TO:%s\r\n", addr);
 }
 
 int smtp_helo(struct smtp_session *ss, const char *domain) {
