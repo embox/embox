@@ -55,6 +55,7 @@ static int exec(int argc, char **argv) {
 	fprintf(stdout, "From: ");
 	if (NULL == fgets(&from[0], sizeof from,
 			stdin)) { ret = -EIO; goto error; }
+	from[strlen(&from[0]) - 1] = '\0'; /* remove \n */
 
 	ret = smtp_mail_from(&ss, &from[0]);
 	if ((ret != 0) || !smtp_ok(&ss)) goto error;
@@ -64,6 +65,7 @@ static int exec(int argc, char **argv) {
 	fprintf(stdout, "To: ");
 	if (NULL == fgets(&to[0], sizeof to,
 			stdin)) { ret = -EIO; goto error; }
+	to[strlen(&to[0]) - 1] = '\0'; /* remove \n */
 
 	ret = smtp_rcpt_to(&ss, &to[0]);
 	if ((ret != 0) || !smtp_ok(&ss)) goto error;
@@ -87,6 +89,7 @@ static int exec(int argc, char **argv) {
 	fprintf(stdout, "%s", &text[0]);
 	if (NULL == fgets(&text[0] + text_len, sizeof text - text_len,
 			stdin)) { ret = -EIO; goto error; }
+	text[strlen(&text[0]) - 1] = '\0'; /* remove \n */
 	if (0 > snprintf(&text[0], sizeof text, "%s\r\n\r\n",
 			&text[0])) { ret = -EIO; goto error; }
 
@@ -99,6 +102,7 @@ static int exec(int argc, char **argv) {
 	while (1) {
 		if (NULL == fgets(&text[0], sizeof text - 2, /* for \r\n */
 				stdin)) { ret = -EIO; goto error; }
+		text[strlen(&text[0]) - 1] = '\0'; /* remove \n */
 
 		if (0 == strcmp(&text[0], ".")) {
 			break;
