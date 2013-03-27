@@ -9,6 +9,7 @@ module LibPosix {
 	depends fs
 	depends sched
 	depends termios
+	depends pthreads
 }
 
 static module termios {
@@ -62,5 +63,10 @@ static module open {
 
 static module sched {
 	source "sched_posix.c"
+}
+
+static module pthreads {
+	source "pthread.c"
+	depends embox.kernel.thread.core
 }
 
