@@ -67,6 +67,8 @@ static module sched {
 
 static module pthreads {
 	source "pthread.c"
+
 	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
 }
 
