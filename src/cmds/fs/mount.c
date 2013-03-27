@@ -4,6 +4,7 @@
  *
  * @date 29.09.10
  * @author Nikolay Korotky
+ * @author Andrey Gazukin
  */
 
 #include <stdio.h>
@@ -65,7 +66,10 @@ static int exec(int argc, char **argv) {
 			return 0;
 		}
 
-		return mount(dev, dir, fs_type);
+		if(0 > mount(dev, dir, fs_type)) {
+			return -errno;
+		}
+		return 0;
 	}
 
 	buff = page_alloc(__phymem_allocator, 1);
