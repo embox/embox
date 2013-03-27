@@ -437,6 +437,49 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 	return 0;
 }
 
+int getsockname(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	struct socket *sock;
+	struct inet_sock *inet;
+	struct sockaddr_in *src_addr;
+
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	assert(sock->sk);
+
+	switch (sock->sk->sk_type) {
+	default:
+		// FIXME: not possible to extract socket family from descriptor
+//	case AF_INET:
+		if (addr == NULL) {
+			SET_ERRNO(EBADF);
+			return -1;
+		}
+		if (*addrlen < sizeof *src_addr) {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
+		src_addr = (struct sockaddr_in *)addr;
+		inet = inet_sk(sock->sk);
+		src_addr->sin_family = AF_INET;
+		src_addr->sin_addr.s_addr = inet->rcv_saddr;
+		src_addr->sin_port = inet->sport;
+		memset(&src_addr->sin_zero[0], 0, sizeof src_addr->sin_zero);
+		*addrlen = sizeof *src_addr;
+		break;
+//	default:
+//		SET_ERRNO(EINVAL);
+//		return -1;
+	}
+
+	return 0;
+}
+
+
 #if 1 /********** TODO remove this ****************/
 int check_icmp_err(int sockfd) {
 	struct socket *sock = idx2sock(sockfd);

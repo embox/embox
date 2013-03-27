@@ -386,11 +386,12 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
  */
 extern int shutdown(int sockfd, int how);
 
+extern int getsockname(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen);
+
 /**
  * TODO not implemented now
  */
-static inline int getsockname(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) { return -1; }
 static inline int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) { return -1; }
 static inline ssize_t recvmsg(int socket, struct msghdr *message,
