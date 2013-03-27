@@ -63,7 +63,7 @@ int socket(int domain, int type, int protocol) {
 		return -1;
 	}
 
-	sock->desc = task_self_idx_get(res);
+	sock->desc_data = task_idx_indata(task_self_idx_get(res));
 
 	assert(sock->state != SS_CONNECTED); /* XXX ?? */
 
@@ -72,7 +72,7 @@ int socket(int domain, int type, int protocol) {
 	 * it is unconnected. Otherwise unblock it.
 	 */
 	if (type != SOCK_STREAM) {
-		idx_io_enable(task_idx_indata(sock->desc), IDX_IO_WRITING);
+		idx_io_enable(sock->desc_data, IDX_IO_WRITING);
 	}
 
 	return res;
@@ -95,7 +95,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 	}
 
 	/* If connection established, than we can write in this socket always. */
-	idx_io_enable(task_idx_indata(sock->desc), IDX_IO_WRITING);
+	idx_io_enable(sock->desc_data, IDX_IO_WRITING);
 
 	return 0;
 }
@@ -149,7 +149,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen,
-			sock->desc->flags);
+			*task_idx_desc_flags_ptr(task_self_idx_get(sockfd)));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -162,13 +162,13 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	new_sock->desc = task_self_idx_get(res);
+	new_sock->desc_data = task_idx_indata(task_self_idx_get(res));
 
 	/**
 	 * If connection established, than we can
 	 * write in this socket always.
 	 */
-	idx_io_enable(task_idx_indata(new_sock->desc), IDX_IO_WRITING);
+	idx_io_enable(new_sock->desc_data, IDX_IO_WRITING);
 
 	return res;
 }
@@ -365,12 +365,13 @@ static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	struct socket *sock = task_idx_desc_data(data);
 	ssize_t len;
 
-	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte, * task_idx_desc_flags_ptr(data), NULL, 0);
+	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
+			*task_idx_desc_flags_ptr(data), NULL, 0);
 
 	softirq_lock();
 	{
 		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
-			idx_io_disable(task_idx_indata(data), IDX_IO_READING);
+			idx_io_disable(sock->desc_data, IDX_IO_READING);
 		}
 	}
 	softirq_unlock();

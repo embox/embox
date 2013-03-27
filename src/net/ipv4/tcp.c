@@ -532,12 +532,10 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 			list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+
 		event_notify(&sock.tcp_sk->new_conn);
-		{
-			struct idx_desc *desc = sock.sk->sk_socket->desc;
-			assert(desc != NULL);
-			idx_io_enable(task_idx_indata(desc), IDX_IO_READING);
-		}
+		idx_io_enable(sock.sk->sk_socket->desc_data, IDX_IO_READING);
+
 		return TCP_RET_OK;
 	}
 	return TCP_RET_DROP;

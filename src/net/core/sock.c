@@ -167,8 +167,6 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 }
 
 void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
-	struct idx_desc *desc = sk->sk_socket->desc;
-
 	assert(sk != NULL);
 
 	if (sk->sk_shutdown & (SHUT_RD + 1)) {
@@ -176,11 +174,8 @@ void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	}
 
 	skb_queue_push(sk->sk_receive_queue, skb);
-
 	event_notify(&sk->sock_is_not_empty);
-	if (desc->data) {
-		idx_io_enable(task_idx_indata(desc), IDX_IO_READING);
-	}
+	idx_io_enable(sk->sk_socket->desc_data, IDX_IO_READING);
 }
 
 // TODO remove this

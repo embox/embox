@@ -209,7 +209,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			/* Delete new socket from list and block listening socket if there are no connections. */
 			list_del_init(&newsock.tcp_sk->conn_wait);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
-				idx_io_disable(task_idx_indata(sk->sk_socket->desc), IDX_IO_READING);
+				idx_io_disable(sk->sk_socket->desc_data, IDX_IO_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);

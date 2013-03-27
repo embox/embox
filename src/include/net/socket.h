@@ -68,7 +68,7 @@ typedef struct socket {
 	unsigned long flags;
 
 	struct sock *sk;
-	struct idx_desc *desc;
+	struct idx_desc_data *desc_data;
 	struct socket_node *socket_node;
 	const struct proto_ops *ops;
 } socket_t;
