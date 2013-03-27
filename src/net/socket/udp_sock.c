@@ -36,7 +36,7 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 }
 
 static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len) {
+		size_t len, int flags) {
 	struct sk_buff *skb;
 
 	struct inet_sock *inet = inet_sk(sk);
@@ -62,7 +62,7 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 }
 
 static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int noblock, int flags) {
+		size_t len, int flags) {
 	struct sk_buff *skb;
 
 	skb = skb_queue_front(sk->sk_receive_queue);

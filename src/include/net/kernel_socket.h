@@ -94,7 +94,7 @@ extern int kernel_socket_listen(struct socket *sock, int backlog);
  * @return 0 on success, minus posix errno on failure
  */
 extern int kernel_socket_accept(struct socket *sock, struct socket **new_sock,
-		struct sockaddr *addr, socklen_t *addrlen);
+		struct sockaddr *addr, socklen_t *addrlen, int flags);
 
 /**
  * Initiate a connection from a connection-mode socket.
@@ -149,7 +149,7 @@ extern int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
  * @return error code
  */
 extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *msg, size_t size);
+		struct msghdr *msg, size_t size, int flags);
 
 /**
  * Receive a message from a socket.

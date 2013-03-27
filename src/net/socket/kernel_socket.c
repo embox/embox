@@ -254,7 +254,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
  }
 
 int kernel_socket_accept(struct socket *sock, struct socket **accepted,
-		struct sockaddr *addr, socklen_t *addrlen) {
+		struct sockaddr *addr, socklen_t *addrlen, int flags) {
 	int res;
 	struct sock *newsk;
 
@@ -284,7 +284,7 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	}
 
 	/* try to accept */
-	res = sock->ops->accept(sock->sk, &newsk, addr, addrlen);
+	res = sock->ops->accept(sock->sk, &newsk, addr, addrlen, flags);
 	if (res < 0) { /* If something went wrong */
 		/* debug_printf("Error while accepting a connection", */
 		/* 						 "kernel_sockets", "kernel_socket_accept"); */
@@ -457,8 +457,8 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 }
 
 int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *m,	size_t total_len) {
-	return sock->ops->sendmsg(iocb, sock, m, total_len);
+		struct msghdr *m, size_t total_len, int flags) {
+	return sock->ops->sendmsg(iocb, sock, m, total_len, flags);
 }
 
 int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,

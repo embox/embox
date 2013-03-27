@@ -157,7 +157,7 @@ typedef struct proto {
 	int (*disconnect)(sock_t *sk, int flags);
 #endif
 	int (*listen)(sock_t *sk, int backlog);
-	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, int *addr_len);
+	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, socklen_t *addr_len, int flags);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
 #if 0
@@ -168,9 +168,9 @@ typedef struct proto {
 	int (*getsockopt)(struct sock *sk, int level, int optname, char *optval,
 			int *option);
 	int (*sendmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
-			size_t len);
+			size_t len, int flags);
 	int (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags);
+			size_t len, int flags);
 	int (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
 	int (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
 	void (*hash)(struct sock *sk);

@@ -191,7 +191,7 @@ int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 	assert(sock->sk->sk_prot != NULL);
 	assert(sock->sk->sk_prot->recvmsg != NULL);
 
-	return sock->sk->sk_prot->recvmsg(iocb, sock->sk, msg, size, 0, flags);
+	return sock->sk->sk_prot->recvmsg(iocb, sock->sk, msg, size, flags);
 }
 
 void sk_common_release(struct sock *sk) {

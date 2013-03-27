@@ -148,7 +148,8 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen);
+	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen,
+			sock->desc->flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -221,7 +222,7 @@ static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len,
 	sock_set_ready(sock->sk);
 #endif
 
-	ret = kernel_socket_sendmsg(NULL, sock, &m, len);
+	ret = kernel_socket_sendmsg(NULL, sock, &m, len, flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;

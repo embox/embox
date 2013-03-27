@@ -83,7 +83,7 @@ struct proto_ops {
 	/* 1st arg struct sock* - because sockets are handled on kernel sockets level
 	   2nd arg struct sock** - not to create excess struct socket, but create it based
 	    on alreadey creaed struct sock* */
-	int (*accept)(struct sock *sock, struct sock **new_sock, sockaddr_t *addr, int *addr_len);
+	int (*accept)(struct sock *sock, struct sock **new_sock, sockaddr_t *addr, socklen_t *addr_len, int flags);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
 
@@ -101,7 +101,7 @@ struct proto_ops {
 	int (*compat_getsockopt)(struct socket *sock, int level, int optname,
 			char *optval, int *optlen);
 	int (*sendmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-			size_t total_len);
+			size_t total_len, int flags);
 	int (*recvmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len, int flags);
 	bool  (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);

@@ -22,8 +22,6 @@
 #include <net/inetdevice.h>
 
 #include <kernel/time/time.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 #include <mem/objalloc.h>
 #include <embox/net/sock.h>
@@ -173,7 +171,7 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 }
 
 static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
-		struct sockaddr *addr, int *addr_len) {
+		struct sockaddr *addr, int *addr_len, int flags) {
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
 	useconds_t started;
@@ -192,7 +190,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-			if (sk->sk_socket->desc->flags & O_NONBLOCK) {
+			if (flags & O_NONBLOCK) {
 				return -EAGAIN;
 			}
 			sock_unlock(sk);
@@ -239,7 +237,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 }
 
 static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len) {
+			size_t len, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes, max_len;
@@ -301,7 +299,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 }
 
 static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags) {
+			size_t len, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes;

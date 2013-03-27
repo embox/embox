@@ -263,7 +263,7 @@ static int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 }
 
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *msg, size_t size) {
+		struct msghdr *msg, size_t size, int flags) {
 	int res;
 	struct sock *sk;
 
@@ -278,7 +278,7 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 	assert(sk->sk_prot != NULL);
 
 	if (sk->sk_prot->sendmsg != NULL) {
-		res = sk->sk_prot->sendmsg(iocb, sk, msg, size);
+		res = sk->sk_prot->sendmsg(iocb, sk, msg, size, flags);
 	}
 	else {
 		res = -EOPNOTSUPP;
@@ -305,7 +305,7 @@ int inet_recvmsg(struct kiocb *iocb, struct socket *sock,
 	assert(sk->sk_prot != NULL);
 
 	if (sk->sk_prot->recvmsg != NULL) {
-		res = sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags);
+		res = sk->sk_prot->recvmsg(iocb, sk, msg, size, flags);
 	}
 	else {
 		res = -EOPNOTSUPP;
@@ -342,7 +342,7 @@ int inet_listen(struct socket *sock, int backlog) {
 	return res;
 }
 
-static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len) {
+static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len, int flags) {
 	int res;
 
 	if (!sock_lock(&sk)) {
@@ -353,7 +353,7 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 	assert(sk->sk_prot != NULL);
 
 	if (sk->sk_prot->accept != NULL) {
-		res = sk->sk_prot->accept(sk, newsk, addr, addr_len);
+		res = sk->sk_prot->accept(sk, newsk, addr, addr_len, flags);
 	}
 	else {
 		res = -EOPNOTSUPP;

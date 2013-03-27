@@ -169,7 +169,7 @@ static void raw_unhash(struct sock *sk) {
 }
 
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len) {
+		size_t len, int flags) {
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
 
@@ -192,7 +192,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 }
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags) {
+			size_t len, int flags) {
 	struct sk_buff *skb;
 
 	skb = skb_queue_front(sk->sk_receive_queue);
