@@ -12,11 +12,21 @@
 #include <termios.h>
 #include <unistd.h>
 
-char * getpass(const char *prompt) {
-	static char pass[PASS_MAX + 2]; /* for \n\0 */
+/**
+ * @brief Non posix extension of deprecated @a getpass that not use static buffers and
+ * therefore thread-safe.
+ *
+ * @param prompt Prompt to be printed to user
+ * @param buf Buffer to store user's input
+ * @param buflen @a buf length
+ *
+ * @return
+ * 	NULL on error
+ * 	pointer to user entered password
+ */
+char *getpass_r(const char *prompt, char *buf, size_t buflen) {
 	size_t pass_len;
-    struct termios t;
-
+	struct termios t;
 	/* print prompt */
 	if (0 > fprintf(stdout, "%s", prompt)) {
 		return NULL;
@@ -35,7 +45,7 @@ char * getpass(const char *prompt) {
 
 	t.c_lflag |= ECHO;
 
-	if (NULL == fgets(&pass[0], sizeof pass, stdin)) {
+	if (NULL == fgets(buf, buflen, stdin)) {
 		tcsetattr(STDIN_FILENO, TCSANOW, &t);
 		return NULL;
 	}
@@ -45,15 +55,20 @@ char * getpass(const char *prompt) {
 	}
 
 	/* remove newline character */
-	pass_len = strlen(&pass[0]);
+	pass_len = strlen(buf);
 
-	if (pass[pass_len - 1] != '\n') {
+	if (buf[pass_len - 1] != '\n') {
 		return NULL; /* error: no newline at the end of line.
 						password is too long or EOF is encountered */
 	}
 
-	pass[pass_len - 1] = '\0';
+	buf[pass_len - 1] = '\0';
 
 	/* done */
-	return &pass[0];
+	return buf;
+}
+
+char * getpass(const char *prompt) {
+	static char pass[PASS_MAX + 2]; /* for \n\0 */
+	return getpass_r(prompt, pass, sizeof(pass));
 }
