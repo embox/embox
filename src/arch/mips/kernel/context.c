@@ -4,6 +4,7 @@
  * @date Aug 15, 2012
  * @author: Anton Bondarev
  */
+#include <stdint.h>
 #include <hal/context.h>
 
 
