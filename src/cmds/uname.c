@@ -68,8 +68,8 @@ static int exec(int argc, char *argv[]) {
 
 	uname(&info);
 	processor = NULL;
-	platform = NULL;
-	system = OPTION_STRING_GET(hostname);
+	platform = OPTION_STRING_GET(platform);
+	system = OPTION_STRING_GET(system);
 
 	if (args.with_a || args.with_s) printf("%s ", info.sysname);
 	if (args.with_a || args.with_n) printf("%s ", info.nodename);

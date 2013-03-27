@@ -25,7 +25,8 @@ package embox.cmd
 module uname {
 	source "uname.c"
 
-	option string system = "Embox-platform"
+	option string system = "Embox-OS"
+	option string platform = ""
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.utsname
