@@ -13,27 +13,26 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-typedef struct pthread {
+#include <kernel/thread/types.h>
+#include <kernel/thread/sync/cond.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sync/rwlock.h>
 
-} pthread_t;
+typedef struct thread *pthread_t;
 
 typedef struct pthread_attr {
 
 } pthread_attr_t;
 
 
-typedef struct pthread_cond {
-
-} pthread_cond_t;
+typedef struct cond pthread_cond_t;
 
 typedef struct pthread_condattr {
 
 } pthread_condattr_t;
 
 
-typedef struct pthread_mutex {
-
-} pthread_mutex_t;
+typedef struct mutex pthread_mutex_t;
 
 typedef struct pthread_mutexattr {
 
@@ -86,7 +85,7 @@ extern int   pthread_attr_setstackaddr(pthread_attr_t *, void *);
 extern int   pthread_attr_setstacksize(pthread_attr_t *, size_t);
 
 extern int   pthread_cancel(pthread_t);
-extern void  pthread_cleanup_push(void *, void *);
+extern void  pthread_cleanup_push(void (*)(void *), void *arg);
 extern void  pthread_cleanup_pop(int);
 
 extern int   pthread_cond_broadcast(pthread_cond_t *);
