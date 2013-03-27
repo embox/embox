@@ -18,21 +18,21 @@ typedef int pthread_attr_t;
 static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
                                __const pthread_mutexattr_t *__mutexattr) {
 	DPRINT();
-	return -1;
+	return 0;
 }
 
 static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
 	DPRINT();
-	return -1;
+	return 0;
 }
 
 static inline int pthread_mutex_lock (pthread_mutex_t *__mutex){
 	DPRINT();
-	return -1;
+	return 0;
 }
 static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
 	DPRINT();
-	return -1;
+	return 0;
 }
 
 #define SIG_BLOCK 1

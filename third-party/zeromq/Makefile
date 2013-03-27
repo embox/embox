@@ -11,6 +11,7 @@ ZEROMQ_LIB       = $(ROOT_DIR)/lib/libzeromq.a
 ZEROMQ_FLAGS     = $(ZEROMQ_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
+EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/STLport/stlport_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/zeromq/zeromq_embox_compat.h
@@ -34,9 +35,6 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
-
-EMBOX_IMPORTED_CFLAGS   += -I$(abspath .)/include
-EMBOX_IMPORTED_CXXFLAGS += -I$(abspath .)/include
 
 EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/zeromq/include
 EMBOX_IMPORTED_CXXFLAGS += -I$(ROOT_DIR)/build/zeromq/include

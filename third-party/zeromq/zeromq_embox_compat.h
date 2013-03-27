@@ -51,6 +51,9 @@ struct sockaddr_un {
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define TCP_NODELACK TCP_NODELAY
 
 struct sockaddr_storage {
 	union {
