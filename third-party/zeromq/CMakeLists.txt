@@ -43,3 +43,28 @@ ExternalProject_Add(
    INSTALL_COMMAND true
    LOG_BUILD 1
 )
+
+ExternalProject_Add(
+   zmq_host
+   PREFIX ../host
+   URL http://download.zeromq.org/zeromq-3.2.2.tar.gz
+   URL_MD5 df68431d9300da84a1a5f9a2784e33de
+   UPDATE_COMMAND ""
+   PATCH_COMMAND
+      cd $ENV{EMBOX_ROOT}/third-party/zeromq/tree
+      #&& bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`"
+      && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/zeromq/patch_zeromq.txt
+   LOG_CONFIGURE 1
+   CONFIGURE_COMMAND
+      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+         --enable-static --disable-shared --enable-debug
+   LOG_BUILD 1
+)
+
+project (zmq_hwclient)
+add_executable(hwclient hwclient.cpp)
+add_dependencies(hwclient zmq_host)
+include_directories("${PROJECT_SOURCE_DIR}/../../build/zeromq/host/include")
+#link_directories(${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib)
+target_link_libraries(hwclient ${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib/libzmq.a)
+target_link_libraries(hwclient pthread rt)
