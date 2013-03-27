@@ -22,25 +22,25 @@ struct idx_desc;
 #define IDX_IO_READING 0x01
 #define IDX_IO_WRITING 0x10
 
-static inline void idx_io_set_monitor(struct idx_desc *desc, int op) {
-	assert(desc->data);
-	desc->data->io_state.io_monitoring |= op;
+static inline void idx_io_set_monitor(struct idx_desc_data *ddata, int op) {
+	assert(ddata);
+	ddata->io_state.io_monitoring |= op;
 }
 
-static inline void idx_io_unset_monitor(struct idx_desc *desc, int op) {
-	assert(desc->data);
-	desc->data->io_state.io_monitoring &= ~op;
+static inline void idx_io_unset_monitor(struct idx_desc_data *ddata, int op) {
+	assert(ddata);
+	ddata->io_state.io_monitoring &= ~op;
 }
 
-static inline void idx_io_disable(struct idx_desc *desc, int op) {
+static inline void idx_io_disable(struct idx_desc_data *ddata, int op) {
 	softirq_lock();
-	assert(desc->data);
-	desc->data->io_state.io_ready &= ~op;
+	assert(ddata);
+	ddata->io_state.io_ready &= ~op;
 	softirq_unlock();
 }
 
-extern void idx_io_enable(struct idx_desc *desc, int op);
+extern void idx_io_enable(struct idx_desc_data *ddata, int op);
 
-extern void idx_io_set_event(struct idx_desc *desc, struct event *event);
+extern void idx_io_set_event(struct idx_desc_data *ddata, struct event *event);
 
 #endif /* KERNEL_TASK_IO_SYNC_H_ */

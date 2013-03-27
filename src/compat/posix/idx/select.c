@@ -101,13 +101,13 @@ static int filter_out_with_op(int nfds, fd_set *set, int op, int update) {
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				if (desc->data->io_state.io_ready & op) {
+				if (task_idx_indata(desc)->io_state.io_ready & op) {
 					fd_cnt++;
 				} else {
 					/* Filter out inactive descriptor and unset corresponding monitor. */
 					if (update) {
-						idx_io_unset_monitor(desc, op);
-						idx_io_set_event(desc, NULL);
+						idx_io_unset_monitor(task_idx_indata(desc), op);
+						idx_io_set_event(task_idx_indata(desc), NULL);
 						FD_CLR(fd, set);
 					}
 				}
@@ -154,7 +154,7 @@ static void set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 		if ((readfds && FD_ISSET(fd, readfds)) ||
 				(writefds && FD_ISSET(fd, writefds))) {
 			desc = task_self_idx_get(fd);
-			idx_io_set_event(desc, event);
+			idx_io_set_event(task_idx_indata(desc), event);
 		}
 	}
 }
@@ -169,7 +169,7 @@ static int set_monitoring(int nfds, fd_set *set, int op) {
 				if (NULL == (desc = task_self_idx_get(fd))) {
 					return -1;
 				}
-				idx_io_set_monitor(desc, op);
+				idx_io_set_monitor(task_idx_indata(desc), op);
 			}
 		}
 	}
@@ -186,7 +186,7 @@ static int unset_monitoring(int nfds, fd_set *set, int op) {
 			if (NULL == (desc = task_self_idx_get(fd))) {
 				return -1;
 			}
-			idx_io_unset_monitor(desc, op);
+			idx_io_unset_monitor(task_idx_indata(desc), op);
 		}
 	}
 

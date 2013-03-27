@@ -68,6 +68,11 @@ struct task_idx_ops {
 	const enum task_idx_ops_type type;
 };
 
+static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
+	assert(desc);
+	return desc->data;
+}
+
 /**
  * @brief idx utillity: get resource by idx
  * @param desc idx descriptor to get
@@ -75,16 +80,17 @@ struct task_idx_ops {
  */
 static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
-	return desc->data->fd_struct;
+	return task_idx_indata(desc)->fd_struct;
 }
 
 static inline idx_flags_t *task_idx_desc_flags_ptr(struct idx_desc *desc) {
+	assert(desc);
 	return &desc->flags;
 }
 
 static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc) {
 	assert(desc);
-	return desc->data->res_ops;
+	return task_idx_indata(desc)->res_ops;
 }
 
 #if 0

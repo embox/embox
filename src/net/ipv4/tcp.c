@@ -536,7 +536,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		{
 			struct idx_desc *desc = sock.sk->sk_socket->desc;
 			assert(desc != NULL);
-			idx_io_enable(desc, IDX_IO_READING);
+			idx_io_enable(task_idx_indata(desc), IDX_IO_READING);
 		}
 		return TCP_RET_OK;
 	}

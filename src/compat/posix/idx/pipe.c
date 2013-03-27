@@ -27,8 +27,8 @@
 struct pipe {
 	struct ring_buff *buff;       /**< Buffer to store data */
 	size_t buf_size;              /**< Size of buffer. May be changed by pipe_set_buf_size() */
-	struct idx_desc *reading_end; /**< Reading end of pipe */
-	struct idx_desc *writing_end; /**< Writing end of pipe */
+	struct idx_desc_data *reading_end; /**< Reading end of pipe */
+	struct idx_desc_data *writing_end; /**< Writing end of pipe */
 	struct event read_wait;       /**< Event to activate reading when pipe was not empty */
 	struct event write_wait;      /**< Event to activate writing when pipe was not full */
 };
@@ -110,11 +110,11 @@ int pipe(int pipefd[2]) {
 
 	/* Init reader */
 	event_init(&pipe->read_wait, "pipe_read_wait");
-	pipe->reading_end = task_self_idx_get(pipefd[0]);
+	pipe->reading_end = task_idx_indata(task_self_idx_get(pipefd[0]));
 
 	/* Init writer */
 	event_init(&pipe->write_wait, "pipe_write_wait");
-	pipe->writing_end = task_self_idx_get(pipefd[1]);
+	pipe->writing_end = task_idx_indata(task_self_idx_get(pipefd[1]));
 
 	/* And enable writing in pipe */
 	idx_io_enable(pipe->writing_end, IDX_IO_WRITING);
@@ -136,11 +136,11 @@ static int pipe_close(struct idx_desc *desc) {
 
 	sched_lock();
 	{
-		if (desc == pipe->reading_end) {
+		if (task_idx_indata(desc) == pipe->reading_end) {
 			pipe->reading_end = NULL;
 			/* Wake up writing end if it is sleeping. */
 			event_notify(&pipe->write_wait);
-		} else if (desc == pipe->writing_end) {
+		} else if (task_idx_indata(desc) == pipe->writing_end) {
 			pipe->writing_end = NULL;
 			/* Wake up reading end if it is sleeping. */
 			event_notify(&pipe->read_wait);
@@ -292,10 +292,10 @@ static int inject_ops(int fd, const struct task_idx_ops *ops, const struct task_
 	}
 
 	if (backup) {
-		*backup = idx_desc->data->res_ops;
+		*backup = task_idx_indata(idx_desc)->res_ops;
 	}
 
-	idx_desc->data->res_ops = ops;
+	task_idx_indata(idx_desc)->res_ops = ops;
 
 	return 0;
 }

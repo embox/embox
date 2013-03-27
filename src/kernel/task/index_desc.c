@@ -131,7 +131,13 @@ static void task_idx_table_inherit(struct task *task, struct task *parent) {
 	for (int i = 0; i < TASKS_RES_QUANTITY; i++) {
 		if (task_idx_table_is_binded(parent_idx_table, i)) {
 			struct idx_desc *par_idx = task_idx_table_get(parent_idx_table, i);
-			struct idx_desc *d = task_idx_desc_alloc(par_idx->data);
+			struct idx_desc *d;
+
+		       	if (!par_idx) {
+				continue;
+			}
+
+			d = task_idx_desc_alloc(par_idx->data);
 			assert(0 == task_idx_table_set(idx_table, i, d),
 					"task_idx_table_init not properly inited idx table");
 

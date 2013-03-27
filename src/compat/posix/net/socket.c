@@ -72,7 +72,7 @@ int socket(int domain, int type, int protocol) {
 	 * it is unconnected. Otherwise unblock it.
 	 */
 	if (type != SOCK_STREAM) {
-		idx_io_enable(sock->desc, IDX_IO_WRITING);
+		idx_io_enable(task_idx_indata(sock->desc), IDX_IO_WRITING);
 	}
 
 	return res;
@@ -95,7 +95,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 	}
 
 	/* If connection established, than we can write in this socket always. */
-	idx_io_enable(sock->desc, IDX_IO_WRITING);
+	idx_io_enable(task_idx_indata(sock->desc), IDX_IO_WRITING);
 
 	return 0;
 }
@@ -167,7 +167,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	 * If connection established, than we can
 	 * write in this socket always.
 	 */
-	idx_io_enable(new_sock->desc, IDX_IO_WRITING);
+	idx_io_enable(task_idx_indata(new_sock->desc), IDX_IO_WRITING);
 
 	return res;
 }
@@ -369,7 +369,7 @@ static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	softirq_lock();
 	{
 		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
-			idx_io_disable(data, IDX_IO_READING);
+			idx_io_disable(task_idx_indata(data), IDX_IO_READING);
 		}
 	}
 	softirq_unlock();

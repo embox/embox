@@ -9,12 +9,12 @@
 #include <kernel/task/io_sync.h>
 #include <kernel/thread/event.h>
 
-void idx_io_enable(struct idx_desc *desc, int op) {
+void idx_io_enable(struct idx_desc_data *ddata, int op) {
 	struct idx_io_state *io_state;
 
-	assert(desc->data);
+	assert(ddata);
 
-	io_state = &desc->data->io_state;
+	io_state = &ddata->io_state;
 
 	softirq_lock();
 	{
@@ -26,9 +26,8 @@ void idx_io_enable(struct idx_desc *desc, int op) {
 	softirq_unlock();
 }
 
-void idx_io_set_event(struct idx_desc *desc, struct event *event) {
+void idx_io_set_event(struct idx_desc_data *ddata, struct event *event) {
 	softirq_lock();
-	assert(desc->data);
-	desc->data->io_state.io_enable = event;
+	ddata->io_state.io_enable = event;
 	softirq_unlock();
 }
