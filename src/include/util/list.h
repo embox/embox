@@ -13,12 +13,16 @@
 #include <util/member.h>
 #include <util/macro.h>
 
+#if 0
 #if defined CONFIG_LIST_NDEBUG || 1
 # include __impl_x(util/list_ndebug.h)
 #else
 # include __impl_x(util/list_debug.h)
 #endif
+#endif
 
+
+#include <module/embox/util/List.h>
 /* Types used for the list itself and for elements linkage. */
 
 /**
