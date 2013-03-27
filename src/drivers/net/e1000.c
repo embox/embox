@@ -141,7 +141,7 @@ static void e1000_rx(struct net_device *dev) {
 	struct sk_buff *skb;
 
 	while (cur != head) {
-		int len = rx_descs[cur].length;
+		int len = rx_descs[cur].length - 4; /* checksum */
 		if (!(rx_descs[cur].status)) {
 			break;
 		}
