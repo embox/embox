@@ -339,6 +339,7 @@ my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 source_o_pats   := %.o
 source_a_pats   := %.a
 source_cc_pats  := %.S %.c %.cpp %.cxx
+source_mk_pats  := %.mk
 source_cpp_pats := %.lds.S
 
 @source_rulemk := \
@@ -346,17 +347,20 @@ source_cpp_pats := %.lds.S
 		$(foreach f,$(call get,$s,fileName),$(or \
 			$(and $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s), \
 			$(and $(filter $(source_cc_pats),$f), source-cc-rule-mk/$s), \
+			$(and $(filter $(source_mk_pats),$f), source-mk-rule-mk/$s), \
 			$(and $(filter $(source_a_pats),$f),  source-a-rule-mk/$s), \
 			$(and $(filter $(source_o_pats),$f),  source-o-rule-mk/$s))))
 
 @source_o_rulemk   := $(filter source-o-rule-mk/%,$(@source_rulemk))
 @source_a_rulemk   := $(filter source-a-rule-mk/%,$(@source_rulemk))
 @source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
+@source_mk_rulemk  := $(filter source-mk-rule-mk/%,$(@source_rulemk))
 @source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
 
 $(@source_o_rulemk)   : kind := o
 $(@source_a_rulemk)   : kind := a
 $(@source_cc_rulemk)  : kind := cc
+$(@source_mk_rulemk)  : kind := mk
 $(@source_cpp_rulemk) : kind := cpp
 
 @source_rulemk += \
@@ -426,6 +430,11 @@ $(@source_cpp_rulemk) $(@source_cc_rulemk) $(@source_o_rulemk) $(@source_a_rulem
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
 		$(call gen_make_rule,$(o_file),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
+
+$(@source_mk_rulemk):
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_include,$(file)))
 
 source_initfs_cp_o_file = \
 	$(addprefix $$(ROOTFS_DIR)/, \
