@@ -13,4 +13,4 @@ HEADERS += \
 
 RESOURCES = texteditor.qrc
 
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS texteditor.pro desktopImage.jpg
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS texteditor.pro

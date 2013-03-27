@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>desktopImage.jpg</file>
+    <file>default.png</file>
     <file>icon.png</file>
 </qresource>
 </RCC>
