@@ -41,7 +41,6 @@ extern int sleep(unsigned int seconds);
  * @param useconds interval in nanoseconds,microseconds,milliseconds
  * @return 0 if time has elapsed if was error then return -1
  */
-extern int nsleep(useconds_t nseconds);
 extern int usleep(useconds_t useconds);
 extern int msleep(useconds_t mseconds);
 

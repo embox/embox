@@ -89,6 +89,9 @@ extern time_t time(time_t *t);
 /** Format date and time */
 extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
 
+extern int nanosleep(const struct timespec *req, struct timespec *rem);
+
+
 __END_DECLS
 
 #endif /* POSIX_TIME_H_ */

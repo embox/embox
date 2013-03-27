@@ -9,11 +9,20 @@
 #include <unistd.h>
 #include <kernel/time/ktime.h>
 #include <sys/types.h>
+#include <time.h>
 
-int nsleep(useconds_t nsec) {
+int nanosleep(const struct timespec *req, struct timespec *rem) {
 	int res;
 
-	res = n_ksleep(nsec);
+	//TODO it must contains remind time if nanosleep was broken by a signal
+	rem = NULL;
+
+	res = sleep(req->tv_sec);
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
+	}
+	res = n_ksleep(req->tv_nsec);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1;
