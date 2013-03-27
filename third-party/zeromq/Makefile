@@ -33,6 +33,7 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += -I$(abspath .)/include
 EMBOX_IMPORTED_CXXFLAGS += -I$(abspath .)/include
@@ -78,13 +79,3 @@ $(ZEROMQ_LIB): $(ZEROMQ_CMAKE_DIR)/Makefile
 	$(AT)cd $(ZEROMQ_CMAKE_DIR) && $(MAKE) # -j `nproc`
 
 all: $(ZEROMQ_LIB)
-
-
-ZEROMQ_HWSERVER_O = $(ZEROMQ_DIR)/obj/hwserver.o
-
-all: $(ZEROMQ_HWSERVER_O)
-
-VPATH           += .
-
-$(ZEROMQ_DIR)/obj/%.o: %.cpp
-	$(AT)g++ $(EMBOX_DERIVED_CXXFLAGS) -o $@ -c $<

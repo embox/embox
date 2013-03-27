@@ -1,6 +1,6 @@
 package third_party.zeromq
 
-module core extends embox.lib.cxx.app {
+module core {
 	depends embox.lib.LibC
 	depends embox.lib.cxx.lib
 	depends embox.arch.x86.LibM // FIXME:
@@ -10,6 +10,11 @@ module core extends embox.lib.cxx.app {
 	source "empty.c" // FIXME: workaround
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/zeromq MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../zeromq/lib/libzmq.a", "hwserver.cpp"
-	//source "../../../../zeromq/bin/hwserver.o"
+	source "../../../../zeromq/lib/libzmq.a"
+	source "order.mk"
+}
+
+module hwserver extends embox.lib.cxx.app {
+	@IncludePath("$(ROOT_DIR)/build/zeromq/include")
+	source "hwserver.cpp"
 }
