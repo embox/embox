@@ -14,7 +14,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <net/ip.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <embox/cmd.h>
 #include <stdio.h>
 
@@ -172,6 +173,7 @@ reset_out:
 }
 
 static int exec(int argc, char **argv) {
+	static int tries = 0;
 	int res = -1, sock, opt;
 	struct sockaddr_in our, dst;
 	int len;
@@ -200,29 +202,31 @@ static int exec(int argc, char **argv) {
 
 	if (!inet_aton(argv[argc -1], &dst.sin_addr)) {
 		printf("Invalid ip address %s\n", argv[argc -1]);
-		return -ENOENT;
+		return -EINVAL;
 	}
+	dst.sin_family = AF_INET;
+	dst.sin_port = htons(RLOGIN_PORT);
+
+	len = strlen(client) + strlen(server) + strlen(term) + 3;
+	buf = malloc(len);
+	if (buf == NULL) {
+		return -ENOMEM;
+	}
+	memset(buf, 0, len);
 
 	our.sin_family = AF_INET;
-	our.sin_port= htons(RLOGIN_PORT + 0);
+	our.sin_port= htons(RLOGIN_PORT + tries++);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		printf("can not allocate socket\n");
-		return -ENOMEM;
+		return -errno;
 	}
-
-	len = strlen(client) + strlen(server) + strlen(term) + 3;
-	buf = malloc(len);
-	memset(buf, 0, len);
 
 	if ((res = bind(sock, (struct sockaddr *)&our, sizeof(our))) < 0) {
 		printf("can not bind socket\n");
 		goto exit;
 	}
-
-	dst.sin_family = AF_INET;
-	dst.sin_port = htons(RLOGIN_PORT);
 
 	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
