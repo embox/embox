@@ -29,8 +29,8 @@ static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 		case 'f': //Move cursor + blink cursor to location v,h
 		case 'H': //Move cursor to screen location v,h
 			executor->token.type = VTESC_CURSOR_POSITION;
-			executor->token.params.cursor_position.row = params[0];
-			executor->token.params.cursor_position.column = params[1];
+			executor->token.params.cursor_position.row = params[1];
+			executor->token.params.cursor_position.column = params[0];
 			break;
 		case 'm': //color
 			executor->token.type = VTESC_SET_SGR;
