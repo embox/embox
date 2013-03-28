@@ -75,10 +75,6 @@ filestruct *make_new_node(filestruct *prevnode)
     return newnode;
 }
 
-static int sigfillset(sigset_t *set) {
-	return -1;
-}
-
 /* Make a copy of a filestruct node. */
 filestruct *copy_node(const filestruct *src)
 {
