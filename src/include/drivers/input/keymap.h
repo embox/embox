@@ -18,14 +18,15 @@ __BEGIN_DECLS
 #define KEY_CAPS 0x83
 
 #define KEY_INS  0x84
-#define KEY_HOME 0x85
-#define KEY_END	 0x86
-#define KEY_PGUP 0x87
-#define KEY_PGDN 0x88
-#define KEY_UP   0x89
-#define KEY_DOWN 0x8a
-#define KEY_LEFT 0x8b
-#define KEY_RGHT 0x8c
+#define KEY_DEL  0x85
+#define KEY_HOME 0x86
+#define KEY_END	 0x87
+#define KEY_PGUP 0x88
+#define KEY_PGDN 0x89
+#define KEY_UP   0x8a
+#define KEY_DOWN 0x8b
+#define KEY_LEFT 0x8c
+#define KEY_RGHT 0x8d
 
 #define KEY_F1   0x90
 #define KEY_F2   0x91

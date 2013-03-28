@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <termios.h>
 #include <util/array.h>
 #include <util/member.h>
@@ -173,6 +174,7 @@ static void execute_token(struct vterm *vt, struct vtesc_token *token) {
 static const char *vterm_key_to_esc(int keycode){
 	switch (keycode) {
 	case KEY_INS: return "2~";
+	case KEY_DEL: return "3~";
 	case KEY_HOME: return "H";
 	case KEY_END: return "F";
 	case KEY_PGUP: return "5~";
@@ -181,9 +183,9 @@ static const char *vterm_key_to_esc(int keycode){
 	case KEY_DOWN: return "B";
 	case KEY_LEFT: return "D";
 	case KEY_RGHT: return "C";
-
-	default: return 0;
 	}
+
+	return NULL;
 }
 
 static char vterm_key_to_char(int keycode) {
