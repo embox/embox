@@ -10,8 +10,8 @@
 #define EMBOX_H_
 
 #include <curses.h>
-#include <stdlib.h>
 #include <setjmp.h>
+#include <stdlib.h>
 
 extern int nano_exit_ret;
 extern int nano_exited;
@@ -26,5 +26,8 @@ extern int nano_main(int argc, char **argv);
 		nano_exited = 1; \
 		longjmp(nano_exit_point, NANO_EXIT_JMP_VALUE); \
 	} while(0);
+
+#include <signal.h>
+static inline int sigfillset(sigset_t *set) { return -1; }
 
 #endif /* EMBOX_H_ */
