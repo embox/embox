@@ -83,7 +83,7 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
  *      2) Carrier without ARP can't be supported
  */
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
-	in_addr_t saddr, daddr;
+	in_addr_t daddr;
 	struct rt_entry *rte;
 	struct net_device *wanna_dev;
 	struct socket_opt_state *ops;
@@ -112,6 +112,13 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 		return 0;
 	}
 
+	/* if loopback set lo device */
+	if (ip_is_local(daddr, false, false)) {
+		assert(inetdev_get_loopback_dev() != NULL);
+		skb->dev = inetdev_get_loopback_dev()->dev;
+		return 0;
+	}
+
 	/* route destanation address */
 	rte = ((wanna_dev == NULL)
 		? (suggested_route == NULL) ? rt_fib_get_best(daddr, NULL) : suggested_route
@@ -124,23 +131,9 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	assert(rte->dev != NULL);
 	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
 	skb->dev = rte->dev;
-	assert(inetdev_get_by_dev(skb->dev) != NULL);
-	saddr = inetdev_get_by_dev(skb->dev)->ifa_address;
-
-	/* if source and destination addresses are equal send via LB interface
-	 * svv: suspicious. There is no check (src == dst) in ip_input
-	 */
-	if (ipv4_is_loopback(daddr)
-			|| (daddr == saddr)) {
-		/* FIXME it's the wrong check. need to check all interfaces
-		 * XXX even if saddr and skb->nh.iph->saddr are different? */
-		assert(inetdev_get_loopback_dev() != NULL);
-		skb->dev = inetdev_get_loopback_dev()->dev;
-	}
 
 	/* if the packet should be sent using gateway
 	 * nothing todo there. all will be done in arp_resolve */
-
 	return 0;
 }
 
@@ -199,7 +192,7 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 	best_mask_len = -1;
 	list_foreach(rt_info, &rt_entry_info_list, lnk) {
 		mask_len = ~rt_info->entry.rt_mask
-			? bit_clz(~rt_info->entry.rt_mask) + 1 : 32;
+			? bit_clz(ntohl(~rt_info->entry.rt_mask)) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
 				&& (out_dev == NULL || out_dev == rt_info->entry.dev)
 				&& (mask_len > best_mask_len)) {

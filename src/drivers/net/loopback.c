@@ -7,6 +7,7 @@
  * @author Dmitry Zubarevich
  */
 
+#include <assert.h>
 #include <embox/unit.h>
 #include <errno.h>
 #include <net/etherdevice.h>
@@ -16,16 +17,19 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT_INIT(loopback_init);
 
-static int loopback_xmit(sk_buff_t *skb, struct net_device *dev) {
-	net_device_stats_t *lb_stats;
+static int loopback_xmit(struct sk_buff *skb, struct net_device *dev) {
+	struct net_device_stats *lb_stats;
 
 	if ((skb == NULL) || (dev == NULL)) {
 		return -EINVAL;
 	}
 
-	lb_stats = &(dev->stats);
+	assert(dev->netdev_ops != NULL);
+	assert(dev->netdev_ops->ndo_get_stats != NULL);
+	lb_stats = dev->netdev_ops->ndo_get_stats(dev);
+
 	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->rx_packets++;
@@ -35,7 +39,8 @@ static int loopback_xmit(sk_buff_t *skb, struct net_device *dev) {
 		lb_stats->rx_err++;
 		lb_stats->tx_err++;
 	}
-	return ENOERR;
+
+	return 0;
 }
 
 static net_device_stats_t * loopback_get_stats(struct net_device *dev) {
@@ -43,7 +48,7 @@ static net_device_stats_t * loopback_get_stats(struct net_device *dev) {
 		return NULL;
 	}
 
-	return &(dev->stats);
+	return &dev->stats;
 }
 
 static const struct net_device_ops loopback_ops = {
@@ -65,16 +70,23 @@ static void loopback_setup(struct net_device *dev) {
 	dev->header_ops         = eth_get_header_ops();
 }
 
-static struct net_device *loopback_dev;
 /**
  * The initialization of loopback device
  */
-static int unit_init(void) {
+static int loopback_init(void) {
+	int ret;
+	struct net_device *loopback_dev;
 
 	loopback_dev = netdev_alloc("lo", &loopback_setup);
 	if (loopback_dev == NULL) {
 		return -ENOMEM;
 	}
 
-	return inetdev_register_dev(loopback_dev);
+	ret = inetdev_register_dev(loopback_dev);
+	if (ret != 0) {
+		netdev_free(loopback_dev);
+		return ret;
+	}
+
+	return 0;
 }

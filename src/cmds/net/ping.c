@@ -83,9 +83,9 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 	start = clock();
 	while ((delta = clock() - start) < timeout) {
 		/* we don't need to get pad data, only header */
-		if (!recvfrom(sock, rx_pack->packet_buff,
+		if (recvfrom(sock, rx_pack->packet_buff,
 				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				(struct sockaddr *) &from, NULL)) {
+				(struct sockaddr *) &from, NULL) <= 0) {
 			continue;
 		}
 		if ((rx_pack->hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||

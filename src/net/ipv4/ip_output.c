@@ -76,7 +76,6 @@ int ip_queue_send(struct sk_buff *skb) {
 	return ip_queue_xmit(skb);
 }
 
-
 int ip_queue_xmit(struct sk_buff *skb) {
 	skb->protocol = ETH_P_IP;
 	return dev_queue_send(skb);
