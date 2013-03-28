@@ -24,7 +24,7 @@ static void *thread_run(void *arg) {
 	struct event *event = (struct event *)arg;
 	/**waiting until event receives  */
 	printf("waiting for event's notifying...\n");
-	event_wait_ms(event, SCHED_TIMEOUT_INFINITE);
+	event_wait(event, SCHED_TIMEOUT_INFINITE);
 	printf("event has been received.\n");
 	return 0;
 }

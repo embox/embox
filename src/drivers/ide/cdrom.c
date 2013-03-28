@@ -70,7 +70,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	/* Data transfer */
 	while (1) {
 		/* Wait until data ready */
-		u_ksleep(CD_WAIT_US);
+		usleep(CD_WAIT_US);
 
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {

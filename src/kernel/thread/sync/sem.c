@@ -26,7 +26,7 @@ void sem_enter(sem_t *s) {
 	sched_lock();
 	{
 		while (tryenter_sched_lock(s) != 0) {
-			sched_sleep_locked_ms(&s->sq, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked(&s->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();

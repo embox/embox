@@ -76,7 +76,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		goto out;
 	}
 
-	event_wait_ms(&event, ticks);
+	event_wait(&event, ticks);
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 

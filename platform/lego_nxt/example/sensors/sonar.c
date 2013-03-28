@@ -26,7 +26,7 @@ static int sonar_example(int argc, char *argv[]) {
 		/* note, after configuring there is no difference between active and passive sensors */
 		printf("%d\n", nxt_sensor_get_val(NXT_SENSOR_1));
 
-		msleep(1000);
+		usleep(1000);
 	}
 	return 0;
 }

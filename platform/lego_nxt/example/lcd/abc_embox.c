@@ -95,39 +95,39 @@ static int run_abc_embox(void) {
 	display_b(42, 3);
 	display_o(60, 3);
 	display_x(80, 3);
-	msleep(250);
+	usleep(250);
 	/*jamp*/
 	display_clean_sp(2, 3);
 	display_e(2, 2);
-	msleep(250);
+	usleep(250);
 	display_clean_sp(2, 2);
 	display_e(2, 3);
-	msleep(250);
+	usleep(250);
 
 	display_clean_sp(22, 3);
 	display_m(22, 2);
-	msleep(250);
+	usleep(250);
 	display_clean_sp(22, 2);
 	display_m(22, 3);
-	msleep(250);
+	usleep(250);
 
 	display_clean_sp(42, 3);
 	display_b(42, 2);
-	msleep(250);
+	usleep(250);
 	display_clean_sp(42, 2);
 	display_b(42, 3);
-	msleep(250);
+	usleep(250);
 
 	display_clean_sp(60, 3);
 	display_o(60, 2);
-	msleep(250);
+	usleep(250);
 	display_clean_sp(60, 2);
 	display_o(60, 3);
-	msleep(250);
+	usleep(250);
 
 	display_clean_sp(80, 3);
 	display_x(80, 2);
-	msleep(250);
+	usleep(250);
 	display_clean_sp(80, 2);
 	display_x(80, 3);
 

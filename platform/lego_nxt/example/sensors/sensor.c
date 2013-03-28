@@ -9,7 +9,7 @@
  */
 
 #include <stdint.h>
-#include <unistd.h> /* msleep */
+#include <unistd.h> /* usleep */
 #include <stdio.h>  /* printf */
 #include <framework/example/self.h>
 
@@ -51,7 +51,7 @@ static void sensor_example_with_callback(void) {
 		 printf("%d\n", sval);
 
 		/* sleep 1 sec */
-		msleep(1000);
+		usleep(1000);
 	}
 }
 
@@ -73,7 +73,7 @@ static void sensor_example_without_callback(void) {
 		/* printf("%d\n", sval); */
 		printf("%d\n", nxt_sensor_get_val(NXT_SENSOR_1));
 		/* sleep 1 sec */
-		msleep(1000);
+		usleep(1000);
 	}
 }
 

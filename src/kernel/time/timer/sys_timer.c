@@ -15,48 +15,14 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-int timer_init_ns(struct sys_timer *tmr, unsigned int flags, uint32_t nsec,
+int timer_init(struct sys_timer *tmr, unsigned int flags, uint32_t usec,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
 		return -EINVAL;
 	}
 
 	tmr->state = 0;
-	tmr->cnt = tmr->load = ns2jiffies(nsec);
-	tmr->handle = handler;
-	tmr->param = param;
-	tmr->flags = flags;
-
-	timer_strat_start(tmr);
-
-	return ENOERR;
-}
-
-int timer_init_us(struct sys_timer *tmr, unsigned int flags, uint32_t usec,
-		sys_timer_handler_t handler, void *param) {
-	if (!handler || !tmr) {
-		return -EINVAL;
-	}
-
-	tmr->state = 0;
-	tmr->cnt = tmr->load = us2jiffies(usec);
-	tmr->handle = handler;
-	tmr->param = param;
-	tmr->flags = flags;
-
-	timer_strat_start(tmr);
-
-	return ENOERR;
-}
-
-int timer_init_ms(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
-		sys_timer_handler_t handler, void *param) {
-	if (!handler || !tmr) {
-		return -EINVAL;
-	}
-
-	tmr->state = 0;
-	tmr->cnt = tmr->load = ms2jiffies(msec);
+	tmr->cnt = tmr->load = ms2jiffies(usec);
 	tmr->handle = handler;
 	tmr->param = param;
 	tmr->flags = flags;
@@ -76,7 +42,7 @@ int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t usec,
 		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
-	timer_init_ms(*ptimer, flags, usec, handler, param);
+	timer_init(*ptimer, flags, usec, handler, param);
 	timer_set_preallocated(*ptimer);
 
 	return ENOERR;

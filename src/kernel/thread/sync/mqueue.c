@@ -73,7 +73,7 @@ unsigned int mqueue_receive(struct mqueue *q, char *message) {
 	sched_lock();
 	{
 		if (!mqueue_busyspace(q)) {
-			sched_sleep_locked_ms(&q->sleepq, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked(&q->sleepq, SCHED_TIMEOUT_INFINITE);
 		}
 
 		assert(mqueue_busyspace(q));

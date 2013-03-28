@@ -19,5 +19,5 @@ TEST_CASE("sleep/wake") {
 	struct sleepq sq;
 
 	sleepq_init(&sq);
-	test_assert_equal(sched_sleep_ms(&sq, 10), -ETIMEDOUT);
+	test_assert_equal(sched_sleep(&sq, 10), -ETIMEDOUT);
 }

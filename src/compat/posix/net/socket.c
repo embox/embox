@@ -288,7 +288,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 		/* if !O_NONBLOCK on socket's file descriptor {*/
 		if (ret == -1) {
-			event_wait_ms(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+			event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
 			ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 		}
 		/* } */

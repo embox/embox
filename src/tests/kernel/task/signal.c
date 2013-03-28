@@ -39,9 +39,9 @@ static void *task_hnd(void *arg) {
 
 TEST_CASE("create task and send signal") {
 	int tid = new_task("", task_hnd, NULL);
-	m_ksleep(100);
+	ksleep(100);
 	kill(tid, 9);
-	m_ksleep(100);
+	ksleep(100);
 	test_assert(flag != 0);
 
 }
@@ -68,13 +68,13 @@ TEST_CASE("create task and send him signal 3 times") {
 	int tid = new_task("", task_hnd2, NULL);
 	flag2 = 0;
 
-	m_ksleep(100);
+	ksleep(100);
 	kill(tid, 1);
 
-	m_ksleep(100);
+	ksleep(100);
 	kill(tid, 1);
 
-	m_ksleep(100);
+	ksleep(100);
 	kill(tid, 9);
 
 	test_assert(flag2 == 2);
@@ -83,7 +83,7 @@ TEST_CASE("create task and send him signal 3 times") {
 
 static void *thread_hnd(void *arg) {
 
-	m_ksleep(1000);
+	ksleep(1000);
 
 	task_exit(NULL);
 

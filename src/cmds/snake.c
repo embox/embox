@@ -218,7 +218,7 @@ static int exec(int argc, char **argv) {
 		point d2 = nil;
 		char ch = ' ';
 
-		msleep(sleep_time);
+		usleep(sleep_time);
 		last_valid = 0;
 		while (diag_kbhit() && !last_valid ) {
 			d = dispatch((ch = getchar()));

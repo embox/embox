@@ -37,7 +37,7 @@ static int sensor_example(int argc, char *argv[]) {
 	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		printf("Lightness is %d%%\n", percent);
 
-		msleep(1000);
+		usleep(1000);
 	}
 
 	return 0;

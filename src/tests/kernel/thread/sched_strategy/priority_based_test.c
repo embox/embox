@@ -35,7 +35,7 @@ static void *low_run(void *arg) {
 
 static void *high_run(void *arg) {
 	test_emit('b');
-	sched_sleep_ms(&sq, SCHED_TIMEOUT_INFINITE);
+	sched_sleep(&sq, SCHED_TIMEOUT_INFINITE);
 	test_emit('d');
 	return NULL;
 }

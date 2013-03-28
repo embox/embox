@@ -22,7 +22,7 @@ void cond_wait(cond_t *c, struct mutex *m) {
 	sched_lock();
 	{
 		mutex_unlock(m);
-		sched_sleep_locked_ms(&c->sq, SCHED_TIMEOUT_INFINITE);
+		sched_sleep_locked(&c->sq, SCHED_TIMEOUT_INFINITE);
 	}
 	sched_unlock();
 

@@ -22,7 +22,7 @@ int task_waitpid(unsigned int pid) {
 		task = task_table_get(pid);
 
 		if (task) {
-			while (0 > sched_sleep_locked_ms(task->wait_sq,
+			while (0 > sched_sleep_locked(task->wait_sq,
 					SCHED_TIMEOUT_INFINITE));
 		} else {
 			res = -ENOENT;

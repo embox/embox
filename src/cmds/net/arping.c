@@ -85,7 +85,7 @@ static int exec(int argc, char **argv) {
 				in_dev->dev);
 		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
-		msleep(DEFAULT_INTERVAL);
+		usleep(DEFAULT_INTERVAL);
 		if (neighbour_get_hardware_address((const unsigned char *)&dst,
 					sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
 					NULL) == ENOERR) {

@@ -1113,7 +1113,7 @@ static int tcp_v4_init(void) {
 	memset(tcp_table, 0, sizeof tcp_table);
 
 	/* Create default timer */
-	ret = timer_init_ms(&tcp_tmr_default, TIMER_PERIODIC, TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
+	ret = timer_init(&tcp_tmr_default, TIMER_PERIODIC, TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (ret < 0) {
 		return ret;
 	}

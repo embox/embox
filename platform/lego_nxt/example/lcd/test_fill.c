@@ -54,11 +54,11 @@ static int run_fill(void) {
 	display_fill(25, 5, 1, 1, 0);
 	display_fill(26, 6, 1, 1, 0);
 	display_fill(27, 7, 1, 1, 0);
-	msleep(10000);
+	usleep(10000);
 	display_fill(0, 0, 100, 64, 0);
-	msleep(1000);
+	usleep(1000);
 	display_fill(5, 5, 90, 54, 1);
-	msleep(8000);
+	usleep(8000);
 
 	return 0;
 }

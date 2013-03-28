@@ -78,7 +78,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 		sched_lock();
 		{
 			while(!hdc->result) {
-				event_wait_ms(&hdc->event, HD_WAIT_MS);
+				event_wait(&hdc->event, HD_WAIT_MS);
 			}
 		}
 		sched_unlock();
@@ -171,7 +171,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		sched_lock();
 		{
 			while(!hdc->result) {
-				event_wait_ms(&hdc->event, HD_WAIT_MS);
+				event_wait(&hdc->event, HD_WAIT_MS);
 			}
 		}
 		sched_unlock();

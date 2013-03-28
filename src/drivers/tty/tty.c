@@ -278,7 +278,7 @@ static int tty_wait_input(struct tty *t) {
 
 	while (WORK_DISABLED_DO(&t->rx_work, ring_empty(&t->i_ring))) {
 
-		rc = event_wait_ms(&t->i_event, SCHED_TIMEOUT_INFINITE);
+		rc = event_wait(&t->i_event, SCHED_TIMEOUT_INFINITE);
 		if (rc)
 			break;
 	}

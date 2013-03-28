@@ -38,11 +38,10 @@ extern int sleep(unsigned int seconds);
 
 /**
  * suspend execution for an interval of time
- * @param useconds interval in nanoseconds,microseconds,milliseconds
+ * @param useconds interval in microseconds
  * @return 0 if time has elapsed if was error then return -1
  */
 extern int usleep(useconds_t useconds);
-extern int msleep(useconds_t mseconds);
 
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
