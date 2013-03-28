@@ -83,7 +83,7 @@ module socket {
 	depends embox.lib.LibC
 
 	source "socket_registry.c"
-	option number amount_socket_node=4
+	option number amount_socket_node=20
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.util.LibUtil
