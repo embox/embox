@@ -363,6 +363,10 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 	case TIOCSETAW:
 	case TIOCSETA:
 		memcpy(&t->termios, data, sizeof(struct termios));
+		if (!TC_L(t,ICANON)) {
+
+			t->i_canon_ring.tail = t->i_canon_ring.head = t->i_ring.head;
+		}
 		break;
 	default:
 		ret = -ENOSYS;
