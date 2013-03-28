@@ -13,6 +13,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sched.h>
@@ -286,15 +287,30 @@ static int tty_wait_input(struct tty *t) {
 
 	return rc;
 }
+#if 1
+static int tty_is_nonblock(struct tty *t) {
+	return t->file_flags & O_NONBLOCK;
+}
+#endif
+
+#if 0
+size_t tty_read_nonblock(struct tty *t, char *buff, size_t size) {
+
+}
+#endif
 
 size_t tty_read(struct tty *t, char *buff, size_t size) {
 	char *end = buff + size;
-	int rc;
+	int rc = 0;
 
 	if (!size)
 		return 0;
+#if 1
+	if(!tty_is_nonblock(t)) {
+		rc = tty_wait_input(t);
+	}
+#endif
 
-	rc = tty_wait_input(t);
 	if (rc == -EINTR)
 		/* TODO then what? -- Eldar */
 		return 0;

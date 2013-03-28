@@ -74,6 +74,9 @@ struct tty {
 	struct event      o_event;
 	struct ring       o_ring;
 	char              o_buff[TTY_IO_BUFF_SZ];
+
+	//TODO this must be in file
+	uint32_t file_flags;
 };
 
 struct tty_ops {

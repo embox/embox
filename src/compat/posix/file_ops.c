@@ -204,8 +204,12 @@ int fcntl(int fd, int cmd, ...) {
 		break;
 	}
 
+
 	if (NULL == ops->fcntl) {
-		return res;
+		if(NULL == ops->ioctl) {
+			return -ENOSYS;
+		}
+		return ops->ioctl(desc, cmd, (void *)flag);
 	}
 
 	res = ops->fcntl(desc, cmd, args);
