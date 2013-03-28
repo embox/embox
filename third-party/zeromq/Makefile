@@ -71,9 +71,9 @@ $(ZEROMQ_FLAGS): | $(ZEROMQ_CMAKE_DIR)
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
 $(ZEROMQ_CMAKE_DIR)/Makefile: CMakeLists.txt $(ZEROMQ_FLAGS) | $(ZEROMQ_CMAKE_DIR)
-	$(AT)cd $(ZEROMQ_CMAKE_DIR) && $(shell cat $(ZEROMQ_FLAGS)) cmake $(shell pwd)
+	$(AT)cd $(ZEROMQ_CMAKE_DIR) && $(shell cat $(ZEROMQ_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
 
 $(ZEROMQ_LIB): $(ZEROMQ_CMAKE_DIR)/Makefile
-	$(AT)cd $(ZEROMQ_CMAKE_DIR) && $(MAKE) # -j `nproc`
+	$(AT)cd $(ZEROMQ_CMAKE_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
 
 all: $(ZEROMQ_LIB)
