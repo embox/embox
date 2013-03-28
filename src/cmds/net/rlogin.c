@@ -153,8 +153,8 @@ static int rlogin_handle(int sock) {
 			}
 
 			if (sock_data_len == -1) {
-				err = errno;
-				if (err != EAGAIN && err != EWOULDBLOCK) {
+				err = -errno;
+				if (err != -EAGAIN && err != -EWOULDBLOCK) {
 					goto reset_out;
 				}
 
@@ -227,14 +227,14 @@ static int exec(int argc, char **argv) {
 	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
 				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
-		res = errno;
+		res = -errno;
 		goto exit;
 	}
 	RLOGIN_DEBUG(printf("connected\n"));
 
 	/* send Handshake */
 	if (write(sock, buf, 1) < 0) {
-		res = errno;
+		res = -errno;
 		goto exit;
 	}
 
@@ -249,7 +249,7 @@ static int exec(int argc, char **argv) {
 	len += strlen(term) + 1;
 	/* send user info */
 	if (write(sock, buf, len) < 0) {
-		res = errno;
+		res = -errno;
 		goto exit;
 	}
 
