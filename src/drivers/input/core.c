@@ -138,6 +138,12 @@ static void indev_softirqhnd(unsigned int nt, void* data) {
 }
 
 static int evnt_noact(struct input_dev *dev) {
+	struct input_event ev;
+
+	while (0 <= input_dev_event(dev, &ev)) {
+
+	}
+
 	return 0;
 }
 

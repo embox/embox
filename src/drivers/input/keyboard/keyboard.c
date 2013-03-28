@@ -66,7 +66,11 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 
 	event->type = event->value = 0;
 
-	keyboard_wait_read(status);
+	status = keyboard_read_stat();
+
+	if (!(status & I8042_STS_OBF)) {
+		return -EAGAIN;
+	}
 
 	scan_code = inb(I8042_DATA_PORT);
 
@@ -144,7 +148,6 @@ static int keyboard_init(void) {
 
 	keyboard_send_cmd(I8042_CMD_PORT_DIS);
 
-	/* Empty keyboard buffer */
 	while (keyboard_havechar()) inb(I8042_DATA_PORT);
 
 	/* Read the current mode */

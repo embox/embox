@@ -34,6 +34,9 @@
 #define I8042_STS_IBF       0x02    /* Input (to kbd) buffer full */
 #define I8042_STS_OBF       0x01    /* Output (from kbd) buffer full */
 
+#define keyboard_read_stat() \
+	inb(I8042_STS_PORT)
+
 #define keyboard_wait_read(status) \
 	do {} while (0 == ((status = inb(I8042_STS_PORT)) & I8042_STS_OBF))
 #define keyboard_wait_write(status) \
