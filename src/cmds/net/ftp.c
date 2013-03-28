@@ -172,26 +172,28 @@ static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 
 	fwrite(buff, 1, ret, stdout);
 
-	for (status = buff - 2; (status != NULL) && (*status != '\0');
-			status = strstr(status, "\r\n")) {
-		status += 2;
+	status = buff;
+	do {
+		if (isdigit(*status)) {
+			ret = sscanf(status, "%d", &session->stat_code);
+			if (ret != 1) {
+				return FTP_RET_ERROR;
+			}
 
-		if (!isdigit(*status)) {
-			continue;
-		}
+			ret = fs_check_stat(session);
+			if (ret != FTP_RET_OK) {
+				return ret;
+			}
 
-		ret = sscanf(status, "%d", &session->stat_code);
-		if (ret != 1) {
-			return FTP_RET_ERROR;
-		}
-
-		ret = fs_check_stat(session);
-		if (ret != FTP_RET_OK) {
-			return ret;
+			status = strstr(status, "\r\n");
 		}
 
 		status = strstr(status, "\r\n");
-	}
+		if (status == NULL) {
+			break;
+		}
+		status += 2;
+	} while (*status != '\0');
 
 	return FTP_RET_OK;
 }
