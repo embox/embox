@@ -118,4 +118,14 @@ int getnameinfo(const struct sockaddr *sa, socklen_t salen,
 	return EAI_FAIL;
 }
 
+#define SIG_BLOCK 1
+
+typedef int sigset_t;
+
+static inline
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	DPRINT();
+	return -1;
+}
+
 #endif /* ZEROMQ_EMBOX_COMPAT_H_ */

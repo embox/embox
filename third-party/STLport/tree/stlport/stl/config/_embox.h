@@ -27,7 +27,20 @@
 //        To resolve later...
 #define _STLP_NO_OWN_NAMESPACE
 
-#define _NOTHREADS
+//#define _STLP_USE_PTHREAD_SPINLOCK
+/* If not explicitly specified otherwise, work with threads
+ */
+#if !defined(_STLP_NO_THREADS) && !defined(_REENTRANT)
+#  define _REENTRANT
+#endif
+#if defined(_REENTRANT) && !defined(_PTHREADS)
+# define _PTHREADS
+#endif
+#if defined(_PTHREADS)
+#  define _STLP_THREADS
+#  define _STLP_PTHREADS
+#endif
+
 
 // ToDo: endianness
 

@@ -18,15 +18,6 @@ diff -aur zeromq-3.2.2/configure zeromq/configure
  
  # By default use DSO visibility
  libzmq_dso_visibility="yes"
-@@ -16913,7 +16914,7 @@
- libzmq_on_android="no"
- 
- # Set some default features required by 0MQ code.
--CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
-+#CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
- 
- # For host type checks
- 
 @@ -17664,6 +17665,8 @@
              as_fn_error $? "Building static libraries is not supported under Cygwin" "$LINENO" 5
          fi

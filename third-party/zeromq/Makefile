@@ -7,7 +7,7 @@ AT=
 
 ZEROMQ_DIR       = $(ROOT_DIR)/build/zeromq
 ZEROMQ_CMAKE_DIR = $(ZEROMQ_DIR)/cmake
-ZEROMQ_LIB       = $(ROOT_DIR)/lib/libzeromq.a
+ZEROMQ_LIB       = $(ZEROMQ_DIR)/lib/libzeromq.a
 ZEROMQ_FLAGS     = $(ZEROMQ_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
