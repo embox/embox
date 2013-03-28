@@ -121,8 +121,8 @@ static void execute_token(struct vterm *vt, struct vtesc_token *token) {
 						vt->cur_y + token->params.move_cursor.y + 1);
 		break;
 	case VTESC_CURSOR_POSITION:
-		setup_cursor(vt, token->params.cursor_position.row,
-				token->params.cursor_position.column);
+		setup_cursor(vt, token->params.cursor_position.column,
+				token->params.cursor_position.row);
 		break;
 	case VTESC_CURSOR_COLOMN:
 		setup_cursor(vt, token->params.cursor_position.column, vt->cur_y + 1);
@@ -172,17 +172,17 @@ static void execute_token(struct vterm *vt, struct vtesc_token *token) {
 
 static const char *vterm_key_to_esc(int keycode){
 	switch (keycode) {
-		case KEY_INS: return "2~";
-		case KEY_HOME: return "H";
-		case KEY_END: return "F";
-		case KEY_PGUP: return "5~";
-		case KEY_PGDN: return "6~";
-		case KEY_UP: return "A";
-		case KEY_DOWN: return "B";
-		case KEY_LEFT: return "D";
-		case KEY_RGHT: return "C";
+	case KEY_INS: return "2~";
+	case KEY_HOME: return "H";
+	case KEY_END: return "F";
+	case KEY_PGUP: return "5~";
+	case KEY_PGDN: return "6~";
+	case KEY_UP: return "A";
+	case KEY_DOWN: return "B";
+	case KEY_LEFT: return "D";
+	case KEY_RGHT: return "C";
 
-		default: return 0;
+	default: return 0;
 	}
 }
 
