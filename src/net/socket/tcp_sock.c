@@ -341,12 +341,11 @@ check_state:
 				msg->msg_iov->iov_len = 0;
 				return 0; /* no more data to receive */
 			}
-			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
-				return -ETIMEDOUT; /* error: timeout */
-			}
-
 			if (flags & O_NONBLOCK) {
 				return -EAGAIN;
+			}
+			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
+				return -ETIMEDOUT; /* error: timeout */
 			}
 			/* wait received packet or another state */
 			goto check_state;
