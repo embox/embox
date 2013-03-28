@@ -50,7 +50,7 @@ typedef struct pthread_rwlockattr {
 
 typedef struct pthread_key {
 
-} pthread_key_t;
+} *pthread_key_t;
 
 
 typedef struct pthread_once {
