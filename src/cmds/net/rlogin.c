@@ -18,6 +18,7 @@
 #include <embox/cmd.h>
 #include <stdio.h>
 
+#include <termios.h>
 
 EMBOX_CMD(exec);
 
@@ -42,7 +43,7 @@ EMBOX_CMD(exec);
 
 /* FIXME cheat for now */
 static const char *client = "embox";
-static const char *term = "xterm/38000";
+static const char *term = "dumb/38000";
 
 static void print_usage(void) {
 	printf("Usage: rlogin [-l username] <server> \n");
@@ -101,14 +102,23 @@ static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
 	return 0;
 }
 
-static void rlogin_handle(int sock) {
+static int rlogin_handle(int sock) {
 	int sock_data_len = 0, stdin_data_len = 0;
 	unsigned char c;
 	unsigned char buf[128];
 	unsigned char *s = buf;
 	int state = R_START, mode = MODE_COOKED;
+	int stdin_flags = fcntl(STDIN_FILENO, F_GETFL);
+	struct termios tios;
+	int c_lflags;
+	int err = 0;
 
-	ioctl(STDIN_FILENO, O_NONBLOCK, 1);
+	tcgetattr(STDIN_FILENO, &tios);
+	c_lflags = tios.c_lflag;
+	tios.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+
+	fcntl(STDIN_FILENO, F_SETFD, stdin_flags | O_NONBLOCK);
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
 	while (1) {
@@ -125,22 +135,40 @@ static void rlogin_handle(int sock) {
 		}
 
 		if (sock_data_len > 0) {
-			bool handeled;
 			/* Try to handle each byte of server data. */
 			do {
-				handeled = false;
 				if (!handle_cntl_byte(*s, &state, &mode) || state == R_STOP
 						|| (write(STDOUT_FILENO, s, 1) == 1)) {
 					sock_data_len -= 1;
 					s += 1;
-					handeled = true;
 				}
-			} while (handeled && sock_data_len > 0);
+			} while (sock_data_len > 0);
 		} else {
 			s = buf;
 			sock_data_len = read(sock, s, 128);
+
+			if (!sock_data_len) {
+				err = 0;
+				goto reset_out;
+			}
+
+			if (sock_data_len == -1) {
+				err = errno;
+				if (err != EAGAIN && err != EWOULDBLOCK) {
+					goto reset_out;
+				}
+
+			}
 		}
 	} /* while (1) */
+
+reset_out:
+
+	fcntl(STDIN_FILENO, F_SETFD, stdin_flags);
+	tios.c_lflag = c_lflags;
+	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+
+	return err;
 }
 
 static int exec(int argc, char **argv) {
@@ -176,7 +204,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	our.sin_family = AF_INET;
-	our.sin_port= htons(RLOGIN_PORT);
+	our.sin_port= htons(RLOGIN_PORT + 0);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -199,12 +227,14 @@ static int exec(int argc, char **argv) {
 	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
 				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
+		res = errno;
 		goto exit;
 	}
 	RLOGIN_DEBUG(printf("connected\n"));
 
 	/* send Handshake */
 	if (write(sock, buf, 1) < 0) {
+		res = errno;
 		goto exit;
 	}
 
@@ -219,15 +249,13 @@ static int exec(int argc, char **argv) {
 	len += strlen(term) + 1;
 	/* send user info */
 	if (write(sock, buf, len) < 0) {
+		res = errno;
 		goto exit;
 	}
 
-	res = ENOERR;
-
-	rlogin_handle(sock);
+	res = rlogin_handle(sock);
 
 exit:
-	res = -errno;
 	free(buf);
 	close(sock);
 	return res;
