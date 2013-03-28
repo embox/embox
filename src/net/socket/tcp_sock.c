@@ -169,7 +169,7 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 
 	return ret;
 }
-
+#include <kernel/thread/sched_lock.h>
 static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		struct sockaddr *addr, int *addr_len, int flags) {
 	union sock_pointer sock, newsock;
@@ -189,18 +189,27 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
 		/* waiting anyone */
-		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-			if (flags & O_NONBLOCK) {
-				return -EAGAIN;
-			}
-			sock_unlock(sk);
+		sched_lock(); {
+			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE); {
+				if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
+					if (flags & O_NONBLOCK) {
+						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+						sched_unlock();
+						return -EAGAIN;
+					}
+					sock_unlock(sk);
 
-			event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
+					event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
 
-			if (!sock_lock(&sk)) {
-				return -EINVAL;
-			}
-		}
+					if (!sock_lock(&sk)) {
+						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+						sched_unlock();
+						return -EINVAL;
+					}
+				}
+			} tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+		} sched_unlock();
+
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
 			assert(!list_empty(&sock.tcp_sk->conn_wait));
@@ -213,6 +222,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+
 		/* save remote address */
 		if (addr != NULL) {
 			addr_in = (struct sockaddr_in *)addr;
@@ -233,7 +243,8 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		}
 		*newsk = newsock.sk;
 		return tcp_st_status(newsock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
-	}
+		/* case TCP_LISTEN */
+	} /* switch(sock.sk->sk_state) */
 }
 
 static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
