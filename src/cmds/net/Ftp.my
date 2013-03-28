@@ -6,13 +6,15 @@ package embox.cmd.net
 		NAME
 			ftp - Simple File Transfer Protocol client
 		SYNOPSIS
-			ftp
+			ftp [-h] [address [port]]
 		DESCRIPTION
 			Simple implimentation of File Transport Protocol (client side)
 		OPTIONS
-			Without options, yet
+			-h	help message
+			address
+				address of host
 		EXAMPLES
-			ftp
+			ftp 10.0.2.10
 		SEE ALSO
 			tftp
 		AUTHORS

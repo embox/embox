@@ -17,6 +17,8 @@
 #include <arpa/inet.h>
 #include <embox/cmd.h>
 
+#define FTP_PORT 21
+
 EMBOX_CMD(exec);
 
 #include <framework/mod/options.h>
@@ -390,7 +392,7 @@ static int fs_cmd_open(struct fs_info *session) {
 		return FTP_RET_ERROR;
 	}
 	if (arg_port == NULL) {
-		remote_port = 21; /* Use default settings */
+		remote_port = FTP_PORT; /* Use default settings */
 	}
 	else {
 		if (sscanf(arg_port, "%u", &remote_port) != 1) {
@@ -889,7 +891,11 @@ int ftp_cmd(int argc, char **argv) {
 	if (argc > 3) {
 		return -EINVAL;
 	}
-	if (argc > 1) {
+	else if (argc > 1) {
+		if (strcmp(argv[1], "-h") == 0) {
+			printf("Usage: %s [address [port]]\n", argv[0]);
+			return 0;
+		}
 		cmd_name = &fsi.cmd_buff[0];
 		snprintf(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, "open %s %s",
 				argv[1], argc == 3 ? argv[2] : "");
