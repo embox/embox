@@ -89,7 +89,7 @@ tp_obj tp_system(TP) {
     char s[TP_CSTR_LEN];
     int r;
     tp_cstr(tp,TP_STR(),s,TP_CSTR_LEN);
-    r = 0;//system(s); /* Embox */
+    r = system(s);
     return tp_number(r);
 }
 

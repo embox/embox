@@ -48,6 +48,10 @@ namespace std {
 		DPRINT();
 		return gmtime(timep);
 	}
+	static inline int system(const char *command) {
+		DPRINT();
+		return -1;
+	}
 #endif
 	static inline double difftime(time_t time1, time_t time0) {
 		DPRINT();
@@ -63,10 +67,6 @@ namespace std {
 		return 0;
 	}
 	static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
-		DPRINT();
-		return -1;
-	}
-	static inline int system(const char *command) {
 		DPRINT();
 		return -1;
 	}

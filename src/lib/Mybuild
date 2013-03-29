@@ -42,6 +42,7 @@ static module LibCStdlib {
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
 	source "stdlib/abort.c"
+	source "stdlib/system.c"
 
 	option number env_amount=0x4
 	option number env_str_len=0x10
