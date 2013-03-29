@@ -123,6 +123,13 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	fd_cnt = 0;
 
+	/* FIXME process exception conditions */
+	if (exceptfd) {
+		if (update) {
+			FD_ZERO(exceptfd);
+		}
+	}
+
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
 		res = filter_out_with_op(nfds, readfds, IDX_IO_READING , update);

@@ -269,6 +269,14 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
 		*daddrlen = sizeof *dest_addr;
 	}
 
+	softirq_lock();
+	{
+		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
+			idx_io_disable(sock->desc_data, IDX_IO_READING);
+		}
+	}
+	softirq_unlock();
+
 	return (ssize_t)iov.iov_len;
 }
 
@@ -362,21 +370,8 @@ int socket_close(int sockfd) {
 #endif
 
 static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	struct socket *sock = task_idx_desc_data(data);
-	ssize_t len;
-
-	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
+	return recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
 			*task_idx_desc_flags_ptr(data), NULL, 0);
-
-	softirq_lock();
-	{
-		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
-			idx_io_disable(sock->desc_data, IDX_IO_READING);
-		}
-	}
-	softirq_unlock();
-
-	return len;
 }
 
 static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {
