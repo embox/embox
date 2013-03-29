@@ -27,7 +27,7 @@
  *   Optional message in @c printf format.
  */
 #define assert(condition, message...) \
-	  __assert(condition, #condition, message)
+	  ({__assert(condition, #condition, message);})
 
 /* Hide assert internals from CDT macro expansion and code formatter. */
 #ifdef __CDT_PARSER__
