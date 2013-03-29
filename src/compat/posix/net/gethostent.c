@@ -6,15 +6,15 @@
  * @author Ilia Vaprol
  */
 
-#include <netdb.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <ctype.h>
-#include <errno.h>
-#include <net/util/hostent_api.h>
-
 #include <framework/mod/options.h>
+#include <net/util/hostent_api.h>
+#include <netdb.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #define MODOPS_PATH_TO_HOSTS OPTION_STRING_GET(path_to_hosts)
 
 #define HOSTENT_BUFF_SZ 512
@@ -22,34 +22,20 @@
 static FILE *hosts = NULL;
 static int is_disposable;
 
-static int open_hosts(const char *filename, int stayopen) {
-	hosts = fopen(filename, "r");
-	is_disposable = !stayopen;
-	return !!hosts;
-}
-
-static void close_hosts(void) {
-	if (hosts == NULL) {
-		return;
-	}
-
-	if (fclose(hosts) < 0) {
-		//LOG_ERROR("can't close file");
-	}
-	hosts = NULL;
-}
-
 void sethostent(int stayopen) {
-	open_hosts(MODOPS_PATH_TO_HOSTS, stayopen);
+	hosts = fopen(MODOPS_PATH_TO_HOSTS, "r");
+	is_disposable = !stayopen;
 }
 
 void endhostent(void) {
-	close_hosts();
+	if (hosts != NULL) {
+		fclose(hosts);
+		hosts = NULL;
+	}
 }
 
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
-static void split_word(char *ptr) { skip_word(ptr); *ptr = '\0'; }
 
 struct hostent * gethostent(void) {
 	char hostent_buff[HOSTENT_BUFF_SZ];
@@ -59,14 +45,20 @@ struct hostent * gethostent(void) {
 
 	/* prepare file (if needed) */
 	if (hosts == NULL) {
-		open_hosts(MODOPS_PATH_TO_HOSTS, 0);
+		sethostent(0);
 	}
 
 	result = NULL;
 
 	/* read hostent from file */
-	while ((tmp = fgets(&hostent_buff[0], sizeof hostent_buff, hosts)) != NULL) {
-		/* Format: <addr> <name> [aliase] */
+	while (1) {
+		/* Format: <addr> <name> [alias, ...] */
+
+		/* get line */
+		tmp = fgets(&hostent_buff[0], sizeof hostent_buff, hosts);
+		if (tmp == NULL) {
+			break;
+		}
 
 		/* skip comments */
 		if (*tmp == '#') {
@@ -80,7 +72,9 @@ struct hostent * gethostent(void) {
 		}
 
 		/* get ipv4 address */
-		skip_spaces(tmp); ip_str = tmp; skip_word(tmp);
+		skip_spaces(tmp);
+		ip_str = tmp;
+		skip_word(tmp);
 		if (*tmp == '\0') {
 			continue; /* invalid format */
 		}
@@ -108,10 +102,14 @@ struct hostent * gethostent(void) {
 		}
 
 		/* get alternate name */
-		skip_spaces(tmp);
-		name = tmp;
-		split_word(tmp);
-		if (*name != '\0') {
+		while (1) {
+			skip_spaces(tmp);
+			name = tmp;
+			skip_word(tmp);
+			*tmp++ = '\0';
+			if (*name == '\0') {
+				break;
+			}
 			if (hostent_add_alias(he, name) != 0) {
 				break;
 			}
@@ -126,7 +124,7 @@ struct hostent * gethostent(void) {
 
 	/* close file (if needed) */
 	if (is_disposable) {
-		close_hosts();
+		endhostent();
 	}
 
 	return result;

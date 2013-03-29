@@ -8,7 +8,7 @@
 
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <net/dns.h>
 #include <net/util/hostent_api.h>
@@ -60,11 +60,11 @@ static struct hostent * get_hostent_from_file(const char *hostname) {
 }
 
 static struct hostent * get_hostent_from_net(const char *hostname) {
-	int ret;
+	int ret, addr_len;
 	struct hostent *he;
 	struct dns_result result;
 	struct dns_rr *rr;
-	size_t i, addr_len;
+	size_t i;
 
 	ret = dns_query(hostname, DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &result);
 	if (ret != 0) {
@@ -107,23 +107,27 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 	return he;
 }
 
-struct hostent * gethostbyname(const char *hostname) {
+struct hostent * gethostbyname(const char *name) {
 	struct hostent *he;
+
+	if (name == NULL) {
+		return NULL;
+	}
 
 	h_errno = NETDB_SUCCESS;
 
 	/* 1. If it's IP address (not symbolic name) */
-	he = get_hostent_from_ip(hostname);
+	he = get_hostent_from_ip(name);
 	if (he != NULL) {
 		return he;
 	}
 
 	/* 2. Lookup in local machine */
-	he = get_hostent_from_file(hostname);
+	he = get_hostent_from_file(name);
 	if (he != NULL) {
 		return he;
 	}
 
 	/* 3. Finally, try to get answer from nameserver */
-	return get_hostent_from_net(hostname);
+	return get_hostent_from_net(name);
 }
