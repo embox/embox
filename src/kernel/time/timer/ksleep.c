@@ -25,7 +25,7 @@ int ksleep(useconds_t usec) {
 
 	event_init(&never_happen, "never_happen");
 
-	res_sleep = event_wait(&never_happen, usec / 1000);
+	res_sleep = event_wait(&never_happen, usec);
 
 	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
 }

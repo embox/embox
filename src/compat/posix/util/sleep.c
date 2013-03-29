@@ -14,7 +14,7 @@
 int usleep(useconds_t usec) {
 	int res;
 
-	res = ksleep(usec);
+	res = ksleep(usec / 1000);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1;
