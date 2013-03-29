@@ -37,11 +37,14 @@
 
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
+#if 0
+/* implemented now */
 	static inline char *asctime(const struct tm *tm) {
 		DPRINT();
 		time_t t = mktime((struct tm *)tm);
 		return ctime(&t);
 	}
+#endif
 	static inline double difftime(time_t time1, time_t time0) {
 		DPRINT();
 		return (double)(time1 - time0);

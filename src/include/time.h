@@ -66,6 +66,9 @@ extern struct tm *gmtime_r(const time_t *timep, struct tm *result);
 
 extern time_t mktime(struct tm *tm);
 
+/* convert date and time to a string */
+char *asctime(const struct tm *timeptr);
+
 #define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
 
 /* clocks from beginning of start system */
