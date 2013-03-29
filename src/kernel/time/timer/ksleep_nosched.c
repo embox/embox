@@ -25,8 +25,8 @@ int ksleep(useconds_t usec) {
 	}
 
 	wait_flag = 1;
-	/* FIXME timer_set argument is tick (not usec) */
-	if (timer_init(&timer, TIMER_ONESHOT, usec, &wake_up, (void *) &wait_flag)) {
+
+	if (timer_init(&timer, TIMER_ONESHOT, usec / 1000, &wake_up, (void *) &wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {
