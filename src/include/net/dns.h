@@ -33,7 +33,9 @@ enum dns_msg_type {
 };
 
 /**
- * Types of operations */ enum dns_oper_code {
+ * Types of operations
+ */
+enum dns_oper_code {
 	DNS_OPER_CODE_QUERY = 0,  /* a standard query */
 	DNS_OPER_CODE_IQUERY = 1, /* an inverse query */
 	DNS_OPER_CODE_STATUS = 2  /* a server status requset */
