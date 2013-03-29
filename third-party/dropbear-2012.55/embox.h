@@ -49,13 +49,13 @@ static inline struct servent *getservbyname(const char *name, const char *proto)
 }
 /* end <netdb.h> */
 
-
+#if 0
 /* <time.h> */
 static inline struct tm *localtime(const time_t *timep) {
 	return NULL;
 }
 /* end <time.h> */
-
+#endif
 
 
 

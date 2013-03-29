@@ -294,10 +294,11 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 
 
 
-
+#if 0
 inline struct tm * localtime ( const time_t * timer ) {
 	return gmtime(timer);
 }
+#endif
 static char *tzname[2];
 inline void tzset(void) {
 	DPRINT();

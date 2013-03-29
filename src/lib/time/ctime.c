@@ -140,3 +140,8 @@ char *asctime(const struct tm *timeptr) {
         1900 + timeptr->tm_year);
     return result;
 }
+
+struct tm *localtime(const time_t *timep) {
+	//TODO local time not use timezone now
+	return gmtime(timep);
+}

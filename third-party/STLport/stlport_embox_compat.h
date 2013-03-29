@@ -44,14 +44,14 @@ namespace std {
 		time_t t = mktime((struct tm *)tm);
 		return ctime(&t);
 	}
+	static inline struct tm *localtime(const time_t *timep) {
+		DPRINT();
+		return gmtime(timep);
+	}
 #endif
 	static inline double difftime(time_t time1, time_t time0) {
 		DPRINT();
 		return (double)(time1 - time0);
-	}
-	static inline struct tm *localtime(const time_t *timep) {
-		DPRINT();
-		return gmtime(timep);
 	}
 	static inline char *getenv(const char *name) {
 		DPRINT();
