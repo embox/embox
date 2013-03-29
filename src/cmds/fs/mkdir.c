@@ -41,7 +41,9 @@ static int exec(int argc, char **argv) {
 		if(0 != strncmp(point, "/", 1)) {
 			return -EINVAL;
 		}
-		return mkdir(point, 0);
+		if (-1 == mkdir(point, 0)) {
+			return -errno;
+		}
 	}
 
 	return 0;
