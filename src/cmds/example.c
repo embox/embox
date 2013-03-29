@@ -39,6 +39,11 @@ static int exec(int argc, char **argv) {
 	int opt, number;
 	const struct example *example;
 
+	if (argc == 1) {
+		print_examples();
+		return ENOERR;
+	}
+
 	number = -1;
 	example = NULL;
 	getopt_init();
@@ -57,11 +62,6 @@ static int exec(int argc, char **argv) {
 		default:
 			return -EINVAL;
 		}
-	}
-
-	if (argc == 1) {
-		print_examples();
-		return ENOERR;
 	}
 
 	if (number == -1) {
