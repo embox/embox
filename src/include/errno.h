@@ -47,6 +47,7 @@
 #define EEOF             200   /* End of file reached */
 #define ENOSUPP          201   /* Operation not supported */
 #define EDEVNOSUPP       202   /* Device does not support this operation */
+#define ENOLCK           203   /* No locks available. */
 
 /* Additional errors used by networking */
 #define ENXIO            300   /* Device not configured */

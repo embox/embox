@@ -36,6 +36,15 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_GETFL     F_GETFD
 #define F_SETFL     F_SETFD
 
+#define F_GETLK            4 /* Get record locking information. */
+#define F_SETLK            5 /* Set record locking information. */
+#define F_SETLKW           6 /* Set record locking information; wait if blocked. */
+
+/* Values for l_type used for record locking with fcntl() (the following values are unique) are as follows: */
+#define F_RDLCK            7 /* Shared or read lock. */
+#define F_UNLCK            8 /* Unlock. */
+#define F_WRLCK            9 /* Exclusive or write lock. */
+
 /* fcntl flags */
 #define O_RDONLY           0x0000  /* Open for reading only */
 #define O_WRONLY           0x0001  /* Open for writing only */
@@ -48,6 +57,9 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_EXCL             0x0400  /* Open only if file doesn't already exist */
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
+
+
+
 
 __END_DECLS
 
