@@ -1,25 +1,32 @@
 /*
  * @file
+ * @brief
  *
- * @date Nov 21, 2012
- * @author: Anton Bondarev
+ * @date 21.11.12
+ * @author Anton Bondarev
  */
 
-#ifndef ARPA_INET_H_
-#define ARPA_INET_H_
+#ifndef COMPAT_POSIX_ARPA_INET_H_
+#define COMPAT_POSIX_ARPA_INET_H_
 
-#include <lib/bits/byteswap.h>
-
+#include <hal/arch.h>
+#include <linux/swab.h>
 #include <netinet/in.h>
-
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
-#define htons(n)            __bswap_16(n)
-#define ntohs(n)            __bswap_16(n) /* same as htons() */
-#define htonl(n)            __bswap_32(n)
-#define ntohl(n)            __bswap_32(n) /* same as htonl() */
+#if defined(__LITTLE_ENDIAN)
+# define htons(n) swab16(n)
+# define ntohs(n) swab16(n)
+# define htonl(n) swab32(n)
+# define ntohl(n) swab32(n)
+#elif defined (__BIG_ENDIAN)
+# define htons(n) (n)
+# define ntohs(n) (n)
+# define htonl(n) (n)
+# define ntohl(n) (n)
+#endif
 
 
 /**
@@ -43,4 +50,4 @@ int inet_aton(const char *cp, struct in_addr *addr);
 __END_DECLS
 
 
-#endif /* ARPA_INET_H_ */
+#endif /* COMPAT_POSIX_ARPA_INET_H_ */
