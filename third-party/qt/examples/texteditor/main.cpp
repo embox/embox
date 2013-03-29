@@ -3,6 +3,9 @@
 #include <QtGui>
 #include "mainwindow.h"
 
+QGraphicsView *emboxView;
+TextEditor *textEditor;
+
 class Button : public QGraphicsWidget
 {
     Q_OBJECT
@@ -48,9 +51,8 @@ protected:
     {
         emit pressed();
         update();
-        TextEditor textEditor;
-        textEditor.show();
-        textEditor.repaint();
+        textEditor->show();
+        textEditor->repaint();
     }
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
@@ -72,8 +74,8 @@ int main(int argv, char **args)
 
     QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->setBackgroundBrush(bgPix);
+    emboxView = new QGraphicsView(&scene);
+    emboxView->setBackgroundBrush(bgPix);
 
     QGraphicsItem *buttonParent = new QGraphicsRectItem;
     Button *texteditorButton = new Button(QPixmap(":/icon.png"), buttonParent);
@@ -85,8 +87,10 @@ int main(int argv, char **args)
     buttonParent->setPos(100, 50);
     buttonParent->setZValue(65);
 
-    view->resize(1024, 768);
-    view->show();
+    emboxView->resize(1024, 788);
+    emboxView->show();
+
+    textEditor = new TextEditor();
 
     return app.exec();
 }

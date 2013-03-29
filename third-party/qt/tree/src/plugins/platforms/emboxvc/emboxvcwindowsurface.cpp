@@ -29,6 +29,14 @@ static void flushAll() {
 	}
 }
 
+static int visibleWidgetsCount() {
+	int cnt = 0;
+	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
+		cnt += __emboxVCcollection.at(i)->window()->isVisible() ? 1 : 0;
+	}
+	return cnt;
+}
+
 static void __emboxVCsetMode(struct vc *vc, int mode) {
 	globalEmboxVC->emboxVCvisualized = mode;
 }
@@ -213,18 +221,10 @@ QEmboxVC::QEmboxVC()
 QEmboxVC::~QEmboxVC() {
 }
 
-static int tmp = 0;
-
 QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
     : QWindowSurface(window)
 {
-	if (tmp == 1) {
-		mImage = QImage(QSize(window->width(), window->height()), QImage::Format_RGB16);
-	} else {
-		mImage = QImage(QSize(1024, 768), QImage::Format_RGB16);
-	}
-
-	tmp++;
+	mImage = QImage(QSize(window->width(), window->height()), QImage::Format_RGB16);
 
 	vc = globalEmboxVC;
 
@@ -233,7 +233,7 @@ QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
 
 QEmboxVCWindowSurface::~QEmboxVCWindowSurface()
 {
-
+	__emboxVCcollection.removeAll(this);
 }
 
 QPaintDevice *QEmboxVCWindowSurface::paintDevice()
@@ -248,6 +248,11 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     Q_UNUSED(offset);
 
     int i, shift, bpp;
+
+    if (widget && widget->platformWindow() &&
+    		!widget->platformWindow()->winId() && visibleWidgetsCount() > 1) {
+    	return;
+    }
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
@@ -272,6 +277,31 @@ void QEmboxVCWindowSurface::resize(const QSize &size)
     //if (mImage.size() != size)
             //[> XXX <]
         //mImage = QImage(size, QImage::Format_RGB16);
+}
+
+QEmboxVCPlatformWindow::QEmboxVCPlatformWindow(QWidget *widget)
+: QPlatformWindow(widget)
+{
+}
+
+QEmboxVCPlatformWindow::~QEmboxVCPlatformWindow()
+{
+}
+
+extern QEmboxVCPlatformWindow *emboxDesktopWindow;
+
+WId QEmboxVCPlatformWindow::winId() const {
+	if (this == emboxDesktopWindow) {
+		return WId(0);
+	} else {
+		return WId(1);
+	}
+}
+
+void QEmboxVCPlatformWindow::setParent(const QPlatformWindow *window) {
+	//if (widget() && window->widget()) {
+	//	widget()->setParent(window->widget());
+	//}
 }
 
 QT_END_NAMESPACE
