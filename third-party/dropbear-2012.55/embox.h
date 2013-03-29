@@ -39,6 +39,7 @@ static inline int chown(const char *path, uid_t owner, gid_t group) {
 extern char *crypt(const char *key, const char *salt);
 /* end <unistd.h> */
 
+#if 0
 /* <netdb.h> */
 static inline struct hostent *gethostbyaddr(const void *addr,
                                      socklen_t len, int type) {
@@ -48,6 +49,7 @@ static inline struct servent *getservbyname(const char *name, const char *proto)
 	return NULL;
 }
 /* end <netdb.h> */
+#endif
 
 #if 0
 /* <time.h> */
