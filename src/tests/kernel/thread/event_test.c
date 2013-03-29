@@ -21,25 +21,32 @@ EMBOX_TEST_SUITE("test for change thread state by events");
 static volatile int condition = 0;
 
 static void *thread_run(void *arg) {
-	struct event *event = (struct event *)arg;
+	struct event *event = (struct event *) arg;
 
-	EVENT_WAIT(event, condition, SCHED_TIMEOUT_INFINITE);
+	test_assert_zero(EVENT_WAIT(event, condition, EVENT_TIMEOUT_INFINITE));
 
 	return 0;
 }
 
 TEST_CASE("Create thread waiting event and then finish") {
-	struct event sync_event;
+	struct event event;
 	struct thread *thread;
 
-	event_init(&sync_event, "sync_event");
+	event_init(&event, "test_event");
 	test_assert_zero(
-				thread_create(&thread, 0, thread_run, &sync_event));
+				thread_create(&thread, 0, thread_run, &event));
 
-	ksleep(1000);
+	ksleep(100);
 
 	condition = 1;
-	event_notify(&sync_event);
+	event_notify(&event);
 
 	test_assert_zero(thread_join(thread, NULL));
+}
+
+TEST_CASE("Checking timeout of event") {
+	struct event event;
+
+	event_init(&event, "test_event");
+	test_assert_equal(EVENT_WAIT(&event, 0, 100), -ETIMEDOUT);
 }
