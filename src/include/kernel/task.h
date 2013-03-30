@@ -17,6 +17,8 @@
 
 #include <kernel/task/task_priority.h>
 
+#include <kernel/task/env.h>
+
 #define MAX_TASK_NAME_LEN 20
 
 __BEGIN_DECLS
@@ -65,6 +67,8 @@ struct task {
 	struct sleepq *wait_sq;
 
 	unsigned int affinity;
+
+	struct env_struct env;
 };
 
 struct task_resource_desc {

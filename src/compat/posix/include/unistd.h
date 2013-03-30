@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
+#include <posix_environ.h>
+
 #include <kernel/task.h>
 
 __BEGIN_DECLS
@@ -125,7 +127,13 @@ extern int opterr;   /**< flag:error message on unrecognzed options */
 /** setup optind and opterr */
 extern void getopt_init(void); /* TODO remove this */
 
+#ifndef environ
+/**
+ * FIXME environ MUST have follow declaration:
+ * but then how to do it different for all tasks
+ */
 extern char **environ;
+#endif
 
 #define PASS_MAX 32
 extern char *getpass(const char *prompt);

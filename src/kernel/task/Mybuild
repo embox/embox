@@ -69,6 +69,11 @@ module errno {
 	depends api
 }
 
+module env {
+	source "env.c"
+	depends api
+}
+
 module u_area {
 	source "u_area.c"
 }

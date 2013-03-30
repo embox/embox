@@ -72,6 +72,9 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 	/* FIXME: This should be only in SMP */
 	task->affinity = (1 << NCPU) - 1;
 
+	task->env.env = NULL;
+	task->env.next = 0;
+
 	return task;
 
 }

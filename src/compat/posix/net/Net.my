@@ -24,7 +24,6 @@ static module socket {
 	depends embox.net.core
 	depends embox.net.socket
 	depends embox.kernel.task.idx_table
-	depends embox.kernel.task.errno
 	depends embox.kernel.thread.event
 	depends embox.kernel.task.io_sync_api
 }
