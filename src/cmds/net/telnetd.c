@@ -162,23 +162,40 @@ static int utmp_login(short ut_type, const char *host) {
 extern int kill(int tid, int sig);
 
 static void *shell_hnd(void* args) {
+	int ret;
 	int *msg = (int*)args;
 
 	struct sockaddr_in *addr_in = &clients[msg[2]].addr_in;
 
-	utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
+	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
+	if (ret != 0) {
+		MD(printk("utmp_login LOGIN error: %d\n", ret));
+	}
 
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
+	if (-1 == close(STDIN_FILENO)) {
+		MD(printk("close STDIN_FILENO error: %d\n", errno));
+	}
+	if (-1 == close(STDOUT_FILENO)) {
+		MD(printk("close STDOUT_FILENO error: %d\n", errno));
+	}
 
-	dup2(msg[0], STDIN_FILENO);
-	dup2(msg[1], STDOUT_FILENO);
+	if (-1 == dup2(msg[0], STDIN_FILENO)) {
+		MD(printk("dup2 STDIN_FILENO error: %d\n", errno));
+	}
+	if (-1 == dup2(msg[1], STDOUT_FILENO)) {
+		MD(printk("dup2 STDOUT_FILENO error: %d\n", errno));
+	}
 
-	MD(printk("starting shell_run\n"));
-	shell_run(shell_lookup("tish"));
-	MD(printk("exiting shell_run\n"));
+	ret = shell_run(shell_lookup("tish"));
+	if (ret != 0) {
+		MD(printk("shell_run error: %d\n", ret));
+	}
 
-	utmp_login(DEAD_PROCESS, "");
+
+	ret = utmp_login(DEAD_PROCESS, "");
+	if (ret != 0) {
+		MD(printk("utmp_login DEAD error: %d\n", ret));
+	}
 
 	return NULL;
 }
@@ -218,6 +235,7 @@ static void *telnet_thread_handler(void* args) {
 	int nfds;
 	fd_set readfds, writefds;
 	struct timeval timeout;
+	int ret;
 
 	MD(printk("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
@@ -231,8 +249,14 @@ static void *telnet_thread_handler(void* args) {
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
-	pipe_pty(pipefd1);
-	pipe_pty(pipefd2);
+	ret = pipe_pty(pipefd1);
+	if (ret != 0) {
+		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+	}
+	ret = pipe_pty(pipefd2);
+	if (ret != 0) {
+		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+	}
 
 	msg[0] = sock;
 	msg[1] = pipefd1[1];
@@ -283,11 +307,8 @@ static void *telnet_thread_handler(void* args) {
 		if (!fd_cnt) {
 			fcntl(sock, F_SETFD, O_NONBLOCK);
 			len = read(sock, s, 128);
-			if (len <= 0) {
+			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
 				MD(printk("read on sock: %d %d\n", len, errno));
-			}
-			if ((len == 0)
-					|| ((len == -1) && (errno != EAGAIN))) {
 				goto kill_and_out;
 			}
 			fcntl(sock, F_SETFD, 0);
