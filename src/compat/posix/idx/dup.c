@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 05.06.2012
+ * @date 05.06.12
  * @author Anton Bondarev
  * @author Anton Kozlov
  */
@@ -12,8 +11,6 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <errno.h>
-
-//TODO set errno on every return -1
 
 int dup(int flides) {
 	int new_fd;
@@ -35,11 +32,13 @@ int dup2(int flides, int flides2) {
 	int res;
 	struct idx_desc *old_idx;
 
-	if (! task_valid_binded_fd(flides)) {
-	       return -1;
+	if (!task_valid_binded_fd(flides)) {
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
-	if (! task_valid_fd(flides2)) {
+	if (!task_valid_fd(flides2)) {
+		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
@@ -49,8 +48,10 @@ int dup2(int flides, int flides2) {
 
 	old_idx = task_self_idx_get(flides);
 
-	if (0 != (res = task_self_idx_set(flides2, task_idx_desc_alloc(old_idx->data)))) {
-		return res;
+	res = task_self_idx_set(flides2, task_idx_desc_alloc(old_idx->data));
+	if (res != 0) {
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	return flides2;
