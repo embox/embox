@@ -21,6 +21,7 @@ extern int vfs_add_leaf(node_t *child, node_t *parent);
 extern int vfs_del_leaf(node_t *nod);
 
 extern node_t *vfs_get_root(void);
+extern node_t *vfs_get_leaf(void);
 
 extern node_t *vfs_create(node_t *parent, const char *path, mode_t mode);
 extern node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode);

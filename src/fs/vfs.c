@@ -16,8 +16,6 @@
 
 #define ROOT_MODE 0755
 
-static node_t *root_node;
-
 int vfs_get_path_by_node(node_t *nod, char *path) {
 	node_t *parent, *node;
 	char buff[MAX_LENGTH_PATH_NAME];
@@ -221,13 +219,22 @@ node_t *vfs_get_parent(node_t *child) {
 	return tree_element(tlink->par, struct node, tree_link);
 }
 
+#include <linux/limits.h>
+node_t *vfs_get_leaf(void) {
+	extern char current_dir[PATH_MAX];
+	return vfs_lookup(vfs_get_root(), &current_dir[0]);
+}
+
 node_t *vfs_get_root(void) {
+	static node_t *root_node;
+
 	if (!root_node) {
 		root_node = node_alloc("/", 0);
 		assert(root_node);
 		root_node->mode = S_IFDIR | ROOT_MODE;
 		//TODO set pseudofs driver
 	}
+
 	return root_node;
 }
 

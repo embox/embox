@@ -24,7 +24,7 @@ DIR *opendir(const char *path) {
 	DIR *d;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
 		return NULL;
 	}

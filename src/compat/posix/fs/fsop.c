@@ -48,7 +48,7 @@ int truncate(const char *path, off_t length) {
 	node_t *node;
 	int res;
 
-	if (0 == (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 == (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}

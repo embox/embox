@@ -19,7 +19,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 	int res;
 	struct node *node;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
 		return -1;
 	}
@@ -67,7 +67,7 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 	int res;
 	struct node *node;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
 		return -1;
 	}
@@ -116,7 +116,7 @@ int listxattr(const char *path, char *list, size_t size) {
 	int res;
 	struct node *node;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
 		return -1;
 	}

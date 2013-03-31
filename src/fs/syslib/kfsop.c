@@ -97,7 +97,7 @@ int kremove(const char *pathname) {
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
@@ -122,7 +122,7 @@ int kunlink(const char *pathname) {
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != fs_perm_lookup(vfs_get_root(), pathname, NULL, &node)) {
+	if (0 != fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -159,7 +159,7 @@ int krmdir(const char *pathname) {
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
@@ -195,7 +195,7 @@ int klstat(const char *path, struct stat *buf) {
 	node_t *node;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
@@ -223,7 +223,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -EINVAL;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
@@ -259,7 +259,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		goto skip_dev_lookup;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), dev, &lastpath, &dev_node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
@@ -271,7 +271,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 skip_dev_lookup:
 	/* find directory */
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 #if 0
@@ -358,7 +358,7 @@ int krename(const char *oldpath, const char *newpath) {
 	/* Check if source file exists */
 	oldpathcopy = strdup(oldpath);
 	opc_free = oldpathcopy;
-	rc = fs_perm_lookup(NULL, (const char *) oldpathcopy,
+	rc = fs_perm_lookup(vfs_get_leaf(), (const char *) oldpathcopy,
 			(const char **) &oldpathcopy, &oldnode);
 	free(opc_free);
 	if (0 != rc) {
@@ -370,7 +370,7 @@ int krename(const char *oldpath, const char *newpath) {
 	 * provided as destination path */
 	newpathcopy = strdup(newpath);
 	npc_free = newpathcopy;
-	rc = fs_perm_lookup(NULL, (const char *) newpathcopy,
+	rc = fs_perm_lookup(vfs_get_leaf(), (const char *) newpathcopy,
 			(const char **) &newpathcopy, &newnode);
 	free(npc_free);
 	if (0 == rc) {
@@ -485,7 +485,7 @@ int kumount(const char *dir) {
 	int res;
 
 	/* find directory */
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 	}
