@@ -24,7 +24,7 @@ module mv {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.posix.fs
+	depends embox.compat.posix.fs.fsop
 	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework

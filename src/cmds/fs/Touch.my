@@ -15,7 +15,7 @@ package embox.cmd.fs
 module touch {
 	source "touch.c"
 
-	depends embox.compat.posix.fs
+	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework

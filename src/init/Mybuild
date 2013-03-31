@@ -30,7 +30,7 @@ module start_script {
 
 	source "start_script.c"
 
-	depends embox.compat.posix.file
+	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.idx.dup
 
 	depends embox.cmd.sh.shell

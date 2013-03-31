@@ -19,7 +19,7 @@ module rm {
 	source "rm.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.fs
+	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

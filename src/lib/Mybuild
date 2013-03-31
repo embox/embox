@@ -126,7 +126,7 @@ static module LibCStdio {
 	source "stdio/fgetc.c"
 
 	source "stdio/file_ops.c"
-	depends embox.compat.posix.open
+	depends embox.compat.posix.fs.open
 
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
@@ -143,7 +143,7 @@ static module LibCStdio {
 	depends LibCMath
 	depends LibCString
 	//depends embox.driver.iodev.core
-	depends embox.compat.posix.file
+	depends embox.compat.posix.fs.file
 
 	/**
 	 * XXX
