@@ -11,6 +11,7 @@
 #include <framework/mod/options.h>
 #include <linux/limits.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <util/array.h>
 
@@ -32,7 +33,12 @@ static int exec(int argc, char *argv[]) {
 		if (dir == NULL) {
 			return -errno;
 		}
-		snprintf(&buff[0], ARRAY_SIZE(buff), "%s/%s", dir, argv[1]);
+		if (0 == strcmp(dir, "/")) {
+			snprintf(&buff[0], ARRAY_SIZE(buff), "/%s", argv[1]);
+		}
+		else {
+			snprintf(&buff[0], ARRAY_SIZE(buff), "%s/%s", dir, argv[1]);
+		}
 	}
 
 	if (-1 == chdir(dir)) {
