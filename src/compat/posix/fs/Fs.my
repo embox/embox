@@ -2,14 +2,20 @@ package embox.compat.posix.fs
 
 module All {
 	depends file,
+		chdir,
 		dirent,
 		fsop,
+		getcwd,
 		xattr
 }
 
 static module file {
 	depends file_ops
 	depends open
+}
+
+static module chdir {
+	source "chdir.c"
 }
 
 static module dirent {
@@ -36,6 +42,10 @@ static module fsop {
 	source "fsop.c"
 
 	depends embox.kernel.task.errno
+}
+
+static module getcwd {
+	source "getcwd.c"
 }
 
 static module open {
