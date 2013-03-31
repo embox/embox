@@ -44,9 +44,6 @@ static module LibCStdlib {
 	source "stdlib/abort.c"
 	source "stdlib/system.c"
 
-	option number env_amount=20
-	option number env_per_task=5
-	option number env_str_len=16
 	source "stdlib/environ.c"
 	depends embox.kernel.task.env
 }

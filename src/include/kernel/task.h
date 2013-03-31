@@ -17,8 +17,6 @@
 
 #include <kernel/task/task_priority.h>
 
-#include <kernel/task/env.h>
-
 #define MAX_TASK_NAME_LEN 20
 
 __BEGIN_DECLS
@@ -28,6 +26,7 @@ struct task_idx_table;
 struct thread;
 struct emmap;
 struct task_u_area;
+struct task_env;
 struct sleepq;
 
 /**
@@ -56,6 +55,8 @@ struct task {
 
 	struct task_u_area *u_area;
 
+	struct task_env *env;
+
 	task_priority_t priority; /**< @brief Task priority */
 
 	void   *security;
@@ -67,8 +68,6 @@ struct task {
 	struct sleepq *wait_sq;
 
 	unsigned int affinity;
-
-	struct env_struct env;
 };
 
 struct task_resource_desc {

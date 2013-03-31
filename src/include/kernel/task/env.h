@@ -13,21 +13,33 @@
 #include <stddef.h>
 #include <sys/cdefs.h>
 
-#include <module/embox/lib/LibCStdlib.h>
+#include <kernel/task.h>
+
+#include <module/embox/kernel/task/env.h>
+
 #define MODOPS_ENV_PER_TASK \
-	OPTION_MODULE_GET(embox__lib__LibCStdlib, NUMBER, env_per_task)
+	OPTION_MODULE_GET(embox__kernel__task__env, NUMBER, env_per_task)
+
+#define MODOPS_ENV_STR_LEN \
+	OPTION_MODULE_GET(embox__kernel__task__env, NUMBER, env_str_len)
 
 __BEGIN_DECLS
 
-struct env_struct {
-	char **env;
-	char *vals[MODOPS_ENV_PER_TASK + 1];
+struct task_env {
+	char **envs;
 	size_t next;
+	char *vals[MODOPS_ENV_PER_TASK + 1];
+	char storage[MODOPS_ENV_PER_TASK][MODOPS_ENV_STR_LEN];
+	char buff[MODOPS_ENV_STR_LEN];
 };
 
-extern struct env_struct * task_self_env_ptr(void);
+static inline struct task_env * task_self_env(void) {
+	return task_self()->env;
+}
 
-extern char *** task_self_environ_ptr(void);
+static inline char *** task_self_environ_ptr(void) {
+	return &task_self()->env->envs;
+}
 
 __END_DECLS
 
