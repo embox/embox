@@ -32,6 +32,8 @@ static void __task_idx_data_free(struct idx_desc_data *data) {
 struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
 	struct idx_desc *idx;
 
+	assert(data);
+
 	idx = objalloc(&idx_pool);
 	if (idx == NULL) {
 		return NULL;
@@ -67,6 +69,9 @@ int task_idx_desc_free(struct idx_desc *idx) {
 struct idx_desc_data * task_idx_data_alloc(const struct task_idx_ops *res_ops,
 		void *fd_struct) {
 	struct idx_desc_data *idx_data;
+
+	assert(res_ops);
+	assert(fd_struct);
 
 	idx_data = objalloc(&idx_data_pool);
 	if (idx_data == NULL) {
@@ -107,7 +112,6 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 	int ret;
 
 	assert(res);
-	/* assert(desc); */
 	old_idx = task_idx_table_get(res, idx);
 
 	if (old_idx) {
