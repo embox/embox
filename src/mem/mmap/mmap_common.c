@@ -16,8 +16,8 @@ static void task_mmap_init(struct task *task, void *mmap) {
 	mmap_init(task->emmap);
 }
 
-static void task_mmap_inherit(struct task *task, struct task *parent_task) {
-	mmap_inherit(task->emmap, parent_task->emmap);
+static int task_mmap_inherit(struct task *task, struct task *parent_task) {
+	return mmap_inherit(task->emmap, parent_task->emmap);
 }
 
 static void task_mmap_deinit(struct task *task) {

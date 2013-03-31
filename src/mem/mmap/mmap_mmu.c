@@ -14,8 +14,8 @@
 #include <mem/mmap.h>
 #include <mem/vmem.h>
 
-#include "../kernel/task/common.h"
-#include "../kernel/thread/types.h"
+#include __impl_x(kernel/task/common.h)
+#include __impl_x(kernel/thread/types.h)
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))

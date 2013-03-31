@@ -40,7 +40,7 @@ POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
-static void task_init_parent(struct task *task, struct task *parent);
+static int task_init_parent(struct task *task, struct task *parent);
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
@@ -101,17 +101,24 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		task_init_parent(self_task, task_self());
+		res = task_init_parent(self_task, task_self());
+		if (res != 0) {
+			goto out_tablefree;
+		}
 
 		thread_set_task(thd, self_task);
 
 		thread_detach(thd);
 
+		res = self_task->tid;
+
 		goto out_unlock;
+
+out_tablefree:
+		task_table_del(self_task->tid);
 
 out_threadfree:
 		thread_terminate(thd);
-		thread_detach(thd);
 
 out_poolfree:
 		pool_free(&creat_param, param);
@@ -149,20 +156,38 @@ static void thread_set_task(struct thread *t, struct task *tsk) {
 	list_move_tail(&t->task_link, &tsk->threads);
 }
 
-static void task_init_parent(struct task *task, struct task *parent) {
-	const struct task_resource_desc *res_desc;
+static int task_init_parent(struct task *task, struct task *parent) {
+	int ret;
+	const struct task_resource_desc *res_desc, *failed;
+
 	task->parent = parent;
 
 	INIT_LIST_HEAD(&task->threads);
 
-	list_add(&task->link, &parent->children);
-
 	task_resource_foreach(res_desc) {
 		if (res_desc->inherit) {
-			res_desc->inherit(task, parent);
+			ret = res_desc->inherit(task, parent);
+			if (ret != 0) {
+				goto out_free_resource;
+			}
 		}
 	}
 
+	list_add(&task->link, &parent->children);
+
+	return 0;
+
+out_free_resource:
+	failed = res_desc;
+	task_resource_foreach(res_desc) {
+		if (res_desc == failed) {
+			break;
+		}
+		if (res_desc->deinit) {
+			res_desc->deinit(task);
+		}
+	}
+	return ret;
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {

@@ -73,7 +73,7 @@ struct task {
 
 struct task_resource_desc {
 	void (*init)(struct task *task, void *resource_space);
-	void (*inherit)(struct task *task, struct task *parent_task);
+	int (*inherit)(struct task *task, struct task *parent_task);
 	void (*deinit)(struct task *task);
 	size_t resource_size; /* to be used in on-stack allocation */
 };

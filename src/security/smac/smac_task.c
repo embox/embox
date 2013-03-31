@@ -16,12 +16,12 @@ static void smac_init(struct task *task, void* security) {
 	task->security = smac_task;
 }
 
-static void smac_inherit(struct task *task, struct task *parent) {
+static int smac_inherit(struct task *task, struct task *parent) {
 	memcpy(task->security, parent->security, sizeof(struct smac_task));
+	return 0;
 }
 
 static void smac_deinit(struct task *task) {
-
 }
 
 static const struct task_resource_desc smac_res = {
