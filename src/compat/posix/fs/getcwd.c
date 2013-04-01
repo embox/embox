@@ -22,6 +22,10 @@ char * getcwd(char *buff, size_t size) {
 	}
 
 	dir = getenv("PWD");
+	if (dir == NULL) { /* TODO remove this */
+		setenv("PWD", "/", 0);
+		dir = "/";
+	}
 	assert(dir != NULL); /* $PWD must be set */
 
 	if (strlen(dir) + 1 >= size) {
