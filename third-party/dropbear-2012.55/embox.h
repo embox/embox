@@ -24,6 +24,11 @@
 static inline int sigemptyset(sigset_t *set) {
 	return -1;
 }
+
+static inline int sigaction(int sig, const struct sigaction *act,
+		struct sigaction *oact) {
+	return 0;
+}
 /* end <sygnal.h> */
 
 //---------------------------------------------------
@@ -60,6 +65,11 @@ static inline struct tm *localtime(const time_t *timep) {
 #endif
 
 
+static inline int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	memset(addr, 0, *addrlen);
+	return 0;
+}
 
 /* <grp.h> */
 /* initgroups NOT POSIX */
