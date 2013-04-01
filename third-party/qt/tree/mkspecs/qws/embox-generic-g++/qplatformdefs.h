@@ -449,10 +449,17 @@ typedef int sig_atomic_t;
 #include <arpa/inet.h>
 
 
+#if 0
 inline struct hostent *gethostbyaddr(const void *addr,
 			      socklen_t len, int type) {
 	printf(">>> gethostbyaddr(%p,%i,%x)\n",addr,len,type);
 	return NULL;
+}
+#endif
+
+static inline int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	return -1;
 }
 
 inline int gethostname(char *name, size_t len) {

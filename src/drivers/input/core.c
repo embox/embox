@@ -303,7 +303,7 @@ static size_t input_devfs_read(struct file_desc *desc, void *buff, size_t size) 
 				event_init(&hnd->rx_happend, "event_rx_happend");
 			irq_unlock();
 
-			event_wait_ms(&hnd->rx_happend, SCHED_TIMEOUT_INFINITE);
+			event_wait(&hnd->rx_happend, SCHED_TIMEOUT_INFINITE);
 		sched_unlock();
 	}
 

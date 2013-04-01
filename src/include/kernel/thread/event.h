@@ -20,6 +20,14 @@ struct event {
 };
 
 extern void event_init(struct event *event, const char *name);
+/**
+ * @brief
+ *
+ * @param event
+ * @param timeout in milliseconds
+ *
+ * @return
+ */
 extern int event_wait(struct event *event, unsigned long timeout);
 extern void event_notify(struct event *event);
 
