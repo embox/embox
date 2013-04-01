@@ -70,8 +70,8 @@ module errno {
 }
 
 module env {
-	option number env_per_task=15
-	option number env_str_len=16
+	option number env_per_task=8
+	option number env_str_len=32
 	source "env.c"
 
 	depends kernel_task

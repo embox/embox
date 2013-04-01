@@ -8,25 +8,29 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
-#include <linux/limits.h>
 #include <unistd.h>
-#include <util/array.h>
-
-char current_dir[PATH_MAX] = "/"; /* FIXME */
 
 char * getcwd(char *buff, size_t size) {
+	const char *dir;
+
 	if ((buff == NULL) || (size == 0)) {
 		SET_ERRNO(EINVAL);
 		return NULL;
 	}
 
-	if (strlen(&current_dir[0]) + 1 >= size) {
+	dir = getenv("PWD");
+	if (dir == NULL) {
+		dir = "/"; /* FIXME use default value if PWD not set */
+	}
+
+	if (strlen(dir) + 1 >= size) {
 		SET_ERRNO(ERANGE);
 		return NULL;
 	}
 
-	strcpy(buff, &current_dir[0]);
+	strcpy(buff, dir);
 
 	return buff;
 }

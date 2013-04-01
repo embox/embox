@@ -6,14 +6,12 @@
  * @date 31.03.13
  */
 
+#include <assert.h>
 #include <errno.h>
-#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include <linux/limits.h>
 #include <unistd.h>
-#include <util/array.h>
-
-extern char current_dir[PATH_MAX];
 
 int chdir(const char *path) {
 	if ((path == NULL) || (*path == '\0')
@@ -22,12 +20,16 @@ int chdir(const char *path) {
 		return -1;
 	}
 
-	if (strlen(path) + 1 >= ARRAY_SIZE(current_dir)) {
+	if (strlen(path) >= PATH_MAX - 1) {
 		SET_ERRNO(ENAMETOOLONG);
 		return -1;
 	}
 
-	strcpy(&current_dir[0], path);
+	if (-1 == setenv("PWD", path, 1)) {
+		assert(errno == ENOMEM); /* it is the only possible error */
+		SET_ERRNO(ENAMETOOLONG);
+		return -1;
+	}
 
 	return 0;
 }

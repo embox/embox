@@ -9,6 +9,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <fs/path.h>
@@ -219,10 +220,16 @@ node_t *vfs_get_parent(node_t *child) {
 	return tree_element(tlink->par, struct node, tree_link);
 }
 
-#include <linux/limits.h>
 node_t *vfs_get_leaf(void) {
-	extern char current_dir[PATH_MAX];
-	return vfs_lookup(vfs_get_root(), &current_dir[0]);
+	char *leaf_name;
+	node_t *leaf;
+
+	if ((NULL == (leaf_name = getenv("PWD")))
+			|| (NULL == (leaf = vfs_lookup(NULL, leaf_name)))) {
+		leaf = vfs_get_root();
+	}
+
+	return leaf;
 }
 
 node_t *vfs_get_root(void) {
