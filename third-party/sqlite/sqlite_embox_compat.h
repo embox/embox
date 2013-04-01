@@ -20,6 +20,10 @@
 #undef HAVE_STRERROR_R
 #endif
 
+#ifdef HAVE_READLINE
+#undef HAVE_READLINE
+#endif
+
 #define SQLITE_HOMEGROWN_RECURSIVE_MUTEX
 
 #if 1
