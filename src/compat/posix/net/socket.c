@@ -284,6 +284,11 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	ssize_t ret;
 	struct socket *sock;
+	int fd_flags;
+
+	(void)flags;
+	/* XXX separate usage of recvfrom()'s flags and fd_flags in file descriptor */
+	fd_flags = *task_idx_desc_flags_ptr(task_self_idx_get(sockfd));
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -293,13 +298,13 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 
 	sched_lock();
 	{
-		ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
-		/* if !O_NONBLOCK on socket's file descriptor {*/
-		if (ret == -1) {
-			event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
-			ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
+		if (ret == -1 && errno == EAGAIN) {
+			if (!(fd_flags & O_NONBLOCK)) {
+				event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+				ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
+			}
 		}
-		/* } */
 	}
 	sched_unlock();
 
