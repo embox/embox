@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <string.h>
 
 static inline
 int fchown(int fd, uid_t owner, gid_t group) {
@@ -75,5 +76,30 @@ static inline int munmap(void *addr, size_t size) {
 		return -1;
 	}
 
+
+struct rusage {
+    struct timeval ru_utime; /* user CPU time used */
+    struct timeval ru_stime; /* system CPU time used */
+};
+#define RUSAGE_SELF 0
+static inline
+int getrusage(int who, struct rusage *usage) {
+	DPRINT();
+	memset(usage, 0, sizeof(*usage));
+	SET_ERRNO(EPERM);
+	return -1;
+}
+
+static inline
+FILE *popen(const char *command, const char *type) {
+	DPRINT();
+	return NULL;
+}
+
+static inline
+int pclose(FILE *stream) {
+	DPRINT();
+	return -1;
+}
 
 #endif /* SQLITE_EMBOX_COMPAT_H_ */
