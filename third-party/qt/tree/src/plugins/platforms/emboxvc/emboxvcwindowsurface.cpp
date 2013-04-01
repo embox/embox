@@ -241,6 +241,8 @@ QPaintDevice *QEmboxVCWindowSurface::paintDevice()
     return &mImage;
 }
 
+int desktopRepaint = 1;
+
 void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
@@ -249,8 +251,7 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int i, shift, bpp;
 
-    if (widget && widget->platformWindow() &&
-    		!widget->platformWindow()->winId() && visibleWidgetsCount() > 1) {
+    if (!widget->platformWindow()->winId() && !desktopRepaint) {
     	return;
     }
 

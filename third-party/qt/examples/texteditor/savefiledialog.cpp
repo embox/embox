@@ -8,9 +8,9 @@ SaveFileDialog::SaveFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
     this->mainWindow = mainWindow;
 
     fileNameEdit = new QLineEdit;
-    fileNameLabel = new QLabel(tr("File name:"));
+    fileNameLabel = new QLabel(tr("Имя файла:"));
 
-    okButton = createButton(tr("&Ok"), SLOT(save()));
+    okButton = createButton(tr("&Ок"), SLOT(save()));
     cancelButton = createButton(tr("&Cancel"), SLOT(close()));
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
@@ -24,7 +24,7 @@ SaveFileDialog::SaveFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
     mainLayout->addLayout(buttonsLayout, 2, 0, 1, 3);
     setLayout(mainLayout);
 
-    setWindowTitle(tr("Save"));
+    setWindowTitle(tr("Сохранить"));
     resize(200, 100);
 }
 

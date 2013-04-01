@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QTextEdit>
 #include <QtGui>
+#include <QTextCodec>
 #include "mainwindow.h"
 
 QGraphicsView *emboxView;
@@ -51,6 +52,8 @@ protected:
     {
         emit pressed();
         update();
+        extern int desktopRepaint;
+        desktopRepaint = 0;
         textEditor->show();
         textEditor->repaint();
     }
@@ -69,6 +72,10 @@ int main(int argv, char **args)
 	Q_INIT_RESOURCE(texteditor);
 
     QApplication app(argv, args);
+
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
     QGraphicsScene scene(0, 0, 1024, 768);
 

@@ -7,9 +7,9 @@ OpenFileDialog::OpenFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
     this->fileName = fileName;
     this->mainWindow = mainWindow;
 
-    fileLabel = new QLabel(tr("Named:"));
-    textLabel = new QLabel(tr("Containing text:"));
-    directoryLabel = new QLabel(tr("In directory:"));
+    fileLabel = new QLabel(tr("Имя файла:"));
+    textLabel = new QLabel(tr("Содержит текст:"));
+    directoryLabel = new QLabel(tr("В папке:"));
     filesFoundLabel = new QLabel;
 
     createFilesTable();
@@ -20,7 +20,7 @@ OpenFileDialog::OpenFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
 
     find();
 
-    setWindowTitle(tr("Open file"));
+    setWindowTitle(tr("Открыть файл"));
     resize(700, 300);
 }
 
@@ -30,7 +30,7 @@ void OpenFileDialog::createFilesTable()
      filesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
      QStringList labels;
-     labels << tr("File Name") << tr("Size");
+     labels << tr("Имя файла") << tr("Размер");
      filesTable->setHorizontalHeaderLabels(labels);
      filesTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
      filesTable->verticalHeader()->hide();
@@ -58,7 +58,7 @@ void OpenFileDialog::showFiles(const QStringList &files)
         filesTable->setItem(row, 0, fileNameItem);
         filesTable->setItem(row, 1, sizeItem);
     }
-    filesFoundLabel->setText(tr("Double click to open file"));
+    filesFoundLabel->setText(tr("Два клика левой кнопкой мыши, чтобы открыть файла"));
 }
 
 void OpenFileDialog::find()
