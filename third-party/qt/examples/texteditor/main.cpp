@@ -6,6 +6,7 @@
 
 QGraphicsView *emboxView;
 TextEditor *textEditor;
+QGraphicsScene *emscene;
 
 class Button : public QGraphicsWidget
 {
@@ -50,10 +51,11 @@ signals:
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
-        emit pressed();
-        update();
-        extern int desktopRepaint;
-        desktopRepaint = 0;
+       // emit pressed();
+       // update();
+       // extern int desktopRepaint;
+       // desktopRepaint = 0;
+    	emscene->addWidget(textEditor,Qt::Widget);
         textEditor->show();
         textEditor->repaint();
     }
@@ -77,11 +79,11 @@ int main(int argv, char **args)
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
-    QGraphicsScene scene(0, 0, 1024, 768);
+    emscene = new QGraphicsScene(0, 0, 1024, 768);
 
     QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    emboxView = new QGraphicsView(&scene);
+    emboxView = new QGraphicsView(emscene);
     emboxView->setBackgroundBrush(bgPix);
 
     QGraphicsItem *buttonParent = new QGraphicsRectItem;
@@ -89,10 +91,10 @@ int main(int argv, char **args)
 
     texteditorButton->setPos(100, 100);
 
-    scene.addItem(buttonParent);
+    emscene->addItem(buttonParent);
     buttonParent->scale(0.75, 0.75);
     buttonParent->setPos(100, 50);
-    buttonParent->setZValue(65);
+    //buttonParent->setZValue(65);
 
     emboxView->resize(1024, 788);
     emboxView->show();
