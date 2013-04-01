@@ -24,6 +24,7 @@
 #include <kernel/printk.h>
 #include <util/array.h>
 #include <embox/unit.h>
+#include <limits.h>
 
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */
@@ -88,7 +89,7 @@ static int initfs_mount(void *dev, void *dir) {
 	struct node *node;
 	struct initfs_file_info *fi;
 	struct cpio_entry entry;
-	char name[MAX_LENGTH_PATH_NAME + 1];
+	char name[PATH_MAX + 1];
 
 	node_t *dir_node = dir;
 
@@ -105,7 +106,7 @@ static int initfs_mount(void *dev, void *dir) {
 			cpio, dir_node->name);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
-		if (entry.name_len > MAX_LENGTH_PATH_NAME) {
+		if (entry.name_len > PATH_MAX) {
 			return -1;
 		}
 		memcpy(name, entry.name, entry.name_len);

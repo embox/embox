@@ -22,6 +22,7 @@
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
+#include <limits.h>
 
 #include <mem/misc/pool.h>
 #include <net/rpc/clnt.h>
@@ -421,7 +422,7 @@ static int nfsfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
 	void *prev_fi, *prev_fs;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
@@ -623,7 +624,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 	req.new.dir_fh = &parent_fi->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strncpy(name.data, node->name, MAX_LENGTH_FILE_NAME);
+	strncpy(name.data, node->name, NAME_MAX);
 	name.len = strlen(node->name);
 	req.new.fname = &name;
 	/* set attribute of new file */

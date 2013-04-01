@@ -23,8 +23,6 @@ abstract module fs_api {
 }
 
 module NoFileSystem extends fs_api{
-	depends fs_name_opt
-
 	depends SysLibFsNone
 	depends SysLibFileSystemNone
 }
@@ -36,19 +34,12 @@ module xattr {
 module core extends fs_api {
 	source "vfs.c", "path.c"
 
-	depends fs_name_opt
-
 	depends embox.compat.posix.fs.fsop
 	depends file_desc, node
 	depends embox.fs.driver.repo
 
 	depends embox.fs.SysLibFsFull
 	depends filesystem
-}
-
-module fs_name_opt {
-	option number file_name_length=32
-	option number path_length=256
 }
 
 module posix_compat {

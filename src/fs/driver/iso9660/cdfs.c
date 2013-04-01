@@ -58,6 +58,7 @@
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
+#include <limits.h>
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -729,7 +730,7 @@ static int cdfs_readdir(struct nas *nas, direntry_t *dirp, int count) {
 
 	// Get info from directory record /
 	dirp->ino = cdfs_isonum_733(rec->extent);
-	dirp->reclen = sizeof(direntry_t) - MAX_LENGTH_PATH_NAME + namelen + 1;
+	dirp->reclen = sizeof(direntry_t) - PATH_MAX + namelen + 1;
 	if (cdfs->joliet) {
 		namelen /= 2;
 		wname = (wchar_t *) rec->name;
@@ -780,7 +781,7 @@ static struct kfile_operations cdfsfs_fop = {
 };
 
 static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
-	char path [MAX_LENGTH_PATH_NAME];
+	char path [PATH_MAX];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
 
@@ -961,7 +962,7 @@ static int cdfsfs_umount(void *dir) {
 	struct nas *dir_nas;
 	struct cdfs_fs_info *fsi;
 	void *prev_fi, *prev_fs;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
@@ -1004,7 +1005,7 @@ static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 	node_t *node;
 	struct nas *nas, *dir_nas;
 	wchar_t *wname;
-	char name[MAX_LENGTH_PATH_NAME];
+	char name[PATH_MAX];
 
 	dir_nas = dir_node->nas;
 
@@ -1107,7 +1108,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	iso_pathtable_record_t *pathrec;
 	cdfs_t *cdfs;
 	int namelen;
-	char name[MAX_LENGTH_PATH_NAME];
+	char name[PATH_MAX];
 	struct node *root_node, *node;
 	struct nas *nas;
 	struct cdfs_file_info *fi, *parent_fi;
@@ -1155,14 +1156,14 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 }
 //
 //static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path) {
-//	char full_path[MAX_LENGTH_PATH_NAME];
+//	char full_path[PATH_MAX];
 //	iso_pathtable_record_t *pathrec;
 //
 //	pathrec = cdfs->path_table[numrec];
 //
 //	/* go up to the root folder */
 //	while (1 != pathrec->parent) {
-//		strncpy(full_path, path, MAX_LENGTH_PATH_NAME);
+//		strncpy(full_path, path, PATH_MAX);
 //		pathrec = cdfs->path_table[pathrec->parent];
 //		memcpy(path, pathrec->name, pathrec->length);
 //		path[pathrec->length] = 0;

@@ -8,7 +8,7 @@
 
 #include <embox/cmd.h>
 #include <errno.h>
-#include <linux/limits.h>
+#include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <util/array.h>

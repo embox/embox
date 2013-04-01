@@ -11,6 +11,7 @@
 
 #include <util/dlist.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 struct filesystem {
 	struct dlist_head link;
@@ -19,8 +20,8 @@ struct filesystem {
 	void             *fsi;    			/* extended information */
 	void             *rootdir_prev_fs;	/* root directory previous file system info */
 	void             *rootdir_prev_fi;	/* root directory previous file info */
-	char mntfrom[MAX_LENGTH_PATH_NAME];
-	char mntto[MAX_LENGTH_PATH_NAME];
+	char mntfrom[PATH_MAX];
+	char mntto[PATH_MAX];
 
 	const struct kfile_operations *file_op;
 };

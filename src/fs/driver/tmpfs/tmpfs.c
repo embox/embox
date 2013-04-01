@@ -24,6 +24,7 @@
 #include <drivers/ramdisk.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <limits.h>
 
 /* tmpfs filesystem description pool */
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_info, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
@@ -454,7 +455,7 @@ static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
 	struct tmpfs_fs_info *fsi;
 	struct nas *nas;
-	char path [MAX_LENGTH_PATH_NAME];
+	char path [PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;

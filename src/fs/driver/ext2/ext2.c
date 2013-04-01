@@ -25,6 +25,7 @@
 #include <drivers/ramdisk.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <limits.h>
 /*
  * Copyright (c) 1997 Manuel Bouyer.
  *
@@ -330,7 +331,7 @@ int ext2_close(struct nas *nas) {
 
 int ext2_open(struct nas *nas) {
 	int rc;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 	const char *cp, *ncp;
 	uint32_t inumber, parent_inumber;
 
@@ -592,7 +593,7 @@ static int ext2fs_delete(struct node *node) {
 	int rc;
 	node_t *parents;
 	struct nas *nas;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 	struct ext2_fs_info *fsi;
 	nas = node->nas;
 	fsi = nas->fs->fsi;
@@ -933,7 +934,7 @@ static int ext2fs_umount(void *dir) {
 	struct nas *dir_nas;
 	//struct ext2_fs_info *fsi;
 	void *prev_fi, *prev_fs;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
@@ -1462,7 +1463,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	node_t *node;
 	mode_t mode;
 
-	if (NULL == (name_buff = ext2_buff_alloc(dir_nas, MAX_LENGTH_FILE_NAME))) {
+	if (NULL == (name_buff = ext2_buff_alloc(dir_nas, NAME_MAX))) {
 		rc = ENOMEM;
 		return rc;
 	}
@@ -2465,7 +2466,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 
 	/* 'bp' now points to a directory block with space. 'dp' points to slot. */
 	dp->e2d_namlen = string_len;
-	for (i = 0; i < MAX_LENGTH_PATH_NAME
+	for (i = 0; i < PATH_MAX
 			&& i < dp->e2d_namlen && string[i];	i++) {
 		dp->e2d_name[i] = string[i];
 	}

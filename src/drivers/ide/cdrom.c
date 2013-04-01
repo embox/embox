@@ -21,6 +21,7 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
+#include <limits.h>
 
 #define CD_WAIT_US 3000
 
@@ -215,7 +216,7 @@ static int idecd_init (void *args) {
 	hd_t *drive;
 	double size;
 	int i;
-	char   path[MAX_LENGTH_PATH_NAME];
+	char   path[PATH_MAX];
 
 	ide = ide_get_drive();
 

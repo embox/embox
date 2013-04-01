@@ -15,6 +15,7 @@
 #include <net/ip.h>
 #include <sys/socket.h>
 #include <net/rpc/rpc.h>
+#include <limits.h>
 
 /*
  * RPC definitions for the portmapper
@@ -127,15 +128,15 @@
 #define	EMBOX_MACHNAME  "embox"
 
 typedef struct create_params {
-	const char      path[MAX_LENGTH_PATH_NAME];
-	const char      fs_name[MAX_LENGTH_FILE_NAME];
+	const char      path[PATH_MAX];
+	const char      fs_name[NAME_MAX];
 	unsigned int    fs_type;
 } create_params_t;
 
 /* RPC string */
 typedef struct rpc_string {
 	size_t len;
-	char data[MAX_LENGTH_FILE_NAME];
+	char data[NAME_MAX];
 } rpc_string_t;
 
 typedef struct rpc_fh_string {
@@ -156,7 +157,7 @@ typedef struct nfs_filehandle {
 typedef struct export_dir {
 	__u32 vf;
 	size_t dir_len;
-	char dir_name[MAX_LENGTH_PATH_NAME];
+	char dir_name[PATH_MAX];
 } export_dir_t;
 
 
@@ -303,8 +304,8 @@ typedef struct write_reply {
 } write_reply_t;
 
 typedef struct nfs_fs_info {
-	char srv_name[MAX_LENGTH_PATH_NAME];
-	char srv_dir[MAX_LENGTH_PATH_NAME];
+	char srv_name[PATH_MAX];
+	char srv_dir[PATH_MAX];
 	export_dir_t export;
 	nfs_filehandle_t fh;
 	struct client *mnt;

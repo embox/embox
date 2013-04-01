@@ -21,6 +21,7 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
+#include <limits.h>
 
 #define HD_WAIT_MS 10
 
@@ -205,7 +206,7 @@ static int idedisk_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
 	double size;
-	char   path[MAX_LENGTH_PATH_NAME];
+	char   path[PATH_MAX];
 
 	ide = ide_get_drive();
 

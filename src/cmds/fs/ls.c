@@ -18,6 +18,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 #include <embox/cmd.h>
 
@@ -29,7 +30,7 @@ static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
 }
 
-static char dir_name[MAX_LENGTH_FILE_NAME];
+static char dir_name[NAME_MAX];
 static size_t dir_namel;
 static int recursive;
 static item_print *printer;
