@@ -332,22 +332,6 @@ inline int getpagesize(void) {
 
 #define O_LARGEFILE 0
 
-
-
-#define F_RDLCK 0
-#define F_WRLCK 0
-#define F_SETLKW 0
-#define F_UNLCK 0
-#define F_SETLK 0
-
-struct flock {
-  short  l_type;
-  short  l_whence;
-  off_t  l_start;
-  off_t  l_len;
-  pid_t  l_pid;
-};
-
 inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 	printf(">>> readLink(%s)\n", path);
 	return 0;

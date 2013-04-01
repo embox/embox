@@ -119,7 +119,6 @@ typedef int sigset_t;
 #define SA_RESETHAND 0
 int sigaddset(sigset_t *set, int signum);
 int sigismember(const sigset_t *set, int signum);
-int nanosleep(const struct timespec *req, struct timespec *rem);
 
 
 

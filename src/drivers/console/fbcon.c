@@ -187,7 +187,7 @@ static char fbcon_getc(struct fbcon *fbcon) {
 	sched_lock();
 
 	while (!fbcon->hasc) {
-		event_wait_ms(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
+		event_wait(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
 	}
 
 	fbcon->hasc --;
