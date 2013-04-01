@@ -29,7 +29,12 @@ extern struct work *work_init(struct work *, void (*worker)(struct work *),
 
 extern struct work_queue *work_queue_init(struct work_queue *);
 
-extern void work_enqueue(struct work *, struct work_queue *);
+extern int work_enqueue(struct work_queue *, struct work *);
+extern struct work *work_dequeue(struct work_queue *);
+
+extern void work_cancel(struct work *);
+
+#if 0
 
 extern void work_disable(struct work *);
 extern void work_enable(struct work *);
@@ -38,8 +43,6 @@ extern int work_disabled(struct work *);
 extern void work_post(struct work *);
 extern unsigned int work_pending(struct work *);
 extern unsigned int work_pending_reset(struct work *);
-
-extern void work_cancel(struct work *);
 
 /**
  * Evaluate a given @a expr inside a block with the specified @a work disabled.
@@ -53,6 +56,8 @@ extern void work_cancel(struct work *);
 		work_enable(__w);          \
 		__ret;                     \
 	})
+#endif
 
 #endif /* KERNEL_WORK_H_ */
+
 

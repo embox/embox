@@ -37,30 +37,30 @@ struct __event_wait {
 		struct __event_wait __wait;                                           \
 		int __time_left = timeout;                                            \
 		int __wait_ret = 0;                                                   \
-		                                                                      \
+                                                                              \
 		__event_wait_init(&__wait);                                           \
-		                                                                      \
+                                                                              \
 		do {                                                                  \
 			__event_prepare_wait(e, &__wait);                                 \
-		                                                                      \
+                                                                              \
 			if (cond_expr)                                                    \
 				__wait_ret = 0;                                               \
-		                                                                      \
+                                                                              \
 			else if (!__wait_ret) {                                           \
 				/* Zzz... */                                                  \
 				__time_left = __event_do_wait(e, __time_left);                \
-			                                                                  \
+                                                                              \
 				if (!__time_left)                                             \
 					__wait_ret = -ETIMEDOUT;                                  \
 				else if (interruptible)                                       \
 					__wait_ret = -EINTR;                                      \
-			                                                                  \
+                                                                              \
 				continue;                                                     \
-		    }                                                                 \
+			}                                                                 \
 		} while(0);                                                           \
-			                                                                  \
+                                                                              \
 		__event_cleanup_wait(e, &__wait);                                     \
-		                                                                      \
+                                                                              \
 		__wait_ret;                                                           \
 	}))
 
