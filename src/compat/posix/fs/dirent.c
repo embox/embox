@@ -1,6 +1,8 @@
 /**
+ * @file
+ * @brief
  *
- * @date 04.02.2013
+ * @date 04.02.13
  * @author Alexander Kalmuk
  * @author Anton Kozlov
  */
@@ -12,6 +14,7 @@
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <fs/flags.h>
+#include <framework/mod/options.h>
 
 #include <dirent.h>
 
