@@ -220,6 +220,9 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 		case '$':
 			ret = snprintf(buf, len, "%c", uid ? '$' : '#');
 			break;
+		case 'w':
+			ret = snprintf(buf, len, "%s", getenv("PWD"));
+			break;
 		default:
 			ret = snprintf(buf, len, "%c", *fmt);
 		}
@@ -240,15 +243,6 @@ static void tish_run(void) {
 	char prompt_buf[PROMPT_BUF_LEN];
 	const char *prompt;
 
-	if (RICH_PROMPT_SUPPORT) {
-		if (0 > rich_prompt(PROMPT_FMT, prompt_buf, PROMPT_BUF_LEN)) {
-		    return;
-		}
-		prompt = prompt_buf;
-	} else {
-		prompt = PROMPT_FMT;
-	}
-
 	/* Set the completion callback. This will be called every time the
 	* user uses the <tab> key. */
 	linenoiseSetCompletionCallback(completion);
@@ -263,7 +257,20 @@ static void tish_run(void) {
 	*
 	* The typed string is returned as a malloc() allocated string by
 	* linenoise, so the user needs to free() it. */
-	while((line = linenoise(prompt)) != NULL) {
+	while (1) {
+		if (RICH_PROMPT_SUPPORT) {
+			prompt = 0 == rich_prompt(PROMPT_FMT, prompt_buf,
+					PROMPT_BUF_LEN) ? &prompt_buf[0] : PROMPT_FMT;
+		}
+		else {
+			prompt = PROMPT_FMT;
+		}
+
+		line = linenoise(prompt);
+		if (line == NULL) {
+			break;
+		}
+
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			linenoiseHistoryAdd(line); /* Add to the history. */

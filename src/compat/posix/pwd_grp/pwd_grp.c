@@ -135,6 +135,7 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	FILE *file;
 
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		*result = NULL;
 		return res;
 	}
 
@@ -160,6 +161,7 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	FILE *file;
 
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		*result = NULL;
 		return res;
 	}
 
