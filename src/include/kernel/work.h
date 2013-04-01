@@ -10,6 +10,7 @@
 #define KERNEL_WORK_H_
 
 #include <util/slist.h>
+#include <util/dlist.h>
 
 #define WORK_F_DISABLED (0x1 << 0)  /**< Initially disabled work. */
 
@@ -19,8 +20,16 @@ struct work {
 	void (*handler)(struct work *);
 };
 
+struct work_queue {
+	struct dlist_head list;
+};
+
 extern struct work *work_init(struct work *, void (*worker)(struct work *),
 		unsigned int flags);
+
+extern struct work_queue *work_queue_init(struct work_queue *);
+
+extern void work_enqueue(struct work *, struct work_queue *);
 
 extern void work_disable(struct work *);
 extern void work_enable(struct work *);
@@ -29,6 +38,8 @@ extern int work_disabled(struct work *);
 extern void work_post(struct work *);
 extern unsigned int work_pending(struct work *);
 extern unsigned int work_pending_reset(struct work *);
+
+extern void work_cancel(struct work *);
 
 /**
  * Evaluate a given @a expr inside a block with the specified @a work disabled.

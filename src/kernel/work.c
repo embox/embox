@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Kernel worker backed by soft interrupts.
+ * @brief Work is a delayed computation unit to perform.
  *
  * @date 13.03.13
  * @author Eldar Abusalimov
@@ -8,87 +8,70 @@
 
 #include <kernel/work.h>
 
-#include <kernel/softirq.h>
-#include <kernel/irq_lock.h>
-#include <embox/unit.h>
-#include <util/slist.h>
+#include <hal/ipl.h>
+#include <util/dlist.h>
+#include <util/member.h>
 
-EMBOX_UNIT_INIT(work_unit_init);
+typedef member_t(struct work, link)       w_link_mt;
+typedef member_t(struct work_queue, list) wq_list_mt;
 
-#define WS_PENDING     0x00000fff /* 4096 pending requests, LS bits. */
-#define WS_DISABLED    0x0000f000 /* 16 calls to work_disable. */
-#define WS_INPROGRESS  0x00010000 /* Being inside the handler. */
+static int __work_enqueue(struct work_queue *wq, struct work *w) {
+	int was_alone = dlist_empty(&w->link);
 
-#define WS_INIT        0x00000000
+	if (was_alone)
+		dlist_add_prev(&w->link, &wq->list);
 
-/* 01111000 *
- * 01110111 *
- * 00001111 *
- * 00000111 *
- * 00001000 */
-#define __COUNT(level) \
-	((((level) ^ ((level) - 1)) >> 1) + 1)
-
-static struct slist       workq      = SLIST_INIT(&workq);
-static struct slist_link *workq_tail = &workq.sentinel;
-
-typedef member_t(struct work, pending_link) work_pending_t;
-
-static void work_softirq_handler(unsigned int softirq_nr, void *data) {
-	struct slist_link *last = &workq.sentinel;
-
-	irq_lock();
-
-	for (struct slist_link *head = &workq.sentinel, *link = head->next;
-			link != head; link = link->next) {
-		struct work *w = member_to_object(link, work_pending_t);
-
-		if (w->state & WS_DISABLED) {
-			last->next = link;
-			last = link;
-			continue;
-		}
-
-		do {
-			assert(w->state & WS_PENDING);
-			assert(!(w->state & WS_INPROGRESS));
-
-			w->state -= __COUNT(WS_PENDING);
-			w->state |= WS_INPROGRESS;
-
-			irq_unlock();
-			w->handler(w);
-			irq_lock();
-
-			w->state &= ~WS_INPROGRESS;
-		} while	(w->state & WS_PENDING);
-	}
-
-	last->next = &workq.sentinel;
-	workq_tail = last;
-
-	irq_unlock();
+	return was_alone;
 }
 
-void work_post(struct work *w) {
-	int disabled;
+int work_enqueue(struct work_queue *wq, struct work *w) {
+	return IPL_SAFE_DO(__work_enqueue(wq, w));
+}
 
-	irq_lock();
+static struct work *__work_dequeue(struct work_queue *wq) {
+	struct dlist_head *first;
 
-	if (!(w->state & (WS_PENDING | WS_INPROGRESS))) {
-		struct slist_link *link = member_of_object(w, work_pending_t);
-		slist_insert_after_link(link, workq_tail);
-		workq_tail = link;
+	if (dlist_empty(&wq->list))
+		return NULL;
+
+	first = wq->list.next;
+	dlist_del(first);
+
+	return member_to_object(first, w_link_mt);
+}
+
+struct work *work_dequeue(struct work_queue *wq) {
+	return IPL_SAFE_DO(__work_dequeue(wq));
+}
+
+void work_queue_run(struct work_queue *wq) {
+	struct dlist_head *list = member_of_object(wq, wq_list_mt);
+	ipl_t ipl;
+
+	ipl = ipl_save();
+
+	for (struct dlist_head *link, *prev = list;
+			(link = prev->next) != list; prev = link) {
+
+		struct work *w = member_to_object(link, w_link_mt);
+		int handled;
+
+		dlist_del(link);
+
+		ipl_restore(ipl);
+		handled = w->handler(w);
+		ipl = ipl_save();
+
+		if (!handled && dlist_empty(link))
+			dlist_add_next(link, prev);
+		else
+			link = prev;
 	}
 
-	disabled = w->state & WS_DISABLED;
-	w->state += __COUNT(WS_PENDING);
-
-	irq_unlock();
-
-	if (!disabled)
-		softirq_raise(SOFTIRQ_NR_WORK);
+	ipl_restore(ipl);
 }
+
+#if 0
 
 unsigned int work_pending(struct work *w) {
 	return w->state & WS_PENDING;
@@ -101,7 +84,7 @@ unsigned int work_pending_reset(struct work *w) {
 
 void work_disable(struct work *w) {
 	irq_lock();
-	w->state += __COUNT(WS_DISABLED);
+	w->state += __WS_COUNT(WS_DISABLED);
 	irq_unlock();
 }
 
@@ -111,7 +94,7 @@ void work_enable(struct work *w) {
 	irq_lock();
 
 	pending = w->state & WS_PENDING;
-	w->state -= __COUNT(WS_DISABLED);
+	w->state -= __WS_COUNT(WS_DISABLED);
 
 	irq_unlock();
 
@@ -129,6 +112,7 @@ void work_lock(void) {
 void work_unlock(void) {
 	softirq_unlock();
 }
+#endif
 
 struct work *work_init(struct work *w, void (*handler)(struct work *),
 		unsigned int flags) {
@@ -136,13 +120,18 @@ struct work *work_init(struct work *w, void (*handler)(struct work *),
 	w->handler = handler;
 	w->state = WS_INIT;
 
-	slist_link_init(&w->pending_link);
+	dlist_head_init(&w->link);
 
-	if (flags & WORK_F_DISABLED) {
-		work_disable(w);
-	}
+	// if (flags & WORK_F_DISABLED) {
+	// 	work_disable(w);
+	// }
 
 	return w;
+}
+
+struct work_queue *work_queue_init(struct work_queue *wq) {
+	dlist_init(&wq->list);
+	return wq;
 }
 
 static int work_unit_init(void) {

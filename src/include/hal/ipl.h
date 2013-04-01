@@ -9,6 +9,8 @@
 #ifndef HAL_IPL_H_
 #define HAL_IPL_H_
 
+#include <util/lang.h>
+
 #include <module/embox/arch/interrupt.h>
 
 /**
@@ -39,7 +41,6 @@ extern void ipl_init(void);
  */
 #define ipl_disable() ((void) ipl_save())
 
-
 /**
  * Sets the maximal interrupt priority level cutting off all IRQs on the CPU.
  *
@@ -59,5 +60,11 @@ ipl_t ipl_save(void);
  * @sa ipl_save()
  */
 void ipl_restore(ipl_t ipl);
+
+/**
+ * Evaluate a given @a expr inside an IRQ-protected block.
+ */
+#define IPL_SAFE_DO(expr) \
+	__lang_surround(expr, __ipl = ipl_save(), ipl_restore(__ipl))
 
 #endif /* HAL_IPL_H_ */
