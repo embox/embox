@@ -6,6 +6,7 @@
  * @date 31.03.13
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -21,9 +22,7 @@ char * getcwd(char *buff, size_t size) {
 	}
 
 	dir = getenv("PWD");
-	if (dir == NULL) {
-		dir = "/"; /* FIXME use default value if PWD not set */
-	}
+	assert(dir != NULL); /* $PWD must be set */
 
 	if (strlen(dir) + 1 >= size) {
 		SET_ERRNO(ERANGE);
