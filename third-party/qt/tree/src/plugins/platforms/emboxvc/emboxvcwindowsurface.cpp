@@ -251,7 +251,7 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int i, shift, bpp;
 
-    if (!widget->platformWindow()->winId() && !desktopRepaint) {
+    if (widget && !widget->platformWindow()->winId() && !desktopRepaint) {
     	return;
     }
 
