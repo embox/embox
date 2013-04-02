@@ -123,8 +123,8 @@ int kunlink(const char *pathname) {
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node)) {
-		errno = EACCES;
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
+		errno = -res;
 		return -1;
 	}
 
