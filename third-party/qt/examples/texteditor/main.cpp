@@ -15,43 +15,28 @@ public:
     Button(const QPixmap &pixmap, QGraphicsItem *parent = 0)
         : QGraphicsWidget(parent), _pix(pixmap)
     {
-        setAcceptHoverEvents(true);
-        setCacheMode(DeviceCoordinateCache);
+	setAcceptHoverEvents(true);
+	setCacheMode(DeviceCoordinateCache);
     }
 
     QRectF boundingRect() const
     {
-        return QRectF(-65, -65, 130, 130);
+	int w = _pix.width();
+	int h = _pix.height();
+	return QRectF(0, 0, w + 10, h + 10);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
     {
         bool down = option->state & QStyle::State_Sunken;
-        QRectF r = boundingRect();
-        QLinearGradient grad(r.topLeft(), r.bottomRight());
-        grad.setColorAt(down ? 1 : 0, option->state & QStyle::State_MouseOver ? Qt::white : Qt::lightGray);
-        grad.setColorAt(down ? 0 : 1, Qt::darkGray);
-        painter->setPen(Qt::darkGray);
-        painter->setBrush(grad);
-        painter->drawRect(r);
-        QLinearGradient grad2(r.topLeft(), r.bottomRight());
-        grad.setColorAt(down ? 1 : 0, Qt::darkGray);
-        grad.setColorAt(down ? 0 : 1, Qt::lightGray);
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(grad);
-        if (down)
-            painter->translate(2, 2);
-        painter->drawRect(r.adjusted(5, 5, -5, -5));
-        painter->drawPixmap(-_pix.width()/2, -_pix.height()/2, _pix);
+	int w = _pix.width();
+	int h = _pix.height();
+	painter->drawPixmap(0, 0, _pix);
     }
-
-signals:
-    void pressed();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
-       // emit pressed();
        // update();
     	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(textEditor, Qt::Widget);
     	proxyWidget->setZValue(50);
@@ -60,9 +45,8 @@ protected:
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     {
-        //update();
+	update();
     }
-
 private:
     QPixmap _pix;
 };
@@ -83,20 +67,15 @@ int main(int argv, char **args)
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
     emboxView = new QGraphicsView(emscene);
     emboxView->setBackgroundBrush(bgPix);
-
-    QGraphicsItem *buttonParent = new QGraphicsRectItem;
-    Button *texteditorButton = new Button(QPixmap(":/icon.png"), buttonParent);
-
-    texteditorButton->setPos(100, 100);
-
-    emscene->addItem(buttonParent);
-    buttonParent->scale(0.75, 0.75);
-    buttonParent->setPos(100, 50);
-    //buttonParent->setZValue(65);
-
     emboxView->resize(1024, 788);
-    emboxView->show();
 
+    Button *texteditorButton = new Button(QPixmap(":/icon.png"));
+    texteditorButton->resize(128,128);
+
+    emscene->addItem(texteditorButton);
+    texteditorButton->setPos(64, 64);
+
+    emboxView->show();
     textEditor = new TextEditor();
 
     return app.exec();
