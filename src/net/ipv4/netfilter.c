@@ -32,7 +32,7 @@ static struct nf_rule * nf_lookup(struct list *rules,
 	assert((rules != NULL) && (addr != NULL));
 
 	list_foreach(r, rules, lnk) {
-		addr_is_eq = memcmp(addr, &r->addr, sizeof addr) == 0;
+		addr_is_eq = memcmp(addr, &r->addr, sizeof *addr) == 0;
 		if (!(addr_is_eq ^ !r->not_addr)) {
 			return r;
 		}
