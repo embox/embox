@@ -40,11 +40,7 @@ void TextEditor::create()
 }
 
 void TextEditor::quit() {
-	extern QGraphicsView *emboxView;
-	extern int desktopRepaint;
 	hide();
-	desktopRepaint = 1;
-	emboxView->repaint();
 }
 
 QWizardPage *createIntroPage()
@@ -63,11 +59,14 @@ QWizardPage *createIntroPage()
 }
 
 void TextEditor::help() {
+	extern QGraphicsScene *emscene;
 	helpWindow = new QWizard();
 	helpWindow->addPage(createIntroPage());
 	helpWindow->setWindowTitle("Справка");
 	helpWindow->resize(600, 300);
-	helpWindow->show();
+	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(helpWindow, Qt::Widget);
+	proxyWidget->setZValue(100);
+	proxyWidget->show();
 }
 
 void TextEditor::open()

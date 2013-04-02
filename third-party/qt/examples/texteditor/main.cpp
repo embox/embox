@@ -53,11 +53,9 @@ protected:
     {
        // emit pressed();
        // update();
-       // extern int desktopRepaint;
-       // desktopRepaint = 0;
-    	emscene->addWidget(textEditor,Qt::Widget);
+    	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(textEditor, Qt::Widget);
+    	proxyWidget->setZValue(50);
         textEditor->show();
-        textEditor->repaint();
     }
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
