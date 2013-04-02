@@ -1,7 +1,29 @@
 diff -aur sqlite-autoconf-3071600/shell.c sqlite/shell.c
 --- sqlite-autoconf-3071600/shell.c	2013-03-18 20:01:49.000000000 +0400
-+++ sqlite/shell.c	2013-04-01 19:33:24.359698365 +0400
-@@ -2935,7 +2935,7 @@
++++ sqlite/shell.c	2013-04-02 16:03:30.077508393 +0400
+@@ -486,9 +486,9 @@
+ */
+ static void shellLog(void *pArg, int iErrCode, const char *zMsg){
+   struct callback_data *p = (struct callback_data*)pArg;
+-  if( p->pLog==0 ) return;
+-  fprintf(p->pLog, "(%d) %s\n", iErrCode, zMsg);
+-  fflush(p->pLog);
++  //if( p->pLog==0 ) return;
++  printf(">>> sqlite log: (%d) %s\n", iErrCode, zMsg);
++  //fflush(p->pLog);
+ }
+ 
+ /*
+@@ -2781,6 +2781,8 @@
+   /* Windows CE (arm-wince-mingw32ce-gcc) does not provide getenv()
+    */
+   home_dir = "/";
++#elif defined(__EMBOX__)
++  home_dir = "/tmp";
+ #else
+ 
+ #if defined(_WIN32) || defined(WIN32)
+@@ -2935,7 +2937,7 @@
    return argv[i];
  }
  

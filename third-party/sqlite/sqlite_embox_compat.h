@@ -25,6 +25,7 @@
 #endif
 
 #define SQLITE_HOMEGROWN_RECURSIVE_MUTEX
+#define SQLITE_4_BYTE_ALIGNED_MALLOC
 
 #if 1
 #define DPRINT() printf(">>> sqlite3 CALL %s\n", __FUNCTION__)
@@ -37,6 +38,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 static inline
 int fchown(int fd, uid_t owner, gid_t group) {
@@ -99,6 +101,13 @@ FILE *popen(const char *command, const char *type) {
 static inline
 int pclose(FILE *stream) {
 	DPRINT();
+	return -1;
+}
+
+static inline
+int fchmod(int fd, mode_t mode) {
+	DPRINT();
+	SET_ERRNO(EPERM);
 	return -1;
 }
 

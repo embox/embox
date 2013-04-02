@@ -9,3 +9,23 @@ module core {
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/sqlite MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source "../../../../sqlite/lib/libsqlite3.a"
 }
+
+@Cmd(name = "sqlite3",
+	help = "SQLite3 shell",
+	man = '''
+		NAME
+			sqlite3 - A command line interface for SQLite version 3
+		SYNOPSIS
+			sqlite3 [options] [databasefile] [SQL]
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
+module shell {
+	depends core
+	depends embox.framework.LibFramework
+
+	@Rule(script="true")
+	source "../../../../sqlite/src/sqlite-build/shell.o"
+	source "shell_cmd.c"
+	source "order.mk"
+}
