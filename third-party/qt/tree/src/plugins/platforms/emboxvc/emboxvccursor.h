@@ -16,11 +16,13 @@ public:
     ~QEmboxCursor();
 
 	void emboxCursorRedraw(struct fb_info *fb, int x, int y);
+	void emboxCursorReset(struct fb_info *fb);
 
 private:
 	void storeDirtyRect(struct fb_info *fb, unsigned char *begin);
 	void flushDirtyRect(struct fb_info *fb, unsigned char *begin);
 	void drawCursor(struct fb_info *fb, unsigned char *begin);
+	int imageChanged(struct fb_info *fb, unsigned char *begin);
 
     int mouseX, mouseY;
     int inited;

@@ -1,6 +1,7 @@
 #ifndef QPLATFORMINTEGRATION_MINIMAL_H
 #define QPLATFORMINTEGRATION_MINIMAL_H
 
+#include <QtGui>
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 #include <../fb_base/fb_base.h>

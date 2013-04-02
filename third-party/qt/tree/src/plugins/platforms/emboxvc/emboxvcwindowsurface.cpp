@@ -104,9 +104,6 @@ void QEmboxVCMouseHandler::readMouseData() {
 		emvc->mouseX += x;
 		emvc->mouseY += -y;
 
-		QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
-				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
-
 		int xres = emvc->emboxVC.fb->var.xres;
 		int yres = emvc->emboxVC.fb->var.yres;
 
@@ -115,6 +112,9 @@ void QEmboxVCMouseHandler::readMouseData() {
 
 		emvc->mouseX = emvc->mouseX > xres ? xres : emvc->mouseX;
 		emvc->mouseY = emvc->mouseY > yres ? yres : emvc->mouseY;
+
+		QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
+				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
 
 		if (!emvc->emboxVC.fb || !emvc->emboxVCvisualized) {
 			return;
@@ -241,8 +241,6 @@ QPaintDevice *QEmboxVCWindowSurface::paintDevice()
     return &mImage;
 }
 
-int desktopRepaint = 1;
-
 void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
@@ -250,10 +248,6 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     Q_UNUSED(offset);
 
     int i, shift, bpp;
-
-    if (widget && !widget->platformWindow()->winId() && !desktopRepaint) {
-    	return;
-    }
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
@@ -266,7 +260,8 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     	memcpy(vc->emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
     }
 
-    /* Draw cursor */
+    /* Reset cursor on new image and redraw */
+    vc->cursor->emboxCursorReset(vc->emboxVC.fb);
     vc->cursor->emboxCursorRedraw(vc->emboxVC.fb, vc->mouseX, vc->mouseY);
 }
 
@@ -289,14 +284,8 @@ QEmboxVCPlatformWindow::~QEmboxVCPlatformWindow()
 {
 }
 
-extern QEmboxVCPlatformWindow *emboxDesktopWindow;
-
 WId QEmboxVCPlatformWindow::winId() const {
-	if (this == emboxDesktopWindow) {
-		return WId(0);
-	} else {
-		return WId(1);
-	}
+	return WId(1);
 }
 
 void QEmboxVCPlatformWindow::setParent(const QPlatformWindow *window) {
