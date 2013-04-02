@@ -107,7 +107,7 @@ typedef struct statfs  {
 static inline int chmod(const char *path, mode_t mode) {
 	return -1;
 }
-extern int    fchmod(int, mode_t);
+//extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
 extern int    fstat(int fd, struct stat *);
