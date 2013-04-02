@@ -180,6 +180,21 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 
 	return 0;
 }
+static struct passwd getpwuid_buffer;
+struct passwd *getpwuid(uid_t uid) {
+	char buff[0x80];
+	struct passwd *pwd;
+
+	if(0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &pwd)) {
+		//TODO errno must be set
+		return 0;
+	}
+	if(pwd == 0) {
+		return 0;
+	}
+
+	return &getpwuid_buffer;
+}
 
 int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		size_t buflen, struct group **gbufp) {
