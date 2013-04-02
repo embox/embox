@@ -10,6 +10,9 @@
 
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 struct passwd {
 	char *pw_name;
@@ -38,5 +41,7 @@ extern struct passwd *getpwuid(uid_t uid);
 static inline void endpwent(void) { }
 static inline struct passwd * getpwent(void) { return NULL; }
 static inline void setpwent(void) { }
+
+__END_DECLS
 
 #endif /* PWD_H_ */
