@@ -34,7 +34,7 @@ diff -aur sqlite-autoconf-3071600/shell.c sqlite/shell.c
    const char *zInitFile = 0;
 diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
 --- sqlite-autoconf-3071600/sqlite3.c	2013-03-18 20:01:49.000000000 +0400
-+++ sqlite/sqlite3.c	2013-04-01 19:30:49.907694408 +0400
++++ sqlite/sqlite3.c	2013-04-02 17:07:35.485602714 +0400
 @@ -18040,6 +18040,7 @@
  ** mutex types, the same mutex is returned on every call that has
  ** the same type number.
@@ -57,3 +57,21 @@ diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
    sqlite3_mutex *p;
    switch( iType ){
      case SQLITE_MUTEX_RECURSIVE: {
+@@ -23023,6 +23031,8 @@
+ # endif
+   int sqlite3OSTrace = SQLITE_DEBUG_OS_TRACE;
+ # define OSTRACE(X)          if( sqlite3OSTrace ) sqlite3DebugPrintf X
++#elif defined(__EMBOX__)
++# define OSTRACE(X)          sqlite3DebugPrintf X
+ #else
+ # define OSTRACE(X)
+ #endif
+@@ -23508,7 +23518,7 @@
+ #endif
+ 
+ 
+-#if defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
++#if defined(__EMBOX__) || defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
+ /*
+ ** Helper function for printing out trace information from debugging
+ ** binaries. This returns the string represetation of the supplied

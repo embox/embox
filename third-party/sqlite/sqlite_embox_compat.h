@@ -27,6 +27,20 @@
 #define SQLITE_HOMEGROWN_RECURSIVE_MUTEX
 #define SQLITE_4_BYTE_ALIGNED_MALLOC
 
+#define SQLITE_PRIVATE
+
+#ifdef SQLITE_OMIT_TRACE
+#undef SQLITE_OMIT_TRACE
+#endif
+
+#define SQLITE_ENABLE_IOTRACE 1
+
+//#define SQLITE_OMIT_SHARED_CACHE
+
+//#ifdef SQLITE_THREADSAFE
+//#undef SQLITE_THREADSAFE
+//#endif
+
 #if 1
 #define DPRINT() printf(">>> sqlite3 CALL %s\n", __FUNCTION__)
 #else
