@@ -74,7 +74,7 @@ extern double strtod(const char *nptr, char **endptr);
  * @param base Base for the conversion. 1 < base < 37.
  * @return Pointer to buf.
  */
-extern char *itoa( int num, char *buf, unsigned short int base )
+extern char *itoa( int num, char *buf, unsigned short int base );
 
 /* Allocate and free dynamic memory */
 extern void *calloc(size_t nmemb, size_t size);
