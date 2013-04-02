@@ -9,6 +9,8 @@
 
 #include "includes.h"
 
+
+#if 0
 #define PWD_CHARLEN 64
 
 static struct passwd embox_passwd;
@@ -21,9 +23,19 @@ struct passwd *getpwnam(const char *name) {
 
 	return ret;
 }
+#endif
 
 char *crypt(const char *key, const char *salt) {
-	return embox_passwd.pw_passwd;
+	struct passwd *pwd;
+	static char buff[0x20];
+
+	pwd = getpwuid(geteuid());
+	if (pwd == NULL) {
+		return 0;
+	}
+	memcpy(buff, pwd->pw_passwd, sizeof(buff));
+
+	return buff;
 }
 
 

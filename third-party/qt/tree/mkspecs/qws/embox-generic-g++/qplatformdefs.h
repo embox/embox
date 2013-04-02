@@ -294,11 +294,7 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 
 
 
-#if 0
-inline struct tm * localtime ( const time_t * timer ) {
-	return gmtime(timer);
-}
-#endif
+
 static char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
@@ -445,30 +441,23 @@ typedef int sig_atomic_t;
 
 
 #include <net/socket.h>
-//#include <netinet/ip.h>
 #include <arpa/inet.h>
 
 
-#if 0
-inline struct hostent *gethostbyaddr(const void *addr,
-			      socklen_t len, int type) {
-	printf(">>> gethostbyaddr(%p,%i,%x)\n",addr,len,type);
-	return NULL;
-}
-#endif
+
 
 static inline int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	return -1;
 }
-
+#if 0
 inline int gethostname(char *name, size_t len) {
 	char localhost[] = "localhost";
 	DPRINT();
 	strncpy(name, localhost, len);
 	return 0;
 }
-
+#endif
 
 typedef __u32 u_int32_t;
 typedef __u16 u_int16_t;
@@ -576,16 +565,13 @@ static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
 }
-
+#if 0
 static inline struct passwd *getpwnam(const char *name) { return NULL; }
-
-//uid_t getuid(void);
+#endif
 
 // this is for FILESYSTEMWATCHER
 #define pathconf(path,name) \
 	printf(">>> pathconf(%s,%s)\n",#path,#name),32
-
-//static inline struct passwd *getpwnam(const char *name) { return NULL; }
 
 #endif // __QEMBOX__
 

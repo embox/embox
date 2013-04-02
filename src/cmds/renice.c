@@ -15,9 +15,6 @@
 
 EMBOX_CMD(exec);
 
-/* TODO remove this */
-static inline struct passwd *getpwnam(const char *name) { return NULL; }
-
 static int exec(int argc, char **argv) {
 	int with_incr, incr, ind, prior, with_n, which, ret;
 	id_t who;
