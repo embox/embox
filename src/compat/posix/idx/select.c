@@ -161,7 +161,9 @@ static void set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 		if ((readfds && FD_ISSET(fd, readfds)) ||
 				(writefds && FD_ISSET(fd, writefds))) {
 			desc = task_self_idx_get(fd);
-			idx_io_set_event(task_idx_indata(desc), event);
+			if (desc) {
+				idx_io_set_event(task_idx_indata(desc), event);
+			}
 		}
 	}
 }
