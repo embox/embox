@@ -481,7 +481,7 @@ static int tmpfs_delete(struct node *node) {
 static int tmpfs_truncate(struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
-	if (length > MAX_FILE_SIZE) {
+	if (length > MAX_FILE_SIZE * PAGE_SIZE()) {
 		return -EFBIG;
 	}
 

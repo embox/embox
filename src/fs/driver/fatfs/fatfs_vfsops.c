@@ -28,14 +28,41 @@
  */
 
 #include <ctype.h>
-#include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
+
+#include <util/array.h>
+#include <mem/misc/pool.h>
+#include <mem/phymem.h>
+
+#include <fs/fs_driver.h>
+#include <fs/node.h>
+#include <fs/vfs.h>
+#include <fs/path.h>
+#include <fs/file_system.h>
+#include <fs/file_desc.h>
+#include <limits.h>
+
+#include <embox/block_dev.h>
+
+#include <framework/mod/options.h>
 
 #include "fatfs.h"
 
+/* fat filesystem description pool */
+POOL_DEF(fat_fs_pool, struct fat_fs_info,
+	OPTION_GET(NUMBER, fat_descriptor_quantity));
+
+/* fat file description pool */
+POOL_DEF(fat_file_pool, struct fat_file_info,
+	OPTION_GET(NUMBER, inode_quantity));
+
+#define LABEL "EMBOX_DISK\0"
+#define SYSTEM "FAT12"
 
 /*
  *  Time bits: 15-11 hours (0-23), 10-5 min, 4-0 sec /2
@@ -64,35 +91,9 @@ static int fat_inactive(vnode_t);
 static int fat_truncate(vnode_t, off_t);
 
 /*
- * vnode operations
- */
-struct vnops fat_vnops = {
-	fat_open,		/* open */
-	fat_close,		/* close */
-	fat_read,		/* read */
-	fat_write,		/* write */
-	fat_seek,		/* seek */
-	fat_ioctl,		/* ioctl */
-	fat_fsync,		/* fsync */
-	fat_readdir,		/* readdir */
-	fat_lookup,		/* lookup */
-	fat_create,		/* create */
-	fat_remove,		/* remove */
-	fat_rename,		/* remame */
-	fat_mkdir,		/* mkdir */
-	fat_rmdir,		/* rmdir */
-	fat_getattr,		/* getattr */
-	fat_setattr,		/* setattr */
-	fat_inactive,		/* inactive */
-	fat_truncate,		/* truncate */
-};
-
-/*
  * Read one cluster to buffer.
  */
-static int
-fat_read_cluster(struct fatfsmount *fmp, u_long cluster)
-{
+static int fat_read_cluster(struct fatfsmount *fmp, u_long cluster) {
 	u_long sec;
 	size_t size;
 
@@ -104,9 +105,7 @@ fat_read_cluster(struct fatfsmount *fmp, u_long cluster)
 /*
  * Write one cluster from buffer.
  */
-static int
-fat_write_cluster(struct fatfsmount *fmp, u_long cluster)
-{
+static int fat_write_cluster(struct fatfsmount *fmp, u_long cluster) {
 	u_long sec;
 	size_t size;
 
@@ -119,26 +118,25 @@ fat_write_cluster(struct fatfsmount *fmp, u_long cluster)
  * Lookup vnode for the specified file/directory.
  * The vnode data will be set properly.
  */
-static int
-fat_lookup(vnode_t dvp, char *name, vnode_t vp)
-{
+static int fat_lookup(vnode_t dvp, char *name, vnode_t vp) {
 	struct fatfsmount *fmp;
 	struct fat_dirent *de;
 	struct fatfs_node *np;
 	int error;
 
-	if (*name == '\0')
+	if (*name == '\0') {
 		return ENOENT;
+	}
 
 	fmp = vp->v_mount->m_data;
 	mutex_lock(&fmp->lock);
 
-	//DPRINTF(("fatfs_lookup: name=%s\n", name));
+	DPRINTF(("fatfs_lookup: name=%s\n", name));
 
 	np = vp->v_data;
 	error = fatfs_lookup_node(dvp, name, np);
 	if (error) {
-		//DPRINTF(("fatfs_lookup: failed!! name=%s\n", name));
+		DPRINTF(("fatfs_lookup: failed!! name=%s\n", name));
 		mutex_unlock(&fmp->lock);
 		return error;
 	}
@@ -149,43 +147,47 @@ fat_lookup(vnode_t dvp, char *name, vnode_t vp)
 	vp->v_size = de->size;
 	vp->v_blkno = de->cluster;
 
-	//DPRINTF(("fatfs_lookup: cl=%d\n", de->cluster));
+	DPRINTF(("fatfs_lookup: cl=%d\n", de->cluster));
 	mutex_unlock(&fmp->lock);
 	return 0;
 }
 
-static int
-fat_read(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
-{
+static int fat_read(vnode_t vp, file_t fp, void *buf,
+						size_t size, size_t *result) {
 	struct fatfsmount *fmp;
 	int nr_read, nr_copy, buf_pos, error;
 	u_long cl, file_pos;
 
-	//DPRINTF(("fatfs_read: vp=%x\n", vp));
+	DPRINTF(("fatfs_read: vp=%x\n", vp));
 
 	*result = 0;
 	fmp = vp->v_mount->m_data;
 
-	if (vp->v_type == VDIR)
+	if (vp->v_type == VDIR) {
 		return EISDIR;
-	if (vp->v_type != VREG)
+	}
+	if (vp->v_type != VREG) {
 		return EINVAL;
+	}
 
 	/* Check if current file position is already end of file. */
 	file_pos = fp->f_offset;
-	if (file_pos >= vp->v_size)
+	if (file_pos >= vp->v_size) {
 		return 0;
+	}
 
 	mutex_lock(&fmp->lock);
 
 	/* Get the actual read size. */
-	if (vp->v_size - file_pos < size)
+	if (vp->v_size - file_pos < size) {
 		size = vp->v_size - file_pos;
+	}
 
 	/* Seek to the cluster for the file offset */
 	error = fat_seek_cluster(fmp, vp->v_blkno, file_pos, &cl);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	/* Read and copy data */
 	nr_read = 0;
@@ -197,21 +199,25 @@ fat_read(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 		}
 
 		nr_copy = fmp->cluster_size;
-		if (buf_pos > 0)
+		if (buf_pos > 0) {
 			nr_copy -= buf_pos;
-		if (buf_pos + size < fmp->cluster_size)
+		}
+		if (buf_pos + size < fmp->cluster_size) {
 			nr_copy = size;
+		}
 		memcpy(buf, fmp->io_buf + buf_pos, nr_copy);
 
 		file_pos += nr_copy;
 		nr_read += nr_copy;
 		size -= nr_copy;
-		if (size <= 0)
+		if (size <= 0) {
 			break;
+		}
 
 		error = fat_next_cluster(fmp, cl, &cl);
-		if (error)
+		if (error) {
 			goto out;
+		}
 
 		buf = (void *)((u_long)buf + nr_copy);
 		buf_pos = 0;
@@ -225,9 +231,8 @@ fat_read(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 	return error;
 }
 
-static int
-fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
-{
+static int fat_write(vnode_t vp, file_t fp, void *buf,
+						size_t size, size_t *result) {
 	struct fatfsmount *fmp;
 	struct fatfs_node *np;
 	struct fat_dirent *de;
@@ -235,15 +240,17 @@ fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 	u_long file_pos, end_pos;
 	u_long cl;
 
-	//DPRINTF(("fatfs_write: vp=%x\n", vp));
+	DPRINTF(("fatfs_write: vp=%x\n", vp));
 
 	*result = 0;
 	fmp = vp->v_mount->m_data;
 
-	if (vp->v_type == VDIR)
+	if (vp->v_type == VDIR) {
 		return EISDIR;
-	if (vp->v_type != VREG)
+	}
+	if (vp->v_type != VREG) {
 		return EINVAL;
+	}
 
 	mutex_lock(&fmp->lock);
 
@@ -264,15 +271,17 @@ fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 		de = &np->dirent;
 		de->size = end_pos;
 		error = fatfs_put_node(fmp, np);
-		if (error)
+		if (error) {
 			goto out;
+		}
 		vp->v_size = end_pos;
 	}
 
 	/* Seek to the cluster for the file offset */
 	error = fat_seek_cluster(fmp, vp->v_blkno, file_pos, &cl);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	buf_pos = file_pos % fmp->cluster_size;
 	cl_size = size / fmp->cluster_size + 1;
@@ -287,10 +296,12 @@ fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 			}
 		}
 		nr_copy = fmp->cluster_size;
-		if (buf_pos > 0)
+		if (buf_pos > 0) {
 			nr_copy -= buf_pos;
-		if (buf_pos + size < fmp->cluster_size)
+		}
+		if (buf_pos + size < fmp->cluster_size) {
 			nr_copy = size;
+		}
 		memcpy(fmp->io_buf + buf_pos, buf, nr_copy);
 
 		if (fat_write_cluster(fmp, cl)) {
@@ -300,12 +311,14 @@ fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 		file_pos += nr_copy;
 		nr_write += nr_copy;
 		size -= nr_copy;
-		if (size <= 0)
+		if (size <= 0) {
 			break;
+		}
 
 		error = fat_next_cluster(fmp, cl, &cl);
-		if (error)
+		if (error) {
 			goto out;
+		}
 
 		buf = (void *)((u_long)buf + nr_copy);
 		buf_pos = 0;
@@ -328,9 +341,7 @@ fat_write(vnode_t vp, file_t fp, void *buf, size_t size, size_t *result)
 	return error;
 }
 
-static int
-fat_readdir(vnode_t vp, file_t fp, struct dirent *dir)
-{
+static int fat_readdir(vnode_t vp, file_t fp, struct dirent *dir) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np;
 	struct fat_dirent *de;
@@ -340,17 +351,19 @@ fat_readdir(vnode_t vp, file_t fp, struct dirent *dir)
 	mutex_lock(&fmp->lock);
 
 	error = fatfs_get_node(vp, fp->f_offset, &np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 	de = &np.dirent;
 	fat_restore_name((char *)&de->name, dir->d_name);
 
-	if (de->attr & FA_SUBDIR)
+	if (de->attr & FA_SUBDIR) {
 		dir->d_type = DT_DIR;
-	else if (de->attr & FA_DEVICE)
+	} else if (de->attr & FA_DEVICE) {
 		dir->d_type = DT_BLK;
-	else
+	} else {
 		dir->d_type = DT_REG;
+	}
 
 	dir->d_fileno = fp->f_offset;
 	dir->d_namlen = strlen(dir->d_name);
@@ -365,30 +378,31 @@ fat_readdir(vnode_t vp, file_t fp, struct dirent *dir)
 /*
  * Create empty file.
  */
-static int
-fat_create(vnode_t dvp, char *name, mode_t mode)
-{
+static int fat_create(vnode_t dvp, char *name, mode_t mode) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np;
 	struct fat_dirent *de;
 	u_long cl;
 	int error;
 
-	//DPRINTF(("fatfs_create: %s\n", name));
+	DPRINTF(("fatfs_create: %s\n", name));
 
-	if (!S_ISREG(mode))
+	if (!S_ISREG(mode)) {
 		return EINVAL;
+	}
 
-	if (!fat_valid_name(name))
+	if (!fat_valid_name(name)) {
 		return EINVAL;
+	}
 
 	fmp = dvp->v_mount->m_data;
 	mutex_lock(&fmp->lock);
 
 	/* Allocate free cluster for new file. */
 	error = fat_alloc_cluster(fmp, 0, &cl);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	de = &np.dirent;
 	memset(de, 0, sizeof(struct fat_dirent));
@@ -398,31 +412,32 @@ fat_create(vnode_t dvp, char *name, mode_t mode)
 	de->date = TEMP_DATE;
 	fat_mode_to_attr(mode, &de->attr);
 	error = fatfs_add_node(dvp, &np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 	error = fat_set_cluster(fmp, cl, fmp->fat_eof);
  out:
 	mutex_unlock(&fmp->lock);
 	return error;
 }
 
-static int
-fat_remove(vnode_t dvp, vnode_t vp, char *name)
-{
+static int fat_remove(vnode_t dvp, vnode_t vp, char *name) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np;
 	struct fat_dirent *de;
 	int error;
 
-	if (*name == '\0')
+	if (*name == '\0') {
 		return ENOENT;
+	}
 
 	fmp = dvp->v_mount->m_data;
 	mutex_lock(&fmp->lock);
 
 	error = fatfs_lookup_node(dvp, name, &np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 	de = &np.dirent;
 	if (IS_DIR(de)) {
 		error = EISDIR;
@@ -435,8 +450,9 @@ fat_remove(vnode_t dvp, vnode_t vp, char *name)
 
 	/* Remove clusters */
 	error = fat_free_clusters(fmp, de->cluster);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	/* remove directory */
 	de->name[0] = 0xe5;
@@ -446,10 +462,8 @@ fat_remove(vnode_t dvp, vnode_t vp, char *name)
 	return error;
 }
 
-static int
-fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
-	     vnode_t dvp2, vnode_t vp2, char *name2)
-{
+static int fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
+	     vnode_t dvp2, vnode_t vp2, char *name2) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np1;
 	struct fat_dirent *de1, *de2;
@@ -459,15 +473,17 @@ fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
 	mutex_lock(&fmp->lock);
 
 	error = fatfs_lookup_node(dvp1, name1, &np1);
-	if (error)
+	if (error) {
 		goto out;
+	}
 	de1 = &np1.dirent;
 
 	if (IS_FILE(de1)) {
 		/* Remove destination file, first */
 		error = fat_remove(dvp2, vp1, name2);
-		if (error == EIO)
+		if (error == EIO) {
 			goto out;
+		}
 
 		/* Change file name of directory entry */
 		fat_convert_name(name2, (char *)de1->name);
@@ -476,25 +492,29 @@ fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
 		if (dvp1 == dvp2) {
 			/* Change the name of existing file */
 			error = fatfs_put_node(fmp, &np1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 		} else {
 			/* Create new directory entry */
 			error = fatfs_add_node(dvp2, &np1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 
 			/* Remove souce file */
 			error = fat_remove(dvp1, vp2, name1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 		}
 	} else {
 
 		/* remove destination directory */
 		error = fat_rmdir(dvp2, NULL, name2);
-		if (error == EIO)
+		if (error == EIO) {
 			goto out;
+		}
 
 		/* Change file name of directory entry */
 		fat_convert_name(name2, (char *)de1->name);
@@ -503,13 +523,15 @@ fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
 		if (dvp1 == dvp2) {
 			/* Change the name of existing directory */
 			error = fatfs_put_node(fmp, &np1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 		} else {
 			/* Create new directory entry */
 			error = fatfs_add_node(dvp2, &np1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 
 			/* Update "." and ".." for renamed directory */
 			if (fat_read_cluster(fmp, de1->cluster)) {
@@ -533,8 +555,9 @@ fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
 
 			/* Remove souce directory */
 			error = fat_rmdir(dvp1, NULL, name1);
-			if (error)
+			if (error) {
 				goto out;
+			}
 		}
 	}
  out:
@@ -542,28 +565,29 @@ fat_rename(vnode_t dvp1, vnode_t vp1, char *name1,
 	return error;
 }
 
-static int
-fat_mkdir(vnode_t dvp, char *name, mode_t mode)
-{
+static int fat_mkdir(vnode_t dvp, char *name, mode_t mode) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np;
 	struct fat_dirent *de;
 	u_long cl;
 	int error;
 
-	if (!S_ISDIR(mode))
+	if (!S_ISDIR(mode)) {
 		return EINVAL;
+	}
 
-	if (!fat_valid_name(name))
+	if (!fat_valid_name(name)) {
 		return ENOTDIR;
+	}
 
 	fmp = dvp->v_mount->m_data;
 	mutex_lock(&fmp->lock);
 
 	/* Allocate free cluster for directory data */
 	error = fat_alloc_cluster(fmp, 0, &cl);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	memset(&np, 0, sizeof(struct fatfs_node));
 	de = &np.dirent;
@@ -573,8 +597,9 @@ fat_mkdir(vnode_t dvp, char *name, mode_t mode)
 	de->date = TEMP_DATE;
 	fat_mode_to_attr(mode, &de->attr);
 	error = fatfs_add_node(dvp, &np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	/* Initialize "." and ".." for new directory */
 	memset(fmp->io_buf, 0, fmp->cluster_size);
@@ -606,23 +631,23 @@ fat_mkdir(vnode_t dvp, char *name, mode_t mode)
 /*
  * remove can be done only with empty directory
  */
-static int
-fat_rmdir(vnode_t dvp, vnode_t vp, char *name)
-{
+static int fat_rmdir(vnode_t dvp, vnode_t vp, char *name) {
 	struct fatfsmount *fmp;
 	struct fatfs_node np;
 	struct fat_dirent *de;
 	int error;
 
-	if (*name == '\0')
+	if (*name == '\0') {
 		return ENOENT;
+	}
 
 	fmp = dvp->v_mount->m_data;
 	mutex_lock(&fmp->lock);
 
 	error = fatfs_lookup_node(dvp, name, &np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	de = &np.dirent;
 	if (!IS_DIR(de)) {
@@ -632,8 +657,9 @@ fat_rmdir(vnode_t dvp, vnode_t vp, char *name)
 
 	/* Remove clusters */
 	error = fat_free_clusters(fmp, de->cluster);
-	if (error)
+	if (error) {
 		goto out;
+	}
 
 	/* remove directory */
 	de->name[0] = 0xe5;
@@ -644,32 +670,24 @@ fat_rmdir(vnode_t dvp, vnode_t vp, char *name)
 	return error;
 }
 
-static int
-fat_getattr(vnode_t vp, struct vattr *vap)
-{
+static int fat_getattr(vnode_t vp, struct vattr *vap) {
 	/* XXX */
 	return 0;
 }
 
-static int
-fat_setattr(vnode_t vp, struct vattr *vap)
-{
+static int fat_setattr(vnode_t vp, struct vattr *vap) {
 	/* XXX */
 	return 0;
 }
 
 
-static int
-fat_inactive(vnode_t vp)
-{
+static int fat_inactive(vnode_t vp) {
 
 	free(vp->v_data);
 	return 0;
 }
 
-static int
-fat_truncate(vnode_t vp, off_t length)
-{
+static int fat_truncate(vnode_t vp, off_t length) {
 	struct fatfsmount *fmp;
 	struct fatfs_node *np;
 	struct fat_dirent *de;
@@ -684,8 +702,9 @@ fat_truncate(vnode_t vp, off_t length)
 	if (length == 0) {
 		/* Remove clusters */
 		error = fat_free_clusters(fmp, de->cluster);
-		if (error)
+		if (error) {
 			goto out;
+		}
 	} else if (length > vp->v_size) {
 		error = fat_expand_file(fmp, vp->v_blkno, length);
 		if (error) {
@@ -697,17 +716,17 @@ fat_truncate(vnode_t vp, off_t length)
 	/* Update directory entry */
 	de->size = length;
 	error = fatfs_put_node(fmp, np);
-	if (error)
+	if (error) {
 		goto out;
+	}
 	vp->v_size = length;
  out:
 	mutex_unlock(&fmp->lock);
 	return error;
 }
 
-int
-fat_init(void)
-{
+int fat_init(void) {
+
 	return 0;
 }
 
@@ -720,18 +739,6 @@ static int fat_vget	(mount_t mp, vnode_t vp);
 #define fat_statfs	((vfsop_statfs_t)vfs_nullop)
 
 /*
- * File system operations
- */
-struct vfsops fat_vfsops = {
-	fat_mount,		/* mount */
-	fat_unmount,		/* unmount */
-	fat_sync,		/* sync */
-	fat_vget,		/* vget */
-	fat_statfs,		/* statfs */
-	&fat_vnops,		/* vnops */
-};
-
-/*
  * Read BIOS parameter block.
  * Return 0 on sucess.
  */
@@ -741,8 +748,9 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	int error;
 
 	bpb = malloc(SEC_SIZE);
-	if (bpb == NULL)
+	if (bpb == NULL) {
 		return ENOMEM;
+	}
 
 	/* Read boot sector (block:0) */
 	size = SEC_SIZE;
@@ -752,7 +760,7 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 		return error;
 	}
 	if (bpb->bytes_per_sector != SEC_SIZE) {
-		//DPRINTF(("fatfs: invalid sector size\n"));
+		DPRINTF(("fatfs: invalid sector size\n"));
 		free(bpb);
 		return EINVAL;
 	}
@@ -779,20 +787,20 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 		fmp->fat_eof = CL_EOF & FAT16_MASK;
 	} else {
 		/* FAT32 is not supported now! */
-		//DPRINTF(("fatfs: invalid FAT type\n"));
+		DPRINTF(("fatfs: invalid FAT type\n"));
 		free(bpb);
 		return EINVAL;
 	}
 	free(bpb);
 
-	//DPRINTF(("----- FAT info -----\n"));
-	//DPRINTF(("drive:%x\n", (int)bpb->physical_drive));
-	//DPRINTF(("total_sectors:%d\n", (int)bpb->total_sectors));
-	//DPRINTF(("heads       :%d\n", (int)bpb->heads));
-	//DPRINTF(("serial      :%x\n", (int)bpb->serial_no));
-	//DPRINTF(("cluster size:%u sectors\n", (int)fmp->sec_per_cl));
-	//DPRINTF(("fat_type    :FAT%u\n", (int)fmp->fat_type));
-	//DPRINTF(("fat_eof     :0x%x\n\n", (int)fmp->fat_eof));
+	DPRINTF(("----- FAT info -----\n"));
+	DPRINTF(("drive:%x\n", (int)bpb->physical_drive));
+	DPRINTF(("total_sectors:%d\n", (int)bpb->total_sectors));
+	DPRINTF(("heads       :%d\n", (int)bpb->heads));
+	DPRINTF(("serial      :%x\n", (int)bpb->serial_no));
+	DPRINTF(("cluster size:%u sectors\n", (int)fmp->sec_per_cl));
+	DPRINTF(("fat_type    :FAT%u\n", (int)fmp->fat_type));
+	DPRINTF(("fat_eof     :0x%x\n\n", (int)fmp->fat_eof));
 	return 0;
 }
 
@@ -804,28 +812,33 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	vnode_t vp;
 	int error = 0;
 
-	//DPRINTF(("fatfs_mount device=%s\n", dev));
+	DPRINTF(("fatfs_mount device=%s\n", dev));
 
 	fmp = malloc(sizeof(struct fatfsmount));
-	if (fmp == NULL)
+	if (fmp == NULL) {
 		return ENOMEM;
+	}
 
 	fmp->dev = mp->m_dev;
-	if (fat_read_bpb(fmp) != 0)
+	if (fat_read_bpb(fmp) != 0) {
 		goto err1;
+	}
 
 	error = ENOMEM;
 	fmp->io_buf = malloc(fmp->sec_per_cl * SEC_SIZE);
-	if (fmp->io_buf == NULL)
+	if (fmp->io_buf == NULL) {
 		goto err1;
+	}
 
 	fmp->fat_buf = malloc(SEC_SIZE * 2);
-	if (fmp->fat_buf == NULL)
+	if (fmp->fat_buf == NULL) {
 		goto err2;
+	}
 
 	fmp->dir_buf = malloc(SEC_SIZE);
-	if (fmp->dir_buf == NULL)
+	if (fmp->dir_buf == NULL) {
 		goto err3;
+	}
 
 	mutex_init(&fmp->lock);
 	mp->m_data = fmp;
@@ -863,10 +876,24 @@ static int fat_vget(mount_t mp, vnode_t vp) {
 	struct fatfs_node *np;
 
 	np = malloc(sizeof(struct fatfs_node));
-	if (np == NULL)
+	if (np == NULL) {
 		return ENOMEM;
+	}
 	vp->v_data = np;
 	return 0;
+}
+
+static fat_file_info_t *fat_fi_alloc(struct nas *nas, void *fs) {
+	struct fat_file_info *fi;
+
+	fi = pool_alloc(&fat_file_pool);
+	if (fi) {
+		memset(fi, 0, sizeof(*fi));
+		nas->fi->privdata = fi;
+		nas->fs = fs;
+	}
+
+	return fi;
 }
 
 /* File operations */
@@ -974,7 +1001,7 @@ static struct fsop_desc fatfs_fsop = {
 };
 
 static struct fs_driver fatfs_driver = {
-	.name = "vfat",
+	.name = "reffat",
 	.file_op = &fatfs_fop,
 	.fsop = &fatfs_fsop,
 };

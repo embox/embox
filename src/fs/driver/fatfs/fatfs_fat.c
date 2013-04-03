@@ -44,32 +44,36 @@ static int read_fat_entry(struct fatfsmount *fmp, u_long cl) {
 	struct buf *bp;
 
 	/* Get the sector number in FAT entry. */
-	if (FAT16(fmp))
+	if (FAT16(fmp)) {
 		sec = (cl * 2) / SEC_SIZE;
-	else {
+	} else {
 		sec = (cl * 3 / 2) / SEC_SIZE;
 		/*
 		 * Check if the entry data is placed at the
 		 * end of sector. If so, we have to read one
 		 * more sector to get complete FAT12 entry.
 		 */
-		if ((cl * 3 / 2) % SEC_SIZE == SEC_SIZE - 1)
+		if ((cl * 3 / 2) % SEC_SIZE == SEC_SIZE - 1) {
 			border = 1;
+		}
 	}
 	sec += fmp->fat_start;
 
 	/* Read first sector. */
-	if ((error = bread(fmp->dev, sec, &bp)) != 0)
+	if ((error = bread(fmp->dev, sec, &bp)) != 0) {
 		return error;
+	}
 	memcpy(buf, bp->b_data, SEC_SIZE);
 	brelse(bp);
 
-	if (!FAT12(fmp) || border == 0)
+	if (!FAT12(fmp) || border == 0) {
 		return 0;
+	}
 
 	/* Read second sector for the border entry of FAT12. */
-	if ((error = bread(fmp->dev, sec + 1, &bp)) != 0)
+	if ((error = bread(fmp->dev, sec + 1, &bp)) != 0) {
 		return error;
+	}
 	memcpy(buf + SEC_SIZE, bp->b_data, SEC_SIZE);
 	brelse(bp);
 	return 0;
@@ -144,7 +148,7 @@ int fat_next_cluster(struct fatfsmount *fmp, u_long cl, u_long *next) {
 			val &= 0xfff;
 	}
 	*next = (u_long)val;
-	//DPRINTF(("fat_next_cluster: %d => %d\n", cl, *next));
+	DPRINTF(("fat_next_cluster: %d => %d\n", cl, *next));
 	return 0;
 }
 
@@ -204,7 +208,7 @@ int fat_alloc_cluster(struct fatfsmount *fmp, u_long scan_start, u_long *free) {
 	if (scan_start == 0)
 		scan_start = fmp->free_scan;
 
-	//DPRINTF(("fat_alloc_cluster: start=%d\n", scan_start));
+	DPRINTF(("fat_alloc_cluster: start=%d\n", scan_start));
 
 	cl = scan_start + 1;
 	while (cl != scan_start) {
@@ -212,7 +216,7 @@ int fat_alloc_cluster(struct fatfsmount *fmp, u_long scan_start, u_long *free) {
 		if (error)
 			return error;
 		if (next == CL_FREE) {	/* free ? */
-			//DPRINTF(("fat_alloc_cluster: free cluster=%d\n", cl));
+			DPRINTF(("fat_alloc_cluster: free cluster=%d\n", cl));
 			*free = cl;
 			return 0;
 		}
@@ -313,7 +317,7 @@ int fat_expand_file(struct fatfsmount *fmp, u_long cl, int size) {
 	}
 	if (alloc)
 		fat_set_cluster(fmp, cl, fmp->fat_eof);	/* add eof */
-	//DPRINTF(("fat_expand_file: new size=%d\n", size));
+	DPRINTF(("fat_expand_file: new size=%d\n", size));
 	return 0;
 }
 
