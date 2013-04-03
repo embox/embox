@@ -251,17 +251,21 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    int i, shift, bpp;
+    int i, shift;
+
+    int x = widget->pos().x();
+    int y = widget->pos().y();
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
     }
 
-    bpp = vc->emboxVC.fb->var.bits_per_pixel / 8;
+    int bpp = vc->emboxVC.fb->var.bits_per_pixel / 8;
+    char *begin = vc->emboxVC.fb->screen_base + (y * vc->emboxVC.fb->var.xres + x) * bpp;
 
     /* Draw image */
     for (i = 0, shift = 0; i < mImage.height(); i++ , shift += vc->emboxVC.fb->var.xres * bpp) {
-    	memcpy(vc->emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
+    	memcpy(begin + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
     }
 
     /* Reset cursor on new image and redraw */

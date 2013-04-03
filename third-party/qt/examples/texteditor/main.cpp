@@ -8,15 +8,15 @@ QGraphicsView *emboxView;
 TextEditor *textEditor;
 QGraphicsScene *emscene;
 
-class Button : public QGraphicsWidget
+class Button : public QWidget
 {
     Q_OBJECT
 public:
-    Button(const QPixmap &pixmap, QGraphicsItem *parent = 0)
-        : QGraphicsWidget(parent), _pix(pixmap)
+    Button(const QPixmap &pixmap)
+        : QWidget(), _pix(pixmap)
     {
-	setAcceptHoverEvents(true);
-	setCacheMode(DeviceCoordinateCache);
+	//setAcceptHoverEvents(true);
+	//setCacheMode(DeviceCoordinateCache);
     }
 
     QRectF boundingRect() const
@@ -38,6 +38,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
        // update();
+        //emscene->addWidget(textEditor, textEditor->windowType());
         textEditor->show();
     }
 
@@ -49,9 +50,12 @@ private:
     QPixmap _pix;
 };
 
+QMdiArea *emarea;
+QMainWindow *win;
+
 int main(int argv, char **args)
 {
-    Q_INIT_RESOURCE(texteditor);
+    //Q_INIT_RESOURCE(texteditor);
 
     QApplication app(argv, args);
 
@@ -63,20 +67,38 @@ int main(int argv, char **args)
 
     QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    emboxView = new QGraphicsView(emscene);
-    emboxView->setBackgroundBrush(bgPix);
-    emboxView->resize(1024, 788);
+    //emboxView = new QGraphicsView(emscene);
+    //emboxView->setBackgroundBrush(bgPix);
+    //emboxView->resize(1024, 768);
 
-    Button *texteditorButton = new Button(QPixmap(":/icon.png"));
-    texteditorButton->resize(128,128);
+    //Button *texteditorButton = new Button(QPixmap(":/icon.png"));
+    //texteditorButton->resize(128,128);
 
-    emscene->addItem(texteditorButton);
-    texteditorButton->setPos(64, 64);
+    //emscene->addItem(texteditorButton);
+    //texteditorButton->setPos(64, 64);
 
-    emboxView->show();
+    //emboxView->show();
     textEditor = new TextEditor();
-    emscene->addWidget(textEditor, textEditor->windowType())->setZValue(50);
-    textEditor->hide();
+
+    //win = new QMainWindow();
+
+    //QWidget *w = new QWidget(win);
+    //QPushButton *p = new QPushButton("New Sub-window", win);
+    //area = new QMdiArea(win);
+
+    //QVBoxLayout *l = new QVBoxLayout(w);
+    //l->addWidget(p);
+    //l->addWidget(area);
+    //w->setLayout(l);
+    //win->setCentralWidget(w);
+
+
+    emarea = new QMdiArea();
+    emarea->setBackground(bgPix);
+    emarea->resize(1024, 768);
+    //area->addSubWindow(emboxView, emboxView->windowType());
+    emarea->addSubWindow(textEditor, textEditor->windowType());
+    emarea->show();
 
     return app.exec();
 }
