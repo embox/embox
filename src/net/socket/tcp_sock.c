@@ -126,6 +126,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
 				if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
 					ret = -ETIMEDOUT;
+					break;
 				}
 			}
 			if (ret == 0) {

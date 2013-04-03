@@ -110,7 +110,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, char *msg,
 		in_addr_t ip, uint16_t port) {
 	struct timeval now;
-	ktime_get_timeval(&now);
+	tcp_get_now(&now);
 	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
 			// info
 			now.tv_sec, now.tv_usec, inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
