@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <time.h>
+#include <sys/time.h>
 #include <kernel/time/time.h>
 
 /*Note: settimeofday is not posix */
@@ -20,7 +21,7 @@ int gettimeofday(struct timeval *t, struct timezone *tz) {
 
 	getnsofday(&ts, tz);
 	t->tv_sec = ts.tv_sec;
-	t->tv_usec = ts.tv_nsec / 1000;
+	t->tv_usec = ts.tv_nsec / NSEC_PER_USEC;
 
 	return 0;
 }

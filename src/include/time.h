@@ -7,11 +7,10 @@
  * @author Ilia Vaprol
  */
 
-#ifndef POSIX_TIME_H_
-#define POSIX_TIME_H_
+#ifndef TIME_H_
+#define TIME_H_
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <stddef.h>    /* NULL definition */
 #include <sys/cdefs.h>
 
@@ -44,11 +43,6 @@ struct timespec {
 struct itimerspec {
 	struct timespec it_interval;  /* Timer period. */
 	struct timespec it_value;     /* Timer expiration. */
-};
-
-struct timezone {
-    int tz_minuteswest;     /* minutes west of Greenwich */
-    int tz_dsttime;         /* type of DST correction */
 };
 
 /**
@@ -86,8 +80,6 @@ extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
-extern int gettimeofday(struct timeval *ts, struct timezone *tz);
-
 /* seconds from beginning of start system */
 extern time_t time(time_t *t);
 
@@ -98,4 +90,4 @@ extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
 __END_DECLS
 
-#endif /* POSIX_TIME_H_ */
+#endif /* TIME_H_ */
