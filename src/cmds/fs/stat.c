@@ -67,10 +67,11 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	if (0 <= stat(argv[argc - 1], &filestat)) {
-		print_statistic(&filestat);
+	if (-1 == stat(argv[argc - 1], &filestat)) {
 		return -errno;
 	}
+
+	print_statistic(&filestat);
 
 	return 0;
 }
