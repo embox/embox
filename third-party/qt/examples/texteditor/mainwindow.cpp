@@ -33,10 +33,15 @@ TextEditor::TextEditor()
     resize(640, 480);
 }
 
+extern QGraphicsScene *emscene;
+
 void TextEditor::create()
 {
     createDialog = new CreateFileDialog(textEdit, &fileName, this);
-    createDialog->show();
+	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(createDialog, createDialog->windowType());
+	proxyWidget->setZValue(100);
+	proxyWidget->show();
+    //createDialog->show();
 }
 
 void TextEditor::quit() {
@@ -59,20 +64,23 @@ QWizardPage *createIntroPage()
 }
 
 void TextEditor::help() {
-	extern QGraphicsScene *emscene;
 	helpWindow = new QWizard();
 	helpWindow->addPage(createIntroPage());
 	helpWindow->setWindowTitle("Справка");
 	helpWindow->resize(600, 300);
-	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(helpWindow, Qt::Widget);
+	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(helpWindow, helpWindow->windowType());
 	proxyWidget->setZValue(100);
 	proxyWidget->show();
+	//helpWindow->show();
 }
 
 void TextEditor::open()
 {
     openDialog = new OpenFileDialog(textEdit, &fileName, this);
-    openDialog->show();
+	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(openDialog, openDialog->windowType());
+	proxyWidget->setZValue(100);
+	proxyWidget->show();
+    //openDialog->show();
 }
 
 void TextEditor::save()
@@ -91,7 +99,10 @@ void TextEditor::save()
     }
     else{
     saveFile = new SaveFileDialog(textEdit, &fileName, this);
-    saveFile->show();
+	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(saveFile, saveFile->windowType());
+	proxyWidget->setZValue(100);
+	proxyWidget->show();
+    //saveFile->show();
     }
 }
 

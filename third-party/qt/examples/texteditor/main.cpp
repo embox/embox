@@ -38,7 +38,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
        // update();
-    	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(textEditor, Qt::Widget);
+    	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(textEditor, textEditor->windowType());
     	proxyWidget->setZValue(50);
         textEditor->show();
     }
