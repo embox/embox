@@ -50,6 +50,10 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	//surf = __emboxVC(vc);
 	//surf->flush(NULL, region, point);
 	flushAll();
+
+	foreach (QWidget *widget, QApplication::allWidgets()) {
+		widget->update();
+	}
 }
 
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
