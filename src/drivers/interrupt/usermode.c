@@ -6,6 +6,7 @@
  * @date    07.03.2013
  */
 
+#include <errno.h>
 #include <stddef.h>
 #include <assert.h>
 #include <kernel/host.h>
@@ -35,18 +36,39 @@ void irqctrl_force(unsigned int interrupt_nr) {
 			EMVISOR_IRQ + interrupt_nr, NULL, 0);
 }
 
-void irq_entry(int irq) {
+static int irq_queue(void) {
+	struct emvisor_msghdr msg;
+	int ret;
+
+	if (0 >= (ret = emvisor_recvmsg(UV_PRDDOWNSTRM, &msg))) {
+		return ret;
+	}
+
+	if (msg.type <= EMVISOR_IRQ) {
+		return -ENOENT;
+	}
+
+	ipl_enable();
+	{
+
+		irq_dispatch(msg.type - EMVISOR_IRQ);
+
+	}
+	ipl_disable();
+
+	return ret;
+}
+
+void irq_entry(void) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		ipl_enable();
 
-		/*prom_printf("received %d\n", irq);*/
+		while (0 < irq_queue());
 
-		irq_dispatch(irq);
+		emvisor_send(UV_PWRUPSTRM, EMVISOR_EOF_IRQ, NULL, 0);
 
-		ipl_disable();
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();

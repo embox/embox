@@ -11,7 +11,7 @@
 
 typedef int (*irqhnd_t)(int num);
 
-extern void irq_entry(int num);
+extern void irq_entry(void);
 
 #endif /* USERMODE86_KERNEL_IRQ_H_ */
 
