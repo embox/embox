@@ -39,6 +39,8 @@ struct task_signal_table {
 	struct dlist_head rtsig_data[TASK_RTSIG_CNT];
 };
 
+extern void task_signal_hnd(void);
+
 #define SIGNAL_HANDLE_ENTRY(func) \
 		extern global_sig_hnd_t __signal_handlers_array[]; \
 		ARRAY_SPREAD_ADD(__signal_handlers_array, func)
