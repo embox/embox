@@ -38,8 +38,6 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
        // update();
-    	QGraphicsProxyWidget *proxyWidget = emscene->addWidget(textEditor, textEditor->windowType());
-    	proxyWidget->setZValue(50);
         textEditor->show();
     }
 
@@ -53,7 +51,7 @@ private:
 
 int main(int argv, char **args)
 {
-	Q_INIT_RESOURCE(texteditor);
+    Q_INIT_RESOURCE(texteditor);
 
     QApplication app(argv, args);
 
@@ -77,6 +75,8 @@ int main(int argv, char **args)
 
     emboxView->show();
     textEditor = new TextEditor();
+    emscene->addWidget(textEditor, textEditor->windowType())->setZValue(50);
+    textEditor->hide();
 
     return app.exec();
 }
