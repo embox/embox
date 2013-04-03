@@ -23,9 +23,12 @@ EMBOX_UNIT_INIT(kernel_task_init);
 
 #define MAX_RES_SUM_SIZE OPTION_MODULE_GET(embox__kernel__task__api, NUMBER, max_resource_size)
 
-#define KERNEL_TASK_SIZE sizeof(struct task) + MAX_RES_SUM_SIZE
+struct kernel_task {
+	struct task task;
+	char resource[MAX_RES_SUM_SIZE];
+};
 
-static char kernel_task[KERNEL_TASK_SIZE];
+static struct kernel_task kernel_task;
 
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
@@ -41,7 +44,7 @@ size_t task_size(void) {
 }
 
 struct task *task_kernel_task(void) {
-	return (struct task *) kernel_task;
+	return &kernel_task.task;
 }
 
 struct task *task_init(void *task_n_res_space, size_t size) {
@@ -88,7 +91,7 @@ static inline void resource_sum_size_calc(void) {
 static int kernel_task_init(void) {
 	resource_sum_size_calc();
 
-	if (!task_init(task_kernel_task(), KERNEL_TASK_SIZE)) {
+	if (!task_init(task_kernel_task(), sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
 

@@ -197,6 +197,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
+	assert(task != task_kernel_task());
+
 	sched_lock();
 	{
 		/* Deinitialize all resources */
