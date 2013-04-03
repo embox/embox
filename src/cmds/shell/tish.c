@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <termios.h>
 #include <kernel/task.h>
 #include <lib/linenoise_1.h>
 #include <cmd/cmdline.h>
@@ -92,6 +93,10 @@ static int run_cmd(int argc, char *argv[]) {
 static void *cmdtask(void *data) {
 	struct cmdtask_data *m = (struct cmdtask_data *) data;
 	char *argv[(BUF_INP_SIZE + 1) / 2], **pp, *p;
+	pid_t pid;
+
+	pid = getpid();
+	tcsetpgrp(STDIN_FILENO, pid);
 
 	pp = argv;
 	p = m->buf;
@@ -109,23 +114,50 @@ static void *cmdtask(void *data) {
 
 }
 
-static int process_amp(int argc, char *argv[]) {
+static struct cmdtask_data *get_task_data(int argc, char *argv[]) {
 	struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
 	char *p = m->buf;
 
 	if (!m) {
-		return -ENOMEM;
+		return m;
 	}
 
-	m->argc = argc - 1;
-	for (int i = 0; i < argc - 1; i++) {
+	m->argc = argc;
+	for (int i = 0; i < argc; i++) {
 		strcpy(p, argv[i]);
 		p += strlen(p) + 1;
 	}
 
 	*p = '\0';
 
+	return m;
+}
+
+static int process_amp(int argc, char *argv[]) {
+	struct cmdtask_data *m = get_task_data(argc - 1, argv);
+
+	if (!m) {
+		return -ENOMEM;
+	}
+
 	new_task(argv[0], cmdtask, m);
+
+	return 0;
+}
+
+static int process_new_task_cmd(int argc, char *argv[]) {
+	pid_t pid;
+	struct cmdtask_data *m = get_task_data(argc, argv);
+
+	if (!m) {
+		return -ENOMEM;
+	}
+
+	pid = new_task(argv[0], cmdtask, m);
+	if (pid < 0) {
+		return pid;
+	}
+	task_waitpid(pid);
 
 	return 0;
 }
@@ -153,9 +185,7 @@ static int process(int argc, char *argv[]) {
 		return process_amp(argc, argv);
 	}
 
-	run_cmd(argc, argv);
-
-	return 0;
+	return process_new_task_cmd(argc, argv);
 }
 
 int shell_line_input(const char *cmdline) {
