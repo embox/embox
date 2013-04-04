@@ -90,6 +90,24 @@ static int run_cmd(int argc, char *argv[]) {
 }
 
 #if AMP_SUPPORT
+static int process_amp(int argc, char *argv[]) {
+	struct cmdtask_data *m = get_task_data(argc - 1, argv);
+
+	if (!m) {
+		return -ENOMEM;
+	}
+
+	new_task(argv[0], cmdtask, m);
+
+	return 0;
+}
+
+#else
+static int process_amp(int argc, char *argv[]) {
+	return -EINVAL;
+}
+#endif
+
 static void *cmdtask(void *data) {
 	struct cmdtask_data *m = (struct cmdtask_data *) data;
 	char *argv[(BUF_INP_SIZE + 1) / 2], **pp, *p;
@@ -133,18 +151,6 @@ static struct cmdtask_data *get_task_data(int argc, char *argv[]) {
 	return m;
 }
 
-static int process_amp(int argc, char *argv[]) {
-	struct cmdtask_data *m = get_task_data(argc - 1, argv);
-
-	if (!m) {
-		return -ENOMEM;
-	}
-
-	new_task(argv[0], cmdtask, m);
-
-	return 0;
-}
-
 static int process_new_task_cmd(int argc, char *argv[]) {
 	pid_t pid;
 	struct cmdtask_data *m = get_task_data(argc, argv);
@@ -161,12 +167,6 @@ static int process_new_task_cmd(int argc, char *argv[]) {
 
 	return 0;
 }
-#else
-static int process_amp(int argc, char *argv[]) {
-	return -EINVAL;
-}
-#endif
-
 
 static int process(int argc, char *argv[]) {
 	if (argc == 0) {
