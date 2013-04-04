@@ -298,6 +298,9 @@ static void tish_run(void) {
 
 		line = linenoise(prompt);
 		if (line == NULL) {
+			if (errno == EAGAIN) {
+				continue; /* ^C was pressed */
+			}
 			break;
 		}
 
