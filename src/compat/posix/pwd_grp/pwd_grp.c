@@ -197,8 +197,6 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	return 0;
 }
 
-
-
 struct passwd *getpwuid(uid_t uid) {
 	static struct passwd getpwuid_buffer;
 	char buff[0x80];

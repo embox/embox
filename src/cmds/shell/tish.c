@@ -34,6 +34,9 @@
 
 #define PROMPT_BUF_LEN 32
 
+static struct cmdtask_data *get_task_data(int argc, char *argv[]);
+static void *cmdtask(void *data);
+
 struct cmdtask_data {
 	int argc;
 	char buf[BUF_INP_SIZE];
