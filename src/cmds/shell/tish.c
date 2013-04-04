@@ -16,10 +16,13 @@
 #include <ctype.h>
 #include <termios.h>
 #include <kernel/task.h>
-#include <lib/readline.h>
 #include <cmd/cmdline.h>
 #include <embox/unit.h>
 #include <pwd.h>
+
+#include <lib/linenoise_1.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include <framework/cmd/api.h>
 
@@ -62,7 +65,7 @@ static int cmd_compl(char *buf, char *out_buf) {
 }
 #endif
 
-void completion_hnd(const char *buf, struct rl_compl *rlc) {
+void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
 
@@ -71,7 +74,7 @@ void completion_hnd(const char *buf, struct rl_compl *rlc) {
 			continue;
 		}
 		if (strncmp(buf, cmd_name(cmd), buf_len) == 0) {
-			rl_compl_add(rlc, (char*)cmd_name(cmd));
+			linenoiseAddCompletion(lc, (char *)cmd_name(cmd));
 		}
 	}
 }
@@ -177,11 +180,11 @@ static int process(int argc, char *argv[]) {
 	}
 
 	if (!strcmp(argv[0], "exit")) {
-		return -1;
+		return -ENOSYS;
 	}
 
 	if (!strcmp(argv[0], "logout")) {
-		return -1;
+		return -ENOSYS;
 	}
 
 	if (!strcmp(argv[argc - 1], "&")) {
@@ -272,7 +275,6 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 }
 
 static void tish_run(void) {
-	int ret;
 	char *line;
 	char prompt_buf[PROMPT_BUF_LEN];
 	const char *prompt;
@@ -281,14 +283,14 @@ static void tish_run(void) {
 	 * Set the completion callback. This will be called every time the
 	 * user uses the <tab> key.
 	 */
-	rl_compl_set_hnd(completion_hnd);
+	linenoiseSetCompletionCallback(completion_hnd);
 
 #if 0
 	/**
 	 * Load history from file. The history file is just a plain text file
 	 * where entries are separated by newlines.
 	 */
-	rl_hist_load("history.txt"); /* Load the history at startup */
+	read_history("history.txt"); /* Load the history at startup */
 #endif
 
 	/**
@@ -305,29 +307,26 @@ static void tish_run(void) {
 			prompt = PROMPT_FMT;
 		}
 
-		ret = rl_read(prompt, &line);
-		if (ret != 0) {
-			if (ret == -EAGAIN) {
-				continue;
-			}
-			break;
+		line = readline(prompt);
+		if (line == NULL) {
+			continue;
 		}
 
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
-			rl_hist_add(line); /* Add to the history. */
-			if (0 > shell_line_input(line)) {
-				rl_free(line);
+			add_history(line); /* Add to the history. */
+			if (0 != shell_line_input(line)) {
+				free(line);
 				return;
 			}
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
-			rl_hist_set_len(len);
+			linenoiseHistorySetMaxLen(len);
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}
-		rl_free(line);
+		free(line);
 	}
 }
 

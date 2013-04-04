@@ -16,10 +16,12 @@ module tish {
 
 	provides embox.cmd.Shell.commandLine
 
+	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "tish.c"
 
 	depends embox.lib.LibC
 	depends embox.lib.readline_api
+	depends third_party.lib.linenoise /* for completion */
 	depends embox.framework.LibFramework
 	depends embox.cmd.sh.shell
 	depends embox.kernel.task.api
