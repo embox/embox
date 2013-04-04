@@ -4,6 +4,15 @@
 #include <QTextCodec>
 #include "mainwindow.h"
 
+#include <framework/mod/options.h>
+#include <module/embox/arch/x86/boot/multiboot.h>
+
+#define MBOOTMOD embox__arch__x86__boot__multiboot
+
+#define WIDTH  OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
+#define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
+#define BPP    OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
+
 QGraphicsView *emboxView;
 TextEditor *textEditor;
 QGraphicsScene *emscene;
@@ -63,9 +72,9 @@ int main(int argv, char **args)
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
-    emscene = new QGraphicsScene(0, 0, 1024, 768);
+    emscene = new QGraphicsScene(0, 0, WIDTH, HEIGHT);
 
-    QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16);
+    QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
     //emboxView = new QGraphicsView(emscene);
     //emboxView->setBackgroundBrush(bgPix);
@@ -95,7 +104,7 @@ int main(int argv, char **args)
 
     emarea = new QMdiArea();
     emarea->setBackground(bgPix);
-    emarea->resize(1024, 768);
+    emarea->resize(WIDTH, HEIGHT);
     //area->addSubWindow(emboxView, emboxView->windowType());
     emarea->addSubWindow(textEditor, textEditor->windowType());
     emarea->show();
