@@ -5,7 +5,7 @@
  * @date 24 Aug, 2012
  * @author Bulychev Anton
  */
-
+#include <stddef.h>
 #include "stack_iter.h"
 
 #define RETPC_OFFSET 8

@@ -4,7 +4,7 @@
 #define STACK_ALIGNMENT OPTION_GET(NUMBER,alignment)
 
 SECTIONS {
-	.stack BLOCK(STACK_ALIGNMENT) (NOLOAD) : {
+	.stack (NOLOAD) : {
 		. = ALIGN (STACK_ALIGNMENT);
 		ALIGNMENT();
 		. += OPTION_GET(NUMBER,stack_size);
