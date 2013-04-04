@@ -1,21 +1,5 @@
 #include "mainwindow.h"
 
-QWizardPage *createIntroPage()
-{
-    QWizardPage *page = new QWizardPage;
-    page->setTitle("О редакторе");
-
-    QLabel *label = new QLabel("Текстовый редактор ZarjaEditor версии 1.0.");
-    label->setWordWrap(true);
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(label);
-    page->setLayout(layout);
-
-    return page;
-}
-
-
 TextEditor::TextEditor()
 {
     //extern QGraphicsScene *emscene;
@@ -68,24 +52,21 @@ TextEditor::TextEditor()
 }
 
 extern QMdiArea *emarea;
+extern QMdiSubWindow *emEditorSubWindow;
 
 void TextEditor::create()
 {
 	createDialog = new CreateFileDialog(textEdit, &fileName, this);
-	emarea->addSubWindow(createDialog, createDialog->windowType());
     createDialog->show();
 }
 
 void TextEditor::quit() {
-	hide();
+	emarea->setActiveSubWindow(emEditorSubWindow);
+	emarea->closeActiveSubWindow();
 }
 
 void TextEditor::help() {
-    helpWindow = new QWizard();
-    helpWindow->addPage(createIntroPage());
-    helpWindow->setWindowTitle("Справка");
-    helpWindow->resize(600, 300);
-    emarea->addSubWindow(helpWindow, helpWindow->windowType());
+    helpWindow = new EWisard();
 	helpWindow->show();
 }
 
@@ -112,7 +93,6 @@ void TextEditor::save()
     }
     else{
     saveFile = new SaveFileDialog(textEdit, &fileName, this);
-    emarea->addSubWindow(saveFile, saveFile->windowType());
 	saveFile->show();
     }
 }
