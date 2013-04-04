@@ -1,5 +1,16 @@
 package embox.lib
 
+@DefaultImpl(linenoise)
+abstract module readline_api { }
+
+module linenoise extends readline_api {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "readline/linenoise.c"
+
+	depends embox.lib.LibC
+	depends third_party.lib.linenoise
+}
+
 static module LibCurses {
 	source "curses.c"
 

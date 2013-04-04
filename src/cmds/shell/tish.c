@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Tiny Shell
- * @details New shell build around tiny readline impl called linenoise.
+ * @details New shell build around tiny readline impl.
  *	    Supports history and completions and tends to be extremely small.
  *
  * @date 13.09.11
@@ -16,7 +16,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <kernel/task.h>
-#include <lib/linenoise_1.h>
+#include <lib/readline.h>
 #include <cmd/cmdline.h>
 #include <embox/unit.h>
 #include <pwd.h>
@@ -62,7 +62,7 @@ static int cmd_compl(char *buf, char *out_buf) {
 }
 #endif
 
-void completion(const char *buf, struct linenoiseCompletions *lc) {
+void completion_hnd(const char *buf, struct rl_compl *rlc) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
 
@@ -71,7 +71,7 @@ void completion(const char *buf, struct linenoiseCompletions *lc) {
 			continue;
 		}
 		if (strncmp(buf, cmd_name(cmd), buf_len) == 0) {
-			linenoiseAddCompletion(lc, (char*)cmd_name(cmd));
+			rl_compl_add(rlc, (char*)cmd_name(cmd));
 		}
 	}
 }
@@ -272,24 +272,30 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 }
 
 static void tish_run(void) {
+	int ret;
 	char *line;
 	char prompt_buf[PROMPT_BUF_LEN];
 	const char *prompt;
 
-	/* Set the completion callback. This will be called every time the
-	* user uses the <tab> key. */
-	linenoiseSetCompletionCallback(completion);
+	/**
+	 * Set the completion callback. This will be called every time the
+	 * user uses the <tab> key.
+	 */
+	rl_compl_set_hnd(completion_hnd);
 
-	/* Load history from file. The history file is just a plain text file
-	* where entries are separated by newlines. */
-	//linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+#if 0
+	/**
+	 * Load history from file. The history file is just a plain text file
+	 * where entries are separated by newlines.
+	 */
+	rl_hist_load("history.txt"); /* Load the history at startup */
+#endif
 
-	/* Now this is the main loop of the typical linenoise-based application.
-	* The call to linenoise() will block as long as the user types something
-	* and presses enter.
-	*
-	* The typed string is returned as a malloc() allocated string by
-	* linenoise, so the user needs to free() it. */
+	/**
+	 * Now this is the main loop of the typical readline-based application.
+	 * The call to readline will block as long as the user types something
+	 * and presses enter.
+	 */
 	while (1) {
 		if (RICH_PROMPT_SUPPORT) {
 			prompt = 0 == rich_prompt(PROMPT_FMT, prompt_buf,
@@ -299,29 +305,29 @@ static void tish_run(void) {
 			prompt = PROMPT_FMT;
 		}
 
-		line = linenoise(prompt);
-		if (line == NULL) {
-			if (errno == EAGAIN) {
-				continue; /* ^C was pressed */
+		ret = rl_read(prompt, &line);
+		if (ret != 0) {
+			if (ret == -EAGAIN) {
+				continue;
 			}
 			break;
 		}
 
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
-			linenoiseHistoryAdd(line); /* Add to the history. */
+			rl_hist_add(line); /* Add to the history. */
 			if (0 > shell_line_input(line)) {
-				free(line);
+				rl_free(line);
 				return;
 			}
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
-			linenoiseHistorySetMaxLen(len);
+			rl_hist_set_len(len);
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}
-		free(line);
+		rl_free(line);
 	}
 }
 
