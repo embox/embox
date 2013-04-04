@@ -13,6 +13,16 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
+#include <stdio.h>
+
+#undef TRACE_FS
+
+#ifdef TRACE_FS
+#define DPRINTF(a)	printf a
+#else
+#define DPRINTF(a)	do {} while (0)
+#endif
+
 __BEGIN_DECLS
 
 /* int open (const char *path, int __oflag);

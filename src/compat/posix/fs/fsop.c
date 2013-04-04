@@ -17,31 +17,59 @@
 #include <sys/types.h>
 
 int creat(const char *pathname, mode_t mode) {
-	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	int rc;
+
+	rc = open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	DPRINTF(("creat(%s, %d ...) = %d\n", pathname, mode, rc));
+	return rc;
 }
 
 int mkdir(const char *pathname, mode_t mode) {
-	return kmkdir(NULL, pathname, mode);
+	int rc;
+
+	rc = kmkdir(NULL, pathname, mode);
+	DPRINTF(("mkdir(%s, %d ...) = %d\n", pathname, mode, rc));
+	return rc;
 }
 
 int remove(const char *pathname) {
-	return kremove(pathname);
+	int rc;
+
+	rc = kremove(pathname);
+	DPRINTF(("remove(%s) = %d\n", pathname, rc));
+	return rc;
 }
 
 int unlink(const char *pathname) {
-	return kunlink(pathname);
+	int rc;
+
+	rc = kunlink(pathname);
+	DPRINTF(("unlink(%s) = %d\n", pathname, rc));
+	return rc;
 }
 
 int rmdir(const char *pathname) {
-	return krmdir(pathname);
+	int rc;
+
+	rc = krmdir(pathname);
+	DPRINTF(("rmdir(%s) = %d\n", pathname, rc));
+	return rc;
 }
 
 int lstat(const char *path, struct stat *buf) {
-	return klstat(path, buf);
+	int rc;
+
+	rc = klstat(path, buf);
+	DPRINTF(("lstat(%s) = %d\n", path, rc));
+	return rc;
 }
 
 int stat(const char *path, struct stat *buf) {
-	return lstat(path, buf);
+	int rc;
+
+	rc = lstat(path, buf);
+	DPRINTF(("stat(%s) = %d\n", path, rc));
+	return rc;
 }
 
 int truncate(const char *path, off_t length) {
@@ -50,8 +78,12 @@ int truncate(const char *path, off_t length) {
 
 	if (0 == (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		errno = -res;
-		return -1;
+		res = -1;
+		goto end;
 	}
 
-	return ktruncate(node, length);
+	res = ktruncate(node, length);
+	end:
+	DPRINTF(("truncate(%s, %d ...) = %d\n", path, length, res));
+	return res;
 }
