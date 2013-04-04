@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <kernel/printk.h>
+#include <sys/time.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -108,9 +109,11 @@ void debug_print(__u8 code, const char *msg, ...) {
 
 static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, char *msg,
 		in_addr_t ip, uint16_t port) {
-	debug_print(1, "%lu %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
+	struct timeval now;
+	tcp_get_now(&now);
+	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
 			// info
-			tcp_get_usec(), inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
+			now.tv_sec, now.tv_usec, inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
 			// seq, ack, seq_len
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_len(skb),
 			// flags
@@ -287,10 +290,17 @@ int tcp_st_status(union sock_pointer sock) {
 	}
 }
 
-useconds_t tcp_get_usec(void) {
-	struct timeval tv;
-	ktime_get_timeval(&tv);
-	return (useconds_t)tv.tv_sec * USEC_PER_SEC + (useconds_t)tv.tv_usec;
+void tcp_get_now(struct timeval *out_now) {
+	ktime_get_timeval(out_now);
+}
+
+int tcp_is_expired(struct timeval *since, useconds_t limit_msec) {
+	struct timeval now, delta, limit;
+	ktime_get_timeval(&now);
+	timersub(&now, since, &delta);
+	limit.tv_sec = limit_msec / MSEC_PER_SEC;
+	limit.tv_usec = (limit_msec % MSEC_PER_SEC) * USEC_PER_MSEC;
+	return timercmp(&delta, &limit, >=);
 }
 
 static __u16 tcp_checksum(__be32 saddr, __be32 daddr, __u8 proto,
@@ -333,8 +343,8 @@ static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	struct sk_buff *skb, *skb_send;
 
 	/* check time wait */
-	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY) &&
-	    (tcp_get_usec() - sock.tcp_sk->last_activity < TCP_REXMIT_DELAY * USEC_PER_MSEC)) {
+	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY)
+			&& !tcp_is_expired(&sock.tcp_sk->last_activity, TCP_REXMIT_DELAY)) {
 		return;
 	}
 
@@ -368,7 +378,7 @@ static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 
-	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last xmit time */
+	tcp_get_now(&sock.tcp_sk->last_activity); /* set last activity */
 
 	tcp_xmit(sock, skb_send);
 }
@@ -1025,7 +1035,7 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
  * Main function of TCP protocol
  */
 static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
-	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last activity time */
+	tcp_get_now(&sock.tcp_sk->last_activity); /* set last activity */
 
 	switch (tcp_handle(sock, skb, pre_process)) {
 	default: /* error code and other TCP_RET_XXX */
@@ -1076,7 +1086,7 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 
 static void tcp_tmr_timewait(union sock_pointer sock) {
 	assert(sock.sk->sk_state == TCP_TIMEWAIT);
-	if (tcp_get_usec() - sock.tcp_sk->last_activity >= TCP_TIMEWAIT_DELAY * USEC_PER_MSEC) {
+	if (tcp_is_expired(&sock.tcp_sk->last_activity, TCP_TIMEWAIT_DELAY)) {
 		tcp_set_st(sock, TCP_CLOSED);
 		debug_print(7, "TIMER: tcp_tmr_timewait: release sk %p\n", sock.tcp_sk);
 		sk_common_release(sock.sk);

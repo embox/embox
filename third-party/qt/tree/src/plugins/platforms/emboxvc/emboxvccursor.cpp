@@ -19,6 +19,12 @@ QEmboxCursor::~QEmboxCursor() {
 	delete [] dirtyRect;
 }
 
+void QEmboxCursor::emboxCursorReset(struct fb_info *fb) {
+	if (imageChanged(fb, __calculateCursorLocation(fb, mouseX, mouseY))) {
+		storeDirtyRect(fb,  __calculateCursorLocation(fb, mouseX, mouseY));
+	}
+}
+
 void QEmboxCursor::emboxCursorRedraw(struct fb_info *fb, int x, int y) {
 	if (inited) {
 		flushDirtyRect(fb, __calculateCursorLocation(fb, mouseX, mouseY));
@@ -34,6 +40,23 @@ void QEmboxCursor::emboxCursorRedraw(struct fb_info *fb, int x, int y) {
 
 static unsigned char *__calculateCursorLocation(struct fb_info *fb, int x, int y) {
 	return fb->screen_base + (y * fb->var.xres + x) * 2;
+}
+
+int QEmboxCursor::imageChanged(struct fb_info *fb, unsigned char *begin) {
+    int shift, i, ret = 0;
+
+    int bpp = fb->var.bits_per_pixel / 8;
+
+    for (i = 0, shift = 0; i < cursor_H; i++ , shift += fb->var.xres * bpp) {
+    	for (int j = 0; j < cursor_W * bpp; j++) {
+    		if (*(dirtyRect + i * cursor_W * bpp + j) != *(begin + shift + j)) {
+    			ret = 1;
+    			break;
+    		}
+    	}
+    }
+
+    return ret;
 }
 
 void QEmboxCursor::drawCursor(struct fb_info *fb, unsigned char *begin) {

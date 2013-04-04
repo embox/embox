@@ -9,8 +9,9 @@
 #ifndef KERNEL_TIME_TIME_H_
 #define KERNEL_TIME_TIME_H_
 
-#include <time.h>
 #include <stdint.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define MSEC_PER_SEC    1000L
 #define USEC_PER_MSEC   1000L

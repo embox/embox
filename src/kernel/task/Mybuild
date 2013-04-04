@@ -69,6 +69,14 @@ module errno {
 	depends api
 }
 
+module env {
+	option number env_per_task=8
+	option number env_str_len=32
+	source "env.c"
+
+	depends kernel_task
+}
+
 module u_area {
 	source "u_area.c"
 }

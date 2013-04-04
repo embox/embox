@@ -29,6 +29,14 @@ static void flushAll() {
 	}
 }
 
+static int visibleWidgetsCount() {
+	int cnt = 0;
+	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
+		cnt += __emboxVCcollection.at(i)->window()->isVisible() ? 1 : 0;
+	}
+	return cnt;
+}
+
 static void __emboxVCsetMode(struct vc *vc, int mode) {
 	globalEmboxVC->emboxVCvisualized = mode;
 }
@@ -42,6 +50,10 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	//surf = __emboxVC(vc);
 	//surf->flush(NULL, region, point);
 	flushAll();
+
+	foreach (QWidget *widget, QApplication::allWidgets()) {
+		widget->update();
+	}
 }
 
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
@@ -96,9 +108,6 @@ void QEmboxVCMouseHandler::readMouseData() {
 		emvc->mouseX += x;
 		emvc->mouseY += -y;
 
-		QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
-				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
-
 		int xres = emvc->emboxVC.fb->var.xres;
 		int yres = emvc->emboxVC.fb->var.yres;
 
@@ -107,6 +116,9 @@ void QEmboxVCMouseHandler::readMouseData() {
 
 		emvc->mouseX = emvc->mouseX > xres ? xres : emvc->mouseX;
 		emvc->mouseY = emvc->mouseY > yres ? yres : emvc->mouseY;
+
+		QWindowSystemInterface::handleMouseEvent(0, QPoint(emvc->mouseX, emvc->mouseY),
+				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
 
 		if (!emvc->emboxVC.fb || !emvc->emboxVCvisualized) {
 			return;
@@ -213,18 +225,10 @@ QEmboxVC::QEmboxVC()
 QEmboxVC::~QEmboxVC() {
 }
 
-static int tmp = 0;
-
 QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
     : QWindowSurface(window)
 {
-	if (tmp == 1) {
-		mImage = QImage(QSize(window->width(), window->height()), QImage::Format_RGB16);
-	} else {
-		mImage = QImage(QSize(1024, 768), QImage::Format_RGB16);
-	}
-
-	tmp++;
+	mImage = QImage(QSize(window->width(), window->height()), QImage::Format_RGB16);
 
 	vc = globalEmboxVC;
 
@@ -233,7 +237,7 @@ QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)
 
 QEmboxVCWindowSurface::~QEmboxVCWindowSurface()
 {
-
+	__emboxVCcollection.removeAll(this);
 }
 
 QPaintDevice *QEmboxVCWindowSurface::paintDevice()
@@ -247,20 +251,25 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    int i, shift, bpp;
+    int i, shift;
+
+    int x = widget->pos().x();
+    int y = widget->pos().y();
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
     }
 
-    bpp = vc->emboxVC.fb->var.bits_per_pixel / 8;
+    int bpp = vc->emboxVC.fb->var.bits_per_pixel / 8;
+    char *begin = vc->emboxVC.fb->screen_base + (y * vc->emboxVC.fb->var.xres + x) * bpp;
 
     /* Draw image */
     for (i = 0, shift = 0; i < mImage.height(); i++ , shift += vc->emboxVC.fb->var.xres * bpp) {
-    	memcpy(vc->emboxVC.fb->screen_base + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
+    	memcpy(begin + shift, (const void *)mImage.constScanLine(i), mImage.bytesPerLine());
     }
 
-    /* Draw cursor */
+    /* Reset cursor on new image and redraw */
+    vc->cursor->emboxCursorReset(vc->emboxVC.fb);
     vc->cursor->emboxCursorRedraw(vc->emboxVC.fb, vc->mouseX, vc->mouseY);
 }
 
@@ -272,6 +281,25 @@ void QEmboxVCWindowSurface::resize(const QSize &size)
     //if (mImage.size() != size)
             //[> XXX <]
         //mImage = QImage(size, QImage::Format_RGB16);
+}
+
+QEmboxVCPlatformWindow::QEmboxVCPlatformWindow(QWidget *widget)
+: QPlatformWindow(widget)
+{
+}
+
+QEmboxVCPlatformWindow::~QEmboxVCPlatformWindow()
+{
+}
+
+WId QEmboxVCPlatformWindow::winId() const {
+	return WId(1);
+}
+
+void QEmboxVCPlatformWindow::setParent(const QPlatformWindow *window) {
+	//if (widget() && window->widget()) {
+	//	widget()->setParent(window->widget());
+	//}
 }
 
 QT_END_NAMESPACE

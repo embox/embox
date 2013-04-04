@@ -17,6 +17,7 @@ int open(const char *path, int __oflag, ...) {
 	struct file_desc *kfile;
 	va_list args;
 	mode_t mode;
+	int rc;
 
 	va_start(args, __oflag);
 	mode = va_arg(args, mode_t);
@@ -28,5 +29,7 @@ int open(const char *path, int __oflag, ...) {
 		return -1;
 	}
 
-	return task_self_idx_alloc(&task_idx_ops_file, kfile);
+	rc = task_self_idx_alloc(&task_idx_ops_file, kfile);
+	DPRINTF(("open(%s, %d ...) = %d\n", path, __oflag, rc));
+	return rc;
 }

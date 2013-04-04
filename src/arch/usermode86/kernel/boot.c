@@ -40,6 +40,5 @@ void _start2(int argc, char *argv) {
 	emvisor_send(UV_PWRUPSTRM, EMVISOR_BUDDY_PID, &thispid,
 			sizeof(thispid));
 
-	kernel_start();
 }
 

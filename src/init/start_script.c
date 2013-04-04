@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include <util/array.h>
 #include <embox/unit.h>
@@ -39,7 +40,7 @@ static const char *script_commands[] = {
 
 static void setup_tty(const char *dev_name) {
 	int fd;
-	char full_name[MAX_LENGTH_PATH_NAME];
+	char full_name[PATH_MAX];
 
 	putenv("TERM=emterm");
 

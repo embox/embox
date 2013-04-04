@@ -80,8 +80,8 @@ struct sigaction {
     void (*sa_restorer)(void);
 };
 
-static inline int sigaction(int sig, const struct sigaction *act,
-		struct sigaction *oact) { return -1; }
+//static inline int sigaction(int sig, const struct sigaction *act,
+		//struct sigaction *oact) { return -1; }
 //static inline int sigfillset(sigset_t *set)
 
 #endif /* SIGNAL_H_ */

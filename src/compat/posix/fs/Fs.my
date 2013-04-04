@@ -1,0 +1,64 @@
+package embox.compat.posix.fs
+
+module All {
+	depends file,
+		chdir,
+		dirent,
+		fsop,
+		getcwd,
+		xattr
+}
+
+static module file {
+	depends file_ops
+	depends open
+}
+
+static module chdir {
+	source "chdir.c"
+}
+
+static module dirent {
+	option number dir_quantity=4
+	source "dirent.c"
+
+	depends embox.fs.core
+	depends embox.mem.objalloc
+	depends embox.lib.LibCString
+}
+
+static module file_ops {
+	source "file_ops.c"
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.errno
+	depends embox.kernel.task.io_sync_api
+	depends embox.init.diag_index_desc
+
+}
+
+static module fsop {
+	source "fsop.c"
+
+	depends embox.kernel.task.errno
+}
+
+static module getcwd {
+	source "getcwd.c"
+}
+
+static module open {
+	source "open.c"
+
+	depends embox.fs.posix_compat
+	depends embox.kernel.task.errno
+}
+
+static module xattr {
+	source "xattr.c"
+
+	depends embox.fs.xattr
+	depends embox.fs.Perm
+	depends embox.security.api
+}

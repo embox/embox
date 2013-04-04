@@ -105,7 +105,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 int ioctl(int fd, int request, ...) {
 	va_list args;
 	const struct task_idx_ops *ops;
-	int ret = -ENOTSUP;
+	int rc = -ENOTSUP;
 	struct idx_desc *desc;
 
 	assert(task_self_idx_table());
@@ -113,7 +113,9 @@ int ioctl(int fd, int request, ...) {
 	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
-		return -1;
+		rc = -1;
+		DPRINTF(("EBADF "));
+		goto end;
 	}
 
 	ops = task_idx_desc_ops(desc);
@@ -130,38 +132,47 @@ int ioctl(int fd, int request, ...) {
 	}
 
 	if (NULL == ops->ioctl) {
-		ret = -1;
+		rc = -1;
 	} else {
 		void *data = va_arg(args, void*);
-		ret = ops->ioctl(desc, request, data);
-
+		rc = ops->ioctl(desc, request, data);
 	}
 
 	va_end(args);
 
-	return ret;
+	end:
+	DPRINTF(("ioctl(%d) = %d\n", fd, rc));
+	return rc;
 }
 
 int fstat(int fd, struct stat *buff) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
+	int rc;
 
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		rc = -1;
+		goto end;
 	}
 
 	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	if(NULL != ops->fstat) {
-		return ops->fstat(desc, buff);
+		rc = ops->fstat(desc, buff);
 	}
 	else {
-		return -1;
+		rc = -1;
 	}
+
+	end:
+	DPRINTF(("fstat(%d) = %d\n", fd, rc));
+	return rc;
+
 }
 
 int fcntl(int fd, int cmd, ...) {
@@ -175,7 +186,9 @@ int fcntl(int fd, int cmd, ...) {
 	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		res = -1;
+		goto end;
 	}
 
 	ops = task_idx_desc_ops(desc);
@@ -189,7 +202,7 @@ int fcntl(int fd, int cmd, ...) {
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
-		return res;
+		goto end;
 	case F_SETFD:
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
@@ -207,19 +220,26 @@ int fcntl(int fd, int cmd, ...) {
 
 	if (NULL == ops->fcntl) {
 		if(NULL == ops->ioctl) {
-			return -ENOSYS;
+			res = -ENOSYS;
+			DPRINTF(("ENOSYS "));
+			goto end;
 		}
-		return ops->ioctl(desc, cmd, (void *)flag);
+		res = ops->ioctl(desc, cmd, (void *)flag);
+		DPRINTF(("fcntl->ioctl(%d, %d) = %d\n", fd, cmd, res));
+		return res;
 	}
 
 	res = ops->fcntl(desc, cmd, args);
 
 	va_end(args);
-
+	end:
+	DPRINTF(("fcntl(%d, %d) = %d\n", fd, cmd, res));
 	return res;
 }
 
 int fsync(int fd) {
+
+	DPRINTF(("fsync(%d) = %d\n", fd, 0));
 	return 0;
 }
 

@@ -68,6 +68,16 @@ private:
     struct vc_callbacks emboxVCcallbacks;
 };
 
+class QEmboxVCPlatformWindow : public QPlatformWindow
+{
+public:
+	QEmboxVCPlatformWindow(QWidget *widget);
+	~QEmboxVCPlatformWindow();
+
+    WId winId() const;
+    void setParent(const QPlatformWindow *window);
+};
+
 class QEmboxVCWindowSurface : public QWindowSurface
 {
 public:

@@ -37,18 +37,25 @@
 
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
+#if 0
+/* implemented now */
 	static inline char *asctime(const struct tm *tm) {
 		DPRINT();
 		time_t t = mktime((struct tm *)tm);
 		return ctime(&t);
 	}
-	static inline double difftime(time_t time1, time_t time0) {
-		DPRINT();
-		return (double)(time1 - time0);
-	}
 	static inline struct tm *localtime(const time_t *timep) {
 		DPRINT();
 		return gmtime(timep);
+	}
+	static inline int system(const char *command) {
+		DPRINT();
+		return -1;
+	}
+#endif
+	static inline double difftime(time_t time1, time_t time0) {
+		DPRINT();
+		return (double)(time1 - time0);
 	}
 	static inline char *getenv(const char *name) {
 		DPRINT();
@@ -60,10 +67,6 @@ namespace std {
 		return 0;
 	}
 	static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
-		DPRINT();
-		return -1;
-	}
-	static inline int system(const char *command) {
 		DPRINT();
 		return -1;
 	}

@@ -2,9 +2,19 @@ package embox.compat.posix.net
 
 module All {
 	depends socket,
-		gethostent,
-		gethostbyname,
 		herror,
+		gethostent,
+		gethostbyaddr,
+		gethostbyname,
+		getnetent,
+		getnetbyaddr,
+		getnetbyname,
+		getprotoent,
+		getprotobyname,
+		getprotobynumber,
+		getservent,
+		getservbyname,
+		getservbyport,
 		inet_addr
 }
 
@@ -14,32 +24,103 @@ static module socket {
 	depends embox.net.core
 	depends embox.net.socket
 	depends embox.kernel.task.idx_table
-	depends embox.kernel.task.errno
 	depends embox.kernel.thread.event
 	depends embox.kernel.task.io_sync_api
 }
 
-static module gethostent {
-	source "gethostent.c"
-	option string path_to_hosts="/hosts"
+static module herror {
+	source "herror.c"
 
 	depends embox.lib.LibC
+}
+
+static module gethostent {
+	option string path_to_hosts="/hosts"
+	source "gethostent.c"
+
 	depends embox.net.util.hostent_api
+	depends embox.lib.LibC
+}
+
+static module gethostbyaddr {
+	source "gethostbyaddr.c"
+
+	depends inet_addr
 	depends embox.net.dns
+	depends embox.net.util.hostent_api
+	depends embox.lib.LibC
 }
 
 static module gethostbyname {
 	source "gethostbyname.c"
 
 	depends gethostent
-	depends embox.lib.LibC
-	depends embox.net.util.hostent_api
 	depends embox.net.dns
+	depends embox.net.util.hostent_api
+	depends embox.lib.LibC
 }
 
-static module herror {
-	source "herror.c"
+static module getnetent {
+	option string path_to_networks="/networks"
+	source "getnetent.c"
 
+	depends embox.net.util.netent_api
+	depends embox.lib.LibC
+}
+
+static module getnetbyaddr {
+	source "getnetbyaddr.c"
+
+	depends getnetent
+}
+
+static module getnetbyname {
+	source "getnetbyname.c"
+
+	depends getnetent
+	depends embox.lib.LibC
+}
+
+static module getprotoent {
+	option string path_to_protocols="/protocols"
+	source "getprotoent.c"
+
+	depends embox.net.util.protoent_api
+	depends embox.lib.LibC
+}
+
+static module getprotobyname {
+	source "getprotobyname.c"
+
+	depends getprotoent
+	depends embox.lib.LibC
+}
+
+static module getprotobynumber {
+	source "getprotobynumber.c"
+
+	depends getprotoent
+}
+
+static module getservent {
+	option string path_to_services="/services"
+	source "getservent.c"
+
+	depends embox.net.util.servent_api
+	depends embox.lib.LibC
+}
+
+static module getservbyname {
+	source "getservbyname.c"
+
+	depends getservent
+	depends embox.lib.LibC
+}
+
+static module getservbyport {
+	source "getservbyport.c"
+
+	depends getservent
 	depends embox.lib.LibC
 }
 

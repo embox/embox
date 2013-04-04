@@ -61,10 +61,19 @@ ExternalProject_Add(
    LOG_BUILD 1
 )
 
-project (zmq_hwclient)
+project (zmq_examples)
+SET (CMAKE_BUILD_TYPE "Debug")
+
 add_executable(hwclient hwclient.cpp)
 add_dependencies(hwclient zmq_host)
 include_directories("${PROJECT_SOURCE_DIR}/../../build/zeromq/host/include")
 #link_directories(${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib)
 target_link_libraries(hwclient ${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib/libzmq.a)
 target_link_libraries(hwclient pthread rt)
+
+add_executable(hwserver hwserver.cpp)
+add_dependencies(hwserver zmq_host)
+include_directories("${PROJECT_SOURCE_DIR}/../../build/zeromq/host/include")
+#link_directories(${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib)
+target_link_libraries(hwserver ${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib/libzmq.a)
+target_link_libraries(hwserver pthread rt)

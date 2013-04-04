@@ -33,10 +33,24 @@ QPixmapData *QEmboxVCIntegration::createPixmapData(QPixmapData::PixelType type) 
     return new QRasterPixmapData(type);
 }
 
+QEmboxVCPlatformWindow *emboxDesktopWindow = 0;
+
 QPlatformWindow *QEmboxVCIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
-    Q_UNUSED(winId);
-    return new QPlatformWindow(widget);
+	Q_UNUSED(winId);
+
+	QEmboxVCPlatformWindow *window = new QEmboxVCPlatformWindow(widget);
+
+	if (emboxDesktopWindow == 0) {
+		/* Create desktop window if it was not created. */
+		emboxDesktopWindow = window;
+	} else {
+		/* Otherwise set desktop as parent for newly created window. */
+		//window->setParent(emboxDesktopWindow);
+		//window->widget()->setParent(emboxDesktopWindow->widget());
+	}
+
+	return window;
 }
 
 QWindowSurface *QEmboxVCIntegration::createWindowSurface(QWidget *widget, WId winId) const

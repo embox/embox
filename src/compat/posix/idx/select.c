@@ -123,6 +123,13 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	fd_cnt = 0;
 
+	/* FIXME process exception conditions */
+	if (exceptfd) {
+		if (update) {
+			FD_ZERO(exceptfd);
+		}
+	}
+
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
 		res = filter_out_with_op(nfds, readfds, IDX_IO_READING , update);
@@ -154,7 +161,9 @@ static void set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 		if ((readfds && FD_ISSET(fd, readfds)) ||
 				(writefds && FD_ISSET(fd, writefds))) {
 			desc = task_self_idx_get(fd);
-			idx_io_set_event(task_idx_indata(desc), event);
+			if (desc) {
+				idx_io_set_event(task_idx_indata(desc), event);
+			}
 		}
 	}
 }

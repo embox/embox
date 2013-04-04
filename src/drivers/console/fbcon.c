@@ -26,8 +26,6 @@
 
 EMBOX_UNIT_INIT(fbcon_init);
 
-#define SET_VIDEO_MODE OPTION_GET(NUMBER,set_video_mode)
-
 static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
 static void devisn(struct vc *vc);
@@ -131,49 +129,15 @@ static void vterm_reinit(struct vterm_video *t, int x, int y);
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	/*struct tty *tty;*/
 	struct fbcon *fbcon = (struct fbcon *) vc;
-#if SET_VIDEO_MODE
-	const struct fb_videomode *mode;
-	int ret;
-
-	fbcon->resbpp.x = 1024;
-	fbcon->resbpp.y = 768;
-	fbcon->resbpp.bpp = 16;
-
-	mode = video_fbmode_by_resbpp(&fbcon->resbpp);
-	if (mode == NULL) {
-		return;
-	}
-
-	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, fbcon->resbpp.bpp);
-	if (ret != 0) {
-		return;
-	}
-
-	ret = fbinfo->ops->fb_set_par(fbinfo);
-	if (ret != 0) {
-		return;
-	}
-
-#else /* SET_VIDEO_MODE */
 
 	fbcon->resbpp.x = fbinfo->var.xres;
 	fbcon->resbpp.y = fbinfo->var.yres;
 	fbcon->resbpp.bpp = fbinfo->var.bits_per_pixel;
 
-#endif /* SET_VIDEO_MODE */
-
-
 	vterm_reinit(&fbcon->vterm_video, fbcon->resbpp.x / fbcon_displ_data.font->width,
 		       	fbcon->resbpp.y / fbcon_displ_data.font->height);
 
 	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
-#if 0
-	tty = (struct tty *) &fbcon->tty_this;
-
-	tty->cur_x = tty->cur_y = 0;
-	tty_cursor(tty);
-
-#endif
 
 }
 
@@ -187,7 +151,7 @@ static char fbcon_getc(struct fbcon *fbcon) {
 	sched_lock();
 
 	while (!fbcon->hasc) {
-		event_wait_ms(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
+		event_wait(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
 	}
 
 	fbcon->hasc --;

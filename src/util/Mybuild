@@ -84,16 +84,6 @@ module indexator {
 	source "indexator.c"
 }
 
-
-//TODO move in from here it depends on kernel modules
-static module LibSync {
-	source "async_ring_buff.c"
-
-	depends LibUtil
-	depends embox.kernel.thread.sync
-}
-
-
 //TODO this is too abstract in my mind
 @DefaultImpl(num_alloc_array)
 abstract module num_alloc { }

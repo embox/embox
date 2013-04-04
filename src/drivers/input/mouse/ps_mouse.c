@@ -51,6 +51,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
 		/* this is keyboard scan code */
 		ret = -EAGAIN;
+		goto out;
 	}
 
 	data = inb(I8042_DATA_PORT);
@@ -74,6 +75,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 
 	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
 
+out:
 	return ret;
 }
 

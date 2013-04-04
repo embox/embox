@@ -119,7 +119,6 @@ typedef int sigset_t;
 #define SA_RESETHAND 0
 int sigaddset(sigset_t *set, int signum);
 int sigismember(const sigset_t *set, int signum);
-int nanosleep(const struct timespec *req, struct timespec *rem);
 
 
 
@@ -134,11 +133,11 @@ static inline int sigemptyset(sigset_t *set) {
 	return -1;
 }
 
-/*static inline int sigaction(int signum, const struct sigaction *act,
+static inline int sigaction(int signum, const struct sigaction *act,
 	      struct sigaction *oldact) {
 	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
 	return -1;
-}*/
+}
 
 
 // Required by libtiff

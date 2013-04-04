@@ -9,21 +9,33 @@
 
 #include "includes.h"
 
-static struct passwd embox_passwd = {
-		.pw_name = "embox",
-		.pw_uid = 0,
-		.pw_gid = 0,
-		.pw_dir = "/",
-		.pw_shell = "tish",
-		.pw_passwd = "123"
-};
+
+#if 0
+#define PWD_CHARLEN 64
+
+static struct passwd embox_passwd;
+static char charbuf[PWD_CHARLEN];
 
 struct passwd *getpwnam(const char *name) {
-	return &embox_passwd;
+	struct passwd *ret;
+
+	getpwnam_r(name, &embox_passwd, charbuf, PWD_CHARLEN, &ret);
+
+	return ret;
 }
+#endif
 
 char *crypt(const char *key, const char *salt) {
-	return embox_passwd.pw_passwd;
+	struct passwd *pwd;
+	static char buff[0x20];
+
+	pwd = getpwuid(geteuid());
+	if (pwd == NULL) {
+		return 0;
+	}
+	memcpy(buff, pwd->pw_passwd, sizeof(buff));
+
+	return buff;
 }
 
 

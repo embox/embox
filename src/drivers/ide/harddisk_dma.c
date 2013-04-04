@@ -16,6 +16,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
+#include <limits.h>
 
 extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 
@@ -244,7 +245,7 @@ static int idedisk_udma_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
 	double size;
-	char   path[MAX_LENGTH_PATH_NAME];
+	char   path[PATH_MAX];
 
 	ide = ide_get_drive();
 

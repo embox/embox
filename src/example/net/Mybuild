@@ -12,6 +12,14 @@ module gethostbyname {
 	depends embox.framework.LibFramework
 }
 
+module gethostbyaddr {
+	source "gethostbyaddr.c"
+
+	depends embox.compat.posix.net.gethostbyaddr
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
 module gethostent {
 	source "gethostent.c"
 

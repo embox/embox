@@ -14,6 +14,7 @@
 #include <fs/node.h>
 
 #include <mem/misc/pool.h>
+#include <limits.h>
 
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
@@ -41,7 +42,7 @@ node_t *node_alloc(const char *name, size_t name_len) {
 		name_len = strlen(name);
 	}
 
-	if (!*name || name_len > MAX_LENGTH_FILE_NAME) {
+	if (!*name || name_len > NAME_MAX) {
 		/* TODO behave more clever here? -- Eldar */
 		return NULL;
 	}

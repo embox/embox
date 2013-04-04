@@ -65,6 +65,17 @@ extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 extern double strtod(const char *nptr, char **endptr);
 
+/**
+ * Convert integer to string.
+ * Converts an integer value to a null-terminated string using the specified base and stores the result in the array given by buf parameter.
+ * If num < 0, the resulting string is preceded with '-' (regardless of base). No prefix is used to explicitly specify the base.
+ * @param num Number to convert.
+ * @param buf Character array to store the result. This should be long enough to contain any possible value.
+ * @param base Base for the conversion. 1 < base < 37.
+ * @return Pointer to buf.
+ */
+extern char *itoa( int num, char *buf, unsigned short int base );
+
 /* Allocate and free dynamic memory */
 extern void *calloc(size_t nmemb, size_t size);
 extern void *malloc(size_t size);
@@ -125,16 +136,17 @@ extern void exit(int status);
 static inline int abs(int x) { return x < 0 ? -x : x; } // TODO move from here
 static inline long labs(long x) { return x < 0 ? -x : x; }
 
-static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) { return 0; }
-static inline int wctomb(char *s, wchar_t wchar) { return 0; }
 
 extern char * getenv(const char *name);
 extern int putenv(char *string);
 extern int setenv(const char *envname, const char *envval, int overwrite);
 extern int unsetenv(const char *name);
 extern int clearenv(void);
+extern int system(const char *command);
 
 static inline int mkstemp(char *path_template) { return -1; }
+static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) { return 0; }
+static inline int wctomb(char *s, wchar_t wchar) { return 0; }
 
 __END_DECLS
 

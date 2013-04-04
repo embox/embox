@@ -13,6 +13,7 @@
 #include <util/array.h>
 #include <util/indexator.h>
 #include <fs/node.h>
+#include <limits.h>
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
@@ -28,7 +29,7 @@
 
 typedef struct block_dev {
 	dev_t id;
-	char name[MAX_LENGTH_FILE_NAME];
+	char name[NAME_MAX];
 	struct node *dev_node;
 
 	struct block_dev_driver *driver;

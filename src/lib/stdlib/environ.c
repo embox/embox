@@ -8,35 +8,25 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mem/misc/pool.h>
-#include <util/math.h>
 #include <util/array.h>
 #include <unistd.h>
-#include <framework/mod/options.h>
+#include <kernel/task/env.h>
 
-#define MODOPS_ENV_AMOUNT OPTION_GET(NUMBER, env_amount)
-#define MODOPS_ENV_STR_LEN OPTION_GET(NUMBER, env_str_len)
-
-char **environ = NULL;
-
-static char *env_vals[MODOPS_ENV_AMOUNT + 1];
-POOL_DEF(env_pool, char [MODOPS_ENV_STR_LEN + 1], MODOPS_ENV_AMOUNT);
-static size_t env_next = 0;
-static char env_buff[MODOPS_ENV_STR_LEN + 1];
-
-static size_t env_lookup(const char *name) {
+static size_t env_lookup(const char *name, char **vals, size_t next) {
 	size_t i, name_len;
 
 	assert(name != NULL);
+	assert(vals != NULL);
 
 	name_len = strlen(name);
 
-	for (i = 0; i < env_next; ++i) {
-		assert(env_vals[i] != NULL);
-		if ((strncmp(name, env_vals[i], name_len) == 0)
-				&& (env_vals[i][name_len] == '=')) {
+	for (i = 0; i < next; ++i) {
+		assert(vals[i] != NULL);
+		if ((strncmp(name, vals[i], name_len) == 0)
+				&& (vals[i][name_len] == '=')) {
 			break;
 		}
 	}
@@ -46,53 +36,61 @@ static size_t env_lookup(const char *name) {
 
 char * getenv(const char *name) {
 	size_t index;
+	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
 			|| (strchr(name, '=') != NULL)) {
 		return NULL;
 	}
 
-	index = env_lookup(name);
-	if (index == env_next) {
+	env = task_self_env();
+	assert(env != NULL);
+
+	index = env_lookup(name, &env->vals[0], env->next);
+	if (index == env->next) {
 		return NULL;
 	}
 
-	assert(env_vals[index] != NULL);
-	strcpy(&env_buff[0], env_vals[index] + strlen(name) + 1);
+	assert(env->vals[index] != NULL);
+	strcpy(&env->buff[0], env->vals[index] + strlen(name) + 1);
 
-	return &env_buff[0];
+	return &env->buff[0];
 }
 
 int putenv(char *string) {
 	size_t str_len, name_len, index;
+	struct task_env *env;
 
 	assert(string != NULL);
 	assert(*string != '=');
 	assert(strchr(string, '=') != NULL);
 
-	name_len = strchr(string, '=') - string;
-	memcpy(&env_buff[0], string, name_len);
-	env_buff[name_len] = '\0';
+	env = task_self_env();
+	assert(env != NULL);
 
-	index = env_lookup(&env_buff[0]);
+	name_len = strchr(string, '=') - string;
+	memcpy(&env->buff[0], string, name_len);
+	env->buff[name_len] = '\0';
+
+	index = env_lookup(&env->buff[0], &env->vals[0], env->next);
 	str_len = strlen(string);
 
-	if ((str_len >= MODOPS_ENV_STR_LEN)
-			|| (index == ARRAY_SIZE(env_vals) - 1)) {
+	if ((str_len >= ARRAY_SIZE(env->storage[0]))
+			|| (index == ARRAY_SIZE(env->vals) - 1)) {
 		SET_ERRNO(ENOMEM);
 		return -1;
 	}
 
-	if (index == env_next) {
-		env_vals[env_next] = pool_alloc(&env_pool);
-		if (env_next == 0) {
-			environ = &env_vals[0];
+	if (index == env->next) {
+		env->vals[env->next] = &env->storage[env->next][0];
+		if (env->next == 0) {
+			env->envs = &env->vals[0];
 		}
-		env_vals[++env_next] = NULL;
+		env->vals[++env->next] = NULL;
 	}
 
-	assert(env_vals[index] != NULL);
-	memcpy(env_vals[index], string, str_len + 1);
+	assert(env->vals[index] != NULL);
+	memcpy(env->vals[index], string, str_len + 1);
 
 	return 0;
 }
@@ -100,6 +98,7 @@ int putenv(char *string) {
 int setenv(const char *name, const char *value, int overwrite) {
 	size_t name_len, val_len, index;
 	char *buff;
+	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
 			|| (strchr(name, '=') != NULL)
@@ -108,29 +107,32 @@ int setenv(const char *name, const char *value, int overwrite) {
 		return -1;
 	}
 
-	index = env_lookup(name);
-	if ((index < env_next) && !overwrite) {
+	env = task_self_env();
+	assert(env != NULL);
+
+	index = env_lookup(name, &env->vals[0], env->next);
+	if ((index < env->next) && !overwrite) {
 		return 0;
 	}
 
 	name_len = strlen(name);
 	val_len = strlen(value);
 
-	if ((name_len + val_len >= MODOPS_ENV_STR_LEN)
-			|| (index == ARRAY_SIZE(env_vals) - 1)) {
+	if ((name_len + val_len >= ARRAY_SIZE(env->storage[0]))
+			|| (index == ARRAY_SIZE(env->vals) - 1)) {
 		SET_ERRNO(ENOMEM);
 		return -1;
 	}
 
-	if (index == env_next) {
-		env_vals[env_next] = pool_alloc(&env_pool);
-		if (env_next == 0) {
-			environ = &env_vals[0];
+	if (index == env->next) {
+		env->vals[env->next] = &env->storage[env->next][0];
+		if (env->next == 0) {
+			env->envs = &env->vals[0];
 		}
-		env_vals[++env_next] = NULL;
+		env->vals[++env->next] = NULL;
 	}
 
-	buff = env_vals[index];
+	buff = env->vals[index];
 	assert(buff != NULL);
 
 	memcpy(buff, name, name_len);
@@ -142,6 +144,7 @@ int setenv(const char *name, const char *value, int overwrite) {
 
 int unsetenv(const char *name) {
 	size_t index;
+	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
 			|| (strchr(name, '=') != NULL)) {
@@ -149,34 +152,38 @@ int unsetenv(const char *name) {
 		return -1;
 	}
 
-	index = env_lookup(name);
-	if ((index == env_next) || (env_next == 0)) {
+	env = task_self_env();
+	assert(env != NULL);
+
+	index = env_lookup(name, &env->vals[0], env->next);
+	if ((index == env->next) || (env->next == 0)) {
 		return 0;
 	}
 
-	pool_free(&env_pool, env_vals[index]);
+	--env->next;
+	memmove(&env->vals[index], &env->vals[index + 1],
+			(env->next - index) * sizeof env->vals[0]);
+	memmove(&env->storage[index][0], &env->storage[index + 1][0],
+			(env->next - index) * ARRAY_SIZE(env->storage[0]));
 
-	memmove(env_vals + index, env_vals + index + 1,
-			(--env_next - index) * sizeof env_vals[0]);
-	if (env_next != 0) {
-		env_vals[env_next] = NULL;
+	if (env->next != 0) {
+		env->vals[env->next] = NULL;
 	}
 	else {
-		environ = NULL;
+		env->envs = NULL;
 	}
 
 	return 0;
 }
 
 int clearenv(void) {
-	size_t index;
+	struct task_env *env;
 
-	for (index = 0; index < env_next; ++index) {
-		pool_free(&env_pool, env_vals[index]);
-	}
+	env = task_self_env();
+	assert(env != NULL);
 
-	env_next = 0;
-	environ = NULL;
+	env->envs = NULL;
+	env->next = 0;
 
 	return 0;
 }

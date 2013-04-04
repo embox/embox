@@ -6,13 +6,14 @@
  * @author Ilia Vaprol
  */
 
-#include <assert.h>
 #include <errno.h>
-#include <string.h>
-#include <netdb.h>
-#include <net/util/hostent_api.h>
-
 #include <framework/mod/options.h>
+#include <net/util/hostent_api.h>
+#include <netdb.h>
+#include <stddef.h>
+#include <string.h>
+#include <util/array.h>
+
 #define MODOPS_MAX_NAME_LEN OPTION_GET(NUMBER, max_name_len)
 #define MODOPS_MAX_ALIASES_NUM OPTION_GET(NUMBER, max_aliases_num)
 #define MODOPS_MAX_ADDR_LEN OPTION_GET(NUMBER, max_addr_len)
@@ -40,12 +41,12 @@ struct hostent * hostent_create(void) {
 int hostent_set_name(struct hostent *he, const char *name) {
 	size_t name_sz;
 
-	assert((he != NULL) && (name != NULL));
-
-	assert(he->h_name == NULL); /* EINVAL */
+	if ((he == NULL) || (name == NULL)) {
+		return -EINVAL;
+	}
 
 	name_sz = strlen(name) + 1;
-	if (name_sz > sizeof hentry_name_storage) {
+	if (name_sz > ARRAY_SIZE(hentry_name_storage)) {
 		return -ENOMEM;
 	}
 
@@ -59,14 +60,16 @@ int hostent_set_name(struct hostent *he, const char *name) {
 int hostent_add_alias(struct hostent *he, const char *alias) {
 	size_t alias_sz;
 
-	assert((he != NULL) && (alias != NULL));
+	if ((he == NULL) || (alias == NULL)) {
+		return -EINVAL;
+	}
 
-	if (hentry_aliases_sz >= sizeof hentry_aliases_storage / sizeof hentry_aliases_storage[0]) {
+	if (hentry_aliases_sz >= ARRAY_SIZE(hentry_aliases_storage)) {
 		return -ENOMEM;
 	}
 
 	alias_sz = strlen(alias) + 1;
-	if (alias_sz > sizeof hentry_aliases_storage[0]) {
+	if (alias_sz > ARRAY_SIZE(hentry_aliases_storage[0])) {
 		return -ENOMEM;
 	}
 
@@ -79,12 +82,12 @@ int hostent_add_alias(struct hostent *he, const char *alias) {
 }
 
 int hostent_set_addr_info(struct hostent *he, int addrtype, int addrlen) {
-	assert(he != NULL);
-
-	assert(he->h_addr_list != NULL); /* EINVAL */
-
-	if ((addrlen <= 0) || (addrlen > sizeof hentry_addrs_storage[0])) {
+	if ((he == NULL) || (addrlen <= 0)) {
 		return -EINVAL;
+	}
+
+	if (addrlen > ARRAY_SIZE(hentry_addrs_storage[0])) {
+		return -ENOMEM;
 	}
 
 	he->h_addrtype = addrtype;
@@ -94,11 +97,11 @@ int hostent_set_addr_info(struct hostent *he, int addrtype, int addrlen) {
 }
 
 int hostent_add_addr(struct hostent *he, const void *addr) {
-	assert((he != NULL) && (addr != NULL));
+	if ((he == NULL) || (addr == NULL)) {
+		return -EINVAL;
+	}
 
-	assert(he->h_length != 0); /* EINVAL */
-
-	if (hentry_addrs_sz >= sizeof hentry_addrs_storage / sizeof hentry_addrs_storage[0]) {
+	if (hentry_addrs_sz >= ARRAY_SIZE(hentry_addrs_storage)) {
 		return -ENOMEM;
 	}
 

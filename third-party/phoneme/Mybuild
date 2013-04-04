@@ -44,5 +44,5 @@ module midp extends cldc {
 
 module javacall {
 	depends third_party.phoneme.core
-	depends embox.compat.posix.file
+	depends embox.compat.posix.fs.file
 }

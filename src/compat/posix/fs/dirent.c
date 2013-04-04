@@ -1,6 +1,8 @@
 /**
+ * @file
+ * @brief
  *
- * @date 04.02.2013
+ * @date 04.02.13
  * @author Alexander Kalmuk
  * @author Anton Kozlov
  */
@@ -12,6 +14,7 @@
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <fs/flags.h>
+#include <framework/mod/options.h>
 
 #include <dirent.h>
 
@@ -24,7 +27,7 @@ DIR *opendir(const char *path) {
 	DIR *d;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
 		return NULL;
 	}

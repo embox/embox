@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <kernel/thread.h>
+#include <kernel/printk.h>
 
 #include <utmp.h>
 
@@ -139,7 +140,6 @@ static int utmp_login(short ut_type, const char *host) {
 	struct timeval tv;
 
 	utmp.ut_type = ut_type;
-	utmp.ut_type = ut_type;
 	utmp.ut_pid = getpid();
 	snprintf(utmp.ut_id, UT_IDSIZE, "/%hd", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
@@ -162,21 +162,40 @@ static int utmp_login(short ut_type, const char *host) {
 extern int kill(int tid, int sig);
 
 static void *shell_hnd(void* args) {
+	int ret;
 	int *msg = (int*)args;
 
 	struct sockaddr_in *addr_in = &clients[msg[2]].addr_in;
 
-	utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
+	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
+	if (ret != 0) {
+		MD(printk("utmp_login LOGIN error: %d\n", ret));
+	}
 
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
+	if (-1 == close(STDIN_FILENO)) {
+		MD(printk("close STDIN_FILENO error: %d\n", errno));
+	}
+	if (-1 == close(STDOUT_FILENO)) {
+		MD(printk("close STDOUT_FILENO error: %d\n", errno));
+	}
 
-	dup2(msg[0], STDIN_FILENO);
-	dup2(msg[1], STDOUT_FILENO);
+	if (-1 == dup2(msg[0], STDIN_FILENO)) {
+		MD(printk("dup2 STDIN_FILENO error: %d\n", errno));
+	}
+	if (-1 == dup2(msg[1], STDOUT_FILENO)) {
+		MD(printk("dup2 STDOUT_FILENO error: %d\n", errno));
+	}
 
-	shell_run(shell_lookup("tish"));
+	ret = shell_run(shell_lookup("tish"));
+	if (ret != 0) {
+		MD(printk("shell_run error: %d\n", ret));
+	}
 
-	utmp_login(DEAD_PROCESS, "");
+
+	ret = utmp_login(DEAD_PROCESS, "");
+	if (ret != 0) {
+		MD(printk("utmp_login DEAD error: %d\n", ret));
+	}
 
 	return NULL;
 }
@@ -216,7 +235,9 @@ static void *telnet_thread_handler(void* args) {
 	int nfds;
 	fd_set readfds, writefds;
 	struct timeval timeout;
+	int ret;
 
+	MD(printk("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
@@ -228,8 +249,14 @@ static void *telnet_thread_handler(void* args) {
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
-	pipe_pty(pipefd1);
-	pipe_pty(pipefd2);
+	ret = pipe_pty(pipefd1);
+	if (ret != 0) {
+		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+	}
+	ret = pipe_pty(pipefd2);
+	if (ret != 0) {
+		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+	}
 
 	msg[0] = sock;
 	msg[1] = pipefd1[1];
@@ -271,17 +298,20 @@ static void *telnet_thread_handler(void* args) {
 			FD_SET(pipefd1[1], &writefds);
 		}
 
+		MD(printk("."));
+
 		fd_cnt = select(nfds, &readfds, &writefds, NULL, &timeout);
 
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
 		if (!fd_cnt) {
 			fcntl(sock, F_SETFD, O_NONBLOCK);
-			read(sock, s, 128);
-			fcntl(sock, F_SETFD, 0);
-			if (errno == ECONNREFUSED) {
+			len = read(sock, s, 128);
+			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
+				MD(printk("read on sock: %d %d\n", len, errno));
 				goto kill_and_out;
 			}
+			fcntl(sock, F_SETFD, 0);
 		}
 
 		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
@@ -289,9 +319,15 @@ static void *telnet_thread_handler(void* args) {
 				pipe_data_len -= len;
 				p += len;
 			}
+			else {
+				MD(printk("write on sock: %d %d\n", len, errno));
+			}
 		} else if (FD_ISSET(pipefd2[0], &readfds)){
 			p = pbuff;
 			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
+			if (pipe_data_len <= 0) {
+				MD(printk("read on pipefd2: %d %d\n", pipe_data_len, errno));
+			}
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
@@ -299,12 +335,18 @@ static void *telnet_thread_handler(void* args) {
 			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
-			} else if (errno == EPIPE) {
-				goto kill_and_out; /* this means that pipe was closed by shell */
+			} else {
+				MD(printk("write on pipefd1: %d %d\n", len, errno));
+				if (errno == EPIPE) {
+					goto kill_and_out; /* this means that pipe was closed by shell */
+				}
 			}
 		} else if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
+			if (sock_data_len <= 0) {
+				MD(printk("read on sock: %d %d\n", sock_data_len, errno));
+			}
 			if (errno == ECONNREFUSED) {
 				goto kill_and_out;
 			}
@@ -320,6 +362,8 @@ out:
 	close(pipefd2[0]);
 	close(sock);
 	clients[client_num].fd = -1;
+
+	MD(printk("exiting from telnet_thread_handler\n"));
 
 	return NULL;
 }
@@ -338,22 +382,22 @@ static int exec(int argc, char **argv) {
 	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		printf("can't create socket\n");
+		printk("can't create socket\n");
 		return -errno;
 	}
 
 	if ((res = bind(listening_descr, (struct sockaddr *)&listening_socket,
 					sizeof(listening_socket))) < 0) {
-		printf("bind() failed\n");
+		printk("bind() failed\n");
 		goto listen_failed;
 	}
 
 	if ((res = listen(listening_descr, TELNETD_MAX_CONNECTIONS)) < 0) {
-		printf("listen() failed\n");
+		printk("listen() failed\n");
 		goto listen_failed;
 	}
 
-	MD(printf("telnetd is ready to accept connections\n"));
+	MD(printk("telnetd is ready to accept connections\n"));
 	while (1) {
 		struct sockaddr_in client_socket;
 		int client_socket_len = sizeof(client_socket);
@@ -363,11 +407,11 @@ static int exec(int argc, char **argv) {
 		size_t i;
 
 		if (client_descr < 0) {
-			MD(printf("accept() failed. code=%d\n", client_descr));
+			MD(printk("accept() failed. code=%d\n", -errno));
 			continue;
 		}
 
-		MD(printf("Attempt to connect from address %s:%d",
+		MD(printk("Attempt to connect from address %s:%d\n",
 			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
 
 		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
@@ -378,8 +422,7 @@ static int exec(int argc, char **argv) {
 
 		if (i >= TELNETD_MAX_CONNECTIONS) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			printf("%s\n", "limit");
-			MD(printf("limit of connections exceded\n"));
+			MD(printk("limit of connections exceded\n"));
 			continue;
 		}
 
@@ -388,7 +431,7 @@ static int exec(int argc, char **argv) {
 
 		if (0 != thread_create(&thread, 0, telnet_thread_handler, (void *) i)) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("thread_create() returned with code=%d\n", res));
+			MD(printk("thread_create() returned with code=%d\n", res));
 			clients[i].fd = -1;
 		}
 	}

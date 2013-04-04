@@ -269,6 +269,14 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
 		*daddrlen = sizeof *dest_addr;
 	}
 
+	softirq_lock();
+	{
+		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
+			idx_io_disable(sock->desc_data, IDX_IO_READING);
+		}
+	}
+	softirq_unlock();
+
 	return (ssize_t)iov.iov_len;
 }
 
@@ -276,6 +284,11 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	ssize_t ret;
 	struct socket *sock;
+	int fd_flags;
+
+	(void)flags;
+	/* XXX separate usage of recvfrom()'s flags and fd_flags in file descriptor */
+	fd_flags = *task_idx_desc_flags_ptr(task_self_idx_get(sockfd));
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -285,13 +298,13 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 
 	sched_lock();
 	{
-		ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
-		/* if !O_NONBLOCK on socket's file descriptor {*/
-		if (ret == -1) {
-			event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
-			ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
+		if (ret == -1 && errno == EAGAIN) {
+			if (!(fd_flags & O_NONBLOCK)) {
+				event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+				ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
+			}
 		}
-		/* } */
 	}
 	sched_unlock();
 
@@ -362,21 +375,8 @@ int socket_close(int sockfd) {
 #endif
 
 static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	struct socket *sock = task_idx_desc_data(data);
-	ssize_t len;
-
-	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
+	return recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
 			*task_idx_desc_flags_ptr(data), NULL, 0);
-
-	softirq_lock();
-	{
-		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
-			idx_io_disable(sock->desc_data, IDX_IO_READING);
-		}
-	}
-	softirq_unlock();
-
-	return len;
 }
 
 static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {

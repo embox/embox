@@ -24,6 +24,7 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <limits.h>
 
 #include <embox/block_dev.h>
 
@@ -1000,7 +1001,7 @@ static void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * was created and can be used.
  */
 static int fat_create_file(struct node * parent_node, struct node *node) {
-	char tmppath[MAX_LENGTH_PATH_NAME];
+	char tmppath[PATH_MAX];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1124,7 +1125,7 @@ static int fat_create_file(struct node * parent_node, struct node *node) {
  */
 static uint32_t fat_open_file(struct nas *nas, uint8_t *path, int mode,
 		uint8_t *p_scratch) {
-	char tmppath[MAX_LENGTH_PATH_NAME];
+	char tmppath[PATH_MAX];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1141,8 +1142,8 @@ static uint32_t fat_open_file(struct nas *nas, uint8_t *path, int mode,
 	fi->mode = mode;
 
 	/* Get a local copy of the path. If it's longer than MAX_PATH, abort.*/
-	strncpy((char *) tmppath, (char *) path, MAX_LENGTH_PATH_NAME);
-	tmppath[MAX_LENGTH_PATH_NAME - 1] = 0;
+	strncpy((char *) tmppath, (char *) path, PATH_MAX);
+	tmppath[PATH_MAX - 1] = 0;
 	if (strcmp((char *) path,(char *) tmppath)) {
 		return DFS_PATHLEN;
 	}
@@ -1773,7 +1774,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 	uint8_t pactive, ptype;
 	dir_info_t di;
 	dir_ent_t de;
-	char full_path[MAX_LENGTH_PATH_NAME];
+	char full_path[PATH_MAX];
 	uint8_t name[MSDOS_NAME + 2];
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -1843,7 +1844,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	dir_ent_t de;
 	uint8_t *rcv_buf;
 	char name[MSDOS_NAME + 2];
-	char full_path[MAX_LENGTH_PATH_NAME];
+	char full_path[PATH_MAX];
 	struct nas *nas;
 	struct fat_file_info  *fi;
 	node_t *node;
@@ -1966,7 +1967,7 @@ static struct kfile_operations fatfs_fop = {
 static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	node_t *node;
 	struct nas *nas;
-	uint8_t path [MAX_LENGTH_PATH_NAME];
+	uint8_t path [PATH_MAX];
 	struct fat_file_info *fi;
 
 	node = nod;
@@ -2303,7 +2304,7 @@ static int fatfs_delete(struct node *node) {
 	struct nas *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	char path [MAX_LENGTH_PATH_NAME];
+	char path [PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
@@ -2355,7 +2356,7 @@ static int fatfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
 	void *prev_fi, *prev_fs;
-	char path[MAX_LENGTH_PATH_NAME];
+	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;

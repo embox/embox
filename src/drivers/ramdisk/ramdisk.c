@@ -17,6 +17,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
+#include <limits.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_BLOCK_SIZE  PAGE_SIZE()
@@ -73,7 +74,7 @@ int ramdisk_create(char *path, size_t size) {
 	}
 
 	strncpy ((void *)&ramdisk->path,
-			 (const void *)path, MAX_LENGTH_PATH_NAME);
+			 (const void *)path, PATH_MAX);
 	ramdisk->size = ramdisk->blocks * RAMDISK_BLOCK_SIZE;
 	block_dev(ramdisk->bdev)->size = ramdisk->size;
 	ramdisk->block_size = PAGE_SIZE();

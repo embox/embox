@@ -11,6 +11,7 @@
 
 #include <fs/node.h>
 #include <stddef.h>
+#include <limits.h>
 
 typedef struct ramdisk {
 	int             idx;
@@ -20,8 +21,8 @@ typedef struct ramdisk {
 	char           *p_start_addr;
 	size_t          blocks;
 	size_t          block_size;
-	const char      path[MAX_LENGTH_PATH_NAME];
-	const char      fs_name[MAX_LENGTH_FILE_NAME];
+	const char      path[PATH_MAX];
+	const char      fs_name[NAME_MAX];
 	unsigned int    fs_type;
 } ramdisk_t;
 

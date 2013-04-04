@@ -19,6 +19,7 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/indexator.h>
+#include <limits.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 
@@ -156,7 +157,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 		return NULL;
 	}
 
-	strncpy (bdev->name, node->name, MAX_LENGTH_FILE_NAME);
+	strncpy (bdev->name, node->name, NAME_MAX);
 	bdev->dev_node = node;
 
 	nas = node->nas;

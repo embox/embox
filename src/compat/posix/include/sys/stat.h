@@ -1,25 +1,19 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 07.09.2011
  * @author Anton Bondarev
  */
 
-#ifndef SYS_STAT_H_
-#define SYS_STAT_H_
+#ifndef COMPAT_POSIX_SYS_STAT_H_
+#define COMPAT_POSIX_SYS_STAT_H_
 
 #include <sys/types.h>
 #include <sys/cdefs.h>
-
-#include <framework/mod/options.h>
-#include <module/embox/fs/fs_name_opt.h>
+#include <limits.h>
 
 __BEGIN_DECLS
-
-#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,file_name_length)
-#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,path_length)
 
 #define S_IFMT   0170000   /* File type mask */
 #define S_IFPKT  0160000   /* Packet device */
@@ -78,6 +72,13 @@ __BEGIN_DECLS
 #define S_TYPEISSEM(buf)   //Test for a semaphore
 #define S_TYPEISSHM(buf)   //Test for a shared memory object
 
+
+#define S_ISUID 0004000                 /* set user id on execution */
+#define S_ISGID 0002000                 /* set group id on execution */
+#define S_ISTXT 0001000                 /* sticky bit */
+
+#define ALLPERMS        (mode_t)(S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
+
 typedef struct stat {
 	int       st_dev;     /* ID of device containing file */
 	int       st_ino;     /* inode number */
@@ -102,9 +103,9 @@ typedef struct statfs  {
 	unsigned int files;        /* Total file nodes in file system */
 	unsigned int ffree;        /* Free file nodes in fs */
 	unsigned int cachesize;    /* Cache buffers */
-	char fstype[MAX_LENGTH_FILE_NAME];   /* File system type name */
-	char mntto[MAX_LENGTH_PATH_NAME];       /* Directory on which mounted */
-	char mntfrom[MAX_LENGTH_PATH_NAME];     /* Mounted file system */
+	char fstype[NAME_MAX];   /* File system type name */
+	char mntto[PATH_MAX];       /* Directory on which mounted */
+	char mntfrom[PATH_MAX];     /* Mounted file system */
 } statfs_t;
 
 /**
@@ -113,7 +114,7 @@ typedef struct statfs  {
 static inline int chmod(const char *path, mode_t mode) {
 	return -1;
 }
-extern int    fchmod(int, mode_t);
+//extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
 extern int    fstat(int fd, struct stat *);
@@ -126,4 +127,4 @@ static inline mode_t umask(mode_t mode) {
 
 __END_DECLS
 
-#endif /* SYS_STAT_H_ */
+#endif /* COMPAT_POSIX_SYS_STAT_H_ */

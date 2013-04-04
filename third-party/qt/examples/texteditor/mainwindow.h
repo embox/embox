@@ -7,6 +7,7 @@
 #include "openfiledialog.h"
 #include "createfiledialog.h"
 #include "savefiledialog.h"
+#include "helpwindow.h"
 
 #define TEDIT_APP_TITLE "TextEditor"
 #define TEDIT_DIR "/tmp/"
@@ -22,6 +23,8 @@ class TextEditor : public QMainWindow
         void create();
         void open();
         void save();
+        void quit();
+        void help();
 
     private:
         QTextEdit *textEdit;
@@ -30,13 +33,16 @@ class TextEditor : public QMainWindow
         QAction *openAction;
         QAction *saveAction;
         QAction *exitAction;
+        QAction *helpAction;
 
         QMenu *fileMenu;
+        QMenu *helpMenu;
         QString fileName;
 
         OpenFileDialog *openDialog;
         CreateFileDialog *createDialog;
         SaveFileDialog *saveFile;
+        QWizard *helpWindow;
 };
 
 #endif // MAINWINDOW_H

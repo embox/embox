@@ -26,6 +26,7 @@
 #include <kernel/thread/state.h>
 #include <kernel/time/timer.h>
 #include <kernel/task.h>
+#include <kernel/task/signal.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
 
@@ -338,32 +339,34 @@ static void sched_switch(void) {
 
 		ipl_disable();
 
-		task_notify_switch(prev, next);
+		//task_notify_switch(prev, next);
 
 		thread_set_current(next);
 		context_switch(&prev->context, &next->context);
 	}
 
 out:
+	task_signal_hnd();
 	sched_unlock_noswitch();
 }
 
 int sched_tryrun(struct thread *thread) {
 	int res = 0;
 
-	assert(!in_harder_critical());
-
-	sched_lock();
-
-	{
-		if (thread_state_sleeping(thread->state)) {
-			do_wake_thread(thread, -EINTR);
-		} else if (!thread_state_running(thread->state)) {
-			res = -1;
+	if (in_harder_critical()) {
+		startq_enqueue_thread(thread, -EINTR);
+		critical_request_dispatch(&sched_critical);
+	} else {
+		sched_lock();
+		{
+			if (thread_state_sleeping(thread->state)) {
+				do_wake_thread(thread, -EINTR);
+			} else if (!thread_state_running(thread->state)) {
+				res = -1;
+			}
 		}
+		sched_unlock();
 	}
-
-	sched_unlock();
 
 	return res;
 }

@@ -99,12 +99,13 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 #if 0
 	sock_set_ready(sock->sk);
 #endif
-	/* newly created socket is UNCONNECTED for sure */
-	sk_set_connection_state(sock, UNCONNECTED);
 	/* addr socket entry to registry */
 	if (0 > (res = sr_add_socket_to_registry(sock))) {
 		return res;
 	}
+
+	/* newly created socket is UNCONNECTED for sure */
+	sk_set_connection_state(sock, UNCONNECTED);
 	/* set default socket options */
 	so_options_init(&sock->socket_node->options, type);
 	*psock = sock; /* and save structure */

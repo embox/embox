@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <embox/unit.h>
 #include <kernel/task/idx.h>
@@ -18,8 +19,25 @@
 OBJALLOC_DEF(idx_pool, struct idx_desc, TASKS_RES_QUANTITY);
 OBJALLOC_DEF(idx_data_pool, struct idx_desc_data, TASKS_RES_QUANTITY);
 
+static void __task_idx_desc_free(struct idx_desc *idx) {
+	assert(idx);
+	objfree(&idx_pool, idx);
+}
+
+static void __task_idx_data_free(struct idx_desc_data *data) {
+	assert(data);
+	objfree(&idx_data_pool, data);
+}
+
 struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
-	struct idx_desc *idx = objalloc(&idx_pool);
+	struct idx_desc *idx;
+
+	assert(data);
+
+	idx = objalloc(&idx_pool);
+	if (idx == NULL) {
+		return NULL;
+	}
 
 	idx->data = data;
 	idx->flags = 0;
@@ -32,6 +50,9 @@ struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
 int task_idx_desc_free(struct idx_desc *idx) {
 	int res;
 
+	assert(idx);
+	assert(idx->data);
+
 	if (1 == idx->data->link_count) {
 		if (0 != (res = task_idx_data_free(idx))) {
 			return res;
@@ -40,30 +61,49 @@ int task_idx_desc_free(struct idx_desc *idx) {
 		idx->data->link_count -= 1;
 	}
 
-	objfree(&idx_pool, idx);
+	__task_idx_desc_free(idx);
+
 	return 0;
 }
 
-struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
-	struct idx_desc_data *idx_data = objalloc(&idx_data_pool);
+struct idx_desc_data * task_idx_data_alloc(const struct task_idx_ops *res_ops,
+		void *fd_struct) {
+	struct idx_desc_data *idx_data;
+
+	assert(res_ops);
+	assert(fd_struct);
+
+	idx_data = objalloc(&idx_data_pool);
+	if (idx_data == NULL) {
+		return NULL;
+	}
+
 	idx_data->link_count = 0;
 	idx_data->res_ops = res_ops;
 	idx_data->fd_struct = fd_struct;
+
 	return idx_data;
 }
 
 int task_idx_data_free(struct idx_desc *idx) {
 	int res;
 
+	assert(idx);
+	assert(idx->data);
+	assert(idx->data->res_ops);
+	assert(idx->data->res_ops->close);
+
 	if (0 != (res = idx->data->res_ops->close(idx))) {
 		return res;
 	}
 
-	objfree(&idx_data_pool, idx->data);
+	__task_idx_data_free(idx->data);
+
 	return 0;
 }
 
 int task_idx_table_first_unbinded(struct task_idx_table *res) {
+	assert(res);
 	return util_idx_table_next_alloc((util_idx_table_t *) &res->idx);
 }
 
@@ -86,8 +126,9 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 }
 
 int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
-	int new_fd;
+	int new_fd, ret;
 	struct task_idx_table *self_res = task_self_idx_table();
+	struct idx_desc *desc;
 	struct idx_desc_data *data;
 
 	if ((new_fd = task_idx_table_first_unbinded(self_res)) < 0) {
@@ -95,9 +136,24 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 	}
 
 	data = task_idx_data_alloc(res_ops, fd_struct);
+	if (data == NULL) {
+		task_idx_table_unbind(self_res, new_fd);
+		return -ENOMEM;
+	}
 
-	if (0 != task_idx_table_set(self_res, new_fd, task_idx_desc_alloc(data))) {
-		return -1;
+	desc = task_idx_desc_alloc(data);
+	if (desc == NULL) {
+		task_idx_table_unbind(self_res, new_fd);
+		__task_idx_data_free(data);
+		return -ENOMEM;
+	}
+
+	ret = task_idx_table_set(self_res, new_fd, desc);
+	if (ret < 0) {
+		task_idx_table_unbind(self_res, new_fd);
+		__task_idx_data_free(data);
+		__task_idx_desc_free(desc);
+		return ret;
 	}
 
 	/* Disable reading/writing on descriptor */
@@ -124,25 +180,41 @@ static void task_idx_table_init(struct task *task, void* _idx_table) {
 	task->idx_table = task_idx_table;
 }
 
-static void task_idx_table_inherit(struct task *task, struct task *parent) {
+static int task_idx_table_inherit(struct task *task, struct task *parent) {
+	int i, ret;
 	struct task_idx_table *idx_table = task_idx_table(task);
 	struct task_idx_table *parent_idx_table = task_idx_table(parent);
 
-	for (int i = 0; i < TASKS_RES_QUANTITY; i++) {
+	for (i = 0; i < TASKS_RES_QUANTITY; i++) {
 		if (task_idx_table_is_binded(parent_idx_table, i)) {
 			struct idx_desc *par_idx = task_idx_table_get(parent_idx_table, i);
 			struct idx_desc *d;
 
-		       	if (!par_idx) {
+			if (!par_idx) {
 				continue;
 			}
 
 			d = task_idx_desc_alloc(par_idx->data);
-			assert(0 == task_idx_table_set(idx_table, i, d),
-					"task_idx_table_init not properly inited idx table");
+			if (d == NULL) {
+				ret = -ENOMEM;
+				goto out_free_table;
+			}
 
+			ret = task_idx_table_set(idx_table, i, d);
+			if (ret != 0) {
+				__task_idx_desc_free(d);
+				goto out_free_table;
+			}
 		}
 	}
+
+	return 0;
+
+out_free_table:
+	while (i > 0) {
+		task_idx_table_unbind(idx_table, --i);
+	}
+	return ret;
 }
 
 static void task_idx_table_deinit(struct task *task) {

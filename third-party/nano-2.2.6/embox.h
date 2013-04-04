@@ -28,6 +28,9 @@ extern int nano_main(int argc, char **argv);
 	} while(0);
 
 #include <signal.h>
+
 static inline int sigfillset(sigset_t *set) { return -1; }
+static inline int sigaction(int sig, const struct sigaction *act,
+		struct sigaction *oact) { return -1; }
 
 #endif /* EMBOX_H_ */

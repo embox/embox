@@ -1,0 +1,21 @@
+package embox.cmd.fs
+
+@Cmd(name = "pwd",
+	help = "print working directory",
+	man = '''
+		NAME
+			pwd - print working directory
+		SYNOPSIS
+			pwd
+		DESCRIPTION
+			Print working directory
+		AUTHORS
+			Ilia Vaprol
+	''')
+module pwd {
+	source "pwd.c"
+
+	depends embox.compat.posix.fs.getcwd
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

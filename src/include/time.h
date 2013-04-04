@@ -7,11 +7,10 @@
  * @author Ilia Vaprol
  */
 
-#ifndef POSIX_TIME_H_
-#define POSIX_TIME_H_
+#ifndef TIME_H_
+#define TIME_H_
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <stddef.h>    /* NULL definition */
 #include <sys/cdefs.h>
 
@@ -46,11 +45,6 @@ struct itimerspec {
 	struct timespec it_value;     /* Timer expiration. */
 };
 
-struct timezone {
-    int tz_minuteswest;     /* minutes west of Greenwich */
-    int tz_dsttime;         /* type of DST correction */
-};
-
 /**
  * Converts the calendar time t into a null-terminated string of the form
  * "Wed Jun 30 21:49:08 1993\n".
@@ -65,6 +59,11 @@ extern struct tm *gmtime(const time_t *timep);
 extern struct tm *gmtime_r(const time_t *timep, struct tm *result);
 
 extern time_t mktime(struct tm *tm);
+
+/* convert date and time to a string */
+extern char *asctime(const struct tm *timeptr);
+
+extern struct tm *localtime(const time_t *timep);
 
 #define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
 
@@ -81,8 +80,6 @@ extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
-extern int gettimeofday(struct timeval *ts, struct timezone *tz);
-
 /* seconds from beginning of start system */
 extern time_t time(time_t *t);
 
@@ -91,7 +88,6 @@ extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
-
 __END_DECLS
 
-#endif /* POSIX_TIME_H_ */
+#endif /* TIME_H_ */

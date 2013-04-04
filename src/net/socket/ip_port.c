@@ -105,22 +105,23 @@ int ip_port_unlock(int type, unsigned short pnum) {
 	return 0;
 }
 
-unsigned short ip_port_get_free(int type) {
+unsigned short ip_port_get_free_since(int type, int since) {
 	int ret, bit_n;
 	unsigned long int *ports;
 	size_t size, word_n;
 	unsigned short try_pnum;
+
+	if (since < 1) {
+		return 0;
+	}
 
 	ret = get_port_table(type, &ports, &size);
 	if (ret != 0) {
 		return 0;
 	}
 
-	static_assert((PORTS_GET_FREE_SINCE > 0)
-			|| (PORTS_GET_FREE_SINCE <= PORTS_PER_PROTOCOL));
-
-	word_n = (PORTS_GET_FREE_SINCE - 1) / LONG_BIT;
-	bit_n = (PORTS_GET_FREE_SINCE - 1) % LONG_BIT;
+	word_n = (since - 1) / LONG_BIT;
+	bit_n = (since - 1) % LONG_BIT;
 
 	assert(ports != NULL);
 	assert(word_n < size);
@@ -138,4 +139,18 @@ unsigned short ip_port_get_free(int type) {
 	}
 
 	return 0;
+}
+
+unsigned short ip_port_get_free(int type) {
+	static unsigned short next_pnum = PORTS_GET_FREE_SINCE;
+	unsigned short pnum;
+
+	pnum = ip_port_get_free_since(type, next_pnum);
+	if (pnum == 0) {
+		pnum = ip_port_get_free_since(type, PORTS_GET_FREE_SINCE);
+	}
+
+	next_pnum = pnum != 0 ? pnum + 1 : next_pnum;
+
+	return pnum;
 }

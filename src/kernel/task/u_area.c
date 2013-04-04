@@ -17,8 +17,9 @@ static void u_area_init(struct task *task, void* _u_area) {
 	task->u_area = u_area;
 }
 
-static void u_area_inherit(struct task *task, struct task *parent) {
+static int u_area_inherit(struct task *task, struct task *parent) {
 	memcpy(task->u_area, parent->u_area, sizeof(struct task_u_area));
+	return 0;
 }
 
 static void u_area_deinit(struct task *task) {

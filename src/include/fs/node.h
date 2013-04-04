@@ -12,11 +12,12 @@
 #include <sys/stat.h>
 #include <fs/file_system.h>
 #include <util/tree.h>
+#include <limits.h>
 
 struct nas;
 
 typedef struct node {
-	char                  name[MAX_LENGTH_FILE_NAME + 1];
+	char                  name[NAME_MAX + 1];
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
 
 	mode_t                mode;

@@ -10,7 +10,7 @@ module ramdisk_test {
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
-	depends embox.compat.posix.fs
+	depends embox.compat.posix.fs.fsop
 	depends embox.framework.LibFramework
 }
 
@@ -29,10 +29,10 @@ module filesystem_test {
 }
 
 module xattr {
-        source "xattr.c"
+	source "xattr.c"
 
 	depends embox.driver.ramdisk
-        depends embox.compat.posix.xattr
+	depends embox.compat.posix.fs.xattr
 }
 
 module file_test {

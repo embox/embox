@@ -163,7 +163,7 @@ int arp_resolve(struct sk_buff *skb) {
 	}
 
 	/* loopback */
-	if (ipv4_is_loopback(daddr) || (daddr == skb->nh.iph->saddr)) {
+	if (ip_is_local(daddr, false, false)) {
 		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return ENOERR;
 	}
@@ -173,14 +173,6 @@ int arp_resolve(struct sk_buff *skb) {
 		memset(skb->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return ENOERR;
 	}
-
-#if 0
-	/* our machine on our device? */
-	if (ip->daddr == inetdev_get_addr(inetdev_get_by_dev(dev))){
-		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
-		return 0;
-	}
-#endif
 
 	/* someone on the net */
 	ret = neighbour_get_hardware_address((const unsigned char *)&daddr,

@@ -12,6 +12,7 @@
 #define TERMIOS_H_
 
 #include <sys/ioctl.h>
+#include <sys/types.h>
 
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT          0x0001  /* signal interrupt on break */
@@ -137,6 +138,9 @@ struct winsize {
 extern int tcgetattr(int fd, struct termios *);
 extern int tcsetattr(int fd, int opt, const struct termios *);
 
+extern pid_t tcgetpgrp(int fd);
+extern int tcsetpgrp(int fd, pid_t pgrp);
+
 static inline speed_t cfgetispeed(const struct termios *termios) {
 	return termios->c_ispeed;
 }
@@ -162,5 +166,8 @@ static inline int cfsetospeed(struct termios *termios, speed_t speed) {
 
 #define	TIOCGWINSZ	_IOR('t', 5, struct winsize)  /* get window size */
 #define	TIOCSWINSZ	_IOW('t', 6, struct winsize)  /* set window size */
+
+#define TIOCSPGRP	_IOR('t', 7, pid_t)  /* set process group */
+#define TIOCGPGRP	_IO('t', 8)  /* get process group */
 
 #endif /* TERMIOS_H_ */

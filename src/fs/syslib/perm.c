@@ -53,7 +53,7 @@ int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,
 		*pathlast = path;
 	}
 
-	*node = root ? root : vfs_get_root();
+	*node = root ? root : vfs_get_leaf();
 
 	while (1) {
 		if (NULL == (path = path_next(path + len, &len))) {

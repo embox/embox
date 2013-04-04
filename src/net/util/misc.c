@@ -11,7 +11,6 @@
 #include <string.h>
 #include <util/array.h>
 
-/*FIXME rename this file it contains only net_utils function*/
 unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];
 	size_t i, j, tmp, cur = 0;
@@ -84,22 +83,3 @@ void macaddr_print(unsigned char *buf, const unsigned char *addr) {
 	sprintf((char *) buf, "%02X:%02X:%02X:%02X:%02X:%02X",
 	    addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
-
-#if 0
-int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk) {
-	const unsigned shift = 0xFFFFFFFF;
-	struct in_addr addr;
-	int userip, netip;
-	uint32_t mask, shiftMask;
-	inet_aton((char *) uip, &addr);
-	userip = addr.s_addr;
-
-	inet_aton((char *) nip, &addr);
-	netip = addr.s_addr;
-
-	mask = msk;
-	shiftMask = shift << (32 - mask);
-
-	return (__bswap_32(netip) & shiftMask) == (__bswap_32(userip) & shiftMask) ? 0 : -1;
-}
-#endif

@@ -47,8 +47,8 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->lock = 0;
-	sock.tcp_sk->last_activity = 0;
-	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;
+	timerclear(&sock.tcp_sk->last_activity);
+	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 
 	event_init(&sock.tcp_sk->new_conn, "new_conn");
@@ -63,7 +63,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 	struct sockaddr_in *addr_in;
 	struct rt_entry *rte;
 	int ret;
-	useconds_t started, now;
+	struct timeval started;
 	static const __u8 magic_opts[] = {
 		/**
 		 * TODO
@@ -121,17 +121,15 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-			now = started = tcp_get_usec();
+			tcp_get_now(&started);
+			ret = 0;
 			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
-				now = tcp_get_usec();
-				if (now - started >= sock.tcp_sk->oper_timeout) {
+				if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
+					ret = -ETIMEDOUT;
 					break;
 				}
 			}
-			if (now - started >= sock.tcp_sk->oper_timeout) {
-				ret = -ETIMEDOUT;
-			}
-			else {
+			if (ret == 0) {
 				ret = tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
 			}
 			break;
@@ -174,7 +172,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		struct sockaddr *addr, int *addr_len, int flags) {
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
-	useconds_t started;
+	struct timeval started;
 
 	assert(sk != NULL);
 	assert(newsk != NULL);
@@ -234,9 +232,9 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		debug_print(3, "tcp_v4_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
 				inet_ntoa(*(struct in_addr *)&newsock.inet_sk->daddr), (int)ntohs(newsock.inet_sk->dport));
 		/* wait until something happened */
-		started = tcp_get_usec();
+		tcp_get_now(&started);
 		while (tcp_st_status(newsock) == TCP_ST_NONSYNC) {
-			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
+			if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
 				tcp_free_sock(newsock);
 				return -ETIMEDOUT;
 			}
@@ -315,7 +313,7 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	union sock_pointer sock;
 	size_t bytes;
 	char *buff, last_iteration;
-	useconds_t started;
+	struct timeval started;
 
 	assert(sk != NULL);
 	assert(msg != NULL);
@@ -324,7 +322,7 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_recvmsg: sk %p\n", sock.tcp_sk);
 
-	started = tcp_get_usec();
+	tcp_get_now(&started);
 
 check_state:
 	assert(sock.sk->sk_state < TCP_MAX_STATE);
@@ -341,12 +339,11 @@ check_state:
 				msg->msg_iov->iov_len = 0;
 				return 0; /* no more data to receive */
 			}
-			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
-				return -ETIMEDOUT; /* error: timeout */
-			}
-
 			if (flags & O_NONBLOCK) {
 				return -EAGAIN;
+			}
+			if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
+				return -ETIMEDOUT; /* error: timeout */
 			}
 			/* wait received packet or another state */
 			goto check_state;

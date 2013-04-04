@@ -40,7 +40,6 @@ static void print_statistic(void *stat) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	int fd;
 
 	if (argc < 2) {
 		printf("Please enter correct file name\n");
@@ -67,15 +66,12 @@ static int exec(int argc, char **argv) {
 		print_usage();
 		return 0;
 	}
-	if (0 > (fd = open(argv[argc - 1], O_RDONLY))) {
-		printf("Can't open file %s\n", argv[argc - 1]);
+
+	if (-1 == stat(argv[argc - 1], &filestat)) {
 		return -errno;
 	}
 
-	if (0 <= stat(fd, &filestat)) {
-		print_statistic(&filestat);
-	}
+	print_statistic(&filestat);
 
-	close(fd);
 	return 0;
 }

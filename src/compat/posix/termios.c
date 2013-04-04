@@ -28,3 +28,13 @@ int tcsetattr(int fd, int opt, const struct termios *termios) {
 		return (-1);
 	}
 }
+
+pid_t tcgetpgrp(int fd) {
+	pid_t pid;
+	ioctl(fd, TIOCGPGRP, &pid);
+	return pid;
+}
+
+int tcsetpgrp(int fd, pid_t pgrp) {
+	return ioctl(fd, TIOCSPGRP, &pgrp);
+}

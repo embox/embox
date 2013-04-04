@@ -15,6 +15,6 @@ module echo {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.posix.file
+	depends embox.compat.posix.fs.file
 	depends embox.framework.LibFramework
 }

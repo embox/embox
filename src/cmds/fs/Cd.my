@@ -1,0 +1,23 @@
+package embox.cmd.fs
+
+@Cmd(name = "cd",
+	help = "change directory",
+	man = '''
+		NAME
+			cd - change directory
+		SYNOPSIS
+			cd [dir]
+		DESCRIPTION
+			Change current directory
+		AUTHORS
+			Ilia Vaprol
+	''')
+module cd {
+	option string home_dir="/"
+	source "cd.c"
+
+	depends embox.compat.posix.fs.chdir
+	depends embox.compat.posix.fs.getcwd
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

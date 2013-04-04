@@ -16,6 +16,7 @@
 #include <mem/phymem.h>
 #include <embox/cmd.h>
 #include <embox/block_dev.h>
+#include <limits.h>
 
 #define BSIZE   512
 #define PATH "if="
@@ -98,8 +99,8 @@ static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 
 static int exec(int argc, char **argv) {
 	int rc;
-	char path[MAX_LENGTH_PATH_NAME];
-	char num[MAX_LENGTH_FILE_NAME];
+	char path[PATH_MAX];
+	char num[NAME_MAX];
 	size_t bytes;
 	blkno_t blkno;
 	char *buffer;

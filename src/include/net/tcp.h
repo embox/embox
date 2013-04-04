@@ -13,6 +13,8 @@
 #include <hal/arch.h>
 #include <linux/types.h>
 
+#include <sys/time.h>
+
 #include <netinet/tcp.h>
 
 #include <net/inet_sock.h>
@@ -98,7 +100,7 @@ typedef struct tcp_sock {
 	struct list_head conn_wait; /* Queue of incoming connection */
 	struct event new_conn;      /* Event for new connection notification */
 	unsigned int lock;          /* Tool for synchronization */
-	useconds_t last_activity;   /* The time when last message was sent */
+	struct timeval last_activity;   /* The time when last message was sent */
 	useconds_t oper_timeout;    /* Time out for socket functions */
 } tcp_sock_t;
 
@@ -172,6 +174,7 @@ extern void send_from_sock(union sock_pointer sock, struct sk_buff *skb, int xmi
 extern void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb);
 extern int tcp_st_status(union sock_pointer sock);
 extern void debug_print(__u8 code, const char *msg, ...);
-extern useconds_t tcp_get_usec(void);
+extern void tcp_get_now(struct timeval *out_now);
+extern int tcp_is_expired(struct timeval *since, useconds_t limit_msec);
 
 #endif /* NET_TCP_H_ */

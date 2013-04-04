@@ -1,5 +1,16 @@
 package embox.lib
 
+@DefaultImpl(linenoise)
+abstract module readline_api { }
+
+module linenoise extends readline_api {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "readline/linenoise.c"
+
+	depends embox.lib.LibC
+	depends third_party.lib.linenoise
+}
+
 static module LibCurses {
 	source "curses.c"
 
@@ -42,10 +53,10 @@ static module LibCStdlib {
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
 	source "stdlib/abort.c"
+	source "stdlib/system.c"
 
-	option number env_amount=0x4
-	option number env_str_len=0x10
 	source "stdlib/environ.c"
+	depends embox.kernel.task.env
 }
 
 static module LibCString {
@@ -126,7 +137,7 @@ static module LibCStdio {
 	source "stdio/fgetc.c"
 
 	source "stdio/file_ops.c"
-	depends embox.compat.posix.open
+	depends embox.compat.posix.fs.open
 
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
@@ -143,7 +154,7 @@ static module LibCStdio {
 	depends LibCMath
 	depends LibCString
 	//depends embox.driver.iodev.core
-	depends embox.compat.posix.file
+	depends embox.compat.posix.fs.file
 
 	/**
 	 * XXX

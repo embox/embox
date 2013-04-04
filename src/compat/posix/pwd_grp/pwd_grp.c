@@ -135,6 +135,7 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	FILE *file;
 
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		*result = NULL;
 		return res;
 	}
 
@@ -154,12 +155,29 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	return 0;
 }
 
+struct passwd *getpwnam(const char *name) {
+	static struct passwd getpwnam_buffer;
+	char buff[0x80];
+	struct passwd *res;
+
+	if (0 != getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res)) {
+		return 0;
+	}
+
+	if (res == 0) {
+		return NULL;
+	}
+
+	return &getpwnam_buffer;
+}
+
 int getpwuid_r(uid_t uid, struct passwd *pwd,
 		char *buf, size_t buflen, struct passwd **result) {
 	int res;
 	FILE *file;
 
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		*result = NULL;
 		return res;
 	}
 
@@ -177,6 +195,22 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	}
 
 	return 0;
+}
+
+struct passwd *getpwuid(uid_t uid) {
+	static struct passwd getpwuid_buffer;
+	char buff[0x80];
+	struct passwd *res;
+
+	if (0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res)) {
+		//TODO errno must be set
+		return NULL;
+	}
+	if (res == 0) {
+		return NULL;
+	}
+
+	return &getpwuid_buffer;
 }
 
 int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,

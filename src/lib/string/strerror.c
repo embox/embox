@@ -46,6 +46,7 @@ char *strerror(int errnum) {
 	case EACCES:       return "Access denied";
 	case EEXIST:       return "File exist";
 	case ECONNRESET:   return "Connection reset by peer";
+	case ENOTCONN:     return "Socket is not connected";
 	default:           return "Unknown error code. PLEASE REPORT ISSUE 519!";
 	}
 }

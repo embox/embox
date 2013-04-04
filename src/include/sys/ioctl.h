@@ -1,7 +1,6 @@
 /**
  * @file
- *
- * @brief TODO No  single standard. Must move from POSIX
+ * @brief
  *
  * @date 14.09.2011
  * @author Anton Bondarev

@@ -392,8 +392,8 @@ extern int getsockname(int sockfd, struct sockaddr *addr,
 /**
  * TODO not implemented now
  */
-static inline int getpeername(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) { return -1; }
+//static inline int getpeername(int sockfd, struct sockaddr *addr,
+		//socklen_t *addrlen) { return -1; }
 static inline ssize_t recvmsg(int socket, struct msghdr *message,
 		int flags) { return -1; }
 static inline ssize_t sendmsg(int socket, const struct msghdr *message,

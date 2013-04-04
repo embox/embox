@@ -14,9 +14,9 @@ namespace std {
 	using ::mktime;
 	using ::strftime;
 	using ::time;
-	// asctime
+	using ::asctime;
+	using ::localtime;
 	// difftime
-	// localtime;
 } // namespace std
 
 #endif // CTIME_

@@ -1,0 +1,77 @@
+diff -aur sqlite-autoconf-3071600/shell.c sqlite/shell.c
+--- sqlite-autoconf-3071600/shell.c	2013-03-18 20:01:49.000000000 +0400
++++ sqlite/shell.c	2013-04-02 16:03:30.077508393 +0400
+@@ -486,9 +486,9 @@
+ */
+ static void shellLog(void *pArg, int iErrCode, const char *zMsg){
+   struct callback_data *p = (struct callback_data*)pArg;
+-  if( p->pLog==0 ) return;
+-  fprintf(p->pLog, "(%d) %s\n", iErrCode, zMsg);
+-  fflush(p->pLog);
++  //if( p->pLog==0 ) return;
++  printf(">>> sqlite log: (%d) %s\n", iErrCode, zMsg);
++  //fflush(p->pLog);
+ }
+ 
+ /*
+@@ -2781,6 +2781,8 @@
+   /* Windows CE (arm-wince-mingw32ce-gcc) does not provide getenv()
+    */
+   home_dir = "/";
++#elif defined(__EMBOX__)
++  home_dir = "/tmp";
+ #else
+ 
+ #if defined(_WIN32) || defined(WIN32)
+@@ -2935,7 +2937,7 @@
+   return argv[i];
+ }
+ 
+-int main(int argc, char **argv){
++int main_sqlite3(int argc, char **argv){
+   char *zErrMsg = 0;
+   struct callback_data data;
+   const char *zInitFile = 0;
+diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
+--- sqlite-autoconf-3071600/sqlite3.c	2013-03-18 20:01:49.000000000 +0400
++++ sqlite/sqlite3.c	2013-04-02 17:07:35.485602714 +0400
+@@ -18040,6 +18040,7 @@
+ ** mutex types, the same mutex is returned on every call that has
+ ** the same type number.
+ */
++#define PTHREAD_MUTEX_INITIALIZER {{{NULL,NULL,NULL},{{NULL,NULL,NULL},0,NULL,0}},NULL,0}
+ static sqlite3_mutex *pthreadMutexAlloc(int iType){
+   static sqlite3_mutex staticMutexes[] = {
+     SQLITE3_MUTEX_INITIALIZER,
+@@ -18049,6 +18050,13 @@
+     SQLITE3_MUTEX_INITIALIZER,
+     SQLITE3_MUTEX_INITIALIZER
+   };
++  static Bool staticMutexesInitialized = 0;
++  if (!staticMutexesInitialized) {
++    staticMutexesInitialized = 1;
++    for(int i=0; i<sizeof(staticMutexes)/sizeof(sqlite3_mutex); i++) {
++      pthread_mutex_init(&staticMutexes[i].mutex, NULL);
++    }
++  }
+   sqlite3_mutex *p;
+   switch( iType ){
+     case SQLITE_MUTEX_RECURSIVE: {
+@@ -23023,6 +23031,8 @@
+ # endif
+   int sqlite3OSTrace = SQLITE_DEBUG_OS_TRACE;
+ # define OSTRACE(X)          if( sqlite3OSTrace ) sqlite3DebugPrintf X
++#elif defined(__EMBOX__)
++# define OSTRACE(X)          sqlite3DebugPrintf X
+ #else
+ # define OSTRACE(X)
+ #endif
+@@ -23508,7 +23518,7 @@
+ #endif
+ 
+ 
+-#if defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
++#if defined(__EMBOX__) || defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
+ /*
+ ** Helper function for printing out trace information from debugging
+ ** binaries. This returns the string represetation of the supplied

@@ -19,10 +19,14 @@
 
 /* <sygnal.h> */
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
-//#define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:983:*/
 
 static inline int sigemptyset(sigset_t *set) {
 	return -1;
+}
+
+static inline int sigaction(int sig, const struct sigaction *act,
+		struct sigaction *oact) {
+	return 0;
 }
 /* end <sygnal.h> */
 
@@ -39,25 +43,13 @@ static inline int chown(const char *path, uid_t owner, gid_t group) {
 extern char *crypt(const char *key, const char *salt);
 /* end <unistd.h> */
 
-/* <netdb.h> */
-static inline struct hostent *gethostbyaddr(const void *addr,
-                                     socklen_t len, int type) {
-	return NULL;
+/* <sys/socket.h> */
+static inline int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	memset(addr, 0, *addrlen);
+	return 0;
 }
-static inline struct servent *getservbyname(const char *name, const char *proto) {
-	return NULL;
-}
-/* end <netdb.h> */
-
-
-/* <time.h> */
-static inline struct tm *localtime(const time_t *timep) {
-	return NULL;
-}
-/* end <time.h> */
-
-
-
+/* end <sys/socket.h> */
 
 /* <grp.h> */
 /* initgroups NOT POSIX */
@@ -65,13 +57,13 @@ static inline int initgroups(const char *user, gid_t group) {
 	return -1;
 }
 
+#if 0
 /* <pwd.h> */
 extern struct passwd *getpwnam(const char *name);
 /* end <pwd.h> */
+#endif
 
 #include <asm/termbits.h>
 #include <sys/select.h>
 
 //------------------------------------------------------------
-
-

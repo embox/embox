@@ -660,9 +660,11 @@ int nonl(void) {
 
 	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
 }
-
+#include <fcntl.h>
 int nodelay(WINDOW *win, bool bf) {
     struct termios t;
+//TODO now we setup nonblock mode tty by the fcntl
+	fcntl(STDIN_FILENO, F_SETFD, bf ? O_NONBLOCK : 0);
 
 	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
 		return ERR;

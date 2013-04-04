@@ -1,92 +1,113 @@
 #include <QApplication>
 #include <QTextEdit>
 #include <QtGui>
+#include <QTextCodec>
 #include "mainwindow.h"
 
-class Button : public QGraphicsWidget
+#include <framework/mod/options.h>
+#include <module/embox/arch/x86/boot/multiboot.h>
+
+#define MBOOTMOD embox__arch__x86__boot__multiboot
+
+#define WIDTH  OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
+#define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
+#define BPP    OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
+
+QGraphicsView *emboxView;
+TextEditor *textEditor;
+QGraphicsScene *emscene;
+
+class Button : public QWidget
 {
     Q_OBJECT
 public:
-    Button(const QPixmap &pixmap, QGraphicsItem *parent = 0)
-        : QGraphicsWidget(parent), _pix(pixmap)
+    Button(const QPixmap &pixmap)
+        : QWidget(), _pix(pixmap)
     {
-        setAcceptHoverEvents(true);
-        setCacheMode(DeviceCoordinateCache);
+	//setAcceptHoverEvents(true);
+	//setCacheMode(DeviceCoordinateCache);
     }
 
     QRectF boundingRect() const
     {
-        return QRectF(-65, -65, 130, 130);
+	int w = _pix.width();
+	int h = _pix.height();
+	return QRectF(0, 0, w + 10, h + 10);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
     {
         bool down = option->state & QStyle::State_Sunken;
-        QRectF r = boundingRect();
-        QLinearGradient grad(r.topLeft(), r.bottomRight());
-        grad.setColorAt(down ? 1 : 0, option->state & QStyle::State_MouseOver ? Qt::white : Qt::lightGray);
-        grad.setColorAt(down ? 0 : 1, Qt::darkGray);
-        painter->setPen(Qt::darkGray);
-        painter->setBrush(grad);
-        painter->drawRect(r);
-        QLinearGradient grad2(r.topLeft(), r.bottomRight());
-        grad.setColorAt(down ? 1 : 0, Qt::darkGray);
-        grad.setColorAt(down ? 0 : 1, Qt::lightGray);
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(grad);
-        if (down)
-            painter->translate(2, 2);
-        painter->drawRect(r.adjusted(5, 5, -5, -5));
-        painter->drawPixmap(-_pix.width()/2, -_pix.height()/2, _pix);
+	int w = _pix.width();
+	int h = _pix.height();
+	painter->drawPixmap(0, 0, _pix);
     }
-
-signals:
-    void pressed();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *)
     {
-        emit pressed();
-        update();
-        TextEditor textEditor;
-        textEditor.show();
-        textEditor.repaint();
+       // update();
+        //emscene->addWidget(textEditor, textEditor->windowType());
+        textEditor->show();
     }
 
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     {
-        //update();
+	update();
     }
-
 private:
     QPixmap _pix;
 };
 
+QMdiArea *emarea;
+QMainWindow *win;
+
 int main(int argv, char **args)
 {
-	Q_INIT_RESOURCE(texteditor);
+    //Q_INIT_RESOURCE(texteditor);
 
     QApplication app(argv, args);
 
-    QGraphicsScene scene(0, 0, 1024, 768);
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
-    QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16);
+    emscene = new QGraphicsScene(0, 0, WIDTH, HEIGHT);
+
+    QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->setBackgroundBrush(bgPix);
+    //emboxView = new QGraphicsView(emscene);
+    //emboxView->setBackgroundBrush(bgPix);
+    //emboxView->resize(1024, 768);
 
-    QGraphicsItem *buttonParent = new QGraphicsRectItem;
-    Button *texteditorButton = new Button(QPixmap(":/icon.png"), buttonParent);
+    //Button *texteditorButton = new Button(QPixmap(":/icon.png"));
+    //texteditorButton->resize(128,128);
 
-    texteditorButton->setPos(100, 100);
+    //emscene->addItem(texteditorButton);
+    //texteditorButton->setPos(64, 64);
 
-    scene.addItem(buttonParent);
-    buttonParent->scale(0.75, 0.75);
-    buttonParent->setPos(100, 50);
-    buttonParent->setZValue(65);
+    //emboxView->show();
+    textEditor = new TextEditor();
 
-    view->resize(1024, 768);
-    view->show();
+    //win = new QMainWindow();
+
+    //QWidget *w = new QWidget(win);
+    //QPushButton *p = new QPushButton("New Sub-window", win);
+    //area = new QMdiArea(win);
+
+    //QVBoxLayout *l = new QVBoxLayout(w);
+    //l->addWidget(p);
+    //l->addWidget(area);
+    //w->setLayout(l);
+    //win->setCentralWidget(w);
+
+
+    emarea = new QMdiArea();
+    emarea->setBackground(bgPix);
+    emarea->resize(WIDTH, HEIGHT);
+    //area->addSubWindow(emboxView, emboxView->windowType());
+    emarea->addSubWindow(textEditor, textEditor->windowType());
+    emarea->show();
 
     return app.exec();
 }

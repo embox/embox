@@ -1,0 +1,15 @@
+package embox.cmd.fs
+
+@Cmd(name = "mandatory.sh",
+	help = "Mandatory test prepare script",
+	man = '''
+
+	''')
+module mandatory {
+	source "mandatory.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}

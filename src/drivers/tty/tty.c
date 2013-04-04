@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sched.h>
@@ -136,6 +137,12 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 
 			goto done;
 		}
+	}
+
+	if (TC_L(t, ISIG) && (ch == cc[VINTR]) && t->pgrp) {
+		kill(t->pgrp, 9);
+		/*TODO normal handling when process groups will be realized*/
+		t->pgrp = 0;
 	}
 
 	/* Finally, store and echo the char.
@@ -367,6 +374,12 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 
 			t->i_canon_ring.tail = t->i_canon_ring.head = t->i_ring.head;
 		}
+		break;
+	case TIOCGPGRP:
+		memcpy(data, &t->pgrp, sizeof(pid_t));
+		break;
+	case TIOCSPGRP:
+		memcpy(&t->pgrp, data, sizeof(pid_t));
 		break;
 	default:
 		ret = -ENOSYS;

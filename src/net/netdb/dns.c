@@ -325,6 +325,12 @@ static int dns_rr_cname_parse(struct dns_rr *rr, const char *data, size_t field_
 			&rr->rdata.cname.cname[0], NULL);
 }
 
+static int dns_rr_ptr_parse(struct dns_rr *rr, const char *data, size_t field_sz,
+		const char *buff, size_t buff_sz) {
+	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ptr.ptrdname,
+			&rr->rdata.ptr.ptrdname[0], NULL);
+}
+
 static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	if (field_sz != sizeof rr->rdata.aaaa.address) {
@@ -401,6 +407,9 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 		break;
 	case DNS_RR_TYPE_CNAME:
 		ret = dns_rr_cname_parse(rr, curr, field_sz, buff, buff_sz);
+		break;
+	case DNS_RR_TYPE_PTR:
+		ret = dns_rr_ptr_parse(rr, curr, field_sz, buff, buff_sz);
 		break;
 	case DNS_RR_TYPE_AAAA:
 		ret = dns_rr_aaaa_parse(rr, curr, field_sz, buff, buff_sz);

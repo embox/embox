@@ -26,6 +26,7 @@ struct task_idx_table;
 struct thread;
 struct emmap;
 struct task_u_area;
+struct task_env;
 struct sleepq;
 
 /**
@@ -54,6 +55,8 @@ struct task {
 
 	struct task_u_area *u_area;
 
+	struct task_env *env;
+
 	task_priority_t priority; /**< @brief Task priority */
 
 	void   *security;
@@ -69,7 +72,7 @@ struct task {
 
 struct task_resource_desc {
 	void (*init)(struct task *task, void *resource_space);
-	void (*inherit)(struct task *task, struct task *parent_task);
+	int (*inherit)(struct task *task, struct task *parent_task);
 	void (*deinit)(struct task *task);
 	size_t resource_size; /* to be used in on-stack allocation */
 };

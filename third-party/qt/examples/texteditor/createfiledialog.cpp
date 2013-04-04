@@ -8,7 +8,7 @@ CreateFileDialog::CreateFileDialog(QTextEdit *textEdit, QString *fileName, QMain
     this->mainWindow = mainWindow;
 
     fileNameEdit = new QLineEdit;
-    fileNameLabel = new QLabel(tr("File name:"));
+    fileNameLabel = new QLabel(tr("Имя файла:"));
 
     okButton = createButton(tr("&Ok"), SLOT(createFile()));
     cancelButton = createButton(tr("&Cancel"), SLOT(close()));

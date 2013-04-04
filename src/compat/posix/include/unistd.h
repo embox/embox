@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
+#include <posix_environ.h>
+
 #include <kernel/task.h>
 
 __BEGIN_DECLS
@@ -93,15 +95,8 @@ extern int setegid(gid_t gid);
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 
-static inline char * getcwd(char *buff, size_t size) {
-	if (size < 2) {
-		return NULL;
-	}
-	buff[0] = '/';
-	buff[1] = 0;
-	return buff;
-}
-static inline int chdir(const char *path) { return 0; }
+extern char * getcwd(char *buff, size_t size);
+extern int chdir(const char *path);
 
 #define R_OK 4
 #define W_OK 2
@@ -125,7 +120,13 @@ extern int opterr;   /**< flag:error message on unrecognzed options */
 /** setup optind and opterr */
 extern void getopt_init(void); /* TODO remove this */
 
+#ifndef environ
+/**
+ * FIXME environ MUST have follow declaration:
+ * but then how to do it different for all tasks
+ */
 extern char **environ;
+#endif
 
 #define PASS_MAX 32
 extern char *getpass(const char *prompt);
