@@ -101,12 +101,11 @@ int mpx_deregister_vc(struct vc *vc) {
 
 int mpx_devisualized(struct vc *vc) {
 
-	assert(curvc == vc);
-
 	if (curvc != vc) {
 		return -EINVAL;
 	}
 
+	curvc->fb = NULL;
 	postvc->fb = curfb;
 	postvc->callbacks->visualized(postvc, curfb);
 
