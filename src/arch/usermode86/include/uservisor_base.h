@@ -24,10 +24,14 @@ enum emvisor_msg {
 	EMVISOR_DIAG_OUT,
 	EMVISOR_DIAG_IN,
 	EMVISOR_TIMER_SET,
+	EMVISOR_NETCTL,
+	EMVISOR_NETDATA,
 	EMVISOR_EOF_IRQ,
 	EMVISOR_IRQ,
 	EMVISOR_IRQ_DIAG_IN,
 	EMVISOR_IRQ_TMR,
+	EMVISOR_IRQ_NETCTL,
+	EMVISOR_IRQ_NETDATA,
 };
 
 struct emvisor_msghdr {
@@ -40,8 +44,30 @@ struct emvisor_tmrset {
 	int overfl_fq;
 };
 
+#define NETSTATE_NODEV -2
+#define NETSTATE_REQUEST -1
+#define NETSTATE_MODON  1
+#define NETSTATE_MODOFF 0
+
+struct emvisor_netstate {
+	int id;
+	char mode;
+	char addr[6];
+};
+
+struct emvisor_netdata_hdr {
+	int len;
+	int dev_id;
+};
+
+extern int emvisor_sendhdr(int fd, enum emvisor_msg type, int dlen);
+
+extern int emvisor_sendn(int fd, const void *data, int len);
+
 extern int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data,
 	       	int dlen);
+
+extern int emvisor_irq(host_pid_t pid, char signal);
 
 extern int emvisor_sendirq(host_pid_t pid, char signal, int fd,
 		enum emvisor_msg type, const void *msg_data, int dlen);
