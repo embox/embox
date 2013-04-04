@@ -15,10 +15,13 @@
 EMBOX_UNIT_INIT(ps_mouse_init);
 
 #define MSTAT_BUTMASK 0x07
+#define MSTAT_ALONE   0x08
 #define MSTAT_XSIGN   0x10
 #define MSTAT_YSIGN   0x20
 #define MSTAT_XOVER   0x40
 #define MSTAT_YOVER   0x80
+
+#define MOUSE_ACK     0xfa
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
@@ -55,6 +58,12 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 	}
 
 	data = inb(I8042_DATA_PORT);
+
+	if (ps2mouse->byteseq_state == 0 &&
+			data == MOUSE_ACK) {
+		ret = -EAGAIN;
+		goto out;
+	}
 
 	switch(ps2mouse->byteseq_state) {
 	case 0:
