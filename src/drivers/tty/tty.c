@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
-/*#include <signal.h>*/
+#include <signal.h>
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sched.h>
@@ -140,7 +140,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	}
 
 	if (TC_L(t, ISIG) && (ch == cc[VINTR]) && t->pgrp) {
-		/*kill(t->pgrp, 9);*/
+		kill(t->pgrp, 9);
 		/*TODO normal handling when process groups will be realized*/
 		t->pgrp = 0;
 	}
