@@ -48,6 +48,8 @@
 #endif
 #define SQLITE_THREADSAFE 0
 
+#define SQLITE_ENABLE_8_3_NAMES 1
+
 //#ifdef SQLITE_THREADSAFE
 //#undef SQLITE_THREADSAFE
 //#endif

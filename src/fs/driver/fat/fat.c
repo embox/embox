@@ -31,7 +31,6 @@
 #include <framework/mod/options.h>
 
 static uint8_t sector_buff[SECTOR_SIZE];
-static uint32_t bytecount;
 
 /* fat filesystem description pool */
 POOL_DEF(fat_fs_pool, struct fat_fs_info,
@@ -2121,9 +2120,11 @@ static int fatfs_close(struct file_desc *desc) {
 
 static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 	size_t rezult;
+	uint32_t bytecount;
 	struct nas *nas;
 	struct fat_file_info *fi;
 
+	bytecount = 0;
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
 	fi->pointer = desc->cursor;
@@ -2138,9 +2139,11 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 	size_t rezult;
+	uint32_t bytecount;
 	struct nas *nas;
 	struct fat_file_info *fi;
 
+	bytecount = 0;
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
 	fi->pointer = desc->cursor;
