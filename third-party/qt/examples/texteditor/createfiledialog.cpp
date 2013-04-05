@@ -1,6 +1,8 @@
 #include "createfiledialog.h"
 #include "mainwindow.h"
 
+extern QMdiArea *emarea;
+
 CreateFileDialog::CreateFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow)
 {
     this->textEdit = textEdit;
@@ -26,9 +28,8 @@ CreateFileDialog::CreateFileDialog(QTextEdit *textEdit, QString *fileName, QMain
 
     setWindowTitle(tr("New file"));
     resize(200, 100);
+    subwindow = emarea->addSubWindow(this, windowType());
 }
-
-
 
 void CreateFileDialog::createFile()
 {
@@ -73,3 +74,9 @@ QPushButton *CreateFileDialog::createButton(const QString &text, const char *mem
      connect(button, SIGNAL(clicked()), this, member);
      return button;
  }
+
+void CreateFileDialog::close() {
+	//hide();
+	emarea->setActiveSubWindow(subwindow);
+	emarea->closeActiveSubWindow();
+}

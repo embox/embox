@@ -6,7 +6,8 @@ module All {
 		getopt,
 		utsname,
 		getpass,
-		gethostname
+		gethostname,
+		environ
 }
 
 module Time {
@@ -57,4 +58,11 @@ static module getpass {
 
 static module gethostname {
 	source "gethostname.c"
+}
+
+static module environ {
+	source "environ.c"
+
+	depends embox.kernel.task.env
+	depends embox.lib.LibC
 }

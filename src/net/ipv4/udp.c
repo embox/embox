@@ -18,6 +18,8 @@
 #include <arpa/inet.h>
 #include <net/netdevice.h>
 
+static void udp_err(sk_buff_t *skb, uint32_t info);
+
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
 struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
@@ -108,8 +110,7 @@ static int udp_rcv(struct sk_buff *skb) {
 				return -res;
 		}
 
-		assert(udp_prot.backlog_rcv != NULL);
-		(*udp_prot.backlog_rcv)(sk, skb);
+		sock_queue_rcv_skb(sk, skb);
 
 		if (inet->rcv_saddr == INADDR_ANY) {
 			//TODO: temporary
@@ -121,7 +122,7 @@ static int udp_rcv(struct sk_buff *skb) {
 	return ENOERR;
 }
 
-void udp_err(sk_buff_t *skb, uint32_t info) {
+static void udp_err(sk_buff_t *skb, uint32_t info) {
 	struct sock *sk;
 	struct iphdr *emb_pack_iphdr;
 	struct udphdr *emb_pack_udphdr;

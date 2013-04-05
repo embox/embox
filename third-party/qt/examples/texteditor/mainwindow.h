@@ -42,7 +42,7 @@ class TextEditor : public QMainWindow
         OpenFileDialog *openDialog;
         CreateFileDialog *createDialog;
         SaveFileDialog *saveFile;
-        QWizard *helpWindow;
+        EWisard *helpWindow;
 };
 
 #endif // MAINWINDOW_H

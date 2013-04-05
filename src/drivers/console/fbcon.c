@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <drivers/iodev.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
@@ -25,8 +26,6 @@
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(fbcon_init);
-
-#define SET_VIDEO_MODE OPTION_GET(NUMBER,set_video_mode)
 
 static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
@@ -49,64 +48,14 @@ static struct fbcon_displ_data fbcon_displ_data = {
 	.cur_color = 0x00F0,
 };
 
-#if 0
-static void cursor(struct fb_info *fb, struct input_event *ev) {
-	static int x, y;
-	const int len = 20;
-
-	short xo = ev->value >> 16;
-	short yo = ev->value & 0xffff;
-
-	const int bpp = fb->var.bits_per_pixel / 8;
-	const int xres = fb->var.xres;
-	const int yres = fb->var.yres;
-
-	void *start = fb->screen_base + (y * xres + x) * bpp;
-	int cnt = len;
-
-	while (cnt--) {
-		memset(start, 0xff, len);
-		start += xres * bpp;
-	}
-
-	x += xo;
-	y += -yo;
-
-	x = x > xres ? xres : x;
-	y = y > yres ? yres : y;
-
-	x = x > 0 ? x : 0;
-	y = y > 0 ? y : 0;
-
-	start = fb->screen_base + (y * xres + x) * bpp;
-
-	cnt = len;
-
-	while (cnt--) {
-		memset(start, 0x0, len);
-		start += xres * bpp;
-	}
-}
-#endif
 static void inpevent(struct vc *vc, struct input_event *ev) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
 	unsigned char ascii[4];
 	int len;
 
-#if 0
-	if (ev->devtype == INPUT_DEV_MOUSE) {
-		if (!vc->fb) {
-			return;
-		}
-
-		cursor(vc->fb, ev);
-
-	}
-
 	if (ev->devtype != INPUT_DEV_KBD) {
 		return;
 	}
-#endif
 
 	if (!(ev->type & KEY_PRESSED)) {
 		return;
@@ -123,57 +72,21 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 
 	event_notify(&fbcon->inpevent);
 
-
 }
 
 static void vterm_reinit(struct vterm_video *t, int x, int y);
 
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
-	/*struct tty *tty;*/
 	struct fbcon *fbcon = (struct fbcon *) vc;
-#if SET_VIDEO_MODE
-	const struct fb_videomode *mode;
-	int ret;
-
-	fbcon->resbpp.x = 1024;
-	fbcon->resbpp.y = 768;
-	fbcon->resbpp.bpp = 16;
-
-	mode = video_fbmode_by_resbpp(&fbcon->resbpp);
-	if (mode == NULL) {
-		return;
-	}
-
-	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, fbcon->resbpp.bpp);
-	if (ret != 0) {
-		return;
-	}
-
-	ret = fbinfo->ops->fb_set_par(fbinfo);
-	if (ret != 0) {
-		return;
-	}
-
-#else /* SET_VIDEO_MODE */
 
 	fbcon->resbpp.x = fbinfo->var.xres;
 	fbcon->resbpp.y = fbinfo->var.yres;
 	fbcon->resbpp.bpp = fbinfo->var.bits_per_pixel;
 
-#endif /* SET_VIDEO_MODE */
-
-
 	vterm_reinit(&fbcon->vterm_video, fbcon->resbpp.x / fbcon_displ_data.font->width,
 		       	fbcon->resbpp.y / fbcon_displ_data.font->height);
 
 	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
-#if 0
-	tty = (struct tty *) &fbcon->tty_this;
-
-	tty->cur_x = tty->cur_y = 0;
-	tty_cursor(tty);
-
-#endif
 
 }
 
@@ -442,11 +355,28 @@ static int make_task(int i, char innewtask) {
 	return 0;
 }
 
+static int iodev_stdio_init(void) {
+	return 0;
+}
+
+static void iodev_stdio_putc(char ch) {
+	vterm_putc(&fbcons[0].vterm, ch);
+}
+
+const struct iodev_ops iodev_stdio_ops = {
+	.init = iodev_stdio_init,
+	.getc = NULL,//&diag_getc,
+	.putc = iodev_stdio_putc,
+	.kbhit = NULL //&diag_kbhit,
+};
+
 
 static int fbcon_init(void) {
 
 	make_task(0, true);
 	make_task(1, true);
+
+	iodev_setup(&iodev_stdio_ops);
 
 	return 0;
 }

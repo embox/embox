@@ -466,6 +466,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
+	fi->f_pointer = desc->cursor;
 
 	while (size != 0) {
 		/* XXX should handle LARGEFILE */

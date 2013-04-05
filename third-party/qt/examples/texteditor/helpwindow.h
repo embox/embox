@@ -8,22 +8,18 @@
 #ifndef HELPWINDOW_H
 #define HELPWINDOW_H
 
-#include <QtGui/QWidget>
+#include <QtGui>
 
-QT_BEGIN_NAMESPACE
-
-class QTextEdit;
-
-class EditorHelpWindow : public QWidget
-{
+class EWisard : public QWizard {
     Q_OBJECT
 
-public:
-    EditorHelpWindow(QWidget *parent = 0);
-    //void setHelp(const QString &topic);
+    public:
+    	EWisard();
 
-private:
-    QTextEdit *m_textEdit;
+    	void setVisible(bool visible);
+
+    private:
+        QMdiSubWindow *subwindow;
 };
 
 QT_END_NAMESPACE

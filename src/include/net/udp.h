@@ -13,6 +13,7 @@
 
 #include <framework/mod/options.h>
 #include <module/embox/net/udp_sock.h>
+#include <linux/types.h>
 
 #define MODOPS_AMOUNT_UDP_SOCK OPTION_MODULE_GET(embox__net__udp_sock, NUMBER, amount_udp_sock)
 
@@ -34,31 +35,14 @@ static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
 typedef struct udp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;
-	int              pending;
-	unsigned int     corkflag;
-	__be16           len;
 } udp_sock_t;
 
-static inline udp_sock_t *udp_sk(const struct sock *sk) {
-	return (udp_sock_t *) sk;
+static inline struct udp_sock * udp_sk(struct sock *sk) {
+	return (struct udp_sock *)sk;
 }
-
-/* net/ipv4/udp.c */
-
-extern int udp_init(void);
-extern void udp_err(sk_buff_t *skb, uint32_t info);
-#if 0
-extern int udp_sendmsg(struct kiocb *iocb, struct sock *sk,
-			struct msghdr *msg, size_t len);
-extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags);
-/*extern void udp_err(sk_buff_t *, uint32_t);*/
-extern int udp_disconnect(struct sock *sk, int flags);
-#endif
 
 extern void *get_udp_sockets(void);
 
 extern struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
-extern const struct proto udp_prot;
 
 #endif /* NET_UDP_H_ */

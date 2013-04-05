@@ -27,6 +27,7 @@
 #include <string.h>
 #include <kernel/printk.h>
 #include <sys/time.h>
+#include <net/ip_port.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -74,7 +75,6 @@ union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
 
 /* Prototypes */
-extern struct sock * inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type);
 static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_t hnd);
 static const tcp_handler_t tcp_st_handler[];
 
@@ -476,11 +476,14 @@ void tcp_free_sock(union sock_pointer sock) {
 	tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 	{
 		list_for_each_entry(anticipant.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
-			sk_common_release(anticipant.sk); /* TODO send RST before */
+			sk_common_release(anticipant.sk);
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
+	if (sock.inet_sk->sport_is_alloced) {
+		ip_port_unlock(sock.sk->sk_protocol, ntohs(sock.inet_sk->sport));
+	}
 	sk_common_release(sock.sk);
 }
 
@@ -520,7 +523,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 	if (tcph->syn) {
 		/* Allocate new socket for this connection */
-		newsock.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
+		newsock.sk = inet_create_sock((struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 		if (newsock.sk == NULL) {
 			return -ENOMEM;
 		}
@@ -1129,7 +1132,7 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	tcp_sock_default.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
+	tcp_sock_default.sk = inet_create_sock((struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 	if (tcp_sock_default.sk == NULL) {
 		return -ENOMEM;
 	}

@@ -1,6 +1,12 @@
 
 package embox.test.posix
 
+module environ_test {
+	source "environ_test.c"
+	depends embox.compat.posix.util.environ
+	depends embox.framework.LibFramework
+}
+
 module getopt_test {
 	source "getopt_test.c"
 

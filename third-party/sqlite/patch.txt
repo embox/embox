@@ -34,7 +34,7 @@ diff -aur sqlite-autoconf-3071600/shell.c sqlite/shell.c
    const char *zInitFile = 0;
 diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
 --- sqlite-autoconf-3071600/sqlite3.c	2013-03-18 20:01:49.000000000 +0400
-+++ sqlite/sqlite3.c	2013-04-02 17:07:35.485602714 +0400
++++ sqlite/sqlite3.c	2013-04-04 15:49:25.493725880 +0400
 @@ -18040,6 +18040,7 @@
  ** mutex types, the same mutex is returned on every call that has
  ** the same type number.
@@ -75,3 +75,12 @@ diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
  /*
  ** Helper function for printing out trace information from debugging
  ** binaries. This returns the string represetation of the supplied
+@@ -37479,7 +37489,7 @@
+ /*
+ ** Macros for troubleshooting.  Normally turned off
+ */
+-#if 0
++#if 1
+ int sqlite3PagerTrace=1;  /* True to enable tracing */
+ #define sqlite3DebugPrintf printf
+ #define PAGERTRACE(X)     if( sqlite3PagerTrace ){ sqlite3DebugPrintf X; }

@@ -20,7 +20,7 @@ module core {
 		AUTHORS
 			fsulima - Adaptation for Embox
 	''')
-module shell {
+module sqlite3 {
 	depends core
 	depends embox.framework.LibFramework
 

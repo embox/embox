@@ -206,7 +206,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				++converted;
 			}
-				continue;
+				break;
 			case 'c': {
 				int dst;
 
@@ -218,7 +218,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				++converted;
 
 			}
-				continue;
+				break;
 			case 'u':
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
@@ -229,7 +229,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				++converted;
 			}
-				continue;
+				break;
 #if 0
 			case 'D': {
 					double dst;
@@ -237,7 +237,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 					*va_arg(args, int*) = dst;
 					++converted;
 				}
-				continue;
+				break;
 #endif
 			case 'o': {
 				int dst;
@@ -247,7 +247,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				++converted;
 			}
-				continue;
+				break;
 #if 0
 			case 'O': {
 				double dst;
@@ -255,7 +255,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				va_arg(args, int) = dst;
 				++converted;
 			}
-				continue;
+				break;
 #endif
 			case 'x': {
 				int dst;
@@ -264,7 +264,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				++converted;
 			}
-				continue;
+				break;
 #if 0
 			case 'X': {
 				double dst;
@@ -272,9 +272,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 				va_arg(args, int) = dst;
 				++converted;
 			}
-				continue;
+				break;
 #endif
 			}
+			fmt++;
 		} else {
 			if (*fmt++ != *(*in)++) {
 				return converted;

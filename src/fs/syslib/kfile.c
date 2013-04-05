@@ -193,17 +193,23 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 
 	if (!file) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	if (!(file->flags & FS_MAY_WRITE)) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	if (NULL == file->ops->write) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	if (file->flags & FS_MAY_APPEND) {
@@ -213,8 +219,13 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ret = file->ops->write(file, (void *)buf, size);
 	if ((ssize_t) ret < 0) {
 		SET_ERRNO(-(ssize_t)ret);
-		return -1;
+		DPRINTF(("err = %d ", ret));
+		ret = -1;
+		goto end;
 	}
+
+	end:
+	DPRINTF(("write(%s, ...) = %d\n", file->node->name, ret));
 
 	return ret;
 }
@@ -224,24 +235,33 @@ size_t kread(void *buf, size_t size, struct file_desc *desc) {
 
 	if (NULL == desc) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	if (!(desc->flags & FS_MAY_READ)) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	if (NULL == desc->ops->read) {
 		SET_ERRNO(EBADF);
-		return -1;
+		DPRINTF(("EBADF "));
+		ret = -1;
+		goto end;
 	}
 
 	ret = desc->ops->read(desc, buf, size);
 	if ((ssize_t) ret < 0) {
-		SET_ERRNO(-(ssize_t)ret);
-		return -1;
+		DPRINTF(("err = %d ", ret));
+		ret = -1;
 	}
+
+	end:
+	DPRINTF(("read(%s, ...) = %d\n", desc->node->name, ret));
 
 	return ret;
 }
@@ -271,6 +291,7 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 
 	if (NULL == desc) {
 		SET_ERRNO(EBADF);
+		DPRINTF(("seek() = EBADF\n"));
 		return -1;
 	}
 
@@ -292,12 +313,11 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 
 		default:
 			SET_ERRNO(EINVAL);
+			DPRINTF(("seek() = EINVAL\n"));
 			return -1;
 	}
 
-	if (desc->cursor > ni->size) {
-		desc->cursor = ni->size;
-	}
+	DPRINTF(("seek(%s, %d) = %d\n", desc->node->name, origin, desc->cursor));
 
 	return desc->cursor;
 }

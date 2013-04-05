@@ -8,6 +8,9 @@ abstract module Display {
 module GraphicMode extends Display {
 	option string fb_name="fb0"
 	option number vesa_mode=3
+	option number set_x
+	option number set_y
+
 	option number fb_init=1
 
 	source "graphic_init.c"
@@ -17,7 +20,7 @@ module GraphicMode extends Display {
 	depends embox.driver.video.vesa_modes
 
 	depends embox.driver.iodev.core
-	depends embox.driver.iodev.iodev_video
+	/*depends embox.driver.iodev.iodev_video*/
 }
 
 module TextMode extends Display {
@@ -32,6 +35,7 @@ module start_script {
 
 	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.util.environ
 
 	depends embox.cmd.sh.shell
 

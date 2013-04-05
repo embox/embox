@@ -52,7 +52,7 @@ static int unix_create(struct socket *sock, int protocol) {
 		return res;
 	}
 
-	sk = sk_alloc(/*net,*/PF_UNIX, 0, (struct proto *)&unix_proto);
+	sk = sk_alloc(/*net,*/PF_UNIX, (struct proto *)&unix_proto);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
