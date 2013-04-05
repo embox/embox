@@ -35,6 +35,7 @@ module start_script {
 
 	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.util.environ
 
 	depends embox.cmd.sh.shell
 
