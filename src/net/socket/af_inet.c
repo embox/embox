@@ -27,7 +27,7 @@ EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 /* AF_INET socket create */
 struct sock * inet_create_sock(struct proto *prot,
-		unsigned short type, unsigned char protocol) {
+		int type, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 

@@ -35,11 +35,6 @@ typedef struct net_protocol {
 extern int inet_add_protocol(net_protocol_t *prot, unsigned char num);
 
 /**
- * Add a protocol handler to the hash tables
- */
-extern int inet_add_protocol(net_protocol_t *prot, unsigned char num);
-
-/**
  * Remove a protocol from the hash tables.
  */
 extern int inet_del_protocol(net_protocol_t *prot, unsigned char num);
@@ -50,8 +45,8 @@ typedef struct inet_protosw {
 	struct list_head list;
 
 	/* These two fields form the lookup key.  */
-	unsigned short type; /* This is the 2nd argument to socket(2). */
-	unsigned short protocol; /* This is the L4 protocol number.  */
+	int type; /* This is the 2nd argument to socket(2). */
+	int protocol; /* This is the L4 protocol number.  */
 
 	const struct proto *prot;
 	const struct proto_ops *ops;

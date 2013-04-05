@@ -32,17 +32,11 @@ typedef struct {
  * Minimal network layer representation of sockets.
  * @param skc_family network address family
  * @param skc_state Connection state
- * @param skc_reuse %SO_REUSEADDR setting
- * @param skc_bound_dev_if bound device index if != 0
  */
 struct sock_common {
-	unsigned short skc_family;
+	int skc_family;
 	unsigned char skc_state;
-#if 0
-	unsigned char skc_reuse;
-	int skc_bound_dev_if;
-#endif
-	struct proto *skc_prot;
+	const struct proto *skc_prot;
 };
 
 /**
@@ -76,9 +70,9 @@ typedef struct sock {
 #define sk_family  __sk_common.skc_family
 #define sk_prot    __sk_common.skc_prot
 #define sk_state   __sk_common.skc_state
-	unsigned char sk_protocol;
+	int sk_protocol;
+	int sk_type;
 	unsigned char sk_shutdown;
-	unsigned short sk_type;
 	socket_lock_t sk_lock;
 
 #if 0
@@ -172,7 +166,6 @@ typedef struct proto {
 	int (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
 			size_t len, int flags);
 	int (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
-	int (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */

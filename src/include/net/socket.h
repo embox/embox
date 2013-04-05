@@ -64,7 +64,7 @@ struct kiocb;
  */
 typedef struct socket {
 	socket_state state;
-	short type;
+	int type;
 	unsigned long flags;
 
 	struct sock *sk;

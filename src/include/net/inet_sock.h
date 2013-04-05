@@ -6,13 +6,12 @@
  * @author Anton Bondarev
  */
 
-#ifndef INET_SOCK_H_
-#define INET_SOCK_H_
+#ifndef NET_INET_SOCK_H_
+#define NET_INET_SOCK_H_
 
 #include <net/sock.h>
 #include <arpa/inet.h>
-
-#include <linux/types.h>
+#include <stdint.h>
 
 /**
  * @struct ip_options
@@ -65,29 +64,26 @@ typedef struct ip_options {
  */
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
-	sock_t         sk;
+	struct sock    sk;
 
 	in_addr_t      saddr;     /* really source address of socket */
 	in_addr_t      rcv_saddr; /* address from which the socket receives packets
 								 (this equals to saddr or INADDR_ANY) */
 	in_addr_t      daddr;     /* really address of destonation host */
 	struct ip_options *opt;
-	__be16         dport;
-	__be16         sport;
-#if 0
-	__u16          num;
-#endif
-	__s16          uc_ttl;
-	__u16          id;
-	__u8           tos;
-	__u8           mc_ttl;
+	in_port_t      dport;
+	in_port_t      sport;
+	int16_t        uc_ttl;
+	uint16_t       id;
+	uint8_t        tos;
+	uint8_t        mc_ttl;
 } inet_sock_t;
 
-static inline inet_sock_t *inet_sk(const sock_t *sk) {
-	return (inet_sock_t *) sk;
+static inline struct inet_sock * inet_sk(struct sock *sk) {
+	return (struct inet_sock *)sk;
 }
 
 extern struct sock * inet_create_sock(struct proto *prot,
-		unsigned short type, unsigned char protocol);
+		int type, int protocol);
 
-#endif /* INET_SOCK_H_ */
+#endif /* NET_INET_SOCK_H_ */
