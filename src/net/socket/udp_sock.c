@@ -103,10 +103,6 @@ static void udp_unhash(struct sock *sk) {
 	}
 }
 
-static void udp_close(struct sock *sk, long timeout) {
-	sk_common_release(sk);
-}
-
 static int udp_setsockopt(struct sock *sk, int level, int optname,
 			char *optval, int optlen) {
 	return ENOERR;
@@ -125,7 +121,6 @@ int udp_disconnect(struct sock *sk, int flags) {
 
 static const struct proto udp_prot = {
 	.name        = "UDP",
-	.close       = udp_close,
 	.sendmsg     = udp_sendmsg,
 	.recvmsg     = udp_recvmsg,
 	.hash        = udp_hash,

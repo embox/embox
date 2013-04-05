@@ -65,7 +65,6 @@ typedef struct ip_options {
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
 	struct sock    sk;
-
 	in_addr_t      saddr;     /* really source address of socket */
 	in_addr_t      rcv_saddr; /* address from which the socket receives packets
 								 (this equals to saddr or INADDR_ANY) */
@@ -73,6 +72,7 @@ typedef struct inet_sock {
 	struct ip_options *opt;
 	in_port_t      dport;
 	in_port_t      sport;
+	int sport_is_alloced;         /* non-zero if port was alloced */
 	int16_t        uc_ttl;
 	uint16_t       id;
 	uint8_t        tos;

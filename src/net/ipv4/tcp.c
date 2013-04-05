@@ -27,6 +27,7 @@
 #include <string.h>
 #include <kernel/printk.h>
 #include <sys/time.h>
+#include <net/ip_port.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -475,11 +476,14 @@ void tcp_free_sock(union sock_pointer sock) {
 	tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 	{
 		list_for_each_entry(anticipant.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
-			sk_common_release(anticipant.sk); /* TODO send RST before */
+			sk_common_release(anticipant.sk);
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
+	if (sock.inet_sk->sport_is_alloced) {
+		ip_port_unlock(sock.sk->sk_protocol, ntohs(sock.inet_sk->sport));
+	}
 	sk_common_release(sock.sk);
 }
 
