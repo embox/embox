@@ -95,6 +95,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 	struct inet_protosw *p_netsock;
+	int port;
 
 	assert(sock != NULL);
 
@@ -112,7 +113,13 @@ static int inet_create(struct socket *sock, int protocol) {
 	}
 
 	inet = inet_sk(sk);
-	inet->sport = htons(ip_port_get_free(protocol));
+	port = ip_port_get_free(sk->sk_protocol);
+	if (port < 0) {
+		sk_common_release(sk);
+		return port;
+	}
+
+	inet->sport = htons((unsigned short)port);
 	inet->sport_is_alloced = 1;
 
 	sock->sk = sk;

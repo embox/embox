@@ -48,7 +48,7 @@ enum {
 	 (to recast on sockaddr_t in AF_INET sockets) */
 typedef struct sockaddr_in {
 	sa_family_t      sin_family;   /* e.g. AF_INET */
-	uint16_t		 sin_port;     /* e.g. htons(3490) i.e. port in big endian */
+	in_port_t		 sin_port;     /* e.g. htons(3490) i.e. port in big endian */
 	struct in_addr   sin_addr;     /* see struct in_addr, above */
 	unsigned char    sin_zero[8];  /* zero this if you want to */
 } sockaddr_in_t;
@@ -66,5 +66,11 @@ typedef struct sockaddr_in {
 /* Address to loopback in software to local host.  */
 #define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */
 
+
+/* Ports < IPPORT_RESERVED are reserved for superuser use */
+#define IPPORT_RESERVED     1024
+
+/* Ports >= IPPORT_USERRESERVED are reserved for explicit use */
+#define IPPORT_USERRESERVED 5000
 
 #endif /* NETINET_IN_H_ */
