@@ -65,7 +65,7 @@ int socket(int domain, int type, int protocol) {
 
 	sock->desc_data = task_idx_indata(task_self_idx_get(res));
 
-	assert(sock->state != SS_CONNECTED); /* XXX ?? */
+//	assert(sock->state != SS_CONNECTED); /* XXX ?? */
 
 	/**
 	 * Block stream socket on writing while

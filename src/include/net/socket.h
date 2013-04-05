@@ -37,6 +37,7 @@
 #define SYS_RECVMSG     17    /* sys_recvmsg(2) */
 #endif
 
+#if 0
 typedef enum {
 	SS_FREE = 0,    /* not allocated */
 	SS_UNCONNECTED, /* unconnected to any socket */
@@ -45,6 +46,7 @@ typedef enum {
 	SS_DISCONNECTING
 /* in process of disconnecting  */
 } socket_state;
+#endif
 
 struct sock;
 struct idx_desc;
@@ -63,7 +65,9 @@ struct kiocb;
  * @param ops protocol specific socket operations
  */
 typedef struct socket {
+#if 0
 	socket_state state;
+#endif
 	int type;
 	unsigned long flags;
 

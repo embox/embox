@@ -65,7 +65,7 @@ int kernel_socket_create(int family, int type, int protocol,
 	}
 
 	sock->type = type;
-	sock->state = SS_UNCONNECTED;
+//	sock->state = SS_UNCONNECTED;
 
 	if (sk == NULL) {
 		res = pf->create(sock, protocol);
