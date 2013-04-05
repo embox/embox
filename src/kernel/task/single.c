@@ -28,3 +28,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
+
+struct task *task_table_get(int n) {
+	return task_kernel_task();
+}

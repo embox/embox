@@ -18,8 +18,13 @@
 #include <kernel/task.h>
 #include <kernel/panic.h>
 #include <kernel/critical.h>
+#include <util/idx_table.h>
 
 #include "common.h"
+
+#define TASK_QUANT OPTION_GET(NUMBER, tasks_quantity)
+
+UTIL_IDX_TABLE_DEF(struct task *, task_table, TASK_QUANT);
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -299,7 +304,41 @@ unsigned int task_get_affinity(struct task *task) {
 	return task->affinity;
 }
 
+int task_table_add(struct task *task) {
+	int res = util_idx_table_add((util_idx_table_t *) &task_table, task);
+
+	if (res >= 0) {
+		task->tid = res;
+	}
+
+	return res;
+}
+
+struct task *task_table_get(int n) {
+	return (struct task *) util_idx_table_get((util_idx_table_t *) &task_table, n);
+}
+
+void task_table_del(int n) {
+	util_idx_table_del((util_idx_table_t *) &task_table, n);
+}
+
+int task_table_has_space(void) {
+	return (util_idx_table_next_alloc((util_idx_table_t *) &task_table) >= 0);
+}
+
+int task_table_get_first(int since) {
+	return util_idx_table_next_mark((util_idx_table_t *) &task_table, since, 1);
+}
+
+static int task_table_init(void) {
+	UTIL_IDX_TABLE_INIT(&task_table, TASK_QUANT);
+	return 0;
+}
+
 int unit_init(void) {
+
+	task_table_init();
+
 	task_table_add(task_kernel_task());
 
 	return 0;
