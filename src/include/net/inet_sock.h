@@ -87,4 +87,7 @@ static inline inet_sock_t *inet_sk(const sock_t *sk) {
 	return (inet_sock_t *) sk;
 }
 
+extern struct sock * inet_create_sock(struct proto *prot,
+		unsigned short type, unsigned char protocol);
+
 #endif /* INET_SOCK_H_ */

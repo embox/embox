@@ -26,12 +26,12 @@
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 /* AF_INET socket create */
-struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
+struct sock * inet_create_sock(struct proto *prot,
 		unsigned short type, unsigned char protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 
-	sk = sk_alloc(AF_INET, 0, prot);
+	sk = sk_alloc(AF_INET, prot);
 	if (sk == NULL) {
 		return NULL;
 	}
@@ -103,7 +103,7 @@ static int inet_create(struct socket *sock, int protocol) {
 		return res;
 	}
 
-	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, type,
+	sk = inet_create_sock((struct proto *)p_netsock->prot, type,
 			p_netsock->protocol);
 	if (sk == NULL) {
 		return -ENOMEM;

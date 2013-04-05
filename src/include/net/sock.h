@@ -182,15 +182,11 @@ typedef struct proto {
 	char name[32];
 } proto_t;
 
-/** Initializes structure sock's pull */
-extern void sk_init(void);
-
 /** Allocates structure sock with specific parameters
  * @family - Protocol family (PF_INIT for example)
- * @priority - isn't used now
  * @prot - pointer to the proto structure
  */
-extern sock_t *sk_alloc(int family, gfp_t priority, struct proto *prot);
+extern struct sock * sk_alloc(int family, struct proto *prot);
 
 /**
  * Returns specified structure sock into pull,

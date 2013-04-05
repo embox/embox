@@ -74,7 +74,6 @@ union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
 
 /* Prototypes */
-extern struct sock * inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type);
 static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_t hnd);
 static const tcp_handler_t tcp_st_handler[];
 
@@ -520,7 +519,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 	if (tcph->syn) {
 		/* Allocate new socket for this connection */
-		newsock.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
+		newsock.sk = inet_create_sock((struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 		if (newsock.sk == NULL) {
 			return -ENOMEM;
 		}
@@ -1129,7 +1128,7 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	tcp_sock_default.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
+	tcp_sock_default.sk = inet_create_sock((struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 	if (tcp_sock_default.sk == NULL) {
 		return -ENOMEM;
 	}
