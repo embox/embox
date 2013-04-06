@@ -375,7 +375,6 @@ static int ne2k_open(struct net_device *dev) {
 		return -EINVAL;
 	}
 
-	ne2k_get_addr_from_prom(dev);
 	ne2k_config(dev);
 
 	return ENOERR;
@@ -418,6 +417,8 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	nic->netdev_ops = &_netdev_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
+
+	ne2k_get_addr_from_prom(nic);
 
 	res = irq_attach(pci_dev->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
 	if (res < 0) {
