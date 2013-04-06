@@ -83,6 +83,7 @@ static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
+		(void)in8(dev->base_addr + NE_DATAPORT);
 	}
 
 	/* Copy the station address and set the multicast
