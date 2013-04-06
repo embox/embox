@@ -41,13 +41,10 @@ static int get_port_table(int type, unsigned long int **pports, size_t *size) {
 	return 0;
 }
 
-#include <stdio.h>
 int ip_port_lock(int type, uint16_t pnum) {
 	int ret, bit_n;
 	unsigned long int *ports;
 	size_t size, word_n;
-
-	printf("ip_port_lock: type %d pnum %d ", type, (int)pnum);
 
 	ret = get_port_table(type, &ports, &size);
 	if (ret != 0) {
@@ -72,8 +69,6 @@ int ip_port_lock(int type, uint16_t pnum) {
 	}
 	sched_unlock();
 
-	printf("done\n");
-
 	return 0;
 }
 
@@ -81,8 +76,6 @@ int ip_port_unlock(int type, uint16_t pnum) {
 	int ret, bit_n;
 	unsigned long int *ports;
 	size_t size, word_n;
-
-	printf("ip_port_unlock: type %d pnum %d ", type, (int)pnum);
 
 	ret = get_port_table(type, &ports, &size);
 	if (ret != 0) {
@@ -106,8 +99,6 @@ int ip_port_unlock(int type, uint16_t pnum) {
 		ports[word_n] &= ~(1 << bit_n);
 	}
 	sched_unlock();
-
-	printf("done\n");
 
 	return 0;
 }
@@ -175,8 +166,6 @@ int ip_port_get_free(int type) {
 			next_pnum = IPPORT_RESERVED;
 		}
 	}
-
-	printf("ip_port_get_free: type %d port %d\n", type, port);
 
 	return port;
 }
