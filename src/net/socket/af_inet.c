@@ -112,15 +112,19 @@ static int inet_create(struct socket *sock, int protocol) {
 		return -ENOMEM;
 	}
 
-	inet = inet_sk(sk);
-	port = ip_port_get_free(sk->sk_protocol);
-	if (port < 0) {
-		sk_common_release(sk);
-		return port;
+	switch (sk->sk_protocol) {
+	case IPPROTO_TCP:
+	case IPPROTO_UDP:
+		port = ip_port_get_free(sk->sk_protocol);
+		if (port < 0) {
+			sk_common_release(sk);
+			return port;
+		}
+		inet = inet_sk(sk);
+		inet->sport = htons((unsigned short)port);
+		inet->sport_is_alloced = 1;
+		break;
 	}
-
-	inet->sport = htons((unsigned short)port);
-	inet->sport_is_alloced = 1;
 
 	sock->sk = sk;
 	sock->ops = p_netsock->ops;
