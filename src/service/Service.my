@@ -3,7 +3,7 @@ package embox.service
 module SrvLib {
 	source "srv_lib.c"
 
-	depends lib.service.service
+	depends embox.lib.service.service
 }
 
 module TestService {

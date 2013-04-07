@@ -1,5 +1,10 @@
-package lib.service
+package embox.lib.service
 
-module service{
+module service {
 	source "service.c"
+
+	depends embox.compat.posix.net.socket
+	depends embox.mem.heap_api
+	depends embox.net.lib.parser
+	depends embox.lib.LibC
 }

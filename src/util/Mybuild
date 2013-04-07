@@ -76,7 +76,7 @@ module hashtable {
 	source "hashtable.c"
 
 	depends embox.lib.LibC
-	depends embox.mem.heap_bm
+	depends embox.mem.heap_api
 	depends embox.mem.objalloc
 }
 
