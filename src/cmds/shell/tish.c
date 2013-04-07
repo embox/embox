@@ -6,6 +6,7 @@
  *
  * @date 13.09.11
  * @author Anton Kozlov
+ * @author Ilia Vaprol
  */
 
 #include <assert.h>
@@ -20,6 +21,7 @@
 #include <cmd/cmdline.h>
 #include <embox/unit.h>
 #include <pwd.h>
+#include <util/array.h>
 
 #include <lib/linenoise_1.h>
 #include <readline/readline.h>
@@ -38,13 +40,13 @@
 
 #define PROMPT_BUF_LEN 32
 
-static struct cmdtask_data *get_task_data(int argc, char *argv[]);
-static void *cmdtask(void *data);
-
-struct cmdtask_data {
+struct cmd_data {
 	int argc;
-	char buf[BUF_INP_SIZE];
+	char *argv[(BUF_INP_SIZE + 1) / 2];
+	char buff[BUF_INP_SIZE];
+	const struct cmd *cmd;
 };
+
 #if 0
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
@@ -66,7 +68,7 @@ static int cmd_compl(char *buf, char *out_buf) {
 }
 #endif
 
-void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
+static void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
 
@@ -80,164 +82,127 @@ void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
 	}
 }
 
-static int run_cmd(int argc, char *argv[]) {
-	const struct cmd *cmd;
-	int code;
+static void * process_cmd(void *data) {
+	int ret;
+	struct cmd_data *cdata;
 
-	if (NULL == (cmd = cmd_lookup(argv[0]))) {
-		printf("%s: Command not found\n", argv[0]);
-		return -ENOENT;
-	}
+	cdata = (struct cmd_data *)data;
 
-	if (0 != (code = cmd_exec(cmd, argc, argv))) {
+	tcsetpgrp(STDIN_FILENO, getpid());
+
+	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
+	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
-				cmd_name(cmd), code, strerror(-code));
+				cmd_name(cdata->cmd), ret, strerror(-ret));
 	}
-	return code;
+
+	free(cdata);
+
+	return NULL;
 }
 
-#if AMP_SUPPORT
-static int process_amp(int argc, char *argv[]) {
-	struct cmdtask_data *m = get_task_data(argc - 1, argv);
+static int process_export(struct cmd_data *cdata) {
+	int ret, i;
+	char *equal;
 
-	if (!m) {
-		return -ENOMEM;
+	ret = 0;
+
+	for (i = 1; i < cdata->argc; ++i) {
+		equal = strchr(cdata->argv[i], '=');
+		if (equal == NULL) {
+			continue;
+		}
+
+		if (*(equal + 1) != '\0') {
+			if (-1 == putenv(cdata->argv[i])) {
+				ret = -errno;
+				break;
+			}
+		}
+		else {
+			*equal = '\0';
+			if (-1 == unsetenv(cdata->argv[i])) {
+				ret = -errno;
+				break;
+			}
+		}
 	}
 
-	new_task(argv[0], cmdtask, m);
+	free(cdata);
+	return ret;
+}
+
+static int process_amp(struct cmd_data *cdata) {
+	pid_t pid;
+
+	pid = new_task(cdata->argv[0], process_cmd, cdata);
+	if (pid < 0) {
+		free(cdata);
+		return pid;
+	}
 
 	return 0;
 }
 
-#else
-static int process_amp(int argc, char *argv[]) {
-	return -EINVAL;
-}
-#endif
-
-static void *cmdtask(void *data) {
-	struct cmdtask_data *m = (struct cmdtask_data *) data;
-	char *argv[(BUF_INP_SIZE + 1) / 2], **pp, *p;
+static int process(struct cmd_data *cdata) {
 	pid_t pid;
 
-	pid = getpid();
-	tcsetpgrp(STDIN_FILENO, pid);
+	assert(cdata != NULL);
 
-	pp = argv;
-	p = m->buf;
-
-	while (*p != '\0') {
-		*pp++ = p;
-		p += strlen(p) + 1;
+	if (0 == strcmp(cdata->argv[0], "exit")) {
+		free(cdata);
+		return -ENOSYS;
+	}
+	else if (0 == strcmp(cdata->argv[0], "logout")) {
+		free(cdata);
+		return -ENOSYS;
+	}
+	else if (0 == strcmp(cdata->argv[0], "export")) {
+		return process_export(cdata);
 	}
 
-	run_cmd(m->argc, argv);
-
-	free(m);
-
-	return NULL;
-
-}
-
-static struct cmdtask_data *get_task_data(int argc, char *argv[]) {
-	struct cmdtask_data *m = malloc(sizeof(struct cmdtask_data));
-	char *p = m->buf;
-
-	if (!m) {
-		return m;
+	cdata->cmd = cmd_lookup(cdata->argv[0]);
+	if (cdata->cmd == NULL) {
+		printf("%s: Command not found\n", cdata->argv[0]);
+		free(cdata);
+		return -ENOENT;
 	}
 
-	m->argc = argc;
-	for (int i = 0; i < argc; i++) {
-		strcpy(p, argv[i]);
-		p += strlen(p) + 1;
+	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		return process_amp(cdata);
 	}
 
-	*p = '\0';
-
-	return m;
-}
-
-static int process_new_task_cmd(int argc, char *argv[]) {
-	pid_t pid;
-	struct cmdtask_data *m = get_task_data(argc, argv);
-
-	if (!m) {
-		return -ENOMEM;
-	}
-
-	pid = new_task(argv[0], cmdtask, m);
+	pid = new_task(cdata->argv[0], process_cmd, cdata);
 	if (pid < 0) {
+		free(cdata);
 		return pid;
 	}
+
 	task_waitpid(pid);
 
 	return 0;
 }
 
-static int process_export(int argc, char *argv[]) {
-	int i;
-	char *equal;
-
-	for (i = 1; i < argc; ++i) {
-		if (NULL == (equal = strchr(argv[i], '='))) {
-			continue;
-		}
-
-		if (*(equal + 1) != '\0') {
-			if (-1 == putenv(argv[i])) {
-				return -errno;
-			}
-		}
-		else {
-			*equal = '\0';
-			if (-1 == unsetenv(argv[i])) {
-				return -errno;
-			}
-		}
-	}
-
-	return 0;
-}
-
-static int process(int argc, char *argv[]) {
-	assert(argc >= 1);
-	assert(argv != NULL);
-
-	if (0 == strcmp(argv[0], "exit")) {
-		return -ENOSYS;
-	}
-	else if (0 == strcmp(argv[0], "logout")) {
-		return -ENOSYS;
-	}
-	else if (0 == strcmp(argv[0], "export")) {
-		return process_export(argc, argv);
-	}
-	else if (0 == strcmp(argv[argc - 1], "&")) {
-		return process_amp(argc, argv);
-	}
-
-	return process_new_task_cmd(argc, argv);
-}
-
 static int tish_exec(const char *cmdline) {
-	char cmdl[BUF_INP_SIZE];
-	/* In the worst case cmdline looks like "x x x x x x". */
-	char *argv[(BUF_INP_SIZE + 1) / 2];
-	int argc;
+	struct cmd_data *cdata;
 
 	if (strlen(cmdline) >= BUF_INP_SIZE) {
-		return -ERANGE;
-	}
-
-	strcpy(cmdl, cmdline);
-
-	argc = cmdline_tokenize(cmdl, argv);
-	if (argc == 0) {
 		return -EINVAL;
 	}
 
-	return process(argc, argv);
+	cdata = malloc(sizeof *cdata);
+	if (cdata == NULL) {
+		return -errno;
+	}
+
+	strcpy(&cdata->buff[0], cmdline);
+
+	cdata->argc = cmdline_tokenize(&cdata->buff[0], &cdata->argv[0]);
+	if (cdata->argc == 0) {
+		return -EINVAL;
+	}
+
+	return process(cdata);
 }
 
 #define PWDBUF_LEN 64
@@ -249,7 +214,7 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 	int state = 0;
 	int ret;
 
-	getpwuid_r(uid, &pwdbuf, cpwdbuf, PWDBUF_LEN, &pwd);
+	getpwuid_r(uid, &pwdbuf, cpwdbuf, ARRAY_SIZE(cpwdbuf), &pwd);
 
 	for (; *fmt; fmt++) {
 		if (len <= 0) {
@@ -328,7 +293,7 @@ static void tish_run(void) {
 	while (1) {
 		if (RICH_PROMPT_SUPPORT) {
 			prompt = 0 == rich_prompt(PROMPT_FMT, prompt_buf,
-					PROMPT_BUF_LEN) ? &prompt_buf[0] : PROMPT_FMT;
+					ARRAY_SIZE(prompt_buf)) ? &prompt_buf[0] : PROMPT_FMT;
 		}
 		else {
 			prompt = PROMPT_FMT;
@@ -342,10 +307,7 @@ static void tish_run(void) {
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
-			if (0 != tish_exec(line)) {
-				free(line);
-				return;
-			}
+			(void)tish_exec(line);
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
@@ -387,4 +349,3 @@ SHELL_DEF({
 	.exec = tish_exec,
 	.run  = tish_run,
 	});
-
