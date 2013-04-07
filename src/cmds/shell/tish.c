@@ -194,7 +194,7 @@ static int process(int argc, char *argv[]) {
 	return process_new_task_cmd(argc, argv);
 }
 
-int shell_line_input(const char *cmdline) {
+static int tish_exec(const char *cmdline) {
 	char cmdl[BUF_INP_SIZE];
 	/* In the worst case cmdline looks like "x x x x x x". */
 	char *argv[(BUF_INP_SIZE + 1) / 2];
@@ -315,7 +315,7 @@ static void tish_run(void) {
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
-			if (0 != shell_line_input(line)) {
+			if (0 != tish_exec(line)) {
 				free(line);
 				return;
 			}
@@ -348,7 +348,7 @@ static void tish_run(void) {
 
 		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
-		if (0 > shell_line_input(inp_buf)) {
+		if (0 > tish_exec(inp_buf)) {
 			return;
 		}
 	}
@@ -357,7 +357,7 @@ static void tish_run(void) {
 
 SHELL_DEF({
 	.name = "tish",
-	.exec = shell_line_input,
+	.exec = tish_exec,
 	.run  = tish_run,
 	});
 
