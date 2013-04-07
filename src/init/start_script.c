@@ -7,11 +7,7 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
-#include <assert.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -23,11 +19,6 @@
 #include <framework/cmd/api.h>
 
 #include <cmd/shell.h>
-
-
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
-
 #include <kernel/printk.h>
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
@@ -74,14 +65,11 @@ static int run_script(void) {
 
 	shell = shell_lookup(OPTION_STRING_GET(shell_name));
 	if (NULL == shell) {
-		char env[20];
 		shell = shell_any();
-
 		if (NULL == shell) {
 			return -ENOENT;
 		}
-		sprintf(env, "shell=%s", shell->name);
-		putenv(env);
+		setenv("shell", shell->name, 0);
 	}
 
 	printk("loading start script:\n");
