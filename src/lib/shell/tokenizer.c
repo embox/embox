@@ -9,22 +9,20 @@
  *         - quotes parsing
  */
 
-#include <errno.h>
 #include <cmd/cmdline.h>
 #include <ctype.h>
-#include <stdio.h>
-
-#define BUF_INP_SIZE 100
+#include <errno.h>
+#include <stddef.h>
 
 /* Parse single quotes */
-static char *parse_sq(char **str) {
+static char * parse_sq(char **str) {
 	char *ret;
 	char *ptr = *str;
 
 	ret = ++ptr;
 
 	while (*ptr != '\'') {
-		if(*ptr == '\0') {
+		if (*ptr == '\0') {
 			return NULL;
 		}
 		ptr++;
@@ -37,7 +35,7 @@ static char *parse_sq(char **str) {
 }
 
 /* Parse double quotes */
-static char *parse_dq(char **str) {
+static char * parse_dq(char **str) {
 	/* right_ptr - point to current processing character,
 	 * left_ptr  - point to the end of processed substring */
 	char *left_ptr, *right_ptr, *ret;
@@ -54,7 +52,7 @@ static char *parse_dq(char **str) {
 
 		if (*right_ptr == '\0') {
 			*str = left_ptr;
-			return (char*) NULL;
+			return NULL;
 		}
 
 		if (*right_ptr == '\"' && *(right_ptr - 1) != '\\') {
@@ -80,7 +78,7 @@ static char *parse_dq(char **str) {
 	return ret;
 }
 
-static char *cmdline_next_token(char **str) {
+static char * cmdline_next_token(char **str) {
 	char *ret;
 	char *ptr = *str;
 
@@ -110,15 +108,14 @@ static char *cmdline_next_token(char **str) {
 
 int cmdline_tokenize(char *string, char **argv) {
 	int argc = 0;
-	char *token;
 
 	while (*string != '\0') {
 		if (*string == '\'') {
-			argv[argc++] = (token = parse_sq(&string));
+			argv[argc++] = parse_sq(&string);
 		} else if(*string == '\"') {
-			argv[argc++] = (token = parse_dq(&string));
+			argv[argc++] = parse_dq(&string);
 		} else {
-			argv[argc++] = (token = cmdline_next_token(&string));
+			argv[argc++] = cmdline_next_token(&string);
 		}
 
 		if (*string) {

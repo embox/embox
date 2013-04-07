@@ -8,6 +8,7 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -174,20 +175,45 @@ static int process_new_task_cmd(int argc, char *argv[]) {
 	return 0;
 }
 
+static int process_export(int argc, char *argv[]) {
+	int i;
+	char *equal;
+
+	for (i = 1; i < argc; ++i) {
+		if (NULL == (equal = strchr(argv[i], '='))) {
+			continue;
+		}
+
+		if (*(equal + 1) != '\0') {
+			if (-1 == putenv(argv[i])) {
+				return -errno;
+			}
+		}
+		else {
+			*equal = '\0';
+			if (-1 == unsetenv(argv[i])) {
+				return -errno;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static int process(int argc, char *argv[]) {
-	if (argc == 0) {
-		return 0;
-	}
+	assert(argc >= 1);
+	assert(argv != NULL);
 
-	if (!strcmp(argv[0], "exit")) {
+	if (0 == strcmp(argv[0], "exit")) {
 		return -ENOSYS;
 	}
-
-	if (!strcmp(argv[0], "logout")) {
+	else if (0 == strcmp(argv[0], "logout")) {
 		return -ENOSYS;
 	}
-
-	if (!strcmp(argv[argc - 1], "&")) {
+	else if (0 == strcmp(argv[0], "export")) {
+		return process_export(argc, argv);
+	}
+	else if (0 == strcmp(argv[argc - 1], "&")) {
 		return process_amp(argc, argv);
 	}
 
@@ -206,8 +232,9 @@ static int tish_exec(const char *cmdline) {
 
 	strcpy(cmdl, cmdline);
 
-	if (0 == (argc = cmdline_tokenize(cmdl, argv))) {
-		return 0;
+	argc = cmdline_tokenize(cmdl, argv);
+	if (argc == 0) {
+		return -EINVAL;
 	}
 
 	return process(argc, argv);
@@ -226,7 +253,7 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 
 	for (; *fmt; fmt++) {
 		if (len <= 0) {
-			return -ERANGE;
+			return -ENOMEM;
 		}
 
 		if (!state) {
@@ -263,11 +290,11 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 			ret = snprintf(buf, len, "%c", *fmt);
 		}
 
-		if (ret >= len) {
-			return -ERANGE;
+		if (ret < 0) {
+			return -EIO;
 		}
 
-		len -=ret;
+		len -= ret;
 		buf += ret;
 	}
 
