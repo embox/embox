@@ -63,6 +63,44 @@ static void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
 	}
 }
 
+static int is_builtin(const char *cname) {
+	char *tmp;
+	size_t cname_len;
+
+	tmp = BUILTIN_COMMANDS;
+	cname_len = strlen(cname);
+
+	while (1) {
+		if ((0 == strncmp(cname, tmp, cname_len))
+				&& ((tmp[cname_len] == ' ') || (tmp[cname_len] == '\0'))) {
+			return 1;
+		}
+
+		tmp = strchr(tmp, ' ');
+		if (tmp == NULL) {
+			break;
+		}
+		++tmp;
+	}
+
+	return 0;
+}
+
+static int process_builtin(struct cmd_data *cdata) {
+	int ret;
+
+	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
+	if (ret != 0) {
+		printf("tish: %s: Command returned with code %d: %s\n",
+				cmd_name(cdata->cmd), ret, strerror(-ret));
+		free(cdata);
+		return ret;
+	}
+
+	free(cdata);
+	return 0;
+}
+
 static void * run_cmd(void *data) {
 	int ret;
 	struct cmd_data *cdata;
@@ -83,38 +121,10 @@ static void * run_cmd(void *data) {
 	}
 
 	free(cdata);
-	return NULL;
+	return NULL; /* ok */
 }
 
-static int is_builtin(const char *command_name) {
-	char *tmp;
-
-	tmp = strstr(BUILTIN_COMMANDS, command_name);
-	if (tmp == NULL) {
-		return 0;
-	}
-
-	return ((tmp == &BUILTIN_COMMANDS[0]) || (*(tmp - 1) == ' '))
-			&& ((*(tmp + strlen(command_name)) == ' ')
-				|| ((*(tmp + strlen(command_name)) == '\0')));
-}
-
-static int process_builtin(struct cmd_data *cdata) {
-	int ret;
-
-	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
-	if (ret != 0) {
-		printf("tish: %s: Command returned with code %d: %s\n",
-				cmd_name(cdata->cmd), ret, strerror(-ret));
-		free(cdata);
-		return ret;
-	}
-
-	free(cdata);
-	return 0;
-}
-
-static int process_amp(struct cmd_data *cdata) {
+static int process_external(struct cmd_data *cdata, int on_fg) {
 	pid_t pid;
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
@@ -123,12 +133,14 @@ static int process_amp(struct cmd_data *cdata) {
 		return pid;
 	}
 
+	if (on_fg) {
+		return task_waitpid(pid);
+	}
+
 	return 0;
 }
 
 static int process(struct cmd_data *cdata) {
-	pid_t pid;
-
 	assert(cdata != NULL);
 
 	/* TODO remove stubs */
@@ -150,18 +162,11 @@ static int process(struct cmd_data *cdata) {
 	}
 
 	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
-		return process_amp(cdata);
+		--cdata->argc;
+		return process_external(cdata, 0);
 	}
 
-	pid = new_task(cdata->argv[0], run_cmd, cdata);
-	if (pid < 0) {
-		free(cdata);
-		return pid;
-	}
-
-	task_waitpid(pid);
-
-	return 0;
+	return process_external(cdata, 1);
 }
 
 static int tish_exec(const char *cmdline) {
