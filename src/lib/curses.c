@@ -21,7 +21,8 @@
  */
 #define SCREEN_WIDTH  80
 #define SCREEN_HEIGHT 24
-static chtype screen[SCREEN_HEIGHT][SCREEN_WIDTH];
+static chtype std_screen[SCREEN_HEIGHT][SCREEN_WIDTH];
+static chtype cur_screen[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 #define WINDOW_AMOUNT 0x10
 
@@ -34,7 +35,7 @@ WINDOW *curscr;
 POOL_DEF(wnd_pool, WINDOW, WINDOW_AMOUNT);
 
 static void window_init(WINDOW *win, uint16_t begy, uint16_t begx,
-		uint16_t nlines, uint16_t ncols, WINDOW *parent) {
+		uint16_t nlines, uint16_t ncols, WINDOW *parent, chtype *lines) {
 	assert(win != NULL);
 
 	win->begy = win->cury = begy;
@@ -44,7 +45,7 @@ static void window_init(WINDOW *win, uint16_t begy, uint16_t begx,
 	win->parent = parent;
 	win->attrs = A_NORMAL;
 	win->bkgd = (chtype)0;
-	win->lines = &screen[0][0];
+	win->lines = lines;
 	win->scrollok = false;
 	win->clearok = false;
 }
@@ -72,7 +73,7 @@ static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
 
 	for (y = begy; y < endy; ++y) {
 		for (x = begx; x < endx; ++x) {
-			window_setch(win, win->bkgd, y, x);
+			window_setch(win, ch, y, x);
 		}
 	}
 }
@@ -82,12 +83,13 @@ WINDOW * initscr(void) {
 	int res;
 
 	stdscr = &standard;
-	window_init(stdscr, 0, 0, LINES, COLS, NULL);
+	window_init(stdscr, 0, 0, LINES, COLS, NULL, &std_screen[0][0]);
 
 	curscr = &current;
-	window_init(curscr, 0, 0, LINES, COLS, NULL);
+	window_init(curscr, 0, 0, LINES, COLS, NULL, &cur_screen[0][0]);
 
-	memset(&screen[0][0], ' ', sizeof screen);
+	memset(&std_screen[0][0], ' ', sizeof std_screen);
+	memset(&cur_screen[0][0], 0, sizeof cur_screen);
 
 	res = doupdate();
 	if (res != OK) {
@@ -115,7 +117,8 @@ WINDOW * newwin(int nlines, int ncols, int begin_y, int begin_x) {
 
 	window_init(win, begin_y, begin_x,
 			nlines != 0 ? nlines : LINES - begin_y,
-			ncols != 0 ? ncols : COLS - begin_x, NULL);
+			ncols != 0 ? ncols : COLS - begin_x, NULL,
+			stdscr->lines);
 
 	return win;
 }
@@ -137,7 +140,7 @@ WINDOW * subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 		return NULL;
 	}
 
-	window_init(win, begin_y, begin_x, nlines, ncols, orig);
+	window_init(win, begin_y, begin_x, nlines, ncols, orig, stdscr->lines);
 
 	return win;
 }
@@ -155,14 +158,20 @@ int delwin(WINDOW *win) {
 }
 
 int doupdate(void) {
+	chtype ch;
 	uint16_t y, x;
-
 
 	for (y = 0; y < LINES; ++y) {
 		for (x = 0; x < COLS; ++x) {
-			printf("\x1b[%hu;%huH%c", y + 1, x + 1, (int)window_getch(stdscr, y, x));
+			ch = window_getch(stdscr, y, x);
+			if (ch != window_getch(curscr, y, x)) {
+				printf("\x1b[%hu;%huH%c", y + 1, x + 1,
+						(char)window_getch(stdscr, y, x));
+			}
 		}
 	}
+
+	memcpy(&cur_screen[0][0], &std_screen[0][0], sizeof cur_screen);
 
 	return OK;
 }
@@ -336,7 +345,7 @@ int wscrl(WINDOW *win, int n) {
 			++dst_line;
 		}
 
-		window_fill(win, 0, dst_line, win->begx, win->endy, win->endx);
+		window_fill(win, win->bkgd, dst_line, win->begx, win->endy, win->endx);
 	}
 	else {
 		n = min(-n, win->endy - win->begy);
@@ -351,7 +360,7 @@ int wscrl(WINDOW *win, int n) {
 			--dst_line;
 		}
 
-		window_fill(win, 0, win->endy - n, win->begx, win->endy, win->endx);
+		window_fill(win, win->bkgd, win->endy - n, win->begx, win->endy, win->endx);
 	}
 
 	return OK;
@@ -390,7 +399,7 @@ int wclear(WINDOW *win) {
 		return ERR;
 	}
 
-	window_fill(win, 0, win->begy, win->begx, win->endy, win->endx);
+	window_fill(win, win->bkgd, win->begy, win->begx, win->endy, win->endx);
 
 	return OK;
 }
