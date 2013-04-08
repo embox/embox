@@ -1,4 +1,4 @@
-package lib.service
+package embox.example.service
 
 module jsp_example {
 	source "jsp_test.c"
