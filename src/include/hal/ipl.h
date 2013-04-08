@@ -65,6 +65,6 @@ void ipl_restore(ipl_t ipl);
  * Evaluate a given @a expr inside an IRQ-protected block.
  */
 #define IPL_SAFE_DO(expr) \
-	__lang_surround(expr, __ipl = ipl_save(), ipl_restore(__ipl))
+	__lang_surround(expr, ipl_t __ipl = ipl_save(), ipl_restore(__ipl))
 
 #endif /* HAL_IPL_H_ */
