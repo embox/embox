@@ -205,7 +205,7 @@ static char vterm_key_to_char(int keycode) {
 	}
 }
 
-static int vterm_input(struct vterm *vt, struct input_event *event) {
+int vterm_input(struct vterm *vt, struct input_event *event) {
 	const char *esc_body;
 	int keycode;
 

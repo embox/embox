@@ -48,10 +48,10 @@ static struct fbcon_displ_data fbcon_displ_data = {
 	.cur_color = 0x00F0,
 };
 
+extern int vterm_input(struct vterm *vt, struct input_event *event);
+
 static void inpevent(struct vc *vc, struct input_event *ev) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
-	unsigned char ascii[4];
-	int len;
 
 	if (ev->devtype != INPUT_DEV_KBD) {
 		return;
@@ -61,17 +61,7 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 		return;
 	}
 
-	len = keymap_to_ascii(ev, ascii);
-
-	if (fbcon->hasc + len >= FBCON_INPB) {
-		return;
-	}
-
-	memcpy((void *) fbcon->ascii + fbcon->hasc, ascii, len);
-	fbcon->hasc += len;
-
-	event_notify(&fbcon->inpevent);
-
+	vterm_input(&fbcon->vterm, ev);
 }
 
 static void vterm_reinit(struct vterm_video *t, int x, int y);
@@ -94,41 +84,17 @@ static void devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
-static char fbcon_getc(struct fbcon *fbcon) {
-	char ret;
-
-	sched_lock();
-
-	while (!fbcon->hasc) {
-		event_wait(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
-	}
-
-	fbcon->hasc --;
-
-	ret = fbcon->ascii[0];
-	memcpy((void *) fbcon->ascii, (void *) &fbcon->ascii[1], 3);
-
-	sched_unlock();
-
-	return ret;
-}
-
 static inline struct fbcon *data2fbcon(struct idx_desc *data) {
 	return (struct fbcon *) (data->data->fd_struct);
 }
 
 static int this_tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(data);
-	char *cbuf = (char *) buf;
+	/*char *cbuf = (char *) buf;*/
 
 	assert(fbcon);
 
-	while (nbyte--) {
-		*cbuf++ = fbcon_getc(fbcon);
-	}
-
-	return (int) cbuf - (int) buf;
-
+	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
 static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) {
@@ -143,7 +109,8 @@ static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) 
 }
 
 static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
-	return tty_ioctl(&data2fbcon(data)->vterm.tty, request, data);
+	struct fbcon *fbcon = data2fbcon(desc);
+	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
 static int this_tty_close(struct idx_desc *idx) {
@@ -339,8 +306,6 @@ static int make_task(int i, char innewtask) {
 	fbcon->vterm_video.ops = &fbcon_vterm_video_ops;
 
 	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
-
-	event_init(&fbcon->inpevent, "fbcon input event");
 
 	if (0 > (ret = mpx_register_vc(&fbcon->vc_this))) {
 		return ret;
