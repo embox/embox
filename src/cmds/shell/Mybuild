@@ -12,14 +12,13 @@ module tish {
 
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
+	option string builtin_commands = "cd export"
 
 	provides embox.cmd.Shell.commandLine
 
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "tish.c"
 
-	depends embox.compat.posix.fs.chdir
-	depends embox.compat.posix.fs.getcwd
 	depends embox.compat.posix.util.environ
 	depends embox.lib.LibC
 	depends embox.lib.readline_api

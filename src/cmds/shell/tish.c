@@ -38,6 +38,8 @@
 
 #define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
 
+#define BUILTIN_COMMANDS OPTION_STRING_GET(builtin_commands)
+
 #define PROMPT_BUF_LEN 32
 
 struct cmd_data {
@@ -61,7 +63,7 @@ static void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
 	}
 }
 
-static void * process_cmd(void *data) {
+static void * run_cmd(void *data) {
 	int ret;
 	struct cmd_data *cdata;
 
@@ -84,70 +86,38 @@ static void * process_cmd(void *data) {
 	return NULL;
 }
 
-static int process_export(struct cmd_data *cdata) {
-	int ret, i;
-	char *equal;
+static int is_builtin(const char *command_name) {
+	char *tmp;
 
-	ret = 0;
+	tmp = strstr(BUILTIN_COMMANDS, command_name);
+	if (tmp == NULL) {
+		return 0;
+	}
 
-	for (i = 1; i < cdata->argc; ++i) {
-		equal = strchr(cdata->argv[i], '=');
-		if (equal == NULL) {
-			continue;
-		}
+	return ((tmp == &BUILTIN_COMMANDS[0]) || (*(tmp - 1) == ' '))
+			&& ((*(tmp + strlen(command_name)) == ' ')
+				|| ((*(tmp + strlen(command_name)) == '\0')));
+}
 
-		if (*(equal + 1) != '\0') {
-			if (-1 == putenv(cdata->argv[i])) {
-				ret = -errno;
-				break;
-			}
-		}
-		else {
-			*equal = '\0';
-			if (-1 == unsetenv(cdata->argv[i])) {
-				ret = -errno;
-				break;
-			}
-		}
+static int process_builtin(struct cmd_data *cdata) {
+	int ret;
+
+	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
+	if (ret != 0) {
+		printf("tish: %s: Command returned with code %d: %s\n",
+				cmd_name(cdata->cmd), ret, strerror(-ret));
+		free(cdata);
+		return ret;
 	}
 
 	free(cdata);
-	return ret;
-}
-
-static int process_cd(struct cmd_data *cdata) {
-	char *dir, buff[PATH_MAX];
-
-	if (cdata->argc == 1) {
-		dir = getenv("HOME");
-	}
-	else if (cdata->argv[1][0] == '/') {
-		dir = cdata->argv[1];
-	}
-	else {
-		dir = getcwd(&buff[0], ARRAY_SIZE(buff));
-		if (dir == NULL) {
-			return -errno;
-		}
-		if (0 == strcmp(dir, "/")) {
-			snprintf(&buff[0], ARRAY_SIZE(buff), "/%s", cdata->argv[1]);
-		}
-		else {
-			snprintf(&buff[0], ARRAY_SIZE(buff), "%s/%s", dir, cdata->argv[1]);
-		}
-	}
-
-	if (-1 == chdir(dir)) {
-		return -errno;
-	}
-
 	return 0;
 }
 
 static int process_amp(struct cmd_data *cdata) {
 	pid_t pid;
 
-	pid = new_task(cdata->argv[0], process_cmd, cdata);
+	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
 		free(cdata);
 		return pid;
@@ -161,19 +131,11 @@ static int process(struct cmd_data *cdata) {
 
 	assert(cdata != NULL);
 
-	if (0 == strcmp(cdata->argv[0], "exit")) {
+	/* TODO remove stubs */
+	if (!strcmp(cdata->argv[0], "exit")
+			|| !strcmp(cdata->argv[0], "logout")) {
 		free(cdata);
 		return -ENOSYS;
-	}
-	else if (0 == strcmp(cdata->argv[0], "logout")) {
-		free(cdata);
-		return -ENOSYS;
-	}
-	else if (0 == strcmp(cdata->argv[0], "export")) {
-		return process_export(cdata);
-	}
-	else if (0 == strcmp(cdata->argv[0], "cd")) {
-		return process_cd(cdata);
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
@@ -183,11 +145,15 @@ static int process(struct cmd_data *cdata) {
 		return -ENOENT;
 	}
 
+	if (is_builtin(cmd_name(cdata->cmd))) {
+		return process_builtin(cdata);
+	}
+
 	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
 		return process_amp(cdata);
 	}
 
-	pid = new_task(cdata->argv[0], process_cmd, cdata);
+	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
 		free(cdata);
 		return pid;
