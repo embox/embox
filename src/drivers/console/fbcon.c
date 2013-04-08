@@ -25,6 +25,8 @@
 #include <cmd/shell.h>
 #include <embox/unit.h>
 
+#include <fcntl.h>
+
 EMBOX_UNIT_INIT(fbcon_init);
 
 static void inpevent(struct vc *vc, struct input_event *ev);
@@ -110,6 +112,10 @@ static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) 
 
 static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
 	struct fbcon *fbcon = data2fbcon(desc);
+	if(request == F_SETFD) {
+		int flags = (int) data;
+		fbcon->vterm.tty.file_flags = flags;
+	}
 	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
