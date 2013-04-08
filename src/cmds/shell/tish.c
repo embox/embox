@@ -22,6 +22,7 @@
 #include <embox/unit.h>
 #include <pwd.h>
 #include <util/array.h>
+#include <limits.h>
 
 #include <lib/linenoise_1.h>
 #include <readline/readline.h>
@@ -114,6 +115,35 @@ static int process_export(struct cmd_data *cdata) {
 	return ret;
 }
 
+static int process_cd(struct cmd_data *cdata) {
+	char *dir, buff[PATH_MAX];
+
+	if (cdata->argc == 1) {
+		dir = getenv("HOME");
+	}
+	else if (cdata->argv[1][0] == '/') {
+		dir = cdata->argv[1];
+	}
+	else {
+		dir = getcwd(&buff[0], ARRAY_SIZE(buff));
+		if (dir == NULL) {
+			return -errno;
+		}
+		if (0 == strcmp(dir, "/")) {
+			snprintf(&buff[0], ARRAY_SIZE(buff), "/%s", cdata->argv[1]);
+		}
+		else {
+			snprintf(&buff[0], ARRAY_SIZE(buff), "%s/%s", dir, cdata->argv[1]);
+		}
+	}
+
+	if (-1 == chdir(dir)) {
+		return -errno;
+	}
+
+	return 0;
+}
+
 static int process_amp(struct cmd_data *cdata) {
 	pid_t pid;
 
@@ -141,6 +171,9 @@ static int process(struct cmd_data *cdata) {
 	}
 	else if (0 == strcmp(cdata->argv[0], "export")) {
 		return process_export(cdata);
+	}
+	else if (0 == strcmp(cdata->argv[0], "cd")) {
+		return process_cd(cdata);
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
