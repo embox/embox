@@ -137,7 +137,7 @@ extern struct task *task_kernel_task(void);
 
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 
-extern int task_waitpid(unsigned int pid);
+extern int task_waitpid(pid_t pid);
 
 __END_DECLS
 

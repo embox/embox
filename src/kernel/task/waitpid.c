@@ -13,24 +13,23 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_lock.h>
 
-int task_waitpid(unsigned int pid) {
+int task_waitpid(pid_t pid) {
 	struct task *task;
-	int res = ENOERR;
+	int ret = 0;
 
 	sched_lock();
 	{
 		task = task_table_get(pid);
-
-		if (task) {
-			while (0 > sched_sleep_locked(task->wait_sq,
-					SCHED_TIMEOUT_INFINITE));
-		} else {
-			res = -ENOENT;
+		if (task == NULL) {
+			ret = -ENOENT;
+		}
+		else {
+			ret = sched_sleep_locked(task->wait_sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
 
-	return res;
+	return ret;
 }
 
 static void task_wait_sq_deinit(struct task *task) {
