@@ -21,11 +21,12 @@
 #include <net/inetdevice.h>
 #include <net/ip.h>
 #include <string.h>
+#include <kernel/time/time.h>
 
 
 EMBOX_CMD(exec);
 
-#define DEFAULT_INTERVAL 1000
+#define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
 static void print_usage(void) {
 	printf("Usage: rarping [-I if] [-c cnt] host\n");
