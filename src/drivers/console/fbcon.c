@@ -145,7 +145,7 @@ static void *run(void *data) {
 
 	close(fd);
 
-	shell_run(sh);
+	shell_exec(sh, "login");
 
 	return NULL;
 
