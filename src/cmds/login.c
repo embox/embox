@@ -24,6 +24,8 @@
 
 #include <embox/cmd.h>
 
+extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
+
 EMBOX_CMD(login_cmd);
 
 #define BUF_LEN 64
@@ -33,50 +35,6 @@ EMBOX_CMD(login_cmd);
 
 #define SHADOW_FILE "/shadow"
 #define SMAC_USERS "/smac_users"
-
-static void echo_mod(char on) {
-	/*printf("\033[12%c", on ? 'l' : 'h');*/
-}
-
-static int passw_prompt(const char *prompt, char *buf, int buflen) {
-	int ch;
-	printf("%s", prompt);
-
-	echo_mod(0);
-
-	ch = fgetc(stdin);
-
-	while ('\n' != ch && '\r' != ch) {
-
-		/* Avoid strange symbols in stdin.
-		 * Actually, telnet sends \r as \r\0,
-		 * so trying bypass it.
-		 */
-		if (ch == '\0') {
-			ch = fgetc(stdin);
-			continue;
-		}
-
-		if (buflen-- <= 0) {
-			return -ERANGE;
-		}
-
-		*buf++ = ch;
-		ch = fgetc(stdin);
-	}
-
-	if (buflen-- <= 0) {
-		return -ERANGE;
-	}
-
-	*buf++ = '\0';
-
-	echo_mod(1);
-
-	printf("\n");
-
-	return 0;
-}
 
 static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
@@ -200,7 +158,7 @@ static int login_cmd(int argc, char **argv) {
 			}
 
 
-			if (0 > (res = passw_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
+			if (NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
 				continue;
 			}
 

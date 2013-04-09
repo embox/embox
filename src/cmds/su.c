@@ -22,43 +22,6 @@
 
 EMBOX_CMD(su_exec);
 
-static char *passw_prompt(const char *prompt, char *buf, int buflen) {
-	int ch;
-	char *ret = buf;
-	printf("%s", prompt);
-
-	ch = fgetc(stdin);
-
-	while ('\n' != ch && '\r' != ch) {
-
-		/* Avoid strange symbols in stdin.
-		 * Actually, telnet sends \r as \r\0,
-		 * so trying bypass it.
-		 */
-		if (ch == '\0') {
-			ch = fgetc(stdin);
-			continue;
-		}
-
-		if (buflen-- <= 0) {
-			return NULL;
-		}
-
-		*buf++ = ch;
-		ch = fgetc(stdin);
-	}
-
-	if (buflen-- <= 0) {
-		return NULL;
-	}
-
-	*buf++ = '\0';
-
-	printf("\n");
-
-	return ret;
-}
-
 static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
 	FILE *shdwf;
@@ -101,12 +64,13 @@ static int su_exec(int argc, char *argv[]) {
 		goto out_err;
 	}
 
-	if (NULL == (pass = passw_prompt("Password: ", passwd, PASSBUF_LEN))) {
+	if (NULL == (pass = getpass_r("Password: ", passwd, PASSBUF_LEN))) {
 		goto out_err;
 	}
 
 	if (strcmp(spwd->sp_pwdp, pass)) {
-		ret = -EACCES;
+		fprintf(stderr, "%s: incorrect password\n", argv[0]);
+		ret = 0;
 		goto out_err;
 	}
 
