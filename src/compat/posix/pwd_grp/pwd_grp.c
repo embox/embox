@@ -157,7 +157,7 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 
 struct passwd *getpwnam(const char *name) {
 	static struct passwd getpwnam_buffer;
-	char buff[0x80];
+	static char buff[0x80];
 	struct passwd *res;
 
 	if (0 != getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res)) {
