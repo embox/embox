@@ -80,24 +80,17 @@ static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	out8(NESM_START_PG_RX, dev->base_addr + EN1_CURPAG);
 
 	/* Get mac-address from prom*/
-	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
+	out8(E8390_PAGE0 | E8390_RREAD | E8390_NODMA, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
 		(void)in8(dev->base_addr + NE_DATAPORT);
-	}
-
-	/* Copy the station address and set the multicast
-	 * hash bitmap to recive all multicast */
-	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETH_ALEN; i++) {
-		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
-		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
 	}
 }
 
 /* Configure board */
 static void ne2k_config(struct net_device *dev) {
 	unsigned int base_addr;
+	int i;
 
 	base_addr = dev->base_addr;
 
@@ -115,6 +108,15 @@ static void ne2k_config(struct net_device *dev) {
 	out8(ENISR_ALL, base_addr + EN0_IMR);
 	out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on */
 	out8(E8390_RXCONFIG, base_addr + EN0_RXCR); /* rx on */
+
+	/* Copy the station address and set the multicast
+	 * hash bitmap to recive all multicast */
+	out8(E8390_NODMA | E8390_PAGE1, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETH_ALEN; i++) {
+		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+	}
+	out8(E8390_NODMA | E8390_PAGE0 | E8390_START, dev->base_addr + E8390_CMD);
 
 //	out8(E8390_PAGE1 | E8390_STOP, base_addr);
 //	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
@@ -360,7 +362,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 		return -EINVAL;
 	}
 
-	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
+	out8(E8390_NODMA | E8390_PAGE1, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
 	}
