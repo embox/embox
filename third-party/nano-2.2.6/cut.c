@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 
-static bool keep_cutbuffer = FALSE;
+bool nano__cut__keep_cutbuffer = FALSE;
 	/* Should we keep the contents of the cutbuffer? */
 	/* Pointer to the end of the cutbuffer. */
 
@@ -34,7 +34,7 @@ static bool keep_cutbuffer = FALSE;
  * cutbuffer. */
 void cutbuffer_reset(void)
 {
-    keep_cutbuffer = FALSE;
+    nano__cut__keep_cutbuffer = FALSE;
 }
 
 /* If we aren't on the last line of the file, move all the text of the
@@ -131,9 +131,9 @@ void do_cut_text(
 
     assert(openfile->current != NULL && openfile->current->data != NULL);
 
-    /* If keep_cutbuffer is FALSE and the cutbuffer isn't empty, blow
+    /* If nano__cut__keep_cutbuffer is FALSE and the cutbuffer isn't empty, blow
      * away the text in the cutbuffer. */
-    if (!keep_cutbuffer && cutbuffer != NULL) {
+    if (!nano__cut__keep_cutbuffer && cutbuffer != NULL) {
 	free_filestruct(cutbuffer);
 	cutbuffer = NULL;
 #ifdef DEBUG
@@ -156,10 +156,10 @@ void do_cut_text(
     }
 #endif
 
-    /* Set keep_cutbuffer to TRUE, so that the text we're going to move
+    /* Set nano__cut__keep_cutbuffer to TRUE, so that the text we're going to move
      * into the cutbuffer will be added to the text already in the
      * cutbuffer instead of replacing it. */
-    keep_cutbuffer = TRUE;
+    nano__cut__keep_cutbuffer = TRUE;
 
 #ifndef NANO_TINY
 
