@@ -42,6 +42,8 @@
 
 #define PROMPT_BUF_LEN 32
 
+#define DEADSHELL_RET 0xDEAD5EE1
+
 struct cmd_data {
 	int argc;
 	char *argv[(BUF_INP_SIZE + 1) / 2];
@@ -147,7 +149,7 @@ static int process(struct cmd_data *cdata) {
 	if (!strcmp(cdata->argv[0], "exit")
 			|| !strcmp(cdata->argv[0], "logout")) {
 		free(cdata);
-		return -ENOSYS;
+		return DEADSHELL_RET;
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
@@ -289,7 +291,9 @@ static void tish_run(void) {
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
-			(void)tish_exec(line);
+			if (DEADSHELL_RET == tish_exec(line)) {
+				break;
+			}
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
