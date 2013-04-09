@@ -161,14 +161,10 @@ struct passwd *getpwnam(const char *name) {
 	struct passwd *res;
 
 	if (0 != getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res)) {
-		return 0;
-	}
-
-	if (res == 0) {
 		return NULL;
 	}
 
-	return &getpwnam_buffer;
+	return res;
 }
 
 int getpwuid_r(uid_t uid, struct passwd *pwd,
@@ -199,18 +195,15 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 
 struct passwd *getpwuid(uid_t uid) {
 	static struct passwd getpwuid_buffer;
-	char buff[0x80];
+	static char buff[0x80];
 	struct passwd *res;
 
 	if (0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res)) {
 		//TODO errno must be set
 		return NULL;
 	}
-	if (res == 0) {
-		return NULL;
-	}
 
-	return &getpwuid_buffer;
+	return res;
 }
 
 int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
