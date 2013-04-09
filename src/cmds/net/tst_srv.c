@@ -48,7 +48,6 @@ static void * client_process(void * args) {
 	char buf[256];
 	struct timeval tv,tv1,tv2,tv3;
 
-	struct timeval tmv;
 	fd_set fds;
 	int bytes;
 
@@ -57,8 +56,6 @@ static void * client_process(void * args) {
 	sock=(int)args;
 	FD_ZERO(&fds);
 	FD_SET(sock,&fds);
-	tmv.tv_sec=1;
-	tmv.tv_usec=10000;
 	printf("Wait request...\n");
 
 	usleep(10);
