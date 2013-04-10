@@ -45,6 +45,8 @@ module start_script {
 	option string tty_dev=""
 	option number input_buffer = 80
 
+	option number shell_start = 1
+
 }
 
 module make_term {
