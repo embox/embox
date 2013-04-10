@@ -6,6 +6,9 @@
  * @date    06.02.2013
  */
 
+#ifndef COMPAT_POSIX_SHADOW_H_
+#define COMPAT_POSIX_SHADOW_H_
+
 #include <stdio.h>
 
 struct spwd {
@@ -43,3 +46,5 @@ extern struct spwd *fgetspent(FILE *file);
  * @return NULL
  */
 extern struct spwd *getspnam_f(const char *name);
+
+#endif /* COMPAT_POSIX_SHADOW_H_ */

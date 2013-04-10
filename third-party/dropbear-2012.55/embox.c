@@ -25,10 +25,12 @@ struct passwd *getpwnam(const char *name) {
 }
 #endif
 
-char *crypt(const char *key, const char *salt) {
+char *crypt(char *key, const char *salt) {
+	static char buff[0x20];
+	return strncpy(buff, key, 0x20);
+#if 0
 	struct passwd *pwd;
 	struct spwd *spwd;
-	static char buff[0x20];
 
 	pwd = getpwuid(geteuid());
 
@@ -47,6 +49,7 @@ char *crypt(const char *key, const char *salt) {
 	}
 
 	return buff;
+#endif
 }
 
 
