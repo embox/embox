@@ -33,30 +33,31 @@ static int umether_start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		.dev_id = devstate.id,
 		.len = skb->len,
 	};
-
+	ipl_t ipl = ipl_save();
 	int ret;
 
 	if (devstate.id < 0) {
-		return -ENODEV;
+		ret = -ENODEV;
+		goto out;
 	}
-
 
 	if (0 >= (ret = emvisor_sendhdr(UV_PWRUPSTRM, EMVISOR_NETDATA,
 					sizeof(dhdr) + skb->len))) {
-		return ret;
+		goto out;
 	}
 
 	if (0 >= (ret = emvisor_sendn(UV_PWRUPSTRM, &dhdr, sizeof(dhdr)))) {
-		return ret;
+		goto out;
 	}
 
 	if (0 >= (ret = emvisor_sendn(UV_PWRUPSTRM, skb->mac.raw, skb->len))) {
-		return ret;
+		goto out;
 	}
 
+out:
 	skb_free(skb);
-
-	return ENOERR;
+	ipl_restore(ipl);
+	return ret;
 }
 
 static int umether_open(struct net_device *dev) {

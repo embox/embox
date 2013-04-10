@@ -383,8 +383,6 @@ static int upstrm_cmd(int pupstream) {
 		return ret;
 	}
 
-	/*fprintf(stderr, "msg: %d, %d\n", msg.type, msg.dlen);*/
-
 	assert(ret == sizeof(struct emvisor_msghdr));
 
 	if (!ret) {

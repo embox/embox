@@ -27,7 +27,9 @@ static char *pipeopen(char *argv, int pipe, int flags) {
 void _start2(int argc, char *argv) {
 	host_pid_t thispid = host_getpid();
 
-	assert(argc == 1 + 2);
+	if (argc != 1 + 2) {
+		host_exit(1);
+	}
 
 	argv += strlen(argv) + 1;
 
