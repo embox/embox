@@ -42,7 +42,10 @@ static void __work_post(struct work *w , struct work_queue *wq) {
 	if (!(w->state & WS_PENDING)) {
 		w->state |= WS_PENDING;
 		w->wq = wq;
-		dlist_add_prev(&w->link, &wq->list);
+
+		if (!(w->state & WS_DISABLED)) {
+			dlist_add_prev(&w->link, &wq->list);
+		}
 	}
 }
 
