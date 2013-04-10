@@ -492,8 +492,18 @@ int main(int argc, char **argv) {
 	int fd, flags, ret;
 	struct termios tc_old, tc_this;
 
-	if (argc != 3) {
+	if (argc < 3 && argc > 4) {
 		return -EINVAL;
+	}
+
+	if (argc == 4 && !fork()) {
+		ret = execlp(argv[3], argv[3], argv[1], argv[2], (char *) 0);
+
+		if (ret == -1) {
+			ret = -errno;
+		}
+
+		return ret;
 	}
 
 	if (0 > tcgetattr(STDIN_FILENO, &tc_old)) {
@@ -532,11 +542,10 @@ int main(int argc, char **argv) {
 	ev_upstream.np_read = fd;
 
 	ret = emvisor();
-
 	tcsetattr(STDIN_FILENO, TCSANOW, &tc_old);
 
 	printf("Emvisor exit: %d\n", ret);
-	pause();
+
 	return ret;
 
 }
