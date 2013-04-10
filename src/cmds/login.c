@@ -33,7 +33,6 @@ EMBOX_CMD(login_cmd);
 #define LOGIN_PROMPT "login: "
 #define PASSW_PROMPT "password: "
 
-#define SHADOW_FILE "/shadow"
 #define SMAC_USERS "/smac_users"
 
 static struct spwd *spwd_find(const char *spwd_path, const char *name) {
@@ -149,7 +148,7 @@ static int login_cmd(int argc, char **argv) {
 			free(name);
 
 			if (result) {
-				spwd = spwd_find(SHADOW_FILE, result->pw_name);
+				spwd = getspnam_f(result->pw_name);
 			}
 
 			if (result == NULL || spwd == NULL) {

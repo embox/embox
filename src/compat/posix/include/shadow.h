@@ -22,7 +22,6 @@ struct spwd {
 
 #if 0
 extern struct spwd *getspent(void);
-extern struct swpd *getspname(char *name);
 
 extern void setspent(void);
 
@@ -32,3 +31,15 @@ extern int ulckpwdf(void);
 #endif
 
 extern struct spwd *fgetspent(FILE *file);
+
+/**
+ * @brief This will search entire DB for matching entry,
+ * which differs from @a getpsnam, that will search from current
+ * position
+ *
+ * @param name Name to searc
+ *
+ * @return pointer to @a spwd
+ * @return NULL
+ */
+extern struct spwd *getspnam_f(const char *name);

@@ -8,7 +8,7 @@
 
 
 #include "includes.h"
-
+#include <shadow.h>
 
 #if 0
 #define PWD_CHARLEN 64
@@ -27,13 +27,24 @@ struct passwd *getpwnam(const char *name) {
 
 char *crypt(const char *key, const char *salt) {
 	struct passwd *pwd;
+	struct spwd *spwd;
 	static char buff[0x20];
 
 	pwd = getpwuid(geteuid());
+
+	buff[0] = '\0';
+
 	if (pwd == NULL) {
-		return 0;
+		return buff;
 	}
-	memcpy(buff, pwd->pw_passwd, sizeof(buff));
+
+	if (!(spwd = getspnam_f(pwd->pw_name))) {
+		return buff;
+	}
+
+	if (!strcmp(key, spwd->sp_pwdp)) {
+		memcpy(buff, pwd->pw_passwd, sizeof(buff));
+	}
 
 	return buff;
 }
