@@ -359,7 +359,5 @@ static int exec(int argc, char **argv) {
 		pinfo.from.s_addr = inetdev_get_by_dev(rte->dev)->ifa_address;
 	}
 	/* ping! */
-	ping(&pinfo, hostname, he->h_name);
-
-	return 0;
+	return ping(&pinfo, hostname, he->h_name);
 }

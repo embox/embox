@@ -11,19 +11,32 @@
 #include <kernel/host.h>
 #include <uservisor_base.h>
 
-int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen) {
+int emvisor_sendhdr(int fd, enum emvisor_msg type, int dlen) {
 	struct emvisor_msghdr msg = {
 		.type = type,
 		.dlen = dlen,
 	};
+
+	return host_write(fd, &msg, sizeof(struct emvisor_msghdr));
+}
+
+int emvisor_sendn(int fd, const void *data, int len) {
+	return host_write(fd, data, len);
+}
+
+int emvisor_send(int fd, enum emvisor_msg type, const void *msg_data, int dlen) {
 	int ret;
 
-	if (0 >= (ret = host_write(fd, &msg, sizeof(struct emvisor_msghdr)))) {
+	if (0 >= (ret = emvisor_sendhdr(fd, type, dlen))) {
 		return ret;
 	}
 
-	if (0 >= (ret = host_write(fd, msg_data, dlen))) {
-		return ret;
+	return emvisor_sendn(fd, msg_data, dlen);
+}
+
+int emvisor_irq(host_pid_t pid, char signal) {
+	if (signal) {
+		return host_kill(pid, UV_IRQ);
 	}
 
 	return 0;
@@ -37,11 +50,7 @@ int emvisor_sendirq(host_pid_t pid, char signal, int fd, enum emvisor_msg type,
 		return ret;
 	}
 
-	if (signal) {
-		return host_kill(pid, UV_IRQ);
-	}
-
-	return 0;
+	return emvisor_irq(pid, signal);
 }
 
 int emvisor_recvn(int fd, void *data, int dlen) {

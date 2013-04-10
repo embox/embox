@@ -10,14 +10,13 @@ module single extends api {
 	depends kernel_task
 }
 
-
 module multi extends api {
 	source "multi.c"
 	depends kernel_task
 
 	option number tasks_quantity = 20
 
-	depends task_table
+	depends embox.util.idx_table
 
 	/* uses task_self() to initialize resources, which implies
 	   to thread be already loaded, as task_self uses thread_self
@@ -32,16 +31,8 @@ module kernel_task {
 	source "common.c"
 }
 
-
-
-module task_table {
-	source "task_table.c"
-	depends embox.util.idx_table
-}
-
 module std_signal {
 	source "std_signal.c"
-	source "sighnd_impl.h"
 	depends signal_common
 }
 
@@ -96,6 +87,5 @@ module io_sync extends io_sync_api {
 module waitpid {
 	source "waitpid.c"
 
-	depends task_table
 	depends embox.kernel.thread.core
 }

@@ -45,16 +45,21 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 	if (!found) {
 		/* All of the existing elements (if any) have higher priority. */
 		list_add_last(__prioq_chain, new_link, &prioq->prio_list);
-		assert(list_empty(&new_link->elem_link));
+		assert(list_is_empty(&new_link->elem_list));
+		assert(list_alone_link(&new_link->elem_link));
 
 	} else if (comparison < 0) {
 		/* Found a chain with lower priority. */
 		list_insert_before(__prioq_chain, new_link, found);
-		assert(list_empty(&new_link->elem_link));
+		assert(list_is_empty(&new_link->elem_list));
+		assert(list_alone_link(&new_link->elem_link));
 
 	} else {
 		/* Found a chain with the same priority. */
-		list_add_tail(&new_link->elem_link, &found->elem_link);
+		list_add_last_link(&new_link->elem_link, &found->elem_list);
+		assert(!list_is_empty(&found->elem_list));
+		assert(list_is_empty(&new_link->elem_list));
+		assert(!list_alone_link(&new_link->elem_link));
 
 	}
 }
@@ -64,21 +69,24 @@ static inline void prioq_remove_link(struct prioq_link *link,
 	assert(link && link_comparator);
 
 	if (list_alone(__prioq_chain, link)) {
-		assert(!list_empty(&link->elem_link));
-		list_del_init(&link->elem_link);
+		assert(list_is_empty(&link->elem_list));
+		assert(!list_alone_link(&link->elem_link));
+		list_unlink_link(&link->elem_link);
 		return;
 	}
 
-	if (!list_empty(&link->elem_link)) {
-		struct prioq_link *new_link = list_entry(link->elem_link.next,
+	if (!list_is_empty(&link->elem_list)) {
+		struct prioq_link *new_link = list_first_element(&link->elem_list,
 				struct prioq_link, elem_link);
 
 		/* Replace priority link being deleted with a new one. */
 		list_insert_after(__prioq_chain, new_link, link);
+
+		list_unlink_link(&new_link->elem_link);
+		list_bulk_add_first(&link->elem_list, &new_link->elem_list);
 	}
 
 	list_unlink_link(&link->prio_link);
-	list_del_init(&link->elem_link);
 }
 
 #endif /* UTIL_PRIOQ_IMPL_H_ */

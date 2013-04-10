@@ -317,10 +317,6 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 			return -1;
 	}
 
-	if (desc->cursor > ni->size) {
-		desc->cursor = ni->size;
-	}
-
 	DPRINTF(("seek(%s, %d) = %d\n", desc->node->name, origin, desc->cursor));
 
 	return desc->cursor;

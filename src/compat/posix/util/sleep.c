@@ -14,7 +14,7 @@
 int usleep(useconds_t usec) {
 	int res;
 
-	res = ksleep(usec / 1000);
+	res = ksleep(usec / USEC_PER_MSEC);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1;
@@ -24,5 +24,5 @@ int usleep(useconds_t usec) {
 }
 
 int sleep(unsigned int seconds) {
-	return usleep(seconds * 1000000);
+	return usleep(seconds * USEC_PER_SEC);
 }

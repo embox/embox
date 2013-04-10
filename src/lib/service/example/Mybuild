@@ -1,8 +1,0 @@
-package lib.service
-
-module jsp_example{
-	source "jsp_test.c"
-
-	depends lib.service.service
-	depends lib.service.jsp
-}

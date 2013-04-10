@@ -16,7 +16,7 @@ static void wake_up(sys_timer_t *timer, void *param) {
 	*(int *)param = 0;
 }
 
-int ksleep(useconds_t usec) {
+int ksleep(useconds_t msec) {
 	volatile int wait_flag; // for sleep func
 	sys_timer_t timer;
 
@@ -26,7 +26,7 @@ int ksleep(useconds_t usec) {
 
 	wait_flag = 1;
 
-	if (timer_init(&timer, TIMER_ONESHOT, usec , &wake_up, (void *) &wait_flag)) {
+	if (timer_init(&timer, TIMER_ONESHOT, msec , &wake_up, (void *) &wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {

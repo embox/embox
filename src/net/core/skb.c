@@ -139,7 +139,7 @@ struct sk_buff * skb_share(struct sk_buff *skb, int share) {
 	return shared;
 }
 
-struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {
+struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom) {
 	int free_headroom = skb->mac.raw - skb->head;
 	int free_tailroom = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (free_headroom + skb->len);
 	int free_space = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (skb->len + headroom + tailroom);

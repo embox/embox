@@ -150,7 +150,8 @@ int netdev_set_flags(struct net_device *dev, unsigned int flags) {
 		res = (*func)(dev);
 	}
 
-	dev->flags = flags;
+	if (res >= 0)
+		dev->flags = flags;
 
 	return res;
 }

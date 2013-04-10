@@ -13,8 +13,22 @@
 #include <kernel/task/std_signal.h>
 #include <kernel/task/task_table.h>
 
+static void sighnd_default(int sig) {
+	task_exit(NULL);
+}
+
+static void sighnd_ignore(int sig) {
+	/* do nothing */
+}
+
 void (*signal(int sig, void (*func)(int)))(int) {
 	void (*old_func)(int) = task_self_signal_get(sig);
+
+	if (func == SIG_DFL) {
+		func = sighnd_default;
+	} else if (func == SIG_IGN || func == SIG_ERR) {
+		func = sighnd_ignore;
+	}
 
 	task_self_signal_set(sig, func);
 

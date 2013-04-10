@@ -26,12 +26,12 @@
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 /* AF_INET socket create */
-struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
-		unsigned short type, unsigned char protocol) {
+struct sock * inet_create_sock(struct proto *prot,
+		int type, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 
-	sk = sk_alloc(AF_INET, 0, prot);
+	sk = sk_alloc(AF_INET, prot);
 	if (sk == NULL) {
 		return NULL;
 	}
@@ -43,13 +43,14 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	inet->id = 0;
 	inet->uc_ttl = -1; /* TODO socket setup more options  */
 	inet->mc_ttl = 1;
-	/* setup port */
-	/* socket_set_port_type(sock); */
-	/* TODO really port type is inet->sport_type, but this not matter, yet */
-	inet->sport = htons(ip_port_get_free(protocol)); /* inet->sport at network bytes order  */
 
+	inet->sport_is_alloced = 0;
+
+	// TODO it's required?
 	inet->rcv_saddr = 0;
-	inet->daddr = 0; // TODO it's required?
+	inet->saddr = 0;
+	inet->sport = 0;
+	inet->daddr = 0;
 	inet->dport = 0;
 
 	return sk;
@@ -92,7 +93,9 @@ static int inet_create(struct socket *sock, int protocol) {
 	int res;
 	unsigned short type;
 	struct sock *sk;
+	struct inet_sock *inet;
 	struct inet_protosw *p_netsock;
+	int port;
 
 	assert(sock != NULL);
 
@@ -103,10 +106,24 @@ static int inet_create(struct socket *sock, int protocol) {
 		return res;
 	}
 
-	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, type,
+	sk = inet_create_sock((struct proto *)p_netsock->prot, type,
 			p_netsock->protocol);
 	if (sk == NULL) {
 		return -ENOMEM;
+	}
+
+	switch (sk->sk_protocol) {
+	case IPPROTO_TCP:
+	case IPPROTO_UDP:
+		port = ip_port_get_free(sk->sk_protocol);
+		if (port < 0) {
+			sk_common_release(sk);
+			return port;
+		}
+		inet = inet_sk(sk);
+		inet->sport = htons((unsigned short)port);
+		inet->sport_is_alloced = 1;
+		break;
 	}
 
 	sock->sk = sk;
@@ -119,7 +136,6 @@ static int inet_create(struct socket *sock, int protocol) {
 
 static int inet_release(struct socket *sock) {
 	struct sock *sk;
-	struct inet_sock *inet;
 
 	assert(sock != NULL);
 
@@ -130,17 +146,15 @@ static int inet_release(struct socket *sock) {
 	sk = sock->sk;
 	assert(sk != NULL);
 
-	/* free port */
-	inet = inet_sk(sk);
-	/* socket_port_unlock(ntohs(inet->sport), inet->sport_type); */
-	ip_port_unlock(sk->sk_protocol, ntohs(inet->sport));
-
 	if (sk->sk_prot->close != NULL) {
 		/* altering close() interface to return NULL
 			 is probably not appropriate) */
 		sk->sk_prot->close(sk, 0);
 	}
 	else {
+		if (inet_sk(sk)->sport_is_alloced) {
+			ip_port_unlock(sk->sk_protocol, ntohs(inet_sk(sk)->sport));
+		}
 		sk_common_release(sk);
 	}
 

@@ -26,14 +26,12 @@
 
 #define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
-static struct proto raw_prot;
+static const struct proto raw_prot;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, raw_prot, inet_raw_ops, 0, true);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, raw_prot, inet_raw_ops, 0, false);
 
 static struct raw_sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
-
-static int raw_rcv_skb(struct sock *sk, struct sk_buff *skb);
 
 /* static method for getting hash table index of a socket */
 static int _raw_get_hash_idx(struct sock *sk) {
@@ -88,7 +86,6 @@ static struct sock *raw_lookup(__u8 proto) {
 #endif
 
 int raw_rcv(struct sk_buff *skb) {
-	int res;
 	size_t i;
 	struct sock *sk;
 	struct sk_buff *cloned;
@@ -103,10 +100,7 @@ int raw_rcv(struct sk_buff *skb) {
 				continue;
 				//return -ENOMEM;
 			}
-			res = raw_rcv_skb(sk, cloned);
-			if (res < 0) {
-				skb_free(cloned);
-			}
+			sock_queue_rcv_skb(sk, cloned);
 		}
 	}
 
@@ -139,11 +133,6 @@ static int raw_init_sock(struct sock *sk) {
 
 static void raw_close(struct sock *sk, long timeout) {
 	sk_common_release(sk);
-}
-
-static int raw_rcv_skb(struct sock *sk, struct sk_buff *skb) {
-	sock_queue_rcv_skb(sk, skb);
-	return ENOERR;
 }
 
 static void raw_hash(struct sock *sk) {
@@ -238,7 +227,7 @@ int raw_connect(struct sock *sk,
 	return ENOERR;
 }
 
-static struct proto raw_prot = {
+static const struct proto raw_prot = {
 	.name = "RAW",
 	.init = raw_init_sock,
 	.bind = raw_bind,
@@ -250,7 +239,6 @@ static struct proto raw_prot = {
 	.close = raw_close,
 //	.disconnect = udp_disconnect,
 	.ioctl = raw_ioctl,
-	.backlog_rcv = raw_rcv_skb,
 	.hash = raw_hash,
 	.unhash = raw_unhash,
 	.obj_size = sizeof(struct raw_sock),

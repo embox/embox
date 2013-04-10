@@ -33,10 +33,6 @@ struct fbcon {
 
 	struct video_resbpp resbpp;
 
-	struct event inpevent;
-
-	volatile char hasc;
-	volatile char ascii[FBCON_INPB];
 };
 
 extern volatile struct fbcon *vc_fbcon_cur;

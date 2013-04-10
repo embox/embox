@@ -1,0 +1,24 @@
+package embox.cmd.net
+
+@Cmd(name = "tst_srv",
+	help = "Start test server",
+	man = '''
+		NAME
+			tst_srv - test server
+		SYNOPSIS
+			tst_srv
+		DESCRIPTION
+			Start test server in the system
+		EXAMPLES
+			tst_srv
+		AUTHORS
+			Aleev Dmitry
+	''')
+module tst_srv {
+	source "tst_srv.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

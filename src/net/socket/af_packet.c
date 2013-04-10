@@ -78,7 +78,7 @@ static int packet_create(struct socket *sock, int protocol) {
 		return res;
 	}
 
-	sk = sk_alloc(/*net,*/ PF_PACKET, 0, (struct proto *)&packet_proto);
+	sk = sk_alloc(/*net,*/ PF_PACKET, (struct proto *)&packet_proto);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}

@@ -33,6 +33,7 @@
 
 
 #include <sys/types.h> // for size_t
+#include <sys/time.h> // for struct timeval
 #include <linux/types.h>
 #include <stddef.h>
 #include <stdint.h>

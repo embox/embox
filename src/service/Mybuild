@@ -3,7 +3,12 @@ package embox.service
 module SrvLib {
 	source "srv_lib.c"
 
-	depends lib.service.service
+	depends embox.lib.service.service
+}
+
+module ImgService {
+	//source "img_service.c"
+	depends embox.service.SrvLib
 }
 
 module TestService {

@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <drivers/iodev.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
@@ -23,6 +24,8 @@
 #include <mem/objalloc.h>
 #include <cmd/shell.h>
 #include <embox/unit.h>
+
+#include <fcntl.h>
 
 EMBOX_UNIT_INIT(fbcon_init);
 
@@ -47,87 +50,25 @@ static struct fbcon_displ_data fbcon_displ_data = {
 	.cur_color = 0x00F0,
 };
 
-#if 0
-static void cursor(struct fb_info *fb, struct input_event *ev) {
-	static int x, y;
-	const int len = 20;
+extern int vterm_input(struct vterm *vt, struct input_event *event);
 
-	short xo = ev->value >> 16;
-	short yo = ev->value & 0xffff;
-
-	const int bpp = fb->var.bits_per_pixel / 8;
-	const int xres = fb->var.xres;
-	const int yres = fb->var.yres;
-
-	void *start = fb->screen_base + (y * xres + x) * bpp;
-	int cnt = len;
-
-	while (cnt--) {
-		memset(start, 0xff, len);
-		start += xres * bpp;
-	}
-
-	x += xo;
-	y += -yo;
-
-	x = x > xres ? xres : x;
-	y = y > yres ? yres : y;
-
-	x = x > 0 ? x : 0;
-	y = y > 0 ? y : 0;
-
-	start = fb->screen_base + (y * xres + x) * bpp;
-
-	cnt = len;
-
-	while (cnt--) {
-		memset(start, 0x0, len);
-		start += xres * bpp;
-	}
-}
-#endif
 static void inpevent(struct vc *vc, struct input_event *ev) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
-	unsigned char ascii[4];
-	int len;
-
-#if 0
-	if (ev->devtype == INPUT_DEV_MOUSE) {
-		if (!vc->fb) {
-			return;
-		}
-
-		cursor(vc->fb, ev);
-
-	}
 
 	if (ev->devtype != INPUT_DEV_KBD) {
 		return;
 	}
-#endif
 
 	if (!(ev->type & KEY_PRESSED)) {
 		return;
 	}
 
-	len = keymap_to_ascii(ev, ascii);
-
-	if (fbcon->hasc + len >= FBCON_INPB) {
-		return;
-	}
-
-	memcpy((void *) fbcon->ascii + fbcon->hasc, ascii, len);
-	fbcon->hasc += len;
-
-	event_notify(&fbcon->inpevent);
-
-
+	vterm_input(&fbcon->vterm, ev);
 }
 
 static void vterm_reinit(struct vterm_video *t, int x, int y);
 
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
-	/*struct tty *tty;*/
 	struct fbcon *fbcon = (struct fbcon *) vc;
 
 	fbcon->resbpp.x = fbinfo->var.xres;
@@ -145,41 +86,17 @@ static void devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
-static char fbcon_getc(struct fbcon *fbcon) {
-	char ret;
-
-	sched_lock();
-
-	while (!fbcon->hasc) {
-		event_wait(&fbcon->inpevent, EVENT_TIMEOUT_INFINITE);
-	}
-
-	fbcon->hasc --;
-
-	ret = fbcon->ascii[0];
-	memcpy((void *) fbcon->ascii, (void *) &fbcon->ascii[1], 3);
-
-	sched_unlock();
-
-	return ret;
-}
-
 static inline struct fbcon *data2fbcon(struct idx_desc *data) {
 	return (struct fbcon *) (data->data->fd_struct);
 }
 
 static int this_tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(data);
-	char *cbuf = (char *) buf;
+	/*char *cbuf = (char *) buf;*/
 
 	assert(fbcon);
 
-	while (nbyte--) {
-		*cbuf++ = fbcon_getc(fbcon);
-	}
-
-	return (int) cbuf - (int) buf;
-
+	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
 static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) {
@@ -194,7 +111,12 @@ static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) 
 }
 
 static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
-	return tty_ioctl(&data2fbcon(data)->vterm.tty, request, data);
+	struct fbcon *fbcon = data2fbcon(desc);
+	if(request == F_SETFD) {
+		int flags = (int) data;
+		fbcon->vterm.tty.file_flags = flags;
+	}
+	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
 static int this_tty_close(struct idx_desc *idx) {
@@ -219,11 +141,11 @@ static void *run(void *data) {
 
 	dup2(fd, 0);
 	dup2(fd, 1);
-	dup2(fd, 2);
+	/*dup2(fd, 2);*/
 
 	close(fd);
 
-	shell_run(sh);
+	shell_exec(sh, "login");
 
 	return NULL;
 
@@ -375,10 +297,22 @@ static const struct vterm_video_ops fbcon_vterm_video_ops = {
 		.copy_rows = &fbcon_vterm_copy_rows
 };
 
+extern int COLS, LINES __attribute__((weak));
+
 static void vterm_reinit(struct vterm_video *t, int x, int y) {
+	int *pCOLS = &COLS, *pLINES = &LINES;
+
 	t->width = x;
 	t->height = y;
-};
+
+	if (pCOLS) {
+		*pCOLS = x;
+	}
+
+	if (pLINES) {
+		*pLINES = y;
+	}
+}
 
 static int make_task(int i, char innewtask) {
 	struct fbcon *fbcon = &fbcons[i];
@@ -390,8 +324,6 @@ static int make_task(int i, char innewtask) {
 	fbcon->vterm_video.ops = &fbcon_vterm_video_ops;
 
 	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
-
-	event_init(&fbcon->inpevent, "fbcon input event");
 
 	if (0 > (ret = mpx_register_vc(&fbcon->vc_this))) {
 		return ret;
@@ -406,11 +338,28 @@ static int make_task(int i, char innewtask) {
 	return 0;
 }
 
+static int iodev_stdio_init(void) {
+	return 0;
+}
+
+static void iodev_stdio_putc(char ch) {
+	vterm_putc(&fbcons[0].vterm, ch);
+}
+
+const struct iodev_ops iodev_stdio_ops = {
+	.init = iodev_stdio_init,
+	.getc = NULL,//&diag_getc,
+	.putc = iodev_stdio_putc,
+	.kbhit = NULL //&diag_kbhit,
+};
+
 
 static int fbcon_init(void) {
 
 	make_task(0, true);
 	make_task(1, true);
+
+	iodev_setup(&iodev_stdio_ops);
 
 	return 0;
 }

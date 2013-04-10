@@ -9,11 +9,10 @@
 #ifndef CMD_SHELL_H_
 #define CMD_SHELL_H_
 
+#include <stddef.h>
 #include <errno.h>
 #include <util/array.h>
 #include <framework/mod/self.h>
-
-extern int shell_line_input(const char *line);
 
 typedef void (*shell_run_ft)(void);
 typedef int  (*shell_exec_ft)(const char *line);
@@ -25,13 +24,12 @@ struct shell {
 };
 
 static inline int shell_run(const struct shell *shell) {
-
-	if (!shell) {
-		return -EBADF;
+	if (shell == NULL) {
+		return -EINVAL;
 	}
 
-	if (!shell->run) {
-		return -EBADF;
+	if (shell->run == NULL) {
+		return -ENOSYS;
 	}
 
 	shell->run();
@@ -40,20 +38,20 @@ static inline int shell_run(const struct shell *shell) {
 }
 
 static inline int shell_exec(const struct shell *shell, const char *line) {
-	if (!shell) {
-		return -EBADF;
+	if (shell == NULL) {
+		return -EINVAL;
 	}
 
-	if (!shell->exec) {
-		return -EBADF;
+	if (shell->exec == NULL) {
+		return -ENOSYS;
 	}
 
 	return shell->exec(line);
 }
 
-extern const struct shell *shell_lookup(const char *shell_name);
+extern const struct shell * shell_lookup(const char *shell_name);
 
-extern const struct shell *shell_any(void);
+extern const struct shell * shell_any(void);
 
 #define SHELL_DEF(...) \
 	extern const struct shell __shell_registry[]; \
@@ -67,6 +65,4 @@ extern const struct shell *shell_any(void);
 
 #endif /* __CDT_PARSER__ */
 
-
-
-#endif
+#endif /* CMD_SHELL_H_ */

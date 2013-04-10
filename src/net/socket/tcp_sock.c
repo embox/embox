@@ -43,15 +43,13 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	debug_print(3, "tcp_v4_init_sock: sk %p\n", sock.tcp_sk);
 
 	tcp_set_st(sock, TCP_CLOSED);
-	sock.tcp_sk->last_ack = 100; // TODO remove constant
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
+	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
+	event_init(&sock.tcp_sk->new_conn, "new_conn");
 	sock.tcp_sk->lock = 0;
 	timerclear(&sock.tcp_sk->last_activity);
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
-	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
-
-	event_init(&sock.tcp_sk->new_conn, "new_conn");
 
 	return 0;
 }

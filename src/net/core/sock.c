@@ -41,7 +41,7 @@ POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 
 
 /* allocates proto structure for specified protocol*/
-static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
+static struct sock * sk_prot_alloc(struct proto *prot) {
 	struct sock *sk;
 	ipl_t sp;
 
@@ -88,12 +88,12 @@ static void sk_prot_free(const struct proto *prot, struct sock *sk) {
 	ipl_restore(sp);
 }
 
-struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
+struct sock * sk_alloc(int family, struct proto *prot) {
 	struct sock *sk;
 
 	assert(prot != NULL);
 
-	sk = sk_prot_alloc(prot, 0);
+	sk = sk_prot_alloc(prot);
 	if (sk == NULL) {
 		return NULL;
 	}

@@ -75,11 +75,13 @@ void task_signal_hnd(void) {
 	sched_lock();
 }
 
+#if 0
 static int notify_hnd(struct thread *prev, struct thread *next) {
 	context_enter_frame(&next->context, task_signal_hnd);
 	return 0;
 }
 
+TASK_RESOURCE_NOTIFY(notify_hnd);
+#endif
 TASK_RESOURCE_DESC(&signal_resource);
 
-TASK_RESOURCE_NOTIFY(notify_hnd);

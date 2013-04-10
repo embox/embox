@@ -6,3 +6,10 @@ module printf_test {
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
+
+module scanf_test {
+	source "scanf_test.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

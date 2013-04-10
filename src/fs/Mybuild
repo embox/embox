@@ -54,6 +54,6 @@ module rootfs {
 	option string src = ""
 	option string dst = "/"
 	depends node, driver.repo
-//	depends embox.mem.heap_bm
 	depends embox.fs.sys.fsop
+	depends embox.lib.LibC
 }

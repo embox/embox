@@ -7,11 +7,7 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
-#include <assert.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -23,14 +19,10 @@
 #include <framework/cmd/api.h>
 
 #include <cmd/shell.h>
-
-
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
-
 #include <kernel/printk.h>
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
+#define START_SHELL OPTION_GET(NUMBER,shell_start)
 
 EMBOX_UNIT_INIT(run_script);
 
@@ -38,6 +30,7 @@ static const char *script_commands[] = {
 	#include <start_script.inc>
 };
 
+#if START_SHELL
 static void setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[PATH_MAX];
@@ -63,25 +56,19 @@ static void setup_tty(const char *dev_name) {
 	dup2(fd, STDOUT_FILENO);
 	dup2(fd, STDERR_FILENO);
 }
+#endif
 
 static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
 
-	printk("\nStarting shell [%s] at device [%s]\n",
-		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
-	setup_tty(OPTION_STRING_GET(tty_dev));
-
 	shell = shell_lookup(OPTION_STRING_GET(shell_name));
 	if (NULL == shell) {
-		char env[20];
 		shell = shell_any();
-
 		if (NULL == shell) {
 			return -ENOENT;
 		}
-		sprintf(env, "shell=%s", shell->name);
-		putenv(env);
+		setenv("shell", shell->name, 0);
 	}
 
 	printk("loading start script:\n");
@@ -91,7 +78,14 @@ static int run_script(void) {
 		shell_exec(shell, command);
 	}
 
+#if START_SHELL
+	printk("\nStarting shell [%s] at device [%s]\n",
+		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
+
+	setup_tty(OPTION_STRING_GET(tty_dev));
+
 	shell_run(shell);
+#endif
 
 	return 0;
 }

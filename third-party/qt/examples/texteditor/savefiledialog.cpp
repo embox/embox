@@ -1,6 +1,8 @@
 #include "savefiledialog.h"
 #include "mainwindow.h"
 
+extern QMdiArea *emarea;
+
 SaveFileDialog::SaveFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow)
 {
     this->textEdit = textEdit;
@@ -26,6 +28,7 @@ SaveFileDialog::SaveFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
 
     setWindowTitle(tr("Сохранить"));
     resize(200, 100);
+    subwindow = emarea->addSubWindow(this, windowType());
 }
 
 QPushButton *SaveFileDialog::createButton(const QString &text, const char *member)
@@ -63,4 +66,10 @@ void SaveFileDialog::save()
         close();
         }
     }
+}
+
+void SaveFileDialog::close() {
+	//hide();
+	emarea->setActiveSubWindow(subwindow);
+	emarea->closeActiveSubWindow();
 }

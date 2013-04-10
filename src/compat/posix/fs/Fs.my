@@ -16,6 +16,9 @@ static module file {
 
 static module chdir {
 	source "chdir.c"
+
+	depends embox.compat.posix.util.environ
+	depends embox.lib.LibC
 }
 
 static module dirent {
@@ -46,6 +49,9 @@ static module fsop {
 
 static module getcwd {
 	source "getcwd.c"
+
+	depends embox.compat.posix.util.environ
+	depends embox.lib.LibC
 }
 
 static module open {

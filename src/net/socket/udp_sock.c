@@ -19,10 +19,9 @@
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
 
-
+static const struct proto udp_prot;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, true);
-
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {
@@ -104,15 +103,6 @@ static void udp_unhash(struct sock *sk) {
 	}
 }
 
-static void udp_close(struct sock *sk, long timeout) {
-	sk_common_release(sk);
-}
-
-static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
-	sock_queue_rcv_skb(sk, skb);
-	return 0;
-}
-
 static int udp_setsockopt(struct sock *sk, int level, int optname,
 			char *optval, int optlen) {
 	return ENOERR;
@@ -129,12 +119,10 @@ int udp_disconnect(struct sock *sk, int flags) {
 }
 #endif
 
-const struct proto udp_prot = {
+static const struct proto udp_prot = {
 	.name        = "UDP",
-	.close       = udp_close,
 	.sendmsg     = udp_sendmsg,
 	.recvmsg     = udp_recvmsg,
-	.backlog_rcv = udp_queue_rcv_skb,
 	.hash        = udp_hash,
 	.unhash      = udp_unhash,
 	.setsockopt  = udp_setsockopt,

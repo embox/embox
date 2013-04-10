@@ -11,6 +11,7 @@ public:
 
 private slots:
     void createFile();
+    void close();
 
 private:
     QPushButton *createButton(const QString &text, const char *member);
@@ -25,6 +26,7 @@ private:
     QTextEdit *textEdit;
     QString *fileName;
     QMainWindow *mainWindow;
+    QMdiSubWindow *subwindow;
 };
 
 #endif // CREATEFILEDIALOG_H

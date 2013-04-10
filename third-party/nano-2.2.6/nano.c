@@ -1066,8 +1066,8 @@ void do_exit(void)
 
 
 static struct sigaction pager_oldaction, pager_newaction;  /* Original and temporary handlers for SIGINT. */
-static bool pager_sig_failed = FALSE; /* Did sigaction() fail without changing the signal handlers? */
-static bool pager_input_aborted = FALSE; /* Did someone invoke the pager and abort it via ^C? */
+bool nano__nano__pager_sig_failed = FALSE; /* Did sigaction() fail without changing the signal handlers? */
+bool nano__nano__pager_input_aborted = FALSE; /* Did someone invoke the pager and abort it via ^C? */
 
 
 /* Things which need to be run regardless of whether
@@ -1089,9 +1089,9 @@ void finish_stdin_pager(void)
 
     dup2(ttystdin,0);
     close(ttystdin);
-    if (!pager_input_aborted)
+    if (!nano__nano__pager_input_aborted)
 	tcgetattr(0, &oldterm);
-    if (!pager_sig_failed && sigaction(SIGINT, &pager_oldaction, NULL) == -1)
+    if (!nano__nano__pager_sig_failed && sigaction(SIGINT, &pager_oldaction, NULL) == -1)
         nperror("sigaction");
     term_init();
     doupdate();
@@ -1102,14 +1102,14 @@ void finish_stdin_pager(void)
 RETSIGTYPE cancel_stdin_pager(int signal)
 {
     /* Currently do nothing, just handle the intr silently */
-    pager_input_aborted = TRUE;
+    nano__nano__pager_input_aborted = TRUE;
 }
 
 /* Let nano read stdin for the first file at least */
 void stdin_pager(void)
 {
     endwin();
-    if (!pager_input_aborted)
+    if (!nano__nano__pager_input_aborted)
 	tcsetattr(0, TCSANOW, &oldterm);
     fprintf(stderr, _("Reading from stdin, ^C to abort\n"));
 
@@ -1121,12 +1121,12 @@ void stdin_pager(void)
 #endif
 
     if (sigaction(SIGINT, NULL, &pager_newaction) == -1) {
-	pager_sig_failed = TRUE;
+	nano__nano__pager_sig_failed = TRUE;
 	nperror("sigaction");
     } else {
 	pager_newaction.sa_handler = cancel_stdin_pager;
 	if (sigaction(SIGINT, &pager_newaction, &pager_oldaction) == -1) {
-	    pager_sig_failed = TRUE;
+	    nano__nano__pager_sig_failed = TRUE;
 	    nperror("sigaction");
 	}
     }
@@ -1454,6 +1454,7 @@ void enable_flow_control(void)
  * typed.  Finally, disable extended input and output processing, and,
  * if we're not in preserve mode, reenable interpretation of the flow
  * control characters. */
+bool nano__nano__term_init__newterm_set = FALSE;
 void term_init(void)
 {
 #ifdef USE_SLANG
@@ -1464,9 +1465,8 @@ void term_init(void)
      * control characters using termios, save the terminal state after
      * the first call, and restore it on subsequent calls. */
     static struct termios newterm;
-    static bool newterm_set = FALSE;
 
-    if (!newterm_set) {
+    if (!nano__nano__term_init__newterm_set) {
 #endif
 
 	raw();
@@ -1482,7 +1482,7 @@ void term_init(void)
 	    disable_flow_control();
 
 	tcgetattr(0, &newterm);
-	newterm_set = TRUE;
+	nano__nano__term_init__newterm_set = TRUE;
     } else
 	tcsetattr(0, TCSANOW, &newterm);
 #endif
@@ -1497,14 +1497,14 @@ void term_init(void)
  * or trying to run a function associated with a shortcut key.  If
  * allow_funcs is FALSE, don't actually run any functions associated
  * with shortcut keys. */
+int *nano__nano__do_input__kbinput = NULL;
+size_t nano__nano__do_input__kbinput_len = 0;
 int do_input(bool *meta_key, bool *func_key, bool *s_or_t, bool
 	*ran_func, bool *finished, bool allow_funcs)
 {
     int input;
 	/* The character we read in. */
-    static int *kbinput = NULL;
 	/* The input buffer. */
-    static size_t kbinput_len = 0;
 	/* The length of the input buffer. */
     bool cut_copy = FALSE;
 	/* Are we cutting or copying text? */
@@ -1562,10 +1562,10 @@ int do_input(bool *meta_key, bool *func_key, bool *s_or_t, bool
 	    if (ISSET(VIEW_MODE))
 		print_view_warning();
 	    else {
-		kbinput_len++;
-		kbinput = (int *)nrealloc(kbinput, kbinput_len *
+		nano__nano__do_input__kbinput_len++;
+		nano__nano__do_input__kbinput = (int *)nrealloc(nano__nano__do_input__kbinput, nano__nano__do_input__kbinput_len *
 			sizeof(int));
-		kbinput[kbinput_len - 1] = input;
+		nano__nano__do_input__kbinput[nano__nano__do_input__kbinput_len - 1] = input;
 
 	    }
 	}
@@ -1585,24 +1585,24 @@ int do_input(bool *meta_key, bool *func_key, bool *s_or_t, bool
 		wrap_reset();
 #endif
 
-	    if (kbinput != NULL) {
+	    if (nano__nano__do_input__kbinput != NULL) {
 		/* Display all the characters in the input buffer at
 		 * once, filtering out control characters. */
-		char *output = charalloc(kbinput_len + 1);
+		char *output = charalloc(nano__nano__do_input__kbinput_len + 1);
 		size_t i;
 
-		for (i = 0; i < kbinput_len; i++)
-		    output[i] = (char)kbinput[i];
+		for (i = 0; i < nano__nano__do_input__kbinput_len; i++)
+		    output[i] = (char)nano__nano__do_input__kbinput[i];
 		output[i] = '\0';
 
-		do_output(output, kbinput_len, FALSE);
+		do_output(output, nano__nano__do_input__kbinput_len, FALSE);
 
 		free(output);
 
 		/* Empty the input buffer. */
-		kbinput_len = 0;
-		free(kbinput);
-		kbinput = NULL;
+		nano__nano__do_input__kbinput_len = 0;
+		free(nano__nano__do_input__kbinput);
+		nano__nano__do_input__kbinput = NULL;
 	    }
 	}
 

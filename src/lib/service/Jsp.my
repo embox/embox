@@ -1,7 +1,8 @@
-package lib.service
+package embox.lib.service
 
-module jsp{
+module jsp {
 	source "jsp.c"
 
-	depends lib.service.service
+	depends service
+	depends embox.lib.LibC
 }

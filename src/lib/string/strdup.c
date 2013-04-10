@@ -6,16 +6,19 @@
  * @author Alexander Kalmuk
  */
 
-#include <string.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
-char *strdup(const char *s) {
-	char *new;
+char * strdup(const char *s) {
+	char *ret;
 
-	new = malloc(strlen(s) + 1);
-	if(new) {
-		strcpy(new, s);
+	ret = malloc(strlen(s) + 1);
+	if (ret == NULL) {
+		return NULL;
 	}
 
-	return new;
+	strcpy(ret, s);
+
+	return ret;
 }

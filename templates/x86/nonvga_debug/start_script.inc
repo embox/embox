@@ -7,3 +7,4 @@
 "route add default gw 10.0.2.10 eth0",
 
 "export PWD=/",
+"export HOME=/",

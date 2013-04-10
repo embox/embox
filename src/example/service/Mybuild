@@ -1,0 +1,8 @@
+package embox.example.service
+
+module jsp_example {
+	source "jsp_test.c"
+
+	depends embox.lib.service.service
+	depends embox.lib.service.jsp
+}

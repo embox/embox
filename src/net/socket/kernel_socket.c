@@ -21,8 +21,9 @@
 #include <net/kernel_socket.h>
 #include <net/socket_registry.h>
 
-int kernel_socket_create(int family, int type, int protocol, struct socket **psock,
-		struct sock *sk, struct proto_ops *sk_ops) {
+int kernel_socket_create(int family, int type, int protocol,
+		struct socket **psock, struct sock *sk,
+		struct proto_ops *sk_ops) {
 	int res;
 	struct socket *sock;
 	const struct net_proto_family *pf;
@@ -64,7 +65,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	}
 
 	sock->type = type;
-	sock->state = SS_UNCONNECTED;
+//	sock->state = SS_UNCONNECTED;
 
 	if (sk == NULL) {
 		res = pf->create(sock, protocol);

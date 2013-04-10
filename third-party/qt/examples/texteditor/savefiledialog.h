@@ -13,6 +13,7 @@ signals:
 
 private slots:
     void save();
+    void close();
 
 private:
     QPushButton *createButton(const QString &text, const char *member);
@@ -27,6 +28,7 @@ private:
     QString *fileName;
     QMainWindow *mainWindow;
     QTextEdit *textEdit;
+    QMdiSubWindow *subwindow;
 };
 
 #endif // SAVEFILEDIALOG_H

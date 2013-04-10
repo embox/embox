@@ -32,7 +32,7 @@ static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
 #define UNIQ_VAL 0x12345678
 
 /* Big area able to cover text + data + stack*/
-#define REGION_SIZE 0x7000000
+#define REGION_SIZE 0xa000000
 
 /* MMU data access exception handler */
 static inline int dfault_handler(uint32_t trap_nr, void *data) {

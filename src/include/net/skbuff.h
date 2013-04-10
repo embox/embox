@@ -140,7 +140,6 @@ extern void skb_free(struct sk_buff *skb);
  *	@skb: buffer to check, copy
  *	@headroom: required amount of free bytes at head
  *	@tailroom: required amount of free bytes at tail
- *	@priority: allocation priority
  *
  *	Make a copy of both an &sk_buff and its data and while doing so
  *	allocate additional space. Do nothing if we already have such amount
@@ -153,7 +152,7 @@ extern void skb_free(struct sk_buff *skb);
  *	to allocate data from. So no allocation if new size doesn't fit.
  */
 extern struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb,
-				int headroom, int tailroom, gfp_t priority);
+				int headroom, int tailroom);
 
 /**
  *	skb_shifthead	-	shift pointers to headers in the head of the skb structure

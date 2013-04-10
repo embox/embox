@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <util/member.h>
 #include <util/list.h>
-#include <linux/list.h>
 
 struct prioq {
 	struct list prio_list;
@@ -20,7 +19,8 @@ struct prioq {
 
 struct prioq_link {
 	struct list_link prio_link;
-	struct list_head elem_link;
+	struct list elem_list;
+	struct list_link elem_link;
 };
 
 #define prioq_element(link, element_type, link_member) \
@@ -51,7 +51,8 @@ static inline int prioq_address_comparator(struct prioq_link *first,
 
 #define PRIOQ_LINK_INIT(link) { \
 		.prio_link = LIST_LINK_INIT(link->prio_link), \
-		.elem_link = LIST_HEAD_INIT(link->elem_link), \
+		.elem_list = LIST_INIT(link->elem_list), \
+		.elem_link = LIST_LINK_INIT(link->elem_link), \
 	}
 
 static inline struct prioq *prioq_init(struct prioq *prioq) {
@@ -66,7 +67,8 @@ static inline struct prioq_link *prioq_link_init(struct prioq_link *link) {
 	assert(link != NULL);
 
 	list_link_init(&link->prio_link);
-	INIT_LIST_HEAD(&link->elem_link);
+	list_init(&link->elem_list);
+	list_link_init(&link->elem_link);
 
 	return link;
 }

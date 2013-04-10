@@ -18,12 +18,13 @@
 #include <net/util.h>
 #include <net/arp.h>
 #include <net/neighbour.h>
+#include <kernel/time/time.h>
 
 
 
 EMBOX_CMD(exec);
 
-#define DEFAULT_INTERVAL 1000
+#define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
 static void print_usage(void) {
 	printf("Usage: arping [-I if] [-c cnt] host\n");
