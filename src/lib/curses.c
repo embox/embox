@@ -19,10 +19,13 @@
  * Screen info
  * TODO make SCREEN structure
  */
+#define SCREEN_MAX_WIDTH  200
+#define SCREEN_MAX_HEIGHT 200
+
 #define SCREEN_WIDTH  80
 #define SCREEN_HEIGHT 24
-static chtype std_screen[SCREEN_HEIGHT][SCREEN_WIDTH];
-static chtype cur_screen[SCREEN_HEIGHT][SCREEN_WIDTH];
+static chtype std_screen[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+static chtype cur_screen[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
 
 #define WINDOW_AMOUNT 0x10
 

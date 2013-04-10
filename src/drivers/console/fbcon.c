@@ -141,7 +141,7 @@ static void *run(void *data) {
 
 	dup2(fd, 0);
 	dup2(fd, 1);
-	dup2(fd, 2);
+	/*dup2(fd, 2);*/
 
 	close(fd);
 
@@ -297,10 +297,22 @@ static const struct vterm_video_ops fbcon_vterm_video_ops = {
 		.copy_rows = &fbcon_vterm_copy_rows
 };
 
+extern int COLS, LINES __attribute__((weak));
+
 static void vterm_reinit(struct vterm_video *t, int x, int y) {
+	int *pCOLS = &COLS, *pLINES = &LINES;
+
 	t->width = x;
 	t->height = y;
-};
+
+	if (pCOLS) {
+		*pCOLS = x;
+	}
+
+	if (pLINES) {
+		*pLINES = y;
+	}
+}
 
 static int make_task(int i, char innewtask) {
 	struct fbcon *fbcon = &fbcons[i];
