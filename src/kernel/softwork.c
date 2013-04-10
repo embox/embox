@@ -20,8 +20,8 @@ static void work_softirq_handler(unsigned int softirq_nr, void *data) {
 	work_queue_run(&workq);
 }
 
-void work_post(struct work *w) {
-	work_enqueue(w, &workq);
+void softwork_post(struct work *w) {
+	work_post(w, &workq);
 	softirq_raise(SOFTIRQ_NR_WORK);
 }
 

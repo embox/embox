@@ -169,7 +169,7 @@ done:
 	return got_data;
 }
 
-static void tty_rx_worker(struct work *w) {
+static int tty_rx_worker(struct work *w) {
 	struct tty *t = member_cast_out(w, struct tty, rx_work);
 	int ich;
 
@@ -184,14 +184,18 @@ static void tty_rx_worker(struct work *w) {
 
 		irq_lock();
 	}
-	work_pending_reset(w);
+	//work_pending_reset(w);
 	irq_unlock();
 
 	t->ops->out_wake(t);
+
+	return 1;
 }
 
 void tty_post_rx(struct tty *t) {
-	work_post(&t->rx_work);
+	/* FIXME: */
+	extern void softwork_post(struct work *w);
+	softwork_post(&t->rx_work);
 }
 
 /* Must only be called with rx_work disabled */
@@ -339,6 +343,8 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 }
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
+	/* FIXME: */
+	extern void softwork_post(struct work *w);
 	size_t count;
 
 	// mutex_lock(&t->lock);
@@ -349,7 +355,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 		tty_output(t, *buff++);
 	}
 
-	work_post(&t->rx_work);
+	softwork_post(&t->rx_work);
 
 	work_enable(&t->rx_work);
 	// mutex_unlock(&t->lock);
