@@ -63,6 +63,10 @@ static struct sock * sk_prot_alloc(struct proto *prot) {
 		}
 	}
 
+	if (!sk) {
+		return NULL;
+	}
+
 	memset(&sk->sk_lock, 0, sizeof(socket_lock_t));
 
 	ipl_restore(sp);
