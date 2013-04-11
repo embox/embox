@@ -18,9 +18,9 @@
 #include <drivers/diag.h>
 #include <drivers/tty.h>
 #include <drivers/video_term.h>
-
-
 #include <drivers/i8042.h>
+
+#define REGISTER_IN_VT OPTION_GET(NUMBER,register_in_vt)
 
 EMBOX_UNIT_INIT(keyboard_init);
 
@@ -118,7 +118,10 @@ static struct input_dev kbd_dev = {
 		.event_get = keyboard_get_input_event,
 };
 
-
+#if REGISTER_IN_VT
+void indev_manager_init_report(const char *name){
+	vterm_open_indev(&diag_vterm, name);
+}
 
 static char kbd_getc(void) {
 	char ch;
@@ -136,6 +139,8 @@ static const struct iodev_ops iodev_diag_ops_struct = {
 static void register_diag_input(void) {
 	iodev_setup(&iodev_diag_ops_struct);
 }
+
+#endif
 
 static int keyboard_init(void) {
 	uint8_t mode;
@@ -167,9 +172,11 @@ static int keyboard_init(void) {
 	input_dev_register(&kbd_dev);
 	kbd_state = 0;
 
+#if REGISTER_IN_VT
 	indev_manager_init_report(kbd_dev.name);
 
 	register_diag_input();
+#endif
 
 	return 0;
 }
