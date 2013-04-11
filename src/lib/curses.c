@@ -8,32 +8,40 @@
 
 #include <assert.h>
 #include <curses.h>
+#include <errno.h>
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <util/math.h>
 #include <termios.h>
-#include <unistd.h>
 #include <stdio.h>
 
-/**
- * Screen info
- * TODO make SCREEN structure
- */
-#define SCREEN_MAX_WIDTH  200
-#define SCREEN_MAX_HEIGHT 200
-
-#define SCREEN_WIDTH  80
-#define SCREEN_HEIGHT 24
-static chtype std_screen[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-static chtype cur_screen[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-
-#define WINDOW_AMOUNT 0x10
-
-int COLS = SCREEN_WIDTH;
-int LINES = SCREEN_HEIGHT;
+int COLS;
+int LINES;
 
 WINDOW *stdscr;
 WINDOW *curscr;
+
+#define WINDOW_AMOUNT 0x10
+
+#define SCREEN_WIDTH  80
+#define SCREEN_HEIGHT 24
+
+#define SCREEN_MAX_WIDTH  200
+#define SCREEN_MAX_HEIGHT 200
+
+typedef struct SCREEN {
+	char *type;
+	FILE *out;
+	FILE *in;
+	WINDOW std_win;   /* stdscr storage */
+	chtype std_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	WINDOW cur_win;   /* curscr storage */
+	chtype cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	bool curses_mode; /* terminal mode (normal or curses) */
+    struct termios last_mode;
+} SCREEN;
+
+static SCREEN screen;
 
 POOL_DEF(wnd_pool, WINDOW, WINDOW_AMOUNT);
 
@@ -81,21 +89,56 @@ static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
 	}
 }
 
-WINDOW * initscr(void) {
-	static WINDOW standard, current;
+static SCREEN * newterm(char *type, FILE *outfile, FILE *infile) {
 	int res;
 
-	stdscr = &standard;
-	window_init(stdscr, 0, 0, LINES, COLS, NULL, &std_screen[0][0]);
+	COLS = SCREEN_WIDTH;
+	LINES = SCREEN_HEIGHT;
 
-	curscr = &current;
-	window_init(curscr, 0, 0, LINES, COLS, NULL, &cur_screen[0][0]);
+	screen.type = type;
+	screen.out = outfile;
+	screen.in = infile;
+	window_init(&screen.std_win, 0, 0, LINES, COLS, NULL, &screen.std_buff[0][0]);
+	memset(&screen.std_buff[0][0], ' ', sizeof screen.std_buff);
+	window_init(&screen.cur_win, 0, 0, LINES, COLS, NULL, &screen.cur_buff[0][0]);
+	memset(&screen.cur_buff[0][0], 0, sizeof screen.cur_buff);
+	screen.curses_mode = true;
 
-	memset(&std_screen[0][0], ' ', sizeof std_screen);
-	memset(&cur_screen[0][0], 0, sizeof cur_screen);
+	if (-1 == tcgetattr(fileno(screen.in), &screen.last_mode)) {
+		return NULL;
+	}
+
+	stdscr = &screen.std_win;
+	curscr = &screen.cur_win;
 
 	res = doupdate();
 	if (res != OK) {
+		return NULL;
+	}
+
+	return &screen;
+}
+
+static int screen_change_mode(void) {
+	struct termios t;
+
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
+		return -errno;
+	}
+
+	if (-1 == tcsetattr(fileno(screen.in), TCSANOW, &screen.last_mode)) {
+		return -errno;
+	}
+
+	memcpy(&screen.last_mode, &t, sizeof screen.last_mode);
+
+	screen.curses_mode = !screen.curses_mode;
+
+	return 0;
+}
+
+WINDOW * initscr(void) {
+	if (NULL == newterm("", stdout, stdin)) {
 		return NULL;
 	}
 
@@ -164,17 +207,22 @@ int doupdate(void) {
 	chtype ch;
 	uint16_t y, x;
 
+	if (isendwin()) {
+		if (0 != screen_change_mode()) {
+			return ERR;
+		}
+	}
+
 	for (y = 0; y < LINES; ++y) {
 		for (x = 0; x < COLS; ++x) {
 			ch = window_getch(stdscr, y, x);
 			if (ch != window_getch(curscr, y, x)) {
-				printf("\x1b[%hu;%huH%c", y + 1, x + 1,
+				fprintf(screen.out, "\x1b[%hu;%huH%c", y + 1, x + 1,
 						(char)window_getch(stdscr, y, x));
+				window_setch(curscr, ch, y, x);
 			}
 		}
 	}
-
-	memcpy(&cur_screen[0][0], &std_screen[0][0], sizeof cur_screen);
 
 	return OK;
 }
@@ -205,6 +253,34 @@ int wrefresh(WINDOW *win) {
 	}
 
 	return doupdate();
+}
+
+bool isendwin(void) {
+	return !screen.curses_mode;
+}
+
+int endwin(void) {
+	uint16_t y, x;
+
+	if (isendwin()) {
+		return ERR;
+	}
+
+	if (0 != screen_change_mode()) {
+		return ERR;
+	}
+
+	fprintf(screen.out, "\x1b[1;1H");
+	for (y = 0; y < LINES; ++y) {
+		for (x = 0; x < COLS; ++x) {
+			window_setch(curscr, ' ', y, x);
+			fprintf(screen.out, " ");
+		}
+	}
+
+	fprintf(screen.out, "\x1b[1;1H");
+
+	return OK;
 }
 
 int move(int y, int x) {
@@ -527,9 +603,9 @@ int mvwgetch(WINDOW *win, int y, int x) {
 int wgetch(WINDOW *win) {
 	int c;
 
-	printf("\x1b[%d;%dH", win->cury + 1, win->curx + 1); /* FIXME setup cursor*/
+	fprintf(screen.out, "\x1b[%d;%dH", win->cury + 1, win->curx + 1); /* FIXME setup cursor*/
 
-	c = getchar();
+	c = fgetc(screen.in);
 	if (c == '\n') {
 		return KEY_ENTER;
 	}
@@ -578,112 +654,115 @@ void wbkgdset(WINDOW *win, chtype ch) {
 int cbreak(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_lflag &= ~ICANON;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int nocbreak(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_lflag |= ICANON;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int raw(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_iflag &= ~IXON;
 	t.c_lflag &= ~(ICANON | ISIG | IXON);
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int noraw(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_iflag |= IXON;
 	t.c_lflag |= ICANON | ISIG;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int echo(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_lflag |= ECHO;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int noecho(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_lflag &= ~ECHO;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int nl(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_iflag |= ICRNL;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
 
 int nonl(void) {
     struct termios t;
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
 	t.c_iflag &= ~ICRNL;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
+
 #include <fcntl.h>
+#include <unistd.h>
 int nodelay(WINDOW *win, bool bf) {
     struct termios t;
-//TODO now we setup nonblock mode tty by the fcntl
+
+	/* TODO now we setup nonblock mode tty by the fcntl */
 	fcntl(STDIN_FILENO, F_SETFD, bf ? O_NONBLOCK : 0);
 
-	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
+	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
 	}
 
-    t.c_cc[VMIN] = bf ? 0 : 1;
+	t.c_cc[VMIN] = bf ? 0 : 1;
 	t.c_cc[VTIME] = 0;
 
-	return -1 != tcsetattr(STDIN_FILENO, TCSANOW, &t) ? OK : ERR;
+	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
