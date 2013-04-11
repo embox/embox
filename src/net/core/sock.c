@@ -48,28 +48,30 @@ static struct sock * sk_prot_alloc(struct proto *prot) {
 	assert(prot != NULL);
 
 	sk = NULL;
-	sp = ipl_save();
-	if (prot->sock_alloc != NULL) {
-		assert(prot->sock_free != NULL);
-		sk = prot->sock_alloc();
-	}
-	else {
-		if (prot->cachep == NULL) {
-			prot->cachep = cache_create(prot->name, prot->obj_size,
-					MODOPS_MIN_AMOUNT_SOCK);
-		}
-		if (prot->cachep != NULL) {
-			sk = cache_alloc(prot->cachep);
-		}
-	}
 
-	if (!sk) {
+	sp = ipl_save();
+	{
+		if (prot->sock_alloc != NULL) {
+			assert(prot->sock_free != NULL);
+			sk = prot->sock_alloc();
+		}
+		else {
+			if (prot->cachep == NULL) {
+				prot->cachep = cache_create(prot->name, prot->obj_size,
+						MODOPS_MIN_AMOUNT_SOCK);
+			}
+			if (prot->cachep != NULL) {
+				sk = cache_alloc(prot->cachep);
+			}
+		}
+	}
+	ipl_restore(sp);
+
+	if (sk == NULL) {
 		return NULL;
 	}
 
-	memset(&sk->sk_lock, 0, sizeof(socket_lock_t));
-
-	ipl_restore(sp);
+	memset(&sk->sk_lock, 0, sizeof sk->sk_lock);
 
 	return sk;
 }
