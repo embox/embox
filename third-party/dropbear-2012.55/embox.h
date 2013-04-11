@@ -58,7 +58,7 @@ static inline int getpeername(int sockfd, struct sockaddr *addr,
 /* <grp.h> */
 /* initgroups NOT POSIX */
 static inline int initgroups(const char *user, gid_t group) {
-	return -1;
+	return 0;
 }
 
 #include <shadow.h>
