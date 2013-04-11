@@ -21,7 +21,7 @@ struct marea {
 	struct dlist_head mmap_link;
 };
 
-struct mmap {
+struct emmap {
 	mmu_ctx_t ctx;
 
 	struct marea *stack_marea;

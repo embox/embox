@@ -20,7 +20,7 @@ struct marea {
 	struct dlist_head glob_link;
 };
 
-struct mmap {
+struct emmap {
 	struct marea *stack_marea;
 
 	struct dlist_head marea_list;
