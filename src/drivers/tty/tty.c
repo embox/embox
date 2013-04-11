@@ -280,12 +280,17 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 
 static int tty_wait_input(struct tty *t) {
 	int rc;
+	unsigned long timeout;
+
+	timeout = (t->termios.c_cc[VMIN] == 0) && (t->termios.c_cc[VTIME] != 0)
+			? t->termios.c_cc[VTIME] * 100 /* deciseconds to milliseconds */
+			: SCHED_TIMEOUT_INFINITE;
 
 	sched_lock();
 
 	while (WORK_DISABLED_DO(&t->rx_work, ring_empty(&t->i_ring))) {
 
-		rc = event_wait(&t->i_event, SCHED_TIMEOUT_INFINITE);
+		rc = event_wait(&t->i_event, timeout);
 		if (rc)
 			break;
 	}
@@ -296,7 +301,9 @@ static int tty_wait_input(struct tty *t) {
 }
 #if 1
 static int tty_is_nonblock(struct tty *t) {
-	return t->file_flags & O_NONBLOCK;
+	return (t->file_flags & O_NONBLOCK)
+			|| ((t->termios.c_cc[VMIN] == 0)
+				&& (t->termios.c_cc[VTIME] == 0));
 }
 #endif
 
@@ -317,6 +324,10 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		rc = tty_wait_input(t);
 	}
 #endif
+
+	if ((rc == -ETIMEDOUT) && (t->termios.c_cc[VMIN] == 0)) {
+		return 0;
+	}
 
 	if (rc == -EINTR)
 		/* TODO then what? -- Eldar */
