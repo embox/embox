@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 #include <linux/list.h>
+#include <sys/time.h>
+#include <kernel/time/ktime.h>
 
 
 typedef int net_addr_t;
@@ -60,9 +62,9 @@ struct pnet_pack {
 	struct net_node *node;
 	enum PNET_PACK_DIRECTION dir;
 	void *data;
+	struct timespec elapsed_time;
 	struct list_head link;
 };
-
 
 #include <pnet/proto.h>
 
