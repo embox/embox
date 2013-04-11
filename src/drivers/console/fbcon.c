@@ -297,7 +297,7 @@ static const struct vterm_video_ops fbcon_vterm_video_ops = {
 		.copy_rows = &fbcon_vterm_copy_rows
 };
 
-extern int COLS, LINES __attribute__((weak));
+extern int COLS __attribute__((weak)), LINES __attribute__((weak));
 
 static void vterm_reinit(struct vterm_video *t, int x, int y) {
 	int *pCOLS = &COLS, *pLINES = &LINES;
