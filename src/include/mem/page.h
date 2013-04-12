@@ -14,7 +14,7 @@
 #include <framework/mod/options.h>
 
 #include <module/embox/mem/page_api.h>
-#define PAGE_SIZE() OPTION_MODULE_GET(embox__mem__page_api,NUMBER,page_size)
+
 
 struct page_allocator {
 	char *start;

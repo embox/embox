@@ -28,6 +28,12 @@
 
 #define ALIGNMENT() . = ALIGN(0x10)
 
+
+#include <framework/mod/options.h>
+#include <module/embox/mem/page_api.h>
+
+#define REGION_ALIGN() . = ALIGN(PAGE_SIZE());
+
 #define LDS_INPUT_RODATA \
 	ALIGNMENT();                   \
 	                               \

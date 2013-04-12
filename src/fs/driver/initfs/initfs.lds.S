@@ -2,10 +2,10 @@
 
 SECTIONS {
 	.rodata () : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		_initfs_start = .;
 		*(.initfs.rodata)
 		_initfs_end = .;
-		ALIGNMENT();
+		REGION_ALIGN();
 	} SECTION_REGION(rodata)
 }

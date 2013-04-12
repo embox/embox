@@ -1,10 +1,18 @@
 package embox.mem
 
+@DefaultImpl(NoPage)
 abstract module page_api {
-	option number page_size=4096
+}
+
+module NoPage extends page_api {
+	source "no_page.h"
+	option number page_size=4
 }
 
 module bitmask extends page_api {
 	source "bitmask.c"
+	source "bitmask.h"
+
 	depends heap_lds
+	option number page_size=4096
 }
