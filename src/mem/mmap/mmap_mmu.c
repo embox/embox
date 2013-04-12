@@ -15,7 +15,7 @@
 #include <mem/vmem.h>
 
 #include __impl_x(kernel/task/common.h)
-#include __impl_x(kernel/thread/types.h)
+#include <kernel/thread/types.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -184,7 +184,7 @@ static int fini() {
 }
 
 static int task_switch_handler(struct thread *prev, struct thread *next) {
-	mmu_set_context(next->task->emmap->ctx);
+	mmu_set_context(next->task->mmap->ctx);
 	return 0;
 }
 
