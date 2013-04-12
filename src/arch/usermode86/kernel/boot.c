@@ -24,6 +24,17 @@ static char *pipeopen(char *argv, int pipe, int flags) {
 	return argv + strlen(argv) + 1;
 }
 
+static void signal_init(void) {
+	struct host_sigaction sigact = {
+		.sa_handler = ipl_hnd,
+		.sa_flags = HOST_SA_NODEFER,
+		.sa_mask = 0,
+	}, old;
+
+	host_sigaction(UV_IRQ, &sigact, &old);
+}
+
+
 void _start2(int argc, char *argv) {
 	host_pid_t thispid = host_getpid();
 
@@ -37,7 +48,7 @@ void _start2(int argc, char *argv) {
 	host_dup2(UV_PRDDOWNSTRM, UV_PWRDOWNSTRM);
 	argv = pipeopen(argv, UV_PWRUPSTRM, HOST_O_WRONLY);
 
-	host_signal(UV_IRQ, ipl_hnd);
+	signal_init();
 
 	emvisor_send(UV_PWRUPSTRM, EMVISOR_BUDDY_PID, &thispid,
 			sizeof(thispid));
