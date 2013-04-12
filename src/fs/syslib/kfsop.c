@@ -260,6 +260,11 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		goto skip_dev_lookup;
 	}
 
+	if (0 == strcmp(fs_type, "cifs")) {
+		dev_node = (node_t *) dev;
+		goto skip_dev_lookup;
+	}
+
 	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;

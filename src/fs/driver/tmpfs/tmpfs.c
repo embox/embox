@@ -50,6 +50,7 @@ static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 	int res;
+	ramdisk_t *ramdisk;
 
 	if (!par) {
 		return 0;
@@ -62,11 +63,12 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	if (0 != (res = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
-		return res;
+	if (NULL == (ramdisk = ramdisk_create(TMPFS_DEV,
+					FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return -1;
 	}
 
-	dev_node = vfs_lookup(NULL, TMPFS_DEV);
+	dev_node = ramdisk->dev_node;
 	if (!dev_node) {
 		return -1;
 	}

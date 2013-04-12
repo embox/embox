@@ -111,8 +111,8 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	int rezult;
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
-		if (0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
-			return rezult;
+		if (NULL == ramdisk_create(path, blocks * PAGE_SIZE())) {
+			return -errno;
 		}
 	}
 

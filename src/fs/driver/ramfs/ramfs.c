@@ -50,6 +50,7 @@ static int ramfs_mount(void *dev, void *dir);
 static int ramfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 	int res;
+	ramdisk_t *ramdisk;
 
 	if (!par) {
 		return 0;
@@ -62,11 +63,15 @@ static int ramfs_init(void * par) {
 		return -1;
 	}
 
-	if (0 != (res = ramdisk_create(RAMFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
-		return res;
+	if (NULL == (ramdisk = ramdisk_create(RAMFS_DEV,
+					FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return -1;
 	}
 
-	dev_node = vfs_lookup(NULL, RAMFS_DEV);
+	dev_node = ramdisk->dev_node;
+	if (!dev_node) {
+		return -1;
+	}
 	if (!dev_node) {
 		return -1;
 	}

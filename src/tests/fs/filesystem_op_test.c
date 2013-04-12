@@ -70,7 +70,10 @@ TEST_CASE("Umount fat filesystem") {
 }
 
 static int setup_suite(void) {
-	return ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE());
+	 if(NULL == ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
+		 return -1;
+	 }
+	 return 0;
 }
 
 static int teardown_suite(void) {

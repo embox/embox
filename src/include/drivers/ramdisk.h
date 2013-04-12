@@ -26,7 +26,7 @@ typedef struct ramdisk {
 	unsigned int    fs_type;
 } ramdisk_t;
 
-extern int ramdisk_create(char *path, size_t size);
+extern ramdisk_t *ramdisk_create(char *path, size_t size);
 extern ramdisk_t *ramdisk_get_param(char *path);
 extern int ramdisk_delete(const char *name);
 
