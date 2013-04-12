@@ -515,11 +515,13 @@ int main(int argc, char **argv) {
 	tc_this.c_lflag &= ~(ICANON | ECHO);
 
 	if (0 > tcsetattr(STDIN_FILENO, TCSANOW, &tc_this)) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	if (0 > (fd = open(argv[1], O_WRONLY))) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 #if 0
@@ -531,17 +533,21 @@ int main(int argc, char **argv) {
 	ev_downstream.np_write = fd;
 
 	if (0 > (fd = open(argv[2], O_RDONLY))) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	flags = fcntl(fd, F_GETFL);
 	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))){
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	ev_upstream.np_read = fd;
 
 	ret = emvisor();
+
+out:
 	tcsetattr(STDIN_FILENO, TCSANOW, &tc_old);
 
 	printf("Emvisor exit: %d\n", ret);
