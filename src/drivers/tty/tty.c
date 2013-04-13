@@ -278,75 +278,106 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 	return buff;
 }
 
-static int tty_wait_input(struct tty *t) {
+static int tty_wait_input(struct tty *t, size_t input_sz,
+		unsigned long timeout) {
 	int rc;
-	unsigned long timeout;
 
-	timeout = (t->termios.c_cc[VMIN] == 0) && (t->termios.c_cc[VTIME] != 0)
-			? t->termios.c_cc[VTIME] * 100 /* deciseconds to milliseconds */
-			: SCHED_TIMEOUT_INFINITE;
+	rc = 0;
 
 	sched_lock();
-
-	while (WORK_DISABLED_DO(&t->rx_work, ring_empty(&t->i_ring))) {
-
-		rc = event_wait(&t->i_event, timeout);
-		if (rc)
-			break;
+	{
+		while (input_sz > WORK_DISABLED_DO(&t->rx_work, ring_can_read(
+					&t->i_ring, TTY_IO_BUFF_SZ, input_sz))) {
+			rc = event_wait(&t->i_event, timeout);
+			if (rc != 0) {
+				break;
+			}
+		}
 	}
-
 	sched_unlock();
 
 	return rc;
 }
-#if 1
-static int tty_is_nonblock(struct tty *t) {
-	return (t->file_flags & O_NONBLOCK)
-			|| ((t->termios.c_cc[VMIN] == 0)
-				&& (t->termios.c_cc[VTIME] == 0));
-}
-#endif
-
-#if 0
-size_t tty_read_nonblock(struct tty *t, char *buff, size_t size) {
-
-}
-#endif
 
 size_t tty_read(struct tty *t, char *buff, size_t size) {
-	char *end = buff + size;
-	int rc = 0;
+	int rc;
+	cc_t vmin, vtime;
+	char *curr, *next, *end;
+	unsigned long timeout;
+	size_t count;
 
-	if (!size)
-		return 0;
-#if 1
-	if(!tty_is_nonblock(t)) {
-		rc = tty_wait_input(t);
+	vmin = t->termios.c_cc[VMIN];
+	vtime = t->termios.c_cc[VTIME];
+	curr = buff;
+	end = buff + size;
+
+	if (((vmin == 0) && (vtime == 0))
+			|| (t->file_flags & O_NONBLOCK)) {
+		/* tty in non-block mode */
+		size = 0;
 	}
-#endif
+	else {
+		size = vtime == 0 ? min(size, vmin) : 1;
+		timeout = vmin > 0 ? SCHED_TIMEOUT_INFINITE
+				: vtime * 100; /* deciseconds to milliseconds */
 
-	if ((rc == -ETIMEDOUT) && (t->termios.c_cc[VMIN] == 0)) {
-		return 0;
+		rc = tty_wait_input(t, size, timeout);
+		if (rc == -ETIMEDOUT) {
+			return 0;
+		}
+		else if (rc == -EINTR) {
+			/* TODO then what? -- Eldar */
+			return 0;
+		}
+		else if (rc != 0) {
+			return rc;
+		}
+
+		if ((vmin > 0) && (vtime > 0)) {
+			size = end - buff;
+			timeout = vtime * 100;
+		}
 	}
 
-	if (rc == -EINTR)
-		/* TODO then what? -- Eldar */
-		return 0;
+	while (1) {
+		// mutex_lock(&t->lock);
+		work_disable(&t->rx_work);
 
-	// mutex_lock(&t->lock);
-	work_disable(&t->rx_work);
-	{
-		buff = tty_read_raw(t, buff, end);
+		next = tty_read_raw(t, curr, end);
 
 		/* TODO serialize termios access with ioctl. -- Eldar */
 		if (TC_L(t, ICANON)) {
-			buff = tty_read_cooked(t, buff, end);
+			next = tty_read_cooked(t, next, end);
+		}
+
+		work_enable(&t->rx_work);
+		// mutex_unlock(&t->lock);
+
+		count = next - curr;
+		curr = next;
+		if (size <= count) {
+			break;
+		}
+		else {
+			/* ASSERT if tty in non-block mode */
+			assert(((vmin != 0) || (vtime != 0))
+					&& !(t->file_flags & O_NONBLOCK));
+		}
+		size -= count;
+
+		rc = tty_wait_input(t, size, timeout);
+		if (rc == -ETIMEDOUT) {
+			break;
+		}
+		else if (rc == -EINTR) {
+			return 0;
+		}
+		else if (rc != 0) {
+			return rc;
 		}
 	}
-	work_enable(&t->rx_work);
-	// mutex_unlock(&t->lock);
 
-	return buff - (end - size);
+	return curr - buff;
 }
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
