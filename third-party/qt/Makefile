@@ -184,10 +184,7 @@ build_and_install: configure
 			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/; \
 		fi
 
-#all: build_and_install
-
-
-
+$(ROOTFS_IMAGE): build_and_install
 
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
