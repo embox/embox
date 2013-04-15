@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 #include <errno.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define SYSCALL_NRS_TOTAL 200
 

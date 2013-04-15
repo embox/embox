@@ -123,7 +123,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 }
 
 static int init() {
-	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 20;
+	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 32;
 
 	if (!(mem_start = (uint32_t)page_alloc(__phymem_allocator, mem_page_count))) {
 		return -ENOMEM;
