@@ -22,6 +22,8 @@ struct marea {
 
 struct emmap {
 	struct marea *stack_marea;
+	struct marea *heap_marea;
+	void *brk;
 
 	struct dlist_head marea_list;
 };

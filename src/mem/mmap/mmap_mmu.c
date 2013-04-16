@@ -50,6 +50,7 @@ static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
 void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
+	mmap->heap_area = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
 

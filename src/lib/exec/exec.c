@@ -286,6 +286,7 @@ int execve(const char *filename, char *const argv[], char *const envp[]) {
 	}
 
 	stack = mmap_create_stack(task_self()->mmap);
+	mmap_create_heap(task_self()->mmap);
 
 	fill_stack(&stack, &exec, argv, envp);
 

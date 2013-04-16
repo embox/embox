@@ -22,9 +22,11 @@ struct marea {
 };
 
 struct emmap {
-	mmu_ctx_t ctx;
-
 	struct marea *stack_marea;
+	struct marea *heap_marea;
+	void *brk;
+
+	mmu_ctx_t ctx;
 
 	struct dlist_head marea_list;
 };

@@ -23,7 +23,6 @@ size_t sys_write(int fd, const void *buf, size_t nbyte) {
 	return write(fd, buf, nbyte);
 }
 
-
 #include <string.h>
 int sys_open(const char *path, int flags, mode_t mode) {
 	ipl_enable();
@@ -43,6 +42,17 @@ int sys_open(const char *path, int flags, mode_t mode) {
 int sys_close(int fd) {
 	ipl_enable();
 	return close(fd);
+}
+
+void *sys_brk(void *new_brk) {
+	struct task *task = task_self();
+
+	if (!new_brk) {
+		return mmap_get_brk(task->mmap);
+	} else {
+		mmap_set_brk(task->mmap, new_brk);
+		return new_brk;
+	}
 }
 
 void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_t pgoffset) {
@@ -99,6 +109,9 @@ int sys_newfstat(int fd, void *buf) {
 	struct new_stat new_stat;
 
 	int res = fstat(fd, &stat);
+
+	memset(&new_stat, 0, sizeof(struct new_stat));
+
 	new_stat.st_dev = stat.st_dev;
 	new_stat.st_ino = stat.st_ino;
 	new_stat.st_mode = stat.st_mode;

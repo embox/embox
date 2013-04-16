@@ -118,6 +118,17 @@ uint32_t mmap_create_stack(struct emmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+void* mmap_create_heap(struct emmap *mmap) {
+	mmap->heap_marea = mmap_alloc_marea(mmap, 4096, 0);
+
+	if (!mmap->heap_marea) {
+		return NULL;
+	}
+
+	mmap->brk = (void *) mmap->heap_marea->start;
+	return mmap->brk;
+}
+
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;
 }
