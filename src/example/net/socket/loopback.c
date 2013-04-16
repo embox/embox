@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <framework/example/self.h>
 
+#define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
+
 /**This macro is used for registration of this example at system
  * run - function which describe work of example
  */

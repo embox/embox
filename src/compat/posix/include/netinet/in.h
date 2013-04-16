@@ -37,7 +37,14 @@ struct sockaddr_in {
  * IPv6 address
  */
 struct in6_addr {
-	uint8_t s6_addr[16];
+	union {
+		uint8_t u6_addr8[16];
+		uint16_t u6_addr16[8];
+		uint32_t u6_addr32[4];
+	} in6_u;
+#define s6_addr   in6_u.u6_addr8
+#define s6_addr16 in6_u.u6_addr16
+#define s6_addr32 in6_u.u6_addr32
 };
 
 /**
@@ -73,16 +80,14 @@ enum {
  */
 #define INADDR_ANY          ((unsigned long int)0x00000000) /* 0.0.0.0 */
 #define INADDR_BROADCAST    ((unsigned long int)0xffffffff) /* 255.255.255.255 */
-#define INADDR_NONE         ((unsigned long int)0xffffffff) /* 255.255.255.255 */
-#define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
 
 /**
  * IPv6 address constants
  */
-//extern const struct in6_addr in6addr_any; /* :: */
+extern const struct in6_addr in6addr_any; /* :: */
 #define IN6ADDR_ANY_INIT \
 	{ { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } }
-//extern const struct in6_addr in6addr_loopback; /* ::1 */
+extern const struct in6_addr in6addr_loopback; /* ::1 */
 #define IN6ADDR_LOOPBACK_INIT \
 	{ { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } } }
 
@@ -91,6 +96,24 @@ enum {
  */
 #define INET_ADDRSTRLEN  16
 #define INET6_ADDRSTRLEN 46
+
+/**
+ * Test for special IPv6 adresses
+ */
+#define IN6_IS_ADDR_UNSPECIFIED(a) \
+	({ \
+	 	const struct in6_addr *__a = (const struct in6_addr *)(a); \
+	 	(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
+	 			&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == 0); \
+	})
+#define IN6_IS_ADDR_LOOPBACK(a) \
+	({ \
+	 	const struct in6_addr *__a = (const struct in6_addr *)(a); \
+	 	(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
+	 			&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == htonl(1)); \
+	})
+#define IN6_IS_ADDR_MULTICAST(a) \
+	(((const struct in6_addr *)(a))->s6_addr == 0xFF)
 
 /**
  * Ports
