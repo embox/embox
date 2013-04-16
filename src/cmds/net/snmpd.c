@@ -10,6 +10,7 @@
 #include <net/ip.h>
 #include <net/mib.h>
 #include <stdio.h>
+#include <time.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <embox/cmd.h>
@@ -17,6 +18,8 @@
 #include <kernel/thread.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 #define SNMP_ADDR INADDR_ANY
 #define SNMP_AGENT_PORT 161
@@ -91,6 +94,19 @@ static int exec(int argc, char **argv) {
 
 	//thread_create(&thread, 0, snmp_agent, NULL);
 	while (1) {
+		struct timeval timeout = {
+			.tv_sec = 1,
+			.tv_usec = 0,
+		};
+
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		FD_SET(sock, &readfds);
+
+		if (0 >= select(sock, &readfds, NULL, NULL, &timeout)) {
+			continue;
+		}
+
 		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
 			size_t len;
 			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
