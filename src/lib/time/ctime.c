@@ -95,7 +95,7 @@ time_t mktime(struct tm *tm) {
 	while (--year >= EPOCH_START - YEAR_1900) {
 		time += year_length(year + YEAR_1900);
 	}
-	while (--month >= 0) {
+	while (--month > 0) {
 		time += days_of_month(month, month + 1);
 	}
 	time += DAY_LENGHT * (tm->tm_mday - 1);
