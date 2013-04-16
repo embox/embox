@@ -48,30 +48,14 @@ static void build_response(struct snmp_desc *snmp) {
 	}
 }
 
-static void *snmp_agent(void *arg) {
+static int exec(int argc, char **argv) {
+	int opt;
+	struct sockaddr_in our;
 	struct snmp_desc snmp;
 	struct sockaddr_in addr;
 	char snmpbuf[MAX_SNMP_LEN];
 	char varbuf[MAX_PDU_LEN]; /* for received variables */
 	socklen_t sklen = 14;
-
-	while (1) {
-		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
-			size_t len;
-			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
-			build_response(&snmp);
-			len = snmp_build(&snmp, snmpbuf);
-			sendto(sock, snmpbuf, len, 0, (struct sockaddr *)&addr, sklen);
-		}
-	}
-
-	return NULL;
-}
-
-static int exec(int argc, char **argv) {
-	int opt;
-	struct sockaddr_in our;
-	struct thread *thread;
 
 	getopt_init();
 
@@ -101,11 +85,20 @@ static int exec(int argc, char **argv) {
 		return -errno;
 	}
 
-	thread_create(&thread, 0, snmp_agent, NULL);
-
 	mib_init_all();
 
 	printf("*SNMP agent started*\n");
+
+	//thread_create(&thread, 0, snmp_agent, NULL);
+	while (1) {
+		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
+			size_t len;
+			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
+			build_response(&snmp);
+			len = snmp_build(&snmp, snmpbuf);
+			sendto(sock, snmpbuf, len, 0, (struct sockaddr *)&addr, sklen);
+		}
+	}
 
 	return 0;
 }
