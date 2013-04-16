@@ -103,7 +103,7 @@ static int exec(int argc, char **argv) {
 		FD_ZERO(&readfds);
 		FD_SET(sock, &readfds);
 
-		if (0 >= select(sock, &readfds, NULL, NULL, &timeout)) {
+		if (0 >= select(sock + 1, &readfds, NULL, NULL, &timeout)) {
 			continue;
 		}
 
