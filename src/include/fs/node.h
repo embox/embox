@@ -13,8 +13,16 @@
 #include <fs/file_system.h>
 #include <util/tree.h>
 #include <limits.h>
+#include <kernel/thread/sync/mutex.h>
 
 struct nas;
+
+typedef struct file_lock {
+	struct mutex      lock;
+	int               flags;
+	pid_t             blocker;
+	struct dlist_head blocked_list;
+} flock_t;
 
 typedef struct node {
 	char                  name[NAME_MAX + 1];
@@ -27,6 +35,7 @@ typedef struct node {
 	struct tree_link      tree_link;
 	struct nas            *nas;
 
+	flock_t               flock;
 } node_t;
 
 struct node_info {

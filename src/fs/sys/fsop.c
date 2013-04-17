@@ -25,3 +25,7 @@ int rename(const char *src_name, const char *dst_name) {
 int umount(char *dir) {
 	return kumount(dir);
 }
+
+int flock(int fd, int operation) {
+	return kflock(fd, operation);
+}

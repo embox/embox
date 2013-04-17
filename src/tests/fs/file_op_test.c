@@ -14,6 +14,7 @@
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
 #include <fs/sys/fsop.h>
+#include <sys/file.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 
@@ -59,6 +60,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnam"
+#define FS_FLOCK		"/tmp/flock"
 
 TEST_CASE("Write file") {
 	int file;
@@ -249,6 +251,42 @@ TEST_CASE("Move file") {
 	/* Test cleanup */
 	test_assert_zero(remove(FS_DTR));
 }
+
+TEST_CASE("flock") {
+	int fd;
+
+	/* Prepare for test */
+	test_assert(-1 != (fd = open(FS_FLOCK, O_CREAT, S_IRUSR | S_IWUSR)));
+
+	/* Acquire exclusive lock */
+	test_assert_zero(flock(fd, LOCK_EX));
+
+//	/* Acquire exclusive lock again without blocking */
+//	test_assert(-1 == flock(fd, LOCK_EX | LOCK_NB));
+//	test_assert(EWOULDBLOCK == errno);
+//
+//	/* Change lock to shared */
+//	test_assert_zero(flock(fd, LOCK_SH));
+//
+//	/* Acquire one more shared lock */
+//	test_assert_zero(flock(fd, LOCK_SH));
+//
+//	/* Release first shared lock */
+//	test_assert_zero(flock(fd, LOCK_UN));
+//
+//	/* Release second shared lock */
+//	test_assert_zero(flock(fd, LOCK_UN));
+//
+//	/* Acquire shared lock without blocking */
+//	test_assert_zero(flock(fd, LOCK_SH | LOCK_NB));
+//
+//	/* Release shared lock without blocking */
+//	test_assert_zero(flock(fd, LOCK_UN | LOCK_NB));
+
+	/* Test cleanup */
+	test_assert_zero(remove(FS_FLOCK));
+}
+
 
 static int setup_suite(void) {
 	int fd, res;
