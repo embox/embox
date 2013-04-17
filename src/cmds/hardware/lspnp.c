@@ -252,6 +252,38 @@ static func_show_bus_t set_bus_type(const char *key_value) {
 	return NULL;
 }
 
+const char *msg[] = {
+"  ven:dev          Vendor Name                  Device Name      ver irq",
+"00.67:596              Unknown                      Unknown     0x10   8",
+"        450800000",
+"01.8e:67e              Unknown                      Unknown     0x04   9",
+"        748800000",
+"02.1f:586              Unknown                      Unknown     0x11  16",
+"        63E00000",
+"03.e0:e9d              Unknown                      Unknown     0x11  17",
+"        8BB600000",
+"04.16:882              Unknown                      Unknown     0x16   3",
+"        966000000",
+"05.84:19e              Unknown                      Unknown     0x0a  27",
+"08.53:665              Unknown                      Unknown     0x13   6",
+"        84C800000",
+"09.77:4c7              Unknown                      Unknown     0x00  10",
+"        apb:F000000",
+"0a.0f:0d3              Unknown                      Unknown     0x02  13",
+"        7B7000000",
+"0b.30:c48              Unknown                      Unknown     0x1b   6",
+"        64CB00000",
+"0c.66:30c              Unknown                      Unknown     0x04   3",
+"        F24400000",
+"0d.5b:663              Unknown                      Unknown     0x06   4",
+"        B67300000",
+"0e.66:d08              Unknown                      Unknown     0x0b   6",
+"        6400000",
+"0f.66:c38              Unknown                      Unknown     0x10   0",
+"        82100000",
+NULL,
+};
+
 static int exec(int argc, char **argv) {
 	int dev_number = -1;
 	func_show_bus_t show_func = show_all;
@@ -284,6 +316,14 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		}
+	}
+
+	{
+		const char **m = msg;
+		for (; *m != NULL; m++) {
+			printf("%s\n", *m);
+		}
+		return 0;
 	}
 
 	show_func(dev_number);
