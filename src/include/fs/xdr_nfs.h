@@ -28,6 +28,8 @@ extern int xdr_nfs_get_dirdesc(struct xdr *xs, char *point);
 
 extern int xdr_nfs_get_attr(struct xdr *xs, char *point);
 
+extern int xdr_nfs_get_del_attr(struct xdr *xs, char *point);
+
 extern int xdr_nfs_read_file(struct xdr *xs, char *point);
 
 extern int xdr_nfs_lookup(struct xdr *xs, char *point);
