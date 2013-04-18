@@ -6,16 +6,22 @@ package embox.cmd
 		NAME
 			wmem - writes to memory
 		SYNOPSIS
-			wmem [-h] -a addr -v value
+			wmem [-h] [-l -s -c] -a addr -v value
 		OPTIONS
 			-h
 				Shows usage
+			-l
+				Perform writing by sizeof(long)
+			-s
+				Perform writing by sizeof(short)
+			-s
+				Perform writing by sizeof(char)
 			-a addr
 				The destination address
 			-v value
 				The value to write
 		EXAMPLES
-			wmem -a 0x40000000 -v 0xdeadbeef
+			wmem -l -a 0x40000000 -v 0xdeadbeef
 		SEE ALSO
 			mem
 		AUTHORS
