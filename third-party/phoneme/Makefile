@@ -316,6 +316,8 @@ amalgamated_cldc: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
 
 amalgamated_midp: $(AMAL_MIDP_LIB)
 
-amalgamated: amalgamated_cldc amalgamated_midp
+amalgamated: amalgamated_cldc
+
+#amalgamated: amalgamated_midp
 
 .NOTPARALLEL:
