@@ -10,6 +10,8 @@ endif
 #export ENABLE_ISOLATES=true
 #export USE_MULTIPLE_ISOLATES=true
 
+# Necessary packages for Ubuntu 12.04/64: ia32-libs libc6-dev-i386 lib32stdc++6-4.6-dbg
+
 CLDC_TARGET_ID=product
 ifneq ($(findstring -g,$(EMBOX_CFLAGS)),)
 USE_DEBUG=true
@@ -26,7 +28,9 @@ EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 
 EMBOX_IMPORTED_CFLAGS   += -fno-stack-protector
+EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
+EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
 EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
