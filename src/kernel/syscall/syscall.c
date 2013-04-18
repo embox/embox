@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
 #include <kernel/task.h>
 #include <mem/mmap.h>
@@ -20,18 +21,8 @@ size_t sys_write(int fd, const void *buf, size_t nbyte) {
 	return write(fd, buf, nbyte);
 }
 
-#include <string.h>
 int sys_open(const char *path, int flags, mode_t mode) {
-	if (strcmp(path, "/lib/libselinux.so.1") == 0) {
-		return open("libselinux.so.1", flags, mode);
-	}
-
-	if (strcmp(path, "/lib/libc.so.6") == 0) {
-		return open("libc.so", flags, mode);
-	}
-
 	return open(path, flags, mode);
-
 }
 
 int sys_close(int fd) {
