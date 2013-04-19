@@ -4,6 +4,7 @@
  *
  * @date 21.11.12
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef COMPAT_POSIX_ARPA_INET_H_
@@ -13,9 +14,13 @@
 #include <linux/swab.h>
 #include <netinet/in.h>
 #include <sys/cdefs.h>
+#include <sys/socket.h>
 
 __BEGIN_DECLS
 
+/**
+ * Convert values between host and network byte order
+ */
 #if defined(__LITTLE_ENDIAN)
 # define htons(n) swab16(n)
 # define ntohs(n) swab16(n)
@@ -28,26 +33,19 @@ __BEGIN_DECLS
 # define ntohl(n) (n)
 #endif
 
+/**
+ * IPv4 address manipulation
+ */
+extern in_addr_t inet_addr(const char *cp);
+extern char * inet_ntoa(struct in_addr in);
+extern int inet_aton(const char *cp, struct in_addr *addr);
 
 /**
- * Convert Internet number in IN to ASCII representation.
- * The return value is a pointer to an internal array containing the string.
+ * Convert IPv4 and IPv6 addresses between binary and text form
  */
-char *inet_ntoa(struct in_addr in);
-
-/**
- * Convert Internet host address from numbers-and-dots notation in CP
- * into binary data in network byte order.
- */
-in_addr_t inet_addr(const char *cp);
-
-/**
- * Convert Internet host address from numbers-and-dots notation in CP
- * into binary data and store the result in the structure INP.
- */
-int inet_aton(const char *cp, struct in_addr *addr);
+extern const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
+extern int inet_pton(int af, const char *src, void *dst);
 
 __END_DECLS
-
 
 #endif /* COMPAT_POSIX_ARPA_INET_H_ */

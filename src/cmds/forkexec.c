@@ -22,21 +22,25 @@ EMBOX_CMD(exec);
 static void *new_task_entry(void *file);
 
 static int exec(int argc, char **argv) {
-	char *filename = malloc(strlen(argv[argc-1]));
+	char *filename;
+	int pid;
+
+	filename = malloc(strlen(argv[argc-1]));
 	strcpy(filename, argv[argc - 1]);
-	return new_task(filename, new_task_entry, filename);
+	pid = new_task(filename, new_task_entry, filename);
+
+	task_waitpid(pid);
+
+	free(filename);
+
+	return 0;
 }
 
 static void *new_task_entry(void *filename) {
-	char s_filename[255];
-	char *argv[2] = {s_filename, NULL};
+	char *argv[2] = {filename, NULL};
 	char *envp[1] = {NULL};
 
-	/* Copying and free filename */
-	strcpy(s_filename, filename);
-	free(filename);
-
-	execve(s_filename, argv, envp);
+	execve(filename, argv, envp);
 
 	return NULL;
 }

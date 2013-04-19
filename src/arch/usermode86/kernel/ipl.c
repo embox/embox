@@ -41,7 +41,6 @@ void ipl_hnd(int signal) {
 		return;
 	}
 
-	host_signal(UV_IRQ, ipl_hnd);
 	ipl_table[ipl_num](signal);
 }
 

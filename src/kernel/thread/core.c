@@ -55,7 +55,7 @@ struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 static int id_counter;
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg, struct task *tsk);
+		void *(*run)(void *), void *arg);
 static void thread_context_init(struct thread *t);
 
 static struct thread *thread_new(void);
@@ -107,7 +107,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		return -ENOMEM;
 	}
 
-	thread_init(t, flags, run, arg, task_self());
+	thread_init(t, flags, run, arg);
 	thread_context_init(t);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
@@ -128,7 +128,10 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg, struct task *tsk) {
+		void *(*run)(void *), void *arg) {
+	struct task *tsk = (flags & THREAD_FLAG_KTASK)
+			? task_kernel_task() : task_self();
+
 	assert(t);
 #if 0
 	assert(run);
@@ -412,7 +415,6 @@ static void *idle_run(void *arg) {
 
 struct thread *thread_init_self(void *stack, size_t stack_sz,
 		thread_priority_t priority) {
-	struct task *kernel_task = task_kernel_task();
 	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */
@@ -424,7 +426,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	list_add_tail(&thread->thread_link, &__thread_list);
 
 	/* General initialization and task setting up */
-	thread_init(thread, 0, NULL, NULL, kernel_task);
+	thread_init(thread, THREAD_FLAG_KTASK, NULL, NULL);
 
 	/* Priority setting up */
 	thread->priority = priority;
@@ -451,7 +453,7 @@ static int unit_init(void) {
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	thread_init(idle, 0, idle_run, NULL, kernel_task);
+	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
 	thread_context_init(idle);
 
 	idle->priority = THREAD_PRIORITY_MIN;

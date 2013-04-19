@@ -20,7 +20,7 @@ int ksleep(useconds_t msec) {
 	volatile int wait_flag; // for sleep func
 	sys_timer_t timer;
 
-	if(0 == usec) {
+	if(0 == msec) {
 		return 0;
 	}
 

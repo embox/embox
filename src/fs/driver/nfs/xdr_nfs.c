@@ -126,7 +126,7 @@ int xdr_nfs_delete(struct xdr *xs, char *point) {
 				&& xdr_u_int(xs, &reply->before_vf)) {
 				if (VALUE_FOLLOWS_YES == reply->before_vf) {
 					if (XDR_SUCCESS !=
-						xdr_nfs_get_attr(xs, (char *) &reply->before_attr)) {
+						xdr_nfs_get_del_attr(xs, (char *) &reply->before_attr)) {
 						break;
 					}
 				}
@@ -356,6 +356,19 @@ int xdr_nfs_get_attr(struct xdr *xs, char *point) {
 			&& xdr_u_hyper(xs, &attr->file_id)
 			&& xdr_u_int(xs, &attr->atime.second)
 			&& xdr_u_int(xs, &attr->atime.nano_sec)
+			&& xdr_u_int(xs, &attr->mtime.second)
+			&& xdr_u_int(xs, &attr->mtime.nano_sec)
+			&& xdr_u_int(xs, &attr->ctime.second)
+			&& xdr_u_int(xs, &attr->ctime.nano_sec));
+}
+
+int xdr_nfs_get_del_attr(struct xdr *xs, char *point) {
+	file_del_attribute_rep_t *attr;
+
+	assert(point != NULL);
+
+	attr = (file_del_attribute_rep_t *) point;
+	return (xdr_u_hyper(xs, &attr->size)
 			&& xdr_u_int(xs, &attr->mtime.second)
 			&& xdr_u_int(xs, &attr->mtime.nano_sec)
 			&& xdr_u_int(xs, &attr->ctime.second)

@@ -19,7 +19,7 @@ EMBOX_TEST_SUITE("fs/ramdisk test");
 #define FS_BLOCKS  124
 
 TEST_CASE("Create ramdisk") {
-	test_assert_zero(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE()));
+	test_assert_zero(NULL == ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE()));
 }
 
 TEST_CASE("Delete ramdisk") {

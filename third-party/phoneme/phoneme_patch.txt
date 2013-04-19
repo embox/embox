@@ -1,12 +1,32 @@
-Index: build/javacall_i386_gcc/javacall_i386_gcc.cfg
+Index: cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg
 ===================================================================
---- cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(revision 20547)
-+++ cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(working copy)
-@@ -75,6 +75,7 @@
+--- cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(révision 20547)
++++ cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(copie de travail)
+@@ -56,6 +56,8 @@
+     # an i386 assembler loop generator and will generate the i386
+     # assembler loop.
+     os_family          = $(host_os)
++    CPP_DEF_FLAGS += -m32
++    LINK_FLAGS += -m32 -L/usr/lib32/debug
+ endif
+ 
+ ifeq ($(IsRomGen),true)
+@@ -63,6 +65,9 @@
+     # an i386 assembler or C loop. It runs on the HOST to
+     # generate the (machine independent) ROM.cpp file.
+     os_family      = $(host_os)
++    CPP_DEF_FLAGS += -m32
++    LINK_FLAGS += -m32 -L/usr/lib32/debug
++    ASM_FLAGS += --32
+ endif
+ 
+ ifeq ($(IsTarget),true)
+@@ -75,6 +80,8 @@
      JAVACALL_INCLUDE_DIR=$(JAVACALL_OUTPUT_DIR)/inc
  
      CPP_DEF_FLAGS += -I$(JAVACALL_INCLUDE_DIR) -DLINUX
 +    CPP_DEF_FLAGS += $(CXXFLAGS_EXTERNAL_TARGET)
++    ASM_FLAGS += --32
  
      JC_STUBS_OBJ = $(JAVACALL_LIB_DIR)/cldc_javanotify_stubs.o
  endif

@@ -24,7 +24,7 @@ EMBOX_EXAMPLE(match_example);
 
 static int match_example(int argc, char **argv) {
 	struct pnet_graph *graph;
-	net_node_t devs, match_node, lin_gate, info, skb;
+	net_node_t devs, match_node, lin_gate, info, skb, timer, null;
 	match_rule_t rule;
 
 	/* create nodes to add them in graph*/
@@ -33,6 +33,8 @@ static int match_example(int argc, char **argv) {
 	info = pnet_get_module("info printer");
 	match_node = pnet_get_module("matcher");
 	skb = pnet_get_module("skb printer");
+	timer = pnet_get_module("timer");
+	null = pnet_get_module("null node");
 
 	/* create graph*/
 	graph =  pnet_graph_create("mygraph");
@@ -42,6 +44,8 @@ static int match_example(int argc, char **argv) {
 	pnet_graph_add_node(graph, info);
 	pnet_graph_add_node(graph, match_node);
 	pnet_graph_add_node(graph, skb);
+	pnet_graph_add_node(graph, timer);
+	pnet_graph_add_node(graph, null);
 
 	rule = pnet_rule_alloc();
 	pnet_rule_set_next_node(rule, info);
@@ -56,6 +60,8 @@ static int match_example(int argc, char **argv) {
 	pnet_node_link(devs, match_node);
 	pnet_node_link(match_node, lin_gate);
 	pnet_node_link(info, lin_gate);
+	pnet_node_link(lin_gate, timer);
+	pnet_node_link(timer, null);
 	//pnet_node_link(skb, lin_gate);
 
 	/* You can also create rules in pnet_rules.inc.
@@ -65,7 +71,7 @@ static int match_example(int argc, char **argv) {
 	/* now graph can packets handle */
 	pnet_graph_start(graph);
 
-	printk("hello!\n");
+	printk("pnet: graph started\n");
 
 	return 0;
 }

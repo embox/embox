@@ -199,6 +199,13 @@ typedef struct file_attribute_rep {
 	time_sec_t ctime;
 } file_attribute_rep_t;
 
+/* attribute of file, reply in READDIRPLUS command */
+typedef struct file_del_attribute_rep {
+	__u64 size;
+	time_sec_t mtime;
+	time_sec_t ctime;
+} file_del_attribute_rep_t;
+
 typedef struct dir_attribute_rep {
 	file_attribute_rep_t dir_attr;
 	__u64 verifier;
@@ -258,7 +265,7 @@ typedef struct create_reply {
 typedef struct delete_reply {
 	__u32 status;
 	__u32 before_vf;
-	file_attribute_rep_t before_attr;
+	file_del_attribute_rep_t before_attr;
 	__u32 dir_vf;
 	file_attribute_rep_t *dir_attr;
 } delete_reply_t;

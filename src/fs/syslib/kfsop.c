@@ -255,7 +255,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return  -ENOSYS;
 	}
 
-	if (0 == strcmp(fs_type, "nfs")) {
+	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
 		dev_node = (node_t *) dev;
 		goto skip_dev_lookup;
 	}

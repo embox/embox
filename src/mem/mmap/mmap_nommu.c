@@ -118,12 +118,23 @@ uint32_t mmap_create_stack(struct emmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+void* mmap_create_heap(struct emmap *mmap) {
+	mmap->heap_marea = mmap_alloc_marea(mmap, 4096, 0);
+
+	if (!mmap->heap_marea) {
+		return NULL;
+	}
+
+	mmap->brk = (void *) mmap->heap_marea->start;
+	return mmap->brk;
+}
+
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;
 }
 
 static int init() {
-	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 20;
+	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 32;
 
 	if (!(mem_start = (uint32_t)page_alloc(__phymem_allocator, mem_page_count))) {
 		return -ENOMEM;

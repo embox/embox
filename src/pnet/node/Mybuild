@@ -30,3 +30,8 @@ module info_printer {
 module skb_printer {
 	source "skb_printer.c"
 }
+
+module timer {
+	source "timer.c"
+	depends embox.pnet.rx_thread
+}

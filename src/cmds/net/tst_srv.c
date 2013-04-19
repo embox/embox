@@ -89,7 +89,7 @@ static void * client_process(void * args) {
 		printf(".");
 			ktime_get_timeval(&tv);
 		printf(".");
-			usleep(1500l);
+			usleep(1500000l);
 		printf(".");
 			ktime_get_timeval(&tv1);
 		printf(".");

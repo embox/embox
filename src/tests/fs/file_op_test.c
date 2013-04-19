@@ -253,7 +253,7 @@ TEST_CASE("Move file") {
 static int setup_suite(void) {
 	int fd, res;
 
-	if (0 != ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
+	if (NULL == ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
 		return -1;
 	}
 

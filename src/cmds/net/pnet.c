@@ -413,6 +413,7 @@ static int exec(int argc, char **argv) {
 	match_rule_t rule;
 	net_node_t node;
 	_rule_setter setter;
+	extern void pnet_print_times_per_priority(enum PNET_PACK_DIRECTION);
 
 	getopt_init();
 
@@ -440,6 +441,18 @@ static int exec(int argc, char **argv) {
 				get_graph(gr, argv[3], 0);
 				get_node_from_graph(gr, node, argv[4], 0);
 				print_rules((net_node_matcher_t) node);
+				break;
+			}
+
+			if (!strcmp("--times", argv[2])) {
+				if (!strcmp("rx", argv[3])) {
+					pnet_print_times_per_priority(PNET_PACK_DIRECTION_RX);
+				} else if (!strcmp("tx", argv[3])) {
+					pnet_print_times_per_priority(PNET_PACK_DIRECTION_TX);
+				} else {
+					printf("%s: no such direction \n", argv[3]);
+				}
+
 				break;
 			}
 

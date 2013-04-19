@@ -22,10 +22,13 @@ struct net_device;
 typedef struct in_device {
 	struct list_link lnk;
 	struct net_device *dev;
+
 	in_addr_t ifa_address;
 	in_addr_t ifa_mask;
 	in_addr_t ifa_broadcast;
 	in_addr_t ifa_anycast;
+
+	struct in6_addr ifa6_address;
 
 	unsigned int ip_id_generator;
 } in_device_t;

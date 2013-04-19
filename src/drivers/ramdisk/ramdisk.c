@@ -42,21 +42,24 @@ block_dev_driver_t ramdisk_pio_driver = {
 
 //EMBOX_UNIT_INIT(unit_init);
 
-int ramdisk_create(char *path, size_t size) {
+ramdisk_t *ramdisk_create(char *path, size_t size) {
 	ramdisk_t *ramdisk;
 
 	if (NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
-		return -ENOMEM;
+		SET_ERRNO(ENOMEM);
+		return NULL;
 	}
 	if (0 > (ramdisk->idx = block_dev_named(path, &ramdisk_idx))) {
-		return -ENOENT;
+		SET_ERRNO(ENOENT);
+		return NULL;
 	}
 
 	if (NULL == (ramdisk->bdev = block_dev_create(path,
 			&ramdisk_pio_driver, ramdisk))) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		return -EIO;
+		SET_ERRNO(EIO);
+		return NULL;
 	}
 
 	ramdisk->dev_node = block_dev(ramdisk->bdev)->dev_node;
@@ -70,7 +73,8 @@ int ramdisk_create(char *path, size_t size) {
 		block_dev_destroy(ramdisk->bdev);
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		return -ENOMEM;
+		SET_ERRNO(ENOMEM);
+		return NULL;
 	}
 
 	strncpy ((void *)&ramdisk->path,
@@ -79,7 +83,7 @@ int ramdisk_create(char *path, size_t size) {
 	block_dev(ramdisk->bdev)->size = ramdisk->size;
 	ramdisk->block_size = PAGE_SIZE();
 
-	return 0;
+	return ramdisk;
 }
 
 ramdisk_t *ramdisk_get_param(char *path) {

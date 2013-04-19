@@ -4,32 +4,45 @@
  *
  * @date 18.11.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #include <arpa/inet.h>
+#include <assert.h>
 #include <ctype.h>
+#include <netinet/in.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <util/array.h>
 
-/*
- * Ascii internet address interpretation routine.
- * The value returned is in network order.
- */
+const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
+
 in_addr_t inet_addr(const char *cp) {
-	struct in_addr val;
+	struct in_addr in;
 
-	if (inet_aton(cp, &val))
-		return (val.s_addr);
-	return (INADDR_NONE);
+	if ((cp == NULL) || (0 == inet_aton(cp, &in))) {
+		return (in_addr_t)-1;
+	}
+
+	return in.s_addr;
 }
 
-/*
- * Check whether "cp" is a valid ascii representation
- * of an Internet address and convert to a binary address.
- * Returns 1 if the address is valid, 0 if not.
- * This replaces inet_addr, the return value from which
- * cannot distinguish between failure and a local broadcast address.
- */
+char * inet_ntoa(struct in_addr in) {
+	int res;
+	static char buff[INET_ADDRSTRLEN];
+	uint8_t *b;
+
+	b = (uint8_t *)&in;
+	res = snprintf(buff, ARRAY_SIZE(buff), "%hhu.%hhu.%hhu.%hhu",
+			b[0], b[1], b[2], b[3]);
+	assert(res >= 0);
+
+	return &buff[0];
+}
+
 int inet_aton(const char *cp, struct in_addr *addr) {
 	static const in_addr_t max[4] = { 0xffffffff, 0xffffff, 0xffff, 0xff };
 	in_addr_t val;
@@ -45,8 +58,7 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	int dots;
 
 	res.word = 0;
-
-	dots = 0;											/* there should be 3 dots in character ip string notation */
+	dots = 0; /* there should be 3 dots in character ip string notation */
 
 	c = *cp;
 	for (;;) {
@@ -127,11 +139,30 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	}
 	return 1;
 }
+#if 0
+static int inet_ntop4(const struct in_addr *in,
+		char *buff, socklen_t size,
 
-static char ntoa_buffer[] = "xxx.xxx.xxx.xxx";
+const char * inet_ntop(int af, const void *src, char *dst,
+		socklen_t size) {
+	int ret;
+	const char *result;
 
-char *inet_ntoa(struct in_addr in) {
-	unsigned char *bytes = (unsigned char *) &in;
-	sprintf(ntoa_buffer, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
-	return ntoa_buffer;
+	switch (af) {
+	default:
+		ret = -EAFNOSUPPORT;
+	case AF_INET:
+		ret = inet_ntop4();
+	case AF_INET6:
+		ret = inet_ntop6();
+	}
+
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return NULL;
+	}
+
+	assert(result != NULL);
+	return result;
 }
+#endif

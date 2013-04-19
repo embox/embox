@@ -439,10 +439,10 @@ int inet_shutdown(struct socket *sock, int how) {
  * predicate to compare two internet address structures
  **/
 static bool inet_address_compare(struct sockaddr *addr1, struct sockaddr *addr2) {
-	sockaddr_in_t *addr_in1, *addr_in2;
+	struct sockaddr_in *addr_in1, *addr_in2;
 
-	addr_in1 = (sockaddr_in_t *)addr1;
-	addr_in2 = (sockaddr_in_t *)addr2;
+	addr_in1 = (struct sockaddr_in *)addr1;
+	addr_in2 = (struct sockaddr_in *)addr2;
 	return (addr_in1->sin_family == addr_in2->sin_family)
 			&& (addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr)
 			&& (addr_in1->sin_port == addr_in2->sin_port);

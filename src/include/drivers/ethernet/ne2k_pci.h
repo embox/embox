@@ -38,7 +38,15 @@
 #define EN0_IMR	        0x0f /* Interrupt mask reg WR */
 #define EN0_COUNTER2    0x0f /* Rcv missed frame error counter RD */
 
-/* Bits in received packet status byte and EN0_RSR*/
+/* Bits in receive configuration byte and EN0_RXCR */
+#define ENRCR_SEP       0x01 /* Accept packets with receive errors */
+#define ENRCR_AR        0x02 /* Accept packets with len < 64 */
+#define ENRCR_AB        0x04 /* Accept packets with bcast dest address */
+#define ENRCR_AM        0x08 /* Accept packets with mcast dest address */
+#define ENRCR_PRO       0x10 /* Accept packets with physical dest address */
+#define ENRCR_MON       0x20 /* Monitor mode (disable buffered to memory) */
+
+/* Bits in received packet status byte and EN0_RSR */
 #define ENRSR_RXOK      0x01 /* Received a good packet */
 #define ENRSR_CRC       0x02 /* CRC error */
 #define ENRSR_FAE       0x04 /* frame alignment error */
@@ -121,7 +129,7 @@
 #define E8390_PAGE1       0x40 /* using the two high-order bits */
 #define E8390_PAGE2       0x80 /* Page 3 is invalid. */
 #define E8390_CMD         0x00 /* The command register (for all pages) */
-#define E8390_RXCONFIG    0x04 /* EN0_RXCR: broadcasts, no multicast,errors */
+#define E8390_RXCONFIG    (ENRCR_AB | ENRCR_PRO) /* EN0_RXCR */
 #define E8390_TXCONFIG    0x00 /* EN0_TXCR: Normal transmit mode */
 
 #endif /* NET_NE2K_PCI_H_ */

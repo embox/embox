@@ -55,6 +55,8 @@ extern int doupdate(void);
 extern int refresh(void);
 extern int wnoutrefresh(WINDOW *win);
 extern int wrefresh(WINDOW *win);
+extern bool isendwin(void);
+extern int endwin(void);
 extern int move(int y, int x);
 extern int wmove(WINDOW *win, int y, int x);
 extern int addch(const chtype ch);
@@ -112,10 +114,8 @@ extern int nonl(void);
 extern int nodelay(WINDOW *win, bool bf);
 
 static inline int beep(void) { return 0; }
-static inline int endwin(void) { return 0; }
 static inline int keypad(WINDOW *win, bool bf) { return 0; }
 static inline int curs_set(int visibility) { return 0; }
-static inline bool isendwin(void) { return TRUE; }
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */
