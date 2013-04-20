@@ -7,18 +7,18 @@ LoginDialog::LoginDialog(QWidget *parent) :
 	QDialog(parent)
 {
     setUpGUI();
-    setWindowTitle( tr("User Login") );
+    setWindowTitle( tr("Вход в систему") );
     setModal( true );
     subwindow = emarea->addSubWindow(this, windowType());
 }
 
 void LoginDialog::setUpGUI(){
     // set up the layout
-    QGridLayout* formGridLayout = new QGridLayout( this );
+    formGridLayout = new QGridLayout( this );
 
     // initialize the username combo box so that it is editable
-    comboUsername = new QComboBox( this );
-    comboUsername->setEditable( true );
+    editUsername = new QLineEdit( this );
+    //comboUsername->setEditable( true );
     // initialize the password field so that it does not echo
     // characters
     editPassword = new QLineEdit( this );
@@ -27,9 +27,9 @@ void LoginDialog::setUpGUI(){
     // initialize the labels
     labelUsername = new QLabel( this );
     labelPassword = new QLabel( this );
-    labelUsername->setText( tr( "Username" ) );
-    labelUsername->setBuddy( comboUsername );
-    labelPassword->setText( tr( "Password" ) );
+    labelUsername->setText( tr( "Имя пользователя" ) );
+    labelUsername->setBuddy( editUsername );
+    labelPassword->setText( tr( "Пароль" ) );
     labelPassword->setBuddy( editPassword );
 
 
@@ -53,59 +53,48 @@ void LoginDialog::setUpGUI(){
              this,
              SLOT(slotAcceptLogin()) );
 
+    errorLabel = new QLabel(this);
+    errorLabel->setText( tr( "" ) );
+
     // place components into the dialog
-    formGridLayout->addWidget( labelUsername, 0, 0 );
-    formGridLayout->addWidget( comboUsername, 0, 1 );
-    formGridLayout->addWidget( labelPassword, 1, 0 );
-    formGridLayout->addWidget( editPassword, 1, 1 );
-    formGridLayout->addWidget( buttons, 2, 0, 1, 2 );
+    formGridLayout->addWidget( errorLabel, 0, 0 );
+    formGridLayout->addWidget( labelUsername, 1, 0 );
+    formGridLayout->addWidget( editUsername, 1, 1 );
+    formGridLayout->addWidget( labelPassword, 2, 0 );
+    formGridLayout->addWidget( editPassword, 2, 1 );
+    formGridLayout->addWidget( buttons, 3, 0, 1, 2 );
 
     setLayout( formGridLayout );
 }
 
 
-void LoginDialog::setUsername(QString &username){
-    bool found = false;
-    for( int i = 0; i < comboUsername->count() && ! found ; i++ )
-        if( comboUsername->itemText( i ) == username  ){
-            comboUsername->setCurrentIndex( i );
-            found = true;
-        }
+void LoginDialog::slotAcceptLogin(){
+    QString username = editUsername->text();
+    QString password = editPassword->text();
 
-    if( ! found ){
-        int index = comboUsername->count();
-        qDebug() << "Select username " << index;
-        comboUsername->addItem( username );
+    struct spwd *spwd = getspnam_f(username.toAscii().data());
 
-        comboUsername->setCurrentIndex( index );
+    if (0 == spwd) {
+    	errorLabel->setText("<font color='red'>Неверное имя пользователя</font>");
+    	formGridLayout->addWidget( errorLabel, 0, 0);
+    	return;
     }
 
-    // place the focus on the password field
-    editPassword->setFocus();
-}
+    if (0 != strcmp(spwd->sp_pwdp, password.toAscii().data())) {
+    	errorLabel->setText("<font color='red'>Неверный пароль</font>");
+    	formGridLayout->addWidget( errorLabel, 0, 0);
+    	return;
+    }
 
-
-void LoginDialog::setPassword(QString &password){
-    editPassword->setText( password );
-}
-
-void LoginDialog::slotAcceptLogin(){
-    QString username = comboUsername->currentText();
-    QString password = editPassword->text();
-    int     index    = comboUsername->currentIndex();
-
-    char *uname = username.toAscii().data();
-    char *pwd = password.toAscii().data();
-
-    emit acceptLogin( username,  // current username
-                      password,  // current password
-                      index      // index in the username list
-                      );
+    emboxShowDesktop();
 
     // close this dialog
     close();
+	emarea->setActiveSubWindow(subwindow);
+	emarea->closeActiveSubWindow();
 }
 
-void LoginDialog::setUsernamesList(const QStringList &usernames){
-    comboUsername->addItems( usernames );
+void LoginDialog::close() {
+	//emarea->setActiveSubWindow(subwindow);
+	//emarea->closeActiveSubWindow();
 }

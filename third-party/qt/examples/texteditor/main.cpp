@@ -18,18 +18,24 @@ TextEditor *textEditor;
 QMdiArea *emarea;
 QMdiSubWindow *emEditorSubWindow;
 
+static void emboxShowLoginForm();
+
 class EmboxRootWindow : public QMainWindow
 {
     Q_OBJECT
 
     public:
     EmboxRootWindow() {
-    	QMenu *fileMenu = new QMenu(QString("&Пуск"), this);
+    	fileMenu = new QMenu(QString("&Пуск"), this);
     	menuBar()->addMenu(fileMenu);
 
     	textEditorAction = new QAction(QString("&Текстовый редактор"), this);
     	fileMenu->addAction(textEditorAction);
     	connect(textEditorAction, SIGNAL(triggered()), this, SLOT(textEditorRun()));
+
+    	logoutAction = new QAction(QString("&Завершение сеанса"), this);
+    	fileMenu->addAction(logoutAction);
+    	connect(logoutAction, SIGNAL(triggered()), this, SLOT(logout()));
     }
 
     private slots:
@@ -39,9 +45,33 @@ class EmboxRootWindow : public QMainWindow
     		textEditor->show();
     	}
 
+    	void logout() {
+    		emboxHideDesktop();
+    		emboxShowLoginForm();
+    	}
+
     private:
+    	QAction *logoutAction;
         QAction *textEditorAction;
+        QMenu *fileMenu;
 };
+
+EmboxRootWindow *emroot;
+
+void emboxShowDesktop() {
+	emroot->menuBar()->show();
+}
+
+void emboxHideDesktop() {
+	emarea->closeAllSubWindows();
+	emroot->menuBar()->hide();
+}
+
+static void emboxShowLoginForm() {
+    LoginDialog *loginDialog = new LoginDialog();
+    loginDialog->subwindow->setGeometry(WIDTH/2 - 150, HEIGHT/2 - 75, 300, 150);
+    loginDialog->show();
+}
 
 int main(int argv, char **args)
 {
@@ -56,25 +86,19 @@ int main(int argv, char **args)
     QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
 
-    EmboxRootWindow *emroot = new EmboxRootWindow();
-
     emarea = new QMdiArea();
     emarea->setBackground(bgPix);
     emarea->resize(WIDTH, HEIGHT);
     emarea->show();
 
+    emroot = new EmboxRootWindow();
     emroot->setCentralWidget(emarea);
     emroot->resize(WIDTH, HEIGHT);
     emroot->show();
 
-    LoginDialog* loginDialog = new LoginDialog();
-    //connect(loginDialog,
-                     //SIGNAL(acceptLogin(QString&,QString&,int&)),
-                     //this,
-                     //SLOT(slotAcceptUserLogin(QString&,QString&)));
-    //loginDialog->move(200, 200);
-    loginDialog->subwindow->setGeometry(WIDTH/2 - 150, HEIGHT/2 - 75, 300, 150);
-    loginDialog->show();
+    emboxHideDesktop();
+
+    emboxShowLoginForm();
 
     return app.exec();
 }

@@ -12,6 +12,9 @@
 #define TEDIT_APP_TITLE "TextEditor"
 #define TEDIT_DIR "/tmp/"
 
+void emboxShowDesktop();
+void emboxHideDesktop();
+
 class TextEditor : public QMainWindow
 {
     Q_OBJECT

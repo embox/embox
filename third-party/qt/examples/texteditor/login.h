@@ -1,3 +1,6 @@
+#ifndef TEXTEDITOR_LOGIN_H
+#define TEXTEDITOR_LOGIN_H
+
 #include <QDialog>
 #include <QLabel>
 #include <QPushButton>
@@ -8,6 +11,17 @@
 #include <QStringList>
 #include <QDebug>
 #include <QtGui>
+
+#include <shadow.h>
+
+//class LoginMdiSubWindow : public QMdiSubWindow {
+//
+//public:
+//    LoginMdiSubWindow() : QMdiSubWindow() {}
+//
+//protected:
+//    bool event(QEvent *event);
+//};
 
 /*!
  *Makes class LoginDialog a child to its parent, QDialog
@@ -34,7 +48,7 @@ private:
       * An editable combo box for allowing the user
       * to enter his username or select it from a list.
       */
-    QComboBox* comboUsername;
+    QLineEdit* editUsername;
 
     /*!
       * A field to let the user enters his password.
@@ -46,6 +60,8 @@ private:
       */
     QDialogButtonBox* buttons;
 
+    QLabel *errorLabel;
+
     /*!
       * A method to set up all dialog components and
       * initialize them.
@@ -55,28 +71,8 @@ private:
 public:
     explicit LoginDialog(QWidget *parent = 0);
 
-    /*!
-      * Sets the proposed username, that can come for instance
-      * from a shared setting.
-      *\param username the string that represents the current username
-      * to display
-      */
-    void setUsername( QString& username );
-
-    /*!
-      * Sets the current password to propose to the user for the login.
-      * \param password the password to fill into the dialog form
-      */
-    void setPassword( QString& password );
-
-    /*!
-      * Sets a list of allowed usernames from which the user
-      * can pick one if he does not want to directly edit it.
-      *\param usernames a list of usernames
-      */
-    void setUsernamesList( const QStringList& usernames );
-
     QMdiSubWindow *subwindow;
+    QGridLayout* formGridLayout;
 
 signals:
 
@@ -93,4 +89,7 @@ public slots:
       * A lot to adjust the emitting of the signal.
       */
     void slotAcceptLogin();
+    void close();
 };
+
+#endif // TEXTEDITOR_LOGIN_H
