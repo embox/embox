@@ -276,6 +276,7 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	sched_lock();
 	{
 		if (tsk->priority == new_priority) {
+			sched_unlock();
 			return 0;
 		}
 
