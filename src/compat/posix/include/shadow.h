@@ -10,6 +10,9 @@
 #define COMPAT_POSIX_SHADOW_H_
 
 #include <stdio.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 struct spwd {
 	char               *sp_namp;
@@ -46,5 +49,7 @@ extern struct spwd *fgetspent(FILE *file);
  * @return NULL
  */
 extern struct spwd *getspnam_f(const char *name);
+
+__END_DECLS
 
 #endif /* COMPAT_POSIX_SHADOW_H_ */
