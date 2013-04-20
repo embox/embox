@@ -3,6 +3,7 @@
 #include <QtGui>
 #include <QTextCodec>
 #include "mainwindow.h"
+#include "login.h"
 
 #include <framework/mod/options.h>
 #include <module/embox/arch/x86/boot/multiboot.h>
@@ -65,6 +66,15 @@ int main(int argv, char **args)
     emroot->setCentralWidget(emarea);
     emroot->resize(WIDTH, HEIGHT);
     emroot->show();
+
+    LoginDialog* loginDialog = new LoginDialog();
+    //connect(loginDialog,
+                     //SIGNAL(acceptLogin(QString&,QString&,int&)),
+                     //this,
+                     //SLOT(slotAcceptUserLogin(QString&,QString&)));
+    //loginDialog->move(200, 200);
+    loginDialog->subwindow->setGeometry(WIDTH/2 - 150, HEIGHT/2 - 75, 300, 150);
+    loginDialog->show();
 
     return app.exec();
 }
