@@ -23,7 +23,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: arp [-i if] [-s|d] [-a host] [-m hwaddr] [-h]\n");
+	printf("Usage: arp [-h] [-i if] [-s addr hwaddr|-d addr]\n");
 }
 
 static int print_arp_entity(const struct neighbour *n,
@@ -90,18 +90,6 @@ static int exec(int argc, char **argv) {
 			return neighbour_add(&hwaddr[0], sizeof hwaddr,
 				(const unsigned char *)&addr, sizeof addr, ifdev->dev,
 				NEIGHBOUR_FLAG_PERMANENT);
-		case 'a':
-			if (0 == inet_aton(optarg, &addr)) {
-				printf("arp: invalid IP address: %s\n", optarg);
-				return -EINVAL;
-			}
-			break;
-		case 'm':
-			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
-				printf("arp: invalid MAC address: %s\n", optarg);
-				return -EINVAL;
-			}
-			break;
 		case 'i':
 			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);
