@@ -28,6 +28,7 @@ class TextEditor : public QMainWindow
         void save();
         void quit();
         void help();
+        void setFont(int);
 
     private:
         QTextEdit *textEdit;
@@ -37,10 +38,13 @@ class TextEditor : public QMainWindow
         QAction *saveAction;
         QAction *exitAction;
         QAction *helpAction;
+        QAction *setFontAction;
 
         QMenu *fileMenu;
         QMenu *helpMenu;
         QString fileName;
+
+        QComboBox *fontBox;
 
         OpenFileDialog *openDialog;
         CreateFileDialog *createDialog;

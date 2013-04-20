@@ -8,6 +8,7 @@ TextEditor::TextEditor()
     saveAction = new QAction(tr("&Сохранить"), this);
     exitAction = new QAction(tr("&Выход"), this);
     helpAction = new QAction(tr("&О редакторе"), this);
+    setFontAction = new QAction(this);
 
     connect(createAction, SIGNAL(triggered()), this, SLOT(create()));
     connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
@@ -28,10 +29,23 @@ TextEditor::TextEditor()
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
-    textEdit = new QTextEdit;
+    textEdit = new QTextEdit(this);
     fileName = "";
 
-    setCentralWidget(textEdit);
+    QFontDatabase fontDataBase;
+    fontBox = new QComboBox();
+    fontBox->addItems(fontDataBase.families());
+    fontBox->addAction(setFontAction);
+    connect(fontBox , SIGNAL(currentIndexChanged(int)),this,SLOT(setFont(int)));
+
+    QGroupBox *groupBox = new QGroupBox;
+    QVBoxLayout *layout = new QVBoxLayout;
+
+    layout->addWidget(fontBox);
+    layout->addWidget(textEdit);
+    groupBox->setLayout(layout);
+
+    setCentralWidget(groupBox);
     setWindowTitle(tr(TEDIT_APP_TITLE));
     resize(640, 480);
 
@@ -85,15 +99,19 @@ void TextEditor::save()
                     //TODO: error message
         }
         else {
-	    QTextStream stream(&file);
-	    stream << textEdit->toPlainText();
-	    stream.flush();
-	    file.close();
+            QTextStream stream(&file);
+            stream << textEdit->toPlainText();
+            stream.flush();
+            file.close();
         }
     }
     else{
-    saveFile = new SaveFileDialog(textEdit, &fileName, this);
-	saveFile->show();
+        saveFile = new SaveFileDialog(textEdit, &fileName, this);
+        saveFile->show();
     }
 }
 
+void TextEditor::setFont(int)
+{
+    textEdit->setFontFamily(fontBox->currentText());
+}
