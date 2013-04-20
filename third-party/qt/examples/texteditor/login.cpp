@@ -94,6 +94,9 @@ void LoginDialog::slotAcceptLogin(){
     QString password = editPassword->text();
     int     index    = comboUsername->currentIndex();
 
+    char *uname = username.toAscii().data();
+    char *pwd = password.toAscii().data();
+
     emit acceptLogin( username,  // current username
                       password,  // current password
                       index      // index in the username list
@@ -102,7 +105,6 @@ void LoginDialog::slotAcceptLogin(){
     // close this dialog
     close();
 }
-
 
 void LoginDialog::setUsernamesList(const QStringList &usernames){
     comboUsername->addItems( usernames );
