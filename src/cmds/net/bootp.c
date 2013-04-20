@@ -23,7 +23,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: bootp <ifname>");
+	printf("Usage: bootp <ifname>\n");
 }
 
 int bootp_client(int bootp_server_timeout, struct in_device *dev) {
