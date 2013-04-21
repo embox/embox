@@ -69,7 +69,7 @@ void emboxHideDesktop() {
 
 static void emboxShowLoginForm() {
     LoginDialog *loginDialog = new LoginDialog();
-    loginDialog->subwindow->setGeometry(WIDTH/2 - 150, HEIGHT/2 - 75, 300, 150);
+    loginDialog->subwindow->setGeometry(WIDTH/2 - 200, HEIGHT/2 - 100, 400, 200);
     loginDialog->show();
 }
 
