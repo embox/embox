@@ -31,7 +31,7 @@ private:
     QDir currentDir;
     QString *fileName;
     QMainWindow *mainWindow;
-
+    QMdiSubWindow *subwindow;
 };
 
 #endif // OPENFILEDIALOG_H

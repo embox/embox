@@ -87,7 +87,6 @@ void TextEditor::help() {
 void TextEditor::open()
 {
 	openDialog = new OpenFileDialog(textEdit, &fileName, this);
-	emarea->addSubWindow(openDialog, openDialog->windowType());
     openDialog->show();
 }
 
