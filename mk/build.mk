@@ -11,7 +11,7 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-.PHONY : build image prepare docsgen dot
+.PHONY : build prepare docsgen dot
 
 build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 

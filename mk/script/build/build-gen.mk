@@ -263,8 +263,9 @@ module_a_source_files = \
 
 $(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
 			$(basename $(call module_occ_source_files,$@)))
-$(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
+# $(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
 	$$(warning static module '$(fqn)' must specify at least one source file.))
+$(@module_ar_rulemk) : check_objs = $1
 
 $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \

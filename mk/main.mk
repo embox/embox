@@ -43,6 +43,16 @@ Usage: $(MAKE) build-<template>
   you have to configure the project first. See configuration targets.
 endef # build
 
+.PHONY : rootfs
+rootfs :
+	+@$(make_mybuild) build __REBUILD_ROOTFS=1
+
+define help-rootfs
+Usage: $(MAKE) rootfs
+
+  Forces rootfs image to be rebuilt unconditionally.
+endef # rootfs
+
 .PHONY : dot
 dot :
 	+@$(make_mybuild) $@
