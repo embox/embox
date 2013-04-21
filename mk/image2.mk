@@ -86,6 +86,7 @@ initfs_cp_prerequisites = $(common_prereqs) $(src_file)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
 		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
+	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
