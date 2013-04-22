@@ -3,6 +3,8 @@
 #include <framework/mod/options.h>
 #include <module/embox/arch/x86/boot/multiboot.h>
 
+#include <stdio.h>
+
 extern QMdiArea *emarea;
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
@@ -57,9 +59,13 @@ void DesktopImageDialog::showFiles(const QStringList &files)
     filesFoundLabel->setText(tr("Два клика левой кнопкой мыши, чтобы сменить обои"));
 }
 
+extern void save_pref(char *buf, int buflen);
+
 void DesktopImageDialog::openFileOfItem(int row, int /* column */)
 {
     QTableWidgetItem *item = filesTable->item(row, 0);
+
+    //char *imageName = item->text().toAscii().data();
 
     QString imagePath = QString(":/images/").append(item->text());
     QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16)
@@ -67,7 +73,7 @@ void DesktopImageDialog::openFileOfItem(int row, int /* column */)
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
     emarea->setBackground(bgPix);
 
-    close();
+    save_pref(item->text().toAscii().data(), strlen(item->text().toAscii().data()));
 
 	emarea->setActiveSubWindow(subwindow);
 	emarea->closeActiveSubWindow();

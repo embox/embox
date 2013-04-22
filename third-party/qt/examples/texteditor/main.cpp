@@ -7,6 +7,7 @@
 #include "login.h"
 #include "desktopimage.h"
 
+#include <fcntl.h>
 #include <framework/mod/options.h>
 #include <module/embox/arch/x86/boot/multiboot.h>
 
@@ -95,10 +96,53 @@ class EmboxRootWindow : public QMainWindow
 
 EmboxRootWindow *emroot;
 
+#define FSIZE 64
+
+static int curuid;
+
+static void load_pref(char *buf, int buflen, char *def) {
+	char file[FSIZE];
+	snprintf(file, FSIZE, "/mnt/pref_%d", curuid);
+	int ret;
+	int fd = open(file, O_RDONLY, 0755);
+	lseek(fd, 0, 0);
+	if (0 > (ret = read(fd, buf, buflen))) {
+		strcpy(buf, def);
+		ret = strlen(def);
+	}
+
+	close(fd);
+
+	buf[ret] = '\0';
+	QString imagePath = QString(":/images/").append(QString(buf));
+    QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
+    QPixmap bgPix = QPixmap::fromImage(desktopImage);
+    emarea->setBackground(bgPix);
+}
+
+void save_pref(char *buf, int buflen) {
+	int fd;
+	char file[FSIZE];
+	snprintf(file, FSIZE, "/mnt/pref_%d", curuid);
+
+	fd = creat(file, 0755);
+
+	write(fd, buf, buflen);
+
+	close(fd);
+}
+
 void emboxShowDesktop(uid_t uid) {
+	char file[FSIZE], wallname[FSIZE];
+	int fd = -1;
 	bool enabled = uid ? false : true;
+	const char *defwall = "default.png";
+
+	curuid = uid;
 	emroot->menuBar()->show();
 	emroot->closeAllEditorsAction->setEnabled(enabled);
+
+	load_pref(wallname, FSIZE, defwall);
 }
 
 void emboxHideDesktop() {
