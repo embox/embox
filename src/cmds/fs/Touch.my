@@ -6,7 +6,7 @@ package embox.cmd.fs
 		NAME
 			touch - create a file
 		SYNOPSIS
-			touch  FULE
+			touch  FILE
 		DESCRIPTION
 			touch is used to create a file
 		AUTHORS
