@@ -57,6 +57,10 @@ class EmboxRootWindow : public QMainWindow
     	fileMenu->addAction(logoutAction);
     	connect(logoutAction, SIGNAL(triggered()), this, SLOT(logout()));
 
+    	saveAction = new QAction(QString("&Сохранить конфигурацию"), this);
+    	fileMenu->addAction(saveAction);
+    	connect(saveAction, SIGNAL(triggered()), this, SLOT(savedefault()));
+
     	wallpaperAction = new QAction(QString("&Обои на рабочий стол"), this);
     	fileMenu->addAction(wallpaperAction);
     	connect(wallpaperAction, SIGNAL(triggered()), this, SLOT(wallpaper()));
@@ -87,10 +91,15 @@ class EmboxRootWindow : public QMainWindow
     		wallpaperDialog->show();
     	}
 
+    	void savedefault() {
+
+    	}
+
     private:
     	QAction *logoutAction;
         QAction *textEditorAction;
         QAction *wallpaperAction;
+        QAction *saveAction;
         QMenu *fileMenu;
 };
 
