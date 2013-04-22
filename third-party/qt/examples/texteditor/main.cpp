@@ -4,6 +4,7 @@
 #include <QTextCodec>
 #include "mainwindow.h"
 #include "login.h"
+#include "desktopimage.h"
 
 #include <framework/mod/options.h>
 #include <module/embox/arch/x86/boot/multiboot.h>
@@ -17,6 +18,8 @@
 TextEditor *textEditor;
 QMdiArea *emarea;
 QMdiSubWindow *emEditorSubWindow;
+static DesktopImageDialog *wallpaperDialog;
+static QStringList desktopImagesList;
 
 static void emboxShowLoginForm();
 
@@ -36,6 +39,10 @@ class EmboxRootWindow : public QMainWindow
     	logoutAction = new QAction(QString("&Завершение сеанса"), this);
     	fileMenu->addAction(logoutAction);
     	connect(logoutAction, SIGNAL(triggered()), this, SLOT(logout()));
+
+    	wallpaperAction = new QAction(QString("&Обои на рабочий стол"), this);
+    	fileMenu->addAction(wallpaperAction);
+    	connect(wallpaperAction, SIGNAL(triggered()), this, SLOT(wallpaper()));
     }
 
     private slots:
@@ -50,9 +57,15 @@ class EmboxRootWindow : public QMainWindow
     		emboxShowLoginForm();
     	}
 
+    	void wallpaper() {
+    		wallpaperDialog = new DesktopImageDialog(desktopImagesList);
+    		wallpaperDialog->show();
+    	}
+
     private:
     	QAction *logoutAction;
         QAction *textEditorAction;
+        QAction *wallpaperAction;
         QMenu *fileMenu;
 };
 
@@ -82,11 +95,13 @@ int main(int argv, char **args)
     QFont serifFont("Times", 10);
     app.setFont(serifFont);
 
+    desktopImagesList << "cats.jpg" << "default.png";
+
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
-    QImage desktopImage = QImage(":/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
+    QImage desktopImage = QImage(":/images/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
 
     emarea = new QMdiArea();
