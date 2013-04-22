@@ -1,3 +1,4 @@
+
 #include <QApplication>
 #include <QTextEdit>
 #include <QtGui>
@@ -15,11 +16,20 @@
 #define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
 #define BPP    OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
 
+static QList<TextEditor*> textEditors;
 TextEditor *textEditor;
 QMdiArea *emarea;
 QMdiSubWindow *emEditorSubWindow;
 static DesktopImageDialog *wallpaperDialog;
 static QStringList desktopImagesList;
+
+void textEditorClosed(TextEditor *ed) {
+	for (int i = 0; i < textEditors.size(); i++) {
+		if (textEditors.at(i) == ed) {
+			textEditors.removeAt(i);
+		}
+	}
+}
 
 static void emboxShowLoginForm();
 
@@ -28,6 +38,8 @@ class EmboxRootWindow : public QMainWindow
     Q_OBJECT
 
     public:
+
+    QAction *closeAllEditorsAction;
     EmboxRootWindow() {
     	fileMenu = new QMenu(QString("&Пуск"), this);
     	menuBar()->addMenu(fileMenu);
@@ -35,6 +47,10 @@ class EmboxRootWindow : public QMainWindow
     	textEditorAction = new QAction(QString("&Текстовый редактор"), this);
     	fileMenu->addAction(textEditorAction);
     	connect(textEditorAction, SIGNAL(triggered()), this, SLOT(textEditorRun()));
+
+    	closeAllEditorsAction = new QAction(QString("&Закрыть все окна"), this);
+    	fileMenu->addAction(closeAllEditorsAction);
+    	connect(closeAllEditorsAction, SIGNAL(triggered()), this, SLOT(closeAllEditors()));
 
     	logoutAction = new QAction(QString("&Завершение сеанса"), this);
     	fileMenu->addAction(logoutAction);
@@ -48,9 +64,17 @@ class EmboxRootWindow : public QMainWindow
     private slots:
     	void textEditorRun() {
     		textEditor = new TextEditor();
+		textEditors << textEditor;
     		emEditorSubWindow = emarea->addSubWindow(textEditor, textEditor->windowType());
+		textEditor->subwindow = emEditorSubWindow;
     		textEditor->show();
     	}
+
+    	void closeAllEditors() {
+		for (int i = 0; i < textEditors.size(); i++) {
+			textEditors.at(i)->subwindow->close();
+		}
+	}
 
     	void logout() {
     		emboxHideDesktop();
@@ -71,8 +95,10 @@ class EmboxRootWindow : public QMainWindow
 
 EmboxRootWindow *emroot;
 
-void emboxShowDesktop() {
+void emboxShowDesktop(uid_t uid) {
+	bool enabled = uid ? false : true;
 	emroot->menuBar()->show();
+	emroot->closeAllEditorsAction->setEnabled(enabled);
 }
 
 void emboxHideDesktop() {

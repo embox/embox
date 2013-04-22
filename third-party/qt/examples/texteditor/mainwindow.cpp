@@ -75,8 +75,11 @@ void TextEditor::create()
 }
 
 void TextEditor::quit() {
+	extern void textEditorClosed(TextEditor *ed);
 	emarea->setActiveSubWindow(emEditorSubWindow);
 	emarea->closeActiveSubWindow();
+
+	textEditorClosed(this);
 }
 
 void TextEditor::help() {

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 
+#include <unistd.h>
 #include <QtGui>
 
 #include "openfiledialog.h"
@@ -12,7 +13,7 @@
 #define TEDIT_APP_TITLE "TextEditor"
 #define TEDIT_DIR "/tmp/"
 
-void emboxShowDesktop();
+void emboxShowDesktop(uid_t uid);
 void emboxHideDesktop();
 
 class TextEditor : public QMainWindow
@@ -20,6 +21,7 @@ class TextEditor : public QMainWindow
     Q_OBJECT
 
     public:
+	QMdiSubWindow *subwindow;
         TextEditor();
 
     private slots:

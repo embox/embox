@@ -1,3 +1,4 @@
+#include <pwd.h>
 #include "login.h"
 #include "mainwindow.h"
 
@@ -74,7 +75,9 @@ void LoginDialog::slotAcceptLogin(){
 
     struct spwd *spwd = getspnam_f(username.toAscii().data());
 
-    if (0 == spwd) {
+    struct passwd *pwd = getpwnam(username.toAscii().data());
+
+    if (NULL == spwd || NULL == pwd) {
     	errorLabel->setText("<font color='red'>Неверное имя пользователя</font>");
     	formGridLayout->addWidget( errorLabel, 0, 0);
     	return;
@@ -86,7 +89,7 @@ void LoginDialog::slotAcceptLogin(){
     	return;
     }
 
-    emboxShowDesktop();
+    emboxShowDesktop(pwd->pw_uid);
 
     // close this dialog
     close();
