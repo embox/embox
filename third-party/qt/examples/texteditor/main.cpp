@@ -115,9 +115,9 @@ static void load_pref(char *buf, int buflen, char *def) {
 
 	buf[ret] = '\0';
 	QString imagePath = QString(":/images/").append(QString(buf));
-    QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
-    QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    emarea->setBackground(bgPix);
+	QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
+	QPixmap bgPix = QPixmap::fromImage(desktopImage);
+	emarea->setBackground(bgPix);
 }
 
 void save_pref(char *buf, int buflen) {
@@ -129,6 +129,7 @@ void save_pref(char *buf, int buflen) {
 
 	write(fd, buf, buflen);
 
+	ftruncate(fd, buflen);
 	close(fd);
 }
 

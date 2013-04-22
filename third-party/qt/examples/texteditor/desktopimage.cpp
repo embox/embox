@@ -73,7 +73,7 @@ void DesktopImageDialog::openFileOfItem(int row, int /* column */)
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
     emarea->setBackground(bgPix);
 
-    save_pref(item->text().toAscii().data(), strlen(item->text().toAscii().data()));
+    save_pref(item->text().toAscii().data(), strlen(item->text().toAscii().data()) + 1);
 
 	emarea->setActiveSubWindow(subwindow);
 	emarea->closeActiveSubWindow();
