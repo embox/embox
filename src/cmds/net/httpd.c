@@ -418,10 +418,14 @@ static int httpd(int argc, char **argv) {
 	while (1) {
 		res = accept(host,(struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
+			continue;
+
+#if 0
 			/* error code in client, now */
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			close(host);
 			return res;
+#endif
 		}
 		client_process(res, addr, addr_len);
 	}
