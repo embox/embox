@@ -19,6 +19,9 @@
 
 #include <util/math.h>
 
+#include <framework/mod/options.h>
+
+#define IP_FRAGMENTED_SUPP OPTION_GET(NUMBER,ip_fragmented_support)
 
 /**
  * Datagram receive buffer
@@ -218,14 +221,17 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	offset <<= 3;
 	/* if it is not complete packet */
 	if (offset || mf_flag) {
-		if (df_flag(skb)) {
+		if (!(IP_FRAGMENTED_SUPP) || df_flag(skb)) {
 			/* For some reason we don't like situation when someone used forced fragmentation */
 			skb_free(skb);
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}
 		if (NULL == (buf = ip_find(skb->nh.iph))) {
-			buf = buf_create(skb->nh.iph);
+			if (NULL == (buf = buf_create(skb->nh.iph))) {
+				skb_free(skb);
+				return NULL;
+			}
 		}
 
 		ip_frag_dgram_buf(buf, skb);
