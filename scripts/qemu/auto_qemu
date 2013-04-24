@@ -3,7 +3,7 @@
 # Change working direcory to scripts/qemu
 cd "$(dirname "$0")"
 
-QEMU=qemu-system-i386
+QEMU=qemu
 IMAGE=../../build/base/bin/embox
 EMBOX_MODS_CONF=../../conf/mods.config
 
@@ -52,5 +52,5 @@ fi
 sudo $QEMU $QEMU_KVM_ENABLE -kernel $IMAGE \
 	-net nic,model=$QEMU_NET_DRIVER,macaddr=AA:BB:CC:DD:EE:02 \
 	-net tap,name=tap0,script=start_script,downscript=stop_script \
-	-no-kvm -s -S $@
+	-nographic -cdrom /image.iso $@
 

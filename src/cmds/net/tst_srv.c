@@ -88,9 +88,7 @@ static void * client_process(void * args) {
 			}
 		printf(".");
 			ktime_get_timeval(&tv);
-		printf(".");
 			usleep(1500000l);
-		printf(".");
 			ktime_get_timeval(&tv1);
 		printf(".");
 			tv3.tv_sec=tv1.tv_sec-tv.tv_sec;
@@ -161,6 +159,7 @@ static int tst_srv(int argc, char **argv){
 			printf("Error.. thread_create() failed. errno=%d\n", errno);
 			continue;
 		}
+		thread_set_priority(tr, 160);
 		thread_detach(tr);
 	}
 	close(host);
