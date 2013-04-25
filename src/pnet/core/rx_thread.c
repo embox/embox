@@ -66,12 +66,6 @@ static int rx_thread_init(void) {
 		thread_create(&pnet_rx_threads[i], 0, pnet_rx_thread_hnd, &pack_storage[i]);
 
 		thread_set_priority(pnet_rx_threads[i], THREAD_PRIORITY_DEFAULT + 1 + i);
-
-#ifdef PNET_THREAD_DEBUG
-		for (int i = 0; i < PNET_PRIORITY_COUNT; i++) {
-			running[i] = sleeping[i] = 0;
-		}
-#endif
 	}
 
 	return 0;
@@ -81,20 +75,22 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 	uint32_t prio;
 
 	prio = pack->priority;
+
+	if (pack->stat.last_sync != (clock_t)-1) {
+		/* We are not in softirq handler */
+		if ((thread_self() != pnet_rx_threads[prio])) {
+			/* If we will switched to thread with higher priority, than calculate running time in current thread
+			 * and initialize start timestamp in new thread */
+			pack->stat.running_time += thread_self()->running_time - pack->stat.last_sync;
+			pack->stat.last_sync = pnet_rx_threads[prio]->running_time;
+		}
+	} else {
+		/* We are in softirq handler */
+		pack->stat.last_sync = pnet_rx_threads[prio]->running_time;
+	}
+
 	ring_buff_enqueue(&pack_storage[prio].buff, &pack, 1);
 	event_notify(&pack_storage[prio].event);
-
-#ifdef PNET_THREAD_DEBUG
-	if (thread_state_running(pnet_rx_threads[prio]->state)) {
-		running[prio]++;
-	}
-
-	if (thread_state_sleeping(pnet_rx_threads[prio]->state)) {
-		sleeping[prio]++;
-	}
-	printf("%d : run %d times, suspended %d times\n", pnet_rx_threads[prio]->id,
-				running[prio], sleeping[prio]);
-#endif
 
 	return 0;
 }

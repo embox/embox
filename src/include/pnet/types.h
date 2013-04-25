@@ -56,13 +56,21 @@ struct pnet_dev {
 
 };
 
+struct pnet_pack_stat {
+	/* TODO struct timespec */
+	clock_t start_time;
+	clock_t running_time;
+	int interrupt_count;
+	clock_t last_sync;
+};
+
 struct pnet_pack {
 	uint32_t type;
 	uint32_t priority;
 	struct net_node *node;
 	enum PNET_PACK_DIRECTION dir;
 	void *data;
-	struct timespec elapsed_time;
+	struct pnet_pack_stat stat;
 	struct list_head link;
 };
 
