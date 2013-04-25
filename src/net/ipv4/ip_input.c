@@ -66,7 +66,11 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 		return NET_RX_DROP;
 	}
 
-	if (!nf_valid_skb(NF_CHAIN_INPUT, skb)) {
+	/* Setup transport layer header */
+	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
+
+	/* Validating */
+	if (0 != nf_test_skb(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, skb)) {
 		stats->rx_dropped++;
 		skb_free(skb);
 		return NET_RX_DROP;
@@ -86,7 +90,7 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 		 * any of own addresses, retransmit packet according to the routing table.
 		 */
 		if (!ip_is_local(iph->daddr, true, false)) {
-			if (!nf_valid_skb(NF_CHAIN_FORWARD, skb)) {
+			if (0 != nf_test_skb(NF_CHAIN_FORWARD, NF_TARGET_ACCEPT, skb)) {
 				stats->rx_dropped++;
 				skb_free(skb);
 				return NET_RX_DROP;
@@ -136,7 +140,6 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 		skb = complete_skb;
 		iph = ip_hdr(complete_skb);
 	}
-	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */

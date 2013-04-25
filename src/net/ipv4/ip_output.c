@@ -68,7 +68,7 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 int ip_queue_send(struct sk_buff *skb) {
-	if (!nf_valid_skb(NF_CHAIN_OUTPUT, skb)) {
+	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
 		printk("ip_queue_send: skb %p dropped by netfilter\n", skb);
 		skb_free(skb);
 		return 0;
