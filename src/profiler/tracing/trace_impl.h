@@ -21,6 +21,7 @@
 #include <kernel/time/itimer.h>
 
 struct __trace_point {
+	const char *name;
 	struct location_func location;
 	int count;
 	bool active;
@@ -38,12 +39,13 @@ struct __trace_block {
 extern struct __trace_point *const __trace_points_array[];
 extern struct __trace_block *const __trace_blocks_array[];
 
-#define __TRACE_POINT_DEF(_name, tp_name) \
-		struct __trace_point _name = {   \
+#define __TRACE_POINT_DEF(_name, tp_name)   \
+		struct __trace_point _name = {      \
+			.name = tp_name,                \
 			.location = LOCATION_FUNC_INIT, \
-			.count = 0,                                       \
-			.active = true, \
-		};                                                    \
+			.count = 0,                     \
+			.active = true,                 \
+		};                                  \
 		ARRAY_SPREAD_ADD(__trace_points_array, &_name)
 
 #define __trace_point_set(tp_pointer) \
@@ -64,10 +66,11 @@ extern struct __trace_block *const __trace_blocks_array[];
 
 #define __tp_ref(__name) \
 	({                                                        \
-		static struct __trace_point __tp = {                           \
+		static struct __trace_point __tp = {                  \
+			.name = __name,                                   \
 			.location = LOCATION_FUNC_INIT,                   \
 			.count = 0,                                       \
-			.active = true, \
+			.active = true,                                   \
 		};                                                    \
 		ARRAY_SPREAD_ADD(__trace_points_array, &__tp);        \
 		&__tp;                                                \
