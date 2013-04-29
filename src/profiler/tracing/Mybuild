@@ -4,7 +4,7 @@ package embox.profiler
 abstract module trace { }
 
 module no_tracing extends trace {
-	source "no_trace_impl.h"
+	source "no_trace.c", "no_trace_impl.h"
 }
 
 module tracing extends trace {
