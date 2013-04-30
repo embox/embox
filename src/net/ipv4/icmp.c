@@ -28,7 +28,7 @@
 #include <kernel/time/ktime.h>
 
 
-EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
+EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
 
 /* Is the packet described by skb is multicast/broadcast one at levels 2 or 3
  * Packets with type PACKET_LOOPBACK we treat as broadcast and drop them.
@@ -404,11 +404,6 @@ void icmp_send(sk_buff_t *pack, __be16 type, __be16 code, __be32 info) {
 	__icmp_send(pack, type, code, info);
 }
 
-
-static int icmp_init(void) {
-	/* Nothing to init. Everything is ready */
-	return ENOERR;
-}
 
 static int ping_rcv(struct sk_buff *skb) {
 	/* Kernel doesn't need this answer.
