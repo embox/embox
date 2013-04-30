@@ -17,6 +17,8 @@
 #define PCI_VENDOR_ID_RDC                 0x17f3
 #define PCI_VENDOR_ID_INTEL               0x8086
 #define PCI_VENDOR_ID_BOCHS               0x1234
+#define PCI_VENDOR_ID_PLX                 0x10B5
+#define PCI_VENDOR_ID_XILINX              0x10EE
 
 /* Cirrus device id's */
 #define PCI_DEV_ID_CIRRUS_5446            0x00b8
@@ -65,5 +67,11 @@
 
 /* Bochs device id's */
 #define PCI_DEV_ID_BOCHS_VGA              0x1111
+
+
+#define PCI_DEV_ID_PLX_PEX8619            0x8619
+
+#define PCI_DEV_ID_XILINX_SPARTAN6        0xA125
+
 
 #endif /* PCI_ID_H_ */

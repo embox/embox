@@ -6,10 +6,14 @@
  */
 
 #include <errno.h>
+#include <string.h>
+#include <util/array.h>
+
+
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
 #include <framework/mod/api.h>
 #include <kernel/printk.h>
-#include <string.h>
 
 ARRAY_SPREAD_DEF(const struct pci_driver *, __pci_driver_registry);
 

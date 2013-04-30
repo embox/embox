@@ -12,6 +12,12 @@
 
 #include <stdint.h>
 
+#define PCIUTILS_SUCCESS 0
+#define PCIUTILS_BUSBUSY 1
+#define PCIUTILS_NODATA  2
+#define PCIUTILS_INVALID 3
+#define PCIUTILS_TIMEOUT 4
+
 extern int pci_is_supported(void);
 
 extern uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
