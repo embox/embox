@@ -992,6 +992,36 @@ static int cdfsfs_umount(void *dir) {
 	return 0;
 }
 
+
+static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *root) {
+	char path[PATH_MAX];
+	char tail[PATH_MAX];
+	iso_pathtable_record_t *pathrec;
+	struct node *dir;
+
+	dir = root;
+	pathrec = cdfs->path_table[numrec];
+
+	memcpy(tail, pathrec->name, pathrec->length);
+	tail[pathrec->length] = 0;
+
+	/* go up to the root folder */
+	while (1 != pathrec->parent) {
+		pathrec = cdfs->path_table[pathrec->parent];
+		memcpy(path, pathrec->name, pathrec->length);
+		path[pathrec->length] = 0;
+		strcat(path, "/");
+		strcat(path, tail);
+		strncpy(tail, path, PATH_MAX);
+	}
+
+	if(1 != numrec) {
+		dir = vfs_lookup(root, tail);
+	}
+
+	return dir;
+}
+
 static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 	block_dev_cache_t *cache;
 	char *p;
@@ -1109,12 +1139,12 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	cdfs_t *cdfs;
 	int namelen;
 	char name[PATH_MAX];
-	struct node *root_node, *node;
+	struct node *root_node, *node, *dir_node;
 	struct nas *nas;
 	struct cdfs_file_info *fi, *parent_fi;
 	struct cdfs_fs_info *fsi;
 
-	root_node = node = root_nas->node;
+	dir_node = root_node = node = root_nas->node;
 
 	fi = parent_fi = root_nas->fi->privdata;
 	fsi = root_nas->fs->fsi;
@@ -1133,7 +1163,9 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		name[20 >= name[0] ? 0 : namelen] = 0; /* root dir name empty */
 
 		if (*name) {
-			node = vfs_create_child(root_node, name, S_IFDIR);
+			dir_node = cdfs_get_dir_node(cdfs, pathrec->parent, root_node);
+
+			node = vfs_create_child(dir_node, name, S_IFDIR);
 			if (!node) {
 				return -ENOMEM;
 			}
