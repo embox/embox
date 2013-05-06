@@ -27,6 +27,7 @@
 #include <kernel/time/timer.h>
 #include <kernel/task.h>
 #include <kernel/task/signal.h>
+#include <kernel/work.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
 
@@ -61,6 +62,7 @@ void sched_post_switch(void);
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
 static struct runq rq;
+static struct work_queue startq;
 
 static inline int in_harder_critical(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
@@ -159,7 +161,8 @@ void do_wake_thread(struct thread *thread, int sleep_result) {
 
 	sched_lock();
 	{
-		thread->sleep_res = sleep_result;
+		thread->sleep_data->result = sleep_result;
+		wake_work();
 		post_switch_if(sleepq_wake_thread(&rq, thread->sleepq, thread));
 	}
 	sched_unlock();
@@ -183,15 +186,38 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	thread_wake_force(thread, -ETIMEDOUT);
 }
 
+static int wake_work(struct work *work) {
+	struct sleep_data *sleep_data = (struct sleep_data *) work;
+	struct thread *thread = sleep_data->thread;
+
+	assert(in_sched_locked());
+
+	post_switch_if(sleepq_wake_thread(&rq, thread->sleepq, thread)); /* TODO: SMP */
+
+	return 1;
+}
+
+void sched_thread_wake(struct thread *thread) {
+	ipl_t ipl = ipl_save();
+	{
+		if (!thread->sleep_data->waked) {
+			work_post(thread->sleep_data->work, &startq);
+			thread->sleep_data->waked = 1;
+		}
+	}
+	ipl_restore(ipl);
+
+	post_switch_if(1);
+}
+
 int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	int ret;
 	struct sys_timer tmr;
 	struct thread *current = sched_current();
+	struct sleep_data sleep_data;
 
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
-
-	current->sleep_res = ENOERR; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
@@ -214,7 +240,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 		timer_close(&tmr);
 	}
 
-	return current->sleep_res;
+	return data.result;
 }
 
 int sched_sleep(struct sleepq *sq, unsigned long timeout) {
@@ -315,6 +341,7 @@ static void sched_switch(void) {
 
 	sched_lock();
 	{
+		work_queue_run(&startq);
 		startq_flush();
 
 		if (!switch_posted) {
@@ -384,6 +411,40 @@ int sched_cpu_init(struct thread *current) {
 
 	return 0;
 }
+
+void sched_prepare_wait(struct wait_data *wait_data) {
+	assert(wait_data->status == WAIT_DATA_STATUS_NONE);
+	IPL_SAFE_DO(wait_data->status = WAIT_DATA_STATUS_WAITING);
+}
+
+void sched_cleanup_wait(struct wait_data *wait_data) {
+	IPL_SAFE_DO({
+		wait_data->status == WAIT_DATA_STATUS_NONE;
+		work_disable(wait_data->work);
+	});
+}
+
+
+
+static inline void wait_data_init(struct wait_data *wait_data) {
+	work_init(&wait_data->work, &wake_work);
+	wait_data->waked = 0;
+	wait_data->result = ENOERR;
+}
+
+static inline void wait_queue_enqueue(struct wait_queue *wait_queue,
+		struct wait_data *wait_data) {
+	assert(in_sched_locked());
+	/* TODO: Priority */
+	dlist_add_prev(&wait_data->link, &wait_queue->list);
+}
+
+static inline void wait_queue_dequeue(struct wait_queue *wait_queue) {
+	assert(in_sched_locked());
+
+	dlist_add_prev(&wait_data->link, &wait_queue->list);
+}
+
 
 static int unit_init(void) {
 	return 0;
