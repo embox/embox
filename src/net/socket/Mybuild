@@ -4,7 +4,6 @@ module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
 
-	depends tcp
 	depends route
 	depends embox.compat.posix.net.inet_addr
 	depends embox.lib.LibC
