@@ -34,6 +34,8 @@
 
 #include <time.h>
 
+#include <kernel/cpu.h>
+
 #include <embox/unit.h>
 
 EMBOX_UNIT(unit_init, unit_fini);
@@ -282,7 +284,8 @@ void sched_set_priority(struct thread *thread,
 
 	sched_lock();
 	{
-		if (!thread_state_exited(thread->state)) {
+		if (!thread_state_exited(thread->state)
+				&& (thread != cpu_get_idle_thread())) {
 			sched_change_scheduling_priority(thread, new_priority);
 		}
 		thread->initial_priority = new_priority;

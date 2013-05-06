@@ -23,9 +23,9 @@
 
 extern unsigned int cpu_get_id(void);
 
-#endif /* __ASSEMBLER__ */
+#endif /* !__ASSEMBLER__ */
 
-#else /* SMP */
+#else /* !SMP */
 
 #define cpu_get_id() (0)
 
@@ -38,9 +38,10 @@ extern unsigned int cpu_get_id(void);
 struct thread;
 
 extern void cpu_set_idle_thread(struct thread *idle);
+extern struct thread * cpu_get_idle_thread(void);
 extern clock_t cpu_get_total_time(unsigned int cpu_id);
 extern clock_t cpu_get_idle_time(unsigned int cpu_id);
 
-#endif
+#endif /* __ASSEMBLER__ */
 
 #endif /* KERNEL_CPU_H_ */

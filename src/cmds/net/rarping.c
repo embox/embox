@@ -29,7 +29,7 @@ EMBOX_CMD(exec);
 #define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
 static void print_usage(void) {
-	printf("Usage: rarping [-I if] [-c cnt] host\n");
+	printf("Usage: rarping [-I if] [-c cnt] hwaddr\n");
 }
 
 static int exec(int argc, char **argv) {

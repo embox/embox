@@ -58,7 +58,6 @@ static void pnet_rx_action(unsigned int nr, void *data) {
 
 	list_for_each_entry_safe(pack, safe, &pnet_queue, link) {
 		list_del(&pack->link);
-		ktime_get_timespec(&pack->elapsed_time);
 		pnet_entry(pack);
 	}
 
@@ -66,7 +65,6 @@ static void pnet_rx_action(unsigned int nr, void *data) {
 		list_del(curr);
 		skb_pack = pnet_pack_create((void*) curr, 0, PNET_PACK_TYPE_SKB);
 		skb_pack->node = entry;
-		ktime_get_timespec(&skb_pack->elapsed_time);
 		pnet_entry(skb_pack);
 	}
 }

@@ -366,6 +366,10 @@ void cpu_set_idle_thread(struct thread *thread) {
 	percpu_var(cpu_started) = clock();
 }
 
+struct thread * cpu_get_idle_thread(void) {
+	return percpu_var(idle);
+}
+
 clock_t cpu_get_total_time(unsigned int cpu_id) {
 	return clock() - percpu_cpu_var(cpu_id, cpu_started);
 }
@@ -457,8 +461,7 @@ static int unit_init(void) {
 	thread_context_init(idle);
 
 	idle->priority = THREAD_PRIORITY_MIN;
-	idle->sched_priority = get_sched_priority(idle->task->priority,
-			idle->priority);
+	idle->sched_priority = SCHED_PRIORITY_MIN;
 
 	cpu_set_idle_thread(idle);
 

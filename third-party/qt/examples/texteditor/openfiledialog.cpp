@@ -1,6 +1,8 @@
 #include "openfiledialog.h"
 #include "mainwindow.h"
 
+extern QMdiArea *emarea;
+
 OpenFileDialog::OpenFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow)
 {
     this->textEdit = textEdit;
@@ -22,6 +24,8 @@ OpenFileDialog::OpenFileDialog(QTextEdit *textEdit, QString *fileName, QMainWind
 
     setWindowTitle(tr("Открыть файл"));
     resize(700, 300);
+
+    subwindow = emarea->addSubWindow(this, windowType());
 }
 
 void OpenFileDialog::createFilesTable()
@@ -92,5 +96,6 @@ void OpenFileDialog::openFileOfItem(int row, int /* column */)
     else{
         //TODO: error message
     }
-    this->close();
+	emarea->setActiveSubWindow(subwindow);
+	emarea->closeActiveSubWindow();
 }

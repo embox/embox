@@ -25,6 +25,7 @@
 
 
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>

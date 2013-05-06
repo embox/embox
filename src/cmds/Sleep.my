@@ -1,0 +1,23 @@
+
+package embox.cmd
+
+@Cmd(name = "sleep",
+	help = "sleep for specified usec num",
+	man = '''
+		NAME
+			sleep - freezes for specified number of useconds.
+		SYNOPSIS
+			sleep USEC
+		DESCRIPTION
+
+		AUTHOR
+			Anton Kozlov
+	''')
+module sleep {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "sleep.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.sleep
+
+}

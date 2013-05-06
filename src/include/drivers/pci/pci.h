@@ -12,9 +12,9 @@
 #include <stdint.h>
 #include <drivers/pci/pci_id.h>
 #include <util/slist.h>
-#include <util/array.h>
+//#include <util/array.h>
 #include <drivers/pci/pci_utils.h>
-#include <drivers/pci/pci_driver.h>
+//#include <drivers/pci/pci_driver.h>
 
 
 /**
@@ -25,23 +25,6 @@
 #define PCI_DEV_QUANTITY        32
 #define MIN_DEVFN               0x00
 #define MAX_DEVFN               0xff
-
-/**
- * PCI access via x86 I/O address space
- */
-enum {
-	/**
-	 * Address of the device's register
-	 * +------+--------+-----+------+----+---------+-+-+
-	 * |31    |30    24|23 16|15  11|10 8|7       2|1|0|
-	 * +------+--------+-----+------+----+---------+-+-+
-	 * |access|reserved|bus  |device|func|reg index|0|0|
-	 * +------+--------+-----+------+----+---------+-+-+
-	 */
-	PCI_CONFIG_ADDRESS    = 0xCF8,
-	/** Data that is supposed to be written to the device */
-	PCI_CONFIG_DATA       = 0xCFC
-};
 
 /**
  * The slot/func address of each device is encoded in a single byte as follows:
@@ -71,9 +54,6 @@ enum {
 #define PCI_CACHE_LINE_SIZE     0x0C   /* 8 bits  */
 #define PCI_LATENCY_TIMER       0x0D   /* 8 bits  */
 #define PCI_HEADER_TYPE         0x0e   /* 8 bits  */
-#define   PCI_HEADER_TYPE_NORMAL  0x0
-#define   PCI_HEADER_TYPE_BRIDGE  0x1
-#define   PCI_HEADER_TYPE_CARDBUS 0x2
 #define PCI_BIST                0x0f   /* 8 bits  */
 
 #define PCI_VENDOR_WRONG        0xFFFFFFFF /* device is not found in the slot */
@@ -115,6 +95,10 @@ enum {
 #define PCI_INTERRUPT_PIN       0x3D   /* 8 bits  */
 #define PCI_MIN_GNT             0x3E   /* 8 bits  */
 #define PCI_MAX_LAT             0x3F   /* 8 bits  */
+
+#define PCI_PRIMARY_BUS         0x18
+#define PCI_SECONDARY_BUS       0x19
+#define PCI_SUBORDINATE_BUS     0x1a
 
 /** Device classes and subclasses */
 
@@ -179,15 +163,19 @@ struct pci_slot_dev {
 	uint8_t slot;
 	uint8_t func;
 	uint8_t rev;
+	uint8_t is_bridge;
+	uint8_t is_multi;
 	uint16_t vendor;
 	uint16_t device;
 	uint8_t baseclass;
 	uint8_t subclass;
 	uint8_t irq;
 	uint32_t bar[6];
+	uint8_t primary;
+	uint8_t secondary;
+	uint8_t subordinate;
+	uint32_t membaselimit;
 };
-
-//extern struct pci_slot_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id);
 
 #define pci_foreach_dev(pci_dev) \
 	slist_foreach(pci_dev, __extension__ ({   \

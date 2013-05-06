@@ -4,14 +4,18 @@ SOURCES += \
     openfiledialog.cpp \
     createfiledialog.cpp \
     savefiledialog.cpp \
-    helpwindow.cpp
+    helpwindow.cpp \
+    login.cpp \
+    desktopimage.cpp
 
 HEADERS += \
     mainwindow.h \
     openfiledialog.h \
     createfiledialog.h \
     savefiledialog.h \
-    helpwindow.h
+    helpwindow.h \
+    login.h \
+    desktopimage.h
 
 RESOURCES = texteditor.qrc
 

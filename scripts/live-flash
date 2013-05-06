@@ -1,3 +1,4 @@
+#!/bin/bash
 
 SYSLINUX_ROOT=$(dirname $0)/syslinux
 EXTLINUX=${SYSLINUX_ROOT}/sbin/extlinux

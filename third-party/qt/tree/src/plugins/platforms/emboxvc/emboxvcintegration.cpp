@@ -8,6 +8,7 @@
 QEmboxVC *globalEmboxVC;
 
 QEmboxVCIntegration::QEmboxVCIntegration()
+    : fontDb(new QGenericUnixFontDatabase())
 {
     QEmboxVCScreen *mPrimaryScreen = new QEmboxVCScreen();
 
@@ -62,4 +63,9 @@ QWindowSurface *QEmboxVCIntegration::createWindowSurface(QWidget *widget, WId wi
 QPixmap QEmboxVCIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 {
 	return QPixmap();
+}
+
+QPlatformFontDatabase *QEmboxVCIntegration::fontDatabase() const
+{
+    return fontDb;
 }

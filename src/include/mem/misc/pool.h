@@ -66,4 +66,6 @@ extern void *pool_alloc(struct pool *pool);
  */
 extern void pool_free(struct pool *pool, void *object);
 
+extern int pool_belong(struct pool* pool, void* obj);
+
 #endif /* MEM_MISC_UTIL_POOL_H_ */

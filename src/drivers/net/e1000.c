@@ -5,29 +5,34 @@
  * @date 01.10.2012
  * @author Anton Kozlov
  */
-
-#include <asm/io.h>
-#include <embox/unit.h>
 #include <errno.h>
-#include <drivers/pci/pci.h>
-#include <kernel/irq.h>
-#include <net/etherdevice.h>
-#include <net/if_ether.h>
-#include <net/netdevice.h>
-#include <net/inetdevice.h>
-#include <net/skbuff.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include <arpa/inet.h>
+
+#include <asm/io.h>
+
+#include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
+#include <kernel/irq.h>
+#include <net/etherdevice.h>
+#include <net/if_ether.h>
+#include <net/netdevice.h>
+#include <net/inetdevice.h>
+#include <net/skbuff.h>
+
 #include <hal/reg.h>
+
 #include <drivers/ethernet/e1000.h>
 
 #include <mem/misc/pool.h>
 
 #include <prom/prom_printf.h>
+
+#include <embox/unit.h>
 
 PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM);
 PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);

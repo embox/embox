@@ -1,10 +1,62 @@
 package embox.cmd.net
 
 @Cmd(name = "iptables",
-	help = "Administration tools for filtering IPv4 packets",
+	help = "Administration tools for manipulation over IP traffic",
 	man = '''
 		NAME
 			iptables - tools for packet filtering
+		SYNOPSIS
+			iptables -A chain rule-specification
+			iptables -R chain rulenum rule-specification
+			iptables -D chain rulenum
+			iptables -F [chain]
+			iptables -L [chain [rulenum]]
+			iptables -P chain target
+		DESCRIPTION
+			Iptables is utility for IPv4 packet filtering and NAT
+		OPTIONS
+			chain	one of the standard chains: INPUT for the input
+					traffic, FORWARD for the forwarding packets and
+					OUTPUT for outgoing packets.
+			rulenum
+					number of the rule to apply the action
+			target	one of the targets: ACCEPT means to let the
+					packet and DROP means to drop the packet
+			COMMANDS
+			-A, --append chain rule-specification
+					append rule to the end of the selected chain
+			-R, --replace chain rulenum rule-specification
+					replace a specified rule in the selected chain
+			-D, --delete chain rulenum
+					delete rule from the selected chain. The rule
+					specified as a number in the chain (starting
+					at 1 from the first rule)
+			-F, --flush [chain]
+					flush the selected chain (all the chains if none
+					is given)
+			-L, --list [chain [rulenum]]
+					list all rules in the selected chain or all
+					chains if no chain is selected
+			-P, --policy chain target
+					set the policy for the chain to the given target
+			-h, --help
+					help message
+			PARAMETERS
+			[!] -p, --protocol protocol
+					select protocol for rule: icmp, tcp or udp.
+			[!] -s, --source address
+					set source address
+			[!] -d, --destination address
+					set destination address
+			-j, --jump target
+					specify the target of the rule
+			[!] --sport, --source-port port
+					source port specification
+			[!] --dport, --destination-port port
+					destination port specification
+		EXAMPLE
+			iptables -A INPUT -p tcp -j DROP --dport 80
+			Blocking incoming traffic for HTTP server
 		AUTHORS
 			Ilia Vaprol
 	''')

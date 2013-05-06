@@ -5,6 +5,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 #include <../fb_base/fb_base.h>
+#include "qgenericunixfontdatabase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -40,8 +41,11 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
+    QPlatformFontDatabase *fontDatabase() const;
+
 private:
     QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *fontDb;
 };
 
 QT_END_NAMESPACE

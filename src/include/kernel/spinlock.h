@@ -10,8 +10,8 @@
 #define KERNEL_SPINLOCK_H_
 
 #include <kernel/cpu.h>
-
-typedef unsigned long spinlock_t;
+#include <sys/types.h>
+//typedef unsigned long spinlock_t;
 
 #define SPIN_UNLOCKED 0
 #define SPIN_LOCKED   1

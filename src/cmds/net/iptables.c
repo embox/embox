@@ -17,106 +17,313 @@
 
 EMBOX_CMD(exec);
 
-static int show_rules(void) {
-	struct nf_rule *r;
+static int clear_rules(int chain) {
+	int ret;
 
-	printf("Chain INPUT\n");
-	printf("target    prot source          destination\n");
-	list_foreach(r, &nf_input_rules, lnk) {
-		printf("%-6s    all  %-15s anywhere\n",
-				r->policy == NF_POLICY_DROP ? "DROP" : "ACCEPT",
-				inet_ntoa(r->addr.in));
+	if (chain != NF_CHAIN_UNKNOWN) {
+		return nf_clear(chain);
 	}
-	printf("\n");
 
-	printf("Chain FORWARD\n");
-	printf("target    prot source          destination\n");
-	list_foreach(r, &nf_forward_rules, lnk) {
-		printf("%-6s    all  %-15s anywhere\n",
-				r->policy == NF_POLICY_DROP ? "DROP" : "ACCEPT",
-				inet_ntoa(r->addr.in));
+	ret = nf_clear(NF_CHAIN_INPUT);
+	if (ret != 0) {
+		return ret;
 	}
-	printf("\n");
 
-	printf("Chain OUTPUT\n");
-	printf("target    prot source          destination\n");
-	list_foreach(r, &nf_output_rules, lnk) {
-		printf("%-6s    all  %-15s anywhere\n",
-				r->policy == NF_POLICY_DROP ? "DROP" : "ACCEPT",
-				inet_ntoa(r->addr.in));
+	ret = nf_clear(NF_CHAIN_FORWARD);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = nf_clear(NF_CHAIN_OUTPUT);
+	if (ret != 0) {
+		return ret;
 	}
 
 	return 0;
 }
 
-static void print_usage(void) {
-	printf("Usage:\n");
-	printf("  iptables {-A|-R|-D} chain options\n");
-	printf("  iptables {-F|-L}\n");
-	printf("  iptables -h\n");
+static void print_header(int chain) {
+	printf("Chain %s (policy %s)\n", nf_chain_to_str(chain),
+			nf_target_to_str(nf_get_chain_target(chain)));
+	printf("target    prot opt  source           destination\n");
+}
+
+static void print_rule(const struct nf_rule *r) {
+	const char *target_str;
+	target_str = nf_target_to_str(r->target);
+	printf("%-8s ", target_str != NULL ? target_str : "");
+	printf("%c%-4s ", r->not_proto ? '!' : ' ',
+			nf_proto_to_str(r->proto));
+	printf("%-3s ", "--");
+	printf("%c%-15s ", r->not_saddr && (r->saddr.s_addr
+				!= INADDR_ANY) ? '!' : ' ',
+			r->saddr.s_addr != INADDR_ANY ? inet_ntoa(r->saddr)
+				: "anywhere");
+	printf("%c%-15s", r->not_daddr && (r->daddr.s_addr
+				!= INADDR_ANY) ? '!' : ' ',
+			r->daddr.s_addr != INADDR_ANY ? inet_ntoa(r->daddr)
+				: "anywhere");
+	if ((r->sport != 0) || (r->dport != 0)) {
+		printf(" %s", nf_proto_to_str(r->proto));
+		if (r->sport != 0) {
+			printf(" spt:");
+			if (r->not_sport) {
+				printf("!");
+			}
+			printf("%hu", (unsigned short int)ntohs(r->sport));
+		}
+		if (r->dport != 0) {
+			printf(" dpt:");
+			if (r->not_dport) {
+				printf("!");
+			}
+			printf("%hu", (unsigned short int)ntohs(r->dport));
+		}
+	}
+	printf("\n");
+}
+
+static void print_rules(int chain) {
+	struct list *rules;
+	struct nf_rule *r;
+
+	rules = nf_get_chain(chain);
+	if (rules == NULL) {
+		return;
+	}
+
+	print_header(chain);
+	list_foreach(r, rules, lnk) {
+		print_rule(r);
+	}
+}
+
+static int show_rules(int chain, int rule_num) {
+	struct nf_rule *r;
+
+	if (chain != NF_CHAIN_UNKNOWN) {
+		if (rule_num == -1) {
+			print_rules(chain);
+		}
+		else {
+			r = nf_get_rule_by_num(chain, rule_num);
+			if (r == NULL) {
+				return -ENOENT;
+			}
+			print_rule(r);
+		}
+	}
+	else {
+		print_rules(NF_CHAIN_INPUT);
+		printf("\n");
+		print_rules(NF_CHAIN_FORWARD);
+		printf("\n");
+		print_rules(NF_CHAIN_OUTPUT);
+	}
+
+	return 0;
 }
 
 static int exec(int argc, char **argv) {
-	int opt, oper, chain;
+	int ind, oper, chain, rule_num, not_flag;
+	unsigned int port;
 	struct nf_rule rule;
 
-	oper = -1;
-	chain = -1;
-	rule.policy = -1;
-	rule.not_addr = 1;
-	rule.addr.in.s_addr = 0;
+	oper = rule_num = -1;
+	chain = NF_CHAIN_UNKNOWN;
+	not_flag = 0;
+	nf_rule_init(&rule);
 
-	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "A:D:R:FLs:j:h"))) {
-		switch (opt) {
-		default:
-		case '?':
-			printf("iptables: invalid option: `-%c'\n", optopt);
-			return -EINVAL;
-		case 'F':
-			return nf_clear();
-		case 'L':
-			return show_rules();
-		case 'A':
-		case 'R':
-		case 'D':
-			oper = opt;
-			if (strcmp("INPUT", optarg) == 0) {
-				chain = NF_CHAIN_INPUT;
-			}
-			else if (strcmp("FORWARD", optarg) == 0) {
-				chain = NF_CHAIN_FORWARD;
-			}
-			else if (strcmp("OUTPUT", optarg) == 0) {
-				chain = NF_CHAIN_OUTPUT;
-			}
-			else {
-				printf("iptables: unknown chain: `%s'\n", optarg);
-				return -EINVAL;
-			}
-			break;
-		case 's':
-			if (inet_aton(optarg, &rule.addr.in) == 0) {
-				printf("iptables: invalid address: `%s'\n", optarg);
-				return -EINVAL;
-			}
-			rule.not_addr = 0;
-			break;
-		case 'j':
-			if (strcmp("DROP", optarg) == 0) {
-				rule.policy = NF_POLICY_DROP;
-			}
-			else if (strcmp("ACCEPT", optarg) == 0) {
-				rule.policy = NF_POLICY_ACCEPT;
-			}
-			else {
-				printf("iptables: unknown policy: `%s'\n", optarg);
-				return -EINVAL;
-			}
-			break;
-		case 'h':
-			print_usage();
+	for (ind = 1; ind != argc; ++ind) {
+		if (!strcmp(argv[ind], "-h")
+				|| !strcmp(argv[ind], "--help")) {
+			printf("Usage:\n");
+			printf("  iptables -A chain rule-specification\n");
+			printf("  iptables -R chain rulenum rule-specification\n");
+			printf("  iptables -D chain rulenum\n");
+			printf("  iptables -F [chain]\n");
+			printf("  iptables -L [chain [rulenum]]\n");
+			printf("  iptables -P chain target\n");
 			return 0;
+		}
+		else if (oper == -1) {
+			if ((0 == strcmp(argv[ind], "-A"))
+					|| (0 == strcmp(argv[ind], "--append"))) {
+				oper = 'A';
+			}
+			else if ((0 == strcmp(argv[ind], "-R"))
+					|| (0 == strcmp(argv[ind], "--replace"))) {
+				oper = 'R';
+			}
+			else if ((0 == strcmp(argv[ind], "-D"))
+					|| (0 == strcmp(argv[ind], "--delete"))) {
+				oper = 'D';
+			}
+			else if ((0 == strcmp(argv[ind], "-F"))
+					|| (0 == strcmp(argv[ind], "--flush"))) {
+				oper = 'F';
+			}
+			else if ((0 == strcmp(argv[ind], "-L"))
+					|| (0 == strcmp(argv[ind], "--list"))) {
+				oper = 'L';
+			}
+			else if ((0 == strcmp(argv[ind], "-P"))
+					|| (0 == strcmp(argv[ind], "--policy"))) {
+				oper = 'P';
+			}
+			else {
+				printf("iptables: unknown command: '%s`\n", argv[ind]);
+				return -EINVAL;
+			}
+		}
+		else if (chain == NF_CHAIN_UNKNOWN) {
+			chain = nf_chain_get_by_name(argv[ind]);
+			if (chain == NF_CHAIN_UNKNOWN) {
+				if ((oper == 'A') || (oper == 'R')
+						|| (oper == 'D') || (oper == 'P')) {
+					printf("iptables: unknown chain: `%s'\n",
+							argv[ind]);
+					return -EINVAL;
+				}
+				else {
+					/* it's not chain */
+					goto after_chain;
+				}
+			}
+		}
+		else
+after_chain:
+		/* else */ if (((oper == 'R') || (oper == 'D')
+					|| (oper == 'L'))
+				&& (rule_num == -1)) {
+			if ((1 != sscanf(argv[ind], "%d", &rule_num))
+					|| (rule_num <= 0)) {
+				if ((oper == 'R') || (oper == 'D')) {
+					printf("iptables: invalid rule_num: `%s'\n",
+							argv[ind]);
+					return -EINVAL;
+				}
+				else {
+					/* it's not rule_num */
+					goto after_rule_num;
+				}
+			}
+			rule_num -= 1;
+		}
+		else
+after_rule_num:
+		/* else */ if ((oper == 'P')
+				&& (rule.target == NF_TARGET_UNKNOWN)) {
+			rule.target = nf_target_get_by_name(argv[ind]);
+			if (rule.target == NF_TARGET_UNKNOWN) {
+				printf("iptables: unknown target: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+		}
+		else if ((oper != 'A') && (oper != 'R')) {
+			printf("iptables: invalid option: `%s'\n", argv[ind]);
+			return -EINVAL;
+		}
+		else if ((0 == strcmp(argv[ind], "-j"))
+				|| (0 == strcmp(argv[ind], "--jump"))) {
+			if (++ind == argc) {
+				printf("iptables: no target specified\n");
+				return -EINVAL;
+			}
+			rule.target = nf_target_get_by_name(argv[ind]);
+			if (rule.target == NF_TARGET_UNKNOWN) {
+				printf("iptables: unknown target: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+		}
+		else if (0 == strcmp(argv[ind], "!")) {
+			not_flag = 1;
+			continue;
+		}
+		else if ((0 == strcmp(argv[ind], "-p"))
+				|| (0 == strcmp(argv[ind], "--protocol"))) {
+			if (++ind == argc) {
+				printf("iptables: no protocol specified\n");
+				return -EINVAL;
+			}
+			rule.proto = nf_proto_get_by_name(argv[ind]);
+			if ((rule.proto == NF_PROTO_ALL) && not_flag) {
+				printf("iptables: rule would never match protocol\n");
+				return -EINVAL;
+			}
+			else if (rule.proto == NF_PROTO_UNKNOWN) {
+				printf("iptables: invalid protocol: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+			rule.not_proto = not_flag;
+			not_flag = 0;
+		}
+		else if ((0 == strcmp(argv[ind], "-s"))
+				|| (0 == strcmp(argv[ind], "--source"))) {
+			if (++ind == argc) {
+				printf("iptables: no source address specified\n");
+				return -EINVAL;
+			}
+			if (0 == inet_aton(argv[ind], &rule.saddr)) {
+				printf("iptables: invalid source address: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+			rule.not_saddr = not_flag;
+			not_flag = 0;
+		}
+		else if ((0 == strcmp(argv[ind], "-d"))
+				|| (0 == strcmp(argv[ind], "--destination"))) {
+			if (++ind == argc) {
+				printf("iptables: no destination address specified\n");
+				return -EINVAL;
+			}
+			if (0 == inet_aton(argv[ind], &rule.daddr)) {
+				printf("iptables: invalid destination address: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+			rule.not_daddr = not_flag;
+			not_flag = 0;
+		}
+		else if (((rule.proto == NF_PROTO_TCP)
+					|| (rule.proto == NF_PROTO_UDP))
+				&& ((0 == strcmp(argv[ind], "--sport"))
+					|| (0 == strcmp(argv[ind], "--source-port")))) {
+			if (++ind == argc) {
+				printf("iptables: no source port address specified\n");
+				return -EINVAL;
+			}
+			if (1 != sscanf(argv[ind], "%u", &port)) {
+				printf("iptables: invalid source port: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+			rule.sport = htons((unsigned short int)port);
+			rule.not_sport = not_flag;
+			not_flag = 0;
+		}
+		else if (((rule.proto == NF_PROTO_TCP)
+					|| (rule.proto == NF_PROTO_UDP))
+				&& !rule.not_proto
+				&& ((0 == strcmp(argv[ind], "--dport"))
+					|| (0 == strcmp(argv[ind], "--destination-port")))) {
+			if (++ind == argc) {
+				printf("iptables: no destination port address specified\n");
+				return -EINVAL;
+			}
+			if (1 != sscanf(argv[ind], "%u", &port)) {
+				printf("iptables: invalid destination port: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+			rule.dport = htons((unsigned short int)port);
+			rule.not_dport = not_flag;
+			not_flag = 0;
+		}
+		else {
+			printf("iptables: unknown option: `%s'\n", argv[ind]);
+			return -EINVAL;
+		}
+		if (not_flag) {
+			printf("iptables: unexpected ! flag\n");
+			return -EINVAL;
 		}
 	}
 
@@ -125,18 +332,27 @@ static int exec(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if (chain == -1) {
-		printf("iptables: chain not specified\n");
+	if (((oper == 'A') || (oper == 'R') || (oper == 'D')
+				|| (oper == 'P'))
+			&& (chain == NF_CHAIN_UNKNOWN)) {
+		printf("iptables: no chain specified\n");
 		return -EINVAL;
 	}
 
-	if (rule.policy == -1) {
-		printf("iptables: target not specified\n");
+	if (((oper == 'R') || (oper == 'D')) && (rule_num == -1)) {
+		printf("iptables: no rule_num specified\n");
 		return -EINVAL;
 	}
 
-	return oper == 'A' ? nf_add_rule(chain, &rule, 0)
-			: oper == 'R' ? nf_add_rule(chain, &rule, 1)
-			: oper == 'D' ? nf_del_rule(chain, &rule)
-			: -EINVAL;
+	if ((oper == 'P') && (rule.target == NF_TARGET_UNKNOWN)) {
+		printf("iptables: no target specified\n");
+		return -EINVAL;
+	}
+
+	return oper == 'A' ? nf_add_rule(chain, &rule)
+			: oper == 'R' ? nf_set_rule(chain, &rule, rule_num)
+			: oper == 'D' ? nf_del_rule(chain, rule_num)
+			: oper == 'F' ? clear_rules(chain)
+			: oper == 'P' ? nf_set_chain_target(chain, rule.target)
+			: /* oper == 'L' ? */ show_rules(chain, rule_num);
 }

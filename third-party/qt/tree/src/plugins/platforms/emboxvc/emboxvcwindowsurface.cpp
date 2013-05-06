@@ -6,6 +6,48 @@
 
 QT_BEGIN_NAMESPACE
 
+/* From VNC */
+static const struct {
+    int keysym;
+    int keycode;
+} emboxKeyMap[] = {
+    { 0x08, Qt::Key_Backspace },
+    { 0x09, Qt::Key_Tab       },
+    { 0x0d, Qt::Key_Return    },
+    { 0x1b, Qt::Key_Escape    },
+    { 0x63, Qt::Key_Insert    },
+    { 0xff, Qt::Key_Delete    },
+    { 0x50, Qt::Key_Home      },
+    { 0x57, Qt::Key_End       },
+    { 0x55, Qt::Key_PageUp    },
+    { 0x56, Qt::Key_PageDown  },
+    { 0x51, Qt::Key_Left      },
+    { 0x52, Qt::Key_Up        },
+    { 0x53, Qt::Key_Right     },
+    { 0x54, Qt::Key_Down      },
+    { 0xbe, Qt::Key_F1        },
+    { 0xbf, Qt::Key_F2        },
+    { 0xc0, Qt::Key_F3        },
+    { 0xc1, Qt::Key_F4        },
+    { 0xc2, Qt::Key_F5        },
+    { 0xc3, Qt::Key_F6        },
+    { 0xc4, Qt::Key_F7        },
+    { 0xc5, Qt::Key_F8        },
+    { 0xc6, Qt::Key_F9        },
+    { 0xc7, Qt::Key_F10       },
+    { 0xc8, Qt::Key_F11       },
+    { 0xc9, Qt::Key_F12       },
+    { 0xe1, Qt::Key_Shift     },
+    { 0xe2, Qt::Key_Shift     },
+    { 0xe3, Qt::Key_Control   },
+    { 0xe4, Qt::Key_Control   },
+    { 0xe7, Qt::Key_Meta      },
+    { 0xe8, Qt::Key_Meta      },
+    { 0xe9, Qt::Key_Alt       },
+    { 0xea, Qt::Key_Alt       },
+    { 0, 0 }
+};
+
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
 extern QEmboxVC *globalEmboxVC;
 
@@ -160,6 +202,8 @@ void QEmboxVCKeyboardHandler::readKeyboardData() {
 	while (read(keyboardFD, &vc, sizeof(struct vc *)) > 0) {
 		QEvent::Type type;
 		unsigned char ascii[4];
+		int key;
+		int i = 0;
 		Qt::KeyboardModifiers modifier = 0;
 
 		read(keyboardFD, &ev, sizeof(struct input_event));
@@ -176,12 +220,15 @@ void QEmboxVCKeyboardHandler::readKeyboardData() {
 
 		int len = keymap_to_ascii(&ev, ascii);
 
-//		QString key
-//		for (int i = 0; i < len; i++) {
-//			key += QChar(ascii[i]);
-//		}
+		while (emboxKeyMap[i].keysym != 0) {
+			if (emboxKeyMap[i].keysym == ascii[i]) {
+				key = emboxKeyMap[i].keycode;
+				break;
+			}
+			i++;
+		}
 
-		QWindowSystemInterface::handleKeyEvent(0, type, ascii[0], modifier, QString(QChar(ascii[0])));
+		QWindowSystemInterface::handleKeyEvent(0, type, key, modifier, QString(QChar(ascii[0])));
 	}
 }
 
