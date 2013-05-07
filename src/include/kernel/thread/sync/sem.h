@@ -9,10 +9,10 @@
 #ifndef KERNEL_THREAD_SYNC_SEM_H_
 #define KERNEL_THREAD_SYNC_SEM_H_
 
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/thread/wait_queue.h>
 
 struct sem {
-	struct sleepq sq;
+	struct wait_queue wq;
 	int value;
 	int max_value;
 };
