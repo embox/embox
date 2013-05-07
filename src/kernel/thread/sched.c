@@ -143,7 +143,7 @@ static int notify_work(struct work *work) {
 void sched_thread_notify(struct thread *thread, int result) {
 	irq_lock();
 	{
-		if (!thread->wait_data.status == WAIT_DATA_STATUS_WAITING) {
+		if (thread->wait_data.status == WAIT_DATA_STATUS_WAITING) {
 			work_post(&thread->wait_data.work, &startq);
 
 			thread->wait_data.status = WAIT_DATA_STATUS_NOTIFIED;
@@ -371,6 +371,8 @@ int sched_cpu_init(struct thread *current) {
 }
 
 static int unit_init(void) {
+	work_queue_init(&startq);
+
 	return 0;
 }
 
