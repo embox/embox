@@ -1,6 +1,6 @@
 package embox.kernel.thread
 
-module sync {
+module sync1 {
 	source "mutex.c", "sem.c", "barrier.c", "cond.c", "rwlock.c", "mqueue.c"
 
 	depends embox.kernel.thread.sched_api

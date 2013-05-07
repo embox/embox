@@ -100,7 +100,6 @@ int runq_finish(struct runq *rq, struct thread *t) {
 
 void sleepq_init(struct sleepq *sq) {
 	sleepq_queue_init(&sq->queue);
-	startq_init_sleepq(&sq->startq_data);
 }
 
 int sleepq_wake_thread(struct runq *rq, struct sleepq *sq, struct thread *t) {
@@ -109,7 +108,7 @@ int sleepq_wake_thread(struct runq *rq, struct sleepq *sq, struct thread *t) {
 	assert(t && rq && sq);
 	assert(thread_state_sleeping(t->state));
 
-	sleepq_queue_remove(&sq->queue, t);
+//	sleepq_queue_remove(&sq->queue, t);
 	t->state = thread_state_do_wake(t->state);
 	t->runq = rq;
 	if (t != current) {
@@ -156,7 +155,7 @@ void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	assert(rq && sq);
 	assert(current->runq == rq);
 
-	sleepq_queue_insert(&sq->queue, current);
+	//sleepq_queue_insert(&sq->queue, current);
 
 	current->sleepq = sq;
 	current->state = thread_state_do_sleep(current->state);

@@ -32,7 +32,7 @@ module sched_none extends sched_api {
 }
 
 module sched extends sched_api {
-	source "sched.c", "startq.c"
+	source "sched.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
@@ -42,6 +42,12 @@ module sched extends sched_api {
 	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
+}
+
+module wait_queue {
+	source "wait_queue.c"
+
+	@NoRuntime depends embox.kernel.thread.sched
 }
 
 module event {

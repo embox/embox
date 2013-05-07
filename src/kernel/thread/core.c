@@ -35,6 +35,7 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+#include <kernel/thread/wait_data.h>
 #include <kernel/panic.h>
 #include <kernel/cpu.h>
 #include <kernel/percpu.h>
@@ -163,12 +164,13 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->sched_priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
-	startq_init_thread(&t->startq_data);
 
-	sleepq_init(&t->exit_sleepq);
+	wait_queue_init(&t->exit_waitq);
 
 	t->running_time = 0;
 	t->affinity = (1 << NCPU) - 1;
+
+	wait_data_init(&t->wait_data);
 }
 
 static void thread_context_init(struct thread *t) {
@@ -214,7 +216,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 				} else {
 					/* Thread is attached. Joining thread delete it.    */
 					current->run_ret = ret;
-					sched_wake_one(&current->exit_sleepq);
+					wait_queue_notify_all(&current->exit_waitq); /* or one */
 				}
 			}
 		}
@@ -239,8 +241,8 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			assert(sleepq_empty(&t->exit_sleepq));
-			sched_sleep_locked(&t->exit_sleepq, SCHED_TIMEOUT_INFINITE);
+			assert(wait_queue_empty(&t->exit_waitq));
+			wait_queue_wait_locked(&t->exit_waitq, SCHED_TIMEOUT_INFINITE);
 		}
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);

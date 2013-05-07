@@ -13,12 +13,12 @@
 #include <errno.h>
 
 #include <kernel/thread/sched.h>
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/thread/wait_queue.h>
 
 #define EVENT_TIMEOUT_INFINITE SCHED_TIMEOUT_INFINITE
 
 struct event {
-	struct sleepq sleepq;
+	struct wait_queue waitq;
 	const char *name;
 };
 

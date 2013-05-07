@@ -11,12 +11,13 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
+#include <sys/types.h>
+
 #include <kernel/thread/current.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
-#include <sys/types.h>
-
 #include <kernel/thread/types.h>
+#include <kernel/thread/wait_data.h>
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
@@ -169,5 +170,11 @@ extern void sched_post_switch(void);
  *   On operation fail.
  */
 extern int sched_tryrun(struct thread *thread);
+
+extern void sched_thread_notify(struct thread *thread, int result);
+extern void sched_prepare_wait(notify_handler on_notified, void *data);
+extern void sched_cleanup_wait(void);
+extern int sched_wait(unsigned long timeout);
+extern int sched_wait_locked(unsigned long timeout);
 
 #endif /* KERNEL_THREAD_SCHED_H_ */

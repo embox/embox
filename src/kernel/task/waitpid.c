@@ -24,7 +24,7 @@ int task_waitpid(pid_t pid) {
 			ret = -ENOENT;
 		}
 		else {
-			ret = sched_sleep_locked(task->wait_sq, SCHED_TIMEOUT_INFINITE);
+			ret = wait_queue_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
@@ -32,18 +32,18 @@ int task_waitpid(pid_t pid) {
 	return ret;
 }
 
-static void task_wait_sq_deinit(struct task *task) {
-	sched_wake_all(task->wait_sq);
+static void task_waitq_deinit(struct task *task) {
+	wait_queue_notify_all(task->waitq);
 }
 
-static void task_wait_sq_init(struct task *task, void *_wait_sq) {
-	task->wait_sq = _wait_sq;
-	sleepq_init(task->wait_sq);
+static void task_waitq_init(struct task *task, void *_waitq) {
+	task->waitq = _waitq;
+	wait_queue_init(task->waitq);
 }
 
 static const struct task_resource_desc waitpid_resource = {
-	.init = task_wait_sq_init,
-	.deinit = task_wait_sq_deinit,
+	.init = task_waitq_init,
+	.deinit = task_waitq_deinit,
 	.resource_size = sizeof(struct sleepq)
 };
 

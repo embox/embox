@@ -13,16 +13,23 @@
 
 #include <kernel/work.h>
 
-
 struct wait_queue {
 	struct dlist_head list;
-
 	int flag;
 };
 
 static inline void wait_queue_init(struct wait_queue *wait_queue) {
 	dlist_init(&wait_queue->list);
 }
+
+static inline int wait_queue_empty(struct wait_queue *wait_queue) {
+	return dlist_empty(&wait_queue->list);
+}
+
+extern int wait_queue_wait(struct wait_queue *wait_queue, int timeout);
+extern int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout);
+extern void wait_queue_notify(struct wait_queue *wait_queue);
+extern void wait_queue_notify_all(struct wait_queue *wait_queue);
 
 #endif /* KERNEL_THREAD_WAIT_QUEUE_H_ */
 
