@@ -19,6 +19,7 @@
 
 #include <net/icmp.h>
 #include <net/inetdevice.h>
+#include <net/if_arp.h>
 #include <net/arp.h>
 #include <net/ip.h>
 #include <net/neighbour.h>

@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <net/if_arp.h>
+#include <net/inetdevice.h>
 #include <string.h>
 
 #include <net/util.h>

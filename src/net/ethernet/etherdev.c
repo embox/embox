@@ -11,6 +11,7 @@
 #include <net/arp.h>
 #include <net/etherdevice.h>
 #include <net/if.h>
+#include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <string.h>

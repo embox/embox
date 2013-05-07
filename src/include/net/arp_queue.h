@@ -10,6 +10,8 @@
 
 #include <net/skbuff.h>
 
+struct sk_buff;
+
 #define MAX_WAIT_TIME 1000
 
 /**
@@ -17,7 +19,7 @@
  * containing in ARP pack.
  * @param arp_pack - ARP pack received on ARP resolution request
  */
-extern void arp_queue_process(sk_buff_t *arp_pack);
+extern void arp_queue_process(struct sk_buff *arp_pack);
 
 /**
  * Add pending packet pack in specific queue to wait for further

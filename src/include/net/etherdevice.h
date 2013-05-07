@@ -10,8 +10,6 @@
 #ifndef NET_ETHERDEVICE_H_
 #define NET_ETHERDEVICE_H_
 
-//#define NET_TYPE_ALL_PROTOCOL 0
-
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <sys/socket.h>

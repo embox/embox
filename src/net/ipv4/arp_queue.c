@@ -12,6 +12,7 @@
 #include <util/hashtable.h>
 #include <kernel/thread/event.h>
 #include <embox/unit.h>
+#include <net/if_arp.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <mem/misc/pool.h>

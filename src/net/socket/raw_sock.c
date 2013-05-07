@@ -18,7 +18,6 @@
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/raw.h>
-#include <net/inet_common.h>
 
 #include <embox/net/sock.h>
 

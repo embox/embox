@@ -12,28 +12,28 @@
 #ifndef NET_ARP_H_
 #define NET_ARP_H_
 
-#include <stdint.h>
-#include <net/if_arp.h>
-#include <net/inetdevice.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
+#include <arpa/inet.h>
+
+struct sk_buff;
+struct net_device;
+struct packet_type;
 
 /**
  * Handle arp packet. This function called protocal stack
  * when arp packet has been received
- * @param pack net_packet
  */
-extern int arp_rcv(sk_buff_t *pack, struct net_device *dev,
-			packet_type_t *pt, struct net_device *orig_dev);
+extern int arp_rcv(struct sk_buff *skb, struct net_device *dev,
+			struct packet_type *pt, struct net_device *orig_dev);
 
 /**
- * resolve ip address and rebuild net_packet
- * @param pack pointer to net_packet struct
- * @param haddr MAC address
- * @return pointer to net_packet struct if success else NULL *
+ * Resolve ip address and rebuild sk_buff
  */
-extern int arp_resolve(sk_buff_t *pack);
+extern int arp_resolve(struct sk_buff *skb);
 
 /**
- * Create and send an arp packet.
+ * Create and send an ARP packet
  */
 extern int arp_send(int type, int ptype, struct net_device *dev,
 		in_addr_t dest_ip, in_addr_t src_ip,

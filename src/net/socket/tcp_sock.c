@@ -33,7 +33,7 @@
 
 EMBOX_UNIT_INIT(tcp_sock_init);
 
-struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
+static struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
 

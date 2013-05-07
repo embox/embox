@@ -12,8 +12,8 @@
 #define NET_IF_ARP_H
 
 #include <linux/types.h>
-#include <stdlib.h>
 #include <net/skbuff.h>
+#include <stddef.h>
 
 /**
  * Prototypes
@@ -36,32 +36,26 @@ struct sk_buff;
 #define	RARP_OPER_REQUEST 3 /* RARP request */
 #define	RARP_OPER_REPLY   4 /* RARP reply */
 
-#if 0
-#define	ARPOP_InREQUEST   8  /* InARP request */
-#define	ARPOP_InREPLY     9  /* InARP reply */
-#define	ARPOP_NAK         10 /* (ATM)ARP NAK */
-#endif
-
 /**
  * Generic protocol header
  */
 typedef struct arpghdr {
-	__be16 ha_space;        /* Hardware address space */
-	__be16 pa_space;        /* Protocol address space */
-	unsigned char ha_len;   /* Length of hardware address */
-	unsigned char pa_len;   /* Length of protocol address */
-	__be16 oper;            /* Operation code */
-	unsigned char stuff[1]; /* Additional information with variable-length */
+	__be16 ha_space; /* Hardware address space */
+	__be16 pa_space; /* Protocol address space */
+	__u8 ha_len;     /* Length of hardware address */
+	__u8 pa_len;     /* Length of protocol address */
+	__be16 oper;     /* Operation code */
+	__u8 stuff[1];   /* Additional information with variable-length */
 } __attribute__((packed)) arpghdr_t;
 
 /**
  * Additional information of variable length
  */
 typedef struct arpg_stuff {
-	unsigned char *sha; /* Sender hardware address */
-	unsigned char *spa; /* Sender protocol address */
-	unsigned char *tha; /* Target hardware address */
-	unsigned char *tpa; /* Target protocol address */
+	__u8 *sha; /* Sender hardware address */
+	__u8 *spa; /* Sender protocol address */
+	__u8 *tha; /* Target hardware address */
+	__u8 *tpa; /* Target protocol address */
 } arpg_stuff_t;
 
 /**
