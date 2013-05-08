@@ -14,7 +14,7 @@ static inline unsigned long partial_sum(void *addr, int len) {
 	unsigned short oddbyte, *ptr;
 
 	sum = 0;
-	ptr = (unsigned short *) addr;
+	ptr = (unsigned short *)addr;
 
 	while (len > 1) {
 		sum += *ptr++;

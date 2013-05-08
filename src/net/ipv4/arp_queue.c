@@ -168,8 +168,8 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	softirq_unlock();
 
-	ret = arp_send(ARP_OPER_REQUEST, ETH_P_ARP, skb->dev, daddr, saddr, NULL,
-			skb->dev->dev_addr, NULL);
+	ret = arp_send(ARP_OPER_REQUEST, ETH_P_IP, skb->dev->addr_len,
+			sizeof saddr, NULL, &saddr, NULL, &daddr, NULL, skb->dev);
 	if (ret != 0) {
 		return ret;
 	}

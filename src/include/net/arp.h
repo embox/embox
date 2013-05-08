@@ -35,9 +35,11 @@ extern int arp_resolve(struct sk_buff *skb);
 /**
  * Create and send an ARP packet
  */
-extern int arp_send(int type, int ptype, struct net_device *dev,
-		in_addr_t dest_ip, in_addr_t src_ip,
-		const unsigned char *dest_hw,
-		const unsigned char *src_hw, const unsigned char *th);
+extern int arp_send(unsigned short oper, unsigned short paddr_space,
+		unsigned char haddr_len, unsigned char paddr_len,
+		const void *src_haddr, const void *src_paddr,
+		const void *dst_haddr, const void *dst_paddr,
+		const void *target_haddr, struct net_device *dev);
+
 
 #endif /* NET_ARP_H_ */

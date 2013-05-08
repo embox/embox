@@ -31,8 +31,8 @@ extern int rarp_rcv(struct sk_buff *skb, struct net_device *dev,
  */
 extern int rarp_send(unsigned short oper, unsigned short paddr_space,
 		unsigned char haddr_len, unsigned char paddr_len,
-		const unsigned char *src_haddr, const unsigned char *src_paddr,
-		const unsigned char *dst_haddr, const unsigned char *dst_paddr,
-		const unsigned char *target_haddr, struct net_device *dev);
+		const void *source_haddr, const void *source_paddr,
+		const void *dest_haddr, const void *dest_paddr,
+		const void *target_haddr, struct net_device *dev);
 
 #endif /* NET_RARP_H_ */
