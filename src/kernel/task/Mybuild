@@ -87,5 +87,5 @@ module io_sync extends io_sync_api {
 module waitpid {
 	source "waitpid.c"
 
-	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sched_api
 }
