@@ -98,7 +98,7 @@ void sched_finish(struct thread *t) {
 			post_switch_if(runq_finish(&rq, t));
 		} else {
 			if (thread_state_sleeping(t->state)) {
-				sleepq_finish(t->sleepq, t);
+				t->wait_data.on_notified(t, t->wait_data.data);
 			} else {
 				t->state = thread_state_do_exit(t->state);
 			}
@@ -114,9 +114,8 @@ static void do_wait_locked(void) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
-	runq_sleep(&rq, NULL); /* TODO: Simple remove from runq */
+	runq_wait(&rq);
 
-	//assert(current->sleepq == sq);
 	assert(thread_state_sleeping(current->state));
 
 	post_switch_if(1);
@@ -133,7 +132,7 @@ static int notify_work(struct work *work) {
 
 	assert(in_sched_locked());
 
-	post_switch_if(sleepq_wake_thread(&rq, NULL, thread)); /* TODO: SMP */
+	post_switch_if(runq_wake_thread(&rq, thread));
 
 	wait_data->on_notified(thread, wait_data->data);
 
@@ -248,8 +247,6 @@ int sched_change_scheduling_priority(struct thread *thread,
 
 		if (thread_state_running(thread->state)) {
 			post_switch_if(runq_change_priority(thread->runq, thread, new_priority));
-		} else if (thread_state_sleeping(thread->state)) {
-			sleepq_change_priority(thread->sleepq, thread, new_priority);
 		} else {
 			thread->sched_priority = new_priority;
 		}

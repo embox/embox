@@ -98,17 +98,12 @@ int runq_finish(struct runq *rq, struct thread *t) {
 	return is_current;
 }
 
-void sleepq_init(struct sleepq *sq) {
-	sleepq_queue_init(&sq->queue);
-}
-
-int sleepq_wake_thread(struct runq *rq, struct sleepq *sq, struct thread *t) {
+int runq_wake_thread(struct runq *rq, struct thread *t) {
 	struct thread *current = thread_self();
 
 	assert(t && rq);
 	assert(thread_state_sleeping(t->state));
 
-//	sleepq_queue_remove(&sq->queue, t);
 	t->state = thread_state_do_wake(t->state);
 	t->runq = rq;
 	if (t != current) {
@@ -118,29 +113,7 @@ int sleepq_wake_thread(struct runq *rq, struct sleepq *sq, struct thread *t) {
 	return t->sched_priority > current->sched_priority;
 }
 
-int sleepq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
-	int ret = 0;
-	struct thread *t;
-
-	assert(rq && sq);
-
-	if (sleepq_empty(sq)) {
-		return 0;
-	}
-
-	if ((t = sleepq_queue_peek(&sq->queue))) {
-		ret = sleepq_wake_thread(rq, sq, t);
-	}
-
-	if (wake_all) {
-		while ((t = sleepq_queue_peek(&sq->queue))) {
-			sleepq_wake_thread(rq, sq, t);
-		}
-	}
-
-	return ret;
-}
-
+#if 0
 void sleepq_finish(struct sleepq *sq, struct thread *t) {
     assert(thread_state_sleeping(t->state));
 
@@ -148,16 +121,14 @@ void sleepq_finish(struct sleepq *sq, struct thread *t) {
     t->state = thread_state_do_exit(t->state);
     t->sleepq = NULL;
 }
+#endif
 
-void runq_sleep(struct runq *rq, struct sleepq *sq) {
+void runq_wait(struct runq *rq) {
 	struct thread *current = thread_self();
 
 	assert(rq);
 	assert(current->runq == rq);
 
-	//sleepq_queue_insert(&sq->queue, current);
-
-	current->sleepq = sq;
 	current->state = thread_state_do_sleep(current->state);
 }
 
@@ -199,24 +170,4 @@ struct thread *runq_switch(struct runq *rq) {
 	}
 
 	return next;
-}
-
-int sleepq_empty(struct sleepq *sq) {
-	assert(sq);
-	return sleepq_queue_empty(&sq->queue);
-}
-
-void sleepq_change_priority(struct sleepq *sq, struct thread *t,
-		sched_priority_t new_priority) {
-	assert(sq && t);
-
-	/* FIXME: */
-	sleepq_queue_remove(&sq->queue, t);
-	t->sched_priority = new_priority;
-	sleepq_queue_insert(&sq->queue, t);
-}
-
-struct thread *sleepq_get_thread(struct sleepq *sq) {
-	assert(sq && !sleepq_empty(sq));
-	return sleepq_queue_peek(&sq->queue);
 }

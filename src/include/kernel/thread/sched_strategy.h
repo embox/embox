@@ -113,10 +113,8 @@ extern void sleepq_finish(struct sleepq *sleepq, struct thread *thread);
  *
  * @param runq
  *   Running queue.
- * @param sleepq
- *   Sleeping queue.
  */
-extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
+extern void runq_wait(struct runq *runq);
 
 /**
  * Moves threads from sleeping queue to running one and makes running their states.
@@ -141,8 +139,6 @@ extern int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
  *
  * @param runq
  * 	 Runninq queue.
- * @param sleepq
- *   Sleeping queue.
  * @param thread
  *   Thread which will be resumed.
  * @retval 0
@@ -150,7 +146,7 @@ extern int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
  * @retval non-zero
  *   Switching of current thread is required.
  */
-extern int sleepq_wake_thread(struct runq *runq, struct sleepq *sleepq, struct thread *thread);
+extern int runq_wake_thread(struct runq *runq, struct thread *thread);
 
 /**
  * Switches current thread.
