@@ -183,6 +183,7 @@ int sched_wait_locked(unsigned long timeout) {
 		}
 	}
 
+	work_enable(&current->wait_data.work);
 	do_wait_locked();
 
 	sched_unlock();

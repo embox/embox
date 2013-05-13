@@ -16,15 +16,27 @@
 
 #include <util/member.h>
 
-struct wait_link {
-	struct dlist_head link;
-	struct thread *thread;
-};
-
 static void on_notified(struct thread *thread, void *data) {
 	struct wait_link *wait_link = data;
 
 	dlist_del(&wait_link->link);
+}
+
+void wait_queue_insert(struct wait_queue *wait_queue,
+		struct wait_link *wait_link) {
+
+	dlist_head_init(&wait_link->link);
+	wait_link->thread = thread_self();
+
+	dlist_add_prev(&wait_link->link, &wait_queue->list);
+}
+
+void wait_queue_prepare(struct wait_link *wait_link) {
+	sched_prepare_wait(&on_notified, wait_link);
+}
+
+void wait_queue_cleanup(struct wait_link *wait_link) {
+	sched_cleanup_wait();
 }
 
 int wait_queue_wait(struct wait_queue *wait_queue, int timeout) {
@@ -43,13 +55,13 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
-	dlist_head_init(&wait_link.link);
-	wait_link.thread = thread_self();
+	IPL_SAFE_DO(wait_queue_insert(wait_queue, &wait_link));
 
-	IPL_SAFE_DO(dlist_add_prev(&wait_link.link, &wait_queue->list));
-	sched_prepare_wait(&on_notified, &wait_link);
+	wait_queue_prepare(&wait_link);
+
 	result = sched_wait_locked(timeout);
-	sched_cleanup_wait();
+
+	wait_queue_cleanup(&wait_link);
 
 	return result;
 }

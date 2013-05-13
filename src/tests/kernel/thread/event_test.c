@@ -11,7 +11,7 @@
 
 #include <kernel/thread/sched.h>
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/time/ktime.h>
 
 #include <embox/test.h>

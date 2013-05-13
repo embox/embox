@@ -43,9 +43,9 @@ static inline void wait_data_prepare(struct wait_data *wait_data, work_handler h
 
 	ipl = ipl_save();
 	{
-		work_init(&wait_data->work, handler, 0);
-		wait_data->status = WAIT_DATA_STATUS_WAITING;
+		work_init(&wait_data->work, handler, WORK_DISABLED);
 		wait_data->result = ENOERR;
+		wait_data->status = WAIT_DATA_STATUS_WAITING;
 	}
 	ipl_restore(ipl);
 }
@@ -54,7 +54,6 @@ static inline void wait_data_cleanup(struct wait_data *wait_data) {
 	assert(wait_data->status != WAIT_DATA_STATUS_NONE);
 
 	wait_data->status = WAIT_DATA_STATUS_NONE;
-	work_disable(&wait_data->work);
 }
 
 #endif /* KERNEL_THREAD_WAIT_DATA_H_ */

@@ -18,6 +18,11 @@ struct wait_queue {
 	int flag;
 };
 
+struct wait_link {
+	struct dlist_head link;
+	struct thread *thread;
+};
+
 static inline void wait_queue_init(struct wait_queue *wait_queue) {
 	dlist_init(&wait_queue->list);
 }
@@ -30,6 +35,11 @@ extern int wait_queue_wait(struct wait_queue *wait_queue, int timeout);
 extern int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout);
 extern void wait_queue_notify(struct wait_queue *wait_queue);
 extern void wait_queue_notify_all(struct wait_queue *wait_queue);
+
+extern void wait_queue_insert(struct wait_queue *wait_queue,
+		struct wait_link *wait_link);
+extern void wait_queue_prepare(struct wait_link *wait_link);
+extern void wait_queue_cleanup(struct wait_link *wait_link);
 
 #endif /* KERNEL_THREAD_WAIT_QUEUE_H_ */
 

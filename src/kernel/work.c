@@ -25,19 +25,6 @@
 #define __COUNT(level) \
         ((((level) ^ ((level) - 1)) >> 1) + 1)
 
-void work_init(struct work *w, int (*handler)(struct work *),
-		unsigned int flags) {
-
-	w->handler = handler;
-	w->wq = NULL;
-	w->state = WS_INIT;         /* TODO: flags. */
-	dlist_head_init(&w->link);
-}
-
-void work_queue_init(struct work_queue *wq) {
-	dlist_init(&wq->list);
-}
-
 static void __work_post(struct work *w , struct work_queue *wq) {
 	if (!(w->state & WS_PENDING)) {
 		w->state |= WS_PENDING;
@@ -70,6 +57,23 @@ static void __work_enable(struct work *w) {
 	if ((w->state & WS_PENDING) && !(w->state & WS_DISABLED)) {
 		dlist_add_prev(&w->link, &w->wq->list);
 	}
+}
+
+void work_init(struct work *w, int (*handler)(struct work *),
+		unsigned int flags) {
+
+	w->handler = handler;
+	w->wq = NULL;
+	w->state = WS_INIT;
+	dlist_head_init(&w->link);
+
+	if (flags & WORK_DISABLED) {
+		__work_disable(w);
+	}
+}
+
+void work_queue_init(struct work_queue *wq) {
+	dlist_init(&wq->list);
 }
 
 void work_post(struct work *w , struct work_queue *wq) {
