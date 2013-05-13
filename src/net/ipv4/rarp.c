@@ -13,13 +13,14 @@
 #include <errno.h>
 #include <net/etherdevice.h>
 #include <net/if_arp.h>
+#include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
 #include <net/rarp.h>
 #include <net/skbuff.h>
 #include <string.h>
 
-EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv, rarp_init);
+EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv);
 
 static int rarp_build(struct sk_buff *skb, unsigned short oper,
 		unsigned short paddr_space, unsigned char haddr_len,
@@ -48,7 +49,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 	assert(dev->header_ops != NULL);
 	assert(dev->header_ops->create != NULL);
 	ret = dev->header_ops->create(skb, dev, skb->protocol,
-			(void *)target_haddr, (void *)source_haddr, skb->len);
+			target_haddr, source_haddr);
 	if (ret != 0) {
 		return ret;
 	}
@@ -84,7 +85,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 static int rarp_xmit(struct sk_buff *skb) {
 	/* fall through to dev layer */
-	return dev_queue_xmit(skb);
+	return dev_xmit_skb(skb);
 }
 
 int rarp_send(unsigned short oper, unsigned short paddr_space,
@@ -231,13 +232,12 @@ static int rarp_process(struct sk_buff *skb, struct net_device *dev) {
 	}
 }
 
-int rarp_rcv(struct sk_buff *skb, struct net_device *dev,
-		struct packet_type *pt, struct net_device *orig_dev) {
+static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(skb != NULL);
 	assert(dev != NULL);
 
 	/* check recipient */
-	switch (eth_packet_type(skb)) {
+	switch (pkt_type(skb)) {
 	default:
 		break; /* error: not for us */
 	case PACKET_HOST:
@@ -256,9 +256,4 @@ int rarp_rcv(struct sk_buff *skb, struct net_device *dev,
 	/* pretend that it was not */
 	skb_free(skb);
 	return NET_RX_DROP;
-}
-
-static int rarp_init(void) {
-	/* ummm.. done */
-	return 0;
 }

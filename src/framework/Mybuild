@@ -1,7 +1,7 @@
 package embox.framework
 
 module LibFrameworkNet {
-	depends net.pack, net.proto, net.sock
+	depends net.family, net.pack, net.proto, net.sock
 }
 
 module LibFramework {

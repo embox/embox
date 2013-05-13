@@ -10,21 +10,12 @@
 #ifndef NET_RARP_H_
 #define NET_RARP_H_
 
-#include <net/skbuff.h>
 #include <net/netdevice.h>
 
 /**
  * Prototypes
  */
-struct sk_buff;
 struct net_device;
-struct packet_type;
-
-/**
- * Handler of RARP packages
- */
-extern int rarp_rcv(struct sk_buff *skb, struct net_device *dev,
-		struct packet_type *pt, struct net_device *orig_dev);
 
 /**
  * Create and send an arp packet.

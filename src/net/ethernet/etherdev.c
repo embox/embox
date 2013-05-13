@@ -2,85 +2,44 @@
  * @file
  * @brief Ethernet-type device handling.
  *
- * @date 4.03.09
+ * @date 04.03.09
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
 #include <errno.h>
-#include <net/arp.h>
+#include <linux/etherdevice.h>
 #include <net/etherdevice.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
-#include <string.h>
-#include <assert.h>
-#include <util/array.h>
 #include <stdio.h>
+#include <string.h>
+#include <util/array.h>
 
-int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr) {
+int etherdev_set_macaddr(struct net_device *dev, const void *mac_addr) {
 	assert(dev != NULL);
-	assert(addr != NULL);
+	assert(mac_addr != NULL);
 
-	if (!is_valid_ether_addr((const uint8_t *) addr->sa_data)) {
-		return -EADDRNOTAVAIL;
+	if (!is_valid_ether_addr(mac_addr)) {
+		return -EINVAL;
 	}
 
-	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
-
-	return ENOERR;
+	return netdev_set_macaddr(dev, mac_addr);
 }
 
-int etherdev_change_mtu(struct net_device *dev, int new_mtu) {
+int etherdev_set_mtu(struct net_device *dev, int new_mtu) {
 	assert(dev != NULL);
 
-	if ((new_mtu < 68) || (new_mtu > ETH_FRAME_LEN)) {
+	if ((new_mtu < ETH_ZLEN) || (new_mtu > ETH_FRAME_LEN)) {
 		return -EINVAL;
 	}
 
 	dev->mtu = new_mtu;
 
-	return ENOERR;
-}
-
-int etherdev_flag_up(struct net_device *dev, int flag_type) {
-	assert(dev != NULL);
-	dev->flags |= flag_type;
-	return ENOERR;
-}
-
-int etherdev_flag_down(struct net_device *dev, int flag_type) {
-	assert(dev != NULL);
-	dev->flags &= ~flag_type;
-	return ENOERR;
-}
-
-int etherdev_set_irq(struct net_device *dev, int irq_num) {
-	assert(dev != NULL);
-	dev->irq = irq_num;
-	return ENOERR;
-}
-
-int etherdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
-	assert(dev != NULL);
-	dev->base_addr = base_addr;
-	return ENOERR;
-}
-
-int etherdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
-	assert(dev != NULL);
-	dev->tx_queue_len = new_len;
-	return ENOERR;
-}
-
-int etherdev_set_broadcast_addr(struct net_device *dev, unsigned char *broadcast_addr) {
-	assert(dev != NULL);
-	assert(broadcast_addr != NULL);
-
-	memcpy((void *)dev->broadcast, (void *)broadcast_addr, ETH_ALEN);
-
-	return ENOERR;
+	return 0;
 }
 
 static void etherdev_setup(struct net_device *dev) {

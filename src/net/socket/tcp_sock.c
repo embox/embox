@@ -13,6 +13,7 @@
 #include <sys/uio.h>
 #include <util/array.h>
 #include <util/math.h>
+#include <net/if_ether.h>
 
 #include <net/tcp.h>
 #include <sys/socket.h>
@@ -26,16 +27,13 @@
 #include <mem/objalloc.h>
 #include <embox/net/sock.h>
 #include <kernel/task/io_sync.h>
-#include <embox/unit.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
-EMBOX_UNIT_INIT(tcp_sock_init);
-
 static struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
 
-EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
+EMBOX_NET_SOCK_INIT(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_prot, tcp_sock_init);
 
 OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
 

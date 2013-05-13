@@ -174,11 +174,7 @@ static int stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static net_device_stats_t *get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
-}
-
-static int set_mac_address(struct net_device *dev, void *addr) {
+static int set_mac_address(struct net_device *dev, const void *addr) {
 	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
@@ -195,7 +191,6 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_start_xmit = start_xmit,
 	.ndo_open = open,
 	.ndo_stop = stop,
-	.ndo_get_stats = get_eth_stat,
 	.ndo_set_mac_address = set_mac_address
 };
 

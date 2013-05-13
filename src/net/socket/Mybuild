@@ -46,9 +46,6 @@ module af_inet {
 	depends socket /* for socket_repo.c */
 	depends ipv4
 	depends embox.framework.LibFrameworkNet
-
-	source "protocol.c"
-	depends embox.lib.LibC
 }
 
 module af_packet {
@@ -86,8 +83,6 @@ module socket {
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.util.LibUtil
-
-	source "socket_repo.c"
 
 	source "ip_port.c"
 	option number ports_per_protocol=65536

@@ -18,7 +18,7 @@
 #include <arpa/inet.h>
 #include <net/netdevice.h>
 
-static void udp_err(sk_buff_t *skb, uint32_t info);
+static void udp_err(sk_buff_t *skb, unsigned int info);
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
@@ -122,7 +122,7 @@ static int udp_rcv(struct sk_buff *skb) {
 	return ENOERR;
 }
 
-static void udp_err(sk_buff_t *skb, uint32_t info) {
+static void udp_err(sk_buff_t *skb, unsigned int info) {
 	struct sock *sk;
 	struct iphdr *emb_pack_iphdr;
 	struct udphdr *emb_pack_udphdr;

@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/uio.h>
+#include <net/if_ether.h>
 
 #include <sys/socket.h>
 #include <net/ip.h>
@@ -19,9 +20,7 @@
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
 
-static const struct proto udp_prot;
-
-EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, true);
+EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_prot);
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {

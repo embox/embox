@@ -25,6 +25,8 @@
 #include <net/etherdevice.h>
 #include <net/netfilter.h>
 #include <kernel/printk.h>
+#include <net/if_packet.h>
+#include <net/if_ether.h>
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
@@ -78,7 +80,7 @@ int ip_queue_send(struct sk_buff *skb) {
 
 int ip_queue_xmit(struct sk_buff *skb) {
 	skb->protocol = ETH_P_IP;
-	return dev_queue_send(skb);
+	return dev_send_skb(skb);
 }
 
 /* Fragments skb and sends it to the interface.
@@ -150,7 +152,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 	 * they processed in other part of code - see ip_is_local(,true,xxx);
 	 * And, of course, loopback packets must not be processed here
 	 */
-	if ((eth_packet_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr)) {
+	if ((pkt_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr)) {
 		skb_free(skb);
 		return 0;
 	}

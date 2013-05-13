@@ -18,13 +18,15 @@
 #include <net/arp_queue.h>
 #include <net/etherdevice.h>
 #include <net/if_arp.h>
+#include <net/if_ether.h>
+#include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
 #include <net/route.h>
 #include <net/skbuff.h>
 #include <string.h>
 
-EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
+EMBOX_NET_PACK(ETH_P_ARP, arp_rcv);
 
 static int arp_build(struct sk_buff *skb, unsigned short oper,
 		unsigned short paddr_space, unsigned char haddr_len,
@@ -53,7 +55,7 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 	assert(dev->header_ops != NULL);
 	assert(dev->header_ops->create != NULL);
 	ret = dev->header_ops->create(skb, dev, skb->protocol,
-			(void *)target_haddr, (void *)source_haddr, skb->len);
+			target_haddr, source_haddr);
 	if (ret != 0) {
 		return ret;
 	}
@@ -84,7 +86,7 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 
 static int arp_xmit(struct sk_buff *skb) {
 	/* fall through to dev layer */
-	return dev_queue_xmit(skb);
+	return dev_xmit_skb(skb);
 }
 
 int arp_send(unsigned short oper, unsigned short paddr_space,
@@ -272,13 +274,12 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	}
 }
 
-int arp_rcv(struct sk_buff *skb, struct net_device *dev,
-		struct packet_type *pt, struct net_device *orig_dev) {
+static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(skb != NULL);
 	assert(dev != NULL);
 
 	/* check recipient */
-	switch (eth_packet_type(skb)) {
+	switch (pkt_type(skb)) {
 	default:
 		break; /* error: not for us */
 	case PACKET_HOST:
@@ -297,8 +298,4 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 	/* pretend that it was not */
 	skb_free(skb);
 	return NET_RX_DROP;
-}
-
-static int arp_init(void) {
-	return 0;
 }

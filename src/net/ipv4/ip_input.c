@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <embox/net/pack.h>
 #include <net/ip.h>
 #include <net/icmp.h>
 #include <net/udp.h>
@@ -18,16 +19,15 @@
 #include <net/inetdevice.h>
 #include <net/route.h>
 #include <net/checksum.h>
-#include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
 #include <net/netfilter.h>
 
-int ip_rcv(sk_buff_t *skb, struct net_device *dev,
-			packet_type_t *pt, struct net_device *orig_dev) {
-	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
-	const struct net_proto *net_proto_ptr = NULL;
-	net_protocol_t *p_netproto;
+EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
+
+static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
+	net_device_stats_t *stats = &dev->stats;
+	const struct net_proto *nproto;
 	iphdr_t *iph = ip_hdr(skb);
 	unsigned short tmp;
 	unsigned int len;
@@ -145,12 +145,11 @@ int ip_rcv(sk_buff_t *skb, struct net_device *dev,
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
 
-	net_proto_foreach(net_proto_ptr) {
-		p_netproto = net_proto_ptr->netproto;
-		if (p_netproto->type == iph->proto) {
-			/* if we are here then socket is registered in one of hash tables. */
-			return p_netproto->handler(skb) == 0 ? NET_RX_SUCCESS : NET_RX_DROP;
-		}
+	nproto = net_proto_lookup(iph->proto);
+	if (nproto != NULL) {
+		return 0 == nproto->handle(skb)
+				? NET_RX_SUCCESS
+				: NET_RX_DROP;
 	}
 
 	skb_free(skb);

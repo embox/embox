@@ -27,6 +27,7 @@
 #include <kernel/printk.h>
 #include <sys/time.h>
 #include <net/ip_port.h>
+#include <net/if_ether.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>

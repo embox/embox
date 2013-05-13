@@ -1,10 +1,10 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 19.06.2011
+ * @date 19.06.11
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #include <string.h>
@@ -19,156 +19,75 @@
 #include <net/route.h>
 #include <net/arp_queue.h>
 #include <framework/net/pack/api.h>
+#include <embox/net/pack.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
-/* FIXME network packet's type is L2 (device layer protocols)
- * what is dev_add_pack, why was separated ptype_base and ptype_all
- * what this code does here?
- */
-/*paket's types*/
-static LIST_HEAD(ptype_base);
-static LIST_HEAD(ptype_all);
-
-void dev_add_pack(struct packet_type *pt) {
-	if (pt->type == htons(ETH_P_ALL)) {
-		list_add(&pt->list, &ptype_all);
-	} else {
-		list_add(&pt->list, &ptype_base);
-	}
-}
-
-void dev_remove_pack(struct packet_type *pt) {
-	struct list_head *head;
-	struct packet_type *pt1;
-
-	if (pt->type == htons(ETH_P_ALL)) {
-		head = &ptype_all;
-	} else {
-		head = &ptype_base;
-	}
-	list_for_each_entry(pt1, head, list) {
-		if (pt == pt1) {
-			list_del(&pt->list);
-			return;
-		}
-	}
-}
-
-#ifdef DEBUG
-/* we use this function in debug mode*/
-static void print_packet (sk_buff_t *skb) {
-	size_t i, j;
-	printf("pack:\n");
-	for (i = 0; i < skb->len; i += 16) {
-		for (j = 0; j < 16; j += 2) {
-			printf("%02x%02x ",
-				(uint8_t)skb->mac.raw[i + j],
-				(uint8_t)skb->mac.raw[i + j + 1]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-	return;
-}
-#endif
-
-int dev_queue_send(struct sk_buff *skb) {
-	int res;
+int dev_send_skb(struct sk_buff *skb) {
+	int ret;
 
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	assert(skb->dev->header_ops != NULL);
 	assert(skb->dev->header_ops->rebuild != NULL);
-
-	res = skb->dev->header_ops->rebuild(skb);
-	if (res < 0) {
-		/* send arp request and add packet in list of deferred packets */
-		res = arp_queue_add(skb);
-		if (res < 0) {
+	ret = skb->dev->header_ops->rebuild(skb);
+	if (ret != 0) {
+		ret = arp_queue_wait_resolve(skb);
+		if (ret != 0) {
 			skb_free(skb);
-			return res;
+			return ret;
 		}
-		return -EINPROGRESS;
-#if 0
-		if (sock_is_ready(skb->sk)) {
-			/* If socket is ready then it was really error
-			 * but if socket isn't ready package has been saved
-			 * and will be transmitted later */
-			skb_free(skb);
-		}
-
-		return res;
-#endif
+		return 0;
 	}
 
-	return dev_queue_xmit(skb);
+	return dev_xmit_skb(skb);
 }
 
-int dev_queue_xmit(struct sk_buff *skb) {
-	int res;
+int dev_xmit_skb(struct sk_buff *skb) {
+	int ret;
+	unsigned int skb_len;
 	struct net_device *dev;
-	const struct net_device_ops *ops;
-	net_device_stats_t *stats;
 
 	assert(skb != NULL);
 
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	ops = dev->netdev_ops;
-	assert(ops != NULL);
-
-	assert(ops->ndo_get_stats != NULL);
-	stats = ops->ndo_get_stats(dev);
-	assert(stats != NULL);
-
-	if (dev->flags & IFF_UP) {
-		assert(ops->ndo_start_xmit != NULL);
-		res = ops->ndo_start_xmit(skb, dev);
-		if (res < 0) {
-			skb_free(skb);
-			stats->tx_err++;
-			return res;
-		}
-
-		/* update statistic */
-		stats->tx_packets++;
-		stats->tx_bytes += skb->len;
-	}
-	else {
+	if (!(dev->flags & IFF_UP)) {
 		skb_free(skb);
+		return -ENETDOWN;
 	}
 
-	return ENOERR;
+	skb_len = skb->len;
+
+	assert(dev->netdev_ops->ndo_start_xmit != NULL);
+	ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	if (ret != 0) {
+		skb_free(skb);
+		dev->stats.tx_err++;
+		return ret;
+	}
+
+	/* update statistic */
+	dev->stats.tx_packets++;
+	dev->stats.tx_bytes += skb_len;
+
+	return 0;
 }
 
-int netif_receive_skb(sk_buff_t *skb) {
-	struct packet_type *q;
-	const struct net_pack *pack;
+int netif_receive_skb(struct sk_buff *skb) {
+	const struct net_pack *npack;
 
 	assert(skb != NULL);
 
-	net_pack_foreach(pack) {
-		assert(pack != NULL);
-
-		q = pack->netpack;
-		assert(q != NULL);
-
-		if (q->type == skb->protocol) {
-			assert(q->func != NULL);
-			return q->func(skb, skb->dev, q, NULL);
-		}
+	npack = net_pack_lookup(skb->protocol);
+	if (npack == NULL) {
+		skb_free(skb);
+		return NET_RX_DROP;
 	}
 
-	skb_free(skb);
-	return NET_RX_DROP;
+	return npack->handle(skb, skb->dev);
 }
-
-static void net_rx_action(struct softirq_action *action) {
-	netdev_rx_processing();
-}
-
 
 void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
@@ -185,7 +104,11 @@ void netif_rx_schedule(struct sk_buff *skb) {
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 
+static void netif_rx_action(struct softirq_action *action) {
+	netdev_rx_processing();
+}
+
 static int unit_init(void) {
-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-	return ENOERR;
+	open_softirq(NET_RX_SOFTIRQ, netif_rx_action, NULL);
+	return 0;
 }

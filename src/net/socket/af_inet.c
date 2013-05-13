@@ -8,22 +8,27 @@
  */
 
 #include <errno.h>
-#include <embox/net/pack.h>
 #include <framework/net/sock/api.h>
 #include <stddef.h>
 #include <linux/aio.h>
-#include <net/protocol.h>
 #include <arpa/inet.h>
 #include <net/sock.h>
 #include <sys/socket.h>
 #include <net/socket_registry.h>
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
+#include <net/if_ether.h>
+#include <embox/net/family.h>
+#include <embox/net/sock.h>
 
 #include <net/ip_port.h>
 #include <net/inet_sock.h>
 
-EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
+EMBOX_NET_FAMILY(AF_INET, inet_create);
+
+static const struct proto_ops inet_raw_ops;
+static const struct proto_ops inet_stream_ops;
+static const struct proto_ops inet_dgram_ops;
 
 /* AF_INET socket create */
 struct sock * inet_create_sock(struct proto *prot,
@@ -56,58 +61,27 @@ struct sock * inet_create_sock(struct proto *prot,
 	return sk;
 }
 
-static int inet_proto_find(unsigned short type, unsigned char protocol,
-		struct inet_protosw **pp_netsock) {
-	const struct net_sock *net_sock_ptr;
-	int type_is_supported;
-
-	assert(pp_netsock != NULL);
-
-	type_is_supported = 0;
-	net_sock_foreach(net_sock_ptr) {
-		*pp_netsock = net_sock_ptr->netsock;
-		switch (net_sock_ptr->net_proto_family) {
-		default:
-			break;
-		case AF_UNSPEC:
-		case AF_INET:
-			if (type == (*pp_netsock)->type) { /* type is ok */
-				type_is_supported = 1;
-				if (protocol == (*pp_netsock)->protocol) {
-					return ENOERR; /* protocol and type matched */
-				}
-				else if ((protocol == 0) && (*pp_netsock)->deflt) {
-					return ENOERR;  /* only type is specified. */
-				}
-				/* ELSE type matched but no such protocol. try next */
-			}
-			/* ELSE no such type. try next */
-			break;
-		}
-	}
-
-	return type_is_supported ? -EPROTONOSUPPORT : -EPROTOTYPE;
-}
-
-static int inet_create(struct socket *sock, int protocol) {
-	int res;
-	unsigned short type;
+static int inet_create(struct socket *sock, int type, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
-	struct inet_protosw *p_netsock;
+	const struct net_sock *nsock;
 	int port;
 
 	assert(sock != NULL);
 
 	type = sock->type;
 
-	res = inet_proto_find(type, protocol, &p_netsock);
-	if (res < 0) {
-		return res;
+	if (!net_sock_support(AF_INET, type)) {
+		return -EPROTOTYPE;
 	}
 
-	sk = inet_create_sock((struct proto *)p_netsock->prot, type,
-			p_netsock->protocol);
+	nsock = net_sock_lookup(AF_INET, type, protocol);
+	if (nsock == NULL) {
+		return -EPROTONOSUPPORT;
+	}
+
+	sk = inet_create_sock((struct proto *)nsock->options, type,
+			nsock->protocol);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
@@ -127,9 +101,21 @@ static int inet_create(struct socket *sock, int protocol) {
 	}
 
 	sock->sk = sk;
-	sock->ops = p_netsock->ops;
+	switch (type) {
+		assert(0, "socket with unknown type");
+		return -EPROTOTYPE;
+	case SOCK_DGRAM:
+		sock->ops = &inet_dgram_ops;
+		break;
+	case SOCK_STREAM:
+		sock->ops = &inet_stream_ops;
+		break;
+	case SOCK_RAW:
+		sock->ops = &inet_raw_ops;
+		break;
+	}
 	sk->sk_socket = sock;
-	sk->sk_protocol = p_netsock->protocol;
+	sk->sk_protocol = nsock->protocol;
 
 	return ENOERR;
 }
@@ -448,13 +434,7 @@ static bool inet_address_compare(struct sockaddr *addr1, struct sockaddr *addr2)
 			&& (addr_in1->sin_port == addr_in2->sin_port);
 }
 
-/* uses for create socket */
-static const struct net_proto_family inet_family_ops = {
-		.family = PF_INET,
-		.create = inet_create,
-};
-
-const struct proto_ops inet_dgram_ops = {
+static const struct proto_ops inet_dgram_ops = {
 		.family            = PF_INET,
 		.release           = inet_release,
 		.bind              = inet_bind,
@@ -465,7 +445,7 @@ const struct proto_ops inet_dgram_ops = {
 		.setsockopt        = inet_setsockopt,
 };
 
-const struct proto_ops inet_stream_ops = {
+static const struct proto_ops inet_stream_ops = {
 		.family            = PF_INET,
 		.release           = inet_release,
 		.bind              = inet_bind,
@@ -482,7 +462,7 @@ const struct proto_ops inet_stream_ops = {
  * For SOCK_RAW sockets; should be the same as inet_dgram_ops but without
  * udp_poll
  */
-const struct proto_ops inet_raw_ops = {
+static const struct proto_ops inet_raw_ops = {
 		.family            = PF_INET,
 		.release           = inet_release,
 		.bind              = inet_bind,
@@ -491,7 +471,3 @@ const struct proto_ops inet_raw_ops = {
 		.recvmsg           = inet_recvmsg,
 		.compare_addresses = inet_address_compare,
 };
-
-static int inet_init(void) {
-	return sock_register(&inet_family_ops);
-}

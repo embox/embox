@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef IF_ETHER_H_
-#define IF_ETHER_H_
+#ifndef NET_IF_ETHER_H_
+#define NET_IF_ETHER_H_
 
 #include <linux/types.h>
 #include <net/skbuff.h>
@@ -56,4 +56,4 @@ static inline struct ethhdr * eth_hdr(const struct sk_buff *skb) {
 	return skb->mac.ethh;
 }
 
-#endif /* IF_ETHER_H_ */
+#endif /* NET_IF_ETHER_H_ */

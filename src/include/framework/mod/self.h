@@ -18,6 +18,7 @@
 #ifndef FRAMEWORK_MOD_SELF_H_
 #define FRAMEWORK_MOD_SELF_H_
 
+#include <framework/mod/api.h>
 #include <framework/mod/ops.h>
 #include <framework/mod/options.h>
 
