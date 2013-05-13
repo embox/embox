@@ -23,8 +23,7 @@
 #define MODOPS_SKB_BUFF_SIZE   OPTION_GET(NUMBER, skb_buff_size)
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
-POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE], MODOPS_AMOUNT_SKB_BUFF * 2);
-POOL_DEF(skb_pool_reserv, struct sk_buff, 0x100);
+POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE], MODOPS_AMOUNT_SKB_BUFF);
 
 static unsigned char * net_buff_alloc(void) {
 	ipl_t sp;
@@ -46,46 +45,7 @@ static void net_buff_free(unsigned char *buff) {
 	pool_free(&net_buff_pool, buff);
 	ipl_restore(sp);
 }
-#if 1
-struct sk_buff * skb_alloc_reserv(unsigned int size) {
-	ipl_t sp;
-	struct sk_buff *skb;
-	unsigned char *head;
 
-	if ((size == 0) || (size > MODOPS_SKB_BUFF_SIZE)) {
-		printk("skb_alloc_tx: error: size is 0 or too big\n");
-		return NULL;
-	}
-
-	head = net_buff_alloc();
-	if (head == NULL) {
-		printk("skb_alloc_tx: error: net_buff_alloc return NULL\n");
-		return NULL;
-	}
-
-	sp = ipl_save();
-	skb = (struct sk_buff *)pool_alloc(&skb_pool_reserv);
-	ipl_restore(sp);
-
-	if (skb == NULL) {
-		net_buff_free(head);
-		printk("skb_alloc_tx: error: can't alloc skb structure\n");
-		return NULL;
-	}
-
-	memset(skb, 0, sizeof *skb);
-	skb->head = head;
-	INIT_LIST_HEAD((struct list_head *)skb);
-	skb->mac.raw = skb->head + SK_BUF_EXTRA_HEADROOM;
-	/* Really skb->nh.raw (as a pointer) is also defined now,
-	 * because everything supports only Ethernet.
-	 * Does NULL pointer give us something more reasonable?
-	 */
-	skb->len = size;
-
-	return skb;
-}
-#endif
 struct sk_buff * skb_alloc(unsigned int size) {
 	ipl_t sp;
 	struct sk_buff *skb;
@@ -127,16 +87,8 @@ struct sk_buff * skb_alloc(unsigned int size) {
 
 void skb_free(struct sk_buff *skb) {
 	ipl_t sp;
-	struct pool *pool;
 
 	assert(skb != NULL);
-
-	if(pool_belong(&skb_pool, skb)) {
-		pool = &skb_pool;
-	}
-	else {
-		pool = &skb_pool_reserv;
-	}
 
 	net_buff_free(skb->head);
 
@@ -145,7 +97,7 @@ void skb_free(struct sk_buff *skb) {
 	if ((skb->prev != NULL) && (skb->next != NULL)) {
 		list_del((struct list_head *)skb);
 	}
-	pool_free(pool, skb);
+	pool_free(&skb_pool, skb);
 
 	ipl_restore(sp);
 }

@@ -153,18 +153,10 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 	skb->h.th->doff = tcp_hdr_sz / 4;
 }
 
-extern struct sk_buff * skb_alloc_reserv(unsigned int size);
-
 struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
-	struct sk_buff *skb;
 	opt_len = (opt_len + 3) & ~(size_t)3; /* round */
-	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
+	return skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
 			+ opt_len + data_len);
-	if(NULL == skb) {
-		skb = skb_alloc_reserv(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
-			+ opt_len + data_len);
-	}
-	return skb;
 }
 
 static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
