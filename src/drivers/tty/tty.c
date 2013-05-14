@@ -324,7 +324,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	}
 	else {
 		size = vtime == 0 ? min(size, vmin) : 1;
-		timeout = vmin > 0 ? SCHED_TIMEOUT_INFINITE
+		timeout = vmin > 0 ? EVENT_TIMEOUT_INFINITE
 				: vtime * 100; /* deciseconds to milliseconds */
 
 		rc = tty_wait_input(t, size, timeout);
