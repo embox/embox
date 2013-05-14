@@ -10,7 +10,7 @@ module executer {
 
 module executer_embox {
     @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
-	source "executer_embox.c"
+	source "executer_embox.c", "device_config.c"
 	depends lego_nxt.driver.nxt_motor
 	depends embox.pnet.core, embox.pnet.pack.PnetPackSimple
 }
