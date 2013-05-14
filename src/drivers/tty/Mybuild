@@ -10,7 +10,7 @@ module tty {
 	depends embox.kernel.work
 	depends embox.kernel.thread.event
 //	depends embox.kernel.thread.sync /* mutex */
-	depends embox.compat.posix.proc.signal
+//	depends embox.compat.posix.proc.signal
 }
 
 module pty {

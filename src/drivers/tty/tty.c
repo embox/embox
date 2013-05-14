@@ -17,7 +17,6 @@
 #include <signal.h>
 
 #include <kernel/irq_lock.h>
-#include <kernel/thread/sched.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
 #include <util/math.h>
