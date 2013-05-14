@@ -1,8 +1,12 @@
 package embox.kernel
 
-@DefaultImpl(event_sched)
+@DefaultImpl(event_nosched)
 abstract module event_api {
 
+}
+
+module event_nosched extends event_api {
+	source "event_nosched.c", "event_nosched.h"
 }
 
 module event_sched extends event_api {

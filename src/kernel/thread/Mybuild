@@ -43,6 +43,8 @@ module sched extends sched_api {
 	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
+
+	@NoRuntime depends embox.kernel.event_sched
 }
 
 module wait_queue {
@@ -51,12 +53,7 @@ module wait_queue {
 	@NoRuntime depends embox.kernel.thread.sched
 }
 
-/* TODO: Deprecated */
+/* FIXME: Deprecated */
 module event {
-	/*source "event.c"
-
-	depends sched_api
-	depends embox.kernel.thread.sched_policy.api*/
-
-	depends embox.kernel.event_sched
+	depends embox.kernel.event_api
 }
