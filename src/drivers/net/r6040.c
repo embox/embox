@@ -341,7 +341,6 @@ static const struct net_device_ops r6040_netdev_ops = {
 //	.ndo_start_xmit = r6040_start_xmit,
 	.ndo_open       = r6040_open,
 	.ndo_stop       = r6040_stop,
-//	.ndo_get_stats  = r6040_get_eth_stat,
 //	.ndo_set_mac_address = set_mac_address
 };
 #endif

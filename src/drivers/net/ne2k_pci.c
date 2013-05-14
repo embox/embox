@@ -40,8 +40,6 @@
 
 PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 
-static net_device_stats_t *get_eth_stat(struct net_device *dev);
-
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
 	uint8_t status; /* status */
@@ -229,7 +227,7 @@ static void ne2k_receive(struct net_device *dev) {
 	uint8_t tries;
 
 	base_addr = dev->base_addr;
-	stat = get_eth_stat(dev);
+	stat = &dev->stats;
 
 	tries = 10;
 	while (--tries) { /* XXX It's an infinite loop or not? */
@@ -293,7 +291,7 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 
-	stat = get_eth_stat((struct net_device *)dev_id);
+	stat = &((struct net_device *)dev_id)->stats;
 	base_addr = ((struct net_device *)dev_id)->base_addr;
 
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + E8390_CMD);
@@ -351,12 +349,7 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	assert(dev != NULL);
-	return &dev->stats;
-}
-
-static int set_mac_address(struct net_device *dev, void *addr) {
+static int set_mac_address(struct net_device *dev, const void *addr) {
 	uint32_t i;
 
 	if ((dev == NULL) || (addr == NULL)) {
@@ -400,7 +393,6 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_start_xmit = start_xmit,
 	.ndo_open = ne2k_open,
 	.ndo_stop = stop,
-	.ndo_get_stats = get_eth_stat,
 	.ndo_set_mac_address = set_mac_address
 };
 

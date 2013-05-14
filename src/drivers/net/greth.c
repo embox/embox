@@ -101,15 +101,7 @@ static int greth_xmit(sk_buff_t *skb, struct net_device *dev) {
 	return ENOERR;
 }
 
-static net_device_stats_t * greth_get_stats(struct net_device *dev) {
-	if (dev == NULL) {
-		return NULL;
-	}
-
-	return &(dev->stats);
-}
-
-static int greth_set_mac_address(struct net_device *dev, void *addr) {
+static int greth_set_mac_address(struct net_device *dev, const void *addr) {
 	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
@@ -151,11 +143,8 @@ static int greth_stop(struct net_device *dev) {
 
 static const struct net_device_ops greth_ops = {
 	.ndo_start_xmit      = greth_xmit,
-	.ndo_get_stats       = greth_get_stats,
-	.ndo_start_xmit = greth_xmit,
 	.ndo_open = greth_open,
 	.ndo_stop = greth_stop,
-	.ndo_get_stats = greth_get_stats,
 	.ndo_set_mac_address = greth_set_mac_address
 
 };

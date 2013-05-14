@@ -9,6 +9,7 @@
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
+#include <net/if_ether.h>
 #include <net/udp.h>
 #include <net/ip.h>
 #include <net/route.h>

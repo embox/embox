@@ -11,24 +11,28 @@
 
 #include __impl_x(framework/net/pack/self_impl.h)
 
-/**
- * @brief Add new packet type handler and initialization
- * function in spread array, placed in one structure previously.
- * @param _type - Ethernet Protocol ID
- * @param _func - handle pack
- * @param _init - initialize Ethernet protocol
- */
-#define EMBOX_NET_PACK(_type, _func, _init)  	\
-	int _func(sk_buff_t *skb, 					\
-			  struct net_device *dev, 				\
-			  packet_type_t *pt,				\
-			  struct net_device *orig_dev);			\
-	static int _init(void); 					\
-	static packet_type_t _##_type = { 			\
-			.type = _type,						\
-			.func = _func,						\
-			.init = _init						\
-		};										\
-		__EMBOX_NET_PACK(_##_type)
+#include <stddef.h>
+
+struct net_device;
+struct sk_buff;
+
+#define EMBOX_NET_PACK(_type, _handle)                  \
+	static int _handle(struct sk_buff *skb,             \
+			struct net_device *dev);                    \
+	__EMBOX_NET_PACK(_type, _type, _handle, NULL, NULL)
+
+#define EMBOX_NET_PACK_INIT(_type, _handle, _init)       \
+	static int _handle(struct sk_buff *skb,              \
+			struct net_device *dev);                     \
+	static int _init(void);                              \
+	__EMBOX_NET_PACK(_type, _type, _handle, _init, NULL)
+
+#define EMBOX_NET_PACK_INIT_FINI(_type, _handle, _init, _fini) \
+	static int _handle(struct sk_buff *skb,                    \
+			struct net_device *dev);                           \
+	static int _init(void);                                    \
+	static int _fini(void);                                    \
+	__EMBOX_NET_PACK(_type, _type, _handle, _init, _fini)
+
 
 #endif /* FRAMEWORK_NET_PACK_SELF_H_ */

@@ -13,6 +13,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <net/if_arp.h>
+#include <net/if_ether.h>
+#include <net/inetdevice.h>
 #include <string.h>
 
 #include <net/util.h>
@@ -84,8 +87,9 @@ static int exec(int argc, char **argv) {
 	for (i = 1; i <= cnt; i++) {
 		neighbour_del(NULL, 0, (const unsigned char *)&dst, sizeof dst,
 				in_dev->dev);
-		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
-				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
+		arp_send(ARP_OPER_REQUEST, ETH_P_IP, in_dev->dev->addr_len,
+				sizeof in_dev->ifa_address, NULL, &in_dev->ifa_address,
+				NULL, &dst.s_addr, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
 		if (neighbour_get_hardware_address((const unsigned char *)&dst,
 					sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],

@@ -12,7 +12,7 @@
  */
 
 #include <errno.h>
-#include <util/slist.h>
+#include <util/dlist.h>
 #include <util/array.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
@@ -38,7 +38,7 @@ typedef struct pci_slot {
 POOL_DEF(devs_pool, struct pci_slot_dev, OPTION_GET(NUMBER,dev_quantity));
 
 /* repository */
-struct slist __pci_devs_list = SLIST_INIT(&__pci_devs_list);
+DLIST_DEFINE(__pci_devs_list);
 
 /* check whether correct pci device in the slot bus */
 uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
@@ -75,8 +75,8 @@ static size_t dev_cnt = 0;
 
 /* insert information about pci device into the repository */
 static inline int pci_add_dev(struct pci_slot_dev *dev) {
-	slist_link_init(&dev->lst);
-	slist_add_first_link(&dev->lst, &__pci_devs_list);
+	dlist_head_init(&dev->lst);
+	dlist_add_prev(&dev->lst, &__pci_devs_list);
 	dev_cnt ++;
 	return 0;
 }
@@ -87,7 +87,7 @@ static int pci_scan_start(void) {
 	uint8_t hdr_type, is_multi = 0;
 	struct pci_slot_dev *new_dev;
 
-	if (!slist_empty(&__pci_devs_list)) {
+	if (!dlist_empty(&__pci_devs_list)) {
 		return dev_cnt;
 	}
 
@@ -133,10 +133,10 @@ static int pci_scan_start(void) {
 
 /* load every available pci driver */
 static int pci_load(void) {
-	struct pci_slot_dev *dev;
+	struct pci_slot_dev *dev, *nxt_pci_dev;
 	int ret;
 
-	pci_foreach_dev(dev) {
+	pci_foreach_dev(dev, nxt_pci_dev) {
 		if ((ret = pci_driver_load(dev))) {
 			if (ret == -ENOENT) {
 				continue;

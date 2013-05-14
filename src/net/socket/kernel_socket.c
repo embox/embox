@@ -14,38 +14,29 @@
 #include <sys/socket.h>
 #include <stddef.h>
 #include <string.h>
-#include <net/net.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>
 #include <net/kernel_socket.h>
 #include <net/socket_registry.h>
+#include <embox/net/family.h>
 
 int kernel_socket_create(int family, int type, int protocol,
 		struct socket **psock, struct sock *sk,
 		struct proto_ops *sk_ops) {
 	int res;
 	struct socket *sock;
-	const struct net_proto_family *pf;
-
-	if (!is_a_valid_sock_type(type)) {
-		return -EPROTOTYPE;
-	}
+	const struct net_family *nfamily;
 
 	if ((family == PF_INET) && (type == SOCK_PACKET)) {
 		family = PF_PACKET;
 	}
 
-	/* check for family support inside */
-	pf = socket_repo_get_family(family);
-	if (pf == NULL) {
+	nfamily = net_family_lookup(family);
+	if (nfamily == NULL) {
 		return -EAFNOSUPPORT;
 	}
 
-	if (pf->create == NULL) {
-		LOG_ERROR("kernel_socket_create", "no create() method for protocol family");
-		return -EAFNOSUPPORT;
-	}
 
 	/* TODO here must be code for trying socket (permition and so on)
 	 err = security_socket_create(family, type, protocol, kern);
@@ -68,7 +59,8 @@ int kernel_socket_create(int family, int type, int protocol,
 //	sock->state = SS_UNCONNECTED;
 
 	if (sk == NULL) {
-		res = pf->create(sock, protocol);
+		assert(nfamily->create != NULL);
+		res = nfamily->create(sock, type, protocol);
 		if (res < 0) {
 			socket_free(sock);
 			return res;

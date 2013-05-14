@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <net/sock.h>
-#include <embox/net/pack.h>
+#include <embox/net/family.h>
 #include <net/if_ether.h>
 #include <net/ip.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 
 #define MODOPS_AMOUNT_SOCKETS OPTION_GET(NUMBER, amount_sockets)
 
-EMBOX_NET_PACK(ETH_P_ALL, ip_rcv, packet_init);
+EMBOX_NET_FAMILY(AF_PACKET, packet_create);
 
 struct packet_sock {
 	/* struct sock has to be the first member of packet_sock */
@@ -53,10 +53,12 @@ static void packet_unhash(struct sock *sk) {
 	}
 }
 
+#if 0
 static int packet_sock_release(struct socket *sock) {
 	sk_common_release(sock->sk);
 	return 0;
 }
+#endif
 
 static int supported_sock_type(struct socket *sock) {
 	switch (sock->type) {
@@ -69,7 +71,7 @@ static int supported_sock_type(struct socket *sock) {
 	}
 }
 
-static int packet_create(struct socket *sock, int protocol) {
+static int packet_create(struct socket *sock, int type, int protocol) {
 	int res;
 	struct sock *sk;
 
@@ -89,24 +91,9 @@ static int packet_create(struct socket *sock, int protocol) {
 	return ENOERR;
 }
 
-/* uses for create socket */
-static const struct net_proto_family packet_family_ops = {
-		.family = PF_PACKET,
-		.create = packet_create,
-};
-
-static const struct proto_ops packet_proto_ops = {
-		.family            = PF_PACKET,
-		.release           = packet_sock_release,
-};
-
 static const struct proto packet_proto = {
 		.name	  = "PACKET",
 		.hash	  = packet_hash,
 		.unhash	  = packet_unhash,
 		.obj_size = sizeof(struct packet_sock),
 };
-
-static int packet_init(void) {
-	return sock_register(&packet_family_ops);
-}

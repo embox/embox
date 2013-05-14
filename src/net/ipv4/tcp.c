@@ -13,7 +13,6 @@
 #include <string.h>
 #include <mem/objalloc.h>
 #include <util/array.h>
-
 #include <net/inetdevice.h>
 #include <sys/socket.h>
 #include <net/checksum.h>
@@ -28,6 +27,7 @@
 #include <kernel/printk.h>
 #include <sys/time.h>
 #include <net/ip_port.h>
+#include <net/if_ether.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -38,7 +38,12 @@
 #include <kernel/task/io_sync.h>
 #include <prom/prom_printf.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/net/tcp_sock.h>
+#define MODOPS_AMOUNT_TCP_SOCK OPTION_MODULE_GET(embox__net__tcp_sock, NUMBER, amount_tcp_sock)
+
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
+
 
 /** TODO
  * +1. Create default socket for resetting
@@ -70,7 +75,6 @@ enum {
 typedef int (*tcp_handler_t)(union sock_pointer sock, struct sk_buff **skb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph);
 
-struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
 union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
 
@@ -108,7 +112,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 }
 
 static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, char *msg,
-		in_addr_t ip, uint16_t port) {
+		in_addr_t ip, in_port_t port) {
 	struct timeval now;
 	tcp_get_now(&now);
 	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
@@ -149,18 +153,10 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 	skb->h.th->doff = tcp_hdr_sz / 4;
 }
 
-extern struct sk_buff * skb_alloc_reserv(unsigned int size);
-
 struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
-	struct sk_buff *skb;
 	opt_len = (opt_len + 3) & ~(size_t)3; /* round */
-	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
+	return skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
 			+ opt_len + data_len);
-	if(NULL == skb) {
-		skb = skb_alloc_reserv(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
-			+ opt_len + data_len);
-	}
-	return skb;
 }
 
 static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
@@ -1014,27 +1010,28 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 	return ret;
 }
 
-static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t daddr, __be16 dport) {
-	size_t i;
+static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t daddr, in_port_t dport) {
 	union sock_pointer sock;
 
 	/* lookup socket with strict addressing */
-	for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-		if (((sock.tcp_sk = tcp_table[i]) != NULL) &&
-		    ((sock.inet_sk->rcv_saddr == saddr) &&
+	for (sock.sk = tcp_prot.iter(NULL);
+			sock.sk != NULL;
+			sock.sk = tcp_prot.iter(sock.sk)) {
+		if ((sock.inet_sk->rcv_saddr == saddr) &&
 		    (sock.inet_sk->sport == sport) &&
 		    (sock.inet_sk->daddr == daddr) &&
-		    (sock.inet_sk->dport == dport))) {
+		    (sock.inet_sk->dport == dport)) {
 			return sock.tcp_sk;
 		}
 	}
 
 	/* lookup another sockets */
-	for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-		if (((sock.tcp_sk = tcp_table[i]) != NULL) &&
-		    (((sock.inet_sk->rcv_saddr == INADDR_ANY) ||
+	for (sock.sk = tcp_prot.iter(NULL);
+			sock.sk != NULL;
+			sock.sk = tcp_prot.iter(sock.sk)) {
+		if (((sock.inet_sk->rcv_saddr == INADDR_ANY) ||
 		    (sock.inet_sk->rcv_saddr == saddr)) &&
-		    (sock.inet_sk->sport == sport))) {
+		    (sock.inet_sk->sport == sport)) {
 			return sock.tcp_sk;
 		}
 	}
@@ -1109,16 +1106,13 @@ static void tcp_tmr_rexmit(union sock_pointer sock) {
 }
 
 static void tcp_timer_handler(struct sys_timer *timer, void *param) {
-	size_t i;
 	union sock_pointer sock;
 
 //	debug_print(7, "TIMER: call tcp_timer_handler\n");
 
-	for (i = 0; i < sizeof tcp_table / sizeof tcp_table[0]; ++i) {
-		sock.tcp_sk = tcp_table[i];
-		if (sock.tcp_sk == NULL) {
-			continue;
-		}
+	for (sock.sk = tcp_prot.iter(NULL);
+			sock.sk != NULL;
+			sock.sk = tcp_prot.iter(sock.sk)) {
 		if (sock.sk->sk_state == TCP_TIMEWAIT) {
 			tcp_tmr_timewait(sock);
 		} else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
@@ -1129,9 +1123,6 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 
 static int tcp_v4_init(void) {
 	int ret;
-
-	/* Init global variables */
-	memset(tcp_table, 0, sizeof tcp_table);
 
 	/* Create default timer */
 	ret = timer_init(&tcp_tmr_default, TIMER_PERIODIC, TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
@@ -1147,8 +1138,4 @@ static int tcp_v4_init(void) {
 	tcp_prot.unhash(tcp_sock_default.sk);
 
 	return 0;
-}
-
-void * get_tcp_sockets(void) {
-	return (void *)tcp_table;
 }

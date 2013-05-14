@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Network device processing routines.
+ * @brief Network device processing routines
  *
  * @date 27.07.12
  * @author Anton Bondarev
@@ -8,17 +8,12 @@
  */
 
 #include <assert.h>
-#include <errno.h>
-#include <mem/misc/pool.h>
-#include <net/if.h>
-#include <net/netdevice.h>
-#include <net/skbuff.h>
-#include <stdlib.h>
-#include <string.h>
 #include <hal/ipl.h>
-#include <linux/list.h>
+#include <net/netdevice.h>
+#include <stddef.h>
+#include <util/list.h>
 
-static LIST_HEAD(rx_dev_queue);
+static LIST_DEF(netdev_rx_list);
 
 void netdev_rx_queued(struct net_device *dev) {
 	ipl_t sp;
@@ -26,14 +21,11 @@ void netdev_rx_queued(struct net_device *dev) {
 	assert(dev != NULL);
 
 	sp = ipl_save();
-
-	assert(((dev->rx_dev_link.next == NULL) && (dev->rx_dev_link.prev == NULL))
-			|| ((dev->rx_dev_link.next != NULL) && (dev->rx_dev_link.prev != NULL)));
-
-	if (dev->rx_dev_link.next == NULL) {
-		list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
+	{
+		if (list_alone_link(&dev->rx_lnk)) {
+			list_add_last_link(&dev->rx_lnk, &netdev_rx_list);
+		}
 	}
-
 	ipl_restore(sp);
 }
 
@@ -43,16 +35,18 @@ void netdev_rx_dequeued(struct net_device *dev) {
 	assert(dev != NULL);
 
 	sp = ipl_save();
-
-	list_del(&dev->rx_dev_link);
-
+	{
+		assert(!list_alone_link(&dev->rx_lnk));
+		list_unlink_link(&dev->rx_lnk);
+	}
 	ipl_restore(sp);
 }
 
 void netdev_rx_processing(void) {
-	struct net_device *dev, *save;
+	struct net_device *dev;
 
-	list_for_each_entry_safe(dev, save, &rx_dev_queue, rx_dev_link) {
+	list_foreach(dev, &netdev_rx_list, rx_lnk) {
+		assert(dev->poll != NULL);
 		dev->poll(dev);
 		netdev_rx_dequeued(dev);
 	}

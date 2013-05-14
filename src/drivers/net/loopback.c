@@ -26,9 +26,7 @@ static int loopback_xmit(struct sk_buff *skb, struct net_device *dev) {
 		return -EINVAL;
 	}
 
-	assert(dev->netdev_ops != NULL);
-	assert(dev->netdev_ops->ndo_get_stats != NULL);
-	lb_stats = dev->netdev_ops->ndo_get_stats(dev);
+	lb_stats = &dev->stats;
 
 	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
@@ -43,17 +41,8 @@ static int loopback_xmit(struct sk_buff *skb, struct net_device *dev) {
 	return 0;
 }
 
-static net_device_stats_t * loopback_get_stats(struct net_device *dev) {
-	if (dev == NULL) {
-		return NULL;
-	}
-
-	return &dev->stats;
-}
-
 static const struct net_device_ops loopback_ops = {
-	.ndo_start_xmit      = loopback_xmit,
-	.ndo_get_stats       = loopback_get_stats,
+	.ndo_start_xmit = loopback_xmit
 };
 
 /**

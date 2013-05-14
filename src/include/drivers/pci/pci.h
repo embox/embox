@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 #include <drivers/pci/pci_id.h>
-#include <util/slist.h>
+#include <util/dlist.h>
 //#include <util/array.h>
 #include <drivers/pci/pci_utils.h>
 //#include <drivers/pci/pci_driver.h>
@@ -158,7 +158,7 @@
 #define PCI_CLASS_OTHERS                0xff
 
 struct pci_slot_dev {
-	struct slist_link lst;
+	struct dlist_head lst;
 	uint32_t busn;
 	uint8_t slot;
 	uint8_t func;
@@ -177,9 +177,9 @@ struct pci_slot_dev {
 	uint32_t membaselimit;
 };
 
-#define pci_foreach_dev(pci_dev) \
-	slist_foreach(pci_dev, __extension__ ({   \
-	extern struct slist __pci_devs_list; &__pci_devs_list; \
+#define pci_foreach_dev(pci_dev, nxt_pci_dev) \
+	dlist_foreach_entry(pci_dev, nxt_pci_dev, __extension__ ({   \
+		extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
 	}), lst)
 
 #endif /* PCI_H_ */

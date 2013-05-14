@@ -11,11 +11,11 @@
 #define NET_BOOTP_H_
 
 #include <net/ip.h>
-#include <net/net.h>
 #include <string.h>
 #include <net/sock.h>
 #include <netinet/in.h>
 #include <net/skbuff.h>
+#include <net/netdevice.h>
 
 
 //#define HOSTNAME "embox"

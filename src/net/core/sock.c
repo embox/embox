@@ -26,20 +26,6 @@
 
 #define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
-#if 0
-typedef struct sock_info {
-	/*FIXME NETSOCK: now we use just udp_sock pull. It is the biggest of sock
-	 *  structure now. But we must allocate sock with size equals obj_size
-	 *  member in proto structure.
-	 */
-	struct udp_sock sk;
-} sock_info_t __attribute__ ((aligned (4)));
-
-/* pool for allocate sock_info */
-POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
-#endif
-
-
 /* allocates proto structure for specified protocol*/
 static struct sock * sk_prot_alloc(struct proto *prot) {
 	struct sock *sk;

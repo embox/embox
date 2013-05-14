@@ -13,7 +13,6 @@
 
 /* FIXME include this */
 //#include <net/if_arp.h>
-//#include <net/if_ether.h>
 //#include <net/netdevice.h>
 //#include <net/ip.h>
 //#include <net/icmp.h>
@@ -214,5 +213,7 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
  * Get first sk_buff from queue
  */
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
+
+#include <net/if_ether.h>
 
 #endif /* NET_SKBUFF_H_ */

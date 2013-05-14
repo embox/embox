@@ -17,6 +17,7 @@
 #include <net/util.h>
 #include <net/rarp.h>
 #include <net/if_arp.h>
+#include <net/if_ether.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
 #include <net/ip.h>
@@ -94,7 +95,7 @@ static int exec(int argc, char **argv) {
 		&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_del(&tha[0], hln, NULL, 0, in_dev->dev);
-		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, &sha[0], NULL,
+		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, NULL, NULL,
 			&tha[0], NULL, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
 		ret = neighbour_get_protocol_address(&tha[0], hln, in_dev->dev,

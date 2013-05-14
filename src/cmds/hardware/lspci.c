@@ -226,7 +226,7 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 
 static int exec(int argc, char **argv) {
 	int opt;
-	struct pci_slot_dev *pci_dev;
+	struct pci_slot_dev *pci_dev, *nxt_pci_dev;
 	char *endptr;
 	uint32_t offset = 0;
 	uint32_t length = 64;
@@ -287,7 +287,7 @@ static int exec(int argc, char **argv) {
 	}/*else have some parameters*/
 
 
-	pci_foreach_dev(pci_dev) {
+	pci_foreach_dev(pci_dev, nxt_pci_dev) {
 		if (busn_set && pci_dev->busn != busn) continue;
 		if (slot_set && pci_dev->slot != slot) continue;
 		if (func_set && pci_dev->func != func) continue;

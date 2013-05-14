@@ -92,6 +92,7 @@ module route {
 module tcp {
 	source "tcp.c"
 
+	depends tcp_sock
 	depends skbuff
 	depends core
 	depends ipv4 /* for ip_output.c */

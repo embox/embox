@@ -13,6 +13,7 @@
 #include <net/skbuff.h>
 #include <net/icmp.h>
 #include <net/ip.h>
+#include <net/if_ether.h>
 
 #include <mem/objalloc.h>
 #include <kernel/time/timer.h>

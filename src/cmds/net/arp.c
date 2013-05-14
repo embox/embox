@@ -15,6 +15,7 @@
 
 #include <net/util.h>
 #include <net/if_arp.h>
+#include <net/if_ether.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
 

@@ -9,6 +9,7 @@
 #ifndef EMBOX_NET_PACK_H_
 #define EMBOX_NET_PACK_H_
 
+#include <framework/net/pack/api.h>
 #include <framework/net/pack/self.h>
 
-#endif /* EMBOX_NET_H__ */
+#endif /* EMBOX_NET_PACK_H_ */

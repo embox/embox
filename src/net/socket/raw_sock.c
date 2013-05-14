@@ -10,15 +10,13 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/uio.h>
+#include <net/if_ether.h>
 
-
-#include <net/protocol.h>
 #include <net/sock.h>
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/raw.h>
-#include <net/inet_common.h>
 
 #include <embox/net/sock.h>
 
@@ -28,8 +26,8 @@
 
 static const struct proto raw_prot;
 
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, raw_prot, inet_raw_ops, 0, true);
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, raw_prot, inet_raw_ops, 0, false);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 1, raw_prot);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_prot);
 
 static struct raw_sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
 

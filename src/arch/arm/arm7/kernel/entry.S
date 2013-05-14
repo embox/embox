@@ -26,7 +26,7 @@ irq_handler:
 	mrs		LR, SPSR
 	stmfd	sp!, {r0-r12, lr}
 
-	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
+	msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT /* going to SYS mode, still disabling interrupts */
 	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
 
 	bl interrupt_handle

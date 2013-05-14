@@ -19,6 +19,7 @@
 #include <net/checksum.h>
 #include <net/netdevice.h>
 #include <net/sock.h>
+#include <linux/types.h>
 
 /**
  * Prototypes
@@ -128,12 +129,6 @@ static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __b
 /**
  * Functions provided by ip.c
  */
-
-/**
- * Main IP Receive routine.
- */
-extern int ip_rcv(struct sk_buff *pack, struct net_device *dev,
-				struct packet_type *pt, struct net_device *orig_dev);
 
 /**
  * Add an ip header to a net_packet and send it out.

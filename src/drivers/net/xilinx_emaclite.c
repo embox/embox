@@ -184,7 +184,6 @@ static void pack_receiving(void *dev_id) {
 	uint16_t len, proto_type;
 	uint32_t tmp;
 	sk_buff_t *skb;
-	const struct net_device_ops *ops;
 	struct net_device_stats *stats;
 	int rx_rc;
 
@@ -232,8 +231,7 @@ static void pack_receiving(void *dev_id) {
 
 	/* update device statistic */
 	skb->dev = dev_id;
-	ops = skb->dev->netdev_ops;
-	stats = ops->ndo_get_stats(skb->dev);
+	stats = &skb->dev->stats;
 	stats->rx_packets++;
 	stats->rx_bytes += skb->len;
 
@@ -300,7 +298,7 @@ static int emaclite_stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
+static int emaclite_set_mac_address(struct net_device *dev, const void *addr) {
 	if (NULL == dev || NULL == addr) {
 		return -EINVAL;
 	}
@@ -320,15 +318,10 @@ static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
 /*
  * Get RX/TX stats
  */
-static net_device_stats_t *emaclite_get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
-}
-
 static const struct net_device_ops _netdev_ops = {
 	.ndo_start_xmit = emaclite_start_xmit,
 	.ndo_open = emaclite_open,
 	.ndo_stop = emaclite_stop,
-	.ndo_get_stats = emaclite_get_eth_stat,
 	.ndo_set_mac_address = emaclite_set_mac_address
 };
 

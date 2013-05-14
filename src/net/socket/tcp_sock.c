@@ -13,6 +13,7 @@
 #include <sys/uio.h>
 #include <util/array.h>
 #include <util/math.h>
+#include <net/if_ether.h>
 
 #include <net/tcp.h>
 #include <sys/socket.h>
@@ -27,8 +28,12 @@
 #include <embox/net/sock.h>
 #include <kernel/task/io_sync.h>
 
+#include <framework/mod/options.h>
+#define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
-EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
+static struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
+
+EMBOX_NET_SOCK_INIT(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_prot, tcp_sock_init);
 
 OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
 
@@ -463,6 +468,28 @@ static void tcp_v4_unhash(struct sock *sk) {
 	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
 }
 
+static struct sock * tcp_v4_iter(struct sock *prev) {
+	size_t i;
+
+	if (prev == NULL) {
+		return (struct sock *)tcp_table[0];
+	}
+
+	for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
+		if ((struct sock *)tcp_table[i] == prev) {
+			break;
+		}
+	}
+
+	for (++i; i < ARRAY_SIZE(tcp_table); ++i) {
+		if (tcp_table[i] != NULL) {
+			return (struct sock *)tcp_table[i];
+		}
+	}
+
+	return NULL;
+}
+
 static int allocated = 0; /* for debug */
 static struct sock * tcp_v4_sock_alloc(void) {
 	struct sock *sk;
@@ -500,8 +527,15 @@ const struct proto tcp_prot = {
 		.close      = tcp_v4_close,
 		.hash       = tcp_v4_hash,
 		.unhash     = tcp_v4_unhash,
+		.iter       = tcp_v4_iter,
 		.sock_alloc = tcp_v4_sock_alloc,
 		.sock_free  = tcp_v4_sock_free,
 		.shutdown   = tcp_v4_shutdown,
 		.obj_size   = sizeof(struct tcp_sock),
 };
+
+static int tcp_sock_init(void) {
+	/* Init global variables */
+	memset(tcp_table, 0, sizeof tcp_table);
+	return 0;
+}

@@ -168,6 +168,7 @@ typedef struct proto {
 	int (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
+	struct sock * (*iter)(struct sock *prev);
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;

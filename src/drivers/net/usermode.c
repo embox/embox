@@ -73,10 +73,6 @@ static int umether_open(struct net_device *dev) {
 	return ENOERR;
 }
 
-static net_device_stats_t *umether_getstat(struct net_device *dev) {
-	return &(dev->stats);
-}
-
 static int umether_stop(struct net_device *dev) {
 
 	if (devstate.id < 0) {
@@ -90,7 +86,7 @@ static int umether_stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int umether_setmac(struct net_device *dev, void *addr) {
+static int umether_setmac(struct net_device *dev, const void *addr) {
 
 	if (devstate.id < 0) {
 		return -ENODEV;
@@ -154,7 +150,6 @@ static const struct net_device_ops umether_netdev_ops = {
 	.ndo_start_xmit = umether_start_xmit,
 	.ndo_open = umether_open,
 	.ndo_stop = umether_stop,
-	.ndo_get_stats = umether_getstat,
 	.ndo_set_mac_address = umether_setmac,
 };
 

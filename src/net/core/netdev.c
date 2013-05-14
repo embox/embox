@@ -17,6 +17,7 @@
 #include <string.h>
 #include <hal/ipl.h>
 #include <linux/list.h>
+#include <util/list.h>
 #include <util/hashtable.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -26,14 +27,12 @@ EMBOX_UNIT_INIT(netdev_init);
 POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER, netdev_quantity));
 struct hashtable *netdevs_table;
 
-static int netdev_process_backlog(struct net_device *dev) {
+static void netdev_process_backlog(struct net_device *dev) {
 	struct sk_buff *skb;
 
 	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
 		netif_receive_skb(skb);
 	}
-
-	return ENOERR;
 }
 
 struct net_device * netdev_alloc(const char *name,
@@ -49,9 +48,7 @@ struct net_device * netdev_alloc(const char *name,
 
 	(*setup)(dev);
 
-	dev->rx_dev_link.next = NULL;
-	dev->rx_dev_link.prev = NULL;
-
+	list_link_init(&dev->rx_lnk);
 	skb_queue_init(&dev->dev_queue);
 	skb_queue_init(&dev->tx_dev_queue);
 	skb_queue_init(&dev->txing_queue);
@@ -83,81 +80,93 @@ struct net_device * netdev_get_by_name(const char *name) {
 }
 
 int netdev_open(struct net_device *dev) {
-	int res;
-	const struct net_device_ops *ops;
+	int ret;
 
-	/* Is it already up? */
+	assert(dev != NULL);
+
 	if (dev->flags & IFF_UP) {
-		return ENOERR;
+		return 0;
 	}
 
-	res = ENOERR;
-	ops = dev->netdev_ops;
-	dev->state |= __LINK_STATE_START;
-
-	if (ops->ndo_open) {
-		res = ops->ndo_open(dev);
-	}
-	if (res != ENOERR) {
-		dev->state &= ~__LINK_STATE_START;
-	} else {
-		/* Set the flags. */
-		/*TODO: IFF_RUNNING sets not here*/
-		dev->flags |= (IFF_UP | IFF_RUNNING);
+	if (dev->netdev_ops->ndo_open != NULL) {
+		ret = dev->netdev_ops->ndo_open(dev);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
-	return res;
+	/* TODO IFF_RUNNING sets not here*/
+	dev->flags |= IFF_UP | IFF_RUNNING;
+
+	return 0;
 }
 
 int netdev_close(struct net_device *dev) {
-	int res;
-	const struct net_device_ops *ops;
+	int ret;
+
+	assert(dev != NULL);
 
 	if (!(dev->flags & IFF_UP)) {
-		return ENOERR;
+		return 0;
 	}
 
-	res = ENOERR;
-	ops = dev->netdev_ops;
-	dev->state &= ~__LINK_STATE_START;
-
-	if (ops->ndo_stop) {
-		res = ops->ndo_stop(dev);
-	}
-	if (res != ENOERR) {
-		dev->state |= __LINK_STATE_START;
-	} else {
-		/* Device is now down. */
-		/* TODO: IFF_RUNNING sets not here*/
-		dev->flags &= ~(IFF_UP | IFF_RUNNING);
+	if (dev->netdev_ops->ndo_stop != NULL) {
+		ret = dev->netdev_ops->ndo_stop(dev);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
-	return res;
+	/* TODO IFF_RUNNING sets not here*/
+	dev->flags &= ~(IFF_UP | IFF_RUNNING);
+
+	return 0;
 }
 
-unsigned int netdev_get_flags(const struct net_device *dev) {
-	return dev->flags;
-}
+int netdev_flag_up(struct net_device *dev, unsigned int flag) {
+	int ret;
 
-int netdev_set_flags(struct net_device *dev, unsigned int flags) {
-	int res, old_flags;
-	int (*func)(struct net_device *);
-
-	res = ENOERR;
-	old_flags = dev->flags;
-	if ((old_flags ^ flags) & IFF_UP) { /* i.e. IFF_UP bit was inverted */
-		func = (flags & IFF_UP) ? &netdev_open : &netdev_close;
-		res = (*func)(dev);
+	if (dev->flags & flag) {
+		return 0;
 	}
 
-	if (res >= 0)
-		dev->flags = flags;
+	switch (flag) {
+	case IFF_UP:
+		ret = netdev_open(dev);
+		if (ret != 0) {
+			return ret;
+		}
+		break;
+	}
 
-	return res;
+	dev->flags |= flag;
+
+	return 0;
+}
+
+int netdev_flag_down(struct net_device *dev, unsigned int flag) {
+	int ret;
+
+	if (!(dev->flags & flag)) {
+		return 0;
+	}
+
+	switch (flag) {
+	case IFF_UP:
+		ret = netdev_close(dev);
+		if (ret != 0) {
+			return ret;
+		}
+		break;
+	}
+
+	dev->flags &= ~flag;
+
+	return 0;
 }
 
 int netdev_set_macaddr(struct net_device *dev,
-		const unsigned char *mac_addr) {
+		const void *mac_addr) {
 	if ((dev == NULL) || (mac_addr == NULL)) {
 		return -EINVAL;
 	}
@@ -167,8 +176,32 @@ int netdev_set_macaddr(struct net_device *dev,
 		return -ENOSUPP;
 	}
 
-	return dev->netdev_ops->ndo_set_mac_address(dev,
-			(void *)mac_addr);
+	return dev->netdev_ops->ndo_set_mac_address(dev, mac_addr);
+}
+
+int netdev_set_irq(struct net_device *dev, int irq_num) {
+	assert(dev != NULL);
+	dev->irq = irq_num;
+	return 0;
+}
+
+int netdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
+	assert(dev != NULL);
+	dev->base_addr = base_addr;
+	return 0;
+}
+
+int netdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
+	assert(dev != NULL);
+	dev->tx_queue_len = new_len;
+	return 0;
+}
+
+int netdev_set_bcastaddr(struct net_device *dev, const void *bcast_addr) {
+	assert(dev != NULL);
+	assert(bcast_addr != NULL);
+	memcpy(&dev->broadcast[0], bcast_addr, dev->addr_len);
+	return 0;
 }
 
 static size_t netdev_hash(const char *name) {
@@ -186,5 +219,5 @@ static int netdev_init(void) {
 	if (netdevs_table == NULL) {
 		return -ENOMEM;
 	}
-	return ENOERR;
+	return 0;
 }

@@ -21,12 +21,11 @@
 #include <net/icmp.h>
 #include <net/raw.h>
 #include <net/etherdevice.h>
+#include <net/if_packet.h>
 
 #include <embox/net/proto.h>
-#include <framework/net/proto/api.h>
 
 #include <kernel/time/ktime.h>
-
 
 EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
 
@@ -36,7 +35,7 @@ EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
  * then ICMP
  */
 static inline bool is_packet_not_unicast(sk_buff_t *skb) {
-	return (eth_packet_type(skb) != PACKET_HOST) ||
+	return (pkt_type(skb) != PACKET_HOST) ||
 		   !(ip_is_local(skb->nh.iph->daddr, false, false));
 }
 
@@ -192,16 +191,14 @@ static int icmp_unreach(sk_buff_t *skb) {
 	{
 		const struct net_proto *net_proto_ptr = NULL;
 
-		net_proto_foreach(net_proto_ptr) {
-			net_protocol_t *p_netproto = net_proto_ptr->netproto;
-			if (p_netproto->type == iph_embedded->proto) {
-				if (likely(p_netproto->err_handler)) {
-					p_netproto->err_handler(skb, info);
-					return ENOERR;
-				} else {
-					/* This protocol refuses errors processing */
-					return -1;
-				}
+		net_proto_ptr = net_proto_lookup(iph_embedded->proto);
+		if (net_proto_ptr != NULL) {
+			if (likely(net_proto_ptr->handle_error)) {
+				net_proto_ptr->handle_error(skb, info);
+				return ENOERR;
+			} else {
+				/* This protocol refuses errors processing */
+				return -1;
 			}
 		}
 	}
