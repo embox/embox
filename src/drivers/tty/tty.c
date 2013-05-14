@@ -18,7 +18,7 @@
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sched.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/work.h>
 #include <util/math.h>
 
@@ -292,7 +292,7 @@ static int tty_wait_input(struct tty *t, size_t input_sz,
 	{
 		while (input_sz > WORK_DISABLED_DO(&t->rx_work, ring_can_read(
 					&t->i_ring, TTY_IO_BUFF_SZ, input_sz))) {
-			rc = event_wait(&t->i_event, timeout);
+			rc = EVENT_WAIT(&t->i_event, 0, timeout); /* TODO: event condition */
 			if (rc != 0) {
 				break;
 			}

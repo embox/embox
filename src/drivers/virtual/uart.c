@@ -22,7 +22,7 @@
 
 #include <kernel/irq.h>
 
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched.h>
 

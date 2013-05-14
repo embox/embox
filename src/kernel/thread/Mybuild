@@ -51,9 +51,12 @@ module wait_queue {
 	@NoRuntime depends embox.kernel.thread.sched
 }
 
+/* TODO: Deprecated */
 module event {
-	source "event.c"
+	/*source "event.c"
 
 	depends sched_api
-	depends embox.kernel.thread.sched_policy.api
+	depends embox.kernel.thread.sched_policy.api*/
+
+	depends embox.kernel.event_sched
 }

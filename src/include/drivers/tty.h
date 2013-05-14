@@ -14,7 +14,7 @@
 #include <termios.h>
 
 #include <kernel/irq_lock.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 // #include <kernel/thread/sync/mutex.h>
 #include <kernel/work.h>
 #include <util/ring.h>

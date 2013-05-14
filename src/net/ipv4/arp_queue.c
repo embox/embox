@@ -10,7 +10,7 @@
 #include <string.h>
 #include <net/arp_queue.h>
 #include <util/hashtable.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <embox/unit.h>
 #include <sys/socket.h>
 #include <errno.h>

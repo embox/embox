@@ -7,7 +7,7 @@
  */
 
 #include <kernel/task/io_sync.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 void idx_io_enable(struct idx_desc_data *ddata, int op) {
 	struct idx_io_state *io_state;

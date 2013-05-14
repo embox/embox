@@ -15,7 +15,7 @@
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
 #include <kernel/softirq_lock.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 

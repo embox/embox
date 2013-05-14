@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/time/time.h>
 #include <kernel/task.h>
@@ -76,7 +76,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		goto out;
 	}
 
-	event_wait(&event, ticks);
+	EVENT_WAIT(&event, 0, ticks); /* TODO: event condition */
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 

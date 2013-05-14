@@ -9,7 +9,7 @@
 #ifndef IDE_H_
 #define IDE_H_
 
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 #define CDSECTORSIZE            2048
 
