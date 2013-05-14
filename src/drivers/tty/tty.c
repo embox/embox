@@ -19,7 +19,10 @@
 #include <kernel/irq_lock.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
+#include <kernel/thread/sched_lock.h>
+
 #include <util/math.h>
+#include <util/member.h>
 
 #define TC_I(t, flag) ((t)->termios.c_iflag & (flag))
 #define TC_O(t, flag) ((t)->termios.c_oflag & (flag))
