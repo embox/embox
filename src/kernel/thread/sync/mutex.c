@@ -29,7 +29,7 @@ static int priority_inherit(struct thread *t);
 static void priority_uninherit(struct thread *t);
 
 void mutex_init(struct mutex *m) {
-	sleepq_init(&m->sq);
+	wait_queue_init(&m->wq);
 	m->lock_count = 0;
 	m->holder = NULL;
 #if 0
@@ -51,7 +51,7 @@ void mutex_lock(struct mutex *m) {
 			/* We have to wait for a mutex to be released. */
 
 			priority_inherit(current);
-			sched_sleep_locked(&m->sq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
+			wait_queue_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 
 		current->mutex_waiting = NULL;
@@ -116,7 +116,7 @@ void mutex_unlock(struct mutex *m) {
 		priority_uninherit(current);
 
 		m->holder = NULL;
-		sched_wake_one(&m->sq);
+		wait_queue_notify(&m->wq);
 	}
 	out: sched_unlock();
 }

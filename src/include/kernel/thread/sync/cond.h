@@ -10,11 +10,10 @@
 #define KERNEL_THREAD_SYNC_COND_H_
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/thread/sched_strategy.h>
-
+#include <kernel/thread/wait_queue.h>
 
 struct cond {
-	struct sleepq sq;
+	struct wait_queue wq;
 };
 
 typedef struct cond cond_t;

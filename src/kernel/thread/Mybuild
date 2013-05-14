@@ -17,6 +17,7 @@ module core extends thread_mode {
 
 	depends sched
 	depends event
+	depends wait_queue
 	depends embox.kernel.thread.sched_policy.api
 	depends embox.arch.context
 	depends embox.kernel.task.kernel_task
@@ -32,7 +33,7 @@ module sched_none extends sched_api {
 }
 
 module sched extends sched_api {
-	source "sched.c", "startq.c"
+	source "sched.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
@@ -44,9 +45,18 @@ module sched extends sched_api {
 	@NoRuntime depends embox.kernel.critical
 }
 
+module wait_queue {
+	source "wait_queue.c"
+
+	@NoRuntime depends embox.kernel.thread.sched
+}
+
+/* TODO: Deprecated */
 module event {
-	source "event.c"
+	/*source "event.c"
 
 	depends sched_api
-	depends embox.kernel.thread.sched_policy.api
+	depends embox.kernel.thread.sched_policy.api*/
+
+	depends embox.kernel.event_sched
 }

@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 #include <framework/example/self.h>
 
@@ -33,7 +33,8 @@ static void *thread_handler(void *args) {
 			thread_self()->id);
 
 
-	event_wait(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
+	/* TODO: event condition */
+	EVENT_WAIT(event, 0, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
 	for(i = 0; i < CONF_HANDLER_REPEAT_NUMBER; i ++) {

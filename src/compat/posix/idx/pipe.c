@@ -16,7 +16,7 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 #include <kernel/thread/sched.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 #include <util/ring_buff.h>
 #include <framework/mod/options.h>
@@ -180,7 +180,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 		if (!(data->flags & O_NONBLOCK)) {
 			if (!len) {
-				event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
+				EVENT_WAIT(&pipe->read_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 			}
 		}
@@ -225,7 +225,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 
 		if (!(data->flags & O_NONBLOCK)) {
 			if (!len) {
-				event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
+				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 			}
 		}

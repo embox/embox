@@ -13,7 +13,7 @@
 
 #include <kernel/thread.h>
 #include <kernel/thread/state.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 #include <pnet/core.h>
 #include <pnet/pnet_pack.h>
@@ -47,7 +47,7 @@ static void *pnet_rx_thread_hnd(void *args) {
 
 	while (1) {
 		if (unit->buff.cnt == 0) {
-			event_wait(&unit->event, EVENT_TIMEOUT_INFINITE);
+			EVENT_WAIT(&unit->event, 0, EVENT_TIMEOUT_INFINITE); /* TODO: event condition */
 			continue;
 		}
 		ring_buff_dequeue(&unit->buff, &pack, 1);

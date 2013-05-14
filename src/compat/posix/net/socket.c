@@ -26,7 +26,7 @@
 #include <net/arp_queue.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/task/io_sync.h>
 #include <net/socket_registry.h>
 
@@ -301,7 +301,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
 		if (ret == -1 && errno == EAGAIN) {
 			if (!(fd_flags & O_NONBLOCK)) {
-				event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+				EVENT_WAIT(&sock->sk->sock_is_not_empty, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
 			}
 		}

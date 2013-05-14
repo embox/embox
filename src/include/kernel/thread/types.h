@@ -22,6 +22,8 @@ typedef unsigned int __thread_state_t;
 #include <sys/types.h>
 #include <kernel/thread/sched_priority.h>
 #include <kernel/thread/thread_priority.h>
+#include <kernel/thread/wait_data.h>
+#include <kernel/thread/wait_queue.h>
 
 struct context;
 
@@ -52,8 +54,6 @@ struct thread {
 	sched_priority_t initial_priority; /**< Scheduling priority. */
 	sched_priority_t sched_priority; /**< Current scheduling priority. */
 
-	struct startq_data startq_data;   /**< Resuming the thread from critical. */
-
 	union {
 		struct runq      *runq;      /**< For running/ready state. */
 		struct sleepq    *sleepq;    /**< For sleeping state. */
@@ -64,9 +64,9 @@ struct thread {
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */
 
-	struct sleepq     exit_sleepq;   /**< Thread exit event. */
+	struct wait_queue exit_waitq;   /**< Thread exit event. */
 
-	int               sleep_res;     /**< Result shed_sleep */
+	struct wait_data  wait_data;
 
 	struct task      *task;          /**< Task belong to. */
 	struct list_head  task_link;     /**< Link in list holding task threads. */

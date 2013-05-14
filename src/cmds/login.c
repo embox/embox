@@ -20,8 +20,6 @@
 #include <shadow.h>
 #include <utmp.h>
 
-#include <kernel/thread/event.h>
-
 #include <embox/cmd.h>
 
 extern char *getpass_r(const char *prompt, char *buf, size_t buflen);

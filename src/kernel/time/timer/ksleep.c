@@ -12,7 +12,7 @@
 
 #include <kernel/time/timer.h>
 #include <kernel/thread/sched.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 int ksleep(useconds_t msec) {
 	int res_sleep;
@@ -25,7 +25,7 @@ int ksleep(useconds_t msec) {
 
 	event_init(&never_happen, "never_happen");
 
-	res_sleep = event_wait(&never_happen, msec);
+	res_sleep = EVENT_WAIT(&never_happen, 0, msec); /* TODO: event condition */
 
 	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
 }
