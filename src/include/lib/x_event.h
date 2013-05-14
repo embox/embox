@@ -1,7 +1,7 @@
 #ifndef LIB_X_EVENT_H_
 #define LIB_X_EVENT_H_
 
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/thread/sync/mqueue.h>
 #include <mem/misc/pool.h>
 

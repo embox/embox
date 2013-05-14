@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <framework/example/self.h>
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 
 #include <util/macro.h>
 
@@ -24,7 +24,7 @@ static void *thread_run(void *arg) {
 	struct event *event = (struct event *)arg;
 	/**waiting until event receives  */
 	printf("waiting for event's notifying...\n");
-	event_wait(event, SCHED_TIMEOUT_INFINITE);
+	EVENT_WAIT(event, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 	printf("event has been received.\n");
 	return 0;
 }
