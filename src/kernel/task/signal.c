@@ -12,14 +12,15 @@
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
 #include <kernel/task/std_signal.h>
+#include <kernel/thread/sched.h>
 #include "common.h"
 #include <util/array.h>
 
 ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
-
+#if 0
 extern void context_enter_frame(struct context *ctx, void *pc);
 extern void context_push_stack(struct context *ctx, void *arg, size_t n);
-
+#endif
 int task_some_thd_run(struct task *task) {
 	struct thread *th;
 	int res = -1;
