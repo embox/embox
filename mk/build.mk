@@ -20,7 +20,17 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/image2.mk MAKEFILES=''
 
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
+	@echo ' BUILDGEN'
 	@$(MAKE) -f $< && touch $@
+
+# force regeneration of build files when some of them are missing
+
+-include $(MKGEN_DIR)/include.mk
+__include ?=
+
+ifneq ($(words $(__include)), $(words $(wildcard $(__include))))
+.PHONY : $(build_gen_ts)
+endif
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)

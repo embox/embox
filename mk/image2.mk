@@ -31,7 +31,12 @@ IMAGE_PIGGY = $(IMAGE).piggy
 include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
+
 include $(MKGEN_DIR)/include.mk
+include $(__include_image)
+include $(__include_initfs)
+include $(__include)
+
 
 .SECONDARY:
 .DELETE_ON_ERROR:

@@ -57,6 +57,13 @@ gen_make_var = \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2)
 
+# 1. Variable name.
+# 2. Value.
+gen_make_var_list = \
+	$(PRINTF) '%s := $(foreach ,$2,\\\n\t%s)\n\n' \
+		$(call sh_quote,$1) \
+		$(foreach v,$2,$(call sh_quote,$v))
+
 # 1. Target.
 # 2. Prerequisites.
 # 3. Recipe.
@@ -97,13 +104,6 @@ gen_make_include = \
 	$(PRINTF) '%sinclude %s\n\n' \
 		$(call sh_quote,$(if $(value 2),-)) \
 		$(call sh_quote,$1)
-
-# 1. Makefiles...
-# 2. Whether to use silent '-include'.
-gen_make_include_list = \
-	$(PRINTF) '%sinclude $(foreach ,$1,\\\n\t%s)\n\n' \
-		$(call sh_quote,$(if $(value 2),-)) \
-		$(foreach v,$1,$(call sh_quote,$v))
 
 # Working with these lists...
 
@@ -184,11 +184,10 @@ $(@build_include_mk) : initfs_rulemk = \
 $(@build_include_mk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_include,$(image_rulemk)); \
-		$(call gen_make_include,$(initfs_rulemk)); \
-		$(call gen_make_include_list,$(source_rulemk)); \
-		$(call gen_make_include_list,$(module_extbld_rulemk)); \
-		$(call gen_make_include_list,$(module_ar_rulemk)))
+		$(call gen_make_var,__include_image,$(image_rulemk)); \
+		$(call gen_make_var,__include_initfs,$(initfs_rulemk)); \
+		$(call gen_make_var_list,__include, \
+			$(source_rulemk) $(module_extbld_rulemk) $(module_ar_rulemk)))
 
 build_initfs := initfs
 
