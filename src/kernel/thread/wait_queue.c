@@ -15,6 +15,7 @@
 #include <kernel/thread/wait_queue.h>
 
 #include <util/member.h>
+#include <util/dlist.h>
 
 static void on_notified(struct thread *thread, void *data) {
 	struct wait_link *wait_link = data;
