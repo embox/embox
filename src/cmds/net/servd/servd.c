@@ -186,9 +186,11 @@ static int servd(int argc, char **argv) {
 		case 'r': /*run - runs service */
 			run_service(optarg);
 			break;
+#if 0
 		case 's': /* stop - stops service */
 			stop_service(optarg);
 			break;
+#endif
 		case 'S': /* Stop - stops server */
 			if (stop_server() < 0) {
 				printf("Can't stop server\n");

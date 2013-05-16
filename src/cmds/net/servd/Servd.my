@@ -6,14 +6,12 @@ package embox.cmd.net
 		NAME
 			servd - HTTP server that supports services
 		SYNOPSIS
-			servd [-c file.config] [-s service] [-r service] [-S]
+			servd [-c file.config] [-r service] [-S]
 		DESCRIPTION
 			Start HTTP server
 		OPTIONS
 			-c file.config
 				starts services that file.config contains (after service name must be next line character)
-			-s service
-				stops one service
 			-r service
 				starts one service
 			-S
