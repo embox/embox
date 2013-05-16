@@ -17,8 +17,6 @@
 
 #include <framework/mod/options.h>
 
-#include <module/embox/kernel/thread/core.h>
-
 #include <kernel/thread/current.h>
 #include <kernel/thread/sched.h>
 #include <sys/types.h>
