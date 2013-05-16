@@ -1,0 +1,6 @@
+package embox.net
+
+module ipv6 {
+	source "ip6_input.c"
+	depends skbuff
+}
