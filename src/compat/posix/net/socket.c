@@ -265,7 +265,6 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
 		dest_addr->sin_family = AF_INET;
 		dest_addr->sin_addr.s_addr = inet->daddr;
 		dest_addr->sin_port = inet->dport;
-		memset(&dest_addr->sin_zero[0], 0, sizeof dest_addr->sin_zero);
 		*daddrlen = sizeof *dest_addr;
 	}
 
@@ -470,7 +469,6 @@ int getsockname(int sockfd, struct sockaddr *addr,
 		src_addr->sin_family = AF_INET;
 		src_addr->sin_addr.s_addr = inet->rcv_saddr;
 		src_addr->sin_port = inet->sport;
-		memset(&src_addr->sin_zero[0], 0, sizeof src_addr->sin_zero);
 		*addrlen = sizeof *src_addr;
 		break;
 //	default:
