@@ -29,6 +29,7 @@ struct net_device;
 struct tcphdr;
 struct udphdr;
 struct icmphdr;
+struct icmp6hdr;
 struct iphdr;
 struct ip6hdr;
 struct arpghdr;
@@ -78,6 +79,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
+		struct icmp6hdr *icmp6h;
 		unsigned char *raw;
 	} h;
 

@@ -13,6 +13,9 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 
+struct sock;
+struct proto;
+
 /**
  * @struct ip_options
  * @brief IP Options

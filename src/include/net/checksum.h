@@ -9,7 +9,7 @@
 #ifndef NET_CHECKSUM_H_
 #define NET_CHECKSUM_H_
 
-static inline unsigned long partial_sum(void *addr, int len) {
+static inline unsigned long partial_sum(const void *addr, int len) {
 	unsigned long sum;
 	unsigned short oddbyte, *ptr;
 
@@ -36,7 +36,7 @@ static inline unsigned short fold_short(unsigned long sum) {
 	return (unsigned short) (sum & 0xffff);
 }
 
-static inline unsigned short ptclbsum(void *addr, int len) {
+static inline unsigned short ptclbsum(const void *addr, int len) {
 	return ~fold_short(partial_sum(addr, len));
 }
 

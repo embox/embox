@@ -49,23 +49,19 @@ struct e8390_pkt_hdr {
 
 #define DEBUG 0
 #if DEBUG
+#include <kernel/printk.h>
 /* Debugging routines */
-static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
-	uint8_t i, val;
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
 
-	printf("\nPACKET %s:", title);
+	printk("\nPACKET(%d) %s:", size, title);
 	for (i = 0; i < size; i++) {
 		if (!(i % 16)) {
-			printf("\n");
+			printk("\n");
 		}
-		val = *(raw + i);
-		if (val < 0x10) {
-			printf(" 0%X", val);
-		} else {
-			printf(" %X", val);
-		}
+		printk(" %02hhX", *(raw + i));
 	}
-	printf("\n.\n");
+	printk("\n.\n");
 }
 #endif
 

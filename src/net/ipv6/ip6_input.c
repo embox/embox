@@ -10,6 +10,8 @@
 #include <net/skbuff.h>
 #include <embox/net/pack.h>
 #include <net/ipv6.h>
+#include <net/netdevice.h>
+#include <arpa/inet.h>
 
 EMBOX_NET_PACK(ETH_P_IPV6, ip6_rcv);
 
@@ -42,7 +44,7 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 				: NET_RX_DROP;
 	}
 
-	printk("ipv6 packet accepted\n");
+	printk("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
 
 	skb_free(skb);
 	return NET_RX_DROP; /* Nobody wants this packet */

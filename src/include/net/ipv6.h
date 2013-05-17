@@ -9,24 +9,15 @@
 #ifndef NET_IP6_H_
 #define NET_IP6_H_
 
-#include <arpa/inet.h>
 #include <netinet/in.h>
-
 #include <net/skbuff.h>
-#include <net/inet_sock.h>
 #include <hal/arch.h> /* endianess */
-#include <net/checksum.h>
-#include <net/netdevice.h>
-#include <net/sock.h>
 #include <linux/types.h>
 
 /**
  * Prototypes
  */
 struct sk_buff;
-struct packet_type;
-struct net_device;
-struct sock;
 
 typedef struct ip6hdr {
 #if defined(__LITTLE_ENDIAN)
@@ -36,7 +27,7 @@ typedef struct ip6hdr {
 	__u8 version:4, /* version = 6 */
 		priority:4; /* priority */
 #endif
-	__u8 flow_lbl;
+	__u8 flow_lbl[3];
 	__be16 payload_len;
 	__u8 nexthdr;
 	__u8 hop_limit;

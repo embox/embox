@@ -4,3 +4,7 @@ module ipv6 {
 	source "ip6_input.c"
 	depends skbuff
 }
+
+module icmp6 {
+	source "icmp6.c"
+}
