@@ -14,7 +14,11 @@
 /* Types */
 enum {
 	ICMP6_ECHO_REQUEST = 128,
-	ICMP6_ECHO_REPLY = 129
+	ICMP6_ECHO_REPLY = 129,
+
+	/* NDP Protocol */
+	ICMP6_NEIGHBOUR_SOLICIT = 135,
+	ICMP6_NEIGHBOUR_ADVERT = 136
 };
 
 typedef struct icmp6hdr {
@@ -26,6 +30,11 @@ typedef struct icmp6hdr {
 			__be16 id;
 			__be16 sequence;
 		} echo;
+		struct {
+			__be32 res;
+			struct in6_addr target;
+			char stuff[1];
+		} nb_solicit;
 	} un;
 } __attribute__((packed)) icmp6hdr_t;
 
