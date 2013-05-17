@@ -14,7 +14,6 @@
 #include <asm/io.h>
 
 #include <kernel/irq_lock.h>
-#include <kernel/thread/sched_lock.h>
 #include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
@@ -76,13 +75,9 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 				hdc->iobase + HDC_COMMAND);
 
     	/* Wait until data read */
-		sched_lock();
-		{
-			while(!hdc->result) {
-				EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-			}
+		while(!hdc->result) {
+			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
 		}
-		sched_unlock();
 
 		if (hdc->result < 0) {
 			break;
@@ -169,13 +164,9 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		}
 
 		/* Wait until data written */
-		sched_lock();
-		{
-			while(!hdc->result) {
-				EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-			}
+		while(!hdc->result) {
+			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
 		}
-		sched_unlock();
 
 		if (hdc->result < 0) {
 			break;
