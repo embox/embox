@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
-#include <signal.h>
+
 
 #include <kernel/irq_lock.h>
 #include <kernel/event.h>
@@ -28,7 +28,7 @@
 #define TC_C(t, flag) ((t)->termios.c_cflag & (flag))
 #define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
 
-#define BREAK_TASK_ENABLE OPTION_GET(NUMBER,break_enable)
+extern void tty_task_break_check(struct tty *t, char ch);
 
 static void tty_tx_char(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
@@ -141,13 +141,8 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 			goto done;
 		}
 	}
-#if BREAK_TASK_ENABLE
-	if (TC_L(t, ISIG) && (ch == cc[VINTR]) && t->pgrp) {
-		kill(t->pgrp, 9);
-		/*TODO normal handling when process groups will be realized*/
-		t->pgrp = 0;
-	}
-#endif
+
+	tty_task_break_check(t, ch);
 
 	/* Finally, store and echo the char.
 	 *
