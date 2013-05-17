@@ -29,6 +29,8 @@
 #define TC_C(t, flag) ((t)->termios.c_cflag & (flag))
 #define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
 
+#define BREAK_TASK_ENABLE OPTION_GET(NUMBER,break_enable)
+
 static void tty_tx_char(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
 	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
@@ -140,12 +142,13 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 			goto done;
 		}
 	}
-
+#if BREAK_TASK_ENABLE
 	if (TC_L(t, ISIG) && (ch == cc[VINTR]) && t->pgrp) {
 		kill(t->pgrp, 9);
 		/*TODO normal handling when process groups will be realized*/
 		t->pgrp = 0;
 	}
+#endif
 
 	/* Finally, store and echo the char.
 	 *
