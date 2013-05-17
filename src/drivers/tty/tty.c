@@ -19,7 +19,6 @@
 #include <kernel/irq_lock.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
-#include <kernel/thread/sched_lock.h>
 
 #include <util/math.h>
 #include <util/member.h>
@@ -289,21 +288,17 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 
 static int tty_wait_input(struct tty *t, size_t input_sz,
 		unsigned long timeout) {
-	int rc;
+	int rc = 0;
 
-	rc = 0;
-
-	sched_lock();
-	{
-		while (input_sz > WORK_DISABLED_DO(&t->rx_work, ring_can_read(
-					&t->i_ring, TTY_IO_BUFF_SZ, input_sz))) {
-			rc = EVENT_WAIT(&t->i_event, 0, timeout); /* TODO: event condition */
-			if (rc != 0) {
-				break;
-			}
+	/* TODO: Remove this while. */
+	while (input_sz > WORK_DISABLED_DO(&t->rx_work, ring_can_read(
+				&t->i_ring, TTY_IO_BUFF_SZ, input_sz))) {
+		rc = EVENT_WAIT(&t->i_event, (input_sz <= WORK_DISABLED_DO(&t->rx_work, ring_can_read(
+				&t->i_ring, TTY_IO_BUFF_SZ, input_sz))), timeout);
+		if (rc != 0) {
+			break;
 		}
 	}
-	sched_unlock();
 
 	return rc;
 }
