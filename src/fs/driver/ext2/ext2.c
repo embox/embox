@@ -491,6 +491,8 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
+	desc->cursor = fi->f_pointer;
+
 	return (addr - (char *) buff);
 }
 
