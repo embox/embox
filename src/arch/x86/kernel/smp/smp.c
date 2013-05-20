@@ -22,6 +22,7 @@
 #include <kernel/spinlock.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
+#include <module/embox/kernel/thread/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 

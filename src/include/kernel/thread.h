@@ -21,8 +21,6 @@
 #include <kernel/thread/sched.h>
 #include <sys/types.h>
 
-#include <module/embox/kernel/thread/core.h>
-
 #define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
 
