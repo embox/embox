@@ -54,8 +54,9 @@ static int umether_start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		goto out;
 	}
 
-out:
 	skb_free(skb);
+	ret = 0;
+out:
 	ipl_restore(ipl);
 	return ret;
 }
