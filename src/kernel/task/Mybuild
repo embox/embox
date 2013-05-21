@@ -45,9 +45,7 @@ module rt_signal {
 module signal_common {
 	source "signal.c"
 
-	depends embox.kernel.thread.current.api
-	depends embox.kernel.thread.sched_policy.api
-	depends embox.kernel.thread.sched_api
+	depends embox.kernel.thread.sched
 }
 
 
@@ -91,6 +89,6 @@ module io_sync extends io_sync_api {
 module waitpid {
 	source "waitpid.c"
 
-	depends embox.kernel.thread.sched_api
+	depends embox.kernel.thread.sched
 	depends embox.kernel.thread.wait_queue
 }

@@ -16,23 +16,14 @@ module core extends thread_mode {
 	source "core.c"
 
 	depends sched
-	depends event
-	depends wait_queue
 	depends embox.kernel.thread.sched_policy.api
 	depends embox.arch.context
 	depends embox.kernel.task.kernel_task
+
+	@NoRuntime depends embox.kernel.event_sched
 }
 
-@DefaultImpl(sched_none)
-abstract module sched_api {
-}
-
-module sched_none extends sched_api {
-	source "sched_none.c"
-
-}
-
-module sched extends sched_api {
+module sched {
 	source "sched.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
@@ -50,14 +41,10 @@ module sched extends sched_api {
 module wait_queue {
 	source "wait_queue.c"
 
-	@NoRuntime depends embox.kernel.thread.sched_api
-	@NoRuntime depends embox.kernel.thread.thread_mode
+	depends embox.util.DList
 
-	/*
-	 FIXME: Should be this:
 	@NoRuntime depends embox.kernel.thread.sched
 	@NoRuntime depends embox.kernel.thread.core
-	*/
 }
 
 /* FIXME: Deprecated */
