@@ -94,7 +94,7 @@ static int diag_shell_exec(const char *cmdline) {
 	/* In the worst case cmdline looks like "x x x x x x". */
 	char *cmdline_cp, *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
 
-	cmdline_cp = alloca(strlen(cmdline) + 1);
+	cmdline_cp = __builtin_alloca(strlen(cmdline) + 1);
 	strcpy(cmdline_cp, cmdline);
 
 	argc = cmdline_tokenize(cmdline_cp, argv);
