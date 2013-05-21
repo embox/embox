@@ -23,14 +23,11 @@ typedef unsigned int __thread_state_t;
 #include <kernel/thread/sched_priority.h>
 #include <kernel/thread/thread_priority.h>
 #include <kernel/thread/wait_data.h>
-#include <kernel/thread/wait_queue.h>
 
 struct context;
 
 struct runq;
 struct sleepq;
-struct event;
-//struct list_head;
 
 struct thread {
 
@@ -64,7 +61,7 @@ struct thread {
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */
 
-	struct wait_queue exit_waitq;   /**< Thread exit event. */
+	struct thread    *joined;        /**< Thread which joined to this. */
 
 	struct wait_data  wait_data;
 

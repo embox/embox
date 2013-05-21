@@ -165,7 +165,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(&t->sched);
 
-	wait_queue_init(&t->exit_waitq);
+	t->joined = NULL;
 
 	t->running_time = 0;
 	t->affinity = (1 << NCPU) - 1;
@@ -214,9 +214,12 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 					/* Thread is detached. Should be deleted by itself. */
 					thread_delete(current);
 				} else {
-					/* Thread is attached. Joining thread delete it.    */
+					/* Thread is attached. Joined thread delete it.    */
 					current->run_ret = ret;
-					wait_queue_notify_all(&current->exit_waitq); /* or one */
+
+					if (current->joined) {
+						sched_thread_notify(current->joined, ENOERR);
+					}
 				}
 			}
 		}
@@ -241,9 +244,14 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			assert(wait_queue_empty(&t->exit_waitq));
-			wait_queue_wait_locked(&t->exit_waitq, SCHED_TIMEOUT_INFINITE);
+			assert(!t->joined);
+			t->joined = current;
+
+			sched_prepare_wait(NULL, NULL);
+			sched_wait_locked(SCHED_TIMEOUT_INFINITE);
+			sched_cleanup_wait();
 		}
+
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);
 		thread_delete(t);

@@ -50,8 +50,8 @@ module sched extends sched_api {
 module wait_queue {
 	source "wait_queue.c"
 
-	@NoRuntime depends embox.kernel.thread.sched_api
-	@NoRuntime depends embox.kernel.thread.thread_mode
+	@NoRuntime depends embox.kernel.thread.sched
+	@NoRuntime depends embox.kernel.thread.core
 }
 
 /* FIXME: Deprecated */

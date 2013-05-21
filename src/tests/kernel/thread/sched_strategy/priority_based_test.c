@@ -7,8 +7,10 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread/sched.h>
+
 #include <kernel/thread.h>
+#include <kernel/thread/sched.h>
+#include <kernel/thread/wait_queue.h>
 
 static struct thread *low, *high;
 static struct wait_queue wq;

@@ -12,6 +12,7 @@
 #include <kernel/task/task_table.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_lock.h>
+#include <kernel/thread/wait_queue.h>
 
 int task_waitpid(pid_t pid) {
 	struct task *task;

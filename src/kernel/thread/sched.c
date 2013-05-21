@@ -134,7 +134,9 @@ static int notify_work(struct work *work) {
 
 	post_switch_if(runq_wake_thread(&rq, thread));
 
-	wait_data->on_notified(thread, wait_data->data);
+	if (wait_data->on_notified) {
+		wait_data->on_notified(thread, wait_data->data);
+	}
 
 	return 1;
 }
