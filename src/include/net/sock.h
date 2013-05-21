@@ -146,12 +146,12 @@ enum sock_flags {
 typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
 	int (*shutdown)(struct sock *sk, int flags);
-	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
+	int (*connect)(sock_t *sk, const struct sockaddr *addr, socklen_t addr_len);
 #if 0
 	int (*disconnect)(sock_t *sk, int flags);
 #endif
 	int (*listen)(sock_t *sk, int backlog);
-	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, socklen_t *addr_len, int flags);
+	int (*accept)(sock_t *sk, sock_t **newsk, struct sockaddr *addr, socklen_t *addr_len, int flags);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
 #if 0
@@ -165,7 +165,7 @@ typedef struct proto {
 			size_t len, int flags);
 	int (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
 			size_t len, int flags);
-	int (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
+	int (*bind)(sock_t *sk, const struct sockaddr *uaddr, socklen_t addr_len);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
 	struct sock * (*iter)(struct sock *prev);

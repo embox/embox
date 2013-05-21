@@ -59,7 +59,7 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	return 0;
 }
 
-static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) {
+static int tcp_v4_connect(struct sock *sk, const struct sockaddr *addr, socklen_t addr_len) {
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;

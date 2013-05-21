@@ -199,7 +199,8 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len) {
+static int raw_bind(struct sock *sk, const struct sockaddr *uaddr,
+		socklen_t addr_len) {
 	struct inet_sock *inet = inet_sk(sk);
 	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
 	inet->rcv_saddr = inet->saddr = addr->sin_addr.s_addr;
@@ -221,7 +222,7 @@ static int raw_ioctl(struct sock *sk, int cmd, unsigned long arg) {
 }
 
 int raw_connect(struct sock *sk,
-				struct sockaddr *uaddr, int addr_len) {
+				const struct sockaddr *uaddr, socklen_t addr_len) {
 	return ENOERR;
 }
 

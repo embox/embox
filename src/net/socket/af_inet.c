@@ -151,7 +151,7 @@ static int inet_release(struct socket *sock) {
 	return ENOERR;
 }
 
-static int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
+static int inet_bind(struct socket *sock, const struct sockaddr *addr, socklen_t addr_len) {
 	int res;
 	struct sock *sk;
 	struct sockaddr_in *addr_in;
@@ -208,8 +208,8 @@ exit_with_error:
 	return res;
 }
 
-static int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
-		int addr_len, int flags) {
+static int inet_stream_connect(struct socket *sock, const struct sockaddr *addr,
+		socklen_t addr_len, int flags) {
 	int res;
 	struct sock *sk;
 
@@ -235,8 +235,8 @@ static int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 	return res;
 }
 
-static int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
-		int addr_len, int flags) {
+static int inet_dgram_connect(struct socket *sock, const struct sockaddr *addr,
+		socklen_t addr_len, int flags) {
 	int res;
 	struct sock *sk;
 

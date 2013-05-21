@@ -157,12 +157,6 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	/* if addrlen is not equal to sizeof(sockaddr) -EINVAL is returned
-	   like in linux. posix doesn't mention this */
-	if(addrlen != sizeof(struct sockaddr)) {
-		return -EINVAL;
-	}
-
 	/* rebinding is forbidden for now, the check for the protocol
 	   rebinding permission should be added to meet posix*/
 	if (sk_is_bound(sock)) {
@@ -187,7 +181,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* try to bind */
-	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
+	res = sock->ops->bind(sock, addr, addrlen);
 	if (res < 0) {  /* If something went wrong */
 		LOG_ERROR("kernel_socket_bind", "error binding socket");
 		/* Set the state to UNCONNECTED */
