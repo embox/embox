@@ -20,7 +20,11 @@ typedef uint32_t in_addr_t; /* An unsigned integral type of exactly 32 bits. */
  * IP address
  */
 struct in_addr {
-	in_addr_t s_addr;
+	union {
+		uint8_t s_addr8[4];
+		uint16_t s_addr16[2];
+		in_addr_t s_addr;
+	};
 };
 
 /**
@@ -38,13 +42,10 @@ struct sockaddr_in {
  */
 struct in6_addr {
 	union {
-		uint8_t u6_addr8[16];
-		uint16_t u6_addr16[8];
-		uint32_t u6_addr32[4];
-	} in6_u;
-#define s6_addr   in6_u.u6_addr8
-#define s6_addr16 in6_u.u6_addr16
-#define s6_addr32 in6_u.u6_addr32
+		uint8_t s6_addr[16];
+		uint16_t s6_addr16[8];
+		uint32_t s6_addr32[4];
+	};
 };
 
 /**

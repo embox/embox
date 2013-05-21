@@ -10,151 +10,227 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <netinet/in.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <util/array.h>
 
 const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
 const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
 
-in_addr_t inet_addr(const char *cp) {
-	struct in_addr in;
+static int inet_to_str(const struct in_addr *in, char *buff,
+		socklen_t buff_sz) {
+	int ret;
 
-	if ((cp == NULL) || (0 == inet_aton(cp, &in))) {
-		return (in_addr_t)-1;
+	assert(in != NULL);
+	assert(buff != NULL);
+
+	ret = snprintf(buff, buff_sz, "%hhu.%hhu.%hhu.%hhu",
+			in->s_addr8[0], in->s_addr8[1], in->s_addr8[2],
+			in->s_addr8[3]);
+	if (ret < 0) {
+		return ret;
+	}
+	else if (ret >= buff_sz) {
+		return -ENOSPC;
 	}
 
-	return in.s_addr;
+	return 0;
 }
 
-char * inet_ntoa(struct in_addr in) {
-	int res;
-	static char buff[INET_ADDRSTRLEN];
-	uint8_t *b;
+static int inet6_to_str(const struct in6_addr *in6, char *buff,
+		socklen_t buff_sz) {
+	int ret;
+	size_t i, zs_ind, zs_len, zs_max_ind, zs_max_len;
 
-	b = (uint8_t *)&in;
-	res = snprintf(buff, ARRAY_SIZE(buff), "%hhu.%hhu.%hhu.%hhu",
-			b[0], b[1], b[2], b[3]);
-	assert(res >= 0);
+	assert(in6 != NULL);
+	assert(buff != NULL);
 
-	return &buff[0];
+	zs_max_ind = 0;
+	zs_len = zs_max_len = 0;
+	for (i = 0; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
+		if (in6->s6_addr16[i] == 0) {
+			if (zs_len == 0) {
+				zs_ind = i;
+			}
+			++zs_len;
+		}
+		else if (zs_len != 0) {
+			if (zs_len > zs_max_len) {
+				zs_max_len = zs_len;
+				zs_max_ind = zs_ind;
+			}
+			zs_len = 0;
+		}
+	}
+
+	if ((i == ARRAY_SIZE(in6->s6_addr16)) && (zs_len > zs_max_len)) {
+		zs_max_len = zs_len;
+		zs_max_ind = zs_ind;
+	}
+
+	for (i = 0; i < zs_max_ind; ++i) {
+		ret = snprintf(buff, buff_sz, "%hx:", in6->s6_addr16[i]);
+		if (ret < 0) {
+			return ret;
+		}
+		else if (ret >= buff_sz) {
+			return -ENOSPC;
+		}
+		buff += ret;
+		buff_sz -= ret;
+	}
+
+	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%hx", in6->s6_addr16[i])
+			: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
+				? snprintf(buff, buff_sz, "::")
+				: snprintf(buff, buff_sz, ":")
+			: zs_max_ind == 0 ? snprintf(buff, buff_sz, ":")
+			: 0;
+	if (ret < 0) {
+		return ret;
+	}
+	else if (ret >= buff_sz) {
+		return -ENOSPC;
+	}
+	buff += ret;
+	buff_sz -= ret;
+	i += zs_max_len <= 1 ? 1 : zs_max_len;
+
+	for (; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
+		ret = snprintf(buff, buff_sz, ":%hx", in6->s6_addr16[i]);
+		if (ret < 0) {
+			return ret;
+		}
+		else if (ret >= buff_sz) {
+			return -ENOSPC;
+		}
+		buff += ret;
+		buff_sz -= ret;
+	}
+
+	return 0;
 }
 
-int inet_aton(const char *cp, struct in_addr *addr) {
-	static const in_addr_t max[4] = { 0xffffffff, 0xffffff, 0xffff, 0xff };
-	in_addr_t val;
-	uint32_t temp;
-	char c;
-	union iaddr {
-	  uint8_t bytes[4];
-	  uint32_t word;
-	} res;
-	uint8_t *pp = res.bytes;
-	int digit;
-	int base;
-	int dots;
+static int str_to_inet(const char *buff, struct in_addr *in) {
+	size_t i;
+	unsigned long addr, val, max_val;
 
-	res.word = 0;
-	dots = 0; /* there should be 3 dots in character ip string notation */
+	assert(buff != NULL);
+	assert(in != NULL);
 
-	c = *cp;
-	for (;;) {
-		/*
-		 * Collect number up to ``.''.
-		 * Values are specified as for C:
-		 * 0x=hex, 0=octal, isdigit=decimal.
-		 */
-		if (!isdigit(c))
-			return 0;
+	addr = 0UL;
+	max_val = ULONG_MAX;
 
-		val = 0; base = 10; digit = 0;
-		if (c == '0') {
-			c = *++cp;
-			if (c == 'x' || c == 'X')
-				base = 16, c = *++cp;
-			else {
-				base = 8;
-				digit = 1 ;
+	for (i = 0; i < ARRAY_SIZE(in->s_addr8); ++i, ++buff,
+			max_val >>= CHAR_BIT) {
+		SET_ERRNO(0);
+		val = strtoul(buff, (char **)&buff, 0);
+		if (errno != 0) {
+			return -errno;
+		}
+		if (val > max_val) {
+			return 1; /* error: invalid address format */
+		}
+		addr |= *buff == '.'
+				? val << (CHAR_BIT * (ARRAY_SIZE(in->s_addr8) - i - 1))
+				: val;
+		if (*buff != '.') {
+			break;
+		}
+		else if (val > UCHAR_MAX) {
+			return 1; /* error: invalid address format */
+		}
+	}
+
+	if (i == ARRAY_SIZE(in->s_addr8)) {
+		return 1; /* error: invalid address format */
+	}
+
+	in->s_addr = htonl(addr);
+
+	return 0;
+}
+
+static int str_to_inet6(const char *buff, struct in6_addr *in6) {
+	size_t i, zs_ind;
+	unsigned long val;
+
+	assert(buff != NULL);
+	assert(in6 != NULL);
+
+	zs_ind = ARRAY_SIZE(in6->s6_addr16);
+	memset(in6, 0, sizeof *in6);
+
+	for (i = 0; i < ARRAY_SIZE(in6->s6_addr16); ++i, ++buff) {
+		if (*buff == ':') {
+			if (zs_ind != ARRAY_SIZE(in6->s6_addr16)) {
+				return 1; /* error: invalid address format */
+			}
+			if ((i == 0) && (*++buff != ':')) {
+				return 1; /* error: invalid address format */
+			}
+			zs_ind = i;
+			++buff;
+			if (*buff == '\0') {
+				break; /* ...:: */
 			}
 		}
-		for (;;) {
-			if (isdigit(c)) {
-				if (base == 8 && (c == '8' || c == '9'))
-					return 0;
-				val = (val * base) + (c - '0');
-				c = *++cp;
-				digit = 1;
-			} else if (base == 16 && isxdigit(c)) {
-			    temp = (islower(c) ? 'a' : 'A');
-				val = (val << 4) |
-					(c + 10 - temp /*(islower(c) ? 'a' : 'A')*/);
-				c = *++cp;
-				digit = 1;
-			} else {
-				break;
-			}
+		SET_ERRNO(0);
+		val = strtoul(buff, (char **)&buff, 16);
+		if (errno != 0) {
+			return -errno;
 		}
-
-		if (c == '.') {
-			/*
-			 * Internet format:
-			 *	a.b.c.d
-			 *	a.b.c	(with c treated as 16 bits)
-			 *	a.b	(with b treated as 24 bits)
-			 */
-			if (pp > res.bytes + 2 || val > 0xff) {
-				return 0;
-			}
-			*pp++ = val;
-			c = *++cp;
-			dots++;  									/* calculate how much dots do we have */
-		} else {
+		if (val > USHRT_MAX) {
+			return 1; /* error: invalid address format */
+		}
+		in6->s6_addr16[i] = (unsigned short)val;
+		if (*buff != ':') {
 			break;
 		}
 	}
-	/* Check for trailing characters. */
-	if (c != '\0' && !isspace(c)) {
-		return 0;
-	}
-	/* It has a valid format? */
-	if (dots == 0) {
-		return 0;
-	}
-	/* Did we get a valid digit? */
-	if (!digit) {
-		return 0;
-	}
-	/* Check whether the last part is in its limits depending on
-	   the number of parts in total.  */
-	if (val > max[pp - res.bytes]) {
-		return 0;
+
+	if ((zs_ind == ARRAY_SIZE(in6->s6_addr16))
+			&& (i != ARRAY_SIZE(in6->s6_addr16))) {
+		return 1; /* error: invalid address format */
 	}
 
-	/* everything went fine */
-	if (addr != NULL) {
-		addr->s_addr = res.word | htonl (val);
-	}
-	return 1;
+	memmove(&in6->s6_addr16[ARRAY_SIZE(in6->s6_addr16) - (i - zs_ind + 1)],
+			&in6->s6_addr16[zs_ind],
+			(i - zs_ind + 1) * sizeof in6->s6_addr16[0]);
+	memset(&in6->s6_addr16[zs_ind], 0,
+			(ARRAY_SIZE(in6->s6_addr16) - i - 1) * sizeof in6->s6_addr16[0]);
+
+	return 0;
 }
-#if 0
-static int inet_ntop4(const struct in_addr *in,
-		char *buff, socklen_t size,
 
-const char * inet_ntop(int af, const void *src, char *dst,
-		socklen_t size) {
+char * inet_ntoa(struct in_addr in) {
+	static char buff[INET_ADDRSTRLEN];
+	return 0 == inet_to_str(&in, &buff[0], ARRAY_SIZE(buff))
+			? &buff[0] : NULL;
+}
+
+const char * inet_ntop(int af, const void *addr, char *buff,
+		socklen_t buff_sz) {
 	int ret;
-	const char *result;
 
 	switch (af) {
 	default:
 		ret = -EAFNOSUPPORT;
+		break;
 	case AF_INET:
-		ret = inet_ntop4();
+		ret = inet_to_str((const struct in_addr *)addr, buff,
+				buff_sz);
+		break;
 	case AF_INET6:
-		ret = inet_ntop6();
+		ret = inet6_to_str((const struct in6_addr *)addr, buff,
+				buff_sz);
+		break;
 	}
 
 	if (ret != 0) {
@@ -162,7 +238,37 @@ const char * inet_ntop(int af, const void *src, char *dst,
 		return NULL;
 	}
 
-	assert(result != NULL);
-	return result;
+	return buff;
 }
-#endif
+
+in_addr_t inet_addr(const char *cp) {
+	struct in_addr in;
+	return 0 == str_to_inet(cp, &in) ? in.s_addr : (in_addr_t)-1;
+}
+
+int inet_aton(const char *cp, struct in_addr *addr) {
+	return 0 == str_to_inet(cp, addr) ? 1 : 0;
+}
+
+int inet_pton(int af, const char *buff, void *addr) {
+	int ret;
+
+	switch (af) {
+	default:
+		ret = -EAFNOSUPPORT;
+		break;
+	case AF_INET:
+		ret = str_to_inet(buff, (struct in_addr *)addr);
+		break;
+	case AF_INET6:
+		ret = str_to_inet6(buff, (struct in6_addr *)addr);
+		break;
+	}
+
+	if (ret < 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return ret == 0 ? 1 : 0;
+}
