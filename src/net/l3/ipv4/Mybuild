@@ -1,0 +1,30 @@
+package embox.net
+
+module ipv4 {
+	/* FIXME:
+	 * 1.it depends from icmp (called from ip_options.c, ip_output.c)
+	 */
+	source "ip_fragment.c"
+
+	option number ip_fragmented_support = 0
+
+	depends skbuff
+	depends embox.mem.objalloc
+	depends embox.kernel.timer.sys_timer
+	depends embox.lib.LibC
+
+	source "ip_input.c"
+	depends skbuff
+	depends raw_sock
+	depends embox.lib.LibC
+	/* depends from ip_fragment.c */
+	depends netfilter
+
+	source "ip_options.c"
+
+	source "ip_output.c"
+	depends net_tx
+	depends skbuff
+	depends route
+	depends eth
+}
