@@ -19,8 +19,6 @@
 #include <string.h>
 #include <util/list.h>
 
-#include <net/if_ether.h>
-
 EMBOX_UNIT_INIT(net_entry_init);
 
 static LIST_DEF(netif_rx_list);
@@ -86,15 +84,8 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 }
 
 int netif_rx(void *data) {
-	struct sk_buff *skb;
-
 	assert(data != NULL);
-
-	skb = (struct sk_buff *)data;
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE; /* TODO move to processing */
-
-	netif_rx_schedule(skb);
-
+	netif_rx_schedule((struct sk_buff *)data);
 	return NET_RX_SUCCESS;
 }
 

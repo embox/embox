@@ -154,7 +154,6 @@ static void e1000_rx(struct net_device *dev) {
 		if ((skb = skb_alloc(len))) {
 			memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
 			skb->dev = dev;
-			skb->protocol = ntohs(skb->mac.ethh->h_proto);
 			/*stat->rx_packets++;*/
 			/*stat->rx_bytes += skb->len;*/
 

@@ -205,7 +205,6 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->mac.raw, total_length, dev->base_addr);
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 #if DEBUG
 	show_packet(skb->mac.raw, skb->len, "recv");
 #endif

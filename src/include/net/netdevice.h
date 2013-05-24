@@ -82,6 +82,7 @@ typedef struct header_ops {
 	int (*create)(struct sk_buff *skb, struct net_device *dev,
 			unsigned short type, const void *daddr, const void *saddr);
 	int (*rebuild)(struct sk_buff *skb);
+	int (*parse)(struct sk_buff *skb);
 } header_ops_t;
 
 /**

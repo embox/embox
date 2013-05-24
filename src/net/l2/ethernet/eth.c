@@ -98,9 +98,16 @@ static int eth_rebuild_header(struct sk_buff *skb) {
 	return 0;
 }
 
+static int eth_parse_header(struct sk_buff *skb) {
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+	skb->protocol = ntohs(skb->mac.ethh->h_proto);
+	return 0;
+}
+
 static const struct header_ops eth_header_ops = {
 	.create        = eth_create_header,
 	.rebuild       = eth_rebuild_header,
+	.parse         = eth_parse_header
 };
 
 const struct header_ops * eth_get_header_ops(void) {

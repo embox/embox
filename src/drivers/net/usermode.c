@@ -128,7 +128,6 @@ static irq_return_t umether_irq(unsigned int irq_num, void *dev_id) {
 	emvisor_recvnbody(UV_PRDDOWNSTRM, skb->mac.raw, hdr.len);
 
 	skb->dev = (struct net_device *) dev_id;
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 
 	netif_rx(skb);
 
