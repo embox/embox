@@ -24,14 +24,14 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 	if (ip6h->version != 6) {
 		dev->stats.rx_err++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: invalid hdr */
 	}
 
 	len = ntohs(ip6h->payload_len);
 	if (len + IP6_HEADER_SIZE > skb->len) {
 		dev->stats.rx_length_errors++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: invalid length */
 	}
 
 	/* Setup transport layer header */
@@ -39,13 +39,11 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	nproto = net_proto_lookup(ip6h->nexthdr);
 	if (nproto != NULL) {
-		return 0 == nproto->handle(skb)
-				? NET_RX_SUCCESS
-				: NET_RX_DROP;
+		return nproto->handle(skb);
 	}
 
 	printk("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
 
 	skb_free(skb);
-	return NET_RX_DROP; /* Nobody wants this packet */
+	return 0; /* error: nobody wants this packet */
 }

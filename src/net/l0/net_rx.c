@@ -20,7 +20,7 @@ int netif_receive_skb(struct sk_buff *skb) {
 	npack = net_pack_lookup(skb->protocol);
 	if (npack == NULL) {
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0;
 	}
 
 	return npack->handle(skb, skb->dev);

@@ -46,7 +46,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		//LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: invalid hdr */
 	}
 
 	len = ntohs(iph->tot_len);
@@ -54,7 +54,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		//LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: invalid length */
 	}
 
 	tmp = iph->check;
@@ -63,7 +63,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		//LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: invalid crc */
 	}
 
 	/* Setup transport layer header */
@@ -73,7 +73,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	if (0 != nf_test_skb(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, skb)) {
 		stats->rx_dropped++;
 		skb_free(skb);
-		return NET_RX_DROP;
+		return 0; /* error: dropped */
 	}
 
 	/* Forwarding */
@@ -93,12 +93,9 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 			if (0 != nf_test_skb(NF_CHAIN_FORWARD, NF_TARGET_ACCEPT, skb)) {
 				stats->rx_dropped++;
 				skb_free(skb);
-				return NET_RX_DROP;
+				return 0; /* error: dropped */
 			}
-			if (ip_forward_packet(skb) <= 0) {
-				return NET_RX_DROP;
-			}
-			return NET_RX_SUCCESS;
+			return ip_forward_packet(skb);
 		}
 	}
 
@@ -116,12 +113,12 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		if (ip_options_compile(skb, opts)) {
 			stats->rx_err++;
 			skb_free(skb);
-			return NET_RX_DROP;
+			return 0; /* error: bad ops */
 		}
 		if (ip_options_handle_srr(skb)) {
 			stats->tx_err++;
 			skb_free(skb);
-			return NET_RX_DROP;
+			return 0; /* error: can't handle ops */
 		}
 	}
 
@@ -133,9 +130,9 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 */
 	if ((complete_skb = ip_defrag(skb)) == NULL) {
 		if (skb == NULL) {
-			return NET_RX_DROP;
+			return 0; /* error: */
 		}
-		return NET_RX_SUCCESS;
+		return 0;
 	} else {
 		skb = complete_skb;
 		iph = ip_hdr(complete_skb);
@@ -147,11 +144,9 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	nproto = net_proto_lookup(iph->proto);
 	if (nproto != NULL) {
-		return 0 == nproto->handle(skb)
-				? NET_RX_SUCCESS
-				: NET_RX_DROP;
+		return nproto->handle(skb);
 	}
 
 	skb_free(skb);
-	return NET_RX_DROP; /* Nobody wants this packet */
+	return 0; /* error: nobody wants this packet */
 }

@@ -185,13 +185,13 @@ static int arp_hnd_request(struct arpghdr *arph, struct arpg_stuff *arps,
 	if ((arph->pa_space != htons(ETH_P_IP))
 			|| (paddr_len != sizeof in_dev->ifa_address)) {
 		skb_free(skb);
-		return -1; /* FIXME error: only IPv4 is supported */
+		return 0; /* FIXME error: only IPv4 is supported */
 	}
 
 	/* check recipient */
 	if (0 != memcmp(arps->tpa, &in_dev->ifa_address, paddr_len)) {
 		skb_free(skb);
-		return -1; /* error: not for us */
+		return 0; /* error: not for us */
 	}
 
 	/* get source protocol address */
@@ -248,14 +248,14 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	/* check hardware and protocol address lengths */
 	if ((skb->nh.raw - skb->mac.raw) + ARPG_HEADER_SIZE(arph) > skb->len) {
 		skb_free(skb);
-		return -1; /* error: bad packet */
+		return 0; /* error: bad packet */
 	}
 
 	/* check device capabilities */
 	if ((arph->ha_space != htons(dev->type))
 			|| (arph->ha_len != dev->addr_len)) {
 		skb_free(skb);
-		return -1; /* error: invalid hardware address info */
+		return 0; /* error: invalid hardware address info */
 	}
 
 	arpg_make_stuff(arph, &arph_stuff);
@@ -264,7 +264,7 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	switch (ntohs(arph->oper)) {
 	default:
 		skb_free(skb);
-		return -1; /* error: bad operation type */
+		return 0; /* error: bad operation type */
 	case ARP_OPER_REQUEST:
 		/* handling request */
 		return arp_hnd_request(arph, &arph_stuff, skb, dev);
@@ -290,12 +290,10 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 			break; /* error: arp doesn't supported */
 		}
 		/* handle package */
-		return 0 == arp_process(skb, dev)
-				? NET_RX_SUCCESS /* handled successfully */
-				: NET_RX_DROP; /* error occured */
+		return arp_process(skb, dev);
 	}
 
 	/* pretend that it was not */
 	skb_free(skb);
-	return NET_RX_DROP;
+	return 0;
 }
