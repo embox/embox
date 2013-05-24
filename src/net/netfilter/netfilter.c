@@ -47,74 +47,121 @@ static void free_rule(struct nf_rule *r) {
 }
 
 int nf_chain_get_by_name(const char *chain_name) {
-	return chain_name == NULL ? NF_CHAIN_UNKNOWN
-			: 0 == strcmp(chain_name, "INPUT") ? NF_CHAIN_INPUT
-			: 0 == strcmp(chain_name, "FORWARD") ? NF_CHAIN_FORWARD
-			: 0 == strcmp(chain_name, "OUTPUT") ? NF_CHAIN_OUTPUT
-			: NF_CHAIN_UNKNOWN;
+	if (chain_name == NULL) {
+		return NF_CHAIN_UNKNOWN;
+	}
+	else if (0 == strcmp(chain_name, "INPUT")) {
+		return NF_CHAIN_INPUT;
+	}
+	else if (0 == strcmp(chain_name, "FORWARD")) {
+		return NF_CHAIN_FORWARD;
+	}
+	else if (0 == strcmp(chain_name, "OUTPUT")) {
+		return NF_CHAIN_OUTPUT;
+	}
+	else {
+		return NF_CHAIN_UNKNOWN;
+	}
 }
 
 const char * nf_chain_to_str(int chain) {
-	return chain == NF_CHAIN_INPUT ? "INPUT"
-			: chain == NF_CHAIN_FORWARD ? "FORWARD"
-			: chain == NF_CHAIN_OUTPUT ? "OUTPUT"
-			: NULL;
+	switch (chain) {
+	default: return NULL;
+	case NF_CHAIN_INPUT: return "INPUT";
+	case NF_CHAIN_FORWARD: return "FORWARD";
+	case NF_CHAIN_OUTPUT: return "OUTPUT";
+	}
 }
 
 enum nf_target nf_target_get_by_name(const char *target_name) {
-	return target_name == NULL ? NF_TARGET_UNKNOWN
-			: 0 == strcmp(target_name, "DROP") ? NF_TARGET_DROP
-			: 0 == strcmp(target_name, "ACCEPT") ? NF_TARGET_ACCEPT
-			: NF_TARGET_UNKNOWN;
+	if (target_name == NULL) {
+		return NF_TARGET_UNKNOWN;
+	}
+	else if (0 == strcmp(target_name, "DROP")) {
+		return NF_TARGET_DROP;
+	}
+	else if (0 == strcmp(target_name, "ACCEPT")) {
+		return NF_TARGET_ACCEPT;
+	}
+	else {
+		return NF_TARGET_UNKNOWN;
+	}
 }
 
 const char * nf_target_to_str(enum nf_target target) {
-	return target == NF_TARGET_DROP ? "DROP"
-			: target == NF_TARGET_ACCEPT ? "ACCEPT"
-			: NULL;
+	switch (target) {
+	default: return NULL;
+	case NF_TARGET_DROP: return "DROP";
+	case NF_TARGET_ACCEPT: return "ACCEPT";
+	}
 }
 
 enum nf_proto nf_proto_get_by_name(const char *proto_name) {
-	return proto_name == NULL ? NF_PROTO_UNKNOWN
-			: 0 == strcmp(proto_name, "all") ? NF_PROTO_ALL
-			: 0 == strcmp(proto_name, "icmp") ? NF_PROTO_ICMP
-			: 0 == strcmp(proto_name, "tcp") ? NF_PROTO_TCP
-			: 0 == strcmp(proto_name, "udp") ? NF_PROTO_UDP
-			: NF_PROTO_UNKNOWN;
+	if (proto_name == NULL) {
+		return NF_PROTO_UNKNOWN;
+	}
+	else if (0 == strcmp(proto_name, "all")) {
+		return NF_PROTO_ALL;
+	}
+	else if (0 == strcmp(proto_name, "icmp")) {
+		return NF_PROTO_ICMP;
+	}
+	else if (0 == strcmp(proto_name, "tcp")) {
+		return NF_PROTO_TCP;
+	}
+	else if (0 == strcmp(proto_name, "udp")) {
+		return NF_PROTO_UDP;
+	}
+	else {
+		return NF_PROTO_UNKNOWN;
+	}
 }
 
 const char * nf_proto_to_str(enum nf_proto proto) {
-	return proto == NF_PROTO_ALL ? "all"
-			: proto == NF_PROTO_ICMP ? "icmp"
-			: proto == NF_PROTO_TCP ? "tcp"
-			: proto == NF_PROTO_UDP ? "udp"
-			: NULL;
+	switch (proto) {
+	default: return NULL;
+	case NF_PROTO_ALL: return "all";
+	case NF_PROTO_ICMP: return "icmp";
+	case NF_PROTO_TCP: return "tcp";
+	case NF_PROTO_UDP: return "udp";
+	}
 }
 
 struct list * nf_get_chain(int chain) {
-	return chain == NF_CHAIN_INPUT ? &nf_input_rules
-			: chain == NF_CHAIN_FORWARD ? &nf_forward_rules
-			: chain == NF_CHAIN_OUTPUT ? &nf_output_rules
-			: NULL;
+	switch (chain) {
+	default: return NULL;
+	case NF_CHAIN_INPUT: return &nf_input_rules;
+	case NF_CHAIN_FORWARD: return &nf_forward_rules;
+	case NF_CHAIN_OUTPUT: return &nf_output_rules;
+	}
 }
 
 enum nf_target nf_get_chain_target(int chain) {
-	return chain == NF_CHAIN_INPUT ? nf_input_default_target
-			: chain == NF_CHAIN_FORWARD ? nf_forward_default_target
-			: chain == NF_CHAIN_OUTPUT ? nf_output_default_target
-			: NF_TARGET_UNKNOWN;
+	switch (chain) {
+	default: return NF_TARGET_UNKNOWN;
+	case NF_CHAIN_INPUT: return nf_input_default_target;
+	case NF_CHAIN_FORWARD: return nf_forward_default_target;
+	case NF_CHAIN_OUTPUT: return nf_output_default_target;
+	}
 }
 
 int nf_set_chain_target(int chain, enum nf_target target) {
-	if (((chain != NF_CHAIN_INPUT) && (chain != NF_CHAIN_FORWARD)
-				&& (chain != NF_CHAIN_OUTPUT))
-			|| (target == NF_TARGET_UNKNOWN)) {
+	if (target == NF_TARGET_UNKNOWN) {
 		return -EINVAL;
 	}
 
-	*(chain == NF_CHAIN_INPUT ? &nf_input_default_target
-			: chain == NF_CHAIN_FORWARD ? &nf_forward_default_target
-			: &nf_output_default_target) = target;
+	switch (chain) {
+	default: return -EINVAL;
+	case NF_CHAIN_INPUT:
+		nf_input_default_target = target;
+		break;
+	case NF_CHAIN_FORWARD:
+		nf_forward_default_target = target;
+		break;
+	case NF_CHAIN_OUTPUT:
+		nf_output_default_target = target;
+		break;
+	}
 
 	return 0;
 }
@@ -239,6 +286,10 @@ int nf_clear(int chain) {
 	return 0;
 }
 
+#define NF_TEST_NOT_FIELD(r1, r2, field) \
+	((0 == memcmp(&r1->field, &r2->field, sizeof r1->field))\
+		== (r1->not_##field == r2->not_##field))
+
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
 	struct nf_rule *r;
@@ -252,9 +303,6 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 		return -EINVAL;
 	}
 
-#define NF_TEST_NOT_FIELD(r1, r2, field) \
-	((0 == memcmp(&r1->field, &r2->field, sizeof r1->field))\
-		== (r1->not_##field == r2->not_##field))
 	list_foreach(r, rules, lnk) {
 		if ((r->target != NF_TARGET_UNKNOWN)
 				&& NF_TEST_NOT_FIELD(test_r, r, saddr)
@@ -267,12 +315,10 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 					|| ((test_r->proto != NF_PROTO_ALL)
 						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
 				&& NF_TEST_NOT_FIELD(test_r, r, sport)
-				&& NF_TEST_NOT_FIELD(test_r, r, dport)
-				) {
+				&& NF_TEST_NOT_FIELD(test_r, r, dport)) {
 			return test_r->target != r->target;
 		}
 	}
-#undef NF_TEST_NOT_FIELD
 
 	return test_r->target != nf_get_chain_target(chain);
 }
