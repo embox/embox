@@ -17,7 +17,7 @@ module udp_sock {
 
 	depends udp
 	depends route
-	depends ip /* for ip_output.c */
+	depends ipv4 /* for ip_output.c */
 	depends skbuff
 	depends core /* for sock.c */
 	depends embox.lib.LibC

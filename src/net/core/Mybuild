@@ -1,29 +1,11 @@
 package embox.net
 
-abstract module entry_api { }
-
 module dev {
-	source "netdev.c"
 	option number netdev_quantity=8
 	option number netdev_table_sz=3
+	source "netdev.c"
 
-	source "netdev_process.c"
-
-	depends skbuff
-	depends embox.lib.LibC
-	depends embox.mem.pool
 	depends embox.util.hashtable
-	depends network_layer /* depends from network_layer.c */
-}
-
-module network_layer {
-	source "network_layer.c"
-
-	depends skbuff
-	depends embox.lib.LibC
-	depends embox.compat.linux.LibLinux
-	depends embox.framework.LibFrameworkNet
-	/* depends from dev.c */
 }
 
 module skbuff {
@@ -64,12 +46,5 @@ module neighbour {
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
-	depends embox.lib.LibC
-}
-
-module net_entry extends entry_api {
-	source "net_entry.c"
-
-	depends network_layer /* for network_layer.c */
 	depends embox.lib.LibC
 }

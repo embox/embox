@@ -1,46 +1,29 @@
 package embox.net
 
-module bootp {
-	source "bootp.c"
-	depends udp
-}
+module udp {
+	source "udp.c"
 
-module dns {
-	source "dns.c"
-	option string nameserver="10.0.0.11"
-
-	depends embox.compat.posix.net.socket
+	depends ipv4 /* for ip_output.c */
+	depends skbuff
+	depends icmpv4
+	depends core /* for sock.c */
 	depends embox.lib.LibC
-	depends embox.mem.heap_api
+	depends embox.framework.LibFrameworkNet
 }
 
-module ntp {
-	source "ntp.c"
+module tcp {
+	source "tcp.c"
 
-	depends udp
-	depends embox.kernel.time.timekeeper
+	depends tcp_sock
+	depends skbuff
+	depends core
+	depends ipv4 /* for ip_output.c */
+	depends af_inet /* for af_inet.c */
+	depends embox.compat.posix.net.inet_addr
+	depends embox.kernel.time.kernel_time
+	depends embox.kernel.time.clock_source
+	depends embox.kernel.critical
+	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-}
-
-module pop3 {
-	source "pop3.c"
-
-	depends embox.compat.posix.net.gethostbyname
-	depends embox.compat.posix.net.socket
-	depends embox.lib.LibC
-}
-
-module smtp {
-	source "smtp.c"
-
-	depends embox.lib.LibCMisc
-	depends embox.compat.posix.net.gethostbyname
-	depends embox.compat.posix.net.socket
-	depends embox.lib.LibC
-}
-
-module snmp {
-	source "snmp.c"
-
-	depends embox.net.mib.snmp_mib
+	depends embox.framework.LibFrameworkNet
 }

@@ -211,35 +211,12 @@ extern int dev_send_skb(struct sk_buff *pack);
 extern int dev_xmit_skb(struct sk_buff *pack);
 
 /**
- * this function remove `dev` from queue of device
- * that have received packages
- * @param dev - net_device to be processed
- */
-extern void netdev_rx_queued(struct net_device *dev);
-
-/**
- * this function processing a device which had received
- * packages
- */
-extern void netdev_rx_processing(void);
-
-/**
  * function must call from net drivers when packet was received
  * and need transmit one throw protocol's stack
  * @param net_packet *pack struct of network packet
  * @return on success, returns 0, on error, -1 is returned
  */
 extern int netif_rx(void *pack);
-
-/**
- * Called by irq handler.
- */
-
-/**
- * Save sk_buff to queue of incoming packages of corresponding
- * net_device and prepare this device for processing
- */
-extern void netif_rx_schedule(struct sk_buff *skb);
 
 /**
  * This funciton starts stack handling of incoming package
