@@ -35,7 +35,7 @@ module sched {
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
 
-//	@NoRuntime depends embox.kernel.event_sched
+	@NoRuntime depends embox.kernel.event_sched
 }
 
 module wait_queue {
