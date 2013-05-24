@@ -23,7 +23,6 @@ module net_rx {
 module net_tx {
 	source "net_tx.c"
 
-	depends arp_queue /* FIXME remove this */
 	depends skbuff
 	depends embox.lib.LibC
 }

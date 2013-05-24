@@ -33,7 +33,7 @@ module kernel_task {
 
 module std_signal {
 	source "std_signal.c"
-	depends signal_common
+//	depends signal_common
 }
 
 module rt_signal {
