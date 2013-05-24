@@ -237,6 +237,10 @@ int kformat(const char *pathname, const char *fs_type) {
 	return drv->fsop->format(node);
 }
 
+extern int mount_table_check(struct node *dir_node);
+
+extern int mount_table_add(struct node *dir_node);
+
 int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct node *dev_node, *dir_node;
 	struct fs_driver *drv;
@@ -263,19 +267,19 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		goto skip_dev_lookup;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
+	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
 
-	if (0 != fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC)) {
+	if (ENOERR != (res = fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC))) {
 		errno = EACCES;
 		return -1;
 	}
 
 skip_dev_lookup:
 	/* find directory */
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
+	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 #if 0
@@ -289,11 +293,22 @@ skip_dev_lookup:
 #endif
 	}
 
-	if (0 != (res = security_mount(dev_node, dir_node))) {
+	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
 		return res;
 	}
 
-	return drv->fsop->mount(dev_node, dir_node);
+	if(ENOERR != mount_table_check(dir_node)) {
+		return EBUSY;
+	}
+
+	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
+		return res;
+
+	}
+	if(ENOERR != (res = mount_table_add(dir_node))) {
+		drv->fsop->mount(dev_node, dir_node);
+	}
+	return ENOERR;
 }
 
 /**
