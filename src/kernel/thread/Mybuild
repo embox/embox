@@ -43,8 +43,8 @@ module wait_queue {
 
 	depends embox.util.DList
 
-	@NoRuntime depends embox.kernel.thread.sched
-	@NoRuntime depends embox.kernel.thread.core
+//	@NoRuntime depends embox.kernel.thread.sched
+//	@NoRuntime depends embox.kernel.thread.core
 }
 
 /* FIXME: Deprecated */
