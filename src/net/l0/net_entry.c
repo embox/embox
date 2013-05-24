@@ -52,12 +52,20 @@ static void netif_rx_dequeued(struct net_device *dev) {
 	ipl_restore(sp);
 }
 
+static void netif_poll(struct net_device *dev) {
+	struct sk_buff *skb;
+
+	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
+		netif_receive_skb(skb);
+	}
+}
+
+
 static void netif_rx_action(struct softirq_action *action) {
 	struct net_device *dev;
 
 	list_foreach(dev, &netif_rx_list, rx_lnk) {
-		assert(dev->poll != NULL);
-		dev->poll(dev);
+		netif_poll(dev);
 		netif_rx_dequeued(dev);
 	}
 }

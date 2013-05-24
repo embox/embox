@@ -27,14 +27,6 @@ EMBOX_UNIT_INIT(netdev_init);
 POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER, netdev_quantity));
 struct hashtable *netdevs_table;
 
-static void netdev_process_backlog(struct net_device *dev) {
-	struct sk_buff *skb;
-
-	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
-		netif_receive_skb(skb);
-	}
-}
-
 struct net_device * netdev_alloc(const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
@@ -52,7 +44,6 @@ struct net_device * netdev_alloc(const char *name,
 	skb_queue_init(&dev->dev_queue);
 	skb_queue_init(&dev->tx_dev_queue);
 	skb_queue_init(&dev->txing_queue);
-	dev->poll = &netdev_process_backlog;
 
 	strncpy(dev->name, name, sizeof dev->name);
 

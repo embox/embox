@@ -107,7 +107,6 @@ typedef struct net_device {
 	struct sk_buff_head dev_queue;
 	struct sk_buff_head tx_dev_queue;
 	struct sk_buff_head txing_queue;
-	void (*poll)(struct net_device *dev);
 	struct net_node *pnet_node;
 } net_device_t;
 
