@@ -22,7 +22,6 @@
 #include <net/icmp.h>
 #include <net/socket_registry.h>
 #include <linux/in.h>
-#include <net/etherdevice.h>
 #include <net/netfilter.h>
 #include <kernel/printk.h>
 #include <net/if_packet.h>

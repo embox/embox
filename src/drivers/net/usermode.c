@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -28,7 +28,7 @@ static int devstate_update(struct emvisor_netstate *devstate) {
 			sizeof(struct emvisor_netstate));
 }
 
-static int umether_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int umether_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct emvisor_netdata_hdr dhdr = {
 		.dev_id = devstate.id,
 		.len = skb->len,
@@ -146,11 +146,11 @@ static irq_return_t umether_irqctl(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static const struct net_device_ops umether_netdev_ops = {
-	.ndo_start_xmit = umether_start_xmit,
-	.ndo_open = umether_open,
-	.ndo_stop = umether_stop,
-	.ndo_set_mac_address = umether_setmac,
+static const struct net_driver umether_drv_ops = {
+	.xmit = umether_xmit,
+	.start = umether_open,
+	.stop = umether_stop,
+	.set_macaddr = umether_setmac,
 };
 
 static int umether_init(void) {
@@ -162,7 +162,7 @@ static int umether_init(void) {
 		return -ENOMEM;
 	}
 
-	nic->netdev_ops = &umether_netdev_ops;
+	nic->drv_ops = &umether_drv_ops;
 	nic->irq = EMVISOR_IRQ_NETDATA - EMVISOR_IRQ;
 
 	res = irq_attach(EMVISOR_IRQ_NETDATA - EMVISOR_IRQ, umether_irq,

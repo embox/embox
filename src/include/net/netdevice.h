@@ -68,22 +68,24 @@ typedef struct net_device_stats {
  * The following hooks can be defined; unless noted otherwise, they are
  * optional and can be filled with a null pointer.
  */
-typedef struct net_device_ops {
-	int (*ndo_open)(struct net_device *dev);
-	int (*ndo_stop)(struct net_device *dev);
-	int (*ndo_start_xmit)(struct sk_buff *pack, struct net_device *dev);
-	int (*ndo_set_mac_address)(struct net_device *dev, const void *addr);
-} net_device_ops_t;
+typedef struct net_driver {
+	int (*start)(struct net_device *dev);
+	int (*stop)(struct net_device *dev);
+	int (*xmit)(struct net_device *dev, struct sk_buff *skb);
+	int (*set_macaddr)(struct net_device *dev, const void *addr);
+} net_driver_t;
 
 /**
  * structure for control header
  */
-typedef struct header_ops {
-	int (*create)(struct sk_buff *skb, struct net_device *dev,
-			unsigned short type, const void *daddr, const void *saddr);
-	int (*rebuild)(struct sk_buff *skb);
-	int (*parse)(struct sk_buff *skb);
-} header_ops_t;
+typedef struct net_device_ops {
+	int (*create_hdr)(struct sk_buff *skb, unsigned short type,
+			const void *daddr, const void *saddr);
+	int (*rebuild_hdr)(struct sk_buff *skb);
+	int (*parse_hdr)(struct sk_buff *skb);
+	int (*check_addr)(const void *addr);
+	int (*check_mtu)(int mtu);
+} net_device_ops_t;
 
 /**
  * structure of net device
@@ -103,8 +105,8 @@ typedef struct net_device {
 	unsigned long base_addr; /**< device I/O address           */
 	unsigned int irq; /**< device IRQ number            */
 	struct net_device_stats stats;
-	const struct net_device_ops *netdev_ops; /**< Management operations        */
-	const struct header_ops *header_ops; /**< Hardware header description  */
+	const struct net_device_ops *ops; /**< Hardware description  */
+	const struct net_driver *drv_ops; /**< Management operations        */
 	struct sk_buff_head dev_queue;
 	struct sk_buff_head tx_dev_queue;
 	struct sk_buff_head txing_queue;
@@ -124,7 +126,7 @@ extern struct net_device * netdev_get_by_name(const char *name);
  * @param callback to initialize device
  */
 extern struct net_device * netdev_alloc(const char *name,
-		void (*setup)(struct net_device *));
+		int (*setup)(struct net_device *));
 
 /**
  * Free network device
@@ -192,6 +194,7 @@ extern int netdev_set_txqueuelen(struct net_device *dev,
 		unsigned long new_len);
 extern int netdev_set_bcastaddr(struct net_device *dev,
 		const void *bcast_addr);
+extern int netdev_set_mtu(struct net_device *dev, int mtu);
 
 /**
  * this function call ip protocol,

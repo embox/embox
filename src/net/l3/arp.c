@@ -16,7 +16,6 @@
 #include <errno.h>
 #include <net/arp.h>
 #include <net/arp_queue.h>
-#include <net/etherdevice.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/if_packet.h>
@@ -52,9 +51,9 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	/* Make device specific header */
-	assert(dev->header_ops != NULL);
-	assert(dev->header_ops->create != NULL);
-	ret = dev->header_ops->create(skb, dev, skb->protocol,
+	assert(dev->ops != NULL);
+	assert(dev->ops->create_hdr != NULL);
+	ret = dev->ops->create_hdr(skb, skb->protocol,
 			target_haddr, source_haddr);
 	if (ret != 0) {
 		return ret;

@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <kernel/time/ktime.h>
 #include <embox/unit.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <drivers/ethernet/r6040.h>
@@ -337,11 +337,11 @@ static int r6040_stop(struct net_device *dev) {
 
 }
 
-static const struct net_device_ops r6040_netdev_ops = {
-//	.ndo_start_xmit = r6040_start_xmit,
-	.ndo_open       = r6040_open,
-	.ndo_stop       = r6040_stop,
-//	.ndo_set_mac_address = set_mac_address
+static const struct net_driver r6040_drv_ops = {
+//	.xmit = r6040_xmit,
+	.start       = r6040_open,
+	.stop       = r6040_stop,
+//	.set_macaddr = set_mac_address
 };
 #endif
 

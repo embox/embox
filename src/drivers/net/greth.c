@@ -11,7 +11,7 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
@@ -97,7 +97,7 @@ static void greth_rings_init(void) {
 	}
 }
 
-static int greth_xmit(sk_buff_t *skb, struct net_device *dev) {
+static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return ENOERR;
 }
 
@@ -141,11 +141,11 @@ static int greth_stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static const struct net_device_ops greth_ops = {
-	.ndo_start_xmit      = greth_xmit,
-	.ndo_open = greth_open,
-	.ndo_stop = greth_stop,
-	.ndo_set_mac_address = greth_set_mac_address
+static const struct net_driver greth_ops = {
+	.xmit      = greth_xmit,
+	.start = greth_open,
+	.stop = greth_stop,
+	.set_macaddr = greth_set_mac_address
 
 };
 
@@ -196,7 +196,7 @@ static int greth_init(void) {
 
 	dev_regs_init(&irq);
 
-	nic->netdev_ops = &greth_ops;
+	nic->drv_ops = &greth_ops;
 	nic->irq = irq;
 	nic->base_addr = (uint32_t)dev_regs;
 

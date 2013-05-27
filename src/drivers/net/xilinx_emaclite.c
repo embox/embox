@@ -17,7 +17,7 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <embox/unit.h>
 #include <arpa/inet.h>
 
@@ -148,7 +148,7 @@ static uint32_t *word_aligned_addr(void *addr) {
 /**
  * Send a packet on this device.
  */
-static int emaclite_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t *aligned_data;
 
 	if ((NULL == skb) || (NULL == dev)) {
@@ -316,11 +316,11 @@ static int emaclite_set_mac_address(struct net_device *dev, const void *addr) {
 /*
  * Get RX/TX stats
  */
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = emaclite_start_xmit,
-	.ndo_open = emaclite_open,
-	.ndo_stop = emaclite_stop,
-	.ndo_set_mac_address = emaclite_set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = emaclite_xmit,
+	.start = emaclite_open,
+	.stop = emaclite_stop,
+	.set_macaddr = emaclite_set_mac_address
 };
 
 static int emaclite_init(void) {
@@ -333,7 +333,7 @@ static int emaclite_init(void) {
 	if (net_device == NULL) {
 		return -ENOMEM;
 	}
-	net_device->netdev_ops = &_netdev_ops;
+	net_device->drv_ops = &_drv_ops;
 	net_device->irq = CONFIG_XILINX_EMACLITE_IRQ_NUM;
 	net_device->base_addr = CONFIG_XILINX_EMACLITE_BASEADDR;
 

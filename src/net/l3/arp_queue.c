@@ -83,9 +83,9 @@ void arp_queue_process(const struct sk_buff *arp_skb) {
 					MODOPS_ARP_QUEUE_PACKAGE_TIMEOUT)) {
 			/* try to rebuild */
 			assert(waiting_item->skb->dev != NULL);
-			assert(waiting_item->skb->dev->header_ops != NULL);
-			assert(waiting_item->skb->dev->header_ops->rebuild != NULL);
-			if (0 == waiting_item->skb->dev->header_ops->rebuild(
+			assert(waiting_item->skb->dev->ops != NULL);
+			assert(waiting_item->skb->dev->ops->rebuild_hdr != NULL);
+			if (0 == waiting_item->skb->dev->ops->rebuild_hdr(
 						waiting_item->skb)) {
 				/* try to xmit */
 				if (0 != dev_xmit_skb(waiting_item->skb)) {

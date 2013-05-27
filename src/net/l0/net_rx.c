@@ -18,9 +18,9 @@ int netif_receive_skb(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
-	assert(skb->dev->header_ops != NULL);
-	assert(skb->dev->header_ops->parse != NULL);
-	ret = skb->dev->header_ops->parse(skb);
+	assert(skb->dev->ops != NULL);
+	assert(skb->dev->ops->parse_hdr != NULL);
+	ret = skb->dev->ops->parse_hdr(skb);
 	if (ret != 0) {
 		return ret;
 	}

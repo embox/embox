@@ -28,24 +28,35 @@ POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER, netdev_quantity));
 struct hashtable *netdevs_table;
 
 struct net_device * netdev_alloc(const char *name,
-		void (*setup)(struct net_device *)) {
+		int (*setup)(struct net_device *)) {
+	int ret;
 	struct net_device *dev;
 
-	assert((name != NULL) && (setup != NULL));
+	if ((name == NULL) || (setup == NULL)) {
+		return NULL; /* error: invalid args */
+	}
+
+	if (strlen(name) >= ARRAY_SIZE(dev->name)) {
+		return NULL; /* error: name too big */
+	}
 
 	dev = (struct net_device *)pool_alloc(&netdev_pool);
 	if (dev == NULL) {
-		return NULL;
+		return NULL; /* error: no memory */
 	}
 
-	(*setup)(dev);
-
 	list_link_init(&dev->rx_lnk);
+	strcpy(&dev->name[0], name);
+	memset(&dev->stats, 0, sizeof dev->stats);
 	skb_queue_init(&dev->dev_queue);
 	skb_queue_init(&dev->tx_dev_queue);
 	skb_queue_init(&dev->txing_queue);
 
-	strncpy(dev->name, name, sizeof dev->name);
+	ret = setup(dev);
+	if (ret != 0) {
+		pool_free(&netdev_pool, dev);
+		return NULL;
+	}
 
 	return dev;
 }
@@ -79,8 +90,8 @@ int netdev_open(struct net_device *dev) {
 		return 0;
 	}
 
-	if (dev->netdev_ops->ndo_open != NULL) {
-		ret = dev->netdev_ops->ndo_open(dev);
+	if (dev->drv_ops->start != NULL) {
+		ret = dev->drv_ops->start(dev);
 		if (ret != 0) {
 			return ret;
 		}
@@ -101,8 +112,8 @@ int netdev_close(struct net_device *dev) {
 		return 0;
 	}
 
-	if (dev->netdev_ops->ndo_stop != NULL) {
-		ret = dev->netdev_ops->ndo_stop(dev);
+	if (dev->drv_ops->stop != NULL) {
+		ret = dev->drv_ops->stop(dev);
 		if (ret != 0) {
 			return ret;
 		}
@@ -158,16 +169,26 @@ int netdev_flag_down(struct net_device *dev, unsigned int flag) {
 
 int netdev_set_macaddr(struct net_device *dev,
 		const void *mac_addr) {
+	int ret;
+
 	if ((dev == NULL) || (mac_addr == NULL)) {
 		return -EINVAL;
 	}
 
-	assert(dev->netdev_ops != NULL);
-	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
+	assert(dev->ops != NULL);
+	if (dev->ops->check_addr != NULL) {
+		ret = dev->ops->check_addr(mac_addr);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
+	assert(dev->drv_ops != NULL);
+	if (dev->drv_ops->set_macaddr == NULL) {
 		return -ENOSUPP;
 	}
 
-	return dev->netdev_ops->ndo_set_mac_address(dev, mac_addr);
+	return dev->drv_ops->set_macaddr(dev, mac_addr);
 }
 
 int netdev_set_irq(struct net_device *dev, int irq_num) {
@@ -192,6 +213,26 @@ int netdev_set_bcastaddr(struct net_device *dev, const void *bcast_addr) {
 	assert(dev != NULL);
 	assert(bcast_addr != NULL);
 	memcpy(&dev->broadcast[0], bcast_addr, dev->addr_len);
+	return 0;
+}
+
+int netdev_set_mtu(struct net_device *dev, int mtu) {
+	int ret;
+
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	assert(dev->ops != NULL);
+	if (dev->ops->check_mtu != NULL) {
+		ret = dev->ops->check_mtu(mtu);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
+	dev->mtu = mtu;
+
 	return 0;
 }
 

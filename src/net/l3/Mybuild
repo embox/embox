@@ -32,7 +32,6 @@ module arp_queue {
 module icmpv4 {
 	source "icmpv4.c"
 
-	depends eth
 	depends raw_sock
 	depends core /* for devinet.c */
 	depends ipv4 /* for ip_output.c */

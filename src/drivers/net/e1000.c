@@ -18,7 +18,7 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -86,7 +86,7 @@ static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 	return (volatile uint32_t *) (dev->base_addr + offset);
 }
 
-static int e1000_start_xmit(struct net_device *dev) {
+static int e1000_xmit(struct net_device *dev) {
 	uint16_t head = REG_LOAD(e1000_reg(dev, E1000_REG_TDH));
 	uint16_t tail  = REG_LOAD(e1000_reg(dev, E1000_REG_TDT));
 	struct sk_buff *skb;
@@ -118,11 +118,11 @@ static int e1000_start_xmit(struct net_device *dev) {
 	return 0;
 }
 
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
-	/*prom_printf("e1000: start_xmit 0x%x\n", (unsigned int) skb);*/
+static int xmit(struct net_device *dev, struct sk_buff *skb) {
+	/*prom_printf("e1000: xmit 0x%x\n", (unsigned int) skb);*/
 	skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
 
-	e1000_start_xmit(dev);
+	e1000_xmit(dev);
 
 	return ENOERR;
 }
@@ -199,7 +199,7 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 	if (cause & (E1000_REG_ICR_TXDW | E1000_REG_ICR_TXQE)) {
 		txed_skb_clean(dev_id);
-		e1000_start_xmit(dev_id);
+		e1000_xmit(dev_id);
 	}
 
 	return IRQ_HANDLED;
@@ -293,11 +293,11 @@ static int set_mac_address(struct net_device *dev, const void *addr) {
 	return ENOERR;
 }
 
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = start_xmit,
-	.ndo_open = e1000_open,
-	.ndo_stop = stop,
-	.ndo_set_mac_address = set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = xmit,
+	.start = e1000_open,
+	.stop = stop,
+	.set_macaddr = set_mac_address
 };
 
 static int e1000_init(struct pci_slot_dev *pci_dev) {
@@ -311,7 +311,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-	nic->netdev_ops = &_netdev_ops;
+	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 

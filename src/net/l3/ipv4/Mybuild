@@ -26,5 +26,4 @@ module ipv4 {
 	depends net_tx
 	depends skbuff
 	depends route
-	depends eth
 }

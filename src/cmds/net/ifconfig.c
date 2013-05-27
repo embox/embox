@@ -13,13 +13,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#include <net/if_ether.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <embox/cmd.h>
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
-#include <net/etherdevice.h>
 #include <net/util.h>
 
 EMBOX_CMD(exec);
@@ -112,7 +110,7 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_mtu) { /* set new MTU value */
-		ret = etherdev_set_mtu(iface->dev, args->mtu);
+		ret = netdev_set_mtu(iface->dev, args->mtu);
 		if (ret != 0) return ret;
 	}
 
@@ -141,7 +139,7 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	 * in this case device reset hardware addrress
 	 */
 	if (args->with_hw) { /* set new MAC address to iface */
-		ret = etherdev_set_macaddr(iface->dev, &args->hw_addr[0]);
+		ret = netdev_set_macaddr(iface->dev, &args->hw_addr[0]);
 		if (ret != 0) return ret;
 	}
 

@@ -76,7 +76,7 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	skb_queue_push(&(dev->dev_queue), skb);
+	skb_queue_push(&dev->dev_queue, skb);
 
 	netif_rx_queued(dev);
 

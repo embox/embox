@@ -27,7 +27,7 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_ether.h>
 #include <drivers/ethernet/ne2k_pci.h>
 
@@ -159,7 +159,7 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t count;
 	unsigned long base_addr;
 
@@ -384,11 +384,11 @@ static int stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = start_xmit,
-	.ndo_open = ne2k_open,
-	.ndo_stop = stop,
-	.ndo_set_mac_address = set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = xmit,
+	.start = ne2k_open,
+	.stop = stop,
+	.set_macaddr = set_mac_address
 };
 
 static int ne2k_init(struct pci_slot_dev *pci_dev) {
@@ -404,7 +404,7 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-	nic->netdev_ops = &_netdev_ops;
+	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 

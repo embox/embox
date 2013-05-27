@@ -19,9 +19,9 @@ int dev_send_skb(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
-	assert(skb->dev->header_ops != NULL);
-	assert(skb->dev->header_ops->rebuild != NULL);
-	ret = skb->dev->header_ops->rebuild(skb);
+	assert(skb->dev->ops != NULL);
+	assert(skb->dev->ops->rebuild_hdr != NULL);
+	ret = skb->dev->ops->rebuild_hdr(skb);
 	if (ret != 0) {
 		ret = arp_queue_wait_resolve(skb);
 		if (ret != 0) {
@@ -51,8 +51,8 @@ int dev_xmit_skb(struct sk_buff *skb) {
 
 	skb_len = skb->len;
 
-	assert(dev->netdev_ops->ndo_start_xmit != NULL);
-	ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	assert(dev->drv_ops->xmit != NULL);
+	ret = dev->drv_ops->xmit(dev, skb);
 	if (ret != 0) {
 		skb_free(skb);
 		dev->stats.tx_err++;
