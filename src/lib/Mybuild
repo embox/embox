@@ -144,6 +144,7 @@ static module LibCStdio {
 	source "stdio/snprintf.c"
 	source "stdio/printk.c"
 	source "stdio/puts.c"
+	source "stdio/rename.c"
 	source "stdio/scanf.c"
 
 	depends LibCMath
