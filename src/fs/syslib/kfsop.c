@@ -306,7 +306,8 @@ skip_dev_lookup:
 
 	}
 	if(ENOERR != (res = mount_table_add(dir_node))) {
-		drv->fsop->mount(dev_node, dir_node);
+		drv->fsop->umount(dir_node);
+		return res;
 	}
 	return ENOERR;
 }
