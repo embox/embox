@@ -1,6 +1,6 @@
-package embox.net.lib
+package embox.net.util
 
-module parser {
+module request_parser {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "request_parser.c"
 

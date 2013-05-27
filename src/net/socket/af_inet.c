@@ -168,7 +168,8 @@ static int inet_bind(struct socket *sock, const struct sockaddr *addr, socklen_t
 		 * packets, some doesn't. IMHO, there is no reason for tcp to use
 		 * not unicast addresses
 		 */
-	if (!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
+	if ((addr_in->sin_addr.s_addr != INADDR_ANY) &&
+			!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
 

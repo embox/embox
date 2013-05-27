@@ -3,7 +3,7 @@ package embox.test.net.parser
 module request_parser_test {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "request_parser_test.c"
-	depends embox.net.lib.parser
+	depends embox.net.util.request_parser
 	depends embox.framework.LibFramework
 }
 

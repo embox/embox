@@ -26,7 +26,6 @@ typedef struct in_device {
 	in_addr_t ifa_address;
 	in_addr_t ifa_mask;
 	in_addr_t ifa_broadcast;
-	in_addr_t ifa_anycast;
 
 	struct in6_addr ifa6_address;
 
@@ -97,9 +96,6 @@ static inline unsigned int inetdev_get_ip_id(struct in_device *in_dev) {
 	assert(in_dev != NULL);
 	return ++in_dev->ip_id_generator;
 }
-
-
-
 
 #include <stdbool.h>
 /**

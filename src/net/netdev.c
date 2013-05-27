@@ -8,24 +8,25 @@
  */
 
 #include <assert.h>
+#include <embox/unit.h>
 #include <errno.h>
+#include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <net/if.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
-#include <hal/ipl.h>
-#include <linux/list.h>
-#include <util/list.h>
 #include <util/hashtable.h>
-#include <embox/unit.h>
-#include <framework/mod/options.h>
+#include <util/list.h>
+
+#define MODOPS_NETDEV_QUANTITY OPTION_GET(NUMBER, netdev_quantity)
+#define MODOPS_NETDEV_TABLE_SZ OPTION_GET(NUMBER, netdev_table_sz)
 
 EMBOX_UNIT_INIT(netdev_init);
 
-POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER, netdev_quantity));
-struct hashtable *netdevs_table;
+POOL_DEF(netdev_pool, struct net_device, MODOPS_NETDEV_QUANTITY);
+struct hashtable *netdevs_table = NULL;
 
 struct net_device * netdev_alloc(const char *name,
 		int (*setup)(struct net_device *)) {
@@ -55,36 +56,53 @@ struct net_device * netdev_alloc(const char *name,
 	ret = setup(dev);
 	if (ret != 0) {
 		pool_free(&netdev_pool, dev);
-		return NULL;
+		return NULL; /* error: see return code */
 	}
 
 	return dev;
 }
 
 void netdev_free(struct net_device *dev) {
-	assert(dev != NULL);
-	pool_free(&netdev_pool, dev);
+	if (dev != NULL) {
+		list_unlink_link(&dev->rx_lnk);
+		skb_queue_free(&dev->dev_queue);
+		skb_queue_free(&dev->tx_dev_queue);
+		skb_queue_free(&dev->txing_queue);
+		pool_free(&netdev_pool, dev);
+	}
 }
 
 int netdev_register(struct net_device *dev) {
-	assert((dev != NULL) && (dev->name != NULL));
-	return hashtable_put(netdevs_table, (void *)dev->name, (void *)dev);
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	return hashtable_put(netdevs_table, (void *)&dev->name[0],
+			(void *)dev);
 }
 
 int netdev_unregister(struct net_device *dev) {
-	assert((dev != NULL) && (dev->name != NULL));
-	return hashtable_del(netdevs_table, (void *)dev->name);
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	return hashtable_del(netdevs_table, (void *)&dev->name[0]);
 }
 
 struct net_device * netdev_get_by_name(const char *name) {
-	assert(name != NULL);
+	if (name == NULL) {
+		return NULL; /* error: invalid name */
+	}
+
 	return hashtable_get(netdevs_table, (void *)name);
 }
 
 int netdev_open(struct net_device *dev) {
 	int ret;
 
-	assert(dev != NULL);
+	if (dev == NULL) {
+		return -EINVAL;
+	}
 
 	if (dev->flags & IFF_UP) {
 		return 0;
@@ -106,7 +124,9 @@ int netdev_open(struct net_device *dev) {
 int netdev_close(struct net_device *dev) {
 	int ret;
 
-	assert(dev != NULL);
+	if (dev == NULL) {
+		return -EINVAL;
+	}
 
 	if (!(dev->flags & IFF_UP)) {
 		return 0;
@@ -125,8 +145,50 @@ int netdev_close(struct net_device *dev) {
 	return 0;
 }
 
+int netdev_set_macaddr(struct net_device *dev, const void *addr) {
+	int ret;
+
+	if ((dev == NULL) || (addr == NULL)) {
+		return -EINVAL;
+	}
+
+	assert(dev->ops != NULL);
+	if (dev->ops->check_addr != NULL) {
+		ret = dev->ops->check_addr(addr);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
+	assert(dev->drv_ops != NULL);
+	if (dev->drv_ops->set_macaddr == NULL) {
+		ret = dev->drv_ops->set_macaddr(dev, addr);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
+	memcpy(&dev->dev_addr[0], addr, dev->addr_len);
+
+	return 0;
+}
+
+int netdev_set_bcastaddr(struct net_device *dev, const void *bcast_addr) {
+	if ((dev == NULL) || (bcast_addr == NULL)) {
+		return -EINVAL;
+	}
+
+	memcpy(&dev->broadcast[0], bcast_addr, dev->addr_len);
+
+	return 0;
+}
+
 int netdev_flag_up(struct net_device *dev, unsigned int flag) {
 	int ret;
+
+	if (dev == NULL) {
+		return -EINVAL;
+	}
 
 	if (dev->flags & flag) {
 		return 0;
@@ -149,6 +211,10 @@ int netdev_flag_up(struct net_device *dev, unsigned int flag) {
 int netdev_flag_down(struct net_device *dev, unsigned int flag) {
 	int ret;
 
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
 	if (!(dev->flags & flag)) {
 		return 0;
 	}
@@ -164,55 +230,6 @@ int netdev_flag_down(struct net_device *dev, unsigned int flag) {
 
 	dev->flags &= ~flag;
 
-	return 0;
-}
-
-int netdev_set_macaddr(struct net_device *dev,
-		const void *mac_addr) {
-	int ret;
-
-	if ((dev == NULL) || (mac_addr == NULL)) {
-		return -EINVAL;
-	}
-
-	assert(dev->ops != NULL);
-	if (dev->ops->check_addr != NULL) {
-		ret = dev->ops->check_addr(mac_addr);
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
-	assert(dev->drv_ops != NULL);
-	if (dev->drv_ops->set_macaddr == NULL) {
-		return -ENOSUPP;
-	}
-
-	return dev->drv_ops->set_macaddr(dev, mac_addr);
-}
-
-int netdev_set_irq(struct net_device *dev, int irq_num) {
-	assert(dev != NULL);
-	dev->irq = irq_num;
-	return 0;
-}
-
-int netdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
-	assert(dev != NULL);
-	dev->base_addr = base_addr;
-	return 0;
-}
-
-int netdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
-	assert(dev != NULL);
-	dev->tx_queue_len = new_len;
-	return 0;
-}
-
-int netdev_set_bcastaddr(struct net_device *dev, const void *bcast_addr) {
-	assert(dev != NULL);
-	assert(bcast_addr != NULL);
-	memcpy(&dev->broadcast[0], bcast_addr, dev->addr_len);
 	return 0;
 }
 
@@ -236,20 +253,53 @@ int netdev_set_mtu(struct net_device *dev, int mtu) {
 	return 0;
 }
 
+int netdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	dev->tx_queue_len = new_len;
+
+	return 0;
+}
+
+int netdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	dev->base_addr = base_addr;
+
+	return 0;
+}
+
+int netdev_set_irq(struct net_device *dev, int irq_num) {
+	if (dev == NULL) {
+		return -EINVAL;
+	}
+
+	dev->irq = irq_num;
+
+	return 0;
+}
+
 static size_t netdev_hash(const char *name) {
 	size_t hash;
+
 	hash = 0;
 	while (*name != '\0') {
 		hash ^= *name++;
 	}
+
 	return hash;
 }
 
 static int netdev_init(void) {
-	netdevs_table = hashtable_create(OPTION_GET(NUMBER,netdev_table_sz),
+	netdevs_table = hashtable_create(MODOPS_NETDEV_TABLE_SZ,
 			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
 	if (netdevs_table == NULL) {
 		return -ENOMEM;
 	}
+
 	return 0;
 }

@@ -5,6 +5,7 @@ module dev {
 	option number netdev_table_sz=3
 	source "netdev.c"
 
+	depends embox.util.List
 	depends embox.util.hashtable
 }
 
@@ -26,6 +27,7 @@ module core {
 	option number amount_interface=4
 
 	depends dev /* for dev.c */
+	depends embox.util.List
 	depends embox.mem.pool
 	depends embox.lib.LibC
 

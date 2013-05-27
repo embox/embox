@@ -17,6 +17,7 @@
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <kernel/printk.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>
