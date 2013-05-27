@@ -181,7 +181,7 @@ build_and_install: configure
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
 			make install && \
 			mkdir -p $(ROOT_DIR)/conf/rootfs && \
-			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/; \
+			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/fonts; \
 		fi
 
 $(ROOTFS_IMAGE): build_and_install

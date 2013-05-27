@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief ffs file system
+ * @brief qnx6 file system
  *
  * @date 14.03.2013
  * @author Andrey Gazukin
@@ -27,28 +27,28 @@
 #include <fs/file_desc.h>
 
 #define PSEVDOFS_NAME "vfat"
-#define FS_NAME "ufs"
+#define FS_NAME "qnx6"
 
 
-static int ffsfs_open(struct node *node, struct file_desc *file_desc,
+static int qnx6fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
-static int ffsfs_close(struct file_desc *desc);
-static size_t ffsfs_read(struct file_desc *desc, void *buf, size_t size);
-static size_t ffsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int ffsfs_ioctl(struct file_desc *desc, int request, ...);
+static int qnx6fs_close(struct file_desc *desc);
+static size_t qnx6fs_read(struct file_desc *desc, void *buf, size_t size);
+static size_t qnx6fs_write(struct file_desc *desc, void *buf, size_t size);
+static int qnx6fs_ioctl(struct file_desc *desc, int request, ...);
 
-static struct kfile_operations ffs_fop = {
-	.open = ffsfs_open,
-	.close = ffsfs_close,
-	.read = ffsfs_read,
-	.write = ffsfs_write,
-	.ioctl = ffsfs_ioctl,
+static struct kfile_operations qnx6_fop = {
+	.open = qnx6fs_open,
+	.close = qnx6fs_close,
+	.read = qnx6fs_read,
+	.write = qnx6fs_write,
+	.ioctl = qnx6fs_ioctl,
 };
 
 /*
  * file_operation
  */
-static int ffsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static int qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -58,7 +58,7 @@ static int ffsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	return drv->file_op->open(node, desc, flags);
 }
 
-static int ffsfs_close(struct file_desc *desc) {
+static int qnx6fs_close(struct file_desc *desc) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -68,7 +68,7 @@ static int ffsfs_close(struct file_desc *desc) {
 	return drv->file_op->close(desc);
 }
 
-static size_t ffsfs_read(struct file_desc *desc, void *buff, size_t size) {
+static size_t qnx6fs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -78,7 +78,7 @@ static size_t ffsfs_read(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->read(desc, buff, size);
 }
 
-static size_t ffsfs_write(struct file_desc *desc, void *buff, size_t size) {
+static size_t qnx6fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -88,46 +88,46 @@ static size_t ffsfs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int ffsfs_ioctl(struct file_desc *desc, int request, ...) {
+static int qnx6fs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 
-static int ffsfs_init(void * par);
-static int ffsfs_format(void *path);
-static int ffsfs_mount(void *dev, void *dir);
-static int ffsfs_create(struct node *parent_node, struct node *node);
-static int ffsfs_delete(struct node *node);
-static int ffsfs_truncate(struct node *node, off_t length);
-static int ffsfs_umount(void *dir);
+static int qnx6fs_init(void * par);
+static int qnx6fs_format(void *path);
+static int qnx6fs_mount(void *dev, void *dir);
+static int qnx6fs_create(struct node *parent_node, struct node *node);
+static int qnx6fs_delete(struct node *node);
+static int qnx6fs_truncate(struct node *node, off_t length);
+static int qnx6fs_umount(void *dir);
 
 
-static struct fsop_desc ffs_fsop = {
-	.init	     = ffsfs_init,
-	.format	     = ffsfs_format,
-	.mount	     = ffsfs_mount,
-	.create_node = ffsfs_create,
-	.delete_node = ffsfs_delete,
+static struct fsop_desc qnx6_fsop = {
+	.init	     = qnx6fs_init,
+	.format	     = qnx6fs_format,
+	.mount	     = qnx6fs_mount,
+	.create_node = qnx6fs_create,
+	.delete_node = qnx6fs_delete,
 
 	.getxattr    = NULL,
 	.setxattr    = NULL,
 	.listxattr   = NULL,
 
-	.truncate    = ffsfs_truncate,
-	.umount      = ffsfs_umount,
+	.truncate    = qnx6fs_truncate,
+	.umount      = qnx6fs_umount,
 };
 
-static int ffsfs_init(void * par) {
+static int qnx6fs_init(void * par) {
 
 	return 0;
 };
 
-static struct fs_driver ffsfs_driver = {
+static struct fs_driver qnx6fs_driver = {
 	.name = FS_NAME,
-	.file_op = &ffs_fop,
-	.fsop = &ffs_fsop,
+	.file_op = &qnx6_fop,
+	.fsop = &qnx6_fsop,
 };
 
-static int ffsfs_create(struct node *parent_node, struct node *node) {
+static int qnx6fs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -137,7 +137,7 @@ static int ffsfs_create(struct node *parent_node, struct node *node) {
 	return drv->fsop->create_node(parent_node, node);
 }
 
-static int ffsfs_delete(struct node *node) {
+static int qnx6fs_delete(struct node *node) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -147,7 +147,7 @@ static int ffsfs_delete(struct node *node) {
 	return drv->fsop->delete_node(node);
 }
 
-static int ffsfs_format(void *dev) {
+static int qnx6fs_format(void *dev) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -157,7 +157,7 @@ static int ffsfs_format(void *dev) {
 	return drv->fsop->format(dev);
 }
 
-static int ffsfs_mount(void *dev, void *dir) {
+static int qnx6fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -167,7 +167,7 @@ static int ffsfs_mount(void *dev, void *dir) {
 	return drv->fsop->mount(dev, dir);
 }
 
-static int ffsfs_truncate (struct node *node, off_t length) {
+static int qnx6fs_truncate (struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -175,7 +175,7 @@ static int ffsfs_truncate (struct node *node, off_t length) {
 	return 0;
 }
 
-static int ffsfs_umount(void *dir) {
+static int qnx6fs_umount(void *dir) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -185,4 +185,4 @@ static int ffsfs_umount(void *dir) {
 	return drv->fsop->umount(dir);
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(ffsfs_driver);
+DECLARE_FILE_SYSTEM_DRIVER(qnx6fs_driver);

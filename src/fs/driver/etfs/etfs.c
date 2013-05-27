@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief ffs file system
+ * @brief etfs file system
  *
  * @date 14.03.2013
  * @author Andrey Gazukin
@@ -27,28 +27,28 @@
 #include <fs/file_desc.h>
 
 #define PSEVDOFS_NAME "vfat"
-#define FS_NAME "ufs"
+#define FS_NAME "etfs"
 
 
-static int ffsfs_open(struct node *node, struct file_desc *file_desc,
+static int etfsfs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
-static int ffsfs_close(struct file_desc *desc);
-static size_t ffsfs_read(struct file_desc *desc, void *buf, size_t size);
-static size_t ffsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int ffsfs_ioctl(struct file_desc *desc, int request, ...);
+static int etfsfs_close(struct file_desc *desc);
+static size_t etfsfs_read(struct file_desc *desc, void *buf, size_t size);
+static size_t etfsfs_write(struct file_desc *desc, void *buf, size_t size);
+static int etfsfs_ioctl(struct file_desc *desc, int request, ...);
 
-static struct kfile_operations ffs_fop = {
-	.open = ffsfs_open,
-	.close = ffsfs_close,
-	.read = ffsfs_read,
-	.write = ffsfs_write,
-	.ioctl = ffsfs_ioctl,
+static struct kfile_operations etfs_fop = {
+	.open = etfsfs_open,
+	.close = etfsfs_close,
+	.read = etfsfs_read,
+	.write = etfsfs_write,
+	.ioctl = etfsfs_ioctl,
 };
 
 /*
  * file_operation
  */
-static int ffsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static int etfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -58,7 +58,7 @@ static int ffsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	return drv->file_op->open(node, desc, flags);
 }
 
-static int ffsfs_close(struct file_desc *desc) {
+static int etfsfs_close(struct file_desc *desc) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -68,7 +68,7 @@ static int ffsfs_close(struct file_desc *desc) {
 	return drv->file_op->close(desc);
 }
 
-static size_t ffsfs_read(struct file_desc *desc, void *buff, size_t size) {
+static size_t etfsfs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -78,7 +78,7 @@ static size_t ffsfs_read(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->read(desc, buff, size);
 }
 
-static size_t ffsfs_write(struct file_desc *desc, void *buff, size_t size) {
+static size_t etfsfs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -88,46 +88,46 @@ static size_t ffsfs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int ffsfs_ioctl(struct file_desc *desc, int request, ...) {
+static int etfsfs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 
-static int ffsfs_init(void * par);
-static int ffsfs_format(void *path);
-static int ffsfs_mount(void *dev, void *dir);
-static int ffsfs_create(struct node *parent_node, struct node *node);
-static int ffsfs_delete(struct node *node);
-static int ffsfs_truncate(struct node *node, off_t length);
-static int ffsfs_umount(void *dir);
+static int etfsfs_init(void * par);
+static int etfsfs_format(void *path);
+static int etfsfs_mount(void *dev, void *dir);
+static int etfsfs_create(struct node *parent_node, struct node *node);
+static int etfsfs_delete(struct node *node);
+static int etfsfs_truncate(struct node *node, off_t length);
+static int etfsfs_umount(void *dir);
 
 
-static struct fsop_desc ffs_fsop = {
-	.init	     = ffsfs_init,
-	.format	     = ffsfs_format,
-	.mount	     = ffsfs_mount,
-	.create_node = ffsfs_create,
-	.delete_node = ffsfs_delete,
+static struct fsop_desc etfs_fsop = {
+	.init	     = etfsfs_init,
+	.format	     = etfsfs_format,
+	.mount	     = etfsfs_mount,
+	.create_node = etfsfs_create,
+	.delete_node = etfsfs_delete,
 
 	.getxattr    = NULL,
 	.setxattr    = NULL,
 	.listxattr   = NULL,
 
-	.truncate    = ffsfs_truncate,
-	.umount      = ffsfs_umount,
+	.truncate    = etfsfs_truncate,
+	.umount      = etfsfs_umount,
 };
 
-static int ffsfs_init(void * par) {
+static int etfsfs_init(void * par) {
 
 	return 0;
 };
 
-static struct fs_driver ffsfs_driver = {
+static struct fs_driver etfsfs_driver = {
 	.name = FS_NAME,
-	.file_op = &ffs_fop,
-	.fsop = &ffs_fsop,
+	.file_op = &etfs_fop,
+	.fsop = &etfs_fsop,
 };
 
-static int ffsfs_create(struct node *parent_node, struct node *node) {
+static int etfsfs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -137,7 +137,7 @@ static int ffsfs_create(struct node *parent_node, struct node *node) {
 	return drv->fsop->create_node(parent_node, node);
 }
 
-static int ffsfs_delete(struct node *node) {
+static int etfsfs_delete(struct node *node) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -147,7 +147,7 @@ static int ffsfs_delete(struct node *node) {
 	return drv->fsop->delete_node(node);
 }
 
-static int ffsfs_format(void *dev) {
+static int etfsfs_format(void *dev) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -157,7 +157,7 @@ static int ffsfs_format(void *dev) {
 	return drv->fsop->format(dev);
 }
 
-static int ffsfs_mount(void *dev, void *dir) {
+static int etfsfs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -167,7 +167,7 @@ static int ffsfs_mount(void *dev, void *dir) {
 	return drv->fsop->mount(dev, dir);
 }
 
-static int ffsfs_truncate (struct node *node, off_t length) {
+static int etfsfs_truncate (struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -175,7 +175,7 @@ static int ffsfs_truncate (struct node *node, off_t length) {
 	return 0;
 }
 
-static int ffsfs_umount(void *dir) {
+static int etfsfs_umount(void *dir) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
@@ -185,4 +185,4 @@ static int ffsfs_umount(void *dir) {
 	return drv->fsop->umount(dir);
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(ffsfs_driver);
+DECLARE_FILE_SYSTEM_DRIVER(etfsfs_driver);
