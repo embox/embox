@@ -9,27 +9,39 @@
 
 #include <assert.h>
 #include <framework/net/pack/api.h>
+#include <net/if_packet.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
 int netif_receive_skb(struct sk_buff *skb) {
-	int ret;
 	const struct net_pack *npack;
 
+	/* parse L2 header */
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
-	ret = skb->dev->ops->parse_hdr(skb);
-	if (ret != 0) {
-		return ret;
+	if (0 != skb->dev->ops->parse_hdr(skb)) {
+		return 0; /* error; can't parse L2 header */
 	}
 
+	/* check recipient on L2 layer */
+	switch (pkt_type(skb)) {
+	default:
+		return 0; /* not for us */
+	case PACKET_HOST:
+	case PACKET_BROADCAST:
+	case PACKET_MULTICAST:
+		break;
+	}
+
+	/* lookup handler for L3 layer */
 	npack = net_pack_lookup(skb->protocol);
 	if (npack == NULL) {
 		skb_free(skb);
-		return 0;
+		return 0; /* not supported */
 	}
 
+	/* handling on L3 layer */
 	return npack->handle(skb, skb->dev);
 }

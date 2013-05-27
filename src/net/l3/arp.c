@@ -231,15 +231,18 @@ static int arp_hnd_reply(struct arpghdr *arph, struct arpg_stuff *arps,
 	return ret;
 }
 
-/**
- * Process an arp request.
- */
-static int arp_process(struct sk_buff *skb, struct net_device *dev) {
+static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	struct arpghdr *arph;
 	struct arpg_stuff arph_stuff;
 
-	assert(skb != NULL);
-	assert(dev != NULL);
+	if ((skb == NULL) || (dev == NULL)) {
+		return -EINVAL;
+	}
+
+	/* check device flags */
+	if (dev->flags & IFF_NOARP) {
+		return 0; /* error: arp doesn't supported by device */
+	}
 
 	arph = skb->nh.arpgh;
 	assert(arph != NULL);
@@ -271,28 +274,4 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		/* handling reply */
 		return arp_hnd_reply(arph, &arph_stuff, skb, dev);
 	}
-}
-
-static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
-	assert(skb != NULL);
-	assert(dev != NULL);
-
-	/* check recipient */
-	switch (pkt_type(skb)) {
-	default:
-		break; /* error: not for us */
-	case PACKET_HOST:
-	case PACKET_BROADCAST:
-	case PACKET_MULTICAST:
-		/* check device flags */
-		if (dev->flags & IFF_NOARP) {
-			break; /* error: arp doesn't supported */
-		}
-		/* handle package */
-		return arp_process(skb, dev);
-	}
-
-	/* pretend that it was not */
-	skb_free(skb);
-	return 0;
 }

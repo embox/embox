@@ -192,12 +192,18 @@ static int rarp_hnd_reply(struct arpghdr *rarph, struct arpg_stuff *rarps,
 	return ret;
 }
 
-static int rarp_process(struct sk_buff *skb, struct net_device *dev) {
+static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	struct arpghdr *rarph;
 	struct arpg_stuff rarph_stuff;
 
-	assert(skb != NULL);
-	assert(dev != NULL);
+	if ((skb == NULL) || (dev == NULL)) {
+		return -EINVAL;
+	}
+
+	/* check device flags */
+	if (dev->flags & IFF_NOARP) {
+		return 0; /* error: rarp doesn't supported by device */
+	}
 
 	rarph = skb->nh.arpgh;
 	assert(rarph != NULL);
@@ -229,28 +235,4 @@ static int rarp_process(struct sk_buff *skb, struct net_device *dev) {
 		/* handling reply */
 		return rarp_hnd_reply(rarph, &rarph_stuff, skb, dev);
 	}
-}
-
-static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
-	assert(skb != NULL);
-	assert(dev != NULL);
-
-	/* check recipient */
-	switch (pkt_type(skb)) {
-	default:
-		break; /* error: not for us */
-	case PACKET_HOST:
-	case PACKET_BROADCAST:
-	case PACKET_MULTICAST:
-		/* check device flags */
-		if (dev->flags & IFF_NOARP) {
-			break; /* error: arp doesn't supported */
-		}
-		/* handle package */
-		return rarp_process(skb, dev);
-	}
-
-	/* pretend that it was not */
-	skb_free(skb);
-	return 0;
 }
