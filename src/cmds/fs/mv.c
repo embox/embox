@@ -14,7 +14,7 @@
 #include <string.h>
 #include <fs/perm.h>
 #include <fs/vfs.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 #include <util/array.h>
 
 #include <embox/cmd.h>

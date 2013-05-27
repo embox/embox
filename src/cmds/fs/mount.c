@@ -13,7 +13,7 @@
 #include <errno.h>
 
 #include <embox/cmd.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 #include <fs/file_system.h>
 #include <mem/phymem.h>
 

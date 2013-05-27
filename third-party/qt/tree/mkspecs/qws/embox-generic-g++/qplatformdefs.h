@@ -349,12 +349,13 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	errno = EPERM;
 	return -1;
 }*/
-inline int rename(const char *oldpath, const char *newpath) {
-//	printf(">>> rename(%s, %s)\n", oldpath, newpath);
-//	errno = EPERM;
-//	return -1;
-	return rename(oldpath, newpath);
-}
+
+/*inline int rename(const char *oldpath, const char *newpath) {
+	printf(">>> rename(%s, %s)\n", oldpath, newpath);
+	errno = EPERM;
+	return -1;
+}*/
+
 inline int symlink(const char *oldpath, const char *newpath) {
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;

@@ -13,7 +13,7 @@
 #include <cmd/mkfs.h>
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 
 #include <drivers/ramdisk.h>
 #include <embox/block_dev.h>

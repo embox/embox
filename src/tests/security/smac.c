@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <security/smac.h>
 #include <fs/vfs.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 #include <fs/flags.h>
 #include <kernel/task.h>
 #include <sys/xattr.h>

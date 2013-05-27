@@ -20,7 +20,7 @@ module filesystem_test {
 	depends embox.driver.ramdisk
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
-	depends embox.fs.sys.fsop
+	depends embox.fs.filesystem
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
@@ -41,7 +41,7 @@ module file_test {
 	depends embox.driver.ramdisk
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
-	depends embox.fs.sys.fsop
+	depends embox.fs.filesystem
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
@@ -71,4 +71,5 @@ module permissions {
 	depends embox.compat.posix.proc.uid
 	depends embox.fs.driver.ext2
 	depends embox.driver.ide
+	depends embox.fs.filesystem
 }
