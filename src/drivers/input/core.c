@@ -339,7 +339,7 @@ static int input_devfs_register(struct input_dev *dev) {
 	}
 
 	nas = node->nas;
-	nas->fs = filesystem_alloc("empty");
+	nas->fs = filesystem_create("empty");
 	if (!nas->fs) {
 		return -1;
 	}

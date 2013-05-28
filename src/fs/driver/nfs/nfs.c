@@ -359,7 +359,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	dir_nas->fi->privdata = NULL;
 	dir_nas->fs = NULL;
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("nfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("nfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->rootdir_prev_fi = prev_fi;

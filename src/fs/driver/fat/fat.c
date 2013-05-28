@@ -2241,7 +2241,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	dir_nas->fi->privdata = NULL;
 	dir_nas->fs = NULL;
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("vfat"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
 		rc =  -ENOMEM;
 	}
 

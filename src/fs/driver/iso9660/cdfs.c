@@ -901,7 +901,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	dir_nas->fi->privdata = NULL;
 	dir_nas->fs = NULL;
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("iso9660"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("iso9660"))) {
 		return -ENOMEM;
 	}
 

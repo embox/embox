@@ -529,7 +529,7 @@ static int tmpfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("tmpfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("tmpfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;

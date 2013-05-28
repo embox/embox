@@ -867,7 +867,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 	dir_nas->fi->privdata = NULL;
 	dir_nas->fs = NULL;
 
-	if (NULL == (dir_nas->fs = filesystem_alloc(EXT_NAME))) {
+	if (NULL == (dir_nas->fs = filesystem_create(EXT_NAME))) {
 		rc = ENOMEM;
 		goto error;
 	}

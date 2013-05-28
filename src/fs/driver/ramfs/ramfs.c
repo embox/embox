@@ -532,7 +532,7 @@ static int ramfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("ramfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("ramfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;

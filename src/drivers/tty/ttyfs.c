@@ -23,7 +23,7 @@ static mount_tty(struct tty* tty, const struct kfile_operations *file_ops) {
 	}
 
 	nas = node->nas;
-	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
+	if (NULL == (nas->fs = filesystem_create("empty"))) {
 		return -1;
 	}
 

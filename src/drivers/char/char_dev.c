@@ -48,7 +48,7 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 	}
 
 	dev_nas = node->nas;
-	dev_nas->fs = filesystem_alloc("empty");
+	dev_nas->fs = filesystem_create("empty");
 	if (dev_nas->fs == NULL) {
 		return -ENOMEM;
 	}
