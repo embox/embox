@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <limits.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,12 +15,14 @@
 #include <sys/types.h>
 
 #include <fs/vfs.h>
+#include <fs/mount.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+
 #include <security/security.h>
-#include <limits.h>
+
 
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
@@ -236,10 +238,6 @@ int kformat(const char *pathname, const char *fs_type) {
 
 	return drv->fsop->format(node);
 }
-
-extern int mount_table_check(struct node *dir_node);
-
-extern int mount_table_add(struct node *dir_node);
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct node *dev_node, *dir_node;
@@ -525,5 +523,11 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	return drv->fsop->umount(dir_node);
+	if(0 != (res = drv->fsop->umount(dir_node))) {
+		return res;
+	}
+
+	mount_table_del(dir_node);
+
+	return 0;
 }

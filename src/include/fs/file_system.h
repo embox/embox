@@ -13,10 +13,14 @@
 #include <sys/stat.h>
 #include <limits.h>
 
+struct fs_driver;
+struct block_dev;
+
 struct filesystem {
 	struct fs_driver *drv;    			/* file system driver */
 	struct block_dev *bdev;   			/* block device, where is this file system */
-	void             *fsi;    			/* extended information */
+	void             *fsi;    			/* file system information (extended information) */
+
 	void             *rootdir_prev_fs;	/* root directory previous file system info */
 	void             *rootdir_prev_fi;	/* root directory previous file info */
 

@@ -15,6 +15,13 @@
 #include <embox/cmd.h>
 #include <fs/fsop.h>
 #include <fs/file_system.h>
+#include <fs/mount.h>
+#include <fs/node.h>
+#include <fs/vfs.h>
+#include <fs/fs_driver.h>
+
+#include <embox/block_dev.h>
+
 #include <mem/phymem.h>
 
 EMBOX_CMD(exec);
@@ -23,12 +30,31 @@ static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
+static int show_mount_list(void) {
+	struct dlist_head *mount_list;
+	struct mount_descriptor *mdesc, *tmp;
+	char mount_path[PATH_MAX];
+	const char *fs_name;
+	const char *bdev_path;
+
+	if(NULL == (mount_list = mount_table())) {
+		return 0;
+	}
+	dlist_foreach_entry(mdesc, tmp, mount_list, mount_link) {
+		vfs_get_path_by_node(mdesc->dir_node, mount_path);
+		fs_name = mdesc->dir_node->nas->fs->drv->name;
+		bdev_path = mdesc->dir_node->nas->fs->bdev->name;
+
+		printf("%s on %s type %s\n", bdev_path, mount_path, fs_name);
+	}
+	return 0;
+}
+
 static int exec(int argc, char **argv) {
 	int opt;
 	int opt_cnt;
 	char *dev, *dir;
 	char *fs_type;
-	//char *buff;
 
 	opt_cnt = 0;
 	fs_type = 0;
@@ -72,11 +98,8 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	/*buff = page_alloc(__phymem_allocator, 1);
-	filesystem_get_mount_list(buff);
-	printf("%s", buff);
-	page_free(__phymem_allocator, buff, 1);
-	*/
+	show_mount_list();
+
 
 	return 0;
 }
