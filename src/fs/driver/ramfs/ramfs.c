@@ -458,24 +458,14 @@ static int ramfs_create(struct node *parent_node, struct node *node) {
 
 static int ramfs_delete(struct node *node) {
 	struct ramfs_file_info *fi;
-	struct ramfs_fs_info *fsi;
 	struct nas *nas;
-	char path [PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-
-	vfs_get_path_by_node(node, path);
 
 	if (!node_is_directory(node)) {
 		index_free(&ramfs_file_idx, fi->index);
 		pool_free(&ramfs_file_pool, fi);
-	}
-
-	/* root node - have fi, but haven't index*/
-	if(0 == strcmp((const char *) path, (const char *) nas->fs->mntto)){
-		pool_free(&ramfs_fs_pool, fsi);
 	}
 
 	vfs_del_leaf(node);
@@ -544,8 +534,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
+
 	fsi->block_per_file = MAX_FILE_SIZE;
 	fsi->block_size = PAGE_SIZE();
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();

@@ -545,6 +545,7 @@ typedef struct ext2_fs_info {
 	u8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
 								        * always s_log_block_size + 10.
 									    */
+	char mntto[PATH_MAX];
 } ext2_fs_info_t;
 
 /*

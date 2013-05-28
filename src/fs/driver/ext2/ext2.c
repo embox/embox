@@ -343,7 +343,7 @@ int ext2_open(struct nas *nas) {
 
 	/* prepare full path into this filesystem */
 	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, nas->fs->mntto);
+	path_cut_mount_dir(path, fsi->mntto);
 
 	/* alloc a block sized buffer used for all transfers */
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
@@ -595,13 +595,7 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 static int ext2fs_delete(struct node *node) {
 	int rc;
 	node_t *parents;
-	struct nas *nas;
-	char path[PATH_MAX];
-	struct ext2_fs_info *fsi;
-	nas = node->nas;
-	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node(node, path);
 	if (NULL == (parents = vfs_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
@@ -609,11 +603,6 @@ static int ext2fs_delete(struct node *node) {
 
 	if (0 != (rc = ext2_unlink(parents->nas, node->nas))) {
 		return -rc;
-	}
-
-	/* root node - have fi, but haven't index*/
-	if (0 == strcmp((const char *) path, (const char *) nas->fs->mntto)) {
-		pool_free(&ext2_fs_pool, fsi);
 	}
 
 	vfs_del_leaf(node);
@@ -884,8 +873,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ext2_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
+	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&ext2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
@@ -937,18 +925,14 @@ static int ext2fs_umount(void *dir) {
 	struct nas *dir_nas;
 	//struct ext2_fs_info *fsi;
 	void *prev_fi, *prev_fs;
-	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
 	//fsi = dir_nas->fs->fsi;
 
-	/* check if dir not a root dir */
-	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(dir_nas->fs->mntto, path)) {
-		return -EINVAL;
-	}
+	/*TODO check if dir not a root dir */
+
 	/*TODO check if it has a opened files */
 
 	prev_fi = dir_nas->fs->rootdir_prev_fi;

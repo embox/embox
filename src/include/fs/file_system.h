@@ -19,8 +19,6 @@ struct filesystem {
 	void             *fsi;    			/* extended information */
 	void             *rootdir_prev_fs;	/* root directory previous file system info */
 	void             *rootdir_prev_fi;	/* root directory previous file info */
-	char mntfrom[PATH_MAX];
-	char mntto[PATH_MAX];
 
 	const struct kfile_operations *file_op;
 };

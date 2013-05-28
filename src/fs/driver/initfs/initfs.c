@@ -96,9 +96,6 @@ static int initfs_mount(void *dev, void *dir) {
 	dir_nas = dir_node->nas;
 	dir_nas->fs = filesystem_create("initfs");
 
-	vfs_get_path_by_node(dir_nas->node, dir_nas->fs->mntto);
-	strncpy(dir_nas->fs->mntfrom, "initfs\0", 7);
-
 	if (&_initfs_start == &_initfs_end) {
 		return -1;
 	}

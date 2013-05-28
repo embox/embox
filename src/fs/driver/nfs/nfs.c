@@ -374,9 +374,6 @@ static int nfsfs_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 	dir_nas->fi->privdata = (void *) fi;
 
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	strcpy(dir_nas->fs->mntfrom, dev);
-
 	/* get server name and mount directory from params */
 	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
 		(0 > nfs_mount(dir_nas))) {
@@ -422,17 +419,13 @@ static int nfsfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
 	void *prev_fi, *prev_fs;
-	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
 
-	/* check if dir not a root dir */
-	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(dir_nas->fs->mntto, path)) {
-		return -EINVAL;
-	}
+	/*TODO check if dir not a root dir */
+
 	/*TODO check if it has a opened files */
 
 	prev_fi = dir_nas->fs->rootdir_prev_fi;
