@@ -18,12 +18,14 @@
 
 POOL_DEF(filesystem_pool, struct filesystem, OPTION_GET(NUMBER,fs_quantity));
 
-static DLIST_DEFINE(fs_list);
+//static DLIST_DEFINE(fs_list);
+
 
 struct filesystem *filesystem_alloc(const char *drv_name) {
 	struct filesystem *fs;
 
 	fs = pool_alloc(&filesystem_pool);
+
 	if (NULL == fs) {
 		return NULL;
 	}
@@ -31,10 +33,11 @@ struct filesystem *filesystem_alloc(const char *drv_name) {
 	if (0 != *drv_name) {
 		fs->drv = fs_driver_find_drv(drv_name);
 	}
+#if 0
 	if(0 != strcmp(drv_name, "empty")) {
 		dlist_add_next(dlist_head_init((struct dlist_head*)&fs->link), &fs_list);
 	}
-
+#endif
 	return fs;
 }
 
@@ -42,11 +45,14 @@ void filesystem_free(struct filesystem *fs) {
 	if (NULL == fs) {
 		return;
 	}
+#if 0
 	dlist_del((struct dlist_head *)&fs->link);
+#endif
 	pool_free(&filesystem_pool, fs);
 }
 
 int filesystem_get_mount_list(char *buff) {
+#if 0
 	struct dlist_head *tmp;
 	struct dlist_head *fs_link;
 	struct filesystem *fs;
@@ -62,6 +68,7 @@ int filesystem_get_mount_list(char *buff) {
 		strcat(buff, fs->drv->name);
 		strcat(buff, "\n");
 	}
+#endif
 	return 0;
 }
 
