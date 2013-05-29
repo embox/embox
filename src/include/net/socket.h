@@ -121,6 +121,9 @@ struct proto_ops {
 extern int socket_close(int sockfd);
 #endif
 
+extern struct socket * socket_alloc(void);
+extern void socket_free(struct socket *sock);
+
 #if 1 /********** TODO remove this ****************/
 #include <net/skbuff.h>
 struct sk_buff;

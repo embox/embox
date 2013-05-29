@@ -16,7 +16,7 @@
 #include <sys/uio.h>
 
 #include <net/inet_sock.h>
-#include <net/kernel_socket.h>
+#include <net/ksocket.h>
 #include <net/socket.h>
 #include <net/sock.h>
 #include <sys/socket.h>
@@ -50,7 +50,7 @@ int socket(int domain, int type, int protocol) {
 	int ret, res;
 	struct socket *sock;
 
-	ret = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
+	ret = ksocket(domain, type, protocol, &sock);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -58,14 +58,12 @@ int socket(int domain, int type, int protocol) {
 
 	res = task_self_idx_alloc(&task_idx_ops_socket, sock);
 	if (res < 0) {
-		kernel_socket_release(sock);
+		ksocket_close(sock);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
 	sock->desc_data = task_idx_indata(task_self_idx_get(res));
-
-//	assert(sock->state != SS_CONNECTED); /* XXX ?? */
 
 	/**
 	 * Block stream socket on writing while
@@ -88,7 +86,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 		return -1;
 	}
 
-	ret = kernel_socket_connect(sock, daddr, daddrlen, 0);
+	ret = kconnect(sock, daddr, daddrlen, 0);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -110,7 +108,7 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		return -1;
 	}
 
-	ret = kernel_socket_bind(sock, addr, addrlen);
+	ret = kbind(sock, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -129,7 +127,7 @@ int listen(int sockfd, int backlog) {
 		return -1;
 	}
 
-	ret = kernel_socket_listen(sock, backlog);
+	ret = klisten(sock, backlog);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -148,8 +146,9 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen,
-			*task_idx_desc_flags_ptr(task_self_idx_get(sockfd)));
+	ret = kaccept(sock, addr, addrlen,
+			*task_idx_desc_flags_ptr(task_self_idx_get(sockfd)),
+			&new_sock);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -157,7 +156,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
 	if (res < 0) {
-		kernel_socket_release(new_sock);
+		ksocket_close(new_sock);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
@@ -222,7 +221,7 @@ static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len,
 	sock_set_ready(sock->sk);
 #endif
 
-	ret = kernel_socket_sendmsg(NULL, sock, &m, len, flags);
+	ret = ksendmsg(sock, &m, flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -253,7 +252,7 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
 	iov.iov_len = len;
 	m.msg_iov = &iov;
 
-	ret = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
+	ret = krecvmsg(sock, &m, flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -343,7 +342,7 @@ int shutdown(int sockfd, int how) {
 
 	sock->sk->sk_shutdown |= (how + 1);
 
-	ret = kernel_socket_shutdown(sock, how);
+	ret = kshutdown(sock, how);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -351,27 +350,6 @@ int shutdown(int sockfd, int how) {
 
 	return 0;
 }
-
-#if 0
-int socket_close(int sockfd) {
-	int ret;
-	struct socket *sock;
-
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kernel_socket_release(sock);
-	if (ret < 0){
-		SET_ERRNO(-ret);
-		return -1;
-	}
-
-	return 0;
-}
-#endif
 
 static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	return recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
@@ -389,7 +367,7 @@ static int this_ioctl(struct idx_desc *socket, int request, void *data) {
 static int this_close(struct idx_desc *socket) {
 	int ret;
 
-	ret = kernel_socket_release(task_idx_desc_data(socket));
+	ret = ksocket_close(task_idx_desc_data(socket));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -409,7 +387,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 		return -1;
 	}
 
-	ret = kernel_socket_getsockopt(sock, level, optname, optval, optlen);
+	ret = kgetsockopt(sock, level, optname, optval, optlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -429,7 +407,7 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 		return -1;
 	}
 
-	ret = kernel_socket_setsockopt(sock, level, optname, optval, optlen);
+	ret = ksetsockopt(sock, level, optname, optval, optlen);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;

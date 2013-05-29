@@ -17,38 +17,21 @@
 
 #include <net/sock.h>
 #include <util/sys_log.h>
-#include <net/kernel_socket.h>
+#include <net/ksocket.h>
 #include <net/socket_registry.h>
 #include <embox/net/family.h>
 
-int kernel_socket_create(int family, int type, int protocol,
-		struct socket **psock, struct sock *sk,
-		struct proto_ops *sk_ops) {
+static int ksocket_ext(int family, int type, int protocol,
+		struct sock *sk, struct proto_ops *sk_ops,
+		struct socket **out_sock) {
 	int res;
 	struct socket *sock;
 	const struct net_family *nfamily;
-
-	if ((family == PF_INET) && (type == SOCK_PACKET)) {
-		family = PF_PACKET;
-	}
 
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
 		return -EAFNOSUPPORT;
 	}
-
-
-	/* TODO here must be code for trying socket (permition and so on)
-	 err = security_socket_create(family, type, protocol, kern);
-	 if (err)
-	 return err;
-	 */
-
-	/*
-	 * Allocate the socket and allow the family to set things up. if
-	 * the protocol is 0, the family is instructed to select an appropriate
-	 * default.
-	 */
 
 	sock = socket_alloc();
 	if (sock == NULL) {
@@ -56,7 +39,6 @@ int kernel_socket_create(int family, int type, int protocol,
 	}
 
 	sock->type = type;
-//	sock->state = SS_UNCONNECTED;
 
 	if (sk == NULL) {
 		assert(nfamily->create != NULL);
@@ -85,13 +67,6 @@ int kernel_socket_create(int family, int type, int protocol,
 		return -EAFNOSUPPORT;
 	}
 
-	/* TODO here we must be code for trying socket (permition and so on)
-	 err = security_socket_post_create(sock, family, type, protocol, kern);
-	 */
-
-#if 0
-	sock_set_ready(sock->sk);
-#endif
 	/* addr socket entry to registry */
 	if (0 > (res = sr_add_socket_to_registry(sock))) {
 		return res;
@@ -101,13 +76,19 @@ int kernel_socket_create(int family, int type, int protocol,
 	sk_set_connection_state(sock, UNCONNECTED);
 	/* set default socket options */
 	so_options_init(&sock->socket_node->options, type);
-	*psock = sock; /* and save structure */
 
-	return ENOERR;
+	*out_sock = sock; /* and save structure */
+
+	return 0;
 }
 
-/* should be understood as close method */
-int kernel_socket_release(struct socket *sock) {
+int ksocket(int family, int type, int protocol,
+		struct socket **out_sock) {
+	return ksocket_ext(family, type, protocol, NULL, NULL,
+			out_sock);
+}
+
+int ksocket_close(struct socket *sock) {
 	int res;
 
 	sk_set_connection_state(sock, DISCONNECTING);
@@ -138,7 +119,7 @@ int kernel_socket_release(struct socket *sock) {
 	return ENOERR;
 }
 
-int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
+int kbind(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int res;
 
@@ -194,7 +175,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	return ENOERR;
 }
 
-int kernel_socket_listen(struct socket *sock, int backlog) {
+int klisten(struct socket *sock, int backlog) {
 	int res;
 	/* TODO come up with an idea about listening queue */
 	/* -EACCES may be returned if the process doesn't have enough privileges */
@@ -241,8 +222,8 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	return res;
  }
 
-int kernel_socket_accept(struct socket *sock, struct socket **accepted,
-		struct sockaddr *addr, socklen_t *addrlen, int flags) {
+int kaccept(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen, int flags, struct socket **out_sock) {
 	int res;
 	struct sock *newsk;
 
@@ -281,18 +262,18 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	}
 
 	/* create socket with the same type, protocol and family as 'sock' */
-	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
-			sock->sk->sk_protocol, accepted, newsk, (struct proto_ops *)sock->ops);
+	res = ksocket_ext(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
+			sock->sk->sk_protocol, newsk, (struct proto_ops *)sock->ops, out_sock);
 	if (res < 0) {
 		sk_common_release(newsk);
 		return res;
 	}
 	/* set state */
-	sk_set_connection_state(*accepted, ESTABLISHED);
+	sk_set_connection_state(*out_sock, ESTABLISHED);
 	return res;
  }
 
-int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
+int kconnect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
@@ -367,18 +348,18 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	return res;
 }
 
-int kernel_socket_getsockname(struct socket *sock,
-		struct sockaddr *addr, int *addrlen) {
+int kgetsockname(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 0);
 }
 
-int kernel_socket_getpeername(struct socket *sock,
-		struct sockaddr *addr, int *addrlen) {
+int kgetpeername(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 1);
 }
 
-int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
-		char *optval, socklen_t *optlen) {
+int kgetsockopt(struct socket *sock, int level, int optname,
+		void *optval, socklen_t *optlen) {
 	int res;
 
 	/* sock is not NULL */
@@ -413,8 +394,8 @@ int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
 	return res;
 }
 
-int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
-		char *optval, socklen_t optlen) {
+int ksetsockopt(struct socket *sock, int level, int optname,
+		const void *optval, socklen_t optlen) {
 	int res;
 
 	/* sock is not NULL */
@@ -433,7 +414,7 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 	}
 	else {
 		if (sock->ops->setsockopt) {
-			res = sock->ops->setsockopt(sock, level, optname, optval, optlen);
+			res = sock->ops->setsockopt(sock, level, optname, (char*)optval, optlen);
 		}
 		else {
 			/* if no getsockopt or setsockopt method is set, it should
@@ -444,17 +425,17 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 	return res;
 }
 
-int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *m, size_t total_len, int flags) {
-	return sock->ops->sendmsg(iocb, sock, m, total_len, flags);
+int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
+	return sock->ops->sendmsg(NULL, sock, msg,
+			msg->msg_iov->iov_len, flags);
 }
 
-int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *m, size_t total_len, int flags) {
-	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
+int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
+	return sock->ops->recvmsg(NULL, sock, msg,
+			msg->msg_iov->iov_len, flags);
 }
 
-int kernel_socket_shutdown(struct socket *sock, int how) {
+int kshutdown(struct socket *sock, int how) {
 	int res = ENOERR;
 
 	if (sock->ops->shutdown) {
