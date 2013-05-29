@@ -1036,7 +1036,6 @@ static int fatfs_mount(void *dev, void *dir) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct node_fi *dev_fi;
-	void *prev_fi, *prev_fs;
 	int rc;
 
 	dev_node = dev;
@@ -1050,18 +1049,11 @@ static int fatfs_mount(void *dev, void *dir) {
 	if(NULL != vfs_get_child_next(dir_node)) {
 		rc =  -ENOTEMPTY;
 	}
-	prev_fi = dir_nas->fi->privdata;
-	prev_fs = dir_nas->fs;
-
-	dir_nas->fi->privdata = NULL;
-	dir_nas->fs = NULL;
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
 		rc =  -ENOMEM;
 	}
 
-	dir_nas->fs->rootdir_prev_fi = prev_fi;
-	dir_nas->fs->rootdir_prev_fs = prev_fs;
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
@@ -1071,8 +1063,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct fat_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
+	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
@@ -1086,9 +1077,9 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	error:
 	fat_free_fs(dir_nas);
-
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	/* TODO */
+//	dir_nas->fi->privdata = prev_fi;
+//	dir_nas->fs = prev_fs;
 	return rc;
 }
 

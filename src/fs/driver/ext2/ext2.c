@@ -834,7 +834,6 @@ static int ext2fs_mount(void *dev, void *dir) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 	struct node_fi *dev_fi;
-	void *prev_fi, *prev_fs;
 
 	dev_node = dev;
 	dev_nas = dev_node->nas;
@@ -850,19 +849,11 @@ static int ext2fs_mount(void *dev, void *dir) {
 		return -ENOTEMPTY;
 	}
 
-	prev_fi = dir_nas->fi->privdata;
-	prev_fs = dir_nas->fs;
-
-	dir_nas->fi->privdata = NULL;
-	dir_nas->fs = NULL;
-
 	if (NULL == (dir_nas->fs = filesystem_create(EXT_NAME))) {
 		rc = ENOMEM;
 		goto error;
 	}
 
-	dir_nas->fs->rootdir_prev_fi = prev_fi;
-	dir_nas->fs->rootdir_prev_fs = prev_fs;
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
@@ -907,8 +898,9 @@ static int ext2fs_mount(void *dev, void *dir) {
 	error:
 	ext2_free_fs(dir_nas);
 
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	/*TODO restore previous fs type from parent dir */
+//	dir_nas->fi->privdata = prev_fi;
+//	dir_nas->fs = prev_fs;
 	return -rc;
 }
 
@@ -923,20 +915,13 @@ static int ext2fs_truncate (struct node *node, off_t length) {
 static int ext2fs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
-	//struct ext2_fs_info *fsi;
-	void *prev_fi, *prev_fs;
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	//fsi = dir_nas->fs->fsi;
-
 	/*TODO check if dir not a root dir */
 
 	/*TODO check if it has a opened files */
-
-	prev_fi = dir_nas->fs->rootdir_prev_fi;
-	prev_fs = dir_nas->fs->rootdir_prev_fs;
 
 	/* delete all entry node */
 	ext2_umount_entry(dir_nas);
@@ -944,8 +929,9 @@ static int ext2fs_umount(void *dir) {
 	/* free ext2 file system pools and buffers*/
 	ext2_free_fs(dir_nas);
 
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	/*TODO restore previous fs type from parent dir */
+//	dir_nas->fi->privdata = prev_fi;
+//	dir_nas->fs = prev_fs;
 
 	return 0;
 }

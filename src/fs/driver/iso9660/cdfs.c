@@ -881,7 +881,6 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
 	struct node_fi *dev_fi;
-	void *prev_fi, *prev_fs;
 	int rc;
 
 	dev_node = dev;
@@ -897,18 +896,10 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return -ENOTEMPTY;
 	}
 
-	prev_fi = dir_nas->fi->privdata;
-	prev_fs = dir_nas->fs;
-
-	dir_nas->fi->privdata = NULL;
-	dir_nas->fs = NULL;
-
 	if (NULL == (dir_nas->fs = filesystem_create("iso9660"))) {
 		return -ENOMEM;
 	}
 
-	dir_nas->fs->rootdir_prev_fi = prev_fi;
-	dir_nas->fs->rootdir_prev_fs = prev_fs;
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
@@ -934,9 +925,9 @@ static int cdfsfs_mount(void *dev, void *dir) {
 
 	error:
 	cdfs_free_fs(dir_nas);
-
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	/*TODO restore previous fs type from parent dir */
+//	dir_nas->fi->privdata = prev_fi;
+//	dir_nas->fs = prev_fs;
 	return rc;
 
 }
@@ -962,7 +953,6 @@ static int cdfsfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
 	struct cdfs_fs_info *fsi;
-	void *prev_fi, *prev_fs;
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
@@ -977,14 +967,12 @@ static int cdfsfs_umount(void *dir) {
 	/* delete all entry node */
 	cdfs_umount_entry(dir_nas);
 
-	prev_fi = dir_nas->fs->rootdir_prev_fi;
-	prev_fs = dir_nas->fs->rootdir_prev_fs;
-
 	/* free cdfs file system pools and buffers*/
 	cdfs_free_fs(dir_nas);
 
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	/*TODO restore previous fs type from parent dir */
+//	dir_nas->fi->privdata = prev_fi;
+//	dir_nas->fs = prev_fs;
 
 	return 0;
 }

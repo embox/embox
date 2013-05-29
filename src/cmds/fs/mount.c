@@ -100,6 +100,5 @@ static int exec(int argc, char **argv) {
 
 	show_mount_list();
 
-
 	return 0;
 }

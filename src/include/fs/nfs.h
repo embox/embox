@@ -313,7 +313,6 @@ typedef struct write_reply {
 typedef struct nfs_fs_info {
 	char srv_name[PATH_MAX];
 	char srv_dir[PATH_MAX];
-	export_dir_t export;
 	nfs_filehandle_t fh;
 	struct client *mnt;
 	struct client *nfs;
@@ -326,7 +325,5 @@ typedef struct nfs_file_info {
 	int mode;				/* mode in which this file was opened */
 	__u64 offset;			/* current (BYTE) pointer */
 } nfs_file_info_t;
-
-int mount_nfs_filesystem(void *par);
 
 #endif /* NFS_H_ */

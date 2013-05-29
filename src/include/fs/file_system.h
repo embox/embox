@@ -21,9 +21,6 @@ struct filesystem {
 	struct block_dev *bdev;   			/* block device, where is this file system */
 	void             *fsi;    			/* file system information (extended information) */
 
-	void             *rootdir_prev_fs;	/* root directory previous file system info */
-	void             *rootdir_prev_fi;	/* root directory previous file info */
-
 	const struct kfile_operations *file_op;
 };
 
