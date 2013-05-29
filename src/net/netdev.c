@@ -161,7 +161,7 @@ int netdev_set_macaddr(struct net_device *dev, const void *addr) {
 	}
 
 	assert(dev->drv_ops != NULL);
-	if (dev->drv_ops->set_macaddr == NULL) {
+	if (dev->drv_ops->set_macaddr != NULL) {
 		ret = dev->drv_ops->set_macaddr(dev, addr);
 		if (ret != 0) {
 			return ret;
