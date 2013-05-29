@@ -30,6 +30,7 @@ int netif_receive_skb(struct sk_buff *skb) {
 	default:
 		return 0; /* not for us */
 	case PACKET_HOST:
+	case PACKET_LOOPBACK:
 	case PACKET_BROADCAST:
 	case PACKET_MULTICAST:
 		break;
