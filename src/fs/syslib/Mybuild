@@ -29,7 +29,6 @@ module SysLibFileSystemNone extends SysLibFileSystem {
 
 module SysLibFileSystemFull extends SysLibFileSystem {
 	source "kfsop.c"
-	source "fsop.c"
 	depends Perm
 }
 
