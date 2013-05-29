@@ -10,9 +10,9 @@
 #include <math.h>
 
 int blog2(int val) {
-	static unsigned long log2_magic = 73743071;
+	static const unsigned long log2_magic = 73743071;
 
-	static unsigned char log2_magic_offsets[] = {
+	static const unsigned char log2_magic_offsets[] = {
 	         0,  1,  2,  6,  3,
 	        11,  7, 16,  4, 14,
 	        12, 21,  8, 23, 17,
