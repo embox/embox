@@ -925,9 +925,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 
 	error:
 	cdfs_free_fs(dir_nas);
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
+
 	return rc;
 
 }
@@ -958,10 +956,6 @@ static int cdfsfs_umount(void *dir) {
 	dir_nas = dir_node->nas;
 	fsi = dir_nas->fs->fsi;
 
-	/*TODO check if dir not a root dir */
-
-	/*TODO check if it has a opened files */
-
 	cdfs_umount(fsi);
 
 	/* delete all entry node */
@@ -969,10 +963,6 @@ static int cdfsfs_umount(void *dir) {
 
 	/* free cdfs file system pools and buffers*/
 	cdfs_free_fs(dir_nas);
-
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
 
 	return 0;
 }

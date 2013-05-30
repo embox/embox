@@ -280,31 +280,26 @@ skip_dev_lookup:
 	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
-#if 0
-		if (res != -ENOENT) {
-			errno = -res;
-		}
-
-		if (0 != (res = kmkdir(dir_node, lastpath, 0755))) {
-			return res;
-		}
-#endif
 	}
 
 	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
 		return res;
 	}
 
-	if(ENOERR != mount_table_check(dir_node)) {
-		return EBUSY;
+	if(ENOERR != (res = mount_table_check(dir_node))) {
+		return res;
 	}
 
 	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
+		/*TODO restore previous fs type from parent dir */
+
 		return res;
 
 	}
 	if(ENOERR != (res = mount_table_add(dir_node))) {
 		drv->fsop->umount(dir_node);
+		/*TODO restore previous fs type from parent dir */
+
 		return res;
 	}
 	return ENOERR;
@@ -508,6 +503,14 @@ int kumount(const char *dir) {
 		return -1;
 	}
 
+	/* check if dir not a root dir */
+	if(-EBUSY != (res = mount_table_check(dir_node))) {
+		errno = -EINVAL;
+		return -1;
+	}
+
+	/*TODO check if it has a opened files */
+
 	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
 
 	drv = dir_node->nas->fs->drv;
@@ -528,6 +531,8 @@ int kumount(const char *dir) {
 	}
 
 	mount_table_del(dir_node);
+
+	/*TODO restore previous fs type from parent dir */
 
 	return 0;
 }

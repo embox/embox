@@ -17,6 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/ext2.h>
 #include <fs/path.h>
+#include <fs/mount.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>
@@ -898,9 +899,6 @@ static int ext2fs_mount(void *dev, void *dir) {
 	error:
 	ext2_free_fs(dir_nas);
 
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
 	return -rc;
 }
 
@@ -919,19 +917,11 @@ static int ext2fs_umount(void *dir) {
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	/*TODO check if dir not a root dir */
-
-	/*TODO check if it has a opened files */
-
 	/* delete all entry node */
 	ext2_umount_entry(dir_nas);
 
 	/* free ext2 file system pools and buffers*/
 	ext2_free_fs(dir_nas);
-
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
 
 	return 0;
 }

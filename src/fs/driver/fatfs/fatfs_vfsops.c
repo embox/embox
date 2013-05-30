@@ -1164,30 +1164,15 @@ static int fatfs_truncate(struct node *node, off_t length) {
 static int fatfs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
-	void *prev_fi, *prev_fs;
-	char path[PATH_MAX];
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-
-	/* check if dir not a root dir */
-	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(dir_nas->fs->mntto, path)) {
-		return -EINVAL;
-	}
-	/*TODO check if it has a opened files */
-
-	prev_fi = dir_nas->fs->rootdir_prev_fi;
-	prev_fs = dir_nas->fs->rootdir_prev_fs;
 
 	/* delete all entry node */
 	fat_umount_entry(dir_nas);
 
 	/* free fat file system pools and buffers*/
 	fat_free_fs(dir_nas);
-
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
 
 	return 0;
 }

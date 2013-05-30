@@ -383,9 +383,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 
 	error:
 	nfs_free_fs(dir_nas);
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
+
 	return rc;
 }
 
@@ -408,25 +406,14 @@ static int nfs_umount_entry(struct nas *nas) {
 
 static int nfsfs_umount(void *dir) {
 	struct node *dir_node;
-	struct nas *dir_nas;
 
 	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-
-	/*TODO check if dir not a root dir */
-
-	/*TODO check if it has a opened files */
 
 	/* delete all entry node */
-	nfs_umount_entry(dir_nas);
+	nfs_umount_entry(dir_node->nas);
 
 	/* free nfs file system pools, clnt and buffers*/
-	nfs_free_fs(dir_nas);
-
-	/*TODO restore previous fs type from parent dir */
-//	dir_nas->fi->privdata = prev_fi;
-//	dir_nas->fs = prev_fs;
+	nfs_free_fs(dir_node->nas);
 
 	return 0;
 }
