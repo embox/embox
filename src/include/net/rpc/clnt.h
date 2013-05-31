@@ -9,7 +9,7 @@
 #define NET_RPC_CLNT_H_
 
 #include <stdint.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <net/rpc/xdr.h>
 #include <net/rpc/rpc_msg.h>
@@ -20,7 +20,6 @@ struct auth;
 struct client;
 struct sockaddr_in;
 struct timeval;
-struct socket;
 
 enum clnt_stat {
 	RPC_SUCCESS,           /* call succeeded */
@@ -72,7 +71,7 @@ struct clnt_ops {
 struct client {
 	struct auth *ath;
 	const struct clnt_ops *ops;
-	struct socket *sock;
+	int sock;
 	struct rpc_err err;
 	uint32_t prognum;
 	uint32_t versnum;
@@ -99,9 +98,10 @@ extern struct rpc_createerr rpc_create_error;
 extern struct client * clnt_create(const char *host, uint32_t prognum, uint32_t versnum,
 		const char *prot);
 extern struct client * clntudp_create(struct sockaddr_in *addr, uint32_t prognum,
-		uint32_t versnum, struct timeval wait, struct socket **psock);
+		uint32_t versnum, struct timeval wait, int *psock);
+
 extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum,
-		uint32_t versnum, struct socket **psock, unsigned int sendsz, unsigned int recvsz);
+		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz);
 
 extern enum clnt_stat clnt_call(struct client *clnt, uint32_t procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait);
@@ -109,6 +109,9 @@ extern enum clnt_stat clnt_call(struct client *clnt, uint32_t procnum, xdrproc_t
 extern void clnt_geterr(struct client * clnt, struct rpc_err *perr);
 
 extern void clnt_destroy(struct client *clnt);
+
+extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum, 	uint32_t versnum,
+		int *psock, unsigned int sendsz, unsigned int __recvsz);
 
 extern char * clnt_sperrno(enum clnt_stat stat);
 extern void clnt_perrno(enum clnt_stat stat);

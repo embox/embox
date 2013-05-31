@@ -19,14 +19,14 @@ uint16_t pmap_getport(struct sockaddr_in *raddr, uint32_t prognum,
 	const struct timeval resend_every = { 5, 0 };
 	const struct timeval timeout = { 60, 0 };
 	uint16_t port;
-	struct socket *sock;
+	int sock;
 	struct client *clnt;
 	struct sockaddr_in addr;
 	struct pmap pm;
 
 	memcpy(&addr, raddr, sizeof *raddr);
 	addr.sin_port = htons(PMAPPORT);
-	sock = NULL;
+	sock = RPC_ANYSOCK;
 	clnt = clntudp_create(&addr, PMAPPROG, PMAPVERS,
 			resend_every, &sock);
 	if (clnt == NULL) {

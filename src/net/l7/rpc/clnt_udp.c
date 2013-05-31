@@ -22,8 +22,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <net/socket.h>
-#include <net/ksocket.h>
 
 #include <kernel/time/ktime.h>
 
@@ -32,11 +30,10 @@
 static const struct clnt_ops clntudp_ops;
 
 struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
-		uint32_t versnum, struct timeval resend, struct socket **psock) {
-	int ret;
+		uint32_t versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
 	struct auth *ath;
-	struct socket *sock;
+	int sock;
 	uint16_t port;
 
 	assert((raddr != NULL) && (psock != NULL));
@@ -56,11 +53,11 @@ struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 		}
 	}
 
-	assert(*psock == NULL); /* TODO remove this */
-	ret = ksocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, &sock);
-	if (ret != 0) {
+	assert(*psock < 0); /* TODO remove this */
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
-		rpc_create_error.err.extra.error = -ret;
+		rpc_create_error.err.extra.error = errno;
 		goto exit_with_error;
 	}
 
@@ -83,23 +80,6 @@ exit_with_error:
 	return NULL;
 }
 
-static struct msghdr * build_msghdr(void *buff, size_t size,
-		const struct sockaddr *addr, socklen_t addrlen) {
-	static struct msghdr msg;
-	static struct iovec iov;
-
-	msg.msg_name = (void *)addr;
-	msg.msg_namelen = addrlen;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_flags = 0;
-
-	iov.iov_base = (void *)buff;
-	iov.iov_len = size;
-
-	return &msg;
-}
-
 static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
@@ -107,7 +87,8 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
 	struct rpc_msg msg_reply, msg_call;
-	struct msghdr *msg;
+	struct sockaddr addr;
+	socklen_t addr_len;
 	size_t buff_len;
 	useconds_t was_sended, elapsed, wait_timeout, wait_resend;
 	struct timeval tmp;
@@ -142,10 +123,8 @@ send_again:
 	ktime_get_timeval(&tmp);
 	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
 
-	msg = build_msghdr(buff, buff_len,
-			(struct sockaddr *)&clnt->extra.udp.sin,
-			sizeof clnt->extra.udp.sin);
-	res = ksendmsg(clnt->sock, msg, 0);
+	res = sendto(clnt->sock, buff, buff_len, 0,
+			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
@@ -153,8 +132,7 @@ send_again:
 	}
 
 recv_again:
-	msg = build_msghdr(buff, sizeof buff, NULL, 0);
-	res = krecvmsg(clnt->sock, msg, 0);
+	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTRECV;
 		clnt->err.extra.error = errno;
@@ -212,7 +190,7 @@ static void clntudp_destroy(struct client *clnt) {
 	assert(clnt != NULL);
 
 	auth_destroy(clnt->ath);
-	ksocket_close(clnt->sock);
+	close(clnt->sock);
 	free(clnt);
 }
 
