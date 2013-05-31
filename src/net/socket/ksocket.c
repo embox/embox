@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <stddef.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>
@@ -56,8 +57,7 @@ static int ksocket_ext(int family, int type, int protocol,
 		}
 		else {
 			return -EINVAL;
-		}
-	}
+		} }
 
 	sock->sk->sk_encap_rcv = NULL;
 
@@ -76,6 +76,8 @@ static int ksocket_ext(int family, int type, int protocol,
 	sk_set_connection_state(sock, UNCONNECTED);
 	/* set default socket options */
 	so_options_init(&sock->socket_node->options, type);
+
+	sock->desc_data = NULL;
 
 	*out_sock = sock; /* and save structure */
 
@@ -175,6 +177,81 @@ int kbind(struct socket *sock, const struct sockaddr *addr,
 	return ENOERR;
 }
 
+int kconnect(struct socket *sock, const struct sockaddr *addr,
+		socklen_t addrlen, int flags) {
+	int res;
+
+	/* EACCES may ber returnedf in case of a lack of priveleges */
+
+	/* EADDRNOTAVAIL. probably the best place - is specific
+	   protocol implementation*/
+
+	/* how should this be interpreted? */
+	if (!sock->ops->connect){
+		return -EOPNOTSUPP;
+	}
+
+	/* find out if socket sock is registered in the system */
+	if (!sr_socket_exists(sock)) {
+		return -ENOTSOCK;
+	}
+
+	/* invalid address family or length of addr*/
+	if ((sizeof(struct sockaddr) != addrlen) ||
+		 (sock->sk->sk_family != addr->sa_family)) {
+		return -EINVAL;
+	}
+
+	/* is the socket already connected */
+	if ((sock->type == SOCK_STREAM) &&
+		 sk_is_connected(sock)) {
+		return -EISCONN;
+	}
+
+	/* is socket listening? */
+	if (sk_is_listening(sock)) {
+		return -EOPNOTSUPP;
+	}
+
+	/* here is the place to check wheather the socket is bound
+	   to a local address. if it is not, try to bind it.
+	   is EADDRINUSE the situation when connect() is trying to
+	   bind to an address already in use? */
+	if (!sk_is_bound(sock)) {
+		/* a method to get a local address which fits the network in
+		   which the host we are trying to connect to is situated */
+		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
+	}
+
+	/* if the socket is non blocking, and it is in connecting state
+	   at the same time with connect() being called*/
+	/* (only blocking sockets are implemented now, but
+	   in future this code should work, or else shall be
+	   modified)*/
+	if (sk_get_connection_state(sock) == CONNECTING) {
+		return -EALREADY;
+	}
+	sk_set_connection_state(sock, CONNECTING);
+
+	/* try to connect */
+	/* specific connect method can return ECONREFUSED, ENETUNREACH,
+	   EPROTOTYPE, ETIMEDOUT, ECONNRESET, EHOSTUNREACH, ELOOP,
+	   ENAMETOLONG, ENETDOWN*/
+	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
+	if (res < 0) {
+		/* in case of non-blocking sockets(for the future)
+		   here should be handled situation when connect is trying to
+		   finish asynchronously */
+		LOG_ERROR("kernel_socket_connect", "unable to connect on socket");
+		sk_set_connection_state(sock, BOUND);
+	}
+	else {
+		sk_set_connection_state(sock, CONNECTED);
+	}
+
+	return res;
+}
+
 int klisten(struct socket *sock, int backlog) {
 	int res;
 	/* TODO come up with an idea about listening queue */
@@ -271,78 +348,88 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 	/* set state */
 	sk_set_connection_state(*out_sock, ESTABLISHED);
 	return res;
- }
+}
 
-int kconnect(struct socket *sock, const struct sockaddr *addr,
-		socklen_t addrlen, int flags) {
-	int res;
+#include <net/inet_sock.h>
+int ksendmsg(struct socket *sock, const struct msghdr *msg, int flags) {
+	struct inet_sock *inet;
+	struct sockaddr_in *dest_addr;
 
-	/* EACCES may ber returnedf in case of a lack of priveleges */
+	assert(sock->sk);
 
-	/* EADDRNOTAVAIL. probably the best place - is specific
-	   protocol implementation*/
-
-	/* how should this be interpreted? */
-	if (!sock->ops->connect){
-		return -EOPNOTSUPP;
+	switch (sock->type) {
+	case SOCK_STREAM:
+		if (!sk_is_connected(sock)) {
+			return -ENOTCONN;
+		}
+		break;
+	case SOCK_DGRAM:
+	case SOCK_RAW:
+	case SOCK_PACKET:
+		if (msg->msg_name == NULL) {
+			return -EDESTADDRREQ;
+		}
+		if (msg->msg_namelen != sizeof *dest_addr) {
+			return -EINVAL;
+		}
+		dest_addr = (struct sockaddr_in *)msg->msg_name;
+		inet = inet_sk(sock->sk);
+		inet->daddr = dest_addr->sin_addr.s_addr;
+		inet->dport = dest_addr->sin_port;
+		break;
 	}
 
-	/* find out if socket sock is registered in the system */
-	if (!sr_socket_exists(sock)) {
-		return -ENOTSOCK;
+	if (sock->sk->sk_shutdown & (SHUT_WR + 1)) {
+		return -EPIPE;
 	}
 
-	/* invalid address family or length of addr*/
-	if ((sizeof(struct sockaddr) != addrlen) ||
-		 (sock->sk->sk_family != addr->sa_family)) {
-		return -EINVAL;
+	/* socket is ready for usage and has no data transmitting errors yet */
+	sock->sk->sk_err = -1; /* XXX ?? */
+
+	return sock->ops->sendmsg(NULL, sock, (struct msghdr *)msg,
+			msg->msg_iov->iov_len, flags);
+}
+
+int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
+	int ret;
+	struct inet_sock *inet;
+	struct sockaddr_in *dest_addr;
+
+	sched_lock();
+	{
+		ret = sock->ops->recvmsg(NULL, sock, msg,
+				msg->msg_iov->iov_len, flags);
+		if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
+			EVENT_WAIT(&sock->sk->sock_is_not_empty, 0,
+					SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
+			ret = sock->ops->recvmsg(NULL, sock, msg,
+					msg->msg_iov->iov_len, flags);
+		}
+	}
+	sched_unlock();
+	if (ret != 0) {
+		return ret;
 	}
 
-	/* is the socket already connected */
-	if ((sock->type == SOCK_STREAM) &&
-		 sk_is_connected(sock)) {
-		return -EISCONN;
+	if ((msg->msg_name != NULL) && (msg->msg_namelen != 0)) {
+		inet = inet_sk(sock->sk);
+		dest_addr = (struct sockaddr_in *)msg->msg_name;
+		dest_addr->sin_family = AF_INET;
+		dest_addr->sin_addr.s_addr = inet->daddr;
+		dest_addr->sin_port = inet->dport;
+		msg->msg_namelen = sizeof *dest_addr;
 	}
 
-	/* is socket listening? */
-	if (sk_is_listening(sock)) {
-		return -EOPNOTSUPP;
-	}
+	return 0;
+}
 
-	/* here is the place to check wheather the socket is bound
-	   to a local address. if it is not, try to bind it.
-	   is EADDRINUSE the situation when connect() is trying to
-	   bind to an address already in use? */
-	if (!sk_is_bound(sock)) {
-		/* a method to get a local address which fits the network in
-		   which the host we are trying to connect to is situated */
-		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
-	}
+int kshutdown(struct socket *sock, int how) {
+	int res = ENOERR;
 
-	/* if the socket is non blocking, and it is in connecting state
-	   at the same time with connect() being called*/
-	/* (only blocking sockets are implemented now, but
-	   in future this code should work, or else shall be
-	   modified)*/
-	if (sk_get_connection_state(sock) == CONNECTING) {
-		return -EALREADY;
-	}
-	sk_set_connection_state(sock, CONNECTING);
+	sock->sk->sk_shutdown |= (how + 1);
 
-	/* try to connect */
-	/* specific connect method can return ECONREFUSED, ENETUNREACH,
-	   EPROTOTYPE, ETIMEDOUT, ECONNRESET, EHOSTUNREACH, ELOOP,
-	   ENAMETOLONG, ENETDOWN*/
-	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
-	if (res < 0) {
-		/* in case of non-blocking sockets(for the future)
-		   here should be handled situation when connect is trying to
-		   finish asynchronously */
-		LOG_ERROR("kernel_socket_connect", "unable to connect on socket");
-		sk_set_connection_state(sock, BOUND);
-	}
-	else {
-		sk_set_connection_state(sock, CONNECTED);
+	if (sock->ops->shutdown) {
+		res = sock->ops->shutdown(sock, how);
 	}
 
 	return res;
@@ -350,7 +437,35 @@ int kconnect(struct socket *sock, const struct sockaddr *addr,
 
 int kgetsockname(struct socket *sock, struct sockaddr *addr,
 		socklen_t *addrlen) {
-	return sock->ops->getname(sock, addr, addrlen, 0);
+	struct inet_sock *inet;
+	struct sockaddr_in *src_addr;
+
+	assert(sock->sk);
+
+	switch (sock->sk->sk_family) {
+	case AF_INET:
+		if (addr == NULL) {
+			SET_ERRNO(EBADF);
+			return -1;
+		}
+		if (*addrlen < sizeof *src_addr) {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
+		src_addr = (struct sockaddr_in *)addr;
+		inet = inet_sk(sock->sk);
+		src_addr->sin_family = AF_INET;
+		src_addr->sin_addr.s_addr = inet->rcv_saddr;
+		src_addr->sin_port = inet->sport;
+		*addrlen = sizeof *src_addr;
+		break;
+	default:
+		SET_ERRNO(EINVAL);
+		return -1;
+	}
+
+	return 0;
+//	return sock->ops->getname(sock, addr, addrlen, 0);
 }
 
 int kgetpeername(struct socket *sock, struct sockaddr *addr,
@@ -422,25 +537,5 @@ int ksetsockopt(struct socket *sock, int level, int optname,
 			res = -ENOPROTOOPT;
 		}
 	}
-	return res;
-}
-
-int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
-	return sock->ops->sendmsg(NULL, sock, msg,
-			msg->msg_iov->iov_len, flags);
-}
-
-int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
-	return sock->ops->recvmsg(NULL, sock, msg,
-			msg->msg_iov->iov_len, flags);
-}
-
-int kshutdown(struct socket *sock, int how) {
-	int res = ENOERR;
-
-	if (sock->ops->shutdown) {
-		res = sock->ops->shutdown(sock, how);
-	}
-
 	return res;
 }

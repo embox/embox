@@ -69,6 +69,20 @@ extern int kbind(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen);
 
 /**
+ * Initiate a connection from a connection-mode socket.
+ * Perform verifications needed to be be able to connect and call
+ * native protocol method.
+ *
+ * @param sock - pointer to the socket structure
+ * @param addr - address to connect
+ * @param addrlen - the size of addr
+ * @param flags
+ * @return 0 on success, minus posix errno on failure
+ */
+extern int kconnect(struct socket *sock, const struct sockaddr *addr,
+		socklen_t addrlen, int flags);
+
+/**
  * Listen for connections on a connection-mode socket.
  * Sets the state of a bound socket to listening, if is made sure
  * to be able to do so for a particular socket, by calling native
@@ -102,48 +116,6 @@ extern int kaccept(struct socket *sock, struct sockaddr *addr,
 		socklen_t *addrlen, int flags, struct socket **out_sock);
 
 /**
- * Initiate a connection from a connection-mode socket.
- * Perform verifications needed to be be able to connect and call
- * native protocol method.
- *
- * @param sock - pointer to the socket structure
- * @param addr - address to connect
- * @param addrlen - the size of addr
- * @param flags
- * @return 0 on success, minus posix errno on failure
- */
-extern int kconnect(struct socket *sock, const struct sockaddr *addr,
-		socklen_t addrlen, int flags);
-
-/**
- * Get socket name.
- * Note: not realized.
- */
-extern int kgetsockname(struct socket *sock, struct sockaddr *addr,
-		socklen_t *addrlen);
-
-/**
- * Get name of connected peer socket.
- * Note: not realized.
- */
-extern int kgetpeername(struct socket *sock, struct sockaddr *addr,
-		socklen_t *addrlen);
-
-/**
- * Get socket options.
- * Note: not realized.
- */
-extern int kgetsockopt(struct socket *sock, int level, int optname,
-		void *optval, socklen_t *optlen);
-
-/**
- * Set socket options.
- * Note: not realized.
- */
-extern int ksetsockopt(struct socket *sock, int level, int optname,
-		const void *optval, socklen_t optlen);
-
-/**
  * Send a message on a socket.
  * Call sendmsg callback from proto_ops.
  *
@@ -151,7 +123,7 @@ extern int ksetsockopt(struct socket *sock, int level, int optname,
  * @param msg
  * @return error code
  */
-extern int ksendmsg(struct socket *sock, struct msghdr *msg,
+extern int ksendmsg(struct socket *sock, const struct msghdr *msg,
 		int flags);
 
 /**
@@ -167,5 +139,29 @@ extern int krecvmsg(struct socket *sock, struct msghdr *msg,
 		int flags);
 
 extern int kshutdown(struct socket *sock, int how);
+
+/**
+ * Get socket name.
+ */
+extern int kgetsockname(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen);
+
+/**
+ * Get name of connected peer socket.
+ */
+extern int kgetpeername(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen);
+
+/**
+ * Get socket options.
+ */
+extern int kgetsockopt(struct socket *sock, int level, int optname,
+		void *optval, socklen_t *optlen);
+
+/**
+ * Set socket options.
+ */
+extern int ksetsockopt(struct socket *sock, int level, int optname,
+		const void *optval, socklen_t optlen);
 
 #endif /* NET_KSOCKET_H_ */

@@ -272,15 +272,6 @@ int     socketpair(int domain, int type, int protocol,
 extern int socket(int domain, int type, int protocol);
 
 /**
- * setup of connection
- * @param sockfd socket description, was created by socket()
- * @param daddr destination address sockaddr structure
- * @param daddrlen size of daddr
- * @return 0 on success. -1 on failure with errno indicating error.
- */
-extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen);
-
-/**
  * bind a socket to an address.
  * @param sockfd socket file descriptor
  * @param addr local address sockaddr structure
@@ -288,6 +279,15 @@ extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen)
  * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+/**
+ * setup of connection
+ * @param sockfd socket description, was created by socket()
+ * @param daddr destination address sockaddr structure
+ * @param daddrlen size of daddr
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen);
 
 /**
  * mark socket as accepting connections
@@ -314,6 +314,16 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
  * @param buf pointer to data
  * @param len length of buf
  * @param flags
+ * @return the number of characters sent. -1 on failure with errno indicating error.
+ */
+extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+
+/**
+ * send a message on a socket.
+ * @param sockfd socket file descriptor
+ * @param buf pointer to data
+ * @param len length of buf
+ * @param flags
  * @param daddr destination address sockaddr structure
  * @param daddrlen size of daddr
  * @return the number of characters sent. -1 on failure with errno indicating error.
@@ -324,12 +334,22 @@ extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 /**
  * send a message on a socket.
  * @param sockfd socket file descriptor
- * @param buf pointer to data
- * @param len length of buf
+ * @param msg
  * @param flags
  * @return the number of characters sent. -1 on failure with errno indicating error.
  */
-extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+extern ssize_t sendmsg(int socket, const struct msghdr *message,
+		int flags);
+
+/**
+ * receive a message from a socket.
+ * @param sockfd socket descriptor
+ * @param buf buffer
+ * @param len size of buffer
+ * @param flags
+ * @return the number of bytes received. -1 on failure with errno indicating error.
+ */
+extern ssize_t recv(int sockfd, void *buf, size_t len, int flags);
 
 /**
  * receive a message from a socket.
@@ -343,7 +363,6 @@ extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
  */
 extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		struct sockaddr *daddr, socklen_t *daddrlen);
-
 /**
  * receive a message from a socket.
  * @param sockfd socket descriptor
@@ -352,31 +371,8 @@ extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
  * @param flags
  * @return the number of bytes received. -1 on failure with errno indicating error.
  */
-extern ssize_t recv(int sockfd, void *buf, size_t len, int flags);
-
-/**
- * get socket options
- * @param sockfd socket description
- * @param level option level (SOL_SOCKET or protocol number)
- * @param optname option name (like SO_BROADCAST or SO_LINGER)
- * @param optval pointer to option value variable on return
- * @param optlen pointer to length of the option value variable on return
- * @return 0 on success. -1 on failure with errno indicating error.
- */
-int getsockopt(int sockfd, int level, int optname, void *optval,
-               socklen_t *optlen);
-
-/**
- * set socket options
- * @param sockfd socket description
- * @param level option level (SOL_SOCKET or protocol number)
- * @param optname option name (like SO_BROADCAST or SO_LINGER)
- * @param optval option value to set
- * @param optlen length of the option value
- * @return 0 on success. -1 on failure with errno indicating error.
- */
-int setsockopt(int sockfd, int level, int optname, void *optval,
-               socklen_t optlen);
+extern ssize_t recvmsg(int socket, struct msghdr *message,
+		int flags);
 
 /**
  * shut down part of a full-duplex connection
@@ -389,15 +385,32 @@ extern int shutdown(int sockfd, int how);
 extern int getsockname(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen);
 
+extern int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen);
+
 /**
- * TODO not implemented now
+ * get socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval pointer to option value variable on return
+ * @param optlen pointer to length of the option value variable on return
+ * @return 0 on success. -1 on failure with errno indicating error.
  */
-//static inline int getpeername(int sockfd, struct sockaddr *addr,
-		//socklen_t *addrlen) { return -1; }
-static inline ssize_t recvmsg(int socket, struct msghdr *message,
-		int flags) { return -1; }
-static inline ssize_t sendmsg(int socket, const struct msghdr *message,
-		int flags) { return -1; }
+extern int getsockopt(int sockfd, int level, int optname,
+		void *optval, socklen_t *optlen);
+
+/**
+ * set socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval option value to set
+ * @param optlen length of the option value
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+extern int setsockopt(int sockfd, int level, int optname,
+		const void *optval, socklen_t optlen);
 
 __END_DECLS
 
