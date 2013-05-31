@@ -80,6 +80,7 @@ static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
  */
 static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
+	assert(task_idx_indata(desc));
 	return task_idx_indata(desc)->fd_struct;
 }
 

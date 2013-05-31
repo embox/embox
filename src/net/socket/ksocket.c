@@ -29,6 +29,8 @@ static int ksocket_ext(int family, int type, int protocol,
 	struct socket *sock;
 	const struct net_family *nfamily;
 
+	assert(out_sock != NULL);
+
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
 		return -EAFNOSUPPORT;
@@ -86,12 +88,22 @@ static int ksocket_ext(int family, int type, int protocol,
 
 int ksocket(int family, int type, int protocol,
 		struct socket **out_sock) {
+	if (out_sock == NULL) {
+		return -EINVAL;
+	}
+
 	return ksocket_ext(family, type, protocol, NULL, NULL,
 			out_sock);
 }
 
 int ksocket_close(struct socket *sock) {
-	int res;
+	int ret;
+
+	if (sock == NULL) {
+		return -EBADF;
+	} else if (!sr_socket_exists(sock)) {
+		return -ENOTSOCK;
+	}
 
 	sk_set_connection_state(sock, DISCONNECTING);
 
@@ -102,23 +114,21 @@ int ksocket_close(struct socket *sock) {
 	/* socket will be unbound, if it is bound else nothing happens */
 	sr_remove_saddr(sock);  /* unset saddr in registry */
 	/* remove socketentry from registry */
-	if (0 < (res = sr_remove_socket_from_registry(sock))){
+	if (0 < (ret = sr_remove_socket_from_registry(sock))){
 		LOG_WARN("kernel_socket_release","couldn't remove entry from registry");
 		/* return res; */
 	}
 
-	res = ENOERR;
-	if ((sock != NULL) && (sock->ops != NULL)
-			&& (sock->ops->release != NULL)) {
-		res = sock->ops->release(sock); /* release struct sock */
-		if (res < 0) {
-			return res;
-		}
+	assert(sock->ops != NULL);
+	assert(sock->ops->release != NULL);
+	ret = sock->ops->release(sock);
+	if (ret != 0) {
+		LOG_WARN("ksocket_close","couldn't release socket");
 	}
 
 	socket_free(sock);
 
-	return ENOERR;
+	return 0;
 }
 
 int kbind(struct socket *sock, const struct sockaddr *addr,
@@ -135,6 +145,9 @@ int kbind(struct socket *sock, const struct sockaddr *addr,
 		 in socket-interface level bind() // ttimkk
 		 -ENOBUFS Insufficient resources were available to complete the call.
 	*/
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	if (!sock->ops->bind) {
 		return -EOPNOTSUPP;
@@ -180,6 +193,10 @@ int kbind(struct socket *sock, const struct sockaddr *addr,
 int kconnect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
+
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	/* EACCES may ber returnedf in case of a lack of priveleges */
 
@@ -259,6 +276,10 @@ int klisten(struct socket *sock, int backlog) {
 	/* TODO the situation when socket is shut down should be handled */
 	/* NOTE if insufficient resources are available ENOBUFS is the errno */
 
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
 	/* no listen method is supported for that type of socket */
 	if (!sock->ops->listen){
 		return -EOPNOTSUPP;
@@ -303,6 +324,10 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 		socklen_t *addrlen, int flags, struct socket **out_sock) {
 	int res;
 	struct sock *newsk;
+
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	/* TODO EAGAIN or EWOULDBLOCK in case of non-blocking socket and absence
 	   of incoming connections should be returned */
@@ -355,6 +380,10 @@ int ksendmsg(struct socket *sock, const struct msghdr *msg, int flags) {
 	struct inet_sock *inet;
 	struct sockaddr_in *dest_addr;
 
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
 	assert(sock->sk);
 
 	switch (sock->type) {
@@ -395,6 +424,10 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	struct inet_sock *inet;
 	struct sockaddr_in *dest_addr;
 
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
 	sched_lock();
 	{
 		ret = sock->ops->recvmsg(NULL, sock, msg,
@@ -426,6 +459,10 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 int kshutdown(struct socket *sock, int how) {
 	int res = ENOERR;
 
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
 	sock->sk->sk_shutdown |= (how + 1);
 
 	if (sock->ops->shutdown) {
@@ -439,6 +476,10 @@ int kgetsockname(struct socket *sock, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	struct inet_sock *inet;
 	struct sockaddr_in *src_addr;
+
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	assert(sock->sk);
 
@@ -470,12 +511,20 @@ int kgetsockname(struct socket *sock, struct sockaddr *addr,
 
 int kgetpeername(struct socket *sock, struct sockaddr *addr,
 		socklen_t *addrlen) {
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
 	return sock->ops->getname(sock, addr, addrlen, 1);
 }
 
 int kgetsockopt(struct socket *sock, int level, int optname,
 		void *optval, socklen_t *optlen) {
 	int res;
+
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	/* sock is not NULL */
 	if (!sock) {
@@ -512,6 +561,10 @@ int kgetsockopt(struct socket *sock, int level, int optname,
 int ksetsockopt(struct socket *sock, int level, int optname,
 		const void *optval, socklen_t optlen) {
 	int res;
+
+	if (sock == NULL) {
+		return -EBADF;
+	}
 
 	/* sock is not NULL */
 	if (!sock) {

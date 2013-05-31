@@ -31,13 +31,14 @@
 
 static const struct task_idx_ops task_idx_ops_socket;
 
-static inline struct socket *idx2socket(int idx) {
-	return (struct socket *)task_idx_desc_data(
-			task_self_idx_get(idx));
+static inline struct socket * idx2socket(int idx) {
+	struct idx_desc *desc = task_self_idx_get(idx);
+	return desc != NULL ? task_idx_desc_data(desc) : NULL;
 }
 
 static inline int idx2flags(int idx) {
-	return *task_idx_desc_flags_ptr(task_self_idx_get(idx));
+	struct idx_desc *desc = task_self_idx_get(idx);
+	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -57,6 +58,7 @@ int socket(int domain, int type, int protocol) {
 		return -1;
 	}
 
+	assert(sock != NULL);
 	sock->desc_data = task_idx_indata(task_self_idx_get(sockfd));
 	if (type != SOCK_STREAM) {
 		idx_io_enable(sock->desc_data, IDX_IO_WRITING);
@@ -97,7 +99,7 @@ int connect(int sockfd, const struct sockaddr *addr,
 	}
 
 	ret = kconnect(sock, addr, addrlen, idx2flags(sockfd));
-	if (ret != 0){
+	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
@@ -149,6 +151,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
+	assert(new_sock != NULL);
 	new_sock->desc_data = task_idx_indata(task_self_idx_get(new_sockfd));
 	idx_io_enable(new_sock->desc_data, IDX_IO_WRITING);
 
@@ -443,6 +446,8 @@ static ssize_t socket_read(struct idx_desc *desc, void *buff,
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+
+	assert(desc != NULL);
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
