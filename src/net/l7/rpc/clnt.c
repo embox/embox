@@ -59,12 +59,11 @@ struct client * clnt_create(const char *host, __u32 prognum,
 		__u32 versnum, const char *prot) {
 	struct sockaddr_in raddr;
 	struct timeval tv;
-	int sock;
+	struct socket *sock;
 
-	sock = RPC_ANYSOCK;
 	raddr.sin_family = AF_INET;
 	inet_aton(host, &raddr.sin_addr);
-	raddr.sin_port = 0;
+	sock = NULL;
 	if (strcmp(prot, "udp") == 0) {
 		tv.tv_sec = 5;
 		tv.tv_usec = 0;

@@ -14,6 +14,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <net/socket.h>
+#include <net/ksocket.h>
 #include <unistd.h>
 
 #include <net/rpc/clnt.h>
@@ -30,10 +32,11 @@ static int writetcp(struct client *clnt, char *buf, size_t len);
 static const struct clnt_ops clnttcp_ops;
 
 struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
-		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
+		uint32_t versnum, struct socket **psock, unsigned int sendsz, unsigned int recvsz) {
+	int ret;
 	struct client *clnt;
 	struct auth *ath;
-	int sock;
+	struct socket *sock;
 	struct sockaddr_in sin;
 
 	assert((raddr != NULL) && (psock != NULL));
@@ -53,13 +56,15 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 		}
 	}
 
-	assert(*psock < 0);
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if ((sock < 0)
-			|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
+	sock = NULL;
+	assert(*psock == NULL);
+	if ((0 != (ret = ksocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock)))
+			|| (0 != (ret = kconnect(sock, (struct sockaddr *)&sin, sizeof sin, 0)))) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
-		rpc_create_error.err.extra.error = errno;
-		close(sock);
+		rpc_create_error.err.extra.error = -ret;
+		if (sock != NULL) {
+			ksocket_close(sock);
+		}
 		goto exit_with_error;
 	}
 
@@ -142,35 +147,56 @@ static void clnttcp_destroy(struct client *clnt) {
 	assert(clnt != NULL);
 
 	auth_destroy(clnt->ath);
-	close(clnt->sock);
+	ksocket_close(clnt->sock);
 	free(clnt);
 }
 
 static int readtcp(struct client *clnt, char *buff, size_t len) {
-	int res;
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
 
-	res = recvfrom(clnt->sock, buff, len, 0, NULL, NULL);
-	if (res < 0) {
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = 0;
+
+	iov.iov_base = (void *)buff;
+	iov.iov_len = len;
+
+	ret = krecvmsg(clnt->sock, &msg, 0);
+	if (ret != 0) {
 		clnt->err.status = RPC_CANTRECV;
-		clnt->err.extra.error = errno;
+		clnt->err.extra.error = -ret;
 		return -1;
 	}
 
-	return res;
+	return iov.iov_len;
 }
 
 static int writetcp(struct client *clnt, char *buff, size_t len) {
-	int res;
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
 
-	/* TODO set timewait */
-	res = sendto(clnt->sock, buff, len, 0, NULL, 0);
-	if (res < 0) {
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = 0;
+
+	iov.iov_base = (void *)buff;
+	iov.iov_len = len;
+
+	ret = ksendmsg(clnt->sock, &msg, 0);
+	if (ret != 0) {
 		clnt->err.status = RPC_CANTSEND;
-		clnt->err.extra.error = errno;
+		clnt->err.extra.error = -ret;
 		return -1;
 	}
 
-	return res;
+	return iov.iov_len;
 }
 
 static const struct clnt_ops clnttcp_ops = {
