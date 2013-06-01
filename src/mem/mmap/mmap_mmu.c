@@ -152,6 +152,11 @@ uint32_t mmap_create_stack(struct emmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+void* mmap_create_heap(struct emmap *mmap) {
+	//TODO: stub
+	return NULL;
+}
+
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea, *new_marea;
