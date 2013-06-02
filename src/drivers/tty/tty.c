@@ -314,6 +314,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 			|| (t->file_flags & O_NONBLOCK)) {
 		/* tty in non-block mode */
 		size = 0;
+		timeout = 0;
 	}
 	else {
 		size = vtime == 0 ? min(size, vmin) : 1;
