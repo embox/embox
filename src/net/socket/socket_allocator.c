@@ -14,28 +14,27 @@
 
 #define MODOPS_AMOUNT_SOCKET OPTION_GET(NUMBER, amount_socket)
 
-/* pool for allocate sockets */
 POOL_DEF(socket_pool, struct socket, MODOPS_AMOUNT_SOCKET);
 
 struct socket * socket_alloc(void) {
+	ipl_t sp;
 	struct socket *sock;
-	ipl_t flags;
 
-	flags = ipl_save();
-
-	sock = pool_alloc(&socket_pool);
-
-	ipl_restore(flags);
+	sp = ipl_save();
+	{
+		sock = pool_alloc(&socket_pool);
+	}
+	ipl_restore(sp);
 
 	return sock;
 }
 
 void socket_free(struct socket *sock) {
-	ipl_t flags;
+	ipl_t sp;
 
-	flags = ipl_save();
-
-	pool_free(&socket_pool, sock); /* return sock into pool */
-
-	ipl_restore(flags);
+	sp = ipl_save();
+	{
+		pool_free(&socket_pool, sock);
+	}
+	ipl_restore(sp);
 }

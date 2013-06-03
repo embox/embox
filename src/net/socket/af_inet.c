@@ -228,7 +228,7 @@ static int inet_stream_connect(struct socket *sock, const struct sockaddr *addr,
 		res = sk->sk_prot->connect(sk, addr, addr_len);
 	}
 	else {
-		res = -EOPNOTSUPP;
+		res = -ENOSYS;
 	}
 
 	sock_unlock(sk);
@@ -256,60 +256,6 @@ static int inet_dgram_connect(struct socket *sock, const struct sockaddr *addr,
 	}
 	else {
 		res = 0;
-	}
-
-	sock_unlock(sk);
-
-	return res;
-}
-
-int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *msg, size_t size, int flags) {
-	int res;
-	struct sock *sk;
-
-	assert(sock != NULL);
-
-	if (!sock_lock(&sock->sk)) {
-		return -EINVAL;
-	}
-
-	sk = sock->sk;
-	assert(sk != NULL);
-	assert(sk->sk_prot != NULL);
-
-	if (sk->sk_prot->sendmsg != NULL) {
-		res = sk->sk_prot->sendmsg(iocb, sk, msg, size, flags);
-	}
-	else {
-		res = -EOPNOTSUPP;
-	}
-
-	sock_unlock(sk);
-
-	return res;
-}
-
-int inet_recvmsg(struct kiocb *iocb, struct socket *sock,
-		struct msghdr *msg, size_t size, int flags) {
-	int res;
-	struct sock *sk;
-
-	assert(sock != NULL);
-
-	if (!sock_lock(&sock->sk)) {
-		return -EINVAL;
-	}
-
-	sk = sock->sk;
-	assert(sk != NULL);
-	assert(sk->sk_prot != NULL);
-
-	if (sk->sk_prot->recvmsg != NULL) {
-		res = sk->sk_prot->recvmsg(iocb, sk, msg, size, flags);
-	}
-	else {
-		res = -EOPNOTSUPP;
 	}
 
 	sock_unlock(sk);
@@ -357,7 +303,7 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 		res = sk->sk_prot->accept(sk, newsk, addr, addr_len, flags);
 	}
 	else {
-		res = -EOPNOTSUPP;
+		res = -ENOSYS;
 	}
 
 	sock_unlock(sk);
@@ -365,23 +311,14 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 	return res;
 }
 
-static int inet_setsockopt(struct socket *sock, int level, int optname,
-		char *optval, int optlen) {
-	struct net_device *dev;
-	struct socket_opt_state *ops;
-	struct sock *sk;
+int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
+		struct msghdr *msg, size_t size, int flags) {
 	int res;
+	struct sock *sk;
+	struct inet_sock *inet;
+	const struct sockaddr_in *addr;
 
 	assert(sock != NULL);
-	assert(sock->socket_node != NULL);
-
-	if (optname == SO_BINDTODEVICE) {
-		dev = netdev_get_by_name(optval);
-		if (!dev)
-			return -ENOENT;
-		ops = &sock->socket_node->options;
-		ops->so_bindtodev = dev;
-	}
 
 	if (!sock_lock(&sock->sk)) {
 		return -EINVAL;
@@ -389,10 +326,60 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 
 	sk = sock->sk;
 	assert(sk != NULL);
-	assert(sk->sk_prot != NULL);
-	assert(sk->sk_prot->setsockopt != NULL);
 
-	res = sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
+	if (msg->msg_name != NULL) {
+		addr = (struct sockaddr_in *)msg->msg_name;
+		inet = inet_sk(sk);
+		inet->daddr = addr->sin_addr.s_addr;
+		inet->dport = addr->sin_port;
+	}
+
+	assert(sk->sk_prot != NULL);
+	if (sk->sk_prot->sendmsg != NULL) {
+		res = sk->sk_prot->sendmsg(iocb, sk, msg, size, flags);
+	}
+	else {
+		res = -ENOSYS;
+	}
+
+	sock_unlock(sk);
+
+	return res;
+}
+
+int inet_recvmsg(struct kiocb *iocb, struct socket *sock,
+		struct msghdr *msg, size_t size, int flags) {
+	int res;
+	struct sock *sk;
+	struct inet_sock *inet;
+	struct sockaddr_in *addr;
+
+	assert(sock != NULL);
+
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
+
+	sk = sock->sk;
+	assert(sk != NULL);
+
+	assert(sk->sk_prot != NULL);
+	if (sk->sk_prot->recvmsg != NULL) {
+		res = sk->sk_prot->recvmsg(iocb, sk, msg, size, flags);
+	}
+	else {
+		res = -ENOSYS;
+	}
+
+	if (msg->msg_name != NULL) {
+		inet = inet_sk(sock->sk);
+		addr = (struct sockaddr_in *)msg->msg_name;
+		addr->sin_family = AF_INET;
+		addr->sin_addr.s_addr = inet->daddr;
+		addr->sin_port = inet->dport;
+		msg->msg_namelen = sizeof *addr;
+	}
+
 	sock_unlock(sk);
 
 	return res;
@@ -422,6 +409,67 @@ int inet_shutdown(struct socket *sock, int how) {
 	return res;
 }
 
+static int inet_getsockname(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	struct inet_sock *inet;
+	struct sockaddr_in *src_addr;
+
+	assert(sock->sk);
+	switch (sock->sk->sk_family) {
+	case AF_INET:
+		if (addr == NULL) {
+			SET_ERRNO(EBADF);
+			return -1;
+		}
+		if (*addrlen < sizeof *src_addr) {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
+		src_addr = (struct sockaddr_in *)addr;
+		inet = inet_sk(sock->sk);
+		src_addr->sin_family = AF_INET;
+		src_addr->sin_addr.s_addr = inet->rcv_saddr;
+		src_addr->sin_port = inet->sport;
+		*addrlen = sizeof *src_addr;
+		break;
+	default:
+		SET_ERRNO(EINVAL);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int inet_getpeername(struct socket *sock, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	return 0;
+}
+
+static int inet_getsockopt(struct socket *sock, int level, int optname,
+		void *optval, socklen_t *optlen) {
+	return 0;
+}
+
+static int inet_setsockopt(struct socket *sock, int level, int optname,
+		char *optval, int optlen) {
+	int res;
+	struct sock *sk;
+
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
+
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+	assert(sk->sk_prot->setsockopt != NULL);
+
+	res = sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
+	sock_unlock(sk);
+
+	return res;
+}
+
 /**
  * predicate to compare two internet address structures
  **/
@@ -444,6 +492,10 @@ static const struct proto_ops inet_dgram_ops = {
 		.recvmsg           = inet_recvmsg,
 		.compare_addresses = inet_address_compare,
 		.setsockopt        = inet_setsockopt,
+
+		.getsockname = inet_getsockname,
+		.getpeername = inet_getpeername,
+		.getsockopt = inet_getsockopt
 };
 
 static const struct proto_ops inet_stream_ops = {

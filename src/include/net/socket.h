@@ -89,8 +89,10 @@ struct proto_ops {
 	    on alreadey creaed struct sock* */
 	int (*accept)(struct sock *sock, struct sock **new_sock, struct sockaddr *addr,
 			socklen_t *addr_len, int flags);
-	int (*getname)(struct socket *sock, struct sockaddr *addr,
-			int *sockaddr_len, int peer);
+	int (*getsockname)(struct socket *sock, struct sockaddr *addr,
+			socklen_t *addrlen);
+	int (*getpeername)(struct socket *sock, struct sockaddr *addr,
+			socklen_t *addrlen);
 
 	int (*ioctl)(struct socket *sock, unsigned int cmd, unsigned long arg);
 	int (*compat_ioctl)(struct socket *sock, unsigned int cmd,
@@ -100,7 +102,7 @@ struct proto_ops {
 	int (*setsockopt)(struct socket *sock, int level, int optname,
 			char *optval, int optlen);
 	int (*getsockopt)(struct socket *sock, int level, int optname,
-			char *optval, int *optlen);
+			void *optval, socklen_t *optlen);
 	int (*compat_setsockopt)(struct socket *sock, int level, int optname,
 			char *optval, int optlen);
 	int (*compat_getsockopt)(struct socket *sock, int level, int optname,
