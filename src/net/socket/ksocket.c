@@ -199,11 +199,13 @@ int kconnect(struct socket *sock, const struct sockaddr *addr,
 		return -ENOSYS;
 	}
 
+#if 0
 	if (!sk_is_bound(sock)) {
 		/* TODO */
 		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
 		return -EINVAL;
 	}
+#endif
 
 	sk_set_connection_state(sock, CONNECTING);
 
