@@ -514,7 +514,6 @@ int kgetsockopt(struct socket *sock, int level, int optname,
 	case SO_ERROR:
 		*((unsigned int*)optval) = sock->sk->sk_so.so_error;
 		sock->sk->sk_so.so_error = 0;  /* clear pending error. posix */
-		sk_clear_pending_error(sock->sk);
 		break;
 	case SO_TYPE:
 		*((unsigned int*)optval) = sock->sk->sk_so.so_type;
