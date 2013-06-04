@@ -77,8 +77,6 @@ static int ksocket_ext(int family, int type, int protocol,
 
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock, UNCONNECTED);
-	/* set default socket options */
-	so_options_init(&sock->socket_node->options, type);
 
 	sock->desc_data = NULL;
 
@@ -483,8 +481,6 @@ int kgetpeername(struct socket *sock, struct sockaddr *addr,
 
 int kgetsockopt(struct socket *sock, int level, int optname,
 		void *optval, socklen_t *optlen) {
-	int ret;
-
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -508,20 +504,88 @@ int kgetsockopt(struct socket *sock, int level, int optname,
 	switch (optname) {
 	case SO_BINDTODEVICE:
 		assert(sock->socket_node != NULL);
-		memcpy(optval, &sock->socket_node->options.so_bindtodev,
+		memcpy(optval, &sock->sk->sk_so.so_bindtodev,
 				min(*optlen, sizeof(void *)));
 		*optlen = *optlen > sizeof(void *) ? sizeof(void *) : *optlen;
 		return 0;
-	}
-
-	ret = so_get_socket_option(&sock->socket_node->options,
-			optname, optval, optlen);
-	/* clear pending error if it was retrieved */
-	if (optname == SO_ERROR && ret >= 0) {
+	case SO_ACCEPTCONN:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_acceptconn;
+		break;
+	case SO_ERROR:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_error;
+		sock->sk->sk_so.so_error = 0;  /* clear pending error. posix */
 		sk_clear_pending_error(sock->sk);
+		break;
+	case SO_TYPE:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_type;
+		break;
+	case SO_BROADCAST:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_broadcast;
+		break;
+	case SO_DEBUG:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_debug;
+		break;
+	case SO_DONTROUTE:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_dontroute;
+		break;
+	case SO_KEEPALIVE:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_keepalive;
+		break;
+	case SO_OOBINLINE:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_oobinline;
+		break;
+	case SO_RCVBUF:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_rcvbuf;
+		break;
+	case SO_RCVLOWAT:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_rcvlowat;
+		break;
+	case SO_REUSEADDR:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_reuseaddr;
+		break;
+	case SO_SNDBUF:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_sndbuf;
+		break;
+	case SO_SNDLOWAT:
+		*((unsigned int*)optval) = sock->sk->sk_so.so_sndlowat;
+		break;
+		/* non-integer valued optnames */
+	case SO_LINGER:
+		if(*optlen != sizeof(struct linger))
+			return -EINVAL;
+		((struct linger*)optval)->l_onoff = sock->sk->sk_so.so_linger.l_onoff;
+		((struct linger*)optval)->l_linger = sock->sk->sk_so.so_linger.l_linger;
+		*optlen = sizeof(struct linger);
+		return ENOERR;
+	case SO_RCVTIMEO:
+		((struct timeval*)optval)->tv_sec = sock->sk->sk_so.so_rcvtimeo.tv_sec;
+		((struct timeval*)optval)->tv_usec = sock->sk->sk_so.so_rcvtimeo.tv_usec;
+		goto optname_check_timeval;
+	case SO_SNDTIMEO:
+		((struct timeval*)optval)->tv_sec = sock->sk->sk_so.so_sndtimeo.tv_sec;
+		((struct timeval*)optval)->tv_usec = sock->sk->sk_so.so_sndtimeo.tv_usec;
+		goto optname_check_timeval;
+//	case SO_BINDTODEVICE:
+		optval = sock->sk->sk_so.so_bindtodev;
+		break;
+	default:
+		return -ENOPROTOOPT;
 	}
 
-	return ret;
+	if(*optlen != sizeof(unsigned int))
+		return -EINVAL;
+	*optlen = sizeof(unsigned int);
+
+	return 0;
+
+optname_check_timeval:
+	if (*optlen < sizeof(struct timeval))
+		return -EINVAL;
+	if (*optlen > sizeof(struct timeval))
+		return -EDOM;
+	*optlen = sizeof(struct timeval);
+
+	return 0;
 }
 
 int ksetsockopt(struct socket *sock, int level, int optname,
@@ -554,10 +618,95 @@ int ksetsockopt(struct socket *sock, int level, int optname,
 			return -ENODEV;
 		}
 		assert(sock->socket_node != NULL);
-		sock->socket_node->options.so_bindtodev = dev;
+		sock->sk->sk_so.so_bindtodev = dev;
 		return 0;
+	case SO_ACCEPTCONN:
+	case SO_ERROR:
+	case SO_TYPE:
+		/* cannot set these optnames, only read */
+		return -EINVAL;
+		break;
+		/* integer valued optnames */
+	case SO_BROADCAST:
+		/* in a specific protocol realization when the address is checked
+			 to be broadcast it is also a good idea to check wheather it can
+		   broadcast at all (like socket type is SOCK_DGRAM)
+		   This check isn't done here, because posix dosn't lay any
+		   restrictions on setting this optname for sockets with types
+		   other than SOCK_DGRAM */
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_broadcast = *((unsigned int*)optval);
+		break;
+	case SO_DEBUG:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_debug = *((unsigned int*)optval);
+		break;
+	case SO_DONTROUTE:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_dontroute = *((unsigned int*)optval);
+		break;
+	case SO_KEEPALIVE:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_keepalive = *((unsigned int*)optval);
+		break;
+	case SO_OOBINLINE:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_oobinline = *((unsigned int*)optval);
+		break;
+	case SO_RCVBUF:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_rcvbuf = *((unsigned int*)optval);
+		break;
+	case SO_RCVLOWAT:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_rcvlowat = *((unsigned int*)optval);
+		break;
+	case SO_REUSEADDR:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_reuseaddr = *((unsigned int*)optval);
+		break;
+	case SO_SNDBUF:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_sndbuf = *((unsigned int*)optval);
+		break;
+	case SO_SNDLOWAT:
+		if(optlen != sizeof(unsigned int))
+			return -EINVAL;
+		sock->sk->sk_so.so_sndlowat = *((unsigned int*)optval);
+		break;
+		/* non-integer valued optnames */
+	case SO_LINGER:
+		if(optlen != sizeof(struct linger))
+			return -EINVAL;
+		memcpy(&sock->sk->sk_so.so_linger, optval, optlen);
+		break;
+	case SO_RCVTIMEO:
+		if(optlen < sizeof(struct timeval))
+			return -EINVAL;
+		if(optlen > sizeof(struct timeval))
+			return -EDOM;
+		memcpy(&sock->sk->sk_so.so_rcvtimeo, optval, optlen);
+		break;
+	case SO_SNDTIMEO:
+		if(optlen < sizeof(struct timeval))
+			return -EINVAL;
+		if(optlen > sizeof(struct timeval))
+			return -EDOM;
+		memcpy(&sock->sk->sk_so.so_sndtimeo, optval, optlen);
+		break;
+	default:
+		return -ENOPROTOOPT;
+		break;
 	}
 
-	return so_set_socket_option(&sock->socket_node->options,
-			optname, optval, optlen);
+	return 0;
 }

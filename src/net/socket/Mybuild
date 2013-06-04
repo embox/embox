@@ -69,15 +69,11 @@ module socket {
 	depends embox.framework.LibFrameworkNet
 	/* depends from socket_repo.c */
 	/* depends from socket_allocator.c */
-	/* depends from socket_options.c */
 	/* depends from socket_registry.c */
 
 	source "socket_allocator.c"
 	option number amount_socket=20
 	depends embox.mem.pool
-
-	source "socket_options.c"
-	depends embox.lib.LibC
 
 	source "socket_registry.c"
 	option number amount_socket_node=20

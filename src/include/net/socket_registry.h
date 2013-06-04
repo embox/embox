@@ -10,7 +10,6 @@
 #define SOCKET_REGISTRY_H_
 
 #include <net/socket.h>
-#include <net/socket_options.h>
 #include <util/dlist.h>
 
 enum socket_connection_state_t {UNCONNECTED,
@@ -26,7 +25,6 @@ typedef struct socket_node{
 	struct sockaddr saddr;
 	struct sockaddr daddr;
 	enum socket_connection_state_t socket_connection_state;
-	struct socket_opt_state options;
 } socket_node_t;
 
 /* TODO: add descriptions */
@@ -82,7 +80,7 @@ static inline int sk_is_listening(struct socket *sock){
 static inline void so_sk_set_so_error(struct sock *sk, int error){
 	if (sk){
 		assert(sk->sk_socket != NULL);
-		sk->sk_socket->socket_node->options.so_error = error;
+		sk->sk_so.so_error = error;
 	}
 	else
 		return;

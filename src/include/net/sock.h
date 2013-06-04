@@ -15,6 +15,7 @@
 #include <kernel/event.h>
 #include <net/skbuff.h>
 #include <linux/aio.h>
+#include <sys/time.h>
 
 struct proto;
 struct sk_buff_head;
@@ -38,6 +39,38 @@ struct sock_common {
 	unsigned char skc_state;
 	const struct proto *skc_prot;
 };
+
+#define DEFAULT_DEBUG 0
+#define DEFAULT_RCVBUF 9000
+#define DEFAULT_SNDBUF 9000
+#define DEFAULT_RCVLOWAT 1
+/* normally this default is for TCP, but for the first time
+   it doesn't matter for UDP */
+#define DEFAULT_SNDLOWAT 2048
+#define DEFAULT_TIMEO {.tv_sec = 0, .tv_usec = 0}
+#define DEFAULT_TCP_SERVER_REUSEADDR 1
+
+
+struct sock_opt_state {
+	int so_acceptconn;
+	int so_broadcast;
+	int so_debug;
+	int so_dontroute;
+	int so_error;
+	int so_keepalive;
+	struct linger so_linger;
+	int so_oobinline;
+	int so_rcvbuf;
+	int so_rcvlowat;
+	struct timeval so_rcvtimeo;
+	int so_reuseaddr;
+	int so_sndbuf;
+	int so_sndlowat;
+	struct timeval so_sndtimeo;
+	int so_type;
+	struct net_device *so_bindtodev; /* name of interface socket bind to*/
+};
+
 
 /**
  * Network layer representation of sockets.
@@ -72,6 +105,7 @@ typedef struct sock {
 #define sk_state   __sk_common.skc_state
 	int sk_protocol;
 	int sk_type;
+	struct sock_opt_state sk_so;
 	unsigned char sk_shutdown;
 	socket_lock_t sk_lock;
 

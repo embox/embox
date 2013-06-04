@@ -86,7 +86,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	in_addr_t daddr;
 	struct rt_entry *rte;
 	struct net_device *wanna_dev;
-	struct socket_opt_state *ops;
+	struct sock_opt_state *ops;
 
 	assert(skb != NULL);
 
@@ -98,7 +98,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	if ((skb->sk != NULL) && (skb->sk->sk_socket != NULL)) {
 		assert(skb->sk->sk_socket->socket_node != NULL);
 
-		ops = &skb->sk->sk_socket->socket_node->options;
+		ops = &skb->sk->sk_so;
 		assert(ops != NULL);
 
 		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,

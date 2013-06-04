@@ -26,6 +26,63 @@
 
 #define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
+/**
+ * default stream type socket options set
+ */
+static const struct sock_opt_state DEFAULT_STREAM_OPTS = {
+	.so_acceptconn = 0,  /* posix doesn't specify default value, we'll turn it off */
+	.so_broadcast = 0,   /* posix default */
+	.so_debug = 0,       /* no debug. posix default */
+	.so_dontroute = 0,	 /* no dontroute flag */
+	.so_error = 0,       /* no error happened yet =) */
+	.so_keepalive = 0,   /* no keepalive's. posix default */
+	.so_linger = {.l_onoff = 0, .l_linger = 0}, /* linger is off. posix default */
+	.so_oobinline = 0,   /* out of band data placement off. posix default */
+	.so_rcvbuf = DEFAULT_RCVBUF,
+	.so_rcvlowat = DEFAULT_RCVLOWAT,
+	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout. posix default*/
+	.so_reuseaddr = 0,  /* TCP servers should set.  posix default */
+	.so_sndbuf = DEFAULT_SNDBUF,
+	.so_sndlowat = DEFAULT_SNDLOWAT,
+	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout.  posix default */
+	.so_type = SOCK_STREAM,  /* stream socket =) */
+	.so_bindtodev = NULL
+};
+
+/**
+ * default dgram type socket options set
+ */
+static const struct sock_opt_state DEFAULT_DGRAM_OPTS = {
+	.so_acceptconn = 0,
+	.so_broadcast = 0,   /* posix specifies default value as 0*/
+	.so_debug = 0,       /* no debug. posix default */
+	.so_dontroute = 0,	 /* no dontroute flag */
+	.so_error = 0,       /* no error happened yet =) */
+	.so_keepalive = 0,   /* no keepalive's. posix default */
+	.so_linger = {.l_onoff = 0, .l_linger = 0}, /* linger is off. posix default */
+	.so_oobinline = 0,   /* out of band data placement off. posix default */
+	.so_rcvbuf = DEFAULT_RCVBUF,
+	.so_rcvlowat = DEFAULT_RCVLOWAT,
+	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout.  posix default */
+	.so_reuseaddr = 0,  /* TCP servers should set.  posix default */
+	.so_sndbuf = DEFAULT_SNDBUF,
+	.so_sndlowat = DEFAULT_SNDLOWAT,
+	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout.  posix default */
+	.so_type = SOCK_DGRAM,  /* stream socket =) */
+	.so_bindtodev = NULL
+};
+
+static void so_options_init(struct sock_opt_state *opts, int socket_type){
+	switch(socket_type) {
+	case SOCK_STREAM:
+		memcpy(opts, &DEFAULT_STREAM_OPTS, sizeof *opts);
+		break;
+	case SOCK_DGRAM:
+	default:
+		memcpy(opts, &DEFAULT_DGRAM_OPTS, sizeof *opts);
+	}
+}
+
 /* allocates proto structure for specified protocol*/
 static struct sock * sk_prot_alloc(struct proto *prot) {
 	struct sock *sk;
@@ -125,6 +182,8 @@ struct sock * sk_alloc(int family, struct proto *prot) {
 #endif
 
 	sk->sk_shutdown = 0;
+
+	so_options_init(&sk->sk_so, sk->sk_type);
 
 	if (prot->hash != NULL) {
 		prot->hash(sk);
