@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <framework/net/sock/api.h>
 #include <stddef.h>
-#include <linux/aio.h>
 #include <arpa/inet.h>
 #include <net/sock.h>
 #include <sys/socket.h>

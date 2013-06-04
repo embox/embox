@@ -14,7 +14,6 @@
 #include <sys/socket.h>
 #include <kernel/event.h>
 #include <net/skbuff.h>
-#include <linux/aio.h>
 #include <sys/time.h>
 
 struct proto;

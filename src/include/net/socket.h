@@ -11,7 +11,6 @@
 #ifndef NET_SOCKET_H_
 #define NET_SOCKET_H_
 
-#include <linux/aio.h>
 #include <netinet/in.h>
 #include <net/sock.h>
 #include <stdbool.h>
