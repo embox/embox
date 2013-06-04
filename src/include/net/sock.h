@@ -192,7 +192,7 @@ extern void sk_free(struct sock *sk);
 extern void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb);
 
 /**
- * Functions to fill in entries in struct proto_ops when a protocol
+ * Functions to fill in entries in struct family_ops when a protocol
  * does not implement a particular function.
  */
 extern int sock_no_listen(struct socket *, int);

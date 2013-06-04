@@ -170,10 +170,6 @@ extern int ip_options_compile(struct sk_buff *skb, struct ip_options *opt);
 extern int ip_options_handle_srr(struct sk_buff *skb);
 
 extern struct net_proto_family inet_family_ops;
-extern const struct proto_ops inet_stream_ops;
-extern const struct proto_ops inet_dgram_ops;
-extern const struct proto_ops inet_raw_ops;
-
 
 /**
  * notify an ip socket about icmp error

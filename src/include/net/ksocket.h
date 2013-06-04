@@ -117,18 +117,19 @@ extern int kaccept(struct socket *sock, struct sockaddr *addr,
 
 /**
  * Send a message on a socket.
- * Call sendmsg callback from proto_ops.
+ * Call sendmsg callback from family_ops.
  *
  * @param sock - pointer to the socket structure
  * @param msg
  * @return error code
+ * NOTE: msg not const
  */
-extern int ksendmsg(struct socket *sock, const struct msghdr *msg,
+extern int ksendmsg(struct socket *sock, struct msghdr *msg,
 		int flags);
 
 /**
  * Receive a message from a socket.
- * Call recvmsg callback from proto_ops.
+ * Call recvmsg callback from family_ops.
  *
  * @param sock - pointer to the socket structure
  * @param msg

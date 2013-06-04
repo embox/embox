@@ -158,8 +158,8 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	return new_sockfd;
 }
 
-static int sendmsg_sock(struct socket *sock,
-		const struct msghdr *msg, int flags) {
+static int sendmsg_sock(struct socket *sock, struct msghdr *msg,
+		int flags) {
 	int ret;
 
 	if (sock == NULL) {
@@ -242,8 +242,8 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	return _msg.msg_iov->iov_len;
 }
 
-static int recvmsg_sock(struct socket *sock,
-		struct msghdr *msg, int flags) {
+static int recvmsg_sock(struct socket *sock, struct msghdr *msg,
+		int flags) {
 	int ret;
 
 	if (sock == NULL) {

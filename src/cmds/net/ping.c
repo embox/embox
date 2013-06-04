@@ -71,7 +71,6 @@ static void print_usage(void) {
 static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char *name) {
 	uint32_t start, delta;
 	union packet *rx_pack = malloc(sizeof(union packet));
-	struct sockaddr_in from;
 	char *dst_addr_str;
 	int res = 0;
 
@@ -85,7 +84,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 		/* we don't need to get pad data, only header */
 		if (recvfrom(sock, rx_pack->packet_buff,
 				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				(struct sockaddr *) &from, NULL) <= 0) {
+				NULL, NULL) <= 0) {
 			continue;
 		}
 		if ((rx_pack->hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
@@ -154,6 +153,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		return -errno;
 	}
 
+	to.sin_family = AF_INET;
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);

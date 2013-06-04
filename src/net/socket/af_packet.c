@@ -26,7 +26,7 @@ struct packet_sock {
 };
 
 /* Prototypes */
-static const struct proto_ops packet_proto_ops;
+static const struct family_ops packet_family_ops;
 static const struct proto packet_proto;
 
 static struct packet_sock *packet_table[MODOPS_AMOUNT_SOCKETS];
@@ -85,7 +85,7 @@ static int packet_create(struct socket *sock, int type, int protocol) {
 		return -ENOMEM;
 	}
 	sock->sk = sk;
-	sock->ops = &packet_proto_ops;
+	sock->ops = &packet_family_ops;
 	sk->sk_protocol = protocol;
 
 	return ENOERR;

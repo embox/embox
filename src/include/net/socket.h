@@ -51,8 +51,7 @@ typedef enum {
 struct sock;
 struct idx_desc;
 struct socket_node;
-struct proto_ops;
-struct kiocb;
+struct family_ops;
 
 /**
  * General BSD socket
@@ -64,7 +63,7 @@ struct kiocb;
  * @param socket_node node in global socket registry
  * @param ops protocol specific socket operations
  */
-typedef struct socket {
+struct socket {
 #if 0
 	socket_state state;
 #endif
@@ -74,54 +73,35 @@ typedef struct socket {
 	struct sock *sk;
 	struct idx_desc_data *desc_data;
 	struct socket_node *socket_node;
-	const struct proto_ops *ops;
-} socket_t;
-
-struct proto_ops {
-	int family;
-	int (*release)(struct socket *sock);
-	int (*bind)(struct socket *sock, const struct sockaddr *myaddr, socklen_t sockaddr_len);
-	int (*connect)(struct socket *sock, const struct sockaddr *vaddr,
-			socklen_t  sockaddr_len, int flags);
-	int (*socketpair)(struct socket *sock1, struct socket *sock2);
-	/* 1st arg struct sock* - because sockets are handled on kernel sockets level
-	   2nd arg struct sock** - not to create excess struct socket, but create it based
-	    on alreadey creaed struct sock* */
-	int (*accept)(struct sock *sock, struct sock **new_sock, struct sockaddr *addr,
-			socklen_t *addr_len, int flags);
-	int (*getsockname)(struct socket *sock, struct sockaddr *addr,
-			socklen_t *addrlen);
-	int (*getpeername)(struct socket *sock, struct sockaddr *addr,
-			socklen_t *addrlen);
-
-	int (*ioctl)(struct socket *sock, unsigned int cmd, unsigned long arg);
-	int (*compat_ioctl)(struct socket *sock, unsigned int cmd,
-			unsigned long arg);
-	int (*listen)(struct socket *sock, int len);
-	int (*shutdown)(struct socket *sock, int flags);
-	int (*setsockopt)(struct socket *sock, int level, int optname,
-			char *optval, int optlen);
-	int (*getsockopt)(struct socket *sock, int level, int optname,
-			void *optval, socklen_t *optlen);
-	int (*compat_setsockopt)(struct socket *sock, int level, int optname,
-			char *optval, int optlen);
-	int (*compat_getsockopt)(struct socket *sock, int level, int optname,
-			char *optval, int *optlen);
-	int (*sendmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-			size_t total_len, int flags);
-	int (*recvmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-			size_t total_len, int flags);
-	bool  (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
+	const struct family_ops *ops;
 };
 
-#if 0
-/**
- * close a socket descriptor
- * @param sockfd socket description
- * @return 0 on success. -1 on failure with errno indicating error.
- */
-extern int socket_close(int sockfd);
-#endif
+struct family_ops {
+	int (*release)(struct sock *sk);
+	int (*bind)(struct sock *sk, const struct sockaddr *addr,
+			socklen_t addrlen);
+	int (*connect)(struct sock *sk, const struct sockaddr *addr,
+			socklen_t addrlen, int flags);
+	int (*listen)(struct sock *sk, int len);
+	int (*accept)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen, int flags, struct sock **out_sk);
+	int (*sendmsg)(struct sock *sk, struct msghdr *msg,
+			int flags);
+	int (*recvmsg)(struct sock *sk, struct msghdr *msg,
+			int flags);
+	int (*shutdown)(struct sock *sk, int how);
+	int (*getsockname)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen);
+	int (*getpeername)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen);
+	int (*getsockopt)(struct sock *sk, int level, int optname,
+			void *optval, socklen_t *optlen);
+	int (*setsockopt)(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen);
+
+
+	bool  (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
+};
 
 extern struct socket * socket_alloc(void);
 extern void socket_free(struct socket *sock);

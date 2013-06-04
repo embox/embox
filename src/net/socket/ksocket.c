@@ -24,7 +24,7 @@
 #include <embox/net/family.h>
 
 static int ksocket_ext(int family, int type, int protocol,
-		struct sock *sk, struct proto_ops *sk_ops,
+		struct sock *sk, struct family_ops *sk_ops,
 		struct socket **out_sock) {
 	int res;
 	struct socket *sock;
@@ -115,7 +115,8 @@ int ksocket_close(struct socket *sock) {
 
 	assert(sock->ops != NULL);
 	if (sock->ops->release != NULL) {
-		if (0 != sock->ops->release(sock)) {
+		assert(sock->sk != NULL);
+		if (0 != sock->ops->release(sock->sk)) {
 			LOG_WARN("ksocket_close", "couldn't release socket");
 		}
 	}
@@ -156,7 +157,8 @@ int kbind(struct socket *sock, const struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	ret = sock->ops->bind(sock, addr, addrlen);
+	assert(sock->sk != NULL);
+	ret = sock->ops->bind(sock->sk, addr, addrlen);
 	if (ret != 0) {
 		return ret;
 	}
@@ -209,7 +211,8 @@ int kconnect(struct socket *sock, const struct sockaddr *addr,
 
 	sk_set_connection_state(sock, CONNECTING);
 
-	ret = sock->ops->connect(sock, (struct sockaddr *)addr,
+	assert(sock->sk != NULL);
+	ret = sock->ops->connect(sock->sk, (struct sockaddr *)addr,
 			addrlen, flags);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_connect", "unable to connect on socket");
@@ -243,7 +246,8 @@ int klisten(struct socket *sock, int backlog) {
 		return -ENOSYS;
 	}
 
-	ret = sock->ops->listen(sock, backlog >= 0 ? backlog : 0);
+	assert(sock->sk != NULL);
+	ret = sock->ops->listen(sock->sk, backlog >= 0 ? backlog : 0);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_listen",
 				"error setting socket in listening state");
@@ -283,8 +287,9 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	ret = sock->ops->accept(sock->sk, &new_sk, addr, addrlen,
-			flags);
+	assert(sock->sk != NULL);
+	ret = sock->ops->accept(sock->sk, addr, addrlen,
+			flags, &new_sk);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_accept",
 				"error while accepting a connection");
@@ -293,7 +298,7 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 
 	ret = ksocket_ext(sock->sk->sk_family, sock->sk->sk_type,
 			sock->sk->sk_protocol, new_sk,
-			(struct proto_ops *)sock->ops, &new_sock);
+			(struct family_ops *)sock->ops, &new_sock);
 	if (ret != 0) {
 		sk_common_release(new_sk);
 		return ret;
@@ -306,8 +311,7 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 	return 0;
 }
 
-int ksendmsg(struct socket *sock, const struct msghdr *msg,
-		int flags) {
+int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -360,8 +364,7 @@ int ksendmsg(struct socket *sock, const struct msghdr *msg,
 		return -ENOSYS;
 	}
 
-	return sock->ops->sendmsg(NULL, sock, (struct msghdr *)msg,
-			msg->msg_iov->iov_len, flags);
+	return sock->ops->sendmsg(sock->sk, msg, flags);
 }
 
 int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
@@ -396,13 +399,11 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 		return -ENOSYS;
 	}
 
-	ret = sock->ops->recvmsg(NULL, sock, msg,
-			msg->msg_iov->iov_len, flags);
+	ret = sock->ops->recvmsg(sock->sk, msg, flags);
 	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
 		EVENT_WAIT(&sock->sk->sock_is_not_empty, 0,
 				SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-		ret = sock->ops->recvmsg(NULL, sock, msg,
-				msg->msg_iov->iov_len, flags);
+		ret = sock->ops->recvmsg(sock->sk, msg, flags);
 	}
 
 	return ret;
@@ -435,7 +436,7 @@ int kshutdown(struct socket *sock, int how) {
 		return 0;
 	}
 
-	return sock->ops->shutdown(sock, how);
+	return sock->ops->shutdown(sock->sk, how);
 }
 
 int kgetsockname(struct socket *sock, struct sockaddr *addr,
@@ -455,7 +456,8 @@ int kgetsockname(struct socket *sock, struct sockaddr *addr,
 		return -ENOSYS;
 	}
 
-	return sock->ops->getsockname(sock, addr, addrlen);
+	assert(sock->sk != NULL);
+	return sock->ops->getsockname(sock->sk, addr, addrlen);
 }
 
 int kgetpeername(struct socket *sock, struct sockaddr *addr,
@@ -475,7 +477,8 @@ int kgetpeername(struct socket *sock, struct sockaddr *addr,
 		return -ENOSYS;
 	}
 
-	return sock->ops->getpeername(sock, addr, addrlen);
+	assert(sock->sk != NULL);
+	return sock->ops->getpeername(sock->sk, addr, addrlen);
 }
 
 int kgetsockopt(struct socket *sock, int level, int optname,
@@ -495,9 +498,10 @@ int kgetsockopt(struct socket *sock, int level, int optname,
 	if (level != SOL_SOCKET) {
 		assert(sock->ops != NULL);
 		if (sock->ops->getsockopt == NULL) {
-			return -ENOPROTOOPT;
+			return -EOPNOTSUPP;
 		}
-		return sock->ops->getsockopt(sock, level, optname,
+		assert(sock->sk != NULL);
+		return sock->ops->getsockopt(sock->sk, level, optname,
 				optval, optlen);
 	}
 
@@ -536,10 +540,11 @@ int ksetsockopt(struct socket *sock, int level, int optname,
 	if (level != SOL_SOCKET) {
 		assert(sock->ops != NULL);
 		if (sock->ops->setsockopt == NULL) {
-			return -ENOPROTOOPT;
+			return -EOPNOTSUPP;
 		}
-		return sock->ops->setsockopt(sock, level, optname,
-				(void *)optval, optlen);
+		assert(sock->sk != NULL);
+		return sock->ops->setsockopt(sock->sk, level, optname,
+				optval, optlen);
 	}
 
 	switch (optname) {

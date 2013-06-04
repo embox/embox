@@ -15,9 +15,9 @@
 EMBOX_NET_FAMILY(AF_UNIX, unix_create);
 
 /* Prototypes */
-static const struct proto_ops unix_dgram_ops;
-static const struct proto_ops unix_stream_ops;
-static const struct proto_ops unix_seqpacket_ops;
+static const struct family_ops unix_dgram_ops;
+static const struct family_ops unix_stream_ops;
+static const struct family_ops unix_seqpacket_ops;
 static const struct proto unix_proto;
 
 struct unix_sock {
@@ -62,7 +62,7 @@ static int unix_create(struct socket *sock, int type, int protocol) {
 	return ENOERR;
 }
 
-static const struct proto_ops unix_dgram_ops = {
+static const struct family_ops unix_dgram_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
@@ -85,7 +85,7 @@ static const struct proto_ops unix_dgram_ops = {
 #endif
 };
 
-static const struct proto_ops unix_stream_ops = {
+static const struct family_ops unix_stream_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
@@ -108,7 +108,7 @@ static const struct proto_ops unix_stream_ops = {
 #endif
 };
 
-static const struct proto_ops unix_seqpacket_ops = {
+static const struct family_ops unix_seqpacket_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
