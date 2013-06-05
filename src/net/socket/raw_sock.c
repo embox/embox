@@ -17,6 +17,7 @@
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/raw.h>
+#include <mem/misc/pool.h>
 
 #include <embox/net/sock.h>
 
@@ -24,12 +25,12 @@
 
 #define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
-static const struct proto raw_prot;
-
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 1, raw_prot);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_prot);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_prot);
 
 static struct raw_sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
+
+POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
 
 /* static method for getting hash table index of a socket */
 static int _raw_get_hash_idx(struct sock *sk) {
@@ -61,7 +62,7 @@ static struct sock *_raw_lookup(unsigned int sk_hash_idx, unsigned char protocol
 		if (!(inet->daddr != daddr && inet->daddr) &&
 			 !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
 			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			 sk_it->sk_protocol == protocol) {
+			 sk_it->opt.so_protocol == protocol) {
 			return sk_it;
 		}
 	}
@@ -92,13 +93,13 @@ int raw_rcv(struct sk_buff *skb) {
 
 	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
 		sk = (struct sock *)raw_table[i];
-		if ((sk != NULL) && (sk->sk_protocol == skb->nh.iph->proto)) {
+		if ((sk != NULL) && (sk->opt.so_protocol == skb->nh.iph->proto)) {
 			cloned = skb_share(skb, SKB_SHARE_DATA); // TODO without skb_clone()
 			if (cloned == NULL) {
 				continue;
 				//return -ENOMEM;
 			}
-			sock_queue_rcv_skb(sk, cloned);
+			sock_rcv(sk, cloned);
 		}
 	}
 
@@ -125,14 +126,6 @@ void raw_err(struct sk_buff *skb, uint32_t info) {
 	} while(sk != NULL);
 }
 
-static int raw_init_sock(struct sock *sk) {
-	return ENOERR;
-}
-
-static void raw_close(struct sock *sk, long timeout) {
-	sk_common_release(sk);
-}
-
 static void raw_hash(struct sock *sk) {
 	size_t i;
 
@@ -155,9 +148,9 @@ static void raw_unhash(struct sock *sk) {
 	}
 }
 
-static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int flags) {
+static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct inet_sock *inet = inet_sk(sk);
+	size_t len = msg->msg_iov->iov_len;
 	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
 
 	assert(skb);
@@ -178,11 +171,11 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int flags) {
+static int raw_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
+	size_t len = msg->msg_iov->iov_len;
 
-	skb = skb_queue_front(sk->sk_receive_queue);
+	skb = skb_queue_front(&sk->rx_queue);
 	if (skb && (skb->len > 0)) {
 		if (len > (skb->len - ETH_HEADER_SIZE)) {
 			len = skb->len - ETH_HEADER_SIZE;
@@ -199,46 +192,10 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-static int raw_bind(struct sock *sk, const struct sockaddr *uaddr,
-		socklen_t addr_len) {
-	struct inet_sock *inet = inet_sk(sk);
-	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
-	inet->rcv_saddr = inet->saddr = addr->sin_addr.s_addr;
-	return ENOERR;
-}
-
-static int raw_setsockopt(struct sock *sk, int level, int optname,
-			char *optval, int optlen) {
-	return ENOERR;
-}
-
-static int raw_getsockopt(struct sock *sk, int level, int optname,
-			char *optval, int *optlen) {
-	return ENOERR;
-}
-
-static int raw_ioctl(struct sock *sk, int cmd, unsigned long arg) {
-	return ENOERR;
-}
-
-int raw_connect(struct sock *sk,
-				const struct sockaddr *uaddr, socklen_t addr_len) {
-	return ENOERR;
-}
-
-static const struct proto raw_prot = {
-	.name = "RAW",
-	.init = raw_init_sock,
-	.bind = raw_bind,
-	.connect = raw_connect,
-	.setsockopt = raw_setsockopt,
-	.getsockopt = raw_getsockopt,
+static const struct sock_ops raw_prot = {
 	.sendmsg = raw_sendmsg,
 	.recvmsg = raw_recvmsg,
-	.close = raw_close,
-//	.disconnect = udp_disconnect,
-	.ioctl = raw_ioctl,
 	.hash = raw_hash,
 	.unhash = raw_unhash,
-	.obj_size = sizeof(struct raw_sock),
+	.obj_pool   = &raw_sock_pool
 };

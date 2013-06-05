@@ -86,7 +86,7 @@ static inline struct inet_sock * inet_sk(struct sock *sk) {
 	return (struct inet_sock *)sk;
 }
 
-extern struct sock * inet_create_sock(struct proto *prot,
-		int type, int protocol);
+extern struct sock * inet_create_sock(int type, int protocol,
+		const struct sock_ops *ops);
 
 #endif /* NET_INET_SOCK_H_ */

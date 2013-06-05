@@ -5,9 +5,10 @@ module tcp_sock {
 	option number amount_tcp_sock=20
 
 	depends route
+	depends sock
 	depends embox.compat.posix.net.inet_addr
 	depends embox.lib.LibC
-	depends embox.mem.objalloc
+	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -16,11 +17,12 @@ module udp_sock {
 	option number amount_udp_sock=20
 
 	depends udp
+	depends sock
 	depends route
 	depends ipv4 /* for ip_output.c */
 	depends skbuff
-	depends core /* for sock.c */
 	depends embox.lib.LibC
+	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -34,15 +36,16 @@ module raw_sock {
 	option number amount_raw_sock=20
 
 	depends skbuff
-	depends core /* for sock.c */
+	depends sock
 	depends embox.lib.LibC
+	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
 
 module af_inet {
 	source "af_inet.c"
 
-	depends core /* for sock.c */
+	depends sock
 	depends socket /* for socket_repo.c */
 	depends ipv4
 	depends embox.framework.LibFrameworkNet
@@ -52,7 +55,7 @@ module af_packet {
 	source "af_packet.c"
 	option number amount_sockets=20
 
-	depends core /* for sock.c */
+	depends sock
 	depends socket /* for socket_repo.c */
 	depends embox.framework.LibFrameworkNet
 }
@@ -60,7 +63,7 @@ module af_packet {
 module af_unix {
 	source "af_unix.c"
 
-	depends core /* for sock.c */
+	depends sock
 	depends socket /* for socket_repo.c */
 }
 

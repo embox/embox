@@ -13,7 +13,7 @@
  * Prototypes
  */
 struct mod;
-struct proto;
+struct sock_ops;
 
 /**
  * Each netsock implements this interface.
@@ -23,7 +23,7 @@ typedef struct net_sock {
 	int type;
 	int protocol;
 	int is_default;
-	const struct proto *options;
+	const struct sock_ops *options;
 	int (*init)(void);
 	int (*fini)(void);
 	/** The corresponding mod. */

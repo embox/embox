@@ -56,7 +56,7 @@ static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx,
 		    !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
 		    (inet->sport == sport) && (inet->dport == dport) &&
 			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			 sk_it->sk_protocol == protocol){
+			 sk_it->opt.so_protocol == protocol){
 			return sk_it;
 		}
 	}
@@ -110,7 +110,7 @@ static int udp_rcv(struct sk_buff *skb) {
 				return -res;
 		}
 
-		sock_queue_rcv_skb(sk, skb);
+		sock_rcv(sk, skb);
 
 		if (inet->rcv_saddr == INADDR_ANY) {
 			//TODO: temporary

@@ -49,7 +49,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 
 static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	/* IP header has already been built */
-	if (sk->sk.sk_type == SOCK_RAW)
+	if (sk->sk.opt.so_type == SOCK_RAW)
 		return;
 
 	/* We use headers in other way then Linux. So data coinsides with LL header
@@ -63,7 +63,7 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	 * This functionality belongs to the device. NOT to the socket.
 	 * See init_ip_header() usage. It's more correct
 	 */
-	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
+	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.opt.so_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
 	return;
 }
@@ -217,8 +217,5 @@ int ip_forward_packet(sk_buff_t *skb) {
 }
 
 void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
-	/* TODO: add more specific error notification */
-
-	sk->sk_err = (type & (code<<8));
-	so_sk_set_so_error(sk, sk->sk_err);
+	so_sk_set_so_error(sk, (type & code << 8));
 }

@@ -19,232 +19,77 @@
 struct proto;
 struct sk_buff_head;
 struct socket;
-struct kiocb;
 struct msghdr;
 struct skbuff;
-struct cache;
+struct pool;
 
 typedef struct {
 	spinlock_t slock;
-} socket_lock_t;
+} sock_lock_t;
 
-/**
- * Minimal network layer representation of sockets.
- * @param skc_family network address family
- * @param skc_state Connection state
- */
-struct sock_common {
-	int skc_family;
-	unsigned char skc_state;
-	const struct proto *skc_prot;
-};
+#define SOCK_OPT_DEFAULT_RCVBUF   16384
+#define SOCK_OPT_DEFAULT_RCVLOWAT 1
+#define SOCK_OPT_DEFAULT_RCVTIMEO { .tv_sec = 0, .tv_usec = 0 }
+#define SOCK_OPT_DEFAULT_SNDBUF   16384
+#define SOCK_OPT_DEFAULT_SNDLOWAT 1
+#define SOCK_OPT_DEFAULT_SNDTIMEO { .tv_sec = 0, .tv_usec = 0 }
 
-#define DEFAULT_DEBUG 0
-#define DEFAULT_RCVBUF 9000
-#define DEFAULT_SNDBUF 9000
-#define DEFAULT_RCVLOWAT 1
-/* normally this default is for TCP, but for the first time
-   it doesn't matter for UDP */
-#define DEFAULT_SNDLOWAT 2048
-#define DEFAULT_TIMEO {.tv_sec = 0, .tv_usec = 0}
-#define DEFAULT_TCP_SERVER_REUSEADDR 1
-
-
-struct sock_opt_state {
+struct sock_opt {
 	int so_acceptconn;
+	struct net_device *so_bindtodev;
 	int so_broadcast;
-	int so_debug;
+	int so_domain;
 	int so_dontroute;
 	int so_error;
-	int so_keepalive;
 	struct linger so_linger;
 	int so_oobinline;
+	int so_protocol;
 	int so_rcvbuf;
 	int so_rcvlowat;
 	struct timeval so_rcvtimeo;
-	int so_reuseaddr;
 	int so_sndbuf;
 	int so_sndlowat;
 	struct timeval so_sndtimeo;
 	int so_type;
-	struct net_device *so_bindtodev; /* name of interface socket bind to*/
 };
 
-
-/**
- * Network layer representation of sockets.
- * @param __sk_common shared layout with inet_timewait_sock
- * @param sk_protocol which protocol this socket belongs in this network family
- * @param sk_shutdown mask of SHUT_RD and SHUT_RW
- * @param sk_type socket type
- * @param sk_rcvbuf size of receive buffer in bytes
- * @param sk_lock synchronizer
- * @param sk_sndbuf size of send buffer in bytes
- * @param sk_flags %SO_LINGER (l_onoff), %SO_BROADCAST, %SO_KEEPALIVE,
- *			%SO_OOBINLINE settings, %SO_TIMESTAMPING settings
- * @param sk_receive_queue incoming packets
- * @param sk_write_queue Packet sending queue
- * @param sk_socket Identd and reporting IO signals
- * @param sk_state_change: callback to indicate change in the state of the sock
- * @param sk_data_ready: callback to indicate there is data to be processed
- * @param sk_write_space: callback to indicate there is bf sending space available
- * @param sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
- * @param sk_backlog_rcv: callback to process the backlog
- * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
- * @param sk_encap_rcv: called before put skbuff data on socket. Handle encapsulated proto
- * @param get_port TODO add description
- * @param arp_queue_info: arp_queue related parameter
- * @param sock_is_ready: event for waking up socket, when the packet is added to arp_queue
- * @param sock_is_not_empty: event for waking up in recvfrom(), when some data were put on sock
- */
-typedef struct sock {
-	struct sock_common __sk_common;
-#define sk_family  __sk_common.skc_family
-#define sk_prot    __sk_common.skc_prot
-#define sk_state   __sk_common.skc_state
-	int sk_protocol;
-	int sk_type;
-	struct sock_opt_state sk_so;
-	unsigned char sk_shutdown;
-	socket_lock_t sk_lock;
-
-#if 0
-	struct {
-		struct sk_buff *head;
-		struct sk_buff *tail;
-	} sk_backlog;
-
-	int sk_sndbuf;
-	int sk_rcvbuf;
-	unsigned long sk_flags;
-#endif
-
-	struct sk_buff_head *sk_receive_queue;
-	struct sk_buff_head *sk_write_queue;
+struct sock {
+	struct sock_opt opt;
+	struct sk_buff_head rx_queue;
+	struct sk_buff_head tx_queue;
+	unsigned char state;
+	unsigned char shutdown_flag;
+	const struct sock_ops *ops;
 
 	struct socket *sk_socket;
-#if 0
-	void *sk_user_data;
-
-	void (* sk_state_change)(struct sock *sk);
-	void (* sk_data_ready)(struct sock *sk, int bytes);
-	void (* sk_write_space)(struct sock *sk);
-	void (* sk_error_report)(struct sock *sk);
-	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
-	void (* sk_destruct)(struct sock *sk);
-	int (* get_port)(struct sock *sk, unsigned short num); // TODO
-#endif
 	int (*sk_encap_rcv)(struct sock *sk, struct sk_buff *pack);
-
-	int32_t sk_err;
-
-#if 0
-	int ready;
-	struct event sock_is_ready;
-#endif
-
 	struct event sock_is_not_empty;
-} sock_t;
-
-#if 0
-static inline void sock_set_ready(struct sock *sk) {
-	sk->ready = true;
-}
-static inline void sock_unset_ready(struct sock *sk){
-	sk->ready = false;
-}
-
-/**
- *	Check if socket is awaiting address resolution
- *	@return
- *         - true if socket is ready for further actions
- *         - false in other case
- */
-static inline bool sock_is_ready(struct sock *sk) {
-	return sk->ready;
-}
-#endif
-
-#if 0
-/** Sock flags */
-enum sock_flags {
-	SOCK_DEAD,
-	SOCK_DONE,
-	SOCK_DESTROY,
-	SOCK_BROADCAST
 };
-#endif
 
-/** Protocol specific functions */
-typedef struct proto {
-	void (*close)(sock_t *sk, long timeout);
-	int (*shutdown)(struct sock *sk, int flags);
-	int (*connect)(sock_t *sk, const struct sockaddr *addr, socklen_t addr_len);
-#if 0
-	int (*disconnect)(sock_t *sk, int flags);
-#endif
-	int (*listen)(sock_t *sk, int backlog);
-	int (*accept)(sock_t *sk, sock_t **newsk, struct sockaddr *addr, socklen_t *addr_len, int flags);
-	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
-	int (*init)(sock_t *sk);
-#if 0
-	void (*destroy)(struct sock *sk);
-#endif
-	int (*setsockopt)(struct sock *sk, int level, int optname, char *optval,
-			int optlen);
-	int (*getsockopt)(struct sock *sk, int level, int optname, char *optval,
-			int *option);
-	int (*sendmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
-			size_t len, int flags);
-	int (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
-			size_t len, int flags);
-	int (*bind)(sock_t *sk, const struct sockaddr *uaddr, socklen_t addr_len);
+struct sock_ops {
+	int (*close)(struct sock *sk);
+	int (*connect)(struct sock *sk, const struct sockaddr *addr,
+			socklen_t addrlen, int flags);
+	int (*listen)(struct sock *sk, int backlog);
+	int (*accept)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen, int flags, struct sock **out_sk);
+	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
+	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
+	int (*shutdown)(struct sock *sk, int how);
+	int (*setsockopt)(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen);
+	int (*getsockopt)(struct sock *sk, int level, int optname,
+			void *optval, socklen_t *optlen);
+	int (*init)(struct sock *sk);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
-	struct sock * (*iter)(struct sock *prev);
-	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
-	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
-	unsigned int obj_size;
-	struct cache *cachep;             /**< associated cache in which socks will be stored */
-	char name[32];
-} proto_t;
+	struct sock * (*iter)(struct sock *sk);
+	struct pool *obj_pool;
+};
 
-/** Allocates structure sock with specific parameters
- * @family - Protocol family (PF_INIT for example)
- * @prot - pointer to the proto structure
- */
-extern struct sock * sk_alloc(int family, struct proto *prot);
-
-/**
- * Returns specified structure sock into pull,
- * assuming there are no more handle on it.
- */
-extern void sk_free(struct sock *sk);
-
-/** This function used by all transports to attempt to queue received packets*/
-extern void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb);
-
-/**
- * Functions to fill in entries in struct family_ops when a protocol
- * does not implement a particular function.
- */
-extern int sock_no_listen(struct socket *, int);
-extern int sock_no_accept(struct socket *, struct socket *, int);
-
-extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
-			struct msghdr *msg, size_t size, int flags);
-
-extern void sk_common_release(struct sock *sk);
-
-/* Simple spinlock */
-extern int sock_lock(struct sock **psk);
-extern void sock_unlock(struct sock *sk);
-
-/**
- * clear sk_err variable in struct sock
- **/
-static inline void sk_clear_pending_error(struct sock *sk){
-	sk->sk_err = 0;
-}
+extern int sock_create(int family, int type, int protocol,
+		const struct sock_ops *ops, struct sock **out_sk);
+extern void sock_release(struct sock *sk);
+extern void sock_rcv(struct sock *sk, struct sk_buff *skb);
 
 #endif /* NET_SOCK_H_ */

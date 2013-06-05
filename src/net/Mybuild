@@ -30,12 +30,13 @@ module core {
 	depends embox.util.List
 	depends embox.mem.pool
 	depends embox.lib.LibC
+}
 
+module sock {
 	source "sock.c"
-	option number min_amount_sock=1
 
 	depends skbuff
-	depends embox.mem.slab
+	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.kernel.thread.event
 	depends embox.kernel.task.io_sync_api /* TODO */

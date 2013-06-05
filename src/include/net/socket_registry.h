@@ -80,7 +80,7 @@ static inline int sk_is_listening(struct socket *sock){
 static inline void so_sk_set_so_error(struct sock *sk, int error){
 	if (sk){
 		assert(sk->sk_socket != NULL);
-		sk->sk_so.so_error = error;
+		sk->opt.so_error = error;
 	}
 	else
 		return;

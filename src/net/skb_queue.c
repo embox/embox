@@ -44,13 +44,18 @@ void skb_queue_init(struct sk_buff_head *queue) {
 	INIT_LIST_HEAD((struct sk_buff *)queue);
 }
 
-void skb_queue_free(struct sk_buff_head *queue) {
-	ipl_t sp;
+void skb_queue_purge(struct sk_buff_head *queue) {
 	struct sk_buff *skb;
 
 	while ((skb = skb_queue_pop(queue)) != NULL) {
 		skb_free(skb);
 	}
+}
+
+void skb_queue_free(struct sk_buff_head *queue) {
+	ipl_t sp;
+
+	skb_queue_purge(queue);
 
 	sp = ipl_save();
 	{

@@ -257,7 +257,7 @@ static int recvmsg_sock(struct socket *sock, struct msghdr *msg,
 
 	softirq_lock();
 	{
-		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
+		if (skb_queue_front(&sock->sk->rx_queue) == NULL) {
 			idx_io_disable(sock->desc_data, IDX_IO_READING);
 		}
 	}
@@ -518,8 +518,8 @@ static const struct task_idx_ops task_idx_ops_socket = {
 #if 1 /********** TODO remove this ****************/
 int check_icmp_err(int sockfd) {
 	struct socket *sock = idx2socket(sockfd);
-	int err = sock->sk->sk_err;
-	sk_clear_pending_error(sock->sk);
+	int err = sock->sk->opt.so_error;
+	sock->sk->opt.so_error = 0;
 	return err;
 }
 

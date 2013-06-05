@@ -19,8 +19,11 @@
 #include <net/route.h>
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
+#include <mem/misc/pool.h>
 
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_prot);
+
+POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {
@@ -33,11 +36,11 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 	return 0;
 }
 
-static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int flags) {
+static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 
 	struct inet_sock *inet = inet_sk(sk);
+	size_t len = msg->msg_iov->iov_len;
 
 	/* FIXME if msg->msg_iov->iov_len more than ETHERNET_V2_FRAME_SIZE */
 	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
@@ -59,11 +62,11 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int flags) {
+static int udp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
+	size_t len = msg->msg_iov->iov_len;
 
-	skb = skb_queue_front(sk->sk_receive_queue);
+	skb = skb_queue_front(&sk->rx_queue);
 	if (skb && skb->len > 0) {
 		if (len > (ntohs(skb->h.uh->len) - UDP_HEADER_SIZE)) {
 			len = ntohs(skb->h.uh->len) - UDP_HEADER_SIZE;
@@ -102,29 +105,10 @@ static void udp_unhash(struct sock *sk) {
 	}
 }
 
-static int udp_setsockopt(struct sock *sk, int level, int optname,
-			char *optval, int optlen) {
-	return ENOERR;
-}
-
-static int udp_getsockopt(struct sock *sk, int level, int optname,
-			char *optval, int *optlen) {
-	return ENOERR;
-}
-
-#if 0
-int udp_disconnect(struct sock *sk, int flags) {
-        return 0;
-}
-#endif
-
-static const struct proto udp_prot = {
-	.name        = "UDP",
+static const struct sock_ops udp_prot = {
 	.sendmsg     = udp_sendmsg,
 	.recvmsg     = udp_recvmsg,
 	.hash        = udp_hash,
 	.unhash      = udp_unhash,
-	.setsockopt  = udp_setsockopt,
-	.getsockopt  = udp_getsockopt,
-	.obj_size    = sizeof(struct udp_sock),
+	.obj_pool   = &udp_sock_pool
 };
