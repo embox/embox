@@ -498,6 +498,10 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 	debug_print(8, "call tcp_st_closed\n");
 	assert(sock.sk->state == TCP_CLOSED);
 
+	if (tcph->rst) {
+		return TCP_RET_DROP;
+	}
+
 	out_tcph->rst = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
