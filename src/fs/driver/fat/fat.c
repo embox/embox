@@ -1855,7 +1855,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		rc = -ENOMEM;
 		goto out;
 	}
-	memset(rcv_buf, 0, sizeof(rcv_buf));
+	memset(rcv_buf, 0, sizeof(PAGE_SIZE()));
 	di.p_scratch = rcv_buf;
 
 	/* set relative path in this file system */
