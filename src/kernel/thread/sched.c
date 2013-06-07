@@ -99,9 +99,8 @@ void sched_finish(struct thread *t) {
 		} else {
 			if (thread_state_sleeping(t->state)) {
 				t->wait_data.on_notified(t, t->wait_data.data);
-			} else {
-				t->state = thread_state_do_exit(t->state);
 			}
+			t->state = thread_state_do_exit(t->state);
 		}
 
 		assert(thread_state_exited(t->state));
