@@ -498,10 +498,6 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 	debug_print(8, "call tcp_st_closed\n");
 	assert(sock.sk->state == TCP_CLOSED);
 
-	if (tcph->rst) {
-		return TCP_RET_DROP;
-	}
-
 	out_tcph->rst = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
@@ -1088,10 +1084,9 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 
 	packet_print(sock, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);
 	if (sock.tcp_sk == NULL) {
-		tcp_handle(tcp_sock_default, skb, tcp_st_handler[TCP_CLOSED]);
-	} else {
-		tcp_process(sock, skb);
+		sock.tcp_sk = tcp_sock_default.tcp_sk;
 	}
+	tcp_process(sock, skb);
 
 	return 0;
 }
