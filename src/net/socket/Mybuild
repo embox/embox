@@ -68,15 +68,13 @@ module af_unix {
 }
 
 module socket {
-	source "ksocket.c"
-	depends embox.framework.LibFrameworkNet
-	/* depends from socket_repo.c */
-	/* depends from socket_allocator.c */
-	/* depends from socket_registry.c */
-
-	source "socket_allocator.c"
 	option number amount_socket=20
+
+	source "ksocket.c"
 	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+	/* depends from socket_registry.c */
 
 	source "socket_registry.c"
 	option number amount_socket_node=20

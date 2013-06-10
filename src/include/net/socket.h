@@ -50,7 +50,6 @@ typedef enum {
 struct sock;
 struct idx_desc;
 struct socket_node;
-struct family_ops;
 
 /**
  * General BSD socket
@@ -67,9 +66,6 @@ struct socket {
 	struct idx_desc_data *desc_data;
 	struct socket_node *socket_node;
 };
-
-extern struct socket * socket_alloc(void);
-extern void socket_free(struct socket *sock);
 
 #if 1 /********** TODO remove this ****************/
 #include <net/skbuff.h>

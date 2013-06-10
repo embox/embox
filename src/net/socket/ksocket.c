@@ -23,6 +23,36 @@
 #include <net/socket_registry.h>
 #include <embox/net/family.h>
 
+#include <framework/mod/options.h>
+#include <hal/ipl.h>
+#include <mem/misc/pool.h>
+
+#define MODOPS_AMOUNT_SOCKET OPTION_GET(NUMBER, amount_socket)
+
+POOL_DEF(socket_pool, struct socket, MODOPS_AMOUNT_SOCKET);
+
+static struct socket * socket_alloc(void) {
+	ipl_t sp;
+	struct socket *sock;
+
+	sp = ipl_save();
+	{
+		sock = pool_alloc(&socket_pool);
+	}
+	ipl_restore(sp);
+
+	return sock;
+}
+
+static void socket_free(struct socket *sock) {
+	ipl_t sp;
+
+	sp = ipl_save();
+	{
+		pool_free(&socket_pool, sock);
+	}
+	ipl_restore(sp);
+}
 static int ksocket_ext(int family, int type, int protocol,
 		struct sock *sk, struct socket **out_sock) {
 	int ret;
