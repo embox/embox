@@ -9,8 +9,6 @@
 
 #include <errno.h>
 
-#include <util/math.h>
-
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
@@ -87,17 +85,26 @@ int ip_queue_xmit(struct sk_buff *skb) {
  * As side effect frees incoming skb
  */
 static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
-	struct sk_buff_head *tx_buf = ip_frag(skb, dev->mtu);
-	int res = tx_buf ? 0 : -1;
+	int ret;
+	struct sk_buff_head tx_buf;
 	struct sk_buff *s_tmp;
 
-	skb_free(skb);
-	while ((res >= 0) && (s_tmp = skb_queue_pop(tx_buf))) {
-		s_tmp->dev = dev;
-		res = min(ip_queue_send(s_tmp), res);
+	ret = ip_frag(skb, dev->mtu, &tx_buf);
+	if (ret != 0) {
+		skb_free(skb);
+		return ret;
 	}
-	skb_queue_free(tx_buf);
-	return res;
+	skb_free(skb);
+
+	while (NULL != (s_tmp = skb_queue_pop(&tx_buf))) {
+		s_tmp->dev = dev;
+		ret = ip_queue_send(s_tmp);
+		if (ret != 0) {
+			break;
+		}
+	}
+	skb_queue_purge(&tx_buf);
+	return ret;
 }
 
 int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {

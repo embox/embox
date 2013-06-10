@@ -13,7 +13,6 @@
 #include <arpa/inet.h>
 #include <net/sock.h>
 #include <sys/socket.h>
-#include <net/socket_registry.h>
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/if_ether.h>

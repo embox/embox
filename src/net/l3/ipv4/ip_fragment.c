@@ -250,8 +250,8 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	return NULL;
 }
 
-struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
-	struct sk_buff_head *tx_buf = skb_queue_alloc();
+int ip_frag(const struct sk_buff *skb, uint32_t mtu,
+		struct sk_buff_head *tx_buf) {
 	struct sk_buff *fragment;
 	int len = ETH_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph);
 	int offset = len; /* offset from skb start (== mac.raw) */
@@ -259,15 +259,12 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 	/* Note: correct MTU, because fragment offset must divide on 8*/
 	int align_MTU = mtu - (mtu - len) % 8;
 
-	if (unlikely(!tx_buf)) {
-		return NULL;
-	}
+	skb_queue_init(tx_buf);
 
 	/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while (offset < skb->len - align_MTU) {
 		if (unlikely(!(fragment = skb_alloc(align_MTU)))) {
-			skb_queue_free(tx_buf);
-			return NULL;
+			return -ENOMEM;
 		}
 
 		/* Copy IP and MAC headers */
@@ -285,8 +282,8 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 	/* copy last fragment */
 	if (offset < skb->len) {
 		if (unlikely(!(fragment = skb_alloc(skb->len - offset + len)))) {
-			skb_queue_free(tx_buf);
-			return NULL;
+			skb_queue_purge(tx_buf);
+			return -ENOMEM;
 		}
 
 		/* Copy IP and MAC headers */
@@ -299,5 +296,5 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 		skb_queue_push(tx_buf, fragment);
 	}
 
-	return tx_buf;
+	return 0;
 }

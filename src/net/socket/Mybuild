@@ -44,11 +44,12 @@ module raw_sock {
 
 module af_inet {
 	source "af_inet.c"
-
 	depends sock
-	depends socket /* for socket_repo.c */
-	depends ipv4
 	depends embox.framework.LibFrameworkNet
+
+	source "ip_port.c"
+	option number ports_per_protocol=65536
+	depends embox.util.Bit
 }
 
 module af_packet {
@@ -71,6 +72,7 @@ module socket {
 	option number amount_socket=20
 
 	source "ksocket.c"
+	depends embox.arch.interrupt
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
@@ -81,8 +83,4 @@ module socket {
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.util.LibUtil
-
-	source "ip_port.c"
-	option number ports_per_protocol=65536
-	depends embox.util.Bit
 }

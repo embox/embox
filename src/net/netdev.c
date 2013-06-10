@@ -65,9 +65,9 @@ struct net_device * netdev_alloc(const char *name,
 void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		list_unlink_link(&dev->rx_lnk);
-		skb_queue_free(&dev->dev_queue);
-		skb_queue_free(&dev->tx_dev_queue);
-		skb_queue_free(&dev->txing_queue);
+		skb_queue_purge(&dev->dev_queue);
+		skb_queue_purge(&dev->tx_dev_queue);
+		skb_queue_purge(&dev->txing_queue);
 		pool_free(&netdev_pool, dev);
 	}
 }

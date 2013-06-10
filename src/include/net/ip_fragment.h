@@ -27,6 +27,7 @@ extern struct sk_buff *ip_defrag(struct sk_buff *skb);
  * We return NULL if we don't have enough memory.
  * During this operation we don't touch the original skb
  */
-extern struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu);
+extern int ip_frag(const struct sk_buff *skb, uint32_t mtu,
+		struct sk_buff_head *tx_buf);
 
 #endif /* NET_IP_FRAGMENT_H */
