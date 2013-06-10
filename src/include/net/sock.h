@@ -16,7 +16,8 @@
 #include <net/skbuff.h>
 #include <sys/time.h>
 
-struct proto;
+struct family_ops;
+struct sock_ops;
 struct sk_buff_head;
 struct socket;
 struct msghdr;
@@ -59,6 +60,7 @@ struct sock {
 	struct sk_buff_head tx_queue;
 	unsigned char state;
 	unsigned char shutdown_flag;
+	const struct family_ops *f_ops;
 	const struct sock_ops *ops;
 
 	struct socket *sk_socket;
@@ -66,7 +68,34 @@ struct sock {
 	struct event sock_is_not_empty;
 };
 
+struct family_ops {
+	int (*init)(struct sock *sk);
+	int (*close)(struct sock *sk);
+	int (*bind)(struct sock *sk, const struct sockaddr *addr,
+			socklen_t addrlen);
+	int (*connect)(struct sock *sk, const struct sockaddr *addr,
+			socklen_t addrlen, int flags);
+	int (*listen)(struct sock *sk, int len);
+	int (*accept)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen, int flags, struct sock **out_sk);
+	int (*sendmsg)(struct sock *sk, struct msghdr *msg,
+			int flags);
+	int (*recvmsg)(struct sock *sk, struct msghdr *msg,
+			int flags);
+	int (*getsockname)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen);
+	int (*getpeername)(struct sock *sk, struct sockaddr *addr,
+			socklen_t *addrlen);
+	int (*getsockopt)(struct sock *sk, int level, int optname,
+			void *optval, socklen_t *optlen);
+	int (*setsockopt)(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen);
+	int (*shutdown)(struct sock *sk, int how);
+	bool (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
+};
+
 struct sock_ops {
+	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
 			socklen_t addrlen, int flags);
@@ -75,12 +104,11 @@ struct sock_ops {
 			socklen_t *addrlen, int flags, struct sock **out_sk);
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
-	int (*shutdown)(struct sock *sk, int how);
-	int (*setsockopt)(struct sock *sk, int level, int optname,
-			const void *optval, socklen_t optlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname,
 			void *optval, socklen_t *optlen);
-	int (*init)(struct sock *sk);
+	int (*setsockopt)(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen);
+	int (*shutdown)(struct sock *sk, int how);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
 	struct sock * (*iter)(struct sock *sk);
@@ -88,8 +116,9 @@ struct sock_ops {
 };
 
 extern int sock_create(int family, int type, int protocol,
-		const struct sock_ops *ops, struct sock **out_sk);
+		struct sock **out_sk);
 extern void sock_release(struct sock *sk);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb);
+extern int sock_close(struct sock *sk);
 
 #endif /* NET_SOCK_H_ */

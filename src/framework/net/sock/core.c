@@ -85,19 +85,6 @@ static int net_sock_mod_member_fini(struct mod_member *member) {
 	return ret;
 }
 
-int net_sock_support(int family, int type) {
-	const struct net_sock *nsock;
-
-	net_sock_foreach(nsock) {
-		if ((nsock->family == family)
-				&& (nsock->type == type)) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 const struct net_sock * net_sock_lookup(int family, int type,
 		int protocol) {
 	const struct net_sock *nsock;

@@ -520,6 +520,7 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 
 static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
+	int ret;
 	union sock_pointer newsock;
 
 	debug_print(8, "call tcp_st_listen\n");
@@ -527,9 +528,10 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 	if (tcph->syn) {
 		/* Allocate new socket for this connection */
-		newsock.sk = inet_create_sock(SOCK_STREAM, IPPROTO_TCP, &tcp_prot);
-		if (newsock.sk == NULL) {
-			return -ENOMEM;
+		ret = sock_create(sock.sk->opt.so_domain,
+				SOCK_STREAM, IPPROTO_TCP, &newsock.sk);
+		if (ret != 0) {
+			return ret;
 		}
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n", newsock.tcp_sk, *pskb, sock.tcp_sk);
 		/* Set up new socket */
@@ -1014,9 +1016,9 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t 
 	union sock_pointer sock;
 
 	/* lookup socket with strict addressing */
-	for (sock.sk = tcp_prot.iter(NULL);
+	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
 			sock.sk != NULL;
-			sock.sk = tcp_prot.iter(sock.sk)) {
+			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
 		if ((sock.inet_sk->rcv_saddr == saddr) &&
 		    (sock.inet_sk->sport == sport) &&
 		    (sock.inet_sk->daddr == daddr) &&
@@ -1026,9 +1028,9 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t 
 	}
 
 	/* lookup another sockets */
-	for (sock.sk = tcp_prot.iter(NULL);
+	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
 			sock.sk != NULL;
-			sock.sk = tcp_prot.iter(sock.sk)) {
+			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
 		if (((sock.inet_sk->rcv_saddr == INADDR_ANY) ||
 		    (sock.inet_sk->rcv_saddr == saddr)) &&
 		    (sock.inet_sk->sport == sport)) {
@@ -1109,9 +1111,9 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 
 //	debug_print(7, "TIMER: call tcp_timer_handler\n");
 
-	for (sock.sk = tcp_prot.iter(NULL);
+	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
 			sock.sk != NULL;
-			sock.sk = tcp_prot.iter(sock.sk)) {
+			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
 		if (sock.sk->state == TCP_TIMEWAIT) {
 			tcp_tmr_timewait(sock);
 		} else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
@@ -1130,11 +1132,12 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	tcp_sock_default.sk = inet_create_sock(SOCK_STREAM, IPPROTO_TCP, &tcp_prot);
-	if (tcp_sock_default.sk == NULL) {
-		return -ENOMEM;
+	ret = sock_create(AF_INET, SOCK_STREAM, IPPROTO_TCP,
+			&tcp_sock_default.sk);
+	if (ret != 0) {
+		return ret;
 	}
-	tcp_prot.unhash(tcp_sock_default.sk);
+	tcp_sock_default.sk->ops->unhash(tcp_sock_default.sk);
 
 	return 0;
 }

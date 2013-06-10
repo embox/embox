@@ -23,7 +23,7 @@ typedef struct net_sock {
 	int type;
 	int protocol;
 	int is_default;
-	const struct sock_ops *options;
+	const struct sock_ops *ops;
 	int (*init)(void);
 	int (*fini)(void);
 	/** The corresponding mod. */

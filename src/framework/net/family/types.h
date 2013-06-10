@@ -9,19 +9,27 @@
 #ifndef FRAMEWORK_NET_FAMILY_TYPES_H_
 #define FRAMEWORK_NET_FAMILY_TYPES_H_
 
+#include <stddef.h>
+
 /**
  * Prototypes
  */
-struct socket;
+struct family_ops;
+
+struct net_family_type {
+	int type;
+	const struct family_ops *ops;
+};
 
 /**
- * Each netpack implements this interface.
+ * Each netfamily implements this interface.
  */
 struct net_family {
 	int family;
+	const struct net_family_type *types;
+	size_t types_sz;
 	int (*init)(void);    /* initializer of this packet family */
 	int (*fini)(void);    /* initializer of this packet family */
-	int (*create)(struct socket *sock, int type, int protocol);
 };
 
 #endif /* FRAMEWORK_NET_FAMILY_TYPES_H_ */

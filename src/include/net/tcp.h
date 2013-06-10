@@ -150,7 +150,6 @@ static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 	return skb->h.th;
 }
 
-extern const struct sock_ops tcp_prot;
 extern union sock_pointer tcp_sock_default;
 
 /* Others functionality */

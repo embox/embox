@@ -17,7 +17,7 @@
 #include "types.h"
 
 #define __EMBOX_NET_SOCK(_name, _family, _type, _protocol, \
-		_is_default, _options, _init, _fini)               \
+		_is_default, _ops, _init, _fini)                   \
 	extern const struct net_sock __net_sock_registry[];    \
 	extern const struct mod_member_ops                     \
 			__net_sock_mod_member_ops;                     \
@@ -27,7 +27,7 @@
 				.type = _type,                             \
 				.protocol = _protocol,                     \
 				.is_default = _is_default,                 \
-				.options = &_options,                      \
+				.ops = &_ops,                              \
 				.init = _init,                             \
 				.fini = _fini,                             \
 				.mod = &mod_self                           \

@@ -4,6 +4,7 @@
  *
  * @date 01.07.11
  * @author Dmitry Zubarevich
+ * @author Ilia Vaprol
  */
 
 #ifndef FRAMEWORK_NET_PACK_SELF_H_

@@ -21,12 +21,12 @@
 	extern const struct mod_ops __net_proto_mod_ops;            \
 	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,                \
 			__net_proto_##_name, {                              \
-			.type = _type,                                      \
-			.init = _init,                                      \
-			.fini = _fini,                                      \
-			.handle = _handle,                                  \
-			.handle_error = _handle_error                       \
-		});                                                     \
+				.type = _type,                                  \
+				.init = _init,                                  \
+				.fini = _fini,                                  \
+				.handle = _handle,                              \
+				.handle_error = _handle_error                   \
+			});                                                 \
 	MOD_INFO_BIND(&__net_proto_mod_ops, &__net_proto_##_name)
 
 #endif /* FRAMEWORK_NET_PROTO_SELF_IMPL_H_ */

@@ -19,11 +19,11 @@
 	extern const struct mod_ops __net_pack_mod_ops;           \
 	ARRAY_SPREAD_ADD_NAMED(__net_pack_registry,               \
 			__net_pack_##_name, {                             \
-		.type = _type,                                        \
-		.init = _init,                                        \
-		.fini = _fini,                                        \
-		.handle = _handle                                     \
-	});                                                       \
+				.type = _type,                                \
+				.init = _init,                                \
+				.fini = _fini,                                \
+				.handle = _handle                             \
+			});                                               \
 	MOD_INFO_BIND(&__net_pack_mod_ops, &__net_pack_##_name)
 
 #endif /* FRAMEWORK_NET_PACK_SELF_IMPL_H_ */

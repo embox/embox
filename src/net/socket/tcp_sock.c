@@ -39,13 +39,13 @@ POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
 
 
 /************************ Socket's functions ***************************/
-static int tcp_v4_init_sock(struct sock *sk) {
+static int tcp_init(struct sock *sk) {
 	union sock_pointer sock;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_init_sock: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_init: sk %p\n", sock.tcp_sk);
 
 	tcp_set_st(sock, TCP_CLOSED);
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
@@ -59,8 +59,56 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	return 0;
 }
 
-static int tcp_v4_connect(struct sock *sk, const struct sockaddr *addr, socklen_t addr_len,
-		int flags) {
+static int tcp_close(struct sock *sk) {
+	struct sk_buff *skb;
+	struct tcphdr *tcph;
+	union sock_pointer sock;
+
+	assert(sk != NULL);
+
+	sock.sk = sk;
+	debug_print(3, "tcp_close: sk %p\n", sock.tcp_sk);
+
+	tcp_obj_lock(sock, TCP_SYNC_STATE);
+	{
+		assert(sock.sk->state < TCP_MAX_STATE);
+		switch (sock.sk->state) {
+		default:
+			return -EBADF;
+		case TCP_CLOSED:
+			tcp_obj_unlock(sock, TCP_SYNC_STATE);
+			tcp_free_sock(sock);
+			return 0;
+		case TCP_LISTEN:
+		case TCP_SYN_SENT:
+		case TCP_SYN_RECV_PRE:
+			tcp_set_st(sock, TCP_CLOSED);
+			tcp_obj_unlock(sock, TCP_SYNC_STATE);
+			tcp_free_sock(sock);
+			return 0;
+		case TCP_SYN_RECV:
+		case TCP_ESTABIL:
+		case TCP_CLOSEWAIT:
+			skb = alloc_prep_skb(0, 0);
+			if (skb == NULL) {
+				break;
+			}
+			tcp_set_st(sock, sock.sk->state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
+			build_tcp_packet(0, 0, sock, skb);
+			tcph = tcp_hdr(skb);
+			tcph->fin = 1;
+			tcph->ack = 1;
+			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+			break;
+		}
+	}
+	tcp_obj_unlock(sock, TCP_SYNC_STATE);
+
+	return 0;
+}
+
+static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
+		socklen_t addr_len, int flags) {
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;
@@ -92,7 +140,7 @@ static int tcp_v4_connect(struct sock *sk, const struct sockaddr *addr, socklen_
 	}
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_connect: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_connect: sk %p\n", sock.tcp_sk);
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
@@ -144,14 +192,14 @@ static int tcp_v4_connect(struct sock *sk, const struct sockaddr *addr, socklen_
 	return ret;
 }
 
-static int tcp_v4_listen(struct sock *sk, int backlog) {
+static int tcp_listen(struct sock *sk, int backlog) {
 	union sock_pointer sock;
 	int ret;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_listen: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_listen: sk %p\n", sock.tcp_sk);
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
@@ -172,7 +220,7 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 	return ret;
 }
 #include <kernel/thread/sched_lock.h>
-static int tcp_v4_accept(struct sock *sk,
+static int tcp_accept(struct sock *sk,
 		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
@@ -183,7 +231,7 @@ static int tcp_v4_accept(struct sock *sk,
 	assert((addr == NULL) || (addr_len != NULL));
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->state);
+	debug_print(3, "tcp_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->state);
 
 	assert(sock.sk->state < TCP_MAX_STATE);
 	switch (sock.sk->state) {
@@ -226,7 +274,7 @@ static int tcp_v4_accept(struct sock *sk,
 			addr_in->sin_addr.s_addr = newsock.inet_sk->daddr;
 			*addr_len = sizeof *addr_in;
 		}
-		debug_print(3, "tcp_v4_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
+		debug_print(3, "tcp_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
 				inet_ntoa(*(struct in_addr *)&newsock.inet_sk->daddr), (int)ntohs(newsock.inet_sk->dport));
 		/* wait until something happened */
 		tcp_get_now(&started);
@@ -242,7 +290,7 @@ static int tcp_v4_accept(struct sock *sk,
 	} /* switch(sock.sk->state) */
 }
 
-static int tcp_v4_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
+static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes, max_len;
@@ -254,7 +302,7 @@ static int tcp_v4_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(len == msg->msg_iov->iov_len);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_sendmsg: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_sendmsg: sk %p\n", sock.tcp_sk);
 
 	assert(sock.sk->state < TCP_MAX_STATE);
 	switch (sock.sk->state) {
@@ -275,7 +323,7 @@ static int tcp_v4_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 					sock.tcp_sk->rem.wind, sock.tcp_sk->self.seq - sock.tcp_sk->last_ack);
 
 			bytes = min(upper_bound, (len > max_len ? max_len : len));
-			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
+			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
 			skb = alloc_prep_skb(0, bytes);
 			if (skb == NULL) {
 				if (len != msg->msg_iov->iov_len) {
@@ -304,7 +352,7 @@ static int tcp_v4_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 }
 
-static int tcp_v4_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
+static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes;
@@ -317,7 +365,7 @@ static int tcp_v4_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(len == msg->msg_iov->iov_len);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_recvmsg: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_recvmsg: sk %p\n", sock.tcp_sk);
 
 	tcp_get_now(&started);
 
@@ -356,7 +404,7 @@ check_state:
 			memcpy((void *)buff, skb->p_data, bytes);
 			buff += bytes;
 			len -= bytes;
-			debug_print(3, "tcp_v4_recvmsg: received len %d\n", bytes);
+			debug_print(3, "tcp_recvmsg: received len %d\n", bytes);
 			if (last_iteration) {
 				skb->p_data += bytes;
 				break;
@@ -372,56 +420,8 @@ check_state:
 	}
 }
 
-static int tcp_v4_close(struct sock *sk) {
-	struct sk_buff *skb;
-	struct tcphdr *tcph;
-	union sock_pointer sock;
-
-	assert(sk != NULL);
-
-	sock.sk = sk;
-	debug_print(3, "tcp_v4_close: sk %p\n", sock.tcp_sk);
-
-	tcp_obj_lock(sock, TCP_SYNC_STATE);
-	{
-		assert(sock.sk->state < TCP_MAX_STATE);
-		switch (sock.sk->state) {
-		default:
-			return -EBADF;
-		case TCP_CLOSED:
-			tcp_obj_unlock(sock, TCP_SYNC_STATE);
-			tcp_free_sock(sock);
-			return 0;
-		case TCP_LISTEN:
-		case TCP_SYN_SENT:
-		case TCP_SYN_RECV_PRE:
-			tcp_set_st(sock, TCP_CLOSED);
-			tcp_obj_unlock(sock, TCP_SYNC_STATE);
-			tcp_free_sock(sock);
-			return 0;
-		case TCP_SYN_RECV:
-		case TCP_ESTABIL:
-		case TCP_CLOSEWAIT:
-			skb = alloc_prep_skb(0, 0);
-			if (skb == NULL) {
-				break;
-			}
-			tcp_set_st(sock, sock.sk->state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
-			build_tcp_packet(0, 0, sock, skb);
-			tcph = tcp_hdr(skb);
-			tcph->fin = 1;
-			tcph->ack = 1;
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-			break;
-		}
-	}
-	tcp_obj_unlock(sock, TCP_SYNC_STATE);
-
-	return 0;
-}
-
 /* TODO */
-static int tcp_v4_shutdown(struct sock *sk, int how) {
+static int tcp_shutdown(struct sock *sk, int how) {
 	if (!(how & (SHUT_WR + 1))) {
 		return 0;
 	}
@@ -430,10 +430,10 @@ static int tcp_v4_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
-static void tcp_v4_hash(struct sock *sk) {
+static void tcp_hash(struct sock *sk) {
 	size_t i;
 
-	debug_print(4, "tcp_v4_hash: sk %p\n", sk);
+	debug_print(4, "tcp_hash: sk %p\n", sk);
 
 	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
 	{
@@ -447,10 +447,10 @@ static void tcp_v4_hash(struct sock *sk) {
 	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
 }
 
-static void tcp_v4_unhash(struct sock *sk) {
+static void tcp_unhash(struct sock *sk) {
 	size_t i;
 
-	debug_print(4, "tcp_v4_unhash: sk %p\n", sk);
+	debug_print(4, "tcp_unhash: sk %p\n", sk);
 
 	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
 	{
@@ -464,7 +464,7 @@ static void tcp_v4_unhash(struct sock *sk) {
 	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
 }
 
-static struct sock * tcp_v4_iter(struct sock *prev) {
+static struct sock * tcp_iter(struct sock *prev) {
 	size_t i;
 
 	if (prev == NULL) {
@@ -486,19 +486,19 @@ static struct sock * tcp_v4_iter(struct sock *prev) {
 	return NULL;
 }
 
-const struct sock_ops tcp_prot = {
-		.init       = tcp_v4_init_sock,
-		.connect    = tcp_v4_connect,
-		.listen     = tcp_v4_listen,
-		.accept     = tcp_v4_accept,
-		.sendmsg    = tcp_v4_sendmsg,
-		.recvmsg    = tcp_v4_recvmsg,
-		.close      = tcp_v4_close,
-		.hash       = tcp_v4_hash,
-		.unhash     = tcp_v4_unhash,
-		.iter       = tcp_v4_iter,
-		.shutdown   = tcp_v4_shutdown,
-		.obj_pool   = &tcp_sock_pool
+static const struct sock_ops tcp_prot = {
+	.init     = tcp_init,
+	.close    = tcp_close,
+	.connect  = tcp_connect,
+	.listen   = tcp_listen,
+	.accept   = tcp_accept,
+	.sendmsg  = tcp_sendmsg,
+	.recvmsg  = tcp_recvmsg,
+	.shutdown = tcp_shutdown,
+	.hash     = tcp_hash,
+	.unhash   = tcp_unhash,
+	.iter     = tcp_iter,
+	.obj_pool = &tcp_sock_pool
 };
 
 static int tcp_sock_init(void) {

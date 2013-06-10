@@ -63,43 +63,9 @@ struct family_ops;
  * @param ops protocol specific socket operations
  */
 struct socket {
-#if 0
-	socket_state state;
-#endif
-	int type;
-	unsigned long flags;
-
 	struct sock *sk;
 	struct idx_desc_data *desc_data;
 	struct socket_node *socket_node;
-	const struct family_ops *ops;
-};
-
-struct family_ops {
-	int (*release)(struct sock *sk);
-	int (*bind)(struct sock *sk, const struct sockaddr *addr,
-			socklen_t addrlen);
-	int (*connect)(struct sock *sk, const struct sockaddr *addr,
-			socklen_t addrlen, int flags);
-	int (*listen)(struct sock *sk, int len);
-	int (*accept)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen, int flags, struct sock **out_sk);
-	int (*sendmsg)(struct sock *sk, struct msghdr *msg,
-			int flags);
-	int (*recvmsg)(struct sock *sk, struct msghdr *msg,
-			int flags);
-	int (*shutdown)(struct sock *sk, int how);
-	int (*getsockname)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen);
-	int (*getpeername)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen);
-	int (*getsockopt)(struct sock *sk, int level, int optname,
-			void *optval, socklen_t *optlen);
-	int (*setsockopt)(struct sock *sk, int level, int optname,
-			const void *optval, socklen_t optlen);
-
-
-	bool  (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
 };
 
 extern struct socket * socket_alloc(void);

@@ -14,6 +14,8 @@
 
 #include <stddef.h>
 
+struct sk_buff;
+
 #define EMBOX_NET_PROTO(_type, _handle, _handle_error)      \
 	static int _handle(struct sk_buff *skb);                \
 	__EMBOX_NET_PROTO(_type, _type, _handle, _handle_error, \

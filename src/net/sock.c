@@ -7,6 +7,8 @@
  * @author Ilia Vaprol
  */
 
+#include <embox/net/family.h>
+#include <embox/net/sock.h>
 #include <errno.h>
 #include <hal/ipl.h>
 #include <kernel/event.h>
@@ -66,40 +68,77 @@ static void sock_opt_init(struct sock_opt *opt, int family,
 	opt->so_type = type;
 }
 
+static void sock_init(struct sock *sk, int family, int type,
+		int protocol, const struct family_ops *f_ops,
+		const struct sock_ops *ops) {
+	assert(sk != NULL);
+	assert(f_ops != NULL);
+	assert(ops != NULL);
+
+	sock_opt_init(&sk->opt, family, type, protocol);
+	skb_queue_init(&sk->rx_queue);
+	skb_queue_init(&sk->tx_queue);
+	sk->state = 0;
+	sk->shutdown_flag = 0;
+	sk->f_ops = f_ops;
+	sk->ops = ops;
+	sk->sk_socket = NULL;
+	sk->sk_encap_rcv = NULL;
+	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
+}
+
 int sock_create(int family, int type, int protocol,
-		const struct sock_ops *ops, struct sock **out_sk) {
+		struct sock **out_sk) {
 	int ret;
 	struct sock *new_sk;
+	const struct net_family *nfamily;
+	const struct net_family_type *nftype;
+	const struct net_sock *nsock;
 
-	if ((ops == NULL) || (out_sk == NULL)) {
+	if (out_sk == NULL) {
 		return -EINVAL;
 	}
 
-	new_sk = sock_alloc(ops);
+	nfamily = net_family_lookup(family);
+	if (nfamily == NULL) {
+		return -EAFNOSUPPORT;
+	}
+
+	nftype = net_family_type_lookup(nfamily, type);
+	if (nftype == NULL) {
+		return -EPROTOTYPE;
+	}
+
+	nsock = net_sock_lookup(family, type, protocol);
+	if (nsock == NULL) {
+		return -EPROTONOSUPPORT;
+	}
+
+	new_sk = sock_alloc(nsock->ops);
 	if (new_sk == NULL) {
 		return -ENOMEM;
 	}
 
-	sock_opt_init(&new_sk->opt, family, type, protocol);
-	skb_queue_init(&new_sk->rx_queue);
-	skb_queue_init(&new_sk->tx_queue);
-	new_sk->state = 0;
-	new_sk->shutdown_flag = 0;
-	new_sk->ops = ops;
-	new_sk->sk_socket = NULL;
-	new_sk->sk_encap_rcv = NULL;
-	event_init(&new_sk->sock_is_not_empty, "sock_is_not_empty");
+	sock_init(new_sk, family, type, protocol, nftype->ops,
+			nsock->ops);
 
-	if (ops->init != NULL) {
-		ret = ops->init(new_sk);
+	assert(new_sk->f_ops != NULL);
+	ret = new_sk->f_ops->init(new_sk);
+	if (ret != 0) {
+		sock_release(new_sk);
+		return ret;
+	}
+
+	assert(new_sk->ops != NULL);
+	if (new_sk->ops->init != NULL) {
+		ret = new_sk->ops->init(new_sk);
 		if (ret != 0) {
-			sock_free(new_sk);
+			sock_close(new_sk);
 			return ret;
 		}
 	}
-
-	if (ops->hash != NULL) {
-		ops->hash(new_sk);
+	if (new_sk->ops->hash != NULL) {
+		new_sk->ops->hash(new_sk);
 	}
 
 	*out_sk = new_sk;
@@ -138,4 +177,18 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb) {
 	if (sk->sk_socket != NULL) {
 		idx_io_enable(sk->sk_socket->desc_data, IDX_IO_READING);
 	}
+}
+
+int sock_close(struct sock *sk) {
+	if (sk == NULL) {
+		return -EINVAL;
+	}
+
+	assert(sk->f_ops != NULL);
+	if (sk->f_ops->close == NULL) {
+		sock_release(sk);
+		return 0;
+	}
+
+	return sk->f_ops->close(sk);
 }

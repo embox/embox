@@ -120,8 +120,8 @@ static socket_node_t *get_sock_node_by_src_address(struct socket *sock, struct s
 
 	if (addr) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link) {
-			if (sock->ops->compare_addresses(addr, &node->saddr) &&
-				 (sock->type == node->sock->type))
+			if (sock->sk->f_ops->compare_addresses(addr, &node->saddr) &&
+				 (sock->sk->opt.so_type == node->sock->sk->opt.so_type))
 				return node;
 		}
 	}
@@ -133,7 +133,7 @@ static socket_node_t *get_sock_node_by_dst_address(struct socket *sock, struct s
 
 	if (addr) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link) {
-			if (sock->ops->compare_addresses(addr, &node->daddr))
+			if (sock->sk->f_ops->compare_addresses(addr, &node->daddr))
 				return node;
 		}
 	}
