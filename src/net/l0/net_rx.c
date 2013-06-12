@@ -22,7 +22,7 @@ int netif_receive_skb(struct sk_buff *skb) {
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
 	if (0 != skb->dev->ops->parse_hdr(skb)) {
-		return 0; /* error; can't parse L2 header */
+		return 0; /* error: can't parse L2 header */
 	}
 
 	/* check recipient on L2 layer */

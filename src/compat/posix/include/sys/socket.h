@@ -157,6 +157,8 @@ SO_TYPE    Socket type.
 #define SO_SNDTIMEO     14/* struct timeval *//* Timeout value for a socket send operation. */
 #define SO_TYPE         15/* int *//* Identify socket type ( getsockopt() only). */
 #define SO_BINDTODEVICE 16/* Bind socket to send packet from specified device */
+#define SO_DOMAIN       17 /* int */ /* Socket domain */
+#define SO_PROTOCOL     18 /* int */ /* Socket protocol */
 /* }; */
 
 

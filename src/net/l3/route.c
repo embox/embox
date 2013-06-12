@@ -99,7 +99,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 
 		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
 				(char*)dev, NULL); */
-		wanna_dev = skb->sk->opt.so_bindtodev;
+		wanna_dev = skb->sk->opt.so_bindtodevice;
 	}
 
 	/* SO_BROADCAST assert. */

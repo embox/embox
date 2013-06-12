@@ -38,7 +38,7 @@ typedef struct {
 
 struct sock_opt {
 	int so_acceptconn;
-	struct net_device *so_bindtodev;
+	struct net_device *so_bindtodevice;
 	int so_broadcast;
 	int so_domain;
 	int so_dontroute;
