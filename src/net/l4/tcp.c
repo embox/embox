@@ -1016,9 +1016,9 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t 
 	union sock_pointer sock;
 
 	/* lookup socket with strict addressing */
-	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
+	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
 			sock.sk != NULL;
-			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
+			sock.sk = sock_next(sock.sk)) {
 		if ((sock.inet_sk->rcv_saddr == saddr) &&
 		    (sock.inet_sk->sport == sport) &&
 		    (sock.inet_sk->daddr == daddr) &&
@@ -1028,9 +1028,9 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t 
 	}
 
 	/* lookup another sockets */
-	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
+	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
 			sock.sk != NULL;
-			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
+			sock.sk = sock_next(sock.sk)) {
 		if (((sock.inet_sk->rcv_saddr == INADDR_ANY) ||
 		    (sock.inet_sk->rcv_saddr == saddr)) &&
 		    (sock.inet_sk->sport == sport)) {
@@ -1111,9 +1111,9 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 
 //	debug_print(7, "TIMER: call tcp_timer_handler\n");
 
-	for (sock.sk = tcp_sock_default.sk->ops->iter(NULL);
+	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
 			sock.sk != NULL;
-			sock.sk = tcp_sock_default.sk->ops->iter(sock.sk)) {
+			sock.sk = sock_next(sock.sk)) {
 		if (sock.sk->state == TCP_TIMEWAIT) {
 			tcp_tmr_timewait(sock);
 		} else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
@@ -1137,7 +1137,7 @@ static int tcp_v4_init(void) {
 	if (ret != 0) {
 		return ret;
 	}
-	tcp_sock_default.sk->ops->unhash(tcp_sock_default.sk);
+	sock_unhash(tcp_sock_default.sk);
 
 	return 0;
 }

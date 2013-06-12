@@ -18,6 +18,7 @@
 #include <net/udp.h>
 #include <net/raw.h>
 #include <mem/misc/pool.h>
+#include <util/array.h>
 
 #include <embox/net/sock.h>
 
@@ -25,12 +26,11 @@
 
 #define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_prot);
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_prot);
-
-static struct raw_sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_ops);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_ops);
 
 POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
+static struct sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
 
 /* static method for getting hash table index of a socket */
 static int _raw_get_hash_idx(struct sock *sk) {
@@ -39,7 +39,7 @@ static int _raw_get_hash_idx(struct sock *sk) {
 	assert(sk != NULL);
 
 	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		if (&raw_table[i]->inet.sk == sk) {
+		if (raw_table[i] == sk) {
 			return i;
 		}
 	}
@@ -56,7 +56,7 @@ static struct sock *_raw_lookup(unsigned int sk_hash_idx, unsigned char protocol
 	int i;
 
 	for (i = sk_hash_idx; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		sk_it = &raw_table[i]->inet.sk;
+		sk_it = raw_table[i];
 		inet = inet_sk(sk_it);
 		/* the socket is being searched for by (daddr, saddr, protocol) */
 		if (!(inet->daddr != daddr && inet->daddr) &&
@@ -126,28 +126,6 @@ void raw_err(struct sk_buff *skb, uint32_t info) {
 	} while(sk != NULL);
 }
 
-static void raw_hash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		if (raw_table[i] == NULL) {
-			raw_table[i] = (struct raw_sock *) sk;
-			break;
-		}
-	}
-}
-
-static void raw_unhash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		if (raw_table[i] == (struct raw_sock *)sk) {
-			raw_table[i] = NULL;
-			break;
-		}
-	}
-}
-
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct inet_sock *inet = inet_sk(sk);
 	size_t len = msg->msg_iov->iov_len;
@@ -192,10 +170,10 @@ static int raw_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static const struct sock_ops raw_prot = {
-	.sendmsg = raw_sendmsg,
-	.recvmsg = raw_recvmsg,
-	.hash = raw_hash,
-	.unhash = raw_unhash,
-	.obj_pool   = &raw_sock_pool
+static const struct sock_ops raw_ops = {
+	.sendmsg       = raw_sendmsg,
+	.recvmsg       = raw_recvmsg,
+	.sock_pool     = &raw_sock_pool,
+	.sock_table    = &raw_table[0],
+	.sock_table_sz = ARRAY_SIZE(raw_table)
 };

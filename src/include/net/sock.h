@@ -20,6 +20,7 @@ struct family_ops;
 struct sock_ops;
 struct sk_buff_head;
 struct socket;
+struct sock;
 struct msghdr;
 struct skbuff;
 struct pool;
@@ -109,15 +110,18 @@ struct sock_ops {
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
-	void (*hash)(struct sock *sk);
-	void (*unhash)(struct sock *sk);
-	struct sock * (*iter)(struct sock *sk);
-	struct pool *obj_pool;
+	struct pool *sock_pool;
+	struct sock **sock_table;
+	size_t sock_table_sz;
 };
 
 extern int sock_create(int family, int type, int protocol,
 		struct sock **out_sk);
 extern void sock_release(struct sock *sk);
+extern void sock_hash(struct sock *sk);
+extern void sock_unhash(struct sock *sk);
+extern struct sock * sock_iter(const struct sock_ops *ops);
+extern struct sock * sock_next(const struct sock *sk);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb);
 extern int sock_close(struct sock *sk);
 

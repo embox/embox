@@ -26,7 +26,7 @@ static struct sock * sock_alloc(const struct sock_ops *ops) {
 
 	sp = ipl_save();
 	{
-		sk = pool_alloc(ops->obj_pool);
+		sk = pool_alloc(ops->sock_pool);
 	}
 	ipl_restore(sp);
 
@@ -41,7 +41,7 @@ static void sock_free(struct sock *sk) {
 
 	sp = ipl_save();
 	{
-		pool_free(sk->ops->obj_pool, sk);
+		pool_free(sk->ops->sock_pool, sk);
 	}
 	ipl_restore(sp);
 }
@@ -137,9 +137,8 @@ int sock_create(int family, int type, int protocol,
 			return ret;
 		}
 	}
-	if (new_sk->ops->hash != NULL) {
-		new_sk->ops->hash(new_sk);
-	}
+
+	sock_hash(new_sk);
 
 	*out_sk = new_sk;
 
@@ -151,14 +150,98 @@ void sock_release(struct sock *sk) {
 		return; /* error: invalid argument */
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->unhash != NULL) {
-		sk->ops->unhash(sk);
-	}
-
+	sock_unhash(sk);
 	skb_queue_purge(&sk->rx_queue);
 	skb_queue_purge(&sk->tx_queue);
 	sock_free(sk);
+}
+
+void sock_hash(struct sock *sk) {
+	struct sock **iter;
+
+	if (sk == NULL) {
+		return; /* error: invalid argument */
+	}
+
+	assert(sk->ops != NULL);
+	if (sk->ops->sock_table == NULL) {
+		return; /* error: not supported */
+	}
+
+	for (iter = sk->ops->sock_table;
+			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
+			++iter) {
+		if (*iter == NULL) {
+			*iter = sk;
+			break;
+		}
+	}
+
+	/* error: no memory */
+}
+
+void sock_unhash(struct sock *sk) {
+	struct sock **iter;
+
+	if (sk == NULL) {
+		return; /* error: invalid argument */
+	}
+
+	assert(sk->ops != NULL);
+	if (sk->ops->sock_table == NULL) {
+		return; /* error: not supported */
+	}
+
+	for (iter = sk->ops->sock_table;
+			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
+			++iter) {
+		if (*iter == NULL) {
+			*iter = NULL;
+			break;
+		}
+	}
+
+	/* error: not such entity */
+}
+
+struct sock * sock_iter(const struct sock_ops *ops) {
+	if (ops == NULL) {
+		return NULL; /* error: invalid argument */
+	}
+	else if (ops->sock_table == NULL) {
+		return NULL; /* error: not supported */
+	}
+
+	return *ops->sock_table;
+}
+
+struct sock * sock_next(const struct sock *sk) {
+	struct sock **iter;
+
+	if (sk == NULL) {
+		return NULL; /* error: invalid argument */
+	}
+
+	assert(sk->ops != NULL);
+	if (sk->ops->sock_table == NULL) {
+		return NULL; /* error: not supported */
+	}
+
+	for (iter = sk->ops->sock_table;
+			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
+			++iter) {
+		if (*iter == sk) {
+			break;
+		}
+	}
+
+	while (++iter < sk->ops->sock_table + sk->ops->sock_table_sz) {
+		if (*iter != NULL) {
+			return *iter;
+		}
+	}
+
+	return NULL;
 }
 
 void sock_rcv(struct sock *sk, struct sk_buff *skb) {

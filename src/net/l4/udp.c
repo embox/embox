@@ -17,47 +17,37 @@
 #include <net/inet_sock.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
+#include <framework/net/sock/api.h>
 
 static void udp_err(sk_buff_t *skb, unsigned int info);
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
-struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
-
-/* static method for getting socket index in hash table */
-static int _udp_v4_get_hash_idx(struct sock *sk) {
-	unsigned int i;
-
-	assert(sk != NULL);
-
-	for (i = 0; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		if (&udp_table[i]->inet.sk == sk) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/* static method for looking an sk by index, proto, sourace and dest addresses and ports */
-static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx,
+static struct sock *_udp_v4_lookup(struct sock *sk,
 		unsigned char protocol, unsigned int saddr, unsigned int daddr,
 		unsigned short sport, unsigned short dport, struct net_device *dev) {
 	/* socket for iterating */
-	struct sock * sk_it;
+	const struct net_sock *udp_nsock = net_sock_lookup(
+			AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	struct inet_sock *inet;
-	int i;
 
-	for (i = sk_hash_idx; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		sk_it = &udp_table[i]->inet.sk;
-		inet = inet_sk(sk_it);
-		/* the socket is being searched for by (daddr, saddr, protocol) */
+	if (udp_nsock == NULL) {
+		return NULL; /* error: udp_sock not suported */
+	}
+
+	if (sk == NULL) {
+		sk = sock_iter(udp_nsock->ops);
+	}
+
+	inet = (struct inet_sock *)sk;
+	while (inet != NULL) {
+		inet = (struct inet_sock *)sock_next(&inet->sk);
 		if (!(inet->daddr != daddr && inet->daddr) &&
 		    !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
 		    (inet->sport == sport) && (inet->dport == dport) &&
 			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			 sk_it->opt.so_protocol == protocol){
-			return sk_it;
+			 inet->sk.opt.so_protocol == protocol){
+			return &inet->sk;
 		}
 	}
 
@@ -65,17 +55,21 @@ static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx,
 }
 
 static struct sock * udp_lookup(in_addr_t daddr, __be16 dport) {
+	const struct net_sock *udp_nsock = net_sock_lookup(
+			AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	struct inet_sock *inet;
-	size_t i;
 
-	for (i = 0; i< sizeof udp_table / sizeof udp_table[0]; ++i) {
-		inet = (struct inet_sock *)udp_table[i];
-		if (inet != NULL) {
-			if (((inet->rcv_saddr == INADDR_ANY) ||
-			    (inet->rcv_saddr == daddr)) &&
-			    (inet->sport == dport)) {
-				return (struct sock *)inet;
-			}
+	if (udp_nsock == NULL) {
+		return NULL; /* error: udp_sock not suported */
+	}
+
+	for (inet = (struct inet_sock *)sock_iter(udp_nsock->ops);
+			inet != NULL;
+			inet = (struct inet_sock *)sock_next(&inet->sk)) {
+		if (((inet->rcv_saddr == INADDR_ANY) ||
+		    (inet->rcv_saddr == daddr)) &&
+		    (inet->sport == dport)) {
+			return &inet->sk;
 		}
 	}
 
@@ -126,7 +120,6 @@ static void udp_err(sk_buff_t *skb, unsigned int info) {
 	struct sock *sk;
 	struct iphdr *emb_pack_iphdr;
 	struct udphdr *emb_pack_udphdr;
-	int sk_idx = 0;
 
 	/* size_t i; */
 	/* __be16 port; */
@@ -137,18 +130,14 @@ static void udp_err(sk_buff_t *skb, unsigned int info) {
 			+ ICMP_HEADER_SIZE + IP_HEADER_SIZE(emb_pack_iphdr));
 
 	/* notify all sockets matching source, dest address, protocol and ports*/
+	sk = NULL;
 	do {
-		sk = _udp_v4_lookup(sk_idx, emb_pack_iphdr->proto, emb_pack_iphdr->saddr,
+		sk = _udp_v4_lookup(sk, emb_pack_iphdr->proto, emb_pack_iphdr->saddr,
 				emb_pack_iphdr->daddr, emb_pack_udphdr->source, emb_pack_udphdr->dest,
 				skb->dev);
 		if (sk != NULL) { /* notify socket about an error */
 			ip_v4_icmp_err_notify(sk, skb->h.icmph->type, skb->h.icmph->code);
 			/* do something else - specific for udp sockets ? */
-			sk_idx = _udp_v4_get_hash_idx(sk) + 1;
 		}
 	} while(sk != NULL);
-}
-
-void * get_udp_sockets(void) {
-	return (void *)udp_table;
 }

@@ -20,10 +20,12 @@
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
 #include <mem/misc/pool.h>
+#include <util/array.h>
 
-EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_prot);
+EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_ops);
 
 POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
+static struct sock *udp_sock_table[MODOPS_AMOUNT_UDP_SOCK];
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {
@@ -83,32 +85,10 @@ static int udp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static void udp_hash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		if (udp_table[i] == NULL) {
-			udp_table[i] = (struct udp_sock *)sk;
-			break;
-		}
-	}
-}
-
-static void udp_unhash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		if (udp_table[i] == (struct udp_sock *) sk) {
-			udp_table[i] = NULL;
-			break;
-		}
-	}
-}
-
-static const struct sock_ops udp_prot = {
-	.sendmsg     = udp_sendmsg,
-	.recvmsg     = udp_recvmsg,
-	.hash        = udp_hash,
-	.unhash      = udp_unhash,
-	.obj_pool   = &udp_sock_pool
+static const struct sock_ops udp_ops = {
+	.sendmsg       = udp_sendmsg,
+	.recvmsg       = udp_recvmsg,
+	.sock_pool     = &udp_sock_pool,
+	.sock_table    = &udp_sock_table[0],
+	.sock_table_sz = ARRAY_SIZE(udp_sock_table)
 };

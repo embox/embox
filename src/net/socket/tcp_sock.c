@@ -31,12 +31,10 @@
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
-static struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
-
-EMBOX_NET_SOCK_INIT(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_prot, tcp_sock_init);
+EMBOX_NET_SOCK_INIT(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_ops, tcp_sock_init);
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-
+static struct sock *tcp_sock_table[MODOPS_AMOUNT_TCP_SOCK];
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -430,79 +428,21 @@ static int tcp_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
-static void tcp_hash(struct sock *sk) {
-	size_t i;
-
-	debug_print(4, "tcp_hash: sk %p\n", sk);
-
-	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-	{
-		for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-			if (tcp_table[i] == NULL) {
-				tcp_table[i] = (struct tcp_sock *)sk;
-				break;
-			}
-		}
-	}
-	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-}
-
-static void tcp_unhash(struct sock *sk) {
-	size_t i;
-
-	debug_print(4, "tcp_unhash: sk %p\n", sk);
-
-	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-	{
-		for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-			if (tcp_table[i] == (struct tcp_sock *)sk) {
-				tcp_table[i] = NULL;
-				break;
-			}
-		}
-	}
-	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-}
-
-static struct sock * tcp_iter(struct sock *prev) {
-	size_t i;
-
-	if (prev == NULL) {
-		return (struct sock *)tcp_table[0];
-	}
-
-	for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-		if ((struct sock *)tcp_table[i] == prev) {
-			break;
-		}
-	}
-
-	for (++i; i < ARRAY_SIZE(tcp_table); ++i) {
-		if (tcp_table[i] != NULL) {
-			return (struct sock *)tcp_table[i];
-		}
-	}
-
-	return NULL;
-}
-
-static const struct sock_ops tcp_prot = {
-	.init     = tcp_init,
-	.close    = tcp_close,
-	.connect  = tcp_connect,
-	.listen   = tcp_listen,
-	.accept   = tcp_accept,
-	.sendmsg  = tcp_sendmsg,
-	.recvmsg  = tcp_recvmsg,
-	.shutdown = tcp_shutdown,
-	.hash     = tcp_hash,
-	.unhash   = tcp_unhash,
-	.iter     = tcp_iter,
-	.obj_pool = &tcp_sock_pool
+static const struct sock_ops tcp_ops = {
+	.init          = tcp_init,
+	.close         = tcp_close,
+	.connect       = tcp_connect,
+	.listen        = tcp_listen,
+	.accept        = tcp_accept,
+	.sendmsg       = tcp_sendmsg,
+	.recvmsg       = tcp_recvmsg,
+	.shutdown      = tcp_shutdown,
+	.sock_pool     = &tcp_sock_pool,
+	.sock_table    = &tcp_sock_table[0],
+	.sock_table_sz = ARRAY_SIZE(tcp_sock_table)
 };
 
 static int tcp_sock_init(void) {
-	/* Init global variables */
-	memset(tcp_table, 0, sizeof tcp_table);
+	memset(tcp_sock_table, 0, sizeof tcp_sock_table);
 	return 0;
 }

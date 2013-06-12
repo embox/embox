@@ -53,6 +53,7 @@ static void socket_free(struct socket *sock) {
 	}
 	ipl_restore(sp);
 }
+
 static int ksocket_ext(int family, int type, int protocol,
 		struct sock *sk, struct socket **out_sock) {
 	int ret;

@@ -41,8 +41,4 @@ static inline struct udp_sock * udp_sk(struct sock *sk) {
 	return (struct udp_sock *)sk;
 }
 
-extern void *get_udp_sockets(void);
-
-extern struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
-
 #endif /* NET_UDP_H_ */
