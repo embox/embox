@@ -282,8 +282,14 @@ static int tcp_accept(struct sock *sk,
 				return -ETIMEDOUT;
 			}
 		}
+
+		if (tcp_st_status(newsock) == TCP_ST_NOTEXIST) {
+			tcp_free_sock(newsock);
+			return -ECONNRESET;
+		}
+
 		*newsk = newsock.sk;
-		return tcp_st_status(newsock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
+		return 0;
 		/* case TCP_LISTEN */
 	} /* switch(sock.sk->state) */
 }
