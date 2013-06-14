@@ -232,6 +232,7 @@ int klisten(struct socket *sock, int backlog) {
 	if (sock == NULL) {
 		return -EBADF;
 	}
+	backlog = backlog > 0 ? backlog : 1;
 
 	assert(sr_socket_exists(sock));
 	assert(sock->sk != NULL);
@@ -249,7 +250,7 @@ int klisten(struct socket *sock, int backlog) {
 	}
 
 	assert(sock->sk != NULL);
-	ret = sock->sk->f_ops->listen(sock->sk, backlog >= 0 ? backlog : 0);
+	ret = sock->sk->f_ops->listen(sock->sk, backlog);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_listen",
 				"error setting socket in listening state");
@@ -258,6 +259,7 @@ int klisten(struct socket *sock, int backlog) {
 	}
 
 	sk_set_connection_state(sock, LISTENING);
+	sock->sk->opt.so_acceptconn = 1;
 
 	return 0;
 }
