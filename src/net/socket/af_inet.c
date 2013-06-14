@@ -122,7 +122,7 @@ static int inet_bind_local(struct sock *sk) {
 	}
 
 	/* addr_in.sin_family = AF_INET; */
-	addr_in.sin_addr.s_addr = INADDR_LOOPBACK;
+	addr_in.sin_addr.s_addr = INADDR_ANY;
 
 	switch (sk->opt.so_protocol) {
 	default:
