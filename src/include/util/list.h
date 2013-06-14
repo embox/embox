@@ -240,6 +240,37 @@ extern struct list_link *list_remove_last_link(struct list *list);
 #define list_pop_element  list_remove_last_element
 #define list_pop_link     list_remove_last_link
 
+/* Getter of the next element (null if none). */
+#define list_next(linkage_t, element, list)                      \
+	member_to_object_or_null(                                    \
+			list_next_link(member_of_object(element, linkage_t), \
+					list),                                       \
+				linkage_t)
+
+#define list_next_element(element, list, element_type, link_member) \
+	member_cast_out_or_null(                                        \
+		list_next_link(member_cast_in(element, link_member), list), \
+				element_type, link_member)
+
+extern struct list_link * list_next_link(struct list_link *link,
+		struct list *list);
+
+/* Getter of the previous element (null if none). */
+#define list_prev(linkage_t, element, list)                      \
+	member_to_object_or_null(                                    \
+			list_prev_link(member_of_object(element, linkage_t), \
+					list),                                       \
+				linkage_t)
+
+#define list_prev_element(element, list, element_type, link_member) \
+	member_cast_out_or_null(                                        \
+		list_prev_link(member_cast_in(element, link_member), list), \
+				element_type, link_member)
+
+extern struct list_link * list_prev_link(struct list_link *link,
+		struct list *list);
+
+
 
 extern void list_bulk_add_first(struct list *from_list, struct list *to_list);
 

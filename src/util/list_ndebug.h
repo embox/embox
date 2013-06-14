@@ -65,6 +65,16 @@ static inline struct list_link *list_last_link(struct list *list) {
 	return last != sentinel ? last : NULL;
 }
 
+static inline struct list_link * list_next_link(struct list_link *link,
+		struct list *list) {
+	return link != list_last_link(list) ? link->next : NULL;
+}
+
+static inline struct list_link * list_prev_link(struct list_link *link,
+		struct list *list) {
+	return link != list_first_link(list) ? link->prev : NULL;
+}
+
 static inline void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
 	struct list_link *sentinel = &list->sentinel;
