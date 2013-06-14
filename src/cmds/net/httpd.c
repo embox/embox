@@ -407,7 +407,7 @@ static int httpd(int argc, char **argv) {
 		return res;
 	}
 
-	res = listen(host, 1);
+	res = listen(host, 3);
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		return res;

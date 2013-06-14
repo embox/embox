@@ -92,8 +92,8 @@ void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //default:
 //	case 0:  /* default */
-	case 1:  /* in/out package print */
-	case 2:  /* socket state */
+//	case 1:  /* in/out package print */
+//	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
@@ -101,7 +101,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
-	case 10: /* pre_process */
+//	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
@@ -518,6 +518,18 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 	return TCP_RET_FLUSH;
 }
 
+static size_t tcp_conn_wait_len(union sock_pointer sock) {
+	union sock_pointer tmp;
+	size_t conn_wait_len;
+
+	conn_wait_len = 0;
+	list_for_each_entry(tmp.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
+		++conn_wait_len;
+	}
+
+	return conn_wait_len;
+}
+
 static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	int ret;
@@ -527,6 +539,16 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 	assert(sock.sk->state == TCP_LISTEN);
 
 	if (tcph->syn) {
+		/* Check max length of accept queue */
+		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+		{
+			if (tcp_conn_wait_len(sock) >= sock.tcp_sk->conn_wait_max) {
+				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+				return TCP_RET_DROP;
+			}
+		}
+		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+
 		/* Allocate new socket for this connection */
 		ret = sock_create(sock.sk->opt.so_domain,
 				SOCK_STREAM, IPPROTO_TCP, &newsock.sk);
@@ -546,6 +568,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 			tcp_handle(newsock, *pskb, tcp_st_handler[TCP_SYN_RECV_PRE]);
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_STATE);
+		/* Save new socket to accept queue */
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
 			list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
@@ -557,6 +580,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 		return TCP_RET_OK;
 	}
+
 	return TCP_RET_DROP;
 }
 

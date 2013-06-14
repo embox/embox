@@ -49,6 +49,7 @@ static int tcp_init(struct sock *sk) {
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
+	sock.tcp_sk->conn_wait_max = 0;
 	event_init(&sock.tcp_sk->new_conn, "new_conn");
 	sock.tcp_sk->lock = 0;
 	timerclear(&sock.tcp_sk->last_activity);
@@ -208,7 +209,12 @@ static int tcp_listen(struct sock *sk, int backlog) {
 			break;
 		case TCP_CLOSED:
 		case TCP_LISTEN:
+			if (backlog <= 0) {
+				ret = -EINVAL; /* error: invalid backlog */
+				break;
+			}
 			tcp_set_st(sock, TCP_LISTEN);
+			sock.tcp_sk->conn_wait_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -245,7 +251,6 @@ static int tcp_accept(struct sock *sk,
 						sched_unlock();
 						return -EAGAIN;
 					}
-
 					EVENT_WAIT(&sock.tcp_sk->new_conn, 0, EVENT_TIMEOUT_INFINITE); /* TODO: event condition */
 				}
 			} tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
