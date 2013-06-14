@@ -215,7 +215,7 @@ void sock_unhash(struct sock *sk) {
 	for (iter = sk->ops->sock_table;
 			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
 			++iter) {
-		if (*iter == NULL) {
+		if (*iter == sk) {
 			*iter = NULL;
 			break;
 		}
