@@ -74,12 +74,15 @@ static int ksocket_ext(int family, int type, int protocol,
 		}
 	}
 
+	sk->sk_socket = new_sock;
+
 	new_sock->sk = sk;
 	new_sock->desc_data = NULL;
 	new_sock->socket_node = NULL;
 
 	ret = sr_add_socket_to_registry(new_sock);
 	if (ret != 0) {
+		socket_free(new_sock);
 		sock_close(sk);
 		return ret;
 	}
