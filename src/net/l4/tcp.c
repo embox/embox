@@ -1132,12 +1132,11 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	ret = sock_create(AF_INET, SOCK_STREAM, IPPROTO_TCP,
+	ret = sock_create_ext(AF_INET, SOCK_STREAM, IPPROTO_TCP,
 			&tcp_sock_default.sk);
 	if (ret != 0) {
 		return ret;
 	}
-	sock_unhash(tcp_sock_default.sk);
 
 	return 0;
 }

@@ -87,7 +87,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
 }
 
-int sock_create(int family, int type, int protocol,
+int sock_create_ext(int family, int type, int protocol,
 		struct sock **out_sk) {
 	int ret;
 	struct sock *new_sk;
@@ -137,6 +137,26 @@ int sock_create(int family, int type, int protocol,
 			return ret;
 		}
 	}
+
+	*out_sk = new_sk;
+
+	return 0;
+}
+
+int sock_create(int family, int type, int protocol,
+		struct sock **out_sk) {
+	int ret;
+	struct sock *new_sk;
+
+	if (out_sk == NULL) {
+		return -EINVAL;
+	}
+
+	ret = sock_create_ext(family, type, protocol, &new_sk);
+	if (ret != 0) {
+		return ret;
+	}
+	assert(new_sk != NULL);
 
 	sock_hash(new_sk);
 

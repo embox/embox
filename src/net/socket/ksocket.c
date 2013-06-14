@@ -198,13 +198,18 @@ int kconnect(struct socket *sock, const struct sockaddr *addr,
 		return -ENOSYS;
 	}
 
-#if 0
 	if (!sk_is_bound(sock)) {
-		/* TODO */
-		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
-		return -EINVAL;
+		/* FIXME */
+		if (sock->sk->f_ops->bind_local == NULL) {
+			return -EINVAL;
+		}
+		ret = sock->sk->f_ops->bind_local(sock->sk);
+		if (ret != 0) {
+			return ret;
+		}
+		/* sk_set_connection_state(sock, BOUND); */
+		sr_set_saddr(sock, addr);
 	}
-#endif
 
 	sk_set_connection_state(sock, CONNECTING);
 

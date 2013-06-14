@@ -36,7 +36,6 @@ EMBOX_NET_FAMILY(AF_INET, inet_types);
 
 static int inet_init(struct sock *sock) {
 	struct inet_sock *inet_sk;
-	int port;
 
 	if (sock == NULL) {
 		return -EINVAL;
@@ -52,19 +51,6 @@ static int inet_init(struct sock *sock) {
 	inet_sk->sport = 0;
 	inet_sk->daddr = 0;
 	inet_sk->dport = 0;
-
-	switch (inet_sk->sk.opt.so_protocol) {
-	case IPPROTO_TCP:
-	case IPPROTO_UDP:
-		port = ip_port_get_free(inet_sk->sk.opt.so_protocol);
-		if (port < 0) {
-			sock_release(&inet_sk->sk);
-			return port;
-		}
-		inet_sk->sport = htons((unsigned short)port);
-		inet_sk->sport_is_alloced = 1;
-		break;
-	}
 
 	return 0;
 }
@@ -87,10 +73,19 @@ static int inet_close(struct sock *sk) {
 	return sk->ops->close(sk);
 }
 
+static void __inet_bind(struct inet_sock *inet_sk,
+		const struct sockaddr_in *addr_in) {
+	assert(inet_sk != NULL);
+	assert(addr_in != NULL);
+
+	inet_sk->rcv_saddr = addr_in->sin_addr.s_addr;
+	inet_sk->sport_is_alloced = 1;
+	inet_sk->sport = addr_in->sin_port;
+}
+
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
-	struct inet_sock *inet_sk;
 	const struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL)
@@ -113,9 +108,36 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return ret;
 	}
 
-	inet_sk = (struct inet_sock *)sk;
-	inet_sk->rcv_saddr = addr_in->sin_addr.s_addr;
-	inet_sk->sport = addr_in->sin_port;
+	__inet_bind((struct inet_sock *)sk, addr_in);
+
+	return 0;
+}
+
+static int inet_bind_local(struct sock *sk) {
+	int port;
+	struct sockaddr_in addr_in;
+
+	if (sk == NULL) {
+		return -EINVAL;
+	}
+
+	/* addr_in.sin_family = AF_INET; */
+	addr_in.sin_addr.s_addr = INADDR_LOOPBACK;
+
+	switch (sk->opt.so_protocol) {
+	default:
+		addr_in.sin_port = 0;
+	case IPPROTO_TCP:
+	case IPPROTO_UDP:
+		port = ip_port_get_free(sk->opt.so_protocol);
+		if (port < 0) {
+			return port;
+		}
+		addr_in.sin_port = htons((unsigned short)port);
+		break;
+	}
+
+	__inet_bind((struct inet_sock *)sk, &addr_in);
 
 	return 0;
 }
@@ -374,6 +396,7 @@ static const struct family_ops inet_dgram_ops = {
 	.init              = inet_init,
 	.close             = inet_close,
 	.bind              = inet_bind,
+	.bind_local        = inet_bind_local,
 	.connect           = inet_nonstream_connect,
 	.listen            = inet_listen,
 	.accept            = inet_accept,
@@ -391,6 +414,7 @@ static const struct family_ops inet_raw_ops = {
 	.init              = inet_init,
 	.close             = inet_close,
 	.bind              = inet_bind,
+	.bind_local        = inet_bind_local,
 	.connect           = inet_nonstream_connect,
 	.listen            = inet_listen,
 	.accept            = inet_accept,
@@ -408,6 +432,7 @@ static const struct family_ops inet_stream_ops = {
 	.init              = inet_init,
 	.close             = inet_close,
 	.bind              = inet_bind,
+	.bind_local        = inet_bind_local,
 	.connect           = inet_stream_connect,
 	.listen            = inet_listen,
 	.accept            = inet_accept,

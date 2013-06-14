@@ -74,6 +74,7 @@ struct family_ops {
 	int (*close)(struct sock *sk);
 	int (*bind)(struct sock *sk, const struct sockaddr *addr,
 			socklen_t addrlen);
+	int (*bind_local)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
 			socklen_t addrlen, int flags);
 	int (*listen)(struct sock *sk, int len);
@@ -116,6 +117,8 @@ struct sock_ops {
 };
 
 extern int sock_create(int family, int type, int protocol,
+		struct sock **out_sk);
+extern int sock_create_ext(int family, int type, int protocol,
 		struct sock **out_sk);
 extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
