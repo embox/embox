@@ -23,7 +23,7 @@ struct __list_link {
 	}
 
 static void __list_link_init(struct __list_link *link);
-static int __list_link_alone(struct __list_link *link);
+static int __list_link_alone(const struct __list_link *link);
 static void __list_bind(struct __list_link *prev, struct __list_link *next);
 static void __list_insert_chain(struct __list_link *first,
 		struct __list_link *last, struct __list_link *prev,
@@ -49,7 +49,7 @@ static inline void __list_bind(struct __list_link *prev,
 	__list_check(prev)->next = next;
 }
 
-static inline int __list_link_alone(struct __list_link *link) {
+static inline int __list_link_alone(const struct __list_link *link) {
 	return link == __list_check(link)->next;
 }
 

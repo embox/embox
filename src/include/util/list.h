@@ -118,7 +118,7 @@ extern int list_is_empty(struct list *list);
 #define list_alone_element(element, link_member) \
 	list_alone_link(member_cast_in(element, link_member))
 
-extern int list_alone_link(struct list_link *link);
+extern int list_alone_link(const struct list_link *link);
 
 /* Unlinking an element from its list. */
 
@@ -252,7 +252,7 @@ extern struct list_link *list_remove_last_link(struct list *list);
 		list_next_link(member_cast_in(element, link_member), list), \
 				element_type, link_member)
 
-extern struct list_link * list_next_link(struct list_link *link,
+extern struct list_link * list_next_link(const struct list_link *link,
 		struct list *list);
 
 /* Getter of the previous element (null if none). */

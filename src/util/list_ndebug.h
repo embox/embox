@@ -47,7 +47,7 @@ static inline struct list *list_init(struct list *list) {
 	return list;
 }
 
-static inline int list_alone_link(struct list_link *link) {
+static inline int list_alone_link(const struct list_link *link) {
 	return link == link->next;
 }
 
@@ -65,7 +65,7 @@ static inline struct list_link *list_last_link(struct list *list) {
 	return last != sentinel ? last : NULL;
 }
 
-static inline struct list_link * list_next_link(struct list_link *link,
+static inline struct list_link * list_next_link(const struct list_link *link,
 		struct list *list) {
 	return link != list_last_link(list) ? link->next : NULL;
 }
