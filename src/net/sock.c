@@ -75,6 +75,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	assert(f_ops != NULL);
 	assert(ops != NULL);
 
+	list_link_init(&sk->lnk);
 	sock_opt_init(&sk->opt, family, type, protocol);
 	skb_queue_init(&sk->rx_queue);
 	skb_queue_init(&sk->tx_queue);
@@ -177,91 +178,71 @@ void sock_release(struct sock *sk) {
 }
 
 void sock_hash(struct sock *sk) {
-	struct sock **iter;
-
 	if (sk == NULL) {
 		return; /* error: invalid argument */
 	}
+	else if (!list_alone_element(sk, lnk)) {
+		return; /* error: already in hash */
+	}
 
 	assert(sk->ops != NULL);
-	if (sk->ops->sock_table == NULL) {
-		return; /* error: not supported */
-	}
-
-	for (iter = sk->ops->sock_table;
-			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
-			++iter) {
-		if (*iter == NULL) {
-			*iter = sk;
-			break;
-		}
-	}
-
-	/* error: no memory */
+	list_add_last_element(sk, sk->ops->sock_list, lnk);
 }
 
 void sock_unhash(struct sock *sk) {
-	struct sock **iter;
-
 	if (sk == NULL) {
 		return; /* error: invalid argument */
 	}
-
-	assert(sk->ops != NULL);
-	if (sk->ops->sock_table == NULL) {
-		return; /* error: not supported */
+	else if (list_alone_element(sk, lnk)) {
+		return; /* error: not hashed */
 	}
 
-	for (iter = sk->ops->sock_table;
-			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
-			++iter) {
-		if (*iter == sk) {
-			*iter = NULL;
-			break;
-		}
-	}
-
-	/* error: not such entity */
+	list_unlink_element(sk, lnk);
 }
 
 struct sock * sock_iter(const struct sock_ops *ops) {
 	if (ops == NULL) {
 		return NULL; /* error: invalid argument */
 	}
-	else if (ops->sock_table == NULL) {
-		return NULL; /* error: not supported */
-	}
 
-	return *ops->sock_table;
+	return list_first_element(ops->sock_list, struct sock, lnk);
 }
 
 struct sock * sock_next(const struct sock *sk) {
-	struct sock **iter;
-
 	if (sk == NULL) {
 		return NULL; /* error: invalid argument */
 	}
+	else if (list_alone_element(sk, lnk)) {
+		return NULL; /* error: not hashed */
+	}
 
 	assert(sk->ops != NULL);
-	if (sk->ops->sock_table == NULL) {
-		return NULL; /* error: not supported */
+
+	return list_next_element(sk, sk->ops->sock_list,
+			struct sock, lnk);
+}
+
+struct sock * sock_lookup(const struct sock *sk,
+		const struct sock_ops *ops,
+		sock_lookup_tester_ft tester,
+		const struct sk_buff *skb) {
+	struct sock *next_sk;
+
+	if ((ops == NULL) || (tester == NULL)) {
+		return NULL; /* error: invalid arguments */
 	}
 
-	for (iter = sk->ops->sock_table;
-			iter < sk->ops->sock_table + sk->ops->sock_table_sz;
-			++iter) {
-		if (*iter == sk) {
-			break;
+	next_sk = sk != NULL ? sock_next(sk) : sock_iter(ops);
+
+	while (next_sk != NULL) {
+		if (tester(next_sk, skb)) {
+			return next_sk;
 		}
+
+		next_sk = sock_next(next_sk);
 	}
 
-	while (++iter < sk->ops->sock_table + sk->ops->sock_table_sz) {
-		if (*iter != NULL) {
-			return *iter;
-		}
-	}
-
-	return NULL;
+	return NULL; /* error: no such entity */
 }
 
 void sock_rcv(struct sock *sk, struct sk_buff *skb) {

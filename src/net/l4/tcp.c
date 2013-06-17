@@ -92,13 +92,13 @@ void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //default:
 //	case 0:  /* default */
-//	case 1:  /* in/out package print */
+	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
-	case 3:  /* global functions */
+//	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
-//	case 7:  /* tcp_default_timer action */
+	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
 //	case 10: /* pre_process */
@@ -1036,33 +1036,35 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 	return ret;
 }
 
-static struct tcp_sock * tcp_lookup(in_addr_t saddr, in_port_t sport, in_addr_t daddr, in_port_t dport) {
-	union sock_pointer sock;
+static int tcp_rcv_tester_strict(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet_sock *inet_sk;
 
-	/* lookup socket with strict addressing */
-	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
-			sock.sk != NULL;
-			sock.sk = sock_next(sock.sk)) {
-		if ((sock.inet_sk->rcv_saddr == saddr) &&
-		    (sock.inet_sk->sport == sport) &&
-		    (sock.inet_sk->daddr == daddr) &&
-		    (sock.inet_sk->dport == dport)) {
-			return sock.tcp_sk;
-		}
-	}
+	inet_sk = (const struct inet_sock *)sk;
+	assert(inet_sk != NULL);
 
-	/* lookup another sockets */
-	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
-			sock.sk != NULL;
-			sock.sk = sock_next(sock.sk)) {
-		if (((sock.inet_sk->rcv_saddr == INADDR_ANY) ||
-		    (sock.inet_sk->rcv_saddr == saddr)) &&
-		    (sock.inet_sk->sport == sport)) {
-			return sock.tcp_sk;
-		}
-	}
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	assert(skb->h.th != NULL);
+	return (inet_sk->rcv_saddr == skb->nh.iph->daddr)
+			&& (inet_sk->sport == skb->h.th->dest)
+			&& (inet_sk->daddr == skb->nh.iph->saddr)
+			&& (inet_sk->dport == skb->h.th->source);
+};
 
-	return NULL;
+static int tcp_rcv_tester_soft(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet_sock *inet_sk;
+
+	inet_sk = (const struct inet_sock *)sk;
+	assert(inet_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	assert(skb->h.th != NULL);
+	return ((inet_sk->rcv_saddr == skb->nh.iph->daddr)
+				|| (inet_sk->rcv_saddr == INADDR_ANY))
+			&& (inet_sk->sport == skb->h.th->dest);
 }
 
 /**
@@ -1090,16 +1092,17 @@ static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 }
 
 static int tcp_v4_rcv(struct sk_buff *skb) {
-	iphdr_t *iph;
-	tcphdr_t *tcph;
-	union sock_pointer sock;
 	int ret;
+	union sock_pointer sock;
 
 	assert(skb != NULL);
 
-	iph = ip_hdr(skb);
-	tcph = tcp_hdr(skb);
-	sock.tcp_sk = tcp_lookup(iph->daddr, tcph->dest, iph->saddr, tcph->source);
+	sock.sk = sock_lookup(NULL, tcp_sock_ops,
+			tcp_rcv_tester_strict, skb);
+	if (sock.sk == NULL) {
+		sock.sk = sock_lookup(NULL, tcp_sock_ops,
+				tcp_rcv_tester_soft, skb);
+	}
 
 	if ((sock.sk != NULL) && (sock.sk->sk_encap_rcv != NULL)) {
 		ret = sock.sk->sk_encap_rcv(sock.sk, skb);
@@ -1133,11 +1136,9 @@ static void tcp_tmr_rexmit(union sock_pointer sock) {
 static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 	union sock_pointer sock;
 
-//	debug_print(7, "TIMER: call tcp_timer_handler\n");
+	debug_print(7, "TIMER: call tcp_timer_handler\n");
 
-	for (sock.sk = sock_iter(tcp_sock_default.sk->ops);
-			sock.sk != NULL;
-			sock.sk = sock_next(sock.sk)) {
+	sock_foreach(sock.sk, tcp_sock_ops) {
 		if (sock.sk->state == TCP_TIMEWAIT) {
 			tcp_tmr_timewait(sock);
 		} else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {

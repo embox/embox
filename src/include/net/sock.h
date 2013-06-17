@@ -15,6 +15,7 @@
 #include <kernel/event.h>
 #include <net/skbuff.h>
 #include <sys/time.h>
+#include <util/list.h>
 
 struct family_ops;
 struct sock_ops;
@@ -56,6 +57,7 @@ struct sock_opt {
 };
 
 struct sock {
+	struct list_link lnk;
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
@@ -112,9 +114,11 @@ struct sock_ops {
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
-	struct sock **sock_table;
-	size_t sock_table_sz;
+	struct list *sock_list;
 };
+
+typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
+		const struct sk_buff *skb);
 
 extern int sock_create(int family, int type, int protocol,
 		struct sock **out_sk);
@@ -125,7 +129,13 @@ extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
 extern struct sock * sock_iter(const struct sock_ops *ops);
 extern struct sock * sock_next(const struct sock *sk);
+extern struct sock * sock_lookup(const struct sock *sk,
+		const struct sock_ops *ops, sock_lookup_tester_ft tester,
+		const struct sk_buff *skb);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb);
 extern int sock_close(struct sock *sk);
+
+#define sock_foreach(sk, ops) \
+	list_foreach(sk, ops->sock_list, lnk)
 
 #endif /* NET_SOCK_H_ */

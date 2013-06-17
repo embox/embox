@@ -41,4 +41,6 @@ static inline struct udp_sock * udp_sk(struct sock *sk) {
 	return (struct udp_sock *)sk;
 }
 
+extern const struct sock_ops *const udp_sock_ops;
+
 #endif /* NET_UDP_H_ */

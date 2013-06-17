@@ -22,10 +22,10 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
-EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_ops);
+static const struct sock_ops udp_sock_ops_struct;
+const struct sock_ops *const udp_sock_ops = &udp_sock_ops_struct;
 
-POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
-static struct sock *udp_sock_table[MODOPS_AMOUNT_UDP_SOCK];
+EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_sock_ops_struct);
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {
@@ -85,10 +85,12 @@ static int udp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static const struct sock_ops udp_ops = {
-	.sendmsg       = udp_sendmsg,
-	.recvmsg       = udp_recvmsg,
-	.sock_pool     = &udp_sock_pool,
-	.sock_table    = &udp_sock_table[0],
-	.sock_table_sz = ARRAY_SIZE(udp_sock_table)
+POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
+static LIST_DEF(udp_sock_list);
+
+static const struct sock_ops udp_sock_ops_struct = {
+	.sendmsg   = udp_sendmsg,
+	.recvmsg   = udp_recvmsg,
+	.sock_pool = &udp_sock_pool,
+	.sock_list = &udp_sock_list
 };

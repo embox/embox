@@ -19,6 +19,7 @@
 #include <net/raw.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
+#include <util/list.h>
 
 #include <embox/net/sock.h>
 
@@ -26,104 +27,78 @@
 
 #define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_ops);
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_ops);
+static const struct sock_ops raw_sock_ops_struct;
+const struct sock_ops *const raw_sock_ops = &raw_sock_ops_struct;
 
-POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
-static struct sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_sock_ops_struct);
 
-/* static method for getting hash table index of a socket */
-static int _raw_get_hash_idx(struct sock *sk) {
-	unsigned int i;
-
-	assert(sk != NULL);
-
-	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		if (raw_table[i] == sk) {
-			return i;
-		}
-	}
-
-	return -1;
+static int raw_rcv_tester(const struct sock *sk,
+		const struct sk_buff *skb) {
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	return sk->opt.so_protocol == skb->nh.iph->proto;
 }
-
-/* looking up for a socket by index in table, proto, source and dest addresses */
-static struct sock *_raw_lookup(unsigned int sk_hash_idx, unsigned char protocol,
-		unsigned int saddr, unsigned int daddr, struct net_device *dev) {
-	/* socket for iterating */
-	struct sock * sk_it;
-	struct inet_sock *inet;
-	int i;
-
-	for (i = sk_hash_idx; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		sk_it = raw_table[i];
-		inet = inet_sk(sk_it);
-		/* the socket is being searched for by (daddr, saddr, protocol) */
-		if (!(inet->daddr != daddr && inet->daddr) &&
-			 !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
-			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			 sk_it->opt.so_protocol == protocol) {
-			return sk_it;
-		}
-	}
-
-	return NULL;
-}
-
-#if 0
-static struct sock *raw_lookup(__u8 proto) {
-	struct sock *sk;
-	size_t i;
-	for (i = 0; i < sizeof raw_hash / sizeof raw_hash[0]; i++) {
-		sk = (struct sock*) raw_hash[i];
-		if (sk && sk->sk_protocol == proto) {
-			return sk;
-		}
-	}
-	return NULL;
-}
-#endif
 
 int raw_rcv(struct sk_buff *skb) {
-	size_t i;
 	struct sock *sk;
 	struct sk_buff *cloned;
 
-	assert(skb != NULL);
+	sk = NULL;
 
-	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
-		sk = (struct sock *)raw_table[i];
-		if ((sk != NULL) && (sk->opt.so_protocol == skb->nh.iph->proto)) {
-			cloned = skb_share(skb, SKB_SHARE_DATA); // TODO without skb_clone()
-			if (cloned == NULL) {
-				continue;
-				//return -ENOMEM;
-			}
-			sock_rcv(sk, cloned);
+	while (1) {
+		sk = sock_lookup(sk, raw_sock_ops, raw_rcv_tester, skb);
+		if (sk == NULL) {
+			break;
 		}
+
+		cloned = skb_share(skb, SKB_SHARE_DATA); // TODO without skb_clone()
+		if (cloned == NULL) {
+			continue;
+			//return -ENOMEM;
+		}
+
+		sock_rcv(sk, cloned);
 	}
 
-	return ENOERR;
+	return 0;
+}
+
+static int raw_err_tester(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet_sock *inet_sk;
+	const struct iphdr *emb_pack_iphdr;
+
+	inet_sk = (const struct inet_sock *)sk;
+	assert(inet_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->h.raw != NULL);
+	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
+			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
+
+	return !(inet_sk->daddr != emb_pack_iphdr->saddr && inet_sk->daddr)
+			&& !(inet_sk->rcv_saddr != emb_pack_iphdr->daddr && inet_sk->rcv_saddr)
+			/* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
+			&& sk->opt.so_protocol == emb_pack_iphdr->proto;
 }
 
 void raw_err(struct sk_buff *skb, uint32_t info) {
-	struct sock *sk = NULL;
-	int sk_idx = 0;
-	struct iphdr *emb_pack_iphdr;
+	struct sock *sk;
 
-	emb_pack_iphdr = (struct iphdr *)(skb->h.raw + IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
+	sk = NULL;
 
 	/* notify all sockets matching source, dest address and protocol */
-	do {
-		sk = _raw_lookup(sk_idx, emb_pack_iphdr->proto,
-				emb_pack_iphdr->saddr, emb_pack_iphdr->daddr, skb->dev);
-		if (sk != NULL) {  /* notify socket about an error */
-			ip_v4_icmp_err_notify(sk, skb->h.icmph->type,
-					skb->h.icmph->code);
-			/* do something else - specific for raw sockets ? */
-			sk_idx = _raw_get_hash_idx(sk) + 1;
+	while (1) {
+		sk = sock_lookup(sk, raw_sock_ops, raw_err_tester, skb);
+		if (sk == NULL) {
+			break;
 		}
-	} while(sk != NULL);
+
+		/* notify socket about an error */
+		ip_v4_icmp_err_notify(sk, skb->h.icmph->type,
+				skb->h.icmph->code);
+	}
 }
 
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
@@ -170,10 +145,12 @@ static int raw_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static const struct sock_ops raw_ops = {
-	.sendmsg       = raw_sendmsg,
-	.recvmsg       = raw_recvmsg,
-	.sock_pool     = &raw_sock_pool,
-	.sock_table    = &raw_table[0],
-	.sock_table_sz = ARRAY_SIZE(raw_table)
+POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
+static LIST_DEF(raw_sock_list);
+
+static const struct sock_ops raw_sock_ops_struct = {
+	.sendmsg   = raw_sendmsg,
+	.recvmsg   = raw_recvmsg,
+	.sock_pool = &raw_sock_pool,
+	.sock_list = &raw_sock_list
 };

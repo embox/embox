@@ -31,10 +31,10 @@
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
-EMBOX_NET_SOCK_INIT(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_ops, tcp_sock_init);
+static const struct sock_ops tcp_sock_ops_struct;
+const struct sock_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 
-POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-static struct sock *tcp_sock_table[MODOPS_AMOUNT_TCP_SOCK];
+EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -439,21 +439,18 @@ static int tcp_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
-static const struct sock_ops tcp_ops = {
-	.init          = tcp_init,
-	.close         = tcp_close,
-	.connect       = tcp_connect,
-	.listen        = tcp_listen,
-	.accept        = tcp_accept,
-	.sendmsg       = tcp_sendmsg,
-	.recvmsg       = tcp_recvmsg,
-	.shutdown      = tcp_shutdown,
-	.sock_pool     = &tcp_sock_pool,
-	.sock_table    = &tcp_sock_table[0],
-	.sock_table_sz = ARRAY_SIZE(tcp_sock_table)
-};
+POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
+static LIST_DEF(tcp_sock_list);
 
-static int tcp_sock_init(void) {
-	memset(tcp_sock_table, 0, sizeof tcp_sock_table);
-	return 0;
-}
+static const struct sock_ops tcp_sock_ops_struct = {
+	.init      = tcp_init,
+	.close     = tcp_close,
+	.connect   = tcp_connect,
+	.listen    = tcp_listen,
+	.accept    = tcp_accept,
+	.sendmsg   = tcp_sendmsg,
+	.recvmsg   = tcp_recvmsg,
+	.shutdown  = tcp_shutdown,
+	.sock_pool = &tcp_sock_pool,
+	.sock_list = &tcp_sock_list
+};
