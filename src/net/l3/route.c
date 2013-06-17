@@ -88,22 +88,17 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	struct net_device *wanna_dev;
 
 	assert(skb != NULL);
-
 	assert(skb->nh.iph != NULL);
 	daddr = skb->nh.iph->daddr;
 
-	wanna_dev = NULL;
-
-	if ((skb->sk != NULL) && (skb->sk->sk_socket != NULL)) {
-		assert(skb->sk->sk_socket->socket_node != NULL);
-
-		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
-				(char*)dev, NULL); */
-		wanna_dev = skb->sk->opt.so_bindtodevice;
-	}
+	assert(skb->sk != NULL);
+	wanna_dev = skb->sk->opt.so_bindtodevice;
 
 	/* SO_BROADCAST assert. */
 	if (daddr == INADDR_BROADCAST) {
+		if (wanna_dev == NULL) {
+			return -ENODEV;
+		}
 		skb->dev = wanna_dev;
 		return 0;
 	}
