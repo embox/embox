@@ -6,7 +6,7 @@ module udp {
 	depends ipv4 /* for ip_output.c */
 	depends skbuff
 	depends icmpv4
-	depends core /* for sock.c */
+	depends sock
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
 }
@@ -14,11 +14,9 @@ module udp {
 module tcp {
 	source "tcp.c"
 
-	depends tcp_sock
 	depends skbuff
-	depends core
+	depends sock
 	depends ipv4 /* for ip_output.c */
-	depends af_inet /* for af_inet.c */
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
 	depends embox.kernel.time.clock_source

@@ -41,6 +41,6 @@ static inline struct udp_sock * udp_sk(struct sock *sk) {
 	return (struct udp_sock *)sk;
 }
 
-extern const struct sock_ops *const udp_sock_ops;
+extern const struct sock_ops *const udp_sock_ops __attribute__((weak));
 
 #endif /* NET_UDP_H_ */
