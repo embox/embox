@@ -88,8 +88,6 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
 	struct rpc_msg msg_reply, msg_call;
-	struct sockaddr addr;
-	socklen_t addr_len;
 	size_t buff_len;
 	struct timeval tmp, until, sent, elapsed;
 
@@ -142,7 +140,7 @@ send_again:
 	}
 
 recv_again:
-	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
+	res = recvfrom(clnt->sock, buff, sizeof buff, 0, NULL, NULL);
 	ktime_get_timeval(&tmp);
 	if (res == -1) {
 		if (errno != EAGAIN) {
