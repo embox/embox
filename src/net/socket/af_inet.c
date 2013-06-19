@@ -127,6 +127,7 @@ static int inet_bind_local(struct sock *sk) {
 	switch (sk->opt.so_protocol) {
 	default:
 		addr_in.sin_port = 0;
+		break;
 	case IPPROTO_TCP:
 	case IPPROTO_UDP:
 		port = ip_port_get_free(sk->opt.so_protocol);
