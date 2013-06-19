@@ -7,5 +7,5 @@
 "route add default gw 10.0.2.10 eth0",
 "export PWD=/",
 "export HOME=/",
-"export QT_QPA_FONTDIR=/",
+"export QT_QPA_FONTDIR=/fonts",
 "cxxapp -platform vnc"

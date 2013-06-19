@@ -240,7 +240,7 @@ int kformat(const char *pathname, const char *fs_type) {
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct node *dev_node, *dir_node;
+	struct node *dev_node, *dir_node, *parent;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -292,14 +292,20 @@ skip_dev_lookup:
 
 	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
 		/*TODO restore previous fs type from parent dir */
-
+		if(NULL != (parent = vfs_get_parent(dir_node))) {
+			dir_node->nas->fs = parent->nas->fs;
+			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+		}
 		return res;
 
 	}
 	if(ENOERR != (res = mount_table_add(dir_node))) {
 		drv->fsop->umount(dir_node);
 		/*TODO restore previous fs type from parent dir */
-
+		if(NULL != (parent = vfs_get_parent(dir_node))) {
+			dir_node->nas->fs = parent->nas->fs;
+			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+		}
 		return res;
 	}
 	return ENOERR;
@@ -492,7 +498,7 @@ int krename(const char *oldpath, const char *newpath) {
 }
 
 int kumount(const char *dir) {
-	struct node *dir_node;
+	struct node *dir_node, *parent;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -532,7 +538,11 @@ int kumount(const char *dir) {
 
 	mount_table_del(dir_node);
 
-	/*TODO restore previous fs type from parent dir */
+	/*restore previous fs type from parent dir */
+	if(NULL != (parent = vfs_get_parent(dir_node))) {
+		dir_node->nas->fs = parent->nas->fs;
+		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+	}
 
 	return 0;
 }
