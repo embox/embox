@@ -18,6 +18,7 @@
 #include <net/rpc/rpc.h>
 #include <net/rpc/rpc_msg.h>
 #include <net/rpc/pmap.h>
+#include <fcntl.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -90,14 +91,9 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	struct sockaddr addr;
 	socklen_t addr_len;
 	size_t buff_len;
-	useconds_t was_sended, elapsed, wait_timeout, wait_resend;
-	struct timeval tmp;
+	struct timeval tmp, until, sent, elapsed;
 
 	assert((clnt != NULL) && (inproc != NULL));
-
-	wait_resend = clnt->extra.udp.resend.tv_sec * USEC_PER_SEC + clnt->extra.udp.resend.tv_usec;
-	wait_timeout = timeout.tv_sec * USEC_PER_SEC + timeout.tv_usec;
-	assert(wait_timeout != 0); // TODO remove this
 
 	msg_call.xid = (uint32_t)rand();
 	msg_call.type = CALL;
@@ -119,49 +115,49 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	xdr_getpos(&xstream);
 	xdr_destroy(&xstream);
 
-send_again:
-	ktime_get_timeval(&tmp);
-	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
-
-	res = sendto(clnt->sock, buff, buff_len, 0,
-			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
-	if (res < 0) {
-		clnt->err.status = RPC_CANTSEND;
+	if (-1 == fcntl(clnt->sock, F_SETFD, O_NONBLOCK)) {
+		clnt->err.status = RPC_SYSTEMERROR;
 		clnt->err.extra.error = errno;
 		goto exit_with_status;
+	}
+
+	ktime_get_timeval(&tmp);
+	timeradd(&tmp, &timeout, &until);
+
+send_again:
+	res = sendto(clnt->sock, buff, buff_len, 0,
+			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
+	ktime_get_timeval(&sent);
+	if (res == -1) {
+		if (errno != EAGAIN) {
+			clnt->err.status = RPC_CANTSEND;
+			clnt->err.extra.error = errno;
+			goto exit_with_status;
+		}
+		if (timercmp(&sent, &until, >=)) {
+			clnt->err.status = RPC_TIMEDOUT;
+			goto exit_with_status;
+		}
+		goto send_again;
 	}
 
 recv_again:
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
-	if (res < 0) {
-		clnt->err.status = RPC_CANTRECV;
-		clnt->err.extra.error = errno;
-		goto exit_with_status;
-	}
-
-	if (res == 0) { /* Reply was not received, resend request or exit with error */
-#if 0
-		printf("ws %u, e %u, wt %u, wr %u\n",
-				(unsigned int)was_sended, (unsigned int)elapsed,
-				(unsigned int)wait_timeout, (unsigned int)wait_resend);
-#endif
-
-		/* Calculate elapsed time */
-		ktime_get_timeval(&tmp);
-		elapsed = (tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec) - was_sended;
-
-		/* Check timeout and set up new value */
-		if (wait_timeout < elapsed) {
+	ktime_get_timeval(&tmp);
+	if (res == -1) {
+		if (errno != EAGAIN) {
+			clnt->err.status = RPC_CANTRECV;
+			clnt->err.extra.error = errno;
+			goto exit_with_status;
+		}
+		if (timercmp(&tmp, &until, >=)) {
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}
-		wait_timeout -= elapsed;
-
-		/* Check resend time */
-		if (elapsed > wait_resend) {
+		timersub(&tmp, &sent, &elapsed);
+		if (timercmp(&elapsed, &clnt->extra.udp.resend, >=)) {
 			goto send_again;
 		}
-
 		goto recv_again;
 	}
 
