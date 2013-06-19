@@ -65,7 +65,7 @@ static int udp_rcv(struct sk_buff *skb) {
 				return -res;
 		}
 
-		sock_rcv(sk, skb);
+		sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE);
 
 		if (inet->rcv_saddr == INADDR_ANY) {
 			//TODO: temporary

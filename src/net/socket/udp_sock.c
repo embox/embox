@@ -64,33 +64,12 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static int udp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct sk_buff *skb;
-	size_t len = msg->msg_iov->iov_len;
-
-	skb = skb_queue_front(&sk->rx_queue);
-	if (skb && skb->len > 0) {
-		if (len > (ntohs(skb->h.uh->len) - UDP_HEADER_SIZE)) {
-			len = ntohs(skb->h.uh->len) - UDP_HEADER_SIZE;
-		}
-		memcpy((void *) msg->msg_iov->iov_base,
-				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
-		skb_free(skb); /* FIXME `skb` may contains more data than `len` */
-	} else {
-		len = 0;
-	}
-
-	msg->msg_iov->iov_len = len;
-
-	return 0;
-}
-
 POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
 static LIST_DEF(udp_sock_list);
 
 static const struct sock_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
-	.recvmsg   = udp_recvmsg,
+	.recvmsg   = sock_nonstream_recvmsg,
 	.sock_pool = &udp_sock_pool,
 	.sock_list = &udp_sock_list
 };

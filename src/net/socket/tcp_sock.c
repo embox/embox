@@ -362,66 +362,28 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 }
 
 static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct sk_buff *skb;
-	union sock_pointer sock;
-	size_t bytes;
-	char *buff, last_iteration;
-	struct timeval started;
-	size_t len = msg->msg_iov->iov_len;
+	int ret;
 
-	assert(sk != NULL);
-	assert(msg != NULL);
-	assert(len == msg->msg_iov->iov_len);
+	if (sk == NULL) {
+		return -EINVAL;
+	}
 
-	sock.sk = sk;
-	debug_print(3, "tcp_recvmsg: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_recvmsg: sk %p\n", sk);
 
-	tcp_get_now(&started);
-
-check_state:
-	assert(sock.sk->state < TCP_MAX_STATE);
-	switch (sock.sk->state) {
+	assert(sk->state < TCP_MAX_STATE);
+	switch (sk->state) {
 	default:
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSEWAIT:
-		skb = skb_queue_front(&sk->rx_queue);
-		if (skb == NULL) {
-			if (sock.sk->state == TCP_CLOSEWAIT) {
-				msg->msg_iov->iov_len = 0;
-				return 0; /* no more data to receive */
-			}
-			if (flags & O_NONBLOCK) {
-				return -EAGAIN;
-			}
-			if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
-				return -ETIMEDOUT; /* error: timeout */
-			}
-			/* wait received packet or another state */
-			goto check_state;
+		ret = sock_stream_recvmsg(sk, msg, flags);
+		if ((ret == -EAGAIN) && (sk->state == TCP_CLOSEWAIT)) {
+			msg->msg_iov->iov_len = 0;
+			return 0; /* no more data to receive */
 		}
-		last_iteration = 0;
-		buff = (char *)msg->msg_iov->iov_base;
-		do {
-			bytes = tcp_data_left(skb);
-			if (bytes > len) {
-				bytes = len;
-				last_iteration = 1;
-			}
-			memcpy((void *)buff, skb->p_data, bytes);
-			buff += bytes;
-			len -= bytes;
-			debug_print(3, "tcp_recvmsg: received len %d\n", bytes);
-			if (last_iteration) {
-				skb->p_data += bytes;
-				break;
-			}
-			skb_free(skb);
-		} while ((len > 0) && ((skb = skb_queue_front(&sk->rx_queue)) != NULL));
-		msg->msg_iov->iov_len -= len;
-		return 0;
+		return ret;
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:

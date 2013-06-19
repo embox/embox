@@ -164,13 +164,10 @@ static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
 
 	seq = ntohl(skb->h.th->seq);
 
-	/* setup p_data */
-	assert(sock.tcp_sk->rem.seq >= seq); /* FIXME */
-	skb->p_data = skb->h.raw + TCP_HEADER_SIZE(skb->h.th)
-		+ (sock.tcp_sk->rem.seq - seq);
-
 	/* move skb to socket received queue */
-	sock_rcv(sock.sk, skb);
+	assert(sock.tcp_sk->rem.seq >= seq); /* FIXME */
+	sock_rcv(sock.sk, skb, skb->h.raw + TCP_HEADER_SIZE(skb->h.th)
+			+ (sock.tcp_sk->rem.seq - seq));
 }
 
 void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {

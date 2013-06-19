@@ -26,6 +26,7 @@
 #include <framework/mod/options.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
+#include <kernel/time/time.h>
 
 #define MODOPS_AMOUNT_SOCKET OPTION_GET(NUMBER, amount_socket)
 
@@ -319,6 +320,8 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 }
 
 int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
+	int ret;
+
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -331,6 +334,17 @@ int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
 
 	switch (sock->sk->opt.so_type) {
 	default:
+		if (!sk_is_bound(sock)) {
+			if (sock->sk->f_ops->bind_local == NULL) {
+				return -EINVAL;
+			}
+			ret = sock->sk->f_ops->bind_local(sock->sk);
+			if (ret != 0) {
+				return ret;
+			}
+			sk_set_connection_state(sock, BOUND);
+			/*sr_set_saddr(sock, addr); FIXME */
+		}
 		if (msg->msg_name == NULL) {
 			if (msg->msg_namelen != 0) {
 				return -EINVAL;
@@ -373,6 +387,7 @@ int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
 
 int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	int ret;
+	unsigned long timeout;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -405,9 +420,17 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 
 	ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
-		EVENT_WAIT(&sock->sk->sock_is_not_empty, 0,
-				SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
+		timeout = 10000;//timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
+		ret = EVENT_WAIT(&sock->sk->sock_is_not_empty, 0,
+				timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE);
+		if (ret == -EINTR) {
+			return -ETIMEDOUT;
+		}
+		else if (ret != 0) {
+			return ret;
+		}
 		ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
+		assert(ret != -EAGAIN);
 	}
 
 	return ret;

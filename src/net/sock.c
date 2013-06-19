@@ -17,6 +17,7 @@
 #include <net/sock.h>
 #include <net/skbuff.h>
 #include <string.h>
+#include <util/math.h>
 
 static struct sock * sock_alloc(const struct sock_ops *ops) {
 	ipl_t sp;
@@ -245,8 +246,9 @@ struct sock * sock_lookup(const struct sock *sk,
 	return NULL; /* error: no such entity */
 }
 
-void sock_rcv(struct sock *sk, struct sk_buff *skb) {
-	if ((sk == NULL) || (skb == NULL)) {
+void sock_rcv(struct sock *sk, struct sk_buff *skb,
+		unsigned char *p_data) {
+	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
 		return; /* error: invalid argument */
 	}
 
@@ -254,6 +256,8 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb) {
 		skb_free(skb);
 		return; /* error: socket is down */
 	}
+
+	skb->p_data = p_data;
 
 	skb_queue_push(&sk->rx_queue, skb);
 	event_notify(&sk->sock_is_not_empty);
@@ -275,4 +279,51 @@ int sock_close(struct sock *sk) {
 	}
 
 	return sk->f_ops->close(sk);
+}
+
+int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags, int stream_mode) {
+	struct sk_buff *skb;
+	char *buff;
+	size_t buff_sz, total_len, len;
+	unsigned char *p_data_end;
+
+	if ((sk == NULL) || (msg == NULL)) {
+		return -EINVAL;
+	}
+
+	assert(msg->msg_iov != NULL);
+	assert(msg->msg_iov->iov_base != NULL);
+	buff = msg->msg_iov->iov_base;
+	buff_sz = msg->msg_iov->iov_len;
+	total_len = 0;
+
+	do {
+		skb = skb_queue_front(&sk->rx_queue);
+		if (skb == NULL) {
+			if (total_len == 0) {
+				return -EAGAIN;
+			}
+			break;
+		}
+
+		assert(skb->mac.raw != NULL);
+		p_data_end = skb->mac.raw + skb->len;
+
+		assert(p_data_end > skb->p_data);
+		len = min(buff_sz, p_data_end - skb->p_data);
+
+		memcpy(buff, skb->p_data, len);
+		buff += len;
+		buff_sz -= len;
+		skb->p_data += len;
+		total_len += len;
+
+		if (!stream_mode || (skb->p_data >= p_data_end)) {
+			skb_free(skb);
+		}
+	} while (stream_mode && (buff_sz != 0));
+
+	msg->msg_iov->iov_len = total_len;
+
+	return 0;
 }

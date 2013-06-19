@@ -58,7 +58,7 @@ int raw_rcv(struct sk_buff *skb) {
 			//return -ENOMEM;
 		}
 
-		sock_rcv(sk, cloned);
+		sock_rcv(sk, cloned, cloned->nh.raw);
 	}
 
 	return 0;
@@ -124,33 +124,12 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-static int raw_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct sk_buff *skb;
-	size_t len = msg->msg_iov->iov_len;
-
-	skb = skb_queue_front(&sk->rx_queue);
-	if (skb && (skb->len > 0)) {
-		if (len > (skb->len - ETH_HEADER_SIZE)) {
-			len = skb->len - ETH_HEADER_SIZE;
-		}
-		memcpy((void*) msg->msg_iov->iov_base,
-				(void*) (skb->mac.raw + ETH_HEADER_SIZE), len);
-		skb_free(skb);
-	} else {
-		len = 0;
-	}
-
-	msg->msg_iov->iov_len = len;
-
-	return 0;
-}
-
 POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
 static LIST_DEF(raw_sock_list);
 
 static const struct sock_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,
-	.recvmsg   = raw_recvmsg,
+	.recvmsg   = sock_nonstream_recvmsg,
 	.sock_pool = &raw_sock_pool,
 	.sock_list = &raw_sock_list
 };

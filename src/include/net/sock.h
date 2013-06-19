@@ -132,8 +132,21 @@ extern struct sock * sock_next(const struct sock *sk);
 extern struct sock * sock_lookup(const struct sock *sk,
 		const struct sock_ops *ops, sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
-extern void sock_rcv(struct sock *sk, struct sk_buff *skb);
+extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
+		unsigned char *p_data);
 extern int sock_close(struct sock *sk);
+
+
+extern int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
+		int flags, int stream_mode);
+static inline int sock_nonstream_recvmsg(struct sock *sk,
+		struct msghdr *msg, int flags) {
+	return sock_common_recvmsg(sk, msg, flags, 0);
+}
+static inline int sock_stream_recvmsg(struct sock *sk,
+		struct msghdr *msg, int flags) {
+	return sock_common_recvmsg(sk, msg, flags, 1);
+}
 
 #define sock_foreach(sk, ops) \
 	list_foreach(sk, ops->sock_list, lnk)
