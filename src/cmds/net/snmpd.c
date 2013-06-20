@@ -58,7 +58,7 @@ static int exec(int argc, char **argv) {
 	struct sockaddr_in addr;
 	char snmpbuf[MAX_SNMP_LEN];
 	char varbuf[MAX_PDU_LEN]; /* for received variables */
-	socklen_t sklen = 14;
+	socklen_t sklen = sizeof addr;
 
 	getopt_init();
 

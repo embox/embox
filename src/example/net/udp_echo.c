@@ -66,6 +66,7 @@ static int exec(int argc, char **argv) {
 
 	/* write data form socket in buffer buf. And then print buffer data */
 	while (1) {
+		sklen = sizeof addr;
 		if ((bytes_read = recvfrom(sock, buf, RECEIVE_BUF_LEN, 0,
 			 (struct sockaddr *)&addr, &sklen)) <= 0) {
 			break;

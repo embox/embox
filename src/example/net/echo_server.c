@@ -56,6 +56,7 @@ static int sock_udp_hnd(int sock) {
 	socklen_t addr_len;
 	ssize_t bytes, bytes_left;
 
+	addr_len = sizeof addr;
 	bytes = recvfrom(sock, &buff, sizeof buff, 0, &addr, &addr_len);
 	if (bytes == -1) { ret = -errno; perror("recvfrom"); return ret; }
 

@@ -65,6 +65,7 @@ static int exec(int argc, char **argv) {
 
 	/* read from sock, print */
 	while (1) {
+		dst_addr_len = sizeof dst;
 		bytes_read = recvfrom(client, buff, sizeof buff, 0, (struct sockaddr *)&dst,
 				&dst_addr_len);
 		if (bytes_read < 0) {
