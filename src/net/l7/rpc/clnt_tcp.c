@@ -29,6 +29,7 @@ static int writetcp(struct client *clnt, char *buf, size_t len);
 
 static const struct clnt_ops clnttcp_ops;
 
+#include <kernel/printk.h>
 struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
 	struct client *clnt;
@@ -57,6 +58,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if ((sock < 0)
 			|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
+		printk("clnttcp_create: socket or connect error\n");
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
 		close(sock);
@@ -100,6 +102,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 
 	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
 				&timeout, sizeof timeout)) {
+		printk("clnttcp_call: setsockopt error\n");
 		clnt->err.status = RPC_SYSTEMERROR;
 		clnt->err.extra.error = errno;
 		goto exit_with_status;
@@ -160,7 +163,9 @@ static int readtcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
 	res = recv(clnt->sock, buff, len, 0);
+//	printk("readtcp: len %zu; res %d\n", len, res);
 	if (res == -1) {
+		printk("readtcp: recv error\n");
 		clnt->err.status = RPC_CANTRECV;
 		clnt->err.extra.error = errno;
 		return -1;
@@ -173,7 +178,9 @@ static int writetcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
 	res = send(clnt->sock, buff, len, 0);
+//	printk("writetcp: len %zu; res %d\n", len, res);
 	if (res == -1) {
+		printk("writetcp: send error\n");
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
 		return -1;

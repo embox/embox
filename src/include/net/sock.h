@@ -12,7 +12,7 @@
 
 #include <net/socket.h>
 #include <sys/socket.h>
-#include <kernel/event.h>
+#include <kernel/manual_event.h>
 #include <net/skbuff.h>
 #include <sys/time.h>
 #include <util/list.h>
@@ -68,7 +68,7 @@ struct sock {
 
 	struct socket *sk_socket;
 	int (*sk_encap_rcv)(struct sock *sk, struct sk_buff *pack);
-	struct event sock_is_not_empty;
+	struct manual_event sock_is_not_empty;
 };
 
 struct family_ops {

@@ -81,6 +81,7 @@ exit_with_error:
 	return NULL;
 }
 
+#include <kernel/printk.h>
 static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
@@ -128,11 +129,13 @@ send_again:
 	ktime_get_timeval(&sent);
 	if (res == -1) {
 		if (errno != EAGAIN) {
+			printk("clntudp_call: sendto error\n");
 			clnt->err.status = RPC_CANTSEND;
 			clnt->err.extra.error = errno;
 			goto exit_with_status;
 		}
 		if (timercmp(&sent, &until, >=)) {
+			printk("clntudp_call: sendto timeout\n");
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}
@@ -144,11 +147,13 @@ recv_again:
 	ktime_get_timeval(&tmp);
 	if (res == -1) {
 		if (errno != EAGAIN) {
+			printk("clntudp_call: recvfrom error\n");
 			clnt->err.status = RPC_CANTRECV;
 			clnt->err.extra.error = errno;
 			goto exit_with_status;
 		}
 		if (timercmp(&tmp, &until, >=)) {
+			printk("clntudp_call: recvfrom timeout\n");
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}

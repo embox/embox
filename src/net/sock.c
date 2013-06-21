@@ -86,7 +86,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->ops = ops;
 	sk->sk_socket = NULL;
 	sk->sk_encap_rcv = NULL;
-	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
+	manual_event_init(&sk->sock_is_not_empty, 0);
 }
 
 int sock_create_ext(int family, int type, int protocol,
@@ -261,7 +261,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb->p_data = p_data;
 
 	skb_queue_push(&sk->rx_queue, skb);
-	event_notify(&sk->sock_is_not_empty);
+	manual_event_notify(&sk->sock_is_not_empty);
 
 	if (sk->sk_socket != NULL) {
 		idx_io_enable(sk->sk_socket->desc_data, IDX_IO_READING);
@@ -299,13 +299,20 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags, int stre
 	total_len = 0;
 
 	do {
-		skb = skb_queue_front(&sk->rx_queue);
-		if (skb == NULL) {
-			if (total_len == 0) {
-				return -EAGAIN;
+		softirq_lock();
+		{
+			skb = skb_queue_front(&sk->rx_queue);
+			if (skb == NULL) {
+				if (total_len == 0) {
+					manual_event_reset(&sk->sock_is_not_empty);
+					softirq_unlock();
+					return -EAGAIN;
+				}
+				softirq_unlock();
+				break;
 			}
-			break;
 		}
+		softirq_unlock();
 
 		assert(skb->mac.raw != NULL);
 		p_data_end = skb->mac.raw + skb->len;
