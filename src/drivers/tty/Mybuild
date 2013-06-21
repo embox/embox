@@ -20,7 +20,7 @@ module tty {
 	source "tty_file_ops.c"
 	source "tty_repo.c"
 	option number io_buff_sz = 128
-	option number rx_buff_sz = 8
+	option number rx_buff_sz = 100
 	depends embox.kernel.work
 	depends embox.kernel.thread.event
 //	depends embox.kernel.thread.sync /* mutex */
