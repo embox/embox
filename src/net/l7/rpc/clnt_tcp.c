@@ -98,6 +98,13 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	memcpy(&msg_call.b.call.cred, &clnt->ath->cred, sizeof clnt->ath->cred);
 	memcpy(&msg_call.b.call.verf, &clnt->ath->verf, sizeof clnt->ath->verf);
 
+	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
+				&timeout, sizeof timeout)) {
+		clnt->err.status = RPC_SYSTEMERROR;
+		clnt->err.extra.error = errno;
+		goto exit_with_status;
+	}
+
 	xdrrec_create(&xstream, clnt->extra.tcp.sendsz, clnt->extra.tcp.recvsz,
 			(char *)clnt, (xdrrec_hnd_t)readtcp, (xdrrec_hnd_t)writetcp);
 
@@ -121,12 +128,15 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 
 	msg_reply.b.reply.r.accepted.d.result.decoder = outproc;
 	msg_reply.b.reply.r.accepted.d.result.param = out;
+	assert(clnt->err.status == RPC_SUCCESS);
 	if (!xdr_rpc_msg(&xstream, &msg_reply)) {
-		clnt->err.status = RPC_CANTDECODERES;
+		if (clnt->err.status == RPC_SUCCESS) {
+			clnt->err.status = RPC_CANTDECODERES;
+		}
 		goto exit_with_status;
 	}
 
-	clnt->err.status = RPC_SUCCESS;
+	assert(clnt->err.status == RPC_SUCCESS);
 exit_with_status:
 	xdr_destroy(&xstream);
 	return clnt->err.status;
@@ -149,8 +159,8 @@ static void clnttcp_destroy(struct client *clnt) {
 static int readtcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
-	res = recvfrom(clnt->sock, buff, len, 0, NULL, NULL);
-	if (res < 0) {
+	res = recv(clnt->sock, buff, len, 0);
+	if (res == -1) {
 		clnt->err.status = RPC_CANTRECV;
 		clnt->err.extra.error = errno;
 		return -1;
@@ -162,9 +172,8 @@ static int readtcp(struct client *clnt, char *buff, size_t len) {
 static int writetcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
-	/* TODO set timewait */
-	res = sendto(clnt->sock, buff, len, 0, NULL, 0);
-	if (res < 0) {
+	res = send(clnt->sock, buff, len, 0);
+	if (res == -1) {
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
 		return -1;
