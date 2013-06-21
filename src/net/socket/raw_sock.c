@@ -119,7 +119,6 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		 */
 	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 
-	skb->sk = sk;
 	ip_send_packet(inet, skb);
 	return 0;
 }

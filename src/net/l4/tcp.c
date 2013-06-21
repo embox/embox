@@ -133,8 +133,6 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 		struct sk_buff *skb) {
 	size_t tcp_hdr_sz;
 
-	skb->sk = sock.sk; // check it
-
 	opt_len = (opt_len + 3) & ~(size_t)3; /* round */
 
 	tcp_hdr_sz = TCP_MIN_HEADER_SIZE + opt_len;

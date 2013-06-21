@@ -123,6 +123,8 @@ int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
 		sk->saddr = inetdev_get_by_dev(best_route->dev)->ifa_address;
 	}
 
+	skb->sk = &sk->sk;
+
 	if (sk != NULL) {
 		build_ip_packet(sk, skb);
 	}

@@ -54,7 +54,6 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE; // + inet->opt->optlen;
-	skb->sk = sk;
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
