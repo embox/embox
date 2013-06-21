@@ -386,7 +386,6 @@ int ksendmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	return sock->sk->f_ops->sendmsg(sock->sk, msg, flags);
 }
 
-#include <kernel/printk.h>
 int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	int ret;
 	unsigned long timeout;
@@ -423,24 +422,11 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
 		timeout = timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
-		timeout = timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE;
-		ret = manual_event_wait(&sock->sk->sock_is_not_empty, timeout);
-//		ret = EVENT_WAIT_OR_INTR(&sock->sk->sock_is_not_empty, 0,
-//				timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE);
-		if (ret == -ETIMEDOUT) {
-			printk("<krecvmsg: %lu to: ", timeout);
+		if (0 == manual_event_wait(&sock->sk->sock_is_not_empty,
+				timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE)) {
 			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-			printk("%d>", ret);
-			if (ret != 0) ret = -ETIMEDOUT;
-			return ret;
+			assert(ret != -EAGAIN);
 		}
-		else if (ret != 0) {
-			printk("krecvmsg: error %d\n", ret);
-			return ret;
-		}
-		ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-		assert(ret != -EAGAIN);
-		assert(ret == 0);
 	}
 
 	return ret;

@@ -163,7 +163,6 @@ static int readtcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
 	res = recv(clnt->sock, buff, len, 0);
-//	printk("readtcp: len %zu; res %d\n", len, res);
 	if (res == -1) {
 		printk("readtcp: recv error\n");
 		clnt->err.status = RPC_CANTRECV;
@@ -178,7 +177,6 @@ static int writetcp(struct client *clnt, char *buff, size_t len) {
 	int res;
 
 	res = send(clnt->sock, buff, len, 0);
-//	printk("writetcp: len %zu; res %d\n", len, res);
 	if (res == -1) {
 		printk("writetcp: send error\n");
 		clnt->err.status = RPC_CANTSEND;
