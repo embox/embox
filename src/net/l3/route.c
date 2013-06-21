@@ -91,8 +91,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	assert(skb->nh.iph != NULL);
 	daddr = skb->nh.iph->daddr;
 
-	assert(skb->sk != NULL);
-	wanna_dev = skb->sk->opt.so_bindtodevice;
+	wanna_dev = skb->sk != NULL ? skb->sk->opt.so_bindtodevice : NULL;
 
 	/* SO_BROADCAST assert. */
 	if (daddr == INADDR_BROADCAST) {

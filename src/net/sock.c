@@ -257,6 +257,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		return; /* error: socket is down */
 	}
 
+	skb->sk = sk;
 	skb->p_data = p_data;
 
 	skb_queue_push(&sk->rx_queue, skb);

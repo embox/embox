@@ -230,6 +230,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
 	icmp_send_check_skb(reply);
+	reply->sk = NULL;
 
 	return ip_send_packet(NULL, reply);
 }
@@ -388,6 +389,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		icmp_send_check_skb(skb);
 	}
 
+	skb->sk = NULL;
 	ip_send_packet(NULL, skb);
 }
 
