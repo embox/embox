@@ -226,6 +226,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 #include <kernel/thread/sched_lock.h>
 static int tcp_accept(struct sock *sk,
 		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
+	int ret;
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
 	struct timeval started;
@@ -251,7 +252,14 @@ static int tcp_accept(struct sock *sk,
 						sched_unlock();
 						return -EAGAIN;
 					}
-					EVENT_WAIT(&sock.tcp_sk->new_conn, 0, EVENT_TIMEOUT_INFINITE); /* TODO: event condition */
+					/* TODO: event condition */
+					ret = EVENT_WAIT_OR_INTR(&sock.tcp_sk->new_conn, 0,
+							EVENT_TIMEOUT_INFINITE);
+					if (ret != 0) {
+						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+						sched_unlock();
+						return ret;
+					}
 				}
 			} tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		} sched_unlock();

@@ -19,4 +19,6 @@ struct event {
 
 #define EVENT_WAIT(event, cond_expr, timeout) ENOERR
 
+#define EVENT_WAIT_OR_INTR(event, cond_expr, timeout) ENOERR
+
 #endif /* KERNEL_EVENT_NOSCHED_H_ */

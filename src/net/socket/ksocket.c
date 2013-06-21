@@ -418,20 +418,22 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 		return -ENOSYS;
 	}
 
-	ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
-		timeout = 10000;//timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
-		ret = EVENT_WAIT(&sock->sk->sock_is_not_empty, 0,
-				timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE);
-		if (ret == -EINTR) {
-			return -ETIMEDOUT;
-		}
-		else if (ret != 0) {
-			return ret;
-		}
+	sched_lock();
+	{
 		ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-		assert(ret != -EAGAIN);
+		if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
+			timeout = 10000;//timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
+			ret = EVENT_WAIT_OR_INTR(&sock->sk->sock_is_not_empty, 0,
+					timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE);
+			if (ret != 0) {
+				sched_unlock();
+				return ret;
+			}
+			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
+			assert(ret != -EAGAIN);
+		}
 	}
+	sched_unlock();
 
 	return ret;
 }
