@@ -52,9 +52,7 @@ typedef struct sk_buff_head {
 
 typedef struct sk_buff {        /* Socket buffer */
 	/* This member must be first. */
-//	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
-	struct sk_buff *next;       /* Next buffer in list */
-	struct sk_buff *prev;       /* Previous buffer in list */
+	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */

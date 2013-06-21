@@ -52,7 +52,7 @@ OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 #define skbuff_for_each(skb, buf) \
 	for(skb = buf->next_skbuff;   \
 	   ((struct list_head*)skb)!=(struct list_head*)buf; \
-	   skb = skb->next)
+	   skb = skb->lnk.next)
 
 #define df_flag(skb) (ntohs(skb->nh.iph->frag_off) & IP_DF)
 
@@ -113,7 +113,7 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 		tmp_offset &= IP_OFFSET;
 		tmp_offset <<= 3;
 		if (offset < tmp_offset) {
-			list_add((struct list_head *) skb, (struct list_head *) tmp->prev);
+			list_add((struct list_head *) skb, (struct list_head *) tmp->lnk.prev);
 			was_added = 1;
 			break;
 		}

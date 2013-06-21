@@ -94,7 +94,7 @@ void skb_free(struct sk_buff *skb) {
 
 	sp = ipl_save();
 
-	if ((skb->prev != NULL) && (skb->next != NULL)) {
+	if ((skb->lnk.prev != NULL) && (skb->lnk.next != NULL)) {
 		list_del((struct list_head *)skb);
 	}
 	pool_free(&skb_pool, skb);
