@@ -91,11 +91,11 @@ void show_log(unsigned int count, bool *disp_types){
 	for(n=0; n<final_count; n++){
 		if(disp_types != NULL){
 			if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
-				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}else{  /* no specific information on output */
-				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}

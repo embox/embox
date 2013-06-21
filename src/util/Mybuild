@@ -48,6 +48,11 @@ module DListNDebug extends DList {
 	source "dlist_ndebug.h"
 }
 
+module sys_log {
+	source "sys_log.c"
+	depends embox.lib.LibC
+}
+
 static module LibUtil {
 //	source "slist_debug.c"
 //	source "list_debug.c"
@@ -57,7 +62,8 @@ static module LibUtil {
 	source "priority_q.c"
 	source "ring.c"
 	source "ring_buff.c"
-	source "sys_log.c"
+
+	depends sys_log
 
 	depends embox.lib.LibC
 
