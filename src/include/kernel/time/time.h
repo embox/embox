@@ -51,7 +51,7 @@ static inline time64_t timespec_to_ns(const struct timespec *ts) {
 }
 
 static inline unsigned long timeval_to_ms(const struct timeval *tv) {
-	return ((__u32) tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec * USEC_PER_MSEC;
+	return ((__u32) tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
 }
 
 static inline time64_t timeval_to_ns(const struct timeval *tv) {
