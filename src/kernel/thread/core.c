@@ -24,30 +24,20 @@
 
 #include <embox/unit.h>
 
-#include <mem/misc/pool.h>
-
-#include <util/math.h>
-#include <util/member.h>
-
-#include <kernel/critical.h>
+#include <util/math.h> /*clamp */
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/thread/sched.h>
-#include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/wait_data.h>
+
 #include <kernel/panic.h>
 #include <kernel/cpu.h>
 #include <kernel/percpu.h>
 
 #include <hal/context.h>
-#include <hal/arch.h>
-#include <hal/ipl.h>
+#include <hal/arch.h> /*only for arch_idle */
 
-#include <time.h>
-
-#define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
-#define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -62,8 +52,8 @@ static void thread_context_init(struct thread *t);
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
 
-static struct thread *thread_alloc(void);
-static void thread_free(struct thread *t);
+struct thread *thread_alloc(void);
+void thread_free(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
@@ -134,9 +124,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 			? task_kernel_task() : task_self();
 
 	assert(t);
-#if 0
-	assert(run);
-#endif
 
 	t->state = thread_state_init();
 
@@ -356,38 +343,6 @@ thread_priority_t thread_get_priority(struct thread *t) {
 
 	return t->priority;
 }
-
-/* FIXME: This operations is only for SMP */
-void thread_set_affinity(struct thread *thread, unsigned int affinity) {
-	thread->affinity = affinity;
-}
-
-unsigned int thread_get_affinity(struct thread *thread) {
-	return thread->affinity;
-}
-
-/* FIXME: Replace it! */
-struct thread *idle __percpu__;
-clock_t cpu_started __percpu__;
-
-void cpu_set_idle_thread(struct thread *thread) {
-	thread->affinity = 1 << cpu_get_id();
-	percpu_var(idle) = thread;
-	percpu_var(cpu_started) = clock();
-}
-
-struct thread * cpu_get_idle_thread(void) {
-	return percpu_var(idle);
-}
-
-clock_t cpu_get_total_time(unsigned int cpu_id) {
-	return clock() - percpu_cpu_var(cpu_id, cpu_started);
-}
-
-clock_t cpu_get_idle_time(unsigned int cpu_id) {
-	return thread_get_running_time(percpu_cpu_var(cpu_id, idle));
-}
-
 clock_t thread_get_running_time(struct thread *thread) {
 	return sched_get_running_time(thread);
 }
@@ -403,7 +358,7 @@ struct thread *thread_lookup(thread_id_t id) {
 
 	return NULL;
 }
-
+//TODO this function is used only in task/multi.c file. Why is it placed here?
 void *thread_stack_malloc(struct thread *thread, size_t size) {
 	void *res;
 
@@ -518,37 +473,4 @@ static void thread_delete(struct thread *t) {
 	} else {
 		thread_free(t);
 	}
-}
-
-typedef union thread_pool_entry {
-	struct thread thread;
-	char stack[STACK_SZ];
-} thread_pool_entry_t __attribute__((aligned(STACK_SZ)));
-
-POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
-
-static struct thread *thread_alloc(void) {
-	thread_pool_entry_t *block;
-	struct thread *t;
-
-	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
-		return NULL;
-	}
-
-	t = &block->thread;
-
-	t->stack = block->stack + sizeof(struct thread);
-	t->stack_sz = STACK_SZ - sizeof(struct thread);
-
-	return t;
-}
-
-static void thread_free(struct thread *t) {
-	thread_pool_entry_t *block;
-
-	assert(t != NULL);
-
-	// TODO may be this is not the best way... -- Eldar
-	block = member_cast_out(t, thread_pool_entry_t, thread);
-	pool_free(&thread_pool, block);
 }
