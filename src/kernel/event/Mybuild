@@ -2,7 +2,6 @@ package embox.kernel
 
 @DefaultImpl(event_nosched)
 abstract module event_api {
-
 }
 
 module event_nosched extends event_api {
@@ -14,4 +13,20 @@ module event_sched extends event_api {
 
 //	depends embox.kernel.thread.sched
 	depends embox.kernel.thread.wait_queue
+}
+
+@DefaultImpl(manual_event_nosched)
+abstract module manual_event_api {
+}
+
+module manual_event_nosched extends manual_event_api {
+	source "manual_event_nosched.c", "manual_event_nosched.h"
+}
+
+module manual_event_sched extends manual_event_api {
+	source "manual_event_sched.c", "manual_event_sched.h"
+
+	depends embox.kernel.thread.sched
+	depends embox.kernel.thread.wait_queue
+	depends embox.lib.LibC
 }
