@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_SEM_H_
 #define KERNEL_THREAD_SYNC_SEM_H_
 
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched/wait_queue.h>
 
 struct sem {
 	struct wait_queue wq;

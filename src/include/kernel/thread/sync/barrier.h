@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_BARRIER_H_
 #define KERNEL_THREAD_SYNC_BARRIER_H_
 
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched/wait_queue.h>
 
 struct barrier {
 	struct wait_queue wq;

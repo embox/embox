@@ -8,8 +8,8 @@
  * @author Alexandr Kalmuk
  */
 
-#ifndef KERNEL_THREAD_SCHED_LOCK_H_
-#define KERNEL_THREAD_SCHED_LOCK_H_
+#ifndef KERNEL_SCHED_SCHED_LOCK_H_
+#define KERNEL_SCHED_SCHED_LOCK_H_
 
 #include <kernel/critical.h>
 
@@ -46,4 +46,4 @@ static inline void sched_unlock_noswitch(void) {
 	critical_leave(CRITICAL_SCHED_LOCK);
 }
 
-#endif /* KERNEL_THREAD_SCHED_LOCK_H_ */
+#endif /* KERNEL_SCHED_SCHED_LOCK_H_ */

@@ -20,7 +20,7 @@
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <mem/objalloc.h>
 #include <cmd/shell.h>
 #include <embox/unit.h>

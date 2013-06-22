@@ -27,7 +27,7 @@
 #include <util/math.h> /*clamp */
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/wait_data.h>
 

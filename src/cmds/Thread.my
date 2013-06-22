@@ -22,7 +22,7 @@ module thread {
 
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

@@ -16,7 +16,7 @@
 #include <sys/select.h>
 
 #include <kernel/event.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>

@@ -11,7 +11,7 @@
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/sched/sched_strategy.h>
 
 #include <kernel/cpu.h>
 

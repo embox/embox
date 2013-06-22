@@ -9,9 +9,9 @@
 #ifndef KERNEL_THREAD_SCHED_STRATEGY_SIMPLE_QUEUE_H_
 #define KERNEL_THREAD_SCHED_STRATEGY_SIMPLE_QUEUE_H_
 
-#include <kernel/thread/startq.h>
+#include <kernel/sched/startq.h>
 
-#include <module/embox/kernel/thread/sched_policy/queue/api.h>
+#include <module/embox/kernel/sched/sched_policy/queue/api.h>
 
 struct thread;
 struct sys_timer;

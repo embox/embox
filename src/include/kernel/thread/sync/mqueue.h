@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_MQUEUE_H_
 #define KERNEL_THREAD_SYNC_MQUEUE_H_
 
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/sched/sched_strategy.h>
 
 #define MQUEUE_SIZE      1024
 #define MQUEUE_LEN_SIZE  sizeof(unsigned int)

@@ -20,7 +20,7 @@
 #include <kernel/thread/state.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);

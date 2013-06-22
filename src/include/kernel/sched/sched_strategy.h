@@ -10,12 +10,12 @@
  *          - Description of functions
  */
 
-#ifndef KERNEL_THREAD_SCHED_STRATEGY_H_
-#define KERNEL_THREAD_SCHED_STRATEGY_H_
+#ifndef KERNEL_SCHED_SCHED_STRATEGY_H_
+#define KERNEL_SCHED_SCHED_STRATEGY_H_
 
-#include <module/embox/kernel/thread/sched_policy/api.h>
+#include <module/embox/kernel/sched/sched_policy/api.h>
 
-#include <kernel/thread/sched_priority.h>
+#include <kernel/sched/sched_priority.h>
 
 struct thread;
 
@@ -213,4 +213,4 @@ extern struct thread *sleepq_get_thread(struct sleepq *sleepq);
 #define sleepq_foreach(thread, sleepq) \
 	  __sleepq_foreach(thread, sleepq)
 
-#endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */
+#endif /* KERNEL_SCHED_SCHED_STRATEGY_H_ */

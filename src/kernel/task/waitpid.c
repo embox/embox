@@ -10,9 +10,9 @@
 
 #include <kernel/task.h>
 #include <kernel/task/task_table.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/sched_lock.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched/wait_queue.h>
 
 int task_waitpid(pid_t pid) {
 	struct task *task;

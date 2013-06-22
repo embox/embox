@@ -12,7 +12,7 @@
 #include <mem/misc/pool.h>
 #include <kernel/usermode.h>
 #include <kernel/thread.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
 
 /* Simultaneous number of task creation */

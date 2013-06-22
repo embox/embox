@@ -12,19 +12,19 @@ module sync {
 module mutex {
 	source "mutex.c"
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }
 
 module sem {
 	source "sem.c"
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }
 
 module barrier {
 	source "barrier.c"
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }
 
 module cond {
@@ -32,17 +32,17 @@ module cond {
 
 	depends mutex
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }
 
 module rwlock {
 	source "rwlock.c"
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }
 
 module mqueue {
 	source "mqueue.c"
 
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 }

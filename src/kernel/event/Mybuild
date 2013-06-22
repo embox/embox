@@ -11,8 +11,8 @@ module event_nosched extends event_api {
 module event_sched extends event_api {
 	source "event_sched.c", "event_sched.h"
 
-//	depends embox.kernel.thread.sched
-	depends embox.kernel.thread.wait_queue
+//	depends embox.kernel.sched.sched
+	depends embox.kernel.sched.wait_queue
 }
 
 @DefaultImpl(manual_event_nosched)
@@ -26,7 +26,7 @@ module manual_event_nosched extends manual_event_api {
 module manual_event_sched extends manual_event_api {
 	source "manual_event_sched.c", "manual_event_sched.h"
 
-	depends embox.kernel.thread.sched
-	depends embox.kernel.thread.wait_queue
+	depends embox.kernel.sched.sched
+	depends embox.kernel.sched.wait_queue
 	depends embox.lib.LibC
 }

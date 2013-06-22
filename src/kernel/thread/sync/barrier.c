@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/thread/sync/barrier.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 
 void barrier_init(barrier_t *b, int count) {
 	wait_queue_init(&b->wq);

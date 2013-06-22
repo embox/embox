@@ -13,7 +13,7 @@
 
 #include <asm/io.h>
 
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <arpa/inet.h>
 #include <fs/fat.h>
 #include <drivers/ide.h>

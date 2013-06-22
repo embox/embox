@@ -15,7 +15,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/event.h>
 
 #include <util/ring_buff.h>

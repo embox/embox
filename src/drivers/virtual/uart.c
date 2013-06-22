@@ -23,8 +23,8 @@
 #include <kernel/irq.h>
 
 #include <kernel/event.h>
-#include <kernel/thread/sched_lock.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched.h>
 
 static struct uart_device *uart_dev;
 

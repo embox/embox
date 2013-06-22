@@ -9,7 +9,7 @@
 #include <util/dlist.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/sched/sched_strategy.h>
 
 void sched_strategy_init(struct sched_strategy_data *s) {
 	dlist_head_init(&s->l_link);

@@ -223,7 +223,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 
 	return ret;
 }
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 static int tcp_accept(struct sock *sk,
 		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
 	int ret;

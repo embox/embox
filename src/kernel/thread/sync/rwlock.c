@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/thread/sync/rwlock.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 
 #define RWLOCK_STATUS_NONE    0
 #define RWLOCK_STATUS_READING 1

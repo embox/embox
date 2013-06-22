@@ -7,8 +7,8 @@
  */
 
 #include <kernel/event.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched.h>
+#include <kernel/sched/wait_queue.h>
 
 void event_init(struct event *event, const char *name) {
 	wait_queue_init(&event->wait_queue);

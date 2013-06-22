@@ -4,7 +4,7 @@ module event_test {
 	source "event_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
 }

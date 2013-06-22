@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/thread/sync/cond.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 
 void cond_init(cond_t *c) {
 	wait_queue_init(&c->wq);

@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <kernel/task.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <sys/select.h>
 #include <math.h>
 

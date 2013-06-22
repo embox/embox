@@ -6,8 +6,8 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_WAIT_QUEUE_H_
-#define KERNEL_THREAD_WAIT_QUEUE_H_
+#ifndef KERNEL_SCHED_WAIT_QUEUE_H_
+#define KERNEL_SCHED_WAIT_QUEUE_H_
 
 #include <util/dlist.h>
 
@@ -41,5 +41,4 @@ extern void wait_queue_insert(struct wait_queue *wait_queue,
 extern void wait_queue_prepare(struct wait_link *wait_link);
 extern void wait_queue_cleanup(struct wait_link *wait_link);
 
-#endif /* KERNEL_THREAD_WAIT_QUEUE_H_ */
-
+#endif /* KERNEL_SCHED_WAIT_QUEUE_H_ */

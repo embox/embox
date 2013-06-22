@@ -18,7 +18,7 @@
 #include <framework/mod/options.h>
 
 #include <kernel/thread/current.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <sys/types.h>
 
 #define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \

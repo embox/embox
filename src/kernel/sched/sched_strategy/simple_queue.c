@@ -13,8 +13,8 @@
 #include <stdio.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
 
 #include <kernel/cpu.h>

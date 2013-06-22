@@ -12,7 +12,7 @@
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
 #include <kernel/task/std_signal.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include "common.h"
 #include <util/array.h>
 

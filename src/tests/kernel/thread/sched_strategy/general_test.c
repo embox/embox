@@ -11,8 +11,8 @@
 #include <errno.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched.h>
+#include <kernel/sched/wait_queue.h>
 
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 

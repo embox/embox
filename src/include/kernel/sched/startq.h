@@ -6,8 +6,8 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_STARTQ_H_
-#define KERNEL_THREAD_STARTQ_H_
+#ifndef KERNEL_SCHED_STARTQ_H_
+#define KERNEL_SCHED_STARTQ_H_
 
 #include <util/dlist.h>
 
@@ -27,4 +27,4 @@ struct startq_data {
 extern void startq_init_thread(struct startq_data *startq_data);
 extern void startq_init_sleepq(struct startq_data *startq_data);
 
-#endif /* KERNEL_THREAD_STARTQ_H_ */
+#endif /* KERNEL_SCHED_STARTQ_H_ */

@@ -8,8 +8,8 @@
 
 #include <errno.h>
 
-#include <kernel/thread/sched.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_lock.h>
 #include <kernel/thread/sync/mqueue.h>
 
 static inline int mqueue_busyspace(struct mqueue *q) {

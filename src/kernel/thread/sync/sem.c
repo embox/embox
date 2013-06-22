@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/thread/sync/sem.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 
 static int tryenter_sched_lock(sem_t *s);
 

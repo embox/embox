@@ -10,7 +10,7 @@
 #define KERNEL_THREAD_SYNC_COND_H_
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched/wait_queue.h>
 
 struct cond {
 	struct wait_queue wq;

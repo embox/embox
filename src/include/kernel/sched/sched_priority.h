@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_THREAD_SCHED_PRIORITY_H_
-#define KERNEL_THREAD_SCHED_PRIORITY_H_
+#ifndef KERNEL_SCHED_SCHED_PRIORITY_H_
+#define KERNEL_SCHED_SCHED_PRIORITY_H_
 
 #include <kernel/thread/thread_priority.h>
 #include <kernel/task/task_priority.h>
@@ -25,4 +25,4 @@ static inline sched_priority_t get_sched_priority(task_priority_t task_priority,
 		+ (sched_priority_t)(thread_priority - THREAD_PRIORITY_MIN);
 }
 
-#endif /* KERNEL_THREAD_SCHED_PRIORITY_H_ */
+#endif /* KERNEL_SCHED_SCHED_PRIORITY_H_ */

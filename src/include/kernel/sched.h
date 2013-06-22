@@ -8,14 +8,14 @@
  * @author Alina Kramar
  */
 
-#ifndef KERNEL_THREAD_SCHED_H_
-#define KERNEL_THREAD_SCHED_H_
+#ifndef KERNEL_SCHED_H_
+#define KERNEL_SCHED_H_
 
 #include <sys/types.h>
 
 #include <kernel/thread/current.h>
-#include <kernel/thread/sched_lock.h>
-#include <kernel/thread/sched_priority.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched/sched_priority.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/wait_data.h>
 
@@ -177,4 +177,4 @@ extern void sched_cleanup_wait(void);
 extern int sched_wait(unsigned long timeout);
 extern int sched_wait_locked(unsigned long timeout);
 
-#endif /* KERNEL_THREAD_SCHED_H_ */
+#endif /* KERNEL_SCHED_H_ */

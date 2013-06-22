@@ -10,8 +10,8 @@
 #ifndef KERNEL_EVENT_EVENT_SCHED_H_
 #define KERNEL_EVENT_EVENT_SCHED_H_
 
-#include <kernel/thread/sched.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched.h>
+#include <kernel/sched/wait_queue.h>
 
 #define EVENT_TIMEOUT_INFINITE SCHED_TIMEOUT_INFINITE
 

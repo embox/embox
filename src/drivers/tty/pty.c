@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
 

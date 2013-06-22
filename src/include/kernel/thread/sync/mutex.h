@@ -11,7 +11,7 @@
 
 
 #include <kernel/thread.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched/wait_queue.h>
 
 /**
  * Defines Mutex structure.

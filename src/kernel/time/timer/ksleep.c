@@ -11,7 +11,7 @@
 #include <kernel/time/ktime.h>
 
 #include <kernel/time/timer.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/event.h>
 
 int ksleep(useconds_t msec) {

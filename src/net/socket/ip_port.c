@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <framework/mod/options.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <limits.h>
 #include <netinet/in.h>
 #include <stddef.h>

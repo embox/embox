@@ -12,8 +12,8 @@
 #include <util/dlist.h>
 
 #include <kernel/time/timer.h>
-#include <kernel/thread/startq.h>
-#include <kernel/thread/sched_priority.h>
+#include <kernel/sched/startq.h>
+#include <kernel/sched/sched_priority.h>
 #include <kernel/task.h>
 
 struct thread;

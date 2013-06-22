@@ -20,9 +20,9 @@
 
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/thread/current.h>
-#include <kernel/thread/sched_strategy.h>
+#include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/time/timer.h>
 #include <kernel/task.h>

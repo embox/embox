@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <kernel/manual_event.h>
 #include <kernel/softirq_lock.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/wait_queue.h>
+#include <kernel/sched.h>
+#include <kernel/sched/wait_queue.h>
 
 void manual_event_init(struct manual_event *m_event, int set) {
 	assert(m_event != NULL);
