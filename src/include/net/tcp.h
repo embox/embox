@@ -14,6 +14,7 @@
 #include <linux/types.h>
 
 #include <sys/time.h>
+#include <kernel/event.h>
 
 #include <netinet/tcp.h>
 

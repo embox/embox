@@ -11,7 +11,7 @@
 #include <embox/net/sock.h>
 #include <errno.h>
 #include <hal/ipl.h>
-#include <kernel/event.h>
+#include <kernel/manual_event.h>
 #include <kernel/task/io_sync.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
@@ -282,7 +282,8 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
-int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags, int stream_mode) {
+int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
+		int flags, int stream_mode) {
 	struct sk_buff *skb;
 	char *buff;
 	size_t buff_sz, total_len, len;

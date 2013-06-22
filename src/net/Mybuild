@@ -38,7 +38,7 @@ module sock {
 	depends embox.arch.interrupt
 	depends embox.mem.pool
 	depends embox.lib.LibC
-	depends embox.kernel.thread.event
+	depends embox.kernel.manual_event_api
 	depends embox.kernel.task.io_sync_api /* TODO */
 	depends embox.framework.LibFrameworkNet
 }

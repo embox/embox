@@ -29,6 +29,7 @@
 #include <net/ip_port.h>
 #include <net/if_ether.h>
 
+#include <kernel/event.h>
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
 #include <kernel/softirq_lock.h>

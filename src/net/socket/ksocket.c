@@ -422,8 +422,11 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 	ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
 		timeout = timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
-		if (0 == manual_event_wait(&sock->sk->sock_is_not_empty,
-				timeout != 0 ? timeout : SCHED_TIMEOUT_INFINITE)) {
+		if (timeout == 0) {
+			timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
+		}
+		ret = manual_event_wait(&sock->sk->sock_is_not_empty, timeout);
+		if (ret == 0) {
 			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 			assert(ret != -EAGAIN);
 		}
