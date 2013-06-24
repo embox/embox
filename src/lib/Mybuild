@@ -7,6 +7,7 @@ module linenoise extends readline_api {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "readline/linenoise.c"
 
+	depends embox.compat.posix.fs.dirent
 	depends embox.lib.LibC
 	depends third_party.lib.linenoise
 }
