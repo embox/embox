@@ -9,8 +9,6 @@
 #ifndef MKFS_H_
 #define MKFS_H_
 
-#include <fs/node.h>
-
 #define MKFS_CREATE_RAMDISK 0x00000001
 #define MKFS_FORMAT_DEV     0x00000002
 

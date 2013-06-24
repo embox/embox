@@ -56,7 +56,7 @@ static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 	int res;
-	ramdisk_t *ramdisk;
+	struct ramdisk *ramdisk;
 
 	if (!par) {
 		return 0;
@@ -74,7 +74,7 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	dev_node = ramdisk->dev_node;
+	dev_node = ramdisk->bdev->dev_node;
 	if (!dev_node) {
 		return -1;
 	}

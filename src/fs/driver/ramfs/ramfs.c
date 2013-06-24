@@ -27,7 +27,6 @@
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 #include <fs/file_system.h>
-#include <fs/file_desc.h>
 
 
 /* ramfs filesystem description pool */
@@ -42,7 +41,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,ramfs_file_size)
 #define FILESYSTEM_SIZE OPTION_GET(NUMBER,ramfs_filesystem_size)
 
-#define RAMFS_NAME "ramfs"
+
 #define RAMFS_DEV  "/dev/ram#"
 #define RAMFS_DIR  "/"
 
@@ -72,7 +71,7 @@ static int ramfs_init(void * par) {
 		return -1;
 	}
 
-	dev_node = ramdisk->dev_node;
+	dev_node = ramdisk->bdev->dev_node;
 	if (!dev_node) {
 		return -1;
 	}
@@ -388,28 +387,7 @@ static int ramfs_stat(void *file, void *buff) {
 */
 
 
-static int ramfs_init(void * par);
-static int ramfs_format(void *path);
-static int ramfs_mount(void *dev, void *dir);
-static int ramfs_create(struct node *parent_node, struct node *node);
-static int ramfs_delete(struct node *node);
-static int ramfs_truncate(struct node *node, off_t length);
 
-static struct fsop_desc ramfs_fsop = {
-	.init = ramfs_init,
-	.format = ramfs_format,
-	.mount = ramfs_mount,
-	.create_node = ramfs_create,
-	.delete_node = ramfs_delete,
-
-	.truncate = ramfs_truncate,
-};
-
-static struct fs_driver ramfs_driver = {
-	.name = RAMFS_NAME,
-	.file_op = &ramfs_fop,
-	.fsop = &ramfs_fsop,
-};
 
 static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	ramfs_file_info_t *fi;
@@ -424,25 +402,6 @@ static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 
 	return fi;
 }
-
-/*
-static node_t *ramfs_create_dot(node_t *parent_node, const char *name) {
-	node_t *dot_node;
-	struct nas *parent_nas, *nas;
-
-	parent_nas = parent_node->nas;
-
-	dot_node = vfs_create_child(parent_node, name, S_IFDIR);
-	if (dot_node) {
-		nas = dot_node->nas;
-		nas->fs = parent_nas->fs;
-		// don't need create fi for directory - take root node fi /
-		nas->fi->privdata = parent_nas->fi->privdata;
-	}
-
-	return dot_node;
-}
-*/
 
 static int ramfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
@@ -554,6 +513,23 @@ static int ramfs_mount(void *dev, void *dir) {
 
 	return 0;
 }
+
+
+static struct fsop_desc ramfs_fsop = {
+	.init = ramfs_init,
+	.format = ramfs_format,
+	.mount = ramfs_mount,
+	.create_node = ramfs_create,
+	.delete_node = ramfs_delete,
+
+	.truncate = ramfs_truncate,
+};
+
+static struct fs_driver ramfs_driver = {
+	.name = "ramfs",
+	.file_op = &ramfs_fop,
+	.fsop = &ramfs_fsop,
+};
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);
 

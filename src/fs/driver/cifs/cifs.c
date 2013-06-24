@@ -22,7 +22,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-//#include <drivers/ramdisk.h>
+
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 
@@ -161,7 +161,7 @@ static int cifsfs_format(void *dev) {
 static int cifsfs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 	int res;
-	ramdisk_t *ramdisk;
+	struct ramdisk *ramdisk;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
@@ -172,11 +172,11 @@ static int cifsfs_mount(void *dev, void *dir) {
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->format((void *) ramdisk->dev_node))) {
+	if (0 != (res = drv->fsop->format((void *) ramdisk->bdev->dev_node))) {
 		return res;
 	}
 
-	return drv->fsop->mount(ramdisk->dev_node, dir);
+	return drv->fsop->mount(ramdisk->bdev->dev_node, dir);
 }
 
 static int cifsfs_truncate (struct node *node, off_t length) {

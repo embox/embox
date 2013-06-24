@@ -9,8 +9,10 @@
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
+#include <stdio.h>
+#include <ctype.h>
 
-#include <cmd/mkfs.h>
+#include <err.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
 
@@ -19,6 +21,7 @@
 #include <mem/phymem.h>
 
 #include <util/indexator.h>
+#include <util/binalign.h>
 
 #include <embox/block_dev.h>
 
@@ -28,11 +31,8 @@
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_BLOCK_SIZE  PAGE_SIZE()
 
-typedef struct dev_ramdisk_head {
-	ramdisk_t param;
-} dev_ramdisk_head_t;
 
-POOL_DEF(ramdisk_pool,struct dev_ramdisk_head,MAX_DEV_QUANTITY);
+POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
 
 static int ram_init(void *arg);
@@ -47,48 +47,59 @@ block_dev_driver_t ramdisk_pio_driver = {
   write_sectors
 };
 
-//EMBOX_UNIT_INIT(unit_init);
+static int ramdisk_get_index(char *path) {
+	char *dev_name;
+	int idx;
 
-ramdisk_t *ramdisk_create(char *path, size_t size) {
-	ramdisk_t *ramdisk;
+	if(NULL == (dev_name = strstr(path, "ram"))) {
+		return -1;
+	}
+	dev_name += sizeof("ram");
+
+	if(!isdigit((int)dev_name[0])) {
+		return -1;
+	}
+
+	sscanf(dev_name, "%d", &idx);
+
+	return idx;
+}
+
+struct ramdisk *ramdisk_create(char *path, size_t size) {
+	struct ramdisk *ramdisk;
+	int idx;
 
 	if (NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
-		SET_ERRNO(ENOMEM);
-		return NULL;
-	}
-	if (0 > (ramdisk->idx = block_dev_named(path, &ramdisk_idx))) {
-		SET_ERRNO(ENOENT);
-		return NULL;
+		return err_ptr(ENOMEM);
 	}
 
-	if (NULL == (ramdisk->bdev = block_dev_create(path,
-			&ramdisk_pio_driver, ramdisk))) {
-		index_free(&ramdisk_idx, ramdisk->idx);
+	if (0 > (idx = block_dev_named(path, &ramdisk_idx))) {
+	//if(0 > (idx =index_alloc(&ramdisk_idx, INDEX_ALLOC_MIN))) {
 		pool_free(&ramdisk_pool, ramdisk);
-		SET_ERRNO(EIO);
-		return NULL;
+		return err_ptr(ENOENT);
 	}
 
-	ramdisk->dev_node = block_dev(ramdisk->bdev)->dev_node;
+	ramdisk->bdev = block_dev_create(path, &ramdisk_pio_driver, ramdisk);
+	if (NULL == ramdisk->bdev) {
+		index_free(&ramdisk_idx, idx);
+		pool_free(&ramdisk_pool, ramdisk);
+		return err_ptr(EIO);
+	}
 
+	size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
 	ramdisk->blocks = size / RAMDISK_BLOCK_SIZE;
-	if (size % RAMDISK_BLOCK_SIZE) {
-		ramdisk->blocks++;
-	}
-	if (NULL == (ramdisk->p_start_addr =
-			page_alloc(__phymem_allocator, ramdisk->blocks))) {
+	ramdisk->block_size = RAMDISK_BLOCK_SIZE;
+
+	ramdisk->p_start_addr = page_alloc(__phymem_allocator, ramdisk->blocks);
+	if (NULL == (ramdisk->p_start_addr)) {
 		block_dev_destroy(ramdisk->bdev);
-		index_free(&ramdisk_idx, ramdisk->idx);
+		index_free(&ramdisk_idx, idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		SET_ERRNO(ENOMEM);
-		return NULL;
+
+		return err_ptr(ENOMEM);
 	}
 
-	strncpy ((void *)&ramdisk->path,
-			 (const void *)path, PATH_MAX);
-	ramdisk->size = ramdisk->blocks * RAMDISK_BLOCK_SIZE;
-	block_dev(ramdisk->bdev)->size = ramdisk->size;
-	ramdisk->block_size = PAGE_SIZE();
+	ramdisk->bdev->size = size;
 
 	return ramdisk;
 }
@@ -111,14 +122,18 @@ int ramdisk_delete(const char *name) {
 	ramdisk_t *ramdisk;
 	struct nas *nas;
 	struct node_fi *node_fi;
+	int idx;
 
 	if (NULL == (ramdisk_node = vfs_lookup(NULL, name))) {
 		return -1;
 	}
+
 	nas = ramdisk_node->nas;
 	node_fi = nas->fi;
 	if (NULL != (ramdisk = (ramdisk_t *) block_dev(node_fi->privdata)->privdata)) {
-		index_free(&ramdisk_idx, ramdisk->idx);
+		if (-1 != (idx = ramdisk_get_index((char *)name))) {
+			index_free(&ramdisk_idx, idx);
+		}
 		pool_free(&ramdisk_pool, ramdisk);
 		block_dev_destroy (node_fi->privdata);
 		vfs_del_leaf(ramdisk_node);

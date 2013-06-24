@@ -123,7 +123,6 @@ static block_dev_module_t *block_dev_find(char *name) {
 */
 
 block_dev_t *block_dev(void *dev) {
-
 	return (block_dev_t *)dev;
 }
 
