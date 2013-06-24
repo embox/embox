@@ -76,7 +76,18 @@ static char * cmd_generator(const char *text, int state) {
 
 static char ** cmd_completion(const char *text, int start,
 		int end) {
-	return rl_completion_matches((char *)text, &cmd_generator);
+	char **matches;
+
+
+	if (start == 0) {
+		matches = rl_completion_matches((char *)text,
+				&cmd_generator);
+	}
+	else {
+		matches = NULL;
+	}
+
+	return matches;
 }
 
 static int is_builtin(const char *cname) {
