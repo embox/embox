@@ -57,7 +57,7 @@ static module getcwd {
 static module open {
 	source "open.c"
 
-	depends embox.fs.posix_compat
+	depends embox.fs.index_operation
 	depends embox.kernel.task.errno
 }
 

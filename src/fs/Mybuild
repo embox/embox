@@ -43,8 +43,8 @@ module core extends fs_api {
 	depends filesystem
 }
 
-module posix_compat {
-	source "posix_compat.c"
+module index_operation {
+	source "index_operation.c"
 	depends fs_api
 	depends embox.kernel.task.idx_table
 }
