@@ -51,18 +51,45 @@ struct cmd_data {
 	const struct cmd *cmd;
 };
 
-static void completion_hnd(const char *buf, linenoiseCompletions_t *lc) {
-	const struct cmd *cmd = NULL;
-	int buf_len = strlen(buf);
+static char * cmd_generator(const char *text, int state) {
+	static int last_ind;
+	static size_t text_len;
+	int ind;
+	const struct cmd *cmd;
 
+	if (state == 0) {
+		last_ind = 0;
+		text_len = strlen(text);
+	}
+
+	ind = 0;
 	cmd_foreach(cmd) {
-		if (strlen(cmd_name(cmd)) < buf_len) {
+		if (ind++ < last_ind) {
 			continue;
 		}
-		if (strncmp(buf, cmd_name(cmd), buf_len) == 0) {
-			linenoiseAddCompletion(lc, (char *)cmd_name(cmd));
+		if (strncmp(text, cmd_name(cmd), text_len) == 0) {
+			last_ind = ind;
+			return strdup(cmd_name(cmd));
 		}
 	}
+
+	return NULL;
+}
+
+static char ** cmd_completion(const char *text, int start,
+		int end) {
+	char **matches;
+
+
+	if (start == 0) {
+		matches = rl_completion_matches((char *)text,
+				&cmd_generator);
+	}
+	else {
+		matches = NULL;
+	}
+
+	return matches;
 }
 
 static int is_builtin(const char *cname) {
@@ -259,7 +286,9 @@ static void tish_run(void) {
 	 * Set the completion callback. This will be called every time the
 	 * user uses the <tab> key.
 	 */
-	linenoiseSetCompletionCallback(completion_hnd);
+	readline_init();
+	rl_attempted_completion_function = cmd_completion;
+	rl_bind_key('\t', rl_complete);
 
 #if 0
 	/**
