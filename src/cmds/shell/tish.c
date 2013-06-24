@@ -32,8 +32,6 @@
 
 #include <cmd/shell.h>
 
-#define BUF_INP_SIZE OPTION_GET(NUMBER, input_buf_size)
-
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
 
 #define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
@@ -46,8 +44,8 @@
 
 struct cmd_data {
 	int argc;
-	char *argv[(BUF_INP_SIZE + 1) / 2];
-	char buff[BUF_INP_SIZE];
+	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
+	char buff[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
 };
 
@@ -201,7 +199,7 @@ static int process(struct cmd_data *cdata) {
 static int tish_exec(const char *cmdline) {
 	struct cmd_data *cdata;
 
-	if (strlen(cmdline) >= BUF_INP_SIZE) {
+	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
 		return -EINVAL;
 	}
 

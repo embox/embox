@@ -6,6 +6,7 @@
  * @date 04.04.13
  */
 
+#include <cmd/shell.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -48,10 +49,9 @@ int rl_bind_key(int key, rl_command_func_t *function) {
 }
 
 int rl_complete(int ignore, int invoking_key) {
-	static char buff[100];
-	char **matches, **match;
 	const char *last_word;
 	size_t start, end;
+	char **matches, **match, buff[SHELL_INPUT_BUFF_SZ];
 
 	if (invoking_key != '\t') {
 		return EINVAL;
