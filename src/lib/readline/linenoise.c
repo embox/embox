@@ -82,7 +82,7 @@ int rl_complete(int ignore, int invoking_key) {
 		}
 	}
 
-	memcpy(&buff[0], complcb_text, start);
+	strncpy(&buff[0], complcb_text, start);
 	for (match = matches + 1; *match != NULL; ++match) {
 		strcpy(&buff[start], *match);
 		linenoiseAddCompletion(complcb_lc, &buff[0]);
@@ -136,7 +136,7 @@ char ** rl_completion_matches(const char *text,
 
 char * rl_filename_completion_function(const char *text,
 		int state) {
-	static DIR *dir;
+	static DIR *dir = NULL;
 	static char path[PATH_MAX], name[NAME_MAX];
 	static size_t path_len, name_len;
 	struct dirent *dent;
@@ -156,13 +156,17 @@ char * rl_filename_completion_function(const char *text,
 			strcpy(&name[0], text);
 		}
 		else {
-			strncpy(&path[0], text,
-					(slash - text + 1) * sizeof(char));
+			strncpy(&path[0], text, (slash - text + 1));
+			path[slash - text + 1] = '\0';
 			strcpy(&name[0], slash + 1);
 		}
 		path_len = strlen(&path[0]);
 		name_len = strlen(&name[0]);
 
+		/* close old dir */
+		if (dir != NULL) {
+			closedir(dir);
+		}
 		/* open path dir */
 		dir = opendir(&path[0]);
 		if (dir == NULL) {
@@ -179,6 +183,8 @@ char * rl_filename_completion_function(const char *text,
 	}
 
 	closedir(dir);
+	dir = NULL;
+
 	return NULL;
 }
 
