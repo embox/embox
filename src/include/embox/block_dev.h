@@ -10,10 +10,8 @@
 #ifndef BLOCK_DEV_H_
 #define BLOCK_DEV_H_
 
-#include <util/array.h>
-#include <util/indexator.h>
-#include <fs/node.h>
 #include <limits.h>
+#include <sys/types.h>
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
@@ -66,8 +64,12 @@ typedef struct block_dev_cache {
 	int buff_cntr;
 } block_dev_cache_t;
 
+
+struct indexator;
+struct block_dev;
+
 extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
-extern block_dev_t *block_dev(void *bdev);
+extern struct block_dev *block_dev(void *bdev);
 extern dev_t block_dev_open(char *name);
 extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
 extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
@@ -78,9 +80,12 @@ extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
 
-extern const block_dev_module_t __block_dev_registry[];
+
+#include <util/array.h>
+
 #define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
-		ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
+	extern const block_dev_module_t __block_dev_registry[]; \
+	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
 
 
 extern int block_devs_init(void);

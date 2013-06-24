@@ -12,19 +12,23 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
+
+#include <util/array.h>
+#include <util/indexator.h>
+#include <mem/misc/pool.h>
+#include <mem/phymem.h> /* PAGE_SIZE() */
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
-#include <util/array.h>
+
 #include <embox/unit.h>
 #include <embox/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
 #include <drivers/ramdisk.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <limits.h>
+
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));

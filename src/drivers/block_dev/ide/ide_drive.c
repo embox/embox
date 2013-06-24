@@ -40,16 +40,24 @@
  * SUCH DAMAGE.
  */
 
-#include <asm/io.h>
-#include <embox/unit.h>
-#include <kernel/irq.h>
-#include <kernel/time/clock_source.h>
+
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <fs/fat.h>
+
+#include <util/indexator.h>
+
+//TODO asm/io.h wrong place
+#include <asm/io.h>
+
+#include <embox/unit.h>
+#include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
+
+
+//#include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>

@@ -8,19 +8,26 @@
 
 #include <errno.h>
 #include <string.h>
+#include <limits.h>
+
 #include <cmd/mkfs.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
-#include <drivers/ramdisk.h>
+
 #include <mem/page.h>
 #include <mem/misc/pool.h>
-#include <embox/block_dev.h>
 #include <mem/phymem.h>
+
 #include <util/indexator.h>
-#include <limits.h>
+
+#include <embox/block_dev.h>
+
+#include <drivers/ramdisk.h>
+
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_BLOCK_SIZE  PAGE_SIZE()
+
 typedef struct dev_ramdisk_head {
 	ramdisk_t param;
 } dev_ramdisk_head_t;
@@ -29,9 +36,9 @@ POOL_DEF(ramdisk_pool,struct dev_ramdisk_head,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
 
 static int ram_init(void *arg);
-static int read_sectors(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
-static int write_sectors(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
-static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
+static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
 block_dev_driver_t ramdisk_pio_driver = {
   "ramdisk_drv",
@@ -119,9 +126,6 @@ int ramdisk_delete(const char *name) {
 	return 0;
 }
 
-//static int unit_init(void) {
-//	return 0;
-//}
 
 static int ram_init(void *arg) {
 	return 0;
