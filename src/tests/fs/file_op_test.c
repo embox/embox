@@ -24,6 +24,8 @@
 #include <mem/page.h>
 #include <embox/test.h>
 
+#include <err.h>
+
 EMBOX_TEST_SUITE("fs/file test");
 
 TEST_SETUP_SUITE(setup_suite);
@@ -253,8 +255,8 @@ TEST_CASE("Move file") {
 static int setup_suite(void) {
 	int fd, res;
 
-	if (NULL == ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
-		return -1;
+	if (0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
+		return res;
 	}
 
 	/* format filesystem */

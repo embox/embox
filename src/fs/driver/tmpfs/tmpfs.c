@@ -31,6 +31,8 @@
 #include <fs/vfs.h>
 #include <fs/tmpfs.h>
 
+#include <err.h>
+
 
 /* tmpfs filesystem description pool */
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_info, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
@@ -69,8 +71,8 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	if (NULL == (ramdisk = ramdisk_create(TMPFS_DEV,
-					FILESYSTEM_SIZE * PAGE_SIZE()))) {
+	ramdisk = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE());
+	if (0 != (res = err(ramdisk))) {
 		return -1;
 	}
 
