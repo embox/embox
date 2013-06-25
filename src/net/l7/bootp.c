@@ -84,6 +84,7 @@ int bootp_receive(struct sock *sk, struct sk_buff *skb) {
 	if (r->op != BOOTPREPLY)
 		goto free_and_drop;
 
+	dev = NULL;
 	netdev_foreach(dev) {
 		if (!strncmp((void*)dev->dev_addr, (void*)skb->mac.raw, ETH_ALEN))
 			break;

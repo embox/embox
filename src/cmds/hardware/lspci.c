@@ -197,22 +197,26 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 	}
 	if ((val8 & 0x7F) == 1)
 		regs = bridge_regs;
-	while (regs[i].width)
+	while (regs[i].width != 0)
 	{
 		if (regs[i].width == 1)
 		{
 			ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val8);
 			val = val8;
 		}
-		if (regs[i].width == 2)
+		else if (regs[i].width == 2)
 		{
 			ret = pci_read_config16(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val16);
 			val = val16;
 		}
-		if (regs[i].width == 4)
+		else if (regs[i].width == 4)
 		{
 			ret = pci_read_config32(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val32);
 			val = val32;
+		}
+		else {
+			printk("Bad register width: %d\n", regs[i].width);
+			return;
 		}
 
 		if (ret == 0)

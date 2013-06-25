@@ -166,6 +166,8 @@ static int socks_handler(int sock_udp, int sock_tcp) {
 static int exec(int argc, char *argv[]) {
 	int ret, res, sock_udp, sock_tcp;
 
+	sock_udp = sock_tcp = -1; /* XXX required for -O2 */
+
 	ret = sock_udp_init(&sock_udp);
 	if (ret != 0) return ret;
 

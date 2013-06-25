@@ -425,6 +425,8 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 	const char *name;
 	mode_t mode;
 
+	nas = NULL; /* XXX required for -O2 */
+
 	name = (const char *) predesc->file_name.name.data;
 
 	node = vfs_lookup_child(parent_nas->node, name);

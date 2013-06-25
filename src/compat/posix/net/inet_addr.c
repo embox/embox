@@ -51,6 +51,8 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	assert(in6 != NULL);
 	assert(buff != NULL);
 
+	zs_ind = 0; /* XXX required for -O2 */
+
 	zs_max_ind = 0;
 	zs_len = zs_max_len = 0;
 	for (i = 0; i < ARRAY_SIZE(in6->s6_addr16); ++i) {

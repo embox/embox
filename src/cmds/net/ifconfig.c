@@ -282,6 +282,7 @@ static int exec(int argc, char *argv[]) {
 	struct in_device *iface;
 	struct ifconfig_args args;
 
+	iface = NULL; /* XXX required for -O2 */
 	memset(&args, 0, sizeof args);
 
 	for (i = 1; i < argc; ++i) {

@@ -1426,6 +1426,8 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	node_t *node;
 	mode_t mode;
 
+	rc = 0;
+
 	if (NULL == (name_buff = ext2_buff_alloc(dir_nas, NAME_MAX))) {
 		rc = ENOMEM;
 		return rc;
@@ -1542,6 +1544,8 @@ int ext2_write_map(struct nas *nas, long position,
 	static long out_range_s;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
+
+	index2 = index3 = 0;
 
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
