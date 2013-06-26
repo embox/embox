@@ -11,41 +11,7 @@
 #ifndef NET_SOCKET_SOCKET_H_
 #define NET_SOCKET_SOCKET_H_
 
-#include <netinet/in.h>
-#include <net/sock.h>
-#include <stdbool.h>
-#include <sys/socket.h>
 
-#if 0
-#define SYS_SOCKET      1     /* sys_socket(2) */
-#define SYS_BIND        2     /* sys_bind(2) */
-#define SYS_CONNECT     3     /* sys_connect(2) */
-#define SYS_LISTEN      4     /* sys_listen(2) */
-#define SYS_ACCEPT      5     /* sys_accept(2) */
-#define SYS_GETSOCKNAME 6     /* sys_getsockname(2) */
-#define SYS_GETPEERNAME 7     /* sys_getpeername(2) */
-#define SYS_SOCKETPAIR  8     /* sys_socketpair(2) */
-#define SYS_SEND        9     /* sys_send(2) */
-#define SYS_RECV        10    /* sys_recv(2) */
-#define SYS_SENDTO      11    /* sys_sendto(2) */
-#define SYS_RECVFROM    12    /* sys_recvfrom(2) */
-#define SYS_SHUTDOWN    13    /* sys_shutdown(2) */
-#define SYS_SETSOCKOPT  14    /* sys_setsockopt(2) */
-#define SYS_GETSOCKOPT  15    /* sys_getsockopt(2) */
-#define SYS_SENDMSG     16    /* sys_sendmsg(2) */
-#define SYS_RECVMSG     17    /* sys_recvmsg(2) */
-#endif
-
-#if 0
-typedef enum {
-	SS_FREE = 0,    /* not allocated */
-	SS_UNCONNECTED, /* unconnected to any socket */
-	SS_CONNECTING,  /* in process of connecting */
-	SS_CONNECTED,   /* connected to socket */
-	SS_DISCONNECTING
-/* in process of disconnecting  */
-} socket_state;
-#endif
 
 struct sock;
 struct idx_desc;
@@ -68,7 +34,7 @@ struct socket {
 };
 
 #if 1 /********** TODO remove this ****************/
-#include <net/skbuff.h>
+
 struct sk_buff;
 /**
  * Handle encapsulated protocol.
@@ -76,7 +42,7 @@ struct sk_buff;
  * @return -1 on failure and drop packet.
  */
 typedef int (*sk_encap_hnd)(struct sock *sk, struct sk_buff *pack);
-extern int check_icmp_err(int sockfd);
+
 extern void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd);
 #endif
 
