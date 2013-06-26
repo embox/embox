@@ -21,6 +21,8 @@
 #include <fs/perm.h>
 #include <security/security.h>
 #include <limits.h>
+#include <sys/file.h>
+#include <kernel/task/idx.h>
 
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
@@ -510,15 +512,63 @@ int kumount(const char *dir) {
 }
 
 int kflock(int fd, int operation) {
+	struct idx_desc *idesc;
+	struct file_desc *fdesc;
+	struct mutex *lock;
 
-	/* Operations for the `flock' call.  */
-	#define LOCK_SH 1       /* Shared lock.  */
-	#define LOCK_EX 2       /* Exclusive lock.  */
-	#define LOCK_UN 8       /* Unlock.  */
+	/**
+	 * Base algorithm:
+	 * + Validate operation
+	 * + Validate fd? Algorithm
+	 * + Get lock pointer and other preparations
+	 * - Determine operation (total 3 x 2 = 6)
+	 *    1. Exclusive lock, blocking
+	 *        - If shared block is acquired by current thread then convert it
+	 *          to exclusive
+	 *        - If shared or exclusive lock is acquired then block
+	 *        - Else acquire exclusive lock
+	 *    2. Exclusive lock, non-blocking
+	 *        - The same as 1 but return EWOULDBLOCK instead of blocking
+	 *    3. Shared lock, blocking
+	 *        - If exclusive block is acquired by current thread then convert
+	 *          it to shared
+	 *        - If exclusive lock is acquired then block
+	 *        - Else acquire shared lock
+	 *    4. Shared lock, non-blocking
+	 *        - The same as 3 but return EWOULDBLOCK instead of blocking
+	 *    5. Unlock, blocking
+	 *        - If any lock is acquired by current thread then remove it
+	 *    6. Unlock, non-blocking
+	 *        - The same as 5 but return EWOULDBLOCK instead of blocking
+	 */
 
-	/* Can be OR'd in to one of the above.  */
-	#define LOCK_NB 4       /* Don't block when locking.  */
+	/* Validate operation */
+	if (((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_EX && \
+			((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_SH && \
+			((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_UN)
+		return -EINVAL;
 
+	/* Find lock for provided file descriptor number
+	 * fd is validated inside task_self_idx_get */
+	idesc = task_self_idx_get(fd);
+	fdesc = idesc->data->fd_struct;
+	lock = &fdesc->node->flock.lock;
+
+	/* Determine if lock is acquired */
+	//if...
+
+	if (LOCK_NB & operation) {
+		/* Non-blocking operation */
+	} else {
+		/* Blocking operation */
+		if (LOCK_EX & operation) {
+			mutex_lock(lock);
+		}
+
+		if (LOCK_UN & operation) {
+			mutex_unlock(lock);
+		}
+	}
 
 	return 0;
 }

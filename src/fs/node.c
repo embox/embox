@@ -65,6 +65,12 @@ node_t *node_alloc(const char *name, size_t name_len) {
 	strncpy((char *) node->name, name, name_len);
 	node->name[name_len] = '\0';
 
+	/* flock initialization */
+	mutex_init(&node->flock.lock);
+	node->flock.flags = 0;
+	dlist_init(&node->flock.blocked_list);
+	node->flock.blocker = -1;
+
 	return node;
 }
 
