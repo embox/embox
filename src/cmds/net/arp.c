@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/neighbour.h>

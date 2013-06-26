@@ -35,7 +35,7 @@ module servent_api {
 	depends embox.lib.LibC
 }
 
-module misc {
-	source "misc.c"
+module macaddr {
+	source "macaddr.c"
 	depends embox.lib.LibC
 }

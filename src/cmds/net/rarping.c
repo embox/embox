@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 #include <net/l3/rarp.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>

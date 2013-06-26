@@ -29,7 +29,7 @@
 #include <net/l3/ipv4/ip.h>
 #include <net/inetdevice.h>
 #include <net/util/checksum.h>
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 
 
 EMBOX_CMD(exec);

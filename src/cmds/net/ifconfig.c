@@ -18,7 +18,7 @@
 #include <embox/cmd.h>
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 
 EMBOX_CMD(exec);
 

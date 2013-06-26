@@ -6,43 +6,10 @@
  */
 
 #include <arpa/inet.h>
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>
-
-unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res) {
-	char symbol_str[4];
-	size_t i, j, tmp, cur = 0;
-	for (i = 0; i < (sizeof(res) - 1); i++) {
-		symbol_str[0]='\0';
-		for (j = 0; j < ARRAY_SIZE(symbol_str); j++) {
-			if ('.' == addr[cur + j]) {
-				memcpy(symbol_str, &addr[cur], j);
-				symbol_str[j] = '\0';
-				break;
-			}
-		}
-		if ('\0' == symbol_str[0]) {
-			return NULL;
-		}
-		if (1 != sscanf (symbol_str, "%d", &tmp)) {
-			return NULL;
-		}
-		if (tmp > 0xFF)
-			return NULL;
-		res[i] = tmp;
-		cur += j + 1;
-	}
-	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str));
-	if (1 != sscanf (symbol_str, "%d", &tmp)) {
-		return NULL;
-	}
-	if (tmp > 0xFF)
-		return NULL;
-	res[i] = tmp;
-	return res;
-}
 
 unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];

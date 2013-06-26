@@ -90,7 +90,7 @@ module pnet {
 	depends embox.pnet.node.linux_dev
 	depends embox.mem.heap_api
 	depends embox.pnet.node.skbuff.matcher
-	depends embox.net.util.misc
+	depends embox.net.util.macaddr
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.LibPosix
 	depends embox.net.dev

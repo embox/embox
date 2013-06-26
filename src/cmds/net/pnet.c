@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <net/util/mac_addr.h>
+#include <net/util/macaddr.h>
 #include <arpa/inet.h>
 #include <util/hashtable.h>
 
@@ -353,7 +353,8 @@ static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_ele
 }
 
 static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
-	if (NULL == ipaddr_scan((unsigned char *) rule_elem, (unsigned char *) &rule->skbuf->nh.iph->saddr)) {
+	if (!inet_aton(rule_elem,
+				(struct in_addr *)&rule->skbuf->nh.iph->saddr)) {
 		return -EINVAL;
 	}
 	return ENOERR;
