@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #include <kernel/task.h>
-#include <net/ntp.h>
+#include <net/l7/ntp.h>
 #include <arpa/inet.h>
 
 EMBOX_CMD(exec);

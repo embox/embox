@@ -7,11 +7,11 @@
  */
 
 #include <net/skbuff.h>
-#include <net/inet_sock.h>
-#include <net/udp.h>
-#include <net/ip.h>
-#include <net/ntp.h>
-#include <net/socket.h>
+#include <net/socket/inet_sock.h>
+#include <net/l4/udp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l7/ntp.h>
+#include <net/socket/socket.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
 #include <kernel/printk.h>

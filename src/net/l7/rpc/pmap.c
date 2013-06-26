@@ -5,10 +5,10 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/pmap.h>
-#include <net/rpc/xdr.h>
-#include <net/rpc/clnt.h>
-#include <net/rpc/rpc.h>
+#include <net/l7/rpc/pmap.h>
+#include <net/l7/rpc/xdr.h>
+#include <net/l7/rpc/clnt.h>
+#include <net/l7/rpc/rpc.h>
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <string.h>

@@ -9,12 +9,12 @@
 
 #include <stdlib.h>
 #include <embox/net/proto.h>
-#include <net/ip.h>
-#include <net/udp.h>
-#include <net/icmp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
+#include <net/l3/icmpv4.h>
 #include <assert.h>
 #include <errno.h>
-#include <net/inet_sock.h>
+#include <net/socket/inet_sock.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
 #include <framework/net/sock/api.h>

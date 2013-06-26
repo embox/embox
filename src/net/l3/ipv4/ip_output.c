@@ -9,16 +9,16 @@
 
 #include <errno.h>
 
-#include <net/ip.h>
-#include <net/udp.h>
-#include <net/inet_sock.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
+#include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
-#include <net/route.h>
-#include <net/bootp.h>
-#include <net/ip_fragment.h>
+#include <net/l3/route.h>
+#include <net/l7/bootp.h>
+#include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
-#include <net/icmp.h>
-#include <net/socket_registry.h>
+#include <net/l3/icmpv4.h>
+#include <net/socket/socket_registry.h>
 #include <linux/in.h>
 #include <net/netfilter.h>
 #include <kernel/printk.h>

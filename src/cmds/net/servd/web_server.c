@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 
 #include <embox/web_service.h>
 #include <lib/url_parser.h>

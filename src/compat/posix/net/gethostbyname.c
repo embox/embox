@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <stddef.h>
 #include <string.h>
-#include <net/dns.h>
+#include <net/l7/dns.h>
 #include <net/util/hostent_api.h>
 
 static struct hostent * get_hostent_from_ip(const char *ip_str) {

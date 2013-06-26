@@ -15,11 +15,11 @@
 #include <util/math.h>
 #include <net/if_ether.h>
 
-#include <net/tcp.h>
+#include <net/l4/tcp.h>
 #include <sys/socket.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/sock.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 
 #include <kernel/time/time.h>

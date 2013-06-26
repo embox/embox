@@ -18,8 +18,8 @@
 #include <util/math.h>
 
 #include <net/inetdevice.h>
-#include <net/icmp.h>
-#include <net/raw.h>
+#include <net/l3/icmpv4.h>
+#include <net/socket/raw.h>
 #include <net/if_packet.h>
 
 #include <embox/net/proto.h>

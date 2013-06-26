@@ -18,8 +18,8 @@
 #include <net/inetdevice.h>
 #include <string.h>
 
-#include <net/util.h>
-#include <net/arp.h>
+#include <net/util/mac_addr.h>
+#include <net/l3/arp.h>
 #include <net/neighbour.h>
 #include <kernel/time/time.h>
 

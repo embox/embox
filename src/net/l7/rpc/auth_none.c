@@ -5,7 +5,7 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/auth.h>
+#include <net/l7/rpc/auth.h>
 #include <stdlib.h>
 #include <string.h>
 

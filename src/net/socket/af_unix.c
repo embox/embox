@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 #include <errno.h>
-#include <net/socket.h>
+#include <net/socket/socket.h>
 #include <sys/socket.h>
 #include <net/sock.h>
 #include <embox/net/family.h>

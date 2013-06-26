@@ -10,7 +10,7 @@
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
-#include <net/socket_registry.h>
+#include <net/socket/socket_registry.h>
 #include <stdlib.h>
 #include <string.h>
 #include <util/dlist.h>

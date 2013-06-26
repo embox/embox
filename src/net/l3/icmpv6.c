@@ -9,9 +9,9 @@
 #include <netinet/in.h>
 #include <stddef.h>
 #include <embox/net/proto.h>
-#include <net/icmp6.h>
+#include <net/l3/icmpv6.h>
 #include <net/skbuff.h>
-#include <net/checksum.h>
+#include <net/util/checksum.h>
 #include <arpa/inet.h>
 
 EMBOX_NET_PROTO(IPPROTO_ICMPV6, icmp6_rcv, NULL);
@@ -19,7 +19,7 @@ EMBOX_NET_PROTO(IPPROTO_ICMPV6, icmp6_rcv, NULL);
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <string.h>
-#include <net/ipv6.h>
+#include <net/l3/ipv6.h>
 
 static int icmp6_hnd_echo_request(struct icmp6hdr *icmp6h,
 		struct sk_buff *skb) {

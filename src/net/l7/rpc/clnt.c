@@ -5,9 +5,9 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/clnt.h>
-#include <net/rpc/auth.h>
-#include <net/rpc/rpc.h>
+#include <net/l7/rpc/clnt.h>
+#include <net/l7/rpc/auth.h>
+#include <net/l7/rpc/rpc.h>
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>

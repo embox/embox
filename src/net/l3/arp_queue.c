@@ -15,12 +15,12 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/time/ktime.h>
 #include <mem/misc/pool.h>
-#include <net/arp.h>
-#include <net/arp_queue.h>
+#include <net/l3/arp.h>
+#include <net/l3/arp_queue.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/inetdevice.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <string.h>
 #include <sys/time.h>
 #include <util/hashtable.h>

@@ -9,12 +9,12 @@
  */
 
 #include <stdio.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
-#include <net/socket.h>
+#include <net/socket/socket.h>
 #include <framework/example/self.h>
 #include <unistd.h>
-#include <net/icmp.h>
+#include <net/l3/icmpv4.h>
 
 #include <unistd.h>
 

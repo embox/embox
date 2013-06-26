@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <netdb.h>
-#include <net/mail/smtp.h>
+#include <net/l7/smtp.h>
 #include <netinet/in.h>
 #include <stdarg.h>
 #include <stddef.h>

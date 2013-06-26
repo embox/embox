@@ -9,10 +9,10 @@
 #include <errno.h>
 #include <string.h>
 
-#include <net/ip_fragment.h>
+#include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
-#include <net/icmp.h>
-#include <net/ip.h>
+#include <net/l3/icmpv4.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/if_ether.h>
 
 #include <mem/objalloc.h>

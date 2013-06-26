@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <net/util.h>
+#include <net/util/mac_addr.h>
 #include <arpa/inet.h>
 #include <util/hashtable.h>
 

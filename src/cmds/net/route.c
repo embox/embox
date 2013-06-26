@@ -10,7 +10,7 @@
 
 #include <embox/cmd.h>
 #include <unistd.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 #include <unistd.h>
 #include <stdlib.h>

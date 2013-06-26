@@ -13,11 +13,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <net/rpc/clnt.h>
-#include <net/rpc/auth.h>
-#include <net/rpc/rpc.h>
-#include <net/rpc/rpc_msg.h>
-#include <net/rpc/pmap.h>
+#include <net/l7/rpc/clnt.h>
+#include <net/l7/rpc/auth.h>
+#include <net/l7/rpc/rpc.h>
+#include <net/l7/rpc/rpc_msg.h>
+#include <net/l7/rpc/pmap.h>
 #include <fcntl.h>
 
 #include <arpa/inet.h>

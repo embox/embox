@@ -11,16 +11,16 @@
 #include <string.h>
 #include <errno.h>
 #include <embox/net/pack.h>
-#include <net/ip.h>
-#include <net/icmp.h>
-#include <net/udp.h>
-#include <net/raw.h>
-#include <net/inet_sock.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l3/icmpv4.h>
+#include <net/l4/udp.h>
+#include <net/socket/raw.h>
+#include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
-#include <net/route.h>
-#include <net/checksum.h>
+#include <net/l3/route.h>
+#include <net/util/checksum.h>
 #include <framework/net/proto/api.h>
-#include <net/ip_fragment.h>
+#include <net/l3/ipv4/ip_fragment.h>
 #include <net/netfilter.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv);

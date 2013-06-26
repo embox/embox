@@ -12,9 +12,9 @@
 
 #include <stdint.h>
 #include <fs/node.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
-#include <net/rpc/rpc.h>
+#include <net/l7/rpc/rpc.h>
 #include <limits.h>
 
 /*

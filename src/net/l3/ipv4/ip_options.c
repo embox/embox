@@ -6,10 +6,10 @@
  * @author Roman Kolobov
  */
 
-#include <net/ip.h>
-#include <net/icmp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l3/icmpv4.h>
 #include <net/inetdevice.h>
-#include <net/inet_sock.h>
+#include <net/socket/inet_sock.h>
 
 int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 

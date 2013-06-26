@@ -15,19 +15,19 @@
 #include <stddef.h>
 #include <sys/uio.h>
 
-#include <net/ksocket.h>
-#include <net/socket.h>
+#include <net/socket/ksocket.h>
+#include <net/socket/socket.h>
 #include <net/sock.h>
 #include <sys/socket.h>
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <net/arp_queue.h>
+#include <net/l3/arp_queue.h>
 
 #include <kernel/thread.h>
 #include <kernel/event.h>
 #include <kernel/task/io_sync.h>
-#include <net/socket_registry.h>
+#include <net/socket/socket_registry.h>
 
 static const struct task_idx_ops task_idx_ops_socket;
 

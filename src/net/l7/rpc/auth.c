@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/auth.h>
-#include <net/rpc/xdr.h>
+#include <net/l7/rpc/auth.h>
+#include <net/l7/rpc/xdr.h>
 #include <assert.h>
 #include <stddef.h>
 

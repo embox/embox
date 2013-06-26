@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <linux/types.h>
 #include <sys/socket.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stddef.h>

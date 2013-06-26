@@ -6,9 +6,9 @@
  * @author Alexander Kalmuk
  */
 
-#include <net/snmp.h>
-#include <net/ip.h>
-#include <net/mib.h>
+#include <net/l7/snmp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l7/mib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>

@@ -9,7 +9,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <net/arp_queue.h>
+#include <net/l3/arp_queue.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stddef.h>

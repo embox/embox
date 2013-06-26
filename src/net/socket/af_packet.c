@@ -11,7 +11,7 @@
 #include <net/sock.h>
 #include <embox/net/family.h>
 #include <net/if_ether.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <stdlib.h>
 
 #include <framework/mod/options.h>

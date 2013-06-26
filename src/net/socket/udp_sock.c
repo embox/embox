@@ -13,10 +13,10 @@
 #include <net/if_ether.h>
 
 #include <sys/socket.h>
-#include <net/ip.h>
-#include <net/udp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
 
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
 #include <mem/misc/pool.h>

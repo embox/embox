@@ -12,12 +12,12 @@
 #include <assert.h>
 #include <net/netfilter.h>
 #include <net/skbuff.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <string.h>
 #include <stddef.h>
 
-#include <net/udp.h>
-#include <net/tcp.h>
+#include <net/l4/udp.h>
+#include <net/l4/tcp.h>
 
 #define MODOPS_NETFILTER_AMOUNT_RULES  OPTION_GET(NUMBER, amount_rules)
 

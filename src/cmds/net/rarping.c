@@ -14,13 +14,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <net/util.h>
-#include <net/rarp.h>
+#include <net/util/mac_addr.h>
+#include <net/l3/rarp.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <string.h>
 #include <kernel/time/time.h>
 

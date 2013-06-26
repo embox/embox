@@ -15,7 +15,7 @@
 #include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
-#include <net/rarp.h>
+#include <net/l3/rarp.h>
 #include <net/skbuff.h>
 #include <string.h>
 

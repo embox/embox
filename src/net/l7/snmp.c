@@ -6,7 +6,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <net/snmp.h>
+#include <net/l7/snmp.h>
 #include <errno.h>
 #include <string.h>
 #include <mem/objalloc.h>

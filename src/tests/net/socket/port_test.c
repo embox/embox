@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <netinet/in.h>
-#include <net/ip_port.h>
+#include <net/socket/ip_port.h>
 #include <stdint.h>
 #include <errno.h>
 

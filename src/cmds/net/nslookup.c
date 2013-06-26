@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-#include <net/dns.h>
+#include <net/l7/dns.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <errno.h>

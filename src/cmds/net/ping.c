@@ -24,12 +24,12 @@
 #include <errno.h>
 #include <netdb.h>
 
-#include <net/route.h>
-#include <net/icmp.h>
-#include <net/ip.h>
+#include <net/l3/route.h>
+#include <net/l3/icmpv4.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/inetdevice.h>
-#include <net/checksum.h>
-#include <net/util.h>
+#include <net/util/checksum.h>
+#include <net/util/mac_addr.h>
 
 
 EMBOX_CMD(exec);

@@ -6,7 +6,7 @@
  */
 
 #include <arpa/inet.h>
-#include <net/util.h>
+#include <net/util/mac_addr.h>
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>

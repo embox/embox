@@ -18,7 +18,7 @@
 
 #include <utmp.h>
 
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <net/inetdevice.h>
 

@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <framework/mod/options.h>
-#include <net/mib.h>
+#include <net/l7/mib.h>
 #include <embox/unit.h>
 #include <util/array.h>
 

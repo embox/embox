@@ -8,7 +8,7 @@
  */
 
 #include <errno.h>
-#include <net/socket.h>
+#include <net/socket/socket.h>
 #include <sys/socket.h>
 #include <stddef.h>
 #include <string.h>
@@ -19,8 +19,8 @@
 
 #include <net/sock.h>
 #include <util/sys_log.h>
-#include <net/ksocket.h>
-#include <net/socket_registry.h>
+#include <net/socket/ksocket.h>
+#include <net/socket/socket_registry.h>
 #include <embox/net/family.h>
 #include <kernel/manual_event.h>
 

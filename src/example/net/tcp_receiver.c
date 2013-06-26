@@ -14,7 +14,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <framework/example/self.h>
 #include <kernel/printk.h>

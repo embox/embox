@@ -22,7 +22,7 @@
 #include <string.h>
 #include <util/array.h>
 
-#include <net/arp.h> /* FIXME */
+#include <net/l3/arp.h> /* FIXME */
 
 /**
  * Create the Ethernet header

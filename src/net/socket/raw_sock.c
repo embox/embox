@@ -13,10 +13,10 @@
 #include <net/if_ether.h>
 
 #include <net/sock.h>
-#include <net/icmp.h>
-#include <net/ip.h>
-#include <net/udp.h>
-#include <net/raw.h>
+#include <net/l3/icmpv4.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
+#include <net/socket/raw.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/list.h>

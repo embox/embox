@@ -10,8 +10,8 @@
 
 #include <errno.h>
 #include <assert.h>
-#include <net/route.h>
-#include <net/socket_registry.h>
+#include <net/l3/route.h>
+#include <net/socket/socket_registry.h>
 #include <linux/in.h>
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>

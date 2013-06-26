@@ -9,7 +9,7 @@
 #include <framework/net/proto/api.h>
 #include <net/skbuff.h>
 #include <embox/net/pack.h>
-#include <net/ipv6.h>
+#include <net/l3/ipv6.h>
 #include <net/netdevice.h>
 #include <arpa/inet.h>
 

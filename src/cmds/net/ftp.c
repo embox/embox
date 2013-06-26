@@ -13,7 +13,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <sys/socket.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
 #include <embox/cmd.h>
 

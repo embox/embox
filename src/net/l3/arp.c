@@ -14,14 +14,14 @@
 #include <assert.h>
 #include <embox/net/pack.h>
 #include <errno.h>
-#include <net/arp.h>
-#include <net/arp_queue.h>
+#include <net/l3/arp.h>
+#include <net/l3/arp_queue.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/skbuff.h>
 #include <string.h>
 

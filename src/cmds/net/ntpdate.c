@@ -14,9 +14,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <net/ip.h>
-#include <net/socket.h>
-#include <net/ntp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/socket/socket.h>
+#include <net/l7/ntp.h>
 
 
 #include <kernel/time/time.h>

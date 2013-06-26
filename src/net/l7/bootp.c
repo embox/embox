@@ -7,13 +7,13 @@
  */
 
 #include <net/skbuff.h>
-#include <net/inet_sock.h>
+#include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/if_ether.h>
-#include <net/udp.h>
-#include <net/ip.h>
-#include <net/route.h>
-#include <net/bootp.h>
+#include <net/l4/udp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l3/route.h>
+#include <net/l7/bootp.h>
 #include <errno.h>
 #include <util/hashtable.h>
 

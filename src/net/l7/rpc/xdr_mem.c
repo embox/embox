@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/xdr.h>
+#include <net/l7/rpc/xdr.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>

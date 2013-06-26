@@ -10,7 +10,7 @@
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
-#include <net/socket.h>
+#include <net/socket/socket.h>
 #include <sys/socket.h>
 #include <kernel/manual_event.h>
 #include <net/skbuff.h>

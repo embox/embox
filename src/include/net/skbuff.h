@@ -14,11 +14,11 @@
 /* FIXME include this */
 //#include <net/if_arp.h>
 //#include <net/netdevice.h>
-//#include <net/ip.h>
-//#include <net/icmp.h>
+//#include <net/l3/ipv4/ip.h>
+//#include <net/l3/icmpv4.h>
 //#include <net/sock.h>
-//#include <net/udp.h>
-//#include <net/tcp.h>
+//#include <net/l4/udp.h>
+//#include <net/l4/tcp.h>
 #include <stdint.h>
 #include <sys/types.h>
 

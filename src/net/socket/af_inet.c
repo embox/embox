@@ -13,14 +13,14 @@
 #include <arpa/inet.h>
 #include <net/sock.h>
 #include <sys/socket.h>
-#include <net/inet_sock.h>
+#include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/if_ether.h>
 #include <embox/net/family.h>
 #include <embox/net/sock.h>
 
-#include <net/ip_port.h>
-#include <net/inet_sock.h>
+#include <net/socket/ip_port.h>
+#include <net/socket/inet_sock.h>
 
 static const struct family_ops inet_dgram_ops;
 static const struct family_ops inet_raw_ops;

@@ -68,12 +68,12 @@ static int tmpfs_init(void * par) {
 
 	dir_node = vfs_lookup(NULL, TMPFS_DIR);
 	if (!dir_node) {
-		return -1;
+		return -ENOENT;
 	}
 
 	ramdisk = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE());
 	if (0 != (res = err(ramdisk))) {
-		return -1;
+		return res;
 	}
 
 	dev_node = ramdisk->bdev->dev_node;

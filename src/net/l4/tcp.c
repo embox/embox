@@ -9,14 +9,14 @@
  * @author Ilia Vaprol
  */
 
-#include <net/tcp.h>
+#include <net/l4/tcp.h>
 #include <string.h>
 #include <mem/objalloc.h>
 #include <util/array.h>
 #include <net/inetdevice.h>
 #include <sys/socket.h>
-#include <net/checksum.h>
-#include <net/route.h>
+#include <net/util/checksum.h>
+#include <net/l3/route.h>
 #include <net/skbuff.h>
 #include <errno.h>
 #include <assert.h>
@@ -26,7 +26,7 @@
 #include <string.h>
 #include <kernel/printk.h>
 #include <sys/time.h>
-#include <net/ip_port.h>
+#include <net/socket/ip_port.h>
 #include <net/if_ether.h>
 
 #include <kernel/event.h>

@@ -14,7 +14,7 @@
 #include <embox/unit.h>
 #include <ctype.h>
 #include <framework/cmd/api.h>
-#include <net/util.h>
+#include <net/util/mac_addr.h>
 #include <net/if_ether.h>
 #include <pnet/repo.h>
 #include <util/member.h>

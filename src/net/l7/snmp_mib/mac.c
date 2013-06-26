@@ -6,7 +6,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <net/mib.h>
+#include <net/l7/mib.h>
 #include <embox/unit.h>
 #include <net/inetdevice.h>
 #include <net/if_ether.h>
