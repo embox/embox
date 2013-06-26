@@ -29,7 +29,7 @@
 #include <kernel/task/io_sync.h>
 #include <net/socket/socket_registry.h>
 
-static const struct task_idx_ops task_idx_ops_socket;
+extern const struct task_idx_ops task_idx_ops_socket;
 
 static inline struct socket * idx2socket(int idx) {
 	struct idx_desc *desc = task_self_idx_get(idx);
@@ -158,8 +158,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	return new_sockfd;
 }
 
-static int sendmsg_sock(struct socket *sock, struct msghdr *msg,
-		int flags) {
+int sendmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
 	int ret;
 
 	if (sock == NULL) {
@@ -242,8 +241,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	return _msg.msg_iov->iov_len;
 }
 
-static int recvmsg_sock(struct socket *sock, struct msghdr *msg,
-		int flags) {
+int recvmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
 	int ret;
 
 	if (sock == NULL) {
@@ -441,90 +439,10 @@ int setsockopt(int sockfd, int level, int optname,
 	return 0;
 }
 
-static ssize_t socket_read(struct idx_desc *desc, void *buff,
-		size_t size) {
-	int ret;
-	struct msghdr msg;
-	struct iovec iov;
 
-	assert(desc != NULL);
-
-	msg.msg_name = NULL;
-	msg.msg_namelen = 0;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_flags = 0;
-
-	iov.iov_base = (void *)buff;
-	iov.iov_len = size;
-
-	ret = recvmsg_sock((struct socket *)task_idx_desc_data(desc),
-			&msg, *task_idx_desc_flags_ptr(desc));
-	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
-	}
-
-	return iov.iov_len;
-}
-
-static ssize_t socket_write(struct idx_desc *desc, const void *buff,
-		size_t size) {
-	int ret;
-	struct msghdr msg;
-	struct iovec iov;
-
-	assert(desc != NULL);
-
-	msg.msg_name = NULL;
-	msg.msg_namelen = 0;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_flags = 0;
-
-	iov.iov_base = (void *)buff;
-	iov.iov_len = size;
-
-	ret = sendmsg_sock((struct socket *)task_idx_desc_data(desc),
-			&msg, *task_idx_desc_flags_ptr(desc));
-	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
-	}
-
-	return iov.iov_len;
-}
-
-static int socket_close(struct idx_desc *desc) {
-	int ret;
-
-	assert(desc != NULL);
-
-	ret = ksocket_close(task_idx_desc_data(desc));
-	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
-	}
-
-	return 0;
-}
-
-static const struct task_idx_ops task_idx_ops_socket = {
-	.read = socket_read,
-	.write = socket_write,
-	.close = socket_close
-};
-
-#if 1 /********** TODO remove this ****************/
-int check_icmp_err(int sockfd) {
-	struct socket *sock = idx2socket(sockfd);
-	int err = sock->sk->opt.so_error;
-	sock->sk->opt.so_error = 0;
-	return err;
-}
-
+/********** TODO remove this ****************/
 void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
 	struct socket *sock = idx2socket(sockfd);
 	sock->sk->sk_encap_rcv = hnd;
 }
-#endif
+

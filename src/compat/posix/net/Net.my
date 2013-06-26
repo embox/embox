@@ -20,6 +20,7 @@ module All {
 
 static module socket {
 	source "socket.c"
+	source "index_operation.c"
 
 	depends embox.net.core
 	depends embox.net.socket
