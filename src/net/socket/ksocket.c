@@ -545,7 +545,7 @@ int kgetsockopt(struct socket *sock, int level, int optname,
 			strncpy(optval, &sock->sk->opt.so_bindtodevice->name[0],
 				*optlen);
 			*optlen = min(*optlen,
-				strlen(&sock->sk->opt.so_bindtodevice->name[0]) + 1);
+				strlen(&sock->sk->opt.so_bindtodevice->name[0]));
 			break);
 	CASE_GETSOCKOPT(SO_BROADCAST, so_broadcast, );
 	CASE_GETSOCKOPT(SO_DOMAIN, so_domain, );
@@ -616,7 +616,8 @@ int ksetsockopt(struct socket *sock, int level, int optname,
 			optval = netdev_get_by_name(optval);
 			if (optval == NULL) {
 				return -ENODEV;
-			});
+			}
+			optlen = sizeof optval);
 	CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
 	CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
 	CASE_SETSOCKOPT(SO_LINGER, so_linger, );
