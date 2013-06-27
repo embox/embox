@@ -1,6 +1,6 @@
 package embox.cmd.net
 
-@Cmd(name = "bootp",
+@Cmd(name = "bootpc",
 	help = "BOOTP client",
 	man = '''
 		NAME
@@ -14,7 +14,15 @@ package embox.cmd.net
 		AUTHORS
 			Alexander Kalmuk
 	''')
-module bootp {
-	source "bootp.c"
+module bootpc {
+	option number timeout = 3000
+	source "bootpc.c"
+
+	depends embox.compat.posix.util.getopt
+	depends embox.lib.LibC
 	depends embox.net.bootp
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.route
+	depends embox.framework.LibFramework
 }

@@ -1,113 +1,67 @@
 /**
  * @file
  * @brief Defenitions for Bootstrap Protocol.
- * @details RFC 951
+ * @details RFC 951 and RFC 1395
  *
  * @date 28.08.09
  * @author Andrey Baboshin
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_L7_BOOTP_H_
 #define NET_L7_BOOTP_H_
 
-#include <net/l3/ipv4/ip.h>
-#include <string.h>
-#include <net/sock.h>
 #include <netinet/in.h>
-#include <net/skbuff.h>
-#include <net/netdevice.h>
+#include <linux/types.h>
 
+/**
+ * Bootp operation codes
+ */
+#define BOOTPREQUEST 1
+#define BOOTPREPLY   2
 
-//#define HOSTNAME "embox"
-//#define DHCP_SUPPORT 1
-//#define DNS_SUPPORT 1
+/**
+ * Bootp server and client port number
+ */
+#define BOOTP_SERVER_PORT 67
+#define BOOTP_CLIENT_PORT 68
 
-#ifdef DHCP_SUPPORT
-#define VEND_LEN	(312 + 32)
-#define MINPKTSZ	576
-#else
-#define VEND_LEN	 64
-#define MINPKTSZ	300
-#endif
+/**
+ * Magic code
+ */
+extern const unsigned char dhcp_magic_cookie[4];
 
-#define DHCP_MAGIC_COOKIE (unsigned int)0x63538263
-
-/*
-	BOOTP support. For details read RFC951 and RFC1395.
-*/
 typedef struct bootphdr {
-	unsigned char    op;                     /* packet op code / message type */
-	unsigned char    htype;                  /* hardware addr type */
-	unsigned char    hlen;                   /* hardware addr length */
-	unsigned char    hops;                   /* gateway hops */
-	unsigned int     xid;                    /* transaction ID */
-	unsigned short   secs;                   /* seconds since boot began */
-	unsigned short   flags;                  /* RFC1532 broadcast, etc. */
-	in_addr_t        ciaddr;                 /* client IP address */
-	in_addr_t        yiaddr;                 /* 'your' (client) IP address */
-	in_addr_t        siaddr;                 /* server IP address */
-	in_addr_t        giaddr;                 /* gateway IP address */
-	unsigned char    chaddr[16];             /* client hardware address */
-	char             sname[64];              /* server host name */
-	char             file[128];              /* boot file name */
-	unsigned char    options[VEND_LEN];
+	__u8 op;          /* message type */
+	__u8 htype;       /* hw_addr type */
+	__u8 hlen;        /* hw_addr length */
+	__u8 hops;        /* gateway hops */
+	__be32 xid;       /* transaction ID */
+	__be16 secs;      /* seconds since boot began */
+	__be16 res;       /* reserved */
+	in_addr_t ciaddr; /* client IP address */
+	in_addr_t yiaddr; /* 'your' (client) IP address */
+	in_addr_t siaddr; /* server IP address */
+	in_addr_t giaddr; /* gateway IP address */
+	__u8 chaddr[16];  /* client hardware address */
+	__s8 sname[64];   /* server host name */
+	__s8 file[128];   /* boot file name */
+	__u8 vend[64];    /* optional vedor-specific data */
 } __attribute__((packed)) bootphdr_t;
 
-#define __MAX(a,b) ((a)>(b)?(a):(b))
-#define BOOTP_HEADER_SIZE __MAX(sizeof(struct bootphdr), MINPKTSZ)
+#define BOOTP_HEADER_SIZE sizeof(struct bootphdr)
 
-// UDP port numbers, server and client.
-#define BOOTP_PORT_SERVER           67
-#define BOOTP_PORT_CLIENT           68
-
-// opcodes
-#define BOOTPREQUEST             1
-#define BOOTPREPLY               2
-#define REQYEST_REVERSE          3 /* n.i */
-#define REPLY_REVERSE            4 /* n.i */
-#define DRARP_Request            5 /* n.i */
-#define DRARP_Reply              6 /* n.i */
-#define DRARP_Error              7 /* n.i */
-#define InARP_Request            8 /* n.i */
-#define InARP_Reply              9 /* n.i */
-#define ARP_NAK                 10 /* n.i */
-
-// Hardware types from Assigned Numbers RFC.
-#define HTYPE_ETHERNET         1
-#define HTYPE_EXP_ETHERNET     2
-#define HTYPE_AX_25            3
-#define HTYPE_PRONET           4
-#define HTYPE_CHAOS            5
-#define HTYPE_IEEE802          6
-#define HTYPE_ARCNET           7
-#define HTYPE_HYPERCHANNEL     8
-#define HTYPE_LANSTAR          9
-#define HTYPE_AUTONET         10
-#define HTYPE_LOCALTALK       11
-#define HTYPE_LOCALNET        12
-#define HTYPE_ULTRALINK       13
-#define HTYPE_SMDS            14
-#define HTYPE_FRAME_RELAY     15
-#define HTYPE_ATM1            16
-#define HTYPE_HDLC            17
-#define HTYPE_FIBRE_CHANNEL   18
-#define HTYPE_ATM2            19
-#define HTYPE_SERIAL_LINE     20
-#define HTYPE_ATM3            21
-
-// Vendor magic cookie's (v_magic)
-#define VM_RFC1048      0x63825363
-
-/*
+/**
  * Tag values used to specify what information is being supplied in
  * the vendor (options) data area of the packet.
- * For details read RFC 1048, 1395, 1497, 1533, 1256, 893.
  */
 #define TAG_END                 ((unsigned char) 255)
 #define TAG_PAD                 ((unsigned char)   0)
 #define TAG_SUBNET_MASK         ((unsigned char)   1)
-#define TAG_TIME_OFFSET         ((unsigned char)   2)
 #define TAG_GATEWAY             ((unsigned char)   3)
+#define TAG_DHCP_PARM_REQ_LIST  ((unsigned char)  55)
+#if 0
+#define TAG_TIME_OFFSET         ((unsigned char)   2)
 #define TAG_TIME_SERVER         ((unsigned char)   4)
 #define TAG_NAME_SERVER         ((unsigned char)   5)
 #define TAG_DOMAIN_SERVER       ((unsigned char)   6)
@@ -159,7 +113,6 @@ typedef struct bootphdr {
 #define TAG_DHCP_OPTOVER        ((unsigned char)  52)
 #define TAG_DHCP_MESS_TYPE      ((unsigned char)  53)
 #define TAG_DHCP_SERVER_ID      ((unsigned char)  54)
-#define TAG_DHCP_PARM_REQ_LIST  ((unsigned char)  55)
 #define TAG_DHCP_TEXT_MESSAGE   ((unsigned char)  56)
 #define TAG_DHCP_MAX_MSGSZ      ((unsigned char)  57)
 #define TAG_DHCP_RENEWAL_TIME   ((unsigned char)  58)
@@ -167,55 +120,11 @@ typedef struct bootphdr {
 #define TAG_DHCP_CLASSID        ((unsigned char)  60)
 #define TAG_DHCP_CLIENTID       ((unsigned char)  61)
 #define TAG_FQDN                ((unsigned char)  81)
+#endif
 
-/*
-	DHCP Message Types.
-	RFC 2131.
-*/
-#define DHCP_MESS_TYPE_DISCOVER  ((unsigned char) 1)
-#define DHCP_MESS_TYPE_OFFER     ((unsigned char) 2)
-#define DHCP_MESS_TYPE_REQUEST   ((unsigned char) 3)
-#define DHCP_MESS_TYPE_DECLINE   ((unsigned char) 4)
-#define DHCP_MESS_TYPE_ACK       ((unsigned char) 5)
-#define DHCP_MESS_TYPE_NAK       ((unsigned char) 6)
-#define DHCP_MESS_TYPE_RELEASE   ((unsigned char) 7)
-
-#define RETRY_COUNT 1 /*8*/
-
-#define SHOULD_BE_RANDOM  0x12345555
-
-/**
- * Discovet an IP address with BOOTP protocol.
- * @param ifdev pointer to an ethernet interface
- * @return 1 if bootp success, 0 if there isn't bootp servers near.
- */
-int bootp_discover (void* ifdev);
-
-struct sk_buff;
-struct sock;
-
-extern int bootp_receive(struct sock *sk, struct sk_buff *skb);
-extern int bootp_client_send(int sock,bootphdr_t *bootp, struct net_device *dev,
-		struct sockaddr_in *dst);
-
-/**
- * Return current bootp info
- */
-//const struct bootphdr const* get_bootp_info (void);
-
-/**
- * Return ip address obtained from bootp/dhcp
- */
-extern in_addr_t get_ip_addr(void);
-
-/**
- * Return network mask obtained from bootp/dhcp
- */
-extern in_addr_t get_ip_mask(void);
-
-/**
- * Return gateway obtained from bootp/dhcp
- */
-extern in_addr_t get_ip_gate(void);
+extern int bootp_build(struct bootphdr *bph, unsigned char opcode,
+		unsigned char hw_type, unsigned char hw_len,
+		unsigned char *hw_addr);
+extern int bootp_valid(struct bootphdr *bph, unsigned char opcode);
 
 #endif /* NET_L7_BOOTP_H_ */
