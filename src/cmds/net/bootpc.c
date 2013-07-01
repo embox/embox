@@ -76,7 +76,8 @@ static int bootp_process(struct bootphdr *bph,
 
 int bootp_client(struct net_device *dev) {
 	static const struct timeval timeout = {
-		MODOPS_TIMEOUT / MSEC_PER_SEC, MODOPS_TIMEOUT % MSEC_PER_SEC
+		MODOPS_TIMEOUT / MSEC_PER_SEC,
+		(MODOPS_TIMEOUT % MSEC_PER_SEC) * USEC_PER_MSEC
 	};
 	int ret, sock;
 	struct bootphdr bph_req, bph_rep;
