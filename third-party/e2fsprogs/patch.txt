@@ -1,0 +1,229 @@
+diff -aur e2fsprogs-1.42.8/Makefile.in e2fsprogs/Makefile.in
+--- e2fsprogs-1.42.8/Makefile.in	2012-07-06 17:37:27.000000000 +0400
++++ e2fsprogs/Makefile.in	2013-07-01 18:57:04.095909222 +0400
+@@ -15,9 +15,11 @@
+ @BLKID_CMT@BLKID_LIB_SUBDIR= lib/blkid
+ @QUOTA_CMT@QUOTA_LIB_SUBDIR= lib/quota
+ 
+-LIB_SUBDIRS=lib/et lib/ss lib/e2p $(UUID_LIB_SUBDIR) lib/ext2fs $(BLKID_LIB_SUBDIR) $(QUOTA_LIB_SUBDIR) intl
+-PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs po
+-SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
++#LIB_SUBDIRS=lib/et lib/ss lib/e2p $(UUID_LIB_SUBDIR) lib/ext2fs $(BLKID_LIB_SUBDIR) $(QUOTA_LIB_SUBDIR) intl
++#PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs po
++#SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
++LIB_SUBDIRS=lib/et lib/e2p $(UUID_LIB_SUBDIR) lib/ext2fs  intl
++SUBDIRS=$(LIB_SUBDIRS)
+ 
+ SUBS= util/subst.conf lib/config.h lib/dirpaths.h \
+ 	lib/ext2fs/ext2_types.h lib/blkid/blkid_types.h lib/uuid/uuid_types.h
+@@ -26,6 +28,9 @@
+ 
+ all:: subs
+ 	$(MAKE) libs
++	#$(MAKE) findsuper_prog
++	$(MAKE) e2freefrag_prog
++	$(MAKE) dumpe2fs_prog
+ 	$(MAKE) progs
+ 	$(MAKE) docs
+ 
+@@ -39,6 +44,18 @@
+ libs: all-libs-recursive
+ all-progs-recursive all-libs-recursive: subs
+ 
++findsuper_prog:
++	echo FINDSUPER_PROG
++	cd misc && $(MAKE) findsuper
++	
++e2freefrag_prog:
++	echo E2FREEFRAG_PROG
++	cd misc && $(MAKE) e2freefrag
++	
++dumpe2fs_prog:
++	echo DUMPE2FS_PROG
++	cd misc && $(MAKE) dumpe2fs
++
+ e2fsprogs.spec: $(DEP_SUBSTITUTE) e2fsprogs.spec.in
+ 	cd $(top_builddir); CONFIG_FILES=./e2fsprogs.spec ./config.status
+ 
+diff -aur e2fsprogs-1.42.8/aclocal.m4 e2fsprogs/aclocal.m4
+--- e2fsprogs-1.42.8/aclocal.m4	2012-12-23 06:20:13.000000000 +0400
++++ e2fsprogs/aclocal.m4	2013-07-01 18:57:04.095909222 +0400
+@@ -405,9 +405,8 @@
+   AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h stddef.h \
+ stdlib.h string.h unistd.h sys/param.h])
+   AC_CHECK_FUNCS([asprintf fwprintf getcwd getegid geteuid getgid getuid \
+-mempcpy munmap putenv setenv setlocale snprintf stpcpy strcasecmp strdup \
+-strtoul tsearch wcslen __argz_count __argz_stringify __argz_next \
+-__fsetlocking])
++munmap putenv setenv setlocale snprintf strcasecmp strdup \
++strtoul wcslen])
+ 
+   dnl Use the _snprintf function only if it is declared (because on NetBSD it
+   dnl is defined as a weak alias of snprintf; we prefer to use the latter).
+Only in e2fsprogs: autom4te.cache
+Only in e2fsprogs: configure
+diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
+--- e2fsprogs-1.42.8/configure.in	2013-06-21 06:43:42.000000000 +0400
++++ e2fsprogs/configure.in	2013-07-01 18:57:04.095909222 +0400
+@@ -840,12 +840,7 @@
+ AC_CHECK_HEADERS(m4_flatten([
+ 	dirent.h
+ 	errno.h
+-	execinfo.h
+-	getopt.h
+ 	malloc.h
+-	mntent.h
+-	paths.h
+-	semaphore.h
+ 	setjmp.h
+ 	signal.h
+ 	stdarg.h
+@@ -855,25 +850,12 @@
+ 	termio.h
+ 	unistd.h
+ 	utime.h
+-	linux/falloc.h
+-	linux/fd.h
+-	linux/major.h
+ 	net/if_dl.h
+ 	netinet/in.h
+-	sys/disklabel.h
+-	sys/file.h
+ 	sys/ioctl.h
+-	sys/mkdev.h
+-	sys/mman.h
+-	sys/prctl.h
+-	sys/queue.h
+-	sys/resource.h
+ 	sys/select.h
+ 	sys/socket.h
+-	sys/sockio.h
+ 	sys/stat.h
+-	sys/syscall.h
+-	sys/sysmacros.h
+ 	sys/time.h
+ 	sys/types.h
+ 	sys/un.h
+@@ -885,7 +867,7 @@
+ #include <sys/queue.h>
+ #endif
+ ]])
+-AC_CHECK_HEADERS(net/if.h,,,
++AC_CHECK_HEADERS(,,,
+ [[
+ #if HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+@@ -1012,50 +994,14 @@
+ fi
+ dnl
+ AC_CHECK_FUNCS(m4_flatten([
+-	__secure_getenv
+ 	backtrace
+-	blkid_probe_get_topology
+-	chflags
+-	fallocate
+-	fallocate64
+-	fchown
+-	fdatasync
+-	fstat64
+-	ftruncate64
+-	getdtablesize
+-	getmntinfo
+ 	getpwuid_r
+-	getrlimit
+-	getrusage
+-	jrand48
+-	llseek
+-	lseek64
+-	mallinfo
+-	mbstowcs
+ 	memalign
+ 	mmap
+-	msync
+ 	nanosleep
+-	open64
+-	pathconf
+-	posix_fadvise
+-	posix_memalign
+-	prctl
+-	secure_getenv
+-	setmntent
+-	setresgid
+-	setresuid
+-	srandom
+-	strcasecmp
+ 	strdup
+ 	strnlen
+-	strptime
+-	strtoull
+-	sync_file_range
+-	sysconf
+ 	usleep
+-	utime
+-	valloc
+ ]))
+ dnl
+ dnl Check to see if -lsocket is required (solaris) to make something
+diff -aur e2fsprogs-1.42.8/lib/ext2fs/kernel-list.h e2fsprogs/lib/ext2fs/kernel-list.h
+--- e2fsprogs-1.42.8/lib/ext2fs/kernel-list.h	2012-07-06 17:37:27.000000000 +0400
++++ e2fsprogs/lib/ext2fs/kernel-list.h	2013-07-01 18:57:04.095909222 +0400
+@@ -11,6 +11,8 @@
+  * using the generic single-entry routines.
+  */
+ 
++#ifndef EMBOX
++
+ struct list_head {
+ 	struct list_head *next, *prev;
+ };
+@@ -109,4 +111,6 @@
+ #define list_for_each(pos, head) \
+         for (pos = (head)->next; pos != (head); pos = pos->next)
+ 
++#endif // EMBOX
++
+ #endif
+diff -aur e2fsprogs-1.42.8/lib/uuid/Makefile.in e2fsprogs/lib/uuid/Makefile.in
+--- e2fsprogs-1.42.8/lib/uuid/Makefile.in	2012-07-31 02:41:44.000000000 +0400
++++ e2fsprogs/lib/uuid/Makefile.in	2013-07-01 18:57:04.095909222 +0400
+@@ -67,7 +67,7 @@
+ @ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+ @BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+-all:: tst_uuid uuid_time $(SMANPAGES) uuid.pc
++all:: uuid_time $(SMANPAGES) uuid.pc
+ 
+ uuid.h: $(srcdir)/uuid.h.in
+ 	$(E) "	CP $@"
+diff -aur e2fsprogs-1.42.8/misc/dumpe2fs.c e2fsprogs/misc/dumpe2fs.c
+--- e2fsprogs-1.42.8/misc/dumpe2fs.c	2013-06-21 06:43:42.000000000 +0400
++++ e2fsprogs/misc/dumpe2fs.c	2013-07-01 19:03:50.080650253 +0400
+@@ -42,6 +42,7 @@
+ 
+ #include "../version.h"
+ #include "nls-enable.h"
++#include <arpa/inet.h>
+ 
+ #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
+ 
+@@ -505,7 +506,7 @@
+ 	free(buf);
+ }
+ 
+-int main (int argc, char ** argv)
++int main_dumpe2fs (int argc, char ** argv)
+ {
+ 	errcode_t	retval;
+ 	ext2_filsys	fs;
+diff -aur e2fsprogs-1.42.8/misc/e2freefrag.c e2fsprogs/misc/e2freefrag.c
+--- e2fsprogs-1.42.8/misc/e2freefrag.c	2013-04-22 03:05:50.000000000 +0400
++++ e2fsprogs/misc/e2freefrag.c	2013-07-01 18:57:04.095909222 +0400
+@@ -265,7 +265,7 @@
+ 
+ void do_freefrag(int argc, char **argv)
+ #else
+-int main(int argc, char *argv[])
++int main_e2freefrag(int argc, char *argv[])
+ #endif
+ {
+ 	struct chunk_info chunk_info;

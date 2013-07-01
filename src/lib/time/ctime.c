@@ -20,6 +20,8 @@
 #define HOUR_LENGHT 3600
 #define MIN_LENGHT  60
 
+static char ctime_buf[30];
+
 static long days_of_month(int year, int month);
 static bool is_leap_year(int year);
 
@@ -48,6 +50,15 @@ char *ctime_r(const time_t *t, char *buff) {
 			time->tm_year + YEAR_1900, time->tm_mon + 1, time->tm_mday, time->tm_hour,
 			time->tm_min, time->tm_sec);
 	return buff;
+}
+
+char *ctime(const time_t *t) {
+	struct tm *time = gmtime(t);
+
+	sprintf(ctime_buf, "%04d-%02d-%02d %02d:%02d:%02d",
+			time->tm_year + YEAR_1900, time->tm_mon + 1, time->tm_mday, time->tm_hour,
+			time->tm_min, time->tm_sec);
+	return ctime_buf;
 }
 
 struct tm *gmtime(const time_t *timep) {
