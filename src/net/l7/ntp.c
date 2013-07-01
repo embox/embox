@@ -1,291 +1,225 @@
 /**
  * @file
- * @brief SNTPv4 implementation over IPv4
+ * @brief Simple Network Time Protocol (SNTP) Version 4
  *
- * @date 13.07.2012
+ * @date 13.07.12
  * @author Alexander Kalmuk
+ * @author Ilia Vaprol
  */
 
-#include <net/skbuff.h>
-#include <net/socket/inet_sock.h>
-#include <net/l4/udp.h>
-#include <net/l3/ipv4/ip.h>
-#include <net/l7/ntp.h>
-#include <net/socket/socket.h>
-#include <kernel/time/time.h>
-#include <kernel/time/timer.h>
-#include <kernel/printk.h>
-#include <util/math.h>
+#include <arpa/inet.h>
+#include <assert.h>
 #include <errno.h>
+#include <kernel/time/time.h>
+#include <net/l7/ntp.h>
+#include <stddef.h>
 #include <string.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/socket.h>
+#include <util/array.h>
 
-#define MIN_POLL 3 /* By RFC 4330 minimum poll interval is about 15 seconds */
-#define MAX_POLL 16
+#define NTP_BUILD_DATA(field, data)              \
+	do {                                         \
+		const void *data_ = data;                \
+		if (data != NULL) {                      \
+			memcpy(&field, data_, sizeof field); \
+		}                                        \
+		else {                                   \
+			memset(&field, 0, sizeof field);     \
+		}                                        \
+	} while (0)
 
-static char kod[3][4] = {"DENY", "RSTR", "RATE"};
-
-/* Config witch we use as server */
-static struct ntphdr server_config;
-/* Config witch we use as client */
-static struct ntphdr client_config = {
-		.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT
-};
-/* Socket binded to port 123 */
-static int ntp_sock;
-/* Current server address for unicast interaction */
-static struct sockaddr_in available_server;
-/* Periodical timer for sending new request each tick */
-static sys_timer_t *ntp_poll_timer;
-/* Check for availability(reply) of server */
-static bool is_server_reply = false;
-static bool ntp_in_use = false;
-
-static inline void ntp_data_ntohs(struct s_ntpdata *data) {
-	data->sec = ntohs(data->sec);
-	data->fraction = ntohs(data->fraction);
-}
-
-static inline void ntp_data_ntohl(struct l_ntpdata *data) {
-	data->sec = ntohl(data->sec);
-	data->fraction = ntohl(data->fraction);
-}
-
-static void ntp_ntoh(struct ntphdr *ntp) {
-	ntp->refid = ntohl(ntp->refid);
-	ntp_data_ntohs(&ntp->rootdelay);
-	ntp_data_ntohs(&ntp->rootdisp);
-	ntp_data_ntohl(&ntp->org_ts);
-	ntp_data_ntohl(&ntp->rec_ts);
-	ntp_data_ntohl(&ntp->ref_ts);
-	ntp_data_ntohl(&ntp->xmt_ts);
-}
-
-static inline bool is_ntp_sock(struct sock *sk) {
-	return (inet_sk(sk)->sport == htons(NTP_SERVER_PORT) ? true : false);
-}
-
-void ntp_server_set(uint32_t s_addr) {
-	available_server.sin_addr.s_addr = s_addr;
-}
-
-int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
-	struct timespec ts;
-	struct ntphdr x;
-
-	x.status = client_config.status;
-	x.poll = client_config.poll;
-
-	getnsofday(&ts, NULL);
-	x.xmt_ts = timespec_to_ntp(ts);
-
-	ntp_ntoh(&x);
-
-	return sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
-}
-
-/* Reply to client with ntp_config last configuration */
-static int ntp_server_reply(struct ntphdr *r, struct timespec rec, struct sockaddr_in *dst) {
-	struct ntphdr x;
-	struct timespec ts;
-
-	x.status = get_leap(&server_config);
-	x.status |= get_version(r);
-	x.status |= NTP_SERVER; /* get_mode(&ntp_config); */
-
-	if (server_config.stratum > NTP_SERVER_UNSYNC)
-		x.stratum = 0;
-	else
-		x.stratum = server_config.stratum;
-
-	x.poll = max(r->poll, MIN_POLL);
-	/* TODO take into account our system clock source precision. */
-	x.precision = server_config.precision;
-	x.refid = server_config.refid;
-	x.ref_ts = server_config.ref_ts;
-	x.org_ts = r->xmt_ts;
-	x.rec_ts = timespec_to_ntp(rec);
-	getnsofday(&ts, NULL);
-	x.xmt_ts = timespec_to_ntp(ts);
-
-	ntp_ntoh(&x);
-
-	return sendto(ntp_sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
-}
-
-int ntp_receive(struct sock *sk, struct sk_buff *skb) {
-	struct ntphdr *r;
-	int mode, res = NET_RX_DROP;
-	struct timespec ts;
-	iphdr_t *iph = ip_hdr(skb);
-	udphdr_t *udph = udp_hdr(skb);
-	struct inet_sock *inet = inet_sk(sk);
-
-	getnsofday(&ts, NULL);
-
-	/* check for NTP packet */
-	if (ntohs(inet->sport) != NTP_SERVER_PORT &&
-			ntohs(udph->source) != NTP_SERVER_PORT)
-		goto free_and_drop;
-
-	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
-
-	ntp_ntoh(r);
-
-	/* check if it is client packet */
-	if ((mode = get_mode(r)) == NTP_CLIENT || mode == NTP_BROADCAST_CLIENT) {
-		struct sockaddr_in dst;
-		dst.sin_port = udph->source;
-		dst.sin_addr.s_addr = iph->saddr;
-		ntp_server_reply(r, ts, &dst);
-		return ENOERR;
+int ntp_build(struct ntphdr *ntph, int leap, int mode,
+		int stratum, int poll, int precision,
+		struct ntp_data_l *ref, struct ntp_data_l *org,
+		struct ntp_data_l *rec, struct ntp_data_l *xmt) {
+	if (ntph == NULL) {
+		return -EINVAL;
 	}
 
-	/* no, it is server reply. Process it below */
+	ntph->leap = leap;
+	ntph->version = NTP_VERSION;
+	ntph->mode = mode;
+	ntph->poll = poll;
+	ntph->precision = precision;
+	NTP_BUILD_DATA(ntph->rootdelay, NULL);
+	NTP_BUILD_DATA(ntph->rootdisp, NULL);
+	NTP_BUILD_DATA(ntph->reftime, ref);
+	NTP_BUILD_DATA(ntph->org, org);
+	NTP_BUILD_DATA(ntph->rec, rec);
+	NTP_BUILD_DATA(ntph->xmt, xmt);
 
-	if (r->stratum >= NTP_SERVER_UNSYNC ||
-			(mode != NTP_SERVER && mode != NTP_BROADCAST))
-		goto free_and_drop;
+	return 0;
+}
 
-	/* check for server KoD */
-	if (r->stratum == 0) {
-		if (strcmp((char *)&r->refid, kod[2])) {
-			if (client_config.poll > MIN_POLL)
-				client_config.poll--;
-			else
-				available_server.sin_addr.s_addr = 0;
-		} else if (strcmp((char *)&r->refid, kod[0]) ||
-				strcmp((char *)&r->refid, kod[1])) {
-			available_server.sin_addr.s_addr = 0;
+static void ndl_to_ts(const struct ntp_data_l *ndl,
+		struct timespec *out_ts) {
+	assert(ndl != NULL);
+	assert(out_ts != NULL);
+	out_ts->tv_sec = ntohl(ndl->sec);
+	out_ts->tv_nsec = (ntohl(ndl->frac) / 1000) * 232;
+}
+
+int ntp_data_l_to_timespec(const struct ntp_data_l *ndl,
+		struct timespec *out_ts) {
+	if ((ndl == NULL) || (out_ts == NULL)) {
+		return -EINVAL;
+	}
+
+	ndl_to_ts(ndl, out_ts);
+
+	return 0;
+}
+
+static void ts_to_ndl(const struct timespec *ts,
+		struct ntp_data_l *out_ndl) {
+	assert(ts != NULL);
+	assert(out_ndl != NULL);
+	out_ndl->sec = htonl(ts->tv_sec);
+	out_ndl->frac = htonl((ts->tv_nsec / 232) * 1000);
+}
+
+int ntp_timespec_to_data_l(const struct timespec *ts,
+		struct ntp_data_l *out_ndl) {
+	if ((ts == NULL) || (out_ndl == NULL)) {
+		return -EINVAL;
+	}
+
+	ts_to_ndl(ts, out_ndl);
+
+	return 0;
+}
+
+int ntp_mode_client(const struct ntphdr *ntph) {
+	if (ntph == NULL) {
+		return 0;
+	}
+
+	return (ntph->mode == NTP_MOD_CLIENT)
+			|| (ntph->mode == NTP_MOD_BROADCAST_CLIENT);
+}
+
+int ntp_mode_server(const struct ntphdr *ntph) {
+	if (ntph == NULL) {
+		return 0;
+	}
+
+	return (ntph->mode == NTP_MOD_SERVER)
+			|| (ntph->mode == NTP_MOD_BROADCAST);
+}
+
+const char * ntp_stratum_error(const struct ntphdr *ntph) {
+	static const struct {
+		const char *code;
+		const char *info;
+	} errors[] = {
+		{ "ACST", "The association belongs to a anycast server" },
+		{ "AUTH", "Server authentication failed" },
+		{ "AUTO", "Autokey sequence failed" },
+		{ "BCST", "The association belongs to a broadcast server" },
+		{ "CRYP", "Cryptographic authentication or identification"
+				" failed" },
+		{ "DENY", "Access denied by remote server" },
+		{ "DROP", "Lost peer in symmetric mode" },
+		{ "RSTR", "Access denied due to local policy" },
+		{ "INIT", "The association has not yet synchronized for"
+				" the first time" },
+		{ "MCST", "The association belongs to a manycast server" },
+		{ "NKEY", "No key found. Either the key was never"
+				" installed or is not trusted" },
+		{ "RATE", "Rate exceeded. The server has temporarily"
+				" denied access because the client exceeded the"
+				" rate threshold" },
+		{ "RMOT", "Somebody is tinkering with the association"
+				" from a remote host running ntpdc. Not to worry"
+				" unless some rascal has stolen your keys" },
+		{ "STEP", "A step change in system time has occurred,"
+				" but the association has not yet resynchronized" }
+	};
+	size_t i;
+
+	if (ntph->stratum != NTP_STRATUM_UNSPEC) {
+		return NULL;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(errors); ++i) {
+		if (0 == strncmp(&ntph->refid[0], errors[i].code,
+					ARRAY_SIZE(ntph->refid))) {
+			return errors[i].info;
 		}
-
-		res = NET_RX_DROP;
-		goto free_and_drop;
 	}
 
-	if (is_ntp_sock(sk)) {
-		/* set system time */
-		ts = ntp_to_timespec(r->xmt_ts);
-		ts = timespec_add(ts, ntp_delay(r));
-		settimeofday(&ts, NULL);
-
-		/* set server and ntp_config if now no server specified */
-		if (available_server.sin_addr.s_addr == 0) {
-			available_server.sin_addr.s_addr = iph->saddr;
-			/* XXX ntp_config.stratum++ */
-			memcpy(&server_config, r, sizeof(struct ntphdr));
-		}
-
-		/* update reply statstic */
-		if (available_server.sin_addr.s_addr == iph->saddr)
-			is_server_reply = true;
-
-		/* update Reference Timestamp */
-		server_config.ref_ts = timespec_to_ntp(ts);
-		/* update poll interval. It is different from our request if server reply is broadcast. */
-		client_config.poll = r->poll;
-	}
-
-	return ENOERR;
-	/* TODO check Key Identifier (optional) */
-free_and_drop:
-	skb_free(skb);
-	return -res;
+	return NULL;
 }
 
-struct timespec ntp_delay(struct ntphdr *ntp) {
-	struct timespec client_r, server_x, server_r, client_x, res;
+int ntp_valid_stratum(const struct ntphdr *ntph) {
+	if (ntph == NULL) {
+		return 0;
+	}
+	else if (ntp_mode_client(ntph)) {
+		return 1;
+	}
 
+	return (ntph->stratum > NTP_STRATUM_UNSPEC)
+			&& (ntph->stratum < NTP_STRATUM_UNSYNC);
+}
+
+int ntp_delay(const struct ntphdr *ntph,
+		struct timespec *out_ts) {
+	struct timespec client_x, server_r, server_x, client_r, tmp;
+
+	if ((ntph == NULL) || (out_ts == NULL)) {
+		return -EINVAL;
+	}
+
+	ndl_to_ts(&ntph->org, &client_x);
+	ndl_to_ts(&ntph->rec, &server_r);
+	ndl_to_ts(&ntph->xmt, &server_x);
 	getnsofday(&client_r, NULL);
-	client_x = ntp_to_timespec(ntp->org_ts);
-	server_x = ntp_to_timespec(ntp->xmt_ts);
-	server_r = ntp_to_timespec(ntp->rec_ts);
 
-	res = timespec_sub(client_r, client_x);
-	res = timespec_sub(res, timespec_sub(server_x, server_r));
+	tmp = timespec_sub(client_r, client_x);
+	tmp = timespec_sub(tmp, timespec_sub(server_x, server_r));
 
-	res.tv_sec /= 2;
-	res.tv_nsec /= 2;
-	return res;
+	out_ts->tv_sec = tmp.tv_sec / 2;
+	out_ts->tv_nsec = tmp.tv_nsec / 2;
+
+	return 0;
 }
 
-struct timespec ntp_offset(struct ntphdr *ntp) {
-	struct timespec client_r, server_x, server_r, client_x, res;
+int ntp_offset(const struct ntphdr *ntph,
+		struct timespec *out_ts) {
+	struct timespec client_x, server_r, server_x, client_r, tmp;
 
+	if ((ntph == NULL) || (out_ts == NULL)) {
+		return -EINVAL;
+	}
+
+	ndl_to_ts(&ntph->org, &client_x);
+	ndl_to_ts(&ntph->rec, &server_r);
+	ndl_to_ts(&ntph->xmt, &server_x);
 	getnsofday(&client_r, NULL);
-	client_x = ntp_to_timespec(ntp->org_ts);
-	server_x = ntp_to_timespec(ntp->xmt_ts);
-	server_r = ntp_to_timespec(ntp->rec_ts);
 
-	res = timespec_sub(server_r, client_x);
-	res = timespec_add(res, timespec_sub(server_x, client_r));
+	tmp = timespec_sub(server_r, client_x);
+	tmp = timespec_add(tmp, timespec_sub(server_x, client_r));
 
-	res.tv_sec /= 2;
-	res.tv_nsec /= 2;
-	return res;
+	out_ts->tv_sec = tmp.tv_sec / 2;
+	out_ts->tv_nsec = tmp.tv_nsec / 2;
+
+	return 0;
 }
 
-/* Send request to avaliable_server on each ntp_poll_timer reload */
-static void send_request(struct sys_timer *timer, void *param) {
-	if (available_server.sin_addr.s_addr) {
-		/* if no reply from server, then increase polling interval */
-		if (!is_server_reply && client_config.poll < MAX_POLL) {
-			client_config.poll++;
-			timer_close(ntp_poll_timer);
-			timer_set(&ntp_poll_timer, TIMER_PERIODIC, (1 << client_config.poll) * MSEC_PER_SEC,
-						send_request, NULL);
-		}
+int ntp_time(const struct ntphdr *ntph, struct timespec *out_ts) {
+	int ret;
+	struct timespec tmp, delay;
 
-		is_server_reply = false;
-		ntp_client_xmit(ntp_sock, &available_server);
-	}
-}
-
-int ntp_start(void) {
-	struct sockaddr_in our;
-
-	if (ntp_in_use)
-		return -EBUSY;
-
-	available_server.sin_port = htons((__u16)NTP_SERVER_PORT);
-	/* set minimum polling interval */
-	client_config.poll = MIN_POLL;
-	/* our server is unsync now*/
-	server_config.stratum = 0;
-
-	if (0 > (ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
-		printk("Can't to allocate NTP socket");
-		return -ENOMEM;
+	if ((ntph == NULL) || (out_ts == NULL)) {
+		return -EINVAL;
 	}
 
-	socket_set_encap_recv(ntp_sock, ntp_receive);
-
-	our.sin_family = AF_INET;
-	our.sin_port = htons((__u16)NTP_SERVER_PORT);
-	our.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (0 > bind(ntp_sock, (struct sockaddr *)&our, sizeof(our))) {
-		printk("error at bind()\n");
-		return -EBUSY;
+	ndl_to_ts(&ntph->xmt, &tmp);
+	ret = ntp_delay(ntph, &delay);
+	if (ret != 0) {
+		return ret;
 	}
+	*out_ts = timespec_add(tmp, delay);
 
-	if (0 > timer_set(&ntp_poll_timer, TIMER_PERIODIC, (1 << MIN_POLL) * MSEC_PER_SEC,
-			send_request, NULL)) {
-		printk("Can't to initialize NTP timer");
-		return -ENOENT;
-	}
-
-	ntp_in_use = true;
-
-	return ENOERR;
-}
-
-int ntp_stop(void) {
-	close(ntp_sock);
-	timer_close(ntp_poll_timer);
-	ntp_in_use = false;
-
-	return ENOERR;
+	return 0;
 }

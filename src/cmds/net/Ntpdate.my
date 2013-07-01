@@ -11,10 +11,18 @@ package embox.cmd.net
 			TODO
 		AUTHORS
 			Alexander Kalmuk
+			Ilia Vaprol
 	''')
-
 module ntpdate {
+	option number timeout = 5000
 	source "ntpdate.c"
-	depends embox.net.ntp
+
+	depends embox.compat.posix.fs.file_ops
+	depends embox.compat.posix.net.inet_addr
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
 	depends embox.kernel.time.timekeeper
+	depends embox.lib.LibC
+	depends embox.net.ntp
 }

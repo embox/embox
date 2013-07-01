@@ -2,7 +2,8 @@ package embox.net
 
 module bootp {
 	source "bootp.c"
-	depends udp
+
+	depends embox.lib.LibC
 }
 
 module dns {
@@ -11,15 +12,13 @@ module dns {
 
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
-	depends embox.mem.heap_api
 }
 
 module ntp {
 	source "ntp.c"
 
-	depends udp
 	depends embox.kernel.time.timekeeper
-	depends embox.kernel.timer.sys_timer
+	depends embox.lib.LibC
 }
 
 module pop3 {

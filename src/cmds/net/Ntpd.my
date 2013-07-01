@@ -11,12 +11,18 @@ package embox.cmd.net
 			TODO
 		AUTHORS
 			Alexander Kalmuk
+			Ilia Vaprol
 	''')
-
 module ntpd {
 	source "ntpd.c"
 
-	depends embox.kernel.task.api
+	depends embox.compat.posix.fs.file_ops
+	depends embox.compat.posix.net.inet_addr
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
+	depends embox.kernel.time.timekeeper
+	depends embox.kernel.timer.sys_timer
+	depends embox.lib.LibC
 	depends embox.net.ntp
 }
