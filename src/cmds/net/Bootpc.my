@@ -20,7 +20,7 @@ module bootpc {
 
 	depends embox.compat.posix.util.getopt
 	depends embox.lib.LibC
-	depends embox.net.bootp
+	depends embox.net.lib.bootp
 	depends embox.net.dev
 	depends embox.net.core
 	depends embox.net.route

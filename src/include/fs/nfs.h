@@ -14,7 +14,7 @@
 #include <fs/node.h>
 #include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
-#include <net/l7/rpc/rpc.h>
+#include <net/lib/rpc/rpc.h>
 #include <limits.h>
 
 /*

@@ -1,0 +1,21 @@
+package embox.net.lib.snmp_mib
+
+module mib_mac {
+	source "mib_mac.c"
+
+	depends embox.net.core
+	depends mib
+}
+
+module mib {
+	option number max_obj_count=64
+	source "mib.c"
+
+	depends embox.mem.objalloc
+	depends embox.util.LibUtil
+}
+
+module all_mibs {
+	depends mib_mac
+	depends mib
+}

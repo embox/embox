@@ -47,7 +47,7 @@ static module gethostbyaddr {
 	source "gethostbyaddr.c"
 
 	depends inet_addr
-	depends embox.net.dns
+	depends embox.net.lib.dns
 	depends embox.net.util.hostent
 	depends embox.lib.LibC
 }
@@ -56,7 +56,7 @@ static module gethostbyname {
 	source "gethostbyname.c"
 
 	depends gethostent
-	depends embox.net.dns
+	depends embox.net.lib.dns
 	depends embox.net.util.hostent
 	depends embox.lib.LibC
 }

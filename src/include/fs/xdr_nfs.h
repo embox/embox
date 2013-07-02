@@ -10,7 +10,7 @@
 #ifndef XDR_NFS_H_
 #define XDR_NFS_H_
 
-#include <net/l7/rpc/xdr.h>
+#include <net/lib/rpc/xdr.h>
 
 extern int xdr_mnt_export(struct xdr *xs, export_dir_t *export);
 

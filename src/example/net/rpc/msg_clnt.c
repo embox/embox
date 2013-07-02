@@ -7,8 +7,8 @@
  */
 
 #include <errno.h>
-#include <net/l7/rpc/clnt.h>
-#include <net/l7/rpc/xdr.h>
+#include <net/lib/rpc/clnt.h>
+#include <net/lib/rpc/xdr.h>
 #include <framework/example/self.h>
 #include <stdio.h>
 #include <string.h>

@@ -13,7 +13,7 @@
 #include <framework/mod/options.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
-#include <net/l7/bootp.h>
+#include <net/lib/bootp.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>

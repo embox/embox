@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
-#include <net/l7/ntp.h>
+#include <net/lib/ntp.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>

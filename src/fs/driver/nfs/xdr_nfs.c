@@ -8,7 +8,7 @@
 
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
-#include <net/l7/rpc/xdr.h>
+#include <net/lib/rpc/xdr.h>
 
 int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 	char *point;

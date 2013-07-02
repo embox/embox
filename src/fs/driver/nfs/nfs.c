@@ -25,8 +25,8 @@
 #include <limits.h>
 
 #include <mem/misc/pool.h>
-#include <net/l7/rpc/clnt.h>
-#include <net/l7/rpc/xdr.h>
+#include <net/lib/rpc/clnt.h>
+#include <net/lib/rpc/xdr.h>
 
 
 static int nfs_create_dir_entry(node_t *parent);

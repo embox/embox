@@ -14,7 +14,7 @@
 #include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
-#include <net/l7/bootp.h>
+#include <net/lib/bootp.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>

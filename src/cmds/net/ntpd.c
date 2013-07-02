@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
-#include <net/l7/ntp.h>
+#include <net/lib/ntp.h>
 #include <netinet/in.h>
 #include <stddef.h>
 #include <stdio.h>

@@ -46,7 +46,7 @@ package embox.cmd.net
 module ping {
 	source "ping.c"
 
-	depends embox.net.dns
+	depends embox.net.lib.dns
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
 	depends embox.compat.posix.net.socket
