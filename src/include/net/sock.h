@@ -67,7 +67,6 @@ struct sock {
 	const struct sock_ops *ops;
 
 	struct socket *sk_socket;
-	int (*sk_encap_rcv)(struct sock *sk, struct sk_buff *pack);
 	struct manual_event sock_is_not_empty;
 };
 

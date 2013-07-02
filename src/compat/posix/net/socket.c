@@ -438,11 +438,3 @@ int setsockopt(int sockfd, int level, int optname,
 
 	return 0;
 }
-
-
-/********** TODO remove this ****************/
-void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
-	struct socket *sock = idx2socket(sockfd);
-	sock->sk->sk_encap_rcv = hnd;
-}
-

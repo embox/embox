@@ -1088,7 +1088,6 @@ static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 }
 
 static int tcp_v4_rcv(struct sk_buff *skb) {
-	int ret;
 	union sock_pointer sock;
 
 	assert(skb != NULL);
@@ -1098,13 +1097,6 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	if (sock.sk == NULL) {
 		sock.sk = sock_lookup(NULL, tcp_sock_ops,
 				tcp_rcv_tester_soft, skb);
-	}
-
-	if ((sock.sk != NULL) && (sock.sk->sk_encap_rcv != NULL)) {
-		ret = sock.sk->sk_encap_rcv(sock.sk, skb);
-		if (ret < 0) {
-			return ret;
-		}
 	}
 
 	packet_print(sock, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);

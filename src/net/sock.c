@@ -85,7 +85,6 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->f_ops = f_ops;
 	sk->ops = ops;
 	sk->sk_socket = NULL;
-	sk->sk_encap_rcv = NULL;
 	manual_event_init(&sk->sock_is_not_empty, 0);
 }
 

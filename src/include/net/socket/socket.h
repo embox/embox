@@ -11,8 +11,6 @@
 #ifndef NET_SOCKET_SOCKET_H_
 #define NET_SOCKET_SOCKET_H_
 
-
-
 struct sock;
 struct idx_desc;
 struct socket_node;
@@ -32,18 +30,5 @@ struct socket {
 	struct idx_desc_data *desc_data;
 	struct socket_node *socket_node;
 };
-
-#if 1 /********** TODO remove this ****************/
-
-struct sk_buff;
-/**
- * Handle encapsulated protocol.
- * @return 0 on success.
- * @return -1 on failure and drop packet.
- */
-typedef int (*sk_encap_hnd)(struct sock *sk, struct sk_buff *pack);
-
-extern void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd);
-#endif
 
 #endif /* NET_SOCKET_SOCKET_H_ */

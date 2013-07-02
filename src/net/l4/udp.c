@@ -41,7 +41,6 @@ static int udp_rcv_tester(const struct sock *sk,
 static int udp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct inet_sock *inet;
-	int res;
 
 	assert(skb != NULL);
 
@@ -59,11 +58,6 @@ static int udp_rcv(struct sk_buff *skb) {
 		inet = inet_sk(sk);
 		inet->dport = skb->h.uh->source;
 		inet->daddr = skb->nh.iph->saddr;
-
-		if (sk->sk_encap_rcv) {
-			if (0 > (res = sk->sk_encap_rcv(sk, skb)))
-				return -res;
-		}
 
 		sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE);
 
