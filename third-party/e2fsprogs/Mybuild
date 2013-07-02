@@ -12,6 +12,8 @@ module libs {
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/ext2fs/libext2fs.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/e2p/libe2p.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/uuid/libuuid.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/blkid/libblkid.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/quota/libquota.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/intl/libintl.a"
 }
 
@@ -48,5 +50,27 @@ module dumpe2fs {
 	@Rule(script="true")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/dumpe2fs.o"
 	source "dumpe2fs_cmd.c"
+	source "order.mk"
+}
+
+@Cmd(name = "mke2fs",
+	help = "Make a ext2fs filesystem",
+	man = '''
+		NAME
+			mke2fs - Make a ext2fs filesystem
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module mke2fs {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/mke2fs.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/util.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/profile.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/prof_err.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/default_profile.o"
+	source "mke2fs_cmd.c"
 	source "order.mk"
 }
