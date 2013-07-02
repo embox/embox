@@ -8,7 +8,7 @@
 
 #include <errno.h>
 #include <framework/mod/options.h>
-#include <net/util/servent_api.h>
+#include <net/util/servent.h>
 #include <netdb.h>
 #include <stddef.h>
 #include <string.h>

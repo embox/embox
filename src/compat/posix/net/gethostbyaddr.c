@@ -8,7 +8,7 @@
 
 #include <linux/swab.h>
 #include <net/l7/dns.h>
-#include <net/util/hostent_api.h>
+#include <net/util/hostent.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stddef.h>

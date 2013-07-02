@@ -39,7 +39,7 @@ static module gethostent {
 	option string path_to_hosts="/hosts"
 	source "gethostent.c"
 
-	depends embox.net.util.hostent_api
+	depends embox.net.util.hostent
 	depends embox.lib.LibC
 }
 
@@ -48,7 +48,7 @@ static module gethostbyaddr {
 
 	depends inet_addr
 	depends embox.net.dns
-	depends embox.net.util.hostent_api
+	depends embox.net.util.hostent
 	depends embox.lib.LibC
 }
 
@@ -57,7 +57,7 @@ static module gethostbyname {
 
 	depends gethostent
 	depends embox.net.dns
-	depends embox.net.util.hostent_api
+	depends embox.net.util.hostent
 	depends embox.lib.LibC
 }
 
@@ -65,7 +65,7 @@ static module getnetent {
 	option string path_to_networks="/networks"
 	source "getnetent.c"
 
-	depends embox.net.util.netent_api
+	depends embox.net.util.netent
 	depends embox.lib.LibC
 }
 
@@ -86,7 +86,7 @@ static module getprotoent {
 	option string path_to_protocols="/protocols"
 	source "getprotoent.c"
 
-	depends embox.net.util.protoent_api
+	depends embox.net.util.protoent
 	depends embox.lib.LibC
 }
 
@@ -107,7 +107,7 @@ static module getservent {
 	option string path_to_services="/services"
 	source "getservent.c"
 
-	depends embox.net.util.servent_api
+	depends embox.net.util.servent
 	depends embox.lib.LibC
 }
 
