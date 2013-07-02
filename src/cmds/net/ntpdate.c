@@ -32,13 +32,16 @@ static int make_socket(const struct timeval *timeout, int *out_sock) {
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock == -1) {
-		return -errno;
+		ret = -errno;
+		assert(ret != 0);
+		return ret;
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
 				timeout, sizeof *timeout)) {
 		ret = -errno;
 		close(sock);
+		assert(ret != 0);
 		return ret;
 	}
 
