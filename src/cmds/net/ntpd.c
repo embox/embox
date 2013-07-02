@@ -75,7 +75,6 @@ static void timer_handler(struct sys_timer *timer, void *param) {
 
 	param_ = param;
 
-	printf("tmr\n");
 	if (!param_->replied && param_->poll < NTP_POLL_MAX) {
 		++param_->poll;
 		timer_close(param_->tmr);
@@ -119,7 +118,6 @@ static int serve(struct ntpd_param *param) {
 		addrlen = sizeof addr;
 		ret = recvfrom(param->sock, &rep, sizeof rep, 0,
 					(struct sockaddr *)&addr, &addrlen);
-		printf("recv %d\n", ret);
 		if (ret == -1) {
 			return -errno;
 		}
@@ -160,7 +158,6 @@ static int ntpd_start(struct ntpd_param *param) {
 
 	ret = timer_set(&param->tmr, TIMER_PERIODIC,
 			(1 << param->poll) * MSEC_PER_SEC, timer_handler, param);
-	printf("(1 << param->poll) * MSEC_PER_SEC = %lu\n", (1 << param->poll) * MSEC_PER_SEC);
 	if (ret != 0) {
 		close(param->sock);
 		return ret;
