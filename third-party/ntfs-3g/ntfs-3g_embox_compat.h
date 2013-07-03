@@ -1,141 +1,94 @@
 /*
- * sqlite_embox_compat.h
+ * ntfs-3g_embox_compat.h
  *
- *  Created on: 25 mars 2013
+ *  Created on: 02 juillet 2013
  *      Author: fsulima
  */
 
-#ifndef SQLITE_EMBOX_COMPAT_H_
-#define SQLITE_EMBOX_COMPAT_H_
+#ifndef NTFS_EMBOX_COMPAT_H_
+#define NTFS_EMBOX_COMPAT_H_
 
-#ifdef HAVE_POSIX_FALLOCATE
-#undef HAVE_POSIX_FALLOCATE
+
+#ifdef linux
+#undef linux
 #endif
 
-#ifdef HAVE_LOCALTIME_R
-#undef HAVE_LOCALTIME_R
+#ifdef __linux__
+#undef __linux__
 #endif
 
-#ifdef HAVE_STRERROR_R
-#undef HAVE_STRERROR_R
-#endif
 
-#ifdef HAVE_READLINE
-#undef HAVE_READLINE
-#endif
 
-#define SQLITE_HOMEGROWN_RECURSIVE_MUTEX
-#define SQLITE_4_BYTE_ALIGNED_MALLOC
-
-#define SQLITE_PRIVATE
-
-#ifdef SQLITE_OMIT_TRACE
-#undef SQLITE_OMIT_TRACE
-#endif
-
-#define SQLITE_ENABLE_IOTRACE 1
-
-#define SQLITE_OMIT_WAL
-
-#define SQLITE_DISABLE_LFS
-
-#define SQLITE_TEMP_STORE 3
-
-#define SQLITE_OMIT_SHARED_CACHE
-
-#ifdef SQLITE_THREADSAFE
-#undef SQLITE_THREADSAFE
-#endif
-#define SQLITE_THREADSAFE 0
-
-#define SQLITE_ENABLE_8_3_NAMES 1
-
-//#ifdef SQLITE_THREADSAFE
-//#undef SQLITE_THREADSAFE
-//#endif
-
-#if 1
-#define DPRINT() printf(">>> sqlite3 CALL %s\n", __FUNCTION__)
-#else
-#define DPRINT()
-#endif
-
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
-
-static inline
-int fchown(int fd, uid_t owner, gid_t group) {
-	DPRINT();
-	SET_ERRNO(EPERM);
-	return -1;
+static inline void __x86_verificator__(void) {
+	// This is to make sure this header only compiles on x86
+	asm ("mov %%cr2, %%eax");
 }
-
-static inline
-int utimes(const char *filename, const struct timeval times[2]) {
-	DPRINT();
-	SET_ERRNO(EPERM);
-	return -1;
-}
-
-#define MAP_SHARED    0x00
-//#define MAP_PRIVATE   0x01
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-#define MAP_FAILED    ((void*)(-1))
-#include <errno.h>
-static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-		// ToDo: implement for InitFS files
-		(void)addr;
-		(void)len;
-		(void)prot;
-		(void)flags;
-		(void)off;
-		printf(">>> mmap(%i)\n",fd);
-		errno = EPERM;
-		return MAP_FAILED;
-	}
-static inline int munmap(void *addr, size_t size) {
-		(void)size;
-		printf(">>> munmap(%p)\n",addr);
-		errno = EPERM;
-		return -1;
-	}
+#define	__LITTLE_ENDIAN	1234
+#define	__BIG_ENDIAN	4321
+#define	__PDP_ENDIAN	3412
+// x86 architecture only
+#define __BYTE_ORDER __LITTLE_ENDIAN
 
 
-struct rusage {
-    struct timeval ru_utime; /* user CPU time used */
-    struct timeval ru_stime; /* system CPU time used */
+#define S_ISVTX 01000
+
+
+#define __timespec_defined
+
+
+// errno values
+#define EOVERFLOW 1
+#define EMLINK    2
+#define ENODATA   3
+#define EILSEQ    4
+
+
+
+#ifndef __need_getopt
+/* Describe the long-named options requested by the application.
+   The LONG_OPTIONS argument to getopt_long or getopt_long_only is a vector
+   of `struct option' terminated by an element containing a name which is
+   zero.
+
+   The field `has_arg' is:
+   no_argument		(or 0) if the option does not take an argument,
+   required_argument	(or 1) if the option requires an argument,
+   optional_argument 	(or 2) if the option takes an optional argument.
+
+   If the field `flag' is not NULL, it points to a variable that is set
+   to the value given in the field `val' when the option is found, but
+   left unchanged if the option is not found.
+
+   To have a long-named option do something other than set an `int' to
+   a compiled-in constant, such as set a value from `optarg', set the
+   option's `flag' field to zero and its `val' field to a nonzero
+   value (the equivalent single-letter option character, if there is
+   one).  For long options that have a zero `flag' field, `getopt'
+   returns the contents of the `val' field.  */
+
+struct option
+{
+  const char *name;
+  /* has_arg can't be an enum because some compilers complain about
+     type mismatches in all the code that assumes it is an int.  */
+  int has_arg;
+  int *flag;
+  int val;
 };
-#define RUSAGE_SELF 0
-static inline
-int getrusage(int who, struct rusage *usage) {
-	DPRINT();
-	memset(usage, 0, sizeof(*usage));
-	SET_ERRNO(EPERM);
-	return -1;
-}
 
-static inline
-FILE *popen(const char *command, const char *type) {
-	DPRINT();
-	return NULL;
-}
+/* Names for the values of the `has_arg' field of `struct option'.  */
 
-static inline
-int pclose(FILE *stream) {
-	DPRINT();
-	return -1;
-}
+# define no_argument		0
+# define required_argument	1
+# define optional_argument	2
+#endif	/* need getopt */
 
-static inline
-int fchmod(int fd, mode_t mode) {
-	DPRINT();
-	SET_ERRNO(EPERM);
-	return -1;
-}
+int getopt_long(int argc, char * const argv[],
+           const char *optstring,
+           const struct option *longopts, int *longindex);
 
-#endif /* SQLITE_EMBOX_COMPAT_H_ */
+
+#include <unistd.h>
+
+
+#endif /* NTFS_EMBOX_COMPAT_H_ */

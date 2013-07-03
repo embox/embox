@@ -34,3 +34,15 @@
  fi
  
  # Autodetect whether we can build crypto stuff or not.
+diff -aur ntfs-3g/ntfsprogs/Makefile.am ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am
+--- ntfs-3g/ntfsprogs/Makefile.am	2013-07-03 17:21:38.955645438 +0400
++++ ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am	2013-01-13 10:46:35.000000000 +0400
+@@ -14,7 +14,7 @@
+ if ENABLE_NTFSPROGS
+ 
+ bin_PROGRAMS		= ntfsfix ntfsinfo ntfscluster ntfsls ntfscat ntfscmp
+-sbin_PROGRAMS		= mkntfs ntfslabel ntfsundelete ntfsresize ntfsclone \
++sbin_PROGRAMS		= mkntfs ntfslabel ntfsresize ntfsclone \
+ 			  ntfscp
+ EXTRA_PROGRAM_NAMES	= ntfsdump_logfile ntfswipe ntfstruncate ntfsmove \
+ 			  ntfsmftalloc ntfsck
