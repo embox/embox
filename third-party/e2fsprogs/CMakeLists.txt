@@ -21,6 +21,7 @@ ExternalProject_Add(
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
       --host=i386-pc-none
+      --disable-tls
    #	BUILD_COMMAND
    LOG_BUILD 1
 )
