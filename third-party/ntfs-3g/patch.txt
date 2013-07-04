@@ -46,3 +46,15 @@ diff -aur ntfs-3g/ntfsprogs/Makefile.am ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Ma
  			  ntfscp
  EXTRA_PROGRAM_NAMES	= ntfsdump_logfile ntfswipe ntfstruncate ntfsmove \
  			  ntfsmftalloc ntfsck
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c ntfs-3g/src/secaudit.c
+--- ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/src/secaudit.c	2013-07-04 17:19:35.287233107 +0400
+@@ -1348,7 +1348,7 @@
+  *		Redefine early error messages in stand-alone situations
+  */
+ 
+-void ntfs_log_early_error(const char *format, ...)
++void _ntfs_log_early_error(const char *format, ...)
+ {
+ 	va_list args;
+ 

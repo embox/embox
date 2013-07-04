@@ -9,7 +9,7 @@ ExternalProject_Add(
       cd $ENV{EMBOX_ROOT}/third-party/ntfs-3g/tree
       #&& bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`"
       && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/ntfs-3g/patch.txt
-      && cd <SOURCE_DIR> && autoconf
+      && cd <SOURCE_DIR> && autoconf && aclocal && automake
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
       <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
