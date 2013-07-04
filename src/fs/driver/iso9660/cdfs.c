@@ -502,19 +502,19 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 	return 0;
 }
 
-int cdfs_statfs(struct cdfs_fs_info *fsi, statfs_t *cache) {
-	cdfs_t *cdfs = (cdfs_t *) fsi->data;
+/* int cdfs_statfs(struct cdfs_fs_info *fsi, statfs_t *cache) { */
+/* 	cdfs_t *cdfs = (cdfs_t *) fsi->data; */
 
-	cache->bsize = CDFS_BLOCKSIZE;
-	cache->iosize = CDFS_BLOCKSIZE;
-	cache->blocks = cdfs->volblks;
-	cache->bfree = 0;
-	cache->files = -1;
-	cache->ffree = 0;
-	/*cache->cachesize = cdfs->cache->poolsize * CDFS_BLOCKSIZE; */
+/* 	cache->bsize = CDFS_BLOCKSIZE; */
+/* 	cache->iosize = CDFS_BLOCKSIZE; */
+/* 	cache->blocks = cdfs->volblks; */
+/* 	cache->bfree = 0; */
+/* 	cache->files = -1; */
+/* 	cache->ffree = 0; */
+/* 	/\*cache->cachesize = cdfs->cache->poolsize * CDFS_BLOCKSIZE; *\/ */
 
-	return 0;
-}
+/* 	return 0; */
+/* } */
 
 static int cdfs_open(struct nas *nas, char *name) {
 	cdfs_t *cdfs;

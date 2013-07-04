@@ -95,18 +95,18 @@ typedef struct stat {
 	unsigned  st_ctime;   /* time of last status change */
 } stat_t;
 
-typedef struct statfs  {
-	unsigned int bsize;        /* Fundamental file system block size */
-	unsigned int iosize;       /* Optimal transfer block size */
-	unsigned int blocks;       /* Total data blocks in file system */
-	unsigned int bfree;        /* Free blocks in fs */
-	unsigned int files;        /* Total file nodes in file system */
-	unsigned int ffree;        /* Free file nodes in fs */
-	unsigned int cachesize;    /* Cache buffers */
-	char fstype[NAME_MAX];   /* File system type name */
-	char mntto[PATH_MAX];       /* Directory on which mounted */
-	char mntfrom[PATH_MAX];     /* Mounted file system */
-} statfs_t;
+/* typedef struct statfs  { */
+/* 	unsigned int bsize;        /\* Fundamental file system block size *\/ */
+/* 	unsigned int iosize;       /\* Optimal transfer block size *\/ */
+/* 	unsigned int blocks;       /\* Total data blocks in file system *\/ */
+/* 	unsigned int bfree;        /\* Free blocks in fs *\/ */
+/* 	unsigned int files;        /\* Total file nodes in file system *\/ */
+/* 	unsigned int ffree;        /\* Free file nodes in fs *\/ */
+/* 	unsigned int cachesize;    /\* Cache buffers *\/ */
+/* 	char fstype[NAME_MAX];   /\* File system type name *\/ */
+/* 	char mntto[PATH_MAX];       /\* Directory on which mounted *\/ */
+/* 	char mntfrom[PATH_MAX];     /\* Mounted file system *\/ */
+/* } statfs_t; */
 
 /**
  * Get file status (size, mode, mtime and so on)
