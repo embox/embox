@@ -34,9 +34,9 @@
  fi
  
  # Autodetect whether we can build crypto stuff or not.
-diff -aur ntfs-3g/ntfsprogs/Makefile.am ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am
---- ntfs-3g/ntfsprogs/Makefile.am	2013-07-03 17:21:38.955645438 +0400
-+++ ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am	2013-01-13 10:46:35.000000000 +0400
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am ntfs-3g/ntfsprogs/Makefile.am
+--- ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Makefile.am	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/ntfsprogs/Makefile.am	2013-07-04 19:22:06.497465669 +0400
 @@ -14,7 +14,7 @@
  if ENABLE_NTFSPROGS
  
@@ -46,9 +46,39 @@ diff -aur ntfs-3g/ntfsprogs/Makefile.am ntfs-3g_ntfsprogs-2013.1.13/ntfsprogs/Ma
  			  ntfscp
  EXTRA_PROGRAM_NAMES	= ntfsdump_logfile ntfswipe ntfstruncate ntfsmove \
  			  ntfsmftalloc ntfsck
+@@ -140,7 +140,7 @@
+ 
+ install-exec-hook:
+ 	$(INSTALL) -d $(DESTDIR)/sbin
+-	$(LN_S) -f $(sbindir)/mkntfs $(DESTDIR)/sbin/mkfs.ntfs
++	$(LN_S) -f $(sbindir)/mkntfs $(sbindir)/mkfs.ntfs
+ 
+ install-data-hook:
+ 	$(INSTALL) -d $(DESTDIR)$(man8dir)
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/ntfs-3g.c ntfs-3g/src/ntfs-3g.c
+--- ntfs-3g_ntfsprogs-2013.1.13/src/ntfs-3g.c	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/src/ntfs-3g.c	2013-07-04 18:00:24.117311852 +0400
+@@ -62,7 +62,7 @@
+ #ifdef HAVE_LIMITS_H
+ #include <limits.h>
+ #endif
+-#include <syslog.h>
++//#include <syslog.h>
+ #include <sys/wait.h>
+ 
+ #ifdef HAVE_SETXATTR
+@@ -3650,7 +3650,7 @@
+ #ifndef DEBUG
+ 			ntfs_log_set_handler(ntfs_log_handler_syslog);
+ 			/* Override default libntfs identify. */
+-			openlog(EXEC_NAME, LOG_PID, LOG_DAEMON);
++			//openlog(EXEC_NAME, LOG_PID, LOG_DAEMON);
+ #endif
+ 		}
+ 	}
 diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c ntfs-3g/src/secaudit.c
 --- ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c	2013-01-13 10:46:35.000000000 +0400
-+++ ntfs-3g/src/secaudit.c	2013-07-04 17:19:35.287233107 +0400
++++ ntfs-3g/src/secaudit.c	2013-07-04 17:56:57.136605713 +0400
 @@ -1348,7 +1348,7 @@
   *		Redefine early error messages in stand-alone situations
   */
@@ -58,3 +88,56 @@ diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c ntfs-3g/src/secaudit.c
  {
  	va_list args;
  
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/Makefile.am ntfs-3g/src/Makefile.am
+--- ntfs-3g_ntfsprogs-2013.1.13/src/Makefile.am	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/src/Makefile.am	2013-07-04 19:41:12.373169750 +0400
+@@ -16,8 +16,8 @@
+ bin_PROGRAMS	 = ntfs-3g.probe \
+ 		ntfs-3g.usermap \
+ 		ntfs-3g.secaudit
+-rootbin_PROGRAMS = ntfs-3g lowntfs-3g
+-rootsbin_DATA 	 = #Create directory
++bin_PROGRAMS = ntfs-3g
++#rootsbin_DATA 	 = #Create directory
+ man_MANS	 = ntfs-3g.8 ntfs-3g.probe.8 \
+ 		ntfs-3g.usermap.8 \
+ 		ntfs-3g.secaudit.8
+@@ -59,7 +59,7 @@
+ ntfs_3g_usermap_SOURCES 	= usermap.c
+ ntfs_3g_secaudit_SOURCES 	= secaudit.c
+ 
+-drivers : $(FUSE_LIBS) ntfs-3g lowntfs-3g
++drivers : $(FUSE_LIBS) ntfs-3g
+ 
+ if RUN_LDCONFIG
+ install-exec-hook:
+@@ -70,17 +70,14 @@
+ install-exec-local:	install-rootbinPROGRAMS
+ 	$(MKDIR_P) "$(DESTDIR)/sbin"
+ 	$(LN_S) -f "$(rootbindir)/ntfs-3g" "$(DESTDIR)/sbin/mount.ntfs-3g"
+-	$(LN_S) -f "$(rootbindir)/lowntfs-3g" "$(DESTDIR)/sbin/mount.lowntfs-3g"
+ endif
+ 
+ install-data-local:	install-man8
+ 	$(LN_S) -f ntfs-3g.8 "$(DESTDIR)$(man8dir)/mount.ntfs-3g.8"
+-	$(LN_S) -f ntfs-3g.8 "$(DESTDIR)$(man8dir)/mount.lowntfs-3g.8"
+ 
+ uninstall-local:
+ 	$(RM) -f "$(DESTDIR)$(man8dir)/mount.ntfs-3g.8"
+ if ENABLE_MOUNT_HELPER
+-	$(RM) -f "$(DESTDIR)/sbin/mount.ntfs-3g" "$(DESTDIR)/sbin/mount.lowntfs-3g"
+ endif
+ 
+ endif # ENABLE_NTFS_3G
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/Makefile.am ntfs-3g/libntfs-3g/Makefile.am
+--- ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/Makefile.am	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/libntfs-3g/Makefile.am	2013-07-04 19:59:31.139125541 +0400
+@@ -54,7 +54,7 @@
+ 
+ # We may need to move .so files to root
+ # And create ldscript or symbolic link from /usr
+-install-exec-hook: install-rootlibLTLIBRARIES
++_install-exec-hook: install-rootlibLTLIBRARIES
+ if INSTALL_LIBRARY
+ 	if [ ! "$(rootlibdir)" -ef "$(libdir)" ]; then \
+ 		$(MV) -f "$(DESTDIR)/$(libdir)"/libntfs-3g.so* "$(DESTDIR)/$(rootlibdir)";  \

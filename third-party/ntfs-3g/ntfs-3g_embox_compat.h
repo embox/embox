@@ -119,4 +119,20 @@ struct statfs {
 
 typedef int sig_atomic_t;
 
+#define UTIME_NOW       ((1l << 30) - 1l)
+#define UTIME_OMIT      ((1l << 30) - 2l)
+
+
+#define _SC_PAGESIZE 0
+
+static inline long sysconf(int name) {
+	printf(">>> sysconf, name - %d\n", name);
+	switch(name) {
+	case _SC_PAGESIZE:
+		return 4096;
+	}
+	return -1;
+}
+
+
 #endif /* NTFS_EMBOX_COMPAT_H_ */

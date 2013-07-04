@@ -16,6 +16,10 @@ ExternalProject_Add(
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
+      --enable-mount-helper=no
+      --disable-ldconfig
+      --disable-largefile
+      --enable-shared=no
       --with-fuse=external
       --host=i386-pc-none
    #	BUILD_COMMAND
