@@ -180,7 +180,15 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	/* Cleanup */
 	hdc->dir = HD_XFER_IDLE;
 	hdc->active = NULL;
+
+	/*
+	 * FIXME This assignment crashes writing, because
+	 * hdc->result equal 1 after writing. So, it set result to 1, afterward
+	 * (return result == 0 ? count : result) return 1.
+	 * --Alexander
+	 *
 	result = hdc->result;
+	*/
 
 	return result == 0 ? count : result;
 }
