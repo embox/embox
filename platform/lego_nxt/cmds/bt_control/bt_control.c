@@ -8,7 +8,6 @@
 
 #include <stddef.h>
 #include <embox/cmd.h>
-#include <net/socket.h>
 #include <pnet/repo.h>
 #include <pnet/types.h>
 #include <pnet/graph.h>
