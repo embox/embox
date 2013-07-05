@@ -1007,8 +1007,13 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 	debug_print(11, "tcp_handle: ret %d skb %p sk %p\n", ret, skb, sock.tcp_sk);
 
 	switch (ret) {
-	case TCP_RET_DROP:
 	case TCP_RET_FREE:
+		/* skb may be listed in sock, so they must be free exactly
+ 		 * in this order */
+		skb_free(skb);
+		tcp_free_sock(sock);
+		break;
+	case TCP_RET_DROP:
 		skb_free(skb);
 		break;
 	case TCP_RET_SEND:
@@ -1081,16 +1086,10 @@ static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 		ret = tcp_handle(sock, skb, NULL);
 	}
 
-	switch (ret) {
-	case TCP_RET_FREE:
-		tcp_free_sock(sock);
-		break;
-	case TCP_RET_RST:
+	if (ret == TCP_RET_RST) {
 		tcp_handle(tcp_sock_default, skb, tcp_st_handler[TCP_CLOSED]);
-		break;
-	default:
-		break;
 	}
+
 }
 
 static int tcp_v4_rcv(struct sk_buff *skb) {
