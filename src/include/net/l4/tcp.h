@@ -168,7 +168,6 @@ extern size_t tcp_data_left(struct sk_buff *skb);
 extern void send_from_sock(union sock_pointer sock, struct sk_buff *skb, int xmit_mod);
 extern void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb);
 extern int tcp_st_status(union sock_pointer sock);
-extern void debug_print(__u8 code, const char *msg, ...);
 extern void tcp_get_now(struct timeval *out_now);
 extern int tcp_is_expired(struct timeval *since, useconds_t limit_msec);
 

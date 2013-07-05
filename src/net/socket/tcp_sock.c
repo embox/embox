@@ -31,6 +31,8 @@
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
+static inline void debug_print(__u8 code, const char *msg, ...) { }
+
 static const struct sock_ops tcp_sock_ops_struct;
 const struct sock_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 
