@@ -135,6 +135,9 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 	return ret;
 }
 
+extern int irq_stack_protection(void);
+
+
 void irq_dispatch(unsigned int irq_nr) {
 	struct irq_entry *entry;
 	irq_handler_t handler = NULL;
@@ -148,6 +151,10 @@ void irq_dispatch(unsigned int irq_nr) {
 	trace_point("interrupt");
 
 	trace_block_enter(&interrupt_tb);
+
+	if(irq_stack_protection()) {
+		assert(0);
+	}
 
 	if (irq_table[irq_nr]) {
 		ipl = ipl_save();
