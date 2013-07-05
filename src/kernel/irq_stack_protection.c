@@ -8,6 +8,12 @@
 #include <stdint.h>
 #include <kernel/sched.h>
 
+#include <framework/mod/api.h>
+
+#define STACK_SAFE_BOUND 128
+
+extern struct mod __mod__embox__kernel__thread__core;
+
 static inline unsigned int cpu_get_stack(void) {
 	unsigned ret;
 	__asm__ __volatile__ (
@@ -18,16 +24,22 @@ static inline unsigned int cpu_get_stack(void) {
 
 }
 
+static inline int threads_done(void) {
+	return __mod__embox__kernel__thread__core.private->flags & 1;
+}
 
 int irq_stack_protection(void) {
 	struct thread *th;
-	unsigned int threshold;
 
-	th = sched_current();
-	threshold = (uint32_t)th->stack - th->stack_sz + 0x400;
-
-	if(threshold < cpu_get_stack()) {
+	if (!threads_done()) {
 		return 0;
 	}
+
+	th = sched_current();
+
+	if ((uint32_t) th->stack + STACK_SAFE_BOUND < cpu_get_stack()) {
+		return 0;
+	}
+
 	return 1;
 }
