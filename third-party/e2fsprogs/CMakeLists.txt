@@ -22,6 +22,7 @@ ExternalProject_Add(
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
       --host=i386-pc-none
       --disable-tls
+      --disable-backtrace
    #	BUILD_COMMAND
    LOG_BUILD 1
 )

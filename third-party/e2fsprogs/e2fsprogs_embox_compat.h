@@ -15,6 +15,7 @@
 #include <string.h>
 #include <grp.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #ifdef linux
 #undef linux
@@ -131,6 +132,48 @@ static inline void setbuf(FILE *stream, char *buf) {
 static inline char *basename(char *path) {
 	printf(">>> basename, path - %s\n", path);
 	return NULL;
+}
+
+/****************** Functions for e2fsck *******************/
+
+#define SA_SIGINFO 0x00000004
+#define SI_USER         0
+
+struct sigaction;
+
+static inline int sigaction(int sig, const struct sigaction *act,
+		struct sigaction *oact) {
+	printf(">>> sigaction, sig - %d\n", sig);
+	return -1;
+}
+
+static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
+	return -1;
+}
+
+static inline void *sbrk(intptr_t increment) {
+	printf(">>> sbrk, increment - %d\n", increment);
+	return NULL;
+}
+
+static inline void tzset (void) {
+	printf(">>> tzset\n");
+}
+
+static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
+	printf(">>> localtime_r\n");
+	return NULL;
+}
+
+static inline struct tm *gmtime_r(const time_t *timep, struct tm *result) {
+	printf(">>> gmtime_r\n");
+	return NULL;
+}
+
+static inline int daemon(int nochdir, int noclose) {
+	printf(">>> daemon, nochdir - %d, noclose - %d\n", nochdir, noclose);
+	return -1;
 }
 
 #endif /* E2FSPROGS_EMBOX_COMPAT_H_ */

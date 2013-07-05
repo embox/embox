@@ -74,3 +74,21 @@ module mke2fs {
 	source "mke2fs_cmd.c"
 	source "order.mk"
 }
+
+@Cmd(name = "e2fsck",
+	help = "a consistency checker for the new extended file system",
+	man = '''
+		NAME
+			e2fsck - a consistency checker for the new extended file system
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module e2fsck {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/e2fsck/*.o"
+	source "e2fsck_cmd.c"
+	source "order.mk"
+}
