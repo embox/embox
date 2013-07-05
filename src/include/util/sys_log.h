@@ -14,7 +14,7 @@
 #include <util/macro.h>
 #include <stdbool.h>
 
-#define N_DEBUG_MSG 100  /* Quantity of messages in a queue */
+#define N_DEBUG_MSG 1000  /* Quantity of messages in a queue */
 #define MAX_MSG_LENGTH (256+1)  /* Length of a message + '\0' */
 #define MAX_MODULE_NAME_LENGTH (50+1)  /* module name */
 #define MAX_FUNC_NAME_LENGTH (50+1)  /* function name */
@@ -41,14 +41,16 @@ typedef struct debug_msg{
 } debug_msg_t;
 
 extern bool syslog_toggle_intrusive(bool *types);
-extern void system_log(char *msg, char *module, char *func, int msg_type);
+extern void system_log(const char *msg, char *module, char *func, int msg_type);
+/* logging function with format capability, msg is format, substitutes are variadic */
+extern void vsystem_log(const char *msg, char *module, char *func, int msg_type, ...);
 extern void show_log(unsigned int count, bool *disp_types);
 
 #define LOG_INFO(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
-																							func_name, LT_INFO)
+		func_name, LT_INFO)
 #define LOG_ERROR(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
-																							 func_name, LT_ERROR)
+		func_name, LT_ERROR)
 #define LOG_WARN(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
-																							func_name, LT_WARNING)
+		func_name, LT_WARNING)
 
-#endif
+#endif /* UTIL_DEBUG_MSG_H_ */
