@@ -53,6 +53,7 @@ module ping {
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.timer.sleep_api
 	depends embox.compat.posix.util.getopt
+	depends embox.mem.heap_api
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework
