@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <sys/file.h>
 #include <kernel/task/idx.h>
+#include <kernel/spinlock.h>
 
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
@@ -511,19 +512,29 @@ int kumount(const char *dir) {
 	return drv->fsop->umount(dir_node);
 }
 
+/**
+ * Apply advisory lock to specified fd
+ * @param File descriptor number
+ * @param Operation: one of LOCK_EX, LOCK_SH, LOCK_UN plus possible LOCK_NB
+ * @return ENOERR if operation succeed or -1 and set errno in other way
+ */
 int kflock(int fd, int operation) {
 	struct idx_desc *idesc;
 	struct file_desc *fdesc;
-	struct mutex *lock;
+	struct mutex *exlock;
+	struct dlist_head *shlock_holders;
+	spinlock_t *flock_guard;
+	long *shlock_count;
+	struct thread *current = sched_current();
 
 	/**
 	 * Base algorithm:
-	 * + Validate operation
-	 * + Validate fd? Algorithm
-	 * + Get lock pointer and other preparations
-	 * - Determine operation (total 3 x 2 = 6)
+	 * - Validate operation
+	 * - Validate fd
+	 * - Get lock pointer and other preparations
+	 * - Determine operation (total 2 x 2 + 1 = 5)
 	 *    1. Exclusive lock, blocking
-	 *        - If shared block is acquired by current thread then convert it
+	 *        - If shared block is acquired only by current thread convert it
 	 *          to exclusive
 	 *        - If shared or exclusive lock is acquired then block
 	 *        - Else acquire exclusive lock
@@ -536,10 +547,10 @@ int kflock(int fd, int operation) {
 	 *        - Else acquire shared lock
 	 *    4. Shared lock, non-blocking
 	 *        - The same as 3 but return EWOULDBLOCK instead of blocking
-	 *    5. Unlock, blocking
+	 *    5. Unlock, blocking and non-blocking
 	 *        - If any lock is acquired by current thread then remove it
-	 *    6. Unlock, non-blocking
-	 *        - The same as 5 but return EWOULDBLOCK instead of blocking
+	 *          blocking and non-blocking the same because mutex_unlock
+	 *          never blocks thread in current implementation
 	 */
 
 	/* Validate operation */
@@ -548,27 +559,102 @@ int kflock(int fd, int operation) {
 			((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_UN)
 		return -EINVAL;
 
-	/* Find lock for provided file descriptor number
-	 * fd is validated inside task_self_idx_get */
+	/* - Find locks and other properties for provided file descriptor number
+	 * - fd is validated inside task_self_idx_get */
 	idesc = task_self_idx_get(fd);
 	fdesc = idesc->data->fd_struct;
-	lock = &fdesc->node->flock.lock;
+	exlock = &fdesc->node->flock.exlock;
+	shlock_count = &fdesc->node->flock.shlock_count;
+	shlock_holders = &fdesc->node->flock.shlock_holders;
+	flock_guard = &fdesc->node->flock.flock_guard;
 
-	/* Determine if lock is acquired */
-	//if...
+	/* TODO:
+	 *  - Extract some work into separate functions
+	 */
 
-	if (LOCK_NB & operation) {
-		/* Non-blocking operation */
-	} else {
-		/* Blocking operation */
-		if (LOCK_EX & operation) {
-			mutex_lock(lock);
+	/* Exclusive locking operation */
+	if (LOCK_EX & operation) {
+		spin_lock(flock_guard);
+		/* If only one shared lock is acquired by current thread then convert
+		 * it to exclusive: release shared and acquire exclusive in one current
+		 * critical section */
+		if (1 == *shlock_count) {
+			/* We can hold only one type of lock at the moment */
+			assert(0 == exlock->lock_count);
+			if (current ==
+					dlist_entry(shlock_holders, struct thread, flock_list)) {
+				*shlock_count -= 1;
+				dlist_del(&current->flock_list);
+			}
 		}
-
-		if (LOCK_UN & operation) {
-			mutex_unlock(lock);
+		if (LOCK_NB & operation) {
+			if (-EAGAIN == mutex_trylock(exlock)) {
+				spin_unlock(flock_guard);
+				SET_ERRNO(EWOULDBLOCK);
+				return -1;
+			}
+		} else {
+			mutex_lock(exlock);
 		}
+		spin_unlock(flock_guard);
 	}
 
-	return 0;
+	/* Shared locking operation */
+	if (LOCK_SH & operation) {
+		spin_lock(flock_guard);
+		/* If current thread is holder of exclusive lock then convert it to
+		 * shared lock */
+		if (exlock->lock_count > 0) {
+			if (current == exlock->holder) {
+				/* Again no two different types of lock can be held
+				 * simultaneously */
+				assert(0 == *shlock_count);
+				/* Exclusive lock can be acquired many times by one thread
+				 * that is because of current implementation of mutexes, so
+				 * if we converting lock to shared we need to free all of them
+				 */
+				while (exlock->lock_count != 0) mutex_unlock(exlock);
+			} else {
+				if (LOCK_NB & operation) {
+					if (-EAGAIN == mutex_trylock(exlock)) {
+						spin_unlock(flock_guard);
+						SET_ERRNO(EWOULDBLOCK);
+						return -1;
+					}
+				} else {
+					mutex_lock(exlock);
+					mutex_unlock(exlock);
+				}
+			}
+		}
+		/* If current is not in any list we can acquire shared lock
+		 * FIXME: it can be in another flock list */
+		if (dlist_empty(&current->flock_list)) {
+			*shlock_count += 1;
+			dlist_add_next(dlist_head_init(&current->flock_list),
+					shlock_holders);
+		}
+		spin_unlock(flock_guard);
+	}
+
+	/* Unlock operation */
+	if (LOCK_UN & operation) {
+		spin_lock(flock_guard);
+		/* Handle exclusive lock free */
+		if (exlock->holder == current) {
+			assert(0 == *shlock_count);
+			/* mutex_unlock can't block the thread
+			 * so nothing need for LOCK_NB */
+			mutex_unlock(exlock);
+		}
+		/* Handle shared lock free */
+		if (*shlock_count > 0 && dlist_empty(&current->flock_list)) {
+			assert(0 == exlock->lock_count);
+			*shlock_count -= 1;
+			dlist_del(&current->flock_list);
+		}
+		spin_unlock(flock_guard);
+	}
+
+	return -ENOERR;
 }

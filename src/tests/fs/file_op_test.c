@@ -271,9 +271,29 @@ static void *first_flock_test_thread(void *arg) {
 static void *second_flock_test_thread(void *arg) {
 	int fd = *((int *) arg);
 	test_emit('c');
+
+	/* Try to non-blocking acquire busy lock */
+	test_assert(-1 == flock(fd, LOCK_EX | LOCK_NB));
+	test_assert(EWOULDBLOCK == errno);
+
 	test_assert_zero(flock(fd, LOCK_EX));
 	test_emit('e');
+
+	/* Convert lock to shared */
+	test_assert_zero(flock(fd, LOCK_SH));
+
+	/* Acquire one more shared lock */
+	test_assert_zero(flock(fd, LOCK_SH | LOCK_NB));
+
+	/* Release first shared lock */
 	test_assert_zero(flock(fd, LOCK_UN));
+
+	/* TODO: Convert share to exclusive */
+
+	/* Release second lock */
+	test_assert_zero(flock(fd, LOCK_UN | LOCK_NB));
+
+//	test_assert_zero(flock(fd, LOCK_UN));
 	test_emit('f');
 	return NULL;
 }
@@ -296,33 +316,10 @@ TEST_CASE("flock") {
 	test_assert_zero(thread_join(fftt, NULL));
 	test_assert_zero(thread_join(sftt, NULL));
 
-//	test_assert_emitted("fabcdeg");
 	test_assert_emitted("abcdefg");
 
 	/* Test cleanup */
 	test_assert_zero(remove(FS_FLOCK));
-
-//	/* Acquire exclusive lock again without blocking */
-//	test_assert(-1 == flock(fd, LOCK_EX | LOCK_NB));
-//	test_assert(EWOULDBLOCK == errno);
-//
-//	/* Change lock to shared */
-//	test_assert_zero(flock(fd, LOCK_SH));
-//
-//	/* Acquire one more shared lock */
-//	test_assert_zero(flock(fd, LOCK_SH));
-//
-//	/* Release first shared lock */
-//	test_assert_zero(flock(fd, LOCK_UN));
-//
-//	/* Release second shared lock */
-//	test_assert_zero(flock(fd, LOCK_UN));
-//
-//	/* Acquire shared lock without blocking */
-//	test_assert_zero(flock(fd, LOCK_SH | LOCK_NB));
-//
-//	/* Release shared lock without blocking */
-//	test_assert_zero(flock(fd, LOCK_UN | LOCK_NB));
 }
 
 

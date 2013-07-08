@@ -64,6 +64,8 @@ struct thread {
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */
 
+	struct dlist_head flock_list;    /**< List of threads holding shared flock */
+
 	struct sleepq     exit_sleepq;   /**< Thread exit event. */
 
 	int               sleep_res;     /**< Result shed_sleep */

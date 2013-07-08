@@ -18,10 +18,10 @@
 struct nas;
 
 typedef struct file_lock {
-	struct mutex      lock;
-	int               flags;
-	pid_t             blocker;
-	struct dlist_head blocked_list;
+	struct mutex      exlock;
+	long              shlock_count;
+	struct dlist_head shlock_holders;
+	spinlock_t        flock_guard;
 } flock_t;
 
 typedef struct node {
