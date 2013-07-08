@@ -799,17 +799,20 @@ static enum tcp_ret_code tcp_st_timewait(union sock_pointer sock, struct sk_buff
 static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcph,
 		struct tcphdr *out_tcph) {
 	switch (sock.sk->state) {
+	case TCP_TIMEWAIT: /* User already closed sock, it waiting to be collected by
+			       tcp timer, can do it now*/
+		return TCP_RET_FREE;
+		break;
+	case TCP_CLOSED: /* TODO */
+	case TCP_LISTEN: /* TODO */
+	case TCP_SYN_RECV_PRE: /* TODO */
+		break;
 	default:
 		if ((sock.sk->state == TCP_SYN_SENT) &&
 		    (sock.tcp_sk->self.seq != ntohl(tcph->ack_seq))) {
 			break; /* invalid reset */
 		}
 		tcp_set_st(sock, TCP_CLOSED);
-		return TCP_RET_FREE;
-		break;
-	case TCP_CLOSED:
-	case TCP_LISTEN:
-	case TCP_SYN_RECV_PRE:
 		break;
 	}
 
