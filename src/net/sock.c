@@ -246,7 +246,7 @@ struct sock * sock_lookup(const struct sock *sk,
 }
 
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
-		unsigned char *p_data) {
+		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
 		return; /* error: invalid argument */
 	}
@@ -258,6 +258,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 
 	skb->sk = sk;
 	skb->p_data = p_data;
+	skb->p_data_end = p_data + size;
 
 	skb_queue_push(&sk->rx_queue, skb);
 	manual_event_notify(&sk->sock_is_not_empty);
@@ -286,7 +287,6 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	struct sk_buff *skb;
 	char *buff;
 	size_t buff_sz, total_len, len;
-	unsigned char *p_data_end;
 
 	if ((sk == NULL) || (msg == NULL)) {
 		return -EINVAL;
@@ -314,11 +314,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		}
 		softirq_unlock();
 
-		assert(skb->mac.raw != NULL);
-		p_data_end = skb->mac.raw + skb->len;
-
-		assert(p_data_end > skb->p_data);
-		len = min(buff_sz, p_data_end - skb->p_data);
+		len = min(buff_sz, skb->p_data_end - skb->p_data);
 
 		memcpy(buff, skb->p_data, len);
 		buff += len;
@@ -326,7 +322,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		skb->p_data += len;
 		total_len += len;
 
-		if (!stream_mode || (skb->p_data >= p_data_end)) {
+		if (!stream_mode || (skb->p_data >= skb->p_data_end)) {
 			skb_free(skb);
 		}
 	} while (stream_mode && (buff_sz != 0));

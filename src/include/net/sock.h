@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <sys/time.h>
 #include <util/list.h>
+#include <stddef.h>
 
 struct family_ops;
 struct sock_ops;
@@ -132,7 +133,7 @@ extern struct sock * sock_lookup(const struct sock *sk,
 		const struct sock_ops *ops, sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
-		unsigned char *p_data);
+		unsigned char *p_data, size_t size);
 extern int sock_close(struct sock *sk);
 
 

@@ -118,6 +118,9 @@ static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	if (from->p_data != NULL) {
 		to->p_data = to->mac.raw + (from->p_data - from->mac.raw);
 	}
+	if (from->p_data_end != NULL) {
+		to->p_data_end = to->mac.raw + (from->p_data_end - from->mac.raw);
+	}
 }
 
 struct sk_buff * skb_share(struct sk_buff *skb, int share) {

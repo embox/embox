@@ -164,17 +164,6 @@ struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
 			+ opt_len + data_len);
 }
 
-static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
-	__u32 seq;
-
-	seq = ntohl(skb->h.th->seq);
-
-	/* move skb to socket received queue */
-	assert(sock.tcp_sk->rem.seq >= seq); /* FIXME */
-	sock_rcv(sock.sk, skb, skb->h.raw + TCP_HEADER_SIZE(skb->h.th)
-			+ (sock.tcp_sk->rem.seq - seq));
-}
-
 void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
 	unsigned int is_locked;
 
@@ -228,6 +217,17 @@ static size_t tcp_data_len(struct sk_buff *skb) {
 	ip_len = ntohs(skb->nh.iph->tot_len);
 	ip_tcp_hdr_sz = IP_HEADER_SIZE(skb->nh.iph) + TCP_HEADER_SIZE(skb->h.th);
 	return ip_len > ip_tcp_hdr_sz ? ip_len - ip_tcp_hdr_sz : 0;
+}
+
+static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
+	__u32 seq;
+
+	seq = ntohl(skb->h.th->seq);
+
+	/* move skb to socket received queue */
+	assert(sock.tcp_sk->rem.seq >= seq); /* FIXME */
+	sock_rcv(sock.sk, skb, skb->h.raw + TCP_HEADER_SIZE(skb->h.th)
+			+ (sock.tcp_sk->rem.seq - seq), tcp_data_len(skb));
 }
 
 size_t tcp_data_left(struct sk_buff *skb) {

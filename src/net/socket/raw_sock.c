@@ -58,7 +58,8 @@ int raw_rcv(struct sk_buff *skb) {
 			//return -ENOMEM;
 		}
 
-		sock_rcv(sk, cloned, cloned->nh.raw);
+		sock_rcv(sk, cloned, cloned->nh.raw,
+				cloned->len - (cloned->nh.raw - cloned->mac.raw));
 	}
 
 	return 0;

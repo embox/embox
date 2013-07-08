@@ -59,7 +59,8 @@ static int udp_rcv(struct sk_buff *skb) {
 		inet->dport = skb->h.uh->source;
 		inet->daddr = skb->nh.iph->saddr;
 
-		sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE);
+		sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE,
+				ntohs(skb->h.uh->len) - UDP_HEADER_SIZE);
 
 		if (inet->rcv_saddr == INADDR_ANY) {
 			//TODO: temporary

@@ -118,6 +118,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		 * So the presence of this field isn't mandatory.
 		 */
 	unsigned char *p_data;
+	unsigned char *p_data_end;
 
 } sk_buff_t;
 
