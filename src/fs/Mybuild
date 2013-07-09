@@ -58,3 +58,9 @@ module rootfs {
 	depends embox.fs.filesystem
 	depends embox.lib.LibC
 }
+
+module journal {
+	source "journal.c"
+
+	depends embox.lib.LibC
+}
