@@ -153,6 +153,8 @@ int arp_queue_wait_resolve(struct sk_buff *skb) {
 	ret = arp_send(ARP_OPER_REQUEST, ETH_P_IP, skb->dev->addr_len,
 			sizeof saddr, NULL, &saddr, NULL, &daddr, NULL, skb->dev);
 	if (ret != 0) {
+		hashtable_del(arp_queue_table, &waiting_item->dest_ip);
+		pool_free(&arp_queue_item_pool, waiting_item);
 		return ret;
 	}
 
