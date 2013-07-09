@@ -269,7 +269,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb_queue_push(&sk->rx_queue, skb);
 	manual_event_notify(&sk->sock_is_not_empty);
 
-	if (sk->sk_socket != NULL) {
+	if (sk->sk_socket != NULL && sk->sk_socket->desc_data) {
 		idx_io_enable(sk->sk_socket->desc_data, IDX_IO_READING);
 	}
 }
