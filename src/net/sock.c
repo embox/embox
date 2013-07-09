@@ -227,6 +227,7 @@ struct sock * sock_lookup(const struct sock *sk,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb) {
 	struct sock *next_sk;
+	ipl_t ipl;
 
 	if ((ops == NULL) || (tester == NULL)) {
 		return NULL; /* error: invalid arguments */
@@ -234,13 +235,18 @@ struct sock * sock_lookup(const struct sock *sk,
 
 	next_sk = sk != NULL ? sock_next(sk) : sock_iter(ops);
 
+	ipl = ipl_save();
+
 	while (next_sk != NULL) {
 		if (tester(next_sk, skb)) {
+			ipl_restore(ipl);
 			return next_sk;
 		}
 
 		next_sk = sock_next(next_sk);
 	}
+
+	ipl_restore(ipl);
 
 	return NULL; /* error: no such entity */
 }
