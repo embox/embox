@@ -10,4 +10,5 @@ module ext3 {
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool
+	depends embox.fs.journal
 }
