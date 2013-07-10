@@ -17,7 +17,7 @@ void manual_event_reset(struct manual_event *m_event) {
 void manual_event_set(struct manual_event *m_event) {
 }
 
-void manual_event_set(struct manual_event *m_event) {
+int manual_event_is_set(struct manual_event *m_event) {
 	return 0;
 }
 

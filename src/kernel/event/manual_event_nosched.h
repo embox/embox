@@ -11,6 +11,7 @@
 
 #define MANUAL_EVENT_TIMEOUT_INFINITE -1
 
-struct manual_event;
+struct manual_event {
+};
 
 #endif /* KERNEL_EVENT_MANUAL_EVENT_NOSCHED_H_ */
