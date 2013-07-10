@@ -27,7 +27,6 @@
 #include <kernel/thread.h>
 #include <kernel/event.h>
 #include <kernel/task/io_sync.h>
-#include <kernel/softirq_lock.h>
 #include <net/socket/socket_registry.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
@@ -60,9 +59,11 @@ int socket(int domain, int type, int protocol) {
 	}
 
 	assert(sock != NULL);
-	sock->desc_data = task_idx_indata(task_self_idx_get(sockfd));
+	assert(sock->sk != NULL);
+	sock->sk->ios = &task_idx_indata(task_self_idx_get(sockfd))->ios;
+
 	if (type != SOCK_STREAM) {
-		io_sync_enable(&sock->desc_data->ios, IO_SYNC_WRITING);
+		io_sync_enable(sock->sk->ios, IO_SYNC_WRITING); /* TODO move to ksocket */
 	}
 
 	return sockfd;
@@ -104,8 +105,6 @@ int connect(int sockfd, const struct sockaddr *addr,
 		SET_ERRNO(-ret);
 		return -1;
 	}
-
-	io_sync_enable(&sock->desc_data->ios, IO_SYNC_WRITING);
 
 	return 0;
 }
@@ -153,8 +152,14 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	assert(new_sock != NULL);
-	new_sock->desc_data = task_idx_indata(task_self_idx_get(new_sockfd));
-	io_sync_enable(&new_sock->desc_data->ios, IO_SYNC_WRITING);
+	assert(new_sock->sk != NULL);
+	new_sock->sk->ios = &task_idx_indata(task_self_idx_get(new_sockfd))->ios;
+
+	/* TODO move to kaccept */
+	io_sync_enable(new_sock->sk->ios, IO_SYNC_WRITING);
+	if (NULL != skb_queue_front(&new_sock->sk->rx_queue)) {
+		io_sync_enable(new_sock->sk->ios, IO_SYNC_READING);
+	}
 
 	return new_sockfd;
 }
@@ -253,14 +258,6 @@ int recvmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
 	if (ret != 0) {
 		return ret;
 	}
-
-	softirq_lock();
-	{
-		if (skb_queue_front(&sock->sk->rx_queue) == NULL) {
-			io_sync_disable(&sock->desc_data->ios, IO_SYNC_READING);
-		}
-	}
-	softirq_unlock();
 
 	return 0;
 }

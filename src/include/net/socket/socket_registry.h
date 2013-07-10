@@ -78,12 +78,9 @@ static inline int sk_is_listening(struct socket *sock){
  * set pending error in socket registry node for struct socket entity
  **/
 static inline void so_sk_set_so_error(struct sock *sk, int error){
-	if (sk){
-		assert(sk->sk_socket != NULL);
+	if (sk) {
 		sk->opt.so_error = error;
 	}
-	else
-		return;
 }
 
 #endif /* NET_SOCKET_SOCKET_REGISTRY_H_ */

@@ -100,11 +100,11 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
-//	case 3:  /* global functions */
+	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
-	case 7:  /* tcp_default_timer action */
+//	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
 //	case 10: /* pre_process */
@@ -578,8 +578,7 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
-		event_notify(&sock.tcp_sk->new_conn);
-		io_sync_enable(&sock.sk->sk_socket->desc_data->ios, IO_SYNC_READING);
+		io_sync_enable(sock.sk->ios, IO_SYNC_READING);
 
 		return TCP_RET_OK;
 	}

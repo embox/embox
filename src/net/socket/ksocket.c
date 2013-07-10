@@ -76,10 +76,7 @@ static int ksocket_ext(int family, int type, int protocol,
 		}
 	}
 
-	sk->sk_socket = new_sock;
-
 	new_sock->sk = sk;
-	new_sock->desc_data = NULL;
 	new_sock->socket_node = NULL;
 
 	ret = sr_add_socket_to_registry(new_sock);
@@ -228,6 +225,8 @@ int kconnect(struct socket *sock, const struct sockaddr *addr,
 
 	sk_set_connection_state(sock, CONNECTED);
 
+	io_sync_enable(sock->sk->ios, IO_SYNC_WRITING);
+
 	return 0;
 }
 
@@ -274,6 +273,7 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 	int ret;
 	struct sock *new_sk;
 	struct socket *new_sock;
+	unsigned long timeout;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -290,6 +290,18 @@ int kaccept(struct socket *sock, struct sockaddr *addr,
 		LOG_ERROR("ksocket_accept",
 				"accepting socket should be in listening state");
 		return -EINVAL;
+	}
+
+	timeout = timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
+	if (timeout == 0) {
+		timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
+	}
+
+	if (!(flags & O_NONBLOCK)) {
+		ret = io_sync_wait(sock->sk->ios, IO_SYNC_READING, timeout);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
 	assert(sock->sk->f_ops != NULL);
@@ -414,29 +426,24 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
+	timeout = timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
+	if (timeout == 0) {
+		timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
+	}
+
+	if (!(flags & O_NONBLOCK)) {
+		ret = io_sync_wait(sock->sk->ios, IO_SYNC_READING, timeout);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+
 	assert(sock->sk->f_ops != NULL);
 	if (sock->sk->f_ops->recvmsg == NULL) {
 		return -ENOSYS;
 	}
 
-	ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-	if ((ret == -EAGAIN) && !(flags & O_NONBLOCK)) {
-		timeout = timeval_to_ms(&sock->sk->opt.so_rcvtimeo);
-		if (timeout == 0) {
-			timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
-		}
-		ret = manual_event_wait(&sock->sk->sock_is_not_empty, timeout);
-		if (ret == 0) {
-			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-			assert(ret != -EAGAIN);
-		}
-		else if (ret == -ETIMEDOUT) {
-			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
-			assert(ret == -EAGAIN);
-		}
-	}
-
-	return ret;
+	return sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 }
 
 int kshutdown(struct socket *sock, int how) {

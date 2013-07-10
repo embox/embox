@@ -11,7 +11,6 @@
 #include <embox/net/sock.h>
 #include <errno.h>
 #include <hal/ipl.h>
-#include <kernel/manual_event.h>
 #include <kernel/task/io_sync.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
@@ -84,8 +83,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->shutdown_flag = 0;
 	sk->f_ops = f_ops;
 	sk->ops = ops;
-	sk->sk_socket = NULL;
-	manual_event_init(&sk->sock_is_not_empty, 0);
+	sk->ios = NULL;
 }
 
 int sock_create_ext(int family, int type, int protocol,
@@ -251,7 +249,6 @@ struct sock * sock_lookup(const struct sock *sk,
 	return NULL; /* error: no such entity */
 }
 
-#include <net/socket/socket.h> /* remove this */
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
@@ -268,10 +265,9 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb->p_data_end = p_data + size;
 
 	skb_queue_push(&sk->rx_queue, skb);
-	manual_event_notify(&sk->sock_is_not_empty);
 
-	if (sk->sk_socket != NULL && sk->sk_socket->desc_data) {
-		io_sync_enable(&sk->sk_socket->desc_data->ios, IO_SYNC_READING);
+	if (sk->ios != NULL) {
+		io_sync_enable(sk->ios, IO_SYNC_READING);
 	}
 }
 
@@ -289,7 +285,6 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
-#include <kernel/softirq_lock.h> /* TODO remove this */
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags, int stream_mode) {
 	struct sk_buff *skb;
@@ -306,21 +301,16 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	buff_sz = msg->msg_iov->iov_len;
 	total_len = 0;
 
-	do {
-		softirq_lock();
-		{
-			skb = skb_queue_front(&sk->rx_queue);
-			if (skb == NULL) {
-				if (total_len == 0) {
-					manual_event_reset(&sk->sock_is_not_empty);
-					softirq_unlock();
-					return -EAGAIN;
-				}
-				softirq_unlock();
-				break;
+	while (1) {
+		io_sync_disable(sk->ios, IO_SYNC_READING);
+		skb = skb_queue_front(&sk->rx_queue);
+		if (skb == NULL) {
+			if (total_len == 0) {
+				return -EAGAIN;
 			}
+			break;
 		}
-		softirq_unlock();
+		io_sync_enable(sk->ios, IO_SYNC_READING);
 
 		len = min(buff_sz, skb->p_data_end - skb->p_data);
 
@@ -333,7 +323,18 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		if (!stream_mode || (skb->p_data >= skb->p_data_end)) {
 			skb_free(skb);
 		}
-	} while (stream_mode && (buff_sz != 0));
+
+		if (!stream_mode || (buff_sz == 0)) {
+			/* disable reading if needed */
+			io_sync_disable(sk->ios, IO_SYNC_READING);
+			if (NULL != skb_queue_front(&sk->rx_queue)) {
+				io_sync_enable(sk->ios, IO_SYNC_READING);
+			}
+
+			/* and exit */
+			break;
+		}
+	}
 
 	msg->msg_iov->iov_len = total_len;
 

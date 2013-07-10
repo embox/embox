@@ -10,9 +10,8 @@
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
-#include <net/socket/socket.h>
 #include <sys/socket.h>
-#include <kernel/manual_event.h>
+#include <kernel/task/io_sync.h>
 #include <net/skbuff.h>
 #include <sys/time.h>
 #include <util/list.h>
@@ -21,7 +20,6 @@
 struct family_ops;
 struct sock_ops;
 struct sk_buff_head;
-struct socket;
 struct sock;
 struct msghdr;
 struct skbuff;
@@ -66,9 +64,7 @@ struct sock {
 	unsigned char shutdown_flag;
 	const struct family_ops *f_ops;
 	const struct sock_ops *ops;
-
-	struct socket *sk_socket;
-	struct manual_event sock_is_not_empty;
+	struct io_sync *ios;
 };
 
 struct family_ops {

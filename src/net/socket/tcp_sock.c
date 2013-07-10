@@ -52,7 +52,6 @@ static int tcp_init(struct sock *sk) {
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 	sock.tcp_sk->conn_wait_max = 0;
-	event_init(&sock.tcp_sk->new_conn, "new_conn");
 	sock.tcp_sk->lock = 0;
 	timerclear(&sock.tcp_sk->last_activity);
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
@@ -225,10 +224,9 @@ static int tcp_listen(struct sock *sk, int backlog) {
 
 	return ret;
 }
-#include <kernel/sched/sched_lock.h>
+
 static int tcp_accept(struct sock *sk,
 		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
-	int ret;
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
 	struct timeval started;
@@ -246,35 +244,26 @@ static int tcp_accept(struct sock *sk,
 		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
 		/* waiting anyone */
-		sched_lock(); {
-			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE); {
-				if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-					if (flags & O_NONBLOCK) {
-						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-						sched_unlock();
-						return -EAGAIN;
-					}
-					/* TODO: event condition */
-					ret = EVENT_WAIT_OR_INTR(&sock.tcp_sk->new_conn, 0,
-							EVENT_TIMEOUT_INFINITE);
-					if (ret != 0) {
-						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-						sched_unlock();
-						return ret;
-					}
-				}
-			} tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-		} sched_unlock();
-
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
-			assert(!list_empty(&sock.tcp_sk->conn_wait));
-			/* get first socket from */
-			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
-			/* Delete new socket from list and block listening socket if there are no connections. */
-			list_del_init(&newsock.tcp_sk->conn_wait);
+			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
-				io_sync_disable(&sk->sk_socket->desc_data->ios, IO_SYNC_READING);
+				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+				return -EAGAIN;
+			}
+			io_sync_enable(sock.sk->ios, IO_SYNC_READING);
+
+			/* get first socket from */
+			assert(!list_empty(&sock.tcp_sk->conn_wait));
+			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+
+			/* delete new socket from list */
+			list_del_init(&newsock.tcp_sk->conn_wait);
+
+			/* disable reading if queue is empty */
+			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
+			if (!list_empty(&sock.tcp_sk->conn_wait)) {
+				io_sync_enable(sock.sk->ios, IO_SYNC_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);

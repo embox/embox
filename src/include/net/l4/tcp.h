@@ -14,7 +14,6 @@
 #include <linux/types.h>
 
 #include <sys/time.h>
-#include <kernel/event.h>
 
 #include <netinet/tcp.h>
 
@@ -95,7 +94,6 @@ typedef struct tcp_sock {
 	uint32_t ack_flag;          /* Acknowledgment for flags (SYN or FIN) */
 	struct list_head conn_wait; /* Queue of incoming connection */
 	size_t conn_wait_max;       /* Max length of queue of incoming connection */
-	struct event new_conn;      /* Event for new connection notification */
 	unsigned int lock;          /* Tool for synchronization */
 	struct timeval last_activity;   /* The time when last message was sent */
 	useconds_t oper_timeout;    /* Time out for socket functions */
