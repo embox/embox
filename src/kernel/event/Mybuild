@@ -28,5 +28,4 @@ module manual_event_sched extends manual_event_api {
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
-	depends embox.lib.LibC
 }

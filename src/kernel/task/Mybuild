@@ -77,7 +77,6 @@ module u_area {
 module io_sync {
 	source "io_sync.c"
 
-    depends embox.lib.LibC
 	depends embox.kernel.manual_event_api
 }
 
