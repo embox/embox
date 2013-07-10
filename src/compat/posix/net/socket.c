@@ -27,6 +27,7 @@
 #include <kernel/thread.h>
 #include <kernel/event.h>
 #include <kernel/task/io_sync.h>
+#include <kernel/softirq_lock.h>
 #include <net/socket/socket_registry.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
@@ -61,7 +62,7 @@ int socket(int domain, int type, int protocol) {
 	assert(sock != NULL);
 	sock->desc_data = task_idx_indata(task_self_idx_get(sockfd));
 	if (type != SOCK_STREAM) {
-		idx_io_enable(sock->desc_data, IDX_IO_WRITING);
+		io_sync_enable(&sock->desc_data->ios, IO_SYNC_WRITING);
 	}
 
 	return sockfd;
@@ -104,7 +105,7 @@ int connect(int sockfd, const struct sockaddr *addr,
 		return -1;
 	}
 
-	idx_io_enable(sock->desc_data, IDX_IO_WRITING);
+	io_sync_enable(&sock->desc_data->ios, IO_SYNC_WRITING);
 
 	return 0;
 }
@@ -153,7 +154,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 	assert(new_sock != NULL);
 	new_sock->desc_data = task_idx_indata(task_self_idx_get(new_sockfd));
-	idx_io_enable(new_sock->desc_data, IDX_IO_WRITING);
+	io_sync_enable(&new_sock->desc_data->ios, IO_SYNC_WRITING);
 
 	return new_sockfd;
 }
@@ -256,7 +257,7 @@ int recvmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
 	softirq_lock();
 	{
 		if (skb_queue_front(&sock->sk->rx_queue) == NULL) {
-			idx_io_disable(sock->desc_data, IDX_IO_READING);
+			io_sync_disable(&sock->desc_data->ios, IO_SYNC_READING);
 		}
 	}
 	softirq_unlock();

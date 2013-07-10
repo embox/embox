@@ -532,6 +532,7 @@ static size_t tcp_conn_wait_len(union sock_pointer sock) {
 	return conn_wait_len;
 }
 
+#include <net/socket/socket.h> /* remove this */
 static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	int ret;
@@ -578,7 +579,7 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
 		event_notify(&sock.tcp_sk->new_conn);
-		idx_io_enable(sock.sk->sk_socket->desc_data, IDX_IO_READING);
+		io_sync_enable(&sock.sk->sk_socket->desc_data->ios, IO_SYNC_READING);
 
 		return TCP_RET_OK;
 	}

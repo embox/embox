@@ -251,6 +251,7 @@ struct sock * sock_lookup(const struct sock *sk,
 	return NULL; /* error: no such entity */
 }
 
+#include <net/socket/socket.h> /* remove this */
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
@@ -270,7 +271,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	manual_event_notify(&sk->sock_is_not_empty);
 
 	if (sk->sk_socket != NULL && sk->sk_socket->desc_data) {
-		idx_io_enable(sk->sk_socket->desc_data, IDX_IO_READING);
+		io_sync_enable(&sk->sk_socket->desc_data->ios, IO_SYNC_READING);
 	}
 }
 
@@ -288,6 +289,7 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
+#include <kernel/softirq_lock.h> /* TODO remove this */
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags, int stream_mode) {
 	struct sk_buff *skb;

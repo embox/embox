@@ -11,6 +11,9 @@
 #ifndef NET_SOCKET_SOCKET_H_
 #define NET_SOCKET_SOCKET_H_
 
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
+
 struct sock;
 struct idx_desc;
 struct socket_node;

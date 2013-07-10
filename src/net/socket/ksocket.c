@@ -430,6 +430,10 @@ int krecvmsg(struct socket *sock, struct msghdr *msg, int flags) {
 			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
 			assert(ret != -EAGAIN);
 		}
+		else if (ret == -ETIMEDOUT) {
+			ret = sock->sk->f_ops->recvmsg(sock->sk, msg, flags);
+			assert(ret == -EAGAIN);
+		}
 	}
 
 	return ret;

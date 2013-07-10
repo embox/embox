@@ -43,22 +43,22 @@ static void pipe_set_buf_size(struct pipe *pipe, size_t size);
 
 static inline void writing_enable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		idx_io_enable(pipe->writing_end, IDX_IO_WRITING);
+		io_sync_enable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 }
 
 static inline void reading_enable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		idx_io_enable(pipe->reading_end, IDX_IO_READING);
+		io_sync_enable(&pipe->reading_end->ios, IO_SYNC_READING);
 }
 
 static inline void writing_disable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		idx_io_disable(pipe->writing_end, IDX_IO_WRITING);
+		io_sync_disable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 }
 
 static inline void reading_disable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		idx_io_disable(pipe->reading_end, IDX_IO_READING);
+		io_sync_disable(&pipe->reading_end->ios, IO_SYNC_READING);
 }
 
 static const struct task_idx_ops read_ops = {
@@ -117,7 +117,7 @@ int pipe(int pipefd[2]) {
 	pipe->writing_end = task_idx_indata(task_self_idx_get(pipefd[1]));
 
 	/* And enable writing in pipe */
-	idx_io_enable(pipe->writing_end, IDX_IO_WRITING);
+	io_sync_enable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 
 	return 0;
 

@@ -74,16 +74,11 @@ module u_area {
 	source "u_area.c"
 }
 
-@DefaultImpl(io_sync_simple)
-abstract module io_sync_api { }
-
-module io_sync_simple extends io_sync_api {
-	source "io_sync_simple.c"
-}
-
-module io_sync extends io_sync_api {
+module io_sync {
 	source "io_sync.c"
-	depends embox.kernel.thread.event
+
+    depends embox.lib.LibC
+	depends embox.kernel.manual_event_api
 }
 
 module waitpid {

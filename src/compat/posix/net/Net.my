@@ -26,7 +26,7 @@ static module socket {
 	depends embox.net.socket
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.thread.event
-	depends embox.kernel.task.io_sync_api
+	depends embox.kernel.task.io_sync
 }
 
 static module herror {

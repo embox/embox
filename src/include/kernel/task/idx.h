@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <kernel/task/io_sync.h>
 
 struct event;
 
@@ -29,17 +30,11 @@ typedef unsigned int idx_flags_t;
 
 struct task_idx_ops;
 
-struct idx_io_state {
-	int io_monitoring;       /**< The set of I/O operations waiting for "ready" one of them */
-	int io_ready;            /**< I/O operations "ready" at now */
-	struct event *io_enable; /**< Event to enable one of operations from io_monitoring set */
-};
-
 struct idx_desc_data {
 	const struct task_idx_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
-	struct idx_io_state io_state;
+	struct io_sync ios;
 };
 
 /**

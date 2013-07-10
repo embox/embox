@@ -274,7 +274,7 @@ static int tcp_accept(struct sock *sk,
 			/* Delete new socket from list and block listening socket if there are no connections. */
 			list_del_init(&newsock.tcp_sk->conn_wait);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
-				idx_io_disable(sk->sk_socket->desc_data, IDX_IO_READING);
+				io_sync_disable(&sk->sk_socket->desc_data->ios, IO_SYNC_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
