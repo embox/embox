@@ -28,9 +28,17 @@ fastcall void irq_handler(pt_regs_t *regs) {
 
 		irq_dispatch(irq);
 
-		i8259_send_eoi(irq);
+		/* next lines ordered this way thats why.
+ 		 * On eoi current irq unmasked and may occur again right there,
+		 * on irq stack. It may repeat till stack exhaustion.
+		 * Disabling ipl first prevents irq handling of same or lower
+		 * level till switched to lower critical level.
+		 */
 
 		ipl_disable();
+
+		i8259_send_eoi(irq);
+
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
