@@ -12,7 +12,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <mem/objalloc.h>
-#include "journal.h"
+#include <fs/journal.h>
 
 static journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     journal_block_t *jb;
