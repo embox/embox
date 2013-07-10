@@ -17,6 +17,10 @@ void manual_event_reset(struct manual_event *m_event) {
 void manual_event_set(struct manual_event *m_event) {
 }
 
+void manual_event_set(struct manual_event *m_event) {
+	return 0;
+}
+
 void manual_event_notify(struct manual_event *m_event) {
 }
 

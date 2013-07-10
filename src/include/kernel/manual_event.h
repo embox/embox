@@ -17,6 +17,7 @@ extern void manual_event_init(struct manual_event *m_event,
 		int set);
 extern void manual_event_reset(struct manual_event *m_event);
 extern void manual_event_set(struct manual_event *m_event);
+extern int manual_event_is_set(struct manual_event *m_event);
 extern void manual_event_notify(struct manual_event *m_event);
 extern int manual_event_wait(struct manual_event *m_event,
 		unsigned long timeout);

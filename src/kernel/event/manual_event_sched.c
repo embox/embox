@@ -28,6 +28,11 @@ void manual_event_set(struct manual_event *m_event) {
 	m_event->set = 1;
 }
 
+int manual_event_is_set(struct manual_event *m_event) {
+	assert(m_event != NULL);
+	return m_event->set;
+}
+
 void manual_event_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
