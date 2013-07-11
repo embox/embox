@@ -442,17 +442,16 @@ typedef int sig_atomic_t;
 
 
 
-#include <net/socket.h>
 #include <arpa/inet.h>
 
 
 
 
+#if 0
 static inline int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	return -1;
 }
-#if 0
 inline int gethostname(char *name, size_t len) {
 	char localhost[] = "localhost";
 	DPRINT();
