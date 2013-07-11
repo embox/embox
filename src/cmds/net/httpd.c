@@ -416,8 +416,10 @@ static int httpd(int argc, char **argv) {
 	welcome_message();
 
 	while (1) {
+		addr_len  = sizeof addr;
 		res = accept(host,(struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
+			printf("accept error: %d\n", errno);
 			continue;
 
 #if 0
