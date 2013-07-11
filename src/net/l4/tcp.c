@@ -946,7 +946,7 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		}
 	}
 
-	return 0;
+	return TCP_RET_OK;
 }
 
 #if 0
