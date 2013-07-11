@@ -48,6 +48,7 @@ static int su_exec(int argc, char *argv[]) {
 	}
 
 	if (strcmp(spwd->sp_pwdp, pass)) {
+		usleep(2000000);
 		fprintf(stderr, "%s: incorrect password\n", argv[0]);
 		ret = 0;
 		goto out_err;

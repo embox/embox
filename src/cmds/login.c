@@ -136,9 +136,10 @@ static int login_cmd(int argc, char **argv) {
 		}
 
 		while (1) {
+			//sleep(3);
 			printf("\n\n");
 			if (NULL == (name = linenoise(LOGIN_PROMPT))) {
-				goto sleep;
+				continue;
 			}
 
 			res = getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result);
@@ -151,21 +152,21 @@ static int login_cmd(int argc, char **argv) {
 
 			if (result == NULL || spwd == NULL) {
 				printf("login: no such user found\n");
-				goto sleep;
+				sleep(3);
+				continue;
 			}
 
 
 			if (NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
-				goto sleep;
+				sleep(3);
+				continue;
 			}
 
 			if (0 == (res = strcmp(passbuf, spwd->sp_pwdp))) {
 				break;
 			}
 
-			sleep:
 			sleep(3);
-
 		}
 
 		if (0 > (tid = new_task("sh", taskshell, result))) {
