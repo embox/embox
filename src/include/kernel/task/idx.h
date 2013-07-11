@@ -9,6 +9,10 @@
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <framework/mod/options.h>
 #include <module/embox/kernel/task/idx_table.h>
 
@@ -243,5 +247,10 @@ static inline int task_valid_binded_fd(int fd) {
 static inline int task_valid_unbinded_fd(int fd) {
 	return task_valid_fd(fd) && !task_idx_table_is_binded(task_self_idx_table(), fd);
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TASK_IDX_H_ */
