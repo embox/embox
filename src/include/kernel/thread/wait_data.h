@@ -20,6 +20,7 @@
 #define WAIT_DATA_STATUS_WAITING     1
 #define WAIT_DATA_STATUS_NOTIFIED    2
 
+struct thread;
 typedef void (*notify_handler)(struct thread *, void *data);
 
 struct wait_data {

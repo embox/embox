@@ -24,7 +24,7 @@
 struct thread;
 struct event;
 struct sleepq;
-
+#if 0
 /**
  * Initializes scheduler.
  *
@@ -41,6 +41,7 @@ struct sleepq;
  *   failed.
  */
 extern int sched_init(struct thread *current, struct thread *idle);
+#endif
 
 /**
  * Obtains a pointer to the currently executing thread.
@@ -142,16 +143,6 @@ extern void sched_set_priority(struct thread *thread,
 extern int sched_change_scheduling_priority(struct thread *thread,
 		sched_priority_t new_priority);
 
-/**
- * Returns running time of the thread. To get better precision should be
- * called inside sched_lock().
- *
- * @param thread
- *   Thread
- * @return
- *   Running time in clocks.
- */
-extern clock_t sched_get_running_time(struct thread *thread);
 
 /**
  * Requests switching of the current thread.

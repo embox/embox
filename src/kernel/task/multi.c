@@ -47,6 +47,21 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static int task_init_parent(struct task *task, struct task *parent);
 
+
+//TODO this function is used only in task/multi.c file. Why is it placed here?
+static void *thread_stack_malloc(struct thread *thread, size_t size) {
+	void *res;
+
+	assert(thread->stack_sz > size);
+
+	res = thread->stack;
+
+	thread->stack    += size;
+	thread->stack_sz -= size;
+
+	return res;
+}
+
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;

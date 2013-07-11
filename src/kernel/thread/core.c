@@ -21,6 +21,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
+#include <time.h>
+
+#include <err.h>
 
 #include <embox/unit.h>
 
@@ -32,14 +35,16 @@
 #include <kernel/thread/wait_data.h>
 
 #include <kernel/panic.h>
-#include <kernel/cpu.h>
-#include <kernel/percpu.h>
 
 #include <hal/context.h>
 #include <hal/arch.h> /*only for arch_idle */
 
+#include <kernel/cpu.h>
+#include <kernel/percpu.h>
 
+#if 0
 EMBOX_UNIT(unit_init, unit_fini);
+#endif
 
 struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
@@ -343,101 +348,22 @@ thread_priority_t thread_get_priority(struct thread *t) {
 
 	return t->priority;
 }
+
 clock_t thread_get_running_time(struct thread *thread) {
-	return sched_get_running_time(thread);
-}
-
-struct thread *thread_lookup(thread_id_t id) {
-	struct thread *t;
-
-	thread_foreach(t) {
-		if (t->id == id) {
-			return t;
+	sched_lock();
+	{
+		if (thread_state_oncpu(thread->state)) {
+			/* Recalculate time of the thread. */
+			clock_t	new_clock = clock();
+			thread->running_time += new_clock - thread->last_sync;
+			thread->last_sync = new_clock;
 		}
 	}
+	sched_unlock();
 
-	return NULL;
-}
-//TODO this function is used only in task/multi.c file. Why is it placed here?
-void *thread_stack_malloc(struct thread *thread, size_t size) {
-	void *res;
-
-	assert(thread->stack_sz > size);
-
-	res = thread->stack;
-
-	thread->stack    += size;
-	thread->stack_sz -= size;
-
-	return res;
+	return thread->running_time;
 }
 
-/**
- * Function, which does nothing. For idle_thread.
- */
-static void *idle_run(void *arg) {
-	while (true) {
-		arch_idle();
-	}
-	return NULL;
-}
-
-struct thread *thread_init_self(void *stack, size_t stack_sz,
-		thread_priority_t priority) {
-	struct thread *thread = stack; /* Allocating at the bottom */
-
-	/* Stack setting up */
-	thread->stack = stack + sizeof(struct thread);
-	thread->stack_sz = stack_sz - sizeof(struct thread);
-
-	/* Global list addition and id setting up */
-	thread->id = id_counter++;
-	list_add_tail(&thread->thread_link, &__thread_list);
-
-	/* General initialization and task setting up */
-	thread_init(thread, THREAD_FLAG_KTASK, NULL, NULL);
-
-	/* Priority setting up */
-	thread->priority = priority;
-	thread->sched_priority = get_sched_priority(thread->task->priority,
-			thread->priority);
-
-	return thread;
-}
-
-static int unit_init(void) {
-	struct thread *idle;
-	struct thread *bootstrap;
-	struct task *kernel_task = task_kernel_task();
-	extern char _stack_vma, _stack_len;
-
-	id_counter = 0;
-
-	/* TODO: priority */
-	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
-			THREAD_PRIORITY_NORMAL);
-
-	kernel_task->main_thread = bootstrap;
-
-	if (!(idle = thread_new())) {
-		return -ENOMEM;
-	}
-	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
-	thread_context_init(idle);
-
-	idle->priority = THREAD_PRIORITY_MIN;
-	idle->sched_priority = SCHED_PRIORITY_MIN;
-
-	cpu_set_idle_thread(idle);
-
-	return sched_init(bootstrap, idle);
-}
-
-static int unit_fini(void) {
-	sched_lock();
-
-	return 0;
-}
 
 static struct thread *thread_new(void) {
 	struct thread *t;
@@ -474,3 +400,87 @@ static void thread_delete(struct thread *t) {
 		thread_free(t);
 	}
 }
+
+
+/*
+ * TODO The code below should be replace
+ */
+struct thread *thread_lookup(thread_id_t id) {
+	struct thread *t;
+
+	thread_foreach(t) {
+		if (t->id == id) {
+			return t;
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * Function, which does nothing. For idle_thread.
+ */
+static void *idle_run(void *arg) {
+	while (true) {
+		arch_idle();
+	}
+	return NULL;
+}
+
+
+struct thread *thread_idle_init(void) {
+	struct thread *idle;
+
+	if (!(idle = thread_new())) {
+		return NULL;
+	}
+	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
+	thread_context_init(idle);
+
+	idle->priority = THREAD_PRIORITY_MIN;
+	idle->sched_priority = SCHED_PRIORITY_MIN;
+
+	cpu_set_idle_thread(idle);
+
+	return idle;
+}
+
+struct thread *thread_init_self(void *stack, size_t stack_sz,
+		thread_priority_t priority) {
+	struct thread *thread = stack; /* Allocating at the bottom */
+
+	/* Stack setting up */
+	thread->stack = stack + sizeof(struct thread);
+	thread->stack_sz = stack_sz - sizeof(struct thread);
+
+	/* Global list addition and id setting up */
+	thread->id = id_counter++;
+	list_add_tail(&thread->thread_link, &__thread_list);
+
+	/* General initialization and task setting up */
+	thread_init(thread, THREAD_FLAG_KTASK, NULL, NULL);
+
+	/* Priority setting up */
+	thread->priority = priority;
+	thread->sched_priority = get_sched_priority(thread->task->priority,
+			thread->priority);
+
+	return thread;
+}
+
+struct thread *thread_boot_init(void) {
+	struct thread *bootstrap;
+	struct task *kernel_task = task_kernel_task();
+	extern char _stack_vma, _stack_len;
+
+	id_counter = 0;
+
+	/* TODO: priority */
+	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
+			THREAD_PRIORITY_NORMAL);
+
+	kernel_task->main_thread = bootstrap;
+
+	return bootstrap;
+}
+

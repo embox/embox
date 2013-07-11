@@ -33,7 +33,6 @@
 
 #include <profiler/tracing/trace.h>
 
-#include <time.h>
 
 #include <kernel/cpu.h>
 
@@ -41,13 +40,13 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT(unit_init, unit_fini);
+EMBOX_UNIT_INIT(sched_init);
 
 static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
-void sched_post_switch(void);
+//void sched_post_switch(void);
 
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
@@ -62,7 +61,18 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
-int sched_init(struct thread* current, struct thread *idle) {
+extern struct thread *thread_idle_init(void);
+extern struct thread *thread_boot_init(void);
+
+static int sched_init(void) {
+	struct thread *idle;
+	struct thread *current;
+
+	idle = thread_idle_init();
+	current = thread_boot_init();
+
+	work_queue_init(&startq);
+
 	current->last_sync = clock();
 
 	thread_set_current(current);
@@ -223,21 +233,6 @@ void sched_post_switch(void) {
 	sched_unlock();
 }
 
-clock_t sched_get_running_time(struct thread *thread) {
-	sched_lock();
-	{
-		if (thread_state_oncpu(thread->state)) {
-			/* Recalculate time of the thread. */
-			clock_t	new_clock = clock();
-			thread->running_time += new_clock - thread->last_sync;
-			thread->last_sync = new_clock;
-		}
-	}
-	sched_unlock();
-
-	return thread->running_time;
-}
-
 int sched_change_scheduling_priority(struct thread *thread,
 		sched_priority_t new_priority) {
 	assert((new_priority >= SCHED_PRIORITY_MIN)
@@ -369,12 +364,3 @@ int sched_cpu_init(struct thread *current) {
 	return 0;
 }
 
-static int unit_init(void) {
-	work_queue_init(&startq);
-
-	return 0;
-}
-
-static int unit_fini(void) {
-	return 0;
-}
