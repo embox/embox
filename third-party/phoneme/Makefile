@@ -52,7 +52,7 @@ REDHAT_JDK_DIR      := /usr/java/jdk1.6.0_35
 JDK7_JDK_DIR	    := /usr/lib/jvm/java-7-openjdk
 
 JDK_DIR 	    := $(firstword \
-	$(wildcard $(UBUNTU_JDK_DIR)/./ $(REDHAT_JDK_DIR)/./ $(JDK7_JDK_DIR)/./ ))
+	$(wildcard /usr/lib/jvm/java-openjdk/./ $(UBUNTU_JDK_DIR)/./ $(REDHAT_JDK_DIR)/./ $(JDK7_JDK_DIR)/./ ))
 
 PCSL_DIR            := $(PHONEME_DIR)/pcsl
 PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
