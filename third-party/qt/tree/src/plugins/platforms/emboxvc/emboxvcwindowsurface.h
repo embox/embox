@@ -31,6 +31,7 @@ private slots:
 
 private:
     int mouseFD, inputFD;
+    struct idx_desc *idx_mouseFD, *idx_inputFD;
     QSocketNotifier *mouseNotifier;
 };
 
@@ -48,6 +49,7 @@ private slots:
 
 private:
     int keyboardFD, inputFD;
+    struct idx_desc *idx_keyboardFD, *idx_inputFD;
     QSocketNotifier *keyboardNotifier;
 };
 

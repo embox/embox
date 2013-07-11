@@ -4,6 +4,8 @@
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
 
+#include <kernel/task/idx.h>
+
 QT_BEGIN_NAMESPACE
 
 /* From VNC */
@@ -98,6 +100,34 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	}
 }
 
+static int desc_read(struct idx_desc *desc, void *buf, size_t size) {
+	const struct task_idx_ops *ops;
+
+	if (!buf) {
+		SET_ERRNO(EFAULT);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
+	assert(ops);
+	assert(ops->read);
+	return ops->read(desc, buf, size);
+}
+
+static int desc_write(struct idx_desc *desc, const void *buf, size_t size) {
+	const struct task_idx_ops *ops;
+
+	if (!buf) {
+		SET_ERRNO(EFAULT);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
+	assert(ops);
+	assert(ops->write);
+	return ops->write(desc, buf, size);
+}
+
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 	int pipefd[2];
 
@@ -107,12 +137,14 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 
 	mouseFD = pipefd[0];
 	inputFD = pipefd[1];
+	idx_mouseFD = task_self_idx_get(mouseFD);
+	idx_inputFD = task_self_idx_get(inputFD);
 
 	fcntl(mouseFD, F_SETFD, O_NONBLOCK);
 	fcntl(inputFD, F_SETFD, O_NONBLOCK);
 
-    mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
-    connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
+	mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
+	connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
 }
 
 QEmboxVCMouseHandler::~QEmboxVCMouseHandler() {
@@ -120,7 +152,7 @@ QEmboxVCMouseHandler::~QEmboxVCMouseHandler() {
 }
 
 void QEmboxVCMouseHandler::storeData(void *data, int datalen) {
-	write(inputFD, data, datalen);
+	desc_write(idx_inputFD, data, datalen);
 }
 
 void QEmboxVCMouseHandler::readMouseData() {
@@ -179,6 +211,8 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 
 	keyboardFD = pipefd[0];
 	inputFD = pipefd[1];
+	idx_keyboardFD = task_self_idx_get(keyboardFD);
+	idx_inputFD = task_self_idx_get(inputFD);
 
 	fcntl(keyboardFD, F_SETFD, O_NONBLOCK);
 	fcntl(inputFD, F_SETFD, O_NONBLOCK);
@@ -192,7 +226,7 @@ QEmboxVCKeyboardHandler::~QEmboxVCKeyboardHandler() {
 }
 
 void QEmboxVCKeyboardHandler::storeData(void *data, int datalen) {
-	write(inputFD, data, datalen);
+	desc_write(idx_inputFD, data, datalen);
 }
 
 void QEmboxVCKeyboardHandler::readKeyboardData() {
