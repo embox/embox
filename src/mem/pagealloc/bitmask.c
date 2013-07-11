@@ -22,7 +22,7 @@
 //TODO page : have no synchronization
 
 #define FREE_MEM_BASE       ((uint32_t)allocator->start)
-#define bitmask             (allocator->start + sizeof(struct page_allocator))
+#define bitmask             ((uint32_t *) (allocator->start + sizeof(struct page_allocator)))
 #define MAIN_BITMASK_LENGTH (allocator->capacity / allocator->page_size) / 32
 #define REST_MASK_BIT       (allocator->capacity / allocator->page_size) % 32
 
@@ -33,13 +33,13 @@ static void *search_single_page(struct page_allocator *allocator) {
 	uint32_t mask;
 	void *page = NULL;
 
-	for (word_offset = 0; word_offset < MAIN_BITMASK_LENGTH - 1; ++word_offset) {
+	for (word_offset = 0; word_offset < MAIN_BITMASK_LENGTH; ++word_offset) {
 		word = bitmask[word_offset];
 		mask = 1;
 		if(word == -1) {
 			continue;
 		}
-		for (bit_offset = 0; bit_offset < 32; ++bit_offset) {
+		for (bit_offset = 0; bit_offset < 32; ++bit_offset, mask <<= 1) {
 
 			if (0 == (word & mask)) { /* page is free */
 				bitmask[word_offset] |= mask;
