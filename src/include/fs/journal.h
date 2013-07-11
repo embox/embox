@@ -127,7 +127,6 @@ struct transaction_s {
     /* Sequence number for this transaction [no locking] */
     uint32_t t_tid;
 
-#if 0
     /*
      * Transaction's current state
      * [no locking - only kjournald alters this]
@@ -142,7 +141,7 @@ struct transaction_s {
         T_COMMIT,
         T_FINISHED
     } t_state;
-#endif
+
     /*
      * Where in the log does this transaction's commit start? [no locking]
      */
@@ -171,6 +170,9 @@ struct transaction_s {
      * handle but not yet modified. [t_handle_lock]
      */
     int t_outstanding_credits;
+
+    /* Reference count of handlers */
+    int t_ref;
 
     /*
      * Forward and backward links for the circular list of all transactions
@@ -352,5 +354,7 @@ struct journal_s {
 };
 
 extern journal_t *journal_load(block_dev_t *jdev, block_t start);
+extern handle_t * journal_start(journal_t *jp, int nblocks);
+extern int journal_stop(handle_t *handle);
 
 #endif /* _LIBJOURNAL_H */
