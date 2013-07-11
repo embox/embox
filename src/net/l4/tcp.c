@@ -941,9 +941,12 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 
 	if (tcph->ack) {
 		ret = process_ack(sock, tcph, out_tcph);
+		if (ret != TCP_RET_OK) {
+			return ret;
+		}
 	}
 
-	return ret;
+	return 0;
 }
 
 #if 0
