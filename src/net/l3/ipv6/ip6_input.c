@@ -42,7 +42,7 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return nproto->handle(skb);
 	}
 
-	printk("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
+//	printk("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
 
 	skb_free(skb);
 	return 0; /* error: nobody wants this packet */
