@@ -17,6 +17,11 @@
 
 struct nas;
 
+typedef struct file_lock_shared {
+	struct thread *holder;
+	struct dlist_head flock_link;
+} flock_shared_t;
+
 typedef struct file_lock {
 	struct mutex      exlock;
 	long              shlock_count;

@@ -24,6 +24,7 @@
 #include <sys/file.h>
 #include <kernel/task/idx.h>
 #include <kernel/spinlock.h>
+#include <mem/misc/pool.h>
 
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
@@ -512,6 +513,39 @@ int kumount(const char *dir) {
 	return drv->fsop->umount(dir_node);
 }
 
+
+#define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER,flock_quantity)
+POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
+
+int flock_shared_get(flock_t *flock) {
+	flock_shared_t *shlock;
+	struct thread *current = sched_current();
+
+	shlock = pool_alloc(&flock_pool);
+	dlist_add_next(dlist_head_init(&shlock->flock_link), &flock->shlock_holders);
+	shlock->holder = current;
+	flock->shlock_count++;
+
+	return -ENOERR;
+}
+
+int flock_shared_put(flock_t *flock) {
+	flock_shared_t *shlock;
+	struct thread *current = sched_current();
+	struct dlist_head *item, *next;
+
+	dlist_foreach(item, next, &flock->shlock_holders) {
+		shlock = dlist_entry(item, flock_shared_t, flock_link);
+		if (current == shlock->holder) {
+			dlist_del(&shlock->flock_link);
+			pool_free(&flock_pool, shlock);
+			flock->shlock_count--;
+		}
+	}
+
+	return -ENOERR;
+}
+
 /**
  * Apply advisory lock to specified fd
  * @param File descriptor number
@@ -519,10 +553,10 @@ int kumount(const char *dir) {
  * @return ENOERR if operation succeed or -1 and set errno in other way
  */
 int kflock(int fd, int operation) {
+	flock_t *flock;
 	struct idx_desc *idesc;
 	struct file_desc *fdesc;
 	struct mutex *exlock;
-	struct dlist_head *shlock_holders;
 	spinlock_t *flock_guard;
 	long *shlock_count;
 	struct thread *current = sched_current();
@@ -563,29 +597,27 @@ int kflock(int fd, int operation) {
 	 * - fd is validated inside task_self_idx_get */
 	idesc = task_self_idx_get(fd);
 	fdesc = idesc->data->fd_struct;
+	flock = &fdesc->node->flock;
 	exlock = &fdesc->node->flock.exlock;
 	shlock_count = &fdesc->node->flock.shlock_count;
-	shlock_holders = &fdesc->node->flock.shlock_holders;
 	flock_guard = &fdesc->node->flock.flock_guard;
 
 	/* TODO:
 	 *  - Extract some work into separate functions
+	 *  - Verify and possibly update tests
+	 *  - Maybe extract flock related functions to external file
+	 *  - Review
 	 */
 
 	/* Exclusive locking operation */
 	if (LOCK_EX & operation) {
 		spin_lock(flock_guard);
-		/* If only one shared lock is acquired by current thread then convert
-		 * it to exclusive: release shared and acquire exclusive in one current
-		 * critical section */
-		if (1 == *shlock_count) {
+		/* If shared lock is acquired by any thread then free up our locks and
+		 * try to acquire exclusive one */
+		if (*shlock_count > 0) {
 			/* We can hold only one type of lock at the moment */
 			assert(0 == exlock->lock_count);
-			if (current ==
-					dlist_entry(shlock_holders, struct thread, flock_list)) {
-				*shlock_count -= 1;
-				dlist_del(&current->flock_list);
-			}
+			flock_shared_put(flock);
 		}
 		if (LOCK_NB & operation) {
 			if (-EAGAIN == mutex_trylock(exlock)) {
@@ -627,13 +659,8 @@ int kflock(int fd, int operation) {
 				}
 			}
 		}
-		/* If current is not in any list we can acquire shared lock
-		 * FIXME: it can be in another flock list */
-		if (dlist_empty(&current->flock_list)) {
-			*shlock_count += 1;
-			dlist_add_next(dlist_head_init(&current->flock_list),
-					shlock_holders);
-		}
+		/* Acquire shared lock */
+		flock_shared_get(flock);
 		spin_unlock(flock_guard);
 	}
 
@@ -645,13 +672,12 @@ int kflock(int fd, int operation) {
 			assert(0 == *shlock_count);
 			/* mutex_unlock can't block the thread
 			 * so nothing need for LOCK_NB */
-			mutex_unlock(exlock);
+			while (exlock->lock_count != 0) mutex_unlock(exlock);
 		}
 		/* Handle shared lock free */
-		if (*shlock_count > 0 && dlist_empty(&current->flock_list)) {
+		if (*shlock_count > 0) {
 			assert(0 == exlock->lock_count);
-			*shlock_count -= 1;
-			dlist_del(&current->flock_list);
+			flock_shared_put(flock);
 		}
 		spin_unlock(flock_guard);
 	}
