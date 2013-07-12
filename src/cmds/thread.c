@@ -8,17 +8,19 @@
  * @author Roman Oderov
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
+
 #include <kernel/thread.h>
 #include <kernel/thread/state.h>
 #include <kernel/task.h>
-#include <errno.h>
+#include <kernel/sched.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
@@ -27,7 +29,7 @@ static void print_usage(void) {
 }
 
 static void print_stat(void) {
-	struct thread *thread;
+	struct thread *thread, *tmp;
 	int running, sleeping, suspended;
 	int total;
 
@@ -37,7 +39,7 @@ static void print_stat(void) {
 
 	sched_lock();
 	{
-		thread_foreach(thread) {
+		thread_foreach(thread, tmp) {
 			thread_state_t s = thread->state;
 			const char *state = NULL;
 

@@ -9,6 +9,7 @@
 
 #include <kernel/thread.h>
 #include <time.h>
+
 /* FIXME: This operations is only for SMP */
 void thread_set_affinity(struct thread *thread, unsigned int affinity) {
 	thread->affinity = affinity;

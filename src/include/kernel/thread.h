@@ -18,17 +18,13 @@
 #include <framework/mod/options.h>
 
 #include <kernel/thread/current.h>
-#include <kernel/sched.h>
-#include <sys/types.h>
+//#include <kernel/sched.h>
+
+#include <util/dlist.h>
+#include <kernel/thread/types.h>
 
 #define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
-
-#define __thread_foreach(thread_ptr) \
-	list_for_each_entry(thread_ptr, __extension__ ({   \
-				extern struct list_head __thread_list; \
-				&__thread_list;                        \
-			}), thread_link)                           \
 
 /**
  * Thread control block.
@@ -47,8 +43,10 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
 #define THREAD_FLAG_SUSPENDED        (0x1 << 2) /**< Initially suspended. */
 
+/**< Create thread with parent priority */
 #define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
 
+/** Use with THREAD_FLAG_PRIORITY_INHERIT flag */
 #define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
@@ -60,8 +58,10 @@ typedef __thread_priority_t thread_priority_t;
  * @param thread
  *   <em> struct thread * </em> iteration variable.
  */
-#define thread_foreach(thread) \
-	  __thread_foreach(thread)
+#define thread_foreach(thread_ptr ,tmp) \
+	extern struct dlist_head __thread_list; \
+	dlist_foreach_entry(thread_ptr, tmp, &__thread_list, thread_link)
+
 
 /**
  * Searches for a thread by the given ID.
@@ -81,7 +81,7 @@ extern struct thread *thread_lookup(thread_id_t id);
  * @return
  *   The currently executing thread.
  */
-#define thread_self() sched_current()
+#define thread_self() thread_get_current()
 
 /*
  * Initializes thread structure for current thread, adds it to list of threads

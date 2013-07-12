@@ -14,6 +14,7 @@
 
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
+#include <kernel/sched.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include <kernel/panic.h>

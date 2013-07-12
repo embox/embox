@@ -18,11 +18,9 @@ typedef unsigned int __thread_state_t;
 
 #include <hal/context.h>
 
-//#include <kernel/sched/startq.h>
 #include <kernel/sched/sched_strategy.h>
-//#include <util/slist.h>
-//#include <util/list.h>
 #include <linux/list.h>
+#include <util/dlist.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/thread/thread_priority.h>
 #include <kernel/thread/wait_data.h>
@@ -45,7 +43,7 @@ struct thread {
 		void         *join_ret;      /**< Exit value of a join target. */
 	} /* unnamed */;
 	void             *stack;         /**< Allocated thread stack buffer. */
-	size_t            stack_sz;      /**< Stack size. TODO unused. -- Eldar */
+	size_t            stack_sz;      /**< Stack size. */
 
 	struct sched_strategy_data sched;/**< Scheduler-private data. */
 
@@ -60,23 +58,23 @@ struct thread {
 	} /* unnamed */;
 
 
-	__thread_id_t     id;            /**< Unique identifier. */
-	struct list_head  thread_link;   /**< Linkage on all threads. */
+	__thread_id_t      id;            /**< Unique identifier. */
+	struct dlist_head   thread_link;   /**< Linkage on all threads. */
 
-	struct mutex     *mutex_waiting; /**< Mutex we are waiting for (if any). */
+	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
 
 
-	struct thread    *joined;        /**< Thread which joined to this. */
+	struct thread     *joined;        /**< Thread which joined to this. */
 
-	struct wait_data  wait_data;
+	struct wait_data   wait_data;
 
-	struct task      *task;          /**< Task belong to. */
+	struct task       *task;          /**< Task belong to. */
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
-	clock_t           running_time;  /**< Running time of thread in clocks. */
-	clock_t           last_sync;     /**< Last recalculation of running time. */
+	clock_t            running_time;  /**< Running time of thread in clocks. */
+	clock_t            last_sync;     /**< Last recalculation of running time. */
 
-	unsigned int      affinity;      /**< CPU affinity of the thread. */
+	unsigned int       affinity;      /**< CPU affinity of the thread. */
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

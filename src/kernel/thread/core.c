@@ -42,11 +42,10 @@
 #include <kernel/cpu.h>
 #include <kernel/percpu.h>
 
-#if 0
-EMBOX_UNIT(unit_init, unit_fini);
-#endif
+EMBOX_UNIT_INIT(thread_core_init);
 
-struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
+//struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
+DLIST_DEFINE(__thread_list);
 
 static int id_counter;
 
@@ -57,8 +56,8 @@ static void thread_context_init(struct thread *t);
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
 
-struct thread *thread_alloc(void);
-void thread_free(struct thread *t);
+extern struct thread *thread_alloc(void);
+extern void thread_free(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
@@ -81,77 +80,104 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	struct thread *t;
-	int save_ptr = (flags & THREAD_FLAG_SUSPENDED)
-			|| !(flags & THREAD_FLAG_DETACHED);
+	int save_ptr;
+	int res = ENOERR;
+
+	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
 			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
 		return -EINVAL;
 	}
 
+	/* check one more mutually exclusive flags */
+	if ((flags & THREAD_FLAG_SUSPENDED) && (flags & THREAD_FLAG_DETACHED)) {
+		return -EINVAL;
+	}
+
+	/* check whether we need to return thread structure pointer */
+	save_ptr = (flags & THREAD_FLAG_SUSPENDED)
+			|| !(flags & THREAD_FLAG_DETACHED);
+
+	/* if we need thread handler we check place for result */
 	if (save_ptr && !p_thread) {
 		return -EINVAL;
 	}
 
+	/* check correct executive function */
 	if (!run) {
 		return -EINVAL;
 	}
 
-	sched_lock();
+	sched_lock(); /* lock scheduling */
 
-	if (!(t = thread_new())) {
-		sched_unlock();
-		return -ENOMEM;
-	}
+		if (!(t = thread_new())) {
+			res = -ENOMEM;
+			goto out;
+		}
 
-	thread_init(t, flags, run, arg);
-	thread_context_init(t);
+		thread_init(t, flags, run, arg);
+		thread_context_init(t);
 
-	if (!(flags & THREAD_FLAG_SUSPENDED)) {
-		thread_launch(t);
-	}
+		if (!(flags & THREAD_FLAG_SUSPENDED)) {
+			thread_launch(t);
+		}
 
-	if (flags & THREAD_FLAG_DETACHED) {
-		thread_detach(t);
-	}
+		if (flags & THREAD_FLAG_DETACHED) {
+			thread_detach(t);
+		}
 
-	if (save_ptr) {
-		*p_thread = t;
-	}
-
+out:
 	sched_unlock();
 
-	return 0;
+	if (save_ptr) {
+		*p_thread = t; /* save result pointer */
+	}
+
+	return res;
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
-	struct task *tsk = (flags & THREAD_FLAG_KTASK)
-			? task_kernel_task() : task_self();
+	struct task *tsk;
+	__thread_priority_t priority;
 
 	assert(t);
+	assert(run);
+
+	/* get task pointer in depends on whether thread create for kernel task
+	 * or user task */
+	tsk = (flags & THREAD_FLAG_KTASK) ? task_kernel_task() : task_self();
+
+	if (tsk) { //TODO may be if tsk == NULL it's an error
+		t->task = tsk;
+		list_add(&t->task_link, &tsk->threads);
+	}
 
 	t->state = thread_state_init();
 
+	/* set executive function and arguments pointer */
 	t->run = run;
 	t->run_arg = arg;
 
+	/* calculate current thread priority. It can be change later with
+	 * thread_set_priority () function
+	 */
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		t->priority = thread_self()->priority;
+		priority = thread_self()->priority;
 	} else {
-		t->priority = THREAD_PRIORITY_DEFAULT;
+		priority = THREAD_PRIORITY_DEFAULT;
 	}
 
-	if (flags & THREAD_FLAG_PRIORITY_LOWER) {
-		t->priority--;
-	} else if (flags & THREAD_FLAG_PRIORITY_HIGHER) {
-		t->priority++;
+	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
+			&& (priority >= THREAD_PRIORITY_MIN)) {
+		priority--;
+	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
+			&& (priority <= THREAD_PRIORITY_HIGH)) {
+		priority++;
 	}
 
-	t->task = tsk;
-	list_add(&t->task_link, &tsk->threads);
+	t->priority = priority; //clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
 
-	// TODO new priority range check, should fail on error. -- Eldar
-	t->priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
 	t->initial_priority = get_sched_priority(t->task->priority, t->priority);
 	t->sched_priority = t->initial_priority;
 
@@ -373,7 +399,7 @@ static struct thread *thread_new(void) {
 	}
 
 	t->id = id_counter++;
-	list_add_tail(&t->thread_link, &__thread_list);
+	dlist_add_next(&t->thread_link, &__thread_list);
 
 	return t;
 }
@@ -392,7 +418,7 @@ static void thread_delete(struct thread *t) {
 	}
 
 	list_del(&t->task_link);
-	list_del(&t->thread_link);
+	dlist_del(&t->thread_link);
 
 	if (t == current) {
 		zombie = t;
@@ -402,13 +428,10 @@ static void thread_delete(struct thread *t) {
 }
 
 
-/*
- * TODO The code below should be replace
- */
 struct thread *thread_lookup(thread_id_t id) {
-	struct thread *t;
+	struct thread *t, *tmp;
 
-	thread_foreach(t) {
+	thread_foreach(t, tmp) {
 		if (t->id == id) {
 			return t;
 		}
@@ -455,10 +478,10 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 
 	/* Global list addition and id setting up */
 	thread->id = id_counter++;
-	list_add_tail(&thread->thread_link, &__thread_list);
+	dlist_add_next(&thread->thread_link, &__thread_list);
 
 	/* General initialization and task setting up */
-	thread_init(thread, THREAD_FLAG_KTASK, NULL, NULL);
+	thread_init(thread, THREAD_FLAG_KTASK, idle_run, NULL);
 
 	/* Priority setting up */
 	thread->priority = priority;
@@ -484,3 +507,13 @@ struct thread *thread_boot_init(void) {
 	return bootstrap;
 }
 
+extern int sched_init(struct thread *idle, struct thread *current);
+
+static int thread_core_init(void) {
+	struct thread *idle;
+	struct thread *current;
+
+	idle = thread_idle_init();
+	current = thread_boot_init();
+	return sched_init(idle, current);
+}

@@ -40,13 +40,10 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(sched_init);
-
 static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
-//void sched_post_switch(void);
 
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
@@ -61,16 +58,9 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
-extern struct thread *thread_idle_init(void);
-extern struct thread *thread_boot_init(void);
 
-static int sched_init(void) {
-	struct thread *idle;
-	struct thread *current;
 
-	idle = thread_idle_init();
-	current = thread_boot_init();
-
+int sched_init(struct thread *idle, struct thread *current) {
 	work_queue_init(&startq);
 
 	current->last_sync = clock();
@@ -130,10 +120,6 @@ static void do_wait_locked(void) {
 	post_switch_if(1);
 }
 
-static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
-	struct thread *thread = (struct thread *) sleep_data;
-	sched_thread_notify(thread, -ETIMEDOUT);
-}
 
 static int notify_work(struct work *work) {
 	struct wait_data *wait_data = member_cast_out(work, struct wait_data, work);
@@ -176,6 +162,12 @@ void sched_prepare_wait(notify_handler on_notified, void *data) {
 
 void sched_cleanup_wait(void) {
 	wait_data_cleanup(&sched_current()->wait_data);
+}
+
+
+static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
+	struct thread *thread = (struct thread *) sleep_data;
+	sched_thread_notify(thread, -ETIMEDOUT);
 }
 
 int sched_wait_locked(unsigned long timeout) {
