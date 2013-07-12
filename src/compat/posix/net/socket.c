@@ -16,7 +16,6 @@
 #include <sys/uio.h>
 
 #include <net/socket/ksocket.h>
-#include <net/socket/socket.h>
 #include <net/sock.h>
 #include <sys/socket.h>
 #include <util/array.h>
@@ -31,7 +30,7 @@
 
 extern const struct task_idx_ops task_idx_ops_socket;
 
-static inline struct socket * idx2socket(int idx) {
+static inline struct sock * idx2sock(int idx) {
 	struct idx_desc *desc = task_self_idx_get(idx);
 	return desc != NULL ? task_idx_desc_data(desc) : NULL;
 }
@@ -43,27 +42,26 @@ static inline int idx2flags(int idx) {
 
 int socket(int domain, int type, int protocol) {
 	int ret, sockfd;
-	struct socket *sock;
+	struct sock *sk;
 
-	ret = ksocket(domain, type, protocol, &sock);
+	ret = ksocket(domain, type, protocol, &sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sock);
+	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk);
 	if (sockfd < 0) {
-		ksocket_close(sock);
+		ksocket_close(sk);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
-	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	sock->sk->ios = &task_idx_indata(task_self_idx_get(sockfd))->ios;
+	assert(sk != NULL);
+	sk->ios = &task_idx_indata(task_self_idx_get(sockfd))->ios;
 
 	if (type != SOCK_STREAM) {
-		io_sync_enable(sock->sk->ios, IO_SYNC_WRITING); /* TODO move to ksocket */
+		io_sync_enable(sk->ios, IO_SYNC_WRITING); /* TODO move to ksocket */
 	}
 
 	return sockfd;
@@ -72,15 +70,15 @@ int socket(int domain, int type, int protocol) {
 int bind(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kbind(sock, addr, addrlen);
+	ret = kbind(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -92,15 +90,15 @@ int bind(int sockfd, const struct sockaddr *addr,
 int connect(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kconnect(sock, addr, addrlen, idx2flags(sockfd));
+	ret = kconnect(sk, addr, addrlen, idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -111,15 +109,15 @@ int connect(int sockfd, const struct sockaddr *addr,
 
 int listen(int sockfd, int backlog) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = klisten(sock, backlog);
+	ret = klisten(sk, backlog);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -130,48 +128,47 @@ int listen(int sockfd, int backlog) {
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int ret, new_sockfd;
-	struct socket *sock, *new_sock;
+	struct sock *sk, *new_sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kaccept(sock, addr, addrlen, idx2flags(sockfd), &new_sock);
+	ret = kaccept(sk, addr, addrlen, idx2flags(sockfd), &new_sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
+	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk);
 	if (new_sockfd < 0) {
-		ksocket_close(new_sock);
+		ksocket_close(new_sk);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
-	assert(new_sock != NULL);
-	assert(new_sock->sk != NULL);
-	new_sock->sk->ios = &task_idx_indata(task_self_idx_get(new_sockfd))->ios;
+	assert(new_sk != NULL);
+	new_sk->ios = &task_idx_indata(task_self_idx_get(new_sockfd))->ios;
 
 	/* TODO move to kaccept */
-	io_sync_enable(new_sock->sk->ios, IO_SYNC_WRITING);
-	if (NULL != skb_queue_front(&new_sock->sk->rx_queue)) {
-		io_sync_enable(new_sock->sk->ios, IO_SYNC_READING);
+	io_sync_enable(new_sk->ios, IO_SYNC_WRITING);
+	if (NULL != skb_queue_front(&new_sk->rx_queue)) {
+		io_sync_enable(new_sk->ios, IO_SYNC_READING);
 	}
 
 	return new_sockfd;
 }
 
-int sendmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
+int sendmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
 
-	if (sock == NULL) {
+	if (sk == NULL) {
 		return -EBADF;
 	}
 
-	ret = ksendmsg(sock, msg, flags);
+	ret = ksendmsg(sk, msg, flags);
 	if (ret != 0) {
 		return ret;
 	}
@@ -194,7 +191,7 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = sendmsg_sock(idx2socket(sockfd), &msg,
+	ret = sendmsg_sock(idx2sock(sockfd), &msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -220,7 +217,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = sendmsg_sock(idx2socket(sockfd), &msg,
+	ret = sendmsg_sock(idx2sock(sockfd), &msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -237,7 +234,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	memcpy(&_msg, msg, sizeof _msg);
 	_msg.msg_flags = flags;
 
-	ret = sendmsg_sock(idx2socket(sockfd), &_msg,
+	ret = sendmsg_sock(idx2sock(sockfd), &_msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -247,14 +244,14 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	return _msg.msg_iov->iov_len;
 }
 
-int recvmsg_sock(struct socket *sock, struct msghdr *msg, int flags) {
+int recvmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
 
-	if (sock == NULL) {
+	if (sk == NULL) {
 		return -EBADF;
 	}
 
-	ret = krecvmsg(sock, msg, flags);
+	ret = krecvmsg(sk, msg, flags);
 	if (ret != 0) {
 		return ret;
 	}
@@ -277,7 +274,7 @@ ssize_t recv(int sockfd, void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = recvmsg_sock(idx2socket(sockfd), &msg,
+	ret = recvmsg_sock(idx2sock(sockfd), &msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -303,7 +300,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = recvmsg_sock(idx2socket(sockfd), &msg,
+	ret = recvmsg_sock(idx2sock(sockfd), &msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -324,7 +321,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	memcpy(&_msg, msg, sizeof _msg);
 	_msg.msg_flags = flags;
 
-	ret = recvmsg_sock(idx2socket(sockfd), &_msg,
+	ret = recvmsg_sock(idx2sock(sockfd), &_msg,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -340,15 +337,15 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 int shutdown(int sockfd, int how) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kshutdown(sock, how);
+	ret = kshutdown(sk, how);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -360,15 +357,15 @@ int shutdown(int sockfd, int how) {
 int getsockname(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kgetsockname(sock, addr, addrlen);
+	ret = kgetsockname(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -380,15 +377,15 @@ int getsockname(int sockfd, struct sockaddr *addr,
 int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kgetpeername(sock, addr, addrlen);
+	ret = kgetpeername(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -400,15 +397,15 @@ int getpeername(int sockfd, struct sockaddr *addr,
 int getsockopt(int sockfd, int level, int optname, void *optval,
 		socklen_t *optlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kgetsockopt(sock, level, optname, optval, optlen);
+	ret = kgetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -420,15 +417,15 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 int setsockopt(int sockfd, int level, int optname,
 		const void *optval, socklen_t optlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2socket(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = ksetsockopt(sock, level, optname, optval, optlen);
+	ret = ksetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;

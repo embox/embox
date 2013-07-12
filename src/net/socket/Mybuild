@@ -69,8 +69,6 @@ module af_unix {
 }
 
 module socket {
-	option number amount_socket=20
-
 	source "ksocket.c"
 	depends embox.arch.interrupt
 	depends embox.mem.pool

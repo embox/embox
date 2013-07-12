@@ -98,17 +98,17 @@ void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //default:
 //	case 0:  /* default */
-	case 1:  /* in/out package print */
+//	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
-//	case 8:  /* state's handler */
+	case 8:  /* state's handler */
 //	case 9:  /* sending package */
-//	case 10: /* pre_process */
-//	case 11: /* tcp_handle */
+	case 10: /* pre_process */
+	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
 		softirq_unlock();
@@ -532,7 +532,6 @@ static size_t tcp_conn_wait_len(union sock_pointer sock) {
 	return conn_wait_len;
 }
 
-#include <net/socket/socket.h> /* remove this */
 static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	int ret;

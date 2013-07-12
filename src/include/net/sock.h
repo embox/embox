@@ -65,6 +65,7 @@ struct sock {
 	const struct family_ops *f_ops;
 	const struct sock_ops *ops;
 	struct io_sync *ios;
+    struct socket_node *sock_node;
 };
 
 struct family_ops {

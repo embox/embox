@@ -23,13 +23,13 @@
 POOL_DEF(socket_node_pool, socket_node_t, MODOPS_AMOUNT_SOCKET_NODE);
 DLIST_DEFINE(socket_registry);
 
-static inline socket_node_t *get_sock_node_by_socket(struct socket *sock);
-static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
+static inline socket_node_t *get_sock_node_by_socket(struct sock *sk);
+static socket_node_t *get_sock_node_by_src_address(struct sock *sk,
     struct sockaddr *addr);
-static socket_node_t *get_sock_node_by_dst_address(struct socket *sock,
+static socket_node_t *get_sock_node_by_dst_address(struct sock *sk,
     struct sockaddr *addr);
 
-int sr_add_socket_to_registry(struct socket *sock){
+int sr_add_socket_to_registry(struct sock *sk){
 	socket_node_t *newnode;
 
 	/* allocate new node */
@@ -44,9 +44,9 @@ int sr_add_socket_to_registry(struct socket *sock){
 	memset(&newnode->daddr, 0, sizeof(struct sockaddr));
 
 	/* set socket link */
-	newnode->sock = sock;
+	newnode->sk = sk;
 
-	sock->socket_node = newnode;
+	sk->sock_node = newnode;
 
 	/* list_add_tail(&socket_registry_head, &newnode->link); */
 	dlist_add_next(&newnode->link, &socket_registry);
@@ -56,10 +56,10 @@ int sr_add_socket_to_registry(struct socket *sock){
 	return ENOERR;
 }
 
-int sr_remove_socket_from_registry(struct socket *sock){
+int sr_remove_socket_from_registry(struct sock *sk){
 	socket_node_t *node;
 
-	node = get_sock_node_by_socket(sock);
+	node = get_sock_node_by_socket(sk);
 	if (node) {
 		LOG_INFO("remove_socket_from_pool", "removing socket entity...");
 		dlist_del(&node->link);
@@ -69,79 +69,79 @@ int sr_remove_socket_from_registry(struct socket *sock){
 	return -1;
 }
 
-bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr){
+bool sr_is_saddr_free(struct sock *sk, struct sockaddr *addr){
 
-	if (get_sock_node_by_src_address(sock, addr))
+	if (get_sock_node_by_src_address(sk, addr))
 		return false;
 	else
 		return true;
 }
 
-bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
+bool sr_is_daddr_free(struct sock *sk, struct sockaddr *addr){
 
-	if (get_sock_node_by_dst_address(sock, addr))
+	if (get_sock_node_by_dst_address(sk, addr))
 		return false;
 	else
 		return true;
 }
 
-bool sr_socket_exists(struct socket *sock){
+bool sr_socket_exists(struct sock *sk){
 	socket_node_t *node, *tmp;
 
-	if (sock) {  /* address validity */
+	if (sk) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link){
-			if (sock == node->sock)
+			if (sk == node->sk)
 				return true;
 		}
 	}
 	return false;
 }
 
-int sr_set_saddr(struct socket *sock, const struct sockaddr *addr){
+int sr_set_saddr(struct sock *sk, const struct sockaddr *addr){
 	/* copy address data */
-	memcpy(&sock->socket_node->saddr, addr, sizeof(struct sockaddr));
+	memcpy(&sk->sock_node->saddr, addr, sizeof(struct sockaddr));
 
 	LOG_INFO("bind_address", "bound address to socket");
 	return 0;
 }
 
-void sr_remove_saddr(struct socket *sock){
+void sr_remove_saddr(struct sock *sk){
 	socket_node_t *node;
 
-	node = get_sock_node_by_socket(sock);
+	node = get_sock_node_by_socket(sk);
 	if (node) {
 		LOG_INFO("unbind_socket", "found socket. trying to unbind...");
 		memset(&node->saddr, 0, sizeof(struct sockaddr));
 	}
 }
 
-static socket_node_t *get_sock_node_by_src_address(struct socket *sock, struct sockaddr *addr) {
+static socket_node_t *get_sock_node_by_src_address(struct sock *sk, struct sockaddr *addr) {
 	socket_node_t *node, *tmp;
 
 	if (addr) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link) {
-			if (sock->sk->f_ops->compare_addresses(addr, &node->saddr) &&
-				 (sock->sk->opt.so_type == node->sock->sk->opt.so_type))
+			if (sk->f_ops->compare_addresses(addr, &node->saddr) &&
+				 (sk->opt.so_type == node->sk->opt.so_type))
 				return node;
 		}
 	}
 	return NULL;
 }
 
-static socket_node_t *get_sock_node_by_dst_address(struct socket *sock, struct sockaddr *addr) {
+static socket_node_t *get_sock_node_by_dst_address(struct sock *sk, struct sockaddr *addr) {
 	socket_node_t *node, *tmp;
 
 	if (addr) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link) {
-			if (sock->sk->f_ops->compare_addresses(addr, &node->daddr))
+			if (sk->f_ops->compare_addresses(addr, &node->daddr))
 				return node;
 		}
 	}
 	return NULL;
 }
 
-static inline socket_node_t *get_sock_node_by_socket(struct socket *sock) {
-	return sock ? sock->socket_node : NULL;
+static inline socket_node_t *get_sock_node_by_socket(struct sock *sk) {
+	return sk ? sk->sock_node : NULL;
 }
 
 size_t sr_get_all_sockets_count(void) {

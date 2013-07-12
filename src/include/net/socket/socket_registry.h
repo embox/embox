@@ -9,8 +9,8 @@
 #ifndef NET_SOCKET_SOCKET_REGISTRY_H_
 #define NET_SOCKET_SOCKET_REGISTRY_H_
 
-#include <net/socket/socket.h>
 #include <util/dlist.h>
+#include <net/sock.h>
 
 enum socket_connection_state_t {UNCONNECTED,
  CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING, SOCK_CONN_STATE_MAX};
@@ -21,7 +21,7 @@ enum socket_connection_state_t {UNCONNECTED,
  */
 typedef struct socket_node{
 	struct dlist_head link;
-	struct socket *sock;
+	struct sock *sk;
 	struct sockaddr saddr;
 	struct sockaddr daddr;
 	enum socket_connection_state_t socket_connection_state;
@@ -30,14 +30,14 @@ typedef struct socket_node{
 /* TODO: add descriptions */
 
 /* inner functions for address binding maintance */
-extern int sr_add_socket_to_registry(struct socket *sock);
-extern int sr_remove_socket_from_registry(struct socket *sock);
-extern int sr_set_saddr(struct socket *sock, const struct sockaddr *addr);
-extern void sr_remove_saddr(struct socket *sock);
-extern bool sr_socket_exists(struct socket *sock);
+extern int sr_add_socket_to_registry(struct sock *sk);
+extern int sr_remove_socket_from_registry(struct sock *sk);
+extern int sr_set_saddr(struct sock *sk, const struct sockaddr *addr);
+extern void sr_remove_saddr(struct sock *sk);
+extern bool sr_socket_exists(struct sock *sk);
 
-extern bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr);
-extern bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr);
+extern bool sr_is_saddr_free(struct sock *sk, struct sockaddr *addr);
+extern bool sr_is_daddr_free(struct sock *sk, struct sockaddr *addr);
 
 /**
  * @brief This structure is used to provide access to the opened sockets from common applications
@@ -53,25 +53,25 @@ extern void sr_free_all_sockets_array(struct sr_external_socket_array_node *arra
 extern size_t sr_get_all_sockets_count(void);
 
 /* socket information node connection info methods. could be excess */
-static inline void sk_set_connection_state(struct socket *sock, enum socket_connection_state_t state){
-	sock->socket_node->socket_connection_state = state;
+static inline void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state){
+	sk->sock_node->socket_connection_state = state;
 }
 
-static inline enum socket_connection_state_t sk_get_connection_state(struct socket *sock){
-	return sock->socket_node->socket_connection_state;
+static inline enum socket_connection_state_t sk_get_connection_state(struct sock *sk){
+	return sk->sock_node->socket_connection_state;
 }
 
-static inline int sk_is_connected(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == CONNECTED
-			|| sock->socket_node->socket_connection_state == ESTABLISHED);
+static inline int sk_is_connected(struct sock *sk){
+	return (sk->sock_node->socket_connection_state == CONNECTED
+			|| sk->sock_node->socket_connection_state == ESTABLISHED);
 }
 
-static inline int sk_is_bound(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == BOUND);
+static inline int sk_is_bound(struct sock *sk){
+	return (sk->sock_node->socket_connection_state == BOUND);
 }
 
-static inline int sk_is_listening(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == LISTENING);
+static inline int sk_is_listening(struct sock *sk){
+	return (sk->sock_node->socket_connection_state == LISTENING);
 }
 
 /**

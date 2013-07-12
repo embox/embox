@@ -11,11 +11,9 @@
 #define NET_SOCKET_KSOCKET_H_
 
 #include <sys/socket.h>
-#include <net/socket/socket.h>
 #include <net/sock.h>
 #include <stddef.h>
 
-struct socket;
 struct sock;
 struct msghdr;
 
@@ -39,7 +37,7 @@ struct msghdr;
  * errno for the error reason.
  */
 extern int ksocket(int family, int type, int protocol,
-		struct socket **out_sock);
+		struct sock **out_sk);
 
 /**
  * Close socket method in kernel layer.
@@ -50,7 +48,7 @@ extern int ksocket(int family, int type, int protocol,
  * @return 0 on success, otherwise result equal to minus posix
  * errno for the error reason.
  */
-extern int ksocket_close(struct socket *sock);
+extern int ksocket_close(struct sock *sk);
 
 /**
  * Bind socket to a local address.
@@ -65,7 +63,7 @@ extern int ksocket_close(struct socket *sock);
  * @param addrlen - size, in bytes, of the address structure pointed to by addr.
  * @return 0 on success, minus posix errno indicating the reason
  */
-extern int kbind(struct socket *sock, const struct sockaddr *addr,
+extern int kbind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen);
 
 /**
@@ -79,7 +77,7 @@ extern int kbind(struct socket *sock, const struct sockaddr *addr,
  * @param flags
  * @return 0 on success, minus posix errno on failure
  */
-extern int kconnect(struct socket *sock, const struct sockaddr *addr,
+extern int kconnect(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen, int flags);
 
 /**
@@ -94,7 +92,7 @@ extern int kconnect(struct socket *sock, const struct sockaddr *addr,
  * @return 0 on success, minus posix errno indicating the reason
  * of an error on a failure
  */
-extern int klisten(struct socket *sock, int backlog);
+extern int klisten(struct sock *sk, int backlog);
 
 /**
  * Accept a connection on a connection-mode socket.
@@ -112,8 +110,8 @@ extern int klisten(struct socket *sock, int backlog);
  *                       if it is available
  * @return 0 on success, minus posix errno on failure
  */
-extern int kaccept(struct socket *sock, struct sockaddr *addr,
-		socklen_t *addrlen, int flags, struct socket **out_sock);
+extern int kaccept(struct sock *sk, struct sockaddr *addr,
+		socklen_t *addrlen, int flags, struct sock **out_sk);
 
 /**
  * Send a message on a socket.
@@ -124,7 +122,7 @@ extern int kaccept(struct socket *sock, struct sockaddr *addr,
  * @return error code
  * NOTE: msg not const
  */
-extern int ksendmsg(struct socket *sock, struct msghdr *msg,
+extern int ksendmsg(struct sock *sk, struct msghdr *msg,
 		int flags);
 
 /**
@@ -136,33 +134,33 @@ extern int ksendmsg(struct socket *sock, struct msghdr *msg,
  * @param flags
  * @return error code
  */
-extern int krecvmsg(struct socket *sock, struct msghdr *msg,
+extern int krecvmsg(struct sock *sk, struct msghdr *msg,
 		int flags);
 
-extern int kshutdown(struct socket *sock, int how);
+extern int kshutdown(struct sock *sk, int how);
 
 /**
  * Get socket name.
  */
-extern int kgetsockname(struct socket *sock, struct sockaddr *addr,
+extern int kgetsockname(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen);
 
 /**
  * Get name of connected peer socket.
  */
-extern int kgetpeername(struct socket *sock, struct sockaddr *addr,
+extern int kgetpeername(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen);
 
 /**
  * Get socket options.
  */
-extern int kgetsockopt(struct socket *sock, int level, int optname,
+extern int kgetsockopt(struct sock *sk, int level, int optname,
 		void *optval, socklen_t *optlen);
 
 /**
  * Set socket options.
  */
-extern int ksetsockopt(struct socket *sock, int level, int optname,
+extern int ksetsockopt(struct sock *sk, int level, int optname,
 		const void *optval, socklen_t optlen);
 
 #endif /* NET_SOCKET_KSOCKET_H_ */
