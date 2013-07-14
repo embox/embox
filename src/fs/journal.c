@@ -118,7 +118,7 @@ int journal_stop(handle_t *handle) {
 }
 
 int journal_commit_transaction(journal_t *jp) {
-    transaction_t *t;
+    transaction_t *t = NULL;
 
     /* We must have an active transaction. */
     if (jp->j_running_transaction == NULL) {
