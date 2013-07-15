@@ -10,6 +10,7 @@
 #define TASK_H_
 
 #include <linux/list.h>
+#include <util/dlist.h>
 #include <util/array.h>
 
 #include <sys/cdefs.h>
@@ -43,7 +44,8 @@ struct task {
 	struct list_head children; /**< @brief Task's children */
 	struct list_head link; /**< @brief task's list link (handle task in lists) */
 
-	struct list_head threads; /**< @brief Threads which have task pointer this task */
+	//struct list_head threads; /**< @brief Threads which have task pointer this task */
+	struct dlist_head threads; /**< @brief Threads which have task pointer this task */
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 

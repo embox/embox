@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include <linux/list.h>
+
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>

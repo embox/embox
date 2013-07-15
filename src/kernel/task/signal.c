@@ -9,23 +9,24 @@
  */
 
 #include <math.h>
+#include <util/dlist.h>
+#include <util/array.h>
+
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
 #include <kernel/task/std_signal.h>
 #include <kernel/sched.h>
+
 #include "common.h"
-#include <util/array.h>
+
 
 ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
-#if 0
-extern void context_enter_frame(struct context *ctx, void *pc);
-extern void context_push_stack(struct context *ctx, void *arg, size_t n);
-#endif
+
 int task_some_thd_run(struct task *task) {
-	struct thread *th;
+	struct thread *th, *tmp;
 	int res = -1;
 
-	list_for_each_entry(th, &task->threads, task_link) {
+	dlist_foreach_entry(th, tmp, &task->threads, task_link) {
 		if ((res = sched_tryrun(th)) != -1) {
 			break;
 		}

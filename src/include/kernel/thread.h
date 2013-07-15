@@ -231,8 +231,9 @@ extern int thread_launch(struct thread *thread);
 
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
-
+#if 0
 extern thread_priority_t thread_get_priority(struct thread *thread);
+#endif
 
 extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
 

@@ -174,7 +174,8 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 
 static void thread_set_task(struct thread *t, struct task *tsk) {
 	t->task = tsk;
-	list_move_tail(&t->task_link, &tsk->threads);
+	//list_move_tail(&t->task_link, &tsk->threads);
+	dlist_move(&t->task_link, &tsk->threads);
 }
 
 static int task_init_parent(struct task *task, struct task *parent) {
@@ -183,7 +184,8 @@ static int task_init_parent(struct task *task, struct task *parent) {
 
 	task->parent = parent;
 
-	INIT_LIST_HEAD(&task->threads);
+	//INIT_LIST_HEAD(&task->threads);
+	dlist_init(&task->threads);
 
 	task_resource_foreach(res_desc) {
 		if (res_desc->inherit) {
@@ -240,7 +242,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		list_for_each_entry_safe(thread, next, &task->threads, task_link) {
+		//list_for_each_entry_safe(thread, next, &task->threads, task_link) {
+		dlist_foreach_entry(thread, next, &task->threads, task_link) {
 			if (thread == task->main_thread) {
 				continue;
 			}
@@ -296,9 +299,10 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 			return 0;
 		}
 
-		list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
+		//list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
+		dlist_foreach_entry(thread, tmp, &tsk->threads, task_link) {
 			sched_set_priority(thread, get_sched_priority(new_priority,
-						thread->priority));
+						thread_priority_get(thread)));
 		}
 
 		tsk->priority = new_priority;

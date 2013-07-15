@@ -146,7 +146,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	if (tsk) { //TODO may be if tsk == NULL it's an error
 		t->task = tsk;
-		list_add(&t->task_link, &tsk->threads);
+		dlist_add_next(dlist_head_init(&t->task_link), &tsk->threads);
 	}
 
 	t->state = thread_state_init();
@@ -159,7 +159,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	 * thread_set_priority () function
 	 */
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		priority = thread_self()->priority;
+		priority = thread_priority_get(thread_self());
 	} else {
 		priority = THREAD_PRIORITY_DEFAULT;
 	}
@@ -172,7 +172,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 		priority++;
 	}
 
-	t->priority = priority;
+	//t->priority = priority;
 
 	thread_priority_set(t, priority);
 
@@ -199,7 +199,7 @@ static void thread_context_init(struct thread *t) {
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	struct thread *thread;
+	struct thread *thread, * tmp;
 	int count = 0;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
@@ -207,7 +207,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 	{
 		/* Counting number of threads in task. XXX: not the best way */
-		list_for_each_entry(thread, &task->threads, task_link) {
+		dlist_foreach_entry(thread, tmp, &task->threads, task_link) {
+//		list_for_each_entry(thread, &task->threads, task_link) {
 			count++;
 		}
 
@@ -353,12 +354,13 @@ int thread_set_priority(struct thread *t, thread_priority_t new_priority) {
 
 	return 0;
 }
-
+#if 0
 thread_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
 	return t->priority;
 }
+#endif
 
 clock_t thread_get_running_time(struct thread *thread) {
 	sched_lock();
@@ -404,7 +406,7 @@ static void thread_delete(struct thread *t) {
 		zombie = NULL;
 	}
 
-	list_del(&t->task_link);
+	dlist_del(&t->task_link);
 	dlist_del(&t->thread_link);
 
 	if (t == current) {
