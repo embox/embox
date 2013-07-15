@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>
