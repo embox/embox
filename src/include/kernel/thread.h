@@ -18,7 +18,6 @@
 #include <framework/mod/options.h>
 
 #include <kernel/thread/current.h>
-//#include <kernel/sched.h>
 
 #include <util/dlist.h>
 #include <kernel/thread/types.h>

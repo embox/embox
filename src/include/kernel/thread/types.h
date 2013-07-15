@@ -25,44 +25,43 @@ typedef unsigned int __thread_state_t;
 #include <kernel/thread/thread_priority.h>
 #include <kernel/thread/wait_data.h>
 
-
+struct thread_priority {
+	sched_priority_t   initial_priority; /**< Scheduling priority. */
+	sched_priority_t   sched_priority;   /**< Current scheduling priority. */
+};
 
 struct runq;
 struct sleepq;
 
 struct thread {
+	__thread_state_t   state;         /**< Current state. */
 
-	__thread_state_t  state;         /**< Current state. */
+	struct context     context;       /**< Architecture-dependent CPU state. */
 
-	struct context    context;       /**< Architecture-dependent CPU state. */
-
-	void           *(*run)(void *);  /**< Start routine. */
+	void            *(*run)(void *);  /**< Start routine. */
 	union {
-		void         *run_arg;       /**< Argument to pass to start routine. */
-		void         *run_ret;       /**< Return value of the routine. */
-		void         *join_ret;      /**< Exit value of a join target. */
+		void          *run_arg;       /**< Argument to pass to start routine. */
+		void          *run_ret;       /**< Return value of the routine. */
+		void          *join_ret;      /**< Exit value of a join target. */
 	} /* unnamed */;
-	void             *stack;         /**< Allocated thread stack buffer. */
-	size_t            stack_sz;      /**< Stack size. */
+	void              *stack;         /**< Allocated thread stack buffer. */
+	size_t             stack_sz;      /**< Stack size. */
 
-	struct sched_strategy_data sched;/**< Scheduler-private data. */
-
-	__thread_priority_t priority;    /**< Pure thread priority excluding priority of the task */
-
-	sched_priority_t initial_priority; /**< Scheduling priority. */
-	sched_priority_t sched_priority; /**< Current scheduling priority. */
 
 	union {
-		struct runq      *runq;      /**< For running/ready state. */
-		struct sleepq    *sleepq;    /**< For sleeping state. */
+		struct runq    *runq;      /**< For running/ready state. */
+		struct sleepq  *sleepq;    /**< For sleeping state. */
 	} /* unnamed */;
-
 
 	__thread_id_t      id;            /**< Unique identifier. */
-	struct dlist_head   thread_link;   /**< Linkage on all threads. */
 
-	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
+	struct dlist_head  thread_link;   /**< Linkage on all threads. */
 
+#if 1
+	sched_priority_t   initial_priority; /**< Scheduling priority. */
+	sched_priority_t   sched_priority;   /**< Current scheduling priority. */
+#endif
+	struct thread_priority thread_priority;
 
 	struct thread     *joined;        /**< Thread which joined to this. */
 
@@ -71,8 +70,14 @@ struct thread {
 	struct task       *task;          /**< Task belong to. */
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
+	__thread_priority_t priority;    /**< Pure thread priority excluding priority of the task */
+
 	clock_t            running_time;  /**< Running time of thread in clocks. */
 	clock_t            last_sync;     /**< Last recalculation of running time. */
+
+	struct sched_strategy_data sched;/**< Scheduler-private data. */
+
+	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
 
 	unsigned int       affinity;      /**< CPU affinity of the thread. */
 };

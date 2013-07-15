@@ -38,7 +38,7 @@ void mutex_init(struct mutex *m) {
 }
 
 void mutex_lock(struct mutex *m) {
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 
 	assert(m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
@@ -61,7 +61,7 @@ void mutex_lock(struct mutex *m) {
 
 int mutex_trylock(struct mutex *m) {
 	int ret;
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -99,7 +99,7 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 }
 
 void mutex_unlock(struct mutex *m) {
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));

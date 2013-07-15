@@ -17,12 +17,6 @@ module simple_queue extends api {
 	depends queue.api
 }
 
-module fixedtime extends api {
-	source "fixedtime_sched.c", "fixedtime_sched.h"
-
-	option number msec_priority_multiplier = 1
-}
-
 
 /* Meta modules for compatibility. Remove them? */
 module priority_based {

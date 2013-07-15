@@ -23,11 +23,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <err.h>
-
 #include <embox/unit.h>
 
-#include <util/math.h> /*clamp */
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
@@ -44,7 +41,6 @@
 
 EMBOX_UNIT_INIT(thread_core_init);
 
-//struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 DLIST_DEFINE(__thread_list);
 
 static int id_counter;
@@ -109,7 +105,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	}
 
 	sched_lock(); /* lock scheduling */
-
+		/*allocate memory, setup thread_id and insert to global thread's list*/
 		if (!(t = thread_new())) {
 			res = -ENOMEM;
 			goto out;
@@ -176,7 +172,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 		priority++;
 	}
 
-	t->priority = priority; //clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->priority = priority;
 
 	t->initial_priority = get_sched_priority(t->task->priority, t->priority);
 	t->sched_priority = t->initial_priority;

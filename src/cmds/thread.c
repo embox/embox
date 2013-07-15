@@ -54,7 +54,7 @@ static void print_stat(void) {
 			printf(" %4d%c %4d  %8d %18s %9lds\n",
 				thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
 				thread->task->tid,
-				thread->priority,
+				thread->sched_priority,
 				state,
 				thread_get_running_time(thread)/CLOCKS_PER_SEC);
 		}
