@@ -23,6 +23,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <net/netfilter.h>
 
 #include <hal/reg.h>
 
@@ -151,6 +152,11 @@ static void e1000_rx(struct net_device *dev) {
 			break;
 		}
 
+		if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
+					ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
+			goto drop_pack;
+		}
+
 		if ((skb = skb_alloc(len))) {
 			memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
 			skb->dev = dev;
@@ -181,6 +187,7 @@ static void e1000_rx(struct net_device *dev) {
 			/*stat->rx_dropped++;*/
 		}
 
+drop_pack:
 		tail = cur;
 
 		++cur;

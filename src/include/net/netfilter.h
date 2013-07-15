@@ -49,6 +49,9 @@ enum nf_proto {
 struct nf_rule {
 	struct list_link lnk;
 	enum nf_target target;
+	char hwaddr_dst[ETH_ALEN]; int not_hwaddr_dst;
+	char hwaddr_src[ETH_ALEN]; int not_hwaddr_src;
+	size_t hwaddr_len;
 	struct in_addr saddr; int not_saddr;
 	struct in_addr daddr; int not_daddr;
 	enum nf_proto proto; int not_proto;
@@ -108,4 +111,18 @@ extern int nf_test_rule(int chain, const struct nf_rule *test_r);
 extern int nf_test_skb(int chain, enum nf_target target,
 		const struct sk_buff *test_skb);
 
+/**
+ * @brief Perform netfitler test on hw addresses before any parsing has occured.
+ * Intended to be called from irq context before skb allocation, etc.
+ *
+ * @param chain Chain packet to pass
+ * @param target Target action of rule
+ * @param hwaddr_dst HW address of destination
+ * @param hwaddr_src HW address of source
+ * @param hwaddr_len HW address length
+ *
+ * @return
+ */
+extern int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
+		const void *hwaddr_src, size_t hwaddr_len);
 #endif /* NET_NETFILTER_H_ */
