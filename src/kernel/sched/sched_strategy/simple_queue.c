@@ -72,8 +72,9 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 int runq_start(struct runq *rq, struct thread *t) {
 	struct thread *current = thread_self();
 
-	assert(rq && t);
-	assert(thread_self() != t);
+	assert(rq);
+	assert(t);
+	assert(current != t);
 	assert(!thread_state_started(t->state));
 
 	t->runq = rq;
@@ -81,7 +82,7 @@ int runq_start(struct runq *rq, struct thread *t) {
 
 	runq_queue_insert(&rq->queue, t);
 
-	return t->sched_priority > current->sched_priority;
+	return thread_priority_get(t) > thread_priority_get(current);
 }
 
 int runq_finish(struct runq *rq, struct thread *t) {
@@ -110,18 +111,8 @@ int runq_wake_thread(struct runq *rq, struct thread *t) {
 		runq_queue_insert(&rq->queue, t);
 	}
 
-	return t->sched_priority > current->sched_priority;
+	return thread_priority_get(t) > thread_priority_get(current);
 }
-
-#if 0
-void sleepq_finish(struct sleepq *sq, struct thread *t) {
-    assert(thread_state_sleeping(t->state));
-
-    sleepq_queue_remove(&sq->queue, t);
-    t->state = thread_state_do_exit(t->state);
-    t->sleepq = NULL;
-}
-#endif
 
 void runq_wait(struct runq *rq) {
 	struct thread *current = thread_self();
@@ -135,18 +126,18 @@ void runq_wait(struct runq *rq) {
 int runq_change_priority(struct runq *rq, struct thread *t, sched_priority_t new_priority) {
 	struct thread *current = thread_self();
 
-	assert(rq && t);
+	assert(rq);
+	assert(t);
 
-	if (current == t) {
-		t->sched_priority = new_priority;
-	} else {
+	thread_priority_set(t, new_priority);
+
+	if (current != t) {
 		/* FIXME: */
 		runq_queue_remove(&rq->queue, t);
-		t->sched_priority = new_priority;
 		runq_queue_insert(&rq->queue, t);
 	}
 
-	return new_priority > current->sched_priority;
+	return new_priority > thread_priority_get(current);
 }
 
 struct thread *runq_switch(struct runq *rq) {

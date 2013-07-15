@@ -12,12 +12,20 @@
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/task.h>
 
+/* return -1 if priority t1 less than t2
+ * 0 if them equals
+ * 1 if priority t1 more than t2
+ */
 static inline int thread_prio_comparator(struct prioq_link *first,
 		struct prioq_link *second) {
 	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
 	struct thread *t2 = prioq_element(second, struct thread, sched.pq_link);
-	return t1->sched_priority < t2->sched_priority ? -1
-			: t1->sched_priority > t2->sched_priority;
+	__thread_priority_t p1, p2;
+
+	p1 = thread_priority_get(t1);
+	p2 = thread_priority_get(t2);
+
+	return p1 < p2 ? (-1) : (p1 > p2);
 }
 
 void sched_strategy_init(struct sched_strategy_data *s) {

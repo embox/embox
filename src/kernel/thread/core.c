@@ -174,8 +174,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	t->priority = priority;
 
-	t->initial_priority = get_sched_priority(t->task->priority, t->priority);
-	t->sched_priority = t->initial_priority;
+	thread_priority_set(t, priority);
 
 	sched_strategy_init(&t->sched);
 
@@ -458,8 +457,9 @@ struct thread *thread_idle_init(void) {
 	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
 	thread_context_init(idle);
 
-	idle->priority = THREAD_PRIORITY_MIN;
-	idle->sched_priority = SCHED_PRIORITY_MIN;
+//	idle->priority = THREAD_PRIORITY_MIN;
+//	idle->sched_priority = SCHED_PRIORITY_MIN;
+	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
 	cpu_set_idle_thread(idle);
 
@@ -484,9 +484,10 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	thread_init(thread, THREAD_FLAG_KTASK, idle_run, NULL);
 
 	/* Priority setting up */
-	thread->priority = priority;
-	thread->sched_priority = get_sched_priority(thread->task->priority,
-			thread->priority);
+//	thread->priority = priority;
+//	thread->sched_priority = get_sched_priority(thread->task->priority,
+//			thread->priority);
+	thread_priority_set(thread, priority);
 
 	return thread;
 }

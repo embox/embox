@@ -25,10 +25,6 @@ typedef unsigned int __thread_state_t;
 #include <kernel/thread/thread_priority.h>
 #include <kernel/thread/wait_data.h>
 
-struct thread_priority {
-	sched_priority_t   initial_priority; /**< Scheduling priority. */
-	sched_priority_t   sched_priority;   /**< Current scheduling priority. */
-};
 
 struct runq;
 struct sleepq;
@@ -57,7 +53,7 @@ struct thread {
 
 	struct dlist_head  thread_link;   /**< Linkage on all threads. */
 
-#if 1
+#if 0
 	sched_priority_t   initial_priority; /**< Scheduling priority. */
 	sched_priority_t   sched_priority;   /**< Current scheduling priority. */
 #endif

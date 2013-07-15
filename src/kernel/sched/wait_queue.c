@@ -75,7 +75,7 @@ void wait_queue_notify(struct wait_queue *wait_queue) {
 	{
 		dlist_foreach_entry(link, next, &wait_queue->list, link) {
 			if (thread == NULL ||
-					link->thread->sched_priority > thread->sched_priority) {
+					thread_priority_get(link->thread) > thread_priority_get(thread)) {
 				thread = link->thread;
 			}
 		}

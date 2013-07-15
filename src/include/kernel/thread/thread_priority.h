@@ -29,4 +29,15 @@
 
 typedef short __thread_priority_t;
 
+
+struct thread_priority {
+	__thread_priority_t   initial_priority; /**< Scheduling priority. */
+	__thread_priority_t   sched_priority;   /**< Current scheduling priority. */
+};
+
+extern int thread_priority_set(struct thread *, __thread_priority_t new_priority);
+extern __thread_priority_t thread_priority_get(struct thread *);
+extern __thread_priority_t thread_priority_inherit(struct thread *t, __thread_priority_t priority);
+extern __thread_priority_t thread_priority_reverse(struct thread *t);
+
 #endif /* KERNEL_THREAD_PRIORITY_H_ */
