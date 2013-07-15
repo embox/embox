@@ -193,6 +193,15 @@ static int scan(char **in, const char *fmt, va_list args) {
 				widht = widht * 10 + (*fmt++ - '0');
 			}
 
+			/* FIXME skip length specifiers */
+			switch (*fmt) {
+			case 'l': if (*++fmt == 'l') ++fmt; break;
+			case 'h': if (*++fmt == 'h') ++fmt; break;
+			case 'z': ++fmt; break;
+			}
+			if (*fmt == '\0')
+				break;
+
 			switch (*fmt) {
 			case 's': {
 				char *dst = va_arg(args, char*);
