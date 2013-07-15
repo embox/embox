@@ -80,6 +80,9 @@ static void print_rule(const struct nf_rule *r) {
 			printf("%hu", (unsigned short int)ntohs(r->dport));
 		}
 	}
+	if (r->limit != NF_LIMIT_DEFAULT) {
+		printf(" limit:%zu", r->limit);
+	}
 	printf("\n");
 }
 
@@ -233,6 +236,18 @@ after_rule_num:
 			rule.target = nf_target_get_by_name(argv[ind]);
 			if (rule.target == NF_TARGET_UNKNOWN) {
 				printf("iptables: unknown target: `%s'\n", argv[ind]);
+				return -EINVAL;
+			}
+		}
+		else if ((0 == strcmp(argv[ind], "-l"))
+				|| (0 == strcmp(argv[ind], "--limit"))) {
+			if (++ind == argc) {
+				printf("iptables: no limit specified\n");
+				return -EINVAL;
+			}
+			if (1 != sscanf(argv[ind], "%zu", &rule.limit)) {
+				printf("iptables: invalid limit number: `%s'\n",
+						argv[ind]);
 				return -EINVAL;
 			}
 		}

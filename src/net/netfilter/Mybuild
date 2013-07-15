@@ -3,6 +3,7 @@ package embox.net
 module netfilter {
 	source "netfilter.c"
 	option number amount_rules=10
+	option number limit_time=1000
 
 	depends embox.mem.pool
 	depends embox.util.List

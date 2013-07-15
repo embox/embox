@@ -15,16 +15,26 @@
 #include <net/l3/ipv4/ip.h>
 #include <string.h>
 #include <stddef.h>
+#include <embox/unit.h>
+#include <kernel/time/timer.h>
 
 #include <net/l4/udp.h>
 #include <net/l4/tcp.h>
 
 #define MODOPS_NETFILTER_AMOUNT_RULES  OPTION_GET(NUMBER, amount_rules)
+#define MODOPS_NETFILTER_LIMIT_TIME  OPTION_GET(NUMBER, limit_time)
+
+EMBOX_UNIT_INIT(netfilter_init);
 
 /**
  * Storage of nf_rule structure
  */
 POOL_DEF(nf_rule_pool, struct nf_rule, MODOPS_NETFILTER_AMOUNT_RULES);
+
+/**
+ * Netfilter timer
+ */
+static struct sys_timer nf_tmr;
 
 /**
  * Default chains of rules
@@ -44,6 +54,14 @@ static void free_rule(struct nf_rule *r) {
 	assert(r != NULL);
 	list_unlink_link(&r->lnk);
 	pool_free(&nf_rule_pool, r);
+}
+
+static void reset_truly(struct list *rules) {
+	struct nf_rule *r;
+
+	list_foreach(r, rules, lnk) {
+		r->truly = 0;
+	}
 }
 
 int nf_chain_get_by_name(const char *chain_name) {
@@ -196,6 +214,7 @@ int nf_rule_init(struct nf_rule *r) {
 	list_link_init(&r->lnk);
 	r->not_hwaddr_dst = r->not_hwaddr_src = r->not_saddr = r->not_daddr =
 		r->not_sport = r->not_dport = 1;
+	r->limit = NF_LIMIT_DEFAULT;
 
 	return 0;
 }
@@ -319,7 +338,8 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
 				&& NF_TEST_NOT_FIELD(test_r, r, sport)
 				&& NF_TEST_NOT_FIELD(test_r, r, dport)) {
-			return test_r->target != r->target;
+			return test_r->target != r->target ? 1
+					: ++r->truly, r->truly > r->limit;
 		}
 	}
 
@@ -376,3 +396,23 @@ int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
 	return nf_test_rule(chain, &rule);
 }
 
+static void nf_timer_handler(struct sys_timer *tmr, void *param) {
+	(void)tmr;
+	(void)param;
+
+	reset_truly(&nf_input_rules);
+	reset_truly(&nf_forward_rules);
+	reset_truly(&nf_output_rules);
+}
+
+static int netfilter_init(void) {
+	int ret;
+
+	ret = timer_init(&nf_tmr, TIMER_PERIODIC,
+			MODOPS_NETFILTER_LIMIT_TIME, nf_timer_handler, NULL);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
+}
