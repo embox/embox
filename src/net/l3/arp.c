@@ -153,10 +153,10 @@ int arp_resolve(struct sk_buff *skb) {
 	}
 
 	/* someone on the net */
-	ret = neighbour_get_hardware_address((const unsigned char *)&daddr,
-			sizeof daddr, skb->dev, sizeof skb->mac.ethh->h_dest,
-			skb->mac.ethh->h_dest, NULL);
-	if (ret != ENOERR) {
+	ret = neighbour_get_haddr(ETH_P_IP, &daddr, skb->dev,
+			skb->dev->type, sizeof skb->mac.ethh->h_dest,
+			skb->mac.ethh->h_dest);
+	if (ret != 0) {
 		return ret;
 	}
 
@@ -224,8 +224,9 @@ static int arp_hnd_reply(struct arpghdr *arph, struct arpg_stuff *arps,
 	assert(arps != NULL);
 
 	/* save destination hardware and protocol addresses */
-	ret = neighbour_add(arps->sha, arph->ha_len, arps->spa, arph->pa_len,
-			dev, 0);
+	ret = neighbour_add(ntohs(arph->pa_space), arps->spa,
+			arph->pa_len, dev, ntohs(arph->ha_space), arps->sha,
+			arph->ha_len, 0);
 	arp_queue_process(skb);
 	skb_free(skb);
 	return ret;

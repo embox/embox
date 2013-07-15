@@ -155,8 +155,8 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 
 	/* get dest addresses */
 	memcpy(&dst_haddr[0], rarps->tha, haddr_len);
-	ret = neighbour_get_protocol_address(&dst_haddr[0], haddr_len,
-			dev, paddr_len, &dst_paddr[0], NULL);
+	ret = neighbour_get_paddr(ntohs(rarph->ha_space), &dst_haddr[0],
+			dev, ntohs(rarph->pa_space), paddr_len, &dst_paddr[0]);
 	if (ret != 0) {
 		skb_free(skb);
 		return ret;
@@ -186,8 +186,9 @@ static int rarp_hnd_reply(struct arpghdr *rarph, struct arpg_stuff *rarps,
 	assert(rarps != NULL);
 
 	/* save destination hardware and protocol addresses */
-	ret = neighbour_add(rarps->tha, rarph->ha_len, rarps->tpa, rarph->pa_len,
-			dev, 0);
+	ret = neighbour_add(ntohs(rarph->pa_space), rarps->tpa,
+			rarph->pa_len, dev, ntohs(rarph->ha_space),
+			rarps->tha, rarph->ha_len, 0);
 	skb_free(skb);
 	return ret;
 }

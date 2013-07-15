@@ -22,7 +22,6 @@
 #include <framework/net/proto/api.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/netfilter.h>
-#include <net/neighbour.h>
 #include <net/if_ether.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
@@ -139,12 +138,6 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		skb = complete_skb;
 		iph = ip_hdr(complete_skb);
 	}
-
-	/* neighbour can be remembered here to prevent discovery on reply
- 	 * (if any)
-	 */
-	neighbour_add(skb->mac.ethh->h_source, ETH_ALEN,
-		(void *) &skb->nh.iph->saddr, IP_ADDR_LEN, skb->dev, 0);
 
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */

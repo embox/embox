@@ -94,13 +94,13 @@ static int exec(int argc, char **argv) {
 	printf("RARPING %s from %s(%s) %s\n", &tha_str[0], &sha_str[0],
 		&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
-		neighbour_del(&tha[0], hln, NULL, 0, in_dev->dev);
+		neighbour_clean(in_dev->dev);
 		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, NULL, NULL,
 			&tha[0], NULL, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
-		ret = neighbour_get_protocol_address(&tha[0], hln, in_dev->dev,
-				pln, &tpa[0], NULL);
-		if (ret == ENOERR) {
+		ret = neighbour_get_paddr(ARPG_HRD_ETHERNET, &tha[0], in_dev->dev,
+				ETH_P_IP, pln, &tpa[0]);
+		if (ret == 0) {
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
 			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
 			cnt_resp++;

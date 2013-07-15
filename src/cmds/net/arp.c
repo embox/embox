@@ -18,6 +18,7 @@
 #include <net/if_ether.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
+#include <net/if_arp.h>
 
 
 
@@ -33,7 +34,12 @@ static int print_arp_entity(const struct neighbour *n,
 	unsigned char mac[18];
 
 	if ((in_dev->dev == n->dev) || (in_dev == NULL)) {
-		macaddr_print(mac, &n->haddr[0]);
+		if (!n->incomplete) {
+			macaddr_print(mac, &n->haddr[0]);
+		}
+		else {
+			sprintf((char *)mac, "%s", "(incomplete)");
+		}
 		addr.s_addr = *(in_addr_t *)&n->paddr[0];
 		printf("%-15s %-6s  %-17s %-5s %-5s\n", inet_ntoa(addr),
 			(n->dev->type == ARPG_HRD_ETHERNET) ? "ether" : "",
@@ -45,7 +51,7 @@ static int print_arp_entity(const struct neighbour *n,
 
 static void print_arp_cache(struct in_device *in_dev) {
 	printf("Address         HWtype  HWaddress         Flags Iface\n");
-	neighbour_foreach((neighbour_foreach_handler_t)&print_arp_entity, in_dev);
+	neighbour_foreach((neighbour_foreach_ft)&print_arp_entity, in_dev);
 }
 
 static int exec(int argc, char **argv) {
@@ -67,8 +73,7 @@ static int exec(int argc, char **argv) {
 				return -EINVAL;
 			}
 			//TODO checked interface and use default
-			return neighbour_del(NULL, 0, (const unsigned char *)&addr,
-					sizeof addr, ifdev->dev);
+			return neighbour_del(ETH_P_IP, &addr, ifdev->dev);
 		case 's':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
@@ -88,9 +93,8 @@ static int exec(int argc, char **argv) {
 				return -EINVAL;
 			}
 			//TODO checked interface and use default
-			return neighbour_add(&hwaddr[0], sizeof hwaddr,
-				(const unsigned char *)&addr, sizeof addr, ifdev->dev,
-				NEIGHBOUR_FLAG_PERMANENT);
+			return neighbour_add(ETH_P_IP, &addr, sizeof addr, ifdev->dev,
+					ARPG_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
 		case 'i':
 			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);

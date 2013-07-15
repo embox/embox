@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of ARP Cache
+ * @brief
  *
  * @date 12.08.11
  * @author Ilia Vaprol
@@ -13,246 +13,307 @@
 #include <string.h>
 #include <util/dlist.h>
 #include <time.h>
+#include <util/list.h>
+#include <util/array.h>
+#include <sys/time.h>
+#include <kernel/time/ktime.h>
 
 #include <framework/mod/options.h>
-#define MODOPS_NEIGHBOUR_QUANTITY OPTION_GET(NUMBER, neighbour_quantity)
+
+#define MODOPS_NEIGHBOUR_AMOUNT OPTION_GET(NUMBER, neighbour_amount)
 #define MODOPS_NEIGHBOUR_EXPIRE OPTION_GET(NUMBER, neighbour_expire)
 
-struct neighbour_head {
-	struct dlist_head lnk;
-	time_t expire;
-	struct neighbour n;
-};
+POOL_DEF(neighbour_pool, struct neighbour, MODOPS_NEIGHBOUR_AMOUNT);
+static LIST_DEF(neighbour_list);
 
-POOL_DEF(neighbour_pool, struct neighbour_head, MODOPS_NEIGHBOUR_QUANTITY); /* Pool of neighbour entities */
-static DLIST_DEFINE(neighbour_list); /* List of valid entity */
+#define NEIGHBOUR_CHECK_EXPIRE(nbr, now)                       \
+	do {                                                       \
+		if (timercmp(now, &nbr->expire, >=)                    \
+				&& !(nbr->flags & NEIGHBOUR_FLAG_PERMANENT)) { \
+			nbr_free(nbr);                                     \
+			continue;                                          \
+		}                                                      \
+	} while (0)
 
-#define NEIGHBOUR_CHECK_EXPIRE(neighbour_head, current_time)            \
-	if ((neighbour_head->expire < current_time)                         \
-			&& !(neighbour_head->n.flags & NEIGHBOUR_FLAG_PERMANENT)) { \
-		dlist_del(&neighbour_head->lnk);                                \
-		pool_free(&neighbour_pool, neighbour_head);                     \
-		continue;                                                       \
+static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
+	assert(nbr != NULL);
+
+	nbr->incomplete = haddr == NULL;
+	if (haddr != NULL) {
+		memcpy(&nbr->haddr[0], haddr, nbr->hlen);
 	}
+}
 
-static struct neighbour_head * neighbour_get(const unsigned char *haddr,
-		unsigned char hlen, const unsigned char *paddr, unsigned char plen,
-		const struct net_device *dev, time_t current_time) {
-	struct neighbour_head *nh, *tmp;
+static void nbr_set_expire(struct neighbour *nbr) {
+	struct timeval now;
 
-	assert(((haddr != NULL) && (hlen != 0)) || ((haddr == NULL) && (hlen == 0)));
-	assert(((paddr != NULL) && (plen != 0)) || ((paddr == NULL) && (plen == 0)));
-	assert((haddr != NULL) || (paddr != NULL));
+	assert(nbr != NULL);
 
-	/* lookup entity with same hardware addr (if haddr not null),
-	 * same protocol addr (if paddr not null) and the same
-	 * device (if dev not null) */
-	dlist_foreach_entry(nh, tmp, &neighbour_list, lnk) {
-		NEIGHBOUR_CHECK_EXPIRE(nh, current_time);
-		if (((haddr == NULL) || ((nh->n.hlen == hlen)
-						&& (memcmp(nh->n.haddr, haddr, hlen) == 0)))
-				&& ((paddr == NULL) || ((nh->n.plen == plen)
-						&& (memcmp(nh->n.paddr, paddr, plen) == 0)))
-				&& ((dev == NULL) || (nh->n.dev == dev))) {
-			return nh;
+	ktime_get_timeval(&now);
+	ms_to_timeval(MODOPS_NEIGHBOUR_EXPIRE, &nbr->expire);
+	timeradd(&nbr->expire, &now, &nbr->expire);
+}
+
+static void nbr_free(struct neighbour *nbr) {
+	assert(nbr != NULL);
+
+	list_unlink_element(nbr, lnk);
+	skb_queue_purge(&nbr->w_queue);
+	pool_free(&neighbour_pool, nbr);
+}
+
+static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
+		const void *paddr, const struct net_device *dev) {
+	struct neighbour *nbr;
+	struct timeval now;
+
+	assert(paddr != NULL);
+	assert(dev != NULL);
+
+	ktime_get_timeval(&now);
+
+	list_foreach(nbr, &neighbour_list, lnk) {
+		NEIGHBOUR_CHECK_EXPIRE(nbr, &now);
+		if ((nbr->ptype == ptype)
+				&& (0 == memcmp(&nbr->paddr[0], paddr, nbr->plen))
+				&& (nbr->dev == dev)) {
+			return nbr;
 		}
 	}
 
-	return NULL; /* not found */
+	return NULL; /* error: no such entity */
 }
 
-int neighbour_add(const unsigned char *haddr, unsigned char hlen,
-		const unsigned char *paddr, unsigned char plen,
-		const struct net_device *dev, unsigned char flags) {
-	struct neighbour_head *nh;
+static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
+		const void *haddr, const struct net_device *dev) {
+	struct neighbour *nbr;
+	struct timeval now;
 
-	assert((haddr != NULL) && (hlen != 0));
-	assert((paddr != NULL) && (plen != 0));
+	assert(haddr != NULL);
 	assert(dev != NULL);
 
-	/* check arguments */
-	if ((hlen > sizeof nh->n.haddr) || (plen > sizeof nh->n.paddr)) {
+	ktime_get_timeval(&now);
+
+	list_foreach(nbr, &neighbour_list, lnk) {
+		NEIGHBOUR_CHECK_EXPIRE(nbr, &now);
+		if ((nbr->htype == htype)
+				&& (0 == memcmp(&nbr->haddr[0], haddr, nbr->hlen))
+				&& (nbr->dev == dev)) {
+			return nbr;
+		}
+	}
+
+	return NULL; /* error: no such entity */
+}
+
+int neighbour_add(unsigned short ptype, const void *paddr,
+		unsigned char plen, const struct net_device *dev,
+		unsigned short htype, const void *haddr, unsigned char hlen,
+		unsigned int flags) {
+	struct neighbour *nbr;
+
+	if ((paddr == NULL) || (plen == 0)
+			|| (plen > ARRAY_SIZE(nbr->paddr))
+			|| (dev == NULL) || (hlen == 0)
+			|| (hlen > ARRAY_SIZE(nbr->haddr))) {
 		return -EINVAL;
 	}
 
-	/* lock softirq context */
 	softirq_lock();
-
-	/* lookup existing entities */
-	nh = neighbour_get(haddr, hlen, NULL, 0, NULL, 0);
-	nh = ((nh != NULL) ? nh : neighbour_get(NULL, 0, paddr, plen, NULL, 0));
-	if (nh != NULL) {
-		/* free invalid entities */
-		if (nh->n.flags & NEIGHBOUR_FLAG_PERMANENT) {
+	{
+		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
+		if (nbr != NULL) {
 			softirq_unlock();
 			return -EEXIST;
 		}
-		dlist_del(&nh->lnk);
-	}
-	else {
-		/* allocate memory for new neighbour if required */
-		nh = pool_alloc(&neighbour_pool);
-		if (nh == NULL) {
+
+		nbr = pool_alloc(&neighbour_pool);
+		if (nbr == NULL) {
 			softirq_unlock();
 			return -ENOMEM;
 		}
-		dlist_head_init(&nh->lnk);
 	}
-
-	/* initialize fields */
-	nh->expire = time(NULL) + MODOPS_NEIGHBOUR_EXPIRE;
-	nh->n.dev = dev;
-	memcpy(&nh->n.haddr[0], haddr, hlen);
-	nh->n.hlen = hlen;
-	memcpy(&nh->n.paddr[0], paddr, plen);
-	nh->n.plen = plen;
-	nh->n.flags = flags;
-
-	/* add to the tail */
-	dlist_add_prev(&nh->lnk, &neighbour_list);
-
-	/* unlock softirq context */
 	softirq_unlock();
 
-	return ENOERR;
-}
+	list_link_init(&nbr->lnk);
+	nbr->ptype = ptype;
+	memcpy(nbr->paddr, paddr, plen);
+	nbr->plen = plen;
+	nbr->dev = dev;
+	nbr->htype = htype;
+	nbr->hlen = hlen;
+	nbr_set_haddr(nbr, haddr);
+	nbr->flags = flags;
+	nbr_set_expire(nbr);
+	skb_queue_init(&nbr->w_queue);
 
-int neighbour_del(const unsigned char *haddr, unsigned char hlen,
-		const unsigned char *paddr, unsigned char plen,
-		const struct net_device *dev) {
-	struct neighbour_head *nh;
-
-	assert(((haddr != NULL) && (hlen != 0)) || ((haddr == NULL) && (hlen == 0)));
-	assert(((paddr != NULL) && (plen != 0)) || ((paddr == NULL) && (plen == 0)));
-	assert((haddr != NULL) || (paddr != NULL));
-
-	/* lock softirq context */
 	softirq_lock();
-
-	/* lookup entity */
-	nh = neighbour_get(haddr, hlen, paddr, plen, dev, 0);
-	if (nh == NULL) {
-		softirq_unlock();
-		return -ENOENT;
+	{
+		list_add_last_element(nbr, &neighbour_list, lnk);
 	}
-
-	/* delete from list */
-	dlist_del(&nh->lnk);
-	pool_free(&neighbour_pool, nh);
-
-	/* unlock softirq context */
 	softirq_unlock();
 
-	return ENOERR;
+	return 0;
 }
 
-int neighbour_get_hardware_address(const unsigned char *paddr,
-		unsigned char plen, const struct net_device *dev, unsigned char hlen_max,
-		unsigned char *out_haddr, unsigned char *out_hlen) {
-	struct neighbour_head *nh;
+int neighbour_set_haddr(unsigned short ptype,
+		const void *paddr, const struct net_device *dev,
+		const void *haddr) {
+	struct neighbour *nbr;
 
-	assert((paddr != NULL) && (plen != 0));
-	assert((hlen_max != 0) && (out_haddr != NULL));
+	if ((paddr == NULL) || (dev == NULL)) {
+		return -EINVAL;
+	}
 
-	/* lock softirq context */
 	softirq_lock();
-
-	/* find an appropriate entry */
-	nh = neighbour_get(NULL, 0, paddr, plen, dev, time(NULL));
-	if (nh == NULL) {
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* check hardware address length */
-	if (nh->n.hlen > hlen_max) {
-		softirq_unlock();
-		return -ENOMEM;
-	}
-
-	/* save results */
-	memcpy(out_haddr, &nh->n.haddr[0], nh->n.hlen);
-	if (out_hlen != NULL) {
-		*out_hlen = nh->n.hlen;
-	}
-	else if (nh->n.hlen != hlen_max) {
-		/* no such entity with the same length of hardware address */
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* unlock softirq context */
-	softirq_unlock();
-
-	return ENOERR;
-}
-
-int neighbour_get_protocol_address(const unsigned char *haddr,
-		unsigned char hlen, const struct net_device *dev, unsigned char plen_max,
-		unsigned char *out_paddr, unsigned char *out_plen) {
-	struct neighbour_head *nh;
-
-	assert((haddr != NULL) && (hlen != 0));
-	assert((plen_max != 0) && (out_paddr != NULL));
-
-	/* lock softirq context */
-	softirq_lock();
-
-	/* find an appropriate entry */
-	nh = neighbour_get(haddr, hlen, NULL, 0, dev, time(NULL));
-	if (nh == NULL) {
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* check protocol address length */
-	if (nh->n.plen > plen_max) {
-		softirq_unlock();
-		return -ENOMEM;
-	}
-
-	/* save results */
-	memcpy(out_paddr, &nh->n.paddr[0], nh->n.plen);
-	if (out_plen != NULL) {
-		*out_plen = nh->n.plen;
-	}
-	else if (nh->n.plen != plen_max) {
-		/* no such entity with the same length of protocol address */
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* unlock softirq context */
-	softirq_unlock();
-
-	return ENOERR;
-}
-
-int neighbour_foreach(neighbour_foreach_handler_t func, void *args) {
-	int ret;
-	struct neighbour_head *nh, *tmp;
-	time_t now;
-
-	assert(func != NULL);
-
-	/* get current time */
-	time(&now);
-
-	/* lock softirq context */
-	softirq_lock();
-
-	/* do for each entity */
-	dlist_foreach_entry(nh, tmp, &neighbour_list, lnk) {
-		NEIGHBOUR_CHECK_EXPIRE(nh, now);
-		ret = (*func)(&nh->n, args);
-		if (ret != ENOERR) {
+	{
+		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
+		if (nbr == NULL) {
 			softirq_unlock();
-			return ret;
+			return -ENOENT;
+		}
+
+		nbr_set_haddr(nbr, haddr);
+		nbr_set_expire(nbr);
+	}
+	softirq_unlock();
+
+	return 0;
+}
+
+int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
+		const struct net_device *dev, unsigned short htype,
+		unsigned char hlen_max, void *out_haddr) {
+	struct neighbour *nbr;
+
+	if ((paddr == NULL) || (dev == NULL) || (out_haddr == NULL)) {
+		return -EINVAL;
+	}
+
+	softirq_lock();
+	{
+		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
+		if (nbr == NULL) {
+			softirq_unlock();
+			return -ENOENT;
+		}
+		else if (nbr->htype != htype) {
+			softirq_unlock();
+			return -ENOENT;
+		}
+		else if (nbr->incomplete) {
+			return -EINPROGRESS;
+		}
+		else if (nbr->hlen > hlen_max) {
+			softirq_unlock();
+			return -ENOMEM;
+		}
+
+		memcpy(out_haddr, &nbr->haddr[0], nbr->hlen);
+	}
+	softirq_unlock();
+
+	return 0;
+}
+
+int neighbour_get_paddr(unsigned short htype, const void *haddr,
+		const struct net_device *dev, unsigned short ptype,
+		unsigned char plen_max, void *out_paddr) {
+	struct neighbour *nbr;
+
+	if ((haddr == NULL) || (dev == NULL) || (out_paddr == NULL)) {
+		return -EINVAL;
+	}
+
+	softirq_lock();
+	{
+		nbr = nbr_lookup_by_haddr(htype, haddr, dev);
+		if (nbr == NULL) {
+			softirq_unlock();
+			return -ENOENT;
+		}
+		else if (nbr->ptype != ptype) {
+			softirq_unlock();
+			return -ENOENT;
+		}
+		else if (nbr->plen > plen_max) {
+			softirq_unlock();
+			return -ENOMEM;
+		}
+
+		memcpy(out_paddr, &nbr->paddr[0], nbr->plen);
+	}
+	softirq_unlock();
+
+	return 0;
+}
+
+int neighbour_del(unsigned short ptype, const void *paddr,
+		const struct net_device *dev) {
+	struct neighbour *nbr;
+
+	if ((paddr == NULL) || (dev == NULL)) {
+		return -EINVAL;
+	}
+
+	softirq_lock();
+	{
+		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
+		if (nbr == NULL) {
+			softirq_unlock();
+			return -ENOENT;
+		}
+
+		nbr_free(nbr);
+	}
+	softirq_unlock();
+
+	return 0;
+}
+
+int neighbour_clean(const struct net_device *dev) {
+	struct neighbour *nbr;
+	struct timeval now;
+
+	ktime_get_timeval(&now);
+
+	softirq_lock();
+	{
+		list_foreach(nbr, &neighbour_list, lnk) {
+			NEIGHBOUR_CHECK_EXPIRE(nbr, &now);
+			if ((nbr->dev == dev) || (dev == NULL)) {
+				nbr_free(nbr);
+			}
 		}
 	}
-
-	/* unlock softirq context */
 	softirq_unlock();
 
-	return ENOERR;
+	return 0;
+}
+
+int neighbour_foreach(neighbour_foreach_ft func, void *args) {
+	int ret;
+	struct neighbour *nbr;
+	struct timeval now;
+
+	if (func == NULL) {
+		return -EINVAL;
+	}
+
+	ktime_get_timeval(&now);
+
+	softirq_lock();
+	{
+		list_foreach(nbr, &neighbour_list, lnk) {
+			NEIGHBOUR_CHECK_EXPIRE(nbr, &now);
+			ret = (*func)(nbr, args);
+			if (ret != 0) {
+				softirq_unlock();
+				return ret;
+			}
+		}
+	}
+	softirq_unlock();
+
+	return 0;
 }

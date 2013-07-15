@@ -45,8 +45,8 @@ module sock {
 
 module neighbour {
 	source "neighbour.c"
-	option number neighbour_quantity=10
-	option number neighbour_expire=60
+	option number neighbour_amount=10
+	option number neighbour_expire=60000
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
