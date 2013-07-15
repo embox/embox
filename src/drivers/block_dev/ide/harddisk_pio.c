@@ -31,7 +31,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	hdc_t *hdc;
 	int sectsleft;
 	int nsects;
-	int result;
+	int result = 0;
 	char *bufp;
 
 	if (count == 0) {
@@ -104,7 +104,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	int sectsleft;
 	int nsects;
 	int n;
-	int result;
+	int result = 0;
 	char *bufp;
 
 	if (count == 0) {

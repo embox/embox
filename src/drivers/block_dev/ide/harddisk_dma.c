@@ -85,7 +85,7 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	hdc_t *hdc;
 	int sectsleft;
 	int nsects;
-	int result;
+	int result = 0;
 	char *bufp;
 
 	if (count == 0) {
@@ -163,7 +163,7 @@ static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t 
 	hdc_t *hdc;
 	int sectsleft;
 	int nsects;
-	int result;
+	int result = 0;
 	char *bufp;
 
 	if (count == 0) {

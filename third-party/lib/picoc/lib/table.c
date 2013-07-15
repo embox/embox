@@ -138,7 +138,7 @@ static struct TableEntry *TableSearchIdentifier(struct Table *Tbl, const char *K
 /* set an identifier and return the identifier. share if possible */
 char *TableSetIdentifier(Picoc *pc, struct Table *Tbl, const char *Ident, int IdentLen)
 {
-    int AddAt;
+    int AddAt = 0;
     struct TableEntry *FoundEntry = TableSearchIdentifier(Tbl, Ident, IdentLen, &AddAt);
 
     if (FoundEntry != NULL)

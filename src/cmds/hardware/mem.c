@@ -127,6 +127,7 @@ static int exec(int argc, char **argv) {
 		}
 
 		switch (at) {
+		default:
 		case MEM_AT_LONG:
 			val = *(unsigned long *) address;
 			break;
