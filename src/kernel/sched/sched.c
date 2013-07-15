@@ -238,10 +238,10 @@ int sched_change_scheduling_priority(struct thread *thread,
 		if (thread_state_running(thread->state)) {
 			post_switch_if(runq_change_priority(thread->runq, thread, new_priority));
 		} else {
-			//thread->sched_priority = new_priority;
+			thread_priority_set(thread, new_priority);
 		}
 
-		//assert(thread->sched_priority == new_priority);
+		assert(thread_priority_get(thread) == new_priority);
 	}
 	sched_unlock();
 
@@ -259,7 +259,6 @@ void sched_set_priority(struct thread *thread,
 				&& (thread != cpu_get_idle_thread())) {
 			sched_change_scheduling_priority(thread, new_priority);
 		}
-		//thread->initial_priority = new_priority;
 		thread_priority_set(thread, new_priority);
 	}
 	sched_unlock();
@@ -313,8 +312,6 @@ static void sched_switch(void) {
 		trace_point("context switch");
 
 		ipl_disable();
-
-		//task_notify_switch(prev, next);
 
 		thread_set_current(next);
 		context_switch(&prev->context, &next->context);

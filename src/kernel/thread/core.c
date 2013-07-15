@@ -349,17 +349,7 @@ int thread_set_priority(struct thread *t, thread_priority_t new_priority) {
 		return -EINVAL;
 	}
 
-	sched_lock();
-	{
-		if (t->priority == new_priority) {
-			sched_unlock();
-			return 0;
-		}
-		sched_set_priority(t, get_sched_priority(t->task->priority,
-					new_priority));
-		t->priority = new_priority;
-	}
-	sched_unlock();
+	thread_priority_set(t, new_priority);
 
 	return 0;
 }
@@ -457,8 +447,6 @@ struct thread *thread_idle_init(void) {
 	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
 	thread_context_init(idle);
 
-//	idle->priority = THREAD_PRIORITY_MIN;
-//	idle->sched_priority = SCHED_PRIORITY_MIN;
 	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
 	cpu_set_idle_thread(idle);
@@ -484,9 +472,6 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	thread_init(thread, THREAD_FLAG_KTASK, idle_run, NULL);
 
 	/* Priority setting up */
-//	thread->priority = priority;
-//	thread->sched_priority = get_sched_priority(thread->task->priority,
-//			thread->priority);
 	thread_priority_set(thread, priority);
 
 	return thread;
