@@ -399,6 +399,8 @@ static struct thread *thread_new(void) {
 	}
 
 	t->id = id_counter++;
+
+	dlist_head_init(&t->thread_link);
 	dlist_add_next(&t->thread_link, &__thread_list);
 
 	return t;
@@ -478,6 +480,8 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 
 	/* Global list addition and id setting up */
 	thread->id = id_counter++;
+
+	dlist_head_init(&thread->thread_link);
 	dlist_add_next(&thread->thread_link, &__thread_list);
 
 	/* General initialization and task setting up */
