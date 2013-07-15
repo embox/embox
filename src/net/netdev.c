@@ -23,7 +23,7 @@
 #define MODOPS_NETDEV_QUANTITY OPTION_GET(NUMBER, netdev_quantity)
 #define MODOPS_NETDEV_TABLE_SZ OPTION_GET(NUMBER, netdev_table_sz)
 
-EMBOX_UNIT_INIT(netdev_init);
+EMBOX_UNIT_INIT(netdev_unit_init);
 
 POOL_DEF(netdev_pool, struct net_device, MODOPS_NETDEV_QUANTITY);
 struct hashtable *netdevs_table = NULL;
@@ -46,14 +46,7 @@ struct net_device * netdev_alloc(const char *name,
 		return NULL; /* error: no memory */
 	}
 
-	list_link_init(&dev->rx_lnk);
-	strcpy(&dev->name[0], name);
-	memset(&dev->stats, 0, sizeof dev->stats);
-	skb_queue_init(&dev->dev_queue);
-	skb_queue_init(&dev->tx_dev_queue);
-	skb_queue_init(&dev->txing_queue);
-
-	ret = setup(dev);
+	ret = netdev_init(dev, name, setup);
 	if (ret != 0) {
 		pool_free(&netdev_pool, dev);
 		return NULL; /* error: see return code */
@@ -62,12 +55,23 @@ struct net_device * netdev_alloc(const char *name,
 	return dev;
 }
 
+int netdev_init(struct net_device *dev, const char *name,
+		int (*setup)(struct net_device *)) {
+
+	list_link_init(&dev->rx_lnk);
+	strcpy(&dev->name[0], name);
+	memset(&dev->stats, 0, sizeof dev->stats);
+	skb_queue_init(&dev->dev_queue);
+	skb_queue_init(&dev->tx_dev_queue);
+
+	return setup(dev);
+}
+
 void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
 		skb_queue_purge(&dev->tx_dev_queue);
-		skb_queue_purge(&dev->txing_queue);
 		pool_free(&netdev_pool, dev);
 	}
 }
@@ -294,7 +298,7 @@ static size_t netdev_hash(const char *name) {
 	return hash;
 }
 
-static int netdev_init(void) {
+static int netdev_unit_init(void) {
 	netdevs_table = hashtable_create(MODOPS_NETDEV_TABLE_SZ,
 			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
 	if (netdevs_table == NULL) {

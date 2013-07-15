@@ -109,7 +109,6 @@ typedef struct net_device {
 	const struct net_driver *drv_ops; /**< Management operations        */
 	struct sk_buff_head dev_queue;
 	struct sk_buff_head tx_dev_queue;
-	struct sk_buff_head txing_queue;
 	struct net_node *pnet_node;
 } net_device_t;
 
@@ -128,6 +127,19 @@ extern struct net_device * netdev_get_by_name(const char *name);
 extern struct net_device * netdev_alloc(const char *name,
 		int (*setup)(struct net_device *));
 
+/**
+ * @brief Initialize net device to match name and setup
+ * function
+ *
+ * @param dev Device to initialize
+ * @param name Name to set
+ * @param setup Setup function to run on
+ *
+ * @return zero on no error
+ * @return negative error code otherwise
+ */
+extern int netdev_init(struct net_device *dev, const char *name,
+		int (*setup)(struct net_device *));
 /**
  * Free network device
  * @param dev net_device handler

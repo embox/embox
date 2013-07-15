@@ -49,6 +49,12 @@ PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
 /** Size of each I/O buffer per descriptor. */
 #define E1000_IOBUF_SIZE 2048
 
+struct e1000_dev {
+	struct net_device dev;
+	struct sk_buff_head txing_queue;
+	char link_status;
+};
+
 static char rx_buf[E1000_RXDESC_NR][E1000_IOBUF_SIZE] ;
 /*static char tx_buf[E1000_TXDESC_NR][E1000_IOBUF_SIZE]__attribute__((aligned(16)));*/
 
@@ -83,11 +89,12 @@ static void mdelay(int value) {
 
 }
 
-static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
-	return (volatile uint32_t *) (dev->base_addr + offset);
+static volatile uint32_t *e1000_reg(struct e1000_dev *dev, int offset) {
+	return (volatile uint32_t *) (dev->dev.base_addr + offset);
 }
 
-static int e1000_xmit(struct net_device *dev) {
+static int e1000_xmit(struct net_device *_dev) {
+	struct e1000_dev *dev = (struct e1000_dev *) _dev;
 	uint16_t head = REG_LOAD(e1000_reg(dev, E1000_REG_TDH));
 	uint16_t tail  = REG_LOAD(e1000_reg(dev, E1000_REG_TDT));
 	struct sk_buff *skb;
@@ -96,7 +103,7 @@ static int e1000_xmit(struct net_device *dev) {
 		return ENOERR;
 	}
 
-	skb = skb_queue_pop(&dev->tx_dev_queue);
+	skb = skb_queue_pop(&dev->dev.tx_dev_queue);
 
 	if (skb == NULL) {
 		return 0;
@@ -128,7 +135,8 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	return ENOERR;
 }
 
-static void txed_skb_clean(struct net_device *dev) {
+static void txed_skb_clean(struct net_device *_dev) {
+	struct e1000_dev *dev = (struct e1000_dev *) _dev;
 	struct sk_buff *skb;
 
 	skb = skb_queue_pop(&dev->txing_queue);
@@ -138,7 +146,8 @@ static void txed_skb_clean(struct net_device *dev) {
 	}
 }
 
-static void e1000_rx(struct net_device *dev) {
+static void e1000_rx(struct net_device *_dev) {
+	struct e1000_dev *dev = (struct e1000_dev *) _dev;
 	/*net_device_stats_t stat = get_eth_stat(dev);*/
 	uint16_t head = REG_LOAD(e1000_reg(dev, E1000_REG_RDH));
 	uint16_t tail = REG_LOAD(e1000_reg(dev, E1000_REG_RDT));
@@ -159,7 +168,7 @@ static void e1000_rx(struct net_device *dev) {
 
 		if ((skb = skb_alloc(len))) {
 			memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
-			skb->dev = dev;
+			skb->dev = (struct net_device *) dev;
 			/*stat->rx_packets++;*/
 			/*stat->rx_bytes += skb->len;*/
 
@@ -209,10 +218,24 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 		e1000_xmit(dev_id);
 	}
 
+	if (cause & (E1000_REG_ICR_LSC)) {
+		struct e1000_dev *dev = dev_id;
+
+		dev->link_status ^= 1;
+
+		if (dev->link_status) {
+			prom_printf("e1000: Link changed to up\n");
+		} else {
+			prom_printf("e1000: Link changed to down\n");
+		}
+
+	}
+
 	return IRQ_HANDLED;
 }
 
-static int e1000_open(struct net_device *dev) {
+static int e1000_open(struct net_device *_dev) {
+	struct e1000_dev *dev = (struct e1000_dev *) _dev;
 
 	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
@@ -278,7 +301,8 @@ static int e1000_open(struct net_device *dev) {
 				      E1000_REG_IMS_RXO  |
 				      E1000_REG_IMS_RXT  |
 				      E1000_REG_IMS_TXQE |
-				      E1000_REG_IMS_TXDW);
+				      E1000_REG_IMS_TXDW |
+				      E1000_REG_IMS_LSC );
 	return ENOERR;
 }
 
@@ -286,7 +310,8 @@ static int stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int set_mac_address(struct net_device *dev, const void *addr) {
+static int set_mac_address(struct net_device *_dev, const void *addr) {
+	struct e1000_dev *dev = (struct e1000_dev *) _dev;
 	REG_ANDIN(e1000_reg(dev, E1000_REG_RAH), ~E1000_REG_RAH_AV);
 
 	REG_STORE(e1000_reg(dev, E1000_REG_RAL), *(uint32_t *) addr);
@@ -295,7 +320,7 @@ static int set_mac_address(struct net_device *dev, const void *addr) {
 	REG_ORIN(e1000_reg(dev, E1000_REG_RAH), E1000_REG_RAH_AV);
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
-	memcpy(dev->dev_addr, addr, ETH_ALEN);
+	memcpy(dev->dev.dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
 }
@@ -307,6 +332,22 @@ static const struct net_driver _drv_ops = {
 	.set_macaddr = set_mac_address
 };
 
+static struct e1000_dev *e1000_dev_alloc(void) {
+	static struct e1000_dev pool, *ptr;
+
+	if (ptr) {
+		return NULL;
+	}
+
+	ptr = &pool;
+
+	netdev_init((struct net_device *) ptr, "eth%u", &ethernet_setup);
+	skb_queue_init(&ptr->txing_queue);
+	ptr->link_status = 0;
+
+	return ptr;
+}
+
 static int e1000_init(struct pci_slot_dev *pci_dev) {
 	int res = 0;
 	uint32_t nic_base;
@@ -314,7 +355,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	nic = etherdev_alloc();
+	nic = (struct net_device *) e1000_dev_alloc();
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
