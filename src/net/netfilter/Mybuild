@@ -5,6 +5,7 @@ module netfilter {
 	option number amount_rules=10
 	option number limit_time=1000
 
+	depends embox.kernel.timer.sys_timer
 	depends embox.mem.pool
 	depends embox.util.List
 }
