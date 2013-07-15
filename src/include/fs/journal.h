@@ -96,12 +96,10 @@ typedef struct journal_block_s {
  *                   handle_t.
  * @h_transaction: Which compound transaction is this update a part of?
  * @h_buffer_credits: Number of remaining buffers we are allowed to dirty.
- * @h_ref: Reference count on this handle
  */
 struct handle_s {
     transaction_t *h_transaction;
     int h_buffer_credits;
-    int h_ref;
 };
 
 /*
@@ -356,5 +354,7 @@ struct journal_s {
 extern journal_t *journal_load(block_dev_t *jdev, block_t start);
 extern handle_t * journal_start(journal_t *jp, int nblocks);
 extern int journal_stop(handle_t *handle);
+extern int journal_checkpoint_transactions(journal_t *jp);
+extern int journal_dirty_metadata (handle_t *handle, journal_block_t *block);
 
 #endif /* _LIBJOURNAL_H */
