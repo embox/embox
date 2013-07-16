@@ -19,6 +19,7 @@
 #include <pwd.h>
 #include <shadow.h>
 #include <utmp.h>
+#include <security/smac.h>
 
 #include <embox/cmd.h>
 
@@ -93,17 +94,13 @@ static void *taskshell(void *data) {
 	setgid(tdata->pwd->pw_gid);
 
 	{
-		char smac_cmd[BUF_LEN], *smac_label = "_";
+		char *new_smac_label = "_";
 
 		if (NULL != (spwd = spwd_find(SMAC_USERS, tdata->pwd->pw_name))) {
-			smac_label = spwd->sp_pwdp;
+			new_smac_label = spwd->sp_pwdp;
 		}
 
-		snprintf(smac_cmd, BUF_LEN, "smac_adm -S %s", smac_label);
-
-		if (0 != shell_exec(shell_any(), smac_cmd)) {
-			printf("login: cannot initialize SMAC label\n");
-		}
+		smac_labelset(new_smac_label);
 	}
 
 	shell = shell_lookup(tdata->pwd->pw_shell);
