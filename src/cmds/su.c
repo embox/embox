@@ -14,6 +14,7 @@
 #include <framework/cmd/api.h>
 
 #include <kernel/task/u_area.h>
+#include <security/smac.h>
 
 EMBOX_CMD(su_exec);
 
@@ -22,6 +23,7 @@ static int su_exec(int argc, char *argv[]) {
 	const struct cmd *login_cmd = cmd_lookup("login");
 	uid_t euid = geteuid();
 	uid_t reuid = getuid();
+	char old_smac_label[SMAC_LABELLEN];
 	char *defargv[] = {"", "root"};
 	int ret;
 
@@ -31,9 +33,12 @@ static int su_exec(int argc, char *argv[]) {
 	}
 
 	uarea->reuid = uarea->euid = 0;
+	strcpy(old_smac_label, task_self_security());
+	strcpy(task_self_security(), smac_admin);
 
 	ret = cmd_exec(login_cmd, argc, argv);
 
+	strcpy(task_self_security(), old_smac_label);
 	uarea->reuid = reuid;
 	uarea->euid = euid;
 

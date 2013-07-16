@@ -100,7 +100,9 @@ static void *taskshell(void *data) {
 			new_smac_label = spwd->sp_pwdp;
 		}
 
-		smac_labelset(new_smac_label);
+		if (smac_labelset(new_smac_label)) {
+			printf("can't setup smac label\n");
+		}
 	}
 
 	shell = shell_lookup(tdata->pwd->pw_shell);
