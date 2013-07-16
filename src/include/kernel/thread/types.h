@@ -19,7 +19,6 @@ typedef unsigned int __thread_state_t;
 #include <hal/context.h>
 
 #include <kernel/sched/sched_strategy.h>
-//#include <linux/list.h>
 #include <util/dlist.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/thread/thread_priority.h>
@@ -51,13 +50,7 @@ struct thread {
 
 	__thread_id_t      id;            /**< Unique identifier. */
 
-	struct dlist_head  thread_link;   /**< Linkage on all threads. */
-
 	struct thread_priority thread_priority;
-
-	struct thread     *joined;        /**< Thread which joined to this. */
-
-	struct wait_data   wait_data;
 
 	struct task       *task;          /**< Task belong to. */
 	struct dlist_head  task_link;     /**< Link in list holding task threads. */
@@ -65,7 +58,13 @@ struct thread {
 	clock_t            running_time;  /**< Running time of thread in clocks. */
 	clock_t            last_sync;     /**< Last recalculation of running time. */
 
-	struct sched_strategy_data sched;/**< Scheduler-private data. */
+	struct thread     *joined;        /**< Thread which joined to this. */
+
+	struct dlist_head  thread_link;   /**< Linkage on all threads. */
+
+	struct wait_data   wait_data;
+
+	struct sched_strategy_data sched; /**< Scheduler-private data. */
 
 	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
 

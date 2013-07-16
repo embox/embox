@@ -49,7 +49,6 @@ static void thread_set_task(struct thread *t, struct task *tsk);
 static int task_init_parent(struct task *task, struct task *parent);
 
 
-//TODO this function is used only in task/multi.c file. Why is it placed here?
 static void *thread_stack_malloc(struct thread *thread, size_t size) {
 	void *res;
 
@@ -95,8 +94,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_poolfree;
 		}
 
-		/* alloc space for task & resources on top of created thread's stack */
-
+		/* reserve space for task & resources on top of created thread's stack */
 		addr = thread_stack_malloc(thd, task_sz);
 
 		if ((self_task = task_init(addr, task_sz)) == NULL) {
@@ -109,14 +107,13 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 
 		self_task->priority = task_self()->priority;
 
-		/* init new task */
-
+		/* initialize the new task */
 		if (strlen(name) > MAX_TASK_NAME_LEN) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
 
-		strcpy(self_task->name, name);
+		strncpy(self_task->task_name, name, sizeof(self_task->task_name) - 1);
 
 		if ((res = task_table_add(self_task)) < 0) {
 			goto out_threadfree;
@@ -174,7 +171,6 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 
 static void thread_set_task(struct thread *t, struct task *tsk) {
 	t->task = tsk;
-	//list_move_tail(&t->task_link, &tsk->threads);
 	dlist_move(&t->task_link, &tsk->threads);
 }
 
@@ -184,7 +180,6 @@ static int task_init_parent(struct task *task, struct task *parent) {
 
 	task->parent = parent;
 
-	//INIT_LIST_HEAD(&task->threads);
 	dlist_init(&task->threads);
 
 	task_resource_foreach(res_desc) {
@@ -196,7 +191,7 @@ static int task_init_parent(struct task *task, struct task *parent) {
 		}
 	}
 
-	list_add(&task->link, &parent->children);
+	dlist_add_next(&task->task_link, &parent->children_tasks);
 
 	return 0;
 
@@ -232,7 +227,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		}
 
 		/* Remove us from list of tasks */
-		list_del(&task->link);
+		dlist_del(&task->task_link);
 
 		/* Release our task id */
 		task_table_del(task->tid);
@@ -242,7 +237,6 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		//list_for_each_entry_safe(thread, next, &task->threads, task_link) {
 		dlist_foreach_entry(thread, next, &task->threads, task_link) {
 			if (thread == task->main_thread) {
 				continue;
@@ -299,7 +293,6 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 			return 0;
 		}
 
-		//list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
 		dlist_foreach_entry(thread, tmp, &tsk->threads, task_link) {
 			sched_set_priority(thread, get_sched_priority(new_priority,
 						thread_priority_get(thread)));

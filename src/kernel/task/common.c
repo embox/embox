@@ -12,9 +12,11 @@
 #include <errno.h>
 #include <string.h>
 
+#include <util/dlist.h>
+
 #include <kernel/task.h>
 #include <kernel/cpu.h>
-#include <linux/list.h>
+
 #include "common.h"
 
 #include <module/embox/kernel/task/api.h>
@@ -59,10 +61,11 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	memset(task_n_res_space, 0, task_sz);
 
-	//INIT_LIST_HEAD(&task->threads);
 	dlist_init(&task->threads);
-	INIT_LIST_HEAD(&task->children);
-	INIT_LIST_HEAD(&task->link);
+
+	dlist_init(&task->task_link);
+
+	dlist_init(&task->children_tasks);
 
 	task->parent = NULL;
 
@@ -96,7 +99,7 @@ static int kernel_task_init(void) {
 		return -ENOMEM;
 	}
 
-	strcpy(task_kernel_task()->name, "kernel");
+	strncpy(task_kernel_task()->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
 
 	return 0;
 }

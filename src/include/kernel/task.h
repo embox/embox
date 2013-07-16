@@ -9,7 +9,6 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <linux/list.h>
 #include <util/dlist.h>
 #include <util/array.h>
 
@@ -37,14 +36,16 @@ struct sleepq;
  * @brief Task describing struct
  */
 struct task {
-	int tid;
-	char name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
+	struct dlist_head task_link; /**< @brief global task's list link */
+
+	int tid;               /**< task identifier */
+
+	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
+
 	struct task *parent; /**< @brief Task's parent */
 
-	struct list_head children; /**< @brief Task's children */
-	struct list_head link; /**< @brief task's list link (handle task in lists) */
+	struct dlist_head children_tasks; /**< @brief Task's children */
 
-	//struct list_head threads; /**< @brief Threads which have task pointer this task */
 	struct dlist_head threads; /**< @brief Threads which have task pointer this task */
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
@@ -92,7 +93,8 @@ extern const task_notifing_resource_hnd task_notifing_resource[];
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
 
 /**
- * @brief Get task resources struct from task
+ * @brief Get task resources structure from task
+ *
  * @param task Task to get from
  * @return Task resources from task
  */
@@ -100,7 +102,11 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 	return task->idx_table;
 }
 
+/** create new task and initialize its descriptor */
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
+
+/** insert a created task into the task */
+extern int task_add_thread(struct thread *);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
@@ -109,13 +115,18 @@ extern int new_task(const char *name, void *(*run)(void *), void *arg);
  */
 extern struct task *task_self(void);
 
+/** return ID of a current task */
 static inline int task_getid(void) {
 	return task_self()->tid;
 }
 
+/** setup task priority */
 extern int task_set_priority(struct task *task, task_priority_t priority);
+
+/** get task priority */
 extern task_priority_t task_get_priority(struct task *task);
 
+/* this is for SMP mode */
 extern void task_set_affinity(struct task *task, unsigned int affinity);
 extern unsigned int task_get_affinity(struct task *task);
 

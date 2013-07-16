@@ -47,7 +47,7 @@ static int id_counter;
 
 static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);
-static void thread_context_init(struct thread *t);
+//static void thread_context_init(struct thread *t);
 
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
@@ -104,6 +104,10 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		return -EINVAL;
 	}
 
+	/* below we will work with thread's instances and therefore we need to
+	 * lock scheduler (disable scheduling) to our structures is not be
+	 * corrupted
+	 */
 	sched_lock(); /* lock scheduling */
 		/*allocate memory, setup thread_id and insert to global thread's list*/
 		if (!(t = thread_new())) {
@@ -111,8 +115,8 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 			goto out;
 		}
 
+		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
-		thread_context_init(t);
 
 		if (!(flags & THREAD_FLAG_SUSPENDED)) {
 			thread_launch(t);
@@ -139,6 +143,8 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	assert(t);
 	assert(run);
+	assert(t->stack);
+	assert(t->stack_sz);
 
 	/* get task pointer in depends on whether thread create for kernel task
 	 * or user task */
@@ -172,28 +178,24 @@ static void thread_init(struct thread *t, unsigned int flags,
 		priority++;
 	}
 
-	//t->priority = priority;
-
+	/* setup thread priority. Now we have not started thread yet therefore we
+	 * just set both base and scheduling priority in default value.
+	 */
 	thread_priority_set(t, priority);
+
+	t->joined = NULL; /* there are not any joined thread */
+
+	/* cpu context init */
+	context_init(&t->context, true); /* setup default value of CPU registers */
+	context_set_entry(&t->context, thread_trampoline); /* set entry (IP register */
+	context_set_stack(&t->context, (char *) t->stack + t->stack_sz); /* set SP */
+
 
 	sched_strategy_init(&t->sched);
 
-	t->joined = NULL;
-
-	t->running_time = 0;
 	t->affinity = (1 << NCPU) - 1;
 
 	wait_data_init(&t->wait_data);
-}
-
-static void thread_context_init(struct thread *t) {
-	assert(t);
-	assert(t->stack);
-	assert(t->stack_sz);
-
-	context_init(&t->context, true);
-	context_set_entry(&t->context, thread_trampoline);
-	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
@@ -208,7 +210,6 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	{
 		/* Counting number of threads in task. XXX: not the best way */
 		dlist_foreach_entry(thread, tmp, &task->threads, task_link) {
-//		list_for_each_entry(thread, &task->threads, task_link) {
 			count++;
 		}
 
@@ -311,6 +312,10 @@ int thread_launch(struct thread *t) {
 			return -ESRCH;
 		}
 
+		/* running time */
+		t->running_time = 0;
+		t->last_sync = clock();
+
 		sched_start(t);
 	}
 	sched_unlock();
@@ -363,11 +368,15 @@ thread_priority_t thread_get_priority(struct thread *t) {
 #endif
 
 clock_t thread_get_running_time(struct thread *thread) {
+	clock_t new_clock;
+
 	sched_lock();
 	{
 		if (thread_state_oncpu(thread->state)) {
 			/* Recalculate time of the thread. */
-			clock_t	new_clock = clock();
+
+
+			new_clock = clock();
 			thread->running_time += new_clock - thread->last_sync;
 			thread->last_sync = new_clock;
 		}
@@ -447,7 +456,7 @@ struct thread *thread_idle_init(void) {
 		return NULL;
 	}
 	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
-	thread_context_init(idle);
+	//thread_context_init(idle);
 
 	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
@@ -476,6 +485,10 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	/* Priority setting up */
 	thread_priority_set(thread, priority);
 
+	/* running time */
+	thread->running_time = clock();
+	thread->last_sync = thread->running_time;
+
 	return thread;
 }
 
@@ -483,8 +496,6 @@ struct thread *thread_boot_init(void) {
 	struct thread *bootstrap;
 	struct task *kernel_task = task_kernel_task();
 	extern char _stack_vma, _stack_len;
-
-	id_counter = 0;
 
 	/* TODO: priority */
 	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
@@ -501,7 +512,10 @@ static int thread_core_init(void) {
 	struct thread *idle;
 	struct thread *current;
 
-	idle = thread_idle_init();
-	current = thread_boot_init();
+	id_counter = 0; /* start enumeration */
+
+	idle = thread_idle_init(); /* idle thread always has ID=0 */
+	current = thread_boot_init(); /* 'init' thread ID=1 */
+
 	return sched_init(idle, current);
 }
