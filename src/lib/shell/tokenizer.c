@@ -110,9 +110,16 @@ int cmdline_tokenize(char *string, char **argv) {
 	int argc = 0;
 
 	while (*string != '\0') {
-		if (*string == '\'') {
+
+		while (isspace(*string)) {
+			string++;
+		}
+
+		if (*string == '\0') {
+			break;
+		} else if (*string == '\'') {
 			argv[argc++] = parse_sq(&string);
-		} else if(*string == '\"') {
+		} else if (*string == '\"') {
 			argv[argc++] = parse_dq(&string);
 		} else {
 			argv[argc++] = cmdline_next_token(&string);
