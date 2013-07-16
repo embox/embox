@@ -6,6 +6,7 @@
  * @date    06.02.2013
  */
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -72,7 +73,14 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 	}
 
 	if (delim != (val = fgetc(stream))) {
-		return EIO;
+		/* fscanf can eat blank charactes, so if it used as delim, here we beleive it
+ 		 * was on place, but stolen. Otherwise, report inproper stream format
+		 */
+		if (isspace(delim)) {
+			ungetc(val, stream);
+		} else {
+			return EIO;
+		}
 	}
 
 	return 0;
