@@ -15,7 +15,6 @@
 #include <embox/net/pack.h>
 #include <errno.h>
 #include <net/l3/arp.h>
-#include <net/l3/arp_queue.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/if_packet.h>
@@ -227,7 +226,6 @@ static int arp_hnd_reply(struct arpghdr *arph, struct arpg_stuff *arps,
 	ret = neighbour_add(ntohs(arph->pa_space), arps->spa,
 			arph->pa_len, dev, ntohs(arph->ha_space), arps->sha,
 			arph->ha_len, 0);
-	arp_queue_process(skb);
 	skb_free(skb);
 	return ret;
 }

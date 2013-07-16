@@ -47,6 +47,8 @@ module neighbour {
 	source "neighbour.c"
 	option number neighbour_amount=10
 	option number neighbour_expire=60000
+	option number neighbour_tmr_freq=1000
+	option number neighbour_resend=3000
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
