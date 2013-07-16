@@ -153,6 +153,8 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		return -errno;
 	}
 
+	fcntl(sk, F_SETFD, O_NONBLOCK);
+
 	to.sin_family = AF_INET;
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 
