@@ -24,19 +24,42 @@ static int su_exec(int argc, char *argv[]) {
 	uid_t euid = geteuid();
 	uid_t reuid = getuid();
 	char old_smac_label[SMAC_LABELLEN];
-	char *defargv[] = {"", "root"};
-	int ret;
+	int opt, ret;
+	char *cmd = NULL, *name = "root";
+	char *newargv[4];
+	int newargc;
 
-	if (argc == 1) {
-		argv = defargv;
-		argc++;
+	getopt_init();
+
+	while (-1 != (opt = getopt(argc, argv, "c:"))) {
+		switch(opt) {
+		case 'c':
+			cmd = optarg;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (optind < argc) {
+		name = argv[optind];
 	}
 
 	uarea->reuid = uarea->euid = 0;
 	strcpy(old_smac_label, task_self_security());
 	strcpy(task_self_security(), smac_admin);
 
-	ret = cmd_exec(login_cmd, argc, argv);
+	if (cmd) {
+		char *nargv[] = {"", "-c", cmd, name};
+		newargc = 4;
+		memcpy(newargv, nargv, sizeof(nargv));
+	} else {
+		char *nargv[] = {"", name};
+		newargc = 2;
+		memcpy(newargv, nargv, sizeof(nargv));
+	}
+
+	ret = cmd_exec(login_cmd, newargc, newargv);
 
 	strcpy(task_self_security(), old_smac_label);
 	uarea->reuid = reuid;
