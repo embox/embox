@@ -44,18 +44,11 @@ enum nf_proto {
 };
 
 /**
- * Default netfilter limit
- */
-#define NF_LIMIT_DEFAULT ((size_t)-1)
-
-/**
  * Netfilter rule structure
  */
 struct nf_rule {
 	struct list_link lnk;
 	enum nf_target target;
-	size_t truly;
-	size_t limit;
 	char hwaddr_dst[ETH_ALEN]; int not_hwaddr_dst;
 	char hwaddr_src[ETH_ALEN]; int not_hwaddr_src;
 	size_t hwaddr_len;

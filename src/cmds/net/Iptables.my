@@ -50,10 +50,6 @@ package embox.cmd.net
 					set destination address
 			-j, --jump target
 					specify the target of the rule
-			-l, --limit
-					specify limit number of the successful checks for
-					this rule per time unit. Time unit is equal to
-					netfilter's limit_time option.
 			[!] --sport, --source-port port
 					source port specification
 			[!] --dport, --destination-port port
@@ -61,9 +57,6 @@ package embox.cmd.net
 		EXAMPLE
 			iptables -A INPUT -p tcp -j DROP --dport 80
 			Blocking incoming traffic for HTTP server
-
-			iptables -A INPUT -j ACCEPT -p icmp -l 10
-			Handling no more than 10 ICMP packets per time unit
 		AUTHORS
 			Ilia Vaprol
 	''')
