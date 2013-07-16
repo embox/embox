@@ -319,6 +319,10 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
 				&& NF_TEST_NOT_FIELD(test_r, r, sport)
 				&& NF_TEST_NOT_FIELD(test_r, r, dport)) {
+			if ((r->test_hnd != NULL)
+					&& r->test_hnd(test_r, r->test_hnd_data)) {
+				return 1;
+			}
 			return test_r->target != r->target;
 		}
 	}

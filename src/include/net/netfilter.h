@@ -44,6 +44,13 @@ enum nf_proto {
 };
 
 /**
+ * Netfilter test callback
+ */
+struct nf_rule;
+typedef int (*nf_test_hnd)(const struct nf_rule *r,
+		void *data);
+
+/**
  * Netfilter rule structure
  */
 struct nf_rule {
@@ -57,6 +64,8 @@ struct nf_rule {
 	enum nf_proto proto; int not_proto;
 	in_port_t sport; int not_sport;
 	in_port_t dport; int not_dport;
+	nf_test_hnd test_hnd;
+	void *test_hnd_data;
 };
 
 /**
