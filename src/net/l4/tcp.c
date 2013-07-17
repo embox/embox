@@ -812,6 +812,10 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 			break; /* invalid reset */
 		}
 		tcp_set_st(sock, TCP_CLOSED);
+
+		if (sock.sk->ios != NULL) {
+			io_sync_error(sock.sk->ios);
+		}
 		break;
 	}
 
