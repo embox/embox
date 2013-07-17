@@ -123,27 +123,31 @@ void mutex_unlock(struct mutex *m) {
 
 static int priority_inherit(struct thread *t) {
 	struct mutex *m;
+	__thread_priority_t prior;
+
 
 	assert(t);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
+	prior = thread_priority_get(t);
 
 	m = t->mutex_waiting;
 
-//	if (m->holder->sched_priority >= t->sched_priority) {
-//		return 0;
-//	}
-	thread_priority_inherit(t, thread_priority_get(m->holder));
-
-	sched_change_scheduling_priority(m->holder, thread_priority_get(t));
+	if(prior != thread_priority_inherit(t, thread_priority_get(m->holder))) {
+		sched_change_scheduling_priority(m->holder, thread_priority_get(t));
+	}
 
 	return 0;
 }
 
 static void priority_uninherit(struct thread *t) {
+	__thread_priority_t prior;
+
 	assert(t);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-	thread_priority_reverse(t);
+	prior = thread_priority_get(t);
 
-	sched_change_scheduling_priority(t, thread_priority_get(t));
+	if(prior != thread_priority_reverse(t)) {
+		sched_change_scheduling_priority(t, thread_priority_get(t));
+	}
 }
