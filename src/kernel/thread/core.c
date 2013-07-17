@@ -152,7 +152,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	if (tsk) { //TODO may be if tsk == NULL it's an error
 		t->task = tsk;
-		dlist_add_next(dlist_head_init(&t->task_link), &tsk->threads);
+		task_add_thread(t->task, t);
 	}
 
 	t->state = thread_state_init();
@@ -201,13 +201,14 @@ static void thread_init(struct thread *t, unsigned int flags,
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	struct thread *thread, * tmp;
-	int count = 0;
+//	struct thread *thread, * tmp;
+//	int count = 0;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 	{
+#if 0
 		/* Counting number of threads in task. XXX: not the best way */
 		dlist_foreach_entry(thread, tmp, &task->threads, task_link) {
 			count++;
@@ -215,7 +216,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 		if ((count == 1) ||
 			(count == 2 && thread_state_dead(task->main_thread->state))) {
-
+#endif
+		if(task->main_thread == current) {
 			/* We are last thread. Unlock scheduler and exit task. */
 			sched_unlock();
 			task_exit(ret);
@@ -415,7 +417,7 @@ static void thread_delete(struct thread *t) {
 		zombie = NULL;
 	}
 
-	dlist_del(&t->task_link);
+	task_remove_thread(t->task, t);
 	dlist_del(&t->thread_link);
 
 	if (t == current) {
@@ -456,7 +458,6 @@ struct thread *thread_idle_init(void) {
 		return NULL;
 	}
 	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
-	//thread_context_init(idle);
 
 	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
@@ -501,7 +502,8 @@ struct thread *thread_boot_init(void) {
 	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
 			THREAD_PRIORITY_NORMAL);
 
-	kernel_task->main_thread = bootstrap;
+	task_add_thread(kernel_task, bootstrap);
+	//kernel_task->main_thread = bootstrap;
 
 	return bootstrap;
 }
@@ -511,10 +513,14 @@ extern int sched_init(struct thread *idle, struct thread *current);
 static int thread_core_init(void) {
 	struct thread *idle;
 	struct thread *current;
+	struct task *kernel_task = task_kernel_task();
+
 
 	id_counter = 0; /* start enumeration */
 
 	idle = thread_idle_init(); /* idle thread always has ID=0 */
+	kernel_task->main_thread = idle;
+
 	current = thread_boot_init(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);

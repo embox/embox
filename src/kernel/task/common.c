@@ -93,13 +93,16 @@ static inline void resource_sum_size_calc(void) {
 
 
 static int kernel_task_init(void) {
+	struct task *task;
 	resource_sum_size_calc();
 
-	if (!task_init(task_kernel_task(), sizeof(kernel_task))) {
+	task = task_kernel_task();
+
+	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
 
-	strncpy(task_kernel_task()->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
+	strncpy(task->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
 
 	return 0;
 }

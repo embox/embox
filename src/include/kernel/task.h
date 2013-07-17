@@ -29,11 +29,9 @@ struct task_u_area;
 struct task_env;
 struct sleepq;
 
+
 /**
- * @brief Task resources container
- */
-/**
- * @brief Task describing struct
+ * @brief Task structure description
  */
 struct task {
 	struct dlist_head task_link; /**< @brief global task's list link */
@@ -48,13 +46,17 @@ struct task {
 
 	struct dlist_head threads; /**< @brief Threads which have task pointer this task */
 
+	struct thread *main_thread;
+
+	//int thread_count;
+
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
 	struct task_signal_table *signal_table;
 
 	struct emmap *mmap;
 
-	struct thread *main_thread;
+
 
 	struct task_u_area *u_area;
 
@@ -106,7 +108,9 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 /** insert a created task into the task */
-extern int task_add_thread(struct thread *);
+extern int task_add_thread(struct task *, struct thread *);
+
+extern int task_remove_thread(struct task *, struct thread *);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
