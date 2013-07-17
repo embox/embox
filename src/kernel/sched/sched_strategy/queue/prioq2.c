@@ -31,7 +31,8 @@ void runq_queue_init(runq_queue_t *queue) {
 }
 
 void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched.link, &queue->list[thread->sched_priority]);
+	dlist_add_prev(&thread->sched.link,
+			&queue->list[thread->thread_priority.sched_priority]);
 }
 
 void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
@@ -76,8 +77,8 @@ static inline int thread_prio_comparator(struct prioq_link *first,
 		struct prioq_link *second) {
 	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
 	struct thread *t2 = prioq_element(second, struct thread, sched.pq_link);
-	return t1->sched_priority < t2->sched_priority ? -1
-			: t1->sched_priority > t2->sched_priority;
+	return t1->thread_priority.sched_priority < t2->thread_priority.sched_priority
+			? -1 : t1->thread_priority.sched_priority > t2->thread_priority.sched_priority;
 }
 
 void sleepq_queue_init(sleepq_queue_t *queue) {
