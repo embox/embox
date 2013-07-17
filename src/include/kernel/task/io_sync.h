@@ -14,15 +14,16 @@
 #include <kernel/manual_event.h>
 
 struct io_sync {
-	struct manual_event reading;
-	struct manual_event writing;
+	struct manual_event can_read;
+	struct manual_event can_write;
 	struct event *on_reading;
 	struct event *on_writing;
+	struct event *on_error;
 };
 
 enum io_sync_op {
-	IO_SYNC_READING = 1,
-	IO_SYNC_WRITING = 2
+	IO_SYNC_READING,
+	IO_SYNC_WRITING
 };
 
 extern void io_sync_init(struct io_sync *ios, int r_set,
@@ -31,6 +32,7 @@ extern void io_sync_enable(struct io_sync *ios,
 		enum io_sync_op op);
 extern void io_sync_disable(struct io_sync *ios,
 		enum io_sync_op op);
+extern void io_sync_error(struct io_sync *ios);
 extern int io_sync_ready(struct io_sync *ios,
 		enum io_sync_op op);
 extern void io_sync_notify(struct io_sync *ios,

@@ -16,8 +16,8 @@
 void io_sync_init(struct io_sync *ios, int r_set, int w_set) {
 	assert(ios != NULL);
 
-	manual_event_init(&ios->reading, r_set);
-	manual_event_init(&ios->writing, w_set);
+	manual_event_init(&ios->can_read, r_set);
+	manual_event_init(&ios->can_write, w_set);
 	ios->on_reading = NULL;
 	ios->on_writing = NULL;
 }
@@ -28,13 +28,13 @@ void io_sync_enable(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		manual_event_notify(&ios->reading);
+		manual_event_notify(&ios->can_read);
 		if (ios->on_reading != NULL) {
 			event_notify(ios->on_reading);
 		}
 		break;
 	case IO_SYNC_WRITING:
-		manual_event_notify(&ios->writing);
+		manual_event_notify(&ios->can_write);
 		if (ios->on_writing != NULL) {
 			event_notify(ios->on_writing);
 		}
@@ -48,11 +48,21 @@ void io_sync_disable(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		manual_event_reset(&ios->reading);
+		manual_event_reset(&ios->can_read);
 		break;
 	case IO_SYNC_WRITING:
-		manual_event_reset(&ios->writing);
+		manual_event_reset(&ios->can_write);
 		break;
+	}
+}
+
+void io_sync_error(struct io_sync *ios) {
+	assert(ios != NULL);
+
+	manual_event_notify(&ios->can_read);
+	manual_event_notify(&ios->can_write);
+	if (ios->on_error != NULL) {
+		event_notify(ios->on_error);
 	}
 }
 
@@ -62,9 +72,9 @@ int io_sync_ready(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		return manual_event_is_set(&ios->reading);
+		return manual_event_is_set(&ios->can_read);
 	case IO_SYNC_WRITING:
-		return manual_event_is_set(&ios->writing);
+		return manual_event_is_set(&ios->can_write);
 	}
 
 	return 0;
@@ -92,9 +102,9 @@ int io_sync_wait(struct io_sync *ios, enum io_sync_op op,
 
 	switch (op) {
 	case IO_SYNC_READING:
-		return manual_event_wait(&ios->reading, timeout);
+		return manual_event_wait(&ios->can_read, timeout);
 	case IO_SYNC_WRITING:
-		return manual_event_wait(&ios->writing, timeout);
+		return manual_event_wait(&ios->can_write, timeout);
 	}
 
 	return 0;
