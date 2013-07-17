@@ -13,7 +13,8 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
-int netif_receive_skb(struct sk_buff *skb) {
+int net_rx(struct sk_buff *skb) {
+	struct net_header_info hdr_info;
 	const struct net_pack *npack;
 
 	/* parse L2 header */
@@ -21,7 +22,7 @@ int netif_receive_skb(struct sk_buff *skb) {
 	assert(skb->dev != NULL);
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
-	if (0 != skb->dev->ops->parse_hdr(skb)) {
+	if (0 != skb->dev->ops->parse_hdr(skb, &hdr_info)) {
 		return 0; /* error: can't parse L2 header */
 	}
 
@@ -37,7 +38,7 @@ int netif_receive_skb(struct sk_buff *skb) {
 	}
 
 	/* lookup handler for L3 layer */
-	npack = net_pack_lookup(skb->protocol);
+	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
 		skb_free(skb);
 		return 0; /* not supported */

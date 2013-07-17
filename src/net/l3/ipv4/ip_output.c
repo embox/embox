@@ -14,6 +14,7 @@
 #include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
+#include <net/l0/net_tx.h>
 #include <net/lib/bootp.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
@@ -76,8 +77,33 @@ int ip_queue_send(struct sk_buff *skb) {
 }
 
 int ip_queue_xmit(struct sk_buff *skb) {
-	skb->protocol = ETH_P_IP;
-	return dev_send_skb(skb);
+	int ret;
+	in_addr_t daddr;
+	struct net_header_info hdr_info;
+
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	daddr = skb->nh.iph->daddr;
+
+	hdr_info.type = ETH_P_IP;
+	hdr_info.src_addr = NULL;
+	hdr_info.dst_addr = NULL;
+	if (ip_is_local(daddr, false, false)) {
+		hdr_info.dst_paddr = NULL;
+	}
+	else {
+		/* get dest ip from route table */
+		ret = rt_fib_route_ip(daddr, &daddr);
+		if (ret != 0) {
+			skb_free(skb);
+			return ret;
+		}
+
+		hdr_info.dst_paddr = &daddr;
+		hdr_info.dst_plen = sizeof daddr;
+	}
+
+	return net_tx(skb, &hdr_info);
 }
 
 /* Fragments skb and sends it to the interface.

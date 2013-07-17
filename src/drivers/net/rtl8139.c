@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <drivers/ethernet/rtl8139.h>
+#include <net/l0/net_entry.h>
 
 PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
 

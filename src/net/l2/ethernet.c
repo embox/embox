@@ -16,100 +16,59 @@
 #include <net/if_ether.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
-#include <kernel/printk.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>
 
-#include <net/l3/arp.h> /* FIXME */
-
-/**
- * Create the Ethernet header
- * @param pack buffer to alter
- * @param type Ethernet type field
- * @param daddr destination address (NULL leave destination address)
- * @param saddr source address (NULL use device source address)
- */
-static int ethernet_create_hdr(struct sk_buff *skb, unsigned short type,
-		const void *daddr, const void *saddr) {
+static int ethernet_build_hdr(struct sk_buff *skb,
+		const struct net_header_info *hdr_info) {
 	struct ethhdr *ethh;
-	const struct net_device *dev;
 
-	if (skb == NULL) {
+	if ((skb == NULL) || (hdr_info == NULL)) {
 		return -EINVAL;
 	}
-
-	dev = skb->dev;
-	assert(dev != NULL);
-
-	daddr = daddr != NULL ? daddr : &dev->broadcast[0];
-	saddr = saddr != NULL ? saddr : &dev->dev_addr[0];
 
 	ethh = skb->mac.ethh;
 	assert(ethh != NULL);
 
-	ethh->h_proto = htons(type);
+	ethh->h_proto = htons(hdr_info->type);
 
-	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+	assert(skb->dev != NULL);
+	if (skb->dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
 		memset(ethh->h_dest, 0, ETH_ALEN);
 		memset(ethh->h_source, 0, ETH_ALEN);
 	}
 	else {
-		memcpy(ethh->h_dest, daddr, ETH_ALEN);
-		memcpy(ethh->h_source, saddr, ETH_ALEN);
+		assert(hdr_info->src_addr != NULL);
+		assert(hdr_info->dst_addr != NULL);
+		memcpy(ethh->h_source, hdr_info->src_addr, ETH_ALEN);
+		memcpy(ethh->h_dest, hdr_info->dst_addr, ETH_ALEN);
 	}
 
 	return 0;
 }
 
-/**
- * Rebuild the Ethernet MAC header.
- * @param pack socket buffer to update
- */
-static int ethernet_rebuild_hdr(struct sk_buff *skb) {
-	int ret;
-	struct ethhdr *ethh;
+static int ethernet_parse_hdr(struct sk_buff *skb,
+		struct net_header_info *out_hdr_info) {
+	const struct ethhdr *ethh;
 
-	if (skb == NULL) {
+	if ((skb == NULL) || (out_hdr_info == NULL)) {
 		return -EINVAL;
 	}
+	else if (skb->len <= ETH_HEADER_SIZE) {
+		return -EINVAL;
+	}
+
+	assert(skb->mac.raw != NULL);
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	ethh = skb->mac.ethh;
-	assert(ethh != NULL);
 
-	ethh->h_proto = htons(skb->protocol);
-
-	switch (skb->protocol) {
-	case ETH_P_LOOP:
-		/* Fill out source and destonation MAC addresses */
-		memset(ethh->h_source, 0, ETH_ALEN);
-		memset(ethh->h_dest, 0, ETH_ALEN);
-		break;
-	case ETH_P_IP:
-		/* Fill out source MAC address */
-		memcpy(ethh->h_source, &skb->dev->dev_addr[0], ETH_ALEN);
-		/* Fill out destonation MAC address */
-		ret = arp_resolve(skb);
-		if (ret != 0) {
-			return ret;
-		}
-		break;
-	case ETH_P_IPV6:
-		break;
-	}
-
-	return 0;
-}
-
-static int ethernet_parse_hdr(struct sk_buff *skb) {
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
-
-	if (skb->len <= ETH_HEADER_SIZE) {
-		return -EINVAL;
-	}
-
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+	memset(out_hdr_info, 0, sizeof *out_hdr_info);
+	out_hdr_info->type = ntohs(ethh->h_proto);
+	out_hdr_info->src_addr = ethh->h_source;
+	out_hdr_info->dst_addr = ethh->h_dest;
 
 	return 0;
 }
@@ -135,8 +94,7 @@ static int ethernet_check_mtu(int mtu) {
 }
 
 const struct net_device_ops ethernet_ops = {
-	.create_hdr = &ethernet_create_hdr,
-	.rebuild_hdr = &ethernet_rebuild_hdr,
+	.build_hdr = &ethernet_build_hdr,
 	.parse_hdr = &ethernet_parse_hdr,
 	.check_addr = &ethernet_check_addr,
 	.check_mtu = &ethernet_check_mtu

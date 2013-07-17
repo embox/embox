@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <net/l0/net_entry.h>
 
 #include <asm/io.h>
 

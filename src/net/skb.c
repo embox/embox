@@ -136,7 +136,6 @@ struct sk_buff * skb_share(struct sk_buff *skb, int share) {
 
 	shared->sk = skb->sk;
 	shared->dev = skb->dev;
-	shared->protocol = skb->protocol;
 	skb_copy_data(shared, skb);
 
 	return shared;

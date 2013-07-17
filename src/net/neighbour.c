@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
+#include <net/l0/net_tx.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
@@ -108,26 +109,45 @@ static int nbr_send_request(struct neighbour *nbr) {
 			nbr->plen, NULL, &saddr, NULL, &nbr->paddr[0], NULL, nbr->dev);
 }
 
+static int nbr_build_and_send_pkt(struct sk_buff *skb,
+		const struct net_header_info *hdr_info) {
+	int ret;
+
+	assert(skb != NULL);
+	assert(hdr_info != NULL);
+
+	/* try to rebuild */
+	assert(skb->dev != NULL);
+	assert(skb->dev->ops != NULL);
+	assert(skb->dev->ops->build_hdr != NULL);
+	ret = skb->dev->ops->build_hdr(skb, hdr_info);
+	if (ret == 0) {
+		/* try to xmit */
+		ret = net_tx(skb, NULL);
+		if (ret != 0) {
+			printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
+			return ret;
+		}
+	}
+	else {
+		printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
+		skb_free(skb);
+		return ret;
+	}
+
+	return 0;
+}
+
 static void nbr_flush_w_queue(struct neighbour *nbr) {
 	struct sk_buff *skb;
+	struct net_header_info hdr_info;
 
-	assert(nbr != NULL);
+	hdr_info.type = nbr->ptype;
+	hdr_info.src_addr = &nbr->dev->dev_addr[0];
+	hdr_info.dst_addr = &nbr->haddr[0];
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		/* try to rebuild */
-		assert(nbr->dev != NULL);
-		assert(nbr->dev->ops != NULL);
-		assert(nbr->dev->ops->rebuild_hdr != NULL);
-		if (0 == nbr->dev->ops->rebuild_hdr(skb)) {
-			/* try to xmit */
-			if (0 != dev_xmit_skb(skb)) {
-				printk("nbr_flush_w_queue: erorr: can't xmit over device\n");
-			}
-		}
-		else {
-			printk("nbr_flush_w_queue: error: can't rebuild after resolving\n");
-			skb_free(skb);
-		}
+		(void)nbr_build_and_send_pkt(skb, &hdr_info);
 	}
 }
 
@@ -319,8 +339,10 @@ int neighbour_send_after_resolve(unsigned short ptype,
 		struct net_device *dev, struct sk_buff *skb) {
 	int resolved;
 	struct neighbour *nbr;
+	struct net_header_info hdr_info;
 
 	if ((paddr == NULL) || (dev == NULL) || (dev == NULL)) {
+		skb_free(skb);
 		return -EINVAL;
 	}
 
@@ -331,6 +353,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 			nbr = pool_alloc(&neighbour_pool);
 			if (nbr == NULL) {
 				irq_unlock();
+				skb_free(skb);
 				return -ENOMEM;
 			}
 			list_link_init(&nbr->lnk);
@@ -349,17 +372,23 @@ int neighbour_send_after_resolve(unsigned short ptype,
 		}
 
 		resolved = !nbr->incomplete;
-		if (nbr->incomplete) {
+
+		if (!resolved) {
 			skb_queue_push(&nbr->w_queue, skb);
 		}
 	}
 	irq_unlock();
 
 	if (resolved) {
-		return dev_send_skb(skb);
+		hdr_info.type = nbr->ptype;
+		hdr_info.src_addr = &nbr->dev->dev_addr[0];
+		hdr_info.dst_addr = &nbr->haddr[0];
+		return nbr_build_and_send_pkt(skb, &hdr_info);
 	}
 
-	return nbr_send_request(nbr);
+	(void)nbr_send_request(nbr);
+
+	return 0;
 }
 
 static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
@@ -380,7 +409,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 
 			if (nbr->incomplete) {
 				if (nbr->resend <= MODOPS_NEIGHBOUR_TMR_FREQ) {
-					nbr_send_request(nbr);
+					(void)nbr_send_request(nbr);
 					nbr->resend = MODOPS_NEIGHBOUR_RESEND;
 				}
 				else {

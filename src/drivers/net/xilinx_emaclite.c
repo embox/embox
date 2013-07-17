@@ -20,6 +20,7 @@
 #include <net/l2/ethernet.h>
 #include <embox/unit.h>
 #include <arpa/inet.h>
+#include <net/l0/net_entry.h>
 
 
 EMBOX_UNIT_INIT(emaclite_init);

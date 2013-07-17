@@ -75,14 +75,31 @@ typedef struct net_driver {
 	int (*set_macaddr)(struct net_device *dev, const void *addr);
 } net_driver_t;
 
+
+/**
+ * information for/of device header
+ */
+struct net_header_info {
+	unsigned short type; /* packet type */
+	const void *src_addr; /* source hw address
+							 use device addr if null */
+	const void *dst_addr; /* destination hw address
+							 if null use dst_paddr for resolving
+							 if dst_paddr is null too, use bcast */
+	const void *dst_paddr; /* destination protocol address
+							  used for discovering of the
+							  hw address in case dst_addr is null */
+	unsigned char dst_plen; /* length of dst_paddr */
+};
+
 /**
  * structure for control header
  */
 typedef struct net_device_ops {
-	int (*create_hdr)(struct sk_buff *skb, unsigned short type,
-			const void *daddr, const void *saddr);
-	int (*rebuild_hdr)(struct sk_buff *skb);
-	int (*parse_hdr)(struct sk_buff *skb);
+	int (*build_hdr)(struct sk_buff *skb,
+			const struct net_header_info *hdr_info);
+	int (*parse_hdr)(struct sk_buff *skb,
+			struct net_header_info *out_hdr_info);
 	int (*check_addr)(const void *addr);
 	int (*check_mtu)(int mtu);
 } net_device_ops_t;
@@ -207,36 +224,5 @@ extern int netdev_set_txqueuelen(struct net_device *dev,
 extern int netdev_set_bcastaddr(struct net_device *dev,
 		const void *bcast_addr);
 extern int netdev_set_mtu(struct net_device *dev, int mtu);
-
-/**
- * this function call ip protocol,
- * it call rebuild mac header function,
- * if can resolve dest addr else it send arp packet,
- * and will trying send packet late. After this
- * it send packet by calling dev_xmit_skb() function
- * return 0 if success else -1
- */
-extern int dev_send_skb(struct sk_buff *pack);
-
-/**
- * this function call xmit functions of network device
- * if this device is works (i.e. flags has IFF_UP bit)
- * return 0 if success
- */
-extern int dev_xmit_skb(struct sk_buff *pack);
-
-/**
- * function must call from net drivers when packet was received
- * and need transmit one throw protocol's stack
- * @param net_packet *pack struct of network packet
- * @return on success, returns 0, on error, -1 is returned
- */
-extern int netif_rx(void *pack);
-
-/**
- * This funciton starts stack handling of incoming package
- * @param skb - incoming package which should be handled
- */
-extern int netif_receive_skb(struct sk_buff *skb);
 
 #endif /* NET_NETDEVICE_H_ */

@@ -10,6 +10,7 @@
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
+#include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>
 #include <net/if_arp.h>

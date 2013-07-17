@@ -5,28 +5,10 @@ module arp {
 
 	depends net_tx
 	depends skbuff
-	depends arp_queue
 	depends route
 	depends neighbour
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
-}
-
-module arp_queue {
-	option number amount_package=20
-	option number htable_width=3
-	option number package_timeout=1000
-	source "arp_queue.c"
-
-	depends embox.util.hashtable
-	depends net_tx
-	depends skbuff
-	depends route
-	depends embox.kernel.time.kernel_time
-	depends embox.kernel.timer.sys_timer
-	depends embox.kernel.sched.sched
-	depends embox.kernel.thread.event
-	depends embox.mem.objalloc
 }
 
 module icmpv4 {

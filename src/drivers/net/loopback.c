@@ -16,6 +16,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <net/l0/net_entry.h>
 
 EMBOX_UNIT_INIT(loopback_init);
 

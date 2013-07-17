@@ -25,6 +25,8 @@
 #include <net/skbuff.h>
 #include <net/netfilter.h>
 
+#include <net/l0/net_entry.h>
+
 #include <hal/reg.h>
 
 #include <drivers/ethernet/e1000.h>

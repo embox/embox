@@ -18,6 +18,7 @@ EMBOX_NET_PROTO(IPPROTO_ICMPV6, icmp6_rcv, NULL);
 
 #include <kernel/printk.h>
 #include <net/netdevice.h>
+#include <net/l0/net_tx.h>
 #include <string.h>
 #include <net/l3/ipv6.h>
 
@@ -59,7 +60,7 @@ static int icmp6_hnd_echo_request(struct icmp6hdr *icmp6h,
 	memcpy(&skb->mac.ethh->h_dest[0], &skb->mac.ethh->h_source[0], skb->dev->addr_len);
 	memcpy(&skb->mac.ethh->h_source[0], &skb->dev->dev_addr[0], skb->dev->addr_len);
 
-	return dev_xmit_skb(skb);
+	return net_tx(skb, NULL);
 }
 
 static int icmp6_hnd_neighbour_solicit(struct icmp6hdr *icmp6h,
@@ -106,7 +107,7 @@ static int icmp6_hnd_neighbour_solicit(struct icmp6hdr *icmp6h,
 	memcpy(&skb->mac.ethh->h_dest[0], &skb->mac.ethh->h_source[0], skb->dev->addr_len);
 	memcpy(&skb->mac.ethh->h_source[0], &skb->dev->dev_addr[0], skb->dev->addr_len);
 
-	return dev_xmit_skb(skb);
+	return net_tx(skb, NULL);
 }
 
 static int icmp6_rcv(struct sk_buff *skb) {

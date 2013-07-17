@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <net/skbuff.h>
 #include <embox/unit.h>
+#include <net/l0/net_entry.h>
 
 #include <kernel/host.h>
 

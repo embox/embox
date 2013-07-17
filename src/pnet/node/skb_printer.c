@@ -16,12 +16,15 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 
+#include <arpa/inet.h>
+
 static void print_skb(struct sk_buff *skb) {
 	int i, j;
+
 	printf("**********\n");
 	printf("dev %s\n", skb->dev->name);
-	printf("eth type = 0x%X ", skb->protocol);
-	printf(": %d bytes\n", skb->len);
+	printf("eth type = %#X ", ntohs(skb->mac.ethh->h_proto));
+	printf(": %u bytes\n", skb->len);
 
 	printf("data:\n");
 	for (i = 0; i < skb->len; i += 16) {

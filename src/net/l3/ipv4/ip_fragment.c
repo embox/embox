@@ -152,7 +152,6 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
 	skb->h.raw = skb->mac.raw + (tmp->h.raw - tmp->mac.raw);
 	skb->nh.raw = skb->mac.raw + (tmp->nh.raw - tmp->mac.raw);
-	skb->protocol = tmp->protocol;
 	skb->dev = tmp->dev;
 
 	/* copy and concatenate data */

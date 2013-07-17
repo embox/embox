@@ -13,18 +13,11 @@
 #define NET_L3_ARP_H_
 
 #include <net/netdevice.h>
-#include <net/skbuff.h>
 
 /**
  * Prototypes
  */
-struct sk_buff;
 struct net_device;
-
-/**
- * Resolve ip address and rebuild sk_buff
- */
-extern int arp_resolve(struct sk_buff *skb);
 
 /**
  * Create and send an ARP packet

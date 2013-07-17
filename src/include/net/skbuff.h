@@ -57,13 +57,6 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
-		/* Packet protocol from driver or protocol to put into Eth header during assembling.
-		 * We should get rid of it. It's almost useless during packet
-		 * receiving and there is a special field in LL header
-		 * for packet assembling.
-		 */
-	uint16_t protocol;
-
 		/* Control buffer (used to store layer-specific info e.g. ip options)
 		 * Nowdays it's used only in ip options, so it's a good idea to
 		 * remove this field

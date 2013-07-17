@@ -15,6 +15,7 @@
 #include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
+#include <net/l0/net_tx.h>
 #include <net/l3/rarp.h>
 #include <net/skbuff.h>
 #include <string.h>
@@ -30,6 +31,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 	int ret;
 	struct arpghdr *rarph;
 	struct arpg_stuff rarph_stuff;
+	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
 	assert((haddr_len != 0) && (paddr_len != 0));
@@ -38,17 +40,19 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 	/* Get default arguments */
 	source_haddr = source_haddr != NULL ? source_haddr : &dev->dev_addr[0];
+	target_haddr = target_haddr != NULL ? target_haddr : &dev->broadcast[0];
 
 	/* Setup some fields */
 	skb->dev = dev;
-	skb->protocol = ETH_P_RARP;
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	/* Make device specific header */
+	hdr_info.type = ETH_P_RARP;
+	hdr_info.src_addr = source_haddr;
+	hdr_info.dst_addr = target_haddr;
 	assert(dev->ops != NULL);
-	assert(dev->ops->create_hdr != NULL);
-	ret = dev->ops->create_hdr(skb, skb->protocol,
-			target_haddr, source_haddr);
+	assert(dev->ops->build_hdr != NULL);
+	ret = dev->ops->build_hdr(skb, &hdr_info);
 	if (ret != 0) {
 		return ret;
 	}
@@ -84,7 +88,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 static int rarp_xmit(struct sk_buff *skb) {
 	/* fall through to dev layer */
-	return dev_xmit_skb(skb);
+	return net_tx(skb, NULL);
 }
 
 int rarp_send(unsigned short oper, unsigned short paddr_space,

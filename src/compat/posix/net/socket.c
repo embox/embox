@@ -21,7 +21,6 @@
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <net/l3/arp_queue.h>
 
 #include <kernel/thread.h>
 #include <kernel/event.h>

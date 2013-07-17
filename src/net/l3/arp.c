@@ -14,13 +14,13 @@
 #include <assert.h>
 #include <embox/net/pack.h>
 #include <errno.h>
-#include <net/l3/arp.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/if_packet.h>
 #include <net/inetdevice.h>
 #include <net/neighbour.h>
-#include <net/l3/route.h>
+#include <net/l0/net_tx.h>
+#include <net/l3/arp.h>
 #include <net/skbuff.h>
 #include <string.h>
 
@@ -35,6 +35,7 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 	int ret;
 	struct arpghdr *arph;
 	struct arpg_stuff arph_stuff;
+	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
 	assert((haddr_len != 0) && (paddr_len != 0));
@@ -43,17 +44,19 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 
 	/* Get default arguments */
 	source_haddr = source_haddr != NULL ? source_haddr : &dev->dev_addr[0];
+	target_haddr = target_haddr != NULL ? target_haddr : &dev->broadcast[0];
 
 	/* Setup some fields */
 	skb->dev = dev;
-	skb->protocol = ETH_P_ARP;
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	/* Make device specific header */
+	hdr_info.type = ETH_P_ARP;
+	hdr_info.src_addr = source_haddr;
+	hdr_info.dst_addr = target_haddr;
 	assert(dev->ops != NULL);
-	assert(dev->ops->create_hdr != NULL);
-	ret = dev->ops->create_hdr(skb, skb->protocol,
-			target_haddr, source_haddr);
+	assert(dev->ops->build_hdr != NULL);
+	ret = dev->ops->build_hdr(skb, &hdr_info);
 	if (ret != 0) {
 		return ret;
 	}
@@ -84,7 +87,7 @@ static int arp_build(struct sk_buff *skb, unsigned short oper,
 
 static int arp_xmit(struct sk_buff *skb) {
 	/* fall through to dev layer */
-	return dev_xmit_skb(skb);
+	return net_tx(skb, NULL);
 }
 
 int arp_send(unsigned short oper, unsigned short paddr_space,
@@ -125,41 +128,6 @@ int arp_send(unsigned short oper, unsigned short paddr_space,
 
 	/* and send */
 	return arp_xmit(skb);
-}
-
-int arp_resolve(struct sk_buff *skb) {
-	int ret;
-	in_addr_t daddr;
-
-	assert(skb != NULL);
-
-	/* get ip after routing */
-	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
-	if (ret != 0) {
-		return ret;
-	}
-
-	/* loopback */
-	if (ip_is_local(daddr, false, false)) {
-		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
-		return ENOERR;
-	}
-
-	/* broadcast */
-	if (daddr == htonl(INADDR_BROADCAST)) {
-		memset(skb->mac.ethh->h_dest, 0xFF, ETH_ALEN);
-		return ENOERR;
-	}
-
-	/* someone on the net */
-	ret = neighbour_get_haddr(ETH_P_IP, &daddr, skb->dev,
-			skb->dev->type, sizeof skb->mac.ethh->h_dest,
-			skb->mac.ethh->h_dest);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return ENOERR;
 }
 
 /**

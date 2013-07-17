@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/list.h>
+#include <net/l0/net_rx.h>
 
 EMBOX_UNIT_INIT(net_entry_init);
 
@@ -53,8 +54,8 @@ static void netif_rx_dequeued(struct net_device *dev) {
 static void netif_poll(struct net_device *dev) {
 	struct sk_buff *skb;
 
-	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
-		netif_receive_skb(skb);
+	while ((skb = skb_queue_pop(&dev->dev_queue)) != NULL) {
+		net_rx(skb);
 	}
 }
 

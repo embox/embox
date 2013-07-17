@@ -3,6 +3,5 @@ package embox.net.l2
 module ethernet {
 	source "ethernet.c"
 
-	depends embox.net.arp /* FIXME */
 	depends embox.lib.LibC
 }
