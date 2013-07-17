@@ -32,34 +32,38 @@ static void print_stat(void) {
 	struct thread *thread, *tmp;
 	int running, sleeping, suspended;
 	int total;
+	//struct task *task, *tmp_task, *ktask;
 
 	printf(" %4s  %4s  %8s %18s %10s\n", "id", "tid", "priority", "state", "time");
 
 	running = sleeping = suspended = 0;
 
+	//ktask = task_kernel_task();
+
 	sched_lock();
 	{
+		//dlist_foreach_entry(task, tmp_task, &ktask->task_link, task_link) {
+		//	dlist_foreach_entry(thread, tmp, &task->main_thread->task_link, task_link) {
 		thread_foreach(thread, tmp) {
-			thread_state_t s = thread->state;
-			const char *state = NULL;
 
-			if (thread_state_running(s)) {
-				state = "running";
-				running++;
-			} else if (thread_state_sleeping(s)) {
-				state = "sleeping";
-				sleeping++;
-			}
+				thread_state_t s = thread->state;
+				const char *state = NULL;
 
-			if(thread->task->tid < 0) {
-				thread->task->tid = 0x54563456;
-			}
-			printf(" %4d%c %4d  %8d %18s %9lds\n",
-				thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
-				thread->task->tid,
-				thread_priority_get(thread),
-				state,
-				thread_get_running_time(thread)/CLOCKS_PER_SEC);
+				if (thread_state_running(s)) {
+					state = "running";
+					running++;
+				} else if (thread_state_sleeping(s)) {
+					state = "sleeping";
+					sleeping++;
+				}
+
+				printf(" %4d%c %4d  %8d %18s %9lds\n",
+					thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
+					thread->task->tid,
+					thread_priority_get(thread),
+					state,
+					thread_get_running_time(thread)/CLOCKS_PER_SEC);
+		//	}
 		}
 	}
 	sched_unlock();

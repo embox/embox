@@ -42,7 +42,6 @@ struct thread {
 	void              *stack;         /**< Allocated thread stack buffer. */
 	size_t             stack_sz;      /**< Stack size. */
 
-
 	union {
 		struct runq    *runq;      /**< For running/ready state. */
 		struct sleepq  *sleepq;    /**< For sleeping state. */
@@ -53,7 +52,7 @@ struct thread {
 	struct thread_priority thread_priority;
 
 	struct task       *task;          /**< Task belong to. */
-	struct dlist_head  task_link;     /**< Link in list holding task threads. */
+	struct dlist_head  thread_task_link;     /**< Link in list holding task threads. */
 
 	clock_t            running_time;  /**< Running time of thread in clocks. */
 	clock_t            last_sync;     /**< Last recalculation of running time. */

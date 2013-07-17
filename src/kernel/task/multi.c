@@ -40,7 +40,7 @@ struct task_creat_param {
 /* Maximum simultaneous creating task number */
 #define SIMULTANEOUS_TASK_CREAT 10
 
-/* struct's livecycle is short: created in new_task,
+/* struct's life cycle is short: created in new_task,
  * freed at first in new task's thread */
 POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
@@ -168,12 +168,7 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 
 	return 0;
 }
-#if 0
-static void thread_set_task(struct thread *t, struct task *tsk) {
-	t->task = tsk;
-	dlist_move(&t->task_link, &tsk->threads);
-}
-#endif
+
 static int task_init_parent(struct task *task, struct task *parent) {
 	int ret;
 	const struct task_resource_desc *res_desc, *failed;
@@ -235,8 +230,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		if(!dlist_empty(&task->main_thread->task_link)) {
-			dlist_foreach_entry(thread, next, &task->main_thread->task_link, task_link) {
+		if(!dlist_empty(&task->main_thread->thread_task_link)) {
+			dlist_foreach_entry(thread, next, &task->main_thread->thread_task_link, thread_task_link) {
 				thread_terminate(thread);
 			}
 		}
@@ -293,7 +288,7 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 		main_thread = tsk->main_thread;
 		get_sched_priority(new_priority, thread_priority_get(main_thread));
 
-		dlist_foreach_entry(thread, tmp, &main_thread->task_link, task_link) {
+		dlist_foreach_entry(thread, tmp, &main_thread->thread_task_link, thread_task_link) {
 			sched_set_priority(thread, get_sched_priority(new_priority,
 						thread_priority_get(thread)));
 		}
@@ -311,7 +306,7 @@ int task_add_thread(struct task * task, struct thread *thread) {
 	}
 
 	/* insert new thread to the list */
-	dlist_add_next(dlist_head_init(&thread->task_link), &task->main_thread->task_link);
+	dlist_add_next(dlist_head_init(&thread->thread_task_link), &task->main_thread->thread_task_link);
 	thread->task = task;
 
 	return ENOERR;
@@ -330,12 +325,12 @@ int task_remove_thread(struct task * task, struct thread *thread) {
 		return -EBUSY;
 	}
 
-	if(dlist_empty(&task->main_thread->task_link)) {
+	if(dlist_empty(&task->main_thread->thread_task_link)) {
 		return -EBUSY;
 	}
 #endif
 	//dlist_head_init(thread);
-	dlist_del(&thread->task_link);
+	dlist_del(&thread->thread_task_link);
 
 	return ENOERR;
 }

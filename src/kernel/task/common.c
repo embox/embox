@@ -61,8 +61,6 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	memset(task_n_res_space, 0, task_sz);
 
-	//dlist_init(&task->threads);
-
 	dlist_head_init(&task->task_link);
 
 	dlist_init(&task->children_tasks);
@@ -101,6 +99,8 @@ static int kernel_task_init(void) {
 	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
+
+	dlist_init(&task->task_link); /* it's out list handler */
 
 	strncpy(task->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
 

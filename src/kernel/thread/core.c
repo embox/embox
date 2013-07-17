@@ -47,7 +47,6 @@ static int id_counter;
 
 static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);
-//static void thread_context_init(struct thread *t);
 
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
@@ -153,7 +152,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	assert(t->stack_sz);
 
 
-	dlist_init(&t->task_link); /* default unlink value */
+	dlist_init(&t->thread_task_link); /* default unlink value */
 
 	t->state = thread_state_init();
 
@@ -363,7 +362,6 @@ clock_t thread_get_running_time(struct thread *thread) {
 	{
 		if (thread_state_oncpu(thread->state)) {
 			/* Recalculate time of the thread. */
-
 			new_clock = clock();
 			thread->running_time += new_clock - thread->last_sync;
 			thread->last_sync = new_clock;
@@ -500,13 +498,10 @@ extern int sched_init(struct thread *idle, struct thread *current);
 static int thread_core_init(void) {
 	struct thread *idle;
 	struct thread *current;
-	struct task *kernel_task = task_kernel_task();
-
 
 	id_counter = 0; /* start enumeration */
 
 	idle = thread_idle_init(); /* idle thread always has ID=0 */
-	kernel_task->main_thread = idle;
 
 	current = thread_boot_init(); /* 'init' thread ID=1 */
 

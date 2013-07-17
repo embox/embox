@@ -43,13 +43,8 @@ struct task {
 	struct task *parent; /**< @brief Task's parent */
 
 	struct dlist_head children_tasks; /**< @brief Task's children */
-#if 0
-	struct dlist_head threads; /**< @brief Threads which have task pointer this task */
-#endif
 
 	struct thread *main_thread;
-
-	//int thread_count;
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
