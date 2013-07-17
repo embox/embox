@@ -8,7 +8,7 @@
 
 #include <net/neighbour.h>
 #include <errno.h>
-#include <kernel/irq_lock.h>
+#include <kernel/softirq_lock.h>
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <util/dlist.h>
@@ -165,7 +165,7 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
 		exist = nbr != NULL;
@@ -173,7 +173,7 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 			nbr = pool_alloc(&neighbour_pool);
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 	if (nbr == NULL) {
 		return -ENOMEM;
 	}
@@ -195,11 +195,11 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 		nbr->dev = dev;
 		skb_queue_init(&nbr->w_queue);
 
-		irq_lock();
+		softirq_lock();
 		{
 			list_add_last_element(nbr, &neighbour_list, lnk);
 		}
-		irq_unlock();
+		softirq_unlock();
 	}
 
 	return 0;
@@ -214,28 +214,29 @@ int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
 		if (nbr == NULL) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOENT;
 		}
 		else if (nbr->htype != htype) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOENT;
 		}
 		else if (nbr->incomplete) {
+			softirq_unlock();
 			return -EINPROGRESS;
 		}
 		else if (nbr->hlen > hlen_max) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOMEM;
 		}
 
 		memcpy(out_haddr, &nbr->haddr[0], nbr->hlen);
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	return 0;
 }
@@ -249,25 +250,25 @@ int neighbour_get_paddr(unsigned short htype, const void *haddr,
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		nbr = nbr_lookup_by_haddr(htype, haddr, dev);
 		if (nbr == NULL) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOENT;
 		}
 		else if (nbr->ptype != ptype) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOENT;
 		}
 		else if (nbr->plen > plen_max) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOMEM;
 		}
 
 		memcpy(out_paddr, &nbr->paddr[0], nbr->plen);
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	return 0;
 }
@@ -280,17 +281,17 @@ int neighbour_del(unsigned short ptype, const void *paddr,
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
 		if (nbr == NULL) {
-			irq_unlock();
+			softirq_unlock();
 			return -ENOENT;
 		}
 
 		nbr_free(nbr);
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	return 0;
 }
@@ -298,7 +299,7 @@ int neighbour_del(unsigned short ptype, const void *paddr,
 int neighbour_clean(struct net_device *dev) {
 	struct neighbour *nbr;
 
-	irq_lock();
+	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
 			if ((nbr->dev == dev) || (dev == NULL)) {
@@ -306,7 +307,7 @@ int neighbour_clean(struct net_device *dev) {
 			}
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	return 0;
 }
@@ -319,17 +320,17 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
 			ret = (*func)(nbr, args);
 			if (ret != 0) {
-				irq_unlock();
+				softirq_unlock();
 				return ret;
 			}
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	return 0;
 }
@@ -346,13 +347,13 @@ int neighbour_send_after_resolve(unsigned short ptype,
 		return -EINVAL;
 	}
 
-	irq_lock();
+	softirq_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
 		if (nbr == NULL) {
 			nbr = pool_alloc(&neighbour_pool);
 			if (nbr == NULL) {
-				irq_unlock();
+				softirq_unlock();
 				skb_free(skb);
 				return -ENOMEM;
 			}
@@ -377,7 +378,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 			skb_queue_push(&nbr->w_queue, skb);
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 
 	if (resolved) {
 		hdr_info.type = nbr->ptype;
@@ -394,7 +395,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 	struct neighbour *nbr;
 
-	irq_lock();
+	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
 			if (nbr->flags & NEIGHBOUR_FLAG_PERMANENT) {
@@ -418,7 +419,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 			}
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 }
 
 static int neighbour_init(void) {
