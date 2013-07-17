@@ -89,7 +89,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, THREAD_FLAG_PRIORITY_INHERIT,
+		if (0 != (res = thread_create(&thd, THREAD_FLAG_KTASK | THREAD_FLAG_PRIORITY_INHERIT,
 				task_trampoline, param))) {
 			goto out_poolfree;
 		}
@@ -103,7 +103,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		}
 
 		thd->task = self_task;
-
 		self_task->main_thread = thd;
 
 		self_task->per_cpu = 0;
@@ -126,8 +125,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		if (res != 0) {
 			goto out_tablefree;
 		}
-
-		//thread_set_task(thd, self_task);
 
 		thread_detach(thd);
 
@@ -238,12 +235,10 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		dlist_foreach_entry(thread, next, &task->threads, task_link) {
-			if (thread == task->main_thread) {
-				continue;
+		if(!dlist_empty(&task->main_thread->task_link)) {
+			dlist_foreach_entry(thread, next, &task->main_thread->task_link, task_link) {
+				thread_terminate(thread);
 			}
-
-			thread_terminate(thread);
 		}
 
 		/* At the end terminate main thread */
@@ -279,6 +274,7 @@ static void *task_trampoline(void *arg) {
 
 int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	struct thread *thread, *tmp;
+	struct thread *main_thread;
 
 	assert(tsk);
 
@@ -294,7 +290,10 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 			return 0;
 		}
 
-		dlist_foreach_entry(thread, tmp, &tsk->threads, task_link) {
+		main_thread = tsk->main_thread;
+		get_sched_priority(new_priority, thread_priority_get(main_thread));
+
+		dlist_foreach_entry(thread, tmp, &main_thread->task_link, task_link) {
 			sched_set_priority(thread, get_sched_priority(new_priority,
 						thread_priority_get(thread)));
 		}
@@ -311,27 +310,18 @@ int task_add_thread(struct task * task, struct thread *thread) {
 		return -EINVAL;
 	}
 
-	if(task->main_thread == NULL) {
-		/* we want to add first thread to task but we creating task now and
-		 *  we don't know new task handler and we just initialize thread as
-		 *  list of threads
-		 */
-		/* this is our list head for threads */
-		dlist_init(&thread->thread_link);
-	} else {
-		/* insert new thread to the list */
-		dlist_add_next(dlist_head_init(&thread->thread_link), &task->main_thread->thread_link);
-		thread->task = task;
-	}
+	/* insert new thread to the list */
+	dlist_add_next(dlist_head_init(&thread->task_link), &task->main_thread->task_link);
+	thread->task = task;
 
 	return ENOERR;
 }
 
 int task_remove_thread(struct task * task, struct thread *thread) {
-	if((NULL != task) || (NULL != thread)) {
+	if((NULL == task) || (NULL == thread)) {
 		return -EINVAL;
 	}
-
+#if 0
 	if(NULL == task->main_thread) {
 		return -EINVAL;
 	}
@@ -340,11 +330,12 @@ int task_remove_thread(struct task * task, struct thread *thread) {
 		return -EBUSY;
 	}
 
-	if(dlist_empty(&task->main_thread->thread_link)) {
+	if(dlist_empty(&task->main_thread->task_link)) {
 		return -EBUSY;
 	}
+#endif
 	//dlist_head_init(thread);
-	//dlist_del(thread);
+	dlist_del(&thread->task_link);
 
 	return ENOERR;
 }

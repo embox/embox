@@ -61,7 +61,7 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	memset(task_n_res_space, 0, task_sz);
 
-	dlist_init(&task->threads);
+	//dlist_init(&task->threads);
 
 	dlist_head_init(&task->task_link);
 

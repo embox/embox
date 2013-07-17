@@ -26,7 +26,11 @@ int task_some_thd_run(struct task *task) {
 	struct thread *th, *tmp;
 	int res = -1;
 
-	dlist_foreach_entry(th, tmp, &task->threads, task_link) {
+	if(-1 != (res = sched_tryrun(task->main_thread))) {
+		return res;
+	}
+
+	dlist_foreach_entry(th, tmp, &task->main_thread->task_link, task_link) {
 		if ((res = sched_tryrun(th)) != -1) {
 			break;
 		}

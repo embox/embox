@@ -51,6 +51,9 @@ static void print_stat(void) {
 				sleeping++;
 			}
 
+			if(thread->task->tid < 0) {
+				thread->task->tid = 0x54563456;
+			}
 			printf(" %4d%c %4d  %8d %18s %9lds\n",
 				thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
 				thread->task->tid,

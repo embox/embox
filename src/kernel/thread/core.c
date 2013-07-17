@@ -109,6 +109,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	 * corrupted
 	 */
 	sched_lock(); /* lock scheduling */
+
 		/*allocate memory, setup thread_id and insert to global thread's list*/
 		if (!(t = thread_new())) {
 			res = -ENOMEM;
@@ -117,6 +118,12 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
+
+
+		/* link with task if it need */
+		if(!(flags & THREAD_FLAG_KTASK)) {
+			task_add_thread(task_self(), t);
+		}
 
 		if (!(flags & THREAD_FLAG_SUSPENDED)) {
 			thread_launch(t);
@@ -138,7 +145,6 @@ out:
 
 static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
-	struct task *tsk;
 	__thread_priority_t priority;
 
 	assert(t);
@@ -146,14 +152,8 @@ static void thread_init(struct thread *t, unsigned int flags,
 	assert(t->stack);
 	assert(t->stack_sz);
 
-	/* get task pointer in depends on whether thread create for kernel task
-	 * or user task */
-	tsk = (flags & THREAD_FLAG_KTASK) ? task_kernel_task() : task_self();
 
-	if (tsk) { //TODO may be if tsk == NULL it's an error
-		t->task = tsk;
-		task_add_thread(t->task, t);
-	}
+	dlist_init(&t->task_link); /* default unlink value */
 
 	t->state = thread_state_init();
 
@@ -201,22 +201,12 @@ static void thread_init(struct thread *t, unsigned int flags,
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-//	struct thread *thread, * tmp;
-//	int count = 0;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 	{
-#if 0
-		/* Counting number of threads in task. XXX: not the best way */
-		dlist_foreach_entry(thread, tmp, &task->threads, task_link) {
-			count++;
-		}
-
-		if ((count == 1) ||
-			(count == 2 && thread_state_dead(task->main_thread->state))) {
-#endif
+		/* We can free only not main threads */
 		if(task->main_thread == current) {
 			/* We are last thread. Unlock scheduler and exit task. */
 			sched_unlock();
@@ -225,18 +215,15 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 			/* Finish scheduling of the thread */
 			sched_finish(current);
 
-			/* We can free only not main threads */
-			if (current != task->main_thread) {
-				if (thread_state_dead(current->state)) {
-					/* Thread is detached. Should be deleted by itself. */
-					thread_delete(current);
-				} else {
-					/* Thread is attached. Joined thread delete it.    */
-					current->run_ret = ret;
+			if (thread_state_dead(current->state)) {
+				/* Thread is detached. Should be deleted by itself. */
+				thread_delete(current);
+			} else {
+				/* Thread is attached. Joined thread delete it.    */
+				current->run_ret = ret;
 
-					if (current->joined) {
-						sched_thread_notify(current->joined, ENOERR);
-					}
+				if (current->joined) {
+					sched_thread_notify(current->joined, ENOERR);
 				}
 			}
 		}
@@ -377,7 +364,6 @@ clock_t thread_get_running_time(struct thread *thread) {
 		if (thread_state_oncpu(thread->state)) {
 			/* Recalculate time of the thread. */
 
-
 			new_clock = clock();
 			thread->running_time += new_clock - thread->last_sync;
 			thread->last_sync = new_clock;
@@ -458,6 +444,8 @@ struct thread *thread_idle_init(void) {
 		return NULL;
 	}
 	thread_init(idle, THREAD_FLAG_KTASK, idle_run, NULL);
+	idle->task = task_kernel_task();
+	idle->task->main_thread = idle;
 
 	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
@@ -481,7 +469,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	dlist_add_next(&thread->thread_link, &__thread_list);
 
 	/* General initialization and task setting up */
-	thread_init(thread, THREAD_FLAG_KTASK, idle_run, NULL);
+	thread_init(thread, 0, idle_run, NULL);
 
 	/* Priority setting up */
 	thread_priority_set(thread, priority);
@@ -503,7 +491,6 @@ struct thread *thread_boot_init(void) {
 			THREAD_PRIORITY_NORMAL);
 
 	task_add_thread(kernel_task, bootstrap);
-	//kernel_task->main_thread = bootstrap;
 
 	return bootstrap;
 }

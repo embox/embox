@@ -25,7 +25,7 @@ TEST_CASE("Create 256 threads with different priority") {
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
 		struct thread *t;
 		test_assert_zero(thread_create(&t,
-				THREAD_FLAG_KTASK, thread_run, (void *) i));
+				0, thread_run, (void *) i));
 		test_assert_zero(thread_set_priority(t, i));
 		test_assert_zero(thread_detach(t));
 	}
