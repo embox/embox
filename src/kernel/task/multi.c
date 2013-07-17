@@ -180,8 +180,6 @@ static int task_init_parent(struct task *task, struct task *parent) {
 
 	task->parent = parent;
 
-	dlist_init(&task->threads);
-
 	task_resource_foreach(res_desc) {
 		if (res_desc->inherit) {
 			ret = res_desc->inherit(task, parent);

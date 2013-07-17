@@ -63,7 +63,7 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	dlist_init(&task->threads);
 
-	dlist_init(&task->task_link);
+	dlist_head_init(&task->task_link);
 
 	dlist_init(&task->children_tasks);
 
