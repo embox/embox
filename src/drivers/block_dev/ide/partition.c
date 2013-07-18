@@ -37,16 +37,16 @@ static int part_read(block_dev_t *bdev, char *buffer,
 	if (blkno + count / SECTOR_SIZE > part->len) {
 		return -EFAULT;
 	}
-	return block_dev_read(bdev, buffer, count, blkno + part->start);
+	return block_dev_read(part->bdev, buffer, count, blkno + part->start);
 }
 
 static int part_write(block_dev_t *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
-  struct partition *part = (struct partition *) bdev->privdata;
-  if (blkno + count / SECTOR_SIZE > part->len) {
-	  return -EFAULT;
-  }
-  return block_dev_write(bdev, buffer, count, blkno + part->start);
+	struct partition *part = (struct partition *) bdev->privdata;
+	if (blkno + count / SECTOR_SIZE > part->len) {
+		return -EFAULT;
+	}
+	return block_dev_write(part->bdev, buffer, count, blkno + part->start);
 }
 
 static block_dev_driver_t partition_driver = {
@@ -55,6 +55,9 @@ static block_dev_driver_t partition_driver = {
 	part_read,
 	part_write
 };
+
+block_dev_driver_t *bdev_driver_part = &partition_driver;
+
 /* TODO Create Partition as drive */
 int create_partitions(hd_t *hd) {
 	mbr_t mbrdata;

@@ -1,0 +1,32 @@
+package embox.cmd.fs
+
+@Cmd(name = "mkpart",
+	help = "creates block device corresponding to partition",
+	man = '''
+		NAME
+			mkpart -b <baseblock> -n <ptn-name> -o <offset> -l <length>
+		OPTIONS
+			-b  - blockdevice from partition to come
+			-n  - name of partition to create
+			-o  - offset of partition in blocks
+			-l  - length of partition in blocks
+		EXAMPLES
+			Consider output of fdisk -l.
+				   Device Boot      Start         End      Blocks   Id  System
+				   <dev>   *      461280     7864823     3701772   83  Linux
+			Then, mkpart should be run like:
+
+			mkpart -b /dev/hda -n hda0 -o 461280 -l 3701772
+		AUTHORS
+			Anton Kozlov
+	''')
+module mkpart {
+	source "mkpart.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.fs.fsop
+	depends embox.fs.core
+	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
+}
