@@ -207,7 +207,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->drv = &ext3fs_driver;
-	dir_nas->fs->journal = journal_load((block_dev_t *) dev_node->nas->fi->privdata,
+	journal_load((block_dev_t *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]), ext3_journal_bmap, dip);
 
 	return 0;
