@@ -67,7 +67,7 @@ PARTITION=${DRIVE}1
 umount $PARTITION
 dd if=/dev/zero of=$DRIVE bs=4K count=16K
 echo "60,,L,*" | sfdisk $DRIVE
-mke2fs $PARTITION
+MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
 mount $PARTITION $MOUNT_POINT
 
 if [ z"$1" == zgrub ]; then
