@@ -59,7 +59,7 @@ typedef unsigned int block_t;
  *
  * This is an opaque datatype.
  */
-typedef struct handle_s handle_t;       /* Atomic operation type */
+typedef struct journal_handle_s journal_handle_t;       /* Atomic operation type */
 
 /**
  * typedef transaction_t - Represents a compound set of atomic updates.
@@ -91,13 +91,18 @@ typedef struct journal_block_s {
     struct dlist_head b_next; /** Linked list entry. */
 } journal_block_t;
 
+/*
+ * Maps journal's block into filesystem block
+ */
+typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
+
 /**
  * struct handle_s - The handle_s type is the concrete type associated with
  *                   handle_t.
  * @h_transaction: Which compound transaction is this update a part of?
  * @h_buffer_credits: Number of remaining buffers we are allowed to dirty.
  */
-struct handle_s {
+struct journal_handle_s {
     transaction_t *h_transaction;
     int h_buffer_credits;
 };
@@ -329,6 +334,9 @@ struct journal_s {
     size_t j_blocksize;
     block_t j_blk_offset;
 
+    journal_bmap_t j_bmap;
+    void *j_ctx;
+
     /* Total maximum capacity of the journal region on disk. */
     size_t j_maxlen;
 
@@ -351,10 +359,14 @@ struct journal_s {
     uint8_t j_uuid[16];
 };
 
-extern journal_t *journal_load(block_dev_t *jdev, block_t start);
-extern handle_t * journal_start(journal_t *jp, int nblocks);
-extern int journal_stop(handle_t *handle);
+extern journal_t *journal_load(block_dev_t *jdev, block_t start, journal_bmap_t f, void *ctx);
+extern journal_handle_t * journal_start(journal_t *jp, int nblocks);
+extern int journal_stop(journal_handle_t *handle);
+
+extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);
+extern void journal_free_block(journal_t *jp, journal_block_t *jb);
+
 extern int journal_checkpoint_transactions(journal_t *jp);
-extern int journal_dirty_metadata (handle_t *handle, journal_block_t *block);
+extern int journal_dirty_block(journal_handle_t *handle, journal_block_t *block);
 
 #endif /* _LIBJOURNAL_H */

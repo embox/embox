@@ -33,14 +33,6 @@
 #define EXT2_NAME "ext2"
 #define EXT3_NAME "ext3"
 #define EXT3_JOURNAL_SUPERBLOCK_INODE 8
-#define MAX_BDEV_COUNT OPTION_MODULE_GET(embox__driver__block,NUMBER,dev_quantity)
-
-struct ext3_nas {
-	struct nas *nas;
-	journal_t *journal;
-};
-
-POOL_DEF(ext3_nas_pool, struct ext3_nas, MAX_BDEV_COUNT);
 
 /* TODO link counter */
 
@@ -166,13 +158,26 @@ static int ext3fs_format(void *dev) {
 	return 0;
 }
 
+/* TODO handle also double-indirect nodes */
+static uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
+	uint32_t buf[jp->j_blocksize / sizeof(uint32_t)];
+	struct ext2fs_dinode *dip = (struct ext2fs_dinode *)jp->j_ctx;
+
+	if (block < NDADDR) {
+		return dip->i_block[block];
+	}
+
+	jp->j_dev->driver->read(jp->j_dev, (char *)buf, jp->j_blocksize, 2 * dip->i_block[NDADDR]);
+
+	return buf[block - NDADDR];
+}
+
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
-	struct ext2fs_dinode *dip;
+	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
-	struct ext3_nas *e3nas;
 	struct node *dev_node = dev;
 	struct nas *dir_nas = ((struct node *)dir)->nas;
 
@@ -196,16 +201,14 @@ static int ext3fs_mount(void *dev, void *dir) {
 	}
 
 	/* set pointer to inode struct in read buffer */
-	dip = (struct ext2fs_dinode *) (buf
-			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE));
+	memcpy(dip, (buf
+			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE)),
+			sizeof(struct ext2fs_dinode));
 
-	e3nas = pool_alloc(&ext3_nas_pool);
-
-	if (NULL == e3nas) {
-		return -ENOMEM;
-	}
-
-	e3nas->journal = journal_load((block_dev_t *) dev_node->nas->fi->privdata, dip->i_block[0] * 2);
+	/* XXX Hack to use ext2 functions */
+	dir_nas->fs->drv = &ext3fs_driver;
+	dir_nas->fs->journal = journal_load((block_dev_t *) dev_node->nas->fi->privdata,
+			fsbtodb(fsi, dip->i_block[0]), ext3_journal_bmap, dip);
 
 	return 0;
 }

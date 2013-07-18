@@ -17,14 +17,19 @@
 static int journal_write_desc_blocks(journal_t *jp);
 static int journal_commit_transaction(journal_t *jp);
 static int journal_write_commit_block(journal_t *jp);
-static journal_block_t *journal_new_block(journal_t *jp, block_t nr);
-static void journal_free_block(journal_t *jp, journal_block_t *jb);
 static transaction_t *journal_new_trans(journal_t *journal);
 static void journal_free_trans(journal_t *journal, transaction_t *t);
 static int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt);
 static int journal_write_superblock(journal_t *jp);
+static int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);
 
-journal_t *journal_load(block_dev_t *jdev, block_t start) {
+#define journal_db2jb(jp, block) \
+		block / (jp->j_blocksize / SECTOR_SIZE)
+
+#define journal_jb2db(jp, block) \
+		block * (jp->j_blocksize / SECTOR_SIZE)
+
+journal_t *journal_load(block_dev_t *jdev, block_t start, journal_bmap_t f, void *ctx) {
     journal_t *jp;
     journal_superblock_t *sb;
     char buf[4096];
@@ -34,32 +39,46 @@ journal_t *journal_load(block_dev_t *jdev, block_t start) {
     }
 
     memset(jp, 0, sizeof(*jp));
-    jp->j_dev        = jdev;
-    jp->j_blk_offset = start;
-    dlist_head_init(&jp->j_checkpoint_transactions);
+
+    jp->j_bmap = f;
+    jp->j_ctx  = ctx;
+    jp->j_dev  = jdev;
 
     /* Load superblock from the log. */
     if (!jp->j_dev->driver->read(jp->j_dev, buf,
-    		1, jp->j_blk_offset)) {
+    		4096, start)) {
     	return NULL;
     }
 
     sb = (journal_superblock_t *)buf;
 
-    jp->j_maxlen     = ntohl(sb->s_maxlen);
-    jp->j_blocksize  = ntohl(sb->s_blocksize);
-    jp->j_first      = ntohl(sb->s_first);
+    jp->j_maxlen         = ntohl(sb->s_maxlen);
+    jp->j_blocksize      = ntohl(sb->s_blocksize);
+    jp->j_blk_offset     = journal_db2jb(jp, start);
+    jp->j_first          = 1;
+    jp->j_last           = jp->j_maxlen;
     jp->j_format_version = ntohl(sb->s_header.h_blocktype);
-    jp->j_sb_buffer = journal_new_block(jp, jp->j_blk_offset);
 
-    memcpy(jp->j_sb_buffer->data, buf, jp->j_blocksize);
+    /* Initialize transaction specific data */
+    jp->j_head                 = jp->j_first;
+    jp->j_tail                 = jp->j_head;
+    jp->j_free                 = jp->j_last - jp->j_first;
+    jp->j_tail_sequence        = 1;
+    jp->j_transaction_sequence = 1;
+    jp->j_running_transaction  = journal_new_trans(jp);
+    dlist_init(&jp->j_checkpoint_transactions);
+
+    /* Update journal superblock */
+    jp->j_sb_buffer      = journal_new_block(jp, jp->j_blk_offset);
     jp->j_superblock = (journal_superblock_t *)jp->j_sb_buffer->data;
+    memcpy(jp->j_sb_buffer->data, buf, jp->j_blocksize);
+    journal_write_superblock(jp);
 
     return jp;
 }
 
-handle_t * journal_start(journal_t *jp, int nblocks) {
-    handle_t *h;
+journal_handle_t * journal_start(journal_t *jp, int nblocks) {
+	journal_handle_t *h;
 
     if (nblocks <= 0 || nblocks >= JOURNAL_NBLOCKS_PER_TRANS(jp)) {
 		errno = EINVAL;
@@ -76,7 +95,7 @@ handle_t * journal_start(journal_t *jp, int nblocks) {
     	return NULL;
     }
 
-    if ((h = malloc(sizeof(handle_t))) == NULL) {
+    if ((h = malloc(sizeof(journal_handle_t))) == NULL) {
     	return NULL;
     }
 
@@ -84,13 +103,14 @@ handle_t * journal_start(journal_t *jp, int nblocks) {
     h->h_transaction    = jp->j_running_transaction;
     h->h_transaction->t_outstanding_credits += nblocks;
     h->h_buffer_credits = nblocks;
+    jp->j_free -= nblocks;
 
     h->h_transaction->t_ref++;
 
     return h;
 }
 
-int journal_stop(handle_t *handle) {
+int journal_stop(journal_handle_t *handle) {
     transaction_t *t;
     journal_t *jp;
     int res = 0;
@@ -101,6 +121,8 @@ int journal_stop(handle_t *handle) {
     if (0 == --t->t_ref) {
     	res = journal_commit_transaction(jp);
     }
+    /* And add to free blocks unused by handle */
+    jp->j_free += handle->h_buffer_credits - t->t_log_blocks;
     free(handle);
 
     return res;
@@ -110,20 +132,17 @@ int journal_checkpoint_transactions(journal_t *jp) {
     transaction_t *t, *tnext;
     journal_block_t *b, *bnext;
 
-    t = jp->j_committing_transaction;
-
     /* XXX make optimization: group writing of neighboring blocks */
     dlist_foreach_entry(t, tnext, &jp->j_checkpoint_transactions, t_next) {
     	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
-    	    if (0 >= jp->j_dev->driver->write(jp->j_dev, b->data,
-    	    		1, b->blocknr)) {
+    	    if (0 >= journal_write_block(jp, b->data, 1, b->blocknr)) {
     	    	return -1;
     	    }
     	}
 
     	jp->j_tail += t->t_log_blocks;
-    	jp->j_free += t->t_log_blocks;
     	jp->j_tail_sequence++;
+    	jp->j_free += t->t_log_blocks;
 
     	if (jp->j_tail > jp->j_last) {
     		jp->j_tail = jp->j_first;
@@ -138,7 +157,7 @@ int journal_checkpoint_transactions(journal_t *jp) {
     return 0;
 }
 
-int journal_dirty_metadata(handle_t *handle, journal_block_t *block) {
+int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
 	transaction_t *t = handle->h_transaction;
 
 	if (0 == handle->h_buffer_credits) {
@@ -152,10 +171,33 @@ int journal_dirty_metadata(handle_t *handle, journal_block_t *block) {
 	return 0;
 }
 
+journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
+    journal_block_t *jb;
+
+    if (!(jb = malloc(sizeof(journal_block_t)))) {
+    	return NULL;
+    }
+
+    if (!(jb->data = malloc(jp->j_blocksize))) {
+		free(jb);
+		return NULL;
+    }
+
+    dlist_head_init(&jb->b_next);
+    jb->blocknr = nr;
+
+    return jb;
+}
+
+void journal_free_block(journal_t *jp, journal_block_t *jb) {
+	free(jb->data);
+	free(jb);
+}
+
 static int journal_write_superblock(journal_t *jp) {
     journal_superblock_t *sb;
 
-	sb = jp->j_superblock;
+    sb = jp->j_superblock;
 
     /* Update in-memory superblock. */
     sb->s_header.h_magic     = htonl(JFS_MAGIC_NUMBER);
@@ -168,7 +210,7 @@ static int journal_write_superblock(journal_t *jp) {
     sb->s_errno              = htonl(0);
 
     /* Write it to the log on disk. */
-    return jp->j_dev->driver->write(jp->j_dev, jp->j_sb_buffer->data, 1, jp->j_blk_offset);
+    return journal_write_block(jp, jp->j_sb_buffer->data, 1, jp->j_blk_offset);
 }
 
 static transaction_t *journal_new_trans(journal_t *journal) {
@@ -182,8 +224,9 @@ static transaction_t *journal_new_trans(journal_t *journal) {
     t->t_journal = journal;
     t->t_tid     = journal->j_transaction_sequence++;
     t->t_state   = T_RUNNING;
-    dlist_head_init(&t->t_reserved_list);
-    dlist_head_init(&t->t_buffers);
+    //dlist_init(&t->t_reserved_list);
+    dlist_init(&t->t_buffers);
+    dlist_head_init(&t->t_next);
 
     return t;
 }
@@ -220,7 +263,6 @@ static int journal_commit_transaction(journal_t *jp) {
     	return -1;
     }
 
-    dlist_init(&jp->j_committing_transaction->t_next);
     dlist_add_prev(&jp->j_committing_transaction->t_next, &jp->j_checkpoint_transactions);
     jp->j_committing_transaction = NULL;
 
@@ -232,7 +274,6 @@ static int journal_write_desc_blocks(journal_t *jp) {
     journal_block_t *b, *bnext, *desc_b = NULL;
     journal_header_t *hdr = NULL;
     journal_block_tag_t *tag = NULL;
-    int tag_cnt = 0;
 
     t->t_state = T_FLUSH;
 
@@ -247,22 +288,24 @@ static int journal_write_desc_blocks(journal_t *jp) {
 	hdr->h_blocktype = htonl(JFS_DESCRIPTOR_BLOCK);
 	hdr->h_sequence  = htonl(t->t_tid);
 
+	tag  = (journal_block_tag_t *) (((journal_header_t *)desc_b->data) + 1);
+
     /* Fill descriptor block and add it as first element */
     dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
 		/* Fill descriptor with update tags. */
-		tag  = (journal_block_tag_t *) (((journal_header_t *)desc_b->data) + 1);
-		tag += tag_cnt++;
-		tag->t_blocknr = htonl(b->blocknr);
-
 		t->t_log_blocks++;
 
-		if (tag_cnt == t->t_nr_buffers ||
-			tag_cnt >= JOURNAL_NTAGS_PER_DESC(jp)) {
+		if (t->t_log_blocks == t->t_nr_buffers ||
+				t->t_log_blocks >= JOURNAL_NTAGS_PER_DESC(jp)) {
 			tag->t_flags = htonl(JFS_FLAG_LAST_TAG);
 		} else {
-			tag->t_flags = htonl(0);
+			tag->t_flags = htonl(JFS_FLAG_SAME_UUID); /* XXX check it */
 		}
+
+		(tag++)->t_blocknr = htonl(b->blocknr);
     }
+    /* desc_b */
+    t->t_log_blocks++;
 
     dlist_add_next(dlist_head_init(&desc_b->b_next), &t->t_buffers);
 
@@ -294,61 +337,32 @@ static int journal_write_commit_block(journal_t *jp) {
     hdr->h_sequence  = htonl(t->t_tid);
 
     /* Write it. */
-    if (0 >= jp->j_dev->driver->write(jp->j_dev, commit_b->data,
-    		1, jp->j_head)) {
+    if (0 >= journal_write_block(jp, commit_b->data, 1, jp->j_bmap(jp, jp->j_head))) {
     	journal_free_block(jp, commit_b);
     	return -1;
     }
     journal_free_block(jp, commit_b);
-
     jp->j_head++;
+
     t->t_log_blocks++;
     t->t_state = T_FINISHED;
 
     return 0;
 }
 
-static journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
-    journal_block_t *jb;
-
-    if (!(jb = malloc(sizeof(journal_block_t)))) {
-    	return NULL;
-    }
-
-    if (!(jb->data = malloc(jp->j_blocksize))) {
-		free(jb);
-		return NULL;
-    }
-
-    jb->blocknr = nr;
-    jp->j_free--;
-
-    return jb;
-}
-
-static void journal_free_block(journal_t *jp, journal_block_t *jb) {
-	free(jb->data);
-	free(jb);
-	jp->j_free++;
-}
-
 static int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt) {
 	journal_block_t *b, *bnext;
-	int ret;
-	char *blocks_data = malloc(cnt * jp->j_blocksize);
-	char *cur = blocks_data;
+	int ret = 0;
 
+	/* XXX Increase speed up of below writing on hd by grouping blocks */
 	dlist_foreach_entry(b, bnext, blocks, b_next) {
-		memcpy(cur, b->data, jp->j_blocksize);
-		cur += jp->j_blocksize;
+		ret += journal_write_block(jp, b->data, 1, jp->j_bmap(jp, jp->j_head++));
 	}
-
-	ret = jp->j_dev->driver->write(jp->j_dev, blocks_data,
-    		cnt, jp->j_head);
-	if (ret > 0) {
-		jp->j_head += cnt;
-	}
-	free(blocks_data);
 
 	return ret;
+}
+
+static int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {
+	return jp->j_dev->driver->write(jp->j_dev, data,
+    		cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
 }
