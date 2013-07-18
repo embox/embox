@@ -22,11 +22,12 @@
 #include <util/dlist.h>
 #include <kernel/thread/types.h>
 
-#define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
+#define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
 
 /**
  * Thread control block.
+ * This is described in <kernel/thread/types.h>
  */
 struct thread;
 
@@ -49,7 +50,8 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
-#define THREAD_FLAG_KTASK            (0x1 << 6) /**< Attach to kernel task. */
+/** Create task without attaching to a task. */
+#define THREAD_FLAG_TASK_THREAD      (0x1 << 6)
 
 /**
  * Iterates over the list of all threads existing in the system.
@@ -82,15 +84,6 @@ extern struct thread *thread_lookup(thread_id_t id);
  */
 #define thread_self() thread_get_current()
 
-/*
- * Initializes thread structure for current thread, adds it to list of threads
- * and to kernel task. Use this ONLY for bootstrap threads.
- *
- * @param
- *   TODO:
- */
-extern struct thread *thread_init_self(void *stack, size_t stack_sz,
-		thread_priority_t priority);
 
 /**
  * Creates a new thread.
@@ -231,15 +224,8 @@ extern int thread_launch(struct thread *thread);
 
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
-#if 0
+
 extern thread_priority_t thread_get_priority(struct thread *thread);
-#endif
-
-extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
-
-extern unsigned int thread_get_affinity(struct thread *thread);
-
-
 
 /**
  * Returns running time of the thread. To get better precision should be
@@ -251,5 +237,12 @@ extern unsigned int thread_get_affinity(struct thread *thread);
  *   Running time in clocks.
  */
 extern clock_t thread_get_running_time(struct thread *thread);
+
+/*
+ * for SMP
+ */
+extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
+extern unsigned int thread_get_affinity(struct thread *thread);
+
 
 #endif /* KERNEL_THREAD_API_H_ */

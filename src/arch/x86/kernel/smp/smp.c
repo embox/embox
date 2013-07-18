@@ -32,6 +32,9 @@ static SPINLOCK_DEFINE(startup_lock);
 
 char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
 
+extern struct thread *thread_init_self(void *stack, size_t stack_sz,
+		thread_priority_t priority);
+
 void startup_ap(void) {
 	extern void idt_load(void);
 	extern int sched_cpu_init(struct thread *thread);

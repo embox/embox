@@ -89,7 +89,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, THREAD_FLAG_KTASK | THREAD_FLAG_PRIORITY_INHERIT,
+		if (0 != (res = thread_create(&thd, THREAD_FLAG_TASK_THREAD | THREAD_FLAG_PRIORITY_INHERIT,
 				task_trampoline, param))) {
 			goto out_poolfree;
 		}

@@ -17,6 +17,8 @@ module core extends thread_mode {
 	source "thread_allocator.c"
 	source "thread_smp.c"
 	source "thread_priority.c"
+	source "idle_thread.c"
+	source "init_thread.c"
 
 	@NoRuntime depends embox.kernel.sched.sched
 	depends embox.kernel.sched.sched_policy.api
