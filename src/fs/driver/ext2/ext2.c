@@ -1313,21 +1313,30 @@ int ext2_write_sblock(struct nas *nas) {
 }
 
 static int ext2_read_sblock(struct nas *nas) {
-	uint8_t sbbuf[SBSIZE];
+	void *sbbuf = NULL;
 	struct ext2_fs_info *fsi;
 	struct ext2sb *ext2sb;
+	int ret = 0;
 
 	fsi = nas->fs->fsi;
 	ext2sb = &fsi->e2sb;
 
-	if (1 != ext2_read_sector(nas, (char *) sbbuf, 1,
-					dbtofsb(fsi, SBOFF / SECTOR_SIZE))) {
-		return EIO;
+	if (!(sbbuf = ext2_buff_alloc(nas, fsi->s_block_size))) {
+		return ENOMEM;
 	}
 
-	e2fs_sbload((void *)sbbuf, ext2sb);
+	if (1 != ext2_read_sector(nas, (char *) sbbuf, 1,
+					dbtofsb(fsi, SBOFF / SECTOR_SIZE))) {
+		ret = EIO;
+		goto out;
+	}
+
+	e2fs_sbload(sbbuf, ext2sb);
+	ext2_buff_free(nas, sbbuf);
+
 	if (ext2sb->s_magic != E2FS_MAGIC) {
-		return EINVAL;
+		ret = EINVAL;
+		goto out;
 	}
 	if (ext2sb->s_rev_level > E2FS_REV1
 		|| (ext2sb->s_rev_level == E2FS_REV1
@@ -1335,7 +1344,9 @@ static int ext2_read_sblock(struct nas *nas) {
 		|| (ext2sb->s_inode_size != 128
 		&& ext2sb->s_inode_size != 256)
 		|| ext2sb->s_feature_incompat & ~EXT2F_INCOMPAT_SUPP))) {
-		return ENODEV;
+		ret = ENODEV;
+		goto out;
+
 	}
 
 	/* compute in-memory ext2_fs_info values */
@@ -1364,7 +1375,9 @@ static int ext2_read_sblock(struct nas *nas) {
 
 	fsi->s_desc_per_block = fsi->s_block_size / sizeof(struct ext2_gd);
 
-	return 0;
+out:
+	ext2_buff_free(nas, sbbuf);
+	return ret;
 }
 
 int ext2_write_gdblock(struct nas *nas) {
@@ -1393,26 +1406,34 @@ static int ext2_read_gdblock(struct nas *nas) {
 	size_t rsize;
 	uint gdpb;
 	int i;
-	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
+	void *gdbuf = NULL;
+	int ret = 0;
 
-	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
 	gdpb = fsi->s_block_size / sizeof(struct ext2_gd);
 
+	if (!(gdbuf = ext2_buff_alloc(nas, fsi->s_block_size))) {
+		return ENOMEM;
+	}
+
 	for (i = 0; i < fsi->s_gdb_count; i++) {
-		rsize = ext2_read_sector(nas, fi->f_buf, 1,
+		rsize = ext2_read_sector(nas, gdbuf, 1,
 				fsi->e2sb.s_first_data_block + 1 + i);
 		if (rsize * fsi->s_block_size != fsi->s_block_size) {
-			return EIO;
+			ret = EIO;
+			goto out;
+
 		}
-		e2fs_cgload((struct ext2_gd *)fi->f_buf, &fsi->e2fs_gd[i * gdpb],
+		e2fs_cgload((struct ext2_gd *)gdbuf, &fsi->e2fs_gd[i * gdpb],
 				(i == (fsi->s_gdb_count - 1)) ?
 				(fsi->s_ncg - gdpb * i) * sizeof(struct ext2_gd)
 				: fsi->s_block_size);
 	}
-	return 0;
+out:
+	ext2_buff_free(nas, gdbuf);
+	return ret;
 }
 
 static int ext2_mount_entry(struct nas *dir_nas) {
