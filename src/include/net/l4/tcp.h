@@ -93,6 +93,7 @@ typedef struct tcp_sock {
 	struct tcp_seq_state rem;   /* Informations about remote socket */
 	uint32_t last_ack;          /* Last acknowledged sequence number */
 	uint32_t ack_flag;          /* Acknowledgment for flags (SYN or FIN) */
+	struct tcp_sock *parent;    /* Listening socket to which it belongs */
 	struct list_head conn_wait; /* Queue of incoming connection */
 	size_t conn_wait_max;       /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */

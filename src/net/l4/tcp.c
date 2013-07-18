@@ -584,11 +584,10 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		/* Save new socket to accept queue */
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
+			newsock.tcp_sk->parent = sock.tcp_sk;
 			list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-
-		io_sync_enable(sock.sk->ios, IO_SYNC_READING);
 
 		return TCP_RET_OK;
 	}
@@ -639,6 +638,10 @@ static enum tcp_ret_code tcp_st_syn_recv(union sock_pointer sock, struct sk_buff
 
 	if (tcph->ack) {
 		tcp_set_st(sock, TCP_ESTABIL);
+
+		if (sock.tcp_sk->parent != NULL) {
+			io_sync_enable(sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
+		}
 	}
 
 	return TCP_RET_DROP;

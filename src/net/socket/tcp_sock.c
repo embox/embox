@@ -50,6 +50,7 @@ static int tcp_init(struct sock *sk) {
 	tcp_set_st(sock, TCP_CLOSED);
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
+	sock.tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 	sock.tcp_sk->conn_wait_max = 0;
 	sock.tcp_sk->lock = 0;
