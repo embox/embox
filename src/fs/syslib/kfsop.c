@@ -26,6 +26,9 @@
 #include <kernel/spinlock.h>
 #include <mem/misc/pool.h>
 
+#define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
+POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
+
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
 	struct fs_driver *drv;
@@ -513,11 +516,7 @@ int kumount(const char *dir) {
 	return drv->fsop->umount(dir_node);
 }
 
-
-#define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER,flock_quantity)
-POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
-
-int flock_shared_get(flock_t *flock) {
+static int flock_shared_get(flock_t *flock) {
 	flock_shared_t *shlock;
 	struct thread *current = sched_current();
 
@@ -529,7 +528,7 @@ int flock_shared_get(flock_t *flock) {
 	return -ENOERR;
 }
 
-int flock_shared_put(flock_t *flock) {
+static int flock_shared_put(flock_t *flock) {
 	flock_shared_t *shlock;
 	struct thread *current = sched_current();
 	struct dlist_head *item, *next;
@@ -546,6 +545,18 @@ int flock_shared_put(flock_t *flock) {
 	return -ENOERR;
 }
 
+static inline void flock_exclusive_get(struct mutex *exlock) {
+	mutex_lock(exlock);
+}
+
+static inline int flock_exclusive_tryget(struct mutex *exlock) {
+	return mutex_trylock(exlock);
+}
+
+static inline void flock_exclusive_put(struct mutex *exlock) {
+	mutex_unlock(exlock);
+}
+
 /**
  * Apply advisory lock to specified fd
  * @param File descriptor number
@@ -555,7 +566,6 @@ int flock_shared_put(flock_t *flock) {
 int kflock(int fd, int operation) {
 	flock_t *flock;
 	struct idx_desc *idesc;
-	struct file_desc *fdesc;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
@@ -596,18 +606,10 @@ int kflock(int fd, int operation) {
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
 	idesc = task_self_idx_get(fd);
-	fdesc = idesc->data->fd_struct;
-	flock = &fdesc->node->flock;
-	exlock = &fdesc->node->flock.exlock;
-	shlock_count = &fdesc->node->flock.shlock_count;
-	flock_guard = &fdesc->node->flock.flock_guard;
-
-	/* TODO:
-	 *  - Extract some work into separate functions
-	 *  - Verify and possibly update tests
-	 *  - Maybe extract flock related functions to external file
-	 *  - Review
-	 */
+	flock = &((struct file_desc *) idesc->data->fd_struct)->node->flock;
+	exlock = &flock->exlock;
+	shlock_count = &flock->shlock_count;
+	flock_guard = &flock->flock_guard;
 
 	/* Exclusive locking operation */
 	if (LOCK_EX & operation) {
@@ -620,13 +622,16 @@ int kflock(int fd, int operation) {
 			flock_shared_put(flock);
 		}
 		if (LOCK_NB & operation) {
-			if (-EAGAIN == mutex_trylock(exlock)) {
+			if (-EAGAIN == flock_exclusive_tryget(exlock)) {
 				spin_unlock(flock_guard);
 				SET_ERRNO(EWOULDBLOCK);
 				return -1;
 			}
 		} else {
-			mutex_lock(exlock);
+			/* We should unlock flock_guard here to avoid many processes
+			 * waiting on spin lock at the enter to this critical section */
+			spin_unlock(flock_guard);
+			flock_exclusive_get(exlock);
 		}
 		spin_unlock(flock_guard);
 	}
@@ -645,17 +650,22 @@ int kflock(int fd, int operation) {
 				 * that is because of current implementation of mutexes, so
 				 * if we converting lock to shared we need to free all of them
 				 */
-				while (exlock->lock_count != 0) mutex_unlock(exlock);
+				while (exlock->lock_count != 0) flock_exclusive_put(exlock);
 			} else {
 				if (LOCK_NB & operation) {
-					if (-EAGAIN == mutex_trylock(exlock)) {
+					if (-EAGAIN == flock_exclusive_tryget(exlock)) {
 						spin_unlock(flock_guard);
 						SET_ERRNO(EWOULDBLOCK);
 						return -1;
 					}
 				} else {
-					mutex_lock(exlock);
-					mutex_unlock(exlock);
+					/* The same as for exclusive lock we are unlocking
+					 * flock_guard to avoid many processes waiting on
+					 * spin lock at the enter to this critical section */
+					spin_unlock(flock_guard);
+					flock_exclusive_get(exlock);
+					spin_lock(flock_guard);
+					flock_exclusive_put(exlock);
 				}
 			}
 		}
@@ -672,7 +682,7 @@ int kflock(int fd, int operation) {
 			assert(0 == *shlock_count);
 			/* mutex_unlock can't block the thread
 			 * so nothing need for LOCK_NB */
-			while (exlock->lock_count != 0) mutex_unlock(exlock);
+			while (exlock->lock_count != 0) flock_exclusive_put(exlock);
 		}
 		/* Handle shared lock free */
 		if (*shlock_count > 0) {

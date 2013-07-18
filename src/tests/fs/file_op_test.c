@@ -265,17 +265,20 @@ static void *first_flock_test_thread(void *arg) {
 	test_emit('d');
 	test_assert_zero(flock(fd, LOCK_UN));
 	test_emit('g');
+
 	return NULL;
 }
 
 static void *second_flock_test_thread(void *arg) {
 	int fd = *((int *) arg);
+
 	test_emit('c');
 
 	/* Try to non-blocking acquire busy lock */
 	test_assert(-1 == flock(fd, LOCK_EX | LOCK_NB));
 	test_assert(EWOULDBLOCK == errno);
 
+	/* Acquire just unlocked by fftt exclusive lock */
 	test_assert_zero(flock(fd, LOCK_EX));
 	test_emit('e');
 
@@ -288,13 +291,14 @@ static void *second_flock_test_thread(void *arg) {
 	/* Release first shared lock */
 	test_assert_zero(flock(fd, LOCK_UN));
 
-	/* TODO: Convert share to exclusive */
+	/* Convert share to exclusive */
+	test_assert_zero(flock(fd, LOCK_EX));
 
 	/* Release second lock */
 	test_assert_zero(flock(fd, LOCK_UN | LOCK_NB));
 
-//	test_assert_zero(flock(fd, LOCK_UN));
 	test_emit('f');
+
 	return NULL;
 }
 
