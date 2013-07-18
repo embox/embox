@@ -17,7 +17,7 @@
 
 extern char _percpu_start, _percpu_block_end, _percpu_end;
 
-#define __percpu__         __attribute__((section(".data.percpu")))
+#define __percpu__         __attribute__((section(".percpu.data")))
 #define __PERCPU_START     ((char *)&_percpu_start)
 #define __PERCPU_BLOCK_END ((char *)&_percpu_block_end)
 #define __PERCPU_BLOCK_SZ  ((size_t)(__PERCPU_BLOCK_END - __PERCPU_START))

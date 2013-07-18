@@ -4,7 +4,7 @@
 SECTIONS {
 	.data : {
 		_percpu_start = .;
-		*(.data.percpu)
+		*(.percpu.data)
 		_percpu_block_end = .;
 		. += (_percpu_block_end - _percpu_start) * (NCPU - 1);
 		_percpu_end = .;
