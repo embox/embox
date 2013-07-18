@@ -263,7 +263,6 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	case TCP_SYN_SENT:
 	case TCP_SYN_RECV:
 	case TCP_FINWAIT_1:
-//	case TCP_CLOSING: /* not req */
 	case TCP_LASTACK:
 		sock.tcp_sk->ack_flag = sock.tcp_sk->self.seq + 1;
 		debug_print(2, "sk %p set ack_flag %u for state %d-%s\n",
@@ -273,6 +272,18 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 
 	sock.sk->state = new_state;
 	debug_print(2, "sk %p set state %d-%s\n", sock.tcp_sk, new_state, str_state[new_state]);
+
+	/* throw error: can't read */
+	switch (new_state) {
+	case TCP_CLOSEWAIT:
+	case TCP_TIMEWAIT:
+	case TCP_CLOSING:
+	case TCP_CLOSED:
+		if (sock.sk->ios != NULL) {
+			io_sync_error(sock.sk->ios);
+		}
+		break;
+	}
 }
 
 int tcp_st_status(union sock_pointer sock) {
@@ -801,7 +812,6 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 	case TCP_TIMEWAIT: /* User already closed sock, it waiting to be collected by
 			       tcp timer, can do it now*/
 		return TCP_RET_FREE;
-		break;
 	case TCP_CLOSED: /* TODO */
 	case TCP_LISTEN: /* TODO */
 	case TCP_SYN_RECV_PRE: /* TODO */
@@ -812,10 +822,6 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 			break; /* invalid reset */
 		}
 		tcp_set_st(sock, TCP_CLOSED);
-
-		if (sock.sk->ios != NULL) {
-			io_sync_error(sock.sk->ios);
-		}
 		break;
 	}
 
