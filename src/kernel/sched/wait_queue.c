@@ -96,3 +96,15 @@ void wait_queue_notify_all(struct wait_queue *wait_queue) {
 	}
 	ipl_restore(ipl);
 }
+
+void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error) {
+	struct wait_link *link, *next;
+
+	ipl_t ipl = ipl_save();
+	{
+		dlist_foreach_entry(link, next, &wait_queue->list, link) {
+			sched_thread_notify(link->thread, error);
+		}
+	}
+	ipl_restore(ipl);
+}

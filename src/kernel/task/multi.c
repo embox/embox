@@ -210,6 +210,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 
 	assert(task != task_kernel_task());
 
+	task->err = (int)res;
+
 	sched_lock();
 	{
 		/* Deinitialize all resources */

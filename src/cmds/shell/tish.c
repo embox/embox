@@ -144,7 +144,7 @@ static void * run_cmd(void *data) {
 		printf("%s: Command returned with code %d: %s\n",
 				cmd_name(cdata->cmd), ret, strerror(-ret));
 		free(cdata);
-		return NULL; /* error: ret */
+		return (void *)ret; /* error: ret */
 	}
 
 	free(cdata);
@@ -153,6 +153,7 @@ static void * run_cmd(void *data) {
 
 static int process_external(struct cmd_data *cdata, int on_fg) {
 	pid_t pid;
+	int res;
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
@@ -161,10 +162,10 @@ static int process_external(struct cmd_data *cdata, int on_fg) {
 	}
 
 	if (on_fg) {
-		return task_waitpid(pid);
+		res = task_waitpid(pid);
 	}
 
-	return 0;
+	return res;
 }
 
 static int process(struct cmd_data *cdata) {

@@ -32,9 +32,9 @@ int task_waitpid(pid_t pid) {
 
 	return ret;
 }
-
+extern void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error);
 static void task_waitq_deinit(struct task *task) {
-	wait_queue_notify_all(task->waitq);
+	wait_queue_notify_all_err(task->waitq, task->err);
 }
 
 static void task_waitq_init(struct task *task, void *_waitq) {
