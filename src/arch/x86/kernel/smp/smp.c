@@ -92,7 +92,7 @@ static int unit_init(void)
 	init_trampoline();
 
 	/* Start all CPUs */
-    for (int i = 0; i <= NCPU - 1; i++) {
+    for (int i = 0; i < NCPU; i++) {
     	if (i == lapic_id()) {
     		continue;
     	}

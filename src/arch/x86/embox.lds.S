@@ -40,7 +40,6 @@ SECTIONS {
 	.data : {
 		REGION_ALIGN();
 		*(.data)
-		*(.data.*)
 		*(.got.*)
 		*(.got)
 		REGION_ALIGN();

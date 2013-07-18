@@ -1,14 +1,13 @@
 #include <asm-generic/embox.lds.h>
-#include <framework/mod/options.h>
-
 #include <kernel/cpu.h>
 
 SECTIONS {
 	.data : {
-		_percpu_vma = .;
+		_percpu_start = .;
 		*(.data.percpu)
-		_percpu_len = . - _percpu_vma;
-		. += _percpu_len * (NCPU - 1);
+		_percpu_block_end = .;
+		. += (_percpu_block_end - _percpu_start) * (NCPU - 1);
+		_percpu_end = .;
 	} SECTION_REGION(data) :data
 	SECTION_SYMBOLS(data)
 }

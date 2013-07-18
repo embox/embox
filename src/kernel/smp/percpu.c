@@ -15,8 +15,17 @@
 #ifdef SMP
 
 void percpu_init(void) {
-	for (unsigned int i = 1; i < NCPU; i++) {
-		memcpy(__PERCPU_START + i*__PERCPU_LEN, __PERCPU_START, __PERCPU_LEN);
+	unsigned int cpu;
+	char *cpu_data_block;
+
+	cpu = 1;
+	cpu_data_block = __PERCPU_START;
+
+	while (cpu < NCPU) {
+		++cpu;
+		cpu_data_block += __PERCPU_BLOCK_SZ;
+
+		memcpy(cpu_data_block, __PERCPU_START, __PERCPU_BLOCK_SZ);
 	}
 }
 

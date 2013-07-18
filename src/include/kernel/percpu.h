@@ -15,16 +15,19 @@
 
 #include <stddef.h>
 
-extern char _percpu_vma, _percpu_len;
+extern char _percpu_start, _percpu_block_end, _percpu_end;
 
-#define __percpu__     __attribute__((section(".data.percpu")))
-#define __PERCPU_START ((char *) &_percpu_vma)
-#define __PERCPU_LEN   ((size_t) &_percpu_len)
+#define __percpu__         __attribute__((section(".data.percpu")))
+#define __PERCPU_START     ((char *)&_percpu_start)
+#define __PERCPU_BLOCK_END ((char *)&_percpu_block_end)
+#define __PERCPU_BLOCK_SZ  ((size_t)(__PERCPU_BLOCK_END - __PERCPU_START))
+#define __PERCPU_END       ((char *)&_percpu_end)
 
 #define __PERCPU_CPU_VAR_PTR(cpu_id, name) \
-		((typeof(name)) (((char *) (name)) + (cpu_id * __PERCPU_LEN)))
+	((typeof(name)) (((char *) (name)) + (cpu_id * __PERCPU_BLOCK_SZ)))
 
-
+//		assert((__PERCPU_START <= (char *)(name))
+//				&& ((char *)(name) < __PERCPU_BLOCK_END));
 #else
 
 #define __percpu__
