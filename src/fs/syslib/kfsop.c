@@ -558,6 +558,9 @@ static int flock_shared_get(flock_t *flock) {
 	struct thread *current = sched_current();
 
 	shlock = pool_alloc(&flock_pool);
+	if (NULL == shlock) {
+		return -ENOMEM;
+	}
 	dlist_add_next(dlist_head_init(&shlock->flock_link), &flock->shlock_holders);
 	shlock->holder = current;
 	flock->shlock_count++;
@@ -601,6 +604,7 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
  * @return ENOERR if operation succeed or -1 and set errno in other way
  */
 int kflock(int fd, int operation) {
+	int rc;
 	flock_t *flock;
 	struct idx_desc *idesc;
 	struct mutex *exlock;
@@ -707,7 +711,10 @@ int kflock(int fd, int operation) {
 			}
 		}
 		/* Acquire shared lock */
-		flock_shared_get(flock);
+		rc = flock_shared_get(flock);
+		if (-ENOERR != rc) {
+			return rc;
+		}
 		spin_unlock(flock_guard);
 	}
 
