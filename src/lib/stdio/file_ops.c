@@ -40,6 +40,22 @@ FILE *stdin = &stdin_struct;
 FILE *stdout = &stdout_struct;
 FILE *stderr = &stderr_struct;
 
+static FILE *file_alloc(int fd) {
+	FILE *file = pool_alloc(&file_pool);
+
+	if (!file) {
+		return NULL;
+	}
+
+	file->fd = fd;
+	file->has_ungetc = 0;
+	return file;
+}
+
+void file_free(FILE *file) {
+	pool_free(&file_pool, file);
+}
+
 FILE *fopen(const char *path, const char *mode) {
 	int fd;
 	FILE *file = NULL;
@@ -57,14 +73,15 @@ FILE *fopen(const char *path, const char *mode) {
 		flags |= O_APPEND | O_WRONLY | O_CREAT;
 	}
 
-	if ((fd = open(path, flags, DEFAULT_MODE)) > 0) {
-		file = pool_alloc(&file_pool);
-		if (file == NULL) {
-			close(fd);
-			SET_ERRNO(ENOMEM);
-			return NULL;
-		}
-		file->fd = fd;
+	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
+		/* That's sad, but open sets errno, no need to alter */
+		return NULL;
+	}
+
+	if (NULL == (file = file_alloc(fd))) {
+		close(fd);
+		SET_ERRNO(ENOMEM);
+		return NULL;
 	}
 
 	return file;
@@ -77,13 +94,11 @@ FILE *fdopen(int fd, const char *mode) {
 	 */
 	FILE *file;
 
-	file = pool_alloc(&file_pool);
+	file = file_alloc(fd);
 	if (file == NULL) {
 		SET_ERRNO(ENOMEM);
 		return NULL;
 	}
-
-	file->fd = fd;
 
 	return file;
 }
@@ -106,9 +121,11 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
+
 	if (NULL == file) {
 		return -1;
 	}
+
 	return write(file->fd, buf, size * count);
 }
 
@@ -140,11 +157,12 @@ int fclose(FILE *file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	res = close(file->fd);
 
+	res = close(file->fd);
 	if (res >= 0) {
-		pool_free(&file_pool, file);
+		file_free(file);
 	}
+
 	return res;
 }
 

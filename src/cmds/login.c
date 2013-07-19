@@ -132,15 +132,14 @@ static void *taskshell(void *data) {
 
 }
 
-static int login_user(const char *name, const char *cmd) {
+static int login_user(const char *name, const char *cmd, char with_pass) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
 	struct passwd pwd, *result;
 	struct spwd *spwd = NULL;
-	uid_t euid = geteuid();
 	int tid;
 	int res;
 
-	if (euid && NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
+	if (with_pass && NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
 		goto errret;
 	}
 
@@ -153,7 +152,7 @@ static int login_user(const char *name, const char *cmd) {
 		goto errret;
 	}
 
-	if (euid && strcmp(passbuf, spwd->sp_pwdp)) {
+	if (with_pass && strcmp(passbuf, spwd->sp_pwdp)) {
 		goto errret;
 	}
 
@@ -180,16 +179,20 @@ errret:
 
 static int login_cmd(int argc, char **argv) {
 	char *name = NULL, *cmd = NULL;
+	char with_pass = 1;
 	int opt, res;
 
 	if (argc != 1) {
 
 		getopt_init();
 
-		while (-1 != (opt = getopt(argc, argv, "c:"))) {
+		while (-1 != (opt = getopt(argc, argv, "pc:"))) {
 			switch(opt) {
 			case 'c':
 				cmd = optarg;
+				break;
+			case 'p':
+				with_pass = 0;
 				break;
 			default:
 				break;
@@ -201,7 +204,7 @@ static int login_cmd(int argc, char **argv) {
 		}
 
 
-		return login_user(name, cmd);
+		return login_user(name, cmd, with_pass);
 	}
 
 	do {
@@ -213,7 +216,7 @@ static int login_cmd(int argc, char **argv) {
 			printf("\n\n");
 		}
 
-		login_user(name, NULL);
+		login_user(name, NULL, 1);
 
 		free(name);
 

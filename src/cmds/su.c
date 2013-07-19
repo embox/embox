@@ -26,7 +26,7 @@ static int su_exec(int argc, char *argv[]) {
 	char old_smac_label[SMAC_LABELLEN];
 	int opt, ret;
 	char *cmd = NULL, *name = "root";
-	char *newargv[4];
+	char *newargv[5];
 	int newargc;
 
 	getopt_init();
@@ -50,14 +50,20 @@ static int su_exec(int argc, char *argv[]) {
 	strcpy(task_self_security(), smac_admin);
 
 	if (cmd) {
-		char *nargv[] = {"", "-c", cmd, name};
-		newargc = 4;
+		char *nargv[] = {"", "-c", cmd};
+		newargc = 3;
 		memcpy(newargv, nargv, sizeof(nargv));
 	} else {
-		char *nargv[] = {"", name};
-		newargc = 2;
+		char *nargv[] = {""};
+		newargc = 1;
 		memcpy(newargv, nargv, sizeof(nargv));
 	}
+
+	if (!euid) {
+		newargv[newargc++] = "-p";
+	}
+
+	newargv[newargc++] = name;
 
 	ret = cmd_exec(login_cmd, newargc, newargv);
 
