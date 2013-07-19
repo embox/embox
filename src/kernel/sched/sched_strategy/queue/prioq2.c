@@ -13,6 +13,7 @@
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 
+#include <module/embox/arch/smp.h>
 #include <kernel/cpu.h>
 
 void sched_strategy_init(struct sched_strategy_data *s) {
@@ -44,12 +45,12 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 	int i;
 
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
-#ifndef SMP
+#ifdef NOSMP
 		if (!dlist_empty(&queue->list[i])) {
 			thread = dlist_entry(queue->list[i].next, struct thread,
 					sched.link);
 		}
-#else
+#else /* NOSMP */
 		struct thread *t, *nxt;
 		unsigned int mask = 1 << cpu_get_id();
 		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {

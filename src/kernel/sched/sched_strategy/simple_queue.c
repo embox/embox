@@ -17,6 +17,7 @@
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
 
+#include <module/embox/arch/smp.h>
 #include <kernel/cpu.h>
 #include <kernel/time/timer.h>
 
@@ -62,11 +63,11 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 	extern void smp_send_resched(int cpu_id);
 	sched_post_switch();
 
-#ifdef SMP
+#ifndef NOSMP
 	for (int i = 0; i < NCPU; i++) {
 		smp_send_resched(i);
 	}
-#endif
+#endif /* !NOSMP */
 }
 
 int runq_start(struct runq *rq, struct thread *t) {

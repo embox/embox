@@ -9,6 +9,8 @@
 #ifndef ARCH_NOSMP_H_
 #define ARCH_NOSMP_H_
 
+#define NOSMP
+
 #define __NCPU 1
 
 #endif /* ARCH_NOSMP_H_ */

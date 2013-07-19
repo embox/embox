@@ -1,15 +1,25 @@
-package embox.kernel
+package embox.kernel.smp
 
-module smp {
-	source "bkl.c"
-
-	depends embox.arch.x86.kernel.smp
-	depends percpu
-
-	depends embox.kernel.thread.core
+@DefaultImpl(no_bkl)
+abstract module bkl_api {
 }
 
-module percpu {
-	source "percpu.lds.S"
-	source "percpu.c"
+module no_bkl extends bkl_api {
+	source "no_bkl_impl.h"
+}
+
+module bkl extends bkl_api {
+	source "bkl.c"
+}
+
+@DefaultImpl(onecpu)
+abstract module cpu_api {
+}
+
+module onecpu extends cpu_api {
+	source "onecpu_impl.h"
+}
+
+module percpu extends cpu_api {
+	source "percpu.c", "percpu_impl.h", "percpu.lds.S"
 }

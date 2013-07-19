@@ -8,6 +8,7 @@
 
 
 #include <asm/linkage.h>
+#include <module/embox/arch/smp.h>
 
 #include <kernel/cpu.h>
 
@@ -62,9 +63,9 @@ C_ENTRY(_start):
 	call    gdt_init
 	call    idt_init
 
-#ifdef SMP
+#ifndef NOSMP
 	call    percpu_init
-#endif
+#endif /* !NOSMP */
 
 /* we already save eax and ebx on the stack */
 	call    multiboot_save_info

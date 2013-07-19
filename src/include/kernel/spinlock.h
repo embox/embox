@@ -11,6 +11,8 @@
 
 #include <kernel/cpu.h>
 #include <sys/types.h>
+#include <module/embox/arch/smp.h>
+
 //typedef unsigned long spinlock_t;
 
 #define SPIN_UNLOCKED 0
@@ -22,7 +24,7 @@
 #define SPINLOCK_DECLARE(name) \
 	extern spinlock_t name
 
-#ifdef SMP
+#ifndef NOSMP
 
 #define __barrier() \
 	__asm__ __volatile__("" : : : "memory")
@@ -50,12 +52,12 @@ static inline void spin_unlock(spinlock_t *lock) {
 	__barrier();
 }
 
-#else
+#else /* NOSMP */
 
 #define spin_lock(lock)   do { (void) lock; } while (0)
 
 #define spin_unlock(lock) do { (void) lock; } while (0)
 
-#endif
+#endif /* !NOSMP */
 
-#endif /* KERNEL_SPINLOCK_H_ */
+#endif /* !KERNEL_SPINLOCK_H_ */

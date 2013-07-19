@@ -11,9 +11,6 @@
 
 #include <kernel/percpu.h>
 
-/* TODO: Delete it */
-#ifdef SMP
-
 void percpu_init(void) {
 	unsigned int cpu;
 	char *cpu_data_block;
@@ -28,5 +25,3 @@ void percpu_init(void) {
 		memcpy(cpu_data_block, __PERCPU_START, __PERCPU_BLOCK_SZ);
 	}
 }
-
-#endif /* SMP */
