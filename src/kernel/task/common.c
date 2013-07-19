@@ -119,3 +119,27 @@ int task_add_thread(struct task * task, struct thread *thread) {
 
 	return ENOERR;
 }
+
+
+int task_remove_thread(struct task * task, struct thread *thread) {
+	if((NULL == task) || (NULL == thread)) {
+		return -EINVAL;
+	}
+#if 0
+	if(NULL == task->main_thread) {
+		return -EINVAL;
+	}
+
+	if(task->main_thread == thread) {
+		return -EBUSY;
+	}
+
+	if(dlist_empty(&task->main_thread->thread_task_link)) {
+		return -EBUSY;
+	}
+#endif
+
+	dlist_del(&thread->thread_task_link);
+
+	return ENOERR;
+}
