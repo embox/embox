@@ -9,30 +9,18 @@
  */
 
 #include <math.h>
+#include <util/dlist.h>
+#include <util/array.h>
+
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
 #include <kernel/task/std_signal.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
+
 #include "common.h"
-#include <util/array.h>
+
 
 ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
-
-extern void context_enter_frame(struct context *ctx, void *pc);
-extern void context_push_stack(struct context *ctx, void *arg, size_t n);
-
-int task_some_thd_run(struct task *task) {
-	struct thread *th;
-	int res = -1;
-
-	list_for_each_entry(th, &task->threads, task_link) {
-		if ((res = sched_tryrun(th)) != -1) {
-			break;
-		}
-	}
-
-	return res;
-}
 
 static void task_terminate(int sig) {
 	task_exit(NULL);
@@ -64,7 +52,7 @@ static const struct task_resource_desc signal_resource = {
 void task_signal_hnd(void) {
 	global_sig_hnd_t hnd;
 
-	sched_unlock();
+	sched_unlock_noswitch();
 	{
 		array_foreach(hnd, __signal_handlers_array, ARRAY_SPREAD_SIZE(__signal_handlers_array)) {
 			if (hnd) {
@@ -75,13 +63,5 @@ void task_signal_hnd(void) {
 	sched_lock();
 }
 
-#if 0
-static int notify_hnd(struct thread *prev, struct thread *next) {
-	context_enter_frame(&next->context, task_signal_hnd);
-	return 0;
-}
-
-TASK_RESOURCE_NOTIFY(notify_hnd);
-#endif
 TASK_RESOURCE_DESC(&signal_resource);
 

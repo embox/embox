@@ -44,6 +44,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
 
 #define ULONG_MAX ((unsigned long)(~0x0L)) /* 0xFFFFFFFF */
 #define LONG_MAX  ((long)(ULONG_MAX >> 1)) /* 0x7FFFFFFF */
@@ -99,6 +100,9 @@ unsigned long int strtoul(const char *nptr, char **endptr, int base) {
 	}
 	if (any < 0) {
 		acc = ULONG_MAX;
+		SET_ERRNO(ERANGE);
+	} else if (any == 0) {
+		SET_ERRNO(EINVAL);
 	} else if (neg) {
 		acc = -acc;
 	}

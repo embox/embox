@@ -27,7 +27,7 @@
 #include <fs/file_desc.h>
 
 #define PSEVDOFS_NAME "vfat"
-#define FS_NAME "ffs"
+#define FS_NAME "ufs"
 
 
 static int ffsfs_open(struct node *node, struct file_desc *file_desc,

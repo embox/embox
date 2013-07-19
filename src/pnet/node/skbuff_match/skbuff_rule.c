@@ -8,8 +8,8 @@
 
 #include <string.h>
 #include <mem/objalloc.h>
-#include <net/udp.h>
-#include <net/ip.h>
+#include <net/l4/udp.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/if_ether.h>
 #include <net/skbuff.h>
 

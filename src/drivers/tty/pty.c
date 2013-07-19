@@ -10,8 +10,8 @@
 
 #include <string.h>
 
-#include <kernel/thread/sched.h>
-#include <kernel/thread/event.h>
+#include <kernel/sched.h>
+#include <kernel/event.h>
 #include <kernel/work.h>
 
 static void pty_out_wake(struct tty *t) {

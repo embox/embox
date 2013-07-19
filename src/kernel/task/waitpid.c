@@ -10,41 +10,41 @@
 
 #include <kernel/task.h>
 #include <kernel/task/task_table.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched/wait_queue.h>
 
-int task_waitpid(unsigned int pid) {
+int task_waitpid(pid_t pid) {
 	struct task *task;
-	int res = ENOERR;
+	int ret = 0;
 
 	sched_lock();
 	{
 		task = task_table_get(pid);
-
-		if (task) {
-			while (0 > sched_sleep_locked(task->wait_sq,
-					SCHED_TIMEOUT_INFINITE));
-		} else {
-			res = -ENOENT;
+		if (task == NULL) {
+			ret = -ENOENT;
+		}
+		else {
+			ret = wait_queue_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
 
-	return res;
+	return ret;
+}
+extern void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error);
+static void task_waitq_deinit(struct task *task) {
+	wait_queue_notify_all_err(task->waitq, task->err);
 }
 
-static void task_wait_sq_deinit(struct task *task) {
-	sched_wake_all(task->wait_sq);
-}
-
-static void task_wait_sq_init(struct task *task, void *_wait_sq) {
-	task->wait_sq = _wait_sq;
-	sleepq_init(task->wait_sq);
+static void task_waitq_init(struct task *task, void *_waitq) {
+	task->waitq = _waitq;
+	wait_queue_init(task->waitq);
 }
 
 static const struct task_resource_desc waitpid_resource = {
-	.init = task_wait_sq_init,
-	.deinit = task_wait_sq_deinit,
+	.init = task_waitq_init,
+	.deinit = task_waitq_deinit,
 	.resource_size = sizeof(struct sleepq)
 };
 

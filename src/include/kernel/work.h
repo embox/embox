@@ -9,26 +9,44 @@
 #ifndef KERNEL_WORK_H_
 #define KERNEL_WORK_H_
 
-#include <util/slist.h>
+#include <util/dlist.h>
 
-#define WORK_F_DISABLED (0x1 << 0)  /**< Initially disabled work. */
+struct work;
 
-struct work {
-	struct slist_link pending_link;
-	unsigned int state;
-	void (*handler)(struct work *);
+typedef int(*work_handler)(struct work *);
+
+struct work_queue {
+	struct dlist_head list;
 };
 
-extern struct work *work_init(struct work *, void (*worker)(struct work *),
-		unsigned int flags);
+struct work {
+	struct dlist_head link;
+	unsigned int state;
 
-extern void work_disable(struct work *);
-extern void work_enable(struct work *);
-extern int work_disabled(struct work *);
+	struct work_queue *wq;
+	work_handler handler;
+};
 
-extern void work_post(struct work *);
+#define WORK_DISABLED 0x1
+
+extern void work_init(struct work *w, work_handler handler, unsigned int flags);
+
+extern void work_queue_init(struct work_queue *wq);
+
+
+extern void work_post(struct work *w , struct work_queue *wq);
+extern void work_cancel(struct work *w);
+
+extern void work_disable(struct work *w);
+extern void work_enable(struct work *w);
+
+extern void work_queue_run(struct work_queue *wq);
+
+
+/*
 extern unsigned int work_pending(struct work *);
 extern unsigned int work_pending_reset(struct work *);
+*/
 
 /**
  * Evaluate a given @a expr inside a block with the specified @a work disabled.
@@ -44,4 +62,3 @@ extern unsigned int work_pending_reset(struct work *);
 	})
 
 #endif /* KERNEL_WORK_H_ */
-

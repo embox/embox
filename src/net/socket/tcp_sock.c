@@ -13,40 +13,46 @@
 #include <sys/uio.h>
 #include <util/array.h>
 #include <util/math.h>
+#include <net/if_ether.h>
 
-#include <net/tcp.h>
+#include <net/l4/tcp.h>
 #include <sys/socket.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/sock.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 
 #include <kernel/time/time.h>
 
-#include <mem/objalloc.h>
+#include <mem/misc/pool.h>
 #include <embox/net/sock.h>
 #include <kernel/task/io_sync.h>
 
+#include <framework/mod/options.h>
+#define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
-EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
+static inline void debug_print(__u8 code, const char *msg, ...) { }
 
-OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
+static const struct sock_ops tcp_sock_ops_struct;
+const struct sock_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 
+EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 
 /************************ Socket's functions ***************************/
-static int tcp_v4_init_sock(struct sock *sk) {
+static int tcp_init(struct sock *sk) {
 	union sock_pointer sock;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_init_sock: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_init: sk %p\n", sock.tcp_sk);
 
 	tcp_set_st(sock, TCP_CLOSED);
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
+	sock.tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
-	event_init(&sock.tcp_sk->new_conn, "new_conn");
+	sock.tcp_sk->conn_wait_max = 0;
 	sock.tcp_sk->lock = 0;
 	timerclear(&sock.tcp_sk->last_activity);
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
@@ -54,7 +60,56 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	return 0;
 }
 
-static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) {
+static int tcp_close(struct sock *sk) {
+	struct sk_buff *skb;
+	struct tcphdr *tcph;
+	union sock_pointer sock;
+
+	assert(sk != NULL);
+
+	sock.sk = sk;
+	debug_print(3, "tcp_close: sk %p\n", sock.tcp_sk);
+
+	tcp_obj_lock(sock, TCP_SYNC_STATE);
+	{
+		assert(sock.sk->state < TCP_MAX_STATE);
+		switch (sock.sk->state) {
+		default:
+			return -EBADF;
+		case TCP_CLOSED:
+			tcp_obj_unlock(sock, TCP_SYNC_STATE);
+			tcp_free_sock(sock);
+			return 0;
+		case TCP_LISTEN:
+		case TCP_SYN_SENT:
+		case TCP_SYN_RECV_PRE:
+			tcp_set_st(sock, TCP_CLOSED);
+			tcp_obj_unlock(sock, TCP_SYNC_STATE);
+			tcp_free_sock(sock);
+			return 0;
+		case TCP_SYN_RECV:
+		case TCP_ESTABIL:
+		case TCP_CLOSEWAIT:
+			skb = alloc_prep_skb(0, 0);
+			if (skb == NULL) {
+				break;
+			}
+			tcp_set_st(sock, sock.sk->state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
+			build_tcp_packet(0, 0, sock, skb);
+			tcph = tcp_hdr(skb);
+			tcph->fin = 1;
+			tcph->ack = 1;
+			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+			break;
+		}
+	}
+	tcp_obj_unlock(sock, TCP_SYNC_STATE);
+
+	return 0;
+}
+
+static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
+		socklen_t addr_len, int flags) {
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;
@@ -86,12 +141,12 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 	}
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_connect: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_connect: sk %p\n", sock.tcp_sk);
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
-		assert(sock.sk->sk_state < TCP_MAX_STATE);
-		switch (sock.sk->sk_state) {
+		assert(sock.sk->state < TCP_MAX_STATE);
+		switch (sock.sk->state) {
 		default:
 			ret = -EISCONN;
 			break;
@@ -138,25 +193,30 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 	return ret;
 }
 
-static int tcp_v4_listen(struct sock *sk, int backlog) {
+static int tcp_listen(struct sock *sk, int backlog) {
 	union sock_pointer sock;
 	int ret;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_listen: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_listen: sk %p\n", sock.tcp_sk);
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
-		assert(sock.sk->sk_state < TCP_MAX_STATE);
-		switch (sock.sk->sk_state) {
+		assert(sock.sk->state < TCP_MAX_STATE);
+		switch (sock.sk->state) {
 		default:
 			ret = -EINVAL; /* error: connection already exists */
 			break;
 		case TCP_CLOSED:
 		case TCP_LISTEN:
+			if (backlog <= 0) {
+				ret = -EINVAL; /* error: invalid backlog */
+				break;
+			}
 			tcp_set_st(sock, TCP_LISTEN);
+			sock.tcp_sk->conn_wait_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -165,9 +225,9 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 
 	return ret;
 }
-#include <kernel/thread/sched_lock.h>
-static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
-		struct sockaddr *addr, int *addr_len, int flags) {
+
+static int tcp_accept(struct sock *sk,
+		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
 	struct timeval started;
@@ -177,44 +237,34 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	assert((addr == NULL) || (addr_len != NULL));
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->sk_state);
+	debug_print(3, "tcp_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->state);
 
-	assert(sock.sk->sk_state < TCP_MAX_STATE);
-	switch (sock.sk->sk_state) {
+	assert(sock.sk->state < TCP_MAX_STATE);
+	switch (sock.sk->state) {
 	default:
 		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
 		/* waiting anyone */
-		sched_lock(); {
-			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE); {
-				if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-					if (flags & O_NONBLOCK) {
-						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-						sched_unlock();
-						return -EAGAIN;
-					}
-					sock_unlock(sk);
-
-					event_wait(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
-
-					if (!sock_lock(&sk)) {
-						tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-						sched_unlock();
-						return -EINVAL;
-					}
-				}
-			} tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-		} sched_unlock();
-
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
-			assert(!list_empty(&sock.tcp_sk->conn_wait));
-			/* get first socket from */
-			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
-			/* Delete new socket from list and block listening socket if there are no connections. */
-			list_del_init(&newsock.tcp_sk->conn_wait);
+			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
-				idx_io_disable(sk->sk_socket->desc_data, IDX_IO_READING);
+				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+				return -EAGAIN;
+			}
+			io_sync_enable(sock.sk->ios, IO_SYNC_READING);
+
+			/* get first socket from */
+			assert(!list_empty(&sock.tcp_sk->conn_wait));
+			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+
+			/* delete new socket from list */
+			list_del_init(&newsock.tcp_sk->conn_wait);
+
+			/* disable reading if queue is empty */
+			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
+			if (!list_empty(&sock.tcp_sk->conn_wait)) {
+				io_sync_enable(sock.sk->ios, IO_SYNC_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
@@ -227,7 +277,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			addr_in->sin_addr.s_addr = newsock.inet_sk->daddr;
 			*addr_len = sizeof *addr_in;
 		}
-		debug_print(3, "tcp_v4_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
+		debug_print(3, "tcp_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
 				inet_ntoa(*(struct in_addr *)&newsock.inet_sk->daddr), (int)ntohs(newsock.inet_sk->dport));
 		/* wait until something happened */
 		tcp_get_now(&started);
@@ -237,28 +287,34 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 				return -ETIMEDOUT;
 			}
 		}
+
+		if (tcp_st_status(newsock) == TCP_ST_NOTEXIST) {
+			tcp_free_sock(newsock);
+			return -ECONNRESET;
+		}
+
 		*newsk = newsock.sk;
-		return tcp_st_status(newsock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
+		return 0;
 		/* case TCP_LISTEN */
-	} /* switch(sock.sk->sk_state) */
+	} /* switch(sock.sk->state) */
 }
 
-static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int flags) {
+static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes, max_len;
 	char *buff;
+	size_t len = msg->msg_iov->iov_len;
 
 	assert(sk != NULL);
 	assert(msg != NULL);
 	assert(len == msg->msg_iov->iov_len);
 
 	sock.sk = sk;
-	debug_print(3, "tcp_v4_sendmsg: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_sendmsg: sk %p\n", sock.tcp_sk);
 
-	assert(sock.sk->sk_state < TCP_MAX_STATE);
-	switch (sock.sk->sk_state) {
+	assert(sock.sk->state < TCP_MAX_STATE);
+	switch (sock.sk->state) {
 	default:
 		return -ENOTCONN;
 	case TCP_ESTABIL:
@@ -276,7 +332,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 					sock.tcp_sk->rem.wind, sock.tcp_sk->self.seq - sock.tcp_sk->last_ack);
 
 			bytes = min(upper_bound, (len > max_len ? max_len : len));
-			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
+			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
 			skb = alloc_prep_skb(0, bytes);
 			if (skb == NULL) {
 				if (len != msg->msg_iov->iov_len) {
@@ -305,67 +361,29 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	}
 }
 
-static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int flags) {
-	struct sk_buff *skb;
-	union sock_pointer sock;
-	size_t bytes;
-	char *buff, last_iteration;
-	struct timeval started;
+static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
+	int ret;
 
-	assert(sk != NULL);
-	assert(msg != NULL);
-	assert(len == msg->msg_iov->iov_len);
+	if (sk == NULL) {
+		return -EINVAL;
+	}
 
-	sock.sk = sk;
-	debug_print(3, "tcp_v4_recvmsg: sk %p\n", sock.tcp_sk);
+	debug_print(3, "tcp_recvmsg: sk %p\n", sk);
 
-	tcp_get_now(&started);
-
-check_state:
-	assert(sock.sk->sk_state < TCP_MAX_STATE);
-	switch (sock.sk->sk_state) {
+	assert(sk->state < TCP_MAX_STATE);
+	switch (sk->state) {
 	default:
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSEWAIT:
-		skb = skb_queue_front(sk->sk_receive_queue);
-		if (skb == NULL) {
-			if (sock.sk->sk_state == TCP_CLOSEWAIT) {
-				msg->msg_iov->iov_len = 0;
-				return 0; /* no more data to receive */
-			}
-			if (flags & O_NONBLOCK) {
-				return -EAGAIN;
-			}
-			if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
-				return -ETIMEDOUT; /* error: timeout */
-			}
-			/* wait received packet or another state */
-			goto check_state;
+		ret = sock_stream_recvmsg(sk, msg, flags);
+		if ((ret == -EAGAIN) && (sk->state == TCP_CLOSEWAIT)) {
+			msg->msg_iov->iov_len = 0;
+			return 0; /* no more data to receive */
 		}
-		last_iteration = 0;
-		buff = (char *)msg->msg_iov->iov_base;
-		do {
-			bytes = tcp_data_left(skb);
-			if (bytes > len) {
-				bytes = len;
-				last_iteration = 1;
-			}
-			memcpy((void *)buff, skb->p_data, bytes);
-			buff += bytes;
-			len -= bytes;
-			debug_print(3, "tcp_v4_recvmsg: received len %d\n", bytes);
-			if (last_iteration) {
-				skb->p_data += bytes;
-				break;
-			}
-			skb_free(skb);
-		} while ((len > 0) && ((skb = skb_queue_front(sk->sk_receive_queue)) != NULL));
-		msg->msg_iov->iov_len -= len;
-		return 0;
+		return ret;
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
@@ -373,54 +391,8 @@ check_state:
 	}
 }
 
-static void tcp_v4_close(struct sock *sk, long timeout) {
-	struct sk_buff *skb;
-	struct tcphdr *tcph;
-	union sock_pointer sock;
-
-	assert(sk != NULL);
-
-	sock.sk = sk;
-	debug_print(3, "tcp_v4_close: sk %p\n", sock.tcp_sk);
-
-	tcp_obj_lock(sock, TCP_SYNC_STATE);
-	{
-		assert(sock.sk->sk_state < TCP_MAX_STATE);
-		switch (sock.sk->sk_state) {
-		default:
-			break; /* error: EBADF */
-		case TCP_CLOSED:
-			tcp_obj_unlock(sock, TCP_SYNC_STATE);
-			tcp_free_sock(sock);
-			return; /* error: connection does not exist */
-		case TCP_LISTEN:
-		case TCP_SYN_SENT:
-		case TCP_SYN_RECV_PRE:
-			tcp_set_st(sock, TCP_CLOSED);
-			tcp_obj_unlock(sock, TCP_SYNC_STATE);
-			tcp_free_sock(sock);
-			return;
-		case TCP_SYN_RECV:
-		case TCP_ESTABIL:
-		case TCP_CLOSEWAIT:
-			skb = alloc_prep_skb(0, 0);
-			if (skb == NULL) {
-				break;
-			}
-			tcp_set_st(sock, sock.sk->sk_state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
-			build_tcp_packet(0, 0, sock, skb);
-			tcph = tcp_hdr(skb);
-			tcph->fin = 1;
-			tcph->ack = 1;
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-			break;
-		}
-	}
-	tcp_obj_unlock(sock, TCP_SYNC_STATE);
-}
-
 /* TODO */
-static int tcp_v4_shutdown(struct sock *sk, int how) {
+static int tcp_shutdown(struct sock *sk, int how) {
 	if (!(how & (SHUT_WR + 1))) {
 		return 0;
 	}
@@ -429,79 +401,18 @@ static int tcp_v4_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
-static void tcp_v4_hash(struct sock *sk) {
-	size_t i;
+POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
+static LIST_DEF(tcp_sock_list);
 
-	debug_print(4, "tcp_v4_hash: sk %p\n", sk);
-
-	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-	{
-		for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-			if (tcp_table[i] == NULL) {
-				tcp_table[i] = (struct tcp_sock *)sk;
-				break;
-			}
-		}
-	}
-	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-}
-
-static void tcp_v4_unhash(struct sock *sk) {
-	size_t i;
-
-	debug_print(4, "tcp_v4_unhash: sk %p\n", sk);
-
-	tcp_obj_lock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-	{
-		for (i = 0; i < ARRAY_SIZE(tcp_table); ++i) {
-			if (tcp_table[i] == (struct tcp_sock *)sk) {
-				tcp_table[i] = NULL;
-				break;
-			}
-		}
-	}
-	tcp_obj_unlock(tcp_sock_default, TCP_SYNC_SOCK_TABLE);
-}
-
-static int allocated = 0; /* for debug */
-static struct sock * tcp_v4_sock_alloc(void) {
-	struct sock *sk;
-
-	sk = (struct sock *)objalloc(&objalloc_tcp_socks); /* TODO sync this */
-	debug_print(6, "tcp_v4_sock_alloc: %p, total %d\n", sk, ++allocated);
-	return sk;
-}
-
-static void tcp_v4_sock_free(struct sock *sk) {
-	debug_print(6, "tcp_v4_sock_free: %p, total %d\n", sk, --allocated);
-	objfree(&objalloc_tcp_socks, sk);
-}
-
-static int tcp_v4_setsockopt(struct sock *sk, int level, int optname,
-			char *optval, int optlen) {
-	return 0;
-}
-
-static int tcp_v4_getsockopt(struct sock *sk, int level, int optname,
-			char *optval, int *optlen) {
-	return 0;
-}
-
-const struct proto tcp_prot = {
-		.name       = "TCP",
-		.init       = tcp_v4_init_sock,
-		.connect    = tcp_v4_connect,
-		.listen     = tcp_v4_listen,
-		.accept     = tcp_v4_accept,
-		.setsockopt = tcp_v4_setsockopt,
-		.getsockopt = tcp_v4_getsockopt,
-		.sendmsg    = tcp_v4_sendmsg,
-		.recvmsg    = tcp_v4_recvmsg,
-		.close      = tcp_v4_close,
-		.hash       = tcp_v4_hash,
-		.unhash     = tcp_v4_unhash,
-		.sock_alloc = tcp_v4_sock_alloc,
-		.sock_free  = tcp_v4_sock_free,
-		.shutdown   = tcp_v4_shutdown,
-		.obj_size   = sizeof(struct tcp_sock),
+static const struct sock_ops tcp_sock_ops_struct = {
+	.init      = tcp_init,
+	.close     = tcp_close,
+	.connect   = tcp_connect,
+	.listen    = tcp_listen,
+	.accept    = tcp_accept,
+	.sendmsg   = tcp_sendmsg,
+	.recvmsg   = tcp_recvmsg,
+	.shutdown  = tcp_shutdown,
+	.sock_pool = &tcp_sock_pool,
+	.sock_list = &tcp_sock_list
 };

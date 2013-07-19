@@ -8,6 +8,8 @@
 #ifndef NO_TRACE_IMPL_H_
 #define NO_TRACE_IMPL_H_
 
+struct __trace_point;
+
 struct __trace_block {
 	int proxy;
 };

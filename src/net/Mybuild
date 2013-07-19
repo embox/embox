@@ -1,0 +1,56 @@
+package embox.net
+
+module dev {
+	option number netdev_quantity=8
+	option number netdev_table_sz=3
+	source "netdev.c"
+
+	depends embox.util.List
+	depends embox.util.hashtable
+}
+
+module skbuff {
+	source "skb.c"
+	option number amount_skb=4000
+	option number amount_skb_buff=4000
+	option number skb_buff_size=1514 /* for example */
+	depends embox.arch.interrupt
+
+	source "skb_queue.c"
+	depends embox.arch.interrupt
+	depends embox.lib.LibC
+}
+
+module core {
+	source "inetdev.c"
+	option number amount_interface=4
+
+	depends dev /* for dev.c */
+	depends embox.util.List
+	depends embox.mem.pool
+	depends embox.lib.LibC
+}
+
+module sock {
+	source "sock.c"
+
+	depends skbuff
+	depends embox.arch.interrupt
+	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.kernel.manual_event_api
+	depends embox.kernel.task.io_sync
+	depends embox.framework.LibFrameworkNet
+}
+
+module neighbour {
+	source "neighbour.c"
+	option number neighbour_amount=10
+	option number neighbour_expire=60000
+	option number neighbour_tmr_freq=1000
+	option number neighbour_resend=3000
+
+	depends embox.compat.posix.util.time /* for time() */
+	depends embox.mem.pool
+	depends embox.lib.LibC
+}

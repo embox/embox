@@ -38,4 +38,8 @@
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82371SB_ISA,      "Intel 82371SB (PIIX3) ISA"},
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82371SB_IDE,      "Intel 82371SB (PIIX3) IDE"},
 /* Bochs */
-{ PCI_VENDOR_ID_BOCHS,    PCI_DEV_ID_BOCHS_VGA,              "Bochs VGA"}
+{ PCI_VENDOR_ID_BOCHS,    PCI_DEV_ID_BOCHS_VGA,              "Bochs VGA"},
+/* PLX Technology */
+{ PCI_VENDOR_ID_PLX,      PCI_DEV_ID_PLX_PEX8619,            "PCI Express Switch"},
+/* XILINX */
+{PCI_VENDOR_ID_XILINX,    PCI_DEV_ID_XILINX_SPARTAN6,        "Spartan 6 PCI interface"}

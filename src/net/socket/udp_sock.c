@@ -10,18 +10,22 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/uio.h>
+#include <net/if_ether.h>
 
 #include <sys/socket.h>
-#include <net/ip.h>
-#include <net/udp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
 
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
+#include <mem/misc/pool.h>
+#include <util/array.h>
 
-static const struct proto udp_prot;
+static const struct sock_ops udp_sock_ops_struct;
+const struct sock_ops *const udp_sock_ops = &udp_sock_ops_struct;
 
-EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, true);
+EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_sock_ops_struct);
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 		__be16 dest, size_t len) {
@@ -34,11 +38,11 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 	return 0;
 }
 
-static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int flags) {
+static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 
 	struct inet_sock *inet = inet_sk(sk);
+	size_t len = msg->msg_iov->iov_len;
 
 	/* FIXME if msg->msg_iov->iov_len more than ETHERNET_V2_FRAME_SIZE */
 	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
@@ -50,7 +54,6 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE; // + inet->opt->optlen;
-	skb->sk = sk;
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
@@ -60,72 +63,12 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-		size_t len, int flags) {
-	struct sk_buff *skb;
+POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
+static LIST_DEF(udp_sock_list);
 
-	skb = skb_queue_front(sk->sk_receive_queue);
-	if (skb && skb->len > 0) {
-		if (len > (ntohs(skb->h.uh->len) - UDP_HEADER_SIZE)) {
-			len = ntohs(skb->h.uh->len) - UDP_HEADER_SIZE;
-		}
-		memcpy((void *) msg->msg_iov->iov_base,
-				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
-		skb_free(skb); /* FIXME `skb` may contains more data than `len` */
-	} else {
-		len = 0;
-	}
-
-	msg->msg_iov->iov_len = len;
-
-	return 0;
-}
-
-static void udp_hash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		if (udp_table[i] == NULL) {
-			udp_table[i] = (struct udp_sock *)sk;
-			break;
-		}
-	}
-}
-
-static void udp_unhash(struct sock *sk) {
-	size_t i;
-
-	for (i = 0; i < sizeof udp_table / sizeof udp_table[0]; ++i) {
-		if (udp_table[i] == (struct udp_sock *) sk) {
-			udp_table[i] = NULL;
-			break;
-		}
-	}
-}
-
-static int udp_setsockopt(struct sock *sk, int level, int optname,
-			char *optval, int optlen) {
-	return ENOERR;
-}
-
-static int udp_getsockopt(struct sock *sk, int level, int optname,
-			char *optval, int *optlen) {
-	return ENOERR;
-}
-
-#if 0
-int udp_disconnect(struct sock *sk, int flags) {
-        return 0;
-}
-#endif
-
-static const struct proto udp_prot = {
-	.name        = "UDP",
-	.sendmsg     = udp_sendmsg,
-	.recvmsg     = udp_recvmsg,
-	.hash        = udp_hash,
-	.unhash      = udp_unhash,
-	.setsockopt  = udp_setsockopt,
-	.getsockopt  = udp_getsockopt,
-	.obj_size    = sizeof(struct udp_sock),
+static const struct sock_ops udp_sock_ops_struct = {
+	.sendmsg   = udp_sendmsg,
+	.recvmsg   = sock_nonstream_recvmsg,
+	.sock_pool = &udp_sock_pool,
+	.sock_list = &udp_sock_list
 };

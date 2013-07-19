@@ -22,5 +22,5 @@ module mount {
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
-	depends embox.fs.sys.fsop
+	depends embox.fs.filesystem
 }

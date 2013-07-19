@@ -7,18 +7,31 @@
  */
 
 #include <math.h>
+#include <util/array.h>
+
+#include <kernel/thread.h>
+#include <kernel/sched.h>
+
 #include <kernel/task/task_table.h>
 #include <kernel/task/std_signal.h>
 #include "common.h"
-#include <util/array.h>
 
-extern int task_some_thd_run(struct task *task);
 
 void task_stdsig_send(struct task *task, int sig) {
+	struct thread *th, *tmp;
+	int res = -1;
 
 	task->signal_table->sig_mask |= 1 << sig;
 
-	task_some_thd_run(task);
+	if(-1 != (res = sched_tryrun(task->main_thread))) {
+		return;
+	}
+
+	dlist_foreach_entry(th, tmp, &task->main_thread->thread_task_link, thread_task_link) {
+		if (-1 != (res = sched_tryrun(th))) {
+			return;
+		}
+	}
 }
 
 void task_stdsig_handle(void) {

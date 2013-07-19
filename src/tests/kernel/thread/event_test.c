@@ -9,31 +9,44 @@
 
 #include <unistd.h>
 
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/time/ktime.h>
 
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("test for change thread state by events");
 
-static void *thread_run(void *arg) {
-	struct event *event = (struct event *)arg;
+static volatile int condition = 0;
 
-	event_wait(event, SCHED_TIMEOUT_INFINITE);
+static void *thread_run(void *arg) {
+	struct event *event = (struct event *) arg;
+
+	test_assert_zero(EVENT_WAIT(event, condition, EVENT_TIMEOUT_INFINITE));
+
 	return 0;
 }
 
 TEST_CASE("Create thread waiting event and then finish") {
-	struct event sync_event;
+	struct event event;
 	struct thread *thread;
 
-	event_init(&sync_event, "sync_event");
+	event_init(&event, "test_event");
 	test_assert_zero(
-				thread_create(&thread, 0, thread_run, &sync_event));
+				thread_create(&thread, 0, thread_run, &event));
+
 	ksleep(100);
-	event_notify(&sync_event);
+
+	condition = 1;
+	event_notify(&event);
 
 	test_assert_zero(thread_join(thread, NULL));
+}
+
+TEST_CASE("Checking timeout of event") {
+	struct event event;
+
+	event_init(&event, "test_event");
+	test_assert_equal(EVENT_WAIT(&event, 0, 100), -ETIMEDOUT);
 }

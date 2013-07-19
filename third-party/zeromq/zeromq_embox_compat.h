@@ -11,35 +11,36 @@
 /*
  *	IPv6 address structure
  */
-
-struct in6_addr {
-	union {
-		unsigned char		u6_addr8[16];
-		unsigned short		u6_addr16[8];
-		unsigned long 		u6_addr32[4];
-	} in6_u;
-#define s6_addr			in6_u.u6_addr8
-#define s6_addr16		in6_u.u6_addr16
-#define s6_addr32		in6_u.u6_addr32
-};
+//
+//struct in6_addr {
+//	union {
+//		unsigned char		u6_addr8[16];
+//		unsigned short		u6_addr16[8];
+//		unsigned long 		u6_addr32[4];
+//	} in6_u;
+//#define s6_addr			in6_u.u6_addr8
+//#define s6_addr16		in6_u.u6_addr16
+//#define s6_addr32		in6_u.u6_addr32
+//};
+//
 
 /* IPv6 Wildcard Address (::) and Loopback Address (::1) defined in RFC2553
  * NOTE: Be aware the IN6ADDR_* constants and in6addr_* externals are defined
  * in network byte order, not in host byte order as are the IPv4 equivalents
  */
-
-struct sockaddr_in6 {
-	unsigned short int	sin6_family;    /* AF_INET6 */
-	unsigned short sin6_port;      /* Transport layer port # */
-	unsigned long			sin6_flowinfo;  /* IPv6 flow information */
-	struct in6_addr		sin6_addr;      /* IPv6 address */
-	unsigned long			sin6_scope_id;  /* scope id (new in RFC2553) */
-};
+//
+//struct sockaddr_in6 {
+//	unsigned short int	sin6_family;    /* AF_INET6 */
+//	unsigned short sin6_port;      /* Transport layer port # */
+//	unsigned long			sin6_flowinfo;  /* IPv6 flow information */
+//	struct in6_addr		sin6_addr;      /* IPv6 address */
+//	unsigned long			sin6_scope_id;  /* scope id (new in RFC2553) */
+//};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-	extern const struct sockaddr_in6 in6addr_any;
+//	extern const struct sockaddr_in6 in6addr_any;
 #ifdef __cplusplus
 }
 #endif
@@ -49,11 +50,13 @@ struct sockaddr_un {
     char sun_path[108];
 };
 
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #define TCP_NODELACK TCP_NODELAY
+#define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
 
 struct sockaddr_storage {
 	union {

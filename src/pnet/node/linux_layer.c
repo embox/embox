@@ -11,7 +11,7 @@
 #include <pnet/prior_path.h>
 #include <kernel/thread.h>
 #include <net/skbuff.h>
-#include <net/netdevice.h>
+#include <net/l0/net_rx.h>
 
 #include <pnet/core.h>
 
@@ -25,9 +25,9 @@ static int pnet_linux_rx(struct pnet_pack *pack) {
 	skb = (struct sk_buff *) pack->data;
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
-	netif_rx_schedule(skb);
+	net_rx(skb);
 
-	return NET_HND_STOP_FREE;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 PNET_NODE_DEF("linux gate", {

@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 #include <errno.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define SYSCALL_NRS_TOTAL 200
 
@@ -19,13 +21,14 @@ extern void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, 
 extern int sys_open(const char *path, int flags, mode_t mode);
 extern int sys_close(int fd);
 extern int sys_newfstat(int fd, void *buf);
+extern void *sys_brk(void *new_brk);
 
 void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	NULL, sys_exit, sys_fork, NULL, sys_write, sys_open, sys_close, NULL, NULL, NULL,    // 0 - 9
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 10 - 19
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 20 - 29
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 30 - 39
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 40 - 49
+	NULL, NULL, NULL, NULL, NULL, sys_brk, NULL, NULL, NULL, NULL,    // 40 - 49
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 50
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 60
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 70

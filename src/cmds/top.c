@@ -22,7 +22,7 @@ static int exec(int argc, char **argv) {
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
 		printf("%-3d %-4d % 3d %s\n", tid, task->u_area->reuid,
-				task_get_priority(task), task->name);
+				task_get_priority(task), task->task_name);
 	}
 
 	return 0;

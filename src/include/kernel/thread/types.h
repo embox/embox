@@ -9,72 +9,65 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
+#include <stddef.h>
+#include <sys/types.h>
+
+
 typedef int __thread_id_t;
 typedef unsigned int __thread_state_t;
 
 #include <hal/context.h>
-#include <kernel/thread/startq.h>
-#include <kernel/thread/sched_strategy.h>
-#include <util/slist.h>
-#include <util/list.h>
-#include <linux/list.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <kernel/thread/sched_priority.h>
-#include <kernel/thread/thread_priority.h>
 
-struct context;
+#include <kernel/sched/sched_strategy.h>
+#include <util/dlist.h>
+#include <kernel/sched/sched_priority.h>
+#include <kernel/thread/thread_priority.h>
+#include <kernel/thread/wait_data.h>
+
 
 struct runq;
 struct sleepq;
-struct event;
-//struct list_head;
 
 struct thread {
+	__thread_state_t   state;         /**< Current state. */
 
-	__thread_state_t  state;         /**< Current state. */
+	struct context     context;       /**< Architecture-dependent CPU state. */
 
-	struct context    context;       /**< Architecture-dependent CPU state. */
-
-	void           *(*run)(void *);  /**< Start routine. */
+	void            *(*run)(void *);  /**< Start routine. */
 	union {
-		void         *run_arg;       /**< Argument to pass to start routine. */
-		void         *run_ret;       /**< Return value of the routine. */
-		void         *join_ret;      /**< Exit value of a join target. */
+		void          *run_arg;       /**< Argument to pass to start routine. */
+		void          *run_ret;       /**< Return value of the routine. */
+		void          *join_ret;      /**< Exit value of a join target. */
 	} /* unnamed */;
-	void             *stack;         /**< Allocated thread stack buffer. */
-	size_t            stack_sz;      /**< Stack size. TODO unused. -- Eldar */
-
-	struct sched_strategy_data sched;/**< Scheduler-private data. */
-
-	__thread_priority_t priority;    /**< Pure thread priority excluding priority of the task */
-
-	sched_priority_t initial_priority; /**< Scheduling priority. */
-	sched_priority_t sched_priority; /**< Current scheduling priority. */
-
-	struct startq_data startq_data;   /**< Resuming the thread from critical. */
+	void              *stack;         /**< Allocated thread stack buffer. */
+	size_t             stack_sz;      /**< Stack size. */
 
 	union {
-		struct runq      *runq;      /**< For running/ready state. */
-		struct sleepq    *sleepq;    /**< For sleeping state. */
+		struct runq    *runq;      /**< For running/ready state. */
+		struct sleepq  *sleepq;    /**< For sleeping state. */
 	} /* unnamed */;
 
-	struct mutex     *mutex_waiting; /**< Mutex we are waiting for (if any). */
+	__thread_id_t      id;            /**< Unique identifier. */
 
-	__thread_id_t     id;            /**< Unique identifier. */
-	struct list_head  thread_link;   /**< Linkage on all threads. */
+	struct thread_priority thread_priority;
 
-	struct sleepq     exit_sleepq;   /**< Thread exit event. */
+	struct task       *task;          /**< Task belong to. */
+	struct dlist_head  thread_task_link;     /**< Link in list holding task threads. */
 
-	int               sleep_res;     /**< Result shed_sleep */
+	clock_t            running_time;  /**< Running time of thread in clocks. */
+	clock_t            last_sync;     /**< Last recalculation of running time. */
 
-	struct task      *task;          /**< Task belong to. */
-	struct list_head  task_link;     /**< Link in list holding task threads. */
+	struct thread     *joined;        /**< Thread which joined to this. */
 
-	clock_t           running_time;  /**< Running time of thread in clocks. */
-	clock_t           last_sync;     /**< Last recalculation of running time. */
+	struct dlist_head  thread_link;   /**< Linkage on all threads. */
 
-	unsigned int      affinity;      /**< CPU affinity of the thread. */
+	struct wait_data   wait_data;
+
+	struct sched_strategy_data sched; /**< Scheduler-private data. */
+
+	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
+
+	unsigned int       affinity;      /**< CPU affinity of the thread. */
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

@@ -4,60 +4,81 @@
  *
  * @date 04.07.11
  * @author Dmitry Zubarevich
+ * @author Ilia Vaprol
  */
 
-#include <kernel/printk.h>
-#include <string.h>
-#include <framework/mod/ops.h>
+#include <framework/mod/self.h>
 #include <framework/net/proto/api.h>
-#include <net/protocol.h>
+#include <kernel/printk.h>
+#include <stddef.h>
+#include <string.h>
 
 ARRAY_SPREAD_DEF(const struct net_proto, __net_proto_registry);
 
-static int net_proto_mod_enable(struct mod_info *mod);
-static int net_proto_mod_disable(struct mod_info *mod);
+static int net_proto_mod_enable(struct mod_info *info);
+static int net_proto_mod_disable(struct mod_info *info);
 
 const struct mod_ops __net_proto_mod_ops = {
 	.enable  = &net_proto_mod_enable,
 	.disable = &net_proto_mod_disable
 };
 
-static int net_proto_mod_enable(struct mod_info *mod) {
+static int net_proto_mod_enable(struct mod_info *info) {
 	int ret;
-	net_proto_t *net_proto_ptr = ((struct net_proto *) mod->data);
-	net_protocol_t *net_proto = net_proto_ptr->netproto;
+	const struct net_proto *nproto;
 
-	printk("NET: initializing protocol %s.%s: ", mod->mod->package->name, mod->mod->name);
+	ret = 0;
+	nproto = (struct net_proto *)info->data;
 
-	ret = inet_add_protocol(net_proto, net_proto->type);
-	if (ret == 0) {
-		if (net_proto_ptr->init != NULL) {
-			ret = net_proto_ptr->init();
-		}
+	printk("\tNET: initializing protocol %s.%s: ",
+			info->mod->package->name, info->mod->name);
+
+	if (nproto->init != NULL) {
+		ret = nproto->init();
 	}
 
 	if (ret == 0) {
 		printk("done\n");
-	} else {
+	}
+	else {
 		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
 }
 
-static int net_proto_mod_disable(struct mod_info *mod) {
+static int net_proto_mod_disable(struct mod_info *info) {
 	int ret;
-	net_protocol_t *net_proto = ((struct net_proto *) mod->data)->netproto;
+	const struct net_proto *nproto;
 
-	printk("NET: finalizing protocol %s: ", mod->mod->name);
+	ret = 0;
+	nproto = (struct net_proto *)info->data;
 
-	ret = inet_del_protocol(net_proto, net_proto->type);
+	printk("\tNET: finalizing protocol %s.%s: ",
+			info->mod->package->name, info->mod->name);
+
+	if (nproto->fini != NULL) {
+		ret = nproto->fini();
+	}
 
 	if (ret == 0) {
 		printk("done\n");
-	} else {
+	}
+	else {
 		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
+}
+
+const struct net_proto * net_proto_lookup(unsigned char type) {
+	const struct net_proto *nproto;
+
+	net_proto_foreach(nproto) {
+		if (nproto->type == type) {
+			return nproto;
+		}
+	}
+
+	return NULL;
 }

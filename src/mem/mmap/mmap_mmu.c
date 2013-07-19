@@ -15,7 +15,7 @@
 #include <mem/vmem.h>
 
 #include __impl_x(kernel/task/common.h)
-#include __impl_x(kernel/thread/types.h)
+#include <kernel/thread/types.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -50,6 +50,7 @@ static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
 void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
+	mmap->heap_marea = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
 
@@ -151,6 +152,11 @@ uint32_t mmap_create_stack(struct emmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+void* mmap_create_heap(struct emmap *mmap) {
+	//TODO: stub
+	return NULL;
+}
+
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea, *new_marea;
@@ -184,7 +190,7 @@ static int fini() {
 }
 
 static int task_switch_handler(struct thread *prev, struct thread *next) {
-	mmu_set_context(next->task->emmap->ctx);
+	mmu_set_context(next->task->mmap->ctx);
 	return 0;
 }
 

@@ -6,7 +6,7 @@ package embox.cmd
 		NAME
 			date - Print or set the system date and time
 		SYNOPSIS
-			date [[[[[CC]YY]MM]DD]hh]mm[.ss]
+			date -s CCYYMMDDhhmm.ss
 		DESCRIPTION
 			Display the current time or set the system date.
 		AUTHORS

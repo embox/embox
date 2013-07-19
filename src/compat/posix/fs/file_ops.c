@@ -191,6 +191,7 @@ int fcntl(int fd, int cmd, ...) {
 		goto end;
 	}
 
+	flag = 0;
 	ops = task_idx_desc_ops(desc);
 
 	va_start(args, cmd);

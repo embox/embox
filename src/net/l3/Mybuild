@@ -1,0 +1,46 @@
+package embox.net
+
+module arp {
+	source "arp.c"
+
+	depends net_tx
+	depends skbuff
+	depends route
+	depends neighbour
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module icmpv4 {
+	source "icmpv4.c"
+
+	depends raw_sock
+	depends core /* for devinet.c */
+	depends ipv4 /* for ip_output.c */
+	depends skbuff
+	depends embox.kernel.time.kernel_time
+	depends embox.framework.LibFrameworkNet
+}
+
+module icmpv6 {
+	source "icmpv6.c"
+}
+
+module rarp {
+	source "rarp.c"
+
+	depends net_tx
+	depends skbuff
+	depends neighbour
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module route {
+	source "route.c"
+	option number route_table_size=8
+
+	depends core /* for inetdev.c */
+	depends embox.mem.pool
+	depends embox.util.List
+}

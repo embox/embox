@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -275,8 +276,20 @@ void *memalign(size_t boundary, size_t size) {
 	return NULL;
 }
 
-void *malloc(size_t size) {
-	return memalign(0, size);
+void * malloc(size_t size) {
+	void *ptr;
+
+	if (size == 0) {
+		return NULL;
+	}
+
+	ptr = memalign(0, size);
+	if (ptr == NULL) {
+		SET_ERRNO(ENOMEM);
+		return NULL;
+	}
+
+	return ptr;
  }
 
 void free(void *ptr) {
@@ -312,38 +325,51 @@ void free(void *ptr) {
 	block = concatenate_next(block);
 }
 
-void *realloc(void *ptr, size_t size) {
+void * realloc(void *ptr, size_t size) {
 	struct free_block *block;
-	void *tmp;
+	void *ret;
 
-	if (NULL == ptr) {
-		tmp = malloc(size);
-		printd("addr = 0x%X\n", (uint32_t)tmp);
-
-		return tmp;
+	if (size == 0) {
+		free(ptr);
+		return NULL; /* ok */
 	}
 
-	tmp = malloc(size);
-	if (NULL == tmp) {
-		return NULL;
+	ret = malloc(size);
+	if (ret == NULL) {
+		return NULL; /* error: errno set in malloc */
+	}
+
+	if (ptr == NULL) {
+		printd("addr = 0x%X\n", (uint32_t)ret);
+		return ret;
 	}
 
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	/* Copy minimum of @c size and actual size of object pointed by @c ptr. And then free @c ptr */
-	memcpy(tmp, ptr, min(size, get_clear_size(block->size) - sizeof(block->size)));
+	memcpy(ret, ptr, min(size, get_clear_size(block->size) - sizeof(block->size)));
 	free(ptr);
 
 	printd("addr = 0x%X\n", (uint32_t)tmp);
-	return tmp;
+	return ret;
 }
 
-void *calloc(size_t nmemb, size_t size) {
-	void *tmp = malloc(nmemb * size);
-	if (tmp) {
-		memset(tmp, 0, nmemb * size);
+void * calloc(size_t nmemb, size_t size) {
+	void *ret;
+	size_t total_size;
+
+	total_size = nmemb * size;
+	if (total_size == 0) {
+		return NULL; /* ok */
 	}
-	return tmp;
+
+	ret = malloc(total_size);
+	if (ret == NULL) {
+		return NULL; /* error: errno set in malloc */
+	}
+
+	memset(ret, 0, total_size);
+	return ret;
 }
 
 static int heap_init(void) {

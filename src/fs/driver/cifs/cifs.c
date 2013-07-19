@@ -22,12 +22,13 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-//#include <drivers/ramdisk.h>
+
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 
 #define PSEVDOFS_NAME "vfat"
 #define FS_NAME "cifs"
+#define FILESYSTEM_SIZE 200
 
 
 static int cifsfs_open(struct node *node, struct file_desc *file_desc,
@@ -159,12 +160,23 @@ static int cifsfs_format(void *dev) {
 
 static int cifsfs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
+	int res;
+	struct ramdisk *ramdisk;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->mount(dev, dir);
+	if (NULL == (ramdisk = ramdisk_create("dev/ram#",
+						FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return -1;
+	}
+
+	if (0 != (res = drv->fsop->format((void *) ramdisk->bdev->dev_node))) {
+		return res;
+	}
+
+	return drv->fsop->mount(ramdisk->bdev->dev_node, dir);
 }
 
 static int cifsfs_truncate (struct node *node, off_t length) {

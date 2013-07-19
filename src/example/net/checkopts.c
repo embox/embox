@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <net/socket_options.h>
 
 EMBOX_EXAMPLE(exec);
 

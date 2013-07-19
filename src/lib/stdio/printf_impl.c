@@ -329,7 +329,7 @@ after_flags:
 
 		/* get length */
 		switch (*format) {
-		case 'h': ops |= *++format != 'h' ? OPS_LEN_MIN : (++format, OPS_LEN_SHORT); break;
+		case 'h': ops |= *++format != 'h' ? OPS_LEN_SHORT : (++format, OPS_LEN_MIN); break;
 		case 'l': ops |= *++format != 'l' ? OPS_LEN_LONG : (++format, OPS_LEN_LONGLONG); break;
 		case 'j': ops |= OPS_LEN_MAX; ++format; break;
 		case 'z': ops |= OPS_LEN_SIZE; ++format; break;

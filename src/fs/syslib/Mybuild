@@ -29,6 +29,7 @@ module SysLibFileSystemNone extends SysLibFileSystem {
 
 module SysLibFileSystemFull extends SysLibFileSystem {
 	source "kfsop.c"
+	source "fsop.c"
 	depends Perm
 	option number flock_quantity=128
 }

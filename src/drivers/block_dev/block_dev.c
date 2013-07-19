@@ -67,6 +67,11 @@ static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
 
 	err = 0;
 
+	if ((blkno + blkcount) * SECTOR_SIZE  > dev->size) {
+		err = -EIO;
+		goto out;
+	}
+
 	if (blkcount * blksize != (res = block_dev_read(dev, bigbuf, blkcount * blksize, blkno))) {
 		err = -EIO;
 		goto out;
@@ -81,7 +86,42 @@ out:
 }
 
 static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	return -ENOTSUP;
+	int blkno, blkcount, blkoff;
+	char *bigbuf;
+	size_t res       = 0;
+	block_dev_t *dev = (block_dev_t *) desc->node->nas->fi->privdata;
+	int blksize      = block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
+	int pages        = (size + PAGE_SIZE() - 1) / PAGE_SIZE();
+
+	if (blksize <= 0) {
+		return -ENOTSUP;
+	}
+
+	if (NULL == (bigbuf = page_alloc(__phymem_allocator, pages))) {
+		return -ENOMEM;
+	}
+
+	blkno = desc->cursor / blksize;
+	blkoff = desc->cursor % blksize;
+	blkcount = (size + blksize - 1) / blksize;
+
+	if (blkcount * blksize != block_dev_read(dev, bigbuf, blkcount * blksize, blkno)) {
+		res = -ENOMEM;
+		goto out;
+	}
+
+	memcpy(bigbuf + blkoff, buf, size);
+
+	if (blkcount * blksize != block_dev_write(dev, bigbuf, blkcount * blksize, blkno)) {
+		res = -EIO;
+		goto out;
+	}
+
+	res = size;
+
+out:
+	page_free(__phymem_allocator, bigbuf, pages);
+	return res;
 }
 
 static int bdev_ioctl(struct file_desc *desc, int request, ...) {
@@ -100,7 +140,7 @@ static struct kfile_operations blockdev_fop = {
 static struct filesystem *blockdev_fs;
 
 static int blockdev_init(void) {
-	blockdev_fs = filesystem_alloc("empty");
+	blockdev_fs = filesystem_create("empty");
 	blockdev_fs->file_op = &blockdev_fop;
 
 	return 0;
@@ -123,7 +163,6 @@ static block_dev_module_t *block_dev_find(char *name) {
 */
 
 block_dev_t *block_dev(void *dev) {
-
 	return (block_dev_t *)dev;
 }
 

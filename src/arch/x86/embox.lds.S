@@ -19,42 +19,46 @@ PHDRS {
 
 SECTIONS {
 	.text : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		*(.multiboot)
 		_traps_text_start = .;
 		*(.traps.*)
 		_traps_text_end = .;
 		*(.text)
 		*(.text.*)
-		ALIGNMENT();
+		REGION_ALIGN();
 	} SECTION_REGION(text) :text
 	SECTION_SYMBOLS(text)
 
 	.rodata : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		LDS_INPUT_RODATA
-		ALIGNMENT();
+		REGION_ALIGN();
 	} SECTION_REGION(rodata) :text
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		*(.data)
-		ALIGNMENT();
+		*(.data.*)
+		*(.got.*)
+		*(.got)
+		REGION_ALIGN();
 	} SECTION_REGION(data) :data
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		*(.bss)
-		ALIGNMENT();
+		*(.bss.*)
+		REGION_ALIGN();
 	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(bss)
 
 	.reserve (NOLOAD) : {
-		ALIGNMENT();
+		REGION_ALIGN();
 		LDS_INPUT_RESERVE
-		ALIGNMENT();
+		REGION_ALIGN();
 	/* TODO memory region for reserve output section. */
 	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(reserve)
@@ -63,6 +67,7 @@ SECTIONS {
 	/DISCARD/ : {
 		*(.comment)
 		*(.eh_frame)
+		*(.note.*)
 	}
 }
 

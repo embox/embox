@@ -7,6 +7,8 @@
  *          - Initial implementation
  * @author Eldar Abusalimov
  *          - Reviewing and refactoring
+ * @author Anton Kozlov
+ *          - access_type added
  */
 
 #include <embox/cmd.h>
@@ -19,8 +21,20 @@
 
 EMBOX_CMD(exec);
 
+enum access_type {
+	MEM_AT_CHAR,
+	MEM_AT_SHORT,
+	MEM_AT_LONG,
+};
+
+static const size_t aalign[] = {
+	sizeof(char),
+	sizeof(short),
+	sizeof(long),
+};
+
 static void print_usage(void) {
-	printf("Usage: wmem [-h] -a addr -v value\n");
+	printf("Usage: wmem [-h] [-l -s -c] -a addr -v value\n");
 }
 
 static int parse_option(char *optarg, int opt, long unsigned int *number) {
@@ -47,9 +61,10 @@ static int exec(int argc, char **argv) {
 	int opt, ret;
 	volatile unsigned int *address;
 	unsigned int value;
+	enum access_type at = MEM_AT_LONG;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "a:v:h"))) {
+	while (-1 != (opt = getopt(argc, argv, "a:v:hlsc"))) {
 		switch (opt) {
 		case 'a':
 			ret = parse_option(optarg, opt, (unsigned long int *) &address);
@@ -65,6 +80,15 @@ static int exec(int argc, char **argv) {
 				return ret;
 			}
 			v_flag = true;
+			break;
+		case 'l':
+			at = MEM_AT_LONG;
+			break;
+		case 's':
+			at = MEM_AT_SHORT;
+			break;
+		case 'c':
+			at = MEM_AT_CHAR;
 			break;
 
 		case '?':
@@ -82,7 +106,22 @@ static int exec(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	*address = value;
+	if ((int) address & ((1 << at) - 1)) {
+		printf("address is not aligned to selected mem access\n");
+		return -EINVAL;
+	}
+
+	switch (at) {
+	case MEM_AT_LONG:
+		*(unsigned long *) address = value;
+		break;
+	case MEM_AT_SHORT:
+		*(unsigned short *) address = value;
+		break;
+	case MEM_AT_CHAR:
+		*(unsigned char *) address = value;
+		break;
+	}
 
 	return 0;
 }

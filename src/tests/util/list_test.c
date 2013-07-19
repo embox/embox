@@ -391,6 +391,30 @@ TEST_CASE("list_top should return a new "
 	test_assert_equal(list_pop(element_in_list, &m), &x);
 }
 
+TEST_CASE("list_next should return null for last element in list") {
+	list_add_last(element_in_list, &x, &m);
+	test_assert_null(list_next(element_in_list, &x, &m));
+}
+
+TEST_CASE("list_next should return next element for not empty list") {
+	list_add_last(element_in_list, &x, &m);
+	list_add_last(element_in_list, &y, &m);
+	test_assert_equal(&y, list_next(element_in_list, &x, &m));
+	test_assert_null(list_next(element_in_list, &y, &m));
+}
+
+TEST_CASE("list_prev should return null for first element in list") {
+	list_add_last(element_in_list, &x, &m);
+	test_assert_null(list_prev(element_in_list, &x, &m));
+}
+
+TEST_CASE("list_next should return prev element for not empty list") {
+	list_add_last(element_in_list, &x, &m);
+	list_add_last(element_in_list, &y, &m);
+	test_assert_equal(&x, list_prev(element_in_list, &y, &m));
+	test_assert_null(list_prev(element_in_list, &x, &m));
+}
+
 TEST_CASE("list_bulk_add_first shouldn't modify a destination list "
 		"if a source list is empty") {
 	fill_in_from(xyz, &n);

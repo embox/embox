@@ -40,6 +40,11 @@ struct timespec {
 	long   tv_nsec; /*Nanoseconds */
 };
 
+struct timeval {
+	time_t		tv_sec;
+	suseconds_t	tv_usec;
+};
+
 struct itimerspec {
 	struct timespec it_interval;  /* Timer period. */
 	struct timespec it_value;     /* Timer expiration. */

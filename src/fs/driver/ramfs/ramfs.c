@@ -12,19 +12,22 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
+
+#include <util/array.h>
+#include <util/indexator.h>
+#include <mem/misc/pool.h>
+#include <mem/phymem.h> /* PAGE_SIZE() */
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
-#include <util/array.h>
+
 #include <embox/unit.h>
 #include <embox/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
 #include <drivers/ramdisk.h>
 #include <fs/file_system.h>
-#include <fs/file_desc.h>
-#include <limits.h>
+
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
@@ -38,7 +41,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,ramfs_file_size)
 #define FILESYSTEM_SIZE OPTION_GET(NUMBER,ramfs_filesystem_size)
 
-#define RAMFS_NAME "ramfs"
+
 #define RAMFS_DEV  "/dev/ram#"
 #define RAMFS_DIR  "/"
 
@@ -50,6 +53,7 @@ static int ramfs_mount(void *dev, void *dir);
 static int ramfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 	int res;
+	ramdisk_t *ramdisk;
 
 	if (!par) {
 		return 0;
@@ -62,11 +66,15 @@ static int ramfs_init(void * par) {
 		return -1;
 	}
 
-	if (0 != (res = ramdisk_create(RAMFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
-		return res;
+	if (NULL == (ramdisk = ramdisk_create(RAMFS_DEV,
+					FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return -1;
 	}
 
-	dev_node = vfs_lookup(NULL, RAMFS_DEV);
+	dev_node = ramdisk->bdev->dev_node;
+	if (!dev_node) {
+		return -1;
+	}
 	if (!dev_node) {
 		return -1;
 	}
@@ -379,28 +387,7 @@ static int ramfs_stat(void *file, void *buff) {
 */
 
 
-static int ramfs_init(void * par);
-static int ramfs_format(void *path);
-static int ramfs_mount(void *dev, void *dir);
-static int ramfs_create(struct node *parent_node, struct node *node);
-static int ramfs_delete(struct node *node);
-static int ramfs_truncate(struct node *node, off_t length);
 
-static struct fsop_desc ramfs_fsop = {
-	.init = ramfs_init,
-	.format = ramfs_format,
-	.mount = ramfs_mount,
-	.create_node = ramfs_create,
-	.delete_node = ramfs_delete,
-
-	.truncate = ramfs_truncate,
-};
-
-static struct fs_driver ramfs_driver = {
-	.name = RAMFS_NAME,
-	.file_op = &ramfs_fop,
-	.fsop = &ramfs_fsop,
-};
 
 static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	ramfs_file_info_t *fi;
@@ -415,25 +402,6 @@ static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 
 	return fi;
 }
-
-/*
-static node_t *ramfs_create_dot(node_t *parent_node, const char *name) {
-	node_t *dot_node;
-	struct nas *parent_nas, *nas;
-
-	parent_nas = parent_node->nas;
-
-	dot_node = vfs_create_child(parent_node, name, S_IFDIR);
-	if (dot_node) {
-		nas = dot_node->nas;
-		nas->fs = parent_nas->fs;
-		// don't need create fi for directory - take root node fi /
-		nas->fi->privdata = parent_nas->fi->privdata;
-	}
-
-	return dot_node;
-}
-*/
 
 static int ramfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
@@ -453,24 +421,14 @@ static int ramfs_create(struct node *parent_node, struct node *node) {
 
 static int ramfs_delete(struct node *node) {
 	struct ramfs_file_info *fi;
-	struct ramfs_fs_info *fsi;
 	struct nas *nas;
-	char path [PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-
-	vfs_get_path_by_node(node, path);
 
 	if (!node_is_directory(node)) {
 		index_free(&ramfs_file_idx, fi->index);
 		pool_free(&ramfs_file_pool, fi);
-	}
-
-	/* root node - have fi, but haven't index*/
-	if(0 == strcmp((const char *) path, (const char *) nas->fs->mntto)){
-		pool_free(&ramfs_fs_pool, fsi);
 	}
 
 	vfs_del_leaf(node);
@@ -527,7 +485,7 @@ static int ramfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("ramfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("ramfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
@@ -539,8 +497,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
+
 	fsi->block_per_file = MAX_FILE_SIZE;
 	fsi->block_size = PAGE_SIZE();
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();
@@ -556,6 +513,23 @@ static int ramfs_mount(void *dev, void *dir) {
 
 	return 0;
 }
+
+
+static struct fsop_desc ramfs_fsop = {
+	.init = ramfs_init,
+	.format = ramfs_format,
+	.mount = ramfs_mount,
+	.create_node = ramfs_create,
+	.delete_node = ramfs_delete,
+
+	.truncate = ramfs_truncate,
+};
+
+static struct fs_driver ramfs_driver = {
+	.name = "ramfs",
+	.file_op = &ramfs_fop,
+	.fsop = &ramfs_fsop,
+};
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);
 

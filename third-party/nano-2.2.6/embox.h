@@ -11,23 +11,9 @@
 
 #include <curses.h>
 #include <setjmp.h>
-#include <stdlib.h>
-
-extern int nano_exit_ret;
-extern int nano_exited;
-extern jmp_buf nano_exit_point;
-extern int nano_main(int argc, char **argv);
-
-#define NANO_EXIT_JMP_VALUE 177
-
-#define exit(status) \
-	do { \
-		nano_exit_ret = status; \
-		nano_exited = 1; \
-		longjmp(nano_exit_point, NANO_EXIT_JMP_VALUE); \
-	} while(0);
-
 #include <signal.h>
+
+extern int nano_main(int argc, char **argv);
 
 static inline int sigfillset(sigset_t *set) { return -1; }
 static inline int sigaction(int sig, const struct sigaction *act,

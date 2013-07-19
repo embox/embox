@@ -9,20 +9,23 @@
 #ifndef FRAMEWORK_NET_SOCK_TYPES_H_
 #define FRAMEWORK_NET_SOCK_TYPES_H_
 
-#include <util/location.h>
-#include <net/protocol.h>
-#include <net/net.h>
+/**
+ * Prototypes
+ */
+struct mod;
+struct sock_ops;
 
 /**
  * Each netsock implements this interface.
  */
-
 typedef struct net_sock {
-#if 0
-	struct net_proto_family *net_proto_family;
-#endif
-	int net_proto_family;
-	struct inet_protosw *netsock;
+	int family;
+	int type;
+	int protocol;
+	int is_default;
+	const struct sock_ops *ops;
+	int (*init)(void);
+	int (*fini)(void);
 	/** The corresponding mod. */
 	const struct mod *mod;
 } net_sock_t;

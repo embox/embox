@@ -15,103 +15,90 @@
 #include <stddef.h>
 #include <sys/uio.h>
 
-#include <net/inet_sock.h>
-#include <net/kernel_socket.h>
-#include <net/socket.h>
+#include <net/socket/ksocket.h>
 #include <net/sock.h>
 #include <sys/socket.h>
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <net/arp_queue.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <kernel/task/io_sync.h>
-#include <net/socket_registry.h>
+#include <net/socket/socket_registry.h>
 
-static ssize_t this_read(struct idx_desc *socket, void *buf, size_t nbyte);
-static ssize_t this_write(struct idx_desc *socket, const void *buf, size_t nbyte);
-static int this_ioctl(struct idx_desc *socket, int request, void *);
-static int this_close(struct idx_desc *socket);
+extern const struct task_idx_ops task_idx_ops_socket;
 
-const struct task_idx_ops task_idx_ops_socket = {
-	.read = this_read,
-	.write = this_write,
-	.close = this_close,
-	.ioctl = this_ioctl
-};
+static inline struct sock * idx2sock(int idx) {
+	struct idx_desc *desc = task_self_idx_get(idx);
+	return desc != NULL ? task_idx_desc_data(desc) : NULL;
+}
 
-static struct socket *idx2sock(int fd) {
-	return (struct socket *) task_idx_desc_data(task_self_idx_get(fd));
+static inline int idx2flags(int idx) {
+	struct idx_desc *desc = task_self_idx_get(idx);
+	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
 }
 
 int socket(int domain, int type, int protocol) {
-	int ret, res;
-	struct socket *sock;
+	int ret, sockfd;
+	struct sock *sk;
 
-	ret = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
+	ret = ksocket(domain, type, protocol, &sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	res = task_self_idx_alloc(&task_idx_ops_socket, sock);
-	if (res < 0) {
-		kernel_socket_release(sock);
+	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk);
+	if (sockfd < 0) {
+		ksocket_close(sk);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
-	sock->desc_data = task_idx_indata(task_self_idx_get(res));
+	assert(sk != NULL);
+	sk->ios = &task_idx_indata(task_self_idx_get(sockfd))->ios;
 
-	assert(sock->state != SS_CONNECTED); /* XXX ?? */
-
-	/**
-	 * Block stream socket on writing while
-	 * it is unconnected. Otherwise unblock it.
-	 */
 	if (type != SOCK_STREAM) {
-		idx_io_enable(sock->desc_data, IDX_IO_WRITING);
+		io_sync_enable(sk->ios, IO_SYNC_WRITING); /* TODO move to ksocket */
 	}
 
-	return res;
+	return sockfd;
 }
 
-int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
+int bind(int sockfd, const struct sockaddr *addr,
+		socklen_t addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_connect(sock, daddr, daddrlen, 0);
+	ret = kbind(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	/* If connection established, than we can write in this socket always. */
-	idx_io_enable(sock->desc_data, IDX_IO_WRITING);
-
 	return 0;
 }
 
-int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+int connect(int sockfd, const struct sockaddr *addr,
+		socklen_t addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_bind(sock, addr, addrlen);
-	if (ret != 0){
+	ret = kconnect(sk, addr, addrlen, idx2flags(sockfd));
+	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
@@ -121,15 +108,15 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 int listen(int sockfd, int backlog) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_listen(sock, backlog);
+	ret = klisten(sk, backlog);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -139,212 +126,225 @@ int listen(int sockfd, int backlog) {
 }
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	int ret, res;
-	struct socket *sock, *new_sock;
+	int ret, new_sockfd;
+	struct sock *sk, *new_sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen,
-			*task_idx_desc_flags_ptr(task_self_idx_get(sockfd)));
+	ret = kaccept(sk, addr, addrlen, idx2flags(sockfd), &new_sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
-	if (res < 0) {
-		kernel_socket_release(new_sock);
+	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk);
+	if (new_sockfd < 0) {
+		ksocket_close(new_sk);
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
-	new_sock->desc_data = task_idx_indata(task_self_idx_get(res));
+	assert(new_sk != NULL);
+	new_sk->ios = &task_idx_indata(task_self_idx_get(new_sockfd))->ios;
 
-	/**
-	 * If connection established, than we can
-	 * write in this socket always.
-	 */
-	idx_io_enable(new_sock->desc_data, IDX_IO_WRITING);
+	/* TODO move to kaccept */
+	io_sync_enable(new_sk->ios, IO_SYNC_WRITING);
+	if (NULL != skb_queue_front(&new_sk->rx_queue)) {
+		io_sync_enable(new_sk->ios, IO_SYNC_READING);
+	}
 
-	return res;
+	return new_sockfd;
 }
 
-static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len,
-		int flags, const struct sockaddr *daddr, socklen_t daddrlen) {
+int sendmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
-	struct inet_sock *inet;
+
+	if (sk == NULL) {
+		return -EBADF;
+	}
+
+	ret = ksendmsg(sk, msg, flags);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+ssize_t send(int sockfd, const void *buff, size_t size,
+		int flags) {
+	int ret;
+	struct msghdr msg;
 	struct iovec iov;
-	struct msghdr m;
-	struct sockaddr_in *dest_addr;
 
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = flags;
 
-	iov.iov_base = (void *)buf;
-	iov.iov_len = len;
-	m.msg_iov = &iov;
+	iov.iov_base = (void *)buff;
+	iov.iov_len = size;
 
-	assert(sock->sk);
-
-	switch (sock->type) {
-	case SOCK_DGRAM:
-	case SOCK_RAW:
-	case SOCK_PACKET:
-		if (daddr == NULL) {
-			SET_ERRNO(EDESTADDRREQ);
-			return -1;
-		}
-		if (daddrlen != sizeof *dest_addr) {
-			SET_ERRNO(EINVAL);
-			return -1;
-		}
-		dest_addr = (struct sockaddr_in *)daddr;
-		inet = inet_sk(sock->sk);
-		inet->daddr = dest_addr->sin_addr.s_addr;
-		inet->dport = dest_addr->sin_port;
-		break;
-	}
-
-	if (sock->sk->sk_shutdown & (SHUT_WR + 1)) {
-		SET_ERRNO(EPIPE);
-		return -1;
-	}
-
-	/* socket is ready for usage and has no data transmitting errors yet */
-	sock->sk->sk_err = -1; /* XXX ?? */
-#if 0
-	sock_set_ready(sock->sk);
-#endif
-
-	ret = kernel_socket_sendmsg(NULL, sock, &m, len, flags);
+	ret = sendmsg_sock(idx2sock(sockfd), &msg,
+			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	return (ssize_t)iov.iov_len;
+	return iov.iov_len;
 }
 
-ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
-		const struct sockaddr *daddr, socklen_t daddrlen) {
-	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
-}
-
-static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
-		int flags, struct sockaddr *daddr, socklen_t *daddrlen) {
+ssize_t sendto(int sockfd, const void *buff, size_t size,
+		int flags, const struct sockaddr *addr,
+		socklen_t addrlen) {
 	int ret;
-	struct inet_sock *inet;
+	struct msghdr msg;
 	struct iovec iov;
-	struct msghdr m;
-	struct sockaddr_in *dest_addr;
 
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
+	msg.msg_name = (void *)addr;
+	msg.msg_namelen = addrlen;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = flags;
 
-	iov.iov_base = buf;
-	iov.iov_len = len;
-	m.msg_iov = &iov;
+	iov.iov_base = (void *)buff;
+	iov.iov_len = size;
 
-	ret = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
+	ret = sendmsg_sock(idx2sock(sockfd), &msg,
+			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	if ((daddr != NULL) && (daddrlen != NULL)) {
-		inet = inet_sk(sock->sk);
-		dest_addr = (struct sockaddr_in *)daddr;
-		dest_addr->sin_family = AF_INET;
-		dest_addr->sin_addr.s_addr = inet->daddr;
-		dest_addr->sin_port = inet->dport;
-		memset(&dest_addr->sin_zero[0], 0, sizeof dest_addr->sin_zero);
-		*daddrlen = sizeof *dest_addr;
-	}
-
-	softirq_lock();
-	{
-		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
-			idx_io_disable(sock->desc_data, IDX_IO_READING);
-		}
-	}
-	softirq_unlock();
-
-	return (ssize_t)iov.iov_len;
+	return iov.iov_len;
 }
 
-ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
-			struct sockaddr *daddr, socklen_t *daddrlen) {
-	ssize_t ret;
-	struct socket *sock;
-	int fd_flags;
+ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
+	int ret;
+	struct msghdr _msg;
 
-	(void)flags;
-	/* XXX separate usage of recvfrom()'s flags and fd_flags in file descriptor */
-	fd_flags = *task_idx_desc_flags_ptr(task_self_idx_get(sockfd));
+	memcpy(&_msg, msg, sizeof _msg);
+	_msg.msg_flags = flags;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
+	ret = sendmsg_sock(idx2sock(sockfd), &_msg,
+			idx2flags(sockfd));
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	sched_lock();
-	{
-		ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
-		if (ret == -1 && errno == EAGAIN) {
-			if (!(fd_flags & O_NONBLOCK)) {
-				event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
-				ret = recvfrom_sock(sock, buf, len, fd_flags, daddr, daddrlen);
-			}
-		}
+	return _msg.msg_iov->iov_len;
+}
+
+int recvmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
+	int ret;
+
+	if (sk == NULL) {
+		return -EBADF;
 	}
-	sched_unlock();
 
-	return ret;
+	ret = krecvmsg(sk, msg, flags);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
 }
 
-ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
-	return recvfrom(sockfd, buf, len, flags, NULL, NULL);
-}
+ssize_t recv(int sockfd, void *buff, size_t size,
+		int flags) {
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
 
-ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
-	struct socket *sock;
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = flags;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
+	iov.iov_base = (void *)buff;
+	iov.iov_len = size;
+
+	ret = recvmsg_sock(idx2sock(sockfd), &msg,
+			idx2flags(sockfd));
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	if (!sk_is_connected(sock)) {
-		SET_ERRNO(ENOTCONN);
+	return iov.iov_len;
+}
+
+ssize_t recvfrom(int sockfd, void *buff, size_t size,
+		int flags, struct sockaddr *addr,
+		socklen_t *addrlen) {
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
+
+	msg.msg_name = (void *)addr;
+	msg.msg_namelen = addrlen != NULL ? *addrlen : 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = flags;
+
+	iov.iov_base = (void *)buff;
+	iov.iov_len = size;
+
+	ret = recvmsg_sock(idx2sock(sockfd), &msg,
+			idx2flags(sockfd));
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	return sendto_sock(sock, buf, len, flags, NULL, 0);
+	if (addrlen != NULL) {
+		*addrlen = msg.msg_namelen;
+	}
+
+	return iov.iov_len;
+}
+
+ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
+	int ret;
+	struct msghdr _msg;
+
+	memcpy(&_msg, msg, sizeof _msg);
+	_msg.msg_flags = flags;
+
+	ret = recvmsg_sock(idx2sock(sockfd), &_msg,
+			idx2flags(sockfd));
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	msg->msg_name = _msg.msg_name;
+	msg->msg_namelen = _msg.msg_namelen;
+	msg->msg_flags = _msg.msg_flags;
+
+	return _msg.msg_iov->iov_len;
 }
 
 int shutdown(int sockfd, int how) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	sock->sk->sk_shutdown |= (how + 1);
-
-	ret = kernel_socket_shutdown(sock, how);
+	ret = kshutdown(sk, how);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -353,45 +353,39 @@ int shutdown(int sockfd, int how) {
 	return 0;
 }
 
-#if 0
-int socket_close(int sockfd) {
+int getsockname(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_release(sock);
-	if (ret < 0){
+	ret = kgetsockname(sk, addr, addrlen);
+	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
 	return 0;
 }
-#endif
 
-static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	return recvfrom_sock(task_idx_desc_data(data), buf, nbyte,
-			*task_idx_desc_flags_ptr(data), NULL, 0);
-}
-
-static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {
-	return sendto_sock(task_idx_desc_data(data), buf, nbyte, 0, NULL, 0);
-}
-
-static int this_ioctl(struct idx_desc *socket, int request, void *data) {
-	return 0;
-}
-
-static int this_close(struct idx_desc *socket) {
+int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) {
 	int ret;
+	struct sock *sk;
 
-	ret = kernel_socket_release(task_idx_desc_data(socket));
-	if (ret != 0) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	ret = kgetpeername(sk, addr, addrlen);
+	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
 	}
@@ -402,15 +396,15 @@ static int this_close(struct idx_desc *socket) {
 int getsockopt(int sockfd, int level, int optname, void *optval,
 		socklen_t *optlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_getsockopt(sock, level, optname, optval, optlen);
+	ret = kgetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -419,18 +413,18 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 	return 0;
 }
 
-int setsockopt(int sockfd, int level, int optname, void *optval,
-		socklen_t optlen) {
+int setsockopt(int sockfd, int level, int optname,
+		const void *optval, socklen_t optlen) {
 	int ret;
-	struct socket *sock;
+	struct sock *sk;
 
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
+	sk = idx2sock(sockfd);
+	if (sk == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	ret = kernel_socket_setsockopt(sock, level, optname, optval, optlen);
+	ret = ksetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -438,60 +432,3 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 
 	return 0;
 }
-
-int getsockname(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) {
-	struct socket *sock;
-	struct inet_sock *inet;
-	struct sockaddr_in *src_addr;
-
-	sock = idx2sock(sockfd);
-	if (sock == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	assert(sock->sk);
-
-	switch (sock->sk->sk_type) {
-	default:
-		// FIXME: not possible to extract socket family from descriptor
-//	case AF_INET:
-		if (addr == NULL) {
-			SET_ERRNO(EBADF);
-			return -1;
-		}
-		if (*addrlen < sizeof *src_addr) {
-			SET_ERRNO(EINVAL);
-			return -1;
-		}
-		src_addr = (struct sockaddr_in *)addr;
-		inet = inet_sk(sock->sk);
-		src_addr->sin_family = AF_INET;
-		src_addr->sin_addr.s_addr = inet->rcv_saddr;
-		src_addr->sin_port = inet->sport;
-		memset(&src_addr->sin_zero[0], 0, sizeof src_addr->sin_zero);
-		*addrlen = sizeof *src_addr;
-		break;
-//	default:
-//		SET_ERRNO(EINVAL);
-//		return -1;
-	}
-
-	return 0;
-}
-
-
-#if 1 /********** TODO remove this ****************/
-int check_icmp_err(int sockfd) {
-	struct socket *sock = idx2sock(sockfd);
-	int err = sock->sk->sk_err;
-	sk_clear_pending_error(sock->sk);
-	return err;
-}
-
-void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
-	struct socket *sock = idx2sock(sockfd);
-	sock->sk->sk_encap_rcv = hnd;
-}
-#endif

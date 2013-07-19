@@ -1,0 +1,16 @@
+package embox.kernel.sched.sched_policy.queue
+
+@DefaultImpl(prioq)
+abstract module api { }
+
+module prioq extends api {
+	source "prioq.c", "prioq.h"
+}
+
+module list extends api {
+	source "list.c", "list.h"
+}
+
+module prioq2 extends api {
+	source "prioq2.c", "prioq2.h"
+}

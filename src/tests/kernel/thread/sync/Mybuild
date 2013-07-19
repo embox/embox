@@ -4,7 +4,7 @@ module mutex_test {
 	source "mutex_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
@@ -14,7 +14,7 @@ module priority_inheritance_test {
 	source "priority_inheritance_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
@@ -24,7 +24,7 @@ module sem_test {
 	source "sem_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
@@ -34,7 +34,7 @@ module barrier_test {
 	source "barrier_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
@@ -44,7 +44,7 @@ module cond_test {
 	source "cond_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
@@ -54,7 +54,7 @@ module rwlock_test {
 	source "rwlock_test.c"
 
 	depends embox.kernel.thread.core
-	depends embox.kernel.thread.sched
+	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework

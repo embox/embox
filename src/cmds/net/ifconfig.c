@@ -18,8 +18,7 @@
 #include <embox/cmd.h>
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
-#include <net/etherdevice.h>
-#include <net/util.h>
+#include <net/util/macaddr.h>
 
 EMBOX_CMD(exec);
 
@@ -41,7 +40,7 @@ struct ifconfig_args {
 	char with_irq; int irq;
 	char with_ioaddr; void *ioaddr;
 	char with_txqueuelen; long int txqueuelen;
-	char with_hw; unsigned char hw_addr[ETH_ALEN];
+	char with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
 	char with_up_or_down; char up;
 };
 
@@ -60,33 +59,32 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	assert(args != NULL);
 
 	if (args->with_up_or_down && !args->up) { /* down device */
-		ret = netdev_set_flags(iface->dev,
-				netdev_get_flags(iface->dev) & ~IFF_UP);
+		ret = netdev_flag_down(iface->dev, IFF_UP);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_arp) { /* set flag IFF_NOARP (default 0 means ARP enabled) */
-		ret = (!args->arp ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_NOARP);
+		ret = (!args->arp ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_NOARP);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_promisc) { /* set flag IFF_PROMISC (default 0) */
-		ret = (args->promisc ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_PROMISC);
+		ret = (args->promisc ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_PROMISC);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_allmulti) { /* set flag IFF_ALLMULTI (default 0) */
-		ret = (args->allmulti ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_ALLMULTI);
+		ret = (args->allmulti ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_ALLMULTI);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_mcast) { /* set flag IFF_MULTICAST (default 0) */
-		ret = (args->allmulti ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_MULTICAST);
+		ret = (args->allmulti ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_MULTICAST);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_p2p) { /* set flag IFF_POINTOPOINT */
-		ret = (args->p2p ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_POINTOPOINT);
+		ret = (args->p2p ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_POINTOPOINT);
 		if (ret != 0) return ret;
 	}
 
@@ -106,34 +104,33 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 			if (ret != 0) return ret;
 		}
 		else {
-			ret = (args->bcast ? etherdev_flag_up : etherdev_flag_down)(iface->dev, IFF_BROADCAST);
+			ret = (args->bcast ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_BROADCAST);
 			if (ret != 0) return ret;
 		}
 	}
 
 	if (args->with_mtu) { /* set new MTU value */
-		ret = etherdev_change_mtu(iface->dev, args->mtu);
+		ret = netdev_set_mtu(iface->dev, args->mtu);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_irq) { /* set new IRQ number */
-		ret = etherdev_set_irq(iface->dev, args->irq);
+		ret = netdev_set_irq(iface->dev, args->irq);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_ioaddr) { /* set new base addr */
-		ret = etherdev_set_baseaddr(iface->dev, (unsigned long)args->ioaddr);
+		ret = netdev_set_baseaddr(iface->dev, (unsigned long)args->ioaddr);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_txqueuelen) { /* set new max packet length */
-		ret = etherdev_set_txqueuelen(iface->dev, args->txqueuelen);
+		ret = netdev_set_txqueuelen(iface->dev, args->txqueuelen);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_up_or_down && args->up) { /* up device */
-		ret = netdev_set_flags(iface->dev,
-				netdev_get_flags(iface->dev) | IFF_UP);
+		ret = netdev_flag_up(iface->dev, IFF_UP);
 		if (ret != 0) return ret;
 	}
 
@@ -162,7 +159,7 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	char s_bcast[] = "xxx.xxx.xxx.xxx";
 	char s_mask[] = "xxx.xxx.xxx.xxx";
 
-	stat = iface->dev->netdev_ops->ndo_get_stats(iface->dev);
+	stat = &iface->dev->stats;
 
 	printf("%s\tLink encap:", &iface->dev->name[0]);
 	if (iface->dev->flags & IFF_LOOPBACK) {
@@ -179,6 +176,7 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
 	if (iface->dev->flags & IFF_LOOPBACK) {
 		printf("inet addr:%s  Mask:%s", s_ip, s_mask);
+		printf("inet6 addr: ::1/128 Scope:Host\n");
 	} else {
 		bcast.s_addr = iface->ifa_broadcast;
 		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
@@ -230,7 +228,7 @@ static int ifconfig_print_short_hdr(void) {
 static int ifconfig_print_short_info(struct in_device *iface) {
 	struct net_device_stats *stat;
 
-	stat = iface->dev->netdev_ops->ndo_get_stats(iface->dev);
+	stat = &iface->dev->stats;
 
 	printf("%-5s %5d %-2d %6lu %6lu %6lu %6lu %6lu %6lu %6lu %6lu ",
 			iface->dev->name,
@@ -284,6 +282,7 @@ static int exec(int argc, char *argv[]) {
 	struct in_device *iface;
 	struct ifconfig_args args;
 
+	iface = NULL; /* XXX required for -O2 */
 	memset(&args, 0, sizeof args);
 
 	for (i = 1; i < argc; ++i) {

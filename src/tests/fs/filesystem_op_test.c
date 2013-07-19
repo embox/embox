@@ -10,16 +10,18 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include <cmd/mkfs.h>
+
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 
 #include <drivers/ramdisk.h>
 #include <embox/block_dev.h>
 #include <embox/test.h>
 
 #include <mem/page.h>
+
+#include <err.h>
 
 EMBOX_TEST_SUITE("fs/filesystem test");
 
@@ -70,7 +72,13 @@ TEST_CASE("Umount fat filesystem") {
 }
 
 static int setup_suite(void) {
-	return ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE());
+	int res;
+
+	if(0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
+		return res;
+	}
+
+	return 0;
 }
 
 static int teardown_suite(void) {

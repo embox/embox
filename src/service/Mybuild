@@ -1,0 +1,33 @@
+package embox.service
+
+module SrvLib {
+	source "srv_lib.c"
+
+	depends embox.lib.service.service
+}
+
+module ImgService {
+	//source "img_service.c"
+	depends embox.service.SrvLib
+}
+
+module TestService {
+	@IncludePath("$(THIRDPARTY_DIR)/lib/expat")
+	source "test_service.c"
+
+	@InitFS
+	source "test.html"
+
+	depends SrvLib
+	depends embox.third_party.expat.expat_lib
+}
+
+module NewService {
+	source "new_service.c"
+	option string template_file="img_service.in"
+
+	@InitFS
+	source "img_service.in"
+
+	depends SrvLib
+}

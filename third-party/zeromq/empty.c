@@ -1,1 +1,1 @@
-const char in6addr_any;
+//const char in6addr_any;

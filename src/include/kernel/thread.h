@@ -17,23 +17,17 @@
 
 #include <framework/mod/options.h>
 
-#include <module/embox/kernel/thread/core.h>
-
 #include <kernel/thread/current.h>
-#include <kernel/thread/sched.h>
-#include <sys/types.h>
 
-#define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
+#include <util/dlist.h>
+#include <kernel/thread/types.h>
+
+#define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
-
-#define __thread_foreach(thread_ptr) \
-	list_for_each_entry(thread_ptr, __extension__ ({   \
-				extern struct list_head __thread_list; \
-				&__thread_list;                        \
-			}), thread_link)                           \
 
 /**
  * Thread control block.
+ * This is described in <kernel/thread/types.h>
  */
 struct thread;
 
@@ -45,17 +39,19 @@ typedef __thread_id_t thread_id_t;
 
 typedef __thread_priority_t thread_priority_t;
 
-/** User-space thread. */
-#define THREAD_FLAG_USER             (0x1 << 0)
-/** Thread is created in detached state. */
-#define THREAD_FLAG_DETACHED         (0x1 << 1)
-/** Thread is created suspended. */
-#define THREAD_FLAG_SUSPENDED        (0x1 << 2)
+#define THREAD_FLAG_USER             (0x1 << 0) /**< User-space thread. */
+#define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
+#define THREAD_FLAG_SUSPENDED        (0x1 << 2) /**< Initially suspended. */
 
+/**< Create thread with parent priority */
 #define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
 
+/** Use with THREAD_FLAG_PRIORITY_INHERIT flag */
 #define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
+
+/** Create task without attaching to a task. */
+#define THREAD_FLAG_TASK_THREAD      (0x1 << 6)
 
 /**
  * Iterates over the list of all threads existing in the system.
@@ -63,8 +59,10 @@ typedef __thread_priority_t thread_priority_t;
  * @param thread
  *   <em> struct thread * </em> iteration variable.
  */
-#define thread_foreach(thread) \
-	  __thread_foreach(thread)
+#define thread_foreach(thread_ptr ,tmp) \
+	extern struct dlist_head __thread_list; \
+	dlist_foreach_entry(thread_ptr, tmp, &__thread_list, thread_link)
+
 
 /**
  * Searches for a thread by the given ID.
@@ -84,17 +82,8 @@ extern struct thread *thread_lookup(thread_id_t id);
  * @return
  *   The currently executing thread.
  */
-#define thread_self() sched_current()
+#define thread_self() thread_get_current()
 
-/*
- * Initializes thread structure for current thread, adds it to list of threads
- * and to kernel task. Use this ONLY for bootstrap threads.
- *
- * @param
- *   TODO:
- */
-extern struct thread *thread_init_self(void *stack, size_t stack_sz,
-		thread_priority_t priority);
 
 /**
  * Creates a new thread.
@@ -238,12 +227,6 @@ extern int thread_set_priority(struct thread *thread,
 
 extern thread_priority_t thread_get_priority(struct thread *thread);
 
-extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
-
-extern unsigned int thread_get_affinity(struct thread *thread);
-
-extern void *thread_stack_malloc(struct thread *thread, size_t size);
-
 /**
  * Returns running time of the thread. To get better precision should be
  * called inside sched_lock().
@@ -254,5 +237,12 @@ extern void *thread_stack_malloc(struct thread *thread, size_t size);
  *   Running time in clocks.
  */
 extern clock_t thread_get_running_time(struct thread *thread);
+
+/*
+ * for SMP
+ */
+extern void thread_set_affinity(struct thread *thread, unsigned int affinity);
+extern unsigned int thread_get_affinity(struct thread *thread);
+
 
 #endif /* KERNEL_THREAD_API_H_ */

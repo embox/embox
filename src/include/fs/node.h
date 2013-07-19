@@ -30,17 +30,22 @@ typedef struct file_lock {
 } flock_t;
 
 typedef struct node {
+	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
+
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
 
-	mode_t                mode;
-	uid_t                 uid;
-	gid_t                 gid;
+	mode_t                mode;/* discrete access mode Read-Write-Execution */
+	uid_t                 uid;/* owner user ID */
+	gid_t                 gid;/* owner group ID */
 
-	struct tree_link      tree_link;
+	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
 
 	flock_t               flock;
+
+	/* service data structure for enabling tree operation */
+	struct tree_link      tree_link;
 } node_t;
 
 struct node_info {

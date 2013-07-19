@@ -66,6 +66,9 @@ typedef int off_t;  /*  Used for file sizes. */
 
 typedef long long loff_t;
 
+typedef unsigned long fsblkcnt_t;
+typedef unsigned long fsfilcnt_t;
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SYS_TYPES_H_ */

@@ -25,8 +25,8 @@
 #include <limits.h>
 
 #include <mem/misc/pool.h>
-#include <net/rpc/clnt.h>
-#include <net/rpc/xdr.h>
+#include <net/lib/rpc/clnt.h>
+#include <net/lib/rpc/xdr.h>
 
 
 static int nfs_create_dir_entry(node_t *parent);
@@ -346,24 +346,15 @@ static int nfsfs_mount(void *dev, void *dir) {
 	nfs_file_info_t *fi;
 	struct nas *dir_nas;
 	struct nfs_fs_info *fsi;
-	void *prev_fi, *prev_fs;
 	int rc;
 
 	dir_node = dir;
 	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
 	dir_nas = dir_node->nas;
 
-	prev_fi = dir_nas->fi->privdata;
-	prev_fs = dir_nas->fs;
-
-	dir_nas->fi->privdata = NULL;
-	dir_nas->fs = NULL;
-
-	if (NULL == (dir_nas->fs = filesystem_alloc("nfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("nfs"))) {
 		return -ENOMEM;
 	}
-	dir_nas->fs->rootdir_prev_fi = prev_fi;
-	dir_nas->fs->rootdir_prev_fs = prev_fs;
 
 	if ((NULL == (fsi = pool_alloc(&nfs_fs_pool))) ||
 			(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
@@ -373,9 +364,6 @@ static int nfsfs_mount(void *dev, void *dir) {
 
 	dir_nas->fs->fsi = fsi;
 	dir_nas->fi->privdata = (void *) fi;
-
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	strcpy(dir_nas->fs->mntfrom, dev);
 
 	/* get server name and mount directory from params */
 	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
@@ -396,8 +384,6 @@ static int nfsfs_mount(void *dev, void *dir) {
 	error:
 	nfs_free_fs(dir_nas);
 
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
 	return rc;
 }
 
@@ -420,32 +406,14 @@ static int nfs_umount_entry(struct nas *nas) {
 
 static int nfsfs_umount(void *dir) {
 	struct node *dir_node;
-	struct nas *dir_nas;
-	void *prev_fi, *prev_fs;
-	char path[PATH_MAX];
 
 	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-
-	/* check if dir not a root dir */
-	vfs_get_path_by_node(dir_node, path);
-	if(0 != strcmp(dir_nas->fs->mntto, path)) {
-		return -EINVAL;
-	}
-	/*TODO check if it has a opened files */
-
-	prev_fi = dir_nas->fs->rootdir_prev_fi;
-	prev_fs = dir_nas->fs->rootdir_prev_fs;
 
 	/* delete all entry node */
-	nfs_umount_entry(dir_nas);
+	nfs_umount_entry(dir_node->nas);
 
 	/* free nfs file system pools, clnt and buffers*/
-	nfs_free_fs(dir_nas);
-
-	dir_nas->fi->privdata = prev_fi;
-	dir_nas->fs = prev_fs;
+	nfs_free_fs(dir_node->nas);
 
 	return 0;
 }
@@ -456,6 +424,8 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 	nfs_file_info_t *fi;
 	const char *name;
 	mode_t mode;
+
+	nas = NULL; /* XXX required for -O2 */
 
 	name = (const char *) predesc->file_name.name.data;
 
@@ -885,16 +855,17 @@ static int nfs_mount(struct nas *nas) {
 	nfs_filehandle_t *p_fh;
 	mount_service_t mnt_svc;
 	struct nfs_fs_info *fsi;
+	export_dir_t export;
 
 	fsi = nas->fs->fsi;
 
 	/* get server mount directory name*/
-	memset((void *)&fsi->export, 0, sizeof(fsi->export));
+	memset((void *)&export, 0, sizeof(export));
 	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_EXPORT,
-		0, (char *)&fsi->export)){
+		0, (char *)&export)){
 		return -1;
 	}
-	if(0 != strcmp(fsi->srv_dir, fsi->export.dir_name)) {
+	if(0 != strcmp(fsi->srv_dir, export.dir_name)) {
 		return -1;
 	}
 	/* send NULL procedure*/
@@ -903,7 +874,7 @@ static int nfs_mount(struct nas *nas) {
 	}
 
 	/* send MOUNT procedure */
-	point = fsi->export.dir_name;
+	point = export.dir_name;
 	p_fh = &fsi->fh;
 	memset(&mnt_svc, 0, sizeof(mnt_svc));
 

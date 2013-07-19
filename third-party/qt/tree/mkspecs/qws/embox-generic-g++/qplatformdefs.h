@@ -349,11 +349,13 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	errno = EPERM;
 	return -1;
 }*/
-inline int rename(const char *oldpath, const char *newpath) {
+
+/*inline int rename(const char *oldpath, const char *newpath) {
 	printf(">>> rename(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;
 	return -1;
-}
+}*/
+
 inline int symlink(const char *oldpath, const char *newpath) {
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;
@@ -440,17 +442,16 @@ typedef int sig_atomic_t;
 
 
 
-#include <net/socket.h>
 #include <arpa/inet.h>
 
 
 
 
+#if 0
 static inline int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	return -1;
 }
-#if 0
 inline int gethostname(char *name, size_t len) {
 	char localhost[] = "localhost";
 	DPRINT();

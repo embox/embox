@@ -56,6 +56,7 @@ static int sock_udp_hnd(int sock) {
 	socklen_t addr_len;
 	ssize_t bytes, bytes_left;
 
+	addr_len = sizeof addr;
 	bytes = recvfrom(sock, &buff, sizeof buff, 0, &addr, &addr_len);
 	if (bytes == -1) { ret = -errno; perror("recvfrom"); return ret; }
 
@@ -164,6 +165,8 @@ static int socks_handler(int sock_udp, int sock_tcp) {
 
 static int exec(int argc, char *argv[]) {
 	int ret, res, sock_udp, sock_tcp;
+
+	sock_udp = sock_tcp = -1; /* XXX required for -O2 */
 
 	ret = sock_udp_init(&sock_udp);
 	if (ret != 0) return ret;

@@ -17,9 +17,10 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <embox/unit.h>
 #include <arpa/inet.h>
+#include <net/l0/net_entry.h>
 
 
 EMBOX_UNIT_INIT(emaclite_init);
@@ -148,7 +149,7 @@ static uint32_t *word_aligned_addr(void *addr) {
 /**
  * Send a packet on this device.
  */
-static int emaclite_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t *aligned_data;
 
 	if ((NULL == skb) || (NULL == dev)) {
@@ -184,7 +185,6 @@ static void pack_receiving(void *dev_id) {
 	uint16_t len, proto_type;
 	uint32_t tmp;
 	sk_buff_t *skb;
-	const struct net_device_ops *ops;
 	struct net_device_stats *stats;
 	int rx_rc;
 
@@ -228,12 +228,9 @@ static void pack_receiving(void *dev_id) {
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	switch_rx_buff();
 
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
-
 	/* update device statistic */
 	skb->dev = dev_id;
-	ops = skb->dev->netdev_ops;
-	stats = ops->ndo_get_stats(skb->dev);
+	stats = &skb->dev->stats;
 	stats->rx_packets++;
 	stats->rx_bytes += skb->len;
 
@@ -300,7 +297,7 @@ static int emaclite_stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
+static int emaclite_set_mac_address(struct net_device *dev, const void *addr) {
 	if (NULL == dev || NULL == addr) {
 		return -EINVAL;
 	}
@@ -320,16 +317,11 @@ static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
 /*
  * Get RX/TX stats
  */
-static net_device_stats_t *emaclite_get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
-}
-
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = emaclite_start_xmit,
-	.ndo_open = emaclite_open,
-	.ndo_stop = emaclite_stop,
-	.ndo_get_stats = emaclite_get_eth_stat,
-	.ndo_set_mac_address = emaclite_set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = emaclite_xmit,
+	.start = emaclite_open,
+	.stop = emaclite_stop,
+	.set_macaddr = emaclite_set_mac_address
 };
 
 static int emaclite_init(void) {
@@ -342,7 +334,7 @@ static int emaclite_init(void) {
 	if (net_device == NULL) {
 		return -ENOMEM;
 	}
-	net_device->netdev_ops = &_netdev_ops;
+	net_device->drv_ops = &_drv_ops;
 	net_device->irq = CONFIG_XILINX_EMACLITE_IRQ_NUM;
 	net_device->base_addr = CONFIG_XILINX_EMACLITE_BASEADDR;
 

@@ -14,7 +14,8 @@
 #include <embox/unit.h>
 #include <ctype.h>
 #include <framework/cmd/api.h>
-#include <net/util.h>
+#include <net/util/macaddr.h>
+#include <arpa/inet.h>
 #include <net/if_ether.h>
 #include <pnet/repo.h>
 #include <util/member.h>
@@ -60,8 +61,8 @@ static int form_rule(match_rule_t rule, const char *rule_elem, int num) {
 		}
 		break;
 	case 3:
-		ipaddr_scan((unsigned char *) rule_elem,
-				(unsigned char*) &rule->skbuf->nh.iph->saddr);
+		inet_aton(rule_elem,
+				(struct in_addr *)&rule->skbuf->nh.iph->saddr);
 		break;
 	case 4:
 		if (strcmp("ICMP", rule_elem) == 0) {

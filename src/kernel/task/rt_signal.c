@@ -9,7 +9,6 @@
 #include <math.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/rt_signal.h>
-#include <kernel/thread/sched.h>
 #include "common.h"
 #include <mem/objalloc.h>
 #include <kernel/irq_lock.h>

@@ -48,6 +48,7 @@ static void print_data(char *buff, size_t size, blkno_t start) {
 				printf("| ");
 			}
 		}
+#if 0
 		for (i_str = 0; i_str < 16; i_str++) {
 			if (((unsigned char) *substr_p) >= 32) { /*is not service simbol */
 				printf("%c", *substr_p);
@@ -57,6 +58,9 @@ static void print_data(char *buff, size_t size, blkno_t start) {
 			}
 			substr_p++;
 		}
+#else
+		substr_p = substr_p;
+#endif
 		printf("\n");
 		addr += 16;
 	}

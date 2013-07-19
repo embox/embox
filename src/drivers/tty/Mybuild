@@ -1,16 +1,30 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.tty
 
+@DefaultImpl(task_breaking_enable)
+abstract module task_breaking {
+
+}
+
+module task_breaking_enable extends task_breaking {
+	source "task_break_enable.c"
+	depends embox.compat.posix.proc.signal
+}
+
+module task_breaking_disable extends task_breaking {
+	source "task_break_disable.c"
+}
+
 module tty {
 	source "tty.c"
 	source "tty_file_ops.c"
 	source "tty_repo.c"
 	option number io_buff_sz = 128
-	option number rx_buff_sz = 8
+	option number rx_buff_sz = 100
 	depends embox.kernel.work
 	depends embox.kernel.thread.event
 //	depends embox.kernel.thread.sync /* mutex */
-	depends embox.compat.posix.proc.signal
+	depends task_breaking
 }
 
 module pty {

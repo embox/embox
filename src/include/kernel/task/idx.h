@@ -9,6 +9,10 @@
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <framework/mod/options.h>
 #include <module/embox/kernel/task/idx_table.h>
 
@@ -17,6 +21,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <kernel/task/io_sync.h>
 
 struct event;
 
@@ -29,17 +34,11 @@ typedef unsigned int idx_flags_t;
 
 struct task_idx_ops;
 
-struct idx_io_state {
-	int io_monitoring;       /**< The set of I/O operations waiting for "ready" one of them */
-	int io_ready;            /**< I/O operations "ready" at now */
-	struct event *io_enable; /**< Event to enable one of operations from io_monitoring set */
-};
-
 struct idx_desc_data {
 	const struct task_idx_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
-	struct idx_io_state io_state;
+	struct io_sync ios;
 };
 
 /**
@@ -80,6 +79,7 @@ static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
  */
 static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
+	assert(task_idx_indata(desc));
 	return task_idx_indata(desc)->fd_struct;
 }
 
@@ -247,5 +247,10 @@ static inline int task_valid_binded_fd(int fd) {
 static inline int task_valid_unbinded_fd(int fd) {
 	return task_valid_fd(fd) && !task_idx_table_is_binded(task_self_idx_table(), fd);
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TASK_IDX_H_ */

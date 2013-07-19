@@ -18,6 +18,7 @@ module linux_dev {
 
 module linux_layer {
 	source "linux_layer.c"
+	depends embox.net.net_rx
 	depends embox.pnet.pack.PnetPackSkbuff
 	depends embox.pnet.node.skbuff.matcher
 	depends linux_dev
@@ -29,4 +30,13 @@ module info_printer {
 
 module skb_printer {
 	source "skb_printer.c"
+}
+
+module timer {
+	source "timer.c"
+
+	@InitFS
+	source "pnet_timer_results"
+
+	depends embox.pnet.rx_thread
 }

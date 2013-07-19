@@ -1,6 +1,0 @@
-package embox.service
-
-module ImgService {
-	//source "img_service.c"
-	depends embox.service.SrvLib
-}

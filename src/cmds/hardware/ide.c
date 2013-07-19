@@ -5,13 +5,16 @@
  * @date 20.07.2012
  * @author Andrey Gazukin
  */
-
-#include <embox/cmd.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+
 #include <drivers/ide.h>
-#include <errno.h>
 #include <embox/block_dev.h>
+#include <fs/node.h>
+
+#include <embox/cmd.h>
+
 
 EMBOX_CMD(exec);
 

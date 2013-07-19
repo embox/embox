@@ -8,17 +8,19 @@
  * @author Roman Oderov
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
+
 #include <kernel/thread.h>
 #include <kernel/thread/state.h>
 #include <kernel/task.h>
-#include <errno.h>
+#include <kernel/sched.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
@@ -27,34 +29,41 @@ static void print_usage(void) {
 }
 
 static void print_stat(void) {
-	struct thread *thread;
+	struct thread *thread, *tmp;
 	int running, sleeping, suspended;
 	int total;
+	//struct task *task, *tmp_task, *ktask;
 
 	printf(" %4s  %4s  %8s %18s %10s\n", "id", "tid", "priority", "state", "time");
 
 	running = sleeping = suspended = 0;
 
+	//ktask = task_kernel_task();
+
 	sched_lock();
 	{
-		thread_foreach(thread) {
-			thread_state_t s = thread->state;
-			const char *state = NULL;
+		//dlist_foreach_entry(task, tmp_task, &ktask->task_link, task_link) {
+		//	dlist_foreach_entry(thread, tmp, &task->main_thread->task_link, task_link) {
+		thread_foreach(thread, tmp) {
 
-			if (thread_state_running(s)) {
-				state = "running";
-				running++;
-			} else if (thread_state_sleeping(s)) {
-				state = "sleeping";
-				sleeping++;
-			}
+				thread_state_t s = thread->state;
+				const char *state = NULL;
 
-			printf(" %4d%c %4d  %8d %18s %9lds\n",
-				thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
-				thread->task->tid,
-				thread->priority,
-				state,
-				thread_get_running_time(thread)/CLOCKS_PER_SEC);
+				if (thread_state_running(s)) {
+					state = "running";
+					running++;
+				} else if (thread_state_sleeping(s)) {
+					state = "sleeping";
+					sleeping++;
+				}
+
+				printf(" %4d%c %4d  %8d %18s %9lds\n",
+					thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
+					thread->task->tid,
+					thread_priority_get(thread),
+					state,
+					thread_get_running_time(thread)/CLOCKS_PER_SEC);
+		//	}
 		}
 	}
 	sched_unlock();

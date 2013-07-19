@@ -15,8 +15,8 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include <kernel/thread/event.h>
-#include <kernel/thread/sched_lock.h>
+#include <kernel/event.h>
+#include <kernel/sched/sched_lock.h>
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -25,7 +25,7 @@
 /**
  * @brief Save only descriptors with active op.
  * */
-static int filter_out_with_op(int nfds, fd_set *set, int op, int update);
+static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int update);
 
 /** @brief Search for active descriptors in all sets.
  * @param update - show if we filter out inactive fds or only count them.
@@ -33,14 +33,9 @@ static int filter_out_with_op(int nfds, fd_set *set, int op, int update);
  * @retval -EBAFD if some descriptor is invalid */
 static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update);
 
-/**
- * @brief Link each desc in fd_set to event.
- */
-static void set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event);
+static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct event *event);
 
-static int set_monitoring(int nfds, fd_set *set, int op);
-
-static int unset_monitoring(int nfds, fd_set *set, int op);
+static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op);
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int fd_cnt;
@@ -56,10 +51,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	 * some of them can to perform corresponding operations (read/write) */
 	event_init(&event, "select_event");
 
-	set_monitoring(nfds, readfds, IDX_IO_READING);
-	set_monitoring(nfds, writefds, IDX_IO_WRITING);
-
-	set_event(nfds, readfds, writefds, exceptfds, &event);
+	set_monitoring(nfds, readfds, IO_SYNC_READING, &event);
+	set_monitoring(nfds, writefds, IO_SYNC_WRITING, &event);
 
 	/* Search active descriptor and build event set.
 	 * First try to find some active descriptor before going to sleep */
@@ -76,21 +69,19 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		goto out;
 	}
 
-	event_wait(&event, ticks);
+	EVENT_WAIT(&event, 0, ticks); /* TODO: event condition */
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 
 out:
-	unset_monitoring(nfds, readfds, IDX_IO_READING);
-	unset_monitoring(nfds, writefds, IDX_IO_WRITING);
-	/* Unset event for all remaining fds */
-	set_event(nfds, readfds, writefds, exceptfds, NULL);
+	unset_monitoring(nfds, readfds, IO_SYNC_READING);
+	unset_monitoring(nfds, writefds, IO_SYNC_WRITING);
 	sched_unlock();
 	return fd_cnt;
 }
 
 /* Suppose that set != NULL */
-static int filter_out_with_op(int nfds, fd_set *set, int op, int update) {
+static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int update) {
 	int fd, fd_cnt;
 	struct idx_desc *desc;
 
@@ -101,13 +92,12 @@ static int filter_out_with_op(int nfds, fd_set *set, int op, int update) {
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				if (task_idx_indata(desc)->io_state.io_ready & op) {
+				if (io_sync_ready(&task_idx_indata(desc)->ios, op)) {
 					fd_cnt++;
 				} else {
 					/* Filter out inactive descriptor and unset corresponding monitor. */
 					if (update) {
-						idx_io_unset_monitor(task_idx_indata(desc), op);
-						idx_io_set_event(task_idx_indata(desc), NULL);
+						io_sync_notify(&task_idx_indata(desc)->ios, op, NULL);
 						FD_CLR(fd, set);
 					}
 				}
@@ -132,7 +122,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
-		res = filter_out_with_op(nfds, readfds, IDX_IO_READING , update);
+		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING , update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -142,7 +132,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	/* Try to find active fd in writefds*/
 	if (writefds != NULL) {
-		res = filter_out_with_op(nfds, writefds, IDX_IO_WRITING, update);
+		res = filter_out_with_op(nfds, writefds, IO_SYNC_WRITING, update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -153,22 +143,8 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 	return fd_cnt;
 }
 
-static void set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event) {
-	int fd;
-	struct idx_desc *desc;
-
-	for (fd = 0; fd < nfds; fd++) {
-		if ((readfds && FD_ISSET(fd, readfds)) ||
-				(writefds && FD_ISSET(fd, writefds))) {
-			desc = task_self_idx_get(fd);
-			if (desc) {
-				idx_io_set_event(task_idx_indata(desc), event);
-			}
-		}
-	}
-}
-
-static int set_monitoring(int nfds, fd_set *set, int op) {
+static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
+		struct event *event) {
 	int fd;
 	struct idx_desc *desc;
 
@@ -178,7 +154,7 @@ static int set_monitoring(int nfds, fd_set *set, int op) {
 				if (NULL == (desc = task_self_idx_get(fd))) {
 					return -1;
 				}
-				idx_io_set_monitor(task_idx_indata(desc), op);
+				io_sync_notify(&task_idx_indata(desc)->ios, op, event);
 			}
 		}
 	}
@@ -186,7 +162,7 @@ static int set_monitoring(int nfds, fd_set *set, int op) {
 	return 0;
 }
 
-static int unset_monitoring(int nfds, fd_set *set, int op) {
+static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op) {
 	int fd;
 	struct idx_desc *desc;
 
@@ -195,7 +171,7 @@ static int unset_monitoring(int nfds, fd_set *set, int op) {
 			if (NULL == (desc = task_self_idx_get(fd))) {
 				return -1;
 			}
-			idx_io_unset_monitor(task_idx_indata(desc), op);
+			io_sync_notify(&task_idx_indata(desc)->ios, op, NULL);
 		}
 	}
 

@@ -3,6 +3,8 @@
 /sbin/ip tuntap add mode tap tap0
 /sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
 /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
+/sbin/ifconfig tap0 inet6 del fe80::a8bb:ccff:fedd:eeff/64
+/sbin/ifconfig tap0 inet6 add fe80::10:0:2:10/64
 
 #Enable IP Forwarding for gateway interface
 gw=`route -n | grep "UG" | sed 's/^.* //'`

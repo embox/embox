@@ -9,14 +9,14 @@
 
 #include <embox/cmd.h>
 #include <stdio.h>
-#include <net/inet_sock.h>
+#include <net/socket/inet_sock.h>
 #include <net/sock.h>
-#include <net/udp.h>
-#include <net/tcp.h>
-#include <net/socket_registry.h>
+#include <net/l4/udp.h>
+#include <net/l4/tcp.h>
+#include <net/socket/socket_registry.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <fcntl.h>
 
 #define __NS_TEST_SOCKET_CREATE__ /*Undefine it, if testing socket is not nessessary*/

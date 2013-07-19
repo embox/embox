@@ -13,6 +13,7 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/vesa_modes.h>
 #include <framework/mod/options.h>
+#include <drivers/pci/pci_driver.h>
 
 #include <module/embox/arch/x86/boot/multiboot.h>
 

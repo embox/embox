@@ -8,6 +8,9 @@ abstract module api {
 module single extends api {
 	source "single.c"
 	depends kernel_task
+
+	depends embox.kernel.thread.current.api
+	depends embox.kernel.sched.sched_policy.api
 }
 
 module multi extends api {
@@ -20,7 +23,7 @@ module multi extends api {
 
 	/* uses task_self() to initialize resources, which implies
 	   to thread be already loaded, as task_self uses thread_self
-	   to determ current thread
+	   to determine current thread
 	*/
 	depends embox.kernel.thread.core
 }
@@ -33,7 +36,7 @@ module kernel_task {
 
 module std_signal {
 	source "std_signal.c"
-	depends signal_common
+//	depends signal_common
 }
 
 module rt_signal {
@@ -44,6 +47,8 @@ module rt_signal {
 
 module signal_common {
 	source "signal.c"
+
+	depends embox.kernel.sched.sched
 }
 
 
@@ -72,20 +77,15 @@ module u_area {
 	source "u_area.c"
 }
 
-@DefaultImpl(io_sync_simple)
-abstract module io_sync_api { }
-
-module io_sync_simple extends io_sync_api {
-	source "io_sync_simple.c"
-}
-
-module io_sync extends io_sync_api {
+module io_sync {
 	source "io_sync.c"
-	depends embox.kernel.thread.event
+
+	depends embox.kernel.manual_event_api
 }
 
 module waitpid {
 	source "waitpid.c"
 
-	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.sched.wait_queue
 }

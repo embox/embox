@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <drivers/pci/pci.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_ether.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <drivers/ethernet/rtl8139.h>
+#include <net/l0/net_entry.h>
 
 PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
 
@@ -36,7 +37,7 @@ static uint8_t tx_buf[4][TX_BUF_SIZE] __attribute__((aligned(4)));
 static uint32_t cur_tx;
 static uint32_t cur_rx;
 
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t entry   = cur_tx % 4;
 	uint32_t size    = skb->len;
 	uint8_t *msg_buf = tx_buf[entry];
@@ -80,7 +81,6 @@ static void rtl8139_rx(struct net_device *dev) {
 		assert(skb);
 		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
 		skb->dev = dev;
-		skb->protocol = ntohs(skb->mac.ethh->h_proto);
 
 		stat->rx_packets++;
 		stat->rx_bytes += skb->len;
@@ -174,11 +174,7 @@ static int stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static net_device_stats_t *get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
-}
-
-static int set_mac_address(struct net_device *dev, void *addr) {
+static int set_mac_address(struct net_device *dev, const void *addr) {
 	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
@@ -191,12 +187,11 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	return ENOERR;
 }
 
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = start_xmit,
-	.ndo_open = open,
-	.ndo_stop = stop,
-	.ndo_get_stats = get_eth_stat,
-	.ndo_set_mac_address = set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = xmit,
+	.start = open,
+	.stop = stop,
+	.set_macaddr = set_mac_address
 };
 
 static int rtl8139_init(struct pci_slot_dev *pci_dev) {
@@ -212,7 +207,7 @@ static int rtl8139_init(struct pci_slot_dev *pci_dev) {
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-	nic->netdev_ops = &_netdev_ops;
+	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
 

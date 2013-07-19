@@ -20,13 +20,11 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: date CCYYMMDDhhmm.ss\n");
+	printf("Usage: date -s CCYYMMDDhhmm.ss\n");
 }
 
 /* RFC 868 */
 #define SECONDS_1900_1970 2208988800L
-
-static struct tm date;
 
 static void show_date(void) {
 	struct timespec ts;
@@ -44,6 +42,9 @@ static void show_date(void) {
 
 static void set_date(char *new_date) {
 	char *end;
+	time_t cur_time;
+	struct timespec tv;
+	struct tm date;
 
 	end = new_date + strlen(new_date);
 
@@ -70,10 +71,15 @@ static void set_date(char *new_date) {
 	sscanf(end, "%d", &date.tm_mon);
 	*end = '\0';
 
-	end -= 2;
+	end -= 4;
 	sscanf(end, "%d", &date.tm_year);
 	date.tm_year -= 1900;
 	*end = '\0';
+
+	cur_time = mktime(&date);
+	tv.tv_sec = cur_time + SECONDS_1900_1970;
+	tv.tv_nsec = 0;
+	settimeofday(&tv, NULL);
 }
 
 static char *get_next_key(char *string) {

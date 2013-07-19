@@ -7,15 +7,16 @@
  * @author Anton Bondarev
  */
 #include <errno.h>
-#include <net/socket.h>
 #include <sys/socket.h>
 #include <net/sock.h>
+#include <embox/net/family.h>
 
+EMBOX_NET_FAMILY(AF_UNIX, unix_create);
 
 /* Prototypes */
-static const struct proto_ops unix_dgram_ops;
-static const struct proto_ops unix_stream_ops;
-static const struct proto_ops unix_seqpacket_ops;
+static const struct family_ops unix_dgram_ops;
+static const struct family_ops unix_stream_ops;
+static const struct family_ops unix_seqpacket_ops;
 static const struct proto unix_proto;
 
 struct unix_sock {
@@ -43,7 +44,7 @@ static int supported_sock_type(struct socket *sock) {
 	return ENOERR;
 }
 
-static int unix_create(struct socket *sock, int protocol) {
+static int unix_create(struct socket *sock, int type, int protocol) {
 	int res;
 	struct sock *sk;
 
@@ -60,12 +61,7 @@ static int unix_create(struct socket *sock, int protocol) {
 	return ENOERR;
 }
 
-static const struct net_proto_family unix_family_ops = {
-	.family = PF_UNIX,
-	.create = unix_create,
-};
-
-static const struct proto_ops unix_dgram_ops = {
+static const struct family_ops unix_dgram_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
@@ -88,7 +84,7 @@ static const struct proto_ops unix_dgram_ops = {
 #endif
 };
 
-static const struct proto_ops unix_stream_ops = {
+static const struct family_ops unix_stream_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
@@ -111,7 +107,7 @@ static const struct proto_ops unix_stream_ops = {
 #endif
 };
 
-static const struct proto_ops unix_seqpacket_ops = {
+static const struct family_ops unix_seqpacket_ops = {
 		.family =	PF_UNIX,
 #if 0
 		.owner =	THIS_MODULE,
@@ -141,7 +137,3 @@ static const struct proto unix_proto = {
 #endif
 		.obj_size = sizeof(struct unix_sock),
 };
-
-/*static*/ int unix_init(void) {
-	return sock_register(&unix_family_ops);
-}

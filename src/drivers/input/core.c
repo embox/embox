@@ -35,8 +35,8 @@ EMBOX_UNIT_INIT(input_devfs_init);
 #include <util/ring_buff.h>
 
 #include <kernel/thread/event.h>
-#include <kernel/thread/sched_lock.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched.h>
 
 
 #define MAX_OPEN_CNT      64
@@ -339,7 +339,7 @@ static int input_devfs_register(struct input_dev *dev) {
 	}
 
 	nas = node->nas;
-	nas->fs = filesystem_alloc("empty");
+	nas->fs = filesystem_create("empty");
 	if (!nas->fs) {
 		return -1;
 	}

@@ -17,6 +17,7 @@ module rlogin {
 	source "rlogin.c"
 
 	depends embox.lib.LibC
+	depends embox.mem.heap_api
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework

@@ -12,6 +12,7 @@
 #include <mem/misc/pool.h>
 #include <util/sys_log.h>
 
+#include <prom/prom_printf.h>
 
 static bool annoy = false;
 static bool annoy_types[] = {true, true, true, true};
@@ -21,7 +22,7 @@ static bool annoy_types[] = {true, true, true, true};
 static debug_msg_t log[N_DEBUG_MSG];
 
 static unsigned int N_message = 0;
-static unsigned int serial = 0;
+volatile static unsigned int serial = 0;
 /* static unsigned int tail = 0; */
 
 static char* types_str[] = {"INFO", "WARNING", "ERROR", "DEBUG"};
@@ -37,7 +38,7 @@ bool syslog_toggle_intrusive(bool *types){
 	return annoy = annoy ? false : true;
 }
 
-void system_log(char *msg, char *module, char *func, int msg_type){
+void system_log(const char *msg, char *module, char *func, int msg_type){
 
 	/* truncuate if necessary */
 	if(strlen(msg)>MAX_MSG_LENGTH){
@@ -76,26 +77,36 @@ void system_log(char *msg, char *module, char *func, int msg_type){
 
 }
 
+void vsystem_log(const char *msg, char *module, char *func, int msg_type, ...) {
+	static char msg_buf[MAX_MSG_LENGTH];
+	va_list va;
+
+	va_start(va, msg_type);
+	vsnprintf(msg_buf, MAX_MSG_LENGTH, msg, va);
+	va_end(va);
+
+	system_log(msg_buf, module, func, msg_type);
+}
 
 void show_log(unsigned int count, bool *disp_types){
 	int n, final_count, current;
 
 	if(!serial){ /* if there are no messages to display */
-		printk("No messages to display\n");
+		prom_printf("No messages to display\n");
 		return;
 	}
 
-	final_count = count < serial ? count : serial;
+	final_count = count < N_message ? count : N_message;
   current = (N_message - final_count)%N_DEBUG_MSG;
 
 	for(n=0; n<final_count; n++){
 		if(disp_types != NULL){
 			if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
-				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				prom_printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}else{  /* no specific information on output */
-				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				prom_printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}

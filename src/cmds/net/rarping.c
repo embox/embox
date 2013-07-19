@@ -14,21 +14,23 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <net/util.h>
-#include <net/rarp.h>
+#include <net/util/macaddr.h>
+#include <net/l3/rarp.h>
 #include <net/if_arp.h>
+#include <net/if_ether.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <string.h>
+#include <kernel/time/time.h>
 
 
 EMBOX_CMD(exec);
 
-#define DEFAULT_INTERVAL 1000
+#define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
 static void print_usage(void) {
-	printf("Usage: rarping [-I if] [-c cnt] host\n");
+	printf("Usage: rarping [-I if] [-c cnt] hwaddr\n");
 }
 
 static int exec(int argc, char **argv) {
@@ -92,13 +94,13 @@ static int exec(int argc, char **argv) {
 	printf("RARPING %s from %s(%s) %s\n", &tha_str[0], &sha_str[0],
 		&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
-		neighbour_del(&tha[0], hln, NULL, 0, in_dev->dev);
-		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, &sha[0], NULL,
+		neighbour_clean(in_dev->dev);
+		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, NULL, NULL,
 			&tha[0], NULL, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
-		ret = neighbour_get_protocol_address(&tha[0], hln, in_dev->dev,
-				pln, &tpa[0], NULL);
-		if (ret == ENOERR) {
+		ret = neighbour_get_paddr(ARPG_HRD_ETHERNET, &tha[0], in_dev->dev,
+				ETH_P_IP, pln, &tpa[0]);
+		if (ret == 0) {
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
 			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
 			cnt_resp++;

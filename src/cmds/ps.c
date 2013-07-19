@@ -28,7 +28,7 @@ static void print_all(void) {
 
 	while (0 <= (tid = task_table_get_first(tid))) {
 		task = task_table_get(tid);
-		printf(" %3d  %20s\n", tid, task->name);
+		printf(" %3d  %20s\n", tid, task->task_name);
 
 		++tid;
 	}

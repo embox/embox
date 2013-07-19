@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stddef.h>
-#include <net/mail/smtp.h>
+#include <net/lib/smtp.h>
 #include <unistd.h>
 #include <string.h>
 

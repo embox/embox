@@ -24,12 +24,12 @@
 #include <errno.h>
 #include <netdb.h>
 
-#include <net/route.h>
-#include <net/icmp.h>
-#include <net/ip.h>
+#include <net/l3/route.h>
+#include <net/l3/icmpv4.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/inetdevice.h>
-#include <net/checksum.h>
-#include <net/util.h>
+#include <net/util/checksum.h>
+#include <net/util/macaddr.h>
 
 
 EMBOX_CMD(exec);
@@ -71,7 +71,6 @@ static void print_usage(void) {
 static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char *name) {
 	uint32_t start, delta;
 	union packet *rx_pack = malloc(sizeof(union packet));
-	struct sockaddr_in from;
 	char *dst_addr_str;
 	int res = 0;
 
@@ -85,7 +84,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 		/* we don't need to get pad data, only header */
 		if (recvfrom(sock, rx_pack->packet_buff,
 				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				(struct sockaddr *) &from, NULL) <= 0) {
+				NULL, NULL) <= 0) {
 			continue;
 		}
 		if ((rx_pack->hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
@@ -154,6 +153,9 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		return -errno;
 	}
 
+	fcntl(sk, F_SETFD, O_NONBLOCK);
+
+	to.sin_family = AF_INET;
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
@@ -359,7 +361,5 @@ static int exec(int argc, char **argv) {
 		pinfo.from.s_addr = inetdev_get_by_dev(rte->dev)->ifa_address;
 	}
 	/* ping! */
-	ping(&pinfo, hostname, he->h_name);
-
-	return 0;
+	return ping(&pinfo, hostname, he->h_name);
 }

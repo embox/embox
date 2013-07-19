@@ -9,6 +9,7 @@
 #ifndef EMBOX_NET_SOCK_H_
 #define EMBOX_NET_SOCK_H_
 
+#include <framework/net/sock/api.h>
 #include <framework/net/sock/self.h>
 
 #endif /* EMBOX_NET_SOCK_H_ */

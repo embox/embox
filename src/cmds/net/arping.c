@@ -13,17 +13,21 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <net/if_arp.h>
+#include <net/if_ether.h>
+#include <net/inetdevice.h>
 #include <string.h>
 
-#include <net/util.h>
-#include <net/arp.h>
+#include <net/util/macaddr.h>
+#include <net/l3/arp.h>
 #include <net/neighbour.h>
+#include <kernel/time/time.h>
 
 
 
 EMBOX_CMD(exec);
 
-#define DEFAULT_INTERVAL 1000
+#define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
 static void print_usage(void) {
 	printf("Usage: arping [-I if] [-c cnt] host\n");
@@ -81,14 +85,13 @@ static int exec(int argc, char **argv) {
 	strncpy(from_b, inet_ntoa(from), sizeof(from_b));
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
-		neighbour_del(NULL, 0, (const unsigned char *)&dst, sizeof dst,
-				in_dev->dev);
-		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
-				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
+		neighbour_del(ETH_P_IP, &dst, in_dev->dev);
+		arp_send(ARP_OPER_REQUEST, ETH_P_IP, in_dev->dev->addr_len,
+				sizeof in_dev->ifa_address, NULL, &in_dev->ifa_address,
+				NULL, &dst.s_addr, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
-		if (neighbour_get_hardware_address((const unsigned char *)&dst,
-					sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
-					NULL) == ENOERR) {
+		if (0 == neighbour_get_haddr(ETH_P_IP, &dst, in_dev->dev,
+					ARPG_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
 			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, -1);
 			cnt_resp++;

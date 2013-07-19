@@ -9,17 +9,21 @@
 #ifndef FRAMEWORK_NET_PACK_TYPES_H_
 #define FRAMEWORK_NET_PACK_TYPES_H_
 
-#include <util/location.h>
-#include <net/netdevice.h>
+/**
+ * Prototypes
+ */
+struct net_device;
+struct sk_buff;
 
 /**
  * Each netpack implements this interface.
  */
-
 struct net_pack {
-	packet_type_t *netpack;
-	/** The corresponding mod. */
-	const struct mod *mod;
+	unsigned short type;  /* type of packet */
+	int (*init)(void);    /* initializer of this packet family */
+	int (*fini)(void);
+	int (*handle)(struct sk_buff *skb,
+			struct net_device *dev); /* packet handler */
 };
 
 #endif /* FRAMEWORK_NET_PACK_TYPES_H_ */

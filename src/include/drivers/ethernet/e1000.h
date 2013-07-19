@@ -46,6 +46,9 @@
 /** EEPROM Read. */
 #define E1000_REG_EERD		0x00014
 
+/** MDI Control. */
+#define E1000_REG_MDIC		0x00020
+
 /** Flow Control Address Low. */
 #define E1000_REG_FCAL		0x00028
 
@@ -202,6 +205,19 @@
 /**
  * @}
  */
+
+#define E1000_REG_MDIC_DATA 	0xffff
+
+#define E1000_REG_MDIC_REGADD_OFF 16
+#define E1000_REG_MDIC_PHYADD_OFF 21
+#define E1000_REG_MDIC_OP_WRITE (0x01 << 26)
+#define E1000_REG_MDIC_OP_READ  (0x10 << 26)
+#define E1000_REG_MDIC_READY	(0x1  << 28)
+#define E1000_REG_MDIC_ERROR	(0x1  << 30)
+
+#define E1000_MDI_PSSTAT	17
+
+#define E1000_PSSTAT_LINK	(0x1 << 10)
 
 /**
  * @name Interrupt Cause Read.

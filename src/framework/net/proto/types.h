@@ -4,23 +4,26 @@
  *
  * @date 04.07.11
  * @author Dmitry Zubarevich
+ * @author Ilia Vaprol
  */
 
 #ifndef FRAMEWORK_NET_PROTO_TYPES_H_
 #define FRAMEWORK_NET_PROTO_TYPES_H_
 
-#include <util/location.h>
-#include <net/protocol.h>
+/**
+ * Prototypes
+ */
+struct sk_buff;
 
 /**
  * Each netproto implements this interface.
  */
-
 typedef struct net_proto {
+	unsigned char type;
 	int (*init)(void);
-	net_protocol_t *netproto;
-	/** The corresponding mod. */
-	const struct mod *mod;
+	int (*fini)(void);
+	int (*handle)(struct sk_buff *skb);
+	void (*handle_error)(struct sk_buff *skb, unsigned int info);
 } net_proto_t;
 
 #endif /* FRAMEWORK_NET_PROTO_TYPES_H_ */

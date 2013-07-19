@@ -22,7 +22,13 @@
 #include <mem/page.h>
 #include <cmd/mkfs.h>
 
+#include <err.h>
+
 #include <embox/cmd.h>
+
+
+#define MKFS_CREATE_RAMDISK 0x00000001
+#define MKFS_FORMAT_DEV     0x00000002
 
 #define MIN_ARGS_OF_MKFS 3 /* <mkfs -q /dev/ram0> must create ramdisk*/
 #define DEFAULT_BLOCK_QTTY  0x20
@@ -111,8 +117,8 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	int rezult;
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
-		if (0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
-			return rezult;
+		if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
+			return -errno;
 		}
 	}
 

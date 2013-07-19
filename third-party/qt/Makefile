@@ -181,13 +181,10 @@ build_and_install: configure
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
 			make install && \
 			mkdir -p $(ROOT_DIR)/conf/rootfs && \
-			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/; \
+			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/fonts; \
 		fi
 
-#all: build_and_install
-
-
-
+$(ROOTFS_IMAGE): build_and_install
 
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit

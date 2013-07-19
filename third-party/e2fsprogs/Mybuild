@@ -1,0 +1,94 @@
+package third_party.e2fsprogs
+
+module libs {
+	depends embox.lib.LibC
+
+	depends embox.arch.x86.LibM // FIXME:
+
+	source "empty.c" // FIXME: workaround
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/e2fsprogs MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/lib/et/libcom_err.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/ext2fs/libext2fs.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/e2p/libe2p.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/uuid/libuuid.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/blkid/libblkid.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/quota/libquota.a",
+		   "../../../../e2fsprogs/src/e2fsprogs-build/intl/libintl.a"
+}
+
+@Cmd(name = "e2freefrag",
+	help = "report filesystem free-space fragmentation",
+	man = '''
+		NAME
+			e2freefrag - report filesystem free-space fragmentation
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module e2freefrag {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/e2freefrag.o"
+	source "e2freefrag_cmd.c"
+	source "order.mk"
+}
+
+@Cmd(name = "dumpe2fs",
+	help = "List the control structures of a second extended filesystem",
+	man = '''
+		NAME
+			dumpe2fs - List the control structures of a second extended filesystem
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module dumpe2fs {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/dumpe2fs.o"
+	source "dumpe2fs_cmd.c"
+	source "order.mk"
+}
+
+@Cmd(name = "mke2fs",
+	help = "Make a ext2fs filesystem",
+	man = '''
+		NAME
+			mke2fs - Make a ext2fs filesystem
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module mke2fs {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/mke2fs.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/util.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/profile.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/prof_err.o",
+			"../../../../e2fsprogs/src/e2fsprogs-build/misc/default_profile.o"
+	source "mke2fs_cmd.c"
+	source "order.mk"
+}
+
+@Cmd(name = "e2fsck",
+	help = "a consistency checker for the new extended file system",
+	man = '''
+		NAME
+			e2fsck - a consistency checker for the new extended file system
+		SYNOPSIS
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module e2fsck {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../e2fsprogs/src/e2fsprogs-build/e2fsck/*.o"
+	source "e2fsck_cmd.c"
+	source "order.mk"
+}

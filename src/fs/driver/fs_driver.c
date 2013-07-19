@@ -81,7 +81,7 @@ struct fs_driver *fs_driver_find_drv(const char *name) {
 	return NULL;
 }
 
-int ffs_driver_register_drv(struct fs_driver *fs) {
+int fs_driver_register_drv(struct fs_driver *fs) {
 	int res = 0;
 	struct fs_driver *p;
 

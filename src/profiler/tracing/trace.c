@@ -58,3 +58,16 @@ int trace_block_diff(struct __trace_block *tb) {
 int trace_point_get_value(struct __trace_point *tp) {
 	return tp->count;
 }
+
+struct __trace_point *trace_point_get_by_name(const char *name) {
+	struct __trace_point *tp;
+
+	array_nullterm_foreach(tp, __trace_points_array)
+	{
+		if (!strcmp(tp->name, name)) {
+			return tp;
+		}
+	}
+
+	return NULL;
+}

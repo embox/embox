@@ -13,12 +13,12 @@
 
 /* FIXME include this */
 //#include <net/if_arp.h>
-//#include <net/if_ether.h>
 //#include <net/netdevice.h>
-//#include <net/ip.h>
-//#include <net/icmp.h>
+//#include <net/l3/ipv4/ip.h>
+//#include <net/l3/icmpv4.h>
 //#include <net/sock.h>
-//#include <net/udp.h>
+//#include <net/l4/udp.h>
+//#include <net/l4/tcp.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -29,7 +29,9 @@ struct net_device;
 struct tcphdr;
 struct udphdr;
 struct icmphdr;
+struct icmp6hdr;
 struct iphdr;
+struct ip6hdr;
 struct arpghdr;
 struct ethhdr;
 
@@ -50,19 +52,10 @@ typedef struct sk_buff_head {
 
 typedef struct sk_buff {        /* Socket buffer */
 	/* This member must be first. */
-//	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
-	struct sk_buff *next;       /* Next buffer in list */
-	struct sk_buff *prev;       /* Previous buffer in list */
+	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
-
-		/* Packet protocol from driver or protocol to put into Eth header during assembling.
-		 * We should get rid of it. It's almost useless during packet
-		 * receiving and there is a special field in LL header
-		 * for packet assembling.
-		 */
-	uint16_t protocol;
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)
 		 * Nowdays it's used only in ip options, so it's a good idea to
@@ -77,6 +70,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
+		struct icmp6hdr *icmp6h;
 		unsigned char *raw;
 	} h;
 
@@ -87,6 +81,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		 */
 	union {
 		struct iphdr *iph;
+		struct ip6hdr *ip6h;
 		struct arpghdr *arpgh;
 		unsigned char *raw;
 	} nh;
@@ -116,6 +111,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		 * So the presence of this field isn't mandatory.
 		 */
 	unsigned char *p_data;
+	unsigned char *p_data_end;
 
 } sk_buff_t;
 
@@ -185,19 +181,14 @@ extern struct sk_buff *skb_share(struct sk_buff *skb, int share);
  */
 
 /**
- * Allocate one instance of structure sk_buff_head.
- */
-extern struct sk_buff_head * skb_queue_alloc(void);
-
-/**
  * Initialize sk_buff_head
  */
 extern void skb_queue_init(struct sk_buff_head *queue);
 
 /**
- * Free sk_buff_head structure with his elements
+ * Cleanup skb_queue
  */
-extern void skb_queue_free(struct sk_buff_head *queue);
+extern void skb_queue_purge(struct sk_buff_head *queue);
 
 /**
  * Add skb to queue
@@ -213,5 +204,8 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
  * Get first sk_buff from queue
  */
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
+
+#include <net/if_arp.h>
+#include <net/if_ether.h>
 
 #endif /* NET_SKBUFF_H_ */

@@ -157,9 +157,7 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 	}
 
 	/* Disable reading/writing on descriptor */
-	data->io_state.io_enable = NULL;
-	data->io_state.io_monitoring = 0;
-	data->io_state.io_ready = 0;
+	io_sync_init(&data->ios, 0, 0);
 
 	return new_fd;
 }

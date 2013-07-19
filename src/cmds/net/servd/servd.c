@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <net/inetdevice.h>
 #include <cmd/web_server.h>
@@ -49,8 +49,8 @@ static int run_service(const char *service) {
 	return 0;
 }
 
-static int stop_service(const char *service) {
 #if 0
+static int stop_service(const char *service) {
 	int ret;
 
 	ret = web_service_stop(service);
@@ -60,9 +60,9 @@ static int stop_service(const char *service) {
 	}
 
 	printf("service %s stopped\n", service);
-#endif
 	return 0;
 }
+#endif
 
 
 static void * start_server(void *unused) {
@@ -186,9 +186,11 @@ static int servd(int argc, char **argv) {
 		case 'r': /*run - runs service */
 			run_service(optarg);
 			break;
+#if 0
 		case 's': /* stop - stops service */
 			stop_service(optarg);
 			break;
+#endif
 		case 'S': /* Stop - stops server */
 			if (stop_server() < 0) {
 				printf("Can't stop server\n");

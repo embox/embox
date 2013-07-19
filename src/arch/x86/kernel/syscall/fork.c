@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include <kernel/irq.h>
-#include <kernel/thread/sched.h>
+#include <kernel/sched.h>
 #include <kernel/task.h>
 #include <mem/misc/pool.h>
 
@@ -58,7 +58,7 @@ asmlinkage int sys_fork(struct pt_regs regs) {
 
 		memcpy(data, &regs, sizeof(struct pt_regs));
 
-		res = new_task(task_self()->name, fork_trampoline, data);
+		res = new_task(task_self()->task_name, fork_trampoline, data);
 	}
 	sched_unlock();
 

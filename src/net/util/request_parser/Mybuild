@@ -1,9 +1,0 @@
-package embox.net.lib
-
-module parser {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "request_parser.c"
-
-	depends third_party.lib.url_parser
-	depends embox.lib.LibC
-}

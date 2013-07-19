@@ -20,7 +20,7 @@ module sendmail {
 	source "sendmail.c"
 
 	depends embox.compat.posix.util.getpass
-	depends embox.net.smtp
+	depends embox.net.lib.smtp
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }

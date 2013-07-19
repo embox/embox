@@ -22,6 +22,7 @@ module login {
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.utmp_api
 	depends embox.kernel.task.waitpid
+	depends embox.security.smac
 	depends third_party.lib.linenoise
 
 	requires embox.cmd.Shell.commandLine

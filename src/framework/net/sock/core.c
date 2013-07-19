@@ -4,56 +4,99 @@
  *
  * @date 05.07.11
  * @author Dmitry Zubarevich
+ * @author Ilia Vaprol
  */
 
-#include <kernel/printk.h>
-#include <string.h>
-#include <framework/mod/ops.h>
-#include <framework/mod/member/ops.h>
+#include <framework/mod/member/self.h>
+#include <framework/mod/self.h>
 #include <framework/net/sock/api.h>
-#include <net/protocol.h>
-#include <util/array.h>
+#include <kernel/printk.h>
+#include <netinet/in.h>
+#include <stddef.h>
+#include <string.h>
 
 ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
 
-#if 0
-static int net_sock_mod_enable(struct mod_member *mod);
-static int net_sock_mod_disable(struct mod_member *mod);
+static int net_sock_mod_member_init(struct mod_member *member);
+static int net_sock_mod_member_fini(struct mod_member *member);
 
-const struct mod_member_ops __net_sock_mod_ops = {
-	.init  = &net_sock_mod_enable,
-	.fini = &net_sock_mod_disable
+const struct mod_member_ops __net_sock_mod_member_ops = {
+	.init = &net_sock_mod_member_init,
+	.fini = &net_sock_mod_member_fini
 };
 
-static int net_sock_mod_enable(struct mod_member *mod) {
-	int ret = 0;
+static const char * proto2str(int proto) {
+	switch (proto) {
+	default:           return "unkonwn";
+	case IPPROTO_IP:   return "IP";
+	case IPPROTO_ICMP: return "ICMP";
+	case IPPROTO_TCP:  return "TCP";
+	case IPPROTO_UDP:  return "UDP";
+	}
+}
 
-	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
-	printk("NET: initializing socket %s.%s: ",
-		mod->mod->package->name, mod->mod->name);
+static int net_sock_mod_member_init(struct mod_member *member) {
+	int ret;
+	const struct net_sock *nsock;
 
-	if (NULL != net_proto_family) {
-		ret = sock_register(net_proto_family);
+	ret = 0;
+	nsock = (struct net_sock *)member->data;
+
+	printk("\tNET: initializing socket %s.%s for %s protocol: ",
+			nsock->mod->package->name, nsock->mod->name,
+			proto2str(nsock->protocol));
+
+	if (nsock->init != NULL) {
+		ret = nsock->init();
 	}
 
-	if (0 == ret) {
+	if (ret == 0) {
 		printk("done\n");
-	} else {
+	}
+	else {
 		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
 }
 
-static int net_sock_mod_disable(struct mod_member *mod) {
-	int ret = 0;
+static int net_sock_mod_member_fini(struct mod_member *member) {
+	int ret;
+	const struct net_sock *nsock;
 
-	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
+	ret = 0;
+	nsock = (struct net_sock *)member->data;
 
-	if (NULL != net_proto_family) {
-		sock_unregister(net_proto_family->family);
+	printk("\tNET: finalizing socket %s.%s for %s protocol: ",
+			nsock->mod->package->name, nsock->mod->name,
+			proto2str(nsock->protocol));
+
+	if (nsock->fini != NULL) {
+		ret = nsock->fini();
+	}
+
+	if (ret == 0) {
+		printk("done\n");
+	}
+	else {
+		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
 }
-#endif
+
+const struct net_sock * net_sock_lookup(int family, int type,
+		int protocol) {
+	const struct net_sock *nsock;
+
+	net_sock_foreach(nsock) {
+		if ((nsock->family == family)
+				&& (nsock->type == type)
+				&& ((nsock->protocol == protocol)
+					|| ((protocol == 0) && (nsock->is_default)))) {
+			return nsock;
+		}
+	}
+
+	return NULL;
+}

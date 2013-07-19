@@ -4,6 +4,8 @@ package embox.pnet
 module pnet_entry {
 	source "pnet_entry.c"
 	depends embox.pnet.core
+	depends embox.compat.posix.util.time
+	depends embox.profiler.trace
 }
 
 module net_entry extends embox.net.entry_api {

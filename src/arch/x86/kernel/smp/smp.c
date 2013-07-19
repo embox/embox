@@ -22,14 +22,18 @@
 #include <kernel/spinlock.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
+#include <module/embox/kernel/thread/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
 
-static SPINLOCK_DEFINE(startup_lock);
+static spinlock_t startup_lock = SPIN_UNLOCKED;
 
 char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
+
+extern struct thread *thread_init_self(void *stack, size_t stack_sz,
+		thread_priority_t priority);
 
 void startup_ap(void) {
 	extern void idt_load(void);
@@ -91,7 +95,7 @@ static int unit_init(void)
 	init_trampoline();
 
 	/* Start all CPUs */
-    for (int i = 0; i <= NCPU - 1; i++) {
+    for (int i = 0; i < NCPU; i++) {
     	if (i == lapic_id()) {
     		continue;
     	}

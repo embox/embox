@@ -10,8 +10,9 @@
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
+#include <net/l0/net_entry.h>
 
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
@@ -97,19 +98,11 @@ static void greth_rings_init(void) {
 	}
 }
 
-static int greth_xmit(sk_buff_t *skb, struct net_device *dev) {
+static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return ENOERR;
 }
 
-static net_device_stats_t * greth_get_stats(struct net_device *dev) {
-	if (dev == NULL) {
-		return NULL;
-	}
-
-	return &(dev->stats);
-}
-
-static int greth_set_mac_address(struct net_device *dev, void *addr) {
+static int greth_set_mac_address(struct net_device *dev, const void *addr) {
 	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
@@ -149,14 +142,11 @@ static int greth_stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static const struct net_device_ops greth_ops = {
-	.ndo_start_xmit      = greth_xmit,
-	.ndo_get_stats       = greth_get_stats,
-	.ndo_start_xmit = greth_xmit,
-	.ndo_open = greth_open,
-	.ndo_stop = greth_stop,
-	.ndo_get_stats = greth_get_stats,
-	.ndo_set_mac_address = greth_set_mac_address
+static const struct net_driver greth_ops = {
+	.xmit      = greth_xmit,
+	.start = greth_open,
+	.stop = greth_stop,
+	.set_macaddr = greth_set_mac_address
 
 };
 
@@ -207,7 +197,7 @@ static int greth_init(void) {
 
 	dev_regs_init(&irq);
 
-	nic->netdev_ops = &greth_ops;
+	nic->drv_ops = &greth_ops;
 	nic->irq = irq;
 	nic->base_addr = (uint32_t)dev_regs;
 

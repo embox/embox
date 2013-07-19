@@ -10,7 +10,7 @@
 
 #include <embox/cmd.h>
 #include <unistd.h>
-#include <net/route.h>
+#include <net/l3/route.h>
 #include <net/inetdevice.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -73,7 +73,8 @@ static int exec(int argc, char **argv) {
 
 	for (i = 1; i < argc; ++i) {
 		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i])) {
-			printf("%s {add|del} <target> [gw <Gw] [netmask <Nm>] [[dev] If]",
+			printf("%s [-hn] [-A family] {add|del} <target> [gw <Gw]"
+					" [netmask <Nm>] [[dev] If]\n",
 					argv[0]);
 			return 0;
 		}

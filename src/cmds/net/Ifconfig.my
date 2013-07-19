@@ -63,8 +63,7 @@ module ifconfig {
 	depends embox.lib.LibC
 	depends embox.compat.posix.net.inet_addr
 	depends embox.net.core
-	depends embox.net.util.misc
-	depends embox.net.eth
+	depends embox.net.util.macaddr
 	depends embox.net.af_inet
 	depends embox.framework.LibFramework
 }

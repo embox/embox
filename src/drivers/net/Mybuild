@@ -4,7 +4,7 @@ module loopback {
 	source "loopback.c"
 
 	depends embox.net.entry_api
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.net.dev
 }
 
@@ -13,7 +13,7 @@ module e1000 {
 	depends embox.net.skbuff
 	depends embox.lib.LibC
 	depends embox.driver.pci
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
@@ -25,7 +25,7 @@ module ne2k_pci {
 	depends embox.net.skbuff
 	depends embox.lib.LibC
 	depends embox.driver.pci
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
@@ -47,7 +47,7 @@ module xemaclite {
 
 	depends embox.lib.LibC
 	depends embox.net.skbuff
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
@@ -57,7 +57,7 @@ module xemaclite {
 module greth {
 	source "greth.c"
 	depends embox.net.skbuff
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
@@ -66,7 +66,7 @@ module greth {
 module usermode {
 	source "usermode.c"
 	depends embox.net.skbuff
-	depends embox.net.eth
+	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api

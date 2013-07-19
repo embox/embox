@@ -12,6 +12,8 @@
 #ifndef EMBOX_LDS_H_
 #define EMBOX_LDS_H_
 
+#define __LDS__
+
 #define __SECTION_SYMBOLS(var_prefix, section_name) \
 	var_prefix ## _vma =     ADDR(section_name); \
 	var_prefix ## _lma = LOADADDR(section_name); \
@@ -27,6 +29,12 @@
 	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
 
 #define ALIGNMENT() . = ALIGN(0x10)
+
+
+#include <framework/mod/options.h>
+#include <module/embox/mem/page_api.h>
+
+#define REGION_ALIGN() . = ALIGN(PAGE_SIZE());
 
 #define LDS_INPUT_RODATA \
 	ALIGNMENT();                   \

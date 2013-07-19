@@ -1,0 +1,7 @@
+package embox.net.l2
+
+module ethernet {
+	source "ethernet.c"
+
+	depends embox.lib.LibC
+}

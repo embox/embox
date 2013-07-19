@@ -12,9 +12,9 @@
 
 #include <stdint.h>
 #include <fs/node.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
-#include <net/rpc/rpc.h>
+#include <net/lib/rpc/rpc.h>
 #include <limits.h>
 
 /*
@@ -199,6 +199,13 @@ typedef struct file_attribute_rep {
 	time_sec_t ctime;
 } file_attribute_rep_t;
 
+/* attribute of file, reply in READDIRPLUS command */
+typedef struct file_del_attribute_rep {
+	__u64 size;
+	time_sec_t mtime;
+	time_sec_t ctime;
+} file_del_attribute_rep_t;
+
 typedef struct dir_attribute_rep {
 	file_attribute_rep_t dir_attr;
 	__u64 verifier;
@@ -258,7 +265,7 @@ typedef struct create_reply {
 typedef struct delete_reply {
 	__u32 status;
 	__u32 before_vf;
-	file_attribute_rep_t before_attr;
+	file_del_attribute_rep_t before_attr;
 	__u32 dir_vf;
 	file_attribute_rep_t *dir_attr;
 } delete_reply_t;
@@ -306,7 +313,6 @@ typedef struct write_reply {
 typedef struct nfs_fs_info {
 	char srv_name[PATH_MAX];
 	char srv_dir[PATH_MAX];
-	export_dir_t export;
 	nfs_filehandle_t fh;
 	struct client *mnt;
 	struct client *nfs;
@@ -319,7 +325,5 @@ typedef struct nfs_file_info {
 	int mode;				/* mode in which this file was opened */
 	__u64 offset;			/* current (BYTE) pointer */
 } nfs_file_info_t;
-
-int mount_nfs_filesystem(void *par);
 
 #endif /* NFS_H_ */

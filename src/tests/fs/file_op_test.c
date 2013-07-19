@@ -13,7 +13,7 @@
 
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 #include <sys/file.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
@@ -25,6 +25,8 @@
 
 #include <mem/page.h>
 #include <embox/test.h>
+
+#include <err.h>
 
 EMBOX_TEST_SUITE("fs/file test");
 
@@ -330,8 +332,8 @@ TEST_CASE("flock") {
 static int setup_suite(void) {
 	int fd, res;
 
-	if (0 != ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
-		return -1;
+	if (0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
+		return res;
 	}
 
 	/* format filesystem */

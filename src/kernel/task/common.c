@@ -12,9 +12,12 @@
 #include <errno.h>
 #include <string.h>
 
+#include <util/dlist.h>
+
 #include <kernel/task.h>
+#include <kernel/thread.h>
 #include <kernel/cpu.h>
-#include <linux/list.h>
+
 #include "common.h"
 
 #include <module/embox/kernel/task/api.h>
@@ -59,9 +62,9 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	memset(task_n_res_space, 0, task_sz);
 
-	INIT_LIST_HEAD(&task->threads);
-	INIT_LIST_HEAD(&task->children);
-	INIT_LIST_HEAD(&task->link);
+	dlist_head_init(&task->task_link);
+
+	dlist_init(&task->children_tasks);
 
 	task->parent = NULL;
 
@@ -89,13 +92,54 @@ static inline void resource_sum_size_calc(void) {
 
 
 static int kernel_task_init(void) {
+	struct task *task;
 	resource_sum_size_calc();
 
-	if (!task_init(task_kernel_task(), sizeof(kernel_task))) {
+	task = task_kernel_task();
+
+	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
 
-	strcpy(task_kernel_task()->name, "kernel");
+	dlist_init(&task->task_link); /* it's out list handler */
+
+	strncpy(task->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
 
 	return 0;
+}
+
+int task_add_thread(struct task * task, struct thread *thread) {
+	if((NULL == task) || (NULL == thread)) {
+		return -EINVAL;
+	}
+
+	/* insert new thread to the list */
+	dlist_add_next(dlist_head_init(&thread->thread_task_link), &task->main_thread->thread_task_link);
+	thread->task = task;
+
+	return ENOERR;
+}
+
+
+int task_remove_thread(struct task * task, struct thread *thread) {
+	if((NULL == task) || (NULL == thread)) {
+		return -EINVAL;
+	}
+#if 0
+	if(NULL == task->main_thread) {
+		return -EINVAL;
+	}
+
+	if(task->main_thread == thread) {
+		return -EBUSY;
+	}
+
+	if(dlist_empty(&task->main_thread->thread_task_link)) {
+		return -EBUSY;
+	}
+#endif
+
+	dlist_del(&thread->thread_task_link);
+
+	return ENOERR;
 }

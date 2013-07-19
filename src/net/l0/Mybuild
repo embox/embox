@@ -1,0 +1,28 @@
+package embox.net
+
+abstract module entry_api {
+}
+
+module net_entry extends entry_api {
+	source "net_entry.c"
+
+	depends net_rx
+	depends skbuff
+	depends embox.lib.LibC
+}
+
+module net_rx {
+	source "net_rx.c"
+
+	depends skbuff
+	depends embox.compat.linux.LibLinux
+	depends embox.framework.LibFrameworkNet
+	depends embox.lib.LibC
+}
+
+module net_tx {
+	source "net_tx.c"
+
+	depends skbuff
+	depends embox.lib.LibC
+}

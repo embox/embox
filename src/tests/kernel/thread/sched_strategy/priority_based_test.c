@@ -7,13 +7,15 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread/sched.h>
+
 #include <kernel/thread.h>
+#include <kernel/sched.h>
+#include <kernel/sched/wait_queue.h>
 
 static struct thread *low, *high;
-static struct sleepq sq;
+static struct wait_queue wq;
 
-EMBOX_TEST_SUITE("Rriority_based scheduling algorithm.");
+EMBOX_TEST_SUITE("Priority_based scheduling algorithm.");
 
 TEST_SETUP(setup);
 
@@ -28,14 +30,14 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('c');
-	sched_wake_one(&sq);
+	wait_queue_notify(&wq);
 	test_emit('e');
 	return NULL;
 }
 
 static void *high_run(void *arg) {
 	test_emit('b');
-	sched_sleep(&sq, SCHED_TIMEOUT_INFINITE);
+	wait_queue_wait(&wq, SCHED_TIMEOUT_INFINITE);
 	test_emit('d');
 	return NULL;
 }
@@ -43,7 +45,7 @@ static void *high_run(void *arg) {
 static int setup(void) {
 	thread_priority_t l = 200, h = 210;
 
-	sleepq_init(&sq);
+	wait_queue_init(&wq);
 	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));
 	test_assert_zero(thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
 	test_assert_zero(thread_set_priority(low, l));

@@ -15,8 +15,9 @@
 
 #define MSEC_PER_SEC    1000L
 #define USEC_PER_MSEC   1000L
-#define NSEC_PER_USEC   1000L
 #define USEC_PER_SEC    1000000L
+#define NSEC_PER_USEC   1000L
+#define NSEC_PER_MSEC   1000000L
 #define NSEC_PER_SEC    1000000000L
 
 /**
@@ -48,6 +49,15 @@ extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
+}
+
+static inline unsigned long timeval_to_ms(const struct timeval *tv) {
+	return ((__u32) tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
+}
+
+static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
+	tv->tv_sec = ms / MSEC_PER_SEC;
+	tv->tv_usec = (ms % MSEC_PER_SEC) * USEC_PER_MSEC;
 }
 
 static inline time64_t timeval_to_ns(const struct timeval *tv) {

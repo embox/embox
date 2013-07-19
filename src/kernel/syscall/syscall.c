@@ -8,41 +8,36 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
 #include <kernel/task.h>
-#include <kernel/irq.h>
 #include <mem/mmap.h>
 
 long sys_exit(int errcode) {
-	ipl_enable();
 	task_exit(NULL);
 }
 
 size_t sys_write(int fd, const void *buf, size_t nbyte) {
-	ipl_enable();
 	return write(fd, buf, nbyte);
 }
 
-
-#include <string.h>
 int sys_open(const char *path, int flags, mode_t mode) {
-	ipl_enable();
-
-	if (strcmp(path, "/lib/libselinux.so.1") == 0) {
-		return open("libselinux.so.1", flags, mode);
-	}
-
-	if (strcmp(path, "/lib/libc.so.6") == 0) {
-		return open("libc.so", flags, mode);
-	}
-
 	return open(path, flags, mode);
-
 }
 
 int sys_close(int fd) {
-	ipl_enable();
 	return close(fd);
+}
+
+void *sys_brk(void *new_brk) {
+	struct task *task = task_self();
+
+	if (!new_brk) {
+		return mmap_get_brk(task->mmap);
+	} else {
+		mmap_set_brk(task->mmap, new_brk);
+		return new_brk;
+	}
 }
 
 void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_t pgoffset) {
@@ -99,6 +94,9 @@ int sys_newfstat(int fd, void *buf) {
 	struct new_stat new_stat;
 
 	int res = fstat(fd, &stat);
+
+	memset(&new_stat, 0, sizeof(struct new_stat));
+
 	new_stat.st_dev = stat.st_dev;
 	new_stat.st_ino = stat.st_ino;
 	new_stat.st_mode = stat.st_mode;

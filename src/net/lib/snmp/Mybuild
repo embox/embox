@@ -1,0 +1,7 @@
+package embox.net.lib
+
+module snmp {
+	source "snmp.c"
+
+	depends snmp_mib.mib
+}

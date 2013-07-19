@@ -7,6 +7,10 @@
  */
 /* <sys/wait.h> */
 /* use in waitpid()  */
+
+#ifndef EMBOX_DROPBEAR_EMBOX_H_
+#define EMBOX_DROPBEAR_EMBOX_H_
+
 #define WNOHANG 0 /*third-party/dropbear-2012.55/svr-chansession.c:91:*/
 
 
@@ -40,21 +44,18 @@ static inline int chown(const char *path, uid_t owner, gid_t group) {
 	return -1;
 }
 
-extern char *crypt(const char *key, const char *salt);
+extern char *crypt(char *key, const char *salt);
 /* end <unistd.h> */
-
-/* <sys/socket.h> */
-static inline int getpeername(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) {
-	memset(addr, 0, *addrlen);
-	return 0;
-}
-/* end <sys/socket.h> */
 
 /* <grp.h> */
 /* initgroups NOT POSIX */
 static inline int initgroups(const char *user, gid_t group) {
-	return -1;
+	return 0;
+}
+
+#include <shadow.h>
+static inline struct spwd *getspnam(const char *name) {
+	return getspnam_f(name);
 }
 
 #if 0
@@ -65,5 +66,8 @@ extern struct passwd *getpwnam(const char *name);
 
 #include <asm/termbits.h>
 #include <sys/select.h>
+#include <linux/types.h>
 
 //------------------------------------------------------------
+
+#endif /* EMBOX_DROPBEAR_EMBOX_H_ */

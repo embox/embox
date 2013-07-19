@@ -10,8 +10,8 @@
 #define PNET_MATCH_LIN_H_
 
 #include <pnet/types.h>
-#include <net/ip.h>
-#include <net/udp.h>
+#include <net/l3/ipv4/ip.h>
+#include <net/l4/udp.h>
 #include <string.h>
 #include <net/skbuff.h>
 #include <pnet/core.h>
@@ -85,7 +85,7 @@ static inline void pnet_rule_set_src_udp_port(match_rule_t rule,
 }
 
 static inline void pnet_rule_set_proto(match_rule_t rule, unsigned char proto) {
-	memcpy((void*) &rule->skbuf->nh.iph->proto, (void*)&proto, sizeof(unsigned char));
+	rule->skbuf->nh.iph->proto = proto;
 }
 
 //extern net_node_t pnet_create_matcher(net_hnd rx_matcher, net_hnd tx_matcher);

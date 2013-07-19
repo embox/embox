@@ -8,7 +8,7 @@
 #ifndef WEB_SERVICE_H_
 #define WEB_SERVICE_H_
 
-#include <kernel/thread/event.h>
+#include <kernel/event.h>
 #include <util/array.h>
 #include <util/dlist.h>
 #include <cmd/servd.h>

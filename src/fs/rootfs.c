@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <fs/sys/fsop.h> /* mount */
+#include <fs/fsop.h> /* mount */
 #include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>

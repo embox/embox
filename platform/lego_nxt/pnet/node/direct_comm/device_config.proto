@@ -1,0 +1,11 @@
+enum DeviceType {
+  LEGO_NXT = 0;
+  SIMULATOR = 1;
+}
+
+message DeviceConfigurationMessage {
+	required string id = 1;
+	required DeviceType type = 2;
+	required bytes sensors = 3;
+	required bytes commands = 4;
+}

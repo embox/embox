@@ -1,125 +1,201 @@
 /**
  * @file
- * @brief SNTPv4 client
+ * @brief NTP client
  *
- * @date 13.07.2012
+ * @date 13.07.12
  * @author Alexander Kalmuk
+ * @author Ilia Vaprol
  */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <errno.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-
-#include <net/ip.h>
-#include <net/socket.h>
-#include <net/ntp.h>
-
-
-#include <kernel/time/time.h>
+#include <assert.h>
 #include <embox/cmd.h>
+#include <errno.h>
+#include <framework/mod/options.h>
+#include <kernel/time/time.h>
+#include <net/lib/ntp.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <time.h>
 
-#define DEFAULT_WAIT_TIME 10000
+#define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
 EMBOX_CMD(exec);
 
-static void print_usage(void) {
-	printf("Usage: ntpdate [-q] server");
+static int make_socket(const struct timeval *timeout, int *out_sock) {
+	int ret, sock;
+
+	assert(timeout != NULL);
+	assert(out_sock != NULL);
+
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock == -1) {
+		ret = -errno;
+		assert(ret != 0);
+		return ret;
+	}
+
+	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+				timeout, sizeof *timeout)) {
+		ret = -errno;
+		close(sock);
+		assert(ret != 0);
+		return ret;
+	}
+
+	*out_sock = sock;
+
+	return 0;
 }
 
-int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r, bool query) {
-	int sock, res;
-	struct sockaddr_in our, dst;
+static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
+		const struct timeval *timeout, struct ntphdr *out_rep) {
+	int ret, sock;
+	struct sockaddr_in addr;
+	socklen_t addrlen;
 
-	if (!inet_aton(dstip, &dst.sin_addr)) {
-		printf("Invalid ip address %s\n", dstip);
-		return -ENOENT;
+	assert(req != NULL);
+	assert(timeout != NULL);
+	assert(out_rep != NULL);
+
+	ret = make_socket(timeout, &sock);
+	if (ret != 0) {
+		return ret;
 	}
 
-	if (0 > (sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
-		printf("Can't to alloc socket\n");
-		return sock;
-	}
+	/* TODO connect */
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(NTP_PORT);
+	addr.sin_addr.s_addr = server_addr;
 
-	socket_set_encap_recv(sock, ntp_receive);
-
-	our.sin_family = AF_INET;
-	our.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (!query) {
-		/* we want, that ntp module set system time if receive request. */
-		our.sin_port = htons(NTP_SERVER_PORT);
-	} else {
-		/* FIXME any free port except NTP_SERVER_PORT */
-		our.sin_port = htons(768);
-	}
-
-	res = bind(sock, (struct sockaddr *)&our, sizeof(our));
-
-	if (res < 0) {
-		printf("error at bind()\n");
+	if (-1 == sendto(sock, req, sizeof *req, 0,
+			(struct sockaddr *)&addr, sizeof addr)) {
+		ret = -errno;
 		goto error;
 	}
 
-	dst.sin_family = AF_INET;
-	dst.sin_port = htons((__u16)NTP_SERVER_PORT);
+	do {
+		addrlen = sizeof addr;
+		ret = recvfrom(sock, out_rep, sizeof *out_rep, 0,
+					(struct sockaddr *)&addr, &addrlen);
+		if (ret == -1) {
+			ret = -errno;
+			goto error;
+		}
+	} while ((addr.sin_addr.s_addr != server_addr)
+			|| (addr.sin_port != htons(NTP_PORT))
+			|| (ret < sizeof *out_rep)
+			|| ntp_mode_client(out_rep));
 
-	if (0 >= (res = ntp_client_xmit(sock, &dst))) {
-		/* FIXME  It is not sending error always. In case, if packet sends by us at first,
-		 * it put in arp_queue and we will think that it is sending error. */
-		printf("Sending error\n");
-		goto error;
-	}
-
-	/* TODO set O_NONBLOCK on socket's file descriptor */
-	res = recvfrom(sock, r, sizeof(struct ntphdr), 0, NULL, NULL);
+	ret = 0;
 error:
 	close(sock);
-	return res;
+	return ret;
+}
+
+static int ntpdate_process(const struct ntphdr *rep, int only_query) {
+	int ret;
+	struct timespec ts;
+
+	assert(rep != NULL);
+
+	if (!ntp_valid_stratum(rep)) {
+		printf("ntpdate_process: error: invalid stratum (%s)\n",
+				ntp_stratum_error(rep));
+		return 0; /* error: incorrect packet */
+	}
+
+	if (only_query) {
+		/* show result */
+		ret = ntp_delay(rep, &ts);
+		if (ret != 0) {
+			return ret;
+		}
+		printf("stratum %hhd, delay %ld:%ld (s:ms)\n",
+				rep->stratum, ts.tv_sec,
+				ts.tv_nsec / NSEC_PER_MSEC);
+	}
+	else {
+		/* setup new time */
+		ret = ntp_time(rep, &ts);
+		if (ret != 0) {
+			return ret;
+		}
+		settimeofday(&ts, NULL);
+	}
+
+	return 0;
+}
+
+static int ntpdate(in_addr_t addr, const struct timeval *timeout,
+		int only_query) {
+	int ret;
+	struct timespec ts;
+	struct ntphdr req, rep;
+	struct ntp_data_l xmit_time;
+
+	getnsofday(&ts, NULL);
+	ret = ntp_timespec_to_data_l(&ts, &xmit_time);
+	if (ret != 0) {
+		return ret;
+	}
+	ret = ntp_build(&req, NTP_LI_NO_WARNING, NTP_MOD_CLIENT, 0, 0,
+			0, NULL, NULL, NULL, &xmit_time);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = ntpdate_exec(&req, addr, timeout, &rep);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return ntpdate_process(&rep, only_query);
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
-	struct ntphdr r;
-	struct timespec delay;
-	bool query = false;
-	uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
+	int opt, only_query, timeout;
+	struct timeval timeout_tv;
+	in_addr_t addr;
 
+	only_query = 0;
+	timeout = MODOPS_TIMEOUT;
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hq:t:"))) {
-		printf("\n");
+	while (-1 != (opt = getopt(argc, argv, "hqt:"))) {
 		switch (opt) {
+		default:
+			return -EINVAL;
 		case 'h':
-			print_usage();
+			printf("Usage: %s [-q] server", argv[0]);
 			return 0;
 		case 'q': /* Query only - don't set the clock */
-			query = true;
+			only_query = 1;
 			break;
 		case 't': /* Maximum time waiting for a server response */
-			if (1 != sscanf(optarg, "%d", &ntp_server_timeout)) {
-				printf("wrong -t argument %s\n", optarg);
+			if (1 != sscanf(optarg, "%d", &timeout)) {
+				printf("%s: error: wrong -t argument %s\n",
+						argv[0], optarg);
 				return -EINVAL;
 			}
-			break;
-		default:  /* Set system clock */
-			return 0;
 			break;
 		}
 	}
 
-	if (0 > ntpdate_common(argv[argc - 1], ntp_server_timeout, &r, query)) {
-		return 0;
+	if (optind >= argc) {
+		printf("%s: error: no server specified\n", argv[0]);
+		return -EINVAL;
+	}
+	else if (!inet_aton(argv[optind], (struct in_addr *)&addr)) {
+		printf("%s: error: invalid address %s\n", argv[0],
+				argv[optind]);
+		return -EINVAL;
 	}
 
-	if (query) {
-		delay = ntp_delay(&r);
-		printf("server %s, stratum %d, delay %d:%d (s:ms)\n", argv[argc - 1], (int)(r.stratum),
-				(int)delay.tv_sec, (int)delay.tv_nsec / 1000);
-	}
+	timeout_tv.tv_sec = timeout / MSEC_PER_SEC;
+	timeout_tv.tv_usec = (timeout % MSEC_PER_SEC) * USEC_PER_MSEC;
 
-	return 0;
+	return ntpdate(addr, &timeout_tv, only_query);
 }

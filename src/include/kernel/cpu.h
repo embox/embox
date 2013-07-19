@@ -2,8 +2,9 @@
  * @file
  * @brief
  *
- * @date 26.12.2012
+ * @date 26.12.12
  * @author Anton Bulychev
+ * @author Ilia Vaprol
  */
 
 #ifndef KERNEL_CPU_H_
@@ -13,34 +14,19 @@
 
 #define NCPU __NCPU
 
-#if NCPU > 1
-# define SMP
-#endif
-
-#ifdef SMP
-
 #ifndef __ASSEMBLER__
 
-extern unsigned int cpu_get_id(void);
-
-#endif /* __ASSEMBLER__ */
-
-#else /* SMP */
-
-#define cpu_get_id() (0)
-
-#endif /* SMP */
-
-#ifndef __ASSEMBLER__
-
+#include <module/embox/kernel/smp/cpu_api.h>
 #include <sys/types.h>
 
 struct thread;
 
+extern unsigned int cpu_get_id(void);
 extern void cpu_set_idle_thread(struct thread *idle);
+extern struct thread * cpu_get_idle_thread(void);
 extern clock_t cpu_get_total_time(unsigned int cpu_id);
 extern clock_t cpu_get_idle_time(unsigned int cpu_id);
 
-#endif
+#endif /* !__ASSEMBLER__ */
 
-#endif /* KERNEL_CPU_H_ */
+#endif /* !KERNEL_CPU_H_ */

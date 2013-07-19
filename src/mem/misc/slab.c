@@ -46,6 +46,8 @@ typedef struct page_info {
 	slab_t *slab;
 } page_info_t;
 
+static struct page_allocator *slab_pa;
+
 #if 0
 # define SLAB_ALLOCATOR_DEBUG
 #endif
@@ -53,7 +55,6 @@ typedef struct page_info {
 #define HEAP_SIZE OPTION_MODULE_GET(embox__mem__slab,NUMBER,heap_size)
 
 static char *heap_start_ptr;
-static char *heap_end_ptr;
 
 static page_info_t pages[HEAP_SIZE / PAGE_SIZE()];
 
@@ -116,7 +117,7 @@ static int cache_member_init(struct mod_member *info) {
  * @param slab_ptr the pointer to slab which must be deleted
  */
 static void cache_slab_destroy(cache_t *cachep, slab_t *slabp) {
-	page_free(__phymem_allocator, slabp, slabp->inuse);
+	page_free(slab_pa, slabp, slabp->inuse);
 }
 
 /* init slab descriptor and slab objects */
@@ -141,7 +142,7 @@ static int cache_grow(cache_t *cachep) {
 	slab_t * slabp;
 	size_t slab_size = 1 << cachep->slab_order;
 
-	if (!(slabp = (slab_t*) page_alloc(__phymem_allocator, slab_size)))
+	if (!(slabp = (slab_t*) page_alloc(slab_pa, slab_size)))
 		return 0;
 
 	page = ptr_to_page(slabp);
@@ -388,7 +389,9 @@ static int slab_init(void) {
 		return -1;
 	}
 
-	heap_end_ptr = heap_start_ptr + page_cnt * PAGE_SIZE();
+	slab_pa = page_allocator_init(heap_start_ptr, page_cnt * PAGE_SIZE(), PAGE_SIZE());
+
+	heap_start_ptr += PAGE_SIZE();
 
 	return 0;
 }

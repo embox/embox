@@ -1,25 +1,30 @@
 package embox.util
 
-module Prioq {
+/*
+   Modules here are true libraries without init functions.
+   So it's safe and natural to have it static
+*/
+
+static module Prioq {
 	source "prioq_impl.h"
 }
 
-module Array {
+static module Array {
 	source "array_impl.h"
 }
 
-module Bit {
+static module Bit {
 	source "bit_impl.h"
 }
 
 @DefaultImpl(SListDebug)
 abstract module SList {
 }
-module SListDebug extends SList {
+static module SListDebug extends SList {
 //	source "slist_debug.c"
 //	source "slist_impl.h"
 }
-module SListNDebug extends SList {
+static module SListNDebug extends SList {
 //	source "slist_ndebug.h"
 //	source "slist_impl.h"
 }
@@ -29,11 +34,11 @@ abstract module List {
 
 }
 
-module ListDebug extends List {
+static module ListDebug extends List {
 	source "list_debug.h"
 	source "list_impl.h"
 }
-module ListNDebug extends List {
+static module ListNDebug extends List {
 	source "list_ndebug.h"
 	//source "list_impl.h"
 }
@@ -41,11 +46,16 @@ module ListNDebug extends List {
 @DefaultImpl(DListDebug)
 abstract module DList {}
 
-module DListDebug extends DList {
+static module DListDebug extends DList {
 	source "dlist_debug.h"
 }
-module DListNDebug extends DList {
+static module DListNDebug extends DList {
 	source "dlist_ndebug.h"
+}
+
+static module sys_log {
+	source "sys_log.c"
+	depends embox.lib.LibC
 }
 
 static module LibUtil {
@@ -57,7 +67,8 @@ static module LibUtil {
 	source "priority_q.c"
 	source "ring.c"
 	source "ring_buff.c"
-	source "sys_log.c"
+
+	depends sys_log
 
 	depends embox.lib.LibC
 
@@ -69,18 +80,18 @@ static module LibUtil {
 	depends Bit
 }
 
-module hashtable {
+static module hashtable {
 	option number hashtables_quantity=16
 	option number item_quntity=64
 
 	source "hashtable.c"
 
 	depends embox.lib.LibC
-	depends embox.mem.heap_bm
+	depends embox.mem.heap_api
 	depends embox.mem.objalloc
 }
 
-module indexator {
+static module indexator {
 	source "indexator.c"
 }
 
@@ -88,11 +99,11 @@ module indexator {
 @DefaultImpl(num_alloc_array)
 abstract module num_alloc { }
 
-module num_alloc_array extends num_alloc {
+static module num_alloc_array extends num_alloc {
 	source "num_alloc_array.c", "num_alloc_array.h"
 }
 
-module idx_table {
+static module idx_table {
 	depends num_alloc
 }
 

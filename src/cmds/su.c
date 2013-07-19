@@ -11,112 +11,67 @@
 #include <errno.h>
 #include <unistd.h>
 #include <embox/cmd.h>
-
-#include <lib/linenoise_1.h>
-#include <cmd/shell.h>
-#include <pwd.h>
-#include <shadow.h>
-#include <utmp.h>
+#include <framework/cmd/api.h>
 
 #include <kernel/task/u_area.h>
+#include <security/smac.h>
 
 EMBOX_CMD(su_exec);
 
-static char *passw_prompt(const char *prompt, char *buf, int buflen) {
-	int ch;
-	char *ret = buf;
-	printf("%s", prompt);
+static int su_exec(int argc, char *argv[]) {
+	struct task_u_area *uarea = task_self_u_area();
+	const struct cmd *login_cmd = cmd_lookup("login");
+	uid_t euid = geteuid();
+	uid_t reuid = getuid();
+	char old_smac_label[SMAC_LABELLEN];
+	int opt, ret;
+	char *cmd = NULL, *name = "root";
+	char *newargv[5];
+	int newargc;
 
-	ch = fgetc(stdin);
+	getopt_init();
 
-	while ('\n' != ch && '\r' != ch) {
-
-		/* Avoid strange symbols in stdin.
-		 * Actually, telnet sends \r as \r\0,
-		 * so trying bypass it.
-		 */
-		if (ch == '\0') {
-			ch = fgetc(stdin);
-			continue;
-		}
-
-		if (buflen-- <= 0) {
-			return NULL;
-		}
-
-		*buf++ = ch;
-		ch = fgetc(stdin);
-	}
-
-	if (buflen-- <= 0) {
-		return NULL;
-	}
-
-	*buf++ = '\0';
-
-	printf("\n");
-
-	return ret;
-}
-
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
-	struct spwd *spwd;
-	FILE *shdwf;
-
-	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
-		return NULL;
-	}
-
-	while (NULL != (spwd = fgetspent(shdwf))) {
-		if (0 == strcmp(spwd->sp_namp, name)) {
+	while (-1 != (opt = getopt(argc, argv, "c:"))) {
+		switch(opt) {
+		case 'c':
+			cmd = optarg;
+			break;
+		default:
 			break;
 		}
 	}
 
-	fclose(shdwf);
-
-	return spwd;
-}
-
-#define SHADOW_FILE "/shadow"
-
-#define PASSBUF_LEN 64
-
-extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
-
-static int su_exec(int argc, char *argv[]) {
-	struct spwd *spwd;
-	struct task_u_area *uarea = task_self_u_area();
-	uid_t euid = geteuid();
-	uid_t reuid = getuid();
-	char passwd[PASSBUF_LEN], *pass;
-	int ret;
+	if (optind < argc) {
+		name = argv[optind];
+	}
 
 	uarea->reuid = uarea->euid = 0;
+	strcpy(old_smac_label, task_self_security());
+	strcpy(task_self_security(), smac_admin);
 
-	spwd = spwd_find(SHADOW_FILE, "root");
-
-	if (!spwd) {
-		ret = -EIO;
-		goto out_err;
+	if (cmd) {
+		char *nargv[] = {"", "-c", cmd};
+		newargc = 3;
+		memcpy(newargv, nargv, sizeof(nargv));
+	} else {
+		char *nargv[] = {""};
+		newargc = 1;
+		memcpy(newargv, nargv, sizeof(nargv));
 	}
 
-	if (NULL == (pass = passw_prompt("Password: ", passwd, PASSBUF_LEN))) {
-		goto out_err;
+	if (!euid) {
+		newargv[newargc++] = "-p";
 	}
 
-	if (strcmp(spwd->sp_pwdp, pass)) {
-		ret = -EACCES;
-		goto out_err;
-	}
+	newargv[newargc++] = name;
 
-	shell_run(shell_lookup("tish"));
+	ret = cmd_exec(login_cmd, newargc, newargv);
 
-	ret = 0;
-
-out_err:
+	strcpy(task_self_security(), old_smac_label);
 	uarea->reuid = reuid;
 	uarea->euid = euid;
+
 	return ret;
+
 }
 

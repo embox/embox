@@ -13,7 +13,7 @@
  */
 
 #include <stdio.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <framework/example/self.h>
 #include <unistd.h>

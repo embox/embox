@@ -23,6 +23,7 @@
 
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>
+#include <kernel/irq_stack.h>
 #include <kernel/critical.h>
 #include <drivers/irqctrl.h>
 #include <hal/ipl.h>
@@ -148,6 +149,9 @@ void irq_dispatch(unsigned int irq_nr) {
 	trace_point("interrupt");
 
 	trace_block_enter(&interrupt_tb);
+
+	assert(irq_stack_protection() == 0,
+			"Stack overflow detected on irq dispatch");
 
 	if (irq_table[irq_nr]) {
 		ipl = ipl_save();

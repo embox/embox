@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <kernel/printk.h>
 #include <framework/example/self.h>
@@ -53,7 +53,7 @@ static int exec(int argc, char **argv) {
 		res = accept(sockfd, (struct sockaddr *)&dst, &dst_addr_len);
 		if (res < 0) {
 			printk("no one can't be accepted\n");
-			return res;
+			return -errno;
  		}
 		printk("client from %s:%d at %d socket\n",
 				inet_ntoa(dst.sin_addr), ntohs(dst.sin_port), res);

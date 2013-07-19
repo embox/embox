@@ -13,21 +13,26 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fs/fs_driver.h>
-#include <fs/vfs.h>
-#include <fs/ext2.h>
-#include <fs/path.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 #include <drivers/ramdisk.h>
+#include <framework/mod/options.h>
+#include <module/embox/driver/block.h>
+
+#include <fs/fs_driver.h>
+#include <fs/vfs.h>
+#include <fs/ext2.h>
+#include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <fs/journal.h>
 
 #define EXT2_NAME "ext2"
 #define EXT3_NAME "ext3"
+#define EXT3_JOURNAL_SUPERBLOCK_INODE 8
 
 /* TODO link counter */
 
@@ -153,14 +158,59 @@ static int ext3fs_format(void *dev) {
 	return 0;
 }
 
+/* TODO handle also double-indirect nodes */
+static uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
+	uint32_t buf[jp->j_blocksize / sizeof(uint32_t)];
+	struct ext2fs_dinode *dip = (struct ext2fs_dinode *)jp->j_ctx;
+
+	if (block < NDADDR) {
+		return dip->i_block[block];
+	}
+
+	jp->j_dev->driver->read(jp->j_dev, (char *)buf, jp->j_blocksize, 2 * dip->i_block[NDADDR]);
+
+	return buf[block - NDADDR];
+}
+
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
+	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
+	char buf[SECTOR_SIZE * 2];
+	struct ext2_fs_info *fsi;
+	int inode_sector, ret, rsize;
+	struct node *dev_node = dev;
+	struct nas *dir_nas = ((struct node *)dir)->nas;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->mount(dev, dir);
+	if ((ret = drv->fsop->mount(dev, dir)) < 0) {
+		return ret;
+	}
+
+	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
+	dir_nas = ((struct node *)dir)->nas;
+	fsi = dir_nas->fs->fsi;
+
+	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
+
+	rsize = ext2_read_sector(dir_nas, buf, 1, inode_sector);
+	if (rsize * fsi->s_block_size != fsi->s_block_size) {
+		return -EIO;
+	}
+
+	/* set pointer to inode struct in read buffer */
+	memcpy(dip, (buf
+			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE)),
+			sizeof(struct ext2fs_dinode));
+
+	/* XXX Hack to use ext2 functions */
+	dir_nas->fs->drv = &ext3fs_driver;
+	journal_load((block_dev_t *) dev_node->nas->fi->privdata,
+			fsbtodb(fsi, dip->i_block[0]), ext3_journal_bmap, dip);
+
+	return 0;
 }
 
 static int ext3fs_truncate (struct node *node, off_t length) {

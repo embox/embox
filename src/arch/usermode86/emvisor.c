@@ -383,8 +383,6 @@ static int upstrm_cmd(int pupstream) {
 		return ret;
 	}
 
-	/*fprintf(stderr, "msg: %d, %d\n", msg.type, msg.dlen);*/
-
 	assert(ret == sizeof(struct emvisor_msghdr));
 
 	if (!ret) {
@@ -494,8 +492,18 @@ int main(int argc, char **argv) {
 	int fd, flags, ret;
 	struct termios tc_old, tc_this;
 
-	if (argc != 3) {
+	if (argc < 3 && argc > 4) {
 		return -EINVAL;
+	}
+
+	if (argc == 4 && !fork()) {
+		ret = execlp(argv[3], argv[3], argv[1], argv[2], (char *) 0);
+
+		if (ret == -1) {
+			ret = -errno;
+		}
+
+		return ret;
 	}
 
 	if (0 > tcgetattr(STDIN_FILENO, &tc_old)) {
@@ -507,11 +515,13 @@ int main(int argc, char **argv) {
 	tc_this.c_lflag &= ~(ICANON | ECHO);
 
 	if (0 > tcsetattr(STDIN_FILENO, TCSANOW, &tc_this)) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	if (0 > (fd = open(argv[1], O_WRONLY))) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 #if 0
@@ -523,22 +533,25 @@ int main(int argc, char **argv) {
 	ev_downstream.np_write = fd;
 
 	if (0 > (fd = open(argv[2], O_RDONLY))) {
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	flags = fcntl(fd, F_GETFL);
 	if (0 > (ret = fcntl(fd, F_SETFL, flags | O_NONBLOCK))){
-		return -errno;
+		ret = -errno;
+		goto out;
 	}
 
 	ev_upstream.np_read = fd;
 
 	ret = emvisor();
 
+out:
 	tcsetattr(STDIN_FILENO, TCSANOW, &tc_old);
 
 	printf("Emvisor exit: %d\n", ret);
-	pause();
+
 	return ret;
 
 }

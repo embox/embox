@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <linux/types.h>
 #include <sys/socket.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stddef.h>
@@ -352,6 +352,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 	while (1) {
 		/* receive reply */
+		remote_addr_len = sizeof remote_addr;
 		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
 		if (ret != 0) goto error;
 
@@ -432,6 +433,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 	do {
 		/* receive reply */
+		remote_addr_len = sizeof remote_addr;
 		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
 		if (ret != 0) goto error;
 

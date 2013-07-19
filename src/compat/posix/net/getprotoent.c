@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <framework/mod/options.h>
-#include <net/util/protoent_api.h>
+#include <net/util/protoent.h>
 #include <netdb.h>
 #include <stddef.h>
 #include <stdio.h>

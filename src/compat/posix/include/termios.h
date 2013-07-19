@@ -67,7 +67,7 @@
 #define VERASE               2  /* cc_c[VERASE] = ERASE char (^H) */
 #define VINTR                3  /* cc_c[VINTR]  = INTR char (DEL) */
 #define VKILL                4  /* cc_c[VKILL]  = KILL char (^U) */
-#define VMIN                 5  /* cc_c[VMIN]   = MIN value for timer */
+#define VMIN                 5  /* cc_c[VMIN]   = MIN amount for reading */
 #define VQUIT                6  /* cc_c[VQUIT]  = QUIT char (^\) */
 #define VTIME                7  /* cc_c[VTIME]  = TIME value for timer */
 #define VSUSP                8  /* cc_c[VSUSP]  = SUSP (^Z, ignored) */

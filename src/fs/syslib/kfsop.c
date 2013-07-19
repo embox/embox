@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <limits.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,12 +15,13 @@
 #include <sys/types.h>
 
 #include <fs/vfs.h>
+#include <fs/mount.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+
 #include <security/security.h>
-#include <limits.h>
 #include <sys/file.h>
 #include <kernel/task/idx.h>
 #include <kernel/spinlock.h>
@@ -245,59 +246,75 @@ int kformat(const char *pathname, const char *fs_type) {
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct node *dev_node, *dir_node;
+	struct node *dev_node, *dir_node, *parent;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
 
 	if (!fs_type) {
-		return -EINVAL;
+		errno = EINVAL;
+		return -1;
 	}
 
 	drv = fs_driver_find_drv(fs_type);
 	if (!drv) {
-		return -EINVAL;
+		errno = EINVAL;
+		return -1;
 	}
 	if (!drv->fsop->mount) {
-		return  -ENOSYS;
+		errno = ENOSYS;
+		return -1;
 	}
 
-	if (0 == strcmp(fs_type, "nfs")) {
+	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
 		dev_node = (node_t *) dev;
 		goto skip_dev_lookup;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
+	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
 
-	if (0 != fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC)) {
+	if (ENOERR != (res = fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC))) {
 		errno = EACCES;
 		return -1;
 	}
 
 skip_dev_lookup:
 	/* find directory */
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
+	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
-#if 0
-		if (res != -ENOENT) {
-			errno = -res;
-		}
-
-		if (0 != (res = kmkdir(dir_node, lastpath, 0755))) {
-			return res;
-		}
-#endif
 	}
 
-	if (0 != (res = security_mount(dev_node, dir_node))) {
+	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
 		return res;
 	}
 
-	return drv->fsop->mount(dev_node, dir_node);
+	if(ENOERR != (res = mount_table_check(dir_node))) {
+		return res;
+	}
+
+	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
+		/*TODO restore previous fs type from parent dir */
+		if(NULL != (parent = vfs_get_parent(dir_node))) {
+			dir_node->nas->fs = parent->nas->fs;
+			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+		}
+		return res;
+
+	}
+	if(ENOERR != (res = mount_table_add(dir_node))) {
+		drv->fsop->umount(dir_node);
+		/*TODO restore previous fs type from parent dir */
+		if(NULL != (parent = vfs_get_parent(dir_node))) {
+			dir_node->nas->fs = parent->nas->fs;
+			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+		}
+		return res;
+	}
+	return ENOERR;
 }
 
 /**
@@ -487,7 +504,7 @@ int krename(const char *oldpath, const char *newpath) {
 }
 
 int kumount(const char *dir) {
-	struct node *dir_node;
+	struct node *dir_node, *parent;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -497,6 +514,14 @@ int kumount(const char *dir) {
 		errno = -res;
 		return -1;
 	}
+
+	/* check if dir not a root dir */
+	if(-EBUSY != (res = mount_table_check(dir_node))) {
+		errno = -EINVAL;
+		return -1;
+	}
+
+	/*TODO check if it has a opened files */
 
 	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
 
@@ -513,7 +538,19 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	return drv->fsop->umount(dir_node);
+	if(0 != (res = drv->fsop->umount(dir_node))) {
+		return res;
+	}
+
+	mount_table_del(dir_node);
+
+	/*restore previous fs type from parent dir */
+	if(NULL != (parent = vfs_get_parent(dir_node))) {
+		dir_node->nas->fs = parent->nas->fs;
+		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+	}
+
+	return 0;
 }
 
 static int flock_shared_get(flock_t *flock) {

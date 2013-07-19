@@ -15,8 +15,8 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
-#include <kernel/thread/sched.h>
-#include <kernel/thread/event.h>
+#include <kernel/sched.h>
+#include <kernel/event.h>
 
 #include <util/ring_buff.h>
 #include <framework/mod/options.h>
@@ -43,22 +43,22 @@ static void pipe_set_buf_size(struct pipe *pipe, size_t size);
 
 static inline void writing_enable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		idx_io_enable(pipe->writing_end, IDX_IO_WRITING);
+		io_sync_enable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 }
 
 static inline void reading_enable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		idx_io_enable(pipe->reading_end, IDX_IO_READING);
+		io_sync_enable(&pipe->reading_end->ios, IO_SYNC_READING);
 }
 
 static inline void writing_disable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		idx_io_disable(pipe->writing_end, IDX_IO_WRITING);
+		io_sync_disable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 }
 
 static inline void reading_disable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		idx_io_disable(pipe->reading_end, IDX_IO_READING);
+		io_sync_disable(&pipe->reading_end->ios, IO_SYNC_READING);
 }
 
 static const struct task_idx_ops read_ops = {
@@ -117,7 +117,7 @@ int pipe(int pipefd[2]) {
 	pipe->writing_end = task_idx_indata(task_self_idx_get(pipefd[1]));
 
 	/* And enable writing in pipe */
-	idx_io_enable(pipe->writing_end, IDX_IO_WRITING);
+	io_sync_enable(&pipe->writing_end->ios, IO_SYNC_WRITING);
 
 	return 0;
 
@@ -180,7 +180,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 		if (!(data->flags & O_NONBLOCK)) {
 			if (!len) {
-				event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
+				EVENT_WAIT(&pipe->read_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 			}
 		}
@@ -225,7 +225,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 
 		if (!(data->flags & O_NONBLOCK)) {
 			if (!len) {
-				event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
+				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 			}
 		}

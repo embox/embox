@@ -14,6 +14,7 @@
 
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
+#include <kernel/sched.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include <kernel/panic.h>
@@ -39,13 +40,27 @@ struct task_creat_param {
 /* Maximum simultaneous creating task number */
 #define SIMULTANEOUS_TASK_CREAT 10
 
-/* struct's livecycle is short: created in new_task,
+/* struct's life cycle is short: created in new_task,
  * freed at first in new task's thread */
 POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 static void *task_trampoline(void *arg);
-static void thread_set_task(struct thread *t, struct task *tsk);
+//static void thread_set_task(struct thread *t, struct task *tsk);
 static int task_init_parent(struct task *task, struct task *parent);
+
+
+static void *thread_stack_malloc(struct thread *thread, size_t size) {
+	void *res;
+
+	assert(thread->stack_sz > size);
+
+	res = thread->stack;
+
+	thread->stack    += size;
+	thread->stack_sz -= size;
+
+	return res;
+}
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
@@ -74,13 +89,12 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, THREAD_FLAG_PRIORITY_INHERIT,
+		if (0 != (res = thread_create(&thd, THREAD_FLAG_TASK_THREAD | THREAD_FLAG_PRIORITY_INHERIT,
 				task_trampoline, param))) {
 			goto out_poolfree;
 		}
 
-		/* alloc space for task & resources on top of created thread's stack */
-
+		/* reserve space for task & resources on top of created thread's stack */
 		addr = thread_stack_malloc(thd, task_sz);
 
 		if ((self_task = task_init(addr, task_sz)) == NULL) {
@@ -88,19 +102,20 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
+		thd->task = self_task;
 		self_task->main_thread = thd;
+
 		self_task->per_cpu = 0;
 
 		self_task->priority = task_self()->priority;
 
-		/* init new task */
-
+		/* initialize the new task */
 		if (strlen(name) > MAX_TASK_NAME_LEN) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
 
-		strcpy(self_task->name, name);
+		strncpy(self_task->task_name, name, sizeof(self_task->task_name) - 1);
 
 		if ((res = task_table_add(self_task)) < 0) {
 			goto out_threadfree;
@@ -110,8 +125,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		if (res != 0) {
 			goto out_tablefree;
 		}
-
-		thread_set_task(thd, self_task);
 
 		thread_detach(thd);
 
@@ -156,18 +169,11 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
 
-static void thread_set_task(struct thread *t, struct task *tsk) {
-	t->task = tsk;
-	list_move_tail(&t->task_link, &tsk->threads);
-}
-
 static int task_init_parent(struct task *task, struct task *parent) {
 	int ret;
 	const struct task_resource_desc *res_desc, *failed;
 
 	task->parent = parent;
-
-	INIT_LIST_HEAD(&task->threads);
 
 	task_resource_foreach(res_desc) {
 		if (res_desc->inherit) {
@@ -178,7 +184,7 @@ static int task_init_parent(struct task *task, struct task *parent) {
 		}
 	}
 
-	list_add(&task->link, &parent->children);
+	dlist_add_next(dlist_head_init(&task->task_link), &parent->children_tasks);
 
 	return 0;
 
@@ -204,6 +210,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 
 	assert(task != task_kernel_task());
 
+	task->err = (int)res;
+
 	sched_lock();
 	{
 		/* Deinitialize all resources */
@@ -214,7 +222,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		}
 
 		/* Remove us from list of tasks */
-		list_del(&task->link);
+		dlist_del(&task->task_link);
 
 		/* Release our task id */
 		task_table_del(task->tid);
@@ -224,12 +232,10 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-			if (thread == task->main_thread) {
-				continue;
+		if(!dlist_empty(&task->main_thread->thread_task_link)) {
+			dlist_foreach_entry(thread, next, &task->main_thread->thread_task_link, thread_task_link) {
+				thread_terminate(thread);
 			}
-
-			thread_terminate(thread);
 		}
 
 		/* At the end terminate main thread */
@@ -265,6 +271,7 @@ static void *task_trampoline(void *arg) {
 
 int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	struct thread *thread, *tmp;
+	struct thread *main_thread;
 
 	assert(tsk);
 
@@ -276,12 +283,16 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	sched_lock();
 	{
 		if (tsk->priority == new_priority) {
+			sched_unlock();
 			return 0;
 		}
 
-		list_for_each_entry_safe(thread, tmp, &tsk->threads, task_link) {
-			sched_set_priority(thread, get_sched_priority(new_priority,
-						thread->priority));
+		main_thread = tsk->main_thread;
+		get_sched_priority(new_priority, thread_priority_get(main_thread));
+
+		dlist_foreach_entry(thread, tmp, &main_thread->thread_task_link, thread_task_link) {
+			sched_change_scheduling_priority(thread, get_sched_priority(new_priority,
+						thread_priority_get(thread)));
 		}
 
 		tsk->priority = new_priority;
@@ -290,6 +301,9 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 
 	return 0;
 }
+
+
+
 
 short task_get_priority(struct task *tsk) {
 	assert(tsk);

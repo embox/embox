@@ -12,19 +12,27 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 
+#include <util/array.h>
+#include <util/indexator.h>
+
+#include <embox/unit.h>
+
+#include <mem/misc/pool.h>
+#include <mem/phymem.h>
+
+#include <embox/block_dev.h>
+#include <drivers/ramdisk.h>
+
+#include <fs/file_system.h>
+#include <fs/file_desc.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/tmpfs.h>
-#include <util/array.h>
-#include <embox/unit.h>
-#include <embox/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
-#include <drivers/ramdisk.h>
-#include <fs/file_system.h>
-#include <fs/file_desc.h>
-#include <limits.h>
+
+#include <err.h>
+
 
 /* tmpfs filesystem description pool */
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_info, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
@@ -50,6 +58,7 @@ static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 	int res;
+	struct ramdisk *ramdisk;
 
 	if (!par) {
 		return 0;
@@ -59,14 +68,15 @@ static int tmpfs_init(void * par) {
 
 	dir_node = vfs_lookup(NULL, TMPFS_DIR);
 	if (!dir_node) {
-		return -1;
+		return -ENOENT;
 	}
 
-	if (0 != (res = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
+	ramdisk = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE());
+	if (0 != (res = err(ramdisk))) {
 		return res;
 	}
 
-	dev_node = vfs_lookup(NULL, TMPFS_DEV);
+	dev_node = ramdisk->bdev->dev_node;
 	if (!dev_node) {
 		return -1;
 	}
@@ -453,24 +463,14 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 
 static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
-	struct tmpfs_fs_info *fsi;
 	struct nas *nas;
-	char path [PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-
-	vfs_get_path_by_node(node, path);
 
 	if (!node_is_directory(node)) {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
-	}
-
-	/* root node - have fi, but haven't index*/
-	if(0 == strcmp((const char *) path, (const char *) nas->fs->mntto)) {
-		pool_free(&tmpfs_fs_pool, fsi);
 	}
 
 	vfs_del_leaf(node);
@@ -527,7 +527,7 @@ static int tmpfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_alloc("tmpfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("tmpfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
@@ -539,8 +539,7 @@ static int tmpfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct tmpfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, dir_nas->fs->mntto);
-	vfs_get_path_by_node(dev_node, dir_nas->fs->mntfrom);
+
 	fsi->block_per_file = MAX_FILE_SIZE;
 	fsi->block_size = PAGE_SIZE();
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();

@@ -12,7 +12,7 @@
 #include <errno.h>
 
 #include <embox/cmd.h>
-#include <fs/sys/fsop.h>
+#include <fs/fsop.h>
 
 EMBOX_CMD(exec);
 

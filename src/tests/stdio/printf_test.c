@@ -29,14 +29,14 @@ TEST_CASE("Test of specifier with type integer") {
 	TEST_STR_FMT("0", "%d", 0);
 
 	/* signed/unsigned char */
-	TEST_STR_FMT("120", "%hd", 120);
-	TEST_STR_FMT("-121","%hd", -121);
-	TEST_STR_FMT("250", "%hu", 250);
+	TEST_STR_FMT("120", "%hhd", 120);
+	TEST_STR_FMT("-121","%hhd", -121);
+	TEST_STR_FMT("250", "%hhu", 250);
 
 	/* signed/unsigned short int */
-	TEST_STR_FMT("32760", "%hhd", 32760);
-	TEST_STR_FMT("-32761", "%hhd", -32761);
-	TEST_STR_FMT("65530", "%hhu", 65530);
+	TEST_STR_FMT("32760", "%hd", 32760);
+	TEST_STR_FMT("-32761", "%hd", -32761);
+	TEST_STR_FMT("65530", "%hu", 65530);
 
 	/* signed/unsigned int */
 	TEST_STR_FMT("2147483640", "%d", 2147483640);

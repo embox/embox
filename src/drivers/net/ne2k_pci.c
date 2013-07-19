@@ -20,13 +20,15 @@
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <net/l0/net_entry.h>
 
 #include <asm/io.h>
 
 
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if_ether.h>
 #include <drivers/ethernet/ne2k_pci.h>
 
@@ -39,8 +41,6 @@
 
 PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 
-static net_device_stats_t *get_eth_stat(struct net_device *dev);
-
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
 	uint8_t status; /* status */
@@ -50,23 +50,19 @@ struct e8390_pkt_hdr {
 
 #define DEBUG 0
 #if DEBUG
+#include <kernel/printk.h>
 /* Debugging routines */
-static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
-	uint8_t i, val;
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
 
-	printf("\nPACKET %s:", title);
+	printk("\nPACKET(%d) %s:", size, title);
 	for (i = 0; i < size; i++) {
 		if (!(i % 16)) {
-			printf("\n");
+			printk("\n");
 		}
-		val = *(raw + i);
-		if (val < 0x10) {
-			printf(" 0%X", val);
-		} else {
-			printf(" %X", val);
-		}
+		printk(" %02hhX", *(raw + i));
 	}
-	printf("\n.\n");
+	printk("\n.\n");
 }
 #endif
 
@@ -80,23 +76,17 @@ static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	out8(NESM_START_PG_RX, dev->base_addr + EN1_CURPAG);
 
 	/* Get mac-address from prom*/
-	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
+	out8(E8390_PAGE0 | E8390_RREAD | E8390_NODMA, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
-	}
-
-	/* Copy the station address and set the multicast
-	 * hash bitmap to recive all multicast */
-	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETH_ALEN; i++) {
-		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
-		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+		(void)in8(dev->base_addr + NE_DATAPORT);
 	}
 }
 
 /* Configure board */
 static void ne2k_config(struct net_device *dev) {
 	unsigned int base_addr;
+	int i;
 
 	base_addr = dev->base_addr;
 
@@ -114,6 +104,15 @@ static void ne2k_config(struct net_device *dev) {
 	out8(ENISR_ALL, base_addr + EN0_IMR);
 	out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on */
 	out8(E8390_RXCONFIG, base_addr + EN0_RXCR); /* rx on */
+
+	/* Copy the station address and set the multicast
+	 * hash bitmap to recive all multicast */
+	out8(E8390_NODMA | E8390_PAGE1, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETH_ALEN; i++) {
+		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+	}
+	out8(E8390_NODMA | E8390_PAGE0 | E8390_START, dev->base_addr + E8390_CMD);
 
 //	out8(E8390_PAGE1 | E8390_STOP, base_addr);
 //	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
@@ -161,7 +160,7 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t count;
 	unsigned long base_addr;
 
@@ -207,7 +206,6 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->mac.raw, total_length, dev->base_addr);
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 #if DEBUG
 	show_packet(skb->mac.raw, skb->len, "recv");
 #endif
@@ -225,7 +223,7 @@ static void ne2k_receive(struct net_device *dev) {
 	uint8_t tries;
 
 	base_addr = dev->base_addr;
-	stat = get_eth_stat(dev);
+	stat = &dev->stats;
 
 	tries = 10;
 	while (--tries) { /* XXX It's an infinite loop or not? */
@@ -289,7 +287,7 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 
-	stat = get_eth_stat((struct net_device *)dev_id);
+	stat = &((struct net_device *)dev_id)->stats;
 	base_addr = ((struct net_device *)dev_id)->base_addr;
 
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + E8390_CMD);
@@ -347,19 +345,14 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	assert(dev != NULL);
-	return &dev->stats;
-}
-
-static int set_mac_address(struct net_device *dev, void *addr) {
+static int set_mac_address(struct net_device *dev, const void *addr) {
 	uint32_t i;
 
 	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
 
-	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
+	out8(E8390_NODMA | E8390_PAGE1, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
 	}
@@ -374,7 +367,6 @@ static int ne2k_open(struct net_device *dev) {
 		return -EINVAL;
 	}
 
-	ne2k_get_addr_from_prom(dev);
 	ne2k_config(dev);
 
 	return ENOERR;
@@ -393,12 +385,11 @@ static int stop(struct net_device *dev) {
 	return ENOERR;
 }
 
-static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = start_xmit,
-	.ndo_open = ne2k_open,
-	.ndo_stop = stop,
-	.ndo_get_stats = get_eth_stat,
-	.ndo_set_mac_address = set_mac_address
+static const struct net_driver _drv_ops = {
+	.xmit = xmit,
+	.start = ne2k_open,
+	.stop = stop,
+	.set_macaddr = set_mac_address
 };
 
 static int ne2k_init(struct pci_slot_dev *pci_dev) {
@@ -414,9 +405,11 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-	nic->netdev_ops = &_netdev_ops;
+	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = nic_base;
+
+	ne2k_get_addr_from_prom(nic);
 
 	res = irq_attach(pci_dev->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
 	if (res < 0) {

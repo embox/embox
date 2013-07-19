@@ -13,6 +13,7 @@
 #include <drivers/video/vbe.h>
 #include <drivers/video/vesa_modes.h>
 #include <framework/mod/options.h>
+#include <drivers/pci/pci_driver.h>
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 

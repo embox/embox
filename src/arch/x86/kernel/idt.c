@@ -20,6 +20,7 @@
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>
+#include <module/embox/arch/smp.h>
 #include <module/embox/arch/syscall.h>
 
 #define IDT_SIZE 256
@@ -118,24 +119,24 @@ static void idt_init_irq(void) {
 #ifndef SYSCALL_STUB
 
 static void idt_init_syscall(void) {
-	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), __KERNEL_CS, 0xEE);
+	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), __KERNEL_CS, 0xEF);
 }
 
 #else
 #define idt_init_syscall() do { } while(0)
 #endif
 
-#ifdef SMP
+#ifndef NOSMP
 
 static void idt_init_smp(void) {
 	idt_set_gate(0x50, (unsigned) __FWD_DECL(resched_trap), __KERNEL_CS, 0x8E);
 }
 
-#else
+#else /* NOSMP */
 
 #define idt_init_smp() do { } while(0)
 
-#endif
+#endif /* !NOSMP */
 
 static struct idt_pointer idt_ptr;
 

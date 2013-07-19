@@ -10,6 +10,8 @@ endif
 #export ENABLE_ISOLATES=true
 #export USE_MULTIPLE_ISOLATES=true
 
+# Necessary packages for Ubuntu 12.04/64: ia32-libs libc6-dev-i386 lib32stdc++6-4.6-dbg
+
 CLDC_TARGET_ID=product
 ifneq ($(findstring -g,$(EMBOX_CFLAGS)),)
 USE_DEBUG=true
@@ -26,7 +28,9 @@ EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 
 EMBOX_IMPORTED_CFLAGS   += -fno-stack-protector
+EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
+EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
 EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
@@ -42,10 +46,13 @@ PATCH_TXT = phoneme_patch.txt
 TOOLS_DIR           := $(PHONEME_DIR)/tools
 JAVACALL_DIR        := $(PHONEME_DIR)/javacall
 JAVACALL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/javacall
-#ubuntu jdk_dir
-JDK_DIR             := /usr/lib/jvm/java-6-openjdk-i386
-#redhat jdk_dir
-#JDK_DIR             := /usr/java/jdk1.6.0_35
+
+UBUNTU_JDK_DIR      := /usr/lib/jvm/java-6-openjdk-i386
+REDHAT_JDK_DIR      := /usr/java/jdk1.6.0_35
+JDK7_JDK_DIR	    := /usr/lib/jvm/java-7-openjdk
+
+JDK_DIR 	    := $(firstword \
+	$(wildcard /usr/lib/jvm/java-openjdk/./ $(UBUNTU_JDK_DIR)/./ $(REDHAT_JDK_DIR)/./ $(JDK7_JDK_DIR)/./ ))
 
 PCSL_DIR            := $(PHONEME_DIR)/pcsl
 PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
@@ -309,6 +316,8 @@ amalgamated_cldc: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
 
 amalgamated_midp: $(AMAL_MIDP_LIB)
 
-amalgamated: amalgamated_cldc amalgamated_midp
+amalgamated: amalgamated_cldc
+
+#amalgamated: amalgamated_midp
 
 .NOTPARALLEL:

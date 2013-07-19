@@ -11,12 +11,13 @@
 
 
 #include <kernel/thread.h>
+#include <kernel/sched/wait_queue.h>
 
 /**
  * Defines Mutex structure.
  */
 struct mutex {
-	struct sleepq sq;
+	struct wait_queue wq;
 	struct thread *holder;
 #if 0
 	int priority;

@@ -1,0 +1,24 @@
+package embox.kernel.sched
+
+module sched {
+	source "sched.c"
+	source "sched_smp.c"
+
+	depends embox.kernel.timer.sys_timer /* for timeslices support */
+	depends embox.arch.context /* context_switch */
+	depends sched_policy.api
+
+	@NoRuntime depends embox.kernel.task.std_signal
+	@NoRuntime depends embox.kernel.thread.current.api
+	@NoRuntime depends embox.compat.posix.util.time
+	@NoRuntime depends embox.kernel.critical
+	@NoRuntime depends embox.kernel.smp.cpu_api
+
+	@NoRuntime depends embox.kernel.event_sched
+}
+
+module wait_queue {
+	source "wait_queue.c"
+
+	depends embox.util.DList
+}

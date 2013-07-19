@@ -11,7 +11,7 @@
  * @see example/net/sender.c
  */
 
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <framework/example/self.h>
 #include <kernel/printk.h>
@@ -66,6 +66,7 @@ static int exec(int argc, char **argv) {
 
 	/* write data form socket in buffer buf. And then print buffer data */
 	while (1) {
+		sklen = sizeof addr;
 		if ((bytes_read = recvfrom(sock, buf, RECEIVE_BUF_LEN, 0,
 			 (struct sockaddr *)&addr, &sklen)) <= 0) {
 			break;

@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <net/ip.h>
+#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -407,7 +407,7 @@ static int httpd(int argc, char **argv) {
 		return res;
 	}
 
-	res = listen(host, 1);
+	res = listen(host, 3);
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		return res;
@@ -416,12 +416,18 @@ static int httpd(int argc, char **argv) {
 	welcome_message();
 
 	while (1) {
+		addr_len  = sizeof addr;
 		res = accept(host,(struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
+			printf("accept error: %d\n", errno);
+			continue;
+
+#if 0
 			/* error code in client, now */
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			close(host);
 			return res;
+#endif
 		}
 		client_process(res, addr, addr_len);
 	}

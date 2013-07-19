@@ -3,9 +3,11 @@
 # Author: Eldar Abusalimov
 #
 
-.PHONY : all image
+.PHONY : all image FORCE
 all : image
 	@echo 'Build complete'
+
+FORCE :
 
 # Run external builders prior to anything else.
 -include __extbld
@@ -29,7 +31,12 @@ IMAGE_PIGGY = $(IMAGE).piggy
 include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
+
 include $(MKGEN_DIR)/include.mk
+include $(__include_image)
+include $(__include_initfs)
+include $(__include)
+
 
 .SECONDARY:
 .DELETE_ON_ERROR:
@@ -82,8 +89,9 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 
 initfs_cp_prerequisites = $(common_prereqs) $(src_file)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	@$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
+	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
 		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
+	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
@@ -117,9 +125,14 @@ $(ROOTFS_IMAGE) :
 #XXX
 $(OBJ_DIR)/src/fs/driver/initfs/initfs_cpio.o : $(ROOTFS_IMAGE)
 
+ifdef __REBUILD_ROOTFS
+initfs_cp_prerequisites += FORCE
+initfs_prerequisites    += FORCE
+endif
+
 ar_prerequisites    = $(common_prereqs) $(ar_objs)
 $(OBJ_DIR)/%.a : | $$(@D)/.
-	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
+	$(AR) $(ARFLAGS) $@ $(or $(call fmt_line,$(ar_objs)),; touch $@)
 
 # Here goes image creation rules...
 

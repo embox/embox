@@ -10,7 +10,7 @@
 #ifndef XDR_NFS_H_
 #define XDR_NFS_H_
 
-#include <net/rpc/xdr.h>
+#include <net/lib/rpc/xdr.h>
 
 extern int xdr_mnt_export(struct xdr *xs, export_dir_t *export);
 
@@ -27,6 +27,8 @@ extern int xdr_nfs_get_dirlist(struct xdr *xs, char *buff);
 extern int xdr_nfs_get_dirdesc(struct xdr *xs, char *point);
 
 extern int xdr_nfs_get_attr(struct xdr *xs, char *point);
+
+extern int xdr_nfs_get_del_attr(struct xdr *xs, char *point);
 
 extern int xdr_nfs_read_file(struct xdr *xs, char *point);
 
