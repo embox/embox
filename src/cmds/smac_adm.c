@@ -17,10 +17,11 @@
 
 EMBOX_CMD(smac_adm);
 
-#define BUFLEN 1024
+#define BUFLEN 4096
+
+static char buf[BUFLEN];
 
 static int print_rules(void) {
-	char buf[BUFLEN];
 	struct smac_env *env;
 	struct smac_entry *ent;
 	int res, i;
@@ -54,7 +55,6 @@ static int new_rule(const char *subject, const char *object,
 }
 
 static int print_label(void) {
-	char buf[BUFLEN];
 	int res;
 
 	if (0 != (res = smac_labelget(buf, BUFLEN))) {
@@ -67,7 +67,7 @@ static int print_label(void) {
 }
 
 static int smac_adm(int argc, char *argv[]) {
-	char buf[BUFLEN], *lset, *rule, *object, *access, *bp;
+	char *lset, *rule, *object, *access, *bp;
 	int opt;
 	enum action {
 		ACT_NONE,

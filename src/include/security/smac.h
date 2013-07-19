@@ -15,6 +15,7 @@
 
 extern const char *smac_xattrkey;
 extern const char *smac_admin;
+extern const char *smac_def_file_label;
 
 struct smac_entry {
 	char	subject[SMAC_LABELLEN];

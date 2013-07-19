@@ -19,6 +19,8 @@ module smac extends api {
 	option number audit=1
 	option string audit_file="/tmp/smac_log"
 
+	option string default_file_label="*"
+
 	depends embox.fs.xattr
 	depends embox.lib.debug.Symbol
 

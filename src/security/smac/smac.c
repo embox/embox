@@ -47,6 +47,7 @@ static int smac_env_n;
 static struct file_desc *audit_log_desc;
 
 static int audit_log_open(void) {
+
 	audit_log_desc = kopen(SMAC_AUDIT_FILE, O_CREAT | O_WRONLY | O_APPEND, 0755);
 
 	return audit_log_desc ? 0 : -1;
@@ -65,6 +66,9 @@ static void audit_log(const char *subject, const char *object,
 	int linelen;
 
 	if (!audit_log_desc) {
+		/*Sorry for that, preventing recursion, casued by kopen
+ 		 * in audit_log_dec */
+		audit_log_desc = (void *) 1;
 		if (audit_log_open()) {
 			return;
 		}
@@ -280,5 +284,13 @@ static int smac_init(void) {
 			     fs and no file could be opened.
 			     But log_open will repeat every log commit till success
 			  */
+
+	/* should allow ourself do anything with not labeled file as there is no
+ 	 * security at all.
+	 * Otherwise boot could hang at mount, etc.
+	 */
+ 	 smac_addenv(smac_admin, smac_def_file_label,
+			FS_MAY_READ | FS_MAY_WRITE | FS_MAY_EXEC);
+
 	return 0;
 }
