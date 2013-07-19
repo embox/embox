@@ -2,6 +2,7 @@ package embox.kernel.sched
 
 module sched {
 	source "sched.c"
+	source "sched_smp.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
@@ -20,7 +21,4 @@ module wait_queue {
 	source "wait_queue.c"
 
 	depends embox.util.DList
-
-//	@NoRuntime depends embox.kernel.sched.sched
-//	@NoRuntime depends embox.kernel.thread.core
 }

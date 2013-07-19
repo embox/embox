@@ -22,23 +22,6 @@
 
 ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
 
-int task_some_thd_run(struct task *task) {
-	struct thread *th, *tmp;
-	int res = -1;
-
-	if(-1 != (res = sched_tryrun(task->main_thread))) {
-		return res;
-	}
-
-	dlist_foreach_entry(th, tmp, &task->main_thread->thread_task_link, thread_task_link) {
-		if ((res = sched_tryrun(th)) != -1) {
-			break;
-		}
-	}
-
-	return res;
-}
-
 static void task_terminate(int sig) {
 	task_exit(NULL);
 }
@@ -80,13 +63,5 @@ void task_signal_hnd(void) {
 	sched_lock();
 }
 
-#if 0
-static int notify_hnd(struct thread *prev, struct thread *next) {
-	context_enter_frame(&next->context, task_signal_hnd);
-	return 0;
-}
-
-TASK_RESOURCE_NOTIFY(notify_hnd);
-#endif
 TASK_RESOURCE_DESC(&signal_resource);
 

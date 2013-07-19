@@ -291,7 +291,7 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 		get_sched_priority(new_priority, thread_priority_get(main_thread));
 
 		dlist_foreach_entry(thread, tmp, &main_thread->thread_task_link, thread_task_link) {
-			sched_set_priority(thread, get_sched_priority(new_priority,
+			sched_change_scheduling_priority(thread, get_sched_priority(new_priority,
 						thread_priority_get(thread)));
 		}
 

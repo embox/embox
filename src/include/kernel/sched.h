@@ -151,6 +151,7 @@ extern void sched_post_switch(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling
+ *
  * @param thread Thread to operate with
  *
  * @return

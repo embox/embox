@@ -237,31 +237,14 @@ int sched_change_scheduling_priority(struct thread *thread,
 
 		if (thread_state_running(thread->state)) {
 			post_switch_if(runq_change_priority(thread->runq, thread, new_priority));
-		} else {
-			thread_priority_set(thread, new_priority);
 		}
+		thread_priority_set(thread, new_priority);
 
 		assert(thread_priority_get(thread) == new_priority);
 	}
 	sched_unlock();
 
 	return 0;
-}
-
-void sched_set_priority(struct thread *thread,
-		sched_priority_t new_priority) {
-	assert((new_priority >= SCHED_PRIORITY_MIN)
-			&& (new_priority <= SCHED_PRIORITY_MAX));
-
-	sched_lock();
-	{
-		if (!thread_state_exited(thread->state)
-				&& (thread != cpu_get_idle_thread())) {
-			sched_change_scheduling_priority(thread, new_priority);
-		}
-		thread_priority_set(thread, new_priority);
-	}
-	sched_unlock();
 }
 
 static int switch_posted;
@@ -325,33 +308,16 @@ out:
 int sched_tryrun(struct thread *thread) {
 	int res = 0;
 
-	if (in_harder_critical()) {
-		/* TODO: */
-		//startq_enqueue_thread(thread, -EINTR);
-		//critical_request_dispatch(&sched_critical);
-	} else {
-		sched_lock();
-		{
-			if (thread_state_sleeping(thread->state)) {
-				sched_thread_notify(thread, -EINTR);
-			} else if (!thread_state_running(thread->state)) {
-				res = -1;
-			}
+	sched_lock();
+	{
+		if (thread_state_sleeping(thread->state)) {
+			sched_thread_notify(thread, -EINTR);
+		} else if (!thread_state_running(thread->state)) {
+			res = -1;
 		}
-		sched_unlock();
 	}
+	sched_unlock();
 
 	return res;
-}
-
-int sched_cpu_init(struct thread *current) {
-	extern int runq_cpu_init(struct runq *rq, struct thread *current);
-
-	runq_cpu_init(&rq, current);
-
-	current->last_sync = clock();
-	thread_set_current(current);
-
-	return 0;
 }
 
