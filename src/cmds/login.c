@@ -136,10 +136,11 @@ static int login_user(const char *name, const char *cmd) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
 	struct passwd pwd, *result;
 	struct spwd *spwd = NULL;
+	uid_t euid = geteuid();
 	int tid;
 	int res;
 
-	if (NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
+	if (euid && NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
 		goto errret;
 	}
 
@@ -152,7 +153,7 @@ static int login_user(const char *name, const char *cmd) {
 		goto errret;
 	}
 
-	if (strcmp(passbuf, spwd->sp_pwdp)) {
+	if (euid && strcmp(passbuf, spwd->sp_pwdp)) {
 		goto errret;
 	}
 
