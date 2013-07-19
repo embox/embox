@@ -3,6 +3,7 @@ package embox.arch.x86
 
 static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
+	source "cmpxchg_impl.h"
 }
 
 static module LibDl {
