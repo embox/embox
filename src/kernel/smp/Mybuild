@@ -10,6 +10,7 @@ module no_bkl extends bkl_api {
 
 module bkl extends bkl_api {
 	source "bkl.c"
+	depends cpu_api
 }
 
 @DefaultImpl(onecpu)
