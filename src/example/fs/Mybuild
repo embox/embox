@@ -7,11 +7,3 @@ module devfs {
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
-
-module flock {
-	source "flock.c"
-
-	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-}

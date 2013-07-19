@@ -14,10 +14,8 @@
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
 #include <fs/fsop.h>
-#include <sys/file.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
-#include <kernel/thread.h>
 
 /* For command testing */
 #include <cmd/cmdline.h>
@@ -63,9 +61,6 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnam"
-#define FS_FLOCK		"/tmp/flock"
-
-static struct thread *fftt, *sftt;
 
 TEST_CASE("Write file") {
 	int file;
@@ -256,78 +251,6 @@ TEST_CASE("Move file") {
 	/* Test cleanup */
 	test_assert_zero(remove(FS_DTR));
 }
-
-static void *first_flock_test_thread(void *arg) {
-	int fd = *((int *) arg);
-
-	test_emit('a');
-	test_assert_zero(flock(fd, LOCK_EX));
-	test_emit('b');
-	test_assert_zero(thread_launch(sftt));
-	test_emit('d');
-	test_assert_zero(flock(fd, LOCK_UN));
-	test_emit('g');
-
-	return NULL;
-}
-
-static void *second_flock_test_thread(void *arg) {
-	int fd = *((int *) arg);
-
-	test_emit('c');
-
-	/* Try to non-blocking acquire busy lock */
-	test_assert(-1 == flock(fd, LOCK_EX | LOCK_NB));
-	test_assert(EWOULDBLOCK == errno);
-
-	/* Acquire just unlocked by fftt exclusive lock */
-	test_assert_zero(flock(fd, LOCK_EX));
-	test_emit('e');
-
-	/* Convert lock to shared */
-	test_assert_zero(flock(fd, LOCK_SH));
-
-	/* Acquire one more shared lock */
-	test_assert_zero(flock(fd, LOCK_SH | LOCK_NB));
-
-	/* Release first shared lock */
-	test_assert_zero(flock(fd, LOCK_UN));
-
-	/* Convert share to exclusive */
-	test_assert_zero(flock(fd, LOCK_EX));
-
-	/* Release second lock */
-	test_assert_zero(flock(fd, LOCK_UN | LOCK_NB));
-
-	test_emit('f');
-
-	return NULL;
-}
-
-TEST_CASE("flock") {
-	int fd;
-	thread_priority_t l = 200, h = 210;
-
-	/* Prepare file and threads for test */
-	test_assert(-1 != (fd = open(FS_FLOCK, O_CREAT, S_IRUSR | S_IWUSR)));
-
-	test_assert_zero(thread_create(&fftt, THREAD_FLAG_SUSPENDED,
-			first_flock_test_thread, (void *) &fd));
-	test_assert_zero(thread_create(&sftt, THREAD_FLAG_SUSPENDED,
-			second_flock_test_thread, (void *) &fd));
-	test_assert_zero(thread_set_priority(fftt, l));
-	test_assert_zero(thread_set_priority(sftt, h));
-
-	test_assert_zero(thread_launch(fftt));
-	test_assert_zero(thread_join(fftt, NULL));
-	test_assert_zero(thread_join(sftt, NULL));
-
-	test_assert_emitted("abcdefg");
-
-	/* Test cleanup */
-	test_assert_zero(remove(FS_FLOCK));
-}
-
 
 static int setup_suite(void) {
 	int fd, res;

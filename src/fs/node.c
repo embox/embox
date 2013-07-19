@@ -15,7 +15,6 @@
 
 #include <mem/misc/pool.h>
 #include <limits.h>
-#include <errno.h>
 
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
@@ -31,15 +30,6 @@ EMBOX_UNIT_INIT(node_init);
 
 static int node_init(void) {
 	return 0;
-}
-
-static inline int flock_init(node_t *node) {
-	/* flock initialization */
-	mutex_init(&node->flock.exlock);
-	node->flock.shlock_count = 0;
-	dlist_init(&node->flock.shlock_holders);
-
-	return ENOERR;
 }
 
 node_t *node_alloc(const char *name, size_t name_len) {
@@ -74,8 +64,6 @@ node_t *node_alloc(const char *name, size_t name_len) {
 
 	strncpy((char *) node->name, name, name_len);
 	node->name[name_len] = '\0';
-
-	flock_init(node);
 
 	return node;
 }

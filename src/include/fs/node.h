@@ -13,21 +13,8 @@
 #include <fs/file_system.h>
 #include <util/tree.h>
 #include <limits.h>
-#include <kernel/thread/sync/mutex.h>
 
 struct nas;
-
-typedef struct file_lock_shared {
-	struct thread *holder;
-	struct dlist_head flock_link;
-} flock_shared_t;
-
-typedef struct file_lock {
-	struct mutex      exlock;
-	long              shlock_count;
-	struct dlist_head shlock_holders;
-	spinlock_t        flock_guard;
-} flock_t;
 
 typedef struct node {
 	/* node name (use vfs_get_path_by_node() for get full path*/
@@ -41,8 +28,6 @@ typedef struct node {
 
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
-
-	flock_t               flock;
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
