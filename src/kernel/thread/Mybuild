@@ -24,8 +24,6 @@ module core extends thread_mode {
 	depends embox.kernel.sched.sched_policy.api
 	@NoRuntime depends embox.arch.context
 	depends embox.kernel.task.kernel_task
-
-//	@NoRuntime depends embox.kernel.event_sched
 }
 
 /* FIXME: Deprecated */

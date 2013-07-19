@@ -8,6 +8,9 @@ abstract module api {
 module single extends api {
 	source "single.c"
 	depends kernel_task
+
+	depends embox.kernel.thread.current.api
+	depends embox.kernel.sched.sched_policy.api
 }
 
 module multi extends api {
@@ -20,7 +23,7 @@ module multi extends api {
 
 	/* uses task_self() to initialize resources, which implies
 	   to thread be already loaded, as task_self uses thread_self
-	   to determ current thread
+	   to determine current thread
 	*/
 	depends embox.kernel.thread.core
 }

@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <time.h>
+#include <stdint.h>
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
