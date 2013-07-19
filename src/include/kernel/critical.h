@@ -124,9 +124,6 @@
 #ifndef KERNEL_CRITICAL_H_
 #define KERNEL_CRITICAL_H_
 
-#include <kernel/percpu.h>
-#include <kernel/bkl.h>
-
 /* Critical levels mask. */
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
@@ -158,6 +155,9 @@
 	(~(level) ^ __CRITICAL_HARDER(level))
 
 #ifndef __ASSEMBLER__
+
+#include <kernel/percpu.h>
+#include <kernel/bkl.h>
 
 typedef long critical_t;
 
