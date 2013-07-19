@@ -87,3 +87,8 @@ int truncate(const char *path, off_t length) {
 	DPRINTF(("truncate(%s, %d ...) = %d\n", path, length, res));
 	return res;
 }
+
+int flock(int fd, int operation) {
+	return kflock(fd, operation);
+}
+
