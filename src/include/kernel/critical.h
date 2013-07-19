@@ -156,8 +156,9 @@
 
 #ifndef __ASSEMBLER__
 
-#include <kernel/percpu.h>
+#include <linux/compiler.h>
 #include <kernel/bkl.h>
+#include <kernel/percpu.h>
 
 typedef long critical_t;
 
@@ -173,10 +174,6 @@ struct critical_dispatcher {
 		.mask = ~((critical_mask)                         \
 				| __CRITICAL_HARDER(critical_mask)),      \
 	}
-
-/** Optimization barrier. TODO move somewhere */
-#define __barrier() \
-	__asm__ __volatile__("" : : : "memory")
 
 extern critical_t __critical_count;
 
