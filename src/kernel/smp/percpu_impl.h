@@ -29,4 +29,4 @@ extern char _percpu_start, _percpu_block_end, _percpu_end;
 
 #endif /* !__ASSEMBLER__ */
 
-#endif /* KERNEL_SMP_PERCPU_IMPL_H_ */
+#endif /* !KERNEL_SMP_PERCPU_IMPL_H_ */

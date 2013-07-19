@@ -14,6 +14,8 @@
 #define __percpu_cpu_ptr(cpu_id, name) \
 	(name)
 
-#define cpu_get_id() (0)
+static inline unsigned int cpu_get_id(void) {
+	return 0;
+}
 
-#endif /* KERNEL_SMP_ONECPU_IMPL_H_ */
+#endif /* !KERNEL_SMP_ONECPU_IMPL_H_ */
