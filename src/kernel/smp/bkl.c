@@ -6,10 +6,11 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/spinlock.h>
 #include <hal/ipl.h>
+#include <kernel/cpu.h>
+#include <kernel/spinlock.h>
 
-static SPINLOCK_DEFINE(bkl);
+static spinlock_t bkl;
 
 static unsigned int owner_id, nested = 0;
 

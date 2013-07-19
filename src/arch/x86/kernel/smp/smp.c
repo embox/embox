@@ -28,7 +28,7 @@ EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
 
-static SPINLOCK_DEFINE(startup_lock);
+static spinlock_t startup_lock;
 
 char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
 
