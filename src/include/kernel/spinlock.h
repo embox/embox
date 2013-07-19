@@ -18,7 +18,7 @@
 
 static inline int spin_trylock(spinlock_t *lock) {
 #ifdef __HAVE_ARCH_CMPXCHG
-	return cmpxchg(lock, SPIN_UNLOCKED, SPIN_LOCKED);
+	return SPIN_UNLOCKED == cmpxchg(lock, SPIN_UNLOCKED, SPIN_LOCKED);
 #else /* !__HAVE_ARCH_CMPXCHG */
 #warning "cmpxchg arch operation required"
 	return 0;

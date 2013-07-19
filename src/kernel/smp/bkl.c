@@ -10,7 +10,7 @@
 #include <kernel/cpu.h>
 #include <kernel/spinlock.h>
 
-static spinlock_t bkl;
+static spinlock_t bkl = SPIN_UNLOCKED;
 
 static unsigned int owner_id, nested = 0;
 
