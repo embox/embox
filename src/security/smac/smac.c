@@ -45,6 +45,7 @@ static int smac_env_n;
 	for (ent = smac_env; ent != smac_env + smac_env_n; ++ent)
 
 static struct file_desc *audit_log_desc;
+static char no_audit;
 
 static int audit_log_open(void) {
 
@@ -65,11 +66,17 @@ static void audit_log(const char *subject, const char *object,
 	char line[AUDITLINE_LEN], straccess[4];
 	int linelen;
 
+	if (no_audit) {
+		return;
+	}
+
 	if (!audit_log_desc) {
-		/*Sorry for that, preventing recursion, casued by kopen
- 		 * in audit_log_dec */
-		audit_log_desc = (void *) 1;
-		if (audit_log_open()) {
+		int ret;
+		no_audit = 1;
+		ret = audit_log_open();
+		no_audit = 0;
+
+		if (ret) {
 			return;
 		}
 	}
