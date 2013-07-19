@@ -48,7 +48,7 @@ static void sched_switch(void);
 
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
-static struct runq rq;
+struct runq rq;
 static struct work_queue startq;
 
 static inline int in_harder_critical(void) {
