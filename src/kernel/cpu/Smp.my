@@ -1,0 +1,8 @@
+package embox.kernel.cpu
+
+module smp {
+	depends bkl
+	depends ncpu
+	depends libsched
+	depends embox.arch.smp
+}

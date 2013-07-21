@@ -4,8 +4,8 @@
  * @date Jul 19, 2013
  * @author: Anton Bondarev
  */
-#include <time.h>
 
+#include <time.h>
 #include <kernel/thread.h>
 
 extern struct runq rq;

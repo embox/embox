@@ -10,8 +10,6 @@
 #include <asm/linkage.h>
 #include <module/embox/arch/smp.h>
 
-#include <kernel/cpu.h>
-
 	.section .text
 	.align 4
 
@@ -64,7 +62,7 @@ C_ENTRY(_start):
 	call    idt_init
 
 #ifndef NOSMP
-	call    percpu_init
+	call    cpudata_init
 #endif /* !NOSMP */
 
 /* we already save eax and ebx on the stack */

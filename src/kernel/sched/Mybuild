@@ -2,7 +2,6 @@ package embox.kernel.sched
 
 module sched {
 	source "sched.c"
-	source "sched_smp.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
@@ -12,7 +11,7 @@ module sched {
 	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
-	@NoRuntime depends embox.kernel.smp.cpu_api
+	@NoRuntime depends embox.kernel.cpu.cpu_api
 
 	@NoRuntime depends embox.kernel.event_sched
 }

@@ -1,7 +1,0 @@
-package embox.kernel
-
-module smp {
-	depends smp.bkl
-	depends smp.percpu
-	depends embox.arch.smp
-}

@@ -9,6 +9,8 @@
 #include <kernel/task.h>
 #include <kernel/thread.h>
 #include <hal/arch.h> /*only for arch_idle */
+#include <sys/types.h>
+#include <kernel/cpu.h>
 
 extern void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);

@@ -3,6 +3,6 @@ package embox.kernel
 module critical {
 	source "critical.c"
 
-	depends embox.kernel.smp.bkl_api
-	depends embox.kernel.smp.cpu_api
+	depends embox.kernel.cpu.bkl_api
+	depends embox.kernel.cpu.cpu_api
 }

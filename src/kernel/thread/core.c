@@ -35,10 +35,6 @@
 
 #include <hal/context.h>
 
-
-#include <kernel/cpu.h>
-#include <kernel/percpu.h>
-
 EMBOX_UNIT_INIT(thread_core_init);
 
 DLIST_DEFINE(__thread_list);

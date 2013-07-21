@@ -13,7 +13,7 @@
 
 #define __HAVE_ARCH_CMPXCHG
 
-static inline long cmpxchg(unsigned long *ptr,
+static inline unsigned long cmpxchg(unsigned long *ptr,
 		unsigned long old_val, unsigned long new_val) {
 	unsigned long ret;
 

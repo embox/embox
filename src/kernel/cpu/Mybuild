@@ -1,4 +1,4 @@
-package embox.kernel.smp
+package embox.kernel.cpu
 
 @DefaultImpl(no_bkl)
 abstract module bkl_api {
@@ -13,14 +13,25 @@ module bkl extends bkl_api {
 	depends cpu_api
 }
 
+module libsched {
+	source "libsched.c"
+}
+
+module libthread {
+	source "libthread.c"
+}
+
 @DefaultImpl(onecpu)
 abstract module cpu_api {
+	option number cpu_count
 }
 
 module onecpu extends cpu_api {
+	option number cpu_count = 1
 	source "onecpu_impl.h"
 }
 
-module percpu extends cpu_api {
-	source "percpu.c", "percpu_impl.h", "percpu.lds.S"
+module ncpu extends cpu_api {
+	option number cpu_count = 2
+	source "ncpu.c", "ncpu_impl.h", "ncpu.lds.S"
 }

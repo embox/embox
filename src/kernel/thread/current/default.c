@@ -6,9 +6,9 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/percpu.h>
+#include <kernel/cpu.h>
 
 struct thread;
 
 /* Defining current thread for each CPU */
-struct thread *__current_thread __percpu__;
+struct thread *__current_thread __cpudata__;

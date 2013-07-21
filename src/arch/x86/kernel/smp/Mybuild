@@ -1,14 +1,13 @@
 package embox.arch.x86.kernel
 
 module cpu {
-	source "cpu.c"
+	source "cpu_get_id.c"
 
 	depends embox.driver.interrupt.lapic
 }
 
 module smp extends embox.arch.smp {
 	source "smp_traps.S", "ap_trampoline.S", "smp.c"
-	source "smp.h"
 
 	depends cpu
 

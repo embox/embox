@@ -158,7 +158,7 @@
 
 #include <linux/compiler.h>
 #include <kernel/bkl.h>
-#include <kernel/percpu.h>
+#include <kernel/cpu.h>
 
 typedef long critical_t;
 
@@ -169,30 +169,30 @@ struct critical_dispatcher {
 };
 
 #define CRITICAL_DISPATCHER_DEF(name, dispatch_fn, critical_mask) \
-	static struct critical_dispatcher name __percpu__ = { \
-		.dispatch = (dispatch_fn),                        \
-		.mask = ~((critical_mask)                         \
-				| __CRITICAL_HARDER(critical_mask)),      \
+	static struct critical_dispatcher name __cpudata__ = {        \
+		.dispatch = (dispatch_fn),                                \
+		.mask = ~((critical_mask)                                 \
+				| __CRITICAL_HARDER(critical_mask)),              \
 	}
 
 extern critical_t __critical_count;
 
 static inline void __critical_count_add(critical_t count) {
-	percpu_var(__critical_count) += count;
+	cpudata_var(__critical_count) += count;
 	__barrier();
 }
 
 static inline void __critical_count_sub(critical_t count) {
 	__barrier();
-	percpu_var(__critical_count) -= count;
+	cpudata_var(__critical_count) -= count;
 }
 
 static inline int critical_allows(critical_t level) {
-	return !(percpu_var(__critical_count) & (level | __CRITICAL_HARDER(level)));
+	return !(cpudata_var(__critical_count) & (level | __CRITICAL_HARDER(level)));
 }
 
 static inline int critical_inside(critical_t level) {
-	return percpu_var(__critical_count) & level;
+	return cpudata_var(__critical_count) & level;
 }
 
 static inline void critical_enter(critical_t level) {
