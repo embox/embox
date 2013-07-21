@@ -127,8 +127,12 @@ extern int task_set_priority(struct task *task, task_priority_t priority);
 extern task_priority_t task_get_priority(struct task *task);
 
 /* this is for SMP mode */
-extern void task_set_affinity(struct task *task, unsigned int affinity);
-extern unsigned int task_get_affinity(struct task *task);
+static inline void task_set_affinity(struct task *task, unsigned int affinity) {
+	task->affinity = affinity;
+}
+static inline unsigned int task_get_affinity(struct task *task) {
+	return task->affinity;
+}
 
 static inline void *task_self_security(void) {
 	return task_self()->security;

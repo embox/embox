@@ -310,14 +310,6 @@ short task_get_priority(struct task *tsk) {
 	return tsk->priority;
 }
 
-void task_set_affinity(struct task *task, unsigned int affinity) {
-	task->affinity = affinity;
-}
-
-unsigned int task_get_affinity(struct task *task) {
-	return task->affinity;
-}
-
 int task_table_add(struct task *task) {
 	int res = util_idx_table_add((util_idx_table_t *) &task_table, task);
 
