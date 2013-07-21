@@ -31,6 +31,7 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	source "kfsop.c"
 	source "fsop.c"
 	depends Perm
+	depends embox.kernel.thread.mutex
 	option number flock_quantity=128
 }
 
