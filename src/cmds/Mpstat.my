@@ -16,4 +16,5 @@ module mpstat {
 	source "mpstat.c"
 
 	depends embox.lib.LibC
+	depends embox.kernel.cpu.stats
 }
