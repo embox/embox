@@ -34,6 +34,8 @@ void textEditorClosed(TextEditor *ed) {
 
 static void emboxShowLoginForm();
 
+QApplication *__qt_app;
+
 class EmboxRootWindow : public QMainWindow
 {
     Q_OBJECT
@@ -61,7 +63,7 @@ class EmboxRootWindow : public QMainWindow
     	fileMenu->addAction(saveAction);
     	connect(saveAction, SIGNAL(triggered()), this, SLOT(savedefault()));
 
-    	wallpaperAction = new QAction(QString("&Обои на рабочий стол"), this);
+    	wallpaperAction = new QAction(QString("&Графические настройки"), this);
     	fileMenu->addAction(wallpaperAction);
     	connect(wallpaperAction, SIGNAL(triggered()), this, SLOT(wallpaper()));
     }
@@ -109,50 +111,78 @@ EmboxRootWindow *emroot;
 
 static int curuid;
 
-static void load_pref(char *buf, int buflen, char *def) {
-	char file[FSIZE];
-	snprintf(file, FSIZE, "/mnt/pref_%d", curuid);
-	int ret;
-	int fd = open(file, O_RDONLY, 0755);
-	lseek(fd, 0, 0);
-	if (0 > (ret = read(fd, buf, buflen))) {
-		strcpy(buf, def);
-		ret = strlen(def);
+#define SEP ':'
+
+static char *parse(char **buf) {
+	char *ret = *buf;
+	char *ch;
+
+	if ((ch = strchr(*buf, SEP))) {
+		*ch++ = '\0';
 	}
 
+	*buf = ch;
+
+	return ret;
+}
+
+static void load_pref(void) {
+	int fd, ret;
+	char cbuf[FSIZE];
+	const char *wall = "default.png";
+	const char *font = "Times";
+	int font_pt = 10;
+
+	snprintf(cbuf, FSIZE, "/mnt/pref_%d", curuid);
+	fd = open(cbuf, O_RDONLY, 0755);
+
+	lseek(fd, 0, 0);
+	if (0 < (ret = read(fd, cbuf, FSIZE))) {
+		char *buf = cbuf;
+
+		buf[ret] = '\0';
+
+		wall = parse(&buf);
+		font = parse(&buf);
+		font_pt = atoi(parse(&buf));
+	}
 	close(fd);
 
-	buf[ret] = '\0';
-	QString imagePath = QString(":/images/").append(QString(buf));
+	QString imagePath = QString(":/images/").append(QString(wall));
 	QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
 	QPixmap bgPix = QPixmap::fromImage(desktopImage);
 	emarea->setBackground(bgPix);
+
+	QFont serifFont(font, 10);
+	__qt_app->setFont(serifFont);
 }
 
-void save_pref(char *buf, int buflen) {
-	int fd;
-	char file[FSIZE];
-	snprintf(file, FSIZE, "/mnt/pref_%d", curuid);
+void save_pref(char *wall, char *font, int font_pt) {
+	int fd, len;
+	char cbuf[FSIZE];
 
-	fd = creat(file, 0755);
+	snprintf(cbuf, FSIZE, "/mnt/pref_%d", curuid);
 
-	write(fd, buf, buflen);
+	fd = creat(cbuf, 0755);
 
-	ftruncate(fd, buflen);
+	len = snprintf(cbuf, FSIZE, "%s:%s:%d", wall, font, font_pt);
+
+	write(fd, cbuf, len);
+
+	ftruncate(fd, len);
+
 	close(fd);
 }
 
 void emboxShowDesktop(uid_t uid) {
-	char file[FSIZE], wallname[FSIZE];
 	int fd = -1;
 	bool enabled = uid ? false : true;
-	const char *defwall = "default.png";
 
 	curuid = uid;
 	emroot->menuBar()->show();
 	emroot->closeAllEditorsAction->setEnabled(enabled);
 
-	load_pref(wallname, FSIZE, defwall);
+	load_pref();
 }
 
 void emboxHideDesktop() {
@@ -171,6 +201,8 @@ int main(int argv, char **args)
     //Q_INIT_RESOURCE(texteditor);
 
     QApplication app(argv, args);
+
+    __qt_app = &app;
 
     QFont serifFont("Times", 10);
     app.setFont(serifFont);

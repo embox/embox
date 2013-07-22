@@ -6,28 +6,48 @@
 #include <stdio.h>
 
 extern QMdiArea *emarea;
+extern QApplication *__qt_app;
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 // hack because emarea->heigth(), emarea->wigth() not suitable
 #define WIDTH  OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
 #define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
 
+extern void save_pref(char *wall, char *font, int font_pt);
+
 DesktopImageDialog::DesktopImageDialog(QStringList &images)
 {
     createFilesTable();
 
-    QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->addWidget(filesTable, 3, 0, 1, 3);
-    setLayout(mainLayout);
+    QVBoxLayout *vLayout = new QVBoxLayout;
+
+    QFontDatabase fontDataBase;
+    fontBox = new QComboBox();
+    fontBox->addItems(fontDataBase.families());
+    connect(fontBox, SIGNAL(currentIndexChanged(int)),this,SLOT(setFont(int)));
+
+    QGridLayout *gLayout = new QGridLayout;
+    gLayout->addWidget(filesTable, 3, 0, 1, 3);
+
+
+    QPushButton *buttonOk = new QPushButton("Сохранить");
+    connect(buttonOk, SIGNAL(released()), this, SLOT(handleOk()));
+
+    vLayout->addLayout(gLayout);
+    vLayout->addWidget(fontBox);
+    vLayout->addWidget(buttonOk);
+
+    setLayout(vLayout);
 
     filesFoundLabel = new QLabel;
 
     showFiles(images);
 
-    setWindowTitle(tr("Обои на рабочий стол"));
+    setWindowTitle(tr("Графические настройки"));
     resize(400, 300);
 
     subwindow = emarea->addSubWindow(this, windowType());
+    selectedWallpaperRow = 0;
 }
 
 void DesktopImageDialog::createFilesTable()
@@ -43,9 +63,23 @@ void DesktopImageDialog::createFilesTable()
      filesTable->setShowGrid(false);
 
      connect(filesTable, SIGNAL(cellActivated(int,int)),
-             this, SLOT(openFileOfItem(int,int)));
+	     this, SLOT(openFileOfItem(int,int)));
+ }
+void DesktopImageDialog::handleOk()
+ {
+
+    save_pref(filesTable->item(selectedWallpaperRow, 0)->text().toAscii().data(),
+		    fontBox->currentText().toAscii().data(), 10);
+
+	emarea->setActiveSubWindow(subwindow);
+	emarea->closeActiveSubWindow();
  }
 
+void DesktopImageDialog::setFont(int)
+{
+    QFont serifFont(fontBox->currentText(), 10);
+    __qt_app->setFont(serifFont);
+}
 void DesktopImageDialog::showFiles(const QStringList &files)
 {
     for (int i = 0; i < files.size(); ++i) {
@@ -59,22 +93,16 @@ void DesktopImageDialog::showFiles(const QStringList &files)
     filesFoundLabel->setText(tr("Два клика левой кнопкой мыши, чтобы сменить обои"));
 }
 
-extern void save_pref(char *buf, int buflen);
-
 void DesktopImageDialog::openFileOfItem(int row, int /* column */)
 {
-    QTableWidgetItem *item = filesTable->item(row, 0);
+    selectedWallpaperRow = row;
+    QTableWidgetItem *selectedWallpaper = filesTable->item(row, 0);
 
-    //char *imageName = item->text().toAscii().data();
-
-    QString imagePath = QString(":/images/").append(item->text());
+    QString imagePath = QString(":/images/").append(selectedWallpaper->text());
     QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16)
     		.scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
     QPixmap bgPix = QPixmap::fromImage(desktopImage);
     emarea->setBackground(bgPix);
 
-    save_pref(item->text().toAscii().data(), strlen(item->text().toAscii().data()) + 1);
 
-	emarea->setActiveSubWindow(subwindow);
-	emarea->closeActiveSubWindow();
 }

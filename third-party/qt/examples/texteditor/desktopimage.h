@@ -11,10 +11,16 @@ public:
 
 private slots:
     void openFileOfItem(int row, int column);
+    void handleOk();
+    void setFont(int);
 private:
     void showFiles(const QStringList &files);
     QComboBox *createComboBox(const QString &text = QString());
     void createFilesTable();
+    int selectedWallpaperRow;
+
+
+    QComboBox *fontBox;
 
     QLabel *filesFoundLabel;
     QTableWidget *filesTable;
