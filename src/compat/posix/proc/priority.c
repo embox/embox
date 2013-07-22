@@ -17,6 +17,10 @@ int getpriority(int which, id_t who) {
 	int tid;
 	struct task *task;
 
+	if(who == 0) {
+		/* return current value */
+		return task_get_priority(task_self());
+	}
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
 		switch (which) {
@@ -48,6 +52,16 @@ int getpriority(int which, id_t who) {
 int setpriority(int which, id_t who, int value) {
 	int tid, ret, exist;
 	struct task *task;
+
+	// TODO kernel task has tid 0 but this value reserved for current pid
+	if(who == 0) {
+		ret = task_set_priority(task_self(), value);
+		if (ret != 0) {
+			SET_ERRNO(-ret);
+			return -1;
+		}
+		return ret;
+	}
 
 	exist = 0;
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {

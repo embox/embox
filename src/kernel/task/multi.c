@@ -272,6 +272,7 @@ static void *task_trampoline(void *arg) {
 int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	struct thread *thread, *tmp;
 	struct thread *main_thread;
+	sched_priority_t sched_prior;
 
 	assert(tsk);
 
@@ -288,11 +289,14 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 		}
 
 		main_thread = tsk->main_thread;
-		get_sched_priority(new_priority, thread_priority_get(main_thread));
+
+		sched_prior = get_sched_priority(new_priority, thread_priority_get(main_thread));
+		sched_change_scheduling_priority(main_thread, sched_prior);
+
 
 		dlist_foreach_entry(thread, tmp, &main_thread->thread_task_link, thread_task_link) {
-			sched_change_scheduling_priority(thread, get_sched_priority(new_priority,
-						thread_priority_get(thread)));
+			sched_prior = get_sched_priority(new_priority, thread_priority_get(thread));
+			sched_change_scheduling_priority(thread, sched_prior);
 		}
 
 		tsk->priority = new_priority;
