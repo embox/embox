@@ -16,6 +16,5 @@ struct sched_strategy_data {
 };
 
 typedef struct prioq runq_queue_t;
-typedef struct prioq sleepq_queue_t;
 
 #endif /* KERNEL_THREAD_QUEUE_PRIOQ_H_ */

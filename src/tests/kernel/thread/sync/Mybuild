@@ -59,10 +59,3 @@ module rwlock_test {
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
 }
-
-module mqueue_test {
-	source "mqueue_test.c"
-
-	depends embox.kernel.thread.sync
-}
-

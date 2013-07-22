@@ -13,16 +13,7 @@ struct runq {
 
 };
 
-struct sleepq {
-
-};
-
 struct sched_strategy_data {
-
 };
 
-
-static inline void sleepq_init(struct sleepq *sleepq) {
-
-}
 #endif /* NOSCHED_H_ */

@@ -6,8 +6,8 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_QUEUE_PRIOQ_H_
-#define KERNEL_THREAD_QUEUE_PRIOQ_H_
+#ifndef KERNEL_THREAD_QUEUE_PRIOQ2_H_
+#define KERNEL_THREAD_QUEUE_PRIOQ2_H_
 
 #include <util/dlist.h>
 #include <util/prioq.h>
@@ -27,6 +27,5 @@ struct sched_strategy_data {
 };
 
 typedef struct runq_queue runq_queue_t;
-typedef struct prioq sleepq_queue_t;
 
-#endif /* KERNEL_THREAD_QUEUE_PRIOQ_H_ */
+#endif /* KERNEL_THREAD_QUEUE_PRIOQ2_H_ */

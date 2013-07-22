@@ -16,6 +16,5 @@ struct sched_strategy_data {
 };
 
 typedef struct dlist_head runq_queue_t;
-typedef struct dlist_head sleepq_queue_t;
 
 #endif /* KERNEL_THREAD_QUEUE_LIST_H_ */

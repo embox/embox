@@ -49,23 +49,3 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 			sched.pq_link);
 }
 
-void sleepq_queue_init(sleepq_queue_t *queue) {
-	prioq_init(queue);
-}
-
-void sleepq_queue_insert(sleepq_queue_t *queue, struct thread *thread) {
-	prioq_enqueue(thread, thread_prio_comparator, queue, sched.pq_link);
-}
-
-void sleepq_queue_remove(sleepq_queue_t *queue, struct thread *thread) {
-	prioq_remove(thread, thread_prio_comparator, sched.pq_link);
-}
-
-struct thread *sleepq_queue_peek(sleepq_queue_t *queue) {
-	return prioq_peek(thread_prio_comparator, queue, struct thread,
-			sched.pq_link);
-}
-
-int sleepq_queue_empty(sleepq_queue_t *queue) {
-	return prioq_empty(queue);
-}

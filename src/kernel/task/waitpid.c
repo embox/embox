@@ -45,7 +45,7 @@ static void task_waitq_init(struct task *task, void *_waitq) {
 static const struct task_resource_desc waitpid_resource = {
 	.init = task_waitq_init,
 	.deinit = task_waitq_deinit,
-	.resource_size = sizeof(struct sleepq)
+	.resource_size = sizeof(struct wait_queue)
 };
 
 TASK_RESOURCE_DESC(&waitpid_resource);
