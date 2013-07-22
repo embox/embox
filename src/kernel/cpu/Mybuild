@@ -10,20 +10,24 @@ module no_bkl extends bkl_api {
 
 module bkl extends bkl_api {
 	source "bkl.c"
+
 	depends cpu_api
+}
+
+module common {
+	source "common.c"
+
+	depends embox.compat.posix.util.time
 }
 
 module libsched {
 	source "libsched.c"
 }
 
-module libthread {
-	source "libthread.c"
-}
-
 @DefaultImpl(onecpu)
 abstract module cpu_api {
 	option number cpu_count
+	depends common
 }
 
 module onecpu extends cpu_api {
@@ -34,4 +38,11 @@ module onecpu extends cpu_api {
 module ncpu extends cpu_api {
 	option number cpu_count = 2
 	source "ncpu.c", "ncpu_impl.h", "ncpu.lds.S"
+}
+
+module stats {
+	source "stats.c"
+
+	depends cpu_api
+	depends embox.compat.posix.util.time
 }

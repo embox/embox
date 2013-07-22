@@ -53,6 +53,9 @@ typedef __thread_priority_t thread_priority_t;
 /** Create task without attaching to a task. */
 #define THREAD_FLAG_TASK_THREAD      (0x1 << 6)
 
+/** Default thread affinity mask */
+#define THREAD_AFFINITY_NONE         ((unsigned int)-1)
+
 /**
  * Iterates over the list of all threads existing in the system.
  *

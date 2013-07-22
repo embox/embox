@@ -43,10 +43,9 @@ struct thread *thread_idle_init(void) {
 	idle->task = task_kernel_task();
 	idle->task->main_thread = idle;
 
-
 	thread_priority_set(idle, THREAD_PRIORITY_MIN);
 
-	cpu_set_idle_thread(idle);
+	cpu_init(cpu_get_id(), idle);
 
 	return idle;
 }

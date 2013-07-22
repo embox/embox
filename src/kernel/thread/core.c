@@ -190,10 +190,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	context_set_entry(&t->context, thread_trampoline); /* set entry (IP register */
 	context_set_stack(&t->context, (char *) t->stack + t->stack_sz); /* set SP */
 
-
 	sched_strategy_init(&t->sched);
 
-	t->affinity = (1 << NCPU) - 1;
+	t->affinity = THREAD_AFFINITY_NONE;
 
 	wait_data_init(&t->wait_data);
 }

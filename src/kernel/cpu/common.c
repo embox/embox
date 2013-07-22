@@ -1,0 +1,32 @@
+/**
+ * @file
+ * @brief
+ *
+ * @date 19.07.13
+ * @author Ilia Vaprol
+ */
+
+#include <kernel/cpu.h>
+#include <kernel/thread.h>
+#include <time.h>
+
+static struct thread *idle __cpudata__;
+static clock_t started __cpudata__;
+
+void cpu_init(unsigned int cpu_id, struct thread *idle_) {
+	cpu_bind(cpu_id, idle_);
+	cpudata_cpu_var(cpu_id, idle) = idle_;
+	cpudata_cpu_var(cpu_id, started) = clock();
+}
+
+void cpu_bind(unsigned int cpu_id, struct thread *t) {
+	thread_set_affinity(t, 1 << cpu_id);
+}
+
+struct thread * cpu_get_idle(unsigned int cpu_id) {
+	return cpudata_cpu_var(cpu_id, idle);
+}
+
+clock_t cpu_get_started(unsigned int cpu_id) {
+	return cpudata_cpu_var(cpu_id, started);
+}
