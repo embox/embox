@@ -14,6 +14,8 @@ module simple_queue extends api {
 
 	option number tick_interval = 100
 
+	/*uses timer_set */
+	depends embox.kernel.timer.sys_timer
 	depends queue.api
 }
 
