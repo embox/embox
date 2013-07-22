@@ -226,9 +226,9 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 		dev->link_status ^= 1;
 
 		if (dev->link_status) {
-			prom_printf("e1000: Link changed to up\n");
+			prom_printf("e1000: Link up\n");
 		} else {
-			prom_printf("e1000: Link changed to down\n");
+			prom_printf("e1000: Link down. Please check and insert network cable\n");
 		}
 
 	}
