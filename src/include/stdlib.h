@@ -15,6 +15,7 @@
 #define STDLIB_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/wait.h>
 
 typedef struct ldiv {
@@ -105,6 +106,28 @@ extern void *upper_bound(const void *key, const void *base,
 extern int rand(void);
 extern int rand_r(unsigned int *seedp);
 extern void srand(unsigned int seed);
+
+extern long int random(void);
+extern void srandom(unsigned int seed);
+extern char *initstate(unsigned int seed, char *state, size_t n);
+extern char *setstate(char *state);
+
+struct random_data
+  {
+    int32_t *fptr;		/* Front pointer.  */
+    int32_t *rptr;		/* Rear pointer.  */
+    int32_t *state;		/* Array of state values.  */
+    int rand_type;		/* Type of random number generator.  */
+    int rand_deg;		/* Degree of random number generator.  */
+    int rand_sep;		/* Distance between front and rear.  */
+    int32_t *end_ptr;		/* Pointer behind state table.  */
+  };
+
+extern int random_r(struct random_data *buf, int32_t *result);
+extern int srandom_r(unsigned int seed, struct random_data *buf);
+extern int initstate_r(unsigned int seed, char *statebuf,
+                       size_t statelen, struct random_data *buf);
+extern int setstate_r(char *statebuf, struct random_data *buf);
 
 extern ldiv_t ldiv(long num, long denom);
 extern div_t div(int num, int denom);

@@ -50,6 +50,8 @@ static module LibCStdlib {
 	source "stdlib/bsearch.c"
 	source "stdlib/qsort.c"
 	source "stdlib/rand.c"
+	source "stdlib/random.c"
+	source "stdlib/random_r.c"
 	source "stdlib/strtod.c"
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"

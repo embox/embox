@@ -37,7 +37,33 @@ static int embox_ntfs_node_delete(struct node *nod) {
 
 static int embox_ntfs_mount(void *dev_node, void *dir_node) {
 	ntfs_volume *vol;
+        /*
+     	struct node *dir_node, *dev_node;
+	struct nas *dir_nas, *dev_nas;
+	struct node_fi *dev_fi;
 
+	dev_node = dev;
+	dev_nas = dev_node->nas;
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	if (NULL == (dev_fi = dev_nas->fi)) {
+		rc = ENODEV;
+		return -rc;
+	}
+
+	if(NULL != vfs_get_child_next(dir_node)) {
+		return -ENOTEMPTY;
+	}
+
+	if (NULL == (dir_nas->fs = filesystem_create(EXT_NAME))) {
+		rc = ENOMEM;
+		goto error;
+	}
+
+	dir_nas->fs->bdev = dev_fi->privdata;
+
+        */
 	vol = ntfs_mount("/dev/null",0);
 	(void)vol;
 
