@@ -70,7 +70,7 @@ int sched_cpu_init(struct thread *current) {
 
 	return 0;
 }
-
+extern int sched_ticker_init(void);
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
@@ -80,6 +80,8 @@ int sched_init(struct thread *idle, struct thread *current) {
 	sched_cpu_init(current);
 
 	runq_start(&rq, idle);
+
+	sched_ticker_init();
 
 	return 0;
 }
