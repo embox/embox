@@ -16,7 +16,7 @@
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>
-#include <mem/misc/pool.h>
+#include <mem/objalloc.h>
 #include <mem/phymem.h>
 #include <drivers/ramdisk.h>
 #include <framework/mod/options.h>
@@ -28,11 +28,14 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <fs/journal.h>
+#include "ext3_journal.h"
 
 #define EXT2_NAME "ext2"
 #define EXT3_NAME "ext3"
 #define EXT3_JOURNAL_SUPERBLOCK_INODE 8
+#define EXT3_JOURNAL_CNT 16 // XXX to Mybuild
+
+OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* TODO link counter */
 
@@ -158,20 +161,6 @@ static int ext3fs_format(void *dev) {
 	return 0;
 }
 
-/* TODO handle also double-indirect nodes */
-static uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
-	uint32_t buf[jp->j_blocksize / sizeof(uint32_t)];
-	struct ext2fs_dinode *dip = (struct ext2fs_dinode *)jp->j_ctx;
-
-	if (block < NDADDR) {
-		return dip->i_block[block];
-	}
-
-	jp->j_dev->driver->read(jp->j_dev, (char *)buf, jp->j_blocksize, 2 * dip->i_block[NDADDR]);
-
-	return buf[block - NDADDR];
-}
-
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
@@ -180,13 +169,33 @@ static int ext3fs_mount(void *dev, void *dir) {
 	int inode_sector, ret, rsize;
 	struct node *dev_node = dev;
 	struct nas *dir_nas = ((struct node *)dir)->nas;
+	journal_t *jp = NULL;
+	ext3_journal_specific_t *ext3_spec;
+	journal_fs_specific_t spec = {
+			.bmap = ext3_journal_bmap,
+			.load = ext3_journal_load,
+			.commit = ext3_journal_commit,
+			.update = ext3_journal_update,
+			.trans_freespace = ext3_journal_trans_freespace
+	};
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if (NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
 	if ((ret = drv->fsop->mount(dev, dir)) < 0) {
 		return ret;
+	}
+
+	if (NULL == (ext3_spec = objalloc(&ext3_journal_cache))) {
+		return -1;
+	}
+
+	spec.data = ext3_spec;
+
+	if (NULL == (jp = journal_create(&spec))) {
+		objfree(&ext3_journal_cache, ext3_spec);
+		return -1;
 	}
 
 	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
@@ -207,8 +216,9 @@ static int ext3fs_mount(void *dev, void *dir) {
 
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->drv = &ext3fs_driver;
-	journal_load((block_dev_t *) dev_node->nas->fi->privdata,
-			fsbtodb(fsi, dip->i_block[0]), ext3_journal_bmap, dip);
+	ext3_spec->ext3_journal_inode = dip;
+	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata, fsbtodb(fsi, dip->i_block[0]));
+	dir_nas->fs->journal = jp;
 
 	return 0;
 }

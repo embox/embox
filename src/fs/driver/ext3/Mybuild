@@ -10,5 +10,11 @@ module ext3 {
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool
+	depends ext3_journal
+}
+
+module ext3_journal {
+	source "ext3_journal.c"
+
 	depends embox.fs.journal
 }

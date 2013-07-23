@@ -1,43 +1,17 @@
 /**
  * @file
- * @brief Minix journal structures adapted for Embox
+ * @brief Journal's common API
  *
  * @author  Alexander Kalmuk
  * @date    09.07.2013
  */
 
-/*
- * This file is part of libjournal.
- *
- * Written by Niek Linnenbank <nieklinnenbank@gmail.com>
- */
-
-#ifndef _LIBJOURNAL_H
-#define _LIBJOURNAL_H
+#ifndef FS_JOURNAL_H
+#define FS_JOURNAL_H
 
 #include <util/dlist.h>
 #include <embox/block_dev.h>
 #include <stdint.h>
-
-/**
- * Maximum number of tags per block descriptor.
- */
-#define JOURNAL_NTAGS_PER_DESC(jp) ( ((jp)->j_blocksize - sizeof(journal_header_t)) \
-				    / (sizeof(journal_block_tag_t)))
-
-/**
- * Maximum number of blocks per transaction.
- */
-#define JOURNAL_NBLOCKS_PER_TRANS(jp) ((jp)->j_maxlen / 4)
-
-/**
- * @brief Maximum number of total on-disk blocks needed in the log
- *        to store the given number of user blocks.
- */
-#define JOURNAL_NBLOCKS_NEEDED(jp,num) \
-    ((((jp)->j_running_transaction->t_outstanding_credits) + (num)) + \
-    (((((jp)->j_running_transaction->t_outstanding_credits) + (num)) / \
-       JOURNAL_NTAGS_PER_DESC(jp)) + 2))
 
 typedef unsigned int block_t;
 
@@ -91,10 +65,64 @@ typedef struct journal_block_s {
     struct dlist_head b_next; /** Linked list entry. */
 } journal_block_t;
 
-/*
- * Maps journal's block into filesystem block
+
+/*********** File system specific ***********/
+
+/**
+ * Below functions should be implemented for each concrete file system's driver.
+ */
+
+/**
+ * Maps journal's block into filesystem block.
+ *
+ * @param jp    - journal
+ * @param block - block number in journal address space (0..jp->max_len - 1)
+ *
+ * @return number of disk block
  */
 typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
+
+/**
+ * Load journal from specified device and initialize it. Typically called after journal_create.
+ *
+ * @param jp    - journal
+ * @param jdev  - device from which journal will be loaded
+ * @param start - number of disk block where journal located
+ *
+ * @return error code
+ * @retval 0 on success
+ */
+typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start);
+/**
+ * Commit current running transaction.
+ *
+ * @param jp    - journal
+ *
+ * @return error code
+ * @retval 0 on success
+ */
+typedef int (*journal_commit_t)(journal_t *jp);
+/**
+ * Update journal's superblock after checkpointing.
+ */
+typedef int (*journal_update_t)(journal_t *jp);
+
+/**
+ * Check if there are free space for nblocks.
+ */
+typedef int (*journal_trans_freespace_t)(journal_t *jp, int nblocks);
+
+typedef struct journal_fs_specific_s {
+	journal_load_t load;
+	journal_commit_t commit;
+	journal_update_t update;
+    journal_bmap_t bmap;
+    journal_trans_freespace_t trans_freespace;
+	void *data;
+} journal_fs_specific_t;
+
+/*********** File system specific ***********/
+
 
 /**
  * struct handle_s - The handle_s type is the concrete type associated with
@@ -184,104 +212,15 @@ struct transaction_s {
     struct dlist_head t_next;
 };
 
-/*
- * On-disk structures
- */
-
-#define JFS_MAGIC_NUMBER 0xc03b3998U /* The first 4 bytes of /dev/random! */
-
-/*
- * Descriptor block types:
- */
-
-#define JFS_DESCRIPTOR_BLOCK    1
-#define JFS_COMMIT_BLOCK        2
-#define JFS_SUPERBLOCK_V1       3
-#define JFS_SUPERBLOCK_V2       4
-#define JFS_REVOKE_BLOCK        5
-
-/*
- * Standard header for all descriptor blocks:
- */
-typedef struct journal_header_s {
-	uint32_t h_magic;
-	uint32_t h_blocktype;
-	uint32_t h_sequence;
-} journal_header_t;
-
-/*
- * The block tag: used to describe a single buffer in the journal.
- */
-typedef struct journal_block_tag_s {
-	uint32_t t_blocknr; /* The on-disk block number */
-	uint32_t t_flags;   /* See below */
-} journal_block_tag_t;
-
-/*
- * Definitions for the journal tag flags word
- */
-#define JFS_FLAG_ESCAPE         1       /* on-disk block is escaped */
-#define JFS_FLAG_SAME_UUID      2       /* block has same uuid as previous */
-#define JFS_FLAG_DELETED        4       /* block deleted by this transaction */
-#define JFS_FLAG_LAST_TAG       8       /* last tag in this descriptor block */
-
-/*
- * The journal superblock.  All fields are in big-endian byte order.
- */
-typedef struct journal_superblock_s {
-    /* 0x0000 */
-    journal_header_t s_header;
-
-    /* 0x000C */
-    /* Static information describing the journal */
-    uint32_t s_blocksize;            /* journal device blocksize */
-    uint32_t s_maxlen;               /* total blocks in journal file */
-    uint32_t s_first;                /* first block of log information */
-
-    /* 0x0018 */
-    /* Dynamic information describing the current state of the log */
-    uint32_t s_sequence;             /* first commit ID expected in log */
-    uint32_t s_start;                /* blocknr of start of log */
-
-    /* 0x0020 */
-    /* Error value, as set by journal_abort(). */
-    uint32_t s_errno;
-
-    /* 0x0024 */
-    /* Remaining fields are only valid in a version-2 superblock */
-    uint32_t s_feature_compat;       /* compatible feature set */
-    uint32_t s_feature_incompat;     /* incompatible feature set */
-    uint32_t s_feature_ro_compat;    /* readonly-compatible feature set */
-    /* 0x0030 */
-    uint8_t  s_uuid[16];             /* 128-bit uuid for journal */
-    /* 0x0040 */
-    uint32_t s_nr_users;             /* Nr of filesystems sharing log */
-    uint32_t s_dynsuper;             /* Blocknr of dynamic superblock copy*/
-
-    /* 0x0048 */
-    uint32_t s_max_transaction;      /* Limit of journal blocks per trans.*/
-    uint32_t s_max_trans_data;       /* Limit of data blocks per trans. */
-
-    /* 0x0050 */
-    uint32_t s_padding[44];
-
-    /* 0x0100 */
-    uint32_t  s_users[16*48];         /* ids of all fs'es sharing the log */
-    /* 0x0400 */
-}
-journal_superblock_t;
-
 /**
  * struct journal_s - The journal_s type is the concrete type
  *                    associated with journal_t.
  */
 struct journal_s {
-    /* The superblock buffer */
-    journal_block_t *j_sb_buffer;
-    journal_superblock_t *j_superblock;
-
-    /* Version of the superblock format */
-    int j_format_version;
+	/**
+	 * Journal's filesystem specific operations.
+	 */
+	journal_fs_specific_t j_fs_specific;
 
     /*
      * Transactions: The current running transaction...
@@ -334,9 +273,6 @@ struct journal_s {
     size_t j_blocksize;
     block_t j_blk_offset;
 
-    journal_bmap_t j_bmap;
-    void *j_ctx;
-
     /* Total maximum capacity of the journal region on disk. */
     size_t j_maxlen;
 
@@ -349,24 +285,27 @@ struct journal_s {
      * Sequence number of the next transaction to grant [j_state_lock]
      */
     uint32_t j_transaction_sequence;
-
-    /*
-     * Journal uuid: identifies the object (filesystem, LVM volume etc)
-     * backed by this journal.  This will eventually be replaced by an array
-     * of uuids, allowing us to index multiple devices within a single
-     * journal and to perform atomic updates across them.
-     */
-    uint8_t j_uuid[16];
 };
 
-extern journal_t *journal_load(block_dev_t *jdev, block_t start, journal_bmap_t f, void *ctx);
+extern journal_t *journal_create(journal_fs_specific_t *spec);
 extern journal_handle_t * journal_start(journal_t *jp, int nblocks);
 extern int journal_stop(journal_handle_t *handle);
 
 extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);
 extern void journal_free_block(journal_t *jp, journal_block_t *jb);
 
+extern transaction_t *journal_new_trans(journal_t *journal);
+void journal_free_trans(journal_t *journal, transaction_t *t);
 extern int journal_checkpoint_transactions(journal_t *jp);
 extern int journal_dirty_block(journal_handle_t *handle, journal_block_t *block);
 
-#endif /* _LIBJOURNAL_H */
+extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt);
+extern int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);
+
+#define journal_db2jb(jp, block) \
+		block / (jp->j_blocksize / SECTOR_SIZE)
+
+#define journal_jb2db(jp, block) \
+		block * (jp->j_blocksize / SECTOR_SIZE)
+
+#endif /* FS_JOURNAL_H */
