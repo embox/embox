@@ -59,6 +59,9 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_unlock_noswitch();
+	/* we must make ipl_enable() because thread_trampoline start executing in
+	 * sched_switch function? but in it we have off interrupts
+	 */
 	ipl_enable();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
@@ -171,10 +174,10 @@ void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (priority >= THREAD_PRIORITY_MIN)) {
+			&& (priority > THREAD_PRIORITY_MIN)) {
 		priority--;
 	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
-			&& (priority <= THREAD_PRIORITY_HIGH)) {
+			&& (priority < THREAD_PRIORITY_HIGH)) {
 		priority++;
 	}
 
@@ -188,7 +191,17 @@ void thread_init(struct thread *t, unsigned int flags,
 	/* cpu context init */
 	context_init(&t->context, true); /* setup default value of CPU registers */
 	context_set_entry(&t->context, thread_trampoline); /* set entry (IP register */
-	context_set_stack(&t->context, (char *) t->stack + t->stack_sz); /* set SP */
+	/* setup stack pointer to the top of allocated memory
+	 * The structure of kernel thread stack follow:
+	 * +++++++++++++++ top
+	 *                  |
+	 *                  v
+	 * the thread structure
+	 * xxxxxxx
+	 * the end
+	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
+	 */
+	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 
 	sched_strategy_init(&t->sched);
 
@@ -374,14 +387,16 @@ clock_t thread_get_running_time(struct thread *thread) {
 
 
 static void thread_delete(struct thread *t) {
-	static struct thread *zombie;
+	static struct thread *zombie = NULL;
+
 	struct thread *current = thread_self();
 
 	assert(t);
 	assert(thread_state_dead(t->state));
 	assert(t != zombie);
+	assert(zombie == current);
 
-	if (zombie != NULL && zombie != current) {
+	if (zombie != NULL) {
 		thread_free(zombie);
 		zombie = NULL;
 	}

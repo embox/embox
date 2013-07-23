@@ -59,6 +59,7 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
+//TODO this is bad place for work with thread state
 int sched_cpu_init(struct thread *current) {
 
 	current->runq = &rq;
@@ -70,7 +71,8 @@ int sched_cpu_init(struct thread *current) {
 
 	return 0;
 }
-extern int sched_ticker_init(void);
+
+
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 

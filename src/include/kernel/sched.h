@@ -24,7 +24,7 @@
 struct thread;
 struct event;
 struct sleepq;
-#if 0
+
 /**
  * Initializes scheduler.
  *
@@ -41,7 +41,9 @@ struct sleepq;
  *   failed.
  */
 extern int sched_init(struct thread *current, struct thread *idle);
-#endif
+
+//TODO sched_ticker have to start automatic after scheduler initialization
+extern int sched_ticker_init(void);
 
 /**
  * Obtains a pointer to the currently executing thread.
