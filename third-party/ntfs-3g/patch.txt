@@ -90,14 +90,16 @@ diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/secaudit.c ntfs-3g/src/secaudit.c
  
 diff -aur ntfs-3g_ntfsprogs-2013.1.13/src/Makefile.am ntfs-3g/src/Makefile.am
 --- ntfs-3g_ntfsprogs-2013.1.13/src/Makefile.am	2013-01-13 10:46:35.000000000 +0400
-+++ ntfs-3g/src/Makefile.am	2013-07-04 19:41:12.373169750 +0400
-@@ -16,8 +16,8 @@
++++ ntfs-3g/src/Makefile.am	2013-07-23 02:33:03.807658150 +0400
+@@ -15,9 +15,9 @@
+ 
  bin_PROGRAMS	 = ntfs-3g.probe \
  		ntfs-3g.usermap \
- 		ntfs-3g.secaudit
+-		ntfs-3g.secaudit
 -rootbin_PROGRAMS = ntfs-3g lowntfs-3g
 -rootsbin_DATA 	 = #Create directory
-+bin_PROGRAMS = ntfs-3g
++		ntfs-3g.secaudit \
++		ntfs-3g
 +#rootsbin_DATA 	 = #Create directory
  man_MANS	 = ntfs-3g.8 ntfs-3g.probe.8 \
  		ntfs-3g.usermap.8 \
@@ -141,3 +143,16 @@ diff -aur ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/Makefile.am ntfs-3g/libntfs-3g/
  if INSTALL_LIBRARY
  	if [ ! "$(rootlibdir)" -ef "$(libdir)" ]; then \
  		$(MV) -f "$(DESTDIR)/$(libdir)"/libntfs-3g.so* "$(DESTDIR)/$(rootlibdir)";  \
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/include/ntfs-3g/types.h ntfs-3g/include/ntfs-3g/types.h
+--- ntfs-3g_ntfsprogs-2013.1.13/include/ntfs-3g/types.h	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/include/ntfs-3g/types.h	2013-07-23 04:28:35.692810104 +0400
+@@ -27,7 +27,7 @@
+ #include "config.h"
+ #endif
+ 
+-#if HAVE_STDINT_H || !HAVE_CONFIG_H
++#if (defined(HAVE_STDINT_H) && HAVE_STDINT_H) || !defined(HAVE_CONFIG_H)
+ #include <stdint.h>
+ #endif
+ #ifdef HAVE_SYS_TYPES_H
+ 

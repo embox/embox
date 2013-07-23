@@ -1,0 +1,8 @@
+package embox.fs.driver
+
+module ntfs {
+	depends third_party.ntfs_3g.core
+
+	@IncludePath("$(ROOT_DIR)/build/ntfs-3g/include")
+	source "ntfs.c"
+}
