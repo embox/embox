@@ -358,7 +358,8 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 void QEmboxVCWindowSurface::resize(const QSize &size)
 {
     //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
-    QWindowSurface::resize(size);
+    //base resize below somehow prevent wallpaper flush. Have no idea how.
+    //QWindowSurface::resize(size);
     if (mImage.size() != size)
 	mImage = QImage(size, QImage::Format_RGB16);
 }

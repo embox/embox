@@ -41,8 +41,8 @@ DesktopImageDialog::DesktopImageDialog(QStringList &images)
 
     vLayout->addLayout(gLayout);
     vLayout->addWidget(fontBox);
-    vLayout->addWidget(buttonOk);
     vLayout->addWidget(fontPt);
+    vLayout->addWidget(buttonOk);
 
     setLayout(vLayout);
 
