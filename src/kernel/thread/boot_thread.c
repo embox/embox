@@ -10,11 +10,6 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
-
-extern void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
-
-
 static void *boot_stub(void *arg) {
 	return NULL;
 }
@@ -43,7 +38,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	return thread;
 }
 
-struct thread *thread_boot_init(void) {
+struct thread *boot_thread_create(void) {
 	struct thread *bootstrap;
 	struct task *kernel_task = task_kernel_task();
 	extern char _stack_vma, _stack_len;

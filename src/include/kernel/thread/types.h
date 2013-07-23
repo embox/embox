@@ -52,10 +52,10 @@ struct thread {
 	struct thread_priority thread_priority;
 
 	struct task       *task;          /**< Task belong to. */
-	struct dlist_head  thread_task_link;     /**< Link in list holding task threads. */
+	struct dlist_head  thread_task_link;/**<list's link holding task threads. */
 
 	clock_t            running_time;  /**< Running time of thread in clocks. */
-	clock_t            last_sync;     /**< Last recalculation of running time. */
+	clock_t            last_sync;     /**< Last recalculation of running time.*/
 
 	struct thread     *joined;        /**< Thread which joined to this. */
 
@@ -64,7 +64,7 @@ struct thread {
 	struct wait_data   wait_data;
 
 	struct sched_strategy_data sched; /**< Scheduler-private data. */
-
+//TODO this field must be deleted
 	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
 
 	unsigned int       affinity;      /**< CPU affinity of the thread. */

@@ -29,6 +29,7 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 #include <kernel/thread/state.h>
+#include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/wait_data.h>
 
 #include <kernel/panic.h>
@@ -37,20 +38,40 @@
 
 EMBOX_UNIT_INIT(thread_core_init);
 
-DLIST_DEFINE(__thread_list);
+DLIST_DEFINE(__thread_list); //TODO make it by task_threads list
 
-static int id_counter;
 
-extern void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
+static int id_counter; // TODO make it an indexator
 
-static void thread_delete(struct thread *t);
 
-extern struct thread *thread_alloc(void);
-extern void thread_free(struct thread *t);
+static void thread_delete(struct thread *t) {
+	static struct thread *zombie = NULL;
+	struct thread *current = thread_self();
+
+	assert(t);
+	assert(thread_state_dead(t->state));
+	assert(t != zombie);
+	assert(zombie != current);
+
+	if (zombie != NULL) {
+		thread_free(zombie);
+		zombie = NULL;
+	}
+
+	task_remove_thread(t->task, t);
+	dlist_del(&t->thread_link);
+
+	if (t == current) {
+		zombie = t;
+	} else {
+		thread_free(t);
+	}
+}
+
 
 /**
  * Wrapper for thread start routine.
+ * Called from sched_switch() function with interrupts off.
  */
 static void __attribute__((noreturn)) thread_trampoline(void) {
 	struct thread *current = thread_self();
@@ -59,15 +80,14 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_unlock_noswitch();
-	/* we must make ipl_enable() because thread_trampoline start executing in
-	 * sched_switch function? but in it we have off interrupts
-	 */
 	ipl_enable();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
+	/* execute user function handler */
 	res = current->run(current->run_arg);
 	thread_exit(res);
+	/* NOTREACHED */
 }
 
 int thread_create(struct thread **p_thread, unsigned int flags,
@@ -105,18 +125,19 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	 * lock scheduler (disable scheduling) to our structures is not be
 	 * corrupted
 	 */
-	sched_lock(); /* lock scheduling */
-		/*allocate memory */
+	sched_lock();
+	{
+		/* allocate memory */
 		if (!(t = thread_alloc())) {
 			res = -ENOMEM;
 			goto out;
 		}
+
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
 
-
-		/* link with task if it need */
-		if(!(flags & THREAD_FLAG_TASK_THREAD)) {
+		/* link with task if needed */
+		if (!(flags & THREAD_FLAG_NOTASK_THREAD)) {
 			task_add_thread(task_self(), t);
 		}
 
@@ -127,21 +148,17 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		if (flags & THREAD_FLAG_DETACHED) {
 			thread_detach(t);
 		}
-
+	}
 out:
 	sched_unlock();
 
 	if (save_ptr) {
-		*p_thread = t; /* save result pointer */
+		*p_thread = t;
 	}
 
 	return res;
 }
 
-/*
- * extern void thread_init(struct thread *t, unsigned int flags,
- * void *(*run)(void *), void *arg)
- */
 void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	__thread_priority_t priority;
@@ -190,7 +207,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	/* cpu context init */
 	context_init(&t->context, true); /* setup default value of CPU registers */
-	context_set_entry(&t->context, thread_trampoline); /* set entry (IP register */
+	context_set_entry(&t->context, thread_trampoline);/*set entry (IP register*/
 	/* setup stack pointer to the top of allocated memory
 	 * The structure of kernel thread stack follow:
 	 * +++++++++++++++ top
@@ -205,7 +222,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(&t->sched);
 
-	t->affinity = THREAD_AFFINITY_NONE;
+	t->affinity = THREAD_AFFINITY_NONE; /* TODO for smp */
 
 	wait_data_init(&t->wait_data);
 }
@@ -260,7 +277,7 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			assert(!t->joined);
+			assert(!t->joined); //TODO may be it should be IF
 			t->joined = current;
 
 			sched_prepare_wait(NULL, NULL);
@@ -295,22 +312,24 @@ int thread_detach(struct thread *t) {
 	}
 	sched_unlock();
 
-	return 0;
+	return ENOERR;
 }
 
 int thread_launch(struct thread *t) {
+	int res = ENOERR;
+
 	assert(t);
 
 	sched_lock();
 	{
 		if (thread_state_started(t->state)) {
-			sched_unlock();
-			return -EINVAL;
+			res = -EINVAL;
+			goto out;
 		}
 
 		if (thread_state_exited(t->state)) {
-			sched_unlock();
-			return -ESRCH;
+			res = -ESRCH;
+			goto out;
 		}
 
 		/* running time */
@@ -319,9 +338,10 @@ int thread_launch(struct thread *t) {
 
 		sched_start(t);
 	}
+out:
 	sched_unlock();
 
-	return 0;
+	return res;
 }
 
 int thread_terminate(struct thread *t) {
@@ -341,7 +361,7 @@ int thread_terminate(struct thread *t) {
 	}
 	sched_unlock();
 
-	return 0;
+	return ENOERR;
 }
 
 void thread_yield(void) {
@@ -358,7 +378,7 @@ int thread_set_priority(struct thread *t, thread_priority_t new_priority) {
 
 	thread_priority_set(t, new_priority);
 
-	return 0;
+	return ENOERR;
 }
 
 thread_priority_t thread_get_priority(struct thread *t) {
@@ -367,50 +387,23 @@ thread_priority_t thread_get_priority(struct thread *t) {
 	return thread_priority_get(t);
 }
 
-
-clock_t thread_get_running_time(struct thread *thread) {
-	clock_t new_clock;
+clock_t thread_get_running_time(struct thread *t) {
+	clock_t running;
 
 	sched_lock();
 	{
-		if (thread_state_oncpu(thread->state)) {
-			/* Recalculate time of the thread. */
-			new_clock = clock();
-			thread->running_time += new_clock - thread->last_sync;
-			thread->last_sync = new_clock;
+		/* if thread is executing now we have to add recent CPU time slice. */
+		if (thread_state_oncpu(t->state)) {
+			running = clock() - t->last_sync;
+			running += t->running_time;
+		} else {
+			running = t->running_time;
 		}
 	}
 	sched_unlock();
 
-	return thread->running_time;
+	return running;
 }
-
-
-static void thread_delete(struct thread *t) {
-	static struct thread *zombie = NULL;
-
-	struct thread *current = thread_self();
-
-	assert(t);
-	assert(thread_state_dead(t->state));
-	assert(t != zombie);
-	assert(zombie != current);
-
-	if (zombie != NULL) {
-		thread_free(zombie);
-		zombie = NULL;
-	}
-
-	task_remove_thread(t->task, t);
-	dlist_del(&t->thread_link);
-
-	if (t == current) {
-		zombie = t;
-	} else {
-		thread_free(t);
-	}
-}
-
 
 struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t, *tmp;
@@ -426,9 +419,8 @@ struct thread *thread_lookup(thread_id_t id) {
 
 
 
-extern int sched_init(struct thread *idle, struct thread *current);
-extern struct thread *thread_idle_init(void);
-extern struct thread *thread_boot_init(void);
+extern struct thread *idle_thread_create(void);
+extern struct thread *boot_thread_create(void);
 
 static int thread_core_init(void) {
 	struct thread *idle;
@@ -436,9 +428,9 @@ static int thread_core_init(void) {
 
 	id_counter = 0; /* start enumeration */
 
-	idle = thread_idle_init(); /* idle thread always has ID=0 */
+	idle = idle_thread_create(); /* idle thread always has ID=0 */
 
-	current = thread_boot_init(); /* 'init' thread ID=1 */
+	current = boot_thread_create(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);
 }

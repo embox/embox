@@ -51,7 +51,7 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
 /** Create task without attaching to a task. */
-#define THREAD_FLAG_TASK_THREAD      (0x1 << 6)
+#define THREAD_FLAG_NOTASK_THREAD      (0x1 << 6)
 
 /** Default thread affinity mask */
 #define THREAD_AFFINITY_NONE         ((unsigned int)-1)
@@ -170,6 +170,10 @@ extern struct thread *thread_lookup(thread_id_t id);
  *   If the system lacked the necessary resources to create a new thread.
  */
 extern int thread_create(struct thread **p_thread, unsigned int flags,
+		void *(*run)(void *), void *arg);
+
+//TODO describe it
+extern void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);
 
 extern int thread_detach(struct thread *thread);

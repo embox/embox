@@ -8,17 +8,10 @@
 
 #include <kernel/task.h>
 #include <kernel/thread.h>
+#include <kernel/thread/thread_alloc.h>
 #include <hal/arch.h> /*only for arch_idle */
 #include <sys/types.h>
 #include <kernel/cpu.h>
-
-extern void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
-
-extern struct thread *thread_alloc(void);
-//extern void thread_free(struct thread *t);
-
-//extern struct dlist_head __thread_list;
 
 /*
  * Function, which does nothing. For idle_thread.
@@ -31,7 +24,7 @@ static void *idle_run(void *arg) {
 }
 
 
-struct thread *thread_idle_init(void) {
+struct thread *idle_thread_create(void) {
 	struct thread *idle;
 
 	if (!(idle = thread_alloc())) {
@@ -39,7 +32,7 @@ struct thread *thread_idle_init(void) {
 	}
 
 
-	thread_init(idle, THREAD_FLAG_TASK_THREAD, idle_run, NULL);
+	thread_init(idle, THREAD_FLAG_NOTASK_THREAD, idle_run, NULL);
 	idle->task = task_kernel_task();
 	idle->task->main_thread = idle;
 

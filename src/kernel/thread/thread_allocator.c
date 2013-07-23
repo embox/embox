@@ -13,6 +13,8 @@
 
 #include <mem/misc/pool.h>
 
+#include <kernel/thread/thread_alloc.h>
+
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
