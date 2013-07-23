@@ -1,7 +1,7 @@
 #
-# Copyright 2011-2012, Mathematics and Mechanics faculty
+# Copyright 2011-2013, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2011-2012, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2011-2013, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@
 #    - Comprehensive framework for defining own builtin functions
 #      with opportunities to inspect expansion stack, inline calls to certain
 #      functions and check usages of native builtins;
-#    - 'lambda' and 'with' builtins for defining anonymous inner functions.
+#    - 'lambda', 'with' and more useful builtins.
 #
 #   Date: Jun 28, 2011
 # Author: Eldar Abusalimov
@@ -76,8 +76,8 @@ include mk/util/var/assign.mk
 include mk/util/var/info.mk
 
 ##
-# Performs both syntactiacal and semantical transformations of a function
-# defined with a given name.
+# Performs both syntactiacal and semantical transformations of functions
+# defined with given names.
 #
 # Params:
 #   1. Name of the function(s) being defined.
@@ -138,7 +138,7 @@ __def_var = <novar>
 
 # Appends a value (if any) to a simple variable.
 #   1. Variable.
-#   1. Value.
+#   2. Value.
 __def_append_var = \
 	$(if $2,${eval $$1 += $$2})
 
@@ -158,7 +158,8 @@ __def_simples := $(foreach 1,$(.VARIABLES),$(var_simple))
 # Disables auto definition of certain variables.
 #
 # Params:
-#   1. Name of function to exclude. May include percent sign for pattern match.
+#   1. Name of a function to exclude. May include a percent sign for pattern
+#      matching.
 # Return:
 #   Nothing.
 def_exclude = \
@@ -168,7 +169,7 @@ def_exclude = \
 # Tells whether the specified function has been ever processed using 'def'.
 #
 # Params:
-#   1. Name of function to check.
+#   1. Name of a function to check.
 # Return:
 #   The argument if answer is true, empty otherwise.
 def_is_done = \
@@ -178,7 +179,7 @@ def_is_done = \
 # Tells whether the specified function is being defined right now.
 #
 # Params:
-#   1. Name of function to check.
+#   1. Name of a function to check.
 # Return:
 #   The argument if answer is true, empty otherwise.
 def_in_progress = \
@@ -446,14 +447,14 @@ define __def_inner_unescape
 endef
 
 # Sets the following hooks:
-#   '(' to call to '__def_i_paren', and
-#   '$('        to '__def_i_expansion'.
+#   '(' to call to '__def_ihook_paren', and
+#   '$('        to '__def_ihook_expansion'.
 define __def_inner_install_hooks
 	$(subst $$$$$$$$# Fix up paren hooks that follow a dollar: '$('.
-			$$$[call __def_i_paren,
-			$$$[call __def_i_expansion,
+			$$$[call __def_ihook_paren,
+			$$$[call __def_ihook_expansion,
 		# Install a paren hook on every opening paren: '('.
-		$(subst  $[,$$$[call __def_i_paren$(\comma),
+		$(subst  $[,$$$[call __def_ihook_paren$(\comma),
 
 			# Commas are also escaped so that inner hook handler gets only
 			# one argument.
@@ -471,21 +472,21 @@ endef
 
 # Hook for plain '(...)'.
 #   1. Value inside the parens.
-define __def_i_paren
+define __def_ihook_paren
 	# All we need here is to echo the argument enclosing it with calls
 	# to outer stack push/pop functions and restoring the original parens.
 	$(call __def_inner_escape,
 		(
-			$$(call __def_o_push,__paren__)
+			$$(call __def_ohook_push,__paren__)
 				$(subst c[$$],$(,),$1)
-			$$(__def_o_pop)
+			$$(__def_ohook_pop)
 		)
 	)
 endef
 
 # Hook for '$(...)'.
 #   1. Value inside the parens.
-define __def_i_expansion
+define __def_ihook_expansion
 	$(call __def_inner_escape,
 		$(or \
 			$(foreach 1st,$(firstword $1),
@@ -505,7 +506,7 @@ endef
 #   2. Warning message.
 define __def_inner_warning
 	# The real warning message will be printed at the outer expansion phase.
-	$$(call __def_o_warning,$(subst c[$$],$$(\comma),$1),
+	$$(call __def_ohook_warning,$(subst c[$$],$$(\comma),$1),
 		$(subst $(\comma),$$(\comma),$2))
 endef
 
@@ -601,10 +602,10 @@ endef
 
 # See '__def_inner_handle'.
 define __def_inner_handle_function
-	$$(call __def_o_push,$(1st))
+	$$(call __def_ohook_push,$(1st))
 
 	# Notice that the opening paren is escaped (see below for explanations).
-	$$$[call __def_o_func# <- also there is no comma here.
+	$$$[call __def_ohook_func# <- also there is no comma here.
 
 		# Unescape any escaped commas and install argument hooks
 		# after each of them.
@@ -612,7 +613,7 @@ define __def_inner_handle_function
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
 			# hooks help to construct a list of these variables.
-			$(,)$$(__def_o_arg),
+			$(,)$$(__def_ohook_arg),
 
 			c[$$]# Escaped comma before the arguments.
 
@@ -708,7 +709,7 @@ endif # DEF_DEBUG
 #   1. Value to push.
 # Return:
 #   Nothing.
-define __def_o_push
+define __def_ohook_push
 	$(call __def_debug,push [$1])
 	${eval \
 		$(__def_stack_push_mk)
@@ -718,7 +719,7 @@ endef
 # Increments the number of arguments of the function call being handled now.
 # Return:
 #   Nothing.
-define __def_o_arg
+define __def_ohook_arg
 	$(call __def_debug,arg$(words $(__def_stack_top)))
 	${eval \
 		$(__def_stack_arg_mk)
@@ -728,19 +729,19 @@ endef
 # Removes an element from the top and restores the previous element.
 # Return:
 #   Nothing.
-define __def_o_pop
+define __def_ohook_pop
 	${eval \
 		$(__def_stack_pop_mk)
 	}
 	$(if $(value __def_debug),
-		$(call __def_debug,pop$(if $(filter __def_o_pop,$0), [$1])))
+		$(call __def_debug,pop$(if $(filter __def_ohook_pop,$0), [$1])))
 endef
 
 # Handles a function expansion. Performs generic checks (arity, ...) and
 # a special translation in case of user-defined builtin.
 # Return:
 #   A code which will substitute the original expansion.
-define __def_o_func
+define __def_ohook_func
 	$(if $(value __def_debug),$(call __def_debug,func [$(builtin_reconstruct)]))
 
 	$(foreach builtin_name,$(__builtin_name),$(foreach 0,$(builtin_name),
@@ -759,8 +760,8 @@ define __def_o_func
 	))
 
 	$(if $(value __def_debug),
-		$(call __def_o_pop,$(__def_tmp__)),
-		$(__def_o_pop))
+		$(call __def_ohook_pop,$(__def_tmp__)),
+		$(__def_ohook_pop))
 endef
 
 # Handles GNU Make native functions.
@@ -795,11 +796,11 @@ __builtin_native_functions := $(strip $(__builtin_native_functions))
 #   2. The message.
 # Return:
 #   The first argument.
-define __def_o_warning
-	$(call __def_o_push,<unknown>)
+define __def_ohook_warning
+	$(call __def_ohook_push,<unknown>)
 	$(call builtin_warning,
 		$2$(if $1,: '$1'))
-	$(__def_o_pop)
+	$(__def_ohook_pop)
 	$1
 endef
 
@@ -863,7 +864,7 @@ builtin_args_list = \
 # code in a 'call'-like syntax.
 #
 # Note:
-#   You must not 'call' theese macros in order to preserve argument values of
+#   You must not 'call' these macros in order to preserve argument values of
 #   the current function call.
 #
 
@@ -1192,44 +1193,6 @@ expand = \
 	$(expand $1)
 silent-expand = \
 	$(silent-expand $1)
-#
-# Extension: 'fx' builtin function.
-#
-# Runtime partial function application.
-#
-# '$(fx func,args...)'
-#
-define builtin_func-fx
-	$(with \
-		$(expand \
-			$(subst $(\comma)$(\s),$(\comma),
-				$(foreach arg,$(builtin_args_list),
-					$(if $(findstring $$,$(subst $$$$,,$($(arg)))),
-						$(call fold,
-							$$$$(subst $$$$$$$$,$$$$$$$$$$$$$$$$,$$($(arg))),
-							\comma [ ],
-							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1))
-						),
-						$(subst $$,$$$$$$$$,$($(arg)))
-					)
-					$(\comma)
-				)
-			)
-		),
-		$(if $(findstring $$,$(subst $$$$$$$$,,$1)),
-			$$(foreach fn,__fx$$(words $$(__builtin_func-fx_cnt)),
-				$$(eval \
-					__builtin_func-fx_cnt += x$$(\n)
-					define $$(fn)$$(\n)$$$$(call $1$$$$1)$$(\n)endef
-				)
-				$$(fn)
-			),
-			$(call builtin_aux_def,$$(call $(subst $$$$,$$,$1)$$1))
-		)
-	)
-endef
-
-__builtin_func-fx_cnt :=# Initially empty.
 
 #
 # Def-time static utils.
@@ -1367,7 +1330,7 @@ ifndef DEF_NOINLINE
 #   The code transormed to a function call (may be inlined).
 #
 # Example:
-#   Builtin function 'eq' is marked to be inlineable and the corresponding
+#   Builtin function 'eq' is marked to be inlinable and the corresponding
 #   function is defined as follows:
 #     eq = $(findstring $1,$(findstring $2,$1))
 #
@@ -1483,7 +1446,7 @@ define __builtin_to_function_inline
 
 		$(if $2,
 			$(def-ifdef DEF_DEBUG,$(call __def_debug,
-					Inlining of function '$(builtin_name)' failed due to \
+					Unable to inline function '$(builtin_name)' due to \
 					ambiguous usage of certain arguments)),
 			$1)
 	)
@@ -1581,15 +1544,15 @@ define __argsplit
 
 		# The exact structure of used delimiters is encoded inside
 		# builtin name which is pushed onto the expansion stack.
-		$$(call __def_o_push,
+		$$(call __def_ohook_push,
 			__argsplit__-($2))
 
 		$$(foreach builtin_name,$$(__builtin_name),
-			$$(call $$3$$(__def_o_arg),$1$(__argsplit_varargs)))
+			$$(call $$3$$(__def_ohook_arg),$1$(__argsplit_varargs)))
 
 		$(def-ifdef DEF_DEBUG,
 			# TODO Using internals of 'expand'. -- Eldar
-			$$(call __def_o_pop,$$(__def_tmp__)),$$(__def_o_pop))
+			$$(call __def_ohook_pop,$$(__def_tmp__)),$$(__def_ohook_pop))
 	))
 endef
 
@@ -1613,7 +1576,7 @@ define __argsplit_hook-sep-out
 	}
 	# Advance the top of the expansion stack with a new
 	# argument and return the native argument separator.
-	$(,)$$(__def_o_arg)
+	$(,)$$(__def_ohook_arg)
 endef
 
 # Return the separator as is.
@@ -1752,9 +1715,7 @@ define builtin_macro-for
 					# Wrap the result of previous steps by a '$(foreach ...)'
 					# with the recognized arguments.
 					$$(foreach $(trim $1),$(trim $2),$3)
-				),$1,$2)),
-		# The body.
-		$(expand $(builtin_lastarg)))
+				),$1,$2)))
 endef
 
 $(def_all)
@@ -1777,23 +1738,5 @@ silent-for = \
 
 # Finally, flush the rest and say Goodbye!
 $(def_all)
-
-ifeq (0,1)
-$(foreach __def_var, \
-	$(filter-out \
-		__def_debug \
-		__def_stack \
-		__def_stack_top \
-		__%__ \
-		  %_mk, \
-		$(filter \
-			  def% \
-			__def%, \
-			$(.VARIABLES) \
-		) \
-	), \
-	$(call def,$(__def_var)) \
-)
-endif
 
 endif # __core_def_mk
