@@ -42,9 +42,9 @@ extern void sched_strategy_init(struct sched_strategy_data *data);
  * @param idle
  *   Idle thread.
  */
-extern void runq_init(struct runq *runq, struct thread *current,
-		struct thread *idle);
+extern void runq_init(struct runq *runq);
 
+#if 0
 /**
  * Finilize queue of running threads.
  *
@@ -52,6 +52,7 @@ extern void runq_init(struct runq *runq, struct thread *current,
  *   Running queue.
  */
 extern void runq_fini(struct runq *runq);
+#endif
 
 /**
  * Returns pointer to the currently executing thread.

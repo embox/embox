@@ -59,19 +59,27 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
+int sched_cpu_init(struct thread *current) {
 
-
-int sched_init(struct thread *idle, struct thread *current) {
-	work_queue_init(&startq);
+	current->runq = &rq;
+	current->state = thread_state_do_activate(current->state);
+	current->state = thread_state_do_oncpu(current->state);
 
 	current->last_sync = clock();
-
 	thread_set_current(current);
 
-	runq_init(&rq, current, idle);
+	return 0;
+}
 
-	assert(thread_state_started(current->state));
-	assert(thread_state_started(idle->state));
+int sched_init(struct thread *idle, struct thread *current) {
+	assert(idle && current);
+
+	work_queue_init(&startq);
+	runq_init(&rq);
+
+	sched_cpu_init(current);
+
+	runq_start(&rq, idle);
 
 	return 0;
 }

@@ -17,7 +17,7 @@ struct sys_timer;
 struct runq {
 	runq_queue_t queue;
 
-	struct sys_timer *tick_timer;
+	//struct sys_timer *tick_timer;
 };
 
 

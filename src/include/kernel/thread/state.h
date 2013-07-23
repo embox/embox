@@ -17,11 +17,11 @@
 typedef __thread_state_t thread_state_t;
 
 #define __THREAD_STATE_INIT       0
-#define __THREAD_STATE_ACTIVE    (0x1 << 0)
-#define __THREAD_STATE_SLEEPING  (0x1 << 1)
-#define __THREAD_STATE_EXITED    (0x1 << 2)
+#define __THREAD_STATE_ACTIVE    (0x1 << 0) /* present in runq */
+#define __THREAD_STATE_SLEEPING  (0x1 << 1) /* waiting for any event */
+#define __THREAD_STATE_EXITED    (0x1 << 2) /* zomby */
 #define __THREAD_STATE_DETACHED  (0x1 << 3)
-#define __THREAD_STATE_ONCPU     (0x1 << 4)
+#define __THREAD_STATE_ONCPU     (0x1 << 4) /* execution now on CPU */
 
 static inline __thread_state_t thread_state_init(void) {
 	return __THREAD_STATE_INIT;
@@ -60,7 +60,6 @@ static inline bool thread_state_dead(__thread_state_t state) {
 	return !thread_state_active(state) && thread_state_exited(state)
 			&& thread_state_detached(state);
 }
-
 
 static inline __thread_state_t thread_state_do_activate(__thread_state_t state) {
 	assert(!thread_state_started(state));

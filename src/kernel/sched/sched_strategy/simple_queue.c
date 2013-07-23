@@ -17,57 +17,14 @@
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
 
-#include <module/embox/arch/smp.h>
-#include <kernel/cpu.h>
-#include <kernel/time/timer.h>
-
 #include <kernel/task.h>
 
 #include "simple_queue.h"
 
-static void sched_tick(sys_timer_t *timer, void *param);
+void runq_init(struct runq *rq) {
+	assert(rq);
 
-void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
-	assert(current && idle);
 	runq_queue_init(&rq->queue);
-
-	current->runq = rq;
-	idle->runq = rq;
-
-	current->state = thread_state_do_activate(current->state);
-	current->state = thread_state_do_oncpu(current->state);
-
-	runq_start(rq, idle);
-
-	/* Initializing tick timer. */
-	/* TODO: Error if not set timer and timer close. */
-	if (timer_set(&rq->tick_timer, TIMER_PERIODIC,
-			OPTION_GET(NUMBER, tick_interval), sched_tick, NULL)) {
-		printf("Scheduler initialization failed!\n");
-	}
-}
-
-void runq_cpu_init(struct runq *rq, struct thread *current) {
-	assert(rq && current);
-
-	current->runq = rq;
-	current->state = thread_state_do_activate(current->state);
-	current->state = thread_state_do_oncpu(current->state);
-}
-
-void runq_fini(struct runq *rq) {
-	timer_close(rq->tick_timer);
-}
-
-static void sched_tick(sys_timer_t *timer, void *param) {
-	extern void smp_send_resched(int cpu_id);
-	sched_post_switch();
-
-#ifndef NOSMP
-	for (int i = 0; i < NCPU; i++) {
-		smp_send_resched(i);
-	}
-#endif /* !NOSMP */
 }
 
 int runq_start(struct runq *rq, struct thread *t) {

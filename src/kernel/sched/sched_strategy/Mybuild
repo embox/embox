@@ -12,8 +12,6 @@ module nosched extends api {
 module simple_queue extends api {
 	source "simple_queue.c", "simple_queue.h"
 
-	option number tick_interval = 100
-
 	/*uses timer_set */
 	depends embox.kernel.timer.sys_timer
 	depends queue.api

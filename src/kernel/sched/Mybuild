@@ -14,6 +14,13 @@ module sched {
 	@NoRuntime depends embox.kernel.cpu.cpu_api
 
 	@NoRuntime depends embox.kernel.event_sched
+
+	@NoRuntime depends sched_ticker
+}
+
+module sched_ticker {
+	source "sched_ticker.c"
+	option number tick_interval = 100
 }
 
 module wait_queue {
