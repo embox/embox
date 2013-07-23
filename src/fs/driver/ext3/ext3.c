@@ -218,7 +218,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	dir_nas->fs->drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
 	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata, fsbtodb(fsi, dip->i_block[0]));
-	dir_nas->fs->journal = jp;
+	//dir_nas->fs->journal = jp;
 
 	return 0;
 }
