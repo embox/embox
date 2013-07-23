@@ -351,6 +351,13 @@ extern char *strpbrk(const char *s, const char *accept);
  */
 extern char *strdup(const char *s);
 
+/**
+ * The  ffs()  function  returns  the position of the first (least significant)
+ * bit set in the word i.  The least significant bit is position 1 and the most
+ * significant position is, for example, 32 or 64.
+ */
+extern int ffs(int i);
+
 __END_DECLS
 
 #endif /* STRING_H_ */
