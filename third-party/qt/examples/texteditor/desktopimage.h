@@ -12,12 +12,13 @@ public:
 private slots:
     void openFileOfItem(int row, int column);
     void handleOk();
-    void setFont(int);
+    void fontChanged(int);
 private:
     void showFiles(const QStringList &files);
     QComboBox *createComboBox(const QString &text = QString());
     void createFilesTable();
     int selectedWallpaperRow;
+    QSpinBox *fontPt;
 
 
     QComboBox *fontBox;

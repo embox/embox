@@ -34,7 +34,8 @@ void textEditorClosed(TextEditor *ed) {
 
 static void emboxShowLoginForm();
 
-QApplication *__qt_app;
+static QApplication *__qt_app;
+static QMenu *__qt_menu;
 
 class EmboxRootWindow : public QMainWindow
 {
@@ -46,6 +47,8 @@ class EmboxRootWindow : public QMainWindow
     EmboxRootWindow() {
     	fileMenu = new QMenu(QString("&Пуск"), this);
     	menuBar()->addMenu(fileMenu);
+
+	__qt_menu = fileMenu;
 
     	textEditorAction = new QAction(QString("&Текстовый редактор"), this);
     	fileMenu->addAction(textEditorAction);
@@ -126,6 +129,12 @@ static char *parse(char **buf) {
 	return ret;
 }
 
+void qtSetfont(const QString &fontFamily, int fontPt) {
+	QFont serifFont(fontFamily, fontPt);
+	__qt_app->setFont(serifFont);
+	__qt_menu->setFont(serifFont);
+}
+
 static void load_pref(void) {
 	int fd, ret;
 	char cbuf[FSIZE];
@@ -153,8 +162,8 @@ static void load_pref(void) {
 	QPixmap bgPix = QPixmap::fromImage(desktopImage);
 	emarea->setBackground(bgPix);
 
-	QFont serifFont(font, 10);
-	__qt_app->setFont(serifFont);
+	qtSetfont(font, font_pt);
+
 }
 
 void save_pref(char *wall, char *font, int font_pt) {

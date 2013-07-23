@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 extern QMdiArea *emarea;
-extern QApplication *__qt_app;
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 // hack because emarea->heigth(), emarea->wigth() not suitable
@@ -14,6 +13,7 @@ extern QApplication *__qt_app;
 #define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
 
 extern void save_pref(char *wall, char *font, int font_pt);
+extern void qtSetfont(const QString &fontFamily, int fontPt);
 
 DesktopImageDialog::DesktopImageDialog(QStringList &images)
 {
@@ -24,7 +24,7 @@ DesktopImageDialog::DesktopImageDialog(QStringList &images)
     QFontDatabase fontDataBase;
     fontBox = new QComboBox();
     fontBox->addItems(fontDataBase.families());
-    connect(fontBox, SIGNAL(currentIndexChanged(int)),this,SLOT(setFont(int)));
+    connect(fontBox, SIGNAL(currentIndexChanged(int)),this,SLOT(fontChanged(int)));
 
     QGridLayout *gLayout = new QGridLayout;
     gLayout->addWidget(filesTable, 3, 0, 1, 3);
@@ -33,9 +33,16 @@ DesktopImageDialog::DesktopImageDialog(QStringList &images)
     QPushButton *buttonOk = new QPushButton("Сохранить");
     connect(buttonOk, SIGNAL(released()), this, SLOT(handleOk()));
 
+    fontPt = new QSpinBox();
+    fontPt->setMinimum(6);
+    fontPt->setMaximum(32);
+    fontPt->setValue(10);
+    connect(fontPt, SIGNAL(valueChanged(int)),this,SLOT(fontChanged(int)));
+
     vLayout->addLayout(gLayout);
     vLayout->addWidget(fontBox);
     vLayout->addWidget(buttonOk);
+    vLayout->addWidget(fontPt);
 
     setLayout(vLayout);
 
@@ -69,17 +76,17 @@ void DesktopImageDialog::handleOk()
  {
 
     save_pref(filesTable->item(selectedWallpaperRow, 0)->text().toAscii().data(),
-		    fontBox->currentText().toAscii().data(), 10);
+		    fontBox->currentText().toAscii().data(), fontPt->value());
 
 	emarea->setActiveSubWindow(subwindow);
 	emarea->closeActiveSubWindow();
  }
 
-void DesktopImageDialog::setFont(int)
+void DesktopImageDialog::fontChanged(int)
 {
-    QFont serifFont(fontBox->currentText(), 10);
-    __qt_app->setFont(serifFont);
+    qtSetfont(fontBox->currentText(), fontPt->value());
 }
+
 void DesktopImageDialog::showFiles(const QStringList &files)
 {
     for (int i = 0; i < files.size(); ++i) {
