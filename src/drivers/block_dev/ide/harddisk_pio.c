@@ -204,8 +204,8 @@ static block_dev_driver_t idedisk_pio_driver = {
 static int idedisk_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
-	double size;
-	char   path[PATH_MAX];
+	size_t size;
+	char path[PATH_MAX];
 
 	ide = ide_get_drive();
 
@@ -224,11 +224,11 @@ static int idedisk_init (void *args) {
 				drive->bdev = block_dev_create(path,
 						&idedisk_pio_driver, drive);
 				if (NULL != drive->bdev) {
-					size = (double) drive->param.cylinders *
-						   (double) drive->param.heads *
-						   (double) drive->param.unfbytes *
-						   (double) (drive->param.sectors + 1);
-					block_dev(drive->bdev)->size = (size_t) size;
+					size = drive->param.cylinders *
+						   drive->param.heads *
+						   drive->param.unfbytes *
+						   (drive->param.sectors + 1);
+					block_dev(drive->bdev)->size = size;
 				} else {
 					return -1;
 				}

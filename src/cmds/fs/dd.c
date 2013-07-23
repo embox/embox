@@ -156,6 +156,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (-1 == (bytesread = read(fd, buffer, bytes))) {
+		printf("read error\n");
 		rc = -errno;
 		goto out;
 	}

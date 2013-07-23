@@ -25,7 +25,7 @@ static int part_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 		return part->len;
 
 	case IOCTL_GETBLKSIZE:
-		return block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+		return block_dev_ioctl(part->bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	}
 
 	return -ENOSYS;

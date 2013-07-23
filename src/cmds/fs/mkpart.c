@@ -22,6 +22,8 @@
 
 EMBOX_CMD(mkpart_exec);
 
+#define BSIZE 512
+
 extern block_dev_driver_t *bdev_driver_part;
 
 static struct block_dev *partbdev;
@@ -65,12 +67,12 @@ static int mkpart_exec(int argc, char *argv[]) {
 		return -1;
 	}
 
-
 	part.bdev = bdevnode->nas->fi->privdata;
 	part.start = blockoffset;
 	part.len = blocklen;
 
 	partbdev = block_dev_create("/dev/hda0", bdev_driver_part, &part);
+	partbdev->size = BSIZE * blocklen;
 
 	return 0;
 
