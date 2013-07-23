@@ -328,7 +328,6 @@ QPaintDevice *QEmboxVCWindowSurface::paintDevice()
 
 void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
@@ -336,6 +335,8 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int x = widget->pos().x();
     int y = widget->pos().y();
+    int width = widget->width();
+    int height = widget->height();
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;
@@ -357,11 +358,9 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 void QEmboxVCWindowSurface::resize(const QSize &size)
 {
     //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
-    //QWindowSurface::resize(size);
-    //QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
-    //if (mImage.size() != size)
-            //[> XXX <]
-        //mImage = QImage(size, QImage::Format_RGB16);
+    QWindowSurface::resize(size);
+    if (mImage.size() != size)
+	mImage = QImage(size, QImage::Format_RGB16);
 }
 
 QEmboxVCPlatformWindow::QEmboxVCPlatformWindow(QWidget *widget)
