@@ -394,7 +394,7 @@ static void thread_delete(struct thread *t) {
 	assert(t);
 	assert(thread_state_dead(t->state));
 	assert(t != zombie);
-	assert(zombie == current);
+	assert(zombie != current);
 
 	if (zombie != NULL) {
 		thread_free(zombie);
