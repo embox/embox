@@ -60,7 +60,6 @@ static module LibCStdlib {
 }
 
 static module LibCString {
-	source "string/ffs.c"
 	source "string/memchr.c"
 	source "string/memcmp.c"
 	source "string/memcpy.c"
