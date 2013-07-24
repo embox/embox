@@ -8,7 +8,7 @@
 
 
 #include <asm/linkage.h>
-#include <module/embox/arch/smp.h>
+#include <hal/cpu.h>
 
 	.section .text
 	.align 4
