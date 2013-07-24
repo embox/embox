@@ -19,10 +19,6 @@ module common {
 	depends embox.compat.posix.util.time
 }
 
-module libsched {
-	source "libsched.c"
-}
-
 @DefaultImpl(no_cpudata)
 abstract module cpudata_api {
 }
