@@ -26,19 +26,3 @@ module checkopts {
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
-
-module receiver {
-	source "receiver.c"
-
-	depends embox.compat.posix.net.socket
-	depends embox.prom.printf
-	depends embox.framework.LibFramework
-}
-
-module sender {
-	source "sender.c"
-
-	depends embox.compat.posix.net.socket
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-}
