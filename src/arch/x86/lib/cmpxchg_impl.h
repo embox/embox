@@ -20,7 +20,7 @@ static inline unsigned long cmpxchg(unsigned long *ptr,
 	__asm__ __volatile__ (
 			"lock cmpxchgl %2, %1"
 			: "=a" (ret), "+m" (*ptr)
-			: "r" (new_val), "" (old_val)
+			: "r" (new_val), "0" (old_val)
 			: "memory"
 	);
 

@@ -53,3 +53,7 @@ module usermode_test {
 
 	depends embox.arch.syscall_caller
 }
+
+module spinlock_test {
+	source "spinlock_test.c"
+}
