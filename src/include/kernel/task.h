@@ -158,13 +158,15 @@ extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 extern int task_waitpid(pid_t pid);
 
-__END_DECLS
+#include <kernel/task/task_table.h>
 
 #define task_foreach_thread(thr, task)                                    \
 	thr = task->main_thread;                                             \
-	for (struct thread *nxt = dlist_entry(thr->thread_task_link.next,    \
-			struct thread, thread_task_link);                            \
-		thr != task->main_thread;                                        \
+	for (struct thread *nxt = dlist_entry(thr->thread_task_link.next, \
+			struct thread, thread_task_link), \
+			*tmp = NULL;                            \
+		(thr != task->main_thread) || (tmp == NULL);                      \
+		tmp = thr, \
 		thr = nxt,                                                       \
 			nxt = dlist_entry(thr->thread_task_link.next,                \
 						struct thread, thread_task_link)                 \
@@ -176,5 +178,7 @@ __END_DECLS
 	(task != NULL);                                    \
 	task = task_table_get(task_table_get_first(tid++)) \
 	)
+
+__END_DECLS
 
 #endif /* TASK_H_ */

@@ -33,7 +33,7 @@ struct thread *idle_thread_create(void) {
 	}
 
 
-	thread_init(idle, THREAD_FLAG_NOTASK_THREAD, idle_run, NULL);
+	thread_init(idle, THREAD_FLAG_NOTASK, idle_run, NULL);
 	idle->task = task_kernel_task();
 	idle->task->main_thread = idle;
 

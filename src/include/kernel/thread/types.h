@@ -59,8 +59,6 @@ struct thread {
 
 	struct thread     *joined;        /**< Thread which joined to this. */
 
-	struct dlist_head  thread_link;   /**< Linkage on all threads. */
-
 	struct wait_data   wait_data;
 
 	struct sched_strategy_data sched; /**< Scheduler-private data. */

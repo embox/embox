@@ -38,8 +38,6 @@
 
 EMBOX_UNIT_INIT(thread_core_init);
 
-DLIST_DEFINE(__thread_list); //TODO make it by task_threads list
-
 
 static int id_counter; // TODO make it an indexator
 
@@ -59,7 +57,6 @@ static void thread_delete(struct thread *t) {
 	}
 
 	task_remove_thread(t->task, t);
-	dlist_del(&t->thread_link);
 
 	if (t == current) {
 		zombie = t;
@@ -137,7 +134,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		thread_init(t, flags, run, arg);
 
 		/* link with task if needed */
-		if (!(flags & THREAD_FLAG_NOTASK_THREAD)) {
+		if (!(flags & THREAD_FLAG_NOTASK)) {
 			task_add_thread(task_self(), t);
 		}
 
@@ -169,9 +166,6 @@ void thread_init(struct thread *t, unsigned int flags,
 	assert(t->stack_sz);
 
 	t->id = id_counter++;
-
-	dlist_head_init(&t->thread_link);
-	dlist_add_next(&t->thread_link, &__thread_list);
 
 	dlist_init(&t->thread_task_link); /* default unlink value */
 
@@ -404,20 +398,6 @@ clock_t thread_get_running_time(struct thread *t) {
 
 	return running;
 }
-
-struct thread *thread_lookup(thread_id_t id) {
-	struct thread *t, *tmp;
-
-	thread_foreach(t, tmp) {
-		if (t->id == id) {
-			return t;
-		}
-	}
-
-	return NULL;
-}
-
-
 
 extern struct thread *idle_thread_create(void);
 extern struct thread *boot_thread_create(void);

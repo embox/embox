@@ -51,33 +51,11 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
 /** Create task without attaching to a task. */
-#define THREAD_FLAG_NOTASK_THREAD      (0x1 << 6)
+#define THREAD_FLAG_NOTASK      (0x1 << 6)
 
 /** Default thread affinity mask */
 #define THREAD_AFFINITY_NONE         ((unsigned int)-1)
 
-/**
- * Iterates over the list of all threads existing in the system.
- *
- * @param thread
- *   <em> struct thread * </em> iteration variable.
- */
-#define thread_foreach(thread_ptr ,tmp) \
-	extern struct dlist_head __thread_list; \
-	dlist_foreach_entry(thread_ptr, tmp, &__thread_list, thread_link)
-
-
-/**
- * Searches for a thread by the given ID.
- *
- * @param id
- *   The thread ID to look up by.
- * @return
- *   Found thread if such exists.
- * @retval NULL
- *   If there is no thread with such ID.
- */
-extern struct thread *thread_lookup(thread_id_t id);
 
 /**
  * Obtains a pointer to the calling thread.

@@ -29,23 +29,19 @@ static void print_usage(void) {
 }
 
 static void print_stat(void) {
-	struct thread *thread, *tmp;
+	struct thread *thread;
 	int running, sleeping, suspended;
 	int total;
-	//struct task *task, *tmp_task, *ktask;
+	struct task *task;
 
 	printf(" %4s  %4s  %8s %18s %10s\n", "id", "tid", "priority", "state", "time");
 
 	running = sleeping = suspended = 0;
 
-	//ktask = task_kernel_task();
-
 	sched_lock();
 	{
-		//dlist_foreach_entry(task, tmp_task, &ktask->task_link, task_link) {
-		//	dlist_foreach_entry(thread, tmp, &task->main_thread->task_link, task_link) {
-		thread_foreach(thread, tmp) {
-
+		task_foreach(task) {
+			task_foreach_thread(thread, task) {
 				thread_state_t s = thread->state;
 				const char *state = NULL;
 
@@ -63,7 +59,7 @@ static void print_stat(void) {
 					thread_priority_get(thread),
 					state,
 					thread_get_running_time(thread)/CLOCKS_PER_SEC);
-		//	}
+			}
 		}
 	}
 	sched_unlock();
@@ -74,28 +70,35 @@ static void print_stat(void) {
 		"\t%d sleeping\n", total, running, sleeping);
 }
 
+static struct thread *thread_lookup(thread_id_t id) {
+	struct thread *t;
+	struct task * task;
+
+	sched_lock();
+	{
+		task_foreach(task) {
+			task_foreach_thread(t, task) {
+				if (t->id == id) {
+					goto out;
+
+				}
+			}
+		}
+		t = NULL;
+	}
+out:
+	sched_unlock();
+
+	return t;
+}
+
 static void kill_thread(thread_id_t thread_id) {
 	struct thread *thread;
-#if 0
-	int error;
-#endif
 
 	if (!(thread = thread_lookup(thread_id))) {
 		printf("No thread with id: %d\n", thread_id);
 		return;
 	}
-
-#if 0
-	if (thread == idle_thread) {
-		printf("Can't kill idle thread\n");
-		return;
-	}
-
-	if ((error = thread_stop(thread))) {
-		printf("Unable to kill thread %d: %s\n", thread_id, strerror(error));
-		return;
-	}
-#endif
 
 	printf("Thread %d killed\n", thread_id);
 }
