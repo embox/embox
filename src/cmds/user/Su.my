@@ -1,5 +1,5 @@
 
-package embox.cmd
+package embox.cmd.user
 
 @Cmd(name = "su",
 	help = "Asks for superuser password and on success gives his shell",
@@ -17,7 +17,6 @@ module su {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "su.c"
 
-	depends embox.lib.LibC
 	depends embox.compat.posix.passwd
 	depends third_party.lib.linenoise
 

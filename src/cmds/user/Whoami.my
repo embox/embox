@@ -1,5 +1,5 @@
 
-package embox.cmd
+package embox.cmd.user
 
 @Cmd(name = "whoami",
 	help = "Display current user's name",
@@ -16,6 +16,5 @@ package embox.cmd
 module whoami {
 	source "whoami.c"
 
-	depends embox.lib.LibC
 	depends embox.compat.posix.passwd
 }

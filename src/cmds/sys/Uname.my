@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.sys
 
 @Cmd(name = "uname",
 	help = "Print system information",
@@ -28,7 +28,6 @@ module uname {
 	option string system = "Embox-OS"
 	option string platform = ""
 
-	depends embox.lib.LibC
 	depends embox.compat.posix.util.utsname
 	depends embox.framework.LibFramework
 }

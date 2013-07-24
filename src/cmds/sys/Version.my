@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.sys
 
 @Cmd(name = "version",
 	help = "Displays info associated with compilation",
@@ -11,7 +11,6 @@ package embox.cmd
 module version {
 	source "version.c"
 
-	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

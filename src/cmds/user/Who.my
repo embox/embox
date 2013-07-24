@@ -1,5 +1,5 @@
 
-package embox.cmd
+package embox.cmd.user
 
 @Cmd(name = "who",
 	help = "Display currently logged users",
@@ -16,7 +16,6 @@ package embox.cmd
 module who {
 	source "who.c"
 
-	depends embox.lib.LibC
 	depends embox.compat.posix.passwd
 
 	depends embox.compat.posix.utmp_api
