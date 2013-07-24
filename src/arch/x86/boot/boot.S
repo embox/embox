@@ -61,9 +61,9 @@ C_ENTRY(_start):
 	call    gdt_init
 	call    idt_init
 
-#ifndef NOSMP
+#if NCPU > 1
 	call    cpudata_init
-#endif /* !NOSMP */
+#endif /* NCPU > 1 */
 
 /* we already save eax and ebx on the stack */
 	call    multiboot_save_info

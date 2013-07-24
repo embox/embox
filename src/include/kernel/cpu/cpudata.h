@@ -9,7 +9,7 @@
 #ifndef KERNEL_CPU_CPUDATA_H_
 #define KERNEL_CPU_CPUDATA_H_
 
-#include <module/embox/kernel/cpu/cpu_api.h>
+#include <module/embox/kernel/cpu/cpudata_api.h>
 #include <hal/cpu.h>
 
 /**

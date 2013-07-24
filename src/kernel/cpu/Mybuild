@@ -10,13 +10,12 @@ module no_bkl extends bkl_api {
 
 module bkl extends bkl_api {
 	source "bkl.c"
-
-	depends cpu_api
 }
 
 module common {
 	source "common.c"
 
+	depends cpudata_api
 	depends embox.compat.posix.util.time
 }
 
@@ -24,22 +23,22 @@ module libsched {
 	source "libsched.c"
 }
 
-@DefaultImpl(onecpu)
-abstract module cpu_api {
-	depends common
+@DefaultImpl(no_cpudata)
+abstract module cpudata_api {
 }
 
-module onecpu extends cpu_api {
-	source "onecpu_impl.h"
+module no_cpudata extends cpudata_api {
+	source "no_cpudata_impl.h"
 }
 
-module ncpu extends cpu_api {
-	source "ncpu.c", "ncpu_impl.h", "ncpu.lds.S"
+module cpudata extends cpudata_api {
+	source "cpudata.c", "cpudata_impl.h", "cpudata.lds.S"
+	depends embox.lib.LibC
 }
 
 module stats {
 	source "stats.c"
 
-	depends cpu_api
+	depends common
 	depends embox.compat.posix.util.time
 }

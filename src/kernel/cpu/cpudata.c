@@ -7,7 +7,6 @@
  * @author Ilia Vaprol
  */
 
-#include <kernel/cpu/cpu.h>
 #include <kernel/cpu/cpudata.h>
 #include <string.h>
 

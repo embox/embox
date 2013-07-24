@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef KERNEL_CPU_NCPU_IMPL_H_
-#define KERNEL_CPU_NCPU_IMPL_H_
+#ifndef KERNEL_CPU_CPUDATA_IMPL_H_
+#define KERNEL_CPU_CPUDATA_IMPL_H_
 
 #ifndef __ASSEMBLER__
 
@@ -27,4 +27,4 @@ extern char __cpudata_start, __cpudata_block_end, __cpudata_end;
 
 #endif /* !__ASSEMBLER__ */
 
-#endif /* !KERNEL_CPU_NCPU_IMPL_H_ */
+#endif /* !KERNEL_CPU_CPUDATA_IMPL_H_ */
