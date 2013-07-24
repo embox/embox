@@ -30,5 +30,8 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 }
 
 struct task *task_table_get(int n) {
+	if(n < 0) {
+		return NULL;
+	}
 	return task_kernel_task();
 }

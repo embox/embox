@@ -160,4 +160,21 @@ extern int task_waitpid(pid_t pid);
 
 __END_DECLS
 
+#define task_foreach_thread(thr, task)                                    \
+	thr = task->main_thread;                                             \
+	for (struct thread *nxt = dlist_entry(thr->thread_task_link.next,    \
+			struct thread, thread_task_link);                            \
+		thr != task->main_thread;                                        \
+		thr = nxt,                                                       \
+			nxt = dlist_entry(thr->thread_task_link.next,                \
+						struct thread, thread_task_link)                 \
+		)
+
+#define task_foreach(task)                             \
+	task = task_table_get(0);                          \
+	for(int tid = 1;                                   \
+	(task != NULL);                                    \
+	task = task_table_get(task_table_get_first(tid++)) \
+	)
+
 #endif /* TASK_H_ */

@@ -20,19 +20,15 @@ static void print_usage(void) {
 	printf("Usage: ps [-a]\n");
 }
 
+
 static void print_all(void) {
-	int tid = 0;
 	struct task *task;
 
 	printf(" %3s  %20s\n", "tid", "name");
 
-	while (0 <= (tid = task_table_get_first(tid))) {
-		task = task_table_get(tid);
-		printf(" %3d  %20s\n", tid, task->task_name);
-
-		++tid;
+	task_foreach(task) {
+		printf(" %3d  %20s\n", task->tid, task->task_name);
 	}
-
 }
 
 static int exec(int argc, char **argv) {
