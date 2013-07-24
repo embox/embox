@@ -11,11 +11,12 @@
 struct indexator *indexator_init(struct indexator *indexator,
 		uint32_t start_idx, uint32_t *mask_array, size_t len_mask) {
 
-	indexator->masks = mask_array;
 	indexator->min_busy = start_idx - 1;
 	indexator->max_busy = len_mask * sizeof(mask_array);
-	indexator->capacity = len_mask * sizeof(mask_array);
+	indexator->next_idx = start_idx;
 	indexator->start = start_idx;
+	indexator->capacity = len_mask * sizeof(mask_array);
+	indexator->masks = mask_array;
 
 	memset(mask_array, 0, len_mask * 32);
 
@@ -37,7 +38,12 @@ int index_find(struct indexator * indexator, enum indexator_allocation_type allo
 	int word_offset;
 	int bit_offset;
 
-	cur_idx = indexator->min_busy + 1;
+	if (allocation_type == INDEX_ALLOC_NEXT) {
+		cur_idx = indexator->next_idx;
+	}
+	else {
+		cur_idx = indexator->min_busy + 1;
+	}
 	word_offset = cur_idx / 32;
 	bit_offset = cur_idx % 32;
 
@@ -67,7 +73,10 @@ void index_lock(struct indexator * indexator, int idx) {
 	word_offset = (idx - indexator->start) / 32;
 	bit_offset = (idx - indexator->start) % 32;
 
-	indexator->masks[word_offset] |= (1 << bit_offset);
+	if (!(indexator->masks[word_offset] & (1 << bit_offset))) {
+		indexator->masks[word_offset] |= (1 << bit_offset);
+		indexator->next_idx = idx + 1;
+	}
 }
 
 void index_unlock(struct indexator * indexator, int idx) {

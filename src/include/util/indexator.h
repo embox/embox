@@ -1,23 +1,27 @@
 /*
  * @file
  *
- * @date Oct 10, 2012
- * @author: Anton Bondarev
+ * @date 10.10.12
+ * @author Anton Bondarev
  */
 
-#ifndef INDEXATOR_H_
-#define INDEXATOR_H_
+#ifndef UTIL_INDEXATOR_H_
+#define UTIL_INDEXATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 enum indexator_allocation_type {
-	INDEX_ALLOC_MIN = 0, INDEX_ALLOC_RANDOM = 1, INDEX_ALLOC_MAX = 2
+	INDEX_ALLOC_MIN = 0,
+	INDEX_ALLOC_RANDOM = 1,
+	INDEX_ALLOC_MAX = 2,
+	INDEX_ALLOC_NEXT = 3
 };
 
 struct indexator {
 	int min_busy;
 	int max_busy;
+	int next_idx;
 
 	size_t start;
 	size_t capacity;
@@ -52,4 +56,4 @@ extern void index_unlock(struct indexator * indexator, int idx);
 
 extern void index_free(struct indexator * indexator, int idx);
 
-#endif /* INDEXATOR_H_ */
+#endif /* UTIL_INDEXATOR_H_ */

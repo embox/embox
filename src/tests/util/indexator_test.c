@@ -40,6 +40,30 @@ TEST_CASE("incremental allocating indexes") {
 	}
 }
 
+TEST_CASE("incremental allocating of next indexes") {
+	int i;
+	int idx;
+
+	for(i = 0; i < idx32.capacity; i++) {
+		idx = index_alloc(&idx32, INDEX_ALLOC_NEXT);
+		test_assert_equal(i, idx);
+	}
+}
+
+TEST_CASE("allocation next index after allocation of min index") {
+	int idx;
+
+	idx = index_alloc(&idx32, INDEX_ALLOC_MIN);
+	test_assert_equal(idx, 0);
+	idx = index_alloc(&idx32, INDEX_ALLOC_MIN);
+	test_assert_equal(idx, 1);
+
+	index_free(&idx32, 1);
+
+	idx = index_alloc(&idx32, INDEX_ALLOC_NEXT);
+	test_assert_equal(idx, 2);
+}
+
 TEST_CASE("incremental allocating indexes for indexator is less than the word ") {
 	int i;
 	int idx;
