@@ -4,7 +4,8 @@
  * @brief File System Driver wrapper for NTFS
  *
  * @date Jul 23, 2013
- * @author: inconnu
+ * @author: L'auteur est à l'avance embarassé par la qualité du code
+ *          ci-dessous donc il veut encore rester inconnu.
  */
 
 #include <fs/fs_driver.h>
@@ -13,9 +14,9 @@
 #include <time.h>
 #define __timespec_defined
 
-static inline void __x86_verificator__(void) {
+static void __x86_verificator__(void) {
 	// This is to make sure this file only compiles on x86
-	asm ("mov %%cr2, %%eax");
+	asm ("mov %cr2, %eax");
 }
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
@@ -28,6 +29,7 @@ static inline void __x86_verificator__(void) {
 
 
 static int embox_ntfs_node_create(struct node *parent_node, struct node *new_node) {
+	(void)__x86_verificator__;
 	return 0;
 }
 
