@@ -16,6 +16,9 @@
 
 EMBOX_EXAMPLE(exec);
 
+/**
+ * RPC Server constants
+ */
 #define MESSAGEPROG 0x20000099
 #define MESSAGEVERS 1
 #define PRINTMESSAGE 1
