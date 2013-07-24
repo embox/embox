@@ -165,4 +165,19 @@ diff -aur ntfs-3g_ntfsprogs-2013.1.13/include/ntfs-3g/types.h ntfs-3g/include/nt
  #include <stdint.h>
  #endif
  #ifdef HAVE_SYS_TYPES_H
- 
+diff -aur ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/unix_io.c ntfs-3g/libntfs-3g/unix_io.c
+--- ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/unix_io.c	2013-01-13 10:46:35.000000000 +0400
++++ ntfs-3g/libntfs-3g/unix_io.c	2013-07-24 17:26:11.944697135 +0400
+@@ -157,10 +157,12 @@
+ 		err = errno;
+ 		ntfs_log_perror("Failed to %s lock '%s'", NDevReadOnly(dev) ? 
+ 				"read" : "write", dev->d_name);
++                goto ignore;
+ 		if (close(DEV_FD(dev)))
+ 			ntfs_log_perror("Failed to close '%s'", dev->d_name);
+ 		goto err_out;
+ 	}
++ ignore:
+ 	
+ 	NDevSetOpen(dev);
+ 	return 0;

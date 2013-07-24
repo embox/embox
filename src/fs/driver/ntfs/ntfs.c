@@ -9,7 +9,8 @@
  */
 
 #include <fs/fs_driver.h>
-
+#include <fs/vfs.h>
+#include <limits.h>
 
 #include <time.h>
 #define __timespec_defined
@@ -37,10 +38,12 @@ static int embox_ntfs_node_delete(struct node *nod) {
 	return 0;
 }
 
-static int embox_ntfs_mount(void *dev_node, void *dir_node) {
+static int embox_ntfs_mount(void *dev, void *dir) {
 	ntfs_volume *vol;
-        /*
-     	struct node *dir_node, *dev_node;
+
+	int rc;
+	char devname[PATH_MAX];
+	struct node *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct node_fi *dev_fi;
 
@@ -58,18 +61,26 @@ static int embox_ntfs_mount(void *dev_node, void *dir_node) {
 		return -ENOTEMPTY;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create(EXT_NAME))) {
+	if ((rc = vfs_get_path_by_node(dev_node, devname))) {
+		goto error;
+	}
+
+	if (NULL == (dir_nas->fs = filesystem_create("ntfs"))) {
 		rc = ENOMEM;
 		goto error;
 	}
 
 	dir_nas->fs->bdev = dev_fi->privdata;
 
-        */
-	vol = ntfs_mount("/dev/null",0);
+	vol = ntfs_mount(devname,0);
 	(void)vol;
 
 	return 0;
+
+	error:
+	//ext2_free_fs(dir_nas);
+
+	return -rc;
 }
 
 static const struct fsop_desc ntfs_fsop = {

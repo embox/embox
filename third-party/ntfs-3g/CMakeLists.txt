@@ -16,6 +16,7 @@ ExternalProject_Add(
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
+      --enable-debug
       --enable-mount-helper=no
       --disable-ldconfig
       --disable-largefile
