@@ -20,6 +20,8 @@
 #include <shadow.h>
 #include <utmp.h>
 #include <security/smac.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include <embox/cmd.h>
 
@@ -132,6 +134,42 @@ static void *taskshell(void *data) {
 
 }
 
+static unsigned char stdin_vintr;
+static unsigned char vdisable = -1;
+
+static int fileno_vintr_disable(int fd) {
+    struct termios t;
+
+	if (-1 == tcgetattr(fd, &t)) {
+		return -errno;
+	}
+
+	stdin_vintr = t.c_cc[VINTR];
+	t.c_cc[VINTR] = vdisable;
+
+	if (-1 == tcsetattr(fd, TCSANOW, &t)) {
+		return -errno;
+	}
+
+	return 0;
+}
+
+static int fileno_vintr_enable(int fd) {
+    struct termios t;
+
+	if (-1 == tcgetattr(fd, &t)) {
+		return -errno;
+	}
+
+	t.c_cc[VINTR] = stdin_vintr;
+
+	if (-1 == tcsetattr(fd, TCSANOW, &t)) {
+		return -errno;
+	}
+
+	return 0;
+}
+
 static int login_user(const char *name, const char *cmd, char with_pass) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
 	struct passwd pwd, *result;
@@ -139,7 +177,14 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 	int tid;
 	int res;
 
+	res = fileno_vintr_disable(STDIN_FILENO);
+	if (res != 0) {
+		printf("fileno_vintr_disable failed\n");
+		goto errret;
+	}
+
 	if (with_pass && NULL == getpass_r(PASSW_PROMPT, passbuf, BUF_LEN)) {
+		res = -1;
 		goto errret;
 	}
 
@@ -149,10 +194,18 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 	}
 
 	if (!(spwd = getspnam_f(result->pw_name))) {
+		res = -1;
 		goto errret;
 	}
 
 	if (with_pass && strcmp(passbuf, spwd->sp_pwdp)) {
+		res = -1;
+		goto errret;
+	}
+
+	res = fileno_vintr_enable(STDIN_FILENO);
+	if (res != 0) {
+		printf("fileno_vintr_enable failed\n");
 		goto errret;
 	}
 
@@ -173,6 +226,10 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 
 errret:
 	sleep(3);
+
+	if (0 != fileno_vintr_enable(STDIN_FILENO)) {
+		printf("fileno_vintr_enable failed\n");
+	}
 
 	return res;
 }
