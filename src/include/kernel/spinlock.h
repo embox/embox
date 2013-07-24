@@ -14,8 +14,8 @@
 #include <module/embox/arch/libarch.h>
 #include <sys/types.h>
 
-#define SPIN_UNLOCKED 10
-#define SPIN_LOCKED   11
+#define SPIN_UNLOCKED 0
+#define SPIN_LOCKED   1
 
 /**
  * spin_trylock -- try to lock object without waiting
