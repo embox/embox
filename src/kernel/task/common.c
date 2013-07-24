@@ -16,7 +16,6 @@
 
 #include <kernel/task.h>
 #include <kernel/thread.h>
-#include <kernel/cpu.h>
 
 #include "common.h"
 
@@ -76,7 +75,7 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 	}
 
 	/* FIXME: This should be only in SMP */
-	task->affinity = (1 << NCPU) - 1;
+	task->affinity = TASK_AFFINITY_DEFAULT;
 
 	return task;
 

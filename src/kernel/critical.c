@@ -11,7 +11,7 @@
 
 #include <hal/ipl.h>
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpudata.h>
 #include <kernel/critical.h>
 
 critical_t __critical_count __cpudata__ = 0;

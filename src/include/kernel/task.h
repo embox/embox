@@ -19,6 +19,8 @@
 
 #define MAX_TASK_NAME_LEN 20
 
+#define TASK_AFFINITY_DEFAULT ((unsigned int)-1)
+
 __BEGIN_DECLS
 
 struct task_signal_table;

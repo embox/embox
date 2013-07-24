@@ -14,7 +14,7 @@
 #include <kernel/sched/sched_strategy.h>
 
 #include <module/embox/arch/smp.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 void sched_strategy_init(struct sched_strategy_data *s) {
 	dlist_head_init(&s->link);

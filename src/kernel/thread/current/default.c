@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpudata.h>
 
 struct thread;
 

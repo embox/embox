@@ -1,5 +1,5 @@
 #include <asm-generic/embox.lds.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 SECTIONS {
 	.data : {

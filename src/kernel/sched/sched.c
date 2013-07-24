@@ -35,8 +35,6 @@
 #include <profiler/tracing/trace.h>
 
 
-#include <kernel/cpu.h>
-
 #include <util/member.h>
 
 #include <embox/unit.h>

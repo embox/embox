@@ -17,7 +17,7 @@
 
 #include <hal/arch.h>
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
 #include <kernel/spinlock.h>
 

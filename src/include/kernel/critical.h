@@ -157,8 +157,8 @@
 #ifndef __ASSEMBLER__
 
 #include <linux/compiler.h>
-#include <kernel/bkl.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/bkl.h>
+#include <kernel/cpu/cpudata.h>
 
 typedef long critical_t;
 

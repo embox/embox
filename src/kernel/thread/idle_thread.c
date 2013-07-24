@@ -11,7 +11,7 @@
 #include <kernel/thread/thread_alloc.h>
 #include <hal/arch.h> /*only for arch_idle */
 #include <sys/types.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 /*
  * Function, which does nothing. For idle_thread.

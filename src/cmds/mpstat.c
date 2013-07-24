@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 EMBOX_CMD(exec);
 

@@ -7,8 +7,8 @@
  * @author Ilia Vaprol
  */
 
-#include <kernel/cpu.h>
-#include <module/embox/arch/smp.h>
+#include <kernel/cpu/cpu.h>
+#include <kernel/cpu/cpudata.h>
 #include <string.h>
 
 void cpudata_init(void) {

@@ -9,7 +9,7 @@
 #include <kernel/sched.h>
 
 #include <kernel/time/timer.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 #include <module/embox/arch/smp.h>
 
 #include <kernel/panic.h>

@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
 #include <time.h>
 

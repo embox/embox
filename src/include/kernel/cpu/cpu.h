@@ -45,27 +45,6 @@ extern clock_t cpu_get_started(unsigned int cpu_id);
 extern clock_t cpu_get_total_time(unsigned int cpu_id);
 extern clock_t cpu_get_idle_time(unsigned int cpu_id);
 
-/**
- * Get data from current CPU
- */
-#define cpudata_ptr(name) \
-	__cpudata_ptr(name)
-
-#define cpudata_var(name) \
-	(*__cpudata_ptr(&(name)))
-
-#define __cpudata_ptr(name) \
-	__cpudata_cpu_ptr(cpu_get_id(), name)
-
-/**
- * Get data from all CPUs
- */
-#define cpudata_cpu_ptr(cpu_id, name) \
-	__cpudata_cpu_ptr(cpu_id, name)
-
-#define cpudata_cpu_var(cpu_id, name) \
-	(*__cpudata_cpu_ptr(cpu_id, &(name)))
-
 #endif /* !__ASSEMBLER__ */
 
 #endif /* !KERNEL_CPU_H_ */

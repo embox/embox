@@ -8,7 +8,7 @@
  */
 
 #include <hal/ipl.h>
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 #include <kernel/spinlock.h>
 
 static spinlock_t bkl = SPIN_UNLOCKED;

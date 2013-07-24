@@ -16,7 +16,6 @@
 #include <asm/traps.h>
 #include <asm/gdt.h>
 
-#include <kernel/cpu.h>
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>

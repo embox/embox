@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpu.h>
 #include <module/embox/driver/interrupt/lapic.h>
 
 unsigned int cpu_get_id(void) {

@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_CURRENT_DEFAULT_H_
 #define KERNEL_THREAD_CURRENT_DEFAULT_H_
 
-#include <kernel/cpu.h>
+#include <kernel/cpu/cpudata.h>
 
 struct thread;
 
