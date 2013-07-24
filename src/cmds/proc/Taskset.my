@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.proc
 
 @Cmd(name = "taskset",
 	help = "report a snapshot of the current processes.",

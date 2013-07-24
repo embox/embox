@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.proc
 
 @Cmd(name = "thread",
 	help = "Interacts with threading subsystem",

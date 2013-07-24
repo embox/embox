@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.proc
 
 @Cmd(name = "nice",
 	help = "run a program with modified scheduling priority.",

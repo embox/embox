@@ -1,5 +1,4 @@
-
-package embox.cmd
+package embox.cmd.proc
 
 @Cmd(name = "kill",
 	help = "Sends signal to task",
@@ -19,7 +18,6 @@ package embox.cmd
 			Anton Kozlov
 	''')
 module kill {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "kill.c"
 
 	depends embox.compat.posix.proc.signal
