@@ -10,7 +10,7 @@
 #define KERNEL_CPU_CPUDATA_H_
 
 #include <module/embox/kernel/cpu/cpu_api.h>
-#include <kernel/cpu/cpu.h>
+#include <hal/cpu.h>
 
 /**
  * Get data from current CPU

@@ -45,6 +45,4 @@ module arch {
 
 	@NoRuntime
 	depends embox.arch.entry
-
-	depends embox.arch.x86.cpu
 }

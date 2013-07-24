@@ -4,7 +4,7 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
-module leon3 extends embox.arch.cpu {
+module leon3 {
 	option number nwindows=8
 }
 

@@ -3,6 +3,3 @@ package embox.arch.ppc
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
 }
-
-module cpu extends embox.arch.cpu {
-}

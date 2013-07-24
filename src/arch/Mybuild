@@ -5,7 +5,11 @@ module system {
 	option number core_freq
 }
 
-abstract module cpu { }
+@Mandatory
+@DefaultImpl(embox.arch.generic.onecpu)
+abstract module cpu {
+	option number cpu_count
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.interrupt_stub)

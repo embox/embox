@@ -5,7 +5,6 @@ module locore extends embox.arch.locore {
 	source "exception_table.S"
 
 	depends embox.arch.arm.kernel.head
-	depends embox.arch.arm.cortexm3.cpu
 }
 
 module interrupt extends embox.arch.interrupt {

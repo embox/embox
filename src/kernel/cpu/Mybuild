@@ -26,17 +26,14 @@ module libsched {
 
 @DefaultImpl(onecpu)
 abstract module cpu_api {
-	option number cpu_count
 	depends common
 }
 
 module onecpu extends cpu_api {
-	option number cpu_count = 1
 	source "onecpu_impl.h"
 }
 
 module ncpu extends cpu_api {
-	option number cpu_count = 2
 	source "ncpu.c", "ncpu_impl.h", "ncpu.lds.S"
 }
 

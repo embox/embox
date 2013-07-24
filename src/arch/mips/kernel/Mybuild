@@ -27,8 +27,8 @@ module exception {
 	source "exception.c"
 }
 
-module interrupt {
-	source "interrupt.c"
+module interrupt extends embox.arch.interrupt {
+	source "interrupt.c", "ipl_impl.h"
 	depends exception
 	depends embox.kernel.irq
 }

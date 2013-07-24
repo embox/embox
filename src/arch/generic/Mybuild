@@ -27,3 +27,8 @@ module nosmp extends embox.arch.smp {
 module nocontext extends embox.arch.context {
 	source "nocontext.h"
 }
+
+module onecpu extends embox.arch.cpu {
+	option number cpu_count = 1
+	source "onecpu.h"
+}

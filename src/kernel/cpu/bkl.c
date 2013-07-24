@@ -8,6 +8,7 @@
  */
 
 #include <hal/ipl.h>
+#include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/spinlock.h>
 

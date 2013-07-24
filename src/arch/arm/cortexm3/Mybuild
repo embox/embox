@@ -1,7 +1,0 @@
-
-package embox.arch.arm.cortexm3
-
-module cpu extends embox.arch.cpu {
-
-	source "include/asm/hal/ipl.h"
-}

@@ -10,26 +10,13 @@
 #ifndef KERNEL_CPU_H_
 #define KERNEL_CPU_H_
 
-#include <framework/mod/options.h>
 #include <module/embox/kernel/cpu/cpu_api.h>
-
-/* FIXME hack to get abstract module variable */
-#if OPTION_MODULE_DEFINED(embox__kernel__cpu__onecpu, NUMBER, cpu_count)
-#define NCPU OPTION_MODULE_GET(embox__kernel__cpu__onecpu, NUMBER, cpu_count)
-#elif OPTION_MODULE_DEFINED(embox__kernel__cpu__ncpu, NUMBER, cpu_count)
-#define NCPU OPTION_MODULE_GET(embox__kernel__cpu__ncpu, NUMBER, cpu_count)
-#endif
 
 #ifndef __ASSEMBLER__
 
 #include <sys/types.h>
 
 struct thread;
-
-/**
- * Get cpu id
- */
-extern unsigned int cpu_get_id(void);
 
 /**
  * Common CPU functions

@@ -14,8 +14,4 @@
 #define __cpudata_cpu_ptr(cpu_id, name) \
 	(name)
 
-static inline unsigned int cpu_get_id(void) {
-	return 0;
-}
-
 #endif /* !KERNEL_CPU_ONECPU_IMPL_H_ */
