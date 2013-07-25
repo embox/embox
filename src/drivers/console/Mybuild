@@ -17,7 +17,7 @@ module fbcon {
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.keyboard.keyboard
 	depends mpx_simple
-	depends embox.cmd.login
+	depends embox.cmd.user.login //TODO why it required?
 
 	depends embox.cmd.sh.tish
 }

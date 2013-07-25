@@ -20,7 +20,6 @@ package embox.cmd.proc
 module thread {
 	source "thread.c"
 
-	depends embox.lib.LibC
 	depends embox.kernel.thread.core
 	depends embox.kernel.sched.sched
 	depends embox.compat.posix.util.getopt

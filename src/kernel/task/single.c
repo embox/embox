@@ -35,3 +35,7 @@ struct task *task_table_get(int n) {
 	}
 	return task_kernel_task();
 }
+
+int task_table_get_first(int since) {
+	return 0;
+}
