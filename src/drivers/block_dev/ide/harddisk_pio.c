@@ -90,6 +90,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 		/* Advance to next */
 		sectsleft -= nsects;
 		bufp += nsects * SECTOR_SIZE;
+		blkno += nsects; /*WTF?*/
 	}
 
 	/* Cleanup */
@@ -183,6 +184,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		/* Advance to next */
 		sectsleft -= nsects;
 		bufp += nsects * SECTOR_SIZE;
+		blkno += nsects; /*WTF?*/
 	}
 
 	/* Cleanup */
