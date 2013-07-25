@@ -56,12 +56,16 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 			break;
 		}
 
+#if 0
 		/* Calculate maximum number of sectors we can transfer */
 		if (sectsleft > 256) {
 			nsects = 256;
 		} else {
 			nsects = sectsleft;
 		}
+#else
+		nsects = 1;
+#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -126,12 +130,16 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			hdc->result = -EIO;
 			break;
 		}
+#if 0
 		/* Calculate maximum number of sectors we can transfer */
 		if (sectsleft > 256) {
 			nsects = 256;
 		} else {
 			nsects = sectsleft;
 		}
+#else
+		nsects = 1;
+#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
