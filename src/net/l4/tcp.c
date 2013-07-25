@@ -28,6 +28,7 @@
 #include <sys/time.h>
 #include <net/socket/ip_port.h>
 #include <net/if_ether.h>
+#include <util/sys_log.h>
 
 #include <kernel/event.h>
 #include <kernel/time/timer.h>
@@ -556,6 +557,7 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
 			if (tcp_conn_wait_len(sock) >= sock.tcp_sk->conn_wait_max) {
+				LOG_DEBUG("tcp_st_listen", "conn_wait is too big");
 				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
@@ -814,6 +816,7 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 	switch (sock.sk->state) {
 	case TCP_TIMEWAIT: /* User already closed sock, it waiting to be collected by
 			       tcp timer, can do it now*/
+		/* XXX Why it's need? */
 		return TCP_RET_FREE;
 	case TCP_CLOSED: /* TODO */
 	case TCP_LISTEN: /* TODO */
@@ -825,6 +828,10 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 			break; /* invalid reset */
 		}
 		tcp_set_st(sock, TCP_CLOSED);
+		if (!list_empty(&sock.tcp_sk->conn_wait)) {
+			list_del_init(&sock.tcp_sk->conn_wait);
+			return TCP_RET_FREE;
+		}
 		break;
 	}
 
