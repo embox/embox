@@ -43,7 +43,7 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
 #define THREAD_FLAG_SUSPENDED        (0x1 << 2) /**< Initially suspended. */
 
-/**< Create thread with parent priority */
+/** Create thread with parent priority */
 #define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
 
 /** Use with THREAD_FLAG_PRIORITY_INHERIT flag */
@@ -51,7 +51,7 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
 /** Create task without attaching to a task. */
-#define THREAD_FLAG_NOTASK      (0x1 << 6)
+#define THREAD_FLAG_NOTASK           (0x1 << 6)
 
 /** Default thread affinity mask */
 #define THREAD_AFFINITY_NONE         ((unsigned int)-1)
@@ -127,7 +127,6 @@ typedef __thread_priority_t thread_priority_t;
  *     created in a detached state. If used apart #THREAD_FLAG_SUSPENDED flag
  *     then a pointer to the created thread is not stored into @a p_thread
  *     to avoid possible race conditions of using that pointer.
- * TODO memory allocation flags -- Eldar
  *
  * @param run
  *   The thread start routine. If it returns, the effect is as if there was an
@@ -150,10 +149,27 @@ typedef __thread_priority_t thread_priority_t;
 extern int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg);
 
-//TODO describe it
+/**
+ * This is a kernel internal function. It use only for initializing field of a
+ * thread structure in create_thread function and function created special
+ * threads (boot, idle, etc.)
+ *
+ * @param t - pointer of the thread structure
+ * @param flags - the same in create_thread()
+ * @param run - the same in create_thread()
+ * @param arg - the same in create_thread()
+ */
 extern void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);
 
+/**
+ * Marks the thread identified by thread as detached. When a detached
+ * thread terminates, its resources are automatically released back to the
+ * system without the need for another thread to join with the terminated
+ * thread.
+ *
+ * @param thread want be detach
+ */
 extern int thread_detach(struct thread *thread);
 
 /**
@@ -174,8 +190,19 @@ extern int thread_detach(struct thread *thread);
  */
 extern int thread_join(struct thread *thread, void **p_ret);
 
+/**
+ * Called from thread_trampoline() when thread finish executing its user handler
+ * or from some place in the thread if you want to finish thread. This call
+ * terminate thread freeing its resources and reports return code joined thread
+ * if it existed.
+ *
+ * @param ret - return code
+ */
 extern void __attribute__((noreturn)) thread_exit(void *ret);
 
+/** Causes the calling thread to relinquish the CPU. The thread is moved to
+ * the end of the queue for its static priority  and  a new thread gets to run.
+ */
 extern void thread_yield(void);
 
 /**

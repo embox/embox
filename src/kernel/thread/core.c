@@ -165,9 +165,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	assert(t->stack);
 	assert(t->stack_sz);
 
-	t->id = id_counter++;
+	t->id = id_counter++; /* setup thread ID */
 
-	dlist_init(&t->thread_task_link); /* default unlink value */
+	dlist_init(&t->thread_link); /* default unlink value */
 
 	t->state = thread_state_init();
 
@@ -214,7 +214,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	 */
 	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 
-	sched_strategy_init(&t->sched);
+	sched_strategy_init(&t->sched_priv);
 
 	t->affinity = THREAD_AFFINITY_NONE; /* TODO for smp */
 
@@ -262,6 +262,7 @@ int thread_join(struct thread *t, void **p_ret) {
 	void *join_ret;
 
 	assert(t);
+	assert(!t->joined);
 
 	if (t == current) {
 		return -EDEADLK;
@@ -271,7 +272,6 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			assert(!t->joined); //TODO may be it should be IF
 			t->joined = current;
 
 			sched_prepare_wait(NULL, NULL);
@@ -294,6 +294,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 int thread_detach(struct thread *t) {
 	assert(t);
+	assert(!t->joined);
 
 	sched_lock();
 	{
@@ -325,10 +326,6 @@ int thread_launch(struct thread *t) {
 			res = -ESRCH;
 			goto out;
 		}
-
-		/* running time */
-		t->running_time = 0;
-		t->last_sync = clock();
 
 		sched_start(t);
 	}

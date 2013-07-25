@@ -60,12 +60,12 @@ static inline int in_sched_locked(void) {
 //TODO this is bad place for work with thread state
 int sched_cpu_init(struct thread *current) {
 
-	current->runq = &rq;
 	current->state = thread_state_do_activate(current->state);
 	current->state = thread_state_do_oncpu(current->state);
-
-	current->last_sync = clock();
 	thread_set_current(current);
+
+	current->running_time = 0;
+	current->last_sync = clock();
 
 	return 0;
 }
@@ -87,7 +87,12 @@ int sched_init(struct thread *idle, struct thread *current) {
 }
 
 void sched_start(struct thread *t) {
+	assert(t);
 	assert(!in_harder_critical());
+
+	/* setup thread running time */
+	t->running_time = 0;
+	t->last_sync = clock();
 
 	sched_lock();
 	{
@@ -246,7 +251,7 @@ int sched_change_scheduling_priority(struct thread *thread,
 		assert(!thread_state_exited(thread->state));
 
 		if (thread_state_running(thread->state)) {
-			post_switch_if(runq_change_priority(thread->runq, thread, new_priority));
+			post_switch_if(runq_change_priority(&rq, thread, new_priority));
 		}
 		thread_priority_set(thread, new_priority);
 

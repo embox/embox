@@ -11,7 +11,7 @@
 
 #include <util/member.h>
 
-// #include __impl_x(util/slist_impl.h)
+
 
 struct slist_link {
 	struct slist_link *next;

@@ -23,7 +23,6 @@
 
 struct thread;
 struct event;
-struct sleepq;
 
 /**
  * Initializes scheduler.
@@ -66,7 +65,7 @@ extern void sched_start(struct thread *thread);
  * Makes exit thread and removes thread from scheduler.
  */
 extern void sched_finish(struct thread *thread);
-
+#if 0
 /**
  * Makes sleep the current thread and puts it in sleeping queue.
  * Execution is suspended until sched_wake_one() or sched_wake_all()
@@ -122,7 +121,9 @@ extern void sched_wake_one(struct sleepq *sleepq);
  *   The sleeping queue.
  */
 extern void sched_wake_all(struct sleepq *sleepq);
+#endif
 
+#if 0
 /**
  * Changes priority of the thread.
  *
@@ -133,7 +134,7 @@ extern void sched_wake_all(struct sleepq *sleepq);
  */
 extern void sched_set_priority(struct thread *thread,
 		sched_priority_t new_priority);
-
+#endif
 /**
  * Changes scheduling priority of the thread.
  *
@@ -166,8 +167,10 @@ extern void sched_post_switch(void);
 extern int sched_tryrun(struct thread *thread);
 
 extern void sched_thread_notify(struct thread *thread, int result);
+
 extern void sched_prepare_wait(notify_handler on_notified, void *data);
 extern void sched_cleanup_wait(void);
+
 extern int sched_wait(unsigned long timeout);
 extern int sched_wait_locked(unsigned long timeout);
 

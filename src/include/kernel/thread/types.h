@@ -26,7 +26,6 @@ typedef unsigned int __thread_state_t;
 
 
 struct runq;
-struct sleepq;
 
 struct thread {
 	__thread_state_t   state;         /**< Current state. */
@@ -42,17 +41,12 @@ struct thread {
 	void              *stack;         /**< Allocated thread stack buffer. */
 	size_t             stack_sz;      /**< Stack size. */
 
-	union {
-		struct runq    *runq;      /**< For running/ready state. */
-		struct sleepq  *sleepq;    /**< For sleeping state. */
-	} /* unnamed */;
-
 	__thread_id_t      id;            /**< Unique identifier. */
 
 	struct thread_priority thread_priority;
 
 	struct task       *task;          /**< Task belong to. */
-	struct dlist_head  thread_task_link;/**<list's link holding task threads. */
+	struct dlist_head  thread_link;   /**<list's link holding task threads. */
 
 	clock_t            running_time;  /**< Running time of thread in clocks. */
 	clock_t            last_sync;     /**< Last recalculation of running time.*/
@@ -61,7 +55,8 @@ struct thread {
 
 	struct wait_data   wait_data;
 
-	struct sched_strategy_data sched; /**< Scheduler-private data. */
+	struct sched_strategy_data sched_priv; /**< Scheduler-private data. */
+
 //TODO this field must be deleted
 	struct mutex      *mutex_waiting; /**< Mutex we are waiting for (if any). */
 

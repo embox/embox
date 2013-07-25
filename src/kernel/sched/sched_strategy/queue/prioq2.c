@@ -32,12 +32,12 @@ void runq_queue_init(runq_queue_t *queue) {
 }
 
 void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched.link,
+	dlist_add_prev(&thread->sched_priv.link,
 			&queue->list[thread->thread_priority.sched_priority]);
 }
 
 void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
-	dlist_del(&thread->sched.link);
+	dlist_del(&thread->sched_priv.link);
 }
 
 struct thread *runq_queue_extract(runq_queue_t *queue) {
@@ -48,12 +48,12 @@ struct thread *runq_queue_extract(runq_queue_t *queue) {
 #ifdef NOSMP
 		if (!dlist_empty(&queue->list[i])) {
 			thread = dlist_entry(queue->list[i].next, struct thread,
-					sched.link);
+					sched_priv.link);
 		}
 #else /* NOSMP */
 		struct thread *t, *nxt;
 		unsigned int mask = 1 << cpu_get_id();
-		dlist_foreach_entry(t, nxt, &queue->list[i], sched.link) {
+		dlist_foreach_entry(t, nxt, &queue->list[i], sched_priv.link) {
 			/* Checking the affinity */
 			if ((thread_get_affinity(t) & mask)
 				&& (task_get_affinity(t->task) & mask)) {

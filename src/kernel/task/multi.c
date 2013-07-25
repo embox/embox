@@ -232,8 +232,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		if(!dlist_empty(&task->main_thread->thread_task_link)) {
-			dlist_foreach_entry(thread, next, &task->main_thread->thread_task_link, thread_task_link) {
+		if(!dlist_empty(&task->main_thread->thread_link)) {
+			dlist_foreach_entry(thread, next, &task->main_thread->thread_link, thread_link) {
 				thread_terminate(thread);
 			}
 		}

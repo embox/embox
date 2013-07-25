@@ -27,7 +27,7 @@ void task_stdsig_send(struct task *task, int sig) {
 		return;
 	}
 
-	dlist_foreach_entry(th, tmp, &task->main_thread->thread_task_link, thread_task_link) {
+	dlist_foreach_entry(th, tmp, &task->main_thread->thread_link, thread_link) {
 		if (-1 != (res = sched_tryrun(th))) {
 			return;
 		}

@@ -113,7 +113,7 @@ int task_add_thread(struct task * task, struct thread *thread) {
 	}
 
 	/* insert new thread to the list */
-	dlist_add_next(dlist_head_init(&thread->thread_task_link), &task->main_thread->thread_task_link);
+	dlist_add_next(dlist_head_init(&thread->thread_link), &task->main_thread->thread_link);
 	thread->task = task;
 
 	return ENOERR;
@@ -133,12 +133,12 @@ int task_remove_thread(struct task * task, struct thread *thread) {
 		return -EBUSY;
 	}
 
-	if(dlist_empty(&task->main_thread->thread_task_link)) {
+	if(dlist_empty(&task->main_thread->thread_link)) {
 		return -EBUSY;
 	}
 #endif
 
-	dlist_del(&thread->thread_task_link);
+	dlist_del(&thread->thread_link);
 
 	return ENOERR;
 }
