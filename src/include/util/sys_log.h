@@ -52,5 +52,7 @@ extern void show_log(unsigned int count, bool *disp_types);
 		func_name, LT_ERROR)
 #define LOG_WARN(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
 		func_name, LT_WARNING)
+#define LOG_DEBUG(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
+		func_name, LT_DEBUG)
 
 #endif /* UTIL_DEBUG_MSG_H_ */
