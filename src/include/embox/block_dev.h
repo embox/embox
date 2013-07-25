@@ -74,7 +74,7 @@ extern dev_t block_dev_open(char *name);
 extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
 extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
 extern int block_dev_read(void *bdev, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_write(void *bdev, char *buffer, size_t count, blkno_t blkno);
+extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);

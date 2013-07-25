@@ -223,7 +223,7 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	return bdev->driver->read(bdev, buffer, count, blkno);
 }
 
-int block_dev_write(void *dev, char *buffer, size_t count, blkno_t blkno) {
+int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
 
 	if (NULL == dev) {
@@ -234,7 +234,7 @@ int block_dev_write(void *dev, char *buffer, size_t count, blkno_t blkno) {
 		return -ENOSYS;
 	}
 
-	return bdev->driver->write(bdev, buffer, count, blkno);
+	return bdev->driver->write(bdev, (char *)buffer, count, blkno);
 }
 
 int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
