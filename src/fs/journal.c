@@ -12,7 +12,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <mem/objalloc.h>
+
 #include <fs/journal.h>
+#include <fs/bcache.h>
 
 journal_t *journal_create(journal_fs_specific_t *spec) {
     journal_t *jp;
@@ -97,10 +99,25 @@ int journal_checkpoint_transactions(journal_t *jp) {
 }
 
 int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
+	struct buffer_head *bh;
+	int i, blkcount;
 	transaction_t *t = handle->h_transaction;
+	journal_t *jp = t->t_journal;
 
 	if (0 == handle->h_buffer_credits) {
 		return -1;
+	}
+
+	blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
+
+	/* Write block into cache */
+	for (i = 0; i < blkcount; i++) {
+		bh = bcache_getblk(jp->j_dev, journal_jb2db(jp, block->blocknr) + i, jp->j_disk_sectorsize);
+		if (buffer_new(bh)) {
+			buffer_clear_flag(bh, BH_NEW);
+		}
+		buffer_set_flag(bh, BH_DIRTY);
+		memcpy(bh->data, block->data + i * jp->j_disk_sectorsize, jp->j_disk_sectorsize);
 	}
 
 	dlist_add_prev(&block->b_next, &t->t_buffers);

@@ -92,7 +92,7 @@ typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
  * @return error code
  * @retval 0 on success
  */
-typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start);
+typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start, size_t sector_size);
 /**
  * Commit current running transaction.
  *
@@ -271,6 +271,7 @@ struct journal_s {
      */
     block_dev_t *j_dev;
     size_t j_blocksize;
+    size_t j_disk_sectorsize;
     block_t j_blk_offset;
 
     /* Total maximum capacity of the journal region on disk. */
@@ -303,9 +304,9 @@ extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, s
 extern int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);
 
 #define journal_db2jb(jp, block) \
-		block / (jp->j_blocksize / SECTOR_SIZE)
+		block / (jp->j_blocksize / jp->j_disk_sectorsize)
 
 #define journal_jb2db(jp, block) \
-		block * (jp->j_blocksize / SECTOR_SIZE)
+		block * (jp->j_blocksize / jp->j_disk_sectorsize)
 
 #endif /* FS_JOURNAL_H */

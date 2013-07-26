@@ -134,7 +134,7 @@ typedef struct ext3_journal_specific_s {
     uint8_t j_uuid[16];
 } ext3_journal_specific_t;
 
-extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start);
+extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, size_t disk_sectorsize);
 extern int ext3_journal_commit(journal_t *jp);
 extern int ext3_journal_update(journal_t *jp);
 extern uint32_t ext3_journal_bmap(journal_t *jp, block_t block);

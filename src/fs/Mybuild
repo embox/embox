@@ -63,4 +63,13 @@ module journal {
 	source "journal.c"
 
 	depends embox.lib.LibC
+	depends buffer_cache
+}
+
+module buffer_cache {
+	source "bcache.c"
+	option number bcache_size=128
+
+	depends embox.lib.LibC
+	depends embox.mem.pool
 }
