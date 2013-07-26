@@ -15,7 +15,7 @@ E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/uuid/libuuid.a
 E2FSPROGS_FLAGS     = $(E2FSPROGS_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
-EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
+#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/e2fsprogs/e2fsprogs_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
