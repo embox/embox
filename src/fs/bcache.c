@@ -32,7 +32,7 @@ struct buffer_head *bcache_getblk(block_dev_t *bdev, int block, size_t size) {
 		if (bh) {
 			return bh;
 		}
-		if (!graw_buffers(bdev, block, size)) {
+		if (-1 == graw_buffers(bdev, block, size)) {
 			free_more_memory(size);
 		}
 	}
@@ -46,15 +46,19 @@ int bcache_flush_blk(struct buffer_head *bh) {
 
 static void free_more_memory(size_t size) {
 	struct buffer_head *bh;
+	struct buffer_head **key;
 
-	while (size > 0) {
-		size -= bh->blocksize;
-		bh = hashtable_get(buffer_cache, hashtable_get_key_first(buffer_cache));
+	while ((int)size > 0) {
+		key = (struct buffer_head **)hashtable_get_key_first(buffer_cache);
+		bh = hashtable_get(buffer_cache, *key);
+
 		if (buffer_dirty(bh)) {
 			bcache_flush_blk(bh);
 		}
-		hashtable_del(buffer_cache, bh);
+		hashtable_del(buffer_cache, *key);
+		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
+		size -= bh->blocksize;
 	}
 }
 
@@ -68,14 +72,19 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	bh->bdev = bdev;
 	bh->block = block;
 	bh->blocksize = size;
-	bh->flags = BH_NEW;
-	bh->data = malloc(size);
+	bh->data = malloc(size); /* TODO kmalloc */
+	buffer_set_flag(bh, BH_NEW);
 
 	if (!bh->data) {
+		pool_free(&buffer_head_pool, bh);
 		return -1;
 	}
 
-	hashtable_put(buffer_cache, bh, bh);
+	if (0 > hashtable_put(buffer_cache, bh, bh)) {
+		free(bh->data);
+		pool_free(&buffer_head_pool, bh);
+		return -1;
+	}
 
 	return 0;
 }

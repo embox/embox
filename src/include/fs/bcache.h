@@ -16,9 +16,12 @@
 #define BH_LOCKED 0x00000002
 #define BH_DIRTY  0x00000004
 
-#define buffer_new(bh) (bh->flags | BH_NEW)
-#define buffer_locked(bh) (bh->flags | BH_LOCKED)
-#define buffer_dirty(bh) (bh->flags | BH_DIRTY)
+#define buffer_new(bh) (bh->flags & BH_NEW)
+#define buffer_locked(bh) (bh->flags & BH_LOCKED)
+#define buffer_dirty(bh) (bh->flags & BH_DIRTY)
+
+#define buffer_set_flag(bh, flag) bh->flags |= flag
+#define buffer_clear_flag(bh, flag) bh->flags &= ~flag
 
 struct buffer_head {
 	block_dev_t *bdev;
