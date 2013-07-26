@@ -97,8 +97,8 @@ typedef struct tcp_sock {
 	struct list_head conn_wait; /* Queue of incoming connection */
 	size_t conn_wait_max;       /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */
-	struct timeval last_activity;   /* The time when last message was sent */
-	useconds_t oper_timeout;    /* Time out for socket functions */
+	struct timeval activity_time;   /* The time when last message was sent */
+	struct timeval sync_time;   /* The time when synchronization started */
 } tcp_sock_t;
 
 #if 0
@@ -113,7 +113,7 @@ enum {
 #define TCP_TIMER_FREQUENCY   1000  /* Frequency for tcp_tmr_default */
 #define TCP_TIMEWAIT_DELAY    2000  /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000  /* Delay between rexmitting */
-#define TCP_OPER_TIMEOUT      5000  /* Time-out */
+#define TCP_SYNC_TIMEOUT      1000  /* Synchronization timeout */
 
 #define TCP_WINDOW_DEFAULT    16384 /* Default size of widnow */
 

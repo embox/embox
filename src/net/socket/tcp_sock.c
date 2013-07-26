@@ -54,8 +54,7 @@ static int tcp_init(struct sock *sk) {
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 	sock.tcp_sk->conn_wait_max = 0;
 	sock.tcp_sk->lock = 0;
-	timerclear(&sock.tcp_sk->last_activity);
-	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
+	timerclear(&sock.tcp_sk->activity_time);
 
 	return 0;
 }
@@ -177,7 +176,7 @@ static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
 			tcp_get_now(&started);
 			ret = 0;
 			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
-				if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
+				if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
 					ret = -ETIMEDOUT;
 					break;
 				}
@@ -282,7 +281,7 @@ static int tcp_accept(struct sock *sk,
 		/* wait until something happened */
 		tcp_get_now(&started);
 		while (tcp_st_status(newsock) == TCP_ST_NONSYNC) {
-			if (tcp_is_expired(&started, sock.tcp_sk->oper_timeout)) {
+			if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
 				tcp_free_sock(newsock);
 				return -ETIMEDOUT;
 			}

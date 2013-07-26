@@ -263,6 +263,8 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	switch (new_state) {
 	case TCP_SYN_SENT:
 	case TCP_SYN_RECV:
+		tcp_get_now(&sock.tcp_sk->sync_time); /* set when SYN sent */
+		/* fallthrough */
 	case TCP_FINWAIT_1:
 	case TCP_LASTACK:
 		sock.tcp_sk->ack_flag = sock.tcp_sk->self.seq + 1;
@@ -362,7 +364,7 @@ static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	/* check time wait */
 	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY)
-			&& !tcp_is_expired(&sock.tcp_sk->last_activity, TCP_REXMIT_DELAY)) {
+			&& !tcp_is_expired(&sock.tcp_sk->activity_time, TCP_REXMIT_DELAY)) {
 		return;
 	}
 
@@ -396,7 +398,7 @@ static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 
-	tcp_get_now(&sock.tcp_sk->last_activity); /* set last activity */
+	tcp_get_now(&sock.tcp_sk->activity_time); /* set last activity */
 
 	tcp_xmit(sock, skb_send);
 }
@@ -1103,7 +1105,7 @@ static int tcp_rcv_tester_soft(const struct sock *sk,
  */
 static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 	enum tcp_ret_code ret;
-	tcp_get_now(&sock.tcp_sk->last_activity); /* set last activity */
+	tcp_get_now(&sock.tcp_sk->activity_time); /* set last activity */
 
 	ret = tcp_handle(sock, skb, pre_process);
 
@@ -1140,7 +1142,7 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 
 static void tcp_tmr_timewait(union sock_pointer sock) {
 	assert(sock.sk->state == TCP_TIMEWAIT);
-	if (tcp_is_expired(&sock.tcp_sk->last_activity, TCP_TIMEWAIT_DELAY)) {
+	if (tcp_is_expired(&sock.tcp_sk->activity_time, TCP_TIMEWAIT_DELAY)) {
 		tcp_set_st(sock, TCP_CLOSED);
 		debug_print(7, "TIMER: tcp_tmr_timewait: release sk %p\n", sock.tcp_sk);
 		sock_release(sock.sk);
@@ -1159,7 +1161,15 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 	sock_foreach(sock.sk, tcp_sock_ops) {
 		if (sock.sk->state == TCP_TIMEWAIT) {
 			tcp_tmr_timewait(sock);
-		} else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
+		}
+		else if ((tcp_st_status(sock) == TCP_ST_NONSYNC)
+				&& !list_empty(&sock.tcp_sk->conn_wait)
+				&& tcp_is_expired(&sock.tcp_sk->sync_time,
+					TCP_SYNC_TIMEOUT)) {
+			list_del_init(&sock.tcp_sk->conn_wait);
+			sock_release(sock.sk);
+		}
+		else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
 			tcp_tmr_rexmit(sock);
 		}
 	}
