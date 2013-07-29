@@ -12,12 +12,9 @@
 #include <module/embox/kernel/sched/sched_policy/queue/api.h>
 
 struct thread;
-struct sys_timer;
-
 struct runq {
 	runq_queue_t queue;
 
-	//struct sys_timer *tick_timer;
 };
 
 

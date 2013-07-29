@@ -250,14 +250,4 @@ extern thread_priority_t thread_get_priority(struct thread *thread);
  */
 extern clock_t thread_get_running_time(struct thread *thread);
 
-/*
- * for SMP
- */
-static inline void thread_set_affinity(struct thread *thread, unsigned int affinity) {
-	thread->affinity = affinity;
-}
-static inline unsigned int thread_get_affinity(struct thread *thread) {
-	return thread->affinity;
-}
-
 #endif /* KERNEL_THREAD_API_H_ */
