@@ -1,6 +1,6 @@
 diff -aur e2fsprogs-1.42.8/Makefile.in e2fsprogs/Makefile.in
 --- e2fsprogs-1.42.8/Makefile.in	2012-07-06 17:37:27.000000000 +0400
-+++ e2fsprogs/Makefile.in	2013-07-26 20:11:29.501778627 +0400
++++ e2fsprogs/Makefile.in	2013-07-29 13:50:11.839242895 +0400
 @@ -15,9 +15,12 @@
  @BLKID_CMT@BLKID_LIB_SUBDIR= lib/blkid
  @QUOTA_CMT@QUOTA_LIB_SUBDIR= lib/quota
@@ -50,7 +50,7 @@ diff -aur e2fsprogs-1.42.8/Makefile.in e2fsprogs/Makefile.in
  
 diff -aur e2fsprogs-1.42.8/aclocal.m4 e2fsprogs/aclocal.m4
 --- e2fsprogs-1.42.8/aclocal.m4	2012-12-23 06:20:13.000000000 +0400
-+++ e2fsprogs/aclocal.m4	2013-07-26 20:11:29.501778627 +0400
++++ e2fsprogs/aclocal.m4	2013-07-29 13:50:11.839242895 +0400
 @@ -405,9 +405,8 @@
    AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h stddef.h \
  stdlib.h string.h unistd.h sys/param.h])
@@ -67,28 +67,30 @@ Only in e2fsprogs: autom4te.cache
 Only in e2fsprogs: configure
 diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
 --- e2fsprogs-1.42.8/configure.in	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/configure.in	2013-07-26 20:11:29.501778627 +0400
-@@ -840,12 +840,7 @@
++++ e2fsprogs/configure.in	2013-07-29 13:51:48.121283569 +0400
+@@ -840,43 +840,21 @@
  AC_CHECK_HEADERS(m4_flatten([
  	dirent.h
  	errno.h
 -	execinfo.h
 -	getopt.h
- 	malloc.h
+-	malloc.h
 -	mntent.h
 -	paths.h
 -	semaphore.h
  	setjmp.h
  	signal.h
  	stdarg.h
-@@ -855,25 +850,12 @@
- 	termio.h
+ 	stdint.h
+ 	stdlib.h
+ 	termios.h
+-	termio.h
  	unistd.h
  	utime.h
 -	linux/falloc.h
 -	linux/fd.h
 -	linux/major.h
- 	net/if_dl.h
+-	net/if_dl.h
  	netinet/in.h
 -	sys/disklabel.h
 -	sys/file.h
@@ -106,8 +108,11 @@ diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
 -	sys/sysmacros.h
  	sys/time.h
  	sys/types.h
- 	sys/un.h
-@@ -885,7 +867,7 @@
+-	sys/un.h
+ 	sys/wait.h
+ ]))
+ AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
+@@ -885,7 +863,7 @@
  #include <sys/queue.h>
  #endif
  ]])
@@ -116,7 +121,7 @@ diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
  [[
  #if HAVE_SYS_TYPES_H
  #include <sys/types.h>
-@@ -1012,50 +994,13 @@
+@@ -1012,50 +990,13 @@
  fi
  dnl
  AC_CHECK_FUNCS(m4_flatten([
@@ -169,7 +174,7 @@ diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
  dnl Check to see if -lsocket is required (solaris) to make something
 diff -aur e2fsprogs-1.42.8/e2fsck/crc32defs.h e2fsprogs/e2fsck/crc32defs.h
 --- e2fsprogs-1.42.8/e2fsck/crc32defs.h	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/e2fsck/crc32defs.h	2013-07-26 20:12:08.346530663 +0400
++++ e2fsprogs/e2fsck/crc32defs.h	2013-07-29 13:50:11.843242978 +0400
 @@ -55,6 +55,8 @@
  #define __le32_to_cpu(x) (x)
  #endif
@@ -187,7 +192,7 @@ diff -aur e2fsprogs-1.42.8/e2fsck/crc32defs.h e2fsprogs/e2fsck/crc32defs.h
 +#endif
 diff -aur e2fsprogs-1.42.8/e2fsck/journal.c e2fsprogs/e2fsck/journal.c
 --- e2fsprogs-1.42.8/e2fsck/journal.c	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/e2fsck/journal.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/e2fsck/journal.c	2013-07-29 13:50:11.843242978 +0400
 @@ -27,6 +27,8 @@
  #include "problem.h"
  #include "uuid/uuid.h"
@@ -199,7 +204,7 @@ diff -aur e2fsprogs-1.42.8/e2fsck/journal.c e2fsprogs/e2fsck/journal.c
  #endif
 diff -aur e2fsprogs-1.42.8/e2fsck/recovery.c e2fsprogs/e2fsck/recovery.c
 --- e2fsprogs-1.42.8/e2fsck/recovery.c	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/e2fsck/recovery.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/e2fsck/recovery.c	2013-07-29 13:50:11.843242978 +0400
 @@ -24,6 +24,8 @@
  #include <linux/slab.h>
  #endif
@@ -211,7 +216,7 @@ diff -aur e2fsprogs-1.42.8/e2fsck/recovery.c e2fsprogs/e2fsck/recovery.c
   * the different passes can carry information between them.
 diff -aur e2fsprogs-1.42.8/e2fsck/revoke.c e2fsprogs/e2fsck/revoke.c
 --- e2fsprogs-1.42.8/e2fsck/revoke.c	2012-07-06 17:37:27.000000000 +0400
-+++ e2fsprogs/e2fsck/revoke.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/e2fsck/revoke.c	2013-07-29 13:50:11.843242978 +0400
 @@ -60,6 +60,7 @@
  #ifndef __KERNEL__
  #include "config.h"
@@ -222,7 +227,7 @@ diff -aur e2fsprogs-1.42.8/e2fsck/revoke.c e2fsprogs/e2fsck/revoke.c
  #include <linux/fs.h>
 diff -aur e2fsprogs-1.42.8/e2fsck/unix.c e2fsprogs/e2fsck/unix.c
 --- e2fsprogs-1.42.8/e2fsck/unix.c	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/e2fsck/unix.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/e2fsck/unix.c	2013-07-29 13:50:11.843242978 +0400
 @@ -838,7 +838,7 @@
  			/* What we do by default, anyway! */
  			break;
@@ -243,7 +248,7 @@ diff -aur e2fsprogs-1.42.8/e2fsck/unix.c e2fsprogs/e2fsck/unix.c
  	int		exit_value = FSCK_OK;
 diff -aur e2fsprogs-1.42.8/lib/blkid/blkidP.h e2fsprogs/lib/blkid/blkidP.h
 --- e2fsprogs-1.42.8/lib/blkid/blkidP.h	2012-07-06 17:37:27.000000000 +0400
-+++ e2fsprogs/lib/blkid/blkidP.h	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/blkid/blkidP.h	2013-07-29 13:50:11.843242978 +0400
 @@ -18,7 +18,7 @@
  
  #include <blkid/blkid.h>
@@ -255,7 +260,7 @@ diff -aur e2fsprogs-1.42.8/lib/blkid/blkidP.h e2fsprogs/lib/blkid/blkidP.h
  #define __BLKID_ATTR(x) __attribute__(x)
 diff -aur e2fsprogs-1.42.8/lib/blkid/blkid_types.h.in e2fsprogs/lib/blkid/blkid_types.h.in
 --- e2fsprogs-1.42.8/lib/blkid/blkid_types.h.in	2012-08-15 07:24:21.000000000 +0400
-+++ e2fsprogs/lib/blkid/blkid_types.h.in	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/blkid/blkid_types.h.in	2013-07-29 13:50:11.843242978 +0400
 @@ -9,6 +9,8 @@
  
  @ASM_TYPES_HEADER@
@@ -276,7 +281,7 @@ diff -aur e2fsprogs-1.42.8/lib/blkid/blkid_types.h.in e2fsprogs/lib/blkid/blkid_
  #endif /* _*_TYPES_H */
 diff -aur e2fsprogs-1.42.8/lib/blkid/dev.c e2fsprogs/lib/blkid/dev.c
 --- e2fsprogs-1.42.8/lib/blkid/dev.c	2012-07-06 17:37:27.000000000 +0400
-+++ e2fsprogs/lib/blkid/dev.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/blkid/dev.c	2013-07-29 13:50:11.843242978 +0400
 @@ -13,6 +13,7 @@
  #include "config.h"
  #include <stdlib.h>
@@ -287,7 +292,7 @@ diff -aur e2fsprogs-1.42.8/lib/blkid/dev.c e2fsprogs/lib/blkid/dev.c
  
 diff -aur e2fsprogs-1.42.8/lib/blkid/list.h e2fsprogs/lib/blkid/list.h
 --- e2fsprogs-1.42.8/lib/blkid/list.h	2009-08-13 05:39:57.000000000 +0400
-+++ e2fsprogs/lib/blkid/list.h	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/blkid/list.h	2013-07-29 13:50:11.843242978 +0400
 @@ -1,6 +1,8 @@
  #if !defined(_BLKID_LIST_H) && !defined(LIST_HEAD)
  #define _BLKID_LIST_H
@@ -306,7 +311,7 @@ diff -aur e2fsprogs-1.42.8/lib/blkid/list.h e2fsprogs/lib/blkid/list.h
  #endif /* _BLKID_LIST_H */
 diff -aur e2fsprogs-1.42.8/lib/ext2fs/ext2_types.h.in e2fsprogs/lib/ext2fs/ext2_types.h.in
 --- e2fsprogs-1.42.8/lib/ext2fs/ext2_types.h.in	2012-08-15 07:24:21.000000000 +0400
-+++ e2fsprogs/lib/ext2fs/ext2_types.h.in	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/ext2fs/ext2_types.h.in	2013-07-29 13:50:11.843242978 +0400
 @@ -9,6 +9,8 @@
  
  @ASM_TYPES_HEADER@
@@ -329,7 +334,7 @@ diff -aur e2fsprogs-1.42.8/lib/ext2fs/ext2_types.h.in e2fsprogs/lib/ext2fs/ext2_
  @PUBLIC_CONFIG_HEADER@
 diff -aur e2fsprogs-1.42.8/lib/ext2fs/kernel-list.h e2fsprogs/lib/ext2fs/kernel-list.h
 --- e2fsprogs-1.42.8/lib/ext2fs/kernel-list.h	2012-07-06 17:37:27.000000000 +0400
-+++ e2fsprogs/lib/ext2fs/kernel-list.h	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/ext2fs/kernel-list.h	2013-07-29 13:50:11.843242978 +0400
 @@ -11,6 +11,8 @@
   * using the generic single-entry routines.
   */
@@ -348,7 +353,7 @@ diff -aur e2fsprogs-1.42.8/lib/ext2fs/kernel-list.h e2fsprogs/lib/ext2fs/kernel-
  #endif
 diff -aur e2fsprogs-1.42.8/lib/ext2fs/mkjournal.c e2fsprogs/lib/ext2fs/mkjournal.c
 --- e2fsprogs-1.42.8/lib/ext2fs/mkjournal.c	2013-04-22 03:05:50.000000000 +0400
-+++ e2fsprogs/lib/ext2fs/mkjournal.c	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/ext2fs/mkjournal.c	2013-07-29 13:50:11.843242978 +0400
 @@ -38,6 +38,8 @@
  #include "ext2fs.h"
  #include "jfs_user.h"
@@ -360,7 +365,7 @@ diff -aur e2fsprogs-1.42.8/lib/ext2fs/mkjournal.c e2fsprogs/lib/ext2fs/mkjournal
   * returns it as an allocated block.
 diff -aur e2fsprogs-1.42.8/lib/quota/quotaio.h e2fsprogs/lib/quota/quotaio.h
 --- e2fsprogs-1.42.8/lib/quota/quotaio.h	2013-05-20 17:28:51.000000000 +0400
-+++ e2fsprogs/lib/quota/quotaio.h	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/quota/quotaio.h	2013-07-29 13:50:11.847243062 +0400
 @@ -9,6 +9,7 @@
  
  #include <limits.h>
@@ -371,7 +376,7 @@ diff -aur e2fsprogs-1.42.8/lib/quota/quotaio.h e2fsprogs/lib/quota/quotaio.h
  #include "ext2fs/ext2fs.h"
 diff -aur e2fsprogs-1.42.8/lib/uuid/Makefile.in e2fsprogs/lib/uuid/Makefile.in
 --- e2fsprogs-1.42.8/lib/uuid/Makefile.in	2012-07-31 02:41:44.000000000 +0400
-+++ e2fsprogs/lib/uuid/Makefile.in	2013-07-26 20:11:29.505778704 +0400
++++ e2fsprogs/lib/uuid/Makefile.in	2013-07-29 13:50:11.847243062 +0400
 @@ -67,7 +67,7 @@
  @ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
  @BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
@@ -383,7 +388,7 @@ diff -aur e2fsprogs-1.42.8/lib/uuid/Makefile.in e2fsprogs/lib/uuid/Makefile.in
  	$(E) "	CP $@"
 diff -aur e2fsprogs-1.42.8/lib/uuid/uuid_types.h.in e2fsprogs/lib/uuid/uuid_types.h.in
 --- e2fsprogs-1.42.8/lib/uuid/uuid_types.h.in	2009-08-13 05:39:57.000000000 +0400
-+++ e2fsprogs/lib/uuid/uuid_types.h.in	2013-07-26 20:11:29.509778781 +0400
++++ e2fsprogs/lib/uuid/uuid_types.h.in	2013-07-29 13:50:11.847243062 +0400
 @@ -6,6 +6,8 @@
  #if (!defined(_STDINT_H) && !defined(_UUID_STDINT_H))
  #define _UUID_STDINT_H
@@ -403,7 +408,7 @@ diff -aur e2fsprogs-1.42.8/lib/uuid/uuid_types.h.in e2fsprogs/lib/uuid/uuid_type
 +#endif
 diff -aur e2fsprogs-1.42.8/misc/dumpe2fs.c e2fsprogs/misc/dumpe2fs.c
 --- e2fsprogs-1.42.8/misc/dumpe2fs.c	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/misc/dumpe2fs.c	2013-07-26 20:11:29.509778781 +0400
++++ e2fsprogs/misc/dumpe2fs.c	2013-07-29 13:50:11.847243062 +0400
 @@ -42,11 +42,12 @@
  
  #include "../version.h"
@@ -430,7 +435,7 @@ diff -aur e2fsprogs-1.42.8/misc/dumpe2fs.c e2fsprogs/misc/dumpe2fs.c
  	ext2_filsys	fs;
 diff -aur e2fsprogs-1.42.8/misc/e2freefrag.c e2fsprogs/misc/e2freefrag.c
 --- e2fsprogs-1.42.8/misc/e2freefrag.c	2013-04-22 03:05:50.000000000 +0400
-+++ e2fsprogs/misc/e2freefrag.c	2013-07-26 20:11:29.509778781 +0400
++++ e2fsprogs/misc/e2freefrag.c	2013-07-29 13:50:11.847243062 +0400
 @@ -265,7 +265,7 @@
  
  void do_freefrag(int argc, char **argv)
@@ -442,7 +447,7 @@ diff -aur e2fsprogs-1.42.8/misc/e2freefrag.c e2fsprogs/misc/e2freefrag.c
  	struct chunk_info chunk_info;
 diff -aur e2fsprogs-1.42.8/misc/mke2fs.c e2fsprogs/misc/mke2fs.c
 --- e2fsprogs-1.42.8/misc/mke2fs.c	2013-06-21 06:53:31.000000000 +0400
-+++ e2fsprogs/misc/mke2fs.c	2013-07-26 20:11:29.509778781 +0400
++++ e2fsprogs/misc/mke2fs.c	2013-07-29 13:50:11.847243062 +0400
 @@ -76,8 +76,8 @@
  extern int isatty(int);
  extern FILE *fpopen(const char *cmd, const char *mode);
