@@ -1,11 +1,11 @@
 package embox.lib
 
-@DefaultImpl(linenoise)
+@DefaultImpl(rl_linenoise)
 abstract module readline_api { }
 
-module linenoise extends readline_api {
+module rl_linenoise extends readline_api {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "readline/linenoise.c"
+	source "readline/rl_linenoise.c"
 
 	depends embox.compat.posix.fs.dirent
 	depends embox.lib.LibC
