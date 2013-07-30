@@ -134,7 +134,14 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 }
 
 static int init() {
-	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 32;
+	/*
+ 	 * Initializing this module early was lead to all except 32 pages
+	 * belong to mmap_nommu, and I see no reason to do it. Anton Kozlov
+	 */
+
+	/*mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 32;*/
+
+	mem_page_count = 1;
 
 	if (!(mem_start = (uint32_t)page_alloc(__phymem_allocator, mem_page_count))) {
 		return -ENOMEM;
