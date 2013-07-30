@@ -13,7 +13,7 @@
 #ifndef KERNEL_SCHED_SCHED_STRATEGY_H_
 #define KERNEL_SCHED_SCHED_STRATEGY_H_
 
-#include <module/embox/kernel/sched/strategy/api.h>
+#include <module/embox/kernel/sched/sched_policy/api.h>
 
 #include <kernel/sched/sched_priority.h>
 
