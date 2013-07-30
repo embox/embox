@@ -16,7 +16,7 @@ usage() {
 	echo "Usage:"
 	echo "    $0 <type> <device>"
 	echo
-	echo "<type> is bootloader type: grub or syslinux"
+	echo "<type> is bootloader type: grub (for grub v1.0), grub2 or syslinux"
 	echo "<device> is dev file of flash."
 	echo
 	echo "Example:"
@@ -71,11 +71,9 @@ MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
 mount $PARTITION $MOUNT_POINT
 
 if [ z"$1" == zgrub ]; then
-	if [ z"$(grub-install --version | grep 2.0)" == z ]; then
-		grub1_do $DRIVE $MOUNT_POINT
-	else
-		grub2_do $DRIVE $MOUNT_POINT
-	fi
+	grub1_do $DRIVE $MOUNT_POINT
+elif [ z"$1" == zgrub2 ]; then
+	grub2_do $DRIVE $MOUNT_POINT
 elif [ z"$1" == zsyslinux ]; then
 	syslinux_do $DRIVE $MOUNT_POINT
 
