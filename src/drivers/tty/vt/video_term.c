@@ -71,6 +71,8 @@ static inline void inc_line(struct vterm *vt) {
 
 static void execute_printable(struct vterm *vt, char ch) {
 	switch (ch) {
+	case '\a': /* bell */
+		break;
 	case '\n':
 	case '\f': /* Form feed/clear screen*/
 		vt->cur_x = 0;
