@@ -12,6 +12,10 @@
 #include <stddef.h>
 #include <string.h>
 
+char *** task_self_environ_ptr(void) {
+	return &task_self()->env->envs;
+}
+
 static void env_init(struct task *task, void *env_) {
 	struct task_env *env;
 

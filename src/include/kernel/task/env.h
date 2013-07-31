@@ -37,10 +37,6 @@ static inline struct task_env * task_self_env(void) {
 	return task_self()->env;
 }
 
-static inline char *** task_self_environ_ptr(void) {
-	return &task_self()->env->envs;
-}
-
 __END_DECLS
 
 #endif /* KERNEL_TASK_ENV_H_ */

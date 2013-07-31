@@ -16,7 +16,6 @@
 #include <drivers/bluetooth/btm112.h>
 #include <kernel/time/timer.h>
 #include <string.h>
-#include <unistd.h>
 
 extern void bt_handle(uint8_t *buff);
 

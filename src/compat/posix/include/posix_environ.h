@@ -9,7 +9,7 @@
 #ifndef COMPAT_POSIX_POSIX_ENVIRON_H_
 #define COMPAT_POSIX_POSIX_ENVIRON_H_
 
-#include <kernel/task/env.h>
+extern char *** task_self_environ_ptr(void);
 
 #define environ (* task_self_environ_ptr())
 
