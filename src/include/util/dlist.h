@@ -131,7 +131,7 @@ static inline int dlist_empty(struct dlist_head *head) {
  * @return a pointer to the item structure which contains the head
  */
 #define dlist_entry(head, type, member) \
-    ((type *)((char *)(head) - (unsigned long)(&((type *)0)->member)))
+    ((type *)((char *)(head) - (unsigned int)(&((type *)0)->member)))
 
 
 #define dlist_foreach(ptr, nxt, head) \

@@ -43,6 +43,9 @@ static module LibCMisc {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "crypt/b64.c"
+}
+
+static module LibCType {
 	source "ctype/ctype.c"
 }
 
@@ -114,6 +117,9 @@ static module LibCMath {
 	source "soft-fp/sf.c", "soft-fp/df.c", "soft-fp/tf.c"
 	depends third_party.lib.softfloat
 
+}
+
+static module LibCMathInt {
 	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
@@ -151,8 +157,11 @@ static module LibCStdio {
 	source "stdio/rename.c"
 	source "stdio/scanf.c"
 
-	depends LibCMath
+	/*depends LibCStdlib // atoi*/
+	depends LibCMathInt
+	//depends LibCMath // depens from support_floating value
 	depends LibCString
+	depends LibCType
 	//depends embox.driver.iodev.core
 	depends embox.compat.posix.fs.file
 
@@ -168,6 +177,7 @@ static module LibC {
 
 	depends LibCDiagnostic
 	depends LibCMisc
+	depends LibCType
 	depends LibCStdlib
 	depends LibCString
 	depends LibCMath

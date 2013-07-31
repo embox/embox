@@ -9,6 +9,7 @@
 #ifndef LIB_MATH_IEEE_H_
 #define LIB_MATH_IEEE_H_
 
+#include <stdint.h>
 #include <hal/arch.h>
 
 /**
@@ -37,11 +38,11 @@
  */
 struct ieee_binary32 {
 #if defined(__BIG_ENDIAN)
-	unsigned int negative:1,
+	uint32_t negative:1,
 			exponent:8,
 			mantissa:23;
 #elif defined(__LITTLE_ENDIAN)
-	unsigned int mantissa:23,
+	uint32_t mantissa:23,
 			exponent:8,
 			negative:1;
 #endif
@@ -52,13 +53,13 @@ struct ieee_binary32 {
  */
 struct ieee_binary64 {
 #if defined(__BIG_ENDIAN)
-	unsigned int negative:1,
+	uint32_t negative:1,
 			exponent:11,
 			mantissa0:20;
-	unsigned int mantissa1;
+	uint32_t mantissa1;
 #elif defined(__LITTLE_ENDIAN)
-	unsigned int mantissa1;
-	unsigned int mantissa0:20,
+	uint32_t mantissa1;
+	uint32_t mantissa0:20,
 			exponent:11,
 			negative:1;
 #endif
@@ -69,14 +70,14 @@ struct ieee_binary64 {
  */
 struct ieee_binary80 {
 #if defined(__BIG_ENDIAN)
-	unsigned short int negative:1,
+	uint16_t negative:1,
 			exponent:15;
-	unsigned int mantissa0;
-	unsigned int mantissa1;
+	uint32_t mantissa0;
+	uint32_t mantissa1;
 #elif defined(__LITTLE_ENDIAN)
-	unsigned int mantissa1;
-	unsigned int mantissa0;
-	unsigned short int exponent:15,
+	uint32_t mantissa1;
+	uint32_t mantissa0;
+	uint16_t exponent:15,
 			negative:1;
 #endif
 };

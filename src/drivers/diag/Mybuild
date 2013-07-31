@@ -25,7 +25,6 @@ module mem_diag extends diag_api {
 
 module no_diag extends diag_api {
 	source "no_diag.c"
-	@NoRuntime depends embox.driver.diag.console.serial
 }
 
 module i8250 extends diag_api {

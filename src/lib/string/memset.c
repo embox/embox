@@ -10,10 +10,10 @@
 
 #include <string.h>
 
-#define BLOCK_SZ (sizeof(long))
+#define BLOCK_SZ (sizeof(int))
 
 /* Nonzero if X is not aligned on a "long" boundary.  */
-#define unaligned(x)   ((long) x & (sizeof(long) - 1))
+#define unaligned(x)   ((int) x & (sizeof(int) - 1))
 
 void *memset(void *addr_, int c, size_t n) {
 	char *addr = addr_;

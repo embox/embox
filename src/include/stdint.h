@@ -41,8 +41,11 @@ typedef __u32 __u_fast;
 #elif __WORDSIZE == 64
 typedef __s64 __s_fast;
 typedef __u64 __u_fast;
+#elif __WORDSIZE == 16
+typedef __s16 __s_fast;
+typedef __u16 __u_fast;
 #else
-# error "Only 32 and 64 __WORDSIZE values are supported"
+# error "Only 16, 32 and 64 __WORDSIZE values are supported"
 #endif
 
 typedef __s_fast int_fast8_t;

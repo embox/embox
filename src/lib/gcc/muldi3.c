@@ -21,7 +21,7 @@ union dw_union {
 	int64_t val;
 };
 
-#define WORD_LENGTH 32
+#define WORD_LENGTH __WORDSIZE
 
 #define highpart(v) (v >> (WORD_LENGTH / 2))
 #define lowpart(v)  (v & ((1 << (WORD_LENGTH / 2)) - 1))

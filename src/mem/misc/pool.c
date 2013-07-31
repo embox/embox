@@ -47,10 +47,10 @@ void pool_free(struct pool* pool, void* obj) {
 
 int pool_belong(struct pool* pool, void* obj) {
 
-	uint32_t pool_end = (uint32_t)pool->memory + pool->pool_size;
+	unsigned int pool_end = (unsigned int)pool->memory + pool->pool_size;
 
-	if(((uint32_t)pool->memory <= (uint32_t)obj) &&
-			((uint32_t)obj + pool->obj_size <= pool_end)) {
+	if(((unsigned int)pool->memory <= (unsigned int)obj) &&
+			((unsigned int)obj + pool->obj_size <= pool_end)) {
 				return 1;
 			}
 	return 0;
