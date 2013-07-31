@@ -105,6 +105,7 @@ static module LibCMath {
 	source "math/log10.c"
 	source "math/div.c"
 	source "math/ldiv.c"
+	/*source "math/lldiv.c"*/
 	source "math/blog2.c"
 	source "math/sqrt.c"
 	depends third_party.lib.Fdlibm

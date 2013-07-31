@@ -31,6 +31,18 @@ module ne2k_pci {
 	depends embox.net.entry_api
 }
 
+module rtl8139 {
+	source "rtl8139.c"
+
+	depends embox.net.skbuff
+	depends embox.lib.LibC
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
 module r6040 {
 	source "r6040.c"
 

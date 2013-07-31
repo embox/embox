@@ -1,0 +1,22 @@
+package embox.cmd.fs
+
+@Cmd(name = "mknod",
+	help = "make node",
+	man = '''
+		NAME
+			mkdir - create a VFS node
+		SYNOPSIS
+			mknod [-h] NODENAME
+		DESCRIPTION
+			mkdir is used to create a generic VFS node
+		AUTHORS
+			Anton Bondarev
+	''')
+module mknod {
+	source "mknod.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+}
