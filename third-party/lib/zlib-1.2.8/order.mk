@@ -1,0 +1,2 @@
+
+minigzip.o: libz.a

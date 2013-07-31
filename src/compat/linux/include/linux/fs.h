@@ -6,9 +6,9 @@
  * structures etc.
  */
 
-#include <linux/limits.h>
-#include <linux/ioctl.h>
-#include <linux/blk_types.h>
+//#include <linux/limits.h>
+//#include <linux/ioctl.h>
+//#include <linux/blk_types.h>
 #include <linux/types.h>
 
 /*
@@ -367,6 +367,22 @@ struct inodes_stat_t {
 #define SYNC_FILE_RANGE_WAIT_BEFORE	1
 #define SYNC_FILE_RANGE_WRITE		2
 #define SYNC_FILE_RANGE_WAIT_AFTER	4
+
+/*
+ * File types
+ *
+ * NOTE! These match bits 12..15 of stat.st_mode
+ * (ie "(i_mode >> 12) & 15").
+ */
+#define DT_UNKNOWN	0
+#define DT_FIFO		1
+#define DT_CHR		2
+#define DT_DIR		4
+#define DT_BLK		6
+#define DT_REG		8
+#define DT_LNK		10
+#define DT_SOCK		12
+#define DT_WHT		14
 
 #ifdef __KERNEL__
 
