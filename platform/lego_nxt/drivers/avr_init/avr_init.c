@@ -9,14 +9,12 @@
 #include <embox/unit.h>
 #include <string.h>
 #include <hal/reg.h>
-#include <unistd.h>
 #include <kernel/time/timer.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/twi.h>
 #include <drivers/nxt/buttons.h>
 #include <drivers/nxt/avr.h>
 #include <drivers/nxt/sensor.h>
-#include <profiler/measuring/measure.h>
 
 /* Notify driver of possible buttons change */
 extern void buttons_updated(nxt_buttons_mask_t state);
