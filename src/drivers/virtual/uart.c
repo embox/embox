@@ -87,7 +87,9 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 		uart_dev->operations->setup(uart_dev, uart_dev->params);
 	}
 
-	desc->ops = &uart_dev_file_op;
+	if (desc) {
+		desc->ops = &uart_dev_file_op;
+	}
 
 	irq_attach(uart_dev->irq_num, irq_handler, 0, (void *)uart_dev, uart_dev->dev_name);
 
