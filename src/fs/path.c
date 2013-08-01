@@ -108,6 +108,11 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 }
 
 const char *path_next(const char *path, size_t *p_len) {
+
+	if (!path) {
+		return NULL;
+	}
+
 	/* Skip leading slashes. */
 	while (*path == '/') {
 		++path;

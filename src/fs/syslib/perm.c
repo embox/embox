@@ -45,15 +45,15 @@ int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,
 	size_t len = 0;
 	int ret;
 
-	if (path[0] == '/') {
-		path = path_next(path, NULL);
-	}
-
 	if (pathlast != NULL) {
 		*pathlast = path;
 	}
 
 	*node = root ? root : vfs_get_leaf();
+
+	if (!path) {
+		return -EINVAL;
+	}
 
 	while (1) {
 		if (NULL == (path = path_next(path + len, &len))) {
@@ -77,5 +77,3 @@ int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,
 
 	return 0;
 }
-
-
