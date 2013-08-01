@@ -10,6 +10,7 @@
 #define FS_BCACHE_H_
 
 #include <util/dlist.h>
+#include <kernel/thread/sync/mutex.h>
 #include <embox/block_dev.h>
 
 #define BH_NEW    0x00000001
@@ -28,10 +29,24 @@ struct buffer_head {
 	int block;
 	size_t blocksize;
 	int flags;
+	struct mutex mutex;
 	char *data;
 };
 
-extern struct buffer_head *bcache_getblk(block_dev_t *bdev, int block, size_t size);
+static inline void bcache_buffer_lock(struct buffer_head *bh) {
+	mutex_lock(&bh->mutex);
+	buffer_set_flag(bh, BH_LOCKED);
+}
+
+static inline void bcache_buffer_unlock(struct buffer_head *bh) {
+	buffer_clear_flag(bh, BH_LOCKED);
+	mutex_unlock(&bh->mutex);
+}
+
+extern struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t size);
 extern int bcache_flush_blk(struct buffer_head *bh);
+/* XXX it is temporary function replaces function that flushes all blocks of specified file
+ *  (used by fsync) */
+extern int bcache_flush_all(void);
 
 #endif /* FS_BCACHE_H_ */
