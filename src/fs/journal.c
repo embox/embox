@@ -112,12 +112,15 @@ int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
 
 	/* Write block into cache */
 	for (i = 0; i < blkcount; i++) {
-		bh = bcache_getblk(jp->j_dev, journal_jb2db(jp, block->blocknr) + i, jp->j_disk_sectorsize);
-		if (buffer_new(bh)) {
-			buffer_clear_flag(bh, BH_NEW);
+		bh = bcache_getblk_locked(jp->j_dev, journal_jb2db(jp, block->blocknr) + i, jp->j_disk_sectorsize);
+		{
+			if (buffer_new(bh)) {
+				buffer_clear_flag(bh, BH_NEW);
+			}
+			buffer_set_flag(bh, BH_DIRTY);
+			memcpy(bh->data, block->data + i * jp->j_disk_sectorsize, jp->j_disk_sectorsize);
 		}
-		buffer_set_flag(bh, BH_DIRTY);
-		memcpy(bh->data, block->data + i * jp->j_disk_sectorsize, jp->j_disk_sectorsize);
+		bcache_buffer_unlock(bh);
 	}
 
 	dlist_add_prev(&block->b_next, &t->t_buffers);
