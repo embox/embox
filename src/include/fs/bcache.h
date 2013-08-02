@@ -43,10 +43,25 @@ static inline void bcache_buffer_unlock(struct buffer_head *bh) {
 	mutex_unlock(&bh->mutex);
 }
 
+/**
+ * @return
+ *   Block with number @a block and with size @a size from device @a bdev.
+ *   Block is returned in locked state.
+ */
 extern struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t size);
+
+/**
+ * Force flushing of block @a bh on disk.
+ *
+ * @return
+ *   Result of writing to disk.
+ */
 extern int bcache_flush_blk(struct buffer_head *bh);
-/* XXX it is temporary function replaces function that flushes all blocks of specified file
- *  (used by fsync) */
+
+/**
+ * XXX it is temporary function replaces function that flushes all blocks of specified file
+ *  (used by fsync)
+ */
 extern int bcache_flush_all(void);
 
 #endif /* FS_BCACHE_H_ */

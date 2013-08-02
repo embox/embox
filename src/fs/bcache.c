@@ -34,7 +34,7 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 		bh = (struct buffer_head *)hashtable_get(buffer_cache, &key);
 
 		if (bh) {
-			mutex_lock(&bh->mutex);
+			bcache_buffer_lock(bh);
 			mutex_unlock(&bcache_mutex);
 			return bh;
 		}
@@ -59,15 +59,16 @@ int bcache_flush_all(void) {
 
 	mutex_lock(&bcache_mutex);
 
+	/* TODO dlist of all blocks */
 	for (key = hashtable_get_key_first(buffer_cache);
 			key != NULL;
 			key = hashtable_get_key_next(buffer_cache, key)) {
 
 		bh = hashtable_get(buffer_cache, *key);
 
-		mutex_lock(&bh->mutex);
+		bcache_buffer_lock(bh);
 		bcache_flush_blk(bh);
-		mutex_unlock(&bh->mutex);
+		bcache_buffer_unlock(bh);
 	}
 
 	mutex_unlock(&bcache_mutex);
@@ -85,18 +86,19 @@ static void free_more_memory(size_t size) {
 		key = (struct buffer_head **)hashtable_get_key_first(buffer_cache);
 		bh = hashtable_get(buffer_cache, *key);
 
-		mutex_lock(&bh->mutex);
+		bcache_buffer_lock(bh);
 		{
 			if (buffer_dirty(bh)) {
 				bcache_flush_blk(bh);
 			}
 
 			hashtable_del(buffer_cache, *key);
-			free(bh->data);
 		}
-		mutex_unlock(&bh->mutex);
+		bcache_buffer_unlock(bh);
 
+		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
+
 		size -= bh->blocksize;
 	}
 
