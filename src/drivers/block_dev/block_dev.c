@@ -15,6 +15,7 @@
 #include <fs/vfs.h>
 #include <fs/node.h>
 #include <fs/file_desc.h>
+#include <fs/bcache.h>
 #include <mem/phymem.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
@@ -211,6 +212,8 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
+	int blksize, blkcount, i, res, readed = 0;
+	struct buffer_head *bh;
 
 	if (NULL == dev) {
 		return -ENODEV;
@@ -220,20 +223,64 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 		return -ENOSYS;
 	}
 
-	return bdev->driver->read(bdev, buffer, count, blkno);
+	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blkcount = (count + blksize - 1) / blksize;
+
+	for (i = 0; i < blkcount; i++) {
+		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
+		{
+			if (buffer_new(bh)) {
+				buffer_clear_flag(bh, BH_NEW);
+
+				if (!readed) {
+					if (0 > (res = bdev->driver->read(bdev, buffer + i * blksize,
+							blksize * (blkcount - i), blkno + i))) {
+						bcache_buffer_unlock(bh);
+						return res;
+					}
+					readed = 1;
+				}
+
+				memcpy(bh->data, buffer + i * blksize, blksize);
+			} else {
+				memcpy(buffer + i * blksize, bh->data, blksize);
+			}
+		}
+		bcache_buffer_unlock(bh);
+	}
+
+	return count;
 }
 
 int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
+	int blksize, blkcount, i;
+	struct buffer_head *bh;
 
 	if (NULL == dev) {
 		return -ENODEV;
 	}
+
 	bdev = block_dev(dev);
+
 	if (NULL == bdev->driver->write) {
 		return -ENOSYS;
 	}
 
+	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blkcount = (count + blksize - 1) / blksize;
+
+	for (i = 0; i < blkcount; i++) {
+		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
+		{
+			memcpy(bh->data, buffer + i * blksize, blksize);
+			buffer_clear_flag(bh, BH_NEW);
+			buffer_set_flag(bh, BH_DIRTY);
+		}
+		bcache_buffer_unlock(bh);
+	}
+
+	/* TODO pending flush */
 	return bdev->driver->write(bdev, (char *)buffer, count, blkno);
 }
 
