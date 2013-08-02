@@ -61,8 +61,15 @@ typedef __u_fast uint_fast64_t;
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
 
-/* ToDo: WARNING 32bit now */
-typedef int intptr_t;
-typedef unsigned int uintptr_t;
+#ifndef __intptr_t_defined
+#define __intptr_t_defined
+typedef __intptr_t intptr_t;
+#endif /*__intptr_t_defined */
+
+#ifndef __uintptr_defined
+#define __uintptr_defined
+typedef __uintptr_t uintptr_t;
+#endif /*__intptr_t_defined */
+
 #endif /* __ASSEMBLER__ */
 #endif /* STDINT_H_ */

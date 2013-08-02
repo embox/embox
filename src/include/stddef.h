@@ -46,4 +46,13 @@ typedef unsigned short wchar_t;
 typedef __ptrdiff_t ptrdiff_t;
 #endif /*__ptrdiff_t_defined */
 
+#ifndef __intptr_t_defined
+#define __intptr_t_defined
+typedef __intptr_t intptr_t;
+#endif /*__intptr_t_defined */
+
+#ifndef __uintptr_defined
+#define __uintptr_defined
+typedef __uintptr_t uintptr_t;
+#endif /*__intptr_t_defined */
 #endif /* STDDEF_H_ */

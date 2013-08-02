@@ -10,10 +10,10 @@
 
 #include <string.h>
 
-#define BLOCK_SZ (sizeof(int))
+#define BLOCK_SZ (sizeof(unsigned long))
 
 /* Nonzero if X is not aligned on a "long" boundary.  */
-#define unaligned(x)   ((int) x & (sizeof(int) - 1))
+#define unaligned(x)   ((unsigned long) x & (sizeof(unsigned long) - 1))
 
 void *memset(void *addr_, int c, size_t n) {
 	char *addr = addr_;
@@ -21,7 +21,7 @@ void *memset(void *addr_, int c, size_t n) {
 	unsigned long buffer;
 	unsigned int d = c & 0xff; /* To avoid sign extension.  */
 
-	while (unaligned(addr)) {
+	while (unaligned((uintptr_t) addr)) {
 		if (n--) {
 			*addr++ = (char) c;
 		} else {

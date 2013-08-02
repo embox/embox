@@ -32,6 +32,9 @@ typedef unsigned int __vsize_t;
 typedef unsigned int  __size_t;
 typedef signed int __ptrdiff_t;
 
+typedef unsigned int __uintptr_t;
+typedef int __intptr_t;
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* ARM_TYPES_H_ */

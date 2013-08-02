@@ -11,11 +11,11 @@
 #include <string.h>
 
 /* How many bytes are copied each iteration of the word copy loop.  */
-#define BLOCK_SZ (sizeof(int))
+#define BLOCK_SZ (sizeof(long))
 
 /* Nonzero if either X or Y is not aligned on a "long" boundary.  */
 #define unaligned(x, y) \
-  (((int) x | (int) y) & (sizeof(int) - 1))
+  (((long) x | (long) y) & (sizeof(long) - 1))
 
 void *memcpy(void *dst_, const void *src_, size_t n) {
 	char *dst = dst_;
@@ -25,7 +25,7 @@ void *memcpy(void *dst_, const void *src_, size_t n) {
 
 	/* If the size is small, or either SRC or DST is unaligned,
 	 then punt into the byte copy loop.  This should be rare.  */
-	if (n >= BLOCK_SZ * 4 && !unaligned(src, dst)) {
+	if (n >= BLOCK_SZ * 4 && !unaligned((intptr_t) src, (intptr_t) dst)) {
 		aligned_dst = (long *) dst;
 		aligned_src = (long *) src;
 
