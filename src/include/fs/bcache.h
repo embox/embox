@@ -32,6 +32,7 @@ struct buffer_head {
 	size_t blocksize;
 	int flags;
 	struct mutex mutex;
+	struct dlist_head bh_next;
 	char *data;
 };
 

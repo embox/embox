@@ -18,6 +18,7 @@ EMBOX_UNIT_INIT(bcache_init);
 #define BCACHE_SIZE OPTION_GET(NUMBER, bcache_size)
 
 POOL_DEF(buffer_head_pool, struct buffer_head, BCACHE_SIZE);
+static DLIST_DEFINE(bh_list);
 
 static struct hashtable *buffer_cache;
 static struct mutex bcache_mutex;
@@ -74,6 +75,7 @@ int bcache_flush_blk(struct buffer_head *bh) {
 	res = bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
 
 	hashtable_del(buffer_cache, bh);
+	dlist_del(&bh->bh_next);
 	bcache_buffer_unlock(bh);
 
 	free(bh->data);
@@ -83,39 +85,36 @@ int bcache_flush_blk(struct buffer_head *bh) {
 }
 
 static void free_more_memory(size_t size) {
-	struct buffer_head *bh;
-	struct buffer_head **key;
+	struct buffer_head *bh, *bhnext;
 
 	mutex_lock(&bcache_mutex);
 
-	key = hashtable_get_key_first(buffer_cache);
-
-	while ((int)size > 0) {
-		bh = hashtable_get(buffer_cache, *key);
+	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
+		if ((int)size < 0) {
+			break;
+		}
 
 		bcache_buffer_lock(bh);
 		{
 			if (buffer_journal(bh)) {
 				bcache_buffer_unlock(bh);
-				key = hashtable_get_key_next(buffer_cache, key);
 				continue;
 			}
 
+			size -= bh->blocksize;
+
 			if (buffer_dirty(bh)) {
 				bcache_flush_blk(bh);
-				goto next_block;
+				continue;
 			}
 
-			hashtable_del(buffer_cache, *key);
+			dlist_del(&bh->bh_next);
+			hashtable_del(buffer_cache, bh);
 		}
 		bcache_buffer_unlock(bh);
 
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
-
-	next_block:
-		size -= bh->blocksize;
-		key = hashtable_get_key_next(buffer_cache, key);
 	}
 
 	mutex_unlock(&bcache_mutex);
@@ -136,6 +135,7 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 
 	buffer_set_flag(bh, BH_NEW);
 	mutex_init(&bh->mutex);
+	dlist_head_init(&bh->bh_next);
 	bh->bdev = bdev;
 	bh->block = block;
 	bh->blocksize = size;
@@ -151,6 +151,8 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 		pool_free(&buffer_head_pool, bh);
 		goto error;
 	}
+
+	dlist_add_next(&bh->bh_next, &bh_list);
 
 	mutex_unlock(&bcache_mutex);
 
