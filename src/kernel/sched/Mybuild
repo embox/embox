@@ -11,6 +11,7 @@ module sched {
 	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
+	@NoRuntime depends embox.profiler.trace
 
 	@NoRuntime depends embox.kernel.event_sched
 

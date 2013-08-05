@@ -8,4 +8,6 @@ module mod {
 	@DefineMacro("__EMBUILD__")
 	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject.mk")
 	source "depsinject.c"
+
+	depends embox.util.Array
 }

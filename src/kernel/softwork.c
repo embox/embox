@@ -9,7 +9,6 @@
 #include <kernel/work.h>
 
 #include <kernel/softirq.h>
-#include <kernel/irq_lock.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(work_unit_init);
