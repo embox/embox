@@ -24,11 +24,11 @@ void *pool_alloc(struct pool* pool) {
 	assert(pool);
 
 	if (!slist_empty(&pool->free_blocks)) {
-		return (void *)slist_remove_first_link(&pool->free_blocks);
+		return (void *) slist_remove_first_link(&pool->free_blocks);
 	}
 
-	if((size_t)pool->bound_free != ((size_t)pool->memory + pool->pool_size)) {
-		addr = (void *)pool->bound_free;
+	if (pool->bound_free != pool->memory + pool->pool_size) {
+		addr = pool->bound_free;
 		pool->bound_free += pool->obj_size;
 		return addr;
 	}
@@ -46,12 +46,7 @@ void pool_free(struct pool* pool, void* obj) {
 }
 
 int pool_belong(struct pool* pool, void* obj) {
+	void *pool_end = pool->memory + pool->pool_size;
 
-	uintptr_t pool_end = (uintptr_t)pool->memory + pool->pool_size;
-
-	if(((uintptr_t)pool->memory <= (uintptr_t)obj) &&
-			((uintptr_t)obj + pool->obj_size <= pool_end)) {
-				return 1;
-			}
-	return 0;
+	return (pool->memory <= obj) && (obj < pool_end);
 }
