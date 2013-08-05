@@ -10,12 +10,34 @@
 #include <stdio.h>
 #include <string.h>
 #include <mem/misc/pool.h>
+#include <util/macro.h>
+
 #include <util/sys_log.h>
 
 #include <prom/prom_printf.h>
 
+#include <framework/mod/options.h>
+
+#define N_DEBUG_MSG OPTION_GET(NUMBER,msg_n)  /* Quantity of messages in a queue */
+#define MAX_MSG_LENGTH (OPTION_GET(NUMBER,msg_max_len)+1)  /* Length of a message + '\0' */
+#define MAX_MODULE_NAME_LENGTH (OPTION_GET(NUMBER,modname_max_len)+1)  /* module name */
+#define MAX_FUNC_NAME_LENGTH (OPTION_GET(NUMBER,funcname_max_len)+1)  /* function name */
+
+static const char *msg_trunc_msg  = "The message is to long. Trunctuated to 50 symbols\n";
+static const char *mod_trunc_msg  = "The module name is to long. Trunctuated to 20 symbols\n";
+static const char *func_trunc_msg = "The function name is to long. Trunctuated to 20 symbols\n";
+
 static bool annoy = false;
 static bool annoy_types[] = {true, true, true, true};
+
+/* message structure in a queue */
+typedef struct debug_msg{
+	char msg[MAX_MSG_LENGTH];
+	char module[MAX_MODULE_NAME_LENGTH];
+	char func[MAX_FUNC_NAME_LENGTH];
+	unsigned int serial;
+	int msg_type;
+} debug_msg_t;
 
 /* POOL_DEF(debug_msg_pool, struct debug_msg, N_DEBUG_MSG); */
 /* static char pool[N_MSG*N_DEBUG_MSG]; */
@@ -42,23 +64,23 @@ void system_log(const char *msg, char *module, char *func, int msg_type){
 
 	/* truncuate if necessary */
 	if(strlen(msg)>MAX_MSG_LENGTH){
-		if(strlen(MSG_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			/* debug_printf(MSG_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
-			LOG_WARN("system_log", MSG_TRUNC_MSG);
+		if(strlen(msg_trunc_msg)<=MAX_MSG_LENGTH)/* just in case*/
+			/* debug_printf(msg_trunc_msg, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", msg_trunc_msg);
 		strncpy(log[N_message].msg, msg, MAX_MSG_LENGTH);
 	}else
 		strcpy(log[N_message].msg, msg);
 	if(strlen(module)>MAX_MODULE_NAME_LENGTH){
-		if(strlen(MOD_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			/* debug_printf(MOD_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
-			LOG_WARN("system_log", MOD_TRUNC_MSG);
+		if(strlen(mod_trunc_msg)<=MAX_MSG_LENGTH)/* just in case*/
+			/* debug_printf(mod_trunc_msg, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", mod_trunc_msg);
 		strncpy(log[N_message].module, module, MAX_MODULE_NAME_LENGTH);
 	}else
 		strcpy(log[N_message].module, module);
 	if(strlen(func)>MAX_FUNC_NAME_LENGTH){
-		if(strlen(FUNC_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			/* debug_printf(FUNC_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
-			LOG_WARN("system_log", FUNC_TRUNC_MSG);
+		if(strlen(func_trunc_msg)<=MAX_MSG_LENGTH)/* just in case*/
+			/* debug_printf(func_trunc_msg, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", func_trunc_msg);
 		strncpy(log[N_message].func, func, MAX_FUNC_NAME_LENGTH);
 	}else
 		strcpy(log[N_message].func, func);
