@@ -18,13 +18,19 @@ module task_breaking_disable extends task_breaking {
 module tty {
 	source "tty.c"
 	source "tty_file_ops.c"
-	source "tty_repo.c"
 	option number io_buff_sz = 128
 	option number rx_buff_sz = 100
 	depends embox.kernel.work
 	depends embox.kernel.thread.event
 //	depends embox.kernel.thread.sync /* mutex */
 	depends task_breaking
+	depends embox.util.ring
+	depends embox.kernel.irq_lock
+}
+
+module tty_repo {
+	source "tty_repo.c"
+	depends embox.mem.pool
 }
 
 module pty {

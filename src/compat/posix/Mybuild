@@ -26,4 +26,5 @@ static module sched {
 
 static module termios {
 	source "termios.c"
+	depends embox.driver.tty.tty
 }

@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 
-#include <drivers/tty.h>
+struct tty;
 
 void tty_task_break_check(struct tty *t, char ch) {
 
