@@ -55,7 +55,17 @@ static module DListNDebug extends DList {
 
 static module sys_log {
 	source "sys_log.c"
-	depends embox.lib.LibC
+
+	option number msg_n = 1000
+	option number msg_max_len = 256
+	option number modname_max_len = 50
+	option number funcname_max_len = 50
+
+}
+
+static module ring {
+	source "ring.c"
+	source "ring_buff.c"
 }
 
 static module LibUtil {
@@ -65,10 +75,9 @@ static module LibUtil {
 	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
-	source "ring.c"
-	source "ring_buff.c"
 
 	depends sys_log
+	depends ring
 
 	depends embox.lib.LibC
 
