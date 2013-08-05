@@ -16,6 +16,9 @@
 #include <fs/journal.h>
 #include <fs/bcache.h>
 
+/* Return involved block in active or commiting transaction or not. */
+static int journal_block_inuse(journal_t *jp, journal_block_t *block);
+
 journal_t *journal_create(journal_fs_specific_t *spec) {
     journal_t *jp;
 
@@ -72,13 +75,26 @@ int journal_stop(journal_handle_t *handle) {
 int journal_checkpoint_transactions(journal_t *jp) {
     transaction_t *t, *tnext;
     journal_block_t *b, *bnext;
+    struct buffer_head *bh;
+    int blkcount, i;
+
+    blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
 
     /* XXX make optimization: group writing of neighboring blocks */
     dlist_foreach_entry(t, tnext, &jp->j_checkpoint_transactions, t_next) {
     	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
-    	    if (0 >= journal_write_block(jp, b->data, 1, b->blocknr)) {
-    	    	return -1;
-    	    }
+    		for (i = 0; i < blkcount; i++) {
+				bh = bcache_getblk_or_null(jp->j_dev, journal_jb2db(jp, b->blocknr) + i, jp->j_disk_sectorsize);
+				if (!bh) {
+					continue;
+				}
+
+				if (journal_block_inuse(jp, b)) {
+					bcache_buffer_unlock(bh);
+				} else {
+					bcache_flush_blk(bh);
+				}
+    		}
     	}
 
     	jp->j_tail += t->t_log_blocks;
@@ -118,6 +134,9 @@ int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
 				buffer_clear_flag(bh, BH_NEW);
 			}
 			buffer_set_flag(bh, BH_DIRTY);
+			/* Lock block in buffer cache until transaction commited */
+			buffer_set_flag(bh, BH_JOURNAL);
+
 			memcpy(bh->data, block->data + i * jp->j_disk_sectorsize, jp->j_disk_sectorsize);
 		}
 		bcache_buffer_unlock(bh);
@@ -195,4 +214,26 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {
 	return jp->j_dev->driver->write(jp->j_dev, data,
     		cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
+}
+
+static int journal_block_inuse(journal_t *jp, journal_block_t *block) {
+    journal_block_t *b, *bnext;
+
+    if (jp->j_running_transaction) {
+		dlist_foreach_entry(b, bnext, &jp->j_running_transaction->t_buffers, b_next) {
+			if (block->blocknr == b->blocknr) {
+				return 1;
+			}
+		}
+	}
+
+    if (jp->j_committing_transaction) {
+		dlist_foreach_entry(b, bnext, &jp->j_committing_transaction->t_buffers, b_next) {
+			if (block->blocknr == b->blocknr) {
+				return 1;
+			}
+		}
+	}
+
+    return 0;
 }
