@@ -49,31 +49,37 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 	return NULL;
 }
 
-int bcache_flush_blk(struct buffer_head *bh) {
-	return bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
-}
-
-int bcache_flush_all(void) {
+struct buffer_head *bcache_getblk_or_null(block_dev_t *bdev, int block, size_t size) {
+	struct buffer_head key = { .bdev = bdev, .block = block };
 	struct buffer_head *bh;
-	struct buffer_head **key;
 
 	mutex_lock(&bcache_mutex);
 
-	/* TODO dlist of all blocks */
-	for (key = hashtable_get_key_first(buffer_cache);
-			key != NULL;
-			key = hashtable_get_key_next(buffer_cache, key)) {
+	bh = (struct buffer_head *) hashtable_get(buffer_cache, &key);
 
-		bh = hashtable_get(buffer_cache, *key);
-
-		bcache_buffer_lock(bh);
-		bcache_flush_blk(bh);
-		bcache_buffer_unlock(bh);
+	if (!bh) {
+		mutex_unlock(&bcache_mutex);
+		return NULL;
 	}
 
+	bcache_buffer_lock(bh);
 	mutex_unlock(&bcache_mutex);
 
-	return 0;
+	return bh;
+}
+
+int bcache_flush_blk(struct buffer_head *bh) {
+	int res;
+
+	res = bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
+
+	hashtable_del(buffer_cache, bh);
+	bcache_buffer_unlock(bh);
+
+	free(bh->data);
+	pool_free(&buffer_head_pool, bh);
+
+	return res;
 }
 
 static void free_more_memory(size_t size) {
@@ -82,14 +88,22 @@ static void free_more_memory(size_t size) {
 
 	mutex_lock(&bcache_mutex);
 
+	key = hashtable_get_key_first(buffer_cache);
+
 	while ((int)size > 0) {
-		key = (struct buffer_head **)hashtable_get_key_first(buffer_cache);
 		bh = hashtable_get(buffer_cache, *key);
 
 		bcache_buffer_lock(bh);
 		{
+			if (buffer_journal(bh)) {
+				bcache_buffer_unlock(bh);
+				key = hashtable_get_key_next(buffer_cache, key);
+				continue;
+			}
+
 			if (buffer_dirty(bh)) {
 				bcache_flush_blk(bh);
+				goto next_block;
 			}
 
 			hashtable_del(buffer_cache, *key);
@@ -99,7 +113,9 @@ static void free_more_memory(size_t size) {
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
 
+	next_block:
 		size -= bh->blocksize;
+		key = hashtable_get_key_next(buffer_cache, key);
 	}
 
 	mutex_unlock(&bcache_mutex);

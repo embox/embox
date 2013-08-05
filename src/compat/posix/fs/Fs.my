@@ -6,8 +6,7 @@ module All {
 		dirent,
 		fsop,
 		getcwd,
-		xattr,
-		sync
+		xattr
 }
 
 static module file {
@@ -68,10 +67,4 @@ static module xattr {
 	depends embox.fs.xattr
 	depends embox.fs.Perm
 	depends embox.security.api
-}
-
-static module sync {
-	source "sync.c"
-
-	depends embox.fs.buffer_cache
 }

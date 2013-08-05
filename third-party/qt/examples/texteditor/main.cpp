@@ -180,13 +180,6 @@ void save_pref(char *wall, char *font, int font_pt) {
 
 	ftruncate(fd, len);
 
-	/*
-	 *  XXX add sync() in this place is bad idea because of performance,
-	 *  but we don't have better mechanism as fsync() or synchronization before shutdown.
-	 *  So, simply force sync() here. --Alexander
-	 */
-	sync();
-
 	close(fd);
 }
 

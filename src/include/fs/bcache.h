@@ -13,13 +13,15 @@
 #include <kernel/thread/sync/mutex.h>
 #include <embox/block_dev.h>
 
-#define BH_NEW    0x00000001
-#define BH_LOCKED 0x00000002
-#define BH_DIRTY  0x00000004
+#define BH_NEW     0x00000001
+#define BH_LOCKED  0x00000002
+#define BH_DIRTY   0x00000004
+#define BH_JOURNAL 0x00000008
 
 #define buffer_new(bh) (bh->flags & BH_NEW)
 #define buffer_locked(bh) (bh->flags & BH_LOCKED)
 #define buffer_dirty(bh) (bh->flags & BH_DIRTY)
+#define buffer_journal(bh) (bh->flags & BH_JOURNAL)
 
 #define buffer_set_flag(bh, flag) bh->flags |= flag
 #define buffer_clear_flag(bh, flag) bh->flags &= ~flag
@@ -51,17 +53,18 @@ static inline void bcache_buffer_unlock(struct buffer_head *bh) {
 extern struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t size);
 
 /**
+ * @return
+ *   Block with number @a block and with size @a size from device @a bdev if block exists in cache.
+ *   Block is returned in locked state. Otherwise NULL will return.
+ */
+extern struct buffer_head *bcache_getblk_or_null(block_dev_t *bdev, int block, size_t size);
+
+/**
  * Force flushing of block @a bh on disk.
  *
  * @return
  *   Result of writing to disk.
  */
 extern int bcache_flush_blk(struct buffer_head *bh);
-
-/**
- * XXX it is temporary function replaces function that flushes all blocks of specified file
- *  (used by fsync)
- */
-extern int bcache_flush_all(void);
 
 #endif /* FS_BCACHE_H_ */
