@@ -3,6 +3,9 @@ package embox.fs.driver
 module ntfs {
 	depends third_party.ntfs_3g.core
 
+	option number ntfs_inode_quantity=64
+	option number ntfs_descriptor_quantity=4
+
 	source "order.mk"
 
 	@IncludePath("$(ROOT_DIR)/build/ntfs-3g/include")
