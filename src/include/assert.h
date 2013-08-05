@@ -11,7 +11,7 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
-#include <module/embox/lib/LibCDiagnostic.h>
+#include <module/embox/lib/LibCAssert.h>
 
 /**
  * If @a condition expression evaluates to @c 0 (@c false), then

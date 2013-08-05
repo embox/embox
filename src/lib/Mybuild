@@ -33,10 +33,12 @@ static module LibExec {
 	depends LibElf
 }
 
-static module LibCDiagnostic {
+static module LibCAssert {
 	source "assert.c"
 	source "assert_impl.h"
-	depends LibCStdio
+
+	depends Printk
+	depends Sprintf
 }
 
 static module LibCMisc {
@@ -49,12 +51,16 @@ static module LibCType {
 	source "ctype/ctype.c"
 }
 
-static module LibCStdlib {
-	source "stdlib/bsearch.c"
-	source "stdlib/qsort.c"
+static module LibCRand {
 	source "stdlib/rand.c"
 	source "stdlib/random.c"
 	source "stdlib/random_r.c"
+}
+
+
+static module LibCStdlib {
+	source "stdlib/bsearch.c"
+	source "stdlib/qsort.c"
 	source "stdlib/strtod.c"
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
@@ -119,7 +125,7 @@ static module LibCMath {
 
 }
 
-static module LibCMathInt {
+static module LibGcc {
 	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
@@ -131,57 +137,75 @@ static module LibCMathInt {
 	source "gcc/umoddi3.c"
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
+	source "gcc/mulsi3.c"
+}
+
+static module Print {
+	option number support_floating = 1
+
+	source "stdio/printf_impl.c"
+	source "stdio/printf_impl.h"
+
+	//depends LibCMath // depends from support_floating value
+	depends LibCStdlib // atoi
+	depends LibCType
+}
+
+static module Printk {
+	option boolean lf_crlf_map = true
+	source "stdio/printk.c"
+
+	depends Print
+}
+
+static module Sprintf {
+	source "stdio/sprintf.c"
+	source "stdio/snprintf.c"
+
+	depends Print
+	depends LibGcc
 }
 
 static module LibCStdio {
 
-	option boolean stdio_lf_crlf_map = true
 	option number file_quantity = 16
-	option number support_floating = 1
 
 	source "stdio/fgetc.c"
 
 	source "stdio/file_ops.c"
 	depends embox.compat.posix.fs.open
 
+	source "stdio/printf.c"
+	source "stdio/fprintf.c"
+	depends Print
+
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
 	source "stdio/perror.c"
-	source "stdio/printf.c"
-	source "stdio/printf_impl.c"
-	source "stdio/fprintf.c"
-	source "stdio/sprintf.c"
-	source "stdio/snprintf.c"
-	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/rename.c"
 	source "stdio/scanf.c"
 
-	/*depends LibCStdlib // atoi*/
-	depends LibCMathInt
-	//depends LibCMath // depens from support_floating value
 	depends LibCString
-	depends LibCType
-	//depends embox.driver.iodev.core
+	depends Sprintf
+
+	/*depends embox.driver.iodev.core*/
 	depends embox.compat.posix.fs.file
 
-	/**
-	 * XXX
-	 * putchar depends from embox.kernel.task.task_table
-	 */
 }
 
 static module LibC {
 	source "time/ctime.c"
 	source "time/strftime.c"
 
-	depends LibCDiagnostic
+	depends LibCAssert
 	depends LibCMisc
 	depends LibCType
 	depends LibCStdlib
 	depends LibCString
 	depends LibCMath
 	depends	LibCStdio
+	depends	LibCRand
 /* not here */
 	source "shell/tokenizer.c"
 }
