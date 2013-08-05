@@ -7,5 +7,6 @@ module arch {
 
 module boot {
 	source "boot.S"
+	source "init_hooks.c"
 }
 
