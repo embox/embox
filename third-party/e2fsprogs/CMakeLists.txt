@@ -5,9 +5,11 @@ include(ExternalProject)
 ExternalProject_Add(
    e2fsprogs
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.42.8/e2fsprogs-1.42.8.tar.gz
 
-   # URL_MD5 919aedd0c84e1d8fb07129251dbe05bf
+   # ToDo: replace by actual MD5 sum
+   URL_MD5 919aedd0c84e1d8fb07129251dbe05bf
 
    UPDATE_COMMAND ""
 

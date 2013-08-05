@@ -2,6 +2,7 @@ include(ExternalProject)
 ExternalProject_Add(
    STLport
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://citylan.dl.sourceforge.net/project/stlport/STLport/STLport-5.2.1/STLport-5.2.1.tar.bz2
    URL_MD5 a8341363e44d9d06a60e03215b38ddde
    UPDATE_COMMAND ""

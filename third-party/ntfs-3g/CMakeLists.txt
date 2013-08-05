@@ -2,6 +2,7 @@ include(ExternalProject)
 ExternalProject_Add(
    ntfs-3g
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://tuxera.com/opensource/ntfs-3g_ntfsprogs-2013.1.13.tgz
    URL_MD5 2d6fb47ddf62b51733227126fe9227fe
    UPDATE_COMMAND ""

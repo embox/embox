@@ -2,6 +2,7 @@ include(ExternalProject)
 ExternalProject_Add(
    zeromq
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://download.zeromq.org/zeromq-3.2.2.tar.gz
    URL_MD5 df68431d9300da84a1a5f9a2784e33de
    UPDATE_COMMAND ""
@@ -25,6 +26,7 @@ ExternalProject_Add(
    czmq
    DEPENDS zeromq
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://download.zeromq.org/czmq-1.3.2.tar.gz
    URL_MD5 513fb1f9a7030c71c7d9a3a61f9970db
    UPDATE_COMMAND ""
@@ -47,6 +49,7 @@ ExternalProject_Add(
 ExternalProject_Add(
    zmq_host
    PREFIX ../host
+   DOWNLOAD_DIR ../../../download
    URL http://download.zeromq.org/zeromq-3.2.2.tar.gz
    URL_MD5 df68431d9300da84a1a5f9a2784e33de
    UPDATE_COMMAND ""

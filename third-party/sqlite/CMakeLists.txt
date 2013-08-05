@@ -2,6 +2,7 @@ include(ExternalProject)
 ExternalProject_Add(
    sqlite
    PREFIX ..
+   DOWNLOAD_DIR ../../../download
    URL http://www.sqlite.org/2013/sqlite-autoconf-3071600.tar.gz
    URL_MD5 919aedd0c84e1d8fb07129251dbe05bf
    UPDATE_COMMAND ""
