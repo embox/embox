@@ -15,6 +15,7 @@ void arch_init(void) {
 }
 
 void arch_idle(void) {
+	__asm__ __volatile__ ("wr %g0, %asr19");
 }
 
 unsigned int arch_excep_disable(void) {
