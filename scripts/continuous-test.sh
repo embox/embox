@@ -56,7 +56,7 @@ do_it timeout -s 9 $TIMEOUT "${atml2sim[$ATML]}"
 
 cat $OUTPUT_FILE
 
-for success_pattern in "Starting shell" "embox>"; do
+for success_pattern in "Started shell" "embox>"; do
 	grep "$success_pattern" $OUTPUT_FILE &>/dev/null && exit 0
 done
 

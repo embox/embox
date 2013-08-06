@@ -31,30 +31,32 @@ static const char *script_commands[] = {
 };
 
 #if START_SHELL
-static void setup_tty(const char *dev_name) {
+static int setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[PATH_MAX];
 
 	putenv("TERM=emterm");
 
 	if (strlen(dev_name) == 0) {
-		return;
+		return -EINVAL;
 	}
 
 	strncpy(full_name, "/dev/", sizeof(full_name));
 	strcat(full_name, dev_name);
 
 	if (-1 == (fd = open(full_name, O_RDWR))) {
-		return;
+		return -errno;
 	}
-
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
 
 	dup2(fd, STDIN_FILENO);
 	dup2(fd, STDOUT_FILENO);
 	dup2(fd, STDERR_FILENO);
+
+	if (fd > 2) {
+		close(fd);
+	}
+
+	return 0;
 }
 #endif
 
@@ -79,10 +81,10 @@ static int run_script(void) {
 	}
 
 #if START_SHELL
-	printk("\nStarting shell [%s] at device [%s]\n",
-		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
-
 	setup_tty(OPTION_STRING_GET(tty_dev));
+
+	printf("\nStarted shell [%s] on device [%s]\n",
+		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 
 	shell_run(shell);
 #endif

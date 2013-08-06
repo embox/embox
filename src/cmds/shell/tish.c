@@ -135,8 +135,7 @@ static void * run_cmd(void *data) {
 	cdata = (struct cmd_data *)data;
 
 	if (-1 == tcsetpgrp(STDIN_FILENO, getpid())) {
-		free(cdata);
-		return NULL; /* error: -errno */
+		/* running noninteractive */
 	}
 
 	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
