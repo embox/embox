@@ -65,14 +65,12 @@ static const struct task_idx_ops read_ops = {
 		.read = pipe_read,
 		.close = pipe_close,
 		.fcntl = pipe_fcntl,
-		.type = TASK_RES_OPS_REGULAR
 };
 
 static const struct task_idx_ops write_ops = {
 		.write = pipe_write,
 		.close = pipe_close,
 		.fcntl = pipe_fcntl,
-		.type = TASK_RES_OPS_REGULAR
 };
 
 int pipe(int pipefd[2]) {
@@ -304,13 +302,22 @@ static int pipe_pty_ioctl(struct idx_desc *desc, int request, void *data) {
 	return 0;
 }
 
+static int pipe_pty_fstat(struct idx_desc *data, void *buff) {
+	struct stat *st = buff;
+
+	st->st_mode = S_IFCHR;
+
+	return 0;
+
+}
+
 static const struct task_idx_ops pipe_pty_ops = {
 		.write = pipe_write,
 		.read  = pipe_read,
 		.close = pipe_close,
 		.fcntl = pipe_fcntl,
 		.ioctl = pipe_pty_ioctl,
-		.type = TASK_RES_OPS_TTY,
+		.fstat = pipe_pty_fstat,
 };
 
 int pipe_pty(int pipe[2]) {

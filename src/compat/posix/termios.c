@@ -31,7 +31,11 @@ int tcsetattr(int fd, int opt, const struct termios *termios) {
 
 pid_t tcgetpgrp(int fd) {
 	pid_t pid;
-	ioctl(fd, TIOCGPGRP, &pid);
+
+	if (-1 == ioctl(fd, TIOCGPGRP, &pid)) {
+		return -1;
+	}
+
 	return pid;
 }
 

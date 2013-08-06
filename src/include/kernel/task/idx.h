@@ -25,11 +25,6 @@ extern "C" {
 
 struct event;
 
-enum task_idx_ops_type {
-	TASK_RES_OPS_REGULAR,
-	TASK_RES_OPS_TTY
-};
-
 typedef unsigned int idx_flags_t;
 
 struct task_idx_ops;
@@ -64,7 +59,6 @@ struct task_idx_ops {
 	long int (*ftell)(struct idx_desc *data);
 	int (*fstat)(struct idx_desc *data, void *buff);
 	int (*ftruncate)(struct idx_desc *data, off_t length);
-	const enum task_idx_ops_type type;
 };
 
 static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
