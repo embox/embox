@@ -2,14 +2,14 @@
  * @file
  * @brief
  *
- * @date 16.11.12
- * @author Anton Bondarev
+ * @author  Anton Kozlov
+ * @date    06.08.2013
  */
 
-#ifndef LIMITS_H_
-#define LIMITS_H_
+#ifndef ASM_LIMITS_H_
+#define ASM_LIMITS_H_
 
-#include <asm/limits.h>
+#ifndef __ASSEMBLER__
 
 #define CHAR_BIT 	8
 #define CHAR_MIN 	SCHAR_MIN
@@ -18,10 +18,10 @@
 #define SCHAR_MAX 	128
 #define UCHAR_MAX 	255
 
-#define WORD_BIT 	32
+#define WORD_BIT 	16
 #define INT_MIN		(-INT_MAX - 1)
-#define INT_MAX		2147483647
-#define UINT_MAX	4294967295U
+#define INT_MAX		32767
+#define UINT_MAX	65535
 
 #define SHRT_MIN	(-32768)
 #define SHRT_MAX	32767
@@ -37,15 +37,6 @@
 
 #define ULLONG_MAX	18446744073709551615ULL
 
-/**
- * Pathname Variable Values
- */
+#endif /* __ASSEMBLER__ */
 
-/* Maximum number of bytes in a filename (not including \0) */
-#define NAME_MAX 32
-
-/* Maximum number of bytes in a pathname, including \0 character */
-#define PATH_MAX 256
-
-
-#endif /* LIMITS_H_ */
+#endif /* ASM_LIMITS_H_ */
