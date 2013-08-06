@@ -86,7 +86,6 @@ static const struct task_idx_ops task_idx_ops_term = {
 		.read = term_read,
 		.write = term_write,
 		.close = term_close,
-		.type = TASK_RES_OPS_TTY
 };
 
 int term(int fd) {
