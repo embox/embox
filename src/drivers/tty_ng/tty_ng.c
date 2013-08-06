@@ -40,6 +40,7 @@ struct param {
 static int _canon_read(struct idx_desc *data, void *buf, size_t size);
 static int _write(struct idx_desc *data, const void *buf, size_t nbyte);
 static int _ioctl(struct idx_desc *data, int request, void *);
+static int _fstat(struct idx_desc *data, void *buff);
 static int _close (struct idx_desc *data);
 
 const struct task_idx_ops task_idx_ops_tty = {
@@ -47,7 +48,7 @@ const struct task_idx_ops task_idx_ops_tty = {
 	.read = _canon_read,
 	.write = _write,
 	.ioctl = _ioctl,
-	.type = TASK_RES_OPS_TTY,
+	.fstat = _fstat,
 };
 
 static struct tty_buf *current_tty;
@@ -148,6 +149,15 @@ static int _ioctl(struct idx_desc *data, int request, void *t) {
 	}
 
 	return 0;
+}
+
+static int _fstat(struct idx_desc *data, void *buff) {
+	struct stat *st = buff;
+
+	st->st_mode = S_IFCHR;
+
+	return 0;
+
 }
 
 static int _close (struct idx_desc *data) {
