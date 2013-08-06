@@ -70,48 +70,39 @@ static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
 	return tty_ioctl(tty, request, data);
 }
 
+static int iodev_fstat(struct idx_desc *data, void *buff) {
+	struct stat *st = buff;
+
+	st->st_mode = S_IFCHR;
+
+	return 0;
+
+}
+
 static const struct task_idx_ops iodev_idx_ops = {
 	.read = iodev_read,
 	.write = iodev_write,
 	.close = iodev_close,
 	.ioctl = iodev_ioctl,
-	.type = TASK_RES_OPS_TTY
+	.fstat = iodev_fstat,
 };
-
-static int check_valid(int fd, int reference_fd) {
-	if (fd == reference_fd) {
-		return 0;
-	}
-
-	for (int i = 0; i < reference_fd; i++) {
-		close(i);
-	}
-
-	if (fd < 0) {
-		return fd;
-	}
-
-	close(fd);
-	return -1;
-}
 
 extern struct tty *diag_tty;
 
 static int iodev_env_init(void) {
 	int fd;
-	int res = 0;
-
 
 	fd = task_self_idx_alloc(&iodev_idx_ops, diag_tty);
-	if ((res = check_valid(fd, 0)) != 0) {
-		return res;
+	if (fd < 0) {
+		return fd;
 	}
 
-	for (int i = 1; i <= 2; i++) {
-		fd = dup(0);
-		if ((res = check_valid(fd, i)) != 0) {
-			return res;
-		}
+	dup2(fd, STDIN_FILENO);
+	dup2(fd, STDOUT_FILENO);
+	dup2(fd, STDERR_FILENO);
+
+	if (fd > 2) {
+		close(fd);
 	}
 
 	return 0;
