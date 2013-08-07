@@ -28,6 +28,13 @@ static struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 	struct node *child;
 	int ret;
 
+	path = path_next(path, NULL);
+
+	if (!path) {
+		SET_ERRNO(EINVAL);
+		return NULL;
+	}
+
 	if (NULL != strchr(path, '/')) {
 		SET_ERRNO(ENOENT);
 		return NULL;

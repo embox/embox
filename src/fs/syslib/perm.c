@@ -40,39 +40,39 @@ int fs_perm_check(struct node *node, int fd_flags) {
 }
 
 int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,
-		struct node **node) {
-	struct node *child;
+		struct node **nodelast) {
+	struct node *node;
 	size_t len = 0;
 	int ret;
-
-	if (pathlast != NULL) {
-		*pathlast = path;
-	}
-
-	*node = root ? root : vfs_get_leaf();
 
 	if (!path) {
 		return -EINVAL;
 	}
 
+	node = root ? root : vfs_get_leaf();
+
 	while (1) {
-		if (NULL == (path = path_next(path + len, &len))) {
+
+		path = path_next(path + len, &len);
+
+		*nodelast = node;
+
+		if (pathlast != NULL) {
+			*pathlast = path;
+		}
+
+		if (!path) {
 			return 0;
 		}
 
-		if (0 != (ret = fs_perm_check(*node, FS_MAY_EXEC))) {
+		if (0 != (ret = fs_perm_check(node, FS_MAY_EXEC))) {
 			return ret;
 		}
 
-		if (NULL == (child = vfs_lookup_childn(*node, path, len))) {
+		if (NULL == (node = vfs_lookup_childn(node, path, len))) {
 			return -ENOENT;
 		}
 
-		*node = child;
-
-		if (pathlast != NULL) {
-			*pathlast = path_next(path + len, NULL);
-		}
 	}
 
 	return 0;
