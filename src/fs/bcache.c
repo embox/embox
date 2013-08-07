@@ -50,40 +50,6 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 	return NULL;
 }
 
-struct buffer_head *bcache_getblk_or_null(block_dev_t *bdev, int block, size_t size) {
-	struct buffer_head key = { .bdev = bdev, .block = block };
-	struct buffer_head *bh;
-
-	mutex_lock(&bcache_mutex);
-
-	bh = (struct buffer_head *) hashtable_get(buffer_cache, &key);
-
-	if (!bh) {
-		mutex_unlock(&bcache_mutex);
-		return NULL;
-	}
-
-	bcache_buffer_lock(bh);
-	mutex_unlock(&bcache_mutex);
-
-	return bh;
-}
-
-int bcache_flush_blk(struct buffer_head *bh) {
-	int res;
-
-	res = bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
-
-	hashtable_del(buffer_cache, bh);
-	dlist_del(&bh->bh_next);
-	bcache_buffer_unlock(bh);
-
-	free(bh->data);
-	pool_free(&buffer_head_pool, bh);
-
-	return res;
-}
-
 static void free_more_memory(size_t size) {
 	struct buffer_head *bh, *bhnext;
 
@@ -101,11 +67,9 @@ static void free_more_memory(size_t size) {
 				continue;
 			}
 
-			size -= bh->blocksize;
-
 			if (buffer_dirty(bh)) {
-				bcache_flush_blk(bh);
-				continue;
+				/* Write directly to disk */
+				bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
 			}
 
 			dlist_del(&bh->bh_next);
@@ -115,6 +79,7 @@ static void free_more_memory(size_t size) {
 
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
+		size -= bh->blocksize;
 	}
 
 	mutex_unlock(&bcache_mutex);

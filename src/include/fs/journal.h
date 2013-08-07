@@ -60,6 +60,10 @@ typedef struct journal_s journal_t;      /* Journal control structure */
  * Represents a single in-memory block.
  */
 typedef struct journal_block_s {
+	/**
+	 * XXX suppose the better solution will be add *bh not *bh[8]
+	 */
+	struct buffer_head *bh[8]; /** Corresponding buffer_heads (up to 8) */
     block_t blocknr;	 /** Block number. */
     char *data;		 /** Pointer to in-memory data. */
     struct dlist_head b_next; /** Linked list entry. */
@@ -296,7 +300,7 @@ extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);
 extern void journal_free_block(journal_t *jp, journal_block_t *jb);
 
 extern transaction_t *journal_new_trans(journal_t *journal);
-void journal_free_trans(journal_t *journal, transaction_t *t);
+extern void journal_free_trans(journal_t *journal, transaction_t *t);
 extern int journal_checkpoint_transactions(journal_t *jp);
 extern int journal_dirty_block(journal_handle_t *handle, journal_block_t *block);
 

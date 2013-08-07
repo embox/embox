@@ -16,9 +16,6 @@
 #include <fs/journal.h>
 #include <fs/bcache.h>
 
-/* Return involved block in active or commiting transaction or not. */
-static int journal_block_inuse(journal_t *jp, journal_block_t *block);
-
 journal_t *journal_create(journal_fs_specific_t *spec) {
     journal_t *jp;
 
@@ -80,20 +77,26 @@ int journal_checkpoint_transactions(journal_t *jp) {
 
     blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
 
-    /* XXX make optimization: group writing of neighboring blocks */
     dlist_foreach_entry(t, tnext, &jp->j_checkpoint_transactions, t_next) {
     	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
     		for (i = 0; i < blkcount; i++) {
-				bh = bcache_getblk_or_null(jp->j_dev, journal_jb2db(jp, b->blocknr) + i, jp->j_disk_sectorsize);
-				if (!bh) {
-					continue;
-				}
+    			bh = b->bh[i];
 
-				if (journal_block_inuse(jp, b)) {
-					bcache_buffer_unlock(bh);
-				} else {
-					bcache_flush_blk(bh);
-				}
+    			bcache_buffer_lock(bh);
+    			{
+					/* That means - if @a b is not up-to-date, than go to next journal block */
+					if (bh->journal_block != b) {
+						bcache_buffer_unlock(bh);
+						break;
+					}
+	    			/* If @a b is up-to-date (i.e. @a t is the last transaction that updated @b),
+	    			 * than unlock corresponding @a bh */
+					buffer_clear_flag(bh, BH_JOURNAL);
+					/* XXX make optimization: group writing of neighboring blocks */
+					jp->j_dev->driver->write(jp->j_dev, bh->data, bh->blocksize, bh->block);
+					buffer_clear_flag(bh, BH_DIRTY);
+    			}
+    			bcache_buffer_unlock(bh);
     		}
     	}
 
@@ -134,9 +137,21 @@ int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
 				buffer_clear_flag(bh, BH_NEW);
 			}
 			buffer_set_flag(bh, BH_DIRTY);
-			/* Lock block in buffer cache until transaction commited */
+
+			/* Lock block in buffer cache until the last transaction in jp->j_checkpoint_transactions list,
+			 * that modified this block, will be checkpointed */
 			buffer_set_flag(bh, BH_JOURNAL);
 
+			bh->journal_block = block;
+			block->bh[i] = bh;
+
+			/*
+			 * TODO
+			 * Remove this memcpy() because we can share journal's and buffer cache's data and so do only one copy.
+			 * This can be done in many ways and I don't know which is better - share buffer_head, share some common
+			 * block_data, or create journal's internal block_data and share it with buffer cache.
+			 * So I postpone this optimization.
+			 */
 			memcpy(bh->data, block->data + i * jp->j_disk_sectorsize, jp->j_disk_sectorsize);
 		}
 		bcache_buffer_unlock(bh);
@@ -160,7 +175,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
 		free(jb);
 		return NULL;
     }
-
+    memset(jb, 0, sizeof jb);
     dlist_head_init(&jb->b_next);
     jb->blocknr = nr;
 
@@ -183,7 +198,7 @@ transaction_t *journal_new_trans(journal_t *journal) {
     t->t_journal = journal;
     t->t_tid     = journal->j_transaction_sequence++;
     t->t_state   = T_RUNNING;
-    //dlist_init(&t->t_reserved_list);
+
     dlist_init(&t->t_buffers);
     dlist_head_init(&t->t_next);
 
@@ -214,26 +229,4 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {
 	return jp->j_dev->driver->write(jp->j_dev, data,
     		cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
-}
-
-static int journal_block_inuse(journal_t *jp, journal_block_t *block) {
-    journal_block_t *b, *bnext;
-
-    if (jp->j_running_transaction) {
-		dlist_foreach_entry(b, bnext, &jp->j_running_transaction->t_buffers, b_next) {
-			if (block->blocknr == b->blocknr) {
-				return 1;
-			}
-		}
-	}
-
-    if (jp->j_committing_transaction) {
-		dlist_foreach_entry(b, bnext, &jp->j_committing_transaction->t_buffers, b_next) {
-			if (block->blocknr == b->blocknr) {
-				return 1;
-			}
-		}
-	}
-
-    return 0;
 }
