@@ -275,7 +275,6 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 		{
 			memcpy(bh->data, buffer + i * blksize, blksize);
 			buffer_clear_flag(bh, BH_NEW);
-			buffer_set_flag(bh, BH_DIRTY);
 		}
 		bcache_buffer_unlock(bh);
 	}

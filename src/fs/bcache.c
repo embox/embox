@@ -77,9 +77,10 @@ static void free_more_memory(size_t size) {
 		}
 		bcache_buffer_unlock(bh);
 
+		size -= bh->blocksize;
+
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
-		size -= bh->blocksize;
 	}
 
 	mutex_unlock(&bcache_mutex);
