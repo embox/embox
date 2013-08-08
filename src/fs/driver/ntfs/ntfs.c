@@ -5,7 +5,7 @@
  *
  * @date Jul 23, 2013
  * @author: L'auteur est à l'avance embarassé par la qualité du code
- *          ci-dessous donc il voudrais encore rester inconnu.
+ *          ci-dessous donc il voudrait encore rester inconnu.
  */
 
 #include <fs/fs_driver.h>
@@ -50,6 +50,11 @@ struct ntfs_file_info {
 	MFT_REF mref;
 };
 
+struct ntfs_desc_info {
+	ntfs_inode *ni;
+	ntfs_attr *attr;
+};
+
 
 /* ntfs filesystem description pool */
 POOL_DEF(ntfs_fs_pool, struct ntfs_fs_info,
@@ -59,15 +64,186 @@ POOL_DEF(ntfs_fs_pool, struct ntfs_fs_info,
 POOL_DEF(ntfs_file_pool, struct ntfs_file_info,
 		OPTION_GET(NUMBER,ntfs_inode_quantity));
 
+/* ntfs open file descriptor pool */
+POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
+		OPTION_GET(NUMBER,ntfs_desc_quantity));
+
+
+static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
 static int embox_ntfs_node_create(struct node *parent_node, struct node *new_node) {
+	ntfs_inode *ni, *pni;
+	ntfschar *ufilename;
+	int ufilename_len;
+	struct ntfs_fs_info *pfsi;
+	struct ntfs_file_info *pfi;
+	mode_t mode;
+
+	// This happens to be the first referenced function in the file, so it is here...
 	(void)__x86_verificator__;
+
+	pfi = parent_node->nas->fi->privdata;
+	pfsi = parent_node->nas->fs->fsi;
+
+	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
+	ufilename = NULL;
+	ufilename_len = ntfs_mbstoucs(new_node->name, &ufilename);
+	if (ufilename_len == -1) {
+		return -errno;
+	}
+
+	pni = ntfs_inode_open(pfsi->ntfs_vol, pfi->mref);
+	if (!pni) {
+		free(ufilename);
+		return -errno;
+	}
+
+	if (node_is_directory(new_node)) {
+		mode = S_IFDIR;
+	} else {
+		mode = S_IFREG;
+	}
+
+	ni = ntfs_create(pni, 0, ufilename, ufilename_len, mode);
+	if (!ni) {
+		int err = errno;
+		ntfs_inode_close(pni);
+		free(ufilename);
+		errno = err;
+		return -errno;
+	}
+
+	// ToDo: ??? node->nas->fs = dir_nas->fs
+
+	if (embox_ntfs_simultaneous_mounting_descend(new_node->nas, ni, false)) {
+		int err = errno;
+		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
+		ntfs_inode_close(pni);
+		free(ufilename);
+		errno = err;
+		return -errno;
+	}
+
+	if (!ntfs_inode_close(pni)) {
+		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
+		//       most appropriate solution would be to completely unmount file system.
+		int err = errno;
+		ni = ntfs_inode_open(pfsi->ntfs_vol, ((struct ntfs_file_info *)new_node->nas->fi->privdata)->mref);
+		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
+		pool_free(&ntfs_file_pool, new_node->nas->fi->privdata);
+                free(ufilename);
+		errno = err;
+		return -errno;
+	}
+
+	free(ufilename);
+
 	return 0;
 }
 
-static int embox_ntfs_node_delete(struct node *nod) {
+static int embox_ntfs_node_delete(struct node *node) {
+	ntfs_inode *ni, *pni;
+	struct node *parent_node;
+	ntfschar *ufilename;
+	int ufilename_len;
+	struct ntfs_fs_info *pfsi;
+	struct ntfs_file_info *pfi, *fi;
+
+	parent_node = node_parent(node);
+	if (!parent_node) {
+		return -EINVAL;
+	}
+	pfi = parent_node->nas->fi->privdata;
+	pfsi = parent_node->nas->fs->fsi;
+	fi = node->nas->fs->fsi;
+
+	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
+	ufilename = NULL;
+	ufilename_len = ntfs_mbstoucs(node->name, &ufilename);
+	if (ufilename_len == -1) {
+		return -errno;
+	}
+
+	pni = ntfs_inode_open(pfsi->ntfs_vol, pfi->mref);
+	if (!pni) {
+		free(ufilename);
+		return -errno;
+	}
+
+	ni = ntfs_inode_open(pfsi->ntfs_vol, fi->mref);
+	if (!ni) {
+		int err = errno;
+		ntfs_inode_close(pni);
+		free(ufilename);
+		errno = err;
+		return -errno;
+	}
+
+	if (ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len)) {
+		int err = errno;
+		ntfs_inode_close(ni);
+		ntfs_inode_close(pni);
+		free(ufilename);
+		errno = err;
+		return -errno;
+	}
+
+	free(ufilename);
+
+	if (!ntfs_inode_close(ni)) {
+		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
+		//       most appropriate solution would be to completely unmount file system.
+		int err = errno;
+		ntfs_inode_close(pni);
+		errno = err;
+		return -errno;
+	}
+
+	if (!ntfs_inode_close(pni)) {
+		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
+		//       most appropriate solution would be to completely unmount file system.
+		return -errno;
+	}
+
+	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
+	free(ufilename);
+
 	return 0;
 }
+
+static int embox_ntfs_truncate(struct node *node, off_t length) {
+	struct ntfs_file_info *fi;
+	struct ntfs_fs_info *fsi;
+	ntfs_inode *ni;
+	ntfs_attr *attr;
+	int ret;
+
+	fi = node->nas->fi->privdata;
+	fsi = node->nas->fs->fsi;
+
+	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
+	if (!ni) {
+		return -errno;
+	}
+
+	attr = ntfs_attr_open(ni, AT_DATA, NULL, 0);
+	if (!attr) {
+		int err = errno;
+		ntfs_inode_close(ni);
+		errno = err;
+		return -errno;
+	}
+
+	ret = ntfs_attr_truncate(attr, length);
+
+	ntfs_attr_close(attr);
+	if (ntfs_inode_close(ni)) {
+		return -errno;
+	}
+
+	return ret;
+}
+
 
 extern struct ntfs_device_operations ntfs_device_bdev_io_ops;
 
@@ -85,8 +261,6 @@ static mode_t ntfs_type_to_mode_fmt(const unsigned dt_type) {
 	default: return 0;
 	}
 }
-
-static int embox_ntfs_simultaneous_mounting_descend(struct nas *dir_nas, ntfs_inode *ni);
 
 static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		const int name_len, const int name_type, const s64 pos,
@@ -140,11 +314,10 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		return -1;
 	}
 
-    return embox_ntfs_simultaneous_mounting_descend(node->nas, ni);
+    return embox_ntfs_simultaneous_mounting_descend(node->nas, ni, true);
 }
 
-/* This function is responsible for closing ni */
-static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni) {
+static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool close_on_err) {
 	struct ntfs_file_info *fi;
 	s64 pos;
 
@@ -173,7 +346,9 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 	return 0;
 
  error:
- 	ntfs_inode_close(ni);
+ 	if (close_on_err) {
+ 		ntfs_inode_close(ni);
+ 	}
     return -1;
 }
 
@@ -282,6 +457,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 		rc = errno;
 		goto error;
 	} else
+		// ToDo: it is probably possible not to use caches
 		ntfs_create_lru_caches(vol);
 
 	fsi->ntfs_dev = ntfs_dev;
@@ -292,7 +468,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-    rc = embox_ntfs_simultaneous_mounting_descend(dir_node->nas, ni);
+    rc = embox_ntfs_simultaneous_mounting_descend(dir_node->nas, ni, true);
 	if (rc) {
 		goto error;
 	}
@@ -303,6 +479,101 @@ error:
 	embox_ntfs_umount(dir);
 
 	return -rc;
+}
+
+static int ntfs_open(struct node *node, struct file_desc *file_desc,
+		int flags)
+{
+	struct ntfs_file_info *fi;
+	struct ntfs_fs_info *fsi;
+	struct ntfs_desc_info *desc;
+	ntfs_inode *ni;
+	ntfs_attr *attr;
+
+	fi = node->nas->fi->privdata;
+	fsi = node->nas->fs->fsi;
+
+	// ToDo: it is not necessary to allocate dedicated structure
+	//       ntfs_attr already contains pointer to ntfs_inode, so it is
+	//       necessary to keep only ntfs_attr
+	desc = pool_alloc(&ntfs_desc_pool);
+	if (!desc) {
+		return -ENOMEM;
+	}
+
+	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
+	if (!ni) {
+		pool_free(&ntfs_desc_pool, desc);
+		return -errno;
+	}
+
+	attr = ntfs_attr_open(ni, AT_DATA, NULL, 0);
+	if (!attr) {
+		int err = errno;
+		pool_free(&ntfs_desc_pool, desc);
+		ntfs_inode_close(ni);
+		errno = err;
+		return -errno;
+	}
+
+	desc->attr = attr;
+	desc->ni = ni;
+	file_desc->file_info = desc;
+
+	// Yet another bullshit: size is not valid until open
+	node->nas->fi->ni.size = attr->data_size;
+
+	return 0;
+}
+
+static int ntfs_close(struct file_desc *file_desc)
+{
+	struct ntfs_desc_info *desc;
+	int res;
+
+	desc = file_desc->file_info;
+
+	ntfs_attr_close(desc->attr);
+	res = ntfs_inode_close(desc->ni);
+	pool_free(&ntfs_desc_pool, desc);
+
+	if (res) {
+		return -errno;
+	}
+
+	return 0;
+}
+
+static size_t ntfs_read(struct file_desc *file_desc, void *buf, size_t size)
+{
+	struct ntfs_desc_info *desc;
+	size_t res;
+
+	desc = file_desc->file_info;
+
+	res = ntfs_attr_pread(desc->attr, file_desc->cursor, size, buf);
+
+	if (res > 0) {
+		file_desc->cursor += res;
+	}
+
+	return res;
+}
+
+static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
+	struct ntfs_desc_info *desc;
+	size_t res;
+
+	desc = file_desc->file_info;
+
+	res = ntfs_attr_pwrite(desc->attr, file_desc->cursor, size, buf);
+
+	if (res > 0) {
+		file_desc->cursor += res;
+		file_desc->node->nas->fi->ni.size = desc->attr->data_size;
+	}
+
+	return res;
 }
 
 
@@ -511,7 +782,7 @@ static s64 ntfs_device_bdev_io_pwrite(struct ntfs_device *dev, const void *buf,
 		errno = EINVAL;
 		return -1;
 	}
-	if (!block_dev_write(bdev, buf, count/blksize, offset/blksize)) {
+	if (count == block_dev_write(bdev, buf, count, offset/blksize)) {
 		return count;
 	}
 	errno = EIO;
@@ -592,11 +863,19 @@ static const struct fsop_desc ntfs_fsop = {
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,
 	.umount = embox_ntfs_umount,
+	.truncate = embox_ntfs_truncate,
+};
+
+static struct kfile_operations ntfs_fop = {
+	.open = ntfs_open,
+	.close = ntfs_close,
+	.read = ntfs_read,
+	.write = ntfs_write,
 };
 
 static const struct fs_driver ntfs_driver = {
 	.name = "ntfs",
-	.file_op = NULL,
+	.file_op = &ntfs_fop,
 	.fsop = &ntfs_fsop,
 };
 

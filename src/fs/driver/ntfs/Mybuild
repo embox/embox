@@ -3,6 +3,7 @@ package embox.fs.driver
 module ntfs {
 	depends third_party.ntfs_3g.core
 
+	option number ntfs_desc_quantity=8
 	option number ntfs_inode_quantity=64
 	option number ntfs_descriptor_quantity=4
 
