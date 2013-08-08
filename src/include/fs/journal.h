@@ -114,7 +114,7 @@ typedef int (*journal_update_t)(journal_t *jp);
 /**
  * Check if there are free space for nblocks.
  */
-typedef int (*journal_trans_freespace_t)(journal_t *jp, int nblocks);
+typedef int (*journal_trans_freespace_t)(journal_t *jp, size_t nblocks);
 
 typedef struct journal_fs_specific_s {
 	journal_load_t load;
@@ -206,7 +206,7 @@ struct transaction_s {
      */
     int t_outstanding_credits;
 
-    /* Reference count of handlers */
+    /* Reference count of handlers [j_list_lock] */
     int t_ref;
 
     /*

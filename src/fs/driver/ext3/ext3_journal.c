@@ -122,19 +122,16 @@ uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
 	return buf[block - NDADDR];
 }
 
-int ext3_journal_trans_freespace(journal_t *jp, int nblocks) {
-    if (nblocks <= 0 || nblocks >= EXT3_JOURNAL_NBLOCKS_PER_TRANS(jp)) {
-		return -EINVAL;
+int ext3_journal_trans_freespace(journal_t *jp, size_t nblocks) {
+    if (EXT3_JOURNAL_NBLOCKS_NEEDED(jp, nblocks) > EXT3_JOURNAL_NBLOCKS_PER_TRANS(jp)) {
+    	return -1;
     }
 
-    if (EXT3_JOURNAL_NBLOCKS_NEEDED(jp, nblocks) > jp->j_free &&
-    		journal_checkpoint_transactions(jp) != 0) {
-    	return -ENOMEM;
-    }
-
-    if (EXT3_JOURNAL_NBLOCKS_NEEDED(jp, nblocks) >= EXT3_JOURNAL_NBLOCKS_PER_TRANS(jp) &&
-        jp->j_fs_specific.commit(jp) != 0) {
-    	return -ENOMEM;
+    if (EXT3_JOURNAL_NBLOCKS_NEEDED(jp, nblocks) > jp->j_free) {
+    	journal_checkpoint_transactions(jp);
+    	if (EXT3_JOURNAL_NBLOCKS_NEEDED(jp, nblocks) > jp->j_free) {
+    		return -1;
+    	}
     }
 
     return 0;

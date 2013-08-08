@@ -138,6 +138,6 @@ extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, si
 extern int ext3_journal_commit(journal_t *jp);
 extern int ext3_journal_update(journal_t *jp);
 extern uint32_t ext3_journal_bmap(journal_t *jp, block_t block);
-extern int ext3_journal_trans_freespace(journal_t *jp, int nblocks);
+extern int ext3_journal_trans_freespace(journal_t *jp, size_t nblocks);
 
 #endif /* EXT3_JOURNAL_H_ */
