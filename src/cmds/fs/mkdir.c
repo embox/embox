@@ -37,10 +37,6 @@ static int exec(int argc, char **argv) {
 
 	if (argc > 1) {
 		point = argv[argc - 1];
-		/*TODO relative path*/
-		if(0 != strncmp(point, "/", 1)) {
-			return -EINVAL;
-		}
 		if (-1 == mkdir(point, 0)) {
 			return -errno;
 		}
