@@ -20,7 +20,7 @@
 #include <drivers/video_term.h>
 #include <drivers/i8042.h>
 
-#define REGISTER_IN_VT OPTION_GET(NUMBER,register_in_vt)
+#define REGISTER_IN_VT 0 //OPTION_GET(NUMBER,register_in_vt)
 
 EMBOX_UNIT_INIT(keyboard_init);
 

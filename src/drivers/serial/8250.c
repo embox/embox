@@ -110,6 +110,8 @@ static struct uart_device uart0 = {
 		.operations = &uart_ops,
 };
 
+struct uart_device *diag_uart = &uart0;
+
 #include <embox/device.h>
 
 static int uart_init(void) {

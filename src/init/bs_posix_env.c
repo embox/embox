@@ -21,7 +21,7 @@
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(iodev_env_init);
-#if 0
+#if 1
 static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
@@ -32,8 +32,7 @@ static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	return (int) cbuf - (int) buf;
 
 }
-#endif
-#if 1
+#else
 static int iodev_read(struct idx_desc *desc, void *buf, size_t nbyte) {
 	struct tty *tty = desc->data->fd_struct;
 
@@ -87,12 +86,10 @@ static const struct task_idx_ops iodev_idx_ops = {
 	.fstat = iodev_fstat,
 };
 
-extern struct tty *diag_tty;
-
 static int iodev_env_init(void) {
 	int fd;
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, diag_tty);
+	fd = task_self_idx_alloc(&iodev_idx_ops, NULL);
 	if (fd < 0) {
 		return fd;
 	}
