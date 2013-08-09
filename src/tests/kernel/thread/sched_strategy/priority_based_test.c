@@ -43,7 +43,7 @@ static void *high_run(void *arg) {
 }
 
 static int setup(void) {
-	thread_priority_t l = 200, h = 210;
+	sched_priority_t l = 200, h = 210;
 
 	wait_queue_init(&wq);
 	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));

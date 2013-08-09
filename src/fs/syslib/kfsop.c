@@ -25,6 +25,8 @@
 #include <sys/file.h>
 #include <kernel/task/idx.h>
 #include <kernel/spinlock.h>
+#include <kernel/thread.h>
+
 #include <mem/misc/pool.h>
 
 #define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
@@ -555,7 +557,7 @@ int kumount(const char *dir) {
 
 static int flock_shared_get(flock_t *flock) {
 	flock_shared_t *shlock;
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 
 	shlock = pool_alloc(&flock_pool);
 	if (NULL == shlock) {
@@ -570,7 +572,7 @@ static int flock_shared_get(flock_t *flock) {
 
 static int flock_shared_put(flock_t *flock) {
 	flock_shared_t *shlock;
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 	struct dlist_head *item, *next;
 
 	dlist_foreach(item, next, &flock->shlock_holders) {
@@ -610,7 +612,7 @@ int kflock(int fd, int operation) {
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
-	struct thread *current = sched_current();
+	struct thread *current = thread_self();
 
 	/**
 	 * Base algorithm:

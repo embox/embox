@@ -19,7 +19,14 @@
 
 #include <kernel/task.h>
 
-#include "simple_queue.h"
+#include <kernel/sched/runq.h>
+
+
+void sched_strategy_init(struct thread *t) {
+	runq_item_init(&t->sched_attr.runq_link);
+	sched_affinity_init(t);
+	sched_timing_init(t);
+}
 
 void runq_init(struct runq *rq) {
 	assert(rq);
@@ -33,9 +40,9 @@ int runq_start(struct runq *rq, struct thread *t) {
 	assert(rq);
 	assert(t);
 	assert(current != t);
-	assert(!thread_state_started(t->state));
+	assert(!thread_state_active(t->state));
+	assert(!thread_state_exited(t->state));
 
-	//t->runq = rq;
 	t->state = thread_state_do_activate(t->state);
 
 	runq_queue_insert(&rq->queue, t);
@@ -48,7 +55,6 @@ int runq_finish(struct runq *rq, struct thread *t) {
 	assert(rq && t);
 	assert(thread_state_running(t->state));
 
-	//t->runq = NULL;
 	t->state = thread_state_do_exit(t->state);
 	if (!(is_current = (t == thread_self()))) {
 		runq_queue_remove(&rq->queue, t);
@@ -64,7 +70,7 @@ int runq_wake_thread(struct runq *rq, struct thread *t) {
 	assert(thread_state_sleeping(t->state));
 
 	t->state = thread_state_do_wake(t->state);
-	//t->runq = rq;
+
 	if (t != current) {
 		runq_queue_insert(&rq->queue, t);
 	}
@@ -76,9 +82,11 @@ void runq_wait(struct runq *rq) {
 	struct thread *current = thread_self();
 
 	assert(rq);
-	//assert(current->runq == rq);
 
 	current->state = thread_state_do_sleep(current->state);
+	/* we don't remove current because it is not in runq, we just mark it as
+	 * waiting and after sched switch all will be correct
+	 */
 }
 
 int runq_change_priority(struct runq *rq, struct thread *t, sched_priority_t new_priority) {
@@ -86,8 +94,6 @@ int runq_change_priority(struct runq *rq, struct thread *t, sched_priority_t new
 
 	assert(rq);
 	assert(t);
-
-	thread_priority_set(t, new_priority);
 
 	if (current != t) {
 		/* FIXME: */

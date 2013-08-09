@@ -35,7 +35,7 @@ int irq_stack_protection(void) {
 		return 0;
 	}
 
-	th = sched_current();
+	th = thread_seld();
 
 	if ((uint32_t) th->stack + STACK_SAFE_BOUND < cpu_get_stack()) {
 		return 0;

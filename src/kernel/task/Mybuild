@@ -10,7 +10,8 @@ module single extends api {
 	depends kernel_task
 
 	depends embox.kernel.thread.current.api
-	depends embox.kernel.sched.sched_policy.api
+	depends embox.kernel.sched.strategy.api
+	depends task_thread_api
 }
 
 module multi extends api {
@@ -26,13 +27,28 @@ module multi extends api {
 	   to determine current thread
 	*/
 	depends embox.kernel.thread.core
+	depends task_thread_api
 }
 
 module task_environment { }
 
+@DefaultImpl(NoThread)
+abstract module task_thread_api {
+}
+
+module NoThread extends task_thread_api {
+}
+
+module MultiThread extends task_thread_api {
+	source "multi_thread.c"
+}
+
 module kernel_task {
 	source "common.c"
+
+	depends task_thread_api
 	depends embox.util.DList
+
 }
 
 module std_signal {

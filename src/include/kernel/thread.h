@@ -37,24 +37,22 @@ struct thread;
  */
 typedef __thread_id_t thread_id_t;
 
-typedef __thread_priority_t thread_priority_t;
 
-#define THREAD_FLAG_USER             (0x1 << 0) /**< User-space thread. */
+#define THREAD_FLAG_JOINABLE         (0x1 << 0) /**< User-space thread. */
 #define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
-#define THREAD_FLAG_SUSPENDED        (0x1 << 2) /**< Initially suspended. */
+
 
 /** Create thread with parent priority */
-#define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
+#define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 2)
+/** Create thread with decremented priority */
+#define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 3)
+/** Create thread with incremented priority */
+#define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 4)
 
-/** Use with THREAD_FLAG_PRIORITY_INHERIT flag */
-#define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
-#define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
-
-/** Create task without attaching to a task. */
+/**< Create a new thread without launching */
+#define THREAD_FLAG_SUSPENDED        (0x1 << 5)
+/** Create a new thread without attaching to a task. */
 #define THREAD_FLAG_NOTASK           (0x1 << 6)
-
-/** Default thread affinity mask */
-#define THREAD_AFFINITY_NONE         ((unsigned int)-1)
 
 
 /**
@@ -234,10 +232,9 @@ extern int thread_terminate(struct thread *thread);
  */
 extern int thread_launch(struct thread *thread);
 
-extern int thread_set_priority(struct thread *thread,
-		thread_priority_t priority);
+extern int thread_set_priority(struct thread *t, sched_priority_t priority);
 
-extern thread_priority_t thread_get_priority(struct thread *thread);
+extern sched_priority_t thread_get_priority(struct thread *thread);
 
 /**
  * Returns running time of the thread. To get better precision should be

@@ -36,8 +36,7 @@ struct thread *thread_alloc(void) {
 
 	t = &block->thread;
 
-	t->stack = block->stack + sizeof(struct thread);
-	t->stack_sz = STACK_SZ - sizeof(struct thread);
+	thread_stack_init(t, STACK_SZ);
 
 	return t;
 }

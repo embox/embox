@@ -23,12 +23,12 @@ void task_stdsig_send(struct task *task, int sig) {
 
 	task->signal_table->sig_mask |= 1 << sig;
 
-	if(-1 != (res = sched_tryrun(task->main_thread))) {
+	if(-1 != (res = sched_signal(task->main_thread, sig))) {
 		return;
 	}
 
 	dlist_foreach_entry(th, tmp, &task->main_thread->thread_link, thread_link) {
-		if (-1 != (res = sched_tryrun(th))) {
+		if (-1 != (res = sched_signal(th, sig))) {
 			return;
 		}
 	}
