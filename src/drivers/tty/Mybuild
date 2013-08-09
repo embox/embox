@@ -26,6 +26,14 @@ module tty {
 	depends task_breaking
 	depends embox.util.ring
 	depends embox.kernel.irq_lock
+
+	depends termios_ops
+}
+
+module termios_ops {
+	source "termios_ops.c"
+
+	depends embox.util.ring
 }
 
 module tty_repo {

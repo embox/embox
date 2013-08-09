@@ -15,7 +15,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-
 #include <kernel/irq_lock.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
@@ -30,31 +29,18 @@
 
 extern void tty_task_break_check(struct tty *t, char ch);
 
-static void tty_tx_char(struct tty *t, char ch) {
-	// TODO locks? context? -- Eldar
-	ring_write_all_from(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1);
-	// t->ops->tx_char(t, ch);
-}
+extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
+extern int termios_gotc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
 /* Called in worker-protected context. */
 static void tty_output(struct tty *t, char ch) {
-	if (TC_L(t, ICANON) && TC_O(t, ONLCR) && ch == '\n')
-		tty_tx_char(t, '\r');
-
-	tty_tx_char(t, ch);
+	// TODO locks? context? -- Eldar
+	termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	// t->ops->tx_char(t, ch);
 }
 
 static void tty_echo(struct tty *t, char ch) {
-	if (!(TC_L(t, ECHO) || (TC_L(t, ECHONL) && ch == '\n')))
-		return;
-
-	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
-		/* ASCII table magic:  CTRL(ch) -> ^ch;  ASCII DEL -> ^? */
-		tty_output(t, '^');
-		ch = toascii(ch + 'A' - 1);  /* ('A' - 1) == ('@') == ('\0' + 0x40). */
-	}
-
-	tty_output(t, ch);
+	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
 }
 
 static void tty_echo_erase(struct tty *t) {

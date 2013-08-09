@@ -15,11 +15,6 @@
 #include "printf_impl.h"
 
 static void iodev_printchar(struct printchar_handler_data *d, int c) {
-#if OPTION_GET(BOOLEAN,lf_crlf_map)
-	if (c == '\n') {
-		iodev_putc('\r');
-	}
-#endif
 	iodev_putc(c);
 }
 

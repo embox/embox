@@ -152,7 +152,6 @@ static module Print {
 }
 
 static module Printk {
-	option boolean lf_crlf_map = true
 	source "stdio/printk.c"
 
 	depends embox.driver.iodev.core
