@@ -25,6 +25,8 @@ struct mutex {
 	int lock_count;
 };
 
+#define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
+
 /**
  * initializes given mutex
  * @param mutex mutex to initialize
