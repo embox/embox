@@ -2,7 +2,6 @@ package embox.driver
 
 module terminal {
 	source "terminal.c"
-	source "vtbuild.c", "vtparse.c", "vtparse_state.c"
 
 	depends embox.lib.LibC
 }
@@ -10,3 +9,4 @@ module terminal {
 module char_dev {
 	source "char_dev.c"
 }
+

@@ -58,10 +58,6 @@ int vterm_input(struct vterm *vt, struct input_event *event) {
 	const char *esc_body;
 	int keycode;
 
-	if (!key_is_pressed(event)) {
-		return 0;
-	}
-
 	keycode = keymap_kbd(event);
 	if (keycode < 0) {
 		return 0;

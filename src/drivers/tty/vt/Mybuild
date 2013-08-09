@@ -2,11 +2,15 @@ package embox.driver.tty
 
 module vterm {
 	source "video_term.c", "indev_manager.c"
-	source "vtesc.c"
 
+	depends embox.driver.input.core
+	depends embox.driver.input.keyboard.keymap
 	depends vterm_video
 }
 
 module vterm_video {
 	source "vterm_video.c"
+	source "vtesc.c"
+
+	depends embox.driver.terminal.vt
 }

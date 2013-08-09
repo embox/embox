@@ -24,10 +24,6 @@
 
 EMBOX_UNIT_INIT(keyboard_init);
 
-int key_is_pressed(struct input_event *event) {
-	return event->type & KEY_PRESSED;
-}
-
 static void keyboard_send_cmd(uint8_t cmd) {
 	unsigned int status;
 	keyboard_wait_write(status);
