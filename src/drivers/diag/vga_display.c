@@ -81,7 +81,7 @@ static void diag_vterm_copy_rows(struct vterm_video *t,
 			sizeof(data->video[0]) * nrows * t->width);
 }
 
-static const struct vterm_video_ops diag_tty_ops = {
+static const struct vterm_video_ops diag_vterm_ops = {
 		.init = &diag_vterm_init,
 		.cursor = &diag_vterm_cursor,
 		.putc = &diag_vterm_putc,
@@ -90,21 +90,15 @@ static const struct vterm_video_ops diag_tty_ops = {
 };
 
 static struct vga_vterm_video diag_vga = {
-		.video = {
-				.ops = &diag_tty_ops,
-				.width = 80,
-				.height = 24
-		},
 		.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
 };
 
-static struct vterm diag_vterm;
 void diag_init(void) {
-	vterm_init(&diag_vterm, &diag_vga.video, NULL);
+	vterm_video_init((struct vterm_video *) &diag_vga, &diag_vterm_ops, 80, 24);
 }
 
 void diag_putc(char ch) {
-	vterm_putc(&diag_vterm, ch);
+	vterm_video_putc((struct vterm_video *) &diag_vga, ch);
 
 }
 

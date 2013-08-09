@@ -31,6 +31,8 @@ module i8250 extends diag_api {
 
 module vga_display extends diag_api {
 	source "vga_display.c"
+
+	depends embox.driver.tty.vterm_video
 }
 
 module xuartlite extends diag_api {
