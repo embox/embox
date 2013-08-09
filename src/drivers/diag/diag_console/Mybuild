@@ -4,11 +4,9 @@ abstract module api { }
 
 module vterm extends api {
 	source "diag_console_vterm.c"
-	@NoRuntime depends embox.driver.iodev.core
-	@NoRuntime depends embox.driver.iodev.vterm
 }
 
 module serial extends api {
 	source "diag_console_serial.c"
-	@NoRuntime depends embox.driver.iodev.core
+
 }

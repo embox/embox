@@ -37,13 +37,11 @@ struct vterm {
 	struct vterm_video *video;
 	struct input_dev *indev;
 
-	struct termios termios;
+	//struct termios termios;
 	struct tty tty;
 	struct vtesc_executor executor;
 };
 
-
-extern struct vterm diag_vterm;
 
 extern void vterm_init(struct vterm *t, struct vterm_video *video, struct input_dev *indev);
 extern void vterm_putc(struct vterm *t, char ch);

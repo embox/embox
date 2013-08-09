@@ -4,19 +4,34 @@
  *
  * @date 05.02.13
  * @author Ilia Vaprol
+ * @author Anton Kozlov
  */
 
-#include <drivers/diag.h>
+#include <string.h>
 #include <asm/io.h>
+#include <drivers/diag.h>
 #include <drivers/video/vga.h>
 #include <drivers/iodev.h>
-#include <drivers/iodev_diag.h>
 #include <drivers/video_term.h>
 #include <util/member.h>
-#include <string.h>
 
 /* The video memory address. */
 #define VIDEO          0xB8000
+
+typedef struct vchar {
+	char c;
+	char a;
+}__attribute__((packed)) vchar_t;
+
+struct diag_vterm_data {
+	char attr;
+	vchar_t *video;
+};
+
+struct vga_vterm_video {
+	struct vterm_video video;
+	struct diag_vterm_data data;
+};
 
 static void diag_vterm_init(struct vterm_video *t) {
 	/**
@@ -74,19 +89,7 @@ static const struct vterm_video_ops diag_tty_ops = {
 		.copy_rows = &diag_vterm_copy_rows
 };
 
-static int iodev_diag_init(void) {
-	return 0;
-}
-
-static const struct iodev_ops iodev_diag_ops_struct = {
-	.init = &iodev_diag_init,
-	.getc = NULL,//&diag_getc,
-	.putc = &diag_putc,
-	.kbhit = NULL //&diag_kbhit,
-};
-
-const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;
-struct vga_vterm_video diag_vga = {
+static struct vga_vterm_video diag_vga = {
 		.video = {
 				.ops = &diag_tty_ops,
 				.width = 80,
@@ -94,3 +97,24 @@ struct vga_vterm_video diag_vga = {
 		},
 		.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
 };
+
+static struct vterm diag_vterm;
+void diag_init(void) {
+	vterm_init(&diag_vterm, &diag_vga.video, NULL);
+}
+
+void diag_putc(char ch) {
+	vterm_putc(&diag_vterm, ch);
+
+}
+
+char diag_getc(void) {
+	return '\0';
+
+}
+
+int diag_kbhit(void) {
+
+	return 0;
+}
+

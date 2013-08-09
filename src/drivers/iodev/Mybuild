@@ -3,24 +3,9 @@ package embox.driver.iodev
 module core {
 	source "iodev.c"
 
-	//depends video_api
-	depends embox.driver.tty.tty
 }
 
-module vterm {
-	source "iodev_diag.c"
-	depends embox.driver.tty.vterm
-}
-
-@DefaultImpl(iodev_no_video)
-abstract module video_api {
-}
-
-module iodev_no_video extends video_api {
-	source "iodev_no_video.c"
-}
-
-module iodev_video extends video_api {
+module iodev_video {
 	source "iodev_video.c"
 
 	depends embox.driver.video.fonts

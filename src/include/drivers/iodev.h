@@ -16,9 +16,11 @@ struct iodev_ops {
 	int (*kbhit)(void);
 };
 
+#if 0
 extern const struct iodev_ops *const iodev_diag_ops;
 extern const struct iodev_ops *const iodev_video_ops;
 extern struct vga_vterm_video diag_vga;
+#endif
 
 extern void iodev_setup(const struct iodev_ops *iodev);
 extern struct iodev_ops const *iodev_current(void);
