@@ -12,6 +12,7 @@
 #include <drivers/uart_device.h>
 #include <embox/unit.h>
 
+EMBOX_UNIT_INIT(uart_init);
 
 /** Default I/O addresses
  * NOTE: The actual I/O addresses used are stored
@@ -19,17 +20,6 @@
  */
 #define COM0_PORT_BASE      0x3f8
 #define COM0_IRQ_NUM        0x4
-
-//#define COM1_PORT           0x2f8
-//#define COM2_PORT           0x3e8
-//#define COM3_PORT           0x2e8
-
-#if 0
-/* if we want disable all interrupts */
-	out8(UART_DLAB, dev->base_addr + UART_LCR);
-	/*disable all uart interrupts*/
-	out8(0x0, dev->base_addr + UART_IER);
-#endif
 
 static uint8_t calc_line_stat(struct uart_params *params) {
 	uint8_t line_stat;
@@ -47,7 +37,7 @@ static uint8_t calc_line_stat(struct uart_params *params) {
 	return line_stat;
 }
 
-static int uart_setup(struct uart_device *dev, struct uart_params *params) {
+static int usetup(const struct uart_desc *dev, struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = calc_line_stat(params);
@@ -69,54 +59,51 @@ static int uart_setup(struct uart_device *dev, struct uart_params *params) {
 	out8(UART_ENABLE_MODEM, dev->base_addr + UART_MCR);
 
 	/*enable rx interrupt*/
-	out8(UART_IER_RX_ENABLE, dev->base_addr + UART_IER);
+	if (params->irq) {
+		/*enable rx interrupt*/
+		out8(UART_IER_RX_ENABLE, dev->base_addr + UART_IER);
+	}
 
 	return 0;
 }
 
-static int uart_putc(struct uart_device *dev, int ch) {
+static int uputc(const struct uart_desc *dev, int ch) {
 	while (!(in8(dev->base_addr + UART_LSR) & UART_EMPTY_TX));
 	out8((uint8_t) ch, dev->base_addr + UART_TX);
 	return 0;
 }
 
-static int uart_has_symbol(struct uart_device *dev) {
+static int uhas_symbol(const struct uart_desc *dev) {
 	return in8(dev->base_addr + UART_LSR) & UART_DATA_READY;
 }
 
-static int uart_getc(struct uart_device *dev) {
+static int ugetc(const struct uart_desc *dev) {
 	return in8(dev->base_addr + UART_RX);
 }
 
-static struct uart_params uart0_params = {
-		.baud_rate = OPTION_GET(NUMBER, baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8
-};
-
-static struct uart_ops uart_ops = {
-		.get = uart_getc,
-		.put = uart_putc,
-		.hasrx = uart_has_symbol,
-		.setup = uart_setup
-};
-
-static struct uart_device uart0 = {
+static const struct uart_desc uart0 = {
 		.dev_name = "uart0",
 		.irq_num = COM0_IRQ_NUM,
 		.base_addr = COM0_PORT_BASE,
-		.params = &uart0_params,
-		.operations = &uart_ops,
+		.uart_getc = ugetc,
+		.uart_putc = uputc,
+		.uart_hasrx = uhas_symbol,
+		.uart_setup = usetup,
 };
 
-struct uart_device *diag_uart = &uart0;
-
-#include <embox/device.h>
+static const struct uart_params uart_defparams = {
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = COM0_IRQ_NUM,
+};
 
 static int uart_init(void) {
-	uart_dev_register(&uart0);
+	struct uart *uart = uart_register(&uart0);
+
+	/* FIXME remove from here */
+	uart_set_params(uart, &uart_defparams);
+
 	return 0;
 }
-
-EMBOX_DEVICE("uart", &uart_dev_file_op, uart_init);

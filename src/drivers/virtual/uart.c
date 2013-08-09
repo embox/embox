@@ -5,12 +5,14 @@
  * @author: Anton Bondarev
  */
 
+
+#include <stdio.h>
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
 
-#include <util/ring_buff.h>
+#include <util/indexator.h>
 
 #include <fs/file_desc.h>
 #include <fs/node.h>
@@ -26,11 +28,16 @@
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched.h>
 
-static struct uart_device *uart_dev;
+#include <mem/misc/pool.h>
 
-static struct uart_device *uart_dev_lookup(char *name) {
-	return uart_dev;
-}
+#include <embox/device.h>
+
+POOL_DEF(uart_pool, struct uart, 4);
+INDEX_DEF(serial_indexator, 0, 32);
+static DLIST_DEFINE(uart_list);
+
+static int serial_register(struct uart *dev);
+static irq_return_t irq_handler(unsigned int irq_nr, void *data);
 
 static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 	int flags);
@@ -47,25 +54,126 @@ struct kfile_operations uart_dev_file_op = {
 	.ioctl = dev_uart_ioctl
 };
 
-static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
-	struct uart_device *dev = data;
+static struct uart *uart_alloc(const struct uart_desc *uartd) {
+	struct uart *uart = pool_alloc(&uart_pool);
 
-	while (dev->operations->hasrx(dev)) {
-		tty_rx_putc(&dev->tty, dev->operations->get(dev), 0);
+	if (!uart) {
+		return NULL;
+	}
+
+	uart->uart_desc = uartd;
+	dlist_head_init(&uart->lnk);
+	memset(&uart->tty, 0, sizeof(struct tty));
+	memset(&uart->params, 0, sizeof(struct uart_params));
+
+	return uart;
+}
+
+static void uart_free(struct uart *uart) {
+	pool_free(&uart_pool, uart);
+}
+
+static int serial_register(struct uart *dev) {
+	int idx;
+	char dev_name[] = "ttyS00";
+
+	idx = index_alloc(&serial_indexator, INDEX_ALLOC_MIN);
+	if(idx < 0) {
+		return -EBUSY;
+	}
+	sprintf(dev_name, "ttyS%d", idx);
+
+	char_dev_register(dev->uart_desc->dev_name, &uart_dev_file_op);
+
+	return ENOERR;
+}
+
+struct uart *uart_register(const struct uart_desc *uartd) {
+	struct uart *uart = NULL;
+
+	if (!(uart = uart_alloc(uartd))) {
+		return NULL;
+	}
+
+	uart->uart_desc = uartd;
+	dlist_add_next(&uart->lnk, &uart_list);
+
+	serial_register(uart);
+
+	return uart;
+}
+
+void uart_deregister(struct uart *uart) {
+	dlist_del(&uart->lnk);
+	uart_free(uart);
+}
+
+struct uart *uart_dev_lookup(const char *name) {
+	struct uart *uart, *nxt;
+
+	dlist_foreach_entry(uart, nxt, &uart_list, lnk) {
+		if (!name || !strcmp(name, uart->uart_desc->dev_name)) {
+			return uart;
+		}
+	}
+
+	return NULL;
+}
+
+int uart_set_params(struct uart *uart, const struct uart_params *params) {
+
+	if (uart->params.irq) {
+		irq_detach(uart->params.irq, uart);
+	}
+
+	memcpy(&uart->params, params, sizeof(struct uart_params));
+
+	if(uart->uart_desc->uart_setup) {
+		uart->uart_desc->uart_setup(uart->uart_desc, &uart->params);
+	}
+
+	if (params->irq) {
+		irq_attach(params->irq, irq_handler, 0, uart, uart->uart_desc->dev_name);
+	}
+
+	return 0;
+}
+
+int uart_get_params(struct uart *uart, struct uart_params *params) {
+	memcpy(params, &uart->params, sizeof(struct uart_params));
+
+	return 0;
+}
+
+static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
+	struct uart *dev = data;
+
+	while (uart_hasrx(dev)) {
+		tty_rx_putc(&dev->tty, uart_getc(dev), 0);
 	}
 
 	return 0;
 }
 
 static void uart_out_wake(struct tty *t) {
-	struct uart_device *uart_dev = member_cast_out(t, struct uart_device, tty);
+	struct uart *uart_dev = member_cast_out(t, struct uart, tty);
 	int ich;
 
 	while ((ich = tty_out_getc(t)) != -1)
-		uart_dev->operations->put(uart_dev, (char) ich);
+		uart_putc(uart_dev, (char) ich);
 }
 
 static void uart_term_setup(struct tty *tty, struct termios *termios) {
+	struct uart *uart = member_cast_out(t, struct uart, tty);
+
+	struct uart_params uparams;
+
+	uart_get_params(uart, &uparams);
+
+	/* TODO baud rate is ospeed. What with ispeed ? */
+	uparams.baud_rate = termios->c_ospeed;
+
+	uart_set_params(uart, &uparams);
 
 }
 
@@ -78,42 +186,39 @@ static struct tty_ops uart_tty_ops = {
  * file_operations
  */
 static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
-	struct uart_device *uart_dev;
-	uart_dev = uart_dev_lookup((char *)node->name);
+	struct uart *uart_dev = uart_dev_lookup(node->name);
+
+	if (!uart_dev) {
+		return -ENOENT;
+	}
 
 	tty_init(&uart_dev->tty, &uart_tty_ops);
 
-	if(uart_dev->operations->setup) {
-		uart_dev->operations->setup(uart_dev, uart_dev->params);
-	}
-
-	if (desc) {
-		desc->ops = &uart_dev_file_op;
-	}
-
-	irq_attach(uart_dev->irq_num, irq_handler, 0, (void *)uart_dev, uart_dev->dev_name);
+	assert(desc);
+	desc->ops = &uart_dev_file_op;
+	desc->file_info = uart_dev;
 
 	return 0;
 }
 
 static int dev_uart_close(struct file_desc *desc) {
-	struct uart_device *uart_dev;
+	struct uart *uart_dev = desc->file_info;
+	const struct uart_desc *uartd = uart_dev->uart_desc;
 
-	uart_dev = uart_dev_lookup((char *)desc->node->name);
+	irq_detach(uartd->irq_num, uart_dev);
 
-	irq_detach(uart_dev->irq_num, uart_dev);
 	return 0;
 }
 
 
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
-	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+	struct uart *uart_dev = desc->file_info;
 
-	return tty_read(&dev->tty, (char *) buff, size);
+	return tty_read(&uart_dev->tty, (char *) buff, size);
 }
 
 static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
-	struct uart_device *uart_dev = uart_dev_lookup((char*)desc->node->name);
+	struct uart *uart_dev = desc->file_info;
 	size_t cnt;
 	char *b;
 
@@ -121,31 +226,21 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 	b = (char*) buff;
 
 	while (cnt != size) {
-		uart_dev->operations->put(uart_dev, b[cnt++]);
+		uart_putc(uart_dev, b[cnt++]);
 	}
-	return 0;
+
+	return size;
 }
 
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
-	return ENOERR;
+	va_list va;
+	void *data;
+	struct uart *uart_dev = desc->file_info;
+
+	va_start(va, request);
+	data = va_arg(va, void *);
+	va_end(va);
+
+	return tty_ioctl(&uart_dev->tty, request, data);
 }
 
-int uart_dev_register(struct uart_device *dev) {
-	struct node node;
-
-	//TODO tmp (we can have only one device)
-	extern struct uart_device diag_uart;
-	uart_dev = &diag_uart;
-	uart_dev->operations = dev->operations;
-	uart_dev->base_addr = dev->base_addr;
-	uart_dev->params = dev->params;
-	uart_dev->irq_num = dev->irq_num;
-
-	uart_dev->fops = &uart_dev_file_op;
-	serial_register(uart_dev);
-
-	memcpy(node.name, dev->dev_name, 6);
-	dev_uart_open(&node, NULL, 0);
-
-	return 0;
-}
