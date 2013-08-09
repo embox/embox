@@ -36,6 +36,13 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 	return ts;
 }
 
+time_t ktime_get_timeseconds(void) {
+	struct timespec ts;
+
+	ktime_get_timespec (&ts);
+	return ts.tv_sec;
+}
+
 static int module_init(void) {
 	/* find clock_event_device with maximal resolution  */
 	kernel_clock_source = clock_source_get_best(CS_ANY);

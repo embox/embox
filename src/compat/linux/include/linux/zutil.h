@@ -6,9 +6,9 @@
  * @author Andrey Gazukin
  */
 
-#ifndef ZUTIL_H_
-#define ZUTIL_H_
+#ifndef __LINUX_ZUTIL_H_
+#define __LINUX_ZUTIL_H_
 
-#include <zlib/zutil.h>
+#include <zutil.h>
 
-#endif /* ZUTIL_H_ */
+#endif /* __LINUX_ZUTIL_H_ */

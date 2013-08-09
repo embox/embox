@@ -15,7 +15,7 @@
 
 /* These aren't used by much yet. If that changes, you might want
    to make them actually correct :) */
-#define PAGE_SIZE  PAGE_SIZE()  /* (0x1 << PAGE_SHIFT) */
+//#define PAGE_SIZE  PAGE_SIZE()  /* (0x1 << PAGE_SHIFT) */
 
 
 #endif /* __ASM_PAGE_H__ */

@@ -6,8 +6,8 @@
  * @author Andrey Gazukin
  */
 
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef __LINUX_TIMER_H_
+#define __LINUX_TIMER_H_
 
 #include <kernel/time/timer.h>
 

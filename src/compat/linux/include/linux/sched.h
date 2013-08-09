@@ -6,9 +6,13 @@
  * @author Andrey Gazukin
  */
 
-#ifndef SCHED_H_
-#define SCHED_H_
+#ifndef __LINUX_SCHED_H_
+#define __LINUX_SCHED_H_
 
-#include <posix/sched.h>
+#include <sched.h>
 
-#endif /* SCHED_H_ */
+#define cond_resched() do { } while(0)
+#define signal_pending(x) (0)
+
+
+#endif /* __LINUX_SCHED_H_ */

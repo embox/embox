@@ -1,13 +1,22 @@
-/*
+/**
+ * @file
+ * @brief
  *
- *
- *  Created on: 15.04.2013
- *  Author: Andrey Gazukin
+ * @date 30.07.2013
+ * @author Andrey Gazukin
  */
 
-#ifndef SLAB_H_
-#define SLAB_H_
+#ifndef __LINUX_SLAB_H__
+#define __LINUX_SLAB_H__
 
-#include <slab.h>
+#include <stdlib.h>
 
-#endif /* SLAB_H_ */
+#include <asm/page.h> /* Don't ask. Linux headers are a mess. */
+
+#define kmalloc(x, y) malloc(x)
+#define kfree(x) free(x)
+#define vmalloc(x) malloc(x)
+#define vfree(x) free(x)
+
+#endif /* __LINUX_SLAB_H__ */
+

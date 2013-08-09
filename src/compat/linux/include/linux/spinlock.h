@@ -43,4 +43,6 @@
 
 #define SPIN_LOCK_UNLOCKED 0
 
+#define DEFINE_SPINLOCK(x) spinlock_t x = SPIN_LOCK_UNLOCKED
+
 #endif /* LINUX_SPINLOCK_H_ */

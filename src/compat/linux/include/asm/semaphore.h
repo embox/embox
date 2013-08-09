@@ -11,10 +11,8 @@
 
 #include <kernel/thread/sync/mutex.h>
 
-typedef struct mutex mutex_t;
-
 struct semaphore {
-	struct mutex_t x;
+	struct mutex x;
 };
 
 #define DECLARE_MUTEX(x) struct semaphore x = { { 0 } };

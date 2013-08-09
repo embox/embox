@@ -6,9 +6,12 @@
  * @author Andrey Gazukin
  */
 
-#ifndef CRC32_H_
-#define CRC32_H_
+#ifndef __LINUX_CRC32_H_
+#define __LINUX_CRC32_H_
 
 #include <lib/crc32.h>
 
-#endif /* CRC32_H_ */
+#define crc32(val, s, len) crc32_accumulate(val, (unsigned char *)s, len)
+
+
+#endif /* __LINUX_CRC32_H_ */

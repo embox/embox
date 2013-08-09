@@ -4,9 +4,12 @@
  *  Created on: 15.04.2013
  *  @author Andrey Gazukin
  */
-#ifndef TIME_H_
-#define TIME_H_
+#ifndef __LINUX_TIME_H_
+#define __LINUX_TIME_H_
 
-#include <time.h>
+#include <kernel/time/time.h>
+#include <kernel/time/clock_source.h>
 
-#endif /* TIME_H_ */
+#define cyg_timestamp get_time
+
+#endif /* __LINUX_TIME_H_ */

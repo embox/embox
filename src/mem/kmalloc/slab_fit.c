@@ -76,7 +76,7 @@ static cache_t *find_fit_cache(size_t obj_size) {
 	return NULL;
 }
 
-void *kmalloc(size_t size) {
+void *kmalloc(size_t size, int priority) {
 	cache_t *cachep;
 	void *obj_ptr;
 	char name[__CACHE_NAMELEN ];

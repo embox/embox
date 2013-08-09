@@ -20,7 +20,7 @@
  * @return pointer to the memory of the requested size.
  * @retval 0 if there are no memory
  */
-extern void *kmalloc(size_t size);
+extern void *kmalloc(size_t size, int priority);
 
 /**
  * Free memory function.

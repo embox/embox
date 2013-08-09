@@ -6,9 +6,9 @@
  * @author Andrey Gazukin
  */
 
-#ifndef STRING_H_
-#define STRING_H_
+#ifndef __LINUX_STRING_H_
+#define __LINUX_STRING_H_
 
 #include <string.h>
 
-#endif /* STRING_H_ */
+#endif /* __LINUX_STRING_H_ */
