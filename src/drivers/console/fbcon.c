@@ -119,6 +119,15 @@ static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
 	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
+static int this_tty_fstat(struct idx_desc *data, void *buff) {
+	struct stat *st = buff;
+
+	st->st_mode = S_IFCHR;
+
+	return 0;
+
+}
+
 static int this_tty_close(struct idx_desc *idx) {
 	return 0;
 }
@@ -128,7 +137,7 @@ static const struct task_idx_ops this_idx_ops = {
 	.write = this_tty_write,
 	.close = this_tty_close,
 	.ioctl = this_tty_ioctl,
-	.type  = TASK_RES_OPS_TTY,
+	.fstat = this_tty_fstat,
 };
 
 static void *run(void *data) {
@@ -321,7 +330,8 @@ static int make_task(int i, char innewtask) {
 	fbcon->vc_this.callbacks = &thiscbs;
 	fbcon->fbcon_disdata = &fbcon_displ_data;
 
-	fbcon->vterm_video.ops = &fbcon_vterm_video_ops;
+	vterm_video_init(&fbcon->vterm_video, &fbcon_vterm_video_ops,
+			0, 0);
 
 	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
 
@@ -338,28 +348,12 @@ static int make_task(int i, char innewtask) {
 	return 0;
 }
 
-static int iodev_stdio_init(void) {
-	return 0;
-}
-
-static void iodev_stdio_putc(char ch) {
-	vterm_putc(&fbcons[0].vterm, ch);
-}
-
-const struct iodev_ops iodev_stdio_ops = {
-	.init = iodev_stdio_init,
-	.getc = NULL,//&diag_getc,
-	.putc = iodev_stdio_putc,
-	.kbhit = NULL //&diag_kbhit,
-};
-
-
 static int fbcon_init(void) {
 
 	make_task(0, true);
 	make_task(1, true);
 
-	iodev_setup(&iodev_stdio_ops);
+	/*iodev_setup(&iodev_stdio_ops);*/
 
 	return 0;
 }

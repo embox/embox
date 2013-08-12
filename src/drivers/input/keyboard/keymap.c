@@ -56,7 +56,7 @@ int keymap_kbd(struct input_event *event) {
 		return -1;
 	}
 
-	if (!(event->value & KEY_PRESSED)) {
+	if (!(event->type & KEY_PRESSED)) {
 		return -1;
 	}
 
