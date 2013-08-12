@@ -12,34 +12,36 @@
 #include <stdbool.h>
 #include <drivers/tty.h>
 
+#define UART_NAME_MAXLEN 8
 
-/* `irq' field has special meaning. If zero, irq is disabled. If not,
- * irq handler assigned to specified irq */
+#define UART_STATE_OPEN (1 << 0)
+
+struct uart;
+
 struct uart_params {
 	uint32_t baud_rate;
 	bool parity;
 	int n_stop;
 	int n_bits;
-	int irq;
+	bool irq;
 };
 
-struct uart;
-
-struct file_operations;
-
 struct uart_desc {
-	const char *dev_name;
-	int irq_num;
+	short irq_num;
 	uint32_t base_addr;
 	int (*uart_getc)(const struct uart_desc *dev);
 	int (*uart_putc)(const struct uart_desc *dev, int symbol);
 	int (*uart_hasrx)(const struct uart_desc *dev);
-	int (*uart_setup)(const struct uart_desc *dev, struct uart_params *params);
+	int (*uart_setup)(const struct uart_desc *dev,
+			struct uart_params *params);
 };
 
 struct uart {
 	struct dlist_head lnk;
+	char dev_name[UART_NAME_MAXLEN];
+	int idx;
 	const struct uart_desc *uart_desc;
+	int state;
 	struct uart_params params;
 	struct tty tty;
 };
@@ -47,11 +49,16 @@ struct uart {
 /**
  * @brief Register uart in kernel
  *
- * @param uart
+ * @param uart Uart descriptor
+ * @param uart_params Pointer to uart params. If not null, used to assign
+ * 	default params
  *
- * @return
+ * @return uart instance pointer on success
+ * @return NULL on error
  */
-extern struct uart *uart_register(const struct uart_desc *uart);
+extern struct uart *uart_register(const struct uart_desc *uartd,
+		const struct uart_params *uart_defparams);
+
 /**
  * @brief Deregister in kernel
  *
@@ -60,13 +67,33 @@ extern struct uart *uart_register(const struct uart_desc *uart);
 extern void uart_deregister(struct uart *uart);
 
 /**
- * @brief Look uart by uart_desc's name. User names (i.e. ttyS0) not matched.
+ * @brief Look uart by name
  *
  * @param name
  *
- * @return
+ * @return uart instance pointer if found
+ * @return NULL if not found
  */
 extern struct uart *uart_dev_lookup(const char *name);
+
+/**
+ * @brief Initialize UART: init tty and assing irq
+ *
+ * @param uart UART to initilize
+ *
+ * @return 0 on succes
+ * @return error code otherwise
+ */
+extern int uart_open(struct uart *uart);
+
+/**
+ * @brief Deinitialize UART
+ *
+ * @param uart
+ *
+ * @return
+ */
+extern int uart_close(struct uart *uart);
 
 /**
  * @brief Get uart parameters
@@ -74,17 +101,18 @@ extern struct uart *uart_dev_lookup(const char *name);
  * @param uart
  * @param params Pointer to store parameters
  *
- * @return
+ * @return 0 on succes
  */
 extern int uart_get_params(struct uart *uart, struct uart_params *params);
 
 /**
- * @brief Set uart parameters
+ * @brief Set parameters of opened UART. This will perform additional actions
+ * to maintain irq parameter and other options.
  *
  * @param uart
  * @param params
  *
- * @return
+ * @return 0 on succes
  */
 extern int uart_set_params(struct uart *uart, const struct uart_params *params);
 

@@ -82,7 +82,6 @@ static int ugetc(const struct uart_desc *dev) {
 }
 
 static const struct uart_desc uart0 = {
-		.dev_name = "uart0",
 		.irq_num = COM0_IRQ_NUM,
 		.base_addr = COM0_PORT_BASE,
 		.uart_getc = ugetc,
@@ -96,14 +95,13 @@ static const struct uart_params uart_defparams = {
 	.parity = 0,
 	.n_stop = 1,
 	.n_bits = 8,
-	.irq = COM0_IRQ_NUM,
+	.irq = 1,
 };
 
 static int uart_init(void) {
-	struct uart *uart = uart_register(&uart0);
-
-	/* FIXME remove from here */
-	uart_set_params(uart, &uart_defparams);
+	if (!uart_register(&uart0, &uart_defparams)) {
+		return -1;
+	}
 
 	return 0;
 }

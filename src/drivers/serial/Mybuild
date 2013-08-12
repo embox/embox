@@ -6,6 +6,16 @@ package embox.driver.serial
 
 abstract module serial { }
 
+module core {
+	source "core.c"
+
+	depends fsnode
+}
+
+module fsnode {
+	source "fsnode.c"
+}
+
 module apbuart extends serial {
 	option number baud_rate
 	option number apbuart_base=0x80000100
@@ -15,7 +25,8 @@ module apbuart extends serial {
 
 	depends embox.lib.LibC
 	depends embox.driver.ambapp_api
-	depends embox.driver.virtual.uart
+
+	depends core
 }
 
 module at91_uart extends serial {
@@ -30,7 +41,8 @@ module serial_port extends serial {
 	source "8250.c"
 
 	depends embox.util.LibUtil
-	depends embox.driver.virtual.uart
+
+	depends core
 }
 
 module xuartlite extends serial {
