@@ -745,12 +745,8 @@ static s64 ntfs_device_bdev_io_pread(struct ntfs_device *dev, void *buf,
 		s64 count, s64 offset)
 {
 	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
-	if ((offset%blksize) || (count%blksize)) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (count == block_dev_read(bdev, buf, count, offset/blksize)) {
+	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (count == block_dev_read_buffered(bdev, buf, count, offset)) {
 		return count;
 	}
 	errno = EIO;
@@ -772,17 +768,13 @@ static s64 ntfs_device_bdev_io_pwrite(struct ntfs_device *dev, const void *buf,
 		s64 count, s64 offset)
 {
 	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (NDevReadOnly(dev)) {
 		errno = EROFS;
 		return -1;
 	}
 	NDevSetDirty(dev);
-	if ((offset%blksize) || (count%blksize)) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (count == block_dev_write(bdev, buf, count, offset/blksize)) {
+	if (count == block_dev_write_buffered(bdev, buf, count, offset)) {
 		return count;
 	}
 	errno = EIO;

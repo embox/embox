@@ -174,7 +174,7 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 	return count;
 }
 
-int block_dev_write_buffered(block_dev_t *bdev, char *buffer, size_t count, size_t offset) {
+int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset) {
 	int blksize, blkno, cplen, cursor;
 	int res, i;
 	struct buffer_head *bh;
