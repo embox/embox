@@ -124,7 +124,7 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 		return -errno;
 	}
 
-	if (!ntfs_inode_close(pni)) {
+	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		int err = errno;
@@ -155,7 +155,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 	}
 	pfi = parent_node->nas->fi->privdata;
 	pfsi = parent_node->nas->fs->fsi;
-	fi = node->nas->fs->fsi;
+	fi = node->nas->fi->privdata;
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;

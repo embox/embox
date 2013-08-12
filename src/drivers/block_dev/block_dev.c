@@ -171,7 +171,7 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 		memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0), cplen);
 	}
 
-	return count;
+	return cursor;
 }
 
 int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset) {
@@ -212,7 +212,7 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 		bcache_buffer_unlock(bh);
 	}
 
-	return count;
+	return cursor;
 }
 
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
