@@ -97,9 +97,10 @@ static int uart_detach_irq(struct uart *uart) {
 }
 
 static int uart_setup(struct uart *uart) {
+	const struct uart_ops *uops = uart->uart_desc->uart_ops;
 
-	if (uart->uart_desc->uart_setup) {
-		return uart->uart_desc->uart_setup(uart->uart_desc, &uart->params);
+	if (uops->uart_setup) {
+		return uops->uart_setup(uart->uart_desc, &uart->params);
 	}
 
 	return 0;

@@ -82,21 +82,25 @@ static int ugetc(const struct uart_desc *dev) {
 	return in8(dev->base_addr + UART_RX);
 }
 
-static const struct uart_desc uart0 = {
-		.irq_num = COM0_IRQ_NUM,
-		.base_addr = COM0_PORT_BASE,
+static const struct uart_ops i8250_uart_ops = {
 		.uart_getc = ugetc,
 		.uart_putc = uputc,
 		.uart_hasrx = uhas_symbol,
 		.uart_setup = usetup,
 };
 
+static const struct uart_desc uart0 = {
+		.uart_ops = &i8250_uart_ops,
+		.irq_num = COM0_IRQ_NUM,
+		.base_addr = COM0_PORT_BASE,
+};
+
 static const struct uart_params uart_defparams = {
-	.baud_rate = OPTION_GET(NUMBER,baud_rate),
-	.parity = 0,
-	.n_stop = 1,
-	.n_bits = 8,
-	.irq = 1,
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = 1,
 };
 
 static int i8250_diag_init(void) {

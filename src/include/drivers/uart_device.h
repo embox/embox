@@ -17,6 +17,7 @@
 #define UART_STATE_OPEN (1 << 0)
 
 struct uart;
+struct uart_desc;
 
 struct uart_params {
 	uint32_t baud_rate;
@@ -26,14 +27,18 @@ struct uart_params {
 	bool irq;
 };
 
-struct uart_desc {
-	short irq_num;
-	uint32_t base_addr;
+struct uart_ops {
 	int (*uart_getc)(const struct uart_desc *dev);
 	int (*uart_putc)(const struct uart_desc *dev, int symbol);
 	int (*uart_hasrx)(const struct uart_desc *dev);
 	int (*uart_setup)(const struct uart_desc *dev,
 			const struct uart_params *params);
+};
+
+struct uart_desc {
+	const struct uart_ops *uart_ops;
+	short irq_num;
+	uint32_t base_addr;
 };
 
 struct uart {
@@ -117,15 +122,15 @@ extern int uart_get_params(struct uart *uart, struct uart_params *params);
 extern int uart_set_params(struct uart *uart, const struct uart_params *params);
 
 static inline int uart_putc(struct uart *uart, int ch) {
-	return uart->uart_desc->uart_putc(uart->uart_desc, ch);
+	return uart->uart_desc->uart_ops->uart_putc(uart->uart_desc, ch);
 }
 
 static inline int uart_getc(struct uart *uart) {
-	return uart->uart_desc->uart_getc(uart->uart_desc);
+	return uart->uart_desc->uart_ops->uart_getc(uart->uart_desc);
 }
 
 static inline int uart_hasrx(struct uart *uart) {
-	return uart->uart_desc->uart_hasrx(uart->uart_desc);
+	return uart->uart_desc->uart_ops->uart_hasrx(uart->uart_desc);
 }
 
 #endif /* UART_DEVICE_H_ */
