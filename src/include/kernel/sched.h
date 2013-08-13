@@ -13,7 +13,6 @@
 
 #include <sys/types.h>
 
-#include <kernel/thread/current.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/thread/types.h>
@@ -43,14 +42,7 @@ extern int sched_init(struct thread *current, struct thread *idle);
 
 //TODO sched_ticker have to start automatic after scheduler initialization
 extern int sched_ticker_init(void);
-
-/**
- * Obtains a pointer to the currently executing thread.
- *
- * @return
- *   The currently executing thread.
- */
-#define sched_current() thread_get_current()
+extern int sched_wait_init(void);
 
 /**
  * Makes active thread and adds thread to the queue of ready to executing
@@ -61,90 +53,27 @@ extern int sched_ticker_init(void);
  */
 extern void sched_start(struct thread *thread);
 
+extern void sched_sleep(struct thread *t);
+
+extern void sched_wake(struct thread *t);
+
 /**
  * Makes exit thread and removes thread from scheduler.
  */
 extern void sched_finish(struct thread *thread);
-#if 0
-/**
- * Makes sleep the current thread and puts it in sleeping queue.
- * Execution is suspended until sched_wake_one() or sched_wake_all()
- * is called.
- *
- * <b>Must not</b> be called with the scheduler @link #sched_lock()
- * locked @endlink or within any other critical context.
- *
- * @param sleepq
- *   Sleeping queue which will be containing thread.
- * @param timeout
- *   Max waiting time of event.
- * @return
- *   Operation result.
- * @retval 0
- *   On success. TODO sleep cancellation is not implemented.
- * @retval SCHED_TIMEOUT_HAPPENED
- *   Timeout happened.
- */
-extern int sched_sleep(struct sleepq *sleepq, unsigned long timeout);
 
 /**
- * Does the same as #sched_sleep() but assumes that the scheduler is
- * @link #sched_lock() locked @endlink once. However it still must not be
- * called inside any other critical section or with the scheduler locked more
- * than once.
+ * Changes scheduling priority of the thread. If the thread is running now
+ * (present in the runq) calls runq_change_priority() for rescheduling runq
+ * and thread_set_priority() else just calls thread_set_priority() for setup
+ * a new value for priority field in sched_strategy_data structure
  *
- * @param sleepq
- *   Sleeping queue which will be containing thread.
- * @param timeout
- *   Max waiting time of event.
- * @return
- *   Operation result.
- * @retval 0
- *   On success. TODO sleep cancellation is not implemented.
- * @retval SCHED_TIMEOUT_HAPPENED
- *   Timeout happened.
- */
-extern int sched_sleep_locked(struct sleepq *sleepq, unsigned long timeout);
-
-/**
- * Wakes up one of the threads contained in the given sleeping queue.
- *
- * @param sleepq
- *   The sleeping queue.
- */
-extern void sched_wake_one(struct sleepq *sleepq);
-
-/**
- * Wakes up all threads contained in the given sleeping queue.
- *
- * @param sleepq
- *   The sleeping queue.
- */
-extern void sched_wake_all(struct sleepq *sleepq);
-#endif
-
-#if 0
-/**
- * Changes priority of the thread.
- *
- * @param thread
+ * @param t
  *   Thread to operate with.
- * @param new_priority
- *   New priority of the the thread.
- */
-extern void sched_set_priority(struct thread *thread,
-		sched_priority_t new_priority);
-#endif
-/**
- * Changes scheduling priority of the thread.
- *
- * @param thread
- *   Thread to operate with.
- * @param new_priority
+ * @param priority
  *   New scheduling priority of the the thread.
  */
-extern int sched_change_scheduling_priority(struct thread *thread,
-		sched_priority_t new_priority);
+extern int sched_change_priority(struct thread *t, sched_priority_t priority);
 
 
 /**
@@ -164,7 +93,7 @@ extern void sched_post_switch(void);
  * @retval non-zero
  *   On operation fail.
  */
-extern int sched_tryrun(struct thread *thread);
+extern int sched_signal(struct thread *thread, int sig);
 
 extern void sched_thread_notify(struct thread *thread, int result);
 
@@ -173,5 +102,7 @@ extern void sched_cleanup_wait(void);
 
 extern int sched_wait(unsigned long timeout);
 extern int sched_wait_locked(unsigned long timeout);
+
+extern void sched_wait_run(void);
 
 #endif /* KERNEL_SCHED_H_ */

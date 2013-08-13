@@ -20,7 +20,9 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/indexator.h>
+#include <util/math.h>
 #include <limits.h>
+#include <assert.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 
@@ -43,86 +45,13 @@ static int bdev_close(struct file_desc *desc) {
 }
 
 static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
-	block_dev_t *dev = (block_dev_t *) desc->node->nas->fi->privdata;
-	int blksize = block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
-	int blkno, blkcount, blkoff, res;
-	int pages = size / PAGE_SIZE();
-	char *bigbuf;
-	size_t err;
-
-	if (pages == 0) {
-		pages++;
-	}
-
-	if (blksize <= 0) {
-		return -ENOTSUP;
-	}
-
-	if (NULL == (bigbuf = page_alloc(__phymem_allocator, pages))) {
-		return -ENOMEM;
-	}
-
-	blkno = desc->cursor / blksize;
-	blkoff = desc->cursor % blksize;
-	blkcount = size / blksize + (size % blksize ? 1 : 0);
-
-	err = 0;
-
-	if ((blkno + blkcount) * SECTOR_SIZE  > dev->size) {
-		err = -EIO;
-		goto out;
-	}
-
-	if (blkcount * blksize != (res = block_dev_read(dev, bigbuf, blkcount * blksize, blkno))) {
-		err = -EIO;
-		goto out;
-	}
-
-	memcpy(buf, bigbuf + blkoff, size);
-	err = size;
-
-out:
-	page_free(__phymem_allocator, bigbuf, pages);
-	return err;
+	return block_dev_read_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+			buf, size, desc->cursor);
 }
 
 static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	int blkno, blkcount, blkoff;
-	char *bigbuf;
-	size_t res       = 0;
-	block_dev_t *dev = (block_dev_t *) desc->node->nas->fi->privdata;
-	int blksize      = block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
-	int pages        = (size + PAGE_SIZE() - 1) / PAGE_SIZE();
-
-	if (blksize <= 0) {
-		return -ENOTSUP;
-	}
-
-	if (NULL == (bigbuf = page_alloc(__phymem_allocator, pages))) {
-		return -ENOMEM;
-	}
-
-	blkno = desc->cursor / blksize;
-	blkoff = desc->cursor % blksize;
-	blkcount = (size + blksize - 1) / blksize;
-
-	if (blkcount * blksize != block_dev_read(dev, bigbuf, blkcount * blksize, blkno)) {
-		res = -ENOMEM;
-		goto out;
-	}
-
-	memcpy(bigbuf + blkoff, buf, size);
-
-	if (blkcount * blksize != block_dev_write(dev, bigbuf, blkcount * blksize, blkno)) {
-		res = -EIO;
-		goto out;
-	}
-
-	res = size;
-
-out:
-	page_free(__phymem_allocator, bigbuf, pages);
-	return res;
+	return block_dev_write_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+			buf, size, desc->cursor);
 }
 
 static int bdev_ioctl(struct file_desc *desc, int request, ...) {
@@ -210,6 +139,87 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	return bdev;
 }
 
+int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_t offset) {
+	int blksize, blkno, cplen, cursor;
+	int res, i;
+	struct buffer_head *bh;
+
+	assert(bdev);
+
+	if (NULL == bdev->driver->read) {
+		return -ENOSYS;
+	}
+	if (offset + count > bdev->size) {
+		return -EIO;
+	}
+	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blkno = offset / blksize;
+	cplen = min(count, blksize - offset % blksize);
+
+	for (cursor = 0, i = 0; count != 0;
+			i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
+		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
+		{
+			if (buffer_new(bh)) {
+				buffer_clear_flag(bh, BH_NEW);
+				if (blksize != (res = bdev->driver->read(bdev, bh->data,
+						blksize, blkno + i))) {
+					bcache_buffer_unlock(bh);
+					return -res;
+				}
+			}
+			memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0), cplen);
+		}
+		bcache_buffer_unlock(bh);
+	}
+
+	return cursor;
+}
+
+int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset) {
+	int blksize, blkno, cplen, cursor;
+	int res, i;
+	struct buffer_head *bh;
+
+	assert(bdev);
+
+	if (NULL == bdev->driver->write) {
+		return -ENOSYS;
+	}
+	if (offset + count > bdev->size) {
+		return -EIO;
+	}
+	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blkno = offset / blksize;
+	cplen = min(count, blksize - offset % blksize);
+
+	for (cursor = 0, i = 0; count != 0;
+			i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
+		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
+		{
+			if (buffer_new(bh)) {
+				buffer_clear_flag(bh, BH_NEW);
+				if (cplen < blksize) {
+					if (blksize != (res = bdev->driver->read(bdev, bh->data,
+							blksize, blkno + i))) {
+						bcache_buffer_unlock(bh);
+						return -res;
+					}
+				}
+			}
+			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor, cplen);
+			if (blksize != (res = bdev->driver->write(bdev, bh->data,
+					blksize, blkno + i))) {
+				bcache_buffer_unlock(bh);
+				return -res;
+			}
+		}
+		bcache_buffer_unlock(bh);
+	}
+
+	return cursor;
+}
+
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
 	int blksize, blkcount, i, res, readed = 0;
@@ -233,10 +243,10 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 				buffer_clear_flag(bh, BH_NEW);
 
 				if (!readed) {
-					if (0 > (res = bdev->driver->read(bdev, buffer + i * blksize,
+					if (blksize * (blkcount - i) != (res = bdev->driver->read(bdev, buffer + i * blksize,
 							blksize * (blkcount - i), blkno + i))) {
 						bcache_buffer_unlock(bh);
-						return res;
+						return -res;
 					}
 					readed = 1;
 				}

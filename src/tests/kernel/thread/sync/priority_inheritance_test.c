@@ -28,7 +28,7 @@ static struct thread *high;
 
 TEST_CASE("with inheritance") {
 	struct mutex mutex;
-	thread_priority_t l = 200, m = 210, h = 220;
+	sched_priority_t l = 200, m = 210, h = 220;
 
 	mutex_init(&mutex);
 

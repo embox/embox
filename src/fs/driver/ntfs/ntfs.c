@@ -113,8 +113,6 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 		return -errno;
 	}
 
-	// ToDo: ??? node->nas->fs = dir_nas->fs
-
 	if (embox_ntfs_simultaneous_mounting_descend(new_node->nas, ni, false)) {
 		int err = errno;
 		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
@@ -124,7 +122,7 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 		return -errno;
 	}
 
-	if (!ntfs_inode_close(pni)) {
+	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		int err = errno;
@@ -137,6 +135,8 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 	}
 
 	free(ufilename);
+
+	new_node->nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
@@ -155,7 +155,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 	}
 	pfi = parent_node->nas->fi->privdata;
 	pfsi = parent_node->nas->fs->fsi;
-	fi = node->nas->fs->fsi;
+	fi = node->nas->fi->privdata;
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
@@ -190,16 +190,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 
 	free(ufilename);
 
-	if (!ntfs_inode_close(ni)) {
-		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
-		//       most appropriate solution would be to completely unmount file system.
-		int err = errno;
-		ntfs_inode_close(pni);
-		errno = err;
-		return -errno;
-	}
-
-	if (!ntfs_inode_close(pni)) {
+	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		return -errno;
@@ -279,7 +270,6 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 
 	{
 		char filename[PATH_MAX];
-		// Add this bullshit due to shitty API
 		char *filename_ptr = filename;
 
 		if(ntfs_ucstombs(name, name_len, &filename_ptr, PATH_MAX) < 0) {
@@ -745,12 +735,8 @@ static s64 ntfs_device_bdev_io_pread(struct ntfs_device *dev, void *buf,
 		s64 count, s64 offset)
 {
 	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
-	if ((offset%blksize) || (count%blksize)) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (count == block_dev_read(bdev, buf, count, offset/blksize)) {
+	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (count == block_dev_read_buffered(bdev, buf, count, offset)) {
 		return count;
 	}
 	errno = EIO;
@@ -772,17 +758,13 @@ static s64 ntfs_device_bdev_io_pwrite(struct ntfs_device *dev, const void *buf,
 		s64 count, s64 offset)
 {
 	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (NDevReadOnly(dev)) {
 		errno = EROFS;
 		return -1;
 	}
 	NDevSetDirty(dev);
-	if ((offset%blksize) || (count%blksize)) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (count == block_dev_write(bdev, buf, count, offset/blksize)) {
+	if (count == block_dev_write_buffered(bdev, buf, count, offset)) {
 		return count;
 	}
 	errno = EIO;

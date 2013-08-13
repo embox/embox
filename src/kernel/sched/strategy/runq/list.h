@@ -11,9 +11,8 @@
 
 #include <util/dlist.h>
 
-struct sched_strategy_data {
-	struct dlist_head l_link;
-};
+
+typedef struct dlist_head runq_item_t;
 
 typedef struct dlist_head runq_queue_t;
 

@@ -18,10 +18,13 @@ struct wait_queue {
 	int flag;
 };
 
+struct thread;
 struct wait_link {
 	struct dlist_head link;
 	struct thread *thread;
 };
+
+#define WAIT_QUEUE_INIT(wq)  {.list = DLIST_INIT(wq.list),.flag = 0}
 
 static inline void wait_queue_init(struct wait_queue *wait_queue) {
 	dlist_init(&wait_queue->list);

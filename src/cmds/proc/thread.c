@@ -44,8 +44,12 @@ static void print_stat(void) {
 			task_foreach_thread(thread, task) {
 				thread_state_t s = thread->state;
 				const char *state = NULL;
+				sched_priority_t prior;
 
-				if (thread_state_running(s)) {
+				prior = sched_priority_thread(task->priority,
+										thread_priority_get(thread));
+
+				if (thread_state_active(s)) {
 					state = "running";
 					running++;
 				} else if (thread_state_sleeping(s)) {
@@ -53,10 +57,11 @@ static void print_stat(void) {
 					sleeping++;
 				}
 
+
 				printf(" %4d%c %4d  %8d %18s %9lds\n",
 					thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
 					thread->task->tid,
-					thread_priority_get(thread),
+					prior,
 					state,
 					thread_get_running_time(thread)/CLOCKS_PER_SEC);
 			}

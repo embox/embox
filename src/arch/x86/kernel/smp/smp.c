@@ -22,6 +22,7 @@
 #include <kernel/spinlock.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
+//TODO WTF
 #include <module/embox/kernel/thread/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -33,11 +34,10 @@ static spinlock_t startup_lock = SPIN_UNLOCKED;
 char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
 
 extern struct thread *thread_init_self(void *stack, size_t stack_sz,
-		thread_priority_t priority);
+		sched_priority_t priority);
 
 void startup_ap(void) {
 	extern void idt_load(void);
-	extern int sched_cpu_init(struct thread *thread);
 
 	struct thread *bootstrap;
 
@@ -49,7 +49,6 @@ void startup_ap(void) {
 			THREAD_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), bootstrap);
-	sched_cpu_init(bootstrap);
 
 	__asm__ __volatile__ ("sti");
 

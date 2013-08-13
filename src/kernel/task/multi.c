@@ -45,22 +45,7 @@ struct task_creat_param {
 POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 static void *task_trampoline(void *arg);
-//static void thread_set_task(struct thread *t, struct task *tsk);
 static int task_init_parent(struct task *task, struct task *parent);
-
-
-static void *thread_stack_malloc(struct thread *thread, size_t size) {
-	void *res;
-
-	assert(thread->stack_sz > size);
-
-	res = thread->stack;
-
-	thread->stack    += size;
-	thread->stack_sz -= size;
-
-	return res;
-}
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
@@ -89,13 +74,17 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, THREAD_FLAG_NOTASK | THREAD_FLAG_PRIORITY_INHERIT,
+		if (0 != (res = thread_create(&thd,
+				THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				task_trampoline, param))) {
 			goto out_poolfree;
 		}
 
-		/* reserve space for task & resources on top of created thread's stack */
-		addr = thread_stack_malloc(thd, task_sz);
+		addr = thread_stack_get(thd);
+
+		if (thread_stack_reserved(thd, task_sz) < 0) {
+			panic("Too small thread stack size");
+		}
 
 		if ((self_task = task_init(addr, task_sz)) == NULL) {
 			res = -EPERM;
@@ -104,6 +93,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 
 		thd->task = self_task;
 		self_task->main_thread = thd;
+
 
 		self_task->per_cpu = 0;
 
@@ -126,7 +116,11 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_tablefree;
 		}
 
+		thread_set_priority(thd,
+				sched_priority_thread(task_self()->priority,
+						thread_priority_get(thread_self())));
 		thread_detach(thd);
+		thread_launch(thd);
 
 		res = self_task->tid;
 
@@ -270,8 +264,9 @@ static void *task_trampoline(void *arg) {
 }
 
 int task_set_priority(struct task *tsk, task_priority_t new_priority) {
-	struct thread *thr;
-	sched_priority_t sched_prior;
+	struct thread *t;
+	task_priority_t tsk_pr;
+	sched_priority_t prior;
 
 	assert(tsk);
 
@@ -287,11 +282,15 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 			return 0;
 		}
 
-		task_foreach_thread(thr, tsk) {
-			sched_prior = get_sched_priority(new_priority, thread_priority_get(thr));
-			sched_change_scheduling_priority(thr, sched_prior);
-		}
+		tsk_pr = tsk->priority;
 		tsk->priority = new_priority;
+
+		task_foreach_thread(t, tsk) {
+			/* reschedule thread */
+			prior = sched_priority_thread(tsk_pr, thread_priority_get(t));
+			thread_set_priority(t, prior);
+		}
+
 	}
 	sched_unlock();
 

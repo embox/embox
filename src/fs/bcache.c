@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <util/hashtable.h>
 #include <string.h>
+#include <stdbool.h>
 
 EMBOX_UNIT_INIT(bcache_init);
 
@@ -42,7 +43,7 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 
 		mutex_unlock(&bcache_mutex);
 
-		if (-1 == graw_buffers(bdev, block, size)) {
+		while (-1 == graw_buffers(bdev, block, size)) {
 			free_more_memory(size);
 		}
 	}
@@ -52,18 +53,30 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 
 static void free_more_memory(size_t size) {
 	struct buffer_head *bh, *bhnext;
+	/*
+	 * TODO
+	 * Below we do 2 steps:
+	 * 1. Search for block with size equal to @a size. If it exists in buffer cache free it.
+	 * 2. If block is not exists, then free all cache. It is bad idea because we should free
+	 * only needed size.
+	 * We should use one cache (slab) per size to prevent this hack. I am pondering on how to allocate
+	 * blocks most effective. --Alexander
+	 */
+	bool free_all = false;
+	bool size_exists = false;
 
 	mutex_lock(&bcache_mutex);
 
+repeat:
 	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
-		if ((int)size < 0) {
-			break;
-		}
-
 		bcache_buffer_lock(bh);
 		{
 			if (buffer_journal(bh)) {
 				bcache_buffer_unlock(bh);
+				continue;
+			}
+
+			if (!free_all && bh->blocksize != size) {
 				continue;
 			}
 
@@ -81,6 +94,17 @@ static void free_more_memory(size_t size) {
 
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
+
+
+		if (!free_all) {
+			size_exists = true;
+			break;
+		}
+	}
+
+	if (!free_all && !size_exists) {
+		free_all = true;
+		goto repeat;
 	}
 
 	mutex_unlock(&bcache_mutex);

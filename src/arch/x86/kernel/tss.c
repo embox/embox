@@ -60,11 +60,11 @@ static int tss_init(void) {
 }
 
 void tss_set_kernel_stack(void) {
-	struct thread *thread = thread_self();
+	struct thread *t = thread_self();
 
 	/*
 	 * NOTE: stack and stack_sz of bootstrap thread equals 0, and we
 	 *       consider that it isn't executed in usermode.
 	 */
-	tss_entry.esp0 = (uint32_t) thread->stack + thread->stack_sz;
+	tss_entry.esp0 = (uint32_t)(thread_stack_get(t) + thread_stack_get_size(t));
 }
