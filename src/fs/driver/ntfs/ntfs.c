@@ -190,15 +190,6 @@ static int embox_ntfs_node_delete(struct node *node) {
 
 	free(ufilename);
 
-	if (!ntfs_inode_close(ni)) {
-		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
-		//       most appropriate solution would be to completely unmount file system.
-		int err = errno;
-		ntfs_inode_close(pni);
-		errno = err;
-		return -errno;
-	}
-
 	if (!ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
@@ -237,7 +228,7 @@ static int embox_ntfs_truncate(struct node *node, off_t length) {
 	ret = ntfs_attr_truncate(attr, length);
 
 	ntfs_attr_close(attr);
-	if (ntfs_inode_close(ni)) {
+	if (!ntfs_inode_close(ni)) {
 		return -errno;
 	}
 
@@ -279,7 +270,6 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 
 	{
 		char filename[PATH_MAX];
-		// Add this bullshit due to shitty API
 		char *filename_ptr = filename;
 
 		if(ntfs_ucstombs(name, name_len, &filename_ptr, PATH_MAX) < 0) {
