@@ -50,16 +50,6 @@ module start_script {
 
 }
 
-module make_term {
-	option boolean lf_crlf_map = true
-
-	source "make_term.c"
-
-	depends embox.compat.posix.idx.dup
-	depends diag_index_desc
-	depends embox.kernel.task.idx_table
-}
-
 module diag_index_desc {
 	source "bs_posix_env.c"
 
