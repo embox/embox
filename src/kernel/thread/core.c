@@ -98,12 +98,6 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		return -EINVAL;
 	}
 
-	/* check one more mutually exclusive flags */
-	if ((flags & THREAD_FLAG_JOINABLE) && (flags & THREAD_FLAG_DETACHED)) {
-		return -EINVAL;
-	}
-
-
 	if((flags & THREAD_FLAG_NOTASK) && !(flags & THREAD_FLAG_SUSPENDED)) {
 		return -EINVAL;
 	}

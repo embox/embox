@@ -38,7 +38,6 @@ struct thread;
 typedef __thread_id_t thread_id_t;
 
 
-#define THREAD_FLAG_JOINABLE         (0x1 << 0) /**< User-space thread. */
 #define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
 
 
