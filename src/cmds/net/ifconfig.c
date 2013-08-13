@@ -176,7 +176,7 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
 	if (iface->dev->flags & IFF_LOOPBACK) {
 		printf("inet addr:%s  Mask:%s", s_ip, s_mask);
-		printf("inet6 addr: ::1/128 Scope:Host\n");
+		printf("\n\tinet6 addr: ::1/128 Scope:Host");
 	} else {
 		bcast.s_addr = iface->ifa_broadcast;
 		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
