@@ -113,8 +113,6 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 		return -errno;
 	}
 
-	// ToDo: ??? node->nas->fs = dir_nas->fs
-
 	if (embox_ntfs_simultaneous_mounting_descend(new_node->nas, ni, false)) {
 		int err = errno;
 		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
@@ -137,6 +135,8 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 	}
 
 	free(ufilename);
+
+	new_node->nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
@@ -190,7 +190,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 
 	free(ufilename);
 
-	if (!ntfs_inode_close(pni)) {
+	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		return -errno;
@@ -228,7 +228,7 @@ static int embox_ntfs_truncate(struct node *node, off_t length) {
 	ret = ntfs_attr_truncate(attr, length);
 
 	ntfs_attr_close(attr);
-	if (!ntfs_inode_close(ni)) {
+	if (ntfs_inode_close(ni)) {
 		return -errno;
 	}
 
