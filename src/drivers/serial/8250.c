@@ -22,7 +22,7 @@ EMBOX_UNIT_INIT(uart_init);
 #define COM0_PORT_BASE      0x3f8
 #define COM0_IRQ_NUM        0x4
 
-static uint8_t calc_line_stat(struct uart_params *params) {
+static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = 0;
@@ -38,7 +38,7 @@ static uint8_t calc_line_stat(struct uart_params *params) {
 	return line_stat;
 }
 
-static int usetup(const struct uart_desc *dev, struct uart_params *params) {
+static int usetup(const struct uart_desc *dev, const struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = calc_line_stat(params);

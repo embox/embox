@@ -33,7 +33,7 @@ struct uart_desc {
 	int (*uart_putc)(const struct uart_desc *dev, int symbol);
 	int (*uart_hasrx)(const struct uart_desc *dev);
 	int (*uart_setup)(const struct uart_desc *dev,
-			struct uart_params *params);
+			const struct uart_params *params);
 };
 
 struct uart {
