@@ -119,6 +119,15 @@ static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
 	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
+static int this_tty_fstat(struct idx_desc *data, void *buff) {
+       struct stat *st = buff;
+
+       st->st_mode = S_IFCHR;
+
+       return 0;
+
+}
+
 static int this_tty_close(struct idx_desc *idx) {
 	return 0;
 }
@@ -128,7 +137,7 @@ static const struct task_idx_ops this_idx_ops = {
 	.write = this_tty_write,
 	.close = this_tty_close,
 	.ioctl = this_tty_ioctl,
-	.type  = TASK_RES_OPS_TTY,
+	.fstat = this_tty_fstat,
 };
 
 static void *run(void *data) {
