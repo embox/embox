@@ -5,4 +5,5 @@
 {PCI_VENDOR_ID_RDC,     "RDC Semiconductor, Inc."},
 {PCI_VENDOR_ID_INTEL,   "Intel Corporation"},
 {PCI_VENDOR_ID_PLX,     "PLX Technology"},
-{PCI_VENDOR_ID_BOCHS,   "Bochs Project"}
+{PCI_VENDOR_ID_BOCHS,   "Bochs Project"},
+{PCI_VENDOR_ID_VIRTIO,  "VirtIO"}

@@ -42,4 +42,6 @@
 /* PLX Technology */
 { PCI_VENDOR_ID_PLX,      PCI_DEV_ID_PLX_PEX8619,            "PCI Express Switch"},
 /* XILINX */
-{PCI_VENDOR_ID_XILINX,    PCI_DEV_ID_XILINX_SPARTAN6,        "Spartan 6 PCI interface"}
+{PCI_VENDOR_ID_XILINX,    PCI_DEV_ID_XILINX_SPARTAN6,        "Spartan 6 PCI interface"},
+/* VirtIO */
+{ PCI_VENDOR_ID_VIRTIO,   PCI_DEV_ID_VIRTIO_NET,             "Virtual High Performance Ethernet card"}
