@@ -35,7 +35,7 @@ module at91_uart extends serial {
 	source "at91_uart.c"
 }
 
-module serial_port extends serial {
+module i8250 extends serial {
 	option number baud_rate
 
 	source "8250.c"

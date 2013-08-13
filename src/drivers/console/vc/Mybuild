@@ -1,0 +1,20 @@
+package embox.driver.console.vc
+
+module vga extends embox.driver.diag.diag_api {
+	source "vga.c"
+
+	depends embox.driver.tty.vterm_video
+}
+
+module vc {
+	source "vc.c"
+
+	depends vga
+
+	depends embox.driver.tty.vterm
+	depends embox.driver.input.core
+	depends embox.driver.input.keyboard.keyboard
+
+	depends embox.driver.char_dev
+}
+

@@ -2,17 +2,15 @@
  * @file
  * @brief
  *
- * @date 05.02.13
- * @author Ilia Vaprol
- * @author Anton Kozlov
+ * @author  Anton Kozlov
+ * @date    13.08.2013
  */
 
 #include <string.h>
 #include <asm/io.h>
 #include <drivers/diag.h>
 #include <drivers/video/vga.h>
-#include <drivers/iodev.h>
-#include <drivers/video_term.h>
+#include <drivers/console/vc_vga.h>
 #include <util/member.h>
 
 /* The video memory address. */
@@ -81,7 +79,7 @@ static void diag_vterm_copy_rows(struct vterm_video *t,
 			sizeof(data->video[0]) * nrows * t->width);
 }
 
-static const struct vterm_video_ops diag_vterm_ops = {
+static const struct vterm_video_ops vc_vga_ops = {
 		.init = &diag_vterm_init,
 		.cursor = &diag_vterm_cursor,
 		.putc = &diag_vterm_putc,
@@ -89,26 +87,26 @@ static const struct vterm_video_ops diag_vterm_ops = {
 		.copy_rows = &diag_vterm_copy_rows
 };
 
-static struct vga_vterm_video diag_vga = {
+static struct vga_vterm_video vc_vga_video = {
 		.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
 };
 
-void diag_init(void) {
-	vterm_video_init((struct vterm_video *) &diag_vga, &diag_vterm_ops, 80, 24);
+struct vterm_video *vc_vga_init(void) {
+	vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
+
+	return &vc_vga_video.video;
 }
 
-void diag_putc(char ch) {
-	vterm_video_putc((struct vterm_video *) &diag_vga, ch);
-
+static int vc_diag_init(void) {
+	return vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
 }
 
-char diag_getc(void) {
-	return '\0';
-
+static void vc_diag_putc(char ch) {
+	vterm_video_putc(&vc_vga_video.video, ch);
 }
 
-int diag_kbhit(void) {
-
-	return 0;
-}
+DIAG_OPS_DECLARE(
+	.init = vc_diag_init,
+	.putc = vc_diag_putc,
+);
 

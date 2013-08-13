@@ -1,7 +1,7 @@
 package embox.driver.tty
 
 module vterm {
-	source "video_term.c", "indev_manager.c"
+	source "video_term.c"
 
 	depends embox.driver.input.core
 	depends embox.driver.input.keyboard.keymap

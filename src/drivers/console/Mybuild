@@ -22,10 +22,3 @@ module fbcon {
 	depends embox.cmd.sh.tish
 }
 
-module vc {
-	source "vc.c"
-
-	depends embox.driver.tty.vterm
-	depends embox.driver.input.core
-	depends embox.driver.input.keyboard.keyboard
-}

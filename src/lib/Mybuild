@@ -154,7 +154,7 @@ static module Print {
 static module Printk {
 	source "stdio/printk.c"
 
-	depends embox.driver.iodev.core
+	depends embox.driver.diag
 	depends Print
 }
 

@@ -1,11 +1,5 @@
 package embox.driver.iodev
 
-module core {
-	source "iodev.c"
-	depends embox.driver.tty.termios_ops
-
-}
-
 module iodev_video {
 	source "iodev_video.c"
 

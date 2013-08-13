@@ -19,8 +19,7 @@ module GraphicMode extends Display {
 	depends embox.driver.video.fb_videomodes
 	depends embox.driver.video.vesa_modes
 
-	depends embox.driver.iodev.core
-	/*depends embox.driver.iodev.iodev_video*/
+	depends embox.driver.diag
 }
 
 module TextMode extends Display {

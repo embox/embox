@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <asm/io.h>
+#include <drivers/diag.h>
 #include <drivers/serial/8250.h>
 #include <drivers/uart_device.h>
 #include <embox/unit.h>
@@ -97,6 +98,39 @@ static const struct uart_params uart_defparams = {
 	.n_bits = 8,
 	.irq = 1,
 };
+
+static int i8250_diag_init(void) {
+	struct uart_params i8250_diag_params = {
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = 0,
+	};
+
+	usetup(&uart0, &i8250_diag_params);
+
+	return 0;
+};
+
+static void i8250_diag_putc(char ch) {
+	uputc(&uart0, ch);
+}
+
+static char i8250_diag_getc(void) {
+	return ugetc(&uart0);
+}
+
+static int i8250_diag_kbhit(void) {
+	return uhas_symbol(&uart0);
+}
+
+DIAG_OPS_DECLARE(
+	.init = i8250_diag_init,
+	.getc = i8250_diag_getc,
+	.putc = i8250_diag_putc,
+	.kbhit = i8250_diag_kbhit,
+);
 
 static int uart_init(void) {
 	if (!uart_register(&uart0, &uart_defparams)) {

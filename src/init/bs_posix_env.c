@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -26,7 +26,7 @@ static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		*cbuf++ = iodev_getc();
+		*cbuf++ = diag_getc();
 	}
 
 	return (int) cbuf - (int) buf;
@@ -37,7 +37,7 @@ static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		iodev_putc(*cbuf++);
+		diag_putc(*cbuf++);
 	}
 
 	return (int) cbuf - (int) buf;
