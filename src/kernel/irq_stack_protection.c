@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <kernel/sched.h>
+#include <kernel/thread.h>
 
 #include <framework/mod/api.h>
 
@@ -14,8 +15,8 @@
 
 extern struct mod __mod__embox__kernel__thread__core;
 
-static inline unsigned int cpu_get_stack(void) {
-	unsigned ret;
+static inline void *cpu_get_stack(void) {
+	void * ret;
 	__asm__ __volatile__ (
 		"mov %%esp, %0\n\t"
 		: "=r"(ret)
@@ -29,15 +30,15 @@ static inline int threads_done(void) {
 }
 
 int irq_stack_protection(void) {
-	struct thread *th;
+	struct thread *t;
 
 	if (!threads_done()) {
 		return 0;
 	}
 
-	th = sched_current();
+	t = thread_self();
 
-	if ((uint32_t) th->stack + STACK_SAFE_BOUND < cpu_get_stack()) {
+	if (thread_stack_get(t) + STACK_SAFE_BOUND < cpu_get_stack()) {
 		return 0;
 	}
 

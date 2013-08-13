@@ -9,9 +9,9 @@
 #ifndef KERNEL_THREAD_SYNC_MUTEX_H_
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
-
-#include <kernel/thread.h>
 #include <kernel/sched/wait_queue.h>
+
+struct thread;
 
 /**
  * Defines Mutex structure.
@@ -19,9 +19,7 @@
 struct mutex {
 	struct wait_queue wq;
 	struct thread *holder;
-#if 0
-	int priority;
-#endif
+
 	int lock_count;
 };
 

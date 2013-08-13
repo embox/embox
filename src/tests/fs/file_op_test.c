@@ -306,7 +306,7 @@ static void *second_flock_test_thread(void *arg) {
 
 TEST_CASE("flock") {
 	int fd;
-	thread_priority_t l = 200, h = 210;
+	sched_priority_t l = 200, h = 210;
 
 	/* Prepare file and threads for test */
 	test_assert(-1 != (fd = open(FS_FLOCK, O_CREAT, S_IRUSR | S_IWUSR)));

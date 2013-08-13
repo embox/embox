@@ -13,23 +13,21 @@
 #ifndef KERNEL_SCHED_SCHED_STRATEGY_H_
 #define KERNEL_SCHED_SCHED_STRATEGY_H_
 
-#include <module/embox/kernel/sched/sched_policy/api.h>
+#include <module/embox/kernel/sched/strategy/api.h>
 
 #include <kernel/sched/sched_priority.h>
 
 struct thread;
-
-struct sched_strategy_data; /* Strategy data of thread   */
 
 struct runq;				/* Queue of running threads  */
 
 /**
  * Initializes scheduler strategy data of the thread.
  *
- * @param data
- *   Structure where storing strategy data of thread.
+ * @param t
+ *   Structure thread for which strategy data will initialize.
  */
-extern void sched_strategy_init(struct sched_strategy_data *data);
+extern void sched_strategy_init(struct thread *t);
 
 /**
  * Initializes queue of running threads. Makes activate current and idle

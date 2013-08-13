@@ -1,0 +1,115 @@
+package embox.kernel.sched.strategy
+
+@DefaultImpl(nosched)
+abstract module api {
+
+	depends runq_api
+}
+
+module nosched extends api {
+	source "nosched.h"
+
+	depends embox.kernel.thread.current.api
+	depends NoPriority
+	depends AffinityNone
+	depends TimeNone
+	depends NoRunq
+}
+
+
+module priority_based extends api {
+	source "sched_strategy.h"
+
+	depends affinity_api
+	depends timing_api
+	depends priority_api
+
+	depends runq.prioq
+
+	depends Runq
+}
+
+module priority_based_smp extends api {
+	source "sched_strategy.h"
+
+	depends affinity_api
+	depends timing_api
+	depends priority_api
+
+	depends runq.list_array
+	depends Runq
+}
+
+module trivial extends api {
+	source "sched_strategy.h"
+	source "runq.c"
+
+	depends affinity_api
+	depends timing_api
+
+	depends NoPriority
+
+	depends runq.list
+	depends Runq
+}
+
+@DefaultImpl(NoRunq)
+abstract module runq_api {
+
+}
+
+module NoRunq extends runq_api {
+
+}
+
+module Runq extends runq_api {
+	source "runq.c"
+	source "runq.h"
+
+	depends runq.api
+}
+
+@DefaultImpl(AffinityNone)
+abstract module affinity_api {
+}
+
+module AffinityNone extends affinity_api {
+	source "no_affinity.h"
+}
+
+module AffinitySMP extends affinity_api {
+	source "smp_affinity.h"
+	source "smp_affinity.c"
+}
+
+@DefaultImpl(TimeRunning)
+abstract module timing_api {
+}
+
+module TimeNone extends timing_api {
+	source "no_time.h"
+}
+
+module TimeRunning extends timing_api {
+	source "running_time.h"
+	source "running_time.c"
+}
+
+
+@DefaultImpl(InharitancePriority)
+abstract module priority_api {
+}
+
+
+module InharitancePriority extends priority_api {
+	source "thread_priority.c"
+	source "thread_priority.h"
+}
+
+module SimplePriority extends priority_api {
+	source "simple_priority.h"
+}
+
+module NoPriority extends priority_api {
+	source "no_priority.h"
+}

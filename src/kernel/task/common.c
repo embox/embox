@@ -15,7 +15,7 @@
 #include <util/dlist.h>
 
 #include <kernel/task.h>
-#include <kernel/thread.h>
+
 
 #include "common.h"
 
@@ -105,40 +105,4 @@ static int kernel_task_init(void) {
 	strncpy(task->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
 
 	return 0;
-}
-
-int task_add_thread(struct task * task, struct thread *thread) {
-	if((NULL == task) || (NULL == thread)) {
-		return -EINVAL;
-	}
-
-	/* insert new thread to the list */
-	dlist_add_next(dlist_head_init(&thread->thread_link), &task->main_thread->thread_link);
-	thread->task = task;
-
-	return ENOERR;
-}
-
-
-int task_remove_thread(struct task * task, struct thread *thread) {
-	if((NULL == task) || (NULL == thread)) {
-		return -EINVAL;
-	}
-#if 0
-	if(NULL == task->main_thread) {
-		return -EINVAL;
-	}
-
-	if(task->main_thread == thread) {
-		return -EBUSY;
-	}
-
-	if(dlist_empty(&task->main_thread->thread_link)) {
-		return -EBUSY;
-	}
-#endif
-
-	dlist_del(&thread->thread_link);
-
-	return ENOERR;
 }

@@ -25,7 +25,7 @@
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);
 
-static int priority_inherit(struct thread *t);
+static int priority_inherit(struct thread *t, struct mutex *m);
 static void priority_uninherit(struct thread *t);
 
 void mutex_init(struct mutex *m) {
@@ -42,16 +42,11 @@ void mutex_lock(struct mutex *m) {
 
 	sched_lock();
 	{
-		current->mutex_waiting = m;
-
 		while (trylock_sched_locked(m, current) != 0) {
 			/* We have to wait for a mutex to be released. */
-
-			priority_inherit(current);
+			priority_inherit(current, m);
 			wait_queue_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
-
-		current->mutex_waiting = NULL;
 	}
 	sched_unlock();
 }
@@ -112,28 +107,27 @@ void mutex_unlock(struct mutex *m) {
 		m->holder = NULL;
 		wait_queue_notify(&m->wq);
 	}
-	out: sched_unlock();
+out:
+	sched_unlock();
 }
 
-static int priority_inherit(struct thread *t) {
-	struct mutex *m;
-	__thread_priority_t prior;
+static int priority_inherit(struct thread *t, struct mutex *m) {
+	sched_priority_t prior;
 
 	assert(t);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-	m = t->mutex_waiting;
 	prior = thread_priority_get(t);
 
 	if(prior != thread_priority_inherit(m->holder, prior)) {
-		sched_change_scheduling_priority(m->holder, prior);
+		sched_change_priority(m->holder, prior);
 	}
 
 	return 0;
 }
 
 static void priority_uninherit(struct thread *t) {
-	__thread_priority_t prior;
+	sched_priority_t prior;
 
 	assert(t);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
@@ -141,6 +135,6 @@ static void priority_uninherit(struct thread *t) {
 	prior = thread_priority_get(t);
 
 	if(prior != thread_priority_reverse(t)) {
-		sched_change_scheduling_priority(t, thread_priority_get(t));
+		sched_change_priority(t, thread_priority_get(t));
 	}
 }

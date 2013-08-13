@@ -18,6 +18,7 @@ struct wait_queue {
 	int flag;
 };
 
+struct thread;
 struct wait_link {
 	struct dlist_head link;
 	struct thread *thread;

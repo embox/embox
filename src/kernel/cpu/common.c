@@ -21,7 +21,8 @@ void cpu_init(unsigned int cpu_id, struct thread *idle_) {
 }
 
 void cpu_bind(unsigned int cpu_id, struct thread *t) {
-	t->affinity = 1 << cpu_id;
+	//t->affinity = 1 << cpu_id;
+	sched_affinity_set(t, 1 << cpu_id);
 }
 
 struct thread * cpu_get_idle(unsigned int cpu_id) {
