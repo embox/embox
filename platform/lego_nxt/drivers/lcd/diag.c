@@ -10,28 +10,17 @@
 #include <drivers/nxt/lcd.h>
 #include <drivers/diag.h>
 
-void diag_init(void) {
+static int nxt_lcd_diag_init(void) {
 	lcd_init();
 	display_clear_screen();
+	return 0;
 }
 
-char diag_getc(void) {
-	/*getc cant be implemented */
-	return '!';
-}
-
-void diag_putc(char ch) {
+static void nxt_lcd_diag_putc(char ch) {
 	display_char(ch);
 }
 
-
-int diag_kbhit(void) {
-	/* as no symbol can be obtained... */
-#define DEBUG_GETC
-	/*should be disabled in release for consistency */
-#ifdef DEBUG_GETC
-	return true;
-#else
-	return false;
-#endif
-}
+DIAG_OPS_DECLARE(
+		.init = nxt_lcd_diag_init,
+		.putc = nxt_lcd_diag_putc,
+);
