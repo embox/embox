@@ -24,11 +24,6 @@ module xuartlite extends diag_api {
 	source "xuartlite.c"
 }
 
-module stm32_usart extends diag_api {
-	source "stm32_usart.c"
-	depends embox.driver.gpio.stm32
-}
-
 module pic32mx_uart extends diag_api {
 	source "pic32mx_uart.c"
 }
