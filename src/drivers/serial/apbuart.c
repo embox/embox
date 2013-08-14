@@ -90,23 +90,11 @@ static unsigned int irq_num;
 EMBOX_UNIT_INIT(uart_init);
 
 static int apbuart_setup(const struct uart_desc *dev, const struct uart_params *params){
-	int err;
-
-	if (NULL != dev_regs) {
-		return -EBUSY;
-	}
-
-	if (0 != (err = dev_regs_init())) {
-		return err;
-	}
 	assert(NULL != dev_regs);
 
 	REG_STORE(&dev_regs->ctrl, UART_DISABLE_ALL);
 	REG_STORE(&dev_regs->scaler, UART_SCALER_VAL);
 	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
-//	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE );
-	//dev->base_addr = (uint32_t)dev_regs;
-	//dev->irq_num = irq_num;
 
 	return 0;
 }
@@ -170,13 +158,9 @@ static const struct uart_ops uart_ops = {
 		.uart_setup = apbuart_setup
 };
 
-#define APBUART_BASE  0x80000100
-
 static struct uart_desc uart0 = {
-		//.dev_name = "uart0",
 		.irq_num = OPTION_GET(NUMBER,irq_num),
-		.base_addr = APBUART_BASE,
-		//.params = &uart0_params,
+		.base_addr = OPTION_GET(NUMBER,apbuart_base),
 		.uart_ops = &uart_ops,
 };
 
@@ -209,6 +193,15 @@ static int apbuart_diag_init(void) {
 		.irq = false,
 	};
 
+	int res;
+
+	if (0 != (res = dev_regs_init())) {
+		return res;
+	}
+
+	uart0.irq_num = irq_num;
+	uart0.base_addr = (uint32_t)dev_regs;
+
 	apbuart_setup(&uart0, &apbuart_diag_params);
 
 	return 0;
@@ -221,7 +214,9 @@ DIAG_OPS_DECLARE(
 	.kbhit = apbuart_diag_kbhit,
 );
 
+
 static int uart_init(void) {
+
 	if (!uart_register(&uart0, &uart_defparams)) {
 		return -1;
 	}
