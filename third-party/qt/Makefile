@@ -118,9 +118,12 @@ all:
 $(QT_BUILD_DIR_EMBOX):
 	$(AT)mkdir -p $@
 
+QT_MD5_LINE:=$(QT_MD5)  $(QT_BUNDLE)
+
 $(DOWNLOADED):
-	$(AT)wget -P $(DOWNLOAD_DIR) -c $(QT_URL)
-	$(AT)(echo '$(QT_MD5) $(QT_BUNDLE)' | md5sum -c)
+	$(AT)(echo '$(QT_MD5_LINE)' | md5sum -c) || \
+		(wget -P $(DOWNLOAD_DIR) -c $(QT_URL) && \
+			echo '$(QT_MD5_LINE)' | md5sum -c)
 	$(AT)touch $@
 
 # When necessity to re-patch is detected manual resolution is required.
@@ -128,13 +131,15 @@ $(DOWNLOADED):
 # and do not want to accidentally remove some possible desired changes.
 # Therefore it is left to the discretion of the user.
 # HINT: Typically it is good to perform build directory cleanup: 'make clean'
+# The patch saved to .extracted for the user to be able to compare previous patch with current one.
+# In some situations this might be useful.
 $(EXTRACTED): $(PATCH_TXT) $(DOWNLOADED)
 	$(AT) [ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
 	-$(AT)rm -rf $(QT_SRC_DIR)
 	$(AT)mkdir -p $(QT_SRC_DIR)
-	$(AT)tar -C $(QT_SRC_DIR) -xzf $(abspath $(QT_BUNDLE)) --strip-component=1
+	$(AT)tar -C $(QT_SRC_DIR) -xzf $(abspath $(QT_BUNDLE)) --strip-components=1
 	$(AT)patch -p1 -d $(QT_SRC_DIR) -N --input=$(abspath $(PATCH_TXT))
-	$(AT)touch $@
+	$(AT)cp $(PATCH_TXT) $@
 
 # using -f since 'svn update' causes unlink and 'cp -u' complaints
 # http://svn.haxx.se/users/archive-2007-10/0797.shtml
