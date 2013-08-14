@@ -86,8 +86,6 @@ static void msp430usci_diag_putc(char ch) {
 }
 
 static char msp430usci_diag_getc(void) {
-	while (!(REG_LOAD(IFG2) & RXIFG));
-
 	return REG_LOAD(RXB);
 }
 

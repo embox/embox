@@ -48,8 +48,6 @@ static int at91uart_hasrx(void) {
 }
 
 static char at91uart_getc(void) {
-	while (!at91uart_hasrx()) {
-	}
 	return (char) REG_LOAD(AT91C_US0_RHR);
 }
 

@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <kernel/panic.h>
 #include <util/ring.h>
 #include <drivers/diag.h>
 #include <termios.h>
@@ -48,11 +49,17 @@ int diag_init(void) {
 
 char diag_getc(void) {
 
-	if (cdiag->getc) {
-		return cdiag->getc();
+	if (!cdiag->getc) {
+		panic("diag_getc called with no implementation");
 	}
 
-	return '\0';
+	if (cdiag->kbhit) {
+		while (!cdiag->kbhit()) {
+
+		}
+	}
+
+	return cdiag->getc();
 }
 
 void diag_putc(char ch) {
@@ -67,13 +74,17 @@ void diag_putc(char ch) {
 	}
 }
 
-int diag_kbhit(void) {
+extern enum diag_kbhit_ret diag_kbhit(void) {
 
 	if (cdiag->kbhit) {
-		return cdiag->kbhit();
+		return cdiag->kbhit() ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
 	}
 
-	return 0;
+	if (cdiag->getc) {
+		return KBHIT_CAN_GETC;
+	}
+
+	return KBHIT_WILL_FOREVER;
 }
 
 #if 0
