@@ -5,8 +5,9 @@
  * @author Anton Kozlov
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <embox/cmd.h>
 #include <drivers/vt.h>
 #include <drivers/diag.h>
 #include <unistd.h>
@@ -27,6 +28,8 @@ static void print_usage(void) {
 #define CSI '['
 #endif
 
+#define MIN_SLEEP_TIME 50000
+#define SLEEP_TIME_DEC 25000
 #define SPEED_INC 5
 #define SIZE 18
 #define SNAKE_LEN 4
@@ -34,7 +37,7 @@ static void print_usage(void) {
 #define FRU 'o'
 
 static int rand_seed = 0;
-static int sleep_time = 350;
+static int sleep_time = 350000;
 static int speed_count = SPEED_INC;
 
 static char field[SIZE * SIZE];
@@ -176,8 +179,8 @@ static int snake_update(void) {
 	switch (new_pos) {
 	case FRU:
 		if (!speed_count--) {
-			if (sleep_time >= 50)
-				sleep_time -= 20;
+			if (sleep_time >= MIN_SLEEP_TIME)
+				sleep_time -= SLEEP_TIME_DEC;
 			speed_count = SPEED_INC;
 		}
 		head = p;
@@ -212,7 +215,7 @@ static int valid(point p) {
 static int exec(int argc, char **argv) {
 	field_init();
 	diff = dxp;
-	getchar();
+	diag_getc();
 	while (snake_update()) {
 		point d = nil;
 		point d2 = nil;
@@ -220,8 +223,8 @@ static int exec(int argc, char **argv) {
 
 		usleep(sleep_time);
 		last_valid = 0;
-		while (diag_kbhit() && !last_valid ) {
-			d = dispatch((ch = getchar()));
+		while (!diag_kbhit() && !last_valid ) {
+			d = dispatch((ch = diag_getc()));
 			d2 = point_plus(d,diff);
 			valid(d2);
 		}
@@ -229,10 +232,10 @@ static int exec(int argc, char **argv) {
 			diff = d;
 			diff_char = ch;
 		}
-		while (diag_kbhit())
-			getchar();
+		while (!diag_kbhit())
+			diag_getc();
 	}
-	getchar();
+	diag_getc();
 	printf("%c%c2J",ESC,CSI);
 	gotohome();
 	return 0;
