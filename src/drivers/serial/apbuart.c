@@ -87,6 +87,7 @@ static volatile struct apbuart_regs *dev_regs;
 static int dev_regs_init(void);
 static unsigned int irq_num;
 
+EMBOX_UNIT_INIT(uart_init);
 
 static int apbuart_setup(const struct uart_desc *dev, const struct uart_params *params){
 	int err;
@@ -173,7 +174,7 @@ static const struct uart_ops uart_ops = {
 
 static struct uart_desc uart0 = {
 		//.dev_name = "uart0",
-		.irq_num = -1,
+		.irq_num = OPTION_GET(NUMBER,irq_num),
 		.base_addr = APBUART_BASE,
 		//.params = &uart0_params,
 		.uart_ops = &uart_ops,
@@ -191,13 +192,21 @@ static int apbuart_diag_kbhit(void) {
 	return apbuart_has_symbol(&uart0);
 }
 
+static const struct uart_params uart_defparams = {
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = true,
+};
+
 static int apbuart_diag_init(void) {
 	struct uart_params apbuart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = 0,
+		.irq = false,
 	};
 
 	apbuart_setup(&uart0, &apbuart_diag_params);
@@ -211,4 +220,12 @@ DIAG_OPS_DECLARE(
 	.putc = apbuart_diag_putc,
 	.kbhit = apbuart_diag_kbhit,
 );
+
+static int uart_init(void) {
+	if (!uart_register(&uart0, &uart_defparams)) {
+		return -1;
+	}
+
+	return 0;
+}
 

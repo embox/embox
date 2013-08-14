@@ -21,6 +21,7 @@ module core {
 module fsnode extends fsnode_api {
 	source "fsnode.c"
 	@NoRuntime depends embox.driver.char_dev
+	depends embox.fs.driver.devfs
 }
 
 module fsnode_none extends fsnode_api {
