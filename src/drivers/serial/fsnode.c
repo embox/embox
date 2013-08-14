@@ -9,8 +9,9 @@
 #include <kernel/irq.h>
 #include <drivers/uart_device.h>
 #include <fs/file_desc.h>
-
 #include <embox/device.h> //XXX
+
+#include <drivers/serial/fsnode.h>
 
 static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 	int flags);
@@ -27,7 +28,7 @@ static struct kfile_operations uart_dev_file_op = {
 	.ioctl = dev_uart_ioctl
 };
 
-int serial_register(struct uart *dev) {
+int serial_register_devfs(struct uart *dev) {
 
 	char_dev_register(dev->dev_name, &uart_dev_file_op);
 

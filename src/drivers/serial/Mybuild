@@ -6,16 +6,25 @@ package embox.driver.serial
 
 abstract module serial { }
 
+@DefaultImpl(fsnode)
+abstract module fsnode_api { }
+
 module core {
+	option number uart_max_n = 4
+
 	source "core.c"
 
-	depends fsnode
+	depends fsnode_api
 	@NoRuntime depends embox.util.indexator
 }
 
-module fsnode {
+module fsnode extends fsnode_api {
 	source "fsnode.c"
 	@NoRuntime depends embox.driver.char_dev
+}
+
+module fsnode_none extends fsnode_api {
+	source "fsnode_none.c"
 }
 
 module apbuart extends serial {
@@ -60,4 +69,5 @@ module stm32_usart extends serial {
 	source "stm32_usart.c"
 
 	depends embox.driver.gpio.stm32
+	depends core
 }

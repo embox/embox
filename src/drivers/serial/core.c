@@ -11,17 +11,16 @@
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
+#include <drivers/serial/fsnode.h>
 
 #include <drivers/uart_device.h>
 
-#define UART_MAX_N 4
+#define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
 
 POOL_DEF(uart_pool, struct uart, UART_MAX_N);
 INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
 static DLIST_DEFINE(uart_list);
-
-extern int serial_register(struct uart *dev);
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data);
 
@@ -152,7 +151,7 @@ struct uart *uart_register(const struct uart_desc *uartd,
 	uart->uart_desc = uartd;
 	dlist_add_next(&uart->lnk, &uart_list);
 
-	serial_register(uart);
+	serial_register_devfs(uart);
 
 	return uart;
 
