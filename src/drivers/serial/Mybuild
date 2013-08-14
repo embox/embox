@@ -10,10 +10,12 @@ module core {
 	source "core.c"
 
 	depends fsnode
+	@NoRuntime depends embox.util.indexator
 }
 
 module fsnode {
 	source "fsnode.c"
+	@NoRuntime depends embox.driver.char_dev
 }
 
 module apbuart extends serial {
@@ -23,8 +25,7 @@ module apbuart extends serial {
 
 	source "apbuart.c"
 
-	depends embox.lib.LibC
-	depends embox.driver.ambapp_api
+	@NoRuntime depends embox.driver.ambapp_api
 
 	depends core
 }

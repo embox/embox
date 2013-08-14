@@ -5,6 +5,7 @@ module diag {
 
 	source "diag.c"
 	depends embox.driver.diag.diag_api
-}
 
+	@NoRuntime depends embox.driver.tty.termios_ops
+}
 

@@ -3,12 +3,6 @@ package embox.driver.diag
 abstract module diag_api {
 }
 
-module apbuart extends diag_api {
-	option number baud_rate
-
-	source "apbuart.c"
-}
-
 module at91_uart extends diag_api {
 	option number baud_rate
 

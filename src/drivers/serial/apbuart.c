@@ -14,6 +14,8 @@
 #include <hal/system.h>
 #include <kernel/irq.h>
 
+#include <drivers/diag.h>
+
 #include <drivers/uart_device.h>
 
 
@@ -86,7 +88,7 @@ static int dev_regs_init(void);
 static unsigned int irq_num;
 
 
-static int uart_setup(struct uart_device *dev, struct uart_params *params){
+static int apbuart_setup(const struct uart_desc *dev, const struct uart_params *params){
 	int err;
 
 	if (NULL != dev_regs) {
@@ -102,13 +104,13 @@ static int uart_setup(struct uart_device *dev, struct uart_params *params){
 	REG_STORE(&dev_regs->scaler, UART_SCALER_VAL);
 	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
 //	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE );
-	dev->base_addr = (uint32_t)dev_regs;
-	dev->irq_num = irq_num;
+	//dev->base_addr = (uint32_t)dev_regs;
+	//dev->irq_num = irq_num;
 
 	return 0;
 }
 
-static int uart_putc(struct uart_device *dev, int ch) {
+static int apbuart_putc(const struct uart_desc *dev, int ch) {
 	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
@@ -116,11 +118,11 @@ static int uart_putc(struct uart_device *dev, int ch) {
 	return 0;
 }
 
-static int uart_has_symbol(struct uart_device *dev) {
+static int apbuart_has_symbol(const struct uart_desc *dev) {
 	return UART_STAT_DR & REG_LOAD(&dev_regs->status);
 }
 
-static int uart_getc(struct uart_device *dev) {
+static int apbuart_getc(const struct uart_desc *dev) {
 #if 0
 	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
 	}
@@ -151,34 +153,62 @@ static int dev_regs_init() {
 #else
 # error "Either DRIVER_AMBAPP or apbuart_base option must be defined"
 #endif /* DRIVER_AMBAPP */
-
+#if 0
 static struct uart_params uart0_params = {
 		.baud_rate = OPTION_GET(NUMBER, baud_rate),
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8
 };
+#endif
 
-static struct uart_ops uart_ops = {
-		.get = uart_getc,
-		.put = uart_putc,
-		.hasrx = uart_has_symbol,
-		.setup = uart_setup
+static const struct uart_ops uart_ops = {
+		.uart_getc = apbuart_getc,
+		.uart_putc = apbuart_putc,
+		.uart_hasrx = apbuart_has_symbol,
+		.uart_setup = apbuart_setup
 };
 
-static struct uart_device uart0 = {
-		.dev_name = "uart0",
+#define APBUART_BASE  0x80000100
+
+static struct uart_desc uart0 = {
+		//.dev_name = "uart0",
 		.irq_num = -1,
-		.base_addr = -1,
-		.params = &uart0_params,
-		.operations = &uart_ops,
+		.base_addr = APBUART_BASE,
+		//.params = &uart0_params,
+		.uart_ops = &uart_ops,
 };
 
-#include <embox/device.h>
-
-static int uart_init(void) {
-	uart_dev_register(&uart0);
-	return 0;
+static void apbuart_diag_putc(char ch) {
+	apbuart_putc(&uart0, ch);
 }
 
-EMBOX_DEVICE("uart", &uart_dev_file_op, uart_init);
+static char apbuart_diag_getc(void) {
+	return apbuart_getc(&uart0);
+}
+
+static int apbuart_diag_kbhit(void) {
+	return apbuart_has_symbol(&uart0);
+}
+
+static int apbuart_diag_init(void) {
+	struct uart_params apbuart_diag_params = {
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = 0,
+	};
+
+	apbuart_setup(&uart0, &apbuart_diag_params);
+
+	return 0;
+};
+
+DIAG_OPS_DECLARE(
+	.init = apbuart_diag_init,
+	.getc = apbuart_diag_getc,
+	.putc = apbuart_diag_putc,
+	.kbhit = apbuart_diag_kbhit,
+);
+
