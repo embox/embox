@@ -68,14 +68,13 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 
 static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 	struct uart *uart_dev = desc->file_info;
-	size_t cnt;
-	char *b;
+	struct tty *tty = &uart_dev->tty;
 
-	cnt = 0;
-	b = (char*) buff;
+	tty_write(tty, buff, size);
 
-	while (cnt != size) {
-		uart_putc(uart_dev, b[cnt++]);
+	while (!ring_empty(&tty->o_ring)) {
+		uart_putc(uart_dev, tty->o_buff[tty->o_ring.tail]);
+		ring_just_read(&tty->o_ring, TTY_IO_BUFF_SZ, 1);
 	}
 
 	return size;
