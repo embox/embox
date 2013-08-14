@@ -30,7 +30,3 @@ module usermode extends diag_api {
 	source "usermode.c"
 }
 
-module msp430usci extends diag_api {
-	source "msp430usci.c"
-}
-

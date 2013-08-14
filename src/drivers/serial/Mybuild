@@ -72,3 +72,8 @@ module stm32_usart extends serial {
 	depends embox.driver.gpio.stm32
 	depends core
 }
+
+module msp430usci {
+	source "msp430usci.c"
+}
+
