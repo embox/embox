@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#include <asm/io.h>
 #include <errno.h>
+#include <drivers/ethernet/virtio.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_driver.h>
@@ -28,18 +28,56 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
+#include <stdlib.h>
+#include <string.h>
 static int virtio_open(struct net_device *dev) {
-	printk("%lx %#hhx\n", dev->base_addr, in8(dev->base_addr + 0x12));
-	out8(1, dev->base_addr + 0x12);
-	printk("%#hhx\n", in8(dev->base_addr + 0x12));
-	out8(2, dev->base_addr + 0x12);
-	printk("%#hhx\n", in8(dev->base_addr + 0x12));
-	out8(4, dev->base_addr + 0x12);
-	printk("%#hhx\n", in8(dev->base_addr + 0x12));
+	uint32_t queue_sz;
+	void *queue;
+
+	printk("%#x\n", virtio_load32(VIRTIO_REG_DEVICE_F, dev));
+	printk("%#x\n", virtio_load32(VIRTIO_REG_GUEST_F, dev));
+	printk("%#x\n", virtio_load16(VIRTIO_REG_NET_STATUS, dev));
+	printk("%#hhx\n", virtio_load8(VIRTIO_REG_DEVICE_S, dev));
+
+	printk("vq 0:\n");
+	virtio_store16(0, VIRTIO_REG_QUEUE_SL, dev);
+	queue_sz = virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
+	printk("%#x\n", queue_sz);
+	printk("%d\n", vring_size(queue_sz));
+	queue = malloc(vring_size(queue_sz));
+	if (queue == NULL) {
+		return -ENOMEM;
+	}
+	memset(queue, 0, vring_size(queue_sz));
+	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
+	virtio_store32(((uint32_t)queue) / 4096, VIRTIO_REG_QUEUE_A, dev);
+	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
+
+	printk("vq 1:\n");
+	virtio_store16(1, VIRTIO_REG_QUEUE_SL, dev);
+	queue_sz = virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
+	printk("%#x\n", queue_sz);
+	printk("%d\n", vring_size(queue_sz));
+	queue = malloc(vring_size(queue_sz));
+	if (queue == NULL) {
+		return -ENOMEM;
+	}
+	memset(queue, 0, vring_size(queue_sz));
+	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
+	virtio_store32(((uint32_t)queue) / 4096, VIRTIO_REG_QUEUE_A, dev);
+	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
+
+
+	printk("%#x\n", virtio_load8(VIRTIO_REG_ISR_S, dev));
+
 	return 0;
 }
 
 static int virtio_stop(struct net_device *dev) {
+	virtio_store16(0, VIRTIO_REG_QUEUE_SL, dev);
+	free((void *)(virtio_load32(VIRTIO_REG_QUEUE_A, dev) * 4096));
+	virtio_store16(1, VIRTIO_REG_QUEUE_SL, dev);
+	free((void *)(virtio_load32(VIRTIO_REG_QUEUE_A, dev) * 4096));
 	return 0;
 }
 
@@ -53,6 +91,38 @@ static const struct net_driver virtio_drv_ops = {
 	.stop = virtio_stop,
 	.set_macaddr = virtio_set_macaddr
 };
+
+static void virtio_config(struct net_device *dev) {
+	/* known device */
+	virtio_store8(VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER,
+			VIRTIO_REG_DEVICE_S, dev);
+
+	/* load device mac */
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
+		for (int i = 0; i < dev->addr_len; ++i) {
+			dev->dev_addr[i] = virtio_load8(VIRTIO_REG_NET_MAC(i), dev);
+		}
+	}
+
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC)
+		printk("VIRTIO_NET_F_MAC is set\n");
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CTRL_VQ)
+		printk("VIRTIO_NET_F_CTRL_VQ is set\n");
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_STATUS)
+		printk("VIRTIO_NET_F_STATUS is set\n");
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CSUM)
+		printk("VIRTIO_NET_F_CSUM is set\n");
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_GUEST_CSUM)
+		printk("VIRTIO_NET_F_GUEST_CSUM is set\n");
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MRG_RXBUF) {
+		printk("VIRTIO_NET_F_MRG_RXBUF is set\n");
+		virtio_store32(VIRTIO_NET_F_MRG_RXBUF, VIRTIO_REG_GUEST_F, dev);
+	}
+
+
+	/* device is ready */
+	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
+}
 
 static int virtio_init(struct pci_slot_dev *pci_dev) {
 	int ret;
@@ -70,6 +140,8 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 	if (ret != 0) {
 		return ret;
 	}
+
+	virtio_config(nic);
 
 	return inetdev_register_dev(nic);
 }
