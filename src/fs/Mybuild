@@ -57,6 +57,7 @@ module rootfs {
 	depends node, driver.repo
 	depends embox.fs.filesystem
 	depends embox.lib.LibC
+	depends embox.kernel.task.api
 }
 
 module journal {
