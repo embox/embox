@@ -15,6 +15,7 @@ module core {
 	source "core.c"
 
 	depends fsnode_api
+	depends embox.driver.tty.tty
 	@NoRuntime depends embox.util.indexator
 }
 
@@ -51,9 +52,8 @@ module i8250 extends serial {
 
 	source "8250.c"
 
-	depends embox.util.LibUtil
-
 	depends core
+	depends embox.util.LibUtil
 }
 
 module xuartlite extends serial {
