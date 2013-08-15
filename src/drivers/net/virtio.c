@@ -6,6 +6,7 @@
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <drivers/ethernet/virtio.h>
 #include <drivers/pci/pci.h>
@@ -15,69 +16,106 @@
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <kernel/printk.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
+
+#define VQS_SZ 2
+static struct {
+	struct vring vr;
+	void *vr_storage;
+} vqs[VQS_SZ];
+
+/* FIXME */
+#define QUEUE_SIZE 256
+#define RING_SIZE 12288
+static char vqs_storage_0[RING_SIZE] __attribute__((aligned(ALIGN_BOUND)));
+static char vqs_storage_1[RING_SIZE] __attribute__((aligned(ALIGN_BOUND)));
+static char vr_desc_buff[VQS_SZ][1514];
+
+static void vq_init(int id, struct net_device *dev) {
+	uint32_t queue_sz, ring_sz;
+	void *ring_mem;
+
+	printk("vq %d:\n", id);
+	assert(id < VQS_SZ);
+	assert(vqs[id].vr_storage ==  NULL);
+
+	virtio_store16(id, VIRTIO_REG_QUEUE_SL, dev);
+	queue_sz = virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
+	ring_sz = vring_size(queue_sz);
+
+	assert(queue_sz == QUEUE_SIZE);
+	assert(ring_sz == RING_SIZE);
+
+#if 0
+	ring_mem = malloc(vring_size(queue_sz));
+#else
+	ring_mem = id ? vqs_storage_1 : vqs_storage_0;
+#endif
+	assert(ring_mem != NULL); /* FIXME */
+	memset(ring_mem, 0, ring_sz);
+
+	printk("\t ring_mem %p\n", ring_mem);
+
+	virtio_store32((uintptr_t)ring_mem / ALIGN_BOUND, VIRTIO_REG_QUEUE_A, dev);
+
+	vring_init(&vqs[id].vr, queue_sz, ring_mem);
+	vqs[id].vr_storage = ring_mem;
+}
+
+static void vq_fini(int id) {
+	assert(id < VQS_SZ);
+	assert(vqs[id].vr_storage != NULL);
+#if 0
+	free(vqs[id].vr_storage);
+#endif
+	vqs[id].vr_storage = NULL;
+}
+
+#include <linux/compiler.h>
+static void vq_add_buff(int id, struct net_device *dev) {
+	assert(id < VQS_SZ);
+	vring_desc_init(&vqs[id].vr.desc[0], &vr_desc_buff[id][0], 1514);
+	vqs[id].vr.avail->ring[vqs[id].vr.avail->idx] = 0;
+	__barrier();
+	vqs[id].vr.avail->idx++;
+	__barrier();
+	virtio_store16(id, VIRTIO_REG_QUEUE_N, dev);
+}
 
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-#include <kernel/printk.h>
 static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	printk("!");
 	return IRQ_HANDLED;
 }
 
-#include <stdlib.h>
-#include <string.h>
 static int virtio_open(struct net_device *dev) {
-	uint32_t queue_sz;
-	void *queue;
-
 	printk("%#x\n", virtio_load32(VIRTIO_REG_DEVICE_F, dev));
 	printk("%#x\n", virtio_load32(VIRTIO_REG_GUEST_F, dev));
 	printk("%#x\n", virtio_load16(VIRTIO_REG_NET_STATUS, dev));
 	printk("%#hhx\n", virtio_load8(VIRTIO_REG_DEVICE_S, dev));
 
-	printk("vq 0:\n");
-	virtio_store16(0, VIRTIO_REG_QUEUE_SL, dev);
-	queue_sz = virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
-	printk("%#x\n", queue_sz);
-	printk("%d\n", vring_size(queue_sz));
-	queue = malloc(vring_size(queue_sz));
-	if (queue == NULL) {
-		return -ENOMEM;
-	}
-	memset(queue, 0, vring_size(queue_sz));
-	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
-	virtio_store32(((uint32_t)queue) / 4096, VIRTIO_REG_QUEUE_A, dev);
-	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
-
-	printk("vq 1:\n");
-	virtio_store16(1, VIRTIO_REG_QUEUE_SL, dev);
-	queue_sz = virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
-	printk("%#x\n", queue_sz);
-	printk("%d\n", vring_size(queue_sz));
-	queue = malloc(vring_size(queue_sz));
-	if (queue == NULL) {
-		return -ENOMEM;
-	}
-	memset(queue, 0, vring_size(queue_sz));
-	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
-	virtio_store32(((uint32_t)queue) / 4096, VIRTIO_REG_QUEUE_A, dev);
-	printk("%#x\n", virtio_load32(VIRTIO_REG_QUEUE_A, dev));
-
+	vq_init(VIRTIO_NET_QUEUE_RX, dev);
+	vq_init(VIRTIO_NET_QUEUE_TX, dev);
 
 	printk("%#x\n", virtio_load8(VIRTIO_REG_ISR_S, dev));
+
+	vq_add_buff(VIRTIO_NET_QUEUE_RX, dev);
+	vq_add_buff(VIRTIO_NET_QUEUE_TX, dev);
 
 	return 0;
 }
 
 static int virtio_stop(struct net_device *dev) {
-	virtio_store16(0, VIRTIO_REG_QUEUE_SL, dev);
-	free((void *)(virtio_load32(VIRTIO_REG_QUEUE_A, dev) * 4096));
-	virtio_store16(1, VIRTIO_REG_QUEUE_SL, dev);
-	free((void *)(virtio_load32(VIRTIO_REG_QUEUE_A, dev) * 4096));
+	vq_fini(VIRTIO_NET_QUEUE_RX);
+	vq_fini(VIRTIO_NET_QUEUE_TX);
 	return 0;
 }
 
@@ -118,7 +156,6 @@ static void virtio_config(struct net_device *dev) {
 		printk("VIRTIO_NET_F_MRG_RXBUF is set\n");
 		virtio_store32(VIRTIO_NET_F_MRG_RXBUF, VIRTIO_REG_GUEST_F, dev);
 	}
-
 
 	/* device is ready */
 	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);

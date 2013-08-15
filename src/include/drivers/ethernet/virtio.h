@@ -9,37 +9,11 @@
 #ifndef DRIVERS_ETHERNET_VIRTIO_H_
 #define DRIVERS_ETHERNET_VIRTIO_H_
 
+#include <assert.h>
 #include <asm/io.h>
 #include <stdint.h>
 #include <net/netdevice.h>
-
-#define __VIRTIO_LOAD(b)                                   \
-	static inline uint##b##_t virtio_load##b(uint32_t reg, \
-			struct net_device *dev) {                      \
-		return in##b(dev->base_addr + reg);                \
-	}
-#define __VIRTIO_STORE(b)                                             \
-	static inline void virtio_store##b(uint##b##_t val, uint32_t reg, \
-			struct net_device *dev) {                                 \
-		out##b(val, dev->base_addr + reg);                            \
-	}
-#define __VIRTIO_ORIN(b)                                                 \
-	static inline void virtio_orin##b(uint##b##_t val, uint32_t reg,     \
-			struct net_device *dev) {                                    \
-		out##b(val | in##b(dev->base_addr + reg), dev->base_addr + reg); \
-	}
-
-__VIRTIO_LOAD(8)
-__VIRTIO_LOAD(16)
-__VIRTIO_LOAD(32)
-__VIRTIO_STORE(8)
-__VIRTIO_STORE(16)
-__VIRTIO_STORE(32)
-__VIRTIO_ORIN(8)
-
-#undef __VIRTIO_LOAD
-#undef __VIRTIO_STORE
-#undef __VIRTIO_ORIN
+#include <util/binalign.h>
 
 /**
  * VirtIO Device Registers
@@ -58,6 +32,13 @@ __VIRTIO_ORIN(8)
  */
 #define VIRTIO_REG_NET_MAC(i) (0x14 + i) /* MAC address (i:0..5)*/
 #define VIRTIO_REG_NET_STATUS 0x1A       /* Status (2 bytes)*/
+
+/**
+ * VirtIO Network Device Queues
+ */
+#define VIRTIO_NET_QUEUE_RX   0 /* Receive queue */
+#define VIRTIO_NET_QUEUE_TX   1 /* Transmission queue */
+#define VIRTIO_NET_QUEUE_CTRL 2 /* Control queue (optional) */
 
 /**
  * VirtIO Device Status
@@ -110,31 +91,132 @@ __VIRTIO_ORIN(8)
 #define VIRTIO_NET_S_LINK_UP  0x1 /* Link is up */
 #define VIRTIO_NET_S_ANNOUNCE 0x2 /* Announcement is needed */
 
-/* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
+/**
+ * VirtIO IO Operations
+ */
+#define __VIRTIO_LOAD(b)                                   \
+	static inline uint##b##_t virtio_load##b(uint32_t reg, \
+			struct net_device *dev) {                      \
+		return in##b(dev->base_addr + reg);                \
+	}
+#define __VIRTIO_STORE(b)                                             \
+	static inline void virtio_store##b(uint##b##_t val, uint32_t reg, \
+			struct net_device *dev) {                                 \
+		out##b(val, dev->base_addr + reg);                            \
+	}
+#define __VIRTIO_ORIN(b)                                                 \
+	static inline void virtio_orin##b(uint##b##_t val, uint32_t reg,     \
+			struct net_device *dev) {                                    \
+		out##b(val | in##b(dev->base_addr + reg), dev->base_addr + reg); \
+	}
+
+__VIRTIO_LOAD(8)
+__VIRTIO_LOAD(16)
+__VIRTIO_LOAD(32)
+__VIRTIO_STORE(8)
+__VIRTIO_STORE(16)
+__VIRTIO_STORE(32)
+__VIRTIO_ORIN(8)
+
+#undef __VIRTIO_LOAD
+#undef __VIRTIO_STORE
+#undef __VIRTIO_ORIN
+
+/**
+ * VirtIO Ring Descriptor Table
+ */
 struct vring_desc {
-        /* Address (guest-physical). */
-        __u64 addr;
-        /* Length. */
-        __u32 len;
-        /* The flags as indicated above. */
-        __u16 flags;
-        /* We chain unused descriptors via this, too */
-        __u16 next;
+	uint64_t addr;  /* Address (guest - physical) */
+	uint32_t len;   /* Length */
+	uint16_t flags; /* Flags */
+	uint16_t next;  /* Next descriptor */
 };
 
-/* u32 is used here for ids for padding reasons. */
-struct vring_used_elem {
-        /* Index of start of used descriptor chain. */
-        __u32 id;
-        /* Total length of the descriptor chain which was used (written to) */
-        __u32 len;
-};
+#define VRING_DESC_F_NEXT     0x1 /* Have next */
+#define VRING_DESC_F_WRITE    0x2 /* Write-only buffer */
+#define VRING_DESC_F_INDIRECT 0x4 /* The buffer contains a list of buffer
+									 descriptors */
 
-#define __ALIGN(x) (((x) + 4095) & ~4095)
-static inline unsigned vring_size(unsigned int qsz) {
-	return __ALIGN(sizeof(struct vring_desc) * qsz + sizeof(__u16) * (3 + qsz))
-		+ __ALIGN(sizeof(struct vring_used_elem) * qsz + 3 * sizeof(__u16));
+static void vring_desc_init(struct vring_desc *vrd,
+		void *addr, unsigned int len) {
+	assert(vrd != NULL);
+	vrd->addr = (uint64_t)(uintptr_t)addr;
+	vrd->len = len;
+	vrd->flags = 0;
 }
-#undef __ALIGN
+
+/**
+ * VirtIO Ring Available
+ */
+struct vring_avail {
+	uint16_t flags;         /* Flags */
+	uint16_t idx;           /* Next ring id */
+	uint16_t ring[];        /* Available rings */
+	/* uint32_t used_event; -- placed at ring[-1] */
+#define vring_used_event(vr) ((vr)->avail->ring[(vr)->num])
+};
+
+#define VRING_AVAIL_F_NO_INTERRUPT 0x1 /* Ignore interrupts while consumes a
+										  descriptor from the available ring */
+
+/**
+ * VirtIO Rind Used
+ */
+struct vring_used_elem {
+	uint32_t id;  /* Index of start of used descriptor chain */
+	uint32_t len; /* Total length of the descriptor chain which was used */
+};
+
+struct vring_used {
+	uint16_t flags;                /* Flags */
+	uint16_t idx;                  /* Next ring id */
+	struct vring_used_elem ring[]; /* Rings */
+	/* uint16_t avail_event;       -- placed at ring[-1].id */
+#define vring_avail_event(vr) ((vr)->used->ring[(vr)->num].id)
+};
+
+#define VRING_USED_F_NO_NOTIFY 0x1 /* Don't notify when the guest adds to
+									  the available ring */
+
+/**
+ * VirtIO Ring
+ */
+struct vring {
+	unsigned int num;          /* The number of descriptors */
+	struct vring_desc *desc;   /* The list of actual descriptors */
+	struct vring_avail *avail; /* A ring of available descriptor heads with
+								  free-running index */
+	/* char pad[];             -- Padding (without reference) */
+	struct vring_used *used;   /* A ring of used descriptor heads with
+								  free-running index */
+};
+
+#define ALIGN_BOUND 4096
+
+static inline unsigned int vring_size(unsigned int num
+		/* , unsigned long align */) {
+	const unsigned long align = ALIGN_BOUND;
+	const unsigned int vring_desc_sz = sizeof(struct vring_desc),
+			vring_avail_sz = (3 + num) * sizeof(uint16_t),
+			vring_used_sz = 3 * sizeof(uint16_t)
+				+ num * sizeof(struct vring_used_elem);
+
+	return binalign_bound(vring_desc_sz * num + vring_avail_sz, align)
+			+ binalign_bound(vring_used_sz, align);
+}
+
+static inline void vring_init(struct vring *vr, unsigned int num,
+		void *p/*, unsigned long align*/) {
+	const unsigned long align = ALIGN_BOUND;
+
+	assert(vr != NULL);
+	vr->num = num;
+	vr->desc = p;
+	assert(binalign_check_bound((uintptr_t)vr->desc, align));
+	vr->avail = p + num * sizeof(struct vring_desc);
+	vr->used = (void *)binalign_bound((uintptr_t)&vr->avail->ring[num]
+			+ sizeof(uint16_t), align);
+	assert(binalign_check_bound((uintptr_t)vr->used, align));
+}
 
 #endif /* DRIVERS_ETHERNET_VIRTIO_H_ */
