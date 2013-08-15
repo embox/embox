@@ -74,5 +74,7 @@ module buffer_cache {
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 
+	depends embox.mem.heap_api
+
 	@NoRuntime depends embox.util.hashtable
 }
