@@ -73,6 +73,14 @@ static int run_script(void) {
 		setenv("shell", shell->name, 0);
 	}
 
+#if START_SHELL
+	setup_tty(OPTION_STRING_GET(tty_dev));
+
+	printf("\nStarted shell [%s] on device [%s]\n",
+		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
+
+#endif
+
 	printk("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		printk("> %s \n", command);
@@ -81,12 +89,8 @@ static int run_script(void) {
 	}
 
 #if START_SHELL
-	setup_tty(OPTION_STRING_GET(tty_dev));
-
-	printf("\nStarted shell [%s] on device [%s]\n",
-		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
-
 	shell_run(shell);
+
 #endif
 
 	return 0;
