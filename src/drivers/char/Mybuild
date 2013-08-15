@@ -9,5 +9,7 @@ module terminal {
 
 module char_dev {
 	source "char_dev.c"
+
+	depends embox.fs.core
 }
 
