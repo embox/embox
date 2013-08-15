@@ -22,23 +22,23 @@ static module LibCurses {
 static module LibElf {
 	source "elf/elf.c"
 
-	depends LibCStdio
-	depends LibCString
+	@NoRuntime depends LibCStdio
+	@NoRuntime depends LibCString
 }
 
 static module LibExec {
 	source "exec/exec.c"
 
 	depends embox.mem.mmap_api
-	depends LibElf
+	@NoRuntime depends LibElf
 }
 
 static module LibCAssert {
 	source "assert.c"
 	source "assert_impl.h"
 
-	depends Printk
-	depends Sprintf
+	@NoRuntime depends Printk
+	@NoRuntime depends Sprintf
 }
 
 static module LibCMisc {
@@ -147,23 +147,23 @@ static module Print {
 	source "stdio/printf_impl.h"
 
 	//depends LibCMath // depends from support_floating value
-	depends LibCStdlib // atoi
-	depends LibCType
+	@NoRuntime depends LibCStdlib // atoi
+	@NoRuntime depends LibCType
 }
 
 static module Printk {
 	source "stdio/printk.c"
 
 	depends embox.driver.diag
-	depends Print
+	@NoRuntime depends Print
 }
 
 static module Sprintf {
 	source "stdio/sprintf.c"
 	source "stdio/snprintf.c"
 
-	depends Print
-	depends LibGcc
+	@NoRuntime depends Print
+	@NoRuntime depends LibGcc
 }
 
 static module LibCStdio {
@@ -186,22 +186,22 @@ static module LibCStdio {
 	source "stdio/rename.c"
 	source "stdio/scanf.c"
 
-	depends LibCString
-	depends Sprintf
+	@NoRuntime depends LibCString
+	@NoRuntime depends Sprintf
 }
 
 static module LibC {
 	source "time/ctime.c"
 	source "time/strftime.c"
 
-	depends LibCAssert
-	depends LibCMisc
-	depends LibCType
-	depends LibCStdlib
-	depends LibCString
-	depends LibCMath
-	depends	LibCStdio
-	depends LibCRand
+	@NoRuntime depends LibCAssert
+	@NoRuntime depends LibCMisc
+	@NoRuntime depends LibCType
+	@NoRuntime depends LibCStdlib
+	@NoRuntime depends LibCString
+	@NoRuntime depends LibCMath
+	@NoRuntime depends LibCStdio
+	@NoRuntime depends LibCRand
 /* not here */
 	source "shell/tokenizer.c"
 }
