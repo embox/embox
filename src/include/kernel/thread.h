@@ -21,6 +21,7 @@
 
 #include <util/dlist.h>
 #include <kernel/thread/types.h>
+#include <sys/types.h>
 
 #define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
