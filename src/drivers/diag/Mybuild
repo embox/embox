@@ -12,12 +12,6 @@ module no_diag extends diag_api {
 	source "no_diag.c"
 }
 
-module xuartlite extends diag_api {
-	option number xuartlite_base
-
-	source "xuartlite.c"
-}
-
 module pic32mx_uart extends diag_api {
 	source "pic32mx_uart.c"
 }
