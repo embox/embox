@@ -108,9 +108,9 @@ static int uart_setup(struct uart *uart) {
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
-	while (uart_hasrx(dev)) {
+	do {
 		tty_rx_putc(&dev->tty, uart_getc(dev), 0);
-	}
+	} while (uart_hasrx(dev));
 
 	return IRQ_HANDLED;
 }
