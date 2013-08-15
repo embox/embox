@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <drivers/iodev.h>
 #include <drivers/video/vesa_modes.h>
 #include <drivers/video/fb.h>
 #include <embox/unit.h>

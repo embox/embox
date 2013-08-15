@@ -81,12 +81,12 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 		if ((thread_self() != pnet_rx_threads[prio])) {
 			/* If we will switched to thread with higher priority, than calculate running time in current thread
 			 * and initialize start timestamp in new thread */
-			pack->stat.running_time += thread_self()->running_time - pack->stat.last_sync;
-			pack->stat.last_sync = pnet_rx_threads[prio]->running_time;
+			pack->stat.running_time += thread_get_running_time(thread_self()) - pack->stat.last_sync;
+			pack->stat.last_sync = thread_get_running_time(pnet_rx_threads[prio]);
 		}
 	} else {
 		/* We are in softirq handler */
-		pack->stat.last_sync = pnet_rx_threads[prio]->running_time;
+		pack->stat.last_sync = thread_get_running_time(pnet_rx_threads[prio]);
 	}
 
 	ring_buff_enqueue(&pack_storage[prio].buff, &pack, 1);

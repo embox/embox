@@ -10,7 +10,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <drivers/iodev.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
