@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <util/list.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 struct family_ops;
 struct sock_ops;

@@ -37,11 +37,15 @@ static int diag_mod_init(void) {
 	return irq_attach(INCHAR_IRQ, inchar_irq, 0, NULL, "diag input");
 }
 
-int diag_kbhit(void) {
-	return diag_hasc;
+static void um_diag_putc(char ch) {
+	ipl_t ipl = ipl_save();
+
+	emvisor_send(UV_PWRUPSTRM, EMVISOR_DIAG_OUT, &ch, 1);
+
+	ipl_restore(ipl);
 }
 
-char diag_getc(void) {
+static char um_diag_getc(void) {
 	ipl_t ipl = ipl_save();
 	int len = 1;
 	char ret;
@@ -62,15 +66,8 @@ char diag_getc(void) {
 	return ret;
 }
 
-void diag_putc(char ch) {
-	ipl_t ipl = ipl_save();
-
-	emvisor_send(UV_PWRUPSTRM, EMVISOR_DIAG_OUT, &ch, 1);
-
-	ipl_restore(ipl);
-}
-
-void diag_init(void) {
-
-}
+DIAG_OPS_DECLARE(
+		.putc = um_diag_putc,
+		.getc = um_diag_getc,
+);
 

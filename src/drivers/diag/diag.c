@@ -81,7 +81,7 @@ extern enum diag_kbhit_ret diag_kbhit(void) {
 	}
 
 	if (cdiag->getc) {
-		return KBHIT_CAN_GETC;
+		return KBHIT_WILL_BLK;
 	}
 
 	return KBHIT_WILL_FOREVER;
