@@ -81,3 +81,7 @@ module pic32mx_uart extends embox.driver.diag.diag_api {
 	source "pic32mx_uart.c"
 }
 
+module ns16550 extends embox.driver.diag.diag_api {
+	source "ns16550.c"
+}
+

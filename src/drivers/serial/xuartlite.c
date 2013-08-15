@@ -58,12 +58,7 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-static int xuartlite_diag_init(void) {
-	return 0;
-}
-
 static char xuartlite_diag_getc(void) {
-	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
 }
 
@@ -77,7 +72,6 @@ static int xuartlite_diag_has_symbol(void) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = xuartlite_diag_init,
 		.putc = xuartlite_diag_putc,
 		.getc = xuartlite_diag_getc,
 		.kbhit = xuartlite_diag_has_symbol,

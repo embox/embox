@@ -215,10 +215,6 @@ extern void mips_delay(int cnt);
 #define PORTB            0xBF886050
 
 static char pic32_uart_diag_getc(void) {
-	while (!(REG_LOAD(UxSTA) & STA_URXDA)) {
-
-	}
-
 	return REG_LOAD(UxRXREG);
 }
 

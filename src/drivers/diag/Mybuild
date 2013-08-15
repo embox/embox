@@ -12,10 +12,6 @@ module no_diag extends diag_api {
 	source "no_diag.c"
 }
 
-module ns16550 extends diag_api {
-	source "ns16550.c"
-}
-
 module usermode extends diag_api {
 	source "usermode.c"
 }
