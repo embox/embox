@@ -29,7 +29,7 @@ module fsnode_none extends fsnode_api {
 	source "fsnode_none.c"
 }
 
-module apbuart extends serial {
+module apbuart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number apbuart_base=0x80000100
 	option number irq_num=2
@@ -41,7 +41,7 @@ module apbuart extends serial {
 	depends core
 }
 
-module at91_uart extends serial {
+module at91_uart extends embox.driver.diag.diag_api {
 	option number baud_rate
 
 	source "at91_uart.c"
@@ -56,14 +56,14 @@ module i8250 extends serial {
 	depends embox.util.LibUtil
 }
 
-module xuartlite extends serial {
+module xuartlite extends embox.driver.diag.diag_api {
 	source "xuartlite.c"
 
 	option number xuartlite_base
 	option number irq_num
 }
 
-module stm32_usart extends serial {
+module stm32_usart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	/*option boolean hw_flow = false*/
 
@@ -73,7 +73,11 @@ module stm32_usart extends serial {
 	depends core
 }
 
-module msp430usci {
+module msp430usci extends embox.driver.diag.diag_api {
 	source "msp430usci.c"
+}
+
+module pic32mx_uart extends embox.driver.diag.diag_api {
+	source "pic32mx_uart.c"
 }
 

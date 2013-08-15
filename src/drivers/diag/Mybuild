@@ -12,10 +12,6 @@ module no_diag extends diag_api {
 	source "no_diag.c"
 }
 
-module pic32mx_uart extends diag_api {
-	source "pic32mx_uart.c"
-}
-
 module ns16550 extends diag_api {
 	source "ns16550.c"
 }
