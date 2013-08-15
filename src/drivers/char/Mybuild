@@ -11,5 +11,6 @@ module char_dev {
 	source "char_dev.c"
 
 	depends embox.fs.core
+	depends embox.fs.driver.devfs
 }
 

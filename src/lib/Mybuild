@@ -202,6 +202,8 @@ static module LibC {
 	@NoRuntime depends LibCMath
 	@NoRuntime depends LibCStdio
 	@NoRuntime depends LibCRand
+
+	depends embox.mem.heap_api
 /* not here */
 	source "shell/tokenizer.c"
 }
