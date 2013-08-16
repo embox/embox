@@ -247,12 +247,23 @@ static int ext3fs_truncate (struct node *node, off_t length) {
 
 static int ext3fs_umount(void *dir) {
 	struct fs_driver *drv;
+	struct ext2_fs_info *fsi;
+	void *fs_spec_data;
+	int res;
+
+	fsi = ((struct node *)dir)->nas->fs->fsi;
+	fs_spec_data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->umount(dir);
+	res = drv->fsop->umount(dir);
+
+	journal_delete(fsi->journal);
+	objfree(&ext3_journal_cache, fs_spec_data);
+
+	return res;
 }
 
 static struct kfile_operations ext3_fop = {
@@ -271,10 +282,10 @@ static struct fsop_desc ext3_fsop = {
 	.delete_node = ext3fs_delete,
 
 	.getxattr    = ext2fs_getxattr,
-	.setxattr    = ext2fs_setxattr,
+	.setxattr    = ext2fs_setxattr, /* TODO journaling */
 	.listxattr   = ext2fs_listxattr,
 
-	.truncate    = ext3fs_truncate,
+	.truncate    = ext3fs_truncate, /* TODO journaling */
 	.umount      = ext3fs_umount,
 };
 
