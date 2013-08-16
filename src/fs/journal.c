@@ -49,7 +49,7 @@ int journal_delete(journal_t *jp) {
 	return 0;
 }
 
-journal_handle_t *journal_start(journal_t *jp, int nblocks) {
+journal_handle_t *journal_start(journal_t *jp, size_t nblocks) {
 	journal_handle_t *h;
 
 	if (jp->j_fs_specific.trans_freespace(jp, nblocks) < 0) {
@@ -150,6 +150,8 @@ int journal_dirty_block(journal_t *jp, journal_block_t *block) {
 	int i, blkcount;
 	transaction_t *t = jp->j_running_transaction;
 
+	assert(t->t_nr_buffers < t->t_outstanding_credits);
+
 	/* See the comment in the header to journal_dirty_block */
 	#if 0
 		if (0 == handle->h_buffer_credits) {
@@ -217,7 +219,7 @@ void journal_free_block(journal_t *jp, journal_block_t *jb) {
 	free(jb);
 }
 
-transaction_t *journal_new_trans(journal_t *journal) {
+transaction_t *journal_new_trans(journal_t *jp) {
     transaction_t *t;
 
     if (!(t = malloc(sizeof(transaction_t)))) {
@@ -225,8 +227,8 @@ transaction_t *journal_new_trans(journal_t *journal) {
     }
 
     memset(t, 0, sizeof(*t));
-    t->t_journal = journal;
-    t->t_tid     = journal->j_transaction_sequence++;
+    t->t_journal = jp;
+    t->t_tid     = jp->j_transaction_sequence++;
     t->t_state   = T_RUNNING;
 
     dlist_init(&t->t_buffers);
@@ -235,11 +237,11 @@ transaction_t *journal_new_trans(journal_t *journal) {
     return t;
 }
 
-void journal_free_trans(journal_t *journal, transaction_t *t) {
+void journal_free_trans(journal_t *jp, transaction_t *t) {
 	journal_block_t *b, *bnext;
 
 	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
-		journal_free_block(journal, b);
+		journal_free_block(jp, b);
 	}
 	free(t);
 }
@@ -250,6 +252,7 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 
 	/* XXX Increase speed up of below writing on hd by grouping blocks */
 	dlist_foreach_entry(b, bnext, blocks, b_next) {
+		assert(jp->j_head < jp->j_maxlen);
 		ret += journal_write_block(jp, b->data, 1, jp->j_fs_specific.bmap(jp, jp->j_head++));
 	}
 

@@ -294,7 +294,7 @@ struct journal_s {
 
 extern journal_t *journal_create(journal_fs_specific_t *spec);
 extern int journal_delete(journal_t *jp);
-extern journal_handle_t * journal_start(journal_t *jp, int nblocks);
+extern journal_handle_t * journal_start(journal_t *jp, size_t nblocks);
 extern int journal_stop(journal_handle_t *handle);
 
 extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);
