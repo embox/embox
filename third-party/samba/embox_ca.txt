@@ -1,54 +1,54 @@
-Checking uname sysname type: UNKNOWN
-Checking uname machine type: UNKNOWN
-Checking uname release type: UNKNOWN
-Checking uname version type: UNKNOWN
+Checking uname sysname type: "Embox"
+Checking uname machine type: "x86"
+Checking uname release type: "UNKNOWN"
+Checking uname version type: "UNKNOWN"
 Checking simple C program: OK
-Checking getconf LFS_CFLAGS: UNKNOWN
-Checking for large file support without additional flags: UNKNOWN
-Checking for -D_FILE_OFFSET_BITS=64: UNKNOWN
-Checking for -D_LARGE_FILES: UNKNOWN
-Checking for WORDS_BIGENDIAN: UNKNOWN
-Checking size of bool: UNKNOWN
-Checking size of char: UNKNOWN
-Checking size of int: UNKNOWN
-Checking size of long long: UNKNOWN
-Checking size of long: UNKNOWN
-Checking size of short: UNKNOWN
-Checking size of size_t: UNKNOWN
-Checking size of ssize_t: UNKNOWN
-Checking size of int8_t: UNKNOWN
-Checking size of uint8_t: UNKNOWN
-Checking size of int16_t: UNKNOWN
-Checking size of uint16_t: UNKNOWN
-Checking size of int32_t: UNKNOWN
-Checking size of uint32_t: UNKNOWN
-Checking size of int64_t: UNKNOWN
-Checking size of uint64_t: UNKNOWN
-Checking size of void*: UNKNOWN
-Checking size of off_t: UNKNOWN
-Checking size of dev_t: UNKNOWN
-Checking size of ino_t: UNKNOWN
-Checking size of time_t: UNKNOWN
-Checking correct behavior of strtoll: UNKNOWN
-Checking for working strptime: UNKNOWN
-Checking for C99 vsnprintf: UNKNOWN
+Checking getconf LFS_CFLAGS: ""
+Checking for large file support without additional flags: OK
+Checking getconf large file support flags work: OK
+Checking for WORDS_BIGENDIAN: NO
+Checking size of bool: "1"
+Checking size of char: "1"
+Checking size of int: "4"
+Checking size of long long: "8"
+Checking size of long: "4"
+Checking size of short: "2"
+Checking size of size_t: "4"
+Checking size of ssize_t: "4"
+Checking size of int8_t: "1"
+Checking size of uint8_t: "1"
+Checking size of int16_t: "2"
+Checking size of uint16_t: "2"
+Checking size of int32_t: "4"
+Checking size of uint32_t: "4"
+Checking size of int64_t: "8"
+Checking size of uint64_t: "8"
+Checking size of void*: "4"
+Checking size of off_t: "4"
+Checking size of dev_t: "4'
+Checking size of ino_t: "4"
+Checking size of time_t: "4"
+Checking correct behavior of strtoll: OK
+Checking for working strptime: OK
+Checking for C99 vsnprintf: NO
 Checking for HAVE_SECURE_MKSTEMP: OK
-Checking for HAVE_IFACE_GETIFADDRS: UNKNOWN
-Checking value of SIGRTMAX: UNKNOWN
-Checking value of SIGRTMIN: UNKNOWN
-Checking for small off_t: UNKNOWN
-Checking for kernel change notify support: UNKNOWN
-Checking for Linux kernel oplocks: UNKNOWN
-Checking for kernel share modes: UNKNOWN
-Checking whether blkcnt_t is 32 bit: UNKNOWN
-Checking whether blkcnt_t is 64 bit: UNKNOWN
-Checking size of ((struct utmp *)NULL)->ut_line: UNKNOWN
-Checking whether setreuid is available: UNKNOWN
-Checking whether setresuid is available: UNKNOWN
+Checking for HAVE_IFACE_GETIFADDRS: NO
+Checking value of SIGRTMAX: NO
+Checking value of SIGRTMIN: NO
+Checking for small off_t: OK
+Checking for -D_FILE_OFFSET_BITS=64: NO
+Checking for kernel change notify support: NO
+Checking for Linux kernel oplocks: NO
+Checking for kernel share modes: NO
+Checking whether blkcnt_t is 32 bit: NO
+Checking whether blkcnt_t is 64 bit: NO
+Checking size of ((struct utmp *)NULL)->ut_line: "32"
+Checking whether setreuid is available: NO
+Checking whether setresuid is available: NO
 Checking whether seteuid is available: OK
-Checking whether fcntl locking is available: UNKNOWN
-Checking for the maximum value of the 'time_t' type: UNKNOWN
-Checking whether the realpath function allows a NULL argument: UNKNOWN
-Checking for ftruncate extend: UNKNOWN
-getcwd takes a NULL argument: UNKNOWN
-Checking configure summary: UNKNOWN
+Checking whether fcntl locking is available: NO
+Checking for the maximum value of the 'time_t' type: "2147483647"
+Checking whether the realpath function allows a NULL argument: NO
+Checking for ftruncate extend: NO
+getcwd takes a NULL argument: NO
+Checking configure summary: OK
