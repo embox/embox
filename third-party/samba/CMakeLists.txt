@@ -20,12 +20,17 @@ ExternalProject_Add(
         --cross-compile
         --cross-answers=$ENV{EMBOX_ROOT}/third-party/samba/embox_ca.txt
       	--prefix=<INSTALL_DIR>
+      	--disable-gnutls
       	--bundled-libraries=tdb
-      	--with-shared-modules=NONE
+#      	--with-shared-modules=NONE
+#      	--with-static-modules=ALL
       	--without-ldap
       	--without-pam
-      	#--with-static-modules=
-      	#--targets=
-   #	BUILD_COMMAND
+      	--nonshared-binary=ALL
+      	#--targets=libsmbclient
+   BUILD_COMMAND
+      ./buildtools/bin/waf build
+        -vv
+        --targets=smbclient
    LOG_BUILD 1
 )
