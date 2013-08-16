@@ -17,13 +17,18 @@
 static int journal_write_desc_blocks(journal_t *jp);
 static int journal_write_commit_block(journal_t *jp);
 
-int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, size_t disk_sectorsize) {
+int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
     ext3_journal_superblock_t *sb;
     ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
     char buf[4096];
 
+    assert(jp);
+    assert(jdev);
+
     jp->j_dev = jdev;
-    jp->j_disk_sectorsize = disk_sectorsize;
+    jp->j_disk_sectorsize = block_dev_ioctl(jdev, IOCTL_GETBLKSIZE, NULL, 0);
+
+    assert(jp->j_disk_sectorsize >= 512);
 
     /* Load superblock from the log. */
     if (!jp->j_dev->driver->read(jp->j_dev, buf,

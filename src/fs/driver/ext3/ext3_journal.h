@@ -159,7 +159,7 @@ static inline int ext3_trans_blocks(int nblocks) {
 	return (nblocks == 1 ? EXT3_TRANS_SINGLEDATA_BLOCK : 3 * nblocks + 6 + 2);
 }
 
-extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, size_t disk_sectorsize);
+extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start);
 extern int ext3_journal_commit(journal_t *jp);
 extern int ext3_journal_update(journal_t *jp);
 extern uint32_t ext3_journal_bmap(journal_t *jp, block_t block);

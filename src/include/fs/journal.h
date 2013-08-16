@@ -96,7 +96,7 @@ typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
  * @return error code
  * @retval 0 on success
  */
-typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start, size_t sector_size);
+typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start);
 /**
  * Commit current running transaction.
  *
