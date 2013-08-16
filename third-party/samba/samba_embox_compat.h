@@ -29,5 +29,7 @@ struct statfs {
 };
 int statfs(const char *path, struct statfs *buf);
 
+#define ID_EFFECTIVE 0
+#define ID_REAL 1
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

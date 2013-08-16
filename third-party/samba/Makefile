@@ -10,7 +10,7 @@ SAMBA_CMAKE_DIR = $(SAMBA_DIR)/cmake
 SAMBA_LIB       = $(SAMBA_DIR)/lib/libsmbclient.a
 SAMBA_FLAGS     = $(SAMBA_CMAKE_DIR)/flags
 
-EMBOX_IMPORTED_CPPFLAGS += -I../../SAMBA
+EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/samba_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
@@ -33,9 +33,6 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
-
-EMBOX_IMPORTED_CFLAGS   += -I$(abspath .)/include
-EMBOX_IMPORTED_CXXFLAGS += -I$(abspath .)/include
 
 EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
 ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)

@@ -67,7 +67,7 @@ diff -aur samba-4.0.8/lib/util/wscript_configure samba/lib/util/wscript_configur
      ( 'STAT_STATFS2_FS_DATA',
 diff -aur samba-4.0.8/lib/ccan/wscript samba/lib/ccan/wscript
 --- samba-4.0.8/lib/ccan/wscript	2012-11-13 12:03:38.000000000 +0400
-+++ samba/lib/ccan/wscript	2013-08-15 18:30:33.849586963 +0400
++++ samba/lib/ccan/wscript	2013-08-16 15:26:29.994451315 +0400
 @@ -26,7 +26,8 @@
                      addmain=False, link=False, cflags=conf.env['WERROR_CFLAGS'],
                      define='HAVE_ATTRIBUTE_USED')
@@ -103,3 +103,17 @@ diff -aur samba-4.0.8/lib/ccan/wscript samba/lib/ccan/wscript
                             headers="endian.h sys/endian.h",
                             define="HAVE_BIG_ENDIAN")
  
+@@ -127,10 +131,10 @@
+     # Only check for FILE_OFFSET_BITS=64 if off_t is normally small:
+     # use raw routines because wrappers include previous _GNU_SOURCE
+     # or _FILE_OFFSET_BITS defines.
+-    conf.check(fragment="""#include <sys/types.h>
+-               int main(void) { return !(sizeof(off_t) < 8); }""",
++    conf.CHECK_CODE("""#include <sys/types.h>
++               int main(void) { return !(sizeof(off_t) < 8); }""", addmain=False,
+                execute=True, msg='Checking for small off_t',
+-               define_name='SMALL_OFF_T')
++               define='SMALL_OFF_T')
+     # Unreliable return value above, hence use define.
+     if conf.CONFIG_SET('SMALL_OFF_T'):
+         conf.check(fragment="""#include <sys/types.h>

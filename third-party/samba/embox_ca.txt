@@ -3,8 +3,6 @@ Checking uname machine type: UNKNOWN
 Checking uname release type: UNKNOWN
 Checking uname version type: UNKNOWN
 Checking simple C program: OK
-rpath library support: UNKNOWN
--Wl,--version-script support: UNKNOWN
 Checking getconf LFS_CFLAGS: UNKNOWN
 Checking for large file support without additional flags: UNKNOWN
 Checking for -D_FILE_OFFSET_BITS=64: UNKNOWN
@@ -31,18 +29,26 @@ Checking size of off_t: UNKNOWN
 Checking size of dev_t: UNKNOWN
 Checking size of ino_t: UNKNOWN
 Checking size of time_t: UNKNOWN
+Checking correct behavior of strtoll: UNKNOWN
 Checking for working strptime: UNKNOWN
 Checking for C99 vsnprintf: UNKNOWN
 Checking for HAVE_SECURE_MKSTEMP: OK
+Checking for HAVE_IFACE_GETIFADDRS: UNKNOWN
 Checking value of SIGRTMAX: UNKNOWN
 Checking value of SIGRTMIN: UNKNOWN
-Checking for HAVE_LITTLE_ENDIAN - runtime: UNKNOWN
-Checking for HAVE_BIG_ENDIAN - runtime: UNKNOWN
+Checking for small off_t: UNKNOWN
 Checking for kernel change notify support: UNKNOWN
 Checking for Linux kernel oplocks: UNKNOWN
 Checking for kernel share modes: UNKNOWN
 Checking whether blkcnt_t is 32 bit: UNKNOWN
 Checking whether blkcnt_t is 64 bit: UNKNOWN
 Checking size of ((struct utmp *)NULL)->ut_line: UNKNOWN
-Checking correct behavior of strtoll: UNKNOWN
-Checking for HAVE_IFACE_GETIFADDRS: UNKNOWN
+Checking whether setreuid is available: UNKNOWN
+Checking whether setresuid is available: UNKNOWN
+Checking whether seteuid is available: OK
+Checking whether fcntl locking is available: UNKNOWN
+Checking for the maximum value of the 'time_t' type: UNKNOWN
+Checking whether the realpath function allows a NULL argument: UNKNOWN
+Checking for ftruncate extend: UNKNOWN
+getcwd takes a NULL argument: UNKNOWN
+Checking configure summary: UNKNOWN
