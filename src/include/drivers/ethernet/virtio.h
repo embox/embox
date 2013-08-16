@@ -275,9 +275,9 @@ static inline uint16_t vring_get_free_desc(struct vring *vr) {
 
 #include <linux/compiler.h>
 static inline void vring_push_desc(uint16_t id, struct vring *vr) {
-	vr->avail->ring[vr->avail->idx] = id;
+	vr->avail->ring[vr->avail->idx % vr->num] = id;
 	__barrier();
-	vr->avail->idx = (vr->avail->idx + 1 ) % vr->num;
+	++vr->avail->idx;
 	__barrier();
 }
 

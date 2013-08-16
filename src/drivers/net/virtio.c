@@ -81,8 +81,8 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
-	const int id = VIRTIO_NET_QUEUE_RX;
-	static uint16_t last_rx;
+	static uint16_t last_rx, last_tx;
+	int id;
 	struct vring_used_elem *used_elem;
 	struct virtio_net_hdr *pkt_hdr;
 	struct sk_buff *skb;
@@ -92,10 +92,18 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	if (!(virtio_load8(VIRTIO_REG_ISR_S, dev_id) & 1)) {
 		return IRQ_NONE;
 	}
-	printk("!");
+//	printk("!");
 
+	id = VIRTIO_NET_QUEUE_TX;
+	while (last_tx != ring[id].used->idx) {
+		used_elem = &ring[id].used->ring[last_tx % ring[id].num];
+		ring[id].desc[used_elem->id].addr = 0;
+		++last_tx;
+	}
+
+	id = VIRTIO_NET_QUEUE_RX;
 	while (last_rx != ring[id].used->idx) {
-		printk("+");
+//		printk("+");
 		used_elem = &ring[id].used->ring[last_rx % ring[id].num];
 		desc = &ring[id].desc[used_elem->id];
 		pkt_hdr = (struct virtio_net_hdr *)(uintptr_t)desc->addr;
