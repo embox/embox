@@ -62,8 +62,9 @@ int journal_stop(journal_handle_t *handle) {
     if (0 == --t->t_ref) {
     	res = jp->j_fs_specific.commit(jp);
     }
-    /* And add to free blocks unused by handle */
-    jp->j_free += handle->h_buffer_credits - t->t_log_blocks;
+    /* XXX See the comment in the header to journal_dirty_block.
+     *  jp->j_free += handle->h_buffer_credits;
+     */
     free(handle);
 
     return res;
@@ -102,7 +103,14 @@ int journal_checkpoint_transactions(journal_t *jp) {
 
     	jp->j_tail += t->t_log_blocks;
     	jp->j_tail_sequence++;
-    	jp->j_free += t->t_log_blocks;
+
+    	/**
+    	 * XXX See the comment in the header to journal_dirty_block.
+    	 * the t_outstanding_credits is a reserve space and the t_log_blocks is actually
+    	 * used space, so we should use jp->j_free += t->t_log_blocks;
+    	 */
+    	jp->j_free += t->t_outstanding_credits;
+    	//jp->j_free += t->t_log_blocks;
 
     	if (jp->j_tail > jp->j_last) {
     		jp->j_tail = jp->j_first;
@@ -117,15 +125,18 @@ int journal_checkpoint_transactions(journal_t *jp) {
     return 0;
 }
 
-int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
+int journal_dirty_block(journal_t *jp, journal_block_t *block) {
 	struct buffer_head *bh;
 	int i, blkcount;
-	transaction_t *t = handle->h_transaction;
-	journal_t *jp = t->t_journal;
+	transaction_t *t = jp->j_running_transaction;
 
-	if (0 == handle->h_buffer_credits) {
-		return -1;
-	}
+	/* See the comment in the header to journal_dirty_block */
+	#if 0
+		if (0 == handle->h_buffer_credits) {
+			return -1;
+		}
+		handle->h_buffer_credits--;
+	#endif
 
 	blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
 
@@ -158,7 +169,6 @@ int journal_dirty_block(journal_handle_t *handle, journal_block_t *block) {
 	}
 
 	dlist_add_prev(&block->b_next, &t->t_buffers);
-	handle->h_buffer_credits--;
 	t->t_nr_buffers++;
 
 	return 0;

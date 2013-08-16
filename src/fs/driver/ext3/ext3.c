@@ -37,8 +37,7 @@
 
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
-/* TODO link counter */
-
+/* file operations */
 static int ext3fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int ext3fs_close(struct file_desc *desc);
@@ -46,13 +45,16 @@ static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext3fs_ioctl(struct file_desc *desc, int request, ...);
 
-static struct kfile_operations ext3_fop = {
-	.open = ext3fs_open,
-	.close = ext3fs_close,
-	.read = ext3fs_read,
-	.write = ext3fs_write,
-	.ioctl = ext3fs_ioctl,
-};
+/* fs operations */
+static int ext3fs_init(void * par);
+static int ext3fs_format(void *path);
+static int ext3fs_mount(void *dev, void *dir);
+static int ext3fs_create(struct node *parent_node, struct node *node);
+static int ext3fs_delete(struct node *node);
+static int ext3fs_truncate(struct node *node, off_t length);
+static int ext3fs_umount(void *dir);
+
+static struct fs_driver ext3fs_driver;
 
 /*
  * file_operation
@@ -89,61 +91,57 @@ static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
 
 static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
+	int res;
+	size_t datablocks;
+	struct ext2_fs_info *fsi;
+	journal_handle_t *handle;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if (NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->file_op->write(desc, buff, size);
+	assert(desc->node);
+	fsi = desc->node->nas->fs->fsi;
+	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
+	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(datablocks)))) {
+		return -1;
+	}
+	res = drv->file_op->write(desc, buff, size);
+	journal_stop(handle);
+
+	return res;
 }
 
 static int ext3fs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 
-static int ext3fs_init(void * par);
-static int ext3fs_format(void *path);
-static int ext3fs_mount(void *dev, void *dir);
-static int ext3fs_create(struct node *parent_node, struct node *node);
-static int ext3fs_delete(struct node *node);
-static int ext3fs_truncate(struct node *node, off_t length);
-static int ext3fs_umount(void *dir);
-
-
-static struct fsop_desc ext3_fsop = {
-	.init	     = ext3fs_init,
-	.format	     = ext3fs_format,
-	.mount	     = ext3fs_mount,
-	.create_node = ext3fs_create,
-	.delete_node = ext3fs_delete,
-
-	.getxattr    = ext2fs_getxattr,
-	.setxattr    = ext2fs_setxattr,
-	.listxattr   = ext2fs_listxattr,
-
-	.truncate    = ext3fs_truncate,
-	.umount      = ext3fs_umount,
-};
-
-static int ext3fs_init(void * par) {
-
+static int ext3fs_init(void *par) {
 	return 0;
-};
-
-static struct fs_driver ext3fs_driver = {
-	.name = EXT3_NAME,
-	.file_op = &ext3_fop,
-	.fsop = &ext3_fsop,
 };
 
 static int ext3fs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
+	struct ext2_fs_info *fsi;
+	journal_handle_t *handle;
+	int res = -1;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
+	fsi = parent_node->nas->fs->fsi;
+	/**
+	 * ext3_trans_blocks(1) - to modify parent_node's data block
+	 * 2 blocks for child = 1 inode + 1 inode bitmap
+	 */
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
+		return -1;
+	}
+	res = drv->fsop->create_node(parent_node, node);
+	journal_stop(handle);
 
-	return drv->fsop->create_node(parent_node, node);
+	return res;
 }
 
 static int ext3fs_delete(struct node *node) {
@@ -219,7 +217,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	ext3_spec->ext3_journal_inode = dip;
 	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]), SECTOR_SIZE);
-	//dir_nas->fs->journal = jp;
+	fsi->journal = jp;
 
 	return 0;
 }
@@ -241,5 +239,34 @@ static int ext3fs_umount(void *dir) {
 
 	return drv->fsop->umount(dir);
 }
+
+static struct kfile_operations ext3_fop = {
+	.open = ext3fs_open,
+	.close = ext3fs_close,
+	.read = ext3fs_read,
+	.write = ext3fs_write,
+	.ioctl = ext3fs_ioctl,
+};
+
+static struct fsop_desc ext3_fsop = {
+	.init	     = ext3fs_init,
+	.format	     = ext3fs_format,
+	.mount	     = ext3fs_mount,
+	.create_node = ext3fs_create,
+	.delete_node = ext3fs_delete,
+
+	.getxattr    = ext2fs_getxattr,
+	.setxattr    = ext2fs_setxattr,
+	.listxattr   = ext2fs_listxattr,
+
+	.truncate    = ext3fs_truncate,
+	.umount      = ext3fs_umount,
+};
+
+static struct fs_driver ext3fs_driver = {
+	.name = EXT3_NAME,
+	.file_op = &ext3_fop,
+	.fsop = &ext3_fsop,
+};
 
 DECLARE_FILE_SYSTEM_DRIVER(ext3fs_driver);

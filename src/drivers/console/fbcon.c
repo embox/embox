@@ -119,11 +119,11 @@ static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
 }
 
 static int this_tty_fstat(struct idx_desc *data, void *buff) {
-	struct stat *st = buff;
+       struct stat *st = buff;
 
-	st->st_mode = S_IFCHR;
+       st->st_mode = S_IFCHR;
 
-	return 0;
+       return 0;
 
 }
 

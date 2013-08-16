@@ -3,9 +3,11 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
-QT_URL= http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.4.tar.gz
-QT_BUNDLE = $(notdir $(QT_URL))
-QT_MD5 = 89c5ecba180cae74c66260ac732dc5cb  $(QT_BUNDLE)
+DOWNLOAD_DIR:= $(ROOT_DIR)/download
+
+QT_URL:=http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
+QT_MD5:= 1864987bdbb2f58f8ae8b350dfdbe133
+QT_BUNDLE:=$(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 
 QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
 # This will be needed to use runtime resources, e.g. fonts
@@ -88,7 +90,6 @@ EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
 
-
 QT_DIR               := $(ROOT_DIR)/build/qt
 QT_SRC_DIR           := $(QT_DIR)/source
 
@@ -104,6 +105,7 @@ endif
 PATCH_TXT = qt_patch.txt
 
 EXTRACTED  = $(QT_SRC_DIR)/.extracted
+DOWNLOADED = $(QT_DIR)/.downloaded
 ENVIRONMENT_EMBOX = $(QT_BUILD_DIR_EMBOX)/.environment
 CONFIGURED_EMBOX = $(QT_BUILD_DIR_EMBOX)/.configured
 
@@ -116,9 +118,12 @@ all:
 $(QT_BUILD_DIR_EMBOX):
 	$(AT)mkdir -p $@
 
-.downloaded:
-	$(AT)wget -c $(QT_URL)
-	$(AT)(echo '$(QT_MD5)' | md5sum -c)
+QT_MD5_LINE:=$(QT_MD5)  $(QT_BUNDLE)
+
+$(DOWNLOADED):
+	$(AT)(echo '$(QT_MD5_LINE)' | md5sum -c) || \
+		(wget -P $(DOWNLOAD_DIR) -c $(QT_URL) && \
+			echo '$(QT_MD5_LINE)' | md5sum -c)
 	$(AT)touch $@
 
 # When necessity to re-patch is detected manual resolution is required.
@@ -126,12 +131,13 @@ $(QT_BUILD_DIR_EMBOX):
 # and do not want to accidentally remove some possible desired changes.
 # Therefore it is left to the discretion of the user.
 # HINT: Typically it is good to perform build directory cleanup: 'make clean'
-$(EXTRACTED): $(PATCH_TXT) .downloaded
+# The patch saved to .extracted for the user to be able to compare previous patch with current one.
+# In some situations this might be useful.
+$(EXTRACTED): $(PATCH_TXT) $(DOWNLOADED)
 	$(AT) [ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
 	-$(AT)rm -rf $(QT_SRC_DIR)
 	$(AT)mkdir -p $(QT_SRC_DIR)
-	$(AT)cd $(QT_SRC_DIR) && tar -xzf $(abspath $(QT_BUNDLE))
-	$(AT)cd $(QT_SRC_DIR) && mv `ls`/* ./
+	$(AT)tar -C $(QT_SRC_DIR) -xzf $(abspath $(QT_BUNDLE)) --strip-components=1
 	$(AT)patch -p1 -d $(QT_SRC_DIR) -N --input=$(abspath $(PATCH_TXT))
 	$(AT)cp $(PATCH_TXT) $@
 

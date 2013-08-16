@@ -12,6 +12,7 @@
 #include <mem/page.h>
 #include <linux/types.h>
 #include <stdint.h>
+#include <fs/journal.h>
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -545,6 +546,7 @@ typedef struct ext2_fs_info {
 	u8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
 								        * always s_log_block_size + 10.
 									    */
+	journal_t *journal; /* ext3 journal. XXX it would be better to have separate ext3_fs_info */
 	char mntto[PATH_MAX];
 } ext2_fs_info_t;
 

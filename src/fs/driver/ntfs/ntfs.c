@@ -18,6 +18,7 @@
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
 #include <fs/path.h>
+#include <errno.h>
 
 
 #include <time.h>
