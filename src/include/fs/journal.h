@@ -302,7 +302,18 @@ extern void journal_free_block(journal_t *jp, journal_block_t *jb);
 extern transaction_t *journal_new_trans(journal_t *journal);
 extern void journal_free_trans(journal_t *journal, transaction_t *t);
 extern int journal_checkpoint_transactions(journal_t *jp);
-extern int journal_dirty_block(journal_handle_t *handle, journal_block_t *block);
+
+/**
+ * TODO
+ * When an atomic handler starts by the call of journal_start(jp, nblocks), journal
+ * reserves nblocks for the current running transaction. nblocks - is the lower upper limit
+ * of blocks that an atomic handler is going to modify. Actually nblocks does'nt correspond
+ * to real count of blocks that an atomic handler will modify (real one is lower).
+ * Therefore we should keep track of really modified blocks to prevent themselves from
+ * waste the journal space. So signature of this function should be
+ * int journal_dirty_block(journal_handle_t *handle, journal_block_t *block)
+ */
+extern int journal_dirty_block(journal_t *jp, journal_block_t *block);
 
 extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt);
 extern int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);

@@ -7,6 +7,7 @@ module ext2 {
 	option number ext2_descriptor_quantity=4
 
 	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.journal
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool

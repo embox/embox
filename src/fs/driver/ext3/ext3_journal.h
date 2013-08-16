@@ -134,6 +134,31 @@ typedef struct ext3_journal_specific_s {
     uint8_t j_uuid[16];
 } ext3_journal_specific_t;
 
+/**
+ * Count of blocks needed for transaction that is going to modify 1 block of data.
+ * 1 inode
+ * 2 bitmaps
+ * up to 3 indirection blocks
+ * 1 superblock
+ * 1 group descriptor
+ */
+#define EXT3_TRANS_SINGLEDATA_BLOCK 8
+
+/**
+ * Count of blocks needed for transaction that is going to modify N blocks of data.
+ * N blocks of data
+ * 1 indirect block
+ * 2 dindirect
+ * 3 tindirect
+ * N bitmaps
+ * N group descriptor
+ * 1 inode
+ * 1 superblock
+ */
+static inline int ext3_trans_blocks(int nblocks) {
+	return (nblocks == 1 ? EXT3_TRANS_SINGLEDATA_BLOCK : 3 * nblocks + 6 + 2);
+}
+
 extern int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, size_t disk_sectorsize);
 extern int ext3_journal_commit(journal_t *jp);
 extern int ext3_journal_update(journal_t *jp);
