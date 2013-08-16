@@ -29,6 +29,26 @@ journal_t *journal_create(journal_fs_specific_t *spec) {
     return jp;
 }
 
+int journal_delete(journal_t *jp) {
+	/* Force commit and checkpoint */
+	if (jp->j_fs_specific.commit(jp) != 0
+			|| journal_checkpoint_transactions(jp) != 0) {
+		return -1;
+	}
+
+	/* Free new running transaction after commit */
+	free(jp->j_running_transaction);
+
+	/* Mark journal as empty */
+	jp->j_tail = 0;
+	jp->j_transaction_sequence = 1;
+	jp->j_fs_specific.update(jp);
+
+	free(jp);
+
+	return 0;
+}
+
 journal_handle_t *journal_start(journal_t *jp, int nblocks) {
 	journal_handle_t *h;
 
