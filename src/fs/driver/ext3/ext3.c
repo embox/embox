@@ -146,12 +146,27 @@ static int ext3fs_create(struct node *parent_node, struct node *node) {
 
 static int ext3fs_delete(struct node *node) {
 	struct fs_driver *drv;
+	struct ext2_fs_info *fsi;
+	journal_handle_t *handle;
+	int res;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->delete_node(node);
+	fsi = node->nas->fs->fsi;
+	/**
+	 * Same as in ext3fs_create:
+	 * ext3_trans_blocks(1) - to modify parent_node's data block
+	 * 2 blocks for child = 1 inode + 1 inode bitmap
+	 */
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
+		return -1;
+	}
+	res = drv->fsop->delete_node(node);
+	journal_stop(handle);
+
+	return res;
 }
 
 static int ext3fs_format(void *dev) {
