@@ -232,6 +232,11 @@ static int ext3fs_mount(void *dev, void *dir) {
 	ext3_spec->ext3_journal_inode = dip;
 	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]));
+	/*
+	 * FIXME Now journal supports block size only equal to filesystem block size
+	 * It is not critical but not flexible enough
+	 */
+	assert(jp->j_blocksize == fsi->s_block_size);
 	fsi->journal = jp;
 
 	return 0;
