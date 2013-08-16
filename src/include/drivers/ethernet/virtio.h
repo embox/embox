@@ -92,6 +92,28 @@
 #define VIRTIO_NET_S_ANNOUNCE 0x2 /* Announcement is needed */
 
 /**
+ * VirtIO Network Packet Header
+ */
+struct virtio_net_hdr {
+	uint8_t flags;        /* Flags */
+	uint8_t gso_type;     /* Type of Generic segmentation
+							 offload (GSO) */
+	uint16_t hdr_len;     /* Header length */
+	uint16_t gso_size;    /* Size of GSO */
+	uint16_t csum_start;  /* Calculate checksum from this place */
+	uint16_t csum_offset; /* Size of this place */
+	uint16_t num_buffers; /* Index */
+};
+
+#define VIRTIO_NET_HDR_F_NEEDS_CSUM 0x1
+
+#define VIRTIO_NET_HDR_GSO_NONE 0
+#define VIRTIO_NET_HDR_GSO_TPV4 1
+#define VIRTIO_NET_HDR_GSO_UDP  3
+#define VIRTIO_NET_HDR_GSO_TPV6 4
+#define VIRTIO_NET_HDR_GSO_ECN  0x80
+
+/**
  * VirtIO IO Operations
  */
 #define __VIRTIO_LOAD(b)                                   \
@@ -122,6 +144,27 @@ __VIRTIO_ORIN(8)
 #undef __VIRTIO_STORE
 #undef __VIRTIO_ORIN
 
+#define VRING_ALIGN_BOUND 4096
+
+/**
+ * VirtIO Register operations
+ */
+static inline void virtio_select_queue(uint16_t id, struct net_device *dev) {
+	virtio_store16(id, VIRTIO_REG_QUEUE_SL, dev);
+}
+
+static inline void virtio_notify_queue(uint16_t id, struct net_device *dev) {
+	virtio_store16(id, VIRTIO_REG_QUEUE_N, dev);
+}
+
+static inline uint16_t virtio_get_queue_size(struct net_device *dev) {
+	return virtio_load16(VIRTIO_REG_QUEUE_SZ, dev);
+}
+
+static inline void virtio_set_queue_addr(void *addr, struct net_device *dev) {
+	virtio_store32((uintptr_t)addr / VRING_ALIGN_BOUND, VIRTIO_REG_QUEUE_A, dev);
+}
+
 /**
  * VirtIO Ring Descriptor Table
  */
@@ -138,11 +181,11 @@ struct vring_desc {
 									 descriptors */
 
 static void vring_desc_init(struct vring_desc *vrd,
-		void *addr, unsigned int len) {
+		void *addr, unsigned int len, unsigned short flags) {
 	assert(vrd != NULL);
 	vrd->addr = (uint64_t)(uintptr_t)addr;
 	vrd->len = len;
-	vrd->flags = 0;
+	vrd->flags = flags;
 }
 
 /**
@@ -191,11 +234,9 @@ struct vring {
 								  free-running index */
 };
 
-#define ALIGN_BOUND 4096
-
 static inline unsigned int vring_size(unsigned int num
 		/* , unsigned long align */) {
-	const unsigned long align = ALIGN_BOUND;
+	const unsigned long align = VRING_ALIGN_BOUND;
 	const unsigned int vring_desc_sz = sizeof(struct vring_desc),
 			vring_avail_sz = (3 + num) * sizeof(uint16_t),
 			vring_used_sz = 3 * sizeof(uint16_t)
@@ -207,7 +248,7 @@ static inline unsigned int vring_size(unsigned int num
 
 static inline void vring_init(struct vring *vr, unsigned int num,
 		void *p/*, unsigned long align*/) {
-	const unsigned long align = ALIGN_BOUND;
+	const unsigned long align = VRING_ALIGN_BOUND;
 
 	assert(vr != NULL);
 	vr->num = num;
@@ -217,6 +258,43 @@ static inline void vring_init(struct vring *vr, unsigned int num,
 	vr->used = (void *)binalign_bound((uintptr_t)&vr->avail->ring[num]
 			+ sizeof(uint16_t), align);
 	assert(binalign_check_bound((uintptr_t)vr->used, align));
+}
+
+static inline uint16_t vring_get_free_desc(struct vring *vr) {
+	uint16_t id;
+
+	for (id = 0; id < vr->num; ++id) {
+		if (vr->desc[id].addr == 0) {
+			return id;
+		}
+	}
+
+	assert(0);
+	return (uint16_t)-1;
+}
+
+#include <linux/compiler.h>
+static inline void vring_push_desc(uint16_t id, struct vring *vr) {
+	vr->avail->ring[vr->avail->idx] = id;
+	__barrier();
+	vr->avail->idx = (vr->avail->idx + 1 ) % vr->num;
+	__barrier();
+}
+
+#include <errno.h>
+static inline int vring_push_buff(void *buff, unsigned int len,
+		int wronly, struct vring *vr) {
+	uint16_t desc_id;
+
+	desc_id = vring_get_free_desc(vr);
+	if (desc_id == (uint16_t)-1) {
+		return -EAGAIN;
+	}
+
+	vring_desc_init(&vr->desc[desc_id], buff, len,
+			wronly ? VRING_DESC_F_WRITE : 0);
+	vring_push_desc(desc_id, vr);
+	return 0;
 }
 
 #endif /* DRIVERS_ETHERNET_VIRTIO_H_ */
