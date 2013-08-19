@@ -97,16 +97,27 @@ struct vterm_video *vc_vga_init(void) {
 	return &vc_vga_video.video;
 }
 
-static int vc_diag_init(void) {
+struct vc_video_diag {
+	struct diag diag;
+	struct vterm_video *video;
+};
+
+static int vc_diag_init(const struct diag *diag) {
 	return vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
 }
 
-static void vc_diag_putc(char ch) {
+static void vc_diag_putc(const struct diag *diag, char ch) {
 	vterm_video_putc(&vc_vga_video.video, ch);
 }
 
-DIAG_OPS_DECLARE(
+const struct diag_ops vc_video_diag_ops = {
 	.init = vc_diag_init,
 	.putc = vc_diag_putc,
-);
+};
+const struct vc_video_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
+	.diag = {
+		.ops = &vc_video_diag_ops,
+	},
+	.video = &vc_vga_video.video,
+};
 

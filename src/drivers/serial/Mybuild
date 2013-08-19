@@ -29,6 +29,10 @@ module fsnode_none extends fsnode_api {
 	source "fsnode_none.c"
 }
 
+module diag {
+	source "diag.c"
+}
+
 module apbuart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number apbuart_base=0x80000100
@@ -39,6 +43,7 @@ module apbuart extends embox.driver.diag.diag_api {
 	@NoRuntime depends embox.driver.ambapp_api
 
 	depends core
+	depends diag
 }
 
 module at91_uart extends embox.driver.diag.diag_api {
@@ -53,6 +58,7 @@ module i8250 extends serial {
 	source "8250.c"
 
 	depends core
+	depends diag
 	depends embox.util.LibUtil
 }
 
@@ -71,6 +77,7 @@ module stm32_usart extends embox.driver.diag.diag_api {
 
 	depends embox.driver.gpio.stm32
 	depends core
+	depends diag
 }
 
 module msp430usci extends embox.driver.diag.diag_api {

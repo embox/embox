@@ -15,9 +15,8 @@
 #include <kernel/irq.h>
 
 #include <drivers/diag.h>
-
 #include <drivers/uart_device.h>
-
+#include <drivers/serial/diag.h>
 
 #include <embox/unit.h>
 
@@ -90,6 +89,12 @@ static unsigned int irq_num;
 EMBOX_UNIT_INIT(uart_init);
 
 static int apbuart_setup(struct uart *dev, const struct uart_params *params) {
+	int res;
+
+	if (NULL == dev_regs && 0 != (res = dev_regs_init())) {
+		return res;
+	}
+
 	assert(NULL != dev_regs);
 
 	REG_STORE(&dev_regs->ctrl, UART_DISABLE_ALL);
@@ -112,10 +117,6 @@ static int apbuart_has_symbol(struct uart *dev) {
 }
 
 static int apbuart_getc(struct uart *dev) {
-#if 0
-	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
-	}
-#endif
 	return REG_LOAD(&dev_regs->data);
 }
 
@@ -142,14 +143,6 @@ static int dev_regs_init() {
 #else
 # error "Either DRIVER_AMBAPP or apbuart_base option must be defined"
 #endif /* DRIVER_AMBAPP */
-#if 0
-static struct uart_params uart0_params = {
-		.baud_rate = OPTION_GET(NUMBER, baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8
-};
-#endif
 
 static const struct uart_ops uart_ops = {
 		.uart_getc = apbuart_getc,
@@ -164,21 +157,6 @@ static struct uart uart0 = {
 		.uart_ops = &uart_ops,
 };
 
-static void apbuart_diag_putc(const struct diag *diag, char ch) {
-	struct uart *uart = (struct uart *) diag->obj;
-	apbuart_putc(uart, ch);
-}
-
-static char apbuart_diag_getc(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return apbuart_getc(uart);
-}
-
-static int apbuart_diag_kbhit(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return apbuart_has_symbol(uart);
-}
-
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
@@ -187,37 +165,21 @@ static const struct uart_params uart_defparams = {
 		.irq = true,
 };
 
-static int apbuart_diag_init(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	struct uart_params apbuart_diag_params = {
+static const struct uart_params uart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
 		.irq = false,
-	};
-
-	int res;
-
-	if (0 != (res = dev_regs_init())) {
-		return res;
-	}
-
-	uart0.irq_num = irq_num;
-	uart0.base_addr = (uint32_t)dev_regs;
-
-	apbuart_setup(uart, &apbuart_diag_params);
-
-	return 0;
 };
 
-DIAG_OPS_DECLARE(
-	.init = apbuart_diag_init,
-	.getc = apbuart_diag_getc,
-	.putc = apbuart_diag_putc,
-	.kbhit = apbuart_diag_kbhit,
-);
-
+const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
+		.diag = {
+			.ops = &uart_diag_ops,
+		},
+		.uart = &uart0,
+		.params = &uart_diag_params,
+};
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);

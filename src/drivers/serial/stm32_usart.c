@@ -119,46 +119,16 @@ static const struct uart_params uart_defparams = {
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = 1,
+		.irq = false,
 };
 
-static int stm32uart_diag_init(const struct diag *diag) {
-	struct uart_params stm32uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = 0,
-	};
-
-	stm32_uart_setup(diag->obj, &stm32uart_diag_params);
-
-	return 0;
+const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
+		.diag = {
+			.ops = &uart_diag_ops,
+		},
+		.uart = &uart0,
+		.params = &uart_defparams,
 };
-
-static void stm32uart_diag_putc(const struct diag *diag, char ch) {
-	struct uart *uart = (struct uart *) diag->obj;
-	stm32_uart_putc(uart, ch);
-}
-
-static char stm32uart_diag_getc(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return stm32_uart_getc(uart);
-}
-
-static int stm32uart_diag_kbhit(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return stm32_uart_hasrx(uart);
-}
-
-DIAG_OPS_DECLARE(
-	.init = stm32uart_diag_init,
-	.getc = stm32uart_diag_getc,
-	.putc = stm32uart_diag_putc,
-	.kbhit = stm32uart_diag_kbhit,
-
-	.obj = &stm32_uart0,
-);
 
 static int stm32uart_mod_init(void) {
 	/*if (!uart_register(&stm32_uart0, &uart_defparams)) {*/

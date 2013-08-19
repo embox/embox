@@ -11,6 +11,7 @@
 #include <drivers/diag.h>
 #include <drivers/serial/8250.h>
 #include <drivers/uart_device.h>
+#include <drivers/serial/diag.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(uart_init);
@@ -100,46 +101,24 @@ static const struct uart_params uart_defparams = {
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = 1,
+		.irq = true,
 };
 
-static int i8250_diag_init(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	struct uart_params i8250_diag_params = {
+static const struct uart_params uart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = 0,
-	};
-
-	i8250_setup(uart, &i8250_diag_params);
-
-	return 0;
+		.irq = false,
 };
 
-static void i8250_diag_putc(const struct diag *diag, char ch) {
-	struct uart *uart = (struct uart *) diag->obj;
-	i8250_putc(uart, ch);
-}
-
-static char i8250_diag_getc(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return i8250_getc(uart);
-}
-
-static int i8250_diag_kbhit(const struct diag *diag) {
-	struct uart *uart = (struct uart *) diag->obj;
-	return i8250_has_symbol(uart);
-}
-
-DIAG_OPS_DECLARE(
-	.init = i8250_diag_init,
-	.getc = i8250_diag_getc,
-	.putc = i8250_diag_putc,
-	.kbhit = i8250_diag_kbhit,
-	.obj = &uart0,
-);
+const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
+		.diag = {
+			.ops = &uart_diag_ops,
+		},
+		.uart = &uart0,
+		.params = &uart_diag_params,
+};
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
