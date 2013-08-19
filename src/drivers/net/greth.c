@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <embox/unit.h>
 
@@ -95,7 +96,7 @@ static struct sk_buff *rx_skb[GRETH_DB_QUANTITY];
 
 static struct greth_dev greth_dev;
 
-static int greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
+static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	struct greth_bd *bd = &dev->base->rx_desc_p[dev->rx_next];
 
 	bd->address = (uint32_t)skb->mac.raw;
@@ -106,19 +107,19 @@ static int greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	dev->rx_next++;
 	dev->rx_next %= GRETH_DB_QUANTITY;
 
-	return 0;
+	return bd;
 }
 
-static int greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
+static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	struct greth_bd *bd = &dev->base->tx_desc_p[dev->tx_next];
 
 	bd->address = (uint32_t)skb->mac.raw;
-	bd->status = GRETH_BD_EN;
+	bd->status = GRETH_BD_EN | skb->len;
 
 	dev->tx_next++;
 	dev->tx_next %= GRETH_DB_QUANTITY;
 
-	return 0;
+	return bd;
 }
 
 static void greth_rings_init(struct greth_dev *dev) {
@@ -144,11 +145,40 @@ static void greth_rings_init(struct greth_dev *dev) {
 	}
 }
 
-static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
-	greth_alloc_tx_bd(&greth_dev, skb);
-	printk("tx\n");
-	while(1);
+#define DEBUG 1
+#if DEBUG
+#include <kernel/printk.h>
+/* Debugging routines */
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
 
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
+#endif
+
+
+static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct greth_bd *bd;
+
+	printk("greth xmit start\n");
+	bd = greth_alloc_tx_bd(&greth_dev, skb);
+	REG_ORIN(&greth_dev.base->control, GRETH_CTRL_TX_EN);
+	show_packet(skb->mac.raw, skb->len, "transmite");
+
+
+
+	while(bd->status & GRETH_BD_EN);
+
+	skb_free(skb);
+
+	printk("greth xmit done\n");
 	return ENOERR;
 }
 
@@ -205,34 +235,20 @@ static const struct net_driver greth_ops = {
 
 };
 
-#define DEBUG 1
-#if DEBUG
-#include <kernel/printk.h>
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
 
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-}
-#endif
-
-static irq_return_t greth_received(void) {
+static irq_return_t greth_received(struct net_device * dev) {
 	struct sk_buff *skb;
 	unsigned int len;
-
-	printk("rx irq\n");
 
 	len = rx_bd[greth_dev.rx_bd].status & GRETH_BD_LEN_MASK;
 	skb = rx_skb[greth_dev.rx_bd];
 
 	skb->len = len;
+	skb->dev = dev;
+
+	greth_dev.rx_bd ++;
+	greth_dev.rx_bd %= GRETH_DB_QUANTITY;
+
 
 	show_packet(skb->mac.raw, len, "received");
 
@@ -242,9 +258,7 @@ static irq_return_t greth_received(void) {
 }
 
 static irq_return_t greth_irq_handler(unsigned int irq_num, void *dev_id) {
-
-
-	return greth_received();
+	return greth_received(dev_id);
 }
 
 #ifdef DRIVER_AMBAPP
@@ -281,6 +295,8 @@ static int greth_init(void) {
 	struct net_device *nic;
 	int res;
 	unsigned int irq;
+	struct greth_regs *regs;
+	char hw_addr[] = {0x1,0x2,0x3,0x4,0x5,0x6};
 
 
 	nic = etherdev_alloc();
@@ -298,6 +314,13 @@ static int greth_init(void) {
 
 	greth_rings_init(&greth_dev);
 
+	regs = greth_dev.base;
+
+	memcpy(nic->dev_addr, hw_addr, 6);
+
+	greth_set_mac_address(nic, nic->dev_addr);
+
+
 	/* Clear all pending interrupts except PHY irq */
 	REG_STORE(&greth_dev.base->status, 0xFF);
 
@@ -307,7 +330,7 @@ static int greth_init(void) {
 		return res;
 	}
 
-	REG_STORE(&greth_dev.base->control, GRETH_CTRL_RX_INT | GRETH_CTRL_RX_EN | GRETH_CTRL_TX_EN);
+	REG_STORE(&greth_dev.base->control, GRETH_CTRL_RX_INT | GRETH_CTRL_RX_EN);
 
 	return inetdev_register_dev(nic);
 }

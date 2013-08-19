@@ -25,5 +25,5 @@ module net_tx {
 
 	depends skbuff
 	depends embox.lib.LibC
-	depends embox.net.neighbour
+	//depends embox.net.neighbour
 }

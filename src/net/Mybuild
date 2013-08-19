@@ -53,5 +53,5 @@ module neighbour {
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
 	depends embox.lib.LibC
-	depends embox.net.arp
+	//depends embox.net.arp
 }
