@@ -23,7 +23,7 @@
 
 #define TTGR_DISABLE 0
 
-static int at91uart_init(void) {
+static int at91uart_diag_init(const struct diag *diag) {
 	/* Disabling controling PA5 and PA6 by PIO */
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA5_RXD0 | AT91C_PA6_TXD0);
 	/* Selecting control by USART controller */
@@ -43,23 +43,23 @@ static int at91uart_init(void) {
 	return 0;
 }
 
-static int at91uart_hasrx(void) {
+static int at91uart_diag_hasrx(const struct diag *diag) {
 	return (AT91C_US_RXRDY & REG_LOAD(AT91C_US0_CSR));
 }
 
-static char at91uart_getc(void) {
+static char at91uart_diag_getc(const struct diag *diag) {
 	return (char) REG_LOAD(AT91C_US0_RHR);
 }
 
-static void at91uart_putc(char ch) {
+static void at91uart_diag_putc(const struct diag *diag, char ch) {
 	while (!(AT91C_US_TXRDY & REG_LOAD(AT91C_US0_CSR))) {
 	}
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
 
 DIAG_OPS_DECLARE(
-		.init = at91uart_init,
-		.putc = at91uart_putc,
-		.getc = at91uart_getc,
-		.kbhit = at91uart_hasrx,
+		.init = at91uart_diag_init,
+		.putc = at91uart_diag_putc,
+		.getc = at91uart_diag_getc,
+		.kbhit = at91uart_diag_hasrx,
 );

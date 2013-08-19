@@ -13,11 +13,13 @@
 
 #include <util/macro.h>
 
-struct diag_ops {
-	int (*init)(void);
-	char (*getc)(void);
-	void (*putc)(char ch);
-	int (*kbhit)(void);
+struct diag {
+	int (*init)(const struct diag *diag);
+	char (*getc)(const struct diag *diag);
+	void (*putc)(const struct diag *diag, char ch);
+	int (*kbhit)(const struct diag *diag);
+
+	void *obj;
 };
 
 enum diag_kbhit_ret {
@@ -58,6 +60,6 @@ extern enum diag_kbhit_ret diag_kbhit(void);
 	MACRO_CONCAT(_modname, _diag_ops)
 
 #define DIAG_OPS_DECLARE(...) \
-	const struct diag_ops DIAG_OPS_NAME(__EMBUILD_MOD__) = { __VA_ARGS__ }
+	const struct diag DIAG_OPS_NAME(__EMBUILD_MOD__) = { __VA_ARGS__ }
 
 #endif /* DRIVERS_DIAG_H_ */

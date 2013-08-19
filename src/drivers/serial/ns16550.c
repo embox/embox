@@ -44,18 +44,18 @@ struct com {
 #define COM3_RBR (((struct com *) COM3_BASE)->rbr)
 #define COM3_LSR (((struct com *) COM3_BASE)->lsr)
 
-static void ns16550_diag_putc(char ch) {
+static void ns16550_diag_putc(const struct diag *diag, char ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);
 
 	COM3_RBR = ch;
 }
 
-static char ns16550_diag_getc(void) {
+static char ns16550_diag_getc(const struct diag *diag) {
 	return COM3_RBR;
 
 }
 
-static int ns16550_diag_kbhit(void) {
+static int ns16550_diag_kbhit(const struct diag *diag) {
 	return COM3_LSR & UART_LSR_DR;
 }
 

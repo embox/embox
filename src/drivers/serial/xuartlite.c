@@ -58,16 +58,16 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-static char xuartlite_diag_getc(void) {
+static char xuartlite_diag_getc(const struct diag *diag) {
 	return (char) (uart->rx_data & 0xFF);
 }
 
-static void xuartlite_diag_putc(char ch) {
+static void xuartlite_diag_putc(const struct diag *diag, char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
 
-static int xuartlite_diag_has_symbol(void) {
+static int xuartlite_diag_has_symbol(const struct diag *diag) {
 	return !is_rx_empty();
 }
 

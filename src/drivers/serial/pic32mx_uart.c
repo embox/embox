@@ -214,11 +214,11 @@ extern void mips_delay(int cnt);
 #define TRISB            0xBF886040
 #define PORTB            0xBF886050
 
-static char pic32_uart_diag_getc(void) {
+static char pic32_uart_diag_getc(const struct diag *diag) {
 	return REG_LOAD(UxRXREG);
 }
 
-static void pic32_uart_diag_putc(char c) {
+static void pic32_uart_diag_putc(const struct diag *diag, char c) {
 	while (REG_LOAD(UxSTA) & STA_UTXBF) {
 
 	}
@@ -226,11 +226,11 @@ static void pic32_uart_diag_putc(char c) {
 	REG_STORE(UxTXREG, c);
 }
 
-static int pic32_uart_diag_kbhit(void) {
+static int pic32_uart_diag_kbhit(const struct diag *diag) {
 	return REG_LOAD(UxSTA) & STA_URXDA;
 }
 
-static int pic32_uart_diag_init(void) {
+static int pic32_uart_diag_init(const struct diag *diag) {
 	REG_STORE(TRISB, 0);
 	REG_STORE(PORTB, 0);
 

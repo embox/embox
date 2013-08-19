@@ -10,13 +10,13 @@
 #include <drivers/nxt/lcd.h>
 #include <drivers/diag.h>
 
-static int nxt_lcd_diag_init(void) {
+static int nxt_lcd_diag_init(void *obj) {
 	lcd_init();
 	display_clear_screen();
 	return 0;
 }
 
-static void nxt_lcd_diag_putc(char ch) {
+static void nxt_lcd_diag_putc(void *obj, char ch) {
 	display_char(ch);
 }
 

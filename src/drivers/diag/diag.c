@@ -18,13 +18,13 @@
 #if OPTION_DEFINED(STRING,impl)
 #define DIAG_OPS DIAG_OPS_NAME(OPTION_GET(STRING,impl))
 #else
-#error No diag_ops option provided
+#error No impl option provided
 #endif
 
 extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
-extern const struct diag_ops DIAG_OPS;
-static const struct diag_ops *cdiag = &DIAG_OPS;
+extern const struct diag DIAG_OPS;
+static const struct diag *cdiag = &DIAG_OPS;
 
 #define BUFLEN 4
 
@@ -41,7 +41,7 @@ int diag_init(void) {
 	ring_init(&r);
 
 	if (cdiag->init) {
-		return cdiag->init();
+		return cdiag->init(cdiag);
 	}
 
 	return 0;
@@ -54,12 +54,12 @@ char diag_getc(void) {
 	}
 
 	if (cdiag->kbhit) {
-		while (!cdiag->kbhit()) {
+		while (!cdiag->kbhit(cdiag)) {
 
 		}
 	}
 
-	return cdiag->getc();
+	return cdiag->getc(cdiag);
 }
 
 void diag_putc(char ch) {
@@ -69,7 +69,7 @@ void diag_putc(char ch) {
 	termios_putc((struct termios *) &diag_tio, ch, &r, buf, BUFLEN);
 
 	while (!ring_empty(&r)) {
-		cdiag->putc(buf[r.tail]);
+		cdiag->putc(cdiag, buf[r.tail]);
 		ring_just_read(&r, BUFLEN, 1);
 	}
 }
@@ -77,7 +77,7 @@ void diag_putc(char ch) {
 extern enum diag_kbhit_ret diag_kbhit(void) {
 
 	if (cdiag->kbhit) {
-		return cdiag->kbhit() ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
+		return cdiag->kbhit(cdiag) ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
 	}
 
 	if (cdiag->getc) {

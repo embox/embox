@@ -164,16 +164,19 @@ static struct uart_desc uart0 = {
 		.uart_ops = &uart_ops,
 };
 
-static void apbuart_diag_putc(char ch) {
-	apbuart_putc(&uart0, ch);
+static void apbuart_diag_putc(const struct diag *diag, char ch) {
+	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	apbuart_putc(uart, ch);
 }
 
-static char apbuart_diag_getc(void) {
-	return apbuart_getc(&uart0);
+static char apbuart_diag_getc(const struct diag *diag) {
+	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	return apbuart_getc(uart);
 }
 
-static int apbuart_diag_kbhit(void) {
-	return apbuart_has_symbol(&uart0);
+static int apbuart_diag_kbhit(const struct diag *diag) {
+	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	return apbuart_has_symbol(uart);
 }
 
 static const struct uart_params uart_defparams = {
@@ -184,7 +187,8 @@ static const struct uart_params uart_defparams = {
 		.irq = true,
 };
 
-static int apbuart_diag_init(void) {
+static int apbuart_diag_init(const struct diag *diag) {
+	struct uart_desc *uart = (struct uart_desc *) diag->obj;
 	struct uart_params apbuart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
@@ -202,7 +206,7 @@ static int apbuart_diag_init(void) {
 	uart0.irq_num = irq_num;
 	uart0.base_addr = (uint32_t)dev_regs;
 
-	apbuart_setup(&uart0, &apbuart_diag_params);
+	apbuart_setup(uart, &apbuart_diag_params);
 
 	return 0;
 };

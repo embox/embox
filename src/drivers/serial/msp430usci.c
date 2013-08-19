@@ -46,7 +46,7 @@
 #define PAR_BRF 	0
 #define PAR_UCO		0
 
-static int msp430usci_diag_init(void) {
+static int msp430usci_diag_init(const struct diag *diag) {
 
 	/*reset uart, select clock*/
 	REG_STORE(CTL1, 0x01);
@@ -79,17 +79,17 @@ static int msp430usci_diag_init(void) {
 	return 0;
 }
 
-static void msp430usci_diag_putc(char ch) {
+static void msp430usci_diag_putc(const struct diag *diag, char ch) {
 	while (!(REG_LOAD(IFG2) & TXIFG));
 
 	REG_STORE(TXB, ch);
 }
 
-static char msp430usci_diag_getc(void) {
+static char msp430usci_diag_getc(const struct diag *diag) {
 	return REG_LOAD(RXB);
 }
 
-static int msp430usci_diag_kbhit(void) {
+static int msp430usci_diag_kbhit(const struct diag *diag) {
 	return (REG_LOAD(IFG2) & RXIFG);
 }
 
