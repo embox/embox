@@ -131,6 +131,11 @@ struct virtio_net_hdr {
 			struct net_device *dev) {                                    \
 		out##b(val | in##b(dev->base_addr + reg), dev->base_addr + reg); \
 	}
+#define __VIRTIO_ANDIN(b)                                                \
+	static inline void virtio_andin##b(uint##b##_t val, uint32_t reg,    \
+			struct net_device *dev) {                                    \
+		out##b(val & in##b(dev->base_addr + reg), dev->base_addr + reg); \
+	}
 
 __VIRTIO_LOAD(8)
 __VIRTIO_LOAD(16)
@@ -139,6 +144,7 @@ __VIRTIO_STORE(8)
 __VIRTIO_STORE(16)
 __VIRTIO_STORE(32)
 __VIRTIO_ORIN(8)
+__VIRTIO_ANDIN(8)
 
 #undef __VIRTIO_LOAD
 #undef __VIRTIO_STORE
@@ -260,40 +266,39 @@ static inline void vring_init(struct vring *vr, unsigned int num,
 	assert(binalign_check_bound((uintptr_t)vr->used, align));
 }
 
-static inline uint16_t vring_get_free_desc(struct vring *vr) {
-	uint16_t id;
-
-	for (id = 0; id < vr->num; ++id) {
-		if (vr->desc[id].addr == 0) {
-			return id;
-		}
-	}
-
-	assert(0);
-	return (uint16_t)-1;
-}
-
 #include <linux/compiler.h>
 static inline void vring_push_desc(uint16_t id, struct vring *vr) {
+	assert(vr != NULL);
 	vr->avail->ring[vr->avail->idx % vr->num] = id;
 	__barrier();
 	++vr->avail->idx;
 	__barrier();
 }
 
-#include <errno.h>
-static inline int vring_push_buff(void *buff, unsigned int len,
-		int wronly, struct vring *vr) {
+/**
+ * VirtIO Queue
+ */
+struct virtqueue {
+	struct vring ring;       /* Ring of this queue */
+	void *ring_data;         /* Allocated data for ring storage */
+	uint16_t last_seen_used; /* Last seen used id */
+	uint16_t next_free_desc; /* Next free descriptor id */
+};
+
+static inline int virtqueue_push_buff(void *buff, unsigned int len,
+		int wronly, struct virtqueue *vq) {
 	uint16_t desc_id;
 
-	desc_id = vring_get_free_desc(vr);
-	if (desc_id == (uint16_t)-1) {
-		return -EAGAIN;
-	}
+	assert(vq != NULL);
 
-	vring_desc_init(&vr->desc[desc_id], buff, len,
+	desc_id = vq->next_free_desc;
+	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+	assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
+
+	vring_desc_init(&vq->ring.desc[desc_id], buff, len,
 			wronly ? VRING_DESC_F_WRITE : 0);
-	vring_push_desc(desc_id, vr);
+	vring_push_desc(desc_id, &vq->ring);
+
 	return 0;
 }
 
