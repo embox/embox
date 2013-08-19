@@ -86,6 +86,8 @@ module greth {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.core
+	depends embox.compat.posix.util.sleep
 }
 
 module usermode {
