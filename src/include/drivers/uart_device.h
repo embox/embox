@@ -28,24 +28,24 @@ struct uart_params {
 };
 
 struct uart_ops {
-	int (*uart_getc)(const struct uart_desc *dev);
-	int (*uart_putc)(const struct uart_desc *dev, int symbol);
-	int (*uart_hasrx)(const struct uart_desc *dev);
-	int (*uart_setup)(const struct uart_desc *dev,
-			const struct uart_params *params);
-};
-
-struct uart_desc {
-	const struct uart_ops *uart_ops;
-	short irq_num;
-	uint32_t base_addr;
+	int (*uart_getc)(struct uart *dev);
+	int (*uart_putc)(struct uart *dev, int symbol);
+	int (*uart_hasrx)(struct uart *dev);
+	int (*uart_setup)(struct uart *dev, const struct uart_params *params);
 };
 
 struct uart {
+	/* declarative */
+	const struct uart_ops *uart_ops;
+	short irq_num;
+	uint32_t base_addr;
+
+	/* management */
 	struct dlist_head lnk;
 	char dev_name[UART_NAME_MAXLEN];
 	int idx;
-	const struct uart_desc *uart_desc;
+
+	/* runtime */
 	int state;
 	struct uart_params params;
 	struct tty tty;
@@ -61,7 +61,7 @@ struct uart {
  * @return uart instance pointer on success
  * @return NULL on error
  */
-extern struct uart *uart_register(const struct uart_desc *uartd,
+extern int uart_register(struct uart *uartd,
 		const struct uart_params *uart_defparams);
 
 /**
@@ -122,15 +122,15 @@ extern int uart_get_params(struct uart *uart, struct uart_params *params);
 extern int uart_set_params(struct uart *uart, const struct uart_params *params);
 
 static inline int uart_putc(struct uart *uart, int ch) {
-	return uart->uart_desc->uart_ops->uart_putc(uart->uart_desc, ch);
+	return uart->uart_ops->uart_putc(uart, ch);
 }
 
 static inline int uart_getc(struct uart *uart) {
-	return uart->uart_desc->uart_ops->uart_getc(uart->uart_desc);
+	return uart->uart_ops->uart_getc(uart);
 }
 
 static inline int uart_hasrx(struct uart *uart) {
-	return uart->uart_desc->uart_ops->uart_hasrx(uart->uart_desc);
+	return uart->uart_ops->uart_hasrx(uart);
 }
 
 #endif /* UART_DEVICE_H_ */

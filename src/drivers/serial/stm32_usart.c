@@ -60,7 +60,7 @@ struct uart_stm32 {
 
 #define RCC_APB2ENR_USART1EN (1 << 14)
 
-static int stm32_uart_putc(const struct uart_desc *dev, int ch) {
+static int stm32_uart_putc(struct uart *dev, int ch) {
 	struct uart_stm32 *uart = (struct uart_stm32 *) dev->base_addr;
 
 	while (!(REG_LOAD(&uart->sr) & USART_FLAG_TXE)) { }
@@ -70,18 +70,18 @@ static int stm32_uart_putc(const struct uart_desc *dev, int ch) {
 	return 0;
 }
 
-static int stm32_uart_hasrx(const struct uart_desc *dev) {
+static int stm32_uart_hasrx(struct uart *dev) {
 	struct uart_stm32 *uart = (struct uart_stm32 *) dev->base_addr;
 
 	return (REG_LOAD(&uart->sr) & USART_FLAG_RXNE);
 }
 
-static int stm32_uart_getc(const struct uart_desc *dev) {
+static int stm32_uart_getc(struct uart *dev) {
 	struct uart_stm32 *uart = (struct uart_stm32 *) dev->base_addr;
 	return REG_LOAD(&uart->dr);
 }
 
-static int stm32_uart_setup(const struct uart_desc *dev, const struct uart_params *params) {
+static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) {
 	struct uart_stm32 *uart = (struct uart_stm32 *) dev->base_addr;
 
 	REG_ORIN(RCC_APB1RSTR,RCC_APB1PWR);
@@ -108,7 +108,7 @@ static const struct uart_ops stm32_uart_ops = {
 		.uart_setup = stm32_uart_setup,
 };
 
-static struct uart_desc stm32_uart0 = {
+static struct uart stm32_uart0 = {
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = 0,
 		.base_addr = UART0,
@@ -131,23 +131,23 @@ static int stm32uart_diag_init(const struct diag *diag) {
 		.irq = 0,
 	};
 
-	stm32_uart_setup(&stm32_uart0, &stm32uart_diag_params);
+	stm32_uart_setup(diag->obj, &stm32uart_diag_params);
 
 	return 0;
 };
 
 static void stm32uart_diag_putc(const struct diag *diag, char ch) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	stm32_uart_putc(uart, ch);
 }
 
 static char stm32uart_diag_getc(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return stm32_uart_getc(uart);
 }
 
 static int stm32uart_diag_kbhit(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return stm32_uart_hasrx(uart);
 }
 
@@ -161,9 +161,9 @@ DIAG_OPS_DECLARE(
 );
 
 static int stm32uart_mod_init(void) {
-	if (!uart_register(&stm32_uart0, &uart_defparams)) {
-		return -1;
-	}
+	/*if (!uart_register(&stm32_uart0, &uart_defparams)) {*/
+		/*return -1;*/
+	/*}*/
 
 	return 0;
 }

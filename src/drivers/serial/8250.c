@@ -38,7 +38,7 @@ static uint8_t calc_line_stat(const struct uart_params *params) {
 	return line_stat;
 }
 
-static int i8250_setup(const struct uart_desc *dev, const struct uart_params *params) {
+static int i8250_setup(struct uart *dev, const struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = calc_line_stat(params);
@@ -68,17 +68,17 @@ static int i8250_setup(const struct uart_desc *dev, const struct uart_params *pa
 	return 0;
 }
 
-static int i8250_putc(const struct uart_desc *dev, int ch) {
+static int i8250_putc(struct uart *dev, int ch) {
 	while (!(in8(dev->base_addr + UART_LSR) & UART_EMPTY_TX));
 	out8((uint8_t) ch, dev->base_addr + UART_TX);
 	return 0;
 }
 
-static int i8250_has_symbol(const struct uart_desc *dev) {
+static int i8250_has_symbol(struct uart *dev) {
 	return in8(dev->base_addr + UART_LSR) & UART_DATA_READY;
 }
 
-static int i8250_getc(const struct uart_desc *dev) {
+static int i8250_getc(struct uart *dev) {
 	return in8(dev->base_addr + UART_RX);
 }
 
@@ -89,7 +89,7 @@ static const struct uart_ops i8250_uart_ops = {
 		.uart_setup = i8250_setup,
 };
 
-static struct uart_desc uart0 = {
+static struct uart uart0 = {
 		.uart_ops = &i8250_uart_ops,
 		.irq_num = COM0_IRQ_NUM,
 		.base_addr = COM0_PORT_BASE,
@@ -104,7 +104,7 @@ static const struct uart_params uart_defparams = {
 };
 
 static int i8250_diag_init(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	struct uart_params i8250_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
@@ -119,17 +119,17 @@ static int i8250_diag_init(const struct diag *diag) {
 };
 
 static void i8250_diag_putc(const struct diag *diag, char ch) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	i8250_putc(uart, ch);
 }
 
 static char i8250_diag_getc(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return i8250_getc(uart);
 }
 
 static int i8250_diag_kbhit(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return i8250_has_symbol(uart);
 }
 
@@ -142,9 +142,5 @@ DIAG_OPS_DECLARE(
 );
 
 static int uart_init(void) {
-	if (!uart_register(&uart0, &uart_defparams)) {
-		return -1;
-	}
-
-	return 0;
+	return uart_register(&uart0, &uart_defparams);
 }

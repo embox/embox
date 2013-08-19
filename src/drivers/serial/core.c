@@ -17,7 +17,6 @@
 
 #define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
 
-POOL_DEF(uart_pool, struct uart, UART_MAX_N);
 INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
 static DLIST_DEFINE(uart_list);
@@ -57,29 +56,10 @@ static int uart_fill_name(struct uart *dev) {
 }
 
 
-static struct uart *uart_alloc(const struct uart_desc *uartd) {
-	struct uart *uart = pool_alloc(&uart_pool);
-
-	if (!uart) {
-		return NULL;
-	}
-
-	uart->uart_desc = uartd;
-	dlist_head_init(&uart->lnk);
-	memset(&uart->tty, 0, sizeof(struct tty));
-	memset(&uart->params, 0, sizeof(struct uart_params));
-
-	return uart;
-}
-
-static void uart_free(struct uart *uart) {
-	pool_free(&uart_pool, uart);
-}
-
 static int uart_attach_irq(struct uart *uart) {
 
 	if (uart->params.irq) {
-		return irq_attach(uart->uart_desc->irq_num, irq_handler, 0, uart,
+		return irq_attach(uart->irq_num, irq_handler, 0, uart,
 				uart->dev_name);
 	}
 
@@ -89,17 +69,17 @@ static int uart_attach_irq(struct uart *uart) {
 static int uart_detach_irq(struct uart *uart) {
 
 	if (uart->params.irq) {
-		return irq_detach(uart->uart_desc->irq_num, uart);
+		return irq_detach(uart->irq_num, uart);
 	}
 
 	return 0;
 }
 
 static int uart_setup(struct uart *uart) {
-	const struct uart_ops *uops = uart->uart_desc->uart_ops;
+	const struct uart_ops *uops = uart->uart_ops;
 
 	if (uops->uart_setup) {
-		return uops->uart_setup(uart->uart_desc, &uart->params);
+		return uops->uart_setup(uart, &uart->params);
 	}
 
 	return 0;
@@ -132,32 +112,27 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 	uart_setup(uart);
 }
 
-struct uart *uart_register(const struct uart_desc *uartd,
+int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
-	struct uart *uart = NULL;
 
-	if (!(uart = uart_alloc(uartd))) {
-		return NULL;
+	if (uart_fill_name(uart)) {
+		return -EBUSY;
 	}
+
+	dlist_head_init(&uart->lnk);
+	memset(&uart->tty, 0, sizeof(struct tty));
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
+	} else {
+		memset(&uart->params, 0, sizeof(struct uart_params));
 	}
 
-	if (uart_fill_name(uart)) {
-		goto out_err;
-	}
-
-	uart->uart_desc = uartd;
 	dlist_add_next(&uart->lnk, &uart_list);
 
 	serial_register_devfs(uart);
 
-	return uart;
-
-out_err:
-	uart_free(uart);
-	return NULL;
+	return 0;
 }
 
 void uart_deregister(struct uart *uart) {
@@ -165,8 +140,6 @@ void uart_deregister(struct uart *uart) {
 	dlist_del(&uart->lnk);
 
 	index_free(&serial_indexator, uart->idx);
-
-	uart_free(uart);
 }
 
 struct uart *uart_dev_lookup(const char *name) {

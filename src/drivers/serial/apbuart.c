@@ -89,7 +89,7 @@ static unsigned int irq_num;
 
 EMBOX_UNIT_INIT(uart_init);
 
-static int apbuart_setup(const struct uart_desc *dev, const struct uart_params *params){
+static int apbuart_setup(struct uart *dev, const struct uart_params *params) {
 	assert(NULL != dev_regs);
 
 	REG_STORE(&dev_regs->ctrl, UART_DISABLE_ALL);
@@ -99,7 +99,7 @@ static int apbuart_setup(const struct uart_desc *dev, const struct uart_params *
 	return 0;
 }
 
-static int apbuart_putc(const struct uart_desc *dev, int ch) {
+static int apbuart_putc(struct uart *dev, int ch) {
 	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
@@ -107,11 +107,11 @@ static int apbuart_putc(const struct uart_desc *dev, int ch) {
 	return 0;
 }
 
-static int apbuart_has_symbol(const struct uart_desc *dev) {
+static int apbuart_has_symbol(struct uart *dev) {
 	return UART_STAT_DR & REG_LOAD(&dev_regs->status);
 }
 
-static int apbuart_getc(const struct uart_desc *dev) {
+static int apbuart_getc(struct uart *dev) {
 #if 0
 	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
 	}
@@ -155,27 +155,27 @@ static const struct uart_ops uart_ops = {
 		.uart_getc = apbuart_getc,
 		.uart_putc = apbuart_putc,
 		.uart_hasrx = apbuart_has_symbol,
-		.uart_setup = apbuart_setup
+		.uart_setup = apbuart_setup,
 };
 
-static struct uart_desc uart0 = {
+static struct uart uart0 = {
 		.irq_num = OPTION_GET(NUMBER,irq_num),
 		.base_addr = OPTION_GET(NUMBER,apbuart_base),
 		.uart_ops = &uart_ops,
 };
 
 static void apbuart_diag_putc(const struct diag *diag, char ch) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	apbuart_putc(uart, ch);
 }
 
 static char apbuart_diag_getc(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return apbuart_getc(uart);
 }
 
 static int apbuart_diag_kbhit(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	return apbuart_has_symbol(uart);
 }
 
@@ -188,7 +188,7 @@ static const struct uart_params uart_defparams = {
 };
 
 static int apbuart_diag_init(const struct diag *diag) {
-	struct uart_desc *uart = (struct uart_desc *) diag->obj;
+	struct uart *uart = (struct uart *) diag->obj;
 	struct uart_params apbuart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
@@ -220,11 +220,6 @@ DIAG_OPS_DECLARE(
 
 
 static int uart_init(void) {
-
-	if (!uart_register(&uart0, &uart_defparams)) {
-		return -1;
-	}
-
-	return 0;
+	return uart_register(&uart0, &uart_defparams);
 }
 
