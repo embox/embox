@@ -177,21 +177,6 @@ static void virtio_config(struct net_device *dev) {
 		}
 	}
 
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC)
-		printk("VIRTIO_NET_F_MAC is set\n");
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CTRL_VQ)
-		printk("VIRTIO_NET_F_CTRL_VQ is set\n");
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_STATUS)
-		printk("VIRTIO_NET_F_STATUS is set\n");
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CSUM)
-		printk("VIRTIO_NET_F_CSUM is set\n");
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_GUEST_CSUM)
-		printk("VIRTIO_NET_F_GUEST_CSUM is set\n");
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MRG_RXBUF) {
-		printk("VIRTIO_NET_F_MRG_RXBUF is set\n");
-		virtio_store32(VIRTIO_NET_F_MRG_RXBUF, VIRTIO_REG_GUEST_F, dev);
-	}
-
 	/* device is ready */
 	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
 }
@@ -200,7 +185,7 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 	int ret;
 	struct net_device *nic;
 
-	nic = etherdev_alloc();
+	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}

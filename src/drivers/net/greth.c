@@ -190,7 +190,7 @@ static int greth_init(void) {
 	unsigned int irq;
 
 
-	nic = etherdev_alloc();
+	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}

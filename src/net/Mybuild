@@ -5,6 +5,7 @@ module dev {
 	option number netdev_table_sz=3
 	source "netdev.c"
 
+	depends embox.lib.LibC
 	depends embox.util.List
 	depends embox.util.hashtable
 }
