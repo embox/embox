@@ -24,7 +24,7 @@ struct jffs2_inodirty;
    Nee jffs_control
 */
 struct jffs2_sb_info {
-	struct mtd_info *mtd;
+	//struct mtd_info *mtd;
 
 	uint32_t highest_ino;
 	uint32_t checked_ino;
