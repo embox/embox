@@ -295,7 +295,6 @@ static int greth_init(void) {
 	struct net_device *nic;
 	int res;
 	unsigned int irq;
-	struct greth_regs *regs;
 	char hw_addr[] = {0x1,0x2,0x3,0x4,0x5,0x6};
 
 
@@ -313,8 +312,6 @@ static int greth_init(void) {
 	greth_reset();
 
 	greth_rings_init(&greth_dev);
-
-	regs = greth_dev.base;
 
 	memcpy(nic->dev_addr, hw_addr, 6);
 
