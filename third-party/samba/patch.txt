@@ -142,3 +142,15 @@ diff -aur samba-4.0.8/wscript samba/wscript
      
      conf.SAMBA_CONFIG_H('include/config.h')
  
+diff -aur samba-4.0.8/source3/wscript_build samba/source3/wscript_build
+--- samba-4.0.8/source3/wscript_build	2013-07-01 11:15:40.000000000 +0400
++++ samba/source3/wscript_build	2013-08-20 15:17:54.213178250 +0400
+@@ -421,7 +421,7 @@
+ 
+ SWAT_SRC = '''${SWAT_SRC1}'''
+ 
+-STATUS_SRC = '''utils/status.c utils/status_profile.c smbd/notify_internal.c'''
++STATUS_SRC = '''utils/status.c utils/status_profile.c'''
+ 
+ SMBCONTROL_SRC = '''utils/smbcontrol.c'''
+ 
