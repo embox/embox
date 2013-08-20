@@ -110,6 +110,7 @@ static inline int tty_rx_putc(struct tty *t, char ch, unsigned char flag) {
 
 static inline int tty_out_getc(struct tty *t) {
 	char ch;
+	/* TODO Locks */
 	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1))
 		return -1;
 	return (int) ch;
