@@ -44,10 +44,10 @@ call "dd if=/dev/zero of=$IMG_DIR/$IMG_NAME count=$DD_IMAGE_SIZE"
 call "chmod 777 $IMG_DIR/$IMG_NAME"
 
 title "Make a new pertition on image"
-echo -e "x\nh\n16\ns\n63\nc\n40\nr\nn\np\n1\n\n\na\n1\nw\n" | call "fdisk $IMG_DIR/$IMG_NAME"
+echo -e "x\nh\n16\ns\n63\nc\n40\nr\nn\np\n1\n\n\na\n1\nw\n" | call "fdisk -c -u $IMG_DIR/$IMG_NAME"
 
 title "Setup loopback device"
-call "fdisk -u -l $IMG_DIR/$IMG_NAME"
+call "fdisk -c -u -l $IMG_DIR/$IMG_NAME"
 call "losetup -o $DD_IMAGE_OFFSET $LOOP_DEVICE $IMG_DIR/$IMG_NAME"
 
 title "Make a file system"
@@ -74,5 +74,5 @@ echo -e "device (hd0) $IMG_DIR/$IMG_NAME\ngeometry (hd0) 40 16 63\nroot (hd0,0)\
 
 title "Done!"
 
-rm -rf $LOG_FILE
+#rm -rf $LOG_FILE
 exit 0
