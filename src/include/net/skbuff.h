@@ -24,6 +24,7 @@
 
 /* Prototypes */
 struct sk_buff;
+struct sk_buff_data;
 struct sock;
 struct net_device;
 struct tcphdr;
@@ -34,16 +35,6 @@ struct iphdr;
 struct ip6hdr;
 struct arpghdr;
 struct ethhdr;
-
-
-#if 0
-struct skb_timeval {
-	uint32_t off_sec;
-	uint32_t off_usec;
-};
-#endif
-
-#define SK_BUF_EXTRA_HEADROOM	96	/* Requires if someone wants to enlarge packet from head */
 
 typedef struct sk_buff_head {
 	struct sk_buff *next;       /* Next buffer in list */
@@ -99,7 +90,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		/* Pointer for buffer used to store all skb content.
 		 * Used by operations with pool, so it MUST NOT be changed
 		 */
-	unsigned char *head;
+	struct sk_buff_data *data;
 
 		/* After processing by (incoming) stack packet is used by
 		 * socket structures. Socket (== User) may consume only a part
@@ -115,6 +106,17 @@ typedef struct sk_buff {        /* Socket buffer */
 
 } sk_buff_t;
 
+extern struct sk_buff_data * skb_data_alloc(void);
+extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
+extern void skb_data_free(struct sk_buff_data *skb_data);
+
+extern unsigned int skb_max_size(void);
+extern unsigned int skb_avail(struct sk_buff *skb);
+
+/**
+ * Wrap sk_buff_data into sk_buff structure
+ */
+extern struct sk_buff * skb_wrap(unsigned int size, struct sk_buff_data *skb_data);
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
@@ -132,47 +134,20 @@ extern struct sk_buff * skb_alloc(unsigned int size);
 extern void skb_free(struct sk_buff *skb);
 
 /**
- *	skb_checkcopy_expand	-	check, copy and expand sk_buff
- *	@skb: buffer to check, copy
- *	@headroom: required amount of free bytes at head
- *	@tailroom: required amount of free bytes at tail
- *
- *	Make a copy of both an &sk_buff and its data and while doing so
- *	allocate additional space. Do nothing if we already have such amount
- *	of free space and this sbk and data are completely ours.
- *
- *	Returns NULL on failure or the pointer to the buffer
- *	on success.
- *
- *	In current implementation there is no "extra-large packets pool"
- *	to allocate data from. So no allocation if new size doesn't fit.
- */
-extern struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb,
-				int headroom, int tailroom);
-
-/**
- *	skb_shifthead	-	shift pointers to headers in the head of the skb structure
+ *	skb_rshift	-	perform right shift on skb data
  *	@skb: buffer to process
  */
-extern void skb_shifthead(struct sk_buff *skb, int headshift);
-
-#if 0
-/**
- * buff_to_skb parse buffer with size 'size' and write it to skb structure
- */
-extern struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size);
-#endif
-
-#define SKB_SHARE_NO   0 /* make full copy of skb */
-#define SKB_SHARE_DATA 1 /* make skb copy with shared data */
-#define SKB_SHARE_ALL  2 /* make shared skb */
+extern void skb_rshift(struct sk_buff *skb, unsigned int count);
 
 /**
- * sk_buff duplicate it used as we want to queue sk_buff in several queue
- * In current implementation we don't have shared area for packets data,
- * so copy and clone are the same.
+ * Make a full sk_buff copy
  */
-extern struct sk_buff *skb_share(struct sk_buff *skb, int share);
+extern struct sk_buff * skb_copy(struct sk_buff *skb);
+
+/**
+ * Make a copy of sk_buff with shared packet data
+ */
+extern struct sk_buff * skb_clone(struct sk_buff *skb);
 
 /**
  * Create copy of skb

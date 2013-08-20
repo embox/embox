@@ -19,13 +19,9 @@ static inline void kfree_skb(struct sk_buff *skb) {
 	skb_free(skb);
 }
 
-static inline struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority) {
-    return skb_share(skb, SKB_SHARE_DATA);
-}
+#define skb_clone(skb, ...) skb_clone(skb)
 
-static inline struct sk_buff *skb_copy(struct sk_buff *skb, gfp_t priority) {
-	return skb_share(skb, SKB_SHARE_NO);
-}
+#define skb_copy(skb, ...) skb_copy(skb)
 
 static inline struct sk_buff * skb_peek(struct sk_buff_head *list) {
 	return skb_queue_front(list);

@@ -52,7 +52,7 @@ int raw_rcv(struct sk_buff *skb) {
 			break;
 		}
 
-		cloned = skb_share(skb, SKB_SHARE_DATA); // TODO without skb_clone()
+		cloned = skb_clone(skb);
 		if (cloned == NULL) {
 			continue;
 			//return -ENOMEM;

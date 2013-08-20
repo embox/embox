@@ -383,7 +383,7 @@ static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 			return;
 		}
 		if (tcp_seq_len(skb) > 0) {
-			skb_send = skb_share(skb, SKB_SHARE_ALL);
+			skb_send = skb_clone(skb);
 			if (skb_send == NULL) {
 				tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 				return;
@@ -419,7 +419,7 @@ void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 
 	skb->p_data = skb->h.raw + TCP_HEADER_SIZE(skb->h.th);
 
-	skb_send = skb_share(skb, SKB_SHARE_ALL);
+	skb_send = skb_clone(skb);
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
 	{
