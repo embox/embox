@@ -19,6 +19,7 @@
 #include <net/netdevice.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/sys_log.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
@@ -84,15 +85,13 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	struct net_device *dev;
-	struct virtio_priv *dev_priv;
+	struct virtqueue *vq;
 	struct vring_used_elem *used_elem;
-	struct virtio_net_hdr *pkt_hdr;
 	struct sk_buff *skb;
+	struct sk_buff_data *new_data;
 	struct vring_desc *desc;
-	unsigned int len;
 
 	dev = dev_id;
-	dev_priv = netdev_priv(dev, struct virtio_priv);
 
 	/* it is really? */
 	if (!(virtio_load8(VIRTIO_REG_ISR_S, dev) & 1)) {
@@ -100,27 +99,40 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	}
 
 	/* release outgoing packets */
-	while (dev_priv->tq.last_seen_used != dev_priv->tq.ring.used->idx) {
-		used_elem = &dev_priv->tq.ring.used->ring[dev_priv->tq.last_seen_used % dev_priv->tq.ring.num];
-		dev_priv->tq.ring.desc[used_elem->id].addr = 0;
-		++dev_priv->tq.last_seen_used;
+	vq = &netdev_priv(dev, struct virtio_priv)->tq;
+	while (vq->last_seen_used != vq->ring.used->idx) {
+		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
+		desc = &vq->ring.desc[used_elem->id];
+//		skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
+		desc->addr = 0;
+		++vq->last_seen_used;
 	}
 
 	/* receive incoming packets */
-	while (dev_priv->rq.last_seen_used != dev_priv->rq.ring.used->idx) {
-		used_elem = &dev_priv->rq.ring.used->ring[dev_priv->rq.last_seen_used % dev_priv->rq.ring.num];
-		desc = &dev_priv->rq.ring.desc[used_elem->id];
-		pkt_hdr = (struct virtio_net_hdr *)(uintptr_t)desc->addr;
-		len = used_elem->len - sizeof *pkt_hdr;
-
-		if ((skb = skb_alloc(len))) {
-			memcpy(skb->mac.raw, pkt_hdr + 1, len);
-			skb->dev = (struct net_device *)dev_id;
-			netif_rx(skb);
+	vq = &netdev_priv(dev, struct virtio_priv)->rq;
+	while (vq->last_seen_used != vq->ring.used->idx) {
+		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
+		desc = &vq->ring.desc[used_elem->id];
+		skb = skb_wrap(used_elem->len,
+					(struct sk_buff_data *)(uintptr_t)desc->addr);
+		if (skb == NULL) {
+			LOG_ERROR("virtio_interrupt", "skb_wrap return NULL");
+			break;
 		}
+		skb->dev = dev;
+		skb->mac.raw = skb->p_data + sizeof(struct virtio_net_hdr);
+		skb->len -= sizeof(struct virtio_net_hdr);
+		netif_rx(skb);
 
-		++dev_priv->rq.last_seen_used;
-		vring_push_desc(used_elem->id, &dev_priv->rq.ring);
+		++vq->last_seen_used;
+		new_data = skb_data_alloc();
+		if (new_data == NULL) {
+			desc->addr = 0;
+			LOG_ERROR("virtio_interrupt", "skb_data_alloc return NULL");
+			break;
+		}
+		desc->addr = (uintptr_t)new_data;
+		vring_push_desc(used_elem->id, &vq->ring);
 		virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 	}
 
@@ -128,20 +140,8 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 }
 
 static int virtio_open(struct net_device *dev) {
-	static char _b[1514 + 96];
-	int ret;
-
-	/* add receive buffer */
-	ret = virtqueue_push_buff(&_b[0], sizeof _b, 1,
-			&netdev_priv(dev, struct virtio_priv)->rq);
-	if (ret != 0) {
-		return ret;
-	}
-	virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
-
 	/* device is ready */
 	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
-
 	return 0;
 }
 
@@ -189,21 +189,39 @@ static void virtio_config(struct net_device *dev) {
 	}
 }
 
+#define SKB_DATA_PREPARE 10
 static int virtio_priv_init(struct virtio_priv *dev_priv,
 		struct net_device *dev) {
-	int ret;
+	int ret, i;
+	struct sk_buff_data *skb_data;
 
+	/* init receive queue */
 	ret = vq_init(&dev_priv->rq, VIRTIO_NET_QUEUE_RX, dev);
 	if (ret != 0) {
 		return ret;
 	}
 
+	/* init transmit queue */
 	ret = vq_init(&dev_priv->tq,
 			VIRTIO_NET_QUEUE_TX, dev);
 	if (ret != 0) {
 		vq_fini(&dev_priv->rq);
 		return ret;
 	}
+
+	/* add receive buffer */
+	for (i = 0; i < SKB_DATA_PREPARE; ++i) {
+		skb_data = skb_data_alloc();
+		if (skb_data == NULL) {
+			return -ENOMEM;
+		}
+		ret = virtqueue_push_buff(skb_data, skb_max_size(), 1,
+				&netdev_priv(dev, struct virtio_priv)->rq);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+	virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 
 	return 0;
 }
