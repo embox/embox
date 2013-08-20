@@ -3,36 +3,33 @@ ExternalProject_Add(
    samba
    PREFIX ..
    DOWNLOAD_DIR ../../../download
-   URL http://www.samba.org/samba/ftp/stable/samba-4.0.8.tar.gz
-   URL_MD5 03819bc1132e417feac1b39299365b73
+   URL http://ftp.samba.org/pub/samba/samba-3.6.18.tar.gz
+   URL_MD5 c7eec3e83fe4c4750240a8a0a214bbd4
    UPDATE_COMMAND ""
    PATCH_COMMAND
       cd $ENV{EMBOX_ROOT}/third-party/samba/tree &&
-      # bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`" &&
+      bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`" &&
       patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/samba/patch.txt
-   BUILD_IN_SOURCE 1
+   #BUILD_IN_SOURCE 1
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
-      <SOURCE_DIR>/configure
-        ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
-        ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
-        ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
-        --cross-compile
-        --cross-answers=$ENV{EMBOX_ROOT}/third-party/samba/embox_ca.txt
-      	--prefix=<INSTALL_DIR>
-      	--disable-gnutls
-      	--bundled-libraries=tdb,replace
-      	#--private-libraries=replace
-      	--builtin-libraries=replace
-      	--with-shared-modules=NONE
-      	--with-static-modules=replace
-      	--without-ldap
-      	--without-pam
-      	--without-pie
-      	--nonshared-binary=smbclient,replace
+   	  <SOURCE_DIR>/source3/runfromhere.sh ./configure
+      --prefix=<INSTALL_DIR>
+      ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
+      ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
+      ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
+      --enable-debug
+      --enable-developer
+      --host=i386-pc-none
+      --target=i386-pc-none
+      --disable-largefile
+      --disable-pie
+      --enable-static=ALL
+      --disable-shared
+      --disable-shared-libs
+      libreplace_cv_HAVE_GETADDRINFO=no
+      ac_cv_file__proc_sys_kernel_core_pattern=no
    BUILD_COMMAND
-      ./buildtools/bin/waf build
-        -vv
-        --targets=smbclient
+      <SOURCE_DIR>/source3/runfromhere.sh make
    LOG_BUILD 1
 )
