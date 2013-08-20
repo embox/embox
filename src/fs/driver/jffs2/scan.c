@@ -591,8 +591,6 @@ scan_more:
 			case JFFS2_FEATURE_ROCOMPAT:
 				printk(KERN_NOTICE "Read-only compatible feature node (0x%04x) found at offset 0x%08x\n", je16_to_cpu(node->nodetype), ofs);
 			        c->flags |= JFFS2_SB_FLAG_RO;
-				if (!(jffs2_is_readonly(c)))
-					return -EROFS;
 				DIRTY_SPACE(PAD(je32_to_cpu(node->totlen)));
 				ofs += PAD(je32_to_cpu(node->totlen));
 				break;

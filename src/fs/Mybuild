@@ -65,6 +65,7 @@ module journal {
 
 	depends embox.lib.LibC
 	depends buffer_cache
+	depends embox.mem.slab
 }
 
 module buffer_cache {

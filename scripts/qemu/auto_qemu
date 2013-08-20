@@ -9,7 +9,7 @@ EMBOX_MODS_CONF=../../conf/mods.config
 
 # Checking for network driver
 
-for DRIVER in "ne2k_pci" "e1000" "rtl8139"
+for DRIVER in "ne2k_pci" "e1000" "rtl8139" "virtio"
 do
 grep embox.driver.net.$DRIVER $EMBOX_MODS_CONF > /dev/null
 if [ $? -eq 0 ]; then

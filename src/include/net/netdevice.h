@@ -10,6 +10,7 @@
 #define NET_NETDEVICE_H_
 
 //#include <util/array.h>
+#include <stddef.h>
 #include <net/if.h>
 //#include <arpa/inet.h>
 
@@ -127,7 +128,13 @@ typedef struct net_device {
 	struct sk_buff_head dev_queue;
 	struct sk_buff_head tx_dev_queue;
 	struct net_node *pnet_node;
+	void *priv; /**< private data */
 } net_device_t;
+
+/**
+ * Get data private data casted to type
+ */
+#define netdev_priv(dev, type) ((type *)((dev)->priv))
 
 /**
  * Find an network device by its name
@@ -142,21 +149,8 @@ extern struct net_device * netdev_get_by_name(const char *name);
  * @param callback to initialize device
  */
 extern struct net_device * netdev_alloc(const char *name,
-		int (*setup)(struct net_device *));
+		int (*setup)(struct net_device *), size_t priv_size);
 
-/**
- * @brief Initialize net device to match name and setup
- * function
- *
- * @param dev Device to initialize
- * @param name Name to set
- * @param setup Setup function to run on
- *
- * @return zero on no error
- * @return negative error code otherwise
- */
-extern int netdev_init(struct net_device *dev, const char *name,
-		int (*setup)(struct net_device *));
 /**
  * Free network device
  * @param dev net_device handler

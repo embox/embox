@@ -43,7 +43,7 @@ struct skb_timeval {
 };
 #endif
 
-#define SK_BUF_EXTRA_HEADROOM	50	/* Requires if someone wants to enlarge packet from head */
+#define SK_BUF_EXTRA_HEADROOM	96	/* Requires if someone wants to enlarge packet from head */
 
 typedef struct sk_buff_head {
 	struct sk_buff *next;       /* Next buffer in list */

@@ -96,7 +96,7 @@ typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
  * @return error code
  * @retval 0 on success
  */
-typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start, size_t sector_size);
+typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start);
 /**
  * Commit current running transaction.
  *
@@ -293,7 +293,8 @@ struct journal_s {
 };
 
 extern journal_t *journal_create(journal_fs_specific_t *spec);
-extern journal_handle_t * journal_start(journal_t *jp, int nblocks);
+extern int journal_delete(journal_t *jp);
+extern journal_handle_t * journal_start(journal_t *jp, size_t nblocks);
 extern int journal_stop(journal_handle_t *handle);
 
 extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);

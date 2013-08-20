@@ -1,5 +1,5 @@
 --- samba-4.0.8/configure	2012-12-04 14:07:43.000000000 +0400
-+++ samba/configure	2013-08-15 17:46:10.588818254 +0400
++++ samba/configure	2013-08-16 18:00:11.664978309 +0400
 @@ -1,6 +1,6 @@
  #!/bin/sh
  
@@ -8,7 +8,7 @@
  
  WAF=./buildtools/bin/waf
  
-@@ -9,6 +9,21 @@
+@@ -9,6 +9,23 @@
  JOBS=1
  export JOBS
  
@@ -20,7 +20,6 @@
 +			break
 +		;;
 +		(*=*)
-+			echo export \"$1\"
 +			eval export \"$1\"; shift; continue
 +		;;
 +		*)
@@ -30,7 +29,10 @@
 +done
 +
 +cd `dirname $0` || exit 1
-+${PYTHON:=python} $WAF configure --blddir=$PREVPATH "$@" || exit 1
++if [ `dirname $0` != $PREVPATH ]; then
++	BLDDIRFLAG=--blddir=$PREVPATH
++fi
++${PYTHON:=python} $WAF configure $BLDDIRFLAG "$@" || exit 1
  cd $PREVPATH
 diff -aur samba-4.0.8/buildtools/wafsamba/wscript samba/buildtools/wafsamba/wscript
 --- samba-4.0.8/buildtools/wafsamba/wscript	2012-12-04 14:07:43.000000000 +0400
@@ -67,7 +69,7 @@ diff -aur samba-4.0.8/lib/util/wscript_configure samba/lib/util/wscript_configur
      ( 'STAT_STATFS2_FS_DATA',
 diff -aur samba-4.0.8/lib/ccan/wscript samba/lib/ccan/wscript
 --- samba-4.0.8/lib/ccan/wscript	2012-11-13 12:03:38.000000000 +0400
-+++ samba/lib/ccan/wscript	2013-08-15 18:30:33.849586963 +0400
++++ samba/lib/ccan/wscript	2013-08-16 16:45:40.848425632 +0400
 @@ -26,7 +26,8 @@
                      addmain=False, link=False, cflags=conf.env['WERROR_CFLAGS'],
                      define='HAVE_ATTRIBUTE_USED')
@@ -102,4 +104,41 @@ diff -aur samba-4.0.8/lib/ccan/wscript samba/lib/ccan/wscript
 +                        """,
                             headers="endian.h sys/endian.h",
                             define="HAVE_BIG_ENDIAN")
+ 
+@@ -127,17 +131,17 @@
+     # Only check for FILE_OFFSET_BITS=64 if off_t is normally small:
+     # use raw routines because wrappers include previous _GNU_SOURCE
+     # or _FILE_OFFSET_BITS defines.
+-    conf.check(fragment="""#include <sys/types.h>
+-               int main(void) { return !(sizeof(off_t) < 8); }""",
++    conf.CHECK_CODE("""#include <sys/types.h>
++               int main(void) { return !(sizeof(off_t) < 8); }""", addmain=False,
+                execute=True, msg='Checking for small off_t',
+-               define_name='SMALL_OFF_T')
++               define='SMALL_OFF_T')
+     # Unreliable return value above, hence use define.
+     if conf.CONFIG_SET('SMALL_OFF_T'):
+-        conf.check(fragment="""#include <sys/types.h>
+-                   int main(void) { return !(sizeof(off_t) >= 8); }""",
++        conf.CHECK_CODE("""#include <sys/types.h>
++                   int main(void) { return !(sizeof(off_t) >= 8); }""", addmain=False,
+                    execute=True, msg='Checking for -D_FILE_OFFSET_BITS=64',
+-                   ccflags='-D_FILE_OFFSET_BITS=64',
+-                   define_name='HAVE_FILE_OFFSET_BITS')
++                   cflags='-D_FILE_OFFSET_BITS=64',
++                   define='HAVE_FILE_OFFSET_BITS')
+ 
+ def ccan_module(bld, name, deps=''):
+     bld.SAMBA_SUBSYSTEM('ccan-%s' % name,
+diff -aur samba-4.0.8/wscript samba/wscript
+--- samba-4.0.8/wscript	2013-07-01 11:15:40.000000000 +0400
++++ samba/wscript	2013-08-16 16:00:39.800413154 +0400
+@@ -172,7 +172,7 @@
+                            addmain=False,
+                            execute=True,
+                            msg='Checking configure summary'):
+-        raise Utils.WafError('configure summary failed')
++        pass # raise Utils.WafError('configure summary failed')
+     
+     conf.SAMBA_CONFIG_H('include/config.h')
  

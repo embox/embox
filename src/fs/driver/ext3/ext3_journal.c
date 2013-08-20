@@ -17,13 +17,18 @@
 static int journal_write_desc_blocks(journal_t *jp);
 static int journal_write_commit_block(journal_t *jp);
 
-int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start, size_t disk_sectorsize) {
+int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
     ext3_journal_superblock_t *sb;
     ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
     char buf[4096];
 
+    assert(jp);
+    assert(jdev);
+
     jp->j_dev = jdev;
-    jp->j_disk_sectorsize = disk_sectorsize;
+    jp->j_disk_sectorsize = block_dev_ioctl(jdev, IOCTL_GETBLKSIZE, NULL, 0);
+
+    assert(jp->j_disk_sectorsize >= 512);
 
     /* Load superblock from the log. */
     if (!jp->j_dev->driver->read(jp->j_dev, buf,
@@ -107,10 +112,12 @@ int ext3_journal_update(journal_t *jp) {
     return journal_write_block(jp, spec->j_sb_buffer->data, 1, jp->j_blk_offset);
 }
 
-/* TODO handle also double-indirect nodes */
 uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
 	uint32_t buf[jp->j_blocksize / sizeof(uint32_t)];
 	ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
+
+	/* TODO handle also dindirect and tindirect blocks indeed this assert */
+	assert(block < NDADDR + jp->j_blocksize / sizeof(uint32_t));
 
 	if (block < NDADDR) {
 		return spec->ext3_journal_inode->i_block[block];
@@ -174,6 +181,11 @@ static int journal_write_desc_blocks(journal_t *jp) {
     }
     /* desc_b */
     t->t_log_blocks++;
+
+    /**
+     * TODO journal must support multiple descriptor blocks per transaction
+     */
+    assert(t->t_log_blocks <= EXT3_JOURNAL_NTAGS_PER_DESC(jp));
 
     dlist_add_next(dlist_head_init(&desc_b->b_next), &t->t_buffers);
 

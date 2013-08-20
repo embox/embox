@@ -146,12 +146,27 @@ static int ext3fs_create(struct node *parent_node, struct node *node) {
 
 static int ext3fs_delete(struct node *node) {
 	struct fs_driver *drv;
+	struct ext2_fs_info *fsi;
+	journal_handle_t *handle;
+	int res;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->delete_node(node);
+	fsi = node->nas->fs->fsi;
+	/**
+	 * Same as in ext3fs_create:
+	 * ext3_trans_blocks(1) - to modify parent_node's data block
+	 * 2 blocks for child = 1 inode + 1 inode bitmap
+	 */
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
+		return -1;
+	}
+	res = drv->fsop->delete_node(node);
+	journal_stop(handle);
+
+	return res;
 }
 
 static int ext3fs_format(void *dev) {
@@ -216,7 +231,12 @@ static int ext3fs_mount(void *dev, void *dir) {
 	dir_nas->fs->drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
 	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
-			fsbtodb(fsi, dip->i_block[0]), SECTOR_SIZE);
+			fsbtodb(fsi, dip->i_block[0]));
+	/*
+	 * FIXME Now journal supports block size only equal to filesystem block size
+	 * It is not critical but not flexible enough
+	 */
+	assert(jp->j_blocksize == fsi->s_block_size);
 	fsi->journal = jp;
 
 	return 0;
@@ -232,12 +252,23 @@ static int ext3fs_truncate (struct node *node, off_t length) {
 
 static int ext3fs_umount(void *dir) {
 	struct fs_driver *drv;
+	struct ext2_fs_info *fsi;
+	void *fs_spec_data;
+	int res;
+
+	fsi = ((struct node *)dir)->nas->fs->fsi;
+	fs_spec_data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
 	}
 
-	return drv->fsop->umount(dir);
+	res = drv->fsop->umount(dir);
+
+	journal_delete(fsi->journal);
+	objfree(&ext3_journal_cache, fs_spec_data);
+
+	return res;
 }
 
 static struct kfile_operations ext3_fop = {
@@ -256,10 +287,10 @@ static struct fsop_desc ext3_fsop = {
 	.delete_node = ext3fs_delete,
 
 	.getxattr    = ext2fs_getxattr,
-	.setxattr    = ext2fs_setxattr,
+	.setxattr    = ext2fs_setxattr, /* TODO journaling */
 	.listxattr   = ext2fs_listxattr,
 
-	.truncate    = ext3fs_truncate,
+	.truncate    = ext3fs_truncate, /* TODO journaling */
 	.umount      = ext3fs_umount,
 };
 

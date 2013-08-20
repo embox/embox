@@ -68,7 +68,7 @@ static int loopback_init(void) {
 	int ret;
 	struct net_device *loopback_dev;
 
-	loopback_dev = netdev_alloc("lo", &loopback_setup);
+	loopback_dev = netdev_alloc("lo", &loopback_setup, 0);
 	if (loopback_dev == NULL) {
 		return -ENOMEM;
 	}

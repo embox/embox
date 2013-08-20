@@ -330,7 +330,7 @@ static int emaclite_init(void) {
 	struct net_device *net_device;
 	/*initialize net_device structures and save
 	 * information about them to local massive */
-	net_device = etherdev_alloc();
+	net_device = etherdev_alloc(0);
 	if (net_device == NULL) {
 		return -ENOMEM;
 	}

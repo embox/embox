@@ -11,6 +11,7 @@
 #ifndef NET_L2_ETHERNET_H_
 #define NET_L2_ETHERNET_H_
 
+#include <stddef.h>
 #include <net/netdevice.h>
 
 /**
@@ -34,8 +35,8 @@ extern int ethernet_setup(struct net_device *dev);
  * Macros to allocate Ethernet device
  * TODO remove this
  */
-static inline struct net_device * etherdev_alloc(void) {
-	return netdev_alloc("eth%u", &ethernet_setup);
+static inline struct net_device * etherdev_alloc(size_t priv_size) {
+	return netdev_alloc("eth%u", &ethernet_setup, priv_size);
 }
 
 #endif /* NET_L2_ETHERNET_H_ */

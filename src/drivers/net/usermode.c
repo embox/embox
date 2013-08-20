@@ -158,7 +158,7 @@ static int umether_init(void) {
 	int res = 0;
 	struct net_device *nic;
 
-	nic = etherdev_alloc();
+	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}

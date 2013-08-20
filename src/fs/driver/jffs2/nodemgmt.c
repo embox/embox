@@ -402,7 +402,7 @@ void jffs2_mark_node_obsolete(struct jffs2_sb_info *c, struct jffs2_raw_node_ref
 	}
 	jeb = &c->blocks[blocknr];
 
-	if (jffs2_can_mark_obsolete(c) && !jffs2_is_readonly(c) &&
+	if (jffs2_can_mark_obsolete(c) &&
 	    !(c->flags & (JFFS2_SB_FLAG_SCANNING | JFFS2_SB_FLAG_BUILDING))) {
 		/* Hm. This may confuse static lock analysis. If any of the above
 		   three conditions is false, we're going to return from this
@@ -530,8 +530,7 @@ void jffs2_mark_node_obsolete(struct jffs2_sb_info *c, struct jffs2_raw_node_ref
 
 	spin_unlock(&c->erase_completion_lock);
 
-	if (!jffs2_can_mark_obsolete(c) || jffs2_is_readonly(c) ||
-		(c->flags & JFFS2_SB_FLAG_BUILDING)) {
+	if (!jffs2_can_mark_obsolete(c) || (c->flags & JFFS2_SB_FLAG_BUILDING)) {
 		/* We didn't lock the erase_free_sem */
 		return;
 	}
