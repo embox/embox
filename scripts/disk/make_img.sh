@@ -55,7 +55,7 @@ call "mkfs.ext2 $LOOP_DEVICE"
 
 title "Mount the image"
 call "mkdir -p $MOUNT_DIR"
-call "mount $LOOP_DEVICE $MOUNT_DIR"
+call "mount -t ext2 $LOOP_DEVICE $MOUNT_DIR"
 
 title "Moving files to image"
 call "mkdir -p $MOUNT_DIR/$GRUB_DIR"
