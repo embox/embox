@@ -1,0 +1,94 @@
+/**
+ * @file
+ *
+ * @date Oct 25, 2012
+ * @author: Anton Bondarev
+ */
+
+#include <stdio.h>
+#include <kernel/irq.h>
+#include <drivers/uart_device.h>
+#include <fs/file_desc.h>
+#include <embox/device.h> //XXX
+
+#include <drivers/serial/fsnode.h>
+
+static int dev_uart_open(struct node *node, struct file_desc *file_desc,
+	int flags);
+static int dev_uart_close(struct file_desc *desc);
+static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
+static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
+
+static struct kfile_operations uart_dev_file_op = {
+	.open = dev_uart_open,
+	.close = dev_uart_close,
+	.read = dev_uart_read,
+	.write = dev_uart_write,
+	.ioctl = dev_uart_ioctl
+};
+
+int serial_register_devfs(struct uart *dev) {
+
+	char_dev_register(dev->dev_name, &uart_dev_file_op);
+
+	return ENOERR;
+}
+
+/*
+ * file_operations
+ */
+static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
+	struct uart *uart_dev = uart_dev_lookup(node->name);
+
+	if (!uart_dev) {
+		return -ENOENT;
+	}
+
+	assert(desc);
+	desc->ops = &uart_dev_file_op;
+	desc->file_info = uart_dev;
+
+	return uart_open(uart_dev);
+
+}
+
+static int dev_uart_close(struct file_desc *desc) {
+	struct uart *uart_dev = desc->file_info;
+
+	return uart_close(uart_dev);
+}
+
+
+static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
+	struct uart *uart_dev = desc->file_info;
+
+	return tty_read(&uart_dev->tty, (char *) buff, size);
+}
+
+static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
+	struct uart *uart_dev = desc->file_info;
+	struct tty *tty = &uart_dev->tty;
+
+	tty_write(tty, buff, size);
+
+	while (!ring_empty(&tty->o_ring)) {
+		uart_putc(uart_dev, tty->o_buff[tty->o_ring.tail]);
+		ring_just_read(&tty->o_ring, TTY_IO_BUFF_SZ, 1);
+	}
+
+	return size;
+}
+
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
+	va_list va;
+	void *data;
+	struct uart *uart_dev = desc->file_info;
+
+	va_start(va, request);
+	data = va_arg(va, void *);
+	va_end(va);
+
+	return tty_ioctl(&uart_dev->tty, request, data);
+}
+

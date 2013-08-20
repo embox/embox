@@ -57,6 +57,7 @@ module rootfs {
 	depends node, driver.repo
 	depends embox.fs.filesystem
 	depends embox.lib.LibC
+	depends embox.kernel.task.api
 }
 
 module journal {
@@ -74,4 +75,8 @@ module buffer_cache {
 	depends embox.lib.LibC
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
+
+	depends embox.mem.heap_api
+
+	@NoRuntime depends embox.util.hashtable
 }

@@ -34,6 +34,8 @@ module file_test {
 	depends embox.mem.phymem
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
+
+	depends embox.cmd.fs.mv
 }
 
 module InitFsTest {

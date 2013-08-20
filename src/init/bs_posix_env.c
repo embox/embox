@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -21,31 +21,23 @@
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(iodev_env_init);
-#if 0
+
 static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		*cbuf++ = iodev_getc();
+		*cbuf++ = diag_getc();
 	}
 
 	return (int) cbuf - (int) buf;
 
 }
-#endif
-#if 1
-static int iodev_read(struct idx_desc *desc, void *buf, size_t nbyte) {
-	struct tty *tty = desc->data->fd_struct;
-
-	return tty_read(tty, buf, nbyte);
-}
-#endif
 
 static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		iodev_putc(*cbuf++);
+		diag_putc(*cbuf++);
 	}
 
 	return (int) cbuf - (int) buf;
@@ -87,12 +79,10 @@ static const struct task_idx_ops iodev_idx_ops = {
 	.fstat = iodev_fstat,
 };
 
-extern struct tty *diag_tty;
-
 static int iodev_env_init(void) {
 	int fd;
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, diag_tty);
+	fd = task_self_idx_alloc(&iodev_idx_ops, NULL);
 	if (fd < 0) {
 		return fd;
 	}

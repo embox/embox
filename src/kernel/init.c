@@ -10,13 +10,12 @@
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 #include <embox/runlevel.h>
 #include <kernel/printk.h>
 
 static void kernel_init(void);
 static int init(void);
-extern int diag_console_init(void);
 
 /**
  * The setup of the system, the run level and execution of the idle function.
@@ -42,7 +41,7 @@ static void kernel_init(void) {
 
 	ipl_init();
 
-	diag_console_init();
+	diag_init();
 }
 
 /**

@@ -11,6 +11,8 @@
 #include <asm/bitops.h>
 #include <kernel/irq.h>
 
+#include <drivers/diag.h>
+
 typedef struct uart_regs {
 	uint32_t rx_data;
 	uint32_t tx_data;
@@ -56,23 +58,24 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-int uart_init(void) {
-	return 0;
-}
-
-char uart_getc(void) {
-	while (is_rx_empty());
+static char xuartlite_diag_getc(const struct diag *diag) {
 	return (char) (uart->rx_data & 0xFF);
 }
 
-void uart_putc(char ch) {
+static void xuartlite_diag_putc(const struct diag *diag, char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
 
-int uart_has_symbol(void) {
+static int xuartlite_diag_has_symbol(const struct diag *diag) {
 	return !is_rx_empty();
 }
+
+DIAG_OPS_DECLARE(
+		.putc = xuartlite_diag_putc,
+		.getc = xuartlite_diag_getc,
+		.kbhit = xuartlite_diag_has_symbol,
+);
 
 /* TODO uart_set_irq_handler haven't to be used*/
 #if 0

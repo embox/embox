@@ -6,7 +6,6 @@
  * @author Bulychev Anton
  */
 
-#include <assert.h>
 #include <stddef.h>
 #include <string.h>
 #include <kernel/printk.h>
@@ -48,8 +47,9 @@ void backtrace(void) {
 		s = symbol_lookup(pc);
 		if (s) {
 			ptrdiff_t offset = (char *) pc - (char *) s->addr;
-			assert(offset >= 0);
-			printk("  <%s+0x%x>", s->name, (unsigned) offset);
+			printk("  <%s+0x%x>",
+					offset >= 0 ? s->name : "__unknown__",
+					(unsigned) offset);
 		}
 
 		printk("\n");

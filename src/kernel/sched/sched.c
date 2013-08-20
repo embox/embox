@@ -20,6 +20,7 @@
 #include <time.h>
 
 #include <kernel/critical.h>
+#include <kernel/thread.h>
 #include <kernel/thread/current.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
@@ -33,6 +34,7 @@
 #include <embox/unit.h>
 
 #include <kernel/sched.h>
+
 
 
 

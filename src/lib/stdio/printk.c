@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <framework/mod/options.h>
@@ -15,12 +15,7 @@
 #include "printf_impl.h"
 
 static void iodev_printchar(struct printchar_handler_data *d, int c) {
-#if OPTION_GET(BOOLEAN,lf_crlf_map)
-	if (c == '\n') {
-		iodev_putc('\r');
-	}
-#endif
-	iodev_putc(c);
+	diag_putc(c);
 }
 
 int printk(const char *format, ...) {

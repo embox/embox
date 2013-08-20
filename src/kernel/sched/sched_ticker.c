@@ -7,6 +7,7 @@
 
 #include <framework/mod/options.h>
 #include <kernel/sched.h>
+#include <kernel/thread.h>
 
 #include <kernel/time/timer.h>
 #include <kernel/cpu/cpu.h>

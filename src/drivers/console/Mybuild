@@ -21,3 +21,4 @@ module fbcon {
 
 	depends embox.cmd.sh.tish
 }
+

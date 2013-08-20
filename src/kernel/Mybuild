@@ -8,7 +8,6 @@ module Kernel {
 	 */
 	source "init.c"
 
-	@NoRuntime depends embox.driver.diag.console.api
 	depends embox.arch.libarch
 	depends embox.arch.locore
 	depends embox.arch.cpu

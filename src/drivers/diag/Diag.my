@@ -1,0 +1,11 @@
+package embox.driver
+
+module diag {
+	option string impl
+
+	source "diag.c"
+
+	@NoRuntime depends embox.driver.diag.diag_api
+	@NoRuntime depends embox.driver.tty.termios_ops
+}
+

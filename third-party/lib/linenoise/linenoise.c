@@ -466,7 +466,7 @@ static void refreshLine(struct linenoiseState *l) {
 /* Insert the character 'c' at cursor current position.
  *
  * On error writing to the terminal -1 is returned, otherwise 0. */
-int linenoiseEditInsert(struct linenoiseState *l, int c) {
+int linenoiseEditInsert(struct linenoiseState *l, char c) {
     if (l->len < l->buflen) {
         if (l->len == l->pos) {
             l->buf[l->pos] = c;
@@ -630,8 +630,7 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
         }
 
         switch(c) {
-        case '\r':
-        case '\n':    /* enter */
+        case 13:    /* '\r' enter */
             history_len--;
             free(history[history_len]);
             return (int)l.len;

@@ -12,4 +12,3 @@
 "smac_adm -R low_label  -o high_label -a w",
 "smac_adm -R _  	-o smac_admin -a r",
 
-"serial_screens 3",

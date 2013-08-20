@@ -19,8 +19,7 @@ module GraphicMode extends Display {
 	depends embox.driver.video.fb_videomodes
 	depends embox.driver.video.vesa_modes
 
-	depends embox.driver.iodev.core
-	/*depends embox.driver.iodev.iodev_video*/
+	depends embox.driver.diag
 }
 
 module TextMode extends Display {
@@ -48,16 +47,6 @@ module start_script {
 
 	option number shell_start = 1
 
-}
-
-module make_term {
-	option boolean lf_crlf_map = true
-
-	source "make_term.c"
-
-	depends embox.compat.posix.idx.dup
-	depends diag_index_desc
-	depends embox.kernel.task.idx_table
 }
 
 module diag_index_desc {

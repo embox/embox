@@ -9,8 +9,8 @@
 #include <embox/unit.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
-
 #include <hal/system.h>
+#include <drivers/diag.h>
 
 /* Baudrate=SYS_CLOCK/(8(2-Over)CD) = MCK/16CD = 18432000/(16*30) = 38400
  * CD = SYS_CLOCK / (16 * UART_BAUD_RATE)
@@ -23,7 +23,7 @@
 
 #define TTGR_DISABLE 0
 
-int uart_init(void) {
+static int at91uart_diag_init(const struct diag *diag) {
 	/* Disabling controling PA5 and PA6 by PIO */
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA5_RXD0 | AT91C_PA6_TXD0);
 	/* Selecting control by USART controller */
@@ -43,18 +43,23 @@ int uart_init(void) {
 	return 0;
 }
 
-int uart_has_symbol(void) {
+static int at91uart_diag_hasrx(const struct diag *diag) {
 	return (AT91C_US_RXRDY & REG_LOAD(AT91C_US0_CSR));
 }
 
-char uart_getc(void) {
-	while (!uart_has_symbol()) {
-	}
+static char at91uart_diag_getc(const struct diag *diag) {
 	return (char) REG_LOAD(AT91C_US0_RHR);
 }
 
-void uart_putc(char ch) {
+static void at91uart_diag_putc(const struct diag *diag, char ch) {
 	while (!(AT91C_US_TXRDY & REG_LOAD(AT91C_US0_CSR))) {
 	}
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
+
+DIAG_OPS_DECLARE(
+		.init = at91uart_diag_init,
+		.putc = at91uart_diag_putc,
+		.getc = at91uart_diag_getc,
+		.kbhit = at91uart_diag_hasrx,
+);
