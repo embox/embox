@@ -319,6 +319,13 @@ extern int journal_dirty_block(journal_t *jp, journal_block_t *block);
 extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt);
 extern int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);
 
+static inline int journal_wrap(journal_t *jp, int var) {
+	if (var >= jp->j_last) {
+		var -= jp->j_last - jp->j_first;
+	}
+	return var;
+}
+
 #define journal_db2jb(jp, block) \
 		block / (jp->j_blocksize / jp->j_disk_sectorsize)
 

@@ -152,10 +152,6 @@ static int journal_write_desc_blocks(journal_t *jp) {
 
     t->t_state = T_FLUSH;
 
-	if (jp->j_head + t->t_nr_buffers > jp->j_last) {
-		jp->j_head = jp->j_first;
-	}
-
     desc_b = journal_new_block(jp, jp->j_head);
 
 	hdr = (ext3_journal_header_t *)desc_b->data;
@@ -222,7 +218,8 @@ static int journal_write_commit_block(journal_t *jp) {
     	return -1;
     }
     journal_free_block(jp, commit_b);
-    jp->j_head++;
+
+    journal_wrap(jp, jp->j_head++);
 
     t->t_log_blocks++;
     t->t_state = T_FINISHED;

@@ -141,6 +141,8 @@ int journal_checkpoint_transactions(journal_t *jp) {
     	}
 
     	jp->j_tail += t->t_log_blocks;
+    	journal_wrap(jp, jp->j_tail);
+
     	jp->j_tail_sequence++;
 
     	/**
@@ -150,10 +152,6 @@ int journal_checkpoint_transactions(journal_t *jp) {
     	 */
     	jp->j_free += t->t_outstanding_credits;
     	//jp->j_free += t->t_log_blocks;
-
-    	if (jp->j_tail > jp->j_last) {
-    		jp->j_tail = jp->j_first;
-    	}
 
     	dlist_del(&t->t_next);
     	journal_free_trans(jp, t);
@@ -285,8 +283,8 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 
 	/* XXX Increase speed up of below writing on hd by grouping blocks */
 	dlist_foreach_entry(b, bnext, blocks, b_next) {
-		assert(jp->j_head < jp->j_maxlen);
-		ret += journal_write_block(jp, b->data, 1, jp->j_fs_specific.bmap(jp, jp->j_head++));
+		ret += journal_write_block(jp, b->data, 1,
+				jp->j_fs_specific.bmap(jp, journal_wrap(jp, jp->j_head++)));
 	}
 
 	return ret;
