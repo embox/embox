@@ -499,7 +499,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 
 	while (1) {
 
-		memset(rcv_buf, 0, sizeof(rcv_buf));
+		memset(rcv_buf, 0, MAXDIRCOUNT * 2);
 
 		if (0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
