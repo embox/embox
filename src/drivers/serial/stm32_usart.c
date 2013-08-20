@@ -12,6 +12,7 @@
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>
+#include <drivers/serial/diag.h>
 #include <embox/unit.h>
 
 #include <drivers/uart_device.h>
@@ -126,7 +127,7 @@ const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 		.diag = {
 			.ops = &uart_diag_ops,
 		},
-		.uart = &uart0,
+		.uart = &stm32_uart0,
 		.params = &uart_defparams,
 };
 
