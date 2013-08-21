@@ -7,11 +7,12 @@
  */
 
 #include <assert.h>
-#include <errno.h>
 #include <drivers/ethernet/virtio.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_driver.h>
+#include <errno.h>
+#include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
@@ -22,6 +23,8 @@
 #include <util/sys_log.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
+
+#define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
 
 struct virtio_priv {
 	struct virtqueue rq;
@@ -189,7 +192,6 @@ static void virtio_config(struct net_device *dev) {
 	}
 }
 
-#define SKB_DATA_PREPARE 10
 static int virtio_priv_init(struct virtio_priv *dev_priv,
 		struct net_device *dev) {
 	int ret, i;
@@ -210,7 +212,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 	}
 
 	/* add receive buffer */
-	for (i = 0; i < SKB_DATA_PREPARE; ++i) {
+	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		skb_data = skb_data_alloc();
 		if (skb_data == NULL) {
 			return -ENOMEM;
