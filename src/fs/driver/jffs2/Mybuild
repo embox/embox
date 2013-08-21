@@ -14,4 +14,5 @@ module jffs2 {
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool
+	depends third_party.zlib.libs
 }
