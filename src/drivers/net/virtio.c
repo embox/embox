@@ -63,14 +63,18 @@ static void vq_fini(struct virtqueue *vq) {
 	free(vq->ring_data);
 }
 
+#include <kernel/printk.h>
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	int ret, desc_id;
 	struct virtio_net_hdr *pkt_hdr;
 	static char _b[sizeof *pkt_hdr + ETH_FRAME_LEN];
 
+//	printk("xmit[%u]",skb->len);
 	pkt_hdr = (struct virtio_net_hdr *)&_b[0];
 	pkt_hdr->flags = 0;
+	pkt_hdr->csum_start = pkt_hdr->csum_offset = 0;
 	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
+	pkt_hdr->hdr_len = pkt_hdr->gso_size = 0;
 
 	memcpy(&_b[sizeof *pkt_hdr], skb->mac.raw, skb->len);
 
@@ -87,11 +91,24 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	skb_free(skb);
 
 	/* wait while txing */
-	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
+//	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
+	desc_id = desc_id;
 
 	return 0;
 }
+/* Debugging routines */
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
 
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
 static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	struct net_device *dev;
 	struct virtqueue *vq;
@@ -107,9 +124,11 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 		return IRQ_NONE;
 	}
 
+//	printk("!");
 	/* release outgoing packets */
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
+//printk("*");
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
 //		skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
@@ -148,9 +167,45 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
+#include <kernel/irq_lock.h>
+#define TEST_F(f) \
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & f) { \
+		printk(#f "is set\n"); \
+	}
 static int virtio_open(struct net_device *dev) {
 	/* device is ready */
 	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
+
+#if 0
+irq_lock();
+   printk("dev_f%#x\n", virtio_load32(VIRTIO_REG_DEVICE_F, dev));
+   printk("guest_f%#x\n", virtio_load32(VIRTIO_REG_GUEST_F, dev));
+   printk("net_s%#x\n", virtio_load16(VIRTIO_REG_NET_STATUS, dev));
+   printk("dev_s%#hhx\n", virtio_load8(VIRTIO_REG_DEVICE_S, dev));
+
+TEST_F(VIRTIO_NET_F_CSUM)
+TEST_F(VIRTIO_NET_F_GUEST_CSUM)
+TEST_F(VIRTIO_NET_F_MAC)
+TEST_F(VIRTIO_NET_F_GSO)
+TEST_F(VIRTIO_NET_F_GUEST_TSO4)
+TEST_F(VIRTIO_NET_F_GUEST_TSO6)
+TEST_F(VIRTIO_NET_F_GUEST_ECN)
+TEST_F(VIRTIO_NET_F_GUEST_UFO)
+TEST_F(VIRTIO_NET_F_HOST_TSO4)
+TEST_F(VIRTIO_NET_F_HOST_TSO6)
+TEST_F(VIRTIO_NET_F_HOST_ECN)
+TEST_F(VIRTIO_NET_F_HOST_UFO)
+TEST_F(VIRTIO_NET_F_MRG_RXBUF)
+TEST_F(VIRTIO_NET_F_STATUS)
+TEST_F(VIRTIO_NET_F_CTRL_VQ)
+TEST_F(VIRTIO_NET_F_CTRL_RX)
+TEST_F(VIRTIO_NET_F_CTRL_VLAN)
+TEST_F(VIRTIO_NET_F_CTRL_RX_EXTRA)
+TEST_F(VIRTIO_NET_F_GUEST_ANNOUNCE)
+TEST_F(VIRTIO_NET_F_MQ)
+TEST_F(VIRTIO_NET_F_CTRL_MAC_ADDR)
+irq_unlock();
+#endif
 	return 0;
 }
 
@@ -192,10 +247,47 @@ static void virtio_config(struct net_device *dev) {
 		}
 	}
 
+#if 0
+	/* negotiate CSUM bit */
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CSUM) {
+		virtio_store32(VIRTIO_NET_F_CSUM, VIRTIO_REG_GUEST_F, dev);
+		virtio_store32(VIRTIO_NET_F_HOST_TSO4, VIRTIO_REG_GUEST_F, dev);
+		virtio_store32(VIRTIO_NET_F_HOST_TSO6, VIRTIO_REG_GUEST_F, dev);
+		virtio_store32(VIRTIO_NET_F_HOST_ECN, VIRTIO_REG_GUEST_F, dev);
+		virtio_store32(VIRTIO_NET_F_HOST_UFO, VIRTIO_REG_GUEST_F, dev);
+	}
+
+	/* negotiate MAC bit */
+	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
+		virtio_store32(VIRTIO_NET_F_MAC, VIRTIO_REG_GUEST_F, dev);
+	}
+#endif
+
 	/* negotiate MSG_RXBUF bit */
 	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MRG_RXBUF) {
 		virtio_store32(VIRTIO_NET_F_MRG_RXBUF, VIRTIO_REG_GUEST_F, dev);
 	}
+	else {
+		assert(0);
+	}
+}
+
+static void virtio_priv_fini(struct virtio_priv *dev_priv) {
+	int i;
+	struct vring_desc *desc;
+
+	/* free receive buffers */
+	for (i = 0, desc = &dev_priv->rq.ring.desc[0];
+			i < dev_priv->rq.ring.num;
+			++i, ++desc) {
+		if (desc->addr != 0) {
+			skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
+		}
+	}
+
+	/* free virtqueues */
+	vq_fini(&dev_priv->rq);
+	vq_fini(&dev_priv->tq);
 }
 
 static int virtio_priv_init(struct virtio_priv *dev_priv,
@@ -221,22 +313,19 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		skb_data = skb_data_alloc();
 		if (skb_data == NULL) {
+			virtio_priv_fini(dev_priv);
 			return -ENOMEM;
 		}
 		ret = virtqueue_push_buff(skb_data, skb_max_size(), 1,
-				&netdev_priv(dev, struct virtio_priv)->rq);
+				&dev_priv->rq);
 		if (ret != 0) {
+			virtio_priv_fini(dev_priv);
 			return ret;
 		}
 	}
 	virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 
 	return 0;
-}
-
-static void virtio_priv_fini(struct virtio_priv *dev_priv) {
-	vq_fini(&dev_priv->rq);
-	vq_fini(&dev_priv->tq);
 }
 
 static int virtio_init(struct pci_slot_dev *pci_dev) {
