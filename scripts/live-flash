@@ -65,21 +65,27 @@ DRIVE=$2
 PARTITION=${DRIVE}1
 [ -d $MOUNT_POINT ] || mkdir $MOUNT_POINT
 umount $PARTITION
-dd if=/dev/zero of=$DRIVE bs=4K count=16K
-echo "60,,L,*" | sfdisk $DRIVE
-MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
+
+if [ -z $LIVEFLASH_CPONLY ]; then
+	dd if=/dev/zero of=$DRIVE bs=4K count=16K
+	echo "60,,L,*" | sfdisk $DRIVE
+	MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
+fi
+
 mount $PARTITION $MOUNT_POINT
 
-if [ z"$1" == zgrub ]; then
-	grub1_do $DRIVE $MOUNT_POINT
-elif [ z"$1" == zgrub2 ]; then
-	grub2_do $DRIVE $MOUNT_POINT
-elif [ z"$1" == zsyslinux ]; then
-	syslinux_do $DRIVE $MOUNT_POINT
+if [ -z $LIVEFLASH_CPONLY ]; then
+	if [ z"$1" == zgrub ]; then
+		grub1_do $DRIVE $MOUNT_POINT
+	elif [ z"$1" == zgrub2 ]; then
+		grub2_do $DRIVE $MOUNT_POINT
+	elif [ z"$1" == zsyslinux ]; then
+		syslinux_do $DRIVE $MOUNT_POINT
 
-else
-	echo Unknown bootloader type
-	exit 1
+	else
+		echo Unknown bootloader type
+		exit 1
+	fi
 fi
 
 cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
