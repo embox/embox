@@ -64,7 +64,7 @@ static void vq_fini(struct virtqueue *vq) {
 }
 
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
-	int ret;
+	int ret, desc_id;
 	struct virtio_net_hdr *pkt_hdr;
 	static char _b[sizeof *pkt_hdr + ETH_FRAME_LEN];
 
@@ -73,6 +73,8 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 
 	memcpy(&_b[sizeof *pkt_hdr], skb->mac.raw, skb->len);
+
+	desc_id = netdev_priv(dev, struct virtio_priv)->tq.next_free_desc;
 
 	ret = virtqueue_push_buff(&_b[0], sizeof *pkt_hdr + skb->len, 0,
 			&netdev_priv(dev, struct virtio_priv)->tq);
@@ -83,6 +85,10 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	virtio_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
 
 	skb_free(skb);
+
+	/* wait while txing */
+	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
+
 	return 0;
 }
 
