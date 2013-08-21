@@ -6,8 +6,9 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/test.h>
 #include <stdint.h>
+#include <limits.h>
+#include <embox/test.h>
 
 EMBOX_TEST_SUITE("gcc/division with remainder tests");
 
@@ -27,6 +28,7 @@ extern int32_t __modsi3(int32_t num, int32_t den);
 extern int64_t __divdi3(int64_t num, int64_t den);
 extern int64_t __moddi3(int64_t num, int64_t den);
 
+extern int __mulsi3(int a, int b);
 /**
  * Some constants
  */
@@ -142,4 +144,24 @@ TEST_CASE("Test for 64-bit signed modulo") {
 	test_assert_true((var_i64n % base) < base);
 	test_assert_true((def_i64n % base) == __moddi3(def_i64n, base));
 	test_assert_true((var_i64n % base) == __moddi3(var_i64n, base));
+}
+
+TEST_CASE("__modsi should be equal for int multiplication") {
+
+	test_assert(1 		== __mulsi3(-1, 	-1));
+	test_assert(-2147483647 == __mulsi3(-1, 	INT_MAX));
+	test_assert(-2147483647 == __mulsi3(INT_MAX, 	-1));
+	test_assert(1 		== __mulsi3(INT_MAX, 	INT_MAX));
+	test_assert(-1 		== __mulsi3(-1, 	1));
+	test_assert(-2147483648 == __mulsi3(-1, 	INT_MIN));
+	test_assert(2147483647 	== __mulsi3(INT_MAX, 	1));
+	test_assert(-2147483648 == __mulsi3(INT_MAX, 	INT_MIN));
+	test_assert(-1 		== __mulsi3(1, 		-1));
+	test_assert(-2147483648 == __mulsi3(1, 		INT_MIN));
+	test_assert(-2147483648 == __mulsi3(INT_MIN, 	1));
+	test_assert(-2147483648 == __mulsi3(INT_MIN, 	INT_MAX));
+	test_assert(1 		== __mulsi3(1, 		1));
+	test_assert(2147483647  == __mulsi3(1, 		INT_MAX));
+	test_assert(-2147483648 == __mulsi3(INT_MIN, 	-1));
+	test_assert(0 		== __mulsi3(INT_MIN, 	INT_MIN));
 }

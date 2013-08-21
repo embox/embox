@@ -5,6 +5,8 @@
  * @author Anton Bondarev, Oleg Medvedev
  */
 
+#include <limits.h>
+
 unsigned int __udivsi3(unsigned int op1, unsigned int op2) {
 	int i;
 	unsigned int result = 0;
@@ -13,7 +15,7 @@ unsigned int __udivsi3(unsigned int op1, unsigned int op2) {
 		return 0;
 	}
 
-	while (0x80000000 != (op2 & 0x80000000)) {
+	while (0 == (op2 & (1 << (WORD_BIT - 1)))) {
 		op2 = op2 << 1;
 		steps++;
 	}
