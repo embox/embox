@@ -31,11 +31,16 @@ ExternalProject_Add(
       ac_cv_file__proc_sys_kernel_core_pattern=no
       ac_cv_func_poll=no
       libreplace_cv_HAVE_MMAP=no
+      ac_cv_lib_readline_rl_callback_handler_install=no
    BUILD_COMMAND
-      <SOURCE_DIR>/source3/runfromhere.sh make libsmbclient
+      <SOURCE_DIR>/source3/runfromhere.sh make
+        EXEEXT=.embox.o
+        libsmbclient
+        bin/smbclient.embox.o
    LOG_BUILD 1
    INSTALL_COMMAND
       <SOURCE_DIR>/source3/runfromhere.sh make
+        EXEEXT=.embox.o
         ""INSTALLLIBCMD_A=install""
         installlibsmbclient
    LOG_INSTALL 1

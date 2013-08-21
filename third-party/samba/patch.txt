@@ -74,3 +74,24 @@ diff -aur samba-3.6.18/source3/configure samba/source3/configure
  
  for ac_header in getopt.h sys/select.h sys/time.h
  do :
+diff -aur samba-3.6.18/source3/Makefile.in samba/source3/Makefile.in
+--- samba-3.6.18/source3/Makefile.in	2013-08-12 11:25:27.000000000 +0400
++++ samba/source3/Makefile.in	2013-08-21 17:33:20.725181326 +0400
+@@ -218,7 +218,7 @@
+ 
+ SBIN_PROGS = bin/smbd@EXEEXT@ bin/nmbd@EXEEXT@ @SWAT_SBIN_TARGETS@ @EXTRA_SBIN_PROGS@
+ 
+-BIN_PROGS1 = bin/smbclient@EXEEXT@ bin/net@EXEEXT@ bin/smbspool@EXEEXT@ \
++BIN_PROGS1 = bin/smbclient$(EXEEXT) bin/net@EXEEXT@ bin/smbspool@EXEEXT@ \
+ 	bin/testparm@EXEEXT@ bin/smbstatus@EXEEXT@ bin/smbget@EXEEXT@ \
+ 	bin/smbta-util@EXEEXT@
+ BIN_PROGS2 = bin/smbcontrol@EXEEXT@ bin/smbtree@EXEEXT@ $(TDBBACKUP) \
+@@ -1805,7 +1805,7 @@
+ 		$(KRB5LIBS) $(LDAP_LIBS) $(LIBTALLOC_LIBS) $(LIBTEVENT_LIBS) $(LIBTDB_LIBS) \
+ 		$(LIBWBCLIENT_LIBS) $(ZLIB_LIBS) $(PASSDB_LIBS)
+ 
+-bin/smbclient@EXEEXT@: $(BINARY_PREREQS) $(CLIENT_OBJ) @BUILD_POPT@ $(LIBTALLOC) $(LIBTEVENT) $(LIBTDB) $(LIBWBCLIENT)
++bin/smbclient$(EXEEXT): $(BINARY_PREREQS) $(CLIENT_OBJ) @BUILD_POPT@ $(LIBTALLOC) $(LIBTEVENT) $(LIBTDB) $(LIBWBCLIENT)
+ 	@echo Linking $@
+ 	@$(CC) -o $@ $(CLIENT_OBJ) $(LDFLAGS) $(DYNEXP) \
+ 		$(TERMLDFLAGS) $(TERMLIBS) $(LIBS) $(POPT_LIBS) \
