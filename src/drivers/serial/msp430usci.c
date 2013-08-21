@@ -80,9 +80,10 @@ static int msp430usci_diag_init(const struct diag *diag) {
 }
 
 static void msp430usci_diag_putc(const struct diag *diag, char ch) {
-	while (!(REG_LOAD(IFG2) & TXIFG));
 
 	REG_STORE(TXB, ch);
+
+	while (!(REG_LOAD(IFG2) & TXIFG));
 }
 
 static char msp430usci_diag_getc(const struct diag *diag) {
