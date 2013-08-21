@@ -37,6 +37,8 @@ void sched_wait_run(void) {
 }
 
 void sched_thread_notify(struct thread *thread, int result) {
+	assert(thread);
+
 	irq_lock();
 	{
 		if (thread->wait_data.status == WAIT_DATA_STATUS_WAITING) {
