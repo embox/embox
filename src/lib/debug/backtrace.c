@@ -14,6 +14,10 @@
 #include <math.h>
 #include <module/embox/arch/stackframe.h>
 
+#include <framework/mod/options.h>
+
+#define MODOPS_ROW_LIMIT OPTION_GET(NUMBER, row_limit)
+
 extern void stack_iter_current(stack_iter_t *);
 extern int stack_iter_next(stack_iter_t *);
 extern void *stack_iter_get_fp(stack_iter_t *);
@@ -22,12 +26,15 @@ extern void *stack_iter_get_retpc(stack_iter_t *);
 void backtrace(void) {
 	stack_iter_t f;
 	int depth = 0;
+	int limit;
 
 	/* Counting frames */
 	stack_iter_current(&f);
 	do {
 		depth++;
 	} while (stack_iter_next(&f));
+
+	limit = depth - MODOPS_ROW_LIMIT;
 
 	printk("\n\nBacktrace:\n\n");
 	printk("     sp        pc         func + offset\n");
@@ -53,7 +60,7 @@ void backtrace(void) {
 		}
 
 		printk("\n");
-	} while (stack_iter_next(&f));
+	} while (stack_iter_next(&f) && depth != limit);
 
 	printk("\n");
 }

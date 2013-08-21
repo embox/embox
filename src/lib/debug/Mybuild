@@ -10,6 +10,7 @@ abstract module backtrace_api {
 }
 
 module Backtrace extends backtrace_api {
+	option number row_limit=0 /* without limit */
 	source "backtrace.c", "backtrace.h"
 	depends embox.arch.stackframe
 	depends embox.lib.debug.Symbol
