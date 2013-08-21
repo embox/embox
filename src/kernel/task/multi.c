@@ -21,6 +21,8 @@
 #include <kernel/critical.h>
 #include <util/idx_table.h>
 
+#include <err.h>
+
 #include "common.h"
 
 #define TASK_QUANT OPTION_GET(NUMBER, tasks_quantity)
@@ -74,9 +76,9 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd,
-				THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
-				task_trampoline, param))) {
+		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
+				task_trampoline, param);
+		if (0 != err(thd)) {
 			goto out_poolfree;
 		}
 

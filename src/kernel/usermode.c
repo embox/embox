@@ -12,6 +12,7 @@
 #include <mem/misc/pool.h>
 #include <kernel/usermode.h>
 #include <kernel/thread.h>
+#include <err.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
 
@@ -43,6 +44,7 @@ int user_thread_create(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp) {
 	struct ue_data *data;
 	int res;
+	struct thread *t;
 
 	sched_lock();
 	{
@@ -53,12 +55,14 @@ int user_thread_create(struct thread **p_thread, unsigned int flags,
 
 		data->ip = ip;
 		data->sp = sp;
+		t = thread_create(flags, TRAMPOLINE, data);
 
-		if ((res = thread_create(p_thread, flags, TRAMPOLINE, data))) {
+		if ((res = err(t))) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
 			return res;
 		}
+		*p_thread = t;
 	}
 	sched_unlock();
 

@@ -10,6 +10,7 @@
 #include <pthread.h>
 
 #include <kernel/thread.h>
+#include <err.h>
 
 /*
 int pthread_attr_destroy(pthread_attr_t *attr) {
@@ -151,7 +152,31 @@ int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
-	return thread_create(thread, 0, start_routine, arg);
+	struct thread *t;
+
+	if(!start_routine) {
+		return -EAGAIN;
+	}
+
+	t = thread_create(0, start_routine, arg);
+	if(err(t)) {
+		/*
+		 * The pthread_create() function will fail if:
+		 *
+		 * [EAGAIN]
+		 *     The system lacked the necessary resources to create another thread, or the system-imposed limit on the total number of threads in a process PTHREAD_THREADS_MAX would be exceeded.
+		 * [EINVAL]
+		 *     The value specified by attr is invalid.
+		 * [EPERM]
+		 *     The caller does not have appropriate permission to set the required scheduling parameters or scheduling policy.
+		 *
+		 * The pthread_create() function will not return an error code of [EINTR].
+		 */
+		return -EAGAIN;
+	}
+	*thread = t;
+
+	return ENOERR;
 }
 
 int pthread_detach(pthread_t thread) {
@@ -338,11 +363,13 @@ int pthread_setcanceltype(int type, int *oldtype) {
 int pthread_setconcurrency(int new_level) {
 	return -ENOSYS;
 }
-
-int pthread_setschedparam(pthread_t thread, int policy, const struct sched_param *param) {
-	return -ENOSYS;
+*/
+int pthread_setschedparam(pthread_t thread, int policy,
+		const struct sched_param *param) {
+	return thread_set_priority(thread, param->sched_priority);
 }
 
+/*
 int pthread_setspecific(pthread_key_t key, const void *value) {
 	return -ENOSYS;
 }

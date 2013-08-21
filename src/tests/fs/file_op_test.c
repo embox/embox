@@ -311,10 +311,15 @@ TEST_CASE("flock") {
 	/* Prepare file and threads for test */
 	test_assert(-1 != (fd = open(FS_FLOCK, O_CREAT, S_IRUSR | S_IWUSR)));
 
-	test_assert_zero(thread_create(&fftt, THREAD_FLAG_SUSPENDED,
-			first_flock_test_thread, (void *) &fd));
-	test_assert_zero(thread_create(&sftt, THREAD_FLAG_SUSPENDED,
-			second_flock_test_thread, (void *) &fd));
+	fftt = thread_create(THREAD_FLAG_SUSPENDED, first_flock_test_thread,
+			(void *) &fd);
+	test_assert_zero(err(fftt));
+
+
+	sftt = thread_create(THREAD_FLAG_SUSPENDED, second_flock_test_thread,
+			(void *) &fd);
+	test_assert_zero(err(sftt));
+
 	test_assert_zero(thread_set_priority(fftt, l));
 	test_assert_zero(thread_set_priority(sftt, h));
 

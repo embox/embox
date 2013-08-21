@@ -9,9 +9,15 @@
 #ifndef PTHREAD_H_
 #define PTHREAD_H_
 
-#include <time.h>
-#include <sys/cdefs.h>
+/*The following types shall be defined as described in <sys/types.h> :
+ * ...
+ */
 #include <sys/types.h>
+
+/* Inclusion of the <sched.h> header may make visible all symbols from
+ * the <time.h> header.
+ */
+#include <sched.h>
 
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/cond.h>
@@ -57,10 +63,6 @@ typedef struct pthread_once {
 
 } pthread_once_t;
 
-
-struct sched_param {
-
-};
 
 __BEGIN_DECLS
 
@@ -148,12 +150,12 @@ extern int   pthread_mutex_unlock(pthread_mutex_t *);
 //extern int   pthread_rwlockattr_init(pthread_rwlockattr_t *);
 //extern int   pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 
-extern pthread_t
-             pthread_self(void);
+extern pthread_t pthread_self(void);
+
 //extern int   pthread_setcancelstate(int, int *);
 //extern int   pthread_setcanceltype(int, int *);
 //extern int   pthread_setconcurrency(int);
-//extern int   pthread_setschedparam(pthread_t, int, const struct sched_param *);
+extern int   pthread_setschedparam(pthread_t, int, const struct sched_param *);
 //extern int   pthread_setspecific(pthread_key_t, const void *);
 //extern void  pthread_testcancel(void);
 

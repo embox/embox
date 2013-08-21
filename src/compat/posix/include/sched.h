@@ -28,7 +28,20 @@ __BEGIN_DECLS
 
 
 struct sched_param {
-	int sched_priority; /**<  process execution scheduling priority */
+	int sched_priority; /**< Process or thread execution scheduling priority. */
+	/*
+	In addition, if _POSIX_SPORADIC_SERVER or _POSIX_THREAD_SPORADIC_SERVER is
+	defined, the sched_param structure defined in <sched.h> shall contain the
+	following members in addition to those specified above:
+
+	int             sched_ss_low_priority Low scheduling priority for
+	                                      sporadic server.
+	struct timespec sched_ss_repl_period  Replenishment period for
+	                                      sporadic server.
+	struct timespec sched_ss_init_budget  Initial budget for sporadic server.
+	int             sched_ss_max_repl     Maximum pending replenishments for
+	                                      sporadic server.
+	*/
 };
 
 /**

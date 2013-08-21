@@ -13,8 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include <kernel/thread.h>
-#include <kernel/printk.h>
+#include <pthread.h>
 
 #include <utmp.h>
 
@@ -169,32 +168,32 @@ static void *shell_hnd(void* args) {
 
 	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(addr_in->sin_addr));
 	if (ret != 0) {
-		MD(printk("utmp_login LOGIN error: %d\n", ret));
+		MD(printf("utmp_login LOGIN error: %d\n", ret));
 	}
 
 	if (-1 == close(STDIN_FILENO)) {
-		MD(printk("close STDIN_FILENO error: %d\n", errno));
+		MD(printf("close STDIN_FILENO error: %d\n", errno));
 	}
 	if (-1 == close(STDOUT_FILENO)) {
-		MD(printk("close STDOUT_FILENO error: %d\n", errno));
+		MD(printf("close STDOUT_FILENO error: %d\n", errno));
 	}
 
 	if (-1 == dup2(msg[0], STDIN_FILENO)) {
-		MD(printk("dup2 STDIN_FILENO error: %d\n", errno));
+		MD(printf("dup2 STDIN_FILENO error: %d\n", errno));
 	}
 	if (-1 == dup2(msg[1], STDOUT_FILENO)) {
-		MD(printk("dup2 STDOUT_FILENO error: %d\n", errno));
+		MD(printf("dup2 STDOUT_FILENO error: %d\n", errno));
 	}
 
 	ret = shell_run(shell_lookup("tish"));
 	if (ret != 0) {
-		MD(printk("shell_run error: %d\n", ret));
+		MD(printf("shell_run error: %d\n", ret));
 	}
 
 
 	ret = utmp_login(DEAD_PROCESS, "");
 	if (ret != 0) {
-		MD(printk("utmp_login DEAD error: %d\n", ret));
+		MD(printf("utmp_login DEAD error: %d\n", ret));
 	}
 
 	return NULL;
@@ -237,7 +236,7 @@ static void *telnet_thread_handler(void* args) {
 	struct timeval timeout;
 	int ret;
 
-	MD(printk("starting telnet_thread_handler\n"));
+	MD(printf("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
@@ -251,11 +250,11 @@ static void *telnet_thread_handler(void* args) {
 
 	ret = pipe_pty(pipefd1);
 	if (ret != 0) {
-		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
 	}
 	ret = pipe_pty(pipefd2);
 	if (ret != 0) {
-		MD(printk("pipe_pty pipedf1 error: %d\n", ret));
+		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
 	}
 
 	msg[0] = sock;
@@ -298,7 +297,7 @@ static void *telnet_thread_handler(void* args) {
 			FD_SET(pipefd1[1], &writefds);
 		}
 
-		MD(printk("."));
+		MD(printf("."));
 
 		fd_cnt = select(nfds, &readfds, &writefds, NULL, &timeout);
 
@@ -308,7 +307,7 @@ static void *telnet_thread_handler(void* args) {
 			fcntl(sock, F_SETFD, O_NONBLOCK);
 			len = read(sock, s, 128);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
-				MD(printk("read on sock: %d %d\n", len, errno));
+				MD(printf("read on sock: %d %d\n", len, errno));
 				goto kill_and_out;
 			}
 			fcntl(sock, F_SETFD, 0);
@@ -320,13 +319,13 @@ static void *telnet_thread_handler(void* args) {
 				p += len;
 			}
 			else {
-				MD(printk("write on sock: %d %d\n", len, errno));
+				MD(printf("write on sock: %d %d\n", len, errno));
 			}
 		} else if (FD_ISSET(pipefd2[0], &readfds)){
 			p = pbuff;
 			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
 			if (pipe_data_len <= 0) {
-				MD(printk("read on pipefd2: %d %d\n", pipe_data_len, errno));
+				MD(printf("read on pipefd2: %d %d\n", pipe_data_len, errno));
 			}
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
@@ -336,7 +335,7 @@ static void *telnet_thread_handler(void* args) {
 				sock_data_len -= len;
 				s += len;
 			} else {
-				MD(printk("write on pipefd1: %d %d\n", len, errno));
+				MD(printf("write on pipefd1: %d %d\n", len, errno));
 				if (errno == EPIPE) {
 					goto kill_and_out; /* this means that pipe was closed by shell */
 				}
@@ -345,7 +344,7 @@ static void *telnet_thread_handler(void* args) {
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
 			if (sock_data_len <= 0) {
-				MD(printk("read on sock: %d %d\n", sock_data_len, errno));
+				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
 			if (errno == ECONNREFUSED) {
 				goto kill_and_out;
@@ -363,7 +362,7 @@ out:
 	close(sock);
 	clients[client_num].fd = -1;
 
-	MD(printk("exiting from telnet_thread_handler\n"));
+	MD(printf("exiting from telnet_thread_handler\n"));
 
 	return NULL;
 }
@@ -382,22 +381,22 @@ static int exec(int argc, char **argv) {
 	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		printk("can't create socket\n");
+		printf("can't create socket\n");
 		return -errno;
 	}
 
 	if ((res = bind(listening_descr, (struct sockaddr *)&listening_socket,
 					sizeof(listening_socket))) < 0) {
-		printk("bind() failed\n");
+		printf("bind() failed\n");
 		goto listen_failed;
 	}
 
 	if ((res = listen(listening_descr, TELNETD_MAX_CONNECTIONS)) < 0) {
-		printk("listen() failed\n");
+		printf("listen() failed\n");
 		goto listen_failed;
 	}
 
-	MD(printk("telnetd is ready to accept connections\n"));
+	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
 		struct sockaddr_in client_socket;
 		int client_socket_len = sizeof(client_socket);
@@ -407,11 +406,11 @@ static int exec(int argc, char **argv) {
 		size_t i;
 
 		if (client_descr < 0) {
-			MD(printk("accept() failed. code=%d\n", -errno));
+			MD(printf("accept() failed. code=%d\n", -errno));
 			continue;
 		}
 
-		MD(printk("Attempt to connect from address %s:%d\n",
+		MD(printf("Attempt to connect from address %s:%d\n",
 			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
 
 		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
@@ -422,16 +421,16 @@ static int exec(int argc, char **argv) {
 
 		if (i >= TELNETD_MAX_CONNECTIONS) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printk("limit of connections exceded\n"));
+			MD(printf("limit of connections exceded\n"));
 			continue;
 		}
 
 		clients[i].fd = client_descr;
 		memcpy(&clients[i].addr_in, &client_socket, sizeof(struct sockaddr_in));
 
-		if (0 != thread_create(&thread, 0, telnet_thread_handler, (void *) i)) {
+		if (0 != pthread_create(&thread, 0, telnet_thread_handler, (void *) i)) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printk("thread_create() returned with code=%d\n", res));
+			MD(printf("thread_create() returned with code=%d\n", res));
 			clients[i].fd = -1;
 		}
 	}
