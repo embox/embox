@@ -18,4 +18,9 @@ static void __x86_verificator__(void) {
 // x86 architecture only
 #define __BYTE_ORDER __LITTLE_ENDIAN
 
+#define LITTLE_ENDIAN __LITTLE_ENDIAN
+#define BIG_ENGIAN    __BIG_ENDIAN
+#define PDP_ENDIAN    __PDP_ENDIAN
+#define BYTE_ORDER    __BYTE_ORDER
+
 #endif /* ENDIAN_H_ */

@@ -29,7 +29,14 @@ ExternalProject_Add(
       --disable-shared-libs
       libreplace_cv_HAVE_GETADDRINFO=no
       ac_cv_file__proc_sys_kernel_core_pattern=no
+      ac_cv_func_poll=no
+      libreplace_cv_HAVE_MMAP=no
    BUILD_COMMAND
-      <SOURCE_DIR>/source3/runfromhere.sh make
+      <SOURCE_DIR>/source3/runfromhere.sh make libsmbclient
    LOG_BUILD 1
+   INSTALL_COMMAND
+      <SOURCE_DIR>/source3/runfromhere.sh make
+        ""INSTALLLIBCMD_A=install""
+        installlibsmbclient
+   LOG_INSTALL 1
 )

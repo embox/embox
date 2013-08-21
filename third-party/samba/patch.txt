@@ -1,6 +1,6 @@
 diff -aur samba-3.6.18/source3/configure samba/source3/configure
 --- samba-3.6.18/source3/configure	2013-08-12 11:26:02.000000000 +0400
-+++ samba/source3/configure	2013-08-20 18:50:22.553276912 +0400
++++ samba/source3/configure	2013-08-21 16:06:29.014551522 +0400
 @@ -8127,10 +8127,10 @@
  else
  
@@ -16,3 +16,61 @@ diff -aur samba-3.6.18/source3/configure samba/source3/configure
  else
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
+@@ -18954,17 +18954,17 @@
+ #define HAVE_EXTATTR_DELETE_FILE 1
+ _ACEOF
+ 
+-		for ac_func in extattr_delete_fd extattr_delete_link extattr_get_fd extattr_get_file extattr_get_link extattr_list_fd extattr_list_file extattr_list_link extattr_set_fd extattr_set_file extattr_set_link
+-do :
+-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+-  cat >>confdefs.h <<_ACEOF
+-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+-_ACEOF
+-
+-fi
+-done
++#		for ac_func in extattr_delete_fd extattr_delete_link extattr_get_fd extattr_get_file extattr_get_link extattr_list_fd extattr_list_file extattr_list_link extattr_set_fd extattr_set_file extattr_set_link
++#do :
++#  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
++#ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
++#if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
++#  cat >>confdefs.h <<_ACEOF
++##define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++#_ACEOF
++#
++#fi
++#done
+ 
+ 
+ fi
+@@ -20784,17 +20784,17 @@
+ TDB_CFLAGS="-I$tdbdir/include"
+ 
+ 
+-for ac_func in mmap pread pwrite getpagesize utime
+-do :
+-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+-  cat >>confdefs.h <<_ACEOF
+-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+-_ACEOF
+-
+-fi
+-done
++#for ac_func in mmap pread pwrite getpagesize utime
++#do :
++#  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
++#ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
++#if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
++#  cat >>confdefs.h <<_ACEOF
++##define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++#_ACEOF
++#
++#fi
++#done
+ 
+ for ac_header in getopt.h sys/select.h sys/time.h
+ do :
