@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include <util/array.h>
 #include <embox/unit.h>
@@ -174,6 +175,52 @@ static int ext3fs_format(void *dev) {
 	return 0;
 }
 
+static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
+    ext3_journal_superblock_t *sb;
+    ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
+    char buf[4096];
+
+    assert(jp);
+    assert(jdev);
+
+    jp->j_dev = jdev;
+    jp->j_disk_sectorsize = block_dev_ioctl(jdev, IOCTL_GETBLKSIZE, NULL, 0);
+
+    assert(jp->j_disk_sectorsize >= 512);
+
+    /* Load superblock from the log. */
+    if (!jp->j_dev->driver->read(jp->j_dev, buf,
+    		4096, start)) {
+    	return -1;
+    }
+
+    sb = (ext3_journal_superblock_t *)buf;
+
+    jp->j_maxlen         = ntohl(sb->s_maxlen);
+    jp->j_blocksize      = ntohl(sb->s_blocksize);
+    jp->j_blk_offset     = journal_db2jb(jp, start);
+    jp->j_first          = 1;
+    jp->j_last           = jp->j_maxlen;
+    spec->j_format_version = ntohl(sb->s_header.h_blocktype);
+
+    /* Initialize transaction specific data */
+    jp->j_head                 = jp->j_first;
+    jp->j_tail                 = jp->j_head;
+    jp->j_free                 = jp->j_last - jp->j_first;
+    jp->j_tail_sequence        = 1;
+    jp->j_transaction_sequence = 1;
+    jp->j_running_transaction  = journal_new_trans(jp);
+    dlist_init(&jp->j_checkpoint_transactions);
+
+    /* Update journal superblock */
+    spec->j_sb_buffer  = journal_new_block(jp, jp->j_blk_offset);
+    spec->j_superblock = (ext3_journal_superblock_t *)spec->j_sb_buffer->data;
+    memcpy(spec->j_sb_buffer->data, buf, jp->j_blocksize);
+    jp->j_fs_specific.update(jp);
+
+    return 0;
+}
+
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
@@ -186,7 +233,6 @@ static int ext3fs_mount(void *dev, void *dir) {
 	ext3_journal_specific_t *ext3_spec;
 	journal_fs_specific_t spec = {
 			.bmap = ext3_journal_bmap,
-			.load = ext3_journal_load,
 			.commit = ext3_journal_commit,
 			.update = ext3_journal_update,
 			.trans_freespace = ext3_journal_trans_freespace
@@ -230,8 +276,10 @@ static int ext3fs_mount(void *dev, void *dir) {
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
-	jp->j_fs_specific.load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
-			fsbtodb(fsi, dip->i_block[0]));
+	if (0 > ext3_journal_load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
+			fsbtodb(fsi, dip->i_block[0]))) {
+		return -EIO;
+	}
 	/*
 	 * FIXME Now journal supports block size only equal to filesystem block size
 	 * It is not critical but not flexible enough
@@ -253,11 +301,11 @@ static int ext3fs_truncate (struct node *node, off_t length) {
 static int ext3fs_umount(void *dir) {
 	struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
-	void *fs_spec_data;
+	ext3_journal_specific_t *data;
 	int res;
 
 	fsi = ((struct node *)dir)->nas->fs->fsi;
-	fs_spec_data = fsi->journal->j_fs_specific.data;
+	data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
@@ -266,7 +314,9 @@ static int ext3fs_umount(void *dir) {
 	res = drv->fsop->umount(dir);
 
 	journal_delete(fsi->journal);
-	objfree(&ext3_journal_cache, fs_spec_data);
+	free(data->ext3_journal_inode);
+	journal_free_block(fsi->journal, data->j_sb_buffer);
+	objfree(&ext3_journal_cache, data);
 
 	return res;
 }

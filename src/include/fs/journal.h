@@ -87,17 +87,6 @@ typedef struct journal_block_s {
 typedef uint32_t (*journal_bmap_t)(journal_t *jp, block_t block);
 
 /**
- * Load journal from specified device and initialize it. Typically called after journal_create.
- *
- * @param jp    - journal
- * @param jdev  - device from which journal will be loaded
- * @param start - number of disk block where journal located
- *
- * @return error code
- * @retval 0 on success
- */
-typedef int (*journal_load_t)(journal_t *jp, block_dev_t *jdev, block_t start);
-/**
  * Commit current running transaction.
  *
  * @param jp    - journal
@@ -117,7 +106,6 @@ typedef int (*journal_update_t)(journal_t *jp);
 typedef int (*journal_trans_freespace_t)(journal_t *jp, size_t nblocks);
 
 typedef struct journal_fs_specific_s {
-	journal_load_t load;
 	journal_commit_t commit;
 	journal_update_t update;
     journal_bmap_t bmap;
@@ -327,9 +315,9 @@ static inline int journal_wrap(journal_t *jp, int var) {
 }
 
 #define journal_db2jb(jp, block) \
-		block / (jp->j_blocksize / jp->j_disk_sectorsize)
+		(block / (jp->j_blocksize / jp->j_disk_sectorsize))
 
 #define journal_jb2db(jp, block) \
-		block * (jp->j_blocksize / jp->j_disk_sectorsize)
+		(block * (jp->j_blocksize / jp->j_disk_sectorsize))
 
 #endif /* FS_JOURNAL_H */
