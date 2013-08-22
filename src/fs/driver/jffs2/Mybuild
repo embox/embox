@@ -1,10 +1,9 @@
 package embox.fs.driver
 
 module jffs2 {
-	source "jffs2.c"//, "gcthread.c"
 	@IncludePath("$(THIRDPARTY_DIR)/lib/zlib-1.2.8")
 	source "build.c", "compr_rtime.c", "compr_rubin.c", "compr_zlib.c", "compr.c", "debug.c"
-	source "dir-ecos.c", "erase.c", "gc.c", "scan.c", "readinode.c", "fs-ecos.c"
+	source "dir-ecos.c", "erase.c", "gc.c", "scan.c", "readinode.c", "jffs2.c"
 	source "read.c", "nodelist.c", "write.c", "malloc-ecos.c", "nodemgmt.c", "rbtree.c", "flashio.c"
 	option number inode_quantity=64
 	option number jffs2_descriptor_quantity=4
@@ -14,5 +13,6 @@ module jffs2 {
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool
+	depends embox.driver.flash
 	depends third_party.zlib.libs
 }

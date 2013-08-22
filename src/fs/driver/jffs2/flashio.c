@@ -15,7 +15,7 @@
 #include <linux/kernel.h>
 #include "nodelist.h"
 
-#include <drivers/flash.h>
+#include <drivers/flash/flash.h>
 
 bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
@@ -40,7 +40,7 @@ bool jffs2_flash_write(struct jffs2_sb_info * c,
 	int err;
 	struct super_block *sb = OFNI_BS_2SFFJ(c);
 
-	err = block_dev_read_buffered(sb->s_dev,
+	err = block_dev_write_buffered(sb->s_dev,
 	(char *) read_buffer, size, write_buffer_offset);
 
 	if(err >= 0) {
