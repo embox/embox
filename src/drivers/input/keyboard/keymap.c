@@ -21,7 +21,7 @@ static const uint8_t key_map[] = {
 	       0,     0x1b,      '1',      '2',     '3',      '4',      '5',      '6',
 	     '7',      '8',      '9',      '0',     '-',      '=',     '\b',     '\t',
 	     'q',      'w',      'e',      'r',     't',      'y',      'u',      'i',
-	     'o',      'p',      '[',      ']',    '\n', KEY_CTRL,      'a',      's',
+	     'o',      'p',      '[',      ']',    '\r', KEY_CTRL,      'a',      's',
 	     'd',      'f',      'g',      'h',     'j',      'k',      'l',      ';',
 	    '\'',      '`', KEY_SHFT,     '\\',     'z',      'x',      'c',      'v',
 	     'b',      'n',      'm',      ',',     '.',      '/', KEY_SHFT,      '*',
@@ -35,7 +35,7 @@ static const uint8_t shift_map[] = {
 	       0,     0x1b,     '!',      '@',  '#',      '$',  '%',      '^',
 	     '&',      '*',     '(',      ')',  '_',      '+', '\b',     '\t',
 	     'Q',      'W',     'E',      'R',  'T',      'Y',  'U',      'I',
-	     'O',      'P',     '{',      '}', '\n', KEY_CTRL,  'A',      'S',
+	     'O',      'P',     '{',      '}', '\r', KEY_CTRL,  'A',      'S',
 	     'D',      'F',     'G',      'H',  'J',      'K',  'L',      ':',
 	     '"',      '~',       0,      '|',  'Z',      'X',  'C',      'V',
 	     'B',      'N',     'M',      '<',  '>',      '?',    0,      '*',
@@ -45,12 +45,18 @@ static const uint8_t shift_map[] = {
 	KEY_DOWN, KEY_PGDN, KEY_INS,  KEY_DEL,    0,      0
 };
 
+static const unsigned char esc_start[] = {0x1B, 0x5B}; /* esc, '[' */
+
 int keymap_kbd(struct input_event *event) {
 	const uint8_t *cur_map;
 	uint8_t val;
 	int key_index = event->value & KEYBOARD_KEY_MASK;
 
 	if (key_index > KEY_MAX) {
+		return -1;
+	}
+
+	if (!(event->type & KEY_PRESSED)) {
 		return -1;
 	}
 
@@ -63,8 +69,6 @@ int keymap_kbd(struct input_event *event) {
 
 	return val;
 }
-
-static const unsigned char esc_start[] = {0x1B, 0x5B}; /* esc, '[' */
 
 int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]) {
 	int keycode = keymap_kbd(event);

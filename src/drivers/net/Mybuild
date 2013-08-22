@@ -9,6 +9,8 @@ module loopback {
 }
 
 module virtio {
+	option number prep_buff_cnt=16 /* the number of prepared
+									  buffers for rxing */
 	source "virtio.c"
 
 	depends embox.net.skbuff

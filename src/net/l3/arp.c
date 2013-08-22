@@ -131,7 +131,21 @@ int arp_send(unsigned short oper, unsigned short paddr_space,
 }
 
 /**
- * receive ARP request, send ARP response
+ * save destination hardware and protocol addresses
+ */
+static int arp_update_neighbour(struct arpghdr *arph,
+		struct arpg_stuff *arps, struct net_device *dev) {
+	assert(arph != NULL);
+	assert(arps != NULL);
+	assert(dev != NULL);
+
+	return neighbour_add(ntohs(arph->pa_space), arps->spa,
+			arph->pa_len, dev, ntohs(arph->ha_space), arps->sha,
+			arph->ha_len, 0);
+}
+
+/**
+ * receive ARP request, update neighbours, send ARP response
  */
 static int arp_hnd_request(struct arpghdr *arph, struct arpg_stuff *arps,
 		struct sk_buff *skb, struct net_device *dev) {
@@ -153,6 +167,9 @@ static int arp_hnd_request(struct arpghdr *arph, struct arpg_stuff *arps,
 		skb_free(skb);
 		return 0; /* FIXME error: only IPv4 is supported */
 	}
+
+	/* update translation table */
+	(void)arp_update_neighbour(arph, arps, dev);
 
 	/* check recipient */
 	if (0 != memcmp(arps->tpa, &in_dev->ifa_address, paddr_len)) {
@@ -187,14 +204,12 @@ static int arp_hnd_reply(struct arpghdr *arph, struct arpg_stuff *arps,
 		struct sk_buff *skb, struct net_device *dev) {
 	int ret;
 
-	assert(arph != NULL);
-	assert(arps != NULL);
+	/* update translation table */
+	ret = arp_update_neighbour(arph, arps, dev);
 
-	/* save destination hardware and protocol addresses */
-	ret = neighbour_add(ntohs(arph->pa_space), arps->spa,
-			arph->pa_len, dev, ntohs(arph->ha_space), arps->sha,
-			arph->ha_len, 0);
+	/* free sk_buff */
 	skb_free(skb);
+
 	return ret;
 }
 

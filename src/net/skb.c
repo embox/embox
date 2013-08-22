@@ -17,70 +17,129 @@
 #include <framework/mod/options.h>
 #include <linux/list.h>
 #include <kernel/printk.h>
+#include <util/member.h>
 
 #define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
-#define MODOPS_AMOUNT_SKB_BUFF OPTION_GET(NUMBER, amount_skb_buff)
-#define MODOPS_SKB_BUFF_SIZE   OPTION_GET(NUMBER, skb_buff_size)
+#define MODOPS_AMOUNT_SKB_DATA OPTION_GET(NUMBER, amount_skb_data)
+#define MODOPS_SKB_DATA_SIZE   OPTION_GET(NUMBER, skb_data_size)
+
+struct sk_buff_data {
+	unsigned char data[MODOPS_SKB_DATA_SIZE];
+	unsigned int links;
+};
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
-POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE], MODOPS_AMOUNT_SKB_BUFF);
+POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
 
-static unsigned char * net_buff_alloc(void) {
-	ipl_t sp;
-	unsigned char *buff;
-
-	sp = ipl_save();
-	buff = pool_alloc(&net_buff_pool);
-	ipl_restore(sp);
-
-	return buff;
+unsigned int skb_max_size(void) {
+	return member_sizeof(struct sk_buff_data, data);
 }
 
-static void net_buff_free(unsigned char *buff) {
-	ipl_t sp;
+unsigned int skb_avail(struct sk_buff *skb) {
+	return skb_max_size() - skb->len;
+}
 
-	assert(buff != NULL);
+struct sk_buff_data * skb_data_alloc(void) {
+	ipl_t sp;
+	struct sk_buff_data *skb_data;
 
 	sp = ipl_save();
-	pool_free(&net_buff_pool, buff);
+	{
+		skb_data = (struct sk_buff_data *)pool_alloc(&skb_data_pool);
+	}
+	ipl_restore(sp);
+
+	if (skb_data == NULL) {
+		printk("skb_data_alloc: error: no memory\n");
+		return NULL; /* error: no memory */
+	}
+
+	skb_data->links = 1;
+
+	return skb_data;
+}
+
+struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
+	ipl_t sp;
+
+	assert(skb_data != NULL);
+
+	sp = ipl_save();
+	{
+		++skb_data->links;
+	}
+	ipl_restore(sp);
+
+	return skb_data; /* cloned */
+}
+
+void skb_data_free(struct sk_buff_data *skb_data) {
+	ipl_t sp;
+
+	assert(skb_data != NULL);
+
+	sp = ipl_save();
+	{
+		if (--skb_data->links == 0) {
+			pool_free(&skb_data_pool, skb_data);
+		}
+	}
 	ipl_restore(sp);
 }
 
-struct sk_buff * skb_alloc(unsigned int size) {
+struct sk_buff * skb_wrap(unsigned int size,
+		struct sk_buff_data *skb_data) {
 	ipl_t sp;
 	struct sk_buff *skb;
-	unsigned char *head;
 
-	if ((size == 0) || (size > MODOPS_SKB_BUFF_SIZE)) {
-		printk("skb_alloc: error: size is 0 or too big\n");
-		return NULL;
-	}
+	assert(size != 0);
+	assert(skb_data != NULL);
 
-	head = net_buff_alloc();
-	if (head == NULL) {
-		printk("skb_alloc: error: net_buff_alloc return NULL\n");
-		return NULL;
+	if (size > MODOPS_SKB_DATA_SIZE) {
+		printk("skb_wrap: error: size is too big\n");
+		return NULL; /* error: invalid argument */
 	}
 
 	sp = ipl_save();
-	skb = (struct sk_buff *)pool_alloc(&skb_pool);
+	{
+		skb = (struct sk_buff *)pool_alloc(&skb_pool);
+	}
 	ipl_restore(sp);
 
 	if (skb == NULL) {
-		net_buff_free(head);
-		printk("skb_alloc: error: can't alloc skb structure\n");
-		return NULL;
+		printk("skb_wrap: error: no memory\n");
+		return NULL; /* error: no memory */
 	}
 
-	memset(skb, 0, sizeof *skb);
-	skb->head = head;
 	INIT_LIST_HEAD((struct list_head *)skb);
-	skb->mac.raw = skb->head + SK_BUF_EXTRA_HEADROOM;
-	/* Really skb->nh.raw (as a pointer) is also defined now,
-	 * because everything supports only Ethernet.
-	 * Does NULL pointer give us something more reasonable?
-	 */
+	skb->sk = NULL;
+	skb->dev = NULL;
 	skb->len = size;
+	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
+	skb->data = skb_data;
+	skb->p_data = &skb_data->data[0];
+	skb->p_data_end = &skb_data->data[size];
+
+	/* TODO remove this */
+	skb->mac.raw = skb->p_data;
+
+	return skb;
+}
+
+struct sk_buff * skb_alloc(unsigned int size) {
+	struct sk_buff *skb;
+	struct sk_buff_data *skb_data;
+
+	skb_data = skb_data_alloc();
+	if (skb_data == NULL) {
+		return NULL; /* error: no memory */
+	}
+
+	skb = skb_wrap(size, skb_data);
+	if (skb == NULL) {
+		skb_data_free(skb_data);
+		return NULL; /* error: no memory */
+	}
 
 	return skb;
 }
@@ -90,89 +149,96 @@ void skb_free(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 
-	net_buff_free(skb->head);
+	skb_data_free(skb->data);
 
 	sp = ipl_save();
-
-	if ((skb->lnk.prev != NULL) && (skb->lnk.next != NULL)) {
+	{
+		assert((skb->lnk.prev != NULL) && (skb->lnk.next != NULL));
 		list_del((struct list_head *)skb);
+		pool_free(&skb_pool, skb);
 	}
-	pool_free(&skb_pool, skb);
-
 	ipl_restore(sp);
 }
 
-static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
-	assert((to->mac.raw != NULL) && (from->mac.raw != NULL));
-	memcpy(to->mac.raw, from->mac.raw, from->len);
+static void skb_copy_ref(struct sk_buff *to,
+		const struct sk_buff *from) {
+	assert((to != NULL) && (to->data != NULL)
+			&& (from != NULL) && (from->data != NULL));
 
-	to->len = from->len;
-
-	/*fix data references during copy net_pack*/
+	to->sk = from->sk;
+	to->dev = from->dev;
+	if (from->mac.raw != NULL) {
+		to->mac.raw = &to->data->data[0] + (from->mac.raw
+					- &from->data->data[0]);
+	}
 	if (from->nh.raw != NULL) {
-		to->nh.raw = to->mac.raw + (from->nh.raw - from->mac.raw);
+		to->nh.raw = &to->data->data[0] + (from->nh.raw
+					- &from->data->data[0]);
 	}
 	if (from->h.raw != NULL) {
-		to->h.raw = to->mac.raw + (from->h.raw - from->mac.raw);
+		to->h.raw = &to->data->data[0] + (from->h.raw
+					- &from->data->data[0]);
 	}
 	if (from->p_data != NULL) {
-		to->p_data = to->mac.raw + (from->p_data - from->mac.raw);
+		to->p_data = &to->data->data[0] + (from->p_data
+					- &from->data->data[0]);
 	}
 	if (from->p_data_end != NULL) {
-		to->p_data_end = to->mac.raw + (from->p_data_end - from->mac.raw);
+		to->p_data_end = &to->data->data[0] + (from->p_data_end
+					- &from->data->data[0]);
 	}
 }
 
-struct sk_buff * skb_share(struct sk_buff *skb, int share) {
-	/* TODO */
-	struct sk_buff *shared;
+static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
+	assert((to != NULL) && (to->data != NULL)
+			&& (from != NULL) && (from->data != NULL)
+			&& (to->len == from->len));
+	memcpy(&to->data->data[0], &from->data->data[0], from->len);
+}
+
+struct sk_buff * skb_copy(struct sk_buff *skb) {
+	struct sk_buff *copied;
 
 	assert(skb != NULL);
 
-	shared = skb_alloc(skb->len);
-	if (shared == NULL) {
-		return NULL;
+	copied = skb_alloc(skb->len);
+	if (copied == NULL) {
+		return NULL; /* error: no memory */
 	}
 
-	shared->sk = skb->sk;
-	shared->dev = skb->dev;
-	skb_copy_data(shared, skb);
+	skb_copy_ref(copied, skb);
+	skb_copy_data(copied, skb);
 
-	return shared;
+	return copied;
 }
 
-struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom) {
-	int free_headroom = skb->mac.raw - skb->head;
-	int free_tailroom = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (free_headroom + skb->len);
-	int free_space = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (skb->len + headroom + tailroom);
+struct sk_buff * skb_clone(struct sk_buff *skb) {
+	struct sk_buff *cloned;
+	struct sk_buff_data *cloned_data;
 
-		/* Stupid situations during shrink */
-	assert(((long)(-headroom)) < ((long)skb->len + (long)tailroom));
+	assert(skb != NULL);
 
-	if (likely((headroom <= free_headroom) && (tailroom <= free_tailroom))) {
-		/* Simplest case, do nothing */
-		return skb;
-	} else if (free_space >= 0) {
-		/* We still can fit reserved buffer */
-		struct sk_buff skb_fields_save = *skb;
-		skb->mac.raw = skb->head + (free_space / 2);	/* Be fair to the tail and head */
-		skb_copy_data(skb, &skb_fields_save);
-		return skb;
-	} else {
-		/* There is no way in current implementaion to give more than
-		 * we have space in pool. You should use sk_buff_head somehow
-		 */
-		return NULL;
+	cloned_data = skb_data_clone(skb->data);
+	if (cloned_data == NULL) {
+		return NULL; /* error: no memory */
 	}
+
+	cloned = skb_wrap(skb->len, cloned_data);
+	if (cloned == NULL) {
+		skb_data_free(cloned_data);
+		return NULL; /* error: no memory */
+	}
+
+	skb_copy_ref(cloned, skb);
+
+	return cloned;
 }
 
-void skb_shifthead(struct sk_buff *skb, int headshift) {
-	skb->mac.raw -= headshift;
-	if(likely(skb->h.raw))
-		skb->h.raw -= headshift;
-	if(likely(skb->nh.raw))
-		skb->nh.raw -= headshift;
-	assert(skb->head <= skb->mac.raw);
-	assert((int)skb->len >= (-headshift));
-	skb->len += headshift;
+void skb_rshift(struct sk_buff *skb, unsigned int count) {
+	assert(skb != NULL);
+	assert(skb->data != NULL);
+	assert(count <= skb_avail(skb));
+	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
+	skb->len += count;
+	skb->p_data_end += count;
 }

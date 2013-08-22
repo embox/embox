@@ -298,7 +298,7 @@ static int greth_init(void) {
 	char hw_addr[] = {0x1,0x2,0x3,0x4,0x5,0x6};
 
 
-	nic = etherdev_alloc();
+	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}

@@ -10,6 +10,8 @@
 #include <kernel/thread/sync/barrier.h>
 #include <kernel/thread.h>
 
+#include <err.h>
+
 static struct thread *low, *high;
 static barrier_t b;
 
@@ -44,8 +46,13 @@ static int setup(void) {
 	sched_priority_t l = 200, h = 210;
 
 	barrier_init(&b, 2);
-	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));
-	test_assert_zero(thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
+
+	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
+	test_assert_zero(err(low));
+
+	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
+	test_assert_zero(err(high));
+
 	test_assert_zero(thread_set_priority(low, l));
 	test_assert_zero(thread_set_priority(high, h));
 

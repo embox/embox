@@ -10,3 +10,11 @@ module core {
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/samba MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source "../../../../samba/lib/libsmbclient.a"
 }
+
+module smbclient {
+	depends core
+
+	@Rule(script="true")
+	source "order.mk"
+	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
+}

@@ -11,12 +11,22 @@
 #include <util/indexator.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-#include <prom/prom_printf.h>
+
 #include <drivers/pci/pci.h>
 
 #define PCI_SPACE_BASE  OPTION_GET(NUMBER, pci_space_base)
 #define PCI_SPACE_SIZE  OPTION_GET(NUMBER, pci_space_size)
 #define PCI_WINDOW_SIZE OPTION_GET(NUMBER, pci_window_size)
+
+
+#define DEBUG_LOG
+#ifdef DEBUG_LOG
+#include <prom/prom_printf.h>
+#define dprintf(...) prom_printf(__VA_ARGS__)
+#else
+#define dprintf(...) do {} while (0)
+#endif
+
 
 EMBOX_UNIT_INIT(pci_bios_init);
 
@@ -62,15 +72,11 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 		/* if no bar available */
 		if (bar == 0)
 			continue;
-		/* TODO fix check the pci standard */
-		if(bar & 0x1F) {
-			continue;
-		}
 		length = 1 + ~(bar & 0xFFFFFFF0);
 
 		window = space_alloc(&pci_allocator, length, length);
 		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t)window);
-		prom_printf("pci bus %d fn = %d bar_num %d bar = 0x%X win = 0x%X len = 0x%X\n", busn, devfn, bar_num, bar, (uint32_t)window, (uint32_t)length);
+		dprintf("pci bus %d fn = %d bar_num %d bar = 0x%X win = 0x%X len = 0x%X\n", busn, devfn, bar_num, bar, (uint32_t)window, (uint32_t)length);
 	}
 	return 0;
 }
@@ -89,14 +95,18 @@ static int pci_bridge_configure(int busn, int devfn) {
 	 * secondary = newbusn
 	 * subordinate = 0xFF
 	 */
+
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
 			(busn) | (newbusn << 8) | (0xFF << 16));
-	prom_printf("\nbridge start configure busn %d newbus %d\n*******\n", busn, newbusn);
+
+	dprintf("\nbridge start configure busn %d newbus %d\n*******\n", busn, newbusn);
+
 	pci_bus_configure(newbusn);
 	subord = index_find(&bus_indexator, INDEX_ALLOC_MIN) - 1;
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
 			(busn) | (newbusn << 8) | (subord << 16));
-	prom_printf("\nbridge start configure subordinate %d\n*******\n", subord);
+
+	dprintf("\nbridge start configure subordinate %d\n*******\n", subord);
 
 	/* align space at 1Mb and check the difference */
 	space_end = space_alloc(&pci_allocator, 0, PCI_WINDOW_SIZE);
@@ -110,13 +120,13 @@ static int pci_bridge_configure(int busn, int devfn) {
 
 	return 0;
 }
-
 extern uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) ;
 static void pci_bus_configure(uint32_t busn) {
 	uint32_t  devfn, vendor_reg;
 	uint8_t hdr_type, is_multi = 0;
 
 	for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
+
 		/* Devices are required to implement function 0, so if
 		 * it's missing then there is no device here. */
 		if (PCI_FUNC(devfn) && !is_multi) {

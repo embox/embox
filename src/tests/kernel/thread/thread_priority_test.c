@@ -13,6 +13,8 @@
 #include <kernel/time/ktime.h>
 #include <kernel/task.h>
 
+#include <err.h>
+
 EMBOX_TEST_SUITE("test for different priority threads");
 
 #define THREADS_QUANTITY  0x100
@@ -25,9 +27,9 @@ static void *thread_run(void *arg) {
 TEST_CASE("Create 256 threads with different priority") {
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
 		struct thread *t;
-		test_assert_zero(thread_create(&t,
-				THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
-				thread_run, (void *) i));
+		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
+				thread_run, (void *) i);
+		test_assert_zero(err(t));
 		task_add_thread(task_kernel_task(), t);
 		test_assert_zero(thread_set_priority(t, i));
 		test_assert_zero(thread_detach(t));

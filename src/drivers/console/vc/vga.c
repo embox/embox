@@ -2,21 +2,34 @@
  * @file
  * @brief
  *
- * @date 05.02.13
- * @author Ilia Vaprol
+ * @author  Anton Kozlov
+ * @date    13.08.2013
  */
 
-#include <drivers/diag.h>
-#include <asm/io.h>
-#include <drivers/video/vga.h>
-#include <drivers/iodev.h>
-#include <drivers/iodev_diag.h>
-#include <drivers/video_term.h>
-#include <util/member.h>
 #include <string.h>
+#include <asm/io.h>
+#include <drivers/diag.h>
+#include <drivers/video/vga.h>
+#include <drivers/console/vc_vga.h>
+#include <util/member.h>
 
 /* The video memory address. */
 #define VIDEO          0xB8000
+
+typedef struct vchar {
+	char c;
+	char a;
+}__attribute__((packed)) vchar_t;
+
+struct diag_vterm_data {
+	char attr;
+	vchar_t *video;
+};
+
+struct vga_vterm_video {
+	struct vterm_video video;
+	struct diag_vterm_data data;
+};
 
 static void diag_vterm_init(struct vterm_video *t) {
 	/**
@@ -66,7 +79,7 @@ static void diag_vterm_copy_rows(struct vterm_video *t,
 			sizeof(data->video[0]) * nrows * t->width);
 }
 
-static const struct vterm_video_ops diag_tty_ops = {
+static const struct vterm_video_ops vc_vga_ops = {
 		.init = &diag_vterm_init,
 		.cursor = &diag_vterm_cursor,
 		.putc = &diag_vterm_putc,
@@ -74,23 +87,37 @@ static const struct vterm_video_ops diag_tty_ops = {
 		.copy_rows = &diag_vterm_copy_rows
 };
 
-static int iodev_diag_init(void) {
-	return 0;
-}
-
-static const struct iodev_ops iodev_diag_ops_struct = {
-	.init = &iodev_diag_init,
-	.getc = NULL,//&diag_getc,
-	.putc = &diag_putc,
-	.kbhit = NULL //&diag_kbhit,
-};
-
-const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;
-struct vga_vterm_video diag_vga = {
-		.video = {
-				.ops = &diag_tty_ops,
-				.width = 80,
-				.height = 24
-		},
+static struct vga_vterm_video vc_vga_video = {
 		.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
 };
+
+struct vterm_video *vc_vga_init(void) {
+	vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
+
+	return &vc_vga_video.video;
+}
+
+struct vc_video_diag {
+	struct diag diag;
+	struct vterm_video *video;
+};
+
+static int vc_diag_init(const struct diag *diag) {
+	return vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
+}
+
+static void vc_diag_putc(const struct diag *diag, char ch) {
+	vterm_video_putc(&vc_vga_video.video, ch);
+}
+
+const struct diag_ops vc_video_diag_ops = {
+	.init = vc_diag_init,
+	.putc = vc_diag_putc,
+};
+const struct vc_video_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
+	.diag = {
+		.ops = &vc_video_diag_ops,
+	},
+	.video = &vc_vga_video.video,
+};
+

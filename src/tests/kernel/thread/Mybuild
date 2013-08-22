@@ -9,13 +9,6 @@ module event_test {
 	depends embox.framework.LibFramework
 }
 
-module state_test {
-	source "state_test.c"
-
-	depends embox.kernel.thread.core
-	depends embox.framework.LibFramework
-}
-
 module thread_test {
 	source "thread_test.c"
 

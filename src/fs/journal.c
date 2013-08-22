@@ -11,25 +11,36 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <mem/objalloc.h>
-
+#include <mem/misc/slab.h>
 #include <fs/journal.h>
 #include <fs/bcache.h>
+
+/**
+ * Slab allocator is used here because we don't want to preallocate a memory
+ * for journal's internal structures because it is needed only if some device mounted with
+ * journaling file system.
+ */
+CACHE_DEF(journal_cache, journal_t, 0);
+CACHE_DEF(journal_block_cache, journal_block_t, 0);
+CACHE_DEF(trans_cache, transaction_t, 0);
+CACHE_DEF(handle_cache, journal_handle_t, 0);
 
 journal_t *journal_create(journal_fs_specific_t *spec) {
     journal_t *jp;
 
-    if (!(jp = malloc(sizeof(journal_t)))) {
+    if (!(jp = cache_alloc(&journal_cache))) {
         return NULL;
     }
 
-    memset(jp, 0, sizeof(*jp));
+    memset(jp, 0, sizeof(journal_t));
     jp->j_fs_specific = *spec;
 
     return jp;
 }
 
 int journal_delete(journal_t *jp) {
+	assert(jp);
+
 	/* Force commit and checkpoint */
 	if (jp->j_fs_specific.commit(jp) != 0
 			|| journal_checkpoint_transactions(jp) != 0) {
@@ -44,7 +55,7 @@ int journal_delete(journal_t *jp) {
 	jp->j_transaction_sequence = 1;
 	jp->j_fs_specific.update(jp);
 
-	free(jp);
+	cache_free(&journal_cache, jp);
 
 	return 0;
 }
@@ -52,11 +63,14 @@ int journal_delete(journal_t *jp) {
 journal_handle_t *journal_start(journal_t *jp, size_t nblocks) {
 	journal_handle_t *h;
 
+	assert(jp);
+	assert(jp->j_running_transaction);
+
 	if (jp->j_fs_specific.trans_freespace(jp, nblocks) < 0) {
 		return NULL;
 	}
 
-    if ((h = malloc(sizeof(journal_handle_t))) == NULL) {
+    if ((h = cache_alloc(&handle_cache)) == NULL) {
     	return NULL;
     }
 
@@ -76,6 +90,9 @@ int journal_stop(journal_handle_t *handle) {
     journal_t *jp;
     int res = 0;
 
+    assert(handle);
+    assert(handle->h_transaction);
+
     t  = handle->h_transaction;
     jp = t->t_journal;
 
@@ -85,7 +102,7 @@ int journal_stop(journal_handle_t *handle) {
     /* XXX See the comment in the header to journal_dirty_block.
      *  jp->j_free += handle->h_buffer_credits;
      */
-    free(handle);
+    cache_free(&handle_cache, handle);
 
     return res;
 }
@@ -95,6 +112,8 @@ int journal_checkpoint_transactions(journal_t *jp) {
     journal_block_t *b, *bnext;
     struct buffer_head *bh;
     int blkcount, i;
+
+    assert(jp);
 
     blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
 
@@ -122,6 +141,8 @@ int journal_checkpoint_transactions(journal_t *jp) {
     	}
 
     	jp->j_tail += t->t_log_blocks;
+    	journal_wrap(jp, jp->j_tail);
+
     	jp->j_tail_sequence++;
 
     	/**
@@ -131,10 +152,6 @@ int journal_checkpoint_transactions(journal_t *jp) {
     	 */
     	jp->j_free += t->t_outstanding_credits;
     	//jp->j_free += t->t_log_blocks;
-
-    	if (jp->j_tail > jp->j_last) {
-    		jp->j_tail = jp->j_first;
-    	}
 
     	dlist_del(&t->t_next);
     	journal_free_trans(jp, t);
@@ -150,6 +167,8 @@ int journal_dirty_block(journal_t *jp, journal_block_t *block) {
 	int i, blkcount;
 	transaction_t *t = jp->j_running_transaction;
 
+	assert(t);
+	assert(block);
 	assert(t->t_nr_buffers < t->t_outstanding_credits);
 
 	/* See the comment in the header to journal_dirty_block */
@@ -199,15 +218,18 @@ int journal_dirty_block(journal_t *jp, journal_block_t *block) {
 journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     journal_block_t *jb;
 
-    if (!(jb = malloc(sizeof(journal_block_t)))) {
+    assert(jp);
+
+    if (!(jb = cache_alloc(&journal_block_cache))) {
     	return NULL;
     }
 
+    /* TODO use kmalloc instead */
     if (!(jb->data = malloc(jp->j_blocksize))) {
-		free(jb);
+    	cache_free(&journal_block_cache, jb);
 		return NULL;
     }
-    memset(jb, 0, sizeof jb);
+    memset(jb, 0, sizeof(journal_block_t));
     dlist_head_init(&jb->b_next);
     jb->blocknr = nr;
 
@@ -215,14 +237,18 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
 }
 
 void journal_free_block(journal_t *jp, journal_block_t *jb) {
+	assert(jp && jb);
+
 	free(jb->data);
-	free(jb);
+	cache_free(&journal_block_cache, jb);
 }
 
 transaction_t *journal_new_trans(journal_t *jp) {
     transaction_t *t;
 
-    if (!(t = malloc(sizeof(transaction_t)))) {
+    assert(jp);
+
+    if (!(t = cache_alloc(&trans_cache))) {
     	return NULL;
     }
 
@@ -240,26 +266,32 @@ transaction_t *journal_new_trans(journal_t *jp) {
 void journal_free_trans(journal_t *jp, transaction_t *t) {
 	journal_block_t *b, *bnext;
 
+	assert(jp);
+	assert(t);
+
 	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
 		journal_free_block(jp, b);
 	}
-	free(t);
+	cache_free(&trans_cache, t);
 }
 
 int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt) {
 	journal_block_t *b, *bnext;
 	int ret = 0;
 
+	assert(jp);
+
 	/* XXX Increase speed up of below writing on hd by grouping blocks */
 	dlist_foreach_entry(b, bnext, blocks, b_next) {
-		assert(jp->j_head < jp->j_maxlen);
-		ret += journal_write_block(jp, b->data, 1, jp->j_fs_specific.bmap(jp, jp->j_head++));
+		ret += journal_write_block(jp, b->data, 1,
+				jp->j_fs_specific.bmap(jp, journal_wrap(jp, jp->j_head++)));
 	}
 
 	return ret;
 }
 
 int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {
+	assert(jp);
 	return jp->j_dev->driver->write(jp->j_dev, data,
     		cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
 }

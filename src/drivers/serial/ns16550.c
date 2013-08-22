@@ -40,30 +40,27 @@ struct com {
         UART_REG(osc_12m_sel);  /* 13*/
 };
 
+/* FIXME volatile? */
 #define COM3_RBR (((struct com *) COM3_BASE)->rbr)
 #define COM3_LSR (((struct com *) COM3_BASE)->lsr)
 
-char diag_getc(void) {
-
-	while ((COM3_LSR & UART_LSR_DR) == 0);
-
-	return COM3_RBR;
-
-}
-
-void diag_putc(char ch) {
-	unsigned char *state = &COM3_LSR;
-
-	state = state;
-
+static void ns16550_diag_putc(const struct diag *diag, char ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);
 
 	COM3_RBR = ch;
 }
 
-int diag_kbhit(void) {
-	return 0; /* TODO */
+static char ns16550_diag_getc(const struct diag *diag) {
+	return COM3_RBR;
+
 }
 
-void diag_init(void) {
+static int ns16550_diag_kbhit(const struct diag *diag) {
+	return COM3_LSR & UART_LSR_DR;
 }
+
+DIAG_OPS_DECLARE(
+		.putc = ns16550_diag_putc,
+		.getc = ns16550_diag_getc,
+		.kbhit = ns16550_diag_kbhit,
+);

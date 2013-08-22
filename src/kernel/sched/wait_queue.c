@@ -67,21 +67,27 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 	return result;
 }
 
+
 void wait_queue_notify(struct wait_queue *wait_queue) {
 	struct wait_link *link, *next;
-	struct thread *thread = NULL;
+	struct thread *t;
 
 	ipl_t ipl = ipl_save();
 	{
+		if (dlist_empty(&wait_queue->list)) {
+			goto out;
+		}
+		t = dlist_entry(wait_queue->list.next, struct wait_link, link)->thread;
+
 		dlist_foreach_entry(link, next, &wait_queue->list, link) {
-			if (thread == NULL ||
-					thread_priority_get(link->thread) > thread_priority_get(thread)) {
-				thread = link->thread;
+			if (thread_priority_get(link->thread) > thread_priority_get(t)) {
+				t = link->thread;
 			}
 		}
 
-		sched_thread_notify(thread, ENOERR);
+		sched_thread_notify(t, ENOERR);
 	}
+out:
 	ipl_restore(ipl);
 }
 

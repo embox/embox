@@ -36,6 +36,7 @@
 #include <kernel/panic.h>
 
 #include <hal/context.h>
+#include <err.h>
 
 EMBOX_UNIT_INIT(thread_core_init);
 
@@ -87,29 +88,22 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	/* NOTREACHED */
 }
 
-int thread_create(struct thread **p_thread, unsigned int flags,
-		void *(*run)(void *), void *arg) {
+struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
 	struct thread *t;
-	int res = ENOERR;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
 			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
-		return -EINVAL;
+		return err_ptr(EINVAL);
 	}
 
 	if((flags & THREAD_FLAG_NOTASK) && !(flags & THREAD_FLAG_SUSPENDED)) {
-		return -EINVAL;
-	}
-
-	/* if we need thread handler we check place for result */
-	if ((NULL == p_thread) && !(flags & THREAD_FLAG_DETACHED)) {
-		return -EINVAL;
+		return err_ptr(EINVAL);
 	}
 
 	/* check correct executive function */
 	if (!run) {
-		return -EINVAL;
+		return err_ptr(EINVAL);
 	}
 
 	/* below we will work with thread's instances and therefore we need to
@@ -120,7 +114,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	{
 		/* allocate memory */
 		if (!(t = thread_alloc())) {
-			res = -ENOMEM;
+			t = err_ptr(ENOMEM);
 			goto out;
 		}
 
@@ -143,11 +137,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 out:
 	sched_unlock();
 
-	if (!(flags & THREAD_FLAG_DETACHED)) {
-		*p_thread = t;
-	}
-
-	return res;
+	return t;
 }
 
 void thread_init(struct thread *t, unsigned int flags,

@@ -128,7 +128,7 @@ POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
 POOL_DEF(ext2_file_pool, struct ext2_file_info,
 		OPTION_GET(NUMBER,inode_quantity));
 
-#define EXT_NAME "ext2"
+#define FS_NAME "ext2"
 
 /* TODO link counter */
 
@@ -573,7 +573,7 @@ static int ext2fs_init(void * par) {
 };
 
 static struct fs_driver ext2fs_driver = {
-	.name = EXT_NAME,
+	.name = FS_NAME,
 	.file_op = &ext2_fop,
 	.fsop = &ext2_fsop,
 };
@@ -870,7 +870,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 		return -ENOTEMPTY;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create(EXT_NAME))) {
+	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
 		rc = ENOMEM;
 		goto error;
 	}

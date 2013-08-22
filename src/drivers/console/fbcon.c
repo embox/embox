@@ -10,7 +10,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <drivers/iodev.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
@@ -330,7 +329,8 @@ static int make_task(int i, char innewtask) {
 	fbcon->vc_this.callbacks = &thiscbs;
 	fbcon->fbcon_disdata = &fbcon_displ_data;
 
-	fbcon->vterm_video.ops = &fbcon_vterm_video_ops;
+	vterm_video_init(&fbcon->vterm_video, &fbcon_vterm_video_ops,
+			0, 0);
 
 	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
 
@@ -347,28 +347,12 @@ static int make_task(int i, char innewtask) {
 	return 0;
 }
 
-static int iodev_stdio_init(void) {
-	return 0;
-}
-
-static void iodev_stdio_putc(char ch) {
-	vterm_putc(&fbcons[0].vterm, ch);
-}
-
-const struct iodev_ops iodev_stdio_ops = {
-	.init = iodev_stdio_init,
-	.getc = NULL,//&diag_getc,
-	.putc = iodev_stdio_putc,
-	.kbhit = NULL //&diag_kbhit,
-};
-
-
 static int fbcon_init(void) {
 
 	make_task(0, true);
 	make_task(1, true);
 
-	iodev_setup(&iodev_stdio_ops);
+	/*iodev_setup(&iodev_stdio_ops);*/
 
 	return 0;
 }

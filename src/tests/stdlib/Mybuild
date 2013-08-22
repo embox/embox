@@ -28,5 +28,5 @@ module setjmp_test {
 	source "setjmp_test.c"
 
 	depends embox.arch.libarch
-	depends embox.framework.LibFramework
+	depends embox.framework.test
 }

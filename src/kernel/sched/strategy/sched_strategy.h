@@ -6,8 +6,8 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_SCHED_STRATEGY_SIMPLE_QUEUE_H_
-#define KERNEL_THREAD_SCHED_STRATEGY_SIMPLE_QUEUE_H_
+#ifndef KERNEL_THREAD_SCHED_STRATEGY_H_
+#define KERNEL_THREAD_SCHED_STRATEGY_H_
 
 #include <kernel/sched/affinity.h>
 #include <kernel/sched/runq.h>
@@ -25,4 +25,4 @@ struct sched_attr {
 	thread_priority_t thread_priority;
 };
 
-#endif /* KERNEL_THREAD_SCHED_STRATEGY_SIMPLE_QUEUE_H_ */
+#endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */

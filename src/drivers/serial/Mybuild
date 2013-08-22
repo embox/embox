@@ -6,45 +6,89 @@ package embox.driver.serial
 
 abstract module serial { }
 
-module apbuart extends serial {
+@DefaultImpl(fsnode)
+abstract module fsnode_api { }
+
+module core {
+	option number uart_max_n = 4
+
+	source "core.c"
+
+	depends fsnode_api
+	depends embox.driver.tty.tty
+	@NoRuntime depends embox.util.indexator
+}
+
+module fsnode extends fsnode_api {
+	source "fsnode.c"
+	@NoRuntime depends embox.driver.char_dev
+	depends embox.fs.driver.devfs
+}
+
+module fsnode_none extends fsnode_api {
+	source "fsnode_none.c"
+}
+
+module diag {
+	source "diag.c"
+}
+
+module apbuart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number apbuart_base=0x80000100
 	option number irq_num=2
 
 	source "apbuart.c"
 
-	depends embox.lib.LibC
-	depends embox.driver.ambapp_api
-	depends embox.driver.virtual.uart
+	@NoRuntime depends embox.driver.ambapp_api
+
+	depends core
+	depends diag
 }
 
-module at91_uart extends serial {
+module at91_uart extends embox.driver.diag.diag_api {
 	option number baud_rate
 
 	source "at91_uart.c"
 }
 
-module serial_port extends serial {
+module i8250 extends serial {
 	option number baud_rate
 
 	source "8250.c"
 
+	depends core
+	depends diag
 	depends embox.util.LibUtil
-	depends embox.driver.virtual.uart
 }
 
-module xuartlite extends serial {
+module xuartlite extends embox.driver.diag.diag_api {
 	source "xuartlite.c"
 
 	option number xuartlite_base
 	option number irq_num
 }
 
-module stm32_usart extends serial {
+module stm32_usart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	/*option boolean hw_flow = false*/
 
 	source "stm32_usart.c"
 
 	depends embox.driver.gpio.stm32
+	depends core
+	depends diag
 }
+
+module msp430usci extends embox.driver.diag.diag_api {
+	source "msp430usci.c"
+}
+
+module pic32mx_uart extends embox.driver.diag.diag_api {
+	source "pic32mx_uart.c"
+}
+
+module ns16550 extends embox.driver.diag.diag_api {
+	source "ns16550.c"
+}
+

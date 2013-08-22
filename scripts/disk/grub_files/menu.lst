@@ -1,0 +1,7 @@
+default 0
+timeout 0
+hiddenmenu
+
+# Embox
+title Embox
+kernel /embox

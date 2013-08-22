@@ -82,7 +82,6 @@
 
 #define DIVISOR(baud) (115200 / baud)
 
-
 #define UART_IER_RX_ENABLE  0x1
 
 #endif /* SERIAL_8250_H_ */

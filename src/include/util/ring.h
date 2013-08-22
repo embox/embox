@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Building block for constructin ring buffers.
+ * @brief Building block for constructing ring buffers.
  *
  * @date 19.03.13
  * @author Eldar Abusalimov
@@ -26,7 +26,7 @@
  * One element is always reserved to distinguish between empty and full state,
  * see #ring_empty() and #ring_full().
  *
- * Performing real opeations on data (typically, a #memcpy()) is up to the
+ * Performing real operations on data (typically, a #memcpy()) is up to the
  * client code, which manages memory and provides proper locking policy.
  */
 struct ring {

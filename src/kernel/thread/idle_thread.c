@@ -7,6 +7,7 @@
 
 #include <kernel/task.h>
 #include <kernel/thread.h>
+#include <err.h>
 #include <kernel/thread/thread_alloc.h>
 #include <hal/arch.h> /*only for arch_idle */
 
@@ -27,20 +28,18 @@ static void *idle_run(void *arg) {
 
 struct thread *idle_thread_create(void) {
 	struct thread *t;
-	sched_priority_t prior;
 
-	if (!(t = thread_alloc())) {
+	t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, idle_run,
+			NULL);
+
+	if(err(t)) {
 		return NULL;
 	}
 
-
-	thread_init(t, THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, idle_run, NULL);
 	t->task = task_kernel_task();
 	t->task->main_thread = t;
 
-	prior = sched_priority_full(t->task->priority, THREAD_PRIORITY_MIN);
-
-	thread_priority_set(t, prior);
+	thread_priority_init(t, SCHED_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), t);
 

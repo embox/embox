@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <embox/unit.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <net/if.h>
@@ -28,8 +29,33 @@ EMBOX_UNIT_INIT(netdev_unit_init);
 POOL_DEF(netdev_pool, struct net_device, MODOPS_NETDEV_QUANTITY);
 struct hashtable *netdevs_table = NULL;
 
+static int netdev_init(struct net_device *dev, const char *name,
+		int (*setup)(struct net_device *), size_t priv_size) {
+	assert(dev != NULL);
+	assert(name != NULL);
+	assert(setup != NULL);
+
+	list_link_init(&dev->rx_lnk);
+	strcpy(&dev->name[0], name);
+	memset(&dev->stats, 0, sizeof dev->stats);
+	skb_queue_init(&dev->dev_queue);
+	skb_queue_init(&dev->tx_dev_queue);
+
+	if (priv_size != 0) {
+		dev->priv = malloc(priv_size);
+		if (dev->priv == NULL) {
+			return -ENOMEM;
+		}
+	}
+	else {
+		dev->priv = NULL;
+	}
+
+	return (*setup)(dev);
+}
+
 struct net_device * netdev_alloc(const char *name,
-		int (*setup)(struct net_device *)) {
+		int (*setup)(struct net_device *), size_t priv_size) {
 	int ret;
 	struct net_device *dev;
 
@@ -46,25 +72,13 @@ struct net_device * netdev_alloc(const char *name,
 		return NULL; /* error: no memory */
 	}
 
-	ret = netdev_init(dev, name, setup);
+	ret = netdev_init(dev, name, setup, priv_size);
 	if (ret != 0) {
-		pool_free(&netdev_pool, dev);
+		netdev_free(dev);
 		return NULL; /* error: see return code */
 	}
 
 	return dev;
-}
-
-int netdev_init(struct net_device *dev, const char *name,
-		int (*setup)(struct net_device *)) {
-
-	list_link_init(&dev->rx_lnk);
-	strcpy(&dev->name[0], name);
-	memset(&dev->stats, 0, sizeof dev->stats);
-	skb_queue_init(&dev->dev_queue);
-	skb_queue_init(&dev->tx_dev_queue);
-
-	return setup(dev);
 }
 
 void netdev_free(struct net_device *dev) {
@@ -72,6 +86,7 @@ void netdev_free(struct net_device *dev) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
 		skb_queue_purge(&dev->tx_dev_queue);
+		free(dev->priv);
 		pool_free(&netdev_pool, dev);
 	}
 }

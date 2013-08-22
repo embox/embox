@@ -21,6 +21,7 @@
 
 #include <util/dlist.h>
 #include <kernel/thread/types.h>
+#include <sys/types.h>
 
 #define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
 			NUMBER,thread_stack_size)
@@ -143,8 +144,7 @@ typedef __thread_id_t thread_id_t;
  * @retval -ENOMEM
  *   If the system lacked the necessary resources to create a new thread.
  */
-extern int thread_create(struct thread **p_thread, unsigned int flags,
-		void *(*run)(void *), void *arg);
+struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg);
 
 /**
  * This is a kernel internal function. It use only for initializing field of a

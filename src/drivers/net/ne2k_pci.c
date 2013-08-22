@@ -401,7 +401,7 @@ static int ne2k_init(struct pci_slot_dev *pci_dev) {
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	nic = etherdev_alloc();
+	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}

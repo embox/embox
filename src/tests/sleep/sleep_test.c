@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
+#include <pthread.h>
 
 EMBOX_TEST_SUITE("sleep suite");
 
@@ -44,20 +45,21 @@ static void * handler1(void* args) {
 }
 
 TEST_CASE("simple multi-threaded check") {
-	struct thread *t1, *t2, *t3;
+	pthread_t t1, t2, t3;
 
 	/* Start threads */
-	test_assert_zero(thread_create(&t1, 0, handler1, (void *) 1));
+
+	test_assert_zero(pthread_create(&t1, 0, handler1, (void *) 1));
 	test_assert_not_null(t1);
-	test_assert_zero(thread_create(&t2, 0, handler1, (void *) 2));
+	test_assert_zero(pthread_create(&t2, 0, handler1, (void *) 2));
 	test_assert_not_null(t2);
-	test_assert_zero(thread_create(&t3, 0, handler1, (void *) 3));
+	test_assert_zero(pthread_create(&t3, 0, handler1, (void *) 3));
 	test_assert_not_null(t3);
 
 	/* join thread */
-	test_assert_zero(thread_join(t1, NULL));
-	test_assert_zero(thread_join(t2, NULL));
-	test_assert_zero(thread_join(t3, NULL));
+	test_assert_zero(pthread_join(t1, NULL));
+	test_assert_zero(pthread_join(t2, NULL));
+	test_assert_zero(pthread_join(t3, NULL));
 
 	test_assert_emitted("123");
 }
@@ -74,15 +76,15 @@ static void * handler2(void* args) {
 
 TEST_CASE("sleep sort") {
 	uint32_t i;
-	struct thread *t[NUM_THREADS];
+	pthread_t t[NUM_THREADS];
 
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
-				thread_create(&t[i], 0, handler2, (void *) i));
+				pthread_create(&t[i], 0, handler2, (void *) i));
 		test_assert_not_null(t[i]);
 	}
 	for (i = 0; i < NUM_THREADS; i++) {
-		test_assert_zero(thread_join(t[i], NULL));
+		test_assert_zero(pthread_join(t[i], NULL));
 	}
 	for (i=0;i<10;++i);
 	test_assert_emitted("87654321");

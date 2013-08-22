@@ -158,8 +158,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	while(!list_empty((struct list_head *)buf)) {
 		memcpy(skb->mac.raw + ihlen + offset, tmp->mac.raw + ihlen, tmp->len - ihlen);
 		offset += tmp->len - ihlen;
-		list_del((struct list_head *)tmp);
-		skb_free(tmp);
+		skb_free(tmp); /* list_del(tmp) will done in skb_free */
 		tmp = buf->next_skbuff;
 	}
 
@@ -202,8 +201,7 @@ static void buf_delete(struct dgram_buf *buf) {
 
 	while(!list_empty((struct list_head *)buf)) {
 		tmp = buf->next_skbuff;
-		list_del((struct list_head*)tmp);
-		skb_free(tmp);
+		skb_free(tmp); /* list_del(tmp) will done in skb_free */
 	}
 
 	list_del(&buf->next_buf);

@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <string.h>
 #include <util/dlist.h>
 #include <sys/stat.h>
 #include <mem/misc/pool.h>
@@ -34,7 +35,7 @@ int tty_register(const char *name, void *dev, const struct kfile_operations *fil
 	item->file_ops = file_ops;
 	item->name = name;
 
-	dlist_add_next(dlist_head_init(&item->list) ,&tty_repo);
+	dlist_add_next(dlist_head_init(&item->list), &tty_repo);
 
 	return ENOERR;
 }

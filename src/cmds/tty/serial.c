@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 #include <drivers/tty_ng.h>
 #include <embox/cmd.h>
 #include <cmd/shell.h>
@@ -32,17 +32,17 @@ static void serial_make_active(struct tty_buf *tty) {
 
 	const char *ch_buf = clrscr;
 	while (*ch_buf != '\0') {
-		iodev_putc(*ch_buf++);
+		diag_putc(*ch_buf++);
 	}
 
 	if (cnt == BUF_SIZE) {
 		while (cnt --) {
-			iodev_putc(tty->out_buf[ps]);
+			diag_putc(tty->out_buf[ps]);
 			ps = (ps + 1) % BUF_SIZE;
 		}
 	} else {
 		for (size_t i = 0; i < ps; i++) {
-			iodev_putc(tty->out_buf[i]);
+			diag_putc(tty->out_buf[i]);
 		}
 	}
 	act_id = tty->id;
@@ -54,7 +54,7 @@ static void serial_make_inactive(struct tty_buf *tty) {
 
 static void serial_pc(struct tty_buf *tty, char ch) {
 	if (act_id == tty->id) {
-		iodev_putc(ch);
+		diag_putc(ch);
 	}
 
 	tty->out_buf[pos[tty->id]] = ch;

@@ -63,7 +63,6 @@ typedef void *cyg_io_handle_t;
 #define CYGNUM_JFFS2_GC_THREAD_STACK_SIZE_8192
 #define CYGNUM_JFFS2_GS_THREAD_TICKS 100
 #define CYGNUM_JFFS2_GS_THREAD_TICKS_100
-#define CYGOPT_FS_JFFS2_WRITE 1
 #define CYGOPT_FS_JFFS2_DEBUG 0
 #define CYGOPT_FS_JFFS2_DEBUG_0
 #define CONFIG_JFFS2_FS_DEBUG 0
@@ -90,12 +89,6 @@ static inline unsigned int full_name_hash(const unsigned char * name, unsigned i
 	}
 	return hash;
 }
-
-#ifdef CYGOPT_FS_JFFS2_WRITE
-#define jffs2_is_readonly(c) (0)
-#else
-#define jffs2_is_readonly(c) (1)
-#endif
 
 /* NAND flash not currently supported on eCos */
 #define jffs2_can_mark_obsolete(c) (1)
@@ -126,26 +119,26 @@ struct _inode {
 	time_t			i_atime;
 	time_t			i_mtime;
 	time_t			i_ctime;
-//	union {
-		unsigned short	i_rdev; // For devices only
-		struct _inode *	i_parent; // For directories only
-		off_t		i_size; // For files only
-//	};
+	//	union {
+	unsigned short	i_rdev; // For devices only
+	struct _inode *	i_parent; // For directories only
+	off_t		i_size; // For files only
+	//	};
 	struct super_block *	i_sb;
 
 	struct jffs2_inode_info	jffs2_i;
 
-        struct _inode *		i_cache_prev; // We need doubly-linked?
-        struct _inode *		i_cache_next;
+	struct _inode *		i_cache_prev; // We need doubly-linked?
+	struct _inode *		i_cache_next;
 };
 
 #define JFFS2_SB_INFO(sb) (&(sb)->jffs2_sb)
 #define OFNI_BS_2SFFJ(c)  ((struct super_block *) ( ((char *)c) - ((char *)(&((struct super_block *)NULL)->jffs2_sb)) ) )
 
 struct super_block {
-	struct jffs2_sb_info	jffs2_sb;
+	struct jffs2_sb_info jffs2_sb;
 	struct _inode *		s_root;
-        unsigned long		s_mount_count;
+    unsigned long		s_mount_count;
 	cyg_io_handle_t		s_dev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
@@ -242,5 +235,15 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
 #endif
 
 #define __init
+
+typedef struct jffs2_fs_info {
+	char mntto[PATH_MAX];
+	struct super_block jffs2_sb;
+} jffs2_fs_info_t;
+
+typedef struct jffs2_file_info {
+	uint32_t f_pointer;			/* current (BYTE) pointer */
+	struct _inode *_inode;
+} jffs2_file_info_t;
 
 #endif /* __JFFS2_OS_ECOS_H__ */

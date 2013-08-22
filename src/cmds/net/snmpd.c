@@ -92,7 +92,6 @@ static int exec(int argc, char **argv) {
 
 	printf("*SNMP agent started*\n");
 
-	//thread_create(&thread, 0, snmp_agent, NULL);
 	while (1) {
 		struct timeval timeout = {
 			.tv_sec = 1,

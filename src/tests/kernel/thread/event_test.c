@@ -11,6 +11,7 @@
 
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <err.h>
 #include <kernel/event.h>
 #include <kernel/time/ktime.h>
 
@@ -33,8 +34,10 @@ TEST_CASE("Create thread waiting event and then finish") {
 	struct thread *thread;
 
 	event_init(&event, "test_event");
-	test_assert_zero(
-				thread_create(&thread, 0, thread_run, &event));
+
+	thread = thread_create(0, thread_run, &event);
+
+	test_assert_zero(err(thread));
 
 	ksleep(100);
 

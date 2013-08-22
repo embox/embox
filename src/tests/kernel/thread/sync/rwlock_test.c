@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/thread.h>
+#include <err.h>
 
 static struct thread *low, *mid, *high;
 static rwlock_t r;
@@ -60,9 +61,15 @@ static int setup(void) {
 	sched_priority_t l = 200, m = 210, h = 220;
 
 	rwlock_init(&r);
-	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));
-	test_assert_zero(thread_create(&mid, THREAD_FLAG_SUSPENDED, mid_run, NULL));
-	test_assert_zero(thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
+
+	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
+	test_assert_zero(err(low));
+
+	mid = thread_create(THREAD_FLAG_SUSPENDED, mid_run, NULL);
+	test_assert_zero(err(mid));
+
+	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
+	test_assert_zero(err(high));
 
 	test_assert_zero(thread_set_priority(low, l));
 	test_assert_zero(thread_set_priority(mid, m));

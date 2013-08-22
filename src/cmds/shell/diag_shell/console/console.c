@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include <drivers/terminal.h>
-#include <drivers/iodev.h>
+#include <drivers/diag.h>
 
 #include "console.h"
 
@@ -80,7 +80,7 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
-	static SCREEN_IO view_io = { iodev_getc, iodev_putc };
+	static SCREEN_IO view_io = { diag_getc, diag_putc };
 	if (this == NULL || callback == NULL) {
 		return NULL;
 	}

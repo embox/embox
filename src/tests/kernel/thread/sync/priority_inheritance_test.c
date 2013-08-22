@@ -14,6 +14,7 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
+#include <err.h>
 #include <kernel/thread/sync/mutex.h>
 
 EMBOX_TEST_SUITE("Priority inheritance for mutex");
@@ -32,18 +33,21 @@ TEST_CASE("with inheritance") {
 
 	mutex_init(&mutex);
 
-	test_assert_zero(
-			thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, (void *) &mutex));
+	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, &mutex);
+	test_assert_zero(err(low));
+
 	test_assert_not_null(low);
 	test_assert_zero(thread_set_priority(low, l));
 
-	test_assert_zero(
-			thread_create(&mid, THREAD_FLAG_SUSPENDED, mid_run, NULL));
+	mid = thread_create(THREAD_FLAG_SUSPENDED, mid_run, &mutex);
+	test_assert_zero(err(mid));
+
 	test_assert_not_null(mid);
 	test_assert_zero(thread_set_priority(mid, m));
 
-	test_assert_zero(
-			thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, (void *) &mutex));
+	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, &mutex);
+	test_assert_zero(err(high));
+
 	test_assert_not_null(high);
 	test_assert_zero(thread_set_priority(high, h));
 

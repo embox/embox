@@ -52,5 +52,5 @@ fi
 sudo $QEMU $QEMU_KVM_ENABLE -kernel $IMAGE \
 	-net nic,model=$QEMU_NET_DRIVER,macaddr=AA:BB:CC:DD:EE:02 \
 	-net tap,name=tap0,script=start_script,downscript=stop_script \
-	-nographic -cdrom /image.iso $@
+	-nographic $@
 
