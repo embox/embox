@@ -74,5 +74,5 @@ echo -e "device (hd0) $IMG_DIR/$IMG_NAME\ngeometry (hd0) 40 16 63\nroot (hd0,0)\
 
 title "Done!"
 
-#rm -rf $LOG_FILE
+rm -rf $LOG_FILE
 exit 0
