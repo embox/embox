@@ -19,3 +19,9 @@ module passwd {
 
 	depends embox.compat.posix.passwd
 }
+
+module inttypes_test {
+	source "inttypes_test.c"
+
+	depends embox.lib.LibCInttypes
+}

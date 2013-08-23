@@ -10,12 +10,13 @@
 
 /* The <inttypes.h> header shall include the <stdint.h> header. */
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * imaxdiv_t - Structure type that is the type of the value returned by the
  * imaxdiv() function.
  */
-struct {
+typedef struct {
 	intmax_t quot;
 	intmax_t rem;
 } imaxdiv_t;
@@ -66,6 +67,9 @@ extern imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
  *   to the return type and sign of the value, if any), and errno shall be set
  *   to [ERANGE].
  */
+extern intmax_t strtoimax(const char *restrict nptr, char **restrict endptr,
+		int base);
+
 extern uintmax_t strtoumax(const char *restrict nptr, char **restrict endptr,
 		int base);
 
@@ -110,7 +114,7 @@ __END_DECLS
 /* The fprintf() macros for signed integers are:
  * PRIdN PRIdLEASTN PRIdFASTN PRIdMAX PRIdPTR PRIiN PRIiLEASTN PRIiFASTN
  * PRIiMAX PRIiPTR*/
-#define    PRId8 __PRId8       "d"
+#define    PRId8       "d"
 #define    PRIdLEAST8  "d"
 #define    PRIdFAST8   "d"
 #define    PRIi8       "i"
@@ -214,7 +218,7 @@ __END_DECLS
 #define    SCNiPTR       SCNi32
 
 #define    SCNdMAX       SCNd32
-#define    SCNdMAX       SCNi32
+#define    SCNiMAX       SCNi32
 
 /* The fscanf() macros for unsigned integers are:
  * SCNoN SCNoLEASTN SCNoFASTN SCNoMAX SCNoPTR SCNuN SCNuLEASTN SCNuFASTN

@@ -71,5 +71,11 @@ typedef __intptr_t intptr_t;
 typedef __uintptr_t uintptr_t;
 #endif /*__intptr_t_defined */
 
+/* XXX these macros should be defined as INT64_MAX/MIN and UINT64_MAX/MIN --Alexander */
+#define INTMAX_MIN  (-INTMAX_MAX - 1)
+#define INTMAX_MAX  9223372036854775807LL
+
+#define UINTMAX_MAX 18446744073709551615ULL
+
 #endif /* __ASSEMBLER__ */
 #endif /* STDINT_H_ */

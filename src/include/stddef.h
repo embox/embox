@@ -37,7 +37,7 @@ typedef __size_t size_t;
 #ifndef __cplusplus
 #ifndef __wchar_t_defined
 #define __wchar_t_defined
-typedef unsigned short wchar_t;
+typedef int wchar_t;
 #endif /*__wchar_t_defined */
 #endif
 

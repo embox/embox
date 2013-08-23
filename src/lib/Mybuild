@@ -68,6 +68,14 @@ static module LibCStdlib {
 	source "stdlib/system.c"
 }
 
+static module LibCInttypes {
+	source "inttypes/imaxmath.c"
+	source "inttypes/strtoimax.c"
+	source "inttypes/strtoumax.c"
+	source "inttypes/wcstrtoimax.c"
+	source "inttypes/wcstrtoumax.c"
+}
+
 static module LibCString {
 	source "string/memchr.c"
 	source "string/memcmp.c"
@@ -202,6 +210,7 @@ static module LibC {
 	@NoRuntime depends LibCMath
 	@NoRuntime depends LibCStdio
 	@NoRuntime depends LibCRand
+	@NoRuntime depends LibCInttypes
 
 	depends embox.mem.heap_api
 /* not here */
