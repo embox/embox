@@ -1,0 +1,8 @@
+
+package embox.test.posix.pthread
+
+module pthread_mutex {
+	source "pthread_mutex_test.c"
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
