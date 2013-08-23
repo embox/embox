@@ -11,6 +11,7 @@
 
 #include <embox/block_dev.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* ======== 0x600 FLASH ===============================
  * Get/Set configuration 'key' values for FLASH drivers

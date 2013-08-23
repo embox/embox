@@ -35,17 +35,17 @@
 POOL_DEF(flash_pool,struct flash_dev,MAX_DEV_QUANTITY);
 INDEX_DEF(flash_idx,0,MAX_DEV_QUANTITY);
 
-static int flash_init(void *arg);
-static int flash_ioctl(struct block_dev *bdev, int kmd, void *buf, size_t size);
-static int flash_read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-static int flash_write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int flashbdev_init(void *arg);
+static int flashbdev_ioctl(struct block_dev *bdev, int kmd, void *buf, size_t size);
+static int flashbdev_read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int flashbdev_write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
 
-block_dev_driver_t flash_pio_driver = {
+block_dev_driver_t flashbdev_pio_driver = {
 	"flash_drv",
-	flash_ioctl,
-	flash_read_sectors,
-	flash_write_sectors
+	flashbdev_ioctl,
+	flashbdev_read_sectors,
+	flashbdev_write_sectors
 };
 
 static int flash_get_index(char *path) {
@@ -79,7 +79,7 @@ struct flash_dev *flash_create(char *path, size_t size) {
 		return err_ptr(ENOENT);
 	}
 
-	flash->bdev = block_dev_create(path, &flash_pio_driver, flash);
+	flash->bdev = block_dev_create(path, &flashbdev_pio_driver, flash);
 	if (NULL == flash->bdev) {
 		index_free(&flash_idx, idx);
 		pool_free(&flash_pool, flash);
@@ -130,12 +130,12 @@ int flash_delete(const char *name) {
 }
 
 
-static int flash_init(void *arg) {
+static int flashbdev_init(void *arg) {
 
 	return 0;
 }
 
-static int flash_read_sectors(block_dev_t *bdev,
+static int flashbdev_read_sectors(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
@@ -161,7 +161,7 @@ static int flash_read_sectors(block_dev_t *bdev,
 }
 
 
-static int flash_write_sectors(block_dev_t *bdev,
+static int flashbdev_write_sectors(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
@@ -192,7 +192,7 @@ static int flash_write_sectors(block_dev_t *bdev,
 /*
 static bool flashiodev_init( struct cyg_devtab_entry *tab )
 {
-  int stat = cyg_flash_init(NULL);
+  int stat = cyg_flashbdev_init(NULL);
   cyg_ucount32 i;
 
   if (stat == CYG_FLASH_ERR_OK)
@@ -306,7 +306,7 @@ static int flash_erase(struct flash_dev * dev, uint32_t flash_base,
 	return stat;
 }
 
-static int flash_ioctl(struct block_dev *bdev, int kmd,
+static int flashbdev_ioctl(struct block_dev *bdev, int kmd,
 									void *buf, size_t size) {
 	struct flash_dev *dev;
 	flash_getconfig_erase_t *e;
@@ -360,4 +360,21 @@ static int flash_ioctl(struct block_dev *bdev, int kmd,
 	}
 }
 
-EMBOX_BLOCK_DEV("flash", &flash_pio_driver, flash_init);
+EMBOX_BLOCK_DEV("flash", &flashbdev_pio_driver, flashbdev_init);
+
+ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
+
+int flash_devs_init(void) {
+	int ret, i;
+
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__flash_dev_registry); ++i) {
+		if (__flash_dev_registry[i].init != NULL) {
+			ret = __flash_dev_registry[i].init(NULL);
+			if (ret != 0) {
+				return ret;
+			}
+		}
+	}
+
+	return 0;
+}
