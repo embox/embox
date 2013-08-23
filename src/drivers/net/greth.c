@@ -110,7 +110,7 @@ static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff 
 	return bd;
 }
 
-static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
+static inline struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	struct greth_bd *bd = dev->base->tx_desc_p;
 
 	bd->address = (uint32_t)skb->mac.raw;
@@ -123,7 +123,6 @@ static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff 
 }
 
 static void greth_rings_init(struct greth_dev *dev) {
-	//int i;
 	struct sk_buff *skb;
 	struct greth_regs *regs = dev->base;
 
@@ -139,10 +138,8 @@ static void greth_rings_init(struct greth_dev *dev) {
 
 
 	/* initialize rx ring buffer descriptors */
-	//for(i = 0; i < 8; i ++) {
-		skb = skb_alloc(ETH_FRAME_LEN);
-		greth_alloc_rx_bd(dev, skb);
-	//}
+	skb = skb_alloc(ETH_FRAME_LEN);
+	greth_alloc_rx_bd(dev, skb);
 }
 
 #define DEBUG 1
@@ -168,11 +165,7 @@ static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct greth_bd *bd;
 
 	irq_lock();
-#if 0
-	if(skb->len < 60) {
-		skb->len = 60;
-	}
-#endif
+
 	printk("greth xmit start\n");
 
 
@@ -281,17 +274,17 @@ static int dev_regs_init(unsigned int *irq_nr) {
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
 			AMBAPP_DEVICE_GAISLER_ETHMAC, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
-				AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_GPTIMER);
+				AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_ETHMAC);
 		return -ENODEV;
 	}
 	greth_dev.base = (struct greth_regs *) amba_dev.bar[0].start;
 	*irq_nr = amba_dev.dev_info.irq;
 	return 0;
 }
-#elif OPTION_DEFINED(NUMBER,gptimer_base)
+#elif OPTION_DEFINED(NUMBER,greth_base)
 static int dev_regs_init(unsigned int *irq_nr) {
 	assert(NULL != irq_nr);
-	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,greth_base);
+	greth_dev.base = (struct greth_regs *) OPTION_GET(NUMBER,greth_base);
 	*irq_nr = OPTION_GET(NUMBER,irq_num);
 	return 0;
 }
