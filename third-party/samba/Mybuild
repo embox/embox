@@ -15,6 +15,7 @@ module smbclient {
 	depends core
 
 	@Rule(script="true")
-	source "order.mk"
 	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
+	source "empty.c" // FIXME: workaround
+	source "order.mk"
 }
