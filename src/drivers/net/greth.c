@@ -74,7 +74,7 @@ struct greth_regs {
 	uint32_t hash_msb;
 	uint32_t hash_lsb;
 };
-//static struct greth_regs *dev_regs;
+
 
 
 
@@ -97,7 +97,7 @@ static struct sk_buff *rx_skb[GRETH_DB_QUANTITY];
 static struct greth_dev greth_dev;
 
 static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
-	struct greth_bd *bd = &dev->base->rx_desc_p[dev->rx_next];
+	struct greth_bd *bd = dev->base->rx_desc_p;
 
 	bd->address = (uint32_t)skb->mac.raw;
 	bd->status = GRETH_BD_EN | GRETH_BD_IE;
@@ -111,7 +111,7 @@ static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff 
 }
 
 static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
-	struct greth_bd *bd = &dev->base->tx_desc_p[dev->tx_next];
+	struct greth_bd *bd = dev->base->tx_desc_p;
 
 	bd->address = (uint32_t)skb->mac.raw;
 	bd->status = GRETH_BD_EN | skb->len;
@@ -123,7 +123,7 @@ static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff 
 }
 
 static void greth_rings_init(struct greth_dev *dev) {
-	int i;
+	//int i;
 	struct sk_buff *skb;
 	struct greth_regs *regs = dev->base;
 
@@ -139,10 +139,10 @@ static void greth_rings_init(struct greth_dev *dev) {
 
 
 	/* initialize rx ring buffer descriptors */
-	for(i = 0; i < 8; i ++) {
+	//for(i = 0; i < 8; i ++) {
 		skb = skb_alloc(ETH_FRAME_LEN);
 		greth_alloc_rx_bd(dev, skb);
-	}
+	//}
 }
 
 #define DEBUG 1
@@ -167,18 +167,26 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct greth_bd *bd;
 
+	irq_lock();
+#if 0
+	if(skb->len < 60) {
+		skb->len = 60;
+	}
+#endif
 	printk("greth xmit start\n");
+
+
 	bd = greth_alloc_tx_bd(&greth_dev, skb);
 	REG_ORIN(&greth_dev.base->control, GRETH_CTRL_TX_EN);
 	show_packet(skb->mac.raw, skb->len, "transmite");
-
-
-
 	while(bd->status & GRETH_BD_EN);
 
 	skb_free(skb);
 
 	printk("greth xmit done\n");
+
+	irq_unlock();
+
 	return ENOERR;
 }
 
@@ -237,7 +245,7 @@ static const struct net_driver greth_ops = {
 
 
 static irq_return_t greth_received(struct net_device * dev) {
-	struct sk_buff *skb;
+	struct sk_buff *skb, *skb_new;
 	unsigned int len;
 
 	len = rx_bd[greth_dev.rx_bd].status & GRETH_BD_LEN_MASK;
@@ -248,6 +256,9 @@ static irq_return_t greth_received(struct net_device * dev) {
 
 	greth_dev.rx_bd ++;
 	greth_dev.rx_bd %= GRETH_DB_QUANTITY;
+	skb_new = skb_alloc(ETH_FRAME_LEN);
+	greth_alloc_rx_bd(&greth_dev, skb_new);
+	REG_ORIN(&greth_dev.base->control, GRETH_CTRL_RX_INT | GRETH_CTRL_RX_EN);
 
 
 	show_packet(skb->mac.raw, len, "received");
