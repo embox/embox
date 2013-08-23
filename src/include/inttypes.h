@@ -52,21 +52,6 @@ extern intmax_t imaxabs(intmax_t j);
 extern imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
 
 /**
- * The imaxdiv() function shall compute numer / denom and numer % denom in a
- * single operation.
- *
- * @param numer
- * @param denom
- * @return The imaxdiv() function shall return a structure of type imaxdiv_t,
- *  comprising both the quotient and the remainder. The structure shall contain
- *  (in either order) the members quot (the quotient) and rem (the remainder),
- *  each of which has type intmax_t.
- *  If either part of the result cannot be represented, the behavior is
- *  undefined.
- */
-extern imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
-
-/**
  * These functions shall be equivalent to the strtol(), strtoll(), strtoul(),
  * and strtoull() functions, except that the initial portion of the string shall
  * be converted to intmax_t and uintmax_t representation, respectively.
@@ -125,7 +110,7 @@ __END_DECLS
 /* The fprintf() macros for signed integers are:
  * PRIdN PRIdLEASTN PRIdFASTN PRIdMAX PRIdPTR PRIiN PRIiLEASTN PRIiFASTN
  * PRIiMAX PRIiPTR*/
-#define    PRId8       "d"
+#define    PRId8 __PRId8       "d"
 #define    PRIdLEAST8  "d"
 #define    PRIdFAST8   "d"
 #define    PRIi8       "i"
