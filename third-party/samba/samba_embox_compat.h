@@ -22,7 +22,7 @@
 #define DPRINT()
 #endif
 
-//#include <stdio.h>
+#include <stdio.h>
 
 struct statfs {
 	int f_bsize;   /* optimal transfer block size */

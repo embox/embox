@@ -1,6 +1,6 @@
 diff -aur samba-3.6.18/source3/configure samba/source3/configure
 --- samba-3.6.18/source3/configure	2013-08-12 11:26:02.000000000 +0400
-+++ samba/source3/configure	2013-08-21 16:06:29.014551522 +0400
++++ samba/source3/configure	2013-08-25 00:38:55.550805600 +0400
 @@ -8127,10 +8127,10 @@
  else
  
@@ -16,6 +16,15 @@ diff -aur samba-3.6.18/source3/configure samba/source3/configure
  else
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
+@@ -11957,7 +11957,7 @@
+ _ACEOF
+ 
+ else
+-  as_fn_error $? "Required function not found" "$LINENO" 5
++echo #  as_fn_error $? "Required function not found" "$LINENO" 5
+ fi
+ done
+ 
 @@ -18954,17 +18954,17 @@
  #define HAVE_EXTATTR_DELETE_FILE 1
  _ACEOF
@@ -95,3 +104,15 @@ diff -aur samba-3.6.18/source3/Makefile.in samba/source3/Makefile.in
  	@echo Linking $@
  	@$(CC) -o $@ $(CLIENT_OBJ) $(LDFLAGS) $(DYNEXP) \
  		$(TERMLDFLAGS) $(TERMLIBS) $(LIBS) $(POPT_LIBS) \
+diff -aur samba-3.6.18/source3/client/client.c samba/source3/client/client.c
+--- samba-3.6.18/source3/client/client.c	2013-08-12 11:25:27.000000000 +0400
++++ samba/source3/client/client.c	2013-08-24 22:23:48.661739207 +0400
+@@ -5101,7 +5101,7 @@
+   main program
+ ****************************************************************************/
+ 
+- int main(int argc,char *argv[])
++ int smbclient_main(int argc,char *argv[])
+ {
+ 	char *base_directory = NULL;
+ 	int opt;

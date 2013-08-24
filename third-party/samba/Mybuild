@@ -11,11 +11,21 @@ module core {
 	source "../../../../samba/lib/libsmbclient.a"
 }
 
+@Cmd(name = "smbclient",
+	help = "smbclient shell",
+	man = '''
+		NAME
+			smbclient - ftp-like client to access SMB/CIFS resources on servers
+		SYNOPSIS
+			smbclient --help for options
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
 module smbclient {
 	depends core
 
 	@Rule(script="true")
 	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
-	source "empty.c" // FIXME: workaround
+	source "shell_cmd.c"
 	source "order.mk"
 }
