@@ -67,10 +67,10 @@ extern imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
  *   to the return type and sign of the value, if any), and errno shall be set
  *   to [ERANGE].
  */
-extern intmax_t strtoimax(const char *restrict nptr, char **restrict endptr,
+extern intmax_t strtoimax(const char */*restrict*/ nptr, char **/*restrict*/ endptr,
 		int base);
 
-extern uintmax_t strtoumax(const char *restrict nptr, char **restrict endptr,
+extern uintmax_t strtoumax(const char */*restrict*/ nptr, char **/*restrict*/ endptr,
 		int base);
 
 /**
@@ -88,8 +88,8 @@ extern uintmax_t strtoumax(const char *restrict nptr, char **restrict endptr,
  *   {INTMAX_MIN}, or {UINTMAX_MAX} shall be returned (according to the return
  *   type and sign of the value, if any), and errno shall be set to [ERANGE].
  */
-extern intmax_t wcstoimax(const wchar_t *restrict nptr,
-		wchar_t **restrict endptr, int base);
+extern intmax_t wcstoimax(const wchar_t */*restrict*/ nptr,
+		wchar_t **/*restrict*/ endptr, int base);
 
 /**
  * The function shall be equivalent to the wcstol(), wcstoll(), wcstoul(),
@@ -106,8 +106,8 @@ extern intmax_t wcstoimax(const wchar_t *restrict nptr,
  *   {INTMAX_MIN}, or {UINTMAX_MAX} shall be returned (according to the return
  *   type and sign of the value, if any), and errno shall be set to [ERANGE].
  */
-extern uintmax_t wcstoumax(const wchar_t *restrict nptr,
-		wchar_t **restrict endptr, int base);
+extern uintmax_t wcstoumax(const wchar_t */*restrict*/ nptr,
+		wchar_t **/*restrict*/ endptr, int base);
 
 __END_DECLS
 
