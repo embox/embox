@@ -65,8 +65,6 @@ static inline int sigaction(int signum, const struct sigaction *act,
 int getpagesize(void);
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
-typedef struct { int val[2]; } fsid_t;
-
 #include <sys/select.h>
 // ToDo: this is actually already defined
 #define FD_SETSIZE (_FDSETWORDS*_FDSETBITSPERWORD)

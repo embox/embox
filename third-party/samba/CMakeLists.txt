@@ -84,6 +84,7 @@ ExternalProject_Add(
       ac_cv_func_sigaction=no
       ac_cv_func_getgrset=no
       ac_cv_func_nanosleep=no
+      ac_cv_lib_ext_rt_nanosleep=no
    BUILD_COMMAND
       <SOURCE_DIR>/source3/runfromhere.sh make
         EXEEXT=.embox.o
@@ -95,5 +96,9 @@ ExternalProject_Add(
         EXEEXT=.embox.o
         ""INSTALLLIBCMD_A=install""
         installlibsmbclient
+        installlibtalloc
+        installlibtevent
+        installlibtdb
+        installlibwbclient
    LOG_INSTALL 1
 )
