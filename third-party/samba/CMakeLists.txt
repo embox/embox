@@ -10,7 +10,7 @@ ExternalProject_Add(
       cd $ENV{EMBOX_ROOT}/third-party/samba/tree &&
       bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`" &&
       patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/samba/patch.txt
-   #BUILD_IN_SOURCE 1
+   BUILD_IN_SOURCE 1
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
    	  <SOURCE_DIR>/source3/runfromhere.sh ./configure
@@ -66,13 +66,24 @@ ExternalProject_Add(
       ac_cv_func_yp_get_default_domain=no
       ac_cv_func_fchmod=no
       ac_cv_func_fdatasync=no
+      ac_cv_lib_rt_fdatasync=no
       ac_cv_func_posix_memalign=no
       ac_cv_func_getpeereid=no
+      samba_cv_HAVE_GETPEEREID=no
       ac_cv_func_setsid=no
       fu_cv_sys_stat_statvfs=no
       ac_cv_func_dlopen=no
       ac_cv_func_shl_load=no
+      ac_cv_func_shl_unload=no
+      ac_cv_func_shl_findsym=no
       ac_cv_func_utime=no
+      ac_cv_func_getpwent_r=no
+      ac_cv_func_getgrent_r=no
+      ac_cv_func_getgrouplist=no
+      ac_cv_func_sigblock=no
+      ac_cv_func_sigaction=no
+      ac_cv_func_getgrset=no
+      ac_cv_func_nanosleep=no
    BUILD_COMMAND
       <SOURCE_DIR>/source3/runfromhere.sh make
         EXEEXT=.embox.o

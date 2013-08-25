@@ -38,9 +38,29 @@ int statfs(const char *path, struct statfs *buf);
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 typedef int sigset_t;
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
-int sigemptyset(sigset_t *set);
-int sigaddset(sigset_t *set, int signum);
+static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
+	printf(">>> sigprocmask(%i,%p,%p)\n",how,set,oldset);
+	return -1;
+}
+static inline int sigaddset(sigset_t *set, int signum){
+	printf(">>> sigaddset(%p,%i)\n",set,signum);
+	if (signum>=sizeof(sigset_t)*8) {
+		return -1;
+	}
+	*set |= 1<<signum;
+	return 0;
+}
+static inline int sigemptyset(sigset_t *set) {
+	*set = 0;
+	printf(">>> sigemptyset()\n");
+	return -1;
+}
+static inline int sigaction(int signum, const struct sigaction *act,
+	      struct sigaction *oldact) {
+	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
+	return -1;
+}
+
 
 int getpagesize(void);
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
@@ -48,6 +68,7 @@ int getpagesize(void);
 typedef struct { int val[2]; } fsid_t;
 
 #include <sys/select.h>
+// ToDo: this is actually already defined
 #define FD_SETSIZE (_FDSETWORDS*_FDSETBITSPERWORD)
 
 #include <assert.h>
@@ -77,18 +98,18 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 	(void)prot;
 	(void)flags;
 	(void)off;
-	//printf(">>> mmap(%i)\n",fd);
+	printf(">>> mmap(%i)\n",fd);
 	errno = EPERM;
 	return 0;
 }
-/*
+
 static inline int munmap(void *addr, size_t size) {
 	(void)size;
 	printf(">>> munmap(%p)\n",addr);
 	errno = EPERM;
 	return -1;
 }
-*/
+
 
 struct in_addr inet_makeaddr(int net, int host);
 
@@ -99,5 +120,28 @@ struct in_addr inet_makeaddr(int net, int host);
 
 typedef __u16 u_int16_t;
 typedef __u32 u_int32_t;
+
+static inline void atexit(void *addr) {
+	printf(">>> atexit(%p)\n",addr);
+}
+
+static inline void *dlsym(void *handle, const char *symbol) {
+	printf(">>> dlsym(%p,%s)\n",handle,symbol);
+	return NULL;
+}
+
+static inline
+int dn_expand(unsigned char *msg, unsigned char *eomorig,
+              unsigned char *comp_dn, char *exp_dn,
+              int length) {
+	printf(">>> dn_expand(%s)\n",comp_dn);
+	return -1;
+}
+static inline
+int res_query(const char *dname, int class, int type,
+              unsigned char *answer, int anslen) {
+	printf(">>> res_query(%s)\n",dname);
+	return -1;
+}
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */
