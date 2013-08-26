@@ -30,3 +30,10 @@ module setjmp_test {
 	depends embox.arch.libarch
 	depends embox.framework.test
 }
+
+module strcasecmp_test{
+	source "strcasecmp.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
