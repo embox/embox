@@ -53,12 +53,7 @@ typedef struct flash_block_info
 	uint32_t         blocks;
 } flash_block_info_t;
 
-// Information about what one device driver drives
-typedef struct {
-	uint32_t     start;              /* First address */
-	uint32_t     end;                /* Last address */
-	uint32_t     num_block_infos;    /* Number of entries */
-	const flash_block_info_t* block_info;         /* Info about block sizes */
-} flash_info_t;
+extern int flash_emu_dev_init(void *arg);
+extern struct flash_dev *flash_create(char *path, size_t size);
 
 #endif /* FLASH_H_ */

@@ -74,7 +74,8 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
 	if (!ri)
 		return -ENOMEM;
 
-	c = JFFS2_SB_INFO(dir_i->i_sb);
+//	c = JFFS2_SB_INFO(dir_i->i_sb);
+	c = &dir_i->i_sb->jffs2_sb;
 
 	D1(printk(KERN_DEBUG "jffs2_create()\n"));
 
@@ -113,10 +114,12 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
 
 int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode, const unsigned char *d_name)
 {
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(dir_i->i_sb);
+	struct jffs2_sb_info *c;// = JFFS2_SB_INFO(dir_i->i_sb);
 	struct jffs2_inode_info *dir_f = JFFS2_INODE_INFO(dir_i);
 	struct jffs2_inode_info *dead_f = JFFS2_INODE_INFO(d_inode);
 	int ret;
+
+	c = &dir_i->i_sb->jffs2_sb;
 
 	ret = jffs2_do_unlink(c, dir_f, (const char *)d_name,
 			       strlen((char *)d_name), dead_f);
@@ -129,13 +132,16 @@ int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode, const unsigned ch
 
 int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i, const unsigned char *d_name)
 {
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_d_inode->i_sb);
+	struct jffs2_sb_info *c;// = JFFS2_SB_INFO(old_d_inode->i_sb);
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(old_d_inode);
 	struct jffs2_inode_info *dir_f = JFFS2_INODE_INFO(dir_i);
 	int ret;
+	uint8_t type;
+
+	c = &old_d_inode->i_sb->jffs2_sb;
 
 	/* XXX: This is ugly */
-	uint8_t type = (old_d_inode->i_mode & S_IFMT) >> 12;
+	type = (old_d_inode->i_mode & S_IFMT) >> 12;
 	if (!type) type = DT_REG;
 
 	ret = jffs2_do_link(c, dir_f, f->inocache->ino, type,
@@ -169,7 +175,8 @@ int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
 	if (!ri)
 		return -ENOMEM;
 
-	c = JFFS2_SB_INFO(dir_i->i_sb);
+//	c = JFFS2_SB_INFO(dir_i->i_sb);
+	c = &dir_i->i_sb->jffs2_sb;
 
 	/* Try to reserve enough space for both node and dirent.
 	 * Just the node will do for now, though
@@ -287,9 +294,12 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 		  struct _inode *new_dir_i, const unsigned char *new_d_name)
 {
 	int ret;
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_dir_i->i_sb);
+//	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_dir_i->i_sb);
+	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *victim_f = NULL;
 	uint8_t type;
+
+	c = &old_dir_i->i_sb->jffs2_sb;
 
 #if 0 /* FIXME -- this really doesn't belong in individual file systems.
 	 The fileio code ought to do this for us, or at least part of it */

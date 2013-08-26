@@ -37,15 +37,15 @@ INDEX_DEF(flash_idx,0,MAX_DEV_QUANTITY);
 
 static int flashbdev_init(void *arg);
 static int flashbdev_ioctl(struct block_dev *bdev, int kmd, void *buf, size_t size);
-static int flashbdev_read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-static int flashbdev_write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
 
 block_dev_driver_t flashbdev_pio_driver = {
 	"flash_drv",
 	flashbdev_ioctl,
-	flashbdev_read_sectors,
-	flashbdev_write_sectors
+	flashbdev_read,
+	flashbdev_write
 };
 
 static int flash_get_index(char *path) {
@@ -135,18 +135,16 @@ static int flashbdev_init(void *arg) {
 	return 0;
 }
 
-static int flashbdev_read_sectors(block_dev_t *bdev,
+static int flashbdev_read(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
-	uint32_t len;
 
 	flash = (struct flash_dev *)bdev->privdata;
 
-	len = count * flash->block_info.block_size;
 	flash = (struct flash_dev *) bdev->privdata;
 	startpos = flash->start + (blkno * flash->block_info.block_size);
-	endpos = startpos + len - 1;
+	endpos = startpos + count - 1;
 	if ( startpos < flash->start ) {
 		return -EINVAL;
 	}
@@ -154,26 +152,24 @@ static int flashbdev_read_sectors(block_dev_t *bdev,
 		return -EINVAL;
 	}
 
-	if(len == flash->drv->flash_read(flash, startpos, buffer, len)) {
-		return count;
+	if((!flash->drv) || (!flash->drv->flash_read)) {
+		return -EINVAL;
 	}
-	return len;
+	return flash->drv->flash_read(flash, startpos, buffer, count);
 }
 
 
-static int flashbdev_write_sectors(block_dev_t *bdev,
+static int flashbdev_write(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
-	uint32_t len;
 
 	flash = (struct flash_dev *)bdev->privdata;
 
-	len = count * flash->block_info.block_size;
 	flash = (struct flash_dev *) bdev->privdata;
 	startpos = flash->start + (blkno * flash->block_info.block_size);
 
-	endpos = startpos + len - 1;
+	endpos = startpos + count - 1;
 	if ( startpos < flash->start ) {
 		return -EINVAL;
 	}
@@ -181,10 +177,11 @@ static int flashbdev_write_sectors(block_dev_t *bdev,
 		return -EINVAL;
 	}
 
-	if(len == flash->drv->flash_program(flash, startpos, buffer, len)) {
-		return count;
+	if((!flash->drv) || (!flash->drv->flash_program)) {
+		return -EINVAL;
 	}
-	return len;
+
+	return flash->drv->flash_program(flash, startpos, buffer, count);
 }
 
 
@@ -272,6 +269,10 @@ static int flash_erase(struct flash_dev * dev, uint32_t flash_base,
 	int stat;
 	size_t block_size;
 
+	if((!dev->drv) || (!dev->drv->flash_erase_block)) {
+		return -EINVAL;
+	}
+
 	/* Check whether or not we are going past the end of this device, on
 	 * to the next one. If so the next device will be handled by a
 	 * recursive call later on.
@@ -306,7 +307,21 @@ static int flash_erase(struct flash_dev * dev, uint32_t flash_base,
 	return stat;
 }
 
-static int flashbdev_ioctl(struct block_dev *bdev, int kmd,
+static int decode_flash_cmd(int cmd) {
+	switch(cmd) {
+
+	case IOCTL_GETBLKSIZE:
+		return GET_CONFIG_FLASH_BLOCKSIZE;
+
+	case IOCTL_GETDEVSIZE:
+		return GET_CONFIG_FLASH_DEVSIZE;
+
+	default:
+		return cmd;
+	}
+}
+
+static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 									void *buf, size_t size) {
 	struct flash_dev *dev;
 	flash_getconfig_erase_t *e;
@@ -317,7 +332,10 @@ static int flashbdev_ioctl(struct block_dev *bdev, int kmd,
 
 	dev = (struct flash_dev *)bdev->privdata;
 
-	switch (kmd) {
+	cmd = decode_flash_cmd(cmd);
+
+	switch (cmd) {
+
 	case GET_CONFIG_FLASH_ERASE:
 		e = (flash_getconfig_erase_t *) buf;
 		startpos = dev->start + e->offset;
@@ -339,18 +357,32 @@ static int flashbdev_ioctl(struct block_dev *bdev, int kmd,
 
 	case GET_CONFIG_FLASH_DEVSIZE:
 		ds = (flash_getconfig_devsize_t *) buf;
+
+		if(NULL == ds) {
+			return (dev->end - dev->start + 1);
+		}
+
 		ds->dev_size = dev->end - dev->start + 1;
 
 		return ENOERR;
 
 	case GET_CONFIG_FLASH_DEVADDR:
 		da = (flash_getconfig_devaddr_t *)buf;
+
+		if(NULL == da) {
+			return (dev->start);
+		}
+
 		da->dev_addr = dev->start;
 
 		return ENOERR;
 
 	case GET_CONFIG_FLASH_BLOCKSIZE:
 		bs = (flash_getconfig_blocksize_t *)buf;
+
+		if(NULL == bs) {
+			return (dev->block_info.block_size);
+		}
 
 		bs->block_size = dev->block_info.block_size;
 		return ENOERR;

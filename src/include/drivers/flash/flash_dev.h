@@ -30,7 +30,7 @@ struct flash_dev {
 	uint32_t     start;            /* First address */
 	uint32_t     end;              /* Last address */
 	uint32_t     num_block_infos;  /* Number of entries */
-	const flash_block_info_t    block_info;      /* Info about one block size */
+	flash_block_info_t    block_info;      /* Info about one block size */
 	void 		 *privdata;
 
 	bool    init;             /* Device has been initialised */

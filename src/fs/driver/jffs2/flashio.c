@@ -21,14 +21,16 @@ bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
 			  size_t * return_size, unsigned char *write_buffer) {
 	int err;
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+//	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
-	err = block_dev_read_buffered(sb->s_dev,
+	err = block_dev_read_buffered(sb->bdev,
 			(char *) write_buffer, size, read_buffer_offset);
 
 	if(err >= 0) {
-		err = ENOERR;
 		*return_size = (size_t) err;
+		err = ENOERR;
 	}
 
 	return err;
@@ -38,14 +40,15 @@ bool jffs2_flash_write(struct jffs2_sb_info * c,
 		uint32_t write_buffer_offset, const size_t size,
 		size_t * return_size, unsigned char *read_buffer) {
 	int err;
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;// = OFNI_BS_2SFFJ(c);
 
-	err = block_dev_write_buffered(sb->s_dev,
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
+	err = block_dev_write_buffered(sb->bdev,
 	(char *) read_buffer, size, write_buffer_offset);
 
 	if(err >= 0) {
-		err = ENOERR;
 		*return_size = (size_t) err;
+		err = ENOERR;
 	}
 
 	return err;
@@ -141,13 +144,14 @@ bool jffs2_flash_erase(struct jffs2_sb_info * c,
 	uint32_t err_addr;
 	int err;
 	uint32_t len = sizeof (e);
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;// = OFNI_BS_2SFFJ(c);
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
 	e.offset = jeb->offset;
 	e.len = c->sector_size;
 	e.err_address = (uint32_t) &err_addr;
 
-	err = block_dev_ioctl(sb->s_dev, GET_CONFIG_FLASH_ERASE, &e, len);
+	err = block_dev_ioctl(sb->bdev, GET_CONFIG_FLASH_ERASE, &e, len);
 
 	return (err != ENOERR || e.flasherr != 0);
 }

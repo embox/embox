@@ -53,8 +53,6 @@
 #define get_seconds clock_sys_ticks
 
 typedef uint32_t cyg_uint32;
-typedef bool cyg_bool;
-typedef void *cyg_io_handle_t;
 
 //#define CYGOPT_FS_JFFS2_GCTHREAD 0
 #define CYGNUM_JFFS2_GC_THREAD_PRIORITY 30
@@ -132,14 +130,14 @@ struct _inode {
 	struct _inode *		i_cache_next;
 };
 
-#define JFFS2_SB_INFO(sb) (&(sb)->jffs2_sb)
-#define OFNI_BS_2SFFJ(c)  ((struct super_block *) ( ((char *)c) - ((char *)(&((struct super_block *)NULL)->jffs2_sb)) ) )
+//#define JFFS2_SB_INFO(sb) (&(sb)->jffs2_sb)
+//#define OFNI_BS_2SFFJ(c)  ((struct super_block *) ( ((char *)c) - ((char *)(&((struct super_block *)NULL)->jffs2_sb)) ) )
 
 struct super_block {
 	struct jffs2_sb_info jffs2_sb;
-	struct _inode *		s_root;
-    unsigned long		s_mount_count;
-	cyg_io_handle_t		s_dev;
+	struct _inode *s_root;
+    unsigned long  s_mount_count;
+	struct block_dev *bdev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
 	cyg_mutex_t s_lock;             // Lock the inode cache
@@ -187,13 +185,13 @@ uint32_t jffs2_to_os_mode (uint32_t jmode);
 
 
 /* flashio.c */
-cyg_bool jffs2_flash_read(struct jffs2_sb_info *c, cyg_uint32 read_buffer_offset,
+bool jffs2_flash_read(struct jffs2_sb_info *c, cyg_uint32 read_buffer_offset,
 			  const size_t size, size_t * return_size, unsigned char * write_buffer);
-cyg_bool jffs2_flash_write(struct jffs2_sb_info *c, cyg_uint32 write_buffer_offset,
+bool jffs2_flash_write(struct jffs2_sb_info *c, cyg_uint32 write_buffer_offset,
 			   const size_t size, size_t * return_size, unsigned char * read_buffer);
 int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 			      unsigned long count, loff_t to, size_t *retlen);
-cyg_bool jffs2_flash_erase(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
+bool jffs2_flash_erase(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 
 // dir-ecos.c
 struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *name, int namelen);

@@ -2,24 +2,27 @@
  * @file
  * @brief Creates special file in virtual file systems
  *
- * @date 15.10.10
- * @author Anton Bondarev
+ * @date 23.08.2013
+ * @author Andrey Gazukin
  */
 
 #include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <fs/vfs.h>
+#include <errno.h>
+
+#include <drivers/flash/flash.h>
+#include <drivers/flash/flash_dev.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: mknod NAME\n");
+	printf("Usage: jffs2 DEV NAME\n");
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
-	mode_t mode;
+
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
@@ -32,11 +35,8 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	mode = S_IFBLK; // XXX this should be an argument, creating block dev
-	mode |= S_IRALL | S_IWALL; // TODO umask. -- Eldar
-
-	if (argc > 1) {
-		vfs_create(NULL, argv[argc - 1], mode);
+	if (argc > 2) {
+		return flash_emu_dev_init(argv);
 	}
 
 	return 0;
