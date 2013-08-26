@@ -37,3 +37,10 @@ module strcasecmp_test{
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
+
+module strtok_test{
+	source "strtok.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

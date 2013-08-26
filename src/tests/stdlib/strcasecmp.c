@@ -8,7 +8,7 @@
 #include <string.h>
 #include <embox/test.h>
 
-EMBOX_TEST_SUITE("string libriry (strcasecpm)");
+EMBOX_TEST_SUITE("string libriry (strcasecmp)");
 
 TEST_CASE("strcasecmp compare identical strings") {
 	char str1[] = "aa";

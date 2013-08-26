@@ -358,6 +358,13 @@ extern char *strdup(const char *s);
  */
 extern int ffs(int i);
 
+extern char *strtok_r(char *str, const char *delim, char **saveptr);
+
+extern char *strtok(char *str, const char *delim);
+
+extern int strcasecmp(const char *s1, const char *s2);
+extern int strncasecmp(const char *s1, const char *s2, size_t n);
+
 __END_DECLS
 
 #endif /* STRING_H_ */
