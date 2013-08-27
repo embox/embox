@@ -61,8 +61,11 @@ static inline int sigaction(int signum, const struct sigaction *act,
 	return -1;
 }
 
-
-int getpagesize(void);
+static inline
+int getpagesize(void) {
+	DPRINT();
+	return 4096;
+}
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
 #include <sys/select.h>
@@ -108,8 +111,40 @@ static inline int munmap(void *addr, size_t size) {
 	return -1;
 }
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#define	IN_CLASSA(a)		((((in_addr_t)(a)) & 0x80000000) == 0)
+#define	IN_CLASSA_NET		0xff000000
+#define	IN_CLASSA_NSHIFT	24
+#define	IN_CLASSA_HOST		(0xffffffff & ~IN_CLASSA_NET)
+#define	IN_CLASSA_MAX		128
+#define	IN_CLASSB(a)		((((in_addr_t)(a)) & 0xc0000000) == 0x80000000)
+#define	IN_CLASSB_NET		0xffff0000
+#define	IN_CLASSB_NSHIFT	16
+#define	IN_CLASSB_HOST		(0xffffffff & ~IN_CLASSB_NET)
+#define	IN_CLASSB_MAX		65536
+#define	IN_CLASSC(a)		((((in_addr_t)(a)) & 0xe0000000) == 0xc0000000)
+#define	IN_CLASSC_NET		0xffffff00
+#define	IN_CLASSC_NSHIFT	8
+#define	IN_CLASSC_HOST		(0xffffffff & ~IN_CLASSC_NET)
+static inline
+struct in_addr
+inet_makeaddr(net, host)
+	in_addr_t net, host;
+{
+	struct in_addr in;
 
-struct in_addr inet_makeaddr(int net, int host);
+	if (net < 128)
+		in.s_addr = (net << IN_CLASSA_NSHIFT) | (host & IN_CLASSA_HOST);
+	else if (net < 65536)
+		in.s_addr = (net << IN_CLASSB_NSHIFT) | (host & IN_CLASSB_HOST);
+	else if (net < 16777216L)
+		in.s_addr = (net << IN_CLASSC_NSHIFT) | (host & IN_CLASSC_HOST);
+	else
+		in.s_addr = net | host;
+	in.s_addr = htonl(in.s_addr);
+	return in;
+}
 
 #define E2BIG  7
 #define EILSEQ 84
@@ -141,5 +176,89 @@ int res_query(const char *dname, int class, int type,
 	printf(">>> res_query(%s)\n",dname);
 	return -1;
 }
+
+#define WEXITSTATUS(s) (s)
+
+static inline
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+	DPRINT();
+	return -1;
+}
+
+static inline
+char *mktemp(char *template) {
+	DPRINT();
+	if (template) {
+		*template = 0;
+	}
+	return template;
+}
+
+static inline
+int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
+	return -1;
+}
+
+static inline
+ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
+	DPRINT();
+	errno = ENOSYS;
+	return -1;
+}
+
+static inline
+ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
+	DPRINT();
+	errno = ENOSYS;
+	return -1;
+}
+
+#include <grp.h>
+
+static inline
+int initgroups(const char *user, gid_t group) {
+	DPRINT();
+	errno = EPERM;
+	return -1;
+}
+
+static inline
+struct group *getgrgid(gid_t gid) {
+	DPRINT();
+	errno = EPERM;
+	return 0;
+}
+
+static inline
+void setgrent(void) {
+	DPRINT();
+}
+
+static inline
+struct group *getgrent(void) {
+	DPRINT();
+	errno = EPERM;
+	return 0;
+}
+
+static inline
+void endgrent(void) {
+	DPRINT();
+}
+
+static inline
+unsigned int alarm(unsigned int seconds) {
+	DPRINT();
+	return 0;
+}
+
+static inline
+int chown(const char *path, uid_t owner, gid_t group) {
+	DPRINT();
+	errno = EPERM;
+	return -1;
+}
+
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

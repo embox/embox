@@ -85,6 +85,8 @@ ExternalProject_Add(
       ac_cv_func_getgrset=no
       ac_cv_func_nanosleep=no
       ac_cv_lib_ext_rt_nanosleep=no
+      ac_cv_search_backtrace_symbols=no
+      ac_cv_func_backtrace_symbols=no
    BUILD_COMMAND
       <SOURCE_DIR>/source3/runfromhere.sh make
         EXEEXT=.embox.o
