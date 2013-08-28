@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 
-#include <string.h>
+#include <strings.h>
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("string libriry (strcasecmp)");
