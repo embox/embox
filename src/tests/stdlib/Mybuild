@@ -51,3 +51,12 @@ module strlcpy_test{
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
+
+module strdup_test{
+	source "strdup.c"
+
+	depends embox.lib.LibC
+	depends embox.mem.heap_api
+	depends embox.framework.LibFramework
+}
+
