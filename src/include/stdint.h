@@ -14,7 +14,9 @@
 #ifndef __WORDSIZE
 # error "You must define __WORDSIZE in asm/types.h"
 #endif
+
 #ifndef __ASSEMBLER__
+
 typedef __s8  int8_t;
 typedef __s16 int16_t;
 typedef __s32 int32_t;
@@ -35,18 +37,6 @@ typedef __u16 uint_least16_t;
 typedef __u32 uint_least32_t;
 typedef __u64 uint_least64_t;
 
-#if __WORDSIZE == 32
-typedef __s32 __s_fast;
-typedef __u32 __u_fast;
-#elif __WORDSIZE == 64
-typedef __s64 __s_fast;
-typedef __u64 __u_fast;
-#elif __WORDSIZE == 16
-typedef __s16 __s_fast;
-typedef __u16 __u_fast;
-#else
-# error "Only 16, 32 and 64 __WORDSIZE values are supported"
-#endif
 
 typedef __s_fast int_fast8_t;
 typedef __s_fast int_fast16_t;
@@ -71,11 +61,9 @@ typedef __intptr_t intptr_t;
 typedef __uintptr_t uintptr_t;
 #endif /*__intptr_t_defined */
 
-/* XXX these macros should be defined as INT64_MAX/MIN and UINT64_MAX/MIN --Alexander */
-#define INTMAX_MIN  (-INTMAX_MAX - 1)
-#define INTMAX_MAX  9223372036854775807LL
 
-#define UINTMAX_MAX 18446744073709551615ULL
+#include <stdint-gcc.h>
 
 #endif /* __ASSEMBLER__ */
+
 #endif /* STDINT_H_ */

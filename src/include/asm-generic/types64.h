@@ -1,15 +1,14 @@
 /**
  * @file
- * @brief Common types for 32-bit architectures.
  *
- * @date 04.10.10
- * @author Eldar Abusalimov
+ * @date Aug 28, 2013
+ * @author: Anton Bondarev
  */
 
-#ifndef ASM_GENERIC_TYPES32_H_
-#define ASM_GENERIC_TYPES32_H_
+#ifndef ASM_GENERIC_TYPES64_H_
+#define ASM_GENERIC_TYPES64_H_
 
-#define __WORDSIZE         32
+#define __WORDSIZE         64
 
 #ifndef __ASSEMBLER__
 
@@ -28,9 +27,9 @@ typedef signed int        __ptrdiff_t;
 typedef unsigned long int __uintptr_t;
 typedef long int          __intptr_t;
 
-typedef __s32 __s_fast;
-typedef __u32 __u_fast;
+typedef __s64             __s_fast;
+typedef __u64             __u_fast;
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* ASM_GENERIC_TYPES32_H_ */
+#endif /* ASM_GENERIC_TYPES64_H_ */
