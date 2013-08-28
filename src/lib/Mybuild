@@ -103,6 +103,7 @@ static module LibCString {
 	source "string/strtok.c"
 
 	source "string/strdup.c"
+	source "string/strlcpy.c"
 	depends embox.mem.heap_api
 }
 

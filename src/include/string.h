@@ -402,6 +402,37 @@ extern char *strtok_r(char *str, const char *delim, char **saveptr);
  */
 extern char *strtok(char *str, const char *delim);
 
+/**
+ * The strnlen() function shall compute the smaller of the number of bytes in
+ * the array to which s points, not including the terminating NUL character,
+ * or the value of the maxlen argument. The strnlen() function shall never
+ * examine more than maxlen bytes of the array pointed to by s.
+ *
+ * @param s
+ * @param maxlen
+ *
+ * @return The strnlen() function shall return an integer containing the smaller
+ *  of either the length of the string pointed to by s or maxlen.
+ */
+extern size_t strnlen(const char *s, size_t maxlen);
+/**
+ * The strndup() function shall be equivalent to the strdup() function,
+ * duplicating the provided s in a new block of memory allocated as if by using
+ * malloc(), with the exception being that strndup() copies at most size plus
+ * one bytes into the newly allocated memory, terminating the new string with a
+ * NUL character. If the length of s is larger than size, only size bytes shall
+ * be duplicated. If size is larger than the length of s, all bytes in s shall
+ * be copied into the new memory buffer, including the terminating NUL
+ * character. The newly created string shall always be properly terminated.
+ *
+ * @param s
+ * @param size
+ * @return Upon successful completion, the strndup() function shall return a
+ * pointer to the newly allocated memory containing the duplicated string.
+ * Otherwise, it shall return a null pointer and set errno to indicate the error.
+ */
+extern char *strndup(const char *s, size_t size);
+
 #if 0 /* NOT IMPLEMENTED */
 /**
  * The memccpy() function copies bytes from memory area s2 into s1, stopping
@@ -466,6 +497,8 @@ extern int strcoll(const char *s1, const char *s2);
 extern size_t strxfrm(char *s1, const char *s2, size_t n);
 
 #endif
+
+#include <string_bsd.h>
 
 __END_DECLS
 
