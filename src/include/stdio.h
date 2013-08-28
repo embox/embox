@@ -199,8 +199,6 @@ extern FILE *stderr;
 
 //TODO: stub
 
-extern void clearerr(FILE *stream);
-
 extern int feof(FILE *stream);
 
 extern int ferror(FILE *stream);

@@ -260,5 +260,86 @@ int chown(const char *path, uid_t owner, gid_t group) {
 	return -1;
 }
 
+#include <time.h>
+static inline
+time_t timegm(struct tm *tm) {
+	DPRINT();
+	return mktime(tm);
+}
+
+static inline
+int execl(const char *path, const char *arg, ...) {
+	DPRINT();
+	errno = EPERM;
+	return -1;
+}
+
+static inline
+int execvp(const char *file, char *const argv[]) {
+	DPRINT();
+	errno = EPERM;
+	return -1;
+}
+
+#include <sys/types.h>
+static inline
+int getgroups(int size, gid_t list[]) {
+	DPRINT();
+	errno = -EPERM;
+	return -1;
+}
+
+#include <stdlib.h>
+static inline
+unsigned long long int strtoull(const char *nptr, char **endptr,
+                                       int base) {
+	DPRINT();
+	return strtoul(nptr, endptr, base);
+}
+
+static inline
+void clearerr(FILE *stream) {
+	DPRINT();
+}
+
+#include <dirent.h>
+static inline
+void seekdir(DIR *dirp, long offset) {
+	DPRINT();
+}
+
+static inline
+long telldir(DIR *dirp) {
+	DPRINT();
+	errno = EPERM;
+	return -1;
+}
+
+static inline
+void rewinddir(DIR *dirp) {
+	DPRINT();
+}
+
+static inline
+void
+swab (const void *bfrom, void *bto, ssize_t n)
+{
+  const char *from = (const char *) bfrom;
+  char *to = (char *) bto;
+
+  n &= ~((ssize_t) 1);
+  while (n > 1)
+    {
+      const char b0 = from[--n], b1 = from[--n];
+      to[n] = b0;
+      to[n + 1] = b1;
+    }
+}
+
+static inline
+int fnmatch(const char *pattern, const char *string, int flags) {
+	DPRINT();
+	return -1;
+}
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

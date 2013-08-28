@@ -87,9 +87,21 @@ ExternalProject_Add(
       ac_cv_lib_ext_rt_nanosleep=no
       ac_cv_search_backtrace_symbols=no
       ac_cv_func_backtrace_symbols=no
+      ac_cv_func_connect=yes
+      ac_cv_func_strlcpy=no
+      ac_cv_func_strndup=no
+      ac_cv_func_strnlen=no
+      ac_cv_func_waitpid=yes
+      ac_cv_func_strtoull=yes
+      #ac_cv_func___strtoull=no
+      #ac_cv_func_strtouq=no
+      #ac_cv_func_strtoll=no
+      #ac_cv_func___strtoll=no
+      #ac_cv_func_strtoq=no
    BUILD_COMMAND
       <SOURCE_DIR>/source3/runfromhere.sh make
         EXEEXT=.embox.o
+        LIBS=
         libsmbclient
         bin/smbclient.embox.o
    LOG_BUILD 1
