@@ -57,6 +57,12 @@ static struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 		return NULL;
 	}
 
+	if(!dir->nas || !dir->nas->fs) {
+		SET_ERRNO(EBADF);
+		vfs_del_leaf(child);
+		return NULL;
+	}
+
 	/* check drv of parents */
 	drv = dir->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
