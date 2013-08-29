@@ -16,10 +16,10 @@
 #ifndef STRING_H_
 #define STRING_H_
 
-#include <stddef.h>
+#include <defines/null.h>
+#include <defines/size_t.h>
 
 #include <sys/cdefs.h>
-
 __BEGIN_DECLS
 
 /**

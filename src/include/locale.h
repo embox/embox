@@ -10,10 +10,9 @@
 #ifndef LOCALE_H_
 #define LOCALE_H_
 
-#include <stddef.h>
+#include <defines/size_t.h>
 
 #include <sys/cdefs.h>
-
 __BEGIN_DECLS
 
 /* These are the possibilities for the first argument to setlocale.

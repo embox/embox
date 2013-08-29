@@ -13,10 +13,7 @@
 
 #include <asm/types.h>
 
-#ifndef __size_t_defined
-#define __size_t_defined
-typedef unsigned int size_t; /**<Used for sizes of objects*/
-#endif /* __size_t_defined */
+#include <defines/size_t.h>
 
 /** Note also that 'size_t' is a typedef required by the ISO C standard
  (it must be available if <stddef.h> is included). However, 'ssize_t'

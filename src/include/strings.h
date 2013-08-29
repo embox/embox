@@ -9,7 +9,8 @@
 #ifndef STRINGS_H_
 #define STRINGS_H_
 
-#include <stddef.h>
+
+#include <defines/size_t.h>
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS

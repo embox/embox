@@ -13,9 +13,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <kernel/printk.h>
+
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_repo.h>
 #include <drivers/pci/pci_utils.h>
+
 
 struct pci_reg {
 	uint8_t offset;

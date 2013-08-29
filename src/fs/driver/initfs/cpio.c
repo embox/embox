@@ -17,6 +17,7 @@
 
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
+#include <kernel/printk.h>
 
 /**
  * The pathname is followed by NUL bytes so that the total size of the fixed

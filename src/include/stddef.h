@@ -21,38 +21,12 @@
 	__builtin_offsetof(type, member)
 #endif
 
-#ifndef NULL
-#ifndef __cplusplus
-#define NULL ((void *)0)
-#else /* __cplusplus */
-#define NULL 0
-#endif /* ! __cplusplus */
-#endif
+#include <defines/null.h>
 
-#ifndef __size_t_defined
-#define __size_t_defined
-typedef __size_t size_t;
-#endif /*__size_t_defined */
+#include <defines/size_t.h>
 
-#ifndef __cplusplus
-#ifndef __wchar_t_defined
-#define __wchar_t_defined
-typedef int wchar_t;
-#endif /*__wchar_t_defined */
-#endif
+#include <defines/wchar_t.h>
 
-#ifndef __ptrdiff_t_defined
-#define __ptrdiff_t_defined
 typedef __ptrdiff_t ptrdiff_t;
-#endif /*__ptrdiff_t_defined */
 
-#ifndef __intptr_t_defined
-#define __intptr_t_defined
-typedef __intptr_t intptr_t;
-#endif /*__intptr_t_defined */
-
-#ifndef __uintptr_defined
-#define __uintptr_defined
-typedef __uintptr_t uintptr_t;
-#endif /*__intptr_t_defined */
 #endif /* STDDEF_H_ */

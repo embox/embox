@@ -9,6 +9,8 @@
  */
 
 #include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* How many bytes are copied each iteration of the word copy loop.  */
 #define BLOCK_SZ (sizeof(long))

@@ -201,12 +201,18 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 # define UINTPTR_MAX __UINTPTR_MAX__
 #endif
 
+#ifdef __INTMAX_MAX__
 #undef INTMAX_MAX
 #define INTMAX_MAX __INTMAX_MAX__
+#endif
+
 #undef INTMAX_MIN
 #define INTMAX_MIN (-INTMAX_MAX - 1)
+
+#ifdef __UINTMAX_MAX__
 #undef UINTMAX_MAX
 #define UINTMAX_MAX __UINTMAX_MAX__
+#endif
 
 /* 7.18.3 Limits of other integer types */
 

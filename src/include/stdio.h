@@ -11,16 +11,19 @@
 #ifndef STDIO_H_
 #define STDIO_H_
 
+/*va_list As described in <stdarg.h>. */
 #include <stdarg.h>
-#include <stddef.h>
-#include <kernel/printk.h>
+
+#include <defines/size_t.h>
+#include <defines/null.h>
+
 
 #define EOF (-1)
 
 #define _IOFBF        0x20
 #define _IOLBF        0x20
 #define _IONBF        0x20
-#define	BUFSIZ        0x100
+#define BUFSIZ        0x100
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 

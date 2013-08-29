@@ -51,16 +51,17 @@ typedef __u_fast uint_fast64_t;
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
 
-#ifndef __intptr_t_defined
-#define __intptr_t_defined
+
 typedef __intptr_t intptr_t;
-#endif /*__intptr_t_defined */
 
-#ifndef __uintptr_defined
-#define __uintptr_defined
 typedef __uintptr_t uintptr_t;
-#endif /*__intptr_t_defined */
 
+
+/* XXX these macros should be defined as INT64_MAX/MIN and UINT64_MAX/MIN --Alexander */
+#define INTMAX_MIN  (-INTMAX_MAX - 1)
+#define INTMAX_MAX  9223372036854775807LL
+
+#define UINTMAX_MAX 18446744073709551615ULL
 
 #include <stdint-gcc.h>
 

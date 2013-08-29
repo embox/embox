@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <stddef.h>
 
 void *upper_bound(const void *key, const void *base,
               size_t nmemb, size_t size,
