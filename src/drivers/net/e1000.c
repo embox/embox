@@ -33,6 +33,7 @@
 
 #include <mem/misc/pool.h>
 
+#include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
 #include <embox/unit.h>
@@ -95,40 +96,52 @@ static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 }
 
 static int e1000_xmit(struct net_device *dev) {
-	uint16_t head = REG_LOAD(e1000_reg(dev, E1000_REG_TDH));
-	uint16_t tail  = REG_LOAD(e1000_reg(dev, E1000_REG_TDT));
+	uint16_t head;
+	uint16_t tail;
 	struct sk_buff *skb;
 
-	if ((tail + 1 % E1000_TXDESC_NR) == head) {
-		return ENOERR;
+	/* Called from kernel space and IRQ. Don't want tail to be handled twice */
+	irq_lock();
+	{
+		head = REG_LOAD(e1000_reg(dev, E1000_REG_TDH));
+		tail = REG_LOAD(e1000_reg(dev, E1000_REG_TDT));
+
+		if ((tail + 1 % E1000_TXDESC_NR) == head) {
+			goto out_unlock;
+		}
+
+		skb = skb_queue_pop(&dev->tx_dev_queue);
+
+		if (skb == NULL) {
+			goto out_unlock;
+		}
+
+		tx_descs[tail].buffer_address = (uint32_t) skb->mac.raw;
+		tx_descs[tail].status = 0;
+		tx_descs[tail].cmd = E1000_TX_CMD_EOP |
+					E1000_TX_CMD_FCS |
+					E1000_TX_CMD_RS;
+		tx_descs[tail].length  = skb->len;
+
+		++tail;
+		tail %= E1000_TXDESC_NR;
+
+		REG_STORE(e1000_reg(dev, E1000_REG_TDT), tail);
+
+		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->txing_queue, skb);
 	}
-
-	skb = skb_queue_pop(&dev->tx_dev_queue);
-
-	if (skb == NULL) {
-		return 0;
-	}
-
-	tx_descs[tail].buffer_address = (uint32_t) skb->mac.raw;
-	tx_descs[tail].status = 0;
-	tx_descs[tail].cmd = E1000_TX_CMD_EOP |
-			        E1000_TX_CMD_FCS |
-				E1000_TX_CMD_RS;
-	tx_descs[tail].length  = skb->len;
-
-	++tail;
-	tail %= E1000_TXDESC_NR;
-
-	REG_STORE(e1000_reg(dev, E1000_REG_TDT), tail);
-
-	skb_queue_push(&netdev_priv(dev, struct e1000_priv)->txing_queue, skb);
-
+out_unlock:
+	irq_unlock();
 	return 0;
 }
 
 static int xmit(struct net_device *dev, struct sk_buff *skb) {
-	/*prom_printf("e1000: xmit 0x%x\n", (unsigned int) skb);*/
-	skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
+
+	irq_lock();
+	{
+		skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
+	}
+	irq_unlock();
 
 	e1000_xmit(dev);
 
@@ -138,70 +151,64 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 static void txed_skb_clean(struct net_device *dev) {
 	struct sk_buff *skb;
 
-	skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->txing_queue);
-
-	if (skb) {
-		skb_free(skb);
+	irq_lock();
+	{
+		while ((skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->txing_queue))) {
+			skb_free(skb);
+		}
 	}
+	irq_unlock();
 }
 
 static void e1000_rx(struct net_device *dev) {
 	/*net_device_stats_t stat = get_eth_stat(dev);*/
-	uint16_t head = REG_LOAD(e1000_reg(dev, E1000_REG_RDH));
-	uint16_t tail = REG_LOAD(e1000_reg(dev, E1000_REG_RDT));
-	uint16_t cur  = (1 + tail) % E1000_RXDESC_NR;
+	uint16_t head;
+	uint16_t tail;
+	uint16_t cur;
 
 	struct sk_buff *skb;
 
-	while (cur != head) {
-		int len = rx_descs[cur].length - 4; /* checksum */
-		if (!(rx_descs[cur].status)) {
-			break;
-		}
+	/* nested irq locked to prevent already handled packets handled once more
+	 * as tail updated at exit
+	 */
+	irq_lock();
+	{
+		head = REG_LOAD(e1000_reg(dev, E1000_REG_RDH));
+		tail = REG_LOAD(e1000_reg(dev, E1000_REG_RDT));
+		cur = (1 + tail) % E1000_RXDESC_NR;
 
-		if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
-					ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
-			goto drop_pack;
-		}
+		while (cur != head) {
+			int len;
 
-		if ((skb = skb_alloc(len))) {
-			memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
-			skb->dev = dev;
-			/*stat->rx_packets++;*/
-			/*stat->rx_bytes += skb->len;*/
-
-#if 0
-			{
-				unsigned char *p = skb->mac.raw;
-				int cnt = len > 64 ? 64 : len;
-				const unsigned char pat[] = { 0xaa, 0xbb, 0xcc, 0xdd};
-				if (!memcmp(p, pat, 4)) {
-
-					prom_printf("rx:\n");
-					while (cnt) {
-						int tcnt = 16;
-						while (--tcnt && --cnt) {
-							prom_printf("%02x ", *p++);
-						}
-						prom_printf("\n");
-					}
-				}
+			if (!(rx_descs[cur].status)) {
+				break;
 			}
 
-#endif
-			netif_rx(skb);
-		} else {
-			/*stat->rx_dropped++;*/
-		}
+			len = rx_descs[cur].length - 4; /* checksum */
+
+			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
+						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
+				goto drop_pack;
+			}
+
+			if ((skb = skb_alloc(len))) {
+				memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
+				skb->dev = dev;
+				/*stat->rx_packets++;*/
+				/*stat->rx_bytes += skb->len;*/
+				netif_rx(skb);
+			} else {
+				/*stat->rx_dropped++;*/
+			}
 
 drop_pack:
-		tail = cur;
+			tail = cur;
 
-		++cur;
-		cur %= E1000_RXDESC_NR;
-
+			cur = (1 + tail) % E1000_RXDESC_NR;
+		}
+		REG_STORE(e1000_reg(dev, E1000_REG_RDT), tail);
 	}
-	REG_STORE(e1000_reg(dev, E1000_REG_RDT), tail);
+	irq_unlock();
 }
 
 static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
