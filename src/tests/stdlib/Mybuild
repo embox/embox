@@ -60,3 +60,10 @@ module strdup_test{
 	depends embox.framework.LibFramework
 }
 
+module strlen_test{
+	source "strlen.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
