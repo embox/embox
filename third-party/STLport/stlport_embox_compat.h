@@ -147,6 +147,8 @@ int   pthread_key_create(struct pthread_key **, void (*)(void *)) {
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
+extern void clearerr(FILE *stream);
+
 #endif // __cplusplus
 
 #endif /* STLPORT_EMBOX_COMPAT_H_ */
