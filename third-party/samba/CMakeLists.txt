@@ -93,6 +93,8 @@ ExternalProject_Add(
       ac_cv_func_strnlen=no
       ac_cv_func_waitpid=yes
       ac_cv_func_strtoull=yes
+      ac_cv_func_getpass=yes
+      libreplace_cv_REPLACE_GETPASS=no
       #ac_cv_func___strtoull=no
       #ac_cv_func_strtouq=no
       #ac_cv_func_strtoll=no
