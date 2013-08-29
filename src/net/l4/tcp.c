@@ -30,6 +30,7 @@
 #include <net/if_ether.h>
 #include <util/sys_log.h>
 
+#include <kernel/panic.h>
 #include <kernel/event.h>
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -166,49 +167,10 @@ struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
 }
 
 void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
-	unsigned int is_locked;
-
-	/* FIXME `tmp_bug_fix` is temporary variable, which help fix the next bug:
-	 * For example, we locked TCP_SYNC_STATE by tcp_obj_lock(sock, TCP_SYNC_STATE).
-	 * It set some bit of `lock` variable. Then if any packages was received
-	 * there handlers may want to lock the same objects. But we have some problem..
-	 * When we processing received packages, current thread has a higher priority
-	 * than user's thread, so we has infinite loop waiting for unlock this bit..
-	 */
-	size_t tmp_bug_fix = 0;
-
-	debug_print(5, "tcp_obj_lock: try sk %p (%x/%x)\n", sock.tcp_sk, obj, sock.tcp_sk->lock);
-
-	while (1) {
-		softirq_lock();
-		{
-			is_locked = sock.tcp_sk->lock & obj;
-			sock.tcp_sk->lock |= obj;
-		}
-		softirq_unlock();
-
-		if (!is_locked) {
-			break;
-		}
-
-		usleep(0);
-
-		if (++tmp_bug_fix > 1000) {
-//			printk("tcp_obj_lock: error: wake up from infinite loop\n");
-			break;
-		}
-	}
-
-	debug_print(5, "tcp_obj_lock: sk %p (%x/%x) locked\n", sock.tcp_sk, obj, sock.tcp_sk->lock);
+	softirq_lock();
 }
 
 void tcp_obj_unlock(union sock_pointer sock, uint32_t obj) {
-	debug_print(5, "tcp_obj_unlock: sk %p (%x/%x) unlocked\n", sock.tcp_sk, obj, sock.tcp_sk->lock);
-
-	softirq_lock();
-	{
-		sock.tcp_sk->lock &= ~obj;
-	}
 	softirq_unlock();
 }
 
@@ -570,7 +532,8 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		ret = sock_create(sock.sk->opt.so_domain,
 				SOCK_STREAM, IPPROTO_TCP, &newsock.sk);
 		if (ret != 0) {
-			return ret;
+			printk("%s: can't alloc socket\n", __func__);
+			return TCP_RET_DROP;
 		}
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n", newsock.tcp_sk, *pskb, sock.tcp_sk);
 		/* Set up new socket */
@@ -815,26 +778,40 @@ static enum tcp_ret_code tcp_st_timewait(union sock_pointer sock, struct sk_buff
 /************************ Process functions ****************************/
 static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcph,
 		struct tcphdr *out_tcph) {
-	switch (sock.sk->state) {
-	case TCP_TIMEWAIT: /* User already closed sock, it waiting to be collected by
-			       tcp timer, can do it now*/
-		/* XXX Why it's need? */
+	enum tcp_state tsock_state = sock.sk->state;
+
+	switch (tsock_state) {
+	case TCP_LASTACK:
+	case TCP_FINWAIT_1:
+	case TCP_FINWAIT_2:
+	case TCP_TIMEWAIT: /* don't wait for tcp_timer to collect the socket */
+		/* socket have a state only after close call. It could be freed only here */
 		return TCP_RET_FREE;
 	case TCP_CLOSED: /* TODO */
 	case TCP_LISTEN: /* TODO */
 	case TCP_SYN_RECV_PRE: /* TODO */
-		break;
-	default:
-		if ((sock.sk->state == TCP_SYN_SENT) &&
-		    (sock.tcp_sk->self.seq != ntohl(tcph->ack_seq))) {
-			break; /* invalid reset */
+		return TCP_RET_DROP;
+
+	case TCP_SYN_SENT:
+		if (sock.tcp_sk->self.seq != ntohl(tcph->ack_seq)) {
+			/* invalid reset */
+			return TCP_RET_DROP;
 		}
+		/* PASSTHROUGH */
+	case TCP_SYN_RECV:
+	case TCP_ESTABIL:
+	case TCP_CLOSEWAIT:
+	case TCP_CLOSING:
 		tcp_set_st(sock, TCP_CLOSED);
 		if (!list_empty(&sock.tcp_sk->conn_wait)) {
+			assert(sock.tcp_sk->parent);
 			list_del_init(&sock.tcp_sk->conn_wait);
 			return TCP_RET_FREE;
 		}
-		break;
+		return TCP_RET_DROP;
+	case TCP_MAX_STATE:
+	default:
+		panic("%s: unreachable state", __func__);
 	}
 
 	return TCP_RET_DROP;
