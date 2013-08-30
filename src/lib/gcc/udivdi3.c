@@ -6,10 +6,8 @@
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
-#include <limits.h>
-#include <stdint.h>
 
-#define MASK_DWORD  (uint64_t)1 << ((WORD_BIT * 2) - 1)
+#include <stdint.h>
 
 uint64_t __udivdi3(uint64_t num, uint64_t den) {
 	uint64_t result = 0;
@@ -22,7 +20,7 @@ uint64_t __udivdi3(uint64_t num, uint64_t den) {
 	steps = 0;
 	result = 0;
 
-	while (!(den & MASK_DWORD)) {
+	while (!(den & 0x8000000000000000)) {
 		den <<= 1;
 		++steps;
 	}
