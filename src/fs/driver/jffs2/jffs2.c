@@ -66,7 +66,7 @@ struct jffs2_dirsearch {
 	bool last;		    		/* last name in path? */
 };
 
-typedef struct jffs2_dirsearch jffs2_dirsearch;
+typedef struct jffs2_dirsearch jffs2_dirsearch_t;
 
 /**
  * Ref count and nlink management
@@ -116,7 +116,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 /**
  * Initialize a dirsearch object to start a search
  */
-static void init_dirsearch(jffs2_dirsearch * ds,
+static void init_dirsearch(jffs2_dirsearch_t * ds,
 			   struct _inode *dir, const unsigned char *name) {
 	D2(printf("init_dirsearch name = %s\n", name));
 	D2(printf("init_dirsearch dir = %x\n", dir));
@@ -134,7 +134,7 @@ static void init_dirsearch(jffs2_dirsearch * ds,
  * Search a single directory for the next name in a path and update the
  * dirsearch object appropriately.
  */
-static int find_entry(jffs2_dirsearch * ds) {
+static int find_entry(jffs2_dirsearch_t * ds) {
 	struct _inode *dir = ds->dir;
 	const unsigned char *name = ds->path;
 	const unsigned char *n = name;
@@ -220,7 +220,7 @@ static int find_entry(jffs2_dirsearch * ds) {
  * Returns with use count incremented on both the sought object and
  * the directory it was found in
  */
-static int jffs2_find(jffs2_dirsearch * d) {
+static int jffs2_find(jffs2_dirsearch_t * d) {
 	int err;
 
 	D2(printf("jffs2_find for path =%s\n", d->path));
@@ -547,7 +547,7 @@ static int jffs2_umount(struct nas *dir_nas) {
  * Open a file for reading or writing.
  */
 static int jffs2_open(struct _inode *dir_ino, const char *name, int mode) {
-	jffs2_dirsearch ds;
+	jffs2_dirsearch_t ds;
 	struct _inode *node = NULL;
 	int err;
 
@@ -2278,12 +2278,12 @@ static int jffs2fs_mount(void *dev, void *dir) {
 
 static int jffs2fs_truncate (struct node *node, off_t length) {
 	struct nas *nas = node->nas;
-	struct _inode *inode;
+	struct jffs2_file_info *fi;
 
 	nas->fi->ni.size = length;
-	inode = nas->fi->privdata;
 
-	jffs2_truncate_file (inode);
+	fi = nas->fi->privdata;
+	jffs2_truncate_file (fi->_inode);
 
 	return 0;
 }
