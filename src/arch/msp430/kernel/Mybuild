@@ -10,3 +10,7 @@ module boot {
 	source "init_hooks.c"
 }
 
+module irq extends embox.arch.interrupt {
+	source "ipl_impl.h"
+}
+
