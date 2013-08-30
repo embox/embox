@@ -3,8 +3,8 @@ package embox.fs.driver
 module jffs2 {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/zlib-1.2.8")
 	source "build.c", "compr_rtime.c", "compr_rubin.c", "compr_zlib.c", "compr.c", "debug.c"
-	source "dir-ecos.c", "erase.c", "gc.c", "scan.c", "readinode.c", "jffs2.c"
-	source "read.c", "nodelist.c", "write.c", "malloc-ecos.c", "nodemgmt.c", "rbtree.c", "flashio.c"
+	source "dir.c", "erase.c", "gc.c", "scan.c", "readinode.c", "jffs2.c"
+	source "read.c", "nodelist.c", "write.c", "malloc_jffs2.c", "nodemgmt.c", "rbtree.c", "flashio.c"
 	option number inode_quantity=64
 	option number jffs2_descriptor_quantity=4
 

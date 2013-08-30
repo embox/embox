@@ -313,7 +313,7 @@ int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 		return hd->blks;
 
 	case IOCTL_GETBLKSIZE:
-		return SECTOR_SIZE;
+		return hd->param.unfbytes;
 
 	case IOCTL_GETGEOMETRY:
 		if (!args || size != sizeof(struct dev_geometry)) {
@@ -323,7 +323,7 @@ int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 		geom->cyls = hd->cyls;
 		geom->heads = hd->heads;
 		geom->spt = hd->sectors;
-		geom->sectorsize = SECTOR_SIZE;
+		geom->sectorsize = hd->param.unfbytes;
 		geom->sectors = hd->blks;
 		return 0;
 

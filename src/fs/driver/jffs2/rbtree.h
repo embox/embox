@@ -34,8 +34,7 @@ extern void rb_replace_node(struct rb_node *victim, struct rb_node *new,
 			    struct rb_root *root);
 
 static inline void rb_link_node(struct rb_node * node, struct rb_node * parent,
-				struct rb_node ** rb_link)
-{
+				struct rb_node ** rb_link) {
 	node->rb_parent = parent;
 	node->rb_color = RB_RED;
 	node->rb_left = node->rb_right = NULL;

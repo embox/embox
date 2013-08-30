@@ -214,7 +214,7 @@ static block_dev_driver_t idecd_pio_driver = {
 static int idecd_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
-	double size;
+	size_t size;
 	int i;
 	char   path[PATH_MAX];
 
@@ -236,11 +236,11 @@ static int idecd_init (void *args) {
 			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 
 			if (NULL != drive->bdev) {
-				size = (double) drive->param.cylinders *
-					   (double) drive->param.heads *
-					   (double) drive->param.unfbytes *
-					   (double) (drive->param.sectors + 1);
-				block_dev(drive->bdev)->size = (size_t) size;
+				if (drive->blks <= 0) {
+					drive->blks = atapi_read_capacity(drive);
+				}
+				size = drive->blks * CDSECTORSIZE;
+				block_dev(drive->bdev)->size = size;
 			} else {
 				return -1;
 			}

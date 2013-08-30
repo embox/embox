@@ -35,6 +35,7 @@ static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
 	block_dev_t *bdev;
 	int len;
 	char * data;
+	int rc;
 
 	bdev = dev->privdata;
 	if(NULL == bdev) {
@@ -45,13 +46,17 @@ static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
 	if(NULL == (data = malloc(len))) {
 		return -ENOMEM;
 	}
-	memset((void *) data, 0, (size_t) len);
+	memset((void *) data, 0xFF, (size_t) len);
 
-	len = block_dev_write_buffered(bdev, (const char *) data,
+	rc = block_dev_write_buffered(bdev, (const char *) data,
 									(size_t) len, block_base);
 	free(data);
 
-	return len;
+	if(len == rc) {
+		return 0;
+	}
+
+	return rc;
 }
 
 static int flash_emu_program (struct flash_dev *dev, uint32_t base,

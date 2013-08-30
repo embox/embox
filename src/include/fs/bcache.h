@@ -45,11 +45,16 @@ struct buffer_head {
 };
 
 static inline void bcache_buffer_lock(struct buffer_head *bh) {
+	assert((bh->flags & BH_LOCKED) == 0);
+
 	mutex_lock(&bh->mutex);
 	buffer_set_flag(bh, BH_LOCKED);
+
 }
 
 static inline void bcache_buffer_unlock(struct buffer_head *bh) {
+	assert((bh->flags & BH_LOCKED) != 0);
+
 	buffer_clear_flag(bh, BH_LOCKED);
 	mutex_unlock(&bh->mutex);
 }

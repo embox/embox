@@ -234,10 +234,7 @@ static int idedisk_init (void *args) {
 				drive->bdev = block_dev_create(path,
 						&idedisk_pio_driver, drive);
 				if (NULL != drive->bdev) {
-					size = drive->param.cylinders *
-						   drive->param.heads *
-						   drive->param.unfbytes *
-						   (drive->param.sectors + 1);
+					size = drive->blks * SECTOR_SIZE;
 					block_dev(drive->bdev)->size = size;
 				} else {
 					return -1;

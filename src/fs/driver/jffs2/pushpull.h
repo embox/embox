@@ -23,17 +23,15 @@ struct pushpull {
 	unsigned int reserve;
 };
 
-
-static inline void init_pushpull(struct pushpull *pp, char *buf, unsigned buflen, unsigned ofs, unsigned reserve)
-{
+static inline void init_pushpull(struct pushpull *pp,
+		char *buf, unsigned buflen, unsigned ofs, unsigned reserve) {
 	pp->buf = (unsigned char *) buf;
 	pp->buflen = buflen;
 	pp->ofs = ofs;
 	pp->reserve = reserve;
 }
 
-static inline int pushbit(struct pushpull *pp, int bit, int use_reserved)
-{
+static inline int pushbit(struct pushpull *pp, int bit, int use_reserved) {
 	if (pp->ofs >= pp->buflen - (use_reserved?0:pp->reserve)) {
 		return -ENOSPC;
 	}
@@ -49,13 +47,11 @@ static inline int pushbit(struct pushpull *pp, int bit, int use_reserved)
 	return 0;
 }
 
-static inline int pushedbits(struct pushpull *pp)
-{
+static inline int pushedbits(struct pushpull *pp) {
 	return pp->ofs;
 }
 
-static inline int pullbit(struct pushpull *pp)
-{
+static inline int pullbit(struct pushpull *pp) {
 	int bit;
 
 	bit = (pp->buf[pp->ofs >> 3] >> (7-(pp->ofs & 7))) & 1;
@@ -64,8 +60,7 @@ static inline int pullbit(struct pushpull *pp)
 	return bit;
 }
 
-static inline int pulledbits(struct pushpull *pp)
-{
+static inline int pulledbits(struct pushpull *pp) {
 	return pp->ofs;
 }
 

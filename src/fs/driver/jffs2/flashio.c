@@ -21,7 +21,6 @@ bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
 			  size_t * return_size, unsigned char *write_buffer) {
 	int err;
-//	struct super_block *sb = OFNI_BS_2SFFJ(c);
 	struct super_block *sb;
 	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
@@ -40,7 +39,7 @@ bool jffs2_flash_write(struct jffs2_sb_info * c,
 		uint32_t write_buffer_offset, const size_t size,
 		size_t * return_size, unsigned char *read_buffer) {
 	int err;
-	struct super_block *sb;// = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
 
 	sb = member_cast_out(c, struct super_block, jffs2_sb);
 	err = block_dev_write_buffered(sb->bdev,
@@ -79,8 +78,9 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ssize_t sizetomalloc = 0, totvecsize = 0;
 				char *cbuf, *cbufptr;
 
-				for (j = i; j < count; j++)
+				for (j = i; j < count; j++) {
 					totvecsize += vecs[j].iov_len;
+				}
 
 				/* pad up in case unaligned */
 				sizetomalloc = totvecsize + sizeof (int) - 1;
@@ -100,8 +100,9 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ret =
 				    jffs2_flash_write(c, to, sizetomalloc,
 						      &thislen, (unsigned char *) cbuf);
-				if (thislen > totvecsize)	/* in case it was aligned up */
+				if (thislen > totvecsize) {	/* in case it was aligned up */
 					thislen = totvecsize;
+				}
 				totlen += thislen;
 				free(cbuf);
 				goto writev_out;
@@ -119,21 +120,25 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ret =
 				    jffs2_flash_write(c, to, lentowrite,
 						      &thislen, (unsigned char *) &buf);
-				if (thislen > vecs[i].iov_len)
+				if (thislen > vecs[i].iov_len) {
 					thislen = vecs[i].iov_len;
+				}
 			}
-		} else
+		} else {
 			ret =
 			    jffs2_flash_write(c, to, vecs[i].iov_len, &thislen,
 					      vecs[i].iov_base);
+		}
 		totlen += thislen;
-		if (ret || thislen != vecs[i].iov_len)
+		if (ret || thislen != vecs[i].iov_len) {
 			break;
+		}
 		to += vecs[i].iov_len;
 	}
       writev_out:
-	if (retlen)
+	if (retlen) {
 		*retlen = totlen;
+	}
 
 	return ret;
 }
@@ -144,7 +149,7 @@ bool jffs2_flash_erase(struct jffs2_sb_info * c,
 	uint32_t err_addr;
 	int err;
 	uint32_t len = sizeof (e);
-	struct super_block *sb;// = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
 	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
 	e.offset = jeb->offset;

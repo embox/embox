@@ -35,6 +35,7 @@
 #include <mem/phymem.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <drivers/flash/flash.h>
 
 #define FS_NAME "jffs2"
 
@@ -46,156 +47,16 @@ POOL_DEF(jffs2_fs_pool, struct jffs2_fs_info,
 POOL_DEF(jffs2_file_pool, struct jffs2_file_info,
 		OPTION_GET(NUMBER,inode_quantity));
 
-//#include <cyg/io/config_keys.h>
-/*
-#if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && \
-    (defined (__arm__) || defined (_mips))
-#error This compiler is known to be broken. Please see:
-#error "http://ecos.sourceware.org/ml/ecos-patches/2003-08/msg00006.html"
-#endif
-
-//==========================================================================
-// Forward definitions
-
-// Filesystem operations
-static int jffs2_mount(cyg_fstab_entry * fste, cyg_mtab_entry * mte);
-static int jffs2_umount(cyg_mtab_entry * mte);
-static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-		      int mode, cyg_file * fte);
-#ifdef CYGOPT_FS_JFFS2_WRITE
-static int jffs2_ops_unlink(cyg_mtab_entry * mte, cyg_dir dir,
-			    const char *name);
-static int jffs2_ops_mkdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name);
-static int jffs2_ops_rmdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name);
-static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
-			    const char *name1, cyg_dir dir2, const char *name2);
-static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
-			  cyg_dir dir2, const char *name2, int type);
-#endif
-static int jffs2_opendir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 cyg_file * fte);
-static int jffs2_chdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-		       cyg_dir * dir_out);
-static int jffs2_stat(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-		      struct stat *buf);
-static int jffs2_getinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 int key, void *buf, int len);
-static int jffs2_setinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 int key, void *buf, int len);
-
-// File operations
-static int jffs2_fo_read(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
-#ifdef CYGOPT_FS_JFFS2_WRITE
-static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
-#endif
-static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * pos, int whence);
-static int jffs2_fo_ioctl(struct CYG_FILE_TAG *fp, CYG_ADDRWORD com,
-			  CYG_ADDRWORD data);
-static int jffs2_fo_fsync(struct CYG_FILE_TAG *fp, int mode);
-static int jffs2_fo_close(struct CYG_FILE_TAG *fp);
-static int jffs2_fo_fstat(struct CYG_FILE_TAG *fp, struct stat *buf);
-static int jffs2_fo_getinfo(struct CYG_FILE_TAG *fp, int key, void *buf,
-			    int len);
-static int jffs2_fo_setinfo(struct CYG_FILE_TAG *fp, int key, void *buf,
-			    int len);
-
-// Directory operations
-static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
-static int jffs2_fo_dirlseek(struct CYG_FILE_TAG *fp, off_t * pos, int whence);
-
-*/
 static int jffs2_read_inode (struct _inode *inode);
 static void jffs2_clear_inode (struct _inode *inode);
 
-
 static int jffs2_truncate_file (struct _inode *inode);
-/*
-//==========================================================================
-// Filesystem table entries
+static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids malloc when user may be under memory pressure */
+static unsigned char n_fs_mounted = 0;  /* a counter to track the number of jffs2 instances mounted */
 
-// -------------------------------------------------------------------------
-// Fstab entry.
-// This defines the entry in the filesystem table.
-// For simplicity we use _FILESYSTEM synchronization for all accesses since
-// we should never block in any filesystem operations.
-
-#ifdef CYGOPT_FS_JFFS2_WRITE
-FSTAB_ENTRY(jffs2_fste, "jffs2", 0,
-	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILESYSTEM,
-	    jffs2_mount,
-	    jffs2_umount,
-	    jffs2_open,
-	    jffs2_ops_unlink,
-	    jffs2_ops_mkdir,
-	    jffs2_ops_rmdir,
-	    jffs2_ops_rename,
-	    jffs2_ops_link,
-	    jffs2_opendir,
-	    jffs2_chdir, jffs2_stat, jffs2_getinfo, jffs2_setinfo);
-#else
-FSTAB_ENTRY(jffs2_fste, "jffs2", 0,
-	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILESYSTEM,
-	    jffs2_mount,
-	    jffs2_umount,
-	    jffs2_open,
-	    (cyg_fsop_unlink *)cyg_fileio_erofs,
-	    (cyg_fsop_mkdir *)cyg_fileio_erofs,
-	    (cyg_fsop_rmdir *)cyg_fileio_erofs,
-	    (cyg_fsop_rename *)cyg_fileio_erofs,
-	    (cyg_fsop_link *)cyg_fileio_erofs,
-	    jffs2_opendir,
-	    jffs2_chdir, jffs2_stat, jffs2_getinfo, jffs2_setinfo);
-#endif
-
-// -------------------------------------------------------------------------
-// File operations.
-// This set of file operations are used for normal open files.
-
-static cyg_fileops jffs2_fileops = {
-	jffs2_fo_read,
-#ifdef CYGOPT_FS_JFFS2_WRITE
-	jffs2_fo_write,
-#else
-	(cyg_fileop_write *) cyg_fileio_erofs,
-#endif
-	jffs2_fo_lseek,
-	jffs2_fo_ioctl,
-	cyg_fileio_seltrue,
-	jffs2_fo_fsync,
-	jffs2_fo_close,
-	jffs2_fo_fstat,
-	jffs2_fo_getinfo,
-	jffs2_fo_setinfo
-};
-
-// -------------------------------------------------------------------------
-// Directory file operations.
-// This set of operations are used for open directories. Most entries
-// point to error-returning stub functions. Only the read, lseek and
-// close entries are functional.
-
-static cyg_fileops jffs2_dirops = {
-	jffs2_fo_dirread,
-	(cyg_fileop_write *) cyg_fileio_enosys,
-	jffs2_fo_dirlseek,
-	(cyg_fileop_ioctl *) cyg_fileio_enosys,
-	cyg_fileio_seltrue,
-	(cyg_fileop_fsync *) cyg_fileio_enosys,
-	jffs2_fo_close,
-	(cyg_fileop_fstat *) cyg_fileio_enosys,
-	(cyg_fileop_getinfo *) cyg_fileio_enosys,
-	(cyg_fileop_setinfo *) cyg_fileio_enosys
-};
-*/
-//==========================================================================
-// STATIC VARIABLES !!!
-
-static unsigned char gc_buffer[PAGE_CACHE_SIZE];	//avoids malloc when user may be under memory pressure
-static unsigned char n_fs_mounted = 0;  // a counter to track the number of jffs2 instances mounted
-
-//==========================================================================
-// Directory operations
-
+/***********************
+ * Directory operations
+ */
 struct jffs2_dirsearch {
 	struct _inode *dir;	    	/* directory to search */
 	const unsigned char *path;  /* path to follow */
@@ -207,29 +68,34 @@ struct jffs2_dirsearch {
 
 typedef struct jffs2_dirsearch jffs2_dirsearch;
 
-//==========================================================================
-// Ref count and nlink management
+/**
+ * Ref count and nlink management
+ */
 
-
-// FIXME: This seems like real cruft. Wouldn't it be better just to do the
-// right thing?
-static void icache_evict(struct _inode *root_i, struct _inode *i)
-{
+/**
+ * FIXME: This seems like real cruft. Wouldn't it be better just to do the
+ * right thing?
+ */
+static void icache_evict(struct _inode *root_i, struct _inode *i) {
 	struct _inode *this = root_i, *next;
+	struct _inode *parent;
 
  restart:
 	D2(printf("icache_evict\n"));
-	// If this is an absolute search path from the root,
-	// remove all cached inodes with i_count of zero (these are only
-	// held where needed for dotdot filepaths)
+	/* If this is an absolute search path from the root,
+	 * remove all cached inodes with i_count of zero (these are only
+	 * held where needed for dotdot filepaths)
+	 */
 	while (this) {
 		next = this->i_cache_next;
 		if (this != i && this->i_count == 0) {
-			struct _inode *parent = this->i_parent;
-			if (this->i_cache_next)
+			parent = this->i_parent;
+			if (this->i_cache_next) {
 				this->i_cache_next->i_cache_prev = this->i_cache_prev;
-			if (this->i_cache_prev)
+			}
+			if (this->i_cache_prev) {
 				this->i_cache_prev->i_cache_next = this->i_cache_next;
+			}
 			jffs2_clear_inode(this);
 			memset(this, 0x5a, sizeof(*this));
 			free(this);
@@ -243,16 +109,15 @@ static void icache_evict(struct _inode *root_i, struct _inode *i)
 	}
 }
 
-//==========================================================================
-// Directory search
+/******************************
+ * Directory search
+ */
 
-// -------------------------------------------------------------------------
-// init_dirsearch()
-// Initialize a dirsearch object to start a search
-
+/**
+ * Initialize a dirsearch object to start a search
+ */
 static void init_dirsearch(jffs2_dirsearch * ds,
-			   struct _inode *dir, const unsigned char *name)
-{
+			   struct _inode *dir, const unsigned char *name) {
 	D2(printf("init_dirsearch name = %s\n", name));
 	D2(printf("init_dirsearch dir = %x\n", dir));
 
@@ -265,13 +130,11 @@ static void init_dirsearch(jffs2_dirsearch * ds,
 	ds->last = false;
 }
 
-// -------------------------------------------------------------------------
-// find_entry()
-// Search a single directory for the next name in a path and update the
-// dirsearch object appropriately.
-
-static int find_entry(jffs2_dirsearch * ds)
-{
+/**
+ * Search a single directory for the next name in a path and update the
+ * dirsearch object appropriately.
+ */
+static int find_entry(jffs2_dirsearch * ds) {
 	struct _inode *dir = ds->dir;
 	const unsigned char *name = ds->path;
 	const unsigned char *n = name;
@@ -280,116 +143,124 @@ static int find_entry(jffs2_dirsearch * ds)
 
 	D2(printf("find_entry\n"));
 
-	// check that we really have a directory
-	if (!S_ISDIR(dir->i_mode))
+	/* check that we really have a directory */
+	if (!S_ISDIR(dir->i_mode)) {
 		return ENOTDIR;
-
-	// Isolate the next element of the path name.
-	while (*n != '\0' && *n != '/')
+	}
+	/* Isolate the next element of the path name. */
+	while (*n != '\0' && *n != '/') {
 		n++, namelen++;
-
-	// Check if this is the last path element.
-	while( *n == '/') n++;
-	if (*n == '\0')
+	}
+	/* Check if this is the last path element. */
+	while( *n == '/') {
+		n++;
+	}
+	if (*n == '\0') {
 		ds->last = true;
+	}
 
-	// update name in dirsearch object
+	/* update name in dirsearch object */
 	ds->name = name;
 	ds->namelen = namelen;
 
-	if (name[0] == '.')
+	if (name[0] == '.') {
 		switch (namelen) {
 		default:
 			break;
 		case 2:
-			// Dot followed by not Dot, treat as any other name
+			/* Dot followed by not Dot, treat as any other name */
 			if (name[1] != '.')
 				break;
-			// Dot Dot
-			// Move back up the search path
+			/* Dot Dot
+			 * Move back up the search path
+			 */
 			D2(printf("find_entry found ..\n"));
 			ds->dir = ds->node;
 			ds->node = ds->dir->i_parent;
 			ds->node->i_count++;
 			return ENOERR;
 		case 1:
-			// Dot is consumed
+			/* Dot is consumed */
 			D2(printf("find_entry found .\n"));
 			ds->node = ds->dir;
 			ds->dir->i_count++;
 			return ENOERR;
 		}
+	}
 
-	// Here we have the name and its length set up.
-	// Search the directory for a matching entry
+	/* Here we have the name and its length set up. */
+	/* Search the directory for a matching entry */
 
 	D2(printf("find_entry for name = %s\n", ds->path));
 	d = jffs2_lookup(dir, name, namelen);
 	D2(printf("find_entry got dir = %x\n", d));
 
-	if (d == NULL)
+	if (d == NULL) {
 		return ENOENT;
-	if (IS_ERR(d))
+	}
+	if (IS_ERR(d)) {
 		return -PTR_ERR(d);
+	}
 
-	// If it's a new directory inode, increase refcount on its parent
+	/* If it's a new directory inode, increase refcount on its parent */
 	if (S_ISDIR(d->i_mode) && !d->i_parent) {
 		d->i_parent = dir;
 		dir->i_count++;
 	}
 
-	// pass back the node we have found
+	/* pass back the node we have found */
 	ds->node = d;
 	return ENOERR;
-
 }
 
-// -------------------------------------------------------------------------
-// jffs2_find()
-// Main interface to directory search code. This is used in all file
-// level operations to locate the object named by the pathname.
-
-// Returns with use count incremented on both the sought object and
-// the directory it was found in
-static int jffs2_find(jffs2_dirsearch * d)
-{
+/**
+ * Main interface to directory search code. This is used in all file
+ * level operations to locate the object named by the pathname.
+ *
+ * Returns with use count incremented on both the sought object and
+ * the directory it was found in
+ */
+static int jffs2_find(jffs2_dirsearch * d) {
 	int err;
 
 	D2(printf("jffs2_find for path =%s\n", d->path));
 
-	// Short circuit empty paths
+	/* Short circuit empty paths */
 	if (*(d->path) == '\0') {
 		d->node->i_count++;
 		return ENOERR;
 	}
+	/* skip dirname separators */
+	while (*(d->path) == '/') {
+		d->path++;
+	}
 
-	// iterate down directory tree until we find the object
-	// we want.
+	/* iterate down directory tree until we find the object we want. */
 	for (;;) {
 		err = find_entry(d);
 
-		if (err != ENOERR)
+		if (err != ENOERR) {
 			return err;
-
-		if (d->last)
+		}
+		if (d->last) {
 			return ENOERR;
-
-		// We're done with it, although it we found a subdir that
-		//   will have caused the refcount to have been increased
+		}
+		/* We're done with it, although it we found a subdir that
+		 * will have caused the refcount to have been increased
+		 */
 		jffs2_iput(d->dir);
 
-		// Update dirsearch object to search next directory.
+		/* Update dirsearch object to search next directory. */
 		d->dir = d->node;
 		d->path += d->namelen;
-		while (*(d->path) == '/')
-			d->path++;	// skip dirname separators
+		while (*(d->path) == '/') {
+			d->path++;	/* skip dirname separators */
+		}
 	}
 }
-/*
-//==========================================================================
-// Pathconf support
-// This function provides support for pathconf() and fpathconf().
 
+/* This function provides support for pathconf() and fpathconf().*/
+/*
 static int jffs2_pathconf(struct _inode *node, struct cyg_pathconf_info *info)
 {
 	int err = ENOERR;
@@ -458,59 +329,50 @@ static int jffs2_pathconf(struct _inode *node, struct cyg_pathconf_info *info)
 	return err;
 }
 */
-//==========================================================================
-// Filesystem operations
 
-// -------------------------------------------------------------------------
-// jffs2_mount()
-// Process a mount request. This mainly creates a root for the
-// filesystem.
-static int jffs2_read_super(struct super_block *sb)
-{
+/**
+ * Process a mount request. This mainly creates a root for the
+ * filesystem.
+ */
+static int jffs2_read_super(struct super_block *sb) {
 	struct jffs2_sb_info *c;
-//	Cyg_ErrNo err;
 	int err;
-//	cyg_uint32 len;
-//	cyg_io_flash_getconfig_devsize_t ds;
-//	cyg_io_flash_getconfig_blocksize_t bs;
+	uint32_t len;
+	flash_getconfig_devsize_t ds;
+	flash_getconfig_blocksize_t bs;
 
 	D1(printk(KERN_DEBUG "jffs2: read_super\n"));
 
-//	c = JFFS2_SB_INFO(sb);
 	c = &sb->jffs2_sb;
 
-//	len = sizeof (ds);
-//	err = cyg_io_get_config(sb->s_dev,
-//				CYG_IO_GET_CONFIG_FLASH_DEVSIZE, &ds, &len);
-//	if (err != ENOERR) {
-//		D1(printf
-//		   ("jffs2: cyg_io_get_config failed to get dev size: %d\n",
-//		    err));
-//		return err;
-//	}
-//	len = sizeof (bs);
-//	bs.offset = 0;
-//	err = cyg_io_get_config(sb->s_dev,
-//				CYG_IO_GET_CONFIG_FLASH_BLOCKSIZE, &bs, &len);
-//	if (err != ENOERR) {
-//		D1(printf
-//		   ("jffs2: cyg_io_get_config failed to get block size: %d\n",
-//		    err));
-//		return err;
-//	}
+	len = sizeof (ds);
+	err = sb->bdev->driver->ioctl(sb->bdev,
+			GET_CONFIG_FLASH_DEVSIZE, &ds, len);
+	if (err != ENOERR) {
+		D1(printf
+		   ("jffs2: ioctl failed to get dev size: %d\n", err));
+		return err;
+	}
 
-//	c->sector_size = bs.block_size;
-//	c->flash_size = ds.dev_size;
-	/* TODO need ioctl for flash dev */
-	c->sector_size = 512;
-	c->flash_size = 1024*1024*4;
+	len = sizeof (bs);
+	err = sb->bdev->driver->ioctl(sb->bdev,
+			GET_CONFIG_FLASH_BLOCKSIZE, &bs, len);
+	if (err != ENOERR) {
+		D1(printf
+		   ("jffs2: ioctl failed to get block size: %d\n", err));
+		return err;
+	}
+
+	c->sector_size = bs.block_size;
+	c->flash_size = ds.dev_size;
+
 
 	c->cleanmarker_size = sizeof(struct jffs2_unknown_node);
 
 	err = jffs2_do_mount_fs(c);
-	if (err)
+	if (err) {
 		return -err;
-
+	}
 	D1(printk(KERN_DEBUG "jffs2_read_super(): Getting root inode\n"));
 	sb->s_root = jffs2_iget(sb, 1);
 	if (IS_ERR(sb->s_root)) {
@@ -530,13 +392,14 @@ static int jffs2_read_super(struct super_block *sb)
 	return err;
 }
 
-static int jffs2_mount(struct nas *dir_nas)
-{
-	struct super_block *jffs2_sb = NULL;
+static int jffs2_mount(struct nas *dir_nas) {
+	struct super_block *jffs2_sb;
 	struct jffs2_sb_info *c;
 	int err;
 
 	struct jffs2_fs_info *fsi;
+
+	fsi = dir_nas->fs->fsi;
 
 	jffs2_sb = &fsi->jffs2_sb;
 
@@ -544,7 +407,6 @@ static int jffs2_mount(struct nas *dir_nas)
 		return ENOMEM;
 	}
 
-//	c = JFFS2_SB_INFO(jffs2_sb);
 	c = &jffs2_sb->jffs2_sb;
 	memset(jffs2_sb, 0, sizeof (struct super_block));
 
@@ -594,13 +456,11 @@ static int umount_vfs_dir_entry(struct nas *dir_nas) {
 
 	return 0;
 }
-//extern cyg_dir cyg_cdir_dir;
-//extern cyg_mtab_entry *cyg_cdir_mtab_entry;
 
-// -------------------------------------------------------------------------
-// jffs2_umount()
-// Unmount the filesystem.
 
+/**
+ * Unmount the filesystem.
+ */
 static int jffs2_umount(struct nas *dir_nas) {
 	struct _inode *root;
 	struct super_block *jffs2_sb;
@@ -611,12 +471,11 @@ static int jffs2_umount(struct nas *dir_nas) {
     dir_fi = dir_nas->fi->privdata;
     root = (struct _inode *) dir_fi->_inode;
     jffs2_sb = root->i_sb;
-//    c = JFFS2_SB_INFO(jffs2_sb);
     c = &jffs2_sb->jffs2_sb;
 
 	D2(printf("jffs2_umount\n"));
 
-	// Only really umount if this is the only mount
+	/* Only really umount if this is the only mount */
 	if (jffs2_sb->s_mount_count == 1) {
 		icache_evict(root, NULL);
 		if (root->i_cache_next != NULL)	{
@@ -627,58 +486,51 @@ static int jffs2_umount(struct nas *dir_nas) {
 				       inode->i_ino, inode->i_count);
 				inode = inode->i_cache_next;
 			}
-			// root icount was set to 1 on mount
+			/* root icount was set to 1 on mount */
 			return EBUSY;
         }
 		/* TODO don't understand */
-//		if (root->i_count == 2 &&
-//		    cyg_cdir_mtab_entry == mte &&
-//		    cyg_cdir_dir == (cyg_dir)root &&
-//		    !strcmp(mte->name, "/")) {
-////			 If we were mounted on root, there's no
-////			   way for the cwd to change out and free
-////			   the file system for unmounting. So we hack
-////			   it -- if cwd is '/' we unset it. Perhaps
-////			   we should allow chdir(NULL) to unset
-////			   cyg_cdir_dir?
-//			cyg_cdir_dir = CYG_DIR_NULL;
-//			jffs2_iput(root);
-//		}
-		// Argh. The fileio code sets this; never clears it
-//		if (cyg_cdir_mtab_entry == mte)
-//			cyg_cdir_mtab_entry = NULL;
-
+/*		if (root->i_count == 2 &&
+		    cyg_cdir_mtab_entry == mte &&
+		    cyg_cdir_dir == (cyg_dir)root &&
+		    !strcmp(mte->name, "/")) {
+//			 If we were mounted on root, there's no
+//			   way for the cwd to change out and free
+//			   the file system for unmounting. So we hack
+//			   it -- if cwd is '/' we unset it. Perhaps
+//			   we should allow chdir(NULL) to unset
+//			   cyg_cdir_dir?
+			cyg_cdir_dir = CYG_DIR_NULL;
+			jffs2_iput(root);
+		}
+		 Argh. The fileio code sets this; never clears it
+		if (cyg_cdir_mtab_entry == mte)
+			cyg_cdir_mtab_entry = NULL;
+*/
 		if (root->i_count != 1) {
-			printf("Ino #1 has use count %d\n",
-			       root->i_count);
+			printf("Ino #1 has use count %d\n", root->i_count);
 			return EBUSY;
 		}
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
 		jffs2_stop_garbage_collect_thread(c);
 #endif
-		jffs2_iput(root);	// Time to free the root inode
+		jffs2_iput(root);	/* Time to free the root inode */
 
-		// free directory entries
+		/* free directory entries */
 		for (fd = root->jffs2_i.dents; fd; fd = next) {
-		  next=fd->next;
-		  jffs2_free_full_dirent(fd);
+			next=fd->next;
+			jffs2_free_full_dirent(fd);
 		}
 
 		free(root);
-		//Clear root inode
-		//root_i = NULL;
 
-		// Clean up the super block and root inode
+		/* Clean up the super block and root inode */
 		jffs2_free_ino_caches(c);
 		jffs2_free_raw_node_refs(c);
 		free(c->blocks);
 		free(c->inocache_list);
 		free(jffs2_sb);
-		// Clear superblock & root pointer
-//		mte->root = CYG_DIR_NULL;
-//        mte->data = 0;
-//		mte->fs->data = 0;	// fstab entry, visible to all mounts. No current mount
-		// That's all folks.
+
 		D2(printf("jffs2_umount No current mounts\n"));
 	} else {
 		jffs2_sb->s_mount_count--;
@@ -691,22 +543,19 @@ static int jffs2_umount(struct nas *dir_nas) {
 	return umount_vfs_dir_entry(dir_nas);
 }
 
-// -------------------------------------------------------------------------
-// jffs2_open()
-// Open a file for reading or writing.
-
+/**
+ * Open a file for reading or writing.
+ */
 static int jffs2_open(struct _inode *dir_ino, const char *name, int mode) {
-
 	jffs2_dirsearch ds;
 	struct _inode *node = NULL;
 	int err;
 
 	D2(printf("jffs2_open\n"));
 
-	// If no chdir has been called and we were the first file system
-	//   mounted, we get called with dir == NULL. Deal with it
-//	if (!dir_ino)
-//		dir_ino = mte->root;
+	if (!dir_ino) {
+		return ENOENT;
+	}
 
 	init_dirsearch(&ds, (struct _inode *) dir_ino,
                        (const unsigned char *) name);
@@ -715,45 +564,44 @@ static int jffs2_open(struct _inode *dir_ino, const char *name, int mode) {
 
 	if (err == ENOENT) {
 		if (ds.last && (mode & O_CREAT)) {
-
-			// No node there, if the O_CREAT bit is set then we must
-			// create a new one. The dir and name fields of the dirsearch
-			// object will have been updated so we know where to put it.
-
-			err = jffs2_create(ds.dir, ds.name, S_IRUGO|S_IXUGO|S_IWUSR|S_IFREG, &node);
-
+		/* No node there, if the O_CREAT bit is set then we must
+		 * create a new one. The dir and name fields of the dirsearch
+		 * object will have been updated so we know where to put it.
+		 */
+			err = jffs2_create(ds.dir, ds.name,
+					S_IRUGO|S_IXUGO|S_IWUSR|S_IFREG, &node);
 			if (err != 0) {
-				//Possible orphaned inode on the flash - but will be gc'd
+				/*Possible orphaned inode on the flash - but will be gc'd */
 				jffs2_iput(ds.dir);
 				return -err;
 			}
-
 			err = ENOERR;
 		}
 	} else if (err == ENOERR) {
-		// The node exists. If the O_CREAT and O_EXCL bits are set, we
-		// must fail the open.
-
+		/**
+		 * The node exists. If the O_CREAT and O_EXCL bits are set, we
+		 * must fail the open.
+		 */
 		if ((mode & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL)) {
 			jffs2_iput(ds.node);
 			err = EEXIST;
-		} else
+		} else {
 			node = ds.node;
+		}
 	}
 
-	// Finished with the directory now
+	/* Finished with the directory now */
 	jffs2_iput(ds.dir);
 
-	if (err != ENOERR)
+	if (err != ENOERR) {
 		return err;
-
-	// Check that we actually have a file here
+	}
+	/* Check that we actually have a file here */
 	if (S_ISDIR(node->i_mode)) {
 		jffs2_iput(node);
 		return EISDIR;
 	}
-
-    // If the O_TRUNC bit is set we must clean out the file data.
+    /* If the O_TRUNC bit is set we must clean out the file data. */
 	if (mode & O_TRUNC) {
 		err = jffs2_truncate_file(node);
 		if (err) {
@@ -761,15 +609,6 @@ static int jffs2_open(struct _inode *dir_ino, const char *name, int mode) {
 			return err;
 		}
 	}
-
-	// Initialise the file object
-//	file->f_flag |= mode & CYG_FILE_MODE_MASK;
-//	file->f_type = CYG_FILE_TYPE_FILE;
-//	file->f_ops = &jffs2_fileops;
-//	file->f_offset = (mode & O_APPEND) ? node->i_size : 0;
-//	file->f_data = (CYG_ADDRWORD) node;
-//	file->f_xops = 0;
-
 	return ENOERR;
 }
 /*
@@ -1224,30 +1063,7 @@ static int jffs2_setinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 
 	return EINVAL;
 }
-*/
-//==========================================================================
-// File operations
 
-// -------------------------------------------------------------------------
-// jffs2_fo_read()
-// Read data from the file.
-
-///* Segment flag values. */
-//enum uio_seg {
-//    UIO_USERSPACE,              /* from user data space */
-//    UIO_SYSSPACE                /* from system space */
-//};
-//
-//struct uio {
-//    struct      iovec *uio_iov; /* pointer to array of iovecs */
-//    int uio_iovcnt;     /* number of iovecs in array */
-//    CYG_ADDRWORD        uio_offset;     /* offset into file this uio corresponds to */
-//    CYG_ADDRWORD        uio_resid;      /* residual i/o count */
-//    enum        uio_seg uio_segflg; /* see above */
-//    enum        uio_rw uio_rw;  /* see above */
-//};
-
-/*
 static int jffs2_fo_read(struct _inode *inode, off_t *pos, size_t size) {
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);
@@ -1295,13 +1111,12 @@ static int jffs2_fo_read(struct _inode *inode, off_t *pos, size_t size) {
 */
 
 
-// -------------------------------------------------------------------------
-// jffs2_fo_write()
-// Write data to file.
-static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
-		       unsigned long offset)
-{
-	struct jffs2_sb_info *c;// = JFFS2_SB_INFO(inode->i_sb);
+/**
+ * Write data to file.
+ */
+static int jffs2_extend_file (struct _inode *inode,
+		struct jffs2_raw_inode *ri, unsigned long offset) {
+	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
 	struct jffs2_full_dnode *fn;
 	uint32_t phys_ofs, alloc_len;
@@ -1309,20 +1124,22 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 
 	c = &inode->i_sb->jffs2_sb;
 
-	// Make new hole frag from old EOF to new page
+	/* Make new hole frag from old EOF to new page */
 	D1(printk(KERN_DEBUG "Writing new hole frag 0x%x-0x%x between current EOF and new page\n",
 		  (unsigned int)inode->i_size, offset));
 
-	ret = jffs2_reserve_space(c, sizeof(*ri), &phys_ofs, &alloc_len, ALLOC_NORMAL);
-	if (ret)
+	ret = jffs2_reserve_space(c, sizeof(*ri),
+			&phys_ofs, &alloc_len, ALLOC_NORMAL);
+	if (ret) {
 		return ret;
-
+	}
 	down(&f->sem);
 
 	ri->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
 	ri->nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
 	ri->totlen = cpu_to_je32(sizeof(*ri));
-	ri->hdr_crc = cpu_to_je32(crc32(0, ri, sizeof(struct jffs2_unknown_node)-4));
+	ri->hdr_crc = cpu_to_je32(crc32(0, ri,
+			sizeof(struct jffs2_unknown_node)-4));
 
 	ri->version = cpu_to_je32(++f->highest_version);
 	ri->isize = cpu_to_je32(max((uint32_t)inode->i_size, offset));
@@ -1359,12 +1176,12 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 	return 0;
 }
 
-// jffs2_fo_open()
-// Truncate a file
-static int jffs2_truncate_file (struct _inode *inode)
-{
+/**
+ * Truncate a file
+ */
+static int jffs2_truncate_file (struct _inode *inode) {
      struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
-     struct jffs2_sb_info *c;// = JFFS2_SB_INFO(inode->i_sb);
+     struct jffs2_sb_info *c;
      struct jffs2_full_dnode *new_metadata, * old_metadata;
      struct jffs2_raw_inode *ri;
      uint32_t phys_ofs, alloclen;
@@ -1395,7 +1212,7 @@ static int jffs2_truncate_file (struct _inode *inode)
      ri->mode = cpu_to_jemode(inode->i_mode);
      ri->isize = cpu_to_je32(0);
      ri->atime = cpu_to_je32(inode->i_atime);
-     ri->mtime = cpu_to_je32(cyg_timestamp());
+     ri->mtime = cpu_to_je32(timestamp());
      ri->offset = cpu_to_je32(0);
      ri->csize = ri->dsize = cpu_to_je32(0);
      ri->compr = JFFS2_COMPR_NONE;
@@ -1403,15 +1220,15 @@ static int jffs2_truncate_file (struct _inode *inode)
      ri->data_crc = cpu_to_je32(0);
      new_metadata = jffs2_write_dnode(c, f, ri, NULL, 0,
                                       phys_ofs, ALLOC_NORMAL);
-     if (IS_ERR(new_metadata)) {
-          jffs2_complete_reservation(c);
-          jffs2_free_raw_inode(ri);
-          up(&f->sem);
-          return PTR_ERR(new_metadata);
-     }
+	if (IS_ERR(new_metadata)) {
+		jffs2_complete_reservation(c);
+		jffs2_free_raw_inode(ri);
+		up(&f->sem);
+		return PTR_ERR(new_metadata);
+	}
 
-     // It worked. Update the inode
-     inode->i_mtime = cyg_timestamp();
+     /* It worked. Update the inode */
+     inode->i_mtime = timestamp();
      inode->i_size = 0;
      old_metadata = f->metadata;
      jffs2_truncate_fragtree (c, &f->fragtree, 0);
@@ -1428,15 +1245,13 @@ static int jffs2_truncate_file (struct _inode *inode)
      return 0;
 }
 
-static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size)
-{
+static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 	struct _inode *inode;
 	off_t pos = desc->cursor;
 	ssize_t resid = size;
 	struct jffs2_raw_inode ri;
 	struct jffs2_inode_info *f;
 	struct jffs2_sb_info *c;
-//	int i;
 	struct nas *nas;
 	struct jffs2_file_info *fi;
 
@@ -1449,17 +1264,11 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size)
 
 	inode = fi->_inode;
 	f = JFFS2_INODE_INFO(inode);
-//	c = JFFS2_SB_INFO(inode->i_sb);
 	c = &inode->i_sb->jffs2_sb;
 
-	// If the APPEND mode bit was supplied, force all writes to
-	// the end of the file.
-//	if (flag & O_APPEND) {
-//		pos = desc->cursor = inode->i_size;
-//	}
-
 	if (pos < 0) {
-		return EINVAL;
+		SET_ERRNO(EINVAL);
+		return 0;
 	}
 
 	memset(&ri, 0, sizeof(ri));
@@ -1468,133 +1277,58 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size)
 	ri.mode = cpu_to_jemode(inode->i_mode);
 	ri.uid = cpu_to_je16(inode->i_uid);
 	ri.gid = cpu_to_je16(inode->i_gid);
-	ri.atime = ri.ctime = ri.mtime = cpu_to_je32(cyg_timestamp());
+	ri.atime = ri.ctime = ri.mtime = cpu_to_je32(timestamp());
 
 	if (pos > inode->i_size) {
-		int err;
 		ri.version = cpu_to_je32(++f->highest_version);
 		err = jffs2_extend_file(inode, &ri, pos);
-		if (err)
-			return -err;
-	}
-	ri.isize = cpu_to_je32(inode->i_size);
-
-	// Now loop over the iovecs until they are all done, or
-	// we get an error.
-//	for (i = 0; i < uio->uio_iovcnt; i++) {
-//		cyg_iovec *iov = &uio->uio_iov[i];
-//		unsigned char *buf = iov->iov_base;
-//		off_t len = iov->iov_len;
-
-		len = size;
-
-		D2(printf("jffs2_fo_write page_start_pos %d\n", pos));
-		D2(printf("jffs2_fo_write transfer size %d\n", len));
-
-		err = jffs2_write_inode_range(c, f, &ri, (unsigned char *)buf,
-					      pos, len, &writtenlen);
-
 		if (err) {
 			SET_ERRNO(-err);
 			return 0;
 		}
 
-		if (writtenlen != len) {
-			SET_ERRNO(ENOSPC);
-			return 0;
-		}
+	}
+	ri.isize = cpu_to_je32(inode->i_size);
 
-		pos += len;
-		resid -= len;
-//	}
+	len = size;
 
-	// We wrote some data successfully, update the modified and access
-	// times of the inode, increase its size appropriately, and update
-	// the file offset and transfer residue.
+	D2(printf("jffs2_fo_write page_start_pos %d\n", pos));
+	D2(printf("jffs2_fo_write transfer size %d\n", len));
+
+	err = jffs2_write_inode_range(c, f, &ri, (unsigned char *)buf,
+					  pos, len, &writtenlen);
+
+	if (err) {
+		SET_ERRNO(-err);
+		return 0;
+	}
+
+	if (writtenlen != len) {
+		SET_ERRNO(ENOSPC);
+		return 0;
+	}
+
+	pos += len;
+	resid -= len;
+
+	/* We wrote some data successfully, update the modified and access
+	 * times of the inode, increase its size appropriately, and update
+	 * the file offset and transfer residue.
+	 */
 	inode->i_mtime = inode->i_ctime = je32_to_cpu(ri.mtime);
 	if (pos > inode->i_size) {
 		inode->i_size = pos;
 	}
 
-//	uio->uio_resid = resid;
-//	fp->f_offset = pos;
 	desc->cursor = pos;
 
-	return resid;
-}
-/*
-// -------------------------------------------------------------------------
-// jffs2_fo_lseek()
-// Seek to a new file position.
-
-static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * apos, int whence)
-{
-	struct _inode *node = (struct _inode *) fp->f_data;
-	off_t pos = *apos;
-
-	D2(printf("jffs2_fo_lseek\n"));
-
-	switch (whence) {
-	case SEEK_SET:
-		// Pos is already where we want to be.
-		break;
-
-	case SEEK_CUR:
-		// Add pos to current offset.
-		pos += fp->f_offset;
-		break;
-
-	case SEEK_END:
-		// Add pos to file size.
-		pos += node->i_size;
-		break;
-
-	default:
-		return EINVAL;
-	}
-
-        if (pos < 0 )
-                return EINVAL;
-
-	// All OK, set fp offset and return new position.
-	*apos = fp->f_offset = pos;
-
-	return ENOERR;
+	return writtenlen;
 }
 
-// -------------------------------------------------------------------------
-// jffs2_fo_ioctl()
-// Handle ioctls. Currently none are defined.
-
-static int jffs2_fo_ioctl(struct CYG_FILE_TAG *fp, CYG_ADDRWORD com,
-			  CYG_ADDRWORD data)
-{
-	// No Ioctls currenly defined.
-
-	D2(printf("jffs2_fo_ioctl\n"));
-
-	return EINVAL;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_fo_fsync().
-// Force the file out to data storage.
-
-static int jffs2_fo_fsync(struct CYG_FILE_TAG *fp, int mode)
-{
-	// Data is always permanently where it belongs, nothing to do
-	// here.
-
-	D2(printf("jffs2_fo_fsync\n"));
-
-	return ENOERR;
-}
-*/
-// -------------------------------------------------------------------------
-// jffs2_fo_close()
-// Close a file. We just decrement the refcnt and let it go away if
-// that is all that is keeping it here.
-
+/**
+ * Close a file. We just decrement the refcnt and let it go away if
+ * that is all that is keeping it here.
+ */
 static int jffs2_fo_close(struct _inode *node) {
 	D2(printf("jffs2_fo_close\n"));
 
@@ -1800,49 +1534,37 @@ static int jffs2_fo_dirlseek(struct CYG_FILE_TAG *fp, off_t * pos, int whence)
 	return ENOERR;
 }
 */
-//==========================================================================
-//
-// Called by JFFS2
-// ===============
-//
-//
-//==========================================================================
 
 unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
-				   struct jffs2_inode_info *f,
-				   unsigned long offset,
-				   unsigned long *priv)
-{
+	struct jffs2_inode_info *f, unsigned long offset, unsigned long *priv) {
 	/* FIXME: This works only with one file system mounted at a time */
 	int ret;
 
 	ret = jffs2_read_inode_range(c, f, gc_buffer,
 				     offset & ~(PAGE_CACHE_SIZE-1), PAGE_CACHE_SIZE);
-	if (ret)
+	if (ret) {
 		return ERR_PTR(ret);
+	}
 
 	return gc_buffer;
 }
 
 void jffs2_gc_release_page(struct jffs2_sb_info *c,
-			   unsigned char *ptr,
-			   unsigned long *priv)
-{
+			   unsigned char *ptr, unsigned long *priv) {
 	/* Do nothing */
 }
 
-static struct _inode *new_inode(struct super_block *sb)
-{
-
-	// Only called in write.c jffs2_new_inode
-	// Always adds itself to inode cache
+static struct _inode *new_inode(struct super_block *sb) {
+	/* Only called in write.c jffs2_new_inode
+	 * Always adds itself to inode cache	 */
 
 	struct _inode *inode;
 	struct _inode *cached_inode;
 
 	inode = malloc(sizeof (struct _inode));
-	if (inode == NULL)
+	if (inode == NULL) {
 		return 0;
+	}
 
 	D2(printf
 	   ("malloc new_inode %x ####################################\n",
@@ -1852,29 +1574,29 @@ static struct _inode *new_inode(struct super_block *sb)
 	inode->i_sb = sb;
 	inode->i_ino = 1;
 	inode->i_count = 1;
-	inode->i_nlink = 1;	// Let JFFS2 manage the link count
+	inode->i_nlink = 1;	/* Let JFFS2 manage the link count */
 	inode->i_size = 0;
 
-	inode->i_cache_next = NULL;	// Newest inode, about to be cached
+	inode->i_cache_next = NULL;	/* Newest inode, about to be cached */
 
-	// Add to the icache
+	/* Add to the icache */
 	for (cached_inode = sb->s_root; cached_inode != NULL;
 	     cached_inode = cached_inode->i_cache_next) {
 		if (cached_inode->i_cache_next == NULL) {
-			cached_inode->i_cache_next = inode;	// Current last in cache points to newcomer
-			inode->i_cache_prev = cached_inode;	// Newcomer points back to last
+			cached_inode->i_cache_next = inode;	/* Current last in cache points to newcomer */
+			inode->i_cache_prev = cached_inode;	/* Newcomer points back to last */
 			break;
 		}
 	}
 	return inode;
 }
 
-static struct _inode *ilookup(struct super_block *sb, cyg_uint32 ino)
+static struct _inode *ilookup(struct super_block *sb, uint32_t ino)
 {
 	struct _inode *inode = NULL;
 
 	D2(printf("ilookup\n"));
-	// Check for this inode in the cache
+	/* Check for this inode in the cache */
 	for (inode = sb->s_root; inode != NULL; inode = inode->i_cache_next) {
 		if (inode->i_ino == ino) {
 			inode->i_count++;
@@ -1884,33 +1606,32 @@ static struct _inode *ilookup(struct super_block *sb, cyg_uint32 ino)
 	return inode;
 }
 
-struct _inode *jffs2_iget(struct super_block *sb, cyg_uint32 ino) {
-	// Called in super.c jffs2_read_super, dir.c jffs2_lookup,
-	// and gc.c jffs2_garbage_collect_pass
-
-	// Must first check for cached inode
-	// If this fails let new_inode create one
-
+struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino) {
+	/* Must first check for cached inode
+	 * If this fails let new_inode create one
+	 */
 	struct _inode *inode;
 	int err;
 
 	D2(printf("jffs2_iget\n"));
 
 	inode = ilookup(sb, ino);
-	if (inode)
+	if (inode) {
 		return inode;
+	}
 
-	// Not cached, so malloc it
+	/* Not cached, so malloc it */
 	inode = new_inode(sb);
-	if (inode == NULL)
+	if (inode == NULL) {
 		return ERR_PTR(-ENOMEM);
+	}
 
 	inode->i_ino = ino;
 
 	err = jffs2_read_inode(inode);
 	if (err) {
 		printf("jffs2_read_inode() failed\n");
-                inode->i_nlink = 0; // free _this_ bad inode right now
+                inode->i_nlink = 0; /* free _this_ bad inode right now */
 		jffs2_iput(inode);
 		inode = NULL;
 		return ERR_PTR(err);
@@ -1918,38 +1639,37 @@ struct _inode *jffs2_iget(struct super_block *sb, cyg_uint32 ino) {
 	return inode;
 }
 
-// -------------------------------------------------------------------------
-// Decrement the reference count on an inode. If this makes the ref count
-// zero, then this inode can be freed.
+/**
+ * Decrement the reference count on an inode. If this makes the ref count
+ * zero, then this inode can be freed.
+ */
+void jffs2_iput(struct _inode *i) {
+	struct _inode *parent;
 
-void jffs2_iput(struct _inode *i)
-{
-	// Called in jffs2_find
-	// (and jffs2_open and jffs2_ops_mkdir?)
-	// super.c jffs2_read_super,
-	// and gc.c jffs2_garbage_collect_pass
  recurse:
 	if (!i) {
 		printf("jffs2_iput() called with NULL inode\n");
-		// and let it fault...
+		/* and let it fault... */
 	}
 
 	i->i_count--;
 
-	if (i->i_count < 0)
+	if (i->i_count < 0) {
 		BUG();
+	}
 
-	if (i->i_count)
-                return;
+	if (i->i_count) {
+		return;
+	}
 
 	if (!i->i_nlink) {
-		struct _inode *parent;
-
-		// Remove from the icache linked list and free immediately
-		if (i->i_cache_prev)
+		/* Remove from the icache linked list and free immediately */
+		if (i->i_cache_prev) {
 			i->i_cache_prev->i_cache_next = i->i_cache_next;
-		if (i->i_cache_next)
+		}
+		if (i->i_cache_next) {
 			i->i_cache_next->i_cache_prev = i->i_cache_prev;
+		}
 
 		parent = i->i_parent;
 		jffs2_clear_inode(i);
@@ -1962,43 +1682,39 @@ void jffs2_iput(struct _inode *i)
 		}
 
 	} else {
-		// Evict some _other_ inode with i_count zero, leaving
-		// this latest one in the cache for a while
+	/* Evict some _other_ inode with i_count zero, leaving
+	 * this latest one in the cache for a while
+	 */
 		icache_evict(i->i_sb->s_root, i);
 	}
 }
 
-
-// -------------------------------------------------------------------------
-// EOF jffs2.c
-
-
-static inline void jffs2_init_inode_info(struct jffs2_inode_info *f)
-{
+static inline void jffs2_init_inode_info(struct jffs2_inode_info *f) {
 	memset(f, 0, sizeof(*f));
 	init_MUTEX_LOCKED(&f->sem);
 }
 
-static void jffs2_clear_inode (struct _inode *inode)
-{
-        /* We can forget about this inode for now - drop all
-         *  the nodelists associated with it, etc.
-         */
-        struct jffs2_sb_info *c;// = JFFS2_SB_INFO(inode->i_sb);
-        struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
+static void jffs2_clear_inode (struct _inode *inode) {
+	/* We can forget about this inode for now - drop all
+	*  the nodelists associated with it, etc.
+	*/
+	struct jffs2_sb_info *c;// = JFFS2_SB_INFO(inode->i_sb);
+	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
 
-        c = &inode->i_sb->jffs2_sb;
+	c = &inode->i_sb->jffs2_sb;
 
-        D1(printk(KERN_DEBUG "jffs2_clear_inode(): ino #%lu mode %o\n", inode->i_ino, inode->i_mode));
+	D1(printk(KERN_DEBUG "jffs2_clear_inode(): ino #%lu mode %o\n", inode->i_ino, inode->i_mode));
 
-        jffs2_do_clear_inode(c, f);
+	jffs2_do_clear_inode(c, f);
 }
 
 
-/* jffs2_new_inode: allocate a new inode and inocache, add it to the hash,
-   fill in the raw_inode while you're at it. */
-struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw_inode *ri)
-{
+/**
+ * allocate a new inode and inocache, add it to the hash,
+ * fill in the raw_inode while you're at it.
+ */
+struct _inode *jffs2_new_inode (struct _inode *dir_i,
+					int mode, struct jffs2_raw_inode *ri) {
 	struct _inode *inode;
 	struct super_block *sb = dir_i->i_sb;
 	struct jffs2_sb_info *c;
@@ -2007,13 +1723,13 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw
 
 	D1(printk(KERN_DEBUG "jffs2_new_inode(): dir_i %ld, mode 0x%x\n", dir_i->i_ino, mode));
 
-//	c = JFFS2_SB_INFO(sb);
 	c = &sb->jffs2_sb;
 
 	inode = new_inode(sb);
 
-	if (!inode)
+	if (!inode) {
 		return ERR_PTR(-ENOMEM);
+	}
 
 	f = JFFS2_INODE_INFO(inode);
 	jffs2_init_inode_info(f);
@@ -2024,24 +1740,27 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw
 	ri->mode =  cpu_to_jemode(mode);
 	ret = jffs2_do_new_inode (c, f, mode, ri);
 	if (ret) {
-                // forceful evict: f->sem is locked already, and the
-                // inode is bad.
-                if (inode->i_cache_prev)
-                       inode->i_cache_prev->i_cache_next = inode->i_cache_next;
-                if (inode->i_cache_next)
-                       inode->i_cache_next->i_cache_prev = inode->i_cache_prev;
-                up(&(f->sem));
-                jffs2_clear_inode(inode);
-                memset(inode, 0x6a, sizeof(*inode));
-                free(inode);
-                return ERR_PTR(ret);
+	/* forceful evict: f->sem is locked already, and the
+	 * inode is bad.
+	 */
+		if (inode->i_cache_prev) {
+			inode->i_cache_prev->i_cache_next = inode->i_cache_next;
+		}
+		if (inode->i_cache_next) {
+			inode->i_cache_next->i_cache_prev = inode->i_cache_prev;
+		}
+		up(&(f->sem));
+		jffs2_clear_inode(inode);
+		memset(inode, 0x6a, sizeof(*inode));
+		free(inode);
+		return ERR_PTR(ret);
 	}
 	inode->i_nlink = 1;
 	inode->i_ino = je32_to_cpu(ri->ino);
 	inode->i_mode = jemode_to_cpu(ri->mode);
 	inode->i_gid = je16_to_cpu(ri->gid);
 	inode->i_uid = je16_to_cpu(ri->uid);
-	inode->i_atime = inode->i_ctime = inode->i_mtime = cyg_timestamp();
+	inode->i_atime = inode->i_ctime = inode->i_mtime = timestamp();
 	ri->atime = ri->mtime = ri->ctime = cpu_to_je32(inode->i_mtime);
 
 	inode->i_size = 0;
@@ -2050,8 +1769,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw
 }
 
 
-static int jffs2_read_inode (struct _inode *inode)
-{
+static int jffs2_read_inode (struct _inode *inode) {
 	struct jffs2_inode_info *f;
 	struct jffs2_sb_info *c;
 	struct jffs2_raw_inode latest_node;
@@ -2060,7 +1778,6 @@ static int jffs2_read_inode (struct _inode *inode)
 	D1(printk(KERN_DEBUG "jffs2_read_inode(): inode->i_ino == %lu\n", inode->i_ino));
 
 	f = JFFS2_INODE_INFO(inode);
-//	c = JFFS2_SB_INFO(inode->i_sb);
 	c = &inode->i_sb->jffs2_sb;
 
 	jffs2_init_inode_info(f);
@@ -2088,14 +1805,12 @@ static int jffs2_read_inode (struct _inode *inode)
 
 
 void jffs2_gc_release_inode(struct jffs2_sb_info *c,
-				   struct jffs2_inode_info *f)
-{
+				   struct jffs2_inode_info *f) {
 	jffs2_iput(OFNI_EDONI_2SFFJ(f));
 }
 
 struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
-						     int inum, int nlink)
-{
+						     int inum, int nlink) {
 	struct _inode *inode;
 	struct jffs2_inode_cache *ic;
 	struct super_block *sb;
@@ -2103,20 +1818,20 @@ struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
 	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
 	if (!nlink) {
-		/* The inode has zero nlink but its nodes weren't yet marked
-		   obsolete. This has to be because we're still waiting for
-		   the final (close() and) jffs2_iput() to happen.
-
-		   There's a possibility that the final jffs2_iput() could have
-		   happened while we were contemplating. In order to ensure
-		   that we don't cause a new read_inode() (which would fail)
-		   for the inode in question, we use ilookup() in this case
-		   instead of jffs2_iget().
-
-		   The nlink can't _become_ zero at this point because we're
-		   holding the alloc_sem, and jffs2_do_unlink() would also
-		   need that while decrementing nlink on any inode.
-		*/
+	/* The inode has zero nlink but its nodes weren't yet marked
+	 * obsolete. This has to be because we're still waiting for
+	 * the final (close() and) jffs2_iput() to happen.
+	 *
+	 * There's a possibility that the final jffs2_iput() could have
+	 * happened while we were contemplating. In order to ensure
+	 * that we don't cause a new read_inode() (which would fail)
+	 * for the inode in question, we use ilookup() in this case
+	 * instead of jffs2_iget().
+	 *
+	 * The nlink can't _become_ zero at this point because we're
+	 * holding the alloc_sem, and jffs2_do_unlink() would also
+	 * need that while decrementing nlink on any inode.
+	 */
 		inode = ilookup(sb, inum);
 		if (!inode) {
 			D1(printk(KERN_DEBUG "ilookup() failed for ino #%u; inode is probably deleted.\n",
@@ -2142,21 +1857,19 @@ struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
 		}
 	} else {
 		/* Inode has links to it still; they're not going away because
-		   jffs2_do_unlink() would need the alloc_sem and we have it.
-		   Just jffs2_iget() it, and if read_inode() is necessary that's OK.
-		*/
+		 * jffs2_do_unlink() would need the alloc_sem and we have it.
+		 * Just jffs2_iget() it, and if read_inode() is necessary that's OK.
+		 */
 		inode = jffs2_iget(sb, inum);
-		if (IS_ERR(inode))
+		if (IS_ERR(inode)) {
 			return (void *)inode;
+		}
 	}
 
 	return JFFS2_INODE_INFO(inode);
 }
 
-
-
-uint32_t jffs2_from_os_mode(uint32_t osmode)
-{
+uint32_t jffs2_from_os_mode(uint32_t osmode) {
 	uint32_t jmode = ((osmode & S_IRUSR)?00400:0) |
 		((osmode & S_IWUSR)?00200:0) |
 		((osmode & S_IXUSR)?00100:0) |
@@ -2196,8 +1909,7 @@ uint32_t jffs2_from_os_mode(uint32_t osmode)
 	return 0;
 }
 
-uint32_t jffs2_to_os_mode (uint32_t jmode)
-{
+uint32_t jffs2_to_os_mode (uint32_t jmode) {
 	uint32_t osmode = ((jmode & 00400)?S_IRUSR:0) |
 		((jmode & 00200)?S_IWUSR:0) |
 		((jmode & 00100)?S_IXUSR:0) |
@@ -2256,7 +1968,6 @@ static struct kfile_operations jffs2_fop = {
  * file_operation
  */
 static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
-	int rc;
 	struct nas *nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
@@ -2265,15 +1976,9 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
-	fi->f_pointer = desc->cursor; /* reset seek pointer */
 
-	if (0 != (rc = jffs2_read_inode(fi->_inode))) {
-		jffs2_fo_close(fi->_inode);
-		return -rc;
-	}
-	else {
-		nas->fi->ni.size = fi->_inode->i_size;
-	}
+	nas->fi->ni.size = fi->_inode->i_size;
+
 	vfs_get_path_by_node(nas->node, path);
 	path_cut_mount_dir(path, fsi->mntto);
 
@@ -2289,36 +1994,36 @@ static int jffs2fs_close(struct file_desc *desc) {
 	}
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
+	nas->fi->ni.size = fi->_inode->i_size;
 
 	return jffs2_fo_close(fi->_inode);
 }
 
 static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	int rc;
-//	size_t csize;
 	struct nas *nas;
 	struct jffs2_file_info *fi;
-//	struct jffs2_fs_info *fsi;
 	struct jffs2_inode_info *f;
 	struct jffs2_sb_info *c;
+	size_t len;
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->f_pointer = desc->cursor;
 
 	f = JFFS2_INODE_INFO(fi->_inode);
-//	c = JFFS2_SB_INFO(fi->_inode->i_sb);
 	c = &fi->_inode->i_sb->jffs2_sb;
 
+	len = min(size, fi->_inode->i_size - desc->cursor);
+
 	if (0 != (rc = jffs2_read_inode_range(c, f,
-			(unsigned char *) buff, fi->f_pointer, size))) {
+			(unsigned char *) buff, desc->cursor, len))) {
 		SET_ERRNO(rc);
 		return 0;
 	}
 
-	desc->cursor = fi->f_pointer;
+	desc->cursor += len;
 
-	return size;
+	return len;
 }
 
 static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
@@ -2328,11 +2033,9 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->f_pointer = desc->cursor;
 
 	bytecount = jffs2_fo_write(desc, buff, size);
 
-	desc->cursor = fi->f_pointer;
 	nas->fi->ni.size = fi->_inode->i_size;
 
 	return bytecount;
@@ -2400,7 +2103,7 @@ static jffs2_file_info_t *jffs2_fi_alloc(struct nas *nas, void *fs) {
 	fi = pool_alloc(&jffs2_file_pool);
 	if (fi) {
 		memset(fi, 0, sizeof(struct jffs2_file_info));
-		nas->fi->ni.size = fi->f_pointer = 0;
+		nas->fi->ni.size = 0;
 		nas->fi->privdata = fi;
 		nas->fs = fs;
 	}
@@ -2469,7 +2172,7 @@ static int jffs2fs_format(void *dev) {
 
 static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	struct jffs2_inode_info *dir_f;
-	struct jffs2_full_dirent *fd = NULL, *fd_list;
+	struct jffs2_full_dirent *fd_list;
 	struct _inode *inode = NULL;
 	uint32_t ino = 0;
 	struct node *vfs_node;
@@ -2494,11 +2197,11 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 					return ENOMEM;
 				}
 				memset(fi, 0, sizeof(struct jffs2_file_info));
-				fi->f_pointer = 0;
 				nas->fi->privdata = (void *) fi;
 				fi->_inode = inode;
+				nas->fs = dir_nas->fs;
 
-				if(fd->type == DT_DIR) {
+				if(node_is_directory(vfs_node)) {
 					mount_vfs_dir_enty(nas);
 				}
 			}
@@ -2558,7 +2261,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-	fi->f_pointer = 0;
 	dir_nas->fi->privdata = fi;
 	fi->_inode = fsi->jffs2_sb.s_root;
 

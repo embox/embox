@@ -20,8 +20,7 @@
 
 static cyg_thread_entry_t jffs2_garbage_collect_thread;
 
-void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c)
-{
+void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c) {
      struct super_block *sb=OFNI_BS_2SFFJ(c);
 
      /* Wake up the thread */
@@ -31,9 +30,7 @@ void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c)
 }
 
 
-void
-jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
-{
+void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c) {
      struct super_block *sb=OFNI_BS_2SFFJ(c);
 
      CYG_ASSERTC(c);
@@ -56,9 +53,7 @@ jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
      cyg_thread_resume(sb->s_gc_thread_handle);
 }
 
-void
-jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c)
-{
+void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c) {
      struct super_block *sb=OFNI_BS_2SFFJ(c);
 
      CYG_ASSERTC(sb->s_gc_thread_handle);
@@ -74,8 +69,9 @@ jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c)
                    GC_THREAD_FLAG_HAS_EXIT,
                    CYG_FLAG_WAITMODE_OR| CYG_FLAG_WAITMODE_CLR);
 
-     // Kill and free the resources ...  this is safe due to the flag
-     // from the thread.
+     /* Kill and free the resources ...  this is safe due to the flag
+      * from the thread.
+      */
      cyg_thread_kill(sb->s_gc_thread_handle);
      cyg_thread_delete(sb->s_gc_thread_handle);
 
@@ -84,9 +80,7 @@ jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c)
 }
 
 
-static void
-jffs2_garbage_collect_thread(cyg_addrword_t data)
-{
+static void jffs2_garbage_collect_thread(cyg_addrword_t data) {
      struct jffs2_sb_info *c=(struct jffs2_sb_info *)data;
      struct super_block *sb=OFNI_BS_2SFFJ(c);
      cyg_flag_value_t flag;
@@ -101,8 +95,9 @@ jffs2_garbage_collect_thread(cyg_addrword_t data)
                                    cyg_current_time()+
                                    CYGNUM_JFFS2_GS_THREAD_TICKS);
 
-          if (flag & GC_THREAD_FLAG_STOP)
-               break;
+          if (flag & GC_THREAD_FLAG_STOP) {
+        	  break;
+          }
 
           D1(printk("jffs2: GC THREAD GC BEGIN\n"));
 
