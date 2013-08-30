@@ -238,10 +238,13 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	sock.sk->state = new_state;
 	debug_print(2, "sk %p set state %d-%s\n", sock.tcp_sk, new_state, str_state[new_state]);
 
-	/* throw error: can't read */
 	switch (new_state) {
-	case TCP_CLOSEWAIT:
-	case TCP_TIMEWAIT:
+	case TCP_CLOSEWAIT: /* throw error: can't read */
+		if (sock.sk->ios != NULL) {
+			io_sync_error_on(sock.sk->ios, IO_SYNC_READING);
+		}
+		break;
+	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
 		if (sock.sk->ios != NULL) {
