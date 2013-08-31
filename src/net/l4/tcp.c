@@ -630,7 +630,7 @@ static enum tcp_ret_code tcp_st_estabil(union sock_pointer sock, struct sk_buff 
 		/* Allocate new sk_buff_t for sending ack flag */
 		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
-			return -ENOMEM;
+			return TCP_RET_DROP; /* error: no memory */
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
@@ -665,7 +665,7 @@ static enum tcp_ret_code tcp_st_finwait_1(union sock_pointer sock, struct sk_buf
 		/* Allocate new sk_buff_t for sending ack's flag */
 		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
-			return -ENOMEM;
+			return TCP_RET_DROP; /* error: no memory */
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
@@ -712,7 +712,7 @@ static enum tcp_ret_code tcp_st_finwait_2(union sock_pointer sock, struct sk_buf
 		/* Allocate new sk_buff_t for sending ack's flag */
 		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
-			return -ENOMEM;
+			return TCP_RET_DROP; /* error: no memory */
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
