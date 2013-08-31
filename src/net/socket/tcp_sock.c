@@ -173,18 +173,18 @@ static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+
+			/* unlock socket state */
+			tcp_obj_unlock(sock, TCP_SYNC_STATE);
+
 			tcp_get_now(&started);
-			ret = 0;
 			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
 				if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
-					ret = -ETIMEDOUT;
-					break;
+					tcp_set_st(sock, TCP_CLOSED);
+					return -ETIMEDOUT;
 				}
 			}
-			if (ret == 0) {
-				ret = tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
-			}
-			break;
+			return tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_STATE);

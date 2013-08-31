@@ -113,7 +113,7 @@ enum {
 #define TCP_TIMER_FREQUENCY   1000  /* Frequency for tcp_tmr_default */
 #define TCP_TIMEWAIT_DELAY    2000  /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000  /* Delay between rexmitting */
-#define TCP_SYNC_TIMEOUT      1000  /* Synchronization timeout */
+#define TCP_SYNC_TIMEOUT      5000  /* Synchronization timeout */
 
 #define TCP_WINDOW_DEFAULT    16384 /* Default size of widnow */
 
