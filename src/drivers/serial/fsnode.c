@@ -69,13 +69,19 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 	struct uart *uart_dev = desc->file_info;
 	struct tty *tty = &uart_dev->tty;
+	size_t written, left = size;
 	int ch;
 
-	tty_write(tty, buff, size);
+	do {
+		written = tty_write(tty, buff, left);
 
-	while (-1 != (ch = tty_out_getc(tty))) {
-		uart_putc(uart_dev, ch);
-	}
+		while (-1 != (ch = tty_out_getc(tty))) {
+			uart_putc(uart_dev, ch);
+		}
+
+		left -= written;
+		buff = (void *)((char *)buff + written);
+	} while (left != 0);
 
 	return size;
 }

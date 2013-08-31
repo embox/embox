@@ -33,9 +33,9 @@ extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *b
 extern int termios_gotc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
 /* Called in worker-protected context. */
-static void tty_output(struct tty *t, char ch) {
+static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
-	termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	return termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
 	// t->ops->tx_char(t, ch);
 }
 
@@ -376,7 +376,8 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 
 	for (count = size; count > 0; count --) {
 		// TODO handle output buffer overflow
-		tty_output(t, *buff++);
+		if (!tty_output(t, *buff++))
+			break;
 	}
 
 	softwork_post(&t->rx_work);
@@ -384,7 +385,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	work_enable(&t->rx_work);
 	// mutex_unlock(&t->lock);
 
-	return size;
+	return size - count;
 }
 
 int tty_ioctl(struct tty *t, int request, void *data) {

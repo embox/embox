@@ -16,20 +16,15 @@
 #define TIO_L(t, flag) ((t)->c_lflag & (flag))
 
 static int tio_putc(char ch, struct ring *ring, char *buf, size_t buflen) {
-	ring_write_all_from(ring, buf, buflen, &ch, 1);
-	return 1;
+	return ring_write_all_from(ring, buf, buflen, &ch, 1);
 }
 
 int termios_putc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
-	int ret = 0;
-
 	if (TIO_L(t, ICANON) && TIO_O(t, ONLCR) && ch == '\n')
-		ret += tio_putc('\r', ring, buf, buflen);
+		if (!tio_putc('\r', ring, buf, buflen))
+			return 0;
 
-	ret += tio_putc(ch, ring, buf, buflen);
-
-	return ret;
-
+	return tio_putc(ch, ring, buf, buflen);
 }
 
 int termios_gotc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
