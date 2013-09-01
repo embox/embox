@@ -28,6 +28,8 @@ enum io_sync_op {
 	IO_SYNC_WRITING
 };
 
+#define IO_SYNC_TIMEOUT_INFINITE MANUAL_EVENT_TIMEOUT_INFINITE
+
 extern void io_sync_init(struct io_sync *ios, int r_set,
 		int w_set);
 extern void io_sync_enable(struct io_sync *ios,

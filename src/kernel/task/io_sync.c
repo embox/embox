@@ -29,15 +29,19 @@ void io_sync_enable(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		manual_event_notify(&ios->can_read);
-		if (ios->on_reading != NULL) {
-			event_notify(ios->on_reading);
+		if (!ios->error_on_read) {
+			manual_event_set_and_notify(&ios->can_read);
+			if (ios->on_reading != NULL) {
+				event_notify(ios->on_reading);
+			}
 		}
 		break;
 	case IO_SYNC_WRITING:
-		manual_event_notify(&ios->can_write);
-		if (ios->on_writing != NULL) {
-			event_notify(ios->on_writing);
+		if (!ios->error_on_write) {
+			manual_event_set_and_notify(&ios->can_write);
+			if (ios->on_writing != NULL) {
+				event_notify(ios->on_writing);
+			}
 		}
 		break;
 	}
@@ -48,10 +52,14 @@ void io_sync_disable(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		manual_event_reset(&ios->can_read);
+		if (!ios->error_on_read) {
+			manual_event_reset(&ios->can_read);
+		}
 		break;
 	case IO_SYNC_WRITING:
-		manual_event_reset(&ios->can_write);
+		if (!ios->error_on_write) {
+			manual_event_reset(&ios->can_write);
+		}
 		break;
 	}
 }
@@ -62,10 +70,12 @@ void io_sync_error_on(struct io_sync *ios, enum io_sync_op op) {
 	switch (op) {
 	case IO_SYNC_READING:
 		ios->error_on_read = 1;
+		manual_event_reset(&ios->can_read);
 		manual_event_notify(&ios->can_read);
 		break;
 	case IO_SYNC_WRITING:
 		ios->error_on_write = 1;
+		manual_event_reset(&ios->can_write);
 		manual_event_notify(&ios->can_write);
 		break;
 	}
@@ -78,6 +88,8 @@ void io_sync_error(struct io_sync *ios) {
 	assert(ios != NULL);
 
 	ios->error_on_read = ios->error_on_write = 1;
+	manual_event_reset(&ios->can_read);
+	manual_event_reset(&ios->can_write);
 	manual_event_notify(&ios->can_read);
 	manual_event_notify(&ios->can_write);
 	if (ios->on_error != NULL) {
