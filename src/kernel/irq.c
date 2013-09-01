@@ -38,12 +38,13 @@ struct irq_entry {
 };
 
 struct irq_action {
-	struct irq_entry entry;
+	struct irq_entry *entry;
 	struct dlist_head entry_list;
 	int sharing_supported;
 };
 
 OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
+OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_NRS_TOTAL * 2);
 
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
@@ -62,32 +63,41 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 
 	/* Check if irq exists and device support sharing
 	 * and new device also support sharing */
-	if (irq_table[irq_nr] && (! (irq_table[irq_nr]->sharing_supported
-			&& (flags & IF_SHARESUP))) ) {
-		/* IRQ sharing is not supported for this IRQ number */
-		ret = -EBUSY;
-		goto out_unlock;
-	}
-
-	/* Action allocation. */
-	if (!(action = objalloc(&irq_actions))) {
+	if (irq_table[irq_nr]) {
+		if(! (irq_table[irq_nr]->sharing_supported && (flags & IF_SHARESUP))) {
+			/* IRQ sharing is not supported for this IRQ number */
+			ret = -EBUSY;
+			goto out_unlock;
+		}
+		action = irq_table[irq_nr];
+	/* Else action allocation */
+	} else if (! (action = objalloc(&irq_actions))) {
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
 
-	action->entry.handler = handler;
+	/* Action entry allocation */
+	if (! (action->entry = objalloc(&irq_entries))) {
+		if (dlist_empty(&(irq_table[irq_nr]->entry_list))) {
+			objfree(&irq_actions, action);
+		}
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
+
+	action->entry->handler = handler;
 	action->sharing_supported = (flags & IF_SHARESUP) ? 1 : 0;
-	action->entry.dev_id = dev_id;
+	action->entry->dev_id = dev_id;
 
 	if (irq_table[irq_nr]) {
 		/* Add new device to list */
-		dlist_add_next(dlist_head_init(&(action->entry.action_link)),
+		dlist_add_next(dlist_head_init(&(action->entry->action_link)),
 				&(irq_table[irq_nr]->entry_list));
 	} else {
 		/* Initialize list if it is first device on this IRQ line */
 		irq_table[irq_nr] = action;
 		dlist_init(&action->entry_list);
-		dlist_add_next(dlist_head_init(&(action->entry.action_link)),
+		dlist_add_next(dlist_head_init(&(action->entry->action_link)),
 				&(irq_table[irq_nr]->entry_list));
 		irqctrl_enable(irq_nr);
 	}
@@ -98,6 +108,7 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 
 int irq_detach(unsigned int irq_nr, void *dev_id) {
 	struct irq_action *action;
+	struct irq_entry *entry;
 	struct dlist_head *item, *next;
 	int ret = ENOERR;
 
@@ -116,18 +127,17 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 	}
 
 	dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
-		action = dlist_entry(item, struct irq_action, entry.action_link);
+		entry = dlist_entry(item, struct irq_entry, action_link);
 
-		if (action->entry.dev_id == dev_id) {
-			dlist_del(&(action->entry.action_link));
+		if (entry->dev_id == dev_id) {
+			dlist_del(&(entry->action_link));
+			objfree(&irq_entries, entry);
 
 			if (dlist_empty(&(irq_table[irq_nr]->entry_list))) {
 				objfree(&irq_actions, action);
 				irq_table[irq_nr] = NULL;
 				irqctrl_disable(irq_nr);
 				break;
-			} else {
-				objfree(&irq_actions, action);
 			}
 		}
 	}
@@ -137,7 +147,7 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 }
 
 void irq_dispatch(unsigned int irq_nr) {
-	struct irq_entry *entry;
+	struct irq_entry *entry = NULL;
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
@@ -157,13 +167,11 @@ void irq_dispatch(unsigned int irq_nr) {
 		ipl = ipl_save();
 		dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
 
-			{
-				if ((entry =
-						dlist_entry(item, struct irq_entry, action_link))) {
-					handler = entry->handler;
-					dev_id = entry->dev_id;
-				}
+			if ((entry = dlist_entry(item, struct irq_entry, action_link))) {
+				handler = entry->handler;
+				dev_id = entry->dev_id;
 			}
+
 			assert(handler != NULL);
 			ipl_restore(ipl);
 			handler(irq_nr, dev_id);
