@@ -115,7 +115,6 @@ static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
 	struct sockaddr_in *addr_in;
 	struct rt_entry *rte;
 	int ret;
-	struct timeval started;
 	static const __u8 magic_opts[] = {
 		/**
 		 * TODO
@@ -174,17 +173,8 @@ static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
 
-			/* unlock socket state */
-			tcp_obj_unlock(sock, TCP_SYNC_STATE);
-
-			tcp_get_now(&started);
-			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
-				if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
-					tcp_set_st(sock, TCP_CLOSED);
-					return -ETIMEDOUT;
-				}
-			}
-			return tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
+			ret = -EINPROGRESS;
+			break;
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_STATE);
@@ -392,9 +382,14 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 /* TODO */
 static int tcp_shutdown(struct sock *sk, int how) {
+	union sock_pointer sock;
+
 	if (!(how & (SHUT_WR + 1))) {
 		return 0;
 	}
+
+	sock.sk = sk;
+	tcp_set_st(sock, TCP_CLOSED);
 
 	/*tcp_send_fin()*/
 	return 0;

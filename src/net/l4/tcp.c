@@ -238,7 +238,23 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	sock.sk->state = new_state;
 	debug_print(2, "sk %p set state %d-%s\n", sock.tcp_sk, new_state, str_state[new_state]);
 
+	/* io_sync manipulation */
 	switch (new_state) {
+	case TCP_ESTABIL: /* new connection */
+		if (sock.tcp_sk->parent != NULL) { /* enable reading for listening socket */
+#if 0
+			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+			{
+				list_move(&sock.tcp_sk->conn_wait, &sock.tcp_sk->parent->conn_wait);
+			}
+			tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+#endif
+			io_sync_enable(sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
+		}
+		if (sock.sk->ios != NULL) { /* enable writing when connection is established */
+			io_sync_enable(sock.sk->ios, IO_SYNC_WRITING);
+		}
+		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
 		if (sock.sk->ios != NULL) {
 			io_sync_error_on(sock.sk->ios, IO_SYNC_READING);
@@ -608,10 +624,6 @@ static enum tcp_ret_code tcp_st_syn_recv(union sock_pointer sock, struct sk_buff
 
 	if (tcph->ack) {
 		tcp_set_st(sock, TCP_ESTABIL);
-
-		if (sock.tcp_sk->parent != NULL) {
-			io_sync_enable(sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
-		}
 	}
 
 	return TCP_RET_DROP;
@@ -808,7 +820,7 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 		tcp_set_st(sock, TCP_CLOSED);
 		if (!list_empty(&sock.tcp_sk->conn_wait)) {
 			assert(sock.tcp_sk->parent);
-			list_del_init(&sock.tcp_sk->conn_wait);
+			list_del(&sock.tcp_sk->conn_wait);
 			return TCP_RET_FREE;
 		}
 		return TCP_RET_DROP;
