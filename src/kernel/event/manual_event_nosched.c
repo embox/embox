@@ -24,6 +24,9 @@ int manual_event_is_set(struct manual_event *m_event) {
 void manual_event_notify(struct manual_event *m_event) {
 }
 
+void manual_event_set_and_notify(struct manual_event *m_event) {
+}
+
 int manual_event_wait(struct manual_event *m_event,
 		unsigned long timeout) {
 	return 0;
