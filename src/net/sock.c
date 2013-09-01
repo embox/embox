@@ -87,7 +87,7 @@ static void sock_init(struct sock *sk, int family, int type,
 }
 
 int sock_create_ext(int family, int type, int protocol,
-		struct sock **out_sk) {
+		int need_hash, struct sock **out_sk) {
 	int ret;
 	struct sock *new_sk;
 	const struct net_family *nfamily;
@@ -118,8 +118,8 @@ int sock_create_ext(int family, int type, int protocol,
 		return -ENOMEM;
 	}
 
-	sock_init(new_sk, family, type, nsock->protocol, nftype->ops,
-			nsock->ops);
+	sock_init(new_sk, family, type, nsock->protocol,
+			nftype->ops, nsock->ops);
 
 	assert(new_sk->f_ops != NULL);
 	ret = new_sk->f_ops->init(new_sk);
@@ -137,6 +137,10 @@ int sock_create_ext(int family, int type, int protocol,
 		}
 	}
 
+	if (need_hash) {
+		sock_hash(new_sk);
+	}
+
 	*out_sk = new_sk;
 
 	return 0;
@@ -144,24 +148,7 @@ int sock_create_ext(int family, int type, int protocol,
 
 int sock_create(int family, int type, int protocol,
 		struct sock **out_sk) {
-	int ret;
-	struct sock *new_sk;
-
-	if (out_sk == NULL) {
-		return -EINVAL;
-	}
-
-	ret = sock_create_ext(family, type, protocol, &new_sk);
-	if (ret != 0) {
-		return ret;
-	}
-	assert(new_sk != NULL);
-
-	sock_hash(new_sk);
-
-	*out_sk = new_sk;
-
-	return 0;
+	return sock_create_ext(family, type, protocol, 1, out_sk);
 }
 
 void sock_release(struct sock *sk) {

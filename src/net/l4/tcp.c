@@ -1177,7 +1177,7 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	ret = sock_create_ext(AF_INET, SOCK_STREAM, IPPROTO_TCP,
+	ret = sock_create_ext(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0,
 			&tcp_sock_default.sk);
 	if (ret != 0) {
 		return ret;

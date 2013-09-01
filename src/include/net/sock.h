@@ -121,7 +121,7 @@ typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 extern int sock_create(int family, int type, int protocol,
 		struct sock **out_sk);
 extern int sock_create_ext(int family, int type, int protocol,
-		struct sock **out_sk);
+		int need_hash, struct sock **out_sk);
 extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
