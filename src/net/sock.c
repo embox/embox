@@ -118,7 +118,7 @@ int sock_create_ext(int family, int type, int protocol,
 		return -ENOMEM;
 	}
 
-	sock_init(new_sk, family, type, protocol, nftype->ops,
+	sock_init(new_sk, family, type, nsock->protocol, nftype->ops,
 			nsock->ops);
 
 	assert(new_sk->f_ops != NULL);
