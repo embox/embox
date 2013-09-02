@@ -20,7 +20,7 @@ static void print_usage(void) {
 }
 
 static void mod_print(const struct mod *mod) {
-	int enabled = mod->private->flags & 0x1; // XXX fix later
+	int enabled = mod->priv->flags & 0x1; // XXX fix later
 	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod->package->name, mod->name);
 }
 
