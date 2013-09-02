@@ -214,7 +214,11 @@ ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
 	DPRINT();
 	for(i=0; i<iovcnt; i++) {
 		int res;
-		res = write(fd, iov[i].iov_base, iov[i].iov_len);
+		if (iov[i].iov_len) {
+			res = write(fd, iov[i].iov_base, iov[i].iov_len);
+		} else {
+			res = 0;
+		}
 		if (res<0) {
 			return -1;
 		}
