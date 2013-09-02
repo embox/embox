@@ -246,18 +246,21 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	/* io_sync manipulation */
 	switch (new_state) {
 	case TCP_ESTABIL: /* new connection */
-		if (sock.tcp_sk->parent != NULL) { /* enable reading for listening socket */
+		/* enable writing when connection is established */
+		io_sync_enable(&sock.sk->ios, IO_SYNC_WRITING);
+		/* enable reading for listening (parent) socket */
+		if (sock.tcp_sk->parent != NULL) {
 			tcp_obj_lock((union sock_pointer)sock.tcp_sk->parent,
 					TCP_SYNC_CONN_QUEUE);
 			{
-				list_move(&sock.tcp_sk->conn_wait, &sock.tcp_sk->parent->conn_wait);
+				list_move(&sock.tcp_sk->conn_wait,
+						&sock.tcp_sk->parent->conn_wait);
 			}
 			tcp_obj_unlock((union sock_pointer)sock.tcp_sk->parent,
 					TCP_SYNC_CONN_QUEUE);
-			io_sync_enable(&sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
+			io_sync_enable(&sock.tcp_sk->parent->inet.sk.ios,
+					IO_SYNC_READING);
 		}
-		/* enable writing when connection is established */
-		io_sync_enable(&sock.sk->ios, IO_SYNC_WRITING);
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
 		io_sync_error_on(&sock.sk->ios, IO_SYNC_READING);

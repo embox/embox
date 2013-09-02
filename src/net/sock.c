@@ -295,7 +295,6 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 			}
 			break;
 		}
-		io_sync_enable(&sk->ios, IO_SYNC_READING);
 
 		len = min(buff_sz, skb->p_data_end - skb->p_data);
 
@@ -310,8 +309,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		}
 
 		if (!stream_mode || (buff_sz == 0)) {
-			/* disable reading if needed */
-			io_sync_disable(&sk->ios, IO_SYNC_READING);
+			/* enable reading if needed */
 			if (NULL != skb_queue_front(&sk->rx_queue)) {
 				io_sync_enable(&sk->ios, IO_SYNC_READING);
 			}

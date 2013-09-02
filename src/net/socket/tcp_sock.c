@@ -241,7 +241,6 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
 			}
-			io_sync_enable(&sock.sk->ios, IO_SYNC_READING);
 
 			/* get first socket from */
 			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
@@ -251,13 +250,12 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			assert(sock.tcp_sk->conn_wait_len != 0);
 			--sock.tcp_sk->conn_wait_len;
 
-			/* disable reading if queue is empty */
-			io_sync_disable(&sock.sk->ios, IO_SYNC_READING);
+			/* enable reading if queue not empty */
 			if (!list_empty(&sock.tcp_sk->conn_wait)
-					&& (TCP_ST_SYNC == tcp_st_status( /* FIXME use io_sync_ready */
-							(union sock_pointer)list_entry(
-								sock.tcp_sk->conn_wait.next,
-								struct tcp_sock, conn_wait)))) {
+					&& io_sync_ready(&list_entry(
+							sock.tcp_sk->conn_wait.next, struct tcp_sock,
+							conn_wait)->inet.sk.ios,
+						IO_SYNC_WRITING)) {
 				io_sync_enable(&sock.sk->ios, IO_SYNC_READING);
 			}
 		}
@@ -272,15 +270,17 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			*addr_len = sizeof *addr_in;
 		}
 
-		debug_print(3, "tcp_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
-				inet_ntoa(*(struct in_addr *)&newsock.inet_sk->daddr), (int)ntohs(newsock.inet_sk->dport));
+		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
+				newsock.tcp_sk, inet_ntoa(
+					*(struct in_addr *)&newsock.inet_sk->daddr),
+				ntohs(newsock.inet_sk->dport));
 
 		if (tcp_st_status(newsock) == TCP_ST_NOTEXIST) {
 			tcp_free_sock(newsock);
 			return -ECONNRESET;
 		}
 
-		assert(tcp_st_status(newsock) == TCP_ST_SYNC);
+		assert(io_sync_ready(&newsock.sk->ios, IO_SYNC_WRITING));
 
 		*newsk = newsock.sk;
 
