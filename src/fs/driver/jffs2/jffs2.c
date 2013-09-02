@@ -2203,10 +2203,20 @@ static int jffs2fs_delete(struct node *node) {
 
 	par_fi = parents->nas->fi->privdata;
 	fi = node->nas->fi->privdata;
+	if (node_is_directory(node)) {
+		if (0 != (rc = jffs2_rmdir(par_fi->_inode, fi->_inode,
+				(const unsigned char *) node->name))) {
+			return -rc;
+		}
+	} else {
+		if (0 != (rc = jffs2_unlink(par_fi->_inode, fi->_inode,
+				(const unsigned char *) node->name))) {
+			return -rc;
+		}
+	}
 
-	if (0 != (rc = jffs2_unlink(par_fi->_inode, fi->_inode,
-			(const unsigned char *) node->name))) {
-		return -rc;
+	if(NULL != (fi = node->nas->fi->privdata)) {
+		pool_free(&jffs2_file_pool, fi);
 	}
 
 	vfs_del_leaf(node);
