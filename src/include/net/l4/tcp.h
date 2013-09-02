@@ -95,7 +95,8 @@ typedef struct tcp_sock {
 	uint32_t ack_flag;          /* Acknowledgment for flags (SYN or FIN) */
 	struct tcp_sock *parent;    /* Listening socket to which it belongs */
 	struct list_head conn_wait; /* Queue of incoming connection */
-	size_t conn_wait_max;       /* Max length of queue of incoming connection */
+	unsigned int conn_wait_len; /* Length of queue of incoming connection */
+	unsigned int conn_wait_max; /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */
 	struct timeval activity_time;   /* The time when last message was sent */
 	struct timeval sync_time;   /* The time when synchronization started */

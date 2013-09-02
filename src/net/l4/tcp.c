@@ -100,17 +100,17 @@ void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //default:
 //	case 0:  /* default */
-//	case 1:  /* in/out package print */
+	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
-	case 3:  /* global functions */
+//	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
 	case 8:  /* state's handler */
 //	case 9:  /* sending package */
-	case 10: /* pre_process */
-	case 11: /* tcp_handle */
+//	case 10: /* pre_process */
+//	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
 		softirq_unlock();
@@ -167,11 +167,16 @@ struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
 }
 
 void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
-	softirq_lock();
+	if (sock.tcp_sk->lock++ == 0) {
+		softirq_lock();
+	}
 }
 
-void tcp_obj_unlock(union sock_pointer sock, uint32_t obj) {
-	softirq_unlock();
+void tcp_obj_unlock(union sock_pointer sock, unsigned int obj) {
+	assert(sock.tcp_sk->lock != 0);
+	if (--sock.tcp_sk->lock == 0) {
+		softirq_unlock();
+	}
 }
 
 static size_t tcp_data_len(struct sk_buff *skb) {
@@ -242,13 +247,13 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 	switch (new_state) {
 	case TCP_ESTABIL: /* new connection */
 		if (sock.tcp_sk->parent != NULL) { /* enable reading for listening socket */
-#if 0
-			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+			tcp_obj_lock((union sock_pointer)sock.tcp_sk->parent,
+					TCP_SYNC_CONN_QUEUE);
 			{
 				list_move(&sock.tcp_sk->conn_wait, &sock.tcp_sk->parent->conn_wait);
 			}
-			tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
-#endif
+			tcp_obj_unlock((union sock_pointer)sock.tcp_sk->parent,
+					TCP_SYNC_CONN_QUEUE);
 			io_sync_enable(sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
 		}
 		if (sock.sk->ios != NULL) { /* enable writing when connection is established */
@@ -461,7 +466,7 @@ static void free_rexmitting_queue(union sock_pointer sock, __u32 ack, __u32 last
 			if (seq_left <= ack_len) {
 				ack_len -= seq_left;
 				debug_print(9, "free_rexmitting_queue: remove skb %p\n", sent_skb);
-				skb_free(sent_skb); /* list_del will done at skb_free */
+				skb_free(sent_skb); /* list_del_init will done at skb_free */
 			} else {
 				sent_skb->p_data += ack_len;
 				break;
@@ -474,13 +479,29 @@ static void free_rexmitting_queue(union sock_pointer sock, __u32 ack, __u32 last
 void tcp_free_sock(union sock_pointer sock) {
 	union sock_pointer anticipant;
 
-	tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
-	{
-		list_for_each_entry(anticipant.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
-			sock_release(anticipant.sk);
+	if (sock.tcp_sk->parent == NULL) {
+		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+		{
+			list_for_each_entry(anticipant.tcp_sk,
+					&sock.tcp_sk->conn_wait, conn_wait) {
+				sock_release(anticipant.sk);
+			}
 		}
+		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 	}
-	tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+	else {
+		tcp_obj_lock((union sock_pointer)sock.tcp_sk->parent,
+				TCP_SYNC_CONN_QUEUE);
+		{
+			if (!list_empty(&sock.tcp_sk->conn_wait)) {
+				assert(sock.tcp_sk->parent->conn_wait_len != 0);
+				--sock.tcp_sk->parent->conn_wait_len;
+				list_del(&sock.tcp_sk->conn_wait);
+			}
+		}
+		tcp_obj_unlock((union sock_pointer)sock.tcp_sk->parent,
+				TCP_SYNC_CONN_QUEUE);
+	}
 
 	if (sock.inet_sk->sport_is_alloced) {
 		ip_port_unlock(sock.sk->opt.so_protocol, ntohs(sock.inet_sk->sport));
@@ -515,18 +536,6 @@ static enum tcp_ret_code tcp_st_closed(union sock_pointer sock, struct sk_buff *
 	return TCP_RET_FLUSH;
 }
 
-static size_t tcp_conn_wait_len(union sock_pointer sock) {
-	union sock_pointer tmp;
-	size_t conn_wait_len;
-
-	conn_wait_len = 0;
-	list_for_each_entry(tmp.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
-		++conn_wait_len;
-	}
-
-	return conn_wait_len;
-}
-
 static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	int ret;
@@ -536,14 +545,15 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 	assert(sock.sk->state == TCP_LISTEN);
 
 	if (tcph->syn) {
-		/* Check max length of accept queue */
+		/* Check max length of accept queue and reserve 1 place */
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
-			if (tcp_conn_wait_len(sock) >= sock.tcp_sk->conn_wait_max) {
+			if (sock.tcp_sk->conn_wait_len >= sock.tcp_sk->conn_wait_max) {
 				LOG_DEBUG("tcp_st_listen", "conn_wait is too big");
 				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
+			++sock.tcp_sk->conn_wait_len; /* reserve */
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
@@ -552,7 +562,13 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 				SOCK_STREAM, IPPROTO_TCP, &newsock.sk);
 		if (ret != 0) {
 			printk("%s: can't alloc socket\n", __func__);
-			return TCP_RET_DROP;
+			tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+			{
+				assert(sock.tcp_sk->conn_wait_len != 0);
+				--sock.tcp_sk->conn_wait_len;
+			}
+			tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
+			return TCP_RET_DROP; /* error: see ret */
 		}
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n", newsock.tcp_sk, *pskb, sock.tcp_sk);
 		/* Set up new socket */
@@ -819,8 +835,7 @@ static enum tcp_ret_code process_rst(union sock_pointer sock, struct tcphdr *tcp
 	case TCP_CLOSING:
 		tcp_set_st(sock, TCP_CLOSED);
 		if (!list_empty(&sock.tcp_sk->conn_wait)) {
-			assert(sock.tcp_sk->parent);
-			list_del(&sock.tcp_sk->conn_wait);
+			assert(sock.tcp_sk->parent != NULL);
 			return TCP_RET_FREE;
 		}
 		return TCP_RET_DROP;
@@ -1158,8 +1173,8 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 				&& !list_empty(&sock.tcp_sk->conn_wait)
 				&& tcp_is_expired(&sock.tcp_sk->sync_time,
 					TCP_SYNC_TIMEOUT)) {
-			list_del_init(&sock.tcp_sk->conn_wait);
-			sock_release(sock.sk);
+			assert(sock.tcp_sk->parent != NULL);
+			tcp_free_sock(sock);
 		}
 		else if (tcp_st_status(sock) != TCP_ST_NOTEXIST) {
 			tcp_tmr_rexmit(sock);
