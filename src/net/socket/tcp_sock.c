@@ -47,7 +47,7 @@ static int tcp_init(struct sock *sk) {
 	sock.sk = sk;
 	debug_print(3, "tcp_init: sk %p\n", sock.tcp_sk);
 
-	tcp_set_st(sock, TCP_CLOSED);
+	sock.sk->state = TCP_CLOSED;
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->parent = NULL;
@@ -236,12 +236,12 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		/* waiting anyone */
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
-			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
+			io_sync_disable(&sock.sk->ios, IO_SYNC_READING);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
 				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
 			}
-			io_sync_enable(sock.sk->ios, IO_SYNC_READING);
+			io_sync_enable(&sock.sk->ios, IO_SYNC_READING);
 
 			/* get first socket from */
 			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
@@ -252,13 +252,13 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			--sock.tcp_sk->conn_wait_len;
 
 			/* disable reading if queue is empty */
-			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
+			io_sync_disable(&sock.sk->ios, IO_SYNC_READING);
 			if (!list_empty(&sock.tcp_sk->conn_wait)
 					&& (TCP_ST_SYNC == tcp_st_status( /* FIXME use io_sync_ready */
 							(union sock_pointer)list_entry(
 								sock.tcp_sk->conn_wait.next,
 								struct tcp_sock, conn_wait)))) {
-				io_sync_enable(sock.sk->ios, IO_SYNC_READING);
+				io_sync_enable(&sock.sk->ios, IO_SYNC_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);

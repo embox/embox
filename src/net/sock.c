@@ -83,7 +83,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->shutdown_flag = 0;
 	sk->f_ops = f_ops;
 	sk->ops = ops;
-	sk->ios = NULL;
+	io_sync_init(&sk->ios, 0, 0);
 }
 
 int sock_create_ext(int family, int type, int protocol,
@@ -253,9 +253,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 
 	skb_queue_push(&sk->rx_queue, skb);
 
-	if (sk->ios != NULL) {
-		io_sync_enable(sk->ios, IO_SYNC_READING);
-	}
+	io_sync_enable(&sk->ios, IO_SYNC_READING);
 }
 
 int sock_close(struct sock *sk) {
@@ -289,7 +287,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	total_len = 0;
 
 	while (1) {
-		io_sync_disable(sk->ios, IO_SYNC_READING);
+		io_sync_disable(&sk->ios, IO_SYNC_READING);
 		skb = skb_queue_front(&sk->rx_queue);
 		if (skb == NULL) {
 			if (total_len == 0) {
@@ -297,7 +295,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 			}
 			break;
 		}
-		io_sync_enable(sk->ios, IO_SYNC_READING);
+		io_sync_enable(&sk->ios, IO_SYNC_READING);
 
 		len = min(buff_sz, skb->p_data_end - skb->p_data);
 
@@ -313,9 +311,9 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 
 		if (!stream_mode || (buff_sz == 0)) {
 			/* disable reading if needed */
-			io_sync_disable(sk->ios, IO_SYNC_READING);
+			io_sync_disable(&sk->ios, IO_SYNC_READING);
 			if (NULL != skb_queue_front(&sk->rx_queue)) {
-				io_sync_enable(sk->ios, IO_SYNC_READING);
+				io_sync_enable(&sk->ios, IO_SYNC_READING);
 			}
 
 			/* and exit */

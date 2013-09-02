@@ -254,23 +254,18 @@ void tcp_set_st(union sock_pointer sock, unsigned char new_state) {
 			}
 			tcp_obj_unlock((union sock_pointer)sock.tcp_sk->parent,
 					TCP_SYNC_CONN_QUEUE);
-			io_sync_enable(sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
+			io_sync_enable(&sock.tcp_sk->parent->inet.sk.ios, IO_SYNC_READING);
 		}
-		if (sock.sk->ios != NULL) { /* enable writing when connection is established */
-			io_sync_enable(sock.sk->ios, IO_SYNC_WRITING);
-		}
+		/* enable writing when connection is established */
+		io_sync_enable(&sock.sk->ios, IO_SYNC_WRITING);
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
-		if (sock.sk->ios != NULL) {
-			io_sync_error_on(sock.sk->ios, IO_SYNC_READING);
-		}
+		io_sync_error_on(&sock.sk->ios, IO_SYNC_READING);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		if (sock.sk->ios != NULL) {
-			io_sync_error(sock.sk->ios);
-		}
+		io_sync_error(&sock.sk->ios);
 		break;
 	}
 }

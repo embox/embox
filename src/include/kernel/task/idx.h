@@ -33,7 +33,7 @@ struct idx_desc_data {
 	const struct task_idx_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
-	struct io_sync ios;
+	struct io_sync *ios;
 };
 
 /**
@@ -221,10 +221,11 @@ static inline int task_self_idx_set(int fd, struct idx_desc *desc) {
 
 extern struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data);
 extern int task_idx_desc_free(struct idx_desc *idx);
-extern struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct);
+extern struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct, struct io_sync *ios);
 extern int task_idx_data_free(struct idx_desc *idx);
 
-extern int task_self_idx_alloc(const struct task_idx_ops *ops, void *data);
+extern int task_self_idx_alloc(const struct task_idx_ops *ops,
+		void *fd_struct, struct io_sync *ios);
 
 static inline int task_self_idx_table_unbind(int fd) {
 	return task_idx_table_unbind(task_self_idx_table(), fd);

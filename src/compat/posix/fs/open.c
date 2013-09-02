@@ -29,7 +29,7 @@ int open(const char *path, int __oflag, ...) {
 		return -1;
 	}
 
-	rc = task_self_idx_alloc(&task_idx_ops_file, kfile);
+	rc = task_self_idx_alloc(&task_idx_ops_file, kfile, &kfile->ios);
 	DPRINTF(("open(%s, %d ...) = %d\n", path, __oflag, rc));
 	return rc;
 }

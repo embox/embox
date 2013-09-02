@@ -13,6 +13,7 @@
 #include <fs/file_operation.h>
 #include <stddef.h>
 #include <fs/flags.h>
+#include <kernel/task/io_sync.h>
 
 struct node;
 struct kfile_operations;
@@ -23,6 +24,7 @@ struct file_desc {
 	const struct kfile_operations *ops;
 	size_t cursor;
 	void *file_info; /* customize in each file system */
+	struct io_sync ios;
 };
 
 extern struct file_desc * file_desc_alloc(void);

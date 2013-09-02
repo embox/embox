@@ -82,7 +82,7 @@ static const struct task_idx_ops iodev_idx_ops = {
 static int iodev_env_init(void) {
 	int fd;
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, NULL);
+	fd = task_self_idx_alloc(&iodev_idx_ops, NULL, NULL);
 	if (fd < 0) {
 		return fd;
 	}

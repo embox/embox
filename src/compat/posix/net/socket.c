@@ -24,7 +24,6 @@
 
 #include <kernel/thread.h>
 #include <kernel/event.h>
-#include <kernel/task/io_sync.h>
 #include <net/socket/socket_registry.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
@@ -49,18 +48,12 @@ int socket(int domain, int type, int protocol) {
 		return -1;
 	}
 
-	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk);
+	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk,
+			&sk->ios);
 	if (sockfd < 0) {
 		ksocket_close(sk);
 		SET_ERRNO(EMFILE);
 		return -1;
-	}
-
-	assert(sk != NULL);
-	sk->ios = &task_idx_indata(task_self_idx_get(sockfd))->ios;
-
-	if (type != SOCK_STREAM) {
-		io_sync_enable(sk->ios, IO_SYNC_WRITING); /* TODO move to ksocket */
 	}
 
 	return sockfd;
@@ -141,20 +134,12 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk);
+	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk,
+			&new_sk->ios);
 	if (new_sockfd < 0) {
 		ksocket_close(new_sk);
 		SET_ERRNO(EMFILE);
 		return -1;
-	}
-
-	assert(new_sk != NULL);
-	new_sk->ios = &task_idx_indata(task_self_idx_get(new_sockfd))->ios;
-
-	/* TODO move to kaccept */
-	io_sync_enable(new_sk->ios, IO_SYNC_WRITING);
-	if (NULL != skb_queue_front(&new_sk->rx_queue)) {
-		io_sync_enable(new_sk->ios, IO_SYNC_READING);
 	}
 
 	return new_sockfd;
