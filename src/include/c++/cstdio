@@ -48,7 +48,7 @@ namespace std {
 	using ::fsetpos;
 	using ::ftell;
 	using ::rewind;
-	using ::clearerr;
+	//using ::clearerr;
 	using ::feof;
 	using ::ferror;
 	using ::perror;
