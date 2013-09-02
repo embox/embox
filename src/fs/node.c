@@ -62,6 +62,8 @@ node_t *node_alloc(const char *name, size_t name_len) {
 		return NULL;
 	}
 
+	memset(nt, 0, sizeof(struct node_tuple));
+
 	node = &nt->node;
 	nas = &nt->nas;
 

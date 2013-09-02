@@ -99,7 +99,7 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name,
 	D1(printk(KERN_DEBUG
 			"jffs2_create: Created ino #%lu with mode %o, nlink %d(%d)\n",
 		  inode->i_ino, inode->i_mode, inode->i_nlink, f->inocache->nlink));
-        *new_i = inode;
+    *new_i = inode;
 	return 0;
 }
 
@@ -168,9 +168,9 @@ int jffs2_mkdir (struct _inode *dir_i,
 	mode |= S_IFDIR;
 
 	ri = jffs2_alloc_raw_inode();
-	if (!ri)
+	if (!ri) {
 		return -ENOMEM;
-
+	}
 	c = &dir_i->i_sb->jffs2_sb;
 
 	/* Try to reserve enough space for both node and dirent.

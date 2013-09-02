@@ -649,14 +649,13 @@ static int jffs2_ops_unlink(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 
 	return -err;
 }
+*/
 
-// -------------------------------------------------------------------------
-// jffs2_ops_mkdir()
-// Create a new directory.
-
-static int jffs2_ops_mkdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
-{
-	jffs2_dirsearch ds;
+/**
+ *  Create a new directory.
+ */
+static int jffs2_ops_mkdir(struct _inode *dir, const char *name, mode_t mode) {
+	jffs2_dirsearch_t ds;
 	int err;
 
 	D2(printf("jffs2_ops_mkdir\n"));
@@ -668,26 +667,28 @@ static int jffs2_ops_mkdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 
 	if (err == ENOENT) {
 		if (ds.last) {
-			// The entry does not exist, and it is the last element in
-			// the pathname, so we can create it here.
-
-			err = -jffs2_mkdir(ds.dir, ds.name, S_IRUGO|S_IXUGO|S_IWUSR);
+			/* The entry does not exist, and it is the last element in
+			 * the pathname, so we can create it here.
+			 */
+			err = -jffs2_mkdir(ds.dir, ds.name, mode); /*S_IRUGO|S_IXUGO|S_IWUSR); */
 		}
-		// If this was not the last element, then an intermediate
-		// directory does not exist.
+		/* If this was not the last element, then an intermediate
+		 * directory does not exist.
+		 */
 	} else {
-		// If there we no error, something already exists with that
-		// name, so we cannot create another one.
-               if (err == ENOERR) {
-            		jffs2_iput(ds.node);
-                        err = EEXIST;
-               }
+		/* If there we no error, something already exists with that
+		 * name, so we cannot create another one.
+		 */
+		if (err == ENOERR) {
+			jffs2_iput(ds.node);
+			err = EEXIST;
+		}
 	}
 	jffs2_iput(ds.dir);
 	return err;
 }
 
-
+/*
 // -------------------------------------------------------------------------
 // jffs2_ops_rmdir()
 // Remove a directory.
@@ -2111,6 +2112,53 @@ static jffs2_file_info_t *jffs2_fi_alloc(struct nas *nas, void *fs) {
 	return fi;
 }
 
+static int mount_vfs_dir_enty(struct nas *dir_nas) {
+	struct jffs2_inode_info *dir_f;
+	struct jffs2_full_dirent *fd_list;
+	struct _inode *inode = NULL;
+	uint32_t ino = 0;
+	struct node *vfs_node;
+	struct nas *nas;
+	struct _inode *dir_i;
+	struct jffs2_file_info *fi;
+
+	fi = dir_nas->fi->privdata;
+	dir_i = fi->_inode;
+
+	dir_f = JFFS2_INODE_INFO(dir_i);
+
+	for (fd_list = dir_f->dents; NULL != fd_list; fd_list = fd_list->next) {
+		if (fd_list) {
+			ino = fd_list->ino;
+			if (ino) {
+				inode = jffs2_iget(dir_i->i_sb, ino);
+				if(NULL == (vfs_node = vfs_lookup(dir_nas->node,
+						(const char *) fd_list->name))) {
+					vfs_node = vfs_create(dir_nas->node,
+							(const char *) fd_list->name, inode->i_mode);
+					if(NULL == vfs_node) {
+						return ENOMEM;
+					}
+				}
+				nas = vfs_node->nas;
+				if(NULL == nas->fi->privdata) {
+					if (NULL == (fi = jffs2_fi_alloc(nas, dir_nas->fs))) {
+						nas->fi->privdata = (void *) fi;
+						return ENOMEM;
+					}
+					fi->_inode = inode;
+				}
+
+				if(node_is_directory(vfs_node)) {
+					mount_vfs_dir_enty(nas);
+				}
+			}
+
+		}
+	}
+	return 0;
+}
+
 static int jffs2fs_create(struct node *parent_node, struct node *node) {
 	int rc;
 	struct nas *nas;
@@ -2119,22 +2167,24 @@ static int jffs2fs_create(struct node *parent_node, struct node *node) {
 	nas = node->nas;
 	parents_fi = parent_node->nas->fi->privdata;
 
-
-	if (NULL == (fi = jffs2_fi_alloc(nas, parent_node->nas->fs))) {
-		nas->fi->privdata = (void *) fi;
-		return ENOMEM;
-	}
-
 	if (node_is_directory(node)) {
-//		if (0 != (rc = jffs2_ops_mkdir(nas, parents_nas))) {
-//			return -rc;
-//		}
-//		if (0 != (rc = jffs2_mount(nas))) {
-//			return -rc;
-//		}
+		node->mode |= S_IRUGO|S_IXUGO|S_IWUSR;
+		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
+				(const char *) &node->name, node->mode))) {
+			return -rc;
+		}
+		/* file info for new dir will be allocate into */
+		if (0 != (rc = mount_vfs_dir_enty(parent_node->nas))) {
+			return -rc;
+		}
 	} else {
+		if (NULL == (fi = jffs2_fi_alloc(nas, parent_node->nas->fs))) {
+				nas->fi->privdata = (void *) fi;
+				return ENOMEM;
+			}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
-				(const unsigned char *) &node->name, node->mode, &fi->_inode))) {
+				(const unsigned char *) &node->name,
+								node->mode, &fi->_inode))) {
 			return -rc;
 		}
 	}
@@ -2167,47 +2217,6 @@ static int jffs2fs_delete(struct node *node) {
 
 static int jffs2fs_format(void *dev) {
 
-	return 0;
-}
-
-static int mount_vfs_dir_enty(struct nas *dir_nas) {
-	struct jffs2_inode_info *dir_f;
-	struct jffs2_full_dirent *fd_list;
-	struct _inode *inode = NULL;
-	uint32_t ino = 0;
-	struct node *vfs_node;
-	struct nas *nas;
-	struct _inode *dir_i;
-	struct jffs2_file_info *fi;
-
-	fi = dir_nas->fi->privdata;
-	dir_i = fi->_inode;
-
-	dir_f = JFFS2_INODE_INFO(dir_i);
-
-	for (fd_list = dir_f->dents; NULL != fd_list; fd_list = fd_list->next) {
-		if (fd_list) {
-			ino = fd_list->ino;
-			if (ino) {
-				inode = jffs2_iget(dir_i->i_sb, ino);
-				vfs_node = vfs_create(dir_nas->node, (const char *) fd_list->name, inode->i_mode);
-				nas = vfs_node->nas;
-				if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
-					nas->fi->privdata = (void *) fi;
-					return ENOMEM;
-				}
-				memset(fi, 0, sizeof(struct jffs2_file_info));
-				nas->fi->privdata = (void *) fi;
-				fi->_inode = inode;
-				nas->fs = dir_nas->fs;
-
-				if(node_is_directory(vfs_node)) {
-					mount_vfs_dir_enty(nas);
-				}
-			}
-
-		}
-	}
 	return 0;
 }
 
@@ -2283,7 +2292,7 @@ static int jffs2fs_truncate (struct node *node, off_t length) {
 	nas->fi->ni.size = length;
 
 	fi = nas->fi->privdata;
-	jffs2_truncate_file (fi->_inode);
+	jffs2_truncate_file(fi->_inode);
 
 	return 0;
 }
