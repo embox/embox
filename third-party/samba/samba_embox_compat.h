@@ -209,9 +209,22 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 
 static inline
 ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
+	int i;
+	size_t bw = 0;
 	DPRINT();
-	errno = ENOSYS;
-	return -1;
+	for(i=0; i<iovcnt; i++) {
+		int res;
+		res = write(fd, iov[i].iov_base, iov[i].iov_len);
+		if (res<0) {
+			return -1;
+		}
+		if (res != iov[i].iov_len) {
+			errno = EIO;
+			return -1;
+		}
+		bw += res;
+	}
+	return bw;
 }
 
 #include <grp.h>
