@@ -87,6 +87,12 @@ static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc
 	return task_idx_indata(desc)->res_ops;
 }
 
+static inline struct io_sync * task_idx_desc_ios(struct idx_desc *desc) {
+	assert(desc);
+	assert(task_idx_indata(desc));
+	return task_idx_indata(desc)->ios;
+}
+
 #if 0
 /**
  * @brief Allocate idx descriptor structure with type and data

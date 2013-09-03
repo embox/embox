@@ -76,8 +76,6 @@ int getpagesize(void) {
 #undef assert
 #define assert(x)
 
-#define FIONREAD 0
-
 struct sockaddr_un {
     unsigned short sun_family;  /* AF_UNIX */
     char sun_path[108];
