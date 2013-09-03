@@ -1,0 +1,8 @@
+
+package embox.security
+
+module seculog {
+	source "seculog.c"
+
+	depends embox.util.DList
+}
