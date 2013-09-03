@@ -16,6 +16,7 @@
 #include <kernel/task.h>
 #include <debug/symbol.h>
 #include <embox/unit.h>
+#include <security/seculog.h>
 
 #include <security/smac.h>
 
@@ -92,6 +93,8 @@ static void audit_log(const char *subject, const char *object,
 			audit->fn_name);
 
 	kwrite(line, linelen, audit_log_desc);
+
+	seculog_record(SECULOG_LABEL_MANDATORY, line);
 }
 
 /*
