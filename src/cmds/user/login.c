@@ -23,6 +23,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <security/seculog.h>
+
 #include <embox/cmd.h>
 
 extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
@@ -170,6 +172,14 @@ static int fileno_vintr_enable(int fd) {
 	return 0;
 }
 
+static inline void seculog_make_rec(const char *username, char allowed) {
+	char seculog_msg[64];
+	snprintf(seculog_msg, 64, "login=%s,action=%s", username, allowed ? "ALLOW" : "DENY");
+
+	seculog_record(SECULOG_LABEL_LOGIN_ACT, seculog_msg);
+}
+
+
 static int login_user(const char *name, const char *cmd, char with_pass) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
 	struct passwd pwd, *result;
@@ -209,6 +219,8 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 		goto errret;
 	}
 
+	seculog_make_rec(name, 1);
+
 	{
 		struct taskdata tdata = {
 			.pwd = result,
@@ -225,6 +237,8 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 	return 0;
 
 errret:
+	seculog_make_rec(name, 0);
+
 	sleep(3);
 
 	if (0 != fileno_vintr_enable(STDIN_FILENO)) {
