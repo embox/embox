@@ -231,7 +231,6 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     	cache_free(&journal_block_cache, jb);
 		return NULL;
     }
-    memset(jb, 0, sizeof(journal_block_t));
     dlist_head_init(&jb->b_next);
     jb->blocknr = nr;
 
