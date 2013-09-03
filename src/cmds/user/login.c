@@ -174,7 +174,7 @@ static int fileno_vintr_enable(int fd) {
 
 static inline void seculog_make_rec(const char *username, char allowed) {
 	char seculog_msg[64];
-	snprintf(seculog_msg, 64, "login=%s,action=%s", username, allowed ? "ALLOW" : "DENY");
+	snprintf(seculog_msg, 64, "login=%s,action=%s\n", username, allowed ? "ALLOW" : "DENY");
 
 	seculog_record(SECULOG_LABEL_LOGIN_ACT, seculog_msg);
 }
