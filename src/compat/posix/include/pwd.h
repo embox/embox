@@ -8,6 +8,7 @@
 #ifndef PWD_H_
 #define PWD_H_
 
+#include <stdio.h>
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/cdefs.h>

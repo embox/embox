@@ -6,6 +6,8 @@
  * @date    20.02.2013
  */
 
+#include <unistd.h>
+#include <pwd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h> /* snprintf */
@@ -55,9 +57,10 @@ static int audit_log_open(void) {
 	return audit_log_desc ? 0 : -1;
 }
 
-int smac_audit_prepare(struct smac_audit *audit, const char *fn_name) {
+int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {
 
 	audit->fn_name = fn_name;
+	audit->file_name = file_name;
 
 	return 0;
 }
@@ -66,6 +69,8 @@ static void audit_log(const char *subject, const char *object,
 		int may_access, int ret, struct smac_audit *audit) {
 	char line[AUDITLINE_LEN], straccess[4];
 	int linelen;
+	uid_t uid;
+	struct passwd *pwd;
 
 	if (no_audit) {
 		return;
@@ -87,9 +92,18 @@ static void audit_log(const char *subject, const char *object,
 	straccess[2] = may_access & FS_MAY_EXEC  ? 'x' : '-';
 	straccess[3] = '\0';
 
+	no_audit = 1;
+	uid = getuid();
+	pwd = getpwuid(uid);
+	no_audit = 0;
+
+	if (!audit->file_name) {
+		audit->file_name = "";
+	}
+
 	linelen = snprintf(line, AUDITLINE_LEN,
-			"subject=%s, object=%s, request=%s, action=%s, function=%s\n",
-			subject, object, straccess, ret == 0 ? "ALLOW" : "DENINED",
+			"subject=%s(label=%s), object=%s, file=%s, request=%s, action=%s, function=%s\n",
+			pwd->pw_name, subject, object, audit->file_name, straccess, ret == 0 ? "ALLOW" : "DENINED",
 			audit->fn_name);
 
 	kwrite(line, linelen, audit_log_desc);
@@ -170,7 +184,7 @@ int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_READ, &audit))) {
@@ -192,7 +206,7 @@ int smac_flushenv(void) {
 	int res;
 	struct smac_audit audit;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
@@ -209,7 +223,7 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
@@ -251,7 +265,7 @@ int smac_labelset(const char *label) {
 	struct smac_audit audit;
 	int res, newlen;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
@@ -271,7 +285,7 @@ int smac_labelget(char *label, size_t len) {
 	struct smac_audit audit;
 	int res, thislen;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_READ, &audit))) {
