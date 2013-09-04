@@ -88,7 +88,6 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 	int res;
 
 	smac_audit_prepare(&audit, __func__, node->name);
-	audit.file_name = node->name;
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
@@ -109,7 +108,6 @@ int security_xattr_set(struct node *node, const char *name,
 	int res;
 
 	smac_audit_prepare(&audit, __func__, node->name);
-	audit.file_name = node->name;
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
@@ -129,7 +127,6 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 	int res;
 
 	smac_audit_prepare(&audit, __func__, node->name);
-	audit.file_name = node->name;
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
 		return res;
