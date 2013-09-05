@@ -554,6 +554,7 @@ struct __res_state {
 #define IPV6_MULTICAST_LOOP 0
 #define IP_MULTICAST_LOOP 0
 #define FIONREAD 0
+#define TCP_NODELAY 0
 
 
 
