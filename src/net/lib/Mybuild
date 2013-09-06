@@ -14,6 +14,14 @@ module dns {
 	depends embox.lib.LibC
 }
 
+module getifaddrs {
+	source "getifaddrs.c"
+	option number amount_ifaddrs=3
+
+	depends embox.mem.pool
+	depends embox.net.core
+}
+
 module ntp {
 	source "ntp.c"
 
