@@ -259,77 +259,6 @@ static int jffs2_find(jffs2_dirsearch_t * d) {
 	}
 }
 
-/* This function provides support for pathconf() and fpathconf().*/
-/*
-static int jffs2_pathconf(struct _inode *node, struct cyg_pathconf_info *info)
-{
-	int err = ENOERR;
-	D2(printf("jffs2_pathconf\n"));
-
-	switch (info->name) {
-	case _PC_LINK_MAX:
-		info->value = LINK_MAX;
-		break;
-
-	case _PC_MAX_CANON:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	case _PC_MAX_INPUT:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	case _PC_NAME_MAX:
-		info->value = NAME_MAX;
-		break;
-
-	case _PC_PATH_MAX:
-		info->value = PATH_MAX;
-		break;
-
-	case _PC_PIPE_BUF:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	case _PC_ASYNC_IO:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	case _PC_CHOWN_RESTRICTED:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	case _PC_NO_TRUNC:
-		info->value = 0;
-		break;
-
-	case _PC_PRIO_IO:
-		info->value = 0;
-		break;
-
-	case _PC_SYNC_IO:
-		info->value = 0;
-		break;
-
-	case _PC_VDISABLE:
-		info->value = -1;	// not supported
-		err = EINVAL;
-		break;
-
-	default:
-		err = EINVAL;
-		break;
-	}
-
-	return err;
-}
-*/
-
 /**
  * Process a mount request. This mainly creates a root for the
  * filesystem.
@@ -452,7 +381,21 @@ static int jffs2_mount(struct nas *dir_nas) {
 	return ENOERR;
 }
 
-static int umount_vfs_dir_entry(struct nas *dir_nas) {
+
+
+static int umount_vfs_dir_entry(struct nas *nas) {
+	struct node *child;
+
+	if(node_is_directory(nas->node)) {
+		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+			if(node_is_directory(child)) {
+				umount_vfs_dir_entry(child->nas);
+			}
+
+			pool_free(&jffs2_file_pool, child->nas->fi->privdata);
+			vfs_del_leaf(child);
+		}
+	}
 
 	return 0;
 }
@@ -478,35 +421,7 @@ static int jffs2_umount(struct nas *dir_nas) {
 	/* Only really umount if this is the only mount */
 	if (jffs2_sb->s_mount_count == 1) {
 		icache_evict(root, NULL);
-		if (root->i_cache_next != NULL)	{
-			struct _inode *inode = root;
-			printf("Refuse to unmount.\n");
-			while (inode) {
-				printf("Ino #%u has use count %d\n",
-				       inode->i_ino, inode->i_count);
-				inode = inode->i_cache_next;
-			}
-			/* root icount was set to 1 on mount */
-			return EBUSY;
-        }
-		/* TODO don't understand */
-/*		if (root->i_count == 2 &&
-		    cyg_cdir_mtab_entry == mte &&
-		    cyg_cdir_dir == (cyg_dir)root &&
-		    !strcmp(mte->name, "/")) {
-//			 If we were mounted on root, there's no
-//			   way for the cwd to change out and free
-//			   the file system for unmounting. So we hack
-//			   it -- if cwd is '/' we unset it. Perhaps
-//			   we should allow chdir(NULL) to unset
-//			   cyg_cdir_dir?
-			cyg_cdir_dir = CYG_DIR_NULL;
-			jffs2_iput(root);
-		}
-		 Argh. The fileio code sets this; never clears it
-		if (cyg_cdir_mtab_entry == mte)
-			cyg_cdir_mtab_entry = NULL;
-*/
+
 		if (root->i_count != 1) {
 			printf("Ino #1 has use count %d\n", root->i_count);
 			return EBUSY;
@@ -529,7 +444,6 @@ static int jffs2_umount(struct nas *dir_nas) {
 		jffs2_free_raw_node_refs(c);
 		free(c->blocks);
 		free(c->inocache_list);
-		free(jffs2_sb);
 
 		D2(printf("jffs2_umount No current mounts\n"));
 	} else {
@@ -611,15 +525,12 @@ static int jffs2_open(struct _inode *dir_ino, const char *name, int mode) {
 	}
 	return ENOERR;
 }
-/*
-#ifdef CYGOPT_FS_JFFS2_WRITE
-// -------------------------------------------------------------------------
-// jffs2_ops_unlink()
-// Remove a file link from its directory.
 
-static int jffs2_ops_unlink(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
-{
-	jffs2_dirsearch ds;
+/**
+ * Remove a file link from its directory.
+ */
+static int jffs2_ops_unlink(struct _inode * dir, const char *name) {
+	struct jffs2_dirsearch ds;
 	int err;
 
 	D2(printf("jffs2_ops_unlink\n"));
@@ -634,22 +545,20 @@ static int jffs2_ops_unlink(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 		return err;
 	}
 
-	// Cannot unlink directories, use rmdir() instead
+	/*  Cannot unlink directories, use rmdir() instead */
 	if (S_ISDIR(ds.node->i_mode)) {
 		jffs2_iput(ds.dir);
 		jffs2_iput(ds.node);
 		return EPERM;
 	}
 
-	// Delete it from its directory
-
+	/* Delete it from its directory */
 	err = jffs2_unlink(ds.dir, ds.node, ds.name);
 	jffs2_iput(ds.dir);
 	jffs2_iput(ds.node);
 
 	return -err;
 }
-*/
 
 /**
  *  Create a new directory.
@@ -688,14 +597,11 @@ static int jffs2_ops_mkdir(struct _inode *dir, const char *name, mode_t mode) {
 	return err;
 }
 
-/*
-// -------------------------------------------------------------------------
-// jffs2_ops_rmdir()
-// Remove a directory.
-
-static int jffs2_ops_rmdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
-{
-	jffs2_dirsearch ds;
+/**
+ *  Remove a directory.
+ */
+static int jffs2_ops_rmdir(struct _inode * dir, const char *name) {
+	struct jffs2_dirsearch ds;
 	int err;
 
 	D2(printf("jffs2_ops_rmdir\n"));
@@ -710,7 +616,7 @@ static int jffs2_ops_rmdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 		return err;
 	}
 
-	// Check that this is actually a directory.
+	/* Check that this is actually a directory. */
 	if (!S_ISDIR(ds.node->i_mode)) {
 		jffs2_iput(ds.dir);
 		jffs2_iput(ds.node);
@@ -724,10 +630,10 @@ static int jffs2_ops_rmdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 	return -err;
 }
 
+/*
 // -------------------------------------------------------------------------
 // jffs2_ops_rename()
 // Rename a file/dir.
-
 static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 			    const char *name1, cyg_dir dir2, const char *name2)
 {
@@ -821,296 +727,7 @@ static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 
 	return err;
 }
-
-// -------------------------------------------------------------------------
-// jffs2_ops_link()
-// Make a new directory entry for a file.
-
-static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
-			  cyg_dir dir2, const char *name2, int type)
-{
-	jffs2_dirsearch ds1, ds2;
-	int err;
-
-	D2(printf("jffs2_ops_link\n"));
-
-	// Only do hard links for now in this filesystem
-	if (type != CYG_FSLINK_HARD)
-		return EINVAL;
-
-	init_dirsearch(&ds1, (struct _inode *) dir1,
-                       (const unsigned char *) name1);
-
-	err = jffs2_find(&ds1);
-
-	if (err != ENOERR) {
-		jffs2_iput(ds1.dir);
-		return err;
-	}
-
-	init_dirsearch(&ds2, (struct _inode *) dir2,
-                       (const unsigned char *) name2);
-
-	err = jffs2_find(&ds2);
-
-	// Don't allow links to existing objects
-	if (err == ENOERR) {
-		jffs2_iput(ds1.dir);
-		jffs2_iput(ds1.node);
-		jffs2_iput(ds2.dir);
-		jffs2_iput(ds2.node);
-		return EEXIST;
-	}
-
-	// Allow through links to non-existing terminal objects
-	if (ds2.last && err == ENOENT) {
-		ds2.node = NULL;
-		err = ENOERR;
-	}
-
-	if (err != ENOERR) {
-		jffs2_iput(ds1.dir);
-		jffs2_iput(ds1.node);
-		jffs2_iput(ds2.dir);
-		return err;
-	}
-
-	// Now we know that there is no existing node at the destination,
-	// make a new direntry at the destination.
-
-	err = jffs2_link(ds1.node, ds2.dir, ds2.name);
-
-	if (err == 0)
-		ds1.node->i_ctime =
-		    ds2.dir->i_ctime = ds2.dir->i_mtime = cyg_timestamp();
-
-	jffs2_iput(ds1.dir);
-	jffs2_iput(ds1.node);
-	jffs2_iput(ds2.dir);
-
-	return -err;
-}
-#endif // CYGOPT_FS_JFFS2_WRITE
-// -------------------------------------------------------------------------
-// jffs2_opendir()
-// Open a directory for reading.
-
-static int jffs2_opendir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 cyg_file * file)
-{
-	jffs2_dirsearch ds;
-	int err;
-
-	D2(printf("jffs2_opendir\n"));
-
-	init_dirsearch(&ds, (struct _inode *) dir,
-                       (const unsigned char *) name);
-
-	err = jffs2_find(&ds);
-
-	jffs2_iput(ds.dir);
-
-	if (err != ENOERR)
-		return err;
-
-	// check it is really a directory.
-	if (!S_ISDIR(ds.node->i_mode)) {
-		jffs2_iput(ds.node);
-		return ENOTDIR;
-	}
-
-	// Initialize the file object, setting the f_ops field to a
-	// special set of file ops.
-
-	file->f_type = CYG_FILE_TYPE_FILE;
-	file->f_ops = &jffs2_dirops;
-	file->f_offset = 0;
-	file->f_data = (CYG_ADDRWORD) ds.node;
-	file->f_xops = 0;
-
-	return ENOERR;
-
-}
-
-// -------------------------------------------------------------------------
-// jffs2_chdir()
-// Change directory support.
-
-static int jffs2_chdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-		       cyg_dir * dir_out)
-{
-	D2(printf("jffs2_chdir\n"));
-
-	if (dir_out != NULL) {
-		// This is a request to get a new directory pointer in
-		// *dir_out.
-
-		jffs2_dirsearch ds;
-		int err;
-
-		init_dirsearch(&ds, (struct _inode *) dir,
-                               (const unsigned char *) name);
-
-		err = jffs2_find(&ds);
-		jffs2_iput(ds.dir);
-
-		if (err != ENOERR)
-			return err;
-
-		// check it is a directory
-		if (!S_ISDIR(ds.node->i_mode)) {
-                        jffs2_iput(ds.node);
-			return ENOTDIR;
-                }
-
-		// Pass it out
-		*dir_out = (cyg_dir) ds.node;
-	} else {
-		// If no output dir is required, this means that the mte and
-		// dir arguments are the current cdir setting and we should
-		// forget this fact.
-
-		struct _inode *node = (struct _inode *) dir;
-
-		// Just decrement directory reference count.
-		jffs2_iput(node);
-	}
-
-	return ENOERR;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_stat()
-// Get struct stat info for named object.
-
-static int jffs2_stat(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-		      struct stat *buf)
-{
-	jffs2_dirsearch ds;
-	int err;
-
-	D2(printf("jffs2_stat\n"));
-
-	init_dirsearch(&ds, (struct _inode *) dir,
-                       (const unsigned char *) name);
-
-	err = jffs2_find(&ds);
-	jffs2_iput(ds.dir);
-
-	if (err != ENOERR)
-		return err;
-
-	// Fill in the status
-	buf->st_mode = ds.node->i_mode;
-	buf->st_ino = ds.node->i_ino;
-	buf->st_dev = 0;
-	buf->st_nlink = ds.node->i_nlink;
-	buf->st_uid = ds.node->i_uid;
-	buf->st_gid = ds.node->i_gid;
-	buf->st_size = ds.node->i_size;
-	buf->st_atime = ds.node->i_atime;
-	buf->st_mtime = ds.node->i_mtime;
-	buf->st_ctime = ds.node->i_ctime;
-
-	jffs2_iput(ds.node);
-
-	return ENOERR;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_getinfo()
-// Getinfo. Currently only support pathconf().
-
-static int jffs2_getinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 int key, void *buf, int len)
-{
-	jffs2_dirsearch ds;
-	int err;
-
-	D2(printf("jffs2_getinfo\n"));
-
-	init_dirsearch(&ds, (struct _inode *) dir,
-                       (const unsigned char *) name);
-
-	err = jffs2_find(&ds);
-	jffs2_iput(ds.dir);
-
-	if (err != ENOERR)
-		return err;
-
-	switch (key) {
-	case FS_INFO_CONF:
-		err = jffs2_pathconf(ds.node, (struct cyg_pathconf_info *) buf);
-		break;
-
-	default:
-		err = EINVAL;
-	}
-
-	jffs2_iput(ds.node);
-	return err;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_setinfo()
-// Setinfo. Nothing to support here at present.
-
-static int jffs2_setinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
-			 int key, void *buf, int len)
-{
-	// No setinfo keys supported at present
-
-	D2(printf("jffs2_setinfo\n"));
-
-	return EINVAL;
-}
-
-static int jffs2_fo_read(struct _inode *inode, off_t *pos, size_t size) {
-	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);
-	int i;
-	ssize_t resid = uio->uio_resid;
-
-	down(&f->sem);
-
-	// Loop over the io vectors until there are none left
-	for (i = 0; i < uio->uio_iovcnt && pos < inode->i_size; i++) {
-		int ret;
-		cyg_iovec *iov = &uio->uio_iov[i];
-		off_t len = min(iov->iov_len, inode->i_size - pos);
-
-		D2(printf("jffs2_fo_read inode size %d\n", inode->i_size));
-
-		ret =
-		    jffs2_read_inode_range(c, f,
-					   (unsigned char *) iov->iov_base, pos,
-					   len);
-		if (ret) {
-			D1(printf
-			   ("jffs2_fo_read(): read_inode_range failed %d\n",
-			    ret));
-			uio->uio_resid = resid;
-			up(&f->sem);
-			return -ret;
-		}
-		resid -= len;
-		pos += len;
-	}
-
-	// We successfully read some data, update the node's access time
-	// and update the file offset and transfer residue.
-
-	inode->i_atime = cyg_timestamp();
-
-	uio->uio_resid = resid;
-	fp->f_offset = pos;
-
-	up(&f->sem);
-
-	return ENOERR;
-}
 */
-
 
 /**
  * Write data to file.
@@ -1337,204 +954,6 @@ static int jffs2_fo_close(struct _inode *node) {
 
 	return ENOERR;
 }
-/*
-// -------------------------------------------------------------------------
-//jffs2_fo_fstat()
-// Get file status.
-
-static int jffs2_fo_fstat(struct CYG_FILE_TAG *fp, struct stat *buf)
-{
-	struct _inode *node = (struct _inode *) fp->f_data;
-
-	D2(printf("jffs2_fo_fstat\n"));
-
-	// Fill in the status
-	buf->st_mode = node->i_mode;
-	buf->st_ino = node->i_ino;
-	buf->st_dev = 0;
-	buf->st_nlink = node->i_nlink;
-	buf->st_uid = node->i_uid;
-	buf->st_gid = node->i_gid;
-	buf->st_size = node->i_size;
-	buf->st_atime = node->i_atime;
-	buf->st_mtime = node->i_mtime;
-	buf->st_ctime = node->i_ctime;
-
-	return ENOERR;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_fo_getinfo()
-// Get info. Currently only supports fpathconf().
-
-static int jffs2_fo_getinfo(struct CYG_FILE_TAG *fp, int key, void *buf,
-			    int len)
-{
-	struct _inode *node = (struct _inode *) fp->f_data;
-	int err;
-
-	D2(printf("jffs2_fo_getinfo\n"));
-
-	switch (key) {
-	case FS_INFO_CONF:
-		err = jffs2_pathconf(node, (struct cyg_pathconf_info *) buf);
-		break;
-
-	default:
-		err = EINVAL;
-	}
-	return err;
-
-	return ENOERR;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_fo_setinfo()
-// Set info. Nothing supported here.
-
-static int jffs2_fo_setinfo(struct CYG_FILE_TAG *fp, int key, void *buf,
-			    int len)
-{
-	// No setinfo key supported at present
-
-	D2(printf("jffs2_fo_setinfo\n"));
-
-	return ENOERR;
-}
-
-//==========================================================================
-// Directory operations
-
-// -------------------------------------------------------------------------
-// jffs2_fo_dirread()
-// Read a single directory entry from a file.
-
-static __inline void filldir(char *nbuf, int nlen, const unsigned char *name, int namlen)
-{
-	int len = nlen < namlen ? nlen : namlen;
-	memcpy(nbuf, name, len);
-	nbuf[len] = '\0';
-}
-
-static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
-{
-	struct _inode *d_inode = (struct _inode *) fp->f_data;
-	struct dirent *ent = (struct dirent *) uio->uio_iov[0].iov_base;
-	char *nbuf = ent->d_name;
-#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
-	struct _inode *c_ino;
-#endif
-	int nlen = sizeof (ent->d_name) - 1;
-	off_t len = uio->uio_iov[0].iov_len;
-	struct jffs2_inode_info *f;
-	struct jffs2_sb_info *c;
-	struct _inode *inode = d_inode;
-	struct jffs2_full_dirent *fd;
-	unsigned long offset, curofs;
-	int found = 1;
-
-	if (len < sizeof (struct dirent))
-		return EINVAL;
-
-	D1(printk
-	   (KERN_DEBUG "jffs2_readdir() for dir_i #%lu\n", d_inode->i_ino));
-
-	f = JFFS2_INODE_INFO(inode);
-	c = JFFS2_SB_INFO(inode->i_sb);
-
-	offset = fp->f_offset;
-
-	if (offset == 0) {
-		D1(printk
-		   (KERN_DEBUG "Dirent 0: \".\", ino #%lu\n", inode->i_ino));
-		filldir(nbuf, nlen, (const unsigned char *) ".", 1);
-#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
- 		// Flags here are the same as jffs2_mkdir. Make sure
-                // d_type is the same as st_mode of calling stat.
-                ent->d_type =
-                  jemode_to_cpu(cpu_to_jemode(S_IRUGO|S_IXUGO|S_IWUSR|S_IFDIR));
-#endif
-                goto out;
-	}
-	if (offset == 1) {
-		filldir(nbuf, nlen, (const unsigned char *) "..", 2);
-#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
-                // Flags here are the same as jffs2_mkdir. Make sure
-                // d_type is the same as st_mode of calling stat.
-                ent->d_type =
-                  jemode_to_cpu(cpu_to_jemode(S_IRUGO|S_IXUGO|S_IWUSR|S_IFDIR));
-#endif
-                goto out;
-	}
-
-	curofs = 1;
-	down(&f->sem);
-	for (fd = f->dents; fd; fd = fd->next) {
-
-		curofs++;
-		// First loop: curofs = 2; offset = 2
-		if (curofs < offset) {
-			D2(printk
-			   (KERN_DEBUG
-			    "Skipping dirent: \"%s\", ino #%u, type %d, because curofs %ld < offset %ld\n",
-			    fd->name, fd->ino, fd->type, curofs, offset));
-			continue;
-		}
-		if (!fd->ino) {
-			D2(printk
-			   (KERN_DEBUG "Skipping deletion dirent \"%s\"\n",
-			    fd->name));
-			offset++;
-			continue;
-		}
-		D2(printk
-		   (KERN_DEBUG "Dirent %ld: \"%s\", ino #%u, type %d\n", offset,
-		    fd->name, fd->ino, fd->type));
-		filldir(nbuf, nlen, fd->name, strlen((char *)fd->name));
-#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
-		c_ino = jffs2_iget(inode->i_sb, fd->ino);
-		if(IS_ERR(c_ino)) {
-			D1(printk(KERN_WARNING "get entry inode failed\n"));
-			// fileio already set it to zero, so not needed here
-			// ent->d_type = 0;
-		}
-		else {
-			ent->d_type = c_ino->i_mode;
-			jffs2_iput(c_ino);
-		}
-#endif
-		goto out_sem;
-	}
-	// Reached the end of the directory
-	found = 0;
-      out_sem:
-	up(&f->sem);
-      out:
-	fp->f_offset = ++offset;
-	if (found) {
-		uio->uio_resid -= sizeof (struct dirent);
-	}
-	return ENOERR;
-}
-
-// -------------------------------------------------------------------------
-// jffs2_fo_dirlseek()
-// Seek directory to start.
-
-static int jffs2_fo_dirlseek(struct CYG_FILE_TAG *fp, off_t * pos, int whence)
-{
-	// Only allow SEEK_SET to zero
-
-	D2(printf("jffs2_fo_dirlseek\n"));
-
-	if (whence != SEEK_SET || *pos != 0)
-		return EINVAL;
-
-	*pos = fp->f_offset = 0;
-
-	return ENOERR;
-}
-*/
 
 unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
 	struct jffs2_inode_info *f, unsigned long offset, unsigned long *priv) {
@@ -2046,7 +1465,7 @@ static int jffs2fs_ioctl(struct file_desc *desc, int request, ...) {
 	return 0;
 }
 
-static void jffs2_free_fs(struct nas *nas) {
+static int jffs2_free_fs(struct nas *nas) {
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
 
@@ -2062,6 +1481,8 @@ static void jffs2_free_fs(struct nas *nas) {
 	if(NULL != (fi = nas->fi->privdata)) {
 		pool_free(&jffs2_file_pool, fi);
 	}
+
+	return 0;
 }
 
 static int jffs2fs_init(void * par);
@@ -2204,13 +1625,13 @@ static int jffs2fs_delete(struct node *node) {
 	par_fi = parents->nas->fi->privdata;
 	fi = node->nas->fi->privdata;
 	if (node_is_directory(node)) {
-		if (0 != (rc = jffs2_rmdir(par_fi->_inode, fi->_inode,
-				(const unsigned char *) node->name))) {
+		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,
+						(const char *) node->name))) {
 			return -rc;
 		}
 	} else {
-		if (0 != (rc = jffs2_unlink(par_fi->_inode, fi->_inode,
-				(const unsigned char *) node->name))) {
+		if (0 != (rc = jffs2_ops_unlink(par_fi->_inode,
+						(const char *) node->name))) {
 			return -rc;
 		}
 	}
@@ -2310,17 +1731,18 @@ static int jffs2fs_truncate (struct node *node, off_t length) {
 static int jffs2fs_umount(void *dir) {
 	struct node *dir_node;
 	struct nas *dir_nas;
+	int rc;
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
 	/* delete all entry node */
-	jffs2_umount(dir_nas);
+	if(0 != (rc = jffs2_umount(dir_nas))) {
+		return rc;
+	}
 
 	/* free jffs2 file system pools and buffers*/
-	jffs2_free_fs(dir_nas);
-
-	return 0;
+	return jffs2_free_fs(dir_nas);
 }
 
 
