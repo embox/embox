@@ -91,8 +91,8 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	skb_free(skb);
 
 	/* wait while txing */
-//	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
-	desc_id = desc_id;
+	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
+//	desc_id = desc_id;
 
 	return 0;
 }
