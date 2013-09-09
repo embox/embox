@@ -54,7 +54,9 @@ static int tcp_init(struct sock *sk) {
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 	sock.tcp_sk->conn_wait_len = sock.tcp_sk->conn_wait_max = 0;
 	sock.tcp_sk->lock = 0;
-	timerclear(&sock.tcp_sk->activity_time);
+	/* timerclear(&sock.tcp_sk->syn_time); */
+	timerclear(&sock.tcp_sk->ack_time);
+	timerclear(&sock.tcp_sk->rcv_time);
 
 	return 0;
 }
@@ -98,7 +100,7 @@ static int tcp_close(struct sock *sk) {
 			tcph = tcp_hdr(skb);
 			tcph->fin = 1;
 			tcph->ack = 1;
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+			send_data_from_sock(sock, skb);
 			break;
 		}
 	}
@@ -172,7 +174,7 @@ static int tcp_connect(struct sock *sk,
 			tcph = tcp_hdr(skb);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+			send_data_from_sock(sock, skb);
 
 			ret = -EINPROGRESS;
 			break;

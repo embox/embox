@@ -98,8 +98,9 @@ typedef struct tcp_sock {
 	unsigned int conn_wait_len; /* Length of queue of incoming connection */
 	unsigned int conn_wait_max; /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */
-	struct timeval activity_time;   /* The time when last message was sent */
-	struct timeval sync_time;   /* The time when synchronization started */
+	struct timeval syn_time;   /* The time when synchronization started */
+	struct timeval ack_time;   /* The time when message was ACKed */
+	struct timeval rcv_time;   /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
 } tcp_sock_t;
 
 #if 0
@@ -124,10 +125,6 @@ enum {
  */
 #define TCP_MAX_DATA_LEN      (ETH_DATA_LEN\
 		- (IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE))  /* Maximum size of data */
-
-/* TCP xmit options */
-#define TCP_XMIT_DEFAULT      0x0 /* Default options for xmitting */
-#define TCP_XMIT_IGNORE_DELAY 0x1 /* Send ignoring delay (checking by default) */
 
 /* Synchronization flags */
 #define TCP_SYNC_WRITE_QUEUE  0x01 /* Synchronization flag for socket sk_write_queue */
@@ -166,7 +163,6 @@ extern void tcp_obj_unlock(union sock_pointer sock, unsigned int obj);
 extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
 extern size_t tcp_seq_len(struct sk_buff *skb);
 extern size_t tcp_data_left(struct sk_buff *skb);
-extern void send_from_sock(union sock_pointer sock, struct sk_buff *skb, int xmit_mod);
 extern void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb);
 extern int tcp_st_status(union sock_pointer sock);
 extern void tcp_get_now(struct timeval *out_now);
