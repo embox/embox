@@ -83,11 +83,17 @@ module xemaclite {
 
 module greth {
 	source "greth.c"
+
+	option number greth_base=0x80000900
+	option number irq_num=1
+
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.core
+	depends embox.compat.posix.util.sleep
 }
 
 module usermode {
