@@ -142,43 +142,29 @@
 
 
 /* "Paranoia" checks */
-void
-__jffs2_dbg_fragtree_paranoia_check(struct jffs2_inode_info *f);
-void
-__jffs2_dbg_fragtree_paranoia_check_nolock(struct jffs2_inode_info *f);
-void
-__jffs2_dbg_acct_paranoia_check(struct jffs2_sb_info *c,
+void __jffs2_dbg_fragtree_paranoia_check(struct jffs2_inode_info *f);
+void __jffs2_dbg_fragtree_paranoia_check_nolock(struct jffs2_inode_info *f);
+void __jffs2_dbg_acct_paranoia_check(struct jffs2_sb_info *c,
 			   	struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_acct_paranoia_check_nolock(struct jffs2_sb_info *c,
+void __jffs2_dbg_acct_paranoia_check_nolock(struct jffs2_sb_info *c,
 				       struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_prewrite_paranoia_check(struct jffs2_sb_info *c,
+void __jffs2_dbg_prewrite_paranoia_check(struct jffs2_sb_info *c,
 				    uint32_t ofs, int len);
 
 /* "Dump" functions */
-void
-__jffs2_dbg_dump_jeb(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_dump_jeb_nolock(struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_dump_block_lists(struct jffs2_sb_info *c);
-void
-__jffs2_dbg_dump_block_lists_nolock(struct jffs2_sb_info *c);
-void
-__jffs2_dbg_dump_node_refs(struct jffs2_sb_info *c,
+void __jffs2_dbg_dump_jeb(struct jffs2_sb_info *c,
+		struct jffs2_eraseblock *jeb);
+void __jffs2_dbg_dump_jeb_nolock(struct jffs2_eraseblock *jeb);
+void __jffs2_dbg_dump_block_lists(struct jffs2_sb_info *c);
+void __jffs2_dbg_dump_block_lists_nolock(struct jffs2_sb_info *c);
+void __jffs2_dbg_dump_node_refs(struct jffs2_sb_info *c,
 		 	   struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_dump_node_refs_nolock(struct jffs2_sb_info *c,
+void __jffs2_dbg_dump_node_refs_nolock(struct jffs2_sb_info *c,
 				  struct jffs2_eraseblock *jeb);
-void
-__jffs2_dbg_dump_fragtree(struct jffs2_inode_info *f);
-void
-__jffs2_dbg_dump_fragtree_nolock(struct jffs2_inode_info *f);
-void
-__jffs2_dbg_dump_buffer(unsigned char *buf, int len, uint32_t offs);
-void
-__jffs2_dbg_dump_node(struct jffs2_sb_info *c, uint32_t ofs);
+void __jffs2_dbg_dump_fragtree(struct jffs2_inode_info *f);
+void __jffs2_dbg_dump_fragtree_nolock(struct jffs2_inode_info *f);
+void __jffs2_dbg_dump_buffer(unsigned char *buf, int len, uint32_t offs);
+void __jffs2_dbg_dump_node(struct jffs2_sb_info *c, uint32_t ofs);
 
 #ifdef JFFS2_DBG_PARANOIA_CHECKS
 #define jffs2_dbg_fragtree_paranoia_check(f)			\
@@ -235,10 +221,8 @@ __jffs2_dbg_dump_node(struct jffs2_sb_info *c, uint32_t ofs);
  * Check the space accounting of the file system and of
  * the JFFS2 erasable block 'jeb'.
  */
-static inline void
-jffs2_dbg_acct_sanity_check_nolock(struct jffs2_sb_info *c,
-				   struct jffs2_eraseblock *jeb)
-{
+static inline void jffs2_dbg_acct_sanity_check_nolock(struct jffs2_sb_info *c,
+				   struct jffs2_eraseblock *jeb) {
 	if (unlikely(jeb && jeb->used_size + jeb->dirty_size +
 			jeb->free_size + jeb->wasted_size +
 			jeb->unchecked_size != c->sector_size)) {
@@ -249,8 +233,9 @@ jffs2_dbg_acct_sanity_check_nolock(struct jffs2_sb_info *c,
 		BUG();
 	}
 
-	if (unlikely(c->used_size + c->dirty_size + c->free_size + c->erasing_size + c->bad_size
-				+ c->wasted_size + c->unchecked_size != c->flash_size)) {
+	if (unlikely(c->used_size + c->dirty_size +
+			c->free_size + c->erasing_size + c->bad_size +
+			c->wasted_size + c->unchecked_size != c->flash_size)) {
 		JFFS2_ERROR("eeep, space accounting superblock info is screwed.\n");
 		JFFS2_ERROR("free %#08x + dirty %#08x + used %#08x + erasing %#08x + bad %#08x + "
 			"wasted %#08x + unchecked %#08x != total %#08x.\n",
@@ -260,10 +245,8 @@ jffs2_dbg_acct_sanity_check_nolock(struct jffs2_sb_info *c,
 	}
 }
 
-static inline void
-jffs2_dbg_acct_sanity_check(struct jffs2_sb_info *c,
-			    struct jffs2_eraseblock *jeb)
-{
+static inline void jffs2_dbg_acct_sanity_check(struct jffs2_sb_info *c,
+			    struct jffs2_eraseblock *jeb) {
 	spin_lock(&c->erase_completion_lock);
 	jffs2_dbg_acct_sanity_check_nolock(c, jeb);
 	spin_unlock(&c->erase_completion_lock);

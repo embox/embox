@@ -92,12 +92,12 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int upd
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				if (io_sync_ready(&task_idx_indata(desc)->ios, op)) {
+				if (io_sync_ready(task_idx_indata(desc)->ios, op)) {
 					fd_cnt++;
 				} else {
 					/* Filter out inactive descriptor and unset corresponding monitor. */
 					if (update) {
-						io_sync_notify(&task_idx_indata(desc)->ios, op, NULL);
+						io_sync_notify(task_idx_indata(desc)->ios, op, NULL);
 						FD_CLR(fd, set);
 					}
 				}
@@ -154,7 +154,7 @@ static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
 				if (NULL == (desc = task_self_idx_get(fd))) {
 					return -1;
 				}
-				io_sync_notify(&task_idx_indata(desc)->ios, op, event);
+				io_sync_notify(task_idx_indata(desc)->ios, op, event);
 			}
 		}
 	}
@@ -171,7 +171,7 @@ static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op) {
 			if (NULL == (desc = task_self_idx_get(fd))) {
 				return -1;
 			}
-			io_sync_notify(&task_idx_indata(desc)->ios, op, NULL);
+			io_sync_notify(task_idx_indata(desc)->ios, op, NULL);
 		}
 	}
 

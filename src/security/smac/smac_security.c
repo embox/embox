@@ -46,7 +46,7 @@ int security_node_create(struct node *dir, mode_t mode) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, dir->name);
 
 	if (0 >= (res = node_getlabel(dir, label, SMAC_LABELLEN))) {
 		return res;
@@ -60,7 +60,7 @@ int security_node_permissions(struct node *node, int flags) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
 		return res;
@@ -87,7 +87,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
@@ -107,7 +107,7 @@ int security_xattr_set(struct node *node, const char *name,
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (0 == strcmp(name, smac_xattrkey)) {
 		return smac_access(task_self_security(), smac_admin,
@@ -126,7 +126,7 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__);
+	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
 		return res;

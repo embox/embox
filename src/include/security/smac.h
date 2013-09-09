@@ -34,9 +34,10 @@ struct smac_task {
 
 struct smac_audit {
 	const char *fn_name;
+	const char *file_name;
 };
 
-extern int smac_audit_prepare(struct smac_audit *audit, const char *fn_name);
+extern int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name);
 
 extern int smac_setenv(struct smac_env *env);
 extern int smac_getenv(void *buf, size_t buflen, struct smac_env **env);

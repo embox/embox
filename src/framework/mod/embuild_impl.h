@@ -36,7 +36,7 @@
 			__MOD_MEMBERS(mod_nm), NULL);                         \
 	static struct __mod_private __MOD_PRIVATE(mod_nm);            \
 	const struct mod __MOD(mod_nm) = {          \
-		.private   = &__MOD_PRIVATE(mod_nm),     \
+		.priv   = &__MOD_PRIVATE(mod_nm),     \
 		.info       = &__MOD_INFO(mod_nm),        \
 		.package    = &__MOD_PACKAGE(package_nm), \
 		.name       = mod_name,                   \

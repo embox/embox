@@ -15,20 +15,21 @@
 #include <linux/kernel.h>
 #include "nodelist.h"
 
-#include <drivers/flash.h>
+#include <drivers/flash/flash.h>
 
 bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
 			  size_t * return_size, unsigned char *write_buffer) {
 	int err;
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
-	err = block_dev_read_buffered(sb->s_dev,
+	err = block_dev_read_buffered(sb->bdev,
 			(char *) write_buffer, size, read_buffer_offset);
 
 	if(err >= 0) {
-		err = ENOERR;
 		*return_size = (size_t) err;
+		err = ENOERR;
 	}
 
 	return err;
@@ -38,14 +39,15 @@ bool jffs2_flash_write(struct jffs2_sb_info * c,
 		uint32_t write_buffer_offset, const size_t size,
 		size_t * return_size, unsigned char *read_buffer) {
 	int err;
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
 
-	err = block_dev_read_buffered(sb->s_dev,
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
+	err = block_dev_write_buffered(sb->bdev,
 	(char *) read_buffer, size, write_buffer_offset);
 
 	if(err >= 0) {
-		err = ENOERR;
 		*return_size = (size_t) err;
+		err = ENOERR;
 	}
 
 	return err;
@@ -76,8 +78,9 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ssize_t sizetomalloc = 0, totvecsize = 0;
 				char *cbuf, *cbufptr;
 
-				for (j = i; j < count; j++)
+				for (j = i; j < count; j++) {
 					totvecsize += vecs[j].iov_len;
+				}
 
 				/* pad up in case unaligned */
 				sizetomalloc = totvecsize + sizeof (int) - 1;
@@ -97,8 +100,9 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ret =
 				    jffs2_flash_write(c, to, sizetomalloc,
 						      &thislen, (unsigned char *) cbuf);
-				if (thislen > totvecsize)	/* in case it was aligned up */
+				if (thislen > totvecsize) {	/* in case it was aligned up */
 					thislen = totvecsize;
+				}
 				totlen += thislen;
 				free(cbuf);
 				goto writev_out;
@@ -116,21 +120,25 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				ret =
 				    jffs2_flash_write(c, to, lentowrite,
 						      &thislen, (unsigned char *) &buf);
-				if (thislen > vecs[i].iov_len)
+				if (thislen > vecs[i].iov_len) {
 					thislen = vecs[i].iov_len;
+				}
 			}
-		} else
+		} else {
 			ret =
 			    jffs2_flash_write(c, to, vecs[i].iov_len, &thislen,
 					      vecs[i].iov_base);
+		}
 		totlen += thislen;
-		if (ret || thislen != vecs[i].iov_len)
+		if (ret || thislen != vecs[i].iov_len) {
 			break;
+		}
 		to += vecs[i].iov_len;
 	}
       writev_out:
-	if (retlen)
+	if (retlen) {
 		*retlen = totlen;
+	}
 
 	return ret;
 }
@@ -141,13 +149,14 @@ bool jffs2_flash_erase(struct jffs2_sb_info * c,
 	uint32_t err_addr;
 	int err;
 	uint32_t len = sizeof (e);
-	struct super_block *sb = OFNI_BS_2SFFJ(c);
+	struct super_block *sb;
+	sb = member_cast_out(c, struct super_block, jffs2_sb);
 
 	e.offset = jeb->offset;
 	e.len = c->sector_size;
 	e.err_address = (uint32_t) &err_addr;
 
-	err = block_dev_ioctl(sb->s_dev, GET_CONFIG_FLASH_ERASE, &e, len);
+	err = block_dev_ioctl(sb->bdev, GET_CONFIG_FLASH_ERASE, &e, len);
 
 	return (err != ENOERR || e.flasherr != 0);
 }

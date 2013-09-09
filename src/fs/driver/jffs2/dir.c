@@ -15,13 +15,10 @@
 #include <linux/crc32.h>
 #include "nodelist.h"
 
-/***********************************************************************/
-
 /* Takes length argument because it can be either NUL-terminated or '/'-terminated */
-struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, int namelen)
-{
+struct _inode *jffs2_lookup(struct _inode *dir_i,
+			const unsigned char *d_name, int namelen) {
 	struct jffs2_inode_info *dir_f;
-//	struct jffs2_sb_info *c;
 	struct jffs2_full_dirent *fd = NULL, *fd_list;
 	uint32_t ino = 0;
 	uint32_t hash = full_name_hash(d_name, namelen);
@@ -30,12 +27,12 @@ struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, i
 	D1(printk("jffs2_lookup()\n"));
 
 	dir_f = JFFS2_INODE_INFO(dir_i);
-//	c = JFFS2_SB_INFO(dir_i->i_sb);
 
 	down(&dir_f->sem);
 
 	/* NB: The 2.2 backport will need to explicitly check for '.' and '..' here */
-	for (fd_list = dir_f->dents; fd_list && fd_list->nhash <= hash; fd_list = fd_list->next) {
+	for (fd_list = dir_f->dents; fd_list && fd_list->nhash <= hash;
+											fd_list = fd_list->next) {
 		if (fd_list->nhash == hash &&
 		    (!fd || fd_list->version > fd->version) &&
 		    strlen((char *)fd_list->name) == namelen &&
@@ -43,8 +40,9 @@ struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, i
 			fd = fd_list;
 		}
 	}
-	if (fd)
+	if (fd) {
 		ino = fd->ino;
+	}
 	up(&dir_f->sem);
 	if (ino) {
 		inode = jffs2_iget(dir_i->i_sb, ino);
@@ -57,13 +55,8 @@ struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, i
 	return inode;
 }
 
-/***********************************************************************/
-
-
-
-int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
-                 struct _inode **new_i)
-{
+int jffs2_create(struct _inode *dir_i, const unsigned char *d_name,
+									int mode, struct _inode **new_i) {
 	struct jffs2_raw_inode *ri;
 	struct jffs2_inode_info *f, *dir_f;
 	struct jffs2_sb_info *c;
@@ -71,10 +64,11 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
 	int ret;
 
 	ri = jffs2_alloc_raw_inode();
-	if (!ri)
+	if (!ri) {
 		return -ENOMEM;
+	}
 
-	c = JFFS2_SB_INFO(dir_i->i_sb);
+	c = &dir_i->i_sb->jffs2_sb;
 
 	D1(printk(KERN_DEBUG "jffs2_create()\n"));
 
@@ -102,46 +96,54 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
 
 	jffs2_free_raw_inode(ri);
 
-	D1(printk(KERN_DEBUG "jffs2_create: Created ino #%lu with mode %o, nlink %d(%d)\n",
+	D1(printk(KERN_DEBUG
+			"jffs2_create: Created ino #%lu with mode %o, nlink %d(%d)\n",
 		  inode->i_ino, inode->i_mode, inode->i_nlink, f->inocache->nlink));
-        *new_i = inode;
+    *new_i = inode;
 	return 0;
 }
 
-/***********************************************************************/
 
 
-int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode, const unsigned char *d_name)
-{
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(dir_i->i_sb);
+
+int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode,
+									const unsigned char *d_name) {
+	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *dir_f = JFFS2_INODE_INFO(dir_i);
 	struct jffs2_inode_info *dead_f = JFFS2_INODE_INFO(d_inode);
 	int ret;
 
+	c = &dir_i->i_sb->jffs2_sb;
+
 	ret = jffs2_do_unlink(c, dir_f, (const char *)d_name,
 			       strlen((char *)d_name), dead_f);
-	if (dead_f->inocache)
+	if (dead_f->inocache) {
 		d_inode->i_nlink = dead_f->inocache->nlink;
+	}
+
 	return ret;
 }
-/***********************************************************************/
 
 
-int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i, const unsigned char *d_name)
-{
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_d_inode->i_sb);
+
+int jffs2_link (struct _inode *old_d_inode,
+		struct _inode *dir_i, const unsigned char *d_name) {
+	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(old_d_inode);
 	struct jffs2_inode_info *dir_f = JFFS2_INODE_INFO(dir_i);
 	int ret;
+	uint8_t type;
+
+	c = &old_d_inode->i_sb->jffs2_sb;
 
 	/* XXX: This is ugly */
-	uint8_t type = (old_d_inode->i_mode & S_IFMT) >> 12;
-	if (!type) type = DT_REG;
+	type = (old_d_inode->i_mode & S_IFMT) >> 12;
+	if (!type) {
+		type = DT_REG;
+	}
 
 	ret = jffs2_do_link(c, dir_f, f->inocache->ino, type,
-                            (const char * )d_name,
-                            strlen((char *)d_name));
-
+                            (const char * )d_name, strlen((char *)d_name));
 	if (!ret) {
 		down(&f->sem);
 		old_d_inode->i_nlink = ++f->inocache->nlink;
@@ -150,8 +152,8 @@ int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i, const unsigned
 	return ret;
 }
 
-int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
-{
+int jffs2_mkdir (struct _inode *dir_i,
+		const unsigned char *d_name, int mode) {
 	struct jffs2_inode_info *f, *dir_f;
 	struct jffs2_sb_info *c;
 	struct _inode *inode;
@@ -166,10 +168,10 @@ int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
 	mode |= S_IFDIR;
 
 	ri = jffs2_alloc_raw_inode();
-	if (!ri)
+	if (!ri) {
 		return -ENOMEM;
-
-	c = JFFS2_SB_INFO(dir_i->i_sb);
+	}
+	c = &dir_i->i_sb->jffs2_sb;
 
 	/* Try to reserve enough space for both node and dirent.
 	 * Just the node will do for now, though
@@ -242,7 +244,7 @@ int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
 	rd->pino = cpu_to_je32(dir_i->i_ino);
 	rd->version = cpu_to_je32(++dir_f->highest_version);
 	rd->ino = cpu_to_je32(inode->i_ino);
-	rd->mctime = cpu_to_je32(cyg_timestamp());
+	rd->mctime = cpu_to_je32(timestamp());
 	rd->nsize = namelen;
 	rd->type = DT_DIR;
 	rd->node_crc = cpu_to_je32(crc32(0, rd, sizeof(*rd)-8));
@@ -271,25 +273,28 @@ int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
 	return 0;
 }
 
-int jffs2_rmdir (struct _inode *dir_i, struct _inode *d_inode, const unsigned char *d_name)
-{
+int jffs2_rmdir (struct _inode *dir_i,
+		struct _inode *d_inode, const unsigned char *d_name) {
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(d_inode);
 	struct jffs2_full_dirent *fd;
 
 	for (fd = f->dents ; fd; fd = fd->next) {
-		if (fd->ino)
-			return EPERM; //-ENOTEMPTY;
+		if (fd->ino) {
+			return EPERM;
+		}
 	}
 	return jffs2_unlink(dir_i, d_inode, d_name);
 }
 
-int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsigned char *old_d_name,
-		  struct _inode *new_dir_i, const unsigned char *new_d_name)
-{
+int jffs2_rename (struct _inode *old_dir_i,
+		struct _inode *d_inode, const unsigned char *old_d_name,
+		  struct _inode *new_dir_i, const unsigned char *new_d_name) {
 	int ret;
-	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_dir_i->i_sb);
+	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *victim_f = NULL;
 	uint8_t type;
+
+	c = &old_dir_i->i_sb->jffs2_sb;
 
 #if 0 /* FIXME -- this really doesn't belong in individual file systems.
 	 The fileio code ought to do this for us, or at least part of it */
@@ -322,28 +327,29 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 #endif
 
 	/* XXX: We probably ought to alloc enough space for
-	   both nodes at the same time. Writing the new link,
-	   then getting -ENOSPC, is quite bad :)
-	*/
+	 * both nodes at the same time. Writing the new link,
+	 * then getting -ENOSPC, is quite bad :)
+	 */
 
 	/* Make a hard link */
 
 	/* XXX: This is ugly */
 	type = (d_inode->i_mode & S_IFMT) >> 12;
-	if (!type) type = DT_REG;
+	if (!type) {
+		type = DT_REG;
+	}
 
-	ret = jffs2_do_link(c, JFFS2_INODE_INFO(new_dir_i),
-			    d_inode->i_ino, type,
-			    (const char *)new_d_name,
-                            strlen((char *)new_d_name));
-
-	if (ret)
+	ret = jffs2_do_link(c, JFFS2_INODE_INFO(new_dir_i), d_inode->i_ino, type,
+			    		(const char *)new_d_name, strlen((char *)new_d_name));
+	if (ret) {
 		return ret;
+	}
 
 	if (victim_f) {
-		/* There was a victim. Kill it off nicely */
-		/* Don't oops if the victim was a dirent pointing to an
-		   inode which didn't exist. */
+		/* There was a victim. Kill it off nicely
+		 * Don't oops if the victim was a dirent pointing to an
+		 * inode which didn't exist.
+		 */
 		if (victim_f->inocache) {
 			down(&victim_f->sem);
 			victim_f->inocache->nlink--;
@@ -353,15 +359,15 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 
 	/* Unlink the original */
 	ret = jffs2_do_unlink(c, JFFS2_INODE_INFO(old_dir_i),
-                              (const char *)old_d_name,
-                              strlen((char *)old_d_name), NULL);
+             (const char *)old_d_name, strlen((char *)old_d_name), NULL);
 
 	if (ret) {
 		/* Oh shit. We really ought to make a single node which can do both atomically */
 		struct jffs2_inode_info *f = JFFS2_INODE_INFO(d_inode);
 		down(&f->sem);
-		if (f->inocache)
+		if (f->inocache) {
 			d_inode->i_nlink = f->inocache->nlink++;
+		}
 		up(&f->sem);
 
 		printk(KERN_NOTICE "jffs2_rename(): Link succeeded, unlink failed (err %d). You now have a hard link\n", ret);

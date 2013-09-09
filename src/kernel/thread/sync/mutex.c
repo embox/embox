@@ -28,6 +28,13 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current);
 static int priority_inherit(struct thread *t, struct mutex *m);
 static void priority_uninherit(struct thread *t);
 
+static inline int mutex_static_inited(struct mutex *m) {
+	if(!(m->wq.list.next && m->wq.list.prev)) {
+		return 1;
+	}
+	return 0;
+}
+
 void mutex_init(struct mutex *m) {
 	wait_queue_init(&m->wq);
 	m->lock_count = 0;
@@ -70,6 +77,10 @@ int mutex_trylock(struct mutex *m) {
 static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	assert(m && current);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
+
+	if(mutex_static_inited(m)) {
+		mutex_init(m);
+	}
 
 	if (m->holder == current) {
 		/* Nested locks. */

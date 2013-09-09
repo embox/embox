@@ -23,6 +23,16 @@ struct mutex {
 	int lock_count;
 };
 
+#define MUTEX_INIT_STATIC \
+	{ \
+		{ /*wait_queue init */ \
+			{/* dlist_init*/ NULL, NULL, NULL,}, \
+			/* flags */0, \
+			}, \
+		/* holder*/ NULL, \
+		/* lock_couunt */ 0 \
+	}
+
 #define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 /**

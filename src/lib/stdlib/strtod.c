@@ -10,6 +10,7 @@
  */
 
 #include <stdlib.h>
+#include <stddef.h>
 #include <ctype.h>
 
 double strtod(const char *nptr, char **endptr) {

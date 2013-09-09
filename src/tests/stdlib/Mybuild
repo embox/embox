@@ -30,3 +30,40 @@ module setjmp_test {
 	depends embox.arch.libarch
 	depends embox.framework.test
 }
+
+module strcasecmp_test{
+	source "strcasecmp.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
+module strtok_test{
+	source "strtok.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
+module strlcpy_test{
+	source "strlcpy.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
+module strdup_test{
+	source "strdup.c"
+
+	depends embox.lib.LibC
+	depends embox.mem.heap_api
+	depends embox.framework.LibFramework
+}
+
+module strlen_test{
+	source "strlen.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+

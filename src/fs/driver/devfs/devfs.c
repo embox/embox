@@ -35,6 +35,11 @@ static int devfs_mount(void *dev, void *dir) {
 		return ret;
 	}
 
+	ret = flash_devs_init();
+	if (ret != 0) {
+		return ret;
+	}
+
 	return block_devs_init();
 }
 

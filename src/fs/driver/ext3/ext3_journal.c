@@ -17,69 +17,20 @@
 static int journal_write_desc_blocks(journal_t *jp);
 static int journal_write_commit_block(journal_t *jp);
 
-int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
-    ext3_journal_superblock_t *sb;
-    ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
-    char buf[4096];
-
-    assert(jp);
-    assert(jdev);
-
-    jp->j_dev = jdev;
-    jp->j_disk_sectorsize = block_dev_ioctl(jdev, IOCTL_GETBLKSIZE, NULL, 0);
-
-    assert(jp->j_disk_sectorsize >= 512);
-
-    /* Load superblock from the log. */
-    if (!jp->j_dev->driver->read(jp->j_dev, buf,
-    		4096, start)) {
-    	return -1;
-    }
-
-    sb = (ext3_journal_superblock_t *)buf;
-
-    jp->j_maxlen         = ntohl(sb->s_maxlen);
-    jp->j_blocksize      = ntohl(sb->s_blocksize);
-    jp->j_blk_offset     = journal_db2jb(jp, start);
-    jp->j_first          = 1;
-    jp->j_last           = jp->j_maxlen;
-    spec->j_format_version = ntohl(sb->s_header.h_blocktype);
-
-    /* Initialize transaction specific data */
-    jp->j_head                 = jp->j_first;
-    jp->j_tail                 = jp->j_head;
-    jp->j_free                 = jp->j_last - jp->j_first;
-    jp->j_tail_sequence        = 1;
-    jp->j_transaction_sequence = 1;
-    jp->j_running_transaction  = journal_new_trans(jp);
-    dlist_init(&jp->j_checkpoint_transactions);
-
-    /* Update journal superblock */
-    spec->j_sb_buffer  = journal_new_block(jp, jp->j_blk_offset);
-    spec->j_superblock = (ext3_journal_superblock_t *)spec->j_sb_buffer->data;
-    memcpy(spec->j_sb_buffer->data, buf, jp->j_blocksize);
-    jp->j_fs_specific.update(jp);
-
-    return 0;
-}
-
 int ext3_journal_commit(journal_t *jp) {
     if (jp->j_running_transaction == NULL) {
-		errno = EAGAIN;
-		return -1;
+		return -EAGAIN;
     }
 
     /* We cannot commit two transactions at the same time. */
     if (jp->j_committing_transaction != NULL) {
-		errno = EBUSY;
-		return -1;
+		return -EBUSY;
     }
 
     jp->j_committing_transaction = jp->j_running_transaction;
     jp->j_running_transaction    = journal_new_trans(jp);
 
     if (journal_write_desc_blocks(jp) != 0) {
-    	/* XXX Ponder on handling such situation. */
     	return -1;
     }
     if (journal_write_commit_block(jp) != 0) {
@@ -153,6 +104,7 @@ static int journal_write_desc_blocks(journal_t *jp) {
     t->t_state = T_FLUSH;
 
     desc_b = journal_new_block(jp, jp->j_head);
+    assert(desc_b);
 
 	hdr = (ext3_journal_header_t *)desc_b->data;
 	hdr->h_magic     = htonl(EXT3_MAGIC_NUMBER);
@@ -185,7 +137,7 @@ static int journal_write_desc_blocks(journal_t *jp) {
 
     dlist_add_next(dlist_head_init(&desc_b->b_next), &t->t_buffers);
 
-    if (0 >= journal_write_blocks_list(jp, &t->t_buffers, t->t_log_blocks)) {
+    if (0 > journal_write_blocks_list(jp, &t->t_buffers, t->t_log_blocks)) {
     	dlist_del(&desc_b->b_next);
     	journal_free_block(jp, desc_b);
     	return -1;
@@ -204,6 +156,7 @@ static int journal_write_commit_block(journal_t *jp) {
     t->t_state = T_COMMIT;
 
     commit_b = journal_new_block(jp, jp->j_head);
+    assert(commit_b);
 
     /* Fill commit block. */
     memset(commit_b->data, 0, jp->j_blocksize);
@@ -219,7 +172,7 @@ static int journal_write_commit_block(journal_t *jp) {
     }
     journal_free_block(jp, commit_b);
 
-    journal_wrap(jp, jp->j_head++);
+    jp->j_head = journal_wrap(jp, jp->j_head++);
 
     t->t_log_blocks++;
     t->t_state = T_FINISHED;

@@ -24,8 +24,4 @@ static inline struct group *getgrnam(const char *name) {
 extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
 extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
 
-extern struct group  *getgrent(void);
-extern void           endgrent(void);
-extern void           setgrent(void);
-
 #endif /* GRP_H_ */

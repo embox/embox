@@ -13,6 +13,7 @@
 #include <drivers/video/vesa_modes.h>
 #include <drivers/console/mpx.h>
 #include <drivers/video_term.h>
+#include <kernel/task/io_sync.h>
 
 #define FBCON_INPB 16
 
@@ -32,6 +33,7 @@ struct fbcon {
 	struct fbcon_displ_data *fbcon_disdata;
 
 	struct video_resbpp resbpp;
+	struct io_sync ios;
 
 };
 

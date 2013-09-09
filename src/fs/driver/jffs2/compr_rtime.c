@@ -25,15 +25,13 @@
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/string.h>
-#include <linux/jffs2.h>
+#include <fs/jffs2.h>
 #include "compr.h"
 
 /* _compress returns the compressed size, -1 if bigger */
 static int jffs2_rtime_compress(unsigned char *data_in,
-				unsigned char *cpage_out,
-				uint32_t *sourcelen, uint32_t *dstlen,
-				void *model)
-{
+				unsigned char *cpage_out,uint32_t *sourcelen,
+								uint32_t *dstlen, void *model) {
 	short positions[256];
 	int outpos = 0;
 	int pos=0;
@@ -74,8 +72,7 @@ static int jffs2_rtime_compress(unsigned char *data_in,
 static int jffs2_rtime_decompress(unsigned char *data_in,
 				  unsigned char *cpage_out,
 				  uint32_t srclen, uint32_t destlen,
-				  void *model)
-{
+				  void *model) {
 	short positions[256];
 	int outpos = 0;
 	int pos=0;
@@ -121,12 +118,10 @@ static struct jffs2_compressor jffs2_rtime_comp = {
 #endif
 };
 
-int jffs2_rtime_init(void)
-{
+int jffs2_rtime_init(void) {
     return jffs2_register_compressor(&jffs2_rtime_comp);
 }
 
-void jffs2_rtime_exit(void)
-{
+void jffs2_rtime_exit(void) {
     jffs2_unregister_compressor(&jffs2_rtime_comp);
 }

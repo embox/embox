@@ -14,8 +14,12 @@
 #ifndef STDLIB_H_
 #define STDLIB_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <defines/size_t.h>
+#include <defines/wchar_t.h>
+
+/* In addition, the following symbolic names and macros shall be defined as in
+ * <sys/wait.h> , for use in decoding the return value from system():
+ */
 #include <sys/wait.h>
 
 typedef struct ldiv {
@@ -29,7 +33,6 @@ typedef struct div {
 } div_t;
 
 #include <sys/cdefs.h>
-
 __BEGIN_DECLS
 
 /**
@@ -112,6 +115,8 @@ extern void srandom(unsigned int seed);
 extern char *initstate(unsigned int seed, char *state, size_t n);
 extern char *setstate(char *state);
 
+/* glibc extention */
+#include <stdint.h>
 struct random_data
   {
     int32_t *fptr;		/* Front pointer.  */

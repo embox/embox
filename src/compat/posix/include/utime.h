@@ -16,6 +16,4 @@ struct utimbuf {
 	time_t modtime; /* modification time */
 };
 
-extern int utime(const char *file, struct utimbuf *times);
-
 #endif /* COMPAT_POSIX_UTIME_H_ */

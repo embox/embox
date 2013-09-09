@@ -5,7 +5,7 @@ module irq_test {
 	source "irq_test.c"
 
 	depends embox.kernel.irq
-	/*depends embox.framework.LibFramework*/
+	depends embox.framework.test
 }
 
 @TestFor(embox.kernel.softirq)
@@ -13,7 +13,7 @@ module softirq_test {
 	source "softirq_test.c"
 
 	depends embox.kernel.softirq
-	/*depends embox.framework.LibFramework*/
+	depends embox.framework.test
 }
 
 @TestFor(embox.kernel.timer.strategy.api)
@@ -21,7 +21,7 @@ module timer_test {
 	source "timer_test.c"
 
 	depends embox.kernel.timer.strategy.api
-	/*depends embox.framework.LibFramework*/
+	depends embox.framework.test
 	depends embox.kernel.time.timer
 }
 

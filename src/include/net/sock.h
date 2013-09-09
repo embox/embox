@@ -65,7 +65,7 @@ struct sock {
 	unsigned char shutdown_flag;
 	const struct family_ops *f_ops;
 	const struct sock_ops *ops;
-	struct io_sync *ios;
+	struct io_sync ios;
     struct socket_node *sock_node;
 };
 
@@ -121,7 +121,7 @@ typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 extern int sock_create(int family, int type, int protocol,
 		struct sock **out_sk);
 extern int sock_create_ext(int family, int type, int protocol,
-		struct sock **out_sk);
+		int need_hash, struct sock **out_sk);
 extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);

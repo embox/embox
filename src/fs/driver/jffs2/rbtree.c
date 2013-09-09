@@ -144,8 +144,7 @@
 } while(0)
 
 /* Note args swapped to match Linux */
-void rb_insert_color(struct rb_node *elm, struct rb_root *head)
-{
+void rb_insert_color(struct rb_node *elm, struct rb_root *head) {
 	struct rb_node *parent, *gparent, *tmp;
 	while ((parent = RB_PARENT(elm)) &&
 	    RB_COLOR(parent) == RB_RED) {
@@ -189,8 +188,7 @@ void rb_insert_color(struct rb_node *elm, struct rb_root *head)
 
 
 static void rb_remove_color(struct rb_root *head, struct rb_node *parent,
-			    struct rb_node *elm)
-{
+			    struct rb_node *elm) {
 	struct rb_node *tmp;
 	while ((elm == NULL || RB_COLOR(elm) == RB_BLACK) &&
 	    elm != RB_HEAD(head)) {
@@ -265,46 +263,53 @@ static void rb_remove_color(struct rb_root *head, struct rb_node *parent,
 }
 
 /* Note name changed. Guess why :) */
-void rb_erase(struct rb_node *elm, struct rb_root *head)
-{
+void rb_erase(struct rb_node *elm, struct rb_root *head) {
 	struct rb_node *child, *parent, *old = elm;
 	int color;
-	if (RB_LEFT(elm) == NULL)
+	if (RB_LEFT(elm) == NULL) {
 		child = RB_RIGHT(elm);
-	else if (RB_RIGHT(elm) == NULL)
+	} else if (RB_RIGHT(elm) == NULL) {
 		child = RB_LEFT(elm);
-	else {
+	} else {
 		struct rb_node *left;
 		elm = RB_RIGHT(elm);
-		while ((left = RB_LEFT(elm)))
+		while ((left = RB_LEFT(elm))) {
 			elm = left;
+		}
 		child = RB_RIGHT(elm);
 		parent = RB_PARENT(elm);
 		color = RB_COLOR(elm);
-		if (child)
+		if (child) {
 			RB_PARENT(child) = parent;
+		}
 		if (parent) {
-			if (RB_LEFT(parent) == elm)
+			if (RB_LEFT(parent) == elm) {
 				RB_LEFT(parent) = child;
-			else
+			} else {
 				RB_RIGHT(parent) = child;
+			}
 			RB_AUGMENT(parent);
-		} else
+		} else {
 			RB_HEAD(head) = child;
-		if (RB_PARENT(elm) == old)
+		}
+		if (RB_PARENT(elm) == old) {
 			parent = elm;
+		}
 		*(elm) = *(old);
 		if (RB_PARENT(old)) {
-			if (RB_LEFT(RB_PARENT(old)) == old)
+			if (RB_LEFT(RB_PARENT(old)) == old) {
 				RB_LEFT(RB_PARENT(old)) = elm;
-			else
+			} else {
 				RB_RIGHT(RB_PARENT(old)) = elm;
+			}
 			RB_AUGMENT(RB_PARENT(old));
-		} else
+		} else {
 			RB_HEAD(head) = elm;
+		}
 		RB_PARENT(RB_LEFT(old)) = elm;
-		if (RB_RIGHT(old))
+		if (RB_RIGHT(old)) {
 			RB_PARENT(RB_RIGHT(old)) = elm;
+		}
 		if (parent) {
 			left = parent;
 			do {
@@ -315,55 +320,61 @@ void rb_erase(struct rb_node *elm, struct rb_root *head)
 	}
 	parent = RB_PARENT(elm);
 	color = RB_COLOR(elm);
-	if (child)
+	if (child) {
 		RB_PARENT(child) = parent;
+	}
 	if (parent) {
-		if (RB_LEFT(parent) == elm)
+		if (RB_LEFT(parent) == elm) {
 			RB_LEFT(parent) = child;
-		else
+		} else {
 			RB_RIGHT(parent) = child;
+		}
 		RB_AUGMENT(parent);
-	} else
+	} else {
 		RB_HEAD(head) = child;
+	}
 color:
-	if (color == RB_BLACK)
+	if (color == RB_BLACK) {
 		rb_remove_color(head, parent, child);
+	}
 }
 
-struct rb_node *rb_next(struct rb_node *elm)
-{
+struct rb_node *rb_next(struct rb_node *elm) {
 	if (RB_RIGHT(elm)) {
 		elm = RB_RIGHT(elm);
-		while (RB_LEFT(elm))
+		while (RB_LEFT(elm)) {
 			elm = RB_LEFT(elm);
+		}
 	} else {
 		if (RB_PARENT(elm) &&
-		    (elm == RB_LEFT(RB_PARENT(elm))))
+			(elm == RB_LEFT(RB_PARENT(elm)))) {
 			elm = RB_PARENT(elm);
-		else {
+		} else {
 			while (RB_PARENT(elm) &&
-			    (elm == RB_RIGHT(RB_PARENT(elm))))
+				(elm == RB_RIGHT(RB_PARENT(elm)))) {
 				elm = RB_PARENT(elm);
+			}
 			elm = RB_PARENT(elm);
 		}
 	}
 	return (elm);
 }
 
-struct rb_node *rb_prev(struct rb_node *elm)
-{
+struct rb_node *rb_prev(struct rb_node *elm) {
 	if (RB_LEFT(elm)) {
 		elm = RB_LEFT(elm);
-		while (RB_RIGHT(elm))
+		while (RB_RIGHT(elm)) {
 			elm = RB_RIGHT(elm);
+		}
 	} else {
 		if (RB_PARENT(elm) &&
-		    (elm == RB_RIGHT(RB_PARENT(elm))))
+		    (elm == RB_RIGHT(RB_PARENT(elm)))) {
 			elm = RB_PARENT(elm);
-		else {
+		} else {
 			while (RB_PARENT(elm) &&
-			    (elm == RB_LEFT(RB_PARENT(elm))))
+			    (elm == RB_LEFT(RB_PARENT(elm)))) {
 				elm = RB_PARENT(elm);
+			}
 			elm = RB_PARENT(elm);
 		}
 	}
@@ -371,38 +382,42 @@ struct rb_node *rb_prev(struct rb_node *elm)
 }
 
 /* These ones are lifted from Linux -- but that's OK because I
-   wrote them. dwmw2. */
-struct rb_node *rb_first(struct rb_root *root)
-{
-        struct rb_node  *n;
+ * wrote them. dwmw2.
+ */
+struct rb_node *rb_first(struct rb_root *root) {
+	struct rb_node  *n;
 
-        n = root->rb_node;
-        if (!n)
-                return 0;
-        while (n->rb_left)
-                n = n->rb_left;
-        return n;
+	n = root->rb_node;
+	if (!n) {
+		return 0;
+	}
+	while (n->rb_left) {
+		n = n->rb_left;
+	}
+	return n;
 }
 
 void rb_replace_node(struct rb_node *victim, struct rb_node *new,
-                     struct rb_root *root)
-{
-        struct rb_node *parent = victim->rb_parent;
+	struct rb_root *root) {
+	struct rb_node *parent = victim->rb_parent;
 
-        /* Set the surrounding nodes to point to the replacement */
-        if (parent) {
-                if (victim == parent->rb_left)
-                        parent->rb_left = new;
-                else
-                        parent->rb_right = new;
-        } else {
-                root->rb_node = new;
-        }
-        if (victim->rb_left)
-                victim->rb_left->rb_parent = new;
-        if (victim->rb_right)
-                victim->rb_right->rb_parent = new;
+	/* Set the surrounding nodes to point to the replacement */
+	if (parent) {
+		if (victim == parent->rb_left) {
+			parent->rb_left = new;
+		} else {
+			parent->rb_right = new;
+		}
+	} else {
+		root->rb_node = new;
+	}
+	if (victim->rb_left) {
+		victim->rb_left->rb_parent = new;
+	}
+	if (victim->rb_right) {
+		victim->rb_right->rb_parent = new;
+	}
 
-        /* Copy the pointers/colour from the victim to the replacement */
-        *new = *victim;
+	/* Copy the pointers/colour from the victim to the replacement */
+	*new = *victim;
 }

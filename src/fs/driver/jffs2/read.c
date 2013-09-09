@@ -22,8 +22,7 @@
 
 int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		     struct jffs2_full_dnode *fd, unsigned char *buf,
-		     int ofs, int len)
-{
+		     int ofs, int len) {
 	struct jffs2_raw_inode *ri;
 	size_t readlen;
 	uint32_t crc;
@@ -32,10 +31,12 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	int ret = 0;
 
 	ri = jffs2_alloc_raw_inode();
-	if (!ri)
+	if (!ri) {
 		return -ENOMEM;
+	}
 
-	ret = jffs2_flash_read(c, ref_offset(fd->raw), sizeof(*ri), &readlen, (unsigned char *)ri);
+	ret = jffs2_flash_read(c, ref_offset(fd->raw),
+			sizeof(*ri), &readlen, (unsigned char *)ri);
 	if (ret) {
 		jffs2_free_raw_inode(ri);
 		printk(KERN_WARNING "Error reading node from 0x%08x: %d\n", ref_offset(fd->raw), ret);
@@ -114,10 +115,12 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	ret = jffs2_flash_read(c, (ref_offset(fd->raw)) + sizeof(*ri),
 			       je32_to_cpu(ri->csize), &readlen, readbuf);
 
-	if (!ret && readlen != je32_to_cpu(ri->csize))
+	if (!ret && readlen != je32_to_cpu(ri->csize)) {
 		ret = -EIO;
-	if (ret)
+	}
+	if (ret) {
 		goto out_decomprbuf;
+	}
 
 	crc = crc32(0, readbuf, je32_to_cpu(ri->csize));
 	if (crc != je32_to_cpu(ri->data_crc)) {
@@ -130,7 +133,8 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	if (ri->compr != JFFS2_COMPR_NONE) {
 		D2(printk(KERN_DEBUG "Decompress %d bytes from %p to %d bytes at %p\n",
 			  je32_to_cpu(ri->csize), readbuf, je32_to_cpu(ri->dsize), decomprbuf));
-		ret = jffs2_decompress(c, f, ri->compr | (ri->usercompr << 8), readbuf, decomprbuf, je32_to_cpu(ri->csize), je32_to_cpu(ri->dsize));
+		ret = jffs2_decompress(c, f, ri->compr | (ri->usercompr << 8), readbuf,
+				decomprbuf, je32_to_cpu(ri->csize), je32_to_cpu(ri->dsize));
 		if (ret) {
 			printk(KERN_WARNING "Error: jffs2_decompress returned %d\n", ret);
 			goto out_decomprbuf;
@@ -138,14 +142,16 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	}
 
 	if (len < je32_to_cpu(ri->dsize)) {
-		memcpy(buf, decomprbuf+ofs, len);
+		memcpy(buf, decomprbuf + ofs, len);
 	}
  out_decomprbuf:
-	if(decomprbuf != buf && decomprbuf != readbuf)
+	if(decomprbuf != buf && decomprbuf != readbuf) {
 		kfree(decomprbuf);
+	}
  out_readbuf:
-	if(readbuf != buf)
+	if(readbuf != buf) {
 		kfree(readbuf);
+	}
  out_ri:
 	jffs2_free_raw_inode(ri);
 
@@ -160,7 +166,7 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	int ret;
 
 	D1(printk(KERN_DEBUG "jffs2_read_inode_range: ino #%u, range 0x%08x-0x%08x\n",
-		  f->inocache->ino, offset, offset+len));
+		  f->inocache->ino, offset, offset + len));
 
 	frag = jffs2_lookup_node_frag(&f->fragtree, offset);
 
@@ -195,9 +201,10 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			fragofs = offset - frag->ofs;
 			readlen = min(frag->size - fragofs, end - offset);
 			D1(printk(KERN_DEBUG "Reading %d-%d from node at 0x%08x (%d)\n",
-				  frag->ofs+fragofs, frag->ofs+fragofs+readlen,
+				  frag->ofs + fragofs, frag->ofs + fragofs + readlen,
 				  ref_offset(frag->node->raw), ref_flags(frag->node->raw)));
-			ret = jffs2_read_dnode(c, f, frag->node, buf, fragofs + frag->ofs - frag->node->ofs, readlen);
+			ret = jffs2_read_dnode(c, f, frag->node, buf,
+					fragofs + frag->ofs - frag->node->ofs, readlen);
 			D2(printk(KERN_DEBUG "node read done\n"));
 			if (ret) {
 				D1(printk(KERN_DEBUG"jffs2_read_inode_range error %d\n",ret));

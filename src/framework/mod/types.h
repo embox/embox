@@ -33,7 +33,7 @@ struct mod {
 
 	const struct mod_info    *info;    /**< (optional) Application specific. */
 	const struct mod_member **members; /**< Members to setup/finalize. */
-	struct __mod_private     *private; /**< Used by dependency resolver. */
+	struct __mod_private     *priv; /**< Used by dependency resolver. */
 
 };
 

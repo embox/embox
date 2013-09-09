@@ -55,7 +55,6 @@ struct sockaddr_un {
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define TCP_NODELACK TCP_NODELAY
 #define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
 
 struct sockaddr_storage {

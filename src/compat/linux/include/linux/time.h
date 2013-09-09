@@ -10,6 +10,6 @@
 #include <kernel/time/time.h>
 #include <kernel/time/clock_source.h>
 
-#define cyg_timestamp get_time
+#define timestamp get_time
 
 #endif /* __LINUX_TIME_H_ */

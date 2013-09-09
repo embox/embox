@@ -17,7 +17,7 @@ module diag_device {
 	source "diag_device.c"
 
 	depends embox.fs.driver.devfs
-	depends embox.driver.diag.diag_api
+	@NoRuntime depends embox.driver.diag.diag_api
 }
 
 module null {

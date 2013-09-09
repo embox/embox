@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stddef.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdint.h>

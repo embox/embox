@@ -14,6 +14,7 @@
 #define WNOHANG 0 /*third-party/dropbear-2012.55/svr-chansession.c:91:*/
 
 
+#define TCP_NODELAY 0
 #define WIFEXITED(s) 0
 #define WEXITSTATUS(s) 0
 #define WIFSIGNALED(s) 0

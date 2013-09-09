@@ -13,6 +13,8 @@
 #ifndef COMPAT_LINUX_LINUX_LIST_H_
 #define COMPAT_LINUX_LINUX_LIST_H_
 
+#include <stddef.h>
+
 /*
  * Simple doubly linked list implementation.
  *

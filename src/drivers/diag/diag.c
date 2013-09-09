@@ -26,19 +26,12 @@ extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *b
 extern const struct diag DIAG_IMPL;
 static const struct diag *cdiag = &DIAG_IMPL;
 
-#define BUFLEN 4
-
 static const struct termios diag_tio = {
 	.c_lflag = ICANON,
 	.c_oflag = ONLCR,
 };
 
-static char buf[BUFLEN];
-static struct ring r;
-
 int diag_init(void) {
-
-	ring_init(&r);
 
 	if (cdiag->ops->init) {
 		return cdiag->ops->init(cdiag);
@@ -62,9 +55,14 @@ char diag_getc(void) {
 	return cdiag->ops->getc(cdiag);
 }
 
+#define BUFLEN 4
 void diag_putc(char ch) {
+	char buf[BUFLEN];
+	struct ring r;
 
 	assert(cdiag->ops->putc);
+
+	ring_init(&r);
 
 	termios_putc((struct termios *) &diag_tio, ch, &r, buf, BUFLEN);
 

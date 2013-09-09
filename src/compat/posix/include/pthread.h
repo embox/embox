@@ -19,10 +19,14 @@
  */
 #include <sched.h>
 
+
+
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/rwlock.h>
+
+#define PTHREAD_MUTEX_INITIALIZER MUTEX_INIT_STATIC
 
 typedef struct thread *pthread_t;
 

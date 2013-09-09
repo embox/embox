@@ -5,5 +5,4 @@ module example {
 	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
 
-	depends embox.lib.LibC
 }

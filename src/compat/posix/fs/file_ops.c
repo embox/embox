@@ -124,11 +124,20 @@ int ioctl(int fd, int request, ...) {
 
 	va_start(args, request);
 
-	/* POSIX says, that this way to make read/write nonblocking is old
-	 * and recommend use fcntl(fd, O_NONBLOCK, ...)
-	 * */
-	if (request == FIONBIO && va_arg(args, int) != 0) {
-		fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | O_NONBLOCK);
+	switch (request) {
+  	case FIONBIO:
+		/* POSIX says, that this way to make read/write nonblocking is old
+		 * and recommend use fcntl(fd, O_NONBLOCK, ...)
+		 * */
+		if (va_arg(args, int) != 0) {
+			fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | O_NONBLOCK);
+		}
+		break;
+	case FIONREAD:
+		/* FIXME set actual amount of bytes */
+		*va_arg(args, int *) = io_sync_ready(
+				task_idx_desc_ios(desc), IO_SYNC_READING);
+		return 0;
 	}
 
 	if (NULL == ops->ioctl) {

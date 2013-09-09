@@ -47,14 +47,16 @@ static int tcp_init(struct sock *sk) {
 	sock.sk = sk;
 	debug_print(3, "tcp_init: sk %p\n", sock.tcp_sk);
 
-	tcp_set_st(sock, TCP_CLOSED);
+	sock.sk->state = TCP_CLOSED;
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
-	sock.tcp_sk->conn_wait_max = 0;
+	sock.tcp_sk->conn_wait_len = sock.tcp_sk->conn_wait_max = 0;
 	sock.tcp_sk->lock = 0;
-	timerclear(&sock.tcp_sk->activity_time);
+	/* timerclear(&sock.tcp_sk->syn_time); */
+	timerclear(&sock.tcp_sk->ack_time);
+	timerclear(&sock.tcp_sk->rcv_time);
 
 	return 0;
 }
@@ -98,7 +100,7 @@ static int tcp_close(struct sock *sk) {
 			tcph = tcp_hdr(skb);
 			tcph->fin = 1;
 			tcph->ack = 1;
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
+			send_data_from_sock(sock, skb);
 			break;
 		}
 	}
@@ -107,15 +109,15 @@ static int tcp_close(struct sock *sk) {
 	return 0;
 }
 
-static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addr_len, int flags) {
+static int tcp_connect(struct sock *sk,
+		const struct sockaddr *addr, socklen_t addr_len,
+		int flags) {
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;
 	struct sockaddr_in *addr_in;
 	struct rt_entry *rte;
 	int ret;
-	struct timeval started;
 	static const __u8 magic_opts[] = {
 		/**
 		 * TODO
@@ -172,18 +174,9 @@ static int tcp_connect(struct sock *sk, const struct sockaddr *addr,
 			tcph = tcp_hdr(skb);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
-			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-			tcp_get_now(&started);
-			ret = 0;
-			while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
-				if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
-					ret = -ETIMEDOUT;
-					break;
-				}
-			}
-			if (ret == 0) {
-				ret = tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
-			}
+			send_data_from_sock(sock, skb);
+
+			ret = -EINPROGRESS;
 			break;
 		}
 	}
@@ -225,11 +218,10 @@ static int tcp_listen(struct sock *sk, int backlog) {
 	return ret;
 }
 
-static int tcp_accept(struct sock *sk,
-		struct sockaddr *addr, int *addr_len, int flags, struct sock **newsk) {
+static int tcp_accept(struct sock *sk, struct sockaddr *addr,
+		socklen_t *addr_len, int flags, struct sock **newsk) {
 	union sock_pointer sock, newsock;
 	struct sockaddr_in *addr_in;
-	struct timeval started;
 
 	assert(sk != NULL);
 	assert(newsk != NULL);
@@ -246,24 +238,27 @@ static int tcp_accept(struct sock *sk,
 		/* waiting anyone */
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		{
-			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
+			io_sync_disable(&sock.sk->ios, IO_SYNC_READING);
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
 				tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
 			}
-			io_sync_enable(sock.sk->ios, IO_SYNC_READING);
 
 			/* get first socket from */
-			assert(!list_empty(&sock.tcp_sk->conn_wait));
 			newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
 
 			/* delete new socket from list */
 			list_del_init(&newsock.tcp_sk->conn_wait);
+			assert(sock.tcp_sk->conn_wait_len != 0);
+			--sock.tcp_sk->conn_wait_len;
 
-			/* disable reading if queue is empty */
-			io_sync_disable(sock.sk->ios, IO_SYNC_READING);
-			if (!list_empty(&sock.tcp_sk->conn_wait)) {
-				io_sync_enable(sock.sk->ios, IO_SYNC_READING);
+			/* enable reading if queue not empty */
+			if (!list_empty(&sock.tcp_sk->conn_wait)
+					&& io_sync_ready(&list_entry(
+							sock.tcp_sk->conn_wait.next, struct tcp_sock,
+							conn_wait)->inet.sk.ios,
+						IO_SYNC_WRITING)) {
+				io_sync_enable(&sock.sk->ios, IO_SYNC_READING);
 			}
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
@@ -276,29 +271,27 @@ static int tcp_accept(struct sock *sk,
 			addr_in->sin_addr.s_addr = newsock.inet_sk->daddr;
 			*addr_len = sizeof *addr_in;
 		}
-		debug_print(3, "tcp_accept: newsk %p for %s:%d\n", newsock.tcp_sk,
-				inet_ntoa(*(struct in_addr *)&newsock.inet_sk->daddr), (int)ntohs(newsock.inet_sk->dport));
-		/* wait until something happened */
-		tcp_get_now(&started);
-		while (tcp_st_status(newsock) == TCP_ST_NONSYNC) {
-			if (tcp_is_expired(&started, TCP_SYNC_TIMEOUT)) {
-				tcp_free_sock(newsock);
-				return -ETIMEDOUT;
-			}
-		}
+
+		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
+				newsock.tcp_sk, inet_ntoa(
+					*(struct in_addr *)&newsock.inet_sk->daddr),
+				ntohs(newsock.inet_sk->dport));
 
 		if (tcp_st_status(newsock) == TCP_ST_NOTEXIST) {
 			tcp_free_sock(newsock);
 			return -ECONNRESET;
 		}
 
+		assert(io_sync_ready(&newsock.sk->ios, IO_SYNC_WRITING));
+
 		*newsk = newsock.sk;
+
 		return 0;
-		/* case TCP_LISTEN */
-	} /* switch(sock.sk->state) */
+	}
 }
 
-static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
+static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
+		int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t bytes, max_len;
@@ -360,7 +353,8 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 }
 
-static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
+static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
+		int flags) {
 	int ret;
 
 	if (sk == NULL) {
@@ -392,9 +386,14 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 /* TODO */
 static int tcp_shutdown(struct sock *sk, int how) {
+	union sock_pointer sock;
+
 	if (!(how & (SHUT_WR + 1))) {
 		return 0;
 	}
+
+	sock.sk = sk;
+	tcp_set_st(sock, TCP_CLOSED);
 
 	/*tcp_send_fin()*/
 	return 0;

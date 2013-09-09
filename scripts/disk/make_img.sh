@@ -63,6 +63,7 @@ call "cp $BIN_DIR/$KERNEL_NAME $MOUNT_DIR"
 call "cp $GRUB_FILES $MOUNT_DIR/$GRUB_DIR"
 
 title "Umount the disk image"
+call "sync"
 call "umount $MOUNT_DIR"
 call "rm -rf $MOUNT_DIR"
 

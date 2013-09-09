@@ -24,10 +24,10 @@
 // TODO unused for now... -- Eldar
 #define MOD_FLAG_OPFAILED      (0 << 1)
 
-#define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
-#define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while (0)
-#define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while (0)
-#define mod_flag_clr(mod, mask) do (mod)->private->flags &= ~(mask); while (0)
+#define mod_flag_tst(mod, mask)   ((mod)->priv->flags &   (mask))
+#define mod_flag_tgl(mod, mask) do (mod)->priv->flags ^=  (mask); while (0)
+#define mod_flag_set(mod, mask) do (mod)->priv->flags |=  (mask); while (0)
+#define mod_flag_clr(mod, mask) do (mod)->priv->flags &= ~(mask); while (0)
 
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
 

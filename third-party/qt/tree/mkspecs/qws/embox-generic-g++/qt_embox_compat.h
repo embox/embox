@@ -62,6 +62,8 @@ static inline int munmap(void *addr, size_t size) {
 	return -1;
 }
 
+#include <time.h>
+extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
 #include <string.h>
 // Stuff below moved here because of testlib

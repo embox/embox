@@ -48,7 +48,7 @@ int journal_delete(journal_t *jp) {
 	}
 
 	/* Free new running transaction after commit */
-	free(jp->j_running_transaction);
+	journal_free_trans(jp, jp->j_running_transaction);
 
 	/* Mark journal as empty */
 	jp->j_tail = 0;
@@ -98,6 +98,9 @@ int journal_stop(journal_handle_t *handle) {
 
     if (0 == --t->t_ref) {
     	res = jp->j_fs_specific.commit(jp);
+    	/* XXX Ponder on how to handle situation when transaction was uncommitted. */
+    	assert(res == 0);
+    	journal_checkpoint_transactions(jp);
     }
     /* XXX See the comment in the header to journal_dirty_block.
      *  jp->j_free += handle->h_buffer_credits;
@@ -132,16 +135,15 @@ int journal_checkpoint_transactions(journal_t *jp) {
 	    			/* If @a b is up-to-date (i.e. @a t is the last transaction that updated @b),
 	    			 * than unlock corresponding @a bh */
 					buffer_clear_flag(bh, BH_JOURNAL);
-					/* XXX make optimization: group writing of neighboring blocks */
-					jp->j_dev->driver->write(jp->j_dev, bh->data, bh->blocksize, bh->block);
 					buffer_clear_flag(bh, BH_DIRTY);
     			}
     			bcache_buffer_unlock(bh);
     		}
+    		journal_write_block(jp, b->data, 1, b->blocknr);
     	}
 
     	jp->j_tail += t->t_log_blocks;
-    	journal_wrap(jp, jp->j_tail);
+    	jp->j_tail = journal_wrap(jp, jp->j_tail);
 
     	jp->j_tail_sequence++;
 
@@ -229,7 +231,6 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     	cache_free(&journal_block_cache, jb);
 		return NULL;
     }
-    memset(jb, 0, sizeof(journal_block_t));
     dlist_head_init(&jb->b_next);
     jb->blocknr = nr;
 
@@ -277,17 +278,26 @@ void journal_free_trans(journal_t *jp, transaction_t *t) {
 
 int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt) {
 	journal_block_t *b, *bnext;
+	unsigned long j_head;
 	int ret = 0;
 
 	assert(jp);
 
+	/* used to restore previous j_head position if write failed */
+	j_head = jp->j_head;
+
 	/* XXX Increase speed up of below writing on hd by grouping blocks */
 	dlist_foreach_entry(b, bnext, blocks, b_next) {
-		ret += journal_write_block(jp, b->data, 1,
-				jp->j_fs_specific.bmap(jp, journal_wrap(jp, jp->j_head++)));
+		jp->j_head = journal_wrap(jp, jp->j_head++);
+		ret = journal_write_block(jp, b->data, 1,
+				jp->j_fs_specific.bmap(jp, jp->j_head));
+		if (ret < 0) {
+			jp->j_head = j_head;
+			return ret;
+		}
 	}
 
-	return ret;
+	return 0;
 }
 
 int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {

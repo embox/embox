@@ -7,14 +7,52 @@ module core {
 
 	source "empty.c" // FIXME: workaround
 
+	depends embox.net.lib.getifaddrs
+
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/samba MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../samba/lib/libsmbclient.a"
+	source
+		"../../../../samba/lib/libsmbclient.a",
+		"../../../../samba/lib/libtevent.a",
+		"../../../../samba/lib/libtalloc.a",
+		"../../../../samba/lib/libtdb.a",
+		"../../../../samba/lib/libwbclient.a"
 }
 
+@Cmd(name = "smbclient",
+	help = "smbclient shell",
+	man = '''
+		NAME
+			smbclient - ftp-like client to access SMB/CIFS resources on servers
+		SYNOPSIS
+			smbclient --help for options
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
 module smbclient {
 	depends core
 
 	@Rule(script="true")
-	source "order.mk"
 	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
+	source "shell_cmd.c"
+	source "order.mk"
+}
+
+@Cmd(name = "testbrowse2",
+	help = "testbrowse2 command",
+	man = '''
+		NAME
+			testbrowse2 - libsmbclient's example testbrowse2
+		SYNOPSIS
+			testbrowse2
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
+module testbrowse2 {
+	depends core
+
+	@IncludePath("$(THIRDPARTY_DIR)/samba/include")
+	@IncludePath("$(ROOT_DIR)/build/samba/include")
+	source "../../../../samba/src/samba/examples/libsmbclient/testbrowse2.c"
+	source "shell_cmd_testbrowse2.c"
+	source "order.mk"
 }

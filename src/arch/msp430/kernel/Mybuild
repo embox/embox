@@ -6,7 +6,14 @@ module arch {
 }
 
 module boot {
-	source "boot.S"
+	source "boot_entry.S"
 	source "init_hooks.c"
+}
+
+module irq extends embox.arch.interrupt {
+	source "ipl_impl.h"
+	source "interrupt_handle.c"
+
+	depends embox.kernel.irq
 }
 

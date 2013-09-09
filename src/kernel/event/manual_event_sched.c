@@ -36,6 +36,13 @@ int manual_event_is_set(struct manual_event *m_event) {
 void manual_event_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
+		wait_queue_notify_all(&m_event->wait_queue);
+	}
+}
+
+void manual_event_set_and_notify(struct manual_event *m_event) {
+	assert(m_event != NULL);
+	if (!m_event->set) {
 		m_event->set = 1;
 		wait_queue_notify_all(&m_event->wait_queue);
 	}

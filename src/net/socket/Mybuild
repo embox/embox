@@ -70,6 +70,7 @@ module af_unix {
 
 module socket {
 	source "ksocket.c"
+	option number connect_timeout=5000
 	depends embox.arch.interrupt
 	depends embox.mem.pool
 	depends embox.lib.LibC

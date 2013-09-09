@@ -57,6 +57,12 @@ static struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 		return NULL;
 	}
 
+	if(!dir->nas || !dir->nas->fs) {
+		SET_ERRNO(EBADF);
+		vfs_del_leaf(child);
+		return NULL;
+	}
+
 	/* check drv of parents */
 	drv = dir->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
@@ -140,6 +146,8 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		| ((flag & O_WRONLY) ? 0 : FS_MAY_READ);
 	desc->flags = perm_flags | ((flag & O_APPEND) ? FS_MAY_APPEND : 0);
 	desc->cursor = 0;
+	io_sync_init(&desc->ios, 0, 0);
+
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {
 		goto free_out;

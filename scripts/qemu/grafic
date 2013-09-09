@@ -1,0 +1,28 @@
+#!/bin/bash
+
+QEMU=qemu-system-i386
+IMAGE=../../build/base/bin/embox
+EMBOX_MODS_CONF=../../conf/mods.config
+SMP=" "
+
+grep "include embox.kernel.smp" $EMBOX_MODS_CONF > /dev/null
+if [ $? -eq 0 ]; then
+SMP="-smp 2,cores=2"
+break
+fi
+
+echo "$SMP"
+
+TAP_DEV=$(tunctl -b)
+echo $TAP_DEV > tap_dev
+sync
+whoami
+echo $TAP_DEV
+sudo $QEMU -s -kernel $IMAGE -no-kvm \
+$SMP \
+-net nic,model=e1000,macaddr=AA:BB:CC:DD:EE:02 \
+-net tap,ifname=tap0,script=start_script,downscript=stop_script \
+-drive file="./images/zrv-mandatory.img",media=disk \
+-drive file="./images/hdb.img",media=disk \
+-drive file="./images/cd0.iso",media=cdrom \
+-s -S $@

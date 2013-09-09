@@ -9,6 +9,8 @@
  */
 
 #include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #define BLOCK_SZ (sizeof(unsigned long))
 

@@ -9,9 +9,11 @@
 
 #ifndef TIME_H_
 #define TIME_H_
-
+/* The clock_t, size_t, time_t, clockid_t, and timer_t  types shall be defined
+ * as described in <sys/types.h> .
+ */
 #include <sys/types.h>
-#include <stddef.h>    /* NULL definition */
+#include <defines/null.h>
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
@@ -90,8 +92,6 @@ extern time_t time(time_t *t);
 
 /** Format date and time */
 extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
-
-extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
 __END_DECLS
 

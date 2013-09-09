@@ -28,6 +28,8 @@
 #include <mem/misc/pool.h>
 #include <kernel/time/time.h>
 
+#define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
+
 static int ksocket_ext(int family, int type, int protocol,
 		struct sock *sk, struct sock **out_sk) {
 	int ret;
@@ -57,11 +59,25 @@ static int ksocket_ext(int family, int type, int protocol,
 
 int ksocket(int family, int type, int protocol,
 		struct sock **out_sk) {
+	int ret;
+	struct sock *sk;
+
 	if (out_sk == NULL) {
 		return -EINVAL;
 	}
 
-	return ksocket_ext(family, type, protocol, NULL, out_sk);
+	ret = ksocket_ext(family, type, protocol, NULL, &sk);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (type != SOCK_STREAM) {
+		io_sync_enable(&sk->ios, IO_SYNC_WRITING);
+	}
+
+	*out_sk = sk;
+
+	return 0;
 }
 
 int ksocket_close(struct sock *sk) {
@@ -175,15 +191,33 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 
 	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr,
 			addrlen, flags);
+	if ((ret == -EINPROGRESS) && !(flags & O_NONBLOCK)) {
+		/* lock until a connection is established */
+		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING,
+				MODOPS_CONNECT_TIMEOUT);
+		if (ret == -ETIMEDOUT) {
+			/* shutdown connection */
+			if (sk->f_ops->shutdown != NULL) {
+				(void)sk->f_ops->shutdown(sk, SHUT_RDWR);
+			}
+		}
+		else if ((ret == 0) && !io_sync_ready(&sk->ios,
+					IO_SYNC_WRITING)) {
+			/* if writing not ready then connection is reset */
+			ret = -ECONNRESET;
+		}
+	}
 	if (ret != 0) {
-		LOG_ERROR("ksocket_connect", "unable to connect on socket");
+		LOG_ERROR("ksocket_connect",
+				"unable to connect on socket");
 		sk_set_connection_state(sk, BOUND);
+		if (ret == -EINPROGRESS) { /* FIXME */
+			sk_set_connection_state(sk, CONNECTED);
+		}
 		return ret;
 	}
 
 	sk_set_connection_state(sk, CONNECTED);
-
-	io_sync_enable(sk->ios, IO_SYNC_WRITING);
 
 	return 0;
 }
@@ -230,7 +264,6 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen, int flags, struct sock **out_sk) {
 	int ret;
 	struct sock *new_sk;
-	unsigned long timeout;
 
 	if (sk == NULL) {
 		return -EBADF;
@@ -249,21 +282,17 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
-	if (timeout == 0) {
-		timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
-	}
-
-	if (!(flags & O_NONBLOCK)) {
-		ret = io_sync_wait(sk->ios, IO_SYNC_READING, timeout);
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->accept == NULL) {
 		return -EOPNOTSUPP;
+	}
+
+	if (!(flags & O_NONBLOCK)) {
+		ret = io_sync_wait(&sk->ios, IO_SYNC_READING,
+				IO_SYNC_TIMEOUT_INFINITE);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
 	ret = sk->f_ops->accept(sk, addr, addrlen,
@@ -284,6 +313,8 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 	sk_set_connection_state(new_sk, ESTABLISHED);
 
+	io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
+
 	*out_sk = new_sk;
 
 	return 0;
@@ -291,6 +322,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
+	unsigned long timeout;
 
 	if (sk == NULL) {
 		return -EBADF;
@@ -301,6 +333,11 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	assert(sr_socket_exists(sk));
 	assert(sk != NULL);
+
+	assert(sk->f_ops != NULL);
+	if (sk->f_ops->sendmsg == NULL) {
+		return -ENOSYS;
+	}
 
 	switch (sk->opt.so_type) {
 	default:
@@ -347,9 +384,16 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
-	assert(sk->f_ops != NULL);
-	if (sk->f_ops->sendmsg == NULL) {
-		return -ENOSYS;
+	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
+	if (timeout == 0) {
+		timeout = IO_SYNC_TIMEOUT_INFINITE;
+	}
+
+	if (!(flags & O_NONBLOCK)) {
+		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING, timeout);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
 	return sk->f_ops->sendmsg(sk, msg, flags);
@@ -383,21 +427,21 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
-	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
-	if (timeout == 0) {
-		timeout = MANUAL_EVENT_TIMEOUT_INFINITE;
-	}
-
-	if (!(flags & O_NONBLOCK)) {
-		ret = io_sync_wait(sk->ios, IO_SYNC_READING, timeout);
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->recvmsg == NULL) {
 		return -ENOSYS;
+	}
+
+	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
+	if (timeout == 0) {
+		timeout = IO_SYNC_TIMEOUT_INFINITE;
+	}
+
+	if (!(flags & O_NONBLOCK)) {
+		ret = io_sync_wait(&sk->ios, IO_SYNC_READING, timeout);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
 	return sk->f_ops->recvmsg(sk, msg, flags);

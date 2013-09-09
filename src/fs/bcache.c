@@ -69,6 +69,11 @@ static void free_more_memory(size_t size) {
 
 repeat:
 	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
+		/*XXX */
+		if(bh->flags & BH_LOCKED) {
+			continue;
+		}
+
 		bcache_buffer_lock(bh);
 		{
 			if (buffer_journal(bh)) {

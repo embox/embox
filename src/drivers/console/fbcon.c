@@ -140,7 +140,8 @@ static const struct task_idx_ops this_idx_ops = {
 };
 
 static void *run(void *data) {
-	int fd = task_self_idx_alloc(&this_idx_ops, data);
+	int fd = task_self_idx_alloc(&this_idx_ops, data,
+			&((struct fbcon *)data)->ios);
 	const struct shell *sh = shell_lookup("tish");
 
 	close(0);
@@ -328,6 +329,7 @@ static int make_task(int i, char innewtask) {
 
 	fbcon->vc_this.callbacks = &thiscbs;
 	fbcon->fbcon_disdata = &fbcon_displ_data;
+	io_sync_init(&fbcon->ios, 0, 0);
 
 	vterm_video_init(&fbcon->vterm_video, &fbcon_vterm_video_ops,
 			0, 0);

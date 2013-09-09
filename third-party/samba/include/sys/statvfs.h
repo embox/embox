@@ -8,6 +8,8 @@
 #ifndef STATVFS_H_
 #define STATVFS_H_
 
+typedef struct { int val[2]; } fsid_t;
+
 struct statvfs {
    unsigned long  f_bsize;    /* file system block size */
    unsigned long  f_frsize;   /* fragment size */

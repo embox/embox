@@ -17,16 +17,8 @@
 #include <linux/config.h>
 #include <linux/fs.h>
 #include <linux/types.h>
-#include <linux/jffs2.h>
-#include <linux/jffs2_fs_sb.h>
-#include <linux/jffs2_fs_i.h>
 
-//#ifdef __ECOS
-#include "os-ecos.h"
-//#else
-//#include <linux/mtd/compatmac.h> /* For compatibility with older kernels */
-//#include "os-linux.h"
-//#endif
+#include <fs/jffs2.h>
 
 #define JFFS2_NATIVE_ENDIAN
 

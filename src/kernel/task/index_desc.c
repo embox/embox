@@ -67,7 +67,7 @@ int task_idx_desc_free(struct idx_desc *idx) {
 }
 
 struct idx_desc_data * task_idx_data_alloc(const struct task_idx_ops *res_ops,
-		void *fd_struct) {
+		void *fd_struct, struct io_sync *ios) {
 	struct idx_desc_data *idx_data;
 
 	assert(res_ops);
@@ -80,6 +80,7 @@ struct idx_desc_data * task_idx_data_alloc(const struct task_idx_ops *res_ops,
 	idx_data->link_count = 0;
 	idx_data->res_ops = res_ops;
 	idx_data->fd_struct = fd_struct;
+	idx_data->ios = ios;
 
 	return idx_data;
 }
@@ -124,7 +125,8 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 	return 0;
 }
 
-int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
+int task_self_idx_alloc(const struct task_idx_ops *res_ops,
+		void *fd_struct, struct io_sync *ios) {
 	int new_fd, ret;
 	struct task_idx_table *self_res = task_self_idx_table();
 	struct idx_desc *desc;
@@ -134,7 +136,7 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 		return new_fd;
 	}
 
-	data = task_idx_data_alloc(res_ops, fd_struct);
+	data = task_idx_data_alloc(res_ops, fd_struct, ios);
 	if (data == NULL) {
 		task_idx_table_unbind(self_res, new_fd);
 		return -ENOMEM;
@@ -154,9 +156,6 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 		__task_idx_desc_free(desc);
 		return ret;
 	}
-
-	/* Disable reading/writing on descriptor */
-	io_sync_init(&data->ios, 0, 0);
 
 	return new_fd;
 }

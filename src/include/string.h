@@ -16,7 +16,8 @@
 #ifndef STRING_H_
 #define STRING_H_
 
-#include <stddef.h>
+#include <defines/null.h>
+#include <defines/size_t.h>
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
@@ -352,11 +353,152 @@ extern char *strpbrk(const char *s, const char *accept);
 extern char *strdup(const char *s);
 
 /**
- * The  ffs()  function  returns  the position of the first (least significant)
- * bit set in the word i.  The least significant bit is position 1 and the most
- * significant position is, for example, 32 or 64.
+ * The function strtok_r() considers the null-terminated string s as a sequence
+ * of zero or more text tokens separated by spans of one or more characters
+ * from the separator string sep. The argument lasts points to a user-provided
+ * pointer which points to stored information necessary for strtok_r() to
+ * continue scanning the same string.
+ * In the first call to strtok_r(), s points to a null-terminated string, sep
+ * to a null-terminated string of separator characters and the value pointed to
+ * by lasts is ignored. The function strtok_r() returns a pointer to the first
+ * character of the first token, writes a null character into s immediately
+ * following the returned token, and updates the pointer to which lasts points.
+ * In subsequent calls, s is a NULL pointer and lasts will be unchanged from the previous call so that subsequent calls will move through the string s, returning successive tokens until no tokens remain. The separator string sep may be different from call to call. When no token remains in s, a NULL pointer is returned.
+ *
+ * @param str
+ * @param delim
+ * @param saveptr
+ * @return The function strtok_r() returns a pointer to the token found, or a
+ * NULL pointer when no token is found.
  */
-extern int ffs(int i);
+extern char *strtok_r(char *str, const char *delim, char **saveptr);
+/**
+ * A sequence of calls to strtok() breaks the string pointed to by s1 into a
+ * sequence of tokens, each of which is delimited by a byte from the string
+ * pointed to by s2. The first call in the sequence has s1 as its first
+ * argument, and is followed by calls with a null pointer as their first
+ * argument. The separator string pointed to by s2 may be different from call
+ * to call.
+ * The first call in the sequence searches the string pointed to by s1 for the
+ * first byte that is not contained in the current separator string pointed to
+ * by s2. If no such byte is found, then there are no tokens in the string
+ * pointed to by s1 and strtok() returns a null pointer. If such a byte is
+ * found, it is the start of the first token.
+ * The strtok() function then searches from there for a byte that is contained
+ * in the current separator string. If no such byte is found, the current token
+ * extends to the end of the string pointed to by s1, and subsequent searches
+ * for a token will return a null pointer. If such a byte is found, it is
+ * overwritten by a null byte, which terminates the current token. The strtok()
+ * function saves a pointer to the following byte, from which the next search
+ * for a token will start.
+ * Each subsequent call, with a null pointer as the value of the first argument,
+ * starts searching from the saved pointer and behaves as described above.
+ *
+ * @param str
+ * @param delim
+ * @return Upon successful completion, strtok() returns a pointer to the first
+ * byte of a token. Otherwise, if there is no token, strtok() returns a null
+ * pointer.
+ */
+extern char *strtok(char *str, const char *delim);
+
+/**
+ * The strnlen() function shall compute the smaller of the number of bytes in
+ * the array to which s points, not including the terminating NUL character,
+ * or the value of the maxlen argument. The strnlen() function shall never
+ * examine more than maxlen bytes of the array pointed to by s.
+ *
+ * @param s
+ * @param maxlen
+ *
+ * @return The strnlen() function shall return an integer containing the smaller
+ *  of either the length of the string pointed to by s or maxlen.
+ */
+extern size_t strnlen(const char *s, size_t maxlen);
+/**
+ * The strndup() function shall be equivalent to the strdup() function,
+ * duplicating the provided s in a new block of memory allocated as if by using
+ * malloc(), with the exception being that strndup() copies at most size plus
+ * one bytes into the newly allocated memory, terminating the new string with a
+ * NUL character. If the length of s is larger than size, only size bytes shall
+ * be duplicated. If size is larger than the length of s, all bytes in s shall
+ * be copied into the new memory buffer, including the terminating NUL
+ * character. The newly created string shall always be properly terminated.
+ *
+ * @param s
+ * @param size
+ * @return Upon successful completion, the strndup() function shall return a
+ * pointer to the newly allocated memory containing the duplicated string.
+ * Otherwise, it shall return a null pointer and set errno to indicate the error.
+ */
+extern char *strndup(const char *s, size_t size);
+
+#if 0 /* NOT IMPLEMENTED */
+/**
+ * The memccpy() function copies bytes from memory area s2 into s1, stopping
+ * after the first occurrence of byte c (converted to an unsigned char) is
+ * copied, or after n bytes are copied, whichever comes first. If copying takes
+ * place between objects that overlap, the behaviour is undefined.
+ *
+ * @param s1
+ * @param s2
+ * @param c
+ * @param n
+ *
+ * @return The memccpy() function returns a pointer to the byte after the copy
+ * of c in s1, or a null pointer if c was not found in the first n bytes of s2.
+ */
+extern void *memccpy(void *s1, const void *s2, int c, size_t n);
+/**
+ * The strcoll() function compares the string pointed to by s1 to the string
+ * pointed to by s2, both interpreted as appropriate to the LC_COLLATE category
+ * of the current locale.
+ * The strcoll() function will not change the setting of errno if successful.
+ * Because no return value is reserved to indicate an error, an application
+ * wishing to check for error situations should set errno to 0, then call
+ * strcoll(), then check errno.
+ *
+ * @param s1
+ * @param s2
+ *
+ * @return Upon successful completion, strcoll() returns an integer greater
+ * than, equal to or less than 0, according to whether the string pointed to by
+ * s1 is greater than, equal to or less than the string pointed to by s2 when
+ * both are interpreted as appropriate to the current locale. On error,
+ * strcoll() may set errno, but no return value is reserved to indicate an
+ * error.
+ */
+extern int strcoll(const char *s1, const char *s2);
+
+/**
+ * The strxfrm() function transforms the string pointed to by s2 and places the
+ * resulting string into the array pointed to by s1. The transformation is such
+ * that if strcmp() is applied to two transformed strings, it returns a value
+ * greater than, equal to or less than 0, corresponding to the result of
+ * strcoll() applied to the same two original strings. No more than n bytes are
+ * placed into the resulting array pointed to by s1, including the terminating
+ * null byte. If n is 0, s1 is permitted to be a null pointer. If copying takes
+ * place between objects that overlap, the behaviour is undefined.
+ * The strxfrm() function will not change the setting of errno if successful.
+ * Because no return value is reserved to indicate an error, an application
+ * wishing to check for error situations should set errno to 0, then call
+ * strcoll(), then check errno.
+ *
+ * @param s1
+ * @param s2
+ * @param n
+ * @return Upon successful completion, strxfrm() returns the length of the
+ * transformed string (not including the terminating null byte). If the value
+ * returned is n or more, the contents of the array pointed to by s1 are
+ * indeterminate.
+ * On error, strxfrm() may set errno but no return value is reserved to
+ * indicate an error.
+ */
+extern size_t strxfrm(char *s1, const char *s2, size_t n);
+
+#endif
+
+#include <string_bsd.h>
 
 __END_DECLS
 

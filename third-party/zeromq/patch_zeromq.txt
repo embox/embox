@@ -43,9 +43,8 @@ diff -aur zeromq-3.2.2/Makefile.in zeromq/Makefile.in
  EXTRA_DIST = \
  	autogen.sh	\
  	version.sh	\
-diff -aur zeromq-3.2.2/src/signaler.cpp zeromq/src/signaler.cpp
 --- zeromq-3.2.2/src/signaler.cpp	2012-10-25 12:30:40.000000000 +0400
-+++ zeromq/src/signaler.cpp	2013-03-27 15:54:32.129990267 +0400
++++ zeromq/src/signaler.cpp	2013-09-02 22:34:27.141626020 +0400
 @@ -327,7 +327,7 @@
  
      return 0;
@@ -55,36 +54,48 @@ diff -aur zeromq-3.2.2/src/signaler.cpp zeromq/src/signaler.cpp
  
      //  Whilst OpenVMS supports socketpair - it maps to AF_INET only.  Further,
      //  it does not set the socket options TCP_NODELAY and TCP_NODELACK which
-@@ -346,10 +346,10 @@
+@@ -345,11 +345,11 @@
+     errno_assert (listener != -1);
  
      int on = 1;
-     int rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+-    int rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
 -    errno_assert (rc != -1);
++    int rc;// = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
 +    //errno_assert (rc != -1);
  
-     rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
+-    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
 -    errno_assert (rc != -1);
++    //rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
 +    //errno_assert (rc != -1);
  
      rc = bind(listener, (struct sockaddr*) &lcladdr, sizeof (lcladdr));
      errno_assert (rc != -1);
-@@ -366,10 +366,10 @@
+@@ -365,11 +365,11 @@
+     *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
      errno_assert (*w_ != -1);
  
-     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
 -    errno_assert (rc != -1);
++    //rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
 +    //errno_assert (rc != -1);
  
-     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
+-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
 -    errno_assert (rc != -1);
++    //rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
 +    //errno_assert (rc != -1);
  
      rc = connect (*w_, (struct sockaddr*) &lcladdr, sizeof (lcladdr));
      errno_assert (rc != -1);
-diff -aur zeromq-3.2.2/src/tcp.cpp zeromq/src/tcp.cpp
 --- zeromq-3.2.2/src/tcp.cpp	2012-10-25 12:30:40.000000000 +0400
-+++ zeromq/src/tcp.cpp	2013-03-28 17:15:43.000228831 +0400
-@@ -49,7 +49,7 @@
++++ zeromq/src/tcp.cpp	2013-09-02 22:45:17.498474013 +0400
+@@ -44,20 +44,20 @@
+     //  so using Nagle wouldn't improve throughput in anyway, but it would
+     //  hurt latency.
+     int nodelay = 1;
+-    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
+-        sizeof (int));
++//    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
++//        sizeof (int));
  #ifdef ZMQ_HAVE_WINDOWS
      wsa_assert (rc != SOCKET_ERROR);
  #else
@@ -93,11 +104,13 @@ diff -aur zeromq-3.2.2/src/tcp.cpp zeromq/src/tcp.cpp
  #endif
  
  #ifdef ZMQ_HAVE_OPENVMS
-@@ -57,7 +57,7 @@
+     //  Disable delayed acknowledgements as they hurt latency is serious manner.
      int nodelack = 1;
-     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
-         sizeof (int));
+-    rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
+-        sizeof (int));
 -    errno_assert (rc != SOCKET_ERROR);
++//    rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
++//        sizeof (int));
 +    //errno_assert (rc != SOCKET_ERROR);
  #endif
  }

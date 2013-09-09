@@ -59,6 +59,7 @@ __BEGIN_DECLS
 
 /* Ioctls applicable to any descriptor */
 #define FIONBIO   0x00005421
+#define FIONREAD  0x0000541B
 
 extern int ioctl(int d, int request, ...);
 
