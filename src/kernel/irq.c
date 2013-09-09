@@ -166,13 +166,14 @@ void irq_dispatch(unsigned int irq_nr) {
 	if (irq_table[irq_nr]) {
 		ipl = ipl_save();
 		dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
+			entry = dlist_entry(item, struct irq_entry, action_link);
+			assert(NULL != entry);
 
-			if ((entry = dlist_entry(item, struct irq_entry, action_link))) {
-				handler = entry->handler;
-				dev_id = entry->dev_id;
-			}
+			handler = entry->handler;
+			assert(NULL != handler);
 
-			assert(handler != NULL);
+			dev_id = entry->dev_id;
+
 			ipl_restore(ipl);
 			handler(irq_nr, dev_id);
 			ipl = ipl_save();
