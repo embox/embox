@@ -109,7 +109,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 7:  /* tcp_default_timer action */
 	case 8:  /* state's handler */
 	case 9:  /* sending package */
-case 10: /* pre_process */
+	case 10: /* pre_process */
 	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
@@ -156,8 +156,13 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 	memset(skb->h.th, 0, tcp_hdr_sz);
 	skb->h.th->source = sock.inet_sk->sport;
 	skb->h.th->dest = sock.inet_sk->dport;
-	skb->h.th->seq = htonl(sock.tcp_sk->self.seq);
+	skb->h.th->seq = 0; /* use set_tcp_set_field */
 	skb->h.th->doff = tcp_hdr_sz / 4;
+}
+
+static void set_tcp_seq_field(union sock_pointer sock,
+		struct sk_buff *skb) {
+	skb->h.th->seq = htonl(sock.tcp_sk->self.seq);
 }
 
 struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
@@ -374,6 +379,7 @@ static void tcp_rexmit(union sock_pointer sock) {
  */
 static void send_from_sock_now(union sock_pointer sock, struct sk_buff *skb) {
 	debug_print(9, "send_from_sock_now: send %p\n", skb);
+	set_tcp_seq_field(sock, skb);
 	tcp_xmit(sock, skb);
 }
 
@@ -389,9 +395,12 @@ void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
 	{
+		set_tcp_seq_field(sock, skb);
+		if (skb_send != NULL) {
+			set_tcp_seq_field(sock, skb_send); /* set to cloned pkg */
+		}
 		skb_queue_push(&sock.sk->tx_queue, skb);
 		sock.tcp_sk->self.seq += tcp_seq_len(skb);
-
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 
@@ -892,7 +901,6 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		seq_last = seq + tcp_seq_len(*pskb) - 1;
 		rem_seq = sock.tcp_sk->rem.seq;
 		rem_last = rem_seq + sock.tcp_sk->self.wind;
-			debug_print(10, "pre_process: sk %p skb %p rem_seq=%u seq=%u seq_last=%u rem_last=%u\n", sock.tcp_sk, *pskb, rem_seq, seq, seq_last, rem_last);
 		if ((rem_seq <= seq) && (seq < rem_last)) {
 			if (rem_seq != seq) {
 				/* TODO There is correct packet (with correct sequence
