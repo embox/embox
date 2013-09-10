@@ -7,7 +7,8 @@
  */
 
 #include <assert.h>
-#include <drivers/ethernet/virtio.h>
+#include <drivers/virtio.h>
+#include <drivers/ethernet/virtio_net.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_driver.h>
