@@ -1,0 +1,5 @@
+package embox.driver
+
+module virtio {
+	source "virtio_ring.c"
+}
