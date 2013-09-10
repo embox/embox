@@ -1120,6 +1120,8 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 		if ((sock.sk->state == TCP_TIMEWAIT)
 				&& tcp_is_expired(&sock.tcp_sk->rcv_time,
 					TCP_TIMEWAIT_DELAY)) {
+			debug_print(7, "tcp_timer_handler: release timewait sk %p\n",
+					sock.tcp_sk);
 			tcp_free_sock(sock);
 		}
 		else if ((tcp_st_status(sock) == TCP_ST_NONSYNC)
@@ -1127,12 +1129,15 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 				&& tcp_is_expired(&sock.tcp_sk->syn_time,
 					TCP_SYNC_TIMEOUT)) {
 			assert(sock.tcp_sk->parent != NULL);
+			debug_print(7, "tcp_timer_handler: release nonsync sk %p\n",
+					sock.tcp_sk);
 			tcp_free_sock(sock);
 		}
 		else if ((tcp_st_status(sock) != TCP_ST_NOTEXIST)
 				&& tcp_is_expired(&sock.tcp_sk->ack_time,
 					TCP_REXMIT_DELAY)) {
-			printk("tcp_timer_handler: rexmit sk %p\n", sock.tcp_sk);
+			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
+					sock.tcp_sk);
 			tcp_rexmit(sock);
 		}
 	}
