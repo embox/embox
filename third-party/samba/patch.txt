@@ -118,7 +118,7 @@ diff -aur samba-3.6.18/source3/client/client.c samba/source3/client/client.c
  	int opt;
 diff -aur samba-3.6.18/examples/libsmbclient/testbrowse2.c samba/examples/libsmbclient/testbrowse2.c
 --- samba-3.6.18/examples/libsmbclient/testbrowse2.c	2013-08-12 11:25:27.000000000 +0400
-+++ samba/examples/libsmbclient/testbrowse2.c	2013-08-25 16:19:44.064365311 +0400
++++ samba/examples/libsmbclient/testbrowse2.c	2013-09-10 21:05:19.886062785 +0400
 @@ -7,6 +7,7 @@
  #include <stdlib.h>
  #include <malloc.h>
@@ -145,7 +145,7 @@ diff -aur samba-3.6.18/examples/libsmbclient/testbrowse2.c samba/examples/libsmb
      SMBCCTX	*ctx;
  
      if ((ctx = smbc_new_context()) == NULL) return NULL;
-@@ -193,7 +194,7 @@
+@@ -193,10 +194,10 @@
      smb_path[len] = '\0';
  }
  
@@ -153,4 +153,8 @@ diff -aur samba-3.6.18/examples/libsmbclient/testbrowse2.c samba/examples/libsmb
 +int testbrowse2_main(int argc, char *argv[]){
      int		i;
      SMBCCTX	*ctx;
-     char	smb_path[32768] = "smb://";
+-    char	smb_path[32768] = "smb://";
++    char	smb_path[PATH_MAX] = "smb://";
+ 
+     if ((ctx = create_smbctx()) == NULL){
+ 	perror("Cant create samba context.");
