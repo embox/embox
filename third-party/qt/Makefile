@@ -7,14 +7,17 @@ DOWNLOAD_DIR:= $(ROOT_DIR)/download
 
 ifeq (arm,$(EMBOX_ARCH))
 ARCH=arm
+#ToDo: detect endianness
+EMBOX_IMPORTED_CROSS_COMPILE_FLAGS += -little-endian
 else ifeq (x86,$(EMBOX_ARCH))
 ARCH=i386
+EMBOX_IMPORTED_CROSS_COMPILE_FLAGS += -little-endian
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
 ifneq (,$(EMBOX_CROSS_COMPILE))
-EMBOX_IMPORTED_CROSS_COMPILE_FLAG += -device-option CROSS_COMPILE=$(EMBOX_CROSS_COMPILE)
+EMBOX_IMPORTED_CROSS_COMPILE_FLAGS += -device-option CROSS_COMPILE=$(EMBOX_CROSS_COMPILE)
 endif
 
 QT_URL:=http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
@@ -24,9 +27,8 @@ QT_BUNDLE:=$(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
 # This will be needed to use runtime resources, e.g. fonts
 #QT_CONF_FLAGS_EMBOX += -prefix /qt
-QT_CONF_FLAGS_EMBOX += -arch $(ARCH) $(EMBOX_IMPORTED_CROSS_COMPILE_FLAG)
-# ToDo: little endian
-QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -little-endian -v
+QT_CONF_FLAGS_EMBOX += -arch $(ARCH) $(EMBOX_IMPORTED_CROSS_COMPILE_FLAGS)
+QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -v
 QT_CONF_FLAGS_EMBOX += -xplatform qws/embox-generic-g++ -static
 QT_CONF_FLAGS_EMBOX += -opensource -confirm-license
 QT_CONF_FLAGS_EMBOX += -no-pch -fast
