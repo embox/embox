@@ -133,8 +133,8 @@ build_sources := \
 
 all .PHONY : $(@build_all)
 
-$(@build_all) : archived_modules = $(suffix $(@module_ar_rulemk))
-$(@build_all) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
+$(@build_all) : a_modules = $(suffix $(@module_ar_rulemk))
+$(@build_all) : o_modules = $(suffix $(@module_ld_rulemk))
 
 build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
 build_image_rulemk_target_pat = $1
@@ -147,11 +147,11 @@ $(@build_image) : target_file = \
 
 $(@build_image) : scripts = $(patsubst %,$(value source_cpp_rulemk_o_pat), \
 			$(call source_base,$(@source_cpp_rulemk)))
-$(@build_image) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
-			$(basename $(call module_occ_source_files,$(normal_modules))))
+$(@build_image) : objs = $(patsubst %,$(value module_ld_rulemk_o_pat), \
+			$(call module_path,$(o_modules)))
 $(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
 			$(basename $(call module_a_source_files,$(build_modules))) \
-			$(call module_path,$(archived_modules)))
+			$(call module_path,$(a_modules)))
 
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -175,6 +175,9 @@ $(@build_include_mk) : source_rulemk = \
 $(@build_include_mk) : module_ar_rulemk = \
 		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
 			$(call module_path,$(@module_ar_rulemk)))
+$(@build_include_mk) : module_ld_rulemk = \
+		$(patsubst %,$(value module_ld_rulemk_mk_pat), \
+			$(call module_path,$(@module_ld_rulemk)))
 $(@build_include_mk) : module_extbld_rulemk = \
 		$(patsubst %,$(value module_extbld_rulemk_mk_pat), \
 			$(call module_path,$(@module_extbld_rulemk)))
@@ -187,7 +190,8 @@ $(@build_include_mk) :
 		$(call gen_make_var,__include_image,$(image_rulemk)); \
 		$(call gen_make_var,__include_initfs,$(initfs_rulemk)); \
 		$(call gen_make_var_list,__include, \
-			$(source_rulemk) $(module_extbld_rulemk) $(module_ar_rulemk)))
+			$(source_rulemk) $(module_extbld_rulemk) \
+			$(module_ar_rulemk) $(module_ld_rulemk)))
 
 build_initfs := initfs
 
@@ -217,13 +221,42 @@ $(@build_initfs) :
 # Per-module artifacts.
 #
 
+source_file = $(call get,$1,fileFullName)
+source_base = $(basename $(source_file))
+
+source_o_pats   := %.o
+source_a_pats   := %.a
+source_cc_pats  := %.S %.c %.cpp %.cxx
+source_mk_pats  := %.mk
+source_cpp_pats := %.lds.S
+
+module_occ_source_files = \
+	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
+		$(call source_file,$(call get,$1,sources))))
+
+module_a_source_files = \
+	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
+
+filter_with_occ = \
+	$(foreach m,$1,$(if $(call module_occ_source_files,$m),$m))
+
+static_modules    := $(call filter_static_modules,$(build_modules))
+nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
+
+
+@module_ld_rulemk := \
+	$(patsubst %,module-ld-rule-mk/%, \
+		$(call filter_with_occ,$(nonstatic_modules)))
+
+@module_ar_rulemk := \
+	$(patsubst %,module-ar-rule-mk/%, \
+		$(call filter_with_occ,$(static_modules)))
+
+
 @module_h := \
 	$(foreach m,$(build_modules), \
 		$(patsubst %,module-h/%$m, \
 			$(call get,$m,allTypes)))
-@module_ar_rulemk := \
-	$(patsubst %,module-ar-rule-mk/%, \
-		$(call filter_static_modules,$(build_modules)))
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
@@ -234,6 +267,7 @@ my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
 @module_all = \
 	$(@module_h) \
+	$(@module_ld_rulemk) \
 	$(@module_ar_rulemk) \
 	$(@module_extbld_rulemk)
 
@@ -246,33 +280,31 @@ module_id   = $(subst .,__,$(module_fqn))
 $(@module_all) : fqn   = $(call module_fqn,$@)
 $(@module_all) : path  = $(call module_path,$@)
 
-module_ar_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
-module_ar_rulemk_a_pat  = $(OBJ_DIR)/%.a
 
-$(@module_ar_rulemk) : @file   = $(path:%=$(module_ar_rulemk_mk_pat))
-$(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_ar_rulemk_mk_pat),$$(module_path))
-$(@module_ar_rulemk) : a_file  = $(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
+module_ar_rulemk_mk_pat = $(MKGEN_DIR)/module/%.ar_rule.mk
+module_ar_rulemk_a_pat  = $(OBJ_DIR)/module/%.a
 
-module_occ_source_files = \
-	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
-		$(call source_file,$(call get,$1,sources))))
+module_ld_rulemk_mk_pat = $(MKGEN_DIR)/module/%.ld_rule.mk
+module_ld_rulemk_o_pat  = $(OBJ_DIR)/module/%.o
 
-module_a_source_files = \
-	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
+$(@module_ld_rulemk) : kind := ld
+$(@module_ar_rulemk) : kind := ar
 
-$(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
+$(@module_ld_rulemk) $(@module_ar_rulemk) : @file   = $(path:%=$(module_$(kind)_rulemk_mk_pat))
+$(@module_ld_rulemk) $(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_$(kind)_rulemk_mk_pat),$$(module_path))
+$(@module_ld_rulemk) $(@module_ar_rulemk) : o_file  = $(patsubst %,$(value module_$(kind)_rulemk_o_pat),$$(module_path))
+
+$(@module_ld_rulemk) $(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
 			$(basename $(call module_occ_source_files,$@)))
-# $(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
-	$$(warning static module '$(fqn)' must specify at least one source file.))
-$(@module_ar_rulemk) : check_objs = $1
 
-$(@module_ar_rulemk) :
+$(@module_ld_rulemk) $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(a_file),$$$$(ar_prerequisites)); \
-		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(call check_objs,$(objs))))
+		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(o_file),$(kind)_objs,$(objs)))
+
 
 module_extbld_rulemk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
 module_extbld_rulemk_target_pat = __extbld-%
@@ -336,12 +368,6 @@ my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 			source-initfs-cp-rulemk/$(strip \
 				$(call source_annotation_values,$s,$(my_initfs_target)))$s))
 
-source_o_pats   := %.o
-source_a_pats   := %.a
-source_cc_pats  := %.S %.c %.cpp %.cxx
-source_mk_pats  := %.mk
-source_cpp_pats := %.lds.S
-
 @source_rulemk := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName),$(or \
@@ -374,9 +400,6 @@ $(@source_cpp_rulemk) : kind := cpp
 all .PHONY : $(@source_all)
 
 $(@source_all) : module = $(basename $@)
-
-source_file = $(call get,$1,fileFullName)
-source_base = $(basename $(source_file))
 
 $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)

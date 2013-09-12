@@ -131,8 +131,13 @@ initfs_prerequisites    += FORCE
 endif
 
 ar_prerequisites    = $(common_prereqs) $(ar_objs)
-$(OBJ_DIR)/%.a : | $$(@D)/.
-	$(AR) $(ARFLAGS) $@ $(or $(call fmt_line,$(ar_objs)),; touch $@)
+$(OBJ_DIR)/module/%.a : | $$(@D)/.
+	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
+
+ld_prerequisites    = $(common_prereqs) $(ld_objs)
+$(OBJ_DIR)/module/%.o : | $$(@D)/.
+	$(LD) -r $(ldflags) -o $@ $(call fmt_line,$(ld_objs))
+
 
 # Here goes image creation rules...
 
