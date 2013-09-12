@@ -65,9 +65,10 @@ static void vq_fini(struct virtqueue *vq) {
 
 #include <kernel/printk.h>
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
-	int ret, desc_id;
+	int desc_id;
 	struct virtio_net_hdr *pkt_hdr;
 	static char _b[sizeof *pkt_hdr + ETH_FRAME_LEN];
+	struct virtqueue *vq;
 
 //	printk("xmit[%u]",skb->len);
 	pkt_hdr = (struct virtio_net_hdr *)&_b[0];
@@ -75,24 +76,30 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	pkt_hdr->csum_start = pkt_hdr->csum_offset = 0;
 	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 	pkt_hdr->hdr_len = pkt_hdr->gso_size = 0;
+	pkt_hdr->num_buffers = 0;
 
-	memcpy(&_b[sizeof *pkt_hdr], skb->mac.raw, skb->len);
+	vq = &netdev_priv(dev, struct virtio_priv)->tq;
+	desc_id = vq->next_free_desc;
 
-	desc_id = netdev_priv(dev, struct virtio_priv)->tq.next_free_desc;
+	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+	assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
+	vring_desc_init(&vq->ring.desc[desc_id], pkt_hdr, sizeof *pkt_hdr,
+			VRING_DESC_F_NEXT);
+	vq->ring.desc[desc_id].next = desc_id + 1;
 
-	ret = virtqueue_push_buff(&_b[0], sizeof *pkt_hdr + skb->len, 0,
-			&netdev_priv(dev, struct virtio_priv)->tq);
-	if (ret != 0) {
-		return ret;
-	}
+	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+	vring_desc_init(&vq->ring.desc[desc_id + 1], skb->mac.raw, skb->len, 0);
+
+	vring_push_desc(desc_id, &vq->ring);
 
 	virtio_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
-
-	skb_free(skb);
 
 	/* wait while txing */
 	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
 //	desc_id = desc_id;
+
+	vq->ring.desc[desc_id + 1].addr = 0;
+	skb_free(skb);
 
 	return 0;
 }
