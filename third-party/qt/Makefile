@@ -5,6 +5,18 @@ endif
 
 DOWNLOAD_DIR:= $(ROOT_DIR)/download
 
+ifeq (arm,$(EMBOX_ARCH))
+ARCH=arm
+else ifeq (x86,$(EMBOX_ARCH))
+ARCH=i386
+else
+$(error Unsupported architecture: $(EMBOX_ARCH))
+endif
+
+ifneq (,$(EMBOX_CROSS_COMPILE))
+EMBOX_IMPORTED_CROSS_COMPILE_FLAG += -device-option CROSS_COMPILE=$(EMBOX_CROSS_COMPILE)
+endif
+
 QT_URL:=http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
 QT_MD5:= 1864987bdbb2f58f8ae8b350dfdbe133
 QT_BUNDLE:=$(DOWNLOAD_DIR)/$(notdir $(QT_URL))
@@ -12,8 +24,9 @@ QT_BUNDLE:=$(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
 # This will be needed to use runtime resources, e.g. fonts
 #QT_CONF_FLAGS_EMBOX += -prefix /qt
-QT_CONF_FLAGS_EMBOX += -arch i386
-QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -little-endian
+QT_CONF_FLAGS_EMBOX += -arch $(ARCH) $(EMBOX_IMPORTED_CROSS_COMPILE_FLAG)
+# ToDo: little endian
+QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -little-endian -v
 QT_CONF_FLAGS_EMBOX += -xplatform qws/embox-generic-g++ -static
 QT_CONF_FLAGS_EMBOX += -opensource -confirm-license
 QT_CONF_FLAGS_EMBOX += -no-pch -fast
@@ -86,9 +99,10 @@ endif
 # no wonder the following doesn't work
 # EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
 
-EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
-EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
-EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
+EMBOX_DERIVED_CFLAGS        += $(EMBOX_IMPORTED_CFLAGS)
+EMBOX_DERIVED_CXXFLAGS      += $(EMBOX_IMPORTED_CXXFLAGS)
+EMBOX_DERIVED_MAKEFLAGS     += $(EMBOX_IMPORTED_MAKEFLAGS)
+#EMBOX_DERIVED_CROSS_COMPILE += $(EMBOX_CROSS_COMPILE)
 
 QT_DIR               := $(ROOT_DIR)/build/qt
 QT_SRC_DIR           := $(QT_DIR)/source
@@ -152,8 +166,9 @@ $(QT_SRC_DIR)/$(QMAKE_CONF_M4): merge_trees
 .PHONY: $(ENVIRONMENT_EMBOX)
 $(ENVIRONMENT_EMBOX): | $(QT_BUILD_DIR_EMBOX)
 	-$(AT)rm $@
-	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"     >>$@
-	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'" >>$@
+	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"               >>$@
+	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'"           >>$@
+	#echo "EMBOX_DERIVED_CROSS_COMPILE='$(EMBOX_DERIVED_CROSS_COMPILE)'" >>$@
 	echo "QT_CONF_FLAGS_EMBOX='$(QT_CONF_FLAGS_EMBOX)'"                   >>$@
 
 # may be need to force the check whether this file was changed

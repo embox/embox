@@ -12,6 +12,7 @@ m4_define(M4_EXTRACT_ENVVAR,`m4_patsubst(m4_esyscmd(echo $$1),`
 
 QMAKE_CFLAGS           += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CFLAGS)   -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'"
 QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive -fno-threadsafe-statics
+#CROSS_COMPILE          += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CROSS_COMPILE)
 
 # Overriding
 # Previous value derived from linux.conf = -lpthread
@@ -26,5 +27,16 @@ QMAKE_LFLAGS      += -fno-rtti -m32
 
 CONFIG += embox_auto_import_plugins
 
+load(device_config)
+!isEmpty(CROSS_COMPILE) {
+	QMAKE_CC      = $${CROSS_COMPILE}gcc
+	QMAKE_CXX     = $${CROSS_COMPILE}g++
+	QMAKE_LINK    = $${CROSS_COMPILE}g++
+	QMAKE_LINK_C  = $${CROSS_COMPILE}gcc
+	QMAKE_AR      = $${CROSS_COMPILE}ar cqs
+	QMAKE_LIB     = $${CROSS_COMPILE}ar -ru
+	QMAKE_OBJCOPY = $${CROSS_COMPILE}objcopy
+	QMAKE_STRIP   = $${CROSS_COMPILE}strip
+}
 
 load(qt_config)
