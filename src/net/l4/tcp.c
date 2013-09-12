@@ -868,26 +868,18 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 	__u16 check;
 	__u32 seq, seq_last, rem_seq, rem_last;
 
-	switch (sock.sk->state) {
-	default:
-		/* Check CRC */
-		check = tcph->check;
-		tcph->check = 0;
-		if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
-				IPPROTO_TCP, tcph, TCP_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
-			printk("pre_process: error: invalid ckecksum %x sk %p skb %p\n",
-					(int)check, sock.tcp_sk, *pskb);
-			return TCP_RET_DROP;
-		}
-		break;
-	case TCP_CLOSED:
-	case TCP_LISTEN:
-	case TCP_SYN_SENT:
-	case TCP_SYN_RECV_PRE:
-	case TCP_SYN_RECV:
-		break;
+	/* Check CRC */
+	check = tcph->check;
+	tcph->check = 0;
+	if (check != tcp_checksum((*pskb)->nh.iph->saddr,
+				(*pskb)->nh.iph->daddr, IPPROTO_TCP, tcph,
+				TCP_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
+		printk("pre_process: error: invalid ckecksum %hx sk %p skb %p\n",
+				ntohs(check), sock.tcp_sk, *pskb);
+		return TCP_RET_DROP;
 	}
 
+	/* Analyze sequence */
 	switch (sock.sk->state) {
 	case TCP_SYN_RECV:
 	case TCP_ESTABIL:
@@ -923,6 +915,7 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		break;
 	}
 
+	/* Processing RST */
 	if (tcph->rst) {
 		ret = process_rst(sock, tcph, out_tcph);
 		if (ret != TCP_RET_OK) {
@@ -930,6 +923,7 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		}
 	}
 
+	/* Porcessing ACK */
 	if (tcph->ack) {
 		ret = process_ack(sock, tcph, out_tcph);
 		if (ret != TCP_RET_OK) {
