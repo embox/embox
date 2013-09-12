@@ -66,24 +66,22 @@ static void vq_fini(struct virtqueue *vq) {
 #include <kernel/printk.h>
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	int desc_id;
-	struct virtio_net_hdr *pkt_hdr;
-	static char _b[sizeof *pkt_hdr + ETH_FRAME_LEN];
+	static struct virtio_net_hdr pkt_hdr;
 	struct virtqueue *vq;
 
 //	printk("xmit[%u]",skb->len);
-	pkt_hdr = (struct virtio_net_hdr *)&_b[0];
-	pkt_hdr->flags = 0;
-	pkt_hdr->csum_start = pkt_hdr->csum_offset = 0;
-	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
-	pkt_hdr->hdr_len = pkt_hdr->gso_size = 0;
-	pkt_hdr->num_buffers = 0;
+	pkt_hdr.flags = 0;
+	pkt_hdr.csum_start = pkt_hdr.csum_offset = 0;
+	pkt_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
+	pkt_hdr.hdr_len = pkt_hdr.gso_size = 0;
+	pkt_hdr.num_buffers = 0;
 
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	desc_id = vq->next_free_desc;
 
 	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
 	assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
-	vring_desc_init(&vq->ring.desc[desc_id], pkt_hdr, sizeof *pkt_hdr,
+	vring_desc_init(&vq->ring.desc[desc_id], &pkt_hdr, sizeof pkt_hdr,
 			VRING_DESC_F_NEXT);
 	vq->ring.desc[desc_id].next = desc_id + 1;
 
