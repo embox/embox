@@ -15,12 +15,11 @@
 #include <fs/journal.h>
 
 #define BH_NEW     0x00000001
-#define BH_LOCKED  0x00000002
-#define BH_DIRTY   0x00000004
-#define BH_JOURNAL 0x00000008
+#define BH_DIRTY   0x00000002
+#define BH_JOURNAL 0x00000004
 
 #define buffer_new(bh) (bh->flags & BH_NEW)
-#define buffer_locked(bh) (bh->flags & BH_LOCKED)
+#define buffer_locked(bh) (bh->lock_count)
 #define buffer_dirty(bh) (bh->flags & BH_DIRTY)
 #define buffer_journal(bh) (bh->flags & BH_JOURNAL)
 
@@ -38,6 +37,7 @@ struct buffer_head {
 	struct mutex mutex;             /* synchronizes concurrent access to block */
 	struct dlist_head bh_next;      /* link to global list of buffer_heads */
 	char *data;                     /* pointer to block's data */
+	int lock_count;			/* lock count to support multiplie locks */
 	/*
 	 * XXX Seems it is not better solution to have back reference to journal.
 	 */
@@ -45,17 +45,16 @@ struct buffer_head {
 };
 
 static inline void bcache_buffer_lock(struct buffer_head *bh) {
-	assert((bh->flags & BH_LOCKED) == 0);
 
 	mutex_lock(&bh->mutex);
-	buffer_set_flag(bh, BH_LOCKED);
+	bh->lock_count ++;
+
 
 }
 
 static inline void bcache_buffer_unlock(struct buffer_head *bh) {
-	assert((bh->flags & BH_LOCKED) != 0);
 
-	buffer_clear_flag(bh, BH_LOCKED);
+	bh->lock_count --;
 	mutex_unlock(&bh->mutex);
 }
 

@@ -69,8 +69,8 @@ static void free_more_memory(size_t size) {
 
 repeat:
 	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
-		/*XXX */
-		if(bh->flags & BH_LOCKED) {
+
+		if (buffer_locked(bh)) {
 			continue;
 		}
 
@@ -82,6 +82,7 @@ repeat:
 			}
 
 			if (!free_all && bh->blocksize != size) {
+				bcache_buffer_unlock(bh);
 				continue;
 			}
 
