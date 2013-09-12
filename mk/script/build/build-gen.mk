@@ -290,20 +290,27 @@ module_ld_rulemk_o_pat  = $(OBJ_DIR)/module/%.o
 $(@module_ld_rulemk) : kind := ld
 $(@module_ar_rulemk) : kind := ar
 
-$(@module_ld_rulemk) $(@module_ar_rulemk) : @file   = $(path:%=$(module_$(kind)_rulemk_mk_pat))
-$(@module_ld_rulemk) $(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_$(kind)_rulemk_mk_pat),$$(module_path))
-$(@module_ld_rulemk) $(@module_ar_rulemk) : o_file  = $(patsubst %,$(value module_$(kind)_rulemk_o_pat),$$(module_path))
+$(@module_ld_rulemk) $(@module_ar_rulemk) : @file   = \
+		$(path:%=$(module_$(kind)_rulemk_mk_pat))
+$(@module_ld_rulemk) $(@module_ar_rulemk) : mk_file = \
+		$(patsubst %,$(value module_$(kind)_rulemk_mk_pat),$$(module_path))
 
-$(@module_ld_rulemk) $(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
+$(@module_ld_rulemk) : out_file = \
+		$(patsubst %,$(value module_ld_rulemk_o_pat),$$(module_path))
+$(@module_ar_rulemk) : out_file = \
+		$(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
+
+$(@module_ld_rulemk) $(@module_ar_rulemk) : objs = \
+		$(patsubst %,$(value source_occ_rulemk_o_pat), \
 			$(basename $(call module_occ_source_files,$@)))
 
 $(@module_ld_rulemk) $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(o_file),$(kind)_objs,$(objs)))
+		$(call gen_make_dep,$(out_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out_file),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(out_file),$(kind)_objs,$(objs)))
 
 
 module_extbld_rulemk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
