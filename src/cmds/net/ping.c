@@ -14,7 +14,6 @@
 #include <embox/cmd.h>
 
 #include <unistd.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -30,7 +29,6 @@
 #include <net/inetdevice.h>
 #include <net/util/checksum.h>
 #include <net/util/macaddr.h>
-
 
 EMBOX_CMD(exec);
 
@@ -115,8 +113,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	uint32_t timeout, total;
-	size_t i;
-	int cnt_resp, cnt_err, sk;
+	int i, cnt_resp, cnt_err, sk;
 	struct sockaddr_in to;
 	union packet *tx_pack = malloc(sizeof(union packet));
 
