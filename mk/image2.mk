@@ -140,7 +140,7 @@ ar_prerequisites    = $(common_prereqs) $(ar_objs)
 $(OBJ_DIR)/module/%.a : | $$(@D)/.
 	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
 
-ld_prerequisites    = $(common_prereqs) $(ld_objs)
+ld_prerequisites    = $(common_prereqs) $(ld_objs) $(reloc_lds)
 $(OBJ_DIR)/module/%.o : ldflags_all = $(ldflags) \
 		$(call fmt_line,$(call ld_scripts_flag,$(reloc_lds)))
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
