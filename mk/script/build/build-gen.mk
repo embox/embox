@@ -149,8 +149,10 @@ $(@build_image) : scripts = $(patsubst %,$(value source_cpp_rmk_o_pat), \
 			$(call source_base,$(@source_cpp_rmk)))
 $(@build_image) : objs = $(patsubst %,$(value module_ld_rmk_o_pat), \
 			$(call module_path,$(o_modules)))
-$(@build_image) : libs = $(patsubst %,$(value module_ar_rmk_a_pat), \
-			$(basename $(call module_a_source_files,$(build_modules))) \
+$(@build_image) : libs = \
+		$(patsubst %,$(value source_a_rmk_o_pat), \
+			$(basename $(call module_a_source_files,$(build_modules)))) \
+		$(patsubst %,$(value module_ar_rmk_a_pat), \
 			$(call module_path,$(a_modules)))
 
 $(@build_image) :
