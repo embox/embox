@@ -18,6 +18,7 @@ ExternalProject_Add(
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
+      ""PKG_CONFIG=/dev/null""
       --with-libiconv=<INSTALL_DIR>
       --enable-debug
       --enable-developer
