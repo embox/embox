@@ -57,6 +57,12 @@ OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
+ifndef LD_SINGLE_T_OPTION
+ld_scripts_flag = $(1:%=-T%)
+else
+ld_scripts_flag = $(if $(strip $1),-T $1)
+endif
+
 # This must be expanded in a secondary expansion context.
 common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
 common_prereqs       = $(common_prereqs_nomk) $(mk_file)
@@ -135,8 +141,9 @@ $(OBJ_DIR)/module/%.a : | $$(@D)/.
 	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
 
 ld_prerequisites    = $(common_prereqs) $(ld_objs)
+$(OBJ_DIR)/module/%.o : ldflags_all = $(ldflags) $(call ld_scripts_flag,$(reloc_lds))
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
-	$(LD) -r $(ldflags) -o $@ $(call fmt_line,$(ld_objs))
+	$(LD) -r $(ldflags_all) -o $@ $(call fmt_line,$(ld_objs))
 
 
 # Here goes image creation rules...
@@ -183,12 +190,8 @@ $(call __define_image_rules,$(image_files))
 
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
-ifndef LD_SINGLE_T_OPTION
-$(image_files): ld_scripts_flag = $(ld_scripts:%=-T%)
-else
-$(image_files): ld_scripts_flag = -T $(ld_scripts)
-endif
-$(image_files): ldflags_all = $(LDFLAGS) $(call fmt_line,$(ld_scripts_flag))
+$(image_files): ldflags_all = $(LDFLAGS) \
+		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
 
 $(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
 	$(LD) --relocatable $(ldflags) \
