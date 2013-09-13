@@ -7,7 +7,7 @@ module libs {
 
 	source "empty.c" // FIXME: workaround
 
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/e2fsprogs MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_LDFLAGS='$(LDFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(MAKE_E2FS)")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/lib/et/libcom_err.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/ext2fs/libext2fs.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/e2p/libe2p.a",
@@ -15,6 +15,7 @@ module libs {
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/blkid/libblkid.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/lib/quota/libquota.a",
 		   "../../../../e2fsprogs/src/e2fsprogs-build/intl/libintl.a"
+	source "order.mk"
 }
 
 @Cmd(name = "e2freefrag",
@@ -29,7 +30,7 @@ module libs {
 module e2freefrag {
 	depends libs
 
-	@Rule(script="true")
+	@Rule(script="$(MAKE_E2FS)")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/e2freefrag.o"
 	source "e2freefrag_cmd.c"
 	source "order.mk"
@@ -47,7 +48,7 @@ module e2freefrag {
 module dumpe2fs {
 	depends libs
 
-	@Rule(script="true")
+	@Rule(script="$(MAKE_E2FS)")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/dumpe2fs.o"
 	source "dumpe2fs_cmd.c"
 	source "order.mk"
@@ -65,7 +66,7 @@ module dumpe2fs {
 module mke2fs {
 	depends libs
 
-	@Rule(script="true")
+	@Rule(script="$(MAKE_E2FS)")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/mke2fs.o",
 			"../../../../e2fsprogs/src/e2fsprogs-build/misc/util.o",
 			"../../../../e2fsprogs/src/e2fsprogs-build/misc/profile.o",
@@ -87,7 +88,7 @@ module mke2fs {
 module e2fsck {
 	depends libs
 
-	@Rule(script="true")
+	@Rule(script="$(MAKE_E2FS)")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/e2fsck/*.o"
 	source "e2fsck_cmd.c"
 	source "order.mk"
