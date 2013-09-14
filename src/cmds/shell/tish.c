@@ -151,8 +151,8 @@ static void * run_cmd(void *data) {
 }
 
 static int process_external(struct cmd_data *cdata, int on_fg) {
+	int ret;
 	pid_t pid;
-	int res;
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
@@ -161,10 +161,13 @@ static int process_external(struct cmd_data *cdata, int on_fg) {
 	}
 
 	if (on_fg) {
-		res = task_waitpid(pid);
+		ret = task_waitpid(pid);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
-	return res;
+	return 0; /* TODO use task_errno() */
 }
 
 static int process(struct cmd_data *cdata) {

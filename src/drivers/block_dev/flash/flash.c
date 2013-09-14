@@ -188,7 +188,7 @@ static int flash_erase(struct flash_dev * dev, uint32_t flash_base,
                 size_t len, uint32_t *err_address) {
 	uint32_t block, end_addr;
 	size_t erase_count;
-	int stat;
+	int stat = 0;
 	size_t block_size;
 
 	if((!dev->drv) || (!dev->drv->flash_erase_block)) {
