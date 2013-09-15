@@ -39,18 +39,16 @@ SECTIONS {
 
 	.data : {
 		REGION_ALIGN();
-		*(.data)
-		*(.data.*)
-		*(.got.*)
+		LDS_INPUT_DATA
 		*(.got)
+		*(.got.*)
 		REGION_ALIGN();
 	} SECTION_REGION(data) :data
 	SECTION_SYMBOLS(data)
 
 	.bss : {
 		REGION_ALIGN();
-		*(.bss)
-		*(.bss.*)
+		LDS_INPUT_BSS
 		REGION_ALIGN();
 	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(bss)
@@ -59,7 +57,7 @@ SECTIONS {
 		REGION_ALIGN();
 		LDS_INPUT_RESERVE
 		REGION_ALIGN();
-	/* TODO memory region for reserve output section. */
+		/* TODO memory region for reserve output section. */
 	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(reserve)
 

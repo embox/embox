@@ -12,7 +12,7 @@
 #define FRAMEWORK_MOD_DECLS_H_
 
 #include <util/macro.h>
-#ifndef __ASSEMBLER__
+
 /*
  * Implementation note:
  * Many macros use some of their arguments to construct symbol names. This
@@ -32,7 +32,8 @@
 #define __MOD_MEMBERS(mod_nm)  MACRO_CONCAT(__mod_members__,  mod_nm)
 
 #define __MOD_PACKAGE(pkg_nm)  MACRO_CONCAT(__mod_package__,  pkg_nm)
-#endif /*__ASSEMBLER__*/
+
+#define __MOD_EXTRA(app_nm)    MACRO_CONCAT(__mod_extra__,    app_nm)
 
 
 #endif /* FRAMEWORK_MOD_DECLS_H_ */

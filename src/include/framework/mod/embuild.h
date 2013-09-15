@@ -28,13 +28,26 @@
  *   The package variable name used in #MOD_PACKAGE_DEF().
  * @param name
  *   A string containing short name of the mod.
+ * @param extra
+ *   Reference to app-specific extras (if any), or NULL.
+ */
+#define MOD_DEF(mod_nm, mod_package_nm, name, extra) \
+	  __MOD_DEF(mod_nm, mod_package_nm, name, extra)
+
+/**
+ * App-specific definitions.
+ *
+ * @param  app_nm
+ *   Symbolic name used to define a structure and to refer anchors defined
+ *   in relocation ld scripts.
+ *
  * @param brief
  *   A one-line string containing brief description of the mod.
  * @param details
  *   A string with detailed description.
  */
-#define MOD_DEF(mod_nm, mod_package_nm, name, brief, details) \
-	  __MOD_DEF(mod_nm, mod_package_nm, name, brief, details)
+#define MOD_EXTRA_DEF(app_nm, brief, details) \
+	  __MOD_EXTRA_DEF(app_nm, brief, details)
 
 /**
  * Defines a new dependency between two specified modules.

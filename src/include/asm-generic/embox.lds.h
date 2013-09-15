@@ -44,20 +44,41 @@
 	                               \
 	*(SORT(.array_spread.*.rodata)) \
 	                               \
-        _ctors_start = .;              \
+	_ctors_start = .;              \
 	KEEP(*(SORT(.init_array)))     \
 	KEEP(*(SORT(.ctors)))          \
 	KEEP(*(SORT(.ctors.*)))        \
-        _ctors_end   = .;              \
+	_ctors_end   = .;              \
 	                               \
 	ALIGNMENT();                   \
 	*(.checksum)                   \
 
 
+#define LDS_INPUT_DATA \
+	ALIGNMENT();                   \
+	*(.data)                       \
+	*(.data.*)                     \
+	__app_data_start = .;          \
+	*(.app.data.*)                 \
+	__app_data_end = .;            \
+
+
+#define LDS_INPUT_BSS \
+	ALIGNMENT();                   \
+	*(.bss)                        \
+	*(.bss.*)                      \
+	__app_bss_start = .;           \
+	*(.app.bss.*)                  \
+	__app_bss_end = .;             \
 
 
 #define LDS_INPUT_RESERVE \
 	ALIGNMENT();                   \
+	__app_reserve_start = .;       \
+	. += (__app_data_end -         \
+	      __app_data_start);       \
+	__app_reserve_end = .;         \
 	*(.reserve*)                   \
+
 
 #endif /* EMBOX_LDS_H_ */
