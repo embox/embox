@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <time.h>
 
-bool nano__search__search_last_line = FALSE;
+static bool search_last_line = FALSE;
 	/* Have we gone past the last line while searching? */
 #if !defined(NANO_TINY) && defined(ENABLE_NANORC)
 static bool history_changed = FALSE;
@@ -133,7 +133,6 @@ void search_init_globals(void)
  *
  * replacing is TRUE if we call from do_replace(), and FALSE if called
  * from do_search(). */
-char *nano__search__search_init__backupstring = NULL;
 int search_init(bool replacing, bool use_answer)
 {
     int i = 0;
@@ -141,15 +140,16 @@ int search_init(bool replacing, bool use_answer)
     sc *s;
     char func = 0;
     bool meta_key = FALSE, func_key = FALSE;
+    static char *backupstring = NULL;
 	/* The search string we'll be using. */
 
     /* If backupstring doesn't exist, initialize it to "". */
-    if (nano__search__search_init__backupstring == NULL)
-	nano__search__search_init__backupstring = mallocstrcpy(NULL, "");
+    if (backupstring == NULL)
+	backupstring = mallocstrcpy(NULL, "");
 
     /* If use_answer is TRUE, set backupstring to answer and get out. */
     if (use_answer) {
-	nano__search__search_init__backupstring = mallocstrcpy(nano__search__search_init__backupstring, answer);
+	backupstring = mallocstrcpy(backupstring, answer);
 	return 0;
     }
 
@@ -177,7 +177,7 @@ int search_init(bool replacing, bool use_answer)
 #ifndef DISABLE_TABCOMP
 	TRUE,
 #endif
-	replacing ? MREPLACE : MWHEREIS, nano__search__search_init__backupstring,
+	replacing ? MREPLACE : MWHEREIS, backupstring,
 	&meta_key, &func_key,
 #ifndef NANO_TINY
 	&search_history,
@@ -211,8 +211,8 @@ int search_init(bool replacing, bool use_answer)
     /* Release buf now that we don't need it anymore. */
     free(buf);
 
-    free(nano__search__search_init__backupstring);
-    nano__search__search_init__backupstring = NULL;
+    free(backupstring);
+    backupstring = NULL;
 
     /* Cancel any search, or just return with no previous search. */
     if (i == -1 || (i < 0 && *last_search == '\0') || (!replacing &&
@@ -238,22 +238,22 @@ int search_init(bool replacing, bool use_answer)
 #ifndef NANO_TINY
 	} else if (func == CASE_SENS_MSG) {
 		TOGGLE(CASE_SENSITIVE);
-		nano__search__search_init__backupstring = mallocstrcpy(nano__search__search_init__backupstring, answer);
+		backupstring = mallocstrcpy(backupstring, answer);
 		return 1;
 	} else if (func == BACKWARDS_MSG) {
 		TOGGLE(BACKWARDS_SEARCH);
-		nano__search__search_init__backupstring = mallocstrcpy(nano__search__search_init__backupstring, answer);
+		backupstring = mallocstrcpy(backupstring, answer);
 		return 1;
 #endif
 #ifdef HAVE_REGEX_H
 	} else if (func == REGEXP_MSG) {
 		TOGGLE(USE_REGEXP);
-		nano__search__search_init__backupstring = mallocstrcpy(nano__search__search_init__backupstring, answer);
+		backupstring = mallocstrcpy(backupstring, answer);
 		return 1;
 #endif
 	} else if (func == DO_REPLACE ||
 	  func == NO_REPLACE_MSG) {
-		nano__search__search_init__backupstring = mallocstrcpy(nano__search__search_init__backupstring, answer);
+		backupstring = mallocstrcpy(backupstring, answer);
 		return -2;	/* Call the opposite search function. */
 	} else if (func == DO_GOTOLINECOLUMN_VOID) {
 		do_gotolinecolumn(openfile->current->lineno,
@@ -359,7 +359,7 @@ bool findnextstr(
 	}
 
 	/* We've finished processing the file, so get out. */
-	if (nano__search__search_last_line) {
+	if (search_last_line) {
 	    not_found_msg(needle);
             disable_nodelay();
 	    return FALSE;
@@ -397,7 +397,7 @@ bool findnextstr(
 
 	/* We've reached the original starting line. */
 	if (fileptr == begin)
-	    nano__search__search_last_line = TRUE;
+	    search_last_line = TRUE;
 
 	rev_start = fileptr->data;
 #ifndef NANO_TINY
@@ -410,7 +410,7 @@ bool findnextstr(
     current_x_find = found - fileptr->data;
 
     /* Ensure we haven't wrapped around again! */
-    if (nano__search__search_last_line &&
+    if (search_last_line &&
 #ifndef NANO_TINY
 	((!ISSET(BACKWARDS_SEARCH) && current_x_find > begin_x) ||
 	(ISSET(BACKWARDS_SEARCH) && current_x_find < begin_x))
@@ -441,7 +441,7 @@ bool findnextstr(
  * file.  We need to do this just before a new search. */
 void findnextstr_wrap_reset(void)
 {
-    nano__search__search_last_line = FALSE;
+    search_last_line = FALSE;
 }
 
 /* Search for a string. */

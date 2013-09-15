@@ -27,17 +27,17 @@
 #include <stdarg.h>
 #include <string.h>
 
-char *nano__prompt__prompt = NULL;
+static char *prompt = NULL;
 	/* The prompt string used for statusbar questions. */
-size_t nano__prompt__statusbar_x = (size_t)-1;
+static size_t statusbar_x = (size_t)-1;
 	/* The cursor position in answer. */
-size_t nano__prompt__statusbar_pww = (size_t)-1;
+static size_t statusbar_pww = (size_t)-1;
 	/* The place we want in answer. */
-size_t nano__prompt__old_statusbar_x = (size_t)-1;
+static size_t old_statusbar_x = (size_t)-1;
 	/* The old cursor position in answer, if any. */
-size_t nano__prompt__old_pww = (size_t)-1;
+static size_t old_pww = (size_t)-1;
 	/* The old place we want in answer, if any. */
-bool nano__prompt__reset_statusbar_x = FALSE;
+static bool reset_statusbar_x = FALSE;
 	/* Should we reset the cursor position at the statusbar
 	 * prompt? */
 
@@ -51,15 +51,15 @@ bool nano__prompt__reset_statusbar_x = FALSE;
  * allow_funcs is FALSE, don't actually run any functions associated
  * with shortcut keys.  refresh_func is the function we will call to
  * refresh the edit window. */
-int *nano__prompt__do_statusbar_input__kbinput = NULL;
-size_t nano__prompt__do_statusbar_input__kbinput_len = 0;
 int do_statusbar_input(bool *meta_key, bool *func_key, bool *have_shortcut,
 	bool *ran_func, bool *finished, bool allow_funcs, void
 	(*refresh_func)(void))
 {
     int input;
 	/* The character we read in. */
+    static int *kbinput = NULL;
 	/* The input buffer. */
+    static size_t kbinput_len = 0;
 	/* The length of the input buffer. */
     const sc *s;
     const subnfunc *f;
@@ -116,10 +116,10 @@ int do_statusbar_input(bool *meta_key, bool *func_key, bool *have_shortcut,
 	     * input. */
 	    if (!ISSET(RESTRICTED) || openfile->filename[0] == '\0' ||
 		currmenu != MWRITEFILE) {
-		nano__prompt__do_statusbar_input__kbinput_len++;
-		nano__prompt__do_statusbar_input__kbinput = (int *)nrealloc(nano__prompt__do_statusbar_input__kbinput, nano__prompt__do_statusbar_input__kbinput_len *
+		kbinput_len++;
+		kbinput = (int *)nrealloc(kbinput, kbinput_len *
 			sizeof(int));
-		nano__prompt__do_statusbar_input__kbinput[nano__prompt__do_statusbar_input__kbinput_len - 1] = input;
+		kbinput[kbinput_len - 1] = input;
 	    }
 	}
 
@@ -127,27 +127,27 @@ int do_statusbar_input(bool *meta_key, bool *func_key, bool *have_shortcut,
 	 * waiting after the one we read in, we need to display all the
 	 * characters in the input buffer if it isn't empty. */
 	 if (*have_shortcut || get_key_buffer_len() == 0) {
-	    if (nano__prompt__do_statusbar_input__kbinput != NULL) {
+	    if (kbinput != NULL) {
 		/* Display all the characters in the input buffer at
 		 * once, filtering out control characters. */
-		char *output = charalloc(nano__prompt__do_statusbar_input__kbinput_len + 1);
+		char *output = charalloc(kbinput_len + 1);
 		size_t i;
 		bool got_enter;
 			/* Whether we got the Enter key. */
 
-		for (i = 0; i < nano__prompt__do_statusbar_input__kbinput_len; i++)
-		    output[i] = (char)nano__prompt__do_statusbar_input__kbinput[i];
+		for (i = 0; i < kbinput_len; i++)
+		    output[i] = (char)kbinput[i];
 		output[i] = '\0';
 
-		do_statusbar_output(output, nano__prompt__do_statusbar_input__kbinput_len, &got_enter,
+		do_statusbar_output(output, kbinput_len, &got_enter,
 			FALSE);
 
 		free(output);
 
 		/* Empty the input buffer. */
-		nano__prompt__do_statusbar_input__kbinput_len = 0;
-		free(nano__prompt__do_statusbar_input__kbinput);
-		nano__prompt__do_statusbar_input__kbinput = NULL;
+		kbinput_len = 0;
+		free(kbinput);
+		kbinput = NULL;
 	    }
 	}
 
@@ -252,21 +252,21 @@ int do_statusbar_mouse(void)
 	FALSE)) {
 	size_t start_col;
 
-	assert(nano__prompt__prompt != NULL);
+	assert(prompt != NULL);
 
-	start_col = strlenpt(nano__prompt__prompt) + 2;
+	start_col = strlenpt(prompt) + 2;
 
 	/* Move to where the click occurred. */
 	if (mouse_x >= start_col && mouse_y == 0) {
-	    size_t pww_save = nano__prompt__statusbar_pww;
+	    size_t pww_save = statusbar_pww;
 
-	    nano__prompt__statusbar_x = actual_x(answer,
+	    statusbar_x = actual_x(answer,
 			get_statusbar_page_start(start_col, start_col +
 			statusbar_xplustabs()) + mouse_x - start_col);
-	    nano__prompt__statusbar_pww = statusbar_xplustabs();
+	    statusbar_pww = statusbar_xplustabs();
 
 	    if (need_statusbar_horizontal_update(pww_save))
-		update_statusbar_line(answer, nano__prompt__statusbar_x);
+		update_statusbar_line(answer, statusbar_x);
 	}
     }
 
@@ -323,22 +323,22 @@ void do_statusbar_output(char *output, size_t output_len, bool
 	/* More dangerousness fun =) */
 	answer = charealloc(answer, answer_len + (char_buf_len * 2));
 
-	assert(nano__prompt__statusbar_x <= answer_len);
+	assert(statusbar_x <= answer_len);
 
-	charmove(answer + nano__prompt__statusbar_x + char_buf_len,
-		answer + nano__prompt__statusbar_x, answer_len - nano__prompt__statusbar_x +
+	charmove(answer + statusbar_x + char_buf_len,
+		answer + statusbar_x, answer_len - statusbar_x +
 		char_buf_len);
-	strncpy(answer + nano__prompt__statusbar_x, char_buf, char_buf_len);
+	strncpy(answer + statusbar_x, char_buf, char_buf_len);
 	answer_len += char_buf_len;
 
-	nano__prompt__statusbar_x += char_buf_len;
+	statusbar_x += char_buf_len;
     }
 
     free(char_buf);
 
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_pww = statusbar_xplustabs();
 
-    update_statusbar_line(answer, nano__prompt__statusbar_x);
+    update_statusbar_line(answer, statusbar_x);
 }
 
 /* Move to the beginning of the prompt text.  If the SMART_HOME flag is
@@ -347,75 +347,75 @@ void do_statusbar_output(char *output, size_t output_len, bool
  * are. */
 void do_statusbar_home(void)
 {
-    size_t pww_save = nano__prompt__statusbar_pww;
+    size_t pww_save = statusbar_pww;
 
 #ifndef NANO_TINY
     if (ISSET(SMART_HOME)) {
-	size_t statusbar_x_save = nano__prompt__statusbar_x;
+	size_t statusbar_x_save = statusbar_x;
 
-	nano__prompt__statusbar_x = indent_length(answer);
+	statusbar_x = indent_length(answer);
 
-	if (nano__prompt__statusbar_x == statusbar_x_save ||
-		nano__prompt__statusbar_x == strlen(answer))
-	    nano__prompt__statusbar_x = 0;
+	if (statusbar_x == statusbar_x_save ||
+		statusbar_x == strlen(answer))
+	    statusbar_x = 0;
 
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+	statusbar_pww = statusbar_xplustabs();
     } else {
 #endif
-	nano__prompt__statusbar_x = 0;
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+	statusbar_x = 0;
+	statusbar_pww = statusbar_xplustabs();
 #ifndef NANO_TINY
     }
 #endif
 
     if (need_statusbar_horizontal_update(pww_save))
-	update_statusbar_line(answer, nano__prompt__statusbar_x);
+	update_statusbar_line(answer, statusbar_x);
 }
 
 /* Move to the end of the prompt text. */
 void do_statusbar_end(void)
 {
-    size_t pww_save = nano__prompt__statusbar_pww;
+    size_t pww_save = statusbar_pww;
 
-    nano__prompt__statusbar_x = strlen(answer);
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_x = strlen(answer);
+    statusbar_pww = statusbar_xplustabs();
 
     if (need_statusbar_horizontal_update(pww_save))
-	update_statusbar_line(answer, nano__prompt__statusbar_x);
+	update_statusbar_line(answer, statusbar_x);
 }
 
 /* Move left one character. */
 void do_statusbar_left(void)
 {
-    if (nano__prompt__statusbar_x > 0) {
-	size_t pww_save = nano__prompt__statusbar_pww;
+    if (statusbar_x > 0) {
+	size_t pww_save = statusbar_pww;
 
-	nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+	statusbar_x = move_mbleft(answer, statusbar_x);
+	statusbar_pww = statusbar_xplustabs();
 
 	if (need_statusbar_horizontal_update(pww_save))
-	    update_statusbar_line(answer, nano__prompt__statusbar_x);
+	    update_statusbar_line(answer, statusbar_x);
     }
 }
 
 /* Move right one character. */
 void do_statusbar_right(void)
 {
-    if (nano__prompt__statusbar_x < strlen(answer)) {
-	size_t pww_save = nano__prompt__statusbar_pww;
+    if (statusbar_x < strlen(answer)) {
+	size_t pww_save = statusbar_pww;
 
-	nano__prompt__statusbar_x = move_mbright(answer, nano__prompt__statusbar_x);
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+	statusbar_x = move_mbright(answer, statusbar_x);
+	statusbar_pww = statusbar_xplustabs();
 
 	if (need_statusbar_horizontal_update(pww_save))
-	    update_statusbar_line(answer, nano__prompt__statusbar_x);
+	    update_statusbar_line(answer, statusbar_x);
     }
 }
 
 /* Backspace over one character. */
 void do_statusbar_backspace(void)
 {
-    if (nano__prompt__statusbar_x > 0) {
+    if (statusbar_x > 0) {
 	do_statusbar_left();
 	do_statusbar_delete();
     }
@@ -424,22 +424,22 @@ void do_statusbar_backspace(void)
 /* Delete one character. */
 void do_statusbar_delete(void)
 {
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_pww = statusbar_xplustabs();
 
-    if (answer[nano__prompt__statusbar_x] != '\0') {
-	int char_buf_len = parse_mbchar(answer + nano__prompt__statusbar_x, NULL,
+    if (answer[statusbar_x] != '\0') {
+	int char_buf_len = parse_mbchar(answer + statusbar_x, NULL,
 		NULL);
-	size_t line_len = strlen(answer + nano__prompt__statusbar_x);
+	size_t line_len = strlen(answer + statusbar_x);
 
-	assert(nano__prompt__statusbar_x < strlen(answer));
+	assert(statusbar_x < strlen(answer));
 
-	charmove(answer + nano__prompt__statusbar_x, answer + nano__prompt__statusbar_x +
-		char_buf_len, strlen(answer) - nano__prompt__statusbar_x -
+	charmove(answer + statusbar_x, answer + statusbar_x +
+		char_buf_len, strlen(answer) - statusbar_x -
 		char_buf_len + 1);
 
-	null_at(&answer, nano__prompt__statusbar_x + line_len - char_buf_len);
+	null_at(&answer, statusbar_x + line_len - char_buf_len);
 
-	update_statusbar_line(answer, nano__prompt__statusbar_x);
+	update_statusbar_line(answer, statusbar_x);
     }
 }
 
@@ -450,17 +450,17 @@ void do_statusbar_cut_text(void)
 
 #ifndef NANO_TINY
     if (ISSET(CUT_TO_END))
-	null_at(&answer, nano__prompt__statusbar_x);
+	null_at(&answer, statusbar_x);
     else {
 #endif
 	null_at(&answer, 0);
-	nano__prompt__statusbar_x = 0;
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+	statusbar_x = 0;
+	statusbar_pww = statusbar_xplustabs();
 #ifndef NANO_TINY
     }
 #endif
 
-    update_statusbar_line(answer, nano__prompt__statusbar_x);
+    update_statusbar_line(answer, statusbar_x);
 }
 
 #ifndef NANO_TINY
@@ -469,7 +469,7 @@ void do_statusbar_cut_text(void)
  * word, and FALSE otherwise. */
 bool do_statusbar_next_word(bool allow_punct)
 {
-    size_t pww_save = nano__prompt__statusbar_pww;
+    size_t pww_save = statusbar_pww;
     char *char_mb;
     int char_mb_len;
     bool end_line = FALSE, started_on_word = FALSE;
@@ -481,7 +481,7 @@ bool do_statusbar_next_word(bool allow_punct)
     /* Move forward until we find the character after the last letter of
      * the current word. */
     while (!end_line) {
-	char_mb_len = parse_mbchar(answer + nano__prompt__statusbar_x, char_mb, NULL);
+	char_mb_len = parse_mbchar(answer + statusbar_x, char_mb, NULL);
 
 	/* If we've found it, stop moving forward through the current
 	 * line. */
@@ -492,38 +492,38 @@ bool do_statusbar_next_word(bool allow_punct)
 	 * started_on_word to TRUE. */
 	started_on_word = TRUE;
 
-	if (answer[nano__prompt__statusbar_x] == '\0')
+	if (answer[statusbar_x] == '\0')
 	    end_line = TRUE;
 	else
-	    nano__prompt__statusbar_x += char_mb_len;
+	    statusbar_x += char_mb_len;
     }
 
     /* Move forward until we find the first letter of the next word. */
-    if (answer[nano__prompt__statusbar_x] == '\0')
+    if (answer[statusbar_x] == '\0')
 	end_line = TRUE;
     else
-	nano__prompt__statusbar_x += char_mb_len;
+	statusbar_x += char_mb_len;
 
     while (!end_line) {
-	char_mb_len = parse_mbchar(answer + nano__prompt__statusbar_x, char_mb, NULL);
+	char_mb_len = parse_mbchar(answer + statusbar_x, char_mb, NULL);
 
 	/* If we've found it, stop moving forward through the current
 	 * line. */
 	if (is_word_mbchar(char_mb, allow_punct))
 	    break;
 
-	if (answer[nano__prompt__statusbar_x] == '\0')
+	if (answer[statusbar_x] == '\0')
 	    end_line = TRUE;
 	else
-	    nano__prompt__statusbar_x += char_mb_len;
+	    statusbar_x += char_mb_len;
     }
 
     free(char_mb);
 
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_pww = statusbar_xplustabs();
 
     if (need_statusbar_horizontal_update(pww_save))
-	update_statusbar_line(answer, nano__prompt__statusbar_x);
+	update_statusbar_line(answer, statusbar_x);
 
     /* Return whether we started on a word. */
     return started_on_word;
@@ -534,7 +534,7 @@ bool do_statusbar_next_word(bool allow_punct)
  * on a word, and FALSE otherwise. */
 bool do_statusbar_prev_word(bool allow_punct)
 {
-    size_t pww_save = nano__prompt__statusbar_pww;
+    size_t pww_save = statusbar_pww;
     char *char_mb;
     int char_mb_len;
     bool begin_line = FALSE, started_on_word = FALSE;
@@ -546,7 +546,7 @@ bool do_statusbar_prev_word(bool allow_punct)
     /* Move backward until we find the character before the first letter
      * of the current word. */
     while (!begin_line) {
-	char_mb_len = parse_mbchar(answer + nano__prompt__statusbar_x, char_mb, NULL);
+	char_mb_len = parse_mbchar(answer + statusbar_x, char_mb, NULL);
 
 	/* If we've found it, stop moving backward through the current
 	 * line. */
@@ -557,43 +557,43 @@ bool do_statusbar_prev_word(bool allow_punct)
 	 * started_on_word to TRUE. */
 	started_on_word = TRUE;
 
-	if (nano__prompt__statusbar_x == 0)
+	if (statusbar_x == 0)
 	    begin_line = TRUE;
 	else
-	    nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
+	    statusbar_x = move_mbleft(answer, statusbar_x);
     }
 
     /* Move backward until we find the last letter of the previous
      * word. */
-    if (nano__prompt__statusbar_x == 0)
+    if (statusbar_x == 0)
 	begin_line = TRUE;
     else
-	nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
+	statusbar_x = move_mbleft(answer, statusbar_x);
 
     while (!begin_line) {
-	char_mb_len = parse_mbchar(answer + nano__prompt__statusbar_x, char_mb, NULL);
+	char_mb_len = parse_mbchar(answer + statusbar_x, char_mb, NULL);
 
 	/* If we've found it, stop moving backward through the current
 	 * line. */
 	if (is_word_mbchar(char_mb, allow_punct))
 	    break;
 
-	if (nano__prompt__statusbar_x == 0)
+	if (statusbar_x == 0)
 	    begin_line = TRUE;
 	else
-	    nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
+	    statusbar_x = move_mbleft(answer, statusbar_x);
     }
 
     /* If we've found it, move backward until we find the character
      * before the first letter of the previous word. */
     if (!begin_line) {
-	if (nano__prompt__statusbar_x == 0)
+	if (statusbar_x == 0)
 	    begin_line = TRUE;
 	else
-	    nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
+	    statusbar_x = move_mbleft(answer, statusbar_x);
 
 	while (!begin_line) {
-	    char_mb_len = parse_mbchar(answer + nano__prompt__statusbar_x, char_mb,
+	    char_mb_len = parse_mbchar(answer + statusbar_x, char_mb,
 		NULL);
 
 	    /* If we've found it, stop moving backward through the
@@ -601,24 +601,24 @@ bool do_statusbar_prev_word(bool allow_punct)
 	    if (!is_word_mbchar(char_mb, allow_punct))
 		break;
 
-	    if (nano__prompt__statusbar_x == 0)
+	    if (statusbar_x == 0)
 		begin_line = TRUE;
 	    else
-		nano__prompt__statusbar_x = move_mbleft(answer, nano__prompt__statusbar_x);
+		statusbar_x = move_mbleft(answer, statusbar_x);
 	}
 
 	/* If we've found it, move forward to the first letter of the
 	 * previous word. */
 	if (!begin_line)
-	    nano__prompt__statusbar_x += char_mb_len;
+	    statusbar_x += char_mb_len;
     }
 
     free(char_mb);
 
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_pww = statusbar_xplustabs();
 
     if (need_statusbar_horizontal_update(pww_save))
-	update_statusbar_line(answer, nano__prompt__statusbar_x);
+	update_statusbar_line(answer, statusbar_x);
 
     /* Return whether we started on a word. */
     return started_on_word;
@@ -666,8 +666,8 @@ bool find_statusbar_bracket_match(bool reverse, const char
     /* rev_start might end up 1 character before the start or after the
      * end of the line.  This won't be a problem because we'll skip over
      * it below in that case. */
-    rev_start = reverse ? answer + (nano__prompt__statusbar_x - 1) : answer +
-	(nano__prompt__statusbar_x + 1);
+    rev_start = reverse ? answer + (statusbar_x - 1) : answer +
+	(statusbar_x + 1);
 
     while (TRUE) {
 	/* Look for either of the two characters in bracket_set.
@@ -689,8 +689,8 @@ bool find_statusbar_bracket_match(bool reverse, const char
     }
 
     /* We've definitely found something. */
-    nano__prompt__statusbar_x = found - answer;
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_x = found - answer;
+    statusbar_pww = statusbar_xplustabs();
 
     return TRUE;
 }
@@ -729,14 +729,14 @@ void do_statusbar_find_bracket(void)
 
     assert(mbstrlen(matchbrackets) % 2 == 0);
 
-    ch = answer + nano__prompt__statusbar_x;
+    ch = answer + statusbar_x;
 
     if (ch == '\0' || (ch = mbstrchr(matchbrackets, ch)) == NULL)
 	return;
 
     /* Save where we are. */
-    statusbar_x_save = nano__prompt__statusbar_x;
-    pww_save = nano__prompt__statusbar_pww;
+    statusbar_x_save = statusbar_x;
+    pww_save = statusbar_pww;
 
     /* If we're on an opening bracket, which must be in the first half
      * of matchbrackets, we want to search forwards for a closing
@@ -783,21 +783,21 @@ void do_statusbar_find_bracket(void)
 	if (find_statusbar_bracket_match(reverse, bracket_set)) {
 	    /* If we found an identical bracket, increment count.  If we
 	     * found a complementary bracket, decrement it. */
-	    parse_mbchar(answer + nano__prompt__statusbar_x, found_ch, NULL);
+	    parse_mbchar(answer + statusbar_x, found_ch, NULL);
 	    count += (strncmp(found_ch, ch, ch_len) == 0) ? 1 : -1;
 
 	    /* If count is zero, we've found a matching bracket.  Update
 	     * the statusbar prompt and get out. */
 	    if (count == 0) {
 		if (need_statusbar_horizontal_update(pww_save))
-		    update_statusbar_line(answer, nano__prompt__statusbar_x);
+		    update_statusbar_line(answer, statusbar_x);
 		break;
 	    }
 	} else {
 	    /* We didn't find either an opening or closing bracket.
 	     * Restore where we were, and get out. */
-	    nano__prompt__statusbar_x = statusbar_x_save;
-	    nano__prompt__statusbar_pww = pww_save;
+	    statusbar_x = statusbar_x_save;
+	    statusbar_pww = pww_save;
 	    break;
 	}
     }
@@ -813,7 +813,7 @@ void do_statusbar_find_bracket(void)
  * smaller than statusbar_x. */
 size_t statusbar_xplustabs(void)
 {
-    return strnlenpt(answer, nano__prompt__statusbar_x);
+    return strnlenpt(answer, statusbar_x);
 }
 
 /* nano scrolls horizontally within a line in chunks.  This function
@@ -833,7 +833,7 @@ size_t get_statusbar_page_start(size_t start_col, size_t column)
 /* Put the cursor in the statusbar prompt at statusbar_x. */
 void reset_statusbar_cursor(void)
 {
-    size_t start_col = strlenpt(nano__prompt__prompt) + 2;
+    size_t start_col = strlenpt(prompt) + 2;
     size_t xpt = statusbar_xplustabs();
 
     wmove(bottomwin, 0, start_col + xpt -
@@ -848,9 +848,9 @@ void update_statusbar_line(const char *curranswer, size_t index)
     size_t start_col, page_start;
     char *expanded;
 
-    assert(nano__prompt__prompt != NULL && index <= strlen(curranswer));
+    assert(prompt != NULL && index <= strlen(curranswer));
 
-    start_col = strlenpt(nano__prompt__prompt) + 2;
+    start_col = strlenpt(prompt) + 2;
     index = strnlenpt(curranswer, index);
     page_start = get_statusbar_page_start(start_col, start_col + index);
 
@@ -858,7 +858,7 @@ void update_statusbar_line(const char *curranswer, size_t index)
 
     blank_statusbar();
 
-    mvwaddnstr(bottomwin, 0, 0, nano__prompt__prompt, actual_x(nano__prompt__prompt, COLS - 2));
+    mvwaddnstr(bottomwin, 0, 0, prompt, actual_x(prompt, COLS - 2));
     waddch(bottomwin, ':');
     waddch(bottomwin, (page_start == 0) ? ' ' : '$');
 
@@ -868,20 +868,20 @@ void update_statusbar_line(const char *curranswer, size_t index)
     free(expanded);
 
     wattroff(bottomwin, reverse_attr);
-    nano__prompt__statusbar_pww = statusbar_xplustabs();
+    statusbar_pww = statusbar_xplustabs();
     reset_statusbar_cursor();
     wnoutrefresh(bottomwin);
 }
 
 /* Return TRUE if we need an update after moving horizontally, and FALSE
- * otherwise.  We need one if pww_save and nano__prompt__statusbar_pww are on
+ * otherwise.  We need one if pww_save and statusbar_pww are on
  * different pages. */
 bool need_statusbar_horizontal_update(size_t pww_save)
 {
-    size_t start_col = strlenpt(nano__prompt__prompt) + 2;
+    size_t start_col = strlenpt(prompt) + 2;
 
     return get_statusbar_page_start(start_col, start_col + pww_save) !=
-	get_statusbar_page_start(start_col, start_col + nano__prompt__statusbar_pww);
+	get_statusbar_page_start(start_col, start_col + statusbar_pww);
 }
 
 /* Unconditionally redraw the entire screen, and then refresh it using
@@ -935,31 +935,31 @@ const sc *get_prompt_string(int *actual, bool allow_tabs,
     answer = mallocstrcpy(answer, curranswer);
     curranswer_len = strlen(answer);
 
-    /* If nano__prompt__reset_statusbar_x is TRUE, restore statusbar_x and
-     * nano__prompt__statusbar_pww to what they were before this prompt.  Then, if
+    /* If reset_statusbar_x is TRUE, restore statusbar_x and
+     * statusbar_pww to what they were before this prompt.  Then, if
      * statusbar_x is uninitialized or past the end of curranswer, put
-     * statusbar_x at the end of the string and update nano__prompt__statusbar_pww
+     * statusbar_x at the end of the string and update statusbar_pww
      * based on it.  We do these things so that the cursor position
      * stays at the right place if a prompt-changing toggle is pressed,
      * or if this prompt was started from another prompt and we cancel
      * out of it. */
-    if (nano__prompt__reset_statusbar_x) {
-	nano__prompt__statusbar_x = nano__prompt__old_statusbar_x;
-	nano__prompt__statusbar_pww = nano__prompt__old_pww;
+    if (reset_statusbar_x) {
+	statusbar_x = old_statusbar_x;
+	statusbar_pww = old_pww;
     }
 
-    if (nano__prompt__statusbar_x == (size_t)-1 || nano__prompt__statusbar_x > curranswer_len) {
-	nano__prompt__statusbar_x = curranswer_len;
-	nano__prompt__statusbar_pww = statusbar_xplustabs();
+    if (statusbar_x == (size_t)-1 || statusbar_x > curranswer_len) {
+	statusbar_x = curranswer_len;
+	statusbar_pww = statusbar_xplustabs();
     }
 
     currmenu = menu;
 
 #ifdef DEBUG
-fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answer, (unsigned long) nano__prompt__statusbar_x);
+fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answer, (unsigned long) statusbar_x);
 #endif
 
-    update_statusbar_line(answer, nano__prompt__statusbar_x);
+    update_statusbar_line(answer, statusbar_x);
 
     /* Refresh the edit window and the statusbar before getting
      * input. */
@@ -974,7 +974,7 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
     while (1) {
 	kbinput = do_statusbar_input(meta_key, func_key, &have_shortcut,
 	    &ran_func, &finished, TRUE, refresh_func);
-	assert(nano__prompt__statusbar_x <= strlen(answer));
+	assert(statusbar_x <= strlen(answer));
 
 	s = get_shortcut(currmenu, &kbinput, meta_key, func_key);
 
@@ -998,15 +998,15 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 			answer = mallocstrcpy(answer,
 				get_history_completion(history_list,
 				answer, complete_len));
-			nano__prompt__statusbar_x = strlen(answer);
+			statusbar_x = strlen(answer);
 		    }
 		} else
 #endif /* !NANO_TINY */
 		if (allow_tabs)
 		    answer = input_tab(answer, allow_files,
-			&nano__prompt__statusbar_x, &tabbed, refresh_func, list);
+			&statusbar_x, &tabbed, refresh_func, list);
 
-		update_statusbar_line(answer, nano__prompt__statusbar_x);
+		update_statusbar_line(answer, statusbar_x);
 	} else
 #endif /* !DISABLE_TABCOMP */
 #ifndef NANO_TINY
@@ -1026,10 +1026,10 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 		    if ((history =
 			get_history_older(history_list)) != NULL) {
 			answer = mallocstrcpy(answer, history);
-			nano__prompt__statusbar_x = strlen(answer);
+			statusbar_x = strlen(answer);
 		    }
 
-		    update_statusbar_line(answer, nano__prompt__statusbar_x);
+		    update_statusbar_line(answer, statusbar_x);
 
 		    /* This key has a shortcut list entry when it's used
 		     * to move to an older search, which means that
@@ -1046,7 +1046,7 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 		    if ((history =
 			get_history_newer(history_list)) != NULL) {
 			answer = mallocstrcpy(answer, history);
-			nano__prompt__statusbar_x = strlen(answer);
+			statusbar_x = strlen(answer);
 		    }
 
 		    /* If, after scrolling down, we're at the bottom of
@@ -1056,10 +1056,10 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 		    if ((*history_list)->next == NULL &&
 			*answer == '\0' && magichistory != NULL) {
 			answer = mallocstrcpy(answer, magichistory);
-			nano__prompt__statusbar_x = strlen(answer);
+			statusbar_x = strlen(answer);
 		    }
 
-		    update_statusbar_line(answer, nano__prompt__statusbar_x);
+		    update_statusbar_line(answer, statusbar_x);
 
 		    /* This key has a shortcut list entry when it's used
 		     * to move to a newer search, which means that
@@ -1071,7 +1071,7 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 	} else
 #endif /* !NANO_TINY */
 	if (s && s->scfunc == DO_HELP_VOID) {
-		update_statusbar_line(answer, nano__prompt__statusbar_x);
+		update_statusbar_line(answer, statusbar_x);
 
 		/* This key has a shortcut list entry when it's used to
 		 * go to the help browser or display a message
@@ -1110,22 +1110,22 @@ fprintf(stderr, "get_prompt_string: answer = \"%s\", statusbar_x = %lu\n", answe
 
 
     /* We've finished putting in an answer or run a normal shortcut's
-     * associated function, so reset statusbar_x and nano__prompt__statusbar_pww.  If
+     * associated function, so reset statusbar_x and statusbar_pww.  If
      * we've finished putting in an answer, reset the statusbar cursor
      * position too. */
     if (s) {
 	if (s->scfunc ==  CANCEL_MSG || s->scfunc == DO_ENTER ||
 	ran_func) {
-	    nano__prompt__statusbar_x = nano__prompt__old_statusbar_x;
-	    nano__prompt__statusbar_pww = nano__prompt__old_pww;
+	    statusbar_x = old_statusbar_x;
+	    statusbar_pww = old_pww;
 
 	    if (!ran_func)
-		nano__prompt__reset_statusbar_x = TRUE;
+		reset_statusbar_x = TRUE;
     /* Otherwise, we're still putting in an answer or a shortcut with
      * an associated function, so leave the statusbar cursor position
      * alone. */
 	} else
-	    nano__prompt__reset_statusbar_x = FALSE;
+	    reset_statusbar_x = FALSE;
     }
 
     *actual = kbinput;
@@ -1164,17 +1164,17 @@ int do_prompt(bool allow_tabs,
 
     /* prompt has been freed and set to NULL unless the user resized
      * while at the statusbar prompt. */
-    if (nano__prompt__prompt != NULL)
-	free(nano__prompt__prompt);
+    if (prompt != NULL)
+	free(prompt);
 
-    nano__prompt__prompt = charalloc(((COLS - 4) * mb_cur_max()) + 1);
+    prompt = charalloc(((COLS - 4) * mb_cur_max()) + 1);
 
     bottombars(menu);
 
     va_start(ap, msg);
-    vsnprintf(nano__prompt__prompt, (COLS - 4) * mb_cur_max(), msg, ap);
+    vsnprintf(prompt, (COLS - 4) * mb_cur_max(), msg, ap);
     va_end(ap);
-    null_at(&nano__prompt__prompt, actual_x(nano__prompt__prompt, COLS - 4));
+    null_at(&prompt, actual_x(prompt, COLS - 4));
 
     s = get_prompt_string(&retval, allow_tabs,
 #ifndef DISABLE_TABCOMP
@@ -1191,13 +1191,13 @@ int do_prompt(bool allow_tabs,
 #endif
 	);
 
-    free(nano__prompt__prompt);
-    nano__prompt__prompt = NULL;
+    free(prompt);
+    prompt = NULL;
 
     /* We're done with the prompt, so save the statusbar cursor
      * position. */
-    nano__prompt__old_statusbar_x = nano__prompt__statusbar_x;
-    nano__prompt__old_pww = nano__prompt__statusbar_pww;
+    old_statusbar_x = statusbar_x;
+    old_pww = statusbar_pww;
 
     /* If we left the prompt via Cancel or Enter, set the return value
      * properly. */
@@ -1229,10 +1229,10 @@ int do_prompt(bool allow_tabs,
 void do_prompt_abort(void)
 {
     /* Uninitialize the old cursor position in answer. */
-    nano__prompt__old_statusbar_x = (size_t)-1;
-    nano__prompt__old_pww = (size_t)-1;
+    old_statusbar_x = (size_t)-1;
+    old_pww = (size_t)-1;
 
-    nano__prompt__reset_statusbar_x = TRUE;
+    reset_statusbar_x = TRUE;
 }
 
 /* Ask a simple Yes/No (and optionally All) question, specified in msg,
