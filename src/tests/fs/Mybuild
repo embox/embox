@@ -62,3 +62,10 @@ module permissions {
 	depends embox.driver.ide
 	depends embox.fs.filesystem
 }
+
+module vfs {
+	source "vfs.c"
+
+	depends embox.fs.core
+	depends embox.fs.node
+}
