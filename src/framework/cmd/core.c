@@ -34,9 +34,9 @@ const struct mod_ops __cmd_mod_ops = {
 static int cmd_mod_enable(struct mod_info *mod_info) {
 	const struct mod_extra *extra = mod_info->mod->extra;
 
-	printk("\tcmd: loading %s.%s: data=0x%08lx, data_sz=%lu, reserve=0x%08lx\n",
+	printk("\tcmd: loading %s.%s: data=0x%08lx, data_sz=%zu, reserve=0x%08lx\n",
 		mod_info->mod->package->name, mod_info->mod->name,
-		(unsigned long) extra->data, (unsigned long) extra->data_sz,
+		(unsigned long) extra->data, extra->data_sz,
 		(unsigned long) extra->data + APP_DATA_RESERVE_OFFSET);
 
 	memcpy(extra->data + APP_DATA_RESERVE_OFFSET, extra->data, extra->data_sz);
