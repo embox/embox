@@ -203,7 +203,8 @@ build_and_install: configure
 			(rm -r $(QT_COMPONENTS_DIR_EMBOX) || true) && \
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
 			make install && \
-			mkdir -p $(ROOT_DIR)/conf/rootfs && \
+			(cp $(QT_BUILD_DIR_EMBOX)/mkspecs/qdevice.pri $(QT_INSTALL_DIR_EMBOX)/mkspecs/ || true) && \
+			mkdir -p $(ROOT_DIR)/conf/rootfs/fonts && \
 			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/fonts; \
 		fi
 
