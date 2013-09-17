@@ -15,8 +15,7 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include <kernel/event.h>
-#include <kernel/sched/sched_lock.h>
+#include <kernel/manual_event.h>
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -33,28 +32,23 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int upd
  * @retval -EBAFD if some descriptor is invalid */
 static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update);
 
-static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct event *event);
+static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct manual_event *m_event);
 
 static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op);
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int fd_cnt;
-	struct event event;
+	struct manual_event wait_on;
 	clock_t ticks;
 
 	fd_cnt = 0;
-	ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns2jiffies(timeval_to_ns(timeout)));
+	ticks = (timeout == NULL ? MANUAL_EVENT_TIMEOUT_INFINITE : timeval_to_ms(timeout));
+	manual_event_init(&wait_on, 0);
 
-	sched_lock();
+	set_monitoring(nfds, readfds, IO_SYNC_READING, &wait_on);
+	set_monitoring(nfds, writefds, IO_SYNC_WRITING, &wait_on);
 
-	/* Install event on each descriptor to be notified if
-	 * some of them can to perform corresponding operations (read/write) */
-	event_init(&event, "select_event");
-
-	set_monitoring(nfds, readfds, IO_SYNC_READING, &event);
-	set_monitoring(nfds, writefds, IO_SYNC_WRITING, &event);
-
-	/* Search active descriptor and build event set.
+	/* Search active descriptor and build wait_on set.
 	 * First try to find some active descriptor before going to sleep */
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 0);
 
@@ -69,14 +63,13 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		goto out;
 	}
 
-	EVENT_WAIT(&event, 0, ticks); /* TODO: event condition */
+	manual_event_wait(&wait_on, ticks);
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 
 out:
 	unset_monitoring(nfds, readfds, IO_SYNC_READING);
 	unset_monitoring(nfds, writefds, IO_SYNC_WRITING);
-	sched_unlock();
 	return fd_cnt;
 }
 
@@ -144,7 +137,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 }
 
 static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
-		struct event *event) {
+		struct manual_event *m_event) {
 	int fd;
 	struct idx_desc *desc;
 
@@ -154,7 +147,7 @@ static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
 				if (NULL == (desc = task_self_idx_get(fd))) {
 					return -1;
 				}
-				io_sync_notify(task_idx_indata(desc)->ios, op, event);
+				io_sync_notify(task_idx_indata(desc)->ios, op, m_event);
 			}
 		}
 	}
