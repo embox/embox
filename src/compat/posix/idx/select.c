@@ -37,7 +37,7 @@ static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct manu
 static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op);
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
-	int fd_cnt;
+	int ret, fd_cnt;
 	struct manual_event wait_on;
 	clock_t ticks;
 
@@ -63,7 +63,16 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		goto out;
 	}
 
-	manual_event_wait(&wait_on, ticks);
+	ret = manual_event_wait(&wait_on, ticks);
+	if (ret == -ETIMEDOUT) {
+		fd_cnt = 0;
+		goto out;
+	}
+	else if (ret != 0) {
+		SET_ERRNO(-ret);
+		fd_cnt = -1;
+		goto out;
+	}
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 
