@@ -89,6 +89,8 @@ module pic32mx_uart extends embox.driver.diag.diag_api {
 }
 
 module ns16550 extends embox.driver.diag.diag_api {
+	option number base_addr = 0x49020000
+
 	source "ns16550.c"
 }
 
