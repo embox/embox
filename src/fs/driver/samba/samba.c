@@ -80,7 +80,7 @@ smbitem* embox_get_smbitem_list(SMBCCTX *ctx, char *smb_path){
 
 }
 
-void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int maxlen){
+static void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int maxlen){
     int 	len;
     smbitem	*list, *item;
     SMBCCTX	*ctx1;
@@ -136,10 +136,35 @@ static int embox_samba_mount(void *dev, void *dir) {
 	char smb_path[PATH_MAX] = "smb://";
 	//try recurse
 	//char smb_path[PATH_MAX] = "smb://192.168.33.129";
+	struct node *dir_node, *dev_node;
+	struct nas *dir_nas, *dev_nas;
+	struct node_fi *dev_fi;
+	int rc;
+
+	dev_node = dev;
+	dev_nas = dev_node->nas;
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	if (NULL == (dev_fi = dev_nas->fi)) {
+			rc = ENODEV;
+			return -rc;
+		}
+
+	if(NULL != vfs_get_child_next(dir_node)) {
+		rc = ENOTEMPTY;
+		return -rc;
+	}
+
+	if (NULL == (dir_nas->fs = filesystem_create("samba"))) {
+		rc = ENOMEM;
+		return -rc;
+	}
 
 	if ((ctx = embox_create_smbctx()) == NULL) {
-		perror("Cant create samba context.");
-		return 1;
+		//Cant create samba context
+		rc = 1
+		return -rc;
 	}
 
 	//get smb_path
