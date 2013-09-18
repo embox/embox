@@ -158,3 +158,15 @@ diff -aur samba-3.6.18/examples/libsmbclient/testbrowse2.c samba/examples/libsmb
  
      if ((ctx = create_smbctx()) == NULL){
  	perror("Cant create samba context.");
+diff -aur samba-3.6.18/source3/param/loadparm.c samba/source3/param/loadparm.c
+--- samba-3.6.18/source3/param/loadparm.c	2013-08-12 11:25:27.000000000 +0400
++++ samba/source3/param/loadparm.c	2013-09-18 14:59:01.808706398 +0400
+@@ -9928,7 +9928,7 @@
+  A useful volume label function. 
+ ********************************************************************/
+ 
+-const char *volume_label(int snum)
++const char *samba_volume_label(int snum)
+ {
+ 	char *ret;
+ 	const char *label = lp_volume(snum);

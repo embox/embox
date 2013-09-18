@@ -11,6 +11,7 @@ SAMBA_LIB       = $(SAMBA_DIR)/lib/libsmbclient.a
 SAMBA_FLAGS     = $(SAMBA_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
+EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/../lib/zlib-1.2.8
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/samba_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
