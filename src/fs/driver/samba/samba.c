@@ -30,8 +30,25 @@ struct smbitem{
     char	name[1];
 };
 
-int embox_set_node(char *group, char *path) {
-	return 0;
+static mode_t samba_type_to_mode_fmt(const unsigned dt_type) {
+	switch (dt_type) {
+		case SMBC_FILE_SHARE:
+		case SMBC_DIR:
+			return S_IFDIR;
+		case SMBC_FILE:
+			return S_IFREG;
+		default: return 0;
+	}
+}
+
+struct node* embox_set_node(struct nas *nas, char *filename, int mode) {
+	struct node *node;
+	node = vfs_create(nas->node, filename, samba_type_to_mode_fmt(mode));
+	if (!node) {
+		return NULL;
+	}
+	node->nas->fs = nas->fs;
+	return node;
 }
 
 SMBCCTX* embox_create_smbctx(void){
@@ -80,10 +97,12 @@ smbitem* embox_get_smbitem_list(SMBCCTX *ctx, char *smb_path){
 
 }
 
-static void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int maxlen){
-    int 	len;
+static int embox_recurse(struct nas *nas, SMBCCTX *ctx, char *smb_group, char *smb_path, int maxlen){
+    int 	len, rc;
     smbitem	*list, *item;
     SMBCCTX	*ctx1;
+    char filename[NAME_MAX + 1] = "";
+    struct node *node;
 
     len = strlen(smb_path);
 
@@ -92,19 +111,20 @@ static void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int max
 	switch(list->type){
 	    case SMBC_WORKGROUP:
 	    case SMBC_SERVER:
+	    //in this case there is no error handling
 		if (list->type == SMBC_WORKGROUP){
-			embox_set_node(list->name, "");
+			//embox_set_node(list->name, "");
 		    smb_group = list->name;
 		}
-		else embox_set_node(smb_group, list->name);
+		//else embox_set_node(smb_group, list->name);
 
 		if (maxlen < 7 + strlen(list->name)) break;
 		strcpy(smb_path + 6, list->name);
 		if ((ctx1 = embox_create_smbctx()) != NULL){
-			embox_recurse(ctx1, smb_group, smb_path, maxlen);
+			embox_recurse(node->nas, ctx1, smb_group, smb_path, maxlen);
 			embox_delete_smbctx(ctx1);
 		}else{
-			embox_recurse(ctx, smb_group, smb_path, maxlen);
+			embox_recurse(node->nas, ctx, smb_group, smb_path, maxlen);
 		    smbc_getFunctionPurgeCachedServers(ctx)(ctx);
 		}
 		break;
@@ -115,9 +135,19 @@ static void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int max
 
 		smb_path[len] = '/';
 		strcpy(smb_path + len + 1, list->name);
-		embox_set_node(smb_group, smb_path + 6);
+		strcpy(filename, list->name);
+		//embox_set_node(smb_group, smb_path + 6);
+		node = embox_set_node(nas, filename, list->type);
+		if (!node) {
+			errno = ENOMEM;
+			return -errno;
+		}
 		if (list->type != SMBC_FILE){
-			embox_recurse(ctx, smb_group, smb_path, maxlen);
+			rc = embox_recurse(node->nas, ctx, smb_group, smb_path, maxlen);
+			if (0 > rc) {
+				free(item);
+				return rc;
+			}
 		    if (list->type == SMBC_FILE_SHARE)
 			smbc_getFunctionPurgeCachedServers(ctx)(ctx);
 		}
@@ -128,6 +158,7 @@ static void embox_recurse(SMBCCTX *ctx, char *smb_group, char *smb_path, int max
 	free(item);
     }
     smb_path[len] = '\0';
+    return 0;
 }
 
 static int embox_samba_mount(void *dev, void *dir) {
@@ -163,12 +194,16 @@ static int embox_samba_mount(void *dev, void *dir) {
 
 	if ((ctx = embox_create_smbctx()) == NULL) {
 		//Cant create samba context
-		rc = 1
+		rc = 1;
 		return -rc;
 	}
 
 	//get smb_path
-	embox_recurse(ctx, "", smb_path, sizeof(smb_path));
+	rc = embox_recurse(dir_node->nas, ctx, "", smb_path, sizeof(smb_path));
+	if (0 > rc) {
+		embox_delete_smbctx(ctx);
+		return rc;
+	}
 
 	embox_delete_smbctx(ctx);
 	return 0;
