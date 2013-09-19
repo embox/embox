@@ -252,15 +252,57 @@ static int embox_cifs_umount(void *dir) {
 	return 0;
 }
 
+static int cifs_open(struct node *node, struct file_desc *file_desc,
+		int flags)
+{
+	struct cifs_fs_info *fsi;
+	char fileurl[PATH_MAX];
+
+	fsi = node->nas->fs->fsi;
+
+	// ToDo: form the full url of the file
+
+
+}
+
+static int cifs_close(struct file_desc *file_desc)
+{
+}
+
+static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
+{
+	struct ntfs_desc_info *desc;
+	size_t res;
+
+	desc = file_desc->file_info;
+
+	res = ntfs_attr_pread(desc->attr, file_desc->cursor, size, buf);
+
+	if (res > 0) {
+		file_desc->cursor += res;
+	}
+
+	return res;
+}
 
 static const struct fsop_desc cifs_fsop = {
+//	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_cifs_mount,
 	.umount = embox_cifs_umount,
+//	.truncate = embox_ntfs_truncate,
+};
+
+static struct kfile_operations cifs_fop = {
+	.open = cifs_open,
+	.close = cifs_close,
+	.read = cifs_read,
+//	.write = ntfs_write,
 };
 
 static const struct fs_driver cifs_driver = {
 	.name = "cifs",
 	.fsop = &cifs_fsop,
+	.file_op = &cifs_fop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);
