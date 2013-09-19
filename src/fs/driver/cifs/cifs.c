@@ -197,20 +197,65 @@ embox_cifs_mount (void *dev, void *dir)
 	rc = embox_cifs_mounting_recurse (dir_node->nas, ctx, smb_path,
 									  sizeof (smb_path));
 	if (0 > rc) {
-		//embox_delete_smbctx(ctx);
-		return rc;
+		goto error;
 	}
 
-	//embox_delete_smbctx(ctx);
 	return 0;
 
 error:
-	//embox_cifs_umount(dir);
+	embox_cifs_umount(dir);
 	return -rc;
 }
 
+static int cifs_umount_entry(struct nas *nas) {
+	struct node *child;
+
+	if(node_is_directory(nas->node)) {
+		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+			if(node_is_directory(child)) {
+				cifs_umount_entry(child->nas);
+			}
+
+			(void)0; // no CIFS-specific resources to free
+			vfs_del_leaf(child);
+		}
+	}
+
+	return 0;
+}
+
+static int embox_cifs_umount(void *dir) {
+	struct node *dir_node;
+	struct nas *dir_nas;
+	struct cifs_fs_info *fsi;
+
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	/* delete all entry node */
+	cifs_umount_entry(dir_nas);
+
+	if(NULL != dir_nas->fs) {
+		fsi = dir_nas->fs->fsi;
+
+		if(NULL != fsi) {
+			if (fsi->ctx) {
+				// ToDo: check if everything passed Ok
+				embox_delete_smbctx(fsi->ctx);
+			}
+			pool_free(&cifs_fs_pool, fsi);
+		}
+		filesystem_free(dir_nas->fs);
+		dir_nas->fs = NULL;
+	}
+
+	return 0;
+}
+
+
 static const struct fsop_desc cifs_fsop = {
 	.mount = embox_cifs_mount,
+	.umount = embox_cifs_umount,
 };
 
 static const struct fs_driver cifs_driver = {
