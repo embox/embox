@@ -19,6 +19,9 @@
  */
 
 #include <asm/modes.h>
+#include <framework/mod/options.h>
+
+#define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
 .weak hardware_init_hook
 .weak software_init_hook
@@ -78,23 +81,7 @@ reset_handler:
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #CONFIG_ARM_IRQ_STACK_SIZE
-
-    msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
-    mov sp, r0
-    sub r0, r0, #CONFIG_ARM_FIQ_STACK_SIZE
-
-    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-    mov sp, r0
-    sub r0, r0, #CONFIG_ARM_SVC_STACK_SIZE
-
-    msr CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
-    mov sp, r0
-    sub r0, r0, #CONFIG_ARM_ABT_STACK_SIZE
-
-    msr CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
-    mov sp, r0
-    sub r1, r0, #CONFIG_ARM_UND_STACK_SIZE
+    sub r0, r0, #IRQ_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0

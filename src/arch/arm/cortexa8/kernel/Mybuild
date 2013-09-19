@@ -7,6 +7,9 @@ module context extends embox.arch.context {
 }
 
 module locore extends embox.arch.locore {
+
+	option number irq_stack_size = 0x100
+
 	source "entry.S"
 	source "exception_table.S"
 
