@@ -25,6 +25,7 @@
 struct cifs_fs_info
 {
 	SMBCCTX *ctx;
+	struct node *mntto;
 	char url[PATH_MAX];
 };
 
@@ -149,64 +150,6 @@ embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 	return 0;
 }
 
-static int
-embox_cifs_mount (void *dev, void *dir)
-{
-	SMBCCTX *ctx;
-	char smb_path[PATH_MAX] = "smb://";
-	struct node *dir_node;
-	struct nas *dir_nas;
-	struct cifs_fs_info *fsi;
-	int rc;
-
-	strncpy (smb_path + 6, dev, sizeof (smb_path) - 7);
-	smb_path[sizeof (smb_path) - 1] = '\0';
-
-	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-	if (NULL != vfs_get_child_next (dir_node)) {
-		rc = ENOTEMPTY;
-		return -rc;
-	}
-
-	if (NULL == (dir_nas->fs = filesystem_create ("cifs"))) {
-		rc = ENOMEM;
-		return -rc;
-	}
-
-	if ((ctx = embox_create_smbctx ()) == NULL) {
-		/* ToDo: error: exit without deallocation of filesystem */
-		//Cant create samba context
-		rc = 1;
-		return -rc;
-	}
-
-	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc (&cifs_fs_pool))) {
-		/* ToDo: error: exit without deallocation of filesystem */
-		rc = ENOMEM;
-		goto error;
-	}
-	memset (fsi, 0, sizeof (*fsi));
-	strcpy (fsi->url, smb_path);
-	fsi->ctx = ctx;
-	dir_nas->fs->fsi = fsi;
-
-	//get smb_path
-	rc = embox_cifs_mounting_recurse (dir_node->nas, ctx, smb_path,
-									  sizeof (smb_path));
-	if (0 > rc) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-	embox_cifs_umount(dir);
-	return -rc;
-}
-
 static int cifs_umount_entry(struct nas *nas) {
 	struct node *child;
 
@@ -252,31 +195,128 @@ static int embox_cifs_umount(void *dir) {
 	return 0;
 }
 
+static int
+embox_cifs_mount (void *dev, void *dir)
+{
+	SMBCCTX *ctx;
+	char smb_path[PATH_MAX] = "smb://";
+	struct node *dir_node;
+	struct nas *dir_nas;
+	struct cifs_fs_info *fsi;
+	int rc;
+
+	strncpy (smb_path + 6, dev, sizeof (smb_path) - 7);
+	smb_path[sizeof (smb_path) - 1] = '\0';
+	rc = strlen(smb_path);
+	if(smb_path[rc-1] == '/') {
+		smb_path[rc-1] = '\0';
+	}
+
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	if (NULL != vfs_get_child_next (dir_node)) {
+		rc = ENOTEMPTY;
+		return -rc;
+	}
+
+	if (NULL == (dir_nas->fs = filesystem_create ("cifs"))) {
+		rc = ENOMEM;
+		return -rc;
+	}
+
+	if ((ctx = embox_create_smbctx ()) == NULL) {
+		/* ToDo: error: exit without deallocation of filesystem */
+		//Cant create samba context
+		rc = 1;
+		return -rc;
+	}
+
+	/* allocate this fs info */
+	if (NULL == (fsi = pool_alloc (&cifs_fs_pool))) {
+		/* ToDo: error: exit without deallocation of filesystem */
+		rc = ENOMEM;
+		goto error;
+	}
+	memset (fsi, 0, sizeof (*fsi));
+	strcpy (fsi->url, smb_path);
+	fsi->mntto = dir_node;
+	fsi->ctx = ctx;
+	dir_nas->fs->fsi = fsi;
+
+	//get smb_path
+	rc = embox_cifs_mounting_recurse (dir_node->nas, ctx, smb_path,
+									  sizeof (smb_path));
+	if (0 > rc) {
+		goto error;
+	}
+
+	return 0;
+
+error:
+	embox_cifs_umount(dir);
+	return -rc;
+}
+
 static int cifs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct cifs_fs_info *fsi;
 	char fileurl[PATH_MAX];
+	SMBCFILE *file;
+	struct stat st;
+	int rc;
 
 	fsi = node->nas->fs->fsi;
 
-	// ToDo: form the full url of the file
+	strcpy(fileurl,fsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+	if (!vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1)) {
+		return -EINVAL;
+	}
 
+	if (!smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
+		return -errno;
+	}
 
+	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,flags,0);
+	if(!file) {
+		return -errno;
+	}
+
+	file_desc->file_info = file;
+
+	// Yet another bullshit: size is not valid until open
+	node->nas->fi->ni.size = st.st_size;
+
+	return 0;
 }
 
 static int cifs_close(struct file_desc *file_desc)
 {
+	struct cifs_fs_info *fsi;
+	SMBCFILE *file;
+
+	fsi = file_desc->node->nas->fs->fsi;
+	file = file_desc->file_info;
+
+	if (!smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
+		return -errno;
+	}
+
+	return 0;
 }
 
 static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 {
-	struct ntfs_desc_info *desc;
+	struct cifs_fs_info *fsi;
+	SMBCFILE *file;
 	size_t res;
 
-	desc = file_desc->file_info;
+	fsi = file_desc->node->nas->fs->fsi;
+	file = file_desc->file_info;
 
-	res = ntfs_attr_pread(desc->attr, file_desc->cursor, size, buf);
+	res = smbc_getFunctionRead(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
 		file_desc->cursor += res;
@@ -286,6 +326,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 }
 
 static const struct fsop_desc cifs_fsop = {
+//	.create_node = embox_ntfs_node_create,
 //	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_cifs_mount,
 	.umount = embox_cifs_umount,
