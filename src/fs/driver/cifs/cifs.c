@@ -271,11 +271,11 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
-	if (!vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1)) {
-		return -EINVAL;
+	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+		return rc;
 	}
 
-	if (!smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
+	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
 		return -errno;
 	}
 
@@ -300,7 +300,7 @@ static int cifs_close(struct file_desc *file_desc)
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
-	if (!smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
+	if (smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
 		return -errno;
 	}
 
