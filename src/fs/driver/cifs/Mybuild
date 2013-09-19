@@ -3,6 +3,8 @@ package embox.fs.driver
 module cifs {
 	depends third_party.samba.core
 
+	option number cifs_descriptor_quantity=4
+
 	source "order.mk"
 
 	@IncludePath("$(THIRDPARTY_DIR)/samba/include")

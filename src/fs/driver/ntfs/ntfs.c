@@ -427,6 +427,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ntfs_fs_pool))) {
+		/* ToDo: error: exit without deallocation of filesystem */
 		rc = ENOMEM;
 		goto error;
 	}
