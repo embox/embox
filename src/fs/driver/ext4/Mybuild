@@ -2,6 +2,7 @@ package embox.fs.driver
 
 module ext4 {
 	source "ext4.c"
+	source "ext4_balloc.c"
 	option number inode_quantity=64
 	option number ext4_descriptor_quantity=4
 
