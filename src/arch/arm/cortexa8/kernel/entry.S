@@ -27,16 +27,15 @@ irq_handler:
 	stmia	r0, {r1, lr}
 	ldmfd	sp!, {r0, r1}
 
-	msr	CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
-	stmfd	sp!, {r0-r3, lr}
+	msr	CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
+	stmfd	sp!, {r0-r12, lr}
 
 	ldr	r0, =this_spsr_lr
 	ldmia	r0, {r1, r2}
-	stmfd	sp!,{r1, r2}
-	stmfd	sp!,{r0}
+	stmfd	sp!,{r0, r1, r2}
 
 	ldr	lr, =irq_leave
-	msr	CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+	msr	CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	msr	SPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 
@@ -45,17 +44,16 @@ irq_handler:
 	ldmfd   sp!, {pc}^
 
 irq_leave:
-	ldmfd	sp!, {r0}
-	ldmfd	sp!, {r1, r2}
+	ldmfd	sp!, {r0, r1, r2}
 	stmia	r0, {r1, r2}
 
-	ldmfd	sp!, {r0-r3, lr}
-	msr	CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+	ldmfd	sp!, {r0-r12, lr}
+	msr	CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	stmfd	sp!, {r0, r1}
 	ldr	r0, =this_spsr_lr
 	ldmia	r0, {r1, lr}
-	msr	SPSR_c, r1
+	msr	SPSR_cxsf, r1
 
 	ldmfd	sp!, {r0, r1}
 
