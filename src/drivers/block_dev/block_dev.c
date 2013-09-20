@@ -165,7 +165,7 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 				if (blksize != (res = bdev->driver->read(bdev, bh->data,
 						blksize, blkno + i))) {
 					bcache_buffer_unlock(bh);
-					return -res;
+					return res;
 				}
 			}
 			memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0), cplen);
@@ -203,7 +203,7 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 					if (blksize != (res = bdev->driver->read(bdev, bh->data,
 							blksize, blkno + i))) {
 						bcache_buffer_unlock(bh);
-						return -res;
+						return res;
 					}
 				}
 			}
@@ -211,7 +211,7 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
 					blksize, blkno + i))) {
 				bcache_buffer_unlock(bh);
-				return -res;
+				return res;
 			}
 		}
 		bcache_buffer_unlock(bh);
@@ -246,7 +246,7 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 					if (blksize * (blkcount - i) != (res = bdev->driver->read(bdev, buffer + i * blksize,
 							blksize * (blkcount - i), blkno + i))) {
 						bcache_buffer_unlock(bh);
-						return -res;
+						return res;
 					}
 					readed = 1;
 				}

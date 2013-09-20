@@ -77,10 +77,12 @@ static inline int min_free(struct jffs2_sb_info *c)
 }
 
 static inline uint32_t EMPTY_SCAN_SIZE(uint32_t sector_size) {
-	if (sector_size < DEFAULT_EMPTY_SCAN_SIZE)
+	if (sector_size < DEFAULT_EMPTY_SCAN_SIZE) {
 		return sector_size;
-	else
+	}
+	else {
 		return DEFAULT_EMPTY_SCAN_SIZE;
+	}
 }
 
 int jffs2_scan_medium(struct jffs2_sb_info *c)

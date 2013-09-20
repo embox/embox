@@ -107,7 +107,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	if (0 < hdc->result) {
 		result = hdc->result = 0;
 	}
-	return result == 0 ? bufsize - bufleft : result;
+	return result == 0 ? bufsize - bufleft : -EIO;
 }
 
 static int atapi_read_capacity(hd_t *hd) {
