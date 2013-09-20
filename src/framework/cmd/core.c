@@ -34,8 +34,15 @@ const struct mod_ops __cmd_mod_ops = {
 static int cmd_mod_enable(struct mod_info *mod_info) {
 	const struct mod_extra *extra = mod_info->mod->extra;
 
-	printk("\tcmd: loading %s.%s: data=0x%08lx, data_sz=%zu, reserve=0x%08lx\n",
-		mod_info->mod->package->name, mod_info->mod->name,
+	printk("\tcmd: loading %s.%s: ",
+		mod_info->mod->package->name, mod_info->mod->name);
+
+	if (!extra) {
+		printk("no app metadata available (missing @Cmd?)\n");
+		return -ENOENT;
+	}
+
+	printk("data=0x%08lx, data_sz=%zu, reserve=0x%08lx\n",
 		(unsigned long) extra->data, extra->data_sz,
 		(unsigned long) extra->data + APP_DATA_RESERVE_OFFSET);
 
