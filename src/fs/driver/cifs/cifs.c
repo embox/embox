@@ -20,6 +20,7 @@
 #include <embox/unit.h>
 #include <fs/path.h>
 #include <errno.h>
+#include <util/math.h>
 
 
 struct cifs_fs_info
@@ -316,6 +317,15 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
+	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
+	if (res != file_desc->cursor) {
+		if (-1 == res) {
+			return -errno;
+		} else {
+			return EIO;
+		}
+	}
+
 	res = smbc_getFunctionRead(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
@@ -325,19 +335,110 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 	return res;
 }
 
+static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
+	struct cifs_fs_info *fsi;
+	SMBCFILE *file;
+	size_t res;
+
+	fsi = file_desc->node->nas->fs->fsi;
+	file = file_desc->file_info;
+
+	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
+	if (res != file_desc->cursor) {
+		if (-1 == res) {
+			return -errno;
+		} else {
+			return -EIO;
+		}
+	}
+
+	res = smbc_getFunctionWrite(fsi->ctx)(fsi->ctx, file, buf, size);
+
+	if (res > 0) {
+		file_desc->cursor += res;
+		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, file_desc->cursor);
+	}
+
+	return res;
+}
+
+static int embox_cifs_node_create(struct node *parent_node, struct node *new_node) {
+	struct cifs_fs_info *pfsi;
+	char fileurl[PATH_MAX];
+	SMBCFILE *file;
+	mode_t mode;
+	int rc;
+
+	pfsi = parent_node->nas->fs->fsi;
+
+	strcpy(fileurl,pfsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+	if ((rc = vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+		return rc;
+	}
+
+	if (node_is_directory(new_node)) {
+		mode = S_IFDIR;
+		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
+			return -errno;
+		}
+	} else {
+		mode = S_IFREG;
+		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
+		if (!file) {
+			return -errno;
+		}
+		if (smbc_getFunctionClose(pfsi->ctx)(pfsi->ctx, file)) {
+			return -errno;
+		}
+	}
+
+	new_node->nas->fs = parent_node->nas->fs;
+
+	return 0;
+}
+
+static int embox_cifs_node_delete(struct node *node) {
+	struct cifs_fs_info *fsi;
+	char fileurl[PATH_MAX];
+	int rc;
+
+	fsi = node->nas->fs->fsi;
+
+	strcpy(fileurl,fsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+		return rc;
+	}
+
+	if (node_is_directory(node)) {
+		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	} else {
+		if (smbc_getFunctionUnlink(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	}
+
+	vfs_del_leaf(node);
+
+	return 0;
+}
+
 static const struct fsop_desc cifs_fsop = {
-//	.create_node = embox_ntfs_node_create,
-//	.delete_node = embox_ntfs_node_delete,
+	.create_node = embox_cifs_node_create,
+	.delete_node = embox_cifs_node_delete,
 	.mount = embox_cifs_mount,
 	.umount = embox_cifs_umount,
-//	.truncate = embox_ntfs_truncate,
+//	.truncate = embox_cifs_truncate,
 };
 
 static struct kfile_operations cifs_fop = {
 	.open = cifs_open,
 	.close = cifs_close,
 	.read = cifs_read,
-//	.write = ntfs_write,
+	.write = cifs_write,
 };
 
 static const struct fs_driver cifs_driver = {
