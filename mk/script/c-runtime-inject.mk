@@ -74,18 +74,18 @@ $(foreach p,$(packages), \
 	$(info MOD_PACKAGE_DEF($(call fqn2id,$p), "$p");))
 $(info )
 
-$(info /* Applications. */)
-$(foreach m,$(app_modules),$(foreach n,$(basename $m), \
-	$(info MOD_EXTRA_DEF($n, \
-		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
-		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
-$(info )
-
 $(info /* Module definitions. */)
 $(foreach m,$(modules),$(foreach n,$(basename $m), \
 	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), \
 		"$(subst .,,$(suffix $n))", \
 		$(call appref_or_null,$m));)))
+$(info )
+
+$(info /* Applications. */)
+$(foreach m,$(app_modules),$(foreach n,$(basename $m), \
+	$(info MOD_EXTRA_DEF($n, \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
 $(info )
 
 $(info /* Runlevel modules. */)
