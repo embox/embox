@@ -18,15 +18,13 @@
 #define PCI_SPACE_SIZE  OPTION_GET(NUMBER, pci_space_size)
 #define PCI_WINDOW_SIZE OPTION_GET(NUMBER, pci_window_size)
 
-
-#define DEBUG_LOG
+//#define DEBUG_LOG
 #ifdef DEBUG_LOG
 #include <prom/prom_printf.h>
 #define dprintf(...) prom_printf(__VA_ARGS__)
 #else
 #define dprintf(...) do {} while (0)
 #endif
-
 
 EMBOX_UNIT_INIT(pci_bios_init);
 
@@ -126,7 +124,6 @@ static void pci_bus_configure(uint32_t busn) {
 	uint8_t hdr_type, is_multi = 0;
 
 	for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-
 		/* Devices are required to implement function 0, so if
 		 * it's missing then there is no device here. */
 		if (PCI_FUNC(devfn) && !is_multi) {
