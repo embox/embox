@@ -75,7 +75,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
-	assert(!critical_allows(CRITICAL_SCHED_LOCK));
+	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
 	sched_unlock_noswitch();
 	ipl_enable();
