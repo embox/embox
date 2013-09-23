@@ -113,7 +113,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		}
 	}
 
-	for (i=0; i<c->nr_blocks; i++) {
+	for (i=0; i < c->nr_blocks; i++) {
 		struct jffs2_eraseblock *jeb = &c->blocks[i];
 
 		ret = jffs2_scan_eraseblock(c, jeb, buf_size ?
