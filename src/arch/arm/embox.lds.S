@@ -31,9 +31,6 @@ SECTIONS {
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
-	// Linker bugs? Dunno, but this helps.  -- Eldar
-	__app_data_size = (__app_data_end - __app_data_start);
-
 	.bss : {
 		LDS_INPUT_BSS
 	} SECTION_REGION(bss)

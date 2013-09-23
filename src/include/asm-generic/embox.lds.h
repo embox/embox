@@ -63,8 +63,8 @@
 	*(.app.data.*)                 \
 	__app_data_end = .;            \
 	__app_data_size =              \
-	    (__app_data_end -          \
-	     __app_data_start);        \
+	    ABSOLUTE(__app_data_end -  \
+	             __app_data_start);\
 
 
 #define LDS_INPUT_BSS \
