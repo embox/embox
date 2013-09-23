@@ -59,9 +59,9 @@
 	*(.data)                       \
 	*(.sdata)                      \
 	*(.data.*)                     \
-	__app_data_start = .;          \
+	__app_data_start = ABSOLUTE(.);\
 	*(.app.data.*)                 \
-	__app_data_end = .;            \
+	__app_data_end = ABSOLUTE(.);  \
 	__app_data_size =              \
 	    ABSOLUTE(__app_data_end -  \
 	             __app_data_start);\
