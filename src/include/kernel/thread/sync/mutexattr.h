@@ -25,6 +25,7 @@ struct mutexattr {
 
 extern int mutexattr_init(struct mutexattr*);
 extern int mutexattr_destroy(struct mutexattr*);
-extern int mutexattr_gettype(const struct mutexattr *, int *);
+extern int mutexattr_gettype(const struct mutexattr*, int*);
+extern int mutexattr_settype(struct mutexattr*, int);
 
 #endif /* MUTEXATTR_H_ */

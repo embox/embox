@@ -295,11 +295,13 @@ int pthread_mutexattr_setprotocol(pthread_mutexattr_t *attr, int protocol) {
 int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr, int pshared) {
 	return -ENOSYS;
 }
+*/
 
 int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type) {
-	return -ENOSYS;
+	return mutexattr_settype(attr, type);
 }
 
+/*
 int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
 	return -ENOSYS;
 }

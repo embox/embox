@@ -135,7 +135,7 @@ extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
-//extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
 
 //extern int   pthread_once(pthread_once_t *, void (*)(void));
 

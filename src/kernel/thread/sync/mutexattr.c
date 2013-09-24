@@ -27,3 +27,10 @@ int mutexattr_gettype(const struct mutexattr *attr, int *type) {
 
 	return ENOERR;
 }
+
+//actually types are not implemented
+int mutexattr_settype(struct mutexattr *attr, int type) {
+	attr->type &= type;
+
+	return ENOERR;
+}
