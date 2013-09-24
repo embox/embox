@@ -32,16 +32,22 @@ void io_sync_enable(struct io_sync *ios, enum io_sync_op op) {
 		if (!ios->error_on_read) {
 			manual_event_set_and_notify(&ios->can_read);
 			if (ios->on_reading != NULL) {
-				event_notify(ios->on_reading);
+				manual_event_set_and_notify(ios->on_reading);
 			}
+		}
+		else {
+			manual_event_set(&ios->can_read);
 		}
 		break;
 	case IO_SYNC_WRITING:
 		if (!ios->error_on_write) {
 			manual_event_set_and_notify(&ios->can_write);
 			if (ios->on_writing != NULL) {
-				event_notify(ios->on_writing);
+				manual_event_set_and_notify(ios->on_writing);
 			}
+		}
+		else {
+			manual_event_set(&ios->can_write);
 		}
 		break;
 	}
@@ -52,14 +58,10 @@ void io_sync_disable(struct io_sync *ios, enum io_sync_op op) {
 
 	switch (op) {
 	case IO_SYNC_READING:
-		if (!ios->error_on_read) {
-			manual_event_reset(&ios->can_read);
-		}
+		manual_event_reset(&ios->can_read);
 		break;
 	case IO_SYNC_WRITING:
-		if (!ios->error_on_write) {
-			manual_event_reset(&ios->can_write);
-		}
+		manual_event_reset(&ios->can_write);
 		break;
 	}
 }
@@ -70,17 +72,15 @@ void io_sync_error_on(struct io_sync *ios, enum io_sync_op op) {
 	switch (op) {
 	case IO_SYNC_READING:
 		ios->error_on_read = 1;
-		manual_event_reset(&ios->can_read);
 		manual_event_notify(&ios->can_read);
 		break;
 	case IO_SYNC_WRITING:
 		ios->error_on_write = 1;
-		manual_event_reset(&ios->can_write);
 		manual_event_notify(&ios->can_write);
 		break;
 	}
 	if (ios->on_error != NULL) {
-		event_notify(ios->on_error);
+		manual_event_set_and_notify(ios->on_error);
 	}
 }
 
@@ -88,12 +88,10 @@ void io_sync_error(struct io_sync *ios) {
 	assert(ios != NULL);
 
 	ios->error_on_read = ios->error_on_write = 1;
-	manual_event_reset(&ios->can_read);
-	manual_event_reset(&ios->can_write);
 	manual_event_notify(&ios->can_read);
 	manual_event_notify(&ios->can_write);
 	if (ios->on_error != NULL) {
-		event_notify(ios->on_error);
+		manual_event_set_and_notify(ios->on_error);
 	}
 }
 
@@ -111,7 +109,7 @@ int io_sync_ready(struct io_sync *ios, enum io_sync_op op) {
 }
 
 void io_sync_notify(struct io_sync *ios, enum io_sync_op op,
-		struct event *on_op) {
+		struct manual_event *on_op) {
 	assert(ios != NULL);
 
 	switch (op) {

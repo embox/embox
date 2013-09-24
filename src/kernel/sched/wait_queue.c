@@ -20,16 +20,23 @@
 static void on_notified(struct thread *thread, void *data) {
 	struct wait_link *wait_link = data;
 
-	dlist_del(&wait_link->link);
+	ipl_t ipl = ipl_save();
+	{
+		dlist_del(&wait_link->link);
+	}
+	ipl_restore(ipl);
 }
 
 void wait_queue_insert(struct wait_queue *wait_queue,
 		struct wait_link *wait_link) {
+	ipl_t ipl = ipl_save();
+	{
+		dlist_head_init(&wait_link->link);
+		wait_link->thread = thread_self();
 
-	dlist_head_init(&wait_link->link);
-	wait_link->thread = thread_self();
-
-	dlist_add_prev(&wait_link->link, &wait_queue->list);
+		dlist_add_prev(&wait_link->link, &wait_queue->list);
+	}
+	ipl_restore(ipl);
 }
 
 void wait_queue_prepare(struct wait_link *wait_link) {
@@ -56,7 +63,7 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
-	IPL_SAFE_DO(wait_queue_insert(wait_queue, &wait_link));
+	wait_queue_insert(wait_queue, &wait_link);
 
 	wait_queue_prepare(&wait_link);
 

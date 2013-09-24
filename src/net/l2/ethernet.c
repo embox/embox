@@ -56,7 +56,7 @@ static int ethernet_parse_hdr(struct sk_buff *skb,
 	if ((skb == NULL) || (out_hdr_info == NULL)) {
 		return -EINVAL;
 	}
-	else if (skb->len <= ETH_HEADER_SIZE) {
+	else if (skb->len < ETH_HEADER_SIZE) {
 		return -EINVAL;
 	}
 

@@ -29,15 +29,15 @@
 #include <unistd.h>
 #include <ctype.h>
 
-int *nano__winio__key_buffer = NULL;
+static int *key_buffer = NULL;
 	/* The keystroke buffer, containing all the keystrokes we
 	 * haven't handled yet at a given point. */
-size_t nano__winio__key_buffer_len = 0;
+static size_t key_buffer_len = 0;
 	/* The length of the keystroke buffer. */
-int nano__winio__statusblank = 0;
+static int statusblank = 0;
 	/* The number of keystrokes left after we call statusbar(),
 	 * before we actually blank the statusbar. */
-bool nano__winio__disable_cursorpos = FALSE;
+static bool disable_cursorpos = FALSE;
 	/* Should we temporarily disable constant cursor position
 	 * display? */
 
@@ -109,7 +109,7 @@ void get_key_buffer(WINDOW *win)
     size_t errcount;
 
     /* If the keystroke buffer isn't empty, get out. */
-    if (nano__winio__key_buffer != NULL)
+    if (key_buffer != NULL)
 	return;
 
     /* Read in the first character using blocking input. */
@@ -144,9 +144,9 @@ void get_key_buffer(WINDOW *win)
 
     /* Increment the length of the keystroke buffer, and save the value
      * of the keystroke at the end of it. */
-    nano__winio__key_buffer_len++;
-    nano__winio__key_buffer = (int *)nmalloc(sizeof(int));
-    nano__winio__key_buffer[0] = input;
+    key_buffer_len++;
+    key_buffer = (int *)nmalloc(sizeof(int));
+    key_buffer[0] = input;
 
     /* Read in the remaining characters using non-blocking input. */
     nodelay(win, TRUE);
@@ -164,10 +164,10 @@ void get_key_buffer(WINDOW *win)
 
 	/* Otherwise, increment the length of the keystroke buffer, and
 	 * save the value of the keystroke at the end of it. */
-	nano__winio__key_buffer_len++;
-	nano__winio__key_buffer = (int *)nrealloc(nano__winio__key_buffer, nano__winio__key_buffer_len *
+	key_buffer_len++;
+	key_buffer = (int *)nrealloc(key_buffer, key_buffer_len *
 		sizeof(int));
-	nano__winio__key_buffer[nano__winio__key_buffer_len - 1] = input;
+	key_buffer[key_buffer_len - 1] = input;
 
 #ifndef NANO_TINY
 	allow_pending_sigwinch(FALSE);
@@ -178,14 +178,14 @@ void get_key_buffer(WINDOW *win)
     nodelay(win, FALSE);
 
 #ifdef DEBUG
-    fprintf(stderr, "get_key_buffer(): key_buffer_len = %lu\n", (unsigned long)nano__winio__key_buffer_len);
+    fprintf(stderr, "get_key_buffer(): key_buffer_len = %lu\n", (unsigned long)key_buffer_len);
 #endif
 }
 
 /* Return the length of the keystroke buffer. */
 size_t get_key_buffer_len(void)
 {
-    return nano__winio__key_buffer_len;
+    return key_buffer_len;
 }
 
 /* Add the keystrokes in input to the keystroke buffer. */
@@ -203,24 +203,24 @@ void unget_input(int *input, size_t input_len)
     /* If adding input would put the keystroke buffer beyond maximum
      * capacity, only add enough of input to put it at maximum
      * capacity. */
-    if (nano__winio__key_buffer_len + input_len < nano__winio__key_buffer_len)
-	input_len = (size_t)-1 - nano__winio__key_buffer_len;
+    if (key_buffer_len + input_len < key_buffer_len)
+	input_len = (size_t)-1 - key_buffer_len;
 
     /* Add the length of input to the length of the keystroke buffer,
      * and reallocate the keystroke buffer so that it has enough room
      * for input. */
-    nano__winio__key_buffer_len += input_len;
-    nano__winio__key_buffer = (int *)nrealloc(nano__winio__key_buffer, nano__winio__key_buffer_len *
+    key_buffer_len += input_len;
+    key_buffer = (int *)nrealloc(key_buffer, key_buffer_len *
 	sizeof(int));
 
     /* If the keystroke buffer wasn't empty before, move its beginning
      * forward far enough so that we can add input to its beginning. */
-    if (nano__winio__key_buffer_len > input_len)
-	memmove(nano__winio__key_buffer + input_len, nano__winio__key_buffer,
-		(nano__winio__key_buffer_len - input_len) * sizeof(int));
+    if (key_buffer_len > input_len)
+	memmove(key_buffer + input_len, key_buffer,
+		(key_buffer_len - input_len) * sizeof(int));
 
     /* Copy input to the beginning of the keystroke buffer. */
-    memcpy(nano__winio__key_buffer, input, input_len * sizeof(int));
+    memcpy(key_buffer, input, input_len * sizeof(int));
 }
 
 /* Put back the character stored in kbinput, putting it in byte range
@@ -254,11 +254,11 @@ int *get_input(WINDOW *win, size_t input_len)
     allow_pending_sigwinch(FALSE);
 #endif
 
-    if (nano__winio__key_buffer_len == 0) {
+    if (key_buffer_len == 0) {
 	if (win != NULL) {
 	    get_key_buffer(win);
 
-	    if (nano__winio__key_buffer_len == 0)
+	    if (key_buffer_len == 0)
 		return NULL;
 	} else
 	    return NULL;
@@ -266,30 +266,30 @@ int *get_input(WINDOW *win, size_t input_len)
 
     /* If input_len is greater than the length of the keystroke buffer,
      * only read the number of characters in the keystroke buffer. */
-    if (input_len > nano__winio__key_buffer_len)
-	input_len = nano__winio__key_buffer_len;
+    if (input_len > key_buffer_len)
+	input_len = key_buffer_len;
 
     /* Subtract input_len from the length of the keystroke buffer, and
      * allocate input so that it has enough room for input_len
      * keystrokes. */
-    nano__winio__key_buffer_len -= input_len;
+    key_buffer_len -= input_len;
     input = (int *)nmalloc(input_len * sizeof(int));
 
     /* Copy input_len keystrokes from the beginning of the keystroke
      * buffer into input. */
-    memcpy(input, nano__winio__key_buffer, input_len * sizeof(int));
+    memcpy(input, key_buffer, input_len * sizeof(int));
 
     /* If the keystroke buffer is empty, mark it as such. */
-    if (nano__winio__key_buffer_len == 0) {
-	free(nano__winio__key_buffer);
-	nano__winio__key_buffer = NULL;
+    if (key_buffer_len == 0) {
+	free(key_buffer);
+	key_buffer = NULL;
     /* If the keystroke buffer isn't empty, move its beginning forward
      * far enough so that the keystrokes in input are no longer at its
      * beginning. */
     } else {
-	memmove(nano__winio__key_buffer, nano__winio__key_buffer + input_len, nano__winio__key_buffer_len *
+	memmove(key_buffer, key_buffer + input_len, key_buffer_len *
 		sizeof(int));
-	nano__winio__key_buffer = (int *)nrealloc(nano__winio__key_buffer, nano__winio__key_buffer_len *
+	key_buffer = (int *)nrealloc(key_buffer, key_buffer_len *
 		sizeof(int));
     }
 
@@ -325,10 +325,9 @@ int get_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
  * sequences into their corresponding key values.  Set meta_key to TRUE
  * when we get a meta key sequence, and set func_key to TRUE when we get
  * a function key.  Assume nodelay(win) is FALSE. */
-int nano__winio__parse_kbinput__escapes = 0;
-int nano__winio__parse_kbinput__byte_digits = 0;
 int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 {
+    static int escapes = 0, byte_digits = 0;
     int *kbinput, retval = ERR;
 
     *meta_key = FALSE;
@@ -347,8 +346,8 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 	    break;
 	case NANO_CONTROL_3:
 	    /* Increment the escape counter. */
-	    nano__winio__parse_kbinput__escapes++;
-	    switch (nano__winio__parse_kbinput__escapes) {
+	    escapes++;
+	    switch (escapes) {
 		case 1:
 		    /* One escape: wait for more input. */
 		case 2:
@@ -359,11 +358,11 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 		default:
 		    /* More than three escapes: limit the escape counter
 		     * to no more than two, and wait for more input. */
-		    nano__winio__parse_kbinput__escapes %= 3;
+		    escapes %= 3;
 	    }
 	    break;
 	default:
-	    switch (nano__winio__parse_kbinput__escapes) {
+	    switch (escapes) {
 		case 0:
 		    /* One non-escape: normal input mode.  Save the
 		     * non-escape character as the result. */
@@ -371,7 +370,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 		    break;
 		case 1:
 		    /* Reset the escape counter. */
-		    nano__winio__parse_kbinput__escapes = 0;
+		    escapes = 0;
 		    if (get_key_buffer_len() == 0) {
 			/* One escape followed by a non-escape, and
 			 * there aren't any other keystrokes waiting:
@@ -391,8 +390,8 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 		case 2:
 		    if (get_key_buffer_len() == 0) {
 			if (('0' <= *kbinput && *kbinput <= '2' &&
-				nano__winio__parse_kbinput__byte_digits == 0) || ('0' <= *kbinput &&
-				*kbinput <= '9' && nano__winio__parse_kbinput__byte_digits > 0)) {
+				byte_digits == 0) || ('0' <= *kbinput &&
+				*kbinput <= '9' && byte_digits > 0)) {
 			    /* Two escapes followed by one or more
 			     * decimal digits, and there aren't any
 			     * other keystrokes waiting: byte sequence
@@ -406,7 +405,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 			     * is not limited to 2XX, fall through. */
 			    int byte;
 
-			    nano__winio__parse_kbinput__byte_digits++;
+			    byte_digits++;
 			    byte = get_byte_kbinput(*kbinput);
 
 			    if (byte != ERR) {
@@ -418,8 +417,8 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 				 * and the byte sequence counter, and
 				 * put back the corresponding byte
 				 * value. */
-				nano__winio__parse_kbinput__escapes = 0;
-				nano__winio__parse_kbinput__byte_digits = 0;
+				escapes = 0;
+				byte_digits = 0;
 
 				/* Put back the multibyte equivalent of
 				 * the byte value. */
@@ -439,8 +438,8 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 			    }
 			} else {
 			    /* Reset the escape counter. */
-			    nano__winio__parse_kbinput__escapes = 0;
-			    if (nano__winio__parse_kbinput__byte_digits == 0)
+			    escapes = 0;
+			    if (byte_digits == 0)
 				/* Two escapes followed by a non-decimal
 				 * digit or a decimal digit that would
 				 * create a byte sequence greater than
@@ -457,7 +456,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 				 * sequence, reset the byte sequence
 				 * counter and save the character we got
 				 * as the result. */
-				nano__winio__parse_kbinput__byte_digits = 0;
+				byte_digits = 0;
 				retval = *kbinput;
 			    }
 			}
@@ -467,7 +466,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 			 * meta and escape sequence mode.  Reset the
 			 * escape counter, set meta_key to TRUE, and
 			 * interpret the escape sequence. */
-			nano__winio__parse_kbinput__escapes = 0;
+			escapes = 0;
 			*meta_key = TRUE;
 			retval = parse_escape_seq_kbinput(win,
 				*kbinput);
@@ -475,7 +474,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
 		    break;
 		case 3:
 		    /* Reset the escape counter. */
-		    nano__winio__parse_kbinput__escapes = 0;
+		    escapes = 0;
 		    if (get_key_buffer_len() == 0)
 			/* Three escapes followed by a non-escape, and
 			 * there aren't any other keystrokes waiting:
@@ -642,7 +641,7 @@ int parse_kbinput(WINDOW *win, bool *meta_key, bool *func_key)
     }
 
 #ifdef DEBUG
-    fprintf(stderr, "parse_kbinput(): kbinput = %d, meta_key = %s, func_key = %s, escapes = %d, byte_digits = %d, retval = %d\n", *kbinput, *meta_key ? "TRUE" : "FALSE", *func_key ? "TRUE" : "FALSE", nano__winio__parse_kbinput__escapes, nano__winio__parse_kbinput__byte_digits, retval);
+    fprintf(stderr, "parse_kbinput(): kbinput = %d, meta_key = %s, func_key = %s, escapes = %d, byte_digits = %d, retval = %d\n", *kbinput, *meta_key ? "TRUE" : "FALSE", *func_key ? "TRUE" : "FALSE", escapes, byte_digits, retval);
 #endif
 
     free(kbinput);
@@ -1268,21 +1267,20 @@ int parse_escape_seq_kbinput(WINDOW *win, int kbinput)
 
 /* Translate a byte sequence: turn a three-digit decimal number (from
  * 000 to 255) into its corresponding byte value. */
-int nano__winio__get_byte_kbinput__byte_digits = 0;
-int nano__winio__get_byte_kbinput__byte = 0;
 int get_byte_kbinput(int kbinput)
 {
+    static int byte_digits = 0, byte = 0;
     int retval = ERR;
 
     /* Increment the byte digit counter. */
-    nano__winio__get_byte_kbinput__byte_digits++;
+    byte_digits++;
 
-    switch (nano__winio__get_byte_kbinput__byte_digits) {
+    switch (byte_digits) {
 	case 1:
 	    /* First digit: This must be from zero to two.  Put it in
 	     * the 100's position of the byte sequence holder. */
 	    if ('0' <= kbinput && kbinput <= '2')
-		nano__winio__get_byte_kbinput__byte = (kbinput - '0') * 100;
+		byte = (kbinput - '0') * 100;
 	    else
 		/* This isn't the start of a byte sequence.  Return this
 		 * character as the result. */
@@ -1293,9 +1291,9 @@ int get_byte_kbinput(int kbinput)
 	     * was two, and may be any decimal value if the first was
 	     * zero or one.  Put it in the 10's position of the byte
 	     * sequence holder. */
-	    if (('0' <= kbinput && kbinput <= '5') || (nano__winio__get_byte_kbinput__byte < 200 &&
+	    if (('0' <= kbinput && kbinput <= '5') || (byte < 200 &&
 		'6' <= kbinput && kbinput <= '9'))
-		nano__winio__get_byte_kbinput__byte += (kbinput - '0') * 10;
+		byte += (kbinput - '0') * 10;
 	    else
 		/* This isn't the second digit of a byte sequence.
 		 * Return this character as the result. */
@@ -1307,12 +1305,12 @@ int get_byte_kbinput(int kbinput)
 	     * be any decimal value if the first was zero or one and the
 	     * second was between six and nine.  Put it in the 1's
 	     * position of the byte sequence holder. */
-	    if (('0' <= kbinput && kbinput <= '5') || (nano__winio__get_byte_kbinput__byte < 250 &&
+	    if (('0' <= kbinput && kbinput <= '5') || (byte < 250 &&
 		'6' <= kbinput && kbinput <= '9')) {
-		nano__winio__get_byte_kbinput__byte += kbinput - '0';
+		byte += kbinput - '0';
 		/* If this character is a valid decimal value, then the
 		 * byte sequence is complete. */
-		retval = nano__winio__get_byte_kbinput__byte;
+		retval = byte;
 	    } else
 		/* This isn't the third digit of a byte sequence.
 		 * Return this character as the result. */
@@ -1329,12 +1327,12 @@ int get_byte_kbinput(int kbinput)
     /* If we have a result, reset the byte digit counter and the byte
      * sequence holder. */
     if (retval != ERR) {
-	nano__winio__get_byte_kbinput__byte_digits = 0;
-	nano__winio__get_byte_kbinput__byte = 0;
+	byte_digits = 0;
+	byte = 0;
     }
 
 #ifdef DEBUG
-    fprintf(stderr, "get_byte_kbinput(): kbinput = %d, byte_digits = %d, byte = %d, retval = %d\n", kbinput, nano__winio__get_byte_kbinput__byte_digits, nano__winio__get_byte_kbinput__byte, retval);
+    fprintf(stderr, "get_byte_kbinput(): kbinput = %d, byte_digits = %d, byte = %d, retval = %d\n", kbinput, byte_digits, byte, retval);
 #endif
 
     return retval;
@@ -1881,10 +1879,10 @@ void blank_bottombars(void)
  * position display is on. */
 void check_statusblank(void)
 {
-    if (nano__winio__statusblank > 0) {
-	nano__winio__statusblank--;
+    if (statusblank > 0) {
+	statusblank--;
 
-	if (nano__winio__statusblank == 0 && !ISSET(CONST_UPDATE)) {
+	if (statusblank == 0 && !ISSET(CONST_UPDATE)) {
 	    blank_statusbar();
 	    wnoutrefresh(bottomwin);
 	    reset_cursor();
@@ -2316,13 +2314,13 @@ void statusbar(const char *msg, ...)
 	/* Leave the cursor at its position in the edit window, not in
 	 * the statusbar. */
 
-    nano__winio__disable_cursorpos = TRUE;
+    disable_cursorpos = TRUE;
 
     /* If we're doing quick statusbar blanking, and constant cursor
      * position display is off, blank the statusbar after only one
      * keystroke.  Otherwise, blank it after twenty-six keystrokes, as
      * Pico does. */
-    nano__winio__statusblank =
+    statusblank =
 #ifndef NANO_TINY
 	ISSET(QUICK_BLANK) && !ISSET(CONST_UPDATE) ? 1 :
 #endif
@@ -3345,8 +3343,8 @@ void do_cursorpos(bool constant)
     openfile->current->data[openfile->current_x] = c;
     openfile->current->next = f;
 
-    if (constant && nano__winio__disable_cursorpos) {
-	nano__winio__disable_cursorpos = FALSE;
+    if (constant && disable_cursorpos) {
+	disable_cursorpos = FALSE;
 	return;
     }
 
@@ -3365,7 +3363,7 @@ void do_cursorpos(bool constant)
 	(unsigned long)cur_xpt, (unsigned long)cur_lenpt, colpct,
 	(unsigned long)i, (unsigned long)openfile->totsize, charpct);
 
-    nano__winio__disable_cursorpos = FALSE;
+    disable_cursorpos = FALSE;
 }
 
 /* Unconditionally display the current cursor position. */

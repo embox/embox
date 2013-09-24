@@ -154,7 +154,7 @@ int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdwait", error);
 
-			return error;
+			return -EIO;
 		}
 
 		if (!(status & HDCS_BSY) && ((status & mask) == mask)) {

@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <asm/io.h>
 #include <net/netdevice.h>
+#include <util/binalign.h>
 
 
 /**
@@ -69,7 +70,7 @@ __VIRTIO_ANDIN(8)
 #undef __VIRTIO_LOAD
 #undef __VIRTIO_STORE
 #undef __VIRTIO_ORIN
-
+#undef __VIRTIO_ANDIN
 
 /**
  * VirtIO Register operations
@@ -87,6 +88,7 @@ static inline uint16_t virtio_get_queue_size(struct net_device *dev) {
 }
 
 static inline void virtio_set_queue_addr(void *addr, struct net_device *dev) {
+	assert(binalign_check_bound((uintptr_t)addr, VRING_ALIGN_BOUND));
 	virtio_store32((uintptr_t)addr / VRING_ALIGN_BOUND, VIRTIO_REG_QUEUE_A, dev);
 }
 
@@ -161,6 +163,9 @@ struct virtqueue {
 	uint16_t next_free_desc; /* Next free descriptor id */
 };
 
+
+extern void vring_desc_init(struct vring_desc *vrd,
+		void *addr, unsigned int len, unsigned short flags);
 
 extern unsigned int vring_size(unsigned int num);
 

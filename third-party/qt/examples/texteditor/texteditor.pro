@@ -6,7 +6,8 @@ SOURCES += \
     savefiledialog.cpp \
     helpwindow.cpp \
     login.cpp \
-    desktopimage.cpp
+    desktopimage.cpp \
+    mdi_background.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -15,7 +16,8 @@ HEADERS += \
     savefiledialog.h \
     helpwindow.h \
     login.h \
-    desktopimage.h
+    desktopimage.h \
+    mdi_background.h
 
 RESOURCES = texteditor.qrc
 

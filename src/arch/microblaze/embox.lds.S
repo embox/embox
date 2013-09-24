@@ -27,21 +27,16 @@ SECTIONS {
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
-		ALIGNMENT();
-		*(.data)
-		ALIGNMENT();
+		LDS_INPUT_DATA
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT();
-		_bstart = .;
-		*(.bss)
-		*(.sbss)
-		ALIGNMENT();
-		_bend = .;
+		LDS_INPUT_BSS
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
+	_bstart = _bss_vma;
+	_bend = _bstart + _bss_len;
 
 	.reserve (NOLOAD): {
 		LDS_INPUT_RESERVE

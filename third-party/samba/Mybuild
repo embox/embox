@@ -8,6 +8,7 @@ module core {
 	source "empty.c" // FIXME: workaround
 
 	depends embox.net.lib.getifaddrs
+	depends third_party.zlib.libs
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/samba MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source

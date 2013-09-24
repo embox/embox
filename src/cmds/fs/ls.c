@@ -117,14 +117,13 @@ static void print(char *path, DIR *dir) {
 			closedir(d);
 		}
 	}
-
 }
 
 static int exec(int argc, char **argv) {
 	DIR *dir;
 
 	int opt_cnt = 0;
-	int opt;
+	int opt, l;
 
 	printer = printer_simple;
 	recursive = 0;
@@ -153,6 +152,9 @@ static int exec(int argc, char **argv) {
 
 	if (optind < argc) {
 		sprintf(dir_name, "%s", argv[optind]);
+		// trim trailing slash
+		l = strlen(dir_name);
+		while (dir_name[l - 1] == '/') dir_name[--l] = 0;
 	} else {
 		sprintf(dir_name, "");
 	}

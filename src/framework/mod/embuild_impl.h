@@ -20,8 +20,10 @@
 
 /* Macro API impl. */
 
-#define __MOD_DEF(mod_nm, package_nm, mod_name, mod_brief, mod_details) \
+#define __MOD_DEF(mod_nm, package_nm, mod_name, app_nm) \
 	extern const struct mod_info __MOD_INFO(mod_nm)               \
+			__attribute__ ((weak));                               \
+	extern const struct mod_extra __MOD_EXTRA(app_nm)             \
 			__attribute__ ((weak));                               \
 	static const struct mod_package __MOD_PACKAGE(package_nm);    \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
@@ -35,21 +37,34 @@
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL);                         \
 	static struct __mod_private __MOD_PRIVATE(mod_nm);            \
-	const struct mod __MOD(mod_nm) = {          \
-		.priv   = &__MOD_PRIVATE(mod_nm),     \
+	const struct mod __MOD(mod_nm) = {            \
+		.priv       = &__MOD_PRIVATE(mod_nm),     \
 		.info       = &__MOD_INFO(mod_nm),        \
 		.package    = &__MOD_PACKAGE(package_nm), \
+		.extra      = &__MOD_EXTRA(app_nm),       \
 		.name       = mod_name,                   \
-		.brief      = mod_brief,                  \
-		.details    = mod_details,                \
 		.requires   = __MOD_REQUIRES(mod_nm),     \
 		.provides   = __MOD_PROVIDES(mod_nm),     \
-		.after_deps = __MOD_AFTER_DEPS(mod_nm), \
-		.contents = __MOD_CONTENTS(mod_nm),  \
-		.members  = __MOD_MEMBERS(mod_nm),      \
-	};                                          \
-	extern const struct mod *__mod_registry[];  \
+		.after_deps = __MOD_AFTER_DEPS(mod_nm),   \
+		.contents   = __MOD_CONTENTS(mod_nm),     \
+		.members    = __MOD_MEMBERS(mod_nm),      \
+	};                                            \
+	extern const struct mod *__mod_registry[];    \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
+
+#define __MOD_EXTRA_DEF(app_nm, app_brief, app_details) \
+	extern char __app_ ## app_nm ## _data_vma; \
+	extern char __app_ ## app_nm ## _data_len; \
+	extern char __app_ ## app_nm ## _bss_vma;  \
+	extern char __app_ ## app_nm ## _bss_len;  \
+	const struct mod_extra __MOD_EXTRA(app_nm) = { \
+		.data    =          &__app_ ## app_nm ## _data_vma, \
+		.data_sz = (size_t) &__app_ ## app_nm ## _data_len, \
+		.bss     =          &__app_ ## app_nm ## _bss_vma,  \
+		.bss_sz  = (size_t) &__app_ ## app_nm ## _bss_len,  \
+		.brief   = app_brief,   \
+		.details = app_details, \
+	}
 
 #define __MOD_DEP_DEF(mod_nm, dep_nm) \
 	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \

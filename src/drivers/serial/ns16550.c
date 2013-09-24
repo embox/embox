@@ -8,10 +8,11 @@
 
 #include <hal/reg.h>
 #include <drivers/diag.h>
+#include <framework/mod/options.h>
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
-#define COM3_BASE (0x49000000 + 0x20000)
+#define COM_BASE (OPTION_GET(NUMBER, base_addr))
 
 #define UART_REG(x)                                                     \
         unsigned char x;                                                \
@@ -41,8 +42,8 @@ struct com {
 };
 
 /* FIXME volatile? */
-#define COM3_RBR (((struct com *) COM3_BASE)->rbr)
-#define COM3_LSR (((struct com *) COM3_BASE)->lsr)
+#define COM3_RBR (((struct com *) COM_BASE)->rbr)
+#define COM3_LSR (((struct com *) COM_BASE)->lsr)
 
 static void ns16550_diag_putc(const struct diag *diag, char ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);

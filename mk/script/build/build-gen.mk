@@ -118,13 +118,13 @@ build_sources := \
 #
 
 @build_image := \
-	$(build_model:%=build-image-rule-mk/%)
+	$(build_model:%=build-image-rmk/%)
 
 @build_include_mk := \
 	$(build_model:%=build-include-mk/%)
 
 @build_initfs := \
-	$(build_model:%=build-initfs-rule-mk/%)
+	$(build_model:%=build-initfs-rmk/%)
 
 @build_all = \
 	$(@build_image) \
@@ -133,25 +133,27 @@ build_sources := \
 
 all .PHONY : $(@build_all)
 
-$(@build_all) : archived_modules = $(suffix $(@module_ar_rulemk))
-$(@build_all) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
+$(@build_all) : a_modules = $(suffix $(@module_ar_rmk))
+$(@build_all) : o_modules = $(suffix $(@module_ld_rmk))
 
-build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
-build_image_rulemk_target_pat = $1
+build_image_rmk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_image_rmk_target_pat = $1
 
-$(@build_image) : @file    = $(patsubst %,$(build_image_rulemk_mk_pat),image)
+$(@build_image) : @file    = $(patsubst %,$(build_image_rmk_mk_pat),image)
 $(@build_image) : mk_file  = \
-		$(patsubst %,$(value build_image_rulemk_mk_pat),image)
+		$(patsubst %,$(value build_image_rmk_mk_pat),image)
 $(@build_image) : target_file = \
-		$(patsubst %,$(value build_image_rulemk_target_pat),image)
+		$(patsubst %,$(value build_image_rmk_target_pat),image)
 
-$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rulemk_o_pat), \
-			$(call source_base,$(@source_cpp_rulemk)))
-$(@build_image) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
-			$(basename $(call module_occ_source_files,$(normal_modules))))
-$(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
-			$(basename $(call module_a_source_files,$(build_modules))) \
-			$(call module_path,$(archived_modules)))
+$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rmk_o_pat), \
+			$(call source_base,$(@source_cpp_rmk)))
+$(@build_image) : objs = $(patsubst %,$(value module_ld_rmk_o_pat), \
+			$(call module_path,$(o_modules)))
+$(@build_image) : libs = \
+		$(patsubst %,$(value source_a_rmk_o_pat), \
+			$(basename $(call module_a_source_files,$(build_modules)))) \
+		$(patsubst %,$(value module_ar_rmk_a_pat), \
+			$(call module_path,$(a_modules)))
 
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -167,43 +169,47 @@ $(@build_image) :
 		$(call gen_comment,__image_rule))
 
 $(@build_include_mk) : @file = $(MKGEN_DIR)/include.mk
-$(@build_include_mk) : image_rulemk = \
-		$(patsubst %,$(value build_image_rulemk_mk_pat),image)
-$(@build_include_mk) : source_rulemk = \
-		$(patsubst %,$(value source_rulemk_mk_pat), \
-			$(call source_file,$(@source_rulemk)))
-$(@build_include_mk) : module_ar_rulemk = \
-		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
-			$(call module_path,$(@module_ar_rulemk)))
-$(@build_include_mk) : module_extbld_rulemk = \
-		$(patsubst %,$(value module_extbld_rulemk_mk_pat), \
-			$(call module_path,$(@module_extbld_rulemk)))
-$(@build_include_mk) : initfs_rulemk = \
-		$(patsubst %,$(value build_initfs_rulemk_mk_pat),$(build_initfs))
+$(@build_include_mk) : image_rmk = \
+		$(patsubst %,$(value build_image_rmk_mk_pat),image)
+$(@build_include_mk) : source_rmk = \
+		$(patsubst %,$(value source_rmk_mk_pat), \
+			$(call source_file,$(@source_rmk)))
+$(@build_include_mk) : module_ar_rmk = \
+		$(patsubst %,$(value module_ar_rmk_mk_pat), \
+			$(call module_path,$(@module_ar_rmk)))
+$(@build_include_mk) : module_ld_rmk = \
+		$(patsubst %,$(value module_ld_rmk_mk_pat), \
+			$(call module_path,$(@module_ld_rmk)))
+$(@build_include_mk) : module_extbld_rmk = \
+		$(patsubst %,$(value module_extbld_rmk_mk_pat), \
+			$(call module_path,$(@module_extbld_rmk)))
+$(@build_include_mk) : initfs_rmk = \
+		$(patsubst %,$(value build_initfs_rmk_mk_pat),$(build_initfs))
 
 $(@build_include_mk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,__include_image,$(image_rulemk)); \
-		$(call gen_make_var,__include_initfs,$(initfs_rulemk)); \
+		$(call gen_make_var,__include_image,$(image_rmk)); \
+		$(call gen_make_var,__include_initfs,$(initfs_rmk)); \
 		$(call gen_make_var_list,__include, \
-			$(source_rulemk) $(module_extbld_rulemk) $(module_ar_rulemk)))
+			$(source_rmk) $(module_extbld_rmk) \
+			$(module_ar_rmk) $(module_ld_rmk)))
 
 build_initfs := initfs
 
 $(@build_initfs) : initfs = $(build_initfs)
 
-build_initfs_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
-build_initfs_rulemk_target_pat = $(ROOTFS_IMAGE)
+build_initfs_rmk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_initfs_rmk_target_pat = $(ROOTFS_IMAGE)
 
-$(@build_initfs) : @file    = $(initfs:%=$(build_initfs_rulemk_mk_pat))
+$(@build_initfs) : @file    = $(initfs:%=$(build_initfs_rmk_mk_pat))
 $(@build_initfs) : mk_file  = \
-		$(patsubst %,$(value build_initfs_rulemk_mk_pat),$$(build_initfs))
+		$(patsubst %,$(value build_initfs_rmk_mk_pat),$$(build_initfs))
 $(@build_initfs) : target_file = \
-		$(patsubst %,$(value build_initfs_rulemk_target_pat),$$(build_initfs))
+		$(patsubst %,$(value build_initfs_rmk_target_pat),$$(build_initfs))
 
 $(@build_initfs) : cpio_files = \
-		$(call source_initfs_cp_o_file,$(@source_initfs_cp_rulemk))
+		$(call source_initfs_cp_o_file,$(@source_initfs_cp_rmk))
 
 $(@build_initfs) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -217,25 +223,70 @@ $(@build_initfs) :
 # Per-module artifacts.
 #
 
-@module_h := \
+source_file = $(call get,$1,fileFullName)
+source_base = $(basename $(source_file))
+
+source_o_pats   := %.o
+source_a_pats   := %.a
+source_cc_pats  := %.S %.c %.cpp %.cxx
+source_mk_pats  := %.mk
+source_cpp_pats := %.lds.S
+
+module_occ_source_files = \
+	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
+		$(call source_file,$(call get,$1,sources))))
+
+module_a_source_files = \
+	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
+
+filter_with_occ = \
+	$(foreach m,$1,$(if $(call module_occ_source_files,$m),$m))
+
+static_modules    := $(call filter_static_modules,$(build_modules))
+nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
+
+
+@module_ld_rmk := \
+	$(patsubst %,module-ld-rmk/%, \
+		$(call filter_with_occ,$(nonstatic_modules)))
+
+@module_ar_rmk := \
+	$(patsubst %,module-ar-rmk/%, \
+		$(call filter_with_occ,$(static_modules)))
+
+my_cmd_name   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.name)
+
+check_atmost_one = \
+	$(if $(word 2,$1), \
+		$(error Too many Cmd names for \
+			'$(call get,$(call get,$m,type),qualifiedName)': \
+			$(call get,$1,value)),$1)
+
+@module_lds := \
+	$(foreach m,$(nonstatic_modules), \
+		$(patsubst %,module-lds-rmk/%$m, \
+			$(call check_atmost_one,$(call invoke, \
+				$(call get,$m,allTypes),getAnnotationValuesOfOption, \
+				$(my_cmd_name)))))
+
+@module_hdr := \
 	$(foreach m,$(build_modules), \
 		$(patsubst %,module-h/%$m, \
 			$(call get,$m,allTypes)))
-@module_ar_rulemk := \
-	$(patsubst %,module-ar-rule-mk/%, \
-		$(call filter_static_modules,$(build_modules)))
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
-@module_extbld_rulemk := \
+@module_extbld_rmk := \
 	$(foreach m,$(build_modules), \
-		$(patsubst %,module-extbld-rulemk/%$m, \
+		$(patsubst %,module-extbld-rmk/%$m, \
 			$(call invoke,$(call get,$m,allTypes),getAnnotationValuesOfOption,$(my_bld_script))))
 
 @module_all = \
-	$(@module_h) \
-	$(@module_ar_rulemk) \
-	$(@module_extbld_rulemk)
+	$(@module_lds) \
+	$(@module_hdr) \
+	$(@module_ld_rmk) \
+	$(@module_ar_rmk) \
+	$(@module_extbld_rmk)
 
 all .PHONY : $(@module_all)
 
@@ -246,45 +297,91 @@ module_id   = $(subst .,__,$(module_fqn))
 $(@module_all) : fqn   = $(call module_fqn,$@)
 $(@module_all) : path  = $(call module_path,$@)
 
-module_ar_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
-module_ar_rulemk_a_pat  = $(OBJ_DIR)/%.a
 
-$(@module_ar_rulemk) : @file   = $(path:%=$(module_ar_rulemk_mk_pat))
-$(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_ar_rulemk_mk_pat),$$(module_path))
-$(@module_ar_rulemk) : a_file  = $(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
+module_ar_rmk_mk_pat = $(MKGEN_DIR)/module/%.ar_rule.mk
+module_ar_rmk_a_pat  = $(OBJ_DIR)/module/%.a
 
-module_occ_source_files = \
-	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
-		$(call source_file,$(call get,$1,sources))))
+module_ld_rmk_mk_pat = $(MKGEN_DIR)/module/%.ld_rule.mk
+module_ld_rmk_o_pat  = $(OBJ_DIR)/module/%.o
 
-module_a_source_files = \
-	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
+$(@module_ld_rmk) : kind := ld
+$(@module_ar_rmk) : kind := ar
 
-$(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
+$(@module_ld_rmk) $(@module_ar_rmk) : @file   = \
+		$(path:%=$(module_$(kind)_rmk_mk_pat))
+$(@module_ld_rmk) $(@module_ar_rmk) : mk_file = \
+		$(patsubst %,$(value module_$(kind)_rmk_mk_pat),$$(module_path))
+
+$(@module_ld_rmk) : out_file = \
+		$(patsubst %,$(value module_ld_rmk_o_pat),$$(module_path))
+$(@module_ar_rmk) : out_file = \
+		$(patsubst %,$(value module_ar_rmk_a_pat),$$(module_path))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : objs = \
+		$(patsubst %,$(value source_occ_rmk_o_pat), \
 			$(basename $(call module_occ_source_files,$@)))
-# $(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
-	$$(warning static module '$(fqn)' must specify at least one source file.))
-$(@module_ar_rulemk) : check_objs = $1
 
-$(@module_ar_rulemk) :
+$(@module_ld_rmk) $(@module_ar_rmk) : lds_file = \
+		$(patsubst %,$(value module_lds_pat), \
+			$(if $(filter %$(suffix $@),$(@module_lds)),$(path)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(a_file),$$$$(ar_prerequisites)); \
-		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(call check_objs,$(objs))))
+		$(call gen_make_dep,$(out_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out_file),reloc_lds,$(lds_file)); \
+		$(call gen_make_tsvar,$(out_file),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(out_file),$(kind)_objs,$(objs)))
 
-module_extbld_rulemk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
-module_extbld_rulemk_target_pat = __extbld-%
 
-$(@module_extbld_rulemk) : @file   = $(path:%=$(module_extbld_rulemk_mk_pat))
-$(@module_extbld_rulemk) : mk_file = $(patsubst %,$(value module_extbld_rulemk_mk_pat),$$(module_path))
-$(@module_extbld_rulemk) : target = $(patsubst %,$(value module_extbld_rulemk_target_pat),$$(module_path))
-$(@module_extbld_rulemk) : gen_string = $(basename $@)
-$(@module_extbld_rulemk) : script = $(call get,$(gen_string),value)
-$(@module_extbld_rulemk) : kind := extbld
+# 1. module instance
+# 2. app name
+define __lds_template
+/* Autogenerated file. Do not edit. */
+SECTIONS {
+	.app.data.$2 : { *(.data); }
+	__app_$2_data_vma =   ADDR(.app.data.$2);
+	__app_$2_data_len = SIZEOF(.app.data.$2);
 
-$(@module_extbld_rulemk) :
+	.app.bss.$2  : { *(.bss); }
+	__app_$2_bss_vma =   ADDR(.app.bss.$2);
+	__app_$2_bss_len = SIZEOF(.app.bss.$2);
+}
+endef
+
+module_lds_pat = $(SRCGEN_DIR)/module/%.lds
+module_hdr_pat = $(SRCGEN_DIR)/include/module/%.h
+
+$(@module_lds) : @file = $(path:%=$(module_lds_pat))
+$(@module_lds) : cmd_name = $(call get,$(basename $@),value)
+
+$(@module_hdr) : @file = $(type_path:%=$(module_hdr_pat))
+$(@module_hdr) : type = $(basename $@)
+$(@module_hdr) : type_fqn = $(call get,$(type),qualifiedName)
+$(@module_hdr) : type_path = $(subst .,/,$(type_fqn))
+
+$(@module_hdr) : content = $(call __header_template,$@,$(type_fqn))
+$(@module_lds) : content = $(call __lds_template,$@,$(cmd_name))
+
+$(@module_hdr) $(@module_lds) : printf_escape = \
+		$(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))
+
+$(@module_hdr) $(@module_lds) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(PRINTF) '%b' $(call sh_quote,$(call printf_escape,$(content))))
+
+
+module_extbld_rmk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
+module_extbld_rmk_target_pat = __extbld-%
+
+$(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
+$(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
+$(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
+$(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
+$(@module_extbld_rmk) : kind := extbld
+
+$(@module_extbld_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
@@ -292,21 +389,6 @@ $(@module_extbld_rulemk) :
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_rule,$(target),,$(script)))
-
-
-$(@module_h) : type = $(basename $@)
-$(@module_h) : type_fqn = $(call get,$(type),qualifiedName)
-$(@module_h) : type_path = $(subst .,/,$(type_fqn))
-
-module_h_pat = $(SRCGEN_DIR)/include/module/%.h
-
-$(@module_h) : @file = $(type_path:%=$(module_h_pat))
-$(@module_h) : printf_escape = $(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))
-$(@module_h) : content = $(call __header_template,$@,$(type_fqn))
-
-$(@module_h) :
-	@$(call cmd_notouch_stdout,$(@file), \
-		$(PRINTF) '%b' $(call sh_quote,$(call printf_escape,$(content))))
 
 #
 # Per-source artifacts.
@@ -330,53 +412,44 @@ my_initfs_target := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target)
 my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
 my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 
-@source_initfs_cp_rulemk := \
+@source_initfs_cp_rmk := \
 	$(foreach s,$(build_sources), \
 		$(if $(call source_annotations,$s,$(my_initfs)), \
-			source-initfs-cp-rulemk/$(strip \
+			source-initfs-cp-rmk/$(strip \
 				$(call source_annotation_values,$s,$(my_initfs_target)))$s))
 
-source_o_pats   := %.o
-source_a_pats   := %.a
-source_cc_pats  := %.S %.c %.cpp %.cxx
-source_mk_pats  := %.mk
-source_cpp_pats := %.lds.S
-
-@source_rulemk := \
+@source_rmk := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName),$(or \
-			$(and $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s), \
-			$(and $(filter $(source_cc_pats),$f), source-cc-rule-mk/$s), \
-			$(and $(filter $(source_mk_pats),$f), source-mk-rule-mk/$s), \
-			$(and $(filter $(source_a_pats),$f),  source-a-rule-mk/$s), \
-			$(and $(filter $(source_o_pats),$f),  source-o-rule-mk/$s))))
+			$(and $(filter $(source_cpp_pats),$f),source-cpp-rmk/$s), \
+			$(and $(filter $(source_cc_pats),$f), source-cc-rmk/$s), \
+			$(and $(filter $(source_mk_pats),$f), source-mk-rmk/$s), \
+			$(and $(filter $(source_a_pats),$f),  source-a-rmk/$s), \
+			$(and $(filter $(source_o_pats),$f),  source-o-rmk/$s))))
 
-@source_o_rulemk   := $(filter source-o-rule-mk/%,$(@source_rulemk))
-@source_a_rulemk   := $(filter source-a-rule-mk/%,$(@source_rulemk))
-@source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
-@source_mk_rulemk  := $(filter source-mk-rule-mk/%,$(@source_rulemk))
-@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
+@source_o_rmk   := $(filter source-o-rmk/%,$(@source_rmk))
+@source_a_rmk   := $(filter source-a-rmk/%,$(@source_rmk))
+@source_cc_rmk  := $(filter source-cc-rmk/%,$(@source_rmk))
+@source_mk_rmk  := $(filter source-mk-rmk/%,$(@source_rmk))
+@source_cpp_rmk := $(filter source-cpp-rmk/%,$(@source_rmk))
 
-$(@source_o_rulemk)   : kind := o
-$(@source_a_rulemk)   : kind := a
-$(@source_cc_rulemk)  : kind := cc
-$(@source_mk_rulemk)  : kind := mk
-$(@source_cpp_rulemk) : kind := cpp
+$(@source_o_rmk)   : kind := o
+$(@source_a_rmk)   : kind := a
+$(@source_cc_rmk)  : kind := cc
+$(@source_mk_rmk)  : kind := mk
+$(@source_cpp_rmk) : kind := cpp
 
-@source_rulemk += \
-	$(@source_initfs_cp_rulemk)
+@source_rmk += \
+	$(@source_initfs_cp_rmk)
 
 # task/???.module.source
 @source_all = \
 	$(@source_gen) \
-	$(@source_rulemk)
+	$(@source_rmk)
 
 all .PHONY : $(@source_all)
 
 $(@source_all) : module = $(basename $@)
-
-source_file = $(call get,$1,fileFullName)
-source_base = $(basename $(source_file))
 
 $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)
@@ -389,38 +462,38 @@ my_rule_prereqs = $(call mybuild_resolve_or_die,mybuild.lang.Rule.prerequisites)
 $(@source_all) : script  = $(call get,$(call values_of,$(my_rule_script)),value)
 $(@source_all) : prereqs = $(call get,$(call values_of,$(my_rule_prereqs)),value)
 
-$(@source_o_rulemk) $(@source_a_rulemk) : script  = $(or \
+$(@source_o_rmk) $(@source_a_rmk) : script  = $(or \
 			$(call get,$(call values_of,$(my_rule_script)),value), \
-			$$(CP) $(file) $$@)
+			@true)
 
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 
-$(@source_rulemk) : includes = $(call values_of,$(my_incpath_val))
-$(@source_rulemk) : defines  = $(call values_of,$(my_defmacro_val))
+$(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
+$(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
 
-$(@source_rulemk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
-$(@source_rulemk) : flags = $(call trim, \
+$(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+$(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
-			-include $(patsubst %,$(value module_h_pat),$(call module_path,$(module))) \
+			-include $(patsubst %,$(value module_hdr_pat),$(call module_path,$(module))) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
 			$(call do_flags,-D,$(defines)))
 
-source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
+source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
-$(@source_rulemk) : @file   = $(file:%=$(source_rulemk_mk_pat))
-$(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_file))
+$(@source_rmk) : @file   = $(file:%=$(source_rmk_mk_pat))
+$(@source_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$$(source_file))
 
-source_occ_rulemk_o_pat = $(OBJ_DIR)/%.o
+source_occ_rmk_o_pat = $(OBJ_DIR)/%.o
 
-source_o_rulemk_o_pat   = $(OBJ_DIR)/%.o
-source_a_rulemk_o_pat   = $(OBJ_DIR)/%.a
-source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
-source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
+source_o_rmk_o_pat   = $(OBJ_DIR)/%.o
+source_a_rmk_o_pat   = $(OBJ_DIR)/%.a
+source_cc_rmk_o_pat  = $(OBJ_DIR)/%.o
+source_cpp_rmk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
-$(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),$$(source_base))
+$(@source_rmk)  : o_file = $(patsubst %,$(value source_$(kind)_rmk_o_pat),$$(source_base))
 
-$(@source_cpp_rulemk) $(@source_cc_rulemk) $(@source_o_rulemk) $(@source_a_rulemk):
+$(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_file,$(file)); \
@@ -431,7 +504,7 @@ $(@source_cpp_rulemk) $(@source_cc_rulemk) $(@source_o_rulemk) $(@source_a_rulem
 		$(call gen_make_rule,$(o_file),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
-$(@source_mk_rulemk):
+$(@source_mk_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_include,$(file)))
@@ -442,17 +515,17 @@ source_initfs_cp_o_file = \
 			$(call get,$(notdir $(basename $(basename $s))),value), \
 			$(call get,$s,fileName))))
 
-$(@source_initfs_cp_rulemk) : o_file = $(call source_initfs_cp_o_file,$@)
+$(@source_initfs_cp_rmk) : o_file = $(call source_initfs_cp_o_file,$@)
 
-$(@source_initfs_cp_rulemk) : src_file = $(file)
-$(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(file))
-$(@source_initfs_cp_rulemk) : kind := initfs_cp
-$(@source_initfs_cp_rulemk) : str_of = \
+$(@source_initfs_cp_rmk) : src_file = $(file)
+$(@source_initfs_cp_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
+$(@source_initfs_cp_rmk) : kind := initfs_cp
+$(@source_initfs_cp_rmk) : str_of = \
 		$(call sh_quote,$(call get,$(call values_of,$1),value))
-$(@source_initfs_cp_rulemk) : chmod = $(call str_of,$(my_initfs_chmod))
-$(@source_initfs_cp_rulemk) : chown = $(call str_of,$(my_initfs_chown))
+$(@source_initfs_cp_rmk) : chmod = $(call str_of,$(my_initfs_chmod))
+$(@source_initfs_cp_rmk) : chown = $(call str_of,$(my_initfs_chown))
 
-$(@source_initfs_cp_rulemk) :
+$(@source_initfs_cp_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \

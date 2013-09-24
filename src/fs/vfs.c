@@ -18,32 +18,38 @@
 
 #define ROOT_MODE 0755
 
-int vfs_get_path_by_node(node_t *nod, char *path) {
-	node_t *parent, *node;
-	char buff[PATH_MAX];
+int vfs_get_pathbynode_tilln(node_t *node, node_t *parent, char *path,
+		size_t plen) {
+	char *p;
+	size_t ll = plen - 1;
 
-	*path = *buff= 0;
-	node = nod;
-	strncpy((char *) buff, (const char *) &node->name, NAME_MAX);
-	strncpy(path, (const char *) &node->name, NAME_MAX);
+	if (plen <= 0) {
+		return -ERANGE;
+	}
 
-	while(NULL !=
-			(parent = vfs_get_parent(node))) {
-		strncpy((char *) path,
-				(const char *) &parent->name, NAME_MAX);
-		if('/' != *path) {
-			strcat((char *) path, (const char *) "/");
+	p = path + ll;
+	*p = '\0';
+
+	while (node != parent && node != NULL) {
+		size_t nnlen = strlen(node->name);
+
+		if (nnlen + 1 > ll) {
+			return -ERANGE;
 		}
-		strcat((char *) path, (const char *) buff);
-		node = parent;
-		strncpy((char *) buff, (const char *) path, PATH_MAX);
+
+		p = strncpy(p - nnlen, node->name, nnlen);
+		*--p = '/';
+		ll -= nnlen + 1;
+
+		node = vfs_get_parent(node);
 	}
 
-	strncpy((char *) buff, (char *) path, PATH_MAX);
-	buff[PATH_MAX - 1] = 0;
-	if (strcmp((char *) path,(char *) buff)) {
-		return -1;
+	memmove(path, p, plen - ll);
+
+	if (node != parent) {
+		return 1;
 	}
+
 	return 0;
 }
 

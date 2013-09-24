@@ -22,15 +22,15 @@
 extern const struct cmd __cmd_registry[];
 
 static inline const char *cmd_name(const struct cmd *cmd) {
-	return NULL != cmd ? cmd->mod->name : NULL;
+	return cmd ? cmd->mod->name : NULL;
 }
 
 static inline const char *cmd_brief(const struct cmd *cmd) {
-	return NULL != cmd ? cmd->mod->brief : NULL;
+	return cmd ? cmd->mod->extra->brief : NULL;
 }
 
 static inline const char *cmd_details(const struct cmd *cmd) {
-	return NULL != cmd ? cmd->mod->details : NULL;
+	return cmd ? cmd->mod->extra->details : NULL;
 }
 
 #endif /* FRAMEWORK_CMD_API_IMPL_H_ */

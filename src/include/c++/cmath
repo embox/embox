@@ -17,6 +17,16 @@ namespace std {
 	using ::pow;
 	inline float pow(float x, float y) { return powf(x, y); }
 	inline long double pow(long double x, long double y) { return powl(x, y); }
+	using ::ceil;
+	using ::acos;
+	using ::fmod;
+	using ::modf;
+	using ::asin;
+	using ::frexp;
+	using ::atan;
+	using ::ldexp;
+	using ::atan2;
+	using ::fabs;
 } // namespace std
 
 #endif // CMATH_

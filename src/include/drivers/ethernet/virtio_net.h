@@ -10,7 +10,6 @@
 
 #include <asm/io.h>
 #include <stdint.h>
-#include <net/netdevice.h>
 
 /**
  * VirtIO Network Device Registers
@@ -87,7 +86,6 @@ struct virtio_net_hdr {
 	uint16_t gso_size;    /* Size of GSO */
 	uint16_t csum_start;  /* Calculate checksum from this place */
 	uint16_t csum_offset; /* Size of this place */
-	uint16_t num_buffers; /* Index */
 };
 
 #define VIRTIO_NET_HDR_F_NEEDS_CSUM 0x1
@@ -97,7 +95,5 @@ struct virtio_net_hdr {
 #define VIRTIO_NET_HDR_GSO_UDP  3
 #define VIRTIO_NET_HDR_GSO_TPV6 4
 #define VIRTIO_NET_HDR_GSO_ECN  0x80
-
-
 
 #endif /* VIRTIO_NET_H_ */

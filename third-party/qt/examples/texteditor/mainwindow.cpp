@@ -71,12 +71,12 @@ extern QMdiSubWindow *emEditorSubWindow;
 void TextEditor::create()
 {
 	createDialog = new CreateFileDialog(textEdit, &fileName, this);
-    createDialog->show();
+	createDialog->show();
 }
 
 void TextEditor::quit() {
 	extern void textEditorClosed(TextEditor *ed);
-	emarea->setActiveSubWindow(emEditorSubWindow);
+	emarea->setActiveSubWindow(subwindow);
 	emarea->closeActiveSubWindow();
 
 	textEditorClosed(this);

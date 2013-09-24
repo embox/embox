@@ -2,10 +2,9 @@
 #include "login.h"
 #include "mainwindow.h"
 
-extern QMdiArea *emarea;
 
-LoginDialog::LoginDialog(QWidget *parent) :
-	QDialog(parent)
+LoginDialog::LoginDialog(QWidget *parent, QMdiArea *area) :
+	QDialog(parent), emarea(area)
 {
     setUpGUI();
     setWindowTitle( tr("Вход в систему") );
@@ -68,6 +67,12 @@ void LoginDialog::setUpGUI(){
     setLayout( formGridLayout );
 }
 
+void LoginDialog::showEvent(QShowEvent *)
+{
+	QRect geo = subwindow->geometry();
+	geo.moveCenter(emarea->parentWidget()->rect().center());
+	subwindow->setGeometry(geo);
+}
 
 void LoginDialog::slotAcceptLogin(){
     QString username = editUsername->text();
@@ -89,12 +94,12 @@ void LoginDialog::slotAcceptLogin(){
     	return;
     }
 
-    emboxShowDesktop(pwd->pw_uid);
+    emboxQtShowDesktop(pwd->pw_uid);
 
     // close this dialog
     close();
-	emarea->setActiveSubWindow(subwindow);
-	emarea->closeActiveSubWindow();
+    emarea->setActiveSubWindow(subwindow);
+    emarea->closeActiveSubWindow();
 }
 
 void LoginDialog::close() {

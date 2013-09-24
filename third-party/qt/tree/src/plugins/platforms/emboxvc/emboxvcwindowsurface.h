@@ -78,6 +78,7 @@ public:
 
     WId winId() const;
     void setParent(const QPlatformWindow *window);
+    void setGeometry(const QRect &rect);
 };
 
 class QEmboxVCWindowSurface : public QWindowSurface
@@ -94,7 +95,6 @@ public:
 
 private:
     QImage mImage;
-    struct vc_callbacks emboxVCcallbacks;
 };
 
 QT_END_NAMESPACE

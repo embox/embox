@@ -24,6 +24,7 @@
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sync/mutexattr.h>
 #include <kernel/thread/sync/rwlock.h>
 
 #define PTHREAD_MUTEX_INITIALIZER MUTEX_INIT_STATIC
@@ -44,10 +45,7 @@ typedef struct pthread_condattr {
 
 typedef struct mutex pthread_mutex_t;
 
-typedef struct pthread_mutexattr {
-
-} pthread_mutexattr_t;
-
+typedef struct mutexattr pthread_mutexattr_t;
 
 typedef struct pthread_rwlock {
 
@@ -128,16 +126,16 @@ extern int   pthread_mutex_lock(pthread_mutex_t *);
 extern int   pthread_mutex_trylock(pthread_mutex_t *);
 extern int   pthread_mutex_unlock(pthread_mutex_t *);
 
-//extern int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
+extern int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getpshared(const pthread_mutexattr_t *, int *);
-//extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
-//extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
+extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
+extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
-//extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
 
 //extern int   pthread_once(pthread_once_t *, void (*)(void));
 

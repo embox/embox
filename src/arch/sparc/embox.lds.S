@@ -31,15 +31,15 @@ SECTIONS {
 
 	.data : {
 		. = ALIGN(0x1000);
-		*(.data)
+		LDS_INPUT_DATA
 		. = ALIGN(0x1000);
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT(); . = ALIGN(0x1000);
-		*(.bss)
-		ALIGNMENT(); . = ALIGN(0x1000);
+		. = ALIGN(0x1000);
+		LDS_INPUT_BSS
+		. = ALIGN(0x1000);
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 

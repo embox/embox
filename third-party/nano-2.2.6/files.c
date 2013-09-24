@@ -745,22 +745,22 @@ int open_file(const char *filename, bool newfie, FILE **f)
  * of a filename (starting with [name][suffix], then [name][suffix].1,
  * etc.).  Memory is allocated for the return value.  If no writable
  * extension exists, we return "". */
-int nano__files__get_next_filename__ulmax_digits = -1;
 char *get_next_filename(const char *name, const char *suffix)
 {
+    static int ulmax_digits = -1;
     unsigned long i = 0;
     char *buf;
     size_t namelen, suffixlen;
 
     assert(name != NULL && suffix != NULL);
 
-    if (nano__files__get_next_filename__ulmax_digits == -1)
-	nano__files__get_next_filename__ulmax_digits = digits(ULONG_MAX);
+    if (ulmax_digits == -1)
+	ulmax_digits = digits(ULONG_MAX);
 
     namelen = strlen(name);
     suffixlen = strlen(suffix);
 
-    buf = charalloc(namelen + suffixlen + nano__files__get_next_filename__ulmax_digits + 2);
+    buf = charalloc(namelen + suffixlen + ulmax_digits + 2);
     sprintf(buf, "%s%s", name, suffix);
 
     while (TRUE) {

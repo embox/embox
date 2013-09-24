@@ -27,15 +27,12 @@ SECTIONS {
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
-		ALIGNMENT();
-		*(.data)
+		LDS_INPUT_DATA
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT();
-		*(.bss)
-		ALIGNMENT();
+		LDS_INPUT_BSS
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 

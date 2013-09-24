@@ -109,7 +109,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 7:  /* tcp_default_timer action */
 	case 8:  /* state's handler */
 	case 9:  /* sending package */
-case 10: /* pre_process */
+	case 10: /* pre_process */
 	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
@@ -156,8 +156,13 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 	memset(skb->h.th, 0, tcp_hdr_sz);
 	skb->h.th->source = sock.inet_sk->sport;
 	skb->h.th->dest = sock.inet_sk->dport;
-	skb->h.th->seq = htonl(sock.tcp_sk->self.seq);
+	skb->h.th->seq = 0; /* use set_tcp_set_field */
 	skb->h.th->doff = tcp_hdr_sz / 4;
+}
+
+static void set_tcp_seq_field(union sock_pointer sock,
+		struct sk_buff *skb) {
+	skb->h.th->seq = htonl(sock.tcp_sk->self.seq);
 }
 
 struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
@@ -374,6 +379,7 @@ static void tcp_rexmit(union sock_pointer sock) {
  */
 static void send_from_sock_now(union sock_pointer sock, struct sk_buff *skb) {
 	debug_print(9, "send_from_sock_now: send %p\n", skb);
+	set_tcp_seq_field(sock, skb);
 	tcp_xmit(sock, skb);
 }
 
@@ -389,9 +395,12 @@ void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
 	{
+		set_tcp_seq_field(sock, skb);
+		if (skb_send != NULL) {
+			set_tcp_seq_field(sock, skb_send); /* set to cloned pkg */
+		}
 		skb_queue_push(&sock.sk->tx_queue, skb);
 		sock.tcp_sk->self.seq += tcp_seq_len(skb);
-
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 
@@ -859,26 +868,18 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 	__u16 check;
 	__u32 seq, seq_last, rem_seq, rem_last;
 
-	switch (sock.sk->state) {
-	default:
-		/* Check CRC */
-		check = tcph->check;
-		tcph->check = 0;
-		if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
-				IPPROTO_TCP, tcph, TCP_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
-			printk("pre_process: error: invalid ckecksum %x sk %p skb %p\n",
-					(int)check, sock.tcp_sk, *pskb);
-			return TCP_RET_DROP;
-		}
-		break;
-	case TCP_CLOSED:
-	case TCP_LISTEN:
-	case TCP_SYN_SENT:
-	case TCP_SYN_RECV_PRE:
-	case TCP_SYN_RECV:
-		break;
+	/* Check CRC */
+	check = tcph->check;
+	tcph->check = 0;
+	if (check != tcp_checksum((*pskb)->nh.iph->saddr,
+				(*pskb)->nh.iph->daddr, IPPROTO_TCP, tcph,
+				TCP_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
+		printk("pre_process: error: invalid ckecksum %hx sk %p skb %p\n",
+				ntohs(check), sock.tcp_sk, *pskb);
+		return TCP_RET_DROP;
 	}
 
+	/* Analyze sequence */
 	switch (sock.sk->state) {
 	case TCP_SYN_RECV:
 	case TCP_ESTABIL:
@@ -892,7 +893,6 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		seq_last = seq + tcp_seq_len(*pskb) - 1;
 		rem_seq = sock.tcp_sk->rem.seq;
 		rem_last = rem_seq + sock.tcp_sk->self.wind;
-			debug_print(10, "pre_process: sk %p skb %p rem_seq=%u seq=%u seq_last=%u rem_last=%u\n", sock.tcp_sk, *pskb, rem_seq, seq, seq_last, rem_last);
 		if ((rem_seq <= seq) && (seq < rem_last)) {
 			if (rem_seq != seq) {
 				/* TODO There is correct packet (with correct sequence
@@ -915,6 +915,7 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		break;
 	}
 
+	/* Processing RST */
 	if (tcph->rst) {
 		ret = process_rst(sock, tcph, out_tcph);
 		if (ret != TCP_RET_OK) {
@@ -922,6 +923,7 @@ static enum tcp_ret_code pre_process(union sock_pointer sock, struct sk_buff **p
 		}
 	}
 
+	/* Porcessing ACK */
 	if (tcph->ack) {
 		ret = process_ack(sock, tcph, out_tcph);
 		if (ret != TCP_RET_OK) {
@@ -1103,34 +1105,33 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	return 0;
 }
 
-static void tcp_tmr_timewait(union sock_pointer sock) {
-	assert(sock.sk->state == TCP_TIMEWAIT);
-	if (tcp_is_expired(&sock.tcp_sk->rcv_time, TCP_TIMEWAIT_DELAY)) {
-		tcp_set_st(sock, TCP_CLOSED);
-		debug_print(7, "TIMER: tcp_tmr_timewait: release sk %p\n", sock.tcp_sk);
-		sock_release(sock.sk);
-	}
-}
-
 static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 	union sock_pointer sock;
 
 	debug_print(7, "TIMER: call tcp_timer_handler\n");
 
 	sock_foreach(sock.sk, tcp_sock_ops) {
-		if (sock.sk->state == TCP_TIMEWAIT) {
-			tcp_tmr_timewait(sock);
+		if ((sock.sk->state == TCP_TIMEWAIT)
+				&& tcp_is_expired(&sock.tcp_sk->rcv_time,
+					TCP_TIMEWAIT_DELAY)) {
+			debug_print(7, "tcp_timer_handler: release timewait sk %p\n",
+					sock.tcp_sk);
+			tcp_free_sock(sock);
 		}
 		else if ((tcp_st_status(sock) == TCP_ST_NONSYNC)
 				&& !list_empty(&sock.tcp_sk->conn_wait)
 				&& tcp_is_expired(&sock.tcp_sk->syn_time,
 					TCP_SYNC_TIMEOUT)) {
 			assert(sock.tcp_sk->parent != NULL);
+			debug_print(7, "tcp_timer_handler: release nonsync sk %p\n",
+					sock.tcp_sk);
 			tcp_free_sock(sock);
 		}
 		else if ((tcp_st_status(sock) != TCP_ST_NOTEXIST)
-				&& !tcp_is_expired(&sock.tcp_sk->ack_time,
+				&& tcp_is_expired(&sock.tcp_sk->ack_time,
 					TCP_REXMIT_DELAY)) {
+			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
+					sock.tcp_sk);
 			tcp_rexmit(sock);
 		}
 	}

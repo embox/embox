@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <fs/vfs.h>
 
+#define FLASH_ERASE_BLOCK_SIZE 4096
 
 int flash_emu_init (void *arg) {
 
@@ -97,6 +98,7 @@ int flash_emu_dev_init (void *arg) {
 	struct node *bdev_node;
 	struct flash_dev *flash;
 	struct block_dev * bdev;
+	size_t block_size, factor;
 
 	argv = (char **) arg;
 
@@ -118,8 +120,16 @@ int flash_emu_dev_init (void *arg) {
 	}
 
 	flash->privdata = bdev;
-	flash->block_info.block_size = bdev->driver->ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	/* XXX */
+	flash->block_info.block_size = FLASH_ERASE_BLOCK_SIZE;
+	block_size = bdev->driver->ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	factor = FLASH_ERASE_BLOCK_SIZE / block_size;
+	if(0 == factor) {
+		factor++;
+	}
 	flash->block_info.blocks = bdev->driver->ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
+	flash->block_info.blocks /= factor;
+
 	flash->start = 0;
 	flash->end = bdev->size;
 

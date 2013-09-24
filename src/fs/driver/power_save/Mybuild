@@ -11,3 +11,16 @@ module qnx6 {
 	depends embox.mem.page_api
 	depends embox.mem.pool
 }
+
+module qnx6_rl {
+	option number fs_info_count = 2
+	option number node_info_count = 128
+
+	source "dir.c",
+	       "inode.c"
+
+	depends embox.driver.block
+	depends embox.fs.buffer_cache
+	depends embox.mem.page_api
+	depends embox.mem.pool
+}

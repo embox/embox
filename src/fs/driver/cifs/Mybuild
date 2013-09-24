@@ -1,13 +1,13 @@
 package embox.fs.driver
 
 module cifs {
-	source "cifs.c"
-	option number inode_quantity=64
+	depends third_party.samba.core
+
 	option number cifs_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
-	depends embox.fs.driver.fat
-	depends embox.driver.block
-	depends embox.mem.page_api
-	depends embox.mem.pool
+	source "order.mk"
+
+	@IncludePath("$(THIRDPARTY_DIR)/samba/include")
+	@IncludePath("$(ROOT_DIR)/build/samba/include")
+	source "cifs.c"
 }

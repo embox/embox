@@ -1,19 +1,14 @@
 #include "desktopimage.h"
+#include "mdi_background.h"
 
 #include <framework/mod/options.h>
-#include <module/embox/arch/x86/boot/multiboot.h>
 
 #include <stdio.h>
 
-extern QMdiArea *emarea;
+extern QMdiAreaWBackground *emarea;
 
-#define MBOOTMOD embox__arch__x86__boot__multiboot
-// hack because emarea->heigth(), emarea->wigth() not suitable
-#define WIDTH  OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
-#define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
-
-extern void save_pref(char *wall, char *font, int font_pt);
-extern void qtSetfont(const QString &fontFamily, int fontPt);
+extern void emboxQtSavePref(char *wall, char *font, int font_pt);
+extern void emboxQtSetfont(const QString &fontFamily, int fontPt);
 
 DesktopImageDialog::DesktopImageDialog(QStringList &images)
 {
@@ -75,7 +70,7 @@ void DesktopImageDialog::createFilesTable()
 void DesktopImageDialog::handleOk()
  {
 
-    save_pref(filesTable->item(selectedWallpaperRow, 0)->text().toAscii().data(),
+    emboxQtSavePref(filesTable->item(selectedWallpaperRow, 0)->text().toAscii().data(),
 		    fontBox->currentText().toAscii().data(), fontPt->value());
 
 	emarea->setActiveSubWindow(subwindow);
@@ -84,7 +79,7 @@ void DesktopImageDialog::handleOk()
 
 void DesktopImageDialog::fontChanged(int)
 {
-    qtSetfont(fontBox->currentText(), fontPt->value());
+    emboxQtSetfont(fontBox->currentText(), fontPt->value());
 }
 
 void DesktopImageDialog::showFiles(const QStringList &files)
@@ -106,10 +101,7 @@ void DesktopImageDialog::openFileOfItem(int row, int /* column */)
     QTableWidgetItem *selectedWallpaper = filesTable->item(row, 0);
 
     QString imagePath = QString(":/images/").append(selectedWallpaper->text());
-    QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16)
-    		.scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
-    QPixmap bgPix = QPixmap::fromImage(desktopImage);
-    emarea->setBackground(bgPix);
+    emarea->setBackgroundPath(imagePath);
 
 
 }

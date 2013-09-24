@@ -23,8 +23,6 @@
 #define PID OPTION_GET(NUMBER,product_id)
 #define BAR OPTION_GET(NUMBER,fb_bar)
 
-PCI_DRIVER("generic fb", generic_init, PCI_VENDOR_ID_CIRRUS, PCI_DEV_ID_CIRRUS_5446);
-PCI_DRIVER("generic fb", generic_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 PCI_DRIVER("generic fb", generic_init, VID, PID);
 
 static int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {

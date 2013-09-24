@@ -14,6 +14,7 @@ modules := \
 packages := \
 	$(sort generic $(basename $(basename $(modules))))
 
+my_cmd_name  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.name)
 my_cmd_help  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.help)
 my_cmd_man   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.man)
 my_rl_value  := $(call mybuild_resolve_or_die,mybuild.lang.Runlevel.value)
@@ -29,6 +30,22 @@ annotation_value = \
 	$(call __single_value_check,$(call invoke,$1,getAnnotationValuesOfOption,$2))
 __single_value_check = \
 	$(if $(strip $1),$(call assert,$(call singleword,$1))$(call get,$1,value))
+
+
+app_nm = \
+	$(call module_annotation_value,$1,$(my_cmd_name))
+
+__check_concat1 = \
+	$(if $1,$1$2)
+# name.obj
+app_modules := \
+	$(foreach m,$(suffix $(modules)), \
+		$(call __check_concat1,$(call app_nm,$m),$m))
+
+__mod_extra = \
+	$(if $1,$1,__app_undefined__)
+appref_or_null = \
+	$(call __mod_extra,$(call app_nm,$1))
 
 str_escape = \
 	"$(subst $(\n),\n,$(subst $(\t),\t,$(subst ",\",$(subst \,\\,$1))))"
@@ -61,13 +78,19 @@ $(info /* Module definitions. */)
 $(foreach m,$(modules),$(foreach n,$(basename $m), \
 	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), \
 		"$(subst .,,$(suffix $n))", \
+		$(call appref_or_null,$m));)))
+$(info )
+
+$(info /* Applications. */)
+$(foreach m,$(app_modules),$(foreach n,$(basename $m), \
+	$(info MOD_EXTRA_DEF($n, \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
 $(info )
 
 $(info /* Runlevel modules. */)
 $(foreach n,$(addprefix generic.runlevel,0 1 2 3), \
-	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), "$n", "", "");))
+	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), "$n", __app_undefined__);))
 $(info )
 
 $(info /* Dependencies. */)

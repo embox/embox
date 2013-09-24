@@ -72,6 +72,11 @@ POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
+static int embox_ntfs_init (void *par) {
+
+	return 0;
+}
+
 static int embox_ntfs_node_create(struct node *parent_node, struct node *new_node) {
 	ntfs_inode *ni, *pni;
 	ntfschar *ufilename;
@@ -191,14 +196,15 @@ static int embox_ntfs_node_delete(struct node *node) {
 
 	free(ufilename);
 
+	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
+	free(ufilename);
+	vfs_del_leaf(node);
+
 	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		return -errno;
 	}
-
-	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
-	free(ufilename);
 
 	return 0;
 }
@@ -427,6 +433,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ntfs_fs_pool))) {
+		/* ToDo: error: exit without deallocation of filesystem */
 		rc = ENOMEM;
 		goto error;
 	}
@@ -842,6 +849,8 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 };
 
 static const struct fsop_desc ntfs_fsop = {
+	.init = embox_ntfs_init,
+	.format = NULL,
 	.create_node = embox_ntfs_node_create,
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,

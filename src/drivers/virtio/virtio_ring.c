@@ -9,7 +9,7 @@
 #include <linux/compiler.h>
 #include <util/binalign.h>
 
-static inline void vring_desc_init(struct vring_desc *vrd,
+void vring_desc_init(struct vring_desc *vrd,
 		void *addr, unsigned int len, unsigned short flags) {
 	assert(vrd != NULL);
 	vrd->addr = (uint64_t)(uintptr_t)addr;

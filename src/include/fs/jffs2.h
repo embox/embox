@@ -37,6 +37,7 @@
 #include <sys/types.h>
 
 #include <kernel/time/clock_source.h>
+#include <kernel/thread.h>
 
 #include <linux/types.h>
 #include <linux/list.h>
@@ -397,16 +398,10 @@ struct super_block {
 	struct block_dev *bdev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
-	mutex_t s_lock;             // Lock the inode cache
-	flag_t  s_gc_thread_flags;  // Communication with the gcthread
-	handle_t s_gc_thread_handle;
-	thread s_gc_thread;
-#if (CYGNUM_JFFS2_GC_THREAD_STACK_SIZE >= CYGNUM_HAL_STACK_SIZE_MINIMUM)
-        char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
-#else
-        char s_gc_thread_stack[CYGNUM_HAL_STACK_SIZE_MINIMUM];
-#endif
-       mtab_entry *mte;
+	struct mutex s_lock;        /* Lock the inode cache */
+	struct thread s_gc_thread;
+    char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
+//       mtab_entry *mte;
 #endif
 };
 
