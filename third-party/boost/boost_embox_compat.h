@@ -24,4 +24,27 @@
 
 #include <stdio.h>
 
+//This can be used to derive sysconf from STLport
+using std::sysconf;
+/*
+static inline
+long sysconf(int name) {
+//#define _SC_CLK_TCK 1
+	printf(">>> sysconf(%d)\n", name);
+	switch (name) {
+		case _SC_PAGESIZE: return 4096;
+//		case _SC_CLK_TCK: return
+		default: break;
+	}
+	return -1;
+}
+*/
+
+
+namespace std {
+	static inline
+	size_t strxfrm(char *dest, const char *src, size_t n);
+}
+
+
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

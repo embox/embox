@@ -16,9 +16,11 @@ ExternalProject_Add(
    CONFIGURE_COMMAND
      ./bootstrap.sh
        --prefix=<INSTALL_DIR>
+       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams
    BUILD_COMMAND
      ./b2
        -q
+       #-d 12
        ""cflags=$ENV{EMBOX_DERIVED_CFLAGS}""
        ""cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
        ""linkflags=$ENV{EMBOX_DERIVED_LDFLAGS}""
@@ -26,6 +28,10 @@ ExternalProject_Add(
        link=static
        threading=multi
        address-model=32
+       #define=BOOST_DATE_TIME_NO_LOCALE
+       #define=BOOST_NO_STD_LOCALE
+       #define=BOOST_LEXICAL_CAST_ASSUME_C_LOCALE
+       #define=BOOST_NO_STD_WSTRING
    LOG_BUILD 1
    INSTALL_COMMAND
    	false
