@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 #include <hal/reg.h>
-#include <drivers/amba_pnp.h>
+#include <drivers/ethernet/ti8178.h>
 #include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>
@@ -49,8 +49,8 @@ static void emac_clear_hdp(void) {
 	int i;
 
 	for (i = 0; i < EMAC_CHANNEL_COUNT; ++i) {
-		REG_STORE(EMAC_BASE + EMAC_TX_HDP(i), 0);
-		REG_STORE(EMAC_BASE + EMAC_RX_HDP(i), 0);
+		REG_STORE(EMAC_BASE + EMAC_R_TXHDP(i), 0);
+		REG_STORE(EMAC_BASE + EMAC_R_RXHDP(i), 0);
 	}
 }
 
@@ -89,7 +89,7 @@ static void emac_init_rx_regs(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_RXFILTERLOWTHRESH, 0);
 
 	for (i = 0; i < EMAC_CHANNEL_COUNT; ++i) {
-		REG_STORE(EMAC_BASE + EMAC_R_RXFLOWTHRESH, 0);
+		REG_STORE(EMAC_BASE + EMAC_R_RXFLOWTHRESH(i), 0);
 
 		REG_STORE(EMAC_BASE + EMAC_R_RXFREEBUFFER(i), PREP_BUF_COUNT);
 	}
@@ -153,9 +153,9 @@ static void emac_prep_rx_queue(void) {
 		assert(skb_data != NULL);
 		desc = (struct emac_desc *)skb_data;
 		if (head == NULL) head = desc;
-		if (prev != NULL) prev->next = desc;
+		if (prev != NULL) prev->next = (uintptr_t)desc;
 		desc->next = 0;
-		desc->data = desc + 1;
+		desc->data = (uintptr_t)(desc + 1);
 		desc->data_off = 0;
 		desc->data_len = skb_max_size() - sizeof *desc;
 		desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
@@ -163,7 +163,7 @@ static void emac_prep_rx_queue(void) {
 		prev = desc;
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(0), head);
+	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(0), (uintptr_t)head);
 }
 
 #define RXEN (0x1 << 0)
@@ -200,13 +200,14 @@ static const struct net_driver ti8178_ops = {
 };
 
 static irq_return_t ti8178_interrupt(unsigned int irq_num, void *dev_id) {
+	return IRQ_HANDLED;
 }
 
 #include <kernel/printk.h>
-static void ti8178_config(struct netdevice *dev) {
+static void ti8178_config(struct net_device *dev) {
 	unsigned char addr[] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
 
-	printk("CPGMACIDVER %#x\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
+	printk("CPGMACIDVER %#lx\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
 
 	/* TODO enable EMAC/MDIO peripheral */
 
@@ -241,6 +242,7 @@ static void ti8178_config(struct netdevice *dev) {
 }
 
 static int ti8178_init(void) {
+	int ret;
 	struct net_device *nic;
 
 	nic = etherdev_alloc(0);
@@ -254,9 +256,9 @@ static int ti8178_init(void) {
 
 	ti8178_config(nic);
 
-	res = irq_attach(nic->irq, ti8178_interrupt, 0, nic, "ti8178");
-	if (res < 0) {
-		return res;
+	ret = irq_attach(nic->irq, ti8178_interrupt, 0, nic, "ti8178");
+	if (ret < 0) {
+		return ret;
 	}
 
 	return inetdev_register_dev(nic);

@@ -22,6 +22,17 @@ module virtio {
 	depends embox.net.entry_api
 }
 
+module ti8178 {
+	source "ti8178.c"
+
+	depends embox.net.skbuff
+	depends embox.lib.LibC
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
 module e1000 {
 	source "e1000.c"
 
