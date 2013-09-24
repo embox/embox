@@ -21,3 +21,9 @@ int mutexattr_destroy(struct mutexattr *attr) {
 
 	return ENOERR;
 }
+
+int mutexattr_gettype(const struct mutexattr *attr, int *type) {
+	*type = attr->type;
+
+	return ENOERR;
+}

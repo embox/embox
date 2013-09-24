@@ -273,11 +273,11 @@ int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *attr, int *protocol
 int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr, int *pshared) {
 	return -ENOSYS;
 }
+*/
 
 int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr, int *type) {
-	return -ENOSYS;
+	return mutexattr_gettype(attr, type);
 }
-*/
 
 int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
 	return mutexattr_init(attr);

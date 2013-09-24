@@ -130,7 +130,7 @@ extern int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getpshared(const pthread_mutexattr_t *, int *);
-//extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
+extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
 extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
