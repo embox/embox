@@ -63,17 +63,13 @@ static void vq_fini(struct virtqueue *vq) {
 	free(vq->ring_data);
 }
 
-#include <kernel/printk.h>
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	int desc_id;
 	static struct virtio_net_hdr pkt_hdr;
 	struct virtqueue *vq;
 
-//	printk("xmit[%u]",skb->len);
 	pkt_hdr.flags = 0;
-	pkt_hdr.csum_start = pkt_hdr.csum_offset = 0;
 	pkt_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
-	pkt_hdr.hdr_len = pkt_hdr.gso_size = 0;
 	pkt_hdr.num_buffers = 0;
 
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
@@ -94,27 +90,16 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	/* wait while txing */
 	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
-//	desc_id = desc_id;
 
 	vq->ring.desc[desc_id + 1].addr = 0;
 	skb_free(skb);
 
 	return 0;
 }
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
 
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-}
-static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
+//#include <kernel/printk.h>
+static irq_return_t virtio_interrupt(unsigned int irq_num,
+		void *dev_id) {
 	struct net_device *dev;
 	struct virtqueue *vq;
 	struct vring_used_elem *used_elem;
@@ -129,7 +114,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 		return IRQ_NONE;
 	}
 
-//	printk("!");
+//printk("!");
 	/* release outgoing packets */
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
@@ -144,6 +129,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	/* receive incoming packets */
 	vq = &netdev_priv(dev, struct virtio_priv)->rq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
+//printk("^");
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
 		skb = skb_wrap(used_elem->len,
@@ -172,45 +158,9 @@ static irq_return_t virtio_interrupt(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-#include <kernel/irq_lock.h>
-#define TEST_F(f) \
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & f) { \
-		printk(#f "is set\n"); \
-	}
 static int virtio_open(struct net_device *dev) {
 	/* device is ready */
 	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
-
-#if 0
-irq_lock();
-   printk("dev_f%#x\n", virtio_load32(VIRTIO_REG_DEVICE_F, dev));
-   printk("guest_f%#x\n", virtio_load32(VIRTIO_REG_GUEST_F, dev));
-   printk("net_s%#x\n", virtio_load16(VIRTIO_REG_NET_STATUS, dev));
-   printk("dev_s%#hhx\n", virtio_load8(VIRTIO_REG_DEVICE_S, dev));
-
-TEST_F(VIRTIO_NET_F_CSUM)
-TEST_F(VIRTIO_NET_F_GUEST_CSUM)
-TEST_F(VIRTIO_NET_F_MAC)
-TEST_F(VIRTIO_NET_F_GSO)
-TEST_F(VIRTIO_NET_F_GUEST_TSO4)
-TEST_F(VIRTIO_NET_F_GUEST_TSO6)
-TEST_F(VIRTIO_NET_F_GUEST_ECN)
-TEST_F(VIRTIO_NET_F_GUEST_UFO)
-TEST_F(VIRTIO_NET_F_HOST_TSO4)
-TEST_F(VIRTIO_NET_F_HOST_TSO6)
-TEST_F(VIRTIO_NET_F_HOST_ECN)
-TEST_F(VIRTIO_NET_F_HOST_UFO)
-TEST_F(VIRTIO_NET_F_MRG_RXBUF)
-TEST_F(VIRTIO_NET_F_STATUS)
-TEST_F(VIRTIO_NET_F_CTRL_VQ)
-TEST_F(VIRTIO_NET_F_CTRL_RX)
-TEST_F(VIRTIO_NET_F_CTRL_VLAN)
-TEST_F(VIRTIO_NET_F_CTRL_RX_EXTRA)
-TEST_F(VIRTIO_NET_F_GUEST_ANNOUNCE)
-TEST_F(VIRTIO_NET_F_MQ)
-TEST_F(VIRTIO_NET_F_CTRL_MAC_ADDR)
-irq_unlock();
-#endif
 	return 0;
 }
 
@@ -240,41 +190,37 @@ static const struct net_driver virtio_drv_ops = {
 
 static void virtio_config(struct net_device *dev) {
 	unsigned char i;
+	uint32_t guest_features;
+
+	/* reset device */
+	virtio_store8(0, VIRTIO_REG_DEVICE_S, dev);
 
 	/* it's known device */
 	virtio_store8(VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER,
 			VIRTIO_REG_DEVICE_S, dev);
+
+	guest_features = 0;
 
 	/* load device mac */
 	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
 		for (i = 0; i < dev->addr_len; ++i) {
 			dev->dev_addr[i] = virtio_load8(VIRTIO_REG_NET_MAC(i), dev);
 		}
+		guest_features |= VIRTIO_NET_F_MAC;
 	}
-
-#if 0
-	/* negotiate CSUM bit */
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_CSUM) {
-		virtio_store32(VIRTIO_NET_F_CSUM, VIRTIO_REG_GUEST_F, dev);
-		virtio_store32(VIRTIO_NET_F_HOST_TSO4, VIRTIO_REG_GUEST_F, dev);
-		virtio_store32(VIRTIO_NET_F_HOST_TSO6, VIRTIO_REG_GUEST_F, dev);
-		virtio_store32(VIRTIO_NET_F_HOST_ECN, VIRTIO_REG_GUEST_F, dev);
-		virtio_store32(VIRTIO_NET_F_HOST_UFO, VIRTIO_REG_GUEST_F, dev);
-	}
-
-	/* negotiate MAC bit */
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
-		virtio_store32(VIRTIO_NET_F_MAC, VIRTIO_REG_GUEST_F, dev);
-	}
-#endif
 
 	/* negotiate MSG_RXBUF bit */
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MRG_RXBUF) {
-		virtio_store32(VIRTIO_NET_F_MRG_RXBUF, VIRTIO_REG_GUEST_F, dev);
-	}
-	else {
-		assert(0);
-	}
+	assert(virtio_load32(VIRTIO_REG_DEVICE_F, dev)
+			& VIRTIO_NET_F_MRG_RXBUF);
+	guest_features |= VIRTIO_NET_F_MRG_RXBUF;
+
+	/* negotiate STATUS bit */
+	assert(virtio_load32(VIRTIO_REG_DEVICE_F, dev)
+			& VIRTIO_NET_F_STATUS);
+	guest_features |= VIRTIO_NET_F_STATUS;
+
+	/* finalize guest features bits */
+	virtio_store32(guest_features, VIRTIO_REG_GUEST_F, dev);
 }
 
 static void virtio_priv_fini(struct virtio_priv *dev_priv) {
