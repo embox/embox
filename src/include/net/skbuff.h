@@ -110,13 +110,15 @@ extern struct sk_buff_data * skb_data_alloc(void);
 extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 
+extern unsigned int skb_max_extra_hdr_size(void);
 extern unsigned int skb_max_size(void);
 extern unsigned int skb_avail(struct sk_buff *skb);
 
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(unsigned int size, struct sk_buff_data *skb_data);
+extern struct sk_buff * skb_wrap(unsigned int size,
+		unsigned int offset, struct sk_buff_data *skb_data);
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.

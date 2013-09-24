@@ -14,7 +14,8 @@ module skbuff {
 	source "skb.c"
 	option number amount_skb=4000
 	option number amount_skb_data=4000
-	option number skb_data_size=1514 /* for example */
+	option number skb_extra_hdr_size=0
+	option number skb_data_size=1514
 	depends embox.arch.interrupt
 
 	source "skb_queue.c"

@@ -19,20 +19,25 @@
 #include <kernel/printk.h>
 #include <util/member.h>
 
-#define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
-#define MODOPS_AMOUNT_SKB_DATA OPTION_GET(NUMBER, amount_skb_data)
-#define MODOPS_SKB_DATA_SIZE   OPTION_GET(NUMBER, skb_data_size)
+#define MODOPS_AMOUNT_SKB         OPTION_GET(NUMBER, amount_skb)
+#define MODOPS_AMOUNT_SKB_DATA    OPTION_GET(NUMBER, amount_skb_data)
+#define MODOPS_SKB_EXTRA_HDR_SIZE OPTION_GET(NUMBER, skb_extra_hdr_size)
+#define MODOPS_SKB_DATA_SIZE      OPTION_GET(NUMBER, skb_data_size)
 
 struct sk_buff_data {
-	unsigned char data[MODOPS_SKB_DATA_SIZE];
+	unsigned char buff[MODOPS_SKB_EXTRA_HDR_SIZE + MODOPS_SKB_DATA_SIZE];
 	unsigned int links;
 };
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
 
+unsigned int skb_max_extra_hdr_size(void) {
+	return MODOPS_SKB_EXTRA_HDR_SIZE;
+}
+
 unsigned int skb_max_size(void) {
-	return member_sizeof(struct sk_buff_data, data);
+	return MODOPS_SKB_DATA_SIZE;
 }
 
 unsigned int skb_avail(struct sk_buff *skb) {
@@ -88,14 +93,15 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 }
 
 struct sk_buff * skb_wrap(unsigned int size,
-		struct sk_buff_data *skb_data) {
+		unsigned int offset, struct sk_buff_data *skb_data) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
 	assert(size != 0);
 	assert(skb_data != NULL);
 
-	if (size > MODOPS_SKB_DATA_SIZE) {
+	if ((offset > skb_max_extra_hdr_size())
+			|| (size > skb_max_size())) {
 		printk("skb_wrap: error: size is too big\n");
 		return NULL; /* error: invalid argument */
 	}
@@ -117,8 +123,8 @@ struct sk_buff * skb_wrap(unsigned int size,
 	skb->len = size;
 	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
 	skb->data = skb_data;
-	skb->p_data = &skb_data->data[0];
-	skb->p_data_end = &skb_data->data[size];
+	skb->p_data = &skb_data->buff[offset];
+	skb->p_data_end = &skb_data->buff[offset + size];
 
 	/* TODO remove this */
 	skb->mac.raw = skb->p_data;
@@ -135,7 +141,7 @@ struct sk_buff * skb_alloc(unsigned int size) {
 		return NULL; /* error: no memory */
 	}
 
-	skb = skb_wrap(size, skb_data);
+	skb = skb_wrap(size, skb_max_extra_hdr_size(), skb_data);
 	if (skb == NULL) {
 		skb_data_free(skb_data);
 		return NULL; /* error: no memory */
@@ -168,24 +174,24 @@ static void skb_copy_ref(struct sk_buff *to,
 	to->sk = from->sk;
 	to->dev = from->dev;
 	if (from->mac.raw != NULL) {
-		to->mac.raw = &to->data->data[0] + (from->mac.raw
-					- &from->data->data[0]);
+		to->mac.raw = &to->data->buff[0] + (from->mac.raw
+					- &from->data->buff[0]);
 	}
 	if (from->nh.raw != NULL) {
-		to->nh.raw = &to->data->data[0] + (from->nh.raw
-					- &from->data->data[0]);
+		to->nh.raw = &to->data->buff[0] + (from->nh.raw
+					- &from->data->buff[0]);
 	}
 	if (from->h.raw != NULL) {
-		to->h.raw = &to->data->data[0] + (from->h.raw
-					- &from->data->data[0]);
+		to->h.raw = &to->data->buff[0] + (from->h.raw
+					- &from->data->buff[0]);
 	}
 	if (from->p_data != NULL) {
-		to->p_data = &to->data->data[0] + (from->p_data
-					- &from->data->data[0]);
+		to->p_data = &to->data->buff[0] + (from->p_data
+					- &from->data->buff[0]);
 	}
 	if (from->p_data_end != NULL) {
-		to->p_data_end = &to->data->data[0] + (from->p_data_end
-					- &from->data->data[0]);
+		to->p_data_end = &to->data->buff[0] + (from->p_data_end
+					- &from->data->buff[0]);
 	}
 }
 
@@ -193,7 +199,8 @@ static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	assert((to != NULL) && (to->data != NULL)
 			&& (from != NULL) && (from->data != NULL)
 			&& (to->len == from->len));
-	memcpy(&to->data->data[0], &from->data->data[0], from->len);
+	memcpy(&to->data->buff[skb_max_extra_hdr_size()],
+			&from->data->buff[skb_max_extra_hdr_size()], from->len);
 }
 
 struct sk_buff * skb_copy(struct sk_buff *skb) {
@@ -223,7 +230,7 @@ struct sk_buff * skb_clone(struct sk_buff *skb) {
 		return NULL; /* error: no memory */
 	}
 
-	cloned = skb_wrap(skb->len, cloned_data);
+	cloned = skb_wrap(skb->len, 0, cloned_data);
 	if (cloned == NULL) {
 		skb_data_free(cloned_data);
 		return NULL; /* error: no memory */
@@ -237,8 +244,9 @@ struct sk_buff * skb_clone(struct sk_buff *skb) {
 void skb_rshift(struct sk_buff *skb, unsigned int count) {
 	assert(skb != NULL);
 	assert(skb->data != NULL);
-	assert(count <= skb_avail(skb));
-	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
+	assert(count + skb->len <= skb_max_size());
+	memmove(&skb->data->buff[skb_max_extra_hdr_size() + count],
+			&skb->data->buff[skb_max_extra_hdr_size()], skb->len);
 	skb->len += count;
 	skb->p_data_end += count;
 }
