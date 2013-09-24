@@ -70,7 +70,6 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	pkt_hdr.flags = 0;
 	pkt_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
-	pkt_hdr.num_buffers = 0;
 
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	desc_id = vq->next_free_desc;
@@ -97,7 +96,6 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-//#include <kernel/printk.h>
 static irq_return_t virtio_interrupt(unsigned int irq_num,
 		void *dev_id) {
 	struct net_device *dev;
@@ -114,11 +112,9 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		return IRQ_NONE;
 	}
 
-//printk("!");
 	/* release outgoing packets */
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
-//printk("*");
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
 //		skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
@@ -129,7 +125,6 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	/* receive incoming packets */
 	vq = &netdev_priv(dev, struct virtio_priv)->rq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
-//printk("^");
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
 		skb = skb_wrap(used_elem->len,
@@ -147,10 +142,14 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		new_data = skb_data_alloc();
 		if (new_data == NULL) {
 			desc->addr = 0;
+			assert(desc->flags & VRING_DESC_F_NEXT);
+			vq->ring.desc[desc->next].addr = 0;
 			LOG_ERROR("virtio_interrupt", "skb_data_alloc return NULL");
 			break;
 		}
 		desc->addr = (uintptr_t)new_data;
+		assert(desc->flags & VRING_DESC_F_NEXT);
+		vq->ring.desc[desc->next].addr = (uintptr_t)new_data + desc->len;
 		vring_push_desc(used_elem->id, &vq->ring);
 		virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 	}
@@ -173,7 +172,7 @@ static int virtio_stop(struct net_device *dev) {
 static int virtio_set_macaddr(struct net_device *dev, const void *addr) {
 	unsigned char i;
 
-	/* setup mac */
+	/* setup MAC-address */
 	for (i = 0; i < dev->addr_len; ++i) {
 		virtio_store8(dev->dev_addr[i], VIRTIO_REG_NET_MAC(i), dev);
 	}
@@ -201,18 +200,13 @@ static void virtio_config(struct net_device *dev) {
 
 	guest_features = 0;
 
-	/* load device mac */
+	/* load device MAC-address and negotiate MAC bit */
 	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
 		for (i = 0; i < dev->addr_len; ++i) {
 			dev->dev_addr[i] = virtio_load8(VIRTIO_REG_NET_MAC(i), dev);
 		}
 		guest_features |= VIRTIO_NET_F_MAC;
 	}
-
-	/* negotiate MSG_RXBUF bit */
-	assert(virtio_load32(VIRTIO_REG_DEVICE_F, dev)
-			& VIRTIO_NET_F_MRG_RXBUF);
-	guest_features |= VIRTIO_NET_F_MRG_RXBUF;
 
 	/* negotiate STATUS bit */
 	assert(virtio_load32(VIRTIO_REG_DEVICE_F, dev)
@@ -245,6 +239,8 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 		struct net_device *dev) {
 	int ret, i;
 	struct sk_buff_data *skb_data;
+	uint32_t desc_id;
+	struct virtqueue *vq;
 
 	/* init receive queue */
 	ret = vq_init(&dev_priv->rq, VIRTIO_NET_QUEUE_RX, dev);
@@ -261,18 +257,30 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 	}
 
 	/* add receive buffer */
+	vq = &dev_priv->rq;
 	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		skb_data = skb_data_alloc();
 		if (skb_data == NULL) {
 			virtio_priv_fini(dev_priv);
 			return -ENOMEM;
 		}
-		ret = virtqueue_push_buff(skb_data, skb_max_size(), 1,
-				&dev_priv->rq);
-		if (ret != 0) {
-			virtio_priv_fini(dev_priv);
-			return ret;
-		}
+
+		desc_id = vq->next_free_desc;
+
+		vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+		assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
+		vring_desc_init(&vq->ring.desc[desc_id], skb_data,
+				sizeof(struct virtio_net_hdr),
+				VRING_DESC_F_WRITE | VRING_DESC_F_NEXT);
+		vq->ring.desc[desc_id].next = desc_id + 1;
+
+		vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+		vring_desc_init(&vq->ring.desc[desc_id + 1],
+				(struct virtio_net_hdr *)skb_data + 1,
+				skb_max_size() - sizeof(struct virtio_net_hdr),
+				VRING_DESC_F_WRITE);
+
+		vring_push_desc(desc_id, &vq->ring);
 	}
 	virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 
