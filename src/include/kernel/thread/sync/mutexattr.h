@@ -9,10 +9,15 @@
 #ifndef MUTEXATTR_H_
 #define MUTEXATTR_H_
 
-#define PTHREAD_MUTEX_DEFAULT 0
-#define PTHREAD_MUTEX_ERRORCHECK 1
-#define PTHREAD_MUTEX_RECURSIVE 2
-#define PTHREAD_MUTEX_NORMAL 3
+/* Mutex does not detect deadlock. A thread attempting to relock this mutex
+ * without first unlocking it will deadlock */
+#define PTHREAD_MUTEX_NORMAL 		0x0000
+#define PTHREAD_MUTEX_ERRORCHECK 	0x0010
+/* Recursive locking acceptable. Multiple locks of this mutex require the same
+ * number of unlocks */
+#define PTHREAD_MUTEX_RECURSIVE 	0x0020
+#define PTHREAD_MUTEX_DEFAULT 		0x0030
+
 
 struct mutexattr {
 	int type;
