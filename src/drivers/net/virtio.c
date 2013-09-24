@@ -64,19 +64,27 @@ static void vq_fini(struct virtqueue *vq) {
 }
 
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
-	int desc_id;
-	static struct virtio_net_hdr pkt_hdr;
+	uint32_t desc_id;
 	struct virtqueue *vq;
+	struct sk_buff_data *skb_data;
+	struct virtio_net_hdr *pkt_hdr;
 
-	pkt_hdr.flags = 0;
-	pkt_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
+	skb_data = skb_data_clone(skb->data);
+	if (skb_data == NULL) {
+		LOG_ERROR("virtio_xmit", "skb_data_clone return NULL");
+		return -ENOMEM;
+	}
+
+	pkt_hdr = (struct virtio_net_hdr *)skb_data;
+	pkt_hdr->flags = 0;
+	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 
 	vq = &netdev_priv(dev, struct virtio_priv)->tq;
 	desc_id = vq->next_free_desc;
 
 	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
 	assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
-	vring_desc_init(&vq->ring.desc[desc_id], &pkt_hdr, sizeof pkt_hdr,
+	vring_desc_init(&vq->ring.desc[desc_id], pkt_hdr, sizeof *pkt_hdr,
 			VRING_DESC_F_NEXT);
 	vq->ring.desc[desc_id].next = desc_id + 1;
 
@@ -87,10 +95,6 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	virtio_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
 
-	/* wait while txing */
-	while (netdev_priv(dev, struct virtio_priv)->tq.ring.desc[desc_id].addr);
-
-	vq->ring.desc[desc_id + 1].addr = 0;
 	skb_free(skb);
 
 	return 0;
@@ -117,8 +121,10 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	while (vq->last_seen_used != vq->ring.used->idx) {
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
-//		skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
+		skb_data_free((struct sk_buff_data *)(uintptr_t)desc->addr);
 		desc->addr = 0;
+		assert(desc->flags & VRING_DESC_F_NEXT);
+		vq->ring.desc[desc->next].addr = 0;
 		++vq->last_seen_used;
 	}
 
@@ -127,15 +133,14 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	while (vq->last_seen_used != vq->ring.used->idx) {
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 		desc = &vq->ring.desc[used_elem->id];
-		skb = skb_wrap(used_elem->len,
-					(struct sk_buff_data *)(uintptr_t)desc->addr);
+		skb = skb_wrap(used_elem->len - sizeof(struct virtio_net_hdr),
+				sizeof(struct virtio_net_hdr),
+				(struct sk_buff_data *)(uintptr_t)desc->addr);
 		if (skb == NULL) {
 			LOG_ERROR("virtio_interrupt", "skb_wrap return NULL");
 			break;
 		}
 		skb->dev = dev;
-		skb->mac.raw = skb->p_data + sizeof(struct virtio_net_hdr);
-		skb->len -= sizeof(struct virtio_net_hdr);
 		netif_rx(skb);
 
 		++vq->last_seen_used;
@@ -191,8 +196,11 @@ static void virtio_config(struct net_device *dev) {
 	unsigned char i;
 	uint32_t guest_features;
 
+	/* check extra header size */
+	assert(skb_max_extra_hdr_size() == sizeof(struct virtio_net_hdr));
+
 	/* reset device */
-	virtio_store8(0, VIRTIO_REG_DEVICE_S, dev);
+	virtio_store32(0, VIRTIO_REG_DEVICE_S, dev);
 
 	/* it's known device */
 	virtio_store8(VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER,
