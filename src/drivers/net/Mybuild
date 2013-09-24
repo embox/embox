@@ -20,6 +20,7 @@ module virtio {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.driver.virtio
 }
 
 module ti8178 {
