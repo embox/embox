@@ -257,11 +257,11 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
 	return ENOERR;
 }
 
-/*
 int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
-	return -ENOSYS;
+	return mutexattr_destroy(attr);
 }
 
+/*
 int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr, int *prioceiling) {
 	return -ENOSYS;
 }
@@ -277,11 +277,13 @@ int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr, int *pshared) 
 int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr, int *type) {
 	return -ENOSYS;
 }
+*/
 
 int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
-	return -ENOSYS;
+	return mutexattr_init(attr);
 }
 
+/*
 int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling) {
 	return -ENOSYS;
 }

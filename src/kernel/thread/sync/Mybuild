@@ -6,6 +6,7 @@ module sync {
 	depends barrier
 	depends cond
 	depends rwlock
+	depends mutexattr
 	//depends mqueue
 }
 
@@ -48,4 +49,8 @@ module mqueue {
 	source "mqueue.c"
 
 	depends embox.kernel.sched.sched
+}
+
+module mutexattr {
+	source "mutexattr.c"
 }
