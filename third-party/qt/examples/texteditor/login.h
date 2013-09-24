@@ -14,15 +14,6 @@
 
 #include <shadow.h>
 
-//class LoginMdiSubWindow : public QMdiSubWindow {
-//
-//public:
-//    LoginMdiSubWindow() : QMdiSubWindow() {}
-//
-//protected:
-//    bool event(QEvent *event);
-//};
-
 /*!
  *Makes class LoginDialog a child to its parent, QDialog
  */
@@ -68,8 +59,13 @@ private:
       */
     void setUpGUI();
 
+    QMdiArea *emarea;
+
+protected:
+    void showEvent(QShowEvent *);
+
 public:
-    explicit LoginDialog(QWidget *parent = 0);
+    explicit LoginDialog(QWidget *parent, QMdiArea *mdiArea);
 
     QMdiSubWindow *subwindow;
     QGridLayout* formGridLayout;

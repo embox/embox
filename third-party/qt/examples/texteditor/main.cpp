@@ -6,23 +6,29 @@
 #include "mainwindow.h"
 #include "login.h"
 #include "desktopimage.h"
+#include "mdi_background.h"
 
+#include <kernel/manual_event.h>
+#include <kernel/event.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
-#include <module/embox/arch/x86/boot/multiboot.h>
 
-#define MBOOTMOD embox__arch__x86__boot__multiboot
+#define FSIZE 64
+#define SEP ':'
 
-#define WIDTH  OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
-#define HEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
-#define BPP    OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
+static QString defaultImagePath = ":/images/default.png";
 
+QMdiAreaWBackground *emarea;
 static QList<TextEditor*> textEditors;
-TextEditor *textEditor;
-QMdiArea *emarea;
-QMdiSubWindow *emEditorSubWindow;
 static DesktopImageDialog *wallpaperDialog;
 static QStringList desktopImagesList;
+static QApplication *__qt_app;
+static QMenu *__qt_menu;
+
+static struct manual_event inited_event;
+static int curuid;
+
+static void emboxQtShowLoginForm();
 
 void textEditorClosed(TextEditor *ed) {
 	for (int i = 0; i < textEditors.size(); i++) {
@@ -32,89 +38,77 @@ void textEditorClosed(TextEditor *ed) {
 	}
 }
 
-static void emboxShowLoginForm();
-
-static QApplication *__qt_app;
-static QMenu *__qt_menu;
-
 class EmboxRootWindow : public QMainWindow
 {
     Q_OBJECT
 
     public:
 
-    QAction *closeAllEditorsAction;
-    EmboxRootWindow() {
-    	fileMenu = new QMenu(QString("&Пуск"), this);
-    	menuBar()->addMenu(fileMenu);
+	QAction *closeAllEditorsAction;
+	EmboxRootWindow() {
+	fileMenu = new QMenu(QString("&Пуск"), this);
+	menuBar()->addMenu(fileMenu);
 
 	__qt_menu = fileMenu;
 
-    	textEditorAction = new QAction(QString("&Текстовый редактор"), this);
-    	fileMenu->addAction(textEditorAction);
-    	connect(textEditorAction, SIGNAL(triggered()), this, SLOT(textEditorRun()));
+	textEditorAction = new QAction(QString("&Текстовый редактор"), this);
+	fileMenu->addAction(textEditorAction);
+	connect(textEditorAction, SIGNAL(triggered()), this, SLOT(textEditorRun()));
 
-    	closeAllEditorsAction = new QAction(QString("&Закрыть все окна"), this);
-    	fileMenu->addAction(closeAllEditorsAction);
-    	connect(closeAllEditorsAction, SIGNAL(triggered()), this, SLOT(closeAllEditors()));
+	closeAllEditorsAction = new QAction(QString("&Закрыть все окна"), this);
+	fileMenu->addAction(closeAllEditorsAction);
+	connect(closeAllEditorsAction, SIGNAL(triggered()), this, SLOT(closeAllEditors()));
 
-    	logoutAction = new QAction(QString("&Завершение сеанса"), this);
-    	fileMenu->addAction(logoutAction);
-    	connect(logoutAction, SIGNAL(triggered()), this, SLOT(logout()));
+	logoutAction = new QAction(QString("&Завершение сеанса"), this);
+	fileMenu->addAction(logoutAction);
+	connect(logoutAction, SIGNAL(triggered()), this, SLOT(logout()));
 
-    	saveAction = new QAction(QString("&Сохранить конфигурацию"), this);
-    	fileMenu->addAction(saveAction);
-    	connect(saveAction, SIGNAL(triggered()), this, SLOT(savedefault()));
+	saveAction = new QAction(QString("&Сохранить конфигурацию"), this);
+	fileMenu->addAction(saveAction);
+	connect(saveAction, SIGNAL(triggered()), this, SLOT(savedefault()));
 
-    	wallpaperAction = new QAction(QString("&Графические настройки"), this);
-    	fileMenu->addAction(wallpaperAction);
-    	connect(wallpaperAction, SIGNAL(triggered()), this, SLOT(wallpaper()));
+	wallpaperAction = new QAction(QString("&Графические настройки"), this);
+	fileMenu->addAction(wallpaperAction);
+	connect(wallpaperAction, SIGNAL(triggered()), this, SLOT(wallpaper()));
     }
 
     private slots:
-    	void textEditorRun() {
-    		textEditor = new TextEditor();
+	void textEditorRun() {
+		TextEditor *textEditor = new TextEditor();
 		textEditors << textEditor;
-    		emEditorSubWindow = emarea->addSubWindow(textEditor, textEditor->windowType());
-		textEditor->subwindow = emEditorSubWindow;
-    		textEditor->show();
-    	}
+		textEditor->subwindow = emarea->addSubWindow(textEditor, textEditor->windowType());
+		textEditor->show();
+	}
 
-    	void closeAllEditors() {
+	void closeAllEditors() {
 		for (int i = 0; i < textEditors.size(); i++) {
 			textEditors.at(i)->subwindow->close();
 		}
 	}
 
-    	void logout() {
-    		emboxHideDesktop();
-    		emboxShowLoginForm();
-    	}
+	void logout() {
+		emboxQtHideDesktop();
+		emboxQtShowLoginForm();
+	}
 
-    	void wallpaper() {
-    		wallpaperDialog = new DesktopImageDialog(desktopImagesList);
-    		wallpaperDialog->show();
-    	}
+	void wallpaper() {
+		wallpaperDialog = new DesktopImageDialog(desktopImagesList);
+		wallpaperDialog->show();
+	}
 
-    	void savedefault() {
+	void savedefault() {
 
-    	}
+	}
 
     private:
-    	QAction *logoutAction;
-        QAction *textEditorAction;
-        QAction *wallpaperAction;
-        QAction *saveAction;
-        QMenu *fileMenu;
+	QAction *logoutAction;
+	QAction *textEditorAction;
+	QAction *wallpaperAction;
+	QAction *saveAction;
+	QMenu *fileMenu;
 };
 
-EmboxRootWindow *emroot;
-
-#define FSIZE 64
-
-static int curuid;
-
-#define SEP ':'
+static EmboxRootWindow *emroot;
 
 static char *parse(char **buf) {
 	char *ret = *buf;
@@ -129,7 +123,7 @@ static char *parse(char **buf) {
 	return ret;
 }
 
-void qtSetfont(const QString &fontFamily, int fontPt) {
+void emboxQtSetfont(const QString &fontFamily, int fontPt) {
 	QFont serifFont(fontFamily, fontPt);
 	__qt_app->setFont(serifFont);
 	__qt_menu->setFont(serifFont);
@@ -158,15 +152,13 @@ static void load_pref(void) {
 	close(fd);
 
 	QString imagePath = QString(":/images/").append(QString(wall));
-	QImage desktopImage = QImage(imagePath).convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
-	QPixmap bgPix = QPixmap::fromImage(desktopImage);
-	emarea->setBackground(bgPix);
+	emarea->setBackgroundPath(imagePath);
 
-	qtSetfont(font, font_pt);
+	emboxQtSetfont(font, font_pt);
 
 }
 
-void save_pref(char *wall, char *font, int font_pt) {
+void emboxQtSavePref(char *wall, char *font, int font_pt) {
 	int fd, len;
 	char cbuf[FSIZE];
 
@@ -183,7 +175,7 @@ void save_pref(char *wall, char *font, int font_pt) {
 	close(fd);
 }
 
-void emboxShowDesktop(uid_t uid) {
+void emboxQtShowDesktop(uid_t uid) {
 	int fd = -1;
 	bool enabled = uid ? false : true;
 
@@ -194,52 +186,57 @@ void emboxShowDesktop(uid_t uid) {
 	load_pref();
 }
 
-void emboxHideDesktop() {
+void emboxQtHideDesktop() {
 	emarea->closeAllSubWindows();
 	emroot->menuBar()->hide();
 }
 
-static void emboxShowLoginForm() {
-    LoginDialog *loginDialog = new LoginDialog();
-    loginDialog->subwindow->setGeometry(WIDTH/2 - 150, HEIGHT/2 - 75, 300, 150);
-    loginDialog->show();
+void emboxRootWindowShow(int width, int height) {
+
+	emroot->setGeometry(QRect(0,0, width, height));
+	manual_event_set_and_notify(&inited_event);
+}
+
+static void emboxQtShowLoginForm() {
+	LoginDialog *loginDialog = new LoginDialog(0, emarea);
+	loginDialog->show();
+
+	emarea->setBackgroundPath(defaultImagePath);
 }
 
 int main(int argv, char **args)
 {
-    //Q_INIT_RESOURCE(texteditor);
+	//Q_INIT_RESOURCE(texteditor);
 
-    QApplication app(argv, args);
+	manual_event_init(&inited_event, 0);
 
-    __qt_app = &app;
+	QApplication app(argv, args);
 
-    QFont serifFont("Times", 10);
-    app.setFont(serifFont);
+	__qt_app = &app;
 
-    desktopImagesList << "cats.jpg" << "default.png";
+	QFont serifFont("Times", 10);
+	app.setFont(serifFont);
+	qDebug() << "Supported formats:" << QImageReader::supportedImageFormats();
+	desktopImagesList << "cats.jpg" << "default.png";
 
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+	QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
-    QImage desktopImage = QImage(":/images/default.png").convertToFormat(QImage::Format_RGB16).scaled(WIDTH, HEIGHT, Qt::KeepAspectRatio);
-    QPixmap bgPix = QPixmap::fromImage(desktopImage);
+	emroot = new EmboxRootWindow();
+	emarea = new QMdiAreaWBackground(defaultImagePath);
 
-    emarea = new QMdiArea();
-    emarea->setBackground(bgPix);
-    emarea->resize(WIDTH, HEIGHT);
-    emarea->show();
+	emroot->setCentralWidget(emarea);
 
-    emroot = new EmboxRootWindow();
-    emroot->setCentralWidget(emarea);
-    emroot->resize(WIDTH, HEIGHT);
-    emroot->show();
+	manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE);
 
-    emboxHideDesktop();
+	emroot->show();
 
-    emboxShowLoginForm();
+	emboxQtHideDesktop();
 
-    return app.exec();
+	emboxQtShowLoginForm();
+
+	return app.exec();
 }
 
 #include "main.moc"

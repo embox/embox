@@ -6,6 +6,7 @@ module core {
 	depends embox.arch.x86.LibM // FIXME:
 	depends embox.compat.posix.fs.dirent
 	depends embox.fs.rootfs
+	depends embox.kernel.manual_event_api
 	source "core.c"
 	// Posix
 }

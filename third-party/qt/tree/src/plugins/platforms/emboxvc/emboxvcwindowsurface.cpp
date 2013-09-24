@@ -3,7 +3,6 @@
 #include <QtGui/private/qapplication_p.h>
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
-
 #include <kernel/task/idx.h>
 
 QT_BEGIN_NAMESPACE
@@ -52,17 +51,7 @@ static const struct {
 
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
 extern QEmboxVC *globalEmboxVC;
-
-//static QEmboxVCWindowSurface * __emboxVC(struct vc *vc) {
-//	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
-//		QEmboxVCWindowSurface *emvc = __emboxVCcollection.at(i);
-//		if (&(emvc->emboxVC) == vc) {
-//			return emvc;
-//		}
-//	}
-//
-//	return NULL;
-//}
+extern void emboxRootWindowShow(int width, int height);
 
 static void flushAll() {
 	QRegion region;
@@ -73,26 +62,20 @@ static void flushAll() {
 	}
 }
 
-static int visibleWidgetsCount() {
-	int cnt = 0;
-	for (int i = 0; i < __emboxVCcollection.size(); ++i) {
-		cnt += __emboxVCcollection.at(i)->window()->isVisible() ? 1 : 0;
-	}
-	return cnt;
-}
-
 static void __emboxVCsetMode(struct vc *vc, int mode) {
 	globalEmboxVC->emboxVCvisualized = mode;
 }
 
 static void __visualization(struct vc *vc, struct fb_info *info) {
 	Q_UNUSED(info);
+	const struct fb_var_screeninfo *vinfo = fb_get_var(info);
 
 	QEmboxVCWindowSurface *surf;
 
+	emboxRootWindowShow(vinfo->xres, vinfo->yres);
+
 	__emboxVCsetMode(vc, 1);
-	//surf = __emboxVC(vc);
-	//surf->flush(NULL, region, point);
+
 	flushAll();
 
 	foreach (QWidget *widget, QApplication::allWidgets()) {
@@ -383,4 +366,10 @@ void QEmboxVCPlatformWindow::setParent(const QPlatformWindow *window) {
 	//}
 }
 
+void QEmboxVCPlatformWindow::setGeometry(const QRect &rect) {
+
+    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
+    QPlatformWindow::setGeometry(rect);
+
+}
 QT_END_NAMESPACE
