@@ -22,15 +22,15 @@ __BEGIN_DECLS
  * Convert values between host and network byte order
  */
 #if defined(__LITTLE_ENDIAN)
-# define htons(n) swab16(n)
-# define ntohs(n) swab16(n)
-# define htonl(n) swab32(n)
-# define ntohl(n) swab32(n)
+//# define htons(n) swab16(n)
+//# define ntohs(n) swab16(n)
+//# define htonl(n) swab32(n)
+//# define ntohl(n) swab32(n)
 #elif defined (__BIG_ENDIAN)
-# define htons(n) (n)
-# define ntohs(n) (n)
-# define htonl(n) (n)
-# define ntohl(n) (n)
+//# define htons(n) (n)
+//# define ntohs(n) (n)
+//# define htonl(n) (n)
+//# define ntohl(n) (n)
 #endif
 
 /**
