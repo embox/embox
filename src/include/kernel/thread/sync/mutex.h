@@ -9,6 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_MUTEX_H_
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
+#include <sys/cdefs.h>
 #include <kernel/sched/wait_queue.h>
 
 struct thread;
@@ -34,6 +35,8 @@ struct mutex {
 	}
 
 #define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
+
+__BEGIN_DECLS
 
 /**
  * initializes given mutex
@@ -66,5 +69,7 @@ extern void mutex_unlock(struct mutex *locked_mutex);
  * @param free_mutex Mutex to lock.
  */
 extern int mutex_trylock(struct mutex *free_mutex);
+
+__END_DECLS
 
 #endif /* KERNEL_THREAD_SYNC_MUTEX_H_ */

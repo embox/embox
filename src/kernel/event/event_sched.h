@@ -18,8 +18,11 @@
 struct event {
 	struct wait_queue wait_queue;
 };
+__BEGIN_DECLS
 
 extern int __event_wait(unsigned long timeout); /* TODO: Remove this */
+
+__END_DECLS
 
 #define __EVENT_WAIT(event, cond_expr, timeout, intr)   \
 	((cond_expr) ? 0 : ({                               \
