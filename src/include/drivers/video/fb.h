@@ -157,6 +157,10 @@ struct fb_cursor {
 
 extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
+static inline const struct fb_var_screeninfo *fb_get_var(struct fb_info *info) {
+	return &info->var;
+}
+
 extern int fb_register(struct fb_info *info);
 extern int fb_unregister(struct fb_info *info);
 extern struct fb_info * fb_lookup(const char *name);
