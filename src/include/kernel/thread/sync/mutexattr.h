@@ -12,6 +12,7 @@
 /* Mutex does not detect deadlock. A thread attempting to relock this mutex
  * without first unlocking it will deadlock */
 #define MUTEX_NORMAL 		0x0000
+/* Mutex provides error checking */
 #define MUTEX_ERRORCHECK 	0x0010
 /* Recursive locking acceptable. Multiple locks of this mutex require the same
  * number of unlocks */
@@ -24,6 +25,7 @@ struct mutexattr {
 };
 
 extern int mutexattr_init(struct mutexattr*);
+extern int mutexattr_copy(const struct mutexattr*, struct mutexattr*);
 extern int mutexattr_destroy(struct mutexattr*);
 extern int mutexattr_gettype(const struct mutexattr*, int*);
 extern int mutexattr_settype(struct mutexattr*, int);

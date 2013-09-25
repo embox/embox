@@ -11,6 +11,7 @@
 
 #include <sys/cdefs.h>
 #include <kernel/sched/wait_queue.h>
+#include <kernel/thread/sync/mutexattr.h>
 
 struct thread;
 
@@ -20,6 +21,7 @@ struct thread;
 struct mutex {
 	struct wait_queue wq;
 	struct thread *holder;
+	struct mutexattr attr;
 
 	int lock_count;
 };
@@ -37,6 +39,8 @@ struct mutex {
 #define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 __BEGIN_DECLS
+
+extern void mutex_init_default(struct mutex *m, const struct mutexattr *attr);
 
 /**
  * initializes given mutex

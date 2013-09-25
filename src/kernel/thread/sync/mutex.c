@@ -35,10 +35,21 @@ static inline int mutex_static_inited(struct mutex *m) {
 	return 0;
 }
 
-void mutex_init(struct mutex *m) {
+void mutex_init_default(struct mutex *m, const struct mutexattr *attr) {
 	wait_queue_init(&m->wq);
 	m->lock_count = 0;
 	m->holder = NULL;
+
+	if (attr) {
+		mutexattr_copy(attr, &m->attr);
+	} else {
+		mutexattr_init(&m->attr);
+	}
+}
+
+void mutex_init(struct mutex *m) {
+	mutex_init_default(m, NULL);
+	mutexattr_settype(&m->attr, MUTEX_RECURSIVE | MUTEX_ERRORCHECK);
 }
 
 void mutex_lock(struct mutex *m) {

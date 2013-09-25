@@ -230,7 +230,7 @@ int pthread_mutex_getprioceiling(const pthread_mutex_t *mutex, int *prioceiling)
 */
 
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
-	mutex_init(mutex);
+	mutex_init_default(mutex, attr);
 
 	return ENOERR;
 }
