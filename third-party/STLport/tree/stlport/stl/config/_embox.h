@@ -12,7 +12,7 @@
 
 #define _STLP_USE_UNIX_IO
 
-#define _STLP_NO_WCHAR_T
+//#define _STLP_NO_WCHAR_T
 #define _STLP_NO_CWCHAR
 
 #define _STLP_NO_LONG_DOUBLE
