@@ -62,6 +62,7 @@ private:
     QMdiArea *emarea;
 
 protected:
+    void closeEvent(QCloseEvent *);
     void showEvent(QShowEvent *);
 
 public:

@@ -74,6 +74,11 @@ void LoginDialog::showEvent(QShowEvent *)
 	subwindow->setGeometry(geo);
 }
 
+void LoginDialog::closeEvent(QCloseEvent *ev)
+{
+	ev->ignore();
+}
+
 void LoginDialog::slotAcceptLogin(){
     QString username = editUsername->text();
     QString password = editPassword->text();
