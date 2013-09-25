@@ -1,6 +1,32 @@
 #include "mainwindow.h"
 
-TextEditor::TextEditor()
+static QList<TextEditor*> TextEditor::textEditors;
+
+TextEditorSubWindow::TextEditorSubWindow(TextEditor *editor)
+{
+	textEditor = editor;
+}
+
+void TextEditorSubWindow::closeEvent(QCloseEvent *closeEvent)
+{
+	TextEditor::closeEditor(textEditor);
+	QMdiSubWindow::closeEvent(closeEvent);
+}
+
+void TextEditor::closeEditor(TextEditor *ed) {
+	for (int i = 0; i < textEditors.size(); i++) {
+		if (textEditors.at(i) == ed) {
+			textEditors.removeAt(i);
+		}
+	}
+}
+void TextEditor::closeAllEditors() {
+	for (int i = 0; i < textEditors.size(); i++) {
+		textEditors.at(i)->quit();
+	}
+}
+
+TextEditor::TextEditor(QMdiArea *area)
 {
     //extern QGraphicsScene *emscene;
     createAction = new QAction(tr("&Новый файл"), this);
@@ -49,24 +75,13 @@ TextEditor::TextEditor()
     setWindowTitle(tr(TEDIT_APP_TITLE));
     resize(640, 480);
 
-//    helpWindow = new QWizard();
-//    helpWindow->addPage(createIntroPage());
-//    helpWindow->setWindowTitle("Справка");
-//    helpWindow->resize(600, 300);
-   // emscene->addWidget(helpWindow,helpWindow->windowType())->setZValue(100);
-   // helpWindow->hide();
+    subwindow = new TextEditorSubWindow(this);
+    subwindow->setWidget(this);
+    subwindow->setAttribute(Qt::WA_DeleteOnClose);
+    area->addSubWindow(subwindow, this->windowType());
 
-
-
-    //saveFile = new SaveFileDialog(textEdit, &fileName, this);
-    //emscene->addWidget(createDialog, createDialog->windowType())->setZValue(100);
-    //createDialog->hide();
-    //emscene->addWidget(openDialog, openDialog->windowType())->setZValue(100);
-    //openDialog->hide();
+    TextEditor::textEditors << this;
 }
-
-extern QMdiArea *emarea;
-extern QMdiSubWindow *emEditorSubWindow;
 
 void TextEditor::create()
 {
@@ -75,11 +90,8 @@ void TextEditor::create()
 }
 
 void TextEditor::quit() {
-	extern void textEditorClosed(TextEditor *ed);
-	emarea->setActiveSubWindow(subwindow);
-	emarea->closeActiveSubWindow();
-
-	textEditorClosed(this);
+	subwindow->mdiArea()->setActiveSubWindow(subwindow);
+	subwindow->mdiArea()->closeActiveSubWindow();
 }
 
 void TextEditor::help() {

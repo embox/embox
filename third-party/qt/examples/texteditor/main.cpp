@@ -19,7 +19,6 @@
 static QString defaultImagePath = ":/images/default.png";
 
 QMdiAreaWBackground *emarea;
-static QList<TextEditor*> textEditors;
 static DesktopImageDialog *wallpaperDialog;
 static QStringList desktopImagesList;
 static QApplication *__qt_app;
@@ -29,14 +28,6 @@ static struct manual_event inited_event;
 static int curuid;
 
 static void emboxQtShowLoginForm();
-
-void textEditorClosed(TextEditor *ed) {
-	for (int i = 0; i < textEditors.size(); i++) {
-		if (textEditors.at(i) == ed) {
-			textEditors.removeAt(i);
-		}
-	}
-}
 
 class EmboxRootWindow : public QMainWindow
 {
@@ -74,16 +65,12 @@ class EmboxRootWindow : public QMainWindow
 
     private slots:
 	void textEditorRun() {
-		TextEditor *textEditor = new TextEditor();
-		textEditors << textEditor;
-		textEditor->subwindow = emarea->addSubWindow(textEditor, textEditor->windowType());
+		TextEditor *textEditor = new TextEditor(emarea);
 		textEditor->show();
 	}
 
 	void closeAllEditors() {
-		for (int i = 0; i < textEditors.size(); i++) {
-			textEditors.at(i)->subwindow->close();
-		}
+		TextEditor::closeAllEditors();
 	}
 
 	void logout() {

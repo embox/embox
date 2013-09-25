@@ -20,19 +20,26 @@ class TextEditor : public QMainWindow
 {
     Q_OBJECT
 
+    public slots:
+        void quit();
+
     public:
-	QMdiSubWindow *subwindow;
-        TextEditor();
+	static void closeEditor(TextEditor *);
+	static void closeAllEditors();
+        TextEditor(QMdiArea *);
 
     private slots:
         void create();
         void open();
         void save();
-        void quit();
         void help();
         void setFont(int);
 
     private:
+	static QList<TextEditor*> textEditors;
+
+	QMdiSubWindow *subwindow;
+
         QTextEdit *textEdit;
 
         QAction *createAction;
@@ -52,6 +59,17 @@ class TextEditor : public QMainWindow
         CreateFileDialog *createDialog;
         SaveFileDialog *saveFile;
         EWisard *helpWindow;
+};
+
+class TextEditorSubWindow : public QMdiSubWindow
+{
+	Q_OBJECT
+public:
+	TextEditorSubWindow(TextEditor *);
+protected:
+        void closeEvent(QCloseEvent *closeEvent);
+private:
+	TextEditor *textEditor;
 };
 
 #endif // MAINWINDOW_H
