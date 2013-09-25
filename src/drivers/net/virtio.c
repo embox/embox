@@ -7,7 +7,9 @@
  */
 
 #include <assert.h>
-#include <drivers/virtio.h>
+#include <drivers/virtio/virtio.h>
+#include <drivers/virtio/virtio_ring.h>
+#include <drivers/virtio/virtio_queue.h>
 #include <drivers/ethernet/virtio_net.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
@@ -31,38 +33,6 @@ struct virtio_priv {
 	struct virtqueue rq;
 	struct virtqueue tq;
 };
-
-static int vq_init(struct virtqueue *vq, int id, struct net_device *dev) {
-	uint16_t queue_sz;
-	uint32_t ring_sz;
-	void *ring_data;
-
-	assert(vq != NULL);
-
-	virtio_select_queue(id, dev);
-
-	queue_sz = virtio_get_queue_size(dev);
-	ring_sz = vring_size(queue_sz);
-
-	ring_data = memalign(VRING_ALIGN_BOUND, ring_sz);
-	if (ring_data == NULL) {
-		return -ENOMEM;
-	}
-	memset(ring_data, 0, ring_sz);
-
-	vring_init(&vq->ring, queue_sz, ring_data);
-	vq->ring_data = ring_data;
-	vq->last_seen_used = vq->next_free_desc = 0;
-
-	virtio_set_queue_addr(ring_data, dev);
-
-	return 0;
-}
-
-static void vq_fini(struct virtqueue *vq) {
-	assert(vq != NULL);
-	free(vq->ring_data);
-}
 
 static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t desc_id;
@@ -94,7 +64,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	vring_push_desc(desc_id, &vq->ring);
 
-	virtio_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
+	virtio_net_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
 
 	skb_free(skb);
 
@@ -113,7 +83,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	dev = dev_id;
 
 	/* it is really? */
-	if (!(virtio_load8(VIRTIO_REG_ISR_S, dev) & 1)) {
+	if (~virtio_net_get_isr_status(dev) & 1) {
 		return IRQ_NONE;
 	}
 
@@ -157,7 +127,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		assert(desc->flags & VRING_DESC_F_NEXT);
 		vq->ring.desc[desc->next].addr = (uintptr_t)new_data + desc->len;
 		vring_push_desc(used_elem->id, &vq->ring);
-		virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
+		virtio_net_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 	}
 
 	return IRQ_HANDLED;
@@ -165,13 +135,13 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 
 static int virtio_open(struct net_device *dev) {
 	/* device is ready */
-	virtio_orin8(VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
+	virtio_net_add_status(VIRTIO_CONFIG_S_DRIVER_OK, dev);
 	return 0;
 }
 
 static int virtio_stop(struct net_device *dev) {
 	/* device is not ready */
-	virtio_andin8(~VIRTIO_CONFIG_S_DRIVER_OK, VIRTIO_REG_DEVICE_S, dev);
+	virtio_net_del_status(VIRTIO_CONFIG_S_DRIVER_OK, dev);
 	return 0;
 }
 
@@ -180,7 +150,7 @@ static int virtio_set_macaddr(struct net_device *dev, const void *addr) {
 
 	/* setup MAC-address */
 	for (i = 0; i < dev->addr_len; ++i) {
-		virtio_store8(dev->dev_addr[i], VIRTIO_REG_NET_MAC(i), dev);
+		virtio_net_set_mac(dev->dev_addr[i], i, dev);
 	}
 
 	return 0;
@@ -201,32 +171,32 @@ static void virtio_config(struct net_device *dev) {
 	assert(skb_max_extra_hdr_size() == sizeof(struct virtio_net_hdr));
 
 	/* reset device */
-	virtio_store32(0, VIRTIO_REG_DEVICE_S, dev);
+	virtio_net_reset(dev);
 
 	/* it's known device */
-	virtio_store8(VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER,
-			VIRTIO_REG_DEVICE_S, dev);
+	virtio_net_add_status(VIRTIO_CONFIG_S_ACKNOWLEDGE
+			| VIRTIO_CONFIG_S_DRIVER, dev);
 
 	guest_features = 0;
 
 	/* load device MAC-address and negotiate MAC bit */
-	if (virtio_load32(VIRTIO_REG_DEVICE_F, dev) & VIRTIO_NET_F_MAC) {
+	if (virtio_net_has_feature(VIRTIO_NET_F_MAC, dev)) {
 		for (i = 0; i < dev->addr_len; ++i) {
-			dev->dev_addr[i] = virtio_load8(VIRTIO_REG_NET_MAC(i), dev);
+			dev->dev_addr[i] = virtio_net_get_mac(i, dev);
 		}
 		guest_features |= VIRTIO_NET_F_MAC;
 	}
 
 	/* negotiate STATUS bit */
-	assert(virtio_load32(VIRTIO_REG_DEVICE_F, dev)
-			& VIRTIO_NET_F_STATUS);
+	assert(virtio_net_has_feature(VIRTIO_NET_F_STATUS, dev));
 	guest_features |= VIRTIO_NET_F_STATUS;
 
 	/* finalize guest features bits */
-	virtio_store32(guest_features, VIRTIO_REG_GUEST_F, dev);
+	virtio_net_set_feature(guest_features, dev);
 }
 
-static void virtio_priv_fini(struct virtio_priv *dev_priv) {
+static void virtio_priv_fini(struct virtio_priv *dev_priv,
+		struct net_device *dev) {
 	int i;
 	struct vring_desc *desc;
 
@@ -240,8 +210,8 @@ static void virtio_priv_fini(struct virtio_priv *dev_priv) {
 	}
 
 	/* free virtqueues */
-	vq_fini(&dev_priv->rq);
-	vq_fini(&dev_priv->tq);
+	virtqueue_net_destroy(&dev_priv->rq, dev);
+	virtqueue_net_destroy(&dev_priv->tq, dev);
 }
 
 static int virtio_priv_init(struct virtio_priv *dev_priv,
@@ -252,16 +222,16 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 	struct virtqueue *vq;
 
 	/* init receive queue */
-	ret = vq_init(&dev_priv->rq, VIRTIO_NET_QUEUE_RX, dev);
+	ret = virtqueue_net_create(&dev_priv->rq, VIRTIO_NET_QUEUE_RX, dev);
 	if (ret != 0) {
 		return ret;
 	}
 
 	/* init transmit queue */
-	ret = vq_init(&dev_priv->tq,
+	ret = virtqueue_net_create(&dev_priv->tq,
 			VIRTIO_NET_QUEUE_TX, dev);
 	if (ret != 0) {
-		vq_fini(&dev_priv->rq);
+		virtqueue_net_destroy(&dev_priv->rq, dev);
 		return ret;
 	}
 
@@ -270,7 +240,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		skb_data = skb_data_alloc();
 		if (skb_data == NULL) {
-			virtio_priv_fini(dev_priv);
+			virtio_priv_fini(dev_priv, dev);
 			return -ENOMEM;
 		}
 
@@ -291,7 +261,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 		vring_push_desc(desc_id, &vq->ring);
 	}
-	virtio_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
+	virtio_net_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 
 	return 0;
 }
@@ -319,7 +289,7 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 
 	ret = irq_attach(nic->irq, virtio_interrupt, IF_SHARESUP, nic, "virtio");
 	if (ret != 0) {
-		virtio_priv_fini(nic_priv);
+		virtio_priv_fini(nic_priv, nic);
 		return ret;
 	}
 

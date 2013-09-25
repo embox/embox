@@ -2,4 +2,12 @@ package embox.driver
 
 module virtio {
 	source "virtio_ring.c"
+	depends embox.lib.LibCAssert
+	/* depends embox.util.binalign */
+
+	source "virtio_queue.c"
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.lib.LibCStdlib
+	/* depends virtio_ring.c */
 }
