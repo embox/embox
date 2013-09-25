@@ -1,6 +1,6 @@
 package third_party.zlib
 
-module libs {
+static module libs {
 	depends embox.lib.LibC
 
 	depends embox.arch.x86.LibM // FIXME:
