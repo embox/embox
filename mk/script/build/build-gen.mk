@@ -145,14 +145,11 @@ $(@build_image) : mk_file  = \
 $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rmk_target_pat),image)
 
-$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rmk_o_pat), \
+$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rmk_out_pat), \
 			$(call source_base,$(@source_cpp_rmk)))
-$(@build_image) : objs = $(patsubst %,$(value module_ld_rmk_o_pat), \
+$(@build_image) : objs = $(patsubst %,$(value module_ld_rmk_out_pat), \
 			$(call module_path,$(o_modules)))
-$(@build_image) : libs = \
-		$(patsubst %,$(value source_a_rmk_o_pat), \
-			$(basename $(call module_a_source_files,$(build_modules)))) \
-		$(patsubst %,$(value module_ar_rmk_a_pat), \
+$(@build_image) : libs = $(patsubst %,$(value module_ar_rmk_a_pat), \
 			$(call module_path,$(a_modules)))
 
 $(@build_image) :
@@ -209,7 +206,7 @@ $(@build_initfs) : target_file = \
 		$(patsubst %,$(value build_initfs_rmk_target_pat),$$(build_initfs))
 
 $(@build_initfs) : cpio_files = \
-		$(call source_initfs_cp_o_file,$(@source_initfs_cp_rmk))
+		$(call source_initfs_cp_out,$(@source_initfs_cp_rmk))
 
 $(@build_initfs) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -232,27 +229,26 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 source_mk_pats  := %.mk
 source_cpp_pats := %.lds.S
 
-module_occ_source_files = \
+module_o_source_files = \
 	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
 		$(call source_file,$(call get,$1,sources))))
 
 module_a_source_files = \
 	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
 
-filter_with_occ = \
-	$(foreach m,$1,$(if $(call module_occ_source_files,$m),$m))
+filter_with_sources = \
+	$(foreach 1,$1,$(if $(module_o_source_files)$(module_a_source_files),$1))
 
 static_modules    := $(call filter_static_modules,$(build_modules))
 nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
 
-
 @module_ld_rmk := \
 	$(patsubst %,module-ld-rmk/%, \
-		$(call filter_with_occ,$(nonstatic_modules)))
+		$(call filter_with_sources,$(nonstatic_modules)))
 
 @module_ar_rmk := \
 	$(patsubst %,module-ar-rmk/%, \
-		$(call filter_with_occ,$(static_modules)))
+		$(call filter_with_sources,$(static_modules)))
 
 my_cmd_name   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.name)
 
@@ -302,7 +298,7 @@ module_ar_rmk_mk_pat = $(MKGEN_DIR)/module/%.ar_rule.mk
 module_ar_rmk_a_pat  = $(OBJ_DIR)/module/%.a
 
 module_ld_rmk_mk_pat = $(MKGEN_DIR)/module/%.ld_rule.mk
-module_ld_rmk_o_pat  = $(OBJ_DIR)/module/%.o
+module_ld_rmk_out_pat  = $(OBJ_DIR)/module/%.o
 
 $(@module_ld_rmk) : kind := ld
 $(@module_ar_rmk) : kind := ar
@@ -312,14 +308,18 @@ $(@module_ld_rmk) $(@module_ar_rmk) : @file   = \
 $(@module_ld_rmk) $(@module_ar_rmk) : mk_file = \
 		$(patsubst %,$(value module_$(kind)_rmk_mk_pat),$$(module_path))
 
-$(@module_ld_rmk) : out_file = \
-		$(patsubst %,$(value module_ld_rmk_o_pat),$$(module_path))
-$(@module_ar_rmk) : out_file = \
+$(@module_ld_rmk) : out = \
+		$(patsubst %,$(value module_ld_rmk_out_pat),$$(module_path))
+$(@module_ar_rmk) : out = \
 		$(patsubst %,$(value module_ar_rmk_a_pat),$$(module_path))
 
-$(@module_ld_rmk) $(@module_ar_rmk) : objs = \
-		$(patsubst %,$(value source_occ_rmk_o_pat), \
-			$(basename $(call module_occ_source_files,$@)))
+$(@module_ld_rmk) $(@module_ar_rmk) : o_files = \
+		$(patsubst %,$(value source_o_rmk_out_pat), \
+			$(basename $(call module_o_source_files,$@)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : a_files = \
+		$(patsubst %,$(value source_a_rmk_out_pat), \
+			$(basename $(call module_a_source_files,$@)))
 
 $(@module_ld_rmk) $(@module_ar_rmk) : lds_file = \
 		$(patsubst %,$(value module_lds_pat), \
@@ -329,10 +329,11 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(out_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(out_file),reloc_lds,$(lds_file)); \
-		$(call gen_make_tsvar,$(out_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(out_file),$(kind)_objs,$(objs)))
+		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),reloc_lds,$(lds_file)); \
+		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
+		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
 
 
 # 1. module instance
@@ -484,24 +485,22 @@ source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 $(@source_rmk) : @file   = $(file:%=$(source_rmk_mk_pat))
 $(@source_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$$(source_file))
 
-source_occ_rmk_o_pat = $(OBJ_DIR)/%.o
+source_o_rmk_out_pat   = $(OBJ_DIR)/%.o
+source_a_rmk_out_pat   = $(OBJ_DIR)/%.a
+source_cc_rmk_out_pat  = $(OBJ_DIR)/%.o
+source_cpp_rmk_out_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
-source_o_rmk_o_pat   = $(OBJ_DIR)/%.o
-source_a_rmk_o_pat   = $(OBJ_DIR)/%.a
-source_cc_rmk_o_pat  = $(OBJ_DIR)/%.o
-source_cpp_rmk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
-
-$(@source_rmk)  : o_file = $(patsubst %,$(value source_$(kind)_rmk_o_pat),$$(source_base))
+$(@source_rmk)  : out = $(patsubst %,$(value source_$(kind)_rmk_out_pat),$$(source_base))
 
 $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
-		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
-		$(call gen_make_rule,$(o_file),$(prereqs),$(script)); \
+		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar,$(out),flags,$(flags)); \
+		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
 $(@source_mk_rmk):
@@ -509,13 +508,13 @@ $(@source_mk_rmk):
 		$(gen_banner); \
 		$(call gen_make_include,$(file)))
 
-source_initfs_cp_o_file = \
+source_initfs_cp_out = \
 	$(addprefix $$(ROOTFS_DIR)/, \
 		$(foreach s,$1,$(or \
 			$(call get,$(notdir $(basename $(basename $s))),value), \
 			$(call get,$s,fileName))))
 
-$(@source_initfs_cp_rmk) : o_file = $(call source_initfs_cp_o_file,$@)
+$(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
 
 $(@source_initfs_cp_rmk) : src_file = $(file)
 $(@source_initfs_cp_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
@@ -528,11 +527,11 @@ $(@source_initfs_cp_rmk) : chown = $(call str_of,$(my_initfs_chown))
 $(@source_initfs_cp_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(o_file),src_file,$(src_file)); \
-		$(call gen_make_tsvar,$(o_file),chmod,$(chmod)); \
-		$(call gen_make_tsvar,$(o_file),chown,$(chown)); \
-		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)))
+		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(out),chmod,$(chmod)); \
+		$(call gen_make_tsvar,$(out),chown,$(chown)); \
+		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : gen_string = $(basename $(basename $@))

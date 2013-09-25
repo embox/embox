@@ -136,15 +136,26 @@ initfs_cp_prerequisites += FORCE
 initfs_prerequisites    += FORCE
 endif
 
-ar_prerequisites    = $(common_prereqs) $(ar_objs)
-$(OBJ_DIR)/module/%.a : | $$(@D)/.
-	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
 
-ld_prerequisites    = $(common_prereqs) $(ld_objs) $(reloc_lds)
-$(OBJ_DIR)/module/%.o : ldflags_all = $(ldflags) \
+# Module-level rules.
+module_prereqs = $(common_prereqs) $(reloc_lds) $(o_files) $(a_files)
+
+$(OBJ_DIR)/module/% : ldflags_all = $(ldflags) \
 		$(call fmt_line,$(call ld_scripts_flag,$(reloc_lds)))
+
+ar_prerequisites = $(module_prereqs)
+$(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
+	@$(MAKE) -f mk/arhelper.mk TARGET='$@' \
+		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
+		LD='$(LD)' LDFLAGS='$(ldflags_all)' \
+		A_FILES='$(a_files)' \
+		O_FILES='$(o_files)' \
+		RELOC='$(reloc_lds)'
+
+ld_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
-	$(LD) -r -o $@ $(ldflags_all) $(call fmt_line,$(ld_objs))
+	$(LD) -r -o $@ $(ldflags_all) $(call fmt_line,$(o_files) \
+            $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
 
 
 # Here goes image creation rules...
