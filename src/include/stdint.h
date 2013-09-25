@@ -63,6 +63,8 @@ typedef __uintptr_t uintptr_t;
 
 #define UINTMAX_MAX 18446744073709551615ULL
 
+#define INT16_MAX 32767
+
 #include <stdint-gcc.h>
 
 #endif /* __ASSEMBLER__ */
