@@ -7,16 +7,15 @@ ExternalProject_Add(
    URL_MD5 efbfbff5a85a9330951f243d0a46e4b9
    UPDATE_COMMAND ""
    PATCH_COMMAND
-      true
-      #cd $ENV{EMBOX_ROOT}/third-party/samba/tree &&
+      #cd $ENV{EMBOX_ROOT}/third-party/boost/tree &&
       #bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`" &&
-      #patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/samba/patch.txt
+      patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/boost/patch.txt
    BUILD_IN_SOURCE 1
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
      ./bootstrap.sh
        --prefix=<INSTALL_DIR>
-       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams
+       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams,thread
    BUILD_COMMAND
      ./b2
        -q
@@ -32,6 +31,12 @@ ExternalProject_Add(
        #define=BOOST_NO_STD_LOCALE
        #define=BOOST_LEXICAL_CAST_ASSUME_C_LOCALE
        #define=BOOST_NO_STD_WSTRING
+       define=BOOST_NO_RTTI
+       define=BOOST_NO_TYPEID
+       define=BOOST_EXCEPTION_DISABLE
+       define=BOOST_HAS_THREADS
+       define=BOOST_HAS_PTHREADS
+       define=BOOST_HAS_SCHED_YIELD
    LOG_BUILD 1
    INSTALL_COMMAND
    	false
