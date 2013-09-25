@@ -13,10 +13,9 @@
 #define KERNEL_SOFTIRQ_H_
 
 #include <kernel/softirq_lock.h>
-
-#include <embox/unit.h>
 #include <module/embox/kernel/softirq.h>
 
+#include <framework/mod/options.h>
 /**
  * Total amount of possible soft IRQs.
  */
