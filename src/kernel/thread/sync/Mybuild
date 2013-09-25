@@ -12,7 +12,6 @@ module sync {
 
 module mutex {
 	source "mutex.c"
-	source "mutexattr.c"
 
 	depends embox.kernel.sched.strategy.api
 	depends embox.kernel.thread.stack_api
