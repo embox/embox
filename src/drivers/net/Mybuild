@@ -23,8 +23,8 @@ module virtio {
 	depends embox.driver.virtio
 }
 
-module ti8178 {
-	source "ti8178.c"
+module ti816x {
+	source "ti816x.c"
 
 	depends embox.net.skbuff
 	depends embox.lib.LibC

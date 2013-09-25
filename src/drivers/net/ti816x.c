@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 #include <hal/reg.h>
-#include <drivers/ethernet/ti8178.h>
+#include <drivers/ethernet/ti816x.h>
 #include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>
@@ -27,7 +27,7 @@
 
 #include <kernel/printk.h>
 
-EMBOX_UNIT_INIT(ti8178_init);
+EMBOX_UNIT_INIT(ti816x_init);
 
 #define PREP_BUF_COUNT 5
 
@@ -173,38 +173,38 @@ static void emac_enable_rx_and_tx_dma(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_TXCONTROL, TXEN);
 }
 
-static int ti8178_xmit(struct net_device *dev, struct sk_buff *skb) {
+static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-static int ti8178_set_macaddr(struct net_device *dev, const void *addr) {
+static int ti816x_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
-static int ti8178_open(struct net_device *dev) {
+static int ti816x_open(struct net_device *dev) {
 	emac_ctrl_enable_irq();
 	return 0;
 }
 
-static int ti8178_stop(struct net_device *dev) {
+static int ti816x_stop(struct net_device *dev) {
 	emac_ctrl_disable_irq();
 	return 0;
 }
 
-static const struct net_driver ti8178_ops = {
-	.xmit = ti8178_xmit,
-	.start = ti8178_open,
-	.stop = ti8178_stop,
-	.set_macaddr = ti8178_set_macaddr
+static const struct net_driver ti816x_ops = {
+	.xmit = ti816x_xmit,
+	.start = ti816x_open,
+	.stop = ti816x_stop,
+	.set_macaddr = ti816x_set_macaddr
 
 };
 
-static irq_return_t ti8178_interrupt(unsigned int irq_num, void *dev_id) {
+static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
 #include <kernel/printk.h>
-static void ti8178_config(struct net_device *dev) {
+static void ti816x_config(struct net_device *dev) {
 	unsigned char addr[] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
 
 	printk("CPGMACIDVER %#lx\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
@@ -241,7 +241,7 @@ static void ti8178_config(struct net_device *dev) {
 	emac_ctrl_enable_irq();
 }
 
-static int ti8178_init(void) {
+static int ti816x_init(void) {
 	int ret;
 	struct net_device *nic;
 
@@ -250,13 +250,13 @@ static int ti8178_init(void) {
 		return -ENOMEM;
 	}
 
-	nic->drv_ops = &ti8178_ops;
+	nic->drv_ops = &ti816x_ops;
 	nic->irq = 0;
 	nic->base_addr = EMAC_BASE_ADDR;
 
-	ti8178_config(nic);
+	ti816x_config(nic);
 
-	ret = irq_attach(nic->irq, ti8178_interrupt, 0, nic, "ti8178");
+	ret = irq_attach(nic->irq, ti816x_interrupt, 0, nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
