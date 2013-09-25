@@ -12,6 +12,11 @@
 #include <kernel/irq.h>
 #include <kernel/softirq.h>
 
+#define IRQF_SHARED IF_SHARESUP
+#define IRQ_RETVAL(x) ((x) != IRQ_NONE)
+
+#define in_interrupt() (critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)))
+
 /**
  * The value returned from request_irq to the requesting function is either 0
  * to indicate success or a negative error code, as usual.
