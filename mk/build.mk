@@ -11,13 +11,18 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-.PHONY : build prepare docsgen dot
+.PHONY : buildgen build prepare docsgen dot
 
 build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 
 build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f mk/image2.mk MAKEFILES=''
+
+buildgen : $(build_gen_ts)
+ifneq ($(filter buildgen,$(MAKECMDGOALS)),)
+.PHONY : $(build_gen_ts)
+endif
 
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
 	@echo ' BUILDGEN'

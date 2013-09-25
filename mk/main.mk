@@ -43,6 +43,23 @@ Usage: $(MAKE) build-<template>
   you have to configure the project first. See configuration targets.
 endef # build
 
+.PHONY : buildgen bg
+bg : buildgen
+buildgen :
+	+@$(make_mybuild) $@
+
+define help-buildgen
+Usage: $(MAKE) buildgen-<template>
+   Or: $(MAKE) buildgen
+   Or: $(MAKE) bg
+
+  Generates build environment for the given <template> (if any)
+  or the current active configuration.
+
+  Note that in order to use simple form (with no template spesified),
+  you have to configure the project first. See configuration targets.
+endef # buildgen
+
 .PHONY : rootfs
 rootfs :
 	+@$(make_mybuild) build __REBUILD_ROOTFS=1
@@ -97,6 +114,10 @@ templates := \
 .PHONY : $(templates:%=build-%)
 $(templates:%=build-%) : build-% :
 	+@$(make_mybuild) CONF_DIR=$(TEMPLATES_DIR)/$* build
+
+.PHONY : $(templates:%=buildgen-%)
+$(templates:%=buildgen-%) : buildgen-% :
+	+@$(make_mybuild) CONF_DIR=$(TEMPLATES_DIR)/$* buildgen
 
 #
 # Configuration related stuff.
@@ -276,6 +297,8 @@ Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'
   build (b)      - Build the current active configuration
   build-<t>      - Build a given configuration template
+  buildgen (bg)  - Unconditionally regenerate build environment
+  buildgen-<t>   - Prepare build environment for a given template
   menubuild (mb) - Interactively select a configuration to build a menu based
                    program (requires 'dialog')
   xbuild (xb)    - Interactively select a configuration to build using GTK
@@ -307,6 +330,7 @@ endef
 help_entries := \
 	all \
 	build \
+	buildgen \
 	dot \
 	docsgen \
 	mod \
