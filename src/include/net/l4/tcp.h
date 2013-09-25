@@ -25,7 +25,7 @@ typedef struct tcphdr {
 	__be16 dest;
 	__be32 seq;
 	__be32 ack_seq;
-#if defined(__LITTLE_ENDIAN)
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u16 res1:4,
 		doff:4,
 		fin:1,
@@ -36,7 +36,7 @@ typedef struct tcphdr {
 		urg:1,
 		ece:1,
 		cwr:1;
-#elif defined(__BIG_ENDIAN)
+#elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u16 doff:4,
 		res1:4,
 		cwr:1,

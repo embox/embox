@@ -9,15 +9,11 @@
 #ifndef BIG_ENDIAN_H_
 #define BIG_ENDIAN_H_
 
-#ifndef __BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#endif
 #ifndef __BIG_ENDIAN_BITFIELD
 #define __BIG_ENDIAN_BITFIELD
 #endif
 
-#include <linux/types.h>
-#include <linux/swab.h>
+#include <swab.h>
 
 #define __constant_htonl(x) (( __be32)(__u32)(x))
 #define __constant_ntohl(x) (( __u32)(__be32)(x))
@@ -108,6 +104,6 @@ static inline __u16 __be16_to_cpup(const __be16 *p) {
 #define __cpu_to_be16s(x) do { (void)(x); } while (0)
 #define __be16_to_cpus(x) do { (void)(x); } while (0)
 
-#include <asm-generic/byteorder/generic.h>
+#include <byteorder/generic.h>
 
 #endif /* BIG_ENDIAN_H_ */

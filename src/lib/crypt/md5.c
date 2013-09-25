@@ -54,14 +54,15 @@
 #include <lib/md5.h>
 #include <hal/arch.h>
 #include <string.h>
+#include <endian.h>
 
-#undef BYTE_ORDER	/* 1 = big-endian, -1 = little-endian, 0 = unknown */
-#if defined(__BIG_ENDIAN)
-#  define BYTE_ORDER 1
-#elif defined(__LITTLE_ENDIAN)
-#  define BYTE_ORDER -1
+/* 1 = big-endian, -1 = little-endian, 0 = unknown */
+#if  __BYTE_ORDER == __BIG_ENDIAN
+#  define MD5_BYTE_ORDER 1
+#elif  __BYTE_ORDER == __LITTLE_ENDIAN
+#  define MD5_BYTE_ORDER -1
 #else
-#  define BYTE_ORDER 0
+#  define MD5_BYTE_ORDER 0
 #endif
 
 #define T_MASK ((md5_word_t)~0)
@@ -142,7 +143,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 	md5_word_t a = pms->abcd[0], b = pms->abcd[1], c = pms->abcd[2], d =
 			pms->abcd[3];
 	md5_word_t t;
-#if BYTE_ORDER > 0
+#if MD5_BYTE_ORDER > 0
 	/* Define storage only for big-endian CPUs. */
 	md5_word_t X[16];
 #else
@@ -152,7 +153,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 #endif
 
 	{
-#if BYTE_ORDER == 0
+#if MD5_BYTE_ORDER == 0
 		/*
 		 * Determine dynamically whether this is a big-endian or
 		 * little-endian machine, since we can use a more efficient
@@ -162,7 +163,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 
 		if (*((const md5_byte_t *)&w)) /* dynamic little-endian */
 #endif
-#if BYTE_ORDER <= 0		/* little-endian */
+#if MD5_BYTE_ORDER <= 0		/* little-endian */
 		{
 			/*
 			 * On little-endian machines, we can process properly aligned
@@ -178,10 +179,10 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 			}
 		}
 #endif
-#if BYTE_ORDER == 0
+#if MD5_BYTE_ORDER == 0
 		else /* dynamic big-endian */
 #endif
-#if BYTE_ORDER >= 0		/* big-endian */
+#if MD5_BYTE_ORDER >= 0		/* big-endian */
 		{
 			/*
 			 * On big-endian machines, we must arrange the bytes in the
@@ -190,7 +191,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 			const md5_byte_t *xp = data;
 			int i;
 
-#  if BYTE_ORDER == 0
+#  if MD5_BYTE_ORDER == 0
 			X = xbuf; /* (dynamic only) */
 #  else
 #    define xbuf X		/* (static only) */

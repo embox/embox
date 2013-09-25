@@ -14,13 +14,14 @@
 
 #include <hal/arch.h>
 #include <math.h>
+#include <endian.h>
 
-#ifdef __LITTLE_ENDIAN
+#if __BYTE_ORDER ==  __LITTLE_ENDIAN
 #define __HI(x) *(1+(int*)&x)
 #define __LO(x) *(int*)&x
 #define __HIp(x) *(1+(int*)x)
 #define __LOp(x) *(int*)x
-#elif defined(__BIG_ENDIAN)
+#elif __BYTE_ORDER == __BIG_ENDIAN
 #define __HI(x) *(int*)&x
 #define __LO(x) *(1+(int*)&x)
 #define __HIp(x) *(int*)x

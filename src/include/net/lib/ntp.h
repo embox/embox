@@ -64,11 +64,11 @@ struct ntp_data_l {
 };
 
 struct ntphdr {
-#if defined(__LITTLE_ENDIAN)
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 mode:3,
 		version:3,
 		leap:2;
-#elif defined(__BIG_ENDIAN)
+#elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u8 leap:2,                 /* leap indicator */
 		version:3,               /* version number */
 		mode:3;                  /* mode */
