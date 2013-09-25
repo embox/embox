@@ -311,6 +311,11 @@ static void *telnet_thread_handler(void* args) {
 				goto kill_and_out;
 			}
 			fcntl(sock, F_SETFD, 0);
+
+			/* preventing further execution since some fds is set,
+ 			 * but they are not active and will block (fd_cnt == 0)
+			 */
+			continue;
 		}
 
 		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {

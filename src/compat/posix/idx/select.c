@@ -34,8 +34,6 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct manual_event *m_event);
 
-static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op);
-
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int ret, fd_cnt;
 	struct manual_event wait_on;
@@ -75,10 +73,10 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	}
 
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
-
 out:
-	unset_monitoring(nfds, readfds, IO_SYNC_READING);
-	unset_monitoring(nfds, writefds, IO_SYNC_WRITING);
+	set_monitoring(nfds, readfds, IO_SYNC_READING, NULL);
+	set_monitoring(nfds, writefds, IO_SYNC_WRITING, NULL);
+
 	return fd_cnt;
 }
 
@@ -124,7 +122,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
-		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING , update);
+		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -150,30 +148,14 @@ static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
 	int fd;
 	struct idx_desc *desc;
 
-	for (fd = 0; fd < nfds; fd++) {
-		if (FD_ISSET(fd, set)) {
-			if (task_self_idx_get(fd)) {
-				if (NULL == (desc = task_self_idx_get(fd))) {
-					return -1;
-				}
-				io_sync_notify(task_idx_indata(desc)->ios, op, m_event);
-			}
-		}
+	if (NULL == set) {
+		return 0;
 	}
 
-	return 0;
-}
-
-static int unset_monitoring(int nfds, fd_set *set, enum io_sync_op op) {
-	int fd;
-	struct idx_desc *desc;
-
 	for (fd = 0; fd < nfds; fd++) {
-		if (FD_ISSET(fd, set)) {
-			if (NULL == (desc = task_self_idx_get(fd))) {
-				return -1;
-			}
-			io_sync_notify(task_idx_indata(desc)->ios, op, NULL);
+		desc = task_self_idx_get(fd);
+		if (FD_ISSET(fd, set) && (NULL != desc)) {
+			io_sync_notify(task_idx_indata(desc)->ios, op, m_event);
 		}
 	}
 
