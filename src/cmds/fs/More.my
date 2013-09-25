@@ -1,0 +1,27 @@
+package embox.cmd.fs
+
+@Cmd(name = "more",
+	help = "Simple tty file output",
+	man = '''
+		NAME
+			more - prints file to standart output
+		SYNOPSIS
+			more [FILE]
+		DESCRIPTION
+			Prints FILE to standard output (screen by screen). You can press 'q'
+		   	anytime to quit programm. Any other key will scroll the text.
+			If screen is too wide, lines will be trimmed.
+		AUTHORS
+			Denis Deryugin
+	''')
+module more {
+	source "more.c"
+
+	depends embox.lib.LibC
+	depends embox.lib.LibCurses
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.fs.file
+	depends embox.fs.core
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}
