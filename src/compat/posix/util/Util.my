@@ -39,6 +39,7 @@ static module time {
 
 static module sleep {
 	source "sleep.c"
+	source "nanosleep"
 
 	depends embox.kernel.timer.sleep_api
 }
