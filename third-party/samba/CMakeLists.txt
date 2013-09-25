@@ -3,7 +3,7 @@ ExternalProject_Add(
    samba
    PREFIX ..
    DOWNLOAD_DIR ../../../download
-   URL http://ftp.samba.org/pub/samba/samba-3.6.18.tar.gz
+   URL http://ftp.samba.org/pub/samba/stable/samba-3.6.18.tar.gz
    URL_MD5 c7eec3e83fe4c4750240a8a0a214bbd4
    UPDATE_COMMAND ""
    PATCH_COMMAND
