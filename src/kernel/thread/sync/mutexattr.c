@@ -11,7 +11,7 @@
 #include <kernel/thread/sync/mutexattr.h>
 
 int mutexattr_init(struct mutexattr *attr) {
-	attr->type = PTHREAD_MUTEX_DEFAULT;
+	attr->type = MUTEX_DEFAULT;
 
 	return ENOERR;
 }
@@ -30,7 +30,7 @@ int mutexattr_gettype(const struct mutexattr *attr, int *type) {
 
 //actually types are not implemented
 int mutexattr_settype(struct mutexattr *attr, int type) {
-	attr->type &= type;
+	attr->type |= type;
 
 	return ENOERR;
 }
