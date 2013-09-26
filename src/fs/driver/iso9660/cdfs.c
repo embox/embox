@@ -562,7 +562,8 @@ static int cdfs_open(struct nas *nas, char *name) {
 	fi->date = date;
 	fi->size = size;
 	if (flags & 2) {
-		fi->flags |= F_DIR;
+		//fi->flags |= F_DIR;
+		fi->flags |= S_IFDIR;
 	}
 
 //	fi->mode = S_IFREG | S_IRUSR | S_IXUSR |
