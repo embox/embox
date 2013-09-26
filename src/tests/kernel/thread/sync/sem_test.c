@@ -7,12 +7,12 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread/sync/sem.h>
+#include <kernel/thread/sync/semaphore.h>
 #include <kernel/thread.h>
 #include <err.h>
 
 static struct thread *low, *mid, *high;
-static sem_t s;
+static struct sem s;
 
 EMBOX_TEST_SUITE("Semaphore test");
 
@@ -28,31 +28,31 @@ TEST_CASE("General") {
 
 static void *low_run(void *arg) {
 	test_emit('a');
-	sem_enter(&s);
+	semaphore_enter(&s);
 	test_emit('b');
 	test_assert_zero(thread_launch(mid));
 	test_emit('j');
-	sem_leave(&s);
+	semaphore_leave(&s);
 	test_emit('k');
 	return NULL;
 }
 
 static void *mid_run(void *arg) {
 	test_emit('c');
-	sem_enter(&s);
+	semaphore_enter(&s);
 	test_emit('d');
 	test_assert_zero(thread_launch(high));
 	test_emit('f');
-	sem_leave(&s);
+	semaphore_leave(&s);
 	test_emit('i');
 	return NULL;
 }
 
 static void *high_run(void *arg) {
 	test_emit('e');
-	sem_enter(&s);
+	semaphore_enter(&s);
 	test_emit('g');
-	sem_leave(&s);
+	semaphore_leave(&s);
 	test_emit('h');
 	return NULL;
 }
@@ -60,7 +60,7 @@ static void *high_run(void *arg) {
 static int setup(void) {
 	sched_priority_t l = 200, m = 210, h = 220;
 
-	sem_init(&s, 2);
+	semaphore_init(&s, 2);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));

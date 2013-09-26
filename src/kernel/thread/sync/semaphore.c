@@ -8,18 +8,18 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <kernel/thread/sync/sem.h>
+#include <kernel/thread/sync/semaphore.h>
 #include <kernel/sched.h>
 
-static int tryenter_sched_lock(sem_t *s);
+static int tryenter_sched_lock(struct sem *s);
 
-void sem_init(sem_t *s, int val) {
+void semaphore_init(struct sem *s, int val) {
 	wait_queue_init(&s->wq);
 	s->value = 0;
 	s->max_value = val;
 }
 
-void sem_enter(sem_t *s) {
+void semaphore_enter(struct sem *s) {
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
@@ -32,7 +32,7 @@ void sem_enter(sem_t *s) {
 	sched_unlock();
 }
 
-static int tryenter_sched_lock(sem_t *s) {
+static int tryenter_sched_lock(struct sem *s) {
 	assert(s);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
@@ -44,7 +44,7 @@ static int tryenter_sched_lock(sem_t *s) {
 	return 0;
 }
 
-int sem_tryenter(sem_t *s) {
+int semaphore_tryenter(struct sem *s) {
 	int err;
 	sched_lock();
 	{
@@ -54,7 +54,7 @@ int sem_tryenter(sem_t *s) {
 	return err;
 }
 
-void sem_leave(sem_t *s) {
+void semaphore_leave(struct sem *s) {
 	assert(s);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
