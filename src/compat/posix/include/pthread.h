@@ -41,7 +41,7 @@ typedef struct pthread_attr {
 } pthread_attr_t;
 
 
-typedef struct cond pthread_cond_t;
+typedef cond_t pthread_cond_t;
 
 typedef struct pthread_condattr {
 

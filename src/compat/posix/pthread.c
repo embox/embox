@@ -105,6 +105,8 @@ int pthread_cond_broadcast(pthread_cond_t *cond) {
 }
 
 int pthread_cond_destroy(pthread_cond_t *cond) {
+	cond_destroy(cond);
+
 	return ENOERR;
 }
 
@@ -132,6 +134,10 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
 	return ENOERR;
 }
 
+int pthread_condattr_init(pthread_condattr_t *attr) {
+	return -ENOSYS;
+}
+
 /*
 int pthread_condattr_destroy(pthread_condattr_t *attr) {
 	return -ENOSYS;
@@ -141,9 +147,6 @@ int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared) {
 	return -ENOSYS;
 }
 
-int pthread_condattr_init(pthread_condattr_t *attr) {
-	return -ENOSYS;
-}
 
 int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
 	return -ENOSYS;

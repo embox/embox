@@ -24,6 +24,7 @@ extern void cond_init(cond_t *c);
 extern void cond_wait(cond_t *c, struct mutex *m);
 extern void cond_signal(cond_t *c);
 extern void cond_broadcast(cond_t *c);
+extern void cond_destroy(cond_t *c);
 
 __END_DECLS
 

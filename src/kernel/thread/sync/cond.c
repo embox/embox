@@ -15,6 +15,10 @@ void cond_init(cond_t *c) {
 	wait_queue_init(&c->wq);
 }
 
+void cond_destroy(cond_t *c) {
+
+}
+
 void cond_wait(cond_t *c, struct mutex *m) {
 	assert(c && m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
