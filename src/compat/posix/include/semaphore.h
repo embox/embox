@@ -12,7 +12,7 @@
 
 #include <kernel/thread/sync/semaphore.h>
 
-typedef struct sem sem_t
+typedef struct sem sem_t;
 
 extern int    sem_close(sem_t *);
 extern int    sem_destroy(sem_t *);
