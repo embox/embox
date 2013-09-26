@@ -158,6 +158,21 @@ extern int mod_disable_nodep(const struct mod *mod);
 extern bool mod_is_running(const struct mod *mod);
 
 /**
+ * Loads static data sections from initialization image for app modules,
+ * does noting for the rest. Module must be running.
+ *
+ * @param mod
+ *   The mod to activate.
+ * @return
+ *   Operation result.
+ * @retval 0
+ *   If everyting is OK.
+ * @retval -ENOENT
+ *   If the @a mod is not running.
+ */
+extern int mod_activate_app(const struct mod *mod);
+
+/**
  * Search for a module with a given FQN (fully.qualified.name)
  * @param fqn
  *   Module name, including packages.

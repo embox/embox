@@ -24,6 +24,12 @@
 // TODO unused for now... -- Eldar
 #define MOD_FLAG_OPFAILED      (0 << 1)
 
+#define APP_DATA_RESERVE_OFFSET ({ \
+		extern char __app_data_start; \
+		extern char __app_reserve_start; \
+		&__app_reserve_start - &__app_data_start; \
+	})
+
 #define mod_flag_tst(mod, mask)   ((mod)->priv->flags &   (mask))
 #define mod_flag_tgl(mod, mask) do (mod)->priv->flags ^=  (mask); while (0)
 #define mod_flag_set(mod, mask) do (mod)->priv->flags |=  (mask); while (0)
@@ -32,20 +38,21 @@
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
 
 static int mod_traverse(const struct mod *mod, bool op);
-static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_safe);
+static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool rec_safe);
 static bool mod_traverse_needed(const struct mod *mod, bool op);
-static int do_enable(const struct mod *mod);
-static int do_disable(const struct mod *mod);
+static int mod_do_enable(const struct mod *mod);
+static int mod_do_disable(const struct mod *mod);
+static void mod_init_app(const struct mod *mod);
 
 bool mod_is_running(const struct mod *mod) {
 	return mod && mod_flag_tst(mod, MOD_FLAG_ENABLED);
 }
 
-int mod_enable_rec_safe(const struct mod *mod, bool recursive_safe) {
+int mod_enable_rec_safe(const struct mod *mod, bool rec_safe) {
 	if (!mod) {
 		return -EINVAL;
 	}
-	return mod_traverse_rec_safe(mod, true, recursive_safe);
+	return mod_traverse_rec_safe(mod, true, rec_safe);
 }
 
 
@@ -53,11 +60,11 @@ int mod_enable(const struct mod *mod) {
 	return mod_enable_rec_safe(mod, false);
 }
 
-int mod_disable_rec_safe(const struct mod *mod, bool recursive_safe) {
+int mod_disable_rec_safe(const struct mod *mod, bool rec_safe) {
 	if (!mod) {
 		return -EINVAL;
 	}
-	return mod_traverse_rec_safe(mod, false, recursive_safe);
+	return mod_traverse_rec_safe(mod, false, rec_safe);
 }
 
 int mod_disable(const struct mod *mod) {
@@ -71,7 +78,7 @@ int mod_enable_nodep(const struct mod *mod) {
 	if (mod_traverse_needed(mod, true)) {
 		return -EBUSY;
 	}
-	return do_enable(mod);
+	return mod_do_enable(mod);
 }
 
 int mod_disable_nodep(const struct mod *mod) {
@@ -81,7 +88,7 @@ int mod_disable_nodep(const struct mod *mod) {
 	if (mod_traverse_needed(mod, false)) {
 		return -EBUSY;
 	}
-	return do_disable(mod);
+	return mod_do_disable(mod);
 }
 
 static bool mod_traverse_needed(const struct mod *mod, bool op) {
@@ -117,7 +124,7 @@ static int mod_traverse_do(const struct mod **mods, bool op, bool soft) {
 	return 0;
 }
 
-static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_safe) {
+static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool rec_safe) {
 	const struct mod **deps = op ? mod->requires : mod->provides;
 	const struct mod **after_deps = mod->after_deps;
 	int ret;
@@ -126,7 +133,7 @@ static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_
 		return 0;
 	}
 
-	if (!recursive_safe) {
+	if (!rec_safe) {
 		assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS),
 				"Recursive mod traversing");
 	} else {
@@ -145,7 +152,7 @@ static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_
 		goto out;
 	}
 
-	if ((ret = (op ? do_enable(mod) : do_disable(mod)))) {
+	if ((ret = (op ? mod_do_enable(mod) : mod_do_disable(mod)))) {
 		goto out;
 	}
 
@@ -163,7 +170,6 @@ out:
 static int mod_traverse(const struct mod *mod, bool op) {
 	return mod_traverse_rec_safe(mod, op, false);
 }
-
 
 static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {
 	const struct mod_info *info = mod->info;
@@ -214,12 +220,14 @@ static int invoke_member_fini(const struct mod_member *member) {
 	return fini((struct mod_member *) member);
 }
 
-static int do_enable(const struct mod *mod) {
+static int mod_do_enable(const struct mod *mod) {
 	const struct mod_member *member;
 
 	if (mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
+
+	mod_init_app(mod);
 
 	array_nullterm_foreach(member, mod->members) {
 		if (0 != invoke_member_init(member)) {
@@ -241,8 +249,7 @@ opfailed:
 	return -EINTR;
 }
 
-
-static int do_disable(const struct mod *mod) {
+static int mod_do_disable(const struct mod *mod) {
 	const struct mod_member *member;
 
 	if (!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
@@ -266,6 +273,28 @@ static int do_disable(const struct mod *mod) {
 opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
+}
+
+static void mod_init_app(const struct mod *mod) {
+	const struct mod_app *app = mod->app;
+
+	if (app)
+		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
+}
+
+int mod_activate_app(const struct mod *mod) {
+	const struct mod_app *app;
+
+	if (!mod_is_running(mod))
+		return -ENOENT;
+
+	app = mod->app;
+	if (app) {
+		memcpy(app->data, app->data + APP_DATA_RESERVE_OFFSET, app->data_sz);
+		memset(app->bss, 0, app->bss_sz);
+	}
+
+	return 0;
 }
 
 const struct mod *mod_lookup(const char *fqn) {

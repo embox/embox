@@ -250,20 +250,12 @@ nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
 	$(patsubst %,module-ar-rmk/%, \
 		$(call filter_with_sources,$(static_modules)))
 
-my_cmd_name   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.name)
-
-check_atmost_one = \
-	$(if $(word 2,$1), \
-		$(error Too many Cmd names for \
-			'$(call get,$(call get,$m,type),qualifiedName)': \
-			$(call get,$1,value)),$1)
+my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 
 @module_lds := \
-	$(foreach m,$(nonstatic_modules), \
-		$(patsubst %,module-lds-rmk/%$m, \
-			$(call check_atmost_one,$(call invoke, \
-				$(call get,$m,allTypes),getAnnotationValuesOfOption, \
-				$(my_cmd_name)))))
+	$(foreach m,$(build_modules), \
+		$(if $(call invoke, \
+			$(call get,$m,allTypes),getAnnotationsOfType,$(my_app)),$m))
 
 @module_hdr := \
 	$(foreach m,$(build_modules), \
@@ -355,7 +347,6 @@ module_lds_pat = $(SRCGEN_DIR)/module/%.lds
 module_hdr_pat = $(SRCGEN_DIR)/include/module/%.h
 
 $(@module_lds) : @file = $(path:%=$(module_lds_pat))
-$(@module_lds) : cmd_name = $(call get,$(basename $@),value)
 
 $(@module_hdr) : @file = $(type_path:%=$(module_hdr_pat))
 $(@module_hdr) : type = $(basename $@)
@@ -363,7 +354,7 @@ $(@module_hdr) : type_fqn = $(call get,$(type),qualifiedName)
 $(@module_hdr) : type_path = $(subst .,/,$(type_fqn))
 
 $(@module_hdr) : content = $(call __header_template,$@,$(type_fqn))
-$(@module_lds) : content = $(call __lds_template,$@,$(cmd_name))
+$(@module_lds) : content = $(call __lds_template,$@,$(call module_id,$@))
 
 $(@module_hdr) $(@module_lds) : printf_escape = \
 		$(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))

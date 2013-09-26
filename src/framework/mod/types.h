@@ -16,7 +16,8 @@ struct mod_package;
 struct __mod_private;
 
 struct mod_info;
-struct mod_extra;
+struct mod_cmd;
+struct mod_app;
 struct mod_member;
 
 struct mod {
@@ -34,19 +35,24 @@ struct mod {
 	/* Data used to properly enable/disable the module itself. */
 
 	const struct mod_info    *info;    /**< (optional) Application specific. */
-	const struct mod_extra   *extra;   /**< (optional) Application specific. */
+	const struct mod_cmd     *cmd;     /**< (optional) Application specific. */
+	const struct mod_app     *app;     /**< (optional) Application specific. */
 	const struct mod_member **members; /**< Members to setup/finalize. */
 	struct __mod_private     *priv; /**< Used by dependency resolver. */
 
 };
 
-struct mod_extra {
+struct mod_cmd {
+	const char *name;
+	const char *brief;
+	const char *details;
+};
+
+struct mod_app {
 	char  *data;
 	size_t data_sz;
 	char  *bss;
 	size_t bss_sz;
-	const char *brief;
-	const char *details;
 };
 
 struct mod_package {
