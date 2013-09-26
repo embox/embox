@@ -22,7 +22,7 @@ static void print_usage(const char *cmd) {
 
 static void print_examples(void) {
 	const struct example *example;
-	size_t i = 0;
+	int i = 0;
 
 	example_foreach(example) {
 		if (0 == strcmp("", example_path(example))) {

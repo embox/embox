@@ -35,7 +35,7 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt, ret;
-	size_t cnt = 4, cnt_resp = 0;
+	int cnt = 4, cnt_resp = 0;
 	struct in_device *in_dev = inetdev_get_by_name("eth0");
 	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN;
 	unsigned char sha[MAX_ADDR_LEN], tha[MAX_ADDR_LEN];
@@ -106,7 +106,7 @@ static int exec(int argc, char **argv) {
 			cnt_resp++;
 		}
 	}
-	printf("Sent %d probes (%d broadcast(s))\n", cnt, 1);
+	printf("Sent %d probes (%d broadcast(s))\n", (int)cnt, 1);
 	printf("Received %d response(s)\n", cnt_resp);
 
 	return 0;

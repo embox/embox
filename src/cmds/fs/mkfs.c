@@ -59,7 +59,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	int min_argc;
 	unsigned int operation_flag;
-	size_t       blocks;
+	int       blocks;
 	char         *path;
 	const char   *fs_name;
 	unsigned int fs_type;

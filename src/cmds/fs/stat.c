@@ -28,7 +28,7 @@ static void print_statistic(void *stat) {
 	filestat = (stat_t *) stat;
 
 	printf("Size: %d    Blocks: %d    IO Block: %d  \n",
-		filestat->st_size, filestat->st_blocks, filestat->st_blksize);
+		(int)filestat->st_size, filestat->st_blocks, (int)filestat->st_blksize);
 	printf("Dev: %d    Inode: %d    Links: %d  \n",
 		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
 	printf("Access: %d    Uid: %d    Gid: %d  \n",

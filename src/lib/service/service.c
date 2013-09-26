@@ -132,7 +132,7 @@ static int service_set_ops(char *buff, size_t len, char *connection,
 	conn_type = (strcmp(connection, http_connection_str[0]) == 0 ? 0 : 1);
 	res = sprintf(buff, "Content-Type: %s\r\n",
 			http_content_type_str[content_type]);
-	res += sprintf(buff + res, "Content-Length: %d\r\n", len);
+	res += sprintf(buff + res, "Content-Length: %d\r\n", (int)len);
 	res += sprintf(buff + res, "Connection: %s\r\n",
 			http_connection_str[conn_type]);
 	res += sprintf(buff + res, "\r\n");

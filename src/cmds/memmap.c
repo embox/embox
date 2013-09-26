@@ -25,7 +25,7 @@ static void show_regions(void) {
 	printf("|  sdram      | 0x%8X | 0x%8X | 0x%8X | 0x%8X |\n",
 			(uint32_t)&_mem_begin,
 			(uint32_t)&_mem_begin + (uint32_t)&_mem_length,
-			(uint32_t)__phymem_end, __phymem_allocator->free);
+			(uint32_t)__phymem_end, (uint32_t)__phymem_allocator->free);
 #if 0
 	page_alloc(__phymem_allocator, 0x10);
 	printf("|  sdram      | 0x%8X | 0x%8X | 0x%8X | 0x%8X |\n",
