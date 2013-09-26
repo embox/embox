@@ -17,3 +17,60 @@ TEST_CASE("Initialize mutex with PTHREAD_MUTEX_INITIALIZER macro") {
 	test_assert_zero(pthread_mutex_lock(&m));
 	test_assert_zero(pthread_mutex_unlock(&m));
 }
+
+TEST_CASE("Mutex with type PTHREAD_MUTEX_ERRORCHECK correctness") {
+	pthread_mutex_t mutex;
+	pthread_mutexattr_t mutexattr;
+	pthread_mutexattr_init(&mutexattr);
+	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
+	pthread_mutex_init(&mutex, &mutexattr);
+
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_not_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+}
+
+TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE correctness") {
+	pthread_mutex_t mutex;
+	pthread_mutexattr_t mutexattr;
+	pthread_mutexattr_init(&mutexattr);
+	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&mutex, &mutexattr);
+
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+}
+
+TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE | "
+		"PTHREAD_MUTEX_ERRORCHECK correctness") {
+	pthread_mutex_t mutex;
+	pthread_mutexattr_t mutexattr;
+	pthread_mutexattr_init(&mutexattr);
+	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&mutex, &mutexattr);
+
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+	test_assert_not_zero(pthread_mutex_unlock(&mutex));
+}
+
+TEST_CASE("Mutex with type PTHREAD_MUTEX_DEFAULT correctness") {
+	pthread_mutex_t mutex;
+	pthread_mutex_init(&mutex, NULL);
+
+	// fail with assert, it is correct
+	//pthread_mutex_unlock(&mutex);
+	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_not_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_unlock(&mutex));
+}

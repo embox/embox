@@ -252,9 +252,7 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-	mutex_unlock(mutex);
-
-	return ENOERR;
+	return mutex_unlock(mutex);
 }
 
 int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {

@@ -94,12 +94,20 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	}
 
 	if (m->holder == current) {
-		/* Nested locks. */
-		m->lock_count++;
-		return 0;
+		if (m->attr.type & MUTEX_RECURSIVE){
+			/* Nested locks. */
+			m->lock_count++;
+			return 0;
+		}
+		if (m->attr.type & MUTEX_ERRORCHECK){
+			/* Nested locks. */
+			return -EAGAIN;
+		}
 	}
 
 	if (m->holder) {
+		// Actually, this is right, but some code uses comparison with -EAGAIN
+		//return -EBUSY;
 		return -EAGAIN;
 	}
 
@@ -109,7 +117,8 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	return 0;
 }
 
-void mutex_unlock(struct mutex *m) {
+int mutex_unlock(struct mutex *m) {
+	int error = 0;
 	struct thread *current = thread_self();
 
 	assert(m);
@@ -117,20 +126,27 @@ void mutex_unlock(struct mutex *m) {
 
 	sched_lock();
 	{
-		assert(m->holder == current);
+		if ((!m->holder || m->holder != current) &&
+				(m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))){
+			error = EPERM;
+			goto out;
+		}
+
 		assert(m->lock_count > 0);
 
-		if(--m->lock_count != 0) {
+		if(--m->lock_count != 0  && (m->attr.type & MUTEX_RECURSIVE)) {
 			goto out;
 		}
 
 		priority_uninherit(current);
 
 		m->holder = NULL;
+		m->lock_count = 0;
 		wait_queue_notify(&m->wq);
 	}
 out:
 	sched_unlock();
+	return -error;
 }
 
 static int priority_inherit(struct thread *t, struct mutex *m) {

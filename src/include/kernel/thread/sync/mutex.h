@@ -33,6 +33,9 @@ struct mutex {
 			/* flags */0, \
 			}, \
 		/* holder*/ NULL, \
+		{ /*mutexattr init */ \
+			/* type */ MUTEX_DEFAULT, \
+			}, \
 		/* lock_couunt */ 0 \
 	}
 
@@ -64,7 +67,7 @@ extern void mutex_lock(struct mutex *free_mutex);
  *
  * @param locked_mutex Previously locked mutex.
  */
-extern void mutex_unlock(struct mutex *locked_mutex);
+extern int mutex_unlock(struct mutex *locked_mutex);
 
 /**
  * Tries to lock the mutex.
