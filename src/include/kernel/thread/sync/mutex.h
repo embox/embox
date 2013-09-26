@@ -43,6 +43,11 @@ struct mutex {
 
 __BEGIN_DECLS
 
+/**
+ * initializes given mutex with attribute
+ * @param m mutex to initialize
+ * @param attr mutex attribute
+ */
 extern void mutex_init_default(struct mutex *m, const struct mutexattr *attr);
 
 /**

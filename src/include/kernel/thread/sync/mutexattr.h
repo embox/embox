@@ -31,16 +31,32 @@ struct mutexattr {
 
 /**
  * initializes given mutexattr with the default values
- * @param mutexattr mutexattr to initialize
+ * @param mutexattr attr to initialize
  */
-extern int mutexattr_init(struct mutexattr*);
+extern int mutexattr_init(struct mutexattr *attr);
 /**
- * copies given mutexattr with the default values
- * @param mutexattr mutexattr to initialize
+ * copies values of source mutexattr to destination
+ * @param mutexattr source_attr source mutexattr
+ * @param mutexattr dest_attr destination mutexattr
  */
-extern int mutexattr_copy(const struct mutexattr*, struct mutexattr*);
-extern int mutexattr_destroy(struct mutexattr*);
-extern int mutexattr_gettype(const struct mutexattr*, int*);
-extern int mutexattr_settype(struct mutexattr*, int);
+extern int mutexattr_copy(const struct mutexattr *source_attr,
+		struct mutexattr *dest_attr);
+/**
+ * makes given mutexattr uninitialized
+ * @param mutexattr attr to destroy
+ */
+extern int mutexattr_destroy(struct mutexattr *attr);
+/**
+ * gets current mutexattr type by int type
+ * @param mutexattr attr with a type to get
+ * @param type will contain mutexattr type
+ */
+extern int mutexattr_gettype(const struct mutexattr *attr, int *type);
+/**
+ * sets given type to mutexattr type
+ * @param mutexattr will contain new type
+ * @param type type to set
+ */
+extern int mutexattr_settype(struct mutexattr *attr, int type);
 
 #endif /* MUTEXATTR_H_ */
