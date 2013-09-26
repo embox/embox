@@ -665,7 +665,7 @@ int kflock(int fd, int operation) {
 			flock_shared_put(flock);
 		}
 		if (LOCK_NB & operation) {
-			if (-EAGAIN == flock_exclusive_tryget(exlock)) {
+			if (-EBUSY == flock_exclusive_tryget(exlock)) {
 				spin_unlock(flock_guard);
 				SET_ERRNO(EWOULDBLOCK);
 				return -1;
@@ -696,7 +696,7 @@ int kflock(int fd, int operation) {
 				while (exlock->lock_count != 0) flock_exclusive_put(exlock);
 			} else {
 				if (LOCK_NB & operation) {
-					if (-EAGAIN == flock_exclusive_tryget(exlock)) {
+					if (-EBUSY == flock_exclusive_tryget(exlock)) {
 						spin_unlock(flock_guard);
 						SET_ERRNO(EWOULDBLOCK);
 						return -1;

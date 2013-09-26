@@ -64,7 +64,7 @@ extern void mutex_init(struct mutex *mutex);
  *
  * @param free_mutex Mutex to lock.
  */
-extern void mutex_lock(struct mutex *free_mutex);
+extern int mutex_lock(struct mutex *free_mutex);
 
 /**
  * Unleashes the mutex from lock and unbinds it, if lockscount

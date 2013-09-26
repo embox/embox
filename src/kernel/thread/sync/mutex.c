@@ -52,7 +52,8 @@ void mutex_init(struct mutex *m) {
 	mutexattr_settype(&m->attr, MUTEX_RECURSIVE | MUTEX_ERRORCHECK);
 }
 
-void mutex_lock(struct mutex *m) {
+int mutex_lock(struct mutex *m) {
+	int ret = 0;
 	struct thread *current = thread_self();
 
 	assert(m);
@@ -60,13 +61,19 @@ void mutex_lock(struct mutex *m) {
 
 	sched_lock();
 	{
-		while (trylock_sched_locked(m, current) != 0) {
+		while ((ret = trylock_sched_locked(m, current)) != 0) {
+			if (ret == -EAGAIN && (m->attr.type & MUTEX_ERRORCHECK)){
+				goto out;
+			}
 			/* We have to wait for a mutex to be released. */
 			priority_inherit(current, m);
 			wait_queue_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 	}
+
+out:
 	sched_unlock();
+	return ret;
 }
 
 int mutex_trylock(struct mutex *m) {
@@ -106,9 +113,7 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	}
 
 	if (m->holder) {
-		// Actually, this is right, but some code uses comparison with -EAGAIN
-		//return -EBUSY;
-		return -EAGAIN;
+		return -EBUSY;
 	}
 
 	m->lock_count = 1;

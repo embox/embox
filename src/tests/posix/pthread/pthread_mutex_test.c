@@ -26,8 +26,8 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_ERRORCHECK correctness") {
 	pthread_mutex_init(&mutex, &mutexattr);
 
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
-	test_assert_zero(pthread_mutex_trylock(&mutex));
-	test_assert_not_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
+	test_assert_not_zero(pthread_mutex_lock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
 }
@@ -40,8 +40,8 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE correctness") {
 	pthread_mutex_init(&mutex, &mutexattr);
 
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
-	test_assert_zero(pthread_mutex_trylock(&mutex));
-	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
@@ -57,8 +57,8 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE | "
 	pthread_mutex_init(&mutex, &mutexattr);
 
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
-	test_assert_zero(pthread_mutex_trylock(&mutex));
-	test_assert_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 	test_assert_not_zero(pthread_mutex_unlock(&mutex));
@@ -70,7 +70,7 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_DEFAULT correctness") {
 
 	// fail with assert, it is correct
 	//pthread_mutex_unlock(&mutex);
-	test_assert_zero(pthread_mutex_trylock(&mutex));
-	test_assert_not_zero(pthread_mutex_trylock(&mutex));
+	test_assert_zero(pthread_mutex_lock(&mutex));
+	test_assert(-EBUSY == pthread_mutex_trylock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));
 }

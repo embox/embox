@@ -236,9 +236,7 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) 
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-	mutex_lock(mutex);
-
-	return ENOERR;
+	return mutex_lock(mutex);
 }
 
 /*
