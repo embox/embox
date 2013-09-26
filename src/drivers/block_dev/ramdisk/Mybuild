@@ -2,7 +2,7 @@ package embox.driver
 
 module ramdisk {
 	source "ramdisk.c"
-	option number ramdisk_quantity=4
+	option number ramdisk_quantity=8
 
 	depends embox.fs.node
 	depends embox.mem.page_api
