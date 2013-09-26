@@ -10,6 +10,8 @@
 #include <termios.h>
 #include <util/ring.h>
 
+#include <drivers/termios_ops.h>
+
 #define TIO_I(t, flag) ((t)->c_iflag & (flag))
 #define TIO_O(t, flag) ((t)->c_oflag & (flag))
 #define TIO_C(t, flag) ((t)->c_cflag & (flag))

@@ -7,6 +7,7 @@
  */
 
 #include <drivers/tty.h>
+#include <drivers/termios_ops.h>
 
 #include <ctype.h>
 #include <errno.h>
@@ -28,9 +29,6 @@
 #define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
 
 extern void tty_task_break_check(struct tty *t, char ch);
-
-extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
-extern int termios_gotc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
 /* Called in worker-protected context. */
 static int tty_output(struct tty *t, char ch) {
