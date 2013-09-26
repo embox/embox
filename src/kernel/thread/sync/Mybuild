@@ -20,7 +20,7 @@ module mutex {
 }
 
 module sem {
-	source "sem.c"
+	source "semaphore.c"
 
 	depends embox.kernel.sched.sched
 }
