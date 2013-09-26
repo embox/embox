@@ -102,6 +102,10 @@ static module hashtable {
 
 static module indexator {
 	source "indexator.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCStdlib
+	depends embox.lib.LibCString
 }
 
 //TODO this is too abstract in my mind

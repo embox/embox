@@ -109,7 +109,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 
 	memset(bdev, 0, sizeof(block_dev_t));
 
-	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_ALLOC_MIN);
+	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_MIN);
 	if (-1 == bdev->id) {
 		pool_free(&blockdev_pool, bdev);
 		return NULL;

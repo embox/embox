@@ -45,7 +45,7 @@ static inline void uart_state_clear(struct uart *uart, int mask) {
 
 static int uart_fill_name(struct uart *dev) {
 
-	dev->idx = index_alloc(&serial_indexator, INDEX_ALLOC_MIN);
+	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
 	if(dev->idx < 0) {
 		return -EBUSY;
 	}

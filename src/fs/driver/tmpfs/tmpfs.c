@@ -420,7 +420,7 @@ static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&tmpfs_file_idx, INDEX_ALLOC_MIN);
+	fi->index = index_alloc(&tmpfs_file_idx, INDEX_MIN);
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

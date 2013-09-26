@@ -397,7 +397,7 @@ static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&ramfs_file_idx, INDEX_ALLOC_MIN);
+	fi->index = index_alloc(&ramfs_file_idx, INDEX_MIN);
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

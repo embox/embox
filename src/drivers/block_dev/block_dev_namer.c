@@ -54,7 +54,7 @@ static void block_dev_select_name(char *name, int idx) {
 int block_dev_named(char *name, struct indexator *indexator) {
 	int idx;
 
-	if (-1 == (idx = index_alloc(indexator, INDEX_ALLOC_MIN))) {
+	if (-1 == (idx = index_alloc(indexator, INDEX_MIN))) {
 		return -1;
 	}
 	block_dev_select_name(name, idx);

@@ -87,7 +87,7 @@ static int pci_bridge_configure(int busn, int devfn) {
 
 	/* align space at 1Mb */
 	space_base = space_alloc(&pci_allocator, 0, PCI_WINDOW_SIZE);
-	newbusn = index_alloc(&bus_indexator, INDEX_ALLOC_MIN);
+	newbusn = index_alloc(&bus_indexator, INDEX_MIN);
 	/* enable new bus with all subordinate
 	 * primary = busn
 	 * secondary = newbusn
@@ -100,7 +100,7 @@ static int pci_bridge_configure(int busn, int devfn) {
 	dprintf("\nbridge start configure busn %d newbus %d\n*******\n", busn, newbusn);
 
 	pci_bus_configure(newbusn);
-	subord = index_find(&bus_indexator, INDEX_ALLOC_MIN) - 1;
+	subord = index_find(&bus_indexator, INDEX_MIN) - 1;
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
 			(busn) | (newbusn << 8) | (subord << 16));
 
@@ -164,7 +164,7 @@ static void pci_bus_configure(uint32_t busn) {
 
 static int pci_bios_init(void) {
 	int busn;
-	busn = index_alloc(&bus_indexator, INDEX_ALLOC_MIN);
+	busn = index_alloc(&bus_indexator, INDEX_MIN);
 	pci_bus_configure(busn);
 	return 0;
 }
