@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <net/inetdevice.h>
 
+#include <util/ring.h>
 #include <util/ring_buff.h>
 #include <util/math.h>
 
@@ -199,31 +200,21 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
-/* in echo mode \n -> \r\n. See RFC 854 for NVT options */
-static size_t buf_copy(unsigned char *dst, const unsigned char *src, size_t n) {
-	size_t len = 0;
+#include <termios.h>
+extern int pipe_pty(int pipe[2], const struct termios *tio);
+static const struct termios pipetio = {
+	.c_lflag = ICANON,
+	.c_oflag = ONLCR,
+};
 
-	for (size_t i = 0; i < n; i++) {
-		if (*src != '\n') {
-			*dst++ = *src++;
-			len++;
-		} else {
-			*dst++ = '\r';
-			*dst++ = *src++;
-			len += 2;
-		}
-	}
 
-	return len;
-}
-
-extern int pipe_pty(int pipe[2]);
+#define XBUFF_LEN 128
 
 /* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
-	unsigned char sbuff[128], pbuff[128], tmpbuff[64];
+	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
 	unsigned char *s = sbuff, *p = pbuff;
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
@@ -248,11 +239,11 @@ static void *telnet_thread_handler(void* args) {
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
-	ret = pipe_pty(pipefd1);
+	ret = pipe_pty(pipefd1, NULL);
 	if (ret != 0) {
 		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
 	}
-	ret = pipe_pty(pipefd2);
+	ret = pipe_pty(pipefd2, &pipetio);
 	if (ret != 0) {
 		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
 	}
@@ -305,7 +296,7 @@ static void *telnet_thread_handler(void* args) {
 		 * alternatively here is this check */
 		if (!fd_cnt) {
 			fcntl(sock, F_SETFD, O_NONBLOCK);
-			len = read(sock, s, 128);
+			len = read(sock, s, XBUFF_LEN);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
 				MD(printf("read on sock: %d %d\n", len, errno));
 				goto kill_and_out;
@@ -327,12 +318,13 @@ static void *telnet_thread_handler(void* args) {
 				MD(printf("write on sock: %d %d\n", len, errno));
 			}
 		} else if (FD_ISSET(pipefd2[0], &readfds)){
+			struct ring pbuf_r;
+			ring_init(&pbuf_r);
 			p = pbuff;
-			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
+			pipe_data_len = read(pipefd2[0], pbuff, XBUFF_LEN);
 			if (pipe_data_len <= 0) {
 				MD(printf("read on pipefd2: %d %d\n", pipe_data_len, errno));
 			}
-			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
 		if ((sock_data_len > 0) && FD_ISSET(pipefd1[1], &writefds)) {
@@ -347,7 +339,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 		} else if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
-			sock_data_len = read(sock, s, 128);
+			sock_data_len = read(sock, s, XBUFF_LEN);
 			if (sock_data_len <= 0) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
