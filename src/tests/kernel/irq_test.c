@@ -11,7 +11,10 @@
 
 EMBOX_TEST_SUITE("IRQ tests");
 
-#define TEST_IRQ_NR 10
+#define TEST_IRQ_NR OPTION_GET(NUMBER,irq_nr)
+
+#define TEST_OUTER_IRQ_NR OPTION_GET(NUMBER,outer_irq_nr)
+#define TEST_INNER_IRQ_NR OPTION_GET(NUMBER,inner_irq_nr)
 
 static irq_return_t test_isr(unsigned int irq_nr, void *dev_id) {
 	test_emit((int) dev_id);
@@ -61,9 +64,6 @@ TEST_CASE("Deep IRQ handler regression "
 
 	test_assert_equal(result, fib(FIBONACCI_NR));
 }
-
-#define TEST_OUTER_IRQ_NR 10
-#define TEST_INNER_IRQ_NR (TEST_OUTER_IRQ_NR + 1)
 
 static irq_return_t test_nesting_isr(unsigned int irq_nr, void *dev_id) {
 	test_emit((int) dev_id);

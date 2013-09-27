@@ -2,6 +2,10 @@ package embox.test.kernel
 
 @TestFor(embox.kernel.irq)
 module irq_test {
+	option number irq_nr = 10
+	option number outer_irq_nr = 10
+	option number inner_irq_nr = 11
+
 	source "irq_test.c"
 
 	depends embox.kernel.irq
