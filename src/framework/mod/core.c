@@ -236,15 +236,9 @@ opfailed:
 static void mod_init_app(const struct mod *mod) {
 	const struct mod_app *app = mod->app;
 
-	if (app) {
-		const struct mod *dep;
-
-		array_nullterm_foreach(dep, mod->requires) {
-			mod_init_app(dep);
-		}
-
+	if (app)
+		/* No need to traverse deps here, they are already initialized. */
 		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
-	}
 }
 
 int mod_activate_app(const struct mod *mod) {
