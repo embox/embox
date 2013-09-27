@@ -32,7 +32,16 @@ extern int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 extern int tlp_build_mem_rd(char frm);
 extern int tlp_build_io_wr(char frm, uint32_t *buff, size_t data_len);
 extern int tlp_build_io_rd(char frm);
-extern int tlp_build_conf_wr(char type, char *buff, size_t data_len);
-extern int tlp_build_conf_rd(char type);
+
+extern int tlp_build_conf0_wr(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
+		uint32_t where);
+extern int tlp_build_conf0_rd(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
+		uint32_t where);
+
+extern int tlp_build_conf1_wr(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
+		uint32_t where);
+
+extern int tlp_build_conf1_rd(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
+		uint32_t where);
 
 #endif /* PCI_TLP_H_ */

@@ -12,9 +12,8 @@
 #include <stdint.h>
 #include <drivers/pci/pci_id.h>
 #include <util/dlist.h>
-//#include <util/array.h>
 #include <drivers/pci/pci_utils.h>
-//#include <drivers/pci/pci_driver.h>
+
 
 
 /**
@@ -176,6 +175,8 @@ struct pci_slot_dev {
 	uint8_t subordinate;
 	uint32_t membaselimit;
 };
+
+#define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
 
 #define pci_foreach_dev(pci_dev, nxt_pci_dev) \
 	dlist_foreach_entry(pci_dev, nxt_pci_dev, __extension__ ({   \
