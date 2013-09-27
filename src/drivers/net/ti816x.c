@@ -158,7 +158,7 @@ static void emac_prep_rx_queue(void) {
 		desc->data = (uintptr_t)(desc + 1);
 		desc->data_off = 0;
 		desc->data_len = skb_max_size() - sizeof *desc;
-		desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
+		desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP;
 		desc->len = desc->data_len;
 		prev = desc;
 	}
@@ -174,6 +174,31 @@ static void emac_enable_rx_and_tx_dma(void) {
 }
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct sk_buff_data *skb_data;
+	struct emac_desc *desc;
+	struct emac_hdr *hdr;
+
+	skb_data = skb_data_clone(skb->data);
+	assert(skb_data != NULL);
+
+	desc = (struct emac_desc *)skb_data;
+
+	hdr = (struct emac_hdr *)(desc + 1);
+	memset(&hdr->preamble[0], EMAC_HDR_PRE,
+			sizeof hdr->preamble);
+	memset(&hdr->sfd, EMAC_HDR_SFD, sizeof hdr->sfd);
+
+	desc->next = 0;
+	desc->data = (uint32_t)hdr;
+	desc->data_off = 0;
+	desc->data_len = sizeof(struct emac_hdr) + skb->len;
+	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
+	desc->len = sizeof(struct emac_hdr) + skb->len;
+
+	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
+
+	skb_free(skb);
+
 	return 0;
 }
 
@@ -199,15 +224,19 @@ static const struct net_driver ti816x_ops = {
 
 };
 
+#include <kernel/printk.h>
 static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
+	printk("!%u", irq_num);
 	return IRQ_HANDLED;
 }
 
-#include <kernel/printk.h>
 static void ti816x_config(struct net_device *dev) {
 	unsigned char addr[] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
 
 	printk("CPGMACIDVER %#lx\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
+	/* check extra header size */
+	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc)
+			+ sizeof(struct emac_hdr));
 
 	/* TODO enable EMAC/MDIO peripheral */
 
@@ -256,10 +285,25 @@ static int ti816x_init(void) {
 
 	ti816x_config(nic);
 
-	ret = irq_attach(nic->irq, ti816x_interrupt, 0, nic, "ti816x");
+	ret = irq_attach(MACRXTHR0, ti816x_interrupt, 0, nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
+	ret = irq_attach(MACRXINT0, ti816x_interrupt, 0, nic, "ti816x");
+	if (ret < 0) {
+		return ret;
+	}
+	ret = irq_attach(MACTXINT0, ti816x_interrupt, 0, nic, "ti816x");
+	if (ret < 0) {
+		return ret;
+	}
+#if 0
+	ret = irq_attach(MACMISC0, ti816x_interrupt, 0, nic, "ti816x");
+	if (ret < 0) {
+		return ret;
+	}
+#endif
+
 
 	return inetdev_register_dev(nic);
 }

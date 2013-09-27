@@ -6,13 +6,21 @@
  * @author Ilia Vaprol
  */
 
-#ifndef DRIVERS_ETHERNET_TI8178_H_
-#define DRIVERS_ETHERNET_TI8178_H_
+#ifndef DRIVERS_ETHERNET_TI816X_H_
+#define DRIVERS_ETHERNET_TI816X_H_
 
 /**
  * EMAC0/MDIO Base Address
  */
 #define EMAC_BASE_ADDR 0x4A100000
+
+/**
+ * CPGMAC0 Interrupts
+ */
+#define MACRXTHR0 40 /* CPGMAC0 Receive threshold interrupt */
+#define MACRXINT0 41 /* CPGMAC0 Receive pending interrupt */
+#define MACTXINT0 42 /* CPGMAC0 Transmit pending interrupt */
+#define MACMISC0  43 /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
 
 /**
  * EMAC/MDIO Registers - Base Address Offset
@@ -23,9 +31,10 @@
 /**
  * EMAC0/MDIO Module and Control Module Base Address
  */
-#define EMAC_BASE      (EMAC_BASE_ADDR + EMAC_OFFSET) /* EMAC Module Base */
-#define EMAC_CTRL_BASE (EMAC_BASE_ADDR + EMAC_CTRL_OFFSET) /* EMAC Control
-															  Module Base */
+#define EMAC_BASE \
+	(EMAC_BASE_ADDR + EMAC_OFFSET)      /* EMAC Module Base */
+#define EMAC_CTRL_BASE \
+	(EMAC_BASE_ADDR + EMAC_CTRL_OFFSET) /* EMAC Control Module Base */
 
 #define EMAC_CHANNEL_COUNT 8
 
@@ -135,15 +144,11 @@
  * EMAC Network Header
  */
 struct emac_hdr {
-	char preamble[7]; /* 0x55 */
-	char sfd;         /* 0x5d */
+	uint8_t preamble[7]; /* 0x55 */
+#define EMAC_HDR_PRE 0x55
+	uint8_t sfd;         /* 0x5d */
+#define EMAC_HDR_SFD 0x5d
 };
-
-/**
- * EMAC Network Header Constants
- */
-#define EMAC_HDR_C_PRE 0x55
-#define EMAC_HDR_C_SFD 0x5d
 
 /**
  * EMAC Buffer Descriptor
@@ -177,4 +182,4 @@ struct emac_desc {
 #define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
 #define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
 
-#endif /* DRIVERS_ETHERNET_TI8178_H_ */
+#endif /* DRIVERS_ETHERNET_TI816X_H_ */
