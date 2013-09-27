@@ -33,7 +33,7 @@ TRAP_ENTRY_INTERRUPT(0xb);         ! 1B interrupt level 11 - IRQ_DSU
 TRAP_ENTRY_INTERRUPT(0xc);         ! 1C interrupt level 12
 TRAP_ENTRY_INTERRUPT(0xd);         ! 1D interrupt level 13
 TRAP_ENTRY_INTERRUPT(0xe);         ! 1E interrupt level 14 - IRQ_PCI
-BAD_TRAP;                          ! 1F interrupt level 15 - IRQ_Halt (NMI)
+TRAP_ENTRY_INTERRUPT(0xf);         ! 1F interrupt level 15 - IRQ_Halt (NMI)
 
 /* Hardware traps. */
 WEAK(0x20); WEAK(0x21); WEAK(0x22); WEAK(0x23); ! 20 - 23 undefined
