@@ -236,8 +236,15 @@ opfailed:
 static void mod_init_app(const struct mod *mod) {
 	const struct mod_app *app = mod->app;
 
-	if (app)
+	if (app) {
+		const struct mod *dep;
+
+		array_nullterm_foreach(dep, mod->requires) {
+			mod_init_app(dep);
+		}
+
 		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
+	}
 }
 
 int mod_activate_app(const struct mod *mod) {
@@ -248,6 +255,14 @@ int mod_activate_app(const struct mod *mod) {
 
 	app = mod->app;
 	if (app) {
+		const struct mod *dep;
+
+		array_nullterm_foreach(dep, mod->requires) {
+			int ret = mod_activate_app(dep);
+			if (ret)
+				return ret;
+		}
+
 		memcpy(app->data, app->data + APP_DATA_RESERVE_OFFSET, app->data_sz);
 		memset(app->bss, 0, app->bss_sz);
 	}
