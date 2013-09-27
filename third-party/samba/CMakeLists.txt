@@ -3,7 +3,7 @@ ExternalProject_Add(
    samba
    PREFIX ..
    DOWNLOAD_DIR ../../../download
-   URL http://ftp.samba.org/pub/samba/samba-3.6.18.tar.gz
+   URL http://ftp.samba.org/pub/samba/stable/samba-3.6.18.tar.gz
    URL_MD5 c7eec3e83fe4c4750240a8a0a214bbd4
    UPDATE_COMMAND ""
    PATCH_COMMAND
@@ -97,6 +97,9 @@ ExternalProject_Add(
       ac_cv_func_strtoull=yes
       ac_cv_func_getpass=yes
       libreplace_cv_REPLACE_GETPASS=no
+      ac_cv_header_zlib_h=yes
+	  ac_cv_lib_ext_z_zlibVersion=yes
+	  samba_cv_zlib_1_2_3=yes
       #ac_cv_func___strtoull=no
       #ac_cv_func_strtouq=no
       #ac_cv_func_strtoll=no

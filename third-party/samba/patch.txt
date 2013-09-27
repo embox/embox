@@ -170,3 +170,4 @@ diff -aur samba-3.6.18/source3/param/loadparm.c samba/source3/param/loadparm.c
  {
  	char *ret;
  	const char *label = lp_volume(snum);
+ 	
