@@ -26,7 +26,7 @@ static xdr_unit_t decode_unit(xdr_unit_t u) { return ntohl(u); }
 static int flush_data(struct xdr *xs, char is_last);
 static int prepare_data(struct xdr *xs, __u32 necessary);
 
-void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
+void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
 		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit) {
 	char *buff;
 

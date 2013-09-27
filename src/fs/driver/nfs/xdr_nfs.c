@@ -5,6 +5,8 @@
  * @date 21.06.2012
  * @author Andrey Gazukin
  */
+#include <sys/types.h>
+#include <stddef.h>
 
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
@@ -18,8 +20,8 @@ int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 	if (xdr_u_int(xs, &export->vf)) {
 		if (VALUE_FOLLOWS_YES == export->vf) {
 			point = export->dir_name;
-			if (xdr_bytes(xs, (char **)&point,
-					&export->dir_len, (__u32) sizeof export->dir_name)) {
+			if (xdr_bytes(xs, (char **)&point, (uint32_t *)&export->dir_len,
+					(uint32_t) sizeof export->dir_name)) {
 				return XDR_SUCCESS;
 			}
 		}
@@ -36,8 +38,9 @@ int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc) {
 	if (xdr_u_int(xs, &mnt_srvc->status)) {
 		if (STATUS_OK == mnt_srvc->status) {
 			point = mnt_srvc->fh.name_fh.data;
-			if (xdr_bytes(xs, (char **)&point, &mnt_srvc->fh.name_fh.len,
-					(__u32) sizeof mnt_srvc->fh.name_fh)) {
+			if (xdr_bytes(xs, (char **)&point,
+					(uint32_t *)&mnt_srvc->fh.name_fh.len,
+					sizeof mnt_srvc->fh.name_fh)) {
 				if (xdr_u_int(xs, &mnt_srvc->flv)) {
 					return XDR_SUCCESS;
 				}
@@ -54,7 +57,8 @@ int xdr_nfs_namestring(struct xdr *xs, rpc_string_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->data;
-	if (xdr_bytes(xs, (char **)&point, &fh->len, (__u32) sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, (uint32_t *)&fh->len,
+			(uint32_t) sizeof(*fh))) {
 		point += fh->len;
 		*point = 0;
 		return XDR_SUCCESS;
@@ -69,7 +73,8 @@ int xdr_nfs_name_fh(struct xdr *xs, rpc_fh_string_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->data;
-	if (xdr_bytes(xs, (char **)&point, &fh->len, (__u32) sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, (uint32_t *)&fh->len,
+			(uint32_t) sizeof(*fh))) {
 		return XDR_SUCCESS;
 	}
 
@@ -300,7 +305,8 @@ int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->name_fh.data;
-	if (xdr_bytes(xs, (char **)&point, &fh->name_fh.len, (__u32) sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, (uint32_t *)&fh->name_fh.len,
+			(uint32_t) sizeof(*fh))) {
 		point = (char *)&fh->cookie;
 		size = sizeof(fh->cookie) + sizeof(fh->cookieverf);
 		if (xdr_opaque(xs, point, size)) {
@@ -377,7 +383,7 @@ int xdr_nfs_get_del_attr(struct xdr *xs, char *point) {
 
 int xdr_nfs_get_dirdesc(struct xdr *xs, char *point) {
 	readdir_desc_t *desc;
-	__u32 *vf;
+	uint32_t *vf;
 
 	assert(point != NULL);
 
@@ -413,24 +419,24 @@ int xdr_nfs_get_dirdesc(struct xdr *xs, char *point) {
 
 int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 	char *point;
-	__u32 vf;
+	uint32_t vf;
 	/*readdir_desc_t *file;*/
 
 	assert(buff != NULL);
 	point = buff;
 
 	if (xdr_u_int(xs, &vf)) {
-		if (STATUS_OK == (*(__u32 *) point = vf)) {
+		if (STATUS_OK == (*(uint32_t *) point = vf)) {
 			point += sizeof(vf);
 			if (xdr_u_int(xs,  &vf)) {
-				if (VALUE_FOLLOWS_YES == (*(__u32 *) point = vf)) {
+				if (VALUE_FOLLOWS_YES == (*(uint32_t *) point = vf)) {
 					point += sizeof(vf);
 					if (xdr_nfs_get_dirattr(xs, point)) {
 						point += sizeof(dir_attribute_rep_t);
 						while(1) {
 							if (xdr_u_int(xs, &vf)) {
 								if (VALUE_FOLLOWS_YES ==
-										(*(__u32 *) point = vf)) {
+										(*(uint32_t *) point = vf)) {
 									point += sizeof(vf);
 									/*file = (readdir_desc_t *)point;*/
 									if (XDR_SUCCESS == xdr_nfs_get_dirdesc(xs,
@@ -444,7 +450,7 @@ int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 							}
 						}
 						/*read EOF */
-						if (xdr_u_int(xs, (__u32 *) point)) {
+						if (xdr_u_int(xs, (uint32_t *) point)) {
 							return XDR_SUCCESS;
 						}
 					}

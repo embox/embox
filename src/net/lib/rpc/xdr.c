@@ -88,7 +88,7 @@ int xdr_void(void) {
 	return XDR_SUCCESS;
 }
 
-int xdr_int(struct xdr *xs, __s32 *ps32) {
+int xdr_int(struct xdr *xs, int32_t *ps32) {
 	assert(xs != NULL);
 
 	switch (xs->oper) {
@@ -103,7 +103,7 @@ int xdr_int(struct xdr *xs, __s32 *ps32) {
 	return XDR_FAILURE; /* unknown operation */
 }
 
-int xdr_u_int(struct xdr *xs, __u32 *pu32) {
+int xdr_u_int(struct xdr *xs, uint32_t *pu32) {
 	assert(xs != NULL);
 
 	switch (xs->oper) {
@@ -118,8 +118,8 @@ int xdr_u_int(struct xdr *xs, __u32 *pu32) {
 	return XDR_FAILURE; /* unknown operation */
 }
 
-int xdr_short(struct xdr *xs, __s16 *ps16) {
-	__s32 s32;
+int xdr_short(struct xdr *xs, int16_t *ps16) {
+	int32_t s32;
 
 	assert(ps16 != NULL);
 
@@ -128,13 +128,13 @@ int xdr_short(struct xdr *xs, __s16 *ps16) {
 		return XDR_FAILURE;
 	}
 
-	*ps16 = (__s16)s32;
+	*ps16 = (int16_t)s32;
 
 	return XDR_SUCCESS;
 }
 
-int xdr_u_short(struct xdr *xs, __u16 *pu16) {
-	__u32 u32;
+int xdr_u_short(struct xdr *xs, uint16_t *pu16) {
+	uint32_t u32;
 
 	assert(pu16 != NULL);
 
@@ -143,12 +143,12 @@ int xdr_u_short(struct xdr *xs, __u16 *pu16) {
 		return XDR_FAILURE;
 	}
 
-	*pu16 = (__u16)u32;
+	*pu16 = (uint16_t)u32;
 
 	return XDR_SUCCESS;
 }
 
-int xdr_u_hyper(struct xdr *xs, __u64 *pu64) {
+int xdr_u_hyper(struct xdr *xs, uint64_t *pu64) {
 	size_t s;
 	xdr_unit_t unit1, unit2;
 
@@ -159,8 +159,8 @@ int xdr_u_hyper(struct xdr *xs, __u64 *pu64) {
 	switch (xs->oper) {
 	case XDR_DECODE:
 		if (xdr_getunit(xs, &unit1) && xdr_getunit(xs, &unit2)) {
-			*pu64 = ((__u64)unit1) << 32;
-			*pu64 |= (__u32)unit2;
+			*pu64 = ((uint64_t)unit1) << 32;
+			*pu64 |= (uint32_t)unit2;
 			return XDR_SUCCESS;
 		}
 		break;
@@ -180,25 +180,25 @@ int xdr_u_hyper(struct xdr *xs, __u64 *pu64) {
 	return XDR_FAILURE;
 }
 
-int xdr_hyper(struct xdr *xs, __s64 *ps64) {
-	return xdr_u_hyper(xs, (__u64 *)ps64);
+int xdr_hyper(struct xdr *xs, int64_t *ps64) {
+	return xdr_u_hyper(xs, (uint64_t *)ps64);
 }
 
-int xdr_enum(struct xdr *xs, __s32 *pe) {
+int xdr_enum(struct xdr *xs, int32_t *pe) {
 	/* According to standard enum is interpreted as int */
 	return xdr_int(xs, pe);
 }
 
-int xdr_bool(struct xdr *xs, __s32 *pb) {
+int xdr_bool(struct xdr *xs, int32_t *pb) {
 	/* According to standard bool is interpreted as enum */
 	return xdr_enum(xs, pb);
 }
 
-int xdr_array(struct xdr *xs, char **parr, __u32 *psize, __u32 maxsize,
-		__u32 elem_size, xdrproc_t elem_proc) {
+int xdr_array(struct xdr *xs, char **parr, uint32_t *psize, uint32_t maxsize,
+		uint32_t elem_size, xdrproc_t elem_proc) {
 	size_t s;
-	__u32 i, size;
-	__u8 need_free;
+	uint32_t i, size;
+	uint8_t need_free;
 	char *pelem;
 
 	assert((xs != NULL) && (parr != NULL) && (psize != NULL)
@@ -260,10 +260,10 @@ int xdr_array(struct xdr *xs, char **parr, __u32 *psize, __u32 maxsize,
 	return XDR_FAILURE;
 }
 
-int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize) {
+int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize, uint32_t maxsize) {
 	size_t s;
-	__u32 size;
-	__u8 need_free;
+	uint32_t size;
+	uint8_t need_free;
 
 	assert((xs != NULL) && (ppc != NULL) && (psize != NULL));
 
@@ -345,10 +345,10 @@ int xdr_opaque(struct xdr *xs, char *pc, size_t size) {
 	return XDR_FAILURE;
 }
 
-int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize) {
+int xdr_string(struct xdr *xs, char **pstr, uint32_t maxsize) {
 	size_t s;
-	__u32 size;
-	__u8 need_free;
+	uint32_t size;
+	uint8_t need_free;
 
 	assert((xs != NULL) && (pstr != NULL));
 
@@ -408,7 +408,7 @@ int xdr_wrapstring(struct xdr *xs, char **pstr) {
 	return xdr_string(xs, pstr, XDR_LAST_UINT32);
 }
 
-extern int xdr_union(struct xdr *xs, __s32 *pdscm, void *pun,
+extern int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault) {
 	size_t s;
 

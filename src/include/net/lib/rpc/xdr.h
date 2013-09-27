@@ -86,9 +86,11 @@ struct xdr_discrim {
 	xdrproc_t proc;
 };
 
-extern void xdrmem_create(struct xdr *xs, char *addr, size_t size, enum xdr_op oper);
-extern void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
+extern void xdrmem_create(struct xdr *xs, char *addr, size_t size,
+		enum xdr_op oper);
+extern void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
 		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit);
+
 extern int xdrrec_endofrecord(struct xdr *xs, int sendnow);
 extern size_t xdr_getpos(struct xdr *xs);
 extern int xdr_setpos(struct xdr *xs, size_t pos);
@@ -97,21 +99,25 @@ extern void xdr_free(xdrproc_t proc, char *obj);
 
 /* XDR filters */
 extern int xdr_void(void);
-extern int xdr_int(struct xdr *xs, __s32 *pi);
+extern int xdr_int(struct xdr *xs, int32_t *pi);
 extern int xdr_u_int(struct xdr *xs, uint32_t *pui);
-extern int xdr_short(struct xdr *xs, __s16 *ps);
-extern int xdr_u_short(struct xdr *xs, __u16 *pus);
-extern int xdr_hyper(struct xdr *xs, __s64 *ph);
-extern int xdr_u_hyper(struct xdr *xs, __u64 *puh);
-extern int xdr_enum(struct xdr *xs, __s32 *pe);
-extern int xdr_bool(struct xdr *xs, __s32 *pb);
-extern int xdr_array(struct xdr *xs, char **parray, uint32_t *psize, uint32_t maxsize,
-		uint32_t elem_size, xdrproc_t elem_proc);
-extern int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize, uint32_t maxsize);
+extern int xdr_short(struct xdr *xs, int16_t *ps);
+extern int xdr_u_short(struct xdr *xs, uint16_t *pus);
+extern int xdr_hyper(struct xdr *xs, int64_t *ph);
+extern int xdr_u_hyper(struct xdr *xs, uint64_t *puh);
+extern int xdr_enum(struct xdr *xs, int32_t *pe);
+extern int xdr_bool(struct xdr *xs, int32_t *pb);
+
+extern int xdr_array(struct xdr *xs, char **parray, uint32_t *psize,
+		uint32_t maxsize, uint32_t elem_size, xdrproc_t elem_proc);
+
+extern int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize,
+		uint32_t maxsize);
+
 extern int xdr_opaque(struct xdr *xs, char *pc, size_t size);
 extern int xdr_string(struct xdr *xs, char **pstr, uint32_t maxsize);
 extern int xdr_wrapstring(struct xdr *xs, char **pstr);
-extern int xdr_union(struct xdr *xs, __s32 *pdscm, void *pun,
+extern int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault);
 
 #endif /* NET_LIB_RPC_XDR_H_ */
