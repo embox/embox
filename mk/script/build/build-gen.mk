@@ -254,8 +254,8 @@ my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 
 @module_lds := \
 	$(foreach m,$(build_modules), \
-		$(if $(call invoke, \
-			$(call get,$m,allTypes),getAnnotationsOfType,$(my_app)),$m))
+		$(if $(strip $(call invoke, \
+			$(call get,$m,allTypes),getAnnotationsOfType,$(my_app))),$m))
 
 @module_hdr := \
 	$(foreach m,$(build_modules), \
