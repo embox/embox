@@ -13,15 +13,12 @@
 #include <stddef.h>
 #include <limits.h>
 
-/**
- * Index Type
- */
 enum index_type {
 	INDEX_RANDOM,
 	INDEX_MIN,
 	INDEX_MAX,
-	INDEX_NEXT,
-	INDEX_PREV
+	INDEX_PREV,
+	INDEX_NEXT
 };
 
 struct indexator {
@@ -29,8 +26,8 @@ struct indexator {
 
 	size_t min;
 	size_t max;
-	size_t next;
 	size_t prev;
+	size_t next;
 
 	unsigned long *mask;
 	size_t start;
@@ -41,12 +38,15 @@ struct indexator {
 
 extern void index_init(struct indexator *ind, size_t start,
 		size_t capacity, void *data);
+extern void index_clean(struct indexator *ind);
+extern size_t index_start(struct indexator *ind);
 extern size_t index_capacity(struct indexator *ind);
 extern void index_clamp(struct indexator *ind, size_t min,
 		size_t max);
 extern size_t index_find(struct indexator *ind,
 		enum index_type type);
-extern int index_lock(struct indexator *ind, size_t idx);
+extern int index_try_lock(struct indexator *ind, size_t idx);
+extern void index_lock(struct indexator *ind, size_t idx);
 extern int index_locked(struct indexator *ind, size_t idx);
 extern void index_unlock(struct indexator *ind, size_t idx);
 extern size_t index_alloc(struct indexator *ind,

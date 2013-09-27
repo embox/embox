@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/binalign.h>
 #include <util/indexator.h>
 
 static int ind_get_bit(struct indexator *ind, size_t idx) {
@@ -25,6 +26,7 @@ static int ind_get_bit(struct indexator *ind, size_t idx) {
 	word = (idx - ind->start) / LONG_BIT;
 	bit = (idx - ind->start) % LONG_BIT;
 
+	assert(ind->mask != NULL);
 	return ind->mask[word] & (1 << bit);
 }
 
@@ -38,6 +40,7 @@ static void ind_set_bit(struct indexator *ind, size_t idx) {
 	word = (idx - ind->start) / LONG_BIT;
 	bit = (idx - ind->start) % LONG_BIT;
 
+	assert(ind->mask != NULL);
 	assert(~ind->mask[word] & (1 << bit));
 	ind->mask[word] |= (1 << bit);
 }
@@ -52,6 +55,7 @@ static void ind_unset_bit(struct indexator *ind, size_t idx) {
 	word = (idx - ind->start) / LONG_BIT;
 	bit = (idx - ind->start) % LONG_BIT;
 
+	assert(ind->mask != NULL);
 	assert(ind->mask[word] & (1 << bit));
 	ind->mask[word] &= ~(1 << bit);
 }
@@ -67,32 +71,32 @@ static size_t ind_find_rand(struct indexator *ind) {
 
 	capacity = ind->clamp_max - ind->clamp_min + 1;
 	do {
-		idx = ind->start + rand() % capacity;
+		idx = ind->clamp_min + rand() % capacity;
 	} while (ind_get_bit(ind, idx));
 
 	return idx;
 }
 
-static size_t ind_find_more(struct indexator *ind, size_t idx,
-		size_t max) {
-	while (idx++ < max) {
-		if (!ind_get_bit(ind, idx)) {
-			return idx;
-		}
-	}
-
-	return INDEX_NONE;
-}
-
 static size_t ind_find_less(struct indexator *ind, size_t idx,
-		size_t min) {
+		size_t min, size_t none) {
 	while (idx-- > min) {
 		if (!ind_get_bit(ind, idx)) {
 			return idx;
 		}
 	}
 
-	return INDEX_NONE;
+	return none;
+}
+
+static size_t ind_find_more(struct indexator *ind, size_t idx,
+		size_t max, size_t none) {
+	while (idx++ < max) {
+		if (!ind_get_bit(ind, idx)) {
+			return idx;
+		}
+	}
+
+	return none;
 }
 
 void index_init(struct indexator *ind, size_t start,
@@ -102,12 +106,29 @@ void index_init(struct indexator *ind, size_t start,
 	assert(data != NULL);
 	assert(start + capacity != INDEX_NONE);
 
-	ind->last = ind->prev = INDEX_NONE;
+	ind->last = INDEX_NONE;
 	ind->min = ind->next = ind->start = ind->clamp_min = start;
-	ind->max = ind->end = ind->clamp_max = start + capacity - 1;
+	ind->max = ind->prev = ind->end = ind->clamp_max = start + capacity - 1;
 
 	ind->mask = (unsigned long *)data;
-	memset(data, 0, (capacity + CHAR_BIT - 1) / CHAR_BIT);
+	memset(data, 0, binalign_bound(capacity, CHAR_BIT));
+}
+
+void index_clean(struct indexator *ind) {
+	assert(ind != NULL);
+	assert(ind->mask != NULL);
+
+	ind->last = INDEX_NONE;
+	ind->min = ind->next = ind->clamp_min = ind->start;
+	ind->max = ind->prev = ind->clamp_max = ind->end;
+
+	memset(ind->mask, 0,
+			binalign_bound(index_capacity(ind), CHAR_BIT));
+}
+
+size_t index_start(struct indexator *ind) {
+	assert(ind != NULL);
+	return ind->start;
 }
 
 size_t index_capacity(struct indexator *ind) {
@@ -122,12 +143,12 @@ void index_clamp(struct indexator *ind, size_t min, size_t max) {
 	assert(ind->last == INDEX_NONE);
 
 	ind->min = ind->next = ind->clamp_min = min;
-	ind->max = ind->clamp_max = max;
+	ind->max = ind->prev = ind->clamp_max = max;
 
 	assert(!index_locked(ind, ind->min));
 	assert(!index_locked(ind, ind->max));
+	assert(!index_locked(ind, ind->prev));
 	assert(!index_locked(ind, ind->next));
-	assert(ind->prev == INDEX_NONE);
 }
 
 size_t index_find(struct indexator *ind, enum index_type type) {
@@ -150,24 +171,36 @@ size_t index_find(struct indexator *ind, enum index_type type) {
 	return INDEX_NONE;
 }
 
-int index_lock(struct indexator *ind, size_t idx) {
+int index_try_lock(struct indexator *ind, size_t idx) {
 	if (ind_get_bit(ind, idx)) {
 		return -EBUSY;
 	}
 
+	index_lock(ind, idx);
+	return 0;
+}
+
+void index_lock(struct indexator *ind, size_t idx) {
 	ind_set_bit(ind, idx);
 
-	ind->last = idx;
-	if (idx == ind->min) {
-		ind->min = ind_find_more(ind, ind->min, ind->clamp_max);
-	}
-	if (idx == ind->max) {
-		ind->max = ind_find_less(ind, ind->max, ind->clamp_min);
-	}
-	ind->prev = ind_find_less(ind, idx, ind->clamp_min);
-	ind->next = ind_find_more(ind, idx, ind->clamp_max);
+	assert(ind != NULL);
+	assert(idx != INDEX_NONE);
 
-	return 0;
+	if ((idx >= ind->clamp_min) && (idx <= ind->clamp_max)) {
+		ind->last = idx;
+		if (idx == ind->min) {
+			ind->min = ind_find_more(ind, ind->min, ind->clamp_max,
+					INDEX_NONE);
+		}
+		if (idx == ind->max) {
+			ind->max = ind_find_less(ind, ind->max, ind->clamp_min,
+					INDEX_NONE);
+		}
+		ind->prev = ind_find_less(ind, idx, ind->clamp_min,
+				ind->max);
+		ind->next = ind_find_more(ind, idx, ind->clamp_max,
+				ind->min);
+	}
 }
 
 int index_locked(struct indexator *ind, size_t idx) {
@@ -181,28 +214,39 @@ void index_unlock(struct indexator *ind, size_t idx) {
 	assert(idx != INDEX_NONE);
 	assert(ind->last != INDEX_NONE);
 
-	if ((idx >= ind->clamp_min) && (idx < ind->min)) {
-		ind->min = idx;
-	}
-	if ((idx > ind->max) && (idx <= ind->clamp_max)) {
-		ind->max = idx;
-	}
-	if ((idx > ind->prev) && (idx < ind->last)) {
-		ind->prev = idx;
-	}
-	if ((idx > ind->last) && (idx < ind->next)) {
-		ind->next = idx;
+	if ((idx >= ind->clamp_min) && (idx <= ind->clamp_max)) {
+		if (ind->min == INDEX_NONE) {
+			ind->min = ind->max = ind->prev = ind->next = idx;
+		}
+		else {
+			if (idx < ind->min) {
+				ind->min = idx;
+			}
+			if (idx > ind->max) {
+				ind->max = idx;
+			}
+			if (((idx > ind->prev) && (idx < ind->last))
+					|| ((ind->prev > ind->last)
+						&& ((idx > ind->prev) || (idx < ind->last)))
+					|| (ind->prev == ind->last)) {
+				ind->prev = idx;
+			}
+			if (((idx < ind->next) && (idx > ind->last))
+					|| ((ind->next < ind->last)
+						&& ((idx < ind->next) || (idx > ind->last)))
+					|| (ind->next == ind->last)) {
+				ind->next = idx;
+			}
+		}
 	}
 }
 
 size_t index_alloc(struct indexator *ind, enum index_type type) {
-	int ret;
 	size_t idx;
 
 	idx = index_find(ind, type);
 	if (idx != INDEX_NONE) {
-		ret = index_lock(ind, idx);
-		assert(ret == 0);
+		index_lock(ind, idx);
 	}
 
 	return idx;
