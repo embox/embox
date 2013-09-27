@@ -9,6 +9,8 @@
 #ifndef ENDIAN_H_
 #define ENDIAN_H_
 
+#ifdef __BYTE_ORDER__
+
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #include <byteorder/little_endian.h>
 #elif  __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -27,5 +29,7 @@
 #define BIG_ENGIAN    __BIG_ENDIAN
 #define PDP_ENDIAN    __PDP_ENDIAN
 #define BYTE_ORDER    __BYTE_ORDER
+
+#endif
 
 #endif /* ENDIAN_H_ */
