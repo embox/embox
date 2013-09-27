@@ -18,3 +18,7 @@ module pci_bios {
 
 	depends embox.mem.page_api
 }
+
+module pci_tlp {
+	source "pci_tlp.c"
+}
