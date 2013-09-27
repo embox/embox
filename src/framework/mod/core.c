@@ -31,144 +31,102 @@
 	})
 
 #define mod_flag_tst(mod, mask)   ((mod)->priv->flags &   (mask))
+#define mod_flag_cmp(mod, mask) (~((mod)->priv->flags ^   (mask)))
 #define mod_flag_tgl(mod, mask) do (mod)->priv->flags ^=  (mask); while (0)
 #define mod_flag_set(mod, mask) do (mod)->priv->flags |=  (mask); while (0)
 #define mod_flag_clr(mod, mask) do (mod)->priv->flags &= ~(mask); while (0)
 
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
 
-static int mod_traverse(const struct mod *mod, bool op);
-static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool rec_safe);
-static bool mod_traverse_needed(const struct mod *mod, bool op);
+static int mod_traverse(const struct mod *mod,
+		int (*mod_op)(const struct mod *), unsigned int flags);
 static int mod_do_enable(const struct mod *mod);
 static int mod_do_disable(const struct mod *mod);
 static void mod_init_app(const struct mod *mod);
 
 bool mod_is_running(const struct mod *mod) {
-	return mod && mod_flag_tst(mod, MOD_FLAG_ENABLED);
+	assert(mod);
+	return mod_flag_tst(mod, MOD_FLAG_ENABLED);
 }
 
 int mod_enable_rec_safe(const struct mod *mod, bool rec_safe) {
-	if (!mod) {
-		return -EINVAL;
-	}
-	return mod_traverse_rec_safe(mod, true, rec_safe);
-}
+	unsigned int flags = MOD_FLAG_ENABLED;
+	if (rec_safe)
+		flags |= MOD_FLAG_OPINPROGRESS;
 
+	assert(mod);
+	return mod_traverse(mod, mod_do_enable, flags);
+}
 
 int mod_enable(const struct mod *mod) {
 	return mod_enable_rec_safe(mod, false);
 }
 
 int mod_disable_rec_safe(const struct mod *mod, bool rec_safe) {
-	if (!mod) {
-		return -EINVAL;
-	}
-	return mod_traverse_rec_safe(mod, false, rec_safe);
+	unsigned int flags = 0;
+	if (rec_safe)
+		flags |= MOD_FLAG_OPINPROGRESS;
+
+	assert(mod);
+	return mod_traverse(mod, mod_do_disable, flags);
 }
 
 int mod_disable(const struct mod *mod) {
 	return mod_disable_rec_safe(mod, false);
 }
 
-int mod_enable_nodep(const struct mod *mod) {
-	if (!mod) {
-		return -EINVAL;
-	}
-	if (mod_traverse_needed(mod, true)) {
-		return -EBUSY;
-	}
-	return mod_do_enable(mod);
-}
-
-int mod_disable_nodep(const struct mod *mod) {
-	if (!mod) {
-		return -EINVAL;
-	}
-	if (mod_traverse_needed(mod, false)) {
-		return -EBUSY;
-	}
-	return mod_do_disable(mod);
-}
-
-static bool mod_traverse_needed(const struct mod *mod, bool op) {
-	const struct mod *dep;
-	const struct mod **deps = op ? mod->requires : mod->provides;
-
-	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
-		return false;
-	}
-
-	array_nullterm_foreach(dep, deps) {
-		if (!op != !mod_flag_tst(dep, MOD_FLAG_ENABLED)) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-static int mod_traverse_do(const struct mod **mods, bool op, bool soft) {
+static int mod_traverse_all(const struct mod **mods,
+		int (*mod_op)(const struct mod *), unsigned int flags) {
 	const struct mod *mod;
 
 	array_nullterm_foreach(mod, mods) {
-		if (soft && mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS)) {
-			continue;
-		}
-
-		if (0 != mod_traverse(mod, op)) {
+		if (0 != mod_traverse(mod, mod_op, flags))
 			return -EINTR;
-		}
 	}
 
 	return 0;
 }
 
-static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool rec_safe) {
-	const struct mod **deps = op ? mod->requires : mod->provides;
-	const struct mod **after_deps = mod->after_deps;
+static int mod_traverse(const struct mod *mod,
+		int (*mod_op)(const struct mod *), unsigned int flags) {
 	int ret;
+	int is_enable = (flags & MOD_FLAG_ENABLED);
+	const struct mod **deps = (is_enable ? mod->requires : mod->provides);
 
-	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+	if (mod_flag_cmp(mod, flags) & MOD_FLAG_ENABLED)
 		return 0;
-	}
 
-	if (!rec_safe) {
-		assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS),
-				"Recursive mod traversing");
-	} else {
-		if (mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS)) {
-			return 0;
-		}
-	}
+	if (mod_flag_tst(mod, flags & MOD_FLAG_OPINPROGRESS))
+		return 0;  // TODO Isn't it an error? -- Eldar
+
+	assert(!mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS),
+			"Recursive mod traversal");
 
 	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 
-	if (!op && (ret = mod_traverse_do(after_deps, op, 1))) {
-		goto out;
+	if (!is_enable) {
+		ret = mod_traverse_all(mod->after_deps, mod_op, flags);
+		if (ret)
+			goto out;
 	}
 
-	if ((ret = mod_traverse_do(deps, op, 0))) {
+	ret = mod_traverse_all(deps, mod_op, flags);
+	if (ret)
 		goto out;
+
+	ret = mod_op(mod);
+	if (ret)
+		goto out;
+
+	if (is_enable) {
+		ret = mod_traverse_all(mod->after_deps, mod_op, flags);
+		if (ret)
+			goto out;
 	}
 
-	if ((ret = (op ? mod_do_enable(mod) : mod_do_disable(mod)))) {
-		goto out;
-	}
-
-
-	if ((ret = mod_traverse_do(after_deps, op, 1))) {
-		goto out;
-	}
-
-	ret = 0;
 out:
 	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 	return ret;
-}
-
-static int mod_traverse(const struct mod *mod, bool op) {
-	return mod_traverse_rec_safe(mod, op, false);
 }
 
 static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {

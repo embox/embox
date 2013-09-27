@@ -100,50 +100,6 @@ extern int mod_disable(const struct mod *mod);
 extern int mod_disable_rec_safe(const struct mod *mod, bool recursive_safe);
 
 /**
- * The weak version of #mod_enable().
- * Enables the specified #mod if and only if all the mods on which the given
- * one depends are also enabled. If the mod has already been enabled then
- * nothing special is done and the function returns zero.
- *
- * @param mod
- *   The mod to enable.
- * @return
- *   Operation result.
- * @retval 0
- *   If the mod has been successfully enabled.
- * @retval -EINVAL
- *   If the argument is @c NULL.
- * @retval -EBUSY
- *   If the mod cannot be enabled at the moment because of unsatisfied
- *   dependencies.
- * @retval -EINTR
- *   If an error has occurred while enabling the mod.
- */
-extern int mod_enable_nodep(const struct mod *mod);
-
-/**
- * The weak version of #mod_disable().
- * Disables the specified mod if and only if all the mods which depend on the
- * given one are also disabled. If the mod has not been enabled yet then
- * nothing special is done and the function returns zero.
- *
- * @param mod
- *   The mod to disable.
- * @return
- *   Operation result.
- * @retval 0
- *   If the mod has been successfully disabled.
- * @retval -EINVAL
- *   If the argument is @c NULL.
- * @retval -EBUSY
- *   If the mod cannot be disabled at the moment because of unsatisfied
- *   dependencies.
- * @retval -EINTR
- *   If an error has occurred while disabling the mod.
- */
-extern int mod_disable_nodep(const struct mod *mod);
-
-/**
  * Tells whether the specified mod is enabled or not.
  *
  * @param mod
