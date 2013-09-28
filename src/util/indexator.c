@@ -114,6 +114,21 @@ void index_init(struct indexator *ind, size_t start,
 	memset(data, 0, binalign_bound(capacity, CHAR_BIT));
 }
 
+void index_clamp(struct indexator *ind, size_t min, size_t max) {
+	assert(ind != NULL);
+	assert(min >= ind->start);
+	assert(max <= ind->end);
+	assert(ind->last == INDEX_NONE);
+
+	ind->min = ind->next = ind->clamp_min = min;
+	ind->max = ind->prev = ind->clamp_max = max;
+
+	assert(!index_locked(ind, ind->min));
+	assert(!index_locked(ind, ind->max));
+	assert(!index_locked(ind, ind->prev));
+	assert(!index_locked(ind, ind->next));
+}
+
 void index_clean(struct indexator *ind) {
 	assert(ind != NULL);
 	assert(ind->mask != NULL);
@@ -131,24 +146,24 @@ size_t index_start(struct indexator *ind) {
 	return ind->start;
 }
 
+size_t index_end(struct indexator *ind) {
+	assert(ind != NULL);
+	return ind->end;
+}
+
 size_t index_capacity(struct indexator *ind) {
 	assert(ind != NULL);
 	return ind->end - ind->start + 1;
 }
 
-void index_clamp(struct indexator *ind, size_t min, size_t max) {
+size_t index_clamp_min(struct indexator *ind) {
 	assert(ind != NULL);
-	assert(min >= ind->start);
-	assert(max <= ind->end);
-	assert(ind->last == INDEX_NONE);
+	return ind->clamp_min;
+}
 
-	ind->min = ind->next = ind->clamp_min = min;
-	ind->max = ind->prev = ind->clamp_max = max;
-
-	assert(!index_locked(ind, ind->min));
-	assert(!index_locked(ind, ind->max));
-	assert(!index_locked(ind, ind->prev));
-	assert(!index_locked(ind, ind->next));
+size_t index_clamp_max(struct indexator *ind) {
+	assert(ind != NULL);
+	return ind->clamp_max;
 }
 
 size_t index_find(struct indexator *ind, enum index_type type) {
@@ -173,11 +188,11 @@ size_t index_find(struct indexator *ind, enum index_type type) {
 
 int index_try_lock(struct indexator *ind, size_t idx) {
 	if (ind_get_bit(ind, idx)) {
-		return -EBUSY;
+		return 0;
 	}
 
 	index_lock(ind, idx);
-	return 0;
+	return 1;
 }
 
 void index_lock(struct indexator *ind, size_t idx) {
@@ -188,6 +203,7 @@ void index_lock(struct indexator *ind, size_t idx) {
 
 	if ((idx >= ind->clamp_min) && (idx <= ind->clamp_max)) {
 		ind->last = idx;
+
 		if (idx == ind->min) {
 			ind->min = ind_find_more(ind, ind->min, ind->clamp_max,
 					INDEX_NONE);
@@ -212,9 +228,10 @@ void index_unlock(struct indexator *ind, size_t idx) {
 
 	assert(ind != NULL);
 	assert(idx != INDEX_NONE);
-	assert(ind->last != INDEX_NONE);
 
 	if ((idx >= ind->clamp_min) && (idx <= ind->clamp_max)) {
+		assert(ind->last != INDEX_NONE);
+
 		if (ind->min == INDEX_NONE) {
 			ind->min = ind->max = ind->prev = ind->next = idx;
 		}
