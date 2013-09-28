@@ -63,7 +63,7 @@ struct sock {
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
-	unsigned char state;
+	//unsigned char state;
 	unsigned char shutdown_flag;
 	const struct family_ops *f_ops;
 	const struct sock_ops *ops;

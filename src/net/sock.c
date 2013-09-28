@@ -79,7 +79,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sock_opt_init(&sk->opt, family, type, protocol);
 	skb_queue_init(&sk->rx_queue);
 	skb_queue_init(&sk->tx_queue);
-	sk->state = 0;
+	//sk->state = 0;
 	sk->shutdown_flag = 0;
 	sk->f_ops = f_ops;
 	sk->ops = ops;

@@ -65,7 +65,7 @@ struct tcp_pseudohdr {
 #define TCP_MIN_HEADER_SIZE  20
 #define TCP_HEADER_SIZE(hdr) ((hdr)->doff * 4)
 
-enum tcp_state {
+enum tcp_sock_state {
 	TCP_CLOSED,
 	TCP_LISTEN,
 	TCP_SYN_SENT,
@@ -89,6 +89,7 @@ struct tcp_seq_state {
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;      /* Inet socket (parent) */
+	enum tcp_sock_state state;  /* Socket state */
 	struct tcp_seq_state self;  /* Some informations about this socket */
 	struct tcp_seq_state rem;   /* Informations about remote socket */
 	uint32_t last_ack;          /* Last acknowledged sequence number */
@@ -157,7 +158,8 @@ extern union sock_pointer tcp_sock_default;
 extern void build_tcp_packet(size_t opt_len, size_t data_len,
 		union sock_pointer sock, struct sk_buff *skb);
 extern void tcp_free_sock(union sock_pointer sock);
-extern void tcp_set_st(union sock_pointer sock, unsigned char new_state);
+extern void tcp_set_st(union sock_pointer sock,
+		enum tcp_sock_state new_state);
 extern void tcp_obj_lock(union sock_pointer sock, unsigned int obj);
 extern void tcp_obj_unlock(union sock_pointer sock, unsigned int obj);
 extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);

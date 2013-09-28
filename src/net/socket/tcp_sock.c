@@ -50,7 +50,7 @@ static int tcp_init(struct sock *sk) {
 	sock.sk = sk;
 	debug_print(3, "tcp_init: sk %p\n", sock.tcp_sk);
 
-	sock.sk->state = TCP_CLOSED;
+	sock.tcp_sk->state = TCP_CLOSED;
 	sock.tcp_sk->self.seq = sock.tcp_sk->last_ack;
 	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->parent = NULL;
@@ -76,8 +76,8 @@ static int tcp_close(struct sock *sk) {
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
-		assert(sock.sk->state < TCP_MAX_STATE);
-		switch (sock.sk->state) {
+		assert(sock.tcp_sk->state < TCP_MAX_STATE);
+		switch (sock.tcp_sk->state) {
 		default:
 			return -EBADF;
 		case TCP_CLOSED:
@@ -98,7 +98,7 @@ static int tcp_close(struct sock *sk) {
 			if (skb == NULL) {
 				break;
 			}
-			tcp_set_st(sock, sock.sk->state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
+			tcp_set_st(sock, sock.tcp_sk->state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1);
 			build_tcp_packet(0, 0, sock, skb);
 			tcph = tcp_hdr(skb);
 			tcph->fin = 1;
@@ -149,8 +149,8 @@ static int tcp_connect(struct sock *sk,
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
-		assert(sock.sk->state < TCP_MAX_STATE);
-		switch (sock.sk->state) {
+		assert(sock.tcp_sk->state < TCP_MAX_STATE);
+		switch (sock.tcp_sk->state) {
 		default:
 			ret = -EISCONN;
 			break;
@@ -199,8 +199,8 @@ static int tcp_listen(struct sock *sk, int backlog) {
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
-		assert(sock.sk->state < TCP_MAX_STATE);
-		switch (sock.sk->state) {
+		assert(sock.tcp_sk->state < TCP_MAX_STATE);
+		switch (sock.tcp_sk->state) {
 		default:
 			ret = -EINVAL; /* error: connection already exists */
 			break;
@@ -231,10 +231,10 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert((addr == NULL) || (addr_len != NULL));
 
 	sock.sk = sk;
-	debug_print(3, "tcp_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->state);
+	debug_print(3, "tcp_accept: sk %p, st%d\n", sock.tcp_sk, sock.tcp_sk->state);
 
-	assert(sock.sk->state < TCP_MAX_STATE);
-	switch (sock.sk->state) {
+	assert(sock.tcp_sk->state < TCP_MAX_STATE);
+	switch (sock.tcp_sk->state) {
 	default:
 		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
@@ -308,8 +308,8 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 	sock.sk = sk;
 	debug_print(3, "tcp_sendmsg: sk %p\n", sock.tcp_sk);
 
-	assert(sock.sk->state < TCP_MAX_STATE);
-	switch (sock.sk->state) {
+	assert(sock.tcp_sk->state < TCP_MAX_STATE);
+	switch (sock.tcp_sk->state) {
 	default:
 		return -ENOTCONN;
 	case TCP_ESTABIL:
@@ -359,23 +359,26 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	int ret;
+	union sock_pointer sock;
 
 	if (sk == NULL) {
 		return -EINVAL;
 	}
 
-	debug_print(3, "tcp_recvmsg: sk %p\n", sk);
+	sock.sk = sk;
 
-	assert(sk->state < TCP_MAX_STATE);
-	switch (sk->state) {
+	debug_print(3, "tcp_recvmsg: sk %p\n", sock.sk);
+
+	assert(sock.tcp_sk->state < TCP_MAX_STATE);
+	switch (sock.tcp_sk->state) {
 	default:
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSEWAIT:
-		ret = sock_stream_recvmsg(sk, msg, flags);
-		if ((ret == -EAGAIN) && (sk->state == TCP_CLOSEWAIT)) {
+		ret = sock_stream_recvmsg(sock.sk, msg, flags);
+		if ((ret == -EAGAIN) && (sock.tcp_sk->state == TCP_CLOSEWAIT)) {
 			msg->msg_iov->iov_len = 0;
 			return 0; /* no more data to receive */
 		}
