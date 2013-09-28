@@ -6,7 +6,8 @@
  * @author Roman Kolobov
  */
 
-#include <net/l3/ipv4/ip.h>
+#include <net/l3/ipv4/ip_options.h>
+#include <net/skbuff.h>
 #include <net/l3/icmpv4.h>
 #include <net/inetdevice.h>
 #include <net/socket/inet_sock.h>

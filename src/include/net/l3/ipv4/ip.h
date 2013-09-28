@@ -34,35 +34,6 @@ struct sock;
 #define ICMP_PROTO_TYPE  (unsigned short)0x01
 #define UDP_PROTO_TYPE   (unsigned short)0x11
 
-/* IP options */
-#define IPOPT_COPY		0x80
-#define IPOPT_CLASS_MASK	0x60
-#define IPOPT_NUMBER_MASK	0x1f
-
-#define	IPOPT_COPIED(o)		((o)&IPOPT_COPY)
-#define	IPOPT_CLASS(o)		((o)&IPOPT_CLASS_MASK)
-#define	IPOPT_NUMBER(o)		((o)&IPOPT_NUMBER_MASK)
-
-#define	IPOPT_CONTROL		0x00
-#define	IPOPT_RESERVED1		0x20
-#define	IPOPT_MEASUREMENT	0x40
-#define	IPOPT_RESERVED2		0x60
-
-#define IPOPT_END	(0 |IPOPT_CONTROL)
-#define IPOPT_NOOP	(1 |IPOPT_CONTROL)
-#define IPOPT_SEC	(2 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_LSRR	(3 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_TIMESTAMP	(4 |IPOPT_MEASUREMENT)
-//#define IPOPT_CIPSO	(6 |IPOPT_CONTROL|IPOPT_COPY)
-#define IPOPT_RR	(7 |IPOPT_CONTROL)
-#define IPOPT_SID	(8 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_SSRR	(9 |IPOPT_CONTROL | IPOPT_COPY)
-//#define IPOPT_RA	(20|IPOPT_CONTROL |IPOPT_COPY)
-
-#define	IPOPT_TS_TSONLY		0		/* timestamps only */
-#define	IPOPT_TS_TSANDADDR	1		/* timestamps and addresses */
-#define	IPOPT_TS_PRESPEC	3		/* specified modules only */
-
 /* IP flags. */
 #define IP_CE           0x8000	/* Flag: "Congestion"       */
 #define IP_DF           0x4000	/* Flag: "Don't Fragment"   */
@@ -153,23 +124,6 @@ extern int ip_queue_xmit(struct sk_buff *skb);
 extern int rebuild_ip_header(struct sk_buff *pack, unsigned char ttl,
 			unsigned char proto, unsigned short id, unsigned short len,
 			in_addr_t saddr, in_addr_t daddr/*, ip_options_t *opt*/);
-
-/**
- * Functions provided by ip_options.c
- */
-
-/*
- * Parses a block of options from an IP header
- * and initializes an instance of an ip_options structure accordingly
- */
-extern int ip_options_compile(struct sk_buff *skb, struct ip_options *opt);
-
-/*
- * Handles socket buffer route info due to SRR options
- */
-extern int ip_options_handle_srr(struct sk_buff *skb);
-
-extern struct net_proto_family inet_family_ops;
 
 /**
  * notify an ip socket about icmp error

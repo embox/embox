@@ -16,38 +16,6 @@
 struct sock;
 
 /**
- * @struct ip_options
- * @brief IP Options
- *
- * @var faddr - Saved first hop address
- * @var is_data - Options in __data, rather than skb
- * @var is_strictroute - Strict source route
- * @var srr_is_hit - Packet destination addr was our one
- * @var is_changed - IP checksum more not valid
- * @var rr_needaddr - Need to record addr of outgoing dev
- * @var ts_needtime - Need to record timestamp
- * @var ts_needaddr - Need to record addr of outgoing dev
- */
-typedef struct ip_options {
-	in_addr_t       faddr;
-	unsigned char   optlen;
-	unsigned char   srr;
-	unsigned char   rr;
-	unsigned char   ts;
-	unsigned char
-			is_strictroute:1,
-			srr_is_hit:1,
-			is_changed:1,
-			rr_needaddr:1,
-			ts_needtime:1,
-			ts_needaddr:1;
-	unsigned char   router_alert;
-	unsigned char   cipso;
-	unsigned char   __pad2;
-	unsigned char __data[0];
-} ip_options_t;
-
-/**
  * @struct inet_sock
  * @brief Representation of INET sockets (FixMe)
  *

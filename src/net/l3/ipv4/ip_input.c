@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <embox/net/pack.h>
 #include <net/l3/ipv4/ip.h>
+#include <net/l3/ipv4/ip_options.h>
 #include <net/l3/icmpv4.h>
 #include <net/l4/udp.h>
 #include <net/socket/raw.h>
