@@ -79,11 +79,12 @@ static void sock_init(struct sock *sk, int family, int type,
 	sock_opt_init(&sk->opt, family, type, protocol);
 	skb_queue_init(&sk->rx_queue);
 	skb_queue_init(&sk->tx_queue);
-	//sk->state = 0;
+	sock_set_state(sk, SS_UNKNOWN);
 	sk->shutdown_flag = 0;
 	sk->f_ops = f_ops;
 	sk->ops = ops;
 	io_sync_init(&sk->ios, 0, 0);
+	//sk->src_addr = sk->dst_addr = NULL;
 }
 
 int sock_create_ext(int family, int type, int protocol,

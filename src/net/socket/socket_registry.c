@@ -169,7 +169,7 @@ struct sr_external_socket_array_node *sr_get_all_sockets_array(size_t *length) {
 			break;
 		memcpy(&(array[i].saddr), &(node->saddr), sizeof(struct sockaddr));
 		memcpy(&(array[i].daddr), &(node->daddr), sizeof(struct sockaddr));
-		array[i].socket_connection_state = node->socket_connection_state;
+		array[i].socket_connection_state = node->sk->state;
 		i++;
 	}
 	return array;

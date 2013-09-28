@@ -23,21 +23,25 @@
 
 EMBOX_CMD(exec);
 
-static const char *con_st_string[SOCK_CONN_STATE_MAX + 1] = {
-	"UNCONNECTED", "CLOSED", "LISTENING", "BOUND",
-	"CONNECTING", "CONNECTED", "ESTABLISHED", "DISCONNECTING",
-	"UNKNOWN_STATE"
-};
-
 static unsigned short get_port(const struct sockaddr_in *sa) {
 	return ntohs(sa->sin_port);
 }
 
-static const char *socket_state_string(enum socket_connection_state_t st) {
-	if (st >= 0 && st < SOCK_CONN_STATE_MAX)
-		return con_st_string[st];
-	else
-		return con_st_string[SOCK_CONN_STATE_MAX];
+static const char *socket_state_string(enum sock_state st) {
+	switch (st) {
+	default:               break;
+	case SS_UNCONNECTED:   return "UNCONNECTED";
+	case SS_BOUND:         return "BOUND";
+	case SS_LISTENING:     return "LISTENING";
+	case SS_CONNECTING:    return "CONNECTING";
+	case SS_CONNECTED:     return "CONNECTED";
+	case SS_ESTABLISHED:   return "ESTABLISHED";
+	case SS_DISCONNECTING: return "DISCONNECTING";
+	case SS_CLOSED:        return "CLOSED";
+	}
+
+	assert(0, "illegal socket state");
+	return NULL;
 }
 
 static void print_ip_addr(in_addr_t ip) {
