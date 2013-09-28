@@ -3,6 +3,8 @@ package embox.net
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
+	option number amount_tcp_port=65536
+	option number amo
 
 	depends route
 	depends sock
@@ -15,6 +17,7 @@ module tcp_sock {
 module udp_sock {
 	source "udp_sock.c"
 	option number amount_udp_sock=20
+	option number amount_udp_port=65536
 
 	depends udp
 	depends sock
@@ -44,12 +47,10 @@ module raw_sock {
 
 module af_inet {
 	source "af_inet.c"
-	depends sock
-	depends embox.framework.LibFrameworkNet
 
-	source "ip_port.c"
-	option number ports_per_protocol=65536
-	depends embox.util.Bit
+	depends sock
+	depends embox.util.indexator
+	depends embox.framework.LibFrameworkNet
 }
 
 module af_packet {
@@ -57,7 +58,6 @@ module af_packet {
 	option number amount_sockets=20
 
 	depends sock
-	depends socket /* for socket_repo.c */
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -65,7 +65,7 @@ module af_unix {
 	source "af_unix.c"
 
 	depends sock
-	depends socket /* for socket_repo.c */
+	depends embox.framework.LibFrameworkNet
 }
 
 module socket {

@@ -26,7 +26,6 @@
 #include <string.h>
 #include <kernel/printk.h>
 #include <sys/time.h>
-#include <net/socket/ip_port.h>
 #include <net/if_ether.h>
 #include <util/sys_log.h>
 
@@ -37,16 +36,12 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/time/time.h>
 #include <kernel/time/ktime.h>
+#include <util/indexator.h>
 
 #include <kernel/task/io_sync.h>
 #include <prom/prom_printf.h>
 
-#include <framework/mod/options.h>
-#include <module/embox/net/tcp_sock.h>
-#define MODOPS_AMOUNT_TCP_SOCK OPTION_MODULE_GET(embox__net__tcp_sock, NUMBER, amount_tcp_sock)
-
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
-
 
 /** TODO
  * +1. Create default socket for resetting
@@ -466,7 +461,9 @@ void tcp_free_sock(union sock_pointer sock) {
 	}
 
 	if (sock.inet_sk->sport_is_alloced) {
-		ip_port_unlock(sock.sk->opt.so_protocol, ntohs(sock.inet_sk->sport));
+		assert(sock.sk->ops != NULL);
+		index_unlock(sock.sk->ops->sock_port,
+				ntohs(sock.inet_sk->sport));
 	}
 	sock_release(sock.sk);
 }

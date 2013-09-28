@@ -17,9 +17,9 @@
 #include <net/inetdevice.h>
 #include <net/if_ether.h>
 #include <embox/net/family.h>
+#include <util/indexator.h>
 #include <embox/net/sock.h>
 
-#include <net/socket/ip_port.h>
 #include <net/socket/inet_sock.h>
 
 static const struct family_ops inet_dgram_ops;
@@ -63,7 +63,7 @@ static int inet_close(struct sock *sk) {
 	assert(sk->ops != NULL);
 	if (sk->ops->close == NULL) {
 		if (inet_sk(sk)->sport_is_alloced) {
-			ip_port_unlock(sk->opt.so_protocol,
+			index_unlock(sk->ops->sock_port,
 					ntohs(inet_sk(sk)->sport));
 		}
 		sock_release(sk);
@@ -78,14 +78,13 @@ static void __inet_bind(struct inet_sock *inet_sk,
 	assert(inet_sk != NULL);
 	assert(addr_in != NULL);
 
+	assert(addr_in->sin_family == AF_INET);
 	inet_sk->rcv_saddr = addr_in->sin_addr.s_addr;
-	inet_sk->sport_is_alloced = 1;
 	inet_sk->sport = addr_in->sin_port;
 }
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
-	int ret;
 	const struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL)
@@ -102,10 +101,13 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return -EADDRNOTAVAIL;
 	}
 
-	ret = ip_port_lock(sk->opt.so_protocol,
-			ntohs(addr_in->sin_port));
-	if (ret != 0) {
-		return ret;
+	assert(sk->ops != NULL);
+	if (sk->ops->sock_port != NULL) {
+		if (!index_try_lock(sk->ops->sock_port,
+					ntohs(addr_in->sin_port))) {
+			return -EADDRINUSE;
+		}
+		inet_sk(sk)->sport_is_alloced = 1;
 	}
 
 	__inet_bind((struct inet_sock *)sk, addr_in);
@@ -114,28 +116,27 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 }
 
 static int inet_bind_local(struct sock *sk) {
-	int port;
+	size_t port;
 	struct sockaddr_in addr_in;
 
 	if (sk == NULL) {
 		return -EINVAL;
 	}
 
-	/* addr_in.sin_family = AF_INET; */
+	addr_in.sin_family = AF_INET;
 	addr_in.sin_addr.s_addr = INADDR_ANY;
 
-	switch (sk->opt.so_protocol) {
-	default:
-		addr_in.sin_port = 0;
-		break;
-	case IPPROTO_TCP:
-	case IPPROTO_UDP:
-		port = ip_port_get_free(sk->opt.so_protocol);
-		if (port < 0) {
-			return port;
+	assert(sk->ops != NULL);
+	if (sk->ops->sock_port != NULL) {
+		port = index_alloc(sk->ops->sock_port, INDEX_NEXT);
+		if (port == INDEX_NONE) {
+			return -ENOMEM;
 		}
-		addr_in.sin_port = htons((unsigned short)port);
-		break;
+		inet_sk(sk)->sport_is_alloced = 1;
+		addr_in.sin_port = htons(port);
+	}
+	else {
+		addr_in.sin_port = 0;
 	}
 
 	__inet_bind((struct inet_sock *)sk, &addr_in);

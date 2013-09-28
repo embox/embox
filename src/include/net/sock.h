@@ -25,6 +25,8 @@ struct sock;
 struct msghdr;
 struct skbuff;
 struct pool;
+struct indexator;
+struct list;
 
 typedef struct {
 	spinlock_t slock;
@@ -112,6 +114,7 @@ struct sock_ops {
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
+	struct indexator *sock_port;
 	struct list *sock_list;
 };
 

@@ -10,12 +10,7 @@
 #define NET_L4_UDP_H_
 
 #include <net/socket/inet_sock.h>
-
-#include <framework/mod/options.h>
-#include <module/embox/net/udp_sock.h>
 #include <linux/types.h>
-
-#define MODOPS_AMOUNT_UDP_SOCK OPTION_MODULE_GET(embox__net__udp_sock, NUMBER, amount_udp_sock)
 
 struct sock;
 

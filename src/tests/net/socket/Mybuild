@@ -1,13 +1,5 @@
 package embox.test.net.socket
 
-module port_test {
-	source "port_test.c"
-
-	depends embox.net.socket
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-}
-
 module inet_socket_test {
 	source "inet_socket_test.c"
 
