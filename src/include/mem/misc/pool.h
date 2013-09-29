@@ -40,10 +40,11 @@ struct pool {
  * @param count of objects in cache
  */
 #define POOL_DEF(name, object_type, size) \
-	static union {                       \
-		typeof(object_type) object;                 \
-		struct slist_link free_link;      \
-	} __pool_storage ## name[size] __attribute__((section(".reserve.pool")));  \
+	static union {                   \
+		typeof(object_type) object;  \
+		struct slist_link free_link; \
+	} __pool_storage ## name[size]   \
+	__attribute__((section(".reserve.pool,\"aw\",@nobits#")));  \
 	static struct pool name = { \
 			.memory = __pool_storage ## name, \
 			.bound_free = __pool_storage ## name, \
