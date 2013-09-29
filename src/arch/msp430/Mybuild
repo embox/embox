@@ -1,7 +1,0 @@
-package embox.arch.msp430
-
-module lds extends embox.arch.lds {
-	source "embox.lds.S"
-	//option number stack_size=4096
-}
-

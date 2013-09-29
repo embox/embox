@@ -90,7 +90,8 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 
 cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
-	$(CPP) -P -undef $(CPPFLAGS) $(flags) -imacros $(SRCGEN_DIR)/config.lds.h \
+	$(CPP) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
 initfs_cp_prerequisites = $(common_prereqs) $(src_file)
@@ -192,40 +193,55 @@ $(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
 GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
 VPATH += $(GPATH)
 
+embox_o = $(OBJ_DIR)/embox.o
+
+$(embox_o): ldflags_all = $(LDFLAGS) \
+		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
+$(embox_o): | $$(@D)/.
+	$(LD) -r $(ldflags_all) \
+		$(call fmt_line,$(ld_objs)) \
+		$(call fmt_line,$(ld_libs)) \
+	--cref -Map $@.map \
+	-o $@
+
+__define_image_rules = $(eval $(value __image_rule))
+$(call __define_image_rules,$(embox_o))
+
+image_lds = $(OBJ_DIR)/mk/image.lds
+$(image_lds) : flags = \
+		$(addprefix -include ,$(wildcard $(SRC_DIR)/arch/$(ARCH)/embox.lds.S))
+
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
 image_pass1_o = $(OBJ_DIR)/image_pass1.o
 
 image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 
-__define_image_rules = $(eval $(value __image_rule))
-$(call __define_image_rules,$(image_files))
-
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
-$(image_files): ldflags_all = $(LDFLAGS) \
-		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
 
-$(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
-	$(LD) --relocatable $(ldflags) \
-	$(call fmt_line,$(ld_objs)) \
-	$(call fmt_line,$(ld_libs)) \
-	--cref -Map $(IMAGE)_nosymbols.map \
+$(image_nosymbols_o): $(image_lds) $(embox_o) | $$(@D)/.
+	$(LD) --relax $(ldflags) \
+	-T $(image_lds) \
+	$(embox_o) \
+	--defsym=__symbol_table=0 \
+	--defsym=__symbol_table_size=0 \
+	--cref -Map $@.map \
 	-o $@
 
-$(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_a) | $$(@D)/.
-	$(LD) --relax $(ldflags_all) \
-		$(image_nosymbols_o) \
-		$(symbols_pass1_a) \
-		$(call fmt_line,$(ld_libs)) \
-		--cref -Map $(IMAGE)_pass1.map \
+$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) | $$(@D)/.
+	$(LD) --relax $(ldflags) \
+	-T $(image_lds) \
+	$(embox_o) \
+	$(symbols_pass1_a) \
+	--cref -Map $@.map \
 	-o $@
 
-$(IMAGE): $(image_nosymbols_o) $(symbols_pass2_a) | $$(@D)/.
-	$(LD) --relax $(ldflags_all) \
-		$(image_nosymbols_o) \
-		$(symbols_pass2_a) \
-		$(call fmt_line,$(ld_libs)) \
-		--cref -Map $(IMAGE).map \
+$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) | $$(@D)/.
+	$(LD) --relax $(ldflags) \
+	-T $(image_lds) \
+	$(embox_o) \
+	$(symbols_pass2_a) \
+	--cref -Map $@.map \
 	-o $@
 
 $(IMAGE_DIS): $(IMAGE)

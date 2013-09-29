@@ -1,6 +1,5 @@
 
 #include <asm-generic/embox.lds.h>
-#include <framework/mod/options.h>
 
 ENTRY(_start)
 
@@ -9,32 +8,14 @@ MEMORY {
 	MEMORY_REGION(flash)
 }
 
+_mem_begin = LDS_REGION_BASE_sdram;
+_mem_length = LDS_REGION_SIZE_sdram;
+
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
-		ALIGNMENT();
-	} SECTION_REGION(text)
-	SECTION_SYMBOLS(text)
-
-	.rodata : {
-		LDS_INPUT_RODATA
-	} SECTION_REGION(rodata)
-	SECTION_SYMBOLS(rodata)
-
-	.data : {
-		LDS_INPUT_DATA
-		LDS_INPUT_RESERVE
-	} SECTION_REGION(data)
-	SECTION_SYMBOLS(data)
-
-	.bss : {
-		LDS_INPUT_BSS
-	} SECTION_REGION(bss)
-	SECTION_SYMBOLS(bss)
+	}
 }
-
-_mem_begin = LDS_REGION_BASE_sdram;
-_mem_length = LDS_REGION_SIZE_sdram;

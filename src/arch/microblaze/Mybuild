@@ -1,5 +1,0 @@
-package embox.arch.microblaze
-
-module lds extends embox.arch.lds {
-	source "embox.lds.S"
-}
