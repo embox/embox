@@ -32,7 +32,7 @@ SECTIONS {
 endef
 
 define section_header
-	.$1.apps : {
+	.$1.apps : ALIGN(DATA_ALIGNMENT) {
 endef
 
 define section_item
@@ -48,7 +48,7 @@ define section_footer
 endef
 
 define file_footer
-	.reserve.apps : {
+	.reserve.apps : ALIGN(DATA_ALIGNMENT) {
 		. += SIZEOF(.data.apps);
 	}
 	_app_data_reserve_offset = ADDR(.reserve.apps) - ADDR(.data.apps);
