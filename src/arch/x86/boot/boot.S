@@ -23,8 +23,7 @@ C_ENTRY(_start):
 	cld
 
 	/* Initialize the stack pointer. */
-	movl    $_stack_vma, %esp  /* load base address for system stack */
-	addl    $_stack_len, %esp  /* setup correct system stack pointer */
+	movl    $__stack, %esp  /* load base address for system stack */
 
 	/* Reset EFLAGS. */
 	pushl   $0

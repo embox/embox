@@ -11,9 +11,15 @@
 #include <kernel/thread/state.h>
 #include <kernel/task.h>
 
+#include <module/embox/kernel/stack.h>
+
+#define STACK_SZ \
+ 	OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size)
+
 static void *boot_stub(void *arg) {
 	return NULL;
 }
+
 /*
  * Initializes thread structure for current thread, adds it to list of threads
  * and to kernel task. Use this ONLY for bootstrap threads.
@@ -26,7 +32,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	//thread->stack = stack + sizeof(struct thread);
 	//thread->stack_sz = stack_sz - sizeof(struct thread);
 	thread_stack_set(thread, stack + sizeof(struct thread));
-	thread_stack_set_size(thread, stack_sz + sizeof(struct thread));
+	thread_stack_set_size(thread, stack_sz - sizeof(struct thread));
 
 
 
@@ -49,10 +55,9 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 struct thread *boot_thread_create(void) {
 	struct thread *bootstrap;
 	struct task *kernel_task = task_kernel_task();
-	extern char _stack_vma, _stack_len;
+	extern char __stack;
 
-//TODO calculate stack size
-	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
+	bootstrap = thread_init_self(&__stack, (size_t) STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
 	task_add_thread(kernel_task, bootstrap);
