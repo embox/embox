@@ -12,8 +12,6 @@
 #ifndef EMBOX_LDS_H_
 #define EMBOX_LDS_H_
 
-#define __LDS__
-
 #define __SECTION_SYMBOLS(var_prefix, section_name) \
 	var_prefix ## _vma =     ADDR(section_name); \
 	var_prefix ## _lma = LOADADDR(section_name); \
@@ -35,54 +33,6 @@
 #include <module/embox/mem/page_api.h>
 
 #define REGION_ALIGN() . = ALIGN(PAGE_SIZE());
-
-#define LDS_INPUT_RODATA \
-	ALIGNMENT();                   \
-	                               \
-	*(.rodata*)                    \
-	*(.const)                      \
-	                               \
-	*(SORT(.array_spread.*.rodata)) \
-	                               \
-	_ctors_start = .;              \
-	KEEP(*(SORT(.init_array)))     \
-	KEEP(*(SORT(.ctors)))          \
-	KEEP(*(SORT(.ctors.*)))        \
-	_ctors_end   = .;              \
-	                               \
-	ALIGNMENT();                   \
-	*(.checksum)                   \
-
-
-#define LDS_INPUT_DATA \
-	ALIGNMENT();                   \
-	*(.data)                       \
-	*(.sdata)                      \
-	*(.data.*)                     \
-	__app_data_start = ABSOLUTE(.);\
-	*(.app.data.*)                 \
-	__app_data_end = ABSOLUTE(.);  \
-	__app_data_size =              \
-	    ABSOLUTE(__app_data_end -  \
-	             __app_data_start);\
-
-
-#define LDS_INPUT_BSS \
-	ALIGNMENT();                   \
-	*(.bss)                        \
-	*(.sbss)                       \
-	*(.bss.*)                      \
-	__app_bss_start = .;           \
-	*(.app.bss.*)                  \
-	__app_bss_end = .;             \
-
-
-#define LDS_INPUT_RESERVE \
-	ALIGNMENT();                   \
-	__app_reserve_start = .;       \
-	. += __app_data_size;          \
-	__app_reserve_end = .;         \
-	*(.reserve*)                   \
 
 
 #endif /* EMBOX_LDS_H_ */
