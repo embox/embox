@@ -32,13 +32,13 @@ SECTIONS {
 endef
 
 define section_header
-	.$1 : {
+	.$1.apps : {
 		__app_$1_start = .;
 endef
 
 define section_item
 		__app_$2_$1_vma = .;
-		*(.app.$1.$2)
+		*(.app.$2.$1)
 		__app_$2_$1_len = ABSOLUTE(. - __app_$2_$1_vma);
 
 endef
@@ -50,7 +50,7 @@ define section_footer
 endef
 
 define file_footer
-	.reserve.app.data : {
+	.reserve.apps : {
 		__app_reserve_start = .;
 		. += ABSOLUTE(__app_data_end -
 		              __app_data_start);

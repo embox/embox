@@ -139,24 +139,25 @@ endif
 
 
 # Module-level rules.
-module_prereqs = $(common_prereqs) $(reloc_lds) $(o_files) $(a_files)
+module_prereqs = $(common_prereqs) $(o_files) $(a_files)
 
-$(OBJ_DIR)/module/% : ldflags_all = $(ldflags) \
-		$(call fmt_line,$(call ld_scripts_flag,$(reloc_lds)))
+$(OBJ_DIR)/module/% : objcopy_flags = \
+	$(foreach s,.data .bss,--rename-section $s=.app.$(app_id)$s)
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
 	@$(MAKE) -f mk/arhelper.mk TARGET='$@' \
 		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
-		LD='$(LD)' LDFLAGS='$(ldflags_all)' \
 		A_FILES='$(a_files)' \
 		O_FILES='$(o_files)' \
-		RELOC='$(reloc_lds)'
+		APP_ID='$(app_id)' $(if $(app_id), \
+			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
-	$(LD) -r -o $@ $(ldflags_all) $(call fmt_line,$(o_files) \
+	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
+	$(if $(app_id),$(OBJCOPY) $(objcopy_flags) $@)
 
 
 # Here goes image creation rules...
