@@ -25,9 +25,8 @@
 #define MOD_FLAG_OPFAILED      (0 << 1)
 
 #define APP_DATA_RESERVE_OFFSET ({ \
-		extern char __app_data_start; \
-		extern char __app_reserve_start; \
-		&__app_reserve_start - &__app_data_start; \
+		extern char _app_data_reserve_offset; \
+		(size_t) &_app_data_reserve_offset;   \
 	})
 
 #define mod_flag_tst(mod, mask)   ((mod)->priv->flags &   (mask))
