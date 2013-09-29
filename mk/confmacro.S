@@ -6,6 +6,9 @@
 
 #define __FIRST_ARG(arg, ...) arg
 
+#define define(macro, value) \
+	$define macro value
+
 #if defined(__BUILD_MK__)
 
 #include "build.conf"
