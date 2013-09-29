@@ -11,6 +11,7 @@ static module Prioq {
 
 static module Array {
 	source "array_impl.h"
+	source "array_spread.lds.S"
 }
 
 static module Bit {
