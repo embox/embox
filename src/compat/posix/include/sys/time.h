@@ -10,10 +10,35 @@
 #ifndef COMPAT_POSIX_SYS_TIME_H_
 #define COMPAT_POSIX_SYS_TIME_H_
 
-#include <assert.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <time.h>
+
+
+/*The time_t and suseconds_t types are defined as described in <sys/types.h>.*/
+#include <defines/time_t.h>
+#include <defines/suseconds_t.h>
+
+
+
+/* The <sys/time.h> header defines the timeval structure that includes at least
+ * the following members:
+ * time_t         tv_sec      seconds
+ * suseconds_t    tv_usec     microseconds
+ */
+struct timeval {
+	time_t      tv_sec;
+	suseconds_t tv_usec;
+};
+
+/* The <sys/time.h> header defines the itimerval structure that includes at
+ * least the following members:
+ * struct timeval it_interval timer interval
+ * struct timeval it_value    current value
+ */
+struct itimerspec {
+	struct timeval it_interval;  /* Timer period. */
+	struct timeval it_value;     /* Timer expiration. */
+};
+
+
 
 #include <sys/cdefs.h>
 
@@ -26,9 +51,13 @@ struct timezone {
 
 extern int gettimeofday(struct timeval *ts, struct timezone *tz);
 
+
 /**
  * timeval operations
  */
+#include <assert.h>
+#include <time.h>
+
 static inline void timeradd(struct timeval *a, struct timeval *b,
 		struct timeval *result) {
 	assert((a != NULL) && (b != NULL) && (result != NULL));
