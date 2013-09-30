@@ -26,7 +26,9 @@
 #define SECTION_REGION(section) \
 	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
 
-#define ALIGNMENT() . = ALIGN(0x10)
+#define DATA_ALIGNMENT 32
+
+#define ALIGNMENT() . = ALIGN(DATA_ALIGNMENT)
 
 
 #include <framework/mod/options.h>

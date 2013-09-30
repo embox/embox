@@ -54,12 +54,15 @@ SECTIONS {
 		*(.sbss)
 		*(.bss.*)
 
+		ALIGNMENT();
 		_bss_end = .;
 		/* Reserve (no need to zero on startup) */
 
 		*(.reserve)
 		*(.reserve.*)
 
+		ALIGNMENT();
+		_reserve_end = .;
 	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(bss)
 
