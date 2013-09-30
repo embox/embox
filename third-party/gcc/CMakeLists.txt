@@ -20,11 +20,11 @@ ExternalProject_Add(
          ""CC_FOR_TARGET=/usr/bin/gcc""
          ""CXX_FOR_TARGET=/usr/bin/g++""
          ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}\ -DLIBGCC2_HAS_XF_MODE=0\ -I<BINARY_DIR>/gcc/include""
-         ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}""
+         ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}\ -I<BINARY_DIR>/gcc/include""
          ""LDFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_LDFLAGS}""
          --enable-languages=c,c++
-         #--target=i386-pc-msdosdjgpp
-         --target=i386-pc-elf
+         --target=i386-pc-msdosdjgpp
+         #--target=i386-pc-elf
          --disable-shared
          --disable-tls
          --disable-multilib
@@ -34,6 +34,7 @@ ExternalProject_Add(
       make
          GCC_FOR_TARGET=gcc
          CXX_FOR_TARGET=g++
+         RAW_CXX_FOR_TARGET=g++
          CC_FOR_TARGET=gcc
          AR_FOR_TARGET=ar
          RANLIB_FOR_TARGET=ranlib
@@ -47,9 +48,11 @@ ExternalProject_Add(
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
          ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
-         all-target-libgcc
+         all-target-libgcc all-target-libstdc++-v3
    INSTALL_COMMAND
-      false
+      make
+         install-target-libgcc
+         install-target-libstdc++-v3
    LOG_BUILD 1
 )
 SET (CMAKE_BUILD_TYPE "Debug")

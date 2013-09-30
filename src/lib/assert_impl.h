@@ -56,8 +56,8 @@ void __attribute__ ((noreturn)) __assertion_handle_failure(
 		}                                                               \
 	} while(0)
 #else
-extern char __assertion_message_buff[];
-extern int sprintf(char *s, const char *format, ...);
+extern "C" char __assertion_message_buff[];
+extern "C" int sprintf(char *s, const char *format, ...);
 # define __assert(condition, expr_str, message...) \
 	do { \
 		if (!(likely(condition))) {                                             \

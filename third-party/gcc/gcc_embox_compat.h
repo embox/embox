@@ -28,4 +28,49 @@ extern int   pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const s
 extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
 extern int   pthread_key_delete(pthread_key_t);
 
+#include <stdio.h>
+#include <string.h>
+
+#if 1
+#define DPRINT() printf(">>> gcc CALL %s\n", __FUNCTION__)
+#else
+#define DPRINT()
+#endif
+
+#ifdef __cplusplus
+
+#define PTHREAD_COND_INITIALIZER {}
+static inline int atexit(void (*function)(void)) {
+	printf(">>> atexit(%p)\n",function);
+}
+
+static inline int strcoll(const char *s1, const char *s2) {
+	printf(">>> strcoll(%s,%s)\n", s1, s2);
+	return strcmp(s1, s2);
+}
+
+static inline size_t strxfrm(char *dest, const char *src, size_t n) {
+	printf(">>> strxfrm(...)\n");
+	return 0;
+}
+
+static inline
+void clearerr(FILE *stream) {
+	DPRINT();
+}
+
+static inline void setbuf(FILE *stream, char *buf) {
+	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
+}
+
+static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
+	return -1;
+}
+
+extern FILE *tmpfile(void);
+extern char *tmpnam(char *s);
+
+#endif // __cplusplus
+
 #endif /* NTFS_EMBOX_COMPAT_H_ */
