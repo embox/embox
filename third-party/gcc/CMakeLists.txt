@@ -42,6 +42,7 @@ ExternalProject_Add(
          ""TARGET-libcpp=LINKER=true\ CC=true\ CXX=true\ POSTCOMPILE=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-libdecnumber=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
+         ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
          ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support""
          all-target-libgcc
    INSTALL_COMMAND
