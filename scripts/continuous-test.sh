@@ -1,4 +1,5 @@
 #!/bin/bash
+# bash is required by declare -A
 # @file
 # @brief
 #
@@ -24,7 +25,7 @@ EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
 do_it() {
-	eval $@
+	echo $@ | sh
 }
 
 declare -A atml2sim
@@ -45,8 +46,8 @@ atml2sim['microblaze/petalogix']="qemu-system-microblaze \
 atml2sim['sparc/qemu']="qemu-system-sparc -M leon3_generic -cpu LEON3 \
 	$QEMU_COMMON"
 
-atml2sim['sparc/debug']="$(dirname $0)/continuous-test.tsim.sh $EMKERNEL \
-	$OUTPUT_FILE"
+atml2sim['sparc/debug']="tsim-leon3 -c $(dirname $0)/tsim_run.cmd $EMKERNEL \
+	> $OUTPUT_FILE"
 
 # qemu refuses to write if run with -serial stdio. So we buffer to file,
 # cat it, and analyze
