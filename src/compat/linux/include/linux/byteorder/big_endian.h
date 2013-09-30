@@ -104,6 +104,6 @@ static inline __u16 __be16_to_cpup(const __be16 *p) {
 #define __cpu_to_be16s(x) do { (void)(x); } while (0)
 #define __be16_to_cpus(x) do { (void)(x); } while (0)
 
-#include <byteorder/generic.h>
+#include <linux/byteorder/generic.h>
 
 #endif /* BIG_ENDIAN_H_ */

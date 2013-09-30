@@ -105,6 +105,6 @@ static inline __u16 __be16_to_cpup(const __be16 *p) {
 #define __cpu_to_be16s(x) __swab16s((x))
 #define __be16_to_cpus(x) __swab16s((x))
 
-#include <byteorder/generic.h>
+#include <linux/byteorder/generic.h>
 
 #endif /* LITTLE_ENDIAN_H_ */
