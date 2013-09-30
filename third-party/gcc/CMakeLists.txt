@@ -19,7 +19,7 @@ ExternalProject_Add(
          --prefix=<INSTALL_DIR>
          ""CC_FOR_TARGET=/usr/bin/gcc""
          ""CXX_FOR_TARGET=/usr/bin/g++""
-         ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}""
+         ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}\ -DLIBGCC2_HAS_XF_MODE=0\ -I<BINARY_DIR>/gcc/include""
          ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}""
          ""LDFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_LDFLAGS}""
          --enable-languages=c,c++
@@ -38,12 +38,12 @@ ExternalProject_Add(
          #""TARGET-build-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          #""TARGET-build-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-zlib=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
-         ""TARGET-libbacktrace=LINKER=true\ CC=true\ AR=touch\ LINK=true\ all""
+         ""TARGET-libbacktrace=LINKER=true\ CC=true\ AR=touch\ 'LINK=mkdir\ -p\ .libs&&true'\ 'LIBS=&&touch\ .libs/libbacktrace.a'\ all""
          ""TARGET-libcpp=LINKER=true\ CC=true\ CXX=true\ POSTCOMPILE=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-libdecnumber=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
-         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support""
+         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
          all-target-libgcc
    INSTALL_COMMAND
       false
