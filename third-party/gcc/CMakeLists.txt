@@ -48,11 +48,30 @@ ExternalProject_Add(
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
          ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
-         all-target-libgcc all-target-libstdc++-v3
+         ""TARGET-target-libstdc++-v3='SUBDIRS=include\ libsupc++'\ all-recursive""
+         all-target-libgcc
+         all-target-libstdc++-v3
    INSTALL_COMMAND
       make
+         GCC_FOR_TARGET=gcc
+         CXX_FOR_TARGET=g++
+         RAW_CXX_FOR_TARGET=g++
+         CC_FOR_TARGET=gcc
+         AR_FOR_TARGET=ar
+         RANLIB_FOR_TARGET=ranlib
+         ""TARGET-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
+         #""TARGET-build-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
+         #""TARGET-build-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
+         ""TARGET-zlib=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
+         ""TARGET-libbacktrace=LINKER=true\ CC=true\ AR=touch\ 'LINK=mkdir\ -p\ .libs&&true'\ 'LIBS=&&touch\ .libs/libbacktrace.a'\ all""
+         ""TARGET-libcpp=LINKER=true\ CC=true\ CXX=true\ POSTCOMPILE=true\ AR=true\ RANLIB=touch\ all""
+         ""TARGET-libdecnumber=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
+         ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
+         ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
+         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
+         ""TARGET-target-libstdc++-v3=SUBDIRS=libsupc++\ install-recursive""
          install-target-libgcc
-         install-target-libstdc++-v3
+         all-target-libstdc++-v3
    LOG_BUILD 1
 )
 SET (CMAKE_BUILD_TYPE "Debug")
