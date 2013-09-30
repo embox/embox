@@ -33,7 +33,10 @@ ExternalProject_Add(
    BUILD_COMMAND
       make
          GCC_FOR_TARGET=gcc
+         CXX_FOR_TARGET=g++
          CC_FOR_TARGET=gcc
+         AR_FOR_TARGET=ar
+         RANLIB_FOR_TARGET=ranlib
          ""TARGET-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          #""TARGET-build-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          #""TARGET-build-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
