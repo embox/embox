@@ -31,10 +31,6 @@ define file_header
 SECTIONS {
 endef
 
-define section_header
-	.$1.apps : ALIGN(DATA_ALIGNMENT) {
-endef
-
 define section_item
 		__app_$2_$1_vma = .;
 		*(.app.$2.$1)
@@ -42,16 +38,21 @@ define section_item
 
 endef
 
-define section_footer
-	}
+data_header = $(\t).data.apps : ALIGN(DATA_ALIGNMENT) {
+data_footer = $(\t)}
 
+define bss_header
+	.reserve.apps (NOLOAD) : ALIGN(DATA_ALIGNMENT) {
+		/* MAX is a workaround to avoid PROGBITS set on empty section. */
+		. += MAX(SIZEOF(.data.apps), 1);
+endef
+
+define bss_footer
+	}
+	_app_data_reserve_offset = ADDR(.reserve.apps) - ADDR(.data.apps);
 endef
 
 define file_footer
-	.reserve.apps : ALIGN(DATA_ALIGNMENT) {
-		. += SIZEOF(.data.apps);
-	}
-	_app_data_reserve_offset = ADDR(.reserve.apps) - ADDR(.data.apps);
 }
 endef
 
@@ -59,9 +60,9 @@ endef
 $(info $(file_header))
 
 print_section = \
-	$(info $(call section_header,$1)) \
+	$(info $($1_header)) \
 	$(foreach n,$(app_ids),$(info $(call section_item,$1,$n))) \
-	$(info $(call section_footer,$1))
+	$(info $($1_footer))
 
 $(call print_section,data)
 $(call print_section,bss)

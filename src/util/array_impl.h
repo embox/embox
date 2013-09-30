@@ -33,7 +33,7 @@
 /* The relative placement of sections within a particular array is controlled
  * by the value of order_tag argument. */
 #define __ARRAY_SPREAD_SECTION(array_nm, order_tag) \
-	".array_spread." #array_nm order_tag ".rodata"
+	".array_spread." #array_nm order_tag ".rodata,\"a\",%progbits;#"
 
 /* Every array entry, group of entries or marker symbols are backed by an
  * individual array (empty for markers) defined as follows. */
