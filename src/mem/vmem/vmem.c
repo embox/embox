@@ -22,8 +22,8 @@
 #include <kernel/printk.h>
 
 /* Section pointers. */
-extern char _text_vma, _rodata_vma, _bss_vma, _data_vma;
-extern char _text_len, _rodata_len, _bss_len, _data_len;
+extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
+extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 
 static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	int err = 0;
@@ -33,9 +33,9 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 			VMEM_PAGE_WRITABLE);
 	err |= vmem_map_on_itself(ctx, &_rodata_vma, (size_t) &_rodata_len,
 			VMEM_PAGE_WRITABLE);
-	err |= vmem_map_on_itself(ctx, &_bss_vma, (size_t) &_bss_len_with_reserve,
-			VMEM_PAGE_WRITABLE);
 	err |= vmem_map_on_itself(ctx, &_data_vma, (size_t) &_data_len,
+			VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_bss_vma, (size_t) &_bss_len_with_reserve,
 			VMEM_PAGE_WRITABLE);
 
 	/* Map special info. */
