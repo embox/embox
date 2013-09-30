@@ -65,3 +65,9 @@ void semaphore_leave(struct sem *s) {
 	}
 	sched_unlock();
 }
+
+int semaphore_getvalue(struct sem *restrict s, int *restrict sval) {
+	*sval = s->value;
+
+	return 0;
+}

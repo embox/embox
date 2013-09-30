@@ -22,4 +22,6 @@ extern void semaphore_enter(struct sem *s);
 extern void semaphore_leave(struct sem *s);
 extern int semaphore_tryenter(struct sem *s);
 
+extern int semaphore_getvalue(struct sem *restrict s, int *restrict sval);
+
 #endif /* KERNEL_THREAD_SYNC_SEMAPHORE_H_ */

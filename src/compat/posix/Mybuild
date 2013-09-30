@@ -28,3 +28,7 @@ static module termios {
 	source "termios.c"
 	depends embox.driver.tty.tty
 }
+
+static module semaphore {
+	source "semaphore.c"
+}
