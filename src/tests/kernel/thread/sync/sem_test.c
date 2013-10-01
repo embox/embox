@@ -11,7 +11,7 @@
 #include <kernel/thread.h>
 #include <err.h>
 
-static struct thread *low, *mid, *high;
+static struct thread *low, *mid, *high, *l_low, *h_high;
 static struct sem s;
 
 EMBOX_TEST_SUITE("Semaphore test");
@@ -24,6 +24,38 @@ TEST_CASE("General") {
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
 	test_assert_emitted("abcdefghijk");
+}
+
+static void *h_high_run(void *arg) {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	test_assert_not_zero(semaphore_timedwait(&s, &time));
+	time.tv_nsec += 10000000;
+	test_assert_zero(semaphore_timedwait(&s, &time));
+	return NULL;
+}
+
+static void *l_low_run(void *arg) {
+	semaphore_enter(&s);
+	test_assert_zero(thread_launch(h_high));
+	semaphore_leave(&s);
+	return NULL;
+}
+
+TEST_CASE("Correctness of semaphore_timedwait") {
+	sched_priority_t ll = 200, hh = 220;
+
+	semaphore_init(&s, 1);
+
+	l_low = thread_create(THREAD_FLAG_SUSPENDED, l_low_run, NULL);
+	test_assert_zero(err(l_low));
+
+	h_high = thread_create(THREAD_FLAG_SUSPENDED, h_high_run, NULL);
+	test_assert_zero(err(h_high));
+
+	test_assert_zero(thread_set_priority(l_low, ll));
+	test_assert_zero(thread_set_priority(h_high, hh));
+	test_assert_zero(thread_launch(l_low));
 }
 
 static void *low_run(void *arg) {
