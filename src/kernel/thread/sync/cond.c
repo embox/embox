@@ -13,10 +13,27 @@
 
 void cond_init(cond_t *c) {
 	wait_queue_init(&c->wq);
+	condattr_init(&c->attr);
 }
 
 void cond_destroy(cond_t *c) {
 
+}
+
+void condattr_init(struct condattr *attr) {
+	attr->pshared = PROCESS_PRIVATE;
+}
+
+void condattr_destroy(struct condattr *attr) {
+
+}
+
+void condattr_getpshared(const struct condattr *attr, int *pshared) {
+	*pshared = attr->pshared;
+}
+
+void condattr_setpshared(struct condattr *attr, int pshared) {
+	attr->pshared = pshared;
 }
 
 void cond_wait(cond_t *c, struct mutex *m) {

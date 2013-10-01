@@ -43,10 +43,7 @@ typedef struct pthread_attr {
 
 typedef cond_t pthread_cond_t;
 
-typedef struct pthread_condattr {
-
-} pthread_condattr_t;
-
+typedef struct condattr pthread_condattr_t;
 
 typedef struct mutex pthread_mutex_t;
 
@@ -107,9 +104,9 @@ extern int   pthread_cond_signal(pthread_cond_t *);
 //extern int   pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct timespec *);
 extern int   pthread_cond_wait(pthread_cond_t *, pthread_mutex_t *);
 
-//extern int   pthread_condattr_destroy(pthread_condattr_t *);
+extern int   pthread_condattr_destroy(pthread_condattr_t *);
 //extern int   pthread_condattr_getpshared(const pthread_condattr_t *, int *);
-//extern int   pthread_condattr_init(pthread_condattr_t *);
+extern int   pthread_condattr_init(pthread_condattr_t *);
 //extern int   pthread_condattr_setpshared(pthread_condattr_t *, int);
 
 extern int   pthread_create(pthread_t *, const pthread_attr_t *, void *(*)(void *), void *);

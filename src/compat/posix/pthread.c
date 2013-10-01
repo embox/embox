@@ -135,23 +135,31 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
 }
 
 int pthread_condattr_init(pthread_condattr_t *attr) {
-	return -ENOSYS;
+	condattr_init(attr);
+
+	return ENOERR;
 }
 
-/*
+
 int pthread_condattr_destroy(pthread_condattr_t *attr) {
-	return -ENOSYS;
+	condattr_destroy(attr);
+
+	return ENOERR;
 }
 
 int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared) {
-	return -ENOSYS;
+	condattr_getpshared(attr, pshared);
+
+	return ENOERR;
 }
 
 
 int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
-	return -ENOSYS;
+	condattr_setpshared(attr, pshared);
+
+	return ENOERR;
 }
-*/
+
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
