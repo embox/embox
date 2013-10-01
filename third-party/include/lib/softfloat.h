@@ -32,8 +32,9 @@ these four paragraphs for those parts of this code that are retained.
 #ifndef SOFTFLOAT_H_
 #define SOFTFLOAT_H_
 
-#include <hal/arch.h>
+#include <endian.h>
 #include <stdint.h>
+
 
 /*----------------------------------------------------------------------------
 | Each of the following `typedef's defines the most convenient type that holds

@@ -11,8 +11,6 @@
 
 #include <asm/hal/arch.h>
 
-#include <endian.h>
-
 typedef enum {
 	ARCH_SHUTDOWN_MODE_HALT,
 	ARCH_SHUTDOWN_MODE_REBOOT,
