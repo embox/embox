@@ -9,8 +9,9 @@
 #ifndef HAL_ARCH_H_
 #define HAL_ARCH_H_
 
-#include <endian.h>
 #include <asm/hal/arch.h>
+
+#include <endian.h>
 
 typedef enum {
 	ARCH_SHUTDOWN_MODE_HALT,
