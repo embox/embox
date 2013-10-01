@@ -39,6 +39,8 @@ CLOCKS_PER_SEC
 #define USEC_PER_SEC    1000000L
 #define NSEC_PER_SEC    1000000000L
 
+#include <sys/time.h> //TODO not standard but Linux compatible
+
 struct tm {
 	int    tm_sec;   /*Seconds [0,60].*/
 	int    tm_min;   /*Minutes [0,59].*/
