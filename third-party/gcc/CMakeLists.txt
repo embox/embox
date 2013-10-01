@@ -23,8 +23,7 @@ ExternalProject_Add(
          ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}\ -I<BINARY_DIR>/gcc/include""
          ""LDFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_LDFLAGS}""
          --enable-languages=c,c++
-         --target=i386-pc-msdosdjgpp
-         #--target=i386-pc-elf
+         --target=$ENV{EMBOX_DERIVED_TARGET}
          --disable-shared
          --disable-tls
          --disable-multilib
