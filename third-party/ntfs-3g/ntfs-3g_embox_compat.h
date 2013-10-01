@@ -17,19 +17,6 @@
 #undef __linux__
 #endif
 
-
-
-static void __x86_verificator__(void) {
-	// This is to make sure this header only compiles on x86
-	asm ("mov %cr2, %eax");
-}
-#define	__LITTLE_ENDIAN	1234
-#define	__BIG_ENDIAN	4321
-#define	__PDP_ENDIAN	3412
-// x86 architecture only
-#define __BYTE_ORDER __LITTLE_ENDIAN
-
-
 #define S_ISVTX 01000
 
 
@@ -126,7 +113,7 @@ typedef int sig_atomic_t;
 #define _SC_PAGESIZE 0
 
 static inline long sysconf(int name) {
-	(void)__x86_verificator__;
+//	(void)__x86_verificator__;
 	printf(">>> sysconf, name - %d\n", name);
 	switch(name) {
 	case _SC_PAGESIZE:

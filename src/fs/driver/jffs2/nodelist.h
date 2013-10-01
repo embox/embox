@@ -17,6 +17,7 @@
 #include <linux/config.h>
 #include <linux/fs.h>
 #include <linux/types.h>
+#include <linux/byteorder.h>
 
 #include <fs/jffs2.h>
 

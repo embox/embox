@@ -41,10 +41,10 @@ struct sock;
 #define IP_OFFSET       0x1FFF	/* "Fragment Offset" part   */
 
 typedef struct iphdr {
-#if defined(__LITTLE_ENDIAN)
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 ihl:4,  /* ihl = 5 */
 	version: 4;  /* version = 4 */
-#elif defined (__BIG_ENDIAN)
+#elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u8 version:4, /* version = 4 */
 		 ihl:4; /* ihl = 5 */
 #endif

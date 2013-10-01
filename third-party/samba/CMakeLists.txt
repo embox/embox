@@ -97,6 +97,9 @@ ExternalProject_Add(
       ac_cv_func_strtoull=yes
       ac_cv_func_getpass=yes
       libreplace_cv_REPLACE_GETPASS=no
+      ac_cv_header_zlib_h=yes
+	  ac_cv_lib_ext_z_zlibVersion=yes
+	  samba_cv_zlib_1_2_3=yes
       #ac_cv_func___strtoull=no
       #ac_cv_func_strtouq=no
       #ac_cv_func_strtoll=no

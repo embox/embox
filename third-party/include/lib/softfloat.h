@@ -84,10 +84,10 @@ typedef int64_t sbits64;
 typedef bits32 float32;
 typedef bits64 float64;
 typedef struct {
-#if defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
     bits16 high;
     bits64 low;
-#elif defined(__LITTLE_ENDIAN)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
     bits64 low;
     bits16 high;
 #endif

@@ -20,10 +20,10 @@
 struct sk_buff;
 
 typedef struct ip6hdr {
-#if defined(__LITTLE_ENDIAN)
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 priority:4, /* priority */
 	version: 4; /* version = 6 */
-#elif defined (__BIG_ENDIAN)
+#elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u8 version:4, /* version = 6 */
 		priority:4; /* priority */
 #endif

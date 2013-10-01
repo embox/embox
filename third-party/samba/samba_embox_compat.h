@@ -364,4 +364,11 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 #define HAVE_CLOCK_GETTIME
 #endif
 
+#define rb_replace_node rb_replace_node_samba
+#define rb_prev rb_prev_samba
+#define rb_next rb_next_samba
+#define rb_first rb_first_samba
+#define rb_insert_color rb_insert_color_samba
+#define rb_erase rb_erase_samba
+
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

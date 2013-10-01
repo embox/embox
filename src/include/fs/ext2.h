@@ -9,10 +9,13 @@
 
 #ifndef EXT_H_
 #define EXT_H_
+
 #include <mem/page.h>
 #include <linux/types.h>
 #include <stdint.h>
 #include <fs/journal.h>
+#include <endian.h>
+#include <swab.h>
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -152,7 +155,7 @@
  * helps reading theses metadatas
  */
 
-//#if defined(__LITTLE_ENDIAN)
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 #	define h2fs16(x) (x)
 #	define h2fs32(x) (x)
 #	define h2fs64(x) (x)
@@ -163,7 +166,7 @@
 #	define e2fs_cgload(old, new, size) memcpy((new), (old), (size));
 #	define e2fs_sbsave(old, new) memcpy((new), (old), SBSIZE);
 #	define e2fs_cgsave(old, new, size) memcpy((new), (old), (size));
-/*#else
+#elif __BYTE_ORDER == __BIG_ENDIAN
 void e2fs_sb_bswap(struct ext2fs *, struct ext2fs *);
 void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #	define h2fs16(x) bswap16(x)
@@ -176,8 +179,10 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #	define e2fs_cgload(old, new, size) e2fs_cg_bswap((old), (new), (size));
 #	define e2fs_sbsave(old, new) e2fs_sb_bswap((old), (new))
 #	define e2fs_cgsave(old, new, size) e2fs_cg_bswap((old), (new), (size));
+#else
+#  error
 #endif
-*/
+
 /*
  * Turn file system block numbers into disk block addresses.
  * This maps file system blocks to device size blocks.

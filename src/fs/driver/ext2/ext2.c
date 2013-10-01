@@ -2629,8 +2629,81 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 	return rc;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(ext2fs_driver);
+#if __BYTE_ORDER == __BIG_ENDIAN
+void e2fs_sb_bswap(struct ext2sb *old, struct ext2sb *new) {
+	/* preserve unused fields */
+	memcpy(new, old, sizeof(struct ext2fs));
+	new->s_inodes_count = bswap32(old->s_inodes_count);
+	new->s_blocks_count = bswap32(old->s_blocks_count);
+	new->s_r_blocks_count = bswap32(old->s_r_blocks_count);
+	new->s_free_blocks_count = bswap32(old->s_free_blocks_count);
+	new->s_free_inodes_count = bswap32(old->s_free_inodes_count);
+	new->s_first_data_block = bswap32(old->s_first_data_block);
+	new->s_log_block_size = bswap32(old->s_log_block_size);
+	new->s_log_frag_size = bswap32(old->s_log_frag_size);
+	new->s_blocks_per_group = bswap32(old->s_blocks_per_group);
+	new->s_frags_per_group = bswap32(old->s_frags_per_group);
+	new->s_inodes_per_group = bswap32(old->s_inodes_per_group);
+	new->s_mtime = bswap32(old->s_mtime);
+	new->s_wtime = bswap32(old->s_wtime);
+	new->s_mnt_count = bswap16(old->s_mnt_count);
+	new->s_max_mnt_count = bswap16(old->s_max_mnt_count);
+	new->s_magic = bswap16(old->s_magic);
+	new->s_state = bswap16(old->s_state);
+	new->s_errors = bswap16(old->s_errors);
+	new->s_minor_rev_level = bswap16(old->s_minor_rev_level);
+	new->s_lastcheck = bswap32(old->s_lastcheck);
+	new->s_checkinterval = bswap32(old->s_checkinterval);
+	new->s_creator_os = bswap32(old->s_creator_os);
+	new->s_rev_level = bswap32(old->s_rev_level);
+	new->s_def_resuid = bswap16(old->s_def_resuid);
+	new->s_def_resgid = bswap16(old->s_def_resgid);
+	new->s_first_ino = bswap32(old->s_first_ino);
+	new->s_inode_size = bswap16(old->s_inode_size);
+	new->s_block_group_nr = bswap16(old->s_block_group_nr);
+	new->s_feature_compat = bswap32(old->s_feature_compat);
+	new->s_feature_incompat = bswap32(old->s_feature_incompat);
+	new->s_feature_ro_compat = bswap32(old->s_feature_ro_compat);
+	new->s_algorithm_usage_bitmap = bswap32(old->s_algorithm_usage_bitmap);
+	new->s_padding1 = bswap16(old->s_padding1);
+}
 
+void e2fs_cg_bswap(struct ext2_gd *old, struct ext2_gd *new, int size) {
+	int i;
+
+	for (i = 0; i < (size / sizeof(struct ext2_gd)); i++) {
+		new[i].block_bitmap = bswap32(old[i].block_bitmap);
+		new[i].inode_bitmap = bswap32(old[i].inode_bitmap);
+		new[i].inode_table = bswap32(old[i].inode_table);
+		new[i].free_blocks_count = bswap16(old[i].free_blocks_count);
+		new[i].free_inodes_count = bswap16(old[i].free_inodes_count);
+		new[i].used_dirs_count = bswap16(old[i].used_dirs_count);
+	}
+}
+
+void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new) {
+
+	new->i_mode = bswap16(old->i_mode);
+	new->i_uid = bswap16(old->i_uid);
+	new->i_gid = bswap16(old->i_gid);
+	new->i_links_count = bswap16(old->i_links_count);
+	new->i_size = bswap32(old->i_size);
+	new->i_atime = bswap32(old->i_atime);
+	new->i_ctime = bswap32(old->i_ctime);
+	new->i_mtime = bswap32(old->i_mtime);
+	new->i_dtime = bswap32(old->i_dtime);
+	new->i_blocks = bswap32(old->i_blocks);
+	new->i_flags = bswap32(old->i_flags);
+	new->i_gen = bswap32(old->i_gen);
+	new->i_facl = bswap32(old->i_facl);
+	new->i_dacl = bswap32(old->i_dacl);
+	new->i_faddr = bswap32(old->i_faddr);
+	memcpy(&new->i_block[0], &old->i_block[0],
+			(NDADDR + NIADDR) * sizeof(uint32_t));
+}
+#endif
+
+DECLARE_FILE_SYSTEM_DRIVER(ext2fs_driver);
 
 /*
  int ext2_fs_slink() {

@@ -2,5 +2,9 @@
 # error "Do not include this file directly!"
 #endif /* HAL_ARCH_H_ */
 
-#define __LITTLE_ENDIAN 1
+#ifndef __BYTE_ORDER__
+#define __BYTE_ORDER __LITTLE_ENDIAN
+#define BYTE_ORDER    __BYTE_ORDER
+#endif
+
 #define __PLATFORM_ARCH "usermode-x86"

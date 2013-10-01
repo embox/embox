@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <hal/arch.h>
+#include <endian.h>
 
 /**
  * IEEE BIAS for single, double and extended precision formats
@@ -37,11 +38,11 @@
  * IEEE single-precision format
  */
 struct ieee_binary32 {
-#if defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
 	uint32_t negative:1,
 			exponent:8,
 			mantissa:23;
-#elif defined(__LITTLE_ENDIAN)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
 	uint32_t mantissa:23,
 			exponent:8,
 			negative:1;
@@ -52,12 +53,12 @@ struct ieee_binary32 {
  * IEEE double-precision format
  */
 struct ieee_binary64 {
-#if defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
 	uint32_t negative:1,
 			exponent:11,
 			mantissa0:20;
 	uint32_t mantissa1;
-#elif defined(__LITTLE_ENDIAN)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
 	uint32_t mantissa1;
 	uint32_t mantissa0:20,
 			exponent:11,
@@ -69,12 +70,12 @@ struct ieee_binary64 {
  * IEEE extended-precision format
  */
 struct ieee_binary80 {
-#if defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
 	uint16_t negative:1,
 			exponent:15;
 	uint32_t mantissa0;
 	uint32_t mantissa1;
-#elif defined(__LITTLE_ENDIAN)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
 	uint32_t mantissa1;
 	uint32_t mantissa0;
 	uint16_t exponent:15,
@@ -86,13 +87,13 @@ struct ieee_binary80 {
  * IEEE extended-precision format with padding
  */
 struct ieee_binary96 {
-#if defined(__BIG_ENDIAN)
+#if __BYTE_ORDER == __BIG_ENDIAN
 	unsigned int negative:1,
 			exponent:15,
 			unused:16;
 	unsigned int mantissa0;
 	unsigned int mantissa1;
-#elif defined(__LITTLE_ENDIAN)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
 	unsigned int mantissa1;
 	unsigned int mantissa0;
 	unsigned int unused:16,

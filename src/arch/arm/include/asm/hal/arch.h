@@ -2,5 +2,8 @@
 # error "Do not include this file directly!"
 #endif /* HAL_ARCH_H_ */
 
-#define __BIG_ENDIAN 1
+#ifndef __BYTE_ORDER__
+# error "You need define byte order for arm architecture"
+#endif
+
 #define __PLATFORM_ARCH "arm"
