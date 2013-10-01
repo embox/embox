@@ -3,7 +3,8 @@
 #endif /* HAL_ARCH_H_ */
 
 #ifndef __BYTE_ORDER__
-# error "You need define byte order for ppc architecture"
+#define __BYTE_ORDER __BIG_ENDIAN /* only big endian is used with embox */
+#define BYTE_ORDER    __BYTE_ORDER
 #endif
 
 #define __PLATFORM_ARCH "ppc"
