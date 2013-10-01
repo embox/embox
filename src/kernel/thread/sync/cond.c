@@ -11,9 +11,16 @@
 #include <kernel/thread/sync/cond.h>
 #include <kernel/sched.h>
 
-void cond_init(cond_t *c) {
+static void condattr_copy(const struct condattr *source, struct condattr *dest) {
+	dest->pshared = source->pshared;
+}
+
+void cond_init(cond_t *c, const struct condattr *attr) {
 	wait_queue_init(&c->wq);
 	condattr_init(&c->attr);
+	if (attr) {
+		condattr_copy(attr, &c->attr);
+	}
 }
 
 void cond_destroy(cond_t *c) {
