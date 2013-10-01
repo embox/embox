@@ -40,6 +40,7 @@ int statfs(const char *path, struct statfs *buf);
 
 #include <signal.h>
 
+
 static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
 	printf(">>> sigprocmask(%i,%p,%p)\n",how,set,oldset);
 	return -1;
@@ -358,5 +359,9 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	DPRINT();
 	return -1;
 }
+
+#ifndef HAVE_CLOCK_GETTIME
+#define HAVE_CLOCK_GETTIME
+#endif
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */
