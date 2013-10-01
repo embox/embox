@@ -17,6 +17,8 @@ module core {
 		"../../../../samba/lib/libtalloc.a",
 		"../../../../samba/lib/libtdb.a",
 		"../../../../samba/lib/libwbclient.a"
+
+	source "order.mk"
 }
 
 @Cmd(name = "smbclient",

@@ -30,7 +30,7 @@ static module libs {
 module e2freefrag {
 	depends libs
 
-	@Rule(script="$(MAKE_E2FS)")
+	@Rule(script="true")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/e2freefrag.o"
 	source "e2freefrag_cmd.c"
 	source "order.mk"
@@ -48,7 +48,7 @@ module e2freefrag {
 module dumpe2fs {
 	depends libs
 
-	@Rule(script="$(MAKE_E2FS)")
+	@Rule(script="true")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/dumpe2fs.o"
 	source "dumpe2fs_cmd.c"
 	source "order.mk"
@@ -66,7 +66,7 @@ module dumpe2fs {
 module mke2fs {
 	depends libs
 
-	@Rule(script="$(MAKE_E2FS)")
+	@Rule(script="true")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/misc/mke2fs.o",
 			"../../../../e2fsprogs/src/e2fsprogs-build/misc/util.o",
 			"../../../../e2fsprogs/src/e2fsprogs-build/misc/profile.o",
@@ -88,7 +88,7 @@ module mke2fs {
 module e2fsck {
 	depends libs
 
-	@Rule(script="$(MAKE_E2FS)")
+	@Rule(script="true")
 	source "../../../../e2fsprogs/src/e2fsprogs-build/e2fsck/*.o"
 	source "e2fsck_cmd.c"
 	source "order.mk"
