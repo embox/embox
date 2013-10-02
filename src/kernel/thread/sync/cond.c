@@ -10,14 +10,18 @@
 #include <errno.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/sched.h>
+#include <kernel/thread/types.h>
+#include <kernel/thread.h>
 
 static void condattr_copy(const struct condattr *source, struct condattr *dest) {
 	dest->pshared = source->pshared;
 }
 
 void cond_init(cond_t *c, const struct condattr *attr) {
+	struct thread* current = thread_self();
 	wait_queue_init(&c->wq);
 	condattr_init(&c->attr);
+	c->task = current->task;
 	if (attr) {
 		condattr_copy(attr, &c->attr);
 	}
@@ -43,9 +47,15 @@ void condattr_setpshared(struct condattr *attr, int pshared) {
 	attr->pshared = pshared;
 }
 
-void cond_wait(cond_t *c, struct mutex *m) {
+int cond_wait(cond_t *c, struct mutex *m) {
+	struct thread* current = thread_self();
+
 	assert(c && m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
+
+	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
+		return -EACCES;
+	}
 
 	sched_lock();
 	{
@@ -55,18 +65,36 @@ void cond_wait(cond_t *c, struct mutex *m) {
 	sched_unlock();
 
 	mutex_lock(m);
+
+	return ENOERR;
 }
 
-void cond_signal(cond_t *c) {
+int cond_signal(cond_t *c) {
+	struct thread* current = thread_self();
+
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+
+	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
+		return -EACCES;
+	}
 
 	wait_queue_notify(&c->wq);
+
+	return ENOERR;
 }
 
-void cond_broadcast(cond_t *c) {
+int cond_broadcast(cond_t *c) {
+	struct thread* current = thread_self();
+
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
+	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
+		return -EACCES;
+	}
+
 	wait_queue_notify_all(&c->wq);
+
+	return ENOERR;
 }

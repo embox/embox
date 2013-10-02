@@ -9,10 +9,11 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread.h>
+#include <kernel/task.h>
 #include <err.h>
 
 static struct thread *low, *high;
-static cond_t c;
+static cond_t c, c_private;
 static struct mutex m;
 
 EMBOX_TEST_SUITE("Condition variable test");
@@ -24,6 +25,24 @@ TEST_CASE("General") {
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(high, NULL));
 	test_assert_emitted("abcdefgh");
+}
+
+static void * try_signal_private(void *unused) {
+	test_assert_not_zero(cond_signal(&c_private));
+	return NULL;
+}
+
+static void * try_signal_shared(void *unused) {
+	test_assert_zero(cond_signal(&c));
+	return NULL;
+}
+
+TEST_CASE("PROCESS_PRIVATE") {
+	cond_init(&c_private, NULL);
+	test_assert_not_zero(new_task("", try_signal_private, NULL));
+	cond_init(&c, NULL);
+	condattr_setpshared(&c.attr, PROCESS_SHARED);
+	test_assert_not_zero(new_task("", try_signal_shared, NULL));
 }
 
 static void *low_run(void *arg) {
