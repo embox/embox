@@ -22,7 +22,28 @@ uint32_t betoh32(uint32_t v) {
 uint32_t htobe32(uint32_t v) {
 	return v;
 }
+#define DEBUG
+#ifdef DEBUG
+#include <kernel/printk.h>
+void print_tlp_packet(const unsigned char *data, int length)
+{
+	int i;
 
+	printk("TLP: (%d)\n", length);
+	for (i = 0; i < length; i++)
+	{
+		printk("%X ", data[i]);
+		if (i % 16 == 15)
+			printk("\n");
+	}
+	if (i % 16 != 15)
+		printk("\n");
+}
+#else
+void print_tlp_packet(const unsigned char *data, int length) {
+
+}
+#endif
 static inline int tlp_fmt2size(char fmt) {
 	if (TLP_FMT_HEADSIZE & fmt) {
 		return 4;
@@ -98,7 +119,34 @@ int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 	return 0;
 }
 
-int tlp_build_mem_rd(char frm) {
+int tlp_build_mem_rd(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
+		uint32_t offset, char fmt, uint32_t *buff, uint16_t len) {
+	int hsize;
+//	char fbe, lbe; /* first and last Byte Enable */
+	uint32_t dw;
+
+	if (len > 0xFFF) {
+		return -EINVAL;
+	}
+	hsize = tlp_fmt2size(fmt);
+
+	tlp[0] = (fmt << TLP_FMT_OFFSET) | (TLP_TYPE_MEM << TLP_TYPE_OFFSET) | len;
+
+	if ((tlp[0] & 0x3FF) > 1) { /* XXX */
+		dw = 0xff; // BUS/DEVFN 0, all bytes are valid
+	}
+	else {
+		dw = 0x0f; // BUS/DEVFN 0, all bytes are valid
+	}
+
+	tlp[1] = dw;
+
+	tlp[2] = PCI_BAR_BASE(dev->bar[bar]) + binalign_bound(offset, 4);
+
+	if (hsize == 4) {
+		tlp[3] = 0;
+	}
+
 	return 0;
 }
 
