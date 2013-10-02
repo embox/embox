@@ -61,6 +61,10 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	assert(c && m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
+	if (!c->task) {
+		c->task = current->task;
+	}
+
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
 		return -EACCES;
 	}
@@ -89,6 +93,10 @@ int cond_signal(cond_t *c) {
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
+	if (!c->task) {
+		c->task = current->task;
+	}
+
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
 		return -EACCES;
 	}
@@ -103,6 +111,10 @@ int cond_broadcast(cond_t *c) {
 
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+
+	if (!c->task) {
+		c->task = current->task;
+	}
 
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
 		return -EACCES;
