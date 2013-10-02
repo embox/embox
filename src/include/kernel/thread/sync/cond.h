@@ -15,7 +15,7 @@
 
 /* The condition variable operates upon by any thread that has access to the
  * memory where the condition variable is allocated */
-#define PROCESS_SHARED 	0
+#define PROCESS_SHARED  0
 /* The condition variable available by threads within the same task as the thread
  * that initialized the conditional variable. If thread tries to use the permitted
  * conditional variable then a function will return EACCES */
@@ -32,6 +32,18 @@ struct cond {
 };
 
 typedef struct cond cond_t;
+
+#define COND_INIT_STATIC \
+		{ \
+			{ /*wait_queue init */ \
+				{/* dlist_init*/ NULL, NULL, NULL,}, \
+				/* flags */0, \
+				}, \
+			{ /*condattr init */ \
+				/* pshared */ PROCESS_PRIVATE, \
+				}, \
+			/* task */ NULL \
+		}
 
 __BEGIN_DECLS
 

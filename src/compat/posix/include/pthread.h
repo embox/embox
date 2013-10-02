@@ -48,6 +48,14 @@ typedef cond_t pthread_cond_t;
 
 typedef struct condattr pthread_condattr_t;
 
+/* In cases where default condition variable attributes are appropriate, the
+ * macro PTHREAD_COND_INITIALIZER can be used to initialize condition variables
+ * that are statically allocated. The effect shall be equivalent to dynamic
+ * initialization by a call to pthread_cond_init() with parameter attr specified
+ * as NULL, except that no error checks are performed.
+ */
+#define PTHREAD_COND_INITIALIZER COND_INIT_STATIC
+
 typedef struct mutex pthread_mutex_t;
 
 typedef struct mutexattr pthread_mutexattr_t;
