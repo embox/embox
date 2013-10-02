@@ -118,9 +118,14 @@ inline long sysconf(int name) {
 	return -1;
 } */
 
+#if 1
+#define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
+#else
+#define DPRINT()
+#endif
 
-
-
+#include <pthread.h>
+#if 0
 typedef int pthread_t;
 
 typedef int pthread_mutex_t;
@@ -130,11 +135,8 @@ typedef int pthread_mutexattr_t;
 typedef int pthread_condattr_t;
 typedef int pthread_attr_t;
 
-#if 1
-#define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
-#else
-#define DPRINT()
-#endif
+
+
 
 static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
                                __const pthread_mutexattr_t *__mutexattr) {
@@ -176,6 +178,7 @@ static inline int pthread_cond_signal (pthread_cond_t *__cond){
 	//DPRINT();
 	return 0;
 }
+
 static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    pthread_mutex_t *__restrict __mutex,
                                    __const struct timespec *__restrict
@@ -184,9 +187,22 @@ static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
 	return 0;
 }
 
+static inline int pthread_cond_broadcast(pthread_cond_t *c){
+	DPRINT();
+	return -1;
+}
 
 
+static inline pthread_t pthread_self (void){
+	//DPRINT();
+	return 0;
+}
 typedef int pthread_once_t;
+typedef unsigned int pthread_key_t;
+#endif
+
+
+
 #define PTHREAD_ONCE_INIT 0
 
 #define PTHREAD_CANCEL_ENABLE 0
@@ -196,7 +212,7 @@ typedef int pthread_once_t;
 
 #define PTHREAD_INHERIT_SCHED 0
 
-typedef unsigned int pthread_key_t;
+
 
 static inline int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void)){
@@ -234,10 +250,7 @@ static inline int pthread_key_delete (pthread_key_t __key){
 	return -1;
 }
 
-static inline pthread_t pthread_self (void){
-	//DPRINT();
-	return 0;
-}
+
 
 static inline int pthread_setcancelstate (int __state, int *__oldstate){
 	DPRINT();
@@ -287,10 +300,6 @@ static inline int pthread_cancel(pthread_t t){
 	return -1;
 }
 
-static inline int pthread_cond_broadcast(pthread_cond_t *c){
-	DPRINT();
-	return -1;
-}
 
 
 

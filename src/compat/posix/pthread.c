@@ -118,11 +118,11 @@ int pthread_cond_signal(pthread_cond_t *cond) {
 	return cond_signal(cond);
 }
 
-/*
-int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime) {
-	return -ENOSYS;
+
+int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex,
+		const struct timespec *abstime) {
+	return cond_timedwait(cond, mutex, abstime);
 }
-*/
 
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
 	return cond_wait(cond, mutex);

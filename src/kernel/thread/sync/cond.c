@@ -8,10 +8,12 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/sched.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread.h>
+#include <kernel/time/time.h>
 
 static void condattr_copy(const struct condattr *source, struct condattr *dest) {
 	dest->pshared = source->pshared;
@@ -48,7 +50,13 @@ void condattr_setpshared(struct condattr *attr, int pshared) {
 }
 
 int cond_wait(cond_t *c, struct mutex *m) {
+	return cond_timedwait(c, m, NULL);
+}
+
+int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	struct thread* current = thread_self();
+	int timeout;
+	time64_t time;
 
 	assert(c && m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
@@ -56,11 +64,17 @@ int cond_wait(cond_t *c, struct mutex *m) {
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
 		return -EACCES;
 	}
+	if(ts == NULL) {
+		timeout = SCHED_TIMEOUT_INFINITE;
+	} else {
+		time = timespec_to_ns(ts);
+		timeout = (int) time; //TODO overflow
+	}
 
 	sched_lock();
 	{
 		mutex_unlock(m);
-		wait_queue_wait_locked(&c->wq, SCHED_TIMEOUT_INFINITE);
+		wait_queue_wait_locked(&c->wq, timeout);
 	}
 	sched_unlock();
 

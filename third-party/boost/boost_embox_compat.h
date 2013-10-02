@@ -66,10 +66,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result);
 
 #include <pthread.h>
 
-extern
-int pthread_cond_timedwait(pthread_cond_t *cond,
-              pthread_mutex_t *mutex,
-              const struct timespec *abstime);
+
 extern
 int pthread_attr_init(pthread_attr_t *attr);
 extern

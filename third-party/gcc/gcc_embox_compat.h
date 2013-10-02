@@ -24,7 +24,7 @@ extern int   pthread_once(pthread_once_t *, void (*)(void));
 extern void *pthread_getspecific(pthread_key_t);
 extern int   pthread_setspecific(pthread_key_t, const void *);
 extern int   pthread_cancel(pthread_t);
-extern int   pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct timespec *);
+
 extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
 extern int   pthread_key_delete(pthread_key_t);
 
@@ -39,7 +39,6 @@ extern int   pthread_key_delete(pthread_key_t);
 
 #ifdef __cplusplus
 
-#define PTHREAD_COND_INITIALIZER {}
 static inline int atexit(void (*function)(void)) {
 	printf(">>> atexit(%p)\n",function);
 }

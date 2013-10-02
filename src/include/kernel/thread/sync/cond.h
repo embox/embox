@@ -46,9 +46,11 @@ typedef struct cond cond_t;
 		}
 
 __BEGIN_DECLS
-
+struct timespec;
 extern void cond_init(cond_t *c, const struct condattr *attr);
 extern int cond_wait(cond_t *c, struct mutex *m);
+extern int cond_timedwait(cond_t *, struct mutex *,
+		const struct timespec *);
 extern int cond_signal(cond_t *c);
 extern int cond_broadcast(cond_t *c);
 extern void cond_destroy(cond_t *c);
