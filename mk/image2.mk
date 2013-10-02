@@ -213,6 +213,7 @@ $(image_lds) : flags = \
 		$(addprefix -include ,$(wildcard \
 			$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S \
 			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S))
+-include $(image_lds).d
 
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
 image_pass1_o = $(OBJ_DIR)/image_pass1.o
