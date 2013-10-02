@@ -34,6 +34,9 @@
 #define PTHREAD_MUTEX_RECURSIVE 	MUTEX_RECURSIVE
 #define PTHREAD_MUTEX_DEFAULT 		MUTEX_DEFAULT
 
+#define PTHREAD_PROCESS_SHARED	PROCESS_SHARED
+#define PTHREAD_PROCESS_PRIVATE	PROCESS_PRIVATE
+
 typedef struct thread *pthread_t;
 
 typedef struct pthread_attr {

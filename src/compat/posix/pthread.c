@@ -99,9 +99,7 @@ void pthread_cleanup_pop(int execute) {
 */
 
 int pthread_cond_broadcast(pthread_cond_t *cond) {
-	cond_broadcast(cond);
-
-	return ENOERR;
+	return cond_broadcast(cond);
 }
 
 int pthread_cond_destroy(pthread_cond_t *cond) {
@@ -117,9 +115,7 @@ int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr) {
 }
 
 int pthread_cond_signal(pthread_cond_t *cond) {
-	cond_signal(cond);
-
-	return ENOERR;
+	return cond_signal(cond);
 }
 
 /*
@@ -129,9 +125,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 */
 
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
-	cond_wait(cond, mutex);
-
-	return ENOERR;
+	return cond_wait(cond, mutex);
 }
 
 int pthread_condattr_init(pthread_condattr_t *attr) {
