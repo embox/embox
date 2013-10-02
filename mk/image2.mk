@@ -209,10 +209,12 @@ __define_image_rules = $(eval $(value __image_rule))
 $(call __define_image_rules,$(embox_o))
 
 image_lds = $(OBJ_DIR)/mk/image.lds
+$(image_lds) : $(common_prereqs_nomk)
 $(image_lds) : flags = \
 		$(addprefix -include ,$(wildcard \
-			$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S \
-			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S))
+			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \
+			$(if $(value PLATFORM), \
+				$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
 -include $(image_lds).d
 
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
