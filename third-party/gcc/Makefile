@@ -94,12 +94,15 @@ $(GCC_LIBS): $(GCC_CMAKE_DIR)/Makefile
 	$(AT)cd $(GCC_CMAKE_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
 
 $(GCC_DERIVED_LIBS): $(GCC_LIBS)
-	$(AT)cp -u $^ $(GCC_DIR)/lib/
 	$(AT)mkdir -p $(GCC_DIR)/include/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/c++config.h $(GCC_DIR)/include/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/os_defines.h $(GCC_DIR)/include/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/cpu_defines.h $(GCC_DIR)/include/
 	$(AT)$(foreach inc,$(GCC_INCLUDES),cp -R -u $(inc)/* $(GCC_DIR)/include/ &&) true
+	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/c++config.h $(GCC_DIR)/include/bits/
+	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/os_defines.h $(GCC_DIR)/include/bits/
+	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/cpu_defines.h $(GCC_DIR)/include/bits/
+	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/cxxabi_tweaks.h $(GCC_DIR)/include/bits/
+	#$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/bits/cxxabi_forced.h $(GCC_DIR)/include/bits/
+	#$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/bits/atomic_lockfree_defines.h $(GCC_DIR)/include/bits/
+	$(AT)cp -u $^ $(GCC_DIR)/lib/
 
 all: $(GCC_DERIVED_LIBS)
 .NOTPARALLEL:
