@@ -14,11 +14,11 @@
 #include <kernel/task.h>
 
 /* The condition variable operates upon by any thread that has access to the
- * memory where the condition variable is allocated, even if the condition variable
- * is allocated in memory that is shared by multiple process */
+ * memory where the condition variable is allocated */
 #define PROCESS_SHARED 	0
-/* The condition variable will only be operated upon by threads created within
- * the same process as the thread that initialized the condition variable */
+/* The condition variable available by threads within the same task as the thread
+ * that initialized the conditional variable. If thread tries to use the permitted
+ * conditional variable then a function will return EACCES */
 #define PROCESS_PRIVATE 1
 
 struct condattr {
