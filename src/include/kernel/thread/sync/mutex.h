@@ -39,6 +39,19 @@ struct mutex {
 		/* lock_couunt */ 0 \
 	}
 
+#define RMUTEX_INIT_STATIC \
+	{ \
+		{ /*wait_queue init */ \
+			{/* dlist_init*/ NULL, NULL, NULL,}, \
+			/* flags */0, \
+			}, \
+		/* holder*/ NULL, \
+		{ /*mutexattr init */ \
+			/* type */ MUTEX_RECURSIVE, \
+			}, \
+		/* lock_couunt */ 0 \
+	}
+
 #define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 __BEGIN_DECLS
