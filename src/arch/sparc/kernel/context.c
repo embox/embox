@@ -19,7 +19,7 @@
 
 void context_init(struct context *ctx, bool privileged) {
 	// TODO initial context state... -- Eldar
-	ctx->kregs.psr = PSR_S | PSR_ET;
+	ctx->kregs.psr = PSR_PIL | PSR_S | PSR_ET;
 	if (privileged) {
 		ctx->kregs.psr |= PSR_PS;
 	}
