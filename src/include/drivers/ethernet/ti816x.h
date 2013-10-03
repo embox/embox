@@ -13,6 +13,7 @@
  * EMAC0/MDIO Base Address
  */
 #define EMAC_BASE_ADDR 0x4A100000
+#define MDIO_BASE_ADDR 0x4A100000
 
 /**
  * CPGMAC0 Interrupts
@@ -27,6 +28,7 @@
  */
 #define EMAC_OFFSET      0x00000000 /* EMAC module */
 #define EMAC_CTRL_OFFSET 0x00000900 /* EMAC control module */
+#define MDIO_OFFSET      0x00000800 /* MDIO module */
 
 /**
  * EMAC0/MDIO Module and Control Module Base Address
@@ -35,6 +37,8 @@
 	(EMAC_BASE_ADDR + EMAC_OFFSET)      /* EMAC Module Base */
 #define EMAC_CTRL_BASE \
 	(EMAC_BASE_ADDR + EMAC_CTRL_OFFSET) /* EMAC Control Module Base */
+#define MDIO_BASE \
+	(MDIO_BASE_ADDR + MDIO_OFFSET)      /* MDIO Module Base */
 
 #define EMAC_CHANNEL_COUNT 8
 
@@ -138,7 +142,29 @@
 #define EMAC_R_RXCP(n)           0x660 /* Receive Channel n[0-7] Completion
 										  Pointer Register */
 
-#define EMAC_MACEOIVECTOR 0x2
+/**
+ * MDIO Registers
+ */
+#define MDIO_R_VERSION          0x00 /* MDIO Version Register */
+#define MDIO_R_CONTROL          0x04 /* MDIO Control Register */
+#define MDIO_R_ALIVE            0x08 /* PHY Alive Status register */
+#define MDIO_R_LINK             0x0C /* PHY Link Status Register */
+#define MDIO_R_LINKINTRAW       0x10 /* MDIO Link Status Change Interrupt
+										(Unmasked) Register */
+#define MDIO_R_LINKINTMASKED    0x14 /* MDIO Link Status Change Interrupt
+										(Masked) Register */
+#define MDIO_R_USERINTRAW       0x20 /* MDIO User Command Complete Interrupt
+										(Unmasked) Register */
+#define MDIO_R_USERINTMASKED    0x24 /* MDIO User Command Complete Interrupt
+										(Masked) Register */
+#define MDIO_R_USERINTMASKSET   0x28 /* MDIO User Command Complete Interrupt
+										Mask Set Register */
+#define MDIO_R_USERINTMASKCLEAR 0x2C /* MDIO User Command Complete Interrupt
+										Mask Clear Register */
+#define MDIO_R_USERACCESS0      0x80 /* MDIO User Access Register 0 */
+#define MDIO_R_USERPHYSEL0      0x84 /* MDIO User PHY Select Register 0 */
+#define MDIO_R_USERACCESS1      0x88 /* MDIO User Access Register 1 */
+#define MDIO_R_USERPHYSEL1      0x8C /* MDIO User PHY Select Register 1 */
 
 /**
  * EMAC Network Header
