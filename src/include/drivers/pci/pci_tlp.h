@@ -24,8 +24,10 @@
 #define TLP_FMT_HEADSIZE 0x1
 #define TLP_FMT_DATA     0x2
 
-#define TLP_FMT_OFFSET  29
-#define TLP_TYPE_OFFSET 24
+#define TLP_FMT_OFFSET     29
+#define TLP_TYPE_OFFSET    24
+#define TLP_BUS_OFFSET     24
+#define TLP_DEV_FUN_OFFSET 16
 
 #define TLP_FMT_MSK  0xFC
 

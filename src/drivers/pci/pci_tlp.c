@@ -4,6 +4,7 @@
  *
  * @date Sep 27, 2013
  * @author Eldar Abusalimov
+ * @author Gazukin Andrey
  */
 #include <stdint.h>
 #include <stddef.h>
@@ -121,7 +122,6 @@ int tlp_build_mem_rd(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 		uint32_t offset, char fmt, uint32_t *buff, uint16_t len) {
 	int hsize;
 //	char fbe, lbe; /* first and last Byte Enable */
-	uint32_t dw;
 
 	if (len > 0xFFF) {
 		return -EINVAL;
@@ -136,13 +136,11 @@ int tlp_build_mem_rd(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 	tlp[0] = (fmt << TLP_FMT_OFFSET) | (TLP_TYPE_MEM << TLP_TYPE_OFFSET) | len;
 
 	if ((tlp[0] & 0x3FF) > 1) { /* XXX */
-		dw = 0xff; // BUS/DEVFN 0, all bytes are valid
+		tlp[1] = 0xff; // BUS/DEVFN 0, all bytes are valid
 	}
 	else {
-		dw = 0x0f; // BUS/DEVFN 0, all bytes are valid
+		tlp[1] = 0x0f; // BUS/DEVFN 0, all bytes are valid
 	}
-
-	tlp[1] = dw;
 
 	tlp[2] = PCI_BAR_BASE(dev->bar[bar]) + binalign_bound(offset, 4);
 
@@ -160,33 +158,48 @@ int tlp_build_io_wr(char frm, uint32_t *buff, size_t data_len) {
 int tlp_build_io_rd(char frm) {
 	return 0;
 }
-
-int tlp_build_conf0_wr(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
-		uint32_t where) {
-	tlp[0] = (TLP_FMT_DATA << TLP_FMT_OFFSET) |
-			(TLP_TYPE_CFG0 << TLP_TYPE_OFFSET) |
-			1 /* length */;
-	tlp[1] = 0xf; // BUS/DEVFN 0, all bytes are valid
-	tlp[2] = (bus << 24) | (dev_fn << 16) | where;
-
-	return 0;
-}
-
 int tlp_build_conf0_rd(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
 		uint32_t where) {
+	/* fmt = 000, type = 00100, length = 1 */
 	tlp[0] = (0 << TLP_FMT_OFFSET) | (TLP_TYPE_CFG0 << TLP_TYPE_OFFSET) | 1;
-	return 0;
-}
+	/* BUS/DEVFN 0, all bytes in 1 DW are valid */
+	tlp[1] = 0xf;
+	tlp[2] = (bus << TLP_BUS_OFFSET) | (dev_fn << TLP_DEV_FUN_OFFSET) | where;
 
-int tlp_build_conf1_wr(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
-		uint32_t where) {
-	tlp[0] = (TLP_FMT_DATA << TLP_FMT_OFFSET) |
-			(TLP_TYPE_CFG1 << TLP_TYPE_OFFSET) |
-			1 /* length */;
 	return 0;
 }
 
 int tlp_build_conf1_rd(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
 		uint32_t where) {
+	/* fmt = 000, type = 00101, length = 1 */
+	tlp[0] = (0 << TLP_FMT_OFFSET) | (TLP_TYPE_CFG1 << TLP_TYPE_OFFSET) | 1;
+	/* BUS/DEVFN 0, all bytes in 1 DW are valid */
+	tlp[1] = 0xf;
+	tlp[2] = (bus << TLP_BUS_OFFSET) | (dev_fn << TLP_DEV_FUN_OFFSET) | where;
+
+	return 0;
+}
+
+int tlp_build_conf0_wr(uint32_t *tlp, uint32_t bus,
+					uint32_t dev_fn, uint32_t where) {
+	/* fmt = 010, type = 00100, length = 1 */
+	tlp[0] = (TLP_FMT_DATA << TLP_FMT_OFFSET) |
+			(TLP_TYPE_CFG0 << TLP_TYPE_OFFSET) | 1;
+	/* BUS/DEVFN 0, all bytes in 1 DW are valid */
+	tlp[1] = 0xf;
+	tlp[2] = (bus << TLP_BUS_OFFSET) | (dev_fn << TLP_DEV_FUN_OFFSET) | where;
+
+	return 0;
+}
+
+int tlp_build_conf1_wr(uint32_t *tlp, uint32_t bus, uint32_t dev_fn,
+		uint32_t where) {
+	/* fmt = 010, type = 00101, length = 1 */
+	tlp[0] = (TLP_FMT_DATA << TLP_FMT_OFFSET) |
+				(TLP_TYPE_CFG1 << TLP_TYPE_OFFSET) | 1;
+	/* BUS/DEVFN 0, all bytes in 1 DW are valid */
+	tlp[1] = 0xf;
+	tlp[2] = (bus << TLP_BUS_OFFSET) | (dev_fn << TLP_DEV_FUN_OFFSET) | where;
+
 	return 0;
 }
