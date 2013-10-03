@@ -84,9 +84,9 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S | $$(@D)/.
 	$(CC) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
-	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
-	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
