@@ -69,7 +69,8 @@ static int notify_work(struct work *work) {
 	return 1;
 }
 
-void sched_prepare_wait(notify_handler on_notified, void *data) {
+void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
+		void *data) {
 	struct wait_data *wait_data = &thread_get_current()->wait_data;
 
 	wait_data->data = data;

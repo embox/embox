@@ -21,7 +21,6 @@
 #define WAIT_DATA_STATUS_NOTIFIED    2
 
 struct thread;
-typedef void (*notify_handler)(struct thread *, void *data);
 
 struct wait_data {
 	struct work work;
@@ -29,7 +28,7 @@ struct wait_data {
 	int status;
 	int result;
 
-	notify_handler on_notified;
+	void (*on_notified)(struct thread *, void *);
 	void *data;
 };
 
@@ -37,7 +36,8 @@ static inline void wait_data_init(struct wait_data *wait_data) {
 	wait_data->status = WAIT_DATA_STATUS_NONE;
 }
 
-static inline void wait_data_prepare(struct wait_data *wait_data, work_handler handler) {
+static inline void wait_data_prepare(struct wait_data *wait_data,
+		int (*handler)(struct work *)) {
 	ipl_t ipl;
 
 	assert(wait_data->status == WAIT_DATA_STATUS_NONE);

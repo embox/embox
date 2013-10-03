@@ -97,7 +97,8 @@ extern int sched_signal(struct thread *thread, int sig);
 
 extern void sched_thread_notify(struct thread *thread, int result);
 
-extern void sched_prepare_wait(notify_handler on_notified, void *data);
+extern void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
+		void *data);
 extern void sched_cleanup_wait(void);
 
 extern int sched_wait(unsigned long timeout);

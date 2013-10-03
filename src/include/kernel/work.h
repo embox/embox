@@ -13,8 +13,6 @@
 
 struct work;
 
-typedef int(*work_handler)(struct work *);
-
 struct work_queue {
 	struct dlist_head list;
 };
@@ -24,12 +22,13 @@ struct work {
 	unsigned int state;
 
 	struct work_queue *wq;
-	work_handler handler;
+	int (*handler)(struct work *);
 };
 
 #define WORK_DISABLED 0x1
 
-extern void work_init(struct work *w, work_handler handler, unsigned int flags);
+extern void work_init(struct work *w, int (*handler)(struct work *),
+		unsigned int flags);
 
 extern void work_queue_init(struct work_queue *wq);
 
