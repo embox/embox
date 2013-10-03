@@ -7,6 +7,11 @@
 
 #include <new>
 
+#if !defined(__EXCEPTIONS) || __EXCEPTIONS!=0
+#error Exceptions must be disabled
+#endif
+
+
 const std::nothrow_t std::nothrow = { };
 
 static std::new_handler __new_handler = 0;

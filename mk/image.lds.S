@@ -19,10 +19,15 @@ SECTIONS {
 		*(.const)
 
 		_ctors_start = .;
-		KEEP(*(SORT(.init_array)))
-		KEEP(*(SORT(.ctors)))
-		KEEP(*(SORT(.ctors.*)))
+		KEEP(*(.init_array))
+		KEEP(*(.ctors))
+		KEEP(*(.ctors.*))
 		_ctors_end   = .;
+
+		/*_eh_frame_start = .;*/
+		KEEP(*(.eh_frame))
+		/*KEEP(*(.eh_frame.*))*/
+		/*KEEP(*(.gcc_except_table))*/
 
 		ALIGNMENT();
 		*(.checksum)
