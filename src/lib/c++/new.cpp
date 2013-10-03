@@ -7,10 +7,10 @@
 
 #include <new>
 
-#if !defined(__EXCEPTIONS) || __EXCEPTIONS!=0
+#if __EXCEPTIONS==0
+#else
 #error Exceptions must be disabled
 #endif
-
 
 const std::nothrow_t std::nothrow = { };
 

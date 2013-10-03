@@ -13,6 +13,7 @@
 #include <net/skbuff.h>
 #include <hal/arch.h> /* endianess */
 #include <linux/types.h>
+#include <endian.h>
 
 /**
  * Prototypes

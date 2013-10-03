@@ -61,7 +61,7 @@ QT_CONF_FLAGS_EMBOX += -no-sql-sqlite
 QT_CONF_FLAGS_EMBOX += -nomake examples -nomake demos
 # translations cause 'make -q' to fail
 QT_CONF_FLAGS_EMBOX += -nomake translations
-ifeq ($(filter -fno-exceptions,$(EMBOX_CXXFLAGS)),-fno-exceptions)
+ifneq ($(filter -fno-exceptions,$(EMBOX_CXXFLAGS)),)
 QT_CONF_FLAGS_EMBOX += -no-exceptions
 endif
 QT_CONF_FLAGS_EMBOX += -debug
