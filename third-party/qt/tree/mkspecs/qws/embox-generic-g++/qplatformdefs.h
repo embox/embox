@@ -284,11 +284,13 @@ static inline int pthread_attr_setdetachstate(pthread_attr_t *a, int p){
 	return -1;
 }
 
+#if 0
 static inline int pthread_create(pthread_t *t, const pthread_attr_t *a,
           void *(*func)(void *), void *arg){
 	DPRINT();
 	return -1;
 }
+#endif
 
 static inline int pthread_attr_setinheritsched(pthread_attr_t *a, int p){
 	DPRINT();
