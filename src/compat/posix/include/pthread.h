@@ -75,9 +75,9 @@ typedef struct pthread_key {
 } *pthread_key_t;
 
 
-typedef struct pthread_once {
+typedef pthread_mutex_t pthread_once_t;
 
-} pthread_once_t;
+#define PTHREAD_ONCE_INIT PTHREAD_MUTEX_INITIALIZER
 
 
 __BEGIN_DECLS
@@ -151,7 +151,7 @@ extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
 extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
 
-//extern int   pthread_once(pthread_once_t *, void (*)(void));
+extern int   pthread_once(pthread_once_t *, void (*)(void));
 
 //extern int   pthread_rwlock_destroy(pthread_rwlock_t *);
 //extern int   pthread_rwlock_init(pthread_rwlock_t *, const pthread_rwlockattr_t *);

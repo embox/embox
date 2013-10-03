@@ -199,11 +199,21 @@ static inline pthread_t pthread_self (void){
 }
 typedef int pthread_once_t;
 typedef unsigned int pthread_key_t;
+
+#define PTHREAD_ONCE_INIT 0
+
+static inline int pthread_once (pthread_once_t *__once_control,
+                         void (*__init_routine) (void)){
+	//DPRINT();
+	__init_routine();
+	return 0;
+}
+
 #endif
 
 
 
-#define PTHREAD_ONCE_INIT 0
+
 
 #define PTHREAD_CANCEL_ENABLE 0
 #define PTHREAD_CANCEL_DISABLE 0
@@ -214,12 +224,7 @@ typedef unsigned int pthread_key_t;
 
 
 
-static inline int pthread_once (pthread_once_t *__once_control,
-                         void (*__init_routine) (void)){
-	//DPRINT();
-	__init_routine();
-	return 0;
-}
+
 
 static void *global_thread_specific;
 

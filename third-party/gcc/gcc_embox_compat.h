@@ -19,8 +19,7 @@
 
 #include <pthread.h>
 
-#define PTHREAD_ONCE_INIT {}
-extern int   pthread_once(pthread_once_t *, void (*)(void));
+
 extern void *pthread_getspecific(pthread_key_t);
 extern int   pthread_setspecific(pthread_key_t, const void *);
 extern int   pthread_cancel(pthread_t);

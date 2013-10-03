@@ -302,11 +302,20 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type) {
 	return mutexattr_settype(attr, type);
 }
 
-/*
+
 int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
-	return -ENOSYS;
+	if((NULL == init_routine) || (NULL == once_control)) {
+		return -EINVAL;
+	}
+	if(pthread_mutex_trylock(once_control)) {
+		return 0;
+	}
+	init_routine();
+
+	return 0;
 }
 
+/*
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
 	return -ENOSYS;
 }
