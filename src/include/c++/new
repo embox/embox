@@ -8,12 +8,10 @@
 #ifndef NEW_
 #define NEW_
 
-#if __EXCEPTIONS==0
-#include <standalone_new>
-#elif __EXCEPTIONS==1
+#if defined(__EXCEPTIONS) && __EXCEPTIONS==1
 #include_next <new>
 #else
-#error __EXCEPTIONS macro should be defined to either 1 or 0
+#include <standalone_new>
 #endif
 
 #endif /* NEW_ */

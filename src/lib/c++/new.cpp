@@ -7,8 +7,7 @@
 
 #include <new>
 
-#if __EXCEPTIONS==0
-#else
+#if defined(__EXCEPTIONS) && __EXCEPTIONS==1
 #error Exceptions must be disabled
 #endif
 
