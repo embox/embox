@@ -32,6 +32,7 @@
 #include_next <time.h>
 //#include <pthread.h>
 #include <errno.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 

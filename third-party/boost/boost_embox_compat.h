@@ -29,20 +29,44 @@
 #include <stdio.h>
 
 //This can be used to derive sysconf from STLport
-using std::sysconf;
-/*
+//using std::sysconf;
+
 static inline
 long sysconf(int name) {
-//#define _SC_CLK_TCK 1
+#define _SC_CLK_TCK 1
 	printf(">>> sysconf(%d)\n", name);
 	switch (name) {
 		case _SC_PAGESIZE: return 4096;
-//		case _SC_CLK_TCK: return
+		case _SC_CLK_TCK: return 1000000;
 		default: break;
 	}
 	return -1;
 }
-*/
+
+#include <pthread.h>
+
+/* Structure describing CPU time used by a process and its children.  */
+struct tms
+{
+  clock_t tms_utime;          /* User CPU time.  */
+  clock_t tms_stime;          /* System CPU time.  */
+
+  clock_t tms_cutime;         /* User CPU time of dead children.  */
+  clock_t tms_cstime;         /* System CPU time of dead children.  */
+};
+
+/* Store the CPU time used by this process and all its
+   dead children (and their dead children) in BUFFER.
+   Return the elapsed real time, or (clock_t) -1 for errors.
+   All times are in CLK_TCKths of a second.  */
+static inline clock_t times (struct tms *__buffer) {
+	//DPRINT();
+	__buffer->tms_cstime = __buffer->tms_cutime = 0;
+	__buffer->tms_stime = task_self()->per_cpu;
+	__buffer->tms_utime = 0;
+
+	return __buffer->tms_stime;
+}
 
 
 namespace std {
@@ -67,6 +91,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result);
 #include <pthread.h>
 
 
+
 extern
 int pthread_attr_init(pthread_attr_t *attr);
 extern
@@ -75,6 +100,31 @@ extern
 int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize);
 extern
 int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize);
+
+#define PTHREAD_CREATE_DETACHED 0
+extern
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
+extern
+int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
+
+extern
+int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_init(pthread_rwlock_t * rwlock,
+	const pthread_rwlockattr_t * attr);
+extern
+int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
+
+extern
+int swprintf(wchar_t *wcs, size_t maxlen,
+	const wchar_t *format, ...);
+extern
+int vswprintf(wchar_t *wcs, size_t maxlen,
+	const wchar_t *format, va_list args);
 
 extern
 int getpagesize(void);
