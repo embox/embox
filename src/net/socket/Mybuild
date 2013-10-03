@@ -75,6 +75,7 @@ module socket {
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
+	depends embox.net.sock
 	/* depends from socket_registry.c */
 
 	source "socket_registry.c"

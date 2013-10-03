@@ -16,7 +16,10 @@ SOURCES += emboxautopluginimporter.cpp
 LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
 QTPLUGIN          += qvncgraphicssystem
 QTPLUGIN          += qminimal
-QTPLUGIN          += emboxvc
+
+contains(DEFINES, QEMBOX_PLUGIN_EMBOXVC) {
+	QTPLUGIN          += emboxvc
+}
 
 unix:!symbian {
     target.path = $$[QT_INSTALL_LIBS]

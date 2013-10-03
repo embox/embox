@@ -6,3 +6,8 @@ static module libarch extends embox.arch.libarch {
 	source "arm_eabi.c"
 }
 
+module cxxabi {
+	source "cxxabi/aeabi_atexit.c"
+	depends embox.lib.cxx.DestructionStatic
+}
+

@@ -40,4 +40,6 @@ static module Fdlibm {
 	source "w_sinh.c"
 	source "w_sqrt.c"
 	source "e_sqrt.c"
+	source "e_rem_pio2.c"
+	source "k_rem_pio2.c"
 }

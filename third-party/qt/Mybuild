@@ -3,12 +3,11 @@ package third_party.qt
 module core {
 	depends embox.lib.LibC
 	depends embox.lib.cxx.lib
-	depends embox.arch.x86.LibM // FIXME:
 	depends embox.compat.posix.fs.dirent
 	depends embox.fs.rootfs
 	depends embox.kernel.manual_event_api
+	depends embox.compat.posix.LibPosix
 	source "empty.c"
-	// Posix
 }
 
 module animatedtiles extends embox.lib.cxx.app {

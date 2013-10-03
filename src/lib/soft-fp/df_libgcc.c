@@ -138,19 +138,3 @@ int __gtdf2(double a, double b) {
 	static_assert(sizeof(float64) == sizeof(double));
 	return !float64_le(double_to_float64(a), double_to_float64(b));
 }
-
-double __sqrtdf2(double a) {
-	static_assert(sizeof(float64) == sizeof(double));
-	return float64_to_double(float64_sqrt(double_to_float64(a)));
-}
-
-double __rounddf2(double a) {
-	static_assert(sizeof(float64) == sizeof(double));
-	return float64_to_double(float64_round_to_int(double_to_float64(a)));
-}
-
-double __remdf3(double a, double b) {
-	static_assert(sizeof(float64) == sizeof(double));
-	return float64_to_double(float64_rem(double_to_float64(a),
-				double_to_float64(b)));
-}

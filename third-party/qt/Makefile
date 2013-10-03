@@ -9,9 +9,13 @@ ifeq (arm,$(EMBOX_ARCH))
 ARCH=arm
 #ToDo: detect endianness
 EMBOX_IMPORTED_CROSS_COMPILE_FLAGS += -little-endian
+QT_CONF_FLAGS_EMBOX += -D QEMBOX_PLUGIN_VNC
 else ifeq (x86,$(EMBOX_ARCH))
 ARCH=i386
 EMBOX_IMPORTED_CROSS_COMPILE_FLAGS += -little-endian
+# it is temporary hack to prevent building Qt on ARM until frame buffer is not supported
+QT_CONF_FLAGS_EMBOX += -D QEMBOX_PLUGIN_VNC
+QT_CONF_FLAGS_EMBOX += -D QEMBOX_PLUGIN_EMBOXVC
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
@@ -23,6 +27,7 @@ endif
 QT_URL:=http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
 QT_MD5:= 1864987bdbb2f58f8ae8b350dfdbe133
 QT_BUNDLE:=$(DOWNLOAD_DIR)/$(notdir $(QT_URL))
+
 
 QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
 # This will be needed to use runtime resources, e.g. fonts
@@ -68,7 +73,7 @@ QT_CONF_FLAGS_EMBOX += -debug
 QT_CONF_FLAGS_EMBOX += -qt-gfx-vnc
 QT_CONF_FLAGS_EMBOX += -no-freetype
 
-
+EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
@@ -287,9 +292,13 @@ endef
 # plugins strictly before importing library both with ':install'
 # everything else before applications
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
-TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
+ifneq (,$(findstring QEMBOX_PLUGIN_VNC,$(QT_CONF_FLAGS_EMBOX)))
+TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
+endif
+ifneq (,$(findstring QEMBOX_PLUGIN_EMBOXVC,$(QT_CONF_FLAGS_EMBOX)))
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/emboxvc:install
+endif
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
 
 TARGET_QMAKE_EMBOX       =$(QT_INSTALL_DIR_EMBOX)/bin/qmake

@@ -139,19 +139,3 @@ int __gtsf2(float a, float b) {
 	static_assert(sizeof(float32) == sizeof(float));
 	return !float32_le(float_to_float32(a), float_to_float32(b));
 }
-
-float __sqrtsf2(float a) {
-	static_assert(sizeof(float32) == sizeof(float));
-	return float32_to_float(float32_sqrt(float_to_float32(a)));
-}
-
-float __roundsf2(float a) {
-	static_assert(sizeof(float32) == sizeof(float));
-	return float32_to_float(float32_round_to_int(float_to_float32(a)));
-}
-
-float __remsf3(float a, float b) {
-	static_assert(sizeof(float32) == sizeof(float));
-	return float32_to_float(float32_rem(float_to_float32(a),
-				float_to_float32(b)));
-}
