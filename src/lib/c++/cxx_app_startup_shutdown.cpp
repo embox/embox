@@ -9,11 +9,6 @@
 #include "cxx_app_startup_termination.h"
 #include "cxxapp.hpp"
 
-#if __EXCEPTIONS==0
-extern "C" void __do_global_ctors (void) {
-}
-#endif
-
 int cxx_app_start(int argc, char **argv) {
 	int ret;
 

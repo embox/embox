@@ -10,7 +10,7 @@ module memory {
 module exceptions {
 	source "exceptions.cpp"
 
-	depends embox.lib.cxx.lib
+	depends embox.lib.cxx.libsupcxx
 	depends embox.framework.LibFramework
 }
 

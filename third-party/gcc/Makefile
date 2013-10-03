@@ -6,7 +6,7 @@ endif
 ifeq (arm,$(EMBOX_ARCH))
 $(error Unsupported architecture: $(EMBOX_ARCH))
 else ifeq (x86,$(EMBOX_ARCH))
-EMBOX_GCC_TARGET=i386-pc-msdosdjgpp
+EMBOX_GCC_TARGET=i386-pc-elf
 #i386-pc-elf
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))

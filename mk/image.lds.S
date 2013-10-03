@@ -25,6 +25,7 @@ SECTIONS {
 		_ctors_end   = .;
 
 		/*_eh_frame_start = .;*/
+                __EH_FRAME_BEGIN__ = .;
 		KEEP(*(.eh_frame))
 		/*KEEP(*(.eh_frame.*))*/
 		/*KEEP(*(.gcc_except_table))*/

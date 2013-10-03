@@ -1,0 +1,26 @@
+diff -aur gcc-4.8.1/gcc/config/elfos.h gcc/gcc/config/elfos.h
+--- gcc-4.8.1/gcc/config/elfos.h	2013-01-11 00:38:27.000000000 +0400
++++ gcc/gcc/config/elfos.h	2013-10-03 14:52:43.033405446 +0400
+@@ -206,8 +206,8 @@
+    The definitions say how to change sections to the .init and .fini
+    sections.  This is the same for all known svr4 assemblers.  */
+ 
+-#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+-#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
++//#define INIT_SECTION_ASM_OP	"\t.section\t.init"
++//#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
+ 
+ /* Output assembly directive to move to the beginning of current section.  */
+ #ifdef HAVE_GAS_SUBSECTION_ORDERING
+diff -aur gcc-4.8.1/libstdc++-v3/configure gcc/libstdc++-v3/configure
+--- gcc-4.8.1/libstdc++-v3/configure	2013-05-24 22:10:37.000000000 +0400
++++ gcc/libstdc++-v3/configure	2013-10-03 13:22:07.636014123 +0400
+@@ -70713,7 +70713,7 @@
+ 
+     ;;
+   *)
+-    as_fn_error "No support for this host/target combination." "$LINENO" 5
++    #as_fn_error "No support for this host/target combination." "$LINENO" 5
+    ;;
+ esac
+ 

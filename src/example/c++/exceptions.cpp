@@ -28,8 +28,8 @@ static int run(int argc, char **argv) {
 			std::printf("throw.. ");
 			throw MyException();
 		}
-		catch (...) {
-			std::printf("catch\n");
+		catch (MyException e) {
+			std::printf("catch: %s\n", e.what());
 		}
 		std::printf("%d -- done\n", num++);
 	}

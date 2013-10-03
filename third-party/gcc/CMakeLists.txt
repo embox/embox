@@ -3,15 +3,15 @@ ExternalProject_Add(
    gcc
    PREFIX ..
    DOWNLOAD_DIR ../../../download
-   URL http://mirrors.ustc.edu.cn/gnu/gcc/gcc-4.8.1/gcc-4.8.1.tar.bz2
-   URL_MD5 3b2386c114cd74185aa3754b58a79304
+   URL http://mirrors.ustc.edu.cn/gnu/gcc/gcc-4.8.1/gcc-4.8.1.tar.gz
+   URL_MD5 74cc12b7afe051ab7d0e00269e49fc9b
    #URL http://www.mirrorservice.org/sites/ftp.gnu.org/gnu/gcc/gcc-4.6.2/gcc-4.6.2.tar.bz2
    #URL_MD5 028115c4fbfb6cfd75d6369f4a90d87e
    UPDATE_COMMAND ""
    PATCH_COMMAND
       cd $ENV{EMBOX_ROOT}/third-party/gcc/tree
       && bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`"
-      #&& patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/gcc/patch.txt
+      && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/gcc/patch.txt
       #&& cd <SOURCE_DIR> && autoconf && aclocal && automake
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
@@ -19,7 +19,7 @@ ExternalProject_Add(
          --prefix=<INSTALL_DIR>
          ""CC_FOR_TARGET=/usr/bin/gcc""
          ""CXX_FOR_TARGET=/usr/bin/g++""
-         ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}\ -DLIBGCC2_HAS_XF_MODE=0\ -DUSE_EH_FRAME_REGISTRY\ -DHAS_INIT_SECTION\ -DDO_GLOBAL_CTORS_BODY\ -DDO_GLOBAL_DTORS_BODY\ -DOBJECT_FORMAT_ELF\ -I<BINARY_DIR>/gcc/include""
+         ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}\ -DLIBGCC2_HAS_XF_MODE=0\ -DDO_GLOBAL_CTORS_BODY\ -DDO_GLOBAL_DTORS_BODY\ -DNAME__MAIN=__embox_register_eh_frame_once\ -DSYMBOL__MAIN=__embox_register_eh_frame_once\ -I<BINARY_DIR>/gcc/include""
          ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}\ -I<BINARY_DIR>/gcc/include""
          ""LDFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_LDFLAGS}""
          --enable-languages=c,c++
@@ -48,6 +48,7 @@ ExternalProject_Add(
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
          ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
          ""TARGET-target-libstdc++-v3='SUBDIRS=include\ libsupc++'\ all-recursive""
+         ""TARGET-target-libgcc=PICFLAG=\ EXTRA_PARTS=\ all""
          all-target-libgcc
          all-target-libstdc++-v3
    INSTALL_COMMAND
@@ -69,6 +70,7 @@ ExternalProject_Add(
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
          ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
          ""TARGET-target-libstdc++-v3=SUBDIRS=libsupc++\ install-recursive""
+         ""TARGET-target-libgcc=PICFLAG=\ EXTRA_PARTS=\ all""
          install-target-libgcc
          all-target-libstdc++-v3
    LOG_BUILD 1

@@ -6,6 +6,8 @@ abstract module lib {
 
 module libsupcxx extends lib {
 	depends third_party.gcc.core
+
+	source "register_eh_frame.c"
 }
 
 module standalone extends lib {

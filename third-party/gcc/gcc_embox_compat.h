@@ -71,4 +71,6 @@ extern char *tmpnam(char *s);
 
 #endif // __cplusplus
 
+#define atexit(x)
+
 #endif /* NTFS_EMBOX_COMPAT_H_ */
