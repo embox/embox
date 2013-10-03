@@ -15,16 +15,6 @@
 #include <drivers/pci/pci_tlp.h>
 #include <endian.h>
 
-/*
-uint32_t betoh32(uint32_t v) {
-	return v;
-}
-
-uint32_t htobe32(uint32_t v) {
-	return v;
-}
-*/
-
 #define DEBUG
 #ifdef DEBUG
 #include <kernel/printk.h>
@@ -89,7 +79,12 @@ int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 	if (len > 0xFFF) {
 		return -EINVAL;
 	}
+	len >>= 2;
+
+	fmt &= TLP_FMT_MSK;
+
 	hsize = tlp_fmt2size(fmt);
+
 	fmt |= TLP_FMT_DATA;
 
 	tlp[0] = (fmt << TLP_FMT_OFFSET) | (TLP_TYPE_MEM << TLP_TYPE_OFFSET) | len;
@@ -131,8 +126,12 @@ int tlp_build_mem_rd(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 	if (len > 0xFFF) {
 		return -EINVAL;
 	}
+	len >>= 2;
+
+	fmt &= TLP_FMT_MSK;
+
 	hsize = tlp_fmt2size(fmt);
-	fmt &= TLP_FMT_HEADSIZE; /* 0 or 1 for read fmt */
+	fmt &= ~TLP_FMT_DATA; /* only 0 or 1 for memory read fmt */
 
 	tlp[0] = (fmt << TLP_FMT_OFFSET) | (TLP_TYPE_MEM << TLP_TYPE_OFFSET) | len;
 

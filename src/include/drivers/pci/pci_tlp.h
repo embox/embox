@@ -27,6 +27,8 @@
 #define TLP_FMT_OFFSET  29
 #define TLP_TYPE_OFFSET 24
 
+#define TLP_FMT_MSK  0xFC
+
 #define TLP_3DW_HEADER_SIZE  0x0C
 #define TLP_4DW_HEADER_SIZE  0x10
 
