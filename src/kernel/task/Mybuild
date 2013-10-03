@@ -3,15 +3,18 @@ package embox.kernel.task
 @DefaultImpl(single)
 abstract module api {
 	option number max_resource_size = 1024
+
 }
 
 module single extends api {
 	source "single.c"
 	depends kernel_task
 
+
 	depends embox.kernel.thread.current.api
 	depends embox.kernel.sched.strategy.api
 	depends task_thread_api
+	depends task_key_table
 }
 
 module multi extends api {
@@ -28,6 +31,7 @@ module multi extends api {
 	*/
 	depends embox.kernel.thread.core
 	depends task_thread_api
+	depends task_key_table
 }
 
 module task_environment { }
@@ -112,4 +116,17 @@ module waitpid {
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
+}
+@DefaultImpl(task_no_thread_key)
+abstract module task_key_table {
+
+}
+
+module task_no_thread_key extends task_key_table {
+	source "task_no_thread_key.h"
+}
+
+module task_thread_key extends task_key_table{
+	source "task_thread_key.h"
+	source "task_thread_key.c"
 }

@@ -205,24 +205,13 @@ int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param *par
 	return -ENOSYS;
 }
 
-void *pthread_getspecific(pthread_key_t key) {
-	return NULL;
-}
 */
 
 int pthread_join(pthread_t thread, void **value_ptr) {
 	return thread_join(thread, value_ptr);
 }
 
-/*
-int pthread_key_create(pthread_key_t *key, void (*destructor)(void *)) {
-	return -ENOSYS;
-}
 
-int pthread_key_delete(pthread_key_t key) {
-	return -ENOSYS;
-}
-*/
 
 int pthread_mutex_destroy(pthread_mutex_t *mutex) {
 	return ENOERR;
@@ -384,9 +373,6 @@ int pthread_setschedparam(pthread_t thread, int policy,
 }
 
 /*
-int pthread_setspecific(pthread_key_t key, const void *value) {
-	return -ENOSYS;
-}
 
 void pthread_testcancel(void) {
 

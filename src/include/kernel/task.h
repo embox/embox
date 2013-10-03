@@ -16,6 +16,7 @@
 #include <sys/types.h>
 
 #include <kernel/task/task_priority.h>
+#include <kernel/task/thread_key_table.h>
 
 #define MAX_TASK_NAME_LEN 20
 
@@ -53,8 +54,6 @@ struct task {
 
 	struct emmap *mmap;
 
-
-
 	struct task_u_area *u_area;
 
 	struct task_env *env;
@@ -70,6 +69,8 @@ struct task {
 	struct wait_queue *waitq;
 
 	unsigned int affinity;
+
+	thread_key_table_t key_table;
 };
 
 struct task_resource_desc {
