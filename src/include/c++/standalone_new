@@ -9,7 +9,8 @@
 #ifndef STANDALONE_NEW_
 #define STANDALONE_NEW_
 
-#if !defined(__EXCEPTIONS) || __EXCEPTIONS!=0
+#if __EXCEPTIONS==0
+#else
 #error Exceptions must be disabled
 #endif
 
