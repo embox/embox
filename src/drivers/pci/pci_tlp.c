@@ -16,7 +16,7 @@
 #include <drivers/pci/pci_tlp.h>
 #include <endian.h>
 
-#define DEBUG
+#define NODEBUG
 #ifdef DEBUG
 #include <kernel/printk.h>
 void print_tlp_packet(const unsigned char *data, int length)
@@ -72,6 +72,54 @@ static inline uint32_t *tlp_from_pci(uint32_t *tlp) {
 	return tlp;
 }
 
+static inline char tlp_get_fbe(uint32_t offset) {
+	char fbe;
+
+	switch (offset & 3) {
+		case 1:
+			fbe = 0x7;
+			break;
+		case 2:
+			fbe = 0x3;
+			break;
+		case 3:
+			fbe = 0x1;
+			break;
+		default:
+			fbe = 0xF;
+			break;
+		}
+
+	return fbe;
+}
+
+static inline char tlp_get_lbe(uint16_t len, uint32_t offset) {
+	char lbe;
+	size_t length;
+	int bits;
+
+	length = TLP_3DW_HEADER_SIZE +
+					((len + (offset % 4) + 3) & 0xFFFFFFFC);
+
+	lbe = 0;
+	if (length <= 16) {
+		return lbe;
+	}
+
+	bits = (offset + length) % 4;
+	if (bits) {
+		/* ((1111 >> 3) = 0001)
+		 * 0001 << 3 = 1000
+		 */
+		lbe = (0xF >> bits) << (bits);
+	} else {
+		lbe = 0xF;
+	}
+	lbe <<= 4;
+
+	return lbe;
+}
+
 int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 		uint32_t offset, char fmt, uint32_t *buff, uint16_t len) {
 	int hsize;
@@ -80,40 +128,27 @@ int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 	if (len > 0xFFF) {
 		return -EINVAL;
 	}
-	len >>= 2;
 
 	fmt &= TLP_FMT_MSK;
+	fmt |= TLP_FMT_DATA;
 
 	hsize = tlp_fmt2size(fmt);
 
-	fmt |= TLP_FMT_DATA;
+	tlp[0] = (fmt << TLP_FMT_OFFSET) |
+			(TLP_TYPE_MEM << TLP_TYPE_OFFSET) | (len >> 2);
 
-	tlp[0] = (fmt << TLP_FMT_OFFSET) | (TLP_TYPE_MEM << TLP_TYPE_OFFSET) | len;
+	/* First BE */
+	fbe = tlp_get_fbe(offset);
+	/* Last BE */
+	lbe = tlp_get_lbe(len, offset);
 
-	switch (offset & 3) {
-	case 1:
-		fbe = 0x7;
-		break;
-	case 2:
-		fbe = 0x3;
-		break;
-	case 3:
-		fbe = 0x1;
-		break;
-	default:
-		fbe = 0xF;
-		break;
-	}
-	lbe = 0;
-
-	tlp[1] = fbe | (lbe << 4);
+	tlp[1] = fbe | lbe;
 
 	tlp[2] = PCI_BAR_BASE(dev->bar[bar]) + binalign_bound(offset, 4);
 
 	if (hsize == 4) {
 		tlp[3] = 0;
 	}
-
 
 	return 0;
 }
