@@ -1,7 +1,7 @@
 package third_party.lib
 
 module libgcc_toolchain {
-	@Rule(script="$(CP) `$(CC) -print-file-name=libgcc.a` $(ROOT_DIR)/download")
-	source "../../../../../../download/libgcc.a"
+	@Rule(script="$(CP) `$(CC) -print-file-name=libgcc.a` $(OBJ_DIR)/third-party/lib/libgcc")
+	source "libgcc.a"
 	source "empty.c"
 }

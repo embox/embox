@@ -8,6 +8,6 @@ static module libarch extends embox.arch.libarch {
 
 module cxxabi {
 	source "cxxabi/aeabi_atexit.c"
-	depends embox.lib.cxx.DestructionStatic
+	depends embox.lib.cxx.DestructionPolicy
 }
 

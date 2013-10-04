@@ -22,9 +22,9 @@ SECTIONS {
 	}
 
 	/* XXX symbols __exidx_start/end are required by libgcc.a --Alexander */
-	__exidx_start = .;
 	.ARM.exidx   : {
 		*(.ARM.exidx*)
 	} SECTION_REGION(text)
-	__exidx_end = .;
+	__exidx_start = ADDR(.ARM.exidx);
+	__exidx_end = __exidx_start + SIZEOF(.ARM.exidx);
 }

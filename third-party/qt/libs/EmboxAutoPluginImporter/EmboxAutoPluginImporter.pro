@@ -14,9 +14,11 @@ CONFIG += create_prl
 SOURCES += emboxautopluginimporter.cpp
 
 LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
-QTPLUGIN          += qvncgraphicssystem
-QTPLUGIN          += qminimal
 
+QTPLUGIN          += qminimal
+contains(DEFINES, QEMBOX_PLUGIN_VNC) {
+	QTPLUGIN          += qvncgraphicssystem
+}
 contains(DEFINES, QEMBOX_PLUGIN_EMBOXVC) {
 	QTPLUGIN          += emboxvc
 }
