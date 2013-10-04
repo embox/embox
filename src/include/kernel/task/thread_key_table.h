@@ -8,9 +8,12 @@
 #ifndef THREAD_KEY_TABLE_H_
 #define THREAD_KEY_TABLE_H_
 
+struct task;
+
 #include <module/embox/kernel/task/task_key_table.h>
 
 typedef __thread_key_table_t thread_key_table_t;
 
+extern void thread_key_table_create(struct task *task);
 
 #endif /* THREAD_KEY_TABLE_H_ */
