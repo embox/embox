@@ -181,18 +181,19 @@ static void sched_switch(void) {
 		ipl_enable();
 
 		prev = thread_get_current();
+		next = runq_switch(&rq);
 
-		if (prev == (next = runq_switch(&rq))) {
+		if (prev == next) {
 			ipl_disable();
 			goto out;
 		}
+
+		assert(thread_state_running(next->state));
 
 		/* Running time recalculation */
 		new_clock = clock();
 		sched_timing_stop(prev, new_clock);
 		sched_timing_start(next, new_clock);
-
-		assert(thread_state_running(next->state));
 
 		trace_point("context switch");
 
@@ -201,10 +202,10 @@ static void sched_switch(void) {
 		thread_set_current(next);
 		context_switch(&prev->context, &next->context);
 	}
-
 out:
-	task_signal_hnd();
 	sched_unlock_noswitch();
+
+	task_signal_hnd();
 }
 
 
