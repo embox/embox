@@ -36,15 +36,19 @@ static inline int wait_queue_empty(struct wait_queue *wait_queue) {
 	return dlist_empty(&wait_queue->list);
 }
 
-extern int wait_queue_wait(struct wait_queue *wait_queue, int timeout);
-extern int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout);
-extern void wait_queue_notify(struct wait_queue *wait_queue);
-extern void wait_queue_notify_all(struct wait_queue *wait_queue);
-
 extern void wait_queue_insert(struct wait_queue *wait_queue,
 		struct wait_link *wait_link);
 extern void wait_queue_prepare(struct wait_link *wait_link);
 extern void wait_queue_cleanup(struct wait_link *wait_link);
+
+extern int wait_queue_wait(struct wait_queue *wait_queue, int timeout);
+extern int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout);
+extern void wait_queue_notify(struct wait_queue *wait_queue);
+extern void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error);
+
+static inline void wait_queue_notify_all(struct wait_queue *wait_queue) {
+	wait_queue_notify_all_err(wait_queue, 0);
+}
 
 __END_DECLS
 
