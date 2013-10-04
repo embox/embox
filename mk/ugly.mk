@@ -29,6 +29,13 @@ $(for modName <- $2,
 	$(\n)
 	$(\h)ifndef __MOD_HEADER__$(subst .,__,$(modName)) $(\n)
 	$(\h)define __MOD_HEADER__$(subst .,__,$(modName)) $(\n)
+	$(for optionInstance <- $(get 1->options),
+		optionId <- $(subst .,__,$(invoke optionInstance->option>getId)),
+		$(\n)
+		$(\h)ifndef $(optionId)$(\n)
+		$(\h)define $(optionId) $(invoke optionInstance->value>toString)$(\n)
+		$(\h)endif$(\n))
+
 	$(foreach impl,$(get 1->type) $(get 1->type>allSuperTypes),
 		$(\n)// module: $(get impl->qualifiedName)$(\n)
 		$(or $(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
@@ -36,12 +43,7 @@ $(for modName <- $2,
 		      ,$(\h)include <../$(header)>$(\n)),
 		     // no headers to include$(\n)))
 
-	$(for optionInstance <- $(get 1->options),
-		optionId <- $(subst .,__,$(invoke optionInstance->option>getId)),
-		$(\n)
-		$(\h)ifndef $(optionId)$(\n)
-		$(\h)define $(optionId) $(invoke optionInstance->value>toString)$(\n)
-		$(\h)endif$(\n))
+
 
 	$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$(modName)) */$(\n)
 )
