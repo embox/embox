@@ -2,55 +2,76 @@
  * @file
  * @brief
  *
- * @author  Alexander Kalmuk
- * @date    22.10.2012
+ * @date 22.10.2012
+ * @author Alexander Kalmuk
+ * @author Eldar Abusalimov
  */
 
-#include <math.h>
-#include <kernel/task/task_table.h>
 #include <kernel/task/rt_signal.h>
+
 #include "common.h"
-#include <mem/objalloc.h>
-#include <kernel/irq_lock.h>
-#include <util/array.h>
-#include <util/dlist.h>
+
+#include <math.h>
 #include <signal.h>
 
+#include <kernel/task/task_table.h>
+#include <kernel/irq_lock.h>
+#include <mem/objalloc.h>
+#include <util/array.h>
+#include <util/dlist.h>
+
 struct rtsig_data {
-	union sigval data;
+	union sigval sigval;
 	struct dlist_head sig_link;
 };
 
-OBJALLOC_DEF(rtsig_data_pool, struct rtsig_data, TASK_RTSIG_CNT * TASK_RTSIG_CNT_PER_TYPE);
+OBJALLOC_DEF(rtsig_data_pool, struct rtsig_data,
+		TASK_RTSIG_CNT * TASK_RTSIG_CNT_PER_TYPE);
 
-void task_rtsignal_send(struct task *task, int sig, const union sigval value) {
-	struct rtsig_data *data = objalloc(&rtsig_data_pool);
+void task_rtsignal_send(struct task *task, int sig, union sigval value) {
+	struct task_signal_table *sig_table = task->signal_table;
+	struct rtsig_data *data;
+	int rtsig = sig - TASK_SIGRTMIN;
+
+	data = objalloc(&rtsig_data_pool);
+	if (!data)
+		/* XXX then what? -- Eldar */
+		assert(0, "FIXME");
 
 	dlist_head_init(&data->sig_link);
-	data->data = value;
+	data->sigval = value;
 
 	irq_lock();
-	dlist_add_prev(&data->sig_link, &task->signal_table->rtsig_data[sig - TASK_SIGRTMIN]);
+	dlist_add_prev(&data->sig_link, &sig_table->rtsig_data[rtsig]);
 	irq_unlock();
 }
 
 void task_rtsignal_handle(void) {
 	struct task_signal_table *sig_table = task_self()->signal_table;
-	struct rtsig_data *cur, *nxt;
-	int sig;
-	task_rtsignal_hnd_t hnd;
+	struct rtsig_data *data, *nxt;
 
-	for (sig = TASK_SIGRTMIN; sig <= TASK_SIGRTMAX; sig++) {
-		if (task_rtsignal_table_get(task_self()->signal_table, sig)) {
-			dlist_foreach_entry(cur, nxt, &sig_table->rtsig_data[sig - TASK_SIGRTMIN], sig_link) {
-				hnd = task_rtsignal_table_get(task_self()->signal_table, sig);
-				hnd(sig, cur->data);
-				dlist_del(&cur->sig_link);
-				objfree(&rtsig_data_pool, cur);
-			}
+	for (int rtsig = 0; rtsig < TASK_RTSIG_CNT; ++rtsig) {
+		task_rtsignal_hnd_t hnd;
+		struct dlist_head *sig_list;
 
-			assert(dlist_empty(&sig_table->rtsig_data[sig - TASK_SIGRTMIN]));
+		hnd = sig_table->rt_hnd[rtsig];
+		if (!hnd)
+			continue;
+
+		sig_list = &sig_table->rtsig_data[rtsig];
+		dlist_foreach_entry(data, nxt, sig_list, sig_link) {
+			union sigval sigval = data->sigval;
+
+			irq_lock();
+			dlist_del(&data->sig_link);
+			irq_unlock();
+
+			objfree(&rtsig_data_pool, data);
+
+			hnd(rtsig + TASK_SIGRTMIN, sigval);
 		}
+
+		assert(dlist_empty(sig_list));
 	}
 }
 

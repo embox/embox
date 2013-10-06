@@ -13,7 +13,7 @@
 
 /* Real-time signals support */
 
-extern void task_rtsignal_send(struct task *task, int sig, const union sigval value);
+extern void task_rtsignal_send(struct task *task, int sig, union sigval value);
 extern void task_rtsignal_handle(void);
 
 static inline void task_rtsignal_table_set(struct task_signal_table *table, int sig, task_rtsignal_hnd_t hnd) {
