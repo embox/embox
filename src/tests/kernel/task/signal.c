@@ -7,11 +7,13 @@
  * @author Anton Bondarev
  */
 
+#include <embox/test.h>
+
 #include <stdint.h>
 #include <unistd.h>
-#include <embox/test.h>
+#include <pthread.h>
+
 #include <kernel/task.h>
-#include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for task API");
@@ -93,7 +95,7 @@ static void *thread_hnd(void *arg) {
 static void *task_hnd_thread(void *arg) {
 	struct thread *thd;
 
-	thread_create(&thd, 0, thread_hnd, NULL);
+	pthread_create(&thd, 0, thread_hnd, NULL);
 
 	return NULL;
 }
