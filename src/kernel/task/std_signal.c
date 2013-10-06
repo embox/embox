@@ -6,8 +6,6 @@
  * @date    20.06.2012
  */
 
-#include <math.h>
-#include <util/array.h>
 
 #include <kernel/thread.h>
 #include <kernel/sched.h>
@@ -16,6 +14,8 @@
 #include <kernel/task/std_signal.h>
 #include "common.h"
 
+#include <util/bit.h>
+
 
 void task_stdsig_send(struct task *task, int sig) {
 	struct thread *th, *tmp;
@@ -23,26 +23,32 @@ void task_stdsig_send(struct task *task, int sig) {
 
 	task->signal_table->sig_mask |= 1 << sig;
 
-	if(-1 != (res = sched_signal(task->main_thread, sig))) {
+	res = sched_signal(task->main_thread, sig);
+	if (res != -1)
 		return;
-	}
 
 	dlist_foreach_entry(th, tmp, &task->main_thread->thread_link, thread_link) {
-		if (-1 != (res = sched_signal(th, sig))) {
+		res = sched_signal(th, sig);
+		if (res != -1)
 			return;
-		}
 	}
 }
 
 void task_stdsig_handle(void) {
-	struct task_signal_table *sig_table= task_self()->signal_table;
-	int sig = (sig_table->sig_mask ? blog2(sig_table->sig_mask) : 0);
+	struct task_signal_table *sig_table = task_self()->signal_table;
+	task_signal_hnd_t hnd;
+	int sig;
+
+	if (!sig_table->sig_mask)
+		return;
+
+	sig = bit_ctz(sig_table->sig_mask);
+	hnd = sig_table->hnd[sig];
 
 	/*TODO handle all standard signals */
 	if (sig) {
 		sig_table->sig_mask &= ~(1 << sig);
-		sig_table->last_sig = sig;
-		task_signal_table_get(task_self()->signal_table, sig)(sig);
+		hnd(sig);
 	}
 }
 

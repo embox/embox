@@ -33,7 +33,6 @@ typedef void (*task_rtsignal_hnd_t)(int sig, union sigval value);
 
 struct task_signal_table {
 	uint32_t sig_mask;
-	char last_sig;
 	task_signal_hnd_t hnd[TASK_SIGNAL_MAX_N];
 	task_rtsignal_hnd_t rt_hnd[TASK_RTSIG_CNT];
 	struct dlist_head rtsig_data[TASK_RTSIG_CNT];
