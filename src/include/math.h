@@ -13,13 +13,6 @@
 
 __BEGIN_DECLS
 
-/**
- * First 1 in val
- * @param val Value
- * @return Number of first 1 in Value
- */
-extern int blog2(int val);
-
 /* Absolute value of floating-point number */
 extern double fabs(double x);
 extern float fabsf(float x);

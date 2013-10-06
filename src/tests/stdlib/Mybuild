@@ -5,11 +5,6 @@ module strtod_test {
 	depends embox.framework.LibFramework
 }
 
-module math_test {
-	source "math_test.c"
-	depends embox.framework.LibFramework
-}
-
 module bsearch_test {
 	source "bsearch_test.c"
 
