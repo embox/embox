@@ -25,6 +25,7 @@ module core extends thread_mode {
 	depends embox.kernel.time.jiffies
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
+	@NoRuntime depends thread_local
 }
 
 @DefaultImpl(fixed_stack)
@@ -35,6 +36,18 @@ abstract module stack_api {
 module fixed_stack extends stack_api {
 	source "fixed_stack.c"
 	source "fixed_stack.h"
+}
+@DefaultImpl(thread_local_none)
+abstract module thread_local {
+
+}
+
+module thread_local_none extends thread_local {
+	source "thread_local_none.h"
+}
+
+module thread_local_heap extends thread_local {
+	source "thread_local_heap.c"
 }
 
 /* FIXME: Deprecated */

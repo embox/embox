@@ -13,6 +13,7 @@
 #include <assert.h>
 
 #include <kernel/task/task_table.h>
+#include <kernel/thread/thread_local.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <mem/misc/pool.h>
@@ -121,6 +122,8 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		thread_set_priority(thd,
 				sched_priority_thread(task_self()->priority,
 						thread_priority_get(thread_self())));
+
+		thread_local_alloc(thd, THREAD_KEYS_QUANTITY);
 		thread_detach(thd);
 		thread_launch(thd);
 

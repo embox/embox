@@ -8,6 +8,8 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
+#include <kernel/thread/thread_local.h>
+#include <kernel/task/thread_key_table.h>
 
 int task_add_thread(struct task * task, struct thread *t) {
 	sched_priority_t sched_prior;
@@ -26,6 +28,8 @@ int task_add_thread(struct task * task, struct thread *t) {
 	 */
 	sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
 	thread_priority_set(t, sched_prior);
+
+	thread_local_alloc(t, THREAD_KEYS_QUANTITY);
 
 	return ENOERR;
 }

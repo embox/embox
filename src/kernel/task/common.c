@@ -74,7 +74,7 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 		res_ptr += res_desc->resource_size;
 	}
 
-	thread_key_table_create(task);
+	task_thread_key_init(task);
 
 	/* FIXME: This should be only in SMP */
 	task->affinity = TASK_AFFINITY_DEFAULT;

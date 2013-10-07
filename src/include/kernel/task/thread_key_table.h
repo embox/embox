@@ -14,6 +14,12 @@ struct task;
 
 typedef __thread_key_table_t thread_key_table_t;
 
-extern void thread_key_table_create(struct task *task);
+extern void task_thread_key_init(struct task *task);
+
+extern int task_thread_key_exist(struct task *task, size_t idx);
+
+extern int task_thread_key_create(struct task *task, size_t idx);
+
+extern int task_thread_key_destroy(struct task *task, size_t idx);
 
 #endif /* THREAD_KEY_TABLE_H_ */
