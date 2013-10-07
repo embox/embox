@@ -17,4 +17,5 @@ typedef struct thread_key_table __thread_key_table_t;
 
 static inline void task_thread_key_init(struct task *task) {}
 
+
 #endif /* TASK_NO_THREAD_KEY_H_ */

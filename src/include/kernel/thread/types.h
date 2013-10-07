@@ -16,6 +16,7 @@
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/wait_data.h>
 #include <kernel/thread/thread_stack.h>
+#include <kernel/thread/thread_local.h>
 
 #include <util/dlist.h>
 
@@ -48,6 +49,8 @@ struct thread {
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
+
+	thread_local_t local;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

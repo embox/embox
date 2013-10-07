@@ -26,6 +26,7 @@ module core extends thread_mode {
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
 	@NoRuntime depends thread_local
+	//@NoRuntime depends embox.kernel.task.task_thread_key
 }
 
 @DefaultImpl(fixed_stack)
@@ -37,7 +38,7 @@ module fixed_stack extends stack_api {
 	source "fixed_stack.c"
 	source "fixed_stack.h"
 }
-@DefaultImpl(thread_local_none)
+@DefaultImpl(thread_local_heap)
 abstract module thread_local {
 
 }
@@ -48,6 +49,9 @@ module thread_local_none extends thread_local {
 
 module thread_local_heap extends thread_local {
 	source "thread_local_heap.c"
+	source "thread_local_heap.h"
+
+	depends embox.kernel.task.task_thread_key
 }
 
 /* FIXME: Deprecated */

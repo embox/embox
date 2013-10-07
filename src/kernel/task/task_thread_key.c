@@ -16,6 +16,7 @@ void task_thread_key_init(struct task *task) {
 	kt = &task->key_table;
 
 	index_init(&kt->indexator, 0, THREAD_KEYS_QUANTITY, kt->ind_buff);
+	mutex_init(&kt->mutex);
 }
 
 int task_thread_key_exist(struct task *task, size_t idx) {
@@ -23,17 +24,34 @@ int task_thread_key_exist(struct task *task, size_t idx) {
 }
 
 int task_thread_key_create(struct task *task, size_t idx) {
-	if(index_locked(&task->key_table.indexator, idx)) {
-		return -EBUSY;
+	int res = ENOERR;
+
+	mutex_lock(&task->key_table.mutex);
+	{
+		if(index_locked(&task->key_table.indexator, idx)) {
+			res = -EBUSY;
+			goto out;
+		}
+		index_lock(&task->key_table.indexator, idx);
 	}
-	index_lock(&task->key_table.indexator, idx);
-	return ENOERR;
+out:
+	mutex_unlock(&task->key_table.mutex);
+
+	return res;
 }
 
 int task_thread_key_destroy(struct task *task, size_t idx) {
-	if(!index_locked(&task->key_table.indexator, idx)) {
-		return -EALREADY;
+	int res;
+
+	mutex_lock(&task->key_table.mutex);
+	{
+		if(!index_locked(&task->key_table.indexator, idx)) {
+			res = -EALREADY;
+			goto out;
+		}
+		index_unlock(&task->key_table.indexator, idx);
 	}
-	index_unlock(&task->key_table.indexator, idx);
-	return ENOERR;
+out:
+	mutex_lock(&task->key_table.mutex);
+	return res;
 }
