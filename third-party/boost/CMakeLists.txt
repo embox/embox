@@ -16,7 +16,7 @@ ExternalProject_Add(
    CONFIGURE_COMMAND
      ./bootstrap.sh
        --prefix=<INSTALL_DIR>
-       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams,thread
+       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams,thread,log
    BUILD_COMMAND
      ./b2
        -q
@@ -35,6 +35,8 @@ ExternalProject_Add(
        define=BOOST_HAS_THREADS
        define=BOOST_HAS_PTHREADS
        define=BOOST_HAS_SCHED_YIELD
+       define=BOOST_HAS_GETTIMEOFDAY
+       #define=BOOST_NO_CWCTYPE
    LOG_BUILD 1
    INSTALL_COMMAND
    	false
