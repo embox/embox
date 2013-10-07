@@ -131,4 +131,6 @@ module task_thread_key extends task_key_table {
 
 	source "task_thread_key.h"
 	source "task_thread_key.c"
+
+	@NoRuntime depends embox.util.indexator
 }
