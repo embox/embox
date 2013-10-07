@@ -15,7 +15,7 @@ module LibPosix {
 
 static module pthreads {
 	source "pthread.c"
-
+	source "pthread_key.c"
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 }

@@ -23,16 +23,16 @@ int task_thread_key_exist(struct task *task, size_t idx) {
 	return index_locked(&task->key_table.indexator, idx);
 }
 
-int task_thread_key_create(struct task *task, size_t idx) {
+int task_thread_key_create(struct task *task, size_t *idx) {
 	int res = ENOERR;
 
 	mutex_lock(&task->key_table.mutex);
 	{
-		if(index_locked(&task->key_table.indexator, idx)) {
+		if(index_locked(&task->key_table.indexator, *idx)) {
 			res = -EBUSY;
 			goto out;
 		}
-		index_lock(&task->key_table.indexator, idx);
+		index_lock(&task->key_table.indexator, *idx);
 	}
 out:
 	mutex_unlock(&task->key_table.mutex);

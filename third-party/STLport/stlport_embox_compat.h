@@ -30,7 +30,6 @@
 
 #include_next <stdio.h>
 #include_next <time.h>
-//#include <pthread.h>
 #include <errno.h>
 #include <sys/types.h>
 
@@ -130,21 +129,6 @@ namespace std {
 //	           int *sign, char *buf, size_t len);
 }
 
-static inline
-void *pthread_getspecific(struct pthread_key *) {
-	DPRINT();
-	return NULL;
-}
-static inline
-int   pthread_setspecific(struct pthread_key *, const void *) {
-	DPRINT();
-	return ENOSYS;
-}
-static inline
-int   pthread_key_create(struct pthread_key **, void (*)(void *)) {
-	DPRINT();
-	return ENOSYS;
-}
 
 /* implemented now
  * extern int nanosleep(const struct timespec *req, struct timespec *rem);

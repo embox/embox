@@ -18,7 +18,7 @@ extern void task_thread_key_init(struct task *task);
 
 extern int task_thread_key_exist(struct task *task, size_t idx);
 
-extern int task_thread_key_create(struct task *task, size_t idx);
+extern int task_thread_key_create(struct task *task, size_t *idx);
 
 extern int task_thread_key_destroy(struct task *task, size_t idx);
 

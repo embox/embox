@@ -26,6 +26,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/mutexattr.h>
 #include <kernel/thread/sync/rwlock.h>
+#include <kernel/task/thread_key_table.h>
 
 #define PTHREAD_MUTEX_INITIALIZER 	MUTEX_INIT_STATIC
 #define PTHREAD_RMUTEX_INITIALIZER	RMUTEX_INIT_STATIC
@@ -70,9 +71,7 @@ typedef struct pthread_rwlockattr {
 } pthread_rwlockattr_t;
 
 
-typedef struct pthread_key {
-
-} *pthread_key_t;
+typedef size_t pthread_key_t;
 
 
 typedef pthread_mutex_t pthread_once_t;
@@ -127,10 +126,11 @@ extern int   pthread_equal(pthread_t, pthread_t);
 extern void  pthread_exit(void *);
 //extern int   pthread_getconcurrency(void);
 //extern int   pthread_getschedparam(pthread_t, int *, struct sched_param *);
-//extern void *pthread_getspecific(pthread_key_t);
+extern void *pthread_getspecific(pthread_key_t);
 extern int   pthread_join(pthread_t, void **);
-//extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
-//extern int   pthread_key_delete(pthread_key_t);
+
+extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
+extern int   pthread_key_delete(pthread_key_t);
 
 extern int   pthread_mutex_destroy(pthread_mutex_t *);
 //extern int   pthread_mutex_getprioceiling(const pthread_mutex_t *, int *);
@@ -172,7 +172,7 @@ extern pthread_t pthread_self(void);
 //extern int   pthread_setcanceltype(int, int *);
 //extern int   pthread_setconcurrency(int);
 extern int   pthread_setschedparam(pthread_t, int, const struct sched_param *);
-//extern int   pthread_setspecific(pthread_key_t, const void *);
+extern int   pthread_setspecific(pthread_key_t, const void *);
 //extern void  pthread_testcancel(void);
 
 __END_DECLS
