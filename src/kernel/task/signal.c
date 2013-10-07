@@ -27,16 +27,13 @@ static void task_terminate(int sig) {
 }
 
 static void task_signal_table_init(struct task *task, void *_signal_table) {
-	int sig;
+	struct task_signal_table *sig_table = _signal_table;
 
-	struct task_signal_table *sig_table =
-		(struct task_signal_table *) _signal_table;
-
-	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
-		task_signal_table_set(sig_table, sig, task_terminate);
+	for (int sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
+		sig_table->hnd[sig] = task_terminate;
 	}
 
-	for (sig = 0; sig < TASK_RTSIG_CNT; sig++) {
+	for (int sig = 0; sig < TASK_RTSIG_CNT; sig++) {
 		sig_table->rt_hnd[sig] = NULL;
 		dlist_init(&sig_table->rtsig_data[sig]);
 	}

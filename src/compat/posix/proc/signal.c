@@ -22,7 +22,8 @@ static void sighnd_ignore(int sig) {
 }
 
 void (*signal(int sig, void (*func)(int)))(int) {
-	void (*old_func)(int) = task_self_signal_get(sig);
+	struct task_signal_table *sig_table = task_self()->signal_table;
+	void (*old_func)(int) = sig_table->hnd[sig];
 
 	if (func == SIG_DFL) {
 		func = sighnd_default;
@@ -30,7 +31,7 @@ void (*signal(int sig, void (*func)(int)))(int) {
 		func = sighnd_ignore;
 	}
 
-	task_self_signal_set(sig, func);
+	sig_table->hnd[sig] = func;
 
 	return old_func;
 }
