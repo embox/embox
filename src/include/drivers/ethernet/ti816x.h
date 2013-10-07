@@ -182,10 +182,10 @@ struct emac_hdr {
 struct emac_desc {
 	uint32_t next;
 	uint32_t data;
-	uint16_t data_off;
 	uint16_t data_len;
-	uint16_t flags;
+	uint16_t data_off;
 	uint16_t len;
+	uint16_t flags;
 };
 
 /**

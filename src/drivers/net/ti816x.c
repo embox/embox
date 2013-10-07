@@ -25,12 +25,13 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <util/binalign.h>
+#include <util/math.h>
 
 #include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(ti816x_init);
 
-#define PREP_BUF_COUNT 10
+#define PREP_BUF_COUNT 1
 
 static void emac_ctrl_enable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXTHRESHINTEN, 0xff);
@@ -156,9 +157,9 @@ static void emac_prep_rx_queue(void) {
 	struct sk_buff_data *skb_data;
 	struct emac_desc *desc, *head, *prev;
 
-
-	for (i = 0; i < 8; ++i) {
 	head = prev = NULL;
+
+	for (i = 0; i < PREP_BUF_COUNT; ++i) {
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
 		desc = (struct emac_desc *)skb_data;
@@ -169,14 +170,14 @@ static void emac_prep_rx_queue(void) {
 		assert(binalign_check_bound((uintptr_t)desc->next, 4));
 		desc->data = (uintptr_t)(desc + 1);
 		assert(binalign_check_bound((uintptr_t)desc->data, 4));
-		desc->data_off = 0;
 		desc->data_len = skb_max_size() - sizeof *desc;
-		desc->flags = EMAC_DESC_F_OWNER;
+		desc->data_off = 0;
 		desc->len = 0;
+		desc->flags = EMAC_DESC_F_OWNER;
 		prev = desc;
-	//REG_STORE(EMAC_BASE + EMAC_R_RXHDP(i), (uintptr_t)head);
 	}
 
+	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(i), (uintptr_t)head);
 }
 
 #define RXEN (0x1 << 0)
@@ -189,32 +190,29 @@ static void emac_enable_rx_and_tx_dma(void) {
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct sk_buff_data *skb_data;
 	struct emac_desc *desc;
-	struct emac_hdr *hdr;
 
 	skb_data = skb_data_clone(skb->data);
 	assert(skb_data != NULL);
 
 	desc = (struct emac_desc *)skb_data;
 	printk("desc %p\n", desc);
-	assert(binalign_check_bound((uintptr_t)desc, 32));
+	//assert(binalign_check_bound((uintptr_t)desc, 32));
 
-	hdr = (struct emac_hdr *)(desc + 1);
-	memset(&hdr->preamble[0], EMAC_HDR_PRE,
-			sizeof hdr->preamble);
-	memset(&hdr->sfd, EMAC_HDR_SFD, sizeof hdr->sfd);
+	if (skb->len < ETH_ZLEN) {
+		skb->len = ETH_ZLEN;
+	}
 
 	desc->next = 0;
 	assert(binalign_check_bound(desc->next, 32));
-	desc->data = (uintptr_t)hdr;
+	desc->data = (uintptr_t)(desc + 1) + 8;
 	assert(binalign_check_bound(desc->data, 1));
+	desc->data_len = desc->len = skb->len;
 	desc->data_off = 0;
-	desc->data_len = max(sizeof(struct emac_hdr) + skb->len, 60);
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
-	desc->len = max(sizeof(struct emac_hdr) + skb->len, 60);
 
 	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
 
-//	skb_free(skb);
+	skb_free(skb);
 
 	return 0;
 }
@@ -243,19 +241,65 @@ static const struct net_driver ti816x_ops = {
 
 #include <kernel/printk.h>
 #define HOSTPEND (1 << 26)
+#define RXTHRESHEOI 0x0
+#define RXEOI       0x1
+#define TXEOI       0x2
+#define MISCEOI     0x3
 static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
-	unsigned long reg = REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR);
+	unsigned long reg;
+	struct sk_buff *skb;
+	struct sk_buff_data *new_data;
+	struct emac_desc *desc;
 
-	printk("!%u reg %lx\n", irq_num, reg);
+	printk("!%u reg %lx\n", irq_num, REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR));
 
 	switch (irq_num) {
+	case MACRXINT0:
+		reg = REG_LOAD(EMAC_BASE + EMAC_R_RXCP(0));
+		desc = (struct emac_desc *)reg;
+		skb = skb_wrap(desc->len - sizeof *desc, sizeof *desc,
+				(struct sk_buff_data *)desc);
+		if (skb == NULL) {
+			printk("ti816x_interrupt: error: skb_wrap return NULL\n");
+			break;
+		}
+		skb->dev = dev_id;
+		netif_rx(skb);
+		new_data = skb_data_alloc();
+		if (new_data != NULL) {
+			desc = (struct emac_desc *)new_data;
+			desc->next = 0;
+			assert(binalign_check_bound((uintptr_t)desc->next, 4));
+			desc->data = (uintptr_t)(desc + 1);
+			assert(binalign_check_bound((uintptr_t)desc->data, 4));
+			desc->data_len = skb_max_size() - sizeof *desc;
+			desc->data_off = 0;
+			desc->len = 0;
+			desc->flags = EMAC_DESC_F_OWNER;
+			REG_STORE(EMAC_BASE + EMAC_R_RXHDP(0), (uintptr_t)desc);
+		}
+		else {
+			printk("ti816x_interrupt: error: skb_data_alloc return NULL\n");
+		}
+		REG_STORE(EMAC_BASE + EMAC_R_RXCP(0), reg);
+		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
+		break;
+	case MACTXINT0:
+		reg = REG_LOAD(EMAC_BASE + EMAC_R_TXCP(0));
+		skb_data_free((struct sk_buff_data *)reg);
+		printk("tx %lx\n", reg);
+		REG_STORE(EMAC_BASE + EMAC_R_TXCP(0), reg);
+		REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), 0);
+		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
+		break;
 	case MACMISC0:
 		printk("cmmiscintstat %lx\n", REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
-		if (reg & HOSTPEND) {
+		if (REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR) & HOSTPEND) {
 			printk("resetting\n");
 			REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
 			while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
 		}
+		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, MISCEOI);
 		break;
 	}
 
