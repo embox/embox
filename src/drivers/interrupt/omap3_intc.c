@@ -92,19 +92,10 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	REG_ORIN(OMAP35X_INTC_ISR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
-#include <kernel/printk.h>
-#include <limits.h>
 void interrupt_handle(void) {
 	unsigned int irq = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
-	static unsigned long msk[10] = { 0 };
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-	assert(irq < sizeof msk * CHAR_BIT);
-
-	if (~msk[irq / LONG_BIT] & (1 << (irq % LONG_BIT))) {
-		printk(" ===== IRQ: %u ==== \n", irq);
-		msk[irq / LONG_BIT] |= (1 << (irq % LONG_BIT));
-	}
 
 	irqctrl_disable(irq);
 
