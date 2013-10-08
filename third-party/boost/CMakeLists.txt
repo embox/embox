@@ -16,7 +16,7 @@ ExternalProject_Add(
    CONFIGURE_COMMAND
      ./bootstrap.sh
        --prefix=<INSTALL_DIR>
-       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams,thread,math,python
+       --without-libraries=chrono,coroutine,filesystem,locale,regex,graph,iostreams,thread,math,python,serialization,test
    BUILD_COMMAND
      ./b2
        -q
@@ -45,8 +45,9 @@ ExternalProject_Add(
        define=_POSIX_TIMERS=1
        #define=BOOST_NO_CWCTYPE
        #define=BOOST_NO_CWCHAR
+       install
    LOG_BUILD 1
    INSTALL_COMMAND
-   	false
+     true
    LOG_INSTALL 1
 )
