@@ -1,0 +1,16 @@
+package third_party.qpid
+
+static module core {
+	depends embox.lib.LibC
+	depends embox.arch.x86.LibM // FIXME:
+
+	depends third_party.boost.core
+
+	source "empty.c" // FIXME: workaround
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source
+		"../../../../gcc/lib/libqpid.a"
+
+	source "order.mk"
+}
