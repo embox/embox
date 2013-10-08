@@ -15,7 +15,7 @@
 //#define _STLP_NO_WCHAR_T
 #define _STLP_NO_CWCHAR
 
-#define _STLP_NO_LONG_DOUBLE
+//#define _STLP_NO_LONG_DOUBLE
 #define _STLP_NO_VENDOR_MATH_L
 #define _STLP_NO_VENDOR_MATH_F
 

@@ -119,11 +119,6 @@ int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
 extern
 int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 
-static inline int pthread_key_delete (pthread_key_t __key){
-	DPRINT();
-	return -1;
-}
-
 
 extern
 int swprintf(wchar_t *wcs, size_t maxlen,
