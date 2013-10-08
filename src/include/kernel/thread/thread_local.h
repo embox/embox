@@ -18,6 +18,7 @@ struct thread;
 typedef __thread_local_t thread_local_t;
 
 extern int thread_local_alloc(struct thread *t, size_t size);
+extern int thread_local_free(struct thread *t);
 
 extern void *thread_local_get(struct thread *t, size_t idx);
 

@@ -21,6 +21,11 @@ int thread_local_alloc(struct thread *t, size_t size) {
 }
 
 
+int thread_local_free(struct thread *t) {
+	free(*t->local.storage);
+
+	return ENOERR;
+}
 
 void *thread_local_get(struct thread *t, size_t idx) {
 	void *res;

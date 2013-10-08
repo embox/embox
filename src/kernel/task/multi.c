@@ -237,6 +237,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 			}
 		}
 
+		thread_local_free(task->main_thread);
 		/* At the end terminate main thread */
 		thread_terminate(task->main_thread);
 	}

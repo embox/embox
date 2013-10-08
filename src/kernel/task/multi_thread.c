@@ -55,6 +55,8 @@ int task_remove_thread(struct task * task, struct thread *thread) {
 
 	dlist_del(&thread->thread_link);
 
+	thread_local_free(thread);
+
 	return ENOERR;
 }
 
