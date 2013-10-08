@@ -35,6 +35,8 @@
 
 #include <kernel/sched.h>
 
+#include <sched.h>
+
 
 
 
@@ -78,6 +80,10 @@ void sched_start(struct thread *t) {
 
 	sched_lock();
 	{
+		if (t->policy == SCHED_FIFO) {
+			sched_ticker_fini(&rq);
+		}
+
 		post_switch_if(runq_start(&rq, t));
 	}
 	sched_unlock();
@@ -181,6 +187,7 @@ static void sched_switch(void) {
 		ipl_enable();
 
 		prev = thread_get_current();
+
 		next = runq_switch(&rq);
 
 		if (prev == next) {
@@ -189,6 +196,10 @@ static void sched_switch(void) {
 		}
 
 		assert(thread_state_running(next->state));
+
+		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
+			sched_ticker_init();
+		}
 
 		/* Running time recalculation */
 		new_clock = clock();
