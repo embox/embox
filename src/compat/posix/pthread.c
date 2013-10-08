@@ -200,12 +200,14 @@ void pthread_exit(void *value_ptr) {
 int pthread_getconcurrency(void) {
 	return -ENOSYS;
 }
+*/
 
 int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param *param) {
-	return -ENOSYS;
-}
+	*policy = thread->policy;
+	param->sched_priority = thread_get_priority(thread);
 
-*/
+	return ENOERR;
+}
 
 int pthread_join(pthread_t thread, void **value_ptr) {
 	return thread_join(thread, value_ptr);
@@ -369,6 +371,7 @@ int pthread_setconcurrency(int new_level) {
 */
 int pthread_setschedparam(pthread_t thread, int policy,
 		const struct sched_param *param) {
+	thread->policy = policy;
 	return thread_set_priority(thread, param->sched_priority);
 }
 
