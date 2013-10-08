@@ -71,16 +71,8 @@ module af_unix {
 module socket {
 	source "ksocket.c"
 	option number connect_timeout=5000
-	depends embox.arch.interrupt
-	depends embox.mem.pool
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
-	depends embox.net.sock
-	/* depends from socket_registry.c */
 
-	source "socket_registry.c"
-	option number amount_socket_node=20
-	depends embox.mem.pool
-	depends embox.lib.LibC
-	depends embox.util.LibUtil
+	depends embox.kernel.task.io_sync
+	depends embox.lib.LibCString
+	depends embox.net.sock
 }

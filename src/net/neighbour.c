@@ -143,8 +143,8 @@ static void nbr_flush_w_queue(struct neighbour *nbr) {
 	struct net_header_info hdr_info;
 
 	hdr_info.type = nbr->ptype;
-	hdr_info.src_addr = &nbr->dev->dev_addr[0];
-	hdr_info.dst_addr = &nbr->haddr[0];
+	hdr_info.src_hw = &nbr->dev->dev_addr[0];
+	hdr_info.dst_hw = &nbr->haddr[0];
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
 		(void)nbr_build_and_send_pkt(skb, &hdr_info);
@@ -382,8 +382,8 @@ int neighbour_send_after_resolve(unsigned short ptype,
 
 	if (resolved) {
 		hdr_info.type = nbr->ptype;
-		hdr_info.src_addr = &nbr->dev->dev_addr[0];
-		hdr_info.dst_addr = &nbr->haddr[0];
+		hdr_info.src_hw = &nbr->dev->dev_addr[0];
+		hdr_info.dst_hw = &nbr->haddr[0];
 		return nbr_build_and_send_pkt(skb, &hdr_info);
 	}
 

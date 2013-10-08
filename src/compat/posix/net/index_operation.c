@@ -1,9 +1,12 @@
 /*
  * @file
+ * @brief
  *
- * @date Jun 26, 2013
- * @author: Anton Bondarev
+ * @date 26.06.13
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
+
 #include <stddef.h>
 
 #include <kernel/task.h>
@@ -13,8 +16,13 @@
 
 #include <sys/socket.h>
 
-extern int recvmsg_sock(struct sock *sk, struct msghdr *msg, int flags);
-extern int sendmsg_sock(struct sock *sk, struct msghdr *msg, int flags);
+static inline struct sock * desc2sock(struct idx_desc *desc) {
+	return desc != NULL ? task_idx_desc_data(desc) : NULL;
+}
+
+static inline int desc2flags(struct idx_desc *desc) {
+	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
+}
 
 static ssize_t socket_read(struct idx_desc *desc, void *buff,
 		size_t size) {
@@ -30,11 +38,10 @@ static ssize_t socket_read(struct idx_desc *desc, void *buff,
 	msg.msg_iovlen = 1;
 	msg.msg_flags = 0;
 
-	iov.iov_base = (void *)buff;
+	iov.iov_base = buff;
 	iov.iov_len = size;
 
-	ret = recvmsg_sock((struct sock *)task_idx_desc_data(desc),
-			&msg, *task_idx_desc_flags_ptr(desc));
+	ret = krecvmsg(desc2sock(desc), &msg, desc2flags(desc));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -60,8 +67,7 @@ static ssize_t socket_write(struct idx_desc *desc, const void *buff,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = sendmsg_sock((struct sock *)task_idx_desc_data(desc),
-			&msg, *task_idx_desc_flags_ptr(desc));
+	ret = ksendmsg(desc2sock(desc), &msg, desc2flags(desc));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -75,7 +81,7 @@ static int socket_close(struct idx_desc *desc) {
 
 	assert(desc != NULL);
 
-	ret = ksocket_close((struct sock *)task_idx_desc_data(desc));
+	ret = ksocket_close(desc2sock(desc));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;

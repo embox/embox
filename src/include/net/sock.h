@@ -75,9 +75,11 @@ struct sock {
 	const struct family_ops *f_ops;
 	const struct sock_ops *ops;
 	struct io_sync ios;
-	//const struct sockaddr *src_addr;
-	//const struct sockaddr *dst_addr;
-	struct socket_node *sock_node;
+#if 0
+	const struct sockaddr *src_addr;
+	const struct sockaddr *dst_addr;
+	size_t addr_len;
+#endif
 };
 
 struct family_ops {
@@ -104,7 +106,6 @@ struct family_ops {
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
-	bool (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
 };
 
 struct sock_ops {
@@ -159,23 +160,37 @@ static inline int sock_stream_recvmsg(struct sock *sk,
 
 static inline void sock_set_state(struct sock *sk,
 		enum sock_state state) {
+	assert(sk != NULL);
 	sk->state = state;
 }
-static inline enum sock_state sock_get_state(struct sock *sk) {
+static inline enum sock_state sock_get_state(const struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state;
 }
 static inline int sock_state_bound(struct sock *sk) {
-	return sk->state == SS_BOUND;
+	assert(sk != NULL);
+	return (sk->state == SS_BOUND) || (sk->state == SS_LISTENING)
+			|| (sk->state == SS_CONNECTING)
+			|| (sk->state == SS_CONNECTED)
+			|| (sk->state == SS_ESTABLISHED);
 }
 static inline int sock_state_listening(struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state == SS_LISTENING;
 }
 static inline int sock_state_connecting(struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state == SS_CONNECTING;
 }
 static inline int sock_state_connected(struct sock *sk) {
+	assert(sk != NULL);
 	return (sk->state == SS_CONNECTED)
 			|| (sk->state == SS_ESTABLISHED);
+}
+
+static inline void sock_set_so_error(struct sock *sk, int error) {
+	assert(sk != NULL);
+	sk->opt.so_error = error;
 }
 
 #define sock_foreach(sk, ops) \

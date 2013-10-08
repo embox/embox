@@ -34,8 +34,6 @@
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 #define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
 
-static inline void debug_print(__u8 code, const char *msg, ...) { }
-
 static const struct sock_ops tcp_sock_ops_struct;
 const struct sock_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 
@@ -118,8 +116,6 @@ static int tcp_connect(struct sock *sk,
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;
-	struct sockaddr_in *addr_in;
-	struct rt_entry *rte;
 	int ret;
 	static const __u8 magic_opts[] = {
 		/**
@@ -137,12 +133,11 @@ static int tcp_connect(struct sock *sk,
 		0x03, 0x03, 0x07 /* Window scale: 7 (multiply by 128) */
 	};
 
-	assert(sk != NULL);
-	assert(addr != NULL);
+	(void)addr;
+	(void)addr_len;
+	(void)flags;
 
-	if (addr_len != sizeof(struct sockaddr_in)) {
-		return -EINVAL;
-	}
+	assert(sk != NULL);
 
 	sock.sk = sk;
 	debug_print(3, "tcp_connect: sk %p\n", sock.tcp_sk);
@@ -155,17 +150,6 @@ static int tcp_connect(struct sock *sk,
 			ret = -EISCONN;
 			break;
 		case TCP_CLOSED:
-			/* XXX setup inet_sock */
-			addr_in = (struct sockaddr_in *)addr;
-			rte = rt_fib_get_best(addr_in->sin_addr.s_addr, NULL);
-			if (rte == NULL) {
-				ret = -EHOSTUNREACH;
-				break;
-			}
-			assert(inetdev_get_by_dev(rte->dev) != NULL);
-			sock.inet_sk->saddr = inetdev_get_by_dev(rte->dev)->ifa_address; // TODO remove this
-			sock.inet_sk->daddr = addr_in->sin_addr.s_addr;
-			sock.inet_sk->dport = addr_in->sin_port;
 			/* make skb with options */
 			skb = alloc_prep_skb(sizeof magic_opts, 0);
 			if (skb == NULL) {
@@ -224,11 +208,13 @@ static int tcp_listen(struct sock *sk, int backlog) {
 static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addr_len, int flags, struct sock **newsk) {
 	union sock_pointer sock, newsock;
-	struct sockaddr_in *addr_in;
+
+	(void)addr;
+	(void)addr_len;
+	(void)flags;
 
 	assert(sk != NULL);
 	assert(newsk != NULL);
-	assert((addr == NULL) || (addr_len != NULL));
 
 	sock.sk = sk;
 	debug_print(3, "tcp_accept: sk %p, st%d\n", sock.tcp_sk, sock.tcp_sk->state);
@@ -266,19 +252,10 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 
-		/* save remote address */
-		if (addr != NULL) {
-			addr_in = (struct sockaddr_in *)addr;
-			addr_in->sin_family = AF_INET;
-			addr_in->sin_port = newsock.inet_sk->dport;
-			addr_in->sin_addr.s_addr = newsock.inet_sk->daddr;
-			*addr_len = sizeof *addr_in;
-		}
-
 		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
-				newsock.tcp_sk, inet_ntoa(
-					*(struct in_addr *)&newsock.inet_sk->daddr),
-				ntohs(newsock.inet_sk->dport));
+				newsock.tcp_sk,
+				inet_ntoa(newsock.inet_sk->dst_in.sin_addr),
+				ntohs(newsock.inet_sk->dst_in.sin_port));
 
 		if (tcp_st_status(newsock) == TCP_ST_NOTEXIST) {
 			tcp_free_sock(newsock);
@@ -300,6 +277,8 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 	size_t bytes, max_len;
 	char *buff;
 	size_t len = msg->msg_iov->iov_len;
+
+	(void)flags;
 
 	assert(sk != NULL);
 	assert(msg != NULL);

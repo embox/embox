@@ -111,7 +111,8 @@ static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __b
  *	RAW: socket, IP header is ready, but LL header unknown
  *	TCP: socket, TCP header is built, IP header is placed, LL header unknown
  */
-extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
+extern int ip_send_packet(struct inet_sock *sk,
+		struct sk_buff *pack, const struct sockaddr_in *to);
 
 /**
  * Perform forwarding of obtained packet

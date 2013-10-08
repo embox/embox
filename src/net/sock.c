@@ -84,7 +84,10 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->f_ops = f_ops;
 	sk->ops = ops;
 	io_sync_init(&sk->ios, 0, 0);
-	//sk->src_addr = sk->dst_addr = NULL;
+#if 0
+	sk->src_addr = sk->dst_addr = NULL;
+	sk->addr_len = 0;
+#endif
 }
 
 int sock_create_ext(int family, int type, int protocol,
@@ -282,9 +285,9 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	}
 
 	assert(msg->msg_iov != NULL);
-	assert(msg->msg_iov->iov_base != NULL);
 	buff = msg->msg_iov->iov_base;
 	buff_sz = msg->msg_iov->iov_len;
+	assert((buff != NULL) || (buff_sz == 0));
 	total_len = 0;
 
 	while (1) {

@@ -35,9 +35,23 @@ EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_sock_ops_struct);
 
 static int raw_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
+	const struct inet_sock *in_sk;
+
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
+	assert(in_sk->dst_in.sin_family == AF_INET);
+
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
-	return sk->opt.so_protocol == skb->nh.iph->proto;
+
+	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 int raw_rcv(struct sk_buff *skb) {
@@ -55,7 +69,6 @@ int raw_rcv(struct sk_buff *skb) {
 		cloned = skb_clone(skb);
 		if (cloned == NULL) {
 			continue;
-			//return -ENOMEM;
 		}
 
 		sock_rcv(sk, cloned, cloned->nh.raw,
@@ -67,21 +80,28 @@ int raw_rcv(struct sk_buff *skb) {
 
 static int raw_err_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 	const struct iphdr *emb_pack_iphdr;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
+	assert(in_sk->dst_in.sin_family == AF_INET);
 
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
 	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
 			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
 
-	return !(inet_sk->daddr != emb_pack_iphdr->saddr && inet_sk->daddr)
-			&& !(inet_sk->rcv_saddr != emb_pack_iphdr->daddr && inet_sk->rcv_saddr)
-			/* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			&& sk->opt.so_protocol == emb_pack_iphdr->proto;
+	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+					&& (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 void raw_err(struct sk_buff *skb, uint32_t info) {
@@ -103,7 +123,7 @@ void raw_err(struct sk_buff *skb, uint32_t info) {
 }
 
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct inet_sock *inet = inet_sk(sk);
+	struct inet_sock *in_sk = inet_sk(sk);
 	size_t len = msg->msg_iov->iov_len;
 	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
 
@@ -120,7 +140,9 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		 */
 	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 
-	ip_send_packet(inet, skb);
+	ip_send_packet(in_sk, skb,
+			(const struct sockaddr_in *)msg->msg_name);
+
 	return 0;
 }
 

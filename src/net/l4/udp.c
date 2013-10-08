@@ -25,61 +25,70 @@ EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
 static int udp_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
 	assert(skb->h.uh != NULL);
-	return ((inet_sk->rcv_saddr == INADDR_ANY)
-				|| (inet_sk->rcv_saddr == skb->nh.iph->daddr))
-			&& (inet_sk->sport == skb->h.uh->dest);
+
+	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->src_in.sin_port == skb->h.uh->dest);
+}
+
+static int udp_accept_dst(const struct inet_sock *in_sk,
+		const struct sk_buff *skb) {
+	assert(in_sk != NULL);
+	assert(in_sk->dst_in.sin_family == AF_INET);
+
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	assert(skb->h.uh != NULL);
+
+	return ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& ((in_sk->dst_in.sin_port == skb->h.uh->source)
+				|| (in_sk->dst_in.sin_port == 0))
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 static int udp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
-	struct inet_sock *inet;
 
 	assert(skb != NULL);
 
-	sk = sock_lookup(NULL, udp_sock_ops,
-			udp_rcv_tester, skb);
-
-#if 0
-	/* FIXME for bootp; use raw socket */
-	if (sk == NULL) {
-		sk = udp_lookup(0, udph->dest);
-	}
-#endif
-
+	sk = sock_lookup(NULL, udp_sock_ops, udp_rcv_tester, skb);
 	if (sk != NULL) {
-		inet = inet_sk(sk);
-		inet->dport = skb->h.uh->source;
-		inet->daddr = skb->nh.iph->saddr;
-
-		sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE,
-				ntohs(skb->h.uh->len) - UDP_HEADER_SIZE);
-
-		if (inet->rcv_saddr == INADDR_ANY) {
-			//TODO: temporary
-			inet->saddr = skb->nh.iph->daddr;
+		if (udp_accept_dst(inet_sk(sk), skb)) {
+			sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE,
+					ntohs(skb->h.uh->len) - UDP_HEADER_SIZE);
 		}
-	} else {
+		else {
+			skb_free(skb);
+		}
+	}
+	else {
 		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}
-	return ENOERR;
+
+	return 0;
 }
 
 static int udp_err_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 	const struct iphdr *emb_pack_iphdr;
 	const struct udphdr *emb_pack_udphdr;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
+	assert(in_sk->dst_in.sin_family == AF_INET);
 
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
@@ -91,12 +100,18 @@ static int udp_err_tester(const struct sock *sk,
 			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE
 			+ IP_HEADER_SIZE(emb_pack_iphdr));
 
-	return !(inet_sk->daddr != emb_pack_iphdr->saddr && inet_sk->daddr)
-			&& !(inet_sk->rcv_saddr != emb_pack_iphdr->daddr && inet_sk->rcv_saddr)
-			&& (inet_sk->sport == emb_pack_udphdr->dest)
-			&& (inet_sk->dport == emb_pack_udphdr->source)
-			/* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			&& inet_sk->sk.opt.so_protocol == emb_pack_iphdr->proto;
+	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->src_in.sin_port == emb_pack_udphdr->source)
+			&& (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+					&& (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& ((in_sk->dst_in.sin_port == emb_pack_udphdr->dest)
+				|| (in_sk->dst_in.sin_port == 0))
+			&& (in_sk->sk.opt.so_protocol == emb_pack_iphdr->proto)
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 static void udp_err(sk_buff_t *skb, unsigned int info) {

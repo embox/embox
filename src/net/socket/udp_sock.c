@@ -46,9 +46,11 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 
 static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
-
-	struct inet_sock *inet = inet_sk(sk);
+	const struct sockaddr_in *to;
+	struct inet_sock *in_sk = inet_sk(sk);
 	size_t len = msg->msg_iov->iov_len;
+
+	to = msg->msg_name != NULL ? msg->msg_name : &in_sk->dst_in;
 
 	/* FIXME if msg->msg_iov->iov_len more than ETHERNET_V2_FRAME_SIZE */
 	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
@@ -63,9 +65,11 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
-	rebuild_udp_header(skb, inet->sport, inet->dport, len);
+	rebuild_udp_header(skb, in_sk->src_in.sin_port,
+			to->sin_port, len);
 
-	ip_send_packet(inet, skb);
+	ip_send_packet(in_sk, skb, to);
+
 	return 0;
 }
 

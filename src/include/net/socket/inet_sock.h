@@ -34,19 +34,13 @@ struct sock;
  */
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
-	struct sock    sk;
-	in_addr_t      saddr;     /* really source address of socket */
-	in_addr_t      rcv_saddr; /* address from which the socket receives packets
-								 (this equals to saddr or INADDR_ANY) */
-	in_addr_t      daddr;     /* really address of destonation host */
-	struct ip_options *opt;
-	in_port_t      dport;
-	in_port_t      sport;
-	int sport_is_alloced;         /* non-zero if port was alloced */
-	int16_t        uc_ttl;
-	uint16_t       id;
-	uint8_t        tos;
-	uint8_t        mc_ttl;
+	struct sock sk;
+	int src_port_alloced;      /* non-zero if port was alloced */
+	struct sockaddr_in src_in; /* address from which the socket
+								  receives packets */
+	struct sockaddr_in dst_in; /* really address of destonation host */
+	int16_t uc_ttl;
+	uint16_t id;
 } inet_sock_t;
 
 static inline struct inet_sock * inet_sk(struct sock *sk) {

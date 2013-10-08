@@ -152,7 +152,6 @@ static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 }
 
 extern const struct sock_ops *const tcp_sock_ops __attribute__((weak));
-extern union sock_pointer tcp_sock_default;
 
 /* Others functionality */
 extern void build_tcp_packet(size_t opt_len, size_t data_len,
@@ -163,11 +162,9 @@ extern void tcp_set_st(union sock_pointer sock,
 extern void tcp_obj_lock(union sock_pointer sock, unsigned int obj);
 extern void tcp_obj_unlock(union sock_pointer sock, unsigned int obj);
 extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
-extern size_t tcp_seq_len(struct sk_buff *skb);
-extern size_t tcp_data_left(struct sk_buff *skb);
 extern void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb);
 extern int tcp_st_status(union sock_pointer sock);
-extern void tcp_get_now(struct timeval *out_now);
-extern int tcp_is_expired(struct timeval *since, useconds_t limit_msec);
+extern void debug_print(__u8 code, const char *msg, ...);
+
 
 #endif /* NET_L4_TCP_H_ */

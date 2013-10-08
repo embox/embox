@@ -80,13 +80,11 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 	start = clock();
 	while ((delta = clock() - start) < timeout) {
 		/* we don't need to get pad data, only header */
-		if (recvfrom(sock, rx_pack->packet_buff,
-				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				NULL, NULL) <= 0) {
+		if (recv(sock, rx_pack->packet_buff,
+				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0) <= 0) {
 			continue;
 		}
 		if ((rx_pack->hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
-		    (ptx_pack->hdr.ip_hdr.daddr != rx_pack->hdr.ip_hdr.saddr) ||
 		    (ptx_pack->hdr.icmp_hdr.un.echo.id != rx_pack->hdr.icmp_hdr.un.echo.id) ||
 		    (ptx_pack->hdr.icmp_hdr.un.echo.sequence != rx_pack->hdr.icmp_hdr.un.echo.sequence)) {
 			continue;
@@ -143,17 +141,24 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	timeout = pinfo->timeout * 1000;
 
 	/* open socket */
-	sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
-	if (sk < 0) {
+	sk = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (sk == -1) {
 		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
 		return -errno;
 	}
 
-	fcntl(sk, F_SETFD, O_NONBLOCK);
-
 	to.sin_family = AF_INET;
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
+	to.sin_port = 0;
+
+	if (0 != connect(sk, (struct sockaddr *)&to, sizeof to)) {
+		close(sk);
+		free(tx_pack);
+		return -errno;
+	}
+
+	fcntl(sk, F_SETFD, O_NONBLOCK);
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
@@ -168,7 +173,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		tx_pack->hdr.icmp_hdr.checksum = ptclbsum(tx_pack->packet_buff + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 		ip_send_check(&tx_pack->hdr.ip_hdr);
-		sendto(sk, tx_pack->packet_buff, ntohs(tx_pack->hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&to, sizeof to);
+		send(sk, tx_pack->packet_buff, ntohs(tx_pack->hdr.ip_hdr.tot_len), 0);
 
 		/* try to fetch response */
 		if (sent_result(sk, timeout, tx_pack, official_name)) {

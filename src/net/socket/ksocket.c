@@ -19,63 +19,33 @@
 #include <net/sock.h>
 #include <util/sys_log.h>
 #include <net/socket/ksocket.h>
-#include <net/socket/socket_registry.h>
-#include <embox/net/family.h>
-#include <kernel/manual_event.h>
 
 #include <framework/mod/options.h>
-#include <hal/ipl.h>
-#include <mem/misc/pool.h>
 #include <kernel/time/time.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 
-static int ksocket_ext(int family, int type, int protocol,
-		struct sock *sk, struct sock **out_sk) {
-	int ret;
-
-	assert(out_sk != NULL);
-
-	if (sk == NULL) {
-		ret = sock_create(family, type, protocol, &sk);
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
-	sk->sock_node = NULL;
-
-	ret = sr_add_socket_to_registry(sk);
-	if (ret != 0) {
-		sock_close(sk);
-		return ret;
-	}
-	sock_set_state(sk, SS_UNCONNECTED);
-
-	*out_sk = sk;
-
-	return 0;
-}
-
 int ksocket(int family, int type, int protocol,
 		struct sock **out_sk) {
 	int ret;
-	struct sock *sk;
+	struct sock *new_sk;
 
 	if (out_sk == NULL) {
 		return -EINVAL;
 	}
 
-	ret = ksocket_ext(family, type, protocol, NULL, &sk);
+	ret = sock_create(family, type, protocol, &new_sk);
 	if (ret != 0) {
 		return ret;
 	}
 
+	sock_set_state(new_sk, SS_UNCONNECTED);
+
 	if (type != SOCK_STREAM) {
-		io_sync_enable(&sk->ios, IO_SYNC_WRITING);
+		io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
 	}
 
-	*out_sk = sk;
+	*out_sk = new_sk;
 
 	return 0;
 }
@@ -85,20 +55,13 @@ int ksocket_close(struct sock *sk) {
 		return -EBADF;
 	}
 
-	assert(sr_socket_exists(sk));
-
 	sock_set_state(sk, SS_DISCONNECTING);
-
-	sr_remove_saddr(sk);
-
-	if (0 != sr_remove_socket_from_registry(sk)) {
-		LOG_WARN("ksocket_close",
-				"couldn't remove entry from registry");
-	}
 
 	if (0 != sock_close(sk)) {
 		LOG_WARN("ksocket_close", "can't close socket");
 	}
+
+	/* sock_set_state(sk, SS_CLOSED); */
 
 	return 0;
 }
@@ -114,21 +77,21 @@ int kbind(struct sock *sk, const struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-
 	if (sock_state_bound(sk)) {
 		return -EINVAL;
 	}
 	else if (sk->opt.so_domain != addr->sa_family) {
 		return -EAFNOSUPPORT;
 	}
+#if 0
 	else if (!sr_is_saddr_free(sk, (struct sockaddr *)addr)) {
 		return -EADDRINUSE;
 	}
+#endif
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->bind == NULL) {
-		return -EOPNOTSUPP;
+		return -ENOSYS;
 	}
 
 	ret = sk->f_ops->bind(sk, addr, addrlen);
@@ -137,7 +100,6 @@ int kbind(struct sock *sk, const struct sockaddr *addr,
 	}
 
 	sock_set_state(sk, SS_BOUND);
-	sr_set_saddr(sk, addr);
 
 	return 0;
 }
@@ -153,8 +115,6 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-
 	if (sk->opt.so_domain != addr->sa_family) {
 		return -EAFNOSUPPORT;
 	}
@@ -163,7 +123,7 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 		return -EISCONN;
 	}
 	else if (sock_state_listening(sk)) {
-		return -EOPNOTSUPP;
+		return -EISCONN;
 	}
 	else if (sock_state_connecting(sk)) {
 		return -EALREADY;
@@ -175,7 +135,6 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 	}
 
 	if (!sock_state_bound(sk)) {
-		/* FIXME */
 		if (sk->f_ops->bind_local == NULL) {
 			return -EINVAL;
 		}
@@ -184,7 +143,6 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 			return ret;
 		}
 		/* sock_set_state(sk, SS_BOUND); */
-		sr_set_saddr(sk, addr);
 	}
 
 	sock_set_state(sk, SS_CONNECTING);
@@ -230,15 +188,22 @@ int klisten(struct sock *sk, int backlog) {
 	}
 	backlog = backlog > 0 ? backlog : 1;
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
-
-	if (!sock_state_bound(sk)) {
-		return -EDESTADDRREQ;
+	if (sk->opt.so_type != SOCK_STREAM) {
+		return -EOPNOTSUPP;
 	}
 	else if (sock_state_connecting(sk)
 			|| sock_state_connected(sk)) {
 		return -EINVAL;
+	}
+	else if (!sock_state_bound(sk)) {
+		if (sk->f_ops->bind_local == NULL) {
+			return -EINVAL;
+		}
+		ret = sk->f_ops->bind_local(sk);
+		if (ret != 0) {
+			return ret;
+		}
+		sock_set_state(sk, SS_BOUND);
 	}
 
 	assert(sk->f_ops != NULL);
@@ -246,17 +211,16 @@ int klisten(struct sock *sk, int backlog) {
 		return -ENOSYS;
 	}
 
-	assert(sk != NULL);
 	ret = sk->f_ops->listen(sk, backlog);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_listen",
 				"error setting socket in listening state");
-		sock_set_state(sk, SS_BOUND);
 		return ret;
 	}
 
 	sock_set_state(sk, SS_LISTENING);
 	sk->opt.so_acceptconn = 1;
+	sk->shutdown_flag |= SHUT_WR + 1;
 
 	return 0;
 }
@@ -274,10 +238,10 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
-
-	if (!sock_state_listening(sk)) {
+	if (sk->opt.so_type != SOCK_STREAM) {
+		return -EOPNOTSUPP;
+	}
+	else if (!sock_state_listening(sk)) {
 		LOG_ERROR("ksocket_accept",
 				"accepting socket should be in listening state");
 		return -EINVAL;
@@ -285,7 +249,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->accept == NULL) {
-		return -EOPNOTSUPP;
+		return -ENOSYS;
 	}
 
 	if (!(flags & O_NONBLOCK)) {
@@ -301,14 +265,6 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	if (ret != 0) {
 		LOG_ERROR("ksocket_accept",
 				"error while accepting a connection");
-		return ret;
-	}
-
-	ret = ksocket_ext(sk->opt.so_domain,
-			sk->opt.so_type, sk->opt.so_protocol,
-			new_sk, &new_sk);
-	if (ret != 0) {
-		sock_release(new_sk);
 		return ret;
 	}
 
@@ -328,18 +284,16 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	if (sk == NULL) {
 		return -EBADF;
 	}
-	else if (msg == NULL) {
+	else if ((msg == NULL) || (msg->msg_iov == NULL)
+			|| (msg->msg_iovlen == 0)) {
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
-
-	assert(sk->f_ops != NULL);
-	if (sk->f_ops->sendmsg == NULL) {
-		return -ENOSYS;
+	if (sk->shutdown_flag & (SHUT_WR + 1)) {
+		return -EPIPE;
 	}
 
+	assert(sk->f_ops != NULL);
 	switch (sk->opt.so_type) {
 	default:
 		if (!sock_state_bound(sk)) {
@@ -351,7 +305,6 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 				return ret;
 			}
 			sock_set_state(sk, SS_BOUND);
-			/*sr_set_saddr(sk, addr); FIXME */
 		}
 		if (msg->msg_name == NULL) {
 			if (msg->msg_namelen != 0) {
@@ -376,13 +329,18 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		break;
 	}
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
-		return -EPIPE;
-	}
-
-	if (msg->msg_flags != 0) { /* TODO remove this */
+	/* TODO remove this */
+	if (msg->msg_flags != 0) {
 		LOG_ERROR("ksendmsg", "flags are not supported");
 		return -EOPNOTSUPP;
+	}
+	else if (msg->msg_iovlen != 1) {
+		LOG_ERROR("ksendmsg", "only one msg_iov allowed");
+		return -EINVAL;
+	}
+
+	if (sk->f_ops->sendmsg == NULL) {
+		return -ENOSYS;
 	}
 
 	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
@@ -407,25 +365,27 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	if (sk == NULL) {
 		return -EBADF;
 	}
-	else if (msg == NULL) {
+	else if ((msg == NULL) || (msg->msg_iov == NULL)
+			|| (msg->msg_iovlen == 0)) {
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
-
-	if ((sk->opt.so_type == SOCK_STREAM)
+	if (sk->shutdown_flag & (SHUT_RD + 1)) {
+		return -EPIPE;
+	}
+	else if ((sk->opt.so_type == SOCK_STREAM)
 			&& !sock_state_connected(sk)) {
 		return -ENOTCONN;
 	}
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
-		return -EPIPE;
-	}
-
-	if (msg->msg_flags != 0) { /* TODO remove this */
-		LOG_ERROR("ksendmsg", "flags are not supported");
+	/* TODO remove this */
+	if (msg->msg_flags != 0) {
+		LOG_ERROR("krecvmsg", "flags are not supported");
 		return -EOPNOTSUPP;
+	}
+	else if (msg->msg_iovlen != 1) {
+		LOG_ERROR("krecvmsg", "only one msg_iov allowed");
+		return -EINVAL;
 	}
 
 	assert(sk->f_ops != NULL);
@@ -461,14 +421,12 @@ int kshutdown(struct sock *sk, int how) {
 		break;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
+	sk->shutdown_flag |= (how + 1);
 
-	if (!sock_state_connected(sk)){
+	if (!sock_state_connected(sk)
+			&& !sock_state_listening(sk)) {
 		return -ENOTCONN;
 	}
-
-	sk->shutdown_flag |= (how + 1);
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->shutdown == NULL) {
@@ -488,9 +446,6 @@ int kgetsockname(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
-
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->getsockname == NULL) {
 		return -ENOSYS;
@@ -509,8 +464,9 @@ int kgetpeername(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
+	if (!sock_state_connected(sk)) {
+		return -ENOTCONN;
+	}
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->getpeername == NULL) {
@@ -520,11 +476,11 @@ int kgetpeername(struct sock *sk, struct sockaddr *addr,
 	return sk->f_ops->getpeername(sk, addr, addrlen);
 }
 
-#define CASE_GETSOCKOPT(test_name, field, expression)       \
-	case test_name:                                         \
+#define CASE_GETSOCKOPT(test_name, field, expression) \
+	case test_name:                                   \
 		memcpy(optval, &sk->opt.field,                \
 				min(*optlen, sizeof sk->opt.field));  \
-		expression;                                         \
+		expression;                                   \
 		*optlen = min(*optlen, sizeof sk->opt.field); \
 		break
 
@@ -537,9 +493,6 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 			|| (*optlen < 0)) {
 		return -EINVAL;
 	}
-
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
 
 	if (level != SOL_SOCKET) {
 		assert(sk->f_ops != NULL);
@@ -589,10 +542,10 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 #define CASE_SETSOCKOPT(test_name, field, expression) \
 	case test_name:                                   \
 		expression;                                   \
-		if (optlen != sizeof sk->opt.field) {   \
+		if (optlen != sizeof sk->opt.field) {         \
 			return -EINVAL;                           \
 		}                                             \
-		memcpy(&sk->opt.field, optval, optlen); \
+		memcpy(&sk->opt.field, optval, optlen);       \
 		break
 
 int ksetsockopt(struct sock *sk, int level, int optname,
@@ -603,9 +556,6 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 	else if ((optval == NULL) || (optlen < 0)) {
 		return -EINVAL;
 	}
-
-	assert(sr_socket_exists(sk));
-	assert(sk != NULL);
 
 	if (level != SOL_SOCKET) {
 		assert(sk->f_ops != NULL);

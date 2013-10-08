@@ -81,11 +81,16 @@ extern int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route);
 extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
 
 /**
- * Get first element from route from table.
- * @return pointer to first entity
- * @retval NULL if entity not found
+ * Get IP address of local interface from which packet would be sent
+ * After this new_addr will be equal to interface address
+ * @param ip address
+ * @param pointer to result
+ * @return error code
  */
-extern struct rt_entry * rt_fib_get_first(void);
+extern int rt_fib_source_ip(in_addr_t dst, in_addr_t *out_src);
+
+extern int rt_fib_out_dev(in_addr_t dst, struct sock *sk,
+		struct net_device **out_dev);
 
 /**
  * @param dst - ip address of destination
@@ -94,6 +99,13 @@ extern struct rt_entry * rt_fib_get_first(void);
  * @retval NULL if entity not found
  */
 extern struct rt_entry* rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
+
+/**
+ * Get first element from route from table.
+ * @return pointer to first entity
+ * @retval NULL if entity not found
+ */
+extern struct rt_entry * rt_fib_get_first(void);
 
 /**
  * Get next element from route from table uses

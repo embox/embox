@@ -19,7 +19,6 @@
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>
-#include <net/socket/socket_registry.h>
 #include <linux/in.h>
 #include <net/netfilter.h>
 #include <kernel/printk.h>
@@ -46,9 +45,10 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	return 0;
 }
 
-static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
+static void build_ip_packet(struct inet_sock *in_sk,
+		struct sk_buff *skb, in_addr_t src_ip, in_addr_t dst_ip) {
 	/* IP header has already been built */
-	if (sk->sk.opt.so_type == SOCK_RAW)
+	if (in_sk->sk.opt.so_type == SOCK_RAW)
 		return;
 
 	/* We use headers in other way then Linux. So data coinsides with LL header
@@ -62,8 +62,8 @@ static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	 * This functionality belongs to the device. NOT to the socket.
 	 * See init_ip_header() usage. It's more correct
 	 */
-	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.opt.so_protocol, sk->id, skb->len,
-			sk->saddr, sk->daddr/*, sk->opt*/);
+	rebuild_ip_header(skb, in_sk->uc_ttl, in_sk->sk.opt.so_protocol,
+			in_sk->id, skb->len, src_ip, dst_ip/*, sk->opt*/);
 	return;
 }
 
@@ -86,10 +86,10 @@ int ip_queue_xmit(struct sk_buff *skb) {
 	daddr = skb->nh.iph->daddr;
 
 	hdr_info.type = ETH_P_IP;
-	hdr_info.src_addr = NULL;
-	hdr_info.dst_addr = NULL;
+	hdr_info.src_hw = NULL;
+	hdr_info.dst_hw = NULL;
 	if (ip_is_local(daddr, false, false)) {
-		hdr_info.dst_paddr = NULL;
+		hdr_info.dst_p = NULL;
 	}
 	else {
 		/* get dest ip from route table */
@@ -99,8 +99,8 @@ int ip_queue_xmit(struct sk_buff *skb) {
 			return ret;
 		}
 
-		hdr_info.dst_paddr = &daddr;
-		hdr_info.dst_plen = sizeof daddr;
+		hdr_info.dst_p = &daddr;
+		hdr_info.p_len = sizeof daddr;
 	}
 
 	return net_tx(skb, &hdr_info);
@@ -133,35 +133,32 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	return ret;
 }
 
-int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
+int ip_send_packet(struct inet_sock *in_sk, struct sk_buff *skb,
+		const struct sockaddr_in *to) {
 	int ret;
-	in_addr_t dest;
-	struct rt_entry *best_route;
+	in_addr_t src_ip, dst_ip;
 
-	dest = ((sk == NULL) ? skb->nh.iph->daddr : sk->daddr);
+	assert((to == NULL) || (to->sin_family == AF_INET));
 
-	best_route = rt_fib_get_best(dest, NULL);
-	if ((best_route == NULL) && (dest != INADDR_BROADCAST)) {
-		skb_free(skb);
-		return -ENETUNREACH;
-	}
-	else if ((best_route != NULL) && (sk != NULL)) {
-		sk->saddr = inetdev_get_by_dev(best_route->dev)->ifa_address;
-	}
+	skb->sk = &in_sk->sk;
 
-	skb->sk = &sk->sk;
+	dst_ip = to != NULL ? to->sin_addr.s_addr
+			: in_sk != NULL ? in_sk->dst_in.sin_addr.s_addr
+			: skb->nh.iph->daddr;
 
-	if (sk != NULL) {
-		build_ip_packet(sk, skb);
-	}
-
-	ret = ip_route(skb, best_route);
+	ret = rt_fib_out_dev(dst_ip, &in_sk->sk, &skb->dev);
 	if (ret != 0) {
 		skb_free(skb);
 		return ret;
 	}
-
 	assert(skb->dev != NULL);
+
+	assert(inetdev_get_by_dev(skb->dev) != NULL);
+	src_ip = inetdev_get_by_dev(skb->dev)->ifa_address;
+
+	if (in_sk != NULL) {
+		build_ip_packet(in_sk, skb, src_ip, dst_ip);
+	}
 
 	if (skb->len > skb->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
@@ -252,5 +249,5 @@ int ip_forward_packet(sk_buff_t *skb) {
 }
 
 void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
-	so_sk_set_so_error(sk, (type & code << 8));
+	sock_set_so_error(sk, (type & code << 8));
 }

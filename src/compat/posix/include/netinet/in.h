@@ -80,6 +80,7 @@ enum {
  * IP address constants
  */
 #define INADDR_ANY          ((unsigned long int)0x00000000) /* 0.0.0.0 */
+#define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
 #define INADDR_BROADCAST    ((unsigned long int)0xffffffff) /* 255.255.255.255 */
 
 /**

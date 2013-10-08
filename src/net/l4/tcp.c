@@ -73,16 +73,18 @@ enum tcp_ret_code {
 typedef enum tcp_ret_code (*tcp_handler_t)(union sock_pointer sock, struct sk_buff **skb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph);
 
-union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
+static union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
 
 /* Prototypes */
 static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_t hnd);
 static const tcp_handler_t tcp_st_handler[];
+static void tcp_get_now(struct timeval *out_now);
+static size_t tcp_seq_len(struct sk_buff *skb);
 
 /************************ Debug functions ******************************/
 #if 1
-static inline void debug_print(__u8 code, const char *msg, ...) { }
+void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, char *msg,
 		in_addr_t ip, in_port_t port) { }
 
@@ -104,8 +106,8 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 7:  /* tcp_default_timer action */
 	case 8:  /* state's handler */
 	case 9:  /* sending package */
-	case 10: /* pre_process */
-	case 11: /* tcp_handle */
+//	case 10: /* pre_process */
+//	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
 		softirq_unlock();
@@ -149,8 +151,8 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 	memset(skb->h.th, 0, tcp_hdr_sz);
-	skb->h.th->source = sock.inet_sk->sport;
-	skb->h.th->dest = sock.inet_sk->dport;
+	skb->h.th->source = sock.inet_sk->src_in.sin_port;
+	skb->h.th->dest = sock.inet_sk->dst_in.sin_port;
 	skb->h.th->seq = 0; /* use set_tcp_set_field */
 	skb->h.th->doff = tcp_hdr_sz / 4;
 }
@@ -198,7 +200,7 @@ static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
 			+ (sock.tcp_sk->rem.seq - seq), tcp_data_len(skb));
 }
 
-size_t tcp_data_left(struct sk_buff *skb) {
+static size_t tcp_data_left(struct sk_buff *skb) {
 	size_t ip_len, recv_sz;
 
 	ip_len = ntohs(skb->nh.iph->tot_len);
@@ -210,7 +212,7 @@ static int tcp_seq_flags(struct tcphdr *tcph) {
 	return tcph->fin || tcph->syn;
 }
 
-size_t tcp_seq_len(struct sk_buff *skb) {
+static size_t tcp_seq_len(struct sk_buff *skb) {
 	return tcp_data_len(skb) + tcp_seq_flags(skb->h.th);
 }
 
@@ -296,11 +298,12 @@ int tcp_st_status(union sock_pointer sock) {
 	}
 }
 
-void tcp_get_now(struct timeval *out_now) {
+static void tcp_get_now(struct timeval *out_now) {
 	ktime_get_timeval(out_now);
 }
 
-int tcp_is_expired(struct timeval *since, useconds_t limit_msec) {
+static int tcp_is_expired(struct timeval *since,
+		useconds_t limit_msec) {
 	struct timeval now, delta, limit;
 	ktime_get_timeval(&now);
 	timersub(&now, since, &delta);
@@ -336,10 +339,12 @@ static void rebuild_tcp_packet(__be32 ip_src, __be32 ip_dest,
 
 static void tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 //	int ret;
-	rebuild_tcp_packet(sock.inet_sk->saddr, sock.inet_sk->daddr,
+	rebuild_tcp_packet(sock.inet_sk->src_in.sin_addr.s_addr,
+			sock.inet_sk->dst_in.sin_addr.s_addr,
 			sock.tcp_sk->rem.seq, sock.tcp_sk->self.wind, skb);
-	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
-	/*ret =*/ ip_send_packet(sock.inet_sk, skb);
+	packet_print(sock, skb, "<=", sock.inet_sk->dst_in.sin_addr.s_addr,
+			sock.inet_sk->dst_in.sin_port);
+	/*ret =*/ ip_send_packet(sock.inet_sk, skb, NULL);
 //	if (ret != 0) {
 //		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
 //	}
@@ -388,6 +393,7 @@ static void send_from_sock_now(union sock_pointer sock, struct sk_buff *skb) {
  */
 void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 	struct sk_buff *skb_send;
+	debug_print(9, "send_data_from_sock: send %p\n", skb);
 
 	skb->p_data = skb->h.raw + TCP_HEADER_SIZE(skb->h.th);
 
@@ -465,10 +471,10 @@ void tcp_free_sock(union sock_pointer sock) {
 				TCP_SYNC_CONN_QUEUE);
 	}
 
-	if (sock.inet_sk->sport_is_alloced) {
+	if (sock.inet_sk->src_port_alloced) {
 		assert(sock.sk->ops != NULL);
 		index_unlock(sock.sk->ops->sock_port,
-				ntohs(sock.inet_sk->sport));
+				ntohs(sock.inet_sk->src_in.sin_port));
 	}
 	sock_release(sock.sk);
 }
@@ -492,10 +498,10 @@ static enum tcp_ret_code tcp_st_closed(union sock_pointer sock, struct sk_buff *
 	}
 
 	/* Set up a socket */
-	sock.inet_sk->saddr = (*pskb)->nh.iph->daddr;
-	sock.inet_sk->sport = tcph->dest;
-	sock.inet_sk->daddr = (*pskb)->nh.iph->saddr;
-	sock.inet_sk->dport = tcph->source;
+	sock.inet_sk->src_in.sin_addr.s_addr = (*pskb)->nh.iph->daddr;
+	sock.inet_sk->src_in.sin_port = tcph->dest;
+	sock.inet_sk->dst_in.sin_addr.s_addr = (*pskb)->nh.iph->saddr;
+	sock.inet_sk->dst_in.sin_port = tcph->source;
 
 	return TCP_RET_FLUSH;
 }
@@ -536,10 +542,12 @@ static enum tcp_ret_code tcp_st_listen(union sock_pointer sock, struct sk_buff *
 		}
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n", newsock.tcp_sk, *pskb, sock.tcp_sk);
 		/* Set up new socket */
-		newsock.inet_sk->saddr = newsock.inet_sk->rcv_saddr = (*pskb)->nh.iph->daddr;
-		newsock.inet_sk->sport = (*pskb)->h.th->dest;
-		newsock.inet_sk->daddr = (*pskb)->nh.iph->saddr;
-		newsock.inet_sk->dport = (*pskb)->h.th->source;
+		newsock.inet_sk->src_in.sin_family = AF_INET;
+		newsock.inet_sk->src_in.sin_port = (*pskb)->h.th->dest;
+		newsock.inet_sk->src_in.sin_addr.s_addr = (*pskb)->nh.iph->daddr;
+		newsock.inet_sk->dst_in.sin_family = AF_INET;
+		newsock.inet_sk->dst_in.sin_port = (*pskb)->h.th->source;
+		newsock.inet_sk->dst_in.sin_addr.s_addr = (*pskb)->nh.iph->saddr;
 		/* Handling skb */
 		tcp_obj_lock(sock, TCP_SYNC_STATE);
 		{
@@ -1043,33 +1051,33 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 
 static int tcp_rcv_tester_strict(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
 	assert(skb->h.th != NULL);
-	return (inet_sk->rcv_saddr == skb->nh.iph->daddr)
-			&& (inet_sk->sport == skb->h.th->dest)
-			&& (inet_sk->daddr == skb->nh.iph->saddr)
-			&& (inet_sk->dport == skb->h.th->source);
+	return (in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+			&& (in_sk->src_in.sin_port == skb->h.th->dest)
+			&& (in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+			&& (in_sk->dst_in.sin_port == skb->h.th->source);
 };
 
 static int tcp_rcv_tester_soft(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
 	assert(skb->h.th != NULL);
-	return ((inet_sk->rcv_saddr == skb->nh.iph->daddr)
-				|| (inet_sk->rcv_saddr == INADDR_ANY))
-			&& (inet_sk->sport == skb->h.th->dest);
+	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->src_in.sin_port == skb->h.th->dest);
 }
 
 /**
