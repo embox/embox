@@ -29,7 +29,7 @@
 #define TLP_BUS_OFFSET     24
 #define TLP_DEV_FUN_OFFSET 16
 
-#define TLP_FMT_MSK  0xFC
+#define TLP_FMT_MSK  0x03
 
 #define TLP_3DW_HEADER_SIZE  0x0C
 #define TLP_4DW_HEADER_SIZE  0x10
