@@ -10,8 +10,7 @@
 #ifndef COMPAT_POSIX_ARPA_INET_H_
 #define COMPAT_POSIX_ARPA_INET_H_
 
-#include <hal/arch.h>
-#include <swab.h>
+#include <endian.h>
 #include <netinet/in.h>
 #include <sys/cdefs.h>
 #include <sys/socket.h>
@@ -22,19 +21,11 @@ __BEGIN_DECLS
 /**
  * Convert values between host and network byte order
  */
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-# define htons(n) swab16(n)
-# define ntohs(n) swab16(n)
-# define htonl(n) swab32(n)
-# define ntohl(n) swab32(n)
-#elif  __BYTE_ORDER == __BIG_ENDIAN
-# define htons(n) (n)
-# define ntohs(n) (n)
-# define htonl(n) (n)
-# define ntohl(n) (n)
-#else
-#error
-#endif
+#define htons(n) htobe16(n)
+#define ntohs(n) be16toh(n)
+#define htonl(n) htobe32(n)
+#define ntohl(n) be32toh(n)
+
 /**
  * IPv4 address manipulation
  */
