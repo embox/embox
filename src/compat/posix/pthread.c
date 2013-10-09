@@ -12,27 +12,31 @@
 #include <kernel/thread.h>
 #include <err.h>
 
-/*
+
 int pthread_attr_destroy(pthread_attr_t *attr) {
 	return -ENOSYS;
 }
 
 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
-	return -ENOSYS;
+	*detachstate = attr->flags & THREAD_FLAG_DETACHED;
+	return ENOERR;
 }
 
+/*
 int pthread_attr_getguardsize(const pthread_attr_t *attr, size_t *guardsize) {
 	return -ENOSYS;
 }
-
+*/
 int pthread_attr_getinheritsched(const pthread_attr_t *attr, int *inheritsched) {
-	return -ENOSYS;
+	*inheritsched = attr->flags & THREAD_FLAG_PRIORITY_INHERIT;
+
+	return ENOERR;
 }
 
 int pthread_attr_getschedparam(const pthread_attr_t *attr, struct sched_param *param) {
 	return -ENOSYS;
 }
-
+/*
 int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) {
 	return -ENOSYS;
 }
@@ -48,23 +52,45 @@ int pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr) {
 int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize) {
 	return -ENOSYS;
 }
-
+*/
 int pthread_attr_init(pthread_attr_t *attr) {
-	return -ENOSYS;
+	attr->flags = 0;
+
+	if (pthread_attr_setdetachstate(attr, 0)) {
+		return -EINVAL;
+	}
+	if (pthread_attr_setinheritsched(attr, THREAD_FLAG_PRIORITY_INHERIT)) {
+		return -EINVAL;
+	}
+
+	return ENOERR;
 }
 
 int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate) {
-	return -ENOSYS;
+	if (detachstate) {
+		attr->flags |= THREAD_FLAG_DETACHED;
+	} else {
+		attr->flags &= ~THREAD_FLAG_DETACHED;
+	}
+	return ENOERR;
 }
 
+/*
 int pthread_attr_setguardsize(pthread_attr_t *attr, size_t guardsize) {
 	return -ENOSYS;
 }
+*/
 
 int pthread_attr_setinheritsched(pthread_attr_t *attr, int inheritsched) {
-	return -ENOSYS;
+	if (inheritsched) {
+		attr->flags |= THREAD_FLAG_PRIORITY_INHERIT;
+	} else {
+		attr->flags &= ~THREAD_FLAG_PRIORITY_INHERIT;
+	}
+	return ENOERR;
 }
 
+/*
 int pthread_attr_setschedparam(pthread_attr_t *attr, const struct sched_param *param) {
 	return -ENOSYS;
 }
@@ -158,13 +184,31 @@ int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
 	struct thread *t;
+	pthread_attr_t def_attr;
+	const pthread_attr_t *pattr;
+	unsigned int flags;
+	int detached, inherit;
 
-	if(!start_routine) {
+	if (!start_routine) {
 		return -EAGAIN;
 	}
+	if (NULL == attr) {
+		pthread_attr_init(&def_attr);
+		pattr = &def_attr;
+	} else {
+		pattr = attr;
+	}
+	if (0 != pthread_attr_getdetachstate(pattr, &detached)) {
+		return -EINVAL;
+	}
+	if (0 != pthread_attr_getinheritsched(pattr, &inherit)) {
+		return -EINVAL;
+	}
 
-	t = thread_create(0, start_routine, arg);
-	if(err(t)) {
+	flags = detached | inherit;
+
+	t = thread_create(flags, start_routine, arg);
+	if (err(t)) {
 		/*
 		 * The pthread_create() function will fail if:
 		 *

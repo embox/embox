@@ -28,21 +28,34 @@
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/task/thread_key_table.h>
 
-#define PTHREAD_MUTEX_INITIALIZER 	MUTEX_INIT_STATIC
-#define PTHREAD_RMUTEX_INITIALIZER	RMUTEX_INIT_STATIC
+#define PTHREAD_MUTEX_INITIALIZER   MUTEX_INIT_STATIC
+#define PTHREAD_RMUTEX_INITIALIZER  RMUTEX_INIT_STATIC
 
-#define PTHREAD_MUTEX_NORMAL 		MUTEX_NORMAL
-#define PTHREAD_MUTEX_ERRORCHECK 	MUTEX_ERRORCHECK
-#define PTHREAD_MUTEX_RECURSIVE 	MUTEX_RECURSIVE
-#define PTHREAD_MUTEX_DEFAULT 		MUTEX_DEFAULT
+#define PTHREAD_MUTEX_NORMAL        MUTEX_NORMAL
+#define PTHREAD_MUTEX_ERRORCHECK    MUTEX_ERRORCHECK
+#define PTHREAD_MUTEX_RECURSIVE     MUTEX_RECURSIVE
+#define PTHREAD_MUTEX_DEFAULT       MUTEX_DEFAULT
 
-#define PTHREAD_PROCESS_SHARED	PROCESS_SHARED
-#define PTHREAD_PROCESS_PRIVATE	PROCESS_PRIVATE
+#define PTHREAD_PROCESS_SHARED      PROCESS_SHARED
+#define PTHREAD_PROCESS_PRIVATE     PROCESS_PRIVATE
+
+#define PTHREAD_SCOPE_PROCESS       THREAD_SCOPE_PROCESS
+#define PTHREAD_SCOPE_SYSTEM        THREAD_SCOPE_SYSTEM
+
+
 
 typedef struct thread *pthread_t;
 
-typedef struct pthread_attr {
 
+//#define  PTHREAD_INHERIT_SCHED      THREAD_FLAG_PRIORITY_INHERIT
+//#define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
+
+
+
+typedef struct pthread_attr {
+	uint32_t flags; /* scope, inherit, detachstate, policy*/
+	void *stack;
+	uint32_t stack_size;
 } pthread_attr_t;
 
 
@@ -85,19 +98,19 @@ __BEGIN_DECLS
  * TODO: Implement!
  */
 
-//extern int   pthread_attr_destroy(pthread_attr_t *);
-//extern int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
+extern int   pthread_attr_destroy(pthread_attr_t *);
+extern int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
-//extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
+extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
 //extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getscope(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getstackaddr(const pthread_attr_t *, void **);
 //extern int   pthread_attr_getstacksize(const pthread_attr_t *, size_t *);
-//extern int   pthread_attr_init(pthread_attr_t *);
-//extern int   pthread_attr_setdetachstate(pthread_attr_t *, int);
+extern int   pthread_attr_init(pthread_attr_t *);
+extern int   pthread_attr_setdetachstate(pthread_attr_t *, int);
 //extern int   pthread_attr_setguardsize(pthread_attr_t *, size_t);
-//extern int   pthread_attr_setinheritsched(pthread_attr_t *, int);
+extern int   pthread_attr_setinheritsched(pthread_attr_t *, int);
 //extern int   pthread_attr_setschedparam(pthread_attr_t *, const struct sched_param *);
 //extern int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
 //extern int   pthread_attr_setscope(pthread_attr_t *, int);
