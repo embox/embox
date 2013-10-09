@@ -67,7 +67,7 @@ static inline uint32_t *tlp_from_pci(uint32_t *tlp) {
 	int cnt;
 
 	for (cnt = 0; cnt != size; ++cnt) {
-		tlp[cnt] = betoh32(tlp[cnt]);
+		tlp[cnt] = be32toh(tlp[cnt]);
 	}
 	return tlp;
 }
