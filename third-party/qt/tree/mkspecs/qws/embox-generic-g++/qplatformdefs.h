@@ -130,11 +130,6 @@ inline long sysconf(int name) {
 #define PTHREAD_CANCEL_ENABLE 0
 #define PTHREAD_CANCEL_DISABLE 0
 
-#define PTHREAD_CREATE_DETACHED 0
-
-#define PTHREAD_INHERIT_SCHED 0
-
-
 
 
 
@@ -153,26 +148,6 @@ static inline void  pthread_cleanup_pop(int a){
 
 static inline void  pthread_testcancel(void){
 	DPRINT();
-}
-
-static inline int pthread_attr_init(pthread_attr_t *a){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_setdetachstate(pthread_attr_t *a, int p){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_setinheritsched(pthread_attr_t *a, int p){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_destroy(pthread_attr_t *a){
-	DPRINT();
-	return -1;
 }
 
 static inline int pthread_cancel(pthread_t t){

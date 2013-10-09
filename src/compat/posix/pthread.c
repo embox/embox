@@ -14,7 +14,7 @@
 
 
 int pthread_attr_destroy(pthread_attr_t *attr) {
-	return -ENOSYS;
+	return ENOERR;
 }
 
 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
@@ -423,6 +423,9 @@ int pthread_setschedparam(pthread_t thread, int policy,
 	return thread_set_priority(thread, param->sched_priority);
 }
 
+int pthread_setschedprio(pthread_t thread, int prio) {
+	return thread_set_priority(thread, (sched_priority_t)prio);
+}
 /*
 
 void pthread_testcancel(void) {

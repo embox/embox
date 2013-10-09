@@ -91,21 +91,12 @@ struct tm *localtime_r(const time_t *timep, struct tm *result);
 #include <pthread.h>
 
 
-
-extern
-int pthread_attr_init(pthread_attr_t *attr);
-extern
-int pthread_attr_destroy(pthread_attr_t *attr);
 extern
 int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize);
 extern
 int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize);
 
-#define PTHREAD_CREATE_DETACHED 0
-extern
-int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
-extern
-int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
+
 
 extern
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);

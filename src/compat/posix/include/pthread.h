@@ -47,8 +47,8 @@
 typedef struct thread *pthread_t;
 
 
-//#define  PTHREAD_INHERIT_SCHED      THREAD_FLAG_PRIORITY_INHERIT
-//#define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
+#define  PTHREAD_INHERIT_SCHED      THREAD_FLAG_PRIORITY_INHERIT
+#define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 
 
 
@@ -187,6 +187,8 @@ extern pthread_t pthread_self(void);
 extern int   pthread_setschedparam(pthread_t, int, const struct sched_param *);
 extern int   pthread_setspecific(pthread_key_t, const void *);
 //extern void  pthread_testcancel(void);
+
+extern int   pthread_setschedprio(pthread_t, int);
 
 __END_DECLS
 
