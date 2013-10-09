@@ -33,7 +33,9 @@ static int print_arp_entity(const struct neighbour *n,
 	struct in_addr addr;
 	unsigned char mac[18];
 
-	if ((in_dev->dev == n->dev) || (in_dev == NULL)) {
+	assert(n != NULL);
+
+	if ((in_dev == NULL) || (in_dev->dev == n->dev)) {
 		if (!n->incomplete) {
 			macaddr_print(mac, &n->haddr[0]);
 		}
