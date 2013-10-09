@@ -1,0 +1,13 @@
+
+package embox.driver.usb
+
+module core {
+	source "usb_core.c"
+	source "usb_obj.c"
+}
+
+module ohci_pci {
+	source "ohci_pci.c"
+
+	depends core
+}
