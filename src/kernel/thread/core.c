@@ -124,8 +124,8 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
 			if (-ENOMEM == task_add_thread(task_self(), t)) {
-				sched_unlock();
-				return err_ptr(ENOMEM);
+				t = err_ptr(ENOMEM);
+				goto out;
 			}
 		}
 
