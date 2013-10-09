@@ -25,7 +25,6 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <util/binalign.h>
-#include <util/math.h>
 
 #include <kernel/printk.h>
 
@@ -45,6 +44,20 @@ static void emac_ctrl_disable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXINTEN, 0x0);
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMTXINTEN, 0x0);
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMMISCINTEN, 0x0);
+}
+
+static void cm_load_mac(struct net_device *dev) {
+	unsigned long mac_hi, mac_lo;
+
+	mac_hi = REG_LOAD(CM_BASE + CM_R_MACID0_HI);
+	mac_lo = REG_LOAD(CM_BASE + CM_R_MACID0_LO);
+
+	dev->dev_addr[0] = mac_hi & 0xff;
+	dev->dev_addr[1] = (mac_hi >> 8) & 0xff;
+	dev->dev_addr[2] = (mac_hi >> 16) & 0xff;
+	dev->dev_addr[3] = mac_hi >> 24;
+	dev->dev_addr[4] = mac_lo & 0xff;
+	dev->dev_addr[5] = mac_lo >> 8;
 }
 
 static void emac_clear_hdp(void) {
@@ -195,18 +208,15 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(skb_data != NULL);
 
 	desc = (struct emac_desc *)skb_data;
-	printk("desc %p\n", desc);
 	//assert(binalign_check_bound((uintptr_t)desc, 32));
 
-	if (skb->len < ETH_ZLEN) {
-		skb->len = ETH_ZLEN;
-	}
+	assert(skb->mac.raw == (void *)(desc + 1));
 
 	desc->next = 0;
 	assert(binalign_check_bound(desc->next, 32));
-	desc->data = (uintptr_t)(desc + 1) + 8;
+	desc->data = (uintptr_t)skb->mac.raw;
 	assert(binalign_check_bound(desc->data, 1));
-	desc->data_len = desc->len = skb->len;
+	desc->data_len = desc->len = skb->len < ETH_ZLEN ? ETH_ZLEN : skb->len;
 	desc->data_off = 0;
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
 
@@ -218,6 +228,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int ti816x_set_macaddr(struct net_device *dev, const void *addr) {
+	emac_set_macaddr((unsigned char (*)[6])addr);
 	return 0;
 }
 
@@ -236,7 +247,6 @@ static const struct net_driver ti816x_ops = {
 	.start = ti816x_open,
 	.stop = ti816x_stop,
 	.set_macaddr = ti816x_set_macaddr
-
 };
 
 #include <kernel/printk.h>
@@ -251,7 +261,7 @@ static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 	struct sk_buff_data *new_data;
 	struct emac_desc *desc;
 
-	printk("!%u reg %lx\n", irq_num, REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR));
+	//printk("!%u reg %lx\n", irq_num, REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR));
 
 	switch (irq_num) {
 	case MACRXINT0:
@@ -287,7 +297,7 @@ static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 	case MACTXINT0:
 		reg = REG_LOAD(EMAC_BASE + EMAC_R_TXCP(0));
 		skb_data_free((struct sk_buff_data *)reg);
-		printk("tx %lx\n", reg);
+		//printk("tx %lx\n", reg);
 		REG_STORE(EMAC_BASE + EMAC_R_TXCP(0), reg);
 		REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), 0);
 		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
@@ -307,12 +317,11 @@ static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 }
 
 static void ti816x_config(struct net_device *dev) {
-	unsigned char addr[] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
+	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-	printk("CPGMACIDVER %#lx\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
+	//printk("CPGMACIDVER %#lx\n", REG_LOAD(EMAC_BASE + EMAC_R_CPGMACIDVER));
 	/* check extra header size */
-	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc)
-			+ sizeof(struct emac_hdr));
+	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc));
 
 	/* reset EMAC module */
 	REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
@@ -332,11 +341,14 @@ static void ti816x_config(struct net_device *dev) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMINTCTRL, 0x30000 | 0x258);
 #endif
 
+	/* load device MAC-address */
+	cm_load_mac(dev);
+
 	/* initialization of EMAC and MDIO modules */
 	emac_clear_ctrl_regs();
 	emac_clear_hdp();
 	emac_clear_stat_regs();
-	emac_set_macaddr(&addr);
+	emac_set_macaddr(&bcast_addr);
 	emac_init_rx_regs();
 	emac_clear_machash();
 	emac_set_rxbufoff(0);
@@ -349,7 +361,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_macctrl(GMIIEN);
 
 	/* enable all the EMAC/MDIO interrupts in the control module */
-	emac_ctrl_enable_irq();
+	//emac_ctrl_enable_irq();
 }
 
 static int ti816x_init(void) {
@@ -386,4 +398,3 @@ static int ti816x_init(void) {
 
 	return inetdev_register_dev(nic);
 }
-
