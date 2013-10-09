@@ -123,7 +123,10 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			task_add_thread(task_self(), t);
+			if (-ENOMEM == task_add_thread(task_self(), t)) {
+				sched_unlock();
+				return err_ptr(ENOMEM);
+			}
 		}
 
 		if (!(flags & THREAD_FLAG_SUSPENDED)) {

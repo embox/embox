@@ -18,7 +18,7 @@ void task_thread_key_init(struct task *task) {
 	index_init(&kt->indexator, 0, THREAD_KEYS_QUANTITY, kt->ind_buff);
 	mutex_init(&kt->mutex);
 }
-
+f
 int task_thread_key_exist(struct task *task, size_t idx) {
 	return index_locked(&task->key_table.indexator, idx);
 }

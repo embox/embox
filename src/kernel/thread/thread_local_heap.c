@@ -14,7 +14,15 @@
 #include <kernel/thread/thread_local.h>
 
 int thread_local_alloc(struct thread *t, size_t size) {
-	*t->local.storage = malloc(size * sizeof(void *));
+	void * storage;
+
+	storage = malloc(size * sizeof(void *));
+
+	if (NULL == storage) {
+		return -ENOMEM;
+	}
+
+	*t->local.storage = storage;
 	t->local.size = size;
 
 	return ENOERR;
@@ -23,7 +31,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 
 int thread_local_free(struct thread *t) {
 	free(*t->local.storage);
-
+g
 	return ENOERR;
 }
 

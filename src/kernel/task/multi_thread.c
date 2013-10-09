@@ -13,7 +13,8 @@
 
 int task_add_thread(struct task * task, struct thread *t) {
 	sched_priority_t sched_prior;
-	if((NULL == task) || (NULL == t)) {
+
+	if ((NULL == task) || (NULL == t)) {
 		return -EINVAL;
 	}
 
@@ -29,7 +30,9 @@ int task_add_thread(struct task * task, struct thread *t) {
 	sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
 	thread_priority_set(t, sched_prior);
 
-	thread_local_alloc(t, THREAD_KEYS_QUANTITY);
+	if (-ENOMEM == thread_local_alloc(t, THREAD_KEYS_QUANTITY)) {
+		return -ENOMEM;
+	}
 
 	return ENOERR;
 }

@@ -27,4 +27,7 @@ static inline int thread_local_set(struct thread *t, size_t idx, void *value) {
 	return -ENOSUPP;
 }
 
+static inline int thread_local_free(struct thread *t) {
+	return -ENOSUPP;
+}
 #endif /* THREAD_LOCAL_HEAP_H_ */
