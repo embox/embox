@@ -111,7 +111,7 @@ void index_init(struct indexator *ind, size_t start,
 	ind->max = ind->prev = ind->end = ind->clamp_max = start + capacity - 1;
 
 	ind->mask = (unsigned long *)data;
-	memset(data, 0, binalign_bound(capacity, CHAR_BIT));
+	memset(data, 0, binalign_bound(capacity, CHAR_BIT) / CHAR_BIT);
 }
 
 void index_clamp(struct indexator *ind, size_t min, size_t max) {
@@ -138,7 +138,7 @@ void index_clean(struct indexator *ind) {
 	ind->max = ind->prev = ind->clamp_max = ind->end;
 
 	memset(ind->mask, 0,
-			binalign_bound(index_capacity(ind), CHAR_BIT));
+			binalign_bound(index_capacity(ind), CHAR_BIT) / CHAR_BIT);
 }
 
 size_t index_start(struct indexator *ind) {
