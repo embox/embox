@@ -125,7 +125,7 @@ extern int   pthread_detach(pthread_t);
 extern int   pthread_equal(pthread_t, pthread_t);
 extern void  pthread_exit(void *);
 //extern int   pthread_getconcurrency(void);
-//extern int   pthread_getschedparam(pthread_t, int *, struct sched_param *);
+extern int   pthread_getschedparam(pthread_t, int *, struct sched_param *);
 extern void *pthread_getspecific(pthread_key_t);
 extern int   pthread_join(pthread_t, void **);
 

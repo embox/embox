@@ -26,7 +26,7 @@ typedef int __thread_id_t;
 struct task;
 
 struct thread {
-	thread_state_t   state;          /**< Current state. */
+	thread_state_t     state;          /**< Current state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
@@ -49,6 +49,8 @@ struct thread {
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
+
+	int                policy;       /**< Scheduling policy*/
 
 	thread_local_t local;
 };

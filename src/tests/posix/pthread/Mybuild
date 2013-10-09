@@ -6,3 +6,8 @@ module pthread_mutex {
 	depends embox.compat.posix.pthreads
 	depends embox.framework.LibFramework
 }
+
+module pthread_policy {
+	source "pthread_policy_test.c"
+	depends embox.compat.posix.pthreads
+}
