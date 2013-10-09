@@ -40,19 +40,21 @@ $(build_mk) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MP -MT $@ -MF $@.d mk/confmacro.S \
-			| sed 's/$$N/\n/g')
+			| sed 's/\$$N/\n/g')
 
 $(config_h) $(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MT $@ -MF $@.d mk/confmacro.S \
-			| sed -e 's/$$N/\n/g' -e 's/$$define/#define/g'; \
+			| sed -e 's/\$$N/\n/g' -e 's/\$$/#/g'; \
 	echo '#define CONFIG_ROOTFS_IMAGE "$(ROOTFS_IMAGE)"') # XXX =/
 
 $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
 	@$(call cmd_notouch_stdout,$@,cat $<)
 
 -include $(addsuffix .d,$(build_mk) $(config_h) $(config_lds_h))
+
+$(build_mk) $(config_h) $(config_lds_h): mk/script/build/oldconf-gen.mk
 
 # XXX copy-patse
 cmd_notouch = \
