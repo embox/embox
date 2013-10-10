@@ -12,9 +12,9 @@ ExternalProject_Add(
       #&& patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/qpid/patch.txt
       #&& cd <SOURCE_DIR> && autoconf && aclocal && automake
       true
-   LOG_CONFIGURE 1
-   CONFIGURE_COMMAND
-      false
+   #LOG_CONFIGURE 1
+   #CONFIGURE_COMMAND
+      #false
    BUILD_COMMAND
       false
    INSTALL_COMMAND

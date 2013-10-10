@@ -10,7 +10,7 @@ static module core {
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source
-		"../../../../gcc/lib/libqpid.a"
+		"../../../../qpid/lib/libqpid.a"
 
 	source "order.mk"
 }
