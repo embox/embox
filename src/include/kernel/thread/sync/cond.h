@@ -12,6 +12,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/wait_queue.h>
 #include <kernel/task.h>
+#include <time.h>
 
 /* The condition variable operates upon by any thread that has access to the
  * memory where the condition variable is allocated */
@@ -22,7 +23,8 @@
 #define PROCESS_PRIVATE 1
 
 struct condattr {
-	int pshared;
+	int        pshared;
+	clockid_t  clock_id;
 };
 
 struct cond {
@@ -41,6 +43,7 @@ typedef struct cond cond_t;
 				}, \
 			{ /*condattr init */ \
 				/* pshared */ PROCESS_PRIVATE, \
+				/* clock_id */ CLOCK_MONOTONIC, \
 				}, \
 			/* task */ NULL \
 		}
@@ -59,6 +62,9 @@ extern void condattr_init(struct condattr *attr);
 extern void condattr_destroy(struct condattr *attr);
 extern void condattr_getpshared(const struct condattr *attr, int *pshared);
 extern void condattr_setpshared(struct condattr *attr, int pshared);
+extern void condattr_getclock(const struct condattr *restrict attr,
+		clockid_t *restrict clock_id);
+extern void condattr_setclock(struct condattr *attr, clockid_t clock_id);
 
 __END_DECLS
 

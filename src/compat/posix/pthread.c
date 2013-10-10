@@ -180,6 +180,19 @@ int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
 	return ENOERR;
 }
 
+int pthread_condattr_getclock(const pthread_condattr_t *restrict attr,
+		clockid_t *restrict clock_id) {
+	condattr_getclock(attr, clock_id);
+
+	return ENOERR;
+
+}
+int pthread_condattr_setclock(pthread_condattr_t *attr,
+		clockid_t clock_id) {
+	condattr_setclock(attr, clock_id);
+
+	return ENOERR;
+}
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
