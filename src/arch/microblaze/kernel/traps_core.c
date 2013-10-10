@@ -42,12 +42,12 @@ void traps_save_env(traps_env_t *env) {
 		old_env = &cur_env;
 	}
 	(&cur_env)->status = msr_get_value();
-	memcpy(env, old_env, sizeof(env));
+	memcpy(env, old_env, sizeof(*env));
 }
 
 void traps_restore_env(traps_env_t *env) {
 	uint32_t msr;
-	memcpy(&cur_env, env, sizeof(env));
+	memcpy(&cur_env, env, sizeof(*env));
 	old_env = &cur_env;
 	/*save msr register*/
 	msr = msr_get_value();
@@ -60,7 +60,7 @@ void traps_restore_env(traps_env_t *env) {
 
 void traps_set_env(traps_env_t *env) {
 	uint32_t msr;
-	memcpy(&cur_env, env, sizeof(env));
+	memcpy(&cur_env, env, sizeof(*env));
 	old_env = &cur_env;
 	/*save msr register*/
 	msr = msr_get_value();
