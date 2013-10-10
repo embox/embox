@@ -34,13 +34,18 @@ int pthread_attr_getinheritsched(const pthread_attr_t *attr, int *inheritsched) 
 }
 
 int pthread_attr_getschedparam(const pthread_attr_t *attr, struct sched_param *param) {
-	return -ENOSYS;
-}
-/*
-int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) {
-	return -ENOSYS;
+	param->sched_priority = attr->sched_param.sched_priority;
+
+	return ENOERR;
 }
 
+int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) {
+	*policy = attr->policy;
+
+	return ENOERR;
+}
+
+/*
 int pthread_attr_getscope(const pthread_attr_t *attr, int *contentionscope) {
 	return -ENOSYS;
 }
@@ -62,6 +67,8 @@ int pthread_attr_init(pthread_attr_t *attr) {
 	if (pthread_attr_setinheritsched(attr, THREAD_FLAG_PRIORITY_INHERIT)) {
 		return -EINVAL;
 	}
+
+	attr->sched_param.sched_priority = THREAD_PRIORITY_DEFAULT;
 
 	return ENOERR;
 }
@@ -90,15 +97,20 @@ int pthread_attr_setinheritsched(pthread_attr_t *attr, int inheritsched) {
 	return ENOERR;
 }
 
-/*
 int pthread_attr_setschedparam(pthread_attr_t *attr, const struct sched_param *param) {
+	//TODO move copy to other place
+	attr->sched_param.sched_priority = param->sched_priority;
+
 	return -ENOSYS;
 }
 
 int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy) {
-	return -ENOSYS;
+	attr->policy = policy;
+
+	return ENOERR;
 }
 
+/*
 int pthread_attr_setscope(pthread_attr_t *attr, int contentionscope) {
 	return -ENOSYS;
 }
@@ -200,7 +212,8 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 	pthread_attr_t def_attr;
 	const pthread_attr_t *pattr;
 	unsigned int flags;
-	int detached, inherit;
+	int detached, inherit, policy;
+	struct sched_param sched_param;
 
 	if (!start_routine) {
 		return -EAGAIN;
@@ -218,7 +231,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		return -EINVAL;
 	}
 
-	flags = detached | inherit;
+	flags = detached | inherit | THREAD_FLAG_SUSPENDED;
 
 	t = thread_create(flags, start_routine, arg);
 	if (err(t)) {
@@ -236,6 +249,12 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		 */
 		return -EAGAIN;
 	}
+
+	pthread_attr_getschedpolicy(pattr, &policy);
+	pthread_attr_getschedparam(pattr, &sched_param);
+	pthread_setschedparam(t, policy, &sched_param);
+
+	thread_launch(t);
 	*thread = t;
 
 	return ENOERR;

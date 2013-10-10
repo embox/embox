@@ -53,9 +53,11 @@ typedef struct thread *pthread_t;
 
 
 typedef struct pthread_attr {
-	uint32_t flags; /* scope, inherit, detachstate, policy*/
+	uint32_t flags; /* scope, inherit, detachstate */
 	void *stack;
 	uint32_t stack_size;
+	int policy;
+	struct sched_param sched_param;
 } pthread_attr_t;
 
 
@@ -102,8 +104,8 @@ extern int   pthread_attr_destroy(pthread_attr_t *);
 extern int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
-//extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
-//extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
+extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
+extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getscope(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getstackaddr(const pthread_attr_t *, void **);
 //extern int   pthread_attr_getstacksize(const pthread_attr_t *, size_t *);
@@ -111,8 +113,8 @@ extern int   pthread_attr_init(pthread_attr_t *);
 extern int   pthread_attr_setdetachstate(pthread_attr_t *, int);
 //extern int   pthread_attr_setguardsize(pthread_attr_t *, size_t);
 extern int   pthread_attr_setinheritsched(pthread_attr_t *, int);
-//extern int   pthread_attr_setschedparam(pthread_attr_t *, const struct sched_param *);
-//extern int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
+extern int   pthread_attr_setschedparam(pthread_attr_t *, const struct sched_param *);
+extern int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
 //extern int   pthread_attr_setscope(pthread_attr_t *, int);
 //extern int   pthread_attr_setstackaddr(pthread_attr_t *, void *);
 //extern int   pthread_attr_setstacksize(pthread_attr_t *, size_t);
