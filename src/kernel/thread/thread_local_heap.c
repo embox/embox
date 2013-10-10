@@ -22,7 +22,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 		return -ENOMEM;
 	}
 
-	*t->local.storage = storage;
+	t->local.storage = storage;
 	t->local.size = size;
 
 	return ENOERR;
