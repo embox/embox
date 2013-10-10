@@ -35,39 +35,39 @@ struct usb_dev;
 struct usb_endp;
 struct usb_request;
 
-#define USB_DEV_REQ_TYPE_WR  0x00
-#define USB_DEV_REQ_TYPE_RD  0x80
+#define USB_DEV_REQ_TYPE_WR    	        0x00
+#define USB_DEV_REQ_TYPE_RD    	        0x80
 
-#define USB_DEV_REQ_TYPE_STD 0x00
-#define USB_DEV_REQ_TYPE_CLS 0x20
-#define USB_DEV_REQ_TYPE_VND 0x40
+#define USB_DEV_REQ_TYPE_STD    	0x00
+#define USB_DEV_REQ_TYPE_CLS    	0x20
+#define USB_DEV_REQ_TYPE_VND    	0x40
 
-#define USB_DEV_REQ_TYPE_DEV 0x00
-#define USB_DEV_REQ_TYPE_IFC 0x01
-#define USB_DEV_REQ_TYPE_ENP 0x02
-#define USB_DEV_REQ_TYPE_OTH 0x03
+#define USB_DEV_REQ_TYPE_DEV    	0x00
+#define USB_DEV_REQ_TYPE_IFC    	0x01
+#define USB_DEV_REQ_TYPE_ENP    	0x02
+#define USB_DEV_REQ_TYPE_OTH    	0x03
 
-#define USB_DEV_REQ_GET_STAT 0x00
-#define USB_DEV_REQ_SET_ADDR 0x05
-#define USB_DEV_REQ_GET_DESC 0x06
-#define USB_DEV_REQ_SET_CONF 0x09
+#define USB_DEV_REQ_GET_STAT    	0x00
+#define USB_DEV_REQ_SET_ADDR    	0x05
+#define USB_DEV_REQ_GET_DESC    	0x06
+#define USB_DEV_REQ_SET_CONF    	0x09
 
-#define USB_DESC_TYPE_DEV      1
-#define USB_DESC_TYPE_CONFIG   2
-#define USB_DESC_TYPE_ENDPOINT 5
+#define USB_DESC_TYPE_DEV    	        1
+#define USB_DESC_TYPE_CONFIG    	2
+#define USB_DESC_TYPE_ENDPOINT    	5
 
-#define USB_DESC_ENDP_TYPE_MASK   0x03
-#define USB_DESC_ENDP_TYPE_CTRL   0x00
-#define USB_DESC_ENDP_TYPE_ISOCHR 0x01
-#define USB_DESC_ENDP_TYPE_BULK   0x02
-#define USB_DESC_ENDP_TYPE_INTR   0x03
+#define USB_DESC_ENDP_TYPE_MASK    	0x03
+#define USB_DESC_ENDP_TYPE_CTRL    	0x00
+#define USB_DESC_ENDP_TYPE_ISOCHR       0x01
+#define USB_DESC_ENDP_TYPE_BULK    	0x02
+#define USB_DESC_ENDP_TYPE_INTR    	0x03
 
-#define USB_HUB_PORT_CONNECT 0x0001
-#define USB_HUB_PORT_ENABLE  0x0002
-#define USB_HUB_PORT_SUSPEND 0x0004
-#define USB_HUB_PORT_OVERRUN 0x0008
-#define USB_HUB_PORT_RESET   0x0010
-#define USB_HUB_PORT_POWER   0x0020
+#define USB_HUB_PORT_CONNECT    	0x0001
+#define USB_HUB_PORT_ENABLE    	        0x0002
+#define USB_HUB_PORT_SUSPEND    	0x0004
+#define USB_HUB_PORT_OVERRUN    	0x0008
+#define USB_HUB_PORT_RESET    	        0x0010
+#define USB_HUB_PORT_POWER              0x0020
 
 enum usb_hub_request {
 	USB_HUB_REQ_PORT_SET,

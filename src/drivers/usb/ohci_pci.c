@@ -93,8 +93,8 @@ static void ohci_ed_free(struct usb_endp *ep) {
 }
 /* === end === */
 
-static struct ohci_td *ohci_td_fill(struct ohci_td *td, uint32_t flags, void *buf, size_t size,
-		struct usb_request *req) {
+static struct ohci_td *ohci_td_fill(struct ohci_td *td, uint32_t flags,
+		void *buf, size_t size, struct usb_request *req) {
 
 	if (!td) {
 		return NULL;
@@ -117,7 +117,8 @@ static struct ohci_td *ohci_ed_get_tail_td(struct ohci_ed *ed) {
 	return (void *) REG_LOAD(&ed->tail_td);
 }
 
-static int ohci_td_enque_tail(struct ohci_ed *ed, struct ohci_td *placeholder_td) {
+static int ohci_td_enque_tail(struct ohci_ed *ed,
+		struct ohci_td *placeholder_td) {
 	struct ohci_td *td = ohci_ed_get_tail_td(ed);
 
 	REG_STORE(&td->next_td, (unsigned long) placeholder_td);
@@ -164,7 +165,7 @@ static int ohci_start(struct usb_hcd *hcd) {
 	} else if (hc_state != OHCI_CTRL_FUNC_STATE_RST) {
 		/* BIOS active */
 		if (hc_state != OHCI_CTRL_FUNC_STATE_OPRT) {
-				OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_RESM);
+			OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_RESM);
 			need_wait = true;
 		}
 	} else {
@@ -177,8 +178,9 @@ static int ohci_start(struct usb_hcd *hcd) {
 	}
 
 	backed_fm_interval = OHCI_READ(ohcd, &ohcd->base->hc_fm_interval);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat, OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) |
-			OHCI_CMD_RESET);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat,
+			OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) |
+				OHCI_CMD_RESET);
 
 	/* poll */
 	while (OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) & OHCI_CMD_RESET) {
@@ -198,13 +200,15 @@ static int ohci_start(struct usb_hcd *hcd) {
 	OHCI_WRITE(ohcd, &ohcd->base->hc_hcca, ohcd->hcca);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_inten, OHCI_INTERRUPT_ALL_BUTSOF);
 
-	OHCI_WRITE(ohcd, &ohcd->base->hc_control, OHCI_READ(ohcd, &ohcd->base->hc_control) |
-			OHCI_CTRL_PERIOD_EN |
-			OHCI_CTRL_ISOCHR_EN |
-			OHCI_CTRL_CTRL_EN   |
-			OHCI_CTRL_BULK_EN);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_control,
+			OHCI_READ(ohcd, &ohcd->base->hc_control)
+				| OHCI_CTRL_PERIOD_EN
+				| OHCI_CTRL_ISOCHR_EN
+				| OHCI_CTRL_CTRL_EN
+				| OHCI_CTRL_BULK_EN);
 
-	OHCI_WRITE(ohcd, &ohcd->base->hc_period_start, (9 * (OHCI_READ(ohcd, &ohcd->base->hc_fm_interval)
+	OHCI_WRITE(ohcd, &ohcd->base->hc_period_start,
+			(9 * (OHCI_READ(ohcd, &ohcd->base->hc_fm_interval)
 				       	& OHCI_FM_INTERVAL_FI_MASK)) / 10);
 
 	OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_OPRT);
@@ -248,7 +252,8 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	}
 
 	if (req == USB_HUB_REQ_PORT_CLEAR) {
-		wval = ~wval & OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+		wval = ~wval
+			& OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
 	}
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[port->idx], wval);
@@ -359,7 +364,8 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 			rhub->ports[i].changed = ohci_port_stat_map(port_stat >> 16);
 
 			if (port_stat >> 16) {
-				OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[i], port_stat & 0xffff0000);
+				OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[i],
+						port_stat & 0xffff0000);
 			}
 		}
 
