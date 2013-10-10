@@ -24,11 +24,6 @@ EMBOX_TEST_SUITE("sleep suite");
  *  assert that real time for sleep different with any_time is less than EPSILON_BORDER
  */
 
-#include <assert.h>
-TEST_CASE("") {
-	assert(0);
-}
-
 TEST_CASE("one sleep") {
 	clock_t cur_time, epsilon;
 
