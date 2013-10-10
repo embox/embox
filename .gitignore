@@ -15,5 +15,6 @@ scripts/qemu/debug_qemu
 scripts/qemu/start_script_my
 scripts/qemu/stop_script_my
 scripts/qemu/tap_dev
+third-party/lib/zlib-1.2.8/libz.a.x
 third-party/qt/.downloaded
 third-party/qt/qt-everywhere-opensource-src-4.8.4.tar.gz
