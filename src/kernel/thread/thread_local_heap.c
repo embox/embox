@@ -16,7 +16,7 @@
 int thread_local_alloc(struct thread *t, size_t size) {
 	void * storage;
 
-	storage = malloc(size * sizeof(void *));
+	storage = malloc(size * sizeof(t->local.storage));
 
 	if (NULL == storage) {
 		return -ENOMEM;
@@ -30,7 +30,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 
 
 int thread_local_free(struct thread *t) {
-	free(*t->local.storage);
+	free(t->local.storage);
 
 	return ENOERR;
 }
@@ -42,7 +42,7 @@ void *thread_local_get(struct thread *t, size_t idx) {
 
 	mutex_lock(&t->task->key_table.mutex);
 	{
-		if(task_thread_key_exist(t->task, idx)) {
+		if (task_thread_key_exist(t->task, idx)) {
 			res = t->local.storage[idx];
 		} else {
 			res = NULL;
@@ -60,7 +60,7 @@ int thread_local_set(struct thread *t, size_t idx, void *value) {
 
 	mutex_lock(&t->task->key_table.mutex);
 	{
-		if(task_thread_key_exist(t->task, idx)) {
+		if (task_thread_key_exist(t->task, idx)) {
 			t->local.storage[idx] = value;
 		} else {
 			res = -EINVAL;
