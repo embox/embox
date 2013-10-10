@@ -42,14 +42,14 @@ data_header = $(\t).data.apps : ALIGN(DATA_ALIGNMENT) {
 data_footer = $(\t)}
 
 define bss_header
-	.reserve.apps (NOLOAD) : ALIGN(DATA_ALIGNMENT) {
+	.bss.reserve.apps (NOLOAD) : ALIGN(DATA_ALIGNMENT) {
 		/* MAX is a workaround to avoid PROGBITS set on empty section. */
 		. += MAX(SIZEOF(.data.apps), 1);
 endef
 
 define bss_footer
 	}
-	_app_data_reserve_offset = ADDR(.reserve.apps) - ADDR(.data.apps);
+	_app_data_reserve_offset = ADDR(.bss.reserve.apps) - ADDR(.data.apps);
 endef
 
 define file_footer
