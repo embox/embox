@@ -62,14 +62,14 @@ SECTIONS {
 
 		*(.bss)
 		*(.sbss)
-//		*(.bss.*)
+		*(.bss.[a-zA-Z0-9-]*) /* this hell is to exclude '.bss..reserve'. */
 
 		ALIGNMENT();
 		_bss_end = .;
 		/* Reserve (no need to zero on startup) */
 
-		*(.bss.reserve)
-		*(.bss.reserve.*)
+		*(.bss..reserve)
+		*(.bss..reserve.*)
 
 		ALIGNMENT();
 		_reserve_end = .;
