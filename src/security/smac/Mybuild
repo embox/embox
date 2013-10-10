@@ -22,7 +22,6 @@ module smac extends api {
 	option string default_file_label="*"
 
 	depends embox.fs.xattr
-	depends embox.lib.debug.Symbol
 
 	depends embox.security.seculog
 

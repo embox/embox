@@ -15,7 +15,7 @@
 
 EMBOX_TEST_SUITE("sleep suite");
 
-#define EPSILON_BORDER 10
+#define EPSILON_BORDER 15
 #define TIME_TO_SLEEP  20
 #define NUM_THREADS     8
 
@@ -23,6 +23,11 @@ EMBOX_TEST_SUITE("sleep suite");
  *  sleep( any_time )
  *  assert that real time for sleep different with any_time is less than EPSILON_BORDER
  */
+
+#include <assert.h>
+TEST_CASE("") {
+	assert(0);
+}
 
 TEST_CASE("one sleep") {
 	clock_t cur_time, epsilon;

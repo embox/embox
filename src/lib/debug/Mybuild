@@ -1,21 +1,23 @@
 package embox.lib.debug
 
-static module Symbol {
+static module symbol {
 	source "symbol.c"
 }
 
 @Mandatory
-@DefaultImpl(Nobacktrace)
-abstract module backtrace_api {
+@DefaultImpl(no_whereami)
+abstract module whereami_api {
 }
 
-module Backtrace extends backtrace_api {
-	option number row_limit=0 /* without limit */
-	source "backtrace.c", "backtrace.h"
-	depends embox.arch.stackframe
-	depends embox.lib.debug.Symbol
+module whereami extends whereami_api {
+	source "whereami.c"
+	option number row_limit=0
+	option number max_depth=64
+
+	depends embox.lib.debug.symbol
+	depends embox.lib.execinfo.backtrace
 }
 
-module Nobacktrace extends backtrace_api {
-	source "nobacktrace.h"
+module no_whereami extends whereami_api {
+	source "no_whereami.h"
 }
