@@ -14,6 +14,7 @@
 #include <util/tree.h>
 #include <limits.h>
 #include <kernel/thread/sync/mutex.h>
+#include <fcntl.h>
 
 struct nas;
 
@@ -40,7 +41,10 @@ typedef struct node {
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
 
-	flock_t               flock;
+	/* Two locks is temporary solution for compatibility,
+	 * only kflock should stay in future */
+	kflock_t              kflock;
+	flock_t	              flock;
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
