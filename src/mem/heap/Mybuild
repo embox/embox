@@ -1,5 +1,6 @@
 package embox.mem
 
+@DefaultImpl(heap_bm)
 abstract module heap_api {
 	option number heap_size = 524288
 }

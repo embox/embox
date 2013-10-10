@@ -127,7 +127,7 @@ module task_no_thread_key extends task_key_table {
 }
 
 module task_thread_key extends task_key_table {
-	option number keys_quantity = 0x400
+	option number keys_quantity = 0x40
 
 	source "task_thread_key.h"
 	source "task_thread_key.c"

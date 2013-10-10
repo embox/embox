@@ -51,6 +51,8 @@ module thread_local_heap extends thread_local {
 	source "thread_local_heap.c"
 	source "thread_local_heap.h"
 
+	depends embox.mem.heap_api
+
 	depends embox.kernel.task.task_thread_key
 }
 
