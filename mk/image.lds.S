@@ -62,7 +62,7 @@ SECTIONS {
 
 		*(.bss)
 		*(.sbss)
-		*(.bss.*)
+//		*(.bss.*)
 
 		ALIGNMENT();
 		_bss_end = .;
