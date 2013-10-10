@@ -20,7 +20,7 @@
 #include <sched.h>
 
 
-
+#include <kernel/thread.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
@@ -129,7 +129,7 @@ extern int   pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *);
 extern int   pthread_cond_signal(pthread_cond_t *);
 extern int   pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct timespec *);
 extern int   pthread_cond_wait(pthread_cond_t *, pthread_mutex_t *);
-extern int   pthread_condattr_getclock(const pthread_condattr_t *restrict, clockid_t *restrict);
+extern int   pthread_condattr_getclock(const pthread_condattr_t */*restrict*/, clockid_t */*restrict*/);
 extern int   pthread_condattr_setclock(pthread_condattr_t *, clockid_t);
 
 extern int   pthread_condattr_destroy(pthread_condattr_t *);

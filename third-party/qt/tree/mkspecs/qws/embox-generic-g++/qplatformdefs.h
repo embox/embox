@@ -113,10 +113,6 @@ inline long sysconf(int name) {
 
 
 
-/* inline int putenv(char *x) {
-	printf(">>> putenv(%s)\n",x);
-	return -1;
-} */
 
 #if 1
 #define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
@@ -197,28 +193,9 @@ inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 	return 0;
 }
 
-/*
-int getpwuid_r(uid_t uid, struct passwd *pwd,
-	       char *buf, size_t buflen, struct passwd **result);
-*/
 
 #include <errno.h>
 
-#define R_OK (printf(">>> R_OK\n"),1)
-#define W_OK (printf(">>> W_OK\n"),2)
-#define X_OK (printf(">>> X_OK\n"),4)
-#define F_OK (printf(">>> F_OK\n"),8)
-/*inline int access(const char *pathname, int mode) {
-	printf(">>> access(%s, %x)\n", pathname, mode);
-	errno = EPERM;
-	return -1;
-}*/
-
-/*inline int rename(const char *oldpath, const char *newpath) {
-	printf(">>> rename(%s, %s)\n", oldpath, newpath);
-	errno = EPERM;
-	return -1;
-}*/
 
 inline int symlink(const char *oldpath, const char *newpath) {
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
@@ -226,46 +203,14 @@ inline int symlink(const char *oldpath, const char *newpath) {
 	return -1;
 }
 
-/*inline int chdir(const char *path) {
-	printf(">>> chdir(%s)\n", path);
-	errno = EPERM;
-	return -1;
-}*/
-
-//char *get_current_dir_name(void);
 
 
 
 // Either this or define __GLIBC__
 #define PATH_MAX 256
-/*inline char *getcwd(char *buf, size_t size) {
-	if(size<2) {
-		printf(">>> getcwd()\n");
-		return NULL;
-	}
-	buf[0] = '/';
-	buf[1] = 0;
-	printf(">>> getcwd(%s)\n", buf);
-	return buf;
-}*/
 
-
-
-
-/*inline char *setlocale(int category, const char *locale) {
-	printf(">>> setlocale(%x, %s)\n", category, locale);
-	return NULL;
-}*/
 #define LC_ALL   (printf(">>> LC_ALL\n"),  1)
 #define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
-
-
-/*
-#define RTLD_LAZY 0
-#define RTLD_GLOBAL 0
-#define RTLD_LOCAL 0
-*/
-
 
 
 
@@ -311,18 +256,7 @@ typedef int sig_atomic_t;
 
 
 
-#if 0
-static inline int getpeername(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) {
-	return -1;
-}
-inline int gethostname(char *name, size_t len) {
-	char localhost[] = "localhost";
-	DPRINT();
-	strncpy(name, localhost, len);
-	return 0;
-}
-#endif
+
 
 typedef __u32 u_int32_t;
 typedef __u16 u_int16_t;

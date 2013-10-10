@@ -62,8 +62,8 @@ extern void condattr_init(struct condattr *attr);
 extern void condattr_destroy(struct condattr *attr);
 extern void condattr_getpshared(const struct condattr *attr, int *pshared);
 extern void condattr_setpshared(struct condattr *attr, int pshared);
-extern void condattr_getclock(const struct condattr *restrict attr,
-		clockid_t *restrict clock_id);
+extern void condattr_getclock(const struct condattr */*restrict*/ attr,
+		clockid_t */*restrict*/ clock_id);
 extern void condattr_setclock(struct condattr *attr, clockid_t clock_id);
 
 __END_DECLS
