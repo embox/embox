@@ -16,7 +16,7 @@
 int thread_local_alloc(struct thread *t, size_t size) {
 	void * storage;
 
-	storage = malloc(size * sizeof(t->local.storage));
+	storage = malloc(size * sizeof(t->local.storage[0]));
 
 	if (NULL == storage) {
 		return -ENOMEM;
