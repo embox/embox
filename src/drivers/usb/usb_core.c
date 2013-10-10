@@ -14,8 +14,18 @@
 #include <mem/misc/pool.h>
 #include <kernel/time/ktime.h>
 #include <kernel/printk.h>
+#include <kernel/panic.h>
 
 static DLIST_DEFINE(usb_hcds);
+
+const struct usb_desc_endpoint usb_desc_endp_control_default = {
+	.b_lenght = sizeof(struct usb_desc_endpoint),
+	.b_desc_type = USB_DESC_TYPE_ENDPOINT,
+	.b_endpoint_address = 0,
+	.bm_attributes = 0,
+	.w_max_packet_size = 8,
+	.b_interval = 0,
+};
 
 static void usb_request_build(struct usb_request *req, uint8_t req_type, uint8_t request,
 			uint16_t value, uint16_t index, uint16_t count,
@@ -56,6 +66,18 @@ static inline void usb_dev_set_state(struct usb_dev *dev, enum usb_dev_state sta
 	dev->state = state;
 }
 
+static int usb_dev_configuration_check(struct usb_dev *dev) {
+	return 1;
+}
+
+static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) {
+	return dev->getconf_data = &dev->tgetconf_data;
+}
+
+static void usb_dev_getconf_free(struct usb_dev *dev) {
+	dev->getconf_data = NULL;
+}
+
 static void usb_dev_notify(struct usb_dev *dev, usb_dev_event_t event_type,
 		union usb_dev_event event) {
 	struct usb_endp *ctrl_endp;
@@ -84,19 +106,90 @@ static void usb_dev_notify(struct usb_dev *dev, usb_dev_event_t event_type,
 		}
 		break;
 	case USB_DEV_DEFAULT:
+		assert(event_type == USB_DEV_EVENT_REQUEST);
 		if (event_type == USB_DEV_EVENT_REQUEST) {
 			dev->bus_idx = dev->idx;
 			usb_dev_set_state(dev, USB_DEV_ADDRESS);
 
 			usb_endp_request(ctrl_endp, USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_STD
-				| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_DEV,
+				| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_DEV << 8,
 				0, sizeof(struct usb_desc_device), &dev->dev_desc);
+
 		}
 
 		break;
 	case USB_DEV_ADDRESS:
-		printk("usb: found dev 0x%04x:0x%04x\n", dev->dev_desc.id_vendor,
-				dev->dev_desc.id_product);
+		assert(event_type == USB_DEV_EVENT_REQUEST);
+		if (event_type != USB_DEV_EVENT_REQUEST) {
+			break;
+		}
+
+		if (event.req->buf == (void *) &dev->dev_desc) {
+			dev->c_config = 1;
+
+			if (NULL == usb_dev_getconf_alloc(dev)) {
+				panic("%s: failed to allocate device's getconf_data\n", __func__);
+			}
+
+			usb_endp_request(ctrl_endp, USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_STD
+				| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_CONFIG << 8,
+				dev->c_config, sizeof(struct usb_desc_configuration) +
+					sizeof(struct usb_desc_interface), dev->getconf_data);
+		} else if (event.req->buf == (void *) dev->getconf_data) {
+			if (!usb_dev_configuration_check(dev)) {
+				if (dev->c_config >= dev->dev_desc.i_num_configurations) {
+					panic("%s: cannot find appropriate configuration", __func__);
+				}
+
+				dev->c_config += 1;
+				usb_endp_request(ctrl_endp, USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_STD
+					| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_CONFIG << 8 ,
+					dev->c_config, sizeof(struct usb_desc_configuration) +
+						sizeof(struct usb_desc_interface), dev->getconf_data);
+			} else {
+				dev->c_interface = 0;
+				usb_endp_request(ctrl_endp, USB_DEV_REQ_TYPE_WR | USB_DEV_REQ_TYPE_STD
+					| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_SET_CONF,
+					dev->getconf_data->config_desc.b_configuration_value,
+					0, 0, NULL);
+
+			}
+		} else if (event.req->buf == NULL) {
+			switch (event.req->ctrl_header.b_request) {
+			case USB_DEV_REQ_SET_CONF:
+				usb_dev_set_state(dev, USB_DEV_CONFIGURED);
+				dev->endp_n = 1 + dev->getconf_data->interface_desc.b_num_endpoints;
+				usb_endp_request(ctrl_endp,
+					USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_STD | USB_DEV_REQ_TYPE_DEV,
+					USB_DEV_REQ_GET_DESC,
+					USB_DESC_TYPE_CONFIG << 8,
+					dev->c_config,
+					sizeof(struct usb_desc_configuration) +
+						sizeof(struct usb_desc_interface) +
+						dev->endp_n * sizeof(struct usb_desc_endpoint),
+					dev->getconf_data);
+				break;
+			default:
+				break;
+			}
+		} else {
+			panic("%s: strange request is done\n", __func__);
+		}
+
+		break;
+	case USB_DEV_CONFIGURED:
+		if (event_type == USB_DEV_EVENT_REQUEST && event.req->buf == (void *) dev->getconf_data) {
+			for (int i = 1; i < dev->endp_n; i++) {
+				struct usb_desc_endpoint *endp_desc = &dev->getconf_data->endp_descs[i - 1];
+
+				if (NULL == usb_endp_alloc(dev, i, endp_desc)) {
+					panic("%s: failed to alloc endpoint\n", __func__);
+				}
+			}
+
+			usb_dev_getconf_free(dev);
+		}
+
 		break;
 	default:
 		break;

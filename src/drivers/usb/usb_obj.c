@@ -90,7 +90,7 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	dev->idx = idx;
 	dev->bus_idx = 0;
 
-	if (!usb_endp_alloc(dev, 0, USB_COMM_CONTROL)) {
+	if (!usb_endp_alloc(dev, 0, &usb_desc_endp_control_default)) {
 		usb_dev_free(dev);
 		return NULL;
 	}
@@ -104,7 +104,7 @@ void usb_dev_free(struct usb_dev *dev) {
 }
 
 struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned int num,
-		enum usb_comm_type type) {
+		const struct usb_desc_endpoint *endp_desc) {
 	struct usb_endp *endp = pool_alloc(&usb_endps);
 	struct usb_hcd *hcd = dev->hcd;
 
@@ -114,7 +114,8 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned int num,
 
 	endp->dev = dev;
 	endp->num = num;
-	endp->type = type;
+
+	usb_endp_fill_from_desc(endp, endp_desc);
 
 	assert(dev->endpoints[num] == NULL);
 	dev->endpoints[num] = endp;

@@ -50,8 +50,17 @@ struct usb_request;
 #define USB_DEV_REQ_GET_STAT 0x00
 #define USB_DEV_REQ_SET_ADDR 0x05
 #define USB_DEV_REQ_GET_DESC 0x06
+#define USB_DEV_REQ_SET_CONF 0x09
 
-#define USB_DESC_TYPE_DEV    0x0100
+#define USB_DESC_TYPE_DEV      1
+#define USB_DESC_TYPE_CONFIG   2
+#define USB_DESC_TYPE_ENDPOINT 5
+
+#define USB_DESC_ENDP_TYPE_MASK   0x03
+#define USB_DESC_ENDP_TYPE_CTRL   0x00
+#define USB_DESC_ENDP_TYPE_ISOCHR 0x01
+#define USB_DESC_ENDP_TYPE_BULK   0x02
+#define USB_DESC_ENDP_TYPE_INTR   0x03
 
 #define USB_HUB_PORT_CONNECT 0x0001
 #define USB_HUB_PORT_ENABLE  0x0002
@@ -89,7 +98,7 @@ enum usb_comm_type {
 	USB_COMM_CONTROL,
 	USB_COMM_INTERRUPT,
 	USB_COMM_BULK,
-	USB_COMM_ISOCHORON,
+	USB_COMM_ISOCHRON,
 };
 
 typedef enum {
@@ -122,6 +131,38 @@ struct usb_desc_device {
 	uint8_t		i_num_configurations;
 } __attribute__((packed));
 
+struct usb_desc_configuration {
+	uint8_t		b_lenght;
+	uint8_t 	b_desc_type;
+	uint16_t	w_total_length;
+	uint8_t 	b_num_interfaces;
+	uint8_t 	b_configuration_value;
+	uint8_t		i_configuration;
+	uint8_t 	bm_attributes;
+	uint8_t 	b_max_power;
+} __attribute__((packed));
+
+struct usb_desc_interface {
+	uint8_t		b_lenght;
+	uint8_t 	b_desc_type;
+	uint8_t 	b_interface_number;
+	uint8_t 	b_alternate_setting;
+	uint8_t		b_num_endpoints;
+	uint8_t		b_interface_class;
+	uint8_t		b_interface_subclass;
+	uint8_t		b_interface_protocol;
+	uint8_t 	i_interface;
+};
+
+struct usb_desc_endpoint {
+	uint8_t		b_lenght;
+	uint8_t 	b_desc_type;
+	uint8_t 	b_endpoint_address;
+	uint8_t 	bm_attributes;
+	uint16_t	w_max_packet_size;
+	uint8_t		b_interval;
+};
+
 struct usb_hcd_ops {
 	void *(*hcd_hci_alloc)(struct usb_hcd *hcd, void *args);
 	void (*hcd_hci_free)(struct usb_hcd *hcd);
@@ -141,24 +182,64 @@ struct usb_hcd_ops {
 struct usb_endp {
 	struct usb_dev *dev;
 	unsigned int num;
+	unsigned char address;
 	enum usb_comm_type type;
+	unsigned short max_packet_size;
+	unsigned char interval;
+
 	void *hci_specific;
 };
+
+static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
+	       	const struct usb_desc_endpoint *desc) {
+	endp->address = desc->b_endpoint_address;
+
+	switch(desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK) {
+	case USB_DESC_ENDP_TYPE_ISOCHR:
+		endp->type = USB_COMM_ISOCHRON;
+		break;
+	case USB_DESC_ENDP_TYPE_BULK:
+		endp->type = USB_COMM_BULK;
+		break;
+	case USB_DESC_ENDP_TYPE_INTR:
+		endp->type = USB_COMM_INTERRUPT;
+		break;
+	case USB_DESC_ENDP_TYPE_CTRL:
+	default:
+		endp->type = USB_COMM_CONTROL;
+		break;
+	}
+
+	endp->max_packet_size = desc->w_max_packet_size;
+	endp->interval = desc->b_interval;
+}
 
 union usb_dev_event {
 	struct usb_request *req;
 	struct usb_hub_port *port;
 };
 
+struct usb_desc_getconf_data {
+	struct usb_desc_configuration config_desc;
+	struct usb_desc_interface interface_desc;
+	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
+} __attribute__((packed));
+
 struct usb_dev {
 	enum usb_dev_state state;
 	struct usb_hcd *hcd;
 	struct usb_hub_port *port;
+	unsigned char endp_n;
 	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
 				   after `addressed' is idx */
+	unsigned char c_config;
+	unsigned char c_interface;
+
 	struct usb_desc_device dev_desc;
+	struct usb_desc_getconf_data *getconf_data;
+	struct usb_desc_getconf_data tgetconf_data;
 };
 
 struct usb_hub_port {
@@ -212,6 +293,9 @@ struct usb_request {
 static inline enum usb_comm_type usb_endp_type(struct usb_endp *endp) {
 	return endp->type;
 }
+
+extern const struct usb_desc_endpoint usb_desc_endp_control_default;
+
 extern int usb_hcd_register(struct usb_hcd *hcd);
 
 extern int usb_rh_nofity(struct usb_hcd *hcd);
@@ -229,7 +313,7 @@ extern struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd);
 extern void usb_dev_free(struct usb_dev *endp);
 
 extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned int num,
-		enum usb_comm_type type);
+		const struct usb_desc_endpoint *endp_desc);
 extern void usb_endp_free(struct usb_endp *endp);
 
 extern struct usb_request *usb_request_alloc(struct usb_endp *endp);
