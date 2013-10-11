@@ -46,7 +46,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 		return -ENOMEM;
 	}
 
-	pkt_hdr = (struct virtio_net_hdr *)skb_data;
+	pkt_hdr = (struct virtio_net_hdr *)skb_data_get_extra_hdr(skb_data);
 	pkt_hdr->flags = 0;
 	pkt_hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 
@@ -123,9 +123,9 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 			LOG_ERROR("virtio_interrupt", "skb_data_alloc return NULL");
 			break;
 		}
-		desc->addr = (uintptr_t)new_data;
+		desc->addr = (uintptr_t)skb_data_get_extra_hdr(new_data);
 		assert(desc->flags & VRING_DESC_F_NEXT);
-		vq->ring.desc[desc->next].addr = (uintptr_t)new_data + desc->len;
+		vq->ring.desc[desc->next].addr = (uintptr_t)skb_data_get_data(new_data);
 		vring_push_desc(used_elem->id, &vq->ring);
 		virtio_net_notify_queue(VIRTIO_NET_QUEUE_RX, dev);
 	}
