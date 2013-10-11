@@ -264,8 +264,7 @@ static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 	case MACRXINT0:
 		reg = REG_LOAD(EMAC_BASE + EMAC_R_RXCP(0));
 		desc = (struct emac_desc *)reg;
-		skb = skb_wrap(desc->len - sizeof *desc, sizeof *desc,
-				(struct sk_buff_data *)desc);
+		skb = skb_wrap(desc->len, sizeof *desc, (struct sk_buff_data *)desc);
 		if (skb == NULL) {
 			printk("ti816x_interrupt: error: skb_wrap return NULL\n");
 			break;
