@@ -25,7 +25,8 @@
 #define MODOPS_SKB_DATA_SIZE      OPTION_GET(NUMBER, skb_data_size)
 
 struct sk_buff_data {
-	unsigned char buff[MODOPS_SKB_EXTRA_HDR_SIZE + MODOPS_SKB_DATA_SIZE];
+	unsigned char extra_hdr[MODOPS_SKB_EXTRA_HDR_SIZE];
+	unsigned char data[MODOPS_SKB_DATA_SIZE];
 	unsigned int links;
 };
 
@@ -33,11 +34,11 @@ POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
 
 unsigned int skb_max_extra_hdr_size(void) {
-	return MODOPS_SKB_EXTRA_HDR_SIZE;
+	return member_sizeof(struct sk_buff_data, extra_hdr);
 }
 
 unsigned int skb_max_size(void) {
-	return MODOPS_SKB_DATA_SIZE;
+	return member_sizeof(struct sk_buff_data, data);
 }
 
 unsigned int skb_avail(struct sk_buff *skb) {
@@ -123,8 +124,8 @@ struct sk_buff * skb_wrap(unsigned int size,
 	skb->len = size;
 	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
 	skb->data = skb_data;
-	skb->p_data = &skb_data->buff[offset];
-	skb->p_data_end = &skb_data->buff[offset + size];
+	skb->p_data = &skb_data->data[0];
+	skb->p_data_end = &skb_data->data[size];
 
 	/* TODO remove this */
 	skb->mac.raw = skb->p_data;
@@ -168,30 +169,28 @@ void skb_free(struct sk_buff *skb) {
 
 static void skb_copy_ref(struct sk_buff *to,
 		const struct sk_buff *from) {
+	ptrdiff_t offset;
+
 	assert((to != NULL) && (to->data != NULL)
 			&& (from != NULL) && (from->data != NULL));
 
 	to->sk = from->sk;
 	to->dev = from->dev;
+	offset = &to->data->data[0] - &from->data->data[0];
 	if (from->mac.raw != NULL) {
-		to->mac.raw = &to->data->buff[0] + (from->mac.raw
-					- &from->data->buff[0]);
+		to->mac.raw = from->mac.raw + offset;
 	}
 	if (from->nh.raw != NULL) {
-		to->nh.raw = &to->data->buff[0] + (from->nh.raw
-					- &from->data->buff[0]);
+		to->nh.raw = from->nh.raw + offset;
 	}
 	if (from->h.raw != NULL) {
-		to->h.raw = &to->data->buff[0] + (from->h.raw
-					- &from->data->buff[0]);
+		to->h.raw = from->h.raw + offset;
 	}
 	if (from->p_data != NULL) {
-		to->p_data = &to->data->buff[0] + (from->p_data
-					- &from->data->buff[0]);
+		to->p_data = from->p_data + offset;
 	}
 	if (from->p_data_end != NULL) {
-		to->p_data_end = &to->data->buff[0] + (from->p_data_end
-					- &from->data->buff[0]);
+		to->p_data_end = from->p_data_end + offset;
 	}
 }
 
@@ -199,8 +198,7 @@ static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	assert((to != NULL) && (to->data != NULL)
 			&& (from != NULL) && (from->data != NULL)
 			&& (to->len == from->len));
-	memcpy(&to->data->buff[skb_max_extra_hdr_size()],
-			&from->data->buff[skb_max_extra_hdr_size()], from->len);
+	memcpy(&to->data->data[0], &from->data->data[0], from->len);
 }
 
 struct sk_buff * skb_copy(struct sk_buff *skb) {
@@ -245,8 +243,7 @@ void skb_rshift(struct sk_buff *skb, unsigned int count) {
 	assert(skb != NULL);
 	assert(skb->data != NULL);
 	assert(count + skb->len <= skb_max_size());
-	memmove(&skb->data->buff[skb_max_extra_hdr_size() + count],
-			&skb->data->buff[skb_max_extra_hdr_size()], skb->len);
+	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
 	skb->len += count;
 	skb->p_data_end += count;
 }
