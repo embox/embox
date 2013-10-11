@@ -38,11 +38,11 @@ define section_item
 
 endef
 
-data_header = $(\t).data.apps : ALIGN(DATA_ALIGNMENT) {
+data_header = $(\t).data.apps : ALIGN(DEFAULT_DATA_ALIGNMENT) {
 data_footer = $(\t)}
 
 define bss_header
-	.bss..reserve.apps (NOLOAD) : ALIGN(DATA_ALIGNMENT) {
+	.bss..reserve.apps (NOLOAD) : ALIGN(DEFAULT_DATA_ALIGNMENT) {
 		/* MAX is a workaround to avoid PROGBITS set on empty section. */
 		. += MAX(SIZEOF(.data.apps), 1);
 endef
