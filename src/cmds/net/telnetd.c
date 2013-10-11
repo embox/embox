@@ -47,7 +47,7 @@ static struct {
 #define TELNETD_PORT 23
 
 	/* Allow to turn off/on extra debugging information */
-#if 0
+#if 1
 #	define MD(x) do {\
 		x;\
 	} while (0);
@@ -232,6 +232,7 @@ static void *telnet_thread_handler(void* args) {
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
 	if (pipe(pipefd1) < 0 || pipe(pipefd2) < 0) {
+		MD(printf("new pipe error: %d\n", errno));
 		goto out;
 	}
 
@@ -259,6 +260,7 @@ static void *telnet_thread_handler(void* args) {
 	msg[1] = pipefd2[1];
 	msg[2] = client_num;
 	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
+		MD(printf("new task error: %d\n", -tid));
 		goto out;
 	}
 
