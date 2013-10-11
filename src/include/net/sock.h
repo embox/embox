@@ -18,8 +18,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-struct family_ops;
-struct sock_ops;
+//struct proto_sock;
+struct sock_family_ops;
+struct sock_proto_ops;
 struct sk_buff_head;
 struct sock;
 struct msghdr;
@@ -39,6 +40,14 @@ enum sock_state {
 	SS_DISCONNECTING,
 	SS_CLOSED
 };
+
+#if 0
+enum sock_shut {
+	SS_RD,
+	SS_WR,
+	SS_RDWR
+};
+#endif
 
 struct sock_opt {
 	int so_acceptconn;
@@ -72,8 +81,9 @@ struct sock {
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
 	unsigned char shutdown_flag;
-	const struct family_ops *f_ops;
-	const struct sock_ops *ops;
+	//struct proto_sock *p_sk;
+	const struct sock_family_ops *f_ops;
+	const struct sock_proto_ops *p_ops;
 	struct io_sync ios;
 #if 0
 	const struct sockaddr *src_addr;
@@ -82,7 +92,7 @@ struct sock {
 #endif
 };
 
-struct family_ops {
+struct sock_family_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*bind)(struct sock *sk, const struct sockaddr *addr,
@@ -106,9 +116,10 @@ struct family_ops {
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
+	struct pool *sock_pool;
 };
 
-struct sock_ops {
+struct sock_proto_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
@@ -138,10 +149,11 @@ extern int sock_create_ext(int family, int type, int protocol,
 extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
-extern struct sock * sock_iter(const struct sock_ops *ops);
+extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
 extern struct sock * sock_next(const struct sock *sk);
 extern struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_ops *ops, sock_lookup_tester_ft tester,
+		const struct sock_proto_ops *p_ops,
+		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size);
@@ -193,7 +205,7 @@ static inline void sock_set_so_error(struct sock *sk, int error) {
 	sk->opt.so_error = error;
 }
 
-#define sock_foreach(sk, ops) \
-	list_foreach(sk, ops->sock_list, lnk)
+#define sock_foreach(sk, p_ops) \
+	list_foreach(sk, p_ops->sock_list, lnk)
 
 #endif /* NET_SOCK_H_ */

@@ -472,8 +472,8 @@ void tcp_free_sock(union sock_pointer sock) {
 	}
 
 	if (sock.inet_sk->src_port_alloced) {
-		assert(sock.sk->ops != NULL);
-		index_unlock(sock.sk->ops->sock_port,
+		assert(sock.sk->p_ops != NULL);
+		index_unlock(sock.sk->p_ops->sock_port,
 				ntohs(sock.inet_sk->src_in.sin_port));
 	}
 	sock_release(sock.sk);

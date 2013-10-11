@@ -23,7 +23,7 @@ static inline raw_sock_t *raw_sk(const struct sock *sk) {
 	return (raw_sock_t *) sk;
 }
 
-extern const struct sock_ops *const raw_sock_ops;
+extern const struct sock_proto_ops *const raw_sock_ops;
 
 extern int raw_rcv(struct sk_buff *);
 extern void raw_err(sk_buff_t *skb, uint32_t info);

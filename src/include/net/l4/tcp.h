@@ -151,7 +151,7 @@ static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 	return skb->h.th;
 }
 
-extern const struct sock_ops *const tcp_sock_ops __attribute__((weak));
+extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 
 /* Others functionality */
 extern void build_tcp_packet(size_t opt_len, size_t data_len,

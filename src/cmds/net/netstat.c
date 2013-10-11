@@ -97,7 +97,8 @@ void print_inet_sock_info(const struct sock *sk) {
 	printf("\n");
 }
 
-void print_info(const char *title, const struct sock_ops *ops,
+void print_info(const char *title,
+		const struct sock_proto_ops *p_ops,
 		void (*print_sock_info)(const struct sock *)) {
 	const struct sock *sk;
 
@@ -105,8 +106,8 @@ void print_info(const char *title, const struct sock_ops *ops,
 		printf("%s\n", title);
 	}
 
-	if (ops != NULL) {
-		sock_foreach(sk, ops) {
+	if (p_ops != NULL) {
+		sock_foreach(sk, p_ops) {
 			(*print_sock_info)(sk);
 		}
 	}

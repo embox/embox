@@ -28,8 +28,8 @@
 #define MODOPS_AMOUNT_UDP_SOCK OPTION_GET(NUMBER, amount_udp_sock)
 #define MODOPS_AMOUNT_UDP_PORT OPTION_GET(NUMBER, amount_udp_port)
 
-static const struct sock_ops udp_sock_ops_struct;
-const struct sock_ops *const udp_sock_ops = &udp_sock_ops_struct;
+static const struct sock_proto_ops udp_sock_ops_struct;
+const struct sock_proto_ops *const udp_sock_ops = &udp_sock_ops_struct;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1, udp_sock_ops_struct);
 
@@ -78,7 +78,7 @@ INDEX_CLAMP_DEF(udp_sock_port, 0, MODOPS_AMOUNT_UDP_PORT,
 		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(udp_sock_list);
 
-static const struct sock_ops udp_sock_ops_struct = {
+static const struct sock_proto_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
 	.sock_pool = &udp_sock_pool,

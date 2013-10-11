@@ -34,8 +34,8 @@
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 #define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
 
-static const struct sock_ops tcp_sock_ops_struct;
-const struct sock_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
+static const struct sock_proto_ops tcp_sock_ops_struct;
+const struct sock_proto_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 
@@ -389,7 +389,7 @@ INDEX_CLAMP_DEF(tcp_sock_port, 0, MODOPS_AMOUNT_TCP_PORT,
 		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(tcp_sock_list);
 
-static const struct sock_ops tcp_sock_ops_struct = {
+static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.init      = tcp_init,
 	.close     = tcp_close,
 	.connect   = tcp_connect,

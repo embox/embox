@@ -27,8 +27,8 @@
 
 #define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
-static const struct sock_ops raw_sock_ops_struct;
-const struct sock_ops *const raw_sock_ops = &raw_sock_ops_struct;
+static const struct sock_proto_ops raw_sock_ops_struct;
+const struct sock_proto_ops *const raw_sock_ops = &raw_sock_ops_struct;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_sock_ops_struct);
@@ -149,7 +149,7 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
 static LIST_DEF(raw_sock_list);
 
-static const struct sock_ops raw_sock_ops_struct = {
+static const struct sock_proto_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
 	.sock_pool = &raw_sock_pool,
