@@ -47,7 +47,7 @@ static struct {
 #define TELNETD_PORT 23
 
 	/* Allow to turn off/on extra debugging information */
-#if 1
+#if 0
 #	define MD(x) do {\
 		x;\
 	} while (0);
