@@ -64,9 +64,9 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	vring_push_desc(desc_id, &vq->ring);
 
-	virtio_net_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
-
 	skb_free(skb);
+
+	virtio_net_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
 
 	return 0;
 }

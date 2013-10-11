@@ -217,9 +217,9 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	desc->data_off = 0;
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
 
-	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
-
 	skb_free(skb);
+
+	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
 
 	return 0;
 }
