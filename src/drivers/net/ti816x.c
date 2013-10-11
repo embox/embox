@@ -221,10 +221,10 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(skb_data != NULL);
 
 	desc = (struct emac_desc *)skb_data_get_extra_hdr(skb_data);
-	assert(binalign_check_bound((uintptr_t)desc, 32));
+	assert(binalign_check_bound((uintptr_t)desc, 4));
 
 	desc->next = 0;
-	assert(binalign_check_bound(desc->next, 32));
+	assert(binalign_check_bound(desc->next, 4));
 	desc->data = (uintptr_t)skb->mac.raw;
 	desc->data_len = desc->len = skb->len < ETH_ZLEN ? ETH_ZLEN : skb->len;
 	desc->data_off = 0;
