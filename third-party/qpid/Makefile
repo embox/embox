@@ -9,7 +9,7 @@ else ifeq (x86,$(EMBOX_ARCH))
 #EMBOX_QPID_TARGET=i386-pc-elf
 #i386-pc-elf
 else
-$(error Unsupported architecture: $(EMBOX_ARCH))
+$(error Unsupported architecture: $TARGET(EMBOX_ARCH))
 endif
 
 
@@ -20,14 +20,18 @@ QPID_CMAKE_DIR = $(QPID_DIR)/cmake
 QPID_LIB      += $(QPID_DIR)/$(EMBOX_QPID_TARGET)/lib/libqpid.a
 QPID_FLAGS     = $(QPID_CMAKE_DIR)/flags
 
+#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/third-party/STLport/include
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/e2fsprogs/include
+EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/STLport/stlport_embox_compat.h
+
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-
-#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -85,8 +89,8 @@ $(QPID_FLAGS): | $(QPID_CMAKE_DIR)
 $(QPID_CMAKE_DIR)/Makefile: CMakeLists.txt $(QPID_FLAGS) | $(QPID_CMAKE_DIR)
 	$(AT)cd $(QPID_CMAKE_DIR) && $(shell cat $(QPID_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
 
-$(QPID_LIB): $(QPID_CMAKE_DIR)/Makefile
-	$(AT)cd $(QPID_CMAKE_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
+$(QPID_LIB): $(QPID_CMAKE_DIR)/Makefile $(QPID_FLAGS)
+	$(AT)cd $(QPID_CMAKE_DIR) && $(shell cat $(QPID_FLAGS)) $(MAKE) VERBOSE=1 # -j `nproc`
 
 all: $(QPID_LIB)
 .NOTPARALLEL:

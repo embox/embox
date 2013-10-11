@@ -5,8 +5,8 @@
  *      Author: fsulima
  */
 
-#ifndef NTFS_EMBOX_COMPAT_H_
-#define NTFS_EMBOX_COMPAT_H_
+#ifndef QPID_EMBOX_COMPAT_H_
+#define QPID_EMBOX_COMPAT_H_
 
 
 #ifdef linux
@@ -17,11 +17,6 @@
 #undef __linux__
 #endif
 
-#include <pthread.h>
-
-extern int   pthread_cancel(pthread_t);
-
-
 #include <stdio.h>
 #include <string.h>
 
@@ -31,41 +26,42 @@ extern int   pthread_cancel(pthread_t);
 #define DPRINT()
 #endif
 
+extern
+int toupper(int c);
+
+#include <pthread.h>
+
+extern
+int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_init(pthread_rwlock_t * rwlock,
+	const pthread_rwlockattr_t * attr);
+extern
+int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
+
+extern "C"
+int alphasort(const struct dirent **a, const struct dirent **b);
+extern "C"
+int scandir(const char *dirp, struct dirent ***namelist,
+              int (*filter)(const struct dirent *),
+              int (*compar)(const struct dirent **, const struct dirent **));
+
+#define O_NOFOLLOW 0
+#define F_TLOCK 1
+#define F_ULOCK 2
+extern
+int lockf(int fd, int cmd, off_t len);
+
 #ifdef __cplusplus
-
-static inline int atexit(void (*function)(void)) {
-	printf(">>> atexit(%p)\n",function);
-}
-
-static inline int strcoll(const char *s1, const char *s2) {
-	printf(">>> strcoll(%s,%s)\n", s1, s2);
-	return strcmp(s1, s2);
-}
-
-static inline size_t strxfrm(char *dest, const char *src, size_t n) {
-	printf(">>> strxfrm(...)\n");
-	return 0;
-}
-
-static inline
-void clearerr(FILE *stream) {
-	DPRINT();
-}
-
-static inline void setbuf(FILE *stream, char *buf) {
-	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
-}
-
-static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
-	return -1;
-}
-
-extern FILE *tmpfile(void);
-extern char *tmpnam(char *s);
 
 #endif // __cplusplus
 
-#define atexit(x)
-
-#endif /* NTFS_EMBOX_COMPAT_H_ */
+#endif /* QPID_EMBOX_COMPAT_H_ */

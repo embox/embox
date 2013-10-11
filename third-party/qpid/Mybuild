@@ -5,6 +5,7 @@ static module core {
 	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.boost.core
+	depends third_party.e2fsprogs.libs
 
 	source "empty.c" // FIXME: workaround
 

@@ -27,7 +27,11 @@ ExternalProject_Add(
       --host=i386-pc-none
       --disable-tls
       --disable-backtrace
+      --disable-elf-shlibs
+      --disable-bsd-shlibs
    #	BUILD_COMMAND
+   INSTALL_COMMAND
+      make install-libs
    LOG_BUILD 1
 )
 SET (CMAKE_BUILD_TYPE "Debug")

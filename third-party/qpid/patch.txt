@@ -1,0 +1,102 @@
+diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
+--- qpidc-0.24/src/CMakeLists.txt	2013-07-13 13:15:49.000000000 +0400
++++ qpid/src/CMakeLists.txt	2013-10-11 14:18:49.881231995 +0400
+@@ -271,7 +271,7 @@
+    # -Wunreachable-code -Wpadded -Winline
+    # -Wshadow - warns about boost headers.
+    set (WARNING_FLAGS
+-        "-Werror -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual")
++        "-Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual")
+ 
+    set (CATCH_UNDEFINED "-Wl,--no-undefined")
+    # gcc on SunOS uses native linker whose "-z defs" is too fussy
+@@ -347,7 +347,7 @@
+ if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+   set (Boost_components program_options date_time thread unit_test_framework regex)
+ else (CMAKE_SYSTEM_NAME STREQUAL Windows)
+-  set (Boost_components program_options unit_test_framework)
++  set (Boost_components program_options)
+ endif (CMAKE_SYSTEM_NAME STREQUAL Windows)
+ 
+ # Visual Studio 2010 requires boost 1.45 or better.
+@@ -1058,7 +1058,7 @@
+ )
+ add_msvc_version (qpidcommon library dll)
+ 
+-add_library (qpidcommon SHARED ${qpidcommon_SOURCES})
++add_library (qpidcommon STATIC ${qpidcommon_SOURCES})
+ if (CLOCK_GETTIME_IN_RT)
+   set (qpidcommon_platform_LIBS ${qpidcommon_platform_LIBS} rt)
+ endif (CLOCK_GETTIME_IN_RT)
+@@ -1085,7 +1085,7 @@
+   ${qpidtypes_platform_SOURCES}
+ )
+ add_msvc_version (qpidtypes library dll)
+-add_library(qpidtypes SHARED ${qpidtypes_SOURCES})
++add_library(qpidtypes STATIC ${qpidtypes_SOURCES})
+ target_link_libraries(qpidtypes ${qpidtypes_platform_LIBS})
+ set_target_properties (qpidtypes PROPERTIES 
+                        VERSION ${qpidtypes_version}
+@@ -1135,7 +1135,7 @@
+ )
+ add_msvc_version (qpidclient library dll)
+ 
+-add_library (qpidclient SHARED ${qpidclient_SOURCES})
++add_library (qpidclient STATIC ${qpidclient_SOURCES})
+ target_link_libraries (qpidclient qpidcommon ${qpidclient_platform_LIBS})
+ set_target_properties (qpidclient PROPERTIES VERSION ${qpidclient_version}
+ SOVERSION ${qpidclient_version_major})
+@@ -1203,7 +1203,7 @@
+ )
+ add_msvc_version (qpidmessaging library dll)
+ 
+-add_library (qpidmessaging SHARED ${qpidmessaging_SOURCES})
++add_library (qpidmessaging STATIC ${qpidmessaging_SOURCES})
+ target_link_libraries (qpidmessaging qpidclient)
+ set_target_properties (qpidmessaging PROPERTIES 
+                        VERSION ${qpidmessaging_version} 
+@@ -1336,7 +1336,7 @@
+      qpid/sys/TCPIOPlugin.cpp
+ )
+ add_msvc_version (qpidbroker library dll)
+-add_library (qpidbroker SHARED ${qpidbroker_SOURCES})
++add_library (qpidbroker STATIC ${qpidbroker_SOURCES})
+ target_link_libraries (qpidbroker qpidcommon ${qpidbroker_platform_LIBS})
+ set_target_properties (qpidbroker PROPERTIES 
+                        VERSION ${qpidbroker_version}
+@@ -1384,7 +1384,7 @@
+     )
+ 
+ add_msvc_version (qmf library dll)
+-add_library (qmf SHARED ${qmf_SOURCES})
++add_library (qmf STATIC ${qmf_SOURCES})
+ target_link_libraries (qmf qmfengine)
+ set_target_properties (qmf PROPERTIES
+                        VERSION ${qmf_version} 
+@@ -1474,7 +1474,7 @@
+         )
+ 
+     add_msvc_version (qmf2 library dll)
+-    add_library (qmf2 SHARED ${qmf2_SOURCES})
++    add_library (qmf2 STATIC ${qmf2_SOURCES})
+     target_link_libraries (qmf2 qpidmessaging qpidtypes qpidclient qpidcommon)
+     set_target_properties (qmf2 PROPERTIES
+                            VERSION ${qmf2_version} 
+@@ -1539,7 +1539,7 @@
+ endif (NOT WIN32)
+ add_msvc_version (qmfengine library dll)
+ 
+-add_library (qmfengine SHARED ${qmfengine_SOURCES})
++add_library (qmfengine STATIC ${qmfengine_SOURCES})
+ target_link_libraries (qmfengine qpidclient)
+ set_target_properties (qmfengine PROPERTIES
+                        VERSION ${qmfengine_version} 
+@@ -1578,7 +1578,7 @@
+      ../include/qpid/console/Value.h
+     )
+ add_msvc_version (qmfconsole library dll)
+-add_library (qmfconsole SHARED ${qmfconsole_SOURCES})
++add_library (qmfconsole STATIC ${qmfconsole_SOURCES})
+ target_link_libraries (qmfconsole qpidclient)
+ set_target_properties (qmfconsole PROPERTIES
+                        VERSION ${qmfconsole_version}
