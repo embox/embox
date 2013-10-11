@@ -204,7 +204,6 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct emac_desc *desc;
 
 	skb_data = skb_data_clone(skb->data);
-	skb_free(skb);
 
 	assert(skb_data != NULL);
 
@@ -213,12 +212,14 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	desc->next = 0;
 	assert(binalign_check_bound(desc->next, 32));
-	desc->data = (uintptr_t)skb_data_get_data(skb_data);
+	desc->data = (uintptr_t)skb->mac.raw;
 	desc->data_len = desc->len = skb->len < ETH_ZLEN ? ETH_ZLEN : skb->len;
 	desc->data_off = 0;
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
 
 	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
+
+	skb_free(skb);
 
 	return 0;
 }
