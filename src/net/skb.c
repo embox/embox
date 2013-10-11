@@ -19,19 +19,40 @@
 #include <kernel/printk.h>
 #include <util/member.h>
 
-#define MODOPS_AMOUNT_SKB         OPTION_GET(NUMBER, amount_skb)
-#define MODOPS_AMOUNT_SKB_DATA    OPTION_GET(NUMBER, amount_skb_data)
-#define MODOPS_SKB_EXTRA_HDR_SIZE OPTION_GET(NUMBER, skb_extra_hdr_size)
-#define MODOPS_SKB_DATA_SIZE      OPTION_GET(NUMBER, skb_data_size)
+#define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
+#define MODOPS_AMOUNT_SKB_DATA OPTION_GET(NUMBER, amount_skb_data)
+#define MODOPS_EXTRA_HDR_SIZE  OPTION_GET(NUMBER, extra_hdr_size)
+#define MODOPS_DATA_SIZE       OPTION_GET(NUMBER, data_size)
+#define MODOPS_DATA_ALIGN      OPTION_GET(NUMBER, data_align)
+
+#if MODOPS_DATA_ALIGN == 0
+#define ATTR_ALIGNED
+#define PAD_SIZE 0
+#else
+#define SKB_ALIGNMENT 4
+#define ATTR_ALIGNED __attribute__((aligned(SKB_ALIGNMENT)))
+#define PAD_SIZE MODOPS_DATA_ALIGN
+#endif
 
 struct sk_buff_data {
-	unsigned char extra_hdr[MODOPS_SKB_EXTRA_HDR_SIZE];
-	unsigned char data[MODOPS_SKB_DATA_SIZE];
+	unsigned char extra_hdr[MODOPS_EXTRA_HDR_SIZE] ATTR_ALIGNED;
+	struct {
+		char __unused[PAD_SIZE];
+		unsigned char data[MODOPS_DATA_SIZE];
+	} ATTR_ALIGNED;
 	unsigned int links;
 };
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
+
+unsigned char * skb_data_get_extra_hdr(struct sk_buff_data *skb_data) {
+	return &skb_data->extra_hdr[0];
+}
+
+unsigned char * skb_data_get_data(struct sk_buff_data *skb_data) {
+	return &skb_data->data[0];
+}
 
 unsigned int skb_max_extra_hdr_size(void) {
 	return member_sizeof(struct sk_buff_data, extra_hdr);
