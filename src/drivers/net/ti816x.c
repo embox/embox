@@ -25,12 +25,14 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <util/binalign.h>
+#include <framework/mod/options.h>
 
 #include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(ti816x_init);
 
-#define PREP_BUF_COUNT 1
+#define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
+#define DEFAULT_CHANNEL 0
 
 static void emac_ctrl_enable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXTHRESHINTEN, 0xff);
@@ -115,7 +117,7 @@ static void emac_init_rx_regs(void) {
 	for (i = 0; i < EMAC_CHANNEL_COUNT; ++i) {
 		REG_STORE(EMAC_BASE + EMAC_R_RXFLOWTHRESH(i), 0);
 
-		REG_STORE(EMAC_BASE + EMAC_R_RXFREEBUFFER(i), PREP_BUF_COUNT);
+		REG_STORE(EMAC_BASE + EMAC_R_RXFREEBUFFER(i), MODOPS_PREP_BUFF_CNT);
 	}
 }
 
@@ -165,14 +167,14 @@ static void emac_enable_rx_and_tx_irq(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_MACINTMASKSET, HOSTMASK | STATMASK);
 }
 
-static void emac_prep_rx_queue(void) {
+static struct emac_desc *alloc_desc_queue(int size) {
 	int i;
 	struct sk_buff_data *skb_data;
 	struct emac_desc *desc, *head, *prev;
 
 	head = prev = NULL;
 
-	for (i = 0; i < PREP_BUF_COUNT; ++i) {
+	for (i = 0; i < size; ++i) {
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
 		desc = (struct emac_desc *)skb_data_get_extra_hdr(skb_data);
@@ -189,7 +191,17 @@ static void emac_prep_rx_queue(void) {
 		prev = desc;
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(i), (uintptr_t)head);
+	return head;
+}
+
+static void emac_prep_rx_queue(void) {
+	struct emac_desc *head;
+
+	head = alloc_desc_queue(MODOPS_PREP_BUFF_CNT);
+	assert(head != NULL);
+
+	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL),
+			(uintptr_t)head);
 }
 
 #define RXEN (0x1 << 0)
@@ -201,7 +213,8 @@ static void emac_enable_rx_and_tx_dma(void) {
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct sk_buff_data *skb_data;
-	struct emac_desc *desc;
+	struct emac_desc *desc, *last;
+	ipl_t ipl;
 
 	skb_data = skb_data_clone(skb->data);
 
@@ -219,7 +232,20 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	skb_free(skb);
 
-	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
+	ipl = ipl_save();
+	{
+		last = (struct emac_desc*)REG_LOAD(EMAC_BASE + EMAC_R_TXHDP(DEFAULT_CHANNEL));
+		if (last != NULL) {
+			while (last->next != 0) {
+				last = (struct emac_desc *)last->next;
+			}
+			last->next = (uintptr_t)desc;
+		}
+		if ((last == NULL) || (last->flags & (EMAC_DESC_F_EOQ | EMAC_DESC_F_EOP))) {
+			REG_STORE(EMAC_BASE + EMAC_R_TXHDP(DEFAULT_CHANNEL), (uintptr_t)desc);
+		}
+	}
+	ipl_restore(ipl);
 
 	return 0;
 }
@@ -246,67 +272,105 @@ static const struct net_driver ti816x_ops = {
 	.set_macaddr = ti816x_set_macaddr
 };
 
-#include <kernel/printk.h>
-#define HOSTPEND (1 << 26)
 #define RXTHRESHEOI 0x0
+static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
+		void *dev_id) {
+	printk("ti816x_interrupt_macrxthr0 unhandled interrupt\n");
+
+	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXTHRESHEOI);
+
+	return IRQ_HANDLED;
+}
+
 #define RXEOI       0x1
-#define TXEOI       0x2
-#define MISCEOI     0x3
-static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
-	unsigned long reg;
+static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
+		void *dev_id) {
 	struct sk_buff *skb;
-	struct sk_buff_data *new_data;
-	struct emac_desc *desc;
+	struct emac_desc *desc, *next, *head, *last;
+	int eoq, need_alloc;
 
-	//printk("!%u reg %lx\n", irq_num, REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR));
+	desc = (struct emac_desc *)REG_LOAD(EMAC_BASE + EMAC_R_RXCP(DEFAULT_CHANNEL));
+	need_alloc = 0;
+	while (1) {
+		next = (struct emac_desc *)desc->next;
+		eoq = desc->flags & (EMAC_DESC_F_EOP | EMAC_DESC_F_EOQ);
+		++need_alloc;
 
-	switch (irq_num) {
-	case MACRXINT0:
-		reg = REG_LOAD(EMAC_BASE + EMAC_R_RXCP(0));
-		desc = (struct emac_desc *)reg;
 		skb = skb_wrap(desc->len, sizeof *desc, (struct sk_buff_data *)desc);
 		if (skb == NULL) {
 			printk("ti816x_interrupt: error: skb_wrap return NULL\n");
 			break;
 		}
+
 		skb->dev = dev_id;
 		netif_rx(skb);
-		new_data = skb_data_alloc();
-		if (new_data != NULL) {
-			desc = (struct emac_desc *)skb_data_get_extra_hdr(new_data);
-			desc->next = 0;
-			assert(binalign_check_bound((uintptr_t)desc->next, 4));
-			desc->data = (uintptr_t)skb_data_get_data(new_data);
-			desc->data_len = skb_max_size() - sizeof *desc;
-			desc->data_off = 0;
-			desc->len = 0;
-			desc->flags = EMAC_DESC_F_OWNER;
-			REG_STORE(EMAC_BASE + EMAC_R_RXHDP(0), (uintptr_t)desc);
+
+		if (eoq) {
+			break;
 		}
-		else {
-			printk("ti816x_interrupt: error: skb_data_alloc return NULL\n");
-		}
-		REG_STORE(EMAC_BASE + EMAC_R_RXCP(0), reg);
-		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
-		break;
-	case MACTXINT0:
-		reg = REG_LOAD(EMAC_BASE + EMAC_R_TXCP(0));
-		skb_data_free((struct sk_buff_data *)reg);
-		//printk("tx %lx\n", reg);
-		REG_STORE(EMAC_BASE + EMAC_R_TXCP(0), reg);
-		REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), 0);
-		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
-		break;
-	case MACMISC0:
-		printk("cmmiscintstat %lx\n", REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
-		if (REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR) & HOSTPEND) {
-			printk("resetting\n");
-			REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
-			while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
-		}
-		REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, MISCEOI);
-		break;
+
+		desc = next;
 	}
+
+	head = alloc_desc_queue(need_alloc);
+	if (head == NULL) {
+		printk("ti816x_interrupt: error: skb_data_alloc return NULL\n");
+	}
+
+	if (next != NULL) {
+		last = next;
+		while (last->next != 0) {
+			last = (struct emac_desc *)last->next;
+		}
+		last->next = (uintptr_t)head;
+	}
+	else {
+		next = head;
+	}
+
+	REG_STORE(EMAC_BASE + EMAC_R_RXCP(DEFAULT_CHANNEL), (uintptr_t)desc);
+	REG_STORE(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL), (uintptr_t)next);
+	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
+
+	return IRQ_HANDLED;
+}
+
+#define TXEOI       0x2
+static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
+		void *dev_id) {
+	int eoq;
+	struct emac_desc *desc, *next;
+
+	desc = (struct emac_desc *)REG_LOAD(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL));
+	while (1) {
+		eoq = desc->flags & (EMAC_DESC_F_EOP | EMAC_DESC_F_EOQ);
+		next = (struct emac_desc *)desc->next;
+		skb_data_free((struct sk_buff_data *)desc);
+		if (eoq) {
+			break;
+		}
+		desc = next;
+	}
+
+	REG_STORE(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL), (uintptr_t)desc);
+	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(DEFAULT_CHANNEL), (uintptr_t)next);
+	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
+
+	return IRQ_HANDLED;
+}
+
+#define HOSTPEND (1 << 26)
+#define MISCEOI     0x3
+static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
+		void *dev_id) {
+	printk("ti816x_interrupt_macrxthr0 unhandled interrupt\n");
+
+	if (REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR) & HOSTPEND) {
+		REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
+		while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
+	}
+
+	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, MISCEOI);
 
 	return IRQ_HANDLED;
 }
@@ -374,19 +438,23 @@ static int ti816x_init(void) {
 
 	ti816x_config(nic);
 
-	ret = irq_attach(MACRXTHR0, ti816x_interrupt, 0, nic, "ti816x");
+	ret = irq_attach(MACRXTHR0, ti816x_interrupt_macrxthr0, 0,
+			nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
-	ret = irq_attach(MACRXINT0, ti816x_interrupt, 0, nic, "ti816x");
+	ret = irq_attach(MACRXINT0, ti816x_interrupt_macrxint0, 0,
+			nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
-	ret = irq_attach(MACTXINT0, ti816x_interrupt, 0, nic, "ti816x");
+	ret = irq_attach(MACTXINT0, ti816x_interrupt_mactxint0, 0,
+			nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
-	ret = irq_attach(MACMISC0, ti816x_interrupt, 0, nic, "ti816x");
+	ret = irq_attach(MACMISC0, ti816x_interrupt_macmisc0, 0,
+			nic, "ti816x");
 	if (ret < 0) {
 		return ret;
 	}
