@@ -67,8 +67,8 @@ PARTITION=${DRIVE}1
 umount $PARTITION
 
 if [ -z $LIVEFLASH_CPONLY ]; then
-	dd if=/dev/zero of=$DRIVE bs=4K count=16K
-	if [ -r $DRIVE ]; then
+	dd if=/dev/zero of=$DRIVE bs=512 count=1
+	if [ ! -b $DRIVE ]; then
 		# default values (as seems to QEMU)
 		SECTOR_SIZE=512
 		SECTOR_TRACK=63
@@ -89,7 +89,7 @@ if [ -z $LIVEFLASH_CPONLY ]; then
 				* $SECTOR_SIZE )) \
 			$PARTITION $DRIVE
 	else
-		echo "60,,L,*" | sfdisk -uS $DRIVE
+		echo "60,,L,*" | sfdisk $DRIVE
 
 	fi
 	MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
@@ -116,6 +116,6 @@ cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
 umount $MOUNT_POINT
 rmdir $MOUNT_POINT
 
-if [ -r $DRIVE ]; then
+if [ ! -b $DRIVE ]; then
 	losetup -d $PARTITION
 fi
