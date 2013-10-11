@@ -175,14 +175,13 @@ static void emac_prep_rx_queue(void) {
 	for (i = 0; i < PREP_BUF_COUNT; ++i) {
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
-		desc = (struct emac_desc *)skb_data;
+		desc = (struct emac_desc *)skb_data_get_extra_hdr(skb_data);
 		assert(binalign_check_bound((uintptr_t)desc, 4));
 		if (head == NULL) head = desc;
 		if (prev != NULL) prev->next = (uintptr_t)desc;
 		desc->next = 0;
 		assert(binalign_check_bound((uintptr_t)desc->next, 4));
-		desc->data = (uintptr_t)(desc + 1);
-		assert(binalign_check_bound((uintptr_t)desc->data, 4));
+		desc->data = (uintptr_t)skb_data_get_data(skb_data);
 		desc->data_len = skb_max_size() - sizeof *desc;
 		desc->data_off = 0;
 		desc->len = 0;
@@ -205,24 +204,21 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct emac_desc *desc;
 
 	skb_data = skb_data_clone(skb->data);
+	skb_free(skb);
+
 	assert(skb_data != NULL);
 
-	desc = (struct emac_desc *)skb_data;
-	//assert(binalign_check_bound((uintptr_t)desc, 32));
-
-	assert(skb->mac.raw == (void *)(desc + 1));
+	desc = (struct emac_desc *)skb_data_get_extra_hdr(skb_data);
+	assert(binalign_check_bound((uintptr_t)desc, 32));
 
 	desc->next = 0;
 	assert(binalign_check_bound(desc->next, 32));
-	desc->data = (uintptr_t)skb->mac.raw;
-	assert(binalign_check_bound(desc->data, 1));
+	desc->data = (uintptr_t)skb_data_get_data(skb_data);
 	desc->data_len = desc->len = skb->len < ETH_ZLEN ? ETH_ZLEN : skb->len;
 	desc->data_off = 0;
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
 
 	REG_STORE(EMAC_BASE + EMAC_R_TXHDP(0), (uintptr_t)desc);
-
-	skb_free(skb);
 
 	return 0;
 }
@@ -277,11 +273,10 @@ static irq_return_t ti816x_interrupt(unsigned int irq_num, void *dev_id) {
 		netif_rx(skb);
 		new_data = skb_data_alloc();
 		if (new_data != NULL) {
-			desc = (struct emac_desc *)new_data;
+			desc = (struct emac_desc *)skb_data_get_extra_hdr(new_data);
 			desc->next = 0;
 			assert(binalign_check_bound((uintptr_t)desc->next, 4));
-			desc->data = (uintptr_t)(desc + 1);
-			assert(binalign_check_bound((uintptr_t)desc->data, 4));
+			desc->data = (uintptr_t)skb_data_get_data(new_data);
 			desc->data_len = skb_max_size() - sizeof *desc;
 			desc->data_off = 0;
 			desc->len = 0;
