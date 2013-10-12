@@ -72,6 +72,7 @@ struct sock_opt {
 	int so_type;
 };
 
+/* Base class for family sockets */
 struct sock {
 	struct list_link lnk;
 	enum sock_state state;
@@ -142,8 +143,12 @@ struct proto_sock {
 	struct sock *sk;
 };
 
-static inline struct sock * to_sock(struct proto_sock *p_sk) {
-	return p_sk->sk;
+/* Conversion to base family socket.
+ * @arg p_sk - derived of proto_sock
+ *             (proto_sock MUST BE FIRST field in derived socket type)
+ */
+static inline struct sock * to_sock(void *p_sk) {
+	return ((struct proto_sock *)p_sk)->sk;
 }
 
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
