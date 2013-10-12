@@ -183,8 +183,7 @@ int rt_fib_out_dev(in_addr_t dst, struct sock *sk,
 	}
 
 	/* route destination address */
-	rte = wanna_dev == NULL ? rt_fib_get_best(dst, NULL)
-			: rt_fib_get_best(dst, wanna_dev);
+	rte = rt_fib_get_best(dst, wanna_dev);
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
