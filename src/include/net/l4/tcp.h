@@ -151,14 +151,14 @@ extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 
 /* Others functionality */
 extern void build_tcp_packet(size_t opt_len, size_t data_len,
-		struct sock *sk, struct sk_buff *skb);
-extern void tcp_free_sock(struct sock *sk);
-extern void tcp_set_st(struct sock *sk,
+		struct tcp_sock *tcp_sk, struct sk_buff *skb);
+extern void tcp_free_sock(struct tcp_sock *tcp_sk);
+extern void tcp_set_st(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state);
 extern void tcp_obj_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_obj_unlock(struct tcp_sock *sk, unsigned int obj);
 extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
-extern void send_data_from_sock(struct sock *sk, struct sk_buff *skb);
+extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_st_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);
 
