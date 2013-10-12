@@ -20,9 +20,14 @@
 #include <util/indexator.h>
 #include <embox/net/sock.h>
 #include <string.h>
+#include <mem/misc/pool.h>
 #include <net/l3/route.h>
 
 #include <net/socket/inet_sock.h>
+
+#include <framework/mod/options.h>
+
+#define MODOPS_AMOUNT_INET_SOCK OPTION_GET(NUMBER, amount_inet_sock)
 
 static const struct sock_family_ops inet_stream_ops;
 static const struct sock_family_ops inet_dgram_ops;
@@ -429,7 +434,7 @@ static int inet_shutdown(struct sock *sk, int how) {
 	return sk->p_ops->shutdown(sk, how);
 }
 
-//POOL_DEF(inet_sock_pool, struct inet_sock, MODOPS_AMOUNT_INET_SOCK);
+POOL_DEF(inet_sock_pool, struct inet_sock, MODOPS_AMOUNT_INET_SOCK);
 
 static const struct sock_family_ops inet_stream_ops = {
 	.init        = inet_init,
@@ -446,7 +451,7 @@ static const struct sock_family_ops inet_stream_ops = {
 	.getsockopt  = inet_getsockopt,
 	.setsockopt  = inet_setsockopt,
 	.shutdown    = inet_shutdown,
-//	.family_pool = &inet_sock_pool
+	.sock_pool   = &inet_sock_pool
 };
 
 static const struct sock_family_ops inet_dgram_ops = {
@@ -464,7 +469,7 @@ static const struct sock_family_ops inet_dgram_ops = {
 	.getsockopt  = inet_getsockopt,
 	.setsockopt  = inet_setsockopt,
 	.shutdown    = inet_shutdown,
-//	.family_pool = &inet_sock_pool
+	.sock_pool   = &inet_sock_pool
 };
 
 static const struct sock_family_ops inet_raw_ops = {
@@ -482,5 +487,5 @@ static const struct sock_family_ops inet_raw_ops = {
 	.getsockopt  = inet_getsockopt,
 	.setsockopt  = inet_setsockopt,
 	.shutdown    = inet_shutdown,
-//	.family_pool = &inet_sock_pool
+	.sock_pool   = &inet_sock_pool
 };

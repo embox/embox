@@ -17,15 +17,10 @@
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/socket/raw.h>
-#include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/list.h>
 
 #include <embox/net/sock.h>
-
-#include <framework/mod/options.h>
-
-#define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
 static const struct sock_proto_ops raw_sock_ops_struct;
 const struct sock_proto_ops *const raw_sock_ops = &raw_sock_ops_struct;
@@ -146,12 +141,10 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
 static LIST_DEF(raw_sock_list);
 
 static const struct sock_proto_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
-	.sock_pool = &raw_sock_pool,
 	.sock_list = &raw_sock_list
 };

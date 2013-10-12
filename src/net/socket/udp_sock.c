@@ -19,13 +19,11 @@
 #include <net/l3/route.h>
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
-#include <mem/misc/pool.h>
 #include <util/indexator.h>
 #include <netinet/in.h>
 #include <util/array.h>
 
 #include <framework/mod/options.h>
-#define MODOPS_AMOUNT_UDP_SOCK OPTION_GET(NUMBER, amount_udp_sock)
 #define MODOPS_AMOUNT_UDP_PORT OPTION_GET(NUMBER, amount_udp_port)
 
 static const struct sock_proto_ops udp_sock_ops_struct;
@@ -73,7 +71,6 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return 0;
 }
 
-POOL_DEF(udp_sock_pool, struct udp_sock, MODOPS_AMOUNT_UDP_SOCK);
 INDEX_CLAMP_DEF(udp_sock_port, 0, MODOPS_AMOUNT_UDP_PORT,
 		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(udp_sock_list);
@@ -81,7 +78,6 @@ static LIST_DEF(udp_sock_list);
 static const struct sock_proto_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
-	.sock_pool = &udp_sock_pool,
 	.sock_port = &udp_sock_port,
 	.sock_list = &udp_sock_list
 };

@@ -19,17 +19,41 @@
 #include <util/math.h>
 
 static struct sock * sock_alloc(
+		const struct sock_family_ops *f_ops,
 		const struct sock_proto_ops *p_ops) {
 	ipl_t sp;
 	struct sock *sk;
+	struct proto_sock *p_sk;
 
+	assert(f_ops != NULL);
 	assert(p_ops != NULL);
 
 	sp = ipl_save();
 	{
-		sk = pool_alloc(p_ops->sock_pool);
+		sk = pool_alloc(f_ops->sock_pool);
+		if (sk == NULL) {
+			ipl_restore(sp);
+			return NULL;
+		}
+
+		if (p_ops->sock_pool != NULL) {
+			p_sk = pool_alloc(p_ops->sock_pool);
+			if (p_sk == NULL) {
+				pool_free(f_ops->sock_pool, sk);
+				ipl_restore(sp);
+				return NULL;
+			}
+		}
+		else {
+			p_sk = NULL;
+		}
 	}
 	ipl_restore(sp);
+
+	assert(((p_sk == NULL) && (p_ops->sock_pool == NULL))
+			|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
+
+	sk->p_sk = p_sk;
 
 	return sk;
 }
@@ -38,11 +62,18 @@ static void sock_free(struct sock *sk) {
 	ipl_t sp;
 
 	assert(sk != NULL);
+	assert(sk->f_ops != NULL);
 	assert(sk->p_ops != NULL);
+	assert(((sk->p_sk == NULL) && (sk->p_ops->sock_pool == NULL))
+			|| ((sk->p_sk != NULL)
+				&& (sk->p_ops->sock_pool != NULL)));
 
 	sp = ipl_save();
 	{
-		pool_free(sk->p_ops->sock_pool, sk);
+		if (sk->p_sk != NULL) {
+			pool_free(sk->p_ops->sock_pool, sk->p_sk);
+		}
+		pool_free(sk->f_ops->sock_pool, sk);
 	}
 	ipl_restore(sp);
 }
@@ -82,6 +113,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	skb_queue_init(&sk->tx_queue);
 	sock_set_state(sk, SS_UNKNOWN);
 	sk->shutdown_flag = 0;
+	sk->p_sk = sk->p_sk; /* setup in sock_alloc() */
 	sk->f_ops = f_ops;
 	sk->p_ops = p_ops;
 	io_sync_init(&sk->ios, 0, 0);
@@ -118,7 +150,7 @@ int sock_create_ext(int family, int type, int protocol,
 		return -EPROTONOSUPPORT;
 	}
 
-	new_sk = sock_alloc(nsock->ops);
+	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
 		return -ENOMEM;
 	}
