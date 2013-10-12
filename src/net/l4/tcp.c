@@ -151,8 +151,8 @@ void build_tcp_packet(size_t opt_len, size_t data_len,
 
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 	memset(skb->h.th, 0, tcp_hdr_sz);
-	skb->h.th->source = inet_sk(sk)->src_in.sin_port;
-	skb->h.th->dest = inet_sk(sk)->dst_in.sin_port;
+	skb->h.th->source = to_inet_sock(sk)->src_in.sin_port;
+	skb->h.th->dest = to_inet_sock(sk)->dst_in.sin_port;
 	skb->h.th->seq = 0; /* use set_tcp_set_field */
 	skb->h.th->doff = tcp_hdr_sz / 4;
 }
@@ -344,13 +344,13 @@ static void rebuild_tcp_packet(__be32 ip_src, __be32 ip_dest,
 
 static void tcp_xmit(struct sock *sk, struct sk_buff *skb) {
 //	int ret;
-	rebuild_tcp_packet(inet_sk(sk)->src_in.sin_addr.s_addr,
-			inet_sk(sk)->dst_in.sin_addr.s_addr,
+	rebuild_tcp_packet(to_inet_sock(sk)->src_in.sin_addr.s_addr,
+			to_inet_sock(sk)->dst_in.sin_addr.s_addr,
 			to_tcp_sock(sk)->rem.seq, to_tcp_sock(sk)->self.wind,
 			skb);
-	packet_print(sk, skb, "<=", inet_sk(sk)->dst_in.sin_addr.s_addr,
-			inet_sk(sk)->dst_in.sin_port);
-	/*ret =*/ ip_send_packet(inet_sk(sk), skb, NULL);
+	packet_print(sk, skb, "<=", to_inet_sock(sk)->dst_in.sin_addr.s_addr,
+			to_inet_sock(sk)->dst_in.sin_port);
+	/*ret =*/ ip_send_packet(to_inet_sock(sk), skb, NULL);
 //	if (ret != 0) {
 //		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
 //	}
@@ -486,10 +486,10 @@ void tcp_free_sock(struct sock *sk) {
 		tcp_obj_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 	}
 
-	if (inet_sk(sk)->src_port_alloced) {
+	if (to_inet_sock(sk)->src_port_alloced) {
 		assert(sk->p_ops != NULL);
 		index_unlock(sk->p_ops->sock_port,
-				ntohs(inet_sk(sk)->src_in.sin_port));
+				ntohs(to_inet_sock(sk)->src_in.sin_port));
 	}
 	sock_release(sk);
 }
@@ -499,7 +499,7 @@ void tcp_free_sock(struct sock *sk) {
 static enum tcp_ret_code tcp_st_closed(struct sock *sk, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	struct tcp_sock *tcp_sk = to_tcp_sock(sk);
-	struct inet_sock *in_sk = inet_sk(sk);
+	struct inet_sock *in_sk = to_inet_sock(sk);
 
 	debug_print(8, "call tcp_st_closed\n");
 	assert(tcp_sk->state == TCP_CLOSED);
@@ -564,7 +564,7 @@ static enum tcp_ret_code tcp_st_listen(struct sock *sk, struct sk_buff **pskb,
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n",
 				newsk, *pskb, tcp_sk->sk);
 		/* Set up new socket */
-		in_newsk = inet_sk(newsk);
+		in_newsk = to_inet_sock(newsk);
 		in_newsk->src_in.sin_family = AF_INET;
 		in_newsk->src_in.sin_port = (*pskb)->h.th->dest;
 		in_newsk->src_in.sin_addr.s_addr = (*pskb)->nh.iph->daddr;
@@ -1099,7 +1099,7 @@ static int tcp_rcv_tester_strict(const struct sock *sk,
 		const struct sk_buff *skb) {
 	const struct inet_sock *in_sk;
 
-	in_sk = inet_sk((struct sock *)sk);
+	in_sk = to_const_inet_sock(sk);
 	assert(in_sk != NULL);
 
 	assert(skb != NULL);
@@ -1115,7 +1115,7 @@ static int tcp_rcv_tester_soft(const struct sock *sk,
 		const struct sk_buff *skb) {
 	const struct inet_sock *in_sk;
 
-	in_sk = inet_sk((struct sock *)sk);
+	in_sk = to_const_inet_sock(sk);
 	assert(in_sk != NULL);
 
 	assert(skb != NULL);

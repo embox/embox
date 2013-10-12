@@ -45,7 +45,7 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct sk_buff *skb;
 	const struct sockaddr_in *to;
-	struct inet_sock *in_sk = inet_sk(sk);
+	struct inet_sock *in_sk = to_inet_sock(sk);
 	size_t len = msg->msg_iov->iov_len;
 
 	to = msg->msg_name != NULL ? msg->msg_name : &in_sk->dst_in;

@@ -256,8 +256,8 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 
 		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
 				tcp_newsk,
-				inet_ntoa(inet_sk(tcp_newsk->sk)->dst_in.sin_addr),
-				ntohs(inet_sk(tcp_newsk->sk)->dst_in.sin_port));
+				inet_ntoa(to_inet_sock(tcp_newsk->sk)->dst_in.sin_addr),
+				ntohs(to_inet_sock(tcp_newsk->sk)->dst_in.sin_port));
 
 		if (tcp_st_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 			tcp_free_sock(tcp_newsk->sk);

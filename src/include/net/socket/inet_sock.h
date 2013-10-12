@@ -43,8 +43,13 @@ typedef struct inet_sock {
 	uint16_t id;
 } inet_sock_t;
 
-static inline struct inet_sock * inet_sk(struct sock *sk) {
+static inline struct inet_sock * to_inet_sock(struct sock *sk) {
 	return (struct inet_sock *)sk;
+}
+
+static inline const struct inet_sock * to_const_inet_sock(
+		const struct sock *sk) {
+	return (const struct inet_sock *)sk;
 }
 
 #endif /* NET_SOCKET_INET_SOCK_H_ */

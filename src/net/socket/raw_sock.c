@@ -118,7 +118,7 @@ void raw_err(struct sk_buff *skb, uint32_t info) {
 }
 
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct inet_sock *in_sk = inet_sk(sk);
+	struct inet_sock *in_sk = to_inet_sock(sk);
 	size_t len = msg->msg_iov->iov_len;
 	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
 

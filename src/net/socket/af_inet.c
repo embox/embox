@@ -48,7 +48,7 @@ static int inet_init(struct sock *sk) {
 		return -EINVAL;
 	}
 
-	in_sk = inet_sk(sk);
+	in_sk = to_inet_sock(sk);
 	in_sk->id = 0;
 	in_sk->uc_ttl = -1;
 	in_sk->src_port_alloced = 0;
@@ -72,10 +72,10 @@ static int inet_close(struct sock *sk) {
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->close == NULL) {
-		if (inet_sk(sk)->src_port_alloced) {
-			assert(inet_sk(sk)->src_in.sin_family == AF_INET);
+		if (to_inet_sock(sk)->src_port_alloced) {
+			assert(to_inet_sock(sk)->src_in.sin_family == AF_INET);
 			index_unlock(sk->p_ops->sock_port,
-					ntohs(inet_sk(sk)->src_in.sin_port));
+					ntohs(to_inet_sock(sk)->src_in.sin_port));
 		}
 		sock_release(sk);
 		return 0;
@@ -116,10 +116,10 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 					ntohs(addr_in->sin_port))) {
 			return -EADDRINUSE;
 		}
-		inet_sk(sk)->src_port_alloced = 1;
+		to_inet_sock(sk)->src_port_alloced = 1;
 	}
 
-	__inet_bind(inet_sk(sk), addr_in);
+	__inet_bind(to_inet_sock(sk), addr_in);
 
 	return 0;
 }
@@ -141,14 +141,14 @@ static int inet_bind_local(struct sock *sk) {
 		if (port == INDEX_NONE) {
 			return -ENOMEM;
 		}
-		inet_sk(sk)->src_port_alloced = 1;
+		to_inet_sock(sk)->src_port_alloced = 1;
 		addr_in.sin_port = htons(port);
 	}
 	else {
 		addr_in.sin_port = 0;
 	}
 
-	__inet_bind(inet_sk(sk), &addr_in);
+	__inet_bind(to_inet_sock(sk), &addr_in);
 
 	return 0;
 }
@@ -195,7 +195,7 @@ static int inet_stream_connect(struct sock *sk,
 		return -EINVAL;
 	}
 
-	ret = __inet_connect(inet_sk(sk), addr_in);
+	ret = __inet_connect(to_inet_sock(sk), addr_in);
 	if (ret != 0) {
 		return ret;
 	}
@@ -224,7 +224,7 @@ static int inet_nonstream_connect(struct sock *sk,
 		return -EINVAL;
 	}
 
-	ret = __inet_connect(inet_sk(sk), addr_in);
+	ret = __inet_connect(to_inet_sock(sk), addr_in);
 	if (ret != 0) {
 		return ret;
 	}
@@ -277,7 +277,7 @@ static int inet_accept(struct sock *sk, struct sockaddr *addr,
 	}
 
 	if (addr_in != NULL) {
-		memcpy(addr_in, &inet_sk(*out_sk)->dst_in, sizeof *addr_in);
+		memcpy(addr_in, &to_inet_sock(*out_sk)->dst_in, sizeof *addr_in);
 		assert(addr_in->sin_family == AF_INET);
 		*addrlen = sizeof *addr_in;
 	}
@@ -332,7 +332,7 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 			return -EINVAL;
 		}
 		addr_in = (struct sockaddr_in *)msg->msg_name;
-		memcpy(addr_in, &inet_sk(sk)->dst_in, sizeof *addr_in);
+		memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
 		assert(addr_in->sin_family == AF_INET);
 		msg->msg_namelen = sizeof *addr_in;
 	}
@@ -350,7 +350,7 @@ static int inet_getsockname(struct sock *sk,
 	}
 
 	addr_in = (struct sockaddr_in *)addr;
-	memcpy(addr_in, &inet_sk(sk)->src_in, sizeof *addr_in);
+	memcpy(addr_in, &to_inet_sock(sk)->src_in, sizeof *addr_in);
 	assert(addr_in->sin_family == AF_INET);
 	*addrlen = sizeof *addr_in;
 
@@ -367,7 +367,7 @@ static int inet_getpeername(struct sock *sk,
 	}
 
 	addr_in = (struct sockaddr_in *)addr;
-	memcpy(addr_in, &inet_sk(sk)->dst_in, sizeof *addr_in);
+	memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
 	assert(addr_in->sin_family == AF_INET);
 	*addrlen = sizeof *addr_in;
 

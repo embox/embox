@@ -64,7 +64,7 @@ static int udp_rcv(struct sk_buff *skb) {
 
 	sk = sock_lookup(NULL, udp_sock_ops, udp_rcv_tester, skb);
 	if (sk != NULL) {
-		if (udp_accept_dst(inet_sk(sk), skb)) {
+		if (udp_accept_dst(to_inet_sock(sk), skb)) {
 			sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE,
 					ntohs(skb->h.uh->len) - UDP_HEADER_SIZE);
 		}
