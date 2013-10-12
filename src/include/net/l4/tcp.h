@@ -87,7 +87,7 @@ struct tcp_seq_state {
 };
 
 typedef struct tcp_sock {
-	struct sock *sk;            /* Base socket pointer (get sk of parent tcp_sk one time) */
+	struct proto_sock p_sk;     /* Base proto_sock class (MUST BE FIRST) */
 	enum tcp_sock_state state;  /* Socket state */
 	struct tcp_seq_state self;  /* Some informations about this socket */
 	struct tcp_seq_state rem;   /* Informations about remote socket */

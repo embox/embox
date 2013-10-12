@@ -18,13 +18,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-//struct proto_sock;
+struct proto_sock;
 struct sock_family_ops;
 struct sock_proto_ops;
-struct sk_buff_head;
-struct sock;
 struct msghdr;
-struct skbuff;
+struct sk_buff;
 struct pool;
 struct indexator;
 struct list;
@@ -138,6 +136,15 @@ struct sock_proto_ops {
 	struct indexator *sock_port;
 	struct list *sock_list;
 };
+
+/* Base class for protocol sockets */
+struct proto_sock {
+	struct sock *sk;
+};
+
+static inline struct sock * to_sock(struct proto_sock *p_sk) {
+	return p_sk->sk;
+}
 
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);

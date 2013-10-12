@@ -33,8 +33,7 @@ struct sock;
  * @var mc_ttl - Multicasting TTL
  */
 typedef struct inet_sock {
-	/* sk have to be the first member of inet_sock */
-	struct sock sk;
+	struct sock sk;            /* Base socket class (MUST BE FIRST) */
 	int src_port_alloced;      /* non-zero if port was alloced */
 	struct sockaddr_in src_in; /* address from which the socket
 								  receives packets */

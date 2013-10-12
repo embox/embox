@@ -54,6 +54,9 @@ static struct sock * sock_alloc(
 			|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
 
 	sk->p_sk = p_sk;
+	if (p_sk != NULL) {
+		p_sk->sk = sk;
+	}
 
 	return sk;
 }
