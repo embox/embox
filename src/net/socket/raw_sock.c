@@ -25,8 +25,9 @@
 static const struct sock_proto_ops raw_sock_ops_struct;
 const struct sock_proto_ops *const raw_sock_ops = &raw_sock_ops_struct;
 
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_UDP, 0, raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_TCP, 0, raw_sock_ops_struct);
 
 static int raw_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
@@ -120,20 +121,14 @@ void raw_err(struct sk_buff *skb, uint32_t info) {
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct inet_sock *in_sk = to_inet_sock(sk);
 	size_t len = msg->msg_iov->iov_len;
-	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
+
+	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + len);
 
 	assert(skb);
 
-	memcpy((void*)((unsigned int)(skb->mac.raw + ETH_HEADER_SIZE)),
-					(void*) msg->msg_iov->iov_base, len);
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
-
-		/* Correct until somebody sends:
-		 *	IP packet with options
-		 *	already fragmented IP packet
-		 * Probably we don't need this pointer in later code
-		 */
-	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE; // + inet->opt->optlen;
+	memcpy(skb->h.raw, msg->msg_iov->iov_base, len);
 
 	ip_send_packet(in_sk, skb,
 			(const struct sockaddr_in *)msg->msg_name);

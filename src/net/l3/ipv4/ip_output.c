@@ -47,10 +47,6 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 
 static void build_ip_packet(struct inet_sock *in_sk,
 		struct sk_buff *skb, in_addr_t src_ip, in_addr_t dst_ip) {
-	/* IP header has already been built */
-	if (in_sk->sk.opt.so_type == SOCK_RAW)
-		return;
-
 	/* We use headers in other way then Linux. So data coinsides with LL header
 	 * Ethernet was hardcoded in skb allocations, so be careful
 	 */
