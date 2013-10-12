@@ -41,7 +41,7 @@
 #include <kernel/task/io_sync.h>
 #include <prom/prom_printf.h>
 
-EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
+EMBOX_NET_PROTO_INIT(ETH_P_IP, IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
 
 /** TODO
  * +1. Create default socket for resetting

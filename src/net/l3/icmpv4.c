@@ -26,7 +26,7 @@
 
 #include <kernel/time/ktime.h>
 
-EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv, NULL);
 
 /* Is the packet described by skb is multicast/broadcast one at levels 2 or 3
  * Packets with type PACKET_LOOPBACK we treat as broadcast and drop them.
@@ -190,7 +190,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	{
 		const struct net_proto *net_proto_ptr = NULL;
 
-		net_proto_ptr = net_proto_lookup(iph_embedded->proto);
+		net_proto_ptr = net_proto_lookup(ETH_P_IP, iph_embedded->proto);
 		if (net_proto_ptr != NULL) {
 			if (likely(net_proto_ptr->handle_error)) {
 				net_proto_ptr->handle_error(skb, info);

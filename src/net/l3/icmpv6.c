@@ -14,7 +14,7 @@
 #include <net/util/checksum.h>
 #include <arpa/inet.h>
 
-EMBOX_NET_PROTO(IPPROTO_ICMPV6, icmp6_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_ICMPV6, icmp6_rcv, NULL);
 
 #include <kernel/printk.h>
 #include <net/netdevice.h>

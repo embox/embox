@@ -15,18 +15,19 @@
 
 #include "types.h"
 
-#define __EMBOX_NET_PROTO(_name, _type, _handle, _handle_error, \
-		_init, _fini)                                           \
-	extern const struct net_proto __net_proto_registry[];       \
-	extern const struct mod_ops __net_proto_mod_ops;            \
-	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,                \
-			__net_proto_##_name, {                              \
-				.type = _type,                                  \
-				.init = _init,                                  \
-				.fini = _fini,                                  \
-				.handle = _handle,                              \
-				.handle_error = _handle_error                   \
-			});                                                 \
+#define __EMBOX_NET_PROTO(_name, _pack, _type, _handle,       \
+		_handle_error, _init, _fini)                          \
+	extern const struct net_proto __net_proto_registry[];     \
+	extern const struct mod_ops __net_proto_mod_ops;          \
+	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,              \
+			__net_proto_##_name, {                            \
+				.pack = _pack,                                \
+				.type = _type,                                \
+				.init = _init,                                \
+				.fini = _fini,                                \
+				.handle = _handle,                            \
+				.handle_error = _handle_error                 \
+			});                                               \
 	MOD_INFO_BIND(&__net_proto_mod_ops, &__net_proto_##_name)
 
 #endif /* FRAMEWORK_NET_PROTO_SELF_IMPL_H_ */

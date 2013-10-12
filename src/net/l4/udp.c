@@ -21,7 +21,7 @@
 
 static void udp_err(sk_buff_t *skb, unsigned int info);
 
-EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_UDP, udp_rcv, udp_err);
 
 static int udp_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {

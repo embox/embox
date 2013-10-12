@@ -156,7 +156,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
 
-	nproto = net_proto_lookup(iph->proto);
+	nproto = net_proto_lookup(ETH_P_IP, iph->proto);
 	if (nproto != NULL) {
 		return nproto->handle(skb);
 	}
