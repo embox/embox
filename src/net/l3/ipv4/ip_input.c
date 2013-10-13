@@ -70,6 +70,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		skb_free(skb);
 		return 0; /* error: invalid crc */
 	}
+	iph->check = tmp; /* restore checksum */
 
 	ip_len = ntohs(iph->tot_len);
 	if (ip_len < IP_HEADER_SIZE(iph)
