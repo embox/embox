@@ -34,8 +34,11 @@ EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv, NULL);
  * then ICMP
  */
 static inline bool is_packet_not_unicast(sk_buff_t *skb) {
-	return (pkt_type(skb) != PACKET_HOST) ||
-		   !(ip_is_local(skb->nh.iph->daddr, false, false));
+	return !(((pkt_type(skb) == PACKET_HOST)
+					|| (pkt_type(skb) ==PACKET_LOOPBACK)) &&
+				ip_is_local(skb->nh.iph->daddr, false, false))
+			&& !((pkt_type(skb) == PACKET_OTHERHOST)
+				&& ip_is_local(skb->nh.iph->saddr, false, false));
 }
 
 static int icmp_discard(sk_buff_t *skb) {
@@ -225,7 +228,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 	in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
 					reply->nh.iph->daddr : idev->ifa_address;
 
-	init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE,
+	init_ip_header(reply->nh.iph, IPPROTO_ICMP,
 			ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
@@ -377,7 +380,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 			__be16 ip_id = inetdev_get_ip_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in.tos,
+			init_ip_header(iph, IPPROTO_ICMP, ip_id, tot_len, iph_in.tos,
 						   idev->ifa_address, iph_in.saddr);
 		}
 
