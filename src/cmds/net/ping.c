@@ -35,7 +35,7 @@ EMBOX_CMD(exec);
 /* Constants */
 #define DEFAULT_COUNT    4
 #define DEFAULT_PADLEN   64
-#define DEFAULT_TIMEOUT  1
+#define DEFAULT_TIMEOUT  10
 #define DEFAULT_INTERVAL 1
 #define DEFAULT_PATTERN  0xFF
 #define DEFAULT_TTL      59
@@ -48,7 +48,6 @@ struct ping_info {
 	int interval;        /* Wait  interval seconds between sending each packet. */
 	int pattern;         /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
 	int ttl;             /* IP Time to Live. */
-	struct in_addr from; /* Source address to specified interface address. */
 	struct in_addr dst;  /* Destination host */
 };
 
@@ -69,67 +68,95 @@ static void print_usage(void) {
 		"            [-I interface] [-W timeout] destination\n");
 }
 
-static int sent_result(int sock, uint32_t timeout, struct packet_out *tx_pack, char *name) {
-	uint32_t start, delta;
-	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
+static int parse_result(struct packet_in *rx_pack,
+		struct packet_out *tx_pack, char *name,
+		struct sockaddr_in *to, uint16_t *last_seq,
+		uint32_t started, uint32_t interval) {
+	uint32_t elapsed;
 	char *dst_addr_str;
 	int res = 0;
+	struct iphdr *emb_iph;
+	struct icmphdr *emb_icmph;
 
-	if (rx_pack == NULL) {
-		printf("packet allocate fail");
-		return -ENOMEM;
-
-	}
-	start = clock();
-	while ((delta = clock() - start) < timeout) {
-		/* we don't need to get pad data, only header */
-		if (recv(sock, rx_pack, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0) <= 0) {
-			continue;
-		}
-		if ((rx_pack->icmph.type != ICMP_ECHOREPLY) ||
-		    (tx_pack->icmph.un.echo.id != rx_pack->icmph.un.echo.id) ||
-		    (tx_pack->icmph.un.echo.sequence != rx_pack->icmph.un.echo.sequence)) {
-			continue;
+	switch (rx_pack->icmph.type) {
+	case ICMP_ECHOREPLY:
+	    if ((to->sin_addr.s_addr != rx_pack->iph.saddr)
+				|| (tx_pack->icmph.un.echo.id
+					!= rx_pack->icmph.un.echo.id)
+				|| (ntohs(tx_pack->icmph.un.echo.sequence)
+					< ntohs(rx_pack->icmph.un.echo.sequence))) {
+			break;
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->iph.saddr);
-		printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d ",
-			(int) (ntohs(rx_pack->iph.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
-			name, dst_addr_str,
-			ntohs(rx_pack->icmph.un.echo.sequence),
-			rx_pack->iph.ttl);
-		if (delta < 1) {
-			printf("time <1ms\n");
-		} else {
-			printf("time=%d ms\n", delta);
+		*last_seq = ntohs(rx_pack->icmph.un.echo.sequence);
+		printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d ",
+				ntohs(rx_pack->iph.tot_len) - (
+					IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE),
+				name, dst_addr_str, *last_seq,
+				rx_pack->iph.ttl);
+		elapsed = clock() - (started + (*last_seq - 1) * interval);
+		if (elapsed < 1) {
+			printf("time<1 ms\n");
+		}
+		else {
+			printf("time=%d ms\n", elapsed);
 		}
 		res = 1;
 		break;
+	case ICMP_DEST_UNREACH:
+		emb_iph = (struct iphdr *)((char *)&rx_pack->icmph + ICMP_LEN_DEST_UNREACH);
+		emb_icmph = (struct icmphdr *)(emb_iph + 1);
+	    if ((to->sin_addr.s_addr != emb_iph->daddr)
+				|| (tx_pack->icmph.un.echo.id
+					!= emb_icmph->un.echo.id)
+				|| (ntohs(tx_pack->icmph.un.echo.sequence)
+					< ntohs(emb_icmph->un.echo.sequence))) {
+			break;
+		}
+		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->iph.saddr);
+		*last_seq = ntohs(emb_icmph->un.echo.sequence);
+		printf("From %s	icmp_seq=%u %s\n",
+				dst_addr_str, *last_seq,
+				rx_pack->icmph.code == ICMP_NET_UNREACH
+						? "Destination Network Unreachable"
+					: rx_pack->icmph.code == ICMP_HOST_UNREACH
+						? "Destination Host Unreachable"
+					: rx_pack->icmph.code == ICMP_PROT_UNREACH
+						? "Destination Protocol Unreachable"
+					: rx_pack->icmph.code == ICMP_PORT_UNREACH
+						? "Destination Port Unreachable"
+					: "unknown icmp_code");
+		break;
+	default:
+		*last_seq = -1;
+		printf("ping: ignore icmp_type=%d icmp_type=%d\n",
+				rx_pack->icmph.type, rx_pack->icmph.code);
+		break;
 	}
-
-	free(rx_pack);
 
 	return res;
 }
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
-	uint32_t timeout, total;
+	uint32_t total, last_sent;
 	int i, cnt_resp, cnt_err, sk;
 	struct sockaddr_in to;
 	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
+	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
+	uint16_t next_seq, last_seq;
 
-	if (tx_pack == NULL) {
+	if (tx_pack == NULL || rx_pack == NULL) {
 		printf("packet allocate fail");
+		free(tx_pack);
+		free(rx_pack);
 		return -ENOMEM;
-
 	}
-	cnt_resp = 0; cnt_err = 0;
+
+	cnt_resp = 0; cnt_err = 0; next_seq = 0;
 
 	tx_pack->icmph.type = ICMP_ECHO;
 	tx_pack->icmph.code = 0;
 	tx_pack->icmph.un.echo.id = 11; /* TODO: get unique id */
-	tx_pack->icmph.un.echo.sequence = 0;
-
-	timeout = pinfo->timeout * 1000;
 
 	/* open socket */
 	sk = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -143,45 +170,46 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 	to.sin_port = 0;
 
-	if (0 != connect(sk, (struct sockaddr *)&to, sizeof to)) {
-		close(sk);
-		free(tx_pack);
-		return -errno;
-	}
-
 	fcntl(sk, F_SETFD, O_NONBLOCK);
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
+	last_sent = 0;
 	total = clock();
 	i = 0;
-	while (1) {
-		tx_pack->icmph.un.echo.sequence = htons(ntohs(tx_pack->icmph.un.echo.sequence) + 1);
-		tx_pack->icmph.checksum = 0;
-		/* TODO checksum must be at network byte order */
-		/* XXX linux-0.2.img sends checksum in host byte order,
-		 * but it's wrong */
-		tx_pack->icmph.checksum = ptclbsum(tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size);
-		send(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0);
-
-		/* try to fetch response */
-		if (sent_result(sk, timeout, tx_pack, official_name)) {
-			cnt_resp++; /* if response was fetched proceed */
-		} else { /* else output diagnostics */
-			/* that is not right. fetch error message */
-			printf("From %s icmp_seq=%d Destination Host Unreachable\n", inet_ntoa(pinfo->from), i); // TODO
-			cnt_err++;
+	last_seq = -1;
+	while (last_seq != next_seq || i < pinfo->count) {
+		if (clock() - last_sent >= pinfo->interval
+				&& i < pinfo->count) {
+			tx_pack->icmph.un.echo.sequence = htons(++next_seq);
+			tx_pack->icmph.checksum = 0;
+			tx_pack->icmph.checksum = ptclbsum(tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size);
+			sendto(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0,
+					(struct sockaddr *)&to, sizeof to);
+			++i;
+			last_sent = clock();
 		}
 
-		if (++i == pinfo->count) {
+		if (clock() - last_sent >= pinfo->timeout) {
 			break;
 		}
 
-		/* wait before sending next */
-		sleep(pinfo->interval);
+		/* we don't need to get pad data, only header */
+		if (recv(sk, rx_pack, sizeof *rx_pack, 0) <= 0) {
+			continue;
+		}
+
+		/* try to fetch response */
+		if (parse_result(rx_pack, tx_pack, official_name, &to,
+					&last_seq, total, pinfo->interval)) {
+			cnt_resp++; /* if response was fetched proceed */
+		} else { /* else output diagnostics */
+			cnt_err++;
+		}
 	}
 
 	free(tx_pack);
+	free(rx_pack);
 
 	/* output statistics */
 	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
@@ -340,17 +368,9 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	/* Get source addr */
-	if (NULL != in_dev) {
-		pinfo.from.s_addr = inetdev_get_addr(in_dev);
-	} else {
-		struct rt_entry *rte = rt_fib_get_best(pinfo.dst.s_addr, NULL);
-		if (NULL == rte) {
-			return -EHOSTUNREACH;
-		}
-		assert(inetdev_get_by_dev(rte->dev) != NULL);
-		pinfo.from.s_addr = inetdev_get_by_dev(rte->dev)->ifa_address;
-	}
+	pinfo.interval *= 1000;
+	pinfo.timeout *= 1000;
+
 	/* ping! */
 	return ping(&pinfo, hostname, he->h_name);
 }
