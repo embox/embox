@@ -31,8 +31,6 @@ struct sock;
 
 #define IP_ADDR_LEN      4
 #define IPv6_ADDR_LEN    16
-#define ICMP_PROTO_TYPE  (unsigned short)0x01
-#define UDP_PROTO_TYPE   (unsigned short)0x11
 
 /* IP flags. */
 #define IP_CE           0x8000	/* Flag: "Congestion"       */
