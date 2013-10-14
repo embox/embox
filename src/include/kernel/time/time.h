@@ -28,7 +28,8 @@ typedef uint64_t cycle_t;
  * There are to ways to store time in kernel:
  * 1. Throw timeval and timespec.
  * 2. Throw int64_t.
- * This two approaches are equal, but int64_t is faster for arithmetic operations. So, we use second.
+ * This two approaches are equal, but int64_t is faster for arithmetic
+ * operations. So, we use second.
  * We use signed integer to simplify subtraction.
  * This types can store about 584 years in nanoseconds.
  */

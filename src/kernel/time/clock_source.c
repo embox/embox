@@ -22,7 +22,8 @@
 ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
 
-POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_quantity));
+POOL_DEF(clock_source_pool, struct clock_source_head,
+						OPTION_GET(NUMBER, clocks_quantity));
 
 DLIST_DEFINE(clock_source_list);
 
