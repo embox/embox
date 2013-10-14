@@ -42,7 +42,11 @@ include $(__include)
 .DELETE_ON_ERROR:
 
 image: $(IMAGE)
-image: $(IMAGE_DIS) $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+
+ifeq ($(value DISASSEMBLY),y)
+image : $(IMAGE_DIS)
+endif
 
 CROSS_COMPILE ?=
 
