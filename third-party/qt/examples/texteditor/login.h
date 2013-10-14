@@ -61,6 +61,9 @@ private:
 
     QMdiArea *emarea;
 
+    /* Used to close login dialog only when it is necessary */
+    bool closable;
+
 protected:
     void closeEvent(QCloseEvent *);
     void showEvent(QShowEvent *);
@@ -86,7 +89,6 @@ public slots:
       * A lot to adjust the emitting of the signal.
       */
     void slotAcceptLogin();
-    void close();
 };
 
 #endif // TEXTEDITOR_LOGIN_H

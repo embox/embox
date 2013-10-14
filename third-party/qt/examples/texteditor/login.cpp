@@ -4,23 +4,18 @@
 
 
 LoginDialog::LoginDialog(QWidget *parent, QMdiArea *area) :
-	QDialog(parent), emarea(area)
-{
+	QDialog(parent), emarea(area), closable(false) {
     setUpGUI();
     setWindowTitle( tr("Вход в систему") );
     setModal( true );
     subwindow = emarea->addSubWindow(this, windowType());
 }
 
-void LoginDialog::setUpGUI(){
+void LoginDialog::setUpGUI() {
     // set up the layout
     formGridLayout = new QGridLayout( this );
 
-    // initialize the username combo box so that it is editable
     editUsername = new QLineEdit( this );
-    //comboUsername->setEditable( true );
-    // initialize the password field so that it does not echo
-    // characters
     editPassword = new QLineEdit( this );
     editPassword->setEchoMode( QLineEdit::Password );
 
@@ -32,21 +27,10 @@ void LoginDialog::setUpGUI(){
     labelPassword->setText( tr( "Пароль" ) );
     labelPassword->setBuddy( editPassword );
 
-
-
     // initialize buttons
     buttons = new QDialogButtonBox( this );
     buttons->addButton( QDialogButtonBox::Ok );
-    buttons->addButton( QDialogButtonBox::Cancel );
     buttons->button( QDialogButtonBox::Ok )->setText( tr("Login") );
-    buttons->button( QDialogButtonBox::Cancel )->setText( tr("Abort") );
-
-    // connects slots
-    connect( buttons->button( QDialogButtonBox::Cancel ),
-             SIGNAL(clicked()),
-             this,
-             SLOT(close())
-             );
 
     connect( buttons->button( QDialogButtonBox::Ok ),
              SIGNAL(clicked()),
@@ -67,19 +51,17 @@ void LoginDialog::setUpGUI(){
     setLayout( formGridLayout );
 }
 
-void LoginDialog::showEvent(QShowEvent *)
-{
+void LoginDialog::showEvent(QShowEvent *) {
 	QRect geo = subwindow->geometry();
 	geo.moveCenter(emarea->parentWidget()->rect().center());
 	subwindow->setGeometry(geo);
 }
 
-void LoginDialog::closeEvent(QCloseEvent *ev)
-{
-	ev->ignore();
+void LoginDialog::closeEvent(QCloseEvent *ev) {
+	closable ? QDialog::closeEvent(ev) : ev->ignore();
 }
 
-void LoginDialog::slotAcceptLogin(){
+void LoginDialog::slotAcceptLogin() {
     QString username = editUsername->text();
     QString password = editPassword->text();
 
@@ -102,12 +84,7 @@ void LoginDialog::slotAcceptLogin(){
     emboxQtShowDesktop(pwd->pw_uid);
 
     // close this dialog
-    close();
+    closable = true;
     emarea->setActiveSubWindow(subwindow);
     emarea->closeActiveSubWindow();
-}
-
-void LoginDialog::close() {
-	//emarea->setActiveSubWindow(subwindow);
-	//emarea->closeActiveSubWindow();
 }
