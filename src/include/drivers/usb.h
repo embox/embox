@@ -10,6 +10,7 @@
 #define DRIVERS_USB_H_
 
 #include <stdint.h>
+#include <kernel/time/timer.h>
 #include <util/dlist.h>
 #include <util/indexator.h>
 
@@ -34,6 +35,10 @@ struct usb_hub_port;
 struct usb_dev;
 struct usb_endp;
 struct usb_request;
+enum usb_dev_event_type;
+
+typedef void (*usb_dev_notify_hnd_t)(struct usb_dev *dev, enum usb_dev_event_type event_type);
+typedef void (*usb_request_notify_hnd_t)(struct usb_request *req);
 
 #define USB_DEV_REQ_TYPE_WR    	        0x00
 #define USB_DEV_REQ_TYPE_RD    	        0x80
@@ -101,10 +106,10 @@ enum usb_comm_type {
 	USB_COMM_ISOCHRON,
 };
 
-typedef enum {
+enum usb_dev_event_type {
 	USB_DEV_EVENT_PORT,
-	USB_DEV_EVENT_REQUEST,
-} usb_dev_event_t;
+	USB_DEV_EVENT_POSTED,
+};
 
 struct usb_control_header {
 	uint8_t		bm_request_type;
@@ -214,11 +219,6 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 	endp->interval = desc->b_interval;
 }
 
-union usb_dev_event {
-	struct usb_request *req;
-	struct usb_hub_port *port;
-};
-
 struct usb_desc_getconf_data {
 	struct usb_desc_configuration config_desc;
 	struct usb_desc_interface interface_desc;
@@ -227,6 +227,10 @@ struct usb_desc_getconf_data {
 
 struct usb_dev {
 	enum usb_dev_state state;
+	usb_dev_notify_hnd_t notify_hnd;
+
+	struct sys_timer post_timer;
+
 	struct usb_hcd *hcd;
 	struct usb_hub_port *port;
 	unsigned char endp_n;
@@ -285,9 +289,10 @@ struct usb_request {
 	char *buf;
 	size_t len;
 	enum usb_request_status req_stat;
+	usb_request_notify_hnd_t notify_hnd;
 
-	struct usb_control_header ctrl_header;
 	void *hci_specific;
+	struct usb_control_header ctrl_header;
 };
 
 static inline enum usb_comm_type usb_endp_type(struct usb_endp *endp) {
