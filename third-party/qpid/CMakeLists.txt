@@ -13,15 +13,11 @@ ExternalProject_Add(
       #&& cd <SOURCE_DIR> && autoconf && aclocal && automake
       #true
    #LOG_CONFIGURE 1
-   #CONFIGURE_COMMAND
-      #false
    CMAKE_CACHE_ARGS
       -DBoost_DEBUG:BOOL=on
-      -DCMAKE_SYSTEM_NAME=Embox
-   #BUILD_COMMAND
-      #false
-   INSTALL_COMMAND
-      false
+      #-DCMAKE_SYSTEM_NAME:STRING=Embox
+      -DBUILD_HA:BOOL=off
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
    LOG_BUILD 1
 )
 SET (CMAKE_BUILD_TYPE "Debug")

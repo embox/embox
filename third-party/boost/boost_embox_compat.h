@@ -214,6 +214,9 @@ int getnameinfo(const struct sockaddr *sa, socklen_t salen,
                        char *host, size_t hostlen,
                        char *serv, size_t servlen, int flags);
 
+#define AI_ADDRCONFIG	0x0001
+#define AI_PASSIVE	0x0020
+
 
 #define SIG_BLOCK 1
 #define SIG_SETMASK 2

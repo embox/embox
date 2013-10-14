@@ -26,8 +26,8 @@
 #define DPRINT()
 #endif
 
-extern
-int toupper(int c);
+#include <ctype.h>
+//extern int toupper(int c);
 
 #include <pthread.h>
 
@@ -36,7 +36,6 @@ int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
 extern
 int pthread_rwlock_init(pthread_rwlock_t * rwlock,
 	const pthread_rwlockattr_t * attr);
-extern
 int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
 extern
 int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
@@ -47,9 +46,9 @@ int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
 extern
 int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 
-extern "C"
+extern
 int alphasort(const struct dirent **a, const struct dirent **b);
-extern "C"
+extern
 int scandir(const char *dirp, struct dirent ***namelist,
               int (*filter)(const struct dirent *),
               int (*compar)(const struct dirent **, const struct dirent **));
@@ -59,9 +58,6 @@ int scandir(const char *dirp, struct dirent ***namelist,
 #define F_ULOCK 2
 extern
 int lockf(int fd, int cmd, off_t len);
-
-using std::sysconf;
-#define _SC_PAGE_SIZE _SC_PAGESIZE
 
 #include <errno.h>
 
@@ -73,7 +69,7 @@ using std::sysconf;
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	// ToDo: implement for InitFS files
 	(void)addr;
-	(void)len;
+	(void)len;pid_t getppid(void);
 	(void)prot;
 	(void)flags;
 	(void)off;
@@ -139,7 +135,53 @@ struct sockaddr_storage
 #define IPV6_V6ONLY 0
 #define TCP_NODELAY 0
 
+#define NI_MAXHOST	1025
+#define NI_MAXSERV	32
+
+extern
+void freeaddrinfo(struct addrinfo *res);
+
+#define NI_NUMERICSERV 2
+#define NI_NUMERICHOST 3
+extern
+int getnameinfo(const struct sockaddr *sa, socklen_t salen,
+                       char *host, size_t hostlen,
+                       char *serv, size_t servlen, int flags);
+
+const char *gai_strerror(int errcode);
+
+#define AI_ADDRCONFIG	0x0001
+#define AI_PASSIVE	0x0020
+
+#define EAI_FAIL	4
+
+static inline
+int getaddrinfo(const char *node, const char *service,
+                       const struct addrinfo *hints,
+                       struct addrinfo **res) {
+	DPRINT();
+	return EAI_FAIL;
+}
+
+#include <arpa/inet.h>
+
+extern
+char *strerror_r(int errnum, char *buf, size_t buflen);
+
+static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
+	printf(">>> localtime_r\n");
+	return NULL;
+}
+
+#include <sys/types.h>
+extern
+pid_t getppid(void);
+
+
 #ifdef __cplusplus
+
+using std::sysconf;
+#define _SC_PAGE_SIZE _SC_PAGESIZE
 
 #endif // __cplusplus
 
