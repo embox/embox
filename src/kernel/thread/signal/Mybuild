@@ -1,0 +1,23 @@
+
+package embox.kernel.thread.signal
+
+@DefaultImpl(sigrt_stub)  abstract module sigrt_api { }
+@DefaultImpl(sigstd_stub) abstract module sigstd_api { }
+
+module sigrt_stub extends sigrt_api {
+	source "sigrt_stub.h"
+}
+
+module sigrt extends sigrt_api {
+	source "sigrt.h"
+	source "sigrt.c"
+}
+
+module sigstd_stub extends sigstd_api {
+	source "sigstd_stub.h"
+}
+
+module sigstd extends sigstd_api {
+	source "sigstd.h"
+	source "sigstd.c"
+}

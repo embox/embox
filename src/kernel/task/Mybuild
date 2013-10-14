@@ -56,14 +56,14 @@ module kernel_task {
 }
 
 module std_signal {
-	source "std_signal.c"
+//	source "std_signal.c"
 
 	depends api
 //	depends signal_common
 }
 
 module rt_signal {
-	source "rt_signal.c"
+//	source "rt_signal.c"
 
 	depends api
 	depends signal_common

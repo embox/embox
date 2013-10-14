@@ -12,10 +12,11 @@
 
 #include <hal/context.h>
 
-#include <kernel/thread/state.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/wait_data.h>
+#include <kernel/thread/state.h>
+#include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
+#include <kernel/thread/wait_data.h>
 
 #include <util/dlist.h>
 
@@ -46,6 +47,7 @@ struct thread {
 	struct thread     *joined;       /**< Thread which joined to this. */
 
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
+	struct signal_data signal_data;  /**< Pending signal(s). */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 };

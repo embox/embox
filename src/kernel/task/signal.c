@@ -5,57 +5,43 @@
  * @author  Anton Kozlov
  * @author  Alexander Kalmuk
  * 			- split signals into standard signals and real-time signals
+ * @author  Eldar Abusalimov
  * @date    22.10.2012
  */
 
 #include <math.h>
-#include <util/dlist.h>
-#include <util/array.h>
-
-#include <kernel/task/task_table.h>
-#include <kernel/task/signal.h>
-#include <kernel/task/std_signal.h>
-#include <kernel/sched.h>
 
 #include "common.h"
 
+#include <kernel/thread/signal.h>
 
-ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
 
-static void task_terminate(int sig) {
+static void task_terminate_sigstd_handler(int sig) {
 	task_exit(NULL);
 }
 
-static void task_signal_table_init(struct task *task, void *_signal_table) {
-	struct task_signal_table *sig_table = _signal_table;
+static void task_terminate_sigrt_handler(int sig, union sigval sigval) {
+	task_exit(NULL);
+}
 
-	for (int sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
-		sig_table->hnd[sig] = task_terminate;
+static void task_signal_table_init(struct task *task, void *resource) {
+	struct signal_table *sig_tab = resource;
+
+	for (int sig = 0; sig < SIGSTD_CNT; ++sig) {
+		sig_tab->sigstd_handlers[sig] = task_terminate_sigstd_handler;
 	}
 
-	for (int sig = 0; sig < TASK_RTSIG_CNT; sig++) {
-		sig_table->rt_hnd[sig] = NULL;
-		dlist_init(&sig_table->rtsig_data[sig]);
+	for (int sig = 0; sig < SIGRT_CNT; ++sig) {
+		sig_tab->sigrt_handlers[sig] = task_terminate_sigrt_handler;
 	}
 
-	task->signal_table = sig_table;
+	task->signal_table = sig_tab;
 }
 
 static const struct task_resource_desc signal_resource = {
 	.init = task_signal_table_init,
-	.resource_size = sizeof(struct task_signal_table),
+	.resource_size = sizeof(struct signal_table),
 };
-
-void task_signal_hnd(void) {
-	global_sig_hnd_t hnd;
-
-	array_foreach(hnd, __signal_handlers_array,
-			ARRAY_SPREAD_SIZE(__signal_handlers_array)) {
-		if (hnd) {
-			hnd();
-		}
-	}
-}
 
 TASK_RESOURCE_DESC(&signal_resource);
 

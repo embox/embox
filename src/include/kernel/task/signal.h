@@ -10,13 +10,14 @@
 #define SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_
 
 #include <stdint.h>
+#include <signal.h>
 #include <kernel/task.h>
 #include <util/dlist.h>
 
-union sigval {
-	int sival_int;
-	void *sival_ptr;
-};
+// union sigval {
+// 	int sival_int;
+// 	void *sival_ptr;
+// };
 
 typedef void(*global_sig_hnd_t)(void);
 /* Handler for standard signal */

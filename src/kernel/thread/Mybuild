@@ -26,6 +26,13 @@ module core extends thread_mode {
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
 	@NoRuntime depends thread_local
+	@NoRuntime depends signal
+}
+
+module signal {
+	source "signal.c"
+	@NoRuntime depends embox.kernel.thread.signal.sigrt_api
+	@NoRuntime depends embox.kernel.thread.signal.sigstd_api
 }
 
 @DefaultImpl(fixed_stack)
