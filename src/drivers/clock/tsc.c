@@ -12,8 +12,6 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include <drivers/clock/tsc.h>
-
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
@@ -21,7 +19,7 @@
 
 static int tsc_init(void);
 
-static unsigned int cpu_hz = 1000000000L;
+static unsigned int cpu_hz;
 
 /* Read Time Stamp Counter Register */
 static inline unsigned long long rdtsc(void) {
@@ -51,10 +49,6 @@ static int tsc_init(void) {
 	tsc.resolution = cpu_hz;
 	clock_source_register(&tsc_clock_source);
 	return ENOERR;
-}
-
-unsigned long long getCpuFrequency(void){
-	return cpu_hz;
 }
 
 EMBOX_UNIT_INIT(tsc_init);
