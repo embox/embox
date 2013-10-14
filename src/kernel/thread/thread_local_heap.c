@@ -6,6 +6,7 @@
  */
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
@@ -15,19 +16,21 @@
 
 int thread_local_alloc(struct thread *t, size_t size) {
 	void * storage;
+	size_t storage_size;
 
-	storage = malloc(size * sizeof(t->local.storage[0]));
+	storage_size = size * sizeof(t->local.storage[0]);
+	storage = malloc(storage_size);
 
 	if (NULL == storage) {
 		return -ENOMEM;
 	}
+	memset(storage, 0, storage_size);
 
 	t->local.storage = storage;
 	t->local.size = size;
 
 	return ENOERR;
 }
-
 
 int thread_local_free(struct thread *t) {
 	free(t->local.storage);
