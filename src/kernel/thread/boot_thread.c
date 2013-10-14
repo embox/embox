@@ -60,7 +60,7 @@ struct thread *boot_thread_create(void) {
 	bootstrap = thread_init_self(&__stack, (size_t) STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
-	task_add_thread(kernel_task, bootstrap);
+	thread_register(kernel_task, bootstrap);
 
 	return bootstrap;
 }

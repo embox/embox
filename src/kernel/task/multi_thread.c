@@ -11,7 +11,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/task/thread_key_table.h>
 
-int task_add_thread(struct task * task, struct thread *t) {
+int thread_register(struct task * task, struct thread *t) {
 	sched_priority_t sched_prior;
 
 	if ((NULL == task) || (NULL == t)) {

@@ -30,7 +30,7 @@ TEST_CASE("Create 256 threads with different priority") {
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				thread_run, (void *) i);
 		test_assert_zero(err(t));
-		task_add_thread(task_kernel_task(), t);
+		thread_register(task_kernel_task(), t);
 		test_assert_zero(thread_set_priority(t, i));
 		test_assert_zero(thread_detach(t));
 		test_assert_zero(thread_launch(t));

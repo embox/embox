@@ -106,7 +106,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 /** insert a created task into the task */
-extern int task_add_thread(struct task *, struct thread *);
+extern int thread_register(struct task *, struct thread *);
 
 extern int task_remove_thread(struct task *, struct thread *);
 

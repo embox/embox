@@ -123,7 +123,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			if (-ENOMEM == task_add_thread(task_self(), t)) {
+			if (-ENOMEM == thread_register(task_self(), t)) {
 				t = err_ptr(ENOMEM);
 				goto out;
 			}
