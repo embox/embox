@@ -44,7 +44,7 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct thread     *joined;       /**< Thread which joined to this. */
+	struct thread_resinfo resinfo;   /**< Resources info*/
 
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
 

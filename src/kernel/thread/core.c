@@ -49,7 +49,8 @@ static void thread_delete(struct thread *t) {
 
 	assert(t);
 	assert(thread_state_exited(t->state));
-	assert(thread_state_detached(t->state));
+	assert(thread_state_detached(&t->resinfo) ||
+			thread_state_joined(&t->resinfo));
 
 	task_remove_thread(t->task, t);
 
@@ -184,7 +185,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	 */
 	thread_priority_init(t, priority);
 
-	t->joined = NULL; /* there are not any joined thread */
+	t->resinfo.state = 0; /* joinable */
+	t->resinfo.joined = NULL; /* there are not any joined thread */
 
 	/* cpu context init */
 	context_init(&t->context, true); /* setup default value of CPU registers */
@@ -229,14 +231,13 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		current->run_ret = ret;
 
 		/* thread must be joined or detached before exit */
-		if (thread_state_detached(current->state)) {
-			if (current->joined) {
-				/* Thread is attached. Joined thread delete it.    */
-				sched_thread_notify(current->joined, ENOERR);
-			} else {
-				/* Thread is detached. Should be deleted by itself. */
-				thread_delete(current);
-			}
+		if (thread_state_detached(&current->resinfo)) {
+			/* Thread is detached. Should be deleted by itself. */
+			thread_delete(current);
+		} else if (thread_state_joined(&current->resinfo)) {
+			assert(current->resinfo.joined);
+			/* Thread is attached. Joined thread delete it.    */
+			sched_thread_notify(current->resinfo.joined, ENOERR);
 		}
 	}
 
@@ -251,7 +252,7 @@ int thread_join(struct thread *t, void **p_ret) {
 	void *join_ret;
 
 	assert(t);
-	assert(!t->joined);
+	assert(!t->resinfo.joined);
 
 	if (t == current) {
 		return -EDEADLK;
@@ -259,11 +260,11 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		t->state = thread_state_do_detach(t->state);
+		t->resinfo.state = thread_state_do_join(&t->resinfo);
 
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			t->joined = current;
+			t->resinfo.joined = current;
 
 			sched_prepare_wait(NULL, NULL);
 			sched_wait_locked(SCHED_TIMEOUT_INFINITE);
@@ -285,11 +286,11 @@ int thread_join(struct thread *t, void **p_ret) {
 
 int thread_detach(struct thread *t) {
 	assert(t);
-	assert(!t->joined);
+	assert(!t->resinfo.joined);
 
 	sched_lock();
 	{
-		t->state = thread_state_do_detach(t->state);
+		t->resinfo.state = thread_state_do_detach(&t->resinfo);
 
 		if (thread_state_exited(t->state)) {
 			/* The target thread has finished, free it here. */
@@ -335,8 +336,8 @@ int thread_terminate(struct thread *t) {
 			sched_finish(t);
 		}
 
-		if (!thread_state_detached(t->state)) {
-			t->state = thread_state_do_detach(t->state);
+		if (!thread_state_detached(&t->resinfo)) {
+			t->resinfo.state = thread_state_do_detach(&t->resinfo);
 		}
 
 		thread_delete(t);
