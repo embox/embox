@@ -50,6 +50,13 @@ module omap3_clk extends embox.arch.clock {
 	depends embox.kernel.time.clock_source
 }
 
+module ti8168_clk extends embox.arch.clock {
+	source "ti_8168.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+}
+
 module ppc_clk extends embox.arch.clock {
 	source "ppc_clk.c"
 
