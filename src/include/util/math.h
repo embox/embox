@@ -36,4 +36,14 @@
 		__clamp_val;                            \
 	})
 
+/** @return Whether a @a val fits a boundary specified by @a lo and @a hi. */
+#define check_range(val, lo, hi) \
+	({                                          \
+		typeof(val) __check_val = (val);        \
+		typeof(lo)  __check_lo  = (lo);         \
+		typeof(hi)  __check_hi  = (hi);         \
+		__check_val >= __check_lo &&            \
+		__check_val <= __check_hi;              \
+	})
+
 #endif /* UTIL_MATH_H_ */
