@@ -15,7 +15,8 @@
 #include <stddef.h>
 #include <string.h>
 
-ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
+ARRAY_SPREAD_DEF(volatile const struct net_sock,
+		__net_sock_registry);
 
 static int net_sock_mod_member_init(struct mod_member *member);
 static int net_sock_mod_member_fini(struct mod_member *member);
@@ -40,7 +41,7 @@ static int net_sock_mod_member_init(struct mod_member *member) {
 	const struct net_sock *nsock;
 
 	ret = 0;
-	nsock = (struct net_sock *)member->data;
+	nsock = (const struct net_sock *)member->data;
 
 	printk("\tNET: initializing socket %s.%s for %s protocol: ",
 			nsock->mod->package->name, nsock->mod->name,
@@ -65,7 +66,7 @@ static int net_sock_mod_member_fini(struct mod_member *member) {
 	const struct net_sock *nsock;
 
 	ret = 0;
-	nsock = (struct net_sock *)member->data;
+	nsock = (const struct net_sock *)member->data;
 
 	printk("\tNET: finalizing socket %s.%s for %s protocol: ",
 			nsock->mod->package->name, nsock->mod->name,
@@ -87,14 +88,14 @@ static int net_sock_mod_member_fini(struct mod_member *member) {
 
 const struct net_sock * net_sock_lookup(int family, int type,
 		int protocol) {
-	const struct net_sock *nsock;
+	volatile const struct net_sock *nsock;
 
 	net_sock_foreach(nsock) {
 		if ((nsock->family == family)
 				&& (nsock->type == type)
 				&& ((nsock->protocol == protocol)
 					|| ((protocol == 0) && (nsock->is_default)))) {
-			return nsock;
+			return (const struct net_sock *)nsock;
 		}
 	}
 

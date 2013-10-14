@@ -13,7 +13,7 @@
 
 #include "types.h"
 
-extern const struct net_pack __net_pack_registry[];
+extern volatile const struct net_pack __net_pack_registry[];
 
 #define __net_pack_foreach(net_pack_ptr)                 \
 	array_foreach_ptr(net_pack_ptr, __net_pack_registry, \

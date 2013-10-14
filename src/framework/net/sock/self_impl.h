@@ -18,7 +18,8 @@
 
 #define __EMBOX_NET_SOCK(_name, _family, _type, _protocol, \
 		_is_default, _ops, _init, _fini)                   \
-	extern const struct net_sock __net_sock_registry[];    \
+	extern volatile const struct net_sock                  \
+			__net_sock_registry[];                         \
 	extern const struct mod_member_ops                     \
 			__net_sock_mod_member_ops;                     \
 	ARRAY_SPREAD_ADD_NAMED(__net_sock_registry,            \

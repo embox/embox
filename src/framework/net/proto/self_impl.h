@@ -17,7 +17,8 @@
 
 #define __EMBOX_NET_PROTO(_name, _pack, _type, _handle,       \
 		_handle_error, _init, _fini)                          \
-	extern const struct net_proto __net_proto_registry[];     \
+	extern volatile const struct net_proto                    \
+			__net_proto_registry[];                           \
 	extern const struct mod_ops __net_proto_mod_ops;          \
 	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,              \
 			__net_proto_##_name, {                            \

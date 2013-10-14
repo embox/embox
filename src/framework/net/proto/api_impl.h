@@ -14,7 +14,7 @@
 
 #include "types.h"
 
-extern const struct net_proto __net_proto_registry[];
+extern volatile const struct net_proto __net_proto_registry[];
 
 #define __net_proto_foreach(net_proto_ptr)                 \
 	array_foreach_ptr(net_proto_ptr, __net_proto_registry, \

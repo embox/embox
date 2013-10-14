@@ -13,7 +13,8 @@
 #include <stddef.h>
 #include <string.h>
 
-ARRAY_SPREAD_DEF(const struct net_proto, __net_proto_registry);
+ARRAY_SPREAD_DEF(volatile const struct net_proto,
+		__net_proto_registry);
 
 static int net_proto_mod_enable(struct mod_info *info);
 static int net_proto_mod_disable(struct mod_info *info);
@@ -28,7 +29,7 @@ static int net_proto_mod_enable(struct mod_info *info) {
 	const struct net_proto *nproto;
 
 	ret = 0;
-	nproto = (struct net_proto *)info->data;
+	nproto = (const struct net_proto *)info->data;
 
 	printk("\tNET: initializing protocol %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -52,7 +53,7 @@ static int net_proto_mod_disable(struct mod_info *info) {
 	const struct net_proto *nproto;
 
 	ret = 0;
-	nproto = (struct net_proto *)info->data;
+	nproto = (const struct net_proto *)info->data;
 
 	printk("\tNET: finalizing protocol %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -73,12 +74,12 @@ static int net_proto_mod_disable(struct mod_info *info) {
 
 const struct net_proto * net_proto_lookup(unsigned short pack,
 		unsigned char type) {
-	const struct net_proto *nproto;
+	volatile const struct net_proto *nproto;
 
 	net_proto_foreach(nproto) {
 		if ((nproto->pack == pack)
 				&& (nproto->type == type)) {
-			return nproto;
+			return (const struct net_proto *)nproto;
 		}
 	}
 

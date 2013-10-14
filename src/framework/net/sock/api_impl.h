@@ -13,7 +13,7 @@
 
 #include "types.h"
 
-extern const struct net_sock __net_sock_registry[];
+extern volatile const struct net_sock __net_sock_registry[];
 
 #define __net_sock_foreach(net_sock_ptr)                 \
 	array_foreach_ptr(net_sock_ptr, __net_sock_registry, \
