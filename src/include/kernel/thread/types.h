@@ -17,6 +17,7 @@
 #include <kernel/thread/wait_data.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
+#include <kernel/thread/res_manage_state.h>
 
 #include <util/dlist.h>
 
