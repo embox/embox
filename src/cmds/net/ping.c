@@ -89,9 +89,9 @@ static int parse_result(struct packet_in *rx_pack,
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->iph.saddr);
 		*last_seq = ntohs(rx_pack->icmph.un.echo.sequence);
-		printf("%d bytes from %s (%s): icmp_seq=%u ttl=%d ",
-				ntohs(rx_pack->iph.tot_len) - (
-					IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE),
+		printf("%u bytes from %s (%s): icmp_seq=%u ttl=%d ",
+				(uint16_t)(ntohs(rx_pack->iph.tot_len) - (
+					IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE)),
 				name, dst_addr_str, *last_seq,
 				rx_pack->iph.ttl);
 		elapsed = clock() - (started + (*last_seq - 1) * interval);
