@@ -97,7 +97,7 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if(mutex_static_inited(m)) {
-		mutex_init(m);
+		mutex_init_default(m, NULL);
 	}
 
 	if (m->holder == current) {
