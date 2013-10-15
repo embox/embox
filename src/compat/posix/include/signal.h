@@ -13,9 +13,9 @@
 #include <sys/types.h>
 // #include <kernel/task/signal.h>
 
-#define SIG_DFL ((__signal_hnd_t) 0x1)
-#define SIG_IGN ((__signal_hnd_t) 0x3)
-#define SIG_ERR ((__signal_hnd_t) 0x5)
+#define SIG_DFL ((sighandler_t) 0x1)
+#define SIG_IGN ((sighandler_t) 0x3)
+#define SIG_ERR ((sighandler_t) 0x5)
 
 /* Signals.  */
 #define SIGHUP      1       /* (POSIX)    Hangup.  */
@@ -77,17 +77,21 @@ typedef struct {
 } siginfo_t;
 
 struct sigaction {
-	void     (*sa_handler)(int);
-	void     (*sa_sigaction)(int, siginfo_t *, void *);
+	/* The storage occupied by sa_handler and sa_sigaction may overlap,
+	 * and a conforming application shall not use both simultaneously.  */
+	union {
+		void (*sa_handler)(int);
+		void (*sa_sigaction)(int, siginfo_t *, void *);
+	} /* unnamed */;
 	sigset_t   sa_mask;
 	int        sa_flags;
-	void     (*sa_restorer)(void);
 };
 
-typedef void (*__signal_hnd_t)(int);
+/* Non-standard GNU extension. */
+typedef void (*sighandler_t)(int);
 
 extern int kill(int tid, int sig);
-extern __signal_hnd_t signal(int sig, __signal_hnd_t fn);
+extern sighandler_t signal(int sig, sighandler_t fn);
 extern int sigqueue(int tid, int sig, const union sigval value);
 static inline int raise(int sig) {
 	return 0;
