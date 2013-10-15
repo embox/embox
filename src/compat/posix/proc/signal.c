@@ -26,26 +26,54 @@ static void sighandler_ignore(int sig) {
 	/* do nothing */
 }
 
-sighandler_t signal(int sig, sighandler_t func) {
+int sigaction(int sig, const struct sigaction *restrict act,
+		struct sigaction *restrict oact) {
 	struct signal_table *sig_tab = task_self()->signal_table;
-	sighandler_t old_func;
 
-	if (!check_range(sig, SIGSTD_MIN, SIGSTD_MAX)) {
-		SET_ERRNO(EINVAL);
-		return NULL;
+	if (!check_range(sig, SIGSTD_MIN, SIGSTD_MAX))
+		return SET_ERRNO(EINVAL);
+
+	if (oact) {
+		sighandler_t ofunc = sig_tab->sigstd_handlers[sig - SIGSTD_MIN];
+
+		if (ofunc == sighandler_default) {
+			ofunc = SIG_DFL;
+		} else if (ofunc == sighandler_ignore) {
+			ofunc = SIG_IGN;
+		}
+
+		oact->sa_handler = ofunc;
 	}
 
-	old_func = sig_tab->sigstd_handlers[sig];
+	if (act) {
+		sighandler_t func = act->sa_handler;
 
-	if (func == SIG_DFL) {
-		func = sighandler_default;
-	} else if (func == SIG_IGN || func == SIG_ERR) {
-		func = sighandler_ignore;
+		if (func == SIG_DFL) {
+			func = sighandler_default;
+		} else if (func == SIG_IGN || func == SIG_ERR) {
+			func = sighandler_ignore;
+		}
+
+		sig_tab->sigstd_handlers[sig - SIGSTD_MIN] = func;
 	}
 
-	sig_tab->sigstd_handlers[sig] = func;
+	return 0;
+}
 
-	return old_func;
+sighandler_t signal(int sig, sighandler_t func) {
+	struct sigaction act  = { 0 };
+	struct sigaction oact = { 0 };
+	int err;
+
+	act.sa_handler = func;
+
+	err = sigaction(sig, &act, &oact);
+	if (err) {
+		SET_ERRNO(err);
+		return SIG_ERR;
+	}
+
+	return oact.sa_handler;
 }
 
 int sigqueue(int tid, int sig, const union sigval value) {

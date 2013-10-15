@@ -77,21 +77,24 @@ typedef struct {
 } siginfo_t;
 
 struct sigaction {
+	sigset_t   sa_mask;
+	int        sa_flags;
 	/* The storage occupied by sa_handler and sa_sigaction may overlap,
 	 * and a conforming application shall not use both simultaneously.  */
 	union {
 		void (*sa_handler)(int);
 		void (*sa_sigaction)(int, siginfo_t *, void *);
 	} /* unnamed */;
-	sigset_t   sa_mask;
-	int        sa_flags;
 };
 
 /* Non-standard GNU extension. */
 typedef void (*sighandler_t)(int);
 
-extern int kill(int tid, int sig);
 extern sighandler_t signal(int sig, sighandler_t fn);
+extern int sigaction(int sig, const struct sigaction *restrict act,
+		struct sigaction *restrict oact);
+
+extern int kill(int tid, int sig);
 extern int sigqueue(int tid, int sig, const union sigval value);
 static inline int raise(int sig) {
 	return 0;
