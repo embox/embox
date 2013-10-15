@@ -2,67 +2,94 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    08.10.2012
+ * @date 08.10.2012
+ * @author Anton Kozlov
+ * @author Eldar Abusalimov
  */
 
 #include <errno.h>
 #include <signal.h>
 #include <stddef.h>
+#include <pthread.h>
 
 #include <kernel/task.h>
+#include <kernel/sched.h>
 #include <kernel/thread/signal.h>
-// #include <kernel/task/rt_signal.h>
-// #include <kernel/task/std_signal.h>
-// #include <kernel/task/task_table.h>
 
-#if 0
-static void sighnd_default(int sig) {
+#include <util/math.h>
+
+static void sighandler_default(int sig) {
 	task_exit(NULL);
 }
 
-static void sighnd_ignore(int sig) {
+static void sighandler_ignore(int sig) {
 	/* do nothing */
 }
 
-void (*signal(int sig, void (*func)(int)))(int) {
+sighandler_t signal(int sig, sighandler_t func) {
 	struct signal_table *sig_tab = task_self()->signal_table;
-	void (*old_func)(int) = sig_tab->handlers[sig];
+	sighandler_t old_func;
 
-	if (func == SIG_DFL) {
-		func = sighnd_default;
-	} else if (func == SIG_IGN || func == SIG_ERR) {
-		func = sighnd_ignore;
+	if (!check_range(sig, SIGSTD_MIN, SIGSTD_MAX)) {
+		SET_ERRNO(EINVAL);
+		return NULL;
 	}
 
-	sig_tab->hnd[sig] = func;
+	old_func = sig_tab->sigstd_handlers[sig];
+
+	if (func == SIG_DFL) {
+		func = sighandler_default;
+	} else if (func == SIG_IGN || func == SIG_ERR) {
+		func = sighandler_ignore;
+	}
+
+	sig_tab->sigstd_handlers[sig] = func;
 
 	return old_func;
 }
 
 int sigqueue(int tid, int sig, const union sigval value) {
-	struct task *task = task_table_get(tid);
+	struct task *task;
+	struct signal_data *sig_data;
+	int err;
 
-	if (task == NULL) {
-		SET_ERRNO(ESRCH);
-		return -1;
-	}
+	task = task_table_get(tid);
+	if (!task)
+		return SET_ERRNO(ESRCH);
 
-	// sigrt_raise(task, sig, value);
+	sig_data = &task->main_thread->signal_data;
+	err = sigrt_raise(&sig_data->sigrt_data, sig, value);
+	if (err)
+		return SET_ERRNO(err);
+
+	sched_post_switch();  /* This shouldn't be here, I think  -- Eldar */
+
+	return 0;
+}
+
+
+int pthread_kill(pthread_t thread, int sig) {
+	struct signal_data *sig_data;
+	int err;
+
+	assert(thread);
+
+	sig_data = &thread->signal_data;
+	err = sigstd_raise(&sig_data->sigstd_data, sig);
+	if (err)
+		return SET_ERRNO(err);
+
+	sched_post_switch();
 
 	return 0;
 }
 
-int kill (int tid, int sig) {
-	struct task *task = task_table_get(tid);
+int kill(int tid, int sig) {
+	struct task *task;
 
-	if (task == NULL) {
-		SET_ERRNO(ESRCH);
-		return -1;
-	}
+	task = task_table_get(tid);
+	if (!task)
+		return SET_ERRNO(ESRCH);
 
-	// task_stdsig_send(task, sig);
-
-	return 0;
+	return pthread_kill(task->main_thread, sig);
 }
-#endif
