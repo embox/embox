@@ -11,8 +11,9 @@
 
 #include <kernel/task/errno.h>
 
-#define errno (* task_self_errno_ptr())
+#define errno (*task_self_errno_ptr())
 
-#define SET_ERRNO(e) (errno = e)
+#define SET_ERRNO(e) \
+	({ errno = e; -1; /* to let 'return SET_ERRNO(...)' */ })
 
 #endif /* COMPAT_POSIX_ERRNO_H_ */
