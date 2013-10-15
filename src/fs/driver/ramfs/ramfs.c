@@ -391,13 +391,20 @@ static int ramfs_stat(void *file, void *buff) {
 
 static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	ramfs_file_info_t *fi;
+	size_t fi_index;
 
 	fi = pool_alloc(&ramfs_file_pool);
 	if (!fi) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&ramfs_file_idx, INDEX_MIN);
+	fi_index = index_alloc(&ramfs_file_idx, INDEX_MIN);
+	if (fi_index == INDEX_NONE) {
+		pool_free(&ramfs_file_pool, fi);
+		return NULL;
+	}
+
+	fi->index = fi_index;
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

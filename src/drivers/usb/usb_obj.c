@@ -9,6 +9,7 @@
 #include <string.h>
 #include <drivers/usb.h>
 #include <mem/misc/pool.h>
+#include <stddef.h>
 
 POOL_DEF(usb_hcds, struct usb_hcd, USB_MAX_HCD);
 POOL_DEF(usb_hubs, struct usb_hub, USB_MAX_HUB);
@@ -74,7 +75,7 @@ void usb_hub_free(struct usb_hub *hub) {
 
 struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	struct usb_dev *dev = pool_alloc(&usb_devs);
-	int idx;
+	size_t idx;
 
 	if (!dev) {
 		return NULL;

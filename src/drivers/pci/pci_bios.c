@@ -81,13 +81,15 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 
 INDEX_DEF(bus_indexator, 0, 32);
 static int pci_bridge_configure(int busn, int devfn) {
-	int newbusn, subord;
+	int subord;
+	size_t newbusn;
 	uint32_t memconf;
 	void *space_base, *space_end;
 
 	/* align space at 1Mb */
 	space_base = space_alloc(&pci_allocator, 0, PCI_WINDOW_SIZE);
 	newbusn = index_alloc(&bus_indexator, INDEX_MIN);
+	assert(newbusn != INDEX_NONE);
 	/* enable new bus with all subordinate
 	 * primary = busn
 	 * secondary = newbusn
@@ -163,8 +165,10 @@ static void pci_bus_configure(uint32_t busn) {
 }
 
 static int pci_bios_init(void) {
-	int busn;
+	size_t busn;
 	busn = index_alloc(&bus_indexator, INDEX_MIN);
-	pci_bus_configure(busn);
-	return 0;
+	if (busn == INDEX_NONE) {
+		return -ENOMEM;
+	}
+	return pci_bus_configure(busn);
 }

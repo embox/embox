@@ -26,7 +26,7 @@ static char block_dev_check_type_name (char *p) {
 	}
 }
 
-static void block_dev_select_name(char *name, int idx) {
+static void block_dev_select_name(char *name, size_t idx) {
 	char *p;
 
 	p = name;
@@ -41,7 +41,7 @@ static void block_dev_select_name(char *name, int idx) {
 		break;
 
 	case DIGITAL_IDX:
-		sprintf(p, "%d", idx);
+		sprintf(p, "%zu", idx);
 		break;
 
 	case CHARACTER_IDX:
@@ -52,13 +52,15 @@ static void block_dev_select_name(char *name, int idx) {
 }
 
 int block_dev_named(char *name, struct indexator *indexator) {
-	int idx;
+	size_t idx;
 
-	if (-1 == (idx = index_alloc(indexator, INDEX_MIN))) {
+	idx = index_alloc(indexator, INDEX_MIN);
+	if (idx == INDEX_NONE) {
 		return -1;
 	}
+
 	block_dev_select_name(name, idx);
 
-	return idx;
+	return (int)idx;
 }
 

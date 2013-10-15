@@ -414,13 +414,20 @@ static struct fs_driver tmpfs_driver = {
 
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	tmpfs_file_info_t *fi;
+	size_t fi_index;
 
 	fi = pool_alloc(&tmpfs_file_pool);
 	if (!fi) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&tmpfs_file_idx, INDEX_MIN);
+	fi_index = index_alloc(&tmpfs_file_idx, INDEX_MIN);
+	if (fi_index == INDEX_NONE) {
+		pool_free(&tmpfs_file_pool, fi);
+		return NULL;
+	}
+
+	fi->index = fi_index;
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

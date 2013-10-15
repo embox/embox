@@ -98,6 +98,7 @@ block_dev_t *block_dev(void *dev) {
 
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
+	size_t bdev_id;
 	node_t *node;
 	struct nas *nas;
 	struct node_fi *node_fi;
@@ -109,11 +110,12 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 
 	memset(bdev, 0, sizeof(block_dev_t));
 
-	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_MIN);
-	if (-1 == bdev->id) {
+	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
+	if (bdev_id == INDEX_NONE) {
 		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
+	bdev->id = (dev_t)bdev_id;
 
 	devtab[bdev->id] = bdev;
 
@@ -121,8 +123,8 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->privdata = privdata;
 
 	if (NULL == (node = vfs_create(NULL, path, S_IFBLK | S_IRALL | S_IWALL))) {
-		pool_free(&blockdev_pool, bdev);
 		index_free(&block_dev_idx, bdev->id);
+		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
 
