@@ -18,9 +18,9 @@ struct thread_cleanup {
 };
 
 struct thread_cancel {
-	int type;
-	int state;
-	int counter;
+	unsigned int type;
+	unsigned int state;
+	unsigned int counter;
 	struct thread_cleanup cleanups[CLEANUPS_QUANTITY];
 };
 typedef struct thread_cancel thread_cancel_t;

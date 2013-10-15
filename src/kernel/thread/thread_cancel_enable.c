@@ -7,11 +7,26 @@
 #include <pthread.h>
 #include <assert.h>
 #include <kernel/thread.h>
+#include <kernel/sched.h>
 
 #include <kernel/thread/thread_cancel.h>
 
 int thread_cancel(struct thread *t) {
-	return -ENOSUPP;
+	sched_lock();
+	{
+		for (; t->cleanups.counter >= 0; t->cleanups.counter--) {
+			struct thread_cleanup *cleanup;
+
+			cleanup = &t->cleanups.cleanups[t->cleanups.counter];
+
+			cleanup->routine(cleanup->arg);
+		}
+
+		thread_terminate(t);
+	}
+	sched_unlock();
+
+	return ENOERR;
 }
 
 int thread_cancel_set_state(int state, int *oldstate) {
@@ -38,13 +53,19 @@ int thread_cancel_cleanup_push(void (*routine)(void *), void *arg) {
 	struct thread *t;
 	struct thread_cleanup *cleanup;
 
-	t = thread_self();
-	assert(CLEANUPS_QUANTITY < t->cleanups.counter);
+	sched_lock();
+	{
+		t = thread_self();
+		assert(CLEANUPS_QUANTITY < t->cleanups.counter);
 
-	cleanup = &t->cleanups.cleanups[t->cleanups.counter];
+		cleanup = &t->cleanups.cleanups[t->cleanups.counter];
 
-	cleanup->routine = routine;
-	cleanup->arg = arg;
+		cleanup->routine = routine;
+		cleanup->arg = arg;
+
+		t->cleanups.counter++;
+	}
+	sched_unlock();
 
 	return ENOERR;
 }
@@ -53,15 +74,20 @@ int thread_cancel_cleanup_pop(int execute) {
 	struct thread *t;
 	struct thread_cleanup *cleanup;
 
-	t = thread_self();
+	sched_lock();
+	{
+		t = thread_self();
 
-	cleanup = &t->cleanups.cleanups[t->cleanups.counter];
+		cleanup = &t->cleanups.cleanups[t->cleanups.counter];
 
-	if(execute) {
-		cleanup->routine(cleanup->arg);
+		if (execute) {
+			cleanup->routine(cleanup->arg);
+		}
+
+		t->cleanups.counter--;
 	}
+	sched_unlock();
 
-	t->cleanups.counter--;
 	return -ENOSUPP;
 }
 

@@ -130,6 +130,8 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 			}
 		}
 
+		thread_cancel_init(t);
+
 		if (!(flags & THREAD_FLAG_SUSPENDED)) {
 			thread_launch(t);
 		}

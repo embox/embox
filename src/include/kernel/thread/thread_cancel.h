@@ -20,4 +20,6 @@ extern int thread_cancel_cleanup_push(void (*)(void *), void *arg);
 
 extern int thread_cancel_cleanup_pop(int);
 
+extern int thread_cancel_init(struct thread *t);
+
 #endif /* THREAD_CANCEL_H_ */
