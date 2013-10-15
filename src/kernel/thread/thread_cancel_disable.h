@@ -14,6 +14,7 @@ typedef struct thread_cancel thread_cancel_t;
 
 #include <errno.h>
 
+struct thread;
 static inline int thread_cancel(struct thread *t) {
 	return -ENOSUPP;
 }
@@ -34,5 +35,8 @@ static inline int thread_cancel_cleanup_pop(int execute) {
 	return -ENOSUPP;
 }
 
+static inline int thread_cancel_init(struct thread *t) {
+	return -ENOSUPP;
+}
 
 #endif /* THREAD_CANCEL_DISABLE_H_ */
