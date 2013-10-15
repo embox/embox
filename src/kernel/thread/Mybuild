@@ -26,6 +26,7 @@ module core extends thread_mode {
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
 	@NoRuntime depends thread_local
+	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
 }
 
@@ -54,6 +55,17 @@ module thread_local_heap extends thread_local {
 	depends embox.mem.heap_api
 
 	depends embox.kernel.task.task_thread_key
+}
+@DefaultImpl(thread_cancel_disable)
+abstract module thread_cancel {}
+
+module thread_cancel_enable extends thread_cancel {
+	source "thread_cancel_enable.h"
+	source "thread_cancel_enable.c"
+}
+
+module thread_cancel_disable extends thread_cancel {
+	source "thread_cancel_disable.h"
 }
 
 /* FIXME: Deprecated */

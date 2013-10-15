@@ -123,37 +123,6 @@ inline long sysconf(int name) {
 #include <pthread.h>
 
 
-#define PTHREAD_CANCEL_ENABLE 0
-#define PTHREAD_CANCEL_DISABLE 0
-
-
-
-
-static inline int pthread_setcancelstate (int __state, int *__oldstate){
-	DPRINT();
-	return -1;
-}
-
-static inline void pthread_cleanup_push(void (*routine)(void*), void *arg){
-	DPRINT();
-}
-
-static inline void  pthread_cleanup_pop(int a){
-	DPRINT();
-}
-
-static inline void  pthread_testcancel(void){
-	DPRINT();
-}
-
-static inline int pthread_cancel(pthread_t t){
-	DPRINT();
-	return -1;
-}
-
-
-
-
 
 static char *tzname[2];
 inline void tzset(void) {
@@ -347,26 +316,16 @@ struct __res_state {
 #endif
 
 
-
 #define IP_MULTICAST_TTL 0
 #define IPV6_MULTICAST_LOOP 0
 #define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
 
-
-/*static inline struct passwd *getpwuid(uid_t uid) {
-	printf(">>> getpwuid %d\n", uid);
-	return NULL;
-}*/
-
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
 }
-#if 0
-static inline struct passwd *getpwnam(const char *name) { return NULL; }
-#endif
 
 // this is for FILESYSTEMWATCHER
 #define pathconf(path,name) \

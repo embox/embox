@@ -19,8 +19,6 @@
 
 #include <pthread.h>
 
-extern int   pthread_cancel(pthread_t);
-
 
 #include <stdio.h>
 #include <string.h>

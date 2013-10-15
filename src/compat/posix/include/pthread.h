@@ -47,7 +47,7 @@
 typedef struct thread *pthread_t;
 
 
-#define  PTHREAD_INHERIT_SCHED      THREAD_FLAG_PRIORITY_INHERIT
+#define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
 #define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 
 
@@ -93,6 +93,12 @@ typedef pthread_mutex_t pthread_once_t;
 
 #define PTHREAD_ONCE_INIT PTHREAD_MUTEX_INITIALIZER
 
+#define PTHREAD_CANCEL_ENABLE       0x0
+#define PTHREAD_CANSEL_DISABLE      0x1
+
+#define PTHREAD_CANCEL_DEFERRED     0x0
+#define PTHREAD_CANCEL_ASYNCHRONOUS 0x1
+
 
 __BEGIN_DECLS
 
@@ -119,9 +125,9 @@ extern int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
 //extern int   pthread_attr_setstackaddr(pthread_attr_t *, void *);
 //extern int   pthread_attr_setstacksize(pthread_attr_t *, size_t);
 
-//extern int   pthread_cancel(pthread_t);
-//extern void  pthread_cleanup_push(void (*)(void *), void *arg);
-//extern void  pthread_cleanup_pop(int);
+extern int   pthread_cancel(pthread_t);
+extern void  pthread_cleanup_push(void (*)(void *), void *arg);
+extern void  pthread_cleanup_pop(int);
 
 extern int   pthread_cond_broadcast(pthread_cond_t *);
 extern int   pthread_cond_destroy(pthread_cond_t *);
@@ -185,12 +191,14 @@ extern int   pthread_once(pthread_once_t *, void (*)(void));
 
 extern pthread_t pthread_self(void);
 
-//extern int   pthread_setcancelstate(int, int *);
-//extern int   pthread_setcanceltype(int, int *);
+extern int   pthread_setcancelstate(int, int *);
+extern int   pthread_setcanceltype(int, int *);
+
 //extern int   pthread_setconcurrency(int);
 extern int   pthread_setschedparam(pthread_t, int, const struct sched_param *);
 extern int   pthread_setspecific(pthread_key_t, const void *);
-//extern void  pthread_testcancel(void);
+
+extern void  pthread_testcancel(void);
 
 extern int   pthread_setschedprio(pthread_t, int);
 
