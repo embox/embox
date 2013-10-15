@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/indexator.h>
+#include <errno.h>
 
 #define WHOLE_NAME     0
 #define DIGITAL_IDX    1
@@ -56,7 +57,7 @@ int block_dev_named(char *name, struct indexator *indexator) {
 
 	idx = index_alloc(indexator, INDEX_MIN);
 	if (idx == INDEX_NONE) {
-		return -1;
+		return -ENOMEM;
 	}
 
 	block_dev_select_name(name, idx);
