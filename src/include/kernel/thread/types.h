@@ -17,7 +17,7 @@
 #include <kernel/thread/wait_data.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/res_manage_state.h>
+#include <kernel/thread/thread_res_state.h>
 
 #include <util/dlist.h>
 
@@ -45,7 +45,7 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct thread_resinfo resinfo;   /**< Resources info*/
+	struct thread_res_state resinfo;   /**< Resources state info*/
 
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
 

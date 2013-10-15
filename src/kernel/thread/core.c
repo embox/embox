@@ -49,8 +49,8 @@ static void thread_delete(struct thread *t) {
 
 	assert(t);
 	assert(thread_state_exited(t->state));
-	assert(thread_state_detached(&t->resinfo) ||
-			thread_state_joined(&t->resinfo));
+	assert(thread_res_state_detached(&t->resinfo) ||
+			thread_res_state_joined(&t->resinfo));
 
 	task_remove_thread(t->task, t);
 
@@ -212,6 +212,7 @@ void thread_init(struct thread *t, unsigned int flags,
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
+	unsigned int res_state;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
@@ -230,14 +231,18 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 		current->run_ret = ret;
 
-		/* thread must be joined or detached before exit */
-		if (thread_state_detached(&current->resinfo)) {
-			/* Thread is detached. Should be deleted by itself. */
-			thread_delete(current);
-		} else if (thread_state_joined(&current->resinfo)) {
-			assert(current->resinfo.joined);
-			/* Thread is attached. Joined thread delete it.    */
+		thread_res_state_get(&current->resinfo, &res_state);
+		switch (res_state) {
+		case __THREAD_STATE_JOINABLE:
+			break;
+		case __THREAD_STATE_JOINED:
+			/* Thread is attached. Joined thread delete it. */
 			sched_thread_notify(current->resinfo.joined, ENOERR);
+			break;
+		case __THREAD_STATE_DETACHED:
+			/* Detached thread should be deleted by itself. */
+			thread_delete(current);
+			break;
 		}
 	}
 
@@ -260,7 +265,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		t->resinfo.state = thread_state_do_join(&t->resinfo);
+		t->resinfo.state = thread_res_state_do_join(&t->resinfo);
 
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
@@ -290,7 +295,7 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
-		t->resinfo.state = thread_state_do_detach(&t->resinfo);
+		t->resinfo.state = thread_res_state_do_detach(&t->resinfo);
 
 		if (thread_state_exited(t->state)) {
 			/* The target thread has finished, free it here. */
@@ -336,8 +341,8 @@ int thread_terminate(struct thread *t) {
 			sched_finish(t);
 		}
 
-		if (!thread_state_detached(&t->resinfo)) {
-			t->resinfo.state = thread_state_do_detach(&t->resinfo);
+		if (!thread_res_state_detached(&t->resinfo)) {
+			t->resinfo.state = thread_res_state_do_detach(&t->resinfo);
 		}
 
 		thread_delete(t);
