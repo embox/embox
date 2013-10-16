@@ -58,18 +58,19 @@ diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
  static inline char* _Stl_ecvtR(double x, int n, int* pt, int* sign, char* buf)
  { return ecvt_r(x, n, pt, sign, buf); }
 diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
+diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
 --- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/config/_system.h	2013-03-21 18:30:19.197504928 +0400
-@@ -158,6 +158,9 @@
++++ STLport/stlport/stl/config/_system.h	2013-10-16 14:18:35.932473155 +0400
+@@ -52,6 +52,9 @@
+ #  elif defined (__FCC_VERSION) /* Fujitsu Compiler, v4.0 assumed */
+ #    include <stl/config/_fujitsu.h>
  #  endif
- 
- #  include <stl/config/_windows.h>
 +#elif defined(__EMBOX__)
 +#include <stl/config/_gcc.h>
 +#include <stl/config/_embox.h>
- #else
- #  error Unknown platform !!
- #endif
+ #elif defined (__hpux)
+ #  include <stl/config/_hpux.h>
+ #  if defined (__GNUC__)
 diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
 --- STLport-5.2.1/src/_stdio_file.h	2008-12-10 12:56:51.000000000 +0300
 +++ STLport/src/_stdio_file.h	2013-03-22 19:46:52.287736680 +0400

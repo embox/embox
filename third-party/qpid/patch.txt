@@ -385,3 +385,14 @@ diff -aur qpidc-0.24/src/qpid/store/CMakeLists.txt qpid/src/qpid/store/CMakeList
  target_link_libraries (store qpidbroker ${Boost_PROGRAM_OPTIONS_LIBRARY})
  if (CMAKE_COMPILER_IS_GNUCXX)
    set (GCC_CATCH_UNDEFINED "-Wl,--no-undefined")
+diff -aur qpidc-0.24/include/qpid/Msg.h qpid/include/qpid/Msg.h
+--- qpidc-0.24/include/qpid/Msg.h	2011-08-30 20:21:00.000000000 +0400
++++ qpid/include/qpid/Msg.h	2013-10-16 12:05:19.145850088 +0400
+@@ -24,6 +24,7 @@
+ 
+ #include <sstream>
+ #include <iostream>
++#include <string>
+ #include "qpid/types/ImportExport.h"
+ 
+ namespace qpid {
