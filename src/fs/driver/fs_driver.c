@@ -53,16 +53,16 @@ static void fs_driver_free(struct fs_driver *drv) {
 
 static int fs_driver_init(void) {
 	fs_driver_head_t *head;
-	size_t i;
+	const struct fs_driver *fs_drv;
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
-		if (NULL == (head = fs_driver_alloc(
-				(struct fs_driver *) __fs_drivers_registry[i]))) {
+	array_spread_foreach(fs_drv, __fs_drivers_registry,
+			ARRAY_SPREAD_SIZE(__fs_drivers_registry)) {
+		if (NULL == (head = fs_driver_alloc((struct fs_driver *)fs_drv))) {
 			return -EINVAL;
 		}
 
-		if (NULL != __fs_drivers_registry[i]->fsop->init) {
-			__fs_drivers_registry[i]->fsop->init(NULL);
+		if (NULL != fs_drv->fsop->init) {
+			fs_drv->fsop->init(NULL);
 		}
 	}
 
