@@ -233,6 +233,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		{
 			io_sync_disable(&to_sock(tcp_sk)->ios,
 					IO_SYNC_READING);
+			debug_print(3, "tcp_accept: check list\n");
 			if (list_empty(&tcp_sk->conn_wait)) {
 				tcp_obj_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
@@ -241,6 +242,12 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			/* get first socket from */
 			tcp_newsk = list_entry(tcp_sk->conn_wait.next,
 					struct tcp_sock, conn_wait);
+
+			/* check if reading was enabled for socket that already released */
+			if (tcp_st_status(tcp_newsk) == TCP_ST_NONSYNC) {
+				tcp_obj_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+				return -EAGAIN;
+			}
 
 			/* delete new socket from list */
 			list_del_init(&tcp_newsk->conn_wait);
@@ -268,6 +275,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			return -ECONNRESET;
 		}
 
+		assert(tcp_st_status(tcp_newsk) == TCP_ST_SYNC);
 		assert(io_sync_ready(&to_sock(tcp_newsk)->ios, IO_SYNC_WRITING));
 
 		*newsk = to_sock(tcp_newsk);
