@@ -372,25 +372,34 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		usb_rh_nofity(hcd);
 	}
 
-	if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
-		struct ohci_td *td;
-		struct usb_request *req;
+        if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
+                struct ohci_td *td, *next_td;
+                struct usb_request *req;
 
-		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
+                td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
-		do {
-			req = ohci2req(td);
-			if (!req) {
-				ohci_td_free(td);
-				continue;
-			}
+                do {
+                        enum usb_request_status req_stat;
 
-			req->req_stat = ohci_td_stat(td);
-			usb_request_complete(req);
-		} while ((td = ohci_td_next(td)));
+                        req_stat = ohci_td_stat(td);
+                        req = ohci2req(td);
+                        next_td = ohci_td_next(td);
 
-		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
-	}
+                        assert((void *) td->buf_p == NULL);
+
+                        ohci_td_free(td);
+
+                        if (!req) {
+                                continue;
+                        }
+
+                        req->req_stat = req_stat;
+                        usb_request_complete(req);
+
+                } while ((td = next_td));
+
+                OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
+        }
 
 	return IRQ_HANDLED;
 }
