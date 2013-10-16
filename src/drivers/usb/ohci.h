@@ -71,6 +71,8 @@
 #define OHCI_ED_MAX_PKT_SIZE_MASK     0x07ff0000
 #define OHCI_ED_SCHEDULED             0x80000000 // spec says some bits could be
                                                  // used by driver
+
+#define OHCI_HCCA_INTERRUPT_LIST_N    32
 #define OHCI_READ(ohcd, _reg) \
 	REG_LOAD(_reg)
 
@@ -81,7 +83,7 @@
 
 /* HCCAs */
 struct ohci_hcca {
-	uint32_t interrupt_table[32];
+	uint32_t interrupt_table[OHCI_HCCA_INTERRUPT_LIST_N];
 	uint16_t frame_number;
 	uint16_t hcca_pad;
 	uint32_t done_head;

@@ -8,7 +8,6 @@
 
 #include <errno.h>
 #include <string.h>
-#include <drivers/usb.h>
 #include <util/member.h>
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
@@ -16,6 +15,7 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 
+#include <drivers/usb.h>
 static DLIST_DEFINE(usb_hcds);
 
 const struct usb_desc_endpoint usb_desc_endp_control_default = {
@@ -57,23 +57,46 @@ static void usb_request_build(struct usb_request *req, uint8_t req_type,
 	rbuf[6] = count & 0xff;
 	rbuf[7] = count >> 8;
 
-	req->buf = data;
-	req->len = count;
 }
 
-static void usb_endp_request(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
-		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
-		uint16_t count, void *data) {
-	struct usb_hcd *hcd = endp->dev->hcd;
+static struct usb_request *usb_endp_request_alloc(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		void *buf, size_t len) {
 	struct usb_request *req;
 
 	req = usb_request_alloc(endp);
 	assert(req, "%s: allocating usb request failed", __func__);
 
+	usb_request_init(req, endp, notify_hnd, buf, len);
+
+	return req;
+}
+
+int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		void *buf, size_t len) {
+	struct usb_hcd *hcd = endp->dev->hcd;
+	struct usb_request *req;
+
+	assert(usb_endp_type(endp) == USB_COMM_INTERRUPT);
+
+	req = usb_endp_request_alloc(endp, notify_hnd, buf, len);
+
+	return hcd->ops->interrupt_request(req);
+}
+
+static int usb_endp_request(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
+		uint16_t count, void *data) {
+	struct usb_hcd *hcd = endp->dev->hcd;
+	struct usb_request *req;
+
+	assert(usb_endp_type(endp) == USB_COMM_CONTROL);
+
+	req = usb_endp_request_alloc(endp, notify_hnd, data, count);
+
 	usb_request_build(req, req_type, request, value, index,
 			count, data);
-	req->notify_hnd = notify_hnd;
-	hcd->ops->control_request(endp, req);
+
+	return hcd->ops->control_request(req);
 }
 
 static inline void usb_dev_set_state(struct usb_dev *dev,
@@ -89,9 +112,11 @@ static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) 
 	return dev->getconf_data = &dev->tgetconf_data;
 }
 
+#if 0
 static void usb_dev_getconf_free(struct usb_dev *dev) {
 	dev->getconf_data = NULL;
 }
+#endif
 
 static void usb_dev_request_hnd_set_addr(struct usb_request *req);
 static void usb_dev_request_hnd_dev_desc(struct usb_request *req);
@@ -137,7 +162,7 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 		USB_DESC_TYPE_CONFIG << 8,
 		dev->c_config,
 		sizeof(struct usb_desc_configuration) +
-			sizeof(struct usb_desc_interface),
+			9 + sizeof(struct usb_desc_interface),
 		dev->getconf_data);
 }
 
@@ -163,7 +188,7 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 			USB_DESC_TYPE_CONFIG << 8 ,
 			dev->c_config,
 			sizeof(struct usb_desc_configuration) +
-				sizeof(struct usb_desc_interface),
+				9 + sizeof(struct usb_desc_interface),
 			dev->getconf_data);
 	} else {
 		dev->c_interface = 0;
@@ -197,7 +222,7 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 		dev->c_config,
 		sizeof(struct usb_desc_configuration) +
 			sizeof(struct usb_desc_interface) +
-			dev->endp_n * sizeof(struct usb_desc_endpoint),
+			9 + (dev->endp_n - 1)* sizeof(struct usb_desc_endpoint),
 		dev->getconf_data);
 
 }
@@ -209,13 +234,16 @@ static void usb_dev_request_hnd_get_conf(struct usb_request *req) {
 		struct usb_desc_endpoint *endp_desc =
 			&dev->getconf_data->endp_descs[i - 1];
 
-		if (NULL == usb_endp_alloc(dev, i, endp_desc)) {
+		if (NULL == usb_endp_alloc(dev, endp_desc)) {
 			panic("%s: failed to alloc endpoint\n",
 					__func__);
 		}
 	}
 
-	usb_dev_getconf_free(dev);
+	dev->conf_desc = &dev->getconf_data->config_desc;
+	dev->interface_desc = &dev->getconf_data->interface_desc;
+
+	usb_class_handle(dev);
 }
 
 static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
@@ -386,6 +414,7 @@ int usb_hcd_register(struct usb_hcd *hcd) {
 	assert(hcd->ops->hcd_stop);
 	assert(hcd->ops->rhub_ctrl);
 	assert(hcd->ops->control_request);
+	assert(hcd->ops->interrupt_request);
 
 	if ((ret = hcd->ops->hcd_start(hcd))) {
 		return ret;

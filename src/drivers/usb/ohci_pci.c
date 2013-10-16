@@ -67,7 +67,8 @@ static void ohci_hcd_free(struct usb_hcd *hcd) {
 }
 
 static struct ohci_td *ohci_td_alloc(void) {
-	return pool_alloc(&ohci_tds);
+	struct ohci_td *td = pool_alloc(&ohci_tds);
+	return td;
 }
 
 static void ohci_td_free(struct ohci_td *td) {
@@ -135,7 +136,7 @@ static void ohci_ed_fill(struct ohci_ed *ed, struct usb_endp *endp) {
 	flags = (flags & ~OHCI_ED_FUNC_ADDRESS_MASK) |
 		(endp->dev->bus_idx << OHCI_ED_FUNC_ADDRESS_OFFS);
 	flags = (flags & ~OHCI_ED_ENDP_ADDRESS_MASK) |
-		(endp->num << OHCI_ED_ENDP_ADDRESS_OFFS);
+		(endp->address << OHCI_ED_ENDP_ADDRESS_OFFS);
 
 	REG_STORE(&ed->flags, flags);
 }
@@ -264,21 +265,54 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	return 0;
 }
 
-static void ohci_ed_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
-	uint32_t cmdstat;
-
+static int ohci_common_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 	if (REG_LOAD(&ed->flags) & OHCI_ED_SCHEDULED) {
-		return;
+		return 0;
 	}
 
 	REG_ORIN(&ed->flags, OHCI_ED_SCHEDULED);
 
+	return 1;
+}
+
+
+static void ohci_ed_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+	uint32_t cmdstat;
+
+	if (!ohci_common_sched(ohcd, ed)) {
+		goto out_update;
+	}
+
 	REG_STORE(&ed->next_ed, OHCI_READ(ohcd, &ohcd->base->hc_ctrl_head_ed));
 	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed, ed);
 
+out_update:
 	cmdstat = OHCI_READ(ohcd, &ohcd->base->hc_cmdstat);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat, cmdstat |
 			OHCI_CMD_CONTROL_FILLED);
+}
+
+static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+	struct ohci_hcca *hcca = ohcd->hcca;
+	int i;
+
+	if (!ohci_common_sched(ohcd, ed)) {
+		return;
+	}
+
+	/* just leave somewhere! */
+	for (i = 0; i < OHCI_HCCA_INTERRUPT_LIST_N; i++) {
+		struct ohci_ed *next_ed = (struct ohci_ed *) REG_LOAD(&hcca->interrupt_table[i]);
+
+		if (!next_ed) {
+			REG_STORE(&ed->next_ed, (unsigned long) next_ed);
+			REG_STORE(&hcca->interrupt_table[i], (unsigned long) ed);
+			break;
+		}
+	}
+
+	assert(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
+			"interrupt request", __func__);
 }
 
 static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
@@ -293,9 +327,9 @@ static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
 	ohci_td_enque_tail(ed, next_td);
 }
 
-static int ohci_request(struct usb_endp *endp, struct usb_request *req) {
-	struct ohci_hcd *ohcd = hcd2ohci(endp->dev->hcd);
-	struct ohci_ed *ed = endp2ohci(endp);
+static int ohci_control_req(struct usb_request *req) {
+	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
+	struct ohci_ed *ed = endp2ohci(req->endp);
 	uint32_t token, negtoken;
 
 	if (req->ctrl_header.bm_request_type & USB_DEV_REQ_TYPE_RD) {
@@ -306,7 +340,7 @@ static int ohci_request(struct usb_endp *endp, struct usb_request *req) {
 		negtoken = OHCI_TD_IN;
 	}
 
-	ohci_ed_fill(ed, endp); /* function address could change due bus
+	ohci_ed_fill(ed, req->endp); /* function address could change due bus
 				   enumeration */
 
 	ohci_transfer(ed, OHCI_TD_SETUP, &req->ctrl_header,
@@ -323,6 +357,31 @@ static int ohci_request(struct usb_endp *endp, struct usb_request *req) {
 	return 0;
 }
 
+static int ohci_interrupt_req(struct usb_request *req) {
+	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
+	struct ohci_ed *ed = endp2ohci(req->endp);
+	uint32_t token;
+
+	switch (req->endp->direction) {
+	case USB_DIRECTION_IN:
+		token = OHCI_TD_IN;
+		break;
+	case USB_DIRECTION_OUT:
+		token = OHCI_TD_OUT;
+	default:
+		assert(0, "%s: don't know how to handle unidirection interrupt "
+				"endpoint", __func__);
+	}
+
+	ohci_ed_fill(ed, req->endp); /* function address could change due bus
+				   enumeration */
+
+	ohci_transfer(ed, token, req->buf, req->len, req);
+
+	ohci_ed_sched_interrupt(ohcd, ed);
+
+	return 0;
+}
 static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_hci_alloc = ohci_hcd_alloc,
 	.hcd_hci_free = ohci_hcd_free,
@@ -331,7 +390,8 @@ static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_start = ohci_start,
 	.hcd_stop = ohci_stop,
 	.rhub_ctrl = ohci_rh_ctrl,
-	.control_request = ohci_request,
+	.control_request = ohci_control_req,
+	.interrupt_request = ohci_interrupt_req,
 };
 
 static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
@@ -372,34 +432,34 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		usb_rh_nofity(hcd);
 	}
 
-        if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
-                struct ohci_td *td, *next_td;
-                struct usb_request *req;
+	if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
+		struct ohci_td *td, *next_td;
+		struct usb_request *req;
 
                 td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
-                do {
-                        enum usb_request_status req_stat;
+		do {
+			enum usb_request_status req_stat;
 
-                        req_stat = ohci_td_stat(td);
-                        req = ohci2req(td);
-                        next_td = ohci_td_next(td);
+			req_stat = ohci_td_stat(td);
+			req = ohci2req(td);
+			next_td = ohci_td_next(td);
 
-                        assert((void *) td->buf_p == NULL);
+			assert((void *) td->buf_p == NULL);
 
-                        ohci_td_free(td);
+			ohci_td_free(td);
 
-                        if (!req) {
-                                continue;
-                        }
+			if (!req) {
+				continue;
+			}
 
-                        req->req_stat = req_stat;
-                        usb_request_complete(req);
+			req->req_stat = req_stat;
+			usb_request_complete(req);
 
-                } while ((td = next_td));
+		} while ((td = next_td));
 
-                OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
-        }
+		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
+	}
 
 	return IRQ_HANDLED;
 }

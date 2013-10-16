@@ -91,7 +91,7 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	dev->idx = idx;
 	dev->bus_idx = 0;
 
-	if (!usb_endp_alloc(dev, 0, &usb_desc_endp_control_default)) {
+	if (!usb_endp_alloc(dev, &usb_desc_endp_control_default)) {
 		usb_dev_free(dev);
 		return NULL;
 	}
@@ -104,22 +104,31 @@ void usb_dev_free(struct usb_dev *dev) {
 	index_free(&dev->hcd->enumerator, dev->idx);
 }
 
-struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned int num,
+struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 		const struct usb_desc_endpoint *endp_desc) {
 	struct usb_endp *endp = pool_alloc(&usb_endps);
 	struct usb_hcd *hcd = dev->hcd;
+	int endp_num;
 
 	if (!endp) {
 		return NULL;
 	}
 
 	endp->dev = dev;
-	endp->num = num;
 
 	usb_endp_fill_from_desc(endp, endp_desc);
 
-	assert(dev->endpoints[num] == NULL);
-	dev->endpoints[num] = endp;
+	for (endp_num = 0; endp_num < USB_DEV_MAX_ENDP; endp_num++) {
+		if (!dev->endpoints[endp_num]) {
+			break;
+		}
+
+		assert(dev->endpoints[endp_num]->address != endp->address);
+	}
+
+	assert(endp_num < USB_DEV_MAX_ENDP);
+
+	dev->endpoints[endp_num] = endp;
 
 	if (hcd->ops->endp_hci_alloc) {
 		endp->hci_specific = hcd->ops->endp_hci_alloc(endp);
@@ -143,8 +152,6 @@ void usb_endp_free(struct usb_endp *endp) {
 extern struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 	struct usb_request *req;
-
-	assert(usb_endp_type(endp) == USB_COMM_CONTROL);
 
 	req = pool_alloc(&usb_requests);
 	req->endp = endp;

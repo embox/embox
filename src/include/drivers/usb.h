@@ -40,38 +40,43 @@ enum usb_dev_event_type;
 typedef void (*usb_dev_notify_hnd_t)(struct usb_dev *dev, enum usb_dev_event_type event_type);
 typedef void (*usb_request_notify_hnd_t)(struct usb_request *req);
 
-#define USB_DEV_REQ_TYPE_WR    	        0x00
-#define USB_DEV_REQ_TYPE_RD    	        0x80
+#define USB_DEV_REQ_TYPE_WR             0x00
+#define USB_DEV_REQ_TYPE_RD             0x80
 
-#define USB_DEV_REQ_TYPE_STD    	0x00
-#define USB_DEV_REQ_TYPE_CLS    	0x20
-#define USB_DEV_REQ_TYPE_VND    	0x40
+#define USB_DEV_REQ_TYPE_STD            0x00
+#define USB_DEV_REQ_TYPE_CLS            0x20
+#define USB_DEV_REQ_TYPE_VND            0x40
 
-#define USB_DEV_REQ_TYPE_DEV    	0x00
-#define USB_DEV_REQ_TYPE_IFC    	0x01
-#define USB_DEV_REQ_TYPE_ENP    	0x02
-#define USB_DEV_REQ_TYPE_OTH    	0x03
+#define USB_DEV_REQ_TYPE_DEV            0x00
+#define USB_DEV_REQ_TYPE_IFC            0x01
+#define USB_DEV_REQ_TYPE_ENP            0x02
+#define USB_DEV_REQ_TYPE_OTH            0x03
 
-#define USB_DEV_REQ_GET_STAT    	0x00
-#define USB_DEV_REQ_SET_ADDR    	0x05
-#define USB_DEV_REQ_GET_DESC    	0x06
-#define USB_DEV_REQ_SET_CONF    	0x09
+#define USB_DEV_REQ_GET_STAT            0x00
+#define USB_DEV_REQ_SET_ADDR            0x05
+#define USB_DEV_REQ_GET_DESC            0x06
+#define USB_DEV_REQ_SET_CONF            0x09
 
-#define USB_DESC_TYPE_DEV    	        1
-#define USB_DESC_TYPE_CONFIG    	2
-#define USB_DESC_TYPE_ENDPOINT    	5
+#define USB_DESC_TYPE_DEV               1
+#define USB_DESC_TYPE_CONFIG            2
+#define USB_DESC_TYPE_ENDPOINT          5
 
-#define USB_DESC_ENDP_TYPE_MASK    	0x03
-#define USB_DESC_ENDP_TYPE_CTRL    	0x00
+#define USB_DESC_ENDP_TYPE_MASK         0x03
+#define USB_DESC_ENDP_TYPE_CTRL         0x00
 #define USB_DESC_ENDP_TYPE_ISOCHR       0x01
-#define USB_DESC_ENDP_TYPE_BULK    	0x02
-#define USB_DESC_ENDP_TYPE_INTR    	0x03
+#define USB_DESC_ENDP_TYPE_BULK         0x02
+#define USB_DESC_ENDP_TYPE_INTR         0x03
 
-#define USB_HUB_PORT_CONNECT    	0x0001
-#define USB_HUB_PORT_ENABLE    	        0x0002
-#define USB_HUB_PORT_SUSPEND    	0x0004
-#define USB_HUB_PORT_OVERRUN    	0x0008
-#define USB_HUB_PORT_RESET    	        0x0010
+#define USB_DESC_ENDP_ADDR_MASK         0x0f
+#define USB_DESC_ENDP_ADDR_DIR_MASK     0x80
+#define USB_DESC_ENDP_ADDR_OUT          0x00
+#define USB_DESC_ENDP_ADDR_IN           0x80
+
+#define USB_HUB_PORT_CONNECT            0x0001
+#define USB_HUB_PORT_ENABLE             0x0002
+#define USB_HUB_PORT_SUSPEND            0x0004
+#define USB_HUB_PORT_OVERRUN            0x0008
+#define USB_HUB_PORT_RESET              0x0010
 #define USB_HUB_PORT_POWER              0x0020
 
 enum usb_hub_request {
@@ -104,6 +109,12 @@ enum usb_comm_type {
 	USB_COMM_INTERRUPT,
 	USB_COMM_BULK,
 	USB_COMM_ISOCHRON,
+};
+
+enum usb_direction {
+	USB_DIRECTION_OUT,
+	USB_DIRECTION_IN,
+	USB_DIRECTION_UNI,
 };
 
 enum usb_dev_event_type {
@@ -157,7 +168,7 @@ struct usb_desc_interface {
 	uint8_t		b_interface_subclass;
 	uint8_t		b_interface_protocol;
 	uint8_t 	i_interface;
-};
+}__attribute__((packed));
 
 struct usb_desc_endpoint {
 	uint8_t		b_lenght;
@@ -166,7 +177,7 @@ struct usb_desc_endpoint {
 	uint8_t 	bm_attributes;
 	uint16_t	w_max_packet_size;
 	uint8_t		b_interval;
-};
+}__attribute__((packed));
 
 struct usb_hcd_ops {
 	void *(*hcd_hci_alloc)(struct usb_hcd *hcd, void *args);
@@ -181,13 +192,14 @@ struct usb_hcd_ops {
 
 	int (*rhub_ctrl)(struct usb_hub_port *port, enum usb_hub_request req,
 			unsigned short value);
-	int (*control_request)(struct usb_endp *endp, struct usb_request *req);
+	int (*control_request)(struct usb_request *req);
+	int (*interrupt_request)(struct usb_request *req);
 };
 
 struct usb_endp {
 	struct usb_dev *dev;
-	unsigned int num;
 	unsigned char address;
+	enum usb_direction direction;
 	enum usb_comm_type type;
 	unsigned short max_packet_size;
 	unsigned char interval;
@@ -197,9 +209,20 @@ struct usb_endp {
 
 static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 	       	const struct usb_desc_endpoint *desc) {
-	endp->address = desc->b_endpoint_address;
 
-	switch(desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK) {
+	endp->address = desc->b_endpoint_address & USB_DESC_ENDP_ADDR_MASK;
+
+	switch (desc->b_endpoint_address & USB_DESC_ENDP_ADDR_DIR_MASK) {
+	case USB_DESC_ENDP_ADDR_OUT:
+		endp->direction = USB_DIRECTION_OUT;
+		break;
+	default:
+	case USB_DESC_ENDP_ADDR_IN:
+		endp->direction = USB_DIRECTION_IN;
+		break;
+	}
+
+	switch (desc->bm_attributes & USB_DESC_ENDP_TYPE_MASK) {
 	case USB_DESC_ENDP_TYPE_ISOCHR:
 		endp->type = USB_COMM_ISOCHRON;
 		break;
@@ -209,12 +232,12 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 	case USB_DESC_ENDP_TYPE_INTR:
 		endp->type = USB_COMM_INTERRUPT;
 		break;
-	case USB_DESC_ENDP_TYPE_CTRL:
 	default:
+	case USB_DESC_ENDP_TYPE_CTRL:
 		endp->type = USB_COMM_CONTROL;
+		endp->direction = USB_DIRECTION_UNI;
 		break;
 	}
-
 	endp->max_packet_size = desc->w_max_packet_size;
 	endp->interval = desc->b_interval;
 }
@@ -222,6 +245,7 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 struct usb_desc_getconf_data {
 	struct usb_desc_configuration config_desc;
 	struct usb_desc_interface interface_desc;
+	char somestuff[9];
 	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
 } __attribute__((packed));
 
@@ -244,7 +268,14 @@ struct usb_dev {
 	struct usb_desc_device dev_desc;
 	struct usb_desc_getconf_data *getconf_data;
 	struct usb_desc_getconf_data tgetconf_data;
+
+	struct usb_desc_configuration *conf_desc;
+	struct usb_desc_interface *interface_desc;
 };
+
+static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
+	return &dev->dev_desc;
+}
 
 struct usb_hub_port {
 	struct usb_hub *hub;
@@ -307,6 +338,8 @@ extern int usb_rh_nofity(struct usb_hcd *hcd);
 
 extern void usb_request_complete(struct usb_request *req);
 
+int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		void *buf, size_t len);
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 extern void usb_hcd_free(struct usb_hcd *hcd);
@@ -317,12 +350,24 @@ extern void usb_hub_free(struct usb_hub *hub);
 extern struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd);
 extern void usb_dev_free(struct usb_dev *endp);
 
-extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned int num,
+extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 		const struct usb_desc_endpoint *endp_desc);
 extern void usb_endp_free(struct usb_endp *endp);
 
 extern struct usb_request *usb_request_alloc(struct usb_endp *endp);
 extern void usb_request_free(struct usb_request *req);
+
+static inline void usb_request_init(struct usb_request *req, struct usb_endp *endp,
+		usb_request_notify_hnd_t notify_hnd, void *buf, size_t len) {
+
+	req->endp = endp;
+	req->buf = buf;
+	req->len = len;
+	req->notify_hnd = notify_hnd;
+}
+
+/* class */
+extern int usb_class_handle(struct usb_dev *dev);
 
 #endif /* DRIVERS_USB_H_ */
 
