@@ -13,8 +13,8 @@
 
 /* resources managed flag */
 #define __THREAD_STATE_JOINABLE  0
-#define __THREAD_STATE_JOINED    (0x1 << 0)
-#define __THREAD_STATE_DETACHED  (0x1 << 1)
+#define __THREAD_STATE_JOINED    1
+#define __THREAD_STATE_DETACHED  2
 
 struct thread;
 
@@ -30,21 +30,21 @@ static inline void thread_res_state_get(struct thread_res_state *info, unsigned 
 }
 
 static inline bool thread_res_state_detached(struct thread_res_state *info) {
-	return info->state & __THREAD_STATE_DETACHED;
+	return info->state == __THREAD_STATE_DETACHED;
 }
 
 static inline bool thread_res_state_joined(struct thread_res_state *info) {
-	return info->state & __THREAD_STATE_JOINED;
+	return info->state == __THREAD_STATE_JOINED;
 }
 
 static inline thread_state_t thread_res_state_do_detach(struct thread_res_state *info) {
 	assert(!thread_res_state_detached(info) && !thread_res_state_joined(info));
-	return info->state | __THREAD_STATE_DETACHED;
+	return __THREAD_STATE_DETACHED;
 }
 
 static inline thread_state_t thread_res_state_do_join(struct thread_res_state *info) {
 	assert(!thread_res_state_detached(info) && !thread_res_state_joined(info));
-	return info->state | __THREAD_STATE_JOINED;
+	return __THREAD_STATE_JOINED;
 }
 
 #endif /* RES_MANAGE_STATE_H_ */

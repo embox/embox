@@ -31,10 +31,7 @@ static void priority_uninherit(struct thread *t);
 static inline int mutex_is_static_inited(struct mutex *m) {
 	/* Static initializer can't really init list now, so if this condition's
 	 * true initialization is not finished */
-	if(!(m->wq.list.next && m->wq.list.prev)) {
-		return 1;
-	}
-	return 0;
+	return !(m->wq.list.next && m->wq.list.prev);
 }
 
 static inline void mutex_complete_static_init(struct mutex *m) {
