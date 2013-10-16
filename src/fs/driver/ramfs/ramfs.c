@@ -47,6 +47,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define RAMFS_DIR  "/"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
+static char ramfs_dev[] = RAMFS_DEV;
 
 static int ramfs_format(void *path);
 static int ramfs_mount(void *dev, void *dir);
@@ -67,7 +68,7 @@ static int ramfs_init(void * par) {
 		return -ENOENT;
 	}
 
-	if (err(ramdisk = ramdisk_create(RAMFS_DEV,
+	if (err(ramdisk = ramdisk_create(ramfs_dev,
 					FILESYSTEM_SIZE * PAGE_SIZE()))) {
 		return err(ramdisk);
 	}
@@ -86,7 +87,7 @@ static int ramfs_init(void * par) {
 }
 
 static int ramfs_ramdisk_fs_init(void) {
-	return ramfs_init(RAMFS_DEV);
+	return ramfs_init(ramfs_dev);
 }
 
 EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
