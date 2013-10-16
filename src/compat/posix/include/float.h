@@ -96,7 +96,7 @@
 /* The maximal floating point value (see notes about FLT_MAX_EXP). */
 #ifdef __LDBL_MAX__
 #undef LDBL_MAX
-#define LDBL_MAX
+#define LDBL_MAX __LDBL_MAX__
 #else
 #define LDBL_MAX        (9.999999999999999e999)
 #endif
