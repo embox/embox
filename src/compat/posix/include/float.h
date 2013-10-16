@@ -57,7 +57,7 @@
 /*  The minimal exponent of a floating point value expressed in base 10 (see notes about FLT_MIN_EXP).*/
 #ifdef __FLT_MIN_10_EXP__
 #undef FLT_MIN_10_EXP
-#define FLT_MIN_10_EXP
+#define FLT_MIN_10_EXP __FLT_MIN_10_EXP__
 #else
 #define FLT_MIN_10_EXP   (-999)
 #endif
