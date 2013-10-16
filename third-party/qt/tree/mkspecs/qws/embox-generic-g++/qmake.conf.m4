@@ -12,7 +12,8 @@ m4_define(M4_EXTRACT_ENVVAR,`m4_patsubst(m4_esyscmd(echo $$1),`
 
 QMAKE_CFLAGS           += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CFLAGS)   -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'"
 # https://bugs.launchpad.net/gcc-linaro/+bug/675347
-QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive -fno-threadsafe-statics -fno-strict-volatile-bitfields
+QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive -fno-threadsafe-statics
+#for ARM only -fno-strict-volatile-bitfields
 #CROSS_COMPILE          += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CROSS_COMPILE)
 
 # Overriding
