@@ -437,18 +437,23 @@ $(@source_o_rmk) $(@source_a_rmk) : script  = $(or \
 			$(call get,$(call values_of,$(my_rule_script)),value), \
 			@true)
 
-my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_incpath_before_val := \
+		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
+my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 
+$(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+$(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)))
 $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
-			-include $(patsubst %,$(value module_config_h_pat),$(call module_path,$(module))) \
-			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
-			$(call do_flags,-D,$(defines)))
+			$(call do_flags,-D,$(defines)) \
+			-include $(patsubst %,$(value module_config_h_pat), \
+						$(call module_path,$(module))) \
+			-D__EMBUILD_MOD__=$(call module_id,$(module)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -469,6 +474,7 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
 		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
