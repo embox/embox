@@ -182,11 +182,11 @@ struct usb_desc_endpoint {
 
 struct usb_hcd_ops {
 	void *(*hcd_hci_alloc)(struct usb_hcd *hcd, void *args);
-	void (*hcd_hci_free)(struct usb_hcd *hcd);
+	void (*hcd_hci_free)(struct usb_hcd *hcd, void *spec);
 	void *(*endp_hci_alloc)(struct usb_endp *endp);
-	void (*endp_hci_free)(struct usb_endp *endp);
+	void (*endp_hci_free)(struct usb_endp *endp, void *spec);
 	void *(*req_hci_alloc)(struct usb_request *req);
-	void (*req_hci_free)(struct usb_request *req);
+	void (*req_hci_free)(struct usb_request *req, void *spec);
 
 	int (*hcd_start)(struct usb_hcd *hcd);
 	int (*hcd_stop)(struct usb_hcd *hcd);
@@ -400,6 +400,7 @@ static inline usb_class_t usb_dev_class(struct usb_dev *dev) {
 
 extern int usb_class_supported(struct usb_dev *dev);
 extern int usb_class_handle(struct usb_dev *dev);
+extern void usb_class_unhandle(struct usb_dev *dev);
 
 extern int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]);
 extern int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev);

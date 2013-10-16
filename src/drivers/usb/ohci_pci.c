@@ -59,8 +59,10 @@ static void *ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	return ohcd;
 }
 
-static void ohci_hcd_free(struct usb_hcd *hcd) {
+static void ohci_hcd_free(struct usb_hcd *hcd, void *spec) {
 	struct ohci_hcd *ohcd = hcd2ohci(hcd);
+
+	assert(ohcd == spec);
 
 	pool_free(&ohci_hcds, ohcd->hcca);
 	pool_free(&ohci_hccas, ohcd);
@@ -89,8 +91,8 @@ static void *ohci_ed_alloc(struct usb_endp *ep) {
 	return ed;
 }
 
-static void ohci_ed_free(struct usb_endp *ep) {
-	pool_free(&ohci_eds, ep->hci_specific);
+static void ohci_ed_free(struct usb_endp *ep, void *spec) {
+	pool_free(&ohci_eds, spec);
 }
 /* === end === */
 

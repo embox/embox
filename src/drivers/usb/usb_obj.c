@@ -41,7 +41,7 @@ struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 void usb_hcd_free(struct usb_hcd *hcd) {
 
 	if (hcd->ops->hcd_hci_free) {
-		hcd->ops->hcd_hci_free(hcd);
+		hcd->ops->hcd_hci_free(hcd, hcd->hci_specific);
 	}
 
 	pool_free(&usb_hcds, hcd);
@@ -100,8 +100,9 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 }
 
 void usb_dev_free(struct usb_dev *dev) {
-	pool_free(&usb_devs, dev);
+	usb_class_unhandle(dev);
 	index_free(&dev->hcd->enumerator, dev->idx);
+	pool_free(&usb_devs, dev);
 }
 
 struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
@@ -145,7 +146,7 @@ void usb_endp_free(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 
 	if (hcd->ops->endp_hci_free) {
-		hcd->ops->endp_hci_free(endp);
+		hcd->ops->endp_hci_free(endp, hcd->hci_specific);
 	}
 }
 
@@ -170,7 +171,7 @@ void usb_request_free(struct usb_request *req) {
 	struct usb_hcd *hcd = req->endp->dev->hcd;
 
 	if (hcd->ops->req_hci_free) {
-		hcd->ops->req_hci_free(req);
+		hcd->ops->req_hci_free(req, hcd->hci_specific);
 	}
 
 	pool_free(&usb_requests, req);
