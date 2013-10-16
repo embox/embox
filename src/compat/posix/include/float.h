@@ -23,6 +23,7 @@
 #ifdef __DBL_MAX__
 #undef DBL_MAX
 #define DBL_MAX __DBL_MAX__
+#else
 #define DBL_MAX          (9.999999999999999e999)
 #endif
 
