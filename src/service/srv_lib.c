@@ -33,8 +33,7 @@ struct web_service_instance *web_service_lookup(const char *srv_name) {
 const struct web_service_desc *web_service_desc_lookup(const char *srv_name) {
 	const struct web_service_desc *srv_desc;
 
-	array_spread_foreach_ptr(srv_desc, __web_services_repository,
-			ARRAY_SPREAD_SIZE(__web_services_repository)) {
+	array_spread_foreach_ptr(srv_desc, __web_services_repository) {
 		if (0 == strcmp(srv_name, srv_desc->srv_name)) {
 			return srv_desc;
 		}

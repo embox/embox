@@ -455,14 +455,12 @@ static int exec(int argc, char **argv) {
 			}
 
 			printf("\nNodes:\n");
-			array_spread_foreach_ptr(mod, __pnet_mod_repo,
-					ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
+			array_spread_foreach_ptr(mod, __pnet_mod_repo) {
 				if (mod->node)
 					printf("	%s\n", mod->node->proto->name);
 			}
 			printf("\nProtocols:\n");
-			array_spread_foreach_ptr(mod, __pnet_mod_repo,
-					ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
+			array_spread_foreach_ptr(mod, __pnet_mod_repo) {
 				if (!mod->node)
 					printf("	%s\n", mod->proto->name);
 			}

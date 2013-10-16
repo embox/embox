@@ -17,8 +17,7 @@
 #include "types.h"
 
 #define __cmd_foreach(cmd) \
-	array_spread_foreach_ptr(cmd, __cmd_registry, \
-			ARRAY_SPREAD_SIZE(__cmd_registry))
+	array_spread_foreach_ptr(cmd, __cmd_registry)
 
 ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry);
 

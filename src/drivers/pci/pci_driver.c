@@ -19,7 +19,8 @@ ARRAY_SPREAD_DEF(const struct pci_driver *, __pci_driver_registry);
 
 static const struct pci_driver * pci_driver_find(uint16_t ven_id, uint16_t dev_id) {
 	const struct pci_driver *pci_drv;
-	array_spread_foreach(pci_drv, __pci_driver_registry, ARRAY_SPREAD_SIZE(__pci_driver_registry)) {
+
+	array_spread_foreach(pci_drv, __pci_driver_registry) {
 		if (ven_id == pci_drv->ven_id && dev_id == pci_drv->dev_id) {
 			return pci_drv;
 		}

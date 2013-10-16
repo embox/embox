@@ -55,8 +55,7 @@ static int fs_driver_init(void) {
 	fs_driver_head_t *head;
 	const struct fs_driver *fs_drv;
 
-	array_spread_foreach(fs_drv, __fs_drivers_registry,
-			ARRAY_SPREAD_SIZE(__fs_drivers_registry)) {
+	array_spread_foreach(fs_drv, __fs_drivers_registry) {
 		if (NULL == (head = fs_driver_alloc((struct fs_driver *)fs_drv))) {
 			return -EINVAL;
 		}

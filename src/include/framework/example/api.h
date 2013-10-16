@@ -16,8 +16,7 @@
 ARRAY_SPREAD_DECLARE(const struct example, __example_registry);
 
 #define example_foreach(example_ptr) \
-	array_spread_foreach_ptr(example_ptr, __example_registry, \
-			ARRAY_SPREAD_SIZE(__example_registry))
+	array_spread_foreach_ptr(example_ptr, __example_registry)
 
 extern int example_exec(const struct example *example, int argc, char **argv);
 

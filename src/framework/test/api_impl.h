@@ -18,8 +18,7 @@
 #include "types.h"
 
 #define __test_foreach(test_ptr) \
-	array_spread_foreach_ptr(test_ptr, __test_registry, \
-			ARRAY_SPREAD_SIZE(__test_registry))
+	array_spread_foreach_ptr(test_ptr, __test_registry)
 
 ARRAY_SPREAD_DECLARE(const struct test_suite, __test_registry);
 

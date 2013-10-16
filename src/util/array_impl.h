@@ -151,17 +151,18 @@
 
 /* Spread array iterators. */
 
-#define __array_spread_foreach(element, array, size) \
-	__array_spread_foreach_nm(element, array, size, MACRO_GUARD(__ptr))
+#define __array_spread_foreach(element, array)            \
+	__array_spread_foreach_nm(element, array,             \
+			ARRAY_SPREAD_SIZE(array), MACRO_GUARD(__ptr))
 
 #define __array_spread_foreach_nm(element, array, size, _ptr)    \
 	for (typeof(element) volatile const *_ptr = (array),         \
 				*_end = _ptr + (size);                           \
 			(_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
 
-#define __array_spread_foreach_ptr(element_ptr, array, size) \
-	__array_spread_foreach_ptr_nm(element_ptr, array,            \
-			MACRO_GUARD(__ptr) + (size),                     \
+#define __array_spread_foreach_ptr(element_ptr, array)     \
+	__array_spread_foreach_ptr_nm(element_ptr, array,      \
+			MACRO_GUARD(__ptr) + ARRAY_SPREAD_SIZE(array), \
 			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_spread_foreach_ptr_nm(element_ptr, array_begin,           \
@@ -172,7 +173,8 @@
 			++_ptr)
 
 #define __array_spread_nullterm_foreach(element, array) \
-	__array_spread_nullterm_foreach_nm(element, array, MACRO_GUARD(__ptr))
+	__array_spread_nullterm_foreach_nm(element, array,  \
+			MACRO_GUARD(__ptr))
 
 #define __array_spread_nullterm_foreach_nm(element, array, _ptr) \
 	for (typeof(element) volatile const *_ptr = (array);         \

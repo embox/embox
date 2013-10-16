@@ -121,10 +121,10 @@
 /**
  * Analogs for spread array.
  */
-#define array_spread_foreach(element, array, size) \
-	  __array_spread_foreach(element, array, size)
-#define array_spread_foreach_ptr(element_ptr, array, size) \
-	  __array_spread_foreach_ptr(element_ptr, array, size)
+#define array_spread_foreach(element, array) \
+	  __array_spread_foreach(element, array)
+#define array_spread_foreach_ptr(element_ptr, array) \
+	  __array_spread_foreach_ptr(element_ptr, array)
 #define array_spread_nullterm_foreach(element, array) \
 	  __array_spread_nullterm_foreach(element, array)
 

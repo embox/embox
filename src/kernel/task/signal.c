@@ -52,8 +52,7 @@ static const struct task_resource_desc signal_resource = {
 void task_signal_hnd(void) {
 	global_sig_hnd_t hnd;
 
-	array_spread_foreach(hnd, __signal_handlers_array,
-			ARRAY_SPREAD_SIZE(__signal_handlers_array)) {
+	array_spread_foreach(hnd, __signal_handlers_array) {
 		if (hnd) {
 			hnd();
 		}
