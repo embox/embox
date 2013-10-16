@@ -13,10 +13,15 @@ extern size_t task_size(void);
 
 extern struct task *task_init(void *task_n_res_space, size_t size);
 
+ARRAY_SPREAD_DECLARE(const struct task_resource_desc *,
+		task_resource_desc_array);
+ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd,
+		task_notifing_resource);
+
 #define task_resource_foreach(item) \
-	array_foreach(item, task_resource_desc_array, \
+	array_spread_foreach(item, task_resource_desc_array, \
 		ARRAY_SPREAD_SIZE(task_resource_desc_array))
 
 #define task_notifing_resource_foreach(item) \
-	array_foreach(item, task_notifing_resource, \
+	array_spread_foreach(item, task_notifing_resource, \
 		ARRAY_SPREAD_SIZE(task_notifing_resource))

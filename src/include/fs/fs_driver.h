@@ -42,10 +42,11 @@ struct fs_driver {
 	const struct fsop_desc        *fsop;
 };
 
-extern const struct fs_driver * __fs_drivers_registry[];
-
-#define DECLARE_FILE_SYSTEM_DRIVER(fs_driver) \
-		ARRAY_SPREAD_ADD(__fs_drivers_registry, &fs_driver)
+#define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
+	ARRAY_SPREAD_DECLARE(const struct fs_driver *, \
+			__fs_drivers_registry);                \
+	ARRAY_SPREAD_ADD(__fs_drivers_registry, \
+			&fs_driver_)
 
 /**
  * allocate structure for fs_driver structure

@@ -13,10 +13,10 @@
 
 #include "types.h"
 
-extern volatile const struct net_family __net_family_registry[];
+ARRAY_SPREAD_DECLARE(const struct net_family, __net_family_registry);
 
-#define __net_family_foreach(net_family_ptr)                 \
-	array_foreach_ptr(net_family_ptr, __net_family_registry, \
+#define __net_family_foreach(net_family_ptr)                        \
+	array_spread_foreach_ptr(net_family_ptr, __net_family_registry, \
 			ARRAY_SPREAD_SIZE(__net_family_registry))
 
 #define __net_family_type_foreach(net_family_type_ptr,           \

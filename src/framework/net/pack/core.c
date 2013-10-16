@@ -13,8 +13,7 @@
 #include <stddef.h>
 #include <string.h>
 
-ARRAY_SPREAD_DEF(volatile const struct net_pack,
-		__net_pack_registry);
+ARRAY_SPREAD_DEF(const struct net_pack, __net_pack_registry);
 
 static int net_pack_mod_enable(struct mod_info *info);
 static int net_pack_mod_disable(struct mod_info *info);
@@ -73,11 +72,11 @@ static int net_pack_mod_disable(struct mod_info *info) {
 }
 
 const struct net_pack * net_pack_lookup(unsigned short type) {
-	volatile const struct net_pack *npack;
+	const struct net_pack *npack;
 
 	net_pack_foreach(npack) {
 		if (npack->type == type) {
-			return (const struct net_pack *)npack;
+			return npack;
 		}
 	}
 

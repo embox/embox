@@ -49,7 +49,7 @@ ARRAY_SPREAD_DEF(const struct example_array_registry_data,
 
 /** Utility macro. It makes easier iterates over the repository */
 #define array_registry_foreach(item) \
-	array_foreach(item, __example_array_registry, \
+	array_spread_foreach_ptr(item, __example_array_registry, \
 		ARRAY_SPREAD_SIZE(__example_array_registry))
 /**
  * Macro for item declaration.

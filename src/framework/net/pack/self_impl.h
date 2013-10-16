@@ -15,8 +15,8 @@
 #include "types.h"
 
 #define __EMBOX_NET_PACK(_name, _type, _handle, _init, _fini)    \
-	extern volatile const struct net_pack __net_pack_registry[]; \
-	extern const struct mod_ops __net_pack_mod_ops;              \
+	ARRAY_SPREAD_DECLARE(const struct net_pack,                  \
+			__net_pack_registry);                                \
 	ARRAY_SPREAD_ADD_NAMED(__net_pack_registry,                  \
 			__net_pack_##_name, {                                \
 				.type = _type,                                   \
@@ -24,6 +24,7 @@
 				.fini = _fini,                                   \
 				.handle = _handle                                \
 			});                                                  \
+	extern const struct mod_ops __net_pack_mod_ops;              \
 	MOD_INFO_BIND(&__net_pack_mod_ops, &__net_pack_##_name)
 
 #endif /* FRAMEWORK_NET_PACK_SELF_IMPL_H_ */

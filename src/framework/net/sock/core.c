@@ -15,8 +15,7 @@
 #include <stddef.h>
 #include <string.h>
 
-ARRAY_SPREAD_DEF(volatile const struct net_sock,
-		__net_sock_registry);
+ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
 
 static int net_sock_mod_member_init(struct mod_member *member);
 static int net_sock_mod_member_fini(struct mod_member *member);
@@ -88,14 +87,14 @@ static int net_sock_mod_member_fini(struct mod_member *member) {
 
 const struct net_sock * net_sock_lookup(int family, int type,
 		int protocol) {
-	volatile const struct net_sock *nsock;
+	const struct net_sock *nsock;
 
 	net_sock_foreach(nsock) {
 		if ((nsock->family == family)
 				&& (nsock->type == type)
 				&& ((nsock->protocol == protocol)
 					|| ((protocol == 0) && (nsock->is_default)))) {
-			return (const struct net_sock *)nsock;
+			return nsock;
 		}
 	}
 

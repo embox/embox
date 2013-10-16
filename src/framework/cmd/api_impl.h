@@ -17,9 +17,10 @@
 #include "types.h"
 
 #define __cmd_foreach(cmd) \
-	array_foreach_ptr(cmd, __cmd_registry, ARRAY_SPREAD_SIZE(__cmd_registry))
+	array_spread_foreach_ptr(cmd, __cmd_registry, \
+			ARRAY_SPREAD_SIZE(__cmd_registry))
 
-extern const struct cmd __cmd_registry[];
+ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry);
 
 static inline const struct mod_cmd *__cmd_deref(const struct cmd *cmd) {
 	return cmd ? cmd->mod->cmd : NULL;

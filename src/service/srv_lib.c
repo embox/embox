@@ -11,6 +11,7 @@
 #include <string.h>
 #include <kernel/task.h>
 #include <unistd.h>
+#include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct web_service_desc, __web_services_repository);
 
@@ -30,13 +31,15 @@ struct web_service_instance *web_service_lookup(const char *srv_name) {
 }
 
 const struct web_service_desc *web_service_desc_lookup(const char *srv_name) {
-	int i;
+	const struct web_service_desc *srv_desc;
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__web_services_repository); i++) {
-		if (0 == strcmp(srv_name, __web_services_repository[i].srv_name)) {
-			return &__web_services_repository[i];
+	array_spread_foreach_ptr(srv_desc, __web_services_repository,
+			ARRAY_SPREAD_SIZE(__web_services_repository)) {
+		if (0 == strcmp(srv_name, srv_desc->srv_name)) {
+			return srv_desc;
 		}
 	}
+
 	return NULL;
 }
 

@@ -12,8 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 
-ARRAY_SPREAD_DEF(volatile const struct net_family,
-		__net_family_registry);
+ARRAY_SPREAD_DEF(const struct net_family, __net_family_registry);
 
 static int net_family_mod_enable(struct mod_info *info);
 static int net_family_mod_disable(struct mod_info *info);
@@ -72,11 +71,11 @@ static int net_family_mod_disable(struct mod_info *info) {
 }
 
 const struct net_family * net_family_lookup(int family) {
-	volatile const struct net_family *nfamily;
+	const struct net_family *nfamily;
 
 	net_family_foreach(nfamily) {
 		if (nfamily->family == family) {
-			return (const struct net_family *)nfamily;
+			return nfamily;
 		}
 	}
 

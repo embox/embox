@@ -1003,7 +1003,7 @@ static struct fsop_desc fatfs_fsop = {
 	.umount = fatfs_umount,
 };
 
-static struct fs_driver fatfs_driver = {
+static const struct fs_driver fatfs_driver = {
 	.name = "reffat",
 	.file_op = &fatfs_fop,
 	.fsop = &fatfs_fsop,

@@ -112,7 +112,8 @@ int mib_init_all(void) {
 	dlist_init(&mib_root.children);
 	mib_root.name = "root";
 
-	array_foreach(init, __mib_register, ARRAY_SPREAD_SIZE(__mib_register)) {
+	array_spread_foreach(init, __mib_register,
+			ARRAY_SPREAD_SIZE(__mib_register)) {
 		init();
 	}
 

@@ -52,7 +52,8 @@
 		.contents   = __MOD_CONTENTS(mod_nm),     \
 		.members    = __MOD_MEMBERS(mod_nm),      \
 	};                                            \
-	extern const struct mod *__mod_registry[];    \
+	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 
 #define __MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details) \

@@ -47,7 +47,7 @@ typedef struct flash_dev_module {
 #include <util/array.h>
 
 #define EMBOX_FLASH_DEV(name, flash_dev_drv, init_func) \
-	extern const flash_dev_module_t __flash_dev_registry[]; \
+	ARRAY_SPREAD_DECLARE(const flash_dev_module_t, __flash_dev_registry); \
 	ARRAY_SPREAD_ADD(__flash_dev_registry, {name, flash_dev_drv, init_func})
 
 extern int block_devs_init(void);

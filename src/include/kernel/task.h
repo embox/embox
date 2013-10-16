@@ -82,14 +82,14 @@ struct task_resource_desc {
 
 typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
 
-extern const struct task_resource_desc *task_resource_desc_array[];
-
-extern const task_notifing_resource_hnd task_notifing_resource[];
-
 #define TASK_RESOURCE_DESC(res) \
+	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *, \
+			task_resource_desc_array); \
 	ARRAY_SPREAD_ADD(task_resource_desc_array, res)
 
 #define TASK_RESOURCE_NOTIFY(fn) \
+	ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd, \
+			task_notifing_resource); \
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
 
 /**

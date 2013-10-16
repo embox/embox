@@ -62,7 +62,7 @@ static int rl_mod_enable(struct mod_info *mod_info) {
 
 	if (runlevel_nr_valid(level - 1)) {
 		const struct mod *mod;
-		array_nullterm_foreach(mod, rl_mod->contents) {
+		array_spread_nullterm_foreach(mod, rl_mod->contents) {
 			if (0 != (ret = mod_enable(mod))) {
 				return ret;
 			}

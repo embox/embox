@@ -59,7 +59,7 @@ extern const struct shell * shell_lookup(const char *shell_name);
 extern const struct shell * shell_any(void);
 
 #define SHELL_DEF(...) \
-	extern const struct shell __shell_registry[]; \
+	ARRAY_SPREAD_DECLARE(const struct shell, __shell_registry); \
 	ARRAY_SPREAD_ADD(__shell_registry, __VA_ARGS__)
 
 #ifdef __CDT_PARSER__

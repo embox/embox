@@ -31,7 +31,7 @@ struct __test_fixture_ops {
 
 struct test_suite {
 	/** @c NULL terminated array of pointers to test cases. */
-	const struct test_case **test_cases;
+	const struct test_case *volatile const *test_cases;
 	/** The corresponding mod. */
 	const struct mod *mod;
 	/** One-line human readable description of the whole test suite. */

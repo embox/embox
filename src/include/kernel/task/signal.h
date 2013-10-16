@@ -41,7 +41,7 @@ struct task_signal_table {
 extern void task_signal_hnd(void);
 
 #define SIGNAL_HANDLE_ENTRY(func) \
-		extern global_sig_hnd_t __signal_handlers_array[]; \
-		ARRAY_SPREAD_ADD(__signal_handlers_array, func)
+	ARRAY_SPREAD_DECLARE(global_sig_hnd_t, __signal_handlers_array); \
+	ARRAY_SPREAD_ADD(__signal_handlers_array, func)
 
 #endif /* SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_ */

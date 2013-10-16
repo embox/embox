@@ -36,9 +36,6 @@ struct __trace_block {
 	bool active;
 };
 
-extern struct __trace_point *const __trace_points_array[];
-extern struct __trace_block *const __trace_blocks_array[];
-
 #define __TRACE_POINT_DEF(_name, tp_name)   \
 		struct __trace_point _name = {      \
 			.name = tp_name,                \
@@ -46,6 +43,8 @@ extern struct __trace_block *const __trace_blocks_array[];
 			.count = 0,                     \
 			.active = true,                 \
 		};                                  \
+		ARRAY_SPREAD_DECLARE(struct __trace_point *, \
+				__trace_points_array);               \
 		ARRAY_SPREAD_ADD(__trace_points_array, &_name)
 
 #define __trace_point_set(tp_pointer) \
@@ -62,6 +61,8 @@ extern struct __trace_block *const __trace_blocks_array[];
 			.time  = 0,    \
 			.active = true, \
 	};                                                   \
+	ARRAY_SPREAD_DECLARE(struct __trace_block *, \
+			__trace_blocks_array);               \
 	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name);  \
 
 #define __tp_ref(__name) \
@@ -72,6 +73,8 @@ extern struct __trace_block *const __trace_blocks_array[];
 			.count = 0,                                       \
 			.active = true,                                   \
 		};                                                    \
+		ARRAY_SPREAD_DECLARE(struct __trace_point *,          \
+				__trace_points_array);                        \
 		ARRAY_SPREAD_ADD(__trace_points_array, &__tp);        \
 		&__tp;                                                \
 	})

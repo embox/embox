@@ -22,10 +22,11 @@ struct mod_member;
 
 struct mod {
 	/** Null-terminated array with dependency information. */
-	const struct mod **requires, **provides; /**< Modules, that this module depends on;
+	const struct mod *volatile const *requires,
+		  *volatile const *provides; /**< Modules, that this module depends on;
                                                   which are dependent on this. */
-	const struct mod **after_deps; /**< Should be loaded right after this. */
-	const struct mod **contents;  /**< Contained in this module. */
+	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
+	const struct mod *volatile const *contents;  /**< Contained in this module. */
 
 	/* Descriptive information about the module provided by Embuild. */
 
@@ -37,7 +38,7 @@ struct mod {
 	const struct mod_info    *info;    /**< (optional) Application specific. */
 	const struct mod_cmd     *cmd;     /**< (optional) Application specific. */
 	const struct mod_app     *app;     /**< (optional) Application specific. */
-	const struct mod_member **members; /**< Members to setup/finalize. */
+	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
 	struct __mod_private     *priv; /**< Used by dependency resolver. */
 
 };
