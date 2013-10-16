@@ -22,6 +22,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
+#include <err.h>
 
 #include <embox/unit.h>
 #include <embox/block_dev.h>
@@ -62,25 +63,21 @@ static int ramfs_init(void * par) {
 	/*TODO */
 
 	dir_node = vfs_lookup(NULL, RAMFS_DIR);
-	if (!dir_node) {
-		return -1;
+	if (dir_node == NULL) {
+		return -ENOENT;
 	}
 
-	if (NULL == (ramdisk = ramdisk_create(RAMFS_DEV,
+	if (err(ramdisk = ramdisk_create(RAMFS_DEV,
 					FILESYSTEM_SIZE * PAGE_SIZE()))) {
-		return -1;
+		return err(ramdisk);
 	}
 
 	dev_node = ramdisk->bdev->dev_node;
-	if (!dev_node) {
-		return -1;
-	}
-	if (!dev_node) {
-		return -1;
-	}
+	assert(dev_node != NULL);
 
 	/* format filesystem */
-	if (0 != (res = ramfs_format((void *) dev_node))) {
+	res = ramfs_format(dev_node);
+	if (res != 0) {
 		return res;
 	}
 
