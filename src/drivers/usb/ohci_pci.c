@@ -138,6 +138,11 @@ static void ohci_ed_fill(struct ohci_ed *ed, struct usb_endp *endp) {
 	flags = (flags & ~OHCI_ED_ENDP_ADDRESS_MASK) |
 		(endp->address << OHCI_ED_ENDP_ADDRESS_OFFS);
 
+#if 0
+	/* resetting any error condition */
+	REG_ANDIN(&ed->head_td, ~3);
+#endif
+
 	REG_STORE(&ed->flags, flags);
 }
 
@@ -382,6 +387,7 @@ static int ohci_interrupt_req(struct usb_request *req) {
 
 	return 0;
 }
+
 static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_hci_alloc = ohci_hcd_alloc,
 	.hcd_hci_free = ohci_hcd_free,
@@ -400,6 +406,8 @@ static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
 		return USB_REQ_NOERR;
 	case OHCI_TD_CC_STALL:
 		return USB_REQ_STALL;
+	case OHCI_TD_CC_DATA_UNDERRUN:
+		return USB_REQ_UNDERRUN;
 	default:
 		return USB_REQ_INTERR;
 	}
@@ -444,8 +452,6 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 			req_stat = ohci_td_stat(td);
 			req = ohci2req(td);
 			next_td = ohci_td_next(td);
-
-			assert((void *) td->buf_p == NULL);
 
 			ohci_td_free(td);
 

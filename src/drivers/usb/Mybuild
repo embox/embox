@@ -12,3 +12,9 @@ module ohci_pci {
 
 	depends core
 }
+
+module class_hid {
+	source "usb_class_hid.c"
+
+	depends core
+}

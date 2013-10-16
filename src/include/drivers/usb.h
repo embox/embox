@@ -101,6 +101,7 @@ enum usb_dev_state {
 enum usb_request_status {
 	USB_REQ_NOERR,
 	USB_REQ_STALL,
+	USB_REQ_UNDERRUN,
 	USB_REQ_INTERR,
 };
 
@@ -192,6 +193,7 @@ struct usb_hcd_ops {
 
 	int (*rhub_ctrl)(struct usb_hub_port *port, enum usb_hub_request req,
 			unsigned short value);
+
 	int (*control_request)(struct usb_request *req);
 	int (*interrupt_request)(struct usb_request *req);
 };
@@ -245,6 +247,7 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 struct usb_desc_getconf_data {
 	struct usb_desc_configuration config_desc;
 	struct usb_desc_interface interface_desc;
+	// --- cut ---
 	char somestuff[9];
 	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
 } __attribute__((packed));
@@ -271,6 +274,8 @@ struct usb_dev {
 
 	struct usb_desc_configuration *conf_desc;
 	struct usb_desc_interface *interface_desc;
+
+	void *class_specific;
 };
 
 static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
@@ -338,8 +343,13 @@ extern int usb_rh_nofity(struct usb_hcd *hcd);
 
 extern void usb_request_complete(struct usb_request *req);
 
-int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+extern int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		void *buf, size_t len);
+
+extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
+		uint16_t count, void *data);
+
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 extern void usb_hcd_free(struct usb_hcd *hcd);
@@ -367,7 +377,33 @@ static inline void usb_request_init(struct usb_request *req, struct usb_endp *en
 }
 
 /* class */
+
+typedef unsigned char usb_class_t;
+
+struct usb_class {
+	struct dlist_head lnk;
+	usb_class_t usb_class;
+	int (*get_conf)(struct usb_class *cls, struct usb_dev *dev);
+	void *(*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
+	void (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
+};
+
+static inline usb_class_t usb_dev_class(struct usb_dev *dev) {
+	usb_class_t dev_class = usb_dev_get_desc(dev)->b_dev_class;
+
+	if (dev_class) {
+		return dev_class;
+	}
+
+	return dev->interface_desc->b_interface_class;
+}
+
+extern int usb_class_supported(struct usb_dev *dev);
 extern int usb_class_handle(struct usb_dev *dev);
 
+extern int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]);
+extern int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev);
+
+extern int usb_class_register(struct usb_class *cls);
 #endif /* DRIVERS_USB_H_ */
 

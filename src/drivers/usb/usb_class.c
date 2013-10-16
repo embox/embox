@@ -7,56 +7,96 @@
  */
 
 #include <errno.h>
+#include <util/dlist.h>
 #include <kernel/printk.h>
+#include <kernel/panic.h>
 #include <drivers/usb.h>
 
-#define USB_CLASS_HID 		 3
+static DLIST_DEFINE(usb_classes);
 
-#define USB_CLASS_HID_SUB	 0
-#define USB_CLASS_HID_SUB_BOOT	 1
+static void usb_dev_request_hnd_get_conf(struct usb_request *req) {
+	struct usb_dev *dev = req->endp->dev;
 
-#define USB_CLASS_HID_PROT_NONE  0
-#define USB_CLASS_HID_PROT_KBD   1
-#define USB_CLASS_HID_PROT_MOUSE 2
-
-#define notzero_or(x, y) \
-	(x) ? (x) : (y)
-
-#define INTR_DATA_LEN 4
-static char intr_data[INTR_DATA_LEN];
-
-static void usb_class_mouse_notify(struct usb_request *req) {
-	printk("\n\nusb_mouse: received=%02x %02x %02x %02x\n",
-			intr_data[0], intr_data[1], intr_data[2],
-			intr_data[3]);
-
-	usb_endp_interrupt(req->endp->dev->endpoints[1],
-			usb_class_mouse_notify,
-			intr_data, INTR_DATA_LEN);
+	usb_dev_generic_fill_endps(dev, dev->getconf_data->endp_descs);
 }
 
-static int usb_class_handle_mouse(struct usb_dev *dev) {
+int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
+	struct usb_endp *ctrl_endp;
 
-	usb_endp_interrupt(dev->endpoints[1], usb_class_mouse_notify,
-			intr_data, INTR_DATA_LEN);
+	ctrl_endp = dev->endpoints[0];
+
+	usb_endp_control(ctrl_endp, usb_dev_request_hnd_get_conf,
+		USB_DEV_REQ_TYPE_RD
+			| USB_DEV_REQ_TYPE_STD
+			| USB_DEV_REQ_TYPE_DEV,
+		USB_DEV_REQ_GET_DESC,
+		USB_DESC_TYPE_CONFIG << 8,
+		dev->c_config,
+		sizeof(struct usb_desc_configuration) +
+			sizeof(struct usb_desc_interface) +
+			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
+		dev->getconf_data);
 
 	return 0;
 }
 
-int usb_class_handle(struct usb_dev *dev) {
-	struct usb_desc_device *dev_desc = usb_dev_get_desc(dev);
-	unsigned char class, subclass, proto;
+int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]) {
 
-	class = notzero_or(dev_desc->b_dev_class, dev->interface_desc->b_interface_class);
-	subclass = notzero_or(dev_desc->b_dev_subclass, dev->interface_desc->b_interface_subclass);
-	proto = notzero_or(dev_desc->b_dev_protocol, dev->interface_desc->b_interface_protocol);
+	for (int i = 1; i < dev->endp_n; i++) {
+		struct usb_desc_endpoint *endp_desc = &endp_descs[i - 1];
 
-	if ((class != USB_CLASS_HID) || (subclass != USB_CLASS_HID_SUB_BOOT)
-				|| (proto != USB_CLASS_HID_PROT_MOUSE)) {
-		assert(0);
-		return -ENOTSUP;
+		assert(endp_desc->b_desc_type == USB_DESC_TYPE_ENDPOINT);
+
+		if (NULL == usb_endp_alloc(dev, endp_desc)) {
+			panic("%s: failed to alloc endpoint\n",
+					__func__);
+		}
 	}
 
-	return usb_class_handle_mouse(dev);
+	return 0;
 }
 
+int usb_class_register(struct usb_class *cls) {
+
+	assert(cls->get_conf);
+
+	dlist_head_init(&cls->lnk);
+	dlist_add_next(&cls->lnk, &usb_classes);
+
+	return 0;
+}
+
+static struct usb_class *usb_class_find(usb_class_t ucls) {
+	struct usb_class *cls, *cls_next;
+
+	dlist_foreach_entry(cls, cls_next, &usb_classes, lnk) {
+		if (cls->usb_class == ucls) {
+			return cls;
+		}
+	}
+
+	return NULL;
+}
+
+int usb_class_supported(struct usb_dev *dev) {
+
+	return NULL != usb_class_find(usb_dev_class(dev));
+}
+
+int usb_class_handle(struct usb_dev *dev) {
+	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
+
+	if (cls->class_alloc) {
+		dev->class_specific = cls->class_alloc(cls, dev);
+	}
+
+	return cls->get_conf(cls, dev);
+}
+
+void usb_class_unhandle(struct usb_dev *dev) {
+	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
+
+	if (cls->class_free) {
+		cls->class_free(cls, dev, dev->class_specific);
+	}
+}
