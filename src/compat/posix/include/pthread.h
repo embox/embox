@@ -94,7 +94,7 @@ typedef pthread_mutex_t pthread_once_t;
 #define PTHREAD_ONCE_INIT PTHREAD_MUTEX_INITIALIZER
 
 #define PTHREAD_CANCEL_ENABLE       0x0
-#define PTHREAD_CANSEL_DISABLE      0x1
+#define PTHREAD_CANCEL_DISABLE      0x1
 
 #define PTHREAD_CANCEL_DEFERRED     0x0
 #define PTHREAD_CANCEL_ASYNCHRONOUS 0x1
