@@ -233,7 +233,6 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		{
 			io_sync_disable(&to_sock(tcp_sk)->ios,
 					IO_SYNC_READING);
-			debug_print(3, "tcp_accept: check list\n");
 			if (list_empty(&tcp_sk->conn_wait)) {
 				tcp_obj_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
