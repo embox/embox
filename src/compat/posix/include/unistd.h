@@ -100,6 +100,8 @@ extern int ftruncate(int fd, off_t length);
 extern char * getcwd(char *buff, size_t size);
 extern int chdir(const char *path);
 
+extern int getpagesize(void);
+
 #define R_OK 4
 #define W_OK 2
 #define X_OK 1

@@ -16,6 +16,7 @@
 #include <grp.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #ifdef linux
 #undef linux
@@ -43,26 +44,7 @@ typedef __u16 u_int16_t;
 typedef __u32 u_int32_t;
 typedef __u64 u_int64_t;
 
-#if 0
-typedef unsigned int uint;
 
-static inline unsigned long long int strtoull(const char *nptr, char **endptr,
-                                       int base) {
-	printf(">>> strtoull\n");
-	return strtoul(nptr, endptr, base);
-}
-
-static inline int strcasecmp(const char *s1, const char *s2) {
-	printf(">>> strcasecmp, s1 - %s, s2 - %s\n", s1, s2);
-	return strcmp(s1, s2);
-}
-
-
-static inline int strncasecmp(const char *s1, const char *s2, size_t n) {
-	printf(">>> strncasecmp, s1 - %s, s2 - %s, n - %d\n", s1, s2, n);
-	return strncmp(s1, s2, n);
-}
-#endif
 
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid. gid - %d\n", gid);
@@ -78,10 +60,6 @@ static inline long sysconf(int name) {
 	return -1;
 }
 
-static inline int getpagesize(void) {
-	printf(">>> getpagesize\n");
-	return 4096;
-}
 
 static inline void *mmap(void *addr, size_t length, int prot, int flags,
            int fd, off_t offset) {

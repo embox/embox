@@ -78,8 +78,6 @@
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
-//#define sysconf(x) (printf(">>> sysconf(%s)\n",#x),-1)
-
 #define _SC_CLK_TCK 0
 #define _SC_NPROCESSORS_ONLN 1
 
@@ -111,7 +109,7 @@ inline long sysconf(int name) {
 
 #include <errno.h>
 
-
+#include <pthread.h>
 
 
 #if 1
@@ -120,7 +118,7 @@ inline long sysconf(int name) {
 #define DPRINT()
 #endif
 
-#include <pthread.h>
+
 
 
 
@@ -150,10 +148,6 @@ inline int ftruncate(int fd, off_t length) {
 	DPRINT();
 	return -1;
 }
-inline int getpagesize(void) {
-	DPRINT();
-	return 4096;
-}
 
 #define O_LARGEFILE 0
 
@@ -163,7 +157,6 @@ inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 }
 
 
-#include <errno.h>
 
 
 inline int symlink(const char *oldpath, const char *newpath) {

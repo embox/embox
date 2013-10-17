@@ -118,9 +118,6 @@ extern
 int vswprintf(wchar_t *wcs, size_t maxlen,
 	const wchar_t *format, va_list args);
 
-extern
-int getpagesize(void);
-
 /* Length of interface name.  */
 #define IF_NAMESIZE	16
 

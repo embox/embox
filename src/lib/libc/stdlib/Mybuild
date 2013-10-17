@@ -6,6 +6,10 @@ static module LibCRand {
 	source "random_r.c"
 }
 
+static module LibCConfig {
+	source "getpagesize.c"
+	depends embox.mem.page_api
+}
 
 static module LibCStdlib {
 	source "bsearch.c"
@@ -19,5 +23,6 @@ static module LibCStdlib {
 	source "strtoull.c"
 	source "atol.c"
 
+	depends LibCConfig
 	@NoRuntime depends LibCRand /* qsort required*/
 }
