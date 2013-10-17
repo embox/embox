@@ -103,3 +103,14 @@ strtoull(const char *nptr, char **endptr, int base)
 	return (acc);
 }
 
+
+#ifdef __weak_alias
+__weak_alias(strtouq, strtoull);
+#else
+uint64_t
+strtouq(const char *nptr, char **endptr, int base)
+{
+
+	return ((uint64_t)strtoull(nptr, endptr, base));
+}
+#endif

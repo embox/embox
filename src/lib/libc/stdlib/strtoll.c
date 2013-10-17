@@ -140,3 +140,14 @@ strtoll(const char *nptr, char **endptr, int base)
 		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
 }
+
+#ifdef __weak_alias
+__weak_alias(strtoq, strtoll);
+#else
+int64_t
+strtoq(const char *nptr, char **endptr, int base)
+{
+
+        return ((int64_t)strtoll(nptr, endptr, base));
+}
+#endif
