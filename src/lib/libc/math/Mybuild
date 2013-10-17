@@ -1,0 +1,30 @@
+package embox.lib
+
+static module LibCMath {
+	source "fabs.c"
+	source "round.c"
+	source "lround.c"
+	source "llround.c"
+	source "floor.c"
+	source "ceil.c"
+	source "trunc.c"
+	source "copysign.c"
+	source "signbit.c"
+	source "isnan.c"
+	source "isinf.c"
+	source "finite.c"
+	source "fmod.c"
+	source "modf.c"
+	source "pow.c"
+	source "log10.c"
+	source "div.c"
+	source "ldiv.c"
+	/*source "lldiv.c"*/
+	source "sqrt.c"
+	depends third_party.lib.Fdlibm
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "soft-fp/sf_libgcc.c", "soft-fp/df_libgcc.c",
+		"soft-fp/tf_libgcc.c", "soft-fp/non_libgcc.c"
+	depends third_party.lib.softfloat
+}

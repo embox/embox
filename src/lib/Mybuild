@@ -22,8 +22,8 @@ static module LibCurses {
 static module LibElf {
 	source "elf/elf.c"
 
-	@NoRuntime depends LibCStdio
-	@NoRuntime depends LibCString
+	@NoRuntime depends embox.lib.LibCStdio
+	@NoRuntime depends embox.lib.LibCString
 }
 
 static module LibExec {
@@ -33,13 +33,6 @@ static module LibExec {
 	@NoRuntime depends LibElf
 }
 
-static module LibCAssert {
-	source "assert.c"
-	source "assert_impl.h"
-
-	@NoRuntime depends Printk
-	@NoRuntime depends Sprintf
-}
 
 static module LibCMisc {
 	source "crypt/crc32.c"
@@ -47,102 +40,7 @@ static module LibCMisc {
 	source "crypt/b64.c"
 }
 
-static module LibCType {
-	source "ctype/ctype.c"
-}
 
-static module LibCRand {
-	source "stdlib/rand.c"
-	source "stdlib/random.c"
-	source "stdlib/random_r.c"
-}
-
-
-static module LibCStdlib {
-	source "stdlib/bsearch.c"
-	source "stdlib/qsort.c"
-	source "stdlib/strtod.c"
-	source "stdlib/strtol.c"
-	source "stdlib/strtoul.c"
-	source "stdlib/abort.c"
-	source "stdlib/system.c"
-	source "stdlib/strtoll.c"
-	source "stdlib/strtoull.c"
-	source "stdlib/atol.c"
-
-	depends LibCRand // qsort
-}
-
-static module LibCInttypes {
-	source "inttypes/imaxmath.c"
-	source "inttypes/strtoimax.c"
-	source "inttypes/strtoumax.c"
-	source "inttypes/wcstrtoimax.c"
-	source "inttypes/wcstrtoumax.c"
-}
-
-static module LibCString {
-	source "string/memchr.c"
-	source "string/memcmp.c"
-	source "string/memcpy.c"
-	source "string/memmove.c"
-	source "string/memset.c"
-	source "string/strcat.c"
-	source "string/strchr.c"
-	source "string/strcmp.c"
-	source "string/strcpy.c"
-	source "string/strcspn.c"
-	source "string/strerror.c"
-	source "string/strlen.c"
-	source "string/strlwr.c"
-	source "string/strncat.c"
-	source "string/strncmp.c"
-	source "string/strncpy.c"
-	source "string/strpbrk.c"
-	source "string/strrchr.c"
-	source "string/strspn.c"
-	source "string/strstr.c"
-	source "string/strupr.c"
-	source "string/strcasecmp.c"
-	source "string/strncasecmp.c"
-	source "string/strtok.c"
-
-	source "string/strdup.c"
-	source "string/strndup.c"
-	source "string/strlcpy.c"
-	source "string/strnlen.c"
-
-	depends embox.mem.heap_api
-}
-
-static module LibCMath {
-	source "math/fabs.c"
-	source "math/round.c"
-	source "math/lround.c"
-	source "math/llround.c"
-	source "math/floor.c"
-	source "math/ceil.c"
-	source "math/trunc.c"
-	source "math/copysign.c"
-	source "math/signbit.c"
-	source "math/isnan.c"
-	source "math/isinf.c"
-	source "math/finite.c"
-	source "math/fmod.c"
-	source "math/modf.c"
-	source "math/pow.c"
-	source "math/log10.c"
-	source "math/div.c"
-	source "math/ldiv.c"
-	/*source "math/lldiv.c"*/
-	source "math/sqrt.c"
-	depends third_party.lib.Fdlibm
-
-	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "soft-fp/sf_libgcc.c", "soft-fp/df_libgcc.c",
-		"soft-fp/tf_libgcc.c", "soft-fp/non_libgcc.c"
-	depends third_party.lib.softfloat
-}
 
 static module LibGcc {
 	source "gcc/clzsi2.c"
@@ -159,71 +57,6 @@ static module LibGcc {
 	source "gcc/mulsi3.c"
 }
 
-static module Print {
-	option number support_floating = 1
-
-	source "stdio/printf_impl.c"
-	source "stdio/printf_impl.h"
-
-	//depends LibCMath // depends from support_floating value
-	@NoRuntime depends LibCStdlib // atoi
-	@NoRuntime depends LibCType
-}
-
-static module Printk {
-	source "stdio/printk.c"
-
-	depends embox.driver.diag
-	@NoRuntime depends Print
-}
-
-static module Sprintf {
-	source "stdio/sprintf.c"
-	source "stdio/snprintf.c"
-
-	@NoRuntime depends Print
-	@NoRuntime depends LibGcc
-}
-
-static module LibCStdio {
-
-	option number file_quantity = 16
-
-	source "stdio/fgetc.c"
-
-	source "stdio/file_ops.c"
-	depends embox.compat.posix.fs.file
-
-	source "stdio/printf.c"
-	source "stdio/fprintf.c"
-	depends Print
-
-	source "stdio/fputc.c"
-	source "stdio/gets.c"
-	source "stdio/perror.c"
-	source "stdio/puts.c"
-	source "stdio/rename.c"
-	source "stdio/scanf.c"
-
-	@NoRuntime depends LibCString
-	@NoRuntime depends Sprintf
-}
-
-static module LibC {
-	source "time/ctime.c"
-	source "time/strftime.c"
-
-	@NoRuntime depends LibCAssert
-	@NoRuntime depends LibCMisc
-	@NoRuntime depends LibCType
-	@NoRuntime depends LibCStdlib
-	@NoRuntime depends LibCString
-	@NoRuntime depends LibCMath
-	@NoRuntime depends LibCStdio
-	@NoRuntime depends LibCRand
-	@NoRuntime depends LibCInttypes
-
-	depends embox.mem.heap_api
-/* not here */
+static module Tokenizer {
 	source "shell/tokenizer.c"
 }

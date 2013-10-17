@@ -1,0 +1,35 @@
+package embox.lib
+
+static module LibCString {
+	source "memchr.c"
+	source "memcmp.c"
+	source "memcpy.c"
+	source "memmove.c"
+	source "memset.c"
+	source "strcat.c"
+	source "strchr.c"
+	source "strcmp.c"
+	source "strcpy.c"
+	source "strcspn.c"
+	source "strerror.c"
+	source "strlen.c"
+	source "strlwr.c"
+	source "strncat.c"
+	source "strncmp.c"
+	source "strncpy.c"
+	source "strpbrk.c"
+	source "strrchr.c"
+	source "strspn.c"
+	source "strstr.c"
+	source "strupr.c"
+	source "strcasecmp.c"
+	source "strncasecmp.c"
+	source "strtok.c"
+
+	source "strdup.c"
+	source "strndup.c"
+	source "strlcpy.c"
+	source "strnlen.c"
+
+	depends embox.mem.heap_api /*for strdup() */
+}

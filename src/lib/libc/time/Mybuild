@@ -1,0 +1,6 @@
+package embox.lib
+
+static module LibCTime {
+	source "ctime.c"
+	source "strftime.c"
+}
