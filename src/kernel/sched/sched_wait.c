@@ -11,6 +11,8 @@
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 #include <util/member.h>
+#include <hal/ipl.h>
+#include <assert.h>
 
 
 
@@ -72,15 +74,28 @@ static int notify_work(struct work *work) {
 void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
 		void *data) {
 	struct wait_data *wait_data = &thread_get_current()->wait_data;
+	ipl_t ipl;
 
 	wait_data->data = data;
 	wait_data->on_notified = on_notified;
 
-	wait_data_prepare(wait_data, &notify_work);
+	assert(wait_data->status == WAIT_DATA_STATUS_NONE);
+
+	ipl = ipl_save();
+	{
+		work_init(&wait_data->work, &notify_work, WORK_DISABLED);
+		wait_data->result = ENOERR;
+		wait_data->status = WAIT_DATA_STATUS_WAITING;
+	}
+	ipl_restore(ipl);
 }
 
 void sched_cleanup_wait(void) {
-	wait_data_cleanup(&thread_get_current()->wait_data);
+	struct wait_data *wait_data = &thread_get_current()->wait_data;
+
+	assert(wait_data->status != WAIT_DATA_STATUS_NONE);
+
+	wait_data->status = WAIT_DATA_STATUS_NONE;
 }
 
 
