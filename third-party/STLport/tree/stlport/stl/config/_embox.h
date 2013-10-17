@@ -45,7 +45,7 @@
 // ToDo: endianness
 static void __x86_verificator__(void) {
 	// This is to make sure this header only compiles on x86
-	asm ("mov %cr2, %eax");
+	asm ("movl $42, %eax");
 }
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
