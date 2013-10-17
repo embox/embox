@@ -140,11 +140,12 @@ extern void clearerr(FILE *stream);
 
 #include <defines/wchar_t.h>
 
-#ifdef __WINT_TYPE__
-typedef __WINT_TYPE__ wint_t;
-#else //__WINT_TYPE__
-#error __WINT_TYPE__ is not defined
-#endif //__WINT_TYPE__
+// moving this section to _embox.h
+//#ifdef __WINT_TYPE__
+//typedef __WINT_TYPE__ wint_t;
+//#else //__WINT_TYPE__
+//#error __WINT_TYPE__ is not defined
+//#endif //__WINT_TYPE__
 
 #ifdef __WCHAR_MIN__
 #define WCHAR_MIN __WCHAR_MIN__
