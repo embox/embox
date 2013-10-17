@@ -9,18 +9,14 @@
 #include <kernel/thread.h>
 
 
-int sched_signal(struct thread *t, int type) {
-	int res = 0;
-
+void sched_signal(struct thread *t) {
 	sched_lock();
 	{
 		if (thread_state_sleeping(t->state)) {
 			sched_thread_notify(t, -EINTR);
 		} else {
-			res = -1;
+			sched_post_switch();
 		}
 	}
 	sched_unlock();
-
-	return res;
 }

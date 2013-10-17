@@ -38,7 +38,8 @@ int sigstd_raise(struct sigstd_data *sigstd_data, int sig) {
 	return 0;
 }
 
-void sigstd_handle(struct sigstd_data *sigstd_data, void (*handlers[])(int)) {
+void sigstd_handle(struct sigstd_data *sigstd_data,
+		struct sigaction *sig_table) {
 	sigset_t pending;
 	int sig;
 	void (*handler)(int sig);
@@ -55,9 +56,10 @@ void sigstd_handle(struct sigstd_data *sigstd_data, void (*handlers[])(int)) {
 		assert(check_range(sig, SIGSTD_MIN, SIGSTD_MAX));
 
 		// TODO locks?
-		handler = handlers[sig + SIGSTD_MIN];
-		if (handler)
-			handler(sig);
+		handler = sig_table[sig + SIGSTD_MIN].sa_handler;
+		assert(handler && "there must be at least a fallback handler");
+
+		handler(sig);
 
 		irq_lock();
 	}

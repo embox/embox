@@ -16,9 +16,9 @@ void thread_signal_handle(void) {
 	struct task   *task   = thread->task;
 
 	struct signal_data *sig_data = &thread->signal_data;
-	struct signal_table *sig_tab = task->signal_table;
+	struct sigaction *sig_table = task->sig_table;
 
-	sigrt_handle(&sig_data->sigrt_data, sig_tab->sigrt_handlers);
-	sigstd_handle(&sig_data->sigstd_data, sig_tab->sigstd_handlers);
+	sigrt_handle(&sig_data->sigrt_data, sig_table);
+	sigstd_handle(&sig_data->sigstd_data, sig_table);
 
 }

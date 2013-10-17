@@ -29,7 +29,6 @@ struct thread;
 struct emmap;
 struct task_u_area;
 struct task_env;
-struct signal_table;
 
 
 /**
@@ -50,7 +49,7 @@ struct task {
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
-	struct signal_table *signal_table;
+	struct sigaction *sig_table;
 
 	struct emmap *mmap;
 

@@ -28,7 +28,7 @@ static inline int sigrt_raise(struct sigrt_data *data, int sig,
 }
 
 static inline void sigrt_handle(struct sigrt_data *data,
-		void (**handlers)(int, union sigval)) {
+		struct sigaction *sig_table) {
 	/* no-op */
 }
 

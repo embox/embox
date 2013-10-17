@@ -54,8 +54,10 @@
 #define SIGSYS      31      /*            Bad system call.  */
 #define SIGUNUSED   31
 
-#define SIGRTMIN    TASK_SIGRTMIN
-#define SIGRTMAX    TASK_SIGRTMAX
+#define SIGRTMIN    32
+#define SIGRTMAX    63
+
+#define _SIG_TOTAL  64
 
 typedef int sigset_t;
 

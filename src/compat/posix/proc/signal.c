@@ -8,6 +8,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <signal.h>
 #include <stddef.h>
 #include <pthread.h>
@@ -28,13 +29,14 @@ static void sighandler_ignore(int sig) {
 
 int sigaction(int sig, const struct sigaction *restrict act,
 		struct sigaction *restrict oact) {
-	struct signal_table *sig_tab = task_self()->signal_table;
+	struct sigaction *sig_table = task_self()->sig_table;
 
 	if (!check_range(sig, SIGSTD_MIN, SIGSTD_MAX))
 		return SET_ERRNO(EINVAL);
 
 	if (oact) {
-		sighandler_t ofunc = sig_tab->sigstd_handlers[sig - SIGSTD_MIN];
+		sighandler_t ofunc = sig_table[sig].sa_handler;
+		memcpy(oact, &sig_table[sig], sizeof(struct sigaction));
 
 		if (ofunc == sighandler_default) {
 			ofunc = SIG_DFL;
@@ -47,6 +49,7 @@ int sigaction(int sig, const struct sigaction *restrict act,
 
 	if (act) {
 		sighandler_t func = act->sa_handler;
+		memcpy(&sig_table[sig], act, sizeof(struct sigaction));
 
 		if (func == SIG_DFL) {
 			func = sighandler_default;
@@ -54,7 +57,7 @@ int sigaction(int sig, const struct sigaction *restrict act,
 			func = sighandler_ignore;
 		}
 
-		sig_tab->sigstd_handlers[sig - SIGSTD_MIN] = func;
+		sig_table[sig].sa_handler = func;
 	}
 
 	return 0;
@@ -90,7 +93,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_post_switch();  /* This shouldn't be here, I think  -- Eldar */
+	sched_signal(task->main_thread);
 
 	return 0;
 }
@@ -107,7 +110,7 @@ int pthread_kill(pthread_t thread, int sig) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_post_switch();
+	sched_signal(thread);
 
 	return 0;
 }

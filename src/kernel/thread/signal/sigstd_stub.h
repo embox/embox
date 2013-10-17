@@ -26,7 +26,7 @@ static inline int sigstd_raise(struct sigstd_data *data, int sig) {
 }
 
 static inline void sigstd_handle(struct sigstd_data *data,
-		void (**handlers)(int)) {
+		struct sigaction *sig_table) {
 	/* no-op */
 }
 

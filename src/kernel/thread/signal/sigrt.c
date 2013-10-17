@@ -21,7 +21,7 @@ struct sigrt_link {
 };
 
 OBJALLOC_DEF(sigrt_link_pool, struct sigrt_link,
-		TASK_RTSIG_CNT * TASK_RTSIG_CNT_PER_TYPE);
+		SIGRT_CNT);
 
 int sigrt_raise(struct sigrt_data *sigrt_data, int sig,
 		union sigval value) {

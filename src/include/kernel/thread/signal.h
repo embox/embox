@@ -26,22 +26,17 @@ struct signal_data {
 	struct sigrt_data  sigrt_data;
 };
 
-struct signal_table {
-	void (*sigstd_handlers[SIGSTD_CNT])(int sig);
-	void (*sigrt_handlers[SIGRT_CNT])(int sig, union sigval value);
-};
-
 
 extern struct sigstd_data *sigstd_data_init(struct sigstd_data *);
 
 extern int sigstd_raise(struct sigstd_data *, int);
-extern void sigstd_handle(struct sigstd_data *, void (**)(int));
+extern void sigstd_handle(struct sigstd_data *, struct sigaction *);
 
 
 extern struct sigrt_data *sigrt_data_init(struct sigrt_data *);
 
 extern int sigrt_raise(struct sigrt_data *, int, union sigval);
-extern void sigrt_handle(struct sigrt_data *, void (**)(int, union sigval));
+extern void sigrt_handle(struct sigrt_data *, struct sigaction *);
 
 
 extern void thread_signal_handle(void);
