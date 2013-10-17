@@ -9,11 +9,6 @@ all : image
 
 FORCE :
 
-# Run external builders prior to anything else.
--include __extbld
-.PHONY : __extbld
-__extbld :
-
 include mk/core/common.mk
 
 include $(MKGEN_DIR)/build.mk
@@ -70,7 +65,6 @@ endif
 # This must be expanded in a secondary expansion context.
 common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
 common_prereqs       = $(common_prereqs_nomk) $(mk_file)
-extbld_prerequisites = $(common_prereqs)
 
 VPATH := $(SRCGEN_DIR)
 
