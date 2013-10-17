@@ -66,6 +66,9 @@ static module LibCStdlib {
 	source "stdlib/strtoul.c"
 	source "stdlib/abort.c"
 	source "stdlib/system.c"
+	source "stdlib/strtoll.c"
+	source "stdlib/strtoull.c"
+	source "stdlib/atol.c"
 
 	depends LibCRand // qsort
 }

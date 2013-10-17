@@ -308,12 +308,7 @@ int getgroups(int size, gid_t list[]) {
 }
 
 #include <stdlib.h>
-static inline
-unsigned long long int strtoull(const char *nptr, char **endptr,
-                                       int base) {
-	DPRINT();
-	return strtoul(nptr, endptr, base);
-}
+
 
 static inline
 void clearerr(FILE *stream) {
