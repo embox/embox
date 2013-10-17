@@ -22,7 +22,7 @@
 struct thread_key_table {
 	struct indexator indexator;
 	char ind_buff[THREAD_KEYS_QUANTITY / CHAR_BIT + 1];
-	void *key_table[THREAD_KEYS_QUANTITY];
+	void *destructor_table[THREAD_KEYS_QUANTITY];
 	struct mutex mutex;
 };
 typedef struct thread_key_table __thread_key_table_t;

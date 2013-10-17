@@ -86,7 +86,7 @@ extern int block_dev_named(char *name, struct indexator *indexator);
 #include <util/array.h>
 
 #define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
-	extern const block_dev_module_t __block_dev_registry[]; \
+	ARRAY_SPREAD_DECLARE(const block_dev_module_t, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
 
 

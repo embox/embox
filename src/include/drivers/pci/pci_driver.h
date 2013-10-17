@@ -22,7 +22,7 @@ struct pci_driver {
 };
 
 #define __PCI_DRIVER(drv_name,init_func,vid,did,driver_struct_nm,mod_ptr) \
-		extern const struct pci_driver *__pci_driver_registry[]; \
+		ARRAY_SPREAD_DECLARE(const struct pci_driver *, __pci_driver_registry); \
 		static int init_func(struct pci_slot_dev *pci_dev);      \
 		static const struct pci_driver driver_struct_nm = {      \
 			.init = init_func,                               \

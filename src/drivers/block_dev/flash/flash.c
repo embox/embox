@@ -76,7 +76,7 @@ struct flash_dev *flash_create(char *path, size_t size) {
 
 	if (0 > (idx = block_dev_named(path, &flash_idx))) {
 		pool_free(&flash_pool, flash);
-		return err_ptr(ENOENT);
+		return err_ptr(-idx);
 	}
 
 	flash->bdev = block_dev_create(path, &flashbdev_pio_driver, flash);

@@ -82,15 +82,15 @@ typedef struct net_driver {
  */
 struct net_header_info {
 	unsigned short type; /* packet type */
-	const void *src_addr; /* source hw address
-							 use device addr if null */
-	const void *dst_addr; /* destination hw address
-							 if null use dst_paddr for resolving
-							 if dst_paddr is null too, use bcast */
-	const void *dst_paddr; /* destination protocol address
-							  used for discovering of the
-							  hw address in case dst_addr is null */
-	unsigned char dst_plen; /* length of dst_paddr */
+	const void *src_hw;  /* source hw address
+							use device addr if null */
+	const void *dst_hw;  /* destination hw address
+							if null use dst_p for resolving
+							if dst_p is null too, use bcast */
+	const void *dst_p;   /* destination protocol address
+							used for discovering of the
+							hw address in case dst_hw is null */
+	unsigned char p_len; /* length of dst_p */
 };
 
 /**

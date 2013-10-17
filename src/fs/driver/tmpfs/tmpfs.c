@@ -51,6 +51,7 @@ INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define TMPFS_DIR  "/tmp"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
+static char tmpfs_dev[] = TMPFS_DEV;
 
 static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
@@ -71,7 +72,7 @@ static int tmpfs_init(void * par) {
 		return -ENOENT;
 	}
 
-	ramdisk = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE());
+	ramdisk = ramdisk_create(tmpfs_dev, FILESYSTEM_SIZE * PAGE_SIZE());
 	if (0 != (res = err(ramdisk))) {
 		return res;
 	}
@@ -91,7 +92,7 @@ static int tmpfs_init(void * par) {
 }
 
 static int tmp_ramdisk_fs_init(void) {
-	return tmpfs_init(TMPFS_DEV);
+	return tmpfs_init(tmpfs_dev);
 }
 
 EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
@@ -414,13 +415,20 @@ static struct fs_driver tmpfs_driver = {
 
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	tmpfs_file_info_t *fi;
+	size_t fi_index;
 
 	fi = pool_alloc(&tmpfs_file_pool);
 	if (!fi) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&tmpfs_file_idx, INDEX_MIN);
+	fi_index = index_alloc(&tmpfs_file_idx, INDEX_MIN);
+	if (fi_index == INDEX_NONE) {
+		pool_free(&tmpfs_file_pool, fi);
+		return NULL;
+	}
+
+	fi->index = fi_index;
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

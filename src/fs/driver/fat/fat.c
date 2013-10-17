@@ -59,7 +59,7 @@ char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 
-static struct fs_driver fatfs_driver;
+static const struct fs_driver fatfs_driver;
 static int fat_write_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 static int fat_read_sector(void *bdev, uint8_t *buffer,
@@ -2192,7 +2192,7 @@ static struct fsop_desc fatfs_fsop = {
 	.umount = fatfs_umount,
 };
 
-static struct fs_driver fatfs_driver = {
+static const struct fs_driver fatfs_driver = {
 	.name = "vfat",
 	.file_op = &fatfs_fop,
 	.fsop = &fatfs_fsop,

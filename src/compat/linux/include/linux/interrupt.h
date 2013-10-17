@@ -46,6 +46,13 @@ static inline void free_irq(unsigned int irq, void *dev_id) {
 	irq_detach(irq, dev_id);
 }
 
+#define enable_irq(nr) irqctrl_enable(nr)
+#define disable_irq(nr) irqctrl_disable(nr)
+
+typedef irq_return_t irqreturn_t;
+/*
+ * soft IRQ
+ */
 enum {
 	HI_SOFTIRQ = 0,
 	TIMER_SOFTIRQ,
@@ -67,6 +74,6 @@ extern void open_softirq(int nr, void(*action)(struct softirq_action *),
 
 #define raise_softirq(nr) softirq_raise(nr)
 
-typedef irq_return_t irqreturn_t;
+
 
 #endif /* LINUX_INTERRUPT_H_ */

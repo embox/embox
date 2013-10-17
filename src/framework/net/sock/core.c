@@ -40,7 +40,7 @@ static int net_sock_mod_member_init(struct mod_member *member) {
 	const struct net_sock *nsock;
 
 	ret = 0;
-	nsock = (struct net_sock *)member->data;
+	nsock = (const struct net_sock *)member->data;
 
 	printk("\tNET: initializing socket %s.%s for %s protocol: ",
 			nsock->mod->package->name, nsock->mod->name,
@@ -65,7 +65,7 @@ static int net_sock_mod_member_fini(struct mod_member *member) {
 	const struct net_sock *nsock;
 
 	ret = 0;
-	nsock = (struct net_sock *)member->data;
+	nsock = (const struct net_sock *)member->data;
 
 	printk("\tNET: finalizing socket %s.%s for %s protocol: ",
 			nsock->mod->package->name, nsock->mod->name,

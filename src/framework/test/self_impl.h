@@ -23,7 +23,7 @@
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
-	extern const struct test_suite __test_registry[];                \
+	ARRAY_SPREAD_DECLARE(const struct test_suite, __test_registry);  \
 	extern const struct mod_ops __test_mod_ops;                      \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \

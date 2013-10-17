@@ -87,8 +87,7 @@ struct tcp_seq_state {
 };
 
 typedef struct tcp_sock {
-	/* inet_sock has to be the first member */
-	struct inet_sock inet;      /* Inet socket (parent) */
+	struct proto_sock p_sk;     /* Base proto_sock class (MUST BE FIRST) */
 	enum tcp_sock_state state;  /* Socket state */
 	struct tcp_seq_state self;  /* Some informations about this socket */
 	struct tcp_seq_state rem;   /* Informations about remote socket */
@@ -103,6 +102,10 @@ typedef struct tcp_sock {
 	struct timeval ack_time;   /* The time when message was ACKed */
 	struct timeval rcv_time;   /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
 } tcp_sock_t;
+
+static inline struct tcp_sock * to_tcp_sock(struct sock *sk) {
+	return (struct tcp_sock *)sk->p_sk;
+}
 
 #if 0
 enum {
@@ -140,34 +143,24 @@ enum {
 	TCP_ST_SYNC      /* Connection is in a synchronized state */
 };
 
-/* Union for conversions between socket types */
-union sock_pointer {
-	struct sock *sk;
-	struct inet_sock *inet_sk;
-	struct tcp_sock *tcp_sk;
-};
-
 static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 	return skb->h.th;
 }
 
-extern const struct sock_ops *const tcp_sock_ops __attribute__((weak));
-extern union sock_pointer tcp_sock_default;
+extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 
 /* Others functionality */
 extern void build_tcp_packet(size_t opt_len, size_t data_len,
-		union sock_pointer sock, struct sk_buff *skb);
-extern void tcp_free_sock(union sock_pointer sock);
-extern void tcp_set_st(union sock_pointer sock,
+		struct tcp_sock *tcp_sk, struct sk_buff *skb);
+extern void tcp_free_sock(struct tcp_sock *tcp_sk);
+extern void tcp_set_st(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state);
-extern void tcp_obj_lock(union sock_pointer sock, unsigned int obj);
-extern void tcp_obj_unlock(union sock_pointer sock, unsigned int obj);
+extern void tcp_obj_lock(struct tcp_sock *sk, unsigned int obj);
+extern void tcp_obj_unlock(struct tcp_sock *sk, unsigned int obj);
 extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
-extern size_t tcp_seq_len(struct sk_buff *skb);
-extern size_t tcp_data_left(struct sk_buff *skb);
-extern void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb);
-extern int tcp_st_status(union sock_pointer sock);
-extern void tcp_get_now(struct timeval *out_now);
-extern int tcp_is_expired(struct timeval *since, useconds_t limit_msec);
+extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
+extern int tcp_st_status(struct tcp_sock *tcp_sk);
+extern void debug_print(__u8 code, const char *msg, ...);
+
 
 #endif /* NET_L4_TCP_H_ */

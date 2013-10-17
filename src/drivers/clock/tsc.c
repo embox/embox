@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <errno.h>
 #include <util/array.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
@@ -17,7 +19,7 @@
 
 static int tsc_init(void);
 
-static unsigned int cpu_hz = 1000000000L;
+static unsigned int cpu_hz;
 
 /* Read Time Stamp Counter Register */
 static inline unsigned long long rdtsc(void) {
@@ -38,7 +40,12 @@ static struct clock_source tsc_clock_source = {
 };
 
 static int tsc_init(void) {
-	/* TODO get CPU hz */
+	unsigned long long t1, t2;
+	/* Getting CPU frequency */
+	t1 = rdtsc();
+	sleep(1);
+	t2 = rdtsc();
+	cpu_hz = t2 - t1;
 	tsc.resolution = cpu_hz;
 	clock_source_register(&tsc_clock_source);
 	return ENOERR;

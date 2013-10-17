@@ -17,9 +17,9 @@
 
 #include <profiler/tracing/trace.h>
 
-ARRAY_SPREAD_DEF_TERMINATED(typeof(struct __trace_point *),
+ARRAY_SPREAD_DEF_TERMINATED(struct __trace_point *,
 		__trace_points_array, NULL);
-ARRAY_SPREAD_DEF_TERMINATED(typeof(struct __trace_block *),
+ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 		__trace_blocks_array, NULL);
 
 void __tracepoint_handle(struct __trace_point *tp) {
@@ -62,7 +62,7 @@ int trace_point_get_value(struct __trace_point *tp) {
 struct __trace_point *trace_point_get_by_name(const char *name) {
 	struct __trace_point *tp;
 
-	array_nullterm_foreach(tp, __trace_points_array)
+	array_spread_nullterm_foreach(tp, __trace_points_array)
 	{
 		if (!strcmp(tp->name, name)) {
 			return tp;

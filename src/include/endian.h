@@ -43,32 +43,32 @@
 #define htobe16 swab16
 #define htobe32 swab32
 #define htobe64 swab64
-#define betoh16 swab16
-#define betoh32 swab32
-#define betoh64 swab64
+#define be16toh swab16
+#define be32toh swab32
+#define be64toh swab64
 
 #define htole16(x) (x)
 #define htole32(x) (x)
 #define htole64(x) (x)
-#define letoh16(x) (x)
-#define letoh32(x) (x)
-#define letoh64(x) (x)
+#define le16toh(x) (x)
+#define le32toh(x) (x)
+#define le64toh(x) (x)
 
 #elif __BYTE_ORDER == __BIG_ENDIAN
 
 #define htole16 swab16
 #define htole32 swab32
 #define htole64 swab64
-#define letoh16 swab16
-#define letoh32 swab32
-#define letoh64 swab64
+#define le16toh swab16
+#define le32toh swab32
+#define le64toh swab64
 
 #define htobe16(x) (x)
 #define htobe32(x) (x)
 #define htobe64(x) (x)
-#define betoh16(x) (x)
-#define betoh32(x) (x)
-#define betoh64(x) (x)
+#define be16toh(x) (x)
+#define be32toh(x) (x)
+#define be64toh(x) (x)
 
 #endif /* BYTE_ORDER */
 

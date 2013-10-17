@@ -74,11 +74,11 @@ int mod_disable(const struct mod *mod) {
 	return mod_disable_rec_safe(mod, false);
 }
 
-static int mod_traverse_all(const struct mod **mods,
+static int mod_traverse_all(const struct mod *volatile const *mods,
 		int (*mod_op)(const struct mod *), unsigned int flags) {
 	const struct mod *mod;
 
-	array_nullterm_foreach(mod, mods) {
+	array_spread_nullterm_foreach(mod, mods) {
 		if (0 != mod_traverse(mod, mod_op, flags))
 			return -EINTR;
 	}
@@ -90,7 +90,7 @@ static int mod_traverse(const struct mod *mod,
 		int (*mod_op)(const struct mod *), unsigned int flags) {
 	int ret;
 	int is_enable = (flags & MOD_FLAG_ENABLED);
-	const struct mod **deps = (is_enable ? mod->requires : mod->provides);
+	const struct mod *volatile const *deps = (is_enable ? mod->requires : mod->provides);
 
 	if (mod_flag_cmp(mod, flags) & MOD_FLAG_ENABLED)
 		return 0;
@@ -186,7 +186,7 @@ static int mod_do_enable(const struct mod *mod) {
 
 	mod_init_app(mod);
 
-	array_nullterm_foreach(member, mod->members) {
+	array_spread_nullterm_foreach(member, mod->members) {
 		if (0 != invoke_member_init(member)) {
 			goto opfailed;
 		}
@@ -217,7 +217,7 @@ static int mod_do_disable(const struct mod *mod) {
 		goto opfailed;
 	}
 
-	array_nullterm_foreach(member, mod->members) {
+	array_spread_nullterm_foreach(member, mod->members) {
 		if (0 != invoke_member_fini(member)) {
 			goto opfailed;
 		}
@@ -250,7 +250,7 @@ int mod_activate_app(const struct mod *mod) {
 	if (app) {
 		const struct mod *dep;
 
-		array_nullterm_foreach(dep, mod->requires) {
+		array_spread_nullterm_foreach(dep, mod->requires) {
 			int ret = mod_activate_app(dep);
 			if (ret)
 				return ret;

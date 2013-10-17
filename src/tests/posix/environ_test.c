@@ -12,23 +12,23 @@
 
 EMBOX_TEST_SUITE("stdlib/environ api");
 
+TEST_SETUP(case_setup);
+TEST_TEARDOWN(case_teardown);
+
 #define ENV_NAME "foo"
+#define BAD_NAME "qux"
 #define ENV_VAL1  "bar"
 #define ENV_VAL2  "baz"
 #define ENV_STR1  (ENV_NAME "=" ENV_VAL1)
 #define ENV_STR2  (ENV_NAME "=" ENV_VAL2)
 
-TEST_CASE("environ must be null after initializing") {
-	test_assert_null(environ);
-}
-
 TEST_CASE("getenv() should return null for empty"
 		" enviroment") {
-	test_assert_null(getenv(ENV_NAME));
+	test_assert_null(getenv(BAD_NAME));
 }
 
 TEST_CASE("putenv() may put new element of environment") {
-	test_assert_zero(putenv(ENV_STR1));
+	test_assert_zero(putenv(ENV_STR2));
 }
 
 TEST_CASE("environ is null-terminated array with added values") {
@@ -54,8 +54,8 @@ TEST_CASE("setenv() overwrite exist value if flag"
 }
 
 TEST_CASE("putenv() overwrite exist value") {
-	test_assert_zero(putenv(ENV_STR1));
-	test_assert_str_equal(getenv(ENV_NAME), ENV_VAL1);
+	test_assert_zero(putenv(ENV_STR2));
+	test_assert_str_equal(getenv(ENV_NAME), ENV_VAL2);
 }
 
 TEST_CASE("unsetenv() may remove exist value") {
@@ -64,7 +64,16 @@ TEST_CASE("unsetenv() may remove exist value") {
 	test_assert_null(getenv(ENV_NAME));
 }
 
-TEST_CASE("environ must be null when environment hasn't"
-		" variables") {
+TEST_CASE("clearenv() removes all variables and environ must"
+		" be null when environment hasn't variables") {
+	test_assert_zero(clearenv());
 	test_assert_null(environ);
+}
+
+static int case_setup(void) {
+	return putenv(ENV_STR1);
+}
+
+static int case_teardown(void) {
+	return clearenv();
 }

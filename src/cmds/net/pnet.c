@@ -27,7 +27,7 @@
 
 EMBOX_CMD(exec);
 
-extern struct pnet_module __pnet_mod_repo[];
+ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo);
 
 #define MAX_WORD_LENGTH 100
 #define MAX_TOKEN_COUNT 10
@@ -455,12 +455,12 @@ static int exec(int argc, char **argv) {
 			}
 
 			printf("\nNodes:\n");
-			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
+			array_spread_foreach_ptr(mod, __pnet_mod_repo) {
 				if (mod->node)
 					printf("	%s\n", mod->node->proto->name);
 			}
 			printf("\nProtocols:\n");
-			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
+			array_spread_foreach_ptr(mod, __pnet_mod_repo) {
 				if (!mod->node)
 					printf("	%s\n", mod->proto->name);
 			}

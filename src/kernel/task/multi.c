@@ -123,7 +123,10 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 				sched_priority_thread(task_self()->priority,
 						thread_priority_get(thread_self())));
 
-		thread_local_alloc(thd, THREAD_KEYS_QUANTITY);
+		if (-ENOMEM == (res = thread_local_alloc(thd, THREAD_KEYS_QUANTITY))) {
+			goto out_tablefree;
+		}
+
 		thread_detach(thd);
 		thread_launch(thd);
 
@@ -237,6 +240,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 			}
 		}
 
+		thread_local_free(task->main_thread);
 		/* At the end terminate main thread */
 		thread_terminate(task->main_thread);
 	}

@@ -22,14 +22,22 @@ EMBOX_UNIT_INIT(loopback_init);
 
 static int loopback_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct net_device_stats *lb_stats;
+	struct sk_buff *copied;
 
 	if ((skb == NULL) || (dev == NULL)) {
 		return -EINVAL;
 	}
 
+	/* make skb with new skb_data */
+	copied = skb_copy(skb);
+	if (copied == NULL) {
+		return -ENOMEM;
+	}
+	skb_free(skb);
+
 	lb_stats = &dev->stats;
 
-	if (netif_rx(skb) == NET_RX_SUCCESS) {
+	if (netif_rx(copied) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->rx_packets++;
 		lb_stats->tx_bytes += skb->len;

@@ -38,27 +38,29 @@
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
 
+#include <linux/types.h>
 typedef __u16 u_int16_t;
 typedef __u32 u_int32_t;
 typedef __u64 u_int64_t;
-typedef unsigned int uint;
+//typedef unsigned int uint;
 
 static inline unsigned long long int strtoull(const char *nptr, char **endptr,
                                        int base) {
 	printf(">>> strtoull\n");
 	return strtoul(nptr, endptr, base);
 }
-
+#if 0
 static inline int strcasecmp(const char *s1, const char *s2) {
 	printf(">>> strcasecmp, s1 - %s, s2 - %s\n", s1, s2);
 	return strcmp(s1, s2);
 }
 
+
 static inline int strncasecmp(const char *s1, const char *s2, size_t n) {
 	printf(">>> strncasecmp, s1 - %s, s2 - %s, n - %d\n", s1, s2, n);
 	return strncmp(s1, s2, n);
 }
-
+#endif
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid. gid - %d\n", gid);
 	return NULL;

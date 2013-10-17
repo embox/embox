@@ -45,7 +45,27 @@ char *strerror(int errnum) {
 	case ETIMEDOUT:    return "Connection timed out";
 	case EACCES:       return "Access denied";
 	case EEXIST:       return "File exist";
+	case EINPROGRESS:  return "Operation now in progress";
+	case EALREADY:     return "Operation already in progress";
+	case ENOTSOCK:     return "Socket operation on non-socket";
+	case EDESTADDRREQ: return "Destination address required";
+	case EMSGSIZE:     return "Message too long";
+	case EPROTOTYPE:   return "Protocol wrong type for socket";
+	case ENOPROTOOPT:  return "Protocol not available";
+	case EPROTONOSUPPORT: return "Protocol not supported";
+	case ESOCKTNOSUPPORT: return "Socket type not supported";
+	case EOPNOTSUPP:   return "Operation not supported";
+	case EPFNOSUPPORT: return "Protocol family not supported";
+	case EAFNOSUPPORT: return "Address family not supported by protocol family";
+	case EADDRINUSE:   return "Address already in use";
+	case EADDRNOTAVAIL: return "Can't assign requested address";
+	case ENETDOWN:     return "Network is down";
+	case ENETUNREACH:  return "Network is unreachable";
+	case ENETRESET:    return "Network dropped connection on reset";
+	case ECONNABORTED: return "Software caused connection abort";
 	case ECONNRESET:   return "Connection reset by peer";
+	case ENOBUFS:      return "No buffer space available";
+	case EISCONN:      return "Socket is already connected";
 	case ENOTCONN:     return "Socket is not connected";
 	default:           return "Unknown error code. PLEASE REPORT ISSUE 519!";
 	}

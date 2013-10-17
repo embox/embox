@@ -9,10 +9,7 @@
 #ifndef NET_L4_UDP_H_
 #define NET_L4_UDP_H_
 
-#include <net/socket/inet_sock.h>
 #include <linux/types.h>
-
-struct sock;
 
 typedef struct udphdr {
 	__be16 source;
@@ -27,15 +24,6 @@ static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
 	return (udphdr_t *) skb->h.raw;
 }
 
-typedef struct udp_sock {
-	/* inet_sock has to be the first member */
-	struct inet_sock inet;
-} udp_sock_t;
-
-static inline struct udp_sock * udp_sk(struct sock *sk) {
-	return (struct udp_sock *)sk;
-}
-
-extern const struct sock_ops *const udp_sock_ops __attribute__((weak));
+extern const struct sock_proto_ops *const udp_sock_ops __attribute__((weak));
 
 #endif /* NET_L4_UDP_H_ */

@@ -14,8 +14,9 @@ module skbuff {
 	source "skb.c"
 	option number amount_skb=4000
 	option number amount_skb_data=4000
-	option number skb_extra_hdr_size=0
-	option number skb_data_size=1514
+	option number extra_hdr_size=0
+	option number data_size=1514
+	option number data_align=0
 	depends embox.arch.interrupt
 
 	source "skb_queue.c"
@@ -50,7 +51,8 @@ module neighbour {
 	option number neighbour_amount=10
 	option number neighbour_expire=60000
 	option number neighbour_tmr_freq=1000
-	option number neighbour_resend=3000
+	option number neighbour_resend=1000
+	option number neighbour_attempt=3
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool

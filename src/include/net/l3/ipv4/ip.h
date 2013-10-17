@@ -31,8 +31,6 @@ struct sock;
 
 #define IP_ADDR_LEN      4
 #define IPv6_ADDR_LEN    16
-#define ICMP_PROTO_TYPE  (unsigned short)0x01
-#define UDP_PROTO_TYPE   (unsigned short)0x11
 
 /* IP flags. */
 #define IP_CE           0x8000	/* Flag: "Congestion"       */
@@ -111,19 +109,13 @@ static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __b
  *	RAW: socket, IP header is ready, but LL header unknown
  *	TCP: socket, TCP header is built, IP header is placed, LL header unknown
  */
-extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
+extern int ip_send_packet(struct inet_sock *sk,
+		struct sk_buff *pack, const struct sockaddr_in *to);
 
 /**
  * Perform forwarding of obtained packet
  */
 extern int ip_forward_packet(struct sk_buff *skb);
-
-extern int ip_queue_send(struct sk_buff *skb);
-extern int ip_queue_xmit(struct sk_buff *skb);
-
-extern int rebuild_ip_header(struct sk_buff *pack, unsigned char ttl,
-			unsigned char proto, unsigned short id, unsigned short len,
-			in_addr_t saddr, in_addr_t daddr/*, ip_options_t *opt*/);
 
 /**
  * notify an ip socket about icmp error

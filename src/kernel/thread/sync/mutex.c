@@ -28,11 +28,14 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current);
 static int priority_inherit(struct thread *t, struct mutex *m);
 static void priority_uninherit(struct thread *t);
 
-static inline int mutex_static_inited(struct mutex *m) {
-	if(!(m->wq.list.next && m->wq.list.prev)) {
-		return 1;
-	}
-	return 0;
+static inline int mutex_is_static_inited(struct mutex *m) {
+	/* Static initializer can't really init list now, so if this condition's
+	 * true initialization is not finished */
+	return !(m->wq.list.next && m->wq.list.prev);
+}
+
+static inline void mutex_complete_static_init(struct mutex *m) {
+	wait_queue_init(&m->wq);
 }
 
 void mutex_init_default(struct mutex *m, const struct mutexattr *attr) {
@@ -96,8 +99,8 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	assert(m && current);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-	if(mutex_static_inited(m)) {
-		mutex_init(m);
+	if(mutex_is_static_inited(m)) {
+		mutex_complete_static_init(m);
 	}
 
 	if (m->holder == current) {

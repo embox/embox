@@ -12,13 +12,13 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <kernel/printk.h>
-#include <debug/backtrace.h>
+#include <debug/whereami.h>
 
 #define panic(...) \
 	do { \
 		ipl_disable(); \
 		printk(__VA_ARGS__); \
-		backtrace(); \
+		whereami(); \
 		arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT); \
 	} while (0)
 

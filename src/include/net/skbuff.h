@@ -110,6 +110,9 @@ extern struct sk_buff_data * skb_data_alloc(void);
 extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 
+extern unsigned char * skb_data_get_extra_hdr(struct sk_buff_data *skb_data);
+extern unsigned char * skb_data_get_data(struct sk_buff_data *skb_data);
+
 extern unsigned int skb_max_extra_hdr_size(void);
 extern unsigned int skb_max_size(void);
 extern unsigned int skb_avail(struct sk_buff *skb);

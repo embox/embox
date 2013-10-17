@@ -28,7 +28,7 @@ static int net_pack_mod_enable(struct mod_info *info) {
 	const struct net_pack *npack;
 
 	ret = 0;
-	npack = (struct net_pack *)info->data;
+	npack = (const struct net_pack *)info->data;
 
 	printk("\tNET: initializing packet %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -52,7 +52,7 @@ static int net_pack_mod_disable(struct mod_info *info) {
 	const struct net_pack *npack;
 
 	ret = 0;
-	npack = (struct net_pack *)info->data;
+	npack = (const struct net_pack *)info->data;
 
 	printk("\tNET: finalizing packet %s.%s: ",
 			info->mod->package->name, info->mod->name);

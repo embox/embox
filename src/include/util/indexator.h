@@ -42,11 +42,24 @@ struct indexator {
 	size_t clamp_max;    /* Maximum possible index */
 };
 
+typedef unsigned long index_data_t;
+
+#define INDEX_DATA_BIT LONG_BIT
+
+/**
+ * Indexator data length
+ *
+ * @param capacity - count of indexes
+ * @return Number of index_data_t enough to maintain requred number of indeces.
+ */
+#define INDEX_DATA_LEN(capacity) \
+	((capacity + INDEX_DATA_BIT - 1) / INDEX_DATA_BIT)
+
 /**
  * Indexator data defination
  */
 #define INDEX_DATA_DEF(name, capacity) \
-	static unsigned long name[(capacity + LONG_BIT - 1) / LONG_BIT]
+	static index_data_t name[INDEX_DATA_LEN(capacity)]
 
 /**
  * Indexator initialization

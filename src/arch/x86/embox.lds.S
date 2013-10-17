@@ -1,17 +1,23 @@
 
 #include <asm-generic/embox.lds.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/mem/page_api.h>
+
+#define ARCH_TEXT_ALIGNMENT PAGE_SIZE()
+#define ARCH_DATA_ALIGNMENT PAGE_SIZE()
+
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
 OUTPUT_ARCH(i386)
 ENTRY(_start)
 
 MEMORY {
-	MEMORY_REGION(sdram)
-	MEMORY_REGION(flash)
+	MEMORY_REGION(RAM)
+	MEMORY_REGION(ROM)
 }
 
-_mem_begin = LDS_REGION_BASE_sdram;
-_mem_length = LDS_REGION_SIZE_sdram;
+_ram_base = ORIGIN(RAM);
+_ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.text : {

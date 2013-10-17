@@ -259,7 +259,7 @@ static int idedisk_udma_init (void *args) {
 				*path = 0;
 				strcat(path, "/dev/hd*");
 				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return -1;
+					return drive->idx;
 				}
 				drive->bdev = block_dev_create(path,
 						&idedisk_udma_driver, drive);

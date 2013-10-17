@@ -15,7 +15,7 @@
 
 EMBOX_TEST_SUITE("sleep suite");
 
-#define EPSILON_BORDER 10
+#define EPSILON_BORDER 15
 #define TIME_TO_SLEEP  20
 #define NUM_THREADS     8
 

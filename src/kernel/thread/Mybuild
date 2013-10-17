@@ -26,6 +26,8 @@ module core extends thread_mode {
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
 	@NoRuntime depends thread_local
+	@NoRuntime depends thread_cancel
+	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal
 }
 
@@ -44,7 +46,7 @@ module fixed_stack extends stack_api {
 	source "fixed_stack.c"
 	source "fixed_stack.h"
 }
-@DefaultImpl(thread_local_none)
+@DefaultImpl(thread_local_heap)
 abstract module thread_local {
 
 }
@@ -55,6 +57,23 @@ module thread_local_none extends thread_local {
 
 module thread_local_heap extends thread_local {
 	source "thread_local_heap.c"
+	source "thread_local_heap.h"
+
+	depends embox.mem.heap_api
+
+	depends embox.kernel.task.task_thread_key
+}
+@DefaultImpl(thread_cancel_disable)
+abstract module thread_cancel {}
+
+module thread_cancel_enable extends thread_cancel {
+	source "thread_cancel_enable.h"
+	source "thread_cancel_enable.c"
+	option number cleanups_quantity=100
+}
+
+module thread_cancel_disable extends thread_cancel {
+	source "thread_cancel_disable.h"
 }
 
 /* FIXME: Deprecated */

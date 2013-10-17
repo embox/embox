@@ -49,6 +49,15 @@ void condattr_setpshared(struct condattr *attr, int pshared) {
 	attr->pshared = pshared;
 }
 
+void condattr_getclock(const struct condattr *restrict attr,
+		clockid_t *restrict clock_id) {
+	*clock_id = attr->clock_id;
+}
+
+void condattr_setclock(struct condattr *attr, clockid_t clock_id) {
+	attr->clock_id = clock_id;
+}
+
 int cond_wait(cond_t *c, struct mutex *m) {
 	return cond_timedwait(c, m, NULL);
 }

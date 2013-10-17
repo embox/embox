@@ -58,18 +58,19 @@ diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
  static inline char* _Stl_ecvtR(double x, int n, int* pt, int* sign, char* buf)
  { return ecvt_r(x, n, pt, sign, buf); }
 diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
+diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
 --- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/config/_system.h	2013-03-21 18:30:19.197504928 +0400
-@@ -158,6 +158,9 @@
++++ STLport/stlport/stl/config/_system.h	2013-10-16 14:18:35.932473155 +0400
+@@ -52,6 +52,9 @@
+ #  elif defined (__FCC_VERSION) /* Fujitsu Compiler, v4.0 assumed */
+ #    include <stl/config/_fujitsu.h>
  #  endif
- 
- #  include <stl/config/_windows.h>
 +#elif defined(__EMBOX__)
 +#include <stl/config/_gcc.h>
 +#include <stl/config/_embox.h>
- #else
- #  error Unknown platform !!
- #endif
+ #elif defined (__hpux)
+ #  include <stl/config/_hpux.h>
+ #  if defined (__GNUC__)
 diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
 --- STLport-5.2.1/src/_stdio_file.h	2008-12-10 12:56:51.000000000 +0300
 +++ STLport/src/_stdio_file.h	2013-03-22 19:46:52.287736680 +0400
@@ -84,3 +85,42 @@ diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
  #else  /* The most common access to file descriptor. */
  
  inline int _FILE_fd(const FILE *__f) { return __f->_file; }
+diff -aur STLport-5.2.1/src/num_get_float.cpp STLport/src/num_get_float.cpp
+--- STLport-5.2.1/src/num_get_float.cpp	2008-12-10 12:56:51.000000000 +0300
++++ STLport/src/num_get_float.cpp	2013-10-08 12:21:25.563118871 +0400
+@@ -28,7 +28,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ #  if defined (__BORLANDC__)
+ typedef unsigned int uint32_t;
+@@ -476,7 +476,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ template <class D, class IEEE, int M, int BIAS>
+ D _Stl_atodT(char *buffer, ptrdiff_t ndigit, int dexp)
+@@ -742,7 +742,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ template <class D, class IEEE, int M, int BIAS>
+ D _Stl_string_to_doubleT(const char *s)
+@@ -865,7 +865,7 @@
+ void _STLP_CALL
+ __string_to_float(const __iostring& v, long double& val) {
+ #if !defined (__linux__) && !defined (__MINGW32__) && !defined (__CYGWIN__) && \
+-    !defined (__BORLANDC__) && !defined (__DMC__) && !defined (__HP_aCC)
++    !defined (__BORLANDC__) && !defined (__DMC__) && !defined (__HP_aCC) && !defined (__EMBOX__)
+   //The following function is valid only if long double is an alias for double.
+   _STLP_STATIC_ASSERT( sizeof(long double) <= sizeof(double) )
+   val = _Stl_string_to_double(v.c_str());

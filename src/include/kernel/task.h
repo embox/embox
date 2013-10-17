@@ -82,14 +82,14 @@ struct task_resource_desc {
 
 typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
 
-extern const struct task_resource_desc *task_resource_desc_array[];
-
-extern const task_notifing_resource_hnd task_notifing_resource[];
-
 #define TASK_RESOURCE_DESC(res) \
+	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *, \
+			task_resource_desc_array); \
 	ARRAY_SPREAD_ADD(task_resource_desc_array, res)
 
 #define TASK_RESOURCE_NOTIFY(fn) \
+	ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd, \
+			task_notifing_resource); \
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
 
 /**
@@ -106,7 +106,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 /** insert a created task into the task */
-extern int task_add_thread(struct task *, struct thread *);
+extern int thread_register(struct task *, struct thread *);
 
 extern int task_remove_thread(struct task *, struct thread *);
 

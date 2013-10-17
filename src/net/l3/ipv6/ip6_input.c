@@ -37,7 +37,7 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 	/* Setup transport layer header */
 	skb->h.raw = skb->nh.raw + IP6_HEADER_SIZE;
 
-	nproto = net_proto_lookup(ip6h->nexthdr);
+	nproto = net_proto_lookup(ETH_P_IPV6, ip6h->nexthdr);
 	if (nproto != NULL) {
 		return nproto->handle(skb);
 	}

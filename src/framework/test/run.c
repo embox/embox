@@ -72,7 +72,7 @@ int test_suite_run(const struct test_suite *test) {
 		return -EINTR;
 	}
 
-	array_nullterm_foreach(test_case, test->test_cases) {
+	array_spread_nullterm_foreach(test_case, test->test_cases) {
 		if ((ret = test_case_run(test_case, &test->case_fixture_ops)) != 0) {
 			++failures;
 		}

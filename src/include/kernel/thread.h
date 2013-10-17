@@ -63,6 +63,8 @@ typedef __thread_id_t thread_id_t;
  */
 #define thread_self() thread_get_current()
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
 
 /**
  * Creates a new thread.
@@ -245,5 +247,7 @@ extern sched_priority_t thread_get_priority(struct thread *thread);
  *   Running time in clocks.
  */
 extern clock_t thread_get_running_time(struct thread *thread);
+
+__END_DECLS
 
 #endif /* KERNEL_THREAD_API_H_ */

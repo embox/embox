@@ -14,7 +14,6 @@ module single extends api {
 	depends embox.kernel.thread.current.api
 	depends embox.kernel.sched.strategy.api
 	depends task_thread_api
-	depends task_key_table
 }
 
 module multi extends api {
@@ -41,10 +40,12 @@ abstract module task_thread_api {
 }
 
 module NoThread extends task_thread_api {
+	depends task_no_thread_key
 }
 
 module MultiThread extends task_thread_api {
 	source "multi_thread.c"
+	@NoRuntime depends task_key_table
 }
 
 module kernel_task {
@@ -117,7 +118,7 @@ module waitpid {
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
 }
-@DefaultImpl(task_no_thread_key)
+@DefaultImpl(task_thread_key)
 abstract module task_key_table {
 
 }
@@ -127,8 +128,10 @@ module task_no_thread_key extends task_key_table {
 }
 
 module task_thread_key extends task_key_table {
-	option number keys_quantity = 0x400
+	option number keys_quantity = 0x40
 
 	source "task_thread_key.h"
 	source "task_thread_key.c"
+
+	@NoRuntime depends embox.util.indexator
 }

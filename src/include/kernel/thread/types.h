@@ -17,6 +17,9 @@
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/wait_data.h>
+#include <kernel/thread/thread_local.h>
+#include <kernel/thread/thread_res_state.h>
+#include <kernel/thread/thread_cancel.h>
 
 #include <util/dlist.h>
 
@@ -26,7 +29,7 @@ typedef int __thread_id_t;
 struct task;
 
 struct thread {
-	thread_state_t   state;          /**< Current state. */
+	thread_state_t     state;          /**< Current state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
@@ -44,12 +47,18 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct thread     *joined;       /**< Thread which joined to this. */
+	struct thread_res_state resinfo;   /**< Resources state info*/
 
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
 	struct signal_data signal_data;  /**< Pending signal(s). */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
+
+	int                policy;       /**< Scheduling policy*/
+
+	thread_local_t     local;
+
+	thread_cancel_t    cleanups;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

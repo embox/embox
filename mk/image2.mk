@@ -42,7 +42,11 @@ include $(__include)
 .DELETE_ON_ERROR:
 
 image: $(IMAGE)
-image: $(IMAGE_DIS) $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+
+ifeq ($(value DISASSEMBLY),y)
+image : $(IMAGE_DIS)
+endif
 
 CROSS_COMPILE ?=
 
@@ -78,19 +82,19 @@ o_prerequisites     = $(common_prereqs)
 cc_prerequisites    = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S | $$(@D)/.
-	$(CC) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
-	$(CPP) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
@@ -187,6 +191,7 @@ symbols_a_files = \
 $(symbols_a_files) : %.a : %.o
 	$(AR) $(ARFLAGS) $@ $<
 
+$(symbols_a_files:%.a=%.o) : flags_before :=
 $(symbols_a_files:%.a=%.o) : flags :=
 
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
@@ -210,6 +215,7 @@ $(call __define_image_rules,$(embox_o))
 
 image_lds = $(OBJ_DIR)/mk/image.lds
 $(image_lds) : $(common_prereqs_nomk)
+$(image_lds) : flags_before :=
 $(image_lds) : flags = \
 		$(addprefix -include ,$(wildcard \
 			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \

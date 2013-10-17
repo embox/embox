@@ -19,6 +19,7 @@
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
 #include <net/if_arp.h>
+#include <string.h>
 
 
 
@@ -33,14 +34,16 @@ static int print_arp_entity(const struct neighbour *n,
 	struct in_addr addr;
 	unsigned char mac[18];
 
-	if ((in_dev->dev == n->dev) || (in_dev == NULL)) {
+	assert(n != NULL);
+
+	if ((in_dev == NULL) || (in_dev->dev == n->dev)) {
 		if (!n->incomplete) {
 			macaddr_print(mac, &n->haddr[0]);
 		}
 		else {
 			sprintf((char *)mac, "%s", "(incomplete)");
 		}
-		addr.s_addr = *(in_addr_t *)&n->paddr[0];
+		memcpy(&addr, n->paddr, n->plen);
 		printf("%-15s %-6s  %-17s %-5s %-5s\n", inet_ntoa(addr),
 			(n->dev->type == ARPG_HRD_ETHERNET) ? "ether" : "",
 			mac, (!(n->flags & NEIGHBOUR_FLAG_PERMANENT) ? "C" : "P"),

@@ -14,11 +14,11 @@
 /**
  * Prototypes
  */
-struct family_ops;
+struct sock_family_ops;
 
 struct net_family_type {
 	int type;
-	const struct family_ops *ops;
+	const struct sock_family_ops *ops;
 };
 
 /**

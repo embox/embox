@@ -5,6 +5,8 @@
  *      Author: fsulima
  */
 
+#include <wchar.h>
+
 #ifndef CWCTYPE_
 #define CWCTYPE_
 

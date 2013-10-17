@@ -27,7 +27,7 @@ static int net_family_mod_enable(struct mod_info *info) {
 	const struct net_family *nfamily;
 
 	ret = 0;
-	nfamily = (struct net_family *)info->data;
+	nfamily = (const struct net_family *)info->data;
 
 	printk("\tNET: initializing family %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -51,7 +51,7 @@ static int net_family_mod_disable(struct mod_info *info) {
 	const struct net_family *nfamily;
 
 	ret = 0;
-	nfamily = (struct net_family *)info->data;
+	nfamily = (const struct net_family *)info->data;
 
 	printk("\tNET: finalizing family %s.%s: ",
 			info->mod->package->name, info->mod->name);

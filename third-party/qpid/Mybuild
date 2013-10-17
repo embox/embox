@@ -1,0 +1,35 @@
+package third_party.qpid
+
+static module core {
+	depends embox.lib.LibC
+	depends embox.arch.x86.LibM // FIXME:
+
+	depends third_party.boost.core
+	depends third_party.e2fsprogs.libs
+
+	source "empty.c" // FIXME: workaround
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source
+		"../../../../qpid/lib/libqmf.a",
+		"../../../../qpid/lib/libqmf2.a",
+		"../../../../qpid/lib/libqmfconsole.a",
+		"../../../../qpid/lib/libqmfengine.a",
+		"../../../../qpid/lib/libqpidclient.a",
+		"../../../../qpid/lib/libqpidcommon.a",
+		"../../../../qpid/lib/libqpidmessaging.a",
+		"../../../../qpid/lib/libqpidtypes.a"
+
+	source "order.mk"
+}
+
+module hello {
+	depends core
+
+	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")
+	@IncludePath("$(ROOT_DIR)/third-party/STLport/include")
+	@IncludePath("$(ROOT_DIR)/build/qpid/include")
+	source "../../../../qpid/src/qpid/examples/messaging/hello_world.cpp"
+
+	source "order.mk"
+}

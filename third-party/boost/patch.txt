@@ -1,0 +1,45 @@
+diff -aur boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp boost/boost/asio/detail/impl/socket_ops.ipp
+--- boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp	2013-05-20 16:32:20.000000000 +0400
++++ boost/boost/asio/detail/impl/socket_ops.ipp	2013-10-07 17:11:51.575062004 +0400
+@@ -1722,7 +1722,8 @@
+ 
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set fds;
+   FD_ZERO(&fds);
+   FD_SET(s, &fds);
+@@ -1763,7 +1764,8 @@
+ 
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set fds;
+   FD_ZERO(&fds);
+   FD_SET(s, &fds);
+@@ -1804,7 +1806,8 @@
+ 
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set write_fds;
+   FD_ZERO(&write_fds);
+   FD_SET(s, &write_fds);
+diff -aur boost_1_54_0/boost/asio/detail/socket_types.hpp boost/boost/asio/detail/socket_types.hpp
+--- boost_1_54_0/boost/asio/detail/socket_types.hpp	2013-05-20 16:32:20.000000000 +0400
++++ boost/boost/asio/detail/socket_types.hpp	2013-10-07 16:28:42.201491602 +0400
+@@ -46,7 +46,7 @@
+ # include <boost/asio/detail/old_win_sdk_compat.hpp>
+ #else
+ # include <sys/ioctl.h>
+-# if !defined(__SYMBIAN32__)
++# if !defined(__SYMBIAN32__) && !defined(__EMBOX__)
+ #  include <sys/poll.h>
+ # endif
+ # include <sys/types.h>

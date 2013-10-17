@@ -17,7 +17,7 @@
 #include "types.h"
 
 #define __EMBOX_CMD(_exec) \
-	extern const struct cmd __cmd_registry[]; \
+	ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry); \
 	static int _exec(int argc, char **argv);  \
 	ARRAY_SPREAD_ADD(__cmd_registry, { \
 			.exec = _exec,             \

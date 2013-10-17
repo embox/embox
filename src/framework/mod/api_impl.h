@@ -13,15 +13,15 @@
 
 #include "types.h"
 
-extern const struct mod *__mod_registry[];
+ARRAY_SPREAD_DECLARE(const struct mod *, __mod_registry);
 
 #define __mod_foreach(mod) \
-	array_nullterm_foreach(mod, __mod_registry)
+	array_spread_nullterm_foreach(mod, __mod_registry)
 
 #define __mod_foreach_requires(dep, mod) \
-	array_nullterm_foreach(dep, (mod)->requires)
+	array_spread_nullterm_foreach(dep, (mod)->requires)
 
 #define __mod_foreach_provides(dep, mod) \
-	array_nullterm_foreach(dep, (mod)->provides)
+	array_spread_nullterm_foreach(dep, (mod)->provides)
 
 #endif /* FRAMEWORK_MOD_API_IMPL_H_ */

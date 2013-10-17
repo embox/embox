@@ -9,6 +9,8 @@
 #ifndef DRIVERS_ETHERNET_TI816X_H_
 #define DRIVERS_ETHERNET_TI816X_H_
 
+#include <endian.h>
+
 /**
  * EMAC0/MDIO Base Address
  */
@@ -167,25 +169,25 @@
 #define MDIO_R_USERPHYSEL1      0x8C /* MDIO User PHY Select Register 1 */
 
 /**
- * EMAC Network Header
- */
-struct emac_hdr {
-	uint8_t preamble[7]; /* 0x55 */
-#define EMAC_HDR_PRE 0x55
-	uint8_t sfd;         /* 0x5d */
-#define EMAC_HDR_SFD 0x5d
-};
-
-/**
  * EMAC Buffer Descriptor
  */
 struct emac_desc {
 	uint32_t next;
 	uint32_t data;
+#if __BYTE_ORDER == __BIG_ENDIAN
 	uint16_t data_off;
 	uint16_t data_len;
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+	uint16_t data_len;
+	uint16_t data_off;
+#endif
+#if __BYTE_ORDER == __BIG_ENDIAN
 	uint16_t flags;
 	uint16_t len;
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+	uint16_t len;
+	uint16_t flags;
+#endif
 };
 
 /**
@@ -207,5 +209,16 @@ struct emac_desc {
 #define EMAC_DESC_F_ALIGNERROR 0x0004U /* Alignment Error (ALIGNERROR) Flag */
 #define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
 #define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
+
+/**
+ * Control Module Base Address
+ */
+#define CM_BASE 0x48140000
+
+/**
+ * Control Module Registers
+ */
+#define CM_R_MACID0_LO 0x630 /* Ethernet MAC ID0 Low Register */
+#define CM_R_MACID0_HI 0x634 /* Ethernet MAC ID0 High Register */
 
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */

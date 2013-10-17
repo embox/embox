@@ -24,6 +24,8 @@ module virtio {
 }
 
 module ti816x {
+	option number prep_buff_cnt=16 /* the number of prepared
+									  buffers for rxing */
 	source "ti816x.c"
 
 	depends embox.net.skbuff

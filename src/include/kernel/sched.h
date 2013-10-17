@@ -22,6 +22,7 @@
 
 struct thread;
 struct event;
+struct runq;
 
 /**
  * Initializes scheduler.
@@ -43,6 +44,7 @@ extern int sched_init(struct thread *current, struct thread *idle);
 //TODO sched_ticker have to start automatic after scheduler initialization
 extern int sched_ticker_init(void);
 extern int sched_wait_init(void);
+extern void sched_ticker_fini(struct runq*);
 
 /**
  * Makes active thread and adds thread to the queue of ready to executing

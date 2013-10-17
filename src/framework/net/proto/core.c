@@ -28,7 +28,7 @@ static int net_proto_mod_enable(struct mod_info *info) {
 	const struct net_proto *nproto;
 
 	ret = 0;
-	nproto = (struct net_proto *)info->data;
+	nproto = (const struct net_proto *)info->data;
 
 	printk("\tNET: initializing protocol %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -52,7 +52,7 @@ static int net_proto_mod_disable(struct mod_info *info) {
 	const struct net_proto *nproto;
 
 	ret = 0;
-	nproto = (struct net_proto *)info->data;
+	nproto = (const struct net_proto *)info->data;
 
 	printk("\tNET: finalizing protocol %s.%s: ",
 			info->mod->package->name, info->mod->name);
@@ -71,11 +71,13 @@ static int net_proto_mod_disable(struct mod_info *info) {
 	return ret;
 }
 
-const struct net_proto * net_proto_lookup(unsigned char type) {
+const struct net_proto * net_proto_lookup(unsigned short pack,
+		unsigned char type) {
 	const struct net_proto *nproto;
 
 	net_proto_foreach(nproto) {
-		if (nproto->type == type) {
+		if ((nproto->pack == pack)
+				&& (nproto->type == type)) {
 			return nproto;
 		}
 	}

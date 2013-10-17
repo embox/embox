@@ -20,13 +20,6 @@
 #include <pthread.h>
 
 
-extern void *pthread_getspecific(pthread_key_t);
-extern int   pthread_setspecific(pthread_key_t, const void *);
-extern int   pthread_cancel(pthread_t);
-
-extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
-extern int   pthread_key_delete(pthread_key_t);
-
 #include <stdio.h>
 #include <string.h>
 

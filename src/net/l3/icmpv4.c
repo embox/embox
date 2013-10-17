@@ -26,7 +26,7 @@
 
 #include <kernel/time/ktime.h>
 
-EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv, NULL);
 
 /* Is the packet described by skb is multicast/broadcast one at levels 2 or 3
  * Packets with type PACKET_LOOPBACK we treat as broadcast and drop them.
@@ -34,8 +34,11 @@ EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL);
  * then ICMP
  */
 static inline bool is_packet_not_unicast(sk_buff_t *skb) {
-	return (pkt_type(skb) != PACKET_HOST) ||
-		   !(ip_is_local(skb->nh.iph->daddr, false, false));
+	return !(((pkt_type(skb) == PACKET_HOST)
+					|| (pkt_type(skb) ==PACKET_LOOPBACK)) &&
+				ip_is_local(skb->nh.iph->daddr, false, false))
+			&& !((pkt_type(skb) == PACKET_OTHERHOST)
+				&& ip_is_local(skb->nh.iph->saddr, false, false));
 }
 
 static int icmp_discard(sk_buff_t *skb) {
@@ -190,7 +193,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	{
 		const struct net_proto *net_proto_ptr = NULL;
 
-		net_proto_ptr = net_proto_lookup(iph_embedded->proto);
+		net_proto_ptr = net_proto_lookup(ETH_P_IP, iph_embedded->proto);
 		if (net_proto_ptr != NULL) {
 			if (likely(net_proto_ptr->handle_error)) {
 				net_proto_ptr->handle_error(skb, info);
@@ -225,13 +228,13 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 	in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
 					reply->nh.iph->daddr : idev->ifa_address;
 
-	init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE,
+	init_ip_header(reply->nh.iph, IPPROTO_ICMP,
 			ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
 	icmp_send_check_skb(reply);
 
-	return ip_send_packet(NULL, reply);
+	return ip_send_packet(NULL, reply, NULL);
 }
 
 static int icmp_echo(sk_buff_t *skb) {
@@ -377,7 +380,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 			__be16 ip_id = inetdev_get_ip_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in.tos,
+			init_ip_header(iph, IPPROTO_ICMP, ip_id, tot_len, iph_in.tos,
 						   idev->ifa_address, iph_in.saddr);
 		}
 
@@ -388,7 +391,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		icmp_send_check_skb(skb);
 	}
 
-	ip_send_packet(NULL, skb);
+	ip_send_packet(NULL, skb, NULL);
 }
 
 /* Unfortunately code might not be safe */

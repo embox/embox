@@ -22,6 +22,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
+#include <err.h>
 
 #include <embox/unit.h>
 #include <embox/block_dev.h>
@@ -46,6 +47,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define RAMFS_DIR  "/"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
+static char ramfs_dev[] = RAMFS_DEV;
 
 static int ramfs_format(void *path);
 static int ramfs_mount(void *dev, void *dir);
@@ -62,25 +64,21 @@ static int ramfs_init(void * par) {
 	/*TODO */
 
 	dir_node = vfs_lookup(NULL, RAMFS_DIR);
-	if (!dir_node) {
-		return -1;
+	if (dir_node == NULL) {
+		return -ENOENT;
 	}
 
-	if (NULL == (ramdisk = ramdisk_create(RAMFS_DEV,
+	if (err(ramdisk = ramdisk_create(ramfs_dev,
 					FILESYSTEM_SIZE * PAGE_SIZE()))) {
-		return -1;
+		return err(ramdisk);
 	}
 
 	dev_node = ramdisk->bdev->dev_node;
-	if (!dev_node) {
-		return -1;
-	}
-	if (!dev_node) {
-		return -1;
-	}
+	assert(dev_node != NULL);
 
 	/* format filesystem */
-	if (0 != (res = ramfs_format((void *) dev_node))) {
+	res = ramfs_format(dev_node);
+	if (res != 0) {
 		return res;
 	}
 
@@ -89,7 +87,7 @@ static int ramfs_init(void * par) {
 }
 
 static int ramfs_ramdisk_fs_init(void) {
-	return ramfs_init(RAMFS_DEV);
+	return ramfs_init(ramfs_dev);
 }
 
 EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
@@ -391,13 +389,20 @@ static int ramfs_stat(void *file, void *buff) {
 
 static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	ramfs_file_info_t *fi;
+	size_t fi_index;
 
 	fi = pool_alloc(&ramfs_file_pool);
 	if (!fi) {
 		return NULL;
 	}
 
-	fi->index = index_alloc(&ramfs_file_idx, INDEX_MIN);
+	fi_index = index_alloc(&ramfs_file_idx, INDEX_MIN);
+	if (fi_index == INDEX_NONE) {
+		pool_free(&ramfs_file_pool, fi);
+		return NULL;
+	}
+
+	fi->index = fi_index;
 	nas->fi->ni.size = fi->pointer = 0;
 
 	return fi;

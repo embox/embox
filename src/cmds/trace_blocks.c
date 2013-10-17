@@ -16,7 +16,7 @@
 
 EMBOX_CMD(exec);
 
-extern struct __trace_point * const __trace_points_array[];
+ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
 	printf("Usage: trace [-h] [-s] [-i <number>] [-d <number>] [-a <number>]\n");
@@ -28,7 +28,7 @@ static void print_trace_block_stat(void) {
 
 	printf("%2s %7s %10s\n", "№ ", "count", "time");
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->active) {
 			printf("%2d %7d %10d\n", number, tb->begin->count, tb->time);
@@ -45,7 +45,7 @@ static void print_trace_block_stat_personal(int i) {
 
 	printf("%2s %7s %10s %5s\n", "№ ", "count", "time", "Act");
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
 			printf("%2d %7d %10d %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
@@ -60,7 +60,7 @@ bool change_block_activity(int index, bool activity) {
 	struct __trace_block *tb;
 	int number = 0;
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == index) {
 			tb->active = activity;

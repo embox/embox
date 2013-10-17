@@ -32,6 +32,7 @@
 #define MODOPS_NEIGHBOUR_EXPIRE   OPTION_GET(NUMBER, neighbour_expire)
 #define MODOPS_NEIGHBOUR_TMR_FREQ OPTION_GET(NUMBER, neighbour_tmr_freq)
 #define MODOPS_NEIGHBOUR_RESEND   OPTION_GET(NUMBER, neighbour_resend)
+#define MODOPS_NEIGHBOUR_ATTEMPT  OPTION_GET(NUMBER, neighbour_attempt)
 
 EMBOX_UNIT_INIT(neighbour_init);
 
@@ -49,6 +50,7 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 	else {
 		nbr->incomplete = 1;
 		nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+		nbr->sent_times = 0;
 	}
 }
 
@@ -105,8 +107,21 @@ static int nbr_send_request(struct neighbour *nbr) {
 
 	saddr = in_dev->ifa_address;
 
+	++nbr->sent_times;
+
 	return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
 			nbr->plen, NULL, &saddr, NULL, &nbr->paddr[0], NULL, nbr->dev);
+}
+
+#include <net/l3/icmpv4.h>
+static void nbr_drop_w_queue(struct neighbour *nbr) {
+	struct sk_buff *skb;
+
+	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
+		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0);
+	}
+
+	nbr->sent_times = 0;
 }
 
 static int nbr_build_and_send_pkt(struct sk_buff *skb,
@@ -143,8 +158,8 @@ static void nbr_flush_w_queue(struct neighbour *nbr) {
 	struct net_header_info hdr_info;
 
 	hdr_info.type = nbr->ptype;
-	hdr_info.src_addr = &nbr->dev->dev_addr[0];
-	hdr_info.dst_addr = &nbr->haddr[0];
+	hdr_info.src_hw = &nbr->dev->dev_addr[0];
+	hdr_info.dst_hw = &nbr->haddr[0];
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
 		(void)nbr_build_and_send_pkt(skb, &hdr_info);
@@ -338,7 +353,7 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 int neighbour_send_after_resolve(unsigned short ptype,
 		const void *paddr, unsigned char plen,
 		struct net_device *dev, struct sk_buff *skb) {
-	int resolved;
+	int allocated, resolved;
 	struct neighbour *nbr;
 	struct net_header_info hdr_info;
 
@@ -370,6 +385,11 @@ int neighbour_send_after_resolve(unsigned short ptype,
 			nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 
 			list_add_last_element(nbr, &neighbour_list, lnk);
+
+			allocated = 1;
+		}
+		else {
+			allocated = 0;
 		}
 
 		resolved = !nbr->incomplete;
@@ -382,12 +402,14 @@ int neighbour_send_after_resolve(unsigned short ptype,
 
 	if (resolved) {
 		hdr_info.type = nbr->ptype;
-		hdr_info.src_addr = &nbr->dev->dev_addr[0];
-		hdr_info.dst_addr = &nbr->haddr[0];
+		hdr_info.src_hw = &nbr->dev->dev_addr[0];
+		hdr_info.dst_hw = &nbr->haddr[0];
 		return nbr_build_and_send_pkt(skb, &hdr_info);
 	}
 
-	(void)nbr_send_request(nbr);
+	if (allocated) {
+		(void)nbr_send_request(nbr);
+	}
 
 	return 0;
 }
@@ -410,8 +432,14 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 
 			if (nbr->incomplete) {
 				if (nbr->resend <= MODOPS_NEIGHBOUR_TMR_FREQ) {
-					(void)nbr_send_request(nbr);
-					nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+					if (nbr->sent_times == MODOPS_NEIGHBOUR_ATTEMPT) {
+						(void)nbr_drop_w_queue(nbr);
+						nbr_free(nbr);
+					}
+					else {
+						(void)nbr_send_request(nbr);
+						nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+					}
 				}
 				else {
 					nbr->resend -= MODOPS_NEIGHBOUR_TMR_FREQ;

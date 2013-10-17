@@ -98,20 +98,11 @@ static void * start_server(void *unused) {
 		return (void *)ret;
 	}
 
-	ret = fcntl(host, F_SETFD, O_NONBLOCK);
-	if (ret == -1) {
-		printf("Error.. listen() failed. errno=%d\n", errno);
-		web_server_started = 0;
-		close(host);
-		return (void *)ret;
-	}
-
 	welcome_message();
 
 	while (web_server_started) {
 		client = ret = accept(host, (struct sockaddr *) &addr, &addr_len);
 		if (ret == -1) {
-			if (errno == EAGAIN) continue;
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			web_server_started = 0;
 			close(host);

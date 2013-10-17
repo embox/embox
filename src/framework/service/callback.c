@@ -15,4 +15,4 @@
 
 #include <framework/service/types.h>
 
-ARRAY_SPREAD_DEF(const struct callback_mng, __callback_mng_registry);
+//ARRAY_SPREAD_DEF(const struct callback_mng, __callback_mng_registry);

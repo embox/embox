@@ -19,6 +19,7 @@ struct sk_buff;
  * Each netproto implements this interface.
  */
 typedef struct net_proto {
+	unsigned short pack;
 	unsigned char type;
 	int (*init)(void);
 	int (*fini)(void);

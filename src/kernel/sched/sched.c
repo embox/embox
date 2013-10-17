@@ -19,6 +19,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <sched.h>
 #include <time.h>
 
 #include <hal/context.h>
@@ -33,6 +34,7 @@
 #include <kernel/thread/state.h>
 
 #include <profiler/tracing/trace.h>
+
 
 static void post_switch_if(int condition);
 
@@ -177,6 +179,7 @@ static void sched_switch(void) {
 		ipl_enable();
 
 		prev = thread_get_current();
+
 		next = runq_switch(&rq);
 
 		if (prev == next) {
@@ -185,6 +188,14 @@ static void sched_switch(void) {
 		}
 
 		assert(thread_state_running(next->state));
+
+		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
+			sched_ticker_init();
+		}
+
+		if (prev->policy != SCHED_FIFO && next->policy == SCHED_FIFO) {
+			sched_ticker_fini(&rq);
+		}
 
 		/* Running time recalculation */
 		new_clock = clock();

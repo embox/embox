@@ -59,11 +59,13 @@ struct clock_source_head {
 };
 
 #define TIME_EVENT_DEVICE(ted) \
-        extern const struct time_event_device * __event_devices[]; \
-        ARRAY_SPREAD_ADD(__event_devices, ted);
+	ARRAY_SPREAD_DECLARE(const struct time_event_device *, \
+			__event_devices) \
+    ARRAY_SPREAD_ADD(__event_devices, ted);
 
 #define TIME_COUNTER_DEVICE(tcd) \
-        extern const struct time_counter_device * __counter_devices[]; \
-        ARRAY_SPREAD_ADD(__counter_devices, tcd);
+	ARRAY_SPREAD_DECLARE(const struct time_counter_device *, \
+			__counter_devices); \
+    ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */

@@ -19,7 +19,7 @@ static int nt_build_hdr(struct sk_buff *skb,
 		struct net_header_info *hdr_info,
 		struct net_device *dev) {
 	int ret;
-	unsigned char dst_addr[MAX_ADDR_LEN];
+	unsigned char dst_haddr[MAX_ADDR_LEN];
 
 	assert(skb != NULL);
 	assert(dev != NULL);
@@ -29,21 +29,21 @@ static int nt_build_hdr(struct sk_buff *skb,
 	}
 
 	/* resolve hw address */
-	if (hdr_info->src_addr == NULL) {
-		hdr_info->src_addr = &dev->dev_addr[0];
+	if (hdr_info->src_hw == NULL) {
+		hdr_info->src_hw = &dev->dev_addr[0];
 	}
-	if (hdr_info->dst_addr == NULL) {
-		if (hdr_info->dst_paddr != NULL) {
+	if (hdr_info->dst_hw == NULL) {
+		if (hdr_info->dst_p != NULL) {
 			ret = neighbour_get_haddr(hdr_info->type,
-					hdr_info->dst_paddr, dev, dev->type,
-					ARRAY_SIZE(dst_addr), &dst_addr[0]);
+					hdr_info->dst_p, dev, dev->type,
+					ARRAY_SIZE(dst_haddr), &dst_haddr[0]);
 			if (ret != 0) {
 				return ret;
 			}
-			hdr_info->dst_addr = &dst_addr[0];
+			hdr_info->dst_hw = &dst_haddr[0];
 		}
 		else {
-			hdr_info->dst_addr = &dev->broadcast[0];
+			hdr_info->dst_hw = &dev->broadcast[0];
 		}
 	}
 
@@ -74,7 +74,7 @@ int net_tx(struct sk_buff *skb,
 	if (0 != nt_build_hdr(skb, hdr_info, dev)) {
 		assert(hdr_info != NULL);
 		return neighbour_send_after_resolve(hdr_info->type,
-				hdr_info->dst_paddr, hdr_info->dst_plen,
+				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
 	}
 

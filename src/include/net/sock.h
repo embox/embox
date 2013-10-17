@@ -18,12 +18,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-struct family_ops;
-struct sock_ops;
-struct sk_buff_head;
-struct sock;
+struct proto_sock;
+struct sock_family_ops;
+struct sock_proto_ops;
 struct msghdr;
-struct skbuff;
+struct sk_buff;
 struct pool;
 struct indexator;
 struct list;
@@ -39,6 +38,14 @@ enum sock_state {
 	SS_DISCONNECTING,
 	SS_CLOSED
 };
+
+#if 0
+enum sock_shut {
+	SS_RD,
+	SS_WR,
+	SS_RDWR
+};
+#endif
 
 struct sock_opt {
 	int so_acceptconn;
@@ -65,22 +72,26 @@ struct sock_opt {
 	int so_type;
 };
 
+/* Base class for family sockets */
 struct sock {
 	struct list_link lnk;
 	enum sock_state state;
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
-	unsigned char shutdown_flag;
-	const struct family_ops *f_ops;
-	const struct sock_ops *ops;
+	unsigned char shutdown_flag; /* FIXME */
+	struct proto_sock *p_sk;
+	const struct sock_family_ops *f_ops;
+	const struct sock_proto_ops *p_ops;
 	struct io_sync ios;
-	//const struct sockaddr *src_addr;
-	//const struct sockaddr *dst_addr;
-	struct socket_node *sock_node;
+#if 0
+	const struct sockaddr *src_addr;
+	const struct sockaddr *dst_addr;
+	size_t addr_len;
+#endif
 };
 
-struct family_ops {
+struct sock_family_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*bind)(struct sock *sk, const struct sockaddr *addr,
@@ -104,10 +115,10 @@ struct family_ops {
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
-	bool (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
+	struct pool *sock_pool;
 };
 
-struct sock_ops {
+struct sock_proto_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
@@ -127,6 +138,19 @@ struct sock_ops {
 	struct list *sock_list;
 };
 
+/* Base class for protocol sockets */
+struct proto_sock {
+	struct sock *sk;
+};
+
+/* Conversion to base family socket.
+ * @arg p_sk - derived of proto_sock
+ *             (proto_sock MUST BE FIRST field in derived socket type)
+ */
+static inline struct sock * to_sock(void *p_sk) {
+	return ((struct proto_sock *)p_sk)->sk;
+}
+
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);
 
@@ -137,10 +161,11 @@ extern int sock_create_ext(int family, int type, int protocol,
 extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
-extern struct sock * sock_iter(const struct sock_ops *ops);
+extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
 extern struct sock * sock_next(const struct sock *sk);
 extern struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_ops *ops, sock_lookup_tester_ft tester,
+		const struct sock_proto_ops *p_ops,
+		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size);
@@ -159,26 +184,40 @@ static inline int sock_stream_recvmsg(struct sock *sk,
 
 static inline void sock_set_state(struct sock *sk,
 		enum sock_state state) {
+	assert(sk != NULL);
 	sk->state = state;
 }
-static inline enum sock_state sock_get_state(struct sock *sk) {
+static inline enum sock_state sock_get_state(const struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state;
 }
 static inline int sock_state_bound(struct sock *sk) {
-	return sk->state == SS_BOUND;
+	assert(sk != NULL);
+	return (sk->state == SS_BOUND) || (sk->state == SS_LISTENING)
+			|| (sk->state == SS_CONNECTING)
+			|| (sk->state == SS_CONNECTED)
+			|| (sk->state == SS_ESTABLISHED);
 }
 static inline int sock_state_listening(struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state == SS_LISTENING;
 }
 static inline int sock_state_connecting(struct sock *sk) {
+	assert(sk != NULL);
 	return sk->state == SS_CONNECTING;
 }
 static inline int sock_state_connected(struct sock *sk) {
+	assert(sk != NULL);
 	return (sk->state == SS_CONNECTED)
 			|| (sk->state == SS_ESTABLISHED);
 }
 
-#define sock_foreach(sk, ops) \
-	list_foreach(sk, ops->sock_list, lnk)
+static inline void sock_set_so_error(struct sock *sk, int error) {
+	assert(sk != NULL);
+	sk->opt.so_error = error;
+}
+
+#define sock_foreach(sk, p_ops) \
+	list_foreach(sk, p_ops->sock_list, lnk)
 
 #endif /* NET_SOCK_H_ */

@@ -17,6 +17,7 @@
 #define PCI_VENDOR_ID_RDC                 0x17f3
 #define PCI_VENDOR_ID_INTEL               0x8086
 #define PCI_VENDOR_ID_BOCHS               0x1234
+#define PCI_VENDOR_ID_APPLE               0x106b
 #define PCI_VENDOR_ID_PLX                 0x10B5
 #define PCI_VENDOR_ID_XILINX              0x10EE
 #define PCI_VENDOR_ID_VIRTIO              0x1AF4
@@ -68,6 +69,9 @@
 
 /* Bochs device id's */
 #define PCI_DEV_ID_BOCHS_VGA              0x1111
+
+/* Apple device id's */
+#define PCI_DEV_ID_APPLE_OHCI_HOST	  0x003f
 
 #define PCI_DEV_ID_PLX_PEX8619            0x8619
 

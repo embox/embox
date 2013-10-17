@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief TODO
+ * @brief
  *
- * @date Aug 28, 2012
+ * @date 28.08.12
  * @author Eldar Abusalimov
  */
 
-#ifndef DEBUG_SYMBOL_H_
-#define DEBUG_SYMBOL_H_
+#ifndef LIB_EXECINFO_SYMBOL_H_
+#define LIB_EXECINFO_SYMBOL_H_
 
 struct symbol {
 	void *addr;
@@ -25,4 +25,4 @@ struct symbol {
  */
 extern const struct symbol *symbol_lookup(void *addr);
 
-#endif /* DEBUG_SYMBOL_H_ */
+#endif /* LIB_EXECINFO_SYMBOL_H_ */

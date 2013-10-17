@@ -252,10 +252,10 @@ nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
 
 my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 
-@module_hdr := \
+@module_h := \
 	$(foreach m,$(build_modules), \
-		$(patsubst %,module-h/%$m, \
-			$(call get,$m,allTypes)))
+		$(foreach t,$(call get,$m,allTypes), \
+			module-header-h/$t$m module-config-h/$t$m))
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
@@ -265,7 +265,7 @@ my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 			$(call invoke,$(call get,$m,allTypes),getAnnotationValuesOfOption,$(my_bld_script))))
 
 @module_all = \
-	$(@module_hdr) \
+	$(@module_h) \
 	$(@module_ld_rmk) \
 	$(@module_ar_rmk) \
 	$(@module_extbld_rmk)
@@ -323,19 +323,22 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
 
 
-module_hdr_pat = $(SRCGEN_DIR)/include/module/%.h
+module_header_h_pat = $(SRCGEN_DIR)/include/module/%.h
+module_config_h_pat = $(SRCGEN_DIR)/include/config/%.h
 
-$(@module_hdr) : @file = $(type_path:%=$(module_hdr_pat))
-$(@module_hdr) : type = $(basename $@)
-$(@module_hdr) : type_fqn = $(call get,$(type),qualifiedName)
-$(@module_hdr) : type_path = $(subst .,/,$(type_fqn))
+$(@module_h) : kind = $(patsubst module-%-h,%,$(@D))
 
-$(@module_hdr) : content = $(call __header_template,$@,$(type_fqn))
+$(@module_h) : @file = $(type_path:%=$(module_$(kind)_h_pat))
+$(@module_h) : type = $(basename $@)
+$(@module_h) : type_fqn = $(call get,$(type),qualifiedName)
+$(@module_h) : type_path = $(subst .,/,$(type_fqn))
 
-$(@module_hdr) : printf_escape = \
+$(@module_h) : content = $(call __module_$(kind)_h_template,$@,$(type))
+
+$(@module_h) : printf_escape = \
 		$(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))
 
-$(@module_hdr) :
+$(@module_h) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(PRINTF) '%b' $(call sh_quote,$(call printf_escape,$(content))))
 
@@ -434,18 +437,23 @@ $(@source_o_rmk) $(@source_a_rmk) : script  = $(or \
 			$(call get,$(call values_of,$(my_rule_script)),value), \
 			@true)
 
-my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_incpath_before_val := \
+		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
+my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 
+$(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+$(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)))
 $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
-			-include $(patsubst %,$(value module_hdr_pat),$(call module_path,$(module))) \
-			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
-			$(call do_flags,-D,$(defines)))
+			$(call do_flags,-D,$(defines)) \
+			-include $(patsubst %,$(value module_config_h_pat), \
+						$(call module_path,$(module))) \
+			-D__EMBUILD_MOD__=$(call module_id,$(module)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -466,6 +474,7 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
 		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))

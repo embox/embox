@@ -48,8 +48,8 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 	/* Make device specific header */
 	hdr_info.type = ETH_P_RARP;
-	hdr_info.src_addr = source_haddr;
-	hdr_info.dst_addr = target_haddr;
+	hdr_info.src_hw = source_haddr;
+	hdr_info.dst_hw = target_haddr;
 	assert(dev->ops != NULL);
 	assert(dev->ops->build_hdr != NULL);
 	ret = dev->ops->build_hdr(skb, &hdr_info);

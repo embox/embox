@@ -19,38 +19,48 @@
 #include <embox/net/family.h>
 #include <util/indexator.h>
 #include <embox/net/sock.h>
+#include <string.h>
+#include <mem/misc/pool.h>
+#include <net/l3/route.h>
 
 #include <net/socket/inet_sock.h>
 
-static const struct family_ops inet_dgram_ops;
-static const struct family_ops inet_raw_ops;
-static const struct family_ops inet_stream_ops;
+#include <framework/mod/options.h>
+
+#define MODOPS_AMOUNT_INET_SOCK OPTION_GET(NUMBER, amount_inet_sock)
+
+static const struct sock_family_ops inet_stream_ops;
+static const struct sock_family_ops inet_dgram_ops;
+static const struct sock_family_ops inet_raw_ops;
 
 static const struct net_family_type inet_types[] = {
+	{ SOCK_STREAM, &inet_stream_ops },
 	{ SOCK_DGRAM, &inet_dgram_ops },
-	{ SOCK_RAW, &inet_raw_ops },
-	{ SOCK_STREAM, &inet_stream_ops }
+	{ SOCK_RAW, &inet_raw_ops }
 };
 
 EMBOX_NET_FAMILY(AF_INET, inet_types);
 
-static int inet_init(struct sock *sock) {
-	struct inet_sock *inet_sk;
+static int inet_init(struct sock *sk) {
+	struct inet_sock *in_sk;
 
-	if (sock == NULL) {
+	if (sk == NULL) {
 		return -EINVAL;
 	}
 
-	inet_sk = (struct inet_sock *)sock;
-	inet_sk->id = 0;
-	inet_sk->uc_ttl = -1;
-	inet_sk->mc_ttl = 1;
-	inet_sk->sport_is_alloced = 0;
-	inet_sk->rcv_saddr = 0;
-	inet_sk->saddr = 0;
-	inet_sk->sport = 0;
-	inet_sk->daddr = 0;
-	inet_sk->dport = 0;
+	in_sk = to_inet_sock(sk);
+	in_sk->id = 0;
+	in_sk->uc_ttl = -1;
+	in_sk->src_port_alloced = 0;
+	memset(&in_sk->src_in, 0, sizeof in_sk->src_in);
+	memset(&in_sk->dst_in, 0, sizeof in_sk->dst_in);
+	in_sk->src_in.sin_family = in_sk->dst_in.sin_family = AF_INET;
+
+#if 0
+	in_sk->sk.src_addr = &in_sk->src_in;
+	in_sk->sk.dst_addr = &in_sk->dst_in;
+	in_sk->sk.addr_len = sizeof(struct sockaddr_in);
+#endif
 
 	return 0;
 }
@@ -60,27 +70,26 @@ static int inet_close(struct sock *sk) {
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->close == NULL) {
-		if (inet_sk(sk)->sport_is_alloced) {
-			index_unlock(sk->ops->sock_port,
-					ntohs(inet_sk(sk)->sport));
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->close == NULL) {
+		if (to_inet_sock(sk)->src_port_alloced) {
+			assert(to_inet_sock(sk)->src_in.sin_family == AF_INET);
+			index_unlock(sk->p_ops->sock_port,
+					ntohs(to_inet_sock(sk)->src_in.sin_port));
 		}
 		sock_release(sk);
 		return 0;
 	}
 
-	return sk->ops->close(sk);
+	return sk->p_ops->close(sk);
 }
 
-static void __inet_bind(struct inet_sock *inet_sk,
+static void __inet_bind(struct inet_sock *in_sk,
 		const struct sockaddr_in *addr_in) {
-	assert(inet_sk != NULL);
+	assert(in_sk != NULL);
 	assert(addr_in != NULL);
-
 	assert(addr_in->sin_family == AF_INET);
-	inet_sk->rcv_saddr = addr_in->sin_addr.s_addr;
-	inet_sk->sport = addr_in->sin_port;
+	memcpy(&in_sk->src_in, addr_in, sizeof *addr_in);
 }
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
@@ -94,23 +103,23 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 
 	addr_in = (const struct sockaddr_in *)addr;
 	if (addr_in->sin_family != AF_INET) {
-		return -EINVAL;
+		return -EAFNOSUPPORT;
 	}
-	else if ((addr_in->sin_addr.s_addr != INADDR_ANY) &&
+	else if ((addr_in->sin_addr.s_addr != htonl(INADDR_ANY)) &&
 			!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->sock_port != NULL) {
-		if (!index_try_lock(sk->ops->sock_port,
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->sock_port != NULL) {
+		if (!index_try_lock(sk->p_ops->sock_port,
 					ntohs(addr_in->sin_port))) {
 			return -EADDRINUSE;
 		}
-		inet_sk(sk)->sport_is_alloced = 1;
+		to_inet_sock(sk)->src_port_alloced = 1;
 	}
 
-	__inet_bind((struct inet_sock *)sk, addr_in);
+	__inet_bind(to_inet_sock(sk), addr_in);
 
 	return 0;
 }
@@ -124,29 +133,56 @@ static int inet_bind_local(struct sock *sk) {
 	}
 
 	addr_in.sin_family = AF_INET;
-	addr_in.sin_addr.s_addr = INADDR_ANY;
+	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	assert(sk->ops != NULL);
-	if (sk->ops->sock_port != NULL) {
-		port = index_alloc(sk->ops->sock_port, INDEX_NEXT);
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->sock_port != NULL) {
+		port = index_alloc(sk->p_ops->sock_port, INDEX_NEXT);
 		if (port == INDEX_NONE) {
 			return -ENOMEM;
 		}
-		inet_sk(sk)->sport_is_alloced = 1;
+		to_inet_sock(sk)->src_port_alloced = 1;
 		addr_in.sin_port = htons(port);
 	}
 	else {
 		addr_in.sin_port = 0;
 	}
 
-	__inet_bind((struct inet_sock *)sk, &addr_in);
+	__inet_bind(to_inet_sock(sk), &addr_in);
 
 	return 0;
 }
 
-static int inet_nonstream_connect(struct sock *sk,
+static int __inet_connect(struct inet_sock *in_sk,
+		const struct sockaddr_in *addr_in) {
+	int ret;
+	in_addr_t src_ip;
+
+	assert(in_sk != NULL);
+	assert(addr_in != NULL);
+	assert(addr_in->sin_family == AF_INET);
+
+	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, &src_ip);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if ((in_sk->src_in.sin_addr.s_addr != htonl(INADDR_ANY))
+			&& (in_sk->src_in.sin_addr.s_addr != src_ip)) {
+		return -EINVAL;
+	}
+
+	in_sk->src_in.sin_addr.s_addr = src_ip;
+
+	memcpy(&in_sk->dst_in, addr_in, sizeof *addr_in);
+
+	return 0;
+}
+
+static int inet_stream_connect(struct sock *sk,
 		const struct sockaddr *addr, socklen_t addrlen,
 		int flags) {
+	int ret;
 	const struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL)
@@ -159,21 +195,27 @@ static int inet_nonstream_connect(struct sock *sk,
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->connect == NULL) {
-		return 0;
+	ret = __inet_connect(to_inet_sock(sk), addr_in);
+	if (ret != 0) {
+		return ret;
 	}
 
-	return sk->ops->connect(sk, addr, addrlen, flags);
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->connect == NULL) {
+		return -ENOSYS;
+	}
+
+	return sk->p_ops->connect(sk, addr, addrlen, flags);
 }
 
-static int inet_stream_connect(struct sock *sk,
+static int inet_nonstream_connect(struct sock *sk,
 		const struct sockaddr *addr, socklen_t addrlen,
 		int flags) {
+	int ret;
 	const struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof(struct sockaddr_in))) {
+			|| (addrlen != sizeof *addr_in)) {
 		return -EINVAL;
 	}
 
@@ -182,12 +224,17 @@ static int inet_stream_connect(struct sock *sk,
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->connect == NULL) {
-		return -ENOSYS;
+	ret = __inet_connect(to_inet_sock(sk), addr_in);
+	if (ret != 0) {
+		return ret;
 	}
 
-	return sk->ops->connect(sk, addr, addrlen, flags);
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->connect == NULL) {
+		return 0;
+	}
+
+	return sk->p_ops->connect(sk, addr, addrlen, flags);
 }
 
 static int inet_listen(struct sock *sk, int backlog) {
@@ -195,76 +242,87 @@ static int inet_listen(struct sock *sk, int backlog) {
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->listen == NULL) {
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->listen == NULL) {
 		return -ENOSYS;
 	}
 
-	return sk->ops->listen(sk, backlog);
+	return sk->p_ops->listen(sk, backlog);
 }
 
 static int inet_accept(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen, int flags, struct sock **out_sk) {
-	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
-			|| (*addrlen < sizeof(struct sockaddr_in))
-			|| (out_sk == NULL)) {
+	int ret;
+	struct sockaddr_in *addr_in;
+
+	if ((sk == NULL) || (out_sk == NULL)) {
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->accept == NULL) {
+	addr_in = (struct sockaddr_in *)addr;
+	if (((addr_in == NULL) && (addrlen != NULL))
+			|| ((addr_in != NULL) && (addrlen == NULL))
+			|| ((addrlen != NULL) && (*addrlen < sizeof *addr_in))) {
+		return -EINVAL;
+	}
+
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->accept == NULL) {
 		return -ENOSYS;
 	}
 
-	return sk->ops->accept(sk, addr, addrlen, flags, out_sk);
+	ret = sk->p_ops->accept(sk, addr, addrlen, flags, out_sk);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (addr_in != NULL) {
+		memcpy(addr_in, &to_inet_sock(*out_sk)->dst_in, sizeof *addr_in);
+		assert(addr_in->sin_family == AF_INET);
+		*addrlen = sizeof *addr_in;
+	}
+
+	return 0;
 }
 
 static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
-	struct inet_sock *inet_sk;
 	const struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (msg == NULL)) {
 		return -EINVAL;
 	}
 
-	if (msg->msg_name != NULL) {
-		if (msg->msg_namelen != sizeof *addr_in) {
-			return -EINVAL;
-		}
-		addr_in = (const struct sockaddr_in *)msg->msg_name;
-		if (addr_in->sin_family != AF_INET) {
-			return -EINVAL;
-		}
-		inet_sk = (struct inet_sock *)sk;
-		inet_sk->daddr = addr_in->sin_addr.s_addr;
-		inet_sk->dport = addr_in->sin_port;
+	addr_in = (const struct sockaddr_in *)msg->msg_name;
+	if ((addr_in != NULL) &&
+			((msg->msg_namelen != sizeof *addr_in)
+				|| (addr_in->sin_family != AF_INET))) {
+		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->sendmsg == NULL) {
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->sendmsg == NULL) {
 		return -ENOSYS;
 	}
 
-	return sk->ops->sendmsg(sk, msg, flags);
+	return sk->p_ops->sendmsg(sk, msg, flags);
 }
 
 static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	int ret;
-	struct inet_sock *inet_sk;
 	struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (msg == NULL)) {
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->recvmsg == NULL) {
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->recvmsg == NULL) {
 		return -ENOSYS;
 	}
 
-	ret = sk->ops->recvmsg(sk, msg, flags);
+	ret = sk->p_ops->recvmsg(sk, msg, flags);
 	if (ret != 0) {
 		return ret;
 	}
@@ -273,11 +331,9 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 		if (msg->msg_namelen < sizeof *addr_in) {
 			return -EINVAL;
 		}
-		inet_sk = (struct inet_sock *)sk;
 		addr_in = (struct sockaddr_in *)msg->msg_name;
-		addr_in->sin_family = AF_INET;
-		addr_in->sin_addr.s_addr = inet_sk->daddr;
-		addr_in->sin_port = inet_sk->dport;
+		memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
+		assert(addr_in->sin_family == AF_INET);
 		msg->msg_namelen = sizeof *addr_in;
 	}
 
@@ -286,7 +342,6 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 
 static int inet_getsockname(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
-	struct inet_sock *inet_sk;
 	struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
@@ -294,11 +349,9 @@ static int inet_getsockname(struct sock *sk,
 		return -EINVAL;
 	}
 
-	inet_sk = (struct inet_sock *)sk;
 	addr_in = (struct sockaddr_in *)addr;
-	addr_in->sin_family = AF_INET;
-	addr_in->sin_addr.s_addr = inet_sk->rcv_saddr;
-	addr_in->sin_port = inet_sk->sport;
+	memcpy(addr_in, &to_inet_sock(sk)->src_in, sizeof *addr_in);
+	assert(addr_in->sin_family == AF_INET);
 	*addrlen = sizeof *addr_in;
 
 	return 0;
@@ -306,7 +359,6 @@ static int inet_getsockname(struct sock *sk,
 
 static int inet_getpeername(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
-	struct inet_sock *inet_sk;
 	struct sockaddr_in *addr_in;
 
 	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
@@ -314,11 +366,9 @@ static int inet_getpeername(struct sock *sk,
 		return -EINVAL;
 	}
 
-	inet_sk = (struct inet_sock *)sk;
 	addr_in = (struct sockaddr_in *)addr;
-	addr_in->sin_family = AF_INET;
-	addr_in->sin_addr.s_addr = inet_sk->daddr;
-	addr_in->sin_port = inet_sk->dport;
+	memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
+	assert(addr_in->sin_family == AF_INET);
 	*addrlen = sizeof *addr_in;
 
 	return 0;
@@ -332,11 +382,11 @@ static int inet_getsockopt(struct sock *sk, int level,
 	}
 
 	if (level != IPPROTO_IP) {
-		assert(sk->ops != NULL);
-		if (sk->ops->getsockopt == NULL) {
+		assert(sk->p_ops != NULL);
+		if (sk->p_ops->getsockopt == NULL) {
 			return -EOPNOTSUPP;
 		}
-		return sk->ops->getsockopt(sk, level, optname, optval,
+		return sk->p_ops->getsockopt(sk, level, optname, optval,
 				optlen);
 	}
 
@@ -355,11 +405,11 @@ static int inet_setsockopt(struct sock *sk, int level,
 	}
 
 	if (level != IPPROTO_IP) {
-		assert(sk->ops != NULL);
-		if (sk->ops->setsockopt == NULL) {
+		assert(sk->p_ops != NULL);
+		if (sk->p_ops->setsockopt == NULL) {
 			return -EOPNOTSUPP;
 		}
-		return sk->ops->setsockopt(sk, level, optname, optval,
+		return sk->p_ops->setsockopt(sk, level, optname, optval,
 				optlen);
 	}
 
@@ -376,74 +426,66 @@ static int inet_shutdown(struct sock *sk, int how) {
 		return -EINVAL;
 	}
 
-	assert(sk->ops != NULL);
-	if (sk->ops->shutdown == NULL) {
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->shutdown == NULL) {
 		return 0;
 	}
 
-	return sk->ops->shutdown(sk, how);
+	return sk->p_ops->shutdown(sk, how);
 }
 
-static bool inet_address_compare(struct sockaddr *addr1, struct sockaddr *addr2) {
-	struct sockaddr_in *addr_in1, *addr_in2;
+POOL_DEF(inet_sock_pool, struct inet_sock, MODOPS_AMOUNT_INET_SOCK);
 
-	addr_in1 = (struct sockaddr_in *)addr1;
-	addr_in2 = (struct sockaddr_in *)addr2;
-	return (addr_in1->sin_family == addr_in2->sin_family)
-			&& (addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr)
-			&& (addr_in1->sin_port == addr_in2->sin_port);
-}
-
-static const struct family_ops inet_dgram_ops = {
-	.init              = inet_init,
-	.close             = inet_close,
-	.bind              = inet_bind,
-	.bind_local        = inet_bind_local,
-	.connect           = inet_nonstream_connect,
-	.listen            = inet_listen,
-	.accept            = inet_accept,
-	.sendmsg           = inet_sendmsg,
-	.recvmsg           = inet_recvmsg,
-	.getsockname       = inet_getsockname,
-	.getpeername       = inet_getpeername,
-	.getsockopt        = inet_getsockopt,
-	.setsockopt        = inet_setsockopt,
-	.shutdown          = inet_shutdown,
-	.compare_addresses = inet_address_compare
+static const struct sock_family_ops inet_stream_ops = {
+	.init        = inet_init,
+	.close       = inet_close,
+	.bind        = inet_bind,
+	.bind_local  = inet_bind_local,
+	.connect     = inet_stream_connect,
+	.listen      = inet_listen,
+	.accept      = inet_accept,
+	.sendmsg     = inet_sendmsg,
+	.recvmsg     = inet_recvmsg,
+	.getsockname = inet_getsockname,
+	.getpeername = inet_getpeername,
+	.getsockopt  = inet_getsockopt,
+	.setsockopt  = inet_setsockopt,
+	.shutdown    = inet_shutdown,
+	.sock_pool   = &inet_sock_pool
 };
 
-static const struct family_ops inet_raw_ops = {
-	.init              = inet_init,
-	.close             = inet_close,
-	.bind              = inet_bind,
-	.bind_local        = inet_bind_local,
-	.connect           = inet_nonstream_connect,
-	.listen            = inet_listen,
-	.accept            = inet_accept,
-	.sendmsg           = inet_sendmsg,
-	.recvmsg           = inet_recvmsg,
-	.getsockname       = inet_getsockname,
-	.getpeername       = inet_getpeername,
-	.getsockopt        = inet_getsockopt,
-	.setsockopt        = inet_setsockopt,
-	.shutdown          = inet_shutdown,
-	.compare_addresses = inet_address_compare
+static const struct sock_family_ops inet_dgram_ops = {
+	.init        = inet_init,
+	.close       = inet_close,
+	.bind        = inet_bind,
+	.bind_local  = inet_bind_local,
+	.connect     = inet_nonstream_connect,
+	.listen      = inet_listen,
+	.accept      = inet_accept,
+	.sendmsg     = inet_sendmsg,
+	.recvmsg     = inet_recvmsg,
+	.getsockname = inet_getsockname,
+	.getpeername = inet_getpeername,
+	.getsockopt  = inet_getsockopt,
+	.setsockopt  = inet_setsockopt,
+	.shutdown    = inet_shutdown,
+	.sock_pool   = &inet_sock_pool
 };
 
-static const struct family_ops inet_stream_ops = {
-	.init              = inet_init,
-	.close             = inet_close,
-	.bind              = inet_bind,
-	.bind_local        = inet_bind_local,
-	.connect           = inet_stream_connect,
-	.listen            = inet_listen,
-	.accept            = inet_accept,
-	.sendmsg           = inet_sendmsg,
-	.recvmsg           = inet_recvmsg,
-	.getsockname       = inet_getsockname,
-	.getpeername       = inet_getpeername,
-	.getsockopt        = inet_getsockopt,
-	.setsockopt        = inet_setsockopt,
-	.shutdown          = inet_shutdown,
-	.compare_addresses = inet_address_compare
+static const struct sock_family_ops inet_raw_ops = {
+	.init        = inet_init,
+	.close       = inet_close,
+	.bind        = inet_bind,
+	.bind_local  = inet_bind_local,
+	.connect     = inet_nonstream_connect,
+	.listen      = inet_listen,
+	.accept      = inet_accept,
+	.sendmsg     = inet_sendmsg,
+	.recvmsg     = inet_recvmsg,
+	.getsockname = inet_getsockname,
+	.getpeername = inet_getpeername,
+	.getsockopt  = inet_getsockopt,
+	.setsockopt  = inet_setsockopt,
+	.shutdown    = inet_shutdown,
+	.sock_pool   = &inet_sock_pool
 };

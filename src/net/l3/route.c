@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <assert.h>
 #include <net/l3/route.h>
-#include <net/socket/socket_registry.h>
 #include <linux/in.h>
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>
@@ -109,7 +108,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 		return 0;
 	}
 
-	/* route destanation address */
+	/* route destination address */
 	rte = ((wanna_dev == NULL)
 		? (suggested_route == NULL) ? rt_fib_get_best(daddr, NULL) : suggested_route
 		: rt_fib_get_best(daddr, wanna_dev));
@@ -127,21 +126,75 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	return 0;
 }
 
-int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
+int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 	struct rt_entry *rte;
 
-	if (source_addr == INADDR_BROADCAST) {
-		*new_addr = source_addr;
+	if (dst_ip == INADDR_BROADCAST) {
+		*next_ip = dst_ip;
 		return 0;
 	}
 
-	rte = rt_fib_get_best(source_addr, NULL);
+	rte = rt_fib_get_best(dst_ip, NULL);
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
 
-	*new_addr = (rte->rt_gateway == INADDR_ANY ? source_addr : rte->rt_gateway);
+	*next_ip = rte->rt_gateway == INADDR_ANY ? dst_ip
+			: rte->rt_gateway;
 
+	return 0;
+}
+
+int rt_fib_source_ip(in_addr_t dst_ip, in_addr_t *src_ip) {
+	struct rt_entry *rte;
+
+	rte = rt_fib_get_best(dst_ip, NULL);
+	if (rte == NULL) {
+		return -ENETUNREACH;
+	}
+
+	assert(inetdev_get_by_dev(rte->dev) != NULL);
+	*src_ip = inetdev_get_by_dev(rte->dev)->ifa_address;
+
+	return 0;
+}
+
+int rt_fib_out_dev(in_addr_t dst, struct sock *sk,
+		struct net_device **out_dev) {
+	struct rt_entry *rte;
+	struct net_device *wanna_dev;
+
+	wanna_dev = sk != NULL ? sk->opt.so_bindtodevice : NULL;
+
+	/* SO_BROADCAST assert. */
+	if (dst == INADDR_BROADCAST) {
+		if (wanna_dev == NULL) {
+			return -ENODEV;
+		}
+		*out_dev = wanna_dev;
+		return 0;
+	}
+
+	/* if loopback set lo device */
+	if (ip_is_local(dst, false, false)) {
+		assert(inetdev_get_loopback_dev() != NULL);
+		*out_dev = inetdev_get_loopback_dev()->dev;
+		return 0;
+	}
+
+	/* route destination address */
+	rte = rt_fib_get_best(dst, wanna_dev);
+	if (rte == NULL) {
+		return -ENETUNREACH;
+	}
+
+	/* set the device for current destination address */
+	assert(rte->dev != NULL);
+	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
+	*out_dev = rte->dev;
+
+	/* if the packet should be sent using gateway
+	 * nothing todo there. all will be done in arp_resolve */
 	return 0;
 }
 

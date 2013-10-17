@@ -17,7 +17,7 @@
 
 EMBOX_CMD(exec);
 
-extern struct __trace_point * const __trace_points_array[];
+ARRAY_SPREAD_DECLARE(struct __trace_point *, __trace_points_array);
 
 static void print_usage(void) {
 	printf(	"Usage: trace_point [ARGS]\n%-60s\n%-60s\n%-60s\n%-60s\n%-60s\n",
@@ -35,7 +35,7 @@ static void print_trace_point_stat_with_location(int i) {
 	printf("%2s %15s %25s %7s %5s\n",
 			"#", "Name", "Location function", "Count", "Act");
 
-	array_nullterm_foreach(tp, __trace_points_array)
+	array_spread_nullterm_foreach(tp, __trace_points_array)
 	{
 		if (number++ == i) {
 			printf("%2d %15s %25s %7d %5s\n", i, tp->name,
@@ -56,7 +56,7 @@ static void print_trace_point_stat(void) {
 			"#", "Name", "Location function", "Count", "Act");
 
 
-	array_nullterm_foreach(tp, __trace_points_array)
+	array_spread_nullterm_foreach(tp, __trace_points_array)
 	{
 		printf("%2d %15s %25s %7d %5s\n", number, tp->name,
 					tp->location.func, tp->count, tp->active ? "yes" : "no");
@@ -74,7 +74,7 @@ bool change_point_activity(int index, bool activity) {
 	struct __trace_point *tp;
 	int number = 0;
 
-	array_nullterm_foreach(tp, __trace_points_array)
+	array_spread_nullterm_foreach(tp, __trace_points_array)
 	{
 		if (number++ == index) {
 			tp->active = activity;

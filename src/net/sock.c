@@ -18,17 +18,45 @@
 #include <string.h>
 #include <util/math.h>
 
-static struct sock * sock_alloc(const struct sock_ops *ops) {
+static struct sock * sock_alloc(
+		const struct sock_family_ops *f_ops,
+		const struct sock_proto_ops *p_ops) {
 	ipl_t sp;
 	struct sock *sk;
+	struct proto_sock *p_sk;
 
-	assert(ops != NULL);
+	assert(f_ops != NULL);
+	assert(p_ops != NULL);
 
 	sp = ipl_save();
 	{
-		sk = pool_alloc(ops->sock_pool);
+		sk = pool_alloc(f_ops->sock_pool);
+		if (sk == NULL) {
+			ipl_restore(sp);
+			return NULL;
+		}
+
+		if (p_ops->sock_pool != NULL) {
+			p_sk = pool_alloc(p_ops->sock_pool);
+			if (p_sk == NULL) {
+				pool_free(f_ops->sock_pool, sk);
+				ipl_restore(sp);
+				return NULL;
+			}
+		}
+		else {
+			p_sk = NULL;
+		}
 	}
 	ipl_restore(sp);
+
+	assert(((p_sk == NULL) && (p_ops->sock_pool == NULL))
+			|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
+
+	sk->p_sk = p_sk;
+	if (p_sk != NULL) {
+		p_sk->sk = sk;
+	}
 
 	return sk;
 }
@@ -37,11 +65,18 @@ static void sock_free(struct sock *sk) {
 	ipl_t sp;
 
 	assert(sk != NULL);
-	assert(sk->ops != NULL);
+	assert(sk->f_ops != NULL);
+	assert(sk->p_ops != NULL);
+	assert(((sk->p_sk == NULL) && (sk->p_ops->sock_pool == NULL))
+			|| ((sk->p_sk != NULL)
+				&& (sk->p_ops->sock_pool != NULL)));
 
 	sp = ipl_save();
 	{
-		pool_free(sk->ops->sock_pool, sk);
+		if (sk->p_sk != NULL) {
+			pool_free(sk->p_ops->sock_pool, sk->p_sk);
+		}
+		pool_free(sk->f_ops->sock_pool, sk);
 	}
 	ipl_restore(sp);
 }
@@ -69,11 +104,11 @@ static void sock_opt_init(struct sock_opt *opt, int family,
 }
 
 static void sock_init(struct sock *sk, int family, int type,
-		int protocol, const struct family_ops *f_ops,
-		const struct sock_ops *ops) {
+		int protocol, const struct sock_family_ops *f_ops,
+		const struct sock_proto_ops *p_ops) {
 	assert(sk != NULL);
 	assert(f_ops != NULL);
-	assert(ops != NULL);
+	assert(p_ops != NULL);
 
 	list_link_init(&sk->lnk);
 	sock_opt_init(&sk->opt, family, type, protocol);
@@ -81,10 +116,14 @@ static void sock_init(struct sock *sk, int family, int type,
 	skb_queue_init(&sk->tx_queue);
 	sock_set_state(sk, SS_UNKNOWN);
 	sk->shutdown_flag = 0;
+	sk->p_sk = sk->p_sk; /* setup in sock_alloc() */
 	sk->f_ops = f_ops;
-	sk->ops = ops;
+	sk->p_ops = p_ops;
 	io_sync_init(&sk->ios, 0, 0);
-	//sk->src_addr = sk->dst_addr = NULL;
+#if 0
+	sk->src_addr = sk->dst_addr = NULL;
+	sk->addr_len = 0;
+#endif
 }
 
 int sock_create_ext(int family, int type, int protocol,
@@ -114,7 +153,7 @@ int sock_create_ext(int family, int type, int protocol,
 		return -EPROTONOSUPPORT;
 	}
 
-	new_sk = sock_alloc(nsock->ops);
+	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
 		return -ENOMEM;
 	}
@@ -129,9 +168,9 @@ int sock_create_ext(int family, int type, int protocol,
 		return ret;
 	}
 
-	assert(new_sk->ops != NULL);
-	if (new_sk->ops->init != NULL) {
-		ret = new_sk->ops->init(new_sk);
+	assert(new_sk->p_ops != NULL);
+	if (new_sk->p_ops->init != NULL) {
+		ret = new_sk->p_ops->init(new_sk);
 		if (ret != 0) {
 			sock_close(new_sk);
 			return ret;
@@ -171,8 +210,8 @@ void sock_hash(struct sock *sk) {
 		return; /* error: already in hash */
 	}
 
-	assert(sk->ops != NULL);
-	list_add_last_element(sk, sk->ops->sock_list, lnk);
+	assert(sk->p_ops != NULL);
+	list_add_last_element(sk, sk->p_ops->sock_list, lnk);
 }
 
 void sock_unhash(struct sock *sk) {
@@ -186,12 +225,12 @@ void sock_unhash(struct sock *sk) {
 	list_unlink_element(sk, lnk);
 }
 
-struct sock * sock_iter(const struct sock_ops *ops) {
-	if (ops == NULL) {
+struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
+	if (p_ops == NULL) {
 		return NULL; /* error: invalid argument */
 	}
 
-	return list_first_element(ops->sock_list, struct sock, lnk);
+	return list_first_element(p_ops->sock_list, struct sock, lnk);
 }
 
 struct sock * sock_next(const struct sock *sk) {
@@ -202,36 +241,35 @@ struct sock * sock_next(const struct sock *sk) {
 		return NULL; /* error: not hashed */
 	}
 
-	assert(sk->ops != NULL);
+	assert(sk->p_ops != NULL);
 
-	return list_next_element(sk, sk->ops->sock_list,
+	return list_next_element(sk, sk->p_ops->sock_list,
 			struct sock, lnk);
 }
 
 struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_ops *ops,
+		const struct sock_proto_ops *p_ops,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb) {
-	struct sock *next_sk;
 	ipl_t ipl;
+	struct sock *next_sk;
 
-	if ((ops == NULL) || (tester == NULL)) {
+	if ((p_ops == NULL) || (tester == NULL)) {
 		return NULL; /* error: invalid arguments */
 	}
 
-	next_sk = sk != NULL ? sock_next(sk) : sock_iter(ops);
+	next_sk = sk != NULL ? sock_next(sk) : sock_iter(p_ops);
 
 	ipl = ipl_save();
-
-	while (next_sk != NULL) {
-		if (tester(next_sk, skb)) {
-			ipl_restore(ipl);
-			return next_sk;
+	{
+		while (next_sk != NULL) {
+			if (tester(next_sk, skb)) {
+				ipl_restore(ipl);
+				return next_sk;
+			}
+			next_sk = sock_next(next_sk);
 		}
-
-		next_sk = sock_next(next_sk);
 	}
-
 	ipl_restore(ipl);
 
 	return NULL; /* error: no such entity */
@@ -282,9 +320,9 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	}
 
 	assert(msg->msg_iov != NULL);
-	assert(msg->msg_iov->iov_base != NULL);
 	buff = msg->msg_iov->iov_base;
 	buff_sz = msg->msg_iov->iov_len;
+	assert((buff != NULL) || (buff_sz == 0));
 	total_len = 0;
 
 	while (1) {

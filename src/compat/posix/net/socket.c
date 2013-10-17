@@ -9,22 +9,15 @@
  */
 
 #include <string.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <arpa/inet.h>
 #include <stddef.h>
 #include <sys/uio.h>
 
 #include <net/socket/ksocket.h>
 #include <net/sock.h>
 #include <sys/socket.h>
-#include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-
-#include <kernel/thread.h>
-#include <kernel/event.h>
-#include <net/socket/socket_registry.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
 
@@ -62,15 +55,8 @@ int socket(int domain, int type, int protocol) {
 int bind(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kbind(sk, addr, addrlen);
+	ret = kbind(idx2sock(sockfd), addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -82,15 +68,9 @@ int bind(int sockfd, const struct sockaddr *addr,
 int connect(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kconnect(sk, addr, addrlen, idx2flags(sockfd));
+	ret = kconnect(idx2sock(sockfd), addr, addrlen,
+			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -101,15 +81,8 @@ int connect(int sockfd, const struct sockaddr *addr,
 
 int listen(int sockfd, int backlog) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = klisten(sk, backlog);
+	ret = klisten(idx2sock(sockfd), backlog);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -120,15 +93,10 @@ int listen(int sockfd, int backlog) {
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int ret, new_sockfd;
-	struct sock *sk, *new_sk;
+	struct sock *new_sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kaccept(sk, addr, addrlen, idx2flags(sockfd), &new_sk);
+	ret = kaccept(idx2sock(sockfd), addr, addrlen,
+			idx2flags(sockfd), &new_sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -143,21 +111,6 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	return new_sockfd;
-}
-
-int sendmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
-	int ret;
-
-	if (sk == NULL) {
-		return -EBADF;
-	}
-
-	ret = ksendmsg(sk, msg, flags);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
 }
 
 ssize_t send(int sockfd, const void *buff, size_t size,
@@ -175,8 +128,7 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = sendmsg_sock(idx2sock(sockfd), &msg,
-			idx2flags(sockfd));
+	ret = ksendmsg(idx2sock(sockfd), &msg, idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -201,8 +153,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = sendmsg_sock(idx2sock(sockfd), &msg,
-			idx2flags(sockfd));
+	ret = ksendmsg(idx2sock(sockfd), &msg, idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -213,34 +164,19 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	int ret;
-	struct msghdr _msg;
+	struct msghdr msg_;
 
-	memcpy(&_msg, msg, sizeof _msg);
-	_msg.msg_flags = flags;
+	memcpy(&msg_, msg, msg != NULL ? sizeof msg_ : 0);
+	msg_.msg_flags = flags;
 
-	ret = sendmsg_sock(idx2sock(sockfd), &_msg,
+	ret = ksendmsg(idx2sock(sockfd), msg != NULL ? &msg_ : NULL,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	return _msg.msg_iov->iov_len;
-}
-
-int recvmsg_sock(struct sock *sk, struct msghdr *msg, int flags) {
-	int ret;
-
-	if (sk == NULL) {
-		return -EBADF;
-	}
-
-	ret = krecvmsg(sk, msg, flags);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
+	return msg_.msg_iov->iov_len;
 }
 
 ssize_t recv(int sockfd, void *buff, size_t size,
@@ -255,11 +191,10 @@ ssize_t recv(int sockfd, void *buff, size_t size,
 	msg.msg_iovlen = 1;
 	msg.msg_flags = flags;
 
-	iov.iov_base = (void *)buff;
+	iov.iov_base = buff;
 	iov.iov_len = size;
 
-	ret = recvmsg_sock(idx2sock(sockfd), &msg,
-			idx2flags(sockfd));
+	ret = krecvmsg(idx2sock(sockfd), &msg, idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -281,11 +216,10 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	msg.msg_iovlen = 1;
 	msg.msg_flags = flags;
 
-	iov.iov_base = (void *)buff;
+	iov.iov_base = buff;
 	iov.iov_len = size;
 
-	ret = recvmsg_sock(idx2sock(sockfd), &msg,
-			idx2flags(sockfd));
+	ret = krecvmsg(idx2sock(sockfd), &msg, idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -300,36 +234,29 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	int ret;
-	struct msghdr _msg;
+	struct msghdr msg_;
 
-	memcpy(&_msg, msg, sizeof _msg);
-	_msg.msg_flags = flags;
+	memcpy(&msg_, msg, msg != NULL ? sizeof msg_ : 0);
+	msg_.msg_flags = flags;
 
-	ret = recvmsg_sock(idx2sock(sockfd), &_msg,
+	ret = krecvmsg(idx2sock(sockfd), msg != NULL ? &msg_ : NULL,
 			idx2flags(sockfd));
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	msg->msg_name = _msg.msg_name;
-	msg->msg_namelen = _msg.msg_namelen;
-	msg->msg_flags = _msg.msg_flags;
+	msg->msg_name = msg_.msg_name;
+	msg->msg_namelen = msg_.msg_namelen;
+	msg->msg_flags = msg_.msg_flags;
 
-	return _msg.msg_iov->iov_len;
+	return msg_.msg_iov->iov_len;
 }
 
 int shutdown(int sockfd, int how) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kshutdown(sk, how);
+	ret = kshutdown(idx2sock(sockfd), how);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -341,15 +268,8 @@ int shutdown(int sockfd, int how) {
 int getsockname(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kgetsockname(sk, addr, addrlen);
+	ret = kgetsockname(idx2sock(sockfd), addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -361,15 +281,8 @@ int getsockname(int sockfd, struct sockaddr *addr,
 int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kgetpeername(sk, addr, addrlen);
+	ret = kgetpeername(idx2sock(sockfd), addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -381,15 +294,9 @@ int getpeername(int sockfd, struct sockaddr *addr,
 int getsockopt(int sockfd, int level, int optname, void *optval,
 		socklen_t *optlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = kgetsockopt(sk, level, optname, optval, optlen);
+	ret = kgetsockopt(idx2sock(sockfd), level, optname, optval,
+			optlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
 		return -1;
@@ -401,15 +308,9 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 int setsockopt(int sockfd, int level, int optname,
 		const void *optval, socklen_t optlen) {
 	int ret;
-	struct sock *sk;
 
-	sk = idx2sock(sockfd);
-	if (sk == NULL) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ret = ksetsockopt(sk, level, optname, optval, optlen);
+	ret = ksetsockopt(idx2sock(sockfd), level, optname, optval,
+			optlen);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;

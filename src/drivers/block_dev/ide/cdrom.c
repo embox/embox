@@ -231,7 +231,7 @@ static int idecd_init (void *args) {
 			*path = 0;
 			strcat(path, "/dev/cd#");
 			if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
-				return -1;
+				return drive->idx;
 			}
 			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 

@@ -40,10 +40,10 @@ static int ethernet_build_hdr(struct sk_buff *skb,
 		memset(ethh->h_source, 0, ETH_ALEN);
 	}
 	else {
-		assert(hdr_info->src_addr != NULL);
-		assert(hdr_info->dst_addr != NULL);
-		memcpy(ethh->h_source, hdr_info->src_addr, ETH_ALEN);
-		memcpy(ethh->h_dest, hdr_info->dst_addr, ETH_ALEN);
+		assert(hdr_info->src_hw != NULL);
+		assert(hdr_info->dst_hw != NULL);
+		memcpy(ethh->h_source, hdr_info->src_hw, ETH_ALEN);
+		memcpy(ethh->h_dest, hdr_info->dst_hw, ETH_ALEN);
 	}
 
 	return 0;
@@ -67,8 +67,8 @@ static int ethernet_parse_hdr(struct sk_buff *skb,
 
 	memset(out_hdr_info, 0, sizeof *out_hdr_info);
 	out_hdr_info->type = ntohs(ethh->h_proto);
-	out_hdr_info->src_addr = ethh->h_source;
-	out_hdr_info->dst_addr = ethh->h_dest;
+	out_hdr_info->src_hw = ethh->h_source;
+	out_hdr_info->dst_hw = ethh->h_dest;
 
 	return 0;
 }
