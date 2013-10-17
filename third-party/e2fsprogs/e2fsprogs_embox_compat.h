@@ -104,10 +104,6 @@ static inline int pclose(FILE *stream) {
 	return -1;
 }
 
-static inline void sync(void) {
-	printf(">>> sync\n");
-}
-
 static inline void setbuf(FILE *stream, char *buf) {
 	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
 }
