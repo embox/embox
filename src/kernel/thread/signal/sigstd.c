@@ -38,14 +38,12 @@ int sigstd_raise(struct sigstd_data *sigstd_data, int sig) {
 	return 0;
 }
 
-void sigstd_handle(struct sigstd_table *sigstd_table,
-		struct sigstd_data *sigstd_data) {
-	assert(sigstd_table);
-	assert(sigstd_data);
-
+void sigstd_handle(struct sigstd_data *sigstd_data, void (*handlers[])(int)) {
 	sigset_t pending;
 	int sig;
 	void (*handler)(int sig);
+
+	assert(sigstd_data);
 
 	irq_lock();
 	pending = sigstd_data->pending;
@@ -57,7 +55,7 @@ void sigstd_handle(struct sigstd_table *sigstd_table,
 		assert(check_range(sig, SIGSTD_MIN, SIGSTD_MAX));
 
 		// TODO locks?
-		handler = sigstd_table->handlers[sig + SIGSTD_MIN];
+		handler = handlers[sig + SIGSTD_MIN];
 		if (handler)
 			handler(sig);
 
