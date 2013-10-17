@@ -14,10 +14,10 @@
 int thread_cancel(struct thread *t) {
 	sched_lock();
 	{
-		for (; t->cleanups.counter >= 0; t->cleanups.counter--) {
+		for (; t->cleanups.counter > 0; t->cleanups.counter--) {
 			struct thread_cleanup *cleanup;
 
-			cleanup = &t->cleanups.cleanups[t->cleanups.counter];
+			cleanup = &t->cleanups.cleanups[t->cleanups.counter - 1];
 
 			cleanup->routine(cleanup->arg);
 		}
@@ -56,14 +56,12 @@ int thread_cancel_cleanup_push(void (*routine)(void *), void *arg) {
 	sched_lock();
 	{
 		t = thread_self();
-		assert(CLEANUPS_QUANTITY < t->cleanups.counter);
+		assert((CLEANUPS_QUANTITY > t->cleanups.counter) && (t->cleanups.counter >= 0));
 
-		cleanup = &t->cleanups.cleanups[t->cleanups.counter];
+		cleanup = &t->cleanups.cleanups[t->cleanups.counter++];
 
 		cleanup->routine = routine;
 		cleanup->arg = arg;
-
-		t->cleanups.counter++;
 	}
 	sched_unlock();
 
@@ -77,18 +75,18 @@ int thread_cancel_cleanup_pop(int execute) {
 	sched_lock();
 	{
 		t = thread_self();
+		t->cleanups.counter--;
+		assert(t->cleanups.counter >= 0);
 
 		cleanup = &t->cleanups.cleanups[t->cleanups.counter];
-
-		if (execute) {
-			cleanup->routine(cleanup->arg);
-		}
-
-		t->cleanups.counter--;
 	}
 	sched_unlock();
 
-	return -ENOSUPP;
+	if (execute) {
+		cleanup->routine(cleanup->arg);
+	}
+
+	return ENOERR;
 }
 
 int thread_cancel_init(struct thread *t) {
