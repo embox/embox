@@ -27,6 +27,9 @@ struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 	hcd->ops = ops;
 	index_init(&hcd->enumerator, 1, USB_HC_MAX_DEV, &hcd->idx_data);
 
+	dlist_head_init(&hcd->lnk);
+	dlist_init(&hcd->enum_devs);
+
 	if (ops->hcd_hci_alloc) {
 		hcd->hci_specific = ops->hcd_hci_alloc(hcd, args);
 		if (!hcd->hci_specific) {
