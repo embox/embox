@@ -25,7 +25,7 @@
 #include <net/if_packet.h>
 #include <net/if_ether.h>
 
-int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
+static int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
 		in_addr_t daddr/*, ip_options_t *opt*/) {
 	static uint16_t global_id = 1230;
@@ -63,16 +63,7 @@ static void build_ip_packet(struct inet_sock *in_sk,
 	return;
 }
 
-int ip_queue_send(struct sk_buff *skb) {
-	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
-		printk("ip_queue_send: skb %p dropped by netfilter\n", skb);
-		skb_free(skb);
-		return 0;
-	}
-	return ip_queue_xmit(skb);
-}
-
-int ip_queue_xmit(struct sk_buff *skb) {
+static int ip_queue_xmit(struct sk_buff *skb) {
 	int ret;
 	in_addr_t daddr;
 	struct net_header_info hdr_info;
@@ -100,6 +91,15 @@ int ip_queue_xmit(struct sk_buff *skb) {
 	}
 
 	return net_tx(skb, &hdr_info);
+}
+
+static int ip_queue_send(struct sk_buff *skb) {
+	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
+		printk("ip_queue_send: skb %p dropped by netfilter\n", skb);
+		skb_free(skb);
+		return 0;
+	}
+	return ip_queue_xmit(skb);
 }
 
 /* Fragments skb and sends it to the interface.

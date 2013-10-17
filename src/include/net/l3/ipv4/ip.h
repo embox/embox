@@ -117,13 +117,6 @@ extern int ip_send_packet(struct inet_sock *sk,
  */
 extern int ip_forward_packet(struct sk_buff *skb);
 
-extern int ip_queue_send(struct sk_buff *skb);
-extern int ip_queue_xmit(struct sk_buff *skb);
-
-extern int rebuild_ip_header(struct sk_buff *pack, unsigned char ttl,
-			unsigned char proto, unsigned short id, unsigned short len,
-			in_addr_t saddr, in_addr_t daddr/*, ip_options_t *opt*/);
-
 /**
  * notify an ip socket about icmp error
  **/
