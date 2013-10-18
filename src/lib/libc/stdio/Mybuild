@@ -46,6 +46,7 @@ static module LibCStdio {
 	source "puts.c"
 	source "rename.c"
 	source "scanf.c"
+	source "link.c" // TODO not implemented
 
 	@NoRuntime depends LibCString
 	@NoRuntime depends Sprintf

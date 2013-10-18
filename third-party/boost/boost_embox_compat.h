@@ -64,7 +64,7 @@ namespace std {
 }
 
 extern int symlink(const char *oldpath, const char *newpath);
-extern int link(const char *oldpath, const char *newpath);
+//extern int link(const char *oldpath, const char *newpath);
 extern ssize_t readlink(const char *path, char *buf, size_t bufsiz);
 #define _PC_NAME_MAX 0
 extern long pathconf(char *path, int name);

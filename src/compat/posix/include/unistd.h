@@ -156,6 +156,8 @@ extern int close(int fd);
 
 extern int fsync(int);
 
+/* TODO not implemented link() --Alexander */
+extern int link(const char *oldpath, const char *newpath);
 //extern void sync(void);
 
 extern pid_t fork(void);
