@@ -233,8 +233,10 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	if (sk == NULL) {
 		return -EBADF;
 	}
-	else if ((addr == NULL) || (addrlen == NULL)
-			|| (*addrlen <= 0) || (out_sk == NULL)) {
+	else if (((addr == NULL) && (addrlen != NULL))
+			|| ((addr != NULL) && (addr_len == NULL))
+			|| ((addrlen != NULL) && (*addrlen <= 0))
+			|| (out_sk == NULL)) {
 		return -EINVAL;
 	}
 
