@@ -110,19 +110,6 @@ typedef int sig_atomic_t;
 #define UTIME_OMIT      ((1l << 30) - 2l)
 
 
-#define _SC_PAGESIZE 0
-
-static inline long sysconf(int name) {
-//	(void)__x86_verificator__;
-	printf(">>> sysconf, name - %d\n", name);
-	switch(name) {
-	case _SC_PAGESIZE:
-		return 4096;
-	}
-	return -1;
-}
-
-
 static inline ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
 	printf(">>> pread, fd - %d, offset - %d\n", fd, offset);
 	return -1;

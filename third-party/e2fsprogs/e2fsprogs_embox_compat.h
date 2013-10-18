@@ -34,7 +34,8 @@
 #define MAP_SHARED    0x00
 #define PROT_READ     0x10
 #define PROT_WRITE    0x20
-#define _SC_PAGESIZE 0
+
+
 #define O_ACCMODE       00000003
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
@@ -50,16 +51,6 @@ static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid. gid - %d\n", gid);
 	return NULL;
 }
-
-static inline long sysconf(int name) {
-	printf(">>> sysconf, name - %d\n", name);
-	switch(name) {
-	case _SC_PAGESIZE:
-		return 4096;
-	}
-	return -1;
-}
-
 
 static inline void *mmap(void *addr, size_t length, int prot, int flags,
            int fd, off_t offset) {

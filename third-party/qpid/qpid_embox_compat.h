@@ -174,6 +174,8 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 }
 
 #include <sys/types.h>
+#include <unistd.h>
+
 extern
 pid_t getppid(void);
 
@@ -181,7 +183,6 @@ pid_t getppid(void);
 #ifdef __cplusplus
 
 using std::sysconf;
-#define _SC_PAGE_SIZE _SC_PAGESIZE
 
 #endif // __cplusplus
 

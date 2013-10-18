@@ -31,17 +31,6 @@
 //This can be used to derive sysconf from STLport
 //using std::sysconf;
 
-static inline
-long sysconf(int name) {
-#define _SC_CLK_TCK 1
-	printf(">>> sysconf(%d)\n", name);
-	switch (name) {
-		case _SC_PAGESIZE: return 4096;
-		case _SC_CLK_TCK: return 1000000;
-		default: break;
-	}
-	return -1;
-}
 
 #include <pthread.h>
 

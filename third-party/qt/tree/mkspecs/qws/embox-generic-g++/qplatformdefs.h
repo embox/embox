@@ -78,19 +78,6 @@
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
-#define _SC_CLK_TCK 0
-#define _SC_NPROCESSORS_ONLN 1
-
-inline long sysconf(int name) {
-	printf(">>> sysconf(%d)\n", name);
-	switch (name) {
-	case _SC_CLK_TCK: return 1000;
-	case _SC_NPROCESSORS_ONLN : return 1;
-	default: break;
-	}
-	return -1;
-}
-
 #include <time.h>
 
 #include <fcntl.h>

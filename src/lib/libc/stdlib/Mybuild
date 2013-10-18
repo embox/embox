@@ -8,6 +8,8 @@ static module LibCRand {
 
 static module LibCConfig {
 	source "getpagesize.c"
+	source "sysconf.c"
+
 	depends embox.mem.page_api
 }
 
