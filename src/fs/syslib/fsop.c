@@ -17,13 +17,37 @@
 #include <sys/types.h>
 
 int mount(char *dev,  char *dir, char *fs_type) {
-	return kmount(dev, dir, fs_type);
+	int ret;
+
+	ret = kmount(dev, dir, fs_type);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return 0;
 }
 
 int format(const char *pathname, const char *fs_type) {
-	return kformat(pathname, fs_type);
+	int ret;
+
+	ret = kformat(pathname, fs_type);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return 0;
 }
 
 int umount(char *dir) {
-	return kumount(dir);
+	int ret;
+
+	ret = kumount(dir);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return 0;
 }
