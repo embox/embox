@@ -10,7 +10,7 @@
 #ifndef NET_LIB_NTP_H_
 #define NET_LIB_NTP_H_
 
-#include <hal/arch.h>
+#include <endian.h>
 #include <linux/types.h>
 #include <time.h>
 

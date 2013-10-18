@@ -12,14 +12,15 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <endian.h>
 
 #include <net/skbuff.h>
 #include <net/socket/inet_sock.h>
-#include <hal/arch.h> /* endianess */
 #include <net/util/checksum.h>
 #include <net/netdevice.h>
 #include <net/sock.h>
 #include <linux/types.h>
+
 
 /**
  * Prototypes
