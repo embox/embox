@@ -38,10 +38,11 @@
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
 
-#include <linux/types.h>
-typedef __u16 u_int16_t;
-typedef __u32 u_int32_t;
-typedef __u64 u_int64_t;
+#include <stdint.h>
+typedef uint16_t u_int16_t;
+typedef uint32_t u_int32_t;
+typedef uint64_t u_int64_t;
+typedef unsigned int uint;
 
 
 
