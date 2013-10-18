@@ -46,20 +46,27 @@ int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
 extern
 int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 
-extern
-int alphasort(const struct dirent **a, const struct dirent **b);
-extern
+#include <errno.h>
+
+static inline
+int alphasort(const struct dirent **a, const struct dirent **b) {
+	DPRINT();
+	return 0;
+}
+static inline
 int scandir(const char *dirp, struct dirent ***namelist,
               int (*filter)(const struct dirent *),
-              int (*compar)(const struct dirent **, const struct dirent **));
+              int (*compar)(const struct dirent **, const struct dirent **)) {
+	DPRINT();
+	errno = ENOMEM;
+	return -1;
+}
 
 #define O_NOFOLLOW 0
 #define F_TLOCK 1
 #define F_ULOCK 2
 extern
 int lockf(int fd, int cmd, off_t len);
-
-#include <errno.h>
 
 #define MAP_SHARED    0x00
 //#define MAP_PRIVATE   0x01

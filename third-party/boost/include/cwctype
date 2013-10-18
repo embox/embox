@@ -10,6 +10,7 @@
 #ifndef CWCTYPE_
 #define CWCTYPE_
 
+
 int       iswalnum(wint_t);
 int       iswalpha(wint_t);
 int       iswblank(wint_t);

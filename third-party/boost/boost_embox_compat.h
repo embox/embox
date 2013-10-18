@@ -1,12 +1,12 @@
 /*
- * samba_embox_compat.h
+ * boost_embox_compat.h
  *
  *  Created on: 21 mars 2013
  *      Author: fsulima
  */
 
-#ifndef SAMBA_EMBOX_COMPAT_H_
-#define SAMBA_EMBOX_COMPAT_H_
+#ifndef BOOST_EMBOX_COMPAT_H_
+#define BOOST_EMBOX_COMPAT_H_
 
 #ifdef linux
 #undef linux
@@ -232,4 +232,4 @@ char *if_indextoname(unsigned ifindex, char *ifname);
 extern
 unsigned if_nametoindex(const char *ifname);
 
-#endif /* SAMBA_EMBOX_COMPAT_H_ */
+#endif /* BOOST_EMBOX_COMPAT_H_ */

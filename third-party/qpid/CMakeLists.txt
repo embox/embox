@@ -10,14 +10,19 @@ ExternalProject_Add(
       cd $ENV{EMBOX_ROOT}/third-party/qpid/tree
       #&& bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`"
       && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/qpid/patch.txt
+      && ln <SOURCE_DIR>/src/qpid/management/Buffer.cpp <SOURCE_DIR>/src/qpid/management/Buffer_.cpp
+      && ln <SOURCE_DIR>/src/qpid/management/Mutex.cpp <SOURCE_DIR>/src/qpid/management/Mutex_.cpp
+      && ln <SOURCE_DIR>/src/qpid/log/Options.cpp <SOURCE_DIR>/src/qpid/log/Options_.cpp
+      && ln <SOURCE_DIR>/src/qpid/sys/Shlib.cpp <SOURCE_DIR>/src/qpid/sys/Shlib_.cpp
       #&& cd <SOURCE_DIR> && autoconf && aclocal && automake
       #true
-   #LOG_CONFIGURE 1
+   LOG_CONFIGURE 1
    CMAKE_CACHE_ARGS
       -DBoost_DEBUG:BOOL=on
       #-DCMAKE_SYSTEM_NAME:STRING=Embox
       -DBUILD_HA:BOOL=off
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DCMAKE_BUILD_TYPE:STRING=Debug
    LOG_BUILD 1
 )
 SET (CMAKE_BUILD_TYPE "Debug")
