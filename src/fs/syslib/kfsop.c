@@ -37,18 +37,18 @@ static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct fs_driver *drv;
 	int retval = 0;
 
+	if(NULL == parent->nas->fs) {
+		return -EINVAL;
+	}
 	node = vfs_create(parent, name, mode);
 	if (!node) {
 		return -ENOMEM;
 	}
 
-	if(NULL == parent->nas->fs) {
-		return -EINVAL;
-	}
 	/* check drv of parents */
 	drv = parent->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
-		retval = -1;
+		retval = -ENOSYS;
 		goto out;
 	}
 
@@ -144,7 +144,8 @@ int kunlink(const char *pathname) {
 	}
 
 	if (0 != (res = security_node_delete(node_parent(node), node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	drv = node->nas->fs->drv;
@@ -244,7 +245,12 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	return drv->fsop->format(node);
+	if (0 != (res = drv->fsop->format(node))) {
+		errno = -res;
+		return -1;
+	}
+
+	return 0;
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
@@ -291,11 +297,13 @@ skip_dev_lookup:
 	}
 
 	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	if(ENOERR != (res = mount_table_check(dir_node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
@@ -304,7 +312,8 @@ skip_dev_lookup:
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 		}
-		return res;
+		errno = -res;
+		return -1;
 
 	}
 	if(ENOERR != (res = mount_table_add(dir_node))) {
@@ -314,7 +323,8 @@ skip_dev_lookup:
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 		}
-		return res;
+		errno = -res;
+		return -1;
 	}
 	return ENOERR;
 }
@@ -738,5 +748,5 @@ int kflock(int fd, int operation) {
 		spin_unlock(flock_guard);
 	}
 
-	return -ENOERR;
+	return ENOERR;
 }
