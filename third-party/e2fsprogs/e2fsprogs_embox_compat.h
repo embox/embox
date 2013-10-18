@@ -16,7 +16,6 @@
 #include <grp.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
 
 #ifdef linux
 #undef linux
@@ -28,7 +27,6 @@
 
 #define EOVERFLOW 1
 #define EMBOX
-#define HAVE_STRCASECMP
 
 #define MAP_PRIVATE   0x01
 #define MAP_SHARED    0x00
@@ -141,9 +139,18 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result) {
 	return NULL;
 }
 
+static inline void sync(void) {
+	printf("sync\n");
+}
+
 static inline int daemon(int nochdir, int noclose) {
 	printf(">>> daemon, nochdir - %d, noclose - %d\n", nochdir, noclose);
 	return -1;
+}
+
+static inline char *getwd(char *buf) {
+	printf("getwd, buf - %p\n", buf);
+	return NULL;
 }
 
 #endif /* E2FSPROGS_EMBOX_COMPAT_H_ */

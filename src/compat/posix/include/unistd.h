@@ -156,7 +156,7 @@ extern int close(int fd);
 
 extern int fsync(int);
 
-extern void sync(void);
+//extern void sync(void);
 
 extern pid_t fork(void);
 
