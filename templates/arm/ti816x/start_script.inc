@@ -5,3 +5,6 @@
 "ifconfig eth0 192.168.0.102 netmask 255.255.255.0 up",
 "route add 192.168.0.0 netmask 255.255.255.0 eth0",
 "route add default gw 192.168.0.1 eth0",
+
+"export QT_QPA_FONTDIR=/fonts",
+"echo cxxapp -platform vnc",
