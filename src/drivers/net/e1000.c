@@ -230,8 +230,10 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 		if (netdev_priv(dev, struct e1000_priv)->link_status) {
 			printk("e1000: Link up\n");
+			netdev_flag_up(dev, IFF_RUNNING);
 		} else {
 			printk("e1000: Link down. Please check and insert network cable\n");
+			netdev_flag_down(dev, IFF_RUNNING);
 		}
 
 	}

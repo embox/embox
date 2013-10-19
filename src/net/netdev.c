@@ -134,8 +134,7 @@ int netdev_open(struct net_device *dev) {
 		}
 	}
 
-	/* TODO IFF_RUNNING sets not here*/
-	dev->flags |= IFF_UP | IFF_RUNNING;
+	dev->flags |= IFF_UP;
 
 	return 0;
 }
@@ -158,8 +157,7 @@ int netdev_close(struct net_device *dev) {
 		}
 	}
 
-	/* TODO IFF_RUNNING sets not here*/
-	dev->flags &= ~(IFF_UP | IFF_RUNNING);
+	dev->flags &= ~IFF_UP;
 
 	return 0;
 }

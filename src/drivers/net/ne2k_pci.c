@@ -327,6 +327,12 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 				if (status & ENTSR_CDH) { stat->tx_heartbeat_errors++; }
 				if (status & ENTSR_OWC) { stat->tx_window_errors++; }
 			}
+			if ((status & ENTSR_COL) && (status & ENTSR_ABT)) {
+				netdev_flag_down(dev_id, IFF_RUNNING);
+			}
+			else {
+				netdev_flag_up(dev_id, IFF_RUNNING);
+			}
 		} else if (isr & ENISR_TX_ERR) {
 			out8(ENISR_TX_ERR, base_addr + EN0_ISR); // TODO
 		}

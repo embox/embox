@@ -188,8 +188,12 @@ static void virtio_config(struct net_device *dev) {
 	}
 
 	/* negotiate STATUS bit */
-	assert(virtio_net_has_feature(VIRTIO_NET_F_STATUS, dev));
-	guest_features |= VIRTIO_NET_F_STATUS;
+	if (virtio_net_has_feature(VIRTIO_NET_F_STATUS, dev)) {
+		if (virtio_net_get_status(dev) & VIRTIO_NET_S_LINK_UP) {
+			netdev_flag_up(dev, IFF_RUNNING);
+		}
+		guest_features |= VIRTIO_NET_F_STATUS;
+	}
 
 	/* finalize guest features bits */
 	virtio_net_set_feature(guest_features, dev);
