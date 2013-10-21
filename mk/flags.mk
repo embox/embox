@@ -70,7 +70,7 @@ override CXXFLAGS = -pipe
 override CXXFLAGS += -fno-strict-aliasing -fno-common
 override CXXFLAGS += -Wall -Werror
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
-override CXXFLAGS += -Wformat -Wno-format-zero-length -Wformat-nonliteral
+override CXXFLAGS += -Wformat -Wformat-nonliteral
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
 override CXXFLAGS += -I$(ROOT_DIR)/build/gcc/include
 #	C++ has build-in type bool
