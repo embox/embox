@@ -359,7 +359,7 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	tcp_sk = to_tcp_sock(sk);
 
-	debug_print(3, "tcp_recvmsg: sk %p\n", tcp_sk);
+	debug_print(3, "tcp_recvmsg: sk %p\n", to_sock(tcp_sk));
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
 	switch (tcp_sk->state) {
