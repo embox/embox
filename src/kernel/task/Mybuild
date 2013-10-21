@@ -2,7 +2,7 @@ package embox.kernel.task
 
 @DefaultImpl(single)
 abstract module api {
-	option number max_resource_size = 1024
+	option number max_resource_size = 1536
 
 }
 
