@@ -20,10 +20,10 @@ struct sk_buff;
  */
 struct net_pack {
 	unsigned short type;  /* type of packet */
+	int (*rcv_pack)(struct sk_buff *skb,
+			struct net_device *dev); /* packet handler */
 	int (*init)(void);    /* initializer of this packet family */
 	int (*fini)(void);
-	int (*handle)(struct sk_buff *skb,
-			struct net_device *dev); /* packet handler */
 };
 
 #endif /* FRAMEWORK_NET_PACK_TYPES_H_ */

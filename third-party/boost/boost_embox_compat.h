@@ -1,12 +1,12 @@
 /*
- * samba_embox_compat.h
+ * boost_embox_compat.h
  *
  *  Created on: 21 mars 2013
  *      Author: fsulima
  */
 
-#ifndef SAMBA_EMBOX_COMPAT_H_
-#define SAMBA_EMBOX_COMPAT_H_
+#ifndef BOOST_EMBOX_COMPAT_H_
+#define BOOST_EMBOX_COMPAT_H_
 
 #ifdef linux
 #undef linux
@@ -31,17 +31,6 @@
 //This can be used to derive sysconf from STLport
 //using std::sysconf;
 
-static inline
-long sysconf(int name) {
-#define _SC_CLK_TCK 1
-	printf(">>> sysconf(%d)\n", name);
-	switch (name) {
-		case _SC_PAGESIZE: return 4096;
-		case _SC_CLK_TCK: return 1000000;
-		default: break;
-	}
-	return -1;
-}
 
 #include <pthread.h>
 
@@ -75,7 +64,7 @@ namespace std {
 }
 
 extern int symlink(const char *oldpath, const char *newpath);
-extern int link(const char *oldpath, const char *newpath);
+//extern int link(const char *oldpath, const char *newpath);
 extern ssize_t readlink(const char *path, char *buf, size_t bufsiz);
 #define _PC_NAME_MAX 0
 extern long pathconf(char *path, int name);
@@ -117,9 +106,6 @@ int swprintf(wchar_t *wcs, size_t maxlen,
 extern
 int vswprintf(wchar_t *wcs, size_t maxlen,
 	const wchar_t *format, va_list args);
-
-extern
-int getpagesize(void);
 
 /* Length of interface name.  */
 #define IF_NAMESIZE	16
@@ -246,4 +232,4 @@ char *if_indextoname(unsigned ifindex, char *ifname);
 extern
 unsigned if_nametoindex(const char *ifname);
 
-#endif /* SAMBA_EMBOX_COMPAT_H_ */
+#endif /* BOOST_EMBOX_COMPAT_H_ */

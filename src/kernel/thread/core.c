@@ -30,7 +30,6 @@
 #include <kernel/sched.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/thread_alloc.h>
-#include <kernel/thread/wait_data.h>
 #include <kernel/sched/sched_priority.h>
 
 #include <kernel/panic.h>
@@ -208,7 +207,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(t);
 
-	wait_data_init(&t->wait_data);
+	t->wait_data.status = WAIT_DATA_STATUS_NONE;
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {

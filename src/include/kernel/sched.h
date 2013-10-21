@@ -15,8 +15,7 @@
 
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
-//#include <kernel/thread/types.h>
-#include <kernel/thread/wait_data.h>
+
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 

@@ -10,14 +10,13 @@
 #ifndef NET_L4_TCP_H_
 #define NET_L4_TCP_H_
 
-#include <hal/arch.h>
-#include <linux/types.h>
-#include <linux/list.h>
-
+#include <endian.h>
 #include <sys/time.h>
-
 #include <netinet/tcp.h>
 
+
+#include <linux/types.h>
+#include <linux/list.h>
 #include <net/socket/inet_sock.h>
 
 typedef struct tcphdr {

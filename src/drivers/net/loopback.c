@@ -59,13 +59,13 @@ static const struct net_driver loopback_ops = {
  * per network namespace.
  */
 static int loopback_setup(struct net_device *dev) {
-	dev->mtu                = (16 * 1024) + 20 + 20 + 12;
-	dev->addr_len           = ETH_ALEN;
-	dev->tx_queue_len       = 0;
-	dev->type               = ARPG_HRD_LOOPBACK;
-	dev->flags              = IFF_LOOPBACK;
-	dev->drv_ops         = &loopback_ops;
-	dev->ops         = &ethernet_ops;
+	dev->mtu          = (16 * 1024) + 20 + 20 + 12;
+	dev->addr_len     = ETH_ALEN;
+	dev->tx_queue_len = 0;
+	dev->type         = ARPG_HRD_LOOPBACK;
+	dev->flags        = IFF_LOOPBACK | IFF_RUNNING;
+	dev->drv_ops      = &loopback_ops;
+	dev->ops          = &ethernet_ops;
 	return 0;
 }
 

@@ -100,7 +100,7 @@
 #define DBL_MIN          (1e-999)
 #endif
 /* Number of significant digits in a floating point number. */
-#ifdef FLT_DIG
+#ifdef __FLT_DIG__
 #undef FLT_DIG
 #define FLT_DIG __FLT_DIG__
 #else

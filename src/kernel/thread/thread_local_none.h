@@ -11,9 +11,9 @@
 #include <errno.h>
 
 
-struct thread_local {
+struct pthread_local {
 };
-typedef struct thread_local __thread_local_t;
+typedef struct pthread_local __thread_local_t;
 
 static inline int thread_local_alloc(struct thread *t, size_t size) {
 	return -ENOSUPP;

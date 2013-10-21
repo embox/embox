@@ -20,7 +20,7 @@ module tish {
 	source "tish.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibC
+	depends embox.lib.Tokenizer
 	depends embox.lib.readline_api
 	depends embox.mem.heap_api
 	depends third_party.lib.linenoise /* for completion */

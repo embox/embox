@@ -1,0 +1,30 @@
+package embox.lib
+
+static module LibCRand {
+	source "rand.c"
+	source "random.c"
+	source "random_r.c"
+}
+
+static module LibCConfig {
+	source "getpagesize.c"
+	source "sysconf.c"
+
+	depends embox.mem.page_api
+}
+
+static module LibCStdlib {
+	source "bsearch.c"
+	source "qsort.c"
+	source "strtod.c"
+	source "strtol.c"
+	source "strtoul.c"
+	source "abort.c"
+	source "system.c"
+	source "strtoll.c"
+	source "strtoull.c"
+	source "atol.c"
+
+	depends LibCConfig
+	@NoRuntime depends LibCRand /* qsort required*/
+}

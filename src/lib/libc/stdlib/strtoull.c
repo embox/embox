@@ -1,5 +1,6 @@
-/*
- * Copyright (c) 1990 Regents of the University of California.
+/*	$OpenBSD: strtoull.c,v 1.5 2005/08/08 08:05:37 espie Exp $ */
+/*-
+ * Copyright (c) 1992 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,83 +28,89 @@
  * SUCH DAMAGE.
  */
 
-/**
- * @file
- * @brief Convert a string to a unsigned long integer.
- *
- * @see stdlib.h
- *
- * @date 10.11.11
- * @author Nikolay Korotky
- *          - Initial import
- */
+#include <sys/types.h>
 
-#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
 
-#define ULONG_MAX ((unsigned long)(~0x0L)) /* 0xFFFFFFFF */
-#define LONG_MAX  ((long)(ULONG_MAX >> 1)) /* 0x7FFFFFFF */
-#define LONG_MIN  ((long)(~LONG_MAX))      /* 0x80000000 */
-
-unsigned long int strtoul(const char *nptr, char **endptr, int base) {
-	const char *s = nptr;
-	unsigned long acc;
+/*
+ * Convert a string to an unsigned long long.
+ *
+ * Ignores `locale' stuff.  Assumes that the upper and lower case
+ * alphabets and digits are each contiguous.
+ */
+unsigned long long int
+strtoull(const char *nptr, char **endptr, int base)
+{
+	const char *s;
+	unsigned long long int acc, cutoff;
 	int c;
-	unsigned long cutoff;
-	int neg = 0, any, cutlim;
+	int neg, any, cutlim;
 
 	/*
-	 * See strtol for comments as to the logic used.
+	 * See strtoq for comments as to the logic used.
 	 */
+	s = nptr;
 	do {
-		c = *s++;
+		c = (unsigned char) *s++;
 	} while (isspace(c));
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
-	} else if (c == '+')
-		c = *s++;
+	} else {
+		neg = 0;
+		if (c == '+')
+			c = *s++;
+	}
 	if ((base == 0 || base == 16) &&
 	    c == '0' && (*s == 'x' || *s == 'X')) {
 		c = s[1];
 		s += 2;
 		base = 16;
 	}
-	if (base == 0) {
+	if (base == 0)
 		base = c == '0' ? 8 : 10;
-	}
-	cutoff = (unsigned long) ULONG_MAX / (unsigned long) base;
-	cutlim = (unsigned long) ULONG_MAX % (unsigned long) base;
-	for (acc = 0, any = 0;; c = *s++) {
-		if (isdigit(c)) {
+
+	cutoff = ULLONG_MAX / (unsigned long long)base;
+	cutlim = ULLONG_MAX % (unsigned long long)base;
+	for (acc = 0, any = 0;; c = (unsigned char) *s++) {
+		if (isdigit(c))
 			c -= '0';
-		} else if (isalpha(c)) {
+		else if (isalpha(c))
 			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
-		} else {
+		else
 			break;
-		}
-		if (c >= base) {
+		if (c >= base)
 			break;
-		}
-		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim)) {
+		if (any < 0)
+			continue;
+		if (acc > cutoff || (acc == cutoff && c > cutlim)) {
 			any = -1;
+			acc = ULLONG_MAX;
+			errno = ERANGE;
 		} else {
 			any = 1;
-			acc *= base;
+			acc *= (unsigned long long)base;
 			acc += c;
 		}
 	}
-	if (any < 0) {
-		acc = ULONG_MAX;
-		SET_ERRNO(ERANGE);
-	} else if (any == 0) {
-		SET_ERRNO(EINVAL);
-	} else if (neg) {
+	if (neg && any > 0)
 		acc = -acc;
-	}
-	if (endptr != 0) {
+	if (endptr != 0)
 		*endptr = (char *) (any ? s - 1 : nptr);
-	}
-	return acc;
+	return (acc);
 }
+
+
+#ifdef __weak_alias
+__weak_alias(strtouq, strtoull);
+#else
+uint64_t
+strtouq(const char *nptr, char **endptr, int base)
+{
+
+	return ((uint64_t)strtoull(nptr, endptr, base));
+}
+#endif

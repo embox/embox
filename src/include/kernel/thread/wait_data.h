@@ -9,11 +9,6 @@
 #ifndef KERNEL_THREAD_WAIT_DATA_H_
 #define KERNEL_THREAD_WAIT_DATA_H_
 
-#include <errno.h>
-#include <assert.h>
-
-#include <hal/ipl.h>
-
 #include <kernel/work.h>
 
 #define WAIT_DATA_STATUS_NONE        0
@@ -32,29 +27,5 @@ struct wait_data {
 	void *data;
 };
 
-static inline void wait_data_init(struct wait_data *wait_data) {
-	wait_data->status = WAIT_DATA_STATUS_NONE;
-}
-
-static inline void wait_data_prepare(struct wait_data *wait_data,
-		int (*handler)(struct work *)) {
-	ipl_t ipl;
-
-	assert(wait_data->status == WAIT_DATA_STATUS_NONE);
-
-	ipl = ipl_save();
-	{
-		work_init(&wait_data->work, handler, WORK_DISABLED);
-		wait_data->result = ENOERR;
-		wait_data->status = WAIT_DATA_STATUS_WAITING;
-	}
-	ipl_restore(ipl);
-}
-
-static inline void wait_data_cleanup(struct wait_data *wait_data) {
-	assert(wait_data->status != WAIT_DATA_STATUS_NONE);
-
-	wait_data->status = WAIT_DATA_STATUS_NONE;
-}
 
 #endif /* KERNEL_THREAD_WAIT_DATA_H_ */

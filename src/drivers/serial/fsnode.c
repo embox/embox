@@ -6,6 +6,8 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
+
 #include <kernel/irq.h>
 #include <drivers/uart_device.h>
 #include <fs/file_desc.h>

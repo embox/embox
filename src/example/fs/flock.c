@@ -10,9 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/file.h>
+#include <fcntl.h>
 #include <framework/example/self.h>
 
+#include <sys/file.h>
 /**
  * This macro is used for registration of this example at system
  * run - function which describe work of example

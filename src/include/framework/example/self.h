@@ -28,7 +28,7 @@
 	MOD_INFO_BIND(&__example_mod_ops, __example)
 #else
 #define EMBOX_EXAMPLE(_exec)                                   \
-	ARRAY_SPREAD_DECLARE(const struct example, __example_registry); \
+	ARRAY_SPREAD_DECLARE(struct example, __example_registry); \
 	extern const struct mod_ops __example_mod_ops; \
 	static int _exec(int argc, char **argv);                   \
 	ARRAY_SPREAD_ADD_NAMED(__example_registry, __example,   {  \

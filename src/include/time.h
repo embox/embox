@@ -29,8 +29,14 @@ CLOCKS_PER_SEC
     seconds. */
 #include <defines/null.h>
 
+/* The value of this macro is the number of clock ticks per second measured by
+ * the clock function.
+ */
 #define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
 
+
+/* This is an obsolete name for CLOCKS_PER_SEC. */
+#define CLK_TCK            CLOCKS_PER_SEC
 
 /* Parameters used to convert the time specific values */
 #define MSEC_PER_SEC    1000L

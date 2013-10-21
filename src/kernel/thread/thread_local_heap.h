@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct thread_local {
+struct pthread_local {
 	void **storage;
 	size_t size;
 };
-typedef struct thread_local __thread_local_t;
+typedef struct pthread_local __thread_local_t;
 
 #endif /* THREAD_LOCAL_HEAP_H_ */

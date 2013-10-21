@@ -16,7 +16,7 @@ module shell {
 		"console/cmdline.c", "console/screen.c",
 		"console/screen_in.c", "console/screen_out.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.Tokenizer
 	depends embox.util.LibUtil
 	depends embox.driver.terminal
 	depends embox.framework.LibFramework

@@ -8,6 +8,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>

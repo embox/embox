@@ -256,15 +256,17 @@ struct usb_dev {
 	enum usb_dev_state state;
 	usb_dev_notify_hnd_t notify_hnd;
 
+	unsigned short idx; /**< index allocated for device */
+	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
+				   after `addressed' is idx */
+	struct dlist_head enum_link;
+
 	struct sys_timer post_timer;
 
 	struct usb_hcd *hcd;
 	struct usb_hub_port *port;
 	unsigned char endp_n;
 	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
-	unsigned short idx; /**< index allocated for device */
-	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
-				   after `addressed' is idx */
 	unsigned char c_config;
 	unsigned char c_interface;
 
@@ -316,6 +318,7 @@ struct usb_hcd {
 
 	index_data_t idx_data[INDEX_DATA_LEN(USB_HC_MAX_DEV)];
 	struct indexator enumerator;
+	struct dlist_head enum_devs;
 
 	void *hci_specific;
 };

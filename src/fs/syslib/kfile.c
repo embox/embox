@@ -21,6 +21,7 @@
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+#include <fs/flags.h>
 #include <security/security.h>
 
 static struct node *kcreat(struct node *dir, const char *path, mode_t mode) {

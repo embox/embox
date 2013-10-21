@@ -14,6 +14,7 @@
 
 //#define _STLP_NO_WCHAR_T
 #define _STLP_NO_CWCHAR
+//#define _STLP_NO_NATIVE_WIDE_FUNCTIONS
 
 //#define _STLP_NO_LONG_DOUBLE
 #define _STLP_NO_VENDOR_MATH_L
@@ -42,21 +43,26 @@
 #endif
 
 
-// ToDo: endianness
-static void __x86_verificator__(void) {
-	// This is to make sure this header only compiles on x86
-	asm ("mov %cr2, %eax");
-}
-#define	__LITTLE_ENDIAN	1234
-#define	__BIG_ENDIAN	4321
-#define	__PDP_ENDIAN	3412
-// x86 architecture only
-#define __BYTE_ORDER __LITTLE_ENDIAN
+#ifdef __WINT_TYPE__
+typedef __WINT_TYPE__ wint_t;
+#else //__WINT_TYPE__
+#error __WINT_TYPE__ is not defined
+#endif //__WINT_TYPE__
 
-#define LITTLE_ENDIAN __LITTLE_ENDIAN
-#define BIG_ENGIAN    __BIG_ENDIAN
-#define PDP_ENDIAN    __PDP_ENDIAN
-#define BYTE_ORDER    __BYTE_ORDER
+
+/* Endiannes */
+#include <endian.h>
+#if !defined(__BYTE_ORDER) || !defined(__LITTLE_ENDIAN) || !defined(__BIG_ENDIAN)
+#  error "One of __BYTE_ORDER, __LITTLE_ENDIAN and __BIG_ENDIAN undefined; Fix me!"
+#endif
+
+#if ( __BYTE_ORDER == __LITTLE_ENDIAN )
+#  define _STLP_LITTLE_ENDIAN 1
+#elif ( __BYTE_ORDER == __BIG_ENDIAN )
+#  define _STLP_BIG_ENDIAN 1
+#else
+#  error "__BYTE_ORDER neither __BIG_ENDIAN nor __LITTLE_ENDIAN; Fix me!"
+#endif
 
 
 #endif /* __STL_CONFIG_EMBOX_H_ */

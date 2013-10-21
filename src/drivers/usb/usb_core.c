@@ -11,6 +11,7 @@
 #include <util/member.h>
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
+#include <kernel/irq_lock.h>
 #include <kernel/time/ktime.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -113,6 +114,72 @@ static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) 
 	return dev->getconf_data = &dev->tgetconf_data;
 }
 
+static inline struct usb_dev *usb_hcd_enum_curdev(struct usb_hcd *hcd) {
+	struct dlist_head *dev_link = hcd->enum_devs.next;
+	return member_cast_out(dev_link, struct usb_dev, enum_link);
+}
+
+static int usb_hcd_do_enum(struct usb_hcd *hcd) {
+	struct usb_dev *dev;
+
+	irq_lock();
+	{
+
+		if (dlist_empty(&hcd->enum_devs)) {
+			irq_unlock();
+			return 0;
+		}
+
+		dev = usb_hcd_enum_curdev(hcd);
+	}
+	irq_unlock();
+
+	usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
+
+	return 0;
+}
+
+static int usb_dev_enumerate(struct usb_dev *dev) {
+	struct usb_hcd *hcd = dev->hcd;
+	bool is_enumerating;
+
+	irq_lock();
+	{
+		is_enumerating = !dlist_empty(&hcd->enum_devs);
+		dlist_head_init(&dev->enum_link);
+		dlist_add_prev(&dev->enum_link, &hcd->enum_devs);
+	}
+	irq_unlock();
+
+	if (!is_enumerating) {
+		usb_hcd_do_enum(hcd);
+	}
+
+	return 0;
+}
+
+static void usb_dev_enumerate_done(struct usb_dev *dev) {
+	struct usb_hcd *hcd = dev->hcd;
+	bool has_to_enum;
+
+	irq_lock();
+	{
+		struct usb_dev *qdev = usb_hcd_enum_curdev(hcd);
+
+		assert(hcd->enum_devs.next == &qdev->enum_link);
+		assert(qdev == dev);
+
+		dlist_del(&dev->enum_link);
+
+		has_to_enum = !dlist_empty(&hcd->enum_devs);
+	}
+	irq_unlock();
+
+	if (has_to_enum) {
+		usb_hcd_do_enum(hcd);
+	}
+}
+
 #if 0
 static void usb_dev_getconf_free(struct usb_dev *dev) {
 	dev->getconf_data = NULL;
@@ -132,6 +199,7 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req) {
 
 	dev->bus_idx = dev->idx;
 	usb_dev_set_state(dev, USB_DEV_ADDRESS);
+	usb_dev_enumerate_done(dev);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
 		USB_DEV_REQ_TYPE_RD
@@ -241,7 +309,7 @@ static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_eve
 	if (event_type == USB_DEV_EVENT_POSTED) {
 		usb_dev_set_state(dev, USB_DEV_POWERED);
 		usb_dev_wait(dev, usb_dev_notify_reset_awaiting);
-		usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
+		usb_dev_enumerate(dev);
 	} else if (event_type == USB_DEV_EVENT_PORT) {
 		/* handle dither */
 		printk("%s: port event: status=%08x\n", __func__, dev->port->status);

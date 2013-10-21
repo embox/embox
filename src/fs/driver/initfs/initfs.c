@@ -104,14 +104,14 @@ static int initfs_mount(void *dev, void *dir) {
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (entry.name_len > PATH_MAX) {
-			return -1;
+			return -ENAMETOOLONG;
 		}
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
 		node = vfs_create_intermediate(dir_node, name, entry.mode);
 		if (!node) {
-			return -1;
+			return -ENOMEM;
 		}
 
 		fi = pool_alloc(&fdesc_pool);

@@ -31,6 +31,7 @@
 #include_next <stdio.h>
 #include_next <time.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus
@@ -83,15 +84,6 @@ namespace std {
 		return -1;
 	}
 
-#define _SC_PAGESIZE 0
-	inline long sysconf(int name) {
-		printf(">>> sysconf(%d)\n", name);
-		switch (name) {
-		case _SC_PAGESIZE: return 4096;
-		default: break;
-		}
-		return -1;
-	}
 
 //#define MAP_SHARED    0x00
 #define MAP_PRIVATE   0x01
@@ -140,11 +132,12 @@ extern void clearerr(FILE *stream);
 
 #include <defines/wchar_t.h>
 
-#ifdef __WINT_TYPE__
-typedef __WINT_TYPE__ wint_t;
-#else //__WINT_TYPE__
-#error __WINT_TYPE__ is not defined
-#endif //__WINT_TYPE__
+// moving this section to _embox.h
+//#ifdef __WINT_TYPE__
+//typedef __WINT_TYPE__ wint_t;
+//#else //__WINT_TYPE__
+//#error __WINT_TYPE__ is not defined
+//#endif //__WINT_TYPE__
 
 #ifdef __WCHAR_MIN__
 #define WCHAR_MIN __WCHAR_MIN__

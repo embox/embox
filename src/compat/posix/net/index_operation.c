@@ -8,6 +8,7 @@
  */
 
 #include <stddef.h>
+#include <errno.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>

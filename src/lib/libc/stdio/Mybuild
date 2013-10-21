@@ -1,0 +1,53 @@
+package embox.lib
+
+static module Print {
+	option number support_floating = 1
+
+	source "printf_impl.c"
+	source "printf_impl.h"
+
+	//depends LibCMath // depends from support_floating value
+	@NoRuntime depends LibCStdlib // atoi
+	@NoRuntime depends LibCType
+}
+
+static module Printk {
+	source "printk.c"
+
+	depends embox.driver.diag
+	@NoRuntime depends Print
+}
+
+static module Sprintf {
+	source "sprintf.c"
+	source "snprintf.c"
+
+	@NoRuntime depends Print
+	@NoRuntime depends LibGcc
+}
+
+
+static module LibCStdio {
+
+	option number file_quantity = 16
+
+	source "fgetc.c"
+
+	source "file_ops.c"
+	depends embox.compat.posix.fs.file
+
+	source "printf.c"
+	source "fprintf.c"
+	depends Print
+
+	source "fputc.c"
+	source "gets.c"
+	source "perror.c"
+	source "puts.c"
+	source "rename.c"
+	source "scanf.c"
+	source "link.c" // TODO not implemented
+
+	@NoRuntime depends LibCString
+	@NoRuntime depends Sprintf
+}

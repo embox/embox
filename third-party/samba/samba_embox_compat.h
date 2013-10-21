@@ -64,11 +64,6 @@ static inline int sigaction(int signum, const struct sigaction *act,
 	return -1;
 }
 
-static inline
-int getpagesize(void) {
-	DPRINT();
-	return 4096;
-}
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
 #include <sys/select.h>
@@ -308,12 +303,7 @@ int getgroups(int size, gid_t list[]) {
 }
 
 #include <stdlib.h>
-static inline
-unsigned long long int strtoull(const char *nptr, char **endptr,
-                                       int base) {
-	DPRINT();
-	return strtoul(nptr, endptr, base);
-}
+
 
 static inline
 void clearerr(FILE *stream) {

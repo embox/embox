@@ -138,8 +138,8 @@ static int parse_result(struct packet_in *rx_pack,
 }
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
-	uint32_t total, last_sent;
-	int i, cnt_resp, cnt_err, sk;
+	clock_t started, last_sent;
+	int cnt_req, cnt_rep, cnt_err, sk;
 	struct sockaddr_in to;
 	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
 	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
@@ -152,7 +152,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		return -ENOMEM;
 	}
 
-	cnt_resp = 0; cnt_err = 0; next_seq = 0;
+	cnt_req = cnt_rep = cnt_err = 0; next_seq = 0;
 
 	tx_pack->icmph.type = ICMP_ECHO;
 	tx_pack->icmph.code = 0;
@@ -175,18 +175,17 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
 	last_sent = 0;
-	total = clock();
-	i = 0;
+	started = clock();
 	last_seq = -1;
-	while (last_seq != next_seq || i < pinfo->count) {
+	while (last_seq != next_seq || cnt_req < pinfo->count) {
 		if (clock() - last_sent >= pinfo->interval
-				&& i < pinfo->count) {
+				&& cnt_req < pinfo->count) {
 			tx_pack->icmph.un.echo.sequence = htons(++next_seq);
 			tx_pack->icmph.checksum = 0;
 			tx_pack->icmph.checksum = ptclbsum(tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size);
 			sendto(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0,
 					(struct sockaddr *)&to, sizeof to);
-			++i;
+			++cnt_req;
 			last_sent = clock();
 		}
 
@@ -201,8 +200,8 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 		/* try to fetch response */
 		if (parse_result(rx_pack, tx_pack, official_name, &to,
-					&last_seq, total, pinfo->interval)) {
-			cnt_resp++; /* if response was fetched proceed */
+					&last_seq, started, pinfo->interval)) {
+			cnt_rep++; /* if response was fetched proceed */
 		} else { /* else output diagnostics */
 			cnt_err++;
 		}
@@ -213,9 +212,9 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 	/* output statistics */
 	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
-	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
-		cnt_resp + cnt_err, cnt_resp, (cnt_err * 100) / (cnt_err + cnt_resp),
-		(int)(clock() - total));
+	printf("%d packets transmitted, %d received, %d%% packet loss, time %jums\n",
+			cnt_req, cnt_rep, (cnt_err * 100) / cnt_req,
+			(uintmax_t)(clock() - started));
 
 	close(sk);
 	return 0;

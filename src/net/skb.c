@@ -40,29 +40,31 @@ struct sk_buff_data {
 		char __unused[PAD_SIZE];
 		unsigned char data[MODOPS_DATA_SIZE];
 	} ATTR_ALIGNED;
-	unsigned int links;
+	size_t links;
 };
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
 
-unsigned char * skb_data_get_extra_hdr(struct sk_buff_data *skb_data) {
+unsigned char * skb_data_get_extra_hdr(
+		struct sk_buff_data *skb_data) {
 	return &skb_data->extra_hdr[0];
 }
 
-unsigned char * skb_data_get_data(struct sk_buff_data *skb_data) {
+unsigned char * skb_data_get_data(
+		struct sk_buff_data *skb_data) {
 	return &skb_data->data[0];
 }
 
-unsigned int skb_max_extra_hdr_size(void) {
+size_t skb_max_extra_hdr_size(void) {
 	return member_sizeof(struct sk_buff_data, extra_hdr);
 }
 
-unsigned int skb_max_size(void) {
+size_t skb_max_size(void) {
 	return member_sizeof(struct sk_buff_data, data);
 }
 
-unsigned int skb_avail(struct sk_buff *skb) {
+size_t skb_avail(const struct sk_buff *skb) {
 	return skb_max_size() - skb->len;
 }
 
@@ -114,8 +116,8 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 	ipl_restore(sp);
 }
 
-struct sk_buff * skb_wrap(unsigned int size,
-		unsigned int offset, struct sk_buff_data *skb_data) {
+struct sk_buff * skb_wrap(size_t size, size_t offset,
+		struct sk_buff_data *skb_data) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
@@ -154,7 +156,7 @@ struct sk_buff * skb_wrap(unsigned int size,
 	return skb;
 }
 
-struct sk_buff * skb_alloc(unsigned int size) {
+struct sk_buff * skb_alloc(size_t size) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
@@ -222,7 +224,7 @@ static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	memcpy(&to->data->data[0], &from->data->data[0], from->len);
 }
 
-struct sk_buff * skb_copy(struct sk_buff *skb) {
+struct sk_buff * skb_copy(const struct sk_buff *skb) {
 	struct sk_buff *copied;
 
 	assert(skb != NULL);
@@ -238,7 +240,7 @@ struct sk_buff * skb_copy(struct sk_buff *skb) {
 	return copied;
 }
 
-struct sk_buff * skb_clone(struct sk_buff *skb) {
+struct sk_buff * skb_clone(const struct sk_buff *skb) {
 	struct sk_buff *cloned;
 	struct sk_buff_data *cloned_data;
 
@@ -260,7 +262,7 @@ struct sk_buff * skb_clone(struct sk_buff *skb) {
 	return cloned;
 }
 
-void skb_rshift(struct sk_buff *skb, unsigned int count) {
+void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(skb != NULL);
 	assert(skb->data != NULL);
 	assert(count + skb->len <= skb_max_size());

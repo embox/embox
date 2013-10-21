@@ -45,5 +45,5 @@ int net_rx(struct sk_buff *skb) {
 	}
 
 	/* handling on L3 layer */
-	return npack->handle(skb, skb->dev);
+	return npack->rcv_pack(skb, skb->dev);
 }

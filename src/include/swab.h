@@ -1,40 +1,41 @@
 #ifndef _LINUX_SWAB_H
 #define _LINUX_SWAB_H
 
-#include <linux/types.h>
-#include <linux/compiler.h>
+//#include <linux/types.h>
+//#include <linux/compiler.h>
+#include <inttypes.h>
 
 /*
  * casts are necessary for constants, because we never know how for sure
- * how U/UL/ULL map to __u16, __u32, __u64. At least not in a portable way.
+ * how U/UL/ULL map to uint16_t, uint32_t, uint64_t. At least not in a portable way.
  */
-#define ___constant_swab16(x) ((__u16)(				\
-	(((__u16)(x) & (__u16)0x00ffU) << 8) |			\
-	(((__u16)(x) & (__u16)0xff00U) >> 8)))
+#define ___constant_swab16(x) ((uint16_t)(				\
+	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
+	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
-#define ___constant_swab32(x) ((__u32)(				\
-	(((__u32)(x) & (__u32)0x000000ffUL) << 24) |		\
-	(((__u32)(x) & (__u32)0x0000ff00UL) <<  8) |		\
-	(((__u32)(x) & (__u32)0x00ff0000UL) >>  8) |		\
-	(((__u32)(x) & (__u32)0xff000000UL) >> 24)))
+#define ___constant_swab32(x) ((uint32_t)(				\
+	(((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) |		\
+	(((uint32_t)(x) & (uint32_t)0x0000ff00UL) <<  8) |		\
+	(((uint32_t)(x) & (uint32_t)0x00ff0000UL) >>  8) |		\
+	(((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
 
-#define ___constant_swab64(x) ((__u64)(				\
-	(((__u64)(x) & (__u64)0x00000000000000ffULL) << 56) |	\
-	(((__u64)(x) & (__u64)0x000000000000ff00ULL) << 40) |	\
-	(((__u64)(x) & (__u64)0x0000000000ff0000ULL) << 24) |	\
-	(((__u64)(x) & (__u64)0x00000000ff000000ULL) <<  8) |	\
-	(((__u64)(x) & (__u64)0x000000ff00000000ULL) >>  8) |	\
-	(((__u64)(x) & (__u64)0x0000ff0000000000ULL) >> 24) |	\
-	(((__u64)(x) & (__u64)0x00ff000000000000ULL) >> 40) |	\
-	(((__u64)(x) & (__u64)0xff00000000000000ULL) >> 56)))
+#define ___constant_swab64(x) ((uint64_t)(				\
+	(((uint64_t)(x) & (uint64_t)0x00000000000000ffULL) << 56) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000000000ff00ULL) << 40) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000000000ff0000ULL) << 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00000000ff000000ULL) <<  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000ff00000000ULL) >>  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000ff0000000000ULL) >> 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00ff000000000000ULL) >> 40) |	\
+	(((uint64_t)(x) & (uint64_t)0xff00000000000000ULL) >> 56)))
 
-#define ___constant_swahw32(x) ((__u32)(			\
-	(((__u32)(x) & (__u32)0x0000ffffUL) << 16) |		\
-	(((__u32)(x) & (__u32)0xffff0000UL) >> 16)))
+#define ___constant_swahw32(x) ((uint32_t)(			\
+	(((uint32_t)(x) & (uint32_t)0x0000ffffUL) << 16) |		\
+	(((uint32_t)(x) & (uint32_t)0xffff0000UL) >> 16)))
 
-#define ___constant_swahb32(x) ((__u32)(			\
-	(((__u32)(x) & (__u32)0x00ff00ffUL) << 8) |		\
-	(((__u32)(x) & (__u32)0xff00ff00UL) >> 8)))
+#define ___constant_swahb32(x) ((uint32_t)(			\
+	(((uint32_t)(x) & (uint32_t)0x00ff00ffUL) << 8) |		\
+	(((uint32_t)(x) & (uint32_t)0xff00ff00UL) >> 8)))
 
 /*
  * Implement the following as inlines, but define the interface using
@@ -42,7 +43,7 @@
  * ___swab16, ___swab32, ___swab64, ___swahw32, ___swahb32
  */
 
-static inline __u16 __fswab16(__u16 val) {
+static inline uint16_t __fswab16(uint16_t val) {
 #ifdef __arch_swab16
 	return __arch_swab16(val);
 #else
@@ -50,7 +51,7 @@ static inline __u16 __fswab16(__u16 val) {
 #endif
 }
 
-static inline __u32 __fswab32(__u32 val) {
+static inline uint32_t __fswab32(uint32_t val) {
 #ifdef __arch_swab32
 	return __arch_swab32(val);
 #else
@@ -58,19 +59,19 @@ static inline __u32 __fswab32(__u32 val) {
 #endif
 }
 
-static inline  __u64 __fswab64(__u64 val) {
+static inline  uint64_t __fswab64(uint64_t val) {
 #ifdef __arch_swab64
 	return __arch_swab64(val);
 #elif defined(__SWAB_64_THRU_32__)
-	__u32 h = val >> 32;
-	__u32 l = val & ((1ULL << 32) - 1);
-	return (((__u64)__fswab32(l)) << 32) | ((__u64)(__fswab32(h)));
+	uint32_t h = val >> 32;
+	uint32_t l = val & ((1ULL << 32) - 1);
+	return (((uint64_t)__fswab32(l)) << 32) | ((uint64_t)(__fswab32(h)));
 #else
 	return ___constant_swab64(val);
 #endif
 }
 
-static inline  __u32 __fswahw32(__u32 val) {
+static inline  uint32_t __fswahw32(uint32_t val) {
 #ifdef __arch_swahw32
 	return __arch_swahw32(val);
 #else
@@ -78,7 +79,7 @@ static inline  __u32 __fswahw32(__u32 val) {
 #endif
 }
 
-static inline  __u32 __fswahb32(__u32 val) {
+static inline  uint32_t __fswahb32(uint32_t val) {
 #ifdef __arch_swahb32
 	return __arch_swahb32(val);
 #else
@@ -91,7 +92,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * @x: value to byteswap
  */
 #define __swab16(x)				\
-	(__builtin_constant_p((__u16)(x)) ?	\
+	(__builtin_constant_p((uint16_t)(x)) ?	\
 	___constant_swab16(x) :			\
 	__fswab16(x))
 
@@ -100,7 +101,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * @x: value to byteswap
  */
 #define __swab32(x)				\
-	(__builtin_constant_p((__u32)(x)) ?	\
+	(__builtin_constant_p((uint32_t)(x)) ?	\
 	___constant_swab32(x) :			\
 	__fswab32(x))
 
@@ -109,7 +110,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * @x: value to byteswap
  */
 #define __swab64(x)				\
-	(__builtin_constant_p((__u64)(x)) ?	\
+	(__builtin_constant_p((uint64_t)(x)) ?	\
 	___constant_swab64(x) :			\
 	__fswab64(x))
 
@@ -120,7 +121,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * __swahw32(0x12340000) is 0x00001234
  */
 #define __swahw32(x)				\
-	(__builtin_constant_p((__u32)(x)) ?	\
+	(__builtin_constant_p((uint32_t)(x)) ?	\
 	___constant_swahw32(x) :		\
 	__fswahw32(x))
 
@@ -131,7 +132,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * __swahb32(0x12345678) is 0x34127856
  */
 #define __swahb32(x)				\
-	(__builtin_constant_p((__u32)(x)) ?	\
+	(__builtin_constant_p((uint32_t)(x)) ?	\
 	___constant_swahb32(x) :		\
 	__fswahb32(x))
 
@@ -139,7 +140,7 @@ static inline  __u32 __fswahb32(__u32 val) {
  * __swab16p - return a byteswapped 16-bit value from a pointer
  * @p: pointer to a naturally-aligned 16-bit value
  */
-static inline __u16 __swab16p(const __u16 *p) {
+static inline uint16_t __swab16p(const uint16_t *p) {
 #ifdef __arch_swab16p
 	return __arch_swab16p(p);
 #else
@@ -151,7 +152,7 @@ static inline __u16 __swab16p(const __u16 *p) {
  * __swab32p - return a byteswapped 32-bit value from a pointer
  * @p: pointer to a naturally-aligned 32-bit value
  */
-static inline __u32 __swab32p(const __u32 *p) {
+static inline uint32_t __swab32p(const uint32_t *p) {
 #ifdef __arch_swab32p
 	return __arch_swab32p(p);
 #else
@@ -163,7 +164,7 @@ static inline __u32 __swab32p(const __u32 *p) {
  * __swab64p - return a byteswapped 64-bit value from a pointer
  * @p: pointer to a naturally-aligned 64-bit value
  */
-static inline __u64 __swab64p(const __u64 *p) {
+static inline uint64_t __swab64p(const uint64_t *p) {
 #ifdef __arch_swab64p
 	return __arch_swab64p(p);
 #else
@@ -177,7 +178,7 @@ static inline __u64 __swab64p(const __u64 *p) {
  *
  * See __swahw32() for details of wordswapping.
  */
-static inline __u32 __swahw32p(const __u32 *p) {
+static inline uint32_t __swahw32p(const uint32_t *p) {
 #ifdef __arch_swahw32p
 	return __arch_swahw32p(p);
 #else
@@ -191,7 +192,7 @@ static inline __u32 __swahw32p(const __u32 *p) {
  *
  * See __swahb32() for details of high/low byteswapping.
  */
-static inline __u32 __swahb32p(const __u32 *p) {
+static inline uint32_t __swahb32p(const uint32_t *p) {
 #ifdef __arch_swahb32p
 	return __arch_swahb32p(p);
 #else
@@ -203,7 +204,7 @@ static inline __u32 __swahb32p(const __u32 *p) {
  * __swab16s - byteswap a 16-bit value in-place
  * @p: pointer to a naturally-aligned 16-bit value
  */
-static inline void __swab16s(__u16 *p) {
+static inline void __swab16s(uint16_t *p) {
 #ifdef __arch_swab16s
 	__arch_swab16s(p);
 #else
@@ -214,7 +215,7 @@ static inline void __swab16s(__u16 *p) {
  * __swab32s - byteswap a 32-bit value in-place
  * @p: pointer to a naturally-aligned 32-bit value
  */
-static inline void __swab32s(__u32 *p) {
+static inline void __swab32s(uint32_t *p) {
 #ifdef __arch_swab32s
 	__arch_swab32s(p);
 #else
@@ -226,7 +227,7 @@ static inline void __swab32s(__u32 *p) {
  * __swab64s - byteswap a 64-bit value in-place
  * @p: pointer to a naturally-aligned 64-bit value
  */
-static inline void __swab64s(__u64 *p) {
+static inline void __swab64s(uint64_t *p) {
 #ifdef __arch_swab64s
 	__arch_swab64s(p);
 #else
@@ -240,7 +241,7 @@ static inline void __swab64s(__u64 *p) {
  *
  * See __swahw32() for details of wordswapping
  */
-static inline void __swahw32s(__u32 *p) {
+static inline void __swahw32s(uint32_t *p) {
 #ifdef __arch_swahw32s
 	__arch_swahw32s(p);
 #else
@@ -254,7 +255,7 @@ static inline void __swahw32s(__u32 *p) {
  *
  * See __swahb32() for details of high and low byte swapping
  */
-static inline void __swahb32s(__u32 *p) {
+static inline void __swahb32s(uint32_t *p) {
 #ifdef __arch_swahb32s
 	__arch_swahb32s(p);
 #else

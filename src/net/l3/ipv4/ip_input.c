@@ -31,8 +31,8 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	net_device_stats_t *stats = &dev->stats;
 	const struct net_proto *nproto;
 	iphdr_t *iph = ip_hdr(skb);
-	unsigned short tmp;
-	unsigned int mac_hdr_len, ip_len;
+	unsigned short csum;
+	size_t mac_hdr_len, ip_len;
 	int optlen;
 	sk_buff_t *complete_skb;
 
@@ -62,15 +62,15 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return 0; /* error: not ipv4 */
 	}
 
-	tmp = iph->check;
+	csum = iph->check;
 	iph->check = 0;
-	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
+	if (csum != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		//LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid crc */
 	}
-	iph->check = tmp; /* restore checksum */
+	iph->check = csum; /* restore checksum */
 
 	ip_len = ntohs(iph->tot_len);
 	if (ip_len < IP_HEADER_SIZE(iph)

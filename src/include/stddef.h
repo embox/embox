@@ -11,8 +11,6 @@
 #ifndef STDDEF_H_
 #define STDDEF_H_
 
-#include <asm/types.h>
-
 #if __GNUC__ < 4 || defined(__CDT_PARSER__)
 # define offsetof(type, member) \
 	((size_t) &((type *) 0x0)->member)
@@ -27,6 +25,7 @@
 
 #include <defines/wchar_t.h>
 
-typedef __ptrdiff_t ptrdiff_t;
+#include <defines/ptrdiff_t.h>
+
 
 #endif /* STDDEF_H_ */
