@@ -1,0 +1,8 @@
+package embox.lib
+
+static module LibCWchar {
+	source "wcscmp.c"
+	source "wcsncpy.c"
+	source "wcstrtoimax.c"
+	source "wcstrtoumax.c"
+}

@@ -5,11 +5,10 @@
  *      Author: fsulima
  */
 
-#include <wchar.h>
-
 #ifndef CWCTYPE_
 #define CWCTYPE_
 
+#include <wctype.h>
 
 int       iswalnum(wint_t);
 int       iswalpha(wint_t);
