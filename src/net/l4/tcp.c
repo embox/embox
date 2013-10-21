@@ -275,7 +275,8 @@ void tcp_set_st(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) {
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		io_sync_error(&to_sock(tcp_sk)->ios);
+		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
+		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
 		break;
 	}
 }

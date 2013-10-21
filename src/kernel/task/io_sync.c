@@ -21,7 +21,13 @@ void io_sync_init(struct io_sync *ios, int r_set, int w_set) {
 	ios->error_on_read = ios->error_on_write = 0;
 	ios->on_reading = NULL;
 	ios->on_writing = NULL;
-	ios->on_error = NULL;
+}
+
+void io_sync_reset(struct io_sync *ios) {
+	assert(ios != NULL);
+	manual_event_reset(&ios->can_read);
+	manual_event_reset(&ios->can_write);
+	ios->error_on_read = ios->error_on_write = 0;
 }
 
 void io_sync_enable(struct io_sync *ios, enum io_sync_op op) {
@@ -66,6 +72,19 @@ void io_sync_disable(struct io_sync *ios, enum io_sync_op op) {
 	}
 }
 
+int io_sync_ready(struct io_sync *ios, enum io_sync_op op) {
+	assert(ios != NULL);
+
+	switch (op) {
+	case IO_SYNC_READING:
+		return manual_event_is_set(&ios->can_read);
+	case IO_SYNC_WRITING:
+		return manual_event_is_set(&ios->can_write);
+	}
+
+	return 0;
+}
+
 void io_sync_error_on(struct io_sync *ios, enum io_sync_op op) {
 	assert(ios != NULL);
 
@@ -79,33 +98,11 @@ void io_sync_error_on(struct io_sync *ios, enum io_sync_op op) {
 		manual_event_notify(&ios->can_write);
 		break;
 	}
-	if (ios->on_error != NULL) {
-		manual_event_set_and_notify(ios->on_error);
-	}
 }
 
-void io_sync_error(struct io_sync *ios) {
+int io_sync_error(struct io_sync *ios) {
 	assert(ios != NULL);
-
-	ios->error_on_read = ios->error_on_write = 1;
-	manual_event_notify(&ios->can_read);
-	manual_event_notify(&ios->can_write);
-	if (ios->on_error != NULL) {
-		manual_event_set_and_notify(ios->on_error);
-	}
-}
-
-int io_sync_ready(struct io_sync *ios, enum io_sync_op op) {
-	assert(ios != NULL);
-
-	switch (op) {
-	case IO_SYNC_READING:
-		return manual_event_is_set(&ios->can_read);
-	case IO_SYNC_WRITING:
-		return manual_event_is_set(&ios->can_write);
-	}
-
-	return 0;
+	return ios->error_on_read || ios->error_on_write;
 }
 
 void io_sync_notify(struct io_sync *ios, enum io_sync_op op,
