@@ -53,6 +53,9 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 		if (io_sync_ready(fd_ios, IO_SYNC_WRITING)) {
 			fds[i].revents |= POLLOUT;
 		}
+		if (io_sync_error(fd_ios)) {
+			fds[i].revents |= POLLHUP;
+		}
 
 		fds[i].revents &= fds[i].events;
 		fds_cnt += !!fds[i].revents;
