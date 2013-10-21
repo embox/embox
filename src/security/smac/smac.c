@@ -15,6 +15,7 @@
 #include <fs/flags.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
+#include <fs/flags.h>
 #include <kernel/task.h>
 #include <embox/unit.h>
 #include <security/seculog.h>
