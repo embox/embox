@@ -217,9 +217,9 @@ $(ROOTFS_IMAGE): build_and_install
 
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
-TARGET_APPS += demos/spreadsheet
-TARGET_APPS += examples/animation/animatedtiles
-TARGET_APPS += examples/animation/moveblocks
+#TARGET_APPS += demos/spreadsheet
+#TARGET_APPS += examples/animation/animatedtiles
+#TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 TARGET_APPS += examples/texteditor
 

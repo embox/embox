@@ -30,6 +30,7 @@
 #define PDP_ENDIAN    __PDP_ENDIAN
 #endif
 
+#include <hal/arch.h>
 
 #ifndef __BYTE_ORDER
 #error "Byte order not defined"
