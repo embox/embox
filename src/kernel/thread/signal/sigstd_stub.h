@@ -10,6 +10,7 @@
 #define KERNEL_THREAD_SIGSTD_STUB_H_
 
 #include <errno.h>
+#include <signal.h>
 
 #define SIGSTD_MIN     0
 #define SIGSTD_MAX     -1
