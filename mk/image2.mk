@@ -200,7 +200,9 @@ $(embox_o): ldflags_all = $(LDFLAGS) \
 $(embox_o): | $$(@D)/.
 	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
+		--start-group \
 		$(call fmt_line,$(ld_libs)) \
+		--end-group \
 	--cref -Map $@.map \
 	-o $@
 

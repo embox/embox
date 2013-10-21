@@ -186,10 +186,9 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 extern
 pid_t getppid(void);
 
+typedef unsigned int uint;
 
 #ifdef __cplusplus
-
-using std::sysconf;
 
 #endif // __cplusplus
 

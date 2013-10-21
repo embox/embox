@@ -4,7 +4,7 @@ $(OBJ_DIR)/third-party/qpid/../../../../qpid/lib/libqmf.a: $(OBJ_DIR)/third-part
 $(OBJ_DIR)/third-party/qpid/../../../../qpid/lib/libqmf.a: $(OBJ_DIR)/third-party/boost/../../../../boost/lib/libboost_system.a
 
 # This is a workaround of weird make behaviour.
-# Make founds .cpp file using VPATH search with stem.
+# Make finds .cpp file using VPATH search with stem.
 # However dependencies searches are related to stem remainder.
 # Therefore the dependency should be related to 'nothing' instead
 #  of $(OBJ_DIR) or $(SRCGEN_DIR)
