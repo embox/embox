@@ -25,3 +25,11 @@ module inttypes_test {
 
 	depends embox.lib.LibCInttypes
 }
+
+module poll_test {
+	source "poll_test.c"
+
+	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.idx.pipe
+	depends embox.framework.LibFramework
+}
