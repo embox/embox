@@ -9,10 +9,8 @@
 #ifndef FS_FILE_DESC_H_
 #define FS_FILE_DESC_H_
 
-#include <fs/node.h>
-#include <fs/file_operation.h>
+
 #include <stddef.h>
-#include <fs/flags.h>
 #include <kernel/task/io_sync.h>
 
 struct node;

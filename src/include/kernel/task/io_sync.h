@@ -29,19 +29,21 @@ enum io_sync_op {
 
 #define IO_SYNC_TIMEOUT_INFINITE MANUAL_EVENT_TIMEOUT_INFINITE
 
-extern void io_sync_init(struct io_sync *ios, int r_set,
-		int w_set);
-extern void io_sync_enable(struct io_sync *ios,
-		enum io_sync_op op);
-extern void io_sync_disable(struct io_sync *ios,
-		enum io_sync_op op);
-extern void io_sync_error_on(struct io_sync *ios,
-		enum io_sync_op op);
+extern void io_sync_init(struct io_sync *ios, int r_set, int w_set);
+
+extern void io_sync_enable(struct io_sync *ios, enum io_sync_op op);
+
+extern void io_sync_disable(struct io_sync *ios, enum io_sync_op op);
+
+extern void io_sync_error_on(struct io_sync *ios, enum io_sync_op op);
+
 extern void io_sync_error(struct io_sync *ios);
-extern int io_sync_ready(struct io_sync *ios,
-		enum io_sync_op op);
-extern void io_sync_notify(struct io_sync *ios,
-		enum io_sync_op op, struct manual_event *on_op);
+
+extern int io_sync_ready(struct io_sync *ios, enum io_sync_op op);
+
+extern void io_sync_notify(struct io_sync *ios, enum io_sync_op op,
+		struct manual_event *on_op);
+
 extern int io_sync_wait(struct io_sync *ios, enum io_sync_op op,
 		unsigned long timeout);
 

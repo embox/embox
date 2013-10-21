@@ -12,6 +12,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
+#include <fs/flags.h>
 #include <fs/kfile.h>
 
 static inline struct file_desc *from_data(struct idx_desc *data) {

@@ -14,15 +14,18 @@
 #include <errno.h>
 #include <sys/types.h>
 
+#include <sys/file.h>
+
 #include <fs/vfs.h>
 #include <fs/mount.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+#include <fs/flags.h>
 
 #include <security/security.h>
-#include <sys/file.h>
+
 #include <kernel/task/idx.h>
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
