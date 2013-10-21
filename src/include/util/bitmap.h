@@ -9,6 +9,7 @@
 #define UTIL_BITMAP_H_
 
 #include <limits.h>  /* LONG_BIT */
+#include <string.h>  /* memset */
 
 #define BITMAP_DECL(name, nbits) \
 	unsigned long name[BITMAP_SIZE(nbits)];
@@ -39,11 +40,26 @@ static inline int bitmap_test_bit(const unsigned long *bitmap, unsigned int bit)
 	return 0x1ul & (bitmap[BITMAP_OFFSET(bit)] >> BITMAP_SHIFT(bit));
 }
 
+static inline void bitmap_set_all(unsigned long *bitmap, unsigned int nbits)
+{
+	memset(bitmap, ~0, BITMAP_SIZE(nbits) * sizeof(*bitmap));
+}
+
+static inline void bitmap_clear_all(unsigned long *bitmap, unsigned int nbits)
+{
+	memset(bitmap, 0, BITMAP_SIZE(nbits) * sizeof(*bitmap));
+}
+
 extern unsigned int bitmap_find_set_bit(const unsigned long *,
 		unsigned int nbits, unsigned int offset);
 extern unsigned int bitmap_find_zero_bit(const unsigned long *,
 		unsigned int nbits, unsigned int offset);
 
+static inline int bitmap_find_first_set_bit(const unsigned long *bitmap,
+		unsigned int nbits)
+{
+	return bitmap_find_set_bit(bitmap, nbits, 0);
+}
 
 #endif /* UTIL_BITMAP_H_ */
 
