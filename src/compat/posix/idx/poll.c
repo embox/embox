@@ -47,17 +47,15 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 			io_sync_notify(fd_ios, IO_SYNC_WRITING, m_event);
 		}
 
-		if (m_event == NULL) {
-			if (io_sync_ready(fd_ios, IO_SYNC_READING)) {
-				fds[i].revents |= POLLIN;
-			}
-			if (io_sync_ready(fd_ios, IO_SYNC_WRITING)) {
-				fds[i].revents |= POLLOUT;
-			}
-
-			fds[i].revents &= fds[i].events;
-			fds_cnt += !!fds[i].revents;
+		if (io_sync_ready(fd_ios, IO_SYNC_READING)) {
+			fds[i].revents |= POLLIN;
 		}
+		if (io_sync_ready(fd_ios, IO_SYNC_WRITING)) {
+			fds[i].revents |= POLLOUT;
+		}
+
+		fds[i].revents &= fds[i].events;
+		fds_cnt += !!fds[i].revents;
 	}
 
 	return fds_cnt;
@@ -77,8 +75,8 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	ret = manual_event_wait(&wait_on,
 			timeout > 0 ? timeout : MANUAL_EVENT_TIMEOUT_INFINITE);
 	if ((ret != 0) && (ret != -ETIMEDOUT)) {
-		SET_ERRNO(-ret);
 		test_and_set_fds(fds, nfds, NULL);
+		SET_ERRNO(-ret);
 		return -1;
 	}
 

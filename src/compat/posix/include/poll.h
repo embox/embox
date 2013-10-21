@@ -11,14 +11,14 @@
 
 #define POLLIN     0x01
 #define POLLRDNORM POLLIN
-#define POLLRDBAND POLLIN
-#define POLLPRI    POLLIN
 #define POLLOUT    0x02
 #define POLLWRNORM POLLOUT
 #define POLLWRBAND POLLOUT
-#define POLLERR    0x04
-#define POLLHUP    0x08
-#define POLLNVAL   0x10
+#define POLLPRI    0x04
+#define POLLRDBAND POLLPRI
+#define POLLERR    0x08
+#define POLLHUP    0x10
+#define POLLNVAL   0x20
 
 /* Data structure describing a polling request */
 struct pollfd {
