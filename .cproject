@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject>
+<?fileVersion 4.0.0?><cproject>
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="converted.config.2068141905">
 			<storageModule buildSystemId="org.eclipse.cdt.core.defaultConfigDataProvider" id="converted.config.2068141905" moduleId="org.eclipse.cdt.core.settings" name="convertedConfig">
@@ -123,11 +121,6 @@
 				<parser enabled="false"/>
 			</scannerInfoProvider>
 		</profile>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
-		<pathentry kind="out" path=""/>
-		<pathentry kind="src" path=""/>
-		<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
@@ -277,4 +270,11 @@
 			</target>
 		</buildTargets>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+		<pathentry excluding="build/" kind="src" path=""/>
+		<pathentry kind="src" path="build/base/src-gen"/>
+		<pathentry kind="out" path=""/>
+		<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>
