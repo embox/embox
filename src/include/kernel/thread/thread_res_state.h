@@ -22,7 +22,7 @@ struct thread;
 struct thread_res_state {
 	/* Zero if joinable, otherwise has one of the resources managed flag */
 	unsigned int      state;
-	struct thread     *joined;  /**< Thread which joined to this. */
+	struct wait_queue *joined;  /**< Thread which joined to this. */
 };
 
 static inline void thread_res_state_get(struct thread_res_state *info, unsigned int *state) {

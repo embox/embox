@@ -37,6 +37,8 @@
 
 #include <sched.h>
 
+#include <kernel/sched_wait.h>
+
 
 
 

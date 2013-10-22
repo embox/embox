@@ -238,7 +238,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 			break;
 		case __THREAD_STATE_JOINED:
 			/* Thread is attached. Joined thread delete it. */
-			sched_thread_notify(current->resinfo.joined, ENOERR);
+			wait_queue_notify(current->resinfo.joined);
 			break;
 		case __THREAD_STATE_DETACHED:
 			/* Detached thread should be deleted by itself. */
@@ -270,11 +270,15 @@ int thread_join(struct thread *t, void **p_ret) {
 
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			t->resinfo.joined = current;
+			struct wait_queue queue;
+			wait_queue_init(&queue);
 
-			sched_prepare_wait(NULL, NULL);
-			sched_wait_locked(SCHED_TIMEOUT_INFINITE);
-			sched_cleanup_wait();
+			t->resinfo.joined = &queue;
+
+			wait_queue_insert(&queue, &link);
+			wait_queue_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
+
+			t->resinfo.joined = 0;
 		}
 
 		join_ret = t->run_ret;

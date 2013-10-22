@@ -9,6 +9,7 @@
 #include <kernel/event.h>
 #include <kernel/sched.h>
 #include <kernel/sched/wait_queue.h>
+#include <kernel/sched_wait.h>
 
 void event_init(struct event *event, const char *name) {
 	wait_queue_init(&event->wait_queue);

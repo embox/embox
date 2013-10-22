@@ -13,6 +13,7 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <kernel/sched/wait_queue.h>
+#include <kernel/sched_wait.h>
 
 #include <util/member.h>
 #include <util/dlist.h>

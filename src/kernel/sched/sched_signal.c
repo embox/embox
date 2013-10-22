@@ -7,6 +7,7 @@
 
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/sched_wait.h>
 
 
 int sched_signal(struct thread *t, int type) {
