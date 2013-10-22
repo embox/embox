@@ -503,11 +503,11 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk, struct sk_buff *
 	out_tcph->rst = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
-		tcp_sk->last_ack = ntohl(tcph->ack_seq);
+		tcp_sk->self.seq = ntohl(tcph->ack_seq);
 		tcp_sk->rem.seq = 0;
 	} else {
 		out_tcph->ack = 1;
-		tcp_sk->last_ack = 0;
+		tcp_sk->self.seq = 0;
 		tcp_sk->rem.seq = ntohl(tcph->seq) + tcp_seq_len(*pskb);
 	}
 
