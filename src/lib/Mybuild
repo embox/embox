@@ -41,8 +41,11 @@ static module LibCMisc {
 }
 
 
+@DefaultImpl(LibGccInternal)
+abstract module LibGcc {
+}
 
-static module LibGcc {
+static module LibGccInternal extends LibGcc {
 	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
