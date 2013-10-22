@@ -20,6 +20,9 @@
 
 EMBOX_TEST_SUITE("inet socket test");
 
+TEST_SETUP_SUITE(suite_setup);
+TEST_TEARDOWN_SUITE(suite_teardown);
+
 TEST_SETUP(case_setup);
 TEST_TEARDOWN(case_teardown);
 
@@ -84,8 +87,7 @@ TEST_CASE("getsockname() returns unspecified address when a socket"
 	test_assert_mem_equal(&addr, &tmp, addrlen);
 }
 
-static int case_setup(void) {
-	static struct iovec iov;
+static int suite_setup(void) {
 	int ret;
 	struct in_device *in_dev;
 
@@ -112,21 +114,10 @@ static int case_setup(void) {
 		return ret;
 	}
 
-	/* init local */
-	sock = socket(AF_INET, TYPE, PROTO);
-	memset(&addr, 0, sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(PORT);
-	addrlen = sizeof addr;
-	memset(&msg, 0, sizeof msg);
-	memset(&iov, 0, sizeof iov);
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	return sock >= 0 ? 0 : -errno;
+	return 0;
 }
 
-static int case_teardown(void) {
+static int suite_teardown(void) {
 	int ret;
 	struct in_device *in_dev;
 
@@ -142,14 +133,41 @@ static int case_teardown(void) {
 	}
 
 	/* del route for lo */
-	ret = rt_del_route(inetdev_get_loopback_dev()->dev,
-			ntohl(INADDR_LOOPBACK & ~1), htonl(0xFF000000), 0);
+	ret = rt_del_route(in_dev->dev, ntohl(INADDR_LOOPBACK & ~1),
+			htonl(0xFF000000), 0);
 	if (ret != 0) {
 		return ret;
 	}
 
-	/* fini local */
-	ret = close(sock);
-	sock = -1;
-	return 0 == ret ? 0 : -errno;
+	return 0;
+}
+
+static int case_setup(void) {
+	static struct iovec iov;
+
+	sock = socket(AF_INET, TYPE, PROTO);
+	if (sock == -1) {
+		return -errno;
+	}
+
+	memset(&addr, 0, sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(PORT);
+	addrlen = sizeof addr;
+
+	memset(&msg, 0, sizeof msg);
+	memset(&iov, 0, sizeof iov);
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+
+	return 0;
+}
+
+static int case_teardown(void) {
+	if (-1 == close(sock)) {
+		return -errno;
+	}
+
+	return 0;
 }
