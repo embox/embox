@@ -9,32 +9,34 @@
 #include <util/bit.h>
 
 
-unsigned int bitmap_find_set_bit(const unsigned long *bitmap,
-		unsigned int size, unsigned int offset) {
+int bitmap_find_bit(const unsigned long *bitmap, int nbits, int offset) {
 	const unsigned long *p = bitmap + BITMAP_OFFSET(offset);
 	unsigned long result = BITMAP_ROUND(offset);
 	unsigned long tmp;
 
-	if (offset >= size)
-		return size;
+	assert(nbits >= 0);
+	assert(offset >= 0);
+
+	if (offset >= nbits)
+		return nbits;
 
 	offset -= result;
-	size -= result;
+	nbits -= result;
 	tmp = *(p++);
 
 	tmp &= (~0x0ul << offset);  /* mask out the beginning */
 
-	while (size >= LONG_BIT) {
+	while (nbits >= LONG_BIT) {
 		if (tmp)
 			goto found;
 		result += LONG_BIT;
-		size -= LONG_BIT;
+		nbits -= LONG_BIT;
 		tmp = *(p++);
 	}
 
-	tmp &= (~0x0ul >> (LONG_BIT - size));  /* ...and the ending */
+	tmp &= (~0x0ul >> (LONG_BIT - nbits));  /* ...and the ending */
 	if (!tmp)
-		return result + size;
+		return result + nbits;
 
 found:
 	return result + bit_ctz(tmp);
