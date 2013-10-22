@@ -11,7 +11,7 @@
 #define SIGNAL_H_
 
 #include <sys/types.h>
-// #include <kernel/task/signal.h>
+#include <util/bitmap.h>
 
 #define SIG_DFL ((sighandler_t) 0x1)
 #define SIG_IGN ((sighandler_t) 0x3)
@@ -59,7 +59,9 @@
 
 #define _SIG_TOTAL  64
 
-typedef int sigset_t;
+typedef struct {
+	BITMAP_DECL(bitmap, _SIG_TOTAL);
+} sigset_t;
 
 union sigval {
 	int   sival_int;
@@ -79,8 +81,8 @@ typedef struct {
 } siginfo_t;
 
 struct sigaction {
-	sigset_t   sa_mask;
 	int        sa_flags;
+	sigset_t   sa_mask;
 	/* The storage occupied by sa_handler and sa_sigaction may overlap,
 	 * and a conforming application shall not use both simultaneously.  */
 	union {
@@ -92,13 +94,19 @@ struct sigaction {
 /* Non-standard GNU extension. */
 typedef void (*sighandler_t)(int);
 
-extern sighandler_t signal(int sig, sighandler_t fn);
-extern int sigaction(int sig, const struct sigaction *restrict act,
+extern int sigemptyset(sigset_t *);
+extern int sigfillset(sigset_t *);
+extern int sigismember(const sigset_t *, int signo);
+extern int sigaddset(sigset_t *, int signo);
+extern int sigdelset(sigset_t *, int signo);
+
+extern sighandler_t signal(int signo, sighandler_t fn);
+extern int sigaction(int signo, const struct sigaction *restrict act,
 		struct sigaction *restrict oact);
 
-extern int kill(int tid, int sig);
-extern int sigqueue(int tid, int sig, const union sigval value);
-static inline int raise(int sig) {
+extern int kill(int tid, int signo);
+extern int sigqueue(int tid, int signo, const union sigval value);
+static inline int raise(int signo) {
 	return 0;
 }
 

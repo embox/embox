@@ -36,6 +36,12 @@ static module signal {
 
 	depends embox.kernel.task.std_signal
 	depends embox.kernel.task.rt_signal
+	depends sigset
+}
+
+static module sigset {
+	source "sigset.c"
+	depends embox.util.Bitmap
 }
 
 static module exit {
