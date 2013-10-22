@@ -31,7 +31,7 @@ int sigrt_raise(struct sigrt_data *sigrt_data, int sig,
 
 	assert(sigrt_data);
 
-	if (!check_range(sig, SIGRT_MIN, SIGRT_MAX))
+	if (!check_range_incl(sig, SIGRT_MIN, SIGRT_MAX))
 		return -EINVAL;
 
 	sigrt_el = objalloc(&sigrt_link_pool);
