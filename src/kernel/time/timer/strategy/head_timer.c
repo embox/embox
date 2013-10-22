@@ -10,11 +10,10 @@
 
 #include <kernel/time/timer.h>
 
-
 static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
-	struct sys_timer *it_tmr, *tmp;
+	struct sys_timer *it_tmr, *nxt;
 
 	dlist_head_init(&tmr->lnk);
 	timer_set_started(tmr);
@@ -22,7 +21,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 	tmr->cnt = tmr->load;
 
 	/* find first element that its time bigger than inserting @new_time */
-	dlist_foreach_entry(it_tmr, tmp, &sys_timers_list,lnk) {
+	dlist_foreach_entry(it_tmr, nxt, &sys_timers_list, lnk) {
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
@@ -44,7 +43,7 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 
 	timer_set_stopped(ptimer);
 
-	if(ptimer->lnk.next != &sys_timers_list) {
+	if (ptimer->lnk.next != &sys_timers_list) {
 		next_tmr = (struct sys_timer *)ptimer->lnk.next;
 		next_tmr->cnt += ptimer->cnt;
 	}
@@ -53,11 +52,11 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 }
 
 static inline bool timers_need_schedule(void) {
-	if(dlist_empty(&sys_timers_list)) {
+	if (dlist_empty(&sys_timers_list)) {
 		return false;
 	}
 
-	if(0 == --((sys_timer_t*)sys_timers_list.next)->cnt) {
+	if (0 == --((sys_timer_t*)sys_timers_list.next)->cnt) {
 		return true;
 	} else {
 		return false;
@@ -65,18 +64,19 @@ static inline bool timers_need_schedule(void) {
 }
 
 static inline void timers_schedule(void) {
-	struct sys_timer *timer,*tmp;
+	struct sys_timer *timer, *nxt;
 	uint32_t nxt_cnt = 0; /* we schedule first timer */
 
-	dlist_foreach_entry(timer, tmp, &sys_timers_list, lnk) {
-		nxt_cnt = tmp->cnt;
+	dlist_foreach_entry(timer, nxt, &sys_timers_list, lnk) {
+
 		timer->handle(timer, timer->param);
 
 		timer_strat_stop(timer);
 		if(timer_is_periodic(timer)) {
 			timer_strat_start(timer);
 		}
-		if (0 != nxt_cnt) {
+
+		if (0 != nxt->cnt) {
 			return;
 		}
 	}
@@ -88,7 +88,7 @@ static inline void timers_schedule(void) {
  * to the counter and the function is executed.
  */
 void timer_strat_sched(void) {
-	if(timers_need_schedule()) {
+	if (timers_need_schedule()) {
 		timers_schedule();
 	}
 }
