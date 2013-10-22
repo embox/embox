@@ -23,9 +23,14 @@ void timer_strat_start(struct sys_timer *tmr) {
 	dlist_head_init(&tmr->lnk);
 
 	ipl = ipl_save();
-	dlist_add_prev(&tmr->lnk, &sys_timers_list);
+	/* new timer added to begining of the list to sure, that it will not
+ 	 * be processed. Otherwise, if a new timer added while handling some
+	 * other one, it will be processed during same timer_strat_sched
+	 * request, not the next. */
+	dlist_add_next(&tmr->lnk, &sys_timers_list);
 	ipl_restore(ipl);
 }
+
 /**
  * For each timer in the timers array do the following: if the timer is enable
  * and the counter of this timer is the zero then its initial value is assigned
@@ -39,12 +44,14 @@ void timer_strat_sched(void) {
 		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
 			trace_point("timer tick");
-			tmr->handle(tmr, tmr->param);
-			if(!timer_is_periodic(tmr)) {
+
+			if (timer_is_periodic(tmr)) {
+				tmr->cnt = tmr->load;
+			} else {
 				timer_strat_stop(tmr);
-				continue;
 			}
-			tmr->cnt = tmr->load;
+
+			tmr->handle(tmr, tmr->param);
 		}
 	}
 }

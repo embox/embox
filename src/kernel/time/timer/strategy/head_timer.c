@@ -65,16 +65,15 @@ static inline bool timers_need_schedule(void) {
 
 static inline void timers_schedule(void) {
 	struct sys_timer *timer, *nxt;
-	uint32_t nxt_cnt = 0; /* we schedule first timer */
 
 	dlist_foreach_entry(timer, nxt, &sys_timers_list, lnk) {
 
-		timer->handle(timer, timer->param);
-
 		timer_strat_stop(timer);
-		if(timer_is_periodic(timer)) {
+		if (timer_is_periodic(timer)) {
 			timer_strat_start(timer);
 		}
+
+		timer->handle(timer, timer->param);
 
 		if (0 != nxt->cnt) {
 			return;
