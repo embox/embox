@@ -5,9 +5,10 @@
  *      Author: fsulima
  */
 
-#ifndef NTFS_EMBOX_COMPAT_H_
-#define NTFS_EMBOX_COMPAT_H_
+#ifndef GCC_EMBOX_COMPAT_H_
+#define GCC_EMBOX_COMPAT_H_
 
+#if !(__ASSEMBLER__==1)
 
 #ifdef linux
 #undef linux
@@ -66,4 +67,8 @@ extern char *tmpnam(char *s);
 
 #define atexit(x)
 
-#endif /* NTFS_EMBOX_COMPAT_H_ */
+#undef bool
+
+#endif //!(__ASSEMBLER__==1)
+
+#endif /* GCC_EMBOX_COMPAT_H_ */

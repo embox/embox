@@ -4,12 +4,21 @@ $(error ROOT_DIR is not set.)
 endif
 
 ifeq (arm,$(EMBOX_ARCH))
-$(error Unsupported architecture: $(EMBOX_ARCH))
+EMBOX_GCC_TARGET=arm-none-eabi
 else ifeq (x86,$(EMBOX_ARCH))
 EMBOX_GCC_TARGET=i386-pc-elf
-#i386-pc-elf
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
+endif
+
+EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
+EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+
+ifeq (,$(EMBOX_TARGET_CC))
+$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
+endif
+ifeq (,$(EMBOX_TARGET_CXX))
+$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
 endif
 
 
@@ -65,7 +74,9 @@ endif
 EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
-EMBOX_DERIVED_TARGET    += $(EMBOX_GCC_TARGET)
+EMBOX_DERIVED_TARGET     = $(EMBOX_GCC_TARGET)
+EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
+EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
 
 EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib
 
@@ -85,6 +96,8 @@ $(GCC_FLAGS): | $(GCC_CMAKE_DIR)
 	$(AT)echo EMBOX_DERIVED_LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_TARGET=\"$(EMBOX_DERIVED_TARGET)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CC)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
 $(GCC_CMAKE_DIR)/Makefile: CMakeLists.txt $(GCC_FLAGS) | $(GCC_CMAKE_DIR)
