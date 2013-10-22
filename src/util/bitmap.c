@@ -26,7 +26,7 @@ int bitmap_find_bit(const unsigned long *bitmap, int nbits, int offset) {
 
 	tmp &= (~0x0ul << offset);  /* mask out the beginning */
 
-	while (nbits >= LONG_BIT) {
+	while (nbits > LONG_BIT) {
 		if (tmp)
 			goto found;
 		result += LONG_BIT;
