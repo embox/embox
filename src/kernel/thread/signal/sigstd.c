@@ -20,7 +20,7 @@ struct sigstd_data * sigstd_data_init(
 		struct sigstd_data *sigstd_data) {
 	assert(sigstd_data);
 
-	sigstd_data->pending = 0;
+	sigemptyset(&sigstd_data->pending);
 
 	return sigstd_data;
 }
@@ -28,32 +28,25 @@ struct sigstd_data * sigstd_data_init(
 int sigstd_raise(struct sigstd_data *sigstd_data, int sig) {
 	assert(sigstd_data);
 
-	if (!check_range(sig, SIGSTD_MIN, SIGSTD_MAX))
-		return -EINVAL;
-
-	irq_lock();
-	sigstd_data->pending |= 0x1 << (sig - SIGSTD_MIN);
-	irq_unlock();
-
-	return 0;
+	return IRQ_LOCKED_DO(sigaddset(&sigstd_data->pending, sig));
 }
 
 void sigstd_handle(struct sigstd_data *sigstd_data,
 		struct sigaction *sig_table) {
-	sigset_t pending;
+	sigset_t *pending;
 	int sig;
 	void (*handler)(int sig);
 
 	assert(sigstd_data);
 
 	irq_lock();
-	pending = sigstd_data->pending;
+	pending = &sigstd_data->pending;
 	while (pending) {
-		sigstd_data->pending &= (pending - 1);  /* clear the LS bit */
+		// sigstd_data->pending &= (pending - 1);  /* clear the LS bit */
 		irq_unlock();
 
-		sig = bit_ctz(pending);
-		assert(check_range(sig, SIGSTD_MIN, SIGSTD_MAX));
+		sig = bitmap_find_first_set_bit(pending->bitmap, _SIG_TOTAL);
+		assert(check_range_incl(sig, SIGSTD_MIN, SIGSTD_MAX));
 
 		// TODO locks?
 		handler = sig_table[sig + SIGSTD_MIN].sa_handler;
