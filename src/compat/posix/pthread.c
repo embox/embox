@@ -68,6 +68,7 @@ int pthread_attr_init(pthread_attr_t *attr) {
 		return -EINVAL;
 	}
 
+	attr->policy = SCHED_OTHER;
 	attr->sched_param.sched_priority = THREAD_PRIORITY_DEFAULT;
 
 	return ENOERR;
