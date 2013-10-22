@@ -30,6 +30,8 @@ __BEGIN_DECLS
 static inline int isalnum(int c) { return __ismask(c) & (_U | _L | _D); }
 /* Checks for an alphabetic character. */
 static inline int isalpha(int c) { return __ismask(c) & (_U | _L); }
+/* Checks for an blank character - space or tab */
+static inline int isblank(int c) { return (c == ' ' || c == '\t'); }
 /* Checks for a control character. */
 static inline int iscntrl(int c) { return __ismask(c) & (_C); }
 /* Checks for a digit (0 through 9). */
