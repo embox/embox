@@ -91,6 +91,12 @@ reset_handler:
     ldr r0, =trap_table_start
     mcr p15, 0, r0, c12, c0, 0
 
+    /* enabling data abort on unaligned mem access */
+    mrc p15, 0, r0, c1, c0, 0
+    mov r1, #2
+    orr r0, r0, r1
+    mcr p15, 0, r0, c1, c0, 0
+
     b bootldr_start
 
 undef_handler:
