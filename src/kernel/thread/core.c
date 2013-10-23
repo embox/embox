@@ -275,7 +275,6 @@ int thread_join(struct thread *t, void **p_ret) {
 
 			t->resinfo.joined = &queue;
 
-			wait_queue_insert(&queue, &link);
 			wait_queue_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
 
 			t->resinfo.joined = 0;
