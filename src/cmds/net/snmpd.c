@@ -10,6 +10,7 @@
 #include <net/l3/ipv4/ip.h>
 #include <net/lib/snmp_mib.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 #include <time.h>
 #include <string.h>
 #include <sys/socket.h>
