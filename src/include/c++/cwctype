@@ -1,0 +1,35 @@
+/**
+ * @file
+ * @date 23.10.13
+ * @author Alexander Kalmuk
+ */
+
+#ifndef CWCTYPE_
+#define CWCTYPE_
+
+#include <wctype.h>
+
+namespace std {
+   using ::iswalnum;
+   using ::iswalpha;
+   using ::iswcntrl;
+   using ::iswctype;
+   using ::iswdigit;
+   using ::iswgraph;
+   using ::iswlower;
+   using ::iswprint;
+   using ::iswpunct;
+   using ::iswspace;
+   using ::iswupper;
+   using ::iswxdigit;
+   using ::towctrans;
+   using ::towlower;
+   using ::towupper;
+   using ::wctrans;
+   using ::wctrans_t;
+   using ::wctype;
+   using ::wctype_t;
+   using ::wint_t;
+}
+
+#endif /* CWCTYPE_ */

@@ -275,7 +275,8 @@ void tcp_set_st(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) {
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		io_sync_error(&to_sock(tcp_sk)->ios);
+		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
+		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
 		break;
 	}
 }
@@ -502,11 +503,11 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk, struct sk_buff *
 	out_tcph->rst = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
-		tcp_sk->last_ack = ntohl(tcph->ack_seq);
+		tcp_sk->self.seq = ntohl(tcph->ack_seq);
 		tcp_sk->rem.seq = 0;
 	} else {
 		out_tcph->ack = 1;
-		tcp_sk->last_ack = 0;
+		tcp_sk->self.seq = 0;
 		tcp_sk->rem.seq = ntohl(tcph->seq) + tcp_seq_len(*pskb);
 	}
 

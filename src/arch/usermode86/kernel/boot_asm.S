@@ -10,11 +10,11 @@
 
 .extern _start2
 .extern kernel_start
-.extern __stack
+.extern _stack_top
 
 _start:
 	call _start2
 
-	movl $__stack - 4, %esp
+	movl $_stack_top - 4, %esp
 
 	call kernel_start

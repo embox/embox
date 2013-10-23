@@ -76,7 +76,7 @@ int lockf(int fd, int cmd, off_t len);
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	// ToDo: implement for InitFS files
 	(void)addr;
-	(void)len;pid_t getppid(void);
+	(void)len;
 	(void)prot;
 	(void)flags;
 	(void)off;
@@ -150,17 +150,25 @@ void freeaddrinfo(struct addrinfo *res);
 
 #define NI_NUMERICSERV 2
 #define NI_NUMERICHOST 3
-extern
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-                       char *host, size_t hostlen,
-                       char *serv, size_t servlen, int flags);
 
-const char *gai_strerror(int errcode);
+static inline
+const char *gai_strerror(int errcode) {
+	static char buf[256];
+	sprintf(buf,"gai_error: %i", errcode);
+}
 
 #define AI_ADDRCONFIG	0x0001
 #define AI_PASSIVE	0x0020
 
 #define EAI_FAIL	4
+
+static inline
+int getnameinfo(const struct sockaddr *sa, socklen_t salen,
+                       char *host, size_t hostlen,
+                       char *serv, size_t servlen, int flags) {
+	DPRINT();
+	return EAI_FAIL;
+}
 
 static inline
 int getaddrinfo(const char *node, const char *service,
@@ -172,8 +180,11 @@ int getaddrinfo(const char *node, const char *service,
 
 #include <arpa/inet.h>
 
-extern
-char *strerror_r(int errnum, char *buf, size_t buflen);
+static inline
+char *strerror_r(int errnum, char *buf, size_t buflen) {
+	DPRINT();
+	return strerror(errnum);
+}
 
 static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 	printf(">>> localtime_r\n");
@@ -183,10 +194,30 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 #include <sys/types.h>
 #include <unistd.h>
 
-extern
-pid_t getppid(void);
+static inline
+pid_t getppid(void) {
+	DPRINT();
+	return 0;
+}
 
 typedef unsigned int uint;
+
+#define SIG_SETMASK 2
+
+typedef int sigset_t;
+
+static inline
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	DPRINT();
+	return 0;
+}
+
+static inline
+int sigfillset(sigset_t *set) {
+	DPRINT();
+	*set = -1;
+	return 0;
+}
 
 #ifdef __cplusplus
 

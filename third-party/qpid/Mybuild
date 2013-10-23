@@ -6,6 +6,8 @@ static module core {
 
 	depends third_party.boost.core
 	depends third_party.e2fsprogs.libs
+	depends embox.compat.posix.idx.poll
+	depends embox.net.lib.getifaddrs
 
 	source "empty.c" // FIXME: workaround
 

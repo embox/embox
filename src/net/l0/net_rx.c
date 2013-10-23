@@ -23,12 +23,14 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
 	if (0 != skb->dev->ops->parse_hdr(skb, &hdr_info)) {
+		skb_free(skb);
 		return 0; /* error: can't parse L2 header */
 	}
 
 	/* check recipient on L2 layer */
 	switch (pkt_type(skb)) {
 	default:
+		skb_free(skb);
 		return 0; /* not for us */
 	case PACKET_HOST:
 	case PACKET_LOOPBACK:

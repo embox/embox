@@ -17,8 +17,8 @@ ExternalProject_Add(
    CONFIGURE_COMMAND
       sh <SOURCE_DIR>/configure
          --prefix=<INSTALL_DIR>
-         ""CC_FOR_TARGET=/usr/bin/gcc""
-         ""CXX_FOR_TARGET=/usr/bin/g++""
+         ""CC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}""
+         ""CXX_FOR_TARGET=$ENV{EMBOX_DERIVED_CXX}""
          ""CFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CFLAGS}\ -DLIBGCC2_HAS_XF_MODE=0\ -DDO_GLOBAL_CTORS_BODY\ -DDO_GLOBAL_DTORS_BODY\ -DNAME__MAIN=__embox_register_eh_frame_once\ -DSYMBOL__MAIN=__embox_register_eh_frame_once\ -I<BINARY_DIR>/gcc/include""
          ""CXXFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_CXXFLAGS}\ -I<BINARY_DIR>/gcc/include""
          ""LDFLAGS_FOR_TARGET=$ENV{EMBOX_DERIVED_LDFLAGS}""
@@ -31,10 +31,10 @@ ExternalProject_Add(
          #--disable-gcc
    BUILD_COMMAND
       make
-         GCC_FOR_TARGET=gcc
-         CXX_FOR_TARGET=g++
-         RAW_CXX_FOR_TARGET=g++
-         CC_FOR_TARGET=gcc
+         GCC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}
+         CXX_FOR_TARGET=$ENV{EMBOX_DERIVED_CXX}
+         RAW_CXX_FOR_TARGET=$ENV{EMBOX_DERIVED_CXX}
+         CC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}
          AR_FOR_TARGET=ar
          RANLIB_FOR_TARGET=ranlib
          ""TARGET-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
@@ -46,17 +46,17 @@ ExternalProject_Add(
          ""TARGET-libdecnumber=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
-         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
+         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
          ""TARGET-target-libstdc++-v3='SUBDIRS=include\ libsupc++'\ all-recursive""
          ""TARGET-target-libgcc=PICFLAG=\ EXTRA_PARTS=\ all""
          all-target-libgcc
          all-target-libstdc++-v3
    INSTALL_COMMAND
       make
-         GCC_FOR_TARGET=gcc
-         CXX_FOR_TARGET=g++
-         RAW_CXX_FOR_TARGET=g++
-         CC_FOR_TARGET=gcc
+         GCC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}
+         CXX_FOR_TARGET=$ENV{EMBOX_DERIVED_CXX}
+         RAW_CXX_FOR_TARGET=$ENV{EMBOX_DERIVED_CXX}
+         CC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}
          AR_FOR_TARGET=ar
          RANLIB_FOR_TARGET=ranlib
          ""TARGET-libiberty=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
@@ -68,7 +68,7 @@ ExternalProject_Add(
          ""TARGET-libdecnumber=LINKER=true\ CC=true\ AR=true\ RANLIB=touch\ all""
          ""TARGET-fixincludes=LINKER=true\ CC=true\ AR=true\ all""
          ""TARGET-lto-plugin=CC=true\ LIBTOOL=true\ all""
-         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=gcc\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
+         ""TARGET-gcc=LINKER=true\ CC=true\ CXX=true\ GCC_FOR_TARGET=$ENV{EMBOX_DERIVED_CC}\ AR=true\ RANLIB=true\ libgcc-support\ stmp-int-hdrs""
          ""TARGET-target-libstdc++-v3=SUBDIRS=libsupc++\ install-recursive""
          ""TARGET-target-libgcc=PICFLAG=\ EXTRA_PARTS=\ all""
          install-target-libgcc

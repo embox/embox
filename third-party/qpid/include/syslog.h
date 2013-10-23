@@ -41,11 +41,19 @@
 #define	LOG_LOCAL6	(22<<3)	/* reserved for local use */
 #define	LOG_LOCAL7	(23<<3)	/* reserved for local use */
 
-extern
-void  closelog(void);
-extern
-void  openlog(const char *, int, int);
-extern
-void  syslog(int, const char *, ...);
+static inline
+void  closelog(void) {
+	DPRINT();
+}
+static inline
+void  openlog(const char *ident, int option, int facility) {
+	DPRINT();
+	printf("Opening log: %s (%i, %i)\n", ident, option, facility);
+}
+static inline
+void  syslog(int prio, const char *format, ...) {
+	DPRINT();
+	printf("qpid:>> %s\n", format);
+}
 
 #endif /* SYSLOG_H_ */

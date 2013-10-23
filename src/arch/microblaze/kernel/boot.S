@@ -18,7 +18,7 @@ C_ENTRY(_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
 	/*set stack pointer*/
-	addi  reg_sp, reg_zero, __stack
+	addi  reg_sp, reg_zero, _stack_top
 
 	brlid r15, setup_trap_table
 	nop
@@ -57,7 +57,7 @@ clear_bss:
 	/*clear register*/
 	REGS_INIT();
 	/*set stack pointer again*/
-	addi  reg_sp, reg_zero, __stack
+	addi  reg_sp, reg_zero, _stack_top
 
 	brlid r15, kernel_start
 	nop

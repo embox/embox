@@ -31,7 +31,7 @@ ExternalProject_Add(
       --disable-shared-libs
       libreplace_cv_HAVE_GETADDRINFO=no
       ac_cv_file__proc_sys_kernel_core_pattern=no
-      ac_cv_func_poll=no
+      ac_cv_func_poll=yes
       libreplace_cv_HAVE_MMAP=no
       ac_cv_lib_readline_rl_callback_handler_install=no
       ac_cv_func_getpassphrase=no

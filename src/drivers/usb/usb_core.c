@@ -29,6 +29,11 @@ const struct usb_desc_endpoint usb_desc_endp_control_default = {
 	.b_interval = 0,
 };
 
+static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
+
 static inline void usb_dev_notify_posted(struct usb_dev *dev);
 static inline void usb_dev_notify_port(struct usb_dev *dev);
 static int usb_dev_post(struct usb_dev *dev, unsigned int ms,
@@ -119,7 +124,7 @@ static inline struct usb_dev *usb_hcd_enum_curdev(struct usb_hcd *hcd) {
 	return member_cast_out(dev_link, struct usb_dev, enum_link);
 }
 
-static int usb_hcd_do_enum(struct usb_hcd *hcd) {
+static int usb_hcd_do_reset(struct usb_hcd *hcd) {
 	struct usb_dev *dev;
 
 	irq_lock();
@@ -136,31 +141,39 @@ static int usb_hcd_do_enum(struct usb_hcd *hcd) {
 
 	usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
 
+	usb_dev_post(dev, USB_RESET_HIGH_DELAY_MS, usb_dev_notify_reset_awaiting);
+
 	return 0;
 }
 
-static int usb_dev_enumerate(struct usb_dev *dev) {
+static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 	struct usb_hcd *hcd = dev->hcd;
-	bool is_enumerating;
+	bool is_resseting;
+
+#if 0
+	usb_dev_wait(dev, notify_hnd);
+#else
+	assert(notify_hnd == usb_dev_notify_reset_awaiting);
+#endif
 
 	irq_lock();
 	{
-		is_enumerating = !dlist_empty(&hcd->enum_devs);
+		is_resseting = !dlist_empty(&hcd->enum_devs);
 		dlist_head_init(&dev->enum_link);
 		dlist_add_prev(&dev->enum_link, &hcd->enum_devs);
 	}
 	irq_unlock();
 
-	if (!is_enumerating) {
-		usb_hcd_do_enum(hcd);
+	if (!is_resseting) {
+		usb_hcd_do_reset(hcd);
 	}
 
 	return 0;
 }
 
-static void usb_dev_enumerate_done(struct usb_dev *dev) {
+static void usb_dev_reset_done(struct usb_dev *dev) {
 	struct usb_hcd *hcd = dev->hcd;
-	bool has_to_enum;
+	bool has_to_reset;
 
 	irq_lock();
 	{
@@ -171,12 +184,12 @@ static void usb_dev_enumerate_done(struct usb_dev *dev) {
 
 		dlist_del(&dev->enum_link);
 
-		has_to_enum = !dlist_empty(&hcd->enum_devs);
+		has_to_reset = !dlist_empty(&hcd->enum_devs);
 	}
 	irq_unlock();
 
-	if (has_to_enum) {
-		usb_hcd_do_enum(hcd);
+	if (has_to_reset) {
+		usb_hcd_do_reset(hcd);
 	}
 }
 
@@ -199,7 +212,7 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req) {
 
 	dev->bus_idx = dev->idx;
 	usb_dev_set_state(dev, USB_DEV_ADDRESS);
-	usb_dev_enumerate_done(dev);
+	usb_dev_reset_done(dev);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
 		USB_DEV_REQ_TYPE_RD
@@ -276,11 +289,6 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 
 static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 	struct usb_dev *dev = req->endp->dev;
-#if 0
-	struct usb_endp *ctrl_endp;
-
-	ctrl_endp = dev->endpoints[0];
-#endif
 
 	assert(req->ctrl_header.b_request == USB_DEV_REQ_SET_CONF);
 
@@ -290,11 +298,6 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 
 	usb_class_handle(dev);
 }
-
-static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
 
 static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type) {
 	assert(event_type == USB_DEV_EVENT_PORT);
@@ -308,8 +311,7 @@ static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_eve
 
 	if (event_type == USB_DEV_EVENT_POSTED) {
 		usb_dev_set_state(dev, USB_DEV_POWERED);
-		usb_dev_wait(dev, usb_dev_notify_reset_awaiting);
-		usb_dev_enumerate(dev);
+		usb_dev_reset(dev, usb_dev_notify_reset_awaiting);
 	} else if (event_type == USB_DEV_EVENT_PORT) {
 		/* handle dither */
 		printk("%s: port event: status=%08x\n", __func__, dev->port->status);
@@ -318,19 +320,15 @@ static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_eve
 
 static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type) {
 
-	assert(event_type == USB_DEV_EVENT_PORT);
+	assert(event_type == USB_DEV_EVENT_POSTED);
 
-	if (event_type == USB_DEV_EVENT_PORT) {
-		if (dev->port->changed & USB_HUB_PORT_RESET) {
-			usb_dev_set_state(dev, USB_DEV_DEFAULT);
-/*FIXME*/
-#if 0
-			usb_dev_post(dev, 10, usb_dev_notify_reseted_delay);
-#else
-			usb_dev_wait(dev, usb_dev_notify_reseted_delay);
-			usb_dev_notify_posted(dev);
-#endif
-		}
+	if (event_type == USB_DEV_EVENT_POSTED) {
+
+		usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
+
+		usb_dev_set_state(dev, USB_DEV_DEFAULT);
+
+		usb_dev_post(dev, 10, usb_dev_notify_reseted_delay);
 	}
 }
 
