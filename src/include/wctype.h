@@ -1,6 +1,8 @@
 /**
  * @file
- *
+ * @brief wide-character classification and mapping utilities
+ * @details TODO: Now wchar set is a char set only (see ctype.h). Any wchar greater than 255
+ * does not belong to any charclass and will be recognized as invalid.
  * @date 21.10.13
  * @author Alexander Kalmuk
  */
