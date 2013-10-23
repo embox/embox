@@ -12,9 +12,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#define SIGSTD_MIN     0
-#define SIGSTD_MAX     -1
-
 struct sigstd_data { };  /* stub */
 
 static inline struct sigstd_data * sigstd_data_init(
@@ -26,9 +23,8 @@ static inline int sigstd_raise(struct sigstd_data *data, int sig) {
 	return -ENOSYS;
 }
 
-static inline void sigstd_handle(struct sigstd_data *data,
-		struct sigaction *sig_table) {
-	/* no-op */
+static inline int sigstd_dequeue(struct sigstd_data *data) {
+	return 0;
 }
 
 #endif /* KERNEL_THREAD_SIGSTD_STUB_H_ */

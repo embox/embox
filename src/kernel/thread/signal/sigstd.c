@@ -42,7 +42,7 @@ static int sigset_first(sigset_t *set) {
 	return sig;
 }
 
-static int sigstd_dequeue(struct sigstd_data *sig_data) {
+int sigstd_dequeue(struct sigstd_data *sig_data) {
 	int sig;
 
 	assert(sig_data);
@@ -56,21 +56,5 @@ static int sigstd_dequeue(struct sigstd_data *sig_data) {
 	irq_unlock();
 
 	return sig;
-}
-
-void sigstd_handle(struct sigstd_data *sig_data,
-		struct sigaction *sig_table) {
-	int sig;
-	void (*handler)(int sig);
-
-	assert(sig_data);
-
-	while ((sig = sigstd_dequeue(sig_data))) {
-		// TODO locks?
-		handler = sig_table[sig].sa_handler;
-		assert(handler && "there must be at least a fallback handler");
-
-		handler(sig);
-	}
 }
 

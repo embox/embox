@@ -18,7 +18,16 @@ void thread_signal_handle(void) {
 	struct signal_data *sig_data = &thread->signal_data;
 	struct sigaction *sig_table = task->sig_table;
 
-	sigrt_handle(&sig_data->sigrt_data, sig_table);
-	sigstd_handle(&sig_data->sigstd_data, sig_table);
+	sighandler_t handler;
+	int sig;
 
+	while ((sig = sigrt_dequeue(&sig_data->sigrt_data)) ||
+		(sig = sigstd_dequeue(&sig_data->sigstd_data))) {
+
+		// TODO locks?
+		handler = sig_table[sig].sa_handler;
+		assert(handler && "there must be at least a fallback handler");
+
+		handler(sig);
+	}
 }

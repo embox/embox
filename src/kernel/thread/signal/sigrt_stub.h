@@ -27,9 +27,8 @@ static inline int sigrt_raise(struct sigrt_data *data, int sig,
 	return -ENOSYS;
 }
 
-static inline void sigrt_handle(struct sigrt_data *data,
-		struct sigaction *sig_table) {
-	/* no-op */
+static inline int sigrt_dequeue(struct sigrt_data *data) {
+	return 0;
 }
 
 #endif /* KERNEL_THREAD_SIGRT_H_ */
