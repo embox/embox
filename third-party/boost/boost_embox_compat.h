@@ -204,21 +204,14 @@ int getnameinfo(const struct sockaddr *sa, socklen_t salen,
 #define AI_PASSIVE	0x0020
 
 
+#include <signal.h>
+
 #define SIG_BLOCK 1
 #define SIG_SETMASK 2
-
-typedef int sigset_t;
 
 static inline
 int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	DPRINT();
-	return 0;
-}
-
-static inline
-int sigfillset(sigset_t *set) {
-	DPRINT();
-	*set = -1;
 	return 0;
 }
 

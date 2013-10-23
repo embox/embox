@@ -45,24 +45,6 @@ static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
 	printf(">>> sigprocmask(%i,%p,%p)\n",how,set,oldset);
 	return -1;
 }
-static inline int sigaddset(sigset_t *set, int signum){
-	printf(">>> sigaddset(%p,%i)\n",set,signum);
-	if (signum>=sizeof(sigset_t)*8) {
-		return -1;
-	}
-	*set |= 1<<signum;
-	return 0;
-}
-static inline int sigemptyset(sigset_t *set) {
-	*set = 0;
-	printf(">>> sigemptyset()\n");
-	return -1;
-}
-static inline int sigaction(int signum, const struct sigaction *act,
-	      struct sigaction *oldact) {
-	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
-	return -1;
-}
 
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
