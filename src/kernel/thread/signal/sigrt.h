@@ -11,9 +11,6 @@
 
 #include <util/slist.h>
 
-#define SIGRT_MIN     16
-#define SIGRT_MAX     20
-
 struct sigrt_data {
 	struct slist pending;
 };

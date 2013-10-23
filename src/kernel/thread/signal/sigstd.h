@@ -11,9 +11,6 @@
 
 #include <signal.h>
 
-#define SIGSTD_MIN     1
-#define SIGSTD_MAX     15
-
 struct sigstd_data {
 	sigset_t pending;
 };

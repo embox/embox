@@ -12,9 +12,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#define SIGRT_MIN     0
-#define SIGRT_MAX     -1
-
 struct sigrt_data { };  /* stub */
 
 static inline struct sigrt_data * sigrt_data_init(

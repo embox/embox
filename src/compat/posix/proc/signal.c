@@ -31,7 +31,7 @@ int sigaction(int sig, const struct sigaction *restrict act,
 		struct sigaction *restrict oact) {
 	struct sigaction *sig_table = task_self()->sig_table;
 
-	if (!check_range_incl(sig, SIGSTD_MIN, SIGSTD_MAX))
+	if (!check_range(sig, 0, _SIG_TOTAL))
 		return SET_ERRNO(EINVAL);
 
 	if (oact) {
