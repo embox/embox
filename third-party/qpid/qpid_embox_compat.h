@@ -188,6 +188,23 @@ pid_t getppid(void);
 
 typedef unsigned int uint;
 
+#define SIG_SETMASK 2
+
+typedef int sigset_t;
+
+static inline
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	DPRINT();
+	return 0;
+}
+
+static inline
+int sigfillset(sigset_t *set) {
+	DPRINT();
+	*set = -1;
+	return 0;
+}
+
 #ifdef __cplusplus
 
 #endif // __cplusplus

@@ -9,6 +9,10 @@
 #ifndef COMPAT_POSIX_POLL_H_
 #define COMPAT_POSIX_POLL_H_
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 #define POLLIN     0x01
 #define POLLRDNORM POLLIN
 #define POLLOUT    0x02
@@ -31,5 +35,7 @@ struct pollfd {
 typedef unsigned long int nfds_t;
 
 extern int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+
+__END_DECLS
 
 #endif /* COMPAT_POSIX_POLL_H_ */

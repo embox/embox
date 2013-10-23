@@ -58,6 +58,7 @@ static module LibGccInternal extends LibGcc {
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
 	source "gcc/mulsi3.c"
+        source "gcc/arm_eabi.c"
 }
 
 static module Tokenizer {
