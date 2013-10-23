@@ -36,14 +36,14 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	wait_queue_thread_notify(thread, -ETIMEDOUT);
 }
 
-static int sched_wait_locked(unsigned long timeout) {
+static int wait_locked(unsigned long timeout) {
 	int ret;
 	struct sys_timer tmr;
 	struct thread *current = thread_get_current();
 
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
-	//there was an assert /* Should be prepared */
+	assert(current->wait_link); /* Should be prepared */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
@@ -77,7 +77,7 @@ void wait_queue_remove(struct wait_link *wait_link) {
 	ipl_restore(ipl);
 }
 
-void wait_queue_insert(struct wait_queue *wait_queue,
+static void wait_queue_insert(struct wait_queue *wait_queue,
 		struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
@@ -89,16 +89,20 @@ void wait_queue_insert(struct wait_queue *wait_queue,
 	ipl_restore(ipl);
 }
 
-void wait_queue_prepare(struct wait_link *wait_link) {
+static void wait_queue_prepare(struct wait_link *wait_link) {
 	struct thread *current = thread_get_current();
+
+	assert(!current->wait_link);
 
 	wait_link->thread = current;
 	wait_link->result = 0;
 	current->wait_link = wait_link;
 }
 
-void wait_queue_cleanup(struct wait_link *wait_link) {
-	//TODO: delete this
+static void wait_queue_cleanup(struct wait_link *wait_link) {
+	struct thread *current = thread_get_current();
+
+	current->wait_link = 0;
 }
 
 int wait_queue_wait(struct wait_queue *wait_queue, int timeout) {
@@ -121,7 +125,7 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 
 	wait_queue_prepare(&wait_link);
 
-	result = sched_wait_locked(timeout);
+	result = wait_locked(timeout);
 
 	wait_queue_cleanup(&wait_link);
 

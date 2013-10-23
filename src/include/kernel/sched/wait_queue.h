@@ -38,16 +38,54 @@ static inline int wait_queue_empty(struct wait_queue *wait_queue) {
 	return dlist_empty(&wait_queue->list);
 }
 
-extern void wait_queue_thread_notify(struct thread *thread, int result);
+/**
+ * Removing wait_link from queue. Sched uses it for finishing sleeping thread
+ * @param wait_link
+ *   wait_link to remove
+ */
 extern void wait_queue_remove(struct wait_link *wait_link);
-extern void wait_queue_insert(struct wait_queue *wait_queue,
-		struct wait_link *wait_link);
-extern void wait_queue_prepare(struct wait_link *wait_link);
-extern void wait_queue_cleanup(struct wait_link *wait_link);
 
+/**
+ * Wait notifying with sched locking
+ * @param wait_queue
+ *   queue with waiting threads
+ * @param timeout
+ *   timeout for interrupt waiting
+ * @return
+ *   waiting result
+ */
 extern int wait_queue_wait(struct wait_queue *wait_queue, int timeout);
+/**
+ * Wait notifying without sched locking
+ * @param wait_queue
+ *   queue with waiting threads
+ * @param timeout
+ *   timeout for interrupt waiting
+ * @return
+ *   waiting result
+ */
 extern int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout);
+/**
+ * Notifying specific thread
+ * @param thread
+ *   thread for notify
+ * @param result
+ *   result returns from wait_queue_wait(_locked) funtions
+ */
+extern void wait_queue_thread_notify(struct thread *thread, int result);
+/**
+ * Notify the most significant thread in queue
+ * @param wait_queue
+ *   queue with threads to notify
+ */
 extern void wait_queue_notify(struct wait_queue *wait_queue);
+/**
+ * Notify all threads in queue with error
+ * @param wait_queue
+ *   queue with threads to notify
+ * @param error
+ *   code error
+ */
 extern void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error);
 
 static inline void wait_queue_notify_all(struct wait_queue *wait_queue) {
