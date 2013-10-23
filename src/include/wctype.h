@@ -16,7 +16,7 @@ typedef int wctrans_t;
 /* Wrapper of ctype function to make it wctype function */
 #define WCFUNC(class) \
 	static inline int isw ## class(wint_t wc) { \
-		return (is ## class(wc)); \
+		return ((wc < (wint_t)0x100 ? is ## class(wc) : 0)); \
 	}
 
 WCFUNC(alnum);
@@ -36,11 +36,15 @@ extern int iswctype(wint_t, wctype_t);
 extern wint_t towctrans(wint_t, wctrans_t);
 
 static inline wint_t towlower(wint_t wc) {
-	return tolower(wc);
+	if (wc == WEOF)
+		return WEOF;
+	return (wc < (wint_t)0x100 ? tolower(wc) : wc);
 }
 
 static inline wint_t towupper(wint_t wc) {
-	return toupper(wc);
+	if (wc == WEOF)
+		return WEOF;
+	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
 }
 
 extern wctype_t wctype(const char *property);

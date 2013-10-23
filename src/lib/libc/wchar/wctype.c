@@ -9,8 +9,14 @@
 #include <wctype.h>
 #include <string.h>
 
-#define _A    (_U | _D)
-#define _B    0xFF /* FIXME: I am not sure that it is good solution */
+/* Section "LC_CTYPE Category in the POSIX Locale" in
+ * http://pubs.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap07.html
+ * says that there are 8 default classes for POSIX locale and <space>. In total 9. So
+ * we must have 9 bit mask to distinguish those 9 classes, but we have only 8 (sizeof char).
+ * Therefore I extracted "blank" class in separate case. */
+#define _B    0xFF
+
+#define _A    (_U | _L | _D)
 #define _G    (_P | _U | _L | _D)
 #define _R    (_P | _U | _L | _D | _SP)
 
@@ -61,14 +67,17 @@ wctrans_t wctrans(const char *charclass) {
 }
 
 int iswctype(wint_t wc, wctype_t t) {
-	/* FIXME it is not best way to extract _B into separate case*/
+	if (wc == WEOF)
+		return 0;
 	if (t == _B) {
 		return iswblank(wc);
 	}
-	return (__ismask(wc) & t);
+	return (wc < (wint_t)0x100 ? __ismask(wc) & t : 0);
 }
 
 wint_t towctrans(wint_t w, wctrans_t t) {
+	if (w == WEOF)
+		return WEOF;
 	switch (t) {
 	case _L:
 		return towlower(w);
