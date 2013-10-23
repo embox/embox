@@ -14,18 +14,19 @@
  * says that there are 8 default classes for POSIX locale and <space>. In total 9. So
  * we must have 9 bit mask to distinguish those 9 classes, but we have only 8 (sizeof char).
  * Therefore I extracted "blank" class in separate case. */
-#define _B    0xFF
+#define _B    0xFF            // <space> and <tab>
 
-#define _A    (_U | _L | _D)
-#define _G    (_P | _U | _L | _D)
-#define _R    (_P | _U | _L | _D | _SP)
+#define _A     (_U | _L)      // "alpha"
+#define _AN    (_U | _L | _D) // "alnum"
+#define _G     (_P | _AN)     // "graph"
+#define _R     (_G | _SP)     // "print"
 
 wctype_t wctype(const char *property) {
 	static const struct {
 		const char	*name;
 		wctype_t	 mask;
 	} props[] = {
-		{ "alnum",  _A |_D },
+		{ "alnum",  _AN },
 		{ "alpha",  _A },
 		{ "blank",  _B },
 		{ "cntrl",  _C },
