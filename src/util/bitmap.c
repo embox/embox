@@ -10,22 +10,22 @@
 
 
 unsigned int bitmap_find_bit(const unsigned long *bitmap,
-		unsigned int nbits, unsigned int offset) {
-	const unsigned long *p = bitmap + BITMAP_OFFSET(offset);
-	unsigned long result = offset - BITMAP_SHIFT(offset);
+		unsigned int nbits, unsigned int start) {
+	const unsigned long *p = bitmap + BITMAP_OFFSET(start);  /* start word */
+	unsigned int shift = BITMAP_SHIFT(start);  /* within the start word */
+	unsigned int result = start - shift;  /* LONG_BIT-aligned down start */
 	unsigned long tmp;
 
 	assert(nbits >= 0);
-	assert(offset >= 0);
+	assert(start >= 0);
 
-	if (offset >= nbits)
+	if (start >= nbits)
 		return nbits;
 
-	offset -= result;
 	nbits -= result;
 	tmp = *(p++);
 
-	tmp &= (~0x0ul << offset);  /* mask out the beginning */
+	tmp &= (~0x0ul << shift);  /* mask out the beginning */
 
 	while (nbits > LONG_BIT) {
 		if (tmp)

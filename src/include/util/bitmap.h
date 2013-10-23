@@ -45,9 +45,9 @@ static inline void bitmap_clear_all(unsigned long *bitmap, unsigned int nbits) {
 }
 
 extern unsigned int bitmap_find_bit(const unsigned long *,
-		unsigned int nbits, unsigned int offset);
+		unsigned int nbits, unsigned int start);
 extern unsigned int bitmap_find_zero_bit(const unsigned long *,
-		unsigned int nbits, unsigned int offset);
+		unsigned int nbits, unsigned int start);
 
 static inline unsigned int bitmap_find_first_bit(const unsigned long *bitmap,
 		unsigned int nbits) {
