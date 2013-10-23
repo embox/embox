@@ -6,6 +6,8 @@
  * @author Eldar Abusalimov
  */
 
+#include <signal.h>
+
 #include <kernel/task.h>
 #include <kernel/thread.h>
 #include <kernel/thread/signal.h>
