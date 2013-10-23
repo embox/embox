@@ -53,9 +53,9 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 struct thread *boot_thread_create(void) {
 	struct thread *bootstrap;
 	struct task *kernel_task = task_kernel_task();
-	extern char __stack;
+	extern char _stack_top;
 
-	bootstrap = thread_init_self(&__stack - STACK_SZ, STACK_SZ,
+	bootstrap = thread_init_self(&_stack_top - STACK_SZ, STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
 	thread_register(kernel_task, bootstrap);

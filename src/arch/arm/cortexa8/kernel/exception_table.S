@@ -68,7 +68,7 @@ fiq_handler_addr:
 start:
 reset_handler:
 
-    ldr r0, =__stack
+    ldr r0, =_stack_top
 
 /* following mode now considered as unresolvable, so don't allocating stack */
     msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
