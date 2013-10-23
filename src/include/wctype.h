@@ -32,8 +32,7 @@ WCFUNC(space);
 WCFUNC(upper);
 WCFUNC(xdigit);
 
-extern int iswctype(wint_t, wctype_t);
-extern wint_t towctrans(wint_t, wctrans_t);
+#undef WCFUNC
 
 static inline wint_t towlower(wint_t wc) {
 	if (wc == WEOF)
@@ -47,7 +46,16 @@ static inline wint_t towupper(wint_t wc) {
 	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
 }
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
+extern int iswctype(wint_t, wctype_t);
+extern wint_t towctrans(wint_t, wctrans_t);
+
 extern wctype_t wctype(const char *property);
 extern wctrans_t wctrans(const char *charclass);
+
+__END_DECLS
 
 #endif /* WCTYPE_H_ */
