@@ -460,8 +460,8 @@ int wscrl(WINDOW *win, int n) {
 	}
 	else {
 		n = min(-n, win->endy - win->begy);
-		src_line = win->endy - n;
-		dst_line = win->endy;
+		src_line = win->endy - n - 1;
+		dst_line = win->endy - 1;
 
 		while (src_line >= win->begy) {
 			src = win->lines + src_line * COLS + win->begx;
@@ -471,7 +471,7 @@ int wscrl(WINDOW *win, int n) {
 			--dst_line;
 		}
 
-		window_fill(win, win->bkgd, win->endy - n, win->begx, win->endy, win->endx);
+		window_fill(win, win->bkgd, win->begy, win->begx, src_line, win->endx);
 	}
 
 	return OK;
