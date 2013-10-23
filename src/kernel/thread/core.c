@@ -207,7 +207,6 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(t);
 
-	t->wait_data.status = WAIT_DATA_STATUS_NONE;
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {

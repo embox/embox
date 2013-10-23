@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <kernel/thread/state.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/irq.h>
@@ -43,10 +44,9 @@ void sched_thread_notify(struct thread *thread, int result) {
 
 	irq_lock();
 	{
-		if (thread->wait_data.status == WAIT_DATA_STATUS_WAITING) {
+		if (thread_state_sleeping(thread->state)) {
 			work_post(&thread->wait_data.work, &startq);
 
-			thread->wait_data.status = WAIT_DATA_STATUS_NOTIFIED;
 			thread->wait_data.result = result;
 
 			sched_post_switch();
@@ -73,31 +73,22 @@ static int notify_work(struct work *work) {
 
 void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
 		void *data) {
-	struct wait_data *wait_data = &thread_get_current()->wait_data;
+	struct thread *current = thread_get_current();
+	struct wait_data *wait_data = &current->wait_data;
 	ipl_t ipl;
 
 	wait_data->data = data;
 	wait_data->on_notified = on_notified;
 
-	assert(wait_data->status == WAIT_DATA_STATUS_NONE);
+	assert(!thread_state_sleeping(current->state));
 
 	ipl = ipl_save();
 	{
 		work_init(&wait_data->work, &notify_work, WORK_DISABLED);
 		wait_data->result = ENOERR;
-		wait_data->status = WAIT_DATA_STATUS_WAITING;
 	}
 	ipl_restore(ipl);
 }
-
-void sched_cleanup_wait(void) {
-	struct wait_data *wait_data = &thread_get_current()->wait_data;
-
-	assert(wait_data->status != WAIT_DATA_STATUS_NONE);
-
-	wait_data->status = WAIT_DATA_STATUS_NONE;
-}
-
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
@@ -111,7 +102,7 @@ int sched_wait_locked(unsigned long timeout) {
 
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
-	assert(current->wait_data.status != WAIT_DATA_STATUS_NONE); /* Should be prepared */
+	//there was an assert /* Should be prepared */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);

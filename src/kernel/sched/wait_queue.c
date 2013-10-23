@@ -45,7 +45,7 @@ void wait_queue_prepare(struct wait_link *wait_link) {
 }
 
 void wait_queue_cleanup(struct wait_link *wait_link) {
-	sched_cleanup_wait();
+	//TODO: delete this
 }
 
 int wait_queue_wait(struct wait_queue *wait_queue, int timeout) {
