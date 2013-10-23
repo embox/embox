@@ -234,9 +234,6 @@ static inline unsigned int ohci_port_stat_map(uint16_t val) {
 	if (val & OHCI_RH_PORT_CONN) {
 		ret |= USB_HUB_PORT_CONNECT;
 	}
-	if (val & OHCI_RH_PORT_RESET) {
-		ret |= USB_HUB_PORT_RESET;
-	}
 	if (val & OHCI_RH_PORT_POWERST) {
 		ret |= USB_HUB_PORT_POWER;
 	}
@@ -260,8 +257,15 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	}
 
 	if (req == USB_HUB_REQ_PORT_CLEAR) {
-		wval = ~wval
-			& OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+		uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+		if (value & USB_HUB_PORT_RESET) {
+			/* check if hardware already cleared RESET,
+ 			 * otherwise RESET high signal was not long enough
+			 */
+			assert((portstat & OHCI_RH_PORT_RESET) == 0);
+		}
+
+		wval = ~wval & portstat;
 	}
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[port->idx], wval);
