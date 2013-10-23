@@ -28,47 +28,24 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
-
-int sched_wait_init(void){
-	work_queue_init(&startq);
-
-	return 0;
-}
-
-void sched_wait_run(void) {
-	work_queue_run(&startq);
-}
-
 void sched_thread_notify(struct thread *thread, int result) {
 	assert(thread);
 
 	irq_lock();
 	{
 		if (thread_state_sleeping(thread->state)) {
-			work_post(&thread->wait_data.work, &startq);
-
 			thread->wait_data.result = result;
 
-			sched_post_switch();
+			sched_wake(thread);
+
+			if (thread->wait_data.on_notified) {
+				thread->wait_data.on_notified(thread, thread->wait_data.data);
+			}
+
+			//sched_post_switch();
 		}
 	}
 	irq_unlock();
-}
-
-
-static int notify_work(struct work *work) {
-	struct wait_data *wait_data = member_cast_out(work, struct wait_data, work);
-	struct thread *t = member_cast_out(wait_data, struct thread, wait_data);
-
-	assert(in_sched_locked());
-
-	sched_wake(t);
-
-	if (wait_data->on_notified) {
-		wait_data->on_notified(t, wait_data->data);
-	}
-
-	return 1;
 }
 
 void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
@@ -84,7 +61,6 @@ void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
 
 	ipl = ipl_save();
 	{
-		work_init(&wait_data->work, &notify_work, WORK_DISABLED);
 		wait_data->result = ENOERR;
 	}
 	ipl_restore(ipl);
@@ -111,7 +87,6 @@ int sched_wait_locked(unsigned long timeout) {
 		}
 	}
 
-	work_enable(&current->wait_data.work);
 	sched_sleep(current);
 
 	sched_unlock();
@@ -127,17 +102,4 @@ int sched_wait_locked(unsigned long timeout) {
 	}
 
 	return current->wait_data.result;
-}
-
-int sched_wait(unsigned long timeout) {
-	int sleep_res;
-	assert(!in_sched_locked());
-
-	sched_lock();
-	{
-		sleep_res = sched_wait_locked(timeout);
-	}
-	sched_unlock();
-
-	return sleep_res;
 }

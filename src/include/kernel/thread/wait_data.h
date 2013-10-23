@@ -14,8 +14,6 @@
 struct thread;
 
 struct wait_data {
-	struct work work;
-
 	int result;
 
 	void (*on_notified)(struct thread *, void *);
