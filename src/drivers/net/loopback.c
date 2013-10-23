@@ -20,9 +20,11 @@
 
 EMBOX_UNIT_INIT(loopback_init);
 
-static int loopback_xmit(struct net_device *dev, struct sk_buff *skb) {
+static int loopback_xmit(struct net_device *dev,
+		struct sk_buff *skb) {
 	struct net_device_stats *lb_stats;
 	struct sk_buff *copied;
+	size_t skb_len;
 
 	if ((skb == NULL) || (dev == NULL)) {
 		return -EINVAL;
@@ -33,6 +35,7 @@ static int loopback_xmit(struct net_device *dev, struct sk_buff *skb) {
 	if (copied == NULL) {
 		return -ENOMEM;
 	}
+	skb_len = skb->len;
 	skb_free(skb);
 
 	lb_stats = &dev->stats;
@@ -40,8 +43,8 @@ static int loopback_xmit(struct net_device *dev, struct sk_buff *skb) {
 	if (netif_rx(copied) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->rx_packets++;
-		lb_stats->tx_bytes += skb->len;
-		lb_stats->rx_bytes += skb->len;
+		lb_stats->tx_bytes += skb_len;
+		lb_stats->rx_bytes += skb_len;
 	} else {
 		lb_stats->rx_err++;
 		lb_stats->tx_err++;
