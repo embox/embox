@@ -17,10 +17,12 @@
 #include <util/list.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <embox/net/pack.h>
 
 struct proto_sock;
 struct sock_family_ops;
 struct sock_proto_ops;
+struct net_pack_out_ops;
 struct msghdr;
 struct sk_buff;
 struct pool;
@@ -83,6 +85,7 @@ struct sock {
 	struct proto_sock *p_sk;
 	const struct sock_family_ops *f_ops;
 	const struct sock_proto_ops *p_ops;
+	const struct net_pack_out_ops *o_ops;
 	struct io_sync ios;
 #if 0
 	const struct sockaddr *src_addr;

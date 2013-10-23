@@ -45,7 +45,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	/* This member must be first. */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
-	struct sock *sk;            /* Socket we are owned by */
+	const struct sock *sk;      /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)
@@ -135,6 +135,9 @@ extern struct sk_buff * skb_wrap(size_t size, size_t offset,
  * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(size_t size);
+
+extern struct sk_buff * skb_realloc(size_t size,
+		struct sk_buff *skb);
 
 /**
  * Free skb allocated by skb_alloc

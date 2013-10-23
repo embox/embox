@@ -16,6 +16,7 @@
 #include <net/if_ether.h>
 
 #include <net/l4/tcp.h>
+#include <net/lib/tcp.h>
 #include <sys/socket.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/sock.h>
@@ -35,9 +36,11 @@
 #define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
 
 static const struct sock_proto_ops tcp_sock_ops_struct;
-const struct sock_proto_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
+const struct sock_proto_ops *const tcp_sock_ops
+		= &tcp_sock_ops_struct;
 
-EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
+		tcp_sock_ops_struct);
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -93,16 +96,20 @@ static int tcp_close(struct sock *sk) {
 		case TCP_SYN_RECV:
 		case TCP_ESTABIL:
 		case TCP_CLOSEWAIT:
-			skb = alloc_prep_skb(0, 0);
-			if (skb == NULL) {
-				break;
+			skb = NULL; /* alloc new pkg */
+			if (0 != alloc_prep_skb(tcp_sk, 0, NULL, &skb)) {
+				break; /* error: see ret */
 			}
-			tcp_set_st(tcp_sk, tcp_sk->state == TCP_CLOSEWAIT ? TCP_LASTACK
+			tcp_set_st(tcp_sk,
+					tcp_sk->state == TCP_CLOSEWAIT ? TCP_LASTACK
 						: TCP_FINWAIT_1);
-			build_tcp_packet(0, 0, tcp_sk, skb);
 			tcph = tcp_hdr(skb);
+			tcp_build(tcph,
+					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
+					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
+					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
 			tcph->fin = 1;
-			tcph->ack = 1;
+			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
 			send_data_from_sock(tcp_sk, skb);
 			break;
 		}
@@ -153,15 +160,18 @@ static int tcp_connect(struct sock *sk,
 			break;
 		case TCP_CLOSED:
 			/* make skb with options */
-			skb = alloc_prep_skb(sizeof magic_opts, 0);
-			if (skb == NULL) {
-				ret = -ENOMEM;
+			skb = NULL; /* alloc new pkg */
+			ret = alloc_prep_skb(tcp_sk, sizeof magic_opts, NULL, &skb);
+			if (ret != 0) {
 				break;
 			}
 			tcp_set_st(tcp_sk, TCP_SYN_SENT);
-			build_tcp_packet(sizeof magic_opts, 0,
-					tcp_sk, skb);
 			tcph = tcp_hdr(skb);
+			tcp_build(tcph,
+					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
+					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
+					TCP_MIN_HEADER_SIZE + sizeof magic_opts,
+					tcp_sk->self.wind);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_data_from_sock(tcp_sk, skb);
@@ -285,9 +295,10 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
+	int ret;
 	struct sk_buff *skb;
 	struct tcp_sock *tcp_sk;
-	size_t bytes, max_len;
+	size_t bytes;
 	char *buff;
 	size_t len = msg->msg_iov->iov_len;
 
@@ -306,8 +317,6 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		max_len = (tcp_sk->rem.wind > TCP_MAX_DATA_LEN ?
-				TCP_MAX_DATA_LEN : tcp_sk->rem.wind);
 		buff = (char *)msg->msg_iov->iov_base;
 		while (len != 0) {
 			/* Maximum size of data that can be send without tcp window size overflowing */
@@ -318,23 +327,26 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 			assert(upper_bound >= 0, "wind - %d, (self.seq - last_ack) - %d\n",
 					tcp_sk->rem.wind, tcp_sk->self.seq - tcp_sk->last_ack);
 
-			bytes = min(upper_bound, (len > max_len ? max_len : len));
+			bytes = min(upper_bound, len);
 			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
-			skb = alloc_prep_skb(0, bytes);
-			if (skb == NULL) {
+			skb = NULL; /* alloc new pkg */
+			ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
+			if (ret != 0) {
 				if (len != msg->msg_iov->iov_len) {
 					break;
 				}
-				return -ENOMEM;
+				return ret;
 			}
-			build_tcp_packet(0, bytes, tcp_sk, skb);
-			memcpy((void *)(skb->h.raw + TCP_MIN_HEADER_SIZE),
-					buff, bytes);
+			tcp_build(skb->h.th,
+					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
+					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
+					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+			memcpy(skb->h.th + 1, buff, bytes);
 			buff += bytes;
 			len -= bytes;
 			/* Fill TCP header */
-			skb->h.th->psh = len != 0 ? 0 : 1;
-			skb->h.th->ack = 1;
+			skb->h.th->psh = (len == 0);
+			tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
 			send_data_from_sock(tcp_sk, skb);
 		}
 		msg->msg_iov->iov_len -= len;

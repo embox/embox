@@ -174,6 +174,25 @@ struct sk_buff * skb_alloc(size_t size) {
 	return skb;
 }
 
+struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
+	if (skb == NULL) {
+		return skb_alloc(size);
+	}
+
+	list_del_init((struct list_head *)skb);
+	skb->sk = NULL;
+	skb->dev = NULL;
+	skb->len = size;
+	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
+	skb->p_data = &skb->data->data[0];
+	skb->p_data_end = &skb->data->data[size];
+
+	/* TODO remove this */
+	skb->mac.raw = skb->p_data;
+
+	return skb;
+}
+
 void skb_free(struct sk_buff *skb) {
 	ipl_t sp;
 
@@ -217,10 +236,10 @@ static void skb_copy_ref(struct sk_buff *to,
 	}
 }
 
-static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
-	assert((to != NULL) && (to->data != NULL)
-			&& (from != NULL) && (from->data != NULL)
-			&& (to->len == from->len));
+static void skb_copy_data(struct sk_buff *to,
+		const struct sk_buff *from) {
+	assert((to != NULL) && (to->data != NULL) && (from != NULL)
+			&& (from->data != NULL) && (to->len == from->len));
 	memcpy(&to->data->data[0], &from->data->data[0], from->len);
 }
 

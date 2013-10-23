@@ -19,7 +19,7 @@
 #include <net/netdevice.h>
 #include <framework/net/sock/api.h>
 
-static void udp_err(sk_buff_t *skb, unsigned int info);
+static void udp_err(const struct sk_buff *skb, int error_info);
 
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_UDP, udp_rcv, udp_err);
 
@@ -114,19 +114,17 @@ static int udp_err_tester(const struct sock *sk,
 				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
-static void udp_err(sk_buff_t *skb, unsigned int info) {
+static void udp_err(const struct sk_buff *skb, int error_info) {
 	struct sock *sk;
 
 	sk = NULL;
 
-	/* notify all sockets matching source, dest address, protocol and ports*/
 	while (1) {
 		sk = sock_lookup(sk, udp_sock_ops, udp_err_tester, skb);
 		if (sk == NULL) {
 			break;
 		}
 
-		/* notify socket about an error */
-		ip_v4_icmp_err_notify(sk, skb->h.icmph->type, skb->h.icmph->code);
+		sock_set_so_error(sk, error_info);
 	}
 }

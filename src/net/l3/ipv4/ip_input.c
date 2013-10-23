@@ -110,7 +110,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 				skb_free(skb);
 				return 0; /* error: dropped */
 			}
-			return ip_forward_packet(skb);
+			return ip_forward(skb);
 		}
 	}
 

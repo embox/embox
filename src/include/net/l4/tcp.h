@@ -50,18 +50,10 @@ typedef struct tcphdr {
 	__be16 window;
 	__be16 check;
 	__be16 urg_ptr;
-	__u8 options;
+	__u32 options[]; /* 32bit aligned options */
 } __attribute__((packed)) tcphdr_t;
 
-struct tcp_pseudohdr {
-	__be32 saddr;
-	__be32 daddr;
-	__u8 zero;
-	__u8 protocol;
-	__be16 tcp_len;
-} __attribute__((packed));
-
-#define TCP_MIN_HEADER_SIZE  20
+#define TCP_MIN_HEADER_SIZE  sizeof(struct tcphdr)
 #define TCP_HEADER_SIZE(hdr) ((hdr)->doff * 4)
 
 enum tcp_sock_state {
@@ -122,13 +114,6 @@ enum {
 
 #define TCP_WINDOW_DEFAULT    16384 /* Default size of widnow */
 
-/**
- * TODO TCP_MAX_DATA_LEN is temporary thing, becouse skb_alloc return NULL
- * if package the big, but it should return skb_queue instead
- */
-#define TCP_MAX_DATA_LEN      (ETH_DATA_LEN\
-		- (IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE))  /* Maximum size of data */
-
 /* Synchronization flags */
 #define TCP_SYNC_WRITE_QUEUE  0x01 /* Synchronization flag for socket sk_write_queue */
 #define TCP_SYNC_STATE        0x02 /* Synchronization flag for socket sk_state */
@@ -156,7 +141,8 @@ extern void tcp_set_st(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state);
 extern void tcp_obj_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_obj_unlock(struct tcp_sock *sk, unsigned int obj);
-extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
+extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
+		size_t *data_len, struct sk_buff **out_skb);
 extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_st_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);
