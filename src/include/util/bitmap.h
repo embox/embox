@@ -17,7 +17,6 @@
 #define BITMAP_SIZE(nbits)  (((nbits) + LONG_BIT - 1) / LONG_BIT)
 #define BITMAP_OFFSET(bit)  ((bit) / LONG_BIT)
 #define BITMAP_SHIFT(bit)   ((bit) % LONG_BIT)
-#define BITMAP_ROUND(bit)   ((bit) - BITMAP_SHIFT(bit))
 #define BITMAP_MASK(bit)    (0x1ul << BITMAP_SHIFT(bit))
 
 static inline void bitmap_set_bit(unsigned long *bitmap, unsigned int bit) {

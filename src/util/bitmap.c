@@ -12,7 +12,7 @@
 unsigned int bitmap_find_bit(const unsigned long *bitmap,
 		unsigned int nbits, unsigned int offset) {
 	const unsigned long *p = bitmap + BITMAP_OFFSET(offset);
-	unsigned long result = BITMAP_ROUND(offset);
+	unsigned long result = offset - BITMAP_SHIFT(offset);
 	unsigned long tmp;
 
 	assert(nbits >= 0);
