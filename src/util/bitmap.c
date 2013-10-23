@@ -16,16 +16,11 @@ unsigned int bitmap_find_bit(const unsigned long *bitmap,
 	unsigned int result = start - shift;  /* LONG_BIT-aligned down start */
 	unsigned long tmp;
 
-	assert(nbits >= 0);
-	assert(start >= 0);
-
 	if (start >= nbits)
 		return nbits;
 
 	nbits -= result;
-	tmp = *(p++);
-
-	tmp &= (~0x0ul << shift);  /* mask out the beginning */
+	tmp = *(p++) & (~0x0ul << shift);  /* mask out the beginning */
 
 	while (nbits > LONG_BIT) {
 		if (tmp)
