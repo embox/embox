@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "cpuinfo",
+	help = "Displays CPU info",
+	man = '''
+		NAME
+			cpuinfo - displays CPU info
+		SYNOPSIS
+			cpuinfo
+		DESCRIPTION
+		OPTIONS
+		AUTHORS
+			Denis Deruigin
+	''')
+module cpuinfo {
+	source "cpuinfo.c"
+
+	depends embox.arch.cpu_counter
+}
