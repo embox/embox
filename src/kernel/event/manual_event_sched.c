@@ -10,7 +10,6 @@
 #include <kernel/manual_event.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
 #include <kernel/sched_wait.h>
 
 void manual_event_init(struct manual_event *m_event, int set) {
@@ -49,16 +48,17 @@ void manual_event_set_and_notify(struct manual_event *m_event) {
 	}
 }
 
-static int __manual_event_wait(unsigned long timeout) {
+static int __manual_event_wait(struct manual_event *m_event,
+		unsigned long timeout) {
 	int ret;
 
 	softirq_unlock();
 	{
 		if (critical_allows(CRITICAL_SCHED_LOCK)) {
-			ret = sched_wait(timeout);
+			ret = wait_queue_wait(&m_event->wait_queue, timeout);
 		}
 		else {
-			ret = sched_wait_locked(timeout);
+			ret = wait_queue_wait_locked(&m_event->wait_queue, timeout);
 		}
 	}
 	softirq_lock();
@@ -69,7 +69,6 @@ static int __manual_event_wait(unsigned long timeout) {
 int manual_event_wait(struct manual_event *m_event,
 		unsigned long timeout) {
 	int ret;
-	struct wait_link wait_lnk;
 
 	assert(m_event != NULL);
 	assert(critical_allows(CRITICAL_SOFTIRQ_LOCK));
@@ -77,12 +76,7 @@ int manual_event_wait(struct manual_event *m_event,
 	softirq_lock();
 	{
 		if (!m_event->set) {
-			wait_queue_prepare(&wait_lnk);
-			wait_queue_insert(&m_event->wait_queue, &wait_lnk);
-
-			ret = __manual_event_wait(timeout);
-
-			wait_queue_cleanup(&wait_lnk);
+			ret = __manual_event_wait(m_event, timeout);
 		}
 		else {
 			ret = 0;
