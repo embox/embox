@@ -22,8 +22,6 @@ typedef __WINT_TYPE__ wint_t;
 typedef unsigned int wint_t;
 #endif
 
-#endif /* __cplusplus */
-
 typedef int wctype_t;
 
 #endif /* WCHAR_T_DEF_H_ */
