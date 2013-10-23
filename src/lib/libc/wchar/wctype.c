@@ -40,7 +40,7 @@ wctype_t wctype(const char *property) {
 		{ "xdigit", _X },
 		{ NULL,     0UL }, /* Default */
 	};
-	int i;
+	int i = 0;
 
 	while (props[i].name != NULL && strcmp(props[i].name, property) != 0) {
 		i++;
@@ -58,7 +58,7 @@ wctrans_t wctrans(const char *charclass) {
 		{ "toupper", _U },
 		{ NULL,      0UL }, /* Default */
 	};
-	int i;
+	int i = 0;
 
 	while (classes[i].name != NULL && strcmp(classes[i].name, charclass) != 0) {
 		i++;
