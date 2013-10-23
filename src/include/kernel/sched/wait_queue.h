@@ -22,6 +22,7 @@ struct thread;
 struct wait_link {
 	struct dlist_head link;
 	struct thread *thread;
+	int result;
 };
 
 #define WAIT_QUEUE_INIT(wq)  {.list = DLIST_INIT(wq.list),.flag = 0}
@@ -37,6 +38,8 @@ static inline int wait_queue_empty(struct wait_queue *wait_queue) {
 	return dlist_empty(&wait_queue->list);
 }
 
+extern void wait_queue_thread_notify(struct thread *thread, int result);
+extern void wait_queue_remove(struct wait_link *wait_link);
 extern void wait_queue_insert(struct wait_queue *wait_queue,
 		struct wait_link *wait_link);
 extern void wait_queue_prepare(struct wait_link *wait_link);

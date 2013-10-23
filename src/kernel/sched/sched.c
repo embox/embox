@@ -37,8 +37,6 @@
 
 #include <sched.h>
 
-#include <kernel/sched_wait.h>
-
 
 
 
@@ -114,7 +112,7 @@ void sched_finish(struct thread *t) {
 			post_switch_if(runq_finish(&rq, t));
 		} else {
 			if (thread_state_sleeping(t->state)) {
-				t->wait_data.on_notified(t, t->wait_data.data);
+				wait_queue_remove(t->wait_link);
 			}
 			t->state = thread_state_do_exit(t->state);
 		}

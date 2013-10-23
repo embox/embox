@@ -3,7 +3,6 @@ package embox.kernel.sched
 module sched {
 	source "sched.c"
 	source "sched_signal.c"
-	source "sched_wait.c"
 
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
