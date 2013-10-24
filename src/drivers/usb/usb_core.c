@@ -119,25 +119,16 @@ static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) 
 	return dev->getconf_data = &dev->tgetconf_data;
 }
 
-static inline struct usb_dev *usb_hcd_enum_curdev(struct usb_hcd *hcd) {
-	struct dlist_head *dev_link = hcd->enum_devs.next;
-	return member_cast_out(dev_link, struct usb_dev, enum_link);
-}
-
 static int usb_hcd_do_reset(struct usb_hcd *hcd) {
+	struct usb_queue_link *ul;
 	struct usb_dev *dev;
 
-	irq_lock();
-	{
-
-		if (dlist_empty(&hcd->enum_devs)) {
-			irq_unlock();
-			return 0;
-		}
-
-		dev = usb_hcd_enum_curdev(hcd);
+	ul = usb_queue_peek(&hcd->reset_queue);
+	if (!ul) {
+		return 0;
 	}
-	irq_unlock();
+
+	dev = member_cast_out(ul, struct usb_dev, reset_link);
 
 	usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
 
@@ -156,14 +147,7 @@ static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 	assert(notify_hnd == usb_dev_notify_reset_awaiting);
 #endif
 
-	irq_lock();
-	{
-		is_resseting = !dlist_empty(&hcd->enum_devs);
-		dlist_head_init(&dev->enum_link);
-		dlist_add_prev(&dev->enum_link, &hcd->enum_devs);
-	}
-	irq_unlock();
-
+	is_resseting = usb_queue_add(&hcd->reset_queue, &dev->reset_link);
 	if (!is_resseting) {
 		usb_hcd_do_reset(hcd);
 	}
@@ -173,24 +157,10 @@ static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 
 static void usb_dev_reset_done(struct usb_dev *dev) {
 	struct usb_hcd *hcd = dev->hcd;
-	bool has_to_reset;
 
-	irq_lock();
-	{
-		struct usb_dev *qdev = usb_hcd_enum_curdev(hcd);
+	usb_queue_done(&hcd->reset_queue, &dev->reset_link);
 
-		assert(hcd->enum_devs.next == &qdev->enum_link);
-		assert(qdev == dev);
-
-		dlist_del(&dev->enum_link);
-
-		has_to_reset = !dlist_empty(&hcd->enum_devs);
-	}
-	irq_unlock();
-
-	if (has_to_reset) {
-		usb_hcd_do_reset(hcd);
-	}
+	usb_hcd_do_reset(hcd);
 }
 
 #if 0

@@ -11,8 +11,11 @@
 
 #include <stdint.h>
 #include <kernel/time/timer.h>
-#include <util/dlist.h>
+#include <drivers/usb_queue.h>
 #include <util/indexator.h>
+#include <util/dlist.h>
+
+#define USB_RESET_HIGH_DELAY_MS 20
 
 #define USB_MAX_HCD 2
 #define USB_MAX_DEV 32
@@ -259,7 +262,7 @@ struct usb_dev {
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
 				   after `addressed' is idx */
-	struct dlist_head enum_link;
+	struct usb_queue_link reset_link;
 
 	struct sys_timer post_timer;
 
@@ -318,7 +321,7 @@ struct usb_hcd {
 
 	index_data_t idx_data[INDEX_DATA_LEN(USB_HC_MAX_DEV)];
 	struct indexator enumerator;
-	struct dlist_head enum_devs;
+	struct usb_queue reset_queue;
 
 	void *hci_specific;
 };

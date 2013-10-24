@@ -2,9 +2,16 @@
 package embox.driver.usb
 
 module core {
+	source "usb_queue.c"
 	source "usb_core.c"
 	source "usb_obj.c"
 	source "usb_class.c"
+}
+
+module class_hid {
+	source "usb_class_hid.c"
+
+	depends core
 }
 
 module ohci_pci {
@@ -13,8 +20,8 @@ module ohci_pci {
 	depends core
 }
 
-module class_hid {
-	source "usb_class_hid.c"
+module ti81xx {
+	source "ti81xx.c"
 
 	depends core
 }
