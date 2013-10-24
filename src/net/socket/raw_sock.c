@@ -58,6 +58,9 @@ int raw_rcv(const struct sk_buff *skb) {
 	struct sock *sk;
 	struct sk_buff *cloned;
 
+	assert(skb != NULL);
+	assert(skb->dev != NULL);
+
 	sk = NULL;
 
 	while (1) {
@@ -72,7 +75,7 @@ int raw_rcv(const struct sk_buff *skb) {
 		}
 
 		sock_rcv(sk, cloned, cloned->nh.raw,
-				cloned->len - (cloned->nh.raw - cloned->mac.raw));
+				cloned->len - skb->dev->hdr_len);
 	}
 
 	return 0;

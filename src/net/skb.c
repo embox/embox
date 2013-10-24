@@ -145,13 +145,10 @@ struct sk_buff * skb_wrap(size_t size, size_t offset,
 	skb->sk = NULL;
 	skb->dev = NULL;
 	skb->len = size;
-	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
+	skb->nh.raw = skb->h.raw = NULL;
 	skb->data = skb_data;
-	skb->p_data = &skb_data->data[0];
-	skb->p_data_end = &skb_data->data[size];
-
-	/* TODO remove this */
-	skb->mac.raw = skb->p_data;
+	skb->mac.raw = &skb_data->data[0];
+	skb->p_data = skb->p_data_end = NULL;
 
 	return skb;
 }
@@ -183,12 +180,8 @@ struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 	skb->sk = NULL;
 	skb->dev = NULL;
 	skb->len = size;
-	skb->mac.raw = skb->nh.raw = skb->h.raw = NULL;
-	skb->p_data = &skb->data->data[0];
-	skb->p_data_end = &skb->data->data[size];
-
-	/* TODO remove this */
-	skb->mac.raw = skb->p_data;
+	skb->mac.raw = &skb->data->data[0];
+	skb->nh.raw = skb->h.raw = NULL;
 
 	return skb;
 }
@@ -228,12 +221,7 @@ static void skb_copy_ref(struct sk_buff *to,
 	if (from->h.raw != NULL) {
 		to->h.raw = from->h.raw + offset;
 	}
-	if (from->p_data != NULL) {
-		to->p_data = from->p_data + offset;
-	}
-	if (from->p_data_end != NULL) {
-		to->p_data_end = from->p_data_end + offset;
-	}
+	to->p_data = to->p_data_end = NULL;
 }
 
 static void skb_copy_data(struct sk_buff *to,
@@ -287,5 +275,4 @@ void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(count + skb->len <= skb_max_size());
 	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
 	skb->len += count;
-	skb->p_data_end += count;
 }

@@ -63,6 +63,7 @@ static const struct net_driver loopback_ops = {
  */
 static int loopback_setup(struct net_device *dev) {
 	dev->mtu          = (16 * 1024) + 20 + 20 + 12;
+	dev->hdr_len      = ETH_HEADER_SIZE;
 	dev->addr_len     = ETH_ALEN;
 	dev->tx_queue_len = 0;
 	dev->type         = ARPG_HRD_LOOPBACK;

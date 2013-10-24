@@ -56,14 +56,9 @@ static int ethernet_parse_hdr(struct sk_buff *skb,
 	if ((skb == NULL) || (out_hdr_info == NULL)) {
 		return -EINVAL;
 	}
-	else if (skb->len < ETH_HEADER_SIZE) {
-		return -EINVAL;
-	}
-
-	assert(skb->mac.raw != NULL);
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	ethh = skb->mac.ethh;
+	assert(ethh != NULL);
 
 	memset(out_hdr_info, 0, sizeof *out_hdr_info);
 	out_hdr_info->type = ntohs(ethh->h_proto);
@@ -122,6 +117,7 @@ int ethernet_setup(struct net_device *dev) {
 
 	memset(&dev->broadcast[0], 0xFF, ETH_ALEN);
 	dev->type = ARPG_HRD_ETHERNET;
+	dev->hdr_len = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
 	dev->flags = IFF_BROADCAST | IFF_MULTICAST;
 	dev->mtu = ETH_FRAME_LEN;

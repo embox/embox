@@ -73,6 +73,7 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	struct sk_buff_head tx_buf;
 	struct sk_buff *s_tmp;
 
+	skb->dev = dev;
 	ret = ip_frag(skb, dev->mtu, &tx_buf);
 	if (ret != 0) {
 		skb_free(skb);
@@ -171,7 +172,7 @@ int ip_forward(struct sk_buff *skb) {
 static int ip_make(const struct sock *sk,
 		const struct sockaddr *to,
 		size_t *data_size, struct sk_buff **out_skb) {
-	size_t hdr_size;
+	size_t hdr_size, max_size;
 	int ret;
 	struct sk_buff *skb;
 	struct net_device *dev;
@@ -198,12 +199,13 @@ static int ip_make(const struct sock *sk,
 	assert(inetdev_get_by_dev(dev) != NULL);
 	src_ip = inetdev_get_by_dev(dev)->ifa_address;
 
-	hdr_size = ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;
-	if (hdr_size > dev->mtu) {
+	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
+	max_size = min(dev->mtu, skb_max_size());
+	if (hdr_size > max_size) {
 		return -EMSGSIZE;
 	}
 
-	*data_size = min(*data_size, dev->mtu - hdr_size);
+	*data_size = min(*data_size, max_size - hdr_size);
 
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
@@ -212,8 +214,7 @@ static int ip_make(const struct sock *sk,
 
 	skb->sk = in_sk != NULL ? &in_sk->sk : NULL;
 	skb->dev = dev;
-	skb->mac.raw = skb->p_data;
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 
 	if (in_sk != NULL) {
