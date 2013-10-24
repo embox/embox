@@ -34,6 +34,11 @@ extern void ip_set_id_field(struct iphdr *iph, uint16_t id);
 extern void ip_set_check_field(struct iphdr *iph);
 
 /**
+ * Calculate IPv4 data length
+ */
+extern size_t ip_data_length(const struct iphdr *iph);
+
+/**
  * IPv4 pseudo header
  */
 struct ip_pseudohdr {
