@@ -142,12 +142,24 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	return pc;
 }
+
+static int pow_int(int x, int y) {
+	/* FIXME Temporarily until powl not work */
+	int r;
+
+	r = 1;
+	while (y-- > 0)
+		r *= x;
+
+	return r;
+}
+
 #if OPTION_GET(NUMBER,support_floating)
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
-		struct printchar_handler_data *printchar_data, double r, int width,
+		struct printchar_handler_data *printchar_data, long double r, int width,
 		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix, *postfix;
-	double ip, fp, ep;
+	long double ip, fp, ep;
 	int pc, i, ch, len, prefix_len, postfix_len, pad_count, sign_count, zero_left, letter_base;
 
 	assert(printchar_handler != NULL);
@@ -156,7 +168,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
-	prefix = signbit(r) ? (r = -r, base == 16)
+	prefix = signbitl(r) ? (r = -r, base == 16)
 				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
 				: "-"
 			: ops & OPS_FLAG_WITH_SIGN ? base == 16
@@ -174,32 +186,33 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 				max(precision, 1) : precision
 			: base == 16 ? 12 : PRINT_F_PREC_DEFAULT;
 
-	fp = modf(r, &ip);
+	fp = modfl(r, &ip);
 	if (with_exp || is_shortened) {
-		ep = 0.0;
-		while (ip >= base) fp = modf((ip + fp) / base, &ip), ep += 1.0;
-		if (fp != 0.0) while (ip == 0.0) fp = modf((ip + fp) * base, &ip), ep -= 1.0;
+		ep = 0.0L;
+		while (ip >= base) fp = modfl((ip + fp) / base, &ip), ep += 1.0L;
+		if (fp != 0.0L) while (ip == 0.0L) fp = modfl((ip + fp) * base, &ip), ep -= 1.0L;
 		if ((ep < -4) || (ep >= precision)) with_exp = 1;
 	}
-	fp = with_exp ? fp : modf(r, &ip);
-	precision -= is_shortened ? ceil(log10(ip)) + (ip != 0.0): 0;
+	fp = with_exp ? fp : modfl(r, &ip);
+	precision -= is_shortened ? ceill(log10l(ip)) + (ip != 0.0L) : 0;
 	assert(precision >= 0);
-	for (; (sign_count < precision) && (fmod(fp, 1.0) != 0.0); ++sign_count) fp *= base;
-	fp = round(fp);
-	ip = precision ? (fp != pow((double)base, (double)sign_count) ? ip : ip + 1.0) : round(ip + fp);
-	fp = fp != pow((double)base, (double)sign_count) ? fp : 0.0;
-	if (with_exp && (ip >= base)) fp = modf((ip + fp) / base, &ip), ep += 1.0;
+	for (; (sign_count < precision) && (fmodl(fp, 1.0L) != 0.0L); ++sign_count) fp *= base;
+	fp = roundl(fp);
+	ip = precision ? fp != (long double)pow_int(base, sign_count)
+			? ip : ip + 1.0L : roundl(ip + fp);
+	fp = fp != (long double)pow_int(base, sign_count) ? fp : 0.0L;
+	if (with_exp && (ip >= base)) fp = modfl((ip + fp) / base, &ip), ep += 1.0L;
 
 	if (with_exp) {
 		do {
-			ch = (int)fmod(fabs(ep), (double)base);
+			ch = (int)fmodl(fabsl(ep), (long double)base);
 			assert((ch >= 0) && (ch < base));
 			if (ch >= 10) ch += letter_base - 10 - '0';
 			*--postfix = ch + '0';
-			modf(ep / base, &ep);
-		} while (ep != 0.0);
+			modfl(ep / base, &ep);
+		} while (ep != 0.0L);
 		if ((strlen(postfix) == 1) && (base != 16)) *--postfix = '0';
-		*--postfix = signbit(ep) ? '-' : '+';
+		*--postfix = signbitl(ep) ? '-' : '+';
 		*--postfix = base == 16 ? ops & OPS_SPEC_UPPER_CASE ?
 					'P' : 'p'
 				: ops & OPS_SPEC_UPPER_CASE ? 'E' : 'e';
@@ -208,11 +221,11 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	for (; i < sign_count; ++i) {
-		ch = (int)fmod(fp, (double)base);
+		ch = (int)fmodl(fp, (long double)base);
 		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
-		modf(fp / base, &fp);
+		modfl(fp / base, &fp);
 	}
 
 	if ((precision && !is_shortened) || sign_count
@@ -221,12 +234,12 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)fmod(ip, (double)base);
+		ch = (int)fmodl(ip, (long double)base);
 		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
-		modf(ip / base, &ip);
-	} while (ip != 0.0);
+		modfl(ip / base, &ip);
+	} while (ip != 0.0L);
 
 	len = end - str;
 	postfix_len = strlen(postfix);
@@ -342,7 +355,6 @@ after_flags:
 		ops |= isupper(*format) ? OPS_SPEC_UPPER_CASE : 0;
 		switch (*format) {
 		default:
-error_print:
 			pc += format - begin + 1;
 			do
 				printchar_handler(printchar_data, *begin);
@@ -385,11 +397,9 @@ error_print:
 		case 'G':
 		case 'a':
 		case 'A':
-			/* TODO handle (ops & OPS_LEN_LONGFP) for long double */
-			if (ops & OPS_LEN_LONGFP) goto error_print; /* TODO long double support */
 			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double)
 					: va_arg(args, double);
-			pc += print_f(printchar_handler, printchar_data, (double)tmp.ld,
+			pc += print_f(printchar_handler, printchar_data, tmp.ld,
 					width, precision, ops, tolower(*format) == 'a' ? 16 : 10,
 					tolower(*format) == 'e' || tolower(*format) == 'a',
 					tolower(*format) == 'g');

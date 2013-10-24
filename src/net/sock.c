@@ -8,6 +8,7 @@
  */
 
 #include <embox/net/family.h>
+#include <embox/net/pack.h>
 #include <embox/net/sock.h>
 #include <errno.h>
 #include <hal/ipl.h>
@@ -105,7 +106,8 @@ static void sock_opt_init(struct sock_opt *opt, int family,
 
 static void sock_init(struct sock *sk, int family, int type,
 		int protocol, const struct sock_family_ops *f_ops,
-		const struct sock_proto_ops *p_ops) {
+		const struct sock_proto_ops *p_ops,
+		const struct net_pack_out_ops *o_ops) {
 	assert(sk != NULL);
 	assert(f_ops != NULL);
 	assert(p_ops != NULL);
@@ -119,6 +121,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->p_sk = sk->p_sk; /* setup in sock_alloc() */
 	sk->f_ops = f_ops;
 	sk->p_ops = p_ops;
+	sk->o_ops = o_ops;
 	io_sync_init(&sk->ios, 0, 0);
 #if 0
 	sk->src_addr = sk->dst_addr = NULL;
@@ -133,6 +136,7 @@ int sock_create_ext(int family, int type, int protocol,
 	const struct net_family *nfamily;
 	const struct net_family_type *nftype;
 	const struct net_sock *nsock;
+	const struct net_pack_out *npout;
 
 	if (out_sk == NULL) {
 		return -EINVAL;
@@ -153,13 +157,19 @@ int sock_create_ext(int family, int type, int protocol,
 		return -EPROTONOSUPPORT;
 	}
 
+	npout = net_pack_out_lookup(family);
+	if (npout == NULL) {
+		/* out_ops may be null */
+	}
+
 	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
 		return -ENOMEM;
 	}
 
 	sock_init(new_sk, family, type, nsock->protocol,
-			nftype->ops, nsock->ops);
+			nftype->ops, nsock->ops,
+			npout != NULL ? npout->ops : NULL);
 
 	assert(new_sk->f_ops != NULL);
 	ret = new_sk->f_ops->init(new_sk);

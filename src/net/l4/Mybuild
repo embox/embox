@@ -3,7 +3,7 @@ package embox.net
 module udp {
 	source "udp.c"
 
-	depends ipv4 /* for ip_output.c */
+	depends embox.net.lib.udp
 	depends skbuff
 	depends icmpv4
 	depends sock
@@ -16,7 +16,7 @@ module tcp {
 
 	depends skbuff
 	depends sock
-	depends ipv4 /* for ip_output.c */
+	depends embox.net.lib.tcp
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
 	depends embox.kernel.time.clock_source

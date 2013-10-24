@@ -25,7 +25,7 @@ module core extends thread_mode {
 	depends embox.kernel.time.jiffies
 	@NoRuntime depends embox.kernel.task.MultiThread
 	@NoRuntime depends stack_api
-	@NoRuntime depends thread_local
+	depends thread_local
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal

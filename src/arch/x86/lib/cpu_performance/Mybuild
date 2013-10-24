@@ -1,0 +1,5 @@
+package embox.arch.x86
+
+module cpu_counter_x86 extends embox.arch.cpu_counter {
+	source "cpu_counter.h", "cpu_counter.c"
+}

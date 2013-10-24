@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 
 #include <utmp.h>
 

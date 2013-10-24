@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <util/array.h>
+#include <kernel/time/time.h>
 
 EMBOX_CMD(exec);
 

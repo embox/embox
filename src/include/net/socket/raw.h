@@ -14,7 +14,7 @@
 
 extern const struct sock_proto_ops *const raw_sock_ops;
 
-extern int raw_rcv(struct sk_buff *skb);
-extern void raw_err(struct sk_buff *skb, uint32_t info);
+extern int raw_rcv(const struct sk_buff *skb);
+extern void raw_err(const struct sk_buff *skb, int error_info);
 
 #endif /* NET_SOCKET_RAW_H_ */

@@ -219,6 +219,8 @@ int sigfillset(sigset_t *set) {
 	return 0;
 }
 
+#define __thread
+
 #ifdef __cplusplus
 
 #endif // __cplusplus

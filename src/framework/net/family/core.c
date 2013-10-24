@@ -18,8 +18,8 @@ static int net_family_mod_enable(struct mod_info *info);
 static int net_family_mod_disable(struct mod_info *info);
 
 const struct mod_ops __net_family_mod_ops = {
-	.enable   = &net_family_mod_enable,
-	.disable  = &net_family_mod_disable
+	.enable  = &net_family_mod_enable,
+	.disable = &net_family_mod_disable
 };
 
 static int net_family_mod_enable(struct mod_info *info) {

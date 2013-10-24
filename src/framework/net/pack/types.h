@@ -14,6 +14,18 @@
  */
 struct net_device;
 struct sk_buff;
+struct sock;
+struct sockaddr;
+
+/**
+ * Netpack outgoing options
+ */
+struct net_pack_out_ops {
+	int (*make_pack)(const struct sock *sk,
+			const struct sockaddr *to, size_t *data_size,
+			struct sk_buff **out_skb);
+	int (*snd_pack)(struct sk_buff *skb);
+};
 
 /**
  * Each netpack implements this interface.
@@ -24,6 +36,14 @@ struct net_pack {
 			struct net_device *dev); /* packet handler */
 	int (*init)(void);    /* initializer of this packet family */
 	int (*fini)(void);
+};
+
+/**
+ * Each netpack implement this intarface too
+ */
+struct net_pack_out {
+	int family;
+	const struct net_pack_out_ops *ops;
 };
 
 #endif /* FRAMEWORK_NET_PACK_TYPES_H_ */

@@ -22,6 +22,12 @@ module getifaddrs {
 	depends embox.net.core
 }
 
+module ipv4 {
+	source "ipv4.c"
+
+	depends embox.lib.LibCAssert
+}
+
 module ntp {
 	source "ntp.c"
 
@@ -44,4 +50,18 @@ module smtp {
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
+}
+
+module tcp {
+	source "tcp.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.net.lib.ipv4
+}
+
+module udp {
+	source "udp.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.net.lib.ipv4
 }

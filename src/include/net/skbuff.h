@@ -45,7 +45,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	/* This member must be first. */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
-	struct sock *sk;            /* Socket we are owned by */
+	const struct sock *sk;      /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)
@@ -57,7 +57,8 @@ typedef struct sk_buff {        /* Socket buffer */
 		/* Length of actual data, from LL header till the end */
 	size_t len;
 
-	union {                     /* Transport layer header */
+		/* Transport layer header */
+	union {
 		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
@@ -65,11 +66,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		unsigned char *raw;
 	} h;
 
-		/* Network layer header.
-		 * Usually iph contains IP_MIN_HEADER_SIZE except some cases:
-		 *	when we process incoming IP packet with options
-		 *	when we use RAW sockets for sending (still not fixed in design)
-		 */
+		/* Network layer header */
 	union {
 		struct iphdr *iph;
 		struct ip6hdr *ip6h;
@@ -77,12 +74,8 @@ typedef struct sk_buff {        /* Socket buffer */
 		unsigned char *raw;
 	} nh;
 
-		/* In current implementation our stack allocates
-		 * ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + ...
-		 * for outgoing packets.
-		 * So it's assumed to have eth header at the start
-		 */
-	union {                     /* Link layer header */
+		/* Link layer header */
+	union {
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
@@ -135,6 +128,9 @@ extern struct sk_buff * skb_wrap(size_t size, size_t offset,
  * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(size_t size);
+
+extern struct sk_buff * skb_realloc(size_t size,
+		struct sk_buff *skb);
 
 /**
  * Free skb allocated by skb_alloc
@@ -190,5 +186,6 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 #include <net/if_arp.h>
 #include <net/if_ether.h>
+#include <net/netdevice.h>
 
 #endif /* NET_SKBUFF_H_ */

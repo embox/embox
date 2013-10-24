@@ -270,16 +270,6 @@ int netdev_set_mtu(struct net_device *dev, int mtu) {
 	return 0;
 }
 
-int netdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
-	if (dev == NULL) {
-		return -EINVAL;
-	}
-
-	dev->tx_queue_len = new_len;
-
-	return 0;
-}
-
 int netdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
 	if (dev == NULL) {
 		return -EINVAL;

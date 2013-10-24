@@ -25,7 +25,7 @@ static module core {
 	source "order.mk"
 }
 
-module hello {
+module hello extends embox.lib.cxx.app {
 	depends core
 
 	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")
