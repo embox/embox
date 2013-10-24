@@ -134,18 +134,15 @@ static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 
 /* Others functionality */
-extern void build_tcp_packet(size_t opt_len, size_t data_len,
-		struct tcp_sock *tcp_sk, struct sk_buff *skb);
-extern void tcp_free_sock(struct tcp_sock *tcp_sk);
-extern void tcp_set_st(struct tcp_sock *tcp_sk,
+extern void tcp_sock_release(struct tcp_sock *tcp_sk);
+extern void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state);
-extern void tcp_obj_lock(struct tcp_sock *sk, unsigned int obj);
-extern void tcp_obj_unlock(struct tcp_sock *sk, unsigned int obj);
+extern void tcp_sock_lock(struct tcp_sock *sk, unsigned int obj);
+extern void tcp_sock_unlock(struct tcp_sock *sk, unsigned int obj);
 extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
 		size_t *data_len, struct sk_buff **out_skb);
 extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
-extern int tcp_st_status(struct tcp_sock *tcp_sk);
+extern int tcp_sock_get_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);
-
 
 #endif /* NET_L4_TCP_H_ */

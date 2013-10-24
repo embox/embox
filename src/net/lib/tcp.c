@@ -47,11 +47,25 @@ void tcp_set_check_field(struct tcphdr *tcph,
 	struct ip_pseudohdr ipph;
 
 	assert(tcph != NULL);
-	assert(iph != NULL);
 
 	ip_pseudo_build(iph, &ipph);
 
 	tcph->check = 0;
 	tcph->check = ~fold_short(partial_sum(&ipph, sizeof ipph) +
 			partial_sum(tcph, ntohs(ipph.data_len))) & 0xFFFF;
+}
+
+size_t tcp_data_length(const struct tcphdr *tcph,
+		const struct iphdr *iph) {
+	assert(tcph != NULL);
+	assert(ip_data_length(iph) >= TCP_HEADER_SIZE(tcph));
+
+	return ip_data_length(iph) - TCP_HEADER_SIZE(tcph);
+}
+
+size_t tcp_seq_length(const struct tcphdr *tcph,
+		const struct iphdr *iph) {
+	assert(tcph != NULL);
+
+	return tcp_data_length(tcph, iph) + (tcph->syn | tcph->fin);
 }
