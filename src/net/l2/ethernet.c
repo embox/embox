@@ -121,7 +121,6 @@ int ethernet_setup(struct net_device *dev) {
 	dev->addr_len = ETH_ALEN;
 	dev->flags = IFF_BROADCAST | IFF_MULTICAST;
 	dev->mtu = ETH_FRAME_LEN;
-	dev->tx_queue_len = 1000;
 	dev->ops = &ethernet_ops;
 
 	return 0;

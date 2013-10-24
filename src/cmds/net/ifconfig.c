@@ -39,7 +39,6 @@ struct ifconfig_args {
 	char with_mtu; int mtu;
 	char with_irq; int irq;
 	char with_ioaddr; void *ioaddr;
-	char with_txqueuelen; long int txqueuelen;
 	char with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
 	char with_up_or_down; char up;
 };
@@ -49,7 +48,7 @@ static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 		|| args->with_allmulti || args->with_mtu || args->with_dstaddr
 		|| args->with_netmask || args->with_irq || args->with_ioaddr
 		|| args->with_bcast || args->with_p2p || args->with_hw || args->with_mcast
-		|| args->with_addr || args->with_txqueuelen;
+		|| args->with_addr;
 }
 
 static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *args) {
@@ -121,11 +120,6 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 
 	if (args->with_ioaddr) { /* set new base addr */
 		ret = netdev_set_baseaddr(iface->dev, (unsigned long)args->ioaddr);
-		if (ret != 0) return ret;
-	}
-
-	if (args->with_txqueuelen) { /* set new max packet length */
-		ret = netdev_set_txqueuelen(iface->dev, args->txqueuelen);
 		if (ret != 0) return ret;
 	}
 
@@ -205,8 +199,8 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 			stat->tx_packets, stat->tx_err, stat->tx_dropped, 0UL,
 			stat->tx_carrier_errors);
 
-	printf("\n\tcollisions:%ld txqueuelen:%ld",
-			stat->collisions, iface->dev->tx_queue_len);
+	printf("\n\tcollisions:%ld",
+			stat->collisions);
 
 	printf("\n\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)",
 			stat->rx_bytes, stat->rx_bytes / 1048576,
@@ -293,7 +287,7 @@ static int exec(int argc, char *argv[]) {
 			printf("  [netmask <address>]  [dstaddr <address>]  [tunnel <address>]\n");
 			printf("  [hw <HW> <address>]  [metric <NN>]  [mtu <NN>]\n");
 			printf("  [[-]arp]  [[-]allmulti]  [multicast]  [[-]promisc]\n");
-			printf("  [io_addr <NN>]  [irq <NN>]  [txqueuelen <NN>]\n");
+			printf("  [io_addr <NN>]  [irq <NN>]\n");
 			printf("  [up|down] ...\n");
 			printf("\n");
 			printf("  <HW>=Hardware Type.\n");
@@ -393,13 +387,6 @@ static int exec(int argc, char *argv[]) {
 				|| !strcmp("-multicast", argv[i])) {
 			args.with_mcast = 1;
 			args.mcast = argv[i][0] != '-';
-		}
-		else if (!strcmp("txqueuelen", argv[i])) {
-			args.with_txqueuelen = 1;
-			if (sscanf(argv[++i], "%ld", &args.txqueuelen) != 1) {
-				printf("%s: bad number\n", argv[i]);
-				return -EINVAL;
-			}
 		}
 		else if (!args.with_addr) {
 			args.with_addr = 1;
