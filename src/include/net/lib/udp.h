@@ -13,8 +13,9 @@
 #include <stdint.h>
 
 /**
- * Prototype
+ * Prototypes
  */
+struct iphdr;
 struct udphdr;
 
 /**
@@ -26,6 +27,7 @@ extern void udp_build(struct udphdr *udph, in_port_t src_prt,
 /**
  * Set UDP check field
  */
-extern void udp_set_check_field(struct udphdr *udph);
+extern void udp_set_check_field(struct udphdr *udph,
+		const struct iphdr *iph);
 
 #endif /* NET_LIB_UDP_H_ */

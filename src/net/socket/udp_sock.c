@@ -72,7 +72,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg,
 	assert(msg->msg_iov->iov_base != NULL);
 	memcpy(skb->h.uh + 1, msg->msg_iov->iov_base, data_len);
 
-	udp_set_check_field(skb->h.uh);
+	udp_set_check_field(skb->h.uh, skb->nh.iph);
 
 	assert(sk->o_ops->snd_pack != NULL);
 	return sk->o_ops->snd_pack(skb);
