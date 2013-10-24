@@ -143,6 +143,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	return pc;
 }
 
+#if OPTION_GET(NUMBER, support_floating)
 static int pow_int(int x, int y) {
 	/* FIXME Temporarily until powl not work */
 	int r;
@@ -154,7 +155,6 @@ static int pow_int(int x, int y) {
 	return r;
 }
 
-#if OPTION_GET(NUMBER,support_floating)
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data, long double r, int width,
 		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
