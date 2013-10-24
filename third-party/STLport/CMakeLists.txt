@@ -13,8 +13,15 @@ ExternalProject_Add(
    BUILD_IN_SOURCE 1
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
-      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-static --disable-shared --without-thread --without-rtti --target=embox \\
-         ""--with-extra-cflags=$ENV{EMBOX_DERIVED_CFLAGS}"" ""--with-extra-cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
+      <SOURCE_DIR>/configure
+         --prefix=<INSTALL_DIR>
+         --target=embox
+         ""--with-extra-cflags=$ENV{EMBOX_DERIVED_CFLAGS}""
+         ""--with-extra-cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
+         --enable-static
+         --disable-shared
+         --with-static-rtl
+         $ENV{EMBOX_RTTI_FLAG}
    #	BUILD_COMMAND
    LOG_BUILD 1
 )
