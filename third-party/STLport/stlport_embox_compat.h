@@ -34,10 +34,13 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+static inline int fflush(FILE *fp) { return 0; }
+
 #ifdef __cplusplus
 
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
+	using ::fflush;
 #if 0
 /* implemented now */
 	static inline char *asctime(const struct tm *tm) {

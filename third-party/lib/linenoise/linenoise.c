@@ -223,7 +223,7 @@ void linenoiseClearScreen(void) {
  * the choices were already shown. */
 static void linenoiseBeep(void) {
     fprintf(stderr, "\x7");
-    fflush(stderr);
+    // FIXME: fflush(stderr);
 }
 
 /* ============================== Completion ================================ */
@@ -768,7 +768,7 @@ char *linenoise(const char *prompt) {
         size_t len;
 
         printf("%s",prompt);
-        fflush(stdout);
+        // FIXME: fflush(stdout);
         if (fgets(buf,LINENOISE_MAX_LINE,stdin) == NULL) return NULL;
         len = strlen(buf);
         while(len && (buf[len-1] == '\n' || buf[len-1] == '\r')) {
