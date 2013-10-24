@@ -46,4 +46,4 @@ abstract module stackframe { }
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp { }
 
-abstract module cpu_counter { }
+abstract module cpu_info { }
