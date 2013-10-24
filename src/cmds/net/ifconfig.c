@@ -25,16 +25,14 @@ EMBOX_CMD(exec);
 struct ifconfig_args {
 	char with_a;
 	char with_s;
-	char with_v; /* TODO not used now */
 	char with_arp, arp;
 	char with_promisc, promisc;
 	char with_allmulti, allmulti;
 	char with_mcast; int mcast;
-	char with_p2p; char p2p; struct in_addr p2p_addr; /* TODO setup p2p_addr (not used now) */
+	char with_p2p; char p2p; struct in_addr p2p_addr;
 	char with_bcast; char bcast; struct in_addr bcast_addr;
 	char with_iface; char iface[IFNAMSIZ];
 	char with_addr; struct in_addr addr;
-	char with_dstaddr; struct in_addr dstaddr; /* TODO setup dstaddr (not used now) */
 	char with_netmask; struct in_addr netmask;
 	char with_mtu; int mtu;
 	char with_irq; int irq;
@@ -45,9 +43,9 @@ struct ifconfig_args {
 
 static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 	return args->with_up_or_down || args->with_arp || args->with_promisc
-		|| args->with_allmulti || args->with_mtu || args->with_dstaddr
-		|| args->with_netmask || args->with_irq || args->with_ioaddr
-		|| args->with_bcast || args->with_p2p || args->with_hw || args->with_mcast
+		|| args->with_allmulti || args->with_mtu || args->with_netmask
+		|| args->with_irq || args->with_ioaddr || args->with_bcast
+		|| args->with_p2p || args->with_hw || args->with_mcast
 		|| args->with_addr;
 }
 
@@ -83,6 +81,7 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_p2p) { /* set flag IFF_POINTOPOINT */
+		/* TODO use p2p_addr */
 		ret = (args->p2p ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_POINTOPOINT);
 		if (ret != 0) return ret;
 	}
@@ -282,10 +281,10 @@ static int exec(int argc, char *argv[]) {
 	for (i = 1; i < argc; ++i) {
 		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i])) {
 			printf("Usage:\n");
-			printf("  %s [-a] [-v] [-s] <interface> [[<AF] <address>]\n", argv[0]);
+			printf("  %s [-a] [-s] <interface> [[<AF>] <address>]\n", argv[0]);
 			printf("  [[-]broadcast [<address>]]  [[-]pointopoint [<address>]]\n");
-			printf("  [netmask <address>]  [dstaddr <address>]  [tunnel <address>]\n");
-			printf("  [hw <HW> <address>]  [metric <NN>]  [mtu <NN>]\n");
+			printf("  [netmask <address>]\n");
+			printf("  [hw <HW> <address>]  [mtu <NN>]\n");
 			printf("  [[-]arp]  [[-]allmulti]  [multicast]  [[-]promisc]\n");
 			printf("  [io_addr <NN>]  [irq <NN>]\n");
 			printf("  [up|down] ...\n");
@@ -300,7 +299,6 @@ static int exec(int argc, char *argv[]) {
 		}
 		else if (!strcmp("-a", argv[i])) args.with_a = 1;
 		else if (!strcmp("-s", argv[i])) args.with_s = 1;
-		else if (!strcmp("-v", argv[i])) args.with_v = 1;
 		else if (!args.with_iface) {
 			args.with_iface = 1;
 			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface));
@@ -326,13 +324,6 @@ static int exec(int argc, char *argv[]) {
 			args.with_mtu = 1;
 			if (sscanf(argv[++i], "%d", &args.mtu) != 1) {
 				printf("%s: wrong mtu argument\n", argv[i]);
-				return -EINVAL;
-			}
-		}
-		else if (!strcmp("dstaddr", argv[i])) {
-			args.with_dstaddr = 1;
-			if (!inet_aton(argv[++i], &args.dstaddr)) {
-				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
 			}
 		}
