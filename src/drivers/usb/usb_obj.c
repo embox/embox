@@ -124,6 +124,8 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 
 	usb_endp_fill_from_desc(endp, endp_desc);
 
+	usb_queue_init(&endp->req_queue);
+
 	for (endp_num = 0; endp_num < USB_DEV_MAX_ENDP; endp_num++) {
 		if (!dev->endpoints[endp_num]) {
 			break;
@@ -161,6 +163,8 @@ extern struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 
 	req = pool_alloc(&usb_requests);
 	req->endp = endp;
+
+	usb_queue_link_init(&req->req_link);
 
 	if (hcd->ops->req_hci_alloc) {
 		req->hci_specific = hcd->ops->req_hci_alloc(req);

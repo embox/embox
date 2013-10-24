@@ -82,6 +82,11 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req);
 #define USB_HUB_PORT_RESET              0x0010
 #define USB_HUB_PORT_POWER              0x0020
 
+#define USB_TOKEN_SETUP                 0x0001
+#define USB_TOKEN_IN                    0x0002
+#define USB_TOKEN_OUT                   0x0004
+#define USB_TOKEN_STATUS                0x0008
+
 enum usb_hub_request {
 	USB_HUB_REQ_PORT_SET,
 	USB_HUB_REQ_PORT_CLEAR,
@@ -197,8 +202,7 @@ struct usb_hcd_ops {
 	int (*rhub_ctrl)(struct usb_hub_port *port, enum usb_hub_request req,
 			unsigned short value);
 
-	int (*control_request)(struct usb_request *req);
-	int (*interrupt_request)(struct usb_request *req);
+	int (*request)(struct usb_request *req);
 };
 
 struct usb_endp {
@@ -208,6 +212,8 @@ struct usb_endp {
 	enum usb_comm_type type;
 	unsigned short max_packet_size;
 	unsigned char interval;
+
+	struct usb_queue req_queue;
 
 	void *hci_specific;
 };
@@ -328,10 +334,13 @@ struct usb_hcd {
 
 struct usb_request {
 	struct usb_endp *endp;
+	unsigned short token;
 	char *buf;
 	size_t len;
 	enum usb_request_status req_stat;
 	usb_request_notify_hnd_t notify_hnd;
+
+	struct usb_queue_link req_link;
 
 	void *hci_specific;
 	struct usb_control_header ctrl_header;
@@ -372,15 +381,6 @@ extern void usb_endp_free(struct usb_endp *endp);
 
 extern struct usb_request *usb_request_alloc(struct usb_endp *endp);
 extern void usb_request_free(struct usb_request *req);
-
-static inline void usb_request_init(struct usb_request *req, struct usb_endp *endp,
-		usb_request_notify_hnd_t notify_hnd, void *buf, size_t len) {
-
-	req->endp = endp;
-	req->buf = buf;
-	req->len = len;
-	req->notify_hnd = notify_hnd;
-}
 
 /* class */
 
