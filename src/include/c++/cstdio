@@ -16,7 +16,7 @@ namespace std {
 //	using ::tmpfile;
 //	using ::tmpnam;
 	using ::fclose;
-//	using ::fflush;
+	using ::fflush;
 	using ::fopen;
 	using ::freopen;
 //	using ::setbuf;
