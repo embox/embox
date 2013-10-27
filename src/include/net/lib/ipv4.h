@@ -10,6 +10,7 @@
 #define NET_LIB_IPV4_H_
 
 #include <netinet/in.h>
+#include <stddef.h>
 #include <stdint.h>
 
 /**
