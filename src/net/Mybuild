@@ -57,4 +57,6 @@ module neighbour {
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
 	depends embox.lib.LibC
+	@NoRuntime depends embox.net.arp
+	@NoRuntime depends embox.net.ndp
 }
