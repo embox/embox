@@ -22,10 +22,25 @@ module getifaddrs {
 	depends embox.net.core
 }
 
+module icmpv6 {
+	source "icmpv6.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.net.lib.ipv6
+}
+
 module ipv4 {
 	source "ipv4.c"
 
 	depends embox.lib.LibCAssert
+}
+
+module ipv6 {
+	source "ipv6.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
 }
 
 module ntp {

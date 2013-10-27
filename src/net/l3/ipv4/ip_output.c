@@ -5,6 +5,7 @@
  * @date 03.12.09
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
+ * @author Ilia Vaprol
  */
 
 #include <errno.h>
