@@ -77,7 +77,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	}
 
 	for (i = 0; i < zs_max_ind; ++i) {
-		ret = snprintf(buff, buff_sz, "%hx:", in6->s6_addr16[i]);
+		ret = snprintf(buff, buff_sz, "%hx:", ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
 			return ret;
 		}
@@ -88,7 +88,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 		buff_sz -= ret;
 	}
 
-	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%hx", in6->s6_addr16[i])
+	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%hx", ntohs(in6->s6_addr16[i]))
 			: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
 				? snprintf(buff, buff_sz, "::")
 				: snprintf(buff, buff_sz, ":")
@@ -105,7 +105,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	i += zs_max_len <= 1 ? 1 : zs_max_len;
 
 	for (; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
-		ret = snprintf(buff, buff_sz, ":%hx", in6->s6_addr16[i]);
+		ret = snprintf(buff, buff_sz, ":%hx", ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
 			return ret;
 		}
@@ -191,7 +191,7 @@ static int str_to_inet6(const char *buff, struct in6_addr *in6) {
 		if (val > USHRT_MAX) {
 			return 1; /* error: invalid address format */
 		}
-		in6->s6_addr16[i] = (unsigned short)val;
+		in6->s6_addr16[i] = htons(val);
 		if (*buff != ':') {
 			break;
 		}
