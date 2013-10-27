@@ -45,6 +45,15 @@ module af_inet {
 	depends embox.framework.LibFrameworkNet
 }
 
+module af_inet6 {
+	source "af_inet6.c"
+	option number amount_inet6_sock=20
+
+	depends sock
+	depends embox.util.indexator
+	depends embox.framework.LibFrameworkNet
+}
+
 module af_packet {
 	source "af_packet.c"
 	option number amount_sockets=20
