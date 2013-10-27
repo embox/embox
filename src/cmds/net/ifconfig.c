@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <net/if.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -32,7 +33,8 @@ struct ifconfig_args {
 	char with_p2p; char p2p; struct in_addr p2p_addr;
 	char with_bcast; char bcast; struct in_addr bcast_addr;
 	char with_iface; char iface[IFNAMSIZ];
-	char with_addr; struct in_addr addr;
+	char with_addr; int addr_family; struct in_addr addr_in;
+			struct in6_addr addr_in6;
 	char with_netmask; struct in_addr netmask;
 	char with_mtu; int mtu;
 	char with_irq; int irq;
@@ -87,8 +89,15 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_addr) { /* set new IP address to iface */
-		ret = inetdev_set_addr(iface, args->addr.s_addr);
-		if (ret != 0) return ret;
+		if (args->addr_family == AF_INET) {
+			ret = inetdev_set_addr(iface, args->addr_in.s_addr);
+			if (ret != 0) return ret;
+		}
+		else {
+			assert(args->addr_family == AF_INET6);
+			memcpy(&iface->ifa6_address, &args->addr_in6,
+					sizeof args->addr_in6);
+		}
 	}
 
 	if (args->with_netmask) { /* set new mask to iface */
@@ -147,10 +156,8 @@ static int ifconfig_print_long_hdr(void) {
 static int ifconfig_print_long_info(struct in_device *iface) {
 	struct net_device_stats *stat;
 	unsigned char mac[] = "xx:xx:xx:xx:xx:xx";
-	struct in_addr ip, bcast, mask;
-	char s_ip[] = "xxx.xxx.xxx.xxx";
-	char s_bcast[] = "xxx.xxx.xxx.xxx";
-	char s_mask[] = "xxx.xxx.xxx.xxx";
+	struct in_addr in;
+	char s_in[INET_ADDRSTRLEN], s_in6[INET6_ADDRSTRLEN];
 
 	stat = &iface->dev->stats;
 
@@ -163,18 +170,22 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	}
 
 	printf("\n\t");
-	ip.s_addr = iface->ifa_address;
-	mask.s_addr = iface->ifa_mask;
-	strncpy(s_ip, inet_ntoa(ip), sizeof(s_ip));
-	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
-	if (iface->dev->flags & IFF_LOOPBACK) {
-		printf("inet addr:%s  Mask:%s", s_ip, s_mask);
-		printf("\n\tinet6 addr: ::1/128 Scope:Host");
-	} else {
-		bcast.s_addr = iface->ifa_broadcast;
-		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
-		printf("inet addr:%s  Bcast:%s  Mask:%s", s_ip, s_bcast, s_mask);
+	in.s_addr = iface->ifa_address;
+	printf("inet addr:%s", inet_ntop(AF_INET, &in, s_in,
+				INET_ADDRSTRLEN));
+	if (iface->dev->flags & IFF_BROADCAST) {
+		in.s_addr = iface->ifa_broadcast;
+		printf("  Bcast:%s", inet_ntop(AF_INET, &in, s_in,
+					INET_ADDRSTRLEN));
 	}
+	in.s_addr = iface->ifa_mask;
+	printf("  Mask:%s", inet_ntop(AF_INET, &in, s_in,
+				INET_ADDRSTRLEN));
+
+	printf("\n\t");
+	printf("inet6 addr: %s/??", inet_ntop(AF_INET6,
+				&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
+	printf("  Scope:Host");
 
 	printf("\n\t");
 	if (iface->dev->flags & IFF_UP) printf("UP ");
@@ -274,6 +285,7 @@ static int exec(int argc, char *argv[]) {
 	int i;
 	struct in_device *iface;
 	struct ifconfig_args args;
+	void *addr;
 
 	iface = NULL; /* XXX required for -O2 */
 	memset(&args, 0, sizeof args);
@@ -381,9 +393,25 @@ static int exec(int argc, char *argv[]) {
 		}
 		else if (!args.with_addr) {
 			args.with_addr = 1;
-			if (!strcmp("inet", argv[i]) || !strcmp("inet6", argv[i])
-					|| !strcmp("unix", argv[i])) ++i;
-			if (!inet_aton(argv[i], &args.addr)) {
+			if (!strcmp("inet", argv[i])) {
+				args.addr_family = AF_INET;
+				addr = &args.addr_in;
+				++i;
+			}
+			else if (!strcmp("inet6", argv[i])) {
+				args.addr_family = AF_INET6;
+				addr = &args.addr_in6;
+				++i;
+			}
+			else if (!strcmp("unix", argv[i])) {
+				printf("unix family not supported\n");
+				return -EINVAL;
+			}
+			else {
+				args.addr_family = AF_INET;
+				addr = &args.addr_in;
+			}
+			if (!inet_pton(args.addr_family, argv[i], addr)) {
 				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
 			}
