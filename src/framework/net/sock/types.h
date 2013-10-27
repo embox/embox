@@ -24,10 +24,6 @@ typedef struct net_sock {
 	int protocol;
 	int is_default;
 	const struct sock_proto_ops *ops;
-	int (*init)(void);
-	int (*fini)(void);
-	/** The corresponding mod. */
-	const struct mod *mod;
 } net_sock_t;
 
 #endif /* FRAMEWORK_NET_SOCK_TYPES_H_ */

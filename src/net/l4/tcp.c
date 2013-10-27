@@ -23,6 +23,7 @@
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
+#include <embox/unit.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/time/ktime.h>
 #include <net/lib/tcp.h>
@@ -32,7 +33,8 @@
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
-EMBOX_NET_PROTO_INIT(ETH_P_IP, IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
+EMBOX_UNIT_INIT(tcp_v4_init);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_v4_rcv, NULL);
 
 /** TODO
  * +1. Create default socket for resetting
