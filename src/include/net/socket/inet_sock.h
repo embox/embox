@@ -4,13 +4,15 @@
  *
  * @date 18.03.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_SOCKET_INET_SOCK_H_
 #define NET_SOCKET_INET_SOCK_H_
 
 #include <net/sock.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <arpa/inet.h> /* TODO remove this */
 #include <stdint.h>
 
 struct sock;
