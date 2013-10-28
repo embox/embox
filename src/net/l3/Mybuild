@@ -39,6 +39,8 @@ module ndp {
 
 	depends embox.lib.LibCAssert
 	depends embox.lib.LibCString
+	@NoRuntime depends embox.net.lib.icmpv6
+	@NoRuntime depends embox.net.lib.ipv6
 	depends embox.net.net_tx
 	depends embox.net.skbuff
 }
