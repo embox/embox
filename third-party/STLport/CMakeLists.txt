@@ -18,6 +18,8 @@ ExternalProject_Add(
          --target=embox
          ""--with-extra-cflags=$ENV{EMBOX_DERIVED_CFLAGS}""
          ""--with-extra-cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
+         --with-cc=$ENV{EMBOX_DERIVED_CC}
+         --with-cxx=$ENV{EMBOX_DERIVED_CXX}
          --enable-static
          --disable-shared
          --with-static-rtl
