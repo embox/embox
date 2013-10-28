@@ -21,15 +21,21 @@ ExternalProject_Add(
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
       <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+      ""CC=$ENV{EMBOX_DERIVED_CC}""
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
-      --host=i386-pc-none
+      --host=$ENV{EMBOX_DERIVED_TARGET}
       --disable-tls
       --disable-backtrace
       --disable-elf-shlibs
       --disable-bsd-shlibs
-   #	BUILD_COMMAND
+
+   BUILD_COMMAND
+      make
+         RDYNAMIC=
+         all
+
    INSTALL_COMMAND
       make install-libs
    LOG_BUILD 1
