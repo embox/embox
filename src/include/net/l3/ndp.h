@@ -107,7 +107,7 @@ struct ndpbody_neighbor_advert {
 	__u32 router:1,
 		solicited:1,
 		override:1,
-		zero1:5;
+		zero1:5,
 		zero2:24;
 #endif
 	struct in6_addr target; /* Target Address */
