@@ -66,7 +66,7 @@ static int udp_rcv(struct sk_buff *skb) {
 
 	/* Check CRC */
 	old_check = skb->h.uh->check;
-	udp_set_check_field(skb->h.uh, skb->nh.iph);
+	udp4_set_check_field(skb->h.uh, skb->nh.iph);
 	if (old_check != skb->h.uh->check) {
 		return 0; /* error: bad checksum */
 	}

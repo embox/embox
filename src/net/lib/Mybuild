@@ -70,13 +70,15 @@ module smtp {
 module tcp {
 	source "tcp.c"
 
-	depends embox.lib.LibCAssert
-	depends embox.net.lib.ipv4
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.net.lib.ipv4
+	@NoRuntime depends embox.net.lib.ipv6
 }
 
 module udp {
 	source "udp.c"
 
-	depends embox.lib.LibCAssert
-	depends embox.net.lib.ipv4
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.net.lib.ipv4
+	@NoRuntime depends embox.net.lib.ipv6
 }

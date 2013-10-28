@@ -33,8 +33,8 @@
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
-EMBOX_UNIT_INIT(tcp_v4_init);
-EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_v4_rcv, NULL);
+EMBOX_UNIT_INIT(tcp_init);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
 
 /** TODO
  * +1. Create default socket for resetting
@@ -121,7 +121,7 @@ static inline void packet_print(struct tcp_sock *tcp_sk, struct sk_buff *skb, ch
 			now.tv_sec, now.tv_usec, inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg,
 			tcp_sk != NULL ? to_sock(tcp_sk) : NULL, skb,
 			// seq, ack, seq_len
-			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_length(skb->h.th, skb->nh.iph),
+			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp4_seq_length(skb->h.th, skb->nh.iph),
 			// flags
 			(skb->h.th->ack ? "ACK" : ""), (skb->h.th->syn ? "SYN" : ""),
 			(skb->h.th->fin ? "FIN" : ""), (skb->h.th->rst ? "RST" : ""),
@@ -188,7 +188,7 @@ static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 	sock_rcv(to_sock(tcp_sk), skb, skb->h.raw
 			+ TCP_HEADER_SIZE(skb->h.th)
 			+ (tcp_sk->rem.seq - ntohl(skb->h.th->seq)),
-			tcp_data_length(skb->h.th, skb->nh.iph));
+			tcp4_data_length(skb->h.th, skb->nh.iph));
 }
 
 void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) {
@@ -332,7 +332,7 @@ static void send_from_sock_now(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
 	debug_print(9, "send_from_sock_now: send %p\n", skb);
 	tcp_set_seq_field(skb->h.th, tcp_sk->self.seq);
-	tcp_set_check_field(skb->h.th, skb->nh.iph);
+	tcp4_set_check_field(skb->h.th, skb->nh.iph);
 	tcp_xmit(tcp_sk, skb);
 }
 
@@ -355,14 +355,14 @@ void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb) {
 	tcp_sock_lock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 	{
 		tcp_set_seq_field(skb->h.th, tcp_sk->self.seq);
-		tcp_set_check_field(skb->h.th, skb->nh.iph);
+		tcp4_set_check_field(skb->h.th, skb->nh.iph);
 		if (skb_send != NULL) {
 			/* set to cloned pkg */
 			memcpy(skb_send->h.th, skb->h.th, sizeof *skb->h.th);
 		}
 		assert(to_sock(tcp_sk) != NULL);
 		skb_queue_push(&to_sock(tcp_sk)->tx_queue, skb);
-		tcp_sk->self.seq += tcp_seq_length(skb->h.th, skb->nh.iph);
+		tcp_sk->self.seq += tcp4_seq_length(skb->h.th, skb->nh.iph);
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 
@@ -425,7 +425,7 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 		tcp_sk->self.seq = 0; /* FIXME */
 		tcp_set_seq_field(out_tcph, 0);
 		tcp_set_ack_field(out_tcph, ntohl(tcph->seq)
-				+ tcp_seq_length(skb->h.th, skb->nh.iph));
+				+ tcp4_seq_length(skb->h.th, skb->nh.iph));
 	}
 
 	/* Set up a socket */
@@ -566,7 +566,7 @@ static enum tcp_ret_code tcp_st_estabil(struct tcp_sock *tcp_sk,
 	debug_print(8, "call tcp_st_estabil\n");
 	assert(tcp_sk->state == TCP_ESTABIL);
 
-	data_len = tcp_data_length(skb->h.th, skb->nh.iph);
+	data_len = tcp4_data_length(skb->h.th, skb->nh.iph);
 	if (data_len > 0) {
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
@@ -596,7 +596,7 @@ static enum tcp_ret_code tcp_st_finwait_1(struct tcp_sock *tcp_sk,
 	debug_print(8, "call tcp_st_finwait_1\n");
 	assert(tcp_sk->state == TCP_FINWAIT_1);
 
-	data_len = tcp_data_length(skb->h.th, skb->nh.iph);
+	data_len = tcp4_data_length(skb->h.th, skb->nh.iph);
 	if (data_len > 0) {
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
@@ -638,7 +638,7 @@ static enum tcp_ret_code tcp_st_finwait_2(struct tcp_sock *tcp_sk,
 	debug_print(8, "call tcp_st_finwait_2\n");
 	assert(tcp_sk->state == TCP_FINWAIT_2);
 
-	data_len = tcp_data_length(skb->h.th, skb->nh.iph);
+	data_len = tcp4_data_length(skb->h.th, skb->nh.iph);
 	if (data_len > 0) {
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
@@ -756,7 +756,7 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 			sent_skb = skb_queue_front(&to_sock(tcp_sk)->tx_queue);
 			assert(sent_skb != NULL);
 			seq_last = ntohl(sent_skb->h.th->seq)
-					+ tcp_seq_length(sent_skb->h.th,
+					+ tcp4_seq_length(sent_skb->h.th,
 						sent_skb->nh.iph);
 			if (ack >= seq_last) {
 				debug_print(9, "free_rexmitting_queue: remove"
@@ -842,7 +842,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	/* Check CRC */
 	old_check = tcph->check;
 	/* XXX remove const qualifier */
-	tcp_set_check_field((struct tcphdr *)tcph,
+	tcp4_set_check_field((struct tcphdr *)tcph,
 			skb->nh.iph);
 	if (old_check != tcph->check) {
 		printk("pre_process: error: invalid ckecksum %hx(%hx)"
@@ -865,7 +865,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
 		seq = ntohl(tcph->seq);
-		seq_last = seq + tcp_seq_length(skb->h.th, skb->nh.iph) - 1;
+		seq_last = seq + tcp4_seq_length(skb->h.th, skb->nh.iph) - 1;
 		rem_seq = tcp_sk->rem.seq;
 		rem_last = rem_seq + tcp_sk->self.wind;
 		if ((rem_seq <= seq) && (seq < rem_last)) {
@@ -1068,7 +1068,7 @@ static void tcp_process(struct tcp_sock *tcp_sk,
 	}
 }
 
-static int tcp_v4_rcv(struct sk_buff *skb) {
+static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
 
@@ -1128,7 +1128,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 	}
 }
 
-static int tcp_v4_init(void) {
+static int tcp_init(void) {
 	int ret;
 	struct sock *sk_default;
 
