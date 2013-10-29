@@ -68,6 +68,9 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
 
+#define O_DIRECTORY        0x2000
+#define O_SEARCH           0x4000
+
 struct flock {
 	short  l_type;   /* Type of lock; F_RDLCK, F_WRLCK, F_UNLCK. */
 	short  l_whence; /* Flag for starting offset. */
