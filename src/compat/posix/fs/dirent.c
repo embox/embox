@@ -85,5 +85,7 @@ struct dirent *readdir(DIR *dir) {
 
 	dir->child_lnk = tree_children_next(dir->child_lnk);
 
+	dir->current.d_ino = (ino_t)chldnod;
+
 	return &dir->current;
 }
