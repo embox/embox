@@ -81,15 +81,20 @@ sighandler_t signal(int sig, sighandler_t func) {
 
 int sigqueue(int tid, int sig, const union sigval value) {
 	struct task *task;
-	struct signal_data *sig_data;
+	struct sigstate *sigstate;
+	siginfo_t info;
 	int err;
 
 	task = task_table_get(tid);
 	if (!task)
 		return SET_ERRNO(ESRCH);
 
-	sig_data = &task->main_thread->signal_data;
-	err = sigrt_raise(&sig_data->sigrt_data, sig, value);
+	sigstate = &task->main_thread->sigstate;
+
+	// TODO prepare it
+	info.si_value = value;
+
+	err = sigstate_send(sigstate, sig, &info);
 	if (err)
 		return SET_ERRNO(err);
 
@@ -100,13 +105,13 @@ int sigqueue(int tid, int sig, const union sigval value) {
 
 
 int pthread_kill(pthread_t thread, int sig) {
-	struct signal_data *sig_data;
+	struct sigstate *sigstate;
 	int err;
 
 	assert(thread);
 
-	sig_data = &thread->signal_data;
-	err = sigstd_raise(&sig_data->sigstd_data, sig);
+	sigstate = &thread->sigstate;
+	err = sigstate_send(sigstate, sig, NULL);
 	if (err)
 		return SET_ERRNO(err);
 

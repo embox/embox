@@ -50,7 +50,7 @@ struct thread {
 	struct thread_res_state resinfo;   /**< Resources state info*/
 
 	struct wait_data   wait_data;    /**< Hold data in waiting mode */
-	struct signal_data signal_data;  /**< Pending signal(s). */
+	struct sigstate    sigstate;     /**< Pending signal(s). */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 

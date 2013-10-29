@@ -11,8 +11,9 @@
 
 #include <util/slist.h>
 
-struct sigrt_data {
-	struct slist pending;
+struct siginfoq {
+	struct slist       queue;
+	struct slist_link *last;
 };
 
 #endif /* KERNEL_THREAD_SIGRT_H_ */

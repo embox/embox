@@ -1,23 +1,25 @@
 
 package embox.kernel.thread.signal
 
-@DefaultImpl(sigrt_stub)  abstract module sigrt_api { }
-@DefaultImpl(sigstd_stub) abstract module sigstd_api { }
+@DefaultImpl(siginfoq_stub) abstract module siginfoq_api { }
+@DefaultImpl(sigstate_stub) abstract module sigstate_api { }
 
-module sigrt_stub extends sigrt_api {
-	source "sigrt_stub.h"
+module siginfoq_stub extends siginfoq_api {
+	source "siginfoq_stub.h"
 }
 
-module sigrt extends sigrt_api {
-	source "sigrt.h"
-	source "sigrt.c"
+module siginfoq extends siginfoq_api {
+	source "siginfoq.h"
+	source "siginfoq.c"
+	option number pool_sz = 64
 }
 
-module sigstd_stub extends sigstd_api {
-	source "sigstd_stub.h"
+module sigstate_stub extends sigstate_api {
+	source "sigstate_stub.h"
 }
 
-module sigstd extends sigstd_api {
-	source "sigstd.h"
-	source "sigstd.c"
+module sigstate extends sigstate_api {
+	source "sigstate.h"
+	source "sigstate.c"
+	depends siginfoq_api
 }

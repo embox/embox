@@ -17,19 +17,20 @@ void thread_signal_handle(void) {
 	struct thread *thread = thread_self();
 	struct task   *task   = thread->task;
 
-	struct signal_data *sig_data = &thread->signal_data;
+	struct sigstate *sigstate = &thread->sigstate;
 	struct sigaction *sig_table = task->sig_table;
 
 	sighandler_t handler;
+	siginfo_t info;
 	int sig;
 
-	while ((sig = sigrt_dequeue(&sig_data->sigrt_data)) ||
-		(sig = sigstd_dequeue(&sig_data->sigstd_data))) {
+	while ((sig = sigstate_receive(sigstate, &info))) {
 
 		// TODO locks?
 		handler = sig_table[sig].sa_handler;
 		assert(handler && "there must be at least a fallback handler");
 
+		// TODO passing info
 		handler(sig);
 	}
 }

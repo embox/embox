@@ -12,18 +12,19 @@
 #include <errno.h>
 #include <signal.h>
 
-struct sigstd_data { };  /* stub */
+struct sigstate { };  /* stub */
 
-static inline struct sigstd_data * sigstd_data_init(
-		struct sigstd_data *sigstd_data) {
-	return sigstd_data;
+static inline struct sigstate *sigstate_init(
+		struct sigstate *sigstate) {
+	return sigstate;
 }
 
-static inline int sigstd_raise(struct sigstd_data *data, int sig) {
+static inline int sigstate_send(struct sigstate *data, int sig,
+		const siginfo_t *info) {
 	return -ENOSYS;
 }
 
-static inline int sigstd_dequeue(struct sigstd_data *data) {
+static inline int sigstate_receive(struct sigstate *data, siginfo_t *info) {
 	return 0;
 }
 
