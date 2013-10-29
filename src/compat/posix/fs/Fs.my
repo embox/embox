@@ -6,7 +6,8 @@ module All {
 		dirent,
 		fsop,
 		getcwd,
-		xattr
+		xattr,
+		libgen
 }
 
 static module file {
@@ -67,3 +68,8 @@ static module xattr {
 	depends embox.fs.Perm
 	depends embox.security.api
 }
+
+static module libgen {
+	source "libgen.c"
+}
+
