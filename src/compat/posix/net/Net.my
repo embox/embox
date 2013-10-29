@@ -2,6 +2,7 @@ package embox.compat.posix.net
 
 module All {
 	depends gai_strerror,
+		//getaddrinfo,
 		gethostbyaddr,
 		gethostbyname,
 		gethostent,
@@ -21,6 +22,10 @@ module All {
 
 static module gai_strerror {
 	source "gai_strerror.c"
+}
+
+static module getaddrinfo {
+	source "getaddrinfo.c"
 }
 
 static module gethostbyaddr {
