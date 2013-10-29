@@ -7,6 +7,7 @@
 
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/sched/wait_queue.h>
 
 
 int sched_signal(struct thread *t, int type) {
@@ -15,7 +16,7 @@ int sched_signal(struct thread *t, int type) {
 	sched_lock();
 	{
 		if (thread_state_sleeping(t->state)) {
-			sched_thread_notify(t, -EINTR);
+			wait_queue_thread_notify(t, -EINTR);
 		} else {
 			res = -1;
 		}

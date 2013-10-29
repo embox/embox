@@ -42,7 +42,6 @@ extern int sched_init(struct thread *current, struct thread *idle);
 
 //TODO sched_ticker have to start automatic after scheduler initialization
 extern int sched_ticker_init(void);
-extern int sched_wait_init(void);
 extern void sched_ticker_fini(struct runq*);
 
 /**
@@ -96,15 +95,5 @@ extern void sched_post_switch(void);
  */
 extern int sched_signal(struct thread *thread, int sig);
 
-extern void sched_thread_notify(struct thread *thread, int result);
-
-extern void sched_prepare_wait(void (*on_notified)(struct thread *, void *),
-		void *data);
-extern void sched_cleanup_wait(void);
-
-extern int sched_wait(unsigned long timeout);
-extern int sched_wait_locked(unsigned long timeout);
-
-extern void sched_wait_run(void);
 
 #endif /* KERNEL_SCHED_H_ */
