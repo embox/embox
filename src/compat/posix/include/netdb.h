@@ -9,9 +9,10 @@
 #ifndef COMPAT_POSIX_NETDB_H_
 #define COMPAT_POSIX_NETDB_H_
 
-#include <sys/cdefs.h>
-#include <stdint.h>
 #include <netinet/in.h>
+#include <stdint.h>
+#include <sys/cdefs.h>
+#include <sys/socket.h>
 
 __BEGIN_DECLS
 
