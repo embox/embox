@@ -11,16 +11,16 @@
 
 int h_errno;
 
-const char * hstrerror(int err) {
-	switch (err) {
+const char * hstrerror(int error_code) {
+	switch (error_code) {
 	default:             return "unknown error";
-	case NETDB_SUCCESS:  return "no error";
+	case 0:              return "no error";
 	case HOST_NOT_FOUND: return "unknown host";
-	case TRY_AGAIN:      return "host name lookup failure";
-	case NO_RECOVERY:    return "unknown server error";
 	case NO_ADDRESS:     return "no address associated with name";
+	case NO_RECOVERY:    return "unknown server error";
+	case TRY_AGAIN:      return "host name lookup failure";
 	}
-};
+}
 
 void herror(const char *msg) {
 	fprintf(stderr, "%s: %s\n", msg, hstrerror(h_errno));
