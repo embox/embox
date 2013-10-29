@@ -207,7 +207,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(t);
 
-	t->wait_link = 0;
+	t->wait_link = NULL;
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
@@ -277,7 +277,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 			wait_queue_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
 
-			t->resinfo.joined = 0;
+			t->resinfo.joined = NULL;
 		}
 
 		join_ret = t->run_ret;

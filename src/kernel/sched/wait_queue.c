@@ -121,9 +121,9 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
-	wait_queue_insert(wait_queue, &wait_link);
-
 	wait_queue_prepare(&wait_link);
+
+	wait_queue_insert(wait_queue, &wait_link);
 
 	result = wait_locked(timeout);
 
