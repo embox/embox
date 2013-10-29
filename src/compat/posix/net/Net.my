@@ -1,7 +1,8 @@
 package embox.compat.posix.net
 
 module All {
-	depends gethostbyaddr,
+	depends gai_strerror,
+		gethostbyaddr,
 		gethostbyname,
 		gethostent,
 		getnetbyaddr,
