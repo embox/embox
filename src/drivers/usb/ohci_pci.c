@@ -353,8 +353,10 @@ static int ohci_request(struct usb_request *req) {
 		cnt++;
 	}
 	if (req->token & USB_TOKEN_OUT) {
-		token = OHCI_TD_OUT;
-		cnt++;
+		if (token != OHCI_TD_SETUP) {
+			token = OHCI_TD_OUT;
+			cnt++;
+		}
 	}
 
 	assert(cnt == 1, "only one token is supported");
@@ -372,33 +374,6 @@ static int ohci_request(struct usb_request *req) {
 
 	return 0;
 }
-
-#if 0
-static int ohci_interrupt_req(struct usb_request *req) {
-	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
-	struct ohci_ed *ed = endp2ohci(req->endp);
-	uint32_t token;
-
-	switch (req->endp->direction) {
-	case USB_DIRECTION_IN:
-		token = OHCI_TD_IN;
-		break;
-	case USB_DIRECTION_OUT:
-		token = OHCI_TD_OUT;
-	default:
-		assert(0, "%s: don't know how to handle unidirection interrupt "
-				"endpoint", __func__);
-	}
-
-	ohci_ed_fill(ed, req->endp); /* function address could change due bus
-				   enumeration */
-
-	ohci_transfer(ed, token, req->buf, req->len, req);
-
-
-	return 0;
-}
-#endif
 
 static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_hci_alloc = ohci_hcd_alloc,
