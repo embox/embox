@@ -6,6 +6,7 @@
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
+ * @author Ilia Vaprol
  */
 
 #include <string.h>

@@ -65,8 +65,12 @@ int scandir(const char *dirp, struct dirent ***namelist,
 #define O_NOFOLLOW 0
 #define F_TLOCK 1
 #define F_ULOCK 2
-extern
-int lockf(int fd, int cmd, off_t len);
+static inline
+int lockf(int fd, int cmd, off_t len) {
+	DPRINT();
+	errno = ENOLCK;
+	return -1;
+}
 
 #define MAP_SHARED    0x00
 //#define MAP_PRIVATE   0x01
@@ -103,8 +107,12 @@ int msync(void *addr, size_t length, int flags) {
 	return -1;
 }
 
-extern
-int socketpair(int domain, int type, int protocol, int sv[2]);
+static inline
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+	DPRINT();
+	errno = -EPROTONOSUPPORT;
+	return -1;
+}
 
 #include <netinet/in.h>
 
@@ -145,8 +153,11 @@ struct sockaddr_storage
 #define NI_MAXHOST	1025
 #define NI_MAXSERV	32
 
-extern
-void freeaddrinfo(struct addrinfo *res);
+static inline
+void freeaddrinfo(struct addrinfo *res) {
+	DPRINT();
+	return;
+}
 
 #define NI_NUMERICSERV 2
 #define NI_NUMERICHOST 3

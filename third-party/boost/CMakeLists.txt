@@ -6,10 +6,12 @@ ExternalProject_Add(
    URL http://optimate.dl.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.gz
    URL_MD5 efbfbff5a85a9330951f243d0a46e4b9
    UPDATE_COMMAND ""
+   LIST_SEPARATOR ^^
    PATCH_COMMAND
       #cd $ENV{EMBOX_ROOT}/third-party/boost/tree &&
       #bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`" &&
       patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/boost/patch.txt &&
+      echo using gcc : : $ENV{EMBOX_DERIVED_CXX} \^^ >> <SOURCE_DIR>/tools/build/v2/user-config.jam &&
       true
    BUILD_IN_SOURCE 1
    LOG_CONFIGURE 1
@@ -25,12 +27,13 @@ ExternalProject_Add(
        ""cflags=$ENV{EMBOX_DERIVED_CFLAGS}""
        ""cxxflags=$ENV{EMBOX_DERIVED_CXXFLAGS}""
        ""linkflags=$ENV{EMBOX_DERIVED_LDFLAGS}""
+       target-os=elf
        variant=debug
        link=static
        threading=multi
        address-model=32
        binary-format=elf
-       architecture=x86
+       architecture=$ENV{EMBOX_DERIVED_ARCH}
        toolset=gcc
        #define=BOOST_DATE_TIME_NO_LOCALE
        #define=BOOST_NO_STD_LOCALE

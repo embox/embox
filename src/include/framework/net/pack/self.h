@@ -12,28 +12,13 @@
 
 #include __impl_x(framework/net/pack/self_impl.h)
 
-#include <stddef.h>
-
 struct net_device;
 struct sk_buff;
 
-#define EMBOX_NET_PACK(_type, _rcv_pack)                  \
-	static int _rcv_pack(struct sk_buff *skb,             \
-			struct net_device *dev);                      \
-	__EMBOX_NET_PACK(_type, _type, _rcv_pack, NULL, NULL)
-
-#define EMBOX_NET_PACK_INIT(_type, _rcv_pack, _init)       \
-	static int _rcv_pack(struct sk_buff *skb,              \
-			struct net_device *dev);                       \
-	static int _init(void);                                \
-	__EMBOX_NET_PACK(_type, _type, _rcv_pack, _init, NULL)
-
-#define EMBOX_NET_PACK_INIT_FINI(_type, _rcv_pack, _init, _fini) \
-	static int _rcv_pack(struct sk_buff *skb,                    \
-			struct net_device *dev);                             \
-	static int _init(void);                                      \
-	static int _fini(void);                                      \
-	__EMBOX_NET_PACK(_type, _type, _rcv_pack, _init, _fini)
+#define EMBOX_NET_PACK(_type, _rcv_pack)      \
+	static int _rcv_pack(struct sk_buff *skb, \
+			struct net_device *dev);          \
+	__EMBOX_NET_PACK(_type, _type, _rcv_pack)
 
 #define EMBOX_NET_PACK_OUT(_family, _ops)        \
 	static const struct net_pack_out_ops _ops;   \

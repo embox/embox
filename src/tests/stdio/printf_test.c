@@ -120,6 +120,8 @@ TEST_CASE("Test of printing with mistake in format") {
 	TEST_STR_FMT("%a", "%30.3%a","");
 }
 
+#if 0
+/* Float is disabled until the reasons (r11423) */
 TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("2.00", "%.2f", 1.997);
 	TEST_STR_FMT("2.0", "%.1f", 1.983183456);
@@ -139,3 +141,4 @@ TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("1.234560e+02", "%e", 123.456);
 	TEST_STR_FMT("+008.2346E-03", "%+013.4E", 0.00823456);
 }
+#endif

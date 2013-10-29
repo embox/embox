@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <util/bitmap.h>
+#include <sys/cdefs.h>
 
 #define SIG_DFL ((sighandler_t) 0x1)
 #define SIG_IGN ((sighandler_t) 0x3)
@@ -58,6 +59,8 @@
 #define SIGRTMAX    63
 
 #define _SIG_TOTAL  64
+
+__BEGIN_DECLS
 
 typedef struct {
 	BITMAP_DECL(bitmap, _SIG_TOTAL);
@@ -113,5 +116,7 @@ static inline int raise(int signo) {
 //static inline int sigaction(int sig, const struct sigaction *act,
 		//struct sigaction *oact) { return -1; }
 //static inline int sigfillset(sigset_t *set)
+
+__END_DECLS
 
 #endif /* SIGNAL_H_ */

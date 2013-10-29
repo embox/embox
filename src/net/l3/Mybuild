@@ -24,6 +24,25 @@ module icmpv4 {
 
 module icmpv6 {
 	source "icmpv6.c"
+
+	depends embox.framework.net.proto
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.net.core
+	depends embox.net.lib.icmpv6
+	depends embox.net.lib.ipv6
+	depends embox.net.skbuff
+}
+
+module ndp {
+	source "ndp.c"
+
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	@NoRuntime depends embox.net.lib.icmpv6
+	@NoRuntime depends embox.net.lib.ipv6
+	depends embox.net.net_tx
+	depends embox.net.skbuff
 }
 
 module rarp {

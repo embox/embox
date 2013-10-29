@@ -16,10 +16,10 @@
 #include <kernel/thread/state.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
-#include <kernel/thread/wait_data.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_cancel.h>
+#include <kernel/sched/wait_queue.h>
 
 #include <util/dlist.h>
 
@@ -49,7 +49,7 @@ struct thread {
 
 	struct thread_res_state resinfo;   /**< Resources state info*/
 
-	struct wait_data   wait_data;    /**< Hold data in waiting mode */
+	struct wait_link   *wait_link;    /**< Hold data in waiting mode */
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */

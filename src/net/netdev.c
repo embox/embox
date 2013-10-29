@@ -39,7 +39,6 @@ static int netdev_init(struct net_device *dev, const char *name,
 	strcpy(&dev->name[0], name);
 	memset(&dev->stats, 0, sizeof dev->stats);
 	skb_queue_init(&dev->dev_queue);
-	skb_queue_init(&dev->tx_dev_queue);
 
 	if (priv_size != 0) {
 		dev->priv = malloc(priv_size);
@@ -85,7 +84,6 @@ void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
-		skb_queue_purge(&dev->tx_dev_queue);
 		free(dev->priv);
 		pool_free(&netdev_pool, dev);
 	}

@@ -3,6 +3,17 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
+EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
+EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+
+ifeq (,$(EMBOX_TARGET_CC))
+$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
+endif
+ifeq (,$(EMBOX_TARGET_CXX))
+$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
+endif
+
+
 AT=
 
 STLPORT_DIR       = $(ROOT_DIR)/build/stlport
@@ -15,7 +26,9 @@ EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/stlport_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -D%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -U%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS := $(filter-out -D"__impl_x%,$(EMBOX_IMPORTED_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -44,9 +57,18 @@ endif
 # no wonder the following doesn't work
 # EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
 
+ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
+EMBOX_RTTI_FLAG          = --without-rtti
+else
+EMBOX_RTTI_FLAG          =
+endif
+
 EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
+EMBOX_DERIVED_RTTI_FLAG  = $(EMBOX_RTTI_FLAG)
+EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
+EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
 
 
 all:
@@ -61,6 +83,9 @@ $(STLPORT_FLAGS): | $(STLPORT_CMAKE_DIR)
 	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
+	$(AT)echo EMBOX_DERIVED_RTTI_FLAG=\"$(EMBOX_DERIVED_RTTI_FLAG)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CXX)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
 $(STLPORT_CMAKE_DIR)/Makefile: CMakeLists.txt $(STLPORT_FLAGS) | $(STLPORT_CMAKE_DIR)

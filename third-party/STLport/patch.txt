@@ -124,3 +124,22 @@ diff -aur STLport-5.2.1/src/num_get_float.cpp STLport/src/num_get_float.cpp
    //The following function is valid only if long double is an alias for double.
    _STLP_STATIC_ASSERT( sizeof(long double) <= sizeof(double) )
    val = _Stl_string_to_double(v.c_str());
+--- STLport-5.2.1/build/Makefiles/gmake/gcc.mak	2008-12-10 12:56:51.000000000 +0300
++++ STLport/build/Makefiles/gmake/gcc.mak	2013-10-29 11:52:26.856154129 +0400
+@@ -25,11 +25,11 @@
+ RC := windres
+ endif
+ 
+-ifdef TARGET_OS
+-CXX := ${TARGET_OS}-${CXX}
+-CC := ${TARGET_OS}-${CC}
+-AS := ${TARGET_OS}-${AS}
+-endif
++#ifdef TARGET_OS
++#CXX := ${TARGET_OS}-${CXX}
++#CC := ${TARGET_OS}-${CC}
++#AS := ${TARGET_OS}-${AS}
++#endif
+ 
+ CXX_VERSION := $(shell ${CXX} -dumpversion)
+ CXX_VERSION_MAJOR := $(shell echo ${CXX_VERSION} | awk 'BEGIN { FS = "."; } { print $$1; }')

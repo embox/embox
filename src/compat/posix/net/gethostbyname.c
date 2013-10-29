@@ -114,8 +114,6 @@ struct hostent * gethostbyname(const char *name) {
 		return NULL;
 	}
 
-	h_errno = NETDB_SUCCESS;
-
 	/* 1. If it's IP address (not symbolic name) */
 	he = get_hostent_from_ip(name);
 	if (he != NULL) {

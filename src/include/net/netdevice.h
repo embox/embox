@@ -124,7 +124,6 @@ typedef struct net_device {
 	const struct net_device_ops *ops; /**< Hardware description  */
 	const struct net_driver *drv_ops; /**< Management operations        */
 	struct sk_buff_head dev_queue;
-	struct sk_buff_head tx_dev_queue;
 	struct net_node *pnet_node;
 	void *priv; /**< private data */
 } net_device_t;

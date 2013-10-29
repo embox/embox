@@ -43,3 +43,15 @@ diff -aur boost_1_54_0/boost/asio/detail/socket_types.hpp boost/boost/asio/detai
  #  include <sys/poll.h>
  # endif
  # include <sys/types.h>
+diff -aur boost_1_54_0/tools/build/v2/tools/gcc.jam boost/tools/build/v2/tools/gcc.jam
+--- boost_1_54_0/tools/build/v2/tools/gcc.jam	2013-05-12 22:02:44.000000000 +0400
++++ boost/tools/build/v2/tools/gcc.jam	2013-10-29 15:38:03.660573765 +0400
+@@ -1032,7 +1032,7 @@
+             case *bsd    : option = -pthread ;  # There is no -lrt on BSD.
+             case sgi     : # gcc on IRIX does not support multi-threading.
+             case darwin  : # No threading options.
+-            case *       : option = -pthread ; libs = rt ;
++            case *       : # No threading options.
+         }
+ 
+         if $(option)

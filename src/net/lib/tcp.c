@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <net/l4/tcp.h>
 #include <net/lib/ipv4.h>
+#include <net/lib/ipv6.h>
 #include <net/lib/tcp.h>
 #include <net/util/checksum.h>
 #include <netinet/in.h>
@@ -42,7 +43,7 @@ void tcp_set_ack_field(struct tcphdr *tcph, uint32_t ack_seq) {
 	tcph->ack = 1;
 }
 
-void tcp_set_check_field(struct tcphdr *tcph,
+void tcp4_set_check_field(struct tcphdr *tcph,
 		const struct iphdr *iph) {
 	struct ip_pseudohdr ipph;
 
@@ -55,7 +56,20 @@ void tcp_set_check_field(struct tcphdr *tcph,
 			partial_sum(tcph, ntohs(ipph.data_len))) & 0xFFFF;
 }
 
-size_t tcp_data_length(const struct tcphdr *tcph,
+void tcp6_set_check_field(struct tcphdr *tcph,
+		const struct ip6hdr *ip6h) {
+	struct ip6_pseudohdr ip6ph;
+
+	assert(tcph != NULL);
+
+	ip6_pseudo_build(ip6h, &ip6ph);
+
+	tcph->check = 0;
+	tcph->check = ~fold_short(partial_sum(&ip6ph, sizeof ip6ph) +
+			partial_sum(tcph, ntohl(ip6ph.len))) & 0xFFFF;
+}
+
+size_t tcp4_data_length(const struct tcphdr *tcph,
 		const struct iphdr *iph) {
 	assert(tcph != NULL);
 	assert(ip_data_length(iph) >= TCP_HEADER_SIZE(tcph));
@@ -63,9 +77,24 @@ size_t tcp_data_length(const struct tcphdr *tcph,
 	return ip_data_length(iph) - TCP_HEADER_SIZE(tcph);
 }
 
-size_t tcp_seq_length(const struct tcphdr *tcph,
+size_t tcp6_data_length(const struct tcphdr *tcph,
+		const struct ip6hdr *ip6h) {
+	assert(tcph != NULL);
+	assert(ip6_data_length(ip6h) >= TCP_HEADER_SIZE(tcph));
+
+	return ip6_data_length(ip6h) - TCP_HEADER_SIZE(tcph);
+}
+
+size_t tcp4_seq_length(const struct tcphdr *tcph,
 		const struct iphdr *iph) {
 	assert(tcph != NULL);
 
-	return tcp_data_length(tcph, iph) + (tcph->syn | tcph->fin);
+	return tcp4_data_length(tcph, iph) + (tcph->syn | tcph->fin);
+}
+
+size_t tcp6_seq_length(const struct tcphdr *tcph,
+		const struct ip6hdr *ip6h) {
+	assert(tcph != NULL);
+
+	return tcp6_data_length(tcph, ip6h) + (tcph->syn | tcph->fin);
 }
