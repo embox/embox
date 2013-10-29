@@ -49,7 +49,7 @@ TEST_CASE("Attempt to open non-existent file") {
 
 	// remove_test_file(); causes crash
 	remove(test_file_filename);
-	test_assert_equal(-1, fd = open(test_file_filename, O_RDONLY));
+	test_assert_equal(-ENOENT, fd = open(test_file_filename, O_RDONLY));
 	if (0 <= fd) {
 		test_assert_equal(0, close(fd));
 	};

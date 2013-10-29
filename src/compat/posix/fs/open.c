@@ -59,19 +59,24 @@ int open(const char *path, int __oflag, ...) {
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
 			if(NULL == kcreat(dir->node, name, mode)) {
-				return -errno;
+				rc =  -errno;
+				goto out;
 			}
 		} else {
-			return -ENOENT;
+			rc = -ENOENT;
+			goto out;
 		}
 	}
 
 	kfile = kopen(path, __oflag, mode);
 	if (NULL == kfile) {
-		return -errno;
+		rc =  -errno;
+		goto out;
 	}
 
 	rc = task_self_idx_alloc(&task_idx_ops_file, kfile, &kfile->ios);
+out:
+	closedir(dir);
 
 	return rc;
 }
