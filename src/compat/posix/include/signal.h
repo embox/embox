@@ -11,7 +11,10 @@
 #define SIGNAL_H_
 
 #include <sys/types.h>
+#include <sys/cdefs.h>
 #include <kernel/task/signal.h>
+
+__BEGIN_DECLS
 
 extern int kill(int tid, int sig);
 
@@ -94,5 +97,7 @@ struct sigaction {
 //static inline int sigaction(int sig, const struct sigaction *act,
 		//struct sigaction *oact) { return -1; }
 //static inline int sigfillset(sigset_t *set)
+
+__END_DECLS
 
 #endif /* SIGNAL_H_ */

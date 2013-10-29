@@ -17,6 +17,8 @@
 #include <util/bit.h>
 #include <util/list.h>
 #include <util/member.h>
+#include <net/skbuff.h>
+#include <net/sock.h>
 
 #include <framework/mod/options.h>
 
@@ -159,7 +161,7 @@ int rt_fib_source_ip(in_addr_t dst_ip, in_addr_t *src_ip) {
 	return 0;
 }
 
-int rt_fib_out_dev(in_addr_t dst, struct sock *sk,
+int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 		struct net_device **out_dev) {
 	struct rt_entry *rte;
 	struct net_device *wanna_dev;

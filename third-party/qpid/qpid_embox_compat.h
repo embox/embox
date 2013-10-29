@@ -65,8 +65,12 @@ int scandir(const char *dirp, struct dirent ***namelist,
 #define O_NOFOLLOW 0
 #define F_TLOCK 1
 #define F_ULOCK 2
-extern
-int lockf(int fd, int cmd, off_t len);
+static inline
+int lockf(int fd, int cmd, off_t len) {
+	DPRINT();
+	errno = ENOLCK;
+	return -1;
+}
 
 #define MAP_SHARED    0x00
 //#define MAP_PRIVATE   0x01
@@ -76,7 +80,7 @@ int lockf(int fd, int cmd, off_t len);
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	// ToDo: implement for InitFS files
 	(void)addr;
-	(void)len;pid_t getppid(void);
+	(void)len;
 	(void)prot;
 	(void)flags;
 	(void)off;
@@ -103,8 +107,12 @@ int msync(void *addr, size_t length, int flags) {
 	return -1;
 }
 
-extern
-int socketpair(int domain, int type, int protocol, int sv[2]);
+static inline
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+	DPRINT();
+	errno = -EPROTONOSUPPORT;
+	return -1;
+}
 
 #include <netinet/in.h>
 
@@ -145,22 +153,33 @@ struct sockaddr_storage
 #define NI_MAXHOST	1025
 #define NI_MAXSERV	32
 
-extern
-void freeaddrinfo(struct addrinfo *res);
+static inline
+void freeaddrinfo(struct addrinfo *res) {
+	DPRINT();
+	return;
+}
 
 #define NI_NUMERICSERV 2
 #define NI_NUMERICHOST 3
-extern
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-                       char *host, size_t hostlen,
-                       char *serv, size_t servlen, int flags);
 
-const char *gai_strerror(int errcode);
+static inline
+const char *gai_strerror(int errcode) {
+	static char buf[256];
+	sprintf(buf,"gai_error: %i", errcode);
+}
 
 #define AI_ADDRCONFIG	0x0001
 #define AI_PASSIVE	0x0020
 
 #define EAI_FAIL	4
+
+static inline
+int getnameinfo(const struct sockaddr *sa, socklen_t salen,
+                       char *host, size_t hostlen,
+                       char *serv, size_t servlen, int flags) {
+	DPRINT();
+	return EAI_FAIL;
+}
 
 static inline
 int getaddrinfo(const char *node, const char *service,
@@ -172,8 +191,11 @@ int getaddrinfo(const char *node, const char *service,
 
 #include <arpa/inet.h>
 
-extern
-char *strerror_r(int errnum, char *buf, size_t buflen);
+static inline
+char *strerror_r(int errnum, char *buf, size_t buflen) {
+	DPRINT();
+	return strerror(errnum);
+}
 
 static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 	printf(">>> localtime_r\n");
@@ -183,10 +205,32 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
 #include <sys/types.h>
 #include <unistd.h>
 
-extern
-pid_t getppid(void);
+static inline
+pid_t getppid(void) {
+	DPRINT();
+	return 0;
+}
 
 typedef unsigned int uint;
+
+#define SIG_SETMASK 2
+
+typedef int sigset_t;
+
+static inline
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	DPRINT();
+	return 0;
+}
+
+static inline
+int sigfillset(sigset_t *set) {
+	DPRINT();
+	*set = -1;
+	return 0;
+}
+
+#define __thread
 
 #ifdef __cplusplus
 

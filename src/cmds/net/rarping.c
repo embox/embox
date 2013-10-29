@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <arpa/inet.h>
 
 #include <net/util/macaddr.h>
 #include <net/l3/rarp.h>

@@ -65,7 +65,7 @@ static int run(void) {
 				(uint32_t) &_text_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 #if 0
-		if (&__stack > (&_text_start + 0x1000000)) {
+		if (&_stack_top > (&_text_start + 0x1000000)) {
 			/* if have to map data sections */
 			mmu_map_region(t[i], _data_start, _data_start, 0x1000000,
 					MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);

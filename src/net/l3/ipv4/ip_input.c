@@ -6,6 +6,7 @@
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
+ * @author Ilia Vaprol
  */
 
 #include <string.h>
@@ -32,7 +33,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	const struct net_proto *nproto;
 	iphdr_t *iph = ip_hdr(skb);
 	unsigned short csum;
-	size_t mac_hdr_len, ip_len;
+	size_t ip_len;
 	int optlen;
 	sk_buff_t *complete_skb;
 
@@ -44,10 +45,9 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 *   3.  Checksums correctly. [Speed optimisation for later, skip loopback checksums]
 	 *   4.  Doesn't have a bogus length
 	 */
-	mac_hdr_len = skb->nh.raw - skb->mac.raw;
-	if (skb->len < mac_hdr_len + IP_MIN_HEADER_SIZE
+	if (skb->len < dev->hdr_len + IP_MIN_HEADER_SIZE
 			|| iph->ihl < 5
-			|| skb->len < mac_hdr_len + IP_HEADER_SIZE(iph)) {
+			|| skb->len < dev->hdr_len + IP_HEADER_SIZE(iph)) {
 		//LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
 		skb_free(skb);
@@ -74,14 +74,14 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	ip_len = ntohs(iph->tot_len);
 	if (ip_len < IP_HEADER_SIZE(iph)
-			|| skb->len < mac_hdr_len + ip_len) {
+			|| skb->len < dev->hdr_len + ip_len) {
 		//LOG_ERROR("invalid IPv4 length\n");
 		stats->rx_length_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
 
-	/* Setup transport layer header */
+	/* Setup transport layer (L4) header */
 	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 
 	/* Validating */
@@ -110,7 +110,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 				skb_free(skb);
 				return 0; /* error: dropped */
 			}
-			return ip_forward_packet(skb);
+			return ip_forward(skb);
 		}
 	}
 

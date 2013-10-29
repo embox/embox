@@ -6,8 +6,8 @@ package embox.cmd.net
 		NAME
 			ifconfig - configure a network interface
 		SYNOPSIS
-			ifconfig [-v] [-a] [-s] [interface]
-			ifconfig [-v] interface [aftype] options | address ...
+			ifconfig [-a] [-s] [interface]
+			ifconfig interface [aftype] options | address ...
 		DESCRIPTION
 			Ifconfig is used to configure the kernel-resident
 			network interfaces. If no arguments are given, ifconfig
@@ -16,7 +16,6 @@ package embox.cmd.net
 		OPTIONS
 			-a		display all interfaces which are currently available, even if down
 			-s		display a short list
-			-v		be more verbose for some error conditions
 			interface
 					the name of the interface
 			up		activate interface
@@ -26,11 +25,7 @@ package embox.cmd.net
 					enable or disable promiscuous mode on this interface
 			[-]allmulti
 					enable or disable all-multicast mode
-			metric N
-					set the interface metric
 			mtu N	set the MTU for this interface
-			dstaddr addr
-					set the remote IP address for a point-to-point link
 			netmask addr
 					set the network mask for this interface
 			irq N	set the interrupt number for interface device
@@ -47,8 +42,6 @@ package embox.cmd.net
 					set the multicast flag on this iterface
 			address
 					the IP address to be assigned to this interface
-			txqueuelen
-					set the length of the transmit queue of this device
 		EXAMPLES
 			ifconfig eth0 10.0.2.16 netmask 255.255.255.0 up
 				This will setup new interface eth0.

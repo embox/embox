@@ -6,10 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <hal/reg.h>
-#include <drivers/watchdog.h>
-#include <drivers/at91sam7s256.h>
-
 void arch_init(void) {
 
 }

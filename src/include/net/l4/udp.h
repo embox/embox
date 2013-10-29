@@ -10,6 +10,7 @@
 #define NET_L4_UDP_H_
 
 #include <linux/types.h>
+#include <net/skbuff.h>
 
 typedef struct udphdr {
 	__be16 source;
@@ -20,8 +21,8 @@ typedef struct udphdr {
 
 #define UDP_HEADER_SIZE	(sizeof(udphdr_t))
 
-static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
-	return (udphdr_t *) skb->h.raw;
+static inline struct udphdr * udp_hdr(const struct sk_buff *skb) {
+	return skb->h.uh;
 }
 
 extern const struct sock_proto_ops *const udp_sock_ops __attribute__((weak));

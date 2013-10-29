@@ -14,6 +14,7 @@
 #else
  typedef int wchar_t;
 #endif /*__wchar_t_defined */
+#endif /* __cplusplus */
 
 #ifdef __WINT_TYPE__
 typedef __WINT_TYPE__ wint_t;
@@ -22,7 +23,5 @@ typedef unsigned int wint_t;
 #endif
 
 typedef int wctype_t;
-
-#endif /* __cplusplus */
 
 #endif /* WCHAR_T_DEF_H_ */

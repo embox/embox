@@ -5,6 +5,7 @@
  * @date 03.12.09
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
+ * @author Ilia Vaprol
  */
 
 #include <errno.h>
@@ -24,46 +25,17 @@
 #include <kernel/printk.h>
 #include <net/if_packet.h>
 #include <net/if_ether.h>
+#include <util/math.h>
+#include <embox/net/pack.h>
+#include <net/lib/ipv4.h>
 
-static int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
-		unsigned short id, unsigned short len, in_addr_t saddr,
-		in_addr_t daddr/*, ip_options_t *opt*/) {
-	static uint16_t global_id = 1230;
+static const struct net_pack_out_ops ip_out_ops_struct;
+const struct net_pack_out_ops *const ip_out_ops
+		= &ip_out_ops_struct;
 
-	iphdr_t *hdr = skb->nh.iph;
-	hdr->version = 4;
-	hdr->ihl = IP_MIN_HEADER_SIZE >> 2 /* + opt->optlen */;
-	hdr->tos = 0;
-	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
-	hdr->id = htons(global_id++);
-	hdr->frag_off = htons(IP_DF); /* frag_off will be set during fragmentation decision */
-	hdr->ttl = 64; /* htons(ttl); */
-	hdr->proto = proto;
-	hdr->saddr = saddr; /* Changed as in_addr_t is in network-ordered */
-	hdr->daddr = daddr;
-	ip_send_check(hdr);
-	return 0;
-}
+EMBOX_NET_PACK_OUT(AF_INET, ip_out_ops_struct);
 
-static void build_ip_packet(struct inet_sock *in_sk,
-		struct sk_buff *skb, in_addr_t src_ip, in_addr_t dst_ip) {
-	/* We use headers in other way then Linux. So data coinsides with LL header
-	 * Ethernet was hardcoded in skb allocations, so be careful
-	 */
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
-
-	/* Suspicious:
-	 *	socket SHOULD NOT set TLL. It's possible, but strange
-	 *	socket (!raw || !packet) CAN NOT have information about id. It's not its business.
-	 * This functionality belongs to the device. NOT to the socket.
-	 * See init_ip_header() usage. It's more correct
-	 */
-	rebuild_ip_header(skb, in_sk->uc_ttl, in_sk->sk.opt.so_protocol,
-			in_sk->id, skb->len, src_ip, dst_ip/*, sk->opt*/);
-	return;
-}
-
-static int ip_queue_xmit(struct sk_buff *skb) {
+static int ip_xmit(struct sk_buff *skb) {
 	int ret;
 	in_addr_t daddr;
 	struct net_header_info hdr_info;
@@ -93,15 +65,6 @@ static int ip_queue_xmit(struct sk_buff *skb) {
 	return net_tx(skb, &hdr_info);
 }
 
-static int ip_queue_send(struct sk_buff *skb) {
-	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
-		printk("ip_queue_send: skb %p dropped by netfilter\n", skb);
-		skb_free(skb);
-		return 0;
-	}
-	return ip_queue_xmit(skb);
-}
-
 /* Fragments skb and sends it to the interface.
  * Returns -1 in case of error
  * As side effect frees incoming skb
@@ -111,6 +74,7 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	struct sk_buff_head tx_buf;
 	struct sk_buff *s_tmp;
 
+	skb->dev = dev;
 	ret = ip_frag(skb, dev->mtu, &tx_buf);
 	if (ret != 0) {
 		skb_free(skb);
@@ -120,7 +84,8 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 
 	while (NULL != (s_tmp = skb_queue_pop(&tx_buf))) {
 		s_tmp->dev = dev;
-		ret = ip_queue_send(s_tmp);
+		ip_set_check_field(s_tmp->nh.iph);
+		ret = ip_xmit(s_tmp);
 		if (ret != 0) {
 			break;
 		}
@@ -129,47 +94,8 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	return ret;
 }
 
-int ip_send_packet(struct inet_sock *in_sk, struct sk_buff *skb,
-		const struct sockaddr_in *to) {
-	int ret;
-	in_addr_t src_ip, dst_ip;
 
-	assert((to == NULL) || (to->sin_family == AF_INET));
-
-	skb->sk = &in_sk->sk;
-
-	dst_ip = to != NULL ? to->sin_addr.s_addr
-			: in_sk != NULL ? in_sk->dst_in.sin_addr.s_addr
-			: skb->nh.iph->daddr;
-
-	ret = rt_fib_out_dev(dst_ip, &in_sk->sk, &skb->dev);
-	if (ret != 0) {
-		skb_free(skb);
-		return ret;
-	}
-	assert(skb->dev != NULL);
-
-	assert(inetdev_get_by_dev(skb->dev) != NULL);
-	src_ip = inetdev_get_by_dev(skb->dev)->ifa_address;
-
-	if (in_sk != NULL) {
-		build_ip_packet(in_sk, skb, src_ip, dst_ip);
-	}
-
-	if (skb->len > skb->dev->mtu) {
-		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
-			return fragment_skb_and_send(skb, skb->dev);
-		} else {
-			/* if packet size is greater than MTU and we can't fragment it we can't go further */
-			skb_free(skb);
-			return -EMSGSIZE;  /* errno? */
-		}
-	}
-
-	return ip_queue_send(skb);
-}
-
-int ip_forward_packet(sk_buff_t *skb) {
+int ip_forward(struct sk_buff *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
 	struct rt_entry *best_route = rt_fib_get_best(iph->daddr, NULL);
@@ -200,7 +126,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		return -1;
 	}
 	iph->ttl--; /* All routes have the same length */
-	ip_send_check(iph);
+	ip_set_check_field(iph);
 
 	/* Check no route */
 	if (!best_route) {
@@ -241,9 +167,85 @@ int ip_forward_packet(sk_buff_t *skb) {
 		}
 	}
 
-	return ip_queue_xmit(skb);
+	return ip_xmit(skb);
 }
 
-void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
-	sock_set_so_error(sk, (type & code << 8));
+static int ip_make(const struct sock *sk,
+		const struct sockaddr *to,
+		size_t *data_size, struct sk_buff **out_skb) {
+	size_t hdr_size, max_size;
+	int ret;
+	struct sk_buff *skb;
+	struct net_device *dev;
+	const struct inet_sock *in_sk;
+	const struct sockaddr_in *to_in;
+	in_addr_t src_ip, dst_ip;
+
+	assert(data_size != NULL);
+	assert((sk != NULL) || (to != NULL));
+
+	in_sk = to_const_inet_sock(sk);
+	to_in = (const struct sockaddr_in *)to;
+
+	assert((to_in == NULL) || (to_in->sin_family == AF_INET));
+
+	dst_ip = to_in != NULL ? to_in->sin_addr.s_addr
+			: in_sk->dst_in.sin_addr.s_addr;
+	ret = rt_fib_out_dev(dst_ip, &in_sk->sk, &dev);
+	if (ret != 0) {
+		return ret;
+	}
+	assert(dev != NULL);
+
+	assert(inetdev_get_by_dev(dev) != NULL);
+	src_ip = inetdev_get_by_dev(dev)->ifa_address;
+
+	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
+	max_size = min(dev->mtu, skb_max_size());
+	if (hdr_size > max_size) {
+		return -EMSGSIZE;
+	}
+
+	*data_size = min(*data_size, max_size - hdr_size);
+
+	skb = skb_realloc(hdr_size + *data_size, *out_skb);
+	if (skb == NULL) {
+		return -ENOMEM;
+	}
+
+	skb->sk = in_sk != NULL ? &in_sk->sk : NULL;
+	skb->dev = dev;
+	skb->nh.raw = skb->mac.raw + dev->hdr_len;
+	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
+
+	if (in_sk != NULL) {
+		ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
+				in_sk->sk.opt.so_protocol, src_ip, dst_ip);
+	}
+
+	*out_skb = skb;
+
+	return 0;
 }
+
+static int ip_snd(struct sk_buff *skb) {
+	static uint16_t global_id = 1230;
+
+	assert(skb != NULL);
+
+	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
+		printk("ip_snd: skb %p dropped by netfilter\n", skb);
+		skb_free(skb);
+		return 0;
+	}
+
+	ip_set_id_field(skb->nh.iph, global_id++);
+	ip_set_check_field(skb->nh.iph);
+
+	return ip_xmit(skb);
+}
+
+static const struct net_pack_out_ops ip_out_ops_struct = {
+	.make_pack = &ip_make,
+	.snd_pack = &ip_snd
+};

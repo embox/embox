@@ -29,6 +29,11 @@ const struct usb_desc_endpoint usb_desc_endp_control_default = {
 	.b_interval = 0,
 };
 
+static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type);
+static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
+
 static inline void usb_dev_notify_posted(struct usb_dev *dev);
 static inline void usb_dev_notify_port(struct usb_dev *dev);
 static int usb_dev_post(struct usb_dev *dev, unsigned int ms,
@@ -61,44 +66,143 @@ static void usb_request_build(struct usb_request *req, uint8_t req_type,
 
 }
 
-static struct usb_request *usb_endp_request_alloc(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+static struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
+		usb_request_notify_hnd_t notify_hnd, unsigned token,
 		void *buf, size_t len) {
 	struct usb_request *req;
 
 	req = usb_request_alloc(endp);
 	assert(req, "%s: allocating usb request failed", __func__);
 
-	usb_request_init(req, endp, notify_hnd, buf, len);
+	req->endp = endp;
+	req->token = token;
+	req->buf = buf;
+	req->len = len;
+	req->notify_hnd = notify_hnd;
 
 	return req;
 }
 
+static int usb_endp_do_req(struct usb_endp *endp) {
+	struct usb_queue_link *l;
+	struct usb_request *req;
+	struct usb_hcd *hcd;
+
+	l = usb_queue_peek(&endp->req_queue);
+	if (!l) {
+		return 0;
+	}
+
+	req = member_cast_out(l, struct usb_request, req_link);
+
+	hcd = req->endp->dev->hcd;
+	hcd->ops->request(req);
+
+	return 0;
+}
+
+static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
+	bool endp_busy;
+
+	endp_busy = usb_queue_add(&endp->req_queue, &req->req_link);
+	if (!endp_busy) {
+		return usb_endp_do_req(endp);
+	}
+
+	return 0;
+}
+
+void usb_request_complete(struct usb_request *req) {
+	struct usb_endp *endp = req->endp;
+
+	if (req->req_stat != USB_REQ_NOERR) {
+		printk("usb_request %p: failed\n", req);
+	}
+
+	if (req->notify_hnd) {
+		req->notify_hnd(req);
+	}
+
+	usb_queue_done(&endp->req_queue, &req->req_link);
+	usb_request_free(req);
+
+	usb_endp_do_req(endp);
+}
+
+static unsigned short usb_endp_dir_token_map(struct usb_endp *endp) {
+	switch (endp->direction) {
+	case USB_DIRECTION_IN:
+		return USB_TOKEN_IN;
+	case USB_DIRECTION_OUT:
+		return USB_TOKEN_OUT;
+	default:
+		break;
+	}
+	panic("%s: can't map unidirection endpoint to token\n", __func__);
+}
+
 int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		void *buf, size_t len) {
-	struct usb_hcd *hcd = endp->dev->hcd;
 	struct usb_request *req;
 
 	assert(usb_endp_type(endp) == USB_COMM_INTERRUPT);
 
-	req = usb_endp_request_alloc(endp, notify_hnd, buf, len);
+	req = usb_endp_request_alloc(endp, notify_hnd,
+			usb_endp_dir_token_map(endp), buf, len);
 
-	return hcd->ops->interrupt_request(req);
+	return usb_endp_request(endp, req);
 }
 
 int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data) {
-	struct usb_hcd *hcd = endp->dev->hcd;
-	struct usb_request *req;
+	struct usb_request *rstp, *rdt, *rstt;
+	unsigned short dtoken, dntoken;
+
+	if (req_type & USB_DEV_REQ_TYPE_RD) {
+		dtoken = USB_TOKEN_IN;
+		dntoken = USB_TOKEN_OUT;
+	} else {
+		dtoken = USB_TOKEN_OUT;
+		dntoken = USB_TOKEN_IN;
+	}
 
 	assert(usb_endp_type(endp) == USB_COMM_CONTROL);
 
-	req = usb_endp_request_alloc(endp, notify_hnd, data, count);
-
-	usb_request_build(req, req_type, request, value, index,
+	rstp = usb_endp_request_alloc(endp, NULL, USB_TOKEN_SETUP,
+			NULL, sizeof(struct usb_control_header));
+	rstp->buf = (void *) &rstp->ctrl_header;
+	usb_request_build(rstp, req_type, request, value, index,
 			count, data);
 
-	return hcd->ops->control_request(req);
+	if (count) {
+		rdt = usb_endp_request_alloc(endp, NULL, dtoken, data, count);
+		if (!rdt) {
+			goto out1;
+		}
+	}
+
+	rstt = usb_endp_request_alloc(endp, notify_hnd, USB_TOKEN_STATUS | dntoken, NULL, 0);
+	if (!rstt) {
+		goto out2;
+	}
+
+	usb_endp_request(endp, rstp);
+	if (count) {
+		usb_endp_request(endp, rdt);
+	}
+	usb_endp_request(endp, rstt);
+
+	return 0;
+
+out2:
+	if (count) {
+		usb_request_free(rdt);
+	}
+out1:
+	usb_request_free(rstp);
+
+	return -ENOMEM;
 }
 
 static inline void usb_dev_set_state(struct usb_dev *dev,
@@ -114,70 +218,48 @@ static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) 
 	return dev->getconf_data = &dev->tgetconf_data;
 }
 
-static inline struct usb_dev *usb_hcd_enum_curdev(struct usb_hcd *hcd) {
-	struct dlist_head *dev_link = hcd->enum_devs.next;
-	return member_cast_out(dev_link, struct usb_dev, enum_link);
-}
-
-static int usb_hcd_do_enum(struct usb_hcd *hcd) {
+static int usb_hcd_do_reset(struct usb_hcd *hcd) {
+	struct usb_queue_link *ul;
 	struct usb_dev *dev;
 
-	irq_lock();
-	{
-
-		if (dlist_empty(&hcd->enum_devs)) {
-			irq_unlock();
-			return 0;
-		}
-
-		dev = usb_hcd_enum_curdev(hcd);
+	ul = usb_queue_peek(&hcd->reset_queue);
+	if (!ul) {
+		return 0;
 	}
-	irq_unlock();
+
+	dev = member_cast_out(ul, struct usb_dev, reset_link);
 
 	usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
 
-	return 0;
-}
-
-static int usb_dev_enumerate(struct usb_dev *dev) {
-	struct usb_hcd *hcd = dev->hcd;
-	bool is_enumerating;
-
-	irq_lock();
-	{
-		is_enumerating = !dlist_empty(&hcd->enum_devs);
-		dlist_head_init(&dev->enum_link);
-		dlist_add_prev(&dev->enum_link, &hcd->enum_devs);
-	}
-	irq_unlock();
-
-	if (!is_enumerating) {
-		usb_hcd_do_enum(hcd);
-	}
+	usb_dev_post(dev, USB_RESET_HIGH_DELAY_MS, usb_dev_notify_reset_awaiting);
 
 	return 0;
 }
 
-static void usb_dev_enumerate_done(struct usb_dev *dev) {
+static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 	struct usb_hcd *hcd = dev->hcd;
-	bool has_to_enum;
+	bool is_resseting;
 
-	irq_lock();
-	{
-		struct usb_dev *qdev = usb_hcd_enum_curdev(hcd);
+#if 0
+	usb_dev_wait(dev, notify_hnd);
+#else
+	assert(notify_hnd == usb_dev_notify_reset_awaiting);
+#endif
 
-		assert(hcd->enum_devs.next == &qdev->enum_link);
-		assert(qdev == dev);
-
-		dlist_del(&dev->enum_link);
-
-		has_to_enum = !dlist_empty(&hcd->enum_devs);
+	is_resseting = usb_queue_add(&hcd->reset_queue, &dev->reset_link);
+	if (!is_resseting) {
+		usb_hcd_do_reset(hcd);
 	}
-	irq_unlock();
 
-	if (has_to_enum) {
-		usb_hcd_do_enum(hcd);
-	}
+	return 0;
+}
+
+static void usb_dev_reset_done(struct usb_dev *dev) {
+	struct usb_hcd *hcd = dev->hcd;
+
+	usb_queue_done(&hcd->reset_queue, &dev->reset_link);
+
+	usb_hcd_do_reset(hcd);
 }
 
 #if 0
@@ -199,7 +281,7 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req) {
 
 	dev->bus_idx = dev->idx;
 	usb_dev_set_state(dev, USB_DEV_ADDRESS);
-	usb_dev_enumerate_done(dev);
+	usb_dev_reset_done(dev);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
 		USB_DEV_REQ_TYPE_RD
@@ -276,13 +358,6 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 
 static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 	struct usb_dev *dev = req->endp->dev;
-#if 0
-	struct usb_endp *ctrl_endp;
-
-	ctrl_endp = dev->endpoints[0];
-#endif
-
-	assert(req->ctrl_header.b_request == USB_DEV_REQ_SET_CONF);
 
 	usb_dev_set_state(dev, USB_DEV_CONFIGURED);
 
@@ -290,11 +365,6 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 
 	usb_class_handle(dev);
 }
-
-static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
 
 static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type) {
 	assert(event_type == USB_DEV_EVENT_PORT);
@@ -308,8 +378,7 @@ static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_eve
 
 	if (event_type == USB_DEV_EVENT_POSTED) {
 		usb_dev_set_state(dev, USB_DEV_POWERED);
-		usb_dev_wait(dev, usb_dev_notify_reset_awaiting);
-		usb_dev_enumerate(dev);
+		usb_dev_reset(dev, usb_dev_notify_reset_awaiting);
 	} else if (event_type == USB_DEV_EVENT_PORT) {
 		/* handle dither */
 		printk("%s: port event: status=%08x\n", __func__, dev->port->status);
@@ -318,19 +387,15 @@ static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_eve
 
 static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type) {
 
-	assert(event_type == USB_DEV_EVENT_PORT);
+	assert(event_type == USB_DEV_EVENT_POSTED);
 
-	if (event_type == USB_DEV_EVENT_PORT) {
-		if (dev->port->changed & USB_HUB_PORT_RESET) {
-			usb_dev_set_state(dev, USB_DEV_DEFAULT);
-/*FIXME*/
-#if 0
-			usb_dev_post(dev, 10, usb_dev_notify_reseted_delay);
-#else
-			usb_dev_wait(dev, usb_dev_notify_reseted_delay);
-			usb_dev_notify_posted(dev);
-#endif
-		}
+	if (event_type == USB_DEV_EVENT_POSTED) {
+
+		usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
+
+		usb_dev_set_state(dev, USB_DEV_DEFAULT);
+
+		usb_dev_post(dev, 10, usb_dev_notify_reseted_delay);
 	}
 }
 
@@ -384,17 +449,6 @@ static void __attribute__((used)) usb_dev_post_cancel(struct usb_dev *dev) {
 
 	timer_close(&dev->post_timer);
 	dev->notify_hnd = NULL;
-}
-
-void usb_request_complete(struct usb_request *req) {
-
-	if (req->req_stat != USB_REQ_NOERR) {
-		printk("usb_request %p: failed\n", req);
-	}
-
-	assert(req->notify_hnd);
-	req->notify_hnd(req);
-	usb_request_free(req);
 }
 
 static void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
@@ -458,8 +512,7 @@ int usb_hcd_register(struct usb_hcd *hcd) {
 	assert(hcd->ops->hcd_start);
 	assert(hcd->ops->hcd_stop);
 	assert(hcd->ops->rhub_ctrl);
-	assert(hcd->ops->control_request);
-	assert(hcd->ops->interrupt_request);
+	assert(hcd->ops->request);
 
 	if ((ret = hcd->ops->hcd_start(hcd))) {
 		return ret;

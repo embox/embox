@@ -12,6 +12,7 @@ module locore extends embox.arch.locore {
 
 	source "entry.S"
 	source "exception_table.S"
+	source "exception_handler.S"
 
 	depends embox.arch.arm.kernel.head
 }

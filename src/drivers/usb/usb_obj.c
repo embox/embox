@@ -28,7 +28,7 @@ struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 	index_init(&hcd->enumerator, 1, USB_HC_MAX_DEV, &hcd->idx_data);
 
 	dlist_head_init(&hcd->lnk);
-	dlist_init(&hcd->enum_devs);
+	usb_queue_init(&hcd->reset_queue);
 
 	if (ops->hcd_hci_alloc) {
 		hcd->hci_specific = ops->hcd_hci_alloc(hcd, args);
@@ -94,6 +94,8 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	dev->idx = idx;
 	dev->bus_idx = 0;
 
+	usb_queue_link_init(&dev->reset_link);
+
 	if (!usb_endp_alloc(dev, &usb_desc_endp_control_default)) {
 		usb_dev_free(dev);
 		return NULL;
@@ -121,6 +123,8 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 	endp->dev = dev;
 
 	usb_endp_fill_from_desc(endp, endp_desc);
+
+	usb_queue_init(&endp->req_queue);
 
 	for (endp_num = 0; endp_num < USB_DEV_MAX_ENDP; endp_num++) {
 		if (!dev->endpoints[endp_num]) {
@@ -159,6 +163,8 @@ extern struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 
 	req = pool_alloc(&usb_requests);
 	req->endp = endp;
+
+	usb_queue_link_init(&req->req_link);
 
 	if (hcd->ops->req_hci_alloc) {
 		req->hci_specific = hcd->ops->req_hci_alloc(req);

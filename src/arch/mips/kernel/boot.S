@@ -60,7 +60,7 @@ C_ENTRY(_start):
 	mthi    $zero
 
 	/* setup stack pointer */
-	PTR_LA  $sp, __stack
+	PTR_LA  $sp, _stack_top
 
 	PTR_LA  $a0, _bss_vma
 	move    $a1, $zero
