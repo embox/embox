@@ -9,7 +9,7 @@ static module core {
 	source "empty.c" // FIXME: workaround
 	source "order.mk"
 
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/boost MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/boost MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source
 		"../../../../boost/lib/libboost_atomic.a",
 		"../../../../boost/lib/libboost_chrono.a",

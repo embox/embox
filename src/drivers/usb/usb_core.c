@@ -169,7 +169,7 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 
 	assert(usb_endp_type(endp) == USB_COMM_CONTROL);
 
-	rstp = usb_endp_request_alloc(endp, NULL, USB_TOKEN_SETUP,
+	rstp = usb_endp_request_alloc(endp, NULL, USB_TOKEN_SETUP | USB_TOKEN_OUT,
 			NULL, sizeof(struct usb_control_header));
 	rstp->buf = (void *) &rstp->ctrl_header;
 	usb_request_build(rstp, req_type, request, value, index,
@@ -182,7 +182,8 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		}
 	}
 
-	rstt = usb_endp_request_alloc(endp, notify_hnd, USB_TOKEN_STATUS | dntoken, NULL, 0);
+	rstt = usb_endp_request_alloc(endp, notify_hnd, USB_TOKEN_STATUS | dntoken,
+		       	NULL, 0);
 	if (!rstt) {
 		goto out2;
 	}
@@ -304,6 +305,9 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 		panic("%s: failed to allocate device's "
 				"getconf_data\n", __func__);
 	}
+
+	printk("usb_core: found vendor=%04x product=%04x\n",
+			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header,
 		USB_DEV_REQ_TYPE_RD

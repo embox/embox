@@ -336,7 +336,7 @@ static int exec(int argc, char **argv) {
 		case -1: /* non-option argument, should be ip*/
 			if (!ip_set) {
 				he = gethostbyname(argv[i_opt + 1]);
-				if (NULL == he) {
+				if (he == NULL) {
 					printf("%s: %s %s\n",
 					    argv[0], hstrerror(h_errno), argv[i_opt + 1]);
 					return -EINVAL;
