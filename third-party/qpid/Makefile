@@ -4,12 +4,21 @@ $(error ROOT_DIR is not set.)
 endif
 
 ifeq (arm,$(EMBOX_ARCH))
-$(error Unsupported architecture: $(EMBOX_ARCH))
+EMBOX_QPID_ARCH=arm
 else ifeq (x86,$(EMBOX_ARCH))
-#EMBOX_QPID_TARGET=i386-pc-elf
-#i386-pc-elf
+EMBOX_QPID_ARCH=x86
 else
-$(error Unsupported architecture: $TARGET(EMBOX_ARCH))
+$(error Unsupported architecture: $(EMBOX_ARCH))
+endif
+
+EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
+EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+
+ifeq (,$(EMBOX_TARGET_CC))
+$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
+endif
+ifeq (,$(EMBOX_TARGET_CXX))
+$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
 endif
 
 
@@ -17,7 +26,7 @@ AT=
 
 QPID_DIR       = $(ROOT_DIR)/build/qpid
 QPID_CMAKE_DIR = $(QPID_DIR)/cmake
-QPID_LIB      += $(QPID_DIR)/$(EMBOX_QPID_TARGET)/lib/libqpid.a
+QPID_LIB      += $(QPID_DIR)/lib/libqpid.a
 QPID_FLAGS     = $(QPID_CMAKE_DIR)/flags
 
 #EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
@@ -31,7 +40,9 @@ EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -D%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -U%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS := $(filter-out -D"__impl_x%,$(EMBOX_IMPORTED_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -62,10 +73,14 @@ endif
 # no wonder the following doesn't work
 # EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
 
+EMBOX_DERIVED_CFLAGS    += -DQPIDC_CONF_FILE=/qpidc.conf
+
 EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
-#EMBOX_DERIVED_TARGET    += $(EMBOX_QPID_TARGET)
+EMBOX_DERIVED_ARCH       = $(EMBOX_QPID_ARCH)
+EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
+EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
 
 EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib
 
@@ -83,11 +98,13 @@ $(QPID_FLAGS): | $(QPID_CMAKE_DIR)
 	$(AT)echo LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
 	$(AT)echo BOOST_ROOT=\"$(ROOT_DIR)/build/boost\" >> $@
-	#$(AT)echo EMBOX_DERIVED_TARGET=\"$(EMBOX_DERIVED_TARGET)\" >> $@
+	$(AT)echo EMBOX_DERIVED_ARCH=\"$(EMBOX_DERIVED_ARCH)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CXX)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
 $(QPID_CMAKE_DIR)/Makefile: CMakeLists.txt $(QPID_FLAGS) | $(QPID_CMAKE_DIR)
-	$(AT)cd $(QPID_CMAKE_DIR) && $(shell cat $(QPID_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
+	$(AT)cd $(QPID_CMAKE_DIR) && $(shell cat $(QPID_FLAGS)) CFLAGS= CXXFLAGS= cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CROSSCOMPILING=1 $(shell pwd)
 
 $(QPID_LIB): $(QPID_CMAKE_DIR)/Makefile $(QPID_FLAGS)
 	$(AT)cd $(QPID_CMAKE_DIR) && $(shell cat $(QPID_FLAGS)) $(MAKE) VERBOSE=1 # -j `nproc`
