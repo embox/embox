@@ -21,6 +21,13 @@
 
 EMBOX_UNIT_INIT(usb_ti81xx_init);
 
+#define TI81XX_USB_DEBUG 1
+#if TI81XX_USB_DEBUG
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
+
 #define TI8168_USBSS_BASE 0x47400000
 #define TI8168_USBSS_SYSCONF (TI8168_USB0_BASE + 0x10)
 #define TI81_USBSS_SYSCONFIG_RESET 0x00000001
@@ -305,7 +312,7 @@ static int ti81xx_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 			unsigned short value) {
 	struct ti81xx_usb *tiusb = hcd2ti(port->hub->hcd);
 
-	printk("%s: request=%d value=%x\n", __func__, req, value);
+	DBG(printk("%s: request=%d value=%x\n", __func__, req, value);)
 
 	if (value & USB_HUB_PORT_RESET) {
 		if (req == USB_HUB_REQ_PORT_SET) {
@@ -325,8 +332,8 @@ static void ti_csr_write(uint16_t *ctrl_reg, uint16_t or_val, uint16_t and_val) 
 
 	ctrl_val = REG16_LOAD(ctrl_reg);
 
-	printk("%s: ctrl=%08x or=%08x and=%08x\n", __func__, ctrl_val,
-		       or_val, and_val);
+	DBG(printk("%s: ctrl=%08x or=%08x and=%08x\n", __func__, ctrl_val,
+		       or_val, and_val);)
 
 	ctrl_val &= and_val;
 	ctrl_val |= or_val;
@@ -337,12 +344,12 @@ static void ti_fifo_write(uint32_t *fifo, struct usb_request *req) {
 	char *td;
 	size_t tl;
 
-	printk("%s: data=", __func__);
+	DBG(printk("%s: data=", __func__);)
 	for (td = req->buf, tl = req->len; tl > 0; td++, tl--) {
 		REG8_STORE(fifo, *td);
-		printk(" %02x", *td);
+		DBG(printk(" %02x", *td);)
 	}
-	printk("\n");
+	DBG(printk("\n");)
 
 	req->len = 0;
 
@@ -354,8 +361,8 @@ static void ti_fifo_do_read(uint32_t *fifo, uint16_t *count, struct usb_request 
 
 	fifo_len = REG16_LOAD(count);
 
-	printk("%s: req->buf=%p, req->len=%d, fifo=%p, count=%d, data=",
-			__func__, req->buf, (int) req->len, fifo, (int) fifo_len);
+	DBG(printk("%s: req->buf=%p, req->len=%d, fifo=%p, count=%d, data=",
+			__func__, req->buf, (int) req->len, fifo, (int) fifo_len);)
 
 	for (tl = min(fifo_len / sizeof(uint32_t), req->len / sizeof(uint32_t));
 			tl > 0;
@@ -364,18 +371,18 @@ static void ti_fifo_do_read(uint32_t *fifo, uint16_t *count, struct usb_request 
 		fifo_val = REG_LOAD(fifo);
 		req->buf = sizeof(uint32_t) + memcpy(req->buf, &fifo_val, sizeof(uint32_t));
 
-		printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));
+		DBG(printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));)
 	}
 
 	tl = min(req->len, fifo_len);
 	if (tl > 0) {
 		fifo_val = REG_LOAD(fifo);
-		printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));
+		DBG(printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));)
 		req->buf = tl + memcpy(req->buf, &fifo_val, tl);
 		req->len -= tl;
 	}
 
-	printk("\n");
+	DBG(printk("\n");)
 }
 
 enum ti81xx_endp_type {
@@ -535,7 +542,7 @@ static int ti81xx_request0(struct usb_request *req) {
 	struct ti81xx_hcd_hci *hcdhci = usb2hcd(endp->dev->hcd);
 	uint16_t or_mask, and_mask;
 
-	printk("%s: ", __func__);
+	DBG(printk("%s: ", __func__);)
 
 	ti81xx_endp_req_bind(hcdhci, TI81_ENDP_CTRL, 0, req);
 
@@ -567,7 +574,7 @@ static int ti81xx_request_rx(struct usb_request *req, int host_endp_n) {
 	struct ti81xx_endp *tiendp = &tiusb->csr[host_endp_n];
 	uint16_t or_mask, and_mask;
 
-	printk("%s: ", __func__);
+	DBG(printk("%s: ", __func__);)
 
 	ti81xx_endp_setup(req->endp, &tiendp->rx_type, &tiendp->rx_maxp,
 			&tiendp->rx_interv);
@@ -605,7 +612,7 @@ static int ti81xx_request(struct usb_request *req) {
 
 	/* lock ? */
 
-	printk("%s: bus_idx=%d\n", __func__, endp->dev->bus_idx);
+	DBG(printk("%s: bus_idx=%d\n", __func__, endp->dev->bus_idx);)
 	REG8_STORE(&tiusb->m_faddr, (uint8_t) endp->dev->bus_idx & TI81_USB_FADDR_MASK);
 
 	if (endp->address == 0) {
@@ -655,11 +662,11 @@ static void ti81xx_irq_receive(uint16_t *csr, uint16_t *count, uint32_t *fifo,
 
 	csr_v = REG16_LOAD(csr);
 
-	printk("%s: csr_v=%04x\n", __func__, csr_v);
+	DBG(printk("%s: csr_v=%04x\n", __func__, csr_v);)
 
 	req->req_stat = ti81xx_endp_status_map(endp_type, csr_v, &errmask);
 	if (req->req_stat != USB_REQ_NOERR) {
-		printk("%s: req_stat=%d\n", __func__, req->req_stat);
+		DBG(printk("%s: req_stat=%d\n", __func__, req->req_stat);)
 		usb_request_complete(req);
 	}
 
@@ -684,7 +691,7 @@ static void ti81xx_irq_cendp(struct ti81xx_hcd_hci *hcdhci,
 	req = ti81xx_endp_req_unbind(hcdhci, TI81_ENDP_CTRL, 0);
 	assert(req);
 
-	printk("%s\n", __func__);
+	DBG(printk("%s\n", __func__);)
 
 	ti81xx_irq_receive(&tiendp0->csr0, &tiendp0->count0, &tiusb->fifo0,
 			TI81_USB_CSR0_CTRL_RX, TI81_ENDP_CTRL, req);
@@ -692,7 +699,7 @@ static void ti81xx_irq_cendp(struct ti81xx_hcd_hci *hcdhci,
 
 static void ti81xx_irq_txendp(struct ti81xx_hcd_hci *hcdhci,
 		struct ti81xx_usb *tiusb, int i) {
-	printk("%s: %d\n", __func__, i);
+	DBG(printk("%s: %d\n", __func__, i);)
 }
 
 static void ti81xx_irq_rxendp(struct ti81xx_hcd_hci *hcdhci,
@@ -700,7 +707,7 @@ static void ti81xx_irq_rxendp(struct ti81xx_hcd_hci *hcdhci,
 	struct usb_request *req;
 	struct ti81xx_endp *tiendp = &tiusb->csr[i];
 
-	printk("%s: %d\n", __func__, i);
+	DBG(printk("%s: %d\n", __func__, i);)
 
 	req = ti81xx_endp_req_unbind(hcdhci, TI81_ENDP_RX, i);
 	assert(req);
@@ -715,21 +722,23 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 	struct ti81xx_hcd_hci *hcdhci = usb2hcd(hcd);
 	struct usb_hub_port *port = &hcd->root_hub->ports[0];
 	uint32_t intrstat0, intrstat1;
+#if TI81XX_USB_DEBUG
 	uint8_t m_intrstat;
 
 	m_intrstat = REG8_LOAD(&tiusb->m_intrusb);
+#endif
 
 	intrstat0 = REG_LOAD(&tiusb->irq_stat0);
 	intrstat1 = REG_LOAD(&tiusb->irq_stat1);
 
-	printk("%s: stat=0x%08lx devctl=0x%08lx m_intrstat=0x%02x "
+	DBG(printk("%s: stat=0x%08lx devctl=0x%08lx m_intrstat=0x%02x "
 				"intrstat0=0x%08lx intrstat1=0x%08lx\n",
 			__func__,
 			REG_LOAD(&tiusb->stat),
 			REG_LOAD(&tiusb->m_devctl),
 			m_intrstat,
 			(unsigned long) intrstat0,
-			(unsigned long) intrstat1);
+			(unsigned long) intrstat1);)
 
 	if (intrstat0) {
 		if (intrstat0 & 0x01) {
