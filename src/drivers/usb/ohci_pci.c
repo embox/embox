@@ -234,9 +234,6 @@ static inline unsigned int ohci_port_stat_map(uint16_t val) {
 	if (val & OHCI_RH_PORT_CONN) {
 		ret |= USB_HUB_PORT_CONNECT;
 	}
-	if (val & OHCI_RH_PORT_RESET) {
-		ret |= USB_HUB_PORT_RESET;
-	}
 	if (val & OHCI_RH_PORT_POWERST) {
 		ret |= USB_HUB_PORT_POWER;
 	}
@@ -260,8 +257,15 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	}
 
 	if (req == USB_HUB_REQ_PORT_CLEAR) {
-		wval = ~wval
-			& OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+		uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+		if (value & USB_HUB_PORT_RESET) {
+			/* check if hardware already cleared RESET,
+ 			 * otherwise RESET high signal was not long enough
+			 */
+			assert((portstat & OHCI_RH_PORT_RESET) == 0);
+		}
+
+		wval = ~wval & portstat;
 	}
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[port->idx], wval);
@@ -334,58 +338,39 @@ static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
 	ohci_td_enque_tail(ed, next_td);
 }
 
-static int ohci_control_req(struct usb_request *req) {
-	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
-	struct ohci_ed *ed = endp2ohci(req->endp);
-	uint32_t token, negtoken;
-
-	if (req->ctrl_header.bm_request_type & USB_DEV_REQ_TYPE_RD) {
-		token = OHCI_TD_IN;
-		negtoken = OHCI_TD_OUT;
-	} else {
-		token = OHCI_TD_OUT;
-		negtoken = OHCI_TD_IN;
-	}
-
-	ohci_ed_fill(ed, req->endp); /* function address could change due bus
-				   enumeration */
-
-	ohci_transfer(ed, OHCI_TD_SETUP, &req->ctrl_header,
-			sizeof(struct usb_control_header), NULL);
-
-	if (req->len > 0) {
-		ohci_transfer(ed, token, req->buf, req->len, NULL);
-	}
-
-	ohci_transfer(ed, negtoken, (void *) 1, 0, req);
-
-	ohci_ed_sched(ohcd, ed);
-
-	return 0;
-}
-
-static int ohci_interrupt_req(struct usb_request *req) {
+static int ohci_request(struct usb_request *req) {
 	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
 	struct ohci_ed *ed = endp2ohci(req->endp);
 	uint32_t token;
+	int cnt = 0;
 
-	switch (req->endp->direction) {
-	case USB_DIRECTION_IN:
-		token = OHCI_TD_IN;
-		break;
-	case USB_DIRECTION_OUT:
-		token = OHCI_TD_OUT;
-	default:
-		assert(0, "%s: don't know how to handle unidirection interrupt "
-				"endpoint", __func__);
+	if (req->token & USB_TOKEN_SETUP) {
+		token = OHCI_TD_SETUP;
+		cnt++;
 	}
+	if (req->token & USB_TOKEN_IN) {
+		token = OHCI_TD_IN;
+		cnt++;
+	}
+	if (req->token & USB_TOKEN_OUT) {
+		if (token != OHCI_TD_SETUP) {
+			token = OHCI_TD_OUT;
+			cnt++;
+		}
+	}
+
+	assert(cnt == 1, "only one token is supported");
 
 	ohci_ed_fill(ed, req->endp); /* function address could change due bus
 				   enumeration */
 
 	ohci_transfer(ed, token, req->buf, req->len, req);
 
-	ohci_ed_sched_interrupt(ohcd, ed);
+	if (req->endp->type == USB_COMM_INTERRUPT) {
+		ohci_ed_sched_interrupt(ohcd, ed);
+	} else {
+		ohci_ed_sched(ohcd, ed);
+	}
 
 	return 0;
 }
@@ -398,8 +383,7 @@ static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_start = ohci_start,
 	.hcd_stop = ohci_stop,
 	.rhub_ctrl = ohci_rh_ctrl,
-	.control_request = ohci_control_req,
-	.interrupt_request = ohci_interrupt_req,
+	.request = ohci_request,
 };
 
 static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
@@ -449,19 +433,15 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
                 td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
 		do {
-			enum usb_request_status req_stat;
-
-			req_stat = ohci_td_stat(td);
 			req = ohci2req(td);
+
+			assert(req);
+
+			req->req_stat = ohci_td_stat(td);
 			next_td = ohci_td_next(td);
 
 			ohci_td_free(td);
 
-			if (!req) {
-				continue;
-			}
-
-			req->req_stat = req_stat;
 			usb_request_complete(req);
 
 		} while ((td = next_td));

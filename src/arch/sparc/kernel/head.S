@@ -92,7 +92,7 @@ boot_start:
 1:	 nop
 
 	/* give us a stack! */
-	set __stack, %fp
+	set _stack_top, %fp
 	add %fp, -STACK_FRAME_SZ, %sp
 
 	rd %psr, %g1

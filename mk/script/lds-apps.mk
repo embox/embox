@@ -49,7 +49,8 @@ endef
 
 define bss_footer
 	}
-	_app_data_reserve_offset = ADDR(.bss..reserve.apps) - ADDR(.data.apps);
+	_app_data_vma = ADDR(.data.apps);
+	_app_reserve_vma = ADDR(.bss..reserve.apps);
 endef
 
 define file_footer

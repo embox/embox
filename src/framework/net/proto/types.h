@@ -21,10 +21,8 @@ struct sk_buff;
 typedef struct net_proto {
 	unsigned short pack;
 	unsigned char type;
-	int (*init)(void);
-	int (*fini)(void);
 	int (*handle)(struct sk_buff *skb);
-	void (*handle_error)(struct sk_buff *skb, unsigned int info);
+	void (*handle_error)(const struct sk_buff *skb, int error_info);
 } net_proto_t;
 
 #endif /* FRAMEWORK_NET_PROTO_TYPES_H_ */

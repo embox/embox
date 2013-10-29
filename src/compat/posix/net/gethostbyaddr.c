@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <swab.h>
+#include <arpa/inet.h>
 #include <net/lib/dns.h>
 #include <net/util/hostent.h>
 #include <netdb.h>
@@ -14,11 +14,12 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <swab.h>
 #include <sys/socket.h>
 #include <util/array.h>
 
-struct hostent * gethostbyaddr(const void *addr,
-						socklen_t len, int type) {
+struct hostent * gethostbyaddr(const void *addr, socklen_t len,
+		int type) {
 	int ret;
 	struct hostent *he;
 	struct dns_result result;

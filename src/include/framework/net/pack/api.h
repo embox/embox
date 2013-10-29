@@ -13,11 +13,17 @@
 #include __impl_x(framework/net/pack/api_impl.h)
 
 struct net_pack;
+struct net_pack_out;
 
 #define net_pack_foreach(net_pack_ptr) \
 	__net_pack_foreach(net_pack_ptr)
 
+#define net_pack_out_foreach(net_pack_out_ptr) \
+	__net_pack_out_foreach(net_pack_out_ptr)
+
 extern const struct net_pack * net_pack_lookup(
 		unsigned short type);
+
+extern const struct net_pack_out * net_pack_out_lookup(int family);
 
 #endif /* FRAMEWORK_NET_PACK_API_H_ */

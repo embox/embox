@@ -41,6 +41,7 @@ $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 cppflags_fn = \
 	-U__linux__ \
 	-D__EMBOX__ \
+	-D__unix \
 	-D"__impl_x(path)=<../path>"\
 	-imacros $(AUTOCONF_DIR)/config.h\
 	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\

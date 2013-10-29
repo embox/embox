@@ -44,7 +44,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 	/* Setup some fields */
 	skb->dev = dev;
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 
 	/* Make device specific header */
 	hdr_info.type = ETH_P_RARP;
@@ -111,7 +111,7 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 	}
 
 	/* allocate net package */
-	skb = skb_alloc(ETH_HEADER_SIZE + ARPG_CALC_HDR_SZ(haddr_len, paddr_len));
+	skb = skb_alloc(dev->hdr_len + ARPG_CALC_HDR_SZ(haddr_len, paddr_len));
 	if (skb == NULL) {
 		return -ENOMEM;
 	}
@@ -124,9 +124,6 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 		skb_free(skb);
 		return ret;
 	}
-
-	/* FIXME */
-	assert(ETH_HEADER_SIZE + ARPG_HEADER_SIZE(skb->nh.arpgh) == skb->len);
 
 	/* and send */
 	return rarp_xmit(skb);
@@ -214,7 +211,7 @@ static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(rarph != NULL);
 
 	/* check hardware and protocol address lengths */
-	if ((skb->nh.raw - skb->mac.raw) + ARPG_HEADER_SIZE(rarph) > skb->len) {
+	if (dev->hdr_len + ARPG_HEADER_SIZE(rarph) > skb->len) {
 		skb_free(skb);
 		return 0; /* error: bad packet */
 	}

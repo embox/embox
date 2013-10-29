@@ -19,11 +19,13 @@
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
 #include <net/l0/net_tx.h>
+#include <util/binalign.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
 #include <net/l3/arp.h>
+#include <net/l3/ndp.h>
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -99,18 +101,36 @@ static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
 }
 
 static int nbr_send_request(struct neighbour *nbr) {
-	in_addr_t saddr;
 	struct in_device *in_dev;
-
-	in_dev = inetdev_get_by_dev(nbr->dev);
-	assert(in_dev != NULL);
-
-	saddr = in_dev->ifa_address;
+	struct {
+		struct ndpbody_neighbor_solicit body;
+		struct ndpoptions_ll_addr ops;
+		char __ops_ll_addr_storage[MAX_ADDR_LEN];
+	} __attribute__((packed)) nbr_solicit;
 
 	++nbr->sent_times;
 
-	return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
-			nbr->plen, NULL, &saddr, NULL, &nbr->paddr[0], NULL, nbr->dev);
+	if (nbr->ptype == ETH_P_IP) {
+		in_dev = inetdev_get_by_dev(nbr->dev);
+		assert(in_dev != NULL);
+		return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
+				nbr->plen, NULL, &in_dev->ifa_address, NULL, &nbr->paddr[0],
+				NULL, nbr->dev);
+	}
+	else {
+		assert(nbr->ptype == ETH_P_IPV6);
+		nbr_solicit.body.zero = 0;
+		memcpy(&nbr_solicit.body.target, &nbr->paddr[0],
+				sizeof nbr_solicit.body.target);
+		nbr_solicit.ops.hdr.type = NDP_SOURCE_LL_ADDR;
+		nbr_solicit.ops.hdr.len = binalign_bound(sizeof nbr_solicit.ops
+				+ nbr->dev->addr_len, 8) / 8;
+		memcpy(nbr_solicit.ops.ll_addr, &nbr->dev->dev_addr[0],
+				nbr->dev->addr_len);
+		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
+				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
+					+ nbr->dev->addr_len, nbr->dev);
+	}
 }
 
 #include <net/l3/icmpv4.h>

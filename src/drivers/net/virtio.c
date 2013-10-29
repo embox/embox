@@ -252,15 +252,15 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 		vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
 		assert(vq->ring.desc[desc_id].addr == 0); /* overflow */
-		vring_desc_init(&vq->ring.desc[desc_id], skb_data,
+		vring_desc_init(&vq->ring.desc[desc_id],
+				skb_data_get_extra_hdr(skb_data),
 				sizeof(struct virtio_net_hdr),
 				VRING_DESC_F_WRITE | VRING_DESC_F_NEXT);
 		vq->ring.desc[desc_id].next = desc_id + 1;
 
 		vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
 		vring_desc_init(&vq->ring.desc[desc_id + 1],
-				(struct virtio_net_hdr *)skb_data + 1,
-				skb_max_size() - sizeof(struct virtio_net_hdr),
+				skb_data_get_data(skb_data), skb_max_size(),
 				VRING_DESC_F_WRITE);
 
 		vring_push_desc(desc_id, &vq->ring);

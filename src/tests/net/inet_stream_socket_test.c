@@ -20,6 +20,9 @@
 
 EMBOX_TEST_SUITE("inet stream socket test");
 
+TEST_SETUP_SUITE(suite_setup);
+TEST_TEARDOWN_SUITE(suite_teardown);
+
 TEST_SETUP(case_setup);
 TEST_TEARDOWN(case_teardown);
 
@@ -152,7 +155,7 @@ TEST_CASE("getpeername() returns address of peer") {
 	test_assert_mem_equal(&addr, &tmp, addrlen);
 }
 
-static int case_setup(void) {
+static int suite_setup(void) {
 	int ret;
 	struct in_device *in_dev;
 
@@ -179,42 +182,67 @@ static int case_setup(void) {
 		return ret;
 	}
 
-	/* init local */
-	l = socket(AF_INET, SOCK_STREAM, PROTO);
-	if (l == -1) {
-		return -errno;
-	}
-	if (-1 == listen(l, 0)) {
-		return -errno;
-	}
-	c = socket(AF_INET, SOCK_STREAM, PROTO);
-	if (c == -1) {
-		return -errno;
-	}
-	addrlen = sizeof addr;
-	if (-1 == getsockname(l, to_sa(&addr), &addrlen)) {
-		return -errno;
-	}
-	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	return 0;
 }
 
-static int case_teardown(void) {
+static int suite_teardown(void) {
 	int ret;
+	struct in_device *in_dev;
 
-	/* del route for lo */
-	ret = rt_del_route(inetdev_get_loopback_dev()->dev,
-			ntohl(INADDR_LOOPBACK & ~1), htonl(0xFF000000), 0);
+	/* down lo device */
+	in_dev = inetdev_get_loopback_dev();
+	if (in_dev == NULL) {
+		return -ENODEV;
+	}
+
+	ret = netdev_flag_down(in_dev->dev, IFF_UP);
 	if (ret != 0) {
 		return ret;
 	}
 
-	/* fini local */
+	/* del route for lo */
+	ret = rt_del_route(in_dev->dev, ntohl(INADDR_LOOPBACK & ~1),
+			htonl(0xFF000000), 0);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static int case_setup(void) {
+	l = socket(AF_INET, SOCK_STREAM, PROTO);
+	if (l == -1) {
+		return -errno;
+	}
+
+	if (-1 == listen(l, 0)) {
+		return -errno;
+	}
+
+	c = socket(AF_INET, SOCK_STREAM, PROTO);
+	if (c == -1) {
+		return -errno;
+	}
+
+	addrlen = sizeof addr;
+	if (-1 == getsockname(l, to_sa(&addr), &addrlen)) {
+		return -errno;
+	}
+
+	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+	return 0;
+}
+
+static int case_teardown(void) {
 	if (-1 == close(l)) {
 		return -errno;
 	}
+
 	if (-1 == close(c)) {
 		return -errno;
 	}
+
 	return 0;
 }

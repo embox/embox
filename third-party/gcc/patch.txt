@@ -24,3 +24,29 @@ diff -aur gcc-4.8.1/libstdc++-v3/configure gcc/libstdc++-v3/configure
     ;;
  esac
  
+diff -aur gcc-4.8.1/libgcc/Makefile.in gcc/libgcc/Makefile.in
+--- gcc-4.8.1/libgcc/Makefile.in	2013-02-04 23:06:20.000000000 +0400
++++ gcc/libgcc/Makefile.in	2013-10-22 14:19:51.885398686 +0400
+@@ -225,7 +225,7 @@
+ LIBGCC2_DEBUG_CFLAGS = -g
+ LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
+ 		 $(LIBGCC2_DEBUG_CFLAGS) -DIN_LIBGCC2 \
+-		 -fbuilding-libgcc -fno-stack-protector \
++		 -fno-stack-protector \
+ 		 $(INHIBIT_LIBC_CFLAGS)
+ 
+ # Additional options to use when compiling libgcc2.a.
+diff -aur gcc-4.8.1/gcc/config/arm/bpabi.h gcc/gcc/config/arm/bpabi.h
+--- gcc-4.8.1/gcc/config/arm/bpabi.h	2013-01-18 18:26:15.000000000 +0400
++++ gcc/gcc/config/arm/bpabi.h	2013-10-22 16:55:19.788509350 +0400
+@@ -120,8 +120,8 @@
+    do not want GCC to put anything into the .{init,fini} sections.  */
+ #undef INIT_SECTION_ASM_OP
+ #undef FINI_SECTION_ASM_OP
+-#define INIT_ARRAY_SECTION_ASM_OP ARM_EABI_CTORS_SECTION_OP
+-#define FINI_ARRAY_SECTION_ASM_OP ARM_EABI_DTORS_SECTION_OP
++//#define INIT_ARRAY_SECTION_ASM_OP ARM_EABI_CTORS_SECTION_OP
++//#define FINI_ARRAY_SECTION_ASM_OP ARM_EABI_DTORS_SECTION_OP
+ 
+ /* The legacy _mcount implementation assumes r11 points to a
+     4-word APCS frame.  This is generally not true for EABI targets,

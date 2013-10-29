@@ -6,6 +6,7 @@ module core {
 
 	source "empty.c" // FIXME: workaround
 
+	depends embox.compat.posix.idx.poll
 	depends embox.net.lib.getifaddrs
 	depends third_party.zlib.libs
 

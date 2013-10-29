@@ -40,3 +40,10 @@ static module pipe {
 	depends embox.util.LibUtil
 	depends embox.kernel.task.io_sync
 }
+
+static module poll {
+	source "poll.c"
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.io_sync
+}

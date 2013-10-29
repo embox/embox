@@ -14,8 +14,14 @@
 #include "types.h"
 
 ARRAY_SPREAD_DECLARE(const struct net_pack, __net_pack_registry);
+ARRAY_SPREAD_DECLARE(const struct net_pack_out,
+		__net_pack_out_registry);
 
 #define __net_pack_foreach(net_pack_ptr) \
 	array_spread_foreach_ptr(net_pack_ptr, __net_pack_registry)
+
+#define __net_pack_out_foreach(net_pack_out_ptr) \
+	array_spread_foreach_ptr(net_pack_out_ptr,   \
+			__net_pack_out_registry)
 
 #endif /* FRAMEWORK_NET_PACK_API_IMPL_H_ */

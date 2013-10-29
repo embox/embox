@@ -54,6 +54,7 @@ PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
 
 struct e1000_priv {
 	struct sk_buff_head txing_queue;
+	struct sk_buff_head tx_dev_queue;
 	char link_status;
 };
 
@@ -110,7 +111,7 @@ static int e1000_xmit(struct net_device *dev) {
 			goto out_unlock;
 		}
 
-		skb = skb_queue_pop(&dev->tx_dev_queue);
+		skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue);
 
 		if (skb == NULL) {
 			goto out_unlock;
@@ -139,7 +140,8 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	irq_lock();
 	{
-		skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
+		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue,
+				skb);
 	}
 	irq_unlock();
 
@@ -351,6 +353,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 	nic_priv = netdev_priv(nic, struct e1000_priv);
 	skb_queue_init(&nic_priv->txing_queue);
+	skb_queue_init(&nic_priv->tx_dev_queue);
 	nic_priv->link_status = 0;
 
 	res = irq_attach(pci_dev->irq, e1000_interrupt, IF_SHARESUP, nic, "e1000");

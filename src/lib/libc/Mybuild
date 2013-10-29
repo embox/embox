@@ -12,6 +12,7 @@ static module LibC {
 	@NoRuntime depends embox.lib.LibCStdio
 	@NoRuntime depends embox.lib.LibCRand
 	@NoRuntime depends embox.lib.LibCInttypes
+	@NoRuntime depends embox.lib.LibCWchar
 
 	depends embox.mem.heap_api
 }

@@ -1,11 +1,13 @@
 package third_party.qpid
 
-static module core {
+module core {
 	depends embox.lib.LibC
 	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.boost.core
 	depends third_party.e2fsprogs.libs
+	depends embox.compat.posix.idx.poll
+	depends embox.net.lib.getifaddrs
 
 	source "empty.c" // FIXME: workaround
 
@@ -23,7 +25,7 @@ static module core {
 	source "order.mk"
 }
 
-module hello {
+module hello extends embox.lib.cxx.app {
 	depends core
 
 	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")

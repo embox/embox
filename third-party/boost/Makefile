@@ -3,6 +3,25 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
+ifeq (arm,$(EMBOX_ARCH))
+EMBOX_BOOST_ARCH=arm
+else ifeq (x86,$(EMBOX_ARCH))
+EMBOX_BOOST_ARCH=x86
+else
+$(error Unsupported architecture: $(EMBOX_ARCH))
+endif
+
+EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
+EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+
+ifeq (,$(EMBOX_TARGET_CC))
+$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
+endif
+ifeq (,$(EMBOX_TARGET_CXX))
+$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
+endif
+
+
 AT=
 
 BOOST_DIR       = $(ROOT_DIR)/build/boost
@@ -17,7 +36,9 @@ EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/STLport/stlport_embo
 EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/boost_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -D%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -U%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS := $(filter-out -D"__impl_x%,$(EMBOX_IMPORTED_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -46,6 +67,9 @@ endif
 EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
+EMBOX_DERIVED_ARCH       = $(EMBOX_BOOST_ARCH)
+EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
+EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
 
 EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib -m32
 all:
@@ -61,6 +85,9 @@ $(BOOST_FLAGS): | $(BOOST_CMAKE_DIR)
 	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
+	$(AT)echo EMBOX_DERIVED_ARCH=\"$(EMBOX_DERIVED_ARCH)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CXX)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
 $(BOOST_CMAKE_DIR)/Makefile: CMakeLists.txt $(BOOST_FLAGS) | $(BOOST_CMAKE_DIR)

@@ -98,10 +98,6 @@ static inline void setbuf(FILE *stream, char *buf) {
 	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
 }
 
-static inline char *basename(char *path) {
-	printf(">>> basename, path - %s\n", path);
-	return NULL;
-}
 
 /****************** Functions for e2fsck *******************/
 

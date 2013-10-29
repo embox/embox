@@ -1,0 +1,27 @@
+package third_party.ti
+
+module syslink {
+	depends embox.lib.LibC
+
+	@Rule(script="$(MAKE) -C $(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05/packages DEVICE=TI816X GPPOS=Embox LOADER=ELF SYSLINK_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05 IPC_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/ipc_1_24_00_16 CGT_ARM_PREFIX=/<prefix>/arm-none-linux-gnueabi- EMBOXKERNEL=$(realpath $(ROOT_DIR)) SYSLINK_BUILD_DEBUG=1 SYSLINK_BUILD_OPTIMIZE=0 SYSLINK_TRACE_ENABLE=1 SYSLINK_NOTIFYDRIVER=NOTIFYDRIVERSHM SYSLINK_TRANSPORT=TRANSPORTSHM CFLAGS='$(.EMBOX_EXPORT_CFLAGS)' CPPFLAGS='$(.EMBOX_EXPORT_CPPFLAGS)' syslink-driver")
+
+	source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/bin/TI816X/syslink.o"
+}
+
+static module libs {
+	depends embox.lib.LibC
+
+	@Rule(script="$(MAKE) -C $(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05/packages DEVICE=TI816X GPPOS=Embox LOADER=ELF SYSLINK_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05 IPC_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/ipc_1_24_00_16 CGT_ARM_PREFIX=/<prefix>/arm-none-linux-gnueabi- EMBOXKERNEL=$(realpath $(ROOT_DIR)) SYSLINK_BUILD_DEBUG=1 SYSLINK_BUILD_OPTIMIZE=0 SYSLINK_TRACE_ENABLE=1 SYSLINK_NOTIFYDRIVER=NOTIFYDRIVERSHM SYSLINK_TRANSPORT=TRANSPORTSHM CFLAGS='$(.EMBOX_EXPORT_CFLAGS)' CPPFLAGS='$(.EMBOX_EXPORT_CPPFLAGS)' syslink-hlos")
+
+	source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/lib/syslink.o_debug"
+}
+
+@Cmd(name = "slaveloader",
+     help = "TI SlaveLoader",
+     man = "")
+module slaveloader {
+       @Rule(script="$(MAKE) -C $(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05/packages DEVICE=TI816X GPPOS=Embox LOADER=ELF SYSLINK_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/syslink_2_21_01_05 IPC_INSTALL_DIR=$(realpath $(THIRDPARTY_DIR))/ti/ipc_1_24_00_16 CGT_ARM_PREFIX=/<prefix>/arm-none-linux-gnueabi- EMBOXKERNEL=$(realpath $(ROOT_DIR)) SYSLINK_BUILD_DEBUG=1 SYSLINK_BUILD_OPTIMIZE=0 SYSLINK_TRACE_ENABLE=1 SYSLINK_NOTIFYDRIVER=NOTIFYDRIVERSHM SYSLINK_TRANSPORT=TRANSPORTSHM CFLAGS='$(.EMBOX_EXPORT_CFLAGS)' CPPFLAGS='$(.EMBOX_EXPORT_CPPFLAGS)' SlaveLoader")
+
+       source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/bin/TI816X/samples/slaveloader_debug.o"
+       source "slaveloader_crappy_embox_stub_due_to_broken_buildsystem.c"
+}

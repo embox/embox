@@ -1,5 +1,16 @@
 package embox.net
 
+module raw_sock {
+	source "raw_sock.c"
+
+	depends embox.framework.net.sock
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.net.skbuff
+	depends embox.net.sock
+	depends embox.util.List
+}
+
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
@@ -17,34 +28,26 @@ module udp_sock {
 	source "udp_sock.c"
 	option number amount_udp_port=65536
 
-	depends udp
-	depends sock
-	depends route
-	depends ipv4 /* for ip_output.c */
-	depends skbuff
-	depends embox.lib.LibC
-	depends embox.mem.pool
-	depends embox.framework.LibFrameworkNet
-}
-
-module raw_sock {
-	/* FIXME:
-	 * 1.it depends from icmp
-	 * 2.it depends from ip
-	 * 3.it depends from udp
-	 */
-	source "raw_sock.c"
-
-	depends skbuff
-	depends sock
-	depends embox.lib.LibC
-	depends embox.mem.pool
-	depends embox.framework.LibFrameworkNet
+	depends embox.framework.net.sock
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.net.lib.udp
+	depends embox.util.indexator
+	depends embox.util.List
 }
 
 module af_inet {
 	source "af_inet.c"
 	option number amount_inet_sock=20
+
+	depends sock
+	depends embox.util.indexator
+	depends embox.framework.LibFrameworkNet
+}
+
+module af_inet6 {
+	source "af_inet6.c"
+	option number amount_inet6_sock=20
 
 	depends sock
 	depends embox.util.indexator

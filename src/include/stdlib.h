@@ -145,7 +145,9 @@ extern div_t div(int num, int denom);
 extern double atof(const char *nptr);
 extern int atoi(const char *nptr);
 extern long atol(const char *nptr);
-extern long long atoll(const char *nptr);
+static inline long long atoll(const char *nptr) {
+	return strtoll(nptr, 0, 10);
+}
 extern long long atoq(const char *nptr);
 extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);

@@ -21,6 +21,7 @@
 #include <net/l3/icmpv4.h>
 #include <net/socket/raw.h>
 #include <net/if_packet.h>
+#include <net/lib/ipv4.h>
 
 #include <embox/net/proto.h>
 
@@ -221,20 +222,24 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_prepare_reply(sk_buff_t *reply) {
 	/* Fix IP header */
 	struct in_device *idev = inetdev_get_by_dev(reply->dev); /* Requires symmetric routing */
-	__be16 ip_id = inetdev_get_ip_id(idev);
 	__be16 tot_len = reply->nh.iph->tot_len;
 
 	/* Replace not unicast addresses */
 	in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
 					reply->nh.iph->daddr : idev->ifa_address;
 
-	init_ip_header(reply->nh.iph, IPPROTO_ICMP,
-			ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
+	ip_build(reply->nh.iph, tot_len, IPPROTO_ICMP,
+			daddr, reply->nh.iph->saddr);
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
 	icmp_send_check_skb(reply);
 
-	return ip_send_packet(NULL, reply, NULL);
+	if (ip_out_ops == NULL) {
+		return -ENOSYS;
+	}
+
+	assert(ip_out_ops->snd_pack != NULL);
+	return ip_out_ops->snd_pack(reply);
 }
 
 static int icmp_echo(sk_buff_t *skb) {
@@ -377,11 +382,10 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		/* Assemble IP header */
 		{
 			struct in_device *idev = inetdev_get_by_dev(skb->dev); /* Requires symmetric routing */
-			__be16 ip_id = inetdev_get_ip_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(iph, IPPROTO_ICMP, ip_id, tot_len, iph_in.tos,
-						   idev->ifa_address, iph_in.saddr);
+			ip_build(iph, tot_len, IPPROTO_ICMP,
+					idev->ifa_address, iph_in.saddr);
 		}
 
 		/* Assemble ICMP header */
@@ -391,7 +395,12 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		icmp_send_check_skb(skb);
 	}
 
-	ip_send_packet(NULL, skb, NULL);
+	if (ip_out_ops == NULL) {
+		return; /* error: -ENOSYS */
+	}
+
+	assert(ip_out_ops->snd_pack != NULL);
+	(void)ip_out_ops->snd_pack(skb); /* error: see ret */
 }
 
 /* Unfortunately code might not be safe */

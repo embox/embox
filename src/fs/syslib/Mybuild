@@ -7,6 +7,7 @@ abstract module SysLibFile {
 
 module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
+	source "kfile_node.c"
 
 	depends embox.security.api
 

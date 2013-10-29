@@ -184,7 +184,7 @@ static struct emac_desc *alloc_desc_queue(int size) {
 		desc->next = 0;
 		assert(binalign_check_bound((uintptr_t)desc->next, 4));
 		desc->data = (uintptr_t)skb_data_get_data(skb_data);
-		desc->data_len = skb_max_size() - sizeof *desc;
+		desc->data_len = skb_max_size();
 		desc->data_off = 0;
 		desc->len = 0;
 		desc->flags = EMAC_DESC_F_OWNER;

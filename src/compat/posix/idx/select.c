@@ -24,7 +24,7 @@
 /**
  * @brief Save only descriptors with active op.
  * */
-static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int update);
+static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int error, int update);
 
 /** @brief Search for active descriptors in all sets.
  * @param update - show if we filter out inactive fds or only count them.
@@ -81,7 +81,7 @@ out:
 }
 
 /* Suppose that set != NULL */
-static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int update) {
+static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int error, int update) {
 	int fd, fd_cnt;
 	struct idx_desc *desc;
 
@@ -92,7 +92,10 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int upd
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				if (io_sync_ready(task_idx_indata(desc)->ios, op)) {
+				if ((!error && io_sync_ready(
+							task_idx_indata(desc)->ios, op))
+						|| (error && io_sync_error(
+							task_idx_indata(desc)->ios))) {
 					fd_cnt++;
 				} else {
 					/* Filter out inactive descriptor and unset corresponding monitor. */
@@ -113,16 +116,19 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	fd_cnt = 0;
 
-	/* FIXME process exception conditions */
-	if (exceptfd) {
-		if (update) {
-			FD_ZERO(exceptfd);
+	/* process exception conditions */
+	if (exceptfd != NULL) {
+		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, 1, update);
+		if (res < 0) {
+			return -EBADF;
+		} else {
+			fd_cnt += res;
 		}
 	}
 
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
-		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, update);
+		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, 0, update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -132,7 +138,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	/* Try to find active fd in writefds*/
 	if (writefds != NULL) {
-		res = filter_out_with_op(nfds, writefds, IO_SYNC_WRITING, update);
+		res = filter_out_with_op(nfds, writefds, IO_SYNC_WRITING, 0, update);
 		if (res < 0) {
 			return -EBADF;
 		} else {

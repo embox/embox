@@ -114,19 +114,16 @@ typedef struct net_device {
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
 	unsigned short type; /**< interface hardware type      */
+	unsigned char hdr_len; /**< hardware header length      */
 	unsigned char addr_len; /**< hardware address length      */
 	unsigned int flags; /**< interface flags (a la BSD)   */
 	unsigned int mtu; /**< interface MTU value          */
-#if 1 /* TODO unused field */
-	unsigned long tx_queue_len; /**< Max frames per queue allowed */
-#endif
 	unsigned long base_addr; /**< device I/O address           */
 	unsigned int irq; /**< device IRQ number            */
 	struct net_device_stats stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
 	const struct net_driver *drv_ops; /**< Management operations        */
 	struct sk_buff_head dev_queue;
-	struct sk_buff_head tx_dev_queue;
 	struct net_node *pnet_node;
 	void *priv; /**< private data */
 } net_device_t;
@@ -213,8 +210,6 @@ extern int netdev_set_macaddr(struct net_device *dev,
 extern int netdev_set_irq(struct net_device *dev, int irq_num);
 extern int netdev_set_baseaddr(struct net_device *dev,
 		unsigned long base_addr);
-extern int netdev_set_txqueuelen(struct net_device *dev,
-		unsigned long new_len);
 extern int netdev_set_bcastaddr(struct net_device *dev,
 		const void *bcast_addr);
 extern int netdev_set_mtu(struct net_device *dev, int mtu);

@@ -6,6 +6,8 @@
  * @date    02.07.2012
  */
 
+#if defined(__ARMEL__) && (__ARMEL__==1)
+
 #include <stdint.h>
 
 extern uint64_t __udivdi3(uint64_t num, uint64_t den);
@@ -83,3 +85,5 @@ void __aeabi_idivmod(int num, int denom) {
 		return ;//r0;
 	}
 }
+
+#endif // defined(__ARMEL__) && (__ARMEL__==1)
