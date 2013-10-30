@@ -6,6 +6,7 @@
  */
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <drivers/ramdisk.h>
 #include <fs/fsop.h>
@@ -22,7 +23,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define FS_NAME         "vfat"
 #define FS_DEV          "/dev/ram_test"
-#define FS_DIR          "/test"
+#define FS_DIR          "/tmp"
 #define MKDIR_PERM      0700
 
 #define FS_BLOCKS       124
@@ -40,10 +41,10 @@ static int setup_suite(void) {
 		return res;
 	}
 
-	if (0 != (res = mkdir(FS_DIR, MKDIR_PERM))) {
-		return res;
+/*	if (0 != mkdir(FS_DIR, MKDIR_PERM)) {
+		return -errno;
 	}
-
+*/
 	/* mount filesystem */
 	if (0 != (res = mount(FS_DEV, FS_DIR, FS_NAME))) {
 		return res;
@@ -59,10 +60,10 @@ static int teardown_suite(void) {
 		return res;
 	}
 
-	if (0 != rmdir(FS_DIR)) {
+/*	if (0 != rmdir(FS_DIR)) {
 		return res;
 	}
-
+*/
 	if (0 != (res = ramdisk_delete(FS_DEV))) {
 		return res;
 	}

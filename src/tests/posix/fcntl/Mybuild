@@ -2,6 +2,9 @@ package embox.test.posix.fcntl
 
 module creat_test {
 	source "creat_test.c"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.driver.devfs
 }
 
 module fcntl_test {
