@@ -88,19 +88,7 @@ out:
 	return ret;
 }
 
-static struct ps2_mouse_indev mouse_dev = {
-	.input_dev = {
-		.name = "mouse",
-		.type = INPUT_DEV_MOUSE,
-		.irq = 12,
-		.event_get = ps_mouse_get_input_event,
-	},
-};
-
-static int ps_mouse_init(void) {
-
-	input_dev_register(&mouse_dev.input_dev);
-
+static int ps_mouse_start(struct input_dev *dev) {
 	kmc_wait_ibe();
 	outb(0xa8, I8042_CMD_PORT); /* Enable aux */
 
@@ -113,6 +101,35 @@ static int ps_mouse_init(void) {
 
 	kmc_write_aux(0xf4); /* Enable aux device */
 	kmc_send_auxcmd(0x47); /* Enable controller ints */
+
+	return 0;
+}
+
+static int ps_mouse_stop(struct input_dev *dev) {
+
+	/* TODO */
+	return 0;
+}
+
+static const struct input_dev_ops ps_mouse_input_ops = {
+	.start = ps_mouse_start,
+	.stop = ps_mouse_stop,
+	.event_get = ps_mouse_get_input_event,
+};
+
+static struct ps2_mouse_indev mouse_dev = {
+	.input_dev = {
+		.ops = &ps_mouse_input_ops,
+		.name = "mouse",
+		.type = INPUT_DEV_MOUSE,
+		.irq = 12,
+	},
+};
+
+static int ps_mouse_init(void) {
+
+	input_dev_register(&mouse_dev.input_dev);
+
 
 	return 0;
 }
