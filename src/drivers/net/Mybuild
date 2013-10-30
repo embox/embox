@@ -118,3 +118,9 @@ module usermode {
 	depends embox.net.dev
 	depends embox.net.entry_api
 }
+
+module lan9118 {
+	source "lan9118.c"
+	depends embox.driver.gpmc.gpmc_api
+	//TODO other dependcies
+}
