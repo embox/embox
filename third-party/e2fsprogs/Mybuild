@@ -2,8 +2,8 @@ package third_party.e2fsprogs
 
 static module libs {
 	depends embox.lib.LibC
-
-	depends embox.arch.x86.LibM // FIXME:
+	depends embox.compat.posix.util.Time
+	depends embox.compat.posix.proc.uid
 
 	source "empty.c" // FIXME: workaround
 

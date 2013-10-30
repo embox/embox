@@ -2,12 +2,19 @@ package third_party.qpid
 
 module core {
 	depends embox.lib.LibC
-	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.boost.core
 	depends third_party.e2fsprogs.libs
 	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.proc.fork
+	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.util.utsname
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.util.gethostname
+	depends embox.compat.posix.fs.fsop
 	depends embox.net.lib.getifaddrs
+	depends embox.compat.posix.net.socket
 
 	source "empty.c" // FIXME: workaround
 

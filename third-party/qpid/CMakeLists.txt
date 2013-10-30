@@ -1,4 +1,3 @@
-SET(CMAKE_C_FLAGS "")
 include(ExternalProject)
 ExternalProject_Add(
    qpid
