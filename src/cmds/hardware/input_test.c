@@ -46,6 +46,7 @@ static int input_test_main(int argc, char **argv) {
 	int opt;
 	char *indev_name = NULL;
 	struct input_dev *indev;
+	int res;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "i:"))) {
@@ -66,17 +67,18 @@ static int input_test_main(int argc, char **argv) {
 
 	indev = input_dev_lookup(indev_name);
 	if (NULL == indev) {
-		printf("Cannot find such input dev");
-		return 1;
+		printf("Cannot find such input dev\n");
+		return -ENOENT;
 	}
 
-	if (0 != input_dev_open(indev, indev_cb)) {
-		return 1;
+	if (0 != (res = input_dev_open(indev, indev_cb))) {
+		printf("Troubles with open\n");
+		return res;
 	}
 
-	while (1) {
-		sleep(1);
-	}
+	getchar();
+
+	input_dev_close(indev);
 
 	return 0;
 }
