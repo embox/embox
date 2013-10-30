@@ -5,6 +5,7 @@
  * @author  Anton Kozlov
  * @date    04.10.2012
  */
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -51,7 +52,7 @@ int open(const char *path, int __oflag, ...) {
 
 	parent_path = dirname((char *)path);
 	if (NULL == (dir = opendir(parent_path))) {
-		return -errno;
+		return -1;
 	}
 	name = basename((char *)path);
 	node = find_node(dir, name);
@@ -59,18 +60,31 @@ int open(const char *path, int __oflag, ...) {
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
 			if(NULL == kcreat(dir->node, name, mode)) {
-				rc =  -errno;
+				rc =  -1;
 				goto out;
 			}
+			__oflag &= ~(O_CREAT | O_EXCL);
 		} else {
-			rc = -ENOENT;
+			SET_ERRNO(ENOENT);
+			rc = -1;
 			goto out;
 		}
 	}
 
+	if (__oflag & O_EXCL) {
+		/* If O_EXCL is set and O_CREAT is not set, the result is undefined.*/
+		assert(__oflag & O_CREAT);
+	}
+
+	if (__oflag & O_EXCL) {
+		SET_ERRNO(EEXIST);
+		rc = -1;
+		goto out;
+	}
+
 	kfile = kopen(path, __oflag, mode);
 	if (NULL == kfile) {
-		rc =  -errno;
+		rc = -1;
 		goto out;
 	}
 

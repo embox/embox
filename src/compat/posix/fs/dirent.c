@@ -48,13 +48,12 @@ DIR *opendir(const char *path) {
 	}
 
 	d->node = node;
-	d->current.d_ino = 0;// = tree_children_begin(&node->tree_link);
+	d->current.d_ino = 0;
 
 	return d;
 }
 
 int closedir(DIR *dir) {
-
 	if (NULL == dir) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -67,7 +66,6 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct node *chldnod;
-	//struct node *dirnod;
 	struct tree_link *chld_link;
 
 	SET_ERRNO(0);
@@ -84,7 +82,7 @@ struct dirent *readdir(DIR *dir) {
 		}
 	} else {
 		chldnod = (struct node *)dir->current.d_ino;
-		if (tree_children_end(&chldnod->tree_link) == &chldnod->tree_link) {
+		if (tree_children_end(&dir->node->tree_link) == &chldnod->tree_link) {
 			return NULL;
 		}
 

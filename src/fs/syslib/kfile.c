@@ -34,24 +34,14 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	int perm_flags, ret;
 
 	assert(path);
+	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead");
+
+
 	ret = fs_perm_lookup(NULL, path, &path, &node);
 
-	if (-ENOENT == ret) {
-		if (!(flag & O_CREAT)) {
-			SET_ERRNO(ENOENT);
-			return NULL;
-		}
-
-		if (NULL == (node = kcreat(node, path, mode))) {
-			return NULL;
-		}
-
-	} else if (-EACCES == ret) {
+	if (-EACCES == ret) {
 		SET_ERRNO(EACCES);
 		return NULL;
-	} else if (ret == 0 && flag & O_CREAT && flag & O_EXCL) {
-			SET_ERRNO(EEXIST);
-			return NULL;
 	}
 
 	if (node_is_directory(node)) {
