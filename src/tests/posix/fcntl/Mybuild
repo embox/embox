@@ -1,0 +1,13 @@
+package embox.test.posix.fcntl
+
+module creat_test {
+	source "creat_test.c"
+}
+
+module fcntl_test {
+	source "fcntl_test.c"
+}
+
+module open_test {
+	source "open_test.c"
+}
