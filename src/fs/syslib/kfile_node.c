@@ -25,6 +25,8 @@ struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 	struct node *child;
 	int ret;
 
+	assert(dir);
+
 	path = path_next(path, NULL);
 
 	if (!path) {

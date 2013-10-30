@@ -20,7 +20,7 @@
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 
-OBJALLOC_DEF(dir_pool, struct DIR, MAX_DIR_QUANTITY);
+OBJALLOC_DEF(dir_pool, struct directory, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
 	node_t *node;
@@ -48,7 +48,7 @@ DIR *opendir(const char *path) {
 	}
 
 	d->node = node;
-	d->child_lnk = tree_children_begin(&node->tree_link);
+	d->current.d_ino = 0;// = tree_children_begin(&node->tree_link);
 
 	return d;
 }
@@ -67,6 +67,8 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct node *chldnod;
+	//struct node *dirnod;
+	struct tree_link *chld_link;
 
 	SET_ERRNO(0);
 
@@ -75,15 +77,23 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 
-	if (tree_children_end(&dir->node->tree_link) == dir->child_lnk) {
-		return NULL;
+	if (0 == dir->current.d_ino) {
+		chld_link = tree_children_begin(&dir->node->tree_link);
+		if (chld_link == NULL) {
+			return NULL;
+		}
+	} else {
+		chldnod = (struct node *)dir->current.d_ino;
+		if (tree_children_end(&chldnod->tree_link) == &chldnod->tree_link) {
+			return NULL;
+		}
+
+		chld_link = tree_children_next(&chldnod->tree_link);
 	}
 
-	chldnod = tree_element(dir->child_lnk, struct node, tree_link);
+	chldnod = tree_element(chld_link, struct node, tree_link);
 
 	strcpy(dir->current.d_name, chldnod->name);
-
-	dir->child_lnk = tree_children_next(dir->child_lnk);
 
 	dir->current.d_ino = (ino_t)chldnod;
 
