@@ -21,7 +21,7 @@
 
 EMBOX_UNIT_INIT(usb_ti81xx_init);
 
-#define TI81XX_USB_DEBUG 1
+#define TI81XX_USB_DEBUG 0
 #if TI81XX_USB_DEBUG
 #define DBG(x) x
 #else
@@ -731,6 +731,11 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 	intrstat0 = REG_LOAD(&tiusb->irq_stat0);
 	intrstat1 = REG_LOAD(&tiusb->irq_stat1);
 
+	REG_STORE(&tiusb->irq_stat0, intrstat0);
+	REG_STORE(&tiusb->irq_stat1, intrstat1);
+
+	REG_STORE(&tiusb->irq_eoi, 1);
+
 	DBG(printk("%s: stat=0x%08lx devctl=0x%08lx m_intrstat=0x%02x "
 				"intrstat0=0x%08lx intrstat1=0x%08lx\n",
 			__func__,
@@ -763,11 +768,6 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 		ti81xx_port_stat_map(tiusb, intrstat1, port);
 		usb_rh_nofity(hcd);
 	}
-
-	REG_STORE(&tiusb->irq_stat0, intrstat0);
-	REG_STORE(&tiusb->irq_stat1, intrstat1);
-
-	REG_STORE(&tiusb->irq_eoi, 1);
 
 	return IRQ_HANDLED;
 }
