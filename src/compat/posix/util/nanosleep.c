@@ -16,7 +16,7 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 
 	clock_gettime(0, &start_time);
 
-	timespec_to_ns(rqtp);
+	nsec = timespec_to_ns(rqtp);
 
 	res = ksleep(nsec * 1000);
 	if (res < 0) {
@@ -28,4 +28,9 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 		return -1;
 	}
 	return ENOERR;
+}
+
+void delay(int d) {
+	//FIXME delay must plase in linux/delay.h
+
 }
