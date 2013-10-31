@@ -5,7 +5,7 @@
  * @author  Anton Kozlov
  * @date    30.10.2013
  */
-
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <drivers/input/input_dev.h>

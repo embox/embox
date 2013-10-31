@@ -5,7 +5,7 @@
  * @author  Anton Kozlov
  * @date    30.10.2013
  */
-
+#include <errno.h>
 #include <string.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
