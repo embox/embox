@@ -40,7 +40,7 @@ int socket(int domain, int type, int protocol) {
 	struct socket_desc *socket_desc;
 
 	socket_desc = socket_desc_create(domain, type, protocol);
-	socket_desc_check_perm(socket_desc);
+	socket_desc_check_perm(socket_desc, SOCKET_DESC_OPS_SOCKET, NULL);
 
 	ret = ksocket(domain, type, protocol, &sk);
 	if (ret != 0) {
@@ -61,6 +61,11 @@ int socket(int domain, int type, int protocol) {
 int bind(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
+	struct socket_desc_param param = { addr, &addrlen};
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_BIND, &param);
 
 	ret = kbind(idx2sock(sockfd), addr, addrlen);
 	if (ret != 0){
@@ -74,6 +79,11 @@ int bind(int sockfd, const struct sockaddr *addr,
 int connect(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
+	struct socket_desc_param param = { addr, &addrlen};
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_CONNECT, &param);
 
 	ret = kconnect(idx2sock(sockfd), addr, addrlen,
 			idx2flags(sockfd));
@@ -88,6 +98,11 @@ int connect(int sockfd, const struct sockaddr *addr,
 int listen(int sockfd, int backlog) {
 	int ret;
 
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_LISTEN, NULL);
+
 	ret = klisten(idx2sock(sockfd), backlog);
 	if (ret != 0){
 		SET_ERRNO(-ret);
@@ -100,6 +115,11 @@ int listen(int sockfd, int backlog) {
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int ret, new_sockfd;
 	struct sock *new_sk;
+	struct socket_desc_param param = { addr, NULL};
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_ACCEPT, &param);
 
 	ret = kaccept(idx2sock(sockfd), addr, addrlen,
 			idx2flags(sockfd), &new_sk);
@@ -124,6 +144,11 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_SEND, NULL);
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -185,8 +210,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	return msg_.msg_iov->iov_len;
 }
 /* read */
-ssize_t recv(int sockfd, void *buff, size_t size,
-		int flags) {
+ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;

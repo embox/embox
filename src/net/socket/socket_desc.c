@@ -21,3 +21,7 @@ void socket_desc_destroy(struct socket_desc *desc) {
 void socket_desc_check_perm(struct socket_desc *desc) {
 
 }
+
+struct socket_desc *socket_desc_get(int idx) {
+	return NULL;
+}
