@@ -230,11 +230,11 @@ static int explore_node(const char *nodename,
 	}
 
 	if (hints->ai_flags & AI_NUMERICHOST) {
-		if (inet_pton(AF_INET, nodename, &addr.in.sin_addr)) {
+		if (1 == inet_pton(AF_INET, nodename, &addr.in.sin_addr)) {
 			sa = (struct sockaddr *)&addr.in;
 			salen = sizeof addr.in;
 		}
-		else if (inet_pton(AF_INET6, nodename,
+		else if (1 == inet_pton(AF_INET6, nodename,
 					&addr.in6.sin6_addr)) {
 			sa = (struct sockaddr *)&addr.in6;
 			salen = sizeof addr.in6;
