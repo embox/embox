@@ -1,7 +1,13 @@
 #!/bin/sh
 
-[ -f $1 ] || (echo "setup path to syslink_embox directory"; exit 1;)
+SYSLINK_EMBOX=$(realpath $1)
 
-ln -s $1/ipc_1_24_00_16 ipc_1_24_00_16
-ln -s $1/syslink_2_21_01_05
+if [ ! -d $SYSLINK_EMBOX ]; then
+	echo "setup path to syslink_embox directory"
+       	exit 1
+fi
 
+cd $(dirname $0)
+
+ln -s $SYSLINK_EMBOX/ipc_1_24_00_16 ./
+ln -s $SYSLINK_EMBOX/syslink_2_21_01_05 ./
