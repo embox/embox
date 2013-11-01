@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <net/socket/socket_desc.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
 
@@ -31,9 +32,15 @@ static inline int idx2flags(int idx) {
 	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
 }
 
+
+/* create */
 int socket(int domain, int type, int protocol) {
 	int ret, sockfd;
 	struct sock *sk;
+	struct socket_desc *socket_desc;
+
+	socket_desc = socket_desc_create(domain, type, protocol);
+	socket_desc_check_perm(socket_desc);
 
 	ret = ksocket(domain, type, protocol, &sk);
 	if (ret != 0) {
@@ -41,8 +48,7 @@ int socket(int domain, int type, int protocol) {
 		return -1;
 	}
 
-	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk,
-			&sk->ios);
+	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk, &sk->ios);
 	if (sockfd < 0) {
 		ksocket_close(sk);
 		SET_ERRNO(EMFILE);
@@ -51,7 +57,7 @@ int socket(int domain, int type, int protocol) {
 
 	return sockfd;
 }
-
+/* fcntl */
 int bind(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
@@ -64,7 +70,7 @@ int bind(int sockfd, const struct sockaddr *addr,
 
 	return 0;
 }
-
+/* open */
 int connect(int sockfd, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	int ret;
@@ -78,7 +84,7 @@ int connect(int sockfd, const struct sockaddr *addr,
 
 	return 0;
 }
-
+/* open */
 int listen(int sockfd, int backlog) {
 	int ret;
 
@@ -90,7 +96,7 @@ int listen(int sockfd, int backlog) {
 
 	return 0;
 }
-
+/* create open */
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int ret, new_sockfd;
 	struct sock *new_sk;
@@ -112,7 +118,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 	return new_sockfd;
 }
-
+/* write */
 ssize_t send(int sockfd, const void *buff, size_t size,
 		int flags) {
 	int ret;
@@ -136,7 +142,7 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 
 	return iov.iov_len;
 }
-
+/* open? write */
 ssize_t sendto(int sockfd, const void *buff, size_t size,
 		int flags, const struct sockaddr *addr,
 		socklen_t addrlen) {
@@ -161,7 +167,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	return iov.iov_len;
 }
-
+/* open? write */
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	int ret;
 	struct msghdr msg_;
@@ -178,7 +184,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	return msg_.msg_iov->iov_len;
 }
-
+/* read */
 ssize_t recv(int sockfd, void *buff, size_t size,
 		int flags) {
 	int ret;
@@ -202,7 +208,7 @@ ssize_t recv(int sockfd, void *buff, size_t size,
 
 	return iov.iov_len;
 }
-
+/* open? read */
 ssize_t recvfrom(int sockfd, void *buff, size_t size,
 		int flags, struct sockaddr *addr,
 		socklen_t *addrlen) {
@@ -231,7 +237,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 	return iov.iov_len;
 }
-
+/* open? read */
 ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	int ret;
 	struct msghdr msg_;
@@ -252,7 +258,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	return msg_.msg_iov->iov_len;
 }
-
+/* fcntl */
 int shutdown(int sockfd, int how) {
 	int ret;
 
@@ -264,7 +270,7 @@ int shutdown(int sockfd, int how) {
 
 	return 0;
 }
-
+/* fcntl */
 int getsockname(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
@@ -277,7 +283,7 @@ int getsockname(int sockfd, struct sockaddr *addr,
 
 	return 0;
 }
-
+/* fcntl */
 int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) {
 	int ret;
@@ -290,7 +296,7 @@ int getpeername(int sockfd, struct sockaddr *addr,
 
 	return 0;
 }
-
+/* fcntl */
 int getsockopt(int sockfd, int level, int optname, void *optval,
 		socklen_t *optlen) {
 	int ret;
@@ -304,7 +310,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 
 	return 0;
 }
-
+/* fcntl */
 int setsockopt(int sockfd, int level, int optname,
 		const void *optval, socklen_t optlen) {
 	int ret;

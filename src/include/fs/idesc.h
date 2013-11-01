@@ -15,22 +15,28 @@ struct mandatoty_permission {
 };
 typedef struct mandatoty_permission mandatoty_permission_t;
 
-struct idesc_permissions {
+struct idesc_perm {
 	discrete_permission_t dperm;
 	mandatoty_permission_t mperm;
 };
 
+#include <kernel/task/io_sync.h>
+
+struct idesc_event {
+	struct io_sync io_sync;
+};
 
 struct idesc {
-	struct idesc_permission perm;
-	struct idesc_event;
+	struct idesc_perm idesc_perm;
+	struct idesc_event idesc_event;
+	struct task_idx_ops idesc_ops;
 };
 
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
 
-extern int idesc_init(struct idesc *idesc, struct idesc_permissions *attr);
+extern int idesc_init(struct idesc *idesc, struct idesc_perm *attr);
 
 extern int idesc_read(struct idesc *idesc, char *buff, int size);
 
