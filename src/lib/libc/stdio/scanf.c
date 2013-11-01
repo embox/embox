@@ -110,11 +110,12 @@ static int trim_leading(char **str) {
 	return ch;
 }
 
-static int scan_int(char **in, int base, int widht) {
+static int scan_int(char **in, int base, int widht, int *res) {
 	int neg = 0;
 	int dst = 0;
 	int ch;
 	int i;
+	int not_empty = 0;
 
 	if (EOF == (ch = trim_leading(in))) {
 		return 0;/*error*/
@@ -133,13 +134,19 @@ static int scan_int(char **in, int base, int widht) {
 			/*end conversion*/
 			break;
 		}
+		not_empty = 1;
 		dst = base * dst + ch_to_digit(ch, base);
 //		ch = scanchar(in);
 	}
 
+	if (!not_empty) {
+		return -1;
+	}
+
 	if (neg)
 		dst = -dst;
-	return dst;
+	*res = dst;
+	return 0;
 }
 #if 0
 static double scan_double(char **in, int base, int width) {
@@ -232,7 +239,9 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
-				dst = scan_int(in, 10, widht);
+				if (0 != scan_int(in, 10, widht, &dst)) {
+					goto out;
+				}
 
 				*va_arg(args, int*) = dst;
 
@@ -250,7 +259,9 @@ static int scan(char **in, const char *fmt, va_list args) {
 #endif
 			case 'o': {
 				int dst;
-				dst = scan_int(in, 8, widht);
+				if (0 != scan_int(in, 8, widht, &dst)) {
+					goto out;
+				}
 
 				*va_arg(args, int*) = dst;
 
@@ -268,7 +279,9 @@ static int scan(char **in, const char *fmt, va_list args) {
 #endif
 			case 'x': {
 				int dst;
-				dst = scan_int(in, 16, widht);
+				if (0 != scan_int(in, 16, widht, &dst)) {
+					goto out;
+				}
 				*va_arg(args, int*) = dst;
 
 				++converted;
@@ -292,6 +305,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 		}
 	}
 
+out:
 	return converted;
 }
 
