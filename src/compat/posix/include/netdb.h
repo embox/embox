@@ -159,13 +159,6 @@ extern int getaddrinfo(const char *nodename, const char *servname,
 extern void freeaddrinfo(struct addrinfo *ai);
 
 /**
- * Address name information functions
- */
-extern int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-		char *node, socklen_t nodelen, char *serv,
-		socklen_t servlen, int flags);
-
-/**
  * Address name information function flags
  */
 #define NI_NOFQDN       0x01 /* Only the nodename portion of the
@@ -213,6 +206,16 @@ extern int getnameinfo(const struct sockaddr *sa, socklen_t salen,
  * Manipulation with address information error codes
  */
 extern const char * gai_strerror(int error_code);
+
+/**
+ * Address name information functions
+ */
+static inline
+int getnameinfo(const struct sockaddr *sa, socklen_t salen,
+		char *node, socklen_t nodelen, char *serv,
+		socklen_t servlen, int flags) {
+	return EAI_FAIL;
+}
 
 __END_DECLS
 
