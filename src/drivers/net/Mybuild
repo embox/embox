@@ -121,6 +121,16 @@ module usermode {
 
 module lan9118 {
 	source "lan9118.c"
+
+	option number pin=16
+
 	depends embox.driver.gpmc.gpmc_api
-	//TODO other dependcies
+	depends embox.driver.gpio.api
+
+	depends embox.net.skbuff
+	depends embox.lib.LibC
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
 }
