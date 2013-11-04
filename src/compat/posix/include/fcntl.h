@@ -76,7 +76,8 @@ struct flock {
 	pid_t  l_pid;    /* Process ID of the process holding the lock; returned with F_GETLK. */
 };
 
-/* Temporary structures, should be removed later */
+/* Temporary structures, should be moved later */
+
 #include <kernel/thread/sync/mutex.h>
 typedef struct kflock_exclusive {
 	struct mutex      lock;
@@ -88,13 +89,17 @@ typedef struct kflock_exclusive {
 } kflock_exclusive_t;
 
 typedef struct kflock_shared {
-	struct thread *holder;
 	struct dlist_head kflock_link;
 	short             whence;
 	off_t             start;
 	off_t             len;
 	pid_t             pid;
 } kflock_shared_t;
+
+typedef union kflock_both {
+	kflock_exclusive_t exlock;
+	kflock_shared_t    shlock;
+} kflock_both_t;
 
 typedef struct kflock {
 	struct dlist_head exlock_list;
@@ -103,6 +108,23 @@ typedef struct kflock {
 	long              shlock_count;
 	spinlock_t        flock_guard;
 } kflock_t;
+
+/*
+typedef struct kflock_lock {
+	short             type;
+	short             whence;
+	off_t             start;
+	off_t             len;
+	pid_t             pid;
+	struct dlist_head kflock_link;
+	struct wait_queue wq;
+};
+
+typedef struct kflock {
+	struct dlist_head locks;
+	spinlock_t        kflock_quard;
+} kflock_t;
+*/
 /* Remove till here */
 __END_DECLS
 

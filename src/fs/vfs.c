@@ -296,6 +296,10 @@ node_t *vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len) 
 
 /*
  * Below fcntl locking implementation and help functions
+ *
+ * TODO:
+ * - Consider moving from mutexes to raw wait queues
+ *
  */
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
@@ -303,11 +307,17 @@ node_t *vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len) 
 #include <fs/file_desc.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <sched.h>
 
 //#define MAX_KFLOCK_SHARED_QUANTITY OPTION_GET(NUMBER, flock_quantity)
 POOL_DEF(kflock_shared_pool, kflock_shared_t, 128);
 //#define MAX_KFLOCK_EXCLUSIVE_QUANTITY OPTION_GET(NUMBER, flock_quantity)
 POOL_DEF(kflock_exclusive_pool, kflock_exclusive_t, 128);
+
+enum {
+	FLOCK_SKIP_EXCLUSIVE,
+	FLOCK_SKIP_SHARED
+};
 
 enum {
 	FLOCK_SHARED_INCLUDE,
@@ -336,9 +346,9 @@ static int kflock_shared_get(kflock_t *kflock, struct flock *flock) {
 		return -ENOMEM;
 	}
 	dlist_add_next(dlist_head_init(&shlock->kflock_link), &kflock->shlock_list);
-	shlock->holder = current;
-	shlock->pid = (pid_t) current->task; /* FIXME: Task pid should be here */
-	shlock->whence = flock->l_whence; /* FIXME: Do not forget to take it into account */
+	/*shlock->holder = current;*/
+	shlock->pid = (pid_t) current->task->tid;
+	shlock->whence = flock->l_whence;
 	shlock->start = flock->l_start;
 	shlock->len = flock->l_len;
 	kflock->shlock_count++;
@@ -355,23 +365,31 @@ static int kflock_shared_put(kflock_t *kflock, struct flock *flock) {
 
 	dlist_foreach(item, next, &kflock->shlock_list) {
 		shlock = dlist_entry(item, kflock_shared_t, kflock_link);
-		if (current == shlock->holder) {
+		if (current->task->tid == shlock->pid) {
 			if (NULL == flock || (shlock->start == flock->l_start &&
 					shlock->len == flock->l_len)) {
 				dlist_del(&shlock->kflock_link);
 				pool_free(&kflock_shared_pool, shlock);
 				kflock->shlock_count--;
+				/* Returning success if we are seaching for one lock
+				 * and it was found */
+				if (NULL != flock)
+					return -ENOERR;
 			}
 		}
 	}
-
-	return -ENOERR;
+	/* If we releasing all locks return -ENOERR in other case if we are here
+	 * it means that lock to release was not found and returning -EINVAL */
+	if (NULL == flock) {
+		return -ENOERR;
+	} else {
+		return -EINVAL;
+	}
 }
 
 static int kflock_exclusive_get(kflock_t *kflock, struct flock *flock) {
 	kflock_exclusive_t *exlock;
 	struct thread *current = thread_self();
-
 	exlock = pool_alloc(&kflock_exclusive_pool);
 	if (NULL == exlock) {
 		return -ENOMEM;
@@ -382,7 +400,7 @@ static int kflock_exclusive_get(kflock_t *kflock, struct flock *flock) {
 
 	dlist_add_next(dlist_head_init(&exlock->kflock_link), &kflock->exlock_list);
 
-	exlock->pid = (pid_t) current->task; /* FIXME: Task pid should be here */
+	exlock->pid = (pid_t) current->task->tid;
 	exlock->whence = flock->l_whence;
 	exlock->start = flock->l_start;
 	exlock->len = flock->l_len;
@@ -400,74 +418,147 @@ static int kflock_exclusive_put(kflock_t *kflock, struct flock *flock) {
 
 	dlist_foreach(item, next, &kflock->exlock_list) {
 		exlock = dlist_entry(item, kflock_exclusive_t, kflock_link);
-		if (current == exlock->lock.holder) {
+		if (current->task->tid == exlock->pid) {
 			if (NULL == flock || (exlock->start == flock->l_start &&
 					exlock->len == flock->l_len)) {
 				mutex_unlock(&exlock->lock);
+
+				/* FIXME not sure about following line */
+				wait_queue_notify_all(&exlock->lock.wq);
+
 				dlist_del(&exlock->kflock_link);
 				pool_free(&kflock_exclusive_pool, exlock);
 				kflock->exlock_count--;
+				/* Returning success if we are seaching for one lock
+				 * and it was found */
+				if (NULL != flock)
+					return -ENOERR;
 			}
 		}
 	}
-
-	return -ENOERR;
+	/* If we releasing all locks return -ENOERR in other case if we are here
+	 * it means that lock to release was not found and returning -EINVAL */
+	if (NULL == flock) {
+		return -ENOERR;
+	} else {
+		return -EINVAL;
+	}
 }
 
-/*
- * Return disposition of flock compare to locks in kflock
- */
-static int kflock_get_disposition(kflock_t *kflock, struct flock *flock)
+/* Return disposition of flock compare to locks in kflock */
+static int kflock_get_disposition(kflock_t *kflock, struct flock *flock,
+		kflock_both_t *existing_kflock, struct flock *existing_flock,
+		int flags)
 {
+	int rc = 0;
 	kflock_exclusive_t *exlock;
 	kflock_shared_t *shlock;
 	struct dlist_head *item, *next;
 	off_t lock_end, flock_end = flock->l_start + flock->l_len;
 	off_t delta_start, delta_end;
 
-	dlist_foreach(item, next, &kflock->exlock_list) {
-		exlock = dlist_entry(item, kflock_exclusive_t, kflock_link);
-		lock_end = exlock->start + exlock->len;
-		delta_start = exlock->start - flock->l_start;
-		delta_end = lock_end - flock_end;
+	if (flags & FLOCK_SKIP_EXCLUSIVE) {
+		dlist_foreach(item, next, &kflock->exlock_list) {
+			exlock = dlist_entry(item, kflock_exclusive_t, kflock_link);
+			lock_end = exlock->start + exlock->len;
+			delta_start = exlock->start - flock->l_start;
+			delta_end = lock_end - flock_end;
 
-		if (0 == delta_start && 0 == delta_end)
-			return FLOCK_EXCLUSIVE_FIT;
-		if (delta_start <= 0 && delta_end >= 0)
-			return FLOCK_EXCLUSIVE_INCLUDE;
-		if (delta_start >= 0 && delta_end <= 0)
-			return FLOCK_EXCLUSIVE_INCLUDED;
-		if (delta_start == exlock->len)
-			return FLOCK_EXCLUSIVE_BORDER_RIGHT;
-		if (delta_end == -exlock->len)
-			return FLOCK_EXCLUSIVE_BORDER_LEFT;
-		if (delta_start < 0 && delta_end <= 0)
-			return FLOCK_EXCLUSIVE_INTERSECT_LEFT;
-		if (delta_start >= 0 && delta_end > 0)
-			return FLOCK_EXCLUSIVE_INTERSECT_RIGHT;
+			if (0 == delta_start && 0 == delta_end) {
+				rc =  FLOCK_EXCLUSIVE_FIT;
+				break;
+			}
+			if (delta_start <= 0 && delta_end >= 0) {
+				rc =  FLOCK_EXCLUSIVE_INCLUDE;
+				break;
+			}
+			if (delta_start >= 0 && delta_end <= 0) {
+				rc =  FLOCK_EXCLUSIVE_INCLUDED;
+				break;
+			}
+			if (delta_start == exlock->len) {
+				rc =  FLOCK_EXCLUSIVE_BORDER_RIGHT;
+				break;
+			}
+			if (delta_end == -exlock->len) {
+				rc =  FLOCK_EXCLUSIVE_BORDER_LEFT;
+				break;
+			}
+			if (delta_start < 0 && delta_end <= 0) {
+				rc =  FLOCK_EXCLUSIVE_INTERSECT_LEFT;
+				break;
+			}
+			if (delta_start >= 0 && delta_end > 0) {
+				rc =  FLOCK_EXCLUSIVE_INTERSECT_RIGHT;
+				break;
+			}
+		}
+		/* If intersection has been found then copy intersect lock and return */
+		if (0 != rc) {
+			memcpy(&existing_kflock->exlock, exlock,
+					sizeof(existing_kflock->exlock));
+
+			existing_flock->l_len = exlock->len;
+			existing_flock->l_pid = exlock->pid;
+			existing_flock->l_start = exlock->start;
+			existing_flock->l_whence = exlock->whence;
+			existing_flock->l_type = F_WRLCK;
+
+			return rc;
+		}
 	}
 
-	dlist_foreach(item, next, &kflock->shlock_list) {
-		shlock = dlist_entry(item, kflock_shared_t, kflock_link);
-		lock_end = shlock->start + shlock->len;
-		delta_start = shlock->start - flock->l_start;
-		delta_end = lock_end - flock_end;
+	if (flags & FLOCK_SKIP_SHARED) {
+		dlist_foreach(item, next, &kflock->shlock_list) {
+			shlock = dlist_entry(item, kflock_shared_t, kflock_link);
+			lock_end = shlock->start + shlock->len;
+			delta_start = shlock->start - flock->l_start;
+			delta_end = lock_end - flock_end;
 
-		if (0 == delta_start && 0 == delta_end)
-			return FLOCK_SHARED_FIT;
-		if (delta_start <= 0 && delta_end >= 0)
-			return FLOCK_SHARED_INCLUDE;
-		if (delta_start >= 0 && delta_end <= 0)
-			return FLOCK_SHARED_INCLUDED;
-		if (delta_start == shlock->len)
-			return FLOCK_SHARED_BORDER_RIGHT;
-		if (delta_end == -shlock->len)
-			return FLOCK_SHARED_BORDER_LEFT;
-		if (delta_start < 0 && delta_end <= 0)
-			return FLOCK_SHARED_INTERSECT_LEFT;
-		if (delta_start >= 0 && delta_end > 0)
-			return FLOCK_SHARED_INTERSECT_RIGHT;
+			if (0 == delta_start && 0 == delta_end) {
+				rc =  FLOCK_SHARED_FIT;
+				break;
+			}
+			if (delta_start <= 0 && delta_end >= 0) {
+				rc =  FLOCK_SHARED_INCLUDE;
+				break;
+			}
+			if (delta_start >= 0 && delta_end <= 0) {
+				rc =  FLOCK_SHARED_INCLUDED;
+				break;
+			}
+			if (delta_start == shlock->len) {
+				rc =  FLOCK_SHARED_BORDER_RIGHT;
+				break;
+			}
+			if (delta_end == -shlock->len) {
+				rc =  FLOCK_SHARED_BORDER_LEFT;
+				break;
+			}
+			if (delta_start < 0 && delta_end <= 0) {
+				rc =  FLOCK_SHARED_INTERSECT_LEFT;
+				break;
+			}
+			if (delta_start >= 0 && delta_end > 0) {
+				rc =  FLOCK_SHARED_INTERSECT_RIGHT;
+				break;
+			}
+		}
+		/* If intersection has been found then copy intersect lock and return */
+		if (0 != rc) {
+			memcpy(&existing_kflock->shlock, shlock,
+					sizeof(existing_kflock->shlock));
+
+			existing_flock->l_len = shlock->len;
+			existing_flock->l_pid = shlock->pid;
+			existing_flock->l_start = shlock->start;
+			existing_flock->l_whence = shlock->whence;
+			existing_flock->l_type = F_RDLCK;
+
+			return rc;
+		}
 	}
+
 	return FLOCK_RANGE_NOT_INTERSECT;
 }
 
@@ -487,9 +578,11 @@ static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
 		idesc = task_self_idx_get(fd);
 		cur_offset = ((struct file_desc *) idesc->data->fd_struct)->cursor;
 		flock->l_start += cur_offset;
+		flock->l_whence = SEEK_SET;
 		break;
 	case SEEK_END:
 		flock->l_start = file_size - flock->l_start;
+		flock->l_whence = SEEK_SET;
 		break;
 	}
 
@@ -521,61 +614,351 @@ static inline int kflock_validate_cmd(int cmd) {
 	return -EINVAL;
 }
 
-static int kflock_handle_exclusive(kflock_t *kflock, struct flock *flock) {
+/* Split existing flock by flock
+ * Should be called within critical section */
+static int kflock_lock_cut(kflock_t *kflock, struct flock *existing_flock,
+		struct flock *flock) {
 	int rc;
-	rc = kflock_get_disposition(kflock, flock);
-	switch(rc) {
-	case FLOCK_SHARED_INCLUDE:
-		//kflock_conv_shared_exclusive();
-	case FLOCK_SHARED_INCLUDED:
-	case FLOCK_SHARED_FIT:
-	case FLOCK_SHARED_INTERSECT_LEFT:
-	case FLOCK_SHARED_INTERSECT_RIGHT:
-	case FLOCK_SHARED_BORDER_LEFT:
-	case FLOCK_SHARED_BORDER_RIGHT:
-	case FLOCK_EXCLUSIVE_INCLUDE:
-	case FLOCK_EXCLUSIVE_INCLUDED:
-	case FLOCK_EXCLUSIVE_FIT:
-	case FLOCK_EXCLUSIVE_INTERSECT_LEFT:
-	case FLOCK_EXCLUSIVE_INTERSECT_RIGHT:
-	case FLOCK_EXCLUSIVE_BORDER_LEFT:
-	case FLOCK_EXCLUSIVE_BORDER_RIGHT:
-	case FLOCK_RANGE_NOT_INTERSECT:
+	struct flock part1;
+	struct flock part2;
+	struct thread *current = thread_self();
+
+	/* Check if existing lock owned by current process */
+	if (current->task->tid != existing_flock->l_pid)
+		return -EACCES;
+
+	part1.l_len = flock->l_start - existing_flock->l_start;
+	part1.l_pid = existing_flock->l_pid;
+	part1.l_start = existing_flock->l_start;
+	part1.l_type = existing_flock->l_type;
+	part1.l_whence = existing_flock->l_whence;
+
+	part2.l_len = (existing_flock->l_start + existing_flock->l_len) - \
+			(flock->l_start + flock->l_len);
+	part2.l_pid = existing_flock->l_pid;
+	part2.l_start = (existing_flock->l_start + existing_flock->l_len) - \
+			part2.l_len;
+	part2.l_type = existing_flock->l_type;
+	part2.l_whence = existing_flock->l_whence;
+
+	switch (existing_flock->l_type) {
+	case F_WRLCK:
+		rc = kflock_exclusive_put(kflock, existing_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		if (part1.l_len > 0) {
+			rc = kflock_exclusive_get(kflock, &part1);
+			if (-ENOERR != rc)
+				return rc;
+		}
+		if (part2.l_len > 0) {
+			rc = kflock_exclusive_get(kflock, &part2);
+			if (-ENOERR != rc)
+				return rc;
+		}
 		break;
+	case F_RDLCK:
+		rc = kflock_shared_put(kflock, existing_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		if (part1.l_len > 0) {
+			rc = kflock_shared_get(kflock, &part1);
+			if (-ENOERR != rc)
+				return rc;
+		}
+		if (part2.l_len > 0) {
+			rc = kflock_shared_get(kflock, &part2);
+			if (-ENOERR != rc)
+				return rc;
+		}
+		break;
+	default:
+		return -EINVAL;
 	}
 
 
-	return rc;
-}
-
-static int kflock_handle_shared(kflock_t *kflock, struct flock *flock) {
-	/* 4 Lines below to make project able to build, should be removed */
-	kflock_exclusive_get(kflock, flock);
-	kflock_exclusive_put(kflock, flock);
-	kflock_shared_get(kflock, flock);
-	kflock_shared_put(kflock, flock);
 	return -ENOERR;
 }
 
-static int kflock_handle_unlock(kflock_t *kflock, struct flock *flock) {
+/* Combine existing lock with flock
+ * Should be called within critical section */
+static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
+		struct flock *flock) {
+	int rc;
+	off_t combined_start, combined_len;
+	struct flock combined_flock;
+	struct thread *current = thread_self();
+
+	/* Should be called only for locks of one type */
+	assert(existing_flock->l_type == flock->l_type);
+
+	/* Check if existing lock owned by current process */
+	if (current->task->tid != existing_flock->l_pid)
+		return -EACCES;
+
+	combined_start = existing_flock->l_start <= flock->l_start ?
+			existing_flock->l_start : flock->l_start;
+	combined_len = (existing_flock->l_start + existing_flock->l_len) >=
+			(flock->l_start + flock->l_len) ?
+					(existing_flock->l_start + existing_flock->l_len) :
+					(flock->l_start + flock->l_len);
+
+	combined_flock.l_start = combined_start;
+	combined_flock.l_len = combined_len;
+	combined_flock.l_pid = existing_flock->l_pid;
+	combined_flock.l_type = existing_flock->l_type;
+	combined_flock.l_whence = existing_flock->l_whence;
+
+	switch (combined_flock.l_type) {
+	case F_WRLCK:
+		rc = kflock_exclusive_put(kflock, existing_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		rc = kflock_exclusive_get(kflock, &combined_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		break;
+	case F_RDLCK:
+		rc = kflock_shared_put(kflock, existing_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		rc = kflock_shared_get(kflock, &combined_flock);
+		if (-ENOERR != rc)
+			return rc;
+
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	return -ENOERR;
+}
+
+/* Handle F_GETLK command */
+static int kflock_handle_getlk(kflock_t *kflock, struct flock *flock) {
+	/* TODO: Implement this */
+	return -EINVAL;
+}
+
+/* Perform all operations needed to get new exclusive lock */
+static int kflock_handle_exclusive(kflock_t *kflock, struct flock *flock,
+		int cmd) {
+	int rc;
+	int intersection = -1;
+	kflock_both_t existing_kflock;
+	struct flock existing_flock;
+	struct thread *current = thread_self();
+
+	if (cmd & F_GETLK)
+		return kflock_handle_getlk(kflock, flock);
+
+	/* Enter critical section */
+	spin_lock(&kflock->flock_guard);
+
+	while (FLOCK_RANGE_NOT_INTERSECT != intersection) {
+		intersection = kflock_get_disposition(kflock, flock,
+				&existing_kflock, &existing_flock, 0);
+
+		switch(intersection) {
+		case FLOCK_EXCLUSIVE_INCLUDE:
+		case FLOCK_EXCLUSIVE_INCLUDED:
+		case FLOCK_EXCLUSIVE_FIT:
+			if (current->task->tid == existing_flock.l_pid) {
+				spin_unlock(&kflock->flock_guard);
+				return -ENOERR;
+			} else {
+				if (cmd & F_SETLK) {
+					spin_unlock(&kflock->flock_guard);
+					return -EAGAIN;
+				} else if (cmd & F_SETLKW) {
+					spin_unlock(&kflock->flock_guard);
+					wait_queue_wait(&existing_kflock.exlock.lock.wq,
+							SCHED_TIMEOUT_INFINITE);
+					spin_lock(&kflock->flock_guard);
+				}
+			}
+			continue;
+
+		case FLOCK_EXCLUSIVE_INTERSECT_LEFT:
+		case FLOCK_EXCLUSIVE_INTERSECT_RIGHT:
+		case FLOCK_EXCLUSIVE_BORDER_LEFT:
+		case FLOCK_EXCLUSIVE_BORDER_RIGHT:
+			if (current->task->tid == existing_flock.l_pid) {
+				rc = kflock_lock_combine(kflock, &existing_flock, flock);
+				if (-ENOERR != rc) {
+					spin_unlock(&kflock->flock_guard);
+					return rc;
+				}
+			} else {
+				if (cmd & F_SETLK) {
+					spin_unlock(&kflock->flock_guard);
+					return -EAGAIN;
+				} else if (cmd & F_SETLKW) {
+					spin_unlock(&kflock->flock_guard);
+					wait_queue_wait(&existing_kflock.exlock.lock.wq,
+							SCHED_TIMEOUT_INFINITE);
+					spin_lock(&kflock->flock_guard);
+				}
+			}
+			continue;
+
+		case FLOCK_SHARED_INCLUDE:
+		case FLOCK_SHARED_INTERSECT_LEFT:
+		case FLOCK_SHARED_INTERSECT_RIGHT:
+		case FLOCK_SHARED_BORDER_LEFT:
+		case FLOCK_SHARED_BORDER_RIGHT:
+			if (current->task->tid == existing_flock.l_pid) {
+				rc = kflock_lock_cut(kflock, &existing_flock, flock);
+				if (-ENOERR != rc) {
+					spin_unlock(&kflock->flock_guard);
+					return rc;
+				}
+				rc = kflock_exclusive_get(kflock, flock);
+				if (-ENOERR != rc) {
+					spin_unlock(&kflock->flock_guard);
+					return rc;
+				}
+			} else {
+
+			}
+			continue;
+
+		case FLOCK_SHARED_INCLUDED:
+		case FLOCK_SHARED_FIT:
+			rc = kflock_shared_put(kflock, &existing_flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			rc = kflock_exclusive_get(kflock, flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			continue;
+		}
+	}
+
+	/* Leave critical section */
+	spin_unlock(&kflock->flock_guard);
+
+	return -ENOERR;
+}
+
+static int kflock_handle_shared(kflock_t *kflock, struct flock *flock,
+		int cmd) {
+	int rc;
+	int intersection = -1;
+	kflock_both_t existing_kflock;
+	struct flock existing_flock;
+	struct thread *current = thread_self();
+
+	if (cmd & F_GETLK)
+		return kflock_handle_getlk(kflock, flock);
+
+	/* Enter critical section */
+	spin_lock(&kflock->flock_guard);
+
+	while (FLOCK_RANGE_NOT_INTERSECT != intersection) {
+		intersection = kflock_get_disposition(kflock, flock,
+				&existing_kflock, &existing_flock, 0);
+
+		switch(intersection) {
+		case FLOCK_SHARED_INCLUDE:
+		case FLOCK_SHARED_FIT:
+			if (current->task->tid != existing_flock.l_pid) {
+				rc = kflock_shared_get(kflock, flock);
+				if (-ENOERR != rc) {
+					spin_unlock(&kflock->flock_guard);
+					return rc;
+				}
+			}
+			spin_unlock(&kflock->flock_guard);
+			return -ENOERR;
+
+		case FLOCK_SHARED_INCLUDED:
+		case FLOCK_SHARED_INTERSECT_LEFT:
+		case FLOCK_SHARED_INTERSECT_RIGHT:
+		case FLOCK_SHARED_BORDER_LEFT:
+		case FLOCK_SHARED_BORDER_RIGHT:
+			rc = kflock_lock_combine(kflock, &existing_flock, flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			continue;
+
+		case FLOCK_EXCLUSIVE_INCLUDE:
+		case FLOCK_EXCLUSIVE_INTERSECT_LEFT:
+		case FLOCK_EXCLUSIVE_INTERSECT_RIGHT:
+		case FLOCK_EXCLUSIVE_BORDER_LEFT:
+		case FLOCK_EXCLUSIVE_BORDER_RIGHT:
+			rc = kflock_lock_cut(kflock, &existing_flock, flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			rc = kflock_shared_get(kflock, flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			continue;
+
+		case FLOCK_EXCLUSIVE_INCLUDED:
+		case FLOCK_EXCLUSIVE_FIT:
+			rc = kflock_exclusive_put(kflock, &existing_flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			rc = kflock_shared_get(kflock, flock);
+			if (-ENOERR != rc) {
+				spin_unlock(&kflock->flock_guard);
+				return rc;
+			}
+			continue;
+		}
+	}
+
+	/* Leave critical section */
+	spin_unlock(&kflock->flock_guard);
+
+	return -ENOERR;
+}
+
+static int kflock_handle_unlock(kflock_t *kflock, struct flock *flock,
+		int cmd) {
+	if (cmd & F_GETLK)
+		return kflock_handle_getlk(kflock, flock);
+
+	switch (flock->l_type) {
+	case F_RDLCK:
+		return kflock_shared_put(kflock, flock);
+	case F_WRLCK:
+		return kflock_exclusive_put(kflock, flock);
+	}
+	return -EINVAL;
 }
 
 /**
- * Common fcntl locking implemetaion
+ * Common fcntl locking implementation
  * Can be used by any fs if it doesn't have own implementation
  * @param File descriptor number
  * @param Operation: F_GETLK, F_SETLK and F_SETLKW
- * @param Sturcture stuct flock with lock description
+ * @param Structure stuct flock with lock description
  * @return ENOERR if operation succeed or -1 and set errno in other way
  */
 int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 	int rc;
 	kflock_t *kflock;
-	/*long *exlock_count;
-	long *shlock_count;
-	spinlock_t *kflock_guard;*/
 	struct idx_desc *idesc;
+	int perm_flags;
 
 	/* Validate lock */
 	if ((rc = kflock_validate_and_fix(flock, fd)) != -ENOERR)
@@ -585,20 +968,31 @@ int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 	 * - fd is validated inside task_self_idx_get */
 	idesc = task_self_idx_get(fd);
 	kflock = &((struct file_desc *) idesc->data->fd_struct)->node->kflock;
-	/*exlock_count = &kflock->exlock_count;
-	shlock_count = &kflock->shlock_count;
-	kflock_guard = &kflock->flock_guard;*/
+	perm_flags = ((struct file_desc *) idesc->data->fd_struct)->flags;
 
 	switch(flock->l_type) {
 	case F_WRLCK:
-		return kflock_handle_exclusive(kflock, flock);
+		if (perm_flags & FS_MAY_WRITE) {
+			return kflock_handle_exclusive(kflock, flock, cmd);
+		} else {
+			return -EPERM;
+		}
 	case F_RDLCK:
-		return kflock_handle_shared(kflock, flock);
+		if (perm_flags & FS_MAY_READ) {
+			return kflock_handle_shared(kflock, flock, cmd);
+		} else {
+			return -EPERM;
+		}
 	case F_UNLCK:
-		return kflock_handle_unlock(kflock, flock);
+		if ((flock->l_type == F_RDLCK && (perm_flags & FS_MAY_READ)) ||
+				(flock->l_type == F_WRLCK && (perm_flags & FS_MAY_WRITE))) {
+			return kflock_handle_unlock(kflock, flock, cmd);
+		} else {
+			return -EPERM;
+		}
 	}
 
-	return -ENOERR;
+	return -EINVAL;
 }
 
 int vfs_fcntl(int fd, int cmd, ... /* arg */ ) {
