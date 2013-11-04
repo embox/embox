@@ -1,0 +1,9 @@
+package embox.test.posix.netdb
+
+module getaddrinfo_test {
+	source "getaddrinfo_test.c"
+
+	depends embox.compat.posix.net.getaddrinfo
+	depends embox.framework.test
+	depends embox.lib.LibCString
+}
