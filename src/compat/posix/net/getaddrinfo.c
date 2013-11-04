@@ -100,10 +100,13 @@ static struct servent * explore_serv(const char *servname,
 
 	if (hints->ai_protocol != 0) {
 		pe = getprotobynumber(hints->ai_protocol);
+#if 0
 		if (pe == NULL) {
 			return NULL; /* error: bad protocol */
 		}
-		proto = pe->p_name;
+#else
+		proto = pe != NULL ? pe->p_name : NULL;
+#endif
 	}
 	else {
 		proto = NULL;
@@ -115,7 +118,7 @@ static struct servent * explore_serv(const char *servname,
 
 	if (hints->ai_flags & AI_NUMERICSERV) {
 		if (1 != sscanf(servname, "%hu", &port)) {
-			return NULL; /* error: bad port */
+			return NULL; /* error: bad port (FIXME EAI_NONAME) */
 		}
 		return servent_make(NULL, port, proto);
 	}
@@ -143,7 +146,7 @@ static int ai_make(int family, int socktype, int protocol,
 	ait->ai.ai_protocol = protocol;
 	ait->ai.ai_addrlen = addrlen;
 	ait->ai.ai_addr = (struct sockaddr *)&ait->__ai_ai_addr_storage;
-	memcpy(&ait->ai.ai_addr, addr, addrlen);
+	memcpy(ait->ai.ai_addr, addr, addrlen);
 	ait->ai.ai_canonname = NULL;
 	ait->ai.ai_next = NULL;
 
@@ -195,12 +198,12 @@ static int explore_node(const char *nodename,
 
 	if (nodename == NULL) {
 		if (hints->ai_flags & AI_PASSIVE) {
-			addr.in.sin_addr.s_addr = INADDR_ANY;
+			addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
 			memcpy(&addr.in6.sin6_addr, &in6addr_any,
 					sizeof addr.in6.sin6_addr);
 		}
 		else {
-			addr.in.sin_addr.s_addr = INADDR_LOOPBACK;
+			addr.in.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 			memcpy(&addr.in6.sin6_addr, &in6addr_loopback,
 					sizeof addr.in6.sin6_addr);
 		}
