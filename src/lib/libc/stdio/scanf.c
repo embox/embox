@@ -180,9 +180,19 @@ static double scan_double(char **in, int base, int width) {
 }
 #endif
 
+#define OPS_LEN_MIN           0x00000040 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
+#define OPS_LEN_SHORT         0x00000080 /* short (d, i); u_short (u, o, x, X); short* (n) */
+#define OPS_LEN_LONG          0x00000100 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
+#define OPS_LEN_LONGLONG      0x00000200 /* llong (d, i); u_llong (u, o, x, X); llong* (n) */
+#define OPS_LEN_MAX           0x00000400 /* intmax_t (d, i); uintmax_t (u, o, x, X); intmax_t* (n) */
+#define OPS_LEN_SIZE          0x00000800 /* size_t (d, i, u, o, x, X); size_t* (n) */
+#define OPS_LEN_PTRDIFF       0x00001000 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
+#define OPS_LEN_LONGFP        0x00002000 /* long double (f, F, e, E, g, G, a, A) */
+
 static int scan(char **in, const char *fmt, va_list args) {
 	int widht;
 	int converted = 0;
+	int ops_len;
 
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -200,11 +210,14 @@ static int scan(char **in, const char *fmt, va_list args) {
 				widht = widht * 10 + (*fmt++ - '0');
 			}
 
-			/* FIXME skip length specifiers */
+			ops_len = 0;
 			switch (*fmt) {
-			case 'l': if (*++fmt == 'l') ++fmt; break;
-			case 'h': if (*++fmt == 'h') ++fmt; break;
-			case 'z': ++fmt; break;
+			case 'h': ops_len = *++fmt != 'h' ? OPS_LEN_SHORT : (++fmt, OPS_LEN_MIN); break;
+			case 'l': ops_len = *++fmt != 'l' ? OPS_LEN_LONG : (++fmt, OPS_LEN_LONGLONG); break;
+			case 'j': ops_len = OPS_LEN_MAX; ++fmt; break;
+			case 'z': ops_len = OPS_LEN_SIZE; ++fmt; break;
+			case 't': ops_len = OPS_LEN_PTRDIFF; ++fmt; break;
+			case 'L': ops_len = OPS_LEN_LONGFP; ++fmt; break;
 			}
 			if (*fmt == '\0')
 				break;
@@ -235,7 +248,27 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 			}
 				break;
-			case 'u':
+			case 'u': {
+				int dst;
+				if (0 != scan_int(in, 10, widht, &dst)) {
+					goto out;
+				}
+
+				switch (ops_len) {
+				default: /* FIXME */
+					*va_arg(args, unsigned int*) = dst;
+					break;
+				case OPS_LEN_MIN:
+					*va_arg(args, unsigned char*) = dst;
+					break;
+				case OPS_LEN_SHORT:
+					*va_arg(args, unsigned short*) = dst;
+					break;
+				}
+
+				++converted;
+			}
+				break;
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
@@ -243,7 +276,17 @@ static int scan(char **in, const char *fmt, va_list args) {
 					goto out;
 				}
 
-				*va_arg(args, int*) = dst;
+				switch (ops_len) {
+				default: /* FIXME */
+					*va_arg(args, int*) = dst;
+					break;
+				case OPS_LEN_MIN:
+					*va_arg(args, char*) = dst;
+					break;
+				case OPS_LEN_SHORT:
+					*va_arg(args, short*) = dst;
+					break;
+				}
 
 				++converted;
 			}
