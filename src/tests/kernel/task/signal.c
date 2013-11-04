@@ -9,6 +9,7 @@
 
 #include <embox/test.h>
 
+#include <signal.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -20,10 +21,6 @@ EMBOX_TEST_SUITE("test for task API");
 
 static volatile char flag = 0;
 static volatile char flag2 = 0;
-
-extern int kill(int tid, int sig);
-
-extern void signal(int sig, void (*hnd)(int));
 
 static void sig_hnd(int sig) {
 	flag = 1;
