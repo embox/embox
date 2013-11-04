@@ -83,7 +83,7 @@ int servent_set_port(struct servent *se, int port) {
 		return -EINVAL;
 	}
 
-	se->s_port = htonl(port);
+	se->s_port = htons(port);
 
 	return 0;
 }
