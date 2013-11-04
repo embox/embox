@@ -83,7 +83,7 @@ int siginfoq_dequeue(struct siginfoq *infoq, int sig, siginfo_t *info) {
 		return -ENOENT;
 
 	// XXX need slist method to unlink an element -- Eldar
-	assert(last_link->next == first_el->link.next);
+	assert(last_link->next == &first_el->link);
 	last_link->next = first_el->link.next;
 	if (infoq->last == &first_el->link)
 		infoq->last = last_link;
