@@ -6,6 +6,7 @@ module All {
 		gethostbyaddr,
 		gethostbyname,
 		gethostent,
+		getnameinfo,
 		getnetbyaddr,
 		getnetbyname,
 		getnetent,
