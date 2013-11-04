@@ -31,7 +31,8 @@ static void *task_hnd(void *arg) {
 
 	signal(9, sig_hnd);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }
@@ -58,7 +59,8 @@ static void *task_hnd2(void *arg) {
 	signal(9, sig_hnd2);
 	signal(1, sig_hnd2);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }

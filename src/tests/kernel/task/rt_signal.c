@@ -30,7 +30,8 @@ static void *test_task_entry(void *data) {
 	test_assert_zero(err);
 
 	while(1)
-		;
+		sleep(0);
+
 	return NULL;
 }
 
