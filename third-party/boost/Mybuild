@@ -3,7 +3,6 @@ package third_party.boost
 static module core {
 	depends embox.lib.LibC
 	depends embox.lib.cxx.libsupcxx
-	depends embox.arch.x86.LibM // FIXME:
 	depends third_party.STLport.core
 
 	source "empty.c" // FIXME: workaround

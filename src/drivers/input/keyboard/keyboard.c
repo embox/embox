@@ -104,14 +104,8 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 
 	return 0;
 }
-static struct input_dev kbd_dev = {
-		.name = "keyboard",
-		.type = INPUT_DEV_KBD,
-		.irq = 1,
-		.event_get = keyboard_get_input_event,
-};
 
-static int keyboard_init(void) {
+static int keyboard_start(struct input_dev *indev) {
 	uint8_t mode;
 
 	/* If 0x64 returns 0xff, then we have no keyboard
@@ -138,8 +132,31 @@ static int keyboard_init(void) {
 
 	keyboard_send_cmd(I8042_CMD_PORT_EN);
 
-	input_dev_register(&kbd_dev);
 	kbd_state = 0;
 
 	return 0;
+}
+
+static int keyboard_stop(struct input_dev *dev) {
+
+	/* TODO */
+	return 0;
+}
+
+static const struct input_dev_ops kbd_input_ops = {
+		.event_get = keyboard_get_input_event,
+		.start = keyboard_start,
+		.stop = keyboard_stop,
+};
+
+static struct input_dev kbd_dev = {
+		.ops = &kbd_input_ops,
+		.name = "keyboard",
+		.type = INPUT_DEV_KBD,
+		.irq = 1,
+};
+
+static int keyboard_init(void) {
+
+	return input_dev_register(&kbd_dev);
 }

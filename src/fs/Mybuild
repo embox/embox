@@ -35,7 +35,6 @@ module xattr {
 module core extends fs_api {
 	source "vfs.c", "path.c"
 
-	depends embox.compat.posix.fs.fsop
 	depends file_desc, node
 	depends embox.fs.driver.repo
 

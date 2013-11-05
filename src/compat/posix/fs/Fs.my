@@ -45,6 +45,9 @@ static module fsop {
 	source "fsop.c"
 
 	depends embox.kernel.task.errno
+	depends embox.fs.core
+	depends embox.fs.Perm
+	depends embox.fs.SysLibFileSystem
 }
 
 static module getcwd {
