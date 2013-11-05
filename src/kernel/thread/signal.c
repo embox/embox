@@ -20,17 +20,21 @@ void thread_signal_handle(void) {
 	struct sigstate *sigstate = &thread->sigstate;
 	struct sigaction *sig_table = task->sig_table;
 
-	sighandler_t handler;
 	siginfo_t info;
 	int sig;
 
 	while ((sig = sigstate_receive(sigstate, &info))) {
+		struct sigaction *act = sig_table + sig;
 
 		// TODO locks?
-		handler = sig_table[sig].sa_handler;
-		assert(handler && "there must be at least a fallback handler");
+		if (act->sa_flags & SA_SIGINFO) {
+			assert(act->sa_sigaction && "expected at least a fallback handler");
+ 			act->sa_sigaction(sig, &info, NULL);
 
-		// TODO passing info
-		handler(sig);
+		} else {
+			assert(act->sa_handler && "expected at least a fallback handler");
+ 			act->sa_handler(sig);
+		}
+
 	}
 }

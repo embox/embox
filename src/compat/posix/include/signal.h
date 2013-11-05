@@ -60,6 +60,14 @@
 
 #define _SIG_TOTAL  64
 
+#define SA_NOCLDSTOP  (0x1ul << 0)
+#define SA_NOCLDWAIT  (0x1ul << 1)
+#define SA_SIGINFO    (0x1ul << 2)
+#define SA_ONSTACK    (0x1ul << 3)
+#define SA_RESTART    (0x1ul << 4)
+#define SA_NODEFER    (0x1ul << 5)
+#define SA_RESETHAND  (0x1ul << 6)
+
 __BEGIN_DECLS
 
 typedef struct {

@@ -24,6 +24,7 @@ static void *test_task_entry(void *data) {
 	struct sigaction act  = { 0 };
 	int err;
 
+	act.sa_flags = (SA_SIGINFO);
 	act.sa_sigaction = test_sig_handler;
 
 	err = sigaction(MY_SIGRT, &act, NULL);
