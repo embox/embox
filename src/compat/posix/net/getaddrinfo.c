@@ -95,8 +95,11 @@ static struct servent * explore_serv(const char *servname,
 	const char *proto;
 	unsigned short port;
 	struct protoent *pe;
+	struct servent *result;
 
 	assert(hints != NULL);
+
+	result = NULL;
 
 	if (hints->ai_protocol != 0) {
 		pe = getprotobynumber(hints->ai_protocol);
@@ -116,14 +119,18 @@ static struct servent * explore_serv(const char *servname,
 		return servent_make(NULL, 0, proto);
 	}
 
-	if (hints->ai_flags & AI_NUMERICSERV) {
-		if (1 != sscanf(servname, "%hu", &port)) {
-			return NULL; /* error: bad port (FIXME EAI_NONAME) */
-		}
-		return servent_make(NULL, port, proto);
+	if (!(hints->ai_flags & AI_NUMERICSERV)) {
+		result = getservbyname(servname, proto);
 	}
 
-	return getservbyname(servname, proto);
+	if (NULL == result) {
+		if (1 == sscanf(servname, "%hu", &port)) {
+			result = servent_make(NULL, port, proto);
+		}
+		/* error: bad port (FIXME EAI_NONAME) */
+	}
+
+	return result;
 }
 
 static int ai_make(int family, int socktype, int protocol,

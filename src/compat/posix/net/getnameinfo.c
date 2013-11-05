@@ -27,7 +27,7 @@ int getnameinfo(const struct sockaddr *sa, socklen_t salen,
 /**
  * FIXME Stub from Dropbear's fake-rfc2553.c
  */
-int getnameinfo(const struct sockaddr *sa, size_t salen, char *host,
+int getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
                 size_t hostlen, char *serv, size_t servlen, int flags)
 {
 	struct sockaddr_in *sin = (struct sockaddr_in *)sa;
