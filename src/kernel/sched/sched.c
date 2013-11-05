@@ -63,6 +63,7 @@ static inline int in_sched_locked(void) {
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
+	sched_wait_init();
 	runq_init(&rq);
 
 	runq_start(&rq, idle);
@@ -112,7 +113,7 @@ void sched_finish(struct thread *t) {
 			post_switch_if(runq_finish(&rq, t));
 		} else {
 			if (thread_state_sleeping(t->state)) {
-				wait_queue_remove(t->wait_link);
+				t->wait_data.on_notified(t, t->wait_data.data);
 			}
 			t->state = thread_state_do_exit(t->state);
 		}
@@ -172,6 +173,8 @@ static void sched_switch(void) {
 
 	sched_lock();
 	{
+		sched_wait_run();
+
 		if (!switch_posted) {
 			goto out;
 		}
