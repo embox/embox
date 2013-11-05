@@ -27,6 +27,7 @@ struct socket_desc_param {
 	socklen_t *addrlen;
 	int flags;
 };
+#include <net/sock.h>
 
 struct socket_desc {
 	struct idesc idesc;
@@ -42,6 +43,8 @@ extern void socket_desc_check_perm(struct socket_desc *desc, int ops_type,
 		struct socket_desc_param *param);
 
 extern struct socket_desc *socket_desc_get(int idx);
+
+extern struct socket_desc *socket_desc_accept(struct sock *sk);
 
 
 #endif /* SOCKET_DESC_H_ */

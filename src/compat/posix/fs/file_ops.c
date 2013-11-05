@@ -227,7 +227,7 @@ int fcntl(int fd, int cmd, ...) {
 		break;
 	}
 
-
+#if 0
 	if (NULL == ops->fcntl) {
 		if(NULL == ops->ioctl) {
 			res = -ENOSYS;
@@ -240,6 +240,9 @@ int fcntl(int fd, int cmd, ...) {
 	}
 
 	res = ops->fcntl(desc, cmd, args);
+#endif
+
+	res = ops->ioctl(desc, cmd, (void *)flag);
 
 	va_end(args);
 	end:

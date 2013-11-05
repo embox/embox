@@ -83,11 +83,6 @@ int kbind(struct sock *sk, const struct sockaddr *addr,
 	else if (sk->opt.so_domain != addr->sa_family) {
 		return -EAFNOSUPPORT;
 	}
-#if 0
-	else if (!sr_is_saddr_free(sk, (struct sockaddr *)addr)) {
-		return -EADDRINUSE;
-	}
-#endif
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->bind == NULL) {

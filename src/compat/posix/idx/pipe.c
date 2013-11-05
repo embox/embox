@@ -47,7 +47,7 @@ struct pipe {
 static int pipe_close(struct idx_desc *desc);
 static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte);
 static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte);
-static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args);
+//static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args);
 
 /* Set size of pipe's buffer. */
 static void pipe_set_buf_size(struct pipe *pipe, size_t size);
@@ -75,13 +75,13 @@ static inline void reading_disable(struct pipe *pipe) {
 static const struct task_idx_ops read_ops = {
 		.read = pipe_read,
 		.close = pipe_close,
-		.fcntl = pipe_fcntl,
+		//.fcntl = pipe_fcntl,
 };
 
 static const struct task_idx_ops write_ops = {
 		.write = pipe_write,
 		.close = pipe_close,
-		.fcntl = pipe_fcntl,
+		//.fcntl = pipe_fcntl,
 };
 
 int pipe(int pipefd[2]) {
@@ -258,8 +258,8 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 
 	return len;
 }
-
-static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args) {
+#if 0
+static inline int pipe_fcntl(struct idx_desc *data, int cmd, va_list args) {
 	struct pipe *pipe;
 	size_t size;
 
@@ -278,6 +278,7 @@ static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args) {
 
 	return 0;
 }
+#endif
 
 static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
 	void *storage;
@@ -323,6 +324,23 @@ static int inject_ops(int fd, const struct task_idx_ops *ops, const struct termi
 }
 
 static int pipe_pty_ioctl(struct idx_desc *desc, int request, void *data) {
+	struct pipe *pipe;
+	size_t size;
+
+	pipe = (struct pipe*) task_idx_desc_data(data);
+
+	switch (request) {
+	case F_GETPIPE_SZ:
+		return pipe->buf_size;
+	case F_SETPIPE_SZ:
+		size = (size_t)data;
+		pipe_set_buf_size(pipe, size);
+		break;
+	default:
+		break;
+	}
+
+
 	return 0;
 }
 
@@ -365,7 +383,7 @@ static const struct task_idx_ops pipe_pty_ops = {
 		.write = pipe_pty_write,
 		.read  = pipe_read,
 		.close = pipe_close,
-		.fcntl = pipe_fcntl,
+		//.fcntl = pipe_fcntl,
 		.ioctl = pipe_pty_ioctl,
 		.fstat = pipe_pty_fstat,
 };

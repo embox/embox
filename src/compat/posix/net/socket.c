@@ -12,10 +12,10 @@
 #include <errno.h>
 #include <stddef.h>
 #include <sys/uio.h>
+#include <sys/socket.h>
 
 #include <net/socket/ksocket.h>
 #include <net/sock.h>
-#include <sys/socket.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <net/socket/socket_desc.h>
@@ -115,11 +115,13 @@ int listen(int sockfd, int backlog) {
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int ret, new_sockfd;
 	struct sock *new_sk;
-	struct socket_desc_param param = { addr, NULL};
+	struct socket_desc_param param = { addr, addrlen};
 	struct socket_desc *sdesc;
+	struct socket_desc *accept_sdesc;
 
 	sdesc = socket_desc_get(sockfd);
 	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_ACCEPT, &param);
+
 
 	ret = kaccept(idx2sock(sockfd), addr, addrlen,
 			idx2flags(sockfd), &new_sk);
@@ -127,6 +129,9 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
+
+	accept_sdesc = socket_desc_accept(new_sk);
+	socket_desc_check_perm(accept_sdesc, SOCKET_DESC_OPS_ACCEPT, NULL);
 
 	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk,
 			&new_sk->ios);

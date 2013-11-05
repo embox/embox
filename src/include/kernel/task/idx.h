@@ -54,7 +54,7 @@ struct task_idx_ops {
 	int (*write)(struct idx_desc *data, const void *buf, size_t nbyte);
 	int (*close)(struct idx_desc *data);
 	int (*ioctl)(struct idx_desc *data, int request, void *);
-	int (*fcntl)(struct idx_desc *data, int cmd, va_list args);
+	//int (*fcntl)(struct idx_desc *data, int cmd, va_list args);
 	int (*fseek)(struct idx_desc *data, long int offset, int origin);
 	long int (*ftell)(struct idx_desc *data);
 	int (*fstat)(struct idx_desc *data, void *buff);
@@ -93,41 +93,9 @@ static inline struct io_sync * task_idx_desc_ios(struct idx_desc *desc) {
 	return task_idx_indata(desc)->ios;
 }
 
-#if 0
-/**
- * @brief Allocate idx descriptor structure with type and data
- *
- * @param type idx descriptor type
- * @param data pointer for idx descriptor data
- *
- * @return
- */
-extern struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *ops, void *data);
-#endif
-#if 0
-/**
- * @brief idx utillity: get reference count by idx
- * @param desc idx descriptor to get
- * @return count of references to idx resource
- */
-static inline int task_idx_desc_link_count(struct idx_desc *desc) {
-	assert(desc);
-	return desc->data->link_count;
-}
-
-/**
- * @brief idx utillity: update reference count by idx
- * @param desc idx descriptor to update
- * @param d references count delta
- * @return new count of references to idx resource
- */
-static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
-	assert(desc);
-	return (desc->data->link_count += d);
-}
-#endif
 
 #include <util/idx_table.h>
+#include <kernel/task.h>
 
 struct task_idx_table {
 	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, TASKS_RES_QUANTITY);
@@ -184,7 +152,7 @@ static inline int task_idx_table_unbind(struct task_idx_table *res, int idx) {
 
 struct task;
 extern struct task *task_self(void);
-static inline struct task_idx_table *task_idx_table(struct task *task);
+extern struct task_idx_table *task_idx_table(struct task *task);
 
 /**
  * @brief Determ is given fd is valid to use with tasks

@@ -26,6 +26,7 @@ struct idesc_event {
 	struct io_sync io_sync;
 };
 
+#include <kernel/task/idx.h>
 struct idesc {
 	struct idesc_perm idesc_perm;
 	struct idesc_event idesc_event;
