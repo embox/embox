@@ -79,6 +79,8 @@ struct flock {
 /* Temporary structures, should be moved later */
 
 #include <kernel/thread/sync/mutex.h>
+#include <sched.h>
+/*
 typedef struct kflock_exclusive {
 	struct mutex      lock;
 	struct dlist_head kflock_link;
@@ -108,23 +110,24 @@ typedef struct kflock {
 	long              shlock_count;
 	spinlock_t        flock_guard;
 } kflock_t;
+*/
 
-/*
 typedef struct kflock_lock {
-	short             type;
+	/*short             type;
 	short             whence;
 	off_t             start;
 	off_t             len;
-	pid_t             pid;
+	pid_t             pid;*/
+	struct flock      flock;
 	struct dlist_head kflock_link;
 	struct wait_queue wq;
-};
+} kflock_lock_t;
 
 typedef struct kflock {
 	struct dlist_head locks;
-	spinlock_t        kflock_quard;
+	spinlock_t        kflock_guard;
 } kflock_t;
-*/
+
 /* Remove till here */
 __END_DECLS
 
