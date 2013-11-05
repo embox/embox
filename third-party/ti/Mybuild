@@ -2,6 +2,8 @@ package third_party.ti
 
 module syslink {
 	depends embox.lib.LibC
+	depends embox.compat.posix.sched
+	depends embox.compat.posix.util.sleep
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ti syslink-driver MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' THIRDPARTY_DIR=$(abspath $(THIRDPARTY_DIR)) ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CC='$(CC)' EMBOX_CXX='$(CXX)' EMBOX_LD='$(LD)' EMBOX_OBJCOPY='$(OBJCOPY)'")
 
