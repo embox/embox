@@ -14,12 +14,14 @@
 #include <fs/idesc.h>
 #include <net/socket/socket_desc.h>
 
-#define SOCKET_DESC_OPS_SOCKET   0
-#define SOCKET_DESC_OPS_BIND     1
-#define SOCKET_DESC_OPS_CONNECT  2
-#define SOCKET_DESC_OPS_LISTEN   3
-#define SOCKET_DESC_OPS_ACCEPT   4
-#define SOCKET_DESC_OPS_SEND     5
+#define SOCKET_DESC_OPS_SOCKET    0
+#define SOCKET_DESC_OPS_BIND      1
+#define SOCKET_DESC_OPS_CONNECT   2
+#define SOCKET_DESC_OPS_LISTEN    3
+#define SOCKET_DESC_OPS_ACCEPT    4
+#define SOCKET_DESC_OPS_SEND      5
+#define SOCKET_DESC_OPS_RECV      6
+#define SOCKET_DESC_OPS_SHUTDOWN  7
 
 
 struct socket_desc_param {

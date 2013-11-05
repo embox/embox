@@ -180,6 +180,12 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	struct msghdr msg;
 	struct iovec iov;
 
+	struct socket_desc *sdesc;
+	struct socket_desc_param param = { addr, addrlen};
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_SEND, &param);
+
 	msg.msg_name = (void *)addr;
 	msg.msg_namelen = addrlen;
 	msg.msg_iov = &iov;
@@ -202,6 +208,11 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	int ret;
 	struct msghdr msg_;
 
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_SEND, NULL);
+
 	memcpy(&msg_, msg, msg != NULL ? sizeof msg_ : 0);
 	msg_.msg_flags = flags;
 
@@ -219,6 +230,11 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_RECV, NULL);
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -244,6 +260,12 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+
+	struct socket_desc *sdesc;
+	struct socket_desc_param param = { addr, addrlen};
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_RECV, &param);
 
 	msg.msg_name = (void *)addr;
 	msg.msg_namelen = addrlen != NULL ? *addrlen : 0;
@@ -271,6 +293,11 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	int ret;
 	struct msghdr msg_;
 
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_RECV, NULL);
+
 	memcpy(&msg_, msg, msg != NULL ? sizeof msg_ : 0);
 	msg_.msg_flags = flags;
 
@@ -290,6 +317,10 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 /* fcntl */
 int shutdown(int sockfd, int how) {
 	int ret;
+	struct socket_desc *sdesc;
+
+	sdesc = socket_desc_get(sockfd);
+	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_SHUTDOWN, NULL);
 
 	ret = kshutdown(idx2sock(sockfd), how);
 	if (ret != 0){
