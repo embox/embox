@@ -102,6 +102,24 @@ struct sigaction {
 	} /* unnamed */;
 };
 
+// TODO Consider moving the following two types into ucontext.h -- Eldar
+
+typedef int mcontext_t; // XXX stub
+
+typedef struct {
+	void     *ss_sp;       /* stack base or pointer */
+	size_t    ss_size;     /* stack size */
+	int       ss_flags;    /* flags */
+} stack_t;
+
+struct _ucontext {
+	struct _ucontext *uc_link;     /* resumed when this context returns */
+	sigset_t    uc_sigmask;  /* blocked when this context is active */
+	stack_t     uc_stack;    /* the stack used by this context */
+	mcontext_t  uc_mcontext; /* machine-specific representation */
+};
+typedef struct _ucontext ucontext_t;
+
 /* Non-standard GNU extension. */
 typedef void (*sighandler_t)(int);
 
