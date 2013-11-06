@@ -41,7 +41,6 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	char *name;
 	struct node *node;
-	//struct file_desc *fdesc;
 
 	if (strlen(path) > PATH_MAX) {
 		return -ENAMETOOLONG;

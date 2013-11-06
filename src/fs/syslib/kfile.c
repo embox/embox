@@ -237,14 +237,8 @@ int kfstat(struct file_desc *desc, struct stat *stat_buff) {
 	return 0;
 }
 
-int kioctl(struct file_desc *desc, int request, ...) {
+int kioctl(struct file_desc *desc, int request, void *data) {
 	int ret;
-	va_list args;
-	void *data;
-
-	va_start(args, request);
-	data = va_arg(args, void *);
-	va_end(args);
 
 	if (NULL == desc) {
 		SET_ERRNO(EBADF);

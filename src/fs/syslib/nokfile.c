@@ -33,7 +33,7 @@ int kfstat(struct file_desc *desc, void *buff) {
 	return -1;
 }
 
-int kioctl(struct file_desc *fp, int request, ...) {
+int kioctl(struct file_desc *fp, int request, void *data) {
 	return -1;
 }
 
