@@ -112,8 +112,8 @@ extern int sigaddset(sigset_t *, int signo);
 extern int sigdelset(sigset_t *, int signo);
 
 extern sighandler_t signal(int signo, sighandler_t fn);
-extern int sigaction(int signo, const struct sigaction *restrict act,
-		struct sigaction *restrict oact);
+extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
+		struct sigaction * /*restrict*/ oact);
 
 extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
