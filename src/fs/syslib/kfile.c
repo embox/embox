@@ -28,23 +28,24 @@
 
 extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
 
-struct file_desc *kopen(const char *path, int flag, mode_t mode) {
-	struct node *node;
+struct file_desc *kopen(struct node *node, int flag) {
+	//struct node *node;
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
 	int ret;
 
-	assert(path);
+	assert(node);
 	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
 	assert(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
-
+#if 0
 	ret = fs_perm_lookup(NULL, path, &path, &node);
 
 	if (-EACCES == ret) {
 		SET_ERRNO(EACCES);
 		return NULL;
 	}
+#endif
 
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */

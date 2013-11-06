@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-struct file_desc *kopen(const char *path, int flag) {
+struct file_desc *kopen(struct node *node, int flag) {
 	return NULL;
 }
 

@@ -65,7 +65,7 @@ int open(const char *path, int __oflag, ...) {
 
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
-			if(NULL == kcreat(dir->node, name, mode)) {
+			if(NULL == (node = kcreat(dir->node, name, mode))) {
 				rc =  -1;
 				goto out;
 			}
@@ -90,10 +90,7 @@ int open(const char *path, int __oflag, ...) {
 		goto out;
 	}
 
-//	fdesc = file_desc_create(node, __oflag);
-//	file_desc_perm_check(fdesc);
-
-	kfile = kopen(path, __oflag, mode);
+	kfile = kopen(node, __oflag);
 	if (NULL == kfile) {
 		rc = -1;
 		goto out;
