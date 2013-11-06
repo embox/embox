@@ -17,6 +17,7 @@ module core {
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.net.gai_strerror
 	depends embox.compat.posix.net.getaddrinfo
+	depends embox.compat.posix.net.getnameinfo
 
 	source "empty.c" // FIXME: workaround
 

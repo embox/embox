@@ -29,6 +29,10 @@ static module getaddrinfo {
 	source "getaddrinfo.c"
 }
 
+static module getnameinfo {
+	source "getnameinfo.c"
+}
+
 static module gethostbyaddr {
 	source "gethostbyaddr.c"
 

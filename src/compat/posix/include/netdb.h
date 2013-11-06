@@ -201,6 +201,7 @@ extern void freeaddrinfo(struct addrinfo *ai);
 #define EAI_SYSTEM    9 /* A system error occurred. The error code
 						   can be found in errno */
 #define EAI_OVERFLOW 10 /* An argument buffer overflowed */
+#define EAI_NODATA   11 /* No address associated with nodename */
 
 /**
  * Manipulation with address information error codes
@@ -210,12 +211,10 @@ extern const char * gai_strerror(int error_code);
 /**
  * Address name information functions
  */
-static inline
+extern
 int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-		char *node, socklen_t nodelen, char *serv,
-		socklen_t servlen, int flags) {
-	return EAI_FAIL;
-}
+		char *node, size_t nodelen, char *serv,
+                size_t servlen, int flags);
 
 __END_DECLS
 

@@ -18,7 +18,9 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 
 	nsec = timespec_to_ns(rqtp);
 
-	res = ksleep(nsec * 1000);
+	/* 10^-9 = nsec; 10^-3 = msec;
+ 	 n * nsec = (n / 1_000_000) * msec */
+	res = ksleep(nsec / 1000000);
 	if (res < 0) {
 		if (NULL != rmtp) {
 			clock_gettime(0, rmtp);
