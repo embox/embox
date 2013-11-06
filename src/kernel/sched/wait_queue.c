@@ -45,14 +45,14 @@ static int wait_locked(unsigned long timeout) {
 	assert(thread_state_running(current->state));
 	assert(current->wait_link); /* Should be prepared */
 
+	sched_sleep(current);
+
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
 			return ret;
 		}
 	}
-
-	sched_sleep(current);
 
 	sched_unlock();
 
@@ -134,16 +134,15 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 
 void wait_queue_thread_notify(struct thread *thread, int result) {
 	assert(thread);
+	assert(thread_state_sleeping(thread->state));
 
 	irq_lock();
 	{
-		if (thread_state_sleeping(thread->state)) {
-			thread->wait_link->result = result;
+		thread->wait_link->result = result;
 
-			sched_wake(thread);
+		sched_wake(thread);
 
-			wait_queue_remove(thread->wait_link);
-		}
+		wait_queue_remove(thread->wait_link);
 	}
 	irq_unlock();
 }
