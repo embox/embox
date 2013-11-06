@@ -41,7 +41,7 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	char *name;
 	struct node *node;
-	struct file_desc *fdesc;
+	//struct file_desc *fdesc;
 
 	if (strlen(path) > PATH_MAX) {
 		return -ENAMETOOLONG;
@@ -58,6 +58,11 @@ int open(const char *path, int __oflag, ...) {
 	name = basename((char *)path);
 	node = find_node(dir, name);
 
+	if (__oflag & O_DIRECTORY) {
+		assert(0);
+		opendir(path);
+	}
+
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
 			if(NULL == kcreat(dir->node, name, mode)) {
@@ -70,6 +75,8 @@ int open(const char *path, int __oflag, ...) {
 			rc = -1;
 			goto out;
 		}
+	} else if (__oflag & O_TRUNC) {
+		ktruncate(node, 0);
 	}
 
 	if (__oflag & O_EXCL) {
@@ -83,8 +90,8 @@ int open(const char *path, int __oflag, ...) {
 		goto out;
 	}
 
-	fdesc = file_desc_create(node, __oflag, mode);
-	file_desc_perm_check(fdesc);
+//	fdesc = file_desc_create(node, __oflag);
+//	file_desc_perm_check(fdesc);
 
 	kfile = kopen(path, __oflag, mode);
 	if (NULL == kfile) {

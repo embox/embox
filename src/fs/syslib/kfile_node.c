@@ -76,6 +76,7 @@ struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 		return NULL;
 	}
 
+
 	return child;
 }
 

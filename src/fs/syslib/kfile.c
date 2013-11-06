@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <err.h>
+
 #include <fs/vfs.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
@@ -31,21 +33,16 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
-	int perm_flags, ret;
+	int ret;
 
 	assert(path);
-	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead");
-
+	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
+	assert(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
 	ret = fs_perm_lookup(NULL, path, &path, &node);
 
 	if (-EACCES == ret) {
 		SET_ERRNO(EACCES);
-		return NULL;
-	}
-
-	if (node_is_directory(node)) {
-		SET_ERRNO(EISDIR);
 		return NULL;
 	}
 
@@ -70,37 +67,21 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
-	/* allocate new descriptor */
-	if (NULL == (desc = file_desc_alloc())) {
-		SET_ERRNO(ENOMEM);
+
+	desc = file_desc_create(node, flag);
+	if (0 != err(desc)) {
+		SET_ERRNO(-(int)desc);
 		return NULL;
 	}
-
-	desc->node = node;
 	desc->ops = ops;
-	perm_flags = ((flag & O_WRONLY || flag & O_RDWR) ? FS_MAY_WRITE : 0)
-		| ((flag & O_WRONLY) ? 0 : FS_MAY_READ);
-	desc->flags = perm_flags | ((flag & O_APPEND) ? FS_MAY_APPEND : 0);
-	desc->cursor = 0;
-	io_sync_init(&desc->ios, 0, 0);
-
-
-	if (0 > (ret = fs_perm_check(node, perm_flags))) {
-		goto free_out;
-	}
 
 	if (0 > (ret = desc->ops->open(node, desc, flag))) {
 		goto free_out;
 	}
 
-	if (flag & O_TRUNC) {
-		/*if (0 > (ret = ktruncate(desc->node, 0))) { }*/
-		ktruncate(desc->node, 0);
-	}
-
 free_out:
 	if (ret < 0) {
-		file_desc_free(desc);
+		file_desc_destroy(desc);
 		SET_ERRNO(-ret);
 		return NULL;
 	}
@@ -201,7 +182,8 @@ int kclose(struct file_desc *desc) {
 	}
 
 	desc->ops->close(desc);
-	file_desc_free(desc);
+
+	file_desc_destroy(desc);
 
 	return 0;
 }

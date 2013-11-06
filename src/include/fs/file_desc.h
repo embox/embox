@@ -32,13 +32,11 @@ struct file_desc {
 	struct io_sync ios;
 };
 
-extern struct file_desc *file_desc_alloc(void);
 
-extern void file_desc_free(struct file_desc *desc);
 struct node;
-extern struct file_desc *file_desc_create(struct node *node, int __oflag, mode_t imode);
+extern struct file_desc *file_desc_create(struct node *node, int __oflag);
 
-extern int file_desc_desctroy(struct file_desc *);
+extern int file_desc_destroy(struct file_desc *);
 extern int file_desc_perm_check(struct file_desc *);
 
 #endif /* FS_FILE_DESC_H_ */
