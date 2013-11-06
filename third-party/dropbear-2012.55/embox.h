@@ -22,8 +22,7 @@
 
 /* end <sys/wait.h> */
 
-#define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
-
+#include <signal.h>
 
 //---------------------------------------------------
 /* <unistd.h */

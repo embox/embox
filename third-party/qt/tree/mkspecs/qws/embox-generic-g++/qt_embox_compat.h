@@ -91,13 +91,6 @@ static inline int strcoll(const char *s1, const char *s2) {
 }
 
 // The following definitions are needed only for testlib and are not linked
-#define SA_RESETHAND 0
-
-
-/*
-#define SA_NOCLDSTOP 0
-*/
-
 
 // Required by libtiff
 static inline void *
