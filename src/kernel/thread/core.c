@@ -28,6 +28,7 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
+#include <kernel/thread/signal.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/sched/sched_priority.h>
@@ -205,6 +206,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	context_set_stack(&t->context,
 			thread_stack_get(t) + thread_stack_get_size(t));
 
+	sigstate_init(&t->sigstate);
 	sched_strategy_init(t);
 
 	t->wait_data.status = WAIT_DATA_STATUS_NONE;

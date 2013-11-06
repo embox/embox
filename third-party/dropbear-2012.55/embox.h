@@ -22,18 +22,8 @@
 
 /* end <sys/wait.h> */
 
-/* <sygnal.h> */
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
 
-static inline int sigemptyset(sigset_t *set) {
-	return -1;
-}
-
-static inline int sigaction(int sig, const struct sigaction *act,
-		struct sigaction *oact) {
-	return 0;
-}
-/* end <sygnal.h> */
 
 //---------------------------------------------------
 /* <unistd.h */

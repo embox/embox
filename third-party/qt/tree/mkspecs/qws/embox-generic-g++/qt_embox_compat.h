@@ -90,58 +90,13 @@ static inline int strcoll(const char *s1, const char *s2) {
 	return strcmp(s1, s2);
 }
 
-
-// This is because of pid_t & uid_t
-#include <sys/types.h>
-
-// The definition is not precise, please revise
-/*typedef struct {
-	int si_signo;
-	int si_code;
-        //union sigval si_value;
-	int si_errno;
-	pid_t si_pid;
-	uid_t si_uid;
-	void *si_addr;
-	int si_status;
-	int si_band;
-} siginfo_t;*/
-
-typedef int sigset_t;
-
-/*struct sigaction {
-    void (*sa_handler)(int);
-    void (*sa_sigaction)(int, siginfo_t *, void *);
-    sigset_t sa_mask;
-    int sa_flags;
-    void (*sa_restorer)(void);
-};*/
-
-
-
 // The following definitions are needed only for testlib and are not linked
 #define SA_RESETHAND 0
-int sigaddset(sigset_t *set, int signum);
-int sigismember(const sigset_t *set, int signum);
-
-
 
 
 /*
 #define SA_NOCLDSTOP 0
 */
-
-static inline int sigemptyset(sigset_t *set) {
-	*set = 0;
-	printf(">>> sigemptyset()\n");
-	return -1;
-}
-
-static inline int sigaction(int signum, const struct sigaction *act,
-	      struct sigaction *oldact) {
-	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
-	return -1;
-}
 
 
 // Required by libtiff

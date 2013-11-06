@@ -34,8 +34,13 @@ static module wait {
 static module signal {
 	source "signal.c"
 
-	depends embox.kernel.task.std_signal
-	depends embox.kernel.task.rt_signal
+	depends embox.kernel.thread.signal
+	depends sigset
+}
+
+static module sigset {
+	source "sigset.c"
+	depends embox.util.Bitmap
 }
 
 static module exit {
