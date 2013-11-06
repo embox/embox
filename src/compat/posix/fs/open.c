@@ -41,6 +41,7 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	char *name;
 	struct node *node;
+	struct file_desc *fdesc;
 
 	if (strlen(path) > PATH_MAX) {
 		return -ENAMETOOLONG;
@@ -81,6 +82,9 @@ int open(const char *path, int __oflag, ...) {
 		rc = -1;
 		goto out;
 	}
+
+	fdesc = file_desc_create(node, __oflag, mode);
+	file_desc_perm_check(fdesc);
 
 	kfile = kopen(path, __oflag, mode);
 	if (NULL == kfile) {

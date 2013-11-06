@@ -181,7 +181,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	struct iovec iov;
 
 	struct socket_desc *sdesc;
-	struct socket_desc_param param = { addr, addrlen};
+	struct socket_desc_param param = { addr, &addrlen};
 
 	sdesc = socket_desc_get(sockfd);
 	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_SEND, &param);
