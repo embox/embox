@@ -57,14 +57,6 @@ struct sockaddr_un {
 
 #define INADDR_LOOPBACK     ((unsigned long int)0x7f000001) /* 127.0.0.1 */
 
-struct sockaddr_storage {
-	union {
-		struct sockaddr_in sin;
-		struct sockaddr_in6 sin6;
-		struct sockaddr_un sun;
-	} addr;
-};
-
 static inline char *tempnam(const char *dir, const char *pfx) {
 	DPRINT();
 	return NULL;
@@ -78,47 +70,14 @@ static inline int socketpair(int domain, int type, int protocol, int sv[2]) {
 	return -1;
 }
 
-typedef struct addrinfo {
-  int             ai_flags;
-  int             ai_family;
-  int             ai_socktype;
-  int             ai_protocol;
-  size_t          ai_addrlen;
-  char            *ai_canonname;
-  struct sockaddr  *ai_addr;
-  struct addrinfo  *ai_next;
-};
-
 #define AI_PASSIVE 0x100
 #define AI_NUMERICHOST 0x200
 
 #define EAI_MEMORY 1
 #define EAI_FAIL 2
 
-static inline
-int getaddrinfo(const char *node, const char *service,
-                       const struct addrinfo *hints,
-                       struct addrinfo **res) {
-	DPRINT();
-	return EAI_FAIL;
-}
-
-static inline
-void freeaddrinfo(struct addrinfo *res) {
-	DPRINT();
-	return;
-}
-
 #define NI_MAXHOST 1
 #define NI_NUMERICHOST 2
-
-static inline
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-                       char *host, size_t hostlen,
-                       char *serv, size_t servlen, int flags) {
-	DPRINT();
-	return EAI_FAIL;
-}
 
 #define SIG_BLOCK 1
 
