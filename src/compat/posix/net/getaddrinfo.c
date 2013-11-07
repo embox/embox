@@ -292,8 +292,23 @@ static int explore_node(const char *nodename,
 				if (*family != he->h_addrtype) {
 					continue;
 				}
-				sa = (struct sockaddr *)*he_addr;
-				salen = he->h_length;
+				if (*family == AF_INET) {
+					if (he->h_length != sizeof(addr.in.sin_addr)) {
+						continue;
+					}
+					addr.in.sin_addr = *((struct in_addr *)*he_addr);
+					sa = (struct sockaddr *)&addr.in;
+					salen = sizeof addr.in;
+				}
+				else {
+					assert(*family == AF_INET6);
+					if (he->h_length != sizeof(addr.in6.sin6_addr)) {
+						continue;
+					}
+					addr.in6.sin6_addr = *((struct in6_addr *)*he_addr);
+					sa = (struct sockaddr *)&addr.in6;
+					salen = sizeof addr.in6;
+				}
 				ret = ai_make(*family, *socktype, *protocol,
 						salen, sa, ai_last_ptr);
 				if (ret != 0) {
