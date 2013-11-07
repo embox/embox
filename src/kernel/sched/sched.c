@@ -63,7 +63,7 @@ static inline int in_sched_locked(void) {
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
-	runq_init(&rq);
+	runq_queue_init(&rq.queue);
 
 	runq_start(&rq, idle);
 

@@ -29,19 +29,6 @@ struct runq;				/* Queue of running threads  */
  */
 extern void sched_strategy_init(struct thread *t);
 
-/**
- * Initializes queue of running threads. Makes activate current and idle
- * threads. Current and idle threads must be inactive.
- *
- * @param runq
- *   Running queue.
- * @param current
- *   Thread which will be first.
- * @param idle
- *   Idle thread.
- */
-extern void runq_init(struct runq *runq);
-
 #if 0
 /**
  * Finilize queue of running threads.
