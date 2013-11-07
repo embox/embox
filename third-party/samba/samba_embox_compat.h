@@ -38,19 +38,9 @@ int statfs(const char *path, struct statfs *buf);
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 
-#include <signal.h>
-
-
-static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
-	printf(">>> sigprocmask(%i,%p,%p)\n",how,set,oldset);
-	return -1;
-}
-
 #define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
 #include <sys/select.h>
-// ToDo: this is actually already defined
-#define FD_SETSIZE (_FDSETWORDS*_FDSETBITSPERWORD)
 
 #include <assert.h>
 #undef assert
