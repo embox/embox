@@ -122,13 +122,20 @@ void sched_sleep(struct thread *t) {
 
 void sched_finish(struct thread *t) {
 	assert(!in_harder_critical());
+	assert(t);
 
 	sched_lock();
 	{
 		assert(!thread_state_exited(t->state));
 
 		if (thread_state_running(t->state)) {
-			post_switch_if(runq_finish(&rq, t));
+			int is_current = t == thread_self();
+
+			t->state = thread_state_do_exit(t->state);
+			if (!is_current) {
+				runq_queue_remove(&rq.queue, t);
+			}
+			post_switch_if(is_current);
 		} else {
 			if (thread_state_sleeping(t->state)) {
 				wait_queue_remove(t->wait_link);

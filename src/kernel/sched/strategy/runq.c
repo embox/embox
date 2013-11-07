@@ -28,19 +28,6 @@ void sched_strategy_init(struct thread *t) {
 	sched_timing_init(t);
 }
 
-int runq_finish(struct runq *rq, struct thread *t) {
-	int is_current;
-	assert(rq && t);
-	assert(thread_state_running(t->state));
-
-	t->state = thread_state_do_exit(t->state);
-	if (!(is_current = (t == thread_self()))) {
-		runq_queue_remove(&rq->queue, t);
-	}
-
-	return is_current;
-}
-
 int runq_wake_thread(struct runq *rq, struct thread *t) {
 	struct thread *current = thread_self();
 
