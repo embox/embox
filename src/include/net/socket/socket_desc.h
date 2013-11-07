@@ -33,7 +33,7 @@ struct socket_desc_param {
 
 struct socket_desc {
 	struct idesc idesc;
-	struct sock sk;
+	struct sock *sk;
 };
 
 extern struct socket_desc *socket_desc_create(int domain, int type,

@@ -38,6 +38,7 @@ int ksocket(int family, int type, int protocol,
 	if (ret != 0) {
 		return ret;
 	}
+	sock_hash(new_sk);
 
 	sock_set_state(new_sk, SS_UNCONNECTED);
 
