@@ -15,8 +15,8 @@
 #define GPIO6_MODULE 6 // FIXME
 
 void pin_config_input(pin_mask_t mask) {
-	uint32_t l = gpio_reg_read(GPIO6_MODULE, GPIO_OE);
-	gpio_reg_write(GPIO6_MODULE, GPIO_OE, l | mask);
+	//uint32_t l = gpio_reg_read(GPIO6_MODULE, GPIO_OE);
+	gpio_reg_write(GPIO6_MODULE, GPIO_OE, mask);
 }
 
 void pin_config_output(pin_mask_t mask) {
@@ -39,8 +39,9 @@ void pin_clear_output(pin_mask_t mask) {
 }
 
 void pin_set_input_interrupt(pin_mask_t mask) {
-	uint32_t l = gpio_reg_read(GPIO6_MODULE, GPIO_IRQENABLE1);
-	gpio_reg_write(GPIO6_MODULE, GPIO_IRQENABLE1, l | mask);
+	//uint32_t l = gpio_reg_read(GPIO6_MODULE, GPIO_IRQENABLE1);
+	gpio_reg_write(GPIO6_MODULE, GPIO_IRQENABLE1, mask);
+	gpio_reg_write(GPIO6_MODULE, GPIO_IRQENABLE2, mask);
 }
 
 pin_mask_t pin_get_input_changed(void) {

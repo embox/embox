@@ -29,5 +29,9 @@ static int gpio_init(void) {
 	}
 #endif
 
-	return irq_attach(GPIO_IRQ(6), irq_pin_handler, 0, NULL, "OMAP3 GPIO6 pins");
+	gpio_reg_write(6, GPIO_RISINGDETECT, (1 << 16));
+	gpio_reg_write(6, GPIO_FALLINGDETECT, 0);
+	gpio_reg_write(6, GPIO_LEVELDETECT0, 0);
+	gpio_reg_write(6, GPIO_LEVELDETECT1, 0);
+	return irq_attach(GPIO_IRQ(6), irq_pin_handler, 0, NULL, "OMAP6 GPIO6 pins");
 }

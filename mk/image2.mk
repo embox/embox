@@ -253,7 +253,7 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) | $$(@D)/.
 	-o $@
 
 $(IMAGE_DIS): $(IMAGE)
-	$(OBJDUMP) -S $< > $@
+#	$(OBJDUMP) -S $< > $@
 
 $(IMAGE_SREC): $(IMAGE)
 	@$(OBJCOPY) -O srec $< $@
