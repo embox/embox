@@ -48,20 +48,6 @@ extern void runq_fini(struct runq *runq);
 extern struct thread *runq_current(struct runq *runq);
 
 /**
- * Moves thread from sleeping queue to running one and makes it running.
- *
- * @param runq
- * 	 Runninq queue.
- * @param thread
- *   Thread which will be resumed.
- * @retval 0
- *   Switching of current thread is not required.
- * @retval non-zero
- *   Switching of current thread is required.
- */
-extern int runq_wake_thread(struct runq *runq, struct thread *thread);
-
-/**
  * Switches current thread.
  *
  * @param runq

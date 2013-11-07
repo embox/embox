@@ -101,9 +101,17 @@ void sched_start(struct thread *t) {
 }
 
 void sched_wake(struct thread *t) {
-	assert(in_sched_locked());
+	struct thread *current = thread_self();
 
-	post_switch_if(runq_wake_thread(&rq, t));
+	assert(t != current);
+	assert(in_sched_locked());
+	assert(t);
+	assert(thread_state_sleeping(t->state));
+
+	t->state = thread_state_do_wake(t->state);
+	runq_queue_insert(&rq.queue, t);
+
+	post_switch_if(thread_priority_get(t) > thread_priority_get(current));
 }
 
 void sched_sleep(struct thread *t) {

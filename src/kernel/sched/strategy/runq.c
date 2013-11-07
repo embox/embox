@@ -28,21 +28,6 @@ void sched_strategy_init(struct thread *t) {
 	sched_timing_init(t);
 }
 
-int runq_wake_thread(struct runq *rq, struct thread *t) {
-	struct thread *current = thread_self();
-
-	assert(t && rq);
-	assert(thread_state_sleeping(t->state));
-
-	t->state = thread_state_do_wake(t->state);
-
-	if (t != current) {
-		runq_queue_insert(&rq->queue, t);
-	}
-
-	return thread_priority_get(t) > thread_priority_get(current);
-}
-
 struct thread *runq_switch(struct runq *rq) {
 	struct thread *current = thread_self();
 	struct thread *next;
