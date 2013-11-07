@@ -89,15 +89,6 @@ extern int runq_start(struct runq *runq, struct thread *thread);
 extern int runq_finish(struct runq *runq, struct thread *thread);
 
 /**
- * Makes sleep current thread state and adds it to sleeping queue.
- *
- * @param runq
- *   Running queue.
- */
-extern void runq_wait(struct runq *runq);
-
-
-/**
  * Moves thread from sleeping queue to running one and makes it running.
  *
  * @param runq
@@ -120,23 +111,6 @@ extern int runq_wake_thread(struct runq *runq, struct thread *thread);
  *   Thread to perform next. May equals to current.
  */
 extern struct thread *runq_switch(struct runq *runq);
-
-/**
- * Sets scheduling priority of running thread.
- *
- * @param runq
- *   Running queue.
- * @param thread
- *   Thread from running queue.
- * @param new_priority
- *   New priority.
- * @retval 0
- *   Switching of current thread is not required.
- * @retval non-zero
- *   Switching of current thread is required.
- */
-extern int runq_change_priority(struct runq *runq, struct thread *thread,
-		sched_priority_t new_priority);
 
 
 #endif /* KERNEL_SCHED_SCHED_STRATEGY_H_ */

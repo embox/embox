@@ -78,32 +78,6 @@ int runq_wake_thread(struct runq *rq, struct thread *t) {
 	return thread_priority_get(t) > thread_priority_get(current);
 }
 
-void runq_wait(struct runq *rq) {
-	struct thread *current = thread_self();
-
-	assert(rq);
-
-	current->state = thread_state_do_sleep(current->state);
-	/* we don't remove current because it is not in runq, we just mark it as
-	 * waiting and after sched switch all will be correct
-	 */
-}
-
-int runq_change_priority(struct runq *rq, struct thread *t, sched_priority_t new_priority) {
-	struct thread *current = thread_self();
-
-	assert(rq);
-	assert(t);
-
-	if (current != t) {
-		/* FIXME: */
-		runq_queue_remove(&rq->queue, t);
-		runq_queue_insert(&rq->queue, t);
-	}
-
-	return new_priority > thread_priority_get(current);
-}
-
 struct thread *runq_switch(struct runq *rq) {
 	struct thread *current = thread_self();
 	struct thread *next;

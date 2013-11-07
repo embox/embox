@@ -94,7 +94,10 @@ void sched_sleep(struct thread *t) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(t->state));
 
-	runq_wait(&rq);
+	t->state = thread_state_do_sleep(t->state);
+	/* we don't remove current because it is not in runq, we just mark it as
+	 * waiting and after sched switch all will be correct
+	 */
 
 	assert(thread_state_sleeping(t->state));
 
@@ -131,6 +134,8 @@ void sched_post_switch(void) {
 }
 
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
+	struct thread *current = thread_self();
+
 	assert(t);
 	assert((prior >= SCHED_PRIORITY_MIN) && (prior <= SCHED_PRIORITY_MAX));
 
@@ -140,8 +145,12 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		thread_priority_set(t, prior);
 
-		if (thread_state_running(t->state)) {
-			post_switch_if(runq_change_priority(&rq, t, prior));
+		/* if in runq */
+		if (thread_state_running(t->state) && current != t) {
+			runq_queue_remove(&rq.queue, t);
+			runq_queue_insert(&rq.queue, t);
+
+			post_switch_if(prior > thread_priority_get(current));
 		}
 
 		assert(thread_priority_get(t) == prior);
