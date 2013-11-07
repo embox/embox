@@ -28,22 +28,6 @@ void sched_strategy_init(struct thread *t) {
 	sched_timing_init(t);
 }
 
-int runq_start(struct runq *rq, struct thread *t) {
-	struct thread *current = thread_self();
-
-	assert(rq);
-	assert(t);
-	assert(current != t);
-	assert(!thread_state_active(t->state));
-	assert(!thread_state_exited(t->state));
-
-	t->state = thread_state_do_activate(t->state);
-
-	runq_queue_insert(&rq->queue, t);
-
-	return thread_priority_get(t) > thread_priority_get(current);
-}
-
 int runq_finish(struct runq *rq, struct thread *t) {
 	int is_current;
 	assert(rq && t);

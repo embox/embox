@@ -48,20 +48,6 @@ extern void runq_fini(struct runq *runq);
 extern struct thread *runq_current(struct runq *runq);
 
 /**
- * Makes activate thread state and puts it in running queue.
- *
- * @param runq
- *   Running queue.
- * @param thread
- *   Thread which will be started.
- * @retval 0
- *   Switching of current thread is not required.
- * @retval non-zero
- *   Switching of current thread is required.
- */
-extern int runq_start(struct runq *runq, struct thread *thread);
-
-/**
  * Makes exit thread state and removes from running queue.
  *
  * @param runq

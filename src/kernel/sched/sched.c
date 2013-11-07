@@ -60,12 +60,28 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
+/* Activate thread and add it to runq */
+static int sched_run(struct thread *t) {
+	struct thread *current = thread_self();
+
+	assert(t);
+	assert(current != t);
+	assert(!thread_state_active(t->state));
+	assert(!thread_state_exited(t->state));
+
+	t->state = thread_state_do_activate(t->state);
+
+	runq_queue_insert(&rq.queue, t);
+
+	return thread_priority_get(t) > thread_priority_get(current);
+}
+
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
 	runq_queue_init(&rq.queue);
 
-	runq_start(&rq, idle);
+	sched_run(idle);
 
 	sched_ticker_init();
 
@@ -79,7 +95,7 @@ void sched_start(struct thread *t) {
 
 	sched_lock();
 	{
-		post_switch_if(runq_start(&rq, t));
+		post_switch_if(sched_run(t));
 	}
 	sched_unlock();
 }
