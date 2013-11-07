@@ -47,15 +47,5 @@ extern void runq_fini(struct runq *runq);
  */
 extern struct thread *runq_current(struct runq *runq);
 
-/**
- * Switches current thread.
- *
- * @param runq
- *   Running queue.
- * @retval
- *   Thread to perform next. May equals to current.
- */
-extern struct thread *runq_switch(struct runq *runq);
-
 
 #endif /* KERNEL_SCHED_SCHED_STRATEGY_H_ */

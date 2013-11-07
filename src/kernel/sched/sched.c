@@ -221,14 +221,22 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		next = runq_switch(&rq);
+		if (thread_state_running(prev->state)) {
+			runq_queue_insert(&rq.queue, prev);
+		}
+
+		next = runq_queue_extract(&rq.queue);
+
+		assert(next != NULL);
+		assert(thread_state_running(next->state));
 
 		if (prev == next) {
 			ipl_disable();
 			goto out;
+		} else {
+			prev->state = thread_state_do_outcpu(prev->state);
+			next->state = thread_state_do_oncpu(next->state);
 		}
-
-		assert(thread_state_running(next->state));
 
 		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
 			sched_ticker_init();

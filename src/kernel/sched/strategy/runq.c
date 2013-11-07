@@ -27,26 +27,3 @@ void sched_strategy_init(struct thread *t) {
 	sched_affinity_init(t);
 	sched_timing_init(t);
 }
-
-struct thread *runq_switch(struct runq *rq) {
-	struct thread *current = thread_self();
-	struct thread *next;
-
-	assert(rq);
-
-	if (thread_state_running(current->state)) {
-		runq_queue_insert(&rq->queue, current);
-	}
-
-	next = runq_queue_extract(&rq->queue);
-
-	assert(next != NULL);
-	assert(thread_state_running(next->state));
-
-	if (next != current) {
-		current->state = thread_state_do_outcpu(current->state);
-		next->state = thread_state_do_oncpu(next->state);
-	}
-
-	return next;
-}
