@@ -19,7 +19,7 @@ module input_test {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.kernel.time.clock_source
+	depends embox.driver.input.core
 	depends embox.framework.LibFramework
 }
 
