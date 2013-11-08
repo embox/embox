@@ -63,17 +63,21 @@
 		.details = cmd_details, \
 	}
 
+#if 0
 #define __MOD_APP_DEF(mod_nm) \
-	extern char __app_ ## mod_nm ## _data_vma; \
-	extern char __app_ ## mod_nm ## _data_len; \
-	extern char __app_ ## mod_nm ## _bss_vma;  \
-	extern char __app_ ## mod_nm ## _bss_len;  \
+	extern char __module_ ## mod_nm ## _data_vma; \
+	extern char __module_ ## mod_nm ## _data_len; \
+	extern char __module_ ## mod_nm ## _bss_vma;  \
+	extern char __module_ ## mod_nm ## _bss_len;  \
 	const struct mod_app __MOD_APP(mod_nm) = { \
-		.data    =          &__app_ ## mod_nm ## _data_vma, \
-		.data_sz = (size_t) &__app_ ## mod_nm ## _data_len, \
-		.bss     =          &__app_ ## mod_nm ## _bss_vma,  \
-		.bss_sz  = (size_t) &__app_ ## mod_nm ## _bss_len,  \
+		.data    =          &__module_ ## mod_nm ## _data_vma, \
+		.data_sz = (size_t) &__module_ ## mod_nm ## _data_len, \
+		.bss     =          &__module_ ## mod_nm ## _bss_vma,  \
+		.bss_sz  = (size_t) &__module_ ## mod_nm ## _bss_len,  \
 	}
+#else
+#define __MOD_APP_DEF(mod_nm)
+#endif
 
 #define __MOD_DEP_DEF(mod_nm, dep_nm) \
 	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \

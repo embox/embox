@@ -140,7 +140,7 @@ endif
 module_prereqs = $(common_prereqs) $(o_files) $(a_files)
 
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,.data .bss,--rename-section $s=.app.$(app_id)$s)
+	$(foreach s,text rodata data bss,--rename-section .$s=.module.$(module_id).$s)
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
@@ -148,14 +148,14 @@ $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
 		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
 		A_FILES='$(a_files)' \
 		O_FILES='$(o_files)' \
-		APP_ID='$(app_id)' $(if $(app_id), \
+		APP_ID='$(is_app)' $(if $(is_app), \
 			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
 	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(app_id),$(OBJCOPY) $(objcopy_flags) $@)
+	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $@)
 
 
 # Here goes image creation rules...
