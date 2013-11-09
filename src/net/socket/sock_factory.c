@@ -182,6 +182,8 @@ int sock_create(int family, int type, int protocol, struct sock **out_sk) {
 		}
 	}
 
+	sock_hash(new_sk);
+
 	*out_sk = new_sk;
 
 	return 0;
