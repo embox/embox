@@ -110,11 +110,11 @@ $(ROOTFS_IMAGE) : rel_cpio_files = \
 $(ROOTFS_IMAGE) : | $$(@D)/. $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
-		&& find $(rel_cpio_files) -depth -print | cpio -L --quiet -H newc -o -O $(abspath $@)
+		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
 	then \
 		cd $(USER_ROOTFS_DIR) \
-			&& find * -depth -print | cpio -L --quiet -H newc -o --append -O $(abspath $@); \
+			&& find * -depth -print | $(CPIO) -L --quiet -H newc -o -A -O $(abspath $@); \
 	fi
 	@FILES=`find $(cpio_files) $(USER_ROOTFS_DIR)/* -depth -print 2>/dev/null`; \
 	{                                            \
