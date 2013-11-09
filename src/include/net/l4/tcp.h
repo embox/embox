@@ -141,7 +141,7 @@ extern void tcp_sock_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_sock_unlock(struct tcp_sock *sk, unsigned int obj);
 extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
 		size_t *data_len, struct sk_buff **out_skb);
-extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
+extern void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_sock_get_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);
 
