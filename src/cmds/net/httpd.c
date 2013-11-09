@@ -299,12 +299,12 @@ static int process_response(struct client_info *info) {
 	}
 }
 
-static void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
+static void client_process(int sock, const struct sockaddr *addr) {
 	int res;
 	size_t bytes, bytes_need;
 	struct client_info ci;
 	int (*hnd)(struct client_info *);
-	char *curr;
+	char *curr, buff[INET6_ADDRSTRLEN];
 
 	memset(&ci, 0, sizeof ci);
 
@@ -317,8 +317,16 @@ process_again:
 	assert((hnd == process_request) || (res != HTTP_RET_OK));
 	switch (res) {
 	default:
-		printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port), ci.file);
-		/* Make header: */
+		printf("%s:%d -- upload %s ", inet_ntop(addr->sa_family,
+					addr->sa_family == AF_INET
+						? (void *)&((struct sockaddr_in *)addr)->sin_addr
+						: (void *)&((struct sockaddr_in6 *)addr)->sin6_addr,
+					buff, sizeof buff),
+				addr->sa_family == AF_INET
+					? ntohs(((struct sockaddr_in *)addr)->sin_port)
+					: ntohs(((struct sockaddr_in6 *)addr)->sin6_port),
+				ci.file);
+		/* Make eader: */
 		curr = ci.buff;
 		/* 1. set title */
 		assert((0 <= res) && (res < HTTP_STAT_MAX));
@@ -377,62 +385,95 @@ process_again:
 	close(ci.sock); /* close connection */
 }
 
-static void welcome_message(void){
-	/* FIXME cheat to get local ip */
-	struct in_addr localAddr;
-	struct in_device *in_dev = inetdev_get_by_name("eth0");
-	localAddr.s_addr = in_dev->ifa_address;
-	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
+static void welcome_message(void) {
+	struct in_device *iface;
+	char s_in[INET_ADDRSTRLEN], s_in6[INET6_ADDRSTRLEN];
+
+	iface = inetdev_get_by_name("eth0");
+	assert(iface != NULL);
+
+	printf("Welcome to http://%s", inet_ntop(AF_INET,
+				&iface->ifa_address, s_in, INET_ADDRSTRLEN));
+	printf(" or http://[%s]\n", inet_ntop(AF_INET6,
+				&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
+}
+
+static int make_socket(int family, const struct sockaddr *addr,
+		socklen_t addrlen) {
+	int sock;
+
+	sock = socket(family, SOCK_STREAM, IPPROTO_TCP);
+	if (sock == -1) {
+		perror("socket");
+		return -errno;
+	}
+
+	if (-1 == bind(sock, addr, addrlen)) {
+		perror("bind");
+		close(sock);
+		return -errno;
+	}
+
+	if (-1 == listen(sock, 3)) {
+		perror("listen");
+		close(sock);
+		return -errno;
+	}
+
+	return sock;
 }
 
 static int httpd(int argc, char **argv) {
-	int res, host;
-	socklen_t addr_len;
-	struct sockaddr_in addr;
+	int host4, host6, client;
+	union {
+		struct sockaddr sa;
+		struct sockaddr_in in;
+		struct sockaddr_in6 in6;
+	} addr;
+	socklen_t addrlen;
 
-	addr.sin_family = AF_INET;
-	addr.sin_port= htons(80);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.in.sin_family = AF_INET;
+	addr.in.sin_port= htons(80);
+	addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	/* Create listen socket */
-	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (host < 0) {
-		printf("Error.. can't create socket. errno=%d\n", errno);
-		return host;
+	host4 = make_socket(AF_INET, &addr.sa, sizeof addr.in);
+	if (host4 < 0) {
+		return host4;
 	}
 
-	res = bind(host, (struct sockaddr *)&addr, sizeof(addr));
-	if (res < 0) {
-		printf("Error.. bind() failed. errno=%d\n", errno);
-		return res;
-	}
+	addr.in6.sin6_family = AF_INET6;
+	addr.in6.sin6_port= htons(80);
+	memcpy(&addr.in6.sin6_addr, &in6addr_any,
+			sizeof addr.in6.sin6_addr);
 
-	res = listen(host, 3);
-	if (res < 0) {
-		printf("Error.. listen() failed. errno=%d\n", errno);
-		return res;
+	host6 = make_socket(AF_INET6, &addr.sa, sizeof addr.in6);
+	if (host6 < 0) {
+		close(host4);
+		return host6;
 	}
 
 	welcome_message();
 
 	while (1) {
-		addr_len  = sizeof addr;
-		res = accept(host,(struct sockaddr *)&addr, &addr_len);
-		if (res < 0) {
-			printf("accept error: %d\n", errno);
+		addrlen  = sizeof addr;
+		client = accept(host4, &addr.sa, &addrlen);
+		if (client < 0) {
+			perror("accept");
 			continue;
-
-#if 0
-			/* error code in client, now */
-			printf("Error.. accept() failed. errno=%d\n", errno);
-			close(host);
-			return res;
-#endif
 		}
-		client_process(res, addr, addr_len);
+		if (((addr.sa.sa_family == AF_INET)
+					&& (addrlen != sizeof addr.in))
+				|| ((addr.sa.sa_family == AF_INET6)
+					&& (addrlen != sizeof addr.in6))) {
+			perror("addrlen");
+			continue;
+		}
+
+		client_process(client, &addr.sa);
 	}
 
-	close(host);
+	close(host4);
+	close(host6);
 
 	return 0;
 }
