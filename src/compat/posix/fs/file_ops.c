@@ -262,8 +262,9 @@ int fcntl(int fd, int cmd, ...) {
 	}
 #endif
 
-	assert(ops->ioctl != NULL);
-	res = ops->ioctl(desc, cmd, (void *)flag);
+	if (ops->ioctl != NULL) {
+		res = ops->ioctl(desc, cmd, (void *)flag);
+	}
 
 	va_end(args);
 end:
