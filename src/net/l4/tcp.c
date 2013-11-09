@@ -292,7 +292,7 @@ static void tcp_xmit(struct sk_buff *skb,
 		const struct net_pack_out_ops *out_ops) {
 	assert((tcp_sk != NULL) || (out_ops != NULL));
 
-	packet_print(tcp_sk, skb, "<=", skb->nh.iph->daddr,
+	packet_print(tcp_sk, skb, "<=", ip_hdr(skb)->daddr,
 			skb->h.th->dest);
 
 	out_ops = out_ops != NULL ? out_ops : to_sock(tcp_sk)->o_ops;
@@ -334,18 +334,21 @@ static void tcp_rexmit(struct tcp_sock *tcp_sk) {
 static void send_rst_reply(struct sk_buff *skb) {
 	struct tcphdr old_tcph, *tcph;
 	size_t tcph_size, old_seq_len;
+	const struct net_pack_out_ops *out_ops;
 
 	memcpy(&old_tcph, tcp_hdr(skb), sizeof old_tcph);
 	old_seq_len = tcp_seq_length(&old_tcph, skb->nh.raw);
 	tcph_size = TCP_MIN_HEADER_SIZE;
 
-	if (ip_out_ops == NULL) {
+	out_ops = ip_hdr(skb)->version == 4 ? ip_out_ops
+			: ip6_out_ops;
+	if (out_ops == NULL) {
 		return; /* error: not implemented */
 	}
 
 	/* make packet with L3 header */
-	assert(ip_out_ops->make_pack != NULL);
-	if (0 != ip_out_ops->make_pack(NULL, NULL, &tcph_size,
+	assert(out_ops->make_pack != NULL);
+	if (0 != out_ops->make_pack(NULL, NULL, &tcph_size,
 				&skb)) {
 		return; /* error: see ret */
 	}
@@ -371,7 +374,7 @@ static void send_rst_reply(struct sk_buff *skb) {
 	tcp_set_check_field(tcph, skb->nh.raw);
 
 	/* send over L3 */
-	tcp_xmit(skb, NULL, ip_out_ops);
+	tcp_xmit(skb, NULL, out_ops);
 }
 
 /**
@@ -508,24 +511,32 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 				newsk, skb, to_sock(tcp_sk));
 		/* Set up new socket */
 		if (to_sock(tcp_sk)->opt.so_domain == AF_INET) {
+			assert(ip_hdr(skb)->version == 4);
 			in_newsk = to_inet_sock(newsk);
 			in_newsk->src_in.sin_family = AF_INET;
-			in_newsk->src_in.sin_port = skb->h.th->dest;
-			in_newsk->src_in.sin_addr.s_addr = skb->nh.iph->daddr;
+			in_newsk->src_in.sin_port = tcph->dest;
+			memcpy(&in_newsk->src_in.sin_addr,
+					&ip_hdr(skb)->daddr,
+					sizeof in_newsk->src_in.sin_addr);
 			in_newsk->dst_in.sin_family = AF_INET;
-			in_newsk->dst_in.sin_port = skb->h.th->source;
-			in_newsk->dst_in.sin_addr.s_addr = skb->nh.iph->saddr;
+			in_newsk->dst_in.sin_port = tcph->source;
+			memcpy(&in_newsk->dst_in.sin_addr,
+					&ip_hdr(skb)->saddr,
+					sizeof in_newsk->dst_in.sin_addr);
 		}
 		else {
 			assert(to_sock(tcp_sk)->opt.so_domain == AF_INET6);
+			assert(ip6_hdr(skb)->version == 6);
 			in6_newsk = to_inet6_sock(newsk);
 			in6_newsk->src_in6.sin6_family = AF_INET6;
-			in6_newsk->src_in6.sin6_port = skb->h.th->dest;
-			memcpy(&in6_newsk->src_in6.sin6_addr, &skb->nh.ip6h->daddr,
+			in6_newsk->src_in6.sin6_port = tcph->dest;
+			memcpy(&in6_newsk->src_in6.sin6_addr,
+					&ip6_hdr(skb)->daddr,
 					sizeof in6_newsk->src_in6.sin6_addr);
 			in6_newsk->dst_in6.sin6_family = AF_INET6;
-			in6_newsk->dst_in6.sin6_port = skb->h.th->source;
-			memcpy(&in6_newsk->dst_in6.sin6_addr, &skb->nh.ip6h->saddr,
+			in6_newsk->dst_in6.sin6_port = tcph->source;
+			memcpy(&in6_newsk->dst_in6.sin6_addr,
+					&ip6_hdr(skb)->saddr,
 					sizeof in6_newsk->dst_in6.sin6_addr);
 		}
 		/* Handling skb */
