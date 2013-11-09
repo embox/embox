@@ -204,6 +204,7 @@ int fcntl(int fd, int cmd, ...) {
 
 	flag = 0;
 	ops = task_idx_desc_ops(desc);
+	assert(ops != NULL);
 
 	va_start(args, cmd);
 
@@ -261,6 +262,7 @@ int fcntl(int fd, int cmd, ...) {
 	}
 #endif
 
+	assert(ops->ioctl != NULL);
 	res = ops->ioctl(desc, cmd, (void *)flag);
 
 	va_end(args);
