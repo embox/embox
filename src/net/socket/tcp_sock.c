@@ -103,7 +103,7 @@ static int tcp_close(struct sock *sk) {
 					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
 			tcph->fin = 1;
 			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
-			send_data_from_sock(tcp_sk, skb);
+			send_seq_from_sock(tcp_sk, skb);
 			break;
 		}
 	}
@@ -167,7 +167,7 @@ static int tcp_connect(struct sock *sk,
 					tcp_sk->self.wind);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
-			send_data_from_sock(tcp_sk, skb);
+			send_seq_from_sock(tcp_sk, skb);
 
 			ret = -EINPROGRESS;
 			break;
@@ -340,7 +340,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 			/* Fill TCP header */
 			skb->h.th->psh = (len == 0);
 			tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
-			send_data_from_sock(tcp_sk, skb);
+			send_seq_from_sock(tcp_sk, skb);
 		}
 		msg->msg_iov->iov_len -= len;
 		return 0;

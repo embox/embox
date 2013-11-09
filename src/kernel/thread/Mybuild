@@ -28,6 +28,12 @@ module core extends thread_mode {
 	depends thread_local
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
+	@NoRuntime depends signal
+}
+
+module signal {
+	source "signal.c"
+	@NoRuntime depends embox.kernel.thread.signal.sigstate_api
 }
 
 @DefaultImpl(fixed_stack)

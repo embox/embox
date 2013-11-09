@@ -10,8 +10,10 @@ module core {
 
 module class_hid {
 	source "usb_class_hid.c"
+	source "usb_hid.c"
 
 	depends core
+	depends embox.driver.input.core
 }
 
 module ohci_pci {

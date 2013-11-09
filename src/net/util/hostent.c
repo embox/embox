@@ -112,3 +112,31 @@ int hostent_add_addr(struct hostent *he, const void *addr) {
 
 	return 0;
 }
+
+struct hostent * hostent_make(const char *name, int addrtype,
+		int addrlen, const void *addr) {
+	struct hostent *he;
+
+	he = hostent_create();
+	if (he == NULL) {
+		return NULL; /* error: no memory */
+	}
+
+	if (name != NULL) {
+		if (0 != hostent_set_name(he, name)) {
+			return NULL; /* error: see ret */
+		}
+	}
+
+	if (0 != hostent_set_addr_info(he, addrtype, addrlen)) {
+		return NULL; /* error: see ret */
+	}
+
+	if (addr != NULL) {
+		if (0 != hostent_add_addr(he, addr)) {
+			return NULL; /* error: see ret */
+		}
+	}
+
+	return he;
+}

@@ -18,6 +18,11 @@ static module Bit {
 	source "bit_impl.h"
 }
 
+static module Bitmap {
+	source "bitmap.c"
+	depends Bit
+}
+
 @DefaultImpl(SListDebug)
 abstract module SList {
 }

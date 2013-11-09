@@ -44,10 +44,13 @@ ExternalProject_Add(
       ac_cv_func_posix_fallocate=no
       ac_cv_func_posix_fallocate64=no
       ac_cv_func_fdopendir=no
+      ac_cv_func_memcpy=yes
+      ac_cv_func_memset=yes
       ac_cv_func_mknod=no
       ac_cv_func_mknod64=no
       ac_cv_func_setgroups=no
       ac_cv_func_syslog=no
+      ac_cv_func_strerror=yes
       ac_cv_func_lgetxattr=no
       ac_cv_func_lgetea=no
       ac_cv_func_attr_get=no
@@ -83,7 +86,7 @@ ExternalProject_Add(
       ac_cv_func_getgrent_r=no
       ac_cv_func_getgrouplist=no
       ac_cv_func_sigblock=no
-      ac_cv_func_sigaction=no
+      ac_cv_func_sigaction=yes
       ac_cv_func_getgrset=no
       ac_cv_func_nanosleep=no
       ac_cv_lib_ext_rt_nanosleep=no

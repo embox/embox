@@ -8,6 +8,7 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
@@ -48,4 +49,19 @@ void udp6_set_check_field(struct udphdr *udph,
 	udph->check = 0;
 	udph->check = ~fold_short(partial_sum(&ip6ph, sizeof ip6ph) +
 			partial_sum(udph, ntohl(ip6ph.len))) & 0xFFFF;
+}
+
+void udp_set_check_field(struct udphdr *udph, const void *nh) {
+	const struct iphdr *iph;
+
+	iph = (const struct iphdr *)nh;
+	assert(iph != NULL);
+
+	if (iph->version == 4) {
+		udp4_set_check_field(udph, iph);
+	}
+	else {
+		assert(iph->version == 6);
+		udp6_set_check_field(udph, (const struct ip6hdr *)nh);
+	}
 }

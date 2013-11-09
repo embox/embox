@@ -24,7 +24,6 @@
 
 __BEGIN_DECLS
 
-struct task_signal_table;
 struct task_idx_table;
 struct thread;
 struct emmap;
@@ -50,7 +49,7 @@ struct task {
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
-	struct task_signal_table *signal_table;
+	struct sigaction *sig_table;
 
 	struct emmap *mmap;
 

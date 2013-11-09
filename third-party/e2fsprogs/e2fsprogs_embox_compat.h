@@ -101,7 +101,6 @@ static inline void setbuf(FILE *stream, char *buf) {
 
 /****************** Functions for e2fsck *******************/
 
-#define SA_SIGINFO 0x00000004
 #define SI_USER         0
 
 struct sigaction;

@@ -9,6 +9,7 @@
 
 #include <embox/test.h>
 
+#include <signal.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -21,10 +22,6 @@ EMBOX_TEST_SUITE("test for task API");
 static volatile char flag = 0;
 static volatile char flag2 = 0;
 
-extern int kill(int tid, int sig);
-
-extern void signal(int sig, void (*hnd)(int));
-
 static void sig_hnd(int sig) {
 	flag = 1;
 	task_exit(NULL);
@@ -34,7 +31,8 @@ static void *task_hnd(void *arg) {
 
 	signal(9, sig_hnd);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }
@@ -61,7 +59,8 @@ static void *task_hnd2(void *arg) {
 	signal(9, sig_hnd2);
 	signal(1, sig_hnd2);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }

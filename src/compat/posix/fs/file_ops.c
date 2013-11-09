@@ -184,9 +184,11 @@ int fstat(int fd, struct stat *buff) {
 
 }
 
+/* XXX -- whole function seems to be covered by many workarounds
+ * try blame it -- Anton Kozlov */
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res = -1, flag;
+	int res, err, flag;
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 
@@ -194,8 +196,8 @@ int fcntl(int fd, int cmd, ...) {
 
 	desc = task_self_idx_get(fd);
 	if (!desc) {
-		SET_ERRNO(EBADF);
 		DPRINTF(("EBADF "));
+		err = -EBADF;
 		res = -1;
 		goto end;
 	}
@@ -205,6 +207,9 @@ int fcntl(int fd, int cmd, ...) {
 
 	va_start(args, cmd);
 
+	err = -EINVAL;
+	res = -1;
+
 	/* Fcntl works in two steps:
 	 * 1. Make general commands like F_SETFD, F_GETFD.
 	 * 2. If fd has some internal fcntl(), it will be called.
@@ -212,41 +217,56 @@ int fcntl(int fd, int cmd, ...) {
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
-		goto end;
+		err = 0;
+		break;
 	case F_SETFD:
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
 		res = 0;
+		err = 0;
 		break;
 	case F_GETPIPE_SZ:
 	case F_SETPIPE_SZ:
+		err = -ENOTSUP;
+		res = -1;
 		break;
 	default:
-		/*SET_ERRNO(EINVAL);*/
+		err = -EINVAL;
 		res = -1;
 		break;
 	}
 
 #if 0
 	if (NULL == ops->fcntl) {
-		if(NULL == ops->ioctl) {
-			res = -ENOSYS;
-			DPRINTF(("ENOSYS "));
+		if (NULL == ops->ioctl) {
 			goto end;
 		}
-		res = ops->ioctl(desc, cmd, (void *)flag);
+
+		/* default operation already done regardless of result,
+ 		 * is it right?
+		 */
+		if ((err = ops->ioctl(desc, cmd, (void *)flag))) {
+			res = -1;
+		}
+
 		DPRINTF(("fcntl->ioctl(%d, %d) = %d\n", fd, cmd, res));
-		return res;
+		goto end;
 	}
 
-	res = ops->fcntl(desc, cmd, args);
+	/* default operation already done regardless of result,
+	 * is it right?
+	 */
+	if ((err = ops->fcntl(desc, cmd, args))) {
+		res = -1;
+	}
 #endif
 
 	res = ops->ioctl(desc, cmd, (void *)flag);
 
 	va_end(args);
-	end:
+end:
 	DPRINTF(("fcntl(%d, %d) = %d\n", fd, cmd, res));
+	SET_ERRNO(-err);
 	return res;
 }
 

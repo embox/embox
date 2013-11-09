@@ -2,62 +2,36 @@
  * @file
  * @brief
  *
+ * @date    22.10.2012
  * @author  Anton Kozlov
  * @author  Alexander Kalmuk
  * 			- split signals into standard signals and real-time signals
- * @date    22.10.2012
+ * @author  Eldar Abusalimov
  */
-
-#include <math.h>
-#include <util/dlist.h>
-#include <util/array.h>
-
-#include <kernel/task/task_table.h>
-#include <kernel/task/signal.h>
-#include <kernel/task/std_signal.h>
-#include <kernel/sched.h>
 
 #include "common.h"
 
+#include <signal.h>
 
-ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
 
-static void task_terminate(int sig) {
+static void task_sig_handler_terminate(int sig) {
 	task_exit(NULL);
 }
 
-static void task_signal_table_init(struct task *task, void *_signal_table) {
-	int sig;
+static void task_sig_table_init(struct task *task, void *resource) {
+	struct sigaction *sig_table = resource;
 
-	struct task_signal_table *sig_table =
-		(struct task_signal_table *) _signal_table;
-
-	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
-		task_signal_table_set(sig_table, sig, task_terminate);
+	for (int sig = 0; sig < _SIG_TOTAL; ++sig) {
+		sig_table[sig].sa_handler = task_sig_handler_terminate;
 	}
 
-	for (sig = 0; sig < TASK_RTSIG_CNT; sig++) {
-		sig_table->rt_hnd[sig] = NULL;
-		dlist_init(&sig_table->rtsig_data[sig]);
-	}
-
-	task->signal_table = sig_table;
+	task->sig_table = sig_table;
 }
 
 static const struct task_resource_desc signal_resource = {
-	.init = task_signal_table_init,
-	.resource_size = sizeof(struct task_signal_table),
+	.init = task_sig_table_init,
+	.resource_size = sizeof(struct sigaction) * _SIG_TOTAL,
 };
-
-void task_signal_hnd(void) {
-	global_sig_hnd_t hnd;
-
-	array_spread_foreach(hnd, __signal_handlers_array) {
-		if (hnd) {
-			hnd();
-		}
-	}
-}
 
 TASK_RESOURCE_DESC(&signal_resource);
 
