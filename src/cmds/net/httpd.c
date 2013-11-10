@@ -424,7 +424,7 @@ static int make_socket(int family, const struct sockaddr *addr,
 }
 
 static int httpd(int argc, char **argv) {
-	int host4, host6, client;
+	int host4, /*host6,*/ client;
 	union {
 		struct sockaddr sa;
 		struct sockaddr_in in;
@@ -440,7 +440,7 @@ static int httpd(int argc, char **argv) {
 	if (host4 < 0) {
 		return host4;
 	}
-
+#if 0
 	addr.in6.sin6_family = AF_INET6;
 	addr.in6.sin6_port= htons(80);
 	memcpy(&addr.in6.sin6_addr, &in6addr_any,
@@ -451,7 +451,7 @@ static int httpd(int argc, char **argv) {
 		close(host4);
 		return host6;
 	}
-
+#endif
 	welcome_message();
 
 	while (1) {
@@ -473,7 +473,7 @@ static int httpd(int argc, char **argv) {
 	}
 
 	close(host4);
-	close(host6);
+//	close(host6);
 
 	return 0;
 }
