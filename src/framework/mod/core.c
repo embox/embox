@@ -15,8 +15,7 @@
 #include <util/array.h>
 #include <framework/mod/api.h>
 #include <framework/mod/ops.h>
-#include <framework/mod/member/ops.h>
-#include "types.h"
+#include <framework/mod/types.h>
 
 #define MOD_FLAG_ENABLED       (1 << 0)
 
