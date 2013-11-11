@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <util/dlist.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -36,6 +37,13 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 			sizeof(struct usb_desc_interface) +
 			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
 		dev->getconf_data);
+
+	return 0;
+}
+
+int usb_dev_generic_fill_iface(struct usb_dev *dev, struct usb_desc_interface *idesc) {
+
+	memcpy(&dev->iface_desc, idesc, sizeof(struct usb_desc_interface));
 
 	return 0;
 }

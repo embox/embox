@@ -6,6 +6,8 @@ module core {
 	source "usb_core.c"
 	source "usb_obj.c"
 	source "usb_class.c"
+
+	source "usb_dev_desc.c"
 }
 
 module class_hid {

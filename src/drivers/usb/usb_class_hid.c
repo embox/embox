@@ -21,6 +21,7 @@ static void usb_hid_request_hnd_get_conf(struct usb_request *req) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_hid *hid = usb2hiddata(dev);
 
+	usb_dev_generic_fill_iface(dev, &hid->getconf->interface_desc);
 	usb_dev_generic_fill_endps(dev, hid->getconf->endp_descs);
 
 	pool_free(&hid_getconfs, hid->getconf);

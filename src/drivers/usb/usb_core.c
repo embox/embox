@@ -66,23 +66,6 @@ static void usb_request_build(struct usb_request *req, uint8_t req_type,
 
 }
 
-static struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
-		usb_request_notify_hnd_t notify_hnd, unsigned token,
-		void *buf, size_t len) {
-	struct usb_request *req;
-
-	req = usb_request_alloc(endp);
-	assert(req, "%s: allocating usb request failed", __func__);
-
-	req->endp = endp;
-	req->token = token;
-	req->buf = buf;
-	req->len = len;
-	req->notify_hnd = notify_hnd;
-
-	return req;
-}
-
 static int usb_endp_do_req(struct usb_endp *endp) {
 	struct usb_queue_link *l;
 	struct usb_request *req;
@@ -101,7 +84,7 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 	return 0;
 }
 
-static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
+int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	bool endp_busy;
 
 	endp_busy = usb_queue_add(&endp->req_queue, &req->req_link);
@@ -306,7 +289,7 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 				"getconf_data\n", __func__);
 	}
 
-	printk("usb_core: found vendor=%04x product=%04x\n",
+	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header,
@@ -367,6 +350,7 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 
 	dev->endp_n = 1 + dev->interface_desc->b_num_endpoints;
 
+	usb_dev_register(dev);
 	usb_class_handle(dev);
 }
 
