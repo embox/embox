@@ -15,7 +15,7 @@ int sched_signal(struct thread *t, int type) {
 
 	sched_lock();
 	{
-		if (thread_state_sleeping(t->state)) {
+		if (__THREAD_STATE_WAITING & t->state) {
 			wait_queue_thread_notify(t, -EINTR);
 		} else {
 			res = -1;

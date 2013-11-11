@@ -42,7 +42,6 @@ static int wait_locked(unsigned long timeout) {
 	struct thread *current = thread_get_current();
 
 	assert(in_sched_locked() && !in_harder_critical());
-	assert(thread_state_running(current->state));
 	assert(current->wait_link); /* Should be prepared */
 
 	sched_sleep(current);
@@ -58,7 +57,7 @@ static int wait_locked(unsigned long timeout) {
 
 	/* At this point we have been awakened and are ready to go. */
 	assert(!in_sched_locked());
-	assert(thread_state_running(current->state));
+	assert(__THREAD_STATE_RUNNING & current->state);
 
 	sched_lock();
 
@@ -134,7 +133,7 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 
 void wait_queue_thread_notify(struct thread *thread, int result) {
 	assert(thread);
-	assert(thread_state_sleeping(thread->state));
+	assert(__THREAD_STATE_WAITING & thread->state);
 
 	irq_lock();
 	{

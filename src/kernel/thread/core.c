@@ -47,7 +47,7 @@ static void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
-	assert(thread_state_exited(t->state));
+	assert(__THREAD_STATE_EXITED & t->state);
 	assert(thread_res_state_detached(&t->resinfo) ||
 			thread_res_state_joined(&t->resinfo));
 
@@ -158,7 +158,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	dlist_init(&t->thread_link); /* default unlink value */
 
-	t->state = thread_state_init();
+	t->state = __THREAD_STATE_WAITING;
 
 	/* set executive function and arguments pointer */
 	t->run = run;
@@ -268,7 +268,7 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		t->resinfo.state = thread_res_state_do_join(&t->resinfo);
 
-		if (!thread_state_exited(t->state)) {
+		if (!(__THREAD_STATE_EXITED & t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
 			struct wait_queue queue;
 			wait_queue_init(&queue);
@@ -301,7 +301,7 @@ int thread_detach(struct thread *t) {
 	{
 		t->resinfo.state = thread_res_state_do_detach(&t->resinfo);
 
-		if (thread_state_exited(t->state)) {
+		if (__THREAD_STATE_EXITED & t->state) {
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
 		}
@@ -318,17 +318,17 @@ int thread_launch(struct thread *t) {
 
 	sched_lock();
 	{
-		if (thread_state_active(t->state)) {
+		if (!(t->state & (__THREAD_STATE_WAITING | __THREAD_STATE_EXITED))) {
 			res = -EINVAL;
 			goto out;
 		}
 
-		if (thread_state_exited(t->state)) {
+		if (__THREAD_STATE_EXITED & t->state) {
 			res = -ESRCH;
 			goto out;
 		}
 
-		sched_start(t);
+		sched_wake(t);
 	}
 out:
 	sched_unlock();
@@ -341,7 +341,7 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		if (!thread_state_exited(t->state)) {
+		if (!(__THREAD_STATE_EXITED & t->state)) {
 			sched_finish(t);
 		}
 

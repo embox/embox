@@ -43,8 +43,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	/* setup state
 	 * this thread must be active and not sleep
 	 */
-	thread->state = thread_state_do_activate(thread->state);
-	thread->state = thread_state_do_oncpu(thread->state);
+	thread->state = __THREAD_STATE_RUNNING;
 	thread_set_current(thread);
 
 	return thread;

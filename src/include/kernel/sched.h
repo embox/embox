@@ -44,17 +44,15 @@ extern int sched_init(struct thread *current, struct thread *idle);
 extern int sched_ticker_init(void);
 extern void sched_ticker_fini(struct runq*);
 
+extern void sched_sleep(struct thread *t);
+
 /**
- * Makes active thread and adds thread to the queue of ready to executing
+ * Makes active or waking thread and adds thread to the queue of ready to executing
  * threads.
  *
  * @param thread
  *   Thread which will be added.
  */
-extern void sched_start(struct thread *thread);
-
-extern void sched_sleep(struct thread *t);
-
 extern void sched_wake(struct thread *t);
 
 /**

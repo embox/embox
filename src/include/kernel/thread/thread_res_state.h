@@ -17,6 +17,7 @@
 #define __THREAD_STATE_DETACHED  2
 
 struct thread;
+typedef unsigned int thread_state_t;
 
 /* thread resources management information */
 struct thread_res_state {

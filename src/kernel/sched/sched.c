@@ -59,73 +59,49 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
-/* Activate thread and add it to runq */
-static void sched_run(struct thread *t) {
-	struct thread *current = thread_self();
-
-	assert(t);
-	assert(current != t);
-	assert(!thread_state_active(t->state));
-	assert(!thread_state_exited(t->state));
-
-	t->state = thread_state_do_activate(t->state);
-
-	runq_queue_insert(&rq.queue, t);
-}
-
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
 	runq_queue_init(&rq.queue);
 
-	sched_run(idle);
+	sched_wake(idle);
 
 	sched_ticker_init();
 
 	return 0;
 }
 
-void sched_start(struct thread *t) {
+void sched_wake(struct thread *t) {
+	struct thread *current = thread_self();
+
+	/* TODO: it's not true when it's called for waking thread from waitq */
+	//assert(!in_harder_critical());
+	assert(t != current);
 	assert(t);
-	assert(!in_harder_critical());
-	assert(!thread_state_active(t->state));
+	assert(__THREAD_STATE_WAITING & t->state);
 
 	sched_lock();
 	{
-		sched_run(t);
-		if (thread_priority_get(t) > thread_priority_get(thread_self())) {
+		t->state = __THREAD_STATE_READY;
+		runq_queue_insert(&rq.queue, t);
+
+		if (thread_priority_get(t) > thread_priority_get(current)) {
 			sched_post_switch();
 		}
 	}
 	sched_unlock();
 }
 
-void sched_wake(struct thread *t) {
-	struct thread *current = thread_self();
-
-	assert(t != current);
-	assert(in_sched_locked());
-	assert(t);
-	assert(thread_state_sleeping(t->state));
-
-	t->state = thread_state_do_wake(t->state);
-	runq_queue_insert(&rq.queue, t);
-
-	if (thread_priority_get(t) > thread_priority_get(current)) {
-		sched_post_switch();
-	}
-}
-
 void sched_sleep(struct thread *t) {
 	assert(in_sched_locked() && !in_harder_critical());
-	assert(thread_state_running(t->state));
+	assert((__THREAD_STATE_READY | __THREAD_STATE_RUNNING) & t->state);
 
-	t->state = thread_state_do_sleep(t->state);
+	t->state = __THREAD_STATE_WAITING;
 	/* we don't remove current because it is not in runq, we just mark it as
 	 * waiting and after sched switch all will be correct
 	 */
 
-	assert(thread_state_sleeping(t->state));
+	assert(__THREAD_STATE_WAITING & t->state);
 
 	sched_post_switch();
 }
@@ -136,10 +112,10 @@ void sched_finish(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!thread_state_exited(t->state));
+		assert(!(__THREAD_STATE_EXITED & t->state));
 
-		if (thread_state_running(t->state)) {
-			t->state = thread_state_do_exit(t->state);
+		if ((__THREAD_STATE_READY | __THREAD_STATE_RUNNING) &t->state) {
+			t->state = __THREAD_STATE_EXITED;
 
 			if (t != thread_self()) {
 				runq_queue_remove(&rq.queue, t);
@@ -147,14 +123,14 @@ void sched_finish(struct thread *t) {
 				sched_post_switch();
 			}
 		} else {
-			if (thread_state_sleeping(t->state)) {
+			if (__THREAD_STATE_WAITING & t->state) {
 				wait_queue_remove(t->wait_link);
 			}
 
-			t->state = thread_state_do_exit(t->state);
+			t->state = __THREAD_STATE_EXITED;
 		}
 
-		assert(thread_state_exited(t->state));
+		assert(__THREAD_STATE_EXITED & t->state);
 	}
 	sched_unlock();
 }
@@ -176,12 +152,12 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 	sched_lock();
 	{
-		assert(!thread_state_exited(t->state));
+		assert(!(__THREAD_STATE_EXITED & t->state));
 
 		thread_priority_set(t, prior);
 
 		/* if in runq */
-		if (thread_state_running(t->state) && current != t) {
+		if (__THREAD_STATE_READY & t->state) {
 			runq_queue_remove(&rq.queue, t);
 			runq_queue_insert(&rq.queue, t);
 
@@ -217,21 +193,23 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		if (thread_state_running(prev->state)) {
+		if (__THREAD_STATE_RUNNING & prev->state) {
 			runq_queue_insert(&rq.queue, prev);
 		}
 
 		next = runq_queue_extract(&rq.queue);
 
 		assert(next != NULL);
-		assert(thread_state_running(next->state));
+		assert((__THREAD_STATE_RUNNING | __THREAD_STATE_READY) & next->state);
 
 		if (prev == next) {
 			ipl_disable();
 			goto out;
 		} else {
-			prev->state = thread_state_do_outcpu(prev->state);
-			next->state = thread_state_do_oncpu(next->state);
+			if (prev->state & __THREAD_STATE_RUNNING) {
+				prev->state = __THREAD_STATE_READY;
+			}
+			next->state = __THREAD_STATE_RUNNING;
 		}
 
 		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
