@@ -40,7 +40,6 @@
 
 
 
-static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
@@ -61,7 +60,7 @@ static inline int in_sched_locked(void) {
 }
 
 /* Activate thread and add it to runq */
-static int sched_run(struct thread *t) {
+static void sched_run(struct thread *t) {
 	struct thread *current = thread_self();
 
 	assert(t);
@@ -72,8 +71,6 @@ static int sched_run(struct thread *t) {
 	t->state = thread_state_do_activate(t->state);
 
 	runq_queue_insert(&rq.queue, t);
-
-	return thread_priority_get(t) > thread_priority_get(current);
 }
 
 int sched_init(struct thread *idle, struct thread *current) {
@@ -95,7 +92,10 @@ void sched_start(struct thread *t) {
 
 	sched_lock();
 	{
-		post_switch_if(sched_run(t));
+		sched_run(t);
+		if (thread_priority_get(t) > thread_priority_get(thread_self())) {
+			sched_post_switch();
+		}
 	}
 	sched_unlock();
 }
@@ -111,7 +111,9 @@ void sched_wake(struct thread *t) {
 	t->state = thread_state_do_wake(t->state);
 	runq_queue_insert(&rq.queue, t);
 
-	post_switch_if(thread_priority_get(t) > thread_priority_get(current));
+	if (thread_priority_get(t) > thread_priority_get(current)) {
+		sched_post_switch();
+	}
 }
 
 void sched_sleep(struct thread *t) {
@@ -137,17 +139,18 @@ void sched_finish(struct thread *t) {
 		assert(!thread_state_exited(t->state));
 
 		if (thread_state_running(t->state)) {
-			int is_current = t == thread_self();
-
 			t->state = thread_state_do_exit(t->state);
-			if (!is_current) {
+
+			if (t != thread_self()) {
 				runq_queue_remove(&rq.queue, t);
+			} else {
+				sched_post_switch();
 			}
-			post_switch_if(is_current);
 		} else {
 			if (thread_state_sleeping(t->state)) {
 				wait_queue_remove(t->wait_link);
 			}
+
 			t->state = thread_state_do_exit(t->state);
 		}
 
@@ -159,7 +162,8 @@ void sched_finish(struct thread *t) {
 void sched_post_switch(void) {
 	sched_lock();
 	{
-		post_switch_if(1);
+		switch_posted = 1;
+		critical_request_dispatch(&sched_critical);
 	}
 	sched_unlock();
 }
@@ -181,7 +185,9 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 			runq_queue_remove(&rq.queue, t);
 			runq_queue_insert(&rq.queue, t);
 
-			post_switch_if(prior > thread_priority_get(current));
+			if (prior > thread_priority_get(current)) {
+				sched_post_switch();
+			}
 		}
 
 		assert(thread_priority_get(t) == prior);
@@ -189,16 +195,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	sched_unlock();
 
 	return 0;
-}
-
-
-static void post_switch_if(int condition) {
-	assert(in_sched_locked());
-
-	if (condition) {
-		switch_posted = 1;
-		critical_request_dispatch(&sched_critical);
-	}
 }
 
 /**
