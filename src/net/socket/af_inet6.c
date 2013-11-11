@@ -104,8 +104,8 @@ static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 	}
 	else if ((0 != memcmp(&addr_in6->sin6_addr, &in6addr_any,
 				sizeof addr_in6->sin6_addr))
-			|| (0 != memcmp(&addr_in6->sin6_addr, &in6addr_loopback,
-					sizeof addr_in6->sin6_addr))) {
+			&& (0 != memcmp(&addr_in6->sin6_addr,
+				&in6addr_loopback, sizeof addr_in6->sin6_addr))) {
 		/* FIXME */
 		return -EADDRNOTAVAIL;
 	}
