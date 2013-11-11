@@ -39,7 +39,7 @@ define file_header
 
 #define MODULE_ENRTY(section_, module_) $(\h)
 		__module_##module_##_##section_##_vma = .; $(\h)
-		*(.module.##module_##.##section_##); $(\h)
+		*(.section_.module_); $(\h)
 		__module_##module_##_##section_##_len = ABSOLUTE(. - $(\h)
 		__module_##module_##_##section_##_vma);
 
@@ -50,20 +50,20 @@ define section_item
 		MODULE_ENRTY($1,$2)
 endef
 # __module_$2_$1_vma = .;
-# *(.module.$2.$1)
+# *(.$2.$1)
 # __module_$2_$1_len = ABSOLUTE(. - __module_$2_$1_vma);
 
-section_header = $(\t).$1.module$(value 3) : \
+section_header = $(\t).$1$(value 3) : \
 		ALIGN($(or $(value 2),DEFAULT_DATA_ALIGNMENT)) {
-section_footer = $(\t)} /* .$1.module$(value 3) */
+section_footer = $(\t)} /* .$1$(value 3) */
 
 define file_footer
 
 	.bss..reserve.apps (NOLOAD) : ALIGN(DEFAULT_DATA_ALIGNMENT) {
 		/* MAX is a workaround to avoid PROGBITS set on empty section. */
-		. += MAX(SIZEOF(.data.module.apps), 1);
+		. += MAX(SIZEOF(.data.apps), 1);
 	}
-	_app_data_vma = ADDR(.data.module.apps);
+	_app_data_vma = ADDR(.data.apps);
 	_app_reserve_vma = ADDR(.bss..reserve.apps);
 }
 endef
