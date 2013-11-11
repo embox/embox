@@ -6,57 +6,102 @@
  * @date 09.11.2013
  * @author Anton Bondarev
  */
+#include <errno.h>
+#include <stdint.h>
+#include <assert.h>
 
+#include <fs/idesc.h>
 
-union idesc_table_entry {
-	unsigned int flags;
-	struct idesc *idesc;
-};
+#include <kernel/task/idesc_table.h>
+#include <util/indexator.h>
 
-struct idesc_table {
-	union idesc_table_entry idesc_entry[TASKS_RES_QUANTITY];
-	struct indexator indexator;
-};
+#define idesc_index_valid(idx) ((idx >=0) && (idx < TASKS_RES_QUANTITY))
 
-int idesc_table_add(struct idesc *idesc, int cloexec) {
-	struct task task;
-	struct idesc_table *idesc_table;
+#define idesc_cloexec_set(idesc) \
+
+#define idesc_cloexec_clear(idesc)
+
+int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	int idx;
 
-	task = task_self();
-	idesc_table = &task->idesc_table;
+	assert(t);
+	assert(idesc);
 
-	idx = index_alloc(&idesc_table->indexator, INDEX_MIN);
+	idx = index_alloc(&t->indexator, INDEX_MIN);
+	if (idx == INDEX_NONE) {
+		return -EMFILE;
+	}
 
-	idesc_table->idesc_entry[idx] = idesc;
+	idesc->idesc_count++;
+
+	if (cloexec) {
+		idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1);
+	}
+
+	t->idesc_table[idx] = idesc;
 
 	return idx;
 }
 
-int idesc_table_del(int idx) {
-	struct task task;
-	struct idesc_table *idesc_table;
+int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx, int cloexec) {
+	assert(t);
+	assert(idesc);
+	assert(idesc_index_valid(idx));
+	assert(!index_locked(&t->indexator, idx));
 
-	task = task_self();
-	idesc_table = &task->idesc_table;
+	index_lock(&t->indexator, idx);
 
-	idesc_table->idesc_entry[idx] = NULL;
+	idesc->idesc_count++;
 
-	index_free(&idesc_table->indexator, idx);
+	if (cloexec) {
+		idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1);
+	}
+
+	t->idesc_table[idx] = idesc;
+
+	return idx;
+}
+
+int idesc_table_locked(struct idesc_table *t, int idx) {
+	assert(t);
+	assert(idesc_index_valid(idx));
+
+	return index_locked(&t->indexator, idx);
+}
+
+int idesc_table_del(struct idesc_table *t, int idx) {
+	struct idesc *idesc;
+
+	assert(t);
+	assert(idesc_index_valid(idx));
+
+	idesc = idesc_table_get(t, idx);
+	assert(idesc);
+	assert(idesc->idesc_ops && idesc->idesc_ops->close);
+
+	if (!(idesc->idesc_count--)) {
+		//idesc->idesc_ops->close(idesc);
+	}
+
+	index_free(&t->indexator, idx);
+
+	t->idesc_table[idx] = NULL;
 
 	return 0;
 }
 
-struct idesc *idesc_table_get(int idx) {
-	struct task task;
-	struct idesc_table *idesc_table;
+struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
+	struct idesc *idesc;
 
-	task = task_self();
-	idesc_table = &task->idesc_table;
+	assert(t);
+	assert(idesc_index_valid(idx));
 
-	return idesc_table->idesc_entry[idx];
+	idesc = (struct idesc *)((uintptr_t)t->idesc_table[idx] & ~0x1);
+
+	return idesc;
 }
 
-int idesc_table_init(struct idesc_table *idesc_table) {
+int idesc_table_init(struct idesc_table *t, struct idesc_table *parent_table) {
+
 	return 0;
 }

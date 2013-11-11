@@ -13,6 +13,7 @@
 #include <errno.h>
 
 int dup(int flides) {
+#if 1
 	int new_fd;
 
 	if (!task_valid_binded_fd(flides)) {
@@ -26,6 +27,31 @@ int dup(int flides) {
 	}
 
 	return dup2(flides, new_fd);
+#else
+	struct idesc *idesc;
+	struct idesc_table *it;
+	int res;
+
+
+	it = task_self()->idesc_table;
+	assert(it);
+
+	idesc = idesc_table_get(it, flides);
+
+	if (idesc == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	res = idesc_table_add(it, idesc, 0);
+
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return res;
+#endif
 }
 
 int dup2(int flides, int flides2) {

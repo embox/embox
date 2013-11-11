@@ -30,7 +30,8 @@ struct idesc_event {
 struct idesc {
 	struct idesc_perm idesc_perm;
 	struct idesc_event idesc_event;
-	struct task_idx_ops idesc_ops;
+	struct task_idx_ops *idesc_ops;
+	int idesc_count;
 };
 
 
