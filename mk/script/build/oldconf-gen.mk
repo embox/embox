@@ -40,13 +40,13 @@ $(build_mk) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MP -MT $@ -MF $@.d mk/confmacro.S \
-			| $(SED) -e 's/\$$N/\'$$'\n/g')
+			| $(SED) -e 's/\$$N/\n/g')
 
 $(config_h) $(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MT $@ -MF $@.d mk/confmacro.S \
-			| $(SED) -e 's/\$$N/\'$$'\n/g' -e 's/\$$/#/g'; \
+			| $(SED) -e 's/\$$N/\n/g' -e 's/\$$/#/g'; \
 	echo '#define CONFIG_ROOTFS_IMAGE "$(ROOTFS_IMAGE)"') # XXX =/
 
 $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
