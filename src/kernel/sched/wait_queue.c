@@ -44,7 +44,7 @@ static int wait_locked(unsigned long timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(current->wait_link); /* Should be prepared */
 
-	sched_sleep(current);
+	sched_sleep();
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
