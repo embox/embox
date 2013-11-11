@@ -34,6 +34,8 @@ const struct sock_proto_ops *const tcp_sock_ops
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
+		tcp_sock_ops_struct);
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
