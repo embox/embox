@@ -424,7 +424,7 @@ static int make_socket(int family, const struct sockaddr *addr,
 }
 
 static int httpd(int argc, char **argv) {
-	int host4, /*host6,*/ client;
+	int host, client;
 	union {
 		struct sockaddr sa;
 		struct sockaddr_in in;
@@ -432,31 +432,31 @@ static int httpd(int argc, char **argv) {
 	} addr;
 	socklen_t addrlen;
 
+#if 0 /* IPv4 */
 	addr.in.sin_family = AF_INET;
 	addr.in.sin_port= htons(80);
 	addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	host4 = make_socket(AF_INET, &addr.sa, sizeof addr.in);
-	if (host4 < 0) {
-		return host4;
+	host = make_socket(AF_INET, &addr.sa, sizeof addr.in);
+	if (host < 0) {
+		return host;
 	}
-#if 0
+#else /* IPv6 */
 	addr.in6.sin6_family = AF_INET6;
 	addr.in6.sin6_port= htons(80);
 	memcpy(&addr.in6.sin6_addr, &in6addr_any,
 			sizeof addr.in6.sin6_addr);
 
-	host6 = make_socket(AF_INET6, &addr.sa, sizeof addr.in6);
-	if (host6 < 0) {
-		close(host4);
-		return host6;
+	host = make_socket(AF_INET6, &addr.sa, sizeof addr.in6);
+	if (host < 0) {
+		return host;
 	}
 #endif
 	welcome_message();
 
 	while (1) {
 		addrlen  = sizeof addr;
-		client = accept(host4, &addr.sa, &addrlen);
+		client = accept(host, &addr.sa, &addrlen);
 		if (client < 0) {
 			perror("accept");
 			continue;
@@ -472,8 +472,7 @@ static int httpd(int argc, char **argv) {
 		client_process(client, &addr.sa);
 	}
 
-	close(host4);
-//	close(host6);
+	close(host);
 
 	return 0;
 }
