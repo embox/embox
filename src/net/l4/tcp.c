@@ -81,7 +81,7 @@ static const tcp_handler_t tcp_st_handler[];
 static void tcp_get_now(struct timeval *out_now);
 
 /************************ Debug functions ******************************/
-#if 0
+#if 1
 void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(const struct tcp_sock *tcp_sk,
 		const struct sk_buff *skb, const char *msg, int family,
