@@ -36,8 +36,8 @@
 #include <prom/prom_printf.h>
 
 EMBOX_UNIT_INIT(tcp_init);
-EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
-EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp4_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp6_rcv, NULL);
 
 /** TODO
  * +1. Create default socket for resetting
@@ -81,11 +81,11 @@ static const tcp_handler_t tcp_st_handler[];
 static void tcp_get_now(struct timeval *out_now);
 
 /************************ Debug functions ******************************/
-#if 1
+#if 0
 void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(const struct tcp_sock *tcp_sk,
-		const struct sk_buff *skb, const char *msg, in_addr_t ip,
-		in_port_t port) { }
+		const struct sk_buff *skb, const char *msg, int family,
+		const void *addr, in_port_t port) { }
 
 #else
 
@@ -116,13 +116,17 @@ void debug_print(__u8 code, const char *msg, ...) {
 }
 
 static inline void packet_print(const struct tcp_sock *tcp_sk,
-		const struct sk_buff *skb, const char *msg, in_addr_t ip,
-		in_port_t port) {
+		const struct sk_buff *skb, const char *msg, int family,
+		const void *addr, in_port_t port) {
 	struct timeval now;
+	char buff[INET6_ADDRSTRLEN];
+
 	tcp_get_now(&now);
 	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
 			// info
-			now.tv_sec, now.tv_usec, inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg,
+			now.tv_sec, now.tv_usec,
+			inet_ntop(family, addr, &buff[0], sizeof buff),
+			ntohs(port), msg,
 			tcp_sk != NULL ? to_sock(tcp_sk) : NULL, skb,
 			// seq, ack, seq_len
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_length(skb->h.th, skb->nh.raw),
@@ -291,12 +295,18 @@ static int tcp_is_expired(struct timeval *since,
 static void tcp_xmit(struct sk_buff *skb,
 		const struct tcp_sock *tcp_sk,
 		const struct net_pack_out_ops *out_ops) {
-	assert((tcp_sk != NULL) || (out_ops != NULL));
+	int family;
 
-	packet_print(tcp_sk, skb, "<=", ip_hdr(skb)->daddr,
+	assert(skb != NULL);
+
+	family = ip_hdr(skb)->version == 4 ? AF_INET : AF_INET6;
+	packet_print(tcp_sk, skb, "<=", family,
+			family == AF_INET ? (void *)&ip_hdr(skb)->daddr
+				: (void *)&ip6_hdr(skb)->daddr,
 			skb->h.th->dest);
 
-	out_ops = out_ops != NULL ? out_ops : to_sock(tcp_sk)->o_ops;
+	out_ops = out_ops != NULL ? out_ops :
+			tcp_sk != NULL ? to_sock(tcp_sk)->o_ops : NULL;
 
 	if (out_ops != NULL) {
 		(void)out_ops->snd_pack(skb);
@@ -1073,37 +1083,6 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 	return ret;
 }
 
-static int tcp_rcv_tester_strict(const struct sock *sk,
-		const struct sk_buff *skb) {
-	const struct inet_sock *in_sk;
-
-	in_sk = to_const_inet_sock(sk);
-	assert(in_sk != NULL);
-
-	assert(skb != NULL);
-	assert(skb->nh.iph != NULL);
-	assert(skb->h.th != NULL);
-	return (in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-			&& (in_sk->src_in.sin_port == skb->h.th->dest)
-			&& (in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
-			&& (in_sk->dst_in.sin_port == skb->h.th->source);
-};
-
-static int tcp_rcv_tester_soft(const struct sock *sk,
-		const struct sk_buff *skb) {
-	const struct inet_sock *in_sk;
-
-	in_sk = to_const_inet_sock(sk);
-	assert(in_sk != NULL);
-
-	assert(skb != NULL);
-	assert(skb->nh.iph != NULL);
-	assert(skb->h.th != NULL);
-	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
-			&& (in_sk->src_in.sin_port == skb->h.th->dest);
-}
-
 /**
  * Main function of TCP protocol
  */
@@ -1127,21 +1106,114 @@ static void tcp_process(struct tcp_sock *tcp_sk,
 	}
 }
 
-static int tcp_rcv(struct sk_buff *skb) {
+static int tcp4_rcv_tester_strict(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet_sock *in_sk;
+
+	in_sk = to_const_inet_sock(sk);
+	assert(in_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	assert(skb->h.th != NULL);
+	return (in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+			&& (in_sk->src_in.sin_port == skb->h.th->dest)
+			&& (in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+			&& (in_sk->dst_in.sin_port == skb->h.th->source);
+};
+
+static int tcp4_rcv_tester_soft(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet_sock *in_sk;
+
+	in_sk = to_const_inet_sock(sk);
+	assert(in_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->nh.iph != NULL);
+	assert(skb->h.th != NULL);
+	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->src_in.sin_port == skb->h.th->dest);
+}
+
+static int tcp4_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
 
 	assert(skb != NULL);
 
 	sk = sock_lookup(NULL, tcp_sock_ops,
-			tcp_rcv_tester_strict, skb);
+			tcp4_rcv_tester_strict, skb);
 	if (sk == NULL) {
 		sk = sock_lookup(NULL, tcp_sock_ops,
-				tcp_rcv_tester_soft, skb);
+				tcp4_rcv_tester_soft, skb);
 	}
 
 	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
-	packet_print(tcp_sk, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);
+	packet_print(tcp_sk, skb, "=>", AF_INET, &skb->nh.iph->saddr,
+			skb->h.th->source);
+
+	tcp_process(tcp_sk, skb);
+
+	return 0;
+}
+
+static int tcp6_rcv_tester_strict(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet6_sock *in6_sk;
+
+	in6_sk = to_const_inet6_sock(sk);
+	assert(in6_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->nh.ip6h != NULL);
+	assert(skb->h.th != NULL);
+	return (0 == memcmp(&in6_sk->src_in6.sin6_addr,
+				&skb->nh.ip6h->daddr,
+				sizeof in6_sk->src_in6.sin6_addr))
+			&& (in6_sk->src_in6.sin6_port == skb->h.th->dest)
+			&& (0 == memcmp(&in6_sk->src_in6.sin6_addr,
+				&skb->nh.ip6h->daddr,
+				sizeof in6_sk->src_in6.sin6_addr))
+			&& (in6_sk->dst_in6.sin6_port == skb->h.th->source);
+};
+
+static int tcp6_rcv_tester_soft(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct inet6_sock *in6_sk;
+
+	in6_sk = to_const_inet6_sock(sk);
+	assert(in6_sk != NULL);
+
+	assert(skb != NULL);
+	assert(skb->nh.ip6h != NULL);
+	assert(skb->h.th != NULL);
+	return ((0 == memcmp(&in6_sk->src_in6.sin6_addr,
+					&skb->nh.ip6h->daddr,
+					sizeof in6_sk->src_in6.sin6_addr))
+				|| (0 == memcmp(&in6_sk->src_in6.sin6_addr,
+					&in6addr_any,
+					sizeof in6_sk->src_in6.sin6_addr)))
+			&& (in6_sk->src_in6.sin6_port == skb->h.th->dest);
+}
+
+static int tcp6_rcv(struct sk_buff *skb) {
+	struct sock *sk;
+	struct tcp_sock *tcp_sk;
+
+	assert(skb != NULL);
+
+	sk = sock_lookup(NULL, tcp_sock_ops,
+			tcp6_rcv_tester_strict, skb);
+	if (sk == NULL) {
+		sk = sock_lookup(NULL, tcp_sock_ops,
+				tcp6_rcv_tester_soft, skb);
+	}
+
+	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
+	packet_print(tcp_sk, skb, "=>", AF_INET6,
+			&skb->nh.ip6h->saddr, skb->h.th->source);
 
 	tcp_process(tcp_sk, skb);
 
@@ -1153,6 +1225,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
 
+	(void)timer;
 	(void)param;
 
 	debug_print(7, "TIMER: call tcp_timer_handler\n");
