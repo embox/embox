@@ -142,9 +142,9 @@ $(QT_BUILD_DIR_EMBOX):
 QT_MD5_LINE:=$(QT_MD5)  $(QT_BUNDLE)
 
 $(DOWNLOADED):
-	$(AT)(echo '$(QT_MD5_LINE)' | md5sum -c) || \
+	$(AT)(echo '$(QT_MD5_LINE)' | $(MD5) -c) || \
 		(wget -P $(DOWNLOAD_DIR) -c $(QT_URL) && \
-			echo '$(QT_MD5_LINE)' | md5sum -c)
+			echo '$(QT_MD5_LINE)' | $(MD5) -c)
 	$(AT)touch $@
 
 # When necessity to re-patch is detected manual resolution is required.

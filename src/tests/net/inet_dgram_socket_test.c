@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <embox/test.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <framework/mod/options.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -262,6 +263,10 @@ static int case_setup(void) {
 	addrlen = sizeof addr;
 
 	if (-1 == bind(b, to_sa(&addr), addrlen)) {
+		return -errno;
+	}
+
+	if (-1 == fcntl(b, F_SETFD, O_NONBLOCK)) {
 		return -errno;
 	}
 
