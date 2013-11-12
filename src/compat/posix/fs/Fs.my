@@ -62,6 +62,8 @@ static module open {
 
 	depends embox.fs.index_operation
 	depends embox.kernel.task.errno
+	depends libgen
+	depends dirent
 }
 
 static module xattr {

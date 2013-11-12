@@ -17,6 +17,7 @@
 
 #include <kernel/task/task_priority.h>
 #include <kernel/task/thread_key_table.h>
+#include <kernel/task/idesc_table.h>
 
 #define MAX_TASK_NAME_LEN 20
 
@@ -70,6 +71,8 @@ struct task {
 	unsigned int affinity;
 
 	thread_key_table_t key_table;
+
+	idesc_table_t idesc_table;
 };
 
 struct task_resource_desc {

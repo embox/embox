@@ -11,15 +11,20 @@
 #include <assert.h>
 
 #include <fs/idesc.h>
+#include <kernel/task/idx.h>
 
 #include <kernel/task/idesc_table.h>
 #include <util/indexator.h>
 
-#define idesc_index_valid(idx) ((idx >=0) && (idx < TASKS_RES_QUANTITY))
+#define idesc_index_valid(idx) ((idx >=0) && (idx < IDESC_QUANTITY))
 
 #define idesc_cloexec_set(idesc) \
+	idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1)
 
-#define idesc_cloexec_clear(idesc)
+#define idesc_cloexec_clear(idesc) \
+	idesc = (struct idesc *)((uintptr_t)t->idesc_table[idx] & ~0x1)
+
+#define idesc_is_cloexec(idesc)  ((uintptr_t)idesc & 0x1)
 
 int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	int idx;
@@ -35,7 +40,7 @@ int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	idesc->idesc_count++;
 
 	if (cloexec) {
-		idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1);
+		idesc_cloexec_set(idesc);
 	}
 
 	t->idesc_table[idx] = idesc;
@@ -54,7 +59,7 @@ int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx, int cl
 	idesc->idesc_count++;
 
 	if (cloexec) {
-		idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1);
+		idesc_cloexec_set(idesc);
 	}
 
 	t->idesc_table[idx] = idesc;
@@ -96,12 +101,37 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 	assert(t);
 	assert(idesc_index_valid(idx));
 
-	idesc = (struct idesc *)((uintptr_t)t->idesc_table[idx] & ~0x1);
+	idesc = t->idesc_table[idx];
 
-	return idesc;
+	return idesc_cloexec_clear(idesc);
 }
 
-int idesc_table_init(struct idesc_table *t, struct idesc_table *parent_table) {
+int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
+	int i;
+	struct idesc *idesc;
 
+	assert(t);
+
+	index_init(&t->indexator, 0, IDESC_QUANTITY, t->idesc_table);
+
+	if (parent_table == NULL) {
+		return 0;
+	}
+
+	for (i = 0; i < TASKS_RES_QUANTITY; i++) {
+		if (parent_table->idesc_table[i]) {
+			idesc = idesc_table_get(parent_table, i);
+			assert(idesc);
+			if (!idesc_is_cloexec(t->idesc_table[i])) {
+				idesc_table_add(t, idesc, 0);
+			}
+		}
+	}
+
+	return 0;
+}
+
+int idesc_table_exec(struct idesc_table *t) {
+	//TODO this for exec() only
 	return 0;
 }
