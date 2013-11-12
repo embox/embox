@@ -139,6 +139,15 @@ extern int mod_activate_app(const struct mod *mod);
  * @return
  *   Found module, if any, NULL otherwise.
  */
+extern bool mod_label_check(const struct mod *mod, const struct mod_label *label);
+
+/**
+ * Search for a module with a given FQN (fully.qualified.name)
+ * @param fqn
+ *   Module name, including packages.
+ * @return
+ *   Found module, if any, NULL otherwise.
+ */
 extern const struct mod *mod_lookup(const char *fqn);
 
 /**

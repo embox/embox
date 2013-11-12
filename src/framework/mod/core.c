@@ -262,6 +262,15 @@ int mod_activate_app(const struct mod *mod) {
 	return 0;
 }
 
+bool mod_label_check(const struct mod *mod, const struct mod_label *label) {
+	assert(mod && label);
+
+	if (!mod->label)
+		return true;
+
+	return !memcmp(mod->label, label, sizeof(*label));
+}
+
 const struct mod *mod_lookup(const char *fqn) {
 	const struct mod *mod;
 	const char *mod_name = strrchr(fqn, '.');
