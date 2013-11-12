@@ -21,7 +21,7 @@
 #include <mem/misc/slab.h>
 #include <mem/page.h>
 #include <mem/heap.h>
-#include <framework/mod/member/ops.h>
+#include <framework/mod/ops.h>
 #include <mem/phymem.h>
 
 #include <embox/unit.h>

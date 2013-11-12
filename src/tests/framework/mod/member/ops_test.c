@@ -7,7 +7,7 @@
 
 #include <embox/test.h>
 
-#include <framework/mod/member/self.h>
+#include <framework/mod/self.h>
 
 EMBOX_TEST_SUITE("simple test for member injection");
 
