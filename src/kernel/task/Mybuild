@@ -50,6 +50,8 @@ module MultiThread extends task_thread_api {
 
 module kernel_task {
 	source "common.c"
+	source "kernel_task.c"
+	source "task_alloc_onstack.c"
 
 	depends task_thread_api
 	depends embox.util.DList
