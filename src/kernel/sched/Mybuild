@@ -25,7 +25,7 @@ module sched_ticker {
 }
 
 module wait_queue {
-	source "wait_queue.c"
+	source "waitq.c"
 
 	depends embox.util.DList
 }

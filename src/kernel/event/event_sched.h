@@ -11,12 +11,12 @@
 #define KERNEL_EVENT_EVENT_SCHED_H_
 
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 #define EVENT_TIMEOUT_INFINITE SCHED_TIMEOUT_INFINITE
 
 struct event {
-	struct wait_queue wait_queue;
+	struct waitq waitq;
 };
 __BEGIN_DECLS
 

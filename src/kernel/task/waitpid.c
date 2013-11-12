@@ -12,7 +12,7 @@
 #include <kernel/task/task_table.h>
 #include <kernel/sched.h>
 #include <kernel/sched/sched_lock.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 int task_waitpid(pid_t pid) {
 	struct task *task;
@@ -25,27 +25,27 @@ int task_waitpid(pid_t pid) {
 			ret = -ENOENT;
 		}
 		else {
-			ret = wait_queue_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
+			ret = waitq_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
 
 	return ret;
 }
-extern void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error);
+extern void waitq_notify_all_err(struct waitq *wait_queue, int error);
 static void task_waitq_deinit(struct task *task) {
-	wait_queue_notify_all_err(task->waitq, task->err);
+	waitq_notify_all_err(task->waitq, task->err);
 }
 
 static void task_waitq_init(struct task *task, void *_waitq) {
 	task->waitq = _waitq;
-	wait_queue_init(task->waitq);
+	waitq_init(task->waitq);
 }
 
 static const struct task_resource_desc waitpid_resource = {
 	.init = task_waitq_init,
 	.deinit = task_waitq_deinit,
-	.resource_size = sizeof(struct wait_queue)
+	.resource_size = sizeof(struct waitq)
 };
 
 TASK_RESOURCE_DESC(&waitpid_resource);

@@ -13,7 +13,7 @@
 #include <kernel/irq.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 #include <util/member.h>
 #include <util/dlist.h>
@@ -33,7 +33,7 @@ static inline int in_sched_locked(void) {
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
-	wait_queue_thread_notify(thread, -ETIMEDOUT);
+	waitq_thread_notify(thread, -ETIMEDOUT);
 }
 
 static int wait_locked(unsigned long timeout) {
@@ -68,7 +68,7 @@ static int wait_locked(unsigned long timeout) {
 	return current->wait_link->result;
 }
 
-void wait_queue_remove(struct wait_link *wait_link) {
+void waitq_remove(struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
 		dlist_del(&wait_link->link);
@@ -76,14 +76,14 @@ void wait_queue_remove(struct wait_link *wait_link) {
 	ipl_restore(ipl);
 }
 
-static void wait_queue_insert(struct wait_queue *wait_queue,
+static void wait_queue_insert(struct waitq *waitq,
 		struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
 		dlist_head_init(&wait_link->link);
 		wait_link->thread = thread_self();
 
-		dlist_add_prev(&wait_link->link, &wait_queue->list);
+		dlist_add_prev(&wait_link->link, &waitq->list);
 	}
 	ipl_restore(ipl);
 }
@@ -104,25 +104,25 @@ static void wait_queue_cleanup(struct wait_link *wait_link) {
 	current->wait_link = 0;
 }
 
-int wait_queue_wait(struct wait_queue *wait_queue, int timeout) {
+int waitq_wait(struct waitq *waitq, int timeout) {
 	int result;
 
 	sched_lock();
 	{
-		result = wait_queue_wait_locked(wait_queue, timeout);
+		result = waitq_wait_locked(waitq, timeout);
 	}
 	sched_unlock();
 
 	return result;
 }
 
-int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
+int waitq_wait_locked(struct waitq *waitq, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
 	wait_queue_prepare(&wait_link);
 
-	wait_queue_insert(wait_queue, &wait_link);
+	wait_queue_insert(waitq, &wait_link);
 
 	result = wait_locked(timeout);
 
@@ -131,7 +131,7 @@ int wait_queue_wait_locked(struct wait_queue *wait_queue, int timeout) {
 	return result;
 }
 
-void wait_queue_thread_notify(struct thread *thread, int result) {
+void waitq_thread_notify(struct thread *thread, int result) {
 	assert(thread);
 	assert(__THREAD_STATE_WAITING & thread->state);
 
@@ -141,41 +141,41 @@ void wait_queue_thread_notify(struct thread *thread, int result) {
 
 		sched_wake(thread);
 
-		wait_queue_remove(thread->wait_link);
+		waitq_remove(thread->wait_link);
 	}
 	irq_unlock();
 }
 
-void wait_queue_notify(struct wait_queue *wait_queue) {
+void waitq_notify(struct waitq *waitq) {
 	struct wait_link *link, *next;
 	struct thread *t;
 
 	ipl_t ipl = ipl_save();
 	{
-		if (dlist_empty(&wait_queue->list)) {
+		if (dlist_empty(&waitq->list)) {
 			goto out;
 		}
-		t = dlist_entry(wait_queue->list.next, struct wait_link, link)->thread;
+		t = dlist_entry(waitq->list.next, struct wait_link, link)->thread;
 
-		dlist_foreach_entry(link, next, &wait_queue->list, link) {
+		dlist_foreach_entry(link, next, &waitq->list, link) {
 			if (thread_priority_get(link->thread) > thread_priority_get(t)) {
 				t = link->thread;
 			}
 		}
 
-		wait_queue_thread_notify(t, ENOERR);
+		waitq_thread_notify(t, ENOERR);
 	}
 out:
 	ipl_restore(ipl);
 }
 
-void wait_queue_notify_all_err(struct wait_queue *wait_queue, int error) {
+void waitq_notify_all_err(struct waitq *waitq, int error) {
 	struct wait_link *link, *next;
 
 	ipl_t ipl = ipl_save();
 	{
-		dlist_foreach_entry(link, next, &wait_queue->list, link) {
-			wait_queue_thread_notify(link->thread, error);
+		dlist_foreach_entry(link, next, &waitq->list, link) {
+			waitq_thread_notify(link->thread, error);
 		}
 	}
 	ipl_restore(ipl);

@@ -12,7 +12,7 @@
 #include <kernel/sched.h>
 
 void barrier_init(barrier_t *b, int count) {
-	wait_queue_init(&b->wq);
+	waitq_init(&b->wq);
 	b->current_count = 0;
 	b->count = count;
 }
@@ -25,10 +25,10 @@ void barrier_wait(barrier_t *b) {
 	{
 		if (b->count == b->current_count + 1) {
 			b->current_count = 0;
-			wait_queue_notify_all(&b->wq);
+			waitq_notify_all(&b->wq);
 		} else {
 			b->current_count++;
-			wait_queue_wait_locked(&b->wq, SCHED_TIMEOUT_INFINITE);
+			waitq_wait_locked(&b->wq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();

@@ -18,7 +18,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 #include <util/dlist.h>
 

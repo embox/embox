@@ -10,10 +10,10 @@
 #define KERNEL_THREAD_SYNC_SEMAPHORE_H_
 
 #include <time.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 struct sem {
-	struct wait_queue wq;
+	struct waitq wq;
 	int value;
 	int max_value;
 };

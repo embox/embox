@@ -14,7 +14,7 @@
 #include <kernel/sched/wait_queue.h>
 
 static struct thread *low, *high;
-static struct wait_queue wq;
+static struct waitq wq;
 
 EMBOX_TEST_SUITE("Priority_based scheduling algorithm.");
 
@@ -31,14 +31,14 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('c');
-	wait_queue_notify(&wq);
+	waitq_notify(&wq);
 	test_emit('e');
 	return NULL;
 }
 
 static void *high_run(void *arg) {
 	test_emit('b');
-	wait_queue_wait(&wq, SCHED_TIMEOUT_INFINITE);
+	waitq_wait(&wq, SCHED_TIMEOUT_INFINITE);
 	test_emit('d');
 	return NULL;
 }
@@ -46,7 +46,7 @@ static void *high_run(void *arg) {
 static int setup(void) {
 	sched_priority_t l = 200, h = 210;
 
-	wait_queue_init(&wq);
+	waitq_init(&wq);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));

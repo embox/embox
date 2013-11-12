@@ -128,7 +128,7 @@ void sched_finish(struct thread *t) {
 			}
 		} else {
 			if (t->state & __THREAD_STATE_WAITING) {
-				wait_queue_remove(t->wait_link);
+				waitq_remove(t->wait_link);
 			}
 
 			t->state = __THREAD_STATE_DO_EXITED(t->state);
