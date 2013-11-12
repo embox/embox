@@ -63,7 +63,7 @@ static int usb_test_write(struct usb_endp_desc *edesc, char **data,
 
 static int usb_test_main(int argc, char **argv) {
 	int vid = -1, pid = -1, endp = -1, len = -1;
-	signed char write = -1, setup_tok = 0, ack_tok = 0;
+	signed char write = 0, setup_tok = 0, ack_tok = 0;
 	struct usb_dev_desc *ddesc;
 	struct usb_endp_desc *edesc;
 	int opt, res;
@@ -99,13 +99,18 @@ static int usb_test_main(int argc, char **argv) {
 		}
 	}
 
-	if (vid == -1 || pid == -1 || endp == -1
-			|| (write != -1 && len != -1)) {
-		printf("vid=%d pid=%d endp=%d write=%d len=%d\n",
-				vid, pid, endp, write, len);
+	if (vid == -1 || pid == -1 || endp == -1) {
 		fprintf(stderr, "one of necessary argument isn't specified\n");
 		usage(argv[0]);
 		return 1;
+	}
+
+	if ((write == 1 && len != -1) || (write == 0 && len == -1)) {
+		fprintf(stderr, "Should be specified exactly one operation "
+				"(-r LENGTH or -w [ DATA ])\n");
+		usage(argv[0]);
+		return 1;
+
 	}
 
 	if (vid > 0xffff || pid > 0xffff || endp > 16) {
