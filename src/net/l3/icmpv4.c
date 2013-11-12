@@ -228,7 +228,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 	in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
 					reply->nh.iph->daddr : idev->ifa_address;
 
-	ip_build(reply->nh.iph, ntohs(tot_len), IPPROTO_ICMP,
+	ip_build(reply->nh.iph, tot_len, IPPROTO_ICMP,
 			daddr, reply->nh.iph->saddr);
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
