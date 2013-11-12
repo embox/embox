@@ -17,6 +17,7 @@
 
 #include "decls.h"
 #include "types.h"
+#include "options.h"
 
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink
@@ -79,6 +80,7 @@
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 
+#if OPTION_MODULE_GET(embox__framework__mod, BOOLEAN, security_label)
 
 #define MOD_LABEL_DEF(mod_nm) \
 	extern char __module_ ## mod_nm ## _text_vma; \
@@ -99,6 +101,10 @@
 		.bss.vma    =          &__module_ ## mod_nm ## _bss_vma, \
 		.bss.len    = (size_t) &__module_ ## mod_nm ## _bss_len, \
 	}
+
+#else
+# define MOD_LABEL_DEF(mod_nm)
+#endif
 
 /**
  * Cmd-specific definitions.
