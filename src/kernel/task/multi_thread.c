@@ -12,6 +12,7 @@
 #include <kernel/task/thread_key_table.h>
 
 int thread_register(struct task * task, struct thread *t) {
+	int ret;
 	sched_priority_t sched_prior;
 
 	if ((NULL == task) || (NULL == t)) {
@@ -30,8 +31,9 @@ int thread_register(struct task * task, struct thread *t) {
 	sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
 	thread_priority_set(t, sched_prior);
 
-	if (-ENOMEM == thread_local_alloc(t, THREAD_KEYS_QUANTITY)) {
-		return -ENOMEM;
+	ret = thread_local_alloc(t, THREAD_KEYS_QUANTITY);
+	if (ret != 0) {
+		return ret;
 	}
 
 	return ENOERR;
@@ -62,5 +64,3 @@ int task_remove_thread(struct task * task, struct thread *thread) {
 
 	return ENOERR;
 }
-
-
