@@ -195,7 +195,8 @@ static inline void usb_dev_set_state(struct usb_dev *dev,
 }
 
 static int usb_dev_configuration_check(struct usb_dev *dev) {
-	return usb_class_supported(dev);
+	return 1;
+	/*return usb_class_supported(dev);*/
 }
 
 static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) {
@@ -224,11 +225,7 @@ static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 	struct usb_hcd *hcd = dev->hcd;
 	bool is_resseting;
 
-#if 0
-	usb_dev_wait(dev, notify_hnd);
-#else
 	assert(notify_hnd == usb_dev_notify_reset_awaiting);
-#endif
 
 	is_resseting = usb_queue_add(&hcd->reset_queue, &dev->reset_link);
 	if (!is_resseting) {
@@ -282,7 +279,7 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 
 	ctrl_endp = dev->endpoints[0];
 
-	dev->c_config = 1;
+	dev->c_config = 0;
 
 	if (NULL == usb_dev_getconf_alloc(dev)) {
 		panic("%s: failed to allocate device's "
@@ -299,7 +296,7 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 		USB_DESC_TYPE_CONFIG << 8,
 		dev->c_config,
 		sizeof(struct usb_desc_configuration) +
-			9 + sizeof(struct usb_desc_interface),
+			sizeof(struct usb_desc_interface),
 		dev->getconf_data);
 }
 
@@ -309,7 +306,6 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 
 	ctrl_endp = dev->endpoints[0];
 
-	dev->conf_desc = &dev->getconf_data->config_desc;
 	dev->interface_desc = &dev->getconf_data->interface_desc;
 
 	if (!usb_dev_configuration_check(dev)) {
@@ -328,7 +324,7 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 			USB_DESC_TYPE_CONFIG << 8 ,
 			dev->c_config,
 			sizeof(struct usb_desc_configuration) +
-				9 + sizeof(struct usb_desc_interface),
+				sizeof(struct usb_desc_interface),
 			dev->getconf_data);
 	} else {
 		dev->c_interface = 0;
@@ -351,6 +347,7 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
 	dev->endp_n = 1 + dev->interface_desc->b_num_endpoints;
 
 	usb_dev_register(dev);
+
 	usb_class_handle(dev);
 }
 

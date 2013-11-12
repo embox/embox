@@ -9,6 +9,21 @@
 #ifndef DRIVERS_USB_DESC_H_
 #define DRIVERS_USB_DESC_H_
 
+#define USB_DESC_TYPE_DEV               1
+#define USB_DESC_TYPE_CONFIG            2
+#define USB_DESC_TYPE_ENDPOINT          5
+
+#define USB_DESC_ENDP_TYPE_MASK         0x03
+#define USB_DESC_ENDP_TYPE_CTRL         0x00
+#define USB_DESC_ENDP_TYPE_ISOCHR       0x01
+#define USB_DESC_ENDP_TYPE_BULK         0x02
+#define USB_DESC_ENDP_TYPE_INTR         0x03
+
+#define USB_DESC_ENDP_ADDR_MASK         0x0f
+#define USB_DESC_ENDP_ADDR_DIR_MASK     0x80
+#define USB_DESC_ENDP_ADDR_OUT          0x00
+#define USB_DESC_ENDP_ADDR_IN           0x80
+
 struct usb_control_header {
 	uint8_t		bm_request_type;
 	uint8_t 	b_request;

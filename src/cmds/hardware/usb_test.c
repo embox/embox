@@ -15,7 +15,7 @@
 
 #include <embox/cmd.h>
 
-EMBOX_CMD(input_test_main);
+EMBOX_CMD(usb_test_main);
 
 #define TEST_BUF_LEN 16
 static char test_buf[TEST_BUF_LEN];
@@ -61,7 +61,7 @@ static int usb_test_write(struct usb_endp_desc *edesc, char **data,
 	return usb_request(edesc, test_buf, len, USB_TOKEN_OUT | tok);
 }
 
-static int input_test_main(int argc, char **argv) {
+static int usb_test_main(int argc, char **argv) {
 	int vid = -1, pid = -1, endp = -1, len = -1;
 	signed char write = -1, setup_tok = 0, ack_tok = 0;
 	struct usb_dev_desc *ddesc;

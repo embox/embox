@@ -63,21 +63,6 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req);
 #define USB_DEV_REQ_GET_DESC            0x06
 #define USB_DEV_REQ_SET_CONF            0x09
 
-#define USB_DESC_TYPE_DEV               1
-#define USB_DESC_TYPE_CONFIG            2
-#define USB_DESC_TYPE_ENDPOINT          5
-
-#define USB_DESC_ENDP_TYPE_MASK         0x03
-#define USB_DESC_ENDP_TYPE_CTRL         0x00
-#define USB_DESC_ENDP_TYPE_ISOCHR       0x01
-#define USB_DESC_ENDP_TYPE_BULK         0x02
-#define USB_DESC_ENDP_TYPE_INTR         0x03
-
-#define USB_DESC_ENDP_ADDR_MASK         0x0f
-#define USB_DESC_ENDP_ADDR_DIR_MASK     0x80
-#define USB_DESC_ENDP_ADDR_OUT          0x00
-#define USB_DESC_ENDP_ADDR_IN           0x80
-
 #define USB_HUB_PORT_CONNECT            0x0001
 #define USB_HUB_PORT_ENABLE             0x0002
 #define USB_HUB_PORT_SUSPEND            0x0004
@@ -197,8 +182,6 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 struct usb_desc_getconf_data {
 	struct usb_desc_configuration config_desc;
 	struct usb_desc_interface interface_desc;
-	// --- cut ---
-	char somestuff[9];
 	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
 } __attribute__((packed));
 
@@ -226,7 +209,6 @@ struct usb_dev {
 	struct usb_desc_getconf_data *getconf_data;
 	struct usb_desc_getconf_data tgetconf_data;
 
-	struct usb_desc_configuration *conf_desc;
 	struct usb_desc_interface *interface_desc;
 
 	void *class_specific;
@@ -343,6 +325,7 @@ struct usb_class {
 	struct dlist_head lnk;
 	usb_class_t usb_class;
 	int (*get_conf)(struct usb_class *cls, struct usb_dev *dev);
+	void (*get_conf_hnd)(struct usb_request *req);
 	void *(*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
 	void (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
 };
@@ -363,7 +346,9 @@ extern void usb_class_unhandle(struct usb_dev *dev);
 
 extern int usb_dev_generic_fill_iface(struct usb_dev *dev, struct usb_desc_interface *idesc);
 extern int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]);
+
 extern int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev);
+extern void usb_class_generic_get_conf_hnd(struct usb_request *req);
 
 extern int usb_class_register(struct usb_class *cls);
 #endif /* DRIVERS_USB_H_ */
