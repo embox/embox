@@ -47,6 +47,8 @@
 			__attribute__ ((weak));                               \
 	extern const struct mod_app __MOD_APP(mod_nm)                 \
 			__attribute__ ((weak));                               \
+	extern const struct mod_label __MOD_LABEL(mod_nm)             \
+			__attribute__ ((weak));                               \
 	static const struct mod_package __MOD_PACKAGE(package_nm);    \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
 			__MOD_REQUIRES(mod_nm), NULL);                        \
@@ -65,6 +67,7 @@
 		.package    = &__MOD_PACKAGE(package_nm), \
 		.cmd        = &__MOD_CMD(mod_nm),         \
 		.app        = &__MOD_APP(mod_nm),         \
+		.label      = &__MOD_LABEL(mod_nm),       \
 		.name       = mod_name,                   \
 		.requires   = __MOD_REQUIRES(mod_nm),     \
 		.provides   = __MOD_PROVIDES(mod_nm),     \
@@ -76,6 +79,26 @@
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 
+
+#define MOD_LABEL_DEF(mod_nm) \
+	extern char __module_ ## mod_nm ## _text_vma; \
+	extern char __module_ ## mod_nm ## _text_len; \
+	extern char __module_ ## mod_nm ## _rodata_vma; \
+	extern char __module_ ## mod_nm ## _rodata_len; \
+	extern char __module_ ## mod_nm ## _data_vma; \
+	extern char __module_ ## mod_nm ## _data_len; \
+	extern char __module_ ## mod_nm ## _bss_vma;  \
+	extern char __module_ ## mod_nm ## _bss_len;  \
+	const struct mod_label __MOD_LABEL(mod_nm) = { \
+		.text.vma   =          &__module_ ## mod_nm ## _text_vma, \
+		.text.len   = (size_t) &__module_ ## mod_nm ## _text_len, \
+		.rodata.vma =          &__module_ ## mod_nm ## _rodata_vma, \
+		.rodata.len = (size_t) &__module_ ## mod_nm ## _rodata_len, \
+		.data.vma   =          &__module_ ## mod_nm ## _data_vma, \
+		.data.len   = (size_t) &__module_ ## mod_nm ## _data_len, \
+		.bss.vma    =          &__module_ ## mod_nm ## _bss_vma, \
+		.bss.len    = (size_t) &__module_ ## mod_nm ## _bss_len, \
+	}
 
 /**
  * Cmd-specific definitions.
@@ -100,7 +123,6 @@
  * App-specific definitions.
  * @param mod_nm
  */
-#if 0
 #define MOD_APP_DEF(mod_nm) \
 	extern char __module_ ## mod_nm ## _data_vma; \
 	extern char __module_ ## mod_nm ## _data_len; \
@@ -112,9 +134,6 @@
 		.bss     =          &__module_ ## mod_nm ## _bss_vma,  \
 		.bss_sz  = (size_t) &__module_ ## mod_nm ## _bss_len,  \
 	}
-#else
-#define MOD_APP_DEF(mod_nm)
-#endif
 
 /**
  * Defines a new dependency between two specified modules.
