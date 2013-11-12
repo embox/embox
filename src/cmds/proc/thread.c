@@ -49,17 +49,17 @@ static void print_stat(void) {
 				prior = sched_priority_thread(task->priority,
 										thread_priority_get(thread));
 
-				if ((__THREAD_STATE_READY | __THREAD_STATE_RUNNING) & s) {
+				if (s & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING)) {
 					state = "running";
 					running++;
-				} else if (__THREAD_STATE_WAITING & s) {
+				} else if (s & __THREAD_STATE_WAITING) {
 					state = "sleeping";
 					sleeping++;
 				}
 
 
 				printf(" %4d%c %4d  %8d %18s %9lds\n",
-					thread->id, __THREAD_STATE_RUNNING & s ? '*' : ' ',
+					thread->id, s & __THREAD_STATE_RUNNING ? '*' : ' ',
 					thread->task->tid,
 					prior,
 					state,

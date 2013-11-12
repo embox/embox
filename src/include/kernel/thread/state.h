@@ -15,6 +15,13 @@
 /* present in waitq or waiting for lunching*/
 #define __THREAD_STATE_WAITING   (0x1 << 1)
 #define __THREAD_STATE_RUNNING   (0x1 << 2) /* executing on CPU now */
-#define __THREAD_STATE_EXITED    (0x1 << 3) /* zombie */
+
+/* zombie */
+#define __THREAD_STATE_DO_EXITED(state)                        \
+	state & ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING |  \
+			__THREAD_STATE_RUNNING)
+#define __THREAD_STATE_IS_EXITED(state)                        \
+	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
+			__THREAD_STATE_RUNNING))
 
 #endif /* KERNEL_THREAD_STATE_H_ */

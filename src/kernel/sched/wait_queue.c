@@ -57,7 +57,7 @@ static int wait_locked(unsigned long timeout) {
 
 	/* At this point we have been awakened and are ready to go. */
 	assert(!in_sched_locked());
-	assert(__THREAD_STATE_RUNNING & current->state);
+	assert(current->state & __THREAD_STATE_RUNNING);
 
 	sched_lock();
 

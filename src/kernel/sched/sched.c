@@ -78,11 +78,12 @@ void sched_wake(struct thread *t) {
 	//assert(!in_harder_critical());
 	assert(t != current);
 	assert(t);
-	assert(__THREAD_STATE_WAITING & t->state);
+	assert(t->state & __THREAD_STATE_WAITING);
 
 	sched_lock();
 	{
-		t->state = __THREAD_STATE_READY;
+		t->state |= __THREAD_STATE_READY;
+		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
 		runq_queue_insert(&rq.queue, t);
 
 		if (thread_priority_get(t) > thread_priority_get(current)) {
@@ -92,11 +93,12 @@ void sched_wake(struct thread *t) {
 	sched_unlock();
 }
 
+/* TODO move to waitq, haven't been refactored yet */
 void sched_sleep(void) {
 	struct thread *current = thread_get_current();
 
 	assert(in_sched_locked() && !in_harder_critical());
-	assert((__THREAD_STATE_READY | __THREAD_STATE_RUNNING) & current->state);
+	assert(current->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING));
 
 	current->state = __THREAD_STATE_WAITING;
 	/* we don't remove current because it is not in runq, we just mark it as
@@ -114,10 +116,10 @@ void sched_finish(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!(__THREAD_STATE_EXITED & t->state));
+		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
-		if ((__THREAD_STATE_READY | __THREAD_STATE_RUNNING) &t->state) {
-			t->state = __THREAD_STATE_EXITED;
+		if (t->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING)) {
+			t->state = __THREAD_STATE_DO_EXITED(t->state);
 
 			if (t != thread_self()) {
 				runq_queue_remove(&rq.queue, t);
@@ -125,14 +127,14 @@ void sched_finish(struct thread *t) {
 				sched_post_switch();
 			}
 		} else {
-			if (__THREAD_STATE_WAITING & t->state) {
+			if (t->state & __THREAD_STATE_WAITING) {
 				wait_queue_remove(t->wait_link);
 			}
 
-			t->state = __THREAD_STATE_EXITED;
+			t->state = __THREAD_STATE_DO_EXITED(t->state);
 		}
 
-		assert(__THREAD_STATE_EXITED & t->state);
+		assert(__THREAD_STATE_IS_EXITED(t->state));
 	}
 	sched_unlock();
 }
@@ -154,12 +156,12 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 	sched_lock();
 	{
-		assert(!(__THREAD_STATE_EXITED & t->state));
+		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
 		thread_priority_set(t, prior);
 
 		/* if in runq */
-		if (__THREAD_STATE_READY & t->state) {
+		if (t->state & __THREAD_STATE_READY) {
 			runq_queue_remove(&rq.queue, t);
 			runq_queue_insert(&rq.queue, t);
 
@@ -195,23 +197,27 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		if (__THREAD_STATE_RUNNING & prev->state) {
+		if (prev->state & __THREAD_STATE_RUNNING) {
 			runq_queue_insert(&rq.queue, prev);
 		}
 
 		next = runq_queue_extract(&rq.queue);
 
 		assert(next != NULL);
-		assert((__THREAD_STATE_RUNNING | __THREAD_STATE_READY) & next->state);
+		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
 
 		if (prev == next) {
 			ipl_disable();
 			goto out;
 		} else {
 			if (prev->state & __THREAD_STATE_RUNNING) {
-				prev->state = __THREAD_STATE_READY;
+				prev->state |= __THREAD_STATE_READY;
+				/* TODO maybe without waiting */
+				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
 			}
-			next->state = __THREAD_STATE_RUNNING;
+			next->state |= __THREAD_STATE_RUNNING;
+			/* TODO maybe without waiting */
+			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 		}
 
 		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
