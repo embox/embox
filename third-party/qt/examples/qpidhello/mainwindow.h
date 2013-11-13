@@ -5,6 +5,8 @@
 #include <QSocketNotifier>
 #include <QThread>
 
+#include <streambuf>
+
 namespace Ui {
 class MainWindow;
 }

@@ -6,7 +6,6 @@
 
 #include <QScrollBar>
 
-#include <streambuf>
 #include <iostream>
 
 class fdoutbuf : public std::streambuf {
@@ -42,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent) :
     int flags;
 
     ::setenv("QPID_LOG_ENABLE","trace+",0);
+    ::setenv("QPID_LOG_OUTPUT","stdout",0);
+    ::setenv("QPID_LOG_TO_FILE","stdout",0);
 
     pipe(pipefd);
     flags = fcntl(pipefd[0], F_GETFL, 0);
@@ -78,7 +79,7 @@ MainWindow::~MainWindow()
     ::close(oldstd[1]);
     */
     std::streambuf *ob = std::cout.rdbuf(oldstd[0]);
-    std::cout.rdbuf(oldstd[1]);
+    std::cerr.rdbuf(oldstd[1]);
     delete ob;
 
     ::close(pipefd[0]);
@@ -148,6 +149,7 @@ void QpidWorker::doQPIDHello()
 #include <qpid/messaging/Receiver.h>
 #include <qpid/messaging/Sender.h>
 #include <qpid/messaging/Session.h>
+//#include <qpid/log/Logger.h>
 
 using namespace qpid::messaging;
 
@@ -155,6 +157,8 @@ static int qpidhello(char *br) {
     std::string broker = br ? br : "localhost:5672";
     std::string address = "amq.topic";
     std::string connectionOptions = "";
+
+    //qpid::log::Logger::instance().reconfigure(std::vector<std::string>());
 
     Connection connection(broker, connectionOptions);
     try {

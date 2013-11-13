@@ -19,5 +19,8 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-unix: LIBS += -lqpidtypes
-unix: LIBS += -lqpidmessaging
+contains(QMAKE_LIBS_THREAD, -lpthread) {
+    unix: LIBS += -lqpidtypes
+    unix: LIBS += -lqpidmessaging
+    unix: LIBS += -lqpidcommon
+}

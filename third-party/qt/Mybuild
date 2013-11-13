@@ -48,8 +48,10 @@ module spreadsheet extends embox.lib.cxx.app {
 module qpidhello extends embox.lib.cxx.app {
 	depends embox.lib.cxx.libsupcxx
 	depends third_party.STLport.core
+	depends third_party.qpid.core
 	source "empty.c"
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source "order.mk"
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' qpidhello")
 	source "../../../../qt/apps_embox/qpidhello/qpidhello.embox.o"
 	depends core
 }

@@ -76,6 +76,7 @@ QT_CONF_FLAGS_EMBOX += -no-xmlpatterns
 
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
@@ -153,7 +154,7 @@ $(DOWNLOADED):
 # and do not want to accidentally remove some possible desired changes.
 # Therefore it is left to the discretion of the user.
 # HINT: Typically it is good to perform build directory cleanup: 'make clean'
-# The patch saved to .extracted for the user to be able to compare previous patch with current one.
+# The patch is saved to .extracted for the user to be able to compare previous patch with current one.
 # In some situations this might be useful.
 $(EXTRACTED): $(PATCH_TXT) $(DOWNLOADED)
 	$(AT) [ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
@@ -223,7 +224,10 @@ TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 TARGET_APPS += examples/texteditor
-#TARGET_APPS += examples/qpidhello
+ifeq ($(MAKECMDGOALS),qpidhello)
+TARGET_APPS += examples/qpidhello
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
+endif
 
 
 
@@ -315,7 +319,9 @@ $(TARGET_QMAKE_EMBOX): build_and_install
 
 all: target_apps_EMBOX
 
+.PHONY: qpidhello
 
+qpidhello: target_apps_EMBOX
 
 
 
