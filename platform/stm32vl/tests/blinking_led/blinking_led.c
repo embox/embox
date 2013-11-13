@@ -19,11 +19,11 @@ EMBOX_TEST(blinking_led);
 #define LED_GREEN (1 << 9) /* port C, pin 9 */
 
 static inline void led1_on(void) {
-	gpio_set(GPIO_C, LED_BLUE);
+	gpio_set_level(GPIO_C, LED_BLUE, 0x1);
 }
 
 static inline void led1_off(void) {
-	gpio_clear(GPIO_C, LED_BLUE);
+	gpio_set_level(GPIO_C, LED_BLUE, 0);
 }
 
 static void timer_hdn(sys_timer_t *tmd, void *param) {
@@ -46,16 +46,16 @@ static int blinking_led(void) {
 	sys_timer_t tmr;
 	volatile int count = 10;
 
-	gpio_out(GPIO_C, LED_BLUE | LED_GREEN, 0);
-	gpio_clear(GPIO_C, LED_BLUE);
-	gpio_set(GPIO_C, LED_GREEN);
+	gpio_settings(GPIO_C, LED_BLUE | LED_GREEN, GPIO_MODE_OUTPUT);
+	gpio_set_level(GPIO_C, LED_BLUE, 0x1);
+	gpio_set_level(GPIO_C, LED_GREEN, 0);
 
 	timer_init(&tmr, TIMER_PERIODIC, 1000, timer_hdn, (void *) &count);
 
 	while (count) { } ;
 
 	timer_close(&tmr);
-	gpio_clear(GPIO_C, LED_GREEN);
+	gpio_set_level(GPIO_C, LED_GREEN, 0);
 
 	return 0;
 }

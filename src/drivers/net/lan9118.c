@@ -7,7 +7,7 @@
  */
 
 #include <drivers/gpmc.h>
-#include <drivers/pins.h>
+#include <drivers/gpio.h>
 #include <errno.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -24,7 +24,8 @@
 #include <unistd.h>
 
 #define LAN9118_GPMC_CS        5 // GPMC chip-select number
-#define LAN9118_PIN            OPTION_GET(NUMBER, pin)
+#define LAN9118_PORT           OPTION_GET(NUMBER, port)
+#define LAN9118_PIN            OPTION_GET(NUMBER, irq_pin)
 #define SIZE_16M               0x1000000
 
 /* CONTROL AND STATUS REGISTERS */
@@ -219,7 +220,8 @@ static int lan9118_open(struct net_device *dev) {
 
 	/* GPIO */
 	//gpio_reg_write(6, GPIO_RISINGDETECT, (1 << LAN9118_PIN));
-	pin_set_input_monitor((1 << LAN9118_PIN), lan9118_irq_handler);
+	gpio_set_input_monitor(gpio_base_addr(LAN9118_PORT),
+			(1 << LAN9118_PIN), lan9118_irq_handler);
 
 	return 0;
 }
