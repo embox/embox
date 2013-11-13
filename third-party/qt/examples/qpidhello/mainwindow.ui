@@ -30,12 +30,23 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Broker:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="text">
+         <string>localhost:5672</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>Execute</string>
         </property>
        </widget>
       </item>

@@ -223,7 +223,7 @@ TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 TARGET_APPS += examples/texteditor
-TARGET_APPS += examples/qpidhello
+#TARGET_APPS += examples/qpidhello
 
 
 
