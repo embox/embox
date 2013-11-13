@@ -72,6 +72,7 @@ endif
 QT_CONF_FLAGS_EMBOX += -debug
 QT_CONF_FLAGS_EMBOX += -qt-gfx-vnc
 QT_CONF_FLAGS_EMBOX += -no-freetype
+QT_CONF_FLAGS_EMBOX += -no-xmlpatterns
 
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 
@@ -218,10 +219,11 @@ $(ROOTFS_IMAGE): build_and_install
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
 #TARGET_APPS += demos/spreadsheet
-#TARGET_APPS += examples/animation/animatedtiles
-#TARGET_APPS += examples/animation/moveblocks
+TARGET_APPS += examples/animation/animatedtiles
+TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 TARGET_APPS += examples/texteditor
+TARGET_APPS += examples/qpidhello
 
 
 
