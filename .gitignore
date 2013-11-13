@@ -5,8 +5,10 @@
 /GNUmakefile
 /build
 /conf
+/cookie.c00k!e
 /core
 /download
+/launch.bat
 mk/.cache
 mk/GNUmakefile
 /nbproject
@@ -23,3 +25,4 @@ third-party/qt/.downloaded
 third-party/qt/qt-everywhere-opensource-src-4.8.4.tar.gz
 third-party/ti/ipc_1_24_00_16
 third-party/ti/syslink_2_21_01_05
+/upload.py
