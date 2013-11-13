@@ -21,7 +21,9 @@ struct idesc;
 
 struct idesc_table {
 	struct idesc *idesc_table[IDESC_QUANTITY];
+
 	struct indexator indexator;
+	index_data_t index_buffer[INDEX_DATA_LEN(IDESC_QUANTITY)];
 };
 
 typedef struct idesc_table idesc_table_t;
@@ -38,6 +40,8 @@ extern int idesc_table_locked(struct idesc_table *t, int idx);
 extern int idesc_table_del(struct idesc_table *t, int idx);
 
 extern struct idesc *idesc_table_get(struct idesc_table *t, int idx);
+
+extern int idesc_table_init(struct idesc_table *t);
 
 extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 

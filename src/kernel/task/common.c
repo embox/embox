@@ -21,12 +21,16 @@
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
-static size_t resource_sum_size = 0;
+static size_t resource_sum_size = sizeof(struct task);
 
 void resource_sum_size_calc(void) {
 	const struct task_resource_desc *res_desc;
 
 	task_resource_foreach(res_desc) {
+		if(res_desc->resource_init) {
+			res_desc->resource_init(res_desc, resource_sum_size);
+		}
+
 		resource_sum_size += res_desc->resource_size;
 	}
 }
@@ -36,7 +40,7 @@ size_t task_resource_sum_size(void) {
 }
 
 size_t task_size(void) {
-	return sizeof(struct task) + resource_sum_size;
+	return resource_sum_size;
 }
 
 

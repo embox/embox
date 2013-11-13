@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include <fs/idesc.h>
-#include <kernel/task/idx.h>
+#include <kernel/task.h>
 
 #include <kernel/task/idesc_table.h>
 #include <util/indexator.h>
@@ -82,7 +82,7 @@ int idesc_table_del(struct idesc_table *t, int idx) {
 
 	idesc = idesc_table_get(t, idx);
 	assert(idesc);
-	assert(idesc->idesc_ops && idesc->idesc_ops->close);
+	//assert(idesc->idesc_ops && idesc->idesc_ops->close);
 
 	if (!(idesc->idesc_count--)) {
 		//idesc->idesc_ops->close(idesc);
@@ -106,19 +106,27 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 	return idesc_cloexec_clear(idesc);
 }
 
+
+int idesc_table_init(struct idesc_table *t) {
+	assert(t);
+	index_init(&t->indexator, 0, IDESC_QUANTITY, t->index_buffer);
+
+	return 0;
+}
+
 int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 	int i;
 	struct idesc *idesc;
 
 	assert(t);
 
-	index_init(&t->indexator, 0, IDESC_QUANTITY, t->idesc_table);
+	idesc_table_init(t);
 
 	if (parent_table == NULL) {
 		return 0;
 	}
 
-	for (i = 0; i < TASKS_RES_QUANTITY; i++) {
+	for (i = 0; i < IDESC_QUANTITY; i++) {
 		if (parent_table->idesc_table[i]) {
 			idesc = idesc_table_get(parent_table, i);
 			assert(idesc);
