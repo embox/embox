@@ -17,7 +17,7 @@
 
 int thread_priority_init(struct thread *t, sched_priority_t new_priority) {
 	assert(t);
-	assert(t->state == __THREAD_STATE_INIT);
+	assert(t->state == __THREAD_STATE_WAITING);
 
 	prior_field(base_priority) = new_priority;
 	prior_field(current_priority) = new_priority;

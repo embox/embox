@@ -36,7 +36,6 @@
 #include <profiler/tracing/trace.h>
 
 
-static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
@@ -59,63 +58,80 @@ static inline int in_sched_locked(void) {
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
-	sched_wait_init();
-	runq_init(&rq);
+	runq_queue_init(&rq.queue);
 
-	runq_start(&rq, idle);
+	sched_wake(idle);
 
 	sched_ticker_init();
 
 	return 0;
 }
 
-void sched_start(struct thread *t) {
+void sched_wake(struct thread *t) {
+	struct thread *current = thread_self();
+
+	/* TODO: it's not true when it's called for waking thread from waitq */
+	//assert(!in_harder_critical());
+	assert(t != current);
 	assert(t);
-	assert(!in_harder_critical());
-	assert(!thread_state_active(t->state));
+	assert(t->state & __THREAD_STATE_WAITING);
 
 	sched_lock();
 	{
-		post_switch_if(runq_start(&rq, t));
+		t->state |= __THREAD_STATE_READY;
+		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
+		runq_queue_insert(&rq.queue, t);
+
+		if (thread_priority_get(t) > thread_priority_get(current)) {
+			sched_post_switch();
+		}
 	}
 	sched_unlock();
 }
 
-void sched_wake(struct thread *t) {
-	assert(in_sched_locked());
+/* TODO move to waitq, haven't been refactored yet */
+void sched_sleep(void) {
+	struct thread *current = thread_get_current();
 	assert(!in_harder_critical());
 
-	post_switch_if(runq_wake_thread(&rq, t));
-}
-
-void sched_sleep(struct thread *t) {
 	assert(in_sched_locked() && !in_harder_critical());
-	assert(thread_state_running(t->state));
+	assert(current->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING));
 
-	runq_wait(&rq);
+	current->state = __THREAD_STATE_WAITING;
+	/* we don't remove current because it is not in runq, we just mark it as
+	 * waiting and after sched switch all will be correct
+	 */
 
-	assert(thread_state_sleeping(t->state));
+	assert(__THREAD_STATE_WAITING & current->state);
 
 	sched_post_switch();
 }
 
 void sched_finish(struct thread *t) {
 	assert(!in_harder_critical());
+	assert(t);
 
 	sched_lock();
 	{
-		assert(!thread_state_exited(t->state));
+		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
-		if (thread_state_running(t->state)) {
-			post_switch_if(runq_finish(&rq, t));
-		} else {
-			if (thread_state_sleeping(t->state)) {
-				t->wait_data.on_notified(t, t->wait_data.data);
+		if (t->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING)) {
+			t->state = __THREAD_STATE_DO_EXITED(t->state);
+
+			if (t != thread_self()) {
+				runq_queue_remove(&rq.queue, t);
+			} else {
+				sched_post_switch();
 			}
-			t->state = thread_state_do_exit(t->state);
+		} else {
+			if (t->state & __THREAD_STATE_WAITING) {
+				waitq_remove(t->wait_link);
+			}
+
+			t->state = __THREAD_STATE_DO_EXITED(t->state);
 		}
 
-		assert(thread_state_exited(t->state));
+		assert(__THREAD_STATE_IS_EXITED(t->state));
 	}
 	sched_unlock();
 }
@@ -123,23 +139,32 @@ void sched_finish(struct thread *t) {
 void sched_post_switch(void) {
 	sched_lock();
 	{
-		post_switch_if(1);
+		switch_posted = 1;
+		critical_request_dispatch(&sched_critical);
 	}
 	sched_unlock();
 }
 
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
+	struct thread *current = thread_self();
+
 	assert(t);
 	assert((prior >= SCHED_PRIORITY_MIN) && (prior <= SCHED_PRIORITY_MAX));
 
 	sched_lock();
 	{
-		assert(!thread_state_exited(t->state));
+		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
 		thread_priority_set(t, prior);
 
-		if (thread_state_running(t->state)) {
-			post_switch_if(runq_change_priority(&rq, t, prior));
+		/* if in runq */
+		if (t->state & __THREAD_STATE_READY) {
+			runq_queue_remove(&rq.queue, t);
+			runq_queue_insert(&rq.queue, t);
+
+			if (prior > thread_priority_get(current)) {
+				sched_post_switch();
+			}
 		}
 
 		assert(thread_priority_get(t) == prior);
@@ -147,16 +172,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	sched_unlock();
 
 	return 0;
-}
-
-
-static void post_switch_if(int condition) {
-	assert(in_sched_locked());
-
-	if (condition) {
-		switch_posted = 1;
-		critical_request_dispatch(&sched_critical);
-	}
 }
 
 /**
@@ -170,8 +185,6 @@ static void sched_switch(void) {
 
 	sched_lock();
 	{
-		sched_wait_run();
-
 		if (!switch_posted) {
 			goto out;
 		}
@@ -181,14 +194,28 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		next = runq_switch(&rq);
+		if (prev->state & __THREAD_STATE_RUNNING) {
+			runq_queue_insert(&rq.queue, prev);
+		}
+
+		next = runq_queue_extract(&rq.queue);
+
+		assert(next != NULL);
+		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
 
 		if (prev == next) {
 			ipl_disable();
 			goto out;
+		} else {
+			if (prev->state & __THREAD_STATE_RUNNING) {
+				prev->state |= __THREAD_STATE_READY;
+				/* TODO maybe without waiting */
+				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
+			}
+			next->state |= __THREAD_STATE_RUNNING;
+			/* TODO maybe without waiting */
+			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 		}
-
-		assert(thread_state_running(next->state));
 
 		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
 			sched_ticker_init();

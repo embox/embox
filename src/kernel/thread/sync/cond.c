@@ -21,7 +21,7 @@ static void condattr_copy(const struct condattr *source, struct condattr *dest) 
 
 void cond_init(cond_t *c, const struct condattr *attr) {
 	struct thread* current = thread_self();
-	wait_queue_init(&c->wq);
+	waitq_init(&c->wq);
 	condattr_init(&c->attr);
 	c->task = current->task;
 	if (attr) {
@@ -87,7 +87,7 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	sched_lock();
 	{
 		mutex_unlock(m);
-		wait_queue_wait_locked(&c->wq, timeout);
+		waitq_wait_locked(&c->wq, timeout);
 	}
 	sched_unlock();
 
@@ -110,7 +110,7 @@ int cond_signal(cond_t *c) {
 		return -EACCES;
 	}
 
-	wait_queue_notify(&c->wq);
+	waitq_notify(&c->wq);
 
 	return ENOERR;
 }
@@ -129,7 +129,7 @@ int cond_broadcast(cond_t *c) {
 		return -EACCES;
 	}
 
-	wait_queue_notify_all(&c->wq);
+	waitq_notify_all(&c->wq);
 
 	return ENOERR;
 }

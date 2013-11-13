@@ -22,7 +22,7 @@ clock_t sched_timing_get(struct thread *t) {
 	clock_t running;
 
 	/* if thread is executing now we have to add recent CPU time slice. */
-	if (thread_state_oncpu(t->state)) {
+	if (t->state & __THREAD_STATE_RUNNING) {
 		running = clock() - t->sched_attr.sched_time.last_sync;
 		running += t->sched_attr.sched_time.running_time;
 	} else {

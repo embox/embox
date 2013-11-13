@@ -17,12 +17,13 @@
 #define __THREAD_STATE_DETACHED  2
 
 struct thread;
+typedef unsigned int thread_state_t;
 
 /* thread resources management information */
 struct thread_res_state {
 	/* Zero if joinable, otherwise has one of the resources managed flag */
 	unsigned int      state;
-	struct thread     *joined;  /**< Thread which joined to this. */
+	struct waitq *joined;  /**< wait_queue which joined thread to this. */
 };
 
 static inline void thread_res_state_get(struct thread_res_state *info, unsigned int *state) {

@@ -21,10 +21,3 @@ module priority_based_test {
 	depends embox.framework.LibFramework
 }
 
-@TestFor(embox.kernel.sched.runq)
-module runq_test {
-	source "runq_test.c"
-
-	depends embox.kernel.sched.runq
-	depends embox.framework.test
-}
