@@ -591,8 +591,6 @@ static int ti81xx_request_tx(struct usb_request *req, int host_endp_n) {
 	struct ti81xx_endp *tiendp = &tiusb->csr[host_endp_n];
 	uint16_t or_mask, and_mask;
 
-	assert(0);
-
 	ti81xx_endp_setup(req->endp, &tiendp->tx_type, &tiendp->tx_maxp,
 			&tiendp->tx_interv);
 
@@ -654,11 +652,21 @@ static void ti81xx_port_stat_map(struct ti81xx_usb *tiusb, uint32_t intrstat1,
 	port->changed |= USB_HUB_PORT_CONNECT;
 }
 
-static void ti81xx_irq_receive(uint16_t *csr, uint16_t *count, uint32_t *fifo,
-		uint16_t ack_mask, enum ti81xx_endp_type endp_type,
-		struct usb_request *req) {
+static void ti81xx_irq_generic_endp(uint16_t *csr,
+		uint16_t *count, uint32_t *fifo, uint16_t read_done_mask,
+		struct ti81xx_hcd_hci *hcdhci, enum ti81xx_endp_type endp_type,
+	       	int endp_n) {
+	struct usb_request *req;
 	uint16_t csr_v;
 	uint16_t errmask;
+
+	assert((count && fifo && read_done_mask)
+			|| (!count && !fifo && !read_done_mask),
+			"count, fifo, read_done_mask must be specified or "
+			"unspecified simultaneously");
+
+	req = ti81xx_endp_req_unbind(hcdhci, endp_type, endp_n);
+	assert(req);
 
 	csr_v = REG16_LOAD(csr);
 
@@ -670,11 +678,11 @@ static void ti81xx_irq_receive(uint16_t *csr, uint16_t *count, uint32_t *fifo,
 		usb_request_complete(req);
 	}
 
-	if (csr_v & ack_mask) {
+	if (csr_v & read_done_mask) {
 		ti_fifo_do_read(fifo, count, req);
 	}
 
-	ti_csr_write(csr, 0, ~(errmask | ack_mask));
+	ti_csr_write(csr, 0, ~(errmask | read_done_mask));
 
 	if (req->len > 0) {
 		ti81xx_request(req);
@@ -685,35 +693,33 @@ static void ti81xx_irq_receive(uint16_t *csr, uint16_t *count, uint32_t *fifo,
 
 static void ti81xx_irq_cendp(struct ti81xx_hcd_hci *hcdhci,
 		struct ti81xx_usb *tiusb) {
-	struct usb_request *req;
 	struct ti81xx_endp_csr0 *tiendp0 = &tiusb->csr0;
-
-	req = ti81xx_endp_req_unbind(hcdhci, TI81_ENDP_CTRL, 0);
-	assert(req);
 
 	DBG(printk("%s\n", __func__);)
 
-	ti81xx_irq_receive(&tiendp0->csr0, &tiendp0->count0, &tiusb->fifo0,
-			TI81_USB_CSR0_CTRL_RX, TI81_ENDP_CTRL, req);
+	ti81xx_irq_generic_endp(&tiendp0->csr0, &tiendp0->count0, &tiusb->fifo0,
+			TI81_USB_CSR0_CTRL_RX, hcdhci, TI81_ENDP_CTRL, 0);
 }
 
 static void ti81xx_irq_txendp(struct ti81xx_hcd_hci *hcdhci,
 		struct ti81xx_usb *tiusb, int i) {
-	DBG(printk("%s: %d\n", __func__, i);)
-}
-
-static void ti81xx_irq_rxendp(struct ti81xx_hcd_hci *hcdhci,
-		struct ti81xx_usb *tiusb, int i) {
-	struct usb_request *req;
 	struct ti81xx_endp *tiendp = &tiusb->csr[i];
 
 	DBG(printk("%s: %d\n", __func__, i);)
 
-	req = ti81xx_endp_req_unbind(hcdhci, TI81_ENDP_RX, i);
-	assert(req);
+	ti81xx_irq_generic_endp(&tiendp->tx_csr, NULL, NULL, 0,
+			hcdhci, TI81_ENDP_TX, i);
+}
 
-	ti81xx_irq_receive(&tiendp->rx_csr, &tiendp->rx_count, &tiusb->fifo[i],
-			TI81_USB_RX_CTRL_RX, TI81_ENDP_RX, req);
+static void ti81xx_irq_rxendp(struct ti81xx_hcd_hci *hcdhci,
+		struct ti81xx_usb *tiusb, int i) {
+	struct ti81xx_endp *tiendp = &tiusb->csr[i];
+
+	DBG(printk("%s: %d\n", __func__, i);)
+
+	ti81xx_irq_generic_endp(&tiendp->rx_csr, &tiendp->rx_count,
+			&tiusb->fifo[i], TI81_USB_RX_CTRL_RX, hcdhci,
+			TI81_ENDP_RX, i);
 }
 
 static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
