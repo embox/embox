@@ -93,23 +93,6 @@ void sched_wake(struct thread *t) {
 	sched_unlock();
 }
 
-/* TODO move to waitq, haven't been refactored yet */
-void sched_sleep(void) {
-	struct thread *current = thread_get_current();
-
-	assert(in_sched_locked() && !in_harder_critical());
-	assert(current->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING));
-
-	current->state = __THREAD_STATE_WAITING;
-	/* we don't remove current because it is not in runq, we just mark it as
-	 * waiting and after sched switch all will be correct
-	 */
-
-	assert(__THREAD_STATE_WAITING & current->state);
-
-	sched_post_switch();
-}
-
 void sched_finish(struct thread *t) {
 	assert(!in_harder_critical());
 	assert(t);
@@ -212,11 +195,9 @@ static void sched_switch(void) {
 		} else {
 			if (prev->state & __THREAD_STATE_RUNNING) {
 				prev->state |= __THREAD_STATE_READY;
-				/* TODO maybe without waiting */
 				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
 			}
 			next->state |= __THREAD_STATE_RUNNING;
-			/* TODO maybe without waiting */
 			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 		}
 

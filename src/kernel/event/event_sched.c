@@ -20,8 +20,8 @@ void event_notify(struct event *event) {
 
 int __event_wait(struct event *event, unsigned long timeout) {
 	if (critical_allows(CRITICAL_SCHED_LOCK)) {
-		return waitq_wait(&event->waitq, timeout);
+		return __waitq_wait(timeout);
 	} else {
-		return waitq_wait_locked(&event->waitq, timeout);
+		return __waitq_wait_locked(timeout);
 	}
 }

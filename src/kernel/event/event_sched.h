@@ -25,21 +25,32 @@ extern int __event_wait(struct event *event, unsigned long timeout);
 
 __END_DECLS
 
-#define __EVENT_WAIT(event, cond_expr, timeout, intr)       \
-	((cond_expr) ? 0 : ({                                   \
-		int __wait_ret;                                     \
-		do {                                                \
-			if (cond_expr) {                                \
-				__wait_ret = 0;                             \
-			}                                               \
-			else {                                          \
-				__wait_ret = __event_wait(event, timeout);  \
-			}                                               \
-			if (!intr && (__wait_ret == -EINTR)) {          \
-				continue;                                   \
-			}                                               \
-		} while (0);                                        \
-		__wait_ret;                                         \
+#define __EVENT_WAIT(event, cond_expr, timeout, intr)         \
+	((cond_expr) ? 0 : ({                                     \
+		int __wait_ret;                                       \
+		struct wait_link wait_link;                           \
+		do {                                                  \
+			while(1) {                                        \
+				__waitq_prepare(&(event)->waitq, &wait_link); \
+				if (cond_expr) {                              \
+					__wait_ret = 0;                           \
+					break;                                    \
+				}                                             \
+				__wait_ret = __event_wait(event, timeout);    \
+				if (__wait_ret == -ETIMEDOUT) {               \
+					break;                                    \
+				}                                             \
+				if (!intr && (__wait_ret == -EINTR)) {        \
+					break;                                    \
+				}                                             \
+				__waitq_cleanup(&wait_link);                  \
+			}                                                 \
+			if (cond_expr) {                                  \
+				__wait_ret = 0;                               \
+			}                                                 \
+			__waitq_cleanup(&wait_link);                      \
+		} while (0);                                          \
+		__wait_ret;                                           \
 	}))
 
 #define EVENT_WAIT(event, cond_expr, timeout) \

@@ -44,8 +44,6 @@ static int wait_locked(unsigned long timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(current->wait_link); /* Should be prepared */
 
-	sched_sleep();
-
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
@@ -53,6 +51,8 @@ static int wait_locked(unsigned long timeout) {
 		}
 	}
 
+	/* __THREAD_STATE_WAITING flag sets in prepare stage */
+	sched_post_switch();
 	sched_unlock();
 
 	/* At this point we have been awakened and are ready to go. */
@@ -76,7 +76,7 @@ void waitq_remove(struct wait_link *wait_link) {
 	ipl_restore(ipl);
 }
 
-static void wait_queue_insert(struct waitq *waitq,
+static void waitq_insert(struct waitq *waitq,
 		struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
@@ -88,17 +88,24 @@ static void wait_queue_insert(struct waitq *waitq,
 	ipl_restore(ipl);
 }
 
-static void wait_queue_prepare(struct wait_link *wait_link) {
+void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 	struct thread *current = thread_get_current();
 
 	assert(!current->wait_link);
+	assert(current->state & (__THREAD_STATE_RUNNING));
+
+	/* TODO check it but should work */
+	current->state |= __THREAD_STATE_WAITING;
+	current->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_RUNNING);
 
 	wait_link->thread = current;
 	wait_link->result = 0;
 	current->wait_link = wait_link;
+
+	waitq_insert(waitq, wait_link);
 }
 
-static void wait_queue_cleanup(struct wait_link *wait_link) {
+void __waitq_cleanup(struct wait_link *wait_link) {
 	struct thread *current = thread_get_current();
 
 	current->wait_link = 0;
@@ -120,15 +127,29 @@ int waitq_wait_locked(struct waitq *waitq, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
-	wait_queue_prepare(&wait_link);
+	__waitq_prepare(waitq, &wait_link);
 
-	wait_queue_insert(waitq, &wait_link);
+	result = __waitq_wait_locked(timeout);
 
-	result = wait_locked(timeout);
-
-	wait_queue_cleanup(&wait_link);
+	__waitq_cleanup(&wait_link);
 
 	return result;
+}
+
+int __waitq_wait(int timeout) {
+	int result;
+
+	sched_lock();
+	{
+		result = __waitq_wait_locked(timeout);
+	}
+	sched_unlock();
+
+	return result;
+}
+
+int __waitq_wait_locked(int timeout) {
+	return wait_locked(timeout);
 }
 
 void waitq_thread_notify(struct thread *thread, int result) {
