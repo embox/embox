@@ -43,6 +43,8 @@ extern struct idesc *idesc_table_get(struct idesc_table *t, int idx);
 
 extern int idesc_table_init(struct idesc_table *t);
 
+extern int idesc_table_finit(struct idesc_table *t);
+
 extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 
 

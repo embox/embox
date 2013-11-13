@@ -16,7 +16,8 @@ static void idesc_table_res_init(struct task *task, void *data) {
 	struct idesc_table *t;
 
 	t = data;
-	index_init(&t->indexator, 0, IDESC_QUANTITY, t->idesc_table);
+
+	idesc_table_init(t);
 }
 
 static int idesc_table_inherit(struct task *task, struct task *parent) {
@@ -30,7 +31,11 @@ static int idesc_table_inherit(struct task *task, struct task *parent) {
 }
 
 static void idesc_table_deinit(struct task *task) {
+	struct idesc_table *t;
 
+	t = res_get_pointer(task);
+
+	idesc_table_finit(t);
 }
 
 static int idesc_table_resource_init(const struct task_resource_desc *desc,

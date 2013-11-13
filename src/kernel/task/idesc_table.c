@@ -114,6 +114,24 @@ int idesc_table_init(struct idesc_table *t) {
 	return 0;
 }
 
+
+int idesc_table_finit(struct idesc_table *t) {
+	int i;
+	struct idesc *idesc;
+
+	assert(t);
+
+	for(i = 0; i < IDESC_QUANTITY; i++) {
+		if (t->idesc_table[i]) {
+			idesc = idesc_table_get(t, i);
+			assert(idesc);
+			idesc_table_del(t, i);
+		}
+	}
+
+	return 0;
+}
+
 int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 	int i;
 	struct idesc *idesc;
