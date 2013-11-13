@@ -1,0 +1,7 @@
+package embox.kernel.light_thread
+
+module Light_thread {
+	source "light_thread.c"
+
+	depends embox.lib.LibCAssert
+}
