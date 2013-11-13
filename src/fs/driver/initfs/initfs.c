@@ -75,11 +75,10 @@ static int initfs_ioctl(struct file_desc *desc, int request, ...) {
 	p_addr = va_arg(args, char **);
 	va_end(args);
 
-	if (p_addr != NULL) {
-		nas = desc->node->nas;
-		fi = (struct initfs_file_info *) nas->fi;
-		*p_addr = fi->addr;
-	}
+	nas = desc->node->nas;
+	fi = (struct initfs_file_info *) nas->fi;
+	assert(p_addr != NULL);
+	*p_addr = fi->addr;
 
 	return 0;
 }
