@@ -6,6 +6,37 @@
 
 #include <QScrollBar>
 
+#include <streambuf>
+#include <iostream>
+
+/*
+class fdoutbuf : public std::streambuf {
+  protected:
+    int fd;    // file descriptor
+  public:
+    // constructor
+    fdoutbuf (int _fd) : fd(_fd) {
+    }
+  protected:
+    // write one character
+    virtual int_type overflow (int_type c) {
+        if (c != EOF) {
+            char z = c;
+            if (write (fd, &z, 1) != 1) {
+                return EOF;
+            }
+        }
+        return c;
+    }
+    // write multiple characters
+    virtual
+    std::streamsize xsputn (const char* s,
+                            std::streamsize num) {
+        return write(fd,s,num);
+    }
+};
+*/
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -24,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dup(pipefd[1]);
     ::close(STDERR_FILENO);
     dup(pipefd[1]);
+    //std::cout.rdbuf(new fdoutbuf(pipefd[1]));
 
     notifier.reset(new QSocketNotifier(pipefd[0], QSocketNotifier::Read));
     connect(notifier.data(), SIGNAL(activated(int)), this, SLOT(onStdout()));
@@ -69,5 +101,6 @@ void MainWindow::on_lineEdit_returnPressed()
 {
     printf("qpidapp:>>> %s\n", ui->lineEdit->text().toAscii().data());
     fflush(stdout);
+    //std::cout << "qpidapp:>>> " << ui->lineEdit->text().toAscii().data() << std::endl;
 }
 
