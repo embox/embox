@@ -18,9 +18,6 @@
 #undef __linux__
 #endif
 
-#include <pthread.h>
-
-
 #include <stdio.h>
 #include <string.h>
 

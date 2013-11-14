@@ -227,6 +227,7 @@ TARGET_APPS += examples/texteditor
 ifeq ($(MAKECMDGOALS),qpidhello)
 TARGET_APPS += examples/qpidhello
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
 endif
 
 

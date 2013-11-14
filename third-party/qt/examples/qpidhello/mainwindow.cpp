@@ -34,15 +34,39 @@ class fdoutbuf : public std::streambuf {
     }
 };
 
+#ifdef __EMBOX__
+extern
+int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_init(pthread_rwlock_t * rwlock,
+    const pthread_rwlockattr_t * attr);
+int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
+extern
+int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
+#endif //__EMBOX__
+#include <qpid/log/Logger.h>
+#include <qpid/log/Options.h>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     int flags;
 
-    ::setenv("QPID_LOG_ENABLE","trace+",0);
-    ::setenv("QPID_LOG_OUTPUT","stdout",0);
-    ::setenv("QPID_LOG_TO_FILE","stdout",0);
+    qpid::log::Options logopt;
+    const char *argv[]={"qpidhello","--log-to-stdout=yes"};
+    logopt.parse(sizeof(argv)/sizeof(char*), argv);
+    logopt.trace = true;
+    qpid::log::Logger::instance().configure(logopt);
+    //::setenv("QPID_LOG_ENABLE","trace+",0);
+    //::setenv("QPID_LOG_OUTPUT","stdout",0);
+    //::setenv("QPID_LOG_TO_FILE","stdout",0);
 
     pipe(pipefd);
     flags = fcntl(pipefd[0], F_GETFL, 0);
@@ -59,8 +83,8 @@ MainWindow::MainWindow(QWidget *parent) :
     dup(pipefd[1]);
     */
     fdoutbuf *ob = new fdoutbuf(pipefd[1]);
-    oldstd[0] = std::cout.rdbuf(ob);
     oldstd[1] = std::cerr.rdbuf(ob);
+    oldstd[0] = std::cout.rdbuf(ob);
 
     notifier.reset(new QSocketNotifier(pipefd[0], QSocketNotifier::Read));
     connect(notifier.data(), SIGNAL(activated(int)), this, SLOT(onStdout()));
@@ -149,7 +173,6 @@ void QpidWorker::doQPIDHello()
 #include <qpid/messaging/Receiver.h>
 #include <qpid/messaging/Sender.h>
 #include <qpid/messaging/Session.h>
-//#include <qpid/log/Logger.h>
 
 using namespace qpid::messaging;
 
@@ -157,8 +180,6 @@ static int qpidhello(char *br) {
     std::string broker = br ? br : "localhost:5672";
     std::string address = "amq.topic";
     std::string connectionOptions = "";
-
-    //qpid::log::Logger::instance().reconfigure(std::vector<std::string>());
 
     Connection connection(broker, connectionOptions);
     try {
