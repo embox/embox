@@ -55,7 +55,7 @@ endef
 
 section_header = $(\t).$1$(value 3) : \
 		ALIGN($(or $(value 2),DEFAULT_DATA_ALIGNMENT)) {
-section_footer = $(\t)} /* .$1$(value 3) */
+section_footer = $(\t)$(\t)*(.$1) } /* .$1$(value 3) */
 
 define file_footer
 
@@ -83,7 +83,7 @@ $(info $(file_header))
 $(call print_section,$(app_ids),data,,.apps)
 $(call print_section,$(app_ids),bss,,.apps)
 
-$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT)
+#$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT)
 $(call print_section,$(module_ids),rodata)
 $(call print_section,$(noapp_ids),data)
 $(call print_section,$(noapp_ids),bss)

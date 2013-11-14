@@ -140,7 +140,7 @@ endif
 module_prereqs = $(common_prereqs) $(o_files) $(a_files)
 
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,text rodata data bss eh_frame,--rename-section .$s=.$s.module.$(module_id))
+	$(foreach s,rodata data bss,--rename-section .$s=.$s.module.$(module_id))
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.

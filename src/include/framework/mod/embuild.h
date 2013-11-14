@@ -83,8 +83,8 @@
 #if OPTION_MODULE_GET(embox__framework__mod, BOOLEAN, security_label)
 
 #define MOD_LABEL_DEF(mod_nm) \
-	extern char __module_ ## mod_nm ## _text_vma; \
-	extern char __module_ ## mod_nm ## _text_len; \
+	/* extern char __module_ ## mod_nm ## _text_vma;  */\
+	/* extern char __module_ ## mod_nm ## _text_len;  */\
 	extern char __module_ ## mod_nm ## _rodata_vma; \
 	extern char __module_ ## mod_nm ## _rodata_len; \
 	extern char __module_ ## mod_nm ## _data_vma; \
@@ -92,8 +92,8 @@
 	extern char __module_ ## mod_nm ## _bss_vma;  \
 	extern char __module_ ## mod_nm ## _bss_len;  \
 	const struct mod_label __MOD_LABEL(mod_nm) = { \
-		.text.vma   =          &__module_ ## mod_nm ## _text_vma, \
-		.text.len   = (size_t) &__module_ ## mod_nm ## _text_len, \
+		/* .text.vma   =          &__module_ ## mod_nm ## _text_vma,  */\
+		/* .text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  */\
 		.rodata.vma =          &__module_ ## mod_nm ## _rodata_vma, \
 		.rodata.len = (size_t) &__module_ ## mod_nm ## _rodata_len, \
 		.data.vma   =          &__module_ ## mod_nm ## _data_vma, \
