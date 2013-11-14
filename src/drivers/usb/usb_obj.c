@@ -222,7 +222,7 @@ static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 }
 
 struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
-		usb_request_notify_hnd_t notify_hnd, unsigned token,
+		usb_request_notify_hnd_t notify_hnd, void *arg, unsigned token,
 		void *buf, size_t len) {
 	struct usb_request *req;
 
@@ -234,6 +234,7 @@ struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
 	req->buf = buf;
 	req->len = len;
 	req->notify_hnd = notify_hnd;
+	req->hnd_data = arg;
 
 	return req;
 }

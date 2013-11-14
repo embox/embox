@@ -44,7 +44,7 @@ struct usb_request;
 enum usb_dev_event_type;
 
 typedef void (*usb_dev_notify_hnd_t)(struct usb_dev *dev, enum usb_dev_event_type event_type);
-typedef void (*usb_request_notify_hnd_t)(struct usb_request *req);
+typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 
 #define USB_DEV_REQ_TYPE_WR             0x00
 #define USB_DEV_REQ_TYPE_RD             0x80
@@ -212,6 +212,9 @@ struct usb_dev {
 	struct usb_desc_interface *interface_desc;
 
 	void *class_specific;
+
+	struct usb_driver *drv;
+	void *drv_data;
 };
 
 static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
@@ -312,7 +315,7 @@ extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 extern void usb_endp_free(struct usb_endp *endp);
 
 extern struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
-		usb_request_notify_hnd_t notify_hnd, unsigned token,
+		usb_request_notify_hnd_t notify_hnd, void *arg, unsigned token,
 		void *buf, size_t len);
 
 extern void usb_request_free(struct usb_request *req);
@@ -325,7 +328,7 @@ struct usb_class {
 	struct dlist_head lnk;
 	usb_class_t usb_class;
 	int (*get_conf)(struct usb_class *cls, struct usb_dev *dev);
-	void (*get_conf_hnd)(struct usb_request *req);
+	void (*get_conf_hnd)(struct usb_request *req, void *arg);
 	void *(*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
 	void (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
 };

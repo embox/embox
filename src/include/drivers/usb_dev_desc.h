@@ -15,6 +15,8 @@
 #include <drivers/usb_token.h>
 
 struct usb_dev_desc;
+struct usb_request;
+typedef void (*usb_notify_hnd_t)(struct usb_request *req, void *arg);
 
 /**
  * @brief Open usb device
@@ -59,8 +61,9 @@ extern int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_dev
  */
 extern int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
 		struct usb_desc_endpoint *desc);
+
 /**
- * @brief Make request to endpoint
+ * @brief Make request to endpoint and wait till complete.
  *
  * @param ddesc Device descriptor
  * @param endp_n Endpoint number
@@ -73,6 +76,22 @@ extern int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
  */
 extern int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		void *buf, size_t len);
+
+/**
+ * @brief Make request to endpoint and call callback when it's done.
+ *
+ * @param ddesc Device descriptor
+ * @param endp_n Endpoint number
+ * @param token Token mask
+ * @param buf Pointer to buffer
+ * @param len Length of buffer
+ * @param notify_hnd Callback to call
+ *
+ * @return 0 on success
+ * @return Negative on error
+ */
+extern int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
+		void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg);
 
 #endif /* DRIVERS_USB_DEV_DESC_H_ */
 

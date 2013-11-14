@@ -65,7 +65,7 @@ int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint end
 	return 0;
 }
 
-static void usb_class_fallback_get_conf_hnd(struct usb_request *req) {
+static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	int i;
 
@@ -130,11 +130,10 @@ int usb_class_handle(struct usb_dev *dev) {
 	if (!cls) {
 #if 0
 		return -ENOTSUP;
-#endif
+#else
 		/* trying to fallback */
-		usb_class_generic_get_conf(&usb_class_fallback, dev);
-
-		return 0;
+		cls = &usb_class_fallback;
+#endif
 	}
 
 	if (cls->class_alloc) {

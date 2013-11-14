@@ -17,7 +17,7 @@ EMBOX_UNIT_INIT(usb_hid_init);
 POOL_DEF(hid_getconfs, struct usb_hid_getconf, USB_HID_MAX_GETCONFS);
 POOL_DEF(hid_classes, struct usb_class_hid, USB_HID_MAX_DEVS);
 
-static void usb_class_hid_get_conf_hnd(struct usb_request *req) {
+static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_hid *hid = usb2hiddata(dev);
 

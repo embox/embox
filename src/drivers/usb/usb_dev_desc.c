@@ -80,19 +80,10 @@ int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
 	return 0;
 }
 
-static void usb_req_notify(struct usb_request *req) {
-	struct manual_event *event = req->hnd_data;
-
-	assert(req->req_stat == USB_REQ_NOERR);
-
-	manual_event_set_and_notify(event);
-}
-
-int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
-		void *buf, size_t len) {
+int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
+		void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg) {
 	struct usb_request *req;
 	struct usb_endp *endp;
-	struct manual_event event;
 
 	if ((token & USB_TOKEN_OUT && token & USB_TOKEN_IN) ||
 		       (!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
@@ -116,16 +107,36 @@ int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		}
 	}
 
-	req = usb_endp_request_alloc(endp, usb_req_notify,
+	req = usb_endp_request_alloc(endp, notify_hnd, arg,
 			token, buf, len);
 	if (!req) {
 		return -ENOMEM;
 	}
 
-	manual_event_init(&event, 0);
-	req->hnd_data = &event;
+	return usb_endp_request(endp, req);
+}
 
-	usb_endp_request(endp, req);
+static void usb_req_notify(struct usb_request *req, void *arg) {
+	struct manual_event *event = arg;
+
+	assert(req->req_stat == USB_REQ_NOERR);
+
+	manual_event_set_and_notify(event);
+}
+
+int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
+		void *buf, size_t len) {
+	struct manual_event event;
+	int res;
+
+	manual_event_init(&event, 0);
+
+	res = usb_request_cb(ddesc, endp_n, token, buf, len,
+			usb_req_notify, &event);
+	if (res != 0) {
+		return res;
+	}
 
 	return manual_event_wait(&event, MANUAL_EVENT_TIMEOUT_INFINITE);
 }
+
