@@ -127,7 +127,6 @@ module lan9118 {
 
 	depends embox.driver.gpmc.gpmc_api
 	depends embox.driver.gpio.api
-	depends embox.driver.gpio.pins
 
 	depends embox.net.skbuff
 	depends embox.lib.LibC
