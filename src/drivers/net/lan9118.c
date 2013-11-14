@@ -219,9 +219,8 @@ static int lan9118_open(struct net_device *dev) {
 	lan9118_mac_write(dev, LAN9118_MAC_CR, l);
 
 	/* GPIO */
-	//gpio_reg_write(6, GPIO_RISINGDETECT, (1 << LAN9118_PIN));
-	gpio_set_input_monitor(gpio_base_addr(LAN9118_PORT),
-			(1 << LAN9118_PIN), lan9118_irq_handler);
+	gpio_pin_irq_attach(LAN9118_PORT, LAN9118_PIN,
+			lan9118_irq_handler, GPIO_MODE_INT_MODE_RISING, dev);
 
 	return 0;
 }

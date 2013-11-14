@@ -11,25 +11,30 @@
 
 #include <stdint.h>
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 typedef volatile unsigned long __gpio_mask_t;
 
+#define N_PINS 8 * (sizeof(int))
 #define GPIO_REG_SIZE 0x2000
 
+struct handler_item_t {
+	int mask;
+	void *data;
+	irq_handler_t handler;
+};
+
 struct gpio {
-	unsigned char regs[GPIO_REG_SIZE];
+	unsigned long base;
+	int gpio_nr;
+	struct handler_item_t pin[N_PINS];
 };
 
 #define GPIO_BASE_ADDRESS(i)      ((i) == 1 ? 0x48310000 : (0x49050000 + ((i) - 2) * GPIO_REG_SIZE))
 #define GPIO_IRQ(i)               (28 + (i))
+#define GPIO_NUM_BY_IRQ(i)        ((i) - 28)
 #define GPIO_MODULE_CNT           6
 
-#define GPIO_1 ((struct gpio *) (GPIO_BASE_ADDRESS(1)))
-#define GPIO_2 ((struct gpio *) (GPIO_BASE_ADDRESS(2)))
-#define GPIO_3 ((struct gpio *) (GPIO_BASE_ADDRESS(3)))
-#define GPIO_4 ((struct gpio *) (GPIO_BASE_ADDRESS(4)))
-#define GPIO_5 ((struct gpio *) (GPIO_BASE_ADDRESS(5)))
-#define GPIO_6 ((struct gpio *) (GPIO_BASE_ADDRESS(6)))
 
 /* Register offsets from base address */
 #define GPIO_REVISION             0x00
@@ -62,13 +67,13 @@ struct gpio {
 #define GPIO_REVISION_MAJOR(l)    ((l >> 4) & 0xF)
 #define GPIO_REVISION_MINOR(l)    (l & 0xF)
 
-static inline uint32_t gpio_reg_read(struct gpio *gpio, int offset) {
-	unsigned long reg_addr = (unsigned long) (gpio + offset);
+static inline uint32_t gpio_reg_read(unsigned long base, int offset) {
+	unsigned long reg_addr =  (base + (unsigned long) offset);
 	return REG_LOAD(reg_addr);
 }
 
-static inline void gpio_reg_write(struct gpio *gpio, int offset, uint32_t val) {
-	unsigned long reg_addr = (unsigned long) (gpio + offset);
+static inline void gpio_reg_write(unsigned long base, int offset, uint32_t val) {
+	unsigned long reg_addr = (base + (unsigned long) offset);
 	REG_STORE(reg_addr, val);
 }
 
