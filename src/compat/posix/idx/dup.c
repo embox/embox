@@ -8,12 +8,16 @@
  */
 
 #include <unistd.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
 #include <errno.h>
 
+#include <kernel/task.h>
+#include <kernel/task/idesc_table.h>
+#include <kernel/task/idx.h>
+
+#define IDESC_TABLE_USE
+
 int dup(int flides) {
-#if 1
+#ifndef IDESC_TABLE_USE
 	int new_fd;
 
 	if (!task_valid_binded_fd(flides)) {
@@ -33,10 +37,15 @@ int dup(int flides) {
 	int res;
 
 
-	it = task_self()->idesc_table;
+	if (!idesc_index_valid(flides)) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	it = idesc_table_get_table(task_self());
 	assert(it);
 
-	idesc = idesc_table_get(it, flides);
+	idesc = idesc_table_get_desc(it, flides);
 
 	if (idesc == NULL) {
 		SET_ERRNO(EBADF);
@@ -55,6 +64,7 @@ int dup(int flides) {
 }
 
 int dup2(int flides, int flides2) {
+#ifndef IDESC_TABLE_USE
 	int res;
 	struct idx_desc *old_idx;
 
@@ -81,4 +91,45 @@ int dup2(int flides, int flides2) {
 	}
 
 	return flides2;
+#else
+	struct idesc *idesc;
+	struct idesc_table *it;
+	int res;
+
+
+	if (flides == flides2) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	if (!idesc_index_valid(flides2) || !idesc_index_valid(flides)) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	idesc = idesc_table_get_desc(it, flides);
+
+	if (idesc == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	if (idesc_table_locked(it,flides2)) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	res = idesc_table_lock(it, idesc, flides2, 0);
+
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return res;
+
+#endif
+
 }

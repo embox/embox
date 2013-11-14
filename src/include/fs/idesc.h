@@ -32,6 +32,7 @@ struct idesc {
 	struct idesc_perm idesc_perm;
 	struct idesc_event idesc_event;
 	struct task_idx_ops *idesc_ops;
+	unsigned int idesc_flags;
 	int idesc_count;
 };
 

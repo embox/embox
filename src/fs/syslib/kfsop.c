@@ -612,6 +612,16 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
 	mutex_unlock(exlock);
 }
 
+static inline struct file_desc *get_file_desc(int fd) {
+#ifndef IDESC_TABLE_USE
+	struct idx_desc *idesc;
+
+	idesc = task_self_idx_get(fd);
+	return (struct file_desc *) idesc->data->fd_struct;
+#else
+	return file_desc_get(fd);
+#endif
+}
 /**
  * Apply advisory lock to specified fd
  * @param File descriptor number
@@ -621,10 +631,10 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
 int kflock(int fd, int operation) {
 	int rc;
 	flock_t *flock;
-	struct idx_desc *idesc;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
+	struct file_desc *fdesc;
 	struct thread *current = thread_self();
 
 	/**
@@ -661,8 +671,8 @@ int kflock(int fd, int operation) {
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
-	idesc = task_self_idx_get(fd);
-	flock = &((struct file_desc *) idesc->data->fd_struct)->node->flock;
+	fdesc = get_file_desc(fd);
+	flock = &(fdesc)->node->flock;
 	exlock = &flock->exlock;
 	shlock_count = &flock->shlock_count;
 	flock_guard = &flock->flock_guard;

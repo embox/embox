@@ -39,4 +39,6 @@ extern struct file_desc *file_desc_create(struct node *node, int __oflag);
 extern int file_desc_destroy(struct file_desc *);
 extern int file_desc_perm_check(struct file_desc *);
 
+extern struct file_desc *file_desc_get(int idx);
+
 #endif /* FS_FILE_DESC_H_ */

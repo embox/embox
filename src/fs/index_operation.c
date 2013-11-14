@@ -16,7 +16,12 @@
 #include <fs/kfile.h>
 
 static inline struct file_desc *from_data(struct idx_desc *data) {
+#ifndef IDESC_TABLE_USE
 	return (struct file_desc *) task_idx_desc_data(data);
+#else
+	//TODO idesc fix
+	return (struct file_desc *)data;
+#endif
 }
 
 static int this_close(struct idx_desc *data) {

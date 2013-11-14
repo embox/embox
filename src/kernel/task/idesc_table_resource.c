@@ -33,6 +33,8 @@ static int idesc_table_inherit(struct task *task, struct task *parent) {
 static void idesc_table_deinit(struct task *task) {
 	struct idesc_table *t;
 
+	assert(task);
+
 	t = res_get_pointer(task);
 
 	idesc_table_finit(t);
@@ -42,6 +44,12 @@ static int idesc_table_resource_init(const struct task_resource_desc *desc,
 		size_t offset) {
 	idesc_table_offset = offset;
 	return 0;
+}
+
+struct idesc_table *idesc_table_get_table(struct task *task) {
+	assert(task);
+
+	return res_get_pointer(task);
 }
 
 static const struct task_resource_desc idesc_table_resource = {

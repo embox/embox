@@ -21,6 +21,9 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
+#include <kernel/task/idesc_table.h>
+#include <fs/idesc.h>
+
 /**
  * @brief Save only descriptors with active op.
  * */
@@ -83,12 +86,14 @@ out:
 /* Suppose that set != NULL */
 static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int error, int update) {
 	int fd, fd_cnt;
-	struct idx_desc *desc;
 
 	fd_cnt = 0;
 
 	for (fd = 0; fd < nfds; fd++) {
 		if (FD_ISSET(fd, set)) {
+#ifndef IDESC_TABLE_USE
+			struct idx_desc *desc;
+
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
@@ -105,6 +110,29 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int err
 					}
 				}
 			}
+#else
+			struct idesc *idesc;
+			struct idesc_table *it;
+
+			it = idesc_table_get_table(task_self());
+			assert(it);
+
+			if (!(idesc = idesc_table_get_desc(it, fd))) {
+				return -EBADF;
+			} else {
+				if ((!error && io_sync_ready(&idesc->idesc_event.io_sync, op))
+						||
+					(error && io_sync_error(&idesc->idesc_event.io_sync))) {
+					fd_cnt++;
+				} else {
+					/* Filter out inactive descriptor and unset corresponding monitor. */
+					if (update) {
+						io_sync_notify(&idesc->idesc_event.io_sync, op, NULL);
+						FD_CLR(fd, set);
+					}
+				}
+			}
+#endif
 		}
 	}
 
@@ -152,17 +180,32 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
 		struct manual_event *m_event) {
 	int fd;
-	struct idx_desc *desc;
 
 	if (NULL == set) {
 		return 0;
 	}
 
 	for (fd = 0; fd < nfds; fd++) {
+#ifndef IDESC_TABLE_USE
+		struct idx_desc *desc;
+
 		desc = task_self_idx_get(fd);
 		if (FD_ISSET(fd, set) && (NULL != desc)) {
 			io_sync_notify(task_idx_indata(desc)->ios, op, m_event);
 		}
+#else
+		struct idesc *idesc;
+		struct idesc_table *it;
+
+		it = idesc_table_get_table(task_self());
+		assert(it);
+
+		idesc = idesc_table_get_desc(it, fd);
+
+		if (FD_ISSET(fd, set) && (NULL != idesc)) {
+			io_sync_notify(&idesc->idesc_event.io_sync, op, m_event);
+		}
+#endif
 	}
 
 	return 0;

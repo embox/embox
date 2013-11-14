@@ -9,12 +9,16 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <assert.h>
+
 
 #include <fs/perm.h>
 #include <fs/flags.h>
 #include <mem/objalloc.h>
 
 #include <fs/file_desc.h>
+#include <kernel/task.h>
+#include <kernel/task/idesc_table.h>
 #include <embox/unit.h>
 #include <err.h>
 
@@ -65,4 +69,21 @@ int file_desc_destroy(struct file_desc *fdesc) {
 
 int file_desc_perm_check(struct file_desc *fdesc) {
 	return 0;
+}
+
+
+struct file_desc *file_desc_get(int idx) {
+	struct idesc *idesc;
+	struct idesc_table *it;
+
+
+	assert(idesc_index_valid(idx));
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	idesc = idesc_table_get_desc(it, idx);
+
+	return (struct file_desc *) idesc;
+
 }

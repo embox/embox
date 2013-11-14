@@ -38,9 +38,14 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 }
 
 int fgetxattr(int fd, const char *name, void *value, size_t size) {
-	struct file_desc *file = (struct file_desc *)
-		task_idx_desc_data(task_self_idx_get(fd));
+	struct file_desc *file;
 	int res;
+#ifndef IDESC_TABLE_USE
+	file = (struct file_desc *)
+		task_idx_desc_data(task_self_idx_get(fd));
+#else
+	file = file_desc_get(fd);
+#endif
 
 	if (!file) {
 		SET_ERRNO(EBADF);
@@ -86,9 +91,14 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 }
 
 int fsetxattr(int fd, const char *name, const char *value, size_t size, int flags) {
-	struct file_desc *file = (struct file_desc *)
-		task_idx_desc_data(task_self_idx_get(fd));
+	struct file_desc *file;
 	int res;
+#ifndef IDESC_TABLE_USE
+	file = (struct file_desc *)
+		task_idx_desc_data(task_self_idx_get(fd));
+#else
+	file = file_desc_get(fd);
+#endif
 
 	if (!file) {
 		SET_ERRNO(EBADF);
@@ -135,9 +145,14 @@ int listxattr(const char *path, char *list, size_t size) {
 }
 
 int flistxattr(int fd, char *list, size_t size) {
-	struct file_desc *file = (struct file_desc *)
-		task_idx_desc_data(task_self_idx_get(fd));
+	struct file_desc *file;
 	int res;
+#ifndef IDESC_TABLE_USE
+	file = (struct file_desc *)
+		task_idx_desc_data(task_self_idx_get(fd));
+#else
+	file = file_desc_get(fd);
+#endif
 
 	if (!file) {
 		SET_ERRNO(EBADF);

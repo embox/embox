@@ -18,24 +18,49 @@
 #include <net/sock.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <fs/idesc.h>
+#include <net/sock.h>
 #include <net/socket/socket_desc.h>
 
 extern const struct task_idx_ops task_idx_ops_socket;
 
 static inline struct sock * idx2sock(int idx) {
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *desc = task_self_idx_get(idx);
 	return desc != NULL ? task_idx_desc_data(desc) : NULL;
+#else
+	return (struct sock *)socket_desc_get(idx);
+#endif
 }
 
 static inline int idx2flags(int idx) {
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *desc = task_self_idx_get(idx);
 	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
+#else
+	struct sock * sk;
+	sk = (struct sock *)socket_desc_get(idx);
+	return sk->idesc.idesc_flags;
+#endif
 }
 
 
+int get_index(struct sock *sk) {
+#ifndef IDESC_TABLE_USE
+	return task_self_idx_alloc(&task_idx_ops_socket, sk, &sk->ios);
+#else
+	struct idesc_table *it;
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	return idesc_table_add(it, (struct idesc *)sk, 0);
+#endif
+}
 /* create */
 int socket(int domain, int type, int protocol) {
-	int ret, sockfd;
+	int ret, sockfd = 0;
+
 	struct sock *sk;
 	struct socket_desc *socket_desc;
 
@@ -48,7 +73,7 @@ int socket(int domain, int type, int protocol) {
 		return -1;
 	}
 
-	sockfd = task_self_idx_alloc(&task_idx_ops_socket, sk, &sk->ios);
+	sockfd = get_index(sk);
 	if (sockfd < 0) {
 		ksocket_close(sk);
 		SET_ERRNO(EMFILE);
@@ -119,6 +144,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	struct socket_desc *sdesc;
 	struct socket_desc *accept_sdesc;
 
+
 	sdesc = socket_desc_get(sockfd);
 	socket_desc_check_perm(sdesc, SOCKET_DESC_OPS_ACCEPT, &param);
 
@@ -133,8 +159,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	accept_sdesc = socket_desc_accept(new_sk);
 	socket_desc_check_perm(accept_sdesc, SOCKET_DESC_OPS_ACCEPT, NULL);
 
-	new_sockfd = task_self_idx_alloc(&task_idx_ops_socket, new_sk,
-			&new_sk->ios);
+	new_sockfd = get_index(new_sk);
 	if (new_sockfd < 0) {
 		ksocket_close(new_sk);
 		SET_ERRNO(EMFILE);

@@ -60,7 +60,7 @@ struct task_idx_ops {
 	int (*fstat)(struct idx_desc *data, void *buff);
 	int (*ftruncate)(struct idx_desc *data, off_t length);
 };
-
+#if 1
 static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
 	assert(desc);
 	return desc->data;
@@ -217,6 +217,7 @@ static inline int task_valid_unbinded_fd(int fd) {
 	return task_valid_fd(fd) && !task_idx_table_is_binded(task_self_idx_table(), fd);
 }
 
+#endif //0
 
 #ifdef __cplusplus
 }

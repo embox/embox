@@ -5,6 +5,9 @@
  * @author: Anton Bondarev
  */
 #include <stddef.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idesc_table.h>
 #include <net/socket/socket_desc.h>
 
 static struct socket_desc *socket_desc_alloc(void) {
@@ -25,7 +28,18 @@ void socket_desc_check_perm(struct socket_desc *desc, int ops_type,
 }
 
 struct socket_desc *socket_desc_get(int idx) {
-	return NULL;
+	struct idesc *idesc;
+	struct idesc_table *it;
+
+
+	assert(idesc_index_valid(idx));
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	idesc = idesc_table_get_desc(it, idx);
+
+	return (struct socket_desc *) idesc;
 }
 
 struct socket_desc *socket_desc_accept(struct sock *sk) {

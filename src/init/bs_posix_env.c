@@ -17,6 +17,8 @@
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <kernel/task/idesc_table.h>
+#include <fs/idesc.h>
 
 #include <embox/unit.h>
 
@@ -79,7 +81,9 @@ static const struct task_idx_ops iodev_idx_ops = {
 	.fstat = iodev_fstat,
 };
 
+#define IDESC_TABLE_USE
 static int iodev_env_init(void) {
+#ifndef IDESC_TABLE_USE
 	int fd;
 
 	fd = task_self_idx_alloc(&iodev_idx_ops, NULL, NULL);
@@ -94,6 +98,19 @@ static int iodev_env_init(void) {
 	if (fd > 2) {
 		close(fd);
 	}
+#else
+
+	static struct idesc idesc_diag;
+	struct idesc_table *idesc_table;
+
+	idesc_table = idesc_table_get_table(task_self()); //kernel task
+
+	idesc_diag.idesc_ops = (struct task_idx_ops *)&iodev_idx_ops;
+	//idesc_table_init(); it's must be in kernel_task initialization
+	idesc_table_lock(idesc_table, &idesc_diag, STDIN_FILENO, 0);
+	idesc_table_lock(idesc_table, &idesc_diag, STDOUT_FILENO, 0);
+	idesc_table_lock(idesc_table, &idesc_diag, STDERR_FILENO, 0);
+#endif
 
 	return 0;
 }

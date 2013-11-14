@@ -18,11 +18,19 @@
 #include <sys/socket.h>
 
 static inline struct sock * desc2sock(struct idx_desc *desc) {
+#ifndef IDESC_TABLE_USE
 	return desc != NULL ? task_idx_desc_data(desc) : NULL;
+#else
+	return (struct sock *)desc;
+#endif
 }
 
 static inline int desc2flags(struct idx_desc *desc) {
+#ifndef IDESC_TABLE_USE
 	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
+#else
+	return desc->flags;
+#endif
 }
 
 static ssize_t socket_read(struct idx_desc *desc, void *buff,

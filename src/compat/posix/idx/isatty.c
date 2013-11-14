@@ -12,8 +12,10 @@
 #include <kernel/task/idx.h>
 
 int isatty(int fd) {
-	struct idx_desc *desc = task_self_idx_get(fd);
 	struct stat st;
+#if 0
+	struct idx_desc *desc = task_self_idx_get(fd);
+
 
 	SET_ERRNO(ENOERR);
 
@@ -23,6 +25,7 @@ int isatty(int fd) {
 
 		return 0;
 	}
+#endif
 
 	fstat(fd, &st);
 

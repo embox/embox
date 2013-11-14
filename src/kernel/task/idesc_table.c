@@ -16,7 +16,7 @@
 #include <kernel/task/idesc_table.h>
 #include <util/indexator.h>
 
-#define idesc_index_valid(idx) ((idx >=0) && (idx < IDESC_QUANTITY))
+
 
 #define idesc_cloexec_set(idesc) \
 	idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1)
@@ -80,7 +80,7 @@ int idesc_table_del(struct idesc_table *t, int idx) {
 	assert(t);
 	assert(idesc_index_valid(idx));
 
-	idesc = idesc_table_get(t, idx);
+	idesc = idesc_table_get_desc(t, idx);
 	assert(idesc);
 	//assert(idesc->idesc_ops && idesc->idesc_ops->close);
 
@@ -95,7 +95,7 @@ int idesc_table_del(struct idesc_table *t, int idx) {
 	return 0;
 }
 
-struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
+struct idesc *idesc_table_get_desc(struct idesc_table *t, int idx) {
 	struct idesc *idesc;
 
 	assert(t);
@@ -114,7 +114,6 @@ int idesc_table_init(struct idesc_table *t) {
 	return 0;
 }
 
-
 int idesc_table_finit(struct idesc_table *t) {
 	int i;
 	struct idesc *idesc;
@@ -123,7 +122,7 @@ int idesc_table_finit(struct idesc_table *t) {
 
 	for(i = 0; i < IDESC_QUANTITY; i++) {
 		if (t->idesc_table[i]) {
-			idesc = idesc_table_get(t, i);
+			idesc = idesc_table_get_desc(t, i);
 			assert(idesc);
 			idesc_table_del(t, i);
 		}
@@ -146,7 +145,7 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 
 	for (i = 0; i < IDESC_QUANTITY; i++) {
 		if (parent_table->idesc_table[i]) {
-			idesc = idesc_table_get(parent_table, i);
+			idesc = idesc_table_get_desc(parent_table, i);
 			assert(idesc);
 			if (!idesc_is_cloexec(t->idesc_table[i])) {
 				idesc_table_add(t, idesc, 0);
