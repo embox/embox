@@ -21,12 +21,6 @@ struct usb_dev_desc {
 
 POOL_DEF(usb_dev_descs, struct usb_dev_desc, 2);
 
-struct usb_endp_desc {
-	struct usb_endp *endp;
-};
-
-POOL_DEF(usb_endp_descs, struct usb_endp_desc, 2);
-
 struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 	struct usb_dev_desc *ddesc;
 	struct usb_dev *dev = usb_dev_iterate(NULL);
@@ -86,24 +80,6 @@ int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
 	return 0;
 }
 
-struct usb_endp_desc *usb_endp_open(struct usb_dev_desc *ddesc, int endp) {
-	struct usb_endp_desc *edesc;
-
-	if (!ddesc || endp > ddesc->dev->endp_n) {
-		return NULL;
-	}
-
-	edesc = pool_alloc(&usb_endp_descs);
-	edesc->endp = ddesc->dev->endpoints[endp];
-
-	return edesc;
-}
-
-void usb_endp_desc_close(struct usb_endp_desc *edesc) {
-
-	pool_free(&usb_endp_descs, edesc);
-}
-
 static void usb_req_notify(struct usb_request *req) {
 	struct manual_event *event = req->hnd_data;
 
@@ -112,66 +88,35 @@ static void usb_req_notify(struct usb_request *req) {
 	manual_event_set_and_notify(event);
 }
 
-#if 0
-
-int usb_read(struct usb_endp_desc *edesc, void *buf, size_t len) {
+int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
+		void *buf, size_t len) {
 	struct usb_request *req;
+	struct usb_endp *endp;
 	struct manual_event event;
-
-#if 0
-	if (len > edesc->endp->max_packet_size) {
-		return -EMSGSIZE;
-	}
-#endif
-
-	if (edesc->endp->direction != USB_DIRECTION_IN &&
-			edesc->endp->direction != USB_DIRECTION_BI) {
-		return -EINVAL;
-	}
-
-	req = usb_endp_request_alloc(edesc->endp, usb_req_notify, USB_TOKEN_IN,
-			buf, len);
-	if (!req) {
-		return -ENOMEM;
-	}
-
-	manual_event_init(&event, 0);
-	req->hnd_data = &event;
-
-	usb_endp_request(edesc->endp, req);
-
-	return manual_event_wait(&event, MANUAL_EVENT_TIMEOUT_INFINITE);
-}
-#endif
-
-int usb_request(struct usb_endp_desc *edesc, void *buf, size_t len,
-		usb_token_t token) {
-	struct usb_request *req;
-	struct manual_event event;
-
-#if 0
-	if (len > edesc->endp->max_packet_size) {
-		return -EMSGSIZE;
-	}
-#endif
 
 	if ((token & USB_TOKEN_OUT && token & USB_TOKEN_IN) ||
 		       (!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
 		return -EINVAL;
 	}
 
-	if (edesc->endp->direction != USB_DIRECTION_BI) {
-		if (edesc->endp->direction == USB_DIRECTION_OUT &&
+	if (endp_n > ddesc->dev->endp_n) {
+		return -EINVAL;
+	}
+
+	endp = ddesc->dev->endpoints[endp_n];
+
+	if (endp->direction != USB_DIRECTION_BI) {
+		if (endp->direction == USB_DIRECTION_OUT &&
 				token & USB_TOKEN_IN) {
 			return -EINVAL;
 		}
-		if (edesc->endp->direction == USB_DIRECTION_IN &&
+		if (endp->direction == USB_DIRECTION_IN &&
 				token & USB_TOKEN_OUT) {
 			return -EINVAL;
 		}
 	}
 
-	req = usb_endp_request_alloc(edesc->endp, usb_req_notify,
+	req = usb_endp_request_alloc(endp, usb_req_notify,
 			token, buf, len);
 	if (!req) {
 		return -ENOMEM;
@@ -180,7 +125,7 @@ int usb_request(struct usb_endp_desc *edesc, void *buf, size_t len,
 	manual_event_init(&event, 0);
 	req->hnd_data = &event;
 
-	usb_endp_request(edesc->endp, req);
+	usb_endp_request(endp, req);
 
 	return manual_event_wait(&event, MANUAL_EVENT_TIMEOUT_INFINITE);
 }

@@ -27,14 +27,14 @@ static void usage(char *argv0) {
 	printf("Usage: %s -v VID -p PID -e ENDP [-a] { -r LENGTH | -w [ DATA ] }\n", argv0);
 }
 
-static int usb_test_read(struct usb_endp_desc *edesc, int len, usb_token_t tok) {
+static int usb_test_read(struct usb_dev_desc *ddesc, int endp, int len, usb_token_t tok) {
 	int res;
 
 	if (len > TEST_BUF_LEN) {
 		return -ERANGE;
 	}
 
-	if ((res = usb_request(edesc, test_buf, len, USB_TOKEN_IN | tok)) != 0) {
+	if ((res = usb_request(ddesc, endp, USB_TOKEN_IN | tok, test_buf, len)) != 0) {
 		return res;
 	}
 
@@ -47,7 +47,7 @@ static int usb_test_read(struct usb_endp_desc *edesc, int len, usb_token_t tok) 
 	return 0;
 }
 
-static int usb_test_write(struct usb_endp_desc *edesc, char **data,
+static int usb_test_write(struct usb_dev_desc *ddesc, int endp, char **data,
 		int len, usb_token_t tok) {
 
 	if (len > TEST_BUF_LEN) {
@@ -58,14 +58,13 @@ static int usb_test_write(struct usb_endp_desc *edesc, char **data,
 		test_buf[i] = strtoul(data[i], NULL, 0);
 	}
 
-	return usb_request(edesc, test_buf, len, USB_TOKEN_OUT | tok);
+	return usb_request(ddesc, endp, USB_TOKEN_OUT | tok, test_buf, len);
 }
 
 static int usb_test_main(int argc, char **argv) {
 	int vid = -1, pid = -1, endp = -1, len = -1;
 	signed char write = 0, setup_tok = 0, ack_tok = 0;
 	struct usb_dev_desc *ddesc;
-	struct usb_endp_desc *edesc;
 	int opt, res;
 
 	getopt_init();
@@ -134,22 +133,16 @@ static int usb_test_main(int argc, char **argv) {
 		return 1;
 	}
 
-	if (NULL == (edesc = usb_endp_open(ddesc, endp))) {
-		fprintf(stderr, "can't open endpoint\n");
-		return 1;
-	}
-
 	if (len != -1) {
 
-		res = usb_test_read(edesc, len, ack_tok ? USB_TOKEN_STATUS : 0 );
+		res = usb_test_read(ddesc, endp, len, ack_tok ? USB_TOKEN_STATUS : 0 );
 		goto exit;
 	}
 
-	res = usb_test_write(edesc, argv + optind, argc - optind,
+	res = usb_test_write(ddesc, endp, argv + optind, argc - optind,
 			(setup_tok ? USB_TOKEN_SETUP : 0)
 			| (ack_tok ? USB_TOKEN_STATUS : 0));
 exit:
-	usb_endp_desc_close(edesc);
 	usb_dev_desc_close(ddesc);
 
 	return res;

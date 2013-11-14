@@ -15,7 +15,6 @@
 #include <drivers/usb_token.h>
 
 struct usb_dev_desc;
-struct usb_endp_desc;
 
 /**
  * @brief Open usb device
@@ -60,38 +59,20 @@ extern int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_dev
  */
 extern int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
 		struct usb_desc_endpoint *desc);
-
-/**
- * @brief Open endpoint
- *
- * @param ddesc USB device descriptor
- * @param endp_n Endpoint number
- *
- * @return Pointer to usb_endp_desc on success
- * @return NULL on error
- */
-extern struct usb_endp_desc *usb_endp_open(struct usb_dev_desc *ddesc, int endp_n);
-
-/**
- * @brief Close endpoint
- *
- * @param edesc
- */
-extern void usb_endp_desc_close(struct usb_endp_desc *edesc);
-
 /**
  * @brief Make request to endpoint
  *
- * @param edesc Endpoint descriptor
+ * @param ddesc Device descriptor
+ * @param endp_n Endpoint number
+ * @param token Token mask
  * @param buf Pointer to buffer
  * @param len Length of buffer
- * @param setup_token If not zero, setup token will be issued
  *
  * @return 0 on success
  * @return Negative on error
  */
-extern int usb_request(struct usb_endp_desc *edesc, void *buf, size_t len,
-		usb_token_t token);
+extern int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
+		void *buf, size_t len);
 
 #endif /* DRIVERS_USB_DEV_DESC_H_ */
 
