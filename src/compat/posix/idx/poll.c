@@ -8,17 +8,25 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <poll.h>
+
+#include <fs/idesc.h>
+
 #include <kernel/manual_event.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
-#include <poll.h>
+
 
 static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 		struct manual_event *m_event) {
 	int fds_cnt;
 	nfds_t i;
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *fd_desc;
+#else
+	struct idesc *idesc;
+#endif
 	struct io_sync *fd_ios;
 
 	fds_cnt = 0;
@@ -27,7 +35,7 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 		if (fds[i].fd < 0) {
 			continue;
 		}
-
+#ifndef IDESC_TABLE_USE
 		fd_desc = task_self_idx_get(fds[i].fd);
 		if (fd_desc == NULL) {
 			fds[i].revents |= POLLNVAL;
@@ -35,10 +43,20 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 			continue;
 
 		}
-
 		assert(task_idx_indata(fd_desc) != NULL);
 		fd_ios = task_idx_indata(fd_desc)->ios;
 		assert(fd_ios != NULL);
+#else
+		idesc = idesc_common_get(fds[i].fd);
+		if (idesc == NULL) {
+			fds[i].revents |= POLLNVAL;
+			++fds_cnt;
+			continue;
+		}
+
+		fd_ios = &idesc->idesc_event.io_sync;
+
+#endif
 
 		if (fds[i].events & POLLIN) {
 			io_sync_notify(fd_ios, IO_SYNC_READING, m_event);

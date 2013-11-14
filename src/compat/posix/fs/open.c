@@ -41,6 +41,9 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	char *name;
 	struct node *node;
+#ifdef IDESC_TABLE_USE
+	struct idesc_table*it;
+#endif
 
 	if (strlen(path) > PATH_MAX) {
 		return -ENAMETOOLONG;
@@ -94,8 +97,14 @@ int open(const char *path, int __oflag, ...) {
 		rc = -1;
 		goto out;
 	}
-
+#ifndef IDESC_TABLE_USE
 	rc = task_self_idx_alloc(&task_idx_ops_file, kfile, &kfile->ios);
+#else
+
+	it = idesc_table_get_table(task_self());
+	idesc_table_add(it, (struct idesc *)kfile, 0);
+#endif
+
 out:
 	closedir(dir);
 

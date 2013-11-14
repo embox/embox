@@ -9,7 +9,7 @@
 #define IDESC_TABLE_H_
 
 //TODO idesc
-//#define IDESC_TABLE_USE
+#define IDESC_TABLE_USE
 
 #include <framework/mod/options.h>
 #include <module/embox/kernel/task/idx_table.h>
@@ -55,6 +55,8 @@ extern int idesc_table_init(struct idesc_table *t);
 extern int idesc_table_finit(struct idesc_table *t);
 
 extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
+
+extern struct idesc *idesc_common_get(int idx);
 
 __END_DECLS
 

@@ -60,7 +60,7 @@ struct task_idx_ops {
 	int (*fstat)(struct idx_desc *data, void *buff);
 	int (*ftruncate)(struct idx_desc *data, off_t length);
 };
-#if 1
+#if 0
 static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
 	assert(desc);
 	return desc->data;

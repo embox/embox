@@ -160,3 +160,12 @@ int idesc_table_exec(struct idesc_table *t) {
 	//TODO this for exec() only
 	return 0;
 }
+
+struct idesc *idesc_common_get(int idx) {
+	struct idesc_table *it;
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	return idesc_table_get_desc(it, idx);
+}
