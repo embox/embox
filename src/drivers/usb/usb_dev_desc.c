@@ -90,7 +90,7 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		return -EINVAL;
 	}
 
-	if (endp_n > ddesc->dev->endp_n) {
+	if (endp_n >= ddesc->dev->endp_n) {
 		return -EINVAL;
 	}
 
