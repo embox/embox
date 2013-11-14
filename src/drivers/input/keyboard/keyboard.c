@@ -145,7 +145,7 @@ static int keyboard_stop(struct input_dev *dev) {
 
 static const struct input_dev_ops kbd_input_ops = {
 		.event_get = keyboard_get_input_event,
-		.start = keyboard_start,
+		/*.start = keyboard_start,*/
 		.stop = keyboard_stop,
 };
 
@@ -157,6 +157,8 @@ static struct input_dev kbd_dev = {
 };
 
 static int keyboard_init(void) {
+
+	keyboard_start(NULL);
 
 	return input_dev_register(&kbd_dev);
 }
