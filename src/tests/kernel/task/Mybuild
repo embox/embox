@@ -15,6 +15,7 @@ module signal {
 
 	depends embox.kernel.task.api
 	depends embox.compat.posix.proc.signal
+	depends embox.kernel.thread.signal.sigstate
 }
 
 module uid {
@@ -41,5 +42,8 @@ module select_test {
 module rtsignal_test {
 	source "rt_signal.c"
 
+	depends embox.kernel.task.api
 	depends embox.compat.posix.proc.signal
+	depends embox.kernel.thread.signal.sigstate
+	depends embox.kernel.thread.signal.siginfoq
 }
