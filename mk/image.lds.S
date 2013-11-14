@@ -47,6 +47,13 @@ SECTIONS {
 		_ctors_end   = .;
 
 		ALIGNMENT();
+		_dtors_start = .;
+		KEEP(*(.fini_array))
+		KEEP(*(.dtors))
+		KEEP(*(.dtors.*))
+		_dtors_end   = .;
+
+		ALIGNMENT();
 		/*_eh_frame_start = .;*/
 		__EH_FRAME_BEGIN__ = .;
 		KEEP(*(.eh_frame))
