@@ -43,12 +43,12 @@ __END_DECLS
 				if (!intr && (__wait_ret == -EINTR)) {        \
 					break;                                    \
 				}                                             \
-				__waitq_cleanup(&wait_link);                  \
+				__waitq_cleanup();                            \
 			}                                                 \
 			if (cond_expr) {                                  \
 				__wait_ret = 0;                               \
 			}                                                 \
-			__waitq_cleanup(&wait_link);                      \
+			__waitq_cleanup();                                \
 		} while (0);                                          \
 		__wait_ret;                                           \
 	}))

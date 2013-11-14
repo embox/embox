@@ -181,6 +181,8 @@ static void sched_switch(void) {
 		prev = thread_get_current();
 
 		if (prev->state & __THREAD_STATE_RUNNING) {
+			prev->state |= __THREAD_STATE_READY;
+			prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
 			runq_queue_insert(&rq.queue, prev);
 		}
 
@@ -189,16 +191,12 @@ static void sched_switch(void) {
 		assert(next != NULL);
 		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
 
+		next->state |= __THREAD_STATE_RUNNING;
+		next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
+
 		if (prev == next) {
 			ipl_disable();
 			goto out;
-		} else {
-			if (prev->state & __THREAD_STATE_RUNNING) {
-				prev->state |= __THREAD_STATE_READY;
-				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
-			}
-			next->state |= __THREAD_STATE_RUNNING;
-			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 		}
 
 		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {

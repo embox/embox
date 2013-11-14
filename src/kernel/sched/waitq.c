@@ -36,7 +36,7 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	waitq_thread_notify(thread, -ETIMEDOUT);
 }
 
-static int wait_locked(unsigned long timeout) {
+int __waitq_wait_locked(int timeout) {
 	int ret;
 	struct sys_timer tmr;
 	struct thread *current = thread_get_current();
@@ -82,7 +82,6 @@ static void waitq_insert(struct waitq *waitq,
 	{
 		dlist_head_init(&wait_link->link);
 		wait_link->thread = thread_self();
-
 		dlist_add_prev(&wait_link->link, &waitq->list);
 	}
 	ipl_restore(ipl);
@@ -105,10 +104,8 @@ void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 	waitq_insert(waitq, wait_link);
 }
 
-void __waitq_cleanup(struct wait_link *wait_link) {
-	struct thread *current = thread_get_current();
-
-	current->wait_link = 0;
+void __waitq_cleanup(void) {
+	thread_get_current()->wait_link = 0;
 }
 
 int waitq_wait(struct waitq *waitq, int timeout) {
@@ -131,7 +128,7 @@ int waitq_wait_locked(struct waitq *waitq, int timeout) {
 
 	result = __waitq_wait_locked(timeout);
 
-	__waitq_cleanup(&wait_link);
+	__waitq_cleanup();
 
 	return result;
 }
@@ -146,10 +143,6 @@ int __waitq_wait(int timeout) {
 	sched_unlock();
 
 	return result;
-}
-
-int __waitq_wait_locked(int timeout) {
-	return wait_locked(timeout);
 }
 
 void waitq_thread_notify(struct thread *thread, int result) {

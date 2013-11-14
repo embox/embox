@@ -89,7 +89,7 @@ extern void waitq_notify(struct waitq *waitq);
 extern void waitq_notify_all_err(struct waitq *waitq, int error);
 
 extern void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link);
-extern void __waitq_cleanup(struct wait_link *wait_link);
+extern void __waitq_cleanup(void);
 extern int __waitq_wait(int timeout);
 extern int __waitq_wait_locked(int timeout);
 
