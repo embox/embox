@@ -80,12 +80,13 @@ static void gpmc_cs_reg_write(int cs, int offset, uint32_t val) {
 	reg_addr = GPMC_BASE_ADDRESS + offset + (cs * GPMC_CS_SIZE);
 	REG_STORE(reg_addr, val);
 }
-
+#if 0
 static int gpmc_cs_enabled(int cs) {
 	uint32_t l;
 	l = gpmc_cs_reg_read(cs, GPMC_CS_CONFIG7);
 	return l & GPMC_CONFIG7_CSVALID;
 }
+#endif
 
 static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 	uint32_t l;
