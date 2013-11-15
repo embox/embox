@@ -46,44 +46,42 @@ static inline void clear_data(unsigned long mask) {
 	out32(g_last_value, PCI_DATA_REG);
 }
 
-int gpio_out(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	set_control(mask);
+int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+	int mode_val;
+	assert(gpio);
+
+	if ((mode & GPIO_MODE_OUT_SECTION) &&
+		(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
+		return -1;
+	}
+
+	if (mode & GPIO_MODE_INPUT) {
+		/* raise logic level to turn off pull-down */
+		set_data(mask);
+		/* select as GPIO function */
+		set_control(mask);
+	} else if (mode & GPIO_MODE_OUTPUT) {
+		set_control(mask);
+	}
+
 	return 0;
 }
 
-int gpio_in(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	/* raise logic level to turn off pull-down */
-	set_data(mask);
-	/* select as GPIO function */
-	set_control(mask);
+void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 
-	return 0;
-}
-
-void gpio_set(struct gpio *gpio, gpio_mask_t mask) {
-	set_data(mask);
-}
-
-void gpio_clear(struct gpio *gpio, gpio_mask_t mask) {
-	clear_data(mask);
-}
-
-gpio_mask_t gpio_level(struct gpio *gpio, gpio_mask_t mask) {
-	unsigned long tmp;
-	out32(RDC_DATA, PCI_ADDR_SEL);
-	tmp = in32(PCI_DATA_REG);
-	return tmp & mask;
-}
-
-#if 0
-void gpio_set_value(unsigned long mask, int value) {
-	if (value) {
+	if(level) {
 		set_data(mask);
 	} else {
 		clear_data(mask);
 	}
 }
-#endif
+
+gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
+	unsigned long tmp;
+	out32(RDC_DATA, PCI_ADDR_SEL);
+	tmp = in32(PCI_DATA_REG);
+	return tmp & mask;
+}
 
 static int gpio_init(void) {
 	/* Example: blink led */

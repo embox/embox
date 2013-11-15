@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <arpa/inet.h>
 #include <drivers/gpmc.h>
-#include <drivers/pins.h>
+#include <drivers/gpio.h>
 #include <errno.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -36,8 +36,9 @@
 #define DBG(x)
 #endif
 
-#define LAN9118_GPMC_CS        5 // GPMC chip-select number
-#define LAN9118_PIN            OPTION_GET(NUMBER, pin)
+#define LAN9118_GPMC_CS        5 /* GPMC chip-select number */
+#define LAN9118_PORT           OPTION_GET(NUMBER, port)
+#define LAN9118_PIN            OPTION_GET(NUMBER, irq_pin)
 #define SIZE_16M               0x1000000
 
 #define LAN9118_RX_DATA_FIFO   0x00
@@ -356,8 +357,8 @@ static int lan9118_open(struct net_device *dev) {
 	lan9118_reg_write(dev, LAN9118_TX_CFG, _LAN9118_TX_CFG_TX_ON);
 
 	/* GPIO */
-	//gpio_reg_write(6, GPIO_RISINGDETECT, (1 << LAN9118_PIN));
-	pin_set_input_monitor((1 << LAN9118_PIN), lan9118_irq_handler);
+	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
+				lan9118_irq_handler, GPIO_MODE_INT_MODE_RISING, dev);
 
 	return 0;
 }
