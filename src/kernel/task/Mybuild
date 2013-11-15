@@ -67,7 +67,7 @@ module signal {
 module idx_table extends task_environment {
 
 	option number task_res_quantity = 64
-	source "index_desc.c"
+	//source "index_desc.c"
 
 	source "idesc_table.c"
 	source "idesc_table_resource.c"

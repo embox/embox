@@ -49,6 +49,8 @@ extern int idesc_write(struct idesc *idesc,char *buff, int size);
 extern int idesc_ctrl(struct idesc *idesc, int cmd, int req, void *buff,
 		int size);
 
+extern int idesc_close(struct idesc *idesc);
+
 __END_DECLS
 
 #endif /* FS_IDESC_H_ */

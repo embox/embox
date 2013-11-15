@@ -33,7 +33,13 @@ static module dirent {
 
 static module file_ops {
 	source "file_ops.c"
-
+	source "close.c"
+	source "fstat.c"
+	source "fsync.c"
+	source "lseek.c"
+	source "read.c"
+	source "write.c"
+	source "ftruncate.c"
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno

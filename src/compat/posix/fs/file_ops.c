@@ -18,96 +18,14 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
-int close(int fd) {
+#include <fs/idesc.h>
+
+static inline int ioctl_inherite(int fd, int request, void *data) {
+	int rc;
 	const struct task_idx_ops *ops;
+
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-
-	assert(ops);
-	assert(ops->close);
-
-	return task_self_idx_table_unbind(fd);
-}
-
-ssize_t write(int fd, const void *buf, size_t nbyte) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	if (!buf) {
-		SET_ERRNO(EFAULT);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->write);
-	return ops->write(desc, buf, nbyte);
-}
-
-ssize_t read(int fd, void *buf, size_t nbyte) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	if (!buf) {
-		SET_ERRNO(EFAULT);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->read);
-	return ops->read(desc, buf, nbyte);
-}
-
-off_t lseek(int fd, off_t offset, int origin) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->fseek);
-	return ops->fseek(desc, offset, origin);
-}
-
-int ioctl(int fd, int request, ...) {
-	va_list args;
-	const struct task_idx_ops *ops;
-	int rc = -ENOTSUP;
-	struct idx_desc *desc;
-
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
@@ -119,8 +37,30 @@ int ioctl(int fd, int request, ...) {
 	}
 
 	ops = task_idx_desc_ops(desc);
+#else
+	struct idesc *idesc;
+	idesc = idesc_common_get(fd);
+	assert(idesc);
+	ops = idesc->idesc_ops;
+#endif
 
 	assert(ops);
+
+
+	if (NULL == ops->ioctl) {
+		rc = -1;
+	} else {
+		//rc = ops->ioctl(desc, request, data);
+	}
+	return rc;
+
+}
+
+int ioctl(int fd, int request, ...) {
+	void *data;
+	va_list args;
+	int rc = -ENOTSUP;
+
 
 	va_start(args, request);
 
@@ -133,60 +73,46 @@ int ioctl(int fd, int request, ...) {
 			fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | O_NONBLOCK);
 		}
 		break;
-	case FIONREAD:
+	case FIONREAD: {
+#ifndef IDESC_TABLE_USE
+		struct idx_desc *desc;
+		assert(task_self_idx_table());
+
+		desc = task_self_idx_get(fd);
+		if (!desc) {
+			SET_ERRNO(EBADF);
+			rc = -1;
+			DPRINTF(("EBADF "));
+			break
+		}
+
 		/* FIXME set actual amount of bytes */
 		*va_arg(args, int *) = io_sync_ready(
 				task_idx_desc_ios(desc), IO_SYNC_READING);
-		return 0;
-	}
+#else
+		idesc_common_get(fd);
 
-	if (NULL == ops->ioctl) {
-		rc = -1;
-	} else {
-		void *data = va_arg(args, void*);
-		rc = ops->ioctl(desc, request, data);
+#endif
+		break;
+	}
+	default:
+		data = va_arg(args, void*);
+		rc = ioctl_inherite(fd,request, data);
+		break;
+
 	}
 
 	va_end(args);
 
-	end:
 	DPRINTF(("ioctl(%d) = %d\n", fd, rc));
 	return rc;
 }
 
-int fstat(int fd, struct stat *buff) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-	int rc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		DPRINTF(("EBADF "));
-		rc = -1;
-		goto end;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	if(NULL != ops->fstat) {
-		rc = ops->fstat(desc, buff);
-	}
-	else {
-		rc = -1;
-	}
-
-	end:
-	DPRINTF(("fstat(%d) = %d\n", fd, rc));
-	return rc;
-
-}
 
 /* XXX -- whole function seems to be covered by many workarounds
  * try blame it -- Anton Kozlov */
 int fcntl(int fd, int cmd, ...) {
+#ifndef IDESC_TABLE_USE
 	va_list args;
 	int res, err, flag;
 	const struct task_idx_ops *ops;
@@ -237,31 +163,6 @@ int fcntl(int fd, int cmd, ...) {
 		break;
 	}
 
-#if 0
-	if (NULL == ops->fcntl) {
-		if (NULL == ops->ioctl) {
-			goto end;
-		}
-
-		/* default operation already done regardless of result,
- 		 * is it right?
-		 */
-		if ((err = ops->ioctl(desc, cmd, (void *)flag))) {
-			res = -1;
-		}
-
-		DPRINTF(("fcntl->ioctl(%d, %d) = %d\n", fd, cmd, res));
-		goto end;
-	}
-
-	/* default operation already done regardless of result,
-	 * is it right?
-	 */
-	if ((err = ops->fcntl(desc, cmd, args))) {
-		res = -1;
-	}
-#endif
-
 	if (ops->ioctl != NULL) {
 		res = ops->ioctl(desc, cmd, (void *)flag);
 	}
@@ -271,34 +172,8 @@ end:
 	DPRINTF(("fcntl(%d, %d) = %d\n", fd, cmd, res));
 	SET_ERRNO(-err);
 	return res;
+#else
+	return -ENOTSUP;
+#endif
 }
 
-int fsync(int fd) {
-
-	DPRINTF(("fsync(%d) = %d\n", fd, 0));
-	return 0;
-}
-
-int ftruncate(int fd, off_t length) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-
-	if (!ops->ftruncate) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	return ops->ftruncate(desc, length);
-}
