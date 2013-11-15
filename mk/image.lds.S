@@ -79,7 +79,7 @@ SECTIONS {
 
 		*(.bss)
 		*(.sbss)
-		*(.bss.[^.]*) /* this hell is to exclude '.bss..reserve'. */
+		*(.bss.[a-zA-Z0-9_-]*) /* this hell is to exclude '.bss..reserve'. */
 		/* *(.tbss) */
 		/* *(.tbss.*) */
 
