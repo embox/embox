@@ -293,6 +293,11 @@ void lan9118_irq_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
 	lan9118_reg_write(nic, LAN9118_INT_STS, l);
 }
 
+static void mdelay(int value) {
+	volatile int delay = value;
+	while (delay --);
+}
+
 static int lan9118_reset(struct net_device *dev) {
 	unsigned int timeout = 10;
 	unsigned int l;
@@ -301,7 +306,7 @@ static int lan9118_reset(struct net_device *dev) {
 	lan9118_reg_write(dev, LAN9118_HW_CFG, _LAN9118_HW_CFG_SRST);
 
 	do {
-		//usleep(10);
+		mdelay(1000);
 		l = lan9118_reg_read(dev, LAN9118_HW_CFG);
 	} while (--timeout && (l & _LAN9118_HW_CFG_SRST));
 
