@@ -136,6 +136,8 @@ int cond_signal(cond_t *c) {
 		wait_queue_init(&c->wq);
 	}
 
+	wait_queue_notify(&c->wq);
+
 	return ENOERR;
 }
 
