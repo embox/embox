@@ -39,7 +39,7 @@
       <item>
        <widget class="QLineEdit" name="lineEdit">
         <property name="text">
-         <string>localhost:5672</string>
+         <string>10.0.2.10:5672</string>
         </property>
        </widget>
       </item>
@@ -56,8 +56,8 @@
      <widget class="QPlainTextEdit" name="plainTextEdit">
       <property name="font">
        <font>
-        <family>Courier New</family>
-        <pointsize>9</pointsize>
+        <family>Courier 10 Pitch</family>
+        <pointsize>10</pointsize>
         <weight>50</weight>
         <bold>false</bold>
         <kerning>true</kerning>
@@ -76,7 +76,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

@@ -71,8 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
     pipe(pipefd);
     flags = fcntl(pipefd[0], F_GETFL, 0);
     fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
-    flags = fcntl(pipefd[1], F_GETFL, 0);
-    fcntl(pipefd[1], F_SETFL, flags | O_NONBLOCK);
+    //flags = fcntl(pipefd[1], F_GETFL, 0);
+    //fcntl(pipefd[1], F_SETFL, flags | O_NONBLOCK);
 
     /*
     oldstd[0] = dup(STDOUT_FILENO);
@@ -90,6 +90,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(notifier.data(), SIGNAL(activated(int)), this, SLOT(onStdout()));
 
     ui->setupUi(this);
+
+    ui->lineEdit->setFocus();
+    ui->lineEdit->selectAll();
 }
 
 MainWindow::~MainWindow()
@@ -150,6 +153,7 @@ void MainWindow::on_lineEdit_returnPressed()
 
 void MainWindow::onFinished()
 {
+    onStdout();
     std::cout << std::endl << "Finished.";
     delete thread.take();
 }
