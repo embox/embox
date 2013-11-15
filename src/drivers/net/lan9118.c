@@ -23,7 +23,7 @@
 #include <net/netfilter.h>
 #include <unistd.h>
 
-#define LAN9118_GPMC_CS        5 // GPMC chip-select number
+#define LAN9118_GPMC_CS        5 /* GPMC chip-select number */
 #define LAN9118_PORT           OPTION_GET(NUMBER, port)
 #define LAN9118_PIN            OPTION_GET(NUMBER, irq_pin)
 #define SIZE_16M               0x1000000
