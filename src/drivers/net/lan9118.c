@@ -301,7 +301,7 @@ static int lan9118_reset(struct net_device *dev) {
 	lan9118_reg_write(dev, LAN9118_HW_CFG, _LAN9118_HW_CFG_SRST);
 
 	do {
-		usleep(10);
+		//usleep(10);
 		l = lan9118_reg_read(dev, LAN9118_HW_CFG);
 	} while (--timeout && (l & _LAN9118_HW_CFG_SRST));
 
