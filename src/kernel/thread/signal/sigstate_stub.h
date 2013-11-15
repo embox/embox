@@ -21,10 +21,12 @@ static inline struct sigstate *sigstate_init(
 
 static inline int sigstate_send(struct sigstate *data, int sig,
 		const siginfo_t *info) {
+	(void)data; (void)sig; (void)info;
 	return -ENOSYS;
 }
 
 static inline int sigstate_receive(struct sigstate *data, siginfo_t *info) {
+	(void)data; (void)info;
 	return 0;
 }
 

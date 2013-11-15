@@ -92,6 +92,7 @@ extern void prioq_enqueue_link(struct prioq_link *new_link,
 
 static inline struct prioq_link *prioq_peek_link(
 		prioq_comparator_t link_comparator, struct prioq *prioq) {
+	(void)link_comparator;
 	assert(prioq != NULL);
 
 	return list_first(__prioq_chain, &prioq->prio_list);

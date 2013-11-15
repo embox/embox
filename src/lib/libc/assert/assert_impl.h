@@ -44,14 +44,14 @@ void __attribute__ ((noreturn)) __assertion_handle_failure(
 #ifndef __cplusplus
 # define __assert(condition, expr_str, message...) \
 	do { \
-		if (!(likely(condition))) {                                             \
-			extern char __assertion_message_buff[];                      \
+		if (!(likely(condition))) {                                     \
+			extern char __assertion_message_buff[];                     \
 			static const struct __assertion_point __assertion_point = { \
 				.location = LOCATION_FUNC_INIT,                         \
 				.expression = expr_str,                                 \
 			};                                                          \
 			extern int sprintf(char *s, const char *format, ...);       \
-			sprintf(__assertion_message_buff, "" message);              \
+			sprintf(__assertion_message_buff, " " message);             \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
@@ -60,12 +60,12 @@ extern "C" char __assertion_message_buff[];
 extern "C" int sprintf(char *s, const char *format, ...);
 # define __assert(condition, expr_str, message...) \
 	do { \
-		if (!(likely(condition))) {                                             \
+		if (!(likely(condition))) {                                     \
 			static const struct __assertion_point __assertion_point = { \
 				LOCATION_FUNC_INIT,                                     \
 				expr_str                                                \
 			};                                                          \
-			sprintf(__assertion_message_buff, " " message);              \
+			sprintf(__assertion_message_buff, " " message);             \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
