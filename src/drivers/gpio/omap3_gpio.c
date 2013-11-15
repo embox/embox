@@ -20,7 +20,7 @@ EMBOX_UNIT_INIT(gpio_init);
 
 static struct gpio omap_gpio[GPIO_MODULE_CNT];
 
-pin_mask_t gpio_get_pin_changed(struct gpio *gpio) {
+static pin_mask_t gpio_get_pin_changed(struct gpio *gpio) {
 	return (int) gpio_reg_read(gpio->base, GPIO_IRQSTATUS1);
 }
 
@@ -42,6 +42,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 		gpio_reg_write(gpio->base, GPIO_OE, l & ~mask);
 	}
 
+	/* interrupt disable */
 	if (mode & GPIO_MODE_IN_INT_DIS) {
 		/* clear front and level detect register, if you need */
 		if (GPIO_MODE_INT_MODE_RISING) {
@@ -70,6 +71,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 		return 0;
 	}
 
+	/* set interrupt mode, if needed */
 	if (GPIO_MODE_INT_MODE_RISING) {
 		gpio_reg_write(gpio->base, GPIO_RISINGDETECT, mask);
 	}
@@ -84,6 +86,11 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 
 	if (GPIO_MODE_INT_MODE_LEVEL1) {
 		gpio_reg_write(gpio->base, GPIO_LEVELDETECT1, mask);
+	}
+
+	/* enable interrupt */
+	if (GPIO_MODE_IN_INT_EN) {
+		gpio_reg_write(gpio->base, GPIO_IRQENABLE1, mask);
 	}
 
 	return 0;
@@ -121,11 +128,14 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 
 	changed = gpio_get_pin_changed(gpio);
 
+/* TODO we can calculate the number on a given mask rather than brute force */
 	for (i = 0; i < N_PINS; i++) {
 		if (changed & gpio->pin[i].mask) {
 			gpio->pin[i].handler(irq_nr, gpio->pin[i].data);
-			gpio_reg_write(gpio->base, GPIO_IRQSTATUS1, changed & gpio->pin[i].mask);
-			gpio_reg_write(gpio->base, GPIO_IRQSTATUS2, changed & gpio->pin[i].mask);
+			gpio_reg_write(gpio->base, GPIO_IRQSTATUS1,
+					changed & gpio->pin[i].mask);
+			gpio_reg_write(gpio->base, GPIO_IRQSTATUS2,
+					changed & gpio->pin[i].mask);
 		}
 	}
 

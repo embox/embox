@@ -18,7 +18,7 @@ typedef volatile unsigned long __gpio_mask_t;
 #define N_PINS 8 * (sizeof(int))
 #define GPIO_REG_SIZE 0x2000
 
-struct handler_item_t {
+struct omap_pin_handler {
 	int mask;
 	void *data;
 	irq_handler_t handler;
@@ -27,7 +27,7 @@ struct handler_item_t {
 struct gpio {
 	unsigned long base;
 	int gpio_nr;
-	struct handler_item_t pin[N_PINS];
+	struct omap_pin_handler pin[N_PINS];
 };
 
 #define GPIO_BASE_ADDRESS(i)      ((i) == 1 ? 0x48310000 : (0x49050000 + ((i) - 2) * GPIO_REG_SIZE))
