@@ -23,6 +23,8 @@ void thread_signal_handle(void) {
 	siginfo_t info;
 	int sig;
 
+	assert(sig_table);
+
 	while ((sig = sigstate_receive(sigstate, &info))) {
 		struct sigaction *act = sig_table + sig;
 

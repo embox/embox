@@ -10,6 +10,7 @@
 #ifndef SIGNAL_H_
 #define SIGNAL_H_
 
+#include <errno.h>
 #include <sys/types.h>
 #include <util/bitmap.h>
 #include <sys/cdefs.h>
@@ -128,6 +129,10 @@ extern int sigfillset(sigset_t *);
 extern int sigismember(const sigset_t *, int signo);
 extern int sigaddset(sigset_t *, int signo);
 extern int sigdelset(sigset_t *, int signo);
+
+static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
+	return -ENOSYS;
+}
 
 extern sighandler_t signal(int signo, sighandler_t fn);
 extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,

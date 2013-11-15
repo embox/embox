@@ -77,6 +77,7 @@ static int initfs_ioctl(struct file_desc *desc, int request, ...) {
 
 	nas = desc->node->nas;
 	fi = (struct initfs_file_info *) nas->fi;
+	assert(p_addr != NULL);
 	*p_addr = fi->addr;
 
 	return 0;

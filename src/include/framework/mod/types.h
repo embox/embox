@@ -33,6 +33,8 @@ struct mod {
 	const struct mod_package *package; /**< Definition package. */
 	const char *name;                  /**< Name assigned by EMBuild. */
 
+	const struct mod_label   *label;   /**< (optional) Security. */
+
 	/* Data used to properly enable/disable the module itself. */
 
 	const struct mod_info    *info;    /**< (optional) Application specific. */
@@ -41,6 +43,18 @@ struct mod {
 	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
 	struct __mod_private     *priv; /**< Used by dependency resolver. */
 
+};
+
+struct __mod_section {
+	char   *vma;
+	size_t  len;
+};
+
+struct mod_label {
+	struct __mod_section text;
+	struct __mod_section rodata;
+	struct __mod_section data;
+	struct __mod_section bss;
 };
 
 struct mod_cmd {

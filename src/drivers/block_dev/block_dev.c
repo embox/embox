@@ -429,5 +429,5 @@ int block_devs_init(void) {
 			__block_dev_registry[i].init(NULL);
 		}
 	}
-	return i;
+	return 0;
 }

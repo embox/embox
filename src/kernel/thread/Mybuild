@@ -34,6 +34,7 @@ module core extends thread_mode {
 module signal {
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate_api
+	depends embox.kernel.task.signal
 }
 
 @DefaultImpl(fixed_stack)

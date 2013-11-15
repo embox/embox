@@ -43,6 +43,7 @@ module barrier_test {
 module cond_test {
 	source "cond_test.c"
 
+	depends embox.kernel.task.api
 	depends embox.kernel.thread.core
 	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync

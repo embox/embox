@@ -124,10 +124,10 @@ int kremove(const char *pathname) {
 	}
 
 	if (node_is_directory(node)) {
-		return rmdir(pathname);
+		return krmdir(pathname);
 	}
 	else {
-		return unlink(pathname);
+		return kunlink(pathname);
 	}
 }
 
@@ -448,7 +448,7 @@ int krename(const char *oldpath, const char *newpath) {
 
 	/* If oldpath is directory, copy it recursively */
 	if (node_is_directory(oldnode)) {
-		rc = mkdir(newpath, oldnode->mode);
+		rc = kmkdir(NULL, newpath, oldnode->mode);
 		if (-1 == rc) {
 			return -1;
 		}
@@ -510,7 +510,7 @@ int krename(const char *oldpath, const char *newpath) {
 	}
 
 	/* Delete file in old path */
-	rc = remove(oldpath);
+	rc = kremove(oldpath);
 	if (0 != rc) {
 		return -1;
 	}

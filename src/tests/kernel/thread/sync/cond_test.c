@@ -39,10 +39,10 @@ static void * try_signal_shared(void *unused) {
 
 TEST_CASE("PROCESS_PRIVATE") {
 	cond_init(&c_private, NULL);
-	test_assert_not_zero(new_task("", try_signal_private, NULL));
+	test_assert(0 <= new_task("", try_signal_private, NULL));
 	cond_init(&c, NULL);
 	condattr_setpshared(&c.attr, PROCESS_SHARED);
-	test_assert_not_zero(new_task("", try_signal_shared, NULL));
+	test_assert(0 <= new_task("", try_signal_shared, NULL));
 }
 
 static void *low_run(void *arg) {

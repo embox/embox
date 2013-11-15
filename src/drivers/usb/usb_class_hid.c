@@ -17,10 +17,11 @@ EMBOX_UNIT_INIT(usb_hid_init);
 POOL_DEF(hid_getconfs, struct usb_hid_getconf, USB_HID_MAX_GETCONFS);
 POOL_DEF(hid_classes, struct usb_class_hid, USB_HID_MAX_DEVS);
 
-static void usb_hid_request_hnd_get_conf(struct usb_request *req) {
+static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_hid *hid = usb2hiddata(dev);
 
+	usb_dev_generic_fill_iface(dev, &hid->getconf->interface_desc);
 	usb_dev_generic_fill_endps(dev, hid->getconf->endp_descs);
 
 	pool_free(&hid_getconfs, hid->getconf);
@@ -42,7 +43,7 @@ static int usb_class_hid_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 
 	hid->getconf = pool_alloc(&hid_getconfs);
 
-	usb_endp_control(dev->endpoints[0], usb_hid_request_hnd_get_conf,
+	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -63,6 +64,7 @@ static struct usb_class usb_class_hid = {
 	.class_alloc = usb_class_hid_alloc,
 	.class_free = usb_class_hid_free,
 	.get_conf = usb_class_hid_get_conf,
+	.get_conf_hnd = usb_class_hid_get_conf_hnd,
 };
 
 static int usb_hid_init(void) {
