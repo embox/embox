@@ -20,6 +20,11 @@ EMBOX_UNIT_INIT(gpio_init);
 
 static struct gpio omap_gpio[GPIO_MODULE_CNT];
 
+struct gpio *gpio_by_num(int num_port) {
+
+	return &omap_gpio[num_port];
+}
+
 static pin_mask_t gpio_get_pin_changed(struct gpio *gpio) {
 	return (int) gpio_reg_read(gpio->base, GPIO_IRQSTATUS1);
 }
@@ -115,6 +120,23 @@ gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask){
 	return mask & (gpio_reg_read(gpio->base, GPIO_DATAIN));
 }
 
+
+static int gpio_pin_number (gpio_mask_t mask) {
+	int pin_nr;
+
+	for(pin_nr = 0; pin_nr < N_PINS; pin_nr++) {
+		if (mask & (1 << pin_nr)) {
+			break;
+		}
+	}
+
+	if (!(mask & (1 << pin_nr))) {
+		return -1;
+	}
+
+	return pin_nr;
+}
+
 irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	int i;
 	int changed;
@@ -142,13 +164,14 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-int gpio_pin_irq_attach(int gpio_nr, int pin_nr,
-		void *pin_handler, unsigned int mode, void *data) {
-	struct gpio *gpio;
-
-	gpio = &omap_gpio[gpio_nr];
+int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
+		void *pin_handler, int mode, void *data) {
+	int pin_nr;
 	assert(gpio);
 
+	if (-1 == (pin_nr = gpio_pin_number(mask))) {
+		return -1;
+	}
 	gpio->pin[pin_nr].handler = pin_handler;
 	gpio->pin[pin_nr].mask = (1 << pin_nr);
 	gpio->pin[pin_nr].data = data;
@@ -158,12 +181,14 @@ int gpio_pin_irq_attach(int gpio_nr, int pin_nr,
 	return 0;
 }
 
-int gpio_pin_irq_detach(int gpio_nr, int pin_nr,
-		void *pin_handler, unsigned int mode) {
-	struct gpio *gpio;
-
-	gpio = &omap_gpio[gpio_nr];
+int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
+		void *pin_handler, int mode) {
+	int pin_nr;
 	assert(gpio);
+
+	if (-1 == (pin_nr = gpio_pin_number(mask))) {
+		return -1;
+	}
 
 	gpio->pin[pin_nr].handler = NULL;
 	gpio_settings(gpio, (1 << pin_nr), mode | GPIO_MODE_IN_INT_DIS);

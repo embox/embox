@@ -36,16 +36,18 @@ typedef __gpio_mask_t gpio_mask_t;
 #define GPIO_MODE_INT_MODE_LEVEL1  (1 << 27)
 #define GPIO_MODE_IN_INT_DIS       (1 << 25)
 
+extern struct gpio *gpio_by_num(int num_port);
+
 extern int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode);
 
 extern void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level);
 
 extern gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask);
 
-int gpio_pin_irq_attach(int gpio_nr, int pin_nr,
-		void *pin_handler, unsigned int mode, void *dev_id);
+extern int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
+		void *pin_handler, int mode, void *data);
 
-int gpio_pin_irq_detach(int gpio_nr, int pin_nr,
-		void *pin_handler, unsigned int mode);
+extern int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
+		void *pin_handler, int mode);
 
 #endif /* DRIVERS_GPIO_H_ */
