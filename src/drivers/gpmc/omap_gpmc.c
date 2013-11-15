@@ -91,11 +91,11 @@ static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 	uint32_t l;
 	uint32_t mask;
 
+#if 0
 	if (gpmc_cs_enabled(cs)) {
 		return -1; // it is so?
 	}
 
-#if 0
 	/*
 	* Ensure that base address is aligned on a
 	* boundary equal to or greater than size.
