@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <curses.h>
+#include <profiler/tracing/trace.h>
 
 #define TAB_SIZE 4
 #define MAX_SCREEN_WIDTH 256
@@ -89,7 +90,8 @@ static void screen(FILE *fp) {
 
 static int exec(int argc, char **argv) {
 	FILE *fp;
-
+	TRACE_BLOCK_DEF(more_tb);
+	trace_block_enter(&more_tb);
 	if (argc < 2) {
 		printf ("Usage: more [FILE]\n");
 		return 0;
@@ -103,5 +105,6 @@ static int exec(int argc, char **argv) {
 	screen(fp);
 
 	fclose(fp);
+	trace_block_leave(&more_tb);
 	return 0;
 }

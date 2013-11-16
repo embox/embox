@@ -19,7 +19,8 @@
 
 enum clock_source_property {
 	CS_WITH_IRQ = 0,
-	CS_ANY = 1
+	CS_ANY = 1,
+	CS_WITHOUT_IRQ = 2
 };
 
 /**
