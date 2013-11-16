@@ -40,6 +40,12 @@ void ip_set_check_field(struct iphdr *iph) {
 	iph->check = ptclbsum(iph, IP_HEADER_SIZE(iph));
 }
 
+int ip_check_version(const struct iphdr *iph) {
+	assert(iph != NULL);
+
+	return iph->version == 4;
+}
+
 size_t ip_data_length(const struct iphdr *iph) {
 	assert(iph != NULL);
 	assert(ntohs(iph->tot_len) >= IP_HEADER_SIZE(iph));

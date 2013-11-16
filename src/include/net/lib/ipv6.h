@@ -27,6 +27,11 @@ extern void ip6_build(struct ip6hdr *ip6h, uint16_t payload_len,
 		const struct in6_addr *dst_ip6);
 
 /**
+ * Check IPv6 version field
+ */
+extern int ip6_check_version(const struct ip6hdr *ip6h);
+
+/**
  * Calculate IPv6 data length
  */
 extern size_t ip6_data_length(const struct ip6hdr *ip6h);
