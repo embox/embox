@@ -35,7 +35,7 @@ int close(int fd) {
 	if(!idesc) {
 		return 0;
 	}
-	return idesc_close(idesc);
+	return idesc_close(idesc, fd);
 
 #endif
 }

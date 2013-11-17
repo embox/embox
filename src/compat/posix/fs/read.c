@@ -5,9 +5,18 @@
  * @author: Anton Bondarev
  */
 
+#include <stddef.h>
+#include <unistd.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
+#include <kernel/task/io_sync.h>
+
+#include <fs/idesc.h>
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	const struct task_idx_ops *ops;
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *desc;
 
 	assert(task_self_idx_table());
@@ -27,4 +36,13 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	assert(ops);
 	assert(ops->read);
 	return ops->read(desc, buf, nbyte);
+#else
+	struct idesc *desc;
+	desc = idesc_common_get(fd);
+	assert(desc);
+
+	ops = desc->idesc_ops;
+
+	return ops->read(desc, buf, nbyte);
+#endif
 }

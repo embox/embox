@@ -46,6 +46,18 @@ struct idx_desc {
 	idx_flags_t flags;
 };
 
+#ifdef IDESC_TABLE_USE
+/**
+ * Specify operations with task's resources, which be called POSIX compat lib
+ */
+struct task_idx_ops {
+	int (*read)(struct idesc *data, void *buf, size_t nbyte);
+	int (*write)(struct idesc *data, const void *buf, size_t nbyte);
+	int (*close)(struct idesc *data);
+	int (*ioctl)(struct idesc *data, int request, void *);
+	int (*fstat)(struct idesc *data, void *buff);
+};
+#else
 /**
  * Specify operations with task's resources, which be called POSIX compat lib
  */
@@ -60,7 +72,9 @@ struct task_idx_ops {
 	int (*fstat)(struct idx_desc *data, void *buff);
 	int (*ftruncate)(struct idx_desc *data, off_t length);
 };
-#if 0
+
+
+
 static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
 	assert(desc);
 	return desc->data;

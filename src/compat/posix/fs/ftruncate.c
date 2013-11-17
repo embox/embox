@@ -5,9 +5,19 @@
  * @author: Anton Bondarev
  */
 
+#include <stddef.h>
+#include <unistd.h>
+#include <errno.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
+#include <kernel/task/io_sync.h>
+
+#include <fs/idesc.h>
 
 int ftruncate(int fd, off_t length) {
 	const struct task_idx_ops *ops;
+#ifndef IDESC_TABLE_USE
 	struct idx_desc *desc;
 
 	assert(task_self_idx_table());
@@ -28,4 +38,14 @@ int ftruncate(int fd, off_t length) {
 	}
 
 	return ops->ftruncate(desc, length);
+#else
+	struct idesc *desc;
+	desc = idesc_common_get(fd);
+	assert(desc);
+
+	ops = desc->idesc_ops;
+
+	return 0;// return ops->ftruncate(desc, length);
+#endif
+
 }

@@ -15,13 +15,9 @@
 #include <fs/flags.h>
 #include <fs/kfile.h>
 
-static inline struct file_desc *from_data(struct idx_desc *data) {
 #ifndef IDESC_TABLE_USE
+static inline struct file_desc *from_data(struct idx_desc *data) {
 	return (struct file_desc *) task_idx_desc_data(data);
-#else
-	//TODO idesc fix
-	return (struct file_desc *)data;
-#endif
 }
 
 static int this_close(struct idx_desc *data) {
@@ -67,3 +63,36 @@ const struct task_idx_ops task_idx_ops_file = {
 	.fstat = this_stat,
 	.ftruncate = this_truncate
 };
+#else
+
+static int this_close(struct idesc *data) {
+	return 0;
+}
+
+static ssize_t this_read(struct idesc *data, void *buf, size_t nbyte) {
+	return 0;
+}
+
+static ssize_t this_write(struct idesc *data, const void *buf, size_t nbyte) {
+	return 0;
+}
+
+
+static int this_stat(struct idesc *data, void *buff) {
+	return 0;
+}
+
+static int this_ioctl(struct idesc *desc, int request, void *data) {
+	return 0;
+}
+
+
+const struct task_idx_ops task_idx_ops_file = {
+	.close = this_close,
+	.read  = this_read,
+	.write = this_write,
+	.ioctl = this_ioctl,
+	.fstat = this_stat,
+};
+
+#endif

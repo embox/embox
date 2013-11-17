@@ -15,6 +15,7 @@ module filesystem {
 
 module file_desc {
 	source "file_desc.c"
+	source "idesc.c"
 	option number fdesc_quantity=32
 }
 

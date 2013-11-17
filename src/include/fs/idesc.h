@@ -49,7 +49,7 @@ extern int idesc_write(struct idesc *idesc,char *buff, int size);
 extern int idesc_ctrl(struct idesc *idesc, int cmd, int req, void *buff,
 		int size);
 
-extern int idesc_close(struct idesc *idesc);
+extern int idesc_close(struct idesc *idesc, int fd);
 
 __END_DECLS
 
