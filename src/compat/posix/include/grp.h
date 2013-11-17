@@ -18,6 +18,7 @@ struct group {
 };
 
 static inline struct group *getgrnam(const char *name) {
+	(void)name;
 	return NULL;
 }
 

@@ -34,6 +34,8 @@ const struct sock_proto_ops *const tcp_sock_ops
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
+		tcp_sock_ops_struct);
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -97,10 +99,9 @@ static int tcp_close(struct sock *sk) {
 					tcp_sk->state == TCP_CLOSEWAIT ? TCP_LASTACK
 						: TCP_FINWAIT_1);
 			tcph = tcp_hdr(skb);
-			tcp_build(tcph,
-					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
-					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+			tcp_build(tcph, tcp_sock_dst_port(tcp_sk),
+					tcp_sock_src_port(tcp_sk), TCP_MIN_HEADER_SIZE,
+					tcp_sk->self.wind);
 			tcph->fin = 1;
 			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
 			send_seq_from_sock(tcp_sk, skb);
@@ -160,9 +161,8 @@ static int tcp_connect(struct sock *sk,
 			}
 			tcp_sock_set_state(tcp_sk, TCP_SYN_SENT);
 			tcph = tcp_hdr(skb);
-			tcp_build(tcph,
-					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
-					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
+			tcp_build(tcph, tcp_sock_dst_port(tcp_sk),
+					tcp_sock_src_port(tcp_sk),
 					TCP_MIN_HEADER_SIZE + sizeof magic_opts,
 					tcp_sk->self.wind);
 			tcph->syn = 1;
@@ -267,10 +267,12 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
+#if 0
 		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
 				to_sock(tcp_newsk),
 				inet_ntoa(to_inet_sock(to_sock(tcp_newsk))->dst_in.sin_addr),
 				ntohs(to_inet_sock(to_sock(tcp_newsk))->dst_in.sin_port));
+#endif
 
 		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 			tcp_sock_release(tcp_newsk);
@@ -330,10 +332,9 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 				}
 				return ret;
 			}
-			tcp_build(skb->h.th,
-					to_inet_sock(to_sock(tcp_sk))->dst_in.sin_port,
-					to_inet_sock(to_sock(tcp_sk))->src_in.sin_port,
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+			tcp_build(skb->h.th, tcp_sock_dst_port(tcp_sk),
+					tcp_sock_src_port(tcp_sk), TCP_MIN_HEADER_SIZE,
+					tcp_sk->self.wind);
 			memcpy(skb->h.th + 1, buff, bytes);
 			buff += bytes;
 			len -= bytes;

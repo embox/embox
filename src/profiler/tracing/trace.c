@@ -31,7 +31,7 @@ void __tracepoint_handle(struct __trace_point *tp) {
 void trace_block_enter(struct __trace_block *tb) {
 	if (tb->active) {
 		//timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
-		itimer_init(tb->tc, clock_source_get_best(CS_ANY), 0);
+		itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
 		__tracepoint_handle(tb->begin);
 	}
 }

@@ -146,7 +146,7 @@ static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *excep
 
 	/* process exception conditions */
 	if (exceptfd != NULL) {
-		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, 1, update);
+		res = filter_out_with_op(nfds, exceptfd, IO_SYNC_READING, 1, update);
 		if (res < 0) {
 			return -EBADF;
 		} else {

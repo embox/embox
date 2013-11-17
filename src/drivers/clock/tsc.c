@@ -14,12 +14,13 @@
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
+#include <hal/system.h>
+
+#include <kernel/printk.h>
 
 #include <embox/unit.h>
 
 static int tsc_init(void);
-
-static unsigned int cpu_hz;
 
 /* Read Time Stamp Counter Register */
 static inline unsigned long long rdtsc(void) {
@@ -45,8 +46,8 @@ static int tsc_init(void) {
 	t1 = rdtsc();
 	sleep(1);
 	t2 = rdtsc();
-	cpu_hz = t2 - t1;
-	tsc.resolution = cpu_hz;
+	tsc.resolution = t2 - t1;
+	/*printk("CPU frequency: %llu\n", t2 - t1);*/
 	clock_source_register(&tsc_clock_source);
 	return ENOERR;
 }

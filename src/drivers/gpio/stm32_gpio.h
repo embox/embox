@@ -36,8 +36,4 @@ struct gpio {
 #define GPIO_E ((struct gpio *) (GPIO_PORT_BASE + 4 * GPIO_PORT_SIZE))
 
 
-#define GPIO_MODE_OUT_PUSH_PULL (1 << 31)
-#define GPIO_MODE_OUT_OPEN_DRAIN (1 << 30)
-#define GPIO_MODE_OUT_ALTERNATE (1 << 29)
-
 #endif /* STM32_GPIO_H_ */

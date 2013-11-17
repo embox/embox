@@ -24,7 +24,7 @@ struct usb_hid_indev {
 
 POOL_DEF(usb_hid_indevs, struct usb_hid_indev, USB_HID_MAX_DEVS);
 
-static void usb_hid_notify(struct usb_request *req);
+static void usb_hid_notify(struct usb_request *req, void *arg);
 
 static int usb_hid_event_get(struct input_dev *dev, struct input_event *ev) {
 	struct usb_hid_indev *hindev;
@@ -57,7 +57,7 @@ static void usb_hid_intr_request(struct usb_hid_indev *hindev) {
 			intr_endp->max_packet_size);
 }
 
-static void usb_hid_notify(struct usb_request *req) {
+static void usb_hid_notify(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_hid *hid = usb2hiddata(dev);
 	struct usb_hid_indev *hindev;

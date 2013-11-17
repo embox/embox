@@ -241,6 +241,13 @@ static int hd_identify(hd_t *hd) {
 	insw(hd->hdc->iobase + HDC_DATA,
 			(char *) &(hd->param), SECTOR_SIZE / 2);
 
+	/* XXX this was added when ide drive with reported block size equals 64
+ 	 * However, block dev tries to use this and fails */
+	static_assert(SECTOR_SIZE == 512);
+	if (hd->param.unfbytes < SECTOR_SIZE) {
+		hd->param.unfbytes = SECTOR_SIZE;
+	}
+
 	/* Fill in drive parameters */
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;

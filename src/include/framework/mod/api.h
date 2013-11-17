@@ -11,7 +11,11 @@
 
 #include <stdbool.h>
 
-#include __impl_x(framework/mod/api_impl.h)
+#include <util/array.h>
+
+#include "types.h"
+
+ARRAY_SPREAD_DECLARE(const struct mod *, __mod_registry);
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.
@@ -135,6 +139,15 @@ extern int mod_activate_app(const struct mod *mod);
  * @return
  *   Found module, if any, NULL otherwise.
  */
+extern bool mod_label_check(const struct mod *mod, const struct mod_label *label);
+
+/**
+ * Search for a module with a given FQN (fully.qualified.name)
+ * @param fqn
+ *   Module name, including packages.
+ * @return
+ *   Found module, if any, NULL otherwise.
+ */
 extern const struct mod *mod_lookup(const char *fqn);
 
 /**
@@ -145,7 +158,7 @@ extern const struct mod *mod_lookup(const char *fqn);
  *   Iteration variable which takes a value of each mod.
  */
 #define mod_foreach(mod) \
-	  __mod_foreach(mod)
+	array_spread_nullterm_foreach(mod, __mod_registry)
 
 /**
  * Iterates over a list of mods on which the specified one depends.
@@ -157,7 +170,7 @@ extern const struct mod *mod_lookup(const char *fqn);
  *   The target mod.
  */
 #define mod_foreach_requires(dep, mod) \
-	  __mod_foreach_requires(dep, mod)
+	array_spread_nullterm_foreach(dep, (mod)->requires)
 
 /**
  * Iterates over a list of mods which depend on the specified one.
@@ -169,6 +182,6 @@ extern const struct mod *mod_lookup(const char *fqn);
  *   The target mod.
  */
 #define mod_foreach_provides(dep, mod) \
-	  __mod_foreach_provides(dep, mod)
+	array_spread_nullterm_foreach(dep, (mod)->provides)
 
 #endif /* FRAMEWORK_MOD_API_H_ */

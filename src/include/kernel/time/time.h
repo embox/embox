@@ -31,7 +31,8 @@ typedef uint64_t cycle_t;
  * This two approaches are equal, but int64_t is faster for arithmetic
  * operations. So, we use second.
  * We use signed integer to simplify subtraction.
- * This types can store about 584 years in nanoseconds.
+ * This types can store about 584 years in nanoseconds
+ * (assuming CPU frequency is about 1 GHz).
  */
 typedef int64_t time64_t;
 

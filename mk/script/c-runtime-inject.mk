@@ -82,6 +82,11 @@ $(info /* Runlevel modules. */)
 $(foreach n,$(addprefix generic.runlevel,0 1 2 3),$(info $(mod_def)))
 $(info )
 
+$(info /* Security labels. */)
+$(foreach m,$(modules),$(foreach n,$(basename $m), \
+	$(info MOD_LABEL_DEF($(call fqn2id,$n));)))
+$(info )
+
 $(info /* Applications. */)
 $(foreach m,$(app_modules),$(foreach n,$(basename $m), \
 	$(info MOD_APP_DEF($(call fqn2id,$n));)))

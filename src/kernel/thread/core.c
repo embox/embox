@@ -90,6 +90,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -124,8 +125,9 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			if (-ENOMEM == thread_register(task_self(), t)) {
-				t = err_ptr(ENOMEM);
+			ret = thread_register(task_self(), t);
+			if (ret != 0) {
+				t = err_ptr(-ret);
 				goto out;
 			}
 		}

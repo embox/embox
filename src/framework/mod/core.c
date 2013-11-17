@@ -15,8 +15,7 @@
 #include <util/array.h>
 #include <framework/mod/api.h>
 #include <framework/mod/ops.h>
-#include <framework/mod/member/ops.h>
-#include "types.h"
+#include <framework/mod/types.h>
 
 #define MOD_FLAG_ENABLED       (1 << 0)
 
@@ -261,6 +260,15 @@ int mod_activate_app(const struct mod *mod) {
 	}
 
 	return 0;
+}
+
+bool mod_label_check(const struct mod *mod, const struct mod_label *label) {
+	assert(mod && label);
+
+	if (!mod->label)
+		return true;
+
+	return !memcmp(mod->label, label, sizeof(*label));
 }
 
 const struct mod *mod_lookup(const char *fqn) {

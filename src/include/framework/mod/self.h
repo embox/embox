@@ -22,7 +22,17 @@
 #include <framework/mod/ops.h>
 #include <framework/mod/options.h>
 
-#include __impl_x(framework/mod/self_impl.h)
+#include <util/array.h>
+
+#include "decls.h"
+
+#ifndef __EMBUILD_MOD__
+# error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
+#endif /* __EMBUILD_MOD__ */
+
+// well, this is rather bad idea
+// TODO it would be better to use something like weakref or alias. -- Eldar
+#define mod_self __MOD(__EMBUILD_MOD__)
 
 /** The #mod structure corresponding to the self mod. */
 extern const struct mod mod_self;
@@ -36,6 +46,45 @@ extern const struct mod mod_self;
  *   Pointer to the module specific data (if any).
  */
 #define MOD_INFO_BIND(mod_ops, mod_data) \
-	  __MOD_INFO_BIND(mod_ops, mod_data)
+	__MOD_INFO_DEF(__EMBUILD_MOD__, mod_ops, mod_data)
+
+#ifndef __cplusplus
+#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
+	const struct mod_info __MOD_INFO(mod_nm) = { \
+		.mod = &__MOD(mod_nm),                   \
+		.ops = _ops,                             \
+		.data = (void *) _data,                  \
+	}
+#else
+#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
+	const struct mod_info __MOD_INFO(mod_nm) = { \
+		&__MOD(mod_nm),                   \
+		_ops,                             \
+		(void *) _data,                   \
+	}
+#endif
+
+/**
+ * Binds the specified data and operations to the mod member.
+ *
+ * @param member_ops
+ *   Pointer to the #mod_member_ops structure (if any).
+ * @param member_data
+ *   Pointer to the member specific data (if any).
+ */
+#define MOD_MEMBER_BIND(member_ops, member_data) \
+	__MOD_MEMBER_DEF(__EMBUILD_MOD__, member_ops, member_data)
+
+#define __MOD_MEMBER_DEF(mod_nm, ops, data) \
+	__MOD_MEMBER_DEF_NM(mod_nm, ops, data, \
+			MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
+
+#define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
+	static const struct mod_member member_nm = {             \
+		.ops = _ops,                                     \
+		.data = (void *) _data,                          \
+	};                                                       \
+	extern const struct mod_member *__MOD_MEMBERS(mod_nm)[]; \
+	ARRAY_SPREAD_ADD(__MOD_MEMBERS(mod_nm), &member_nm)
 
 #endif /* FRAMEWORK_MOD_SELF_H_ */

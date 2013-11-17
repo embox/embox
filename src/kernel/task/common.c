@@ -13,6 +13,8 @@
 #include <util/dlist.h>
 
 #include <kernel/task.h>
+#include <util/binalign.h>
+#include <stdint.h>
 
 
 #include "common.h"
@@ -45,12 +47,17 @@ size_t task_size(void) {
 
 
 struct task *task_init(void *task_n_res_space, size_t size) {
-	struct task *task = (struct task *) task_n_res_space;
-	void *res_ptr = task_n_res_space + sizeof(struct task);
+	struct task *task;
+	void *res_ptr;
 	const struct task_resource_desc *res_desc;
-	size_t task_sz = task_size();
+	size_t task_off, task_sz;
 
-	if (size < task_sz) {
+	task = (struct task *)binalign_bound((uintptr_t)task_n_res_space, 4);
+	task_off = (void *)task - task_n_res_space;
+	task_sz = task_size();
+	res_ptr = (void *)task + sizeof(struct task);
+
+	if (size < task_off + task_sz) {
 		return NULL;
 	}
 

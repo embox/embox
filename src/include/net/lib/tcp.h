@@ -45,7 +45,7 @@ extern void tcp4_set_check_field(struct tcphdr *tcph,
 extern void tcp6_set_check_field(struct tcphdr *tcph,
 		const struct ip6hdr *ip6h);
 extern void tcp_set_check_field(struct tcphdr *tcph,
-		const void *nh);
+		const void *nhhdr);
 
 /**
  * Calculate TCP data length
@@ -55,7 +55,7 @@ extern size_t tcp4_data_length(const struct tcphdr *tcph,
 extern size_t tcp6_data_length(const struct tcphdr *tcph,
 		const struct ip6hdr *ip6h);
 extern size_t tcp_data_length(const struct tcphdr *tcph,
-		const void *nh);
+		const void *nhhdr);
 
 /**
  * Calculate TCP sequance length
@@ -65,6 +65,6 @@ extern size_t tcp4_seq_length(const struct tcphdr *tcph,
 extern size_t tcp6_seq_length(const struct tcphdr *tcph,
 		const struct ip6hdr *ip6h);
 extern size_t tcp_seq_length(const struct tcphdr *tcph,
-		const void *nh);
+		const void *nhhdr);
 
 #endif /* NET_LIB_TCP_H_ */

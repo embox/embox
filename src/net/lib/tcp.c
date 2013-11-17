@@ -8,7 +8,6 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <net/l3/ipv4/ip.h>
 #include <net/l4/tcp.h>
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
@@ -71,18 +70,13 @@ void tcp6_set_check_field(struct tcphdr *tcph,
 }
 
 void tcp_set_check_field(struct tcphdr *tcph,
-		const void *nh) {
-	const struct iphdr *iph;
-
-	iph = (const struct iphdr *)nh;
-	assert(iph != NULL);
-
-	if (iph->version == 4) {
-		tcp4_set_check_field(tcph, iph);
+		const void *nhhdr) {
+	if (ip_check_version((const struct iphdr *)nhhdr)) {
+		tcp4_set_check_field(tcph, (const struct iphdr *)nhhdr);
 	}
 	else {
-		assert(iph->version == 6);
-		tcp6_set_check_field(tcph, (const struct ip6hdr *)nh);
+		assert(ip6_check_version((const struct ip6hdr *)nhhdr));
+		tcp6_set_check_field(tcph, (const struct ip6hdr *)nhhdr);
 	}
 }
 
@@ -103,19 +97,14 @@ size_t tcp6_data_length(const struct tcphdr *tcph,
 }
 
 size_t tcp_data_length(const struct tcphdr *tcph,
-		const void *nh) {
-	const struct iphdr *iph;
-
-	iph = (const struct iphdr *)nh;
-	assert(iph != NULL);
-
-	if (iph->version == 4) {
-		return tcp4_data_length(tcph, iph);
+		const void *nhhdr) {
+	if (ip_check_version((const struct iphdr *)nhhdr)) {
+		return tcp4_data_length(tcph,
+				(const struct iphdr *)nhhdr);
 	}
-	else {
-		assert(iph->version == 6);
-		return tcp6_data_length(tcph, (const struct ip6hdr *)nh);
-	}
+
+	assert(ip6_check_version((const struct ip6hdr *)nhhdr));
+	return tcp6_data_length(tcph, (const struct ip6hdr *)nhhdr);
 }
 
 size_t tcp4_seq_length(const struct tcphdr *tcph,
@@ -133,8 +122,8 @@ size_t tcp6_seq_length(const struct tcphdr *tcph,
 }
 
 size_t tcp_seq_length(const struct tcphdr *tcph,
-		const void *nh) {
+		const void *nhhdr) {
 	assert(tcph != NULL);
 
-	return tcp_data_length(tcph, nh) + (tcph->syn | tcph->fin);
+	return tcp_data_length(tcph, nhhdr) + (tcph->syn | tcph->fin);
 }

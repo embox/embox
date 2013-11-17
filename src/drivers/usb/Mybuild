@@ -6,6 +6,9 @@ module core {
 	source "usb_core.c"
 	source "usb_obj.c"
 	source "usb_class.c"
+	source "usb_driver.c"
+
+	source "usb_dev_desc.c"
 }
 
 module class_hid {
@@ -14,6 +17,12 @@ module class_hid {
 
 	depends core
 	depends embox.driver.input.core
+}
+
+module driver_example {
+	source "usb_driver_example.c"
+
+	depends core
 }
 
 module ohci_pci {
