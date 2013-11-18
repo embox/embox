@@ -47,7 +47,7 @@ static void sched_switch(void);
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
 //TODO these variable for scheduler (may be create object scheduler?)
-struct runq rq;
+static struct runq rq;
 static int switch_posted;
 
 
