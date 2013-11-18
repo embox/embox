@@ -43,28 +43,6 @@ EMBOX_UNIT_INIT(thread_core_init);
 static int id_counter; // TODO make it an indexator
 
 
-static void thread_delete(struct thread *t) {
-	static struct thread *zombie = NULL;
-
-	assert(t);
-	assert(__THREAD_STATE_IS_EXITED(t->state));
-
-	task_remove_thread(t->task, t);
-
-	if (zombie) {
-		thread_free(zombie);
-	}
-
-	if (t == thread_self()) {
-		zombie = t;
-		return;
-	}
-
-	thread_free(t);
-	zombie = NULL;
-}
-
-
 /**
  * Wrapper for thread start routine.
  * Called from sched_switch() function with interrupts off.
@@ -205,6 +183,27 @@ void thread_init(struct thread *t, unsigned int flags,
 	sched_strategy_init(t);
 
 	t->wait_link = NULL;
+}
+
+static void thread_delete(struct thread *t) {
+	static struct thread *zombie = NULL;
+
+	assert(t);
+	assert(__THREAD_STATE_IS_EXITED(t->state));
+
+	task_remove_thread(t->task, t);
+
+	if (zombie) {
+		thread_free(zombie);
+	}
+
+	if (t == thread_self()) {
+		zombie = t;
+		return;
+	}
+
+	thread_free(t);
+	zombie = NULL;
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
