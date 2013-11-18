@@ -62,7 +62,7 @@ static inline int in_sched_locked(void) {
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
-	runq_queue_init(&rq.queue);
+	runq_init(&rq.queue);
 
 	sched_wake(idle);
 
@@ -84,7 +84,7 @@ void sched_wake(struct thread *t) {
 	{
 		t->state |= __THREAD_STATE_READY;
 		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
-		runq_queue_insert(&rq.queue, t);
+		runq_insert(&rq.queue, t);
 
 		if (thread_priority_get(t) > thread_priority_get(current)) {
 			sched_post_switch();
@@ -105,7 +105,7 @@ void sched_finish(struct thread *t) {
 			t->state = __THREAD_STATE_DO_EXITED(t->state);
 
 			if (t != thread_self()) {
-				runq_queue_remove(&rq.queue, t);
+				runq_remove(&rq.queue, t);
 			} else {
 				sched_post_switch();
 			}
@@ -144,8 +144,8 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 		thread_priority_set(t, prior);
 
 		if (t->state & __THREAD_STATE_READY) {
-			runq_queue_remove(&rq.queue, t);
-			runq_queue_insert(&rq.queue, t);
+			runq_remove(&rq.queue, t);
+			runq_insert(&rq.queue, t);
 
 			if (prior > thread_priority_get(current)) {
 				sched_post_switch();
@@ -182,10 +182,10 @@ static void sched_switch(void) {
 		if (prev->state & __THREAD_STATE_RUNNING) {
 			prev->state |= __THREAD_STATE_READY;
 			prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
-			runq_queue_insert(&rq.queue, prev);
+			runq_insert(&rq.queue, prev);
 		}
 
-		next = runq_queue_extract(&rq.queue);
+		next = runq_extract(&rq.queue);
 
 		assert(next != NULL);
 		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));

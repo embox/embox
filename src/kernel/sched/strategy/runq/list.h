@@ -14,6 +14,6 @@
 
 typedef struct dlist_head runq_item_t;
 
-typedef struct dlist_head runq_queue_t;
+typedef struct dlist_head runq_t;
 
 #endif /* KERNEL_THREAD_QUEUE_LIST_H_ */
