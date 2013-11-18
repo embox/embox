@@ -99,25 +99,20 @@ void sched_finish(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!__THREAD_STATE_IS_EXITED(t->state));
-
-		if (t->state & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING)) {
-			t->state = __THREAD_STATE_DO_EXITED(t->state);
-
-			if (t != thread_self()) {
-				runq_remove(&rq.queue, t);
-			} else {
-				sched_post_switch();
-			}
-		} else {
-			if (t->state & __THREAD_STATE_WAITING) {
-				waitq_remove(t->wait_link);
-			}
-
-			t->state = __THREAD_STATE_DO_EXITED(t->state);
+		if (t->state & __THREAD_STATE_RUNNING) {
+			assert(t == thread_self(), "XXX SMP NIY");
+			sched_post_switch();
 		}
 
-		assert(__THREAD_STATE_IS_EXITED(t->state));
+		if (t->state & __THREAD_STATE_READY) {
+			runq_remove(&rq.queue, t);
+		}
+
+		if (t->state & __THREAD_STATE_WAITING) {
+			waitq_remove(t->wait_link);
+		}
+
+		t->state = __THREAD_STATE_DO_EXITED(t->state);
 	}
 	sched_unlock();
 }

@@ -223,8 +223,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_lock();
 	{
-		/* Finish scheduling of the thread */
-		sched_finish(current);
+		current->state &= ~__THREAD_STATE_RUNNING;
 
 		/* Wake up a joining thread (if any).
 		 * Note that join_wq and run_ret are both in a union. */
@@ -237,6 +236,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		if (current->state & __THREAD_STATE_DETACHED)
 			/* No one references this thread anymore. Time to delete it. */
 			thread_delete(current);
+
+		sched_post_switch();
 	}
 	sched_unlock();
 
@@ -326,10 +327,7 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		if (!__THREAD_STATE_IS_EXITED(t->state)) {
-			sched_finish(t);
-		}
-
+		sched_finish(t);
 		thread_delete(t);
 	}
 	sched_unlock();
