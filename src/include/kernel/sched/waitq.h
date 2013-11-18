@@ -46,7 +46,7 @@ static inline int waitq_empty(struct waitq *waitq) {
 extern void waitq_remove(struct wait_link *wait_link);
 
 /**
- * Wait notifying with sched locking
+ * Waiting with sched locking, doesn't need any preparations.
  * @param waitq
  *   queue with waiting threads
  * @param timeout
@@ -56,7 +56,7 @@ extern void waitq_remove(struct wait_link *wait_link);
  */
 extern int waitq_wait(struct waitq *waitq, int timeout);
 /**
- * Wait notifying without sched locking
+ * Waiting without sched locking, doesn't need any preparations.
  * @param waitq
  *   queue with waiting threads
  * @param timeout
@@ -88,9 +88,36 @@ extern void waitq_notify(struct waitq *waitq);
  */
 extern void waitq_notify_all_err(struct waitq *waitq, int error);
 
+
+/* You should use function with __waitq prefix if race condition is possible by
+ * using waitq_* functions*/
+/**
+ * Preparing to wait. Adds wait_link to waitq, puts waiting flag to thread state
+ * @param waitq
+ *   queue with threads to notify
+ * @param wait_link
+ *   wait_link to remove
+ */
 extern void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link);
+/**
+ * Cleanup thread->wait_link, must be used after each waiting
+ */
 extern void __waitq_cleanup(void);
+/**
+ * Waiting with sched locking, needs preparations by __waitq_prepare.
+ * @param timeout
+ *   timeout for interrupt waiting
+ * @return
+ *   waiting result
+ */
 extern int __waitq_wait(int timeout);
+/**
+ * Waiting without sched locking, needs preparations by __waitq_prepare.
+ * @param timeout
+ *   timeout for interrupt waiting
+ * @return
+ *   waiting result
+ */
 extern int __waitq_wait_locked(int timeout);
 
 static inline void waitq_notify_all(struct waitq *waitq) {

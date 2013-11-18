@@ -143,7 +143,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		thread_priority_set(t, prior);
 
-		/* if in runq */
 		if (t->state & __THREAD_STATE_READY) {
 			runq_queue_remove(&rq.queue, t);
 			runq_queue_insert(&rq.queue, t);
