@@ -20,7 +20,7 @@ if ! echo $TESTABLES | grep $ATML &>/dev/null; then
 	exit 0
 fi
 
-TIMEOUT=30
+TIMEOUT=45
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
