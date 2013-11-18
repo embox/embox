@@ -62,11 +62,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	}
 
 	ret = manual_event_wait(&wait_on, ticks);
-	if (ret == -ETIMEDOUT) {
-		fd_cnt = 0;
-		goto out;
-	}
-	else if (ret != 0) {
+	if (ret != 0 && ret != -ETIMEDOUT) {
 		SET_ERRNO(-ret);
 		fd_cnt = -1;
 		goto out;
