@@ -18,8 +18,9 @@
 
 
 off_t lseek(int fd, off_t offset, int origin) {
-	const struct task_idx_ops *ops;
 #ifndef IDESC_TABLE_USE
+	const struct task_idx_ops *ops;
+
 	struct idx_desc *desc;
 
 	assert(task_self_idx_table());
@@ -39,7 +40,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 	desc = idesc_common_get(fd);
 	assert(desc);
 
-	ops = desc->idesc_ops;
+	//ops = desc->idesc_ops;
 	return 0;//ops->fseek(idesc, offset, origin);
 #endif
 

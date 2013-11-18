@@ -16,8 +16,9 @@
 #include <fs/idesc.h>
 
 int ftruncate(int fd, off_t length) {
-	const struct task_idx_ops *ops;
 #ifndef IDESC_TABLE_USE
+	const struct task_idx_ops *ops;
+
 	struct idx_desc *desc;
 
 	assert(task_self_idx_table());
@@ -43,7 +44,7 @@ int ftruncate(int fd, off_t length) {
 	desc = idesc_common_get(fd);
 	assert(desc);
 
-	ops = desc->idesc_ops;
+//	ops = desc->idesc_ops;
 
 	return 0;// return ops->ftruncate(desc, length);
 #endif

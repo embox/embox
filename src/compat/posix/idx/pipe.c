@@ -36,25 +36,6 @@
 /* Set size of pipe's buffer. */
 //static void pipe_set_buf_size(struct pipe *pipe, size_t size);
 
-static inline void writing_enable(struct pipe *pipe) {
-	if (pipe->writing_end)
-		io_sync_enable(pipe->writing_end->ios, IO_SYNC_WRITING);
-}
-
-static inline void reading_enable(struct pipe *pipe) {
-	if (pipe->reading_end)
-		io_sync_enable(pipe->reading_end->ios, IO_SYNC_READING);
-}
-
-static inline void writing_disable(struct pipe *pipe) {
-	if (pipe->writing_end)
-		io_sync_disable(pipe->writing_end->ios, IO_SYNC_WRITING);
-}
-
-static inline void reading_disable(struct pipe *pipe) {
-	if (pipe->reading_end)
-		io_sync_disable(pipe->reading_end->ios, IO_SYNC_READING);
-}
 
 
 int pipe(int pipefd[2]) {
@@ -78,6 +59,7 @@ int pipe(int pipefd[2]) {
 	ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 	io_sync_init(&pipe->ios_read, 0, 0);
 	io_sync_init(&pipe->ios_write, 0, 0);
+
 #if 0
 	pipefd[1] = task_self_idx_alloc(&write_ops, pipe,
 			&pipe->ios_write);

@@ -56,6 +56,7 @@
 struct tty_ops;
 
 struct tty {
+	//struct idecs idesc;
 	const struct tty_ops *ops;
 
 	struct termios    termios;
@@ -74,7 +75,7 @@ struct tty {
 	struct event      o_event;
 	struct ring       o_ring;
 	char              o_buff[TTY_IO_BUFF_SZ];
-	pid_t			  pgrp; /* process group (TODO: lonely process now) */
+	pid_t             pgrp; /* process group (TODO: lonely process now) */
 
 	//TODO this must be in file
 	uint32_t file_flags;

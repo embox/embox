@@ -21,6 +21,8 @@
 #include <kernel/task/idx.h>
 #include <fs/pipe.h>
 
+#include <kernel/task/idesc_table.h>
+
 
 static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
 	void *storage;
@@ -42,7 +44,8 @@ static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
 
 static int inject_ops(int fd, const struct task_idx_ops *ops, const struct termios *tio,
 		const struct task_idx_ops **backup) {
-	struct idx_desc *idx_desc = task_self_idx_get(fd);
+#ifndef IDESC_TABLE_USE
+	struct idesc *idx_desc = task_self_idx_get(fd);
 	struct pipe *pipe = (struct pipe*) task_idx_desc_data(idx_desc);
 
 	if (!idx_desc) {
@@ -54,6 +57,10 @@ static int inject_ops(int fd, const struct task_idx_ops *ops, const struct termi
 	}
 
 	task_idx_indata(idx_desc)->res_ops = ops;
+#else
+	//struct idesc *idesc = idesc_common_get(fd);
+	struct pipe *pipe = NULL;
+#endif
 
 	if (tio) {
 		memcpy(&pipe->tio, tio, sizeof(struct termios));
@@ -67,11 +74,11 @@ static int inject_ops(int fd, const struct task_idx_ops *ops, const struct termi
 
 
 
-static int pipe_pty_ioctl(struct idx_desc *desc, int request, void *data) {
+static int pipe_pty_ioctl(struct idesc *desc, int request, void *data) {
 	struct pipe *pipe;
 	size_t size;
 
-	pipe = (struct pipe*) task_idx_desc_data(data);
+	pipe = NULL;//(struct pipe*) task_idx_desc_data(data);
 
 	switch (request) {
 	case F_GETPIPE_SZ:
@@ -88,7 +95,7 @@ static int pipe_pty_ioctl(struct idx_desc *desc, int request, void *data) {
 	return 0;
 }
 
-static int pipe_pty_fstat(struct idx_desc *data, void *buff) {
+static int pipe_pty_fstat(struct idesc *data, void *buff) {
 	struct stat *st = buff;
 
 	st->st_mode = S_IFCHR;
@@ -96,11 +103,12 @@ static int pipe_pty_fstat(struct idx_desc *data, void *buff) {
 	return 0;
 
 }
+extern int pipe_write(struct idesc *data, const void *buf, size_t nbyte);
 
-static int pipe_pty_write(struct idx_desc *desc, const void *buf, size_t nbyte) {
+static int pipe_pty_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	char tbuf[4];
 	struct ring r;
-	struct pipe *pipe = (struct pipe*) task_idx_desc_data(desc);
+	struct pipe *pipe = NULL;//(struct pipe*) task_idx_desc_data(desc);
 	const char *c = buf;
 	int i;
 
@@ -122,6 +130,8 @@ static int pipe_pty_write(struct idx_desc *desc, const void *buf, size_t nbyte) 
 
 	return nbyte;
 }
+extern int pipe_close(struct idesc *desc);
+extern int pipe_read(struct idesc *data, void *buf, size_t nbyte);
 
 static const struct task_idx_ops pipe_pty_ops = {
 		.write = pipe_pty_write,
