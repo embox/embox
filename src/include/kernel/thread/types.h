@@ -21,6 +21,21 @@
 
 #include <util/dlist.h>
 
+#define __THREAD_STATE_READY     (0x1 << 0) /* present in runq */
+#define __THREAD_STATE_WAITING   (0x1 << 1) /* waiting for an event */
+#define __THREAD_STATE_RUNNING   (0x1 << 2) /* executing on CPU now */
+
+/* Resource mgmt flags. */
+#define __THREAD_STATE_DETACHED  (0x1 << 4)
+
+/* zombie */
+#define __THREAD_STATE_DO_EXITED(state)                        \
+	state & ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING |  \
+			__THREAD_STATE_RUNNING)
+#define __THREAD_STATE_IS_EXITED(state)                        \
+	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
+			__THREAD_STATE_RUNNING))
+
 typedef int __thread_id_t;
 
 struct task;
