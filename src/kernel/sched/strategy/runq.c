@@ -15,7 +15,6 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/state.h>
 
 #include <kernel/task.h>
 

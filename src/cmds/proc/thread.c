@@ -42,7 +42,7 @@ static void print_stat(void) {
 	{
 		task_foreach(task) {
 			task_foreach_thread(thread, task) {
-				thread_state_t s = thread->state;
+				unsigned int s = thread->state;
 				const char *state = NULL;
 				sched_priority_t prior;
 

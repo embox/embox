@@ -22,6 +22,4 @@
 	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
 			__THREAD_STATE_RUNNING))
 
-typedef unsigned int thread_state_t;
-
 #endif /* KERNEL_THREAD_STATE_H_ */

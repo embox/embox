@@ -14,7 +14,6 @@
 
 #include <kernel/thread/state.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
@@ -27,7 +26,7 @@ typedef int __thread_id_t;
 struct task;
 
 struct thread {
-	thread_state_t     state;          /**< Current state. */
+	unsigned int       state;          /**< Current state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
