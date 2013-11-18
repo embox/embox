@@ -90,10 +90,8 @@ static void waitq_insert(struct waitq *waitq,
 void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 	struct thread *current = thread_get_current();
 
-	assert(!current->wait_link);
-	assert(current->state & (__THREAD_STATE_RUNNING));
+	assert(current->state & __THREAD_STATE_RUNNING);
 
-	/* TODO check it but should work */
 	current->state |= __THREAD_STATE_WAITING;
 	current->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_RUNNING);
 
@@ -105,7 +103,22 @@ void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 }
 
 void __waitq_cleanup(void) {
-	thread_get_current()->wait_link = 0;
+	struct thread *current = thread_get_current();
+
+	/* if sched_switch wasn't called after preparing it's necessary to set
+	 * running state */
+	sched_lock();
+	{
+		if (current->state & __THREAD_STATE_WAITING) {
+			current->state |= __THREAD_STATE_RUNNING;
+			current->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
+
+			waitq_remove(current->wait_link);
+		}
+	}
+	sched_unlock();
+
+	current->wait_link = 0;
 }
 
 int waitq_wait(struct waitq *waitq, int timeout) {
@@ -152,9 +165,7 @@ void waitq_thread_notify(struct thread *thread, int result) {
 	irq_lock();
 	{
 		thread->wait_link->result = result;
-
 		sched_wake(thread);
-
 		waitq_remove(thread->wait_link);
 	}
 	irq_unlock();
