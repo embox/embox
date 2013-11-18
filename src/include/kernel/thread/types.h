@@ -14,14 +14,13 @@
 
 #include <kernel/thread/state.h>
 #include <kernel/sched/sched_strategy.h>
+#include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_cancel.h>
 #include <kernel/sched/waitq.h>
 
 #include <util/dlist.h>
-
 
 typedef int __thread_id_t;
 
@@ -33,10 +32,10 @@ struct thread {
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
 	void            *(*run)(void *); /**< Start routine. */
+	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
-		void          *run_arg;      /**< Argument to pass to start routine. */
 		void          *run_ret;      /**< Return value of the routine. */
-		void          *join_ret;     /**< Exit value of a join target. */
+		void          *join_wq;      /**< A queue of joining threads. */
 	} /* unnamed */;
 
 	thread_stack_t     stack;        /**< Handler for work with thread stack */
@@ -46,16 +45,11 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct thread_res_state resinfo;   /**< Resources state info*/
-
-	struct wait_link   *wait_link;    /**< Hold data in waiting mode */
-
+	struct wait_link   *wait_link;   /**< Hold data in waiting mode */
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
-
 	int                policy;       /**< Scheduling policy*/
 
 	thread_local_t     local;
-
 	thread_cancel_t    cleanups;
 };
 
