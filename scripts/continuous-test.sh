@@ -11,7 +11,7 @@
 ATML="$1"
 ARCH=$(echo $ATML | cut -d \/ -f 1)
 
-TESTABLES="x86/nonvga_debug mips/debug ppc/debug microblaze/petalogix \
+TESTABLES="x86/nonvga_debug x86/smp mips/debug ppc/debug microblaze/petalogix \
 	sparc/debug"
 #"sparc/qemu" not supported due qemu bug
 
@@ -33,6 +33,7 @@ declare -A atml2sim
 QEMU_COMMON="-kernel $EMKERNEL -serial file:${OUTPUT_FILE} -display none"
 
 atml2sim['x86/nonvga_debug']="qemu-system-i386 -m 512 -no-kvm $QEMU_COMMON"
+atml2sim['x86/smp']="qemu-system-i386 -m 512 -no-kvm -smp 2 $QEMU_COMMON"
 
 atml2sim['mips/debug']="qemu-system-mips -M mipssim $QEMU_COMMON"
 
