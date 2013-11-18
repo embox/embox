@@ -197,13 +197,12 @@ static void thread_delete(struct thread *t) {
 		thread_free(zombie);
 	}
 
-	if (t == thread_self()) {
+	if (t != thread_self()) {
+		thread_free(t);
+		zombie = NULL;
+	} else {
 		zombie = t;
-		return;
 	}
-
-	thread_free(t);
-	zombie = NULL;
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
