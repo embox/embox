@@ -22,7 +22,7 @@ static struct gpio omap_gpio[GPIO_MODULE_CNT];
 
 struct gpio *gpio_by_num(int num_port) {
 
-	return &omap_gpio[num_port];
+	return &omap_gpio[num_port - 1];
 }
 
 static pin_mask_t gpio_get_pin_changed(struct gpio *gpio) {
