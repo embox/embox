@@ -47,8 +47,8 @@ extern void sched_ticker_fini(struct runq*);
 extern void sched_sleep(void);
 
 /**
- * Makes active or waking thread and adds thread to the queue of ready to executing
- * threads.
+ * Makes active or waking thread and adds thread to the queue of ready to
+ * executing threads.
  *
  * @param thread
  *   Thread which will be added.
