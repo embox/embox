@@ -102,7 +102,7 @@ int open(const char *path, int __oflag, ...) {
 #else
 
 	it = idesc_table_get_table(task_self());
-	idesc_table_add(it, (struct idesc *)kfile, 0);
+	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
 #endif
 
 out:

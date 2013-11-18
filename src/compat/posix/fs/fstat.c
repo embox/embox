@@ -17,8 +17,9 @@
 
 int fstat(int fd, struct stat *buff) {
 	const struct task_idx_ops *ops;
-	int rc;
+
 #ifndef IDESC_TABLE_USE
+	int rc;
 	struct idx_desc *desc;
 
 
@@ -32,20 +33,22 @@ int fstat(int fd, struct stat *buff) {
 	}
 
 	ops = task_idx_desc_ops(desc);
-#else
-	struct idesc *desc;
-	desc = idesc_common_get(fd);
-	assert(desc);
-
-	ops = desc->idesc_ops;
-#endif
 	assert(ops);
 	if(NULL != ops->fstat) {
-		//rc = ops->fstat(desc, buff);
+		rc = ops->fstat(desc, buff);
 	}
 	else {
 		rc = -1;
 	}
 
 	return rc;
+#else
+	struct idesc *desc;
+	desc = idesc_common_get(fd);
+	assert(desc);
+
+	ops = desc->idesc_ops;
+	return ops->fstat(desc, buff);
+#endif
+
 }

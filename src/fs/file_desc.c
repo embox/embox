@@ -33,6 +33,7 @@ static void file_desc_free(struct file_desc *desc) {
 	objfree(&desc_pool, desc);
 }
 
+extern const struct task_idx_ops task_idx_ops_file;
 
 struct file_desc *file_desc_create(struct node *node, int flag) {
 	struct file_desc *desc;
@@ -58,6 +59,7 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 		file_desc_free(desc);
 		return err_ptr(EACCES);
 	}
+	desc->idesc.idesc_ops = (struct task_idx_ops *)&task_idx_ops_file;
 
 	return desc;
 }

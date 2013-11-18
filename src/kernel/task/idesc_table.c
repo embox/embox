@@ -12,6 +12,7 @@
 
 #include <fs/idesc.h>
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 #include <kernel/task/idesc_table.h>
 #include <util/indexator.h>
@@ -82,10 +83,10 @@ int idesc_table_del(struct idesc_table *t, int idx) {
 
 	idesc = idesc_table_get_desc(t, idx);
 	assert(idesc);
-	//assert(idesc->idesc_ops && idesc->idesc_ops->close);
+	assert(idesc->idesc_ops && idesc->idesc_ops->close);
 
-	if (!(idesc->idesc_count--)) {
-		//idesc->idesc_ops->close(idesc);
+	if (!(--idesc->idesc_count)) {
+		idesc->idesc_ops->close(idesc);
 	}
 
 	index_free(&t->indexator, idx);
