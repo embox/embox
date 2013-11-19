@@ -6,6 +6,7 @@
  * @author Alexander Kalmuk
  */
 
+#if 0
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -35,8 +36,6 @@
 
 /* Set size of pipe's buffer. */
 //static void pipe_set_buf_size(struct pipe *pipe, size_t size);
-
-
 
 int pipe(int pipefd[2]) {
 	struct pipe *pipe;
@@ -96,4 +95,5 @@ free_memory:
 	SET_ERRNO(res);
 	return -1;
 }
+#endif
 

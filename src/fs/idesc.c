@@ -4,13 +4,22 @@
  * @date Oct 21, 2013
  * @author: Anton Bondarev
  */
+
 #include <errno.h>
+#include <string.h>
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 
-int idesc_init(struct idesc *idesc, struct idesc_perm *attr) {
-	return -ENOSUPP;
+int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, struct idesc_perm *attr) {
+
+	memset(idesc, 0, sizeof(struct idesc));
+
+	memcpy(&idesc->idesc_perm, attr, sizeof(struct idesc_perm));
+
+	idesc->idesc_ops = ops;
+
+	return 0;
 }
 
 

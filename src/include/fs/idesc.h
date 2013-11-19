@@ -40,7 +40,7 @@ struct idesc {
 #include <sys/cdefs.h>
 __BEGIN_DECLS
 
-extern int idesc_init(struct idesc *idesc, struct idesc_perm *attr);
+extern int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, struct idesc_perm *attr);
 
 extern int idesc_read(struct idesc *idesc, char *buff, int size);
 
