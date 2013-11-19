@@ -165,7 +165,7 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 }
 
 int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode, void *data) {
+		irq_handler_t pin_handler, int mode, void *data) {
 	int pin_nr;
 	assert(gpio);
 
@@ -182,7 +182,7 @@ int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode) {
+		irq_handler_t pin_handler, int mode) {
 	int pin_nr;
 	assert(gpio);
 
