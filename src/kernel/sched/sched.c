@@ -73,6 +73,7 @@ int sched_init(struct thread *idle, struct thread *current) {
 
 void sched_wake(struct thread *t) {
 	struct thread *current = thread_self();
+	ipl_t ipl;
 
 	/* TODO: it's not true when it's called for waking thread from waitq */
 	//assert(!in_harder_critical());
@@ -80,7 +81,7 @@ void sched_wake(struct thread *t) {
 	assert(t);
 	assert(t->state & __THREAD_STATE_WAITING);
 
-	sched_lock();
+	ipl = ipl_save();
 	{
 		t->state |= __THREAD_STATE_READY;
 		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
@@ -90,14 +91,16 @@ void sched_wake(struct thread *t) {
 			sched_post_switch();
 		}
 	}
-	sched_unlock();
+	ipl_restore(ipl);
 }
 
 void sched_finish(struct thread *t) {
+	ipl_t ipl;
+
 	assert(!in_harder_critical());
 	assert(t);
 
-	sched_lock();
+	ipl = ipl_save();
 	{
 		if (t->state & __THREAD_STATE_RUNNING) {
 			assert(t == thread_self(), "XXX SMP NIY");
@@ -114,25 +117,26 @@ void sched_finish(struct thread *t) {
 
 		t->state = __THREAD_STATE_DO_EXITED(t->state);
 	}
-	sched_unlock();
+	ipl_restore(ipl);
 }
 
 void sched_post_switch(void) {
-	sched_lock();
+	ipl_t ipl = ipl_save();
 	{
 		switch_posted = 1;
 		critical_request_dispatch(&sched_critical);
 	}
-	sched_unlock();
+	ipl_restore(ipl);
 }
 
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	struct thread *current = thread_self();
+	ipl_t ipl;
 
 	assert(t);
 	assert((prior >= SCHED_PRIORITY_MIN) && (prior <= SCHED_PRIORITY_MAX));
 
-	sched_lock();
+	ipl = ipl_save();
 	{
 		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
@@ -149,7 +153,7 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		assert(thread_priority_get(t) == prior);
 	}
-	sched_unlock();
+	ipl_restore(ipl);
 
 	return 0;
 }
