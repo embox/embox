@@ -180,7 +180,10 @@ void thread_init(struct thread *t, unsigned int flags,
 	context_set_stack(&t->context,
 			thread_stack_get(t) + thread_stack_get_size(t));
 
-	sched_strategy_init(t);
+	/* Initializes scheduler strategy data of the thread */
+	runq_item_init(&t->sched_attr.runq_link);
+	sched_affinity_init(t);
+	sched_timing_init(t);
 
 	t->wait_link = NULL;
 }
