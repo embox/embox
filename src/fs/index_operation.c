@@ -90,8 +90,10 @@ static int this_stat(struct idesc *idesc, void *buf) {
 	return kfstat((struct file_desc *)idesc, buf);
 }
 
-static int this_ioctl(struct idesc *desc, int request, void *data) {
-	return 0;
+static int this_ioctl(struct idesc *idesc, int request, void *data) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &task_idx_ops_file);
+	return kioctl((struct file_desc *)idesc, request, data);
 }
 
 

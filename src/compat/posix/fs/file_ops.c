@@ -46,11 +46,10 @@ static inline int ioctl_inherite(int fd, int request, void *data) {
 
 	assert(ops);
 
-
 	if (NULL == ops->ioctl) {
 		rc = -1;
 	} else {
-		//rc = ops->ioctl(desc, request, data);
+		rc = ops->ioctl(idesc, request, data);
 	}
 	return rc;
 

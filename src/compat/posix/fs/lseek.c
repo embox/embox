@@ -13,10 +13,11 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
-#include <fs/idesc.h>
+#include <fs/kfile.h>
+#include <fs/file_desc.h>
 
 
-
+extern const struct task_idx_ops task_idx_ops_file;
 off_t lseek(int fd, off_t offset, int origin) {
 #ifndef IDESC_TABLE_USE
 	const struct task_idx_ops *ops;
@@ -36,12 +37,15 @@ off_t lseek(int fd, off_t offset, int origin) {
 	assert(ops->fseek);
 	return ops->fseek(desc, offset, origin);
 #else
-	struct idesc *desc;
-	desc = idesc_common_get(fd);
+	struct file_desc *desc;
+	desc = file_desc_get(fd);
 	assert(desc);
 
-	//ops = desc->idesc_ops;
-	return 0;//ops->fseek(idesc, offset, origin);
+	if (desc->idesc.idesc_ops != &task_idx_ops_file) {
+		return -EBADF;
+	}
+
+	return kseek(desc, offset, origin);
 #endif
 
 }
