@@ -31,7 +31,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
-#include <kernel/thread/state.h>
+#include <kernel/irq_lock.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -71,7 +71,6 @@ int sched_init(struct thread *idle, struct thread *current) {
 
 void sched_wake(struct thread *t) {
 	struct thread *current = thread_self();
-	ipl_t ipl;
 
 	/* TODO: it's not true when it's called for waking thread from waitq */
 	//assert(!in_harder_critical());
@@ -79,7 +78,7 @@ void sched_wake(struct thread *t) {
 	assert(t);
 	assert(t->state & __THREAD_STATE_WAITING);
 
-	ipl = ipl_save();
+	irq_lock();
 	{
 		t->state |= __THREAD_STATE_READY;
 		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
@@ -89,16 +88,14 @@ void sched_wake(struct thread *t) {
 			sched_post_switch();
 		}
 	}
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 void sched_finish(struct thread *t) {
-	ipl_t ipl;
-
 	assert(!in_harder_critical());
 	assert(t);
 
-	ipl = ipl_save();
+	irq_lock();
 	{
 		if (t->state & __THREAD_STATE_RUNNING) {
 			assert(t == thread_self(), "XXX SMP NIY");
@@ -115,26 +112,25 @@ void sched_finish(struct thread *t) {
 
 		t->state = __THREAD_STATE_DO_EXITED(t->state);
 	}
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 void sched_post_switch(void) {
-	ipl_t ipl = ipl_save();
+	irq_lock();
 	{
 		switch_posted = 1;
 		critical_request_dispatch(&sched_critical);
 	}
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	struct thread *current = thread_self();
-	ipl_t ipl;
 
 	assert(t);
 	assert((prior >= SCHED_PRIORITY_MIN) && (prior <= SCHED_PRIORITY_MAX));
 
-	ipl = ipl_save();
+	irq_lock();
 	{
 		assert(!__THREAD_STATE_IS_EXITED(t->state));
 
@@ -151,7 +147,7 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		assert(thread_priority_get(t) == prior);
 	}
-	ipl_restore(ipl);
+	irq_unlock();
 
 	return 0;
 }
@@ -171,8 +167,6 @@ static void sched_switch(void) {
 		}
 		switch_posted = 0;
 
-		ipl_enable();
-
 		prev = thread_get_current();
 
 		if (prev->state & __THREAD_STATE_RUNNING) {
@@ -190,7 +184,6 @@ static void sched_switch(void) {
 		next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 
 		if (prev == next) {
-			ipl_disable();
 			goto out;
 		}
 
@@ -198,8 +191,6 @@ static void sched_switch(void) {
 		sched_timing_switch(prev, next);
 
 		trace_point("context switch");
-
-		ipl_disable();
 
 		thread_set_current(next);
 		context_switch(&prev->context, &next->context);
