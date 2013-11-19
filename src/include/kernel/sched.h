@@ -40,11 +40,9 @@ struct runq;
  */
 extern int sched_init(struct thread *current, struct thread *idle);
 
-//TODO sched_ticker have to start automatic after scheduler initialization
-extern int sched_ticker_init(void);
-extern void sched_ticker_fini(struct runq*);
-
-extern void sched_sleep(void);
+extern void sched_ticker_init(void);
+extern void sched_ticker_fini(void);
+extern void sched_ticker_switch(struct thread *prev, struct thread *next);
 
 /**
  * Makes active or waking thread and adds thread to the queue of ready to

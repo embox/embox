@@ -35,14 +35,8 @@
 
 #include <kernel/sched.h>
 
-#include <sched.h>
-
-
-
-
 
 static void sched_switch(void);
-
 
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
@@ -163,7 +157,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
  */
 static void sched_switch(void) {
 	struct thread *prev, *next;
-	clock_t new_clock;
 
 	assert(!in_sched_locked());
 
@@ -197,18 +190,8 @@ static void sched_switch(void) {
 			goto out;
 		}
 
-		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
-			sched_ticker_init();
-		}
-
-		if (prev->policy != SCHED_FIFO && next->policy == SCHED_FIFO) {
-			sched_ticker_fini(&rq);
-		}
-
-		/* Running time recalculation */
-		new_clock = clock();
-		sched_timing_stop(prev, new_clock);
-		sched_timing_start(next, new_clock);
+		sched_ticker_switch(prev, next);
+		sched_timing_switch(prev, next);
 
 		trace_point("context switch");
 
