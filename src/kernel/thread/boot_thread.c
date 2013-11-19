@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/state.h>
 #include <kernel/task.h>
 
 #include <module/embox/kernel/stack.h>

@@ -13,7 +13,6 @@
 #include <hal/context.h>
 
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/state.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>

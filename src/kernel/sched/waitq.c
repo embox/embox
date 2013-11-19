@@ -18,7 +18,6 @@
 #include <util/member.h>
 #include <util/dlist.h>
 
-#include <kernel/thread/state.h>
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 #include <assert.h>
