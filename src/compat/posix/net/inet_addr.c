@@ -34,7 +34,7 @@ static int inet_to_str(const struct in_addr *in, char *buff,
 			in->s_addr8[0], in->s_addr8[1], in->s_addr8[2],
 			in->s_addr8[3]);
 	if (ret < 0) {
-		return ret;
+		return -EIO;
 	}
 	else if (ret >= buff_sz) {
 		return -ENOSPC;
@@ -79,7 +79,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	for (i = 0; i < zs_max_ind; ++i) {
 		ret = snprintf(buff, buff_sz, "%hx:", ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
-			return ret;
+			return -EIO;
 		}
 		else if (ret >= buff_sz) {
 			return -ENOSPC;
@@ -95,7 +95,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 			: zs_max_ind == 0 ? snprintf(buff, buff_sz, ":")
 			: 0;
 	if (ret < 0) {
-		return ret;
+		return -EIO;
 	}
 	else if (ret >= buff_sz) {
 		return -ENOSPC;
@@ -107,7 +107,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	for (; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
 		ret = snprintf(buff, buff_sz, ":%hx", ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
-			return ret;
+			return -EIO;
 		}
 		else if (ret >= buff_sz) {
 			return -ENOSPC;
@@ -134,7 +134,7 @@ static int str_to_inet(const char *buff, struct in_addr *in) {
 		SET_ERRNO(0);
 		val = strtoul(buff, (char **)&buff, 0);
 		if (errno != 0) {
-			return -errno;
+			return 1; /* error: see errno */
 		}
 		if (val > max_val) {
 			return 1; /* error: invalid address format */
@@ -186,7 +186,7 @@ static int str_to_inet6(const char *buff, struct in6_addr *in6) {
 		SET_ERRNO(0);
 		val = strtoul(buff, (char **)&buff, 16);
 		if (errno != 0) {
-			return -errno;
+			return 1; /* error: see errno */
 		}
 		if (val > USHRT_MAX) {
 			return 1; /* error: invalid address format */

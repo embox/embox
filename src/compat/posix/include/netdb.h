@@ -9,9 +9,10 @@
 #ifndef COMPAT_POSIX_NETDB_H_
 #define COMPAT_POSIX_NETDB_H_
 
-#include <sys/cdefs.h>
-#include <stdint.h>
 #include <netinet/in.h>
+#include <stdint.h>
+#include <sys/cdefs.h>
+#include <sys/socket.h>
 
 __BEGIN_DECLS
 
@@ -158,13 +159,6 @@ extern int getaddrinfo(const char *nodename, const char *servname,
 extern void freeaddrinfo(struct addrinfo *ai);
 
 /**
- * Address name information functions
- */
-extern int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-		char *node, socklen_t nodelen, char *serv,
-		socklen_t servlen, int flags);
-
-/**
  * Address name information function flags
  */
 #define NI_NOFQDN       0x01 /* Only the nodename portion of the
@@ -207,11 +201,20 @@ extern int getnameinfo(const struct sockaddr *sa, socklen_t salen,
 #define EAI_SYSTEM    9 /* A system error occurred. The error code
 						   can be found in errno */
 #define EAI_OVERFLOW 10 /* An argument buffer overflowed */
+#define EAI_NODATA   11 /* No address associated with nodename */
 
 /**
  * Manipulation with address information error codes
  */
 extern const char * gai_strerror(int error_code);
+
+/**
+ * Address name information functions
+ */
+extern
+int getnameinfo(const struct sockaddr *sa, socklen_t salen,
+		char *node, size_t nodelen, char *serv,
+                size_t servlen, int flags);
 
 __END_DECLS
 

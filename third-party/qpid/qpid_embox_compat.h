@@ -116,78 +116,11 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
 
 #include <netinet/in.h>
 
-struct addrinfo
-{
-  int ai_flags;			/* Input flags.  */
-  int ai_family;		/* Protocol family for socket.  */
-  int ai_socktype;		/* Socket type.  */
-  int ai_protocol;		/* Protocol for socket.  */
-  socklen_t ai_addrlen;		/* Length of socket address.  */
-  struct sockaddr *ai_addr;	/* Socket address for socket.  */
-  char *ai_canonname;		/* Canonical name for service location.  */
-  struct addrinfo *ai_next;	/* Pointer to next in list.  */
-};
-
-/* Structure large enough to hold any socket address (with the historical
-   exception of AF_UNIX).  We reserve 128 bytes.  */
-#define __ss_aligntype	unsigned long int
-#define _SS_SIZE	128
-#define _SS_PADSIZE	(_SS_SIZE - (2 * sizeof (__ss_aligntype)))
-
-#define	__SOCKADDR_COMMON(sa_prefix) \
-  sa_family_t sa_prefix##family
-
-#define __SOCKADDR_COMMON_SIZE	(sizeof (unsigned short int))
-
-struct sockaddr_storage
-  {
-    __SOCKADDR_COMMON (ss_);	/* Address family, etc.  */
-    __ss_aligntype __ss_align;	/* Force desired alignment.  */
-    char __ss_padding[_SS_PADSIZE];
-  };
-
-
 #define IPV6_V6ONLY 0
 #define TCP_NODELAY 0
 
 #define NI_MAXHOST	1025
 #define NI_MAXSERV	32
-
-static inline
-void freeaddrinfo(struct addrinfo *res) {
-	DPRINT();
-	return;
-}
-
-#define NI_NUMERICSERV 2
-#define NI_NUMERICHOST 3
-
-static inline
-const char *gai_strerror(int errcode) {
-	static char buf[256];
-	sprintf(buf,"gai_error: %i", errcode);
-}
-
-#define AI_ADDRCONFIG	0x0001
-#define AI_PASSIVE	0x0020
-
-#define EAI_FAIL	4
-
-static inline
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-                       char *host, size_t hostlen,
-                       char *serv, size_t servlen, int flags) {
-	DPRINT();
-	return EAI_FAIL;
-}
-
-static inline
-int getaddrinfo(const char *node, const char *service,
-                       const struct addrinfo *hints,
-                       struct addrinfo **res) {
-	DPRINT();
-	return EAI_FAIL;
-}
 
 #include <arpa/inet.h>
 
@@ -215,18 +148,9 @@ typedef unsigned int uint;
 
 #define SIG_SETMASK 2
 
-typedef int sigset_t;
-
 static inline
 int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	DPRINT();
-	return 0;
-}
-
-static inline
-int sigfillset(sigset_t *set) {
-	DPRINT();
-	*set = -1;
 	return 0;
 }
 

@@ -12,8 +12,9 @@
 
 #include <hal/context.h>
 
-#include <kernel/thread/state.h>
 #include <kernel/sched/sched_strategy.h>
+#include <kernel/thread/state.h>
+#include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
@@ -60,6 +61,9 @@ struct thread {
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
 	struct wait_link   *wait_link;   /**< Hold data in waiting mode */
+
+	struct sigstate    sigstate;     /**< Pending signal(s). */
+
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 	int                policy;       /**< Scheduling policy*/
 

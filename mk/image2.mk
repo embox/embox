@@ -110,11 +110,11 @@ $(ROOTFS_IMAGE) : rel_cpio_files = \
 $(ROOTFS_IMAGE) : | $$(@D)/. $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
-		&& find $(rel_cpio_files) -depth -print | cpio -L --quiet -H newc -o -O $(abspath $@)
+		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
 	then \
 		cd $(USER_ROOTFS_DIR) \
-			&& find * -depth -print | cpio -L --quiet -H newc -o --append -O $(abspath $@); \
+			&& find * -depth -print | $(CPIO) -L --quiet -H newc -o -A -O $(abspath $@); \
 	fi
 	@FILES=`find $(cpio_files) $(USER_ROOTFS_DIR)/* -depth -print 2>/dev/null`; \
 	{                                            \
@@ -140,7 +140,7 @@ endif
 module_prereqs = $(common_prereqs) $(o_files) $(a_files)
 
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,.data .bss,--rename-section $s=.app.$(app_id)$s)
+	$(foreach s,rodata data bss,--rename-section .$s=.$s.module.$(module_id))
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
@@ -148,14 +148,14 @@ $(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
 		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
 		A_FILES='$(a_files)' \
 		O_FILES='$(o_files)' \
-		APP_ID='$(app_id)' $(if $(app_id), \
+		APP_ID='$(is_app)' $(if $(is_app), \
 			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.o : | $$(@D)/.
 	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(app_id),$(OBJCOPY) $(objcopy_flags) $@)
+	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $@)
 
 
 # Here goes image creation rules...
@@ -173,7 +173,7 @@ $(symbols_pass2_c) : image_o = $(image_pass1_o)
 $(symbols_c_files) :
 $(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
 $(symbols_c_files) : $$(image_o)
-	$(NM) --demangle -n $< | awk -f mk/script/nm2c.awk > $@
+	$(NM) --demangle -n $< | $(AWK) -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a

@@ -27,6 +27,10 @@ typedef struct sockaddr {
 	char sa_data[14];      /* 14 bytes of protocol address */
 } sockaddr_t;
 
+struct sockaddr_storage {
+	sa_family_t ss_family;
+	char __ss_storage[100];
+};
 
 struct iovec;
 

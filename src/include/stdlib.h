@@ -178,9 +178,19 @@ extern int unsetenv(const char *name);
 extern int clearenv(void);
 extern int system(const char *command);
 
-static inline int mkstemp(char *path_template) { return -1; }
-static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) { return 0; }
-static inline int wctomb(char *s, wchar_t wchar) { return 0; }
+static inline int mkstemp(char *path_template) {
+	(void)path_template;
+	return -1;
+}
+static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
+	(void)pwc; (void)s; (void)n;
+	return 0;
+}
+static inline int wctomb(char *s, wchar_t wchar) {
+	(void)s;
+	(void)wchar;
+	return 0;
+}
 
 __END_DECLS
 

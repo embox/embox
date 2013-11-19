@@ -72,9 +72,11 @@ endif
 QT_CONF_FLAGS_EMBOX += -debug
 QT_CONF_FLAGS_EMBOX += -qt-gfx-vnc
 QT_CONF_FLAGS_EMBOX += -no-freetype
+QT_CONF_FLAGS_EMBOX += -no-xmlpatterns
 
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
@@ -97,6 +99,7 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 
 
 EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
@@ -142,9 +145,9 @@ $(QT_BUILD_DIR_EMBOX):
 QT_MD5_LINE:=$(QT_MD5)  $(QT_BUNDLE)
 
 $(DOWNLOADED):
-	$(AT)(echo '$(QT_MD5_LINE)' | md5sum -c) || \
+	$(AT)(echo '$(QT_MD5_LINE)' | $(MD5) -c) || \
 		(wget -P $(DOWNLOAD_DIR) -c $(QT_URL) && \
-			echo '$(QT_MD5_LINE)' | md5sum -c)
+			echo '$(QT_MD5_LINE)' | $(MD5) -c)
 	$(AT)touch $@
 
 # When necessity to re-patch is detected manual resolution is required.
@@ -152,7 +155,7 @@ $(DOWNLOADED):
 # and do not want to accidentally remove some possible desired changes.
 # Therefore it is left to the discretion of the user.
 # HINT: Typically it is good to perform build directory cleanup: 'make clean'
-# The patch saved to .extracted for the user to be able to compare previous patch with current one.
+# The patch is saved to .extracted for the user to be able to compare previous patch with current one.
 # In some situations this might be useful.
 $(EXTRACTED): $(PATCH_TXT) $(DOWNLOADED)
 	$(AT) [ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
@@ -218,10 +221,15 @@ $(ROOTFS_IMAGE): build_and_install
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
 #TARGET_APPS += demos/spreadsheet
-#TARGET_APPS += examples/animation/animatedtiles
-#TARGET_APPS += examples/animation/moveblocks
+TARGET_APPS += examples/animation/animatedtiles
+TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 TARGET_APPS += examples/texteditor
+ifeq ($(MAKECMDGOALS),qpidhello)
+TARGET_APPS += examples/qpidhello
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
+endif
 
 
 
@@ -313,7 +321,9 @@ $(TARGET_QMAKE_EMBOX): build_and_install
 
 all: target_apps_EMBOX
 
+.PHONY: qpidhello
 
+qpidhello: target_apps_EMBOX
 
 
 

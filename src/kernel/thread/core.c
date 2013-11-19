@@ -28,6 +28,7 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
+#include <kernel/thread/signal.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/sched/sched_priority.h>
@@ -65,6 +66,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -99,8 +101,9 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			if (-ENOMEM == thread_register(task_self(), t)) {
-				t = err_ptr(ENOMEM);
+			ret = thread_register(task_self(), t);
+			if (ret != 0) {
+				t = err_ptr(-ret);
 				goto out;
 			}
 		}
@@ -195,6 +198,11 @@ static void thread_delete(struct thread *t) {
 	assert(__THREAD_STATE_IS_EXITED(t->state));
 
 	task_remove_thread(t->task, t);
+	sigstate_init(&t->sigstate);
+
+	runq_item_init(&t->sched_attr.runq_link);
+	sched_affinity_init(t);
+	sched_timing_init(t);
 
 	if (zombie) {
 		thread_free(zombie);

@@ -96,3 +96,12 @@ TEST_CASE("sleep 0 seconds") {
 	test_emit('2');
 	test_assert_emitted("12");
 }
+
+TEST_CASE("many sleeps") {
+
+	for (int i = 0; i < 1000; i++) {
+		ksleep(i % 17);
+	}
+}
+
+

@@ -18,6 +18,7 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <net/socket/inet_sock.h>
+#include <net/socket/inet6_sock.h>
 
 typedef struct tcphdr {
 	__be16 source;
@@ -98,6 +99,34 @@ static inline struct tcp_sock * to_tcp_sock(struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
 }
 
+static inline in_port_t tcp_sock_src_port(
+		const struct tcp_sock *tcp_sk) {
+	const struct sock *sk;
+
+	sk = to_sock(tcp_sk);
+
+	if (sk->opt.so_domain == AF_INET) {
+		return to_const_inet_sock(sk)->src_in.sin_port;
+	}
+
+	assert(sk->opt.so_domain == AF_INET6);
+	return to_const_inet6_sock(sk)->src_in6.sin6_port;
+}
+
+static inline in_port_t tcp_sock_dst_port(
+		const struct tcp_sock *tcp_sk) {
+	const struct sock *sk;
+
+	sk = to_sock(tcp_sk);
+
+	if (sk->opt.so_domain == AF_INET) {
+		return to_const_inet_sock(sk)->dst_in.sin_port;
+	}
+
+	assert(sk->opt.so_domain == AF_INET6);
+	return to_const_inet6_sock(sk)->dst_in6.sin6_port;
+}
+
 #if 0
 enum {
 	TCP_OPT_KIND_EOL,
@@ -141,7 +170,7 @@ extern void tcp_sock_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_sock_unlock(struct tcp_sock *sk, unsigned int obj);
 extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
 		size_t *data_len, struct sk_buff **out_skb);
-extern void send_data_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
+extern void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_sock_get_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);
 

@@ -89,7 +89,7 @@ extern void sched_post_switch(void);
  * @retval non-zero
  *   On operation fail.
  */
-extern int sched_signal(struct thread *thread, int sig);
+extern void sched_signal(struct thread *thread);
 
 
 #endif /* KERNEL_SCHED_H_ */

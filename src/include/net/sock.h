@@ -150,8 +150,8 @@ struct proto_sock {
  * @arg p_sk - derived of proto_sock
  *             (proto_sock MUST BE FIRST field in derived socket type)
  */
-static inline struct sock * to_sock(void *p_sk) {
-	return ((struct proto_sock *)p_sk)->sk;
+static inline struct sock * to_sock(const void *p_sk) {
+	return ((const struct proto_sock *)p_sk)->sk;
 }
 
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,

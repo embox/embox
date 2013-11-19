@@ -66,7 +66,7 @@ static int enqueue_fn(int (*alloc)(struct ring_buff *, int n, void **ret),
 		return t2;
 	}
 
-	memcpy(&write_to, elem + t1 * buf->elem_size, t2 * buf->elem_size);
+	memcpy(write_to, elem + t1 * buf->elem_size, t2 * buf->elem_size);
 
 	tcnt -= t2;
 

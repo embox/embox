@@ -2,16 +2,26 @@ package third_party.qpid
 
 module core {
 	depends embox.lib.LibC
-	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.boost.core
 	depends third_party.e2fsprogs.libs
 	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.proc.fork
+	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.util.utsname
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.util.gethostname
+	depends embox.compat.posix.fs.fsop
 	depends embox.net.lib.getifaddrs
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.net.gai_strerror
+	depends embox.compat.posix.net.getaddrinfo
+	depends embox.compat.posix.net.getnameinfo
 
 	source "empty.c" // FIXME: workaround
 
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source
 		"../../../../qpid/lib/libqmf.a",
 		"../../../../qpid/lib/libqmf2.a",

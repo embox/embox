@@ -9,6 +9,8 @@
 #ifndef TASK_H_
 #define TASK_H_
 
+#include <assert.h>
+
 #include <util/dlist.h>
 #include <util/array.h>
 
@@ -24,7 +26,6 @@
 
 __BEGIN_DECLS
 
-struct task_signal_table;
 struct task_idx_table;
 struct thread;
 struct emmap;
@@ -50,7 +51,7 @@ struct task {
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
-	struct task_signal_table *signal_table;
+	struct sigaction *sig_table;
 
 	struct emmap *mmap;
 
@@ -99,6 +100,8 @@ typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *ne
  * @return Task resources from task
  */
 static inline struct task_idx_table *task_idx_table(struct task *task) {
+
+	assert(task);
 	return task->idx_table;
 }
 
@@ -130,13 +133,19 @@ extern task_priority_t task_get_priority(struct task *task);
 
 /* this is for SMP mode */
 static inline void task_set_affinity(struct task *task, unsigned int affinity) {
+
+	assert(task);
 	task->affinity = affinity;
 }
+
 static inline unsigned int task_get_affinity(struct task *task) {
+
+	assert(task);
 	return task->affinity;
 }
 
 static inline void *task_self_security(void) {
+
 	return task_self()->security;
 }
 

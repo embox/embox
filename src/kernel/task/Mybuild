@@ -2,7 +2,7 @@ package embox.kernel.task
 
 @DefaultImpl(single)
 abstract module api {
-	option number max_resource_size = 1024
+	option number max_resource_size = 2048
 
 }
 
@@ -56,27 +56,11 @@ module kernel_task {
 
 }
 
-module std_signal {
-	source "std_signal.c"
-
-	depends api
-//	depends signal_common
-}
-
-module rt_signal {
-	source "rt_signal.c"
-
-	depends api
-	depends signal_common
-	depends embox.mem.objalloc
-}
-
-module signal_common {
+module signal {
 	source "signal.c"
 
 	depends embox.kernel.sched.sched
 }
-
 
 module idx_table extends task_environment {
 

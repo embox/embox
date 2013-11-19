@@ -10,18 +10,14 @@
 #include <kernel/sched/waitq.h>
 
 
-int sched_signal(struct thread *t, int type) {
-	int res = 0;
-
+void sched_signal(struct thread *t) {
 	sched_lock();
 	{
 		if (t->state & __THREAD_STATE_WAITING) {
 			waitq_thread_notify(t, -EINTR);
 		} else {
-			res = -1;
+			sched_post_switch();
 		}
 	}
 	sched_unlock();
-
-	return res;
 }

@@ -15,19 +15,23 @@
  *              - @c startq for deferred wake/resume processing
  */
 
+#include <embox/unit.h>
+
 #include <assert.h>
 #include <errno.h>
+#include <sched.h>
 #include <time.h>
-
-#include <kernel/critical.h>
-#include <kernel/thread.h>
-#include <kernel/thread/current.h>
-#include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/state.h>
-#include <kernel/task/signal.h>
 
 #include <hal/context.h>
 #include <hal/ipl.h>
+
+#include <kernel/critical.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_strategy.h>
+#include <kernel/thread.h>
+#include <kernel/thread/current.h>
+#include <kernel/thread/signal.h>
+#include <kernel/thread/state.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -203,7 +207,7 @@ static void sched_switch(void) {
 out:
 	sched_unlock_noswitch();
 
-	task_signal_hnd();
+	thread_signal_handle();
 }
 
 

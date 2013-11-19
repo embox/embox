@@ -9,24 +9,42 @@
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
+
+#include <util/dlist.h>
+
 #include <kernel/thread/sync/cond.h>
 #include <kernel/sched.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread.h>
 #include <kernel/time/time.h>
 
+
+static inline int cond_is_static_inited(cond_t *c) {
+	/* Static initializer can't really init list now, so if this condition's
+	 * true initialization is not finished */
+	return !(c->wq.list.next && c->wq.list.prev);
+}
+
 static void condattr_copy(const struct condattr *source, struct condattr *dest) {
 	dest->pshared = source->pshared;
 }
 
 void cond_init(cond_t *c, const struct condattr *attr) {
-	struct thread* current = thread_self();
+	struct thread* current;
+
+	assert(c);
+
+	current = thread_self();
+
 	waitq_init(&c->wq);
-	condattr_init(&c->attr);
+
 	c->task = current->task;
 	if (attr) {
 		condattr_copy(attr, &c->attr);
+	} else {
+		condattr_init(&c->attr);
 	}
+
 }
 
 void cond_destroy(cond_t *c) {
@@ -84,6 +102,10 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 		timeout = (int) time; //TODO overflow
 	}
 
+	if (cond_is_static_inited(c)) {
+		waitq_init(&c->wq);
+	}
+
 	sched_lock();
 	{
 		mutex_unlock(m);
@@ -110,6 +132,10 @@ int cond_signal(cond_t *c) {
 		return -EACCES;
 	}
 
+	if (cond_is_static_inited(c)) {
+		waitq_init(&c->wq);
+	}
+
 	waitq_notify(&c->wq);
 
 	return ENOERR;
@@ -127,6 +153,10 @@ int cond_broadcast(cond_t *c) {
 
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
 		return -EACCES;
+	}
+
+	if (cond_is_static_inited(c)) {
+		waitq_init(&c->wq);
 	}
 
 	waitq_notify_all(&c->wq);

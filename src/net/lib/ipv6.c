@@ -29,6 +29,12 @@ void ip6_build(struct ip6hdr *ip6h, uint16_t payload_len,
 	memcpy(&ip6h->daddr, dst_ip6, sizeof ip6h->daddr);
 }
 
+int ip6_check_version(const struct ip6hdr *ip6h) {
+	assert(ip6h != NULL);
+
+	return ip6h->version == 6;
+}
+
 size_t ip6_data_length(const struct ip6hdr *ip6h) {
 	assert(ip6h != NULL);
 

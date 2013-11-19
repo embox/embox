@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <util/dlist.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -14,9 +15,10 @@
 
 static DLIST_DEFINE(usb_classes);
 
-static void usb_dev_request_hnd_get_conf(struct usb_request *req) {
+void usb_class_generic_get_conf_hnd(struct usb_request *req) {
 	struct usb_dev *dev = req->endp->dev;
 
+	usb_dev_generic_fill_iface(dev, &dev->getconf_data->interface_desc);
 	usb_dev_generic_fill_endps(dev, dev->getconf_data->endp_descs);
 }
 
@@ -25,7 +27,7 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 
 	ctrl_endp = dev->endpoints[0];
 
-	usb_endp_control(ctrl_endp, usb_dev_request_hnd_get_conf,
+	usb_endp_control(ctrl_endp, class->get_conf_hnd,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -36,6 +38,13 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 			sizeof(struct usb_desc_interface) +
 			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
 		dev->getconf_data);
+
+	return 0;
+}
+
+int usb_dev_generic_fill_iface(struct usb_dev *dev, struct usb_desc_interface *idesc) {
+
+	memcpy(&dev->iface_desc, idesc, sizeof(struct usb_desc_interface));
 
 	return 0;
 }
@@ -55,6 +64,38 @@ int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint end
 
 	return 0;
 }
+
+static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) {
+	struct usb_dev *dev = req->endp->dev;
+	int i;
+
+	for (i = 0; i < dev->endp_n - 1; i++) {
+		struct usb_desc_endpoint *endp_desc =
+			&dev->getconf_data->endp_descs[i];
+
+		if (endp_desc->b_lenght != sizeof(struct usb_desc_endpoint)
+				|| endp_desc->b_desc_type
+					!= USB_DESC_TYPE_ENDPOINT) {
+
+			printk("usb_core: vendor=%04x product=%04x "
+					"seems cannot be handled by generic "
+					"class; disabling\n",
+					dev->dev_desc.id_vendor,
+					dev->dev_desc.id_product);
+
+			usb_dev_deregister(dev);
+
+			return;
+		}
+	}
+
+	usb_class_generic_get_conf_hnd(req);
+}
+
+static struct usb_class usb_class_fallback = {
+	.get_conf = usb_class_generic_get_conf,
+	.get_conf_hnd = usb_class_fallback_get_conf_hnd,
+};
 
 int usb_class_register(struct usb_class *cls) {
 
@@ -85,6 +126,15 @@ int usb_class_supported(struct usb_dev *dev) {
 
 int usb_class_handle(struct usb_dev *dev) {
 	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
+
+	if (!cls) {
+#if 0
+		return -ENOTSUP;
+#else
+		/* trying to fallback */
+		cls = &usb_class_fallback;
+#endif
+	}
 
 	if (cls->class_alloc) {
 		dev->class_specific = cls->class_alloc(cls, dev);

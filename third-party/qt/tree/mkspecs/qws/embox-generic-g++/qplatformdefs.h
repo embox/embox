@@ -128,10 +128,12 @@ inline int fseeko(FILE *stream, off_t offset, int whence) {
 }
 
 inline int truncate(const char *path, off_t length) {
+	(void)path; (void)length;
 	DPRINT();
 	return -1;
 }
 inline int ftruncate(int fd, off_t length) {
+	(void)fd; (void)length;
 	DPRINT();
 	return -1;
 }
@@ -139,6 +141,7 @@ inline int ftruncate(int fd, off_t length) {
 #define O_LARGEFILE 0
 
 inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+	(void)path; (void)buf; (void)bufsiz;
 	printf(">>> readLink(%s)\n", path);
 	return 0;
 }
@@ -147,6 +150,7 @@ inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 
 
 inline int symlink(const char *oldpath, const char *newpath) {
+	(void)oldpath; (void)newpath;
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;
 	return -1;

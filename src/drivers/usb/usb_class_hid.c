@@ -10,91 +10,24 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <embox/unit.h>
-#include <drivers/usb.h>
+#include <drivers/usb_hid.h>
 
 EMBOX_UNIT_INIT(usb_hid_init);
-
-#define USB_HID_MAX_INPUT_LEN 8
-
-#define USB_HID_MAX_DEVS         2
-#define USB_HID_MAX_GETCONFS     2
-
-#define USB_CLASS_HID 		 3
-
-#define USB_CLASS_HID_SUB	 0
-#define USB_CLASS_HID_SUB_BOOT	 1
-
-#define USB_CLASS_HID_PROT_NONE  0
-#define USB_CLASS_HID_PROT_KBD   1
-#define USB_CLASS_HID_PROT_MOUSE 2
-
-struct usb_desc_hid {
-	uint8_t b_lenght;
-	uint8_t b_desc_type;
-	uint16_t bcd_hid;
-	uint8_t b_country_code;
-	uint8_t b_num_descriptors;
-	uint8_t b_descriptor_type;
-	uint16_t w_descriptor_len;
-} __attribute__((packed));
-
-struct usb_hid_getconf {
-	struct usb_desc_configuration config_desc;
-	struct usb_desc_interface interface_desc;
-	struct usb_desc_hid hid_desc;
-	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
-} __attribute__((packed));
-
-struct usb_class_hid {
-	struct usb_hid_getconf *getconf;
-	unsigned char input_data[USB_HID_MAX_INPUT_LEN];
-};
-
-struct usb_class_hid *usb2hiddata(struct usb_dev *dev) {
-	return dev->class_specific;
-}
 
 POOL_DEF(hid_getconfs, struct usb_hid_getconf, USB_HID_MAX_GETCONFS);
 POOL_DEF(hid_classes, struct usb_class_hid, USB_HID_MAX_DEVS);
 
-#if 1 /* mouse */
-static void usb_mouse_notify(struct usb_request *req) {
+static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_hid *hid = usb2hiddata(dev);
 
-	printk("\n\nusb_mouse: received=");
-	for (int i = 0; i < USB_HID_MAX_INPUT_LEN; i++) {
-		printk(" %.2x", hid->input_data[i]);
-	}
-	printk("\n");
-
-	usb_endp_interrupt(dev->endpoints[1], usb_mouse_notify,
-			hid->input_data, dev->endpoints[1]->max_packet_size);
-}
-
-static int usb_handle_mouse(struct usb_dev *dev) {
-	struct usb_class_hid *hid = usb2hiddata(dev);
-
-	assert(dev->endpoints[1]->max_packet_size <= USB_HID_MAX_INPUT_LEN);
-
-	usb_endp_interrupt(dev->endpoints[1], usb_mouse_notify,
-			hid->input_data, dev->endpoints[1]->max_packet_size);
-
-	return 0;
-}
-#endif
-
-static void usb_hid_request_hnd_get_conf(struct usb_request *req) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_class_hid *hid = usb2hiddata(dev);
-
+	usb_dev_generic_fill_iface(dev, &hid->getconf->interface_desc);
 	usb_dev_generic_fill_endps(dev, hid->getconf->endp_descs);
 
 	pool_free(&hid_getconfs, hid->getconf);
 	hid->getconf = NULL;
 
-	/* let's open mouse right here to see debug info! */
-	usb_handle_mouse(dev);
+	usb_hid_found(dev);
 }
 
 static void *usb_class_hid_alloc(struct usb_class *cls, struct usb_dev *dev) {
@@ -110,7 +43,7 @@ static int usb_class_hid_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 
 	hid->getconf = pool_alloc(&hid_getconfs);
 
-	usb_endp_control(dev->endpoints[0], usb_hid_request_hnd_get_conf,
+	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -131,6 +64,7 @@ static struct usb_class usb_class_hid = {
 	.class_alloc = usb_class_hid_alloc,
 	.class_free = usb_class_hid_free,
 	.get_conf = usb_class_hid_get_conf,
+	.get_conf_hnd = usb_class_hid_get_conf_hnd,
 };
 
 static int usb_hid_init(void) {
