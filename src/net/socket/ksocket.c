@@ -22,21 +22,20 @@
 
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
+#include <fs/idesc.h>
+
+#include <err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
+extern const struct task_idx_ops task_idx_ops_socket;
 
-int ksocket(int family, int type, int protocol,
-		struct sock **out_sk) {
-	int ret;
+struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
 
-	if (out_sk == NULL) {
-		return -EINVAL;
-	}
 
-	ret = sock_create(family, type, protocol, &new_sk);
-	if (ret != 0) {
-		return ret;
+	new_sk = sock_create(family, type, protocol);
+	if (0 != err(new_sk)) {
+		return new_sk;
 	}
 
 	sock_set_state(new_sk, SS_UNCONNECTED);
@@ -45,9 +44,9 @@ int ksocket(int family, int type, int protocol,
 		io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
 	}
 
-	*out_sk = new_sk;
 
-	return 0;
+
+	return new_sk;
 }
 
 int ksocket_close(struct sock *sk) {

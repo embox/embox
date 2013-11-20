@@ -48,5 +48,7 @@ extern struct socket_desc *socket_desc_get(int idx);
 
 extern struct socket_desc *socket_desc_accept(struct sock *sk);
 
+extern struct sock *idesc_sock_get(int idx);
+
 
 #endif /* SOCKET_DESC_H_ */

@@ -57,9 +57,17 @@ static inline int ioctl_inherite(int fd, int request, void *data) {
 
 int ioctl(int fd, int request, ...) {
 	void *data;
+	struct idesc *idesc;
 	va_list args;
 	int rc = -ENOTSUP;
 
+	if (!idesc_index_valid(fd)) {
+		return SET_ERRNO(EBADF);
+	}
+	idesc = idesc_common_get(fd);
+	if (NULL == idesc) {
+		return SET_ERRNO(EBADF);
+	}
 
 	va_start(args, request);
 
@@ -89,8 +97,8 @@ int ioctl(int fd, int request, ...) {
 		*va_arg(args, int *) = io_sync_ready(
 				task_idx_desc_ios(desc), IO_SYNC_READING);
 #else
-		idesc_common_get(fd);
 
+		//*va_arg(args, int *) = io_sync_ready(idesc, IO_SYNC_READING);
 #endif
 		break;
 	}
@@ -172,7 +180,47 @@ end:
 	SET_ERRNO(-err);
 	return res;
 #else
-	return -ENOTSUP;
+	struct idesc *idesc;
+	va_list args;
+
+	if (!idesc_index_valid(fd)) {
+		return SET_ERRNO(EBADF);
+	}
+
+	idesc = idesc_common_get(fd);
+	if (NULL == idesc) {
+		return SET_ERRNO(EBADF);
+	}
+
+	/* Fcntl works in two steps:
+	 * 1. Make general commands like F_SETFD, F_GETFD.
+	 * 2. If fd has some internal fcntl(), it will be called.
+	 *    Otherwise result of point 1 will be returned. */
+	switch (cmd) {
+	case F_GETFD:
+		return idesc->idesc_flags;
+	case F_SETFD:
+		va_start(args, cmd);
+		idesc->idesc_flags = va_arg(args, int);
+		va_end(args);
+		return 0;
+	case F_GETPIPE_SZ:
+	case F_SETPIPE_SZ:
+		break;
+	default:
+		/*
+		 * va_start(args, cmd);
+		 * data = va_arg(args, void*);
+		 * if (ops->ioctl != NULL) {
+		res = ops->ioctl(desc, cmd, data);
+			}
+		 */
+		break;
+	}
+
+	SET_ERRNO(ENOTSUP);
+
+	return -1;
 #endif
 }
 

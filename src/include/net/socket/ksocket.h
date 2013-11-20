@@ -36,8 +36,7 @@ struct msghdr;
  * @return On success, 0 otherwise result equal to minus posix
  * errno for the error reason.
  */
-extern int ksocket(int family, int type, int protocol,
-		struct sock **out_sk);
+extern struct sock * ksocket(int family, int type, int protocol);
 
 /**
  * Close socket method in kernel layer.

@@ -99,4 +99,81 @@ const struct task_idx_ops task_idx_ops_socket = {
 };
 
 #else
+
+
+static ssize_t socket_read(struct idesc *desc, void *buff,
+		size_t size) {
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
+	struct sock *sk = (struct sock *)desc;
+
+	assert(desc != NULL);
+
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = 0;
+
+	iov.iov_base = buff;
+	iov.iov_len = size;
+
+	ret = krecvmsg(sk, &msg, desc->idesc_flags);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return iov.iov_len;
+}
+
+static ssize_t socket_write(struct idesc *desc, const void *buff,
+		size_t size) {
+	int ret;
+	struct msghdr msg;
+	struct iovec iov;
+	struct sock *sk = (struct sock *)desc;
+
+	assert(desc != NULL);
+
+	msg.msg_name = NULL;
+	msg.msg_namelen = 0;
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_flags = 0;
+
+	iov.iov_base = (void *)buff;
+	iov.iov_len = size;
+
+	ret = ksendmsg(sk, &msg, desc->idesc_flags);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return iov.iov_len;
+}
+
+static int socket_close(struct idesc *desc) {
+	int ret;
+	struct sock *sk = (struct sock *)desc;
+
+	assert(desc != NULL);
+
+	ret = ksocket_close(sk);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return 0;
+}
+
+const struct task_idx_ops task_idx_ops_socket = {
+	.read = socket_read,
+	.write = socket_write,
+	.close = socket_close
+};
+
 #endif

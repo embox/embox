@@ -40,6 +40,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 	struct file_desc *desc;
 	desc = file_desc_get(fd);
 	assert(desc);
+	//file_desc_valide(desc);
 
 	if (desc->idesc.idesc_ops != &task_idx_ops_file) {
 		return -EBADF;

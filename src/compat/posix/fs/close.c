@@ -4,6 +4,7 @@
  * @date Nov 15, 2013
  * @author: Anton Bondarev
  */
+#include <errno.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
@@ -31,11 +32,17 @@ int close(int fd) {
 #else
 	struct idesc *idesc;
 
+	if(!idesc_index_valid(fd)) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
 	idesc = idesc_common_get(fd);
 	if(!idesc) {
-		return 0;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
-	return idesc_close(idesc, fd);
 
+	return idesc_close(idesc, fd);
 #endif
 }

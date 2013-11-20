@@ -15,6 +15,8 @@
 #include <framework/net/sock/api.h>
 #include <framework/net/pack/api.h>
 
+#include <err.h>
+
 static struct sock * sock_alloc(
 		const struct sock_family_ops *f_ops,
 		const struct sock_proto_ops *p_ops) {
@@ -124,32 +126,31 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->addr_len = 0;
 #endif
 }
-
-int sock_create(int family, int type, int protocol, struct sock **out_sk) {
+extern const struct task_idx_ops task_idx_ops_socket;
+struct sock *sock_create(int family, int type, int protocol) {
 	int ret;
 	struct sock *new_sk;
 	const struct net_family *nfamily;
 	const struct net_family_type *nftype;
 	const struct net_sock *nsock;
 	const struct net_pack_out *npout;
+	struct idesc_perm perm;
 
-	if (out_sk == NULL) {
-		return -EINVAL;
-	}
+
 
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
-		return -EAFNOSUPPORT;
+		return err_ptr(EAFNOSUPPORT);
 	}
 
 	nftype = net_family_type_lookup(nfamily, type);
 	if (nftype == NULL) {
-		return -EPROTOTYPE;
+		return err_ptr(EPROTOTYPE);
 	}
 
 	nsock = net_sock_lookup(family, type, protocol);
 	if (nsock == NULL) {
-		return -EPROTONOSUPPORT;
+		return err_ptr(EPROTONOSUPPORT);
 	}
 
 	npout = net_pack_out_lookup(family);
@@ -159,7 +160,7 @@ int sock_create(int family, int type, int protocol, struct sock **out_sk) {
 
 	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
-		return -ENOMEM;
+		return err_ptr(ENOMEM);
 	}
 
 	sock_init(new_sk, family, type, nsock->protocol,
@@ -170,7 +171,7 @@ int sock_create(int family, int type, int protocol, struct sock **out_sk) {
 	ret = new_sk->f_ops->init(new_sk);
 	if (ret != 0) {
 		sock_release(new_sk);
-		return ret;
+		return err_ptr(ret);
 	}
 
 	assert(new_sk->p_ops != NULL);
@@ -178,15 +179,16 @@ int sock_create(int family, int type, int protocol, struct sock **out_sk) {
 		ret = new_sk->p_ops->init(new_sk);
 		if (ret != 0) {
 			sock_close(new_sk);
-			return ret;
+			return err_ptr(ret);
 		}
 	}
 
 	sock_hash(new_sk);
 
-	*out_sk = new_sk;
+	perm.dperm = 0;
+	idesc_init(&new_sk->idesc, &task_idx_ops_socket, &perm);
 
-	return 0;
+	return new_sk;
 }
 
 void sock_release(struct sock *sk) {

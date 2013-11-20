@@ -38,14 +38,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	assert(node);
 	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
 	assert(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
-#if 0
-	ret = fs_perm_lookup(NULL, path, &path, &node);
 
-	if (-EACCES == ret) {
-		SET_ERRNO(EACCES);
-		return NULL;
-	}
-#endif
 
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */

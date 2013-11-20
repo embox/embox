@@ -149,7 +149,7 @@ static inline struct sock * to_sock(const void *p_sk) {
 }
 
 
-extern int sock_create(int family, int type, int protocol, struct sock **out_sk);
+extern struct sock * sock_create(int family, int type, int protocol);
 
 extern void sock_release(struct sock *sk);
 

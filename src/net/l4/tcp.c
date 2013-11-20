@@ -35,6 +35,8 @@
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
+#include <err.h>
+
 EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp4_rcv, NULL);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp6_rcv, NULL);
@@ -483,7 +485,7 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
-	int ret;
+	//int ret;
 	struct sock *newsk;
 	struct inet_sock *in_newsk;
 	struct inet6_sock *in6_newsk;
@@ -506,9 +508,10 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
 		/* Allocate new socket for this connection */
-		ret = sock_create(to_sock(tcp_sk)->opt.so_domain,
-				SOCK_STREAM, IPPROTO_TCP, &newsk);
-		if (ret != 0) {
+		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+				SOCK_STREAM, IPPROTO_TCP);
+
+		if (err(newsk) != 0) {
 			printk("%s: can't alloc socket\n", __func__);
 			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			{

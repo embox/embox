@@ -45,3 +45,19 @@ struct socket_desc *socket_desc_get(int idx) {
 struct socket_desc *socket_desc_accept(struct sock *sk) {
 	return socket_desc_alloc();
 }
+
+
+struct sock *idesc_sock_get(int idx) {
+	struct idesc *idesc;
+	struct idesc_table *it;
+
+
+	assert(idesc_index_valid(idx));
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	idesc = idesc_table_get_desc(it, idx);
+
+	return (struct sock *) idesc;
+}

@@ -15,7 +15,9 @@ int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, struct idesc
 
 	memset(idesc, 0, sizeof(struct idesc));
 
+	assert(attr);
 	memcpy(&idesc->idesc_perm, attr, sizeof(struct idesc_perm));
+
 
 	idesc->idesc_ops = ops;
 
