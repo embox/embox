@@ -23,8 +23,13 @@
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(iodev_env_init);
-#ifndef IDESC_TABLE_USE
-static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
+
+static struct idesc_diag {
+	struct idesc idesc;
+	struct tty *tty;
+} idesc_diag;
+
+static int iodev_read(struct idesc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
@@ -35,7 +40,7 @@ static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 }
 
-static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+static int iodev_write(struct idesc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
@@ -45,16 +50,21 @@ static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	return (int) cbuf - (int) buf;
 }
 
-static int iodev_close(struct idx_desc *idx) {
+static int iodev_close(struct idesc *data) {
 	return 0;
 }
 
-static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
-	struct tty *tty = desc->data->fd_struct;
+static int iodev_ioctl(struct idesc *desc, int request, void *data) {
+	struct idesc_diag *idesc_diag = (struct idesc_diag *) desc;
+	struct tty *tty;
+
+	tty = idesc_diag->tty;
 
 	if(NULL == tty) {
 		return -EINVAL;
 	}
+
+#if 0
 	if(request == F_SETFD) {
 		int flags = (int) data;
 		desc->flags = flags;
@@ -62,9 +72,11 @@ static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
 	}
 
 	return tty_ioctl(tty, request, data);
+#endif
+	return 0;
 }
 
-static int iodev_fstat(struct idx_desc *data, void *buff) {
+static int iodev_fstat(struct idesc *data, void *buff) {
 	struct stat *st = buff;
 
 	st->st_mode = S_IFCHR;
@@ -81,12 +93,14 @@ static const struct task_idx_ops iodev_idx_ops = {
 	.fstat = iodev_fstat,
 };
 
-
 static int iodev_env_init(void) {
-
+	struct idesc_table *idesc_table;
 	int fd;
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, NULL, NULL);
+	idesc_table = idesc_table_get_table(task_self()); //kernel task
+
+	idesc_init(&idesc_diag.idesc, &iodev_idx_ops, NULL);
+	fd = idesc_table_add(idesc_table, &idesc_diag.idesc, 0);
 	if (fd < 0) {
 		return fd;
 	}
@@ -95,25 +109,9 @@ static int iodev_env_init(void) {
 	dup2(fd, STDOUT_FILENO);
 	dup2(fd, STDERR_FILENO);
 
-	if (fd > 2) {
+	if (fd > STDERR_FILENO) {
 		close(fd);
 	}
 
 	return 0;
 }
-
-#else
-static int iodev_env_init(void) {
-	static struct idesc idesc_diag;
-	struct idesc_table *idesc_table;
-
-	idesc_table = idesc_table_get_table(task_self()); //kernel task
-
-	//idesc_diag.idesc_ops = (struct task_idx_ops *)&iodev_idx_ops;
-	//idesc_table_init(); it's must be in kernel_task initialization
-	idesc_table_lock(idesc_table, &idesc_diag, STDIN_FILENO, 0);
-	idesc_table_lock(idesc_table, &idesc_diag, STDOUT_FILENO, 0);
-	idesc_table_lock(idesc_table, &idesc_diag, STDERR_FILENO, 0);
-	return 0;
-}
-#endif
