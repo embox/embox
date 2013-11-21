@@ -34,7 +34,6 @@ struct idesc_pipe {
 	struct pipe *pipe;
 };
 
-#if 1
 static inline void writing_enable(struct pipe *pipe) {
 	if (pipe->writing_end)
 		io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
@@ -54,10 +53,8 @@ static inline void reading_disable(struct pipe *pipe) {
 	if (pipe->reading_end)
 		io_sync_disable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
 }
-#endif
 
 int pipe_close(struct idesc *idesc) {
-#if 1
 	struct idesc_pipe *ip;
 	struct pipe *pipe;
 
@@ -86,13 +83,9 @@ int pipe_close(struct idesc *idesc) {
 	sched_unlock();
 
 	return 0;
-#else
-	return 0;
-#endif
 }
 
 int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
-#if 1
 	int len;
 	struct idesc_pipe *ip;
 	struct pipe *pipe;
@@ -132,13 +125,9 @@ int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	}
 	sched_unlock();
 	return len;
-#else
-	return 0;
-#endif
 }
 
 int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
-#if 1
 	int len;
 	struct pipe *pipe;
 	struct idesc_pipe *ip;
@@ -181,9 +170,6 @@ int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	sched_unlock();
 
 	return len;
-#else
-	return 0;
-#endif
 }
 
 #if 0
@@ -221,14 +207,14 @@ static const struct task_idx_ops write_ops = {
 };
 
 static struct idesc_pipe *idesc_pipe_alloc(struct pipe *pipe,
-		const struct task_idx_ops *ops, struct idesc_perm *iperm,
+		const struct task_idx_ops *ops, idesc_access_mode_t amode,
 		struct idesc **id) {
 	struct idesc_pipe *idp;
 
 	idp = malloc(sizeof(struct idesc_pipe));
 
 	if (idp) {
-		idesc_init(&idp->idesc, ops, iperm);
+		idesc_init(&idp->idesc, ops, amode);
 
 		idp->pipe = pipe;
 		*id = &idp->idesc;
@@ -240,19 +226,13 @@ static struct idesc_pipe *idesc_pipe_alloc(struct pipe *pipe,
 }
 
 static struct idesc_pipe *idesc_pipe_alloc_reading(struct pipe *pipe) {
-	struct idesc_perm iperm;
 
-	idesc_perm_init(&iperm, FS_MAY_READ);
-
-	return idesc_pipe_alloc(pipe, &read_ops, &iperm, &pipe->reading_end);
+	return idesc_pipe_alloc(pipe, &read_ops, FS_MAY_READ, &pipe->reading_end);
 }
 
 static struct idesc_pipe *idesc_pipe_alloc_writing(struct pipe *pipe) {
-	struct idesc_perm iperm;
 
-	idesc_perm_init(&iperm, FS_MAY_WRITE);
-
-	return idesc_pipe_alloc(pipe, &write_ops, &iperm, &pipe->writing_end);
+	return idesc_pipe_alloc(pipe, &write_ops, FS_MAY_WRITE, &pipe->writing_end);
 }
 
 static void idesc_pipe_free(struct idesc_pipe *idp) {

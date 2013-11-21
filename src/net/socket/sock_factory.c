@@ -134,9 +134,6 @@ struct sock *sock_create(int family, int type, int protocol) {
 	const struct net_family_type *nftype;
 	const struct net_sock *nsock;
 	const struct net_pack_out *npout;
-	struct idesc_perm perm;
-
-
 
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
@@ -185,8 +182,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	sock_hash(new_sk);
 
-	perm.dperm = 0;
-	idesc_init(&new_sk->idesc, &task_idx_ops_socket, &perm);
+	idesc_init(&new_sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
 
 	return new_sk;
 }

@@ -99,7 +99,7 @@ static int iodev_env_init(void) {
 
 	idesc_table = idesc_table_get_table(task_self()); //kernel task
 
-	idesc_init(&idesc_diag.idesc, &iodev_idx_ops, NULL);
+	idesc_init(&idesc_diag.idesc, &iodev_idx_ops, FS_MAY_READ | FS_MAY_WRITE);
 	fd = idesc_table_add(idesc_table, &idesc_diag.idesc, 0);
 	if (fd < 0) {
 		return fd;
