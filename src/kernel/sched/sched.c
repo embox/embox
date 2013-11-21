@@ -80,9 +80,13 @@ void sched_wake(struct thread *t) {
 
 	irq_lock();
 	{
-		t->state |= __THREAD_STATE_READY;
-		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
-		runq_insert(&rq.queue, t);
+
+		t->state &= ~__THREAD_STATE_WAITING;
+
+		if (!(t->state & __THREAD_STATE_READY)) {
+			t->state |= __THREAD_STATE_READY;
+			runq_insert(&rq.queue, t);
+		}
 
 		if (thread_priority_get(t) > thread_priority_get(current)) {
 			sched_post_switch();
@@ -171,17 +175,17 @@ static void sched_switch(void) {
 
 		if (prev->state & __THREAD_STATE_RUNNING) {
 			prev->state |= __THREAD_STATE_READY;
-			prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
+			prev->state &= ~__THREAD_STATE_RUNNING;
 			runq_insert(&rq.queue, prev);
 		}
 
 		next = runq_extract(&rq.queue);
 
 		assert(next != NULL);
-		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
+		assert(next->state & __THREAD_STATE_READY);
 
 		next->state |= __THREAD_STATE_RUNNING;
-		next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
+		next->state &= ~__THREAD_STATE_READY;
 
 		if (prev == next) {
 			goto out;

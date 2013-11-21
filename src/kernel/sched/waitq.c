@@ -43,6 +43,8 @@ int __waitq_wait_locked(int timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(current->wait_link); /* Should be prepared */
 
+	current->state &= ~__THREAD_STATE_RUNNING;
+
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
@@ -92,7 +94,6 @@ void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 	assert(current->state & __THREAD_STATE_RUNNING);
 
 	current->state |= __THREAD_STATE_WAITING;
-	current->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_RUNNING);
 
 	wait_link->thread = current;
 	wait_link->result = 0;
@@ -109,9 +110,7 @@ void __waitq_cleanup(void) {
 	sched_lock();
 	{
 		if (current->state & __THREAD_STATE_WAITING) {
-			current->state |= __THREAD_STATE_RUNNING;
-			current->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
-
+			current->state &= ~__THREAD_STATE_WAITING;
 			waitq_remove(current->wait_link);
 		}
 	}
