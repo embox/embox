@@ -20,39 +20,13 @@
 
 #include <fs/idesc.h>
 
-static inline int ioctl_inherite(int fd, int request, void *data) {
-	int rc;
-	const struct task_idx_ops *ops;
+static inline int ioctl_inherite(struct idesc *idesc, int request, void *data) {
+	assert(idesc->idesc_ops);
 
-#ifndef IDESC_TABLE_USE
-	struct idx_desc *desc;
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		rc = -1;
-		DPRINTF(("EBADF "));
-		goto end;
+	if (!idesc->idesc_ops->ioctl) {
+		return SET_ERRNO(ENOTSUP);
 	}
-
-	ops = task_idx_desc_ops(desc);
-#else
-	struct idesc *idesc;
-	idesc = idesc_common_get(fd);
-	assert(idesc);
-	ops = idesc->idesc_ops;
-#endif
-
-	assert(ops);
-
-	if (NULL == ops->ioctl) {
-		rc = -1;
-	} else {
-		rc = ops->ioctl(idesc, request, data);
-	}
-	return rc;
-
+	return idesc->idesc_ops->ioctl(idesc, request, data);
 }
 
 int ioctl(int fd, int request, ...) {
@@ -104,7 +78,7 @@ int ioctl(int fd, int request, ...) {
 	}
 	default:
 		data = va_arg(args, void*);
-		rc = ioctl_inherite(fd,request, data);
+		rc = ioctl_inherite(idesc, request, data);
 		break;
 
 	}
@@ -115,72 +89,17 @@ int ioctl(int fd, int request, ...) {
 	return rc;
 }
 
+static inline int fcntl_inherit(struct idesc *idesc, int cmd, void *data) {
+	assert(idesc->idesc_ops);
+	if (!idesc->idesc_ops->ioctl) {
+		return SET_ERRNO(ENOTSUP);
+	}
+	return idesc->idesc_ops->ioctl(idesc, cmd, data);
+}
 
-/* XXX -- whole function seems to be covered by many workarounds
- * try blame it -- Anton Kozlov */
 int fcntl(int fd, int cmd, ...) {
-#ifndef IDESC_TABLE_USE
-	va_list args;
-	int res, err, flag;
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		DPRINTF(("EBADF "));
-		err = -EBADF;
-		res = -1;
-		goto end;
-	}
-
-	flag = 0;
-	ops = task_idx_desc_ops(desc);
-	assert(ops != NULL);
-
-	va_start(args, cmd);
-
-	err = -EINVAL;
-	res = -1;
-
-	/* Fcntl works in two steps:
-	 * 1. Make general commands like F_SETFD, F_GETFD.
-	 * 2. If fd has some internal fcntl(), it will be called.
-	 *    Otherwise result of point 1 will be returned. */
-	switch(cmd) {
-	case F_GETFD:
-		res = *task_idx_desc_flags_ptr(desc);
-		err = 0;
-		break;
-	case F_SETFD:
-		flag = va_arg(args, int);
-		*task_idx_desc_flags_ptr(desc) = flag;
-		res = 0;
-		err = 0;
-		break;
-	case F_GETPIPE_SZ:
-	case F_SETPIPE_SZ:
-		err = -ENOTSUP;
-		res = -1;
-		break;
-	default:
-		err = -EINVAL;
-		res = -1;
-		break;
-	}
-
-	if (ops->ioctl != NULL) {
-		res = ops->ioctl(desc, cmd, (void *)flag);
-	}
-
-	va_end(args);
-end:
-	DPRINTF(("fcntl(%d, %d) = %d\n", fd, cmd, res));
-	SET_ERRNO(-err);
-	return res;
-#else
 	struct idesc *idesc;
+	void * data;
 	va_list args;
 
 	if (!idesc_index_valid(fd)) {
@@ -204,23 +123,17 @@ end:
 		idesc->idesc_flags = va_arg(args, int);
 		va_end(args);
 		return 0;
-	case F_GETPIPE_SZ:
+/*	case F_GETPIPE_SZ:
 	case F_SETPIPE_SZ:
 		break;
+*/
 	default:
-		/*
-		 * va_start(args, cmd);
-		 * data = va_arg(args, void*);
-		 * if (ops->ioctl != NULL) {
-		res = ops->ioctl(desc, cmd, data);
-			}
-		 */
-		break;
+		va_start(args, cmd);
+		data = va_arg(args, void*);
+		va_end(args);
+		return fcntl_inherit(idesc, cmd, data);
 	}
 
-	SET_ERRNO(ENOTSUP);
-
-	return -1;
-#endif
+	return SET_ERRNO(ENOTSUP);
 }
 
