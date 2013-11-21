@@ -14,8 +14,8 @@
 
 void sched_timing_init(struct thread *t) {
 	/* setup thread running time */
-	t->sched_attr.sched_time.running_time = 0;
-	t->sched_attr.sched_time.last_sync = clock();
+	t->runnable.sched_attr.sched_time.running_time = 0;
+	t->runnable.sched_attr.sched_time.last_sync = clock();
 }
 
 clock_t sched_timing_get(struct thread *t) {
@@ -23,10 +23,10 @@ clock_t sched_timing_get(struct thread *t) {
 
 	/* if thread is executing now we have to add recent CPU time slice. */
 	if (t->state & __THREAD_STATE_RUNNING) {
-		running = clock() - t->sched_attr.sched_time.last_sync;
-		running += t->sched_attr.sched_time.running_time;
+		running = clock() - t->runnable.sched_attr.sched_time.last_sync;
+		running += t->runnable.sched_attr.sched_time.running_time;
 	} else {
-		running = t->sched_attr.sched_time.running_time;
+		running = t->runnable.sched_attr.sched_time.running_time;
 	}
 
 	return running;
@@ -35,13 +35,13 @@ clock_t sched_timing_get(struct thread *t) {
 void sched_timing_stop(struct thread *t, clock_t cur_time) {
 	clock_t spent;
 
-	spent = cur_time - t->sched_attr.sched_time.last_sync;
+	spent = cur_time - t->runnable.sched_attr.sched_time.last_sync;
 
-	t->sched_attr.sched_time.running_time += spent;
+	t->runnable.sched_attr.sched_time.running_time += spent;
 	//TODO this is for qt
 	t->task->per_cpu += spent;
 }
 
 void sched_timing_start(struct thread *t, clock_t cur_time) {
-	t->sched_attr.sched_time.last_sync = cur_time;
+	t->runnable.sched_attr.sched_time.last_sync = cur_time;
 }

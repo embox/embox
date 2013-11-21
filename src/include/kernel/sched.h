@@ -17,6 +17,10 @@
 #include <kernel/sched/sched_priority.h>
 
 
+
+
+
+
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
 struct thread;
@@ -92,6 +96,5 @@ extern void sched_post_switch(void);
  *   On operation fail.
  */
 extern void sched_signal(struct thread *thread);
-
 
 #endif /* KERNEL_SCHED_H_ */

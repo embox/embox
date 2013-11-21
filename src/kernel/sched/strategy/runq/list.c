@@ -8,7 +8,7 @@
 
 #include <util/dlist.h>
 
-#include <kernel/thread.h>
+#include <kernel/runnable/runnable.h>
 #include <kernel/sched/sched_strategy.h>
 
 void runq_item_init(runq_item_t *runq_link) {
@@ -19,20 +19,20 @@ void runq_queue_init(runq_queue_t *queue) {
 	dlist_init(queue);
 }
 
-void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched_attr.runq_link, queue);
+void runq_queue_insert(runq_queue_t *queue, struct runnable *runnable) {
+	dlist_add_prev(&runnable->sched_attr.runq_link, queue);
 }
 
-void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
-	dlist_del(&thread->sched_attr.runq_link);
+void runq_queue_remove(runq_queue_t *queue, struct runnable *runnable) {
+	dlist_del(&runnable->sched_attr.runq_link);
 }
 
-struct thread *runq_queue_extract(runq_queue_t *queue) {
-	struct thread *thread;
+struct runnable *runq_queue_extract(runq_queue_t *queue) {
+	struct runnable *runnable;
 
-	thread = dlist_entry(queue->next, struct thread, sched_attr.runq_link);
-	runq_queue_remove(queue, thread);
+	runnable = dlist_entry(queue->next, struct runnable, sched_attr.runq_link);
+	runq_queue_remove(queue, runnable);
 
-	return thread;
+	return runnable;
 }
 

@@ -29,12 +29,20 @@
 #include <kernel/sched.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
+
+#include <kernel/runnable/runnable.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/state.h>
 
 #include <profiler/tracing/trace.h>
 
+/*#include <kernel/sched/thread_routine.h>*/
+#define SCHED_THREAD_REPLANNED 1
+#define SCHED_THREAD_REMAINED 0
+struct thread_pair{
+	struct thread *prev, *next;
+};
 
 
 static void sched_switch(void);
@@ -80,7 +88,7 @@ void sched_wake(struct thread *t) {
 	{
 		t->state |= __THREAD_STATE_READY;
 		t->state &= ~(__THREAD_STATE_WAITING | __THREAD_STATE_RUNNING);
-		runq_queue_insert(&rq.queue, t);
+		runq_queue_insert(&rq.queue, &(t->runnable));
 
 		if (thread_priority_get(t) > thread_priority_get(current)) {
 			sched_post_switch();
@@ -119,7 +127,7 @@ void sched_finish(struct thread *t) {
 			t->state = __THREAD_STATE_DO_EXITED(t->state);
 
 			if (t != thread_self()) {
-				runq_queue_remove(&rq.queue, t);
+				runq_queue_remove(&rq.queue, &(t->runnable));
 			} else {
 				sched_post_switch();
 			}
@@ -159,8 +167,8 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		/* if in runq */
 		if (t->state & __THREAD_STATE_READY) {
-			runq_queue_remove(&rq.queue, t);
-			runq_queue_insert(&rq.queue, t);
+			runq_queue_remove(&rq.queue, &(t->runnable));
+			runq_queue_insert(&rq.queue, &(t->runnable));
 
 			if (prior > thread_priority_get(current)) {
 				sched_post_switch();
@@ -178,8 +186,9 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
  * Called by critical dispatching code with IRQs disabled.
  */
 static void sched_switch(void) {
-	struct thread *prev, *next;
-	clock_t new_clock;
+	struct thread *prev_thread;
+	struct runnable *prev, *next;
+	struct thread_pair arg;
 
 	assert(!in_sched_locked());
 
@@ -192,55 +201,70 @@ static void sched_switch(void) {
 
 		ipl_enable();
 
-		prev = thread_get_current();
+		prev_thread = thread_get_current();
+		prev = &(prev_thread->runnable);
 
-		if (prev->state & __THREAD_STATE_RUNNING) {
+		if (prev_thread->state & __THREAD_STATE_RUNNING) {
 			runq_queue_insert(&rq.queue, prev);
 		}
 
 		next = runq_queue_extract(&rq.queue);
 
+		/*
 		assert(next != NULL);
 		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
+		*/
 
+		if(next->prepare(prev, next, &rq) == SCHED_THREAD_REPLANNED){
+			next->run_arg = &arg;
+			next->run(prev, next, next->run_arg);
+		}
+
+		/*
 		if (prev == next) {
 			ipl_disable();
 			goto out;
 		} else {
 			if (prev->state & __THREAD_STATE_RUNNING) {
 				prev->state |= __THREAD_STATE_READY;
+				*/
 				/* TODO maybe without waiting */
+				/*
 				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
 			}
 			next->state |= __THREAD_STATE_RUNNING;
+			*/
 			/* TODO maybe without waiting */
+			/*
 			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 		}
 
-		if (prev->policy == SCHED_FIFO && next->policy != SCHED_FIFO) {
+		if (prev->runnable.policy == SCHED_FIFO && next->runnable.policy != SCHED_FIFO) {
 			sched_ticker_init();
 		}
 
-		if (prev->policy != SCHED_FIFO && next->policy == SCHED_FIFO) {
+		if (prev->runnable.policy != SCHED_FIFO && next->runnable.policy == SCHED_FIFO) {
 			sched_ticker_fini(&rq);
-		}
+		}*/
 
-		/* Running time recalculation */
+		/* Running time recalculation *//*
 		new_clock = clock();
 		sched_timing_stop(prev, new_clock);
 		sched_timing_start(next, new_clock);
-
+		*/
+		/*
 		trace_point("context switch");
 
 		ipl_disable();
 
 		thread_set_current(next);
-		context_switch(&prev->context, &next->context);
+		context_switch(&prev->context, &next->context);*/
+
+
+
 	}
 out:
 	sched_unlock_noswitch();
 
 	thread_signal_handle();
 }
-
-

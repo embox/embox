@@ -1,8 +1,0 @@
-package embox.kernel.runnable
-
-module Runnable{
-	source "runnable.c"
-
-	depends embox.kernel.thread
-	depends embox.lib.LibCAssert
-}

@@ -5,19 +5,21 @@
  * @author: Anton Bondarev
  */
 
-#include <kernel/thread.h>
-#include <kernel/thread/state.h>
+#include <kernel/runnable/runnable.h>
+/*#include <kernel/thread/state.h>*/
+#include <kernel/runnable/runnable_priority.h>
+
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/sched/runq.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
-#define prior_field(field)   t->runnable.sched_attr.thread_priority.field
+#define prior_field(field)   r->sched_attr.thread_priority.field
 
-int thread_priority_init(struct thread *t, sched_priority_t new_priority) {
-	assert(t);
-	assert(t->state == __THREAD_STATE_WAITING);
+int runnable_priority_init(struct runnable *r, sched_priority_t new_priority) {
+	assert(r);
+	//assert(t->state == __THREAD_STATE_WAITING);
 
 	prior_field(base_priority) = new_priority;
 	prior_field(current_priority) = new_priority;
@@ -25,8 +27,8 @@ int thread_priority_init(struct thread *t, sched_priority_t new_priority) {
 	return 0;
 }
 
-int thread_priority_set(struct thread *t, sched_priority_t new_priority) {
-	assert(t);
+int runnable_priority_set(struct runnable *r, sched_priority_t new_priority) {
+	assert(r);
 
 	sched_lock();
 	{
@@ -54,15 +56,15 @@ out:
 	return 0;
 }
 
-sched_priority_t thread_priority_get(struct thread *t) {
-	assert(t);
+sched_priority_t runnable_priority_get(struct runnable *r) {
+	assert(r);
 
 	return prior_field(current_priority);
 }
 
-sched_priority_t thread_priority_inherit(struct thread *t,
+sched_priority_t runnable_priority_inherit(struct runnable *r,
 		sched_priority_t priority) {
-	assert(t);
+	assert(r);
 
 	if(priority > prior_field(current_priority)) {
 		prior_field(current_priority) = priority;
@@ -71,8 +73,8 @@ sched_priority_t thread_priority_inherit(struct thread *t,
 	return prior_field(current_priority);
 }
 
-sched_priority_t thread_priority_reverse(struct thread *t) {
-	assert(t);
+sched_priority_t runnable_priority_reverse(struct runnable *r) {
+	assert(r);
 
 	prior_field(current_priority) = prior_field(base_priority);
 

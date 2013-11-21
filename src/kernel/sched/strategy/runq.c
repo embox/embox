@@ -23,7 +23,7 @@
 
 
 void sched_strategy_init(struct thread *t) {
-	runq_item_init(&t->sched_attr.runq_link);
-	sched_affinity_init(t);
+	runq_item_init(&(t->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(t->runnable));
 	sched_timing_init(t);
 }

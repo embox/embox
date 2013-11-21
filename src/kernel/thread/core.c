@@ -32,11 +32,14 @@
 #include <kernel/thread/state.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/sched/sched_priority.h>
+#include <kernel/runnable/runnable.h>
 
 #include <kernel/panic.h>
 
 #include <hal/context.h>
 #include <err.h>
+
+#include <kernel/sched/thread_routine.h>
 
 EMBOX_UNIT_INIT(thread_core_init);
 
@@ -160,6 +163,11 @@ void thread_init(struct thread *t, unsigned int flags,
 	dlist_init(&t->thread_link); /* default unlink value */
 
 	t->state = __THREAD_STATE_WAITING;
+
+	/* set sched functions */
+	t->runnable.prepare = &sched_prepare_thread;
+	t->runnable.run = (void *)sched_execute_thread;
+	t->runnable.run_arg = NULL;
 
 	/* set executive function and arguments pointer */
 	t->run = run;

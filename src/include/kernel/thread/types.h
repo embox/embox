@@ -12,6 +12,7 @@
 
 #include <hal/context.h>
 
+#include <kernel/sched/waitq.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/signal.h>
@@ -19,7 +20,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/sched/waitq.h>
+#include <kernel/runnable/runnable.h>
 
 #include <util/dlist.h>
 
@@ -29,7 +30,10 @@ typedef int __thread_id_t;
 struct task;
 
 struct thread {
-	thread_state_t     state;          /**< Current state. */
+	/* runnable member HAVE TO be first. Please, do NOT move!*/
+	struct runnable    runnable;     /**< Runnable interface for scheduler */
+
+	thread_state_t     state;        /**< Current state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
@@ -52,9 +56,13 @@ struct thread {
 	struct wait_link   *wait_link;    /**< Hold data in waiting mode */
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
-	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 
-	int                policy;       /**< Scheduling policy*/
+
+/*	struct sched_attr  sched_attr; */  /**< Scheduler-private data. */
+
+/*	int                policy;    */   /**< Scheduling policy*/
+
+
 
 	thread_local_t     local;
 

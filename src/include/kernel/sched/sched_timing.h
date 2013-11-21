@@ -14,6 +14,8 @@
 
 typedef __sched_timing_t sched_timing_t;
 
+struct thread;
+
 extern void sched_timing_init(struct thread *t);
 
 extern clock_t sched_timing_get(struct thread *t);

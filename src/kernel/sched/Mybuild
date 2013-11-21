@@ -1,0 +1,32 @@
+package embox.kernel.sched
+
+module sched {
+	source "sched.c"
+	source "sched_signal.c"
+
+	depends embox.kernel.timer.sys_timer /* for timeslices support */
+	depends embox.arch.context /* context_switch */
+	depends strategy.api
+
+	@NoRuntime depends embox.kernel.thread.signal
+	@NoRuntime depends embox.kernel.thread.current.api
+	@NoRuntime depends embox.compat.posix.util.time
+	@NoRuntime depends embox.kernel.critical
+	@NoRuntime depends embox.profiler.trace
+
+	@NoRuntime depends embox.kernel.event_sched
+
+	@NoRuntime depends sched_ticker
+}
+
+module sched_ticker {
+	source "sched_ticker.c"
+	option number tick_interval = 100
+}
+
+module wait_queue {
+	source "waitq.c"
+
+	depends embox.util.DList
+}
+
