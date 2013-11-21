@@ -9,22 +9,27 @@
 #include <drivers/pty.h>
 
 #include <string.h>
+#include <util/member.h>
 
 #include <kernel/sched.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
 
 static void pty_out_wake(struct tty *t) {
+#if 0
 	struct pty *pt = pty_from_tty(t);
 
 	event_notify(&pt->read_event);
+#endif
 }
 
 size_t pty_read(struct pty *pt, char *buff, size_t size) {
 	struct tty *t = pty_to_tty(pt);
 	const char *saved_buff = buff;
 	size_t block_size;
+#if 0
 	int rc;
+#endif
 
 	for (;;) {
 		work_disable(&t->rx_work);
@@ -45,10 +50,12 @@ size_t pty_read(struct pty *pt, char *buff, size_t size) {
 
 		if (!size)
 			break;
+#if 0
 
 		rc = event_wait_ms(&pt->read_event, SCHED_TIMEOUT_INFINITE);
 		if (rc)
 			break;
+#endif
 	}
 
 	return buff - saved_buff;
