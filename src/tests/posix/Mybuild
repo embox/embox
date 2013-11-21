@@ -39,3 +39,10 @@ module poll_test {
 	depends embox.compat.posix.idx.pipe
 	depends embox.framework.LibFramework
 }
+
+module pipe_test {
+	source "pipe_test.c"
+
+	depends embox.compat.posix.idx.pipe
+}
+
