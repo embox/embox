@@ -32,9 +32,6 @@ struct pipe {
 	struct event read_wait;       /**< Event to activate reading when pipe was not empty */
 	struct event write_wait;      /**< Event to activate writing when pipe was not full */
 
-	struct io_sync ios_read;
-	struct io_sync ios_write;
-
 	/* FIXME used by pipe io, will follow pipe_pty when thrown  */
 	char has_tio;
 	struct termios tio;

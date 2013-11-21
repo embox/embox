@@ -25,6 +25,7 @@
 #include <fs/idesc.h>
 #include <fcntl.h>
 #include <fs/pipe.h>
+#include <fs/flags.h>
 
 #include <unistd.h>
 
@@ -33,42 +34,43 @@ struct idesc_pipe {
 	struct pipe *pipe;
 };
 
-#if 0
+#if 1
 static inline void writing_enable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		io_sync_enable(pipe->writing_end->ios, IO_SYNC_WRITING);
+		io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
 }
 
 static inline void reading_enable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		io_sync_enable(pipe->reading_end->ios, IO_SYNC_READING);
+		io_sync_enable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
 }
 
 static inline void writing_disable(struct pipe *pipe) {
 	if (pipe->writing_end)
-		io_sync_disable(pipe->writing_end->ios, IO_SYNC_WRITING);
+		io_sync_disable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
 }
 
 static inline void reading_disable(struct pipe *pipe) {
 	if (pipe->reading_end)
-		io_sync_disable(pipe->reading_end->ios, IO_SYNC_READING);
+		io_sync_disable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
 }
 #endif
 
-int pipe_close(struct idesc *desc) {
+int pipe_close(struct idesc *idesc) {
+#if 1
+	struct idesc_pipe *ip;
 	struct pipe *pipe;
 
-	pipe = NULL;//(struct pipe*) task_idx_desc_data(desc);
-	pipe = pipe;
+	ip = (struct idesc_pipe *) idesc;
+	pipe = ip->pipe;
 
-#if 0
 	sched_lock();
 	{
-		if (task_idx_indata(desc) == pipe->reading_end) {
+		if (idesc == pipe->reading_end) {
 			pipe->reading_end = NULL;
 			/* Wake up writing end if it is sleeping. */
 			event_notify(&pipe->write_wait);
-		} else if (task_idx_indata(desc) == pipe->writing_end) {
+		} else if (idesc == pipe->writing_end) {
 			pipe->writing_end = NULL;
 			/* Wake up reading end if it is sleeping. */
 			event_notify(&pipe->read_wait);
@@ -82,22 +84,26 @@ int pipe_close(struct idesc *desc) {
 
 	}
 	sched_unlock();
-#endif
+
 	return 0;
+#else
+	return 0;
+#endif
 }
 
-int pipe_read(struct idesc *data, void *buf, size_t nbyte) {
+int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+#if 1
 	int len;
+	struct idesc_pipe *ip;
 	struct pipe *pipe;
 
-	pipe = NULL;//(struct pipe*) task_idx_desc_data(data);
-	pipe = pipe;
+	ip = (struct idesc_pipe *) idesc;
+	pipe = ip->pipe;
 
 	if (0 == nbyte) {
 		return 0;
 	}
 
-#if 0
 	sched_lock();
 	{
 		len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
@@ -107,7 +113,7 @@ int pipe_read(struct idesc *data, void *buf, size_t nbyte) {
 			sched_unlock();
 			return len;
 		}
-		if (!(data->flags & O_NONBLOCK)) {
+		if (!(idesc->idesc_flags & O_NONBLOCK)) {
 			if (!len) {
 				EVENT_WAIT(&pipe->read_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
@@ -125,21 +131,21 @@ int pipe_read(struct idesc *data, void *buf, size_t nbyte) {
 		}
 	}
 	sched_unlock();
-#else
-	len = 0;
-#endif
 	return len;
+#else
+	return 0;
+#endif
 }
 
-int pipe_write(struct idesc *data, const void *buf, size_t nbyte) {
+int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+#if 1
 	int len;
 	struct pipe *pipe;
+	struct idesc_pipe *ip;
 
-	pipe = NULL;//(struct pipe*) task_idx_desc_data(data);
-	pipe = pipe;
-	len = 0;
+	ip = (struct idesc_pipe *) idesc;
+	pipe = ip->pipe;
 
-#if 0
 	sched_lock();
 	{
 		/* If reading end is closed that means it is not reason for further writing. */
@@ -155,7 +161,7 @@ int pipe_write(struct idesc *data, const void *buf, size_t nbyte) {
 		}
 
 		len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
-		if (!(data->flags & O_NONBLOCK)) {
+		if (!(idesc->idesc_flags & O_NONBLOCK)) {
 			if (!len) {
 				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 				len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
@@ -173,9 +179,11 @@ int pipe_write(struct idesc *data, const void *buf, size_t nbyte) {
 		}
 	}
 	sched_unlock();
-#endif
 
 	return len;
+#else
+	return 0;
+#endif
 }
 
 #if 0
@@ -213,29 +221,38 @@ static const struct task_idx_ops write_ops = {
 };
 
 static struct idesc_pipe *idesc_pipe_alloc(struct pipe *pipe,
-		const struct task_idx_ops *ops, struct idesc **id) {
+		const struct task_idx_ops *ops, struct idesc_perm *iperm,
+		struct idesc **id) {
 	struct idesc_pipe *idp;
 
 	idp = malloc(sizeof(struct idesc_pipe));
 
 	if (idp) {
-		idesc_init(&idp->idesc, ops, NULL);
+		idesc_init(&idp->idesc, ops, iperm);
 
 		idp->pipe = pipe;
 		*id = &idp->idesc;
+
+		io_sync_init(&idp->idesc.idesc_event.io_sync, 0, 0);
 	}
 
 	return idp;
 }
 
 static struct idesc_pipe *idesc_pipe_alloc_reading(struct pipe *pipe) {
+	struct idesc_perm iperm;
 
-	return idesc_pipe_alloc(pipe, &read_ops, &pipe->reading_end);
+	idesc_perm_init(&iperm, FS_MAY_READ);
+
+	return idesc_pipe_alloc(pipe, &read_ops, &iperm, &pipe->reading_end);
 }
 
 static struct idesc_pipe *idesc_pipe_alloc_writing(struct pipe *pipe) {
+	struct idesc_perm iperm;
 
-	return idesc_pipe_alloc(pipe, &write_ops, &pipe->writing_end);
+	idesc_perm_init(&iperm, FS_MAY_WRITE);
+
+	return idesc_pipe_alloc(pipe, &write_ops, &iperm, &pipe->writing_end);
 }
 
 static void idesc_pipe_free(struct idesc_pipe *idp) {
@@ -261,6 +278,8 @@ static struct pipe *pipe_alloc(void) {
         pipe->buff = pipe_buff;
         pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
         ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
+	event_init(&pipe->read_wait, "pipe_read_wait");
+	event_init(&pipe->write_wait, "pipe_write_wait");
 
 	return pipe;
 

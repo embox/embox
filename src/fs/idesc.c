@@ -11,6 +11,16 @@
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 
+int idesc_perm_init(struct idesc_perm *iperm, discrete_permission_t dperm) {
+
+#if 0
+	memcpy(&iperm, task_self_security(), sizeof(struct security_t));
+#endif
+	iperm->dperm = dperm;
+
+	return 0;
+}
+
 int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, struct idesc_perm *attr) {
 
 	memset(idesc, 0, sizeof(struct idesc));
