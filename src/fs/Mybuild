@@ -31,6 +31,7 @@ module NoFileSystem extends fs_api{
 
 module xattr {
 	source "xattr.c"
+	source "xattr_list.c"
 }
 
 module core extends fs_api {
