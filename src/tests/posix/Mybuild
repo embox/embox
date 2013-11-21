@@ -46,3 +46,9 @@ module pipe_test {
 	depends embox.compat.posix.idx.pipe
 }
 
+module ppty_test {
+	source "ppty_test.c"
+
+	depends embox.compat.posix.idx.ppty
+}
+

@@ -15,87 +15,196 @@
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
+#include <util/member.h>
 
-#include <drivers/termios_ops.h>
+#include <drivers/pty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <fs/pipe.h>
+#include <fs/idesc.h>
 
 #include <kernel/task/idesc_table.h>
 
+struct ppty;
 
-static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
-	void *storage;
+struct idesc_ppty {
+	struct idesc idesc;
+	struct ppty *ppty;
+};
 
-	if (size > MAX_PIPE_BUFFER_SIZE )
-		return;
+struct ppty {
+	struct pty pty;
+	struct idesc *master, *slave;
+};
 
-	if (!(storage = malloc(size))) {
-		return;
+static int ppty_close(struct idesc *idesc);
+static int ppty_ioctl(struct idesc *idesc, int request, void *data);
+static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int ppty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int ppty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int ppty_fstat(struct idesc *data, void *buff);
+
+static const struct task_idx_ops ppty_master_ops = {
+		.write = ppty_master_write,
+		.read  = ppty_master_read,
+		.close = ppty_close,
+		/*.ioctl = ppty_ioctl,*/
+		/*.fstat = ppty_fstat,*/
+};
+
+static const struct task_idx_ops ppty_slave_ops = {
+		.write = ppty_slave_write,
+		.read  = ppty_slave_read,
+		.close = ppty_close,
+		.ioctl = ppty_ioctl,
+		.fstat = ppty_fstat,
+};
+
+static struct ppty *ppty_create(void) {
+	struct ppty *ppty;
+
+	ppty = malloc(sizeof(struct ppty));
+
+	if (ppty) {
+		pty_init(&ppty->pty);
 	}
+
+	return ppty;
+}
+
+static void ppty_delete(struct ppty *ppty) {
+
+	free(ppty);
+}
+
+static struct idesc_ppty *idesc_ppty_create(struct ppty *ppty, const struct task_idx_ops *ops,
+		struct idesc **idesc) {
+	struct idesc_ppty *ippty;
+
+	ippty = malloc(sizeof(struct idesc_ppty));
+
+	if (ippty) {
+		idesc_init(&ippty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
+	}
+
+	ippty->ppty = ppty;
+
+	*idesc = &ippty->idesc;
+
+	return ippty;
+}
+
+static void idesc_ppty_delete(struct idesc_ppty *ppty, struct idesc **idesc) {
+
+	*idesc = NULL;
+
+	free(ppty);
+}
+
+static int ppty_fixup_error(struct idesc *idesc, int code) {
+	struct ppty *ppty;
+	struct idesc *idesc_other;
+
+	/* Negative => error, positive => some data read */
+	if (code != 0) {
+		return code;
+	}
+
+	ppty = ((struct idesc_ppty *) idesc)->ppty;
+
+	if (idesc == ppty->master) {
+		idesc_other = ppty->slave;
+	} else {
+		assert(idesc == ppty->slave);
+		idesc_other = ppty->master;
+	}
+
+	if (idesc_other == NULL) {
+		return 0;
+	}
+
+	assert(idesc->idesc_flags & O_NONBLOCK);
+	return -EAGAIN;
+}
+
+static int ppty_close(struct idesc *idesc) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
+	struct idesc **ippty_pm, **ippty_ps;
+	struct ppty *ppty;
+
+	ippty_pm = &ippty->ppty->master;
+	ippty_ps = &ippty->ppty->slave;
+
+	ppty = ippty->ppty;
 
 	sched_lock();
 	{
-		free(pipe->buff->storage);
-		ring_buff_init(pipe->buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
+		if (idesc == *ippty_pm) {
+			idesc_ppty_delete((struct idesc_ppty *) idesc, ippty_pm);
+			/* Wake up writing end if it is sleeping. */
+			/*event_notify(&pipe->write_wait);*/
+		} else if (idesc == *ippty_ps) {
+			idesc_ppty_delete((struct idesc_ppty *) idesc, ippty_ps);
+			/* Wake up reading end if it is sleeping. */
+			/*event_notify(&pipe->read_wait);*/
+		}
+
+		/* Free memory if both of ends are closed. */
+		if (NULL == *ippty_pm && NULL == *ippty_ps) {
+			ppty_delete(ppty);
+		}
+
 	}
 	sched_unlock();
-}
-
-static int inject_ops(int fd, const struct task_idx_ops *ops, const struct termios *tio,
-		const struct task_idx_ops **backup) {
-#ifndef IDESC_TABLE_USE
-	struct idesc *idx_desc = task_self_idx_get(fd);
-	struct pipe *pipe = (struct pipe*) task_idx_desc_data(idx_desc);
-
-	if (!idx_desc) {
-		return -EBADF;
-	}
-
-	if (backup) {
-		*backup = task_idx_indata(idx_desc)->res_ops;
-	}
-
-	task_idx_indata(idx_desc)->res_ops = ops;
-#else
-	//struct idesc *idesc = idesc_common_get(fd);
-	struct pipe *pipe = NULL;
-#endif
-
-	if (tio) {
-		memcpy(&pipe->tio, tio, sizeof(struct termios));
-		pipe->has_tio = 1;
-	} else {
-		pipe->has_tio = 0;
-	}
 
 	return 0;
 }
 
+static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+	int res;
 
+	/* XXX */
+	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
-static int pipe_pty_ioctl(struct idesc *desc, int request, void *data) {
-	struct pipe *pipe;
-	size_t size;
-
-	pipe = NULL;//(struct pipe*) task_idx_desc_data(data);
-
-	switch (request) {
-	case F_GETPIPE_SZ:
-		return pipe->buf_size;
-	case F_SETPIPE_SZ:
-		size = (size_t)data;
-		pipe_set_buf_size(pipe, size);
-		break;
-	default:
-		break;
-	}
-
-
-	return 0;
+	res = pty_write(&ippty->ppty->pty, buf, nbyte);
+	return ppty_fixup_error(desc, res);
 }
 
-static int pipe_pty_fstat(struct idesc *data, void *buff) {
+static int ppty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+	int res;
+
+	/* XXX */
+	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
+
+	res = pty_read(&ippty->ppty->pty, buf, nbyte);
+	return ppty_fixup_error(desc, res);
+}
+
+static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+	int res;
+
+	/* XXX */
+	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
+
+	res = tty_write(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	return ppty_fixup_error(desc, res);
+}
+
+static int ppty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+	int res;
+
+	/* XXX */
+	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
+
+	res = tty_read(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	return ppty_fixup_error(desc, res);
+}
+
+static int ppty_fstat(struct idesc *data, void *buff) {
 	struct stat *st = buff;
 
 	st->st_mode = S_IFCHR;
@@ -103,59 +212,70 @@ static int pipe_pty_fstat(struct idesc *data, void *buff) {
 	return 0;
 
 }
-extern int pipe_write(struct idesc *data, const void *buf, size_t nbyte);
 
-static int pipe_pty_write(struct idesc *desc, const void *buf, size_t nbyte) {
-	char tbuf[4];
-	struct ring r;
-	struct pipe *pipe = NULL;//(struct pipe*) task_idx_desc_data(desc);
-	const char *c = buf;
-	int i;
+static int ppty_ioctl(struct idesc *idesc, int request, void *data) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
 
-	if (pipe->has_tio == 0) {
-		return pipe_write(desc, buf, nbyte);
-	}
-
-	ring_init(&r);
-
-	for (i = 0; i < nbyte; i++) {
-
-		termios_putc((struct termios *) &pipe->tio, c[i], &r, tbuf, 4);
-
-		while (!ring_empty(&r)) {
-			pipe_write(desc, &tbuf[r.tail], 1);
-			ring_just_read(&r, 4, 1);
-		}
-	}
-
-	return nbyte;
+	return tty_ioctl(pty_to_tty(&ippty->ppty->pty), request, data);
 }
-extern int pipe_close(struct idesc *desc);
-extern int pipe_read(struct idesc *data, void *buf, size_t nbyte);
 
-static const struct task_idx_ops pipe_pty_ops = {
-		.write = pipe_pty_write,
-		.read  = pipe_read,
-		.close = pipe_close,
-		//.fcntl = pipe_fcntl,
-		.ioctl = pipe_pty_ioctl,
-		.fstat = pipe_pty_fstat,
-};
-
-int pipe_pty(int pipe[2], const struct termios *tio) {
+int ppty(int pptyfds[2]) {
 	int res;
-	const struct task_idx_ops *backup1, *backup2;
+	struct ppty *ppty;
+	struct idesc_ppty *master, *slave;
+	struct idesc_table *it;
 
-	if (0 > (res = inject_ops(pipe[0], &pipe_pty_ops, tio, &backup1))) {
-		return res;
+	it = idesc_table_get_table(task_self());
+
+	ppty = NULL;
+	master = slave = NULL;
+
+	ppty = ppty_create();
+	if (!ppty) {
+		res = ENOMEM;
+		goto out_err;
 	}
 
-	if (0 > (res = inject_ops(pipe[1], &pipe_pty_ops, tio, &backup2))) {
-		inject_ops(pipe[0], backup1, NULL, NULL);
+	master = idesc_ppty_create(ppty, &ppty_master_ops, &ppty->master);
+	slave = idesc_ppty_create(ppty, &ppty_slave_ops, &ppty->slave);
 
-		return res;
+	if (!master || !slave) {
+		res = ENOMEM;
+		goto out_err;
+	}
+
+	pptyfds[0] = idesc_table_add(it, &master->idesc, 0);
+	pptyfds[1] = idesc_table_add(it, &slave->idesc, 0);
+
+	if (pptyfds[0] < 0) {
+		res = -pptyfds[0];
+		goto out_err;
+	}
+
+	if (pptyfds[1] < 0) {
+		res = -pptyfds[1];
+		goto out_err;
 	}
 
 	return 0;
+
+out_err:
+	if (pptyfds[1] >= 0) {
+		idesc_table_del(it, pptyfds[1]);
+	}
+	if (pptyfds[0] >= 0) {
+		idesc_table_del(it, pptyfds[0]);
+	}
+	if (master) {
+		idesc_ppty_delete(master, &ppty->master);
+	}
+	if (slave) {
+		idesc_ppty_delete(slave, &ppty->slave);
+	}
+	if (ppty) {
+		ppty_delete(ppty);
+	}
+	SET_ERRNO(res);
+	return -1;
 }
 
