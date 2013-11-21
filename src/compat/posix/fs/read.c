@@ -5,6 +5,8 @@
  * @author: Anton Bondarev
  */
 
+#include <errno.h>
+#include <posix_errno.h>
 #include <stddef.h>
 #include <unistd.h>
 
@@ -16,33 +18,25 @@
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	const struct task_idx_ops *ops;
-#ifndef IDESC_TABLE_USE
-	struct idx_desc *desc;
+	struct idesc *idesc;
+	int res;
 
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
+	if(!idesc_index_valid(fd)) {
+		return SET_ERRNO(EBADF);
 	}
 
-	if (!buf) {
-		SET_ERRNO(EFAULT);
-		return -1;
+	idesc = idesc_common_get(fd);
+	if(!idesc) {
+		return SET_ERRNO(EBADF);
 	}
 
-	ops = task_idx_desc_ops(desc);
+	ops = idesc->idesc_ops;
 	assert(ops);
-	assert(ops->read);
-	return ops->read(desc, buf, nbyte);
-#else
-	struct idesc *desc;
-	desc = idesc_common_get(fd);
-	assert(desc);
 
-	ops = desc->idesc_ops;
+	res = ops->read(idesc, buf, nbyte);
+	if (res < 0) {
+		return SET_ERRNO(-res);
+	}
 
-	return ops->read(desc, buf, nbyte);
-#endif
+	return res;
 }

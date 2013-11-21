@@ -11,38 +11,22 @@
 #include <fs/idesc.h>
 
 int close(int fd) {
-#ifndef IDESC_TABLE_USE
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-
-	assert(ops);
-	assert(ops->close);
-
-	return task_self_idx_table_unbind(fd);
-#else
 	struct idesc *idesc;
+	int res;
 
 	if(!idesc_index_valid(fd)) {
-		SET_ERRNO(EBADF);
-		return -1;
+		return SET_ERRNO(EBADF);
 	}
 
 	idesc = idesc_common_get(fd);
 	if(!idesc) {
-		SET_ERRNO(EBADF);
-		return -1;
+		return SET_ERRNO(EBADF);
 	}
 
-	return idesc_close(idesc, fd);
-#endif
+	res = idesc_close(idesc, fd);
+	if (res) {
+		return SET_ERRNO(-res);
+	}
+
+	return res;
 }
