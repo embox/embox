@@ -117,8 +117,7 @@ int dup2(int flides, int flides2) {
 	}
 
 	if (idesc_table_locked(it,flides2)) {
-		SET_ERRNO(EBADF);
-		return -1;
+		close(flides2);
 	}
 
 	res = idesc_table_lock(it, idesc, flides2, 0);
