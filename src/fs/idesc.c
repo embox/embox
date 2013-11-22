@@ -7,6 +7,9 @@
 
 #include <errno.h>
 #include <string.h>
+
+#include <util/dlist.h>
+
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
@@ -18,6 +21,8 @@ int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, idesc_access
 	idesc->idesc_amode = amode;
 
 	idesc->idesc_ops = ops;
+
+	dlist_head_init(&idesc->idesc_event_list);
 
 	return 0;
 }

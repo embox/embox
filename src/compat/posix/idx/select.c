@@ -91,32 +91,12 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int err
 
 	for (fd = 0; fd < nfds; fd++) {
 		if (FD_ISSET(fd, set)) {
-#ifndef IDESC_TABLE_USE
-			struct idx_desc *desc;
-
-			if (!(desc = task_self_idx_get(fd))) {
-				return -EBADF;
-			} else {
-				if ((!error && io_sync_ready(
-							task_idx_indata(desc)->ios, op))
-						|| (error && io_sync_error(
-							task_idx_indata(desc)->ios))) {
-					fd_cnt++;
-				} else {
-					/* Filter out inactive descriptor and unset corresponding monitor. */
-					if (update) {
-						io_sync_notify(task_idx_indata(desc)->ios, op, NULL);
-						FD_CLR(fd, set);
-					}
-				}
-			}
-#else
-			struct idesc *idesc;
+	//		struct idesc *idesc;
 			struct idesc_table *it;
 
 			it = idesc_table_get_table(task_self());
 			assert(it);
-
+#if 0
 			if (!(idesc = idesc_table_get_desc(it, fd))) {
 				return -EBADF;
 			} else {
@@ -132,6 +112,7 @@ static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int err
 					}
 				}
 			}
+
 #endif
 		}
 	}
@@ -203,7 +184,7 @@ static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
 		idesc = idesc_table_get_desc(it, fd);
 
 		if (FD_ISSET(fd, set) && (NULL != idesc)) {
-			io_sync_notify(&idesc->idesc_event.io_sync, op, m_event);
+			//TODO io_sync_notify(&idesc->idesc_event.io_sync, op, m_event);
 		}
 #endif
 	}

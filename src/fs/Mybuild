@@ -16,6 +16,8 @@ module filesystem {
 module file_desc {
 	source "file_desc.c"
 	source "idesc.c"
+	source "idesc_event.c"
+	option number idesc_event_quantity = 256
 	option number fdesc_quantity=32
 }
 

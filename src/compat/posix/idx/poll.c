@@ -35,18 +35,7 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 		if (fds[i].fd < 0) {
 			continue;
 		}
-#ifndef IDESC_TABLE_USE
-		fd_desc = task_self_idx_get(fds[i].fd);
-		if (fd_desc == NULL) {
-			fds[i].revents |= POLLNVAL;
-			++fds_cnt;
-			continue;
 
-		}
-		assert(task_idx_indata(fd_desc) != NULL);
-		fd_ios = task_idx_indata(fd_desc)->ios;
-		assert(fd_ios != NULL);
-#else
 		idesc = idesc_common_get(fds[i].fd);
 		if (idesc == NULL) {
 			fds[i].revents |= POLLNVAL;
@@ -54,9 +43,9 @@ static int test_and_set_fds(struct pollfd fds[], nfds_t nfds,
 			continue;
 		}
 
-		fd_ios = &idesc->idesc_event.io_sync;
+		fd_ios = NULL;// &idesc->idesc_event.io_sync;
 
-#endif
+
 
 		if (fds[i].events & POLLIN) {
 			io_sync_notify(fd_ios, IO_SYNC_READING, m_event);

@@ -9,20 +9,15 @@
 #define FS_IDESC_H_
 
 #include <fs/flags.h>
+#include <util/dlist.h>
 
 struct task_idx_ops;
 typedef int idesc_access_mode_t;
 
-#include <kernel/task/io_sync.h>
-
-struct idesc_event {
-	struct io_sync io_sync;
-};
-
 
 struct idesc {
 	idesc_access_mode_t idesc_amode;
-	struct idesc_event idesc_event;
+	struct dlist_head idesc_event_list;
 	const struct task_idx_ops *idesc_ops;
 	unsigned int idesc_flags;
 	int idesc_count;

@@ -35,23 +35,23 @@ struct idesc_pipe {
 };
 
 static inline void writing_enable(struct pipe *pipe) {
-	if (pipe->writing_end)
-		io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
+//	if (pipe->writing_end)
+//		io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
 }
 
 static inline void reading_enable(struct pipe *pipe) {
-	if (pipe->reading_end)
-		io_sync_enable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
+//	if (pipe->reading_end)
+//		io_sync_enable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
 }
 
 static inline void writing_disable(struct pipe *pipe) {
-	if (pipe->writing_end)
-		io_sync_disable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
+//	if (pipe->writing_end)
+//		io_sync_disable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
 }
 
 static inline void reading_disable(struct pipe *pipe) {
-	if (pipe->reading_end)
-		io_sync_disable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
+//	if (pipe->reading_end)
+//		io_sync_disable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
 }
 
 int pipe_close(struct idesc *idesc) {
@@ -219,7 +219,7 @@ static struct idesc_pipe *idesc_pipe_alloc(struct pipe *pipe,
 		idp->pipe = pipe;
 		*id = &idp->idesc;
 
-		io_sync_init(&idp->idesc.idesc_event.io_sync, 0, 0);
+		//io_sync_init(&idp->idesc.idesc_event.io_sync, 0, 0);
 	}
 
 	return idp;
