@@ -63,12 +63,6 @@ irq_handler_addr:
 fiq_handler_addr:
     .word fiq_handler
 
-
-.data
-	.align 15
-tlb_addr: /* uint32_t tlb[4096] */
-	.space 4096*4
-
 .text
 /* initialize stacks in some modes */
 start:
