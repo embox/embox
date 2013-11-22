@@ -317,6 +317,8 @@ int pipe2(int pipefd[2], int flags) {
 		goto out_err;
 	}
 
+	io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
+
 	return 0;
 
 out_err:
