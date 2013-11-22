@@ -139,3 +139,8 @@ TEST_CASE("In canonical mode master shouldn't accept slave input immediately") {
 
 	test_assert_equal(0, readstr(fds, "abcd\n"));
 }
+
+TEST_CASE("Slave tty should be a tty (test by isatty())") {
+
+	test_assert_true(isatty(fds));
+}
