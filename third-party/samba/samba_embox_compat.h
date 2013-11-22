@@ -38,7 +38,7 @@ int statfs(const char *path, struct statfs *buf);
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
 #include <sys/select.h>
 

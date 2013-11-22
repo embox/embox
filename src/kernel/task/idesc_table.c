@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <assert.h>
+#include <fcntl.h>
 
 #include <fs/idesc.h>
 #include <kernel/task.h>
@@ -18,14 +19,13 @@
 #include <util/indexator.h>
 
 
+#define idesc_cloexec_set(desc) \
+	desc = (struct idesc *)(((uintptr_t)desc) | 0x1)
 
-#define idesc_cloexec_set(idesc) \
-	idesc = (struct idesc *)(((uintptr_t)idesc) | 0x1)
+#define idesc_cloexec_clear(desc) \
+	desc = (struct idesc *)(((uintptr_t)desc) & ~0x1)
 
-#define idesc_cloexec_clear(idesc) \
-	idesc = (struct idesc *)((uintptr_t)t->idesc_table[idx] & ~0x1)
-
-#define idesc_is_cloexec(idesc)  ((uintptr_t)idesc & 0x1)
+#define idesc_is_cloexeced(idesc)  ((uintptr_t)idesc & 0x1)
 
 int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	int idx;
@@ -148,7 +148,7 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 		if (parent_table->idesc_table[i]) {
 			idesc = idesc_table_get_desc(parent_table, i);
 			assert(idesc);
-			if (!idesc_is_cloexec(t->idesc_table[i])) {
+			if (!idesc_is_cloexeced(t->idesc_table[i])) {
 				idesc_table_add(t, idesc, 0);
 			}
 		}
@@ -169,4 +169,31 @@ struct idesc *idesc_common_get(int idx) {
 	assert(it);
 
 	return idesc_table_get_desc(it, idx);
+}
+
+int idesc_is_cloexec(int fd) {
+	struct idesc_table *it;
+	int fd_flags = 0;
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	if (idesc_is_cloexeced(it->idesc_table[fd])) {
+		fd_flags |= FD_CLOEXEC;
+	}
+	return fd_flags;
+}
+
+int idesc_set_cloexec(int fd, int cloexec) {
+	struct idesc_table *it;
+
+	it = idesc_table_get_table(task_self());
+	assert(it);
+
+	if (cloexec | FD_CLOEXEC) {
+		idesc_cloexec_set(it->idesc_table[fd]);
+	} else {
+		idesc_cloexec_clear(it->idesc_table[fd]);
+	}
+	return 0;
 }

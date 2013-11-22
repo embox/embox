@@ -123,8 +123,8 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 	idx_mouseFD = task_self_idx_get(mouseFD);
 	idx_inputFD = task_self_idx_get(inputFD);
 
-	fcntl(mouseFD, F_SETFD, O_NONBLOCK);
-	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+	fcntl(mouseFD, F_SETFL, O_NONBLOCK);
+	fcntl(inputFD, F_SETFL, O_NONBLOCK);
 
 	mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
 	connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
@@ -197,8 +197,8 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 	idx_keyboardFD = task_self_idx_get(keyboardFD);
 	idx_inputFD = task_self_idx_get(inputFD);
 
-	fcntl(keyboardFD, F_SETFD, O_NONBLOCK);
-	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+	fcntl(keyboardFD, F_SETFL, O_NONBLOCK);
+	fcntl(inputFD, F_SETFL, O_NONBLOCK);
 
     keyboardNotifier = new QSocketNotifier(keyboardFD, QSocketNotifier::Read, this);
     connect(keyboardNotifier, SIGNAL(activated(int)),this, SLOT(readKeyboardData()));

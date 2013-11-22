@@ -58,6 +58,11 @@ extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 
 extern struct idesc *idesc_common_get(int idx);
 
+extern int idesc_is_cloexec(int fd);
+
+extern int idesc_set_cloexec(int fd, int cloexec);
+
+
 __END_DECLS
 
 #endif /* IDESC_TABLE_H_ */

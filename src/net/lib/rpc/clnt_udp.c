@@ -114,7 +114,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	xdr_getpos(&xstream);
 	xdr_destroy(&xstream);
 
-	if (-1 == fcntl(clnt->sock, F_SETFD, O_NONBLOCK)) {
+	if (-1 == fcntl(clnt->sock, F_SETFL, O_NONBLOCK)) {
 		clnt->err.status = RPC_SYSTEMERROR;
 		clnt->err.extra.error = errno;
 		goto exit_with_status;

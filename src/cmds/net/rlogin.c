@@ -119,8 +119,8 @@ static int rlogin_handle(int sock) {
 	tios.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 
-	fcntl(STDIN_FILENO, F_SETFD, stdin_flags | O_NONBLOCK);
-	fcntl(sock, F_SETFD, O_NONBLOCK);
+	fcntl(STDIN_FILENO, F_SETFL, stdin_flags | O_NONBLOCK);
+	fcntl(sock, F_SETFL, O_NONBLOCK);
 
 	while (1) {
 		if (stdin_data_len > 0) {
@@ -165,7 +165,7 @@ static int rlogin_handle(int sock) {
 
 reset_out:
 
-	fcntl(STDIN_FILENO, F_SETFD, stdin_flags);
+	fcntl(STDIN_FILENO, F_SETFL, stdin_flags);
 	tios.c_lflag = c_lflags;
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 

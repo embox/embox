@@ -113,7 +113,7 @@ TEST_CASE("send...() and recv...() works") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 	test_assert(0 <= (a = accept(l, to_sa(&addr), &addrlen)));
-	test_assert_zero(fcntl(a, F_SETFD, O_NONBLOCK));
+	test_assert_zero(fcntl(a, F_SETFL, O_NONBLOCK));
 
 	test_assert_equal(0, send(c, NULL, 0, 0));
 	test_assert_equal(1, send(c, "a", 1, 0));

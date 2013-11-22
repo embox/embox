@@ -232,7 +232,7 @@ static void *telnet_thread_handler(void* args) {
 
 	MD(printf("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
-	fcntl(sock, F_SETFD, O_NONBLOCK);
+	fcntl(sock, F_SETFL, O_NONBLOCK);
 
 	if (ppty(pptyfd) < 0) {
 		MD(printf("new pipe error: %d\n", errno));
@@ -248,7 +248,7 @@ static void *telnet_thread_handler(void* args) {
 	/* handle options from client */
 	ignore_telnet_options(msg);
 
-	fcntl(sock, F_SETFD, 0);
+	fcntl(sock, F_SETFL, 0); /* O_NONBLOCK */
 
 	msg[0] = pptyfd[1];
 	msg[1] = pptyfd[1];
@@ -291,13 +291,13 @@ static void *telnet_thread_handler(void* args) {
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
 		if (!fd_cnt) {
-			fcntl(sock, F_SETFD, O_NONBLOCK);
+			fcntl(sock, F_SETFL, O_NONBLOCK);
 			len = read(sock, s, XBUFF_LEN);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
 				MD(printf("read on sock: %d %d\n", len, errno));
 				goto kill_and_out;
 			}
-			fcntl(sock, F_SETFD, 0);
+			fcntl(sock, F_SETFL, 0);
 
 			/* preventing further execution since some fds is set,
  			 * but they are not active and will block (fd_cnt == 0)

@@ -64,15 +64,6 @@ static int iodev_ioctl(struct idesc *desc, int request, void *data) {
 		return -EINVAL;
 	}
 
-#if 0
-	if(request == F_SETFD) {
-		int flags = (int) data;
-		desc->flags = flags;
-		tty->file_flags = flags;
-	}
-
-	return tty_ioctl(tty, request, data);
-#endif
 	return 0;
 }
 

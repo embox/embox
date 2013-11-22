@@ -266,7 +266,7 @@ static int case_setup(void) {
 		return -errno;
 	}
 
-	if (-1 == fcntl(b, F_SETFD, O_NONBLOCK)) {
+	if (-1 == fcntl(b, F_SETFL, O_NONBLOCK)) {
 		return -errno;
 	}
 

@@ -170,7 +170,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 	to.sin_port = 0;
 
-	fcntl(sk, F_SETFD, O_NONBLOCK);
+	fcntl(sk, F_SETFL, O_NONBLOCK);
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
