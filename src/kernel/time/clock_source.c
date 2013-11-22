@@ -98,12 +98,19 @@ time64_t clock_source_read(struct clock_source *cs) {
 static time64_t cs_full_read(struct clock_source *cs) {
 	static cycle_t prev_cycles, cycles, cycles_all;
 	int old_jiffies, cycles_per_jiff, safe;
-	struct time_event_device *ed = cs->event_device;
-	struct time_counter_device *cd = cs->counter_device;
+	struct time_event_device *ed;
+	struct time_counter_device *cd;
 
+	assert(cs);
+
+	ed = cs->event_device;
+	assert(ed);
+	assert(ed->resolution != 0);
+
+	cd = cs->counter_device;
+	assert(cd);
 	assert(cd->read);
 	assert(cd->resolution != 0);
-	assert(ed->resolution != 0);
 
 	cycles_per_jiff = cd->resolution / ed->resolution;
 	safe = 0;
