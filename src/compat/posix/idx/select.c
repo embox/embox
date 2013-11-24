@@ -10,184 +10,96 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <hal/clock.h>
-
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include <kernel/manual_event.h>
+#include <hal/clock.h>
+
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <kernel/task/io_sync.h>
 
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 
-/**
- * @brief Save only descriptors with active op.
- * */
-static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int error, int update);
 
-/** @brief Search for active descriptors in all sets.
- * @param update - show if we filter out inactive fds or only count them.
- * @return count of active descriptors
- * @retval -EBAFD if some descriptor is invalid */
-static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update);
+static inline int select_get_mask(int idx, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+	int mask = 0;
+	if (FD_ISSET(idx, readfds)) {
+		mask |= IDESC_STAT_READ;
+	}
 
-static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op, struct manual_event *m_event);
+	if (FD_ISSET(idx, writefds)) {
+		mask |= IDESC_STAT_WRITE;
+	}
+
+	if (FD_ISSET(idx, exceptfds)) {
+		mask |= IDESC_STAT_EXEPT;
+	}
+
+	return mask;
+}
+
+static int select_count_descriptors(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+	struct idesc *idesc;
+	int cnt = 0;
+
+	for (;nfds >= 0; nfds--) {
+		idesc = idesc_common_get(nfds);
+		assert(idesc);
+
+		if (FD_ISSET(nfds, readfds)) {
+			if (idesc->idesc_ops->status(idesc, IDESC_STAT_READ)) {
+				cnt++;
+			}
+		}
+		if (FD_ISSET(nfds, writefds)) {
+			if (idesc->idesc_ops->status(idesc, IDESC_STAT_WRITE)) {
+				cnt++;
+			}
+		}
+		if (FD_ISSET(nfds, exceptfds)) {
+			if (idesc->idesc_ops->status(idesc, IDESC_STAT_EXEPT)) {
+				cnt++;
+			}
+		}
+	}
+
+	return cnt;
+}
+
+static int select_wait(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, clock_t ticks) {
+	//struct wait_link wait_link;
+
+	//wait_queue_prepare(&wait_link);
+	return 0;
+}
+
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
-	int ret, fd_cnt;
-	struct manual_event wait_on;
+	int fd_cnt;
 	clock_t ticks;
 
 	fd_cnt = 0;
-	ticks = (timeout == NULL ? MANUAL_EVENT_TIMEOUT_INFINITE : timeval_to_ms(timeout));
-	manual_event_init(&wait_on, 0);
+	/* If  timeout is NULL (no timeout), select() can block indefinitely. */
+	ticks = (timeout == NULL ? SCHED_TIMEOUT_INFINITE : timeval_to_ms(timeout));
 
-	set_monitoring(nfds, readfds, IO_SYNC_READING, &wait_on);
-	set_monitoring(nfds, writefds, IO_SYNC_WRITING, &wait_on);
+	fd_cnt = select_count_descriptors(nfds, readfds, writefds, exceptfds);
 
-	/* Search active descriptor and build wait_on set.
-	 * First try to find some active descriptor before going to sleep */
-	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 0);
-
-	if (fd_cnt < 0) {
-		SET_ERRNO(-fd_cnt);
-		fd_cnt = -1;
-		goto out;
-	} else if (fd_cnt > 0 || !ticks) {
-		/* We know there are some active descriptors in three sets.
-		 * So we can simply update the sets and return fd_cnt. */
-		fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
-		goto out;
+	if (ticks == 0) {
+		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
+		 *  returns immediately.
+		 */
+		return fd_cnt;
 	}
 
-	ret = manual_event_wait(&wait_on, ticks);
-	if (ret == -ETIMEDOUT) {
-		fd_cnt = 0;
-		goto out;
+	if (0 != fd_cnt) {
+		return fd_cnt;
 	}
-	else if (ret != 0) {
-		SET_ERRNO(-ret);
-		fd_cnt = -1;
-		goto out;
-	}
+	select_wait(nfds, readfds, writefds, exceptfds, ticks);
 
-	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
-out:
-	set_monitoring(nfds, readfds, IO_SYNC_READING, NULL);
-	set_monitoring(nfds, writefds, IO_SYNC_WRITING, NULL);
+	fd_cnt = select_count_descriptors(nfds, readfds, writefds, exceptfds);
 
 	return fd_cnt;
 }
 
-/* Suppose that set != NULL */
-static int filter_out_with_op(int nfds, fd_set *set, enum io_sync_op op, int error, int update) {
-	int fd, fd_cnt;
-
-	fd_cnt = 0;
-
-	for (fd = 0; fd < nfds; fd++) {
-		if (FD_ISSET(fd, set)) {
-	//		struct idesc *idesc;
-			struct idesc_table *it;
-
-			it = idesc_table_get_table(task_self());
-			assert(it);
-#if 0
-			if (!(idesc = idesc_table_get_desc(it, fd))) {
-				return -EBADF;
-			} else {
-				if ((!error && io_sync_ready(&idesc->idesc_event.io_sync, op))
-						||
-					(error && io_sync_error(&idesc->idesc_event.io_sync))) {
-					fd_cnt++;
-				} else {
-					/* Filter out inactive descriptor and unset corresponding monitor. */
-					if (update) {
-						io_sync_notify(&idesc->idesc_event.io_sync, op, NULL);
-						FD_CLR(fd, set);
-					}
-				}
-			}
-
-#endif
-		}
-	}
-
-	return fd_cnt;
-}
-
-static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update) {
-	int fd_cnt, res;
-
-	fd_cnt = 0;
-
-	/* process exception conditions */
-	if (exceptfd != NULL) {
-		res = filter_out_with_op(nfds, exceptfd, IO_SYNC_READING, 1, update);
-		if (res < 0) {
-			return -EBADF;
-		} else {
-			fd_cnt += res;
-		}
-	}
-
-	/* Try to find active fd in readfds*/
-	if (readfds != NULL) {
-		res = filter_out_with_op(nfds, readfds, IO_SYNC_READING, 0, update);
-		if (res < 0) {
-			return -EBADF;
-		} else {
-			fd_cnt += res;
-		}
-	}
-
-	/* Try to find active fd in writefds*/
-	if (writefds != NULL) {
-		res = filter_out_with_op(nfds, writefds, IO_SYNC_WRITING, 0, update);
-		if (res < 0) {
-			return -EBADF;
-		} else {
-			fd_cnt += res;
-		}
-	}
-
-	return fd_cnt;
-}
-
-static int set_monitoring(int nfds, fd_set *set, enum io_sync_op op,
-		struct manual_event *m_event) {
-	int fd;
-
-	if (NULL == set) {
-		return 0;
-	}
-
-	for (fd = 0; fd < nfds; fd++) {
-#ifndef IDESC_TABLE_USE
-		struct idx_desc *desc;
-
-		desc = task_self_idx_get(fd);
-		if (FD_ISSET(fd, set) && (NULL != desc)) {
-			io_sync_notify(task_idx_indata(desc)->ios, op, m_event);
-		}
-#else
-		struct idesc *idesc;
-		struct idesc_table *it;
-
-		it = idesc_table_get_table(task_self());
-		assert(it);
-
-		idesc = idesc_table_get_desc(it, fd);
-
-		if (FD_ISSET(fd, set) && (NULL != idesc)) {
-			//TODO io_sync_notify(&idesc->idesc_event.io_sync, op, m_event);
-		}
-#endif
-	}
-
-	return 0;
-}

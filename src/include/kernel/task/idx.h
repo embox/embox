@@ -27,6 +27,23 @@ struct event;
 
 typedef unsigned int idx_flags_t;
 
+#define IDESC_TABLE_USE
+#ifdef IDESC_TABLE_USE
+
+struct idesc;
+/**
+ * Specify operations with task's resources, which be called POSIX compat lib
+ */
+struct task_idx_ops {
+	int (*read)(struct idesc *idesc, void *buf, size_t nbyte);
+	int (*write)(struct idesc *idesc, const void *buf, size_t nbyte);
+	int (*close)(struct idesc *idesc);
+	int (*ioctl)(struct idesc *idesc, int request, void *);
+	int (*fstat)(struct idesc *idesc, void *buff);
+	int (*status)(struct idesc *idesc, int mask);
+};
+
+#else
 struct task_idx_ops;
 
 struct idx_desc_data {
@@ -46,18 +63,6 @@ struct idx_desc {
 	idx_flags_t flags;
 };
 
-#ifdef IDESC_TABLE_USE
-/**
- * Specify operations with task's resources, which be called POSIX compat lib
- */
-struct task_idx_ops {
-	int (*read)(struct idesc *data, void *buf, size_t nbyte);
-	int (*write)(struct idesc *data, const void *buf, size_t nbyte);
-	int (*close)(struct idesc *data);
-	int (*ioctl)(struct idesc *data, int request, void *);
-	int (*fstat)(struct idesc *data, void *buff);
-};
-#else
 /**
  * Specify operations with task's resources, which be called POSIX compat lib
  */
