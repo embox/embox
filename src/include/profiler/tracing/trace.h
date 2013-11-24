@@ -33,9 +33,9 @@ extern void trace_block_leave(struct __trace_block *tb);
 #define trace_point_set(tp_pointer) \
 		__trace_point_set(tp_pointer)
 
-extern int trace_block_diff(struct __trace_block *tb);
+extern time64_t trace_block_diff(struct __trace_block *tb);
 
-extern int trace_block_get_time(struct __trace_block *tb);
+extern time64_t trace_block_get_time(struct __trace_block *tb);
 
 extern int trace_point_get_value(struct __trace_point *tp);
 

@@ -16,8 +16,6 @@
 #include <kernel/time/ktime.h>
 #include <hal/system.h>
 
-#include <kernel/printk.h>
-
 #include <embox/unit.h>
 
 static int tsc_init(void);
@@ -26,7 +24,7 @@ static int tsc_init(void);
 static inline unsigned long long rdtsc(void) {
 	unsigned hi, lo;
 	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-	return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
+	return (((unsigned long long) lo) | (((unsigned long long) hi) << 32));
 }
 
 static struct time_counter_device tsc = {
@@ -41,7 +39,7 @@ static struct clock_source tsc_clock_source = {
 };
 
 static int tsc_init(void) {
-	unsigned long long t1, t2;
+	time64_t t1, t2;
 	/* Getting CPU frequency */
 	t1 = rdtsc();
 	sleep(1);

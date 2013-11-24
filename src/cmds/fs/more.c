@@ -61,8 +61,7 @@ static void screen(FILE *fp) {
 					}
 				}
 				/*	In case if we got out of the actual line size	*/
-				buff[columns] = '\0';
-
+				buff[columns]= '\n';
 				addstr(buff);
 			}
 			memset(info, '\0', columns);
@@ -90,7 +89,6 @@ static void screen(FILE *fp) {
 
 static int exec(int argc, char **argv) {
 	FILE *fp;
-
 	TRACE_BLOCK_DEF(more_outer);
 	TRACE_BLOCK_DEF(more_inner);
 
@@ -111,5 +109,6 @@ static int exec(int argc, char **argv) {
 
 	fclose(fp);
 	trace_block_leave(&more_outer);
+
 	return 0;
 }

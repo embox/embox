@@ -26,12 +26,14 @@ static void print_trace_block_stat(void) {
 	struct __trace_block *tb;
 	int number = 0;
 
-	printf("%2s %7s %10s\n", "№ ", "count", "time");
+	printf("%2s %15s %12s %20s %11s\n", "№ ", "Name", "Count", "Ticks", "Time");
 
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->active) {
-			printf("%2d %7d %10d\n", number, tb->begin->count, tb->time);
+			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
+				tb->count, tb->time,
+				(tb->tc->cs) ? (long double) 1.0 * tb->time / tb->tc->cs->counter_device->resolution : 0);
 		}
 		number++;
 	}
@@ -48,7 +50,7 @@ static void print_trace_block_stat_personal(int i) {
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
-			printf("%2d %7d %10d %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			printf("%2d %7d %10llu %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
 			break;
 		}
 	}
