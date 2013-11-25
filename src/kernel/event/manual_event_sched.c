@@ -36,7 +36,7 @@ int manual_event_is_set(struct manual_event *m_event) {
 void manual_event_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
-		waitq_notify_all(&m_event->waitq);
+		sched_wakeup_waitq_all(&m_event->waitq, ENOERR);
 	}
 }
 
@@ -44,7 +44,7 @@ void manual_event_set_and_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
 		m_event->set = 1;
-		waitq_notify_all(&m_event->waitq);
+		sched_wakeup_waitq_all(&m_event->waitq, ENOERR);
 	}
 }
 
@@ -54,12 +54,8 @@ static int __manual_event_wait(struct manual_event *m_event,
 
 	softirq_unlock();
 	{
-		if (critical_allows(CRITICAL_SCHED_LOCK)) {
-			ret = waitq_wait(&m_event->waitq, timeout);
-		}
-		else {
-			ret = waitq_wait_locked(&m_event->waitq, timeout);
-		}
+		assert(critical_allows(CRITICAL_SCHED_LOCK));
+		ret = sched_wait_timeout(timeout);
 	}
 	softirq_lock();
 
