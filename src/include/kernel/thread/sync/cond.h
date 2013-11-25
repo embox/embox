@@ -10,7 +10,7 @@
 #define KERNEL_THREAD_SYNC_COND_H_
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/task.h>
 #include <time.h>
 
@@ -28,7 +28,7 @@ struct condattr {
 };
 
 struct cond {
-	struct wait_queue wq;
+	struct waitq wq;
 	struct condattr attr;
 	struct task* task; //task where cond was created
 };

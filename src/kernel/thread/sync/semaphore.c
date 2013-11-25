@@ -14,7 +14,7 @@
 static int tryenter_sched_lock(struct sem *s);
 
 void semaphore_init(struct sem *s, int val) {
-	wait_queue_init(&s->wq);
+	waitq_init(&s->wq);
 	s->value = 0;
 	s->max_value = val;
 }
@@ -26,7 +26,7 @@ void semaphore_enter(struct sem *s) {
 	sched_lock();
 	{
 		while (tryenter_sched_lock(s) != 0) {
-			wait_queue_wait_locked(&s->wq, SCHED_TIMEOUT_INFINITE);
+			waitq_wait_locked(&s->wq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
@@ -45,7 +45,7 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 			clock_gettime(CLOCK_REALTIME, &current_time);
 			diff = current_time.tv_nsec - abs_timeout->tv_nsec;
 			if (diff < 0) {
-				wait_queue_wait_locked(&s->wq, diff);
+				waitq_wait_locked(&s->wq, diff);
 			} else {
 				ret = -ETIMEDOUT;
 				goto out;
@@ -87,7 +87,7 @@ void semaphore_leave(struct sem *s) {
 	sched_lock();
 	{
 		s->value--;
-		wait_queue_notify(&s->wq);
+		waitq_notify(&s->wq);
 	}
 	sched_unlock();
 }

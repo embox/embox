@@ -21,10 +21,7 @@ static inline clock_t sched_timing_get(struct thread *t) {
 	return 0;
 }
 
-static inline void sched_timing_start(struct thread *t, clock_t cur_time) {
-}
-
-static inline void sched_timing_stop(struct thread *t, clock_t cur_time) {
+static inline void sched_timing_switch(struct thread *prev, struct thread *next) {
 }
 
 #endif /* SCHED_NO_TIME_H_ */

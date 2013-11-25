@@ -10,7 +10,7 @@
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
 #include <sys/cdefs.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutexattr.h>
 
 struct thread;
@@ -19,7 +19,7 @@ struct thread;
  * Defines Mutex structure.
  */
 struct mutex {
-	struct wait_queue wq;
+	struct waitq wq;
 	struct thread *holder;
 	struct mutexattr attr;
 
@@ -52,7 +52,7 @@ struct mutex {
 		/* lock_couunt */ 0 \
 	}
 
-#define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
+#define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 __BEGIN_DECLS
 

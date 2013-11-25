@@ -8,20 +8,20 @@
 
 #include <kernel/event.h>
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 void event_init(struct event *event, const char *name) {
-	wait_queue_init(&event->wait_queue);
+	waitq_init(&event->waitq);
 }
 
 void event_notify(struct event *event) {
-	wait_queue_notify_all(&event->wait_queue);
+	waitq_notify_all(&event->waitq);
 }
 
-int __event_wait(unsigned long timeout) {
+int __event_wait(struct event *event, unsigned long timeout) {
 	if (critical_allows(CRITICAL_SCHED_LOCK)) {
-		return sched_wait(timeout);
+		return __waitq_wait(timeout);
 	} else {
-		return sched_wait_locked(timeout);
+		return __waitq_wait_locked(timeout);
 	}
 }

@@ -13,6 +13,6 @@
 
 typedef struct prioq_link runq_item_t;
 
-typedef struct prioq runq_queue_t;
+typedef struct prioq runq_t;
 
 #endif /* KERNEL_THREAD_QUEUE_PRIOQ_H_ */

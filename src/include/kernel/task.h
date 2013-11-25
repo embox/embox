@@ -67,7 +67,7 @@ struct task {
 
 	clock_t per_cpu; /**< task times */
 
-	struct wait_queue *waitq;
+	struct waitq *waitq;
 
 	unsigned int affinity;
 
