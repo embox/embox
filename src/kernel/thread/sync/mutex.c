@@ -55,32 +55,35 @@ void mutex_init(struct mutex *m) {
 }
 
 int mutex_lock(struct mutex *m) {
-	int ret = 0;
 	struct thread *current = thread_self();
+	int errcheck;
+	int ret, wait_ret;
 
 	assert(m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		while ((ret = trylock_sched_locked(m, current)) != 0) {
-			if (ret == -EAGAIN && (m->attr.type & MUTEX_ERRORCHECK)){
-				goto out;
-			}
-			/* We have to wait for a mutex to be released. */
-			priority_inherit(current, m);
-			waitq_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
-		}
-	}
+	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
 
-out:
-	sched_unlock();
+	wait_ret = SCHED_WAIT_ON(&m->wq, ({
+		int done;
+
+		ret = mutex_trylock(m);
+		done = (ret == 0) || (errcheck && ret == -EAGAIN);
+		if (!done)
+			priority_inherit(current, m);
+		done;
+
+	}), SCHED_TIMEOUT_INFINITE, 0);
+
+	if (!wait_ret)
+		ret = wait_ret;
+
 	return ret;
 }
 
 int mutex_trylock(struct mutex *m) {
-	int ret;
 	struct thread *current = thread_self();
+	int ret;
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -98,7 +101,7 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 	assert(m && current);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-	if(mutex_is_static_inited(m)) {
+	if (mutex_is_static_inited(m)) {
 		mutex_complete_static_init(m);
 	}
 
@@ -149,7 +152,7 @@ int mutex_unlock(struct mutex *m) {
 
 		m->holder = NULL;
 		m->lock_count = 0;
-		waitq_notify(&m->wq);
+		sched_wakeup_waitq_all(&m->wq, ENOERR);
 	}
 out:
 	sched_unlock();
