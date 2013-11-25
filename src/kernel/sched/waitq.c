@@ -21,71 +21,71 @@
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 
-void __waitq_enqueue(struct waitq *wq, struct thread *t) {
-	struct waitq_link *wql;
+void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
+	assert(wq && wql);
 
-	assert(wq && t);
-	wql = &t->waitq_link;
-
-	// TODO insert with respect to the priority
 	dlist_head_init(&wql->link);
 	dlist_add_prev(&wql->link, &wq->list);
 }
 
-void waitq_enqueue(struct waitq *wq, struct thread *t) {
+void waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	ipl_t ipl;
 
-	assert(wq && t);
+	assert(wq && wql);
 
 	ipl = spin_lock_ipl(&wq->lock);
-	__waitq_enqueue(wq, t);
+	__waitq_add(wq, wql);
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void __waitq_remove(struct waitq *wq, struct thread *t) {
-	struct waitq_link *wql;
+void __waitq_del(struct waitq *wq, struct waitq_link *wql) {
+	assert(wq && wql);
 
-	assert(wq && t);
-
-	wql = &t->waitq_link;
-	assert(!dlist_empty(&wql->link));
-	dlist_del(&wql->link);
+	if (!dlist_empty(&wql->link))
+		dlist_del(&wql->link);
 }
 
-void waitq_remove(struct waitq *wq, struct thread *t) {
+void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	ipl_t ipl;
 
-	assert(wq && t);
+	assert(wq && wql);
 
 	ipl = spin_lock_ipl(&wq->lock);
-	__waitq_remove(wq, t);
+	__waitq_del(wq, wql);
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-struct thread *__waitq_dequeue(struct waitq *wq) {
-	struct dlist_head *link;
+void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
+	waitq_add(wq, wql);
+	sched_wait_prepare();
+}
+
+void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+	sched_wait_cleanup();
+	waitq_del(wq, wql);
+}
+
+void __waitq_wakeup(struct waitq *wq, int nr, int result) {
+	struct wait_link *wql, *next_wql;
 
 	assert(wq);
 
-	if (dlist_empty(&wq->list))
-		return NULL;
+	dlist_foreach_entry(wql, next_wql, &wait_queue->list, link) {
+		if (!__sched_wakeup(wql->thread))
+			continue;
 
-	link = wq->list.next;
-	dlist_del(link);
-
-	return dlist_entry(link, struct thread, waitq_link.link);
+		wql->result = result;
+		if (!--nr)
+			break;
+	}
 }
 
-struct thread *waitq_dequeue(struct waitq *wq) {
-	struct thread *t;
+void waitq_wakeup(struct waitq *wq, int nr, int result) {
 	ipl_t ipl;
 
 	assert(wq);
 
 	ipl = spin_lock_ipl(&wq->lock);
-	t = __waitq_dequeue(wq);
+	__waitq_wakeup(wq, nr, result);
 	spin_unlock_ipl(&wq->lock, ipl);
-
-	return t;
 }
-

@@ -68,9 +68,7 @@ int sched_init(struct thread *idle, struct thread *current) {
 	return 0;
 }
 
-/**
- * Called with IRQs off and thread lock held.
- */
+/** Called with IRQs off and thread lock held. */
 void __sched_start(struct thread *t) {
 	assert(t);
 	assert(!sched_ready(t));
@@ -92,6 +90,31 @@ void sched_start(struct thread *t) {
 	ipl = spin_lock_ipl(&t->lock);
 	__sched_start(t);
 	spin_unlock_ipl(&t->lock, ipl);
+}
+
+/** Called with IRQs off and thread lock held. */
+int __sched_wakeup(struct thread *t) {
+	assert(t);
+
+	if (t->state & THREAD_READY)
+		return 0;
+
+	__sched_start(t);
+
+	return 1;
+}
+
+int sched_wakeup(struct thread *t, int result) {
+	int ret;
+	ipl_t ipl;
+
+	assert(t);
+
+	ipl = spin_lock_ipl(&t->lock);
+	ret = __sched_wakeup(t, result);
+	spin_unlock_ipl(&t->lock, ipl);
+
+	return ret;
 }
 
 void sched_finish(struct thread *t) {
