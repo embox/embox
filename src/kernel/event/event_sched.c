@@ -17,5 +17,5 @@ void event_init(struct event *event, const char *name) {
 }
 
 void event_notify(struct event *event) {
-	sched_wakeup_waitq_all(&event->waitq, ENOERR);
+	waitq_wakeup_all(&event->waitq, ENOERR);
 }

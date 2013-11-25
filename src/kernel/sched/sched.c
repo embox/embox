@@ -104,14 +104,14 @@ int __sched_wakeup(struct thread *t) {
 	return 1;
 }
 
-int sched_wakeup(struct thread *t, int result) {
+int sched_wakeup(struct thread *t) {
 	int ret;
 	ipl_t ipl;
 
 	assert(t);
 
 	ipl = spin_lock_ipl(&t->lock);
-	ret = __sched_wakeup(t, result);
+	ret = __sched_wakeup(t);
 	spin_unlock_ipl(&t->lock, ipl);
 
 	return ret;

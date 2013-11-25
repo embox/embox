@@ -25,11 +25,10 @@ void barrier_wait(barrier_t *b) {
 	{
 		if (b->count == b->current_count + 1) {
 			b->current_count = 0;
-			sched_wakeup_waitq_all(&b->wq, 0);
+			waitq_wakeup_all(&b->wq, 0);
 		} else {
 			b->current_count++;
-			SCHED_WAIT_ON(&b->wq, b->count == b->current_count,
-				SCHED_TIMEOUT_INFINITE, 1);
+			WAITQ_WAIT(&b->wq, b->count == b->current_count);
 		}
 	}
 	sched_unlock();

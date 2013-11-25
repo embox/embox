@@ -187,8 +187,6 @@ void thread_init(struct thread *t, unsigned int flags,
 	runq_item_init(&t->sched_attr.runq_link);
 	sched_affinity_init(t);
 	sched_timing_init(t);
-
-	waitq_link_init(&t->waitq_link);
 }
 
 static int thread_exited(struct thread *t) {
@@ -243,7 +241,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		joining = current->joining;
 		if (joining) {
 			current->run_ret = ret;
-			sched_wakeup(joining, ENOERR);
+			sched_wakeup(joining);
 		}
 
 		if (current->state & __THREAD_STATE_DETACHED)
@@ -273,7 +271,7 @@ int thread_join(struct thread *t, void **p_ret) {
 		assert(!(t->state & __THREAD_STATE_DETACHED));
 
 		t->joining = current;
-		ret = SCHED_WAIT(thread_exited(t), SCHED_TIMEOUT_INFINITE, 0);
+		ret = SCHED_WAIT(thread_exited(t));
 		if (ret)
 			goto out;
 

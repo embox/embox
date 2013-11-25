@@ -23,8 +23,7 @@ void semaphore_enter(struct sem *s) {
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	SCHED_WAIT_ON(&s->wq, (tryenter_sched_lock(s) == 0),
-		SCHED_TIMEOUT_INFINITE, 0);
+	WAITQ_WAIT(&s->wq, (tryenter_sched_lock(s) == 0));
 }
 
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
@@ -95,7 +94,7 @@ void semaphore_leave(struct sem *s) {
 	sched_lock();
 	{
 		s->value--;
-		sched_wakeup_waitq_all(&s->wq, 0);
+		waitq_wakeup_all(&s->wq, 0);
 	}
 	sched_unlock();
 }

@@ -23,7 +23,7 @@ struct event {
 };
 
 #define __EVENT_WAIT(event, cond_expr, timeout, intr)     \
-	SCHED_WAIT_ON(&(event)->waitq, cond_expr, timeout, intr)
+	WAITQ_WAIT_TIMEOUT(&(event)->waitq, cond_expr, timeout)
 
 __END_DECLS
 

@@ -87,8 +87,8 @@ extern void sched_wait_cleanup(void);
 extern int sched_wait(void);
 extern int sched_wait_timeout(int timeout);
 
-extern int __sched_wakeup(struct thread *t, int result);
-extern int sched_wakeup(struct thread *t, int result);
+extern int __sched_wakeup(struct thread *t);
+extern int sched_wakeup(struct thread *t);
 
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout)  \
 	({                                                    \

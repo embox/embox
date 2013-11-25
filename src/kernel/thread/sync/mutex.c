@@ -64,7 +64,7 @@ int mutex_lock(struct mutex *m) {
 
 	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
 
-	wait_ret = SCHED_WAIT_ON(&m->wq, ({
+	wait_ret = WAITQ_WAIT(&m->wq, ({
 		int done;
 
 		ret = mutex_trylock(m);
@@ -73,7 +73,7 @@ int mutex_lock(struct mutex *m) {
 			priority_inherit(current, m);
 		done;
 
-	}), SCHED_TIMEOUT_INFINITE, 0);
+	}));
 
 	if (!wait_ret)
 		ret = wait_ret;
@@ -152,7 +152,7 @@ int mutex_unlock(struct mutex *m) {
 
 		m->holder = NULL;
 		m->lock_count = 0;
-		sched_wakeup_waitq_all(&m->wq, ENOERR);
+		waitq_wakeup_all(&m->wq, ENOERR);
 	}
 out:
 	sched_unlock();

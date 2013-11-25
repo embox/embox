@@ -16,7 +16,7 @@ void sched_signal(struct thread *t) {
 		if (t->state & THREAD_READY) {
 			sched_post_switch();
 		} else {
-			sched_wakeup(t, -EINTR);
+			sched_wakeup(t); // XXX -EINTR
 		}
 	}
 	sched_unlock();

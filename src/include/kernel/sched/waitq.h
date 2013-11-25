@@ -14,6 +14,8 @@
 #include <sys/cdefs.h>
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
+#include <kernel/sched.h>
+#include <kernel/thread.h>
 
 __BEGIN_DECLS
 
@@ -61,7 +63,7 @@ static inline void waitq_wakeup_all(struct waitq *wq, int result) {
 	waitq_wakeup(wq, 0, result);
 }
 
-#define WAIQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
+#define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                 \
 		int __wait_ret;                                   \
 		struct waitq_link wql;                            \
@@ -83,7 +85,7 @@ static inline void waitq_wakeup_all(struct waitq *wq, int result) {
 			__wait_ret = 0;                               \
 		                                                  \
 		__wait_ret;                                       \
-	})
+	}))
 
 #define WAITQ_WAIT(wq, cond_expr) \
 	WAITQ_WAIT_TIMEOUT(wq, cond_expr, SCHED_TIMEOUT_INFINITE)

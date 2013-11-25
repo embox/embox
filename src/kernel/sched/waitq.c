@@ -9,10 +9,11 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <kernel/sched/waitq.h>
+
 #include <kernel/irq.h>
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
-#include <kernel/sched/waitq.h>
 #include <kernel/thread.h>
 
 #include <util/member.h>
@@ -66,12 +67,12 @@ void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr, int result) {
-	struct wait_link *wql, *next_wql;
+	struct waitq_link *wql, *next_wql;
 
 	assert(wq);
 
-	dlist_foreach_entry(wql, next_wql, &wait_queue->list, link) {
-		if (!__sched_wakeup(wql->thread))
+	dlist_foreach_entry(wql, next_wql, &wq->list, link) {
+		if (!sched_wakeup(wql->thread))
 			continue;
 
 		wql->result = result;

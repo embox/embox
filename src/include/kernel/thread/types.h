@@ -14,7 +14,6 @@
 
 #include <kernel/spinlock.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/sched/waitq.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
@@ -34,7 +33,6 @@
 typedef int __thread_id_t;
 
 struct task;
-struct waitq_link;
 
 struct thread {
 	unsigned int       state;          /**< Current state. */
@@ -55,9 +53,6 @@ struct thread {
 
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
-
-	struct waitq      *waitq;        /**< TODO remove it. */
-	struct waitq_link  waitq_link;   /**< Holds data in waiting mode */
 
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
