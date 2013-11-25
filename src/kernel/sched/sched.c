@@ -57,6 +57,28 @@ static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
+static inline int is_running(struct thread *t) {
+	return t->state & __THREAD_STATE_RUNNING;
+}
+
+static inline int is_ready(struct thread *t) {
+	return t->state & __THREAD_STATE_READY;
+}
+
+static inline int is_waiting(struct thread *t) {
+	return t->state & __THREAD_STATE_WAITING;
+}
+
+static inline void make_ready(struct thread *t) {
+	t->state |= __THREAD_STATE_READY;
+	t->state &= ~__THREAD_STATE_RUNNING;
+}
+
+static inline void make_running(struct thread *t) {
+	t->state |= __THREAD_STATE_RUNNING;
+	t->state &= ~__THREAD_STATE_READY;
+}
+
 int sched_init(struct thread *idle, struct thread *current) {
 	assert(idle && current);
 
@@ -76,15 +98,15 @@ void sched_wake(struct thread *t) {
 	//assert(!in_harder_critical());
 	assert(t != current);
 	assert(t);
-	assert(t->state & __THREAD_STATE_WAITING);
+	assert(is_waiting(t));
 
 	irq_lock();
 	{
 
 		t->state &= ~__THREAD_STATE_WAITING;
 
-		if (!(t->state & __THREAD_STATE_READY)) {
-			t->state |= __THREAD_STATE_READY;
+		if (!is_ready(t)) {
+			make_ready(t);
 			runq_insert(&rq.queue, t);
 		}
 
@@ -101,16 +123,16 @@ void sched_finish(struct thread *t) {
 
 	irq_lock();
 	{
-		if (t->state & __THREAD_STATE_RUNNING) {
+		if (is_running(t)) {
 			assert(t == thread_self(), "XXX SMP NIY");
 			sched_post_switch();
 		}
 
-		if (t->state & __THREAD_STATE_READY) {
+		if (is_ready(t)) {
 			runq_remove(&rq.queue, t);
 		}
 
-		if (t->state & __THREAD_STATE_WAITING) {
+		if (is_waiting(t)) {
 			waitq_remove(t->wait_link);
 		}
 
@@ -140,7 +162,7 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 		thread_priority_set(t, prior);
 
-		if (t->state & __THREAD_STATE_READY) {
+		if (is_ready(t)) {
 			runq_remove(&rq.queue, t);
 			runq_insert(&rq.queue, t);
 
@@ -173,19 +195,17 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		if (prev->state & __THREAD_STATE_RUNNING) {
-			prev->state |= __THREAD_STATE_READY;
-			prev->state &= ~__THREAD_STATE_RUNNING;
+		if (is_running(prev)) {
+			make_ready(prev);
 			runq_insert(&rq.queue, prev);
 		}
 
 		next = runq_extract(&rq.queue);
 
 		assert(next != NULL);
-		assert(next->state & __THREAD_STATE_READY);
+		assert(is_ready(next));
 
-		next->state |= __THREAD_STATE_RUNNING;
-		next->state &= ~__THREAD_STATE_READY;
+		make_running(next);
 
 		if (prev == next) {
 			goto out;
