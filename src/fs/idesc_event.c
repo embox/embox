@@ -10,8 +10,9 @@
 #include <util/dlist.h>
 #include <fs/idesc.h>
 #include <fcntl.h>
-
 #include <kernel/thread.h>
+
+#include <fs/idesc_event.h>
 
 struct idesc_waitq_link {
 	int iwq_masks;
@@ -48,12 +49,23 @@ int idesc_notify_all(struct idesc * idesc, int mask) {
 	return 0;
 }
 
-int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
+void idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
+		int mask) {
 
+}
+
+int idesc_wait(struct idesc_wait_link *wl, unsigned int timeout) {
+
+#if 0
 	if (idesc->idesc_flags & O_NONBLOCK) {
 		return -EAGAIN;
 	}
+#endif
 
 	/* do actual wait */
 	return -ENOTSUP;
+}
+
+void idesc_wait_cleanup(struct idesc_wait_link *wl) {
+
 }
