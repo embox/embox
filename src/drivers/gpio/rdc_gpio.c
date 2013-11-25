@@ -6,6 +6,7 @@
  * @author Nikolay Korotkiy
  */
 
+#include <assert.h>
 #include <asm/io.h>
 #include <embox/unit.h>
 
@@ -47,7 +48,6 @@ static inline void clear_data(unsigned long mask) {
 }
 
 int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	int mode_val;
 	assert(gpio);
 
 	if ((mode & GPIO_MODE_OUT_SECTION) &&

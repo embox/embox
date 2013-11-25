@@ -9,6 +9,7 @@ module core {
 	source "usb_driver.c"
 
 	source "usb_dev_desc.c"
+	depends embox.driver.char_dev
 }
 
 module class_hid {

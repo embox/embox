@@ -12,6 +12,13 @@
 #include <kernel/event.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
+#include <module/third_party/qt/texteditor.h>
+
+#define DEFAULT_WIDTH \
+		OPTION_MODULE_GET(third_party__qt__texteditor, NUMBER, root_window_width)
+
+#define DEFAULT_HEIGHT \
+		OPTION_MODULE_GET(third_party__qt__texteditor, NUMBER, root_window_height)
 
 #define FSIZE 64
 #define SEP ':'
@@ -215,7 +222,11 @@ int main(int argv, char **args)
 
 	emroot->setCentralWidget(emarea);
 
-	manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE);
+	if (DEFAULT_WIDTH == 0 || DEFAULT_HEIGHT == 0) {
+		manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE); /* EMBOXVC plugin*/
+	} else {
+		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT)); /* VNC plugin */
+	}
 
 	emroot->show();
 
