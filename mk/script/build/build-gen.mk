@@ -225,7 +225,7 @@ source_base = $(basename $(source_file))
 
 source_o_pats   := %.o
 source_a_pats   := %.a
-source_cc_pats  := %.S %.c %.cpp %.cxx
+source_cc_pats  := %.S %.c %.cpp %.cxx %.C
 source_mk_pats  := %.mk
 source_cpp_pats := %.lds.S
 
