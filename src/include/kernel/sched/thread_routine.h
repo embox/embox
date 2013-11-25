@@ -17,26 +17,16 @@
 #include <kernel/thread/state.h>
 #include <profiler/tracing/trace.h>
 
-#define SCHED_THREAD_REPLANNED 1
-#define SCHED_THREAD_REMAINED 0
-
-int sched_prepare_thread(struct runnable *p, struct runnable *n,
-		struct runq *rq) {
-
-	struct thread *next, *prev;
+void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *rq) {
+	struct thread *prev, *next;
 	clock_t new_clock;
 
-	/* Upcast runnables to threads */
-	prev = (struct thread *) p;
-	next = (struct thread *) n;
-
-
-	assert(next);
-	assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
+	prev = (struct thread *)p;
+	next = (struct thread *)n;
 
 	if (prev == next) {
 		ipl_disable();
-		return SCHED_THREAD_REMAINED;
+		return;
 	} else {
 		if (prev->state & __THREAD_STATE_RUNNING) {
 			prev->state |= __THREAD_STATE_READY;
@@ -60,15 +50,6 @@ int sched_prepare_thread(struct runnable *p, struct runnable *n,
 	new_clock = clock();
 	sched_timing_stop(prev, new_clock);
 	sched_timing_start(next, new_clock);
-
-	return SCHED_THREAD_REPLANNED;
-}
-
-void sched_execute_thread(struct runnable *p, struct runnable *n, void *arg) {
-	struct thread *prev, *next;
-
-	prev = (struct thread *)p;
-	next = (struct thread *)n;
 
 	trace_point("context switch");
 

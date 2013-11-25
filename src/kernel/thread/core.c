@@ -164,8 +164,7 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->state = __THREAD_STATE_WAITING;
 
-	/* set sched functions */
-	t->runnable.prepare = &sched_prepare_thread;
+	/* set sched routines */
 	t->runnable.run = (void *)sched_execute_thread;
 	t->runnable.run_arg = NULL;
 

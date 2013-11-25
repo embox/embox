@@ -37,14 +37,6 @@
 
 #include <profiler/tracing/trace.h>
 
-/*#include <kernel/sched/thread_routine.h>*/
-#define SCHED_THREAD_REPLANNED 1
-#define SCHED_THREAD_REMAINED 0
-struct thread_pair{
-	struct thread *prev, *next;
-};
-
-
 static void sched_switch(void);
 
 
@@ -188,7 +180,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 static void sched_switch(void) {
 	struct thread *prev_thread;
 	struct runnable *prev, *next;
-	struct thread_pair arg;
 
 	assert(!in_sched_locked());
 
@@ -210,58 +201,8 @@ static void sched_switch(void) {
 
 		next = runq_queue_extract(&rq.queue);
 
-		/*
-		assert(next != NULL);
-		assert(next->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY));
-		*/
-
-		if(next->prepare(prev, next, &rq) == SCHED_THREAD_REPLANNED){
-			next->run_arg = &arg;
-			next->run(prev, next, next->run_arg);
-		}
-
-		/*
-		if (prev == next) {
-			ipl_disable();
-			goto out;
-		} else {
-			if (prev->state & __THREAD_STATE_RUNNING) {
-				prev->state |= __THREAD_STATE_READY;
-				*/
-				/* TODO maybe without waiting */
-				/*
-				prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
-			}
-			next->state |= __THREAD_STATE_RUNNING;
-			*/
-			/* TODO maybe without waiting */
-			/*
-			next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
-		}
-
-		if (prev->runnable.policy == SCHED_FIFO && next->runnable.policy != SCHED_FIFO) {
-			sched_ticker_init();
-		}
-
-		if (prev->runnable.policy != SCHED_FIFO && next->runnable.policy == SCHED_FIFO) {
-			sched_ticker_fini(&rq);
-		}*/
-
-		/* Running time recalculation *//*
-		new_clock = clock();
-		sched_timing_stop(prev, new_clock);
-		sched_timing_start(next, new_clock);
-		*/
-		/*
-		trace_point("context switch");
-
-		ipl_disable();
-
-		thread_set_current(next);
-		context_switch(&prev->context, &next->context);*/
-
-
-
+		/* Start execution, context switching for threads inside*/
+		next->run(prev, next, &rq);
 	}
 out:
 	sched_unlock_noswitch();
