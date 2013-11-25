@@ -23,38 +23,46 @@ void semaphore_enter(struct sem *s) {
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		while (tryenter_sched_lock(s) != 0) {
-			waitq_wait_locked(&s->wq, SCHED_TIMEOUT_INFINITE);
-		}
-	}
-	sched_unlock();
+	SCHED_WAIT_ON(&s->wq, (tryenter_sched_lock(s) == 0),
+		SCHED_TIMEOUT_INFINITE, 0);
 }
 
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
 	struct timespec current_time;
 	int ret = 0;
+	int diff;
+
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		while (tryenter_sched_lock(s) != 0) {
-			int diff;
-			clock_gettime(CLOCK_REALTIME, &current_time);
-			diff = current_time.tv_nsec - abs_timeout->tv_nsec;
-			if (diff < 0) {
-				waitq_wait_locked(&s->wq, diff);
-			} else {
-				ret = -ETIMEDOUT;
-				goto out;
+	if (tryenter_sched_lock(s) != 0) {
+
+		while (1) {
+			sched_wait_prepare(&s->wq, 0);
+
+			if (tryenter_sched_lock(s) != 0) {
+				ret = 0;
+				break;
 			}
+
+			clock_gettime(CLOCK_REALTIME, &current_time);
+			diff = abs_timeout->tv_nsec - current_time.tv_nsec;
+
+			if (diff > 0)
+				ret = sched_wait_timeout(diff);
+			else
+				ret = -ETIMEDOUT;
+
+			if (ret == -ETIMEDOUT || ret == -EINTR)
+				break;
 		}
+
+		if (tryenter_sched_lock(s) != 0)
+			ret = 0;
+
+		sched_wait_cleanup(&s->wq);
 	}
 
-out:
-	sched_unlock();
 	return ret;
 }
 
@@ -87,7 +95,7 @@ void semaphore_leave(struct sem *s) {
 	sched_lock();
 	{
 		s->value--;
-		waitq_notify(&s->wq);
+		sched_wakeup_waitq_all(&s->wq, 0);
 	}
 	sched_unlock();
 }
