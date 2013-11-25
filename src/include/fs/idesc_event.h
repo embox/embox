@@ -8,7 +8,7 @@
 #ifndef IDESC_EVENT_H_
 #define IDESC_EVENT_H_
 
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 #define IDESC_EVENT_READ         0x0001
 #define IDESC_EVENT_WRITE        0x0002

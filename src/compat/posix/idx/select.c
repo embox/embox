@@ -21,30 +21,15 @@
 
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
+#include <fs/idesc_event.h>
 
-
-static inline int select_get_mask(int idx, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
-	int mask = 0;
-	if (FD_ISSET(idx, readfds)) {
-		mask |= IDESC_STAT_READ;
-	}
-
-	if (FD_ISSET(idx, writefds)) {
-		mask |= IDESC_STAT_WRITE;
-	}
-
-	if (FD_ISSET(idx, exceptfds)) {
-		mask |= IDESC_STAT_EXEPT;
-	}
-
-	return mask;
-}
 
 
 struct idesc_poll {
 	struct idesc *idesc;
 	int poll_mask;
-	struct wait_link wait_link;
+	//struct wait_link wait_link;
+	struct idesc_wait_link wait_link;
 };
 
 struct idesc_poll_table {
@@ -53,30 +38,26 @@ struct idesc_poll_table {
 	int size;
 };
 
-static int select_count_descriptors(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
-	struct idesc *idesc;
+static int select_count_descriptors(struct idesc_poll_table *pt) {
 	int cnt = 0;
+	int i;
 
-	for (;nfds >= 0; nfds--) {
-		idesc = idesc_common_get(nfds);
-		assert(idesc);
+	for (i = 0; i < pt->size; pt->size++) {
+		struct idesc *idesc;
+		struct idesc_wait_link *waitl;
+		int poll_mask;
 
-		if (FD_ISSET(nfds, readfds)) {
-			if (idesc->idesc_ops->status(idesc, IDESC_STAT_READ)) {
-				cnt++;
-			}
+		idesc = pt->idesc_poll[i].idesc;
+		waitl = &pt->idesc_poll[i].wait_link;
+		poll_mask = pt->idesc_poll[i].poll_mask;
+
+		if (idesc->idesc_ops->status(idesc, poll_mask)) {
+			cnt++;
 		}
-		if (FD_ISSET(nfds, writefds)) {
-			if (idesc->idesc_ops->status(idesc, IDESC_STAT_WRITE)) {
-				cnt++;
-			}
-		}
-		if (FD_ISSET(nfds, exceptfds)) {
-			if (idesc->idesc_ops->status(idesc, IDESC_STAT_EXEPT)) {
-				cnt++;
-			}
-		}
+		idesc_wait_cleanup(waitl);
 	}
+
+	__waitq_cleanup();
 
 	return cnt;
 }
@@ -89,20 +70,17 @@ static int select_wait(struct idesc_poll_table *pt, clock_t ticks) {
 		struct idesc_wait_link *waitl;
 		int poll_mask;
 
-		idesc = pt->idesc_poll[i].idesc
+		idesc = pt->idesc_poll[i].idesc;
 		waitl = &pt->idesc_poll[i].wait_link;
 		poll_mask = pt->idesc_poll[i].poll_mask;
 
 		idesc_wait_prepare(idesc, waitl, poll_mask);
 	}
 
-	//wait_queue_prepare(&pt->wait_link)
-	//sched_prepare_wait()
+	__waitq_wait(ticks);
 
 	return 0;
 }
-
-
 
 static int select_table_prepare(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
@@ -154,9 +132,9 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	if (0 != fd_cnt) {
 		return fd_cnt;
 	}
-	select_wait(pt, ticks);
+	select_wait(&pt, ticks);
 
-	fd_cnt = select_count_descriptors(nfds, readfds, writefds, exceptfds);
+	fd_cnt = select_count_descriptors(&pt);
 
 	return fd_cnt;
 }
