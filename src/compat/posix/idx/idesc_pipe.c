@@ -46,7 +46,7 @@ struct idesc_pipe {
 	struct pipe *pipe;
 };
 
-int pipe_close(struct idesc *idesc) {
+static int pipe_close(struct idesc *idesc) {
 	struct pipe *pipe;
 	struct idesc *other_end;
 
@@ -77,26 +77,40 @@ static int pipe_last_read(struct pipe *pipe, void *buf, size_t nbyte) {
 	void *cbuf = buf;
 	int len;
 
-	do {
+	while (nbyte > 0) {
 		len = ring_buff_dequeue(pipe->buff, buf, nbyte);
 		if (len <= 0) {
 			break;
 		}
 
 		nbyte -= len;
-	} while (nbyte > 0);
+	}
 
 	return cbuf - buf;
 }
 
-int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
+	struct idesc_wait_link wl;
+	int res;
+
+	idesc_wait_prepare(idesc, &wl, flags);
+
+	mutex_unlock(&pipe->mutex);
+
+	res = idesc_wait(&wl, SCHED_TIMEOUT_INFINITE);
+
+	mutex_lock(&pipe->mutex);
+
+	idesc_wait_cleanup(&wl);
+
+	assert(res != -ETIMEDOUT);
+	return res;
+}
+
+static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	struct pipe *pipe;
 	void *cbuf;
 	int res;
-
-	if (0 == nbyte) {
-		return 0;
-	}
 
 	pipe = ((struct idesc_pipe *) idesc)->pipe;
 	mutex_lock(&pipe->mutex);
@@ -110,26 +124,14 @@ int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 
 	cbuf = buf;
 
-	do {
+	while (nbyte > 0) {
 		res = ring_buff_dequeue(pipe->buff, cbuf, nbyte);
 		if (res > 0) {
-
 			assert(res <= nbyte);
-
 			cbuf += res;
 			nbyte -= res;
 		} else {
-			struct idesc_wait_link wl;
-
-			idesc_wait_prepare(idesc, &wl, IDESC_EVENT_READ | IDESC_EVENT_ERROR);
-
-			mutex_unlock(&pipe->mutex);
-			res = idesc_wait(&wl, SCHED_TIMEOUT_INFINITE);
-			mutex_lock(&pipe->mutex);
-
-			idesc_wait_cleanup(&wl);
-
-			assert(res != -ETIMEDOUT);
+			res = pipe_wait(idesc, pipe, IDESC_EVENT_READ | IDESC_EVENT_ERROR);
 			if (res < 0) {
 				break;
 			}
@@ -140,7 +142,7 @@ int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 				goto out_unlock;
 			}
 		}
-	} while (nbyte > 0);
+	}
 
 	if (cbuf != buf) {
 		idesc_notify_all(pipe->writing_end, IDESC_EVENT_WRITE);
@@ -152,14 +154,10 @@ out_unlock:
 	return res;
 }
 
-int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	struct pipe *pipe;
 	const void *cbuf;
 	int res;
-
-	if (0 == nbyte) {
-		return 0;
-	}
 
 	pipe = ((struct idesc_pipe *) idesc)->pipe;
 	mutex_lock(&pipe->mutex);
@@ -174,26 +172,14 @@ int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 
 	cbuf = buf;
 
-	do {
+	while (nbyte > 0) {
 		res = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
 		if (res > 0) {
-
 			assert(res <= nbyte);
-
 			cbuf += res;
 			nbyte -= res;
 		} else {
-			struct idesc_wait_link wl;
-
-			idesc_wait_prepare(idesc, &wl, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
-
-			mutex_unlock(&pipe->mutex);
-			res = idesc_wait(&wl, SCHED_TIMEOUT_INFINITE);
-			mutex_lock(&pipe->mutex);
-
-			idesc_wait_cleanup(&wl);
-
-			assert(res != -ETIMEDOUT);
+			res = pipe_wait(idesc, pipe, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
 			if (res < 0) {
 				break;
 			}
@@ -204,7 +190,7 @@ int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 				goto out_unlock;
 			}
 		}
-	} while (nbyte > 0);
+	}
 
 	if (cbuf != buf) {
 		idesc_notify_all(pipe->reading_end, IDESC_EVENT_READ);
