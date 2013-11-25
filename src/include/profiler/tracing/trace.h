@@ -9,6 +9,9 @@
 #ifndef PROFILER_TRACING_TRACE_H_
 #define PROFILER_TRACING_TRACE_H_
 
+/* for time64_t */
+#include <kernel/time/time.h>
+
 struct __trace_point;
 struct __trace_block;
 
