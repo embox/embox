@@ -176,12 +176,13 @@ int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 
 	do {
 		res = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
+		if (res > 0) {
 
-		assert(res >= 0);
-		cbuf += res;
-		nbyte -= res;
+			assert(res <= nbyte);
 
-		if (!res) {
+			cbuf += res;
+			nbyte -= res;
+		} else {
 			struct idesc_wait_link wl;
 
 			idesc_wait_prepare(idesc, &wl, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
@@ -196,8 +197,14 @@ int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 			if (res < 0) {
 				break;
 			}
+
+			/* is the error event occured? Let's check another end of pipe */
+			if (NULL == pipe->reading_end) {
+				res = cbuf - buf;
+				goto out_unlock;
+			}
 		}
-	} while (1);
+	} while (nbyte > 0);
 
 	if (cbuf != buf) {
 		idesc_notify_all(pipe->reading_end, IDESC_EVENT_READ);
