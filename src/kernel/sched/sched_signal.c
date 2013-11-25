@@ -7,13 +7,14 @@
 
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/sched/waitq.h>
 
 
 void sched_signal(struct thread *t) {
 	sched_lock();
 	{
-		if (thread_state_sleeping(t->state)) {
-			sched_thread_notify(t, -EINTR);
+		if (t->state & __THREAD_STATE_WAITING) {
+			waitq_thread_notify(t, -EINTR);
 		} else {
 			sched_post_switch();
 		}

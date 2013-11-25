@@ -86,14 +86,6 @@ static int ti8168_clk_config(struct time_dev_conf *conf) {
 	return 0;
 }
 
-static cycle_t ti8168_clk_read(void) {
-	return 0;
-}
-
-static struct time_counter_device ti8168_clk_counter = {
-	.read = ti8168_clk_read,
-};
-
 static struct time_event_device ti8168_clk_event = {
 	.config = ti8168_clk_config,
 	.resolution = 1000,
@@ -103,7 +95,6 @@ static struct time_event_device ti8168_clk_event = {
 struct clock_source ti8168_clk_clock_source = {
 	.name = "ti8168",
 	.event_device = &ti8168_clk_event,
-	.counter_device = &ti8168_clk_counter,
 	.read = clock_source_read,
 };
 

@@ -22,7 +22,7 @@ static struct gpio omap_gpio[GPIO_MODULE_CNT];
 
 struct gpio *gpio_by_num(int num_port) {
 
-	return &omap_gpio[num_port];
+	return &omap_gpio[num_port - 1];
 }
 
 static pin_mask_t gpio_get_pin_changed(struct gpio *gpio) {
@@ -165,7 +165,7 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 }
 
 int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode, void *data) {
+		irq_handler_t pin_handler, int mode, void *data) {
 	int pin_nr;
 	assert(gpio);
 
@@ -182,7 +182,7 @@ int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode) {
+		irq_handler_t pin_handler, int mode) {
 	int pin_nr;
 	assert(gpio);
 

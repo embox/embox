@@ -4,6 +4,7 @@
  *
  * @date 18.03.2012
  * @author Alina Kramar
+ * @author Denis Deryugin
  */
 
 #ifndef PROFILER_TRACING_TRACE_IMPL_H_
@@ -28,11 +29,12 @@ struct __trace_point {
 };
 
 struct __trace_block {
+	const char *name;
 	struct __trace_point *begin;
 	struct __trace_point *end;
-	//struct timecounter *tc;
 	struct itimer *tc;
-	int time;
+	int64_t count;
+	time64_t time;
 	bool active;
 };
 
@@ -50,20 +52,22 @@ struct __trace_block {
 #define __trace_point_set(tp_pointer) \
 		__tracepoint_handle(tp_pointer)
 
-#define __TRACE_BLOCK_DEF(tb_name)                           \
-	static struct __trace_point b;             \
-	static struct __trace_point e; \
-	static struct itimer tc;\
-	static struct __trace_block tb_name  = {         \
-			.begin = &b,      \
-			.end   = &e,                             \
-			.tc    = &tc,                          \
-			.time  = 0,    \
-			.active = true, \
-	};                                                   \
-	ARRAY_SPREAD_DECLARE(struct __trace_block *, \
-			__trace_blocks_array);               \
-	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name);  \
+#define __TRACE_BLOCK_DEF(tb_name)                  	\
+	static struct __trace_point tb_name ## _b;      	\
+	static struct __trace_point tb_name ## _e; 			\
+	static struct itimer tb_name ## _tc;				\
+	static struct __trace_block tb_name  = {        	\
+			.name  = #tb_name,							\
+			.begin = &tb_name ## _b,     				\
+			.end   = &tb_name ## _e,                	\
+			.tc    = &tb_name ## _tc,               	\
+			.time  = 0,									\
+			.count = 0,									\
+			.active = true, 							\
+	};                                              	\
+	ARRAY_SPREAD_DECLARE(struct __trace_block *,		\
+			__trace_blocks_array);              		\
+	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name)
 
 #define __tp_ref(__name) \
 	({                                                        \

@@ -17,7 +17,6 @@
 #include <math.h>
 
 #include <hal/ipl.h>
-#include <kernel/thread/state.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched.h>
@@ -35,11 +34,11 @@ static inline int mutex_is_static_inited(struct mutex *m) {
 }
 
 static inline void mutex_complete_static_init(struct mutex *m) {
-	wait_queue_init(&m->wq);
+	waitq_init(&m->wq);
 }
 
 void mutex_init_default(struct mutex *m, const struct mutexattr *attr) {
-	wait_queue_init(&m->wq);
+	waitq_init(&m->wq);
 	m->lock_count = 0;
 	m->holder = NULL;
 
@@ -70,7 +69,7 @@ int mutex_lock(struct mutex *m) {
 			}
 			/* We have to wait for a mutex to be released. */
 			priority_inherit(current, m);
-			wait_queue_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
+			waitq_wait_locked(&m->wq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 	}
 
@@ -150,7 +149,7 @@ int mutex_unlock(struct mutex *m) {
 
 		m->holder = NULL;
 		m->lock_count = 0;
-		wait_queue_notify(&m->wq);
+		waitq_notify(&m->wq);
 	}
 out:
 	sched_unlock();

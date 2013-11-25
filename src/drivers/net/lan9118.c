@@ -125,8 +125,6 @@
 
 EMBOX_UNIT_INIT(lan9118_init);
 
-static struct net_device *nic;
-
 static uint32_t lan9118_reg_read(struct net_device *dev, int offset) {
 	return REG_LOAD(dev->base_addr + offset);
 }
@@ -284,7 +282,7 @@ repeat:
 	irq_unlock();
 }
 
-void lan9118_irq_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
+irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
 
 	if (l & _LAN9118_INT_STS_RSFL_INT) {
@@ -292,6 +290,8 @@ void lan9118_irq_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
 	}
 
 	lan9118_reg_write(nic, LAN9118_INT_STS, l);
+
+	return IRQ_HANDLED;
 }
 
 static void mdelay(int value) {
@@ -376,6 +376,7 @@ static const struct net_driver lan9118_drv_ops = {
 
 static int lan9118_init(void) {
 	int res;
+	struct net_device *nic;
 
 	nic = etherdev_alloc(0);
 	if (nic == NULL) {

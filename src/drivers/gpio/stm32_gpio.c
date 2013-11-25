@@ -74,7 +74,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 		}
 	} else if (mode & GPIO_MODE_OUTPUT) {
 
-		mode_val = 3
+		mode_val = 3;
 
 		if (mode & GPIO_MODE_OUT_ALTERNATE) {
 			mode_val |= 8;

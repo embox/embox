@@ -61,14 +61,6 @@ struct gptimerxx_x {
 #define GPTIMER_TIER_OVERFLOW   (1 << 1)
 #define GPTIMER_TISR_OVERFLOW   (1 << 1)
 
-static cycle_t omap_clk_read(void) {
-	return 0;
-}
-
-static struct time_counter_device omap_clk_counter = {
-	.read = omap_clk_read,
-};
-
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	volatile struct gptimerxx_x *gptimer = GPTIMER1_BASE;
 	clock_tick_handler(irq_nr, data);
@@ -108,7 +100,6 @@ static struct time_event_device omap3_clk_event = {
 static struct clock_source omap3_clk_clock_source = {
 	.name = "omap3_clk",
 	.event_device = &omap3_clk_event,
-	.counter_device = &omap_clk_counter,
 	.read = clock_source_read,
 };
 

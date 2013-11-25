@@ -9,6 +9,8 @@
 #ifndef TASK_H_
 #define TASK_H_
 
+#include <assert.h>
+
 #include <util/dlist.h>
 #include <util/array.h>
 
@@ -66,7 +68,7 @@ struct task {
 
 	clock_t per_cpu; /**< task times */
 
-	struct wait_queue *waitq;
+	struct waitq *waitq;
 
 	unsigned int affinity;
 
@@ -84,6 +86,8 @@ struct task {
  * @return Task resources from task
  */
 static inline struct task_idx_table *task_idx_table(struct task *task) {
+
+	assert(task);
 	return task->idx_table;
 }
 
@@ -115,13 +119,19 @@ extern task_priority_t task_get_priority(struct task *task);
 
 /* this is for SMP mode */
 static inline void task_set_affinity(struct task *task, unsigned int affinity) {
+
+	assert(task);
 	task->affinity = affinity;
 }
+
 static inline unsigned int task_get_affinity(struct task *task) {
+
+	assert(task);
 	return task->affinity;
 }
 
 static inline void *task_self_security(void) {
+
 	return task_self()->security;
 }
 

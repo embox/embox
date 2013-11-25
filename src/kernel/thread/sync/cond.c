@@ -36,7 +36,7 @@ void cond_init(cond_t *c, const struct condattr *attr) {
 
 	current = thread_self();
 
-	wait_queue_init(&c->wq);
+	waitq_init(&c->wq);
 
 	c->task = current->task;
 	if (attr) {
@@ -103,13 +103,13 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	}
 
 	if (cond_is_static_inited(c)) {
-		wait_queue_init(&c->wq);
+		waitq_init(&c->wq);
 	}
 
 	sched_lock();
 	{
 		mutex_unlock(m);
-		wait_queue_wait_locked(&c->wq, timeout);
+		waitq_wait_locked(&c->wq, timeout);
 	}
 	sched_unlock();
 
@@ -133,10 +133,10 @@ int cond_signal(cond_t *c) {
 	}
 
 	if (cond_is_static_inited(c)) {
-		wait_queue_init(&c->wq);
+		waitq_init(&c->wq);
 	}
 
-	wait_queue_notify(&c->wq);
+	waitq_notify(&c->wq);
 
 	return ENOERR;
 }
@@ -156,10 +156,10 @@ int cond_broadcast(cond_t *c) {
 	}
 
 	if (cond_is_static_inited(c)) {
-		wait_queue_init(&c->wq);
+		waitq_init(&c->wq);
 	}
 
-	wait_queue_notify_all(&c->wq);
+	waitq_notify_all(&c->wq);
 
 	return ENOERR;
 }

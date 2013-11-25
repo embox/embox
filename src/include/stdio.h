@@ -13,7 +13,6 @@
 
 /*va_list As described in <stdarg.h>. */
 #include <stdarg.h>
-#include <assert.h>
 
 #include <defines/size_t.h>
 #include <defines/null.h>
@@ -210,10 +209,7 @@ extern int feof(FILE *stream);
 
 extern int ferror(FILE *stream);
 
-static inline int fileno(FILE *stream) {
-	assert(stream != NULL);
-	return stream->fd;
-}
+extern int fileno(FILE *stream);
 
 __END_DECLS
 

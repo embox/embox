@@ -10,6 +10,7 @@
 #define DRIVERS_GPIO_H_
 
 #include <module/embox/driver/gpio/api.h>
+#include <kernel/irq.h>
 
 struct gpio;
 
@@ -45,9 +46,9 @@ extern void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level);
 extern gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask);
 
 extern int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode, void *data);
+		irq_handler_t pin_handler, int mode, void *data);
 
 extern int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
-		void *pin_handler, int mode);
+		irq_handler_t pin_handler, int mode);
 
 #endif /* DRIVERS_GPIO_H_ */

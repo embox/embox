@@ -14,11 +14,8 @@
 #define EVENT_TIMEOUT_INFINITE -1
 
 struct event {
-
 };
 
-#define EVENT_WAIT(event, cond_expr, timeout) ENOERR
-
-#define EVENT_WAIT_OR_INTR(event, cond_expr, timeout) ENOERR
+#define __EVENT_WAIT(event, cond_expr, timeout, intr) ENOERR
 
 #endif /* KERNEL_EVENT_NOSCHED_H_ */

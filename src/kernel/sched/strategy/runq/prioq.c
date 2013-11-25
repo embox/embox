@@ -35,18 +35,18 @@ void runq_item_init(runq_item_t *runq_link) {
 	prioq_link_init(runq_link);
 }
 
-void runq_queue_init(runq_queue_t *queue) {
+void runq_init(runq_t *queue) {
 	prioq_init(queue);
 }
 
-void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
+void runq_insert(runq_t *queue, struct thread *thread) {
 	prioq_enqueue(thread, thread_prio_comparator, queue, rq_field);
 }
 
-void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
+void runq_remove(runq_t *queue, struct thread *thread) {
 	prioq_remove(thread, thread_prio_comparator, rq_field);
 }
 
-struct thread *runq_queue_extract(runq_queue_t *queue) {
+struct thread *runq_extract(runq_t *queue) {
 	return prioq_dequeue(thread_prio_comparator, queue,struct thread, rq_field);
 }
