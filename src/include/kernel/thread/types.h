@@ -12,36 +12,33 @@
 
 #include <hal/context.h>
 
+#include <kernel/spinlock.h>
 #include <kernel/sched/sched_strategy.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/sched/waitq.h>
 
 #include <util/dlist.h>
 
-#define __THREAD_STATE_READY     (0x1 << 0) /* present in runq */
-#define __THREAD_STATE_WAITING   (0x1 << 1) /* waiting for an event */
-#define __THREAD_STATE_RUNNING   (0x1 << 2) /* executing on CPU now */
+#define THREAD_STATE_INIT 0x0
+
+#define THREAD_READY     (0x1 << 0)  /**< Not waiting (and not about to be). */
+#define THREAD_ACTIVE    (0x1 << 1)  /**< Runs on CPU now (is current). */
 
 /* Resource mgmt flags. */
+#define __THREAD_STATE_EXITED    (0x1 << 3)
 #define __THREAD_STATE_DETACHED  (0x1 << 4)
-
-/* zombie */
-#define __THREAD_STATE_DO_EXITED(state)                        \
-	state & ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING |  \
-			__THREAD_STATE_RUNNING)
-#define __THREAD_STATE_IS_EXITED(state)                        \
-	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
-			__THREAD_STATE_RUNNING))
 
 typedef int __thread_id_t;
 
 struct task;
+struct waitq_link;
 
 struct thread {
 	unsigned int       state;          /**< Current state. */
+	spinlock_t         lock;
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
@@ -49,7 +46,7 @@ struct thread {
 	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
 		void          *run_ret;      /**< Return value of the routine. */
-		void          *join_wq;      /**< A queue of joining threads. */
+		void          *joining;      /**< A joining thread (if any). */
 	} /* unnamed */;
 
 	thread_stack_t     stack;        /**< Handler for work with thread stack */
@@ -59,7 +56,8 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct wait_link   *wait_link;   /**< Hold data in waiting mode */
+	struct waitq      *waitq;        /**< TODO remove it. */
+	struct waitq_link  waitq_link;   /**< Holds data in waiting mode */
 
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 

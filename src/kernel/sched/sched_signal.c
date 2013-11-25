@@ -13,10 +13,10 @@
 void sched_signal(struct thread *t) {
 	sched_lock();
 	{
-		if (t->state & __THREAD_STATE_WAITING) {
-			waitq_thread_notify(t, -EINTR);
-		} else {
+		if (t->state & THREAD_READY) {
 			sched_post_switch();
+		} else {
+			sched_wakeup(t, -EINTR);
 		}
 	}
 	sched_unlock();

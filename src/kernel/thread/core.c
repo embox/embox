@@ -136,13 +136,14 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	dlist_init(&t->thread_link); /* default unlink value */
 
-	t->state = __THREAD_STATE_WAITING;
+	t->state = THREAD_STATE_INIT;
+	t->lock = SPIN_UNLOCKED;
 
 	/* set executive function and arguments pointer */
 	t->run = run;
 	t->run_arg = arg;
 
-	t->join_wq = NULL; /* there are not any joined thread */
+	t->joining = NULL;
 
 	/* calculate current thread priority. It can be change later with
 	 * thread_set_priority () function
@@ -187,14 +188,18 @@ void thread_init(struct thread *t, unsigned int flags,
 	sched_affinity_init(t);
 	sched_timing_init(t);
 
-	t->wait_link = NULL;
+	waitq_link_init(&t->waitq_link);
+}
+
+static int thread_exited(struct thread *t) {
+	return !(t->state & __THREAD_STATE_EXITED);
 }
 
 static void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
-	assert(__THREAD_STATE_IS_EXITED(t->state));
+	assert(thread_exited(t));
 
 	task_remove_thread(t->task, t);
 	sigstate_init(&t->sigstate);
@@ -218,7 +223,7 @@ static void thread_delete(struct thread *t) {
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	struct waitq *join_wq;
+	struct thread *joining;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
@@ -231,14 +236,14 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_lock();
 	{
-		current->state &= ~__THREAD_STATE_RUNNING;
+		sched_finish(current);
 
 		/* Wake up a joining thread (if any).
-		 * Note that join_wq and run_ret are both in a union. */
-		join_wq = current->join_wq;
-		if (join_wq) {
+		 * Note that joining and run_ret are both in a union. */
+		joining = current->joining;
+		if (joining) {
 			current->run_ret = ret;
-			waitq_notify(join_wq);
+			sched_wakeup(joining, ENOERR);
 		}
 
 		if (current->state & __THREAD_STATE_DETACHED)
@@ -255,6 +260,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 int thread_join(struct thread *t, void **p_ret) {
 	struct thread *current = thread_self();
+	int ret = 0;
 
 	assert(t);
 
@@ -263,26 +269,23 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		assert(!t->join_wq);
+		assert(!t->joining);
 		assert(!(t->state & __THREAD_STATE_DETACHED));
 
-		if (!__THREAD_STATE_IS_EXITED(t->state)) {
-			/* Target thread is not exited. Waiting for his exiting. */
-			struct waitq queue;
-			waitq_init(&queue);
-
-			t->join_wq = &queue;
-			waitq_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
-		}
+		t->joining = current;
+		ret = SCHED_WAIT(thread_exited(t), SCHED_TIMEOUT_INFINITE, 0);
+		if (ret)
+			goto out;
 
 		if (p_ret)
 			*p_ret = t->run_ret;
 
 		thread_delete(t);
 	}
+out:
 	sched_unlock();
 
-	return 0;
+	return ret;
 }
 
 int thread_detach(struct thread *t) {
@@ -290,10 +293,10 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!t->join_wq);
+		assert(!t->joining);
 		assert(!(t->state & __THREAD_STATE_DETACHED));
 
-		if (!__THREAD_STATE_IS_EXITED(t->state))
+		if (!thread_exited(t))
 			/* The target will free itself upon finishing. */
 			t->state |= __THREAD_STATE_DETACHED;
 		else
@@ -312,17 +315,17 @@ int thread_launch(struct thread *t) {
 
 	sched_lock();
 	{
-		if (t->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY)) {
+		if (t->state & (THREAD_READY | THREAD_ACTIVE)) {
 			res = -EINVAL;
 			goto out;
 		}
 
-		if (__THREAD_STATE_IS_EXITED(t->state)) {
+		if (thread_exited(t)) {
 			res = -ESRCH;
 			goto out;
 		}
 
-		sched_wake(t);
+		sched_start(t);
 	}
 out:
 	sched_unlock();
