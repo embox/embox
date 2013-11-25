@@ -41,24 +41,23 @@ static void print_stat(void) {
 	{
 		task_foreach(task) {
 			task_foreach_thread(thread, task) {
-				unsigned int s = thread->state;
 				const char *state = NULL;
 				sched_priority_t prior;
 
 				prior = sched_priority_thread(task->priority,
 										thread_priority_get(thread));
 
-				if (s & (__THREAD_STATE_READY | __THREAD_STATE_RUNNING)) {
+				if (sched_active(thread)) {
 					state = "running";
 					running++;
-				} else if (s & __THREAD_STATE_WAITING) {
+				} else if (!sched_ready(thread)) {
 					state = "sleeping";
 					sleeping++;
 				}
 
 
 				printf(" %4d%c %4d  %8d %18s %9lds\n",
-					thread->id, s & __THREAD_STATE_RUNNING ? '*' : ' ',
+					thread->id, sched_active(thread) ? '*' : ' ',
 					thread->task->tid,
 					prior,
 					state,
