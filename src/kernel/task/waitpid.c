@@ -21,20 +21,18 @@ int task_waitpid(pid_t pid) {
 	sched_lock();
 	{
 		task = task_table_get(pid);
-		if (task == NULL) {
+		if (!task)
 			ret = -ENOENT;
-		}
-		else {
-			ret = waitq_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
-		}
+		// else
+		// 	ret = waitq_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
 	}
 	sched_unlock();
 
 	return ret;
 }
-extern void waitq_notify_all_err(struct waitq *wait_queue, int error);
+
 static void task_waitq_deinit(struct task *task) {
-	waitq_notify_all_err(task->waitq, task->err);
+	sched_wakeup_waitq_all(task->waitq, task->err);
 }
 
 static void task_waitq_init(struct task *task, void *_waitq) {
