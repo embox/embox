@@ -13,6 +13,7 @@
 
 #include <sys/types.h>
 
+#include <kernel/thread/types.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 
@@ -51,12 +52,21 @@ extern void sched_ticker_switch(struct thread *prev, struct thread *next);
  * @param thread
  *   Thread which will be added.
  */
-extern void sched_wake(struct thread *t);
+extern void __sched_start(struct thread *t);
+extern void sched_start(struct thread *t);
 
 /**
  * Makes exit thread and removes thread from scheduler.
  */
-extern void sched_finish(struct thread *thread);
+extern void sched_finish(struct thread *t);
+
+static inline int sched_ready(struct thread *t) {
+	return (t->state & THREAD_READY);
+}
+
+static inline int sched_active(struct thread *t) {
+	return (t->state & THREAD_ACTIVE);
+}
 
 /**
  * Changes scheduling priority of the thread. If the thread is running now
@@ -71,11 +81,65 @@ extern void sched_finish(struct thread *thread);
  */
 extern int sched_change_priority(struct thread *t, sched_priority_t priority);
 
+extern int sched_wait(void);
+extern int sched_wait_timeout(int timeout);
+
+extern void __sched_wait_prepare(struct waitq *wq, int result);
+extern void sched_wait_prepare(struct waitq *wq, int result);
+
+extern int __sched_wait_cleanup(struct waitq *wq);
+extern int sched_wait_cleanup(struct waitq *wq);
+
+extern int __sched_wakeup(struct thread *t, int result);
+extern int sched_wakeup(struct thread *t, int result);
+
+extern void sched_wakeup_waitq(struct waitq *wq, int nr, int result);
+static inline void sched_wakeup_waitq_all(struct waitq *wq, int result) {
+	sched_wakeup_waitq(wq, 0, result);
+}
+
+/**
+ * Wait cond_expr to become TRUE. waitq may be NULL.
+ */
+#define SCHED_WAIT_ON(waitq, cond_expr, timeout, intr)    \
+	((cond_expr) ? 0 : ({                                 \
+		int __wait_ret;                                   \
+		                                                  \
+		while (1) {                                       \
+			sched_wait_prepare(waitq, 0);                 \
+			if (cond_expr) {                              \
+				__wait_ret = 0;                           \
+				break;                                    \
+			}                                             \
+			__wait_ret = sched_wait_timeout(timeout);     \
+			if (__wait_ret == -ETIMEDOUT)                 \
+				break;                                    \
+			if (!intr && (__wait_ret == -EINTR))          \
+				break;                                    \
+		}                                                 \
+		if (cond_expr)                                    \
+			__wait_ret = 0;                               \
+		                                                  \
+		sched_wait_cleanup(waitq);                        \
+		                                                  \
+		__wait_ret;                                       \
+	}))
+
+/**
+ * Wait cond_expr to become TRUE.
+ */
+#define SCHED_WAIT(cond_expr, timeout, intr)     \
+	SCHED_WAIT_ON(NULL, cond_expr, timeout, intr)
 
 /**
  * Requests switching of the current thread.
  */
 extern void sched_post_switch(void);
+
+/**
+ * Runs the scheduler right now.
+ */
+extern void sched_switch(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling
