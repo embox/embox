@@ -17,6 +17,8 @@
 #include <limits.h>
 #include <errno.h>
 
+#include <kernel/spinlock.h>
+
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
 struct node_tuple {
@@ -38,6 +40,14 @@ static inline int flock_init(node_t *node) {
 	mutex_init(&node->flock.exlock);
 	node->flock.shlock_count = 0;
 	dlist_init(&node->flock.shlock_holders);
+
+	return ENOERR;
+}
+
+static inline int kflock_init(node_t *node) {
+	/* kflock initialization */
+	dlist_init(&node->kflock.locks);
+	node->kflock.kflock_guard = SPIN_UNLOCKED;
 
 	return ENOERR;
 }
@@ -78,6 +88,7 @@ node_t *node_alloc(const char *name, size_t name_len) {
 	node->name[name_len] = '\0';
 
 	flock_init(node);
+	kflock_init(node);
 
 	return node;
 }

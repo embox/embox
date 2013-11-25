@@ -133,3 +133,27 @@ TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
 			       	test_path, PATH_MAX));
 	test_assert_zero(strcmp("/R/B/D/E", test_path));
 }
+
+#include <unistd.h>
+#include <sys/file.h>
+#include <fs/vfs.h>
+#include <errno.h>
+#include <kernel/printk.h>
+#include <fs/file_operation.h>
+
+TEST_CASE("vfs_fcntl advisory locking tests") {
+	int fd;
+	struct flock flock = { F_RDLCK, SEEK_SET, 0, 0, 0 };
+
+	printk("\n\n========= vfs_fcntl test =========	\n");
+
+	fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDONLY | O_TRUNC,
+			S_IRUSR | S_IWUSR);
+
+	test_assert_not_equal(-1, fd);
+	test_assert_zero(vfs_fcntl(fd, F_SETLK, &flock));
+
+	flock.l_type = F_UNLCK;
+
+	test_assert_zero(vfs_fcntl(fd, F_SETLK, &flock));
+}

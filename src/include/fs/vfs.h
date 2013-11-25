@@ -105,4 +105,16 @@ static inline int vfs_get_path_by_node(node_t *nod, char *path) {
 	return vfs_get_path_till_root(nod, vfs_get_root(), path, PATH_MAX);
 }
 
+/**
+ * @brief Fcntl functions implementation
+ *
+ * @param fd file descriptor for operation
+ * @param cmd command to describe action you would like to perform
+ * @param ... one or more command specific options
+ *
+ * @return zero if it was no errors or according error code
+ */
+int vfs_fcntl(int fd, int cmd, ... /* arg */ );
+
+
 #endif /* FS_VFS_H_ */

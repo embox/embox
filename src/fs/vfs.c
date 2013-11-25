@@ -388,14 +388,15 @@ static int kflock_lock_put(kflock_t *kflock, struct flock *flock) {
 }
 
 /* Return disposition of flock compare to locks in kflock */
-static int kflock_get_disposition(kflock_t *kflock, struct flock *flock,
-		kflock_lock_t *existing_kflock, int flags)
+static int kflock_get_disposition(int *intersection, kflock_t *kflock,
+		struct flock *flock, kflock_lock_t *existing_kflock, unsigned int skip)
 {
-	int rc = 0;
 	kflock_lock_t *lock;
 	struct dlist_head *item, *next;
 	off_t lock_end, flock_end = flock->l_start + flock->l_len;
 	off_t delta_start, delta_end;
+
+	*intersection = -1;
 
 	dlist_foreach(item, next, &kflock->locks) {
 		lock = dlist_entry(item, kflock_lock_t, kflock_link);
@@ -403,75 +404,79 @@ static int kflock_get_disposition(kflock_t *kflock, struct flock *flock,
 		delta_start = lock->flock.l_start - flock->l_start;
 		delta_end = lock_end - flock_end;
 
-		if (F_WRLCK == lock->flock.l_type && !(flags & FLOCK_SKIP_EXCLUSIVE)) {
+		if (skip--)
+			continue;
+
+		if (F_WRLCK == lock->flock.l_type) {
 			if (0 == delta_start && 0 == delta_end) {
-				rc =  FLOCK_EXCLUSIVE_FIT;
+				*intersection = FLOCK_EXCLUSIVE_FIT;
 				break;
 			}
 			if (delta_start <= 0 && delta_end >= 0) {
-				rc =  FLOCK_EXCLUSIVE_INCLUDE;
+				*intersection = FLOCK_EXCLUSIVE_INCLUDE;
 				break;
 			}
 			if (delta_start >= 0 && delta_end <= 0) {
-				rc =  FLOCK_EXCLUSIVE_INCLUDED;
+				*intersection = FLOCK_EXCLUSIVE_INCLUDED;
 				break;
 			}
 			if (delta_start == lock->flock.l_len) {
-				rc =  FLOCK_EXCLUSIVE_BORDER_RIGHT;
+				*intersection = FLOCK_EXCLUSIVE_BORDER_RIGHT;
 				break;
 			}
 			if (delta_end == -lock->flock.l_len) {
-				rc =  FLOCK_EXCLUSIVE_BORDER_LEFT;
+				*intersection = FLOCK_EXCLUSIVE_BORDER_LEFT;
 				break;
 			}
 			if (delta_start < 0 && delta_end <= 0) {
-				rc =  FLOCK_EXCLUSIVE_INTERSECT_LEFT;
+				*intersection = FLOCK_EXCLUSIVE_INTERSECT_LEFT;
 				break;
 			}
 			if (delta_start >= 0 && delta_end > 0) {
-				rc =  FLOCK_EXCLUSIVE_INTERSECT_RIGHT;
+				*intersection = FLOCK_EXCLUSIVE_INTERSECT_RIGHT;
 				break;
 			}
 		}
 
-		if (F_RDLCK == lock->flock.l_type && !(flags & FLOCK_SKIP_SHARED)) {
+		if (F_RDLCK == lock->flock.l_type) {
 			if (0 == delta_start && 0 == delta_end) {
-				rc =  FLOCK_SHARED_FIT;
+				*intersection = FLOCK_SHARED_FIT;
 				break;
 			}
 			if (delta_start <= 0 && delta_end >= 0) {
-				rc =  FLOCK_SHARED_INCLUDE;
+				*intersection = FLOCK_SHARED_INCLUDE;
 				break;
 			}
 			if (delta_start >= 0 && delta_end <= 0) {
-				rc =  FLOCK_SHARED_INCLUDED;
+				*intersection = FLOCK_SHARED_INCLUDED;
 				break;
 			}
 			if (delta_start == lock->flock.l_len) {
-				rc =  FLOCK_SHARED_BORDER_RIGHT;
+				*intersection = FLOCK_SHARED_BORDER_RIGHT;
 				break;
 			}
 			if (delta_end == -lock->flock.l_len) {
-				rc =  FLOCK_SHARED_BORDER_LEFT;
+				*intersection = FLOCK_SHARED_BORDER_LEFT;
 				break;
 			}
 			if (delta_start < 0 && delta_end <= 0) {
-				rc =  FLOCK_SHARED_INTERSECT_LEFT;
+				*intersection = FLOCK_SHARED_INTERSECT_LEFT;
 				break;
 			}
 			if (delta_start >= 0 && delta_end > 0) {
-				rc =  FLOCK_SHARED_INTERSECT_RIGHT;
+				*intersection = FLOCK_SHARED_INTERSECT_RIGHT;
 				break;
 			}
 		}
 	}
 	/* If intersection has been found then copy intersect lock and return */
-	if (0 != rc) {
-		memcpy(existing_kflock, lock, sizeof(existing_kflock));
-		return rc;
+	if (-1 != *intersection) {
+		memcpy(existing_kflock, lock, sizeof(*existing_kflock));
+	} else {
+		*intersection = FLOCK_RANGE_NOT_INTERSECT;
 	}
 
-	return FLOCK_RANGE_NOT_INTERSECT;
+	return -ENOERR;
 }
 
 static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
@@ -512,17 +517,25 @@ static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
 	}
 
 	/* Validate type of the lock */
-	if (! (fltype && !(fltype & (fltype - 1)) && \
-			(((F_RDLCK | F_WRLCK | F_UNLCK) & fltype) == fltype)))
+	switch (fltype) {
+	case F_RDLCK:
+	case F_WRLCK:
+	case F_UNLCK:
+		break;
+	default:
 		return -EINVAL;
+	}
 
 	return -ENOERR;
 }
 
 static inline int kflock_validate_cmd(int cmd) {
-	if (cmd && !(cmd & (cmd - 1)) && \
-			(((F_SETLK | F_SETLKW | F_GETLK) & cmd) == cmd))
-		return -ENOERR;
+		switch (cmd) {
+		case F_SETLK:
+		case F_SETLKW:
+		case F_GETLK:
+			return -ENOERR;
+		}
 	return -EINVAL;
 }
 
@@ -573,11 +586,6 @@ static int kflock_lock_cut(kflock_t *kflock, struct flock *existing_flock,
 
 /* Combine existing lock with flock
  * Should be called within critical section */
-/*
- * TODO:
- *  - Combine should now acquire new lock, just release old one and returned
- *    updated struct flock with parameters for new lock to get
- */
 static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
 		struct flock *flock) {
 	int rc;
@@ -605,11 +613,10 @@ static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
 	combined_flock.l_type = existing_flock->l_type;
 	combined_flock.l_whence = existing_flock->l_whence;
 
-	rc = kflock_lock_put(kflock, existing_flock);
-	if (-ENOERR != rc)
-		return rc;
+	/* Modify provided flock to be combined */
+	memcpy(flock, &combined_flock, sizeof(*flock));
 
-	rc = kflock_lock_get(kflock, &combined_flock);
+	rc = kflock_lock_put(kflock, existing_flock);
 	if (-ENOERR != rc)
 		return rc;
 
@@ -618,40 +625,82 @@ static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
 
 /* Handle F_GETLK command */
 static int kflock_handle_getlk(kflock_t *kflock, struct flock *flock) {
-	/* TODO: Implement this */
+	int rc;
+	int intersection = -1;
+	unsigned int skip_locks = 0;
+	kflock_lock_t existing_kflock;
+
+	/* Enter critical section */
+	spin_lock(&kflock->kflock_guard);
+
+	do {
+		/* If both lock shared they shouldn't affect each other, so we need
+		 * to find intersection with exclusive locks only */
+		rc = kflock_get_disposition(&intersection, kflock, flock,
+				&existing_kflock, skip_locks);
+		skip_locks++;
+	} while (FLOCK_RANGE_NOT_INTERSECT != intersection ||
+			(flock->l_type == F_RDLCK &&
+					existing_kflock.flock.l_type == F_RDLCK));
+
+	if (-ENOERR != rc) {
+		spin_unlock(&kflock->kflock_guard);
+		return rc;
+	}
+
+	if (FLOCK_RANGE_NOT_INTERSECT == intersection) {
+		flock->l_type = F_UNLCK;
+	} else {
+		memcpy(flock, &existing_kflock.flock, sizeof(*flock));
+	}
+
+	/* Exit critical section */
+	spin_lock(&kflock->kflock_guard);
+
 	return -EINVAL;
 }
 
 /* Perform all operations needed to get new exclusive lock */
 /*
- * TODO:
- *  - Reduce following function by creating separate
- *    functions for repeated parts of code
+ * TODO: Reduce following function by creating separate functions for repeated
+ * parts of code
  */
-static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
+static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 	int rc;
 	int intersection = -1;
+	unsigned int skip_locks = 0;
 	kflock_lock_t existing_kflock;
 	struct thread *current = thread_self();
 
-	if (cmd & F_GETLK)
+	if (cmd == F_GETLK)
 		return kflock_handle_getlk(kflock, flock);
 
 	/* Enter critical section */
 	spin_lock(&kflock->kflock_guard);
 
 	while (FLOCK_RANGE_NOT_INTERSECT != intersection) {
-		intersection = kflock_get_disposition(kflock, flock,
-				&existing_kflock, 0);
+		rc = kflock_get_disposition(&intersection, kflock, flock,
+				&existing_kflock, skip_locks);
+		if (-ENOERR != rc) {
+			spin_unlock(&kflock->kflock_guard);
+			return rc;
+		}
 
 		switch(intersection) {
 		case FLOCK_EXCLUSIVE_INCLUDE:
 		case FLOCK_EXCLUSIVE_FIT:
 			if (current->task->tid == existing_kflock.flock.l_pid) {
+				/* Exclusive lock within current process include of fit */
 				if (F_WRLCK == flock->l_type) {
+					/* Lock we try to acquire is exclusive.
+					 * Since lock like this or larger is already acquired
+					 * we just need to return ENOERR */
 					spin_unlock(&kflock->kflock_guard);
 					return -ENOERR;
 				} else {
+					/* Lock we try to acquire is shared.
+					 * We are putting shared lock held by current process to
+					 * make it possible to acquire exclusive instead */
 					rc = kflock_lock_put(kflock, &existing_kflock.flock);
 					if (-ENOERR != rc) {
 						spin_unlock(&kflock->kflock_guard);
@@ -659,11 +708,16 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 					}
 				}
 			} else {
+				/* Exclusive lock within another process include of fit.
+				 * We are waiting or returning EAGAIN independent on
+				 * type of lock we try to acquire */
 				if (cmd & F_SETLK) {
 					spin_unlock(&kflock->kflock_guard);
 					return -EAGAIN;
 				} else if (cmd & F_SETLKW) {
 					spin_unlock(&kflock->kflock_guard);
+					/* FIXME what if context switch occur here and below
+					 * at the similar code points */
 					wait_queue_wait(&existing_kflock.wq,
 							SCHED_TIMEOUT_INFINITE);
 					spin_lock(&kflock->kflock_guard);
@@ -677,10 +731,13 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 		case FLOCK_EXCLUSIVE_BORDER_LEFT:
 		case FLOCK_EXCLUSIVE_BORDER_RIGHT:
 			if (current->task->tid == existing_kflock.flock.l_pid) {
+				/* Intersection with exclusive lock within current process */
 				if (F_WRLCK == flock->l_type) {
+					/* If both locks are exclusive then combine them into one */
 					rc = kflock_lock_combine(kflock, &existing_kflock.flock,
 							flock);
 				} else {
+					/* If intersect lock is shared cut it */
 					rc = kflock_lock_cut(kflock, &existing_kflock.flock, flock);
 				}
 				if (-ENOERR != rc) {
@@ -688,6 +745,9 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 					return rc;
 				}
 			} else {
+				/* Intersection with exclusive lock within another process
+				 * We are waiting or returning EAGAIN independent on
+				 * type of lock we try to acquire */
 				if (cmd & F_SETLK) {
 					spin_unlock(&kflock->kflock_guard);
 					return -EAGAIN;
@@ -706,9 +766,12 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 		case FLOCK_SHARED_BORDER_LEFT:
 		case FLOCK_SHARED_BORDER_RIGHT:
 			if (current->task->tid == existing_kflock.flock.l_pid) {
+				/* Intersection with shared lock within current process */
 				if (F_WRLCK == flock->l_type) {
+					/* Cut it if we try to acquire exclusive one */
 					rc = kflock_lock_cut(kflock, &existing_kflock.flock, flock);
 				} else {
+					/* Combine it if we try to acquire shared one */
 					rc = kflock_lock_combine(kflock, &existing_kflock.flock,
 							flock);
 				}
@@ -717,21 +780,28 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 					return rc;
 				}
 			} else {
-				/* FIXME:
-				 * Here if we would like to put shared lock we can probably do
-				 * it if there is now other conflicts. So we need to skip any
-				 * intersection with this shared lock from different process
-				 * and continue to search for conflicting locks. If no such
-				 * locks were found then acquire current shared lock
-				 */
-				if (cmd & F_SETLK) {
-					spin_unlock(&kflock->kflock_guard);
-					return -EAGAIN;
-				} else if (cmd & F_SETLKW) {
-					spin_unlock(&kflock->kflock_guard);
-					wait_queue_wait(&existing_kflock.wq,
-							SCHED_TIMEOUT_INFINITE);
-					spin_lock(&kflock->kflock_guard);
+				/* Intersection with shared lock within another process */
+				if (F_WRLCK == flock->l_type) {
+					/* We are waiting or returning EAGAIN if lock we try to
+					 * acquire is exclusive */
+					if (cmd & F_SETLK) {
+						spin_unlock(&kflock->kflock_guard);
+						return -EAGAIN;
+					} else if (cmd & F_SETLKW) {
+						spin_unlock(&kflock->kflock_guard);
+						wait_queue_wait(&existing_kflock.wq,
+								SCHED_TIMEOUT_INFINITE);
+						spin_lock(&kflock->kflock_guard);
+					}
+				} else {
+					/* Here if we would like to put shared lock we can
+					 * probably do it if there is no other conflicts. So we
+					 * need to skip any intersection with this shared lock from
+					 * different process and continue to search for conflicting
+					 * locks. If no such locks were found then acquire current
+					 * shared lock
+					 */
+					skip_locks++;
 				}
 			}
 			continue;
@@ -739,32 +809,42 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 		case FLOCK_SHARED_INCLUDED:
 		case FLOCK_SHARED_FIT:
 			if (current->task->tid == existing_kflock.flock.l_pid) {
+				/* Shared lock within current process include of fit */
 				if (F_WRLCK == flock->l_type) {
+					/* Put held lock to replace it with exclusive one */
 					rc = kflock_lock_put(kflock, &existing_kflock.flock);
 					if (-ENOERR != rc) {
 						spin_unlock(&kflock->kflock_guard);
 						return rc;
 					}
 				} else {
+					/* Return ENOERR since similar lock is already acquired */
 					spin_unlock(&kflock->kflock_guard);
 					return -ENOERR;
 				}
 			} else {
-				/* FIXME:
-				 * Here if we would like to put shared lock we can probably do
-				 * it if there is now other conflicts. So we need to skip any
-				 * intersection with this shared lock from different process
-				 * and continue to search for conflicting locks. If no such
-				 * locks were found then acquire current shared lock
-				 */
-				if (cmd & F_SETLK) {
-					spin_unlock(&kflock->kflock_guard);
-					return -EAGAIN;
-				} else if (cmd & F_SETLKW) {
-					spin_unlock(&kflock->kflock_guard);
-					wait_queue_wait(&existing_kflock.wq,
-							SCHED_TIMEOUT_INFINITE);
-					spin_lock(&kflock->kflock_guard);
+				/* Shared lock within another process include of fit */
+				if (F_WRLCK == flock->l_type) {
+					/* We are waiting or returning EAGAIN if lock we try to
+					 * acquire is exclusive */
+					if (cmd & F_SETLK) {
+						spin_unlock(&kflock->kflock_guard);
+						return -EAGAIN;
+					} else if (cmd & F_SETLKW) {
+						spin_unlock(&kflock->kflock_guard);
+						wait_queue_wait(&existing_kflock.wq,
+								SCHED_TIMEOUT_INFINITE);
+						spin_lock(&kflock->kflock_guard);
+					}
+				} else {
+					/* Here if we would like to put shared lock we can
+					 * probably do it if there is no other conflicts. So we
+					 * need to skip any intersection with this shared lock from
+					 * different process and continue to search for conflicting
+					 * locks. If no such locks were found then acquire current
+					 * shared lock
+					 */
+					skip_locks++;
 				}
 			}
 			continue;
@@ -786,7 +866,7 @@ static int kflock_lock_handle(kflock_t *kflock, struct flock *flock, int cmd) {
 
 static int kflock_handle_unlock(kflock_t *kflock, struct flock *flock,
 		int cmd) {
-	if (cmd & F_GETLK)
+	if (cmd == F_GETLK)
 		return kflock_handle_getlk(kflock, flock);
 
 	return kflock_lock_put(kflock, flock);
@@ -818,26 +898,19 @@ int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 	kflock = &((struct file_desc *) idesc->data->fd_struct)->node->kflock;
 	perm_flags = ((struct file_desc *) idesc->data->fd_struct)->flags;
 
+	/* Check permissions to requested operation */
+	if ((!(flock->l_type == F_RDLCK && (perm_flags & FS_MAY_READ))) &&
+			(!(flock->l_type == F_WRLCK && (perm_flags & FS_MAY_WRITE))) &&
+			(!(flock->l_type == F_UNLCK)))
+		return -EPERM;
+
+	/* Jump to requested operation */
 	switch(flock->l_type) {
 	case F_WRLCK:
-		if (perm_flags & FS_MAY_WRITE) {
-			return kflock_lock_handle(kflock, flock, cmd);
-		} else {
-			return -EPERM;
-		}
 	case F_RDLCK:
-		if (perm_flags & FS_MAY_READ) {
-			return kflock_lock_handle(kflock, flock, cmd);
-		} else {
-			return -EPERM;
-		}
+		return kflock_handle_lock(kflock, flock, cmd);
 	case F_UNLCK:
-		if ((flock->l_type == F_RDLCK && (perm_flags & FS_MAY_READ)) ||
-				(flock->l_type == F_WRLCK && (perm_flags & FS_MAY_WRITE))) {
-			return kflock_handle_unlock(kflock, flock, cmd);
-		} else {
-			return -EPERM;
-		}
+		return kflock_handle_unlock(kflock, flock, cmd);
 	}
 
 	return -EINVAL;
