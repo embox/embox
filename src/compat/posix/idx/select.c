@@ -40,6 +40,19 @@ static inline int select_get_mask(int idx, fd_set *readfds, fd_set *writefds, fd
 	return mask;
 }
 
+
+struct idesc_poll {
+	struct idesc *idesc;
+	int poll_mask;
+	struct wait_link wait_link;
+};
+
+struct idesc_poll_table {
+	struct idesc_poll idesc_poll[IDESC_QUANTITY];
+	struct wait_link wait_link;
+	int size;
+};
+
 static int select_count_descriptors(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
 	struct idesc *idesc;
 	int cnt = 0;
@@ -68,23 +81,68 @@ static int select_count_descriptors(int nfds, fd_set *readfds, fd_set *writefds,
 	return cnt;
 }
 
-static int select_wait(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, clock_t ticks) {
-	//struct wait_link wait_link;
+static int select_wait(struct idesc_poll_table *pt, clock_t ticks) {
+	int i;
 
-	//wait_queue_prepare(&wait_link);
+	for (i = 0; i < pt->size; pt->size++) {
+		struct idesc *idesc;
+		struct idesc_wait_link *waitl;
+		int poll_mask;
+
+		idesc = pt->idesc_poll[i].idesc
+		waitl = &pt->idesc_poll[i].wait_link;
+		poll_mask = pt->idesc_poll[i].poll_mask;
+
+		idesc_wait_prepare(idesc, waitl, poll_mask);
+	}
+
+	//wait_queue_prepare(&pt->wait_link)
+	//sched_prepare_wait()
+
 	return 0;
 }
 
 
+
+static int select_table_prepare(struct idesc_poll_table *pt,
+		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+	struct idesc *idesc;
+
+	assert(pt);
+
+	for (pt->size = 0;nfds >= 0; nfds--, pt->size++) {
+		idesc = idesc_common_get(nfds);
+		assert(idesc);
+
+		if (FD_ISSET(nfds, readfds)) {
+			pt->idesc_poll[pt->size].idesc = idesc;
+			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_READ;
+		}
+
+		if (FD_ISSET(nfds, writefds)) {
+			pt->idesc_poll[pt->size].idesc = idesc;
+			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_WRITE;
+		}
+
+		if (FD_ISSET(nfds, exceptfds)) {
+			pt->idesc_poll[pt->size].idesc = idesc;
+			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_EXEPT;
+		}
+	}
+
+	return pt->size;
+}
+
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int fd_cnt;
 	clock_t ticks;
+	struct idesc_poll_table pt;
 
 	fd_cnt = 0;
 	/* If  timeout is NULL (no timeout), select() can block indefinitely. */
 	ticks = (timeout == NULL ? SCHED_TIMEOUT_INFINITE : timeval_to_ms(timeout));
 
-	fd_cnt = select_count_descriptors(nfds, readfds, writefds, exceptfds);
+	fd_cnt = select_table_prepare(&pt, nfds, readfds, writefds, exceptfds);
 
 	if (ticks == 0) {
 		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
@@ -96,7 +154,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	if (0 != fd_cnt) {
 		return fd_cnt;
 	}
-	select_wait(nfds, readfds, writefds, exceptfds, ticks);
+	select_wait(pt, ticks);
 
 	fd_cnt = select_count_descriptors(nfds, readfds, writefds, exceptfds);
 
