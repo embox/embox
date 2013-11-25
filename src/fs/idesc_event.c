@@ -9,6 +9,7 @@
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
 #include <fs/idesc.h>
+#include <fcntl.h>
 
 #include <kernel/thread.h>
 
@@ -47,3 +48,12 @@ int idesc_notify_all(struct idesc * idesc, int mask) {
 	return 0;
 }
 
+int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
+
+	if (idesc->idesc_flags & O_NONBLOCK) {
+		return -EAGAIN;
+	}
+
+	/* do actual wait */
+	return -ENOTSUP;
+}
