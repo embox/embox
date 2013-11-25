@@ -7,173 +7,187 @@
  * @author Alexander Kalmuk
  * @author Anton Kozlov
  */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 
 #include <util/ring_buff.h>
-#include <util/ring.h>
 
-#include <kernel/task/io_sync.h>
-#include <kernel/sched.h>
-#include <kernel/event.h>
-
-#include <kernel/task.h>
+#include <framework/mod/options.h>
+#include <kernel/thread/sync/mutex.h>
 #include <kernel/task/idx.h>
-
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
-#include <fcntl.h>
-#include <fs/pipe.h>
+#include <fs/idesc_event.h>
 #include <fs/flags.h>
 
 #include <unistd.h>
+
+#define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
+#define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
+
+struct ring_buff;
+struct idesc;
+
+struct pipe {
+	struct ring_buff *buff;         /**< Buffer to store data */
+	size_t buf_size;                /**< Size of buffer. May be changed by pipe_set_buf_size() */
+
+	struct mutex mutex;             /**< Global pipe mutex */
+
+	struct idesc *reading_end;      /**< Reading end of pipe */
+	struct idesc *writing_end;      /**< Writing end of pipe */
+
+};
 
 struct idesc_pipe {
 	struct idesc idesc;
 	struct pipe *pipe;
 };
 
-static inline void writing_enable(struct pipe *pipe) {
-//	if (pipe->writing_end)
-//		io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
-}
-
-static inline void reading_enable(struct pipe *pipe) {
-//	if (pipe->reading_end)
-//		io_sync_enable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
-}
-
-static inline void writing_disable(struct pipe *pipe) {
-//	if (pipe->writing_end)
-//		io_sync_disable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
-}
-
-static inline void reading_disable(struct pipe *pipe) {
-//	if (pipe->reading_end)
-//		io_sync_disable(&pipe->reading_end->idesc_event.io_sync, IO_SYNC_READING);
-}
-
 int pipe_close(struct idesc *idesc) {
-	struct idesc_pipe *ip;
 	struct pipe *pipe;
+	struct idesc *other_end;
 
-	ip = (struct idesc_pipe *) idesc;
-	pipe = ip->pipe;
+	pipe = ((struct idesc_pipe *) idesc)->pipe;
+	mutex_lock(&pipe->mutex);
 
-	sched_lock();
-	{
-		if (idesc == pipe->reading_end) {
-			pipe->reading_end = NULL;
-			/* Wake up writing end if it is sleeping. */
-			event_notify(&pipe->write_wait);
-		} else if (idesc == pipe->writing_end) {
-			pipe->writing_end = NULL;
-			/* Wake up reading end if it is sleeping. */
-			event_notify(&pipe->read_wait);
-		}
-		/* Free memory if both of ends are closed. */
-		if (NULL == pipe->reading_end && NULL == pipe->writing_end) {
-			free(pipe->buff->storage);
-			free(pipe->buff);
-			free(pipe);
-		}
-
+	if (idesc == pipe->reading_end) {
+		pipe->reading_end = NULL;
+		other_end = pipe->writing_end;
+	} else if (idesc == pipe->writing_end) {
+		pipe->writing_end = NULL;
+		other_end = pipe->reading_end;
 	}
-	sched_unlock();
 
+	if (NULL == other_end) {
+		free(pipe->buff->storage);
+		free(pipe->buff);
+		free(pipe);
+	} else {
+		idesc_notify_all(other_end, IDESC_EVENT_ERROR);
+	}
+
+	mutex_unlock(&pipe->mutex);
 	return 0;
 }
 
-int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static int pipe_last_read(struct pipe *pipe, void *buf, size_t nbyte) {
+	void *cbuf = buf;
 	int len;
-	struct idesc_pipe *ip;
-	struct pipe *pipe;
 
-	ip = (struct idesc_pipe *) idesc;
-	pipe = ip->pipe;
+	while (nbyte > 0) {
+		mutex_lock(&pipe->mutex);
+		len = ring_buff_dequeue(pipe->buff, buf, nbyte);
+		mutex_unlock(&pipe->mutex);
+		assert (len >= 0);
+
+		nbyte -= len;
+
+		if (len == 0) {
+			break;
+		}
+	}
+
+	return cbuf - buf;
+}
+
+int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+	struct pipe *pipe;
+	void *cbuf;
+	int res;
 
 	if (0 == nbyte) {
 		return 0;
 	}
 
-	sched_lock();
-	{
-		len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
+	pipe = ((struct idesc_pipe *) idesc)->pipe;
+	mutex_lock(&pipe->mutex);
 
-		/* If writing end is closed that means it was last data in pipe. */
-		if (NULL == pipe->writing_end) {
-			sched_unlock();
-			return len;
-		}
-		if (!(idesc->idesc_flags & O_NONBLOCK)) {
-			if (!len) {
-				EVENT_WAIT(&pipe->read_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-				len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
+	if (NULL == pipe->writing_end) {
+		res = pipe_last_read(pipe, buf, nbyte);
+		goto out_unlock;
+	}
+
+	cbuf = buf;
+
+	do {
+		res = ring_buff_dequeue(pipe->buff, buf, nbyte);
+
+		assert(res >= 0);
+		cbuf += res;
+		nbyte -= res;
+
+		if (!res) {
+			res = idesc_wait(idesc, IDESC_EVENT_READ | IDESC_EVENT_ERROR,
+					SCHED_TIMEOUT_INFINITE);
+			assert(res != -ETIMEDOUT);
+			if (res < 0) {
+				break;
 			}
 		}
-		/* Block pipe on reading if pipe is empty. */
-		if (ring_buff_get_cnt(pipe->buff) == 0) {
-			reading_disable(pipe);
-		}
+	} while (1);
 
-		/* Unblock pipe on writing if pipe is not full. */
-		if (len > 0) {
-			event_notify(&pipe->write_wait);
-			writing_enable(pipe);
-		}
+	if (cbuf != buf) {
+		idesc_notify_all(pipe->writing_end, IDESC_EVENT_WRITE);
+		res = cbuf - buf;
 	}
-	sched_unlock();
-	return len;
+
+out_unlock:
+	mutex_unlock(&pipe->mutex);
+	return res;
 }
 
 int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
-	int len;
 	struct pipe *pipe;
-	struct idesc_pipe *ip;
+	const void *cbuf;
+	int res;
 
-	ip = (struct idesc_pipe *) idesc;
-	pipe = ip->pipe;
+	if (0 == nbyte) {
+		return 0;
+	}
 
-	sched_lock();
-	{
-		/* If reading end is closed that means it is not reason for further writing. */
-		if (NULL == pipe->reading_end) {
-			SET_ERRNO(EPIPE);
-			sched_unlock();
-			return -1;
-		}
+	pipe = ((struct idesc_pipe *) idesc)->pipe;
+	mutex_lock(&pipe->mutex);
 
-		if (0 == nbyte) {
-			sched_unlock();
-			return 0;
-		}
+	/* If writing end is closed that means it was last data in pipe. */
+	if (NULL == pipe->reading_end) {
+		res = -EPIPE;
+		goto out_unlock;
+	}
 
-		len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
-		if (!(idesc->idesc_flags & O_NONBLOCK)) {
-			if (!len) {
-				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-				len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
+	cbuf = buf;
+
+	do {
+		res = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
+
+		assert(res >= 0);
+		cbuf += res;
+		nbyte -= res;
+
+		if (!res) {
+			res = idesc_wait(idesc, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR,
+					SCHED_TIMEOUT_INFINITE);
+			assert(res != -ETIMEDOUT);
+			if (res < 0) {
+				break;
 			}
 		}
-		/* Block pipe on writing if pipe is full. */
-		if (ring_buff_get_space(pipe->buff) == 0) {
-			writing_disable(pipe);
-		}
+	} while (1);
 
-		/* Unblock pipe on reading if pipe is not empty. */
-		if (len > 0) {
-			event_notify(&pipe->read_wait);
-			reading_enable(pipe);
-		}
+	if (cbuf != buf) {
+		idesc_notify_all(pipe->reading_end, IDESC_EVENT_READ);
+		res = cbuf - buf;
 	}
-	sched_unlock();
 
-	return len;
+out_unlock:
+	mutex_unlock(&pipe->mutex);
+	return res;
 }
 
 #if 0
-static inline int pipe_fcntl(struct idesc *data, int cmd, va_list args) {
+static int pipe_fcntl(struct idesc *data, int cmd, va_list args) {
 	struct pipe *pipe;
 	size_t size;
 
@@ -258,8 +272,8 @@ static struct pipe *pipe_alloc(void) {
         pipe->buff = pipe_buff;
         pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
         ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
-	event_init(&pipe->read_wait, "pipe_read_wait");
-	event_init(&pipe->write_wait, "pipe_write_wait");
+
+	mutex_init(&pipe->mutex);
 
 	return pipe;
 
