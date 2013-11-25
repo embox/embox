@@ -7,6 +7,7 @@
  */
 
 #include <unistd.h>
+#include <kernel/thread.h>
 
 #include <embox/test.h>
 
@@ -59,4 +60,29 @@ TEST_CASE("reading big chunk from smalls should be successfull") {
 	read(pipe_testfd[0], buf, 4);
 
 	test_assert_zero(strncmp(buf, "abcd", 4));
+}
+
+void *thd_handler(void *arg) {
+
+	usleep(100 * 1000);
+
+	write(pipe_testfd[1], "abcd", 4);
+
+	return NULL;
+}
+
+TEST_CASE("read should block until data avaible") {
+	char buf[5];
+
+	test_emit('a');
+
+	thread_create(THREAD_FLAG_DETACHED, thd_handler, NULL);
+
+	test_assert_equal(4, read(pipe_testfd[0], buf, 4));
+
+	test_emit('c');
+
+	test_assert_zero(strncmp(buf, "abcd", 4));
+
+	test_assert_emitted("abc");
 }
