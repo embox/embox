@@ -41,7 +41,9 @@ static inline size_t ent_len(struct ext2_xattr_ent *ent) {
 				(((unsigned int) _var) + ent_len(_var)))
 
 #define XATTR_ENT_HASH_NAM_SHIFT 5
+#define XATTR_ENT_HASH_NAM_RSHIFT (8 * sizeof(hash) - XATTR_ENT_HASH_NAM_SHIFT)
 #define XATTR_ENT_HASH_VAL_SHIFT 16
+#define XATTR_ENT_HASH_VAL_RSHIFT (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)
 
 static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 		struct ext2_xattr_ent *xattr_ent) {
@@ -56,7 +58,7 @@ static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 	len = xattr_ent->e_name_len;
 	while (len--) {
 		hash = (hash << XATTR_ENT_HASH_NAM_SHIFT) ^
-			(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_NAM_SHIFT)) ^
+			(hash >> XATTR_ENT_HASH_NAM_RSHIFT) ^
 			*p++;
 	}
 
@@ -64,7 +66,7 @@ static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 		len = iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD) >> 2;
 		while (len--) {
 			hash = (hash << XATTR_ENT_HASH_VAL_SHIFT) ^
-				(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)) ^
+				(hash >> XATTR_ENT_HASH_VAL_RSHIFT) ^
 				d2h32(*vp++);
 		}
 	}
@@ -82,7 +84,8 @@ static int ensure_dinode(struct nas *nas) {
 	return 0;
 }
 
-static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk, char check_magic) {
+static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
+		char check_magic) {
 	struct ext2fs_dinode *dinode;
 	struct ext2_xattr_hdr *xattr_blk;
 	int res;
@@ -119,6 +122,7 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk, char chec
 }
 
 #define XATTR_BLK_HASH_SHIFT 16
+#define XATTR_BLK_HASH_RSHIFT (8 * sizeof(unsigned int) - XATTR_BLK_HASH_SHIFT)
 
 static void block_rehash(struct ext2_xattr_hdr *xattr_blk) {
 	struct ext2_xattr_ent *i_ent;
@@ -127,7 +131,7 @@ static void block_rehash(struct ext2_xattr_hdr *xattr_blk) {
 
 	foreach_xattr(i_ent, xattr_blk->h_entries) {
 		hash = (hash << XATTR_BLK_HASH_SHIFT) ^
-			(hash >> (8 * sizeof(unsigned int) - XATTR_BLK_HASH_SHIFT)) ^
+			(hash >> XATTR_BLK_HASH_RSHIFT) ^
 			d2h32(i_ent->e_hash);
 	}
 
@@ -167,10 +171,11 @@ int ext2fs_listxattr(struct node *node, char *list, size_t len) {
 	return res;
 }
 
-static void del_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xattr_ent,
-		int *min_value_offs) {
+static void del_val(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *xattr_ent, int *min_value_offs) {
 	struct ext2_xattr_ent *i_ent;
-	unsigned int dellen = iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD);
+	unsigned int dellen = iceil(d2h32(xattr_ent->e_value_size),
+			EXT2_XATTR_PAD);
 	unsigned short deloff = d2h16(xattr_ent->e_value_offs);
 
 	memmove(((char*) xattr_blk) + *min_value_offs + dellen,
@@ -187,16 +192,17 @@ static void del_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 	*min_value_offs += dellen;
 }
 
-static void del_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xattr_ent,
-		struct ext2_xattr_ent *end_ent) {
+static void del_ent(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *xattr_ent,
+	       	struct ext2_xattr_ent *end_ent) {
 	void *src = ((char *) xattr_ent) + ent_len(xattr_ent);
 
 	memmove(xattr_ent, src, EXT2_XATTR_PAD + (unsigned int) end_ent
 			- (unsigned int) src);
 }
 
-static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *end_ent,
-		const char *name) {
+static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *end_ent, const char *name) {
 	struct ext2_xattr_ent *i_ent;
 	size_t name_len = strlen(name);
 
@@ -206,9 +212,11 @@ static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk, struct 
 		}
 	}
 
-	memmove(((void *) i_ent) + sizeof(struct ext2_xattr_ent) + iceil(strlen(name), EXT2_XATTR_PAD),
+	memmove(((void *) i_ent) + sizeof(struct ext2_xattr_ent)
+				+ iceil(strlen(name), EXT2_XATTR_PAD),
 			i_ent,
-			((unsigned int) end_ent) - ((unsigned int) i_ent) + EXT2_XATTR_PAD);
+			((unsigned int) end_ent) - ((unsigned int) i_ent)
+				+ EXT2_XATTR_PAD);
 
 	i_ent->e_name_len = (uint8_t) name_len;
 	i_ent->e_name_index = 1;
@@ -220,8 +228,9 @@ static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk, struct 
 }
 
 
-static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xattr_ent,
-		int *min_value_offs, const char *value, size_t len) {
+static void str_val(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *xattr_ent, int *min_value_offs,
+		const char *value, size_t len) {
 
 	size_t alen = iceil(len, EXT2_XATTR_PAD);
 
@@ -370,8 +379,8 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 
 		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4
 				> min_value_offs
-				    + iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD)
-				    - len) {
+					+ iceil(d2h32(xattr_ent->e_value_size),
+					    EXT2_XATTR_PAD) - len) {
 			res = -ENOMEM;
 			goto cleanup_out;
 		}
@@ -384,7 +393,8 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 
 	block_rehash(xattr_blk);
 
-	ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
+	ext2_write_sector(node->nas, (char *) xattr_blk, 1,
+			d2h32(dinode->i_facl));
 
 cleanup_out:
 	if (xattr_blk) {
@@ -394,7 +404,8 @@ cleanup_out:
 	return res;
 }
 
-int ext2fs_getxattr(struct node *node, const char *name, char *value, size_t len) {
+int ext2fs_getxattr(struct node *node, const char *name, char *value,
+		size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
 	struct ext2_xattr_ent *xattr_ent;
 	size_t name_len = strlen(name);
@@ -407,10 +418,13 @@ int ext2fs_getxattr(struct node *node, const char *name, char *value, size_t len
 	res = -ENOENT;
 	foreach_xattr(xattr_ent, xattr_blk->h_entries) {
 		if (name_len == xattr_ent->e_name_len &&
-				0 == strncmp(name, xattr_ent->e_name, strlen(name))) {
+				0 == strncmp(name, xattr_ent->e_name,
+						strlen(name))) {
 			if (xattr_ent->e_value_size < len) {
-				strncpy(value, ((char *) xattr_blk) + xattr_ent->e_value_offs,
-						xattr_ent->e_value_size);
+				const char *vsrc = ((char *) xattr_blk)
+					+ xattr_ent->e_value_offs;
+
+				strncpy(value, vsrc, xattr_ent->e_value_size);
 				*(value + xattr_ent->e_value_size) = '\0';
 				res = xattr_ent->e_value_size + 1;
 			} else if (len == 0 || value == NULL) {
