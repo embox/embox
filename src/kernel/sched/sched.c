@@ -175,10 +175,13 @@ static void sched_preempt(void) {
 	assert(!in_harder_critical());
 
 	sched_lock();
-	while (switch_posted) {
-		switch_posted = 0;
-
+	while (1) {
 		prev = thread_get_current();
+
+		if (!switch_posted && sched_ready(prev))
+			break;
+
+		switch_posted = 0;
 
 		if (sched_ready(prev))
 			runq_insert(&rq.queue, prev);
