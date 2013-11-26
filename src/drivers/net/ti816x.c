@@ -35,6 +35,7 @@ EMBOX_UNIT_INIT(ti816x_init);
 #define DEFAULT_CHANNEL 0
 
 /* FIXME */
+#include <module/embox/arch/mmu.h>
 #ifndef NOMMU
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
