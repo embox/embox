@@ -34,6 +34,7 @@ typedef struct idesc_table idesc_table_t;
 
 #include <sys/cdefs.h>
 
+struct task;
 __BEGIN_DECLS
 
 extern int idesc_table_add(struct idesc_table *t, struct idesc *idesc,

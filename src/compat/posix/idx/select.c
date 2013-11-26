@@ -22,73 +22,17 @@
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
+#include <fs/poll_table.h>
 
-
-
-struct idesc_poll {
-	struct idesc *idesc;
-	int poll_mask;
-	//struct wait_link wait_link;
-	struct idesc_wait_link wait_link;
-};
-
-struct idesc_poll_table {
-	struct idesc_poll idesc_poll[IDESC_QUANTITY];
-	struct wait_link wait_link;
-	int size;
-};
-
-static int select_count_descriptors(struct idesc_poll_table *pt) {
-	int cnt = 0;
-	int i;
-
-	for (i = 0; i < pt->size; pt->size++) {
-		struct idesc *idesc;
-		struct idesc_wait_link *waitl;
-		int poll_mask;
-
-		idesc = pt->idesc_poll[i].idesc;
-		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].poll_mask;
-
-		if (idesc->idesc_ops->status(idesc, poll_mask)) {
-			cnt++;
-		}
-		idesc_wait_cleanup(waitl);
-	}
-
-	__waitq_cleanup();
-
-	return cnt;
-}
-
-static int select_wait(struct idesc_poll_table *pt, clock_t ticks) {
-	int i;
-
-	for (i = 0; i < pt->size; pt->size++) {
-		struct idesc *idesc;
-		struct idesc_wait_link *waitl;
-		int poll_mask;
-
-		idesc = pt->idesc_poll[i].idesc;
-		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].poll_mask;
-
-		idesc_wait_prepare(idesc, waitl, poll_mask);
-	}
-
-	__waitq_wait(ticks);
-
-	return 0;
-}
 
 static int select_table_prepare(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
 	struct idesc *idesc;
+	int cnt;
 
 	assert(pt);
 
-	for (pt->size = 0;nfds >= 0; nfds--, pt->size++) {
+	for (cnt = 0;nfds >= 0; nfds--, cnt++) {
 		idesc = idesc_common_get(nfds);
 		assert(idesc);
 
@@ -108,13 +52,16 @@ static int select_table_prepare(struct idesc_poll_table *pt,
 		}
 	}
 
-	return pt->size;
+	pt->size = cnt;
+
+	return cnt;
 }
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int fd_cnt;
 	clock_t ticks;
 	struct idesc_poll_table pt;
+	int ret;
 
 	fd_cnt = 0;
 	/* If  timeout is NULL (no timeout), select() can block indefinitely. */
@@ -132,9 +79,23 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	if (0 != fd_cnt) {
 		return fd_cnt;
 	}
-	select_wait(&pt, ticks);
 
-	fd_cnt = select_count_descriptors(&pt);
+	do {
+		poll_table_wait_prepare(&pt, ticks);
+		if ((fd_cnt = poll_table_count(&pt))) {
+			break;
+		}
+		ret = __waitq_wait(ticks);
+	} while (!ret);
+
+	poll_table_cleanup(&pt);
+
+	if (ret == -EINTR) {
+		SET_ERRNO(EINTR);
+		return -1;
+	}
+
+	fd_cnt = poll_table_cleanup(&pt);
 
 	return fd_cnt;
 }

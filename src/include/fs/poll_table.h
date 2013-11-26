@@ -1,0 +1,37 @@
+/**
+ * @file
+ *
+ * @date Nov 26, 2013
+ * @author: Anton Bondarev
+ */
+
+#ifndef POLL_TABLE_H_
+#define POLL_TABLE_H_
+
+struct idesc_poll_table;
+
+extern int poll_table_count(struct idesc_poll_table *pt);
+
+extern int poll_table_cleanup(struct idesc_poll_table *pt);
+
+extern int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks);
+
+
+#include <fs/idesc_event.h>
+#include <kernel/task/idesc_table.h>
+struct idesc;
+struct idesc_poll {
+	struct idesc *idesc;
+	int poll_mask;
+	//struct wait_link wait_link;
+	struct idesc_wait_link wait_link;
+};
+
+struct idesc_poll_table {
+	struct idesc_poll idesc_poll[IDESC_QUANTITY];
+	struct wait_link wait_link;
+	int size;
+};
+
+
+#endif /* POLL_TABLE_H_ */
