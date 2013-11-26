@@ -16,9 +16,12 @@ extern int poll_table_cleanup(struct idesc_poll_table *pt);
 
 extern int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks);
 
+extern int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks);
+
 
 #include <fs/idesc_event.h>
 #include <kernel/task/idesc_table.h>
+
 struct idesc;
 struct idesc_poll {
 	struct idesc *idesc;

@@ -63,7 +63,6 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	struct idesc_poll_table pt;
 	int ret;
 
-	fd_cnt = 0;
 	/* If  timeout is NULL (no timeout), select() can block indefinitely. */
 	ticks = (timeout == NULL ? SCHED_TIMEOUT_INFINITE : timeval_to_ms(timeout));
 
@@ -80,13 +79,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 		return fd_cnt;
 	}
 
-	do {
-		poll_table_wait_prepare(&pt, ticks);
-		if ((fd_cnt = poll_table_count(&pt))) {
-			break;
-		}
-		ret = __waitq_wait(ticks);
-	} while (!ret);
+	ret = poll_table_wait(&pt, ticks);
 
 	poll_table_cleanup(&pt);
 

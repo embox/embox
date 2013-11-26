@@ -70,3 +70,18 @@ int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 
 	return 0;
 }
+
+int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
+	int fd_cnt;
+	int ret = 0;
+
+	do {
+		poll_table_wait_prepare(pt, ticks);
+		if ((fd_cnt = poll_table_count(pt))) {
+			break;
+		}
+		ret = __waitq_wait(ticks);
+	} while (!ret);
+
+	return ret;
+}
