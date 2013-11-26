@@ -89,10 +89,10 @@ extern int __sched_wakeup(struct thread *);
 extern int sched_wakeup(struct thread *);
 
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout)  \
-	({                                                    \
-		int __wait_ret = !(cond_expr);                    \
+	((cond_expr) ? 0 : ({                                 \
+		int __wait_ret;                                   \
 		                                                  \
-		while (!__wait_ret) {                             \
+		do {                                              \
 			sched_wait_prepare();                         \
 			                                              \
 			if (cond_expr) {                              \
@@ -102,13 +102,13 @@ extern int sched_wakeup(struct thread *);
 			}                                             \
 			                                              \
 			__wait_ret = sched_wait_timeout(timeout);     \
-		}                                                 \
+		} while (!__wait_ret);                            \
 		                                                  \
 		if (__wait_ret && (cond_expr))                    \
 			__wait_ret = 0;                               \
 		                                                  \
 		__wait_ret;                                       \
-	})
+	}))
 
 /**
  * Wait cond_expr to become TRUE.
