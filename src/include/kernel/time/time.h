@@ -83,8 +83,13 @@ static inline clock_t ns_to_clock(uint32_t resolution, time64_t ns) {
 }
 
 static inline time64_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
+	/**
+	 * Int64 overflow may occure only if resolution
+	 * is higher than 18 446 744 074
+	 */
 	assert(resolution != 0);
-	return (cycles * NSEC_PER_SEC + resolution - 1) / resolution;
+	return (cycles / resolution) * NSEC_PER_SEC +
+		((cycles % resolution) * NSEC_PER_SEC) / resolution;
 }
 
 static inline cycle_t ns_to_cycles(uint32_t resolution, time64_t ns) {

@@ -26,14 +26,15 @@ static void print_trace_block_stat(void) {
 	struct __trace_block *tb;
 	int number = 0;
 
-	printf("%2s %15s %12s %20s %11s\n", "№ ", "Name", "Count", "Ticks", "Time");
+	printf("%2s %15s %12s %20s %11s\n", "#", "Name", "Count", "Ticks", "Time");
 
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->active) {
 			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
 				tb->count, tb->time,
-				(tb->tc->cs) ? (long double) 1.0 * tb->time / tb->tc->cs->counter_device->resolution : 0);
+				(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+				/* Converting from nanoseconds to seconds */
 		}
 		number++;
 	}
