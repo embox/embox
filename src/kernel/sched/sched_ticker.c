@@ -7,12 +7,13 @@
 
 #include <sched.h>
 
+#include <hal/cpu.h>
+
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 
 #include <kernel/time/timer.h>
 #include <kernel/cpu/cpu.h>
-#include <module/embox/arch/smp.h>
 
 #include <kernel/panic.h>
 
@@ -26,12 +27,12 @@ static struct sys_timer *sched_tick_timer;
 static void sched_tick(sys_timer_t *timer, void *param) {
 	sched_post_switch();
 
-#ifndef NOSMP
+#ifdef SMP
 	for (int i = 0; i < NCPU; i++) {
 		extern void smp_send_resched(int cpu_id);
 		smp_send_resched(i);
 	}
-#endif /* !NOSMP */
+#endif /* SMP */
 }
 
 void sched_ticker_init(void) {
