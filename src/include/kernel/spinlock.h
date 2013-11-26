@@ -10,11 +10,13 @@
 #ifndef KERNEL_SPINLOCK_H_
 #define KERNEL_SPINLOCK_H_
 
-#include <hal/ipl.h>
-#include <linux/compiler.h>
-#include <module/embox/arch/libarch.h>
 #include <sys/types.h>
+#include <linux/compiler.h>
+
+#include <hal/cpu.h>
+#include <hal/ipl.h>
 #include <kernel/sched/sched_lock.h>
+#include <module/embox/arch/libarch.h>
 
 #define SPIN_UNLOCKED 0
 #define SPIN_LOCKED   1
