@@ -64,7 +64,6 @@ struct thread {
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
-	int                policy;       /**< Scheduling policy*/
 
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
