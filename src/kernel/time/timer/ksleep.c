@@ -8,27 +8,20 @@
  */
 
 #include <errno.h>
-#include <kernel/time/ktime.h>
+#include <sys/types.h>
 
-#include <kernel/time/timer.h>
 #include <kernel/sched.h>
-#include <kernel/event.h>
 
 int ksleep(useconds_t msec) {
-	int res_sleep;
-	struct event never_happen;
+	int wait_res;
 
 	if (msec == 0) {
 		sched_post_switch();
 		return 0;
 	}
 
-	event_init(&never_happen, "never_happen");
+	wait_res = SCHED_WAIT_TIMEOUT(0, msec);
 
-	sched_lock();
-	res_sleep = EVENT_WAIT(&never_happen, 0, msec);
-	sched_unlock();
-
-	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
+	return wait_res == -ETIMEDOUT ? 0 : wait_res;
 }
 
