@@ -34,33 +34,14 @@ EMBOX_UNIT_INIT(ti816x_init);
 #define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
 #define DEFAULT_CHANNEL 0
 
-static inline void dcache_inval(const void *p, size_t size) {
-	uint32_t start, end, csir, line_size;
-
-	start = (uint32_t)(uintptr_t)p;
-	end = (uint32_t)(uintptr_t)p + size;
-	asm volatile ("mrc p15, 1, %0, c0, c0, 0" : "=r" (csir));
-	line_size = (1 << ((csir & 7) + 2)) * 4;
-	start &= ~(line_size - 1);
-	while (start < end) {
-		asm volatile ("mcr p15, 0, %0, c7, c6, 1" : : "r" (start));
-		start += line_size;
-	}
-}
-
-static inline void dcache_flush(const void *p, size_t size) {
-	uint32_t start, end, csir, line_size;
-
-	start = (uint32_t)(uintptr_t)p;
-	end = (uint32_t)(uintptr_t)p + size;
-	asm volatile ("mrc p15, 1, %0, c0, c0, 0" : "=r" (csir));
-	line_size = (1 << ((csir & 7) + 2)) * 4;
-	start &= ~(line_size - 1);
-	while (start < end) {
-		asm volatile ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start));
-		start += line_size;
-	}
-}
+/* FIXME */
+#ifndef NOMMU
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
+#else
+static inline void dcache_inval(const void *p, size_t size) { }
+static inline void dcache_flush(const void *p, size_t size) { }
+#endif
 
 static void emac_ctrl_enable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXTHRESHINTEN, 0xff);
@@ -246,8 +227,6 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct emac_desc *desc, *last;
 	ipl_t ipl;
 
-	printk("ti816x_xmit: skb %p len %zu\n", skb, skb->len);
-
 	skb_data = skb_data_clone(skb->data);
 
 	assert(skb_data != NULL);
@@ -333,7 +312,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		++need_alloc;
 
 		skb = skb_wrap(desc->len, sizeof *desc, (struct sk_buff_data *)desc);
-		printk("ti816x_interrupt_macrxint0: skb %p len %zu\n", skb, skb->len);
 		if (skb == NULL) {
 			printk("ti816x_interrupt: error: skb_wrap return NULL\n");
 			break;
