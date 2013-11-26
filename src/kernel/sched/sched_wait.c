@@ -30,27 +30,22 @@ int sched_wait(void) {
 	return 0;  // XXX
 }
 
-static void waitq_timeout_handler(struct sys_timer *timer, void *data) {
+static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	struct thread *t = data;
-	sched_wakeup(t); // -ETIMEDOUT
+	sched_wakeup(t);
 }
 
 int sched_wait_timeout(int timeout) {
 	struct sys_timer tmr;
-	int ret;
 
 	if (timeout == SCHED_TIMEOUT_INFINITE)
 		return sched_wait();
 
-	ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t) timeout,
-			waitq_timeout_handler, thread_self());
-	if (ret)
-		return ret;
-
+	timer_init(&tmr, TIMER_ONESHOT, (uint32_t) timeout,
+			sched_wait_timeout_handler, thread_self());
 	sched_switch();
+	timer_close(&tmr);
 
-	timer_close(&tmr);  // TODO err check?
-
-	return 0;  // XXX
+	return -ETIMEDOUT;  // XXX
 }
 
