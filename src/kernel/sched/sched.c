@@ -96,7 +96,6 @@ void sched_wake(struct thread *t) {
 
 	/* TODO: it's not true when it's called for waking thread from waitq */
 	//assert(!in_harder_critical());
-	assert(t != current);
 	assert(t);
 	assert(is_waiting(t));
 

@@ -158,13 +158,14 @@ int __waitq_wait(int timeout) {
 
 void waitq_thread_notify(struct thread *thread, int result) {
 	assert(thread);
-	assert(__THREAD_STATE_WAITING & thread->state);
 
 	irq_lock();
 	{
-		thread->wait_link->result = result;
-		sched_wake(thread);
-		waitq_remove(thread->wait_link);
+		if (__THREAD_STATE_WAITING & thread->state) {
+			thread->wait_link->result = result;
+			sched_wake(thread);
+			waitq_remove(thread->wait_link);
+		}
 	}
 	irq_unlock();
 }
@@ -198,6 +199,7 @@ void waitq_notify_all_err(struct waitq *waitq, int error) {
 	ipl_t ipl = ipl_save();
 	{
 		dlist_foreach_entry(link, next, &waitq->list, link) {
+
 			waitq_thread_notify(link->thread, error);
 		}
 	}
