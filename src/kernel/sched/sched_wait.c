@@ -11,26 +11,20 @@
 #include <kernel/thread.h>
 #include <kernel/time/timer.h>
 
-void sched_wait_prepare(void) {
+void sched_wait_prepare(int dfl_res) {
 	struct thread *t = thread_self();
-	ipl_t ipl;
 
-	/* Disabling just IRQs could enough because waiting is performed on the
-	 * current thread. */
-	ipl = spin_lock_ipl(&t->lock);
+	t->wake_res = dfl_res;
+	// TODO SMP barrier -- Eldar
 	t->state &= ~THREAD_READY;
-	spin_unlock_ipl(&t->lock, ipl);
 }
 
-void sched_wait_cleanup(void) {
+int sched_wait_cleanup(void) {
 	struct thread *t = thread_self();
-	ipl_t ipl;
 
-	/* This does not need locks either. TODO -- Eldar */
-
-	ipl = spin_lock_ipl(&t->lock);
 	t->state |= THREAD_READY;
-	spin_unlock_ipl(&t->lock, ipl);
+	// TODO SMP barrier -- Eldar
+	return t->wake_res;
 }
 
 int sched_wait(void) {

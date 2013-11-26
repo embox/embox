@@ -21,8 +21,6 @@
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
 struct thread;
-struct event;
-struct runq;
 
 /**
  * Initializes scheduler.
@@ -81,8 +79,8 @@ static inline int sched_active(struct thread *t) {
  */
 extern int sched_change_priority(struct thread *t, sched_priority_t priority);
 
-extern void sched_wait_prepare(void);
-extern void sched_wait_cleanup(void);
+extern void sched_wait_prepare(int);
+extern int sched_wait_cleanup(void);
 
 extern int sched_wait(void);
 extern int sched_wait_timeout(int timeout);

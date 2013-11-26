@@ -48,17 +48,17 @@ static inline void waitq_link_init(struct waitq_link *wql) {
 	wql->result = 0;
 }
 
-extern void __waitq_add(struct waitq *wq, struct waitq_link *wql);
-extern void waitq_add(struct waitq *wq, struct waitq_link *wql);
+extern void __waitq_add(struct waitq *, struct waitq_link *);
+extern void waitq_add(struct waitq *, struct waitq_link *);
 
-extern void __waitq_del(struct waitq *wq, struct waitq_link *wql);
-extern void waitq_del(struct waitq *wq, struct waitq_link *wql);
+extern void __waitq_del(struct waitq *, struct waitq_link *);
+extern void waitq_del(struct waitq *, struct waitq_link *);
 
-extern void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql);
-extern void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql);
+extern void waitq_wait_prepare(struct waitq *, struct waitq_link *, int);
+extern int waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
-extern void __waitq_wakeup(struct waitq *wq, int nr, int result);
-extern void waitq_wakeup(struct waitq *wq, int nr, int result);
+extern void __waitq_wakeup(struct waitq *, int nr, int result);
+extern void waitq_wakeup(struct waitq *, int nr, int result);
 static inline void waitq_wakeup_all(struct waitq *wq, int result) {
 	waitq_wakeup(wq, 0, result);
 }

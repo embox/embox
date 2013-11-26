@@ -56,14 +56,15 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
+void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql, int dfl_res) {
 	waitq_add(wq, wql);
-	sched_wait_prepare();
+	sched_wait_prepare(default_res);
 }
 
-void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
-	sched_wait_cleanup();
+int waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+	int res = sched_wait_cleanup();
 	waitq_del(wq, wql);
+	return res;
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr, int result) {
