@@ -18,6 +18,8 @@
 #include <kernel/sched/sched_lock.h>
 #include <module/embox/arch/libarch.h>
 
+#include <util/lang.h>
+
 #define SPIN_UNLOCKED 0
 #define SPIN_LOCKED   1
 
@@ -92,5 +94,16 @@ static inline void spin_unlock_ipl(spinlock_t *lock, ipl_t ipl) {
 	sched_unlock();
 }
 
+#define SPIN_PROTECTED_DO(lock, expr) \
+	__lang_surround(expr,             \
+		spinlock_t *__lock = (lock);  \
+		spin_lock(__lock),            \
+		spin_unlock(__lock))
+
+#define SPIN_IPL_PROTECTED_DO(lock, expr) \
+	__lang_surround(expr,                    \
+		spinlock_t *__lock = (lock);         \
+		ipl_t __ipl = spin_lock_ipl(__lock), \
+		spin_unlock_ipl(__lock, __ipl))
 
 #endif /* !KERNEL_SPINLOCK_H_ */
