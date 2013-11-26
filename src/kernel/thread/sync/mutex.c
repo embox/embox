@@ -152,7 +152,7 @@ int mutex_unlock(struct mutex *m) {
 
 		m->holder = NULL;
 		m->lock_count = 0;
-		waitq_wakeup_all(&m->wq, ENOERR);
+		waitq_wakeup_all(&m->wq);
 	}
 out:
 	sched_unlock();

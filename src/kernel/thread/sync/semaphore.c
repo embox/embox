@@ -94,7 +94,7 @@ void semaphore_leave(struct sem *s) {
 	sched_lock();
 	{
 		s->value--;
-		waitq_wakeup_all(&s->wq, 0);
+		waitq_wakeup_all(&s->wq);
 	}
 	sched_unlock();
 }

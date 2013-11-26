@@ -32,7 +32,7 @@ int task_waitpid(pid_t pid) {
 }
 
 static void task_waitq_deinit(struct task *task) {
-	waitq_wakeup_all(task->waitq, task->err);
+	waitq_wakeup_all(task->waitq);
 }
 
 static void task_waitq_init(struct task *task, void *_waitq) {

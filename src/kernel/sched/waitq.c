@@ -66,7 +66,7 @@ void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
 	waitq_del(wq, wql);
 }
 
-void __waitq_wakeup(struct waitq *wq, int nr, int res) {
+void __waitq_wakeup(struct waitq *wq, int nr) {
 	struct waitq_link *wql, *next_wql;
 
 	assert(wq);
@@ -82,7 +82,7 @@ void __waitq_wakeup(struct waitq *wq, int nr, int res) {
 	}
 }
 
-void waitq_wakeup(struct waitq *wq, int nr, int res) {
+void waitq_wakeup(struct waitq *wq, int nr) {
 	assert(wq);
-	SPIN_IPL_PROTECTED_DO(&wq->lock, __waitq_wakeup(wq, nr, res));
+	SPIN_IPL_PROTECTED_DO(&wq->lock, __waitq_wakeup(wq, nr));
 }

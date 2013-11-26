@@ -31,7 +31,7 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('c');
-	waitq_wakeup(&wq);
+	waitq_wakeup_all(&wq);
 	test_emit('e');
 	return NULL;
 }

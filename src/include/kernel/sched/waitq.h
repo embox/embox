@@ -55,10 +55,10 @@ extern void waitq_del(struct waitq *, struct waitq_link *);
 extern void waitq_wait_prepare(struct waitq *, struct waitq_link *);
 extern void waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
-extern void __waitq_wakeup(struct waitq *, int nr, int res);
-extern void waitq_wakeup(struct waitq *, int nr, int res);
-static inline void waitq_wakeup_all(struct waitq *wq, int res) {
-	waitq_wakeup(wq, 0, res);
+extern void __waitq_wakeup(struct waitq *, int nr);
+extern void waitq_wakeup(struct waitq *, int nr);
+static inline void waitq_wakeup_all(struct waitq *wq) {
+	waitq_wakeup(wq, 0);
 }
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \

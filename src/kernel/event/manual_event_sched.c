@@ -36,7 +36,7 @@ int manual_event_is_set(struct manual_event *m_event) {
 void manual_event_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
-		waitq_wakeup_all(&m_event->waitq, ENOERR);
+		waitq_wakeup_all(&m_event->waitq);
 	}
 }
 
@@ -44,7 +44,7 @@ void manual_event_set_and_notify(struct manual_event *m_event) {
 	assert(m_event != NULL);
 	if (!m_event->set) {
 		m_event->set = 1;
-		waitq_wakeup_all(&m_event->waitq, ENOERR);
+		waitq_wakeup_all(&m_event->waitq);
 	}
 }
 
