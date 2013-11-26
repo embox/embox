@@ -6,7 +6,7 @@
  * @date 25.11.13
  */
 
-#include <asm/mmu.h>
+#include <asm/hal/mmu.h>
 #include <util/binalign.h>
 
 #define RAM_START 0x80000000
@@ -33,9 +33,9 @@ mmu_init:
     orr r4, #L1D_XN                  /* disable execution on region */
     orr r4, #L1D_AP_FULL             /* enable full access for region */
 1:  cmp r4, r2                       /* do: if region >= start of RAM then */
-    orrhs   r4, r4, #L1D_B | L1D_C   /*   set cacheable and bufferable flags */
+    orrhs   r4, r4, #L1D_B | L1D_C   /*   set bufferable and cacheable flags */
     cmp r4, r3                       /* if region >= end of RAM then */
-    bichs   r4, r4, #L1D_B | L1D_C   /*   clear cacheable and bufferable flags */
+    bichs   r4, r4, #L1D_B | L1D_C   /*   clear cacheable and cacheable flags */
     str r4, [r0], #4                 /* save region into TLB, increment TLB */
     add r4, r4, #L1D_BASE(0)         /* select the next region */
     teq r0, r1                       /* while the end of TLB is reached */

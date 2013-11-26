@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef ARM_MMU_H_
-#define ARM_MMU_H_
+#ifndef ARM_HAL_MMU_H_
+#define ARM_HAL_MMU_H_
 
 /**
  * First-level descriptor format (VMSAv6, subpages disabled)
@@ -21,4 +21,4 @@
 #define L1D_NG      0x20000 /* not global */
 #define L1D_BASE(n) (0x100000 + n) /* section base address */
 
-#endif /* ARM_MMU_H_ */
+#endif /* ARM_HAL_MMU_H_ */
