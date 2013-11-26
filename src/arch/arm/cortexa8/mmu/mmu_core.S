@@ -10,28 +10,28 @@
 #include <util/binalign.h>
 
 #define RAM_START 0x80000000
-#define RAM_SIZE  0x10000000
+#define RAM_SIZE  0x40000000
 
-	.section .data.translation_table
+    .section .data.translation_table
 
-	.align 14
+    .align 14
 translation_table_start:
-	.space 16384 /* default 16KB */
+    .space 16384 /* default 16KB */
 translation_table_end:
 
-	.section .text
+    .section .text
 
-	.global mmu_init
+    .global mmu_init
 mmu_init:
-	/* setup translation table */
+    /* setup translation table */
     ldr r0, =translation_table_start /* r0 = start of TLB */
     ldr r1, =translation_table_end   /* r1 = end of TLB */
-	ldr r2, =binalign(RAM_START, 18) /* r2 = aligned start of RAM */
+    ldr r2, =binalign(RAM_START, 18) /* r2 = aligned start of RAM */
     ldr r3, =RAM_START + RAM_SIZE    /* r3 = end of RAM */
-	mov r4, #0                       /* r4 = first region of VMEM */
+    mov r4, #0                       /* r4 = first region of VMEM */
     orr r4, #L1D_TYPE_SD             /* mark region as section descriptor */
-	orr r4, #L1D_XN                  /* disable execution on region */
-	orr r4, #L1D_AP_FULL             /* enable full access for region */
+    orr r4, #L1D_XN                  /* disable execution on region */
+    orr r4, #L1D_AP_FULL             /* enable full access for region */
 1:  cmp r4, r2                       /* do: if region >= start of RAM then */
     orrhs   r4, r4, #L1D_B | L1D_C   /*   set cacheable and bufferable flags */
     cmp r4, r3                       /* if region >= end of RAM then */
@@ -41,13 +41,13 @@ mmu_init:
     teq r0, r1                       /* while the end of TLB is reached */
     bne 1b
 
-	/* setup c2, Translation Table Base Register 0 */
+    /* setup c2, Translation Table Base Register 0 */
     ldr r0, =translation_table_start
-	mcr p15, 0, r0, c2, c0, 0
+    mcr p15, 0, r0, c2, c0, 0
 
-	/* setup c3, Domain Access Control Register */
-	mov r0, #0xffffffff
-	mcr p15, 0, r0, c3, c0, 0
+    /* setup c3, Domain Access Control Register */
+    mov r0, #0xffffffff
+    mcr p15, 0, r0, c3, c0, 0
 
-	/* done */
-	mov pc, lr
+    /* exit */
+    mov pc, lr
