@@ -79,14 +79,14 @@ static inline int sched_active(struct thread *t) {
  */
 extern int sched_change_priority(struct thread *t, sched_priority_t priority);
 
-extern void sched_wait_prepare(int);
-extern int sched_wait_cleanup(void);
+extern void sched_wait_prepare(void);
+extern void sched_wait_cleanup(void);
 
 extern int sched_wait(void);
 extern int sched_wait_timeout(int timeout);
 
-extern int __sched_wakeup(struct thread *t);
-extern int sched_wakeup(struct thread *t);
+extern int __sched_wakeup(struct thread *);
+extern int sched_wakeup(struct thread *);
 
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout)  \
 	({                                                    \

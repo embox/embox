@@ -29,7 +29,6 @@ struct waitq {
 struct waitq_link {
 	struct dlist_head link;
 	struct thread *thread;
-	int result;
 };
 
 #define WAITQ_INIT(wq)  { \
@@ -45,7 +44,6 @@ static inline void waitq_init(struct waitq *wq) {
 static inline void waitq_link_init(struct waitq_link *wql) {
 	dlist_init(&wql->link);
 	wql->thread = thread_self();
-	wql->result = 0;
 }
 
 extern void __waitq_add(struct waitq *, struct waitq_link *);
@@ -54,13 +52,13 @@ extern void waitq_add(struct waitq *, struct waitq_link *);
 extern void __waitq_del(struct waitq *, struct waitq_link *);
 extern void waitq_del(struct waitq *, struct waitq_link *);
 
-extern void waitq_wait_prepare(struct waitq *, struct waitq_link *, int);
-extern int waitq_wait_cleanup(struct waitq *, struct waitq_link *);
+extern void waitq_wait_prepare(struct waitq *, struct waitq_link *);
+extern void waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
-extern void __waitq_wakeup(struct waitq *, int nr, int result);
-extern void waitq_wakeup(struct waitq *, int nr, int result);
-static inline void waitq_wakeup_all(struct waitq *wq, int result) {
-	waitq_wakeup(wq, 0, result);
+extern void __waitq_wakeup(struct waitq *, int nr, int res);
+extern void waitq_wakeup(struct waitq *, int nr, int res);
+static inline void waitq_wakeup_all(struct waitq *wq, int res) {
+	waitq_wakeup(wq, 0, res);
 }
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \

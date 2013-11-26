@@ -11,20 +11,18 @@
 #include <kernel/thread.h>
 #include <kernel/time/timer.h>
 
-void sched_wait_prepare(int dfl_res) {
+void sched_wait_prepare(void) {
 	struct thread *t = thread_self();
 
-	t->wake_res = dfl_res;
-	// TODO SMP barrier -- Eldar
+	// TODO SMP barrier? -- Eldar
 	t->state &= ~THREAD_READY;
 }
 
-int sched_wait_cleanup(void) {
+void sched_wait_cleanup(void) {
 	struct thread *t = thread_self();
 
 	t->state |= THREAD_READY;
-	// TODO SMP barrier -- Eldar
-	return t->wake_res;
+	// TODO SMP barrier? -- Eldar
 }
 
 int sched_wait(void) {

@@ -56,18 +56,17 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql, int dfl_res) {
+void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
 	waitq_add(wq, wql);
-	sched_wait_prepare(default_res);
+	sched_wait_prepare();
 }
 
-int waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
-	int res = sched_wait_cleanup();
+void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+	sched_wait_cleanup();
 	waitq_del(wq, wql);
-	return res;
 }
 
-void __waitq_wakeup(struct waitq *wq, int nr, int result) {
+void __waitq_wakeup(struct waitq *wq, int nr, int res) {
 	struct waitq_link *wql, *next_wql;
 
 	assert(wq);
@@ -76,18 +75,14 @@ void __waitq_wakeup(struct waitq *wq, int nr, int result) {
 		if (!sched_wakeup(wql->thread))
 			continue;
 
-		wql->result = result;
+		// TODO mark this wql as the one who has woken the thread up? -- Eldar
+
 		if (!--nr)
 			break;
 	}
 }
 
-void waitq_wakeup(struct waitq *wq, int nr, int result) {
-	ipl_t ipl;
-
+void waitq_wakeup(struct waitq *wq, int nr, int res) {
 	assert(wq);
-
-	ipl = spin_lock_ipl(&wq->lock);
-	__waitq_wakeup(wq, nr, result);
-	spin_unlock_ipl(&wq->lock, ipl);
+	SPIN_IPL_PROTECTED_DO(&wq->lock, __waitq_wakeup(wq, nr, res));
 }

@@ -83,13 +83,8 @@ void __sched_start(struct thread *t) {
 }
 
 void sched_start(struct thread *t) {
-	ipl_t ipl;
-
 	assert(t);
-
-	ipl = spin_lock_ipl(&t->lock);
-	__sched_start(t);
-	spin_unlock_ipl(&t->lock, ipl);
+	SPIN_IPL_PROTECTED_DO(&t->lock, __sched_start(t));
 }
 
 /** Called with IRQs off and thread lock held. */
@@ -105,16 +100,8 @@ int __sched_wakeup(struct thread *t) {
 }
 
 int sched_wakeup(struct thread *t) {
-	int ret;
-	ipl_t ipl;
-
 	assert(t);
-
-	ipl = spin_lock_ipl(&t->lock);
-	ret = __sched_wakeup(t);
-	spin_unlock_ipl(&t->lock, ipl);
-
-	return ret;
+	return SPIN_IPL_PROTECTED_DO(&t->lock, __sched_wakeup(t));
 }
 
 void sched_finish(struct thread *t) {
