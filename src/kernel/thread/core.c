@@ -190,7 +190,7 @@ void thread_init(struct thread *t, unsigned int flags,
 }
 
 static int thread_exited(struct thread *t) {
-	return !(t->state & __THREAD_STATE_EXITED);
+	return t->state & __THREAD_STATE_EXITED;
 }
 
 static void thread_delete(struct thread *t) {
@@ -235,6 +235,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 	{
 		sched_finish(current);
+		current->state |= __THREAD_STATE_EXITED;
 
 		/* Wake up a joining thread (if any).
 		 * Note that joining and run_ret are both in a union. */
