@@ -4,6 +4,7 @@
  * @date Nov 26, 2013
  * @author: Anton Bondarev
  */
+#include <poll.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
@@ -31,7 +32,17 @@ int poll_table_count(struct idesc_poll_table *pt) {
 
 		assert(idesc->idesc_ops);
 
-		if (idesc->idesc_ops->status(idesc, poll_mask)) {
+		if (idesc->idesc_ops->status(idesc, POLLIN & poll_mask)) {
+			pt->idesc_poll[i].o_poll_mask |= POLLIN;
+		}
+		if (idesc->idesc_ops->status(idesc, POLLOUT & poll_mask)) {
+			pt->idesc_poll[i].o_poll_mask |= POLLOUT;
+		}
+		if (idesc->idesc_ops->status(idesc, POLLERR & poll_mask)) {
+			pt->idesc_poll[i].o_poll_mask |= POLLERR;
+		}
+
+		if (pt->idesc_poll[i].o_poll_mask) {
 			cnt++;
 		}
 	}
@@ -40,23 +51,16 @@ int poll_table_count(struct idesc_poll_table *pt) {
 }
 
 int poll_table_cleanup(struct idesc_poll_table *pt) {
-	int cnt = 0;
 	int i;
 	struct idesc *idesc;
 	struct idesc_wait_link *waitl;
-	int poll_mask;
 
-	for (i = 0; i < pt->size; pt->size++) {
+	for (i = 0; i < pt->size; i++) {
 		idesc = pt->idesc_poll[i].idesc;
 		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].i_poll_mask;
 
 		if (idesc == NULL) {
 			continue;
-		}
-
-		if (idesc->idesc_ops->status(idesc, poll_mask)) {
-			cnt++;
 		}
 
 		idesc_wait_cleanup(waitl);
@@ -64,7 +68,7 @@ int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 	__waitq_cleanup();
 
-	return cnt;
+	return 0;
 }
 
 int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
@@ -87,7 +91,10 @@ int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 	int fd_cnt;
 	int ret = 0;
+	struct waitq waitq = WAITQ_INIT(waitq);
+	struct wait_link waitl;
 
+	__waitq_prepare(&waitq, &waitl);
 	do {
 		poll_table_wait_prepare(pt, ticks);
 		if ((fd_cnt = poll_table_count(pt))) {

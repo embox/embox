@@ -19,7 +19,8 @@
 #include <fs/poll_table.h>
 
 
-static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[], nfds_t nfds) {
+static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
+		nfds_t nfds) {
 	int i;
 	struct idesc *idesc;
 	int cnt = 0;
@@ -44,7 +45,7 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[], nfds_
 			poll_mask = POLLIN;
 		}
 
-		if ((fds[i].events & POLLIN) && (idesc->idesc_amode & FS_MAY_WRITE)) {
+		if ((fds[i].events & POLLOUT) && (idesc->idesc_amode & FS_MAY_WRITE)) {
 			poll_mask |= POLLOUT;
 		}
 
@@ -65,7 +66,31 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[], nfds_
 
 	return cnt;
 }
+static int fds_setup(struct idesc_poll_table *pt, struct pollfd fds[],
+		nfds_t nfds) {
+	int i;
+	int cnt = 0;
 
+	for (i = 0; (i < nfds) && (i < pt->size); ++i) {
+		if (!idesc_index_valid(fds[i].fd)) {
+			continue;
+		}
+
+		if (pt->idesc_poll[i].fd != fds[i].fd) {
+			cnt++;//TODO
+			continue;
+		}
+
+		if (pt->idesc_poll[i].o_poll_mask) {
+			cnt++;
+			fds[i].revents = (short) pt->idesc_poll[i].o_poll_mask;
+		}
+	}
+
+
+	return cnt;
+
+}
 int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	int ret;
 	int fd_cnt;
@@ -77,6 +102,7 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	fd_cnt = table_prepare(&pt, fds, nfds);
 
 	fd_cnt = poll_table_count(&pt);
+	fd_cnt = fds_setup(&pt, fds, nfds);
 
 	if (ticks == 0) {
 		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
@@ -91,9 +117,10 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 
 	ret = poll_table_wait(&pt, ticks);
 
-	poll_table_cleanup(&pt);
-
 	fd_cnt = poll_table_cleanup(&pt);
+	fd_cnt = poll_table_count(&pt);
+
+	fd_cnt = fds_setup(&pt, fds, nfds);
 
 	if (ret == -EINTR) {
 		SET_ERRNO(EINTR);
