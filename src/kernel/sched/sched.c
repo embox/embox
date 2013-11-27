@@ -47,12 +47,8 @@ CRITICAL_DISPATCHER_DEF(sched_critical, sched_preempt, CRITICAL_SCHED_LOCK);
 static struct runq rq;
 static int switch_posted;
 
-static inline int in_harder_critical(void) {
+static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
-}
-
-static inline int in_sched_locked(void) {
-	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
 int sched_init(struct thread *idle, struct thread *current) {
@@ -106,7 +102,7 @@ int sched_wakeup(struct thread *t) {
 
 void sched_finish(struct thread *t) {
 	assert(t);
-	assert(!in_harder_critical());
+	assert(!sched_in_interrupt());
 
 	irq_lock();
 	{
@@ -172,8 +168,7 @@ static void sched_preempt(void) {
 	struct thread *prev, *next;
 	unsigned int local_critical;
 
-	// assert(!in_sched_locked());
-	assert(!in_harder_critical());
+	assert(!sched_in_interrupt());
 
 	sched_lock();
 	while (1) {
