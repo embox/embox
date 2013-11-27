@@ -183,4 +183,7 @@ struct pci_slot_dev {
 		extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
 	}), lst)
 
+struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
+		uint32_t devfn, uint32_t vendor_reg);
+
 #endif /* PCI_H_ */
