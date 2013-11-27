@@ -43,8 +43,6 @@ int __waitq_wait_locked(int timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(current->wait_link); /* Should be prepared */
 
-	current->state &= ~__THREAD_STATE_RUNNING;
-
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
