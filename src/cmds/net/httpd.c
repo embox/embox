@@ -432,7 +432,7 @@ static int httpd(int argc, char **argv) {
 	} addr;
 	socklen_t addrlen;
 
-#if 0 /* IPv4 */
+#if 1 /* IPv4 */
 	addr.in.sin_family = AF_INET;
 	addr.in.sin_port= htons(80);
 	addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
