@@ -26,17 +26,14 @@ struct event {
 	((cond_expr) ? 0 : ({                                 \
 		int __wait_ret;                                   \
 		struct wait_link wait_link;                       \
-		while(1) {                                        \
+		while (1) {                                       \
 			__waitq_prepare(&(event)->waitq, &wait_link); \
 			if (cond_expr) {                              \
 				__wait_ret = 0;                           \
 				break;                                    \
 			}                                             \
 			__wait_ret = __event_wait(event, timeout);    \
-			if (__wait_ret == -ETIMEDOUT) {               \
-				break;                                    \
-			}                                             \
-			if (!intr && (__wait_ret == -EINTR)) {        \
+			if ((__wait_ret != -EINTR) || intr) {         \
 				break;                                    \
 			}                                             \
 		}                                                 \
