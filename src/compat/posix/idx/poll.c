@@ -22,32 +22,47 @@
 static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[], nfds_t nfds) {
 	int i;
 	struct idesc *idesc;
-	int cnt;
+	int cnt = 0;
+	int poll_mask;
 
 	for (i = 0; i < nfds; ++i) {
 		fds[i].revents = 0;
-		if (fds[i].fd < 0) {
+
+		if (!idesc_index_valid(fds[i].fd)) {
 			continue;
 		}
 
 		idesc = idesc_common_get(fds[i].fd);
 		if (idesc == NULL) {
 			fds[i].revents |= POLLNVAL;
+			pt->idesc_poll[cnt].idesc = NULL;
+			cnt++;
 			continue;
 		}
 
-		if (fds[i].events & POLLIN) {
-			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_READ;
-			cnt++;
+		if ((fds[i].events & POLLIN) && (idesc->idesc_amode & FS_MAY_READ)) {
+			poll_mask = POLLIN;
 		}
 
-		if (fds[i].events & POLLOUT) {
-			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_READ;
+		if ((fds[i].events & POLLIN) && (idesc->idesc_amode & FS_MAY_WRITE)) {
+			poll_mask |= POLLOUT;
+		}
+
+		if ((fds[i].events & POLLERR)) {
+			poll_mask |= POLLERR;
+		}
+
+		if (poll_mask) {
+			pt->idesc_poll[cnt].idesc = idesc;
+			pt->idesc_poll[cnt].i_poll_mask = poll_mask;
+			pt->idesc_poll[cnt].o_poll_mask = 0;
+
+			pt->idesc_poll[cnt].fd = fds[i].fd;
 			cnt++;
 		}
 	}
+	pt->size = cnt;
+
 	return cnt;
 }
 
@@ -61,6 +76,8 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 
 	fd_cnt = table_prepare(&pt, fds, nfds);
 
+	fd_cnt = poll_table_count(&pt);
+
 	if (ticks == 0) {
 		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
 		 *  returns immediately.
@@ -72,23 +89,16 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 		return fd_cnt;
 	}
 
-	do {
-		poll_table_wait_prepare(&pt, ticks);
-		if ((fd_cnt = poll_table_count(&pt))) {
-			break;
-		}
-		ret = __waitq_wait(ticks);
-	} while (!ret);
+	ret = poll_table_wait(&pt, ticks);
 
 	poll_table_cleanup(&pt);
+
+	fd_cnt = poll_table_cleanup(&pt);
 
 	if (ret == -EINTR) {
 		SET_ERRNO(EINTR);
 		return -1;
 	}
 
-	fd_cnt = poll_table_cleanup(&pt);
-
 	return fd_cnt;
-
 }

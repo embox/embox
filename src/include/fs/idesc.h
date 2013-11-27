@@ -14,12 +14,12 @@
 struct task_idx_ops;
 typedef int idesc_access_mode_t;
 
-
+/*
 #define IDESC_STAT_ANY    0x0000
 #define IDESC_STAT_READ   0x0001
 #define IDESC_STAT_WRITE  0x0002
 #define IDESC_STAT_EXEPT  0x0004
-
+*/
 struct idesc {
 	idesc_access_mode_t idesc_amode;
 	struct dlist_head idesc_event_list;

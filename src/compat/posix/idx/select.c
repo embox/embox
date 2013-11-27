@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/select.h>
+#include <poll.h>
 
 #include <hal/clock.h>
 
@@ -38,17 +39,20 @@ static int select_table_prepare(struct idesc_poll_table *pt,
 
 		if (FD_ISSET(nfds, readfds)) {
 			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_READ;
+			pt->idesc_poll[pt->size].i_poll_mask = POLLIN;//IDESC_STAT_READ;
+			pt->idesc_poll[pt->size].o_poll_mask = 0;
 		}
 
 		if (FD_ISSET(nfds, writefds)) {
 			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_WRITE;
+			pt->idesc_poll[pt->size].i_poll_mask = POLLOUT;//IDESC_STAT_WRITE;
+			pt->idesc_poll[pt->size].o_poll_mask = 0;
 		}
 
 		if (FD_ISSET(nfds, exceptfds)) {
 			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].poll_mask = IDESC_STAT_EXEPT;
+			pt->idesc_poll[pt->size].i_poll_mask = POLLERR;//IDESC_STAT_EXEPT;
+			pt->idesc_poll[pt->size].o_poll_mask = 0;
 		}
 	}
 
@@ -83,12 +87,12 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 
 	poll_table_cleanup(&pt);
 
+	fd_cnt = poll_table_cleanup(&pt);
+
 	if (ret == -EINTR) {
 		SET_ERRNO(EINTR);
 		return -1;
 	}
-
-	fd_cnt = poll_table_cleanup(&pt);
 
 	return fd_cnt;
 }

@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <poll.h>
 
 #include <util/ring_buff.h>
 
@@ -26,6 +27,9 @@
 
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
+
+
+#define idesc_to_pipe(desc) ((struct idesc_pipe *) desc)->pipe
 
 struct ring_buff;
 struct idesc;
@@ -43,9 +47,6 @@ struct pipe {
 
 	struct idesc_pipe read_desc;    /**< Reading end of pipe */
 	struct idesc_pipe write_desc;   /**< Writing end of pipe */
-//	struct idesc *reading_end;      /**< Reading end of pipe */
-//	struct idesc *writing_end;      /**< Writing end of pipe */
-
 };
 
 static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
@@ -58,16 +59,18 @@ static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 
 	return 0;
 }
+
 static const struct task_idx_ops idesc_pipe_ops;
 static int pipe_close(struct idesc *idesc) {
 	struct pipe *pipe;
 	struct idesc_pipe *cur;
 
+	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
 
 	cur = ((struct idesc_pipe *) idesc);
 
-	pipe = cur->pipe;
+	pipe = idesc_to_pipe(idesc);
 
 	mutex_lock(&pipe->mutex);
 
@@ -128,7 +131,7 @@ static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
 	assert(idesc->idesc_amode == FS_MAY_READ);
 
-	pipe = ((struct idesc_pipe *) idesc)->pipe;
+	pipe = idesc_to_pipe(idesc);
 	mutex_lock(&pipe->mutex);
 
 	while (nbyte) {
@@ -167,7 +170,7 @@ static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
 	assert(idesc->idesc_amode == FS_MAY_WRITE);
 
-	pipe = ((struct idesc_pipe *) idesc)->pipe;
+	pipe = idesc_to_pipe(idesc);
 	mutex_lock(&pipe->mutex);
 
 
@@ -218,12 +221,43 @@ static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
 	return 0;
 }
 
+static int idesc_pipe_status(struct idesc *idesc, int mask) {
+	struct pipe *pipe;
+	int res = 0;
+
+	assert(idesc);
+
+	if (!mask) {
+		return 0;
+	}
+	pipe = idesc_to_pipe(idesc);
+	assert(pipe);
+
+	if (mask == POLLIN) {
+		/* how many we can read */
+		res += ring_buff_get_cnt(pipe->buff);
+	}
+
+	if (mask == POLLOUT) {
+		/* how many we can read */
+		res += pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+	}
+
+	if (mask == POLLERR) {
+		/* is there any exeptions */
+		res += 0; //TODO Where is errors counter
+	}
+
+	return res;
+}
+
 
 static const struct task_idx_ops idesc_pipe_ops = {
 		.read = pipe_read,
 		.write = pipe_write,
 		.close = pipe_close,
 		.ioctl = pipe_fcntl,
+		.status = idesc_pipe_status
 		/*.fcntl = pipe_fcntl,*/
 };
 

@@ -17,10 +17,19 @@ int poll_table_count(struct idesc_poll_table *pt) {
 	struct idesc *idesc;
 	int poll_mask;
 
-	for (i = 0; i < pt->size; pt->size++) {
-
+	for (i = 0; i < pt->size; i++) {
 		idesc = pt->idesc_poll[i].idesc;
-		poll_mask = pt->idesc_poll[i].poll_mask;
+		/* in poll we must treat wrong descriptors and setup revents in
+		 * POLLNVAL value
+		 */
+		if (idesc == NULL) {
+			cnt++;
+			continue;
+		}
+
+		poll_mask = pt->idesc_poll[i].i_poll_mask;
+
+		assert(idesc->idesc_ops);
 
 		if (idesc->idesc_ops->status(idesc, poll_mask)) {
 			cnt++;
@@ -40,7 +49,11 @@ int poll_table_cleanup(struct idesc_poll_table *pt) {
 	for (i = 0; i < pt->size; pt->size++) {
 		idesc = pt->idesc_poll[i].idesc;
 		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].poll_mask;
+		poll_mask = pt->idesc_poll[i].i_poll_mask;
+
+		if (idesc == NULL) {
+			continue;
+		}
 
 		if (idesc->idesc_ops->status(idesc, poll_mask)) {
 			cnt++;
@@ -60,10 +73,10 @@ int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	struct idesc_wait_link *waitl;
 	int poll_mask;
 
-	for (i = 0; i < pt->size; pt->size++) {
+	for (i = 0; i < pt->size; i++) {
 		idesc = pt->idesc_poll[i].idesc;
 		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].poll_mask;
+		poll_mask = pt->idesc_poll[i].i_poll_mask;
 
 		idesc_wait_prepare(idesc, waitl, poll_mask);
 	}
