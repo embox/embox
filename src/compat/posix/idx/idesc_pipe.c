@@ -29,65 +29,77 @@
 
 struct ring_buff;
 struct idesc;
-
-struct pipe {
-	struct ring_buff *buff;         /**< Buffer to store data */
-	size_t buf_size;                /**< Size of buffer. May be changed by pipe_set_buf_size() */
-
-	struct mutex mutex;             /**< Global pipe mutex */
-
-	struct idesc *reading_end;      /**< Reading end of pipe */
-	struct idesc *writing_end;      /**< Writing end of pipe */
-
-};
+struct pipe;
 
 struct idesc_pipe {
 	struct idesc idesc;
 	struct pipe *pipe;
 };
 
-static int pipe_close(struct idesc *idesc) {
-	struct pipe *pipe;
-	struct idesc *other_end;
+struct pipe {
+	struct ring_buff *buff;         /**< Buffer to store data */
+	size_t buf_size;                /**< Size of buffer. May be changed by pipe_set_buf_size() */
+	struct mutex mutex;             /**< Global pipe mutex */
 
-	pipe = ((struct idesc_pipe *) idesc)->pipe;
-	mutex_lock(&pipe->mutex);
+	struct idesc_pipe read_desc;    /**< Reading end of pipe */
+	struct idesc_pipe write_desc;   /**< Writing end of pipe */
+//	struct idesc *reading_end;      /**< Reading end of pipe */
+//	struct idesc *writing_end;      /**< Writing end of pipe */
 
-	if (idesc == pipe->reading_end) {
-		pipe->reading_end = NULL;
-		other_end = pipe->writing_end;
-	} else if (idesc == pipe->writing_end) {
-		pipe->writing_end = NULL;
-		other_end = pipe->reading_end;
+};
+
+static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
+	cur->idesc.idesc_amode = 0;
+	if (other->idesc.idesc_amode) {
+		idesc_notify_all(&other->idesc, IDESC_EVENT_ERROR);
+	} else {
+		return 1;
 	}
 
-	if (NULL == other_end) {
-		free(pipe->buff->storage);
-		free(pipe->buff);
-		free(pipe);
-	} else {
-		idesc_notify_all(other_end, IDESC_EVENT_ERROR);
+	return 0;
+}
+static const struct task_idx_ops idesc_pipe_ops;
+static int pipe_close(struct idesc *idesc) {
+	struct pipe *pipe;
+	struct idesc_pipe *cur;
+
+	assert(idesc->idesc_ops == &idesc_pipe_ops);
+
+	cur = ((struct idesc_pipe *) idesc);
+
+	pipe = cur->pipe;
+
+	mutex_lock(&pipe->mutex);
+
+	if (cur == &pipe->read_desc) {
+		if (idesc_pipe_close(cur, &pipe->write_desc)) {
+			goto free_pipe;
+		}
+		goto out_unlock;
+	}
+
+	if (cur == &pipe->write_desc) {
+		if (idesc_pipe_close(cur, &pipe->read_desc)) {
+			goto free_pipe;
+		}
+		goto out_unlock;
 	}
 
 	mutex_unlock(&pipe->mutex);
+
+	return -EBADF;
+
+free_pipe:
+	free(pipe->buff->storage);
+	free(pipe->buff);
+	free(pipe);
+
+out_unlock:
+	mutex_unlock(&pipe->mutex);
+
 	return 0;
 }
 
-static int pipe_last_read(struct pipe *pipe, void *buf, size_t nbyte) {
-	void *cbuf = buf;
-	int len;
-
-	while (nbyte > 0) {
-		len = ring_buff_dequeue(pipe->buff, buf, nbyte);
-		if (len <= 0) {
-			break;
-		}
-
-		nbyte -= len;
-	}
-
-	return cbuf - buf;
-}
 
 static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 	struct idesc_wait_link wl;
@@ -109,45 +121,37 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 
 static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	struct pipe *pipe;
-	void *cbuf;
 	int res;
+
+	assert(buf);
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_pipe_ops);
+	assert(idesc->idesc_amode == FS_MAY_READ);
 
 	pipe = ((struct idesc_pipe *) idesc)->pipe;
 	mutex_lock(&pipe->mutex);
 
-	assert(idesc == pipe->reading_end);
-
-	if (NULL == pipe->writing_end) {
-		res = pipe_last_read(pipe, buf, nbyte);
-		goto out_unlock;
-	}
-
-	cbuf = buf;
-
-	while (nbyte > 0) {
-		res = ring_buff_dequeue(pipe->buff, cbuf, nbyte);
+	while (nbyte) {
+		res = ring_buff_dequeue(pipe->buff, buf, nbyte);
 		if (res > 0) {
-			assert(res <= nbyte);
-			cbuf += res;
-			nbyte -= res;
-		} else {
-			res = pipe_wait(idesc, pipe, IDESC_EVENT_READ | IDESC_EVENT_ERROR);
-			if (res < 0) {
-				break;
-			}
+			goto out_notify;
+		}
 
-			/* is the error event occured? Let's check another end of pipe */
-			if (NULL == pipe->writing_end) {
-				res = (cbuf - buf) + pipe_last_read(pipe, cbuf, nbyte);
-				goto out_unlock;
-			}
+		if (0 == pipe->write_desc.idesc.idesc_amode) {
+			/* if write end of pipe closed we return number of read byte
+			 * even 0
+			 */
+			goto out_unlock;
+		}
+
+		res = pipe_wait(idesc, pipe, IDESC_EVENT_READ | IDESC_EVENT_ERROR);
+		if (res != 0) {
+			goto out_unlock;
 		}
 	}
 
-	if (cbuf != buf) {
-		idesc_notify_all(pipe->writing_end, IDESC_EVENT_WRITE);
-		res = cbuf - buf;
-	}
+out_notify:
+	idesc_notify_all(&pipe->write_desc.idesc, IDESC_EVENT_WRITE);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
@@ -156,54 +160,45 @@ out_unlock:
 
 static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	struct pipe *pipe;
-	const void *cbuf;
 	int res;
+
+	assert(buf);
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_pipe_ops);
+	assert(idesc->idesc_amode == FS_MAY_WRITE);
 
 	pipe = ((struct idesc_pipe *) idesc)->pipe;
 	mutex_lock(&pipe->mutex);
 
-	assert(idesc == pipe->writing_end);
 
 	/* If writing end is closed that means it was last data in pipe. */
-	if (NULL == pipe->reading_end) {
+	if (0 == pipe->read_desc.idesc.idesc_amode) {
 		res = -EPIPE;
 		goto out_unlock;
 	}
 
-	cbuf = buf;
-
 	while (nbyte > 0) {
-		res = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
+		res = ring_buff_enqueue(pipe->buff, (void *)buf, nbyte);
 		if (res > 0) {
-			assert(res <= nbyte);
-			cbuf += res;
-			nbyte -= res;
-		} else {
-			res = pipe_wait(idesc, pipe, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
-			if (res < 0) {
-				break;
-			}
+			break;
+		}
 
-			/* is the error event occured? Let's check another end of pipe */
-			if (NULL == pipe->reading_end) {
-				res = cbuf - buf;
-				goto out_unlock;
-			}
+		res = pipe_wait(idesc, pipe, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
+		if (res < 0) {
+			goto out_unlock;
 		}
 	}
 
-	if (cbuf != buf) {
-		idesc_notify_all(pipe->reading_end, IDESC_EVENT_READ);
-		res = cbuf - buf;
-	}
+	idesc_notify_all(&pipe->read_desc.idesc, IDESC_EVENT_READ);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
 	return res;
 }
 
+
+static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
 #if 0
-static int pipe_fcntl(struct idesc *data, int cmd, va_list args) {
 	struct pipe *pipe;
 	size_t size;
 
@@ -219,55 +214,28 @@ static int pipe_fcntl(struct idesc *data, int cmd, va_list args) {
 	default:
 		break;
 	}
-
+#endif
 	return 0;
 }
-#endif
 
-static const struct task_idx_ops read_ops = {
+
+static const struct task_idx_ops idesc_pipe_ops = {
 		.read = pipe_read,
-		.close = pipe_close,
-		/*.fcntl = pipe_fcntl,*/
-};
-
-static const struct task_idx_ops write_ops = {
 		.write = pipe_write,
 		.close = pipe_close,
+		.ioctl = pipe_fcntl,
 		/*.fcntl = pipe_fcntl,*/
 };
 
-static struct idesc_pipe *idesc_pipe_alloc(struct pipe *pipe,
-		const struct task_idx_ops *ops, idesc_access_mode_t amode,
-		struct idesc **id) {
-	struct idesc_pipe *idp;
+static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
+		idesc_access_mode_t amode) {
 
-	idp = malloc(sizeof(struct idesc_pipe));
+	idesc_init(&pdesc->idesc, &idesc_pipe_ops, amode);
 
-	if (idp) {
-		idesc_init(&idp->idesc, ops, amode);
+	pdesc->pipe = pipe;
 
-		idp->pipe = pipe;
-		*id = &idp->idesc;
 
-		//io_sync_init(&idp->idesc.idesc_event.io_sync, 0, 0);
-	}
-
-	return idp;
-}
-
-static struct idesc_pipe *idesc_pipe_alloc_reading(struct pipe *pipe) {
-
-	return idesc_pipe_alloc(pipe, &read_ops, FS_MAY_READ, &pipe->reading_end);
-}
-
-static struct idesc_pipe *idesc_pipe_alloc_writing(struct pipe *pipe) {
-
-	return idesc_pipe_alloc(pipe, &write_ops, FS_MAY_WRITE, &pipe->writing_end);
-}
-
-static void idesc_pipe_free(struct idesc_pipe *idp) {
-
-	free(idp);
+	return 0;
 }
 
 static struct pipe *pipe_alloc(void) {
@@ -310,20 +278,17 @@ static void pipe_free(struct pipe *pipe) {
 }
 
 int pipe(int pipefd[2]) {
-
 	return pipe2(pipefd, 0);
 }
 
 int pipe2(int pipefd[2], int flags) {
 	struct idesc_table *it;
 	struct pipe *pipe;
-	struct idesc_pipe *idpr, *idpw;
 	int res = 0;
 
 	it = idesc_table_get_table(task_self());
+	assert(it);
 
-	pipe = NULL;
-	idpr = idpw = NULL;
 
 	pipe = pipe_alloc();
 	if (!pipe) {
@@ -331,23 +296,18 @@ int pipe2(int pipefd[2], int flags) {
 		goto out_err;
 	}
 
-	idpr = idesc_pipe_alloc_reading(pipe);
-	idpw = idesc_pipe_alloc_writing(pipe);
 
-	if (!idpr || !idpw) {
-		res = ENOMEM;
-		goto out_err;
-	}
+	idesc_pipe_init(&pipe->read_desc, pipe, FS_MAY_READ);
+	idesc_pipe_init(&pipe->write_desc, pipe, FS_MAY_WRITE);
 
-	pipefd[0] = idesc_table_add(it, &idpr->idesc, 0);
-	pipefd[1] = idesc_table_add(it, &idpw->idesc, 0);
+
+	pipefd[0] = idesc_table_add(it, &pipe->read_desc.idesc, flags);
+	pipefd[1] = idesc_table_add(it, &pipe->write_desc.idesc, flags);
 
 	if (pipefd[0] < 0 || pipefd[1] < 0) {
 		res = ENOMEM;
 		goto out_err;
 	}
-
-//	io_sync_enable(&pipe->writing_end->idesc_event.io_sync, IO_SYNC_WRITING);
 
 	return 0;
 
@@ -358,15 +318,10 @@ out_err:
 	if (pipefd[0] >= 0) {
 		idesc_table_del(it, pipefd[0]);
 	}
-	if (idpw) {
-		idesc_pipe_free(idpw);
-	}
-	if (idpr) {
-		idesc_pipe_free(idpr);
-	}
 	if (pipe) {
 		pipe_free(pipe);
 	}
+
 	SET_ERRNO(res);
 	return -1;
 }
