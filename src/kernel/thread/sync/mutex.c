@@ -62,18 +62,22 @@ int mutex_lock(struct mutex *m) {
 	assert(m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
+	sched_lock();
+	{
+		errcheck = (m->attr.type & MUTEX_ERRORCHECK);
 
-	wait_ret = WAITQ_WAIT(&m->wq, ({
-		int done;
+		wait_ret = WAITQ_WAIT(&m->wq, ({
+			int done;
 
-		ret = mutex_trylock(m);
-		done = (ret == 0) || (errcheck && ret == -EAGAIN);
-		if (!done)
-			priority_inherit(current, m);
-		done;
+			ret = mutex_trylock(m);
+			done = (ret == 0) || (errcheck && ret == -EAGAIN);
+			if (!done)
+				priority_inherit(current, m);
+			done;
 
-	}));
+		}));
+	}
+	sched_unlock();
 
 	if (!wait_ret)
 		ret = wait_ret;
