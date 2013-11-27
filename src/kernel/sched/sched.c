@@ -170,8 +170,9 @@ void sched_switch(void) {
  */
 static void sched_preempt(void) {
 	struct thread *prev, *next;
+	unsigned int local_critical;
 
-	assert(!in_sched_locked());
+	// assert(!in_sched_locked());
 	assert(!in_harder_critical());
 
 	sched_lock();
@@ -193,6 +194,9 @@ static void sched_preempt(void) {
 		if (prev == next)
 			continue;
 
+		local_critical = critical_count();
+		critical_count() = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
+
 		prev->state &= ~THREAD_ACTIVE;
 
 		sched_ticker_switch(prev, next);
@@ -204,6 +208,8 @@ static void sched_preempt(void) {
 
 		thread_set_current(next);
 		context_switch(&prev->context, &next->context);
+
+		critical_count() = local_critical;
 	}
 	sched_unlock_noswitch();
 
