@@ -160,11 +160,9 @@
 #include <kernel/cpu/bkl.h>
 #include <kernel/cpu/cpudata.h>
 
-typedef long critical_t;
-
 struct critical_dispatcher {
 	struct critical_dispatcher *next;
-	critical_t mask; /**< Inverted in case when dispatching is not pending. */
+	unsigned int mask; /**< Inverted in case when dispatching is not pending. */
 	void (*dispatch)(void);
 };
 
@@ -175,32 +173,36 @@ struct critical_dispatcher {
 				| __CRITICAL_HARDER(critical_mask)),              \
 	}
 
-extern critical_t __critical_count;
+extern unsigned int __critical_count __cpudata__;
 
-static inline void __critical_count_add(critical_t count) {
-	cpudata_var(__critical_count) += count;
+/** Local CPU counter, lvalue. */
+#define critical_count() \
+	cpudata_var(__critical_count)
+
+static inline void __critical_count_add(unsigned int count) {
+	critical_count() += count;
 	__barrier();
 }
 
-static inline void __critical_count_sub(critical_t count) {
+static inline void __critical_count_sub(unsigned int count) {
 	__barrier();
-	cpudata_var(__critical_count) -= count;
+	critical_count() -= count;
 }
 
-static inline int critical_allows(critical_t level) {
-	return !(cpudata_var(__critical_count) & (level | __CRITICAL_HARDER(level)));
+static inline int critical_allows(unsigned int level) {
+	return !(critical_count() & (level | __CRITICAL_HARDER(level)));
 }
 
-static inline int critical_inside(critical_t level) {
-	return cpudata_var(__critical_count) & level;
+static inline int critical_inside(unsigned int level) {
+	return critical_count() & level;
 }
 
-static inline void critical_enter(critical_t level) {
+static inline void critical_enter(unsigned int level) {
 	bkl_lock();
 	__critical_count_add(__CRITICAL_COUNT(level));
 }
 
-static inline void critical_leave(critical_t level) {
+static inline void critical_leave(unsigned int level) {
 	__critical_count_sub(__CRITICAL_COUNT(level));
 	bkl_unlock();
 }
