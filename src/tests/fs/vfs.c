@@ -141,19 +141,35 @@ TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
 #include <kernel/printk.h>
 #include <fs/file_operation.h>
 
+/* TODO: Test cases for vfs fcntl advisory locking:
+ *  - Command validation checks
+ *  - Flock validation and fix checks
+ *  - Permissions check for shared, exclusive lock and unlock
+ *  - GETLK command test
+ *  - Get dispositions checks for all variants
+ *  - Lock and unlock operations checks for exclusive and shared locks
+ *  - Combine and cut operations checks for exclusive and shared locks
+ *  - Locks conversions checks
+ *  - Test blocking and non-blocking mode
+ */
 TEST_CASE("vfs_fcntl advisory locking tests") {
 	int fd;
-	struct flock flock = { F_RDLCK, SEEK_SET, 0, 0, 0 };
+	struct flock shlock = { F_RDLCK, SEEK_SET, 0, 0, 0 };
+	struct flock exlock = { F_WRLCK, SEEK_SET, 0, 0, 0 };
 
 	printk("\n\n========= vfs_fcntl test =========	\n");
 
-	fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDONLY | O_TRUNC,
+	/*fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDONLY | O_TRUNC,
+			S_IRUSR | S_IWUSR);*/
+	fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDWR | O_TRUNC,
 			S_IRUSR | S_IWUSR);
 
 	test_assert_not_equal(-1, fd);
-	test_assert_zero(vfs_fcntl(fd, F_SETLK, &flock));
+	test_assert_zero(vfs_fcntl(fd, F_SETLK, &shlock));
 
-	flock.l_type = F_UNLCK;
+	test_assert_zero(vfs_fcntl(fd, F_SETLKW, &exlock));
 
-	test_assert_zero(vfs_fcntl(fd, F_SETLK, &flock));
+	shlock.l_type = F_UNLCK;
+
+	test_assert_zero(vfs_fcntl(fd, F_SETLK, &shlock));
 }
