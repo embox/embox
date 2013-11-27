@@ -26,7 +26,7 @@ void sched_wait_cleanup(void) {
 }
 
 int sched_wait(void) {
-	sched_switch();
+	schedule();
 	return 0;  // XXX
 }
 
@@ -43,7 +43,7 @@ int sched_wait_timeout(int timeout) {
 
 	timer_init(&tmr, TIMER_ONESHOT, (uint32_t) timeout,
 			sched_wait_timeout_handler, thread_self());
-	sched_switch();
+	schedule();
 	timer_close(&tmr);
 
 	return -ETIMEDOUT;  // XXX

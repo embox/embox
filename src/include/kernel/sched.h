@@ -124,7 +124,7 @@ extern void sched_post_switch(void);
 /**
  * Runs the scheduler right now.
  */
-extern void sched_switch(void);
+extern void schedule(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling

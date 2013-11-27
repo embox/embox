@@ -55,12 +55,12 @@
  *  		// Handler wakes up some thread,
  *  		// but rescheduling can't occur immediately
  *  		// because of being inside interrupt handler.
- *  		sched_wake();
+ *  		sched_wakeup();
  *  		...
  *  	}
  *  }
  *
- *  sched_switch(); // Scheduling and thread context switch is performed here.
+ *  scheduling(); // Scheduling and thread preemption is performed here.
  *
  * @endcode
  *

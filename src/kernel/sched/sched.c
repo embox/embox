@@ -40,12 +40,14 @@
 #include <embox/unit.h>
 
 static void sched_preempt(void);
-
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_preempt, CRITICAL_SCHED_LOCK);
 
 //TODO these variable for scheduler (may be create object scheduler?)
 static struct runq rq;
-static int switch_posted;
+
+void sched_post_switch(void) {
+	critical_request_dispatch(&sched_critical);
+}
 
 static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
@@ -146,69 +148,58 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	return 0;
 }
 
-void sched_post_switch(void) {
-	irq_lock();
-	{
-		switch_posted = 1;
-		critical_request_dispatch(&sched_critical);
-	}
-	irq_unlock();
+static void sched_switch(struct thread *prev, struct thread *next) {
+	unsigned int local_critical = critical_count();
+	critical_count() = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
+
+	assert(prev != next);
+
+	prev->state &= ~THREAD_ACTIVE;
+
+	sched_ticker_switch(prev, next);
+	sched_timing_switch(prev, next);
+
+	next->state |= THREAD_ACTIVE;
+
+	trace_point(__func__);
+
+	thread_set_current(next);
+	context_switch(&prev->context, &next->context);
+
+	critical_count() = local_critical;
 }
 
-void sched_switch(void) {
-	ipl_disable();
-	sched_preempt();
-	ipl_enable();
-}
-
-/**
- * Called by critical dispatching code with IRQs disabled.
- */
-static void sched_preempt(void) {
+static void __schedule(int preempt) {
 	struct thread *prev, *next;
-	unsigned int local_critical;
 
 	assert(!sched_in_interrupt());
 
-	sched_lock();
-	while (1) {
-		prev = thread_get_current();
+	prev = thread_self();
 
-		if (!switch_posted && sched_ready(prev))
-			break;
-
-		switch_posted = 0;
-
-		if (sched_ready(prev))
-			runq_insert(&rq.queue, prev);
-
-		next = runq_extract(&rq.queue);
-
-		assert(sched_ready(next));
-
-		if (prev == next)
-			continue;
-
-		local_critical = critical_count();
-		critical_count() = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
-
-		prev->state &= ~THREAD_ACTIVE;
-
-		sched_ticker_switch(prev, next);
-		sched_timing_switch(prev, next);
-
-		next->state |= THREAD_ACTIVE;
-
-		trace_point("context switch");
-
-		thread_set_current(next);
-		context_switch(&prev->context, &next->context);
-
-		critical_count() = local_critical;
+	if (sched_ready(prev)) {
+		if (!preempt)
+			return;
+		runq_insert(&rq.queue, prev);
 	}
-	sched_unlock_noswitch();
+
+	next = runq_extract(&rq.queue);
+	assert(sched_ready(next));
+
+	if (prev != next)
+		sched_switch(prev, next);
 
 	thread_signal_handle();
+}
+
+/** Called by critical dispatching code with IRQs disabled. */
+static void sched_preempt(void) {
+	__schedule(1);
+}
+
+void schedule(void) {
+	ipl_disable();
+	__schedule(0);
+	ipl_enable();
 }
 
 
