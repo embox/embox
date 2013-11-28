@@ -410,9 +410,6 @@ void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb) {
 
 	debug_print(9, "send_seq_from_sock: send %p\n", skb);
 
-	assert(skb->h.th != NULL);
-	skb->p_data = skb->h.raw + TCP_HEADER_SIZE(skb->h.th);
-
 	skb_send = skb_clone(skb);
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
