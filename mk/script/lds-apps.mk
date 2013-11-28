@@ -39,7 +39,7 @@ define file_header
 
 #define MODULE_ENRTY(section_, module_) $(\h)
 		__module_##module_##_##section_##_vma = .; $(\h)
-		*(.section_.module_); $(\h)
+		*(.section_.module.module_); $(\h)
 		__module_##module_##_##section_##_len = ABSOLUTE(. - $(\h)
 		__module_##module_##_##section_##_vma);
 
