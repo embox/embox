@@ -37,6 +37,7 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 
 int sched_wait_timeout(int timeout) {
 	struct sys_timer tmr;
+	clock_t cur_time = clock();
 
 	if (timeout == SCHED_TIMEOUT_INFINITE)
 		return sched_wait();
@@ -46,6 +47,6 @@ int sched_wait_timeout(int timeout) {
 	schedule();
 	timer_close(&tmr);
 
-	return -ETIMEDOUT;  // XXX
+	return (clock() - cur_time < timeout) ? 0 : -ETIMEDOUT;  // XXX
 }
 

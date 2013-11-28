@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
+#include <kernel/sched/waitq.h>
 #include <pthread.h>
 
 EMBOX_TEST_SUITE("sleep suite");
@@ -31,6 +32,30 @@ TEST_CASE("one sleep") {
 	ksleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
 	test_assert_true(epsilon < EPSILON_BORDER);
+}
+
+static void * handler_timeout(void* args) {
+	struct waitq *wq = (struct waitq*) args;
+	test_assert_not_zero(SCHED_WAIT_TIMEOUT(0, 10));
+	waitq_wakeup(wq, 1);
+	return NULL;
+}
+
+TEST_CASE("timeout sleep") {
+	pthread_t t;
+	struct waitq wq;
+	struct waitq_link wql;
+
+	waitq_init(&wq);
+	waitq_link_init(&wql);
+	waitq_wait_prepare(&wq, &wql);
+
+	test_assert_zero(pthread_create(&t, 0, handler_timeout, (void*) &wq));
+	test_assert_not_null(t);
+
+	test_assert_zero(sched_wait_timeout(1000));
+
+	waitq_wait_cleanup(&wq, &wql);
 }
 
 /**
