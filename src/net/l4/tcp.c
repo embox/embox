@@ -931,7 +931,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	case TCP_TIMEWAIT:
 		seq = ntohl(tcph->seq);
 		seq_last = seq + tcp_seq_length(skb->h.th,
-					skb->nh.raw) - 1;
+					skb->nh.raw);
 		rem_seq = tcp_sk->rem.seq;
 		rem_last = rem_seq + tcp_sk->self.wind;
 		if ((rem_seq <= seq) && (seq < rem_last)) {
@@ -944,14 +944,14 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				return TCP_RET_DROP;
 			}
 		}
-		else if ((rem_seq <= seq_last)
-				&& (seq_last < rem_last)) { }
+		else if ((rem_seq < seq_last)
+				&& (seq_last <= rem_last)) { }
 		else {
 			debug_print(10, "pre_process: received old package:"
 						" rem_seq=%u seq=%u seq_last=%u"
 						" rem_last=%u\n",
 					rem_seq, seq, seq_last, rem_last);
-			if ((seq < rem_seq) && (seq_last < rem_seq)) {
+			if ((seq < rem_seq) && (seq_last <= rem_seq)) {
 				/* Send segment with ack flag if this packet
 				 * is duplicated */
 				tcp_set_ack_field(out_tcph, tcp_sk->rem.seq);
