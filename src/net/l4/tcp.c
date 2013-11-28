@@ -808,7 +808,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 static void confirm_ack(struct tcp_sock *tcp_sk,
 		__u32 ack) {
 	struct sk_buff *sent_skb;
-	__u32 seq_last;
+	__u32 seq, seq_len;
 
 	debug_print(9, "free_rexmitting_queue: sk %p ack %u\n",
 			to_sock(tcp_sk), ack);
@@ -817,24 +817,24 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 		do {
 			sent_skb = skb_queue_front(&to_sock(tcp_sk)->tx_queue);
 			assert(sent_skb != NULL);
-			seq_last = ntohl(sent_skb->h.th->seq)
-					+ tcp_seq_length(sent_skb->h.th,
-						sent_skb->nh.raw);
-			if (ack >= seq_last) {
+			seq = ntohl(sent_skb->h.th->seq);
+			seq_len = tcp_seq_length(sent_skb->h.th,
+					sent_skb->nh.raw);
+			if (ack - seq >= seq_len) {
 				debug_print(9, "free_rexmitting_queue: remove"
 							" skb %p\n",
 						sent_skb);
 				skb_free(sent_skb); /* list_del_init will done
 									   at skb_free */
 			}
-		} while (ack > seq_last);
+		} while (ack - seq > seq_len);
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 }
 
 static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
-	__u32 ack;
+	__u32 ack, last_ack, seq;
 
 	/* Resetting if recv ack in this state */
 	switch (tcp_sk->state) {
@@ -846,20 +846,27 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	}
 
 	ack = ntohl(tcph->ack_seq);
-	if ((tcp_sk->last_ack < ack) && (ack <= tcp_sk->self.seq)) {
+	last_ack = tcp_sk->last_ack;
+	seq = tcp_sk->self.seq;
+
+	if (0 < (ack - last_ack)
+			&& (ack - last_ack <= seq - last_ack)) {
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
 	}
-	else if (ack == tcp_sk->last_ack) { /* no new
-										   acknowledgments */ }
-	else if (ack < tcp_sk->last_ack) { /* package with non-last
-										  acknowledgment */ }
+	else if (ack == last_ack) { /* no new acknowledgments */ }
+	else if ((0 < last_ack - ack)
+			&& (last_ack - ack <= seq - ack)) {
+		/* package with non-last acknowledgment */
+	}
 	else {
-		assert(ack > tcp_sk->self.seq);
+		assert((0 <= (seq - last_ack))
+				&& (seq - last_ack < ack - last_ack));
+		/* assert(ack > tcp_sk->self.seq); -- without overflow checks */
 		debug_print(10, "process_ack: invalid acknowledgments:"
-					"last_ack=%u ack=%u self_seq=%u\n",
-				tcp_sk->last_ack, ack, tcp_sk->self.seq);
+					"last_ack=%u ack=%u seq=%u\n",
+				last_ack, ack, seq);
 		switch (tcp_sk->state) {
 		default:
 			break;
@@ -880,8 +887,11 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	case TCP_FINWAIT_1:
 	case TCP_CLOSING:
 	case TCP_LASTACK:
-		if (ack >= tcp_sk->ack_flag) { /* All ok, our flag was
-										  confirmed */ }
+		if ((0 <= ack - tcp_sk->ack_flag)
+				&& (ack - tcp_sk->ack_flag
+					<= seq - tcp_sk->ack_flag)) {
+			/* All ok, our flag was confirmed */
+		}
 		else { /* Else unmark ack flag */
 			debug_print(10, "process_ack: sk %p unmark ack\n",
 					to_sock(tcp_sk));
@@ -931,7 +941,8 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 					skb->nh.raw);
 		rem_seq = tcp_sk->rem.seq;
 		rem_last = rem_seq + tcp_sk->self.wind;
-		if ((rem_seq <= seq) && (seq < rem_last)) {
+		if ((0 <= seq - rem_seq)
+				&& (seq - rem_seq < rem_last - rem_seq)) {
 			if (rem_seq != seq) {
 				/* TODO There is correct packet (with
 				 * correct sequence number), but some packages
@@ -941,14 +952,15 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				return TCP_RET_DROP;
 			}
 		}
-		else if ((rem_seq < seq_last)
-				&& (seq_last <= rem_last)) { }
+		else if ((0 < seq_last - rem_seq)
+				&& (seq_last - rem_seq <= rem_last - rem_seq)) { }
 		else {
 			debug_print(10, "pre_process: received old package:"
 						" rem_seq=%u seq=%u seq_last=%u"
 						" rem_last=%u\n",
 					rem_seq, seq, seq_last, rem_last);
-			if ((seq < rem_seq) && (seq_last <= rem_seq)) {
+			if ((0 <= seq_last - seq)
+					&& (seq_last - seq <= rem_seq - seq)) {
 				/* Send segment with ack flag if this packet
 				 * is duplicated */
 				tcp_set_ack_field(out_tcph, tcp_sk->rem.seq);
