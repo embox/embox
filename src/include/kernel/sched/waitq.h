@@ -42,7 +42,6 @@ static inline void waitq_init(struct waitq *wq) {
 }
 
 static inline void waitq_link_init(struct waitq_link *wql) {
-	dlist_init(&wql->link);
 	wql->thread = thread_self();
 }
 
@@ -73,12 +72,13 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 			if (cond_expr) {                              \
 				__wait_ret = 0;                           \
 				break;                                    \
+				waitq_wait_cleanup(wq, &wql);             \
 			}                                             \
 			                                              \
 			__wait_ret = sched_wait_timeout(timeout);     \
+			waitq_wait_cleanup(wq, &wql);                 \
 		} while (!__wait_ret);                            \
 		                                                  \
-		waitq_wait_cleanup(wq, &wql);                     \
 		if (__wait_ret && (cond_expr))                    \
 			__wait_ret = 0;                               \
 		                                                  \
