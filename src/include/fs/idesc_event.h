@@ -10,22 +10,12 @@
 
 #include <kernel/sched/waitq.h>
 
-#define IDESC_EVENT_READ         0x0001
-#define IDESC_EVENT_WRITE        0x0002
-#define IDESC_EVENT_ERROR        0x0004
-
-struct idesc_event {
-	int flags;
-	struct wait_link wait_link;
+struct idesc_waitq_link {
+	int iwq_masks;
+	struct wait_link link;
 };
 
-struct idesc_wait_link {
-
-};
-
-extern int idesc_event_lock(void);
-
-extern int idesc_event_unlock(void);
+//struct idesc_waitq_link *idesc_wait_link_alloc(void);
 
 extern int idesc_notify_all(struct idesc * idesc, int mask);
 
@@ -36,7 +26,7 @@ extern int idesc_notify_all(struct idesc * idesc, int mask);
  * @param wl Idesc_wait_link to prepare
  * @param mask Mask of events
  */
-extern void idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
+extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *,
 		int mask);
 
 /* for SCHED_TIMEOUT_INFINITE */
@@ -53,13 +43,14 @@ extern void idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
  * @return -EINTR if was interrupted
  * @return Non-negative if event occured
  */
-extern int idesc_wait(struct idesc_wait_link *wl, unsigned int timeout);
+extern int idesc_wait(struct idesc *idesc, struct idesc_waitq_link *wl,
+		unsigned int timeout);
 
 /**
  * @brief Clean idesc_wait_link
  *
  * @param wl
  */
-extern void idesc_wait_cleanup(struct idesc_wait_link *wl);
+extern void idesc_wait_cleanup(struct idesc *idesc, struct idesc_waitq_link *wl);
 
 #endif /* IDESC_EVENT_H_ */

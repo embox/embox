@@ -53,7 +53,7 @@ int poll_table_count(struct idesc_poll_table *pt) {
 int poll_table_cleanup(struct idesc_poll_table *pt) {
 	int i;
 	struct idesc *idesc;
-	struct idesc_wait_link *waitl;
+	struct idesc_waitq_link *waitl;
 
 	for (i = 0; i < pt->size; i++) {
 		idesc = pt->idesc_poll[i].idesc;
@@ -63,7 +63,7 @@ int poll_table_cleanup(struct idesc_poll_table *pt) {
 			continue;
 		}
 
-		idesc_wait_cleanup(waitl);
+		idesc_wait_cleanup(idesc, waitl);
 	}
 
 	__waitq_cleanup();
@@ -74,10 +74,11 @@ int poll_table_cleanup(struct idesc_poll_table *pt) {
 int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	int i;
 	struct idesc *idesc;
-	struct idesc_wait_link *waitl;
+	struct idesc_waitq_link *waitl;
 	int poll_mask;
 
 	for (i = 0; i < pt->size; i++) {
+
 		idesc = pt->idesc_poll[i].idesc;
 		waitl = &pt->idesc_poll[i].wait_link;
 		poll_mask = pt->idesc_poll[i].i_poll_mask;

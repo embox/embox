@@ -22,7 +22,8 @@ int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, idesc_access
 
 	idesc->idesc_ops = ops;
 
-	dlist_head_init(&idesc->idesc_event_list);
+	//dlist_head_init(&idesc->idesc_event_list);
+	waitq_init(&idesc->idesc_waitq);
 
 	return 0;
 }

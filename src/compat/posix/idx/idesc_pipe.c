@@ -52,7 +52,7 @@ struct pipe {
 static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 	cur->idesc.idesc_amode = 0;
 	if (other->idesc.idesc_amode) {
-		idesc_notify_all(&other->idesc, IDESC_EVENT_ERROR);
+		idesc_notify_all(&other->idesc, POLLERR);
 	} else {
 		return 1;
 	}
@@ -105,18 +105,18 @@ out_unlock:
 
 
 static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
-	struct idesc_wait_link wl;
+	struct idesc_waitq_link wl;
 	int res;
 
 	idesc_wait_prepare(idesc, &wl, flags);
 
 	mutex_unlock(&pipe->mutex);
 
-	res = idesc_wait(&wl, SCHED_TIMEOUT_INFINITE);
+	res = idesc_wait(idesc, &wl, SCHED_TIMEOUT_INFINITE);
 
 	mutex_lock(&pipe->mutex);
 
-	idesc_wait_cleanup(&wl);
+	idesc_wait_cleanup(idesc, &wl);
 
 	assert(res != -ETIMEDOUT);
 	return res;
@@ -147,14 +147,14 @@ static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 			goto out_unlock;
 		}
 
-		res = pipe_wait(idesc, pipe, IDESC_EVENT_READ | IDESC_EVENT_ERROR);
+		res = pipe_wait(idesc, pipe, POLLIN | POLLERR);
 		if (res != 0) {
 			goto out_unlock;
 		}
 	}
 
 out_notify:
-	idesc_notify_all(&pipe->write_desc.idesc, IDESC_EVENT_WRITE);
+	idesc_notify_all(&pipe->write_desc.idesc, POLLOUT);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
@@ -186,13 +186,13 @@ static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 			break;
 		}
 
-		res = pipe_wait(idesc, pipe, IDESC_EVENT_WRITE | IDESC_EVENT_ERROR);
+		res = pipe_wait(idesc, pipe, POLLOUT | POLLERR);
 		if (res < 0) {
 			goto out_unlock;
 		}
 	}
 
-	idesc_notify_all(&pipe->read_desc.idesc, IDESC_EVENT_READ);
+	idesc_notify_all(&pipe->read_desc.idesc, POLLIN);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);

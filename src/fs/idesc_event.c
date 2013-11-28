@@ -14,58 +14,39 @@
 
 #include <fs/idesc_event.h>
 
-struct idesc_waitq_link {
-	int iwq_masks;
-	struct dlist_head iwq_link;
-	struct thread *iwq_thread;
-};
-
-POOL_DEF(idesc_event_pool, struct idesc_waitq_link, 100);
-
-int idesc_waitq_prepare(struct idesc * idesc, int mask) {
-	struct idesc_waitq_link *link;
-
-	link = pool_alloc(&idesc_event_pool);
-	if (!link) {
-		return -ENOMEM;
-	}
-	dlist_init(&link->iwq_link);
-	dlist_add_next(&link->iwq_link, &idesc->idesc_event_list);
-
-	link->iwq_thread = thread_self();
-
-	return 0;
-}
-
-int idesc_notify_all(struct idesc * idesc, int mask) {
-	struct idesc_waitq_link *tmp, *link;
-
-	dlist_foreach_entry(link, tmp, &idesc->idesc_event_list, iwq_link) {
-		if (link->iwq_masks & mask) {
-			//sched_notify(link->iwq_thread);
-		}
-	}
-
-	return 0;
-}
-
-void idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
+int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *link,
 		int mask) {
+	assert(idesc);
+	assert(link);
 
+	link->iwq_masks = mask;
+	__waitq_prepare(&idesc->idesc_waitq, &link->link);
+
+	return 0;
 }
 
-int idesc_wait(struct idesc_wait_link *wl, unsigned int timeout) {
+int idesc_notify_all(struct idesc *idesc, int mask) {
 
-#if 0
+	//TODO MASK
+	waitq_notify_all_err(&idesc->idesc_waitq, 0);
+
+	return 0;
+}
+
+int idesc_wait(struct idesc *idesc, struct idesc_waitq_link *link,
+		unsigned int timeout) {
+	int ret;
+
 	if (idesc->idesc_flags & O_NONBLOCK) {
 		return -EAGAIN;
 	}
-#endif
+
+	ret = __waitq_wait(timeout);
 
 	/* do actual wait */
-	return -ENOTSUP;
+	return ret;
 }
 
-void idesc_wait_cleanup(struct idesc_wait_link *wl) {
-
+void idesc_wait_cleanup(struct idesc *idesc, struct idesc_waitq_link *wl) {
+	waitq_remove(&wl->link);
 }

@@ -66,6 +66,8 @@ void *thd_handler(void *arg) {
 
 	usleep(100 * 1000);
 
+	test_emit('b');
+
 	write(pipe_testfd[1], "abcd", 4);
 
 	return NULL;
@@ -79,6 +81,8 @@ TEST_CASE("read should block until data avaible") {
 	thread_create(THREAD_FLAG_DETACHED, thd_handler, NULL);
 
 	test_assert_equal(4, read(pipe_testfd[0], buf, 4));
+
+	usleep(100 * 1000);
 
 	test_emit('c');
 
