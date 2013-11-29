@@ -14,8 +14,6 @@
 #include <sys/select.h>
 #include <poll.h>
 
-
-
 #include <hal/clock.h>
 
 #include <kernel/time/time.h>
@@ -29,35 +27,46 @@
 #include <fs/idesc_event.h>
 #include <fs/poll_table.h>
 
-
-static int select_table_prepare(struct idesc_poll_table *pt,
+static int select_fds2pt(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
 	struct idesc *idesc;
 	int cnt;
+	int poll_mask;
 
 	assert(pt);
 
-	for (cnt = 0;nfds >= 0; nfds--, cnt++) {
-		idesc = index_descriptor_get(nfds);
-		assert(idesc);
+	cnt = 0;
 
-		if (FD_ISSET(nfds, readfds)) {
-			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].i_poll_mask = POLLIN;//IDESC_STAT_READ;
-			pt->idesc_poll[pt->size].o_poll_mask = 0;
+	for (int i = 0; i < nfds; i++) {
+
+		poll_mask = 0;
+
+		if (readfds && FD_ISSET(i, readfds)) {
+			poll_mask |= POLLIN;//IDESC_STAT_READ;
+		}
+		if (writefds && FD_ISSET(i, writefds)) {
+			poll_mask |= POLLOUT;//IDESC_STAT_WRITE;
+		}
+		if (exceptfds && FD_ISSET(i, exceptfds)) {
+			poll_mask |= POLLERR;//IDESC_STAT_EXEPT;
 		}
 
-		if (FD_ISSET(nfds, writefds)) {
-			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].i_poll_mask = POLLOUT;//IDESC_STAT_WRITE;
-			pt->idesc_poll[pt->size].o_poll_mask = 0;
+		if (poll_mask) {
+			struct idesc_poll *pl;
+
+			idesc = index_descriptor_get(i);
+			if (!idesc) {
+				return -EBADF;
+			}
+
+			pl = &pt->idesc_poll[cnt++];
+
+			pl->fd = i;
+			pl->idesc = idesc;
+			pl->i_poll_mask = poll_mask;
+			pl->o_poll_mask = 0;
 		}
 
-		if (FD_ISSET(nfds, exceptfds)) {
-			pt->idesc_poll[pt->size].idesc = idesc;
-			pt->idesc_poll[pt->size].i_poll_mask = POLLERR;//IDESC_STAT_EXEPT;
-			pt->idesc_poll[pt->size].o_poll_mask = 0;
-		}
 	}
 
 	pt->size = cnt;
@@ -65,39 +74,64 @@ static int select_table_prepare(struct idesc_poll_table *pt,
 	return cnt;
 }
 
+static void select_pt2fds(struct idesc_poll_table *pt,
+		fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+
+	if (readfds) {
+		FD_ZERO(readfds);
+	}
+	if (writefds) {
+		FD_ZERO(writefds);
+	}
+	if (exceptfds) {
+		FD_ZERO(exceptfds);
+	}
+
+	for (int i = 0; i < pt->size; i ++) {
+		struct idesc_poll *pl;
+
+		pl = &pt->idesc_poll[i];
+
+		if (pl->o_poll_mask) {
+
+			if (readfds && pl->o_poll_mask & POLLIN) {
+				FD_SET(pl->fd, readfds);
+			}
+			if (writefds && pl->o_poll_mask & POLLOUT) {
+				FD_SET(pl->fd, writefds);
+			}
+			if (exceptfds && pl->o_poll_mask & POLLERR) {
+				FD_SET(pl->fd, exceptfds);
+			}
+		}
+	}
+}
+
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
-	int fd_cnt;
 	clock_t ticks;
 	struct idesc_poll_table pt;
 	int ret;
 
-	/* If  timeout is NULL (no timeout), select() can block indefinitely. */
-	ticks = (timeout == NULL ? SCHED_TIMEOUT_INFINITE : timeval_to_ms(timeout));
-
-	fd_cnt = select_table_prepare(&pt, nfds, readfds, writefds, exceptfds);
-
-	if (ticks == 0) {
-		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
-		 *  returns immediately.
-		 */
-		return fd_cnt;
+	ret = select_fds2pt(&pt, nfds, readfds, writefds, exceptfds);
+	if (0 > ret) {
+		return ret;
 	}
 
-	if (0 != fd_cnt) {
-		return fd_cnt;
+	ticks = (timeout == NULL ? SCHED_TIMEOUT_INFINITE : timeval_to_ms(timeout));
+	ret = poll_table_count(&pt);
+
+	if (ret != 0 || ticks == 0) {
+		select_pt2fds(&pt, readfds, writefds, exceptfds);
+		return ret;
 	}
 
 	ret = poll_table_wait(&pt, ticks);
-
-	poll_table_cleanup(&pt);
-
-	fd_cnt = poll_table_cleanup(&pt);
-
 	if (ret == -EINTR) {
-		SET_ERRNO(EINTR);
-		return -1;
+		return SET_ERRNO(EINTR);
 	}
 
-	return fd_cnt;
+	ret = poll_table_count(&pt);
+	select_pt2fds(&pt, readfds, writefds, exceptfds);
+	return ret;
 }
 

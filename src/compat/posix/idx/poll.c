@@ -99,35 +99,29 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	int ticks;
 	struct idesc_poll_table pt;
 
-	ticks = timeout;
-
-	fd_cnt = table_prepare(&pt, fds, nfds);
-
-	fd_cnt = poll_table_count(&pt);
-	fd_cnt = fds_setup(&pt, fds, nfds);
-
-	if (ticks == 0) {
-		/* If  both  fields  of  the  timeval  stucture  are zero, then select()
-		 *  returns immediately.
-		 */
-		return fd_cnt;
+	if (!fds) {
+		return -EINVAL;
 	}
 
-	if (0 != fd_cnt) {
+	table_prepare(&pt, fds, nfds);
+
+	ticks = timeout;
+	fd_cnt = poll_table_count(&pt);
+
+	if (fd_cnt || ticks == 0) {
+		fds_setup(&pt, fds, nfds);
 		return fd_cnt;
 	}
 
 	ret = poll_table_wait(&pt, ticks);
-
-	fd_cnt = poll_table_cleanup(&pt);
-	fd_cnt = poll_table_count(&pt);
-
-	fd_cnt = fds_setup(&pt, fds, nfds);
-
 	if (ret == -EINTR) {
 		SET_ERRNO(EINTR);
 		return -1;
 	}
+
+	poll_table_count(&pt);
+
+	fd_cnt = fds_setup(&pt, fds, nfds);
 
 	return fd_cnt;
 }
