@@ -89,7 +89,7 @@ static int iodev_env_init(void) {
 	struct idesc_table *idesc_table;
 	int fd;
 
-	idesc_table = idesc_table_get_table(task_self()); //kernel task
+	idesc_table = task_get_idesc_table(task_self()); //kernel task
 
 	idesc_init(&idesc_diag.idesc, &iodev_idx_ops, FS_MAY_READ | FS_MAY_WRITE);
 	fd = idesc_table_add(idesc_table, &idesc_diag.idesc, 0);

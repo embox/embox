@@ -12,7 +12,7 @@
 #define IDESC_TABLE_USE
 
 #include <framework/mod/options.h>
-#include <module/embox/kernel/task/idx_table.h>
+#include <config/embox/kernel/task/idx_table.h>
 
 #define IDESC_QUANTITY \
 	OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
@@ -32,24 +32,30 @@ struct idesc_table {
 
 typedef struct idesc_table idesc_table_t;
 
+//TODO
+#include <stdint.h>
+#define idesc_cloexec_set(desc) \
+	desc = (struct idesc *)(((uintptr_t)desc) | 0x1)
+
+#define idesc_cloexec_clear(desc) \
+	desc = (struct idesc *)(((uintptr_t)desc) & ~0x1)
+
+#define idesc_is_cloexeced(idesc)  ((uintptr_t)idesc & 0x1)
+
+
 #include <sys/cdefs.h>
 
-struct task;
 __BEGIN_DECLS
 
 extern int idesc_table_add(struct idesc_table *t, struct idesc *idesc,
 		int cloexec);
 
+extern int idesc_table_del(struct idesc_table *t, int idx);
+
 extern int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx,
 		int cloexec);
 
 extern int idesc_table_locked(struct idesc_table *t, int idx);
-
-extern int idesc_table_del(struct idesc_table *t, int idx);
-
-extern struct idesc_table *idesc_table_get_table(struct task *task);
-
-extern struct idesc *idesc_table_get_desc(struct idesc_table *t, int idx);
 
 extern int idesc_table_init(struct idesc_table *t);
 
@@ -57,11 +63,7 @@ extern int idesc_table_finit(struct idesc_table *t);
 
 extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 
-extern struct idesc *idesc_common_get(int idx);
-
-extern int idesc_is_cloexec(int fd);
-
-extern int idesc_set_cloexec(int fd, int cloexec);
+extern struct idesc *idesc_table_get(struct idesc_table *t, int idx);
 
 
 __END_DECLS

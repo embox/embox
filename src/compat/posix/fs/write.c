@@ -6,13 +6,15 @@
  */
 
 #include <errno.h>
-#include <posix_errno.h>
+//#include <posix_errno.h>
 #include <stddef.h>
 #include <unistd.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
+
+#include <fs/index_descriptor.h>
 
 #include <fs/idesc.h>
 
@@ -25,7 +27,7 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 		return SET_ERRNO(EBADF);
 	}
 
-	idesc = idesc_common_get(fd);
+	idesc = index_descriptor_get(fd);
 	if(!idesc) {
 		return SET_ERRNO(EBADF);
 	}

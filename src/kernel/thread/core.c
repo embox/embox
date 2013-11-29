@@ -196,7 +196,7 @@ static void thread_delete(struct thread *t) {
 	assert(t);
 	assert(__THREAD_STATE_IS_EXITED(t->state));
 
-	task_remove_thread(t->task, t);
+	thread_unregister(t->task, t);
 	sigstate_init(&t->sigstate);
 
 	runq_item_init(&t->sched_attr.runq_link);

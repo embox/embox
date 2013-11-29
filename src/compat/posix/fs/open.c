@@ -101,7 +101,7 @@ int open(const char *path, int __oflag, ...) {
 	rc = task_self_idx_alloc(&task_idx_ops_file, kfile, &kfile->ios);
 #else
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
 #endif
 

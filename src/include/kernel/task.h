@@ -77,8 +77,11 @@ struct task {
 	//idesc_table_t idesc_table;
 };
 
-#include <kernel/task/task_resource.h>
 
+extern struct idesc_table *task_get_idesc_table(struct task *task);
+
+#include <kernel/task/task_resource.h>
+#if 0
 /**
  * @brief Get task resources structure from task
  *
@@ -90,6 +93,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 	assert(task);
 	return task->idx_table;
 }
+#endif
 
 /** create new task and initialize its descriptor */
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
@@ -97,7 +101,7 @@ extern int new_task(const char *name, void *(*run)(void *), void *arg);
 /** insert a created task into the task */
 extern int thread_register(struct task *, struct thread *);
 
-extern int task_remove_thread(struct task *, struct thread *);
+extern int thread_unregister(struct task *, struct thread *);
 
 /**
  * @brief Get self task (task which current execution thread associated with)

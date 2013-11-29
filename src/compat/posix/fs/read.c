@@ -14,6 +14,7 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
+#include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
@@ -25,7 +26,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 		return SET_ERRNO(EBADF);
 	}
 
-	idesc = idesc_common_get(fd);
+	idesc = index_descriptor_get(fd);
 	if(!idesc) {
 		return SET_ERRNO(EBADF);
 	}

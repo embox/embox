@@ -34,7 +34,7 @@ int get_index(struct sock *sk) {
 #else
 	struct idesc_table *it;
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	assert(it);
 
 	return idesc_table_add(it, (struct idesc *)sk, 0);

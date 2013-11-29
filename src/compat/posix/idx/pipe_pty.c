@@ -226,7 +226,7 @@ int ppty(int pptyfds[2]) {
 	struct idesc_ppty *master, *slave;
 	struct idesc_table *it;
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 
 	ppty = NULL;
 	master = slave = NULL;

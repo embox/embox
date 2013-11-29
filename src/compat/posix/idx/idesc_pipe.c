@@ -321,7 +321,7 @@ int pipe2(int pipefd[2], int flags) {
 	struct pipe *pipe;
 	int res = 0;
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	assert(it);
 
 

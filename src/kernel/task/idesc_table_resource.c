@@ -46,7 +46,7 @@ static int idesc_table_resource_init(const struct task_resource_desc *desc,
 	return 0;
 }
 
-struct idesc_table *idesc_table_get_table(struct task *task) {
+struct idesc_table *task_get_idesc_table(struct task *task) {
 	assert(task);
 
 	return res_get_pointer(task);

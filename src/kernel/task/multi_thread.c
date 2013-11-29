@@ -40,7 +40,7 @@ int thread_register(struct task * task, struct thread *t) {
 }
 
 
-int task_remove_thread(struct task * task, struct thread *thread) {
+int thread_unregister(struct task * task, struct thread *thread) {
 	if((NULL == task) || (NULL == thread)) {
 		return -EINVAL;
 	}

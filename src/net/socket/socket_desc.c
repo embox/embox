@@ -34,10 +34,10 @@ struct socket_desc *socket_desc_get(int idx) {
 
 	assert(idesc_index_valid(idx));
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	assert(it);
 
-	idesc = idesc_table_get_desc(it, idx);
+	idesc = idesc_table_get(it, idx);
 
 	return (struct socket_desc *) idesc;
 }
@@ -54,10 +54,10 @@ struct sock *idesc_sock_get(int idx) {
 
 	assert(idesc_index_valid(idx));
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	assert(it);
 
-	idesc = idesc_table_get_desc(it, idx);
+	idesc = idesc_table_get(it, idx);
 
 	return (struct sock *) idesc;
 }

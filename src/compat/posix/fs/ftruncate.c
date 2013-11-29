@@ -13,6 +13,8 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
+#include <fs/index_descriptor.h>
+
 #include <fs/idesc.h>
 
 int ftruncate(int fd, off_t length) {
@@ -41,7 +43,7 @@ int ftruncate(int fd, off_t length) {
 	return ops->ftruncate(desc, length);
 #else
 	struct idesc *desc;
-	desc = idesc_common_get(fd);
+	desc = index_descriptor_get(fd);
 	assert(desc);
 
 //	ops = desc->idesc_ops;

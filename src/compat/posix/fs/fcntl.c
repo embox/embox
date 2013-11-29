@@ -13,22 +13,18 @@
 #include <kernel/task/io_sync.h>
 #include <kernel/task/idesc_table.h>
 
+#include <fs/index_descriptor.h>
+
 #include <fs/idesc.h>
 
 
-static inline int fcntl_inherit(struct idesc *idesc, int cmd, void *data) {
-	assert(idesc->idesc_ops);
-	if (!idesc->idesc_ops->ioctl) {
-		return SET_ERRNO(ENOTSUP);
-	}
-	return idesc->idesc_ops->ioctl(idesc, cmd, data);
-}
+
 
 static inline int dupfd(struct idesc *idesc, int idx) {
 	struct idesc_table *it;
 	int res;
 
-	it = idesc_table_get_table(task_self());
+	it = task_get_idesc_table(task_self());
 	assert(it);
 
 	if (idesc_table_locked(it, idx)) {
@@ -51,12 +47,13 @@ int fcntl(int fd, int cmd, ...) {
 	void * data;
 	va_list args;
 	int dint;
+	int res;
 
 	if (!idesc_index_valid(fd)) {
 		return SET_ERRNO(EBADF);
 	}
 
-	idesc = idesc_common_get(fd);
+	idesc = index_descriptor_get(fd);
 	if (NULL == idesc) {
 		return SET_ERRNO(EBADF);
 	}
@@ -79,12 +76,12 @@ int fcntl(int fd, int cmd, ...) {
 		va_end(args);
 		return 0;
 	case F_GETFD: /* only for CLOEXEC flag */
-		return idesc_is_cloexec(fd);
+		return index_descritor_cloexec_get(fd);
 	case F_SETFD: /* only for CLOEXEC flag */
 		va_start(args, cmd);
 		dint = va_arg(args, int);
 		va_end(args);
-		return idesc_set_cloexec(fd, dint);
+		return index_descriptor_cloexec_set(fd, dint);
 /*	case F_GETPIPE_SZ:
 	case F_SETPIPE_SZ:
 		break;
@@ -94,9 +91,12 @@ int fcntl(int fd, int cmd, ...) {
 		va_start(args, cmd);
 		data = va_arg(args, void*);
 		va_end(args);
-		return fcntl_inherit(idesc, cmd, data);
+		res = index_descriptor_fcntl(fd, cmd, data);
+		if (res < 0) {
+			return SET_ERRNO(ENOTSUP);
+		}
 	}
 
-	return SET_ERRNO(ENOTSUP);
+	return 0;
 }
 

@@ -13,6 +13,8 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
+#include <fs/index_descriptor.h>
+
 #include <fs/idesc.h>
 
 int fstat(int fd, struct stat *buff) {
@@ -44,7 +46,7 @@ int fstat(int fd, struct stat *buff) {
 	return rc;
 #else
 	struct idesc *desc;
-	desc = idesc_common_get(fd);
+	desc = index_descriptor_get(fd);
 	assert(desc);
 
 	ops = desc->idesc_ops;

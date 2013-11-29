@@ -10,12 +10,13 @@
 #include <errno.h>
 #include <poll.h>
 
+#include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <fs/flags.h>
 
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
-#include <kernel/task/io_sync.h>
+//#include <kernel/task/idx.h>
+//#include <kernel/task/io_sync.h>
 
 #include <fs/poll_table.h>
 
@@ -34,7 +35,7 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 			continue;
 		}
 
-		idesc = idesc_common_get(fds[i].fd);
+		idesc = index_descriptor_get(fds[i].fd);
 		if (idesc == NULL) {
 			fds[i].revents |= POLLNVAL;
 			pt->idesc_poll[cnt].idesc = NULL;

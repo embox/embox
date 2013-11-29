@@ -24,6 +24,7 @@
 #include <kernel/task/idx.h>
 
 #include <kernel/task/idesc_table.h>
+#include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 #include <fs/poll_table.h>
@@ -37,7 +38,7 @@ static int select_table_prepare(struct idesc_poll_table *pt,
 	assert(pt);
 
 	for (cnt = 0;nfds >= 0; nfds--, cnt++) {
-		idesc = idesc_common_get(nfds);
+		idesc = index_descriptor_get(nfds);
 		assert(idesc);
 
 		if (FD_ISSET(nfds, readfds)) {
