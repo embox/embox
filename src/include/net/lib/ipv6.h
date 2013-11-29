@@ -53,4 +53,16 @@ struct ip6_pseudohdr {
 extern void ip6_pseudo_build(const struct ip6hdr *ip6h,
 		struct ip6_pseudohdr *out_ip6ph);
 
+/**
+ * IPv6/AF_INET6 testers
+ */
+extern int ip6_tester_src(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip6_tester_src_or_any(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip6_tester_dst(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip6_tester_dst_or_any(const struct sock *sk,
+		const struct sk_buff *skb);
+
 #endif /* NET_LIB_IPV6_H_ */
