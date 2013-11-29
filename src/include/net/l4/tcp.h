@@ -95,36 +95,9 @@ typedef struct tcp_sock {
 	struct timeval rcv_time;   /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
 } tcp_sock_t;
 
-static inline struct tcp_sock * to_tcp_sock(struct sock *sk) {
+static inline struct tcp_sock * to_tcp_sock(
+		const struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
-}
-
-static inline in_port_t tcp_sock_src_port(
-		const struct tcp_sock *tcp_sk) {
-	const struct sock *sk;
-
-	sk = to_sock(tcp_sk);
-
-	if (sk->opt.so_domain == AF_INET) {
-		return to_const_inet_sock(sk)->src_in.sin_port;
-	}
-
-	assert(sk->opt.so_domain == AF_INET6);
-	return to_const_inet6_sock(sk)->src_in6.sin6_port;
-}
-
-static inline in_port_t tcp_sock_dst_port(
-		const struct tcp_sock *tcp_sk) {
-	const struct sock *sk;
-
-	sk = to_sock(tcp_sk);
-
-	if (sk->opt.so_domain == AF_INET) {
-		return to_const_inet_sock(sk)->dst_in.sin_port;
-	}
-
-	assert(sk->opt.so_domain == AF_INET6);
-	return to_const_inet6_sock(sk)->dst_in6.sin6_port;
 }
 
 #if 0
