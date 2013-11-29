@@ -9,8 +9,9 @@
 
 struct runnable {
 	/**
+		Thread-specific function, puts current thread in runq
 	*/
-	/*void                *(*sched_thread_); */
+	void                *(*sched_thread_specific)(struct runnable *p, struct runq *rq);
 
 	/** Called by sched when replanned.
 	*/
@@ -20,5 +21,10 @@ struct runnable {
 	int                policy;       /**< Scheduling policy pointer*/
 	struct sched_attr  sched_attr;   /**< Scheduler-private data pointer */
 };
+
+extern struct runnable *runnable_get_current(void);
+extern void sched_thread_specific(struct runnable *p, struct runq *rq);
+extern void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *rq);
+
 
 #endif /* _KERNEL_RUNNABLE_H_ */

@@ -1,21 +1,30 @@
 /*
 	Thread planning functions, used in sched_switch
+
+	Implements runnable interface
 */
-
-
-#ifndef _SCHED_THREADROUTINE_H_
-#define _SCHED_THREADROUTINE_H_
 
 #include <hal/context.h>
 #include <hal/ipl.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <sched.h>
+#include <kernel/sched.h>
 #include <kernel/critical.h>
 #include <kernel/thread.h>
 #include <kernel/runnable/runnable.h>
 #include <kernel/thread/state.h>
 #include <profiler/tracing/trace.h>
+
+void sched_thread_specific(struct runnable *p, struct runq *rq) {
+	struct thread *prev;
+
+	prev = (struct thread *)p;
+
+	if (prev->state & __THREAD_STATE_RUNNING) {
+			runq_queue_insert(&rq->queue, p);
+	}
+}
 
 void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *rq) {
 	struct thread *prev, *next;
@@ -59,5 +68,3 @@ void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *r
 	context_switch(&(prev->context), &(next->context));
 }
 
-
-#endif /* _SCHED_THREADROUTINE_H_ */

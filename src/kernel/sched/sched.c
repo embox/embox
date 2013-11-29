@@ -178,7 +178,6 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
  * Called by critical dispatching code with IRQs disabled.
  */
 static void sched_switch(void) {
-	struct thread *prev_thread;
 	struct runnable *prev, *next;
 
 	assert(!in_sched_locked());
@@ -192,11 +191,11 @@ static void sched_switch(void) {
 
 		ipl_enable();
 
-		prev_thread = thread_get_current();
-		prev = &(prev_thread->runnable);
+		prev = runnable_get_current();
 
-		if (prev_thread->state & __THREAD_STATE_RUNNING) {
-			runq_queue_insert(&rq.queue, prev);
+		/*prev can be thread, we might want to put it into runq */
+		if(prev->sched_thread_specific != NULL) {
+			prev->sched_thread_specific(prev, &rq);
 		}
 
 		next = runq_queue_extract(&rq.queue);
@@ -208,4 +207,9 @@ out:
 	sched_unlock_noswitch();
 
 	thread_signal_handle();
+}
+
+/* Implement from runnable.h */
+struct runnable *runnable_get_current(){
+	return &(thread_get_current()->runnable);
 }

@@ -39,8 +39,6 @@
 #include <hal/context.h>
 #include <err.h>
 
-#include <kernel/sched/thread_routine.h>
-
 EMBOX_UNIT_INIT(thread_core_init);
 
 
@@ -165,6 +163,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->state = __THREAD_STATE_WAITING;
 
 	/* set sched routines */
+	t->runnable.sched_thread_specific = (void *)sched_thread_specific;
 	t->runnable.run = (void *)sched_execute_thread;
 	t->runnable.run_arg = NULL;
 
