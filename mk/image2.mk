@@ -173,7 +173,7 @@ $(symbols_pass2_c) : image_o = $(image_pass1_o)
 $(symbols_c_files) :
 $(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
 $(symbols_c_files) : $$(image_o)
-	$(NM) --demangle -n $< | $(AWK) -f mk/script/nm2c.awk > $@
+	$(NM) --demangle --line-numbers --numeric-sort $< | $(AWK) -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a

@@ -20,8 +20,12 @@ BEGIN {
 }
 
 /^[0-9a-fA-F]* [tT]/ {
-	split($0,a," [tT] ");
-	printf "\t{ (void *) 0x%s, \"%s\" },\n", $1, a[2];
+	split($4,a,":");
+	if (a[1])
+		loc = sprintf("{ \"%s\", %d }", a[1], a[2])
+	else
+		loc = sprintf("{ }", a[1], a[2])
+	printf "\t{ (void *) 0x%s, \"%s\", %s },\n", $1, $3, loc;
 }
 
 END {
