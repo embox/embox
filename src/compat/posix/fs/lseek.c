@@ -17,10 +17,10 @@
 #include <fs/file_desc.h>
 
 
-extern const struct task_idx_ops task_idx_ops_file;
+extern const struct idesc_ops task_idx_ops_file;
 off_t lseek(int fd, off_t offset, int origin) {
 #ifndef IDESC_TABLE_USE
-	const struct task_idx_ops *ops;
+	const struct idesc_ops *ops;
 
 	struct idx_desc *desc;
 

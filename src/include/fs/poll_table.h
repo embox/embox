@@ -29,7 +29,7 @@ struct idesc_poll {
 	int i_poll_mask;
 	int o_poll_mask;
 
-	struct idesc_waitq_link wait_link;
+	struct idesc_wait_link wait_link;
 };
 
 struct idesc_poll_table {

@@ -16,7 +16,7 @@
 #include <fs/idesc.h>
 
 int fstat(int fd, struct stat *buff) {
-	const struct task_idx_ops *ops;
+	const struct idesc_ops *ops;
 
 #ifndef IDESC_TABLE_USE
 	int rc;

@@ -10,14 +10,13 @@
 
 #include <kernel/sched/waitq.h>
 
-struct idesc_waitq_link {
+/**
+ * The same as struct wait_link link but have poll flags
+ */
+struct idesc_wait_link {
 	int iwq_masks;
 	struct wait_link link;
 };
-
-//struct idesc_waitq_link *idesc_wait_link_alloc(void);
-
-extern int idesc_notify_all(struct idesc * idesc, int mask);
 
 /**
  * @brief Prepare link to wait on idesc
@@ -26,14 +25,11 @@ extern int idesc_notify_all(struct idesc * idesc, int mask);
  * @param wl Idesc_wait_link to prepare
  * @param mask Mask of events
  */
-extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *,
+extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
 		int mask);
 
-/* for SCHED_TIMEOUT_INFINITE */
-#include <kernel/sched.h>
-
 /**
- * @brief Wait for events of specifed mask occured on idesc
+ * @brief Wait for events of specified mask occurred on idesc
  *
  * @param wl Prepared idesc_wait_link
  * @param timeout Timeout of waiting specified in ms (?). Can be SCHED_TIMEOUT_INFINITE.
@@ -43,14 +39,23 @@ extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *,
  * @return -EINTR if was interrupted
  * @return Non-negative if event occured
  */
-extern int idesc_wait(struct idesc *idesc, struct idesc_waitq_link *wl,
-		unsigned int timeout);
+extern int idesc_wait(struct idesc *idesc, unsigned int timeout);
+
 
 /**
  * @brief Clean idesc_wait_link
  *
- * @param wl
+ * @param idesc - index descriptor on which thread waited
+ * @param wl wait link which was prepared by idesc_wait_prepare()
  */
-extern void idesc_wait_cleanup(struct idesc *idesc, struct idesc_waitq_link *wl);
+extern void idesc_wait_cleanup(struct idesc *idesc, struct idesc_wait_link *wl);
+
+/**
+ * Wake all thread which wait this descriptor
+ *
+ * @param idesc on which something happened
+ */
+extern int idesc_notify(struct idesc * idesc, int mask);
+
 
 #endif /* IDESC_EVENT_H_ */

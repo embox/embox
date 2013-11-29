@@ -131,7 +131,7 @@ static int this_tty_close(struct idx_desc *idx) {
 	return 0;
 }
 
-static const struct task_idx_ops this_idx_ops = {
+static const struct idesc_ops this_idx_ops = {
 	.read  = this_tty_read,
 	.write = this_tty_write,
 	.close = this_tty_close,

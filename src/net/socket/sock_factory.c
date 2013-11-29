@@ -10,6 +10,7 @@
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
+#include <fs/flags.h>
 
 #include <framework/net/family/api.h>
 #include <framework/net/sock/api.h>
@@ -126,7 +127,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->addr_len = 0;
 #endif
 }
-extern const struct task_idx_ops task_idx_ops_socket;
+extern const struct idesc_ops task_idx_ops_socket;
 struct sock *sock_create(int family, int type, int protocol) {
 	int ret;
 	struct sock *new_sk;

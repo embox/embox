@@ -21,6 +21,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <fs/idesc.h>
+#include <fs/flags.h>
 
 #include <kernel/task/idesc_table.h>
 
@@ -44,7 +45,7 @@ static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
 static int ppty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
 static int ppty_fstat(struct idesc *data, void *buff);
 
-static const struct task_idx_ops ppty_master_ops = {
+static const struct idesc_ops ppty_master_ops = {
 		.write = ppty_master_write,
 		.read  = ppty_master_read,
 		.close = ppty_close,
@@ -52,7 +53,7 @@ static const struct task_idx_ops ppty_master_ops = {
 		/*.fstat = ppty_fstat,*/
 };
 
-static const struct task_idx_ops ppty_slave_ops = {
+static const struct idesc_ops ppty_slave_ops = {
 		.write = ppty_slave_write,
 		.read  = ppty_slave_read,
 		.close = ppty_close,
@@ -77,7 +78,7 @@ static void ppty_delete(struct ppty *ppty) {
 	free(ppty);
 }
 
-static struct idesc_ppty *idesc_ppty_create(struct ppty *ppty, const struct task_idx_ops *ops,
+static struct idesc_ppty *idesc_ppty_create(struct ppty *ppty, const struct idesc_ops *ops,
 		struct idesc **idesc) {
 	struct idesc_ppty *ippty;
 

@@ -19,6 +19,7 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
+#include <fs/flags.h>
 
 #include <embox/unit.h>
 
@@ -76,7 +77,7 @@ static int iodev_fstat(struct idesc *data, void *buff) {
 
 }
 
-static const struct task_idx_ops iodev_idx_ops = {
+static const struct idesc_ops iodev_idx_ops = {
 	.read = iodev_read,
 	.write = iodev_write,
 	.close = iodev_close,

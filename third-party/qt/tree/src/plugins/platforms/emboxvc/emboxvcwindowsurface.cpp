@@ -84,7 +84,7 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 }
 
 static int desc_read(struct idx_desc *desc, void *buf, size_t size) {
-	const struct task_idx_ops *ops;
+	const struct idesc_ops *ops;
 
 	if (!buf) {
 		SET_ERRNO(EFAULT);
@@ -98,7 +98,7 @@ static int desc_read(struct idx_desc *desc, void *buf, size_t size) {
 }
 
 static int desc_write(struct idx_desc *desc, const void *buf, size_t size) {
-	const struct task_idx_ops *ops;
+	const struct idesc_ops *ops;
 
 	if (!buf) {
 		SET_ERRNO(EFAULT);

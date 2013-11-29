@@ -92,7 +92,7 @@ static int socket_close(struct idx_desc *desc) {
 	return 0;
 }
 
-const struct task_idx_ops task_idx_ops_socket = {
+const struct idesc_ops task_idx_ops_socket = {
 	.read = socket_read,
 	.write = socket_write,
 	.close = socket_close
@@ -170,7 +170,7 @@ static int socket_close(struct idesc *desc) {
 	return 0;
 }
 
-const struct task_idx_ops task_idx_ops_socket = {
+const struct idesc_ops task_idx_ops_socket = {
 	.read = socket_read,
 	.write = socket_write,
 	.close = socket_close

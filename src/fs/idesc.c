@@ -14,7 +14,7 @@
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 
-int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, idesc_access_mode_t amode) {
+int idesc_init(struct idesc *idesc, const struct idesc_ops *ops, idesc_access_mode_t amode) {
 
 	memset(idesc, 0, sizeof(struct idesc));
 
@@ -22,12 +22,12 @@ int idesc_init(struct idesc *idesc, const struct task_idx_ops *ops, idesc_access
 
 	idesc->idesc_ops = ops;
 
-	//dlist_head_init(&idesc->idesc_event_list);
 	waitq_init(&idesc->idesc_waitq);
 
 	return 0;
 }
 
+#if 0
 
 int idesc_read(struct idesc *idesc, char *buff, int size) {
 	return -ENOSUPP;
@@ -40,6 +40,7 @@ int idesc_write(struct idesc *idesc,char *buff, int size) {
 int idesc_ctrl(struct idesc *idesc, int cmd, int type, void *buff, int size) {
 	return -ENOSUPP;
 }
+#endif
 
 int idesc_close(struct idesc *idesc, int fd) {
 	struct idesc_table *it;

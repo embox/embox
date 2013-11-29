@@ -27,7 +27,7 @@
 #include <err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
-extern const struct task_idx_ops task_idx_ops_socket;
+extern const struct idesc_ops task_idx_ops_socket;
 
 struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;

@@ -54,7 +54,7 @@ static int this_truncate(struct idx_desc *data, off_t length) {
 	return ktruncate(from_data(data)->node, length);
 }
 
-const struct task_idx_ops task_idx_ops_file = {
+const struct idesc_ops task_idx_ops_file = {
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,
@@ -64,7 +64,7 @@ const struct task_idx_ops task_idx_ops_file = {
 	.ftruncate = this_truncate
 };
 #else
-extern const struct task_idx_ops task_idx_ops_file;
+extern const struct idesc_ops task_idx_ops_file;
 static int this_close(struct idesc *idesc) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &task_idx_ops_file);
@@ -97,7 +97,7 @@ static int this_ioctl(struct idesc *idesc, int request, void *data) {
 }
 
 
-const struct task_idx_ops task_idx_ops_file = {
+const struct idesc_ops task_idx_ops_file = {
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,

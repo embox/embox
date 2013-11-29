@@ -21,6 +21,7 @@
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
+#include <kernel/sched.h>
 #include <fs/flags.h>
 
 #include <unistd.h>
@@ -52,7 +53,7 @@ struct pipe {
 static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 	cur->idesc.idesc_amode = 0;
 	if (other->idesc.idesc_amode) {
-		idesc_notify_all(&other->idesc, POLLERR);
+		idesc_notify(&other->idesc, POLLERR);
 	} else {
 		return 1;
 	}
@@ -60,7 +61,7 @@ static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 	return 0;
 }
 
-static const struct task_idx_ops idesc_pipe_ops;
+static const struct idesc_ops idesc_pipe_ops;
 static int pipe_close(struct idesc *idesc) {
 	struct pipe *pipe;
 	struct idesc_pipe *cur;
@@ -105,14 +106,14 @@ out_unlock:
 
 
 static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
-	struct idesc_waitq_link wl;
+	struct idesc_wait_link wl;
 	int res;
 
 	idesc_wait_prepare(idesc, &wl, flags);
 
 	mutex_unlock(&pipe->mutex);
 
-	res = idesc_wait(idesc, &wl, SCHED_TIMEOUT_INFINITE);
+	res = idesc_wait(idesc, SCHED_TIMEOUT_INFINITE);
 
 	mutex_lock(&pipe->mutex);
 
@@ -154,7 +155,7 @@ static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	}
 
 out_notify:
-	idesc_notify_all(&pipe->write_desc.idesc, POLLOUT);
+	idesc_notify(&pipe->write_desc.idesc, POLLOUT);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
@@ -192,7 +193,7 @@ static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 		}
 	}
 
-	idesc_notify_all(&pipe->read_desc.idesc, POLLIN);
+	idesc_notify(&pipe->read_desc.idesc, POLLIN);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
@@ -252,7 +253,7 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 }
 
 
-static const struct task_idx_ops idesc_pipe_ops = {
+static const struct idesc_ops idesc_pipe_ops = {
 		.read = pipe_read,
 		.write = pipe_write,
 		.close = pipe_close,

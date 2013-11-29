@@ -26,7 +26,7 @@
 
 #include <err.h>
 
-extern const struct task_idx_ops task_idx_ops_socket;
+extern const struct idesc_ops task_idx_ops_socket;
 
 int get_index(struct sock *sk) {
 #ifndef IDESC_TABLE_USE

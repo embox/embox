@@ -14,7 +14,7 @@
 
 #include <fs/idesc_event.h>
 
-int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *link,
+int idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *link,
 		int mask) {
 	assert(idesc);
 	assert(link);
@@ -25,7 +25,7 @@ int idesc_wait_prepare(struct idesc *idesc, struct idesc_waitq_link *link,
 	return 0;
 }
 
-int idesc_notify_all(struct idesc *idesc, int mask) {
+int idesc_notify(struct idesc *idesc, int mask) {
 
 	//TODO MASK
 	waitq_notify_all_err(&idesc->idesc_waitq, 0);
@@ -33,8 +33,7 @@ int idesc_notify_all(struct idesc *idesc, int mask) {
 	return 0;
 }
 
-int idesc_wait(struct idesc *idesc, struct idesc_waitq_link *link,
-		unsigned int timeout) {
+int idesc_wait(struct idesc *idesc, unsigned int timeout) {
 	int ret;
 
 	if (idesc->idesc_flags & O_NONBLOCK) {
@@ -47,6 +46,6 @@ int idesc_wait(struct idesc *idesc, struct idesc_waitq_link *link,
 	return ret;
 }
 
-void idesc_wait_cleanup(struct idesc *idesc, struct idesc_waitq_link *wl) {
+void idesc_wait_cleanup(struct idesc *idesc, struct idesc_wait_link *wl) {
 	waitq_remove(&wl->link);
 }

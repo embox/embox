@@ -17,7 +17,7 @@
 #include <fs/idesc.h>
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	const struct task_idx_ops *ops;
+	const struct idesc_ops *ops;
 	struct idesc *idesc;
 	int res;
 

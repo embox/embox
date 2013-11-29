@@ -11,6 +11,7 @@
 #include <poll.h>
 
 #include <fs/idesc.h>
+#include <fs/flags.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
