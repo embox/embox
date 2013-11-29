@@ -105,7 +105,6 @@ static int ip6_make(const struct sock *sk,
 		return -ENOMEM;
 	}
 
-	skb->sk = in6_sk != NULL ? &in6_sk->sk : NULL;
 	skb->dev = dev;
 	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 	skb->h.raw = skb->nh.raw + IP6_HEADER_SIZE;
