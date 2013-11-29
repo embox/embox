@@ -59,3 +59,10 @@ void udp_set_check_field(struct udphdr *udph, const void *nhhdr) {
 		udp6_set_check_field(udph, (const struct ip6hdr *)nhhdr);
 	}
 }
+
+size_t udp_data_length(const struct udphdr *udph) {
+	assert(udph != NULL);
+	assert(ntohs(udph->len) >= UDP_HEADER_SIZE);
+
+	return ntohs(udph->len) - UDP_HEADER_SIZE;
+}

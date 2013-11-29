@@ -35,4 +35,9 @@ extern void udp6_set_check_field(struct udphdr *udph,
 extern void udp_set_check_field(struct udphdr *udph,
 		const void *nhhdr);
 
+/**
+ * Calculate UDP data length
+ */
+extern size_t udp_data_length(const struct udphdr *udph);
+
 #endif /* NET_LIB_UDP_H_ */
