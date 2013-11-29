@@ -967,7 +967,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		break;
 	}
 
-	/* Processing RST */
+	/* Process RST */
 	if (tcph->rst) {
 		ret = process_rst(tcp_sk, tcph);
 		if (ret != TCP_RET_OK) {
@@ -975,12 +975,21 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		}
 	}
 
-	/* Porcessing ACK */
+	/* Porcess ACK */
 	if (tcph->ack) {
 		ret = process_ack(tcp_sk, tcph);
 		if (ret != TCP_RET_OK) {
 			return ret;
 		}
+	}
+
+	/* Update window */
+	switch (tcp_sock_get_status(tcp_sk)) {
+	default:
+		break;
+	case TCP_ST_SYNC:
+		tcp_sk->rem.wind = ntohs(tcph->window);
+		break;
 	}
 
 	return TCP_RET_OK;

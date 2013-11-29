@@ -316,16 +316,9 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 	case TCP_CLOSEWAIT:
 		buff = (char *)msg->msg_iov->iov_base;
 		while (len != 0) {
-			/* Maximum size of data that can be send without tcp window size overflowing */
-			int upper_bound;
-
-			while (!(upper_bound = tcp_sk->rem.wind - (tcp_sk->self.seq - tcp_sk->last_ack)));
-
-			assert(upper_bound >= 0, "wind - %d, (self.seq - last_ack) - %d\n",
-					tcp_sk->rem.wind, tcp_sk->self.seq - tcp_sk->last_ack);
-
-			bytes = min(upper_bound, len);
-			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
+			while (tcp_sk->rem.wind <= tcp_sk->self.seq
+						- tcp_sk->last_ack) { /* FIXME sleeping */ }
+			bytes = len; /* try to send wholly msg */
 			skb = NULL; /* alloc new pkg */
 			ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
 			if (ret != 0) {
@@ -334,6 +327,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 				}
 				return ret;
 			}
+			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
 			tcp_build(skb->h.th,
 					sock_inet_get_dst_port(to_sock(tcp_sk)),
 					sock_inet_get_src_port(to_sock(tcp_sk)),
