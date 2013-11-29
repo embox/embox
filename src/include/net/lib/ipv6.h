@@ -17,6 +17,8 @@
  * Prototype
  */
 struct ip6hdr;
+struct sk_buff;
+struct sock;
 
 /**
  * Build IPv6 header
