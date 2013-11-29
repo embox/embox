@@ -193,14 +193,17 @@ void tcp_sock_unlock(struct tcp_sock *tcp_sk, unsigned int obj) {
 
 static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
+	size_t seq_off;
+
 	assert(tcp_sk != NULL);
 	assert(skb != NULL);
 	assert(tcp_sk->rem.seq >= ntohl(skb->h.th->seq)); /* FIXME */
+	seq_off = tcp_sk->rem.seq - ntohl(skb->h.th->seq);
 
+	assert(tcp_data_length(skb->h.th, skb->nh.raw) > seq_off);
 	sock_rcv(to_sock(tcp_sk), skb, skb->h.raw
-			+ TCP_HEADER_SIZE(skb->h.th)
-			+ (tcp_sk->rem.seq - ntohl(skb->h.th->seq)),
-			tcp_data_length(skb->h.th, skb->nh.raw));
+			+ TCP_HEADER_SIZE(skb->h.th) + seq_off,
+			tcp_data_length(skb->h.th, skb->nh.raw) - seq_off);
 }
 
 void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) {
