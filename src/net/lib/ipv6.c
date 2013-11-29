@@ -72,8 +72,8 @@ int ip6_tester_src_or_any(const struct sock *sk,
 
 	assert(ip6_hdr(skb) != NULL);
 	assert(ip6_check_version(ip6_hdr(skb)));
-	return (0 == memcmp(in6, &ip6_hdr(skb)->daddr, sizeof in6))
-			|| (0 == memcmp(in6, &in6addr_any, sizeof in6));
+	return (0 == memcmp(in6, &ip6_hdr(skb)->daddr, sizeof *in6))
+			|| (0 == memcmp(in6, &in6addr_any, sizeof *in6));
 }
 
 int ip6_tester_dst(const struct sock *sk,
@@ -95,6 +95,6 @@ int ip6_tester_dst_or_any(const struct sock *sk,
 
 	assert(ip6_hdr(skb) != NULL);
 	assert(ip6_check_version(ip6_hdr(skb)));
-	return (0 == memcmp(in6, &ip6_hdr(skb)->saddr, sizeof in6))
-			|| (0 == memcmp(in6, &in6addr_any, sizeof in6));
+	return (0 == memcmp(in6, &ip6_hdr(skb)->saddr, sizeof *in6))
+			|| (0 == memcmp(in6, &in6addr_any, sizeof *in6));
 }
