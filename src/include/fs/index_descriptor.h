@@ -26,5 +26,10 @@ extern int index_descriptor_fcntl(int fd, int cmd, void *data);
 
 extern int index_descriptor_status(int fd, int pollmask);
 
+extern int index_descriptor_dupfd(int fd, int newfd);
+
+struct stat;
+extern int index_descriptor_fstat(int fd, struct stat *buff);
+
 
 #endif /* INDEX_DESCRIPTOR_H_ */

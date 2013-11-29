@@ -17,7 +17,7 @@
 #include <net/socket/ksocket.h>
 #include <net/sock.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
+
 #include <fs/idesc.h>
 #include <net/sock.h>
 #include <net/socket/socket_desc.h>
@@ -29,16 +29,12 @@
 extern const struct idesc_ops task_idx_ops_socket;
 
 int get_index(struct sock *sk) {
-#ifndef IDESC_TABLE_USE
-	return task_self_idx_alloc(&task_idx_ops_socket, sk, &sk->ios);
-#else
 	struct idesc_table *it;
 
 	it = task_get_idesc_table(task_self());
 	assert(it);
 
 	return idesc_table_add(it, (struct idesc *)sk, 0);
-#endif
 }
 
 #define  socket_idesc_check(sockfd, sk) \

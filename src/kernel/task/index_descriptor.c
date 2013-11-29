@@ -110,3 +110,41 @@ int index_descriptor_status(int fd, int pollmask) {
 	}
 	return idesc->idesc_ops->status(idesc, pollmask);
 }
+
+int index_descriptor_dupfd(int fd, int newfd) {
+	struct idesc_table *it;
+	int res;
+	struct idesc *idesc;
+
+	idesc = index_descriptor_get(fd);
+	assert(idesc);
+
+	it = task_get_idesc_table(task_self());
+	assert(it);
+
+	if (idesc_table_locked(it, newfd)) {
+		assert(newfd == 0); /* only for dup() */
+		res = idesc_table_add(it, idesc, 0);
+	} else {
+		res = idesc_table_lock(it, idesc, newfd, 0);
+	}
+
+	return res;
+}
+
+int index_descriptor_fstat(int fd, struct stat *buff) {
+	const struct idesc_ops *ops;
+	struct idesc *idesc;
+
+	assert(buff);
+
+	idesc = index_descriptor_get(fd);
+	assert(idesc);
+
+	ops = idesc->idesc_ops;
+	assert(idesc->idesc_ops);
+	if (!idesc->idesc_ops->fstat) {
+		return -ENOTSUP;
+	}
+	return ops->fstat(idesc, buff);
+}

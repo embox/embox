@@ -8,9 +8,6 @@
 #ifndef IDESC_TABLE_H_
 #define IDESC_TABLE_H_
 
-//TODO idesc
-#define IDESC_TABLE_USE
-
 #include <framework/mod/options.h>
 #include <config/embox/kernel/task/idx_table.h>
 

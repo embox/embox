@@ -26,7 +26,7 @@
 
 #include <security/security.h>
 
-#include <kernel/task/idx.h>
+
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
 
@@ -612,16 +612,6 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
 	mutex_unlock(exlock);
 }
 
-static inline struct file_desc *get_file_desc(int fd) {
-#ifndef IDESC_TABLE_USE
-	struct idx_desc *idesc;
-
-	idesc = task_self_idx_get(fd);
-	return (struct file_desc *) idesc->data->fd_struct;
-#else
-	return file_desc_get(fd);
-#endif
-}
 /**
  * Apply advisory lock to specified fd
  * @param File descriptor number
@@ -671,7 +661,7 @@ int kflock(int fd, int operation) {
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
-	fdesc = get_file_desc(fd);
+	fdesc = file_desc_get(fd);
 	flock = &(fdesc)->node->flock;
 	exlock = &flock->exlock;
 	shlock_count = &flock->shlock_count;
