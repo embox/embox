@@ -144,7 +144,7 @@ int ip_forward(struct sk_buff *skb) {
 		/* We can still proceed here */
 	}
 
-	if (ip_route(skb, best_route) < 0) {
+	if (ip_route(skb, NULL, best_route) < 0) {
 		/* So we have something like arp problem */
 		if (best_route->rt_gateway == INADDR_ANY) {
 			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, iph->daddr);
@@ -219,7 +219,6 @@ static int ip_make(const struct sock *sk,
 		return -ENOMEM;
 	}
 
-	skb->sk = in_sk != NULL ? &in_sk->sk : NULL;
 	skb->dev = dev;
 	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;

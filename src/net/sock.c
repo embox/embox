@@ -298,7 +298,6 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		return; /* error: socket is down */
 	}
 
-	skb->sk = sk;
 	skb->p_data = p_data;
 	skb->p_data_end = p_data + size;
 
