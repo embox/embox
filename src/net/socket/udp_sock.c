@@ -66,7 +66,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg,
 
 	assert(skb != NULL);
 	assert(skb->h.uh != NULL);
-	udp_build(skb->h.uh, to_inet_sock(sk)->src_in.sin_port,
+	udp_build(skb->h.uh, sock_inet_get_src_port(sk),
 			to->sin_port, total_len);
 
 	assert(msg->msg_iov->iov_base != NULL);
