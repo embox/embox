@@ -811,7 +811,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 static void confirm_ack(struct tcp_sock *tcp_sk,
 		__u32 ack) {
 	struct sk_buff *sent_skb;
-	__u32 seq, seq_len;
+	__u32 ack2seq, seq_len;
 
 	debug_print(9, "confirm_ack: sk %p ack %u\n",
 			to_sock(tcp_sk), ack);
@@ -820,23 +820,23 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 		do {
 			sent_skb = skb_queue_front(&to_sock(tcp_sk)->tx_queue);
 			assert(sent_skb != NULL);
-			seq = ntohl(sent_skb->h.th->seq);
+			ack2seq = ack - ntohl(sent_skb->h.th->seq);
 			seq_len = tcp_seq_length(sent_skb->h.th,
 					sent_skb->nh.raw);
-			if (ack - seq >= seq_len) {
+			if (ack2seq >= seq_len) {
 				debug_print(9, "confirm_ack: remove skb %p\n",
 						sent_skb);
 				skb_free(sent_skb); /* list_del_init will done
 									   at skb_free */
 			}
-		} while (ack - seq > seq_len);
+		} while (ack2seq > seq_len);
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 }
 
 static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
-	__u32 ack, last_ack, seq;
+	__u32 ack, ack2last_ack, seq;
 
 	/* Resetting if recv ack in this state */
 	switch (tcp_sk->state) {
@@ -848,27 +848,24 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	}
 
 	ack = ntohl(tcph->ack_seq);
-	last_ack = tcp_sk->last_ack;
+	ack2last_ack = ack - tcp_sk->last_ack;
 	seq = tcp_sk->self.seq;
 
-	if (0 < (ack - last_ack)
-			&& (ack - last_ack <= seq - last_ack)) {
+	if (ack2last_ack == 0) { /* no new acknowledgments */ }
+	else if (ack2last_ack <= seq - tcp_sk->last_ack) {
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
 	}
-	else if (ack == last_ack) { /* no new acknowledgments */ }
-	else if ((0 < last_ack - ack)
-			&& (last_ack - ack <= seq - ack)) {
+	else if (ack - seq <= ack2last_ack) {
 		/* package with non-last acknowledgment */
 	}
 	else {
-		assert((0 <= (seq - last_ack))
-				&& (seq - last_ack < ack - last_ack));
+		assert(seq - tcp_sk->last_ack < ack2last_ack);
 		/* assert(ack > tcp_sk->self.seq); -- without overflow checks */
 		debug_print(10, "process_ack: invalid acknowledgments:"
 					"last_ack=%u ack=%u seq=%u\n",
-				last_ack, ack, seq);
+				tcp_sk->last_ack, ack, seq);
 		switch (tcp_sk->state) {
 		default:
 			break;
@@ -889,9 +886,7 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	case TCP_FINWAIT_1:
 	case TCP_CLOSING:
 	case TCP_LASTACK:
-		if ((0 <= ack - tcp_sk->ack_flag)
-				&& (ack - tcp_sk->ack_flag
-					<= seq - tcp_sk->ack_flag)) {
+		if (ack - tcp_sk->ack_flag <= seq - tcp_sk->ack_flag) {
 			/* All ok, our flag was confirmed */
 		}
 		else { /* Else unmark ack flag */
@@ -911,7 +906,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		struct tcphdr *out_tcph) {
 	int ret;
 	__u16 old_check;
-	__u32 seq, seq_last, rem_seq, rem_last;
+	__u32 seq2rem_seq, seq_len, seq_last2rem_seq, rem_len;
 
 	/* Check CRC */
 	old_check = tcph->check;
@@ -938,14 +933,12 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
-		seq = ntohl(tcph->seq);
-		seq_last = seq + tcp_seq_length(skb->h.th,
-					skb->nh.raw);
-		rem_seq = tcp_sk->rem.seq;
-		rem_last = rem_seq + tcp_sk->self.wind;
-		if ((0 <= seq - rem_seq)
-				&& (seq - rem_seq < rem_last - rem_seq)) {
-			if (rem_seq != seq) {
+		seq2rem_seq = ntohl(tcph->seq) - tcp_sk->rem.seq;
+		seq_len = tcp_seq_length(skb->h.th, skb->nh.raw);;
+		seq_last2rem_seq = seq2rem_seq + seq_len;
+		rem_len = tcp_sk->self.wind;
+		if (seq2rem_seq < rem_len) {
+			if (seq2rem_seq != 0) {
 				/* TODO There is correct packet (with
 				 * correct sequence number), but some packages
 				 * was lost. We should save this skb, and wait
@@ -954,15 +947,16 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				return TCP_RET_DROP;
 			}
 		}
-		else if ((0 < seq_last - rem_seq)
-				&& (seq_last - rem_seq <= rem_last - rem_seq)) { }
+		else if ((seq_last2rem_seq != 0)
+				&& (seq_last2rem_seq <= rem_len)) { }
 		else {
 			debug_print(10, "pre_process: received old package:"
 						" rem_seq=%u seq=%u seq_last=%u"
 						" rem_last=%u\n",
-					rem_seq, seq, seq_last, rem_last);
-			if ((0 <= seq_last - seq)
-					&& (seq_last - seq <= rem_seq - seq)) {
+					tcp_sk->rem.seq, ntohl(tcph->seq),
+					ntohl(tcph->seq) + seq_len,
+					tcp_sk->rem.seq + rem_len);
+			if (seq2rem_seq <= -seq_len) {
 				/* Send segment with ack flag if this packet
 				 * is duplicated */
 				tcp_set_ack_field(out_tcph, tcp_sk->rem.seq);
