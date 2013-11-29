@@ -102,6 +102,7 @@ int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 			break;
 		}
 		ret = __waitq_wait(ticks);
+		poll_table_cleanup(pt);
 	} while (!ret);
 
 	poll_table_cleanup(pt);
