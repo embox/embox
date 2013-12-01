@@ -6,16 +6,17 @@
  * @author Roman Kurbatov
  */
 
+/* TODO: add testing of detection of errors on file descriptors */
+
 #include <stdarg.h>
 #include <limits.h>
+#include <errno.h>
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <sys/select.h>
 #include <sys/time.h>
-
-#include <kernel/thread.h>
-#include <kernel/time/ktime.h>
 
 #include <embox/test.h>
 
@@ -27,12 +28,15 @@ TEST_TEARDOWN(case_teardown);
 #define READ_END 0
 #define WRITE_END 1
 
-#define DELAY 100 /* in milliseconds */
+#define DELAY 10 /* in milliseconds */
 #define SMALL_TIMEOUT 10 /* in milliseconds */
 #define BIG_TIMEOUT 10 /* in seconds */
 
-static int first_pipe[2], second_pipe[2], third_pipe[2], fourth_pipe[2];
+#define PIPES_COUNT 4
+
+static int pipes[PIPES_COUNT][2];
 static int max_fd;
+pthread_attr_t attr;
 
 /* Write data to the pipe until it is full. */
 static void fill_pipe(const int pipe_fds[]);
@@ -43,38 +47,37 @@ static void *read_from_pipe_after_delay(const int pipe_fds[]);
 /* Write one byte to the pipe after a delay. */
 static void *write_to_pipe_after_delay(const int pipe_fds[]);
 
-/* Get the maximum of several int numbers. */
-static int max(int count, ...);
-
 TEST_CASE("descriptor becomes ready to read after a time") {
 	fd_set read_fds;
 	fd_set write_fds;
 	struct timeval timeout;
 	int ret;
+	pthread_t thread;
 
-	fill_pipe(first_pipe);
-	fill_pipe(second_pipe);
+	fill_pipe(pipes[0]);
+	fill_pipe(pipes[1]);
 
 	FD_ZERO(&read_fds);
-	FD_SET(third_pipe[READ_END], &read_fds);
-	FD_SET(fourth_pipe[READ_END], &read_fds);
+	FD_SET(pipes[2][READ_END], &read_fds);
+	FD_SET(pipes[3][READ_END], &read_fds);
 
 	FD_ZERO(&write_fds);
-	FD_SET(first_pipe[WRITE_END], &write_fds);
-	FD_SET(second_pipe[WRITE_END], &write_fds);
+	FD_SET(pipes[0][WRITE_END], &write_fds);
+	FD_SET(pipes[1][WRITE_END], &write_fds);
 
 	timeout.tv_sec = BIG_TIMEOUT;
 	timeout.tv_usec = 0;
 
-	thread_create(0, (void *(*)(void *)) &write_to_pipe_after_delay, third_pipe);
+	pthread_create(&thread, &attr,
+			(void *(*)(void *)) &write_to_pipe_after_delay, pipes[2]);
 
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
 	test_assert_equal(ret, 1);
-	test_assert_not_zero(FD_ISSET(third_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(fourth_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(first_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(second_pipe[WRITE_END], &write_fds));
+	test_assert_not_zero(FD_ISSET(pipes[2][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[3][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[0][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[1][WRITE_END], &write_fds));
 }
 
 TEST_CASE("descriptor becomes ready to write after a time") {
@@ -82,30 +85,32 @@ TEST_CASE("descriptor becomes ready to write after a time") {
 	fd_set write_fds;
 	struct timeval timeout;
 	int ret;
+	pthread_t thread;
 
-	fill_pipe(first_pipe);
-	fill_pipe(second_pipe);
+	fill_pipe(pipes[0]);
+	fill_pipe(pipes[1]);
 
 	FD_ZERO(&read_fds);
-	FD_SET(third_pipe[READ_END], &read_fds);
-	FD_SET(fourth_pipe[READ_END], &read_fds);
+	FD_SET(pipes[2][READ_END], &read_fds);
+	FD_SET(pipes[3][READ_END], &read_fds);
 
 	FD_ZERO(&write_fds);
-	FD_SET(first_pipe[WRITE_END], &write_fds);
-	FD_SET(second_pipe[WRITE_END], &write_fds);
+	FD_SET(pipes[0][WRITE_END], &write_fds);
+	FD_SET(pipes[1][WRITE_END], &write_fds);
 
 	timeout.tv_sec = BIG_TIMEOUT;
 	timeout.tv_usec = 0;
 
-	thread_create(0, (void *(*)(void *)) &read_from_pipe_after_delay, first_pipe);
+	pthread_create(&thread, &attr,
+			(void *(*)(void *)) &read_from_pipe_after_delay, pipes[0]);
 
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
 	test_assert_equal(ret, 1);
-	test_assert_not_zero(FD_ISSET(first_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(second_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(third_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(fourth_pipe[READ_END], &read_fds));
+	test_assert_not_zero(FD_ISSET(pipes[0][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[1][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[2][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[3][READ_END], &read_fds));
 }
 
 TEST_CASE("some of descriptors are ready when select() is "
@@ -116,18 +121,18 @@ TEST_CASE("some of descriptors are ready when select() is "
 	int ret;
 	char buf;
 
-	fill_pipe(second_pipe);
+	fill_pipe(pipes[1]);
 
 	buf = 'a';
-	write(third_pipe[WRITE_END], &buf, 1);
+	write(pipes[2][WRITE_END], &buf, 1);
 
 	FD_ZERO(&read_fds);
-	FD_SET(third_pipe[READ_END], &read_fds);
-	FD_SET(fourth_pipe[READ_END], &read_fds);
+	FD_SET(pipes[2][READ_END], &read_fds);
+	FD_SET(pipes[3][READ_END], &read_fds);
 
 	FD_ZERO(&write_fds);
-	FD_SET(first_pipe[WRITE_END], &write_fds);
-	FD_SET(second_pipe[WRITE_END], &write_fds);
+	FD_SET(pipes[0][WRITE_END], &write_fds);
+	FD_SET(pipes[1][WRITE_END], &write_fds);
 
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
@@ -135,10 +140,10 @@ TEST_CASE("some of descriptors are ready when select() is "
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
 	test_assert_equal(ret, 2);
-	test_assert_not_zero(FD_ISSET(first_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(second_pipe[WRITE_END], &write_fds));
-	test_assert_not_zero(FD_ISSET(third_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(fourth_pipe[READ_END], &read_fds));
+	test_assert_not_zero(FD_ISSET(pipes[0][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[1][WRITE_END], &write_fds));
+	test_assert_not_zero(FD_ISSET(pipes[2][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[3][READ_END], &read_fds));
 }
 
 TEST_CASE("some of descriptors are ready when select() "
@@ -148,26 +153,26 @@ TEST_CASE("some of descriptors are ready when select() "
 	int ret;
 	char buf;
 
-	fill_pipe(second_pipe);
+	fill_pipe(pipes[1]);
 
 	buf = 'a';
-	write(third_pipe[WRITE_END], &buf, 1);
+	write(pipes[2][WRITE_END], &buf, 1);
 
 	FD_ZERO(&read_fds);
-	FD_SET(third_pipe[READ_END], &read_fds);
-	FD_SET(fourth_pipe[READ_END], &read_fds);
+	FD_SET(pipes[2][READ_END], &read_fds);
+	FD_SET(pipes[3][READ_END], &read_fds);
 
 	FD_ZERO(&write_fds);
-	FD_SET(first_pipe[WRITE_END], &write_fds);
-	FD_SET(second_pipe[WRITE_END], &write_fds);
+	FD_SET(pipes[0][WRITE_END], &write_fds);
+	FD_SET(pipes[1][WRITE_END], &write_fds);
 
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, NULL);
 
 	test_assert_equal(ret, 2);
-	test_assert_not_zero(FD_ISSET(first_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(second_pipe[WRITE_END], &write_fds));
-	test_assert_not_zero(FD_ISSET(third_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(fourth_pipe[READ_END], &read_fds));
+	test_assert_not_zero(FD_ISSET(pipes[0][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[1][WRITE_END], &write_fds));
+	test_assert_not_zero(FD_ISSET(pipes[2][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[3][READ_END], &read_fds));
 }
 
 TEST_CASE("no descriptors are ready") {
@@ -176,16 +181,16 @@ TEST_CASE("no descriptors are ready") {
 	struct timeval timeout;
 	int ret;
 
-	fill_pipe(first_pipe);
-	fill_pipe(second_pipe);
+	fill_pipe(pipes[0]);
+	fill_pipe(pipes[1]);
 
 	FD_ZERO(&read_fds);
-	FD_SET(third_pipe[READ_END], &read_fds);
-	FD_SET(fourth_pipe[READ_END], &read_fds);
+	FD_SET(pipes[2][READ_END], &read_fds);
+	FD_SET(pipes[3][READ_END], &read_fds);
 
 	FD_ZERO(&write_fds);
-	FD_SET(first_pipe[WRITE_END], &write_fds);
-	FD_SET(second_pipe[WRITE_END], &write_fds);
+	FD_SET(pipes[0][WRITE_END], &write_fds);
+	FD_SET(pipes[1][WRITE_END], &write_fds);
 
 	timeout.tv_sec = 0;
 	timeout.tv_usec = SMALL_TIMEOUT * 1000;
@@ -193,10 +198,10 @@ TEST_CASE("no descriptors are ready") {
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
 	test_assert_zero(ret);
-	test_assert_zero(FD_ISSET(first_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(second_pipe[WRITE_END], &write_fds));
-	test_assert_zero(FD_ISSET(third_pipe[READ_END], &read_fds));
-	test_assert_zero(FD_ISSET(fourth_pipe[READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[0][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[1][WRITE_END], &write_fds));
+	test_assert_zero(FD_ISSET(pipes[2][READ_END], &read_fds));
+	test_assert_zero(FD_ISSET(pipes[3][READ_END], &read_fds));
 }
 
 TEST_CASE("no sets of descriptors are given") {
@@ -211,31 +216,55 @@ TEST_CASE("no sets of descriptors are given") {
 }
 
 static int case_setup(void) {
-	pipe(first_pipe);
-	pipe(second_pipe);
-	pipe(third_pipe);
-	pipe(fourth_pipe);
+	int i, j;
+	int ret;
 
-	max_fd = max(8, first_pipe[READ_END], first_pipe[WRITE_END],
-			second_pipe[READ_END], second_pipe[WRITE_END],
-			third_pipe[READ_END], third_pipe[WRITE_END],
-			fourth_pipe[READ_END], fourth_pipe[WRITE_END]);
+	for (i = 0; i < PIPES_COUNT; ++i) {
+		ret = pipe(pipes[i]);
+		if (ret != 0) {
+			return -errno;
+		}
+	}
+
+	max_fd = INT_MIN;
+	for (i = 0; i < PIPES_COUNT; ++i) {
+		for (j = 0; j < 2; ++j) {
+			if (pipes[i][j] > max_fd) {
+				max_fd = pipes[i][j];
+			}
+		}
+	}
+
+	ret = pthread_attr_init(&attr);
+	if (ret != 0) {
+		return -errno;
+	}
+
+	ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	if (ret != 0) {
+		return -errno;
+	}
 
 	return 0;
 }
 
 static int case_teardown(void) {
-	close(first_pipe[READ_END]);
-	close(first_pipe[WRITE_END]);
+	int i, j;
+	int ret;
 
-	close(second_pipe[READ_END]);
-	close(second_pipe[WRITE_END]);
+	for (i = 0; i < PIPES_COUNT; ++i) {
+		for (j = 0; j < 2; ++j) {
+			ret = close(pipes[i][j]);
+			if (ret != 0) {
+				return -errno;
+			}
+		}
+	}
 
-	close(third_pipe[READ_END]);
-	close(third_pipe[WRITE_END]);
-
-	close(fourth_pipe[READ_END]);
-	close(fourth_pipe[WRITE_END]);
+	ret = pthread_attr_destroy(&attr);
+	if (ret != 0) {
+		return -errno;
+	}
 
 	return 0;
 }
@@ -261,7 +290,7 @@ static void fill_pipe(const int pipe_fds[]) {
 static void *read_from_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
 
-	ksleep(DELAY);
+	usleep(DELAY * 1000);
 
 	read(pipe_fds[READ_END], &buf, 1);
 
@@ -271,30 +300,10 @@ static void *read_from_pipe_after_delay(const int pipe_fds[]) {
 static void *write_to_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
 
-	ksleep(DELAY);
+	usleep(DELAY * 1000);
 
 	buf = 'a';
 	write(pipe_fds[WRITE_END], &buf, 1);
 
 	return NULL;
-}
-
-static int max(int count, ...) {
-	va_list ap;
-	int res;
-	int n;
-
-	va_start(ap, count);
-
-	res = INT_MIN;
-	while (count-- > 0) {
-		n = va_arg(ap, int);
-		if (n > res) {
-			res = n;
-		}
-	}
-
-	va_end(ap);
-
-	return res;
 }
