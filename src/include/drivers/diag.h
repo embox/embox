@@ -60,6 +60,17 @@ extern char diag_getc(void);
  */
 extern enum diag_kbhit_ret diag_kbhit(void);
 
+/**
+ * @brief Set new diag interface. Intended for some emergency situation, when
+ * new diag is known only in runtime
+ *
+ * @param diag
+ *
+ * @return 0 on success
+ * @return Negative otherwise
+ */
+extern int diag_setup(const struct diag *diag);
+
 #define DIAG_IMPL_NAME(_modname) \
 	MACRO_CONCAT(_modname, diag_impl)
 

@@ -1,0 +1,31 @@
+
+package embox.cmd
+
+@Cmd(name = "usb_test",
+	help = "Utility for raw access to usb devices",
+	man = '''
+		NAME
+			usb_test - Utility for raw access to usb devices
+		SYNOPSIS
+			usb_test -v VID -p PID -e ENDP [-a] { -r LENGTH | -w -s [ DATA ] }
+		DESCRIPTION
+			-v 	Vendor ID
+			-p	Product ID
+			-e	Endpoint number
+			-r	Read LENGTH bytes and print
+			-w	Write data followed after -w.  Length computed automatically
+			-a 	Specifies that the transfer should contain ack (STATUS) token.
+			-s 	Specifies that the write should contain SETUP token.
+
+		AUTHORS
+			Anton Kozlov
+	''')
+module usb_test {
+	source "usb_test.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.driver.usb.core
+	depends embox.framework.LibFramework
+}
+

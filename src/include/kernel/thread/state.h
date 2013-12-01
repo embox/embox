@@ -24,4 +24,26 @@
 	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
 			__THREAD_STATE_RUNNING))
 
+static inline int is_running(struct thread *t) {
+	return t->state & __THREAD_STATE_RUNNING;
+}
+
+static inline int is_ready(struct thread *t) {
+	return t->state & __THREAD_STATE_READY;
+}
+
+static inline int is_waiting(struct thread *t) {
+	return t->state & __THREAD_STATE_WAITING;
+}
+
+static inline void make_ready(struct thread *t) {
+	t->state |= __THREAD_STATE_READY;
+	t->state &= ~__THREAD_STATE_RUNNING;
+}
+
+static inline void make_running(struct thread *t) {
+	t->state |= __THREAD_STATE_RUNNING;
+	t->state &= ~__THREAD_STATE_READY;
+}
+
 #endif /* KERNEL_THREAD_STATE_H_ */

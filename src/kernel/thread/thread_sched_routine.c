@@ -21,51 +21,37 @@ void sched_prepare_runnable(struct runnable *p, struct runq *rq) {
 
 	prev = (struct thread *)p;
 
-	if (prev->state & __THREAD_STATE_RUNNING) {
-			runq_queue_insert(&rq->queue, p);
+	if (is_running(prev) && !is_waiting(prev)) {
+		make_ready(prev);
+		runq_insert(&(rq->queue), p);
 	}
 }
 
 void sched_execute_runnable(struct runnable *p, struct runnable *n, struct runq *rq) {
 	struct thread *prev, *next;
-	clock_t new_clock;
 
 	prev = (struct thread *)p;
 	next = (struct thread *)n;
 
+	prev->state &= ~__THREAD_STATE_RUNNING;
+
+	assert(next != NULL);
+	assert(is_ready(next));
+
+	make_running(next);
+
 	if (prev == next) {
 		ipl_disable();
 		return;
-	} else {
-		if (prev->state & __THREAD_STATE_RUNNING) {
-			prev->state |= __THREAD_STATE_READY;
-			/* TODO maybe without waiting */
-			prev->state &= ~(__THREAD_STATE_RUNNING | __THREAD_STATE_WAITING);
-		}
-		next->state |= __THREAD_STATE_RUNNING;
-		/* TODO maybe without waiting */
-		next->state &= ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING);
 	}
 
-	if (prev->runnable.policy == SCHED_FIFO && next->runnable.policy != SCHED_FIFO) {
-		sched_ticker_init();
-	}
-
-	if (prev->runnable.policy != SCHED_FIFO && next->runnable.policy == SCHED_FIFO) {
-		sched_ticker_fini(rq);
-	}
-
-	/* Running time recalculation */
-	new_clock = clock();
-	sched_timing_stop(prev, new_clock);
-	sched_timing_start(next, new_clock);
+	sched_ticker_switch(prev, next);
+	sched_timing_switch(prev, next);
 
 	trace_point("context switch");
 
-	ipl_disable();
-
 	thread_set_current(next);
-	context_switch(&(prev->context), &(next->context));
+	context_switch(&prev->context, &next->context);
 }
 
 struct runnable *runnable_get_current(){

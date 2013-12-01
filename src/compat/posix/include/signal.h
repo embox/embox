@@ -131,6 +131,7 @@ extern int sigaddset(sigset_t *, int signo);
 extern int sigdelset(sigset_t *, int signo);
 
 static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
+	(void)how; (void)set; (void)oldset;
 	return -ENOSYS;
 }
 
@@ -141,6 +142,7 @@ extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
 extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
 static inline int raise(int signo) {
+	(void)signo;
 	return 0;
 }
 

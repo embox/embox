@@ -24,6 +24,7 @@
 
 #define __MOD(mod_nm)          MACRO_CONCAT(__mod__,          mod_nm)
 #define __MOD_INFO(mod_nm)     MACRO_CONCAT(__mod_info__,     mod_nm)
+#define __MOD_LABEL(mod_nm)    MACRO_CONCAT(__mod_label__,    mod_nm)
 #define __MOD_CMD(mod_nm)      MACRO_CONCAT(__mod_cmd__,      mod_nm)
 #define __MOD_APP(mod_nm)      MACRO_CONCAT(__mod_app__,      mod_nm)
 #define __MOD_PRIVATE(mod_nm)  MACRO_CONCAT(__mod_private__,  mod_nm)

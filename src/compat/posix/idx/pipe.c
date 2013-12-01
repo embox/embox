@@ -237,9 +237,9 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 		len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 
 		if (!(data->flags & O_NONBLOCK)) {
-			if (!len) {
+			while (len!=nbyte) {
 				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-				len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
+				len += ring_buff_enqueue(pipe->buff, ((char*)buf)+len, nbyte-len);
 			}
 		}
 

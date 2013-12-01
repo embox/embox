@@ -211,7 +211,10 @@ extern long int sysconf(int name);
 #define W_OK 2
 #define X_OK 1
 #define F_OK 0
-static inline int access(const char *path, int amode) { return 0; }
+static inline int access(const char *path, int amode) {
+	(void)path; (void)amode;
+	return 0;
+}
 
 /**
  * @param argc is the number of arguments on cmdline
@@ -240,7 +243,7 @@ extern char **environ;
 #define PASS_MAX 32
 extern char *getpass(const char *prompt);
 
-int gethostname(char *name, size_t len);
+extern int gethostname(char *name, size_t len);
 
 __END_DECLS
 

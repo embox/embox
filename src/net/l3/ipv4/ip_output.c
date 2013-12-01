@@ -144,7 +144,7 @@ int ip_forward(struct sk_buff *skb) {
 		/* We can still proceed here */
 	}
 
-	if (ip_route(skb, best_route) < 0) {
+	if (ip_route(skb, NULL, best_route) < 0) {
 		/* So we have something like arp problem */
 		if (best_route->rt_gateway == INADDR_ANY) {
 			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, iph->daddr);
@@ -179,19 +179,22 @@ static int ip_make(const struct sock *sk,
 	struct net_device *dev;
 	const struct inet_sock *in_sk;
 	const struct sockaddr_in *to_in;
+	uint8_t proto;
 	in_addr_t src_ip, dst_ip;
 
+	assert((to == NULL) || (to->sa_family == AF_INET));
 	assert(data_size != NULL);
-	assert((sk != NULL) || (to != NULL));
+	assert(out_skb != NULL);
+	assert((sk != NULL) || (*out_skb != NULL));
 
 	in_sk = to_const_inet_sock(sk);
 	to_in = (const struct sockaddr_in *)to;
 
-	assert((to_in == NULL) || (to_in->sin_family == AF_INET));
-
 	dst_ip = to_in != NULL ? to_in->sin_addr.s_addr
-			: in_sk->dst_in.sin_addr.s_addr;
-	ret = rt_fib_out_dev(dst_ip, &in_sk->sk, &dev);
+			: in_sk != NULL ? in_sk->dst_in.sin_addr.s_addr
+			: (*out_skb)->nh.iph->saddr; /* make a reply */
+	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
+			&dev);
 	if (ret != 0) {
 		return ret;
 	}
@@ -199,6 +202,9 @@ static int ip_make(const struct sock *sk,
 
 	assert(inetdev_get_by_dev(dev) != NULL);
 	src_ip = inetdev_get_by_dev(dev)->ifa_address;
+
+	proto = in_sk != NULL ? in_sk->sk.opt.so_protocol
+			: (*out_skb)->nh.iph->proto;
 
 	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
 	max_size = min(dev->mtu, skb_max_size());
@@ -213,15 +219,12 @@ static int ip_make(const struct sock *sk,
 		return -ENOMEM;
 	}
 
-	skb->sk = in_sk != NULL ? &in_sk->sk : NULL;
 	skb->dev = dev;
 	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 
-	if (in_sk != NULL) {
-		ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
-				in_sk->sk.opt.so_protocol, src_ip, dst_ip);
-	}
+	ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
+			proto, src_ip, dst_ip);
 
 	*out_skb = skb;
 

@@ -5,11 +5,13 @@
  *
  * @date 26.03.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #include <stdlib.h>
 #include <embox/net/proto.h>
 #include <net/l3/ipv4/ip.h>
+#include <net/l3/ipv6.h>
 #include <net/l4/udp.h>
 #include <net/lib/udp.h>
 #include <net/l3/icmpv4.h>
@@ -20,42 +22,52 @@
 #include <net/netdevice.h>
 #include <framework/net/sock/api.h>
 
+#include <net/lib/ipv4.h>
+#include <net/lib/ipv6.h>
+
 static void udp_err(const struct sk_buff *skb, int error_info);
 
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_UDP, udp_rcv, udp_err);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_UDP, udp_rcv, NULL);
 
-static int udp_rcv_tester(const struct sock *sk,
+static int udp4_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *in_sk;
-
-	in_sk = (const struct inet_sock *)sk;
-	assert(in_sk != NULL);
-	assert(in_sk->src_in.sin_family == AF_INET);
-
-	assert(skb != NULL);
-	assert(skb->nh.iph != NULL);
-	assert(skb->h.uh != NULL);
-
-	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
-			&& (in_sk->src_in.sin_port == skb->h.uh->dest);
+	assert(sk != NULL);
+	return (sk->opt.so_domain == AF_INET)
+			&& ip_tester_dst_or_any(sk, skb)
+			&& (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
 }
 
-static int udp_accept_dst(const struct inet_sock *in_sk,
+static int udp6_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	assert(in_sk != NULL);
-	assert(in_sk->dst_in.sin_family == AF_INET);
+	assert(sk != NULL);
+	return (sk->opt.so_domain == AF_INET6)
+			&& ip6_tester_dst_or_any(sk, skb)
+			&& (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
+}
 
-	assert(skb != NULL);
-	assert(skb->nh.iph != NULL);
-	assert(skb->h.uh != NULL);
+static int udp4_accept_dst(const struct sock *sk,
+		const struct sk_buff *skb) {
+	assert(sk != NULL);
+	return (sk->opt.so_domain == AF_INET)
+			&& ip_tester_src_or_any(sk, skb)
+			&&  ((sock_inet_get_dst_port(sk)
+					== udp_hdr(skb)->source)
+				|| (sock_inet_get_dst_port(sk) == 0))
+			&& ((sk->opt.so_bindtodevice == skb->dev)
+				|| (sk->opt.so_bindtodevice == NULL));
+}
 
-	return ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->daddr)
-				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
-			&& ((in_sk->dst_in.sin_port == skb->h.uh->source)
-				|| (in_sk->dst_in.sin_port == 0))
-			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
-				|| (in_sk->sk.opt.so_bindtodevice == NULL));
+static int udp6_accept_dst(const struct sock *sk,
+		const struct sk_buff *skb) {
+	assert(sk != NULL);
+	return (sk->opt.so_domain == AF_INET6)
+			&& ip6_tester_src_or_any(sk, skb)
+			&&  ((sock_inet_get_dst_port(sk)
+					== udp_hdr(skb)->source)
+				|| (sock_inet_get_dst_port(sk) == 0))
+			&& ((sk->opt.so_bindtodevice == skb->dev)
+				|| (sk->opt.so_bindtodevice == NULL));
 }
 
 static int udp_rcv(struct sk_buff *skb) {
@@ -63,19 +75,26 @@ static int udp_rcv(struct sk_buff *skb) {
 	uint16_t old_check;
 
 	assert(skb != NULL);
+	assert(ip_check_version(ip_hdr(skb))
+			|| ip6_check_version(ip6_hdr(skb)));
 
 	/* Check CRC */
 	old_check = skb->h.uh->check;
-	udp4_set_check_field(skb->h.uh, skb->nh.iph);
+	udp_set_check_field(skb->h.uh, skb->nh.raw);
 	if (old_check != skb->h.uh->check) {
 		return 0; /* error: bad checksum */
 	}
 
-	sk = sock_lookup(NULL, udp_sock_ops, udp_rcv_tester, skb);
+	sk = sock_lookup(NULL, udp_sock_ops,
+			ip_check_version(ip_hdr(skb))
+				? udp4_rcv_tester : udp6_rcv_tester,
+			skb);
 	if (sk != NULL) {
-		if (udp_accept_dst(to_inet_sock(sk), skb)) {
+		if (ip_check_version(ip_hdr(skb))
+				? udp4_accept_dst(sk, skb)
+				: udp6_accept_dst(sk, skb)) {
 			sock_rcv(sk, skb, skb->h.raw + UDP_HEADER_SIZE,
-					ntohs(skb->h.uh->len) - UDP_HEADER_SIZE);
+					udp_data_length(udp_hdr(skb)));
 		}
 		else {
 			skb_free(skb);

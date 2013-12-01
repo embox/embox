@@ -22,14 +22,6 @@ struct thread;
 
 struct runq;				/* Queue of running threads  */
 
-/**
- * Initializes scheduler strategy data of the thread.
- *
- * @param t
- *   Structure thread for which strategy data will initialize.
- */
-extern void sched_strategy_init(struct thread *t);
-
 #if 0
 /**
  * Finilize queue of running threads.

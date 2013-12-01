@@ -17,6 +17,8 @@
  * Prototype
  */
 struct iphdr;
+struct sk_buff;
+struct sock;
 
 /**
  * Build IPv4 header
@@ -33,6 +35,11 @@ extern void ip_set_id_field(struct iphdr *iph, uint16_t id);
  * Set IPv4 check field
  */
 extern void ip_set_check_field(struct iphdr *iph);
+
+/**
+ * Check IPv4 version field
+ */
+extern int ip_check_version(const struct iphdr *iph);
 
 /**
  * Calculate IPv4 data length
@@ -55,5 +62,17 @@ struct ip_pseudohdr {
  */
 extern void ip_pseudo_build(const struct iphdr *iph,
 		struct ip_pseudohdr *out_ipph);
+
+/**
+ * IPv4/AF_INET testers
+ */
+extern int ip_tester_src(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip_tester_src_or_any(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip_tester_dst(const struct sock *sk,
+		const struct sk_buff *skb);
+extern int ip_tester_dst_or_any(const struct sock *sk,
+		const struct sk_buff *skb);
 
 #endif /* NET_LIB_IPV4_H_ */

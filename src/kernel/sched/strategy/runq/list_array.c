@@ -22,7 +22,7 @@ void runq_item_init(runq_item_t *runq_link) {
 
 /* runq operations */
 
-void runq_queue_init(runq_queue_t *queue) {
+void runq_init(runq_t *queue) {
 	int i;
 
 	for (i = SCHED_PRIORITY_MIN; i <= SCHED_PRIORITY_MAX; i++) {
@@ -30,17 +30,17 @@ void runq_queue_init(runq_queue_t *queue) {
 	}
 }
 
-void runq_queue_insert(runq_queue_t *queue, struct runnable *runnable) {
+void runq_insert(runq_t *queue, struct runnable *runnable) {
 	dlist_add_prev(&runnable->sched_attr.runq_link,
 			&queue->list[runnable_priority_get(runnable)]);
 }
 
-void runq_queue_remove(runq_queue_t *queue, struct runnable *runnable) {
+void runq_remove(runq_t *queue, struct runnable *runnable) {
 	dlist_del(&runnable->sched_attr.runq_link);
 }
 
-struct runnable *runq_queue_extract(runq_queue_t *queue) {
-	struct runable *runnable = NULL;
+struct runnable *runq_extract(runq_t *queue) {
+	struct runnable *runnable = NULL;
 	int i;
 
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
@@ -56,7 +56,7 @@ struct runnable *runq_queue_extract(runq_queue_t *queue) {
 		}
 
 		if (runnable) {
-			runq_queue_remove(queue, runnable);
+			runq_remove(queue, runnable);
 			break;
 		}
 	}

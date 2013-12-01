@@ -112,7 +112,7 @@ static int ps_mouse_stop(struct input_dev *dev) {
 }
 
 static const struct input_dev_ops ps_mouse_input_ops = {
-	.start = ps_mouse_start,
+	/*.start = ps_mouse_start,*/
 	.stop = ps_mouse_stop,
 	.event_get = ps_mouse_get_input_event,
 };
@@ -128,8 +128,7 @@ static struct ps2_mouse_indev mouse_dev = {
 
 static int ps_mouse_init(void) {
 
-	input_dev_register(&mouse_dev.input_dev);
+	ps_mouse_start(NULL);
 
-
-	return 0;
+	return input_dev_register(&mouse_dev.input_dev);
 }

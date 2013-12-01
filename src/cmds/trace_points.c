@@ -51,7 +51,6 @@ static void print_trace_point_stat(void) {
 	struct __trace_point *tp;
 	int number = 0;
 
-
 	printf("%2s %15s %25s %7s %5s\n",
 			"#", "Name", "Location function", "Count", "Act");
 

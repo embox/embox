@@ -12,13 +12,13 @@
 
 #include <kernel/thread.h>
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 
 TEST_CASE("sleep/wake") {
-	struct wait_queue wq;
+	struct waitq wq;
 
-	wait_queue_init(&wq);
-	test_assert_equal(wait_queue_wait(&wq, 10), -ETIMEDOUT);
+	waitq_init(&wq);
+	test_assert_equal(waitq_wait(&wq, 10), -ETIMEDOUT);
 }

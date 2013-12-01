@@ -13,8 +13,13 @@
 
 __BEGIN_DECLS
 
-extern void event_init(struct event *event, const char *name);
+#define EVENT_WAIT(event, cond_expr, timeout) \
+	__EVENT_WAIT(event, cond_expr, timeout, 0)
 
+#define EVENT_WAIT_OR_INTR(event, cond_expr, timeout) \
+	__EVENT_WAIT(event, cond_expr, timeout, 1)
+
+extern void event_init(struct event *event, const char *name);
 extern void event_notify(struct event *event);
 
 __END_DECLS

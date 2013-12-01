@@ -10,7 +10,7 @@
 #define MEM_MISC_SLAB_IMPL_H_
 
 #include <util/dlist.h>
-#include <framework/mod/member/self.h>
+#include <framework/mod/self.h>
 #include <stddef.h>
 #include <stdbool.h>
 

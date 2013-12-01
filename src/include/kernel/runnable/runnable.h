@@ -18,7 +18,6 @@ struct runnable {
 	void               *(*run)(struct runnable *p, struct runnable *n, struct runq *rq);
 	void			   *run_arg;     /* Argument to be passed to run function */
 
-	int                policy;       /**< Scheduling policy pointer*/
 	struct sched_attr  sched_attr;   /**< Scheduler-private data pointer */
 };
 

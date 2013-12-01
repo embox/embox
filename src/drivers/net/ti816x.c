@@ -34,6 +34,16 @@ EMBOX_UNIT_INIT(ti816x_init);
 #define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
 #define DEFAULT_CHANNEL 0
 
+/* FIXME */
+#include <module/embox/arch/mmu.h>
+#ifndef NOMMU
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
+#else
+static inline void dcache_inval(const void *p, size_t size) { }
+static inline void dcache_flush(const void *p, size_t size) { }
+#endif
+
 static void emac_ctrl_enable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXTHRESHINTEN, 0xff);
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXINTEN, 0xff);
@@ -189,6 +199,8 @@ static struct emac_desc *alloc_desc_queue(int size) {
 		desc->len = 0;
 		desc->flags = EMAC_DESC_F_OWNER;
 		prev = desc;
+
+		dcache_flush(desc, skb_max_extra_hdr_size());
 	}
 
 	return head;
@@ -231,6 +243,8 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	desc->flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
 
 	skb_free(skb);
+
+	dcache_flush(desc, skb_max_extra_hdr_size() + skb_max_size());
 
 	ipl = ipl_save();
 	{
@@ -292,6 +306,8 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	desc = (struct emac_desc *)REG_LOAD(EMAC_BASE + EMAC_R_RXCP(DEFAULT_CHANNEL));
 	need_alloc = 0;
 	while (1) {
+		dcache_inval(desc, skb_max_extra_hdr_size() + skb_max_size());
+
 		next = (struct emac_desc *)desc->next;
 		eoq = desc->flags & (EMAC_DESC_F_EOP | EMAC_DESC_F_EOQ);
 		++need_alloc;

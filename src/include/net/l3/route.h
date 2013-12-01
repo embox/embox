@@ -69,7 +69,8 @@ extern int rt_del_route(struct net_device *dev, in_addr_t dst,
  * @param skbuff
  * @param route - take this route as best match. Or NULL to define it
  */
-extern int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route);
+extern int ip_route(sk_buff_t *skb, struct net_device *wanna_dev,
+		struct rt_entry *suggested_route);
 
 /**
  * Get IP address of the next machine after routing

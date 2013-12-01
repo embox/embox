@@ -13,10 +13,10 @@
 
 struct runnable;
 
-extern void runq_queue_init(runq_queue_t *queue);
-extern void runq_queue_insert(runq_queue_t *queue, struct runnable *runnable);
-extern void runq_queue_remove(runq_queue_t *queue, struct runnable *runnable);
-extern struct runnable *runq_queue_extract(runq_queue_t *queue);
+extern void runq_init(runq_t *queue);
+extern void runq_insert(runq_t *queue, struct runnable *runnable);
+extern void runq_remove(runq_t *queue, struct runnable *runnable);
+extern struct runnable *runq_extract(runq_t *queue);
 
 extern void runq_item_init(runq_item_t *runq_link);
 

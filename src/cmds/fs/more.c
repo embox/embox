@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <curses.h>
+#include <profiler/tracing/trace.h>
 
 #define TAB_SIZE 4
 #define MAX_SCREEN_WIDTH 256
@@ -60,8 +61,7 @@ static void screen(FILE *fp) {
 					}
 				}
 				/*	In case if we got out of the actual line size	*/
-				buff[columns] = '\0';
-
+				buff[columns]= '\n';
 				addstr(buff);
 			}
 			memset(info, '\0', columns);
@@ -89,7 +89,10 @@ static void screen(FILE *fp) {
 
 static int exec(int argc, char **argv) {
 	FILE *fp;
+	TRACE_BLOCK_DEF(more_outer);
+	TRACE_BLOCK_DEF(more_inner);
 
+	trace_block_enter(&more_outer);
 	if (argc < 2) {
 		printf ("Usage: more [FILE]\n");
 		return 0;
@@ -100,8 +103,12 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
+	trace_block_enter(&more_inner);
 	screen(fp);
+	trace_block_leave(&more_inner);
 
 	fclose(fp);
+	trace_block_leave(&more_outer);
+
 	return 0;
 }

@@ -20,7 +20,7 @@ EMBOX_TEST_SUITE("test for different priority threads");
 #define THREADS_QUANTITY  0x100
 
 static void *thread_run(void *arg) {
-	ksleep(100 * 1000);
+	ksleep(2 * 1000);
 	return 0;
 }
 

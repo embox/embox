@@ -76,7 +76,7 @@ $(myfiles_mk) $(configfiles_mk) : | $$(@D)/.
 
 $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 	@echo ' $(recipe_tag) $<'
-	@SCOPE=`echo '$<' | md5sum | cut -c -8`; \
+	@SCOPE=`echo '$<' | $(MD5) | cut -c -8`; \
 	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="@$$SCOPE" > $@ && \
 	echo '__resource-$@ := '".obj1@$$SCOPE" >> $@
 

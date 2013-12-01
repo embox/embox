@@ -7,8 +7,9 @@
  */
 
 #include <assert.h>
+#include <arpa/inet.h>
 #include <drivers/gpmc.h>
-#include <drivers/pins.h>
+#include <drivers/gpio.h>
 #include <errno.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -35,8 +36,9 @@
 #define DBG(x)
 #endif
 
-#define LAN9118_GPMC_CS        5 // GPMC chip-select number
-#define LAN9118_PIN            OPTION_GET(NUMBER, pin)
+#define LAN9118_GPMC_CS        5 /* GPMC chip-select number */
+#define LAN9118_PORT           OPTION_GET(NUMBER, port)
+#define LAN9118_PIN            OPTION_GET(NUMBER, irq_pin)
 #define SIZE_16M               0x1000000
 
 #define LAN9118_RX_DATA_FIFO   0x00
@@ -77,7 +79,10 @@
 #define _LAN9118_FIFO_INT_RX_STS_LEVEL     0x000000FF
 
 #define LAN9118_RX_CFG         0x6C
+
 #define LAN9118_TX_CFG         0x70
+#define _LAN9118_TX_CFG_TX_ON              0x00000002
+#define _LAN9118_TX_CFG_STOP_TX            0x00000001
 
 #define LAN9118_HW_CFG         0x74
 #define _LAN9118_HW_CFG_MBO_               0x00100000
@@ -91,6 +96,8 @@
 #define _LAN9118_RX_FIFO_INF_RXDUSED       0x0000FFFF
 
 #define LAN9118_TX_FIFO_INF    0x80
+#define _LAN9118_TX_FIFO_INF_TDFREE        0x0000FFFF
+
 #define LAN9118_PMT_CTRL       0x84
 #define LAN9118_GPIO_CFG       0x88
 #define LAN9118_GPT_CFG        0x8C
@@ -117,8 +124,6 @@
 #define _LAN9118_MAC_CR_RXEN               0x00000004
 
 EMBOX_UNIT_INIT(lan9118_init);
-
-static struct net_device *nic;
 
 static uint32_t lan9118_reg_read(struct net_device *dev, int offset) {
 	return REG_LOAD(dev->base_addr + offset);
@@ -170,23 +175,42 @@ static void lan9118_mac_write(struct net_device *dev, unsigned int offset, uint3
 }
 
 static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
-	uint32_t l;
+	uint32_t l, freespace;
+	uint32_t *src, *dst;
+	int wrsz;
 
-	DBG(printk("%s\n", __func__));
+	freespace = lan9118_reg_read(dev, LAN9118_TX_FIFO_INF) & _LAN9118_TX_FIFO_INF_TDFREE;
 
-	/* ToDo check for freespace */
+	DBG(printk("%s, skb_len - %d, freespace - %d\n", __func__, skb->len, freespace));
 
-	l = (uint32_t) ((ulong) skb->data & 0x03) << 16;
-	l |= _LAN9118_TX_CMD_A_FIRST_SEG_ | _LAN9118_TX_CMD_A_LAST_SEG_;
-	l |= skb->len;
-	lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
+	irq_lock();
+	{
+		l = (uint32_t) ((unsigned long)skb->mac.raw & 0x03) << 16;
+		l |= _LAN9118_TX_CMD_A_FIRST_SEG_ | _LAN9118_TX_CMD_A_LAST_SEG_;
+		l |= skb->len;
+		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
 
-	l = skb->len << 16;
-	l |= skb->len;
-	lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
+		l = skb->len << 16;
+		l |= skb->len;
+		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
 
+		src = (uint32_t*) ((uint32_t)skb->mac.raw & (~0x3));
+		dst = (uint32_t*) (dev->base_addr + LAN9118_TX_DATA_FIFO);
 
-	skb_free(skb);
+		assert(freespace >= skb->len);
+
+		wrsz = (uint32_t)skb->len + 3;
+		wrsz += (uint32_t)((unsigned long)skb->mac.raw & 0x3);
+		wrsz >>= 2;
+
+		while (wrsz > 0) {
+			*dst = *src++;
+			wrsz--;
+		}
+
+		skb_free(skb);
+	}
+	irq_unlock();
 
 	return 0;
 }
@@ -207,6 +231,7 @@ static void lan9118_rx(struct net_device *dev) {
 	int packet_len;
 	struct sk_buff *skb;
 	uint32_t *src, *dst;
+	uint32_t trash;
 
 	irq_lock();
 	{
@@ -214,6 +239,7 @@ static void lan9118_rx(struct net_device *dev) {
 		assert(rx_status != 0);
 
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
+repeat:
 		packet_len -= 4; /* checksum */
 
 		if (rx_status & _LAN9118_RX_STS_ES) {
@@ -223,9 +249,6 @@ static void lan9118_rx(struct net_device *dev) {
 		}
 
 		if ((skb = skb_alloc(packet_len))) {
-			if (packet_len == 46) {
-				src = NULL;
-			}
 			DBG(printk("%s: packet_len - %d\n", __func__, packet_len));
 
 			src = (uint32_t*) (dev->base_addr + LAN9118_RX_DATA_FIFO);
@@ -235,19 +258,31 @@ static void lan9118_rx(struct net_device *dev) {
 				*dst++ = *src;
 				packet_len -= 4;
 			}
+			/* and read the last word */
+			trash = *src;
+			(void) trash;
 
 			skb->dev = dev;
-			/*stat->rx_packets++;*/
-			/*stat->rx_bytes += skb->len;*/
+			//dev->stats.rx_packets++;
+			//dev->stats.rx_bytes += skb->len;
 			netif_rx(skb);
 		} else {
-			/*stat->rx_dropped++;*/
+			//dev->stats.rx_dropped++;
+			DBG(printk("dropped %d\n", packet_len));
 		}
+
+		rx_status = lan9118_rx_status(dev);
+		packet_len = ((rx_status & 0x3FFF0000) >> 16);
+
+		if (packet_len > 0)
+			goto repeat;
+
+		assert(packet_len == 0, "packet_len - %d\n", packet_len);
 	}
 	irq_unlock();
 }
 
-void lan9118_irq_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
+irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
 
 	if (l & _LAN9118_INT_STS_RSFL_INT) {
@@ -255,6 +290,13 @@ void lan9118_irq_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
 	}
 
 	lan9118_reg_write(nic, LAN9118_INT_STS, l);
+
+	return IRQ_HANDLED;
+}
+
+static void mdelay(int value) {
+	volatile int delay = value;
+	while (delay --);
 }
 
 static int lan9118_reset(struct net_device *dev) {
@@ -265,7 +307,7 @@ static int lan9118_reset(struct net_device *dev) {
 	lan9118_reg_write(dev, LAN9118_HW_CFG, _LAN9118_HW_CFG_SRST);
 
 	do {
-		usleep(10);
+		mdelay(1000);
 		l = lan9118_reg_read(dev, LAN9118_HW_CFG);
 	} while (--timeout && (l & _LAN9118_HW_CFG_SRST));
 
@@ -312,9 +354,11 @@ static int lan9118_open(struct net_device *dev) {
 	DBG(printk("LAN9118_MAC_CR: %X\n", l));
 	lan9118_mac_write(dev, LAN9118_MAC_CR, l);
 
+	lan9118_reg_write(dev, LAN9118_TX_CFG, _LAN9118_TX_CFG_TX_ON);
+
 	/* GPIO */
-	//gpio_reg_write(6, GPIO_RISINGDETECT, (1 << LAN9118_PIN));
-	pin_set_input_monitor((1 << LAN9118_PIN), lan9118_irq_handler);
+	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
+				lan9118_irq_handler, GPIO_MODE_INT_MODE_RISING, dev);
 
 	return 0;
 }
@@ -332,6 +376,7 @@ static const struct net_driver lan9118_drv_ops = {
 
 static int lan9118_init(void) {
 	int res;
+	struct net_device *nic;
 
 	nic = etherdev_alloc(0);
 	if (nic == NULL) {

@@ -22,8 +22,8 @@ ExternalProject_Add(
          --with-cxx=$ENV{EMBOX_DERIVED_CXX}
          --enable-static
          --disable-shared
+         $ENV{EMBOX_DERIVED_RTTI_FLAG}
          --with-static-rtl
-         $ENV{EMBOX_RTTI_FLAG}
    #	BUILD_COMMAND
    LOG_BUILD 1
 )

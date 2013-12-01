@@ -48,6 +48,8 @@ void startup_ap(void) {
 	bootstrap = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 			THREAD_PRIORITY_MIN);
 
+	thread_register(task_kernel_task(), bootstrap);
+
 	cpu_init(cpu_get_id(), bootstrap);
 
 	__asm__ __volatile__ ("sti");

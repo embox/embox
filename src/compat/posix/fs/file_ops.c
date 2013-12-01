@@ -199,7 +199,7 @@ int fcntl(int fd, int cmd, ...) {
 		DPRINTF(("EBADF "));
 		err = -EBADF;
 		res = -1;
-		goto end;
+		goto error;
 	}
 
 	flag = 0;
@@ -218,18 +218,18 @@ int fcntl(int fd, int cmd, ...) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
 		err = 0;
-		break;
+		goto end;
 	case F_SETFD:
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
 		res = 0;
 		err = 0;
-		break;
+		goto end;
 	case F_GETPIPE_SZ:
 	case F_SETPIPE_SZ:
 		err = -ENOTSUP;
 		res = -1;
-		break;
+		goto end;
 	default:
 		err = -EINVAL;
 		res = -1;
@@ -261,8 +261,11 @@ int fcntl(int fd, int cmd, ...) {
 
 end:
 	va_end(args);
+error:
 	DPRINTF(("fcntl(%d, %d) = %d\n", fd, cmd, res));
-	SET_ERRNO(-err);
+	if (err != 0) {
+		SET_ERRNO(-err);
+	}
 	return res;
 }
 

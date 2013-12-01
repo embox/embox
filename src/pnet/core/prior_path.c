@@ -10,6 +10,8 @@
 
 #include <pnet/prior_path.h>
 
+struct sock;
+
 struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
 }

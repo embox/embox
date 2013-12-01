@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/lib/ipv4.h>
+#include <net/socket/inet_sock.h>
 #include <net/util/checksum.h>
 #include <netinet/in.h>
 
@@ -40,6 +41,12 @@ void ip_set_check_field(struct iphdr *iph) {
 	iph->check = ptclbsum(iph, IP_HEADER_SIZE(iph));
 }
 
+int ip_check_version(const struct iphdr *iph) {
+	assert(iph != NULL);
+
+	return iph->version == 4;
+}
+
 size_t ip_data_length(const struct iphdr *iph) {
 	assert(iph != NULL);
 	assert(ntohs(iph->tot_len) >= IP_HEADER_SIZE(iph));
@@ -57,4 +64,48 @@ void ip_pseudo_build(const struct iphdr *iph,
 	out_ipph->protocol = iph->proto;
 	out_ipph->data_len = htons(ntohs(iph->tot_len)
 			- IP_HEADER_SIZE(iph));
+}
+
+int ip_tester_src(const struct sock *sk,
+		const struct sk_buff *skb) {
+	assert(to_const_inet_sock(sk) != NULL);
+	assert(ip_hdr(skb) != NULL);
+	assert(ip_check_version(ip_hdr(skb)));
+	return to_const_inet_sock(sk)->src_in.sin_addr.s_addr
+			== ip_hdr(skb)->daddr;
+}
+
+int ip_tester_src_or_any(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct in_addr *in;
+
+	assert(to_const_inet_sock(sk) != NULL);
+	in = &to_const_inet_sock(sk)->src_in.sin_addr;
+
+	assert(ip_hdr(skb) != NULL);
+	assert(ip_check_version(ip_hdr(skb)));
+	return (in->s_addr == ip_hdr(skb)->daddr)
+			|| (in->s_addr == INADDR_ANY);
+}
+
+int ip_tester_dst(const struct sock *sk,
+		const struct sk_buff *skb) {
+	assert(to_const_inet_sock(sk) != NULL);
+	assert(ip_hdr(skb) != NULL);
+	assert(ip_check_version(ip_hdr(skb)));
+	return to_const_inet_sock(sk)->dst_in.sin_addr.s_addr
+			== ip_hdr(skb)->saddr;
+}
+
+int ip_tester_dst_or_any(const struct sock *sk,
+		const struct sk_buff *skb) {
+	const struct in_addr *in;
+
+	assert(to_const_inet_sock(sk) != NULL);
+	in = &to_const_inet_sock(sk)->dst_in.sin_addr;
+
+	assert(ip_hdr(skb) != NULL);
+	assert(ip_check_version(ip_hdr(skb)));
+	return (in->s_addr == ip_hdr(skb)->saddr)
+			|| (in->s_addr == INADDR_ANY);
 }

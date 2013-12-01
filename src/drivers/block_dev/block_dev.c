@@ -422,12 +422,17 @@ ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 
 
 int block_devs_init(void) {
-	int i;
+	int ret;
+	const block_dev_module_t *bdev_module;
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if (NULL != __block_dev_registry[i].init) {
-			__block_dev_registry[i].init(NULL);
+	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
+		if (bdev_module->init != NULL) {
+			ret = bdev_module->init(NULL);
+			if (ret != 0) {
+				return ret;
+			}
 		}
 	}
+
 	return 0;
 }

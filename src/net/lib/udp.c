@@ -49,3 +49,20 @@ void udp6_set_check_field(struct udphdr *udph,
 	udph->check = ~fold_short(partial_sum(&ip6ph, sizeof ip6ph) +
 			partial_sum(udph, ntohl(ip6ph.len))) & 0xFFFF;
 }
+
+void udp_set_check_field(struct udphdr *udph, const void *nhhdr) {
+	if (ip_check_version((const struct iphdr *)nhhdr)) {
+		udp4_set_check_field(udph, (const struct iphdr *)nhhdr);
+	}
+	else {
+		assert(ip6_check_version((const struct ip6hdr *)nhhdr));
+		udp6_set_check_field(udph, (const struct ip6hdr *)nhhdr);
+	}
+}
+
+size_t udp_data_length(const struct udphdr *udph) {
+	assert(udph != NULL);
+	assert(ntohs(udph->len) >= UDP_HEADER_SIZE);
+
+	return ntohs(udph->len) - UDP_HEADER_SIZE;
+}

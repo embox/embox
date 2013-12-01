@@ -25,14 +25,7 @@ module stm32 extends api {
 }
 
 module omap3_gpio extends api {
-	source "omap3_gpio.c"
+	source "omap3_gpio.c", "omap3_gpio.h"
 
-	depends omap3_pins
 	depends embox.kernel.irq
-}
-
-module omap3_pins extends pins {
-	source "omap3_pins.c"
-
-	depends pins_core
 }

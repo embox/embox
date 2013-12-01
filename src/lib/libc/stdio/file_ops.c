@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
@@ -254,3 +255,9 @@ int ungetc(int ch, FILE *file) {
 	file->has_ungetc = 1;
 	return ch;
 }
+
+int fileno(FILE *stream) {
+	assert(stream != NULL);
+	return stream->fd;
+}
+

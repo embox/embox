@@ -135,7 +135,7 @@ endef
 # Return:
 #   List of decimal char codes.
 __gold_read_file = \
-	$(shell od --output-duplicates --address-radix=n --format=uC $1)
+	$(shell od -v -A n -t uC $1)
 
 # Params: ignored
 define builtin_macro-gold-parser

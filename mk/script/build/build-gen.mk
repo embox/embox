@@ -225,7 +225,7 @@ source_base = $(basename $(source_file))
 
 source_o_pats   := %.o
 source_a_pats   := %.a
-source_cc_pats  := %.S %.c %.cpp %.cxx
+source_cc_pats  := %.S %.c %.cpp %.cxx %.C
 source_mk_pats  := %.mk
 source_cpp_pats := %.lds.S
 
@@ -307,17 +307,20 @@ $(@module_ld_rmk) $(@module_ar_rmk) : a_files = \
 		$(patsubst %,$(value source_a_rmk_out_pat), \
 			$(basename $(call module_a_source_files,$@)))
 
-$(@module_ld_rmk) $(@module_ar_rmk) : app_id = \
+$(@module_ld_rmk) $(@module_ar_rmk) : id_ = \
+		$(call module_id,$@)
+
+$(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
-				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app)) \
-			),$(call module_id,$@))
+				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(out),app_id,$(app_id)); \
+		$(call gen_make_tsvar,$(out),module_id,$(id_)); \
+		$(call gen_make_tsvar,$(out),is_app,$(is_app)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))

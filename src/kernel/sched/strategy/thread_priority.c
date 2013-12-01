@@ -6,7 +6,6 @@
  */
 
 #include <kernel/thread.h>
-#include <kernel/thread/state.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/sched/runq.h>

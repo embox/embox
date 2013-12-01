@@ -91,8 +91,9 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	REG_ORIN(RCC_APB2ENR,RCC_APB2ENR_USART1EN);
 
-	gpio_out(UART_GPIO, TX_PIN , GPIO_MODE_OUT_ALTERNATE);
-	gpio_in(UART_GPIO, RX_PIN, 0);
+	gpio_settings(UART_GPIO, TX_PIN ,
+			GPIO_MODE_OUTPUT | GPIO_MODE_OUT_ALTERNATE);
+	gpio_settings(UART_GPIO, RX_PIN, GPIO_MODE_INPUT);
 
 	REG_STORE(&uart->brr, SYS_CLOCK / params->baud_rate);
 	REG_ORIN(&uart->cr1, USART_FLAG_RE | USART_FLAG_TE);

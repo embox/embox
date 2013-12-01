@@ -14,16 +14,29 @@
 
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/state.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/thread_res_state.h>
 #include <kernel/thread/thread_cancel.h>
 #include <kernel/runnable/runnable.h>
+#include <kernel/sched/waitq.h>
 
 #include <util/dlist.h>
 
+#define __THREAD_STATE_READY     (0x1 << 0) /* present in runq */
+#define __THREAD_STATE_WAITING   (0x1 << 1) /* waiting for an event */
+#define __THREAD_STATE_RUNNING   (0x1 << 2) /* executing on CPU now */
+
+/* Resource mgmt flags. */
+#define __THREAD_STATE_DETACHED  (0x1 << 4)
+
+/* zombie */
+#define __THREAD_STATE_DO_EXITED(state)                        \
+	state & ~(__THREAD_STATE_READY | __THREAD_STATE_WAITING |  \
+			__THREAD_STATE_RUNNING)
+#define __THREAD_STATE_IS_EXITED(state)                        \
+	!(state & (__THREAD_STATE_READY | __THREAD_STATE_WAITING | \
+			__THREAD_STATE_RUNNING))
 
 typedef int __thread_id_t;
 
@@ -32,16 +45,15 @@ struct task;
 struct thread {
 	/* runnable member HAVE TO be first. Please, do NOT move!*/
 	struct runnable    runnable;     /**< Runnable interface for scheduler */
-
-	thread_state_t     state;        /**< Current state. */
+	unsigned int       state;        /**< Current state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
 	void            *(*run)(void *); /**< Start routine. */
+	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
-		void          *run_arg;      /**< Argument to pass to start routine. */
 		void          *run_ret;      /**< Return value of the routine. */
-		void          *join_ret;     /**< Exit value of a join target. */
+		void          *join_wq;      /**< A queue of joining threads. */
 	} /* unnamed */;
 
 	thread_stack_t     stack;        /**< Handler for work with thread stack */
@@ -51,21 +63,11 @@ struct thread {
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */
 
-	struct thread_res_state resinfo;   /**< Resources state info*/
+	struct wait_link   *wait_link;   /**< Hold data in waiting mode */
 
-	struct wait_link   *wait_link;    /**< Hold data in waiting mode */
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
-
-
-/*	struct sched_attr  sched_attr; */  /**< Scheduler-private data. */
-
-/*	int                policy;    */   /**< Scheduling policy*/
-
-
-
 	thread_local_t     local;
-
 	thread_cancel_t    cleanups;
 };
 

@@ -50,6 +50,7 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 	(void)len;
 	(void)prot;
 	(void)flags;
+	(void)fd;
 	(void)off;
 	//printf(">>> mmap(%i)\n",fd);
 	errno = EPERM;

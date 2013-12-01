@@ -194,6 +194,8 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 }
 
 int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
+	int res;
+
 	if (dev == NULL) {
 		return -EINVAL;
 	}
@@ -207,11 +209,19 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 	dlist_head_init(&dev->post_link);
 
 	if (dev->irq > 0) {
-		return irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd");
+
+		res = irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd");
+		if (res < 0) {
+			return res;
+		}
 	}
 
 	if (dev->ops->start) {
-		dev->ops->start(dev);
+
+		res = dev->ops->start(dev);
+		if (res < 0) {
+			return res;
+		}
 	}
 
 	return 0;

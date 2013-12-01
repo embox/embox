@@ -15,6 +15,7 @@
 #include <kernel/time/ktime.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
+#include <drivers/usb_driver.h>
 
 #include <drivers/usb.h>
 
@@ -66,23 +67,6 @@ static void usb_request_build(struct usb_request *req, uint8_t req_type,
 
 }
 
-static struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
-		usb_request_notify_hnd_t notify_hnd, unsigned token,
-		void *buf, size_t len) {
-	struct usb_request *req;
-
-	req = usb_request_alloc(endp);
-	assert(req, "%s: allocating usb request failed", __func__);
-
-	req->endp = endp;
-	req->token = token;
-	req->buf = buf;
-	req->len = len;
-	req->notify_hnd = notify_hnd;
-
-	return req;
-}
-
 static int usb_endp_do_req(struct usb_endp *endp) {
 	struct usb_queue_link *l;
 	struct usb_request *req;
@@ -101,7 +85,7 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 	return 0;
 }
 
-static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
+int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	bool endp_busy;
 
 	endp_busy = usb_queue_add(&endp->req_queue, &req->req_link);
@@ -120,7 +104,7 @@ void usb_request_complete(struct usb_request *req) {
 	}
 
 	if (req->notify_hnd) {
-		req->notify_hnd(req);
+		req->notify_hnd(req, req->hnd_data);
 	}
 
 	usb_queue_done(&endp->req_queue, &req->req_link);
@@ -147,7 +131,7 @@ int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hn
 
 	assert(usb_endp_type(endp) == USB_COMM_INTERRUPT);
 
-	req = usb_endp_request_alloc(endp, notify_hnd,
+	req = usb_endp_request_alloc(endp, notify_hnd, NULL,
 			usb_endp_dir_token_map(endp), buf, len);
 
 	return usb_endp_request(endp, req);
@@ -156,7 +140,7 @@ int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hn
 int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data) {
-	struct usb_request *rstp, *rdt, *rstt;
+	struct usb_request *rstp, *rdt = NULL, *rstt;
 	unsigned short dtoken, dntoken;
 
 	if (req_type & USB_DEV_REQ_TYPE_RD) {
@@ -169,20 +153,20 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 
 	assert(usb_endp_type(endp) == USB_COMM_CONTROL);
 
-	rstp = usb_endp_request_alloc(endp, NULL, USB_TOKEN_SETUP | USB_TOKEN_OUT,
+	rstp = usb_endp_request_alloc(endp, NULL, NULL, USB_TOKEN_SETUP | USB_TOKEN_OUT,
 			NULL, sizeof(struct usb_control_header));
 	rstp->buf = (void *) &rstp->ctrl_header;
 	usb_request_build(rstp, req_type, request, value, index,
 			count, data);
 
 	if (count) {
-		rdt = usb_endp_request_alloc(endp, NULL, dtoken, data, count);
+		rdt = usb_endp_request_alloc(endp, NULL, NULL, dtoken, data, count);
 		if (!rdt) {
 			goto out1;
 		}
 	}
 
-	rstt = usb_endp_request_alloc(endp, notify_hnd, USB_TOKEN_STATUS | dntoken,
+	rstt = usb_endp_request_alloc(endp, notify_hnd, NULL, USB_TOKEN_STATUS | dntoken,
 		       	NULL, 0);
 	if (!rstt) {
 		goto out2;
@@ -212,7 +196,8 @@ static inline void usb_dev_set_state(struct usb_dev *dev,
 }
 
 static int usb_dev_configuration_check(struct usb_dev *dev) {
-	return usb_class_supported(dev);
+	return 1;
+	/*return usb_class_supported(dev);*/
 }
 
 static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) {
@@ -241,11 +226,7 @@ static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
 	struct usb_hcd *hcd = dev->hcd;
 	bool is_resseting;
 
-#if 0
-	usb_dev_wait(dev, notify_hnd);
-#else
 	assert(notify_hnd == usb_dev_notify_reset_awaiting);
-#endif
 
 	is_resseting = usb_queue_add(&hcd->reset_queue, &dev->reset_link);
 	if (!is_resseting) {
@@ -269,12 +250,12 @@ static void usb_dev_getconf_free(struct usb_dev *dev) {
 }
 #endif
 
-static void usb_dev_request_hnd_set_addr(struct usb_request *req);
-static void usb_dev_request_hnd_dev_desc(struct usb_request *req);
-static void usb_dev_request_hnd_conf_header(struct usb_request *req);
-static void usb_dev_request_hnd_set_conf(struct usb_request *req);
+static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg);
+static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
+static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
+static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
 
-static void usb_dev_request_hnd_set_addr(struct usb_request *req) {
+static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;
 
@@ -293,20 +274,20 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req) {
 		&dev->dev_desc);
 }
 
-static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
+static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;
 
 	ctrl_endp = dev->endpoints[0];
 
-	dev->c_config = 1;
+	dev->c_config = 0;
 
 	if (NULL == usb_dev_getconf_alloc(dev)) {
 		panic("%s: failed to allocate device's "
 				"getconf_data\n", __func__);
 	}
 
-	printk("usb_core: found vendor=%04x product=%04x\n",
+	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header,
@@ -316,17 +297,16 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req) {
 		USB_DESC_TYPE_CONFIG << 8,
 		dev->c_config,
 		sizeof(struct usb_desc_configuration) +
-			9 + sizeof(struct usb_desc_interface),
+			sizeof(struct usb_desc_interface),
 		dev->getconf_data);
 }
 
-static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
+static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;
 
 	ctrl_endp = dev->endpoints[0];
 
-	dev->conf_desc = &dev->getconf_data->config_desc;
 	dev->interface_desc = &dev->getconf_data->interface_desc;
 
 	if (!usb_dev_configuration_check(dev)) {
@@ -345,7 +325,7 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 			USB_DESC_TYPE_CONFIG << 8 ,
 			dev->c_config,
 			sizeof(struct usb_desc_configuration) +
-				9 + sizeof(struct usb_desc_interface),
+				sizeof(struct usb_desc_interface),
 			dev->getconf_data);
 	} else {
 		dev->c_interface = 0;
@@ -360,14 +340,14 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req) {
 	}
 }
 
-static void usb_dev_request_hnd_set_conf(struct usb_request *req) {
+static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 
 	usb_dev_set_state(dev, USB_DEV_CONFIGURED);
 
 	dev->endp_n = 1 + dev->interface_desc->b_num_endpoints;
 
-	usb_class_handle(dev);
+	usb_drv_handle(dev);
 }
 
 static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type) {

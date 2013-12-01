@@ -18,7 +18,6 @@
 #include <util/member.h>
 #include <util/dlist.h>
 
-#include <kernel/thread/state.h>
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 #include <assert.h>
@@ -36,15 +35,13 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	waitq_thread_notify(thread, -ETIMEDOUT);
 }
 
-static int wait_locked(unsigned long timeout) {
+int __waitq_wait_locked(int timeout) {
 	int ret;
 	struct sys_timer tmr;
 	struct thread *current = thread_get_current();
 
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(current->wait_link); /* Should be prepared */
-
-	sched_sleep();
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
@@ -53,6 +50,8 @@ static int wait_locked(unsigned long timeout) {
 		}
 	}
 
+	/* __THREAD_STATE_WAITING flag sets in prepare stage */
+	sched_post_switch();
 	sched_unlock();
 
 	/* At this point we have been awakened and are ready to go. */
@@ -76,30 +75,44 @@ void waitq_remove(struct wait_link *wait_link) {
 	ipl_restore(ipl);
 }
 
-static void wait_queue_insert(struct waitq *waitq,
+static void waitq_insert(struct waitq *waitq,
 		struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
 		dlist_head_init(&wait_link->link);
 		wait_link->thread = thread_self();
-
 		dlist_add_prev(&wait_link->link, &waitq->list);
 	}
 	ipl_restore(ipl);
 }
 
-static void wait_queue_prepare(struct wait_link *wait_link) {
+void __waitq_prepare(struct waitq *waitq, struct wait_link *wait_link) {
 	struct thread *current = thread_get_current();
 
-	assert(!current->wait_link);
+	assert(current->state & __THREAD_STATE_RUNNING);
+
+	current->state |= __THREAD_STATE_WAITING;
 
 	wait_link->thread = current;
 	wait_link->result = 0;
 	current->wait_link = wait_link;
+
+	waitq_insert(waitq, wait_link);
 }
 
-static void wait_queue_cleanup(struct wait_link *wait_link) {
+void __waitq_cleanup(void) {
 	struct thread *current = thread_get_current();
+
+	/* if sched_switch wasn't called after preparing it's necessary to set
+	 * running state */
+	sched_lock();
+	{
+		if (current->state & __THREAD_STATE_WAITING) {
+			current->state &= ~__THREAD_STATE_WAITING;
+			waitq_remove(current->wait_link);
+		}
+	}
+	sched_unlock();
 
 	current->wait_link = 0;
 }
@@ -120,28 +133,37 @@ int waitq_wait_locked(struct waitq *waitq, int timeout) {
 	struct wait_link wait_link;
 	int result;
 
-	wait_queue_prepare(&wait_link);
+	__waitq_prepare(waitq, &wait_link);
 
-	wait_queue_insert(waitq, &wait_link);
+	result = __waitq_wait_locked(timeout);
 
-	result = wait_locked(timeout);
+	__waitq_cleanup();
 
-	wait_queue_cleanup(&wait_link);
+	return result;
+}
+
+int __waitq_wait(int timeout) {
+	int result;
+
+	sched_lock();
+	{
+		result = __waitq_wait_locked(timeout);
+	}
+	sched_unlock();
 
 	return result;
 }
 
 void waitq_thread_notify(struct thread *thread, int result) {
 	assert(thread);
-	assert(__THREAD_STATE_WAITING & thread->state);
 
 	irq_lock();
 	{
-		thread->wait_link->result = result;
-
-		sched_wake(thread);
-
-		waitq_remove(thread->wait_link);
+		if (__THREAD_STATE_WAITING & thread->state) {
+			thread->wait_link->result = result;
+			sched_wake(thread);
+			waitq_remove(thread->wait_link);
+		}
 	}
 	irq_unlock();
 }
@@ -175,6 +197,7 @@ void waitq_notify_all_err(struct waitq *waitq, int error) {
 	ipl_t ipl = ipl_save();
 	{
 		dlist_foreach_entry(link, next, &waitq->list, link) {
+
 			waitq_thread_notify(link->thread, error);
 		}
 	}

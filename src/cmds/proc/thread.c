@@ -16,7 +16,6 @@
 #include <errno.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/state.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
@@ -42,7 +41,7 @@ static void print_stat(void) {
 	{
 		task_foreach(task) {
 			task_foreach_thread(thread, task) {
-				thread_state_t s = thread->state;
+				unsigned int s = thread->state;
 				const char *state = NULL;
 				sched_priority_t prior;
 

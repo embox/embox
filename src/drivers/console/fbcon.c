@@ -67,6 +67,8 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 
 static void vterm_reinit(struct vterm_video *t, int x, int y);
 
+static struct fbcon *fbcon_current;
+
 static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	struct fbcon *fbcon = (struct fbcon *) vc;
 
@@ -79,9 +81,14 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 
 	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
 
+	fbcon_current = fbcon;
+
 }
 
 static void devisn(struct vc *vc) {
+
+	fbcon_current = NULL;
+
 	mpx_devisualized(vc);
 }
 
@@ -349,12 +356,26 @@ static int make_task(int i, char innewtask) {
 	return 0;
 }
 
+#include <drivers/diag.h>
+
+static void fbcon_diag_putc(const struct diag *diag, char ch) {
+
+	if (!fbcon_current) {
+		return;
+	}
+
+
+	vterm_putc(&fbcon_current->vterm, ch);
+}
+
+DIAG_OPS_DECLARE(
+	.putc = fbcon_diag_putc,
+);
+
 static int fbcon_init(void) {
 
 	make_task(0, true);
 	make_task(1, true);
 
-	/*iodev_setup(&iodev_stdio_ops);*/
-
-	return 0;
+	return diag_setup(&DIAG_IMPL_NAME(__EMBUILD_MOD__));
 }

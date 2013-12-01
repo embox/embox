@@ -222,13 +222,13 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_prepare_reply(sk_buff_t *reply) {
 	/* Fix IP header */
 	struct in_device *idev = inetdev_get_by_dev(reply->dev); /* Requires symmetric routing */
-	__be16 tot_len = reply->nh.iph->tot_len;
+	uint16_t tot_len = ntohs(reply->nh.iph->tot_len);
 
 	/* Replace not unicast addresses */
 	in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
 					reply->nh.iph->daddr : idev->ifa_address;
 
-	ip_build(reply->nh.iph, ntohs(tot_len), IPPROTO_ICMP,
+	ip_build(reply->nh.iph, tot_len, IPPROTO_ICMP,
 			daddr, reply->nh.iph->saddr);
 
 	/* Calculate ICMP CRC. Header itself was fixed in caller */
@@ -382,9 +382,8 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		/* Assemble IP header */
 		{
 			struct in_device *idev = inetdev_get_by_dev(skb->dev); /* Requires symmetric routing */
-			__be16 tot_len = htons(ip_ret_len);
 
-			ip_build(iph, tot_len, IPPROTO_ICMP,
+			ip_build(iph, ip_ret_len, IPPROTO_ICMP,
 					idev->ifa_address, iph_in.saddr);
 		}
 

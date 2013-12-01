@@ -17,11 +17,8 @@ typedef __sched_timing_t sched_timing_t;
 struct thread;
 
 extern void sched_timing_init(struct thread *t);
-
+extern void sched_timing_switch(struct thread *prev, struct thread *next);
 extern clock_t sched_timing_get(struct thread *t);
 
-extern void sched_timing_start(struct thread *t, clock_t cur_time);
-
-extern void sched_timing_stop(struct thread *t, clock_t cur_time);
 
 #endif /* SCHED_TIMING_H_ */

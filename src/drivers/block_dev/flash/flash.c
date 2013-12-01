@@ -319,11 +319,12 @@ EMBOX_BLOCK_DEV("flash", &flashbdev_pio_driver, flashbdev_init);
 ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
 
 int flash_devs_init(void) {
-	int ret, i;
+	int ret;
+	const flash_dev_module_t *fdev_module;
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__flash_dev_registry); ++i) {
-		if (__flash_dev_registry[i].init != NULL) {
-			ret = __flash_dev_registry[i].init(NULL);
+	array_spread_foreach_ptr(fdev_module, __flash_dev_registry) {
+		if (fdev_module->init != NULL) {
+			ret = fdev_module->init(NULL);
 			if (ret != 0) {
 				return ret;
 			}

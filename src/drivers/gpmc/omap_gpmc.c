@@ -80,22 +80,23 @@ static void gpmc_cs_reg_write(int cs, int offset, uint32_t val) {
 	reg_addr = GPMC_BASE_ADDRESS + offset + (cs * GPMC_CS_SIZE);
 	REG_STORE(reg_addr, val);
 }
-
+#if 0
 static int gpmc_cs_enabled(int cs) {
 	uint32_t l;
 	l = gpmc_cs_reg_read(cs, GPMC_CS_CONFIG7);
 	return l & GPMC_CONFIG7_CSVALID;
 }
+#endif
 
 static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 	uint32_t l;
 	uint32_t mask;
 
+#if 0
 	if (gpmc_cs_enabled(cs)) {
 		return -1; // it is so?
 	}
 
-#if 0
 	/*
 	* Ensure that base address is aligned on a
 	* boundary equal to or greater than size.

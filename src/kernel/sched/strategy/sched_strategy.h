@@ -15,7 +15,7 @@
 #include <kernel/sched/sched_priority.h>
 
 struct runq {
-	runq_queue_t queue;
+	runq_t queue;
 };
 
 struct sched_attr {
@@ -23,6 +23,7 @@ struct sched_attr {
 	affinity_t affinity;
 	sched_timing_t sched_time;
 	thread_priority_t thread_priority;
+	int policy;
 };
 
 #endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */

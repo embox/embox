@@ -44,6 +44,7 @@
 #define PCI_DEVICE_ID           0x02   /* 16 bits */
 #define PCI_COMMAND             0x04   /* 16 bits */
 #define   PCI_COMMAND_IO         0x1   /* Enable response in I/O space */
+#define   PCI_COMMAND_MEMORY     0x2   /* Enable response in Memory space */
 #define   PCI_COMMAND_MASTER     0x4   /* Enable bus mastering */
 #define PCI_STATUS              0x06   /* 16 bits */
 #define PCI_REVISION_ID         0x08   /* 8 bits  */
@@ -182,5 +183,8 @@ struct pci_slot_dev {
 	dlist_foreach_entry(pci_dev, nxt_pci_dev, __extension__ ({   \
 		extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
 	}), lst)
+
+struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
+		uint32_t devfn, uint32_t vendor_reg);
 
 #endif /* PCI_H_ */

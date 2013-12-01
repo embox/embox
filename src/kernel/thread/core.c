@@ -29,7 +29,6 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
-#include <kernel/thread/state.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/runnable/runnable.h>
@@ -43,30 +42,6 @@ EMBOX_UNIT_INIT(thread_core_init);
 
 
 static int id_counter; // TODO make it an indexator
-
-
-static void thread_delete(struct thread *t) {
-	static struct thread *zombie = NULL;
-
-	assert(t);
-	assert(__THREAD_STATE_IS_EXITED(t->state));
-	assert(thread_res_state_detached(&t->resinfo) ||
-			thread_res_state_joined(&t->resinfo));
-
-	task_remove_thread(t->task, t);
-
-	if (zombie) {
-		thread_free(zombie);
-	}
-
-	if (t == thread_self()) {
-		zombie = t;
-		return;
-	}
-
-	thread_free(t);
-	zombie = NULL;
-}
 
 
 /**
@@ -91,6 +66,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -125,8 +101,9 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			if (-ENOMEM == thread_register(task_self(), t)) {
-				t = err_ptr(ENOMEM);
+			ret = thread_register(task_self(), t);
+			if (ret != 0) {
+				t = err_ptr(-ret);
 				goto out;
 			}
 		}
@@ -171,6 +148,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
+	t->join_wq = NULL; /* there are not any joined thread */
+
 	/* calculate current thread priority. It can be change later with
 	 * thread_set_priority () function
 	 */
@@ -193,9 +172,6 @@ void thread_init(struct thread *t, unsigned int flags,
 	 */
 	thread_priority_init(t, priority);
 
-	t->resinfo.state = 0; /* joinable */
-	t->resinfo.joined = NULL; /* there are not any joined thread */
-
 	/* cpu context init */
 	context_init(&t->context, true); /* setup default value of CPU registers */
 	context_set_entry(&t->context, thread_trampoline);/*set entry (IP register*/
@@ -212,49 +188,71 @@ void thread_init(struct thread *t, unsigned int flags,
 	context_set_stack(&t->context,
 			thread_stack_get(t) + thread_stack_get_size(t));
 
-	sigstate_init(&t->sigstate);
-	sched_strategy_init(t);
+	/* Initializes scheduler strategy data of the thread */
+	runq_item_init(&(t->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(t->runnable));
+	sched_timing_init(t);
 
 	t->wait_link = NULL;
+}
+
+static void thread_delete(struct thread *t) {
+	static struct thread *zombie = NULL;
+
+	assert(t);
+	assert(__THREAD_STATE_IS_EXITED(t->state));
+
+	task_remove_thread(t->task, t);
+	sigstate_init(&t->sigstate);
+
+	runq_item_init(&(t->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(t->runnable));
+	sched_timing_init(t);
+
+	if (zombie) {
+		thread_free(zombie);
+	}
+
+	if (t != thread_self()) {
+		thread_free(t);
+		zombie = NULL;
+	} else {
+		zombie = t;
+	}
 }
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	unsigned int res_state;
+	struct waitq *join_wq;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		/* We can free only not main threads */
-		if (task->main_thread == current) {
-			/* We are last thread. Unlock scheduler and exit task. */
-			sched_unlock();
-			task_exit(ret);
-			/* NOTREACHED */
-		}
-
-		/* Finish scheduling of the thread */
-		sched_finish(current);
-
-		current->run_ret = ret;
-
-		thread_res_state_get(&current->resinfo, &res_state);
-		switch (res_state) {
-		case __THREAD_STATE_JOINABLE:
-			break;
-		case __THREAD_STATE_JOINED:
-			/* Thread is attached. Joined thread delete it. */
-			waitq_notify(current->resinfo.joined);
-			break;
-		case __THREAD_STATE_DETACHED:
-			/* Detached thread should be deleted by itself. */
-			thread_delete(current);
-			break;
-		}
+	/* We can free only not main threads */
+	if (task->main_thread == current) {
+		/* We are last thread. */
+		task_exit(ret);
+		/* NOTREACHED */
 	}
 
+	sched_lock();
+	{
+		current->state &= ~__THREAD_STATE_RUNNING;
+
+		/* Wake up a joining thread (if any).
+		 * Note that join_wq and run_ret are both in a union. */
+		join_wq = current->join_wq;
+		if (join_wq) {
+			current->run_ret = ret;
+			waitq_notify(join_wq);
+		}
+
+		if (current->state & __THREAD_STATE_DETACHED)
+			/* No one references this thread anymore. Time to delete it. */
+			thread_delete(current);
+
+		sched_post_switch();
+	}
 	sched_unlock();
 
 	/* NOTREACHED */
@@ -263,38 +261,30 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 int thread_join(struct thread *t, void **p_ret) {
 	struct thread *current = thread_self();
-	void *join_ret;
 
 	assert(t);
-	assert(!t->resinfo.joined);
 
-	if (t == current) {
+	if (t == current)
 		return -EDEADLK;
-	}
 
 	sched_lock();
 	{
-		t->resinfo.state = thread_res_state_do_join(&t->resinfo);
+		assert(!t->join_wq);
+		assert(!(t->state & __THREAD_STATE_DETACHED));
 
 		if (!__THREAD_STATE_IS_EXITED(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
 			struct waitq queue;
 			waitq_init(&queue);
 
-			t->resinfo.joined = &queue;
-
+			t->join_wq = &queue;
 			waitq_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
-
-			t->resinfo.joined = NULL;
 		}
 
-		join_ret = t->run_ret;
+		if (p_ret)
+			*p_ret = t->run_ret;
 
 		thread_delete(t);
-
-		if (p_ret) {
-			*p_ret = join_ret;
-		}
 	}
 	sched_unlock();
 
@@ -303,24 +293,26 @@ int thread_join(struct thread *t, void **p_ret) {
 
 int thread_detach(struct thread *t) {
 	assert(t);
-	assert(!t->resinfo.joined);
 
 	sched_lock();
 	{
-		t->resinfo.state = thread_res_state_do_detach(&t->resinfo);
+		assert(!t->join_wq);
+		assert(!(t->state & __THREAD_STATE_DETACHED));
 
-		if (__THREAD_STATE_IS_EXITED(t->state)) {
+		if (!__THREAD_STATE_IS_EXITED(t->state))
+			/* The target will free itself upon finishing. */
+			t->state |= __THREAD_STATE_DETACHED;
+		else
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
-		}
 	}
 	sched_unlock();
 
-	return ENOERR;
+	return 0;
 }
 
 int thread_launch(struct thread *t) {
-	int res = ENOERR;
+	int res = 0;
 
 	assert(t);
 
@@ -349,19 +341,12 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		if (!__THREAD_STATE_IS_EXITED(t->state)) {
-			sched_finish(t);
-		}
-
-		if (!thread_res_state_detached(&t->resinfo)) {
-			t->resinfo.state = thread_res_state_do_detach(&t->resinfo);
-		}
-
+		sched_finish(t);
 		thread_delete(t);
 	}
 	sched_unlock();
 
-	return ENOERR;
+	return 0;
 }
 
 void thread_yield(void) {
@@ -385,7 +370,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 		sched_change_priority(t, prior);
 	}
 
-	return ENOERR;
+	return 0;
 }
 
 sched_priority_t thread_get_priority(struct thread *t) {
