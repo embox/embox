@@ -162,9 +162,9 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->state = __THREAD_STATE_WAITING;
 
-	/* set sched routines */
-	t->runnable.sched_thread_specific = (void *)sched_thread_specific;
-	t->runnable.run = (void *)sched_execute_thread;
+	/* set sched routines, implemented in thread_sched_routine.h */
+	t->runnable.prepare = (void *)sched_prepare_runnable;
+	t->runnable.run = (void *)sched_execute_runnable;
 	t->runnable.run_arg = NULL;
 
 	/* set executive function and arguments pointer */

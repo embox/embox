@@ -194,8 +194,8 @@ static void sched_switch(void) {
 		prev = runnable_get_current();
 
 		/*prev can be thread, we might want to put it into runq */
-		if(prev->sched_thread_specific != NULL) {
-			prev->sched_thread_specific(prev, &rq);
+		if(prev->prepare) {
+			prev->prepare(prev, &rq);
 		}
 
 		next = runq_queue_extract(&rq.queue);
@@ -207,9 +207,4 @@ out:
 	sched_unlock_noswitch();
 
 	thread_signal_handle();
-}
-
-/* Implement from runnable.h */
-struct runnable *runnable_get_current(){
-	return &(thread_get_current()->runnable);
 }

@@ -11,7 +11,7 @@ struct runnable {
 	/**
 		Thread-specific function, puts current thread in runq
 	*/
-	void                *(*sched_thread_specific)(struct runnable *p, struct runq *rq);
+	void                *(*prepare)(struct runnable *p, struct runq *rq);
 
 	/** Called by sched when replanned.
 	*/
@@ -23,8 +23,10 @@ struct runnable {
 };
 
 extern struct runnable *runnable_get_current(void);
-extern void sched_thread_specific(struct runnable *p, struct runq *rq);
-extern void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *rq);
+
+/* Theese are assigned to runnable->shed_prepare and runnable->run in core.c */
+extern void sched_prepare_runnable(struct runnable *p, struct runq *rq);
+extern void sched_execute_runnable(struct runnable *p, struct runnable *n, struct runq *rq);
 
 
 #endif /* _KERNEL_RUNNABLE_H_ */

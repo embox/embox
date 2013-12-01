@@ -1,7 +1,7 @@
 /*
 	Thread planning functions, used in sched_switch
 
-	Implements runnable interface
+	Implements runnable.h interface
 */
 
 #include <hal/context.h>
@@ -16,7 +16,7 @@
 #include <kernel/thread/state.h>
 #include <profiler/tracing/trace.h>
 
-void sched_thread_specific(struct runnable *p, struct runq *rq) {
+void sched_prepare_runnable(struct runnable *p, struct runq *rq) {
 	struct thread *prev;
 
 	prev = (struct thread *)p;
@@ -26,7 +26,7 @@ void sched_thread_specific(struct runnable *p, struct runq *rq) {
 	}
 }
 
-void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *rq) {
+void sched_execute_runnable(struct runnable *p, struct runnable *n, struct runq *rq) {
 	struct thread *prev, *next;
 	clock_t new_clock;
 
@@ -68,3 +68,6 @@ void sched_execute_thread(struct runnable *p, struct runnable *n, struct runq *r
 	context_switch(&(prev->context), &(next->context));
 }
 
+struct runnable *runnable_get_current(){
+	return &(thread_get_current()->runnable);
+}
