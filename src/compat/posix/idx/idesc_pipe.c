@@ -135,27 +135,28 @@ static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	pipe = idesc_to_pipe(idesc);
 	mutex_lock(&pipe->mutex);
 
-	while (nbyte) {
+	if (!nbyte) {
+		res = 0;
+		goto out_unlock;
+	}
+
+	do {
 		res = ring_buff_dequeue(pipe->buff, buf, nbyte);
-		if (res > 0) {
-			goto out_notify;
-		}
 
 		if (0 == pipe->write_desc.idesc.idesc_amode) {
-			/* if write end of pipe closed we return number of read byte
-			 * even 0
-			 */
-			goto out_unlock;
+			/* Nothing to do, what's read, that's read */
+			break;
+		}
+
+		if (res > 0) {
+			/* Smth read, notify write end (can't be closed,
+ 			 * checked already) */
+			idesc_notify(&pipe->write_desc.idesc, POLLOUT);
+			break;
 		}
 
 		res = pipe_wait(idesc, pipe, POLLIN | POLLERR);
-		if (res != 0) {
-			goto out_unlock;
-		}
-	}
-
-out_notify:
-	idesc_notify(&pipe->write_desc.idesc, POLLOUT);
+	} while (res == 0);
 
 out_unlock:
 	mutex_unlock(&pipe->mutex);
@@ -164,7 +165,8 @@ out_unlock:
 
 static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	struct pipe *pipe;
-	int res;
+	const void *cbuf;
+	int len, res;
 
 	assert(buf);
 	assert(idesc);
@@ -174,32 +176,39 @@ static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	pipe = idesc_to_pipe(idesc);
 	mutex_lock(&pipe->mutex);
 
+	cbuf = buf;
+	/* nbyte == 0 is ok to passthrough */
 
-	/* If writing end is closed that means it was last data in pipe. */
-	if (0 == pipe->read_desc.idesc.idesc_amode) {
-		res = -EPIPE;
-		goto out_unlock;
-	}
+	do {
+		/* No data can be readed at all */
+		if (0 == pipe->read_desc.idesc.idesc_amode) {
+			res = -EPIPE;
+			break;
+		}
 
-	while (nbyte > 0) {
-		res = ring_buff_enqueue(pipe->buff, (void *)buf, nbyte);
-		if (res > 0) {
+		/* Try to write some data */
+		len = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
+		if (len > 0) {
+			/* Notzero was written, adjust pointers and notify
+ 			 * (read end can't be closed) */
+			cbuf += len;
+			nbyte -= len;
+
+			idesc_notify(&pipe->read_desc.idesc, POLLIN);
+		}
+
+		/* Have nothing to write, exit*/
+		if (!nbyte) {
+			res = cbuf - buf;
 			break;
 		}
 
 		res = pipe_wait(idesc, pipe, POLLOUT | POLLERR);
-		if (res < 0) {
-			goto out_unlock;
-		}
-	}
+	} while (res == 0);
 
-	idesc_notify(&pipe->read_desc.idesc, POLLIN);
-
-out_unlock:
 	mutex_unlock(&pipe->mutex);
 	return res;
 }
-
 
 static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
 #if 0
