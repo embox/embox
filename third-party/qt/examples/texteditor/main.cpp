@@ -148,6 +148,7 @@ static void load_pref(void) {
 	}
 	close(fd);
 
+set_default:
 	QString imagePath = QString(":/images/").append(QString(wall));
 	emarea->setBackgroundPath(imagePath);
 
