@@ -36,6 +36,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb->p_data_end = p_data + size;
 
 	skb_queue_push(&sk->rx_queue, skb);
+	sk->rx_data_len += size;
 
 	io_sync_enable(&sk->ios, IO_SYNC_READING);
 }
@@ -87,6 +88,9 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 		buff_sz -= len;
 		skb->p_data += len;
 		total_len += len;
+
+		assert(sk->rx_data_len >= len);
+		sk->rx_data_len -= len;
 
 		if (!stream_mode || (skb->p_data >= skb->p_data_end)) {
 			skb_free(skb);

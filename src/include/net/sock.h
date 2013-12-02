@@ -76,6 +76,8 @@ struct sock {
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
+	unsigned int rx_data_len;
+	//unsigned int tx_data_len;
 	unsigned char shutdown_flag; /* FIXME */
 	struct proto_sock *p_sk;
 	const struct sock_family_ops *f_ops;

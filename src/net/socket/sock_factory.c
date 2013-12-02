@@ -115,6 +115,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sock_opt_init(&sk->opt, family, type, protocol);
 	skb_queue_init(&sk->rx_queue);
 	skb_queue_init(&sk->tx_queue);
+	sk->rx_data_len = 0;
 	sock_set_state(sk, SS_UNKNOWN);
 	sk->shutdown_flag = 0;
 	sk->p_sk = sk->p_sk; /* setup in sock_alloc() */

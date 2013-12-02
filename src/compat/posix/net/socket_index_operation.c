@@ -13,6 +13,7 @@
 #include <net/socket/ksocket.h>
 
 #include <sys/socket.h>
+#include <poll.h>
 
 
 static ssize_t socket_read(struct idesc *desc, void *buff,
@@ -84,9 +85,33 @@ static int socket_close(struct idesc *desc) {
 	return 0;
 }
 
+static int socket_status(struct idesc *desc, int status_nr) {
+	struct sock *sk = (struct sock *)desc;
+
+	assert(sk != NULL);
+
+	if (!status_nr)
+		return 0;
+
+	switch (status_nr) {
+	case POLLIN:
+		return sk->rx_data_len;
+	case POLLOUT:
+		return INT_MAX; // XXX it is so?
+	case POLLERR:
+		return 0; /* TODO */
+	default:
+		/* UNREACHABLE */
+		assert(0);
+	}
+
+	return 0;
+}
+
 const struct idesc_ops task_idx_ops_socket = {
 	.read = socket_read,
 	.write = socket_write,
-	.close = socket_close
+	.close = socket_close,
+	.status = socket_status
 };
 
