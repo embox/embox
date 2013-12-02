@@ -50,9 +50,16 @@ static int smac_env_n;
 static struct file_desc *audit_log_desc;
 static char no_audit;
 
+#include <fs/vfs.h>
 static int audit_log_open(void) {
+	struct node *audit_node;
 
-	audit_log_desc = kopen(SMAC_AUDIT_FILE, O_CREAT | O_WRONLY | O_APPEND, 0755);
+	audit_node = vfs_lookup(NULL, SMAC_AUDIT_FILE);
+	if (!audit_node) {
+		return -1;
+	}
+
+	audit_log_desc = kopen(audit_node, O_CREAT | O_WRONLY | O_APPEND);
 
 	return audit_log_desc ? 0 : -1;
 }
