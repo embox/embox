@@ -33,7 +33,7 @@ static void file_desc_free(struct file_desc *desc) {
 	objfree(&desc_pool, desc);
 }
 
-extern const struct idesc_ops task_idx_ops_file;
+extern const struct idesc_ops idesc_file_ops;
 
 struct file_desc *file_desc_create(struct node *node, int flag) {
 	struct file_desc *desc;
@@ -47,7 +47,7 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 	/* setup access mode */
 	perm_flags = 0;
 	if ((flag & O_WRONLY) || (flag & O_RDWR)) {
-		perm_flags |= FS_MAY_READ;
+		perm_flags |= FS_MAY_WRITE;
 	}
 	if (!(flag & O_WRONLY)) {
 		perm_flags |= FS_MAY_READ;
@@ -62,14 +62,14 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 	desc->file_flags = flag & O_APPEND;
 	desc->cursor = 0;
 
-	idesc_init(&desc->idesc, &task_idx_ops_file, perm_flags);
+	idesc_init(&desc->idesc, &idesc_file_ops, perm_flags);
 
 	return desc;
 }
 
 int file_desc_destroy(struct file_desc *fdesc) {
 	assert(fdesc);
-	assert(fdesc->idesc.idesc_ops == &task_idx_ops_file);
+	assert(fdesc->idesc.idesc_ops == &idesc_file_ops);
 
 	file_desc_free(fdesc);
 	return 0;
@@ -87,7 +87,7 @@ struct file_desc *file_desc_get(int idx) {
 
 	idesc = idesc_table_get(it, idx);
 
-	if (idesc->idesc_ops != &task_idx_ops_file) {
+	if (idesc->idesc_ops != &idesc_file_ops) {
 		return NULL;
 	}
 

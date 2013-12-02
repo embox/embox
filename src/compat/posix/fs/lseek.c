@@ -13,7 +13,7 @@
 #include <fs/file_desc.h>
 
 
-extern const struct idesc_ops task_idx_ops_file;
+extern const struct idesc_ops idesc_file_ops;
 off_t lseek(int fd, off_t offset, int origin) {
 	struct file_desc *desc;
 
@@ -21,7 +21,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 	assert(desc);
 
 
-	if (desc->idesc.idesc_ops != &task_idx_ops_file) {
+	if (desc->idesc.idesc_ops != &idesc_file_ops) {
 		return -EBADF;
 	}
 
