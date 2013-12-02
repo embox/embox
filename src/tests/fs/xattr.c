@@ -13,7 +13,7 @@
 #include <drivers/ramdisk.h>
 #include <mem/page.h>
 #include <sys/xattr.h>
-#include <fs/sys/fsop.h>
+#include <fs/mount.h>
 
 #include <embox/test.h>
 
@@ -60,7 +60,7 @@ static int check_xattr(const char *path, int fd, const char *name, const char *v
 	}
 
 	if (vlen != ret) {
-		return ret;
+		return -1;
 	}
 
 	return strcmp(value, buf);
