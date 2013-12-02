@@ -71,8 +71,8 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 			                                              \
 			if (cond_expr) {                              \
 				__wait_ret = 0;                           \
-				break;                                    \
 				waitq_wait_cleanup(wq, &wql);             \
+				break;                                    \
 			}                                             \
 			                                              \
 			__wait_ret = sched_wait_timeout(timeout);     \
@@ -80,7 +80,10 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 		} while (!__wait_ret);                            \
 		                                                  \
 		if (__wait_ret && (cond_expr))                    \
+		{                                                 \
 			__wait_ret = 0;                               \
+			waitq_wait_cleanup(wq, &wql);                 \
+		}                                                 \
 		                                                  \
 		__wait_ret;                                       \
 	}))
