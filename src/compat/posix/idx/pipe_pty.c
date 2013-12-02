@@ -4,14 +4,16 @@
  * @brief
  *
  * @date 17.11.2013
- * @author Alexander Kalmuk
+ * @author Anton Kozlov
  */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <termios.h>
+#include <poll.h>
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
@@ -44,6 +46,7 @@ static int ppty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
 static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
 static int ppty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
 static int ppty_fstat(struct idesc *data, void *buff);
+static int ppty_status(struct idesc *idesc, int mask);
 
 static const struct idesc_ops ppty_master_ops = {
 		.write = ppty_master_write,
@@ -54,11 +57,12 @@ static const struct idesc_ops ppty_master_ops = {
 };
 
 static const struct idesc_ops ppty_slave_ops = {
-		.write = ppty_slave_write,
-		.read  = ppty_slave_read,
-		.close = ppty_close,
-		.ioctl = ppty_ioctl,
-		.fstat = ppty_fstat,
+		.write  = ppty_slave_write,
+		.read   = ppty_slave_read,
+		.close  = ppty_close,
+		.ioctl  = ppty_ioctl,
+		.fstat  = ppty_fstat,
+		.status = ppty_status,
 };
 
 static struct ppty *ppty_create(void) {
@@ -218,6 +222,26 @@ static int ppty_ioctl(struct idesc *idesc, int request, void *data) {
 	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
 
 	return tty_ioctl(pty_to_tty(&ippty->ppty->pty), request, data);
+}
+
+static int ppty_status(struct idesc *idesc, int mask) {
+	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
+	struct pty *pty = &ippty->ppty->pty;
+	int res;
+
+	switch (mask) {
+	case POLLIN:
+		res = ring_can_read(&pty_to_tty(pty)->i_ring, TTY_IO_BUFF_SZ, 1);
+	case POLLOUT:
+		res = ring_can_write(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
+		break;
+	default:
+	case POLLERR:
+		res = 0;
+		break;
+	}
+
+	return res;
 }
 
 int ppty(int pptyfds[2]) {

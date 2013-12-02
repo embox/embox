@@ -31,6 +31,7 @@ int poll_table_count(struct idesc_poll_table *pt) {
 		poll_mask = pt->idesc_poll[i].i_poll_mask;
 
 		assert(idesc->idesc_ops);
+		assert(idesc->idesc_ops->status);
 
 		if (idesc->idesc_ops->status(idesc, POLLIN & poll_mask)) {
 			pt->idesc_poll[i].o_poll_mask |= POLLIN;
