@@ -11,17 +11,20 @@
 
 
 #include <stddef.h>
-#include <kernel/task/io_sync.h>
+//#include <kernel/task/io_sync.h>
 #include <fs/idesc.h>
 
+
+//#define FS_MAY_APPEND  (0x1 << 3)
 struct node;
 struct kfile_operations;
+
 
 struct file_desc {
 	struct idesc idesc;
 
 	struct node *node;
-	int flags;
+	int file_flags;
 	const struct kfile_operations *ops;
 	size_t cursor;
 /* TODO this need for system without file_nodes where we want to use uart for
@@ -29,7 +32,7 @@ struct file_desc {
  */
 	void *file_info; /* customize in each file system */
 
-	struct io_sync ios;
+	//struct io_sync ios;
 };
 
 
@@ -37,7 +40,6 @@ struct node;
 extern struct file_desc *file_desc_create(struct node *node, int __oflag);
 
 extern int file_desc_destroy(struct file_desc *);
-extern int file_desc_perm_check(struct file_desc *);
 
 extern struct file_desc *file_desc_get(int idx);
 

@@ -40,39 +40,40 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 	int perm_flags;
 	int ret;
 
-	perm_flags = ((flag & O_WRONLY || flag & O_RDWR) ? FS_MAY_WRITE : 0)
-		| ((flag & O_WRONLY) ? 0 : FS_MAY_READ);
-
 	/* allocate new descriptor */
 	if (NULL == (desc = file_desc_alloc())) {
 		return err_ptr(ENOMEM);
 	}
-
-	desc->node = node;
-
-	desc->flags = perm_flags | ((flag & O_APPEND) ? FS_MAY_APPEND : 0);
-	desc->cursor = 0;
-	io_sync_init(&desc->ios, 0, 0);
-
+	/* setup access mode */
+	perm_flags = 0;
+	if ((flag & O_WRONLY) || (flag & O_RDWR)) {
+		perm_flags |= FS_MAY_READ;
+	}
+	if (!(flag & O_WRONLY)) {
+		perm_flags |= FS_MAY_READ;
+	}
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {
 		file_desc_free(desc);
 		return err_ptr(EACCES);
 	}
-	desc->idesc.idesc_ops = (struct idesc_ops *)&task_idx_ops_file;
+
+	desc->node = node;
+	desc->file_flags = flag & O_APPEND;
+	desc->cursor = 0;
+
+	idesc_init(&desc->idesc, &task_idx_ops_file, perm_flags);
 
 	return desc;
 }
 
 int file_desc_destroy(struct file_desc *fdesc) {
+	assert(fdesc);
+	assert(fdesc->idesc.idesc_ops == &task_idx_ops_file);
+
 	file_desc_free(fdesc);
 	return 0;
 }
-
-int file_desc_perm_check(struct file_desc *fdesc) {
-	return 0;
-}
-
 
 struct file_desc *file_desc_get(int idx) {
 	struct idesc *idesc;
@@ -85,6 +86,10 @@ struct file_desc *file_desc_get(int idx) {
 	assert(it);
 
 	idesc = idesc_table_get(it, idx);
+
+	if (idesc->idesc_ops != &task_idx_ops_file) {
+		return NULL;
+	}
 
 	return (struct file_desc *) idesc;
 

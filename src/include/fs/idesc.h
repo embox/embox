@@ -8,7 +8,7 @@
 #ifndef FS_IDESC_H_
 #define FS_IDESC_H_
 
-//#include <fs/flags.h>
+#include <fs/flags.h>
 
 
 struct idesc_ops;
@@ -42,6 +42,8 @@ __BEGIN_DECLS
 
 extern int idesc_init(struct idesc *idesc, const struct idesc_ops *ops,
 		idesc_access_mode_t amode);
+
+extern int idesc_check_mode(struct idesc *idesc, idesc_access_mode_t amode);
 
 #if 0
 extern int idesc_read(struct idesc *idesc, char *buff, int size);

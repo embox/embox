@@ -27,6 +27,10 @@ int idesc_init(struct idesc *idesc, const struct idesc_ops *ops, idesc_access_mo
 	return 0;
 }
 
+int idesc_check_mode(struct idesc *idesc, idesc_access_mode_t amode) {
+	return idesc->idesc_amode & amode;
+}
+
 #if 0
 
 int idesc_read(struct idesc *idesc, char *buff, int size) {

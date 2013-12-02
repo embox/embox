@@ -17,6 +17,7 @@
 
 
 extern const struct idesc_ops task_idx_ops_file;
+
 static int this_close(struct idesc *idesc) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &task_idx_ops_file);

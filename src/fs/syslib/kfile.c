@@ -93,7 +93,7 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (!(file->flags & FS_MAY_WRITE)) {
+	if (!idesc_check_mode(&file->idesc, FS_MAY_WRITE)) {
 		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
@@ -105,7 +105,7 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (file->flags & FS_MAY_APPEND) {
+	if (file->file_flags & O_APPEND) {
 		kseek(file, 0, SEEK_END);
 	}
 
@@ -115,7 +115,7 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	end:
+end:
 	DPRINTF(("write(%s, ...) = %d\n", file->node->name, ret));
 
 	return ret;
@@ -130,7 +130,7 @@ size_t kread(void *buf, size_t size, struct file_desc *desc) {
 		goto end;
 	}
 
-	if (!(desc->flags & FS_MAY_READ)) {
+	if (!idesc_check_mode(&desc->idesc, FS_MAY_READ)) {
 		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
