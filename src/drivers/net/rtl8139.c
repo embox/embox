@@ -198,8 +198,8 @@ static int rtl8139_init(struct pci_slot_dev *pci_dev) {
 	int res = 0;
 	uint32_t nic_base;
 	struct net_device *nic;
-	struct pci_slot_dev *pci_dev;
 
+	assert(pci_dev != NULL);
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 

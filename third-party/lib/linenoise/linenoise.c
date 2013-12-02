@@ -111,8 +111,6 @@
 static char *unsupported_term[] = {"dumb","cons25",NULL};
 static linenoiseCompletionCallback *completionCallback = NULL;
 
-static struct termios orig_termios; /* In order to restore at exit.*/
-static int rawmode = 0; /* For atexit() function to check if restore is needed*/
 static int mlmode = 0;  /* Multi line mode. Default is single line. */
 static int atexit_registered = 0; /* Register atexit just 1 time. */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
@@ -161,7 +159,7 @@ static int isUnsupportedTerm(void) {
 }
 
 /* Raw mode: 1960 magic shit. */
-static int enableRawMode(int fd) {
+static int enableRawMode(int fd, struct termios *orig_termios, int *rawmode) {
     struct termios raw;
 
     if (!isatty(STDIN_FILENO)) goto fatal;
@@ -169,9 +167,9 @@ static int enableRawMode(int fd) {
        // atexit(linenoiseAtExit);
         atexit_registered = 1;
     }
-    if (tcgetattr(fd,&orig_termios) == -1) goto fatal;
+    if (tcgetattr(fd,orig_termios) == -1) goto fatal;
 
-    raw = orig_termios;  /* modify the original mode */
+    raw = *orig_termios;  /* modify the original mode */
     /* input modes: no break, no CR to NL, no parity check, no strip char,
      * no start/stop output control. */
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
@@ -188,7 +186,7 @@ static int enableRawMode(int fd) {
 
     /* put terminal in raw mode after flushing */
     if (tcsetattr(fd,TCSAFLUSH,&raw) < 0) goto fatal;
-    rawmode = 1;
+    *rawmode = 1;
     return 0;
 
 fatal:
@@ -196,10 +194,10 @@ fatal:
     return -1;
 }
 
-static void disableRawMode(int fd) {
+static void disableRawMode(int fd, struct termios *orig_termios, int *rawmode) {
     /* Don't even check the return value as it's too late. */
-    if (rawmode && tcsetattr(fd,TCSAFLUSH,&orig_termios) != -1)
-        rawmode = 0;
+    if (*rawmode && tcsetattr(fd,TCSAFLUSH,orig_termios) != -1)
+        *rawmode = 0;
 }
 
 /* Try to get the number of columns in the current terminal, or assume 80
@@ -733,6 +731,8 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
  * the STDIN file descriptor set in raw mode. */
 static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
     int fd = STDIN_FILENO;
+    struct termios orig_termios; /* In order to restore at exit.*/
+    int rawmode = 0; /* For atexit() function to check if restore is needed*/
     int count;
 
     if (buflen == 0) {
@@ -747,9 +747,9 @@ static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
             buf[count] = '\0';
         }
     } else {
-        if (enableRawMode(fd) == -1) return -1;
+        if (enableRawMode(fd, &orig_termios, &rawmode) == -1) return -1;
         count = linenoiseEdit(fd, STDOUT_FILENO, buf, buflen, prompt);
-        disableRawMode(fd);
+        disableRawMode(fd, &orig_termios, &rawmode);
         printf("\n");
     }
     return count;

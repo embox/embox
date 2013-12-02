@@ -17,7 +17,6 @@
 #include <net/l3/icmpv4.h>
 #include <net/l4/udp.h>
 #include <net/socket/raw.h>
-#include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
 #include <net/util/checksum.h>

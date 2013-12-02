@@ -96,16 +96,14 @@ void sched_wake(struct thread *t) {
 
 	/* TODO: it's not true when it's called for waking thread from waitq */
 	//assert(!in_harder_critical());
-	assert(t != current);
 	assert(t);
 	assert(is_waiting(t));
 
 	irq_lock();
 	{
-
 		t->state &= ~__THREAD_STATE_WAITING;
 
-		if (!is_ready(t)) {
+		if (!is_ready(t) && !is_running(t)) {
 			make_ready(t);
 			runq_insert(&rq.queue, t);
 		}
@@ -195,10 +193,12 @@ static void sched_switch(void) {
 
 		prev = thread_get_current();
 
-		if (is_running(prev)) {
+		if (is_running(prev) && !is_waiting(prev)) {
 			make_ready(prev);
 			runq_insert(&rq.queue, prev);
 		}
+
+		prev->state &= ~__THREAD_STATE_RUNNING;
 
 		next = runq_extract(&rq.queue);
 

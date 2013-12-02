@@ -224,7 +224,9 @@ $(ROOTFS_IMAGE): build_and_install
 TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
+ifeq ($(MAKECMDGOALS),texteditor) # texteditor will be built only if included as mybuild module
 TARGET_APPS += examples/texteditor
+endif
 ifeq ($(MAKECMDGOALS),qpidhello)
 TARGET_APPS += examples/qpidhello
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
@@ -321,9 +323,10 @@ $(TARGET_QMAKE_EMBOX): build_and_install
 
 all: target_apps_EMBOX
 
-.PHONY: qpidhello
+.PHONY: qpidhello texteditor
 
 qpidhello: target_apps_EMBOX
+texteditor: target_apps_EMBOX
 
 
 

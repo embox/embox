@@ -19,7 +19,9 @@
  */
 
 #include <asm/modes.h>
+#include <asm/regs.h>
 #include <framework/mod/options.h>
+#include <module/embox/arch/mmu.h>
 
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
@@ -91,34 +93,16 @@ reset_handler:
     ldr r0, =trap_table_start
     mcr p15, 0, r0, c12, c0, 0
 
-	/*
-	 * FIXME (Linux copy-paste)
-	 * Initialise the page tables, turning on the cacheable and bufferable
-	 * bits for the RAM area only.
-	 */
-	ldr r3, =0x80000000
-    mov r0, r3
-    mov r9, r0, lsr #18
-    mov r9, r9, lsl #18     @ start of RAM
-    add r10, r9, #0x40000000    @ a reasonable RAM size
-    mov r1, #0x12
-    orr r1, r1, #3 << 10
-    add r2, r3, #16384
- 1: cmp r1, r9          @ if virt > start of RAM
-    orrhs   r1, r1, #0x0c       @ set cacheable, bufferable
-    cmp r1, r10         @ if virt > end of RAM
-    bichs   r1, r1, #0x0c       @ clear cacheable, bufferable
-    str r1, [r0], #4        @ 1:1 mapping
-    add r1, r1, #1048576
-    teq r0, r2
-    bne 1b
-	mcr p15, 0, r3, c2, c0, 0
-	mov r1, #0xffffffff
-	mcr p15, 0, r1, c3, c0, 0
+	/* initializing MMU */
+#ifndef NOMMU
+    bl mmu_init
+#endif
 
     /* setup c1, Control Register */
     mrc p15, 0, r0, c1, c0, 0
+#ifndef NOMMU
     orr r0, r0, #CR_M /* enabling MMU */
+#endif
     orr r0, r0, #CR_A /* enabling data abort on unaligned mem access */
     orr r0, r0, #CR_C /* enabling data caching */
     orr r0, r0, #CR_Z /* enabling program flow prediction */

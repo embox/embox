@@ -142,7 +142,6 @@ struct sk_buff * skb_wrap(size_t size, size_t offset,
 	}
 
 	INIT_LIST_HEAD((struct list_head *)skb);
-	skb->sk = NULL;
 	skb->dev = NULL;
 	skb->len = size;
 	skb->nh.raw = skb->h.raw = NULL;
@@ -177,7 +176,6 @@ struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 	}
 
 	list_del_init((struct list_head *)skb);
-	skb->sk = NULL;
 	skb->dev = NULL;
 	skb->len = size;
 	skb->mac.raw = &skb->data->data[0];
@@ -209,7 +207,6 @@ static void skb_copy_ref(struct sk_buff *to,
 	assert((to != NULL) && (to->data != NULL)
 			&& (from != NULL) && (from->data != NULL));
 
-	to->sk = from->sk;
 	to->dev = from->dev;
 	offset = &to->data->data[0] - &from->data->data[0];
 	if (from->mac.raw != NULL) {

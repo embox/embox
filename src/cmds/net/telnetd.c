@@ -22,8 +22,6 @@
 #include <sys/socket.h>
 #include <net/inetdevice.h>
 
-#include <util/ring.h>
-#include <util/ring_buff.h>
 #include <util/math.h>
 
 
@@ -314,8 +312,6 @@ static void *telnet_thread_handler(void* args) {
 				MD(printf("write on sock: %d %d\n", len, errno));
 			}
 		} else if (FD_ISSET(pptyfd[0], &readfds)){
-			struct ring pbuf_r;
-			ring_init(&pbuf_r);
 			p = pbuff;
 			pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN);
 			if (pipe_data_len <= 0) {

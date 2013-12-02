@@ -10,6 +10,7 @@
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
+#include <assert.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 
@@ -145,6 +146,7 @@ struct proto_sock {
  *             (proto_sock MUST BE FIRST field in derived socket type)
  */
 static inline struct sock * to_sock(const void *p_sk) {
+	assert(p_sk != NULL);
 	return ((const struct proto_sock *)p_sk)->sk;
 }
 
@@ -196,5 +198,12 @@ extern struct sock * sock_lookup(const struct sock *sk,
 
 #define sock_foreach(sk, p_ops) \
 	list_foreach(sk, p_ops->sock_list, lnk)
+
+/**
+ * AF_INET/AF_INET6 socket functions
+ */
+#include <netinet/in.h>
+extern in_port_t sock_inet_get_src_port(const struct sock *sk);
+extern in_port_t sock_inet_get_dst_port(const struct sock *sk);
 
 #endif /* NET_SOCK_H_ */
