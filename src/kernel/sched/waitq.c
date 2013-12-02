@@ -25,8 +25,8 @@
 void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	assert(wq && wql);
 
-	dlist_head_init(&wql->link);
-	dlist_add_prev(&wql->link, &wq->list);
+	if (dlist_empty(&wql->link))
+		dlist_add_prev(&wql->link, &wq->list);
 }
 
 void waitq_add(struct waitq *wq, struct waitq_link *wql) {
