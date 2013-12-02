@@ -12,6 +12,7 @@
 
 
 struct idesc_ops;
+struct idesc_xattrops;
 typedef int idesc_access_mode_t;
 
 #include <kernel/sched/waitq.h>
@@ -20,6 +21,7 @@ struct idesc {
 	idesc_access_mode_t idesc_amode;
 	struct waitq idesc_waitq;
 	const struct idesc_ops *idesc_ops;
+	const struct idesc_xattrops *idesc_xattrops;
 	unsigned int idesc_flags;
 	int idesc_count;
 };
@@ -36,6 +38,14 @@ struct idesc_ops {
 	int (*status)(struct idesc *idesc, int mask);
 };
 
+struct idesc_xattrops {
+	int (*getxattr)(struct idesc *idesc, const char *name, void *value,
+			size_t size);
+	int (*setxattr)(struct idesc *idesc, const char *name,
+			const void *value, size_t size);
+	int (*listxattr)(struct idesc *idesc, char *list, size_t size);
+	int (*removexattr)(struct idesc *idesc, const char *name);
+};
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
