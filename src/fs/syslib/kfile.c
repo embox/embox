@@ -43,13 +43,13 @@ struct file_desc *kopen(struct node *node, int flag) {
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */
 	if (NULL == nas->fs ) {
-		/*return -ENOSUPP;*/
+		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
 
 	if (node_is_file(node)) {
 		if (NULL == nas->fs->drv) {
-			/*return -ENOSUPP;*/
+			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
 		ops = (struct kfile_operations *) nas->fs->drv->file_op;
@@ -58,13 +58,13 @@ struct file_desc *kopen(struct node *node, int flag) {
 	}
 
 	if(ops == NULL) {
-		/*SET_ERRNO(ENOSUPP);*/
+		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
 
 	desc = file_desc_create(node, flag);
 	if (0 != err(desc)) {
-		/*SET_ERRNO(-(int)desc);*/
+		SET_ERRNO(-(int)desc);
 		return NULL;
 	}
 	desc->ops = ops;
@@ -76,7 +76,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 free_out:
 	if (ret < 0) {
 		file_desc_destroy(desc);
-		/*SET_ERRNO(-ret);*/
+		SET_ERRNO(-ret);
 		return NULL;
 	}
 

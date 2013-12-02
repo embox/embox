@@ -50,6 +50,11 @@ int open(const char *path, int __oflag, ...) {
 	mode = va_arg(args, mode_t);
 	va_end(args);
 
+	if (__oflag & O_EXCL) {
+		/* If O_EXCL is set and O_CREAT is not set, the result is undefined.*/
+		assert(__oflag & O_CREAT);
+	}
+
 	parent_path = dirname((char *)path);
 	if (NULL == (dir = opendir(parent_path))) {
 		return -1;
@@ -68,26 +73,24 @@ int open(const char *path, int __oflag, ...) {
 				rc =  -1;
 				goto out;
 			}
-			__oflag &= ~(O_CREAT | O_EXCL);
 		} else {
 			SET_ERRNO(ENOENT);
 			rc = -1;
 			goto out;
 		}
-	} else if (__oflag & O_TRUNC) {
-		ktruncate(node, 0);
+	} else {
+		if (__oflag & O_EXCL) {
+			SET_ERRNO(EEXIST);
+			rc = -1;
+			goto out;
+		}
+
+		if (__oflag & O_TRUNC) {
+			ktruncate(node, 0);
+		}
 	}
 
-	if (__oflag & O_EXCL) {
-		/* If O_EXCL is set and O_CREAT is not set, the result is undefined.*/
-		assert(__oflag & O_CREAT);
-	}
-
-	if (__oflag & O_EXCL) {
-		SET_ERRNO(EEXIST);
-		rc = -1;
-		goto out;
-	}
+	__oflag &= ~(O_CREAT | O_EXCL);
 
 	kfile = kopen(node, __oflag);
 	if (NULL == kfile) {
