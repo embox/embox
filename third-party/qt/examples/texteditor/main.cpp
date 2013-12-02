@@ -133,6 +133,9 @@ static void load_pref(void) {
 	snprintf(cbuf, FSIZE, "/mnt/pref_%d", curuid);
 	fd = open(cbuf, O_RDONLY, 0755);
 
+	if (fd == -1)
+		goto set_default;
+
 	lseek(fd, 0, 0);
 	if (0 < (ret = read(fd, cbuf, FSIZE))) {
 		char *buf = cbuf;
