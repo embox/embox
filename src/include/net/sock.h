@@ -83,8 +83,10 @@ struct sock {
 	const struct sock_family_ops *f_ops;
 	const struct sock_proto_ops *p_ops;
 	const struct net_pack_out_ops *o_ops;
-	struct io_sync ios;
+
 #if 0
+	struct io_sync ios;
+
 	const struct sockaddr *src_addr;
 	const struct sockaddr *dst_addr;
 	size_t addr_len;

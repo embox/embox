@@ -122,10 +122,8 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->f_ops = f_ops;
 	sk->p_ops = p_ops;
 	sk->o_ops = o_ops;
-	io_sync_init(&sk->ios, 0, 0);
 #if 0
-	sk->src_addr = sk->dst_addr = NULL;
-	sk->addr_len = 0;
+	io_sync_init(&sk->ios, 0, 0);
 #endif
 }
 extern const struct idesc_ops task_idx_ops_socket;

@@ -39,6 +39,7 @@ module sock {
 	source "socket/sock_hash.c"
 	source "socket/sock_repo.c"
 	source "socket/sock_factory.c"
+	source "socket/sock_wait.c"
 
 	depends skbuff
 	depends embox.arch.interrupt

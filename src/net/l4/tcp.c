@@ -237,7 +237,9 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
+#if 0
 		io_sync_enable(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
+#endif
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -247,18 +249,24 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
+#if 0
 			io_sync_enable(&to_sock(tcp_sk->parent)->ios,
 					IO_SYNC_READING);
+#endif
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
+#if 0
 		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
+#endif
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
+#if 0
 		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
 		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
+#endif
 		break;
 	}
 }

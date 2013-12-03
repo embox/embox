@@ -40,10 +40,11 @@ struct sock *ksocket(int family, int type, int protocol) {
 
 	sock_set_state(new_sk, SS_UNCONNECTED);
 
+#if 0
 	if (type != SOCK_STREAM) {
 		io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
 	}
-
+#endif
 
 
 	return new_sk;
@@ -144,6 +145,7 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr,
 			addrlen, flags);
 	if ((ret == -EINPROGRESS) && !(flags & O_NONBLOCK)) {
+#ifdef NOTUSE_IOSYNC
 		/* lock until a connection is established */
 		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING,
 				MODOPS_CONNECT_TIMEOUT);
@@ -158,6 +160,7 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 			/* if writing not ready then connection is reset */
 			ret = -ECONNRESET;
 		}
+#endif
 	}
 	if (ret != 0) {
 		LOG_ERROR("ksocket_connect",
@@ -249,8 +252,12 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	}
 
 	if (!(flags & O_NONBLOCK)) {
+		ret = 0;
+#if 0
 		ret = io_sync_wait(&sk->ios, IO_SYNC_READING,
 				IO_SYNC_TIMEOUT_INFINITE);
+#endif
+
 		if (ret != 0) {
 			return ret;
 		}
@@ -265,9 +272,9 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	}
 
 	sock_set_state(new_sk, SS_ESTABLISHED);
-
+#if 0
 	io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
-
+#endif
 	*out_sk = new_sk;
 
 	return 0;
@@ -345,7 +352,9 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	if (!(flags & O_NONBLOCK)) {
+#if 0
 		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING, timeout);
+#endif
 		if (ret != 0) {
 			return ret;
 		}
@@ -395,7 +404,10 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	if (!(flags & O_NONBLOCK)) {
+		ret = 0;
+#if 0
 		ret = io_sync_wait(&sk->ios, IO_SYNC_READING, timeout);
+#endif
 		if (ret != 0) {
 			return ret;
 		}

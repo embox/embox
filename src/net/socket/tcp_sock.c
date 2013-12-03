@@ -236,8 +236,10 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		/* waiting anyone */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
+#if 0
 			io_sync_disable(&to_sock(tcp_sk)->ios,
 					IO_SYNC_READING);
+#endif
 			if (list_empty(&tcp_sk->conn_wait)) {
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return -EAGAIN;
@@ -259,22 +261,19 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			--tcp_sk->conn_wait_len;
 
 			/* enable reading if queue not empty */
-			if (!list_empty(&tcp_sk->conn_wait)
-					&& io_sync_ready(&to_sock(list_entry(
+			if (!list_empty(&tcp_sk->conn_wait)) {
+#if 0
+				if (io_sync_ready(&to_sock(list_entry(
 								tcp_sk->conn_wait.next, struct tcp_sock,
 									conn_wait))->ios,
 						IO_SYNC_WRITING)) {
+
 				io_sync_enable(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
+#endif
 			}
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-#if 0
-		debug_print(3, "tcp_accept: newsk %p for %s:%hu\n",
-				to_sock(tcp_newsk),
-				inet_ntoa(to_inet_sock(to_sock(tcp_newsk))->dst_in.sin_addr),
-				ntohs(sock_inet_get_dst_port(to_sock(tcp_newsk))));
-#endif
 
 		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 			tcp_sock_release(tcp_newsk);
@@ -282,8 +281,9 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 
 		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
+#if 0
 		assert(io_sync_ready(&to_sock(tcp_newsk)->ios, IO_SYNC_WRITING));
-
+#endif
 		*newsk = to_sock(tcp_newsk);
 
 		return 0;
