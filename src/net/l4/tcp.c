@@ -1264,7 +1264,7 @@ static int tcp_init(void) {
 	int ret;
 
 	/* Create default timer */
-	ret = timer_init(&tcp_tmr_default, TIMER_PERIODIC,
+	ret = timer_init_msec(&tcp_tmr_default, TIMER_PERIODIC,
 			TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;
