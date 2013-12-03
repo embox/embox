@@ -70,7 +70,10 @@ int __waitq_wait_locked(int timeout) {
 void waitq_remove(struct wait_link *wait_link) {
 	ipl_t ipl = ipl_save();
 	{
-		dlist_del(&wait_link->link);
+		if (!dlist_empty(&wait_link->link)) {
+			dlist_del(&wait_link->link);
+			dlist_init(&wait_link->link);
+		}
 	}
 	ipl_restore(ipl);
 }
