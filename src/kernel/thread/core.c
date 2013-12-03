@@ -273,7 +273,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 		t->joining = current;
 		ret = SCHED_WAIT(thread_exited(t));
-		if (ret)
+		if (ret < 0)
 			goto out;
 
 		if (p_ret)
@@ -284,7 +284,7 @@ int thread_join(struct thread *t, void **p_ret) {
 out:
 	sched_unlock();
 
-	return ret;
+	return ret < 0 ? ret : 0;
 }
 
 int thread_detach(struct thread *t) {

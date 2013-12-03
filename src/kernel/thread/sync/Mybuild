@@ -2,7 +2,7 @@ package embox.kernel.thread
 
 module sync {
 	depends mutex
-//	depends sem
+	depends sem
 //	depends barrier
 //	depends cond
 //	depends rwlock

@@ -22,6 +22,6 @@ int ksleep(useconds_t msec) {
 
 	wait_res = SCHED_WAIT_TIMEOUT(0, msec);
 
-	return wait_res == -ETIMEDOUT ? 0 : wait_res;
+	return wait_res;
 }
 

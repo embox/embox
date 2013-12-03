@@ -55,7 +55,7 @@ static int __manual_event_wait(struct manual_event *m_event,
 	softirq_unlock();
 	{
 		assert(critical_allows(CRITICAL_SCHED_LOCK));
-		ret = sched_wait_timeout(timeout);
+		ret = sched_wait_timeout(timeout) ? 0 : -ETIMEDOUT;
 	}
 	softirq_lock();
 

@@ -29,26 +29,24 @@ void semaphore_enter(struct sem *s) {
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
 	struct timespec current_time;
 	int ret = 0;
-	int diff;
 
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	if (tryenter_sched_lock(s) != 0) {
+		clock_gettime(CLOCK_REALTIME, &current_time);
+		ret = ms2jiffies(abs_timeout->tv_nsec - current_time.tv_nsec);
 
 		while (1) {
-			sched_wait_prepare(&s->wq, 0);
+			sched_wait_prepare();
 
 			if (tryenter_sched_lock(s) != 0) {
 				ret = 0;
 				break;
 			}
 
-			clock_gettime(CLOCK_REALTIME, &current_time);
-			diff = abs_timeout->tv_nsec - current_time.tv_nsec;
-
-			if (diff > 0)
-				ret = sched_wait_timeout(diff);
+			if (ret > 0)
+				ret = sched_wait_timeout(ret);
 			else
 				ret = -ETIMEDOUT;
 
@@ -59,7 +57,7 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 		if (tryenter_sched_lock(s) != 0)
 			ret = 0;
 
-		sched_wait_cleanup(&s->wq);
+		sched_wait_cleanup();
 	}
 
 	return ret;

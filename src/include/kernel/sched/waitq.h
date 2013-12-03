@@ -17,6 +17,8 @@
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 
+#include <kernel/time/time.h>
+
 __BEGIN_DECLS
 
 struct thread;
@@ -63,24 +65,25 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                 \
-		int __wait_ret;                                   \
 		struct waitq_link wql;                            \
+		int __wait_ret = ms2jiffies(timeout);             \
 		waitq_link_init(&wql);                            \
 		                                                  \
 		do {                                              \
 			waitq_wait_prepare(wq, &wql);                 \
 			                                              \
 			if (cond_expr) {                              \
-				__wait_ret = 0;                           \
 				break;                                    \
 			}                                             \
 			                                              \
-			__wait_ret = sched_wait_timeout(timeout);     \
-		} while (!__wait_ret);                            \
+			__wait_ret = sched_wait_timeout(__wait_ret);  \
+			if (__wait_ret <= 0)                          \
+				break;                                    \
+		} while (1);                                      \
 		                                                  \
 		if (__wait_ret && (cond_expr))                    \
 		{                                                 \
-			__wait_ret = 0;                               \
+			__wait_ret = 1;                               \
 		}                                                 \
 		waitq_wait_cleanup(wq, &wql);                     \
 		                                                  \
