@@ -52,6 +52,11 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 
 	assert(desc != NULL);
 
+#if 0
+	if (sk->shutdown_flag & (SHUT_WR + 1))
+		return SET_ERRNO(EPIPE);
+#endif
+
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
 	msg.msg_iov = &iov;

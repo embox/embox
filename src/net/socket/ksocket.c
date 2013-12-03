@@ -283,19 +283,14 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
 
-	if (sk == NULL) {
-		return -EBADF;
-	}
-	else if ((msg == NULL) || (msg->msg_iov == NULL)
-			|| (msg->msg_iovlen == 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov);
+	assert(msg->msg_iovlen);
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
-		return -EPIPE;
-	}
+	assert(sk->f_ops);
+	assert(sk->f_ops->sendmsg);
 
-	assert(sk->f_ops != NULL);
 	switch (sk->opt.so_type) {
 	default:
 		if (!sock_state_bound(sk)) {
@@ -331,19 +326,8 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		break;
 	}
 
-	/* TODO remove this */
-	if (msg->msg_flags != 0) {
-		LOG_ERROR("ksendmsg", "flags are not supported");
-		return -EOPNOTSUPP;
-	}
-	else if (msg->msg_iovlen != 1) {
-		LOG_ERROR("ksendmsg", "only one msg_iov allowed");
-		return -EINVAL;
-	}
-
-	if (sk->f_ops->sendmsg == NULL) {
+	if (sk->f_ops->sendmsg == NULL)
 		return -ENOSYS;
-	}
 
 	return sk->f_ops->sendmsg(sk, msg, flags);
 }

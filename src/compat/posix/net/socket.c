@@ -23,6 +23,7 @@
 #include <net/socket/socket_desc.h>
 
 #include <kernel/task/idesc_table.h>
+#include <util/sys_log.h>
 
 #include <err.h>
 
@@ -149,6 +150,20 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+#if 0
+	if (sk->shutdown_flag & (SHUT_WR + 1))
+		return SET_ERRNO(EPIPE);
+#endif
+
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("ksendmsg", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
+	}
+
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
 	msg.msg_iov = &iov;
@@ -178,6 +193,20 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+#if 0
+	if (sk->shutdown_flag & (SHUT_WR + 1))
+		return SET_ERRNO(EPIPE);
+#endif
+
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("ksendmsg", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
+	}
+
 	msg.msg_name = (void *)addr;
 	msg.msg_namelen = addrlen;
 	msg.msg_iov = &iov;
@@ -204,7 +233,22 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (NULL == msg) {
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+#if 0
+	if (sk->shutdown_flag & (SHUT_WR + 1))
+		return SET_ERRNO(EPIPE);
+#endif
+
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("ksendmsg", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
+	}
+
+	if ((msg == NULL) || (msg->msg_iov == NULL)
+			|| (msg->msg_iovlen == 0)) {
 		return SET_ERRNO(EINVAL);
 	}
 	memcpy(&msg_, msg, sizeof (msg_));
