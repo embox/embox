@@ -15,6 +15,7 @@ module filesystem {
 
 module file_desc {
 	source "file_desc.c"
+	source "file_xattr.c"
 	source "idesc.c"
 	source "idesc_event.c"
 	option number idesc_event_quantity = 256

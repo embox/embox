@@ -22,6 +22,7 @@
 #include <embox/unit.h>
 #include <err.h>
 
+extern const struct idesc_xattrops file_idesc_xattrops;
 
 OBJALLOC_DEF(desc_pool, struct file_desc, OPTION_GET(NUMBER,fdesc_quantity));
 
@@ -63,6 +64,7 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 	desc->cursor = 0;
 
 	idesc_init(&desc->idesc, &idesc_file_ops, perm_flags);
+	desc->idesc.idesc_xattrops = &file_idesc_xattrops;
 
 	return desc;
 }
