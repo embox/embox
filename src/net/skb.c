@@ -273,3 +273,19 @@ void skb_rshift(struct sk_buff *skb, size_t count) {
 	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
 	skb->len += count;
 }
+
+
+size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
+	size_t len;
+
+	assert(skb);
+	assert(skb->p_data_end >= skb->p_data);
+
+	len = min(buff_sz, skb->p_data_end - skb->p_data);
+
+	memcpy(buff, skb->p_data, len);
+
+	skb->p_data += len;
+
+	return len;
+}

@@ -17,6 +17,7 @@
 #include <embox/net/sock.h>
 
 #include <hal/ipl.h>
+#include <kernel/softirq_lock.h>
 //#include <kernel/task/io_sync.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
@@ -40,6 +41,8 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 
 	skb_queue_push(&sk->rx_queue, skb);
 	sk->rx_data_len += size;
+
+	idesc_notify(&sk->idesc, POLLIN);
 #if 0
 	io_sync_enable(&sk->ios, IO_SYNC_READING);
 #endif
@@ -59,25 +62,9 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
-static size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
-	size_t len;
+size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
 
-	assert(skb);
-	assert(skb->p_data_end >= skb->p_data);
-
-	len = min(buff_sz, skb->p_data_end - skb->p_data);
-
-	memcpy(buff, skb->p_data, len);
-
-	skb->p_data += len;
-	if (skb->p_data == skb->p_data_end) {
-		skb_free(skb);
-	}
-
-	return len;
-}
-
-int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
+static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
 	struct sk_buff *skb;
 	size_t len;
 	int total_len;
@@ -106,12 +93,14 @@ out:
 	sk->rx_data_len -= total_len;
 	return total_len;
 }
-#include <kernel/softirq_lock.h>
+
+
 
 extern int sock_wait(struct idesc *idesc, int flags);
-int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags, int stream_mode) {
-	//struct sk_buff *skb;
+
+int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
+		int stream_mode) {
+
 	char *buff;
 	size_t buff_sz, total_len, len;
 
@@ -126,21 +115,21 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	total_len = 0;
 
-	while (buff_sz) {
-		softirq_lock();
-		{
+	softirq_lock();
+	{
+		while (buff_sz) {
 			len = sock_read(sk, buff, buff_sz, stream_mode);
 
 			buff_sz -= len;
 			total_len += len;
 
-			if (total_len == 0) {
-				sock_wait(&sk->idesc, POLLIN);
+			if (total_len > 0) {
+				break;
 			}
+			sock_wait(&sk->idesc, POLLIN);
 		}
-		softirq_unlock();
-
 	}
+	softirq_unlock();
 
 	msg->msg_iov->iov_len = total_len;
 
