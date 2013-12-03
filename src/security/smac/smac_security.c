@@ -41,6 +41,30 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	return 1;
 }
 
+static int idesc_getlabel(struct idesc *idesc, char *label, size_t lablen) {
+	int res = 0;
+
+	if (0 > (res = idesc_getxattr(idesc, smac_xattrkey, label,
+					lablen))) {
+		strcpy(label, smac_def_file_label);
+	}
+
+	return 1;
+}
+
+static int security_xattr_is_service_access(const char *name, int may_access,
+		struct smac_audit *audit) {
+	int res;
+
+	if (0 != strcmp(name, smac_xattrkey)) {
+		return 1;
+	}
+
+	res = smac_access(task_self_security(), smac_admin,
+			may_access, audit);
+	assert(res != 1);
+	return res;
+}
 
 int security_node_create(struct node *dir, mode_t mode) {
 	char label[SMAC_LABELLEN];
@@ -90,9 +114,9 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 
 	smac_audit_prepare(&audit, __func__, node->name);
 
-	if (0 == strcmp(name, smac_xattrkey)) {
-		return smac_access(task_self_security(), smac_admin,
-				FS_MAY_READ, &audit);
+	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_READ,
+					&audit))) {
+		return res;
 	}
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
@@ -110,9 +134,9 @@ int security_xattr_set(struct node *node, const char *name,
 
 	smac_audit_prepare(&audit, __func__, node->name);
 
-	if (0 == strcmp(name, smac_xattrkey)) {
-		return smac_access(task_self_security(), smac_admin,
-				FS_MAY_WRITE, &audit);
+	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_WRITE,
+					&audit))) {
+		return res;
 	}
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
@@ -130,6 +154,58 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
+		return res;
+	}
+
+	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+}
+
+int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value, size_t len) {
+	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
+	int res;
+
+	smac_audit_prepare(&audit, __func__, NULL);
+
+	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_READ,
+					&audit))) {
+		return res;
+	}
+
+	if (0 >= (res = idesc_getlabel(idesc, label, SMAC_LABELLEN))) {
+		return res;
+	}
+
+	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+}
+
+int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *value, size_t len, int flags) {
+	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
+	int res;
+
+	smac_audit_prepare(&audit, __func__, NULL);
+
+	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_WRITE,
+					&audit))) {
+		return res;
+	}
+
+	if (0 >= (res = idesc_getlabel(idesc, label, SMAC_LABELLEN))) {
+		return res;
+	}
+
+	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+}
+
+int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
+	char label[SMAC_LABELLEN];
+	struct smac_audit audit;
+	int res;
+
+	smac_audit_prepare(&audit, __func__, NULL);
+
+	if (0 >= (res = idesc_getlabel(idesc, label, SMAC_LABELLEN))) {
 		return res;
 	}
 
