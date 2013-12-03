@@ -7,12 +7,15 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+#include <assert.h>
+#include <string.h>
+
+#include <util/math.h>
 
 #include <net/skbuff.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
-#include <assert.h>
-#include <string.h>
+
 #include <linux/compiler.h>
 #include <framework/mod/options.h>
 #include <linux/list.h>

@@ -20,7 +20,7 @@
 #include <util/list.h>
 
 #include <fs/idesc.h>
-#include <kernel/task/io_sync.h>
+//#include <kernel/task/io_sync.h>
 #include <net/skbuff.h>
 
 
@@ -83,14 +83,6 @@ struct sock {
 	const struct sock_family_ops *f_ops;
 	const struct sock_proto_ops *p_ops;
 	const struct net_pack_out_ops *o_ops;
-
-#if 0
-	struct io_sync ios;
-
-	const struct sockaddr *src_addr;
-	const struct sockaddr *dst_addr;
-	size_t addr_len;
-#endif
 };
 
 struct sock_family_ops {

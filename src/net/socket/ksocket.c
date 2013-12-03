@@ -282,7 +282,6 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
-	unsigned long timeout;
 
 	if (sk == NULL) {
 		return -EBADF;
@@ -346,27 +345,10 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -ENOSYS;
 	}
 
-	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
-	if (timeout == 0) {
-		timeout = IO_SYNC_TIMEOUT_INFINITE;
-	}
-
-	if (!(flags & O_NONBLOCK)) {
-#if 0
-		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING, timeout);
-#endif
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
 	return sk->f_ops->sendmsg(sk, msg, flags);
 }
 
 int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	int ret;
-	unsigned long timeout;
-
 	if (sk == NULL) {
 		return -EBADF;
 	}
@@ -396,21 +378,6 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->recvmsg == NULL) {
 		return -ENOSYS;
-	}
-
-	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
-	if (timeout == 0) {
-		timeout = IO_SYNC_TIMEOUT_INFINITE;
-	}
-
-	if (!(flags & O_NONBLOCK)) {
-		ret = 0;
-#if 0
-		ret = io_sync_wait(&sk->ios, IO_SYNC_READING, timeout);
-#endif
-		if (ret != 0) {
-			return ret;
-		}
 	}
 
 	return sk->f_ops->recvmsg(sk, msg, flags);

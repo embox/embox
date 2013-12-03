@@ -18,13 +18,14 @@
 
 #include <hal/ipl.h>
 #include <kernel/softirq_lock.h>
-//#include <kernel/task/io_sync.h>
+#include <fs/idesc_event.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
 #include <net/skbuff.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 
+//TODO this function call from stack (may be place it to other file)
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
@@ -43,9 +44,6 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	sk->rx_data_len += size;
 
 	idesc_notify(&sk->idesc, POLLIN);
-#if 0
-	io_sync_enable(&sk->ios, IO_SYNC_READING);
-#endif
 }
 
 int sock_close(struct sock *sk) {
@@ -94,13 +92,11 @@ out:
 	return total_len;
 }
 
-
-
-extern int sock_wait(struct idesc *idesc, int flags);
+extern int sock_wait(struct sock *sk, int flags);
 
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		int stream_mode) {
-
+	int res;
 	char *buff;
 	size_t buff_sz, total_len, len;
 
@@ -124,16 +120,19 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 			total_len += len;
 
 			if (total_len > 0) {
+				msg->msg_iov->iov_len = total_len;
+				res = total_len;
 				break;
 			}
-			sock_wait(&sk->idesc, POLLIN);
+			res = sock_wait(sk, POLLIN);
+			if (res != 0) {
+				break;
+			}
 		}
 	}
 	softirq_unlock();
 
-	msg->msg_iov->iov_len = total_len;
-
-	return 0;
+	return res;
 }
 
 in_port_t sock_inet_get_src_port(const struct sock *sk) {

@@ -18,6 +18,7 @@ struct idesc_wait_link {
 	struct wait_link link;
 };
 
+struct idesc;
 /**
  * @brief Prepare link to wait on idesc
  *

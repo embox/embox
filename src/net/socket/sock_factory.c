@@ -103,6 +103,8 @@ static void sock_opt_init(struct sock_opt *opt, int family,
 	opt->so_type = type;
 }
 
+extern const struct idesc_ops task_idx_ops_socket;
+
 static void sock_init(struct sock *sk, int family, int type,
 		int protocol, const struct sock_family_ops *f_ops,
 		const struct sock_proto_ops *p_ops,
@@ -122,11 +124,11 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->f_ops = f_ops;
 	sk->p_ops = p_ops;
 	sk->o_ops = o_ops;
-#if 0
-	io_sync_init(&sk->ios, 0, 0);
-#endif
+
+	idesc_init(&sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
 }
-extern const struct idesc_ops task_idx_ops_socket;
+
+
 struct sock *sock_create(int family, int type, int protocol) {
 	int ret;
 	struct sock *new_sk;
@@ -182,7 +184,6 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	sock_hash(new_sk);
 
-	idesc_init(&new_sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
 
 	return new_sk;
 }
