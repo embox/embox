@@ -328,7 +328,7 @@ int nf_clear(int chain) {
 #define NF_TEST_NOT_FIELD(test_r, r, field)  \
 	((0 == memcmp(&test_r->field, &r->field, \
 					sizeof test_r->field))   \
-			!= r->not_##field)
+			!= !!r->not_##field)
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
