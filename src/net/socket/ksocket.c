@@ -286,7 +286,7 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-	assert(msg->msg_iovlen);
+	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 	assert(sk->f_ops);
 	assert(sk->f_ops->sendmsg);
@@ -336,31 +336,15 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-
-	if (sk->shutdown_flag & (SHUT_RD + 1)) {
-		return -EPIPE;
-	}
+	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 	if (msg->msg_iov->iov_len == 0) {
 		return 0;
 	}
 
-	/* TODO remove this */
-	if (msg->msg_flags != 0) {
-		LOG_ERROR("krecvmsg", "flags are not supported");
-		return -EOPNOTSUPP;
-	}
-
-	if (msg->msg_iovlen != 1) {
-		LOG_ERROR("krecvmsg", "only one msg_iov allowed");
-		return -EINVAL;
-	}
-
 	if ((sk->opt.so_type == SOCK_STREAM) && !sock_state_connected(sk)) {
 		return -ENOTCONN;
 	}
-
-
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->recvmsg == NULL) {

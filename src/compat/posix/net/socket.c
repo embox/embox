@@ -153,14 +153,12 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	if (!sk)
 		return SET_ERRNO(EBADF);
 
-
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
+	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("ksendmsg", "flags are not supported");
+		LOG_ERROR("send", "flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -201,7 +199,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("ksendmsg", "flags are not supported");
+		LOG_ERROR("sendto", "flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -237,10 +235,9 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
 
-
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("ksendmsg", "flags are not supported");
+		LOG_ERROR("sendmsg", "flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -268,6 +265,18 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
+
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (sk->shutdown_flag & (SHUT_RD + 1))
+		return SET_ERRNO(EPIPE);
+
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("recv", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
+	}
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -297,6 +306,18 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
+
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (sk->shutdown_flag & (SHUT_RD + 1))
+		return SET_ERRNO(EPIPE);
+
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("recv", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
+	}
 
 	msg.msg_name = (void *)addr;
 	msg.msg_namelen = addrlen != NULL ? *addrlen : 0;
@@ -329,12 +350,21 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (msg == NULL) {
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (sk->shutdown_flag & (SHUT_RD + 1))
+		return SET_ERRNO(EPIPE);
+
+	if ((msg == NULL) || (msg->msg_iov == NULL)
+			|| (msg->msg_iovlen == 0)) {
 		return SET_ERRNO(EINVAL);
 	}
 
-	if (msg->msg_iovlen == 0) {
-		return SET_ERRNO(EINVAL);
+	/* TODO remove this */
+	if (flags != 0) {
+		LOG_ERROR("recv", "flags are not supported");
+		return SET_ERRNO(EOPNOTSUPP);
 	}
 
 	memcpy(&msg_, msg, sizeof msg_);
