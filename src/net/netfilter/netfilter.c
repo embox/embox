@@ -325,10 +325,12 @@ int nf_clear(int chain) {
 	return 0;
 }
 
-#define NF_TEST_NOT_FIELD(test_r, r, field)  \
-	((0 == memcmp(&test_r->field, &r->field, \
+#define NF_TEST_NOT_FIELD(test_r, r, field) \
+	(!test_r->set_##field || !r->set_##field \
+		|| (assert(!test_r->not_##field), \
+			(0 == memcmp(&test_r->field, &r->field, \
 					sizeof test_r->field))   \
-			!= !!r->not_##field)
+			!= !!r->not_##field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
@@ -379,21 +381,23 @@ int nf_test_skb(int chain, enum nf_target target,
 
 	nf_rule_init(&rule);
 	rule.target = target;
-	rule.saddr.s_addr = test_skb->nh.iph->saddr;
-	rule.daddr.s_addr = test_skb->nh.iph->daddr;
+	NF_SET_NOT_FIELD_PTR(&rule, saddr, 0, &test_skb->nh.iph->saddr,
+			sizeof test_skb->nh.iph->saddr);
+	NF_SET_NOT_FIELD_PTR(&rule, daddr, 0, &test_skb->nh.iph->daddr,
+			sizeof test_skb->nh.iph->daddr);
 	switch (test_skb->nh.iph->proto) {
 	case IPPROTO_ICMP:
-		rule.proto = NF_PROTO_ICMP;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_ICMP);
 		break;
 	case IPPROTO_TCP:
-		rule.proto = NF_PROTO_TCP;
-		rule.sport = test_skb->h.th->source;
-		rule.dport = test_skb->h.th->dest;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_TCP);
+		NF_SET_NOT_FIELD(&rule, sport, 0, test_skb->h.th->source);
+		NF_SET_NOT_FIELD(&rule, dport, 0, test_skb->h.th->dest);
 		break;
 	case IPPROTO_UDP:
-		rule.proto = NF_PROTO_UDP;
-		rule.sport = test_skb->h.uh->source;
-		rule.dport = test_skb->h.uh->dest;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_UDP);
+		NF_SET_NOT_FIELD(&rule, sport, 0, test_skb->h.uh->source);
+		NF_SET_NOT_FIELD(&rule, dport, 0, test_skb->h.uh->dest);
 		break;
 	}
 
@@ -408,10 +412,10 @@ int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
 	nf_rule_init(&rule);
 
 	rule.target = target;
-	memcpy(rule.hwaddr_dst, hwaddr_dst, hwaddr_len);
-	memcpy(rule.hwaddr_src, hwaddr_src, hwaddr_len);
-	rule.hwaddr_len = hwaddr_len;
+	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_src, 0, hwaddr_src,
+			hwaddr_len);
+	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_dst, 0, hwaddr_dst,
+			hwaddr_len);
 
 	return nf_test_rule(chain, &rule);
 }
-

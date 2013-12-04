@@ -260,7 +260,7 @@ after_rule_num:
 				printf("iptables: invalid protocol: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_proto = not_flag;
+			NF_SET_NOT_FIELD(&rule, proto, not_flag, rule.proto);
 			not_flag = 0;
 		}
 		else if ((0 == strcmp(argv[ind], "-s"))
@@ -273,7 +273,7 @@ after_rule_num:
 				printf("iptables: invalid source address: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_saddr = not_flag;
+			NF_SET_NOT_FIELD(&rule, saddr, not_flag, rule.saddr);
 			not_flag = 0;
 		}
 		else if ((0 == strcmp(argv[ind], "-d"))
@@ -286,11 +286,13 @@ after_rule_num:
 				printf("iptables: invalid destination address: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_daddr = not_flag;
+			NF_SET_NOT_FIELD(&rule, daddr, not_flag, rule.daddr);
 			not_flag = 0;
 		}
-		else if (((rule.proto == NF_PROTO_TCP)
+		else if (rule.set_proto
+				&& ((rule.proto == NF_PROTO_TCP)
 					|| (rule.proto == NF_PROTO_UDP))
+				&& !rule.not_proto
 				&& ((0 == strcmp(argv[ind], "--sport"))
 					|| (0 == strcmp(argv[ind], "--source-port")))) {
 			if (++ind == argc) {
@@ -301,11 +303,12 @@ after_rule_num:
 				printf("iptables: invalid source port: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.sport = htons((unsigned short int)port);
-			rule.not_sport = not_flag;
+			NF_SET_NOT_FIELD(&rule, sport, not_flag,
+					htons((unsigned short)port));
 			not_flag = 0;
 		}
-		else if (((rule.proto == NF_PROTO_TCP)
+		else if (rule.set_proto
+				&& ((rule.proto == NF_PROTO_TCP)
 					|| (rule.proto == NF_PROTO_UDP))
 				&& !rule.not_proto
 				&& ((0 == strcmp(argv[ind], "--dport"))
@@ -318,8 +321,8 @@ after_rule_num:
 				printf("iptables: invalid destination port: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.dport = htons((unsigned short int)port);
-			rule.not_dport = not_flag;
+			NF_SET_NOT_FIELD(&rule, dport, not_flag,
+					htons((unsigned short)port));
 			not_flag = 0;
 		}
 		else {
