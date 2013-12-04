@@ -215,7 +215,8 @@ int nf_rule_copy(struct nf_rule *r_dst,
 	return 0;
 }
 
-int nf_add_rule(int chain, const struct nf_rule *r) {
+static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
+		struct list **rules_p, struct nf_rule **new_r_p) {
 	struct list *rules;
 	struct nf_rule *new_r;
 
@@ -236,7 +237,44 @@ int nf_add_rule(int chain, const struct nf_rule *r) {
 	nf_rule_init(new_r);
 	nf_rule_copy(new_r, r);
 
+	*rules_p = rules;
+	*new_r_p = new_r;
+
+	return 0;
+}
+
+
+int nf_add_rule(int chain, const struct nf_rule *r) {
+	struct list *rules;
+	struct nf_rule *new_r;
+	int res;
+
+	res = nf_chain_rule_prepare(chain, r, &rules, &new_r);
+	if (res != 0) {
+		return res;
+	}
+
 	list_add_last_link(&new_r->lnk, rules);
+
+	return 0;
+}
+
+int nf_insert_rule(int chain, const struct nf_rule *r, size_t num) {
+	struct list *rules;
+	struct nf_rule *new_r, *old_r;
+	int res;
+
+	res = nf_chain_rule_prepare(chain, r, &rules, &new_r);
+	if (res != 0) {
+		return res;
+	}
+
+	old_r = nf_get_rule_by_num(chain, num);
+	if (!old_r) {
+		list_add_last_link(&new_r->lnk, rules);
+	} else {
+		list_insert_before_link(&new_r->lnk, &old_r->lnk);
+	}
 
 	return 0;
 }

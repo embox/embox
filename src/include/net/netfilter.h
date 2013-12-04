@@ -112,6 +112,7 @@ extern int nf_rule_copy(struct nf_rule *r_dst,
  * Main netfilter API
  */
 extern int nf_add_rule(int chain, const struct nf_rule *r);
+extern int nf_insert_rule(int chain, const struct nf_rule *r, size_t r_num);
 extern int nf_set_rule(int chain, const struct nf_rule *r,
 		size_t r_num);
 extern int nf_del_rule(int chain, size_t r_num);
