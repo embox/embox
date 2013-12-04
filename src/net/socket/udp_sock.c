@@ -35,50 +35,50 @@ const struct sock_proto_ops *const udp_sock_ops
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1,
 		udp_sock_ops_struct);
 
-static int udp_sendmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
+static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
 	size_t data_len, total_len, actual_len;
 	struct sk_buff *skb;
 	const struct sockaddr_in *to;
+	const struct sockaddr *sockaddr;
 
-	assert(sk != NULL);
-	if (sk->o_ops == NULL) {
-		return -ENOSYS;
-	}
+	assert(sk);
+	assert(sk->o_ops);
+	assert(sk->o_ops->make_pack);
+	assert(msg);
+	assert(msg->msg_iov);
+	assert(msg->msg_iov->iov_base);
 
-	assert(msg != NULL);
-	assert(msg->msg_iov != NULL);
 	data_len = msg->msg_iov->iov_len;
 	total_len = actual_len = UDP_HEADER_SIZE + data_len;
 	skb = NULL;
+	sockaddr = (const struct sockaddr *)msg->msg_name;
 
-	assert(sk->o_ops->make_pack != NULL);
-	ret = sk->o_ops->make_pack(sk,
-			(const struct sockaddr *)msg->msg_name,
-			&actual_len, &skb);
+	ret = sk->o_ops->make_pack(sk, sockaddr, &actual_len, &skb);
 	if (ret != 0) {
 		return ret;
 	}
-	else if (actual_len < total_len) {
+
+	if (actual_len < total_len) {
 		return -EMSGSIZE;
 	}
 
-	to = msg->msg_name != NULL
-			? (const struct sockaddr_in *)msg->msg_name
-			: (const struct sockaddr_in *)&to_inet_sock(sk)->dst_in;
+	if (msg->msg_name != NULL) {
+		to = (const struct sockaddr_in *)msg->msg_name;
+	} else {
+		to = (const struct sockaddr_in *)&to_inet_sock(sk)->dst_in;
+	}
 
-	assert(skb != NULL);
-	assert(skb->h.uh != NULL);
-	udp_build(skb->h.uh, sock_inet_get_src_port(sk),
-			to->sin_port, total_len);
+	assert(skb);
+	assert(skb->h.uh);
 
-	assert(msg->msg_iov->iov_base != NULL);
+	udp_build(skb->h.uh, sock_inet_get_src_port(sk), to->sin_port, total_len);
+
 	memcpy(skb->h.uh + 1, msg->msg_iov->iov_base, data_len);
 
 	udp4_set_check_field(skb->h.uh, skb->nh.iph);
 
-	assert(sk->o_ops->snd_pack != NULL);
+	assert(sk->o_ops->snd_pack);
 	return sk->o_ops->snd_pack(skb);
 }
 

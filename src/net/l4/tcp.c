@@ -8,20 +8,24 @@
  * @author Anton Kozlov
  * @author Ilia Vaprol
  */
+#include <time.h>
+#include <errno.h>
+#include <assert.h>
+#include <sys/time.h>
+#include <string.h>
+#include <poll.h>
+
 
 #include <net/l4/tcp.h>
 #include <net/skbuff.h>
-#include <errno.h>
-#include <assert.h>
 #include <net/sock.h>
-#include <time.h>
-#include <sys/time.h>
+
 #include <util/sys_log.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv6.h>
-#include <string.h>
+
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -31,7 +35,10 @@
 #include <net/lib/tcp.h>
 #include <util/indexator.h>
 
-#include <kernel/task/io_sync.h>
+#include <fs/idesc.h>
+#include <fs/idesc_event.h>
+
+//#include <kernel/task/io_sync.h>
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
@@ -237,9 +244,6 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-#if 0
-		io_sync_enable(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
-#endif
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -249,24 +253,15 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
-#if 0
-			io_sync_enable(&to_sock(tcp_sk->parent)->ios,
-					IO_SYNC_READING);
-#endif
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
-#if 0
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
-#endif
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-#if 0
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
-#endif
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLERR);
 		break;
 	}
 }
@@ -850,6 +845,7 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
 	__u32 ack, ack2last_ack, seq;
+	struct sock *sk;
 
 	/* Resetting if recv ack in this state */
 	switch (tcp_sk->state) {
@@ -869,6 +865,8 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
+		sk = tcp_sk->p_sk.sk;
+		idesc_notify(&sk->idesc, POLLOUT);
 	}
 	else if (ack - seq <= ack2last_ack) {
 		/* package with non-last acknowledgment */

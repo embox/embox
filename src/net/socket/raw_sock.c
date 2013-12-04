@@ -139,7 +139,7 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	skb = NULL;
 	sockaddr = (const struct sockaddr *)msg->msg_name;
 
-	ret = sk->o_ops->make_pack(sk, sockaddr,&data_len, &skb);
+	ret = sk->o_ops->make_pack(sk, sockaddr, &data_len, &skb);
 
 	if (ret != 0) {
 		return ret;

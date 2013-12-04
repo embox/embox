@@ -124,7 +124,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 				res = total_len;
 				break;
 			}
-			res = sock_wait(sk, POLLIN);
+			res = sock_wait(sk, POLLIN | POLLERR);
 			if (res != 0) {
 				break;
 			}

@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
+#include <poll.h>
 #include <util/math.h>
 
 #include <net/l4/tcp.h>
@@ -22,7 +23,9 @@
 #include <util/indexator.h>
 #include <netinet/in.h>
 #include <embox/net/sock.h>
-#include <kernel/task/io_sync.h>
+//#include <kernel/task/io_sync.h>
+#include <fs/idesc_event.h>
+
 
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
@@ -289,21 +292,51 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return 0;
 	}
 }
-
-static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
-	int ret;
-	struct sk_buff *skb;
-	struct tcp_sock *tcp_sk;
+static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	size_t bytes;
+	struct sk_buff *skb;
+	int ret;
+
+	while (len != 0) {
+		bytes = len; /* try to send wholly msg */
+		skb = NULL; /* alloc new pkg */
+
+		ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
+		if (ret != 0) {
+			return len;
+		}
+
+		debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
+
+		tcp_build(skb->h.th,
+				sock_inet_get_dst_port(to_sock(tcp_sk)),
+				sock_inet_get_src_port(to_sock(tcp_sk)),
+				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+
+		memcpy(skb->h.th + 1, buff, bytes);
+		buff += bytes;
+		len -= bytes;
+		/* Fill TCP header */
+		skb->h.th->psh = (len == 0);
+		tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
+		send_seq_from_sock(tcp_sk, skb);
+	}
+	return len;
+}
+
+extern int sock_wait(struct sock *sk, int flags);
+static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
+	struct tcp_sock *tcp_sk;
 	char *buff;
 	size_t len = msg->msg_iov->iov_len;
 
 	(void)flags;
 
-	assert(sk != NULL);
-	assert(msg != NULL);
-	assert(len == msg->msg_iov->iov_len);
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov->iov_len);
+
+	len = msg->msg_iov->iov_len;
 
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_sendmsg: sk %p\n", to_sock(tcp_sk));
@@ -314,32 +347,13 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg,
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		buff = (char *)msg->msg_iov->iov_base;
-		while (len != 0) {
-			while (tcp_sk->rem.wind <= tcp_sk->self.seq
-						- tcp_sk->last_ack) { /* FIXME sleeping */ }
-			bytes = len; /* try to send wholly msg */
-			skb = NULL; /* alloc new pkg */
-			ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
-			if (ret != 0) {
-				if (len != msg->msg_iov->iov_len) {
-					break;
-				}
-				return ret;
-			}
-			debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
-			tcp_build(skb->h.th,
-					sock_inet_get_dst_port(to_sock(tcp_sk)),
-					sock_inet_get_src_port(to_sock(tcp_sk)),
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
-			memcpy(skb->h.th + 1, buff, bytes);
-			buff += bytes;
-			len -= bytes;
-			/* Fill TCP header */
-			skb->h.th->psh = (len == 0);
-			tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
-			send_seq_from_sock(tcp_sk, skb);
+		while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
+			sock_wait(sk, POLLOUT | POLLERR);
 		}
+
+		buff = (char *)msg->msg_iov->iov_base;
+		len = tcp_write(tcp_sk, buff, len);
+
 		msg->msg_iov->iov_len -= len;
 		return 0;
 	case TCP_FINWAIT_1:
