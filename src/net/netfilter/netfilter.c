@@ -287,9 +287,10 @@ int nf_clear(int chain) {
 	return 0;
 }
 
-#define NF_TEST_NOT_FIELD(r1, r2, field) \
-	((0 == memcmp(&r1->field, &r2->field, sizeof r1->field))\
-		== (r1->not_##field == r2->not_##field))
+#define NF_TEST_NOT_FIELD(test_r, r, field)  \
+	((0 == memcmp(&test_r->field, &r->field, \
+					sizeof test_r->field))   \
+			!= r->not_##field)
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
@@ -342,7 +343,6 @@ int nf_test_skb(int chain, enum nf_target target,
 	rule.target = target;
 	rule.saddr.s_addr = test_skb->nh.iph->saddr;
 	rule.daddr.s_addr = test_skb->nh.iph->daddr;
-	rule.not_saddr = rule.not_daddr = 0;
 	switch (test_skb->nh.iph->proto) {
 	case IPPROTO_ICMP:
 		rule.proto = NF_PROTO_ICMP;
@@ -351,13 +351,11 @@ int nf_test_skb(int chain, enum nf_target target,
 		rule.proto = NF_PROTO_TCP;
 		rule.sport = test_skb->h.th->source;
 		rule.dport = test_skb->h.th->dest;
-		rule.not_sport = rule.not_dport = 0;
 		break;
 	case IPPROTO_UDP:
 		rule.proto = NF_PROTO_UDP;
 		rule.sport = test_skb->h.uh->source;
 		rule.dport = test_skb->h.uh->dest;
-		rule.not_sport = rule.not_dport = 0;
 		break;
 	}
 
@@ -375,7 +373,6 @@ int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
 	memcpy(rule.hwaddr_dst, hwaddr_dst, hwaddr_len);
 	memcpy(rule.hwaddr_src, hwaddr_src, hwaddr_len);
 	rule.hwaddr_len = hwaddr_len;
-	rule.not_hwaddr_dst = rule.not_hwaddr_src = 0;
 
 	return nf_test_rule(chain, &rule);
 }
