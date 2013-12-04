@@ -153,10 +153,10 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	if (!sk)
 		return SET_ERRNO(EBADF);
 
-#if 0
-	if (sk->shutdown_flag & (SHUT_WR + 1))
+
+	if (sk->shutdown_flag & (SHUT_WR + 1)) {
 		return SET_ERRNO(EPIPE);
-#endif
+	}
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -196,10 +196,8 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	if (!sk)
 		return SET_ERRNO(EBADF);
 
-#if 0
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-#endif
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -236,10 +234,9 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	if (!sk)
 		return SET_ERRNO(EBADF);
 
-#if 0
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-#endif
+
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -268,7 +265,6 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
-
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
@@ -337,7 +333,11 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 		return SET_ERRNO(EINVAL);
 	}
 
-	memcpy(&msg_, msg, msg != NULL ? sizeof msg_ : 0);
+	if (msg->msg_iovlen == 0) {
+		return SET_ERRNO(EINVAL);
+	}
+
+	memcpy(&msg_, msg, sizeof msg_);
 	msg_.msg_flags = flags;
 
 	ret = krecvmsg(sk, &msg_, sk->idesc.idesc_flags);

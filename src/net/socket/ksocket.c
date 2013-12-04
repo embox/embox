@@ -333,20 +333,16 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 }
 
 int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	if (sk == NULL) {
-		return -EBADF;
-	}
-	else if ((msg == NULL) || (msg->msg_iov == NULL)
-			|| (msg->msg_iovlen == 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov);
 
 	if (sk->shutdown_flag & (SHUT_RD + 1)) {
 		return -EPIPE;
 	}
-	else if ((sk->opt.so_type == SOCK_STREAM)
-			&& !sock_state_connected(sk)) {
-		return -ENOTCONN;
+
+	if (msg->msg_iov->iov_len == 0) {
+		return 0;
 	}
 
 	/* TODO remove this */
@@ -354,10 +350,17 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		LOG_ERROR("krecvmsg", "flags are not supported");
 		return -EOPNOTSUPP;
 	}
-	else if (msg->msg_iovlen != 1) {
+
+	if (msg->msg_iovlen != 1) {
 		LOG_ERROR("krecvmsg", "only one msg_iov allowed");
 		return -EINVAL;
 	}
+
+	if ((sk->opt.so_type == SOCK_STREAM) && !sock_state_connected(sk)) {
+		return -ENOTCONN;
+	}
+
+
 
 	assert(sk->f_ops != NULL);
 	if (sk->f_ops->recvmsg == NULL) {

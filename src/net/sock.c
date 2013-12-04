@@ -72,22 +72,30 @@ static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
 	while(buff_sz) {
 		skb = skb_queue_front(&sk->rx_queue);
 		if (!skb) {
-			goto out;
+			break;
 		}
 		len = skb_read(skb, buff, buff_sz);
-		if (len == 0) {
-			continue;
-		}
 
 		buff += len;
 		buff_sz -= len;
+		total_len += len;
 
-		if (!stream && skb->p_data == skb->p_data_end) {
+		if (!stream) {
+			/* For message-based sockets, such as SOCK_DGRAM and SOCK_SEQPACKET,
+			 * the entire message shall be read in a single operation. If a
+			 * message is too long to fit in the supplied buffer, and MSG_PEEK
+			 * is not set in the flags argument, the excess bytes shall be
+			 * discarded.
+			 */
+			skb_free(skb);
+			break;
+		}
+
+		if (skb->p_data == skb->p_data_end) {
 			skb_free(skb);
 		}
 	}
 
-out:
 	sk->rx_data_len -= total_len;
 	return total_len;
 }
@@ -121,7 +129,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 
 			if (total_len > 0) {
 				msg->msg_iov->iov_len = total_len;
-				res = total_len;
+				res = 0;
 				break;
 			}
 			res = sock_wait(sk, POLLIN | POLLERR);
