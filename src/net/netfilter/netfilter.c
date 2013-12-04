@@ -194,8 +194,6 @@ int nf_rule_init(struct nf_rule *r) {
 
 	memset(r, 0, sizeof *r);
 	list_link_init(&r->lnk);
-	r->not_hwaddr_dst = r->not_hwaddr_src = r->not_saddr = r->not_daddr =
-		r->not_sport = r->not_dport = 1;
 
 	return 0;
 }
@@ -325,12 +323,12 @@ int nf_clear(int chain) {
 	return 0;
 }
 
-#define NF_TEST_NOT_FIELD(test_r, r, field) \
-	(!test_r->set_##field || !r->set_##field \
-		|| (assert(!test_r->not_##field), \
+#define NF_TEST_NOT_FIELD(test_r, r, field)         \
+	(!r->set_##field ? 1 : !test_r->set_##field ? 0 \
+		: (assert(!test_r->not_##field),            \
 			(0 == memcmp(&test_r->field, &r->field, \
-					sizeof test_r->field))   \
-			!= !!r->not_##field))
+					sizeof test_r->field))          \
+				!= !!r->not_##field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
@@ -347,8 +345,8 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 
 	list_foreach(r, rules, lnk) {
 		if ((r->target != NF_TARGET_UNKNOWN)
-				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
 				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_src)
+				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
 				&& NF_TEST_NOT_FIELD(test_r, r, saddr)
 				&& NF_TEST_NOT_FIELD(test_r, r, daddr)
 				&& (((test_r->proto != NF_PROTO_ALL)
