@@ -54,7 +54,7 @@ static void print_rule(const struct nf_rule *r) {
 	printf("%-8s ", target_str != NULL ? target_str : "");
 	printf("%c%-4s ", r->not_proto ? '!' : ' ',
 			nf_proto_to_str(r->proto));
-	printf("%-3s ", "--");
+	printf("%c%-2s ", r->test_hnd ? 'C' : '-', "-");
 	printf("%c%-15s ", r->not_saddr && (r->saddr.s_addr
 				!= INADDR_ANY) ? '!' : ' ',
 			r->saddr.s_addr != INADDR_ANY ? inet_ntoa(r->saddr)
