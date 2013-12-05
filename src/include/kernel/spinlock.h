@@ -26,6 +26,34 @@
 
 #ifdef SMP
 
+static inline int spin_trylock_no_preempt(spinlock_t *lock) {
+#ifdef __HAVE_ARCH_CMPXCHG
+	return (SPIN_UNLOCKED == cmpxchg(lock, SPIN_UNLOCKED, SPIN_LOCKED));
+#else /* !__HAVE_ARCH_CMPXCHG */
+	return __sync_bool_compare_and_swap(lock, SPIN_UNLOCKED, SPIN_LOCKED);
+#endif /* __HAVE_ARCH_CMPXCHG */
+}
+
+#else /* !SMP */
+
+static inline int spin_trylock_no_preempt(spinlock_t *lock) {
+	return SPIN_LOCKED;
+}
+
+#endif /* SMP */
+
+static inline void spin_lock_no_preempt(spinlock_t *lock) {
+	while (!spin_trylock_no_preempt(lock))
+		;
+}
+
+static inline void spin_unlock_no_preempt(spinlock_t *lock) {
+#ifdef SMP
+	*lock = SPIN_UNLOCKED;
+#endif
+	__barrier();
+}
+
 /**
  * spin_trylock -- try to lock object without waiting
  * @param lock  object to lock
@@ -34,24 +62,11 @@
 static inline int spin_trylock(spinlock_t *lock) {
 	int ret;
 	sched_lock();
-#ifdef __HAVE_ARCH_CMPXCHG
-	ret = (SPIN_UNLOCKED == cmpxchg(lock, SPIN_UNLOCKED, SPIN_LOCKED));
-#else /* !__HAVE_ARCH_CMPXCHG */
-	ret = __sync_bool_compare_and_swap(lock, SPIN_UNLOCKED, SPIN_LOCKED);
-#endif /* __HAVE_ARCH_CMPXCHG */
+	ret = spin_trylock_no_preempt(lock);
 	if (!ret)
 		sched_unlock();
 	return ret;
 }
-
-#else /* !SMP */
-
-static inline int spin_trylock(spinlock_t *lock) {
-	sched_lock();
-	return SPIN_LOCKED;
-}
-
-#endif /* SMP */
 
 /**
  * spin_lock -- try to lock object or wait until it's will done
