@@ -17,6 +17,8 @@
 #ifndef DLIST_H_
 #define DLIST_H_
 
+#include <assert.h>
+#include <util/member.h>
 #include <module/embox/util/DList.h>
 
 /**
@@ -100,6 +102,7 @@ extern void dlist_add_prev(struct dlist_head *_new,	struct dlist_head *list);
  * @param item_head - deleting item head
  */
 extern void dlist_del(struct dlist_head *item_head);
+extern void dlist_del_init(struct dlist_head *item_head);
 
 /**
  * Move the item head from the list where it is now to the pointed list.
@@ -119,8 +122,68 @@ static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) 
  * @return 1 if list is not empty and zero if empty *
  */
 static inline int dlist_empty(struct dlist_head *head) {
-	return head == head->next;
+	assert(head);
+	return (head == head->next);
 }
+
+/**
+ * @fn dlist_first()
+ * @fn dlist_last()
+ *
+ * Get first/last link of a non-empty list.
+ */
+
+static inline struct dlist_head *dlist_first(struct dlist_head *list) {
+	assert(!dlist_empty(list));
+	return list->next;
+}
+
+static inline struct dlist_head *dlist_last(struct dlist_head *list) {
+	assert(!dlist_empty(list));
+	return list->prev;
+}
+
+/**
+ * @fn dlist_first_or_null()
+ * @fn dlist_last_or_null()
+ *
+ * Get first/last link with null as a fallback return value
+ * for case of an empty list.
+ */
+
+static inline struct dlist_head *dlist_first_or_null(struct dlist_head *list) {
+	return (!dlist_empty(list) ? dlist_first(list) : NULL);
+}
+
+static inline struct dlist_head *dlist_last_or_null(struct dlist_head *list) {
+	return (!dlist_empty(list) ? dlist_last(list) : NULL);
+}
+
+/**
+ * @def dlist_first_entry()
+ * @def dlist_last_entry()
+ *
+ * Get first/last element of a non-empty list casted to a given type.
+ */
+
+#define dlist_first_entry(list, type, member) \
+	mcast_out(dlist_first(list), type, member)
+
+#define dlist_last_entry(list, type, member) \
+	mcast_out(dlist_last(list), type, member)
+
+/**
+ * @def dlist_first_entry_or_null()
+ * @def dlist_last_entry_or_null()
+ *
+ * Get first/last element casted to a given type. A list may be empty.
+ */
+
+#define dlist_first_entry_or_null(list, type, member) \
+	mcast_out_or_null(dlist_first_or_null(list), type, member)
+
+#define dlist_last_entry_or_null(list, type, member) \
+	mcast_out_or_null(dlist_last_or_null(list), type, member)
 
 /**
  * Receive the element structure which encapsulates item head.
@@ -131,13 +194,12 @@ static inline int dlist_empty(struct dlist_head *head) {
  * @return a pointer to the item structure which contains the head
  */
 #define dlist_entry(head, type, member) \
-    ((type *)((char *)(head) - offsetof(type, member)))
+    mcast_out(head, type, member)
 
 
 #define dlist_foreach(ptr, nxt, head) \
 	ptr = (head)->next; nxt = ptr->next;                         \
 	for (; ptr != (head); ptr = nxt, nxt = ptr->next)
-
 
 #define dlist_foreach_entry(ptr, nxt, head, member)  \
 	ptr = dlist_entry((head)->next, typeof(*ptr), member);         \
@@ -145,5 +207,46 @@ static inline int dlist_empty(struct dlist_head *head) {
 	for (; &ptr->member != (head);                                 \
 		ptr = nxt,                                                 \
 		nxt = dlist_entry(nxt->member.next, typeof(*ptr), member)) \
+
+/*
+ * 'for'-like loops safe to modification from inside a loop body.
+ *
+ * An expression of 'head' is always evaluated exactly once.
+ * An iteration variable is not touched in case of an empty list.
+ * Otherwise it holds the element of the last iteration.
+ * Loop body may overwrite it with no effects.
+ */
+
+#define dlist_foreach_safe(link, head) \
+	__dlist_foreach_safe(link, head, \
+		MACRO_GUARD(__link) \
+		MACRO_GUARD(__head) \
+		MACRO_GUARD(__next))
+
+#define __dlist_foreach_safe(link, head, __link, __head, __next) \
+	for (struct dlist_head *__link,       \
+			__head = (head),              \
+			__next = __head->next;        \
+			                              \
+		__next = (__link = __next)->next, \
+			(__link != __head) &&         \
+			((link = __link), 1);)
+
+
+#define dlist_foreach_entry_safe(ptr, head) \
+	__dlist_foreach_entry_safe(ptr, head, \
+		MACRO_GUARD(__link) \
+		MACRO_GUARD(__head) \
+		MACRO_GUARD(__next))
+
+#define __dlist_foreach_entry_safe(ptr, head, __link, __head, __next) \
+	for (struct dlist_head *__link,       \
+			__head = (head),              \
+			__next = __head->next;        \
+			                              \
+		__next = (__link = __next)->next, \
+			(__link != __head) &&         \
+			((ptr = dlist_entry(__link, typeof(*ptr), member)), 1);)
+
 
 #endif /* DLIST_H_ */
