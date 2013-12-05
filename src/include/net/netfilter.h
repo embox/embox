@@ -47,6 +47,16 @@ enum nf_proto {
  * Netfilter test callback
  */
 struct nf_rule;
+
+/**
+ * @brief Netfilter dynamic matching field
+ *
+ * @param r Rule to match against
+ * @param data Optional data stored in rule
+ *
+ * @return 0 if rule not matches
+ * @return not zero if rule matches
+ */
 typedef int (*nf_test_hnd)(const struct nf_rule *r,
 		void *data);
 
