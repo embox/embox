@@ -47,7 +47,7 @@ static void xattr_ent_value_update(struct xattr_ent *xent, const char *value,
 	xent->xe_len = vlen;
 }
 
-static struct xattr_ent *xattr_ent_create(struct xattr_list *xls,
+static struct xattr_ent *xattr_ent_create(struct dlist_head *add_next,
 		const char *name, const char *value, size_t vlen) {
 	struct xattr_ent *xent;
 
@@ -60,7 +60,7 @@ static struct xattr_ent *xattr_ent_create(struct xattr_list *xls,
 	strcpy(xent->xe_name, name);
 	xattr_ent_value_update(xent, value, vlen);
 
-	dlist_add_prev(&xent->xe_lnk, &xls->xl_head);
+	dlist_add_next(&xent->xe_lnk, add_next);
 
 	return xent;
 }
@@ -71,17 +71,36 @@ static void xattr_ent_delete(struct xattr_ent *xent) {
 	pool_free(&xattr_ent_pool, xent);
 }
 
-static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name) {
-	struct xattr_ent *xent, *xent_nxt;
+static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
+		struct dlist_head **add_next_p) {
+	struct xattr_ent *xent, *xent_nxt, *xent_out;
+	struct dlist_head *add_next;
+
+	add_next = &xlnk->xl_head;
+	xent_out = NULL;
 
 	dlist_foreach_entry(xent, xent_nxt, &xlnk->xl_head, xe_lnk) {
+		int d;
 
-		if (!strcpy(xent->xe_name, name)) {
-			return xent;
+		d = strcmp(xent->xe_name, name);
+
+		if (d == 0) {
+			xent_out = xent;
+			break;
 		}
+
+		if (d > 0) {
+			break;
+		}
+
+		add_next = &xent->xe_lnk;
 	}
 
-	return NULL;
+	if (add_next) {
+		*add_next_p = add_next;
+	}
+
+	return xent_out;
 }
 
 int getxattr_generic(struct xattr_list *xlst, const char *name,
@@ -92,7 +111,7 @@ int getxattr_generic(struct xattr_list *xlst, const char *name,
 		return -ERANGE;
 	}
 
-	xent = xattr_find(xlst, name);
+	xent = xattr_find(xlst, name, NULL);
 	if (!xent) {
 		return -ENOENT;
 	}
@@ -109,12 +128,13 @@ int getxattr_generic(struct xattr_list *xlst, const char *name,
 int setxattr_generic(struct xattr_list *xlst, const char *name,
 			const char *value, size_t len, int flags) {
 	struct xattr_ent *xent;
+	struct dlist_head *add_next;
 
 	if (strlen(name) > XATTR_MAX_NSIZE || len > XATTR_MAX_VSIZE) {
 		return -ERANGE;
 	}
 
-	xent = xattr_find(xlst, name);
+	xent = xattr_find(xlst, name, &add_next);
 
 	if (xent) {
 
@@ -130,7 +150,7 @@ int setxattr_generic(struct xattr_list *xlst, const char *name,
 		return -ENOENT;
 	}
 
-	xent = xattr_ent_create(xlst, name, value, len);
+	xent = xattr_ent_create(add_next, name, value, len);
 	if (!xent) {
 		return -ENOMEM;
 	}
@@ -147,24 +167,26 @@ int listxattr_generic(struct xattr_list *xlst, char *list, size_t len) {
 	last = len;
 
 	dlist_foreach_entry(xent, xent_nxt, &xlst->xl_head, xe_lnk) {
+		int attr_len;
 
-		if (last <= xent->xe_len) {
+		attr_len = strlen(xent->xe_name);
+		if (last <= attr_len) {
 			return -ERANGE;
 		}
 
-		plist = memcpy(plist, xent->xe_val, xent->xe_len);
-		*plist++ = '\0';
+		memcpy(plist, xent->xe_name, attr_len + 1);
+		plist += attr_len + 1;
 
 		last -= xent->xe_len + 1;
 	}
 
-	return 0;
+	return plist - list;
 }
 
 int removexattr_generic(struct xattr_list *xlst, const char *name) {
 	struct xattr_ent *xent;
 
-	xent = xattr_find(xlst, name);
+	xent = xattr_find(xlst, name, NULL);
 	if (!xent) {
 		return -ENOENT;
 	}
