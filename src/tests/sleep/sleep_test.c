@@ -19,6 +19,7 @@ EMBOX_TEST_SUITE("sleep suite");
 #define EPSILON_BORDER 30
 #define TIME_TO_SLEEP  50
 #define NUM_THREADS     8
+#define BENCH_LOOPS   300
 
 /**
  *  sleep( any_time )
@@ -124,7 +125,7 @@ TEST_CASE("sleep 0 seconds") {
 
 TEST_CASE("many sleeps") {
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < BENCH_LOOPS; i++) {
 		ksleep(i % 17);
 	}
 }
