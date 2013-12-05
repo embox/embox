@@ -133,9 +133,9 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 
 	sock_set_state(sk, SS_CONNECTING);
 
-	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr,
-			addrlen, flags);
+	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr, addrlen, flags);
 	if ((ret == -EINPROGRESS) && !(flags & O_NONBLOCK)) {
+		ret = -ECONNRESET;
 #ifdef NOTUSE_IOSYNC
 		/* lock until a connection is established */
 		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING,

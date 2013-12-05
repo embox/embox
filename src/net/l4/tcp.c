@@ -248,8 +248,8 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			{
-				list_move(&tcp_sk->conn_wait,
-						&tcp_sk->parent->conn_wait);
+				list_move(&tcp_sk->conn_wait, &tcp_sk->parent->conn_wait);
+				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);

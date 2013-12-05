@@ -10,17 +10,15 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/sched.h>
 #include <net/sock.h>
+#include <net/sock_wait.h>
 
-int sock_wait(struct sock *sk, int flags) {
+int sock_wait(struct sock *sk, int flags, int timeout) {
 	struct idesc_wait_link wl;
 	int res;
-	unsigned long timeout;
 
-	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
 	if (timeout == 0) {
 		timeout = SCHED_TIMEOUT_INFINITE;
 	}
-
 
 	idesc_wait_prepare(&sk->idesc, &wl, flags);
 	softirq_unlock();

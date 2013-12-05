@@ -16,6 +16,10 @@
 #include <embox/net/pack.h>
 #include <embox/net/sock.h>
 
+
+#include <kernel/time/time.h>
+#include <kernel/sched.h>
+
 #include <hal/ipl.h>
 #include <kernel/softirq_lock.h>
 #include <fs/idesc_event.h>
@@ -24,6 +28,7 @@
 #include <net/skbuff.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
+#include <net/sock_wait.h>
 
 //TODO this function call from stack (may be place it to other file)
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
@@ -100,13 +105,14 @@ static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
 	return total_len;
 }
 
-extern int sock_wait(struct sock *sk, int flags);
+
 
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		int stream_mode) {
 	int res;
 	char *buff;
 	size_t buff_sz, total_len, len;
+	int timeout;
 
 	assert(sk);
 	assert(msg);
@@ -132,7 +138,12 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 				res = 0;
 				break;
 			}
-			res = sock_wait(sk, POLLIN | POLLERR);
+			timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
+			if (timeout == 0) {
+				timeout = SCHED_TIMEOUT_INFINITE;
+			}
+
+			res = sock_wait(sk, POLLIN | POLLERR, timeout);
 			if (res != 0) {
 				break;
 			}

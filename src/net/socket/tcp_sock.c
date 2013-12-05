@@ -18,18 +18,28 @@
 #include <net/sock.h>
 
 #include <kernel/time/time.h>
+#include <kernel/sched.h>
 
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 #include <netinet/in.h>
+
 #include <embox/net/sock.h>
+
+#include <kernel/softirq_lock.h>
 //#include <kernel/task/io_sync.h>
 #include <fs/idesc_event.h>
+#include <net/sock_wait.h>
+
 
 
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 #define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
+
+#include <config/embox/net/socket.h>
+#define MODOPS_CONNECT_TIMEOUT \
+	OPTION_MODULE_GET(embox__net__socket, NUMBER, connect_timeout)
 
 static const struct sock_proto_ops tcp_sock_ops_struct;
 const struct sock_proto_ops *const tcp_sock_ops
@@ -39,6 +49,7 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
+
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -173,8 +184,26 @@ static int tcp_connect(struct sock *sk,
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
+			//FIXME hack use common lock/unlock systems for socket
+			softirq_lock();
+			{
+				tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
+				ret = sock_wait(sk, POLLOUT | POLLERR, MODOPS_CONNECT_TIMEOUT);
+				tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
+			}
+			softirq_unlock();
+			if (ret == -EAGAIN) {
+				ret = -EINPROGRESS;
+				break;
+			}
+			if (tcp_sock_get_status(tcp_sk) == TCP_ST_NOTEXIST) {
+				ret = -ECONNRESET;
+				break;
+			}
+			if (tcp_sock_get_status(tcp_sk) == TCP_ST_SYNC) {
+				ret = 0;
+			}
 
-			ret = -EINPROGRESS;
 			break;
 		}
 	}
@@ -324,11 +353,12 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	return len;
 }
 
-extern int sock_wait(struct sock *sk, int flags);
+
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
 	char *buff;
 	size_t len = msg->msg_iov->iov_len;
+	int timeout;
 
 	(void)flags;
 
@@ -347,9 +377,17 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
-			sock_wait(sk, POLLOUT | POLLERR);
+		softirq_lock();
+		{
+			timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
+			if (timeout == 0) {
+				timeout = SCHED_TIMEOUT_INFINITE;
+			}
+			while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
+				sock_wait(sk, POLLOUT | POLLERR, timeout);
+			}
 		}
+		softirq_unlock();
 
 		buff = (char *)msg->msg_iov->iov_base;
 		len = tcp_write(tcp_sk, buff, len);
