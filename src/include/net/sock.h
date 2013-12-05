@@ -20,6 +20,7 @@
 #include <util/list.h>
 
 #include <fs/idesc.h>
+#include <net/socket/sock_xattr.h>
 //#include <kernel/task/io_sync.h>
 #include <net/skbuff.h>
 
@@ -71,6 +72,7 @@ struct sock_opt {
 /* Base class for family sockets */
 struct sock {
 	struct idesc idesc;
+	struct sock_xattr sock_xattr;
 	struct list_link lnk;
 	enum sock_state state;
 	struct sock_opt opt;
