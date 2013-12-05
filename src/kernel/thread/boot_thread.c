@@ -4,8 +4,10 @@
  * @date Jul 18, 2013
  * @author: Anton Bondarev
  */
-#include <time.h>
+
+#include <assert.h>
 #include <stdint.h>
+#include <time.h>
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
@@ -16,6 +18,7 @@
 	((size_t) OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size))
 
 static void *boot_stub(void *arg) {
+	assert(0, "Entering boot_stub");
 	return NULL;
 }
 
