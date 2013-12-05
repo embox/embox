@@ -15,7 +15,7 @@
 
 #include <hal/cpu.h>
 #include <hal/ipl.h>
-#include <kernel/sched/sched_lock.h>
+#include <kernel/critical.h>
 #include <module/embox/arch/libarch.h>
 
 #include <util/lang.h>
@@ -61,10 +61,10 @@ static inline void spin_unlock_no_preempt(spinlock_t *lock) {
  */
 static inline int spin_trylock(spinlock_t *lock) {
 	int ret;
-	sched_lock();
+	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 	ret = spin_trylock_no_preempt(lock);
 	if (!ret)
-		sched_unlock();
+		__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 	return ret;
 }
 
@@ -86,7 +86,7 @@ static inline void spin_unlock(spinlock_t *lock) {
 	*lock = SPIN_UNLOCKED;
 	__barrier();
 #endif
-	sched_unlock();
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }
 
 static inline ipl_t spin_lock_ipl(spinlock_t *lock) {
@@ -107,7 +107,7 @@ static inline void spin_unlock_ipl(spinlock_t *lock, ipl_t ipl) {
 	*lock = SPIN_UNLOCKED;
 #endif /* SMP */
 	ipl_restore(ipl);  /* implies optimization barrier */
-	sched_unlock();
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }
 
 static inline void spin_lock_ipl_disable(spinlock_t *lock) {
@@ -126,7 +126,7 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 	*lock = SPIN_UNLOCKED;
 #endif /* SMP */
 	ipl_enable();  /* implies optimization barrier */
-	sched_unlock();
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }
 
 /**
