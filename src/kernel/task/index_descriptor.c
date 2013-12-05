@@ -14,21 +14,30 @@
 
 #include <fs/index_descriptor.h>
 
-struct idesc *index_descriptor_get(int idx) {
+static inline struct idesc_table *task_self_idesc_table(void) {
 	struct idesc_table *it;
 
 	it = task_get_idesc_table(task_self());
 	assert(it);
 
-	return idesc_table_get(it, idx);
+	return it;
+}
+
+int index_descriptor_add(struct idesc *idesc) {
+
+	return idesc_table_add(task_self_idesc_table(), idesc, 0);
+}
+
+struct idesc *index_descriptor_get(int idx) {
+
+	return idesc_table_get(task_self_idesc_table(), idx);
 }
 
 int index_descritor_cloexec_get(int fd) {
 	struct idesc_table *it;
 	int fd_flags = 0;
 
-	it = task_get_idesc_table(task_self());
-	assert(it);
+	it = task_self_idesc_table();
 
 	if (idesc_is_cloexeced(it->idesc_table[fd])) {
 		fd_flags |= FD_CLOEXEC;
@@ -119,8 +128,7 @@ int index_descriptor_dupfd(int fd, int newfd) {
 	idesc = index_descriptor_get(fd);
 	assert(idesc);
 
-	it = task_get_idesc_table(task_self());
-	assert(it);
+	it = task_self_idesc_table();
 
 	if (idesc_table_locked(it, newfd)) {
 		assert(newfd == 0); /* only for dup() */

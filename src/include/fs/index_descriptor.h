@@ -16,6 +16,8 @@ extern int index_descriptor_cloexec_set(int fd, int cloexec);
 
 extern struct idesc *index_descriptor_get(int idx);
 
+extern int index_descriptor_add(struct idesc *idesc);
+
 extern int index_descriptor_flags_get(int fd);
 
 extern int index_descriptor_flags_set(int fd, int flags);
