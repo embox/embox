@@ -27,7 +27,6 @@ int sock_wait(struct sock *sk, int flags, int timeout) {
 	softirq_lock();
 
 	idesc_wait_cleanup(&sk->idesc, &wl);
-	__waitq_cleanup();
 
 	return res;
 }

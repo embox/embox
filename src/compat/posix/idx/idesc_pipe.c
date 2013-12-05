@@ -117,7 +117,6 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 	mutex_lock(&pipe->mutex);
 
 	idesc_wait_cleanup(idesc, &wl);
-	__waitq_cleanup();
 
 	assert(res != -ETIMEDOUT);
 	return res;
