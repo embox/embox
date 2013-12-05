@@ -94,6 +94,25 @@ static inline void spin_unlock_ipl(spinlock_t *lock, ipl_t ipl) {
 	sched_unlock();
 }
 
+static inline void spin_lock_ipl_disable(spinlock_t *lock) {
+	ipl_t ipl = 0;
+
+	while (1) {
+		ipl = ipl_save();
+		if (spin_trylock(lock))
+			break;
+		ipl_restore(ipl);
+	}
+}
+
+static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
+#ifdef SMP
+	*lock = SPIN_UNLOCKED;
+#endif /* SMP */
+	ipl_enable();  /* implies optimization barrier */
+	sched_unlock();
+}
+
 #define SPIN_PROTECTED_DO(lock, expr) \
 	__lang_surround(expr,             \
 		spinlock_t *__lock = (lock);  \
