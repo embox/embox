@@ -22,9 +22,7 @@
 #include <kernel/sched.h>
 
 
-static int trylock_sched_locked(struct mutex *m, struct thread *current);
-
-static int priority_inherit(struct thread *t, struct mutex *m);
+static void priority_inherit(struct thread *t, struct mutex *m);
 static void priority_uninherit(struct thread *t);
 
 static inline int mutex_is_static_inited(struct mutex *m) {
@@ -60,24 +58,19 @@ int mutex_lock(struct mutex *m) {
 	int ret, wait_ret;
 
 	assert(m);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		errcheck = (m->attr.type & MUTEX_ERRORCHECK);
+	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
 
-		wait_ret = WAITQ_WAIT(&m->wq, ({
-			int done;
+	wait_ret = WAITQ_WAIT(&m->wq, ({
+		int done;
 
-			ret = mutex_trylock(m);
-			done = (ret == 0) || (errcheck && ret == -EAGAIN);
-			if (!done)
-				priority_inherit(current, m);
-			done;
+		ret = mutex_trylock(m);
+		done = (ret == 0) || (errcheck && ret == -EAGAIN);
+		if (!done)
+			priority_inherit(current, m);
+		done;
 
-		}));
-	}
-	sched_unlock();
+	}));
 
 	if (!wait_ret)
 		ret = wait_ret;
@@ -87,27 +80,12 @@ int mutex_lock(struct mutex *m) {
 
 int mutex_trylock(struct mutex *m) {
 	struct thread *current = thread_self();
-	int ret;
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_lock();
-	{
-		ret = trylock_sched_locked(m, current);
-	}
-	sched_unlock();
-
-	return ret;
-}
-
-static int trylock_sched_locked(struct mutex *m, struct thread *current) {
-	assert(m && current);
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
-
-	if (mutex_is_static_inited(m)) {
+	if (mutex_is_static_inited(m))
 		mutex_complete_static_init(m);
-	}
 
 	if (m->holder == current) {
 		if (m->attr.type & MUTEX_RECURSIVE){
@@ -132,61 +110,40 @@ static int trylock_sched_locked(struct mutex *m, struct thread *current) {
 }
 
 int mutex_unlock(struct mutex *m) {
-	int error = 0;
 	struct thread *current = thread_self();
 
 	assert(m);
-	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_lock();
-	{
-		if ((!m->holder || m->holder != current) &&
-				(m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))){
-			error = EPERM;
-			goto out;
-		}
-
-		assert(m->lock_count > 0);
-
-		if(--m->lock_count != 0  && (m->attr.type & MUTEX_RECURSIVE)) {
-			goto out;
-		}
-
-		priority_uninherit(current);
-
-		m->holder = NULL;
-		m->lock_count = 0;
-		waitq_wakeup_all(&m->wq);
+	if ((!m->holder || m->holder != current) &&
+			(m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))){
+		return -EPERM;
 	}
-out:
-	sched_unlock();
-	return -error;
-}
 
-static int priority_inherit(struct thread *t, struct mutex *m) {
-	sched_priority_t prior;
+	assert(m->lock_count > 0);
 
-	assert(t);
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
-
-	prior = thread_priority_get(t);
-
-	if(prior != thread_priority_inherit(m->holder, prior)) {
-		sched_change_priority(m->holder, prior);
+	if (--m->lock_count != 0  && (m->attr.type & MUTEX_RECURSIVE)) {
+		return 0;
 	}
+
+	priority_uninherit(current);
+
+	m->holder = NULL;
+	m->lock_count = 0;
+	waitq_wakeup_all(&m->wq);
 
 	return 0;
 }
 
+static void priority_inherit(struct thread *t, struct mutex *m) {
+	sched_priority_t prior = thread_priority_get(t);
+
+	if (prior != thread_priority_inherit(m->holder, prior))
+		sched_change_priority(m->holder, prior);
+}
+
 static void priority_uninherit(struct thread *t) {
-	sched_priority_t prior;
+	sched_priority_t prior = thread_priority_get(t);
 
-	assert(t);
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
-
-	prior = thread_priority_get(t);
-
-	if(prior != thread_priority_reverse(t)) {
+	if (prior != thread_priority_reverse(t))
 		sched_change_priority(t, thread_priority_get(t));
-	}
 }
