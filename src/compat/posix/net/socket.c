@@ -75,6 +75,12 @@ int bind(int sockfd, const struct sockaddr *addr,
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (!addr || (addrlen <= 0))
+		return SET_ERRNO(EINVAL);
+
 	ret = kbind(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
@@ -91,6 +97,11 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (!addr || (addrlen <= 0))
+		return SET_ERRNO(EINVAL);
 
 	ret = kconnect(sk, addr, addrlen, sk->idesc.idesc_flags);
 	if (ret != 0) {
@@ -108,8 +119,11 @@ int listen(int sockfd, int backlog) {
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
 	ret = klisten(sk, backlog);
-	if (ret != 0){
+	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
@@ -123,6 +137,15 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
+
+	if (sk == NULL)
+		return SET_ERRNO(EBADF);
+
+	if (((addr == NULL) && (addrlen != NULL))
+			|| ((addr != NULL) && (addrlen == NULL))
+			|| ((addrlen != NULL) && (*addrlen <= 0))) {
+		return SET_ERRNO(EINVAL);
+	}
 
 	ret = kaccept(sk, addr, addrlen, sk->idesc.idesc_flags, &new_sk);
 	if (ret != 0) {
@@ -390,6 +413,12 @@ int shutdown(int sockfd, int how) {
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if (how != SHUT_RD && how != SHUT_WR && how != SHUT_RDWR)
+		return SET_ERRNO(EINVAL);
+
 	ret = kshutdown(sk, how);
 	if (ret != 0){
 		SET_ERRNO(-ret);
@@ -405,6 +434,14 @@ int getsockname(int sockfd, struct sockaddr *addr,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
+
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if ((addr == NULL) || (addrlen == NULL)
+			|| (*addrlen <= 0)) {
+		return SET_ERRNO(EINVAL);
+	}
 
 	ret = kgetsockname(sk, addr, addrlen);
 	if (ret != 0){
@@ -423,6 +460,14 @@ int getpeername(int sockfd, struct sockaddr *addr,
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if ((addr == NULL) || (addrlen == NULL)
+			|| (*addrlen <= 0)) {
+		return SET_ERRNO(EINVAL);
+	}
+
 	ret = kgetpeername(sk, addr, addrlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
@@ -439,6 +484,14 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 
 	socket_idesc_check(sockfd, sk);
 
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if ((optval == NULL) || (optlen == NULL)
+			|| (*optlen < 0)) {
+		return SET_ERRNO(EINVAL);
+	}
+
 	ret = kgetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0){
 		SET_ERRNO(-ret);
@@ -454,6 +507,13 @@ int setsockopt(int sockfd, int level, int optname,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
+
+	if (!sk)
+		return SET_ERRNO(EBADF);
+
+	if ((optval == NULL) || (optlen < 0)) {
+		return SET_ERRNO(EINVAL);
+	}
 
 	ret = ksetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0) {
