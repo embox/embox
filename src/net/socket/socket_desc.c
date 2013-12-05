@@ -9,43 +9,9 @@
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <net/socket/socket_desc.h>
+#include <fs/idesc.h>
 
-static struct socket_desc *socket_desc_alloc(void) {
-	return NULL;
-}
-
-struct socket_desc *socket_desc_create(int domain, int type, int protocol) {
-	return socket_desc_alloc();
-}
-
-void socket_desc_destroy(struct socket_desc *desc) {
-
-}
-
-void socket_desc_check_perm(struct socket_desc *desc, int ops_type,
-		struct socket_desc_param *param) {
-
-}
-
-struct socket_desc *socket_desc_get(int idx) {
-	struct idesc *idesc;
-	struct idesc_table *it;
-
-
-	assert(idesc_index_valid(idx));
-
-	it = task_get_idesc_table(task_self());
-	assert(it);
-
-	idesc = idesc_table_get(it, idx);
-
-	return (struct socket_desc *) idesc;
-}
-
-struct socket_desc *socket_desc_accept(struct sock *sk) {
-	return socket_desc_alloc();
-}
-
+extern const struct idesc_ops task_idx_ops_socket;
 
 struct sock *idesc_sock_get(int idx) {
 	struct idesc *idesc;
@@ -58,6 +24,9 @@ struct sock *idesc_sock_get(int idx) {
 	assert(it);
 
 	idesc = idesc_table_get(it, idx);
+	if (idesc->idesc_ops != &task_idx_ops_socket) {
+		return NULL;
+	}
 
 	return (struct sock *) idesc;
 }
