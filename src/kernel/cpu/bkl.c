@@ -7,6 +7,8 @@
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
+
 #include <hal/ipl.h>
 #include <hal/cpu.h>
 #include <kernel/spinlock.h>
@@ -43,7 +45,7 @@ void bkl_unlock(void) {
 
 	ipl = spin_lock_ipl(&bkl);
 	{
-		assert(nested && (cpu_get_id() == owner_id))
+		assert(nested && (cpu_get_id() == owner_id));
 		--nested;
 		if (!nested)
 			owner_id = -1;
