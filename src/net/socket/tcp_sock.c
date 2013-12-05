@@ -408,9 +408,8 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 	int ret;
 	struct tcp_sock *tcp_sk;
 
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
 
 	tcp_sk = to_tcp_sock(sk);
 
