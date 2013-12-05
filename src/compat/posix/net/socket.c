@@ -44,7 +44,10 @@ int get_index(struct sock *sk) {
 	}                                \
 	if (NULL == (sk = idesc_sock_get(sockfd))) { \
 		return SET_ERRNO(EBADF);            \
-	}
+	} \
+	if (sk->idesc.idesc_ops != &task_idx_ops_socket) { \
+		return SET_ERRNO(ENOTSOCK); \
+	} \
 
 /* create */
 int socket(int domain, int type, int protocol) {
@@ -75,9 +78,6 @@ int bind(int sockfd, const struct sockaddr *addr,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if (!addr || (addrlen <= 0))
 		return SET_ERRNO(EINVAL);
 
@@ -96,9 +96,6 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if (!addr || (addrlen <= 0))
 		return SET_ERRNO(EINVAL);
@@ -119,9 +116,6 @@ int listen(int sockfd, int backlog) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	ret = klisten(sk, backlog);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
@@ -137,9 +131,6 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (sk == NULL)
-		return SET_ERRNO(EBADF);
 
 	if (((addr == NULL) && (addrlen != NULL))
 			|| ((addr != NULL) && (addrlen == NULL))
@@ -172,9 +163,6 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
@@ -214,9 +202,6 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
 
@@ -252,9 +237,6 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
 
@@ -288,9 +270,6 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
@@ -329,9 +308,6 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
@@ -373,9 +349,6 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
 
@@ -413,9 +386,6 @@ int shutdown(int sockfd, int how) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if (how != SHUT_RD && how != SHUT_WR && how != SHUT_RDWR)
 		return SET_ERRNO(EINVAL);
 
@@ -434,9 +404,6 @@ int getsockname(int sockfd, struct sockaddr *addr,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if ((addr == NULL) || (addrlen == NULL)
 			|| (*addrlen <= 0)) {
@@ -460,9 +427,6 @@ int getpeername(int sockfd, struct sockaddr *addr,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if ((addr == NULL) || (addrlen == NULL)
 			|| (*addrlen <= 0)) {
 		return SET_ERRNO(EINVAL);
@@ -484,9 +448,6 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!sk)
-		return SET_ERRNO(EBADF);
-
 	if ((optval == NULL) || (optlen == NULL)
 			|| (*optlen < 0)) {
 		return SET_ERRNO(EINVAL);
@@ -507,9 +468,6 @@ int setsockopt(int sockfd, int level, int optname,
 	struct sock *sk;
 
 	socket_idesc_check(sockfd, sk);
-
-	if (!sk)
-		return SET_ERRNO(EBADF);
 
 	if ((optval == NULL) || (optlen < 0)) {
 		return SET_ERRNO(EINVAL);

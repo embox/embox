@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <poll.h>
 
+const struct idesc_ops task_idx_ops_socket;
 
 static ssize_t socket_read(struct idesc *desc, void *buff,
 		size_t size) {
@@ -23,7 +24,8 @@ static ssize_t socket_read(struct idesc *desc, void *buff,
 	struct iovec iov;
 	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
 
 	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
@@ -53,7 +55,8 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 	struct iovec iov;
 	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
 
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
@@ -80,7 +83,8 @@ static int socket_close(struct idesc *desc) {
 	int ret;
 	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
 
 	ret = ksocket_close(sk);
 	if (ret != 0) {
@@ -94,7 +98,8 @@ static int socket_close(struct idesc *desc) {
 static int socket_status(struct idesc *desc, int status_nr) {
 	struct sock *sk = (struct sock *)desc;
 
-	assert(sk != NULL);
+	assert(sk);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
 
 	if (!status_nr)
 		return 0;
