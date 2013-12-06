@@ -246,6 +246,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	}
 	sched_unlock();
 
+	task->main_thread = NULL; // XXX
+	thread_exit(NULL);
+
 	/* NOTREACHED */
 	panic("Returning from task_exit()");
 }
