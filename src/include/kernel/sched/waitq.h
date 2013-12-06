@@ -72,20 +72,18 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 		do {                                              \
 			waitq_wait_prepare(wq, &wql);                 \
 			                                              \
-			if (cond_expr) {                              \
+			if (cond_expr)                                \
 				break;                                    \
-			}                                             \
 			                                              \
 			__wait_ret = sched_wait_timeout(__wait_ret);  \
 			if (__wait_ret <= 0)                          \
 				break;                                    \
 		} while (1);                                      \
 		                                                  \
-		if (__wait_ret && (cond_expr))                    \
-		{                                                 \
-			__wait_ret = 1;                               \
-		}                                                 \
 		waitq_wait_cleanup(wq, &wql);                     \
+		                                                  \
+		if (__wait_ret && (cond_expr))                    \
+			__wait_ret = 1;                               \
 		                                                  \
 		__wait_ret;                                       \
 	}))
