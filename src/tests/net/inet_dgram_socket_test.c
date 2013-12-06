@@ -106,7 +106,7 @@ TEST_CASE("recv() works on disconnected socket") {
 	test_assert_equal(1, send(c, "a", 1, 0));
 	test_assert_equal(1, send(c, "b", 1, 0));
 
-	test_assert_equal(1, recv(b, buf, 2, 0));
+	test_assert_equal(0, recv(b, buf, 0, 0));
 	test_assert_equal(1, recv(b, buf, 2, 0));
 	test_assert_equal('b', buf[0]);
 }
@@ -123,7 +123,7 @@ TEST_CASE("recv() works on connected socket") {
 				addrlen));
 	test_assert_equal(1, sendto(c, "c", 1, 0, NULL, 0));
 
-	test_assert_equal(1, recv(b, buf, 2, 0));
+	test_assert_equal(0, recv(b, buf, 0, 0));
 	test_assert_equal(1, recv(b, buf, 2, 0));
 	test_assert_equal('c', buf[0]);
 }
@@ -161,7 +161,7 @@ TEST_CASE("recvfrom() and recvmsg() works on connected socket") {
 				addrlen));
 	test_assert_equal(1, sendto(c, "c", 1, 0, NULL, 0));
 
-	test_assert_equal(1, recvfrom(b, buf, 2, 0, to_sa(&addr),
+	test_assert_equal(0, recvfrom(b, buf, 0, 0, to_sa(&addr),
 				&addrlen));
 	test_assert_equal(sizeof addr, addrlen);
 	test_assert_mem_equal(&addr, &tmp, addrlen);
@@ -266,7 +266,7 @@ static int case_setup(void) {
 		return -errno;
 	}
 
-	if (-1 == fcntl(b, F_SETFL, O_NONBLOCK)) {
+	if (-1 == fcntl(b, F_SETFD, O_NONBLOCK)) {
 		return -errno;
 	}
 
