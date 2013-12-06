@@ -165,8 +165,8 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
 
-	if (!size)
-		return 0;
+//	if (!size)
+//		return 0;
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -206,8 +206,8 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
 
-	if (!size)
-		return 0;
+//	if (!size)
+//		return 0;
 
 	/* TODO remove this */
 	if (flags != 0) {

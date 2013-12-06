@@ -309,9 +309,9 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(msg->msg_iov);
 	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
-	if (msg->msg_iov->iov_len == 0) {
-		return 0;
-	}
+//	if (msg->msg_iov->iov_len == 0) {
+//		return 0;
+//	}
 
 	if ((sk->opt.so_type == SOCK_STREAM) && !sock_state_connected(sk)) {
 		return -ENOTCONN;

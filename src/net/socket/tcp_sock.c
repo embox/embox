@@ -355,7 +355,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	assert(sk);
 	assert(msg);
-	assert(msg->msg_iov->iov_len);
+	//assert(msg->msg_iov->iov_len);
 
 	len = msg->msg_iov->iov_len;
 
