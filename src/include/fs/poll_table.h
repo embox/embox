@@ -12,10 +12,6 @@ struct idesc_poll_table;
 
 extern int poll_table_count(struct idesc_poll_table *pt);
 
-extern int poll_table_cleanup(struct idesc_poll_table *pt);
-
-extern int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks);
-
 extern int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks);
 
 
@@ -34,7 +30,6 @@ struct idesc_poll {
 
 struct idesc_poll_table {
 	struct idesc_poll idesc_poll[IDESC_QUANTITY];
-	struct wait_link wait_link;
 	int size;
 };
 

@@ -11,7 +11,6 @@
 #include <fs/idesc.h>
 #include <fs/poll_table.h>
 
-
 int poll_table_count(struct idesc_poll_table *pt) {
 	int cnt = 0;
 	int i;
@@ -51,40 +50,28 @@ int poll_table_count(struct idesc_poll_table *pt) {
 	return cnt;
 }
 
-int poll_table_cleanup(struct idesc_poll_table *pt) {
+static int poll_table_cleanup(struct idesc_poll_table *pt) {
 	int i;
-	struct idesc *idesc;
-	struct idesc_wait_link *waitl;
 
 	for (i = 0; i < pt->size; i++) {
-		idesc = pt->idesc_poll[i].idesc;
-		waitl = &pt->idesc_poll[i].wait_link;
+		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
-		if (idesc == NULL) {
-			continue;
-		}
-
-		idesc_wait_cleanup(idesc, waitl);
+		assert(idesc_poll->idesc);
+		idesc_wait_cleanup(idesc_poll->idesc, &idesc_poll->wait_link);
 	}
-
-	__waitq_cleanup();
 
 	return 0;
 }
 
-int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
+static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	int i;
-	struct idesc *idesc;
-	struct idesc_wait_link *waitl;
-	int poll_mask;
 
 	for (i = 0; i < pt->size; i++) {
+		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
-		idesc = pt->idesc_poll[i].idesc;
-		waitl = &pt->idesc_poll[i].wait_link;
-		poll_mask = pt->idesc_poll[i].i_poll_mask;
-
-		idesc_wait_prepare(idesc, waitl, poll_mask);
+		assert(idesc_poll->idesc);
+		idesc_wait_prepare(idesc_poll->idesc, &idesc_poll->wait_link,
+				idesc_poll->i_poll_mask);
 	}
 
 	return 0;
