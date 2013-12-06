@@ -27,7 +27,6 @@
 #include <embox/net/sock.h>
 
 #include <kernel/softirq_lock.h>
-//#include <kernel/task/io_sync.h>
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
@@ -245,9 +244,29 @@ static int tcp_listen(struct sock *sk, int backlog) {
 	return ret;
 }
 
+static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
+	struct tcp_sock *tcp_newsk;
+	/* get first socket from */
+	tcp_newsk = list_entry(tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+
+	/* check if reading was enabled for socket that already released */
+	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NONSYNC) {
+		//TODO have to create socket before
+		return NULL;
+	}
+
+	/* delete new socket from list */
+	list_del_init(&tcp_newsk->conn_wait);
+	assert(tcp_sk->conn_wait_len != 0);
+	--tcp_sk->conn_wait_len;
+
+	return tcp_newsk;
+}
+
 static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addr_len, int flags, struct sock **newsk) {
 	struct tcp_sock *tcp_sk, *tcp_newsk;
+	int ret;
 
 	(void)addr;
 	(void)addr_len;
@@ -268,41 +287,15 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		/* waiting anyone */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-#if 0
-			io_sync_disable(&to_sock(tcp_sk)->ios,
-					IO_SYNC_READING);
-#endif
-			if (list_empty(&tcp_sk->conn_wait)) {
-				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-				return -EAGAIN;
-			}
-
-			/* get first socket from */
-			tcp_newsk = list_entry(tcp_sk->conn_wait.next,
-					struct tcp_sock, conn_wait);
-
-			/* check if reading was enabled for socket that already released */
-			if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NONSYNC) {
-				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-				return -EAGAIN;
-			}
-
-			/* delete new socket from list */
-			list_del_init(&tcp_newsk->conn_wait);
-			assert(tcp_sk->conn_wait_len != 0);
-			--tcp_sk->conn_wait_len;
-
-			/* enable reading if queue not empty */
-			if (!list_empty(&tcp_sk->conn_wait)) {
-#if 0
-				if (io_sync_ready(&to_sock(list_entry(
-								tcp_sk->conn_wait.next, struct tcp_sock,
-									conn_wait))->ios,
-						IO_SYNC_WRITING)) {
-
-				io_sync_enable(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
-#endif
-			}
+			do {
+				if (!list_empty(&tcp_sk->conn_wait)) {
+					tcp_newsk = accept_get_connection(tcp_sk);
+					if (tcp_newsk) {
+						break;
+					}
+				}
+				ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
+			} while (ret);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -313,9 +306,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 
 		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
-#if 0
-		assert(io_sync_ready(&to_sock(tcp_newsk)->ios, IO_SYNC_WRITING));
-#endif
+
 		*newsk = to_sock(tcp_newsk);
 
 		return 0;

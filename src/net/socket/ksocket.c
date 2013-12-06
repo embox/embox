@@ -12,13 +12,13 @@
 #include <stddef.h>
 #include <string.h>
 #include <fcntl.h>
-#include <net/netdevice.h>
 
 #include <util/math.h>
+#include <util/sys_log.h>
 
 #include <net/sock.h>
-#include <util/sys_log.h>
 #include <net/socket/ksocket.h>
+#include <net/netdevice.h>
 
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
@@ -237,20 +237,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	if (!(flags & O_NONBLOCK)) {
-		ret = 0;
-#if 0
-		ret = io_sync_wait(&sk->ios, IO_SYNC_READING,
-				IO_SYNC_TIMEOUT_INFINITE);
-#endif
-
-		if (ret != 0) {
-			return ret;
-		}
-	}
-
-	ret = sk->f_ops->accept(sk, addr, addrlen,
-			flags, &new_sk);
+	ret = sk->f_ops->accept(sk, addr, addrlen, flags, &new_sk);
 	if (ret != 0) {
 		LOG_ERROR("ksocket_accept",
 				"error while accepting a connection");
@@ -258,9 +245,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	}
 
 	sock_set_state(new_sk, SS_ESTABLISHED);
-#if 0
-	io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
-#endif
+
 	*out_sk = new_sk;
 
 	return 0;
