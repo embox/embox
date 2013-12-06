@@ -18,6 +18,7 @@
 #include <net/sock.h>
 #include <kernel/task.h>
 
+#include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <net/sock.h>
 #include <net/socket/socket_desc.h>
@@ -26,6 +27,8 @@
 #include <util/sys_log.h>
 
 #include <err.h>
+
+extern const struct idesc_ops task_idx_ops_socket;
 
 int get_index(struct sock *sk) {
 	struct idesc_table *it;
@@ -36,13 +39,13 @@ int get_index(struct sock *sk) {
 	return idesc_table_add(it, (struct idesc *)sk, 0);
 }
 
-#define socket_idesc_check(sockfd, sk) \
-	do { \
-		int __ret; \
-		if (0 > (__ret = (idesc_sock_get(sockfd, &sk)))) { \
-			return SET_ERRNO(-__ret);            \
-		} \
-	} while (0);
+#define  socket_idesc_check(sockfd, sk) \
+	if (!idesc_index_valid(sockfd) || !index_descriptor_get(sockfd)) {\
+		return SET_ERRNO(EBADF);            \
+	}                                \
+	if (NULL == (sk = idesc_sock_get(sockfd))) { \
+		return SET_ERRNO(ENOTSOCK);            \
+	} \
 
 /* create */
 int socket(int domain, int type, int protocol) {

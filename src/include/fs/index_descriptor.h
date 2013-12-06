@@ -8,6 +8,9 @@
 #ifndef INDEX_DESCRIPTOR_H_
 #define INDEX_DESCRIPTOR_H_
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+
 struct idesc;
 
 extern int index_descritor_cloexec_get(int fd);
@@ -32,6 +35,8 @@ extern int index_descriptor_dupfd(int fd, int newfd);
 
 struct stat;
 extern int index_descriptor_fstat(int fd, struct stat *buff);
+
+__END_DECLS
 
 
 #endif /* INDEX_DESCRIPTOR_H_ */

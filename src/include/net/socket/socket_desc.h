@@ -8,9 +8,8 @@
 #ifndef SOCKET_DESC_H_
 #define SOCKET_DESC_H_
 
-#include <net/sock.h>
 
-extern int idesc_sock_get(int idx, struct sock **sk);
+extern struct sock *idesc_sock_get(int idx);
 
 
 #endif /* SOCKET_DESC_H_ */

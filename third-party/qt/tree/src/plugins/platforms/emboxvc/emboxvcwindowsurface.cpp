@@ -3,6 +3,7 @@
 #include <QtGui/private/qapplication_p.h>
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
+#include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <kernel/task.h>
 
@@ -115,8 +116,8 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 
 	mouseFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_mouseFD = task_self_get_idesc(mouseFD);
-	idx_inputFD = task_self_get_idesc(inputFD);
+	idx_mouseFD = index_descriptor_get(mouseFD);
+	idx_inputFD = index_descriptor_get(inputFD);
 
 	fcntl(mouseFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);
@@ -189,8 +190,8 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 
 	keyboardFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_keyboardFD = task_self_get_idesc(keyboardFD);
-	idx_inputFD = task_self_get_idesc(inputFD);
+	idx_keyboardFD = (keyboardFD);
+	idx_inputFD = index_descriptor_get(inputFD);
 
 	fcntl(keyboardFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);
