@@ -24,10 +24,9 @@
 
 extern int backtrace_context(void **buff, int size, struct context *ctx); // XXX
 
-#define MAX_ROWS OPTION_GET(NUMBER, row_limit)
+#define MAX_ROWS  OPTION_GET(NUMBER, max_rows)
 #define MAX_DEPTH OPTION_GET(NUMBER, max_depth)
-
-#define ROW_SZ 100
+#define ROW_SZ    OPTION_GET(NUMBER, row_sz)
 
 #define ELLI "..."
 
