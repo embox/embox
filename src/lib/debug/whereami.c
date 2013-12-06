@@ -112,12 +112,12 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 	int is_current = (t == thread_self());
 
 	p += tb_safe_snprintf(p, end-p,
-		" === thread %d (task %d) %c%c%c%c ",
-		t->id, t->task->tid,
+		" ==    %c %c %c %c thread %3d  (task %2d) ",
 		is_current      ? '*' : ' ',
 		sched_active(t) ? 'A' : ' ',
 		t->ready        ? 'R' : ' ',
-		t->waiting      ? 'W' : ' ');
+		t->waiting      ? 'W' : ' ',
+		t->id, t->task->tid);
 
 	memset(p, '=', end-p-1);
 	*(end-1) = '\0';
