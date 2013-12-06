@@ -31,8 +31,6 @@ typedef unsigned long useconds_t;
 /** Used for time in microseconds.*/
 #include <defines/suseconds_t.h>
 
-typedef unsigned long spinlock_t;
-
 typedef __u32 gfp_t;
 
 typedef struct {

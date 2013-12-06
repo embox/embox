@@ -5,10 +5,13 @@
  * @date 08.02.12
  * @author Anton Bulychev
  * @author Ilia Vaprol
+ * @author Eldar Abusalimov
  */
 
 #ifndef KERNEL_SPINLOCK_H_
 #define KERNEL_SPINLOCK_H_
+
+#include <assert.h>
 
 #include <sys/types.h>
 #include <linux/compiler.h>
@@ -21,33 +24,66 @@
 #include <util/lang.h>
 #include <util/macro.h>
 
-#define SPIN_UNLOCKED 0
-#define SPIN_LOCKED   1
+#define SPIN_CONTENTION_LIMIT 0x10000000
+
+#ifdef SPIN_CONTENTION_LIMIT
+# define __SPIN_CONTENTION_FIELD       unsigned int contention_count;
+# define __SPIN_CONTENTION_FIELD_INIT .contention_count = SPIN_CONTENTION_LIMIT,
+#else /* SPIN_CONTENTION_LIMIT */
+# define __SPIN_CONTENTION_FIELD
+# define __SPIN_CONTENTION_FIELD_INIT
+#endif /* SPIN_CONTENTION_LIMIT */
+
+typedef struct {
+	unsigned long l;
+	__SPIN_CONTENTION_FIELD
+} spinlock_t;
+
+#define SPIN_STATIC_UNLOCKED { .l = __SPIN_UNLOCKED, __SPIN_CONTENTION_FIELD_INIT }
+#define SPIN_STATIC_LOCKED   { .l = __SPIN_LOCKED,   __SPIN_CONTENTION_FIELD_INIT }
+
+#define SPIN_UNLOCKED (spinlock_t) SPIN_STATIC_UNLOCKED
+#define SPIN_LOCKED   (spinlock_t) SPIN_STATIC_LOCKED
+
+#define __SPIN_UNLOCKED 0
+#define __SPIN_LOCKED   1
 
 #ifdef SMP
 
-static inline int spin_trylock_no_preempt(spinlock_t *lock) {
+static inline int __spin_trylock_smp(spinlock_t *lock) {
 #ifdef __HAVE_ARCH_CMPXCHG
-	return (SPIN_UNLOCKED == cmpxchg(lock, SPIN_UNLOCKED, SPIN_LOCKED));
+	return (__SPIN_UNLOCKED == cmpxchg(&lock->l, __SPIN_UNLOCKED, __SPIN_LOCKED));
 #else /* !__HAVE_ARCH_CMPXCHG */
-	return __sync_bool_compare_and_swap(lock, SPIN_UNLOCKED, SPIN_LOCKED);
+	return __sync_bool_compare_and_swap(&lock->l, __SPIN_UNLOCKED, __SPIN_LOCKED);
 #endif /* __HAVE_ARCH_CMPXCHG */
 }
 
 #else /* !SMP */
 
-static inline int spin_trylock_no_preempt(spinlock_t *lock) {
-	return SPIN_LOCKED;
+static inline int __spin_trylock_smp(spinlock_t *lock) {
+	return 1;
 }
 
 #endif /* SMP */
 
-static inline void spin_lock_no_preempt(spinlock_t *lock) {
-	while (!spin_trylock_no_preempt(lock))
+static inline int __spin_trylock(spinlock_t *lock) {
+	int ret = __spin_trylock_smp(lock);
+#ifdef SPIN_CONTENTION_LIMIT
+	if (ret)
+		lock->contention_count = SPIN_CONTENTION_LIMIT;
+	else
+		// TODO this must be atomic dec
+		assert(lock->contention_count--, "deadlock");
+#endif
+	return ret;
+}
+
+static inline void __spin_lock(spinlock_t *lock) {
+	while (!__spin_trylock(lock))
 		;
 }
 
-static inline void spin_unlock_no_preempt(spinlock_t *lock) {
+static inline void __spin_unlock(spinlock_t *lock) {
 #ifdef SMP
 	*lock = SPIN_UNLOCKED;
 #endif
@@ -62,7 +98,7 @@ static inline void spin_unlock_no_preempt(spinlock_t *lock) {
 static inline int spin_trylock(spinlock_t *lock) {
 	int ret;
 	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
-	ret = spin_trylock_no_preempt(lock);
+	ret = __spin_trylock(lock);
 	if (!ret)
 		__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 	return ret;
@@ -82,10 +118,7 @@ static inline void spin_lock(spinlock_t *lock) {
  * @param lock  object to unlock
  */
 static inline void spin_unlock(spinlock_t *lock) {
-#ifdef SMP
-	*lock = SPIN_UNLOCKED;
-	__barrier();
-#endif
+	__spin_unlock(lock);
 	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }
 
@@ -103,9 +136,7 @@ static inline ipl_t spin_lock_ipl(spinlock_t *lock) {
 }
 
 static inline void spin_unlock_ipl(spinlock_t *lock, ipl_t ipl) {
-#ifdef SMP
-	*lock = SPIN_UNLOCKED;
-#endif /* SMP */
+	__spin_unlock(lock);
 	ipl_restore(ipl);  /* implies optimization barrier */
 	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }
@@ -122,9 +153,7 @@ static inline void spin_lock_ipl_disable(spinlock_t *lock) {
 }
 
 static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
-#ifdef SMP
-	*lock = SPIN_UNLOCKED;
-#endif /* SMP */
+	__spin_unlock(lock);
 	ipl_enable();  /* implies optimization barrier */
 	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
 }

@@ -13,12 +13,12 @@
 #include <hal/cpu.h>
 #include <kernel/spinlock.h>
 
-static spinlock_t bkl = SPIN_UNLOCKED;
+static spinlock_t bkl = SPIN_STATIC_UNLOCKED;
 
 void bkl_lock(void) {
-	spin_lock_no_preempt(&bkl);
+	__spin_lock(&bkl);
 }
 
 void bkl_unlock(void) {
-	spin_unlock_no_preempt(&bkl);
+	__spin_unlock(&bkl);
 }
