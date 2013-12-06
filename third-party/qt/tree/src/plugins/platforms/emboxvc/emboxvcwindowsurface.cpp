@@ -115,8 +115,8 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 
 	mouseFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_mouseFD = task_get_idesc(mouseFD);
-	idx_inputFD = task_get_idesc(inputFD);
+	idx_mouseFD = task_self_get_idesc(mouseFD);
+	idx_inputFD = task_self_get_idesc(inputFD);
 
 	fcntl(mouseFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);
@@ -189,8 +189,8 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 
 	keyboardFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_keyboardFD = task_get_idesc(keyboardFD);
-	idx_inputFD = task_get_idesc(inputFD);
+	idx_keyboardFD = task_self_get_idesc(keyboardFD);
+	idx_inputFD = task_self_get_idesc(inputFD);
 
 	fcntl(keyboardFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);

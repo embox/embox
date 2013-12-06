@@ -52,7 +52,7 @@ struct idesc_table *task_get_idesc_table(struct task *task) {
 	return res_get_pointer(task);
 }
 
-struct idesc *task_get_idesc(int idx) {
+struct idesc *task_self_get_idesc(int idx) {
 	struct idesc_table *t;
 
 	t = task_get_idesc_table(task_self());

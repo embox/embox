@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <stddef.h>
+#include <errno.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
@@ -13,20 +14,21 @@
 
 extern const struct idesc_ops task_idx_ops_socket;
 
-struct sock *idesc_sock_get(int idx) {
+int idesc_sock_get(int idx, struct sock **sk) {
 	struct idesc *idesc;
-	struct idesc_table *it;
 
+	if (!idesc_index_valid(idx))
+		return -EBADF;
 
-	assert(idesc_index_valid(idx));
+	idesc = task_self_get_idesc(idx);
 
-	it = task_get_idesc_table(task_self());
-	assert(it);
+	if (!idesc)
+		return -EBADF;
 
-	idesc = idesc_table_get(it, idx);
-	if (idesc->idesc_ops != &task_idx_ops_socket) {
-		return NULL;
-	}
+	if (idesc->idesc_ops != &task_idx_ops_socket)
+		return -ENOTSOCK;
 
-	return (struct sock *) idesc;
+	*sk = (struct sock *) idesc;
+
+	return 0;
 }
