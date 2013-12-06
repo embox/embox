@@ -51,7 +51,7 @@ void __attribute__ ((noreturn)) __assertion_handle_failure(
 				.expression = expr_str,                                 \
 			};                                                          \
 			extern int sprintf(char *s, const char *format, ...);       \
-			sprintf(__assertion_message_buff, " " message);             \
+			sprintf(__assertion_message_buff, "" message);              \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
@@ -65,7 +65,7 @@ extern "C" int sprintf(char *s, const char *format, ...);
 				LOCATION_FUNC_INIT,                                     \
 				expr_str                                                \
 			};                                                          \
-			sprintf(__assertion_message_buff, " " message);             \
+			sprintf(__assertion_message_buff, "" message);              \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
