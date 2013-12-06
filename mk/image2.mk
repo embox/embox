@@ -32,7 +32,6 @@ include $(__include_image)
 include $(__include_initfs)
 include $(__include)
 
-
 .SECONDARY:
 .DELETE_ON_ERROR:
 
@@ -64,7 +63,8 @@ endif
 
 # This must be expanded in a secondary expansion context.
 common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
-common_prereqs       = $(common_prereqs_nomk) $(mk_file)
+common_prereqs       = $(common_prereqs_nomk) $(mk_file) \
+	$(dir $(my_file:%=$(OBJ_DIR)/%)).
 
 VPATH := $(SRCGEN_DIR)
 
