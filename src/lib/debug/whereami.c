@@ -87,11 +87,12 @@ static void tb_dump_thread_stack(struct thread *t) {
 	size = backtrace_context(&bt_buff[0], ARRAY_SIZE(bt_buff), ctx);
 	limit = MAX_ROWS ? min(size, MAX_ROWS + 1) : size;
 
-	printk("\n\n thread %d (task %d) %c%c%c\n",
+	printk("\n\n thread %d (task %d) %c%c%c%c\n",
 		t->id, t->task->tid,
 		is_current      ? '*' : ' ',
 		sched_active(t) ? 'A' : ' ',
-		sched_ready(t)  ? 'R' : 'W');
+		t->ready        ? 'R' : ' ',
+		t->waiting      ? 'W' : ' ');
 	printk("Backtrace:\n"
 			"    pc         func + offset\n"
 			"    ---------- ------------------------\n"

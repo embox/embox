@@ -11,6 +11,7 @@
 #define KERNEL_THREAD_TYPES_H_
 
 #include <hal/context.h>
+#include <hal/cpu.h>
 
 #include <kernel/spinlock.h>
 #include <kernel/sched/sched_strategy.h>
@@ -21,22 +22,43 @@
 
 #include <util/dlist.h>
 
-#define THREAD_STATE_INIT 0x0
-
-#define THREAD_READY     (0x1 << 0)  /**< Not waiting (and not about to be). */
-#define THREAD_ACTIVE    (0x1 << 1)  /**< Runs on CPU now (is current). */
+#ifdef SMP
+# define TW_SMP_WAKING    (-1)  /**< In the middle of sched_wakeup. */
+#else
+# define TW_SMP_WAKING      0   /* Not used in non-SMP kernel. */
+#endif
 
 /* Resource mgmt flags. */
 #define __THREAD_STATE_EXITED    (0x1 << 3)
 #define __THREAD_STATE_DETACHED  (0x1 << 4)
 
+#define THREAD_STATE_INIT 0 // XXX
+
 typedef int __thread_id_t;
 
 struct task;
 
+/**
+ * Thread control block.
+ *
+ * Locking:
+ *   t->lock    - used during waking up
+ *   t->active  - (SMP) only current is allowed to modify it,
+ *                reads are usually paired with t->waiting
+ *   t->ready   - any access must be protected with rq lock and interrupts off,
+ *                only current can reset it to zero (during 'schedule'),
+ *                others can set it to a non-zero during wake up
+ *   t->waiting - current can change it from zero to a non-zero with no locks,
+ *                others access it with t->lock held and interrupts off
+ */
 struct thread {
-	unsigned int       state;          /**< Current state. */
 	spinlock_t         lock;
+
+	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
+	unsigned int       ready;        /**< Managed by the scheduler. */
+	unsigned int       waiting;      /**< Waiting for an event. */
+
+	unsigned int       state;        /**< XXX. resource mgmt, needs clean up */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 

@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
@@ -15,13 +16,13 @@ void sched_wait_prepare(void) {
 	struct thread *t = thread_self();
 
 	// TODO SMP barrier? -- Eldar
-	t->state &= ~THREAD_READY;
+	t->waiting = true;
 }
 
 void sched_wait_cleanup(void) {
 	struct thread *t = thread_self();
 
-	t->state |= THREAD_READY;
+	t->waiting = false;
 	// TODO SMP barrier? -- Eldar
 }
 

@@ -13,12 +13,13 @@
 
 #include <sys/types.h>
 
+#include <hal/cpu.h>
+
 #include <kernel/thread/types.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 
 #include <kernel/time/time.h>
-
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
@@ -60,12 +61,8 @@ extern void sched_start(struct thread *t);
  */
 extern void sched_finish(struct thread *t);
 
-static inline int sched_ready(struct thread *t) {
-	return (t->state & THREAD_READY);
-}
-
 static inline int sched_active(struct thread *t) {
-	return (t->state & THREAD_ACTIVE);
+	return t->active;
 }
 
 /**
@@ -128,6 +125,8 @@ extern void sched_post_switch(void);
  * Runs the scheduler right now.
  */
 extern void schedule(void);
+
+extern void sched_ack_switched(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling

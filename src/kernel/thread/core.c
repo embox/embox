@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -53,8 +54,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
-	sched_unlock_noswitch();
-	ipl_enable();
+	sched_ack_switched();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
@@ -136,8 +136,11 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	dlist_init(&t->thread_link); /* default unlink value */
 
-	t->state = THREAD_STATE_INIT;
 	t->lock = SPIN_UNLOCKED;
+	t->ready = false;
+	t->active = false;
+	t->waiting = true;
+	t->state = THREAD_STATE_INIT;
 
 	/* set executive function and arguments pointer */
 	t->run = run;
@@ -202,7 +205,6 @@ static void thread_delete(struct thread *t) {
 	task_remove_thread(t->task, t);
 	sigstate_init(&t->sigstate);
 
-	runq_item_init(&t->sched_attr.runq_link);
 	sched_affinity_init(t);
 	sched_timing_init(t);
 
@@ -223,8 +225,6 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct task *task = task_self();
 	struct thread *joining;
 
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	/* We can free only not main threads */
 	if (task->main_thread == current) {
 		/* We are last thread. */
@@ -232,26 +232,23 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		/* NOTREACHED */
 	}
 
-	sched_lock();
-	{
-		sched_finish(current);
-		current->state |= __THREAD_STATE_EXITED;
+	// sched_finish(current);
+	current->waiting = true;
+	current->state |= __THREAD_STATE_EXITED;
 
-		/* Wake up a joining thread (if any).
-		 * Note that joining and run_ret are both in a union. */
-		joining = current->joining;
-		if (joining) {
-			current->run_ret = ret;
-			sched_wakeup(joining);
-		}
-
-		if (current->state & __THREAD_STATE_DETACHED)
-			/* No one references this thread anymore. Time to delete it. */
-			thread_delete(current);
-
-		sched_post_switch();
+	/* Wake up a joining thread (if any).
+	 * Note that joining and run_ret are both in a union. */
+	joining = current->joining;
+	if (joining) {
+		current->run_ret = ret;
+		sched_wakeup(joining);
 	}
-	sched_unlock();
+
+	if (current->state & __THREAD_STATE_DETACHED)
+		/* No one references this thread anymore. Time to delete it. */
+		thread_delete(current);
+
+	schedule();
 
 	/* NOTREACHED */
 	panic("Returning from thread_exit()");
@@ -308,28 +305,8 @@ int thread_detach(struct thread *t) {
 }
 
 int thread_launch(struct thread *t) {
-	int res = 0;
-
-	assert(t);
-
-	sched_lock();
-	{
-		if (t->state & (THREAD_READY | THREAD_ACTIVE)) {
-			res = -EINVAL;
-			goto out;
-		}
-
-		if (thread_exited(t)) {
-			res = -ESRCH;
-			goto out;
-		}
-
-		sched_start(t);
-	}
-out:
-	sched_unlock();
-
-	return res;
+	sched_wakeup(t);
+	return 0;
 }
 
 int thread_terminate(struct thread *t) {
@@ -337,8 +314,9 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		sched_finish(t);
-		thread_delete(t);
+		// sched_finish(t);
+		// assert(0, "NIY");
+		// thread_delete(t);
 	}
 	sched_unlock();
 
@@ -398,7 +376,6 @@ static int thread_core_init(void) {
 	id_counter = 0; /* start enumeration */
 
 	idle = idle_thread_create(); /* idle thread always has ID=0 */
-
 	current = boot_thread_create(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);

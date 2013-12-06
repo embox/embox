@@ -50,7 +50,7 @@ static void print_stat(void) {
 				if (sched_active(thread)) {
 					state = "running";
 					running++;
-				} else if (!sched_ready(thread)) {
+				} else if (!thread->ready) {
 					state = "sleeping";
 					sleeping++;
 				}
