@@ -52,6 +52,15 @@ struct idesc_table *task_get_idesc_table(struct task *task) {
 	return res_get_pointer(task);
 }
 
+struct idesc *task_get_idesc(int idx) {
+	struct idesc_table *t;
+
+	t = task_get_idesc_table(task_self());
+	assert(t);
+
+	return idesc_table_get(t, idx);
+}
+
 static const struct task_resource_desc idesc_table_resource = {
 	.init = idesc_table_res_init,
 	.inherit = idesc_table_inherit,

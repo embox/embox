@@ -3,7 +3,8 @@
 #include <QtGui/private/qapplication_p.h>
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
-#include <kernel/task/idx.h>
+#include <fs/idesc.h>
+#include <kernel/task.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,32 +84,26 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	}
 }
 
-static int desc_read(struct idx_desc *desc, void *buf, size_t size) {
-	const struct idesc_ops *ops;
-
+static int desc_read(struct idesc *desc, void *buf, size_t size) {
 	if (!buf) {
 		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->read);
-	return ops->read(desc, buf, size);
+	assert(desc->idesc_ops);
+	assert(desc->idesc_ops->read);
+	return desc->idesc_ops->read(desc, buf, size);
 }
 
-static int desc_write(struct idx_desc *desc, const void *buf, size_t size) {
-	const struct idesc_ops *ops;
-
+static int desc_write(struct idesc *desc, const void *buf, size_t size) {
 	if (!buf) {
 		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->write);
-	return ops->write(desc, buf, size);
+	assert(desc->idesc_ops);
+	assert(desc->idesc_ops->write);
+	return desc->idesc_ops->write(desc, buf, size);
 }
 
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
@@ -120,8 +115,8 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 
 	mouseFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_mouseFD = task_self_idx_get(mouseFD);
-	idx_inputFD = task_self_idx_get(inputFD);
+	idx_mouseFD = task_get_idesc(mouseFD);
+	idx_inputFD = task_get_idesc(inputFD);
 
 	fcntl(mouseFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);
@@ -194,8 +189,8 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 
 	keyboardFD = pipefd[0];
 	inputFD = pipefd[1];
-	idx_keyboardFD = task_self_idx_get(keyboardFD);
-	idx_inputFD = task_self_idx_get(inputFD);
+	idx_keyboardFD = task_get_idesc(keyboardFD);
+	idx_inputFD = task_get_idesc(inputFD);
 
 	fcntl(keyboardFD, F_SETFL, O_NONBLOCK);
 	fcntl(inputFD, F_SETFL, O_NONBLOCK);
