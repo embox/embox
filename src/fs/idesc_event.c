@@ -47,7 +47,12 @@ int idesc_wait(struct idesc *idesc, unsigned int timeout) {
 }
 
 void idesc_wait_cleanup(struct idesc *idesc, struct idesc_wait_link *wl) {
-	/* XXX why both ? */
-	waitq_remove(&wl->link);
+	struct thread *current_thd = thread_self();
+
+	assert(current_thd->wait_link == &wl->link);
+
+	/* clean up current thread waitq. WAITING guaranted to cleared,
+ 	 * thread's wait_link removed from waitq
+	 */
 	__waitq_cleanup();
 }

@@ -57,7 +57,7 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
 		assert(idesc_poll->idesc);
-		idesc_wait_cleanup(idesc_poll->idesc, &idesc_poll->wait_link);
+		waitq_remove(&idesc_poll->wait_link.link);
 	}
 
 	return 0;
@@ -83,15 +83,17 @@ int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 	struct waitq waitq = WAITQ_INIT(waitq);
 	struct wait_link waitl;
 
-	__waitq_prepare(&waitq, &waitl);
+	poll_table_wait_prepare(pt, ticks);
+
 	do {
-		poll_table_wait_prepare(pt, ticks);
+		__waitq_prepare(&waitq, &waitl);
 		if ((fd_cnt = poll_table_count(pt))) {
 			break;
 		}
 		ret = __waitq_wait(ticks);
-		poll_table_cleanup(pt);
 	} while (!ret);
+
+	__waitq_cleanup();
 
 	poll_table_cleanup(pt);
 
