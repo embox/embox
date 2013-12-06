@@ -9,13 +9,15 @@
 #ifndef KERNEL_THREAD_SCHED_STRATEGY_H_
 #define KERNEL_THREAD_SCHED_STRATEGY_H_
 
+#include <kernel/spinlock.h>
 #include <kernel/sched/affinity.h>
 #include <kernel/sched/runq.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_priority.h>
 
 struct runq {
-	runq_t queue;
+	runq_t     queue;
+	spinlock_t lock;
 };
 
 struct sched_attr {
