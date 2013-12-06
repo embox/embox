@@ -36,7 +36,7 @@ module priority_based_smp extends api {
 	depends timing_api
 	depends priority_api
 
-	depends runq.list_array
+	depends runq.prioq
 	depends Runq
 }
 
