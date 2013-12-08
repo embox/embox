@@ -65,7 +65,7 @@ static size_t tb_snprint_symbol(char *buff, size_t buff_sz, void *addr) {
 	if (!loc->file)
 		goto out;
 
-	lineno_len = tb_decimal_width(loc->line);
+	lineno_len = tb_decimal_width(loc->line) + 1;  /* including a colon */
 	if (end-p <= strlen(ELLI) + lineno_len)
 		goto out;
 
