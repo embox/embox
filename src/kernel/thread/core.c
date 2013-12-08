@@ -328,7 +328,7 @@ void thread_yield(void) {
 }
 
 int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
-	sched_priority_t prior;
+	// sched_priority_t prior;
 
 	assert(t);
 	assert(t->task);
@@ -338,11 +338,14 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 		return -EINVAL;
 	}
 
-	prior = sched_priority_thread(t->task->priority, thread_priority_get(t));
-	if(new_priority != prior) {
-		prior = sched_priority_full(t->task->priority, new_priority);
-		sched_change_priority(t, prior);
-	}
+	// prior = sched_priority_thread(t->task->priority, thread_priority_get(t));
+	// if(new_priority != prior) {
+	// 	prior = sched_priority_full(t->task->priority, new_priority);
+	// 	sched_change_priority(t, prior);
+	// }
+
+ 	sched_change_priority(t, new_priority);
+
 
 	return 0;
 }
