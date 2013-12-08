@@ -24,6 +24,7 @@
 #include <util/lang.h>
 #include <util/macro.h>
 
+#define SPIN_DEBUG  // TODO make it an option
 #define SPIN_CONTENTION_LIMIT 0x10000000
 
 #ifdef SPIN_CONTENTION_LIMIT
@@ -48,7 +49,7 @@ typedef struct {
 #define __SPIN_UNLOCKED 0
 #define __SPIN_LOCKED   1
 
-#ifdef SMP
+#if defined(SMP) || defined(SPIN_DEBUG)
 
 static inline int __spin_trylock_smp(spinlock_t *lock) {
 #ifdef __HAVE_ARCH_CMPXCHG
@@ -58,13 +59,13 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 #endif /* __HAVE_ARCH_CMPXCHG */
 }
 
-#else /* !SMP */
+#else /* !(SMP || SPIN_DEBUG) */
 
 static inline int __spin_trylock_smp(spinlock_t *lock) {
 	return 1;
 }
 
-#endif /* SMP */
+#endif /* SMP || SPIN_DEBUG */
 
 static inline int __spin_trylock(spinlock_t *lock) {
 	int ret = __spin_trylock_smp(lock);
@@ -73,7 +74,7 @@ static inline int __spin_trylock(spinlock_t *lock) {
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
 	else
 		// TODO this must be atomic dec
-		assert(lock->contention_count--, "deadlock");
+		assert(lock->contention_count--, "Possible spin deadlock");
 #endif
 	return ret;
 }
@@ -84,9 +85,10 @@ static inline void __spin_lock(spinlock_t *lock) {
 }
 
 static inline void __spin_unlock(spinlock_t *lock) {
-#ifdef SMP
+#if defined(SMP) || defined(SPIN_DEBUG)
+	assert(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
 	*lock = SPIN_UNLOCKED;
-#endif
+#endif /* SMP || SPIN_DEBUG */
 	__barrier();
 }
 
