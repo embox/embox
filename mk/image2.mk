@@ -64,7 +64,7 @@ endif
 # This must be expanded in a secondary expansion context.
 common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
 common_prereqs       = $(common_prereqs_nomk) $(mk_file) \
-	$(dir $(my_file:%=$(OBJ_DIR)/%)).
+	$(if $(value myfile),$(dir $(my_file:%=$(OBJ_DIR)/%)).)
 
 VPATH := $(SRCGEN_DIR)
 
