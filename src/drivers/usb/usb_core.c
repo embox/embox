@@ -140,7 +140,7 @@ int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hn
 int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data) {
-	struct usb_request *rstp, *rdt, *rstt;
+	struct usb_request *rstp, *rdt = NULL, *rstt;
 	unsigned short dtoken, dntoken;
 
 	if (req_type & USB_DEV_REQ_TYPE_RD) {

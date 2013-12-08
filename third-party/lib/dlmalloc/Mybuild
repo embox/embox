@@ -1,0 +1,10 @@
+package third_party.lib
+
+module dlmalloc extends embox.mem.heap_api {
+
+	source "empty.c" // FIXME: workaround
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/lib/dlmalloc MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)'")
+	source
+		"../../../../../dlmalloc/malloc.o"
+}

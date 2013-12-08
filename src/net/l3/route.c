@@ -83,16 +83,14 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
  *         style must be the same
  *      2) Carrier without ARP can't be supported
  */
-int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
+int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
+		struct rt_entry *suggested_route) {
 	in_addr_t daddr;
 	struct rt_entry *rte;
-	struct net_device *wanna_dev;
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
 	daddr = skb->nh.iph->daddr;
-
-	wanna_dev = skb->sk != NULL ? skb->sk->opt.so_bindtodevice : NULL;
 
 	/* SO_BROADCAST assert. */
 	if (daddr == INADDR_BROADCAST) {

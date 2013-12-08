@@ -16,7 +16,6 @@
 //#include <net/netdevice.h>
 //#include <net/l3/ipv4/ip.h>
 //#include <net/l3/icmpv4.h>
-//#include <net/sock.h>
 //#include <net/l4/udp.h>
 //#include <net/l4/tcp.h>
 #include <stddef.h>
@@ -25,7 +24,6 @@
 /* Prototypes */
 struct sk_buff;
 struct sk_buff_data;
-struct sock;
 struct net_device;
 struct tcphdr;
 struct udphdr;
@@ -45,7 +43,6 @@ typedef struct sk_buff {        /* Socket buffer */
 	/* This member must be first. */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
-	const struct sock *sk;      /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)

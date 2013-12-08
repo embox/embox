@@ -54,7 +54,7 @@ static void print_rule(const struct nf_rule *r) {
 	printf("%-8s ", target_str != NULL ? target_str : "");
 	printf("%c%-4s ", r->not_proto ? '!' : ' ',
 			nf_proto_to_str(r->proto));
-	printf("%-3s ", "--");
+	printf("%c%-2s ", r->test_hnd ? 'C' : '-', "-");
 	printf("%c%-15s ", r->not_saddr && (r->saddr.s_addr
 				!= INADDR_ANY) ? '!' : ' ',
 			r->saddr.s_addr != INADDR_ANY ? inet_ntoa(r->saddr)
@@ -139,6 +139,7 @@ static int exec(int argc, char **argv) {
 				|| !strcmp(argv[ind], "--help")) {
 			printf("Usage:\n");
 			printf("  iptables -A chain rule-specification\n");
+			printf("  iptables -I chain [rulenum] rule-specification\n");
 			printf("  iptables -R chain rulenum rule-specification\n");
 			printf("  iptables -D chain rulenum\n");
 			printf("  iptables -F [chain]\n");
@@ -150,6 +151,10 @@ static int exec(int argc, char **argv) {
 			if ((0 == strcmp(argv[ind], "-A"))
 					|| (0 == strcmp(argv[ind], "--append"))) {
 				oper = 'A';
+			}
+			else if ((0 == strcmp(argv[ind], "-I"))
+					|| (0 == strcmp(argv[ind], "--insert"))) {
+				oper = 'I';
 			}
 			else if ((0 == strcmp(argv[ind], "-R"))
 					|| (0 == strcmp(argv[ind], "--replace"))) {
@@ -179,7 +184,7 @@ static int exec(int argc, char **argv) {
 		else if (chain == NF_CHAIN_UNKNOWN) {
 			chain = nf_chain_get_by_name(argv[ind]);
 			if (chain == NF_CHAIN_UNKNOWN) {
-				if ((oper == 'A') || (oper == 'R')
+				if ((oper == 'A') || (oper == 'I') || (oper == 'R')
 						|| (oper == 'D') || (oper == 'P')) {
 					printf("iptables: unknown chain: `%s'\n",
 							argv[ind]);
@@ -193,7 +198,7 @@ static int exec(int argc, char **argv) {
 		}
 		else
 after_chain:
-		/* else */ if (((oper == 'R') || (oper == 'D')
+		/* else */ if (((oper == 'R') || (oper == 'D') || (oper == 'I')
 					|| (oper == 'L'))
 				&& (rule_num == -1)) {
 			if ((1 != sscanf(argv[ind], "%d", &rule_num))
@@ -220,7 +225,7 @@ after_rule_num:
 				return -EINVAL;
 			}
 		}
-		else if ((oper != 'A') && (oper != 'R')) {
+		else if ((oper != 'A') && (oper != 'I') && (oper != 'R')) {
 			printf("iptables: invalid option: `%s'\n", argv[ind]);
 			return -EINVAL;
 		}
@@ -255,7 +260,7 @@ after_rule_num:
 				printf("iptables: invalid protocol: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_proto = not_flag;
+			NF_SET_NOT_FIELD(&rule, proto, not_flag, rule.proto);
 			not_flag = 0;
 		}
 		else if ((0 == strcmp(argv[ind], "-s"))
@@ -268,7 +273,7 @@ after_rule_num:
 				printf("iptables: invalid source address: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_saddr = not_flag;
+			NF_SET_NOT_FIELD(&rule, saddr, not_flag, rule.saddr);
 			not_flag = 0;
 		}
 		else if ((0 == strcmp(argv[ind], "-d"))
@@ -281,11 +286,13 @@ after_rule_num:
 				printf("iptables: invalid destination address: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.not_daddr = not_flag;
+			NF_SET_NOT_FIELD(&rule, daddr, not_flag, rule.daddr);
 			not_flag = 0;
 		}
-		else if (((rule.proto == NF_PROTO_TCP)
+		else if (rule.set_proto
+				&& ((rule.proto == NF_PROTO_TCP)
 					|| (rule.proto == NF_PROTO_UDP))
+				&& !rule.not_proto
 				&& ((0 == strcmp(argv[ind], "--sport"))
 					|| (0 == strcmp(argv[ind], "--source-port")))) {
 			if (++ind == argc) {
@@ -296,11 +303,12 @@ after_rule_num:
 				printf("iptables: invalid source port: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.sport = htons((unsigned short int)port);
-			rule.not_sport = not_flag;
+			NF_SET_NOT_FIELD(&rule, sport, not_flag,
+					htons((unsigned short)port));
 			not_flag = 0;
 		}
-		else if (((rule.proto == NF_PROTO_TCP)
+		else if (rule.set_proto
+				&& ((rule.proto == NF_PROTO_TCP)
 					|| (rule.proto == NF_PROTO_UDP))
 				&& !rule.not_proto
 				&& ((0 == strcmp(argv[ind], "--dport"))
@@ -313,8 +321,8 @@ after_rule_num:
 				printf("iptables: invalid destination port: `%s'\n", argv[ind]);
 				return -EINVAL;
 			}
-			rule.dport = htons((unsigned short int)port);
-			rule.not_dport = not_flag;
+			NF_SET_NOT_FIELD(&rule, dport, not_flag,
+					htons((unsigned short)port));
 			not_flag = 0;
 		}
 		else {
@@ -332,16 +340,20 @@ after_rule_num:
 		return -EINVAL;
 	}
 
-	if (((oper == 'A') || (oper == 'R') || (oper == 'D')
+	if (((oper == 'A') || (oper == 'I') || (oper == 'R') || (oper == 'D')
 				|| (oper == 'P'))
 			&& (chain == NF_CHAIN_UNKNOWN)) {
 		printf("iptables: no chain specified\n");
 		return -EINVAL;
 	}
 
-	if (((oper == 'R') || (oper == 'D')) && (rule_num == -1)) {
-		printf("iptables: no rule_num specified\n");
-		return -EINVAL;
+	if (rule_num == -1) {
+		if ((oper == 'R') || (oper == 'D')) {
+			printf("iptables: no rule_num specified\n");
+			return -EINVAL;
+		} else if ((oper == 'I')) {
+			rule_num = 0;
+		}
 	}
 
 	if ((oper == 'P') && (rule.target == NF_TARGET_UNKNOWN)) {
@@ -350,6 +362,7 @@ after_rule_num:
 	}
 
 	return oper == 'A' ? nf_add_rule(chain, &rule)
+			: oper == 'I' ? nf_insert_rule(chain, &rule, rule_num)
 			: oper == 'R' ? nf_set_rule(chain, &rule, rule_num)
 			: oper == 'D' ? nf_del_rule(chain, rule_num)
 			: oper == 'F' ? clear_rules(chain)

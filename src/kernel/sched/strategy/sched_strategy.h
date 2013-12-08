@@ -25,6 +25,7 @@ struct sched_attr {
 	affinity_t affinity;
 	sched_timing_t sched_time;
 	thread_priority_t thread_priority;
+	int policy;
 };
 
 #endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */

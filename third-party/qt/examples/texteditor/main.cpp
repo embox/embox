@@ -12,6 +12,13 @@
 #include <kernel/event.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
+#include <module/third_party/qt/texteditor.h>
+
+#define DEFAULT_WIDTH \
+		OPTION_MODULE_GET(third_party__qt__texteditor, NUMBER, root_window_width)
+
+#define DEFAULT_HEIGHT \
+		OPTION_MODULE_GET(third_party__qt__texteditor, NUMBER, root_window_height)
 
 #define FSIZE 64
 #define SEP ':'
@@ -126,6 +133,9 @@ static void load_pref(void) {
 	snprintf(cbuf, FSIZE, "/mnt/pref_%d", curuid);
 	fd = open(cbuf, O_RDONLY, 0755);
 
+	if (fd == -1)
+		goto set_default;
+
 	lseek(fd, 0, 0);
 	if (0 < (ret = read(fd, cbuf, FSIZE))) {
 		char *buf = cbuf;
@@ -138,6 +148,7 @@ static void load_pref(void) {
 	}
 	close(fd);
 
+set_default:
 	QString imagePath = QString(":/images/").append(QString(wall));
 	emarea->setBackgroundPath(imagePath);
 
@@ -215,7 +226,11 @@ int main(int argv, char **args)
 
 	emroot->setCentralWidget(emarea);
 
-	manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE);
+	if (DEFAULT_WIDTH == 0 || DEFAULT_HEIGHT == 0) {
+		manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE); /* EMBOXVC plugin*/
+	} else {
+		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT)); /* VNC plugin */
+	}
 
 	emroot->show();
 

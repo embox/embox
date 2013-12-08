@@ -25,8 +25,10 @@ module moveblocks extends embox.lib.cxx.app {
 }
 
 module texteditor extends embox.lib.cxx.app {
+	option number root_window_width=0
+	option number root_window_height=0
 	source "empty.c"
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' texteditor")
 	source "../../../../qt/apps_embox/texteditor/texteditor.embox.o"
 	depends core
 }

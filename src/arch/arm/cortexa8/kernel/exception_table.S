@@ -19,7 +19,9 @@
  */
 
 #include <asm/modes.h>
+#include <asm/regs.h>
 #include <framework/mod/options.h>
+#include <module/embox/arch/mmu.h>
 
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
@@ -91,11 +93,26 @@ reset_handler:
     ldr r0, =trap_table_start
     mcr p15, 0, r0, c12, c0, 0
 
-    /* enabling data abort on unaligned mem access */
+	/* initializing MMU */
+#ifndef NOMMU
+    bl mmu_init
+#endif
+
+    /* setup c1, Control Register */
     mrc p15, 0, r0, c1, c0, 0
-    mov r1, #2
-    orr r0, r0, r1
+#ifndef NOMMU
+    orr r0, r0, #CR_M /* enabling MMU */
+#endif
+    orr r0, r0, #CR_A /* enabling data abort on unaligned mem access */
+    orr r0, r0, #CR_C /* enabling data caching */
+    orr r0, r0, #CR_Z /* enabling program flow prediction */
+    orr r0, r0, #CR_I /* enabling instruction caching */
     mcr p15, 0, r0, c1, c0, 0
+
+    /* setup c1, Auxiliary Control Register */
+    mrc p15, 0, r0, c1, c0, 1
+    orr r0, r0, #ACR_L2EN /* enabling L2 cache */
+    mcr p15, 0, r0, c1, c0, 1
 
     b bootldr_start
 

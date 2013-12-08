@@ -18,6 +18,8 @@
 #include <net/skbuff.h>
 #include <string.h>
 #include <util/math.h>
+#include <net/socket/inet_sock.h>
+#include <net/socket/inet6_sock.h>
 
 static struct sock * sock_alloc(
 		const struct sock_family_ops *f_ops,
@@ -296,7 +298,6 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		return; /* error: socket is down */
 	}
 
-	skb->sk = sk;
 	skb->p_data = p_data;
 	skb->p_data_end = p_data + size;
 
@@ -371,4 +372,28 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
 	msg->msg_iov->iov_len = total_len;
 
 	return 0;
+}
+
+in_port_t sock_inet_get_src_port(const struct sock *sk) {
+	assert(sk != NULL);
+	assert((sk->opt.so_domain == AF_INET)
+			|| (sk->opt.so_domain == AF_INET6));
+
+	if (sk->opt.so_domain == AF_INET) {
+		return to_const_inet_sock(sk)->src_in.sin_port;
+	}
+
+	return to_const_inet6_sock(sk)->src_in6.sin6_port;
+}
+
+in_port_t sock_inet_get_dst_port(const struct sock *sk) {
+	assert(sk != NULL);
+	assert((sk->opt.so_domain == AF_INET)
+			|| (sk->opt.so_domain == AF_INET6));
+
+	if (sk->opt.so_domain == AF_INET) {
+		return to_const_inet_sock(sk)->dst_in.sin_port;
+	}
+
+	return to_const_inet6_sock(sk)->dst_in6.sin6_port;
 }

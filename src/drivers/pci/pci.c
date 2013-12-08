@@ -20,6 +20,14 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 
+//#define DEBUG_LOG
+#ifdef DEBUG_LOG
+#include <prom/prom_printf.h>
+#define dprintf(...) prom_printf(__VA_ARGS__)
+#else
+#define dprintf(...) do {} while (0)
+#endif
+
 EMBOX_UNIT_INIT(pci_init);
 
 typedef struct pci_slot {
@@ -45,7 +53,7 @@ uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	uint32_t vendor;
 	pci_read_config32(bus, devfn, PCI_VENDOR_ID, &vendor);
 	if ((vendor == PCI_VENDOR_NONE) || (vendor == PCI_VENDOR_WRONG)) {
-		return (uint32_t)-1;
+		return (uint32_t) -1;
 	}
 	return vendor;
 }
@@ -81,19 +89,48 @@ static inline int pci_add_dev(struct pci_slot_dev *dev) {
 	return 0;
 }
 
+struct pci_slot_dev *pci_insert_dev(char configured,
+			uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
+	struct pci_slot_dev *new_dev;
+
+	if(NULL == (new_dev = pool_alloc(&devs_pool))) {
+		dprintf("pci dev pool overflow");
+		return NULL;
+	}
+
+	new_dev->busn = (uint8_t) bus;
+	new_dev->func = (uint8_t) devfn;
+
+	new_dev->vendor = (uint16_t) vendor_reg & 0xffff;
+	new_dev->device = (uint16_t) (vendor_reg >> 16) & 0xffff;
+	if (configured) {
+		pci_get_slot_info(new_dev);
+	}
+	pci_add_dev(new_dev);
+	dprintf("\nAdd pci >> bc %d, sc %d, rev %d, irq %d \n",
+			new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
+	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num ++) {
+		dprintf("bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
+	}
+	dprintf("\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
+	return new_dev;
+}
+
 /* collecting information about available device on the pci bus */
 static int pci_scan_start(void) {
 	uint32_t bus, devfn;
+	uint32_t vendor_reg;
 	uint8_t hdr_type, is_multi = 0;
-	struct pci_slot_dev *new_dev;
 
-	if (!dlist_empty(&__pci_devs_list)) {
-		return dev_cnt;
-	}
+	/*
+	 * TODO need alternative list for static pci empty slot
+	 * if (!dlist_empty(&__pci_devs_list)) {
+	 *     return dev_cnt;
+	 * }
+	 */
 
 	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-			uint32_t vendor_reg;
 
 			/* Devices are required to implement function 0, so if
 			 * it's missing then there is no device here. */
@@ -115,17 +152,8 @@ static int pci_scan_start(void) {
 				continue;
 			}
 
-			/*add bus and device to list*/
-			new_dev = pool_alloc(&devs_pool);
-			new_dev->busn = (uint8_t) bus;
-			new_dev->func = (uint8_t) devfn;
-
-			new_dev->vendor = (uint16_t) vendor_reg & 0xffff;
-			new_dev->device = (uint16_t) (vendor_reg >> 16) & 0xffff;
-
-			pci_get_slot_info(new_dev);
-
-			pci_add_dev(new_dev);
+			/* add bus and device to list*/
+			pci_insert_dev(1, bus, devfn, vendor_reg);
 		}
 	}
 	return dev_cnt;
