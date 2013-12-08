@@ -18,15 +18,7 @@ int task_waitpid(pid_t pid) {
 	struct task *task;
 	int ret = 0;
 
-	sched_lock();
-	{
-		task = task_table_get(pid);
-		if (!task)
-			ret = -ENOENT;
-		// else
-		// 	ret = waitq_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
-	}
-	sched_unlock();
+	WAITQ_WAIT(task->waitq, !(task = task_table_get(pid)));
 
 	return ret;
 }
