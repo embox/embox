@@ -72,9 +72,9 @@ static struct ppty *ppty_create(void) {
 
 	ppty = malloc(sizeof(struct ppty));
 
-	if (ppty) {
-		pty_init(&ppty->pty);
-	}
+//	if (ppty) {
+//		pty_init(&ppty->pty);
+//	}
 
 	return ppty;
 }
@@ -185,10 +185,10 @@ static int ppty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
 	/* XXX */
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
-	res = pty_read(&ippty->ppty->pty, buf, nbyte);
+	res = pty_read(&ippty->ppty->pty, desc, buf, nbyte);
 	return ppty_fixup_error(desc, res);
 }
-
+extern void pty_notify(struct pty *pt);
 static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
 	int res;
@@ -197,6 +197,8 @@ static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
 	res = tty_write(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	//res = pty_write(&ippty->ppty->pty, buf, nbyte);
+	pty_notify(&ippty->ppty->pty);
 	return ppty_fixup_error(desc, res);
 }
 
@@ -208,6 +210,8 @@ static int ppty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
 	res = tty_read(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	pty_notify(&ippty->ppty->pty);
+	//res = pty_read(&ippty->ppty->pty, desc, buf, nbyte);
 	return ppty_fixup_error(desc, res);
 }
 
@@ -235,6 +239,7 @@ static int ppty_master_status(struct idesc *idesc, int mask) {
 	switch (mask) {
 	case POLLIN:
 		res = ring_can_read(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
+		break;
 	case POLLOUT:
 		res = ring_can_write(&pty_to_tty(pty)->rx_ring, TTY_RX_BUFF_SZ, 1);
 		break;
@@ -255,6 +260,7 @@ static int ppty_slave_status(struct idesc *idesc, int mask) {
 	switch (mask) {
 	case POLLIN:
 		res = ring_can_read(&pty_to_tty(pty)->i_ring, TTY_IO_BUFF_SZ, 1);
+		break;
 	case POLLOUT:
 		res = ring_can_write(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
 		break;
@@ -286,6 +292,9 @@ int ppty(int pptyfds[2]) {
 
 	master = idesc_ppty_create(ppty, &ppty_master_ops, &ppty->master);
 	slave = idesc_ppty_create(ppty, &ppty_slave_ops, &ppty->slave);
+	if (ppty) {
+		pty_init(&ppty->pty, ppty->master);
+	}
 
 	if (!master || !slave) {
 		res = ENOMEM;

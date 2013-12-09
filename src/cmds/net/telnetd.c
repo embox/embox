@@ -260,7 +260,7 @@ static void *telnet_thread_handler(void* args) {
 	nfds = max(sock, pptyfd[0]);
 	nfds = max(pptyfd[1], nfds) + 1;
 
-	timeout.tv_sec = 1;
+	timeout.tv_sec = 100;
 	timeout.tv_usec = 0;
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,

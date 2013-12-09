@@ -54,9 +54,9 @@
 	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, rx_buff_sz)
 
 struct tty_ops;
-
+struct idesc;
 struct tty {
-	//struct idecs idesc;
+	struct idesc *idesc;
 	const struct tty_ops *ops;
 
 	struct termios    termios;
