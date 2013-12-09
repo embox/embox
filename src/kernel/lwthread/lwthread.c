@@ -2,21 +2,54 @@
 
 */
 #include <errno.h>
-#include <assert.h>
+#include <kernel/lwthread.h>
+#include <mem/misc/pool.h>
 
-#include <kernel/light_thread/light_thread.h>
+typedef union lwthread_pool_entry {
+	struct lwthread lwthread;
+} lwthread_pool_entry_t;
 
-void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
-	assert(run);
+/**
+ * Memory have to be allocated only for lwthread structure,
+ * while execute lwthread uses thread stack
+*/
+#define POOL_SZ sizeof(lwthread_pool_entry_t);
 
-	lt->run = run;
+POOL_DEF(lwthread_pool, lwthread_pool_entry_t, POOL_SZ);
+
+
+void lthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
+	lt->runnable->run = run;
+	lt->runnable->prepare = NULL;
+
 	lt->run_arg = arg;
 }
 
-struct lthread * lthread_create(void *(*run)(void *), void *arg) {
-	struct lthread lt;
+struct lwthread * lwthread_create(void *(*run)(void *), void *arg) {
+	struct lwthread *lwt;
+	lwthread_pool_entry_t *block;
 
-	lthread_init(*lt, run, arg);
+	/* check correct executive function */
+	if (!run) {
+		return err_ptr(EINVAL);
+	}
 
-	return *lt;
+	if (!(block = (lwthread_pool_entry_t *) pool_alloc(&lwthread_pool))) {
+		return err_ptr(ENOMEM);
+	}
+
+	lwt = &(block->lwthread);
+
+	lwthread_init(lwt, run, arg);
+
+	return lwt;
+}
+
+void lwthread_free(struct lwthread *lwt) {
+	lwthread_pool_entry_t *block;
+
+	assert(lwt != NULL);
+
+	block = member_cast_out(lwt, lwthread_pool_entry_t, lwthread);
+	pool_free(&lwthread_pool, block);
 }

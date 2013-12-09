@@ -1,0 +1,7 @@
+package embox.kernel.lwthread
+
+module lwthread {
+	source "lwthread.c"
+
+	depends embox.lib.LibCAssert
+}
