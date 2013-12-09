@@ -571,6 +571,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		{
 			tcp_newsk->parent = tcp_sk;
 			list_add_tail(&tcp_newsk->conn_wait, &tcp_sk->conn_wait);
+			idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 

@@ -275,6 +275,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert(sk != NULL);
 	assert(newsk != NULL);
 
+	tcp_newsk = NULL;
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_accept: sk %p, st%d\n",
 			to_sock(tcp_sk), tcp_sk->state);
@@ -295,10 +296,14 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 					}
 				}
 				ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
-			} while (ret);
+			} while (!ret);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
+
+		if (!tcp_newsk) {
+			return -ECONNRESET;
+		}
 
 		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 			tcp_sock_release(tcp_newsk);
