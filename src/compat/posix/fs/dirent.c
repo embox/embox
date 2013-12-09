@@ -82,11 +82,11 @@ struct dirent *readdir(DIR *dir) {
 		}
 	} else {
 		chldnod = (struct node *)dir->current.d_ino;
-		if (tree_children_end(&dir->node->tree_link) == &chldnod->tree_link) {
+		chld_link = tree_children_next(&chldnod->tree_link);
+
+		if (tree_children_end(&dir->node->tree_link) == chld_link) {
 			return NULL;
 		}
-
-		chld_link = tree_children_next(&chldnod->tree_link);
 	}
 
 	chldnod = tree_element(chld_link, struct node, tree_link);
