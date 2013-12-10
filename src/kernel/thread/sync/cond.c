@@ -109,7 +109,7 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	sched_lock();
 	{
 		mutex_unlock(m);
-		waitq_wait_locked(&c->wq, timeout);
+		WAITQ_WAIT_TIMEOUT(&c->wq, 0, timeout);
 	}
 	sched_unlock();
 
@@ -136,7 +136,7 @@ int cond_signal(cond_t *c) {
 		waitq_init(&c->wq);
 	}
 
-	waitq_notify(&c->wq);
+	waitq_wakeup(&c->wq, 0);
 
 	return ENOERR;
 }
@@ -159,7 +159,7 @@ int cond_broadcast(cond_t *c) {
 		waitq_init(&c->wq);
 	}
 
-	waitq_notify_all(&c->wq);
+	waitq_wakeup_all(&c->wq);
 
 	return ENOERR;
 }

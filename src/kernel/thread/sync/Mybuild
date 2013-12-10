@@ -3,9 +3,9 @@ package embox.kernel.thread
 module sync {
 	depends mutex
 	depends sem
-//	depends barrier
-//	depends cond
-//	depends rwlock
+	depends barrier
+	depends cond
+	depends rwlock
 	//depends mqueue
 }
 
