@@ -170,9 +170,22 @@ static int ext3fs_delete(struct node *node) {
 	return res;
 }
 
-static int ext3fs_format(void *dev) {
+extern int main_mke2fs(int argc, char **argv);
 
-	return 0;
+static int ext3fs_format(void *dev) {
+	struct node *dev_node;
+	int argc = 4;
+	char *argv[4];
+
+	dev_node = dev;
+
+	argv[0] = "mke2fs";
+	argv[1] = "-t";
+	argv[2] = "ext3";
+	argv[3] =  strcat("/dev/", dev_node->name);
+
+	getopt_init();
+	return main_mke2fs(argc, argv);
 }
 
 static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
