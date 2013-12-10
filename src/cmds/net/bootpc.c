@@ -105,8 +105,6 @@ int bootp_client(struct net_device *dev) {
 	int ret, sock;
 	struct bootphdr bph_req, bph_rep;
 	struct sockaddr_in addr;
-	socklen_t addrlen;
-
 
 	ret = bootp_prepare(dev);
 	if (ret) {
@@ -123,6 +121,15 @@ int bootp_client(struct net_device *dev) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (-1 == bind(sock, (struct sockaddr *)&addr, sizeof addr)) {
+		ret = -errno;
+		goto error;
+	}
+
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(BOOTP_SERVER_PORT);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof addr)) {
 		ret = -errno;
 		goto error;
 	}
@@ -159,15 +166,8 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	addrlen = sizeof addr;
-	if (-1 == recvfrom(sock, &bph_rep, sizeof bph_rep, 0,
-				(struct sockaddr *)&addr, &addrlen)) {
+	if (-1 == recv(sock, &bph_rep, sizeof bph_rep, 0)) {
 		ret = -errno;
-		goto error;
-	}
-
-	if (addr.sin_port != htons(BOOTP_SERVER_PORT)) {
-		ret = -EINVAL;
 		goto error;
 	}
 
