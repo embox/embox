@@ -11,7 +11,7 @@
 #include <kernel/thread.h>
 #include <err.h>
 #include <kernel/sched.h>
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 static struct thread *low, *high;
 static struct waitq wq;
@@ -38,7 +38,7 @@ static void *low_run(void *arg) {
 
 static void *high_run(void *arg) {
 	test_emit('b');
-	waitq_wait(&wq, SCHED_TIMEOUT_INFINITE);
+	WAITQ_WAIT_TIMEOUT(&wq, 0, SCHED_TIMEOUT_INFINITE);
 	test_emit('d');
 	return NULL;
 }
