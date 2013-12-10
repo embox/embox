@@ -83,7 +83,8 @@ static int name_to_label(const char *name, char *buff,
 static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 		size_t max_name_sz, char *out_name, size_t *out_field_sz) {
 	size_t bytes_left, field_sz;
-	uint8_t label_sz, offset;
+	uint8_t label_sz;
+	uint16_t offset;
 	char one_line;
 	const char *buff_end;
 
@@ -93,12 +94,13 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	buff_end = buff + buff_sz;
 
 	while ((label_sz = *(uint8_t *)label++) != 0) {
-		if (label_sz == 0xC0) { /* it's a pointer to other label */
+		/* It's a pointer to other label? */
+		if ((label_sz & DNS_LABEL_MASK) == DNS_LABEL_MASK) {
 			if (one_line) {
 				field_sz += 2 * sizeof(char); /* plus size of pointer */
 				one_line = 0;
 			}
-			offset = *(uint8_t *)label;
+			offset = ((label_sz & ~DNS_LABEL_MASK) << 8) + *(uint8_t *)label;
 			label = buff + offset; /* get new address of label */
 			if (label >= buff_end) { /* check boundary */
 				return -ENOMEM;
@@ -114,7 +116,7 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 		label += label_sz;
 		out_name += label_sz;
 
-		/* How much bytes will be skipped after parsing of lable ? */
+		/* How much bytes will be skipped after parsing of lable? */
 		if (one_line) {
 			field_sz += (label_sz + 1) * sizeof(char);
 		}
