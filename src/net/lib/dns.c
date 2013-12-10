@@ -214,7 +214,6 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	int sock;
 	ssize_t bytes;
 	struct sockaddr_in nameserver_addr;
-	socklen_t nameserver_addr_sz;
 
 	/* Setup dns_host structure */
 	memset(&nameserver_addr, 0, sizeof nameserver_addr);
@@ -223,30 +222,33 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	if (!inet_aton(dns_get_nameserver(), &nameserver_addr.sin_addr)) {
 		return -EINVAL;
 	}
-	nameserver_addr_sz = sizeof nameserver_addr;
 
 	/* Create socket */
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock < 0) {
-		return sock;
+	if (sock == -1) {
+		return -errno;
+	}
+
+	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
+				sizeof nameserver_addr)) {
+		close(sock);
+		return -errno;
 	}
 
 	while (1) {
 		/* Send request */
-		bytes = sendto(sock, &req->raw[0], req_sz, 0,
-				(struct sockaddr *)&nameserver_addr, nameserver_addr_sz);
+		bytes = send(sock, &req->raw[0], req_sz, 0);
 		if (bytes != req_sz) {
 			close(sock);
-			return errno ? -errno : -1; /* if errno equal to zero O_o */
+			return -errno;
 		}
 
 		do {
 			/* Receive reply */
-			bytes = recvfrom(sock, &rep->raw[0], sizeof *rep, 0,
-					(struct sockaddr *)&nameserver_addr, &nameserver_addr_sz);
-			if (bytes < 0) {
+			bytes = recv(sock, &rep->raw[0], sizeof *rep, 0);
+			if (bytes == -1) {
 				close(sock);
-				return errno ? -errno : -1; /* if errno equal to zero O_o */
+				return -errno;
 			}
 		} while (bytes < sizeof(struct dnshdr)); /* bad size, try again */
 
