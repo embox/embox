@@ -25,14 +25,13 @@ public:
     ~QEmboxVCMouseHandler();
 
     void storeData(void *data, int datalen);
+    void activate();
 
-private slots:
-    void readMouseData();
+    void *ring_buff;
+    struct event new_data;
 
 private:
-    int mouseFD, inputFD;
-    struct idesc *idx_mouseFD, *idx_inputFD;
-    QSocketNotifier *mouseNotifier;
+    void readDataLoop();
 };
 
 class QEmboxVCKeyboardHandler : public QObject
@@ -43,14 +42,13 @@ public:
     ~QEmboxVCKeyboardHandler();
 
     void storeData(void *data, int datalen);
+    void activate();
 
-private slots:
-    void readKeyboardData();
+    void *ring_buff;
+    struct event new_data;
 
 private:
-    int keyboardFD, inputFD;
-    struct idesc *idx_keyboardFD, *idx_inputFD;
-    QSocketNotifier *keyboardNotifier;
+    void readDataLoop();
 };
 
 class QEmboxVC
