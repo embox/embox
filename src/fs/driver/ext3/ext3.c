@@ -196,6 +196,8 @@ static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
 
     sb = (ext3_journal_superblock_t *)buf;
 
+    assert(sb->s_blocksize);
+
     jp->j_maxlen         = ntohl(sb->s_maxlen);
     jp->j_blocksize      = ntohl(sb->s_blocksize);
     jp->j_blk_offset     = journal_db2jb(jp, start);
