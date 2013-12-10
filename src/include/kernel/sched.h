@@ -88,24 +88,25 @@ extern int __sched_wakeup(struct thread *);
 extern int sched_wakeup(struct thread *);
 
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout)  \
-	((cond_expr) ? 0 : ({                                 \
-		int __wait_ret = ms2jiffies(timeout);             \
-		                                                  \
-		do {                                              \
-			sched_wait_prepare();                         \
-			                                              \
-			if (cond_expr)                                \
-				break;                                    \
-			                                              \
-			__wait_ret = sched_wait_timeout(__wait_ret);  \
-		} while (__wait_ret);                             \
-		                                                  \
-		sched_wait_cleanup();                             \
-		                                                  \
-		if (!__wait_ret && (cond_expr))                   \
-			__wait_ret = 1;                               \
-		                                                  \
-		__wait_ret;                                       \
+	((cond_expr) ? 0 : ({                                    \
+		int __wait_ret = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);    \
+		                                                     \
+		do {                                                 \
+			sched_wait_prepare();                            \
+			                                                 \
+			if (cond_expr)                                   \
+				break;                                       \
+			                                                 \
+			__wait_ret = sched_wait_timeout(__wait_ret);     \
+		} while (__wait_ret);                                \
+		                                                     \
+		sched_wait_cleanup();                                \
+		                                                     \
+		if (!__wait_ret && (cond_expr))                      \
+			__wait_ret = 1;                                  \
+		                                                     \
+		__wait_ret;                                          \
 	}))
 
 /**
