@@ -257,8 +257,8 @@ static void *telnet_thread_handler(void* args) {
 	}
 
 	/* Preparations for select call */
-	nfds = max(sock, pptyfd[0]);
-	nfds = max(pptyfd[1], nfds) + 1;
+	nfds = max(sock, pptyfd[0]) + 1;
+	//nfds = max(pptyfd[0], nfds) + 1;
 
 	timeout.tv_sec = 100;
 	timeout.tv_usec = 0;
@@ -319,8 +319,8 @@ static void *telnet_thread_handler(void* args) {
 			}
 		}
 
-		if ((sock_data_len > 0) && FD_ISSET(pptyfd[1], &writefds)) {
-			if ((len = write(pptyfd[1], s, sock_data_len)) > 0) {
+		if ((sock_data_len > 0) && FD_ISSET(pptyfd[0], &writefds)) {
+			if ((len = write(pptyfd[0], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			} else {

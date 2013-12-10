@@ -130,6 +130,10 @@ static int ppty_fixup_error(struct idesc *idesc, int code) {
 		return 0;
 	}
 
+//	if (code == -EAGAIN) {
+//		return -EAGAIN;
+//	}
+
 	assert(idesc->idesc_flags & O_NONBLOCK);
 	return -EAGAIN;
 }
@@ -175,7 +179,8 @@ static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte) 
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
 	res = pty_write(&ippty->ppty->pty, buf, nbyte);
-	return ppty_fixup_error(desc, res);
+
+	return res;
 }
 
 static int ppty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
@@ -186,7 +191,7 @@ static int ppty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
 	res = pty_read(&ippty->ppty->pty, desc, buf, nbyte);
-	return ppty_fixup_error(desc, res);
+	return res;
 }
 extern void pty_notify(struct pty *pt);
 static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
@@ -197,9 +202,10 @@ static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	pty_to_tty(&ippty->ppty->pty)->file_flags = desc->idesc_flags;
 
 	res = tty_write(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
-	//res = pty_write(&ippty->ppty->pty, buf, nbyte);
 	pty_notify(&ippty->ppty->pty);
-	return ppty_fixup_error(desc, res);
+
+	//return ppty_fixup_error(desc, res);
+	return res;
 }
 
 static int ppty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
@@ -211,7 +217,7 @@ static int ppty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
 
 	res = tty_read(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
 	pty_notify(&ippty->ppty->pty);
-	//res = pty_read(&ippty->ppty->pty, desc, buf, nbyte);
+
 	return ppty_fixup_error(desc, res);
 }
 

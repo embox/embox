@@ -69,6 +69,7 @@ size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
 		do {
 			block_size = pty_tty_read(t, buff, size);
 			if (block_size) {
+				ret = block_size;
 				break;
 			}
 
@@ -79,7 +80,7 @@ size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
 	}
 	work_enable(&t->rx_work);
 
-	return block_size;
+	return ret;
 }
 
 size_t pty_write(struct pty *pt, const char *buff, size_t size) {
