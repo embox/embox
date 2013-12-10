@@ -94,15 +94,13 @@ extern int sched_wakeup(struct thread *);
 		do {                                              \
 			sched_wait_prepare();                         \
 			                                              \
-			if (cond_expr) {                              \
-				sched_wait_cleanup();                     \
+			if (cond_expr)                                \
 				break;                                    \
-			}                                             \
 			                                              \
 			__wait_ret = sched_wait_timeout(__wait_ret);  \
-			if (!__wait_ret)                              \
-				break;                                    \
-		} while (1);                                      \
+		} while (__wait_ret);                             \
+		                                                  \
+		sched_wait_cleanup();                             \
 		                                                  \
 		if (!__wait_ret && (cond_expr))                   \
 			__wait_ret = 1;                               \
