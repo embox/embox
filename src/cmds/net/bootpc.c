@@ -125,15 +125,6 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(BOOTP_SERVER_PORT);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof addr)) {
-		ret = -errno;
-		goto error;
-	}
-
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
 				&dev->name[0], strlen(&dev->name[0]))) {
 		ret = -errno;
