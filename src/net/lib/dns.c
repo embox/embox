@@ -546,6 +546,11 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 		curr += section_sz;
 	}
 
+	/* That's all */
+	if (curr != &dm->raw[dm_sz]) {
+		return -EINVAL;
+	}
+
 	/* All ok, done */
 	return 0;
 
