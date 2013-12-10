@@ -140,7 +140,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->ready = false;
 	t->active = false;
 	t->waiting = true;
-	t->state = THREAD_STATE_INIT;
+	t->state = TS_INIT;
 
 	/* set executive function and arguments pointer */
 	t->run = run;
@@ -192,21 +192,13 @@ void thread_init(struct thread *t, unsigned int flags,
 	sched_timing_init(t);
 }
 
-static int thread_exited(struct thread *t) {
-	return t->state & __THREAD_STATE_EXITED;
-}
-
 static void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
-	assert(thread_exited(t));
+	assert(t->state & TS_EXITED);
 
 	task_remove_thread(t->task, t);
-	sigstate_init(&t->sigstate);
-
-	sched_affinity_init(t);
-	sched_timing_init(t);
 
 	if (zombie) {
 		thread_free(zombie);
@@ -234,7 +226,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	// sched_finish(current);
 	current->waiting = true;
-	current->state |= __THREAD_STATE_EXITED;
+	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */
@@ -244,7 +236,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		sched_wakeup(joining);
 	}
 
-	if (current->state & __THREAD_STATE_DETACHED)
+	if (current->state & TS_DETACHED)
 		/* No one references this thread anymore. Time to delete it. */
 		thread_delete(current);
 
@@ -266,10 +258,10 @@ int thread_join(struct thread *t, void **p_ret) {
 	sched_lock();
 	{
 		assert(!t->joining);
-		assert(!(t->state & __THREAD_STATE_DETACHED));
+		assert(!(t->state & TS_DETACHED));
 
 		t->joining = current;
-		ret = SCHED_WAIT(thread_exited(t));
+		ret = SCHED_WAIT(t->state & TS_EXITED);
 		if (ret < 0)
 			goto out;
 
@@ -290,11 +282,11 @@ int thread_detach(struct thread *t) {
 	sched_lock();
 	{
 		assert(!t->joining);
-		assert(!(t->state & __THREAD_STATE_DETACHED));
+		assert(!(t->state & TS_DETACHED));
 
-		if (!thread_exited(t))
+		if (!(t->state & TS_EXITED))
 			/* The target will free itself upon finishing. */
-			t->state |= __THREAD_STATE_DETACHED;
+			t->state |= TS_DETACHED;
 		else
 			/* The target thread has finished, free it here. */
 			thread_delete(t);

@@ -22,17 +22,18 @@
 
 #include <util/dlist.h>
 
+/* Resource mgmt flags. */
+#define TS_INIT         (0x0)
+#define TS_LAUNCHED     (0x1 << 0)
+#define TS_EXITED       (0x1 << 1)
+#define TS_DETACHED     (0x1 << 2)
+
 #ifdef SMP
-# define TW_SMP_WAKING    (-1)  /**< In the middle of sched_wakeup. */
+# define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
 #else
-# define TW_SMP_WAKING      0   /* Not used in non-SMP kernel. */
+# define TW_SMP_WAKING  (0x0)   /* Not used in non-SMP kernel. */
 #endif
 
-/* Resource mgmt flags. */
-#define __THREAD_STATE_EXITED    (0x1 << 3)
-#define __THREAD_STATE_DETACHED  (0x1 << 4)
-
-#define THREAD_STATE_INIT 0 // XXX
 
 typedef int __thread_id_t;
 
@@ -58,7 +59,7 @@ struct thread {
 	unsigned int       ready;        /**< Managed by the scheduler. */
 	unsigned int       waiting;      /**< Waiting for an event. */
 
-	unsigned int       state;        /**< XXX. resource mgmt, needs clean up */
+	unsigned int       state;        /**< Thread-specific state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
