@@ -92,6 +92,15 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	__barrier();
 }
 
+static inline void __spin_preempt_disable(void) {
+	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+}
+
+static inline void __spin_preempt_enable(void) {
+	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	critical_dispatch_pending();
+}
+
 /**
  * spin_trylock -- try to lock object without waiting
  * @param lock  object to lock
@@ -99,10 +108,10 @@ static inline void __spin_unlock(spinlock_t *lock) {
  */
 static inline int spin_trylock(spinlock_t *lock) {
 	int ret;
-	__critical_count_add(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__spin_preempt_disable();
 	ret = __spin_trylock(lock);
 	if (!ret)
-		__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+		__spin_preempt_enable();
 	return ret;
 }
 
@@ -121,7 +130,7 @@ static inline void spin_lock(spinlock_t *lock) {
  */
 static inline void spin_unlock(spinlock_t *lock) {
 	__spin_unlock(lock);
-	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__spin_preempt_enable();
 }
 
 static inline ipl_t spin_lock_ipl(spinlock_t *lock) {
@@ -140,7 +149,7 @@ static inline ipl_t spin_lock_ipl(spinlock_t *lock) {
 static inline void spin_unlock_ipl(spinlock_t *lock, ipl_t ipl) {
 	__spin_unlock(lock);
 	ipl_restore(ipl);  /* implies optimization barrier */
-	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__spin_preempt_enable();
 }
 
 static inline void spin_lock_ipl_disable(spinlock_t *lock) {
@@ -157,7 +166,7 @@ static inline void spin_lock_ipl_disable(spinlock_t *lock) {
 static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 	__spin_unlock(lock);
 	ipl_enable();  /* implies optimization barrier */
-	__critical_count_sub(__CRITICAL_COUNT(CRITICAL_SCHED_LOCK));
+	__spin_preempt_enable();
 }
 
 /**
