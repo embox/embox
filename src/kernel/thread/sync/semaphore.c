@@ -28,6 +28,7 @@ void semaphore_enter(struct sem *s) {
 
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
 	struct timespec current_time;
+	struct waitq_link wql;
 	int ret = 0;
 
 	assert(s);
@@ -36,11 +37,12 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 	if (tryenter_sched_lock(s) != 0) {
 		clock_gettime(CLOCK_REALTIME, &current_time);
 		ret = ms2jiffies(abs_timeout->tv_nsec - current_time.tv_nsec);
+		waitq_link_init(&wql);
 
 		while (1) {
-			sched_wait_prepare();
+			waitq_wait_prepare(&s->wq, &wql);
 
-			if (tryenter_sched_lock(s) != 0) {
+			if (!tryenter_sched_lock(s)) {
 				ret = 0;
 				break;
 			}
@@ -54,10 +56,10 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 				break;
 		}
 
-		if (tryenter_sched_lock(s) != 0)
+		if (!tryenter_sched_lock(s))
 			ret = 0;
 
-		sched_wait_cleanup();
+		waitq_wait_cleanup(&s->wq, &wql);
 	}
 
 	return ret;
@@ -65,7 +67,6 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 
 static int tryenter_sched_lock(struct sem *s) {
 	assert(s);
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if (s->value == s->max_value) {
 		return -EAGAIN;
