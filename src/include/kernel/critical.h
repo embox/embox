@@ -198,15 +198,15 @@ static inline int critical_inside(unsigned int level) {
 }
 
 static inline void critical_enter(unsigned int level) {
-	if (!critical_count())
-		bkl_lock();
 	__critical_count_add(__CRITICAL_COUNT(level));
+	if (critical_count() == __CRITICAL_COUNT(level))
+		bkl_lock();
 }
 
 static inline void critical_leave(unsigned int level) {
-	__critical_count_sub(__CRITICAL_COUNT(level));
-	if (!critical_count())
+	if (critical_count() == __CRITICAL_COUNT(level))
 		bkl_unlock();
+	__critical_count_sub(__CRITICAL_COUNT(level));
 }
 
 static inline int critical_pending(struct critical_dispatcher *d) {
