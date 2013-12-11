@@ -174,8 +174,8 @@ extern int main_mke2fs(int argc, char **argv);
 
 static int ext3fs_format(void *dev) {
 	struct node *dev_node;
-	int argc = 4;
-	char *argv[4];
+	int argc = 6;
+	char *argv[6];
 	char dev_path[64];
 
 	dev_node = dev;
@@ -184,9 +184,11 @@ static int ext3fs_format(void *dev) {
 	strcat(dev_path, dev_node->name);
 
 	argv[0] = "mke2fs";
-	argv[1] = "-t";
-	argv[2] = "ext3";
-	argv[3] = dev_path;
+	argv[1] = "-b";
+	argv[2] = "1024";
+	argv[3] = "-t";
+	argv[4] = "ext3";
+	argv[5] = dev_path;
 
 	getopt_init();
 	return main_mke2fs(argc, argv);
