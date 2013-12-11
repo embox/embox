@@ -87,7 +87,7 @@ int net_tx(struct sk_buff *skb,
 	skb_len = skb->len;
 
 #ifdef DEBUG
-	printk("net_tx: skb %p[%zu] type %#.4hx\n",
+	printk("net_tx: skb %p[%zu] type %#.6hx\n",
 			skb, skb->len, ntohs(skb->mac.ethh->h_proto));
 #endif
 

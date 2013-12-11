@@ -61,7 +61,7 @@ int net_rx(struct sk_buff *skb) {
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
 
 #ifdef DEBUG
-	printk("net_rx: skb %p[%zu] type %#.4hx\n",
+	printk("net_rx: skb %p[%zu] type %#.6hx\n",
 			skb, skb->len, hdr_info.type);
 #endif
 
