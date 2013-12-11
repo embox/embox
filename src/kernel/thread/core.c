@@ -205,6 +205,8 @@ static void thread_delete(struct thread *t) {
 	}
 
 	if (t != thread_self()) {
+		assert(!t->active);
+		assert(!t->ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -223,6 +225,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		task_exit(ret);
 		/* NOTREACHED */
 	}
+
+	sched_lock();
 
 	// sched_finish(current);
 	current->waiting = true;
@@ -243,6 +247,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	schedule();
 
 	/* NOTREACHED */
+	sched_unlock();  /* just to be honest */
 	panic("Returning from thread_exit()");
 }
 
