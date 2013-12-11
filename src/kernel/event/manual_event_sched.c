@@ -51,11 +51,14 @@ void manual_event_set_and_notify(struct manual_event *m_event) {
 static int __manual_event_wait(struct manual_event *m_event,
 		unsigned long timeout) {
 	int ret;
+	struct waitq_link wql;
 
 	softirq_unlock();
 	{
-		sched_wait_prepare();
+		waitq_link_init(&wql);
+		waitq_wait_prepare(&m_event->waitq, &wql);
 		ret = sched_wait_timeout(timeout) ? 0 : -ETIMEDOUT;
+		waitq_wait_cleanup(&m_event->waitq, &wql);
 	}
 	softirq_lock();
 
