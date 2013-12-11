@@ -32,7 +32,7 @@
 
 EMBOX_UNIT_INIT(ti816x_init);
 
-#define MODOPS_PREP_BUFF_CNT 10//OPTION_GET(NUMBER, prep_buff_cnt)
+#define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
 #define DEFAULT_CHANNEL 0
 
 struct emac_desc_head {
