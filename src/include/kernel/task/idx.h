@@ -23,6 +23,8 @@ extern "C" {
 #include <sys/types.h>
 #include <kernel/task/io_sync.h>
 
+#include <kernel/task.h>
+
 struct event;
 
 typedef unsigned int idx_flags_t;

@@ -11,6 +11,7 @@
 
 #include <signal.h>
 #include <unistd.h>
+#include <kernel/task.h>
 
 EMBOX_TEST_SUITE("test for real-time signals");
 

@@ -10,7 +10,8 @@ module All {
 		exit,
 		uid,
 		nice,
-		priority
+		priority,
+		pid
 }
 
 static module exec {
@@ -63,4 +64,8 @@ static module nice {
 
 static module priority {
 	source "priority.c"
+}
+
+static module pid {
+	source "pid.c"
 }
