@@ -34,6 +34,13 @@
 #define PAD_SIZE MODOPS_DATA_ALIGN
 #endif
 
+#define SKB_DEBUG 0
+#if SKB_DEBUG
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
+
 struct sk_buff_data {
 	unsigned char extra_hdr[MODOPS_EXTRA_HDR_SIZE] ATTR_ALIGNED;
 	struct {
@@ -79,7 +86,7 @@ struct sk_buff_data * skb_data_alloc(void) {
 	ipl_restore(sp);
 
 	if (skb_data == NULL) {
-		printk("skb_data_alloc: error: no memory\n");
+		DBG(printk("skb_data_alloc: error: no memory\n");)
 		return NULL; /* error: no memory */
 	}
 
@@ -126,7 +133,7 @@ struct sk_buff * skb_wrap(size_t size, size_t offset,
 
 	if ((offset > skb_max_extra_hdr_size())
 			|| (size > skb_max_size())) {
-		printk("skb_wrap: error: size is too big\n");
+		DBG(printk("skb_wrap: error: size is too big\n");)
 		return NULL; /* error: invalid argument */
 	}
 
@@ -137,7 +144,7 @@ struct sk_buff * skb_wrap(size_t size, size_t offset,
 	ipl_restore(sp);
 
 	if (skb == NULL) {
-		printk("skb_wrap: error: no memory\n");
+		DBG(printk("skb_wrap: error: no memory\n");)
 		return NULL; /* error: no memory */
 	}
 

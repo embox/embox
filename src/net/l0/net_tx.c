@@ -15,6 +15,12 @@
 #include <stddef.h>
 #include <util/array.h>
 
+//#define DEBUG
+#ifdef DEBUG
+#include <kernel/printk.h>
+#include <arpa/inet.h>
+#endif
+
 static int nt_build_hdr(struct sk_buff *skb,
 		struct net_header_info *hdr_info,
 		struct net_device *dev) {
@@ -79,6 +85,11 @@ int net_tx(struct sk_buff *skb,
 	}
 
 	skb_len = skb->len;
+
+#ifdef DEBUG
+	printk("net_tx: skb %p[%zu] type %#.4hx\n",
+			skb, skb->len, ntohs(skb->mac.ethh->h_proto));
+#endif
 
 	assert(dev->drv_ops != NULL);
 	assert(dev->drv_ops->xmit != NULL);

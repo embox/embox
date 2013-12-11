@@ -11,6 +11,7 @@ module ext3 {
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends ext3_journal
+	depends third_party.e2fsprogs.mke2fs
 }
 
 module ext3_journal {

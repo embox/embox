@@ -11,6 +11,7 @@
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_dev.h>
 
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -92,31 +93,19 @@ static struct flash_dev_drv flash_emu_drv = {
 	flash_emu_read
 };
 
-int flash_emu_dev_init (void *arg) {
-
-	char **argv;
-	struct node *bdev_node;
+int flash_emu_dev_create (struct node *bdev_node, /*const*/ char *flash_node_path) {
 	struct flash_dev *flash;
 	struct block_dev * bdev;
 	size_t block_size, factor;
-
-	argv = (char **) arg;
-
-	if(NULL == arg) {
-		return 0;
-	}
-
-	if(NULL == (bdev_node = vfs_lookup(NULL, argv[1]))) {
-		return -ENOENT;
-	}
 
 	if(NULL == (bdev = (struct block_dev *)
 					bdev_node->nas->fi->privdata)) {
 		return -ENOTBLK;
 	}
 
-	if(NULL == (flash = flash_create(argv[2], bdev->size))) {
-		return -1;
+	flash = flash_create(flash_node_path, bdev->size);
+	if(err(flash)) {
+		return err(flash);
 	}
 
 	flash->privdata = bdev;
@@ -136,6 +125,23 @@ int flash_emu_dev_init (void *arg) {
 	flash->drv = &flash_emu_drv;
 
 	return 0;
+}
+
+int flash_emu_dev_init (void *arg) {
+	struct node *bdev_node;
+	char **argv;
+
+	argv = (char **) arg;
+
+	if(NULL == arg) {
+		return 0;
+	}
+
+	if(NULL == (bdev_node = vfs_lookup(NULL, argv[1]))) {
+		return -ENOENT;
+	}
+
+	return flash_emu_dev_create(bdev_node, argv[2]);
 }
 
 EMBOX_FLASH_DEV("flash_emul", &flash_emu_drv, flash_emu_dev_init);

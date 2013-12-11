@@ -160,12 +160,12 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		/* try to xmit */
 		ret = net_tx(skb, NULL);
 		if (ret != 0) {
-			printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
+			/*printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);*/
 			return ret;
 		}
 	}
 	else {
-		printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
+		/*printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);*/
 		skb_free(skb);
 		return ret;
 	}

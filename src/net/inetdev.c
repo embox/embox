@@ -181,7 +181,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast,
 		return true;
 	}
 
-	if (check_broadcast && (addr == htonl(INADDR_BROADCAST))) {
+	if (check_broadcast && ipv4_is_broadcast(addr)) {
 		return true;
 	}
 

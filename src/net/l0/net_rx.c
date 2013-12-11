@@ -13,6 +13,11 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
+//#define DEBUG
+#ifdef DEBUG
+#include <kernel/printk.h>
+#endif
+
 int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;
 	const struct net_pack *npack;
@@ -54,6 +59,11 @@ int net_rx(struct sk_buff *skb) {
 	/* setup L3 header */
 	assert(skb->mac.raw != NULL);
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
+
+#ifdef DEBUG
+	printk("net_rx: skb %p[%zu] type %#.4hx\n",
+			skb, skb->len, hdr_info.type);
+#endif
 
 	/* handling on L3 layer */
 	return npack->rcv_pack(skb, skb->dev);

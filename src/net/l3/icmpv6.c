@@ -220,21 +220,17 @@ static int icmp6_rcv(struct sk_buff *skb) {
 	icmp6h = icmp6_hdr(skb);
 	switch (icmp6h->type) {
 	default:
-		printk("icmp6_rcv: unknown type: %hhu\n", icmp6h->type);
+		/*printk("icmp6_rcv: unknown type: %hhu\n", icmp6h->type);*/
 		break;
 	case ICMP6_ECHO_REQUEST:
-		printk("icmp6_rcv: echo-request\n");
 		return icmp6_hnd_echo_request(icmp6h, &icmp6h->body[0].echo,
 				skb);
 	case ICMP6_ECHO_REPLY:
-		printk("icmp6_rcv: echo-reply\n");
 		break;
 	case NDP_NEIGHBOR_SOLICIT:
-		printk("icmp6_rcv: neighbor-solicit\n");
 		return ndp_hnd_neighbor_solicit(icmp6h,
 				&icmp6h->body[0].neighbor_solicit, skb);
 	case NDP_NEIGHBOR_ADVERT:
-		printk("icmp6_rcv: neighbor-advert\n");
 		return ndp_hnd_neighbor_advert(icmp6h,
 				&icmp6h->body[0].neighbor_advert, skb);
 	}
