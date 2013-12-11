@@ -176,13 +176,17 @@ static int ext3fs_format(void *dev) {
 	struct node *dev_node;
 	int argc = 4;
 	char *argv[4];
+	char dev_path[64];
 
 	dev_node = dev;
+
+	strcpy(dev_path, "/dev/");
+	strcat(dev_path, dev_node->name);
 
 	argv[0] = "mke2fs";
 	argv[1] = "-t";
 	argv[2] = "ext3";
-	argv[3] =  strcat("/dev/", dev_node->name);
+	argv[3] = dev_path;
 
 	getopt_init();
 	return main_mke2fs(argc, argv);
