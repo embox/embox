@@ -69,10 +69,6 @@ int sched_init(struct thread *idle, struct thread *current) {
 
 	assert(thread_self() == current);
 
-	current->ready = true; // XXX
-	current->active = true; // XXX
-	current->waiting = false; // XXX
-
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
 
