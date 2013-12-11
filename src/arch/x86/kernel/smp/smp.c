@@ -19,11 +19,11 @@
 
 #include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
+#include <kernel/task.h>
 #include <kernel/spinlock.h>
 
+
 #include <module/embox/driver/interrupt/lapic.h>
-//TODO WTF
-#include <module/embox/kernel/thread/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 

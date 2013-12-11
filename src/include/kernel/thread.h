@@ -15,16 +15,18 @@
 #ifndef KERNEL_THREAD_API_H_
 #define KERNEL_THREAD_API_H_
 
-#include <framework/mod/options.h>
 
+
+#include <framework/mod/options.h>
+#include <config/embox/kernel/thread/core.h>
+
+#define THREAD_STACK_SIZE     \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER,thread_stack_size)
+
+
+#include <kernel/thread/types.h>
 #include <kernel/thread/current.h>
 
-#include <util/dlist.h>
-#include <kernel/thread/types.h>
-#include <sys/types.h>
-
-#define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
-			NUMBER,thread_stack_size)
 
 /**
  * Thread control block.
