@@ -122,7 +122,7 @@ static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) 
  * @return 1 if list is not empty and zero if empty *
  */
 static inline int dlist_empty(struct dlist_head *head) {
-	assert(head);
+	__dlist_debug_check(head);
 	return (head == head->next);
 }
 
