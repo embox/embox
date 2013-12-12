@@ -35,9 +35,9 @@ int task_waitpid(pid_t pid) {
 
 		waitq_wait_cleanup(task->waitq, &wql);
 	}
+out:
 	sched_unlock();
 
-out:
 	return ret;
 }
 
