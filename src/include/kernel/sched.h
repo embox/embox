@@ -82,31 +82,30 @@ extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
 
 extern int sched_wait(void);
-extern int sched_wait_timeout(clock_t timeout);
+extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
 
 extern int __sched_wakeup(struct thread *);
 extern int sched_wakeup(struct thread *);
 
-#define SCHED_WAIT_TIMEOUT(cond_expr, timeout)  \
-	((cond_expr) ? 0 : ({                                    \
-		int __wait_ret = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);    \
-		                                                     \
-		do {                                                 \
-			sched_wait_prepare();                            \
-			                                                 \
-			if (cond_expr)                                   \
-				break;                                       \
-			                                                 \
-			__wait_ret = sched_wait_timeout(__wait_ret);     \
-		} while (__wait_ret);                                \
-		                                                     \
-		sched_wait_cleanup();                                \
-		                                                     \
-		if (!__wait_ret && (cond_expr))                      \
-			__wait_ret = 1;                                  \
-		                                                     \
-		__wait_ret;                                          \
+#define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
+	((cond_expr) ? 0 : ({                                            \
+		int __wait_ret = 0;                                          \
+		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		                                                             \
+		do {                                                         \
+			sched_wait_prepare();                                    \
+			                                                         \
+			if (cond_expr)                                           \
+				break;                                               \
+			                                                         \
+			__wait_ret = sched_wait_timeout(__wait_timeout,          \
+											&__wait_timeout);        \
+		} while (!__wait_ret);                                       \
+		                                                             \
+		sched_wait_cleanup();                                        \
+		                                                             \
+		__wait_ret;                                                  \
 	}))
 
 /**

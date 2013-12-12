@@ -36,13 +36,16 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	sched_wakeup(t);
 }
 
-int sched_wait_timeout(clock_t timeout) {
+int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	struct sys_timer tmr;
-	clock_t cur_time;
-	int diff;
+	clock_t remain_v, cur_time;
+	int res, diff;
 
-	if (timeout == SCHED_TIMEOUT_INFINITE)
-		return sched_wait();
+	if (timeout == SCHED_TIMEOUT_INFINITE) {
+		remain_v = SCHED_TIMEOUT_INFINITE;
+		res = sched_wait();
+		goto out;
+	}
 
 	cur_time = clock();
 	timer_init(&tmr, TIMER_ONESHOT, timeout,
@@ -51,6 +54,18 @@ int sched_wait_timeout(clock_t timeout) {
 	diff = clock() - cur_time;
 	timer_close(&tmr);
 
-	return (diff < timeout) ? timeout - diff : 0;  // XXX
+	if (diff < timeout) {
+		remain_v = timeout - diff;
+		res = 0;
+	} else {
+		remain_v = 0;
+		res = -ETIMEDOUT;
+	}
+
+out:
+	if (remain) {
+		*remain = remain_v;
+	}
+	return res;
 }
 

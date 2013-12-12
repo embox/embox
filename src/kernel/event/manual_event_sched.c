@@ -57,7 +57,7 @@ static int __manual_event_wait(struct manual_event *m_event,
 	{
 		waitq_link_init(&wql);
 		waitq_wait_prepare(&m_event->waitq, &wql);
-		ret = sched_wait_timeout(timeout) ? 0 : -ETIMEDOUT;
+		ret = sched_wait_timeout(timeout, NULL);
 		waitq_wait_cleanup(&m_event->waitq, &wql);
 	}
 	softirq_lock();

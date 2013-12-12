@@ -64,32 +64,30 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 }
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
-	((cond_expr) ? 0 : ({                                    \
-		struct waitq_link wql;                               \
-		int __wait_ret = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);    \
-		waitq_link_init(&wql);                               \
-		                                                     \
-		do {                                                 \
-			waitq_wait_prepare(wq, &wql);                    \
-			                                                 \
-			if (cond_expr)                                   \
-				break;                                       \
-			                                                 \
-			__wait_ret = sched_wait_timeout(__wait_ret);     \
-		} while (__wait_ret);                                \
-		                                                     \
-		waitq_wait_cleanup(wq, &wql);                        \
-		                                                     \
-		if (__wait_ret && (cond_expr))                       \
-			__wait_ret = 1;                                  \
-		                                                     \
-		__wait_ret;                                          \
+	((cond_expr) ? 0 : ({                                            \
+		struct waitq_link wql;                                       \
+		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		int __wait_ret = 0;                                          \
+		waitq_link_init(&wql);                                       \
+		                                                             \
+		do {                                                         \
+			waitq_wait_prepare(wq, &wql);                            \
+			                                                         \
+			if (cond_expr)                                           \
+				break;                                               \
+			                                                         \
+			__wait_ret = sched_wait_timeout(__wait_timeout,          \
+				                            &__wait_timeout);        \
+		} while (!__wait_ret);                                       \
+		                                                             \
+		waitq_wait_cleanup(wq, &wql);                                \
+		                                                             \
+		__wait_ret;                                                  \
 	}))
 
 #define WAITQ_WAIT(wq, cond_expr) \
 	WAITQ_WAIT_TIMEOUT(wq, cond_expr, SCHED_TIMEOUT_INFINITE)
-
 
 __END_DECLS
 

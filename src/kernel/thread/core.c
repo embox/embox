@@ -269,8 +269,9 @@ int thread_join(struct thread *t, void **p_ret) {
 
 		t->joining = current;
 		ret = SCHED_WAIT(t->state & TS_EXITED);
-		if (ret < 0)
+		if (ret) {
 			goto out;
+		}
 
 		if (p_ret)
 			*p_ret = t->run_ret;

@@ -37,7 +37,7 @@ TEST_CASE("one sleep") {
 
 static void * handler_timeout(void* args) {
 	struct waitq *wq = (struct waitq*) args;
-	test_assert_zero(SCHED_WAIT_TIMEOUT(0, 10));
+	test_assert_equal(-ETIMEDOUT, SCHED_WAIT_TIMEOUT(0, 10));
 	waitq_wakeup(wq, 1);
 	return NULL;
 }
@@ -46,6 +46,7 @@ TEST_CASE("timeout sleep") {
 	pthread_t t;
 	struct waitq wq;
 	struct waitq_link wql;
+	clock_t remain;
 
 	waitq_init(&wq);
 	waitq_link_init(&wql);
@@ -54,7 +55,8 @@ TEST_CASE("timeout sleep") {
 	test_assert_zero(pthread_create(&t, 0, handler_timeout, (void*) &wq));
 	test_assert_not_null(t);
 
-	test_assert_not_zero(sched_wait_timeout(1000));
+	test_assert_zero(sched_wait_timeout(1000, &remain));
+	test_assert_not_zero(remain);
 
 	waitq_wait_cleanup(&wq, &wql);
 }

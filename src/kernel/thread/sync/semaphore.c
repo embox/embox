@@ -48,7 +48,7 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 			}
 
 			if (ret > 0)
-				ret = sched_wait_timeout(ret);
+				ret = sched_wait_timeout(ret, NULL);
 			else
 				ret = -ETIMEDOUT;
 
