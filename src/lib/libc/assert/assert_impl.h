@@ -46,38 +46,34 @@ extern int sprintf(char *s, const char *format, ...);
 }
 #endif
 
-#ifndef __cplusplus
-# define __assert(condition, expr_str, message...) \
-	do { \
-		if (!(condition)) {                                     \
-			static const struct __assertion_point __assertion_point = { \
-				.location   = LOCATION_FUNC_INIT,                       \
-				.expression = expr_str,                                 \
-			};                                                          \
-			__assert_message_sprintf("" message);                       \
-			__assertion_handle_failure(&__assertion_point);             \
-		}                                                               \
-	} while(0)
+#ifdef __cplusplus
+# define __if_cplusplus(x...) x
+# define __if_not_cplusplus(x...)
+# define __assert_switch(cond, if_true, if_false) \
+	((cond) ? (if_true) : (if_false))
 #else
-# define __assert(condition, expr_str, message...) \
+# define __if_cplusplus(x...)
+# define __if_not_cplusplus(x...) x
+# define __assert_switch __builtin_choose_expr
+#endif
+
+#define __assert(condition, expr_str, message...) \
 	do { \
 		if (!(likely(condition))) {                                     \
 			static const struct __assertion_point __assertion_point = { \
-				LOCATION_FUNC_INIT,                                     \
-				expr_str                                                \
+				__if_not_cplusplus(.location   =) LOCATION_FUNC_INIT,   \
+				__if_not_cplusplus(.expression =) expr_str,             \
 			};                                                          \
 			__assert_message_sprintf("" message);                       \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
-#endif
 
 #define __assert_message_sprintf(fmt, args...) \
-	__builtin_choose_expr(sizeof(fmt) != 1,                             \
-		sprintf(__assertion_message_buff,                               \
-			__builtin_choose_expr(sizeof(fmt) != 1, fmt, " "),          \
-			## args),                                                   \
-		(void) 0)
+	(void) __assert_switch(sizeof(fmt) != 1,             \
+		sprintf(__assertion_message_buff,                \
+			__assert_switch(sizeof(fmt) != 1, fmt, " "), \
+			## args), (int) 0)
 
 #endif /* NDEBUG */
 
