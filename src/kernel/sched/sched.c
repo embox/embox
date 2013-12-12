@@ -311,6 +311,8 @@ static void __sched_deactivate(struct thread *t) {
 static void sched_prepare_switch(struct thread *prev, struct thread *next) {
 	sched_ticker_switch(prev, next);
 	sched_timing_switch(prev, next);
+	prev->critical_count = critical_count();
+	critical_count() = next->critical_count;
 	__sched_activate(next);
 }
 
@@ -328,17 +330,11 @@ static struct thread *saved_prev __cpudata__; // XXX
  */
 void sched_ack_switched(void) {
 	sched_finish_switch(cpudata_var(saved_prev));
-	critical_count() = 0;
-	bkl_unlock();
 	ipl_enable();
+	sched_unlock();
 }
 
 static void sched_switch(struct thread *prev, struct thread *next) {
-	unsigned int local_critical = critical_count();
-	if (!local_critical)
-		bkl_lock();
-	critical_count() = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
-
 	sched_prepare_switch(prev, next);
 
 	trace_point(__func__);
@@ -350,10 +346,6 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(prev);
-
-	critical_count() = local_critical;
-	if (!local_critical)
-		bkl_unlock();
 }
 
 static void __schedule(int preempt) {
@@ -370,7 +362,7 @@ static void __schedule(int preempt) {
 		 * prev->active state (which is done by '__sched_deactivate')
 		 * any CPU waking prev will move it to TW_SMP_WAKING state
 		 * without really waking it up.
-		 * 'sched_switch' will sort out what to do in such case. */
+		 * 'sched_finish_switch' will sort out what to do in such case. */
 	else
 		__sched_enqueue(prev);
 
@@ -391,12 +383,16 @@ static void __schedule(int preempt) {
 }
 
 void schedule(void) {
+	sched_lock();
 	__schedule(0);
+	sched_unlock();
 }
 
 /** Called by critical dispatching code with IRQs disabled. */
 static void sched_preempt(void) {
+	sched_lock();
 	__schedule(1);
+	sched_unlock();
 }
 
 

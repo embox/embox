@@ -53,7 +53,9 @@ struct task;
  *                others access it with t->lock held and interrupts off
  */
 struct thread {
-	spinlock_t         lock;
+	unsigned int       critical_count;
+
+	spinlock_t         lock;         /**< Protects wait state and others. */
 
 	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
 	unsigned int       ready;        /**< Managed by the scheduler. */
