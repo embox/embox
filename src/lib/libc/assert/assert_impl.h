@@ -34,30 +34,31 @@ struct __assertion_point {
 };
 
 #ifdef __cplusplus
-extern "C"
-#else
-extern
+extern "C" {
 #endif
-void __attribute__ ((noreturn)) __assertion_handle_failure(
+
+extern void __attribute__ ((noreturn)) __assertion_handle_failure(
 		const struct __assertion_point *point);
+extern char __assertion_message_buff[];
+extern int sprintf(char *s, const char *format, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifndef __cplusplus
 # define __assert(condition, expr_str, message...) \
 	do { \
-		if (!(likely(condition))) {                                     \
-			extern char __assertion_message_buff[];                     \
+		if (!(condition)) {                                     \
 			static const struct __assertion_point __assertion_point = { \
-				.location = LOCATION_FUNC_INIT,                         \
+				.location   = LOCATION_FUNC_INIT,                       \
 				.expression = expr_str,                                 \
 			};                                                          \
-			extern int sprintf(char *s, const char *format, ...);       \
-			sprintf(__assertion_message_buff, "" message);              \
+			__assert_message_sprintf("" message);                       \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
 #else
-extern "C" char __assertion_message_buff[];
-extern "C" int sprintf(char *s, const char *format, ...);
 # define __assert(condition, expr_str, message...) \
 	do { \
 		if (!(likely(condition))) {                                     \
@@ -65,11 +66,18 @@ extern "C" int sprintf(char *s, const char *format, ...);
 				LOCATION_FUNC_INIT,                                     \
 				expr_str                                                \
 			};                                                          \
-			sprintf(__assertion_message_buff, "" message);              \
+			__assert_message_sprintf("" message);                       \
 			__assertion_handle_failure(&__assertion_point);             \
 		}                                                               \
 	} while(0)
 #endif
+
+#define __assert_message_sprintf(fmt, args...) \
+	__builtin_choose_expr(sizeof(fmt) != 1,                             \
+		sprintf(__assertion_message_buff,                               \
+			__builtin_choose_expr(sizeof(fmt) != 1, fmt, " "),          \
+			## args),                                                   \
+		(void) 0)
 
 #endif /* NDEBUG */
 

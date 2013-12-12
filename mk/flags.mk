@@ -70,7 +70,7 @@ override COMMON_CCFLAGS := $(COMMON_FLAGS)
 override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -Wall -Werror
 override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
-override COMMON_CCFLAGS += -Wformat -Wno-format-zero-length #-Wformat-nonliteral
+override COMMON_CCFLAGS += -Wformat
 
 cxxflags := $(CXXFLAGS)
 override CXXFLAGS = $(COMMON_CCFLAGS)
