@@ -27,8 +27,15 @@ void barrier_wait(barrier_t *b) {
 			b->current_count = 0;
 			waitq_wakeup_all(&b->wq);
 		} else {
+			struct waitq_link wql;
+
 			b->current_count++;
-			WAITQ_WAIT(&b->wq, b->count == b->current_count);
+
+			waitq_link_init(&wql);
+
+			waitq_wait_prepare(&b->wq, &wql);
+			sched_wait();
+			waitq_wait_cleanup(&b->wq, &wql);
 		}
 	}
 	sched_unlock();

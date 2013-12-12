@@ -45,9 +45,18 @@ static void do_up(rwlock_t *r, int status) {
 
 	sched_lock();
 	{
+		struct waitq_link wql;
+
+		waitq_link_init(&wql);
+
 		while (tryenter_sched_lock(r, status) != 0) {
-			WAITQ_WAIT_TIMEOUT(&r->wq, 0, SCHED_TIMEOUT_INFINITE);
+
+			waitq_wait_prepare(&r->wq, &wql);
+
+			sched_wait();
 		}
+
+		waitq_wait_cleanup(&r->wq, &wql);
 	}
 	sched_unlock();
 }

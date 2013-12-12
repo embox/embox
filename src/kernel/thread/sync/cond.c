@@ -82,8 +82,9 @@ int cond_wait(cond_t *c, struct mutex *m) {
 
 int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	struct thread* current = thread_self();
-	int timeout;
 	time64_t time;
+	clock_t timeout;
+	int res;
 
 	assert(c && m);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
@@ -106,16 +107,24 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 		waitq_init(&c->wq);
 	}
 
+	res = ENOERR;
 	sched_lock();
 	{
+		struct waitq_link wql;
+		waitq_link_init(&wql);
+		waitq_wait_prepare(&c->wq, &wql);
+
 		mutex_unlock(m);
-		WAITQ_WAIT_TIMEOUT(&c->wq, 0, timeout);
+
+		res = sched_wait_timeout(timeout, NULL);
+
+		waitq_wait_cleanup(&c->wq, &wql);
 	}
 	sched_unlock();
 
 	mutex_lock(m);
 
-	return ENOERR;
+	return res;
 }
 
 int cond_signal(cond_t *c) {

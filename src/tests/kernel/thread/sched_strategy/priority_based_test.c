@@ -37,9 +37,17 @@ static void *low_run(void *arg) {
 }
 
 static void *high_run(void *arg) {
+	struct waitq_link wql;
+	waitq_link_init(&wql);
+
 	test_emit('b');
-	WAITQ_WAIT_TIMEOUT(&wq, 0, SCHED_TIMEOUT_INFINITE);
+
+	waitq_wait_prepare(&wq, &wql);
+	sched_wait();
+	waitq_wait_cleanup(&wq, &wql);
+
 	test_emit('d');
+
 	return NULL;
 }
 
