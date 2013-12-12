@@ -58,7 +58,7 @@ override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
 
 override COMMON_FLAGS := -pipe
-override COMMON_FLAGS += --debug-prefix-map=$$(pwd)=
+override COMMON_FLAGS += --debug-prefix-map=`pwd`=
 override COMMON_FLAGS += --debug-prefix-map=./=
 
 # Assembler flags
