@@ -37,11 +37,15 @@
 
 typedef struct {
 	unsigned long l;
+	unsigned int owner;
 	__SPIN_CONTENTION_FIELD
 } spinlock_t;
 
-#define SPIN_STATIC_UNLOCKED { .l = __SPIN_UNLOCKED, __SPIN_CONTENTION_FIELD_INIT }
-#define SPIN_STATIC_LOCKED   { .l = __SPIN_LOCKED,   __SPIN_CONTENTION_FIELD_INIT }
+#define SPIN_INIT(state) \
+	{ .l = state, .owner = -1, __SPIN_CONTENTION_FIELD_INIT }
+
+#define SPIN_STATIC_UNLOCKED SPIN_INIT(__SPIN_UNLOCKED)
+#define SPIN_STATIC_LOCKED   SPIN_INIT(__SPIN_LOCKED)
 
 #define SPIN_UNLOCKED (spinlock_t) SPIN_STATIC_UNLOCKED
 #define SPIN_LOCKED   (spinlock_t) SPIN_STATIC_LOCKED
@@ -68,7 +72,16 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 #endif /* SMP || SPIN_DEBUG */
 
 static inline int __spin_trylock(spinlock_t *lock) {
-	int ret = __spin_trylock_smp(lock);
+	int ret;
+	unsigned int cpu_id = cpu_get_id();
+
+	assert(lock->owner != cpu_id, "Recursive lock of a spin owned by this CPU");
+
+	ret = __spin_trylock_smp(lock);
+	if (ret) {
+		assert(lock->owner == -1);
+		lock->owner = cpu_id;
+	}
 #ifdef SPIN_CONTENTION_LIMIT
 	if (ret)
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
@@ -87,6 +100,9 @@ static inline void __spin_lock(spinlock_t *lock) {
 static inline void __spin_unlock(spinlock_t *lock) {
 #if defined(SMP) || defined(SPIN_DEBUG)
 	assert(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
+	assert(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
+	lock->owner = -1;
+	__barrier();  // XXX this must be SMP barrier
 	*lock = SPIN_UNLOCKED;
 #endif /* SMP || SPIN_DEBUG */
 	__barrier();
