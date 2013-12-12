@@ -16,10 +16,28 @@
 
 int task_waitpid(pid_t pid) {
 	struct task *task;
+	struct waitq_link wql;
 	int ret = 0;
 
-	WAITQ_WAIT(task->waitq, !(task = task_table_get(pid)));
+	waitq_link_init(&wql);
 
+	sched_lock();
+	{
+		task = task_table_get(pid);
+		if (!task) {
+			ret = -ECHILD;
+			goto out;
+		}
+
+		waitq_wait_prepare(task->waitq, &wql);
+
+		sched_wait();
+
+		waitq_wait_cleanup(task->waitq, &wql);
+	}
+	sched_unlock();
+
+out:
 	return ret;
 }
 
