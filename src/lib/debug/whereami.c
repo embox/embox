@@ -112,36 +112,38 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 	int is_current = (t == thread_self());
 
 	p += tb_safe_snprintf(p, end-p,
-		" ==    %c %c %c %c thread %3d  (task %2d) ",
+		" --   %08x %c %c %c %c  thread %d  task %d ",
+		t->critical_count,
 		is_current      ? '*' : ' ',
 		sched_active(t) ? 'A' : ' ',
 		t->ready        ? 'R' : ' ',
 		t->waiting      ? 'W' : ' ',
 		t->id, t->task->tid);
 
-	memset(p, '=', end-p-1);
+	memset(p, '-', end-p-1);
 	*(end-1) = '\0';
 
 	return buff_sz;
 }
 
-static void tb_dump_thread_stack(struct thread *t) {
+void traceback_dump_thread(struct thread *t) {
 	struct context *ctx;
+	int is_current;
 	int size, limit;
-	int is_current = (t == thread_self());
 	char buff[ROW_SZ];
+
+	if (!t)
+		t = thread_self();
+	is_current = (t == thread_self());
 
 	ctx  = is_current ? NULL : &t->context;
 	size = backtrace_context(&bt_buff[0], ARRAY_SIZE(bt_buff), ctx);
 	limit = MAX_ROWS ? min(size, MAX_ROWS + 1) : size;
 
 	tb_snprint_thread_state(buff, sizeof(buff), t);
-	printk("\n\n%s\n", buff);
+	printk("\n\n%s\n\n", buff);
 
-	printk("    pc         func + offset\n");
-	printk("    ---------- ------------------------\n");
-
-	for (int i = is_current ? 2 : 0; i < limit; ++i) {
+	for (int i = is_current ? 3 : 0; i < limit; ++i) {
 		tb_snprint_stack_frame(buff, sizeof(buff),
 			size-i, bt_buff[i]);
 		printk("%s\n", buff);
@@ -151,16 +153,20 @@ static void tb_dump_thread_stack(struct thread *t) {
 	printk("\n%s\n", buff);
 }
 
+void traceback_dump(void) {
+	traceback_dump_thread(thread_self());
+}
+
 void whereami(void) {
 	struct thread *t;
 	struct task *task;
 
-	tb_dump_thread_stack(thread_self());
+	traceback_dump();
 
 	task_foreach(task) {
 		task_foreach_thread(t, task) {
 			if (t != thread_self())
-				tb_dump_thread_stack(t);
+				traceback_dump_thread(t);
 		}
 	}
 }
