@@ -35,14 +35,14 @@ char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)
 
 extern struct thread *thread_init_self(void *stack, size_t stack_sz,
 		sched_priority_t priority);
+extern void idt_load(void);
 
 void startup_ap(void) {
-	extern void idt_load(void);
-
 	struct thread *bootstrap;
 
-	idt_load();
+	__spin_lock(&startup_lock);
 
+	idt_load();
 	lapic_enable();
 
 	bootstrap = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
@@ -52,13 +52,11 @@ void startup_ap(void) {
 
 	cpu_init(cpu_get_id(), bootstrap);
 
-	__asm__ __volatile__ ("sti");
+	__spin_unlock(&startup_lock);
+	ipl_enable();
 
-	spin_unlock(&startup_lock);
-
-	while(1) {
+	while (1)
 		arch_idle();
-	}
 }
 
 static inline void init_trampoline(void) {
@@ -96,20 +94,12 @@ static int unit_init(void)
 	init_trampoline();
 
 	/* Start all CPUs */
-    for (int i = 0; i < NCPU; i++) {
-    	if (i == lapic_id()) {
-    		continue;
-    	}
+	for (int i = 0; i < NCPU; i++) {
+		if (i != lapic_id())
+			cpu_start(i);
+	}
 
-    	spin_lock(&startup_lock);
-    	cpu_start(i);
-
-    	/* For synchronization */
-    	spin_lock(&startup_lock);
-    	spin_unlock(&startup_lock);
-    }
-
-    return 0;
+	return 0;
 }
 
 void smp_send_resched(int cpu_id) {
