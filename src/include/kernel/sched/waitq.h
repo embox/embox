@@ -34,8 +34,8 @@ struct waitq_link {
 };
 
 #define WAITQ_INIT(wq)  { \
-	.list = DLIST_INIT(wq.list), \
-	.lock = SPIN_UNLOCKED,       \
+	.list = DLIST_INIT(wq.list),  \
+	.lock = SPIN_STATIC_UNLOCKED, \
 }
 
 static inline void waitq_init(struct waitq *wq) {
