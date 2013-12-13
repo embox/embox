@@ -48,23 +48,6 @@ void manual_event_set_and_notify(struct manual_event *m_event) {
 	}
 }
 
-static int __manual_event_wait(struct manual_event *m_event,
-		unsigned long timeout) {
-	int ret;
-	struct waitq_link wql;
-
-	softirq_unlock();
-	{
-		waitq_link_init(&wql);
-		waitq_wait_prepare(&m_event->waitq, &wql);
-		ret = sched_wait_timeout(timeout, NULL);
-		waitq_wait_cleanup(&m_event->waitq, &wql);
-	}
-	softirq_lock();
-
-	return ret;
-}
-
 int manual_event_wait(struct manual_event *m_event,
 		unsigned long timeout) {
 	int ret;
@@ -72,16 +55,7 @@ int manual_event_wait(struct manual_event *m_event,
 	assert(m_event != NULL);
 	assert(critical_allows(CRITICAL_SOFTIRQ_LOCK));
 
-	softirq_lock();
-	{
-		if (!m_event->set) {
-			ret = __manual_event_wait(m_event, timeout);
-		}
-		else {
-			ret = 0;
-		}
-	}
-	softirq_unlock();
-
+	ret = WAITQ_WAIT_TIMEOUT(&m_event->waitq,
+			m_event->set, timeout);
 	return ret;
 }
