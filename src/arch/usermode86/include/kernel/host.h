@@ -9,6 +9,7 @@
 #ifndef ARCH_USERMODE86_HOST_H_
 #define ARCH_USERMODE86_HOST_H_
 
+#if 0
 typedef int host_pid_t;
 typedef void (*host_sighandler_t)(int);
 
@@ -64,9 +65,13 @@ extern int host_close(int fd);
 
 extern host_pid_t host_getpid(void);
 
-extern int host_pause(void);
 
 extern int host_sigaction(int signum, const struct host_sigaction *new,
 		struct host_sigaction *old);
+#endif
+
+extern int host_putchar(int c);
+
+extern int host_pause(void);
 
 #endif /* ARCH_USERMODE86_HOST_H_ */
