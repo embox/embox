@@ -44,6 +44,12 @@ typedef struct {
 #define SPIN_INIT(state) \
 	{ .l = state, .owner = -1, __SPIN_CONTENTION_FIELD_INIT }
 
+static inline void spin_init(spinlock_t *lock, unsigned int state) {
+	lock->l = state;
+	lock->contention_count = SPIN_CONTENTION_LIMIT;
+	lock->owner = -1;
+}
+
 #define SPIN_STATIC_UNLOCKED SPIN_INIT(__SPIN_UNLOCKED)
 #define SPIN_STATIC_LOCKED   SPIN_INIT(__SPIN_LOCKED)
 
