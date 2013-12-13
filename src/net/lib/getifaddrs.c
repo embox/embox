@@ -100,8 +100,7 @@ int getifaddrs(struct ifaddrs **out_ifa) {
 			if (ifa) {
 				freeifaddrs(ifa);
 			}
-			SET_ERRNO(ENOMEM);
-			return -1;
+			return SET_ERRNO(ENOMEM);
 		}
 
 		strncpy((*ifa_ptr)->ifa_name, &in_dev->dev->name[0],
