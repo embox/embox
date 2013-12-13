@@ -118,7 +118,7 @@ static struct fm_info ftp_mtds[] = {
 static int fs_snd_request(struct fs_info *session, const char *cmd) {
 	int ret;
 
-	ret = sendto(session->cmd_sock, cmd, strlen(cmd), 0, NULL, 0);
+	ret = send(session->cmd_sock, cmd, strlen(cmd), 0);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't send data\n");
 		return FTP_RET_ERROR;
@@ -163,7 +163,7 @@ static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	int ret;
 	char *status;
 
-	ret = recvfrom(session->cmd_sock, buff, buff_sz - 1, 0, NULL, NULL);
+	ret = recv(session->cmd_sock, buff, buff_sz - 1, 0);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
@@ -305,7 +305,7 @@ static int fill_file_from_socket(FILE *file, int sock, char *buff, size_t buff_s
 	int received, written;
 
 	while (1) {
-		received = recvfrom(sock, buff, buff_sz, 0, NULL, NULL);
+		received = recv(sock, buff, buff_sz, 0);
 		if (received < 0) {
 			fprintf(stderr, "Can't receive data.\n");
 			return FTP_RET_ERROR;
@@ -340,7 +340,7 @@ static int flush_file_to_socket(FILE *file, int sock, char *buff, size_t buff_sz
 			break;
 		}
 
-		posted = sendto(sock, buff, readed, 0, NULL, 0);
+		posted = send(sock, buff, readed, 0);
 		if (posted != readed) {
 			fprintf(stderr, "Can't send data.\n");
 			return FTP_RET_ERROR;

@@ -128,7 +128,8 @@ static char * get_next_line(struct client_info *info) {
 	/* 1. move next_chunk to head of buffer */
 	chunk = memmove(info->buff, chunk, len);
 	/* 2. get new piece if data */
-	res = recvfrom(info->sock, chunk + len, sizeof info->buff - len, 0, NULL, NULL);
+	res = recv(info->sock, chunk + len, sizeof info->buff - len,
+			0);
 	if (res <= 0) {
 		return NULL;
 	}
