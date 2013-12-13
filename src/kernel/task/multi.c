@@ -208,8 +208,6 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	assert(task != task_kernel_task());
 
 	task->err = (int)res;
