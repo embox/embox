@@ -28,8 +28,8 @@
 #define SPIN_CONTENTION_LIMIT 0x10000000
 
 #ifdef SPIN_CONTENTION_LIMIT
-# define __SPIN_CONTENTION_FIELD       unsigned int contention_count;
-# define __SPIN_CONTENTION_FIELD_INIT .contention_count = SPIN_CONTENTION_LIMIT,
+# define __SPIN_CONTENTION_FIELD      unsigned int contention_count;
+# define __SPIN_CONTENTION_FIELD_INIT contention_count : SPIN_CONTENTION_LIMIT,
 #else /* SPIN_CONTENTION_LIMIT */
 # define __SPIN_CONTENTION_FIELD
 # define __SPIN_CONTENTION_FIELD_INIT
@@ -41,8 +41,10 @@ typedef struct {
 	__SPIN_CONTENTION_FIELD
 } spinlock_t;
 
+/* XXX use 'field : value' instead of '.field = value' syntax because g++ does not support
+ * the second one, but supports the first one in the trivial order --Alexander */
 #define SPIN_INIT(state) \
-	{ .l = state, .owner = -1, __SPIN_CONTENTION_FIELD_INIT }
+	{ l : state, owner : -1, __SPIN_CONTENTION_FIELD_INIT }
 
 static inline void spin_init(spinlock_t *lock, unsigned int state) {
 	lock->l = state;
