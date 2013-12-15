@@ -6,9 +6,14 @@
  * @date    15.12.2013
  */
 
+#include "host_defs.h"
 #include <assert.h>
 #include <stddef.h>
 #include <sys/time.h>
+
+static HOST_FNX(int, setitimer,
+		CONCAT(int what, const struct itimerval *it, struct itimerval *oit),
+		what, it, oit)
 
 void host_timer_config(int usec) {
 	struct itimerval itv = {
@@ -23,6 +28,6 @@ void host_timer_config(int usec) {
 	};
 	int res;
 
-	res = setitimer(ITIMER_REAL, &itv, NULL);
+	res = host_setitimer(ITIMER_REAL, &itv, NULL);
 	assert(res == 0);
 }

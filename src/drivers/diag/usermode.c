@@ -14,7 +14,12 @@ static void um_diag_putc(const struct diag *diag, char ch) {
 	host_putchar(ch);
 }
 
+static char um_diag_getc(const struct diag *diag) {
+	return host_getchar();
+}
+
 DIAG_OPS_DECLARE(
 		.putc = um_diag_putc,
+		.getc = um_diag_getc,
 );
 

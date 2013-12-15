@@ -12,6 +12,7 @@
 #define HOST_TIMER_IRQ 14
 
 extern int host_putchar(int c);
+extern int host_getchar(void);
 
 extern int host_pause(void);
 
