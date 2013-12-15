@@ -18,7 +18,7 @@
 #define PCIUTILS_INVALID 3
 #define PCIUTILS_TIMEOUT 4
 
-extern int pci_is_supported(void);
+extern int pci_check_type(void);
 
 extern uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t *value);
