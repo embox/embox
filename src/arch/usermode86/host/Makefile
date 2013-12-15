@@ -57,7 +57,7 @@ all:
 HOST_DIR := $(ROOT_DIR)/build/usermode_host
 
 HOST_OBJ := $(HOST_DIR)/host.o
-HOST_SRCS := host_main.c host_irq.c
+HOST_SRCS := $(wildcard *.c)
 HOST_OBJS := $(addprefix $(HOST_DIR)/,$(HOST_SRCS:.c=.o))
 
 .PHONY: all

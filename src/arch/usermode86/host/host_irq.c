@@ -6,17 +6,19 @@
  * @date    15.12.2013
  */
 
+#include <assert.h>
 #include <stddef.h>
 #include <signal.h>
 
 extern void irq_entry(int irq_nr);
 
-#define HOST_SIGMAX SIGUSR2
+#define HOST_SIGMAX 31
 
 static inline void host_sigfillset(sigset_t *set) {
 	sigemptyset(set);
 	sigaddset(set, SIGUSR1);
 	sigaddset(set, SIGUSR2);
+	sigaddset(set, SIGALRM);
 }
 
 static void host_signal_handler(int signal) {
@@ -27,10 +29,11 @@ static void host_signal_handler(int signal) {
 void host_ipl_init(void) {
 	sigset_t iset, eset;
 	struct sigaction sigact;
-	int i;
+	int res, i;
 
 	sigemptyset(&iset);
-	sigprocmask(SIG_SETMASK, &iset, NULL);
+	res = sigprocmask(SIG_SETMASK, &iset, NULL);
+	assert(res == 0);
 
 	sigact.sa_handler = host_signal_handler;
 	sigact.sa_mask = iset;
@@ -42,7 +45,8 @@ void host_ipl_init(void) {
 			continue;
 		}
 
-		sigaction(i, &sigact, NULL);
+		res = sigaction(i, &sigact, NULL);
+		assert(res == 0);
 	}
 }
 
