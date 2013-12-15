@@ -74,4 +74,9 @@ extern int host_putchar(int c);
 
 extern int host_pause(void);
 
+extern void host_ipl_init(void);
+extern int host_ipl_save(void);
+extern void host_ipl_restore(int ipl);
+
+extern void host_signal_send_self(int sig_nr);
 #endif /* ARCH_USERMODE86_HOST_H_ */

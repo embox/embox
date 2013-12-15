@@ -20,6 +20,7 @@ AT=
 #EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/busybox_embox_compat.h
 #EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 #EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS +=
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -50,21 +51,25 @@ EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
 
-EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib -m32
+EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib $(filter -m32,$(EMBOX_CFLAGS))
 all:
 
-HOST_DIR := $(ROOT_DIR)/build/usermode_host/
+HOST_DIR := $(ROOT_DIR)/build/usermode_host
 
 HOST_OBJ := $(HOST_DIR)/host.o
-HOST_SRC := host.c
+HOST_SRCS := host_main.c host_irq.c
+HOST_OBJS := $(addprefix $(HOST_DIR)/,$(HOST_SRCS:.c=.o))
 
 .PHONY: all
 
 $(HOST_DIR):
 	$(AT)mkdir -p $@
 
-$(HOST_OBJ) : $(HOST_SRC) $(HOST_DIR)
+$(HOST_DIR)/%.o : ./%.c | $(HOST_DIR)
 	$(EMBOX_TARGET_CC) $(EMBOX_DERIVED_CFLAGS) -c -o $@ $<
+
+$(HOST_OBJ) : $(HOST_OBJS)
+	$(EMBOX_TARGET_CC) $(EMBOX_DERIVED_LDFLAGS) $(HOST_OBJS) -o $@
 
 all: $(HOST_OBJ)
 
