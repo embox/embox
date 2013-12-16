@@ -52,7 +52,9 @@ typedef struct {
 
 static inline void spin_init(spinlock_t *lock, unsigned int state) {
 	lock->l = state;
+#ifdef SPIN_CONTENTION_LIMIT
 	lock->contention_count = SPIN_CONTENTION_LIMIT;
+#endif
 	lock->owner = -1;
 }
 
@@ -91,7 +93,7 @@ static inline int __spin_trylock(spinlock_t *lock) {
 
 	ret = __spin_trylock_smp(lock);
 	if (ret) {
-		assert(lock->owner == -1);
+		assert(lock->owner == (unsigned int)-1);
 		lock->owner = cpu_id;
 	}
 #ifdef SPIN_CONTENTION_LIMIT
