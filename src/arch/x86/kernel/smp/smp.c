@@ -24,11 +24,14 @@
 
 
 #include <module/embox/driver/interrupt/lapic.h>
+#include <module/embox/kernel/thread/core.h>
+
+#define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
+			NUMBER,thread_stack_size)
 
 EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
-
 extern struct thread *thread_init_self(void *stack, size_t stack_sz,
 		sched_priority_t priority);
 extern void idt_load(void);
