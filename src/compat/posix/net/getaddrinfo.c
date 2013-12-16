@@ -346,6 +346,7 @@ int getaddrinfo(const char *nodename, const char *servname,
 		return EAI_SERVICE;
 	}
 
+	res_ = NULL;
 	ret = explore_node(nodename, &hints_, se, &res_);
 	if (ret != 0) {
 		return ret;
