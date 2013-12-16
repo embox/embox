@@ -20,6 +20,10 @@ struct ring_buff {
 	size_t elem_size;     /**< size of element */
 };
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 /**
  * @brief Enqueue elements from @a elem array of lenght @a cnt. It cannot enqueue more
  * than buffer can hold.
@@ -82,6 +86,8 @@ extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, vo
 extern int ring_buff_get_cnt(struct ring_buff *buf);
 
 extern int ring_buff_get_space(struct ring_buff *buf);
+
+__END_DECLS
 
 #define RING_BUFFER_DEF(name, elem_type, req_len) \
 	static elem_type name##_storage[req_len];     \
