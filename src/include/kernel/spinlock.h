@@ -111,7 +111,7 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	assert(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
 	lock->owner = -1;
 	__barrier();  // XXX this must be SMP barrier
-	*lock = SPIN_UNLOCKED;
+	lock->l = __SPIN_UNLOCKED;
 #endif /* SMP || SPIN_DEBUG */
 	__barrier();
 }
