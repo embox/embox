@@ -116,8 +116,11 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	lock->owner = -1;
 	__barrier();  // XXX this must be SMP barrier
 	lock->l = __SPIN_UNLOCKED;
-#endif /* SMP || SPIN_DEBUG */
 	__barrier();
+#else /* !(SMP || SPIN_DEBUG) */
+	lock->owner = -1;
+	__barrier();
+#endif /* SMP || SPIN_DEBUG */
 }
 
 static inline void __spin_preempt_disable(void) {
