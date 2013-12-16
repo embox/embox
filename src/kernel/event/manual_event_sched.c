@@ -11,6 +11,7 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
+#include <stddef.h>
 
 void manual_event_init(struct manual_event *m_event, int set) {
 	assert(m_event != NULL);
@@ -53,7 +54,6 @@ int manual_event_wait(struct manual_event *m_event,
 	int ret;
 
 	assert(m_event != NULL);
-	assert(critical_allows(CRITICAL_SOFTIRQ_LOCK));
 
 	ret = WAITQ_WAIT_TIMEOUT(&m_event->waitq,
 			m_event->set, timeout);

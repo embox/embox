@@ -45,16 +45,12 @@ struct buffer_head {
 };
 
 static inline void bcache_buffer_lock(struct buffer_head *bh) {
-
 	mutex_lock(&bh->mutex);
-	bh->lock_count ++;
-
-
+	bh->lock_count++;
 }
 
 static inline void bcache_buffer_unlock(struct buffer_head *bh) {
-
-	bh->lock_count --;
+	bh->lock_count--;
 	mutex_unlock(&bh->mutex);
 }
 

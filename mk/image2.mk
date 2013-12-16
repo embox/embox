@@ -230,6 +230,32 @@ image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
 
+#XXX
+ifeq (1,$(FINAL_LINK_WITH_CC))
+
+$(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	-Wl,--defsym=__symbol_table=0 \
+	-Wl,--defsym=__symbol_table_size=0 \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+
+$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	$(symbols_pass1_a) \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+
+$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	$(symbols_pass2_a) \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+else
+
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
@@ -254,6 +280,7 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@
+endif
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

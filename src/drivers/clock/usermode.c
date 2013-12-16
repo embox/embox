@@ -17,31 +17,16 @@
 
 EMBOX_UNIT_INIT(umclock_init);
 
-#define CLOCK_IRQ  (EMVISOR_IRQ_TMR - EMVISOR_IRQ)
+#define CLOCK_IRQ HOST_TIMER_IRQ
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	unsigned long long ovrn_count;
-	int ret;
 
-	ret = emvisor_recvnbody(UV_PRDDOWNSTRM, &ovrn_count, sizeof(ovrn_count));
-
-	/* yep, reading a bit of 8 bytes is not supported and
-	 * hopefully will not occur.
-	 */
-	assert(ret == sizeof(ovrn_count));
-
-	while (ovrn_count--) {
-		clock_tick_handler(irq_nr, data);
-	}
+        clock_tick_handler(irq_nr, data);
 
 	return IRQ_HANDLED;
 }
 
 static int clk_config(struct time_dev_conf *conf);
-
-static cycle_t ppc_clk_read(void) {
-	return 0;
-}
 
 static struct time_event_device umclock_ev = {
 	.config = clk_config,
@@ -49,30 +34,23 @@ static struct time_event_device umclock_ev = {
 	.irq_nr = CLOCK_IRQ,
 };
 
-static struct time_counter_device umclock_cd = {
-	.read = ppc_clk_read,
-	.resolution = 1000000,
-};
-
 static struct clock_source umclock_cs = {
 	.name = "usermode clock",
 	.event_device = &umclock_ev,
-	.counter_device = &umclock_cd,
+	.counter_device = NULL,
 	.read = clock_source_read,
 };
 
 static int clk_config(struct time_dev_conf *conf) {
-	struct emvisor_tmrset ts = {
-		.count_fq = umclock_cd.resolution,
-		.overfl_fq = umclock_ev.resolution
-	};
 
-
-	emvisor_send(UV_PWRUPSTRM, EMVISOR_TIMER_SET, &ts, sizeof(ts));
+	host_timer_config(1000000 / umclock_ev.resolution);
 
 	return 0;
 }
+
 static int umclock_init(void) {
+
 	clock_source_register(&umclock_cs);
-	return irq_attach(CLOCK_IRQ, clock_handler, 0, &umclock_cs, "ppc_clk");
+
+	return irq_attach(CLOCK_IRQ, clock_handler, 0, &umclock_cs, "usermode clock");
 }

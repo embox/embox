@@ -21,7 +21,7 @@ EMBOX_UNIT_INIT(bcache_init);
 POOL_DEF(buffer_head_pool, struct buffer_head, BCACHE_SIZE);
 static DLIST_DEFINE(bh_list);
 
-static struct hashtable *buffer_cache;
+static struct hashtable *bcache;
 static struct mutex bcache_mutex;
 static int graw_buffers(block_dev_t *bdev, int block, size_t size);
 static void free_more_memory(size_t size);
@@ -30,46 +30,34 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 	struct buffer_head key = { .bdev = bdev, .block = block };
 	struct buffer_head *bh;
 
-	while (1) {
-		mutex_lock(&bcache_mutex);
+	assert(bdev);
 
-		bh = (struct buffer_head *)hashtable_get(buffer_cache, &key);
+	mutex_lock(&bcache_mutex);
+	while (1) {
+		bh = (struct buffer_head *)hashtable_get(bcache, &key);
 
 		if (bh) {
+			assert(size == bh->blocksize);
 			bcache_buffer_lock(bh);
 			mutex_unlock(&bcache_mutex);
 			return bh;
 		}
 
-		mutex_unlock(&bcache_mutex);
-
 		while (-1 == graw_buffers(bdev, block, size)) {
 			free_more_memory(size);
 		}
 	}
+	mutex_unlock(&bcache_mutex);
 
+	assert(0); /* UNREACHABLE */
 	return NULL;
 }
 
 static void free_more_memory(size_t size) {
 	struct buffer_head *bh, *bhnext;
-	/*
-	 * TODO
-	 * Below we do 2 steps:
-	 * 1. Search for block with size equal to @a size. If it exists in buffer cache free it.
-	 * 2. If block is not exists, then free all cache. It is bad idea because we should free
-	 * only needed size.
-	 * We should use one cache (slab) per size to prevent this hack. I am pondering on how to allocate
-	 * blocks most effective. --Alexander
-	 */
-	bool free_all = false;
-	bool size_exists = false;
 
-	mutex_lock(&bcache_mutex);
-
-repeat:
+	/* Free everything that we can free */
 	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
-
 		if (buffer_locked(bh)) {
 			continue;
 		}
@@ -81,50 +69,30 @@ repeat:
 				continue;
 			}
 
-			if (!free_all && bh->blocksize != size) {
-				bcache_buffer_unlock(bh);
-				continue;
-			}
-
 			if (buffer_dirty(bh)) {
+				assert(bh->bdev && bh->bdev->driver);
+				assert(bh->bdev->driver->write);
 				/* Write directly to disk */
 				bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
 			}
 
 			dlist_del(&bh->bh_next);
-			hashtable_del(buffer_cache, bh);
+			hashtable_del(bcache, bh);
 		}
 		bcache_buffer_unlock(bh);
 
-		size -= bh->blocksize;
-
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
-
-
-		if (!free_all) {
-			size_exists = true;
-			break;
-		}
 	}
-
-	if (!free_all && !size_exists) {
-		free_all = true;
-		goto repeat;
-	}
-
-	mutex_unlock(&bcache_mutex);
 }
 
 static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	struct buffer_head *bh;
 
-	mutex_lock(&bcache_mutex);
-
 	bh = pool_alloc(&buffer_head_pool);
 
 	if (!bh) {
-		goto error;
+		return -1;
 	}
 
 	memset(bh, 0, sizeof(struct buffer_head));
@@ -139,24 +107,18 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 
 	if (!bh->data) {
 		pool_free(&buffer_head_pool, bh);
-		goto error;
+		return -1;
 	}
 
-	if (0 > hashtable_put(buffer_cache, bh, bh)) {
+	if (0 > hashtable_put(bcache, bh, bh)) {
 		free(bh->data);
 		pool_free(&buffer_head_pool, bh);
-		goto error;
+		return -1;
 	}
 
 	dlist_add_next(&bh->bh_next, &bh_list);
 
-	mutex_unlock(&bcache_mutex);
-
 	return 0;
-
-error:
-	mutex_unlock(&bcache_mutex);
-	return -1;
 }
 
 static size_t bh_hash(void *key) {
@@ -178,9 +140,9 @@ static int bh_cmp(void *key1, void *key2) {
 
 static int bcache_init(void) {
 	/* XXX calculate size of hashtable */
-	buffer_cache = hashtable_create(BCACHE_SIZE / 10, bh_hash, bh_cmp);
+	bcache = hashtable_create(BCACHE_SIZE / 10, bh_hash, bh_cmp);
 
-	if (!buffer_cache) {
+	if (!bcache) {
 		return -1;
 	}
 
