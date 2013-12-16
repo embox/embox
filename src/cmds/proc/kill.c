@@ -37,7 +37,7 @@ static int kill_cmd(int argc, char **argv) {
 		}
 	}
 
-	if (signal <= 0) {
+	if (sig <= 0) {
 		printf("Invalid signal number: %d\n", sig);
 		return -EINVAL;
 	}
