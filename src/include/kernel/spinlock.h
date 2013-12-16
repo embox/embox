@@ -48,14 +48,14 @@ typedef struct {
 /* XXX use 'field : value' instead of '.field = value' syntax because g++ does not support
  * the second one, but supports the first one in the trivial order --Alexander */
 #define SPIN_INIT(state) \
-  { l : state, owner : (unsigned)-1, __SPIN_CONTENTION_FIELD_INIT }
+  { l : state, owner : -1u, __SPIN_CONTENTION_FIELD_INIT }
 
 static inline void spin_init(spinlock_t *lock, unsigned int state) {
 	lock->l = state;
 #ifdef SPIN_CONTENTION_LIMIT
 	lock->contention_count = SPIN_CONTENTION_LIMIT;
 #endif
-	lock->owner = -1;
+	lock->owner = -1u;
 }
 
 #define SPIN_STATIC_UNLOCKED SPIN_INIT(__SPIN_UNLOCKED)
@@ -93,7 +93,7 @@ static inline int __spin_trylock(spinlock_t *lock) {
 
 	ret = __spin_trylock_smp(lock);
 	if (ret) {
-		assert(lock->owner == (unsigned int)-1);
+		assert(lock->owner == -1u);
 		lock->owner = cpu_id;
 	}
 #ifdef SPIN_CONTENTION_LIMIT
@@ -115,12 +115,12 @@ static inline void __spin_unlock(spinlock_t *lock) {
 #if defined(SMP) || defined(SPIN_DEBUG)
 	assert(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
 	assert(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
-	lock->owner = -1;
+	lock->owner = -1u;
 	__barrier();  // XXX this must be SMP barrier
 	lock->l = __SPIN_UNLOCKED;
 	__barrier();
 #else /* !(SMP || SPIN_DEBUG) */
-	lock->owner = -1;
+	lock->owner = -1u;
 	__barrier();
 #endif /* SMP || SPIN_DEBUG */
 }
