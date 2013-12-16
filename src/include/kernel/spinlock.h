@@ -24,7 +24,11 @@
 #include <util/lang.h>
 #include <util/macro.h>
 
-#define SPIN_DEBUG  // TODO make it an option
+#include <framework/mod/options.h>
+#include <config/embox/kernel/spinlock.h>
+#if OPTION_MODULE_GET(embox__kernel__spinlock, BOOLEAN, spin_debug)
+#define SPIN_DEBUG
+#endif
 #define SPIN_CONTENTION_LIMIT 0x10000000
 
 #ifdef SPIN_CONTENTION_LIMIT
