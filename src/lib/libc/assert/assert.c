@@ -28,8 +28,6 @@ char __assertion_message_buff[MESSAGE_BUFF_SZ];
 static spinlock_t assert_lock = SPIN_STATIC_UNLOCKED;
 
 void __assertion_handle_failure(const struct __assertion_point *point) {
-	const struct location_func *loc = &point->location;
-
 	spin_lock_ipl_disable(&assert_lock);
 
 	printk("\n"
@@ -40,13 +38,15 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 			"\n | |____.| | | | | |  __  __  __"
 			"\n |______||_| |_| |_| /./ /./ /./"
 			"\n\n"
+
 			"  ASSERTION  FAILED   on CPU %d\n"
-			"\tat %s : %d\n"
-			"\tin function %s:\n\n"
+			LOCATION_FUNC_FMT("\t", "\n") "\n"
 			"%s\n",
+
 			cpu_get_id(),
-			loc->at.file, loc->at.line, loc->func,
+			LOCATION_FUNC_ARGS(&point->location),
 			point->expression);
+
 	if (*__assertion_message_buff)
 		printk("\n\t(%s)\n", __assertion_message_buff);
 
