@@ -32,32 +32,50 @@
 			on_rest(__lang_subst_void(expr, 0), ## __VA_ARGS__))
 
 /**
- * Surrounds an @a expr with @a stmt_before and @a stmt_after statements.
+ * Surrounds an @a expr with @a pre_stmt and @a post_stmt statements.
  *
  * @return An expression of the same type as the given one.
  */
-#define __lang_surround(expr, stmt_before, stmt_after) \
-	__lang_void_switch(expr, __lang_surround_void, __lang_surround_nonvoid, \
-			stmt_before, stmt_after)
+#define __lang_surround(expr, pre_stmt, post_stmt) \
+	({ pre_stmt; __lang_eval_before(expr, post_stmt); })
+
+/** @return An expression of the same type as the given one. */
+#define __lang_eval_before(expr, post_stmt) \
+	__lang_void_switch(expr,          \
+		__lang_eval_void_before,    \
+		__lang_eval_nonvoid_before, \
+		post_stmt)
+
+/** @return An expression of the same type as the given one. */
+#define __lang_eval_after(expr, pre_stmt) \
+	({ pre_stmt; (expr); })
+
 
 /** The same as #__lang_surround, but does not return the result of @a expr. */
-#define __lang_surround_void(expr, stmt_before, stmt_after) \
-	({                 \
-		stmt_before;   \
-		(void) (expr); \
-		stmt_after;    \
-		(void) 0;      \
-	})
+#define __lang_surround_void(expr, pre_stmt, post_stmt) \
+	({ pre_stmt; __lang_eval_void_before(expr, post_stmt); })
+
+/** The same as #__lang_eval_before, but returns nothing. */
+#define __lang_eval_void_before(expr, post_stmt) \
+	({ (void) (expr); post_stmt; (void) 0; })
+
+/** The same as #__lang_eval_after, but returns nothing. */
+#define __lang_eval_void_after(expr, pre_stmt) \
+	({ pre_stmt; (void) (expr); })
+
 
 /** The same as #__lang_surround for @a expr known to be non-void. */
-#define __lang_surround_nonvoid(expr, stmt_before, stmt_after) \
-	({                           \
-		typeof(expr) __lang_ret; \
-		stmt_before;             \
-		__lang_ret = (expr);     \
-		stmt_after;              \
-		__lang_ret;              \
-	})
+#define __lang_surround_nonvoid(expr, pre_stmt, post_stmt) \
+	({ pre_stmt; __lang_eval_nonvoid_before(expr, post_stmt); })
+
+/** The same as #__lang_eval_before for @a expr known to be non-void. */
+#define __lang_eval_nonvoid_before(expr, post_stmt) \
+	({ typeof(expr) __lang_ret = (expr); post_stmt; __lang_ret; })
+
+/** The same as #__lang_eval_after for @a expr known to be non-void. */
+#define __lang_eval_nonvoid_after(expr, pre_stmt) \
+	({ typeof(expr) __lang_ret; pre_stmt; __lang_ret = (expr); __lang_ret; })
+
 
 /** Can be used to refer an extern variable without explicit declaration. */
 #define __lang_extern_ref(type, name) \
