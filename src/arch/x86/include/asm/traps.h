@@ -11,12 +11,6 @@
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
-
-extern char _traps_text_start, _traps_text_end;
-
-#define TRAPS_TEXT_START     ((unsigned int) &_traps_text_start)
-#define TRAPS_TEXT_END       ((unsigned int) &_traps_text_end)
-
 /*
  * There are 256 IDT entries (each entry is 8 bytes)
  * Vectors 0...31 : system traps and exceptions

@@ -346,6 +346,10 @@ static int jffs2_mount(struct nas *dir_nas) {
 		return ENOMEM;
 	}
 	memset(c->inocache_list, 0, sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
+
+	spin_init(&c->inocache_lock, __SPIN_UNLOCKED);
+	spin_init(&c->erase_completion_lock, __SPIN_UNLOCKED);
+
 	if (n_fs_mounted++ == 0) {
 		jffs2_create_slab_caches(); /* No error check, cannot fail */
 		jffs2_compressors_init();

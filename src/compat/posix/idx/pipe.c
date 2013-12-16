@@ -193,8 +193,9 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 		if (!(data->flags & O_NONBLOCK)) {
 			if (!len) {
-				EVENT_WAIT(&pipe->read_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-				len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
+				EVENT_WAIT(&pipe->read_wait,
+					(len = ring_buff_dequeue(pipe->buff, (void*)buf, nbyte)),
+					 SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 			}
 		}
 
@@ -237,10 +238,9 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 		len = ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 
 		if (!(data->flags & O_NONBLOCK)) {
-			while (len!=nbyte) {
-				EVENT_WAIT(&pipe->write_wait, 0, SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
-				len += ring_buff_enqueue(pipe->buff, ((char*)buf)+len, nbyte-len);
-			}
+			EVENT_WAIT(&pipe->write_wait,
+				(len += ring_buff_enqueue(pipe->buff, ((char*)buf)+len, nbyte-len), len == nbyte),
+				SCHED_TIMEOUT_INFINITE); /* TODO: event condition */
 		}
 
 		/* Block pipe on writing if pipe is full. */

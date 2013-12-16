@@ -425,7 +425,7 @@ static int usb_dev_post(struct usb_dev *dev, unsigned int ms,
 		usb_dev_notify_hnd_t notify_hnd) {
 
 	usb_dev_wait(dev, notify_hnd);
-	return timer_init(&dev->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
+	return timer_init_msec(&dev->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
 			dev);
 }
 

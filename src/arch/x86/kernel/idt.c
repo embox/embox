@@ -16,10 +16,10 @@
 #include <asm/traps.h>
 #include <asm/gdt.h>
 
+#include <hal/cpu.h>
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>
-#include <module/embox/arch/smp.h>
 #include <module/embox/arch/syscall.h>
 
 #define IDT_SIZE 256
@@ -125,17 +125,17 @@ static void idt_init_syscall(void) {
 #define idt_init_syscall() do { } while(0)
 #endif
 
-#ifndef NOSMP
+#ifdef SMP
 
 static void idt_init_smp(void) {
 	idt_set_gate(0x50, (unsigned) __FWD_DECL(resched_trap), __KERNEL_CS, 0x8E);
 }
 
-#else /* NOSMP */
+#else /* !SMP */
 
 #define idt_init_smp() do { } while(0)
 
-#endif /* !NOSMP */
+#endif /* SMP */
 
 static struct idt_pointer idt_ptr;
 

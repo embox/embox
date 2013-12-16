@@ -6,6 +6,8 @@
  * @author Anton Bulychev
  */
 
+#include <errno.h>
+
 #include <kernel/event.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
@@ -15,13 +17,5 @@ void event_init(struct event *event, const char *name) {
 }
 
 void event_notify(struct event *event) {
-	waitq_notify_all(&event->waitq);
-}
-
-int __event_wait(struct event *event, unsigned long timeout) {
-	if (critical_allows(CRITICAL_SCHED_LOCK)) {
-		return __waitq_wait(timeout);
-	} else {
-		return __waitq_wait_locked(timeout);
-	}
+	waitq_wakeup_all(&event->waitq);
 }

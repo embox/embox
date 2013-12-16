@@ -23,6 +23,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <kernel/task.h>
+
 #include <security/seculog.h>
 
 #include <embox/cmd.h>

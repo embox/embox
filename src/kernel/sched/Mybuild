@@ -3,8 +3,8 @@ package embox.kernel.sched
 module sched {
 	source "sched.c"
 	source "sched_signal.c"
+	source "sched_wait.c"
 
-	depends embox.kernel.timer.sys_timer /* for timeslices support */
 	depends embox.arch.context /* context_switch */
 	depends strategy.api
 
@@ -17,11 +17,13 @@ module sched {
 	@NoRuntime depends embox.kernel.event_sched
 
 	@NoRuntime depends sched_ticker
+	@NoRuntime depends wait_queue
 }
 
 module sched_ticker {
 	source "sched_ticker.c"
 	option number tick_interval = 100
+	depends embox.kernel.timer.sys_timer /* for timeslices support */
 }
 
 module wait_queue {
