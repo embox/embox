@@ -10,6 +10,9 @@
 #define KERNEL_TASK_TASK_TABLE_H_
 
 #include <kernel/task.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 /**
  * @brief Add a task to a task table
@@ -52,5 +55,7 @@ extern int task_table_has_space(void);
  * @return negative on error (not found)
  */
 extern int task_table_get_first(int since);
+
+__END_DECLS
 
 #endif /* KERNEL_TASK_TASK_TABLE_H_ */
