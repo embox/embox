@@ -157,6 +157,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		if (tmp == 0) {
 			break; /* errors */
 		}
+		cnt += tmp;
 	}
 	if (!(cnt % size)) {
 		/* try to revert some bytes */
