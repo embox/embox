@@ -24,7 +24,7 @@ BEGIN {
 	if (a[1])
 		loc = sprintf("{ \"%s\", %d }", a[1], a[2])
 	else
-		loc = sprintf("{ }", a[1], a[2])
+		loc = "{ 0 }"
 	printf "\t{ (void *) 0x%s, \"%s\", %s },\n", $1, $3, loc;
 }
 
