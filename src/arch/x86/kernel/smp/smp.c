@@ -29,28 +29,31 @@ EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
 
-static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
-
-char AP_STACK[NCPU][THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
-
 extern struct thread *thread_init_self(void *stack, size_t stack_sz,
 		sched_priority_t priority);
 extern void idt_load(void);
 
+static char ap_stack[NCPU][THREAD_STACK_SIZE]
+		__attribute__((aligned(THREAD_STACK_SIZE)));
+static int ap_ack;
+static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
+
 void startup_ap(void) {
-	struct thread *bootstrap;
+	struct thread *bs_idle;
+	int self_id = lapic_id();
 
 	__spin_lock(&startup_lock);
 
 	idt_load();
 	lapic_enable();
 
-	bootstrap = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
+	bs_idle = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 			THREAD_PRIORITY_MIN);
 
-	thread_register(task_kernel_task(), bootstrap);
+	thread_register(task_kernel_task(), bs_idle);
 
-	cpu_init(cpu_get_id(), bootstrap);
+	cpu_init(self_id, bs_idle);
+	ap_ack = 1;
 
 	__spin_unlock(&startup_lock);
 	ipl_enable();
@@ -71,7 +74,7 @@ static inline void init_trampoline(void) {
 /* TODO: FIX THIS! */
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */
-	__ap_sp = AP_STACK[cpu_id] + THREAD_STACK_SIZE;
+	__ap_sp = ap_stack[cpu_id] + THREAD_STACK_SIZE;
 
 	lapic_send_init_ipi(cpu_id);
 
@@ -85,17 +88,21 @@ static inline void cpu_start(int cpu_id) {
 		__asm__ __volatile__ ("nop");
 	}
 
+	ap_ack = 0;
 	lapic_send_startup_ipi(cpu_id, TRAMPOLINE_ADDR);
+	while (!ap_ack)
+		__barrier();
 }
 
-static int unit_init(void)
-{
+static int unit_init(void) {
+	int self_id = lapic_id();
+
 	/* Initialize trampoline for the APs */
 	init_trampoline();
 
 	/* Start all CPUs */
 	for (int i = 0; i < NCPU; i++) {
-		if (i != lapic_id())
+		if (i != self_id)
 			cpu_start(i);
 	}
 
