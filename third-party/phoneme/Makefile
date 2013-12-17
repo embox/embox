@@ -47,13 +47,6 @@ TOOLS_DIR           := $(PHONEME_DIR)/tools
 JAVACALL_DIR        := $(PHONEME_DIR)/javacall
 JAVACALL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/javacall
 
-#UBUNTU_JDK_DIR      := /usr/lib/jvm/java-6-openjdk-i38
-#REDHAT_JDK_DIR      := /usr/java/jdk1.6.0_35
-#JDK7_JDK_DIR	    := /usr/lib/jvm/java-7-openjdk
-
-#JDK_DIR 	    := $(firstword \
-#	$(wildcard /usr/lib/jvm/java-openjdk/./ $(UBUNTU_JDK_DIR)/./ $(REDHAT_JDK_DIR)/./ $(JDK7_JDK_DIR)/./ ))
-
 JDK_BIN_DIR = $(shell readlink -f `which javac` | xargs dirname)
 JDK_DIR     = $(JDK_BIN_DIR)/..
 
