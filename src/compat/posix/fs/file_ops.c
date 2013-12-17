@@ -17,6 +17,7 @@
 
 
 #include <fs/index_descriptor.h>
+#include <kernel/task/idesc_table.h>
 
 
 int ioctl(int fd, int request, ...) {

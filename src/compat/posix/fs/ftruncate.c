@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <fs/index_descriptor.h>
 

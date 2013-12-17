@@ -5,8 +5,10 @@
  * @author: Anton Bondarev
  */
 #include <poll.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
+
+//#include <kernel/task.h>
+#include <kernel/sched/waitq.h>
+//#include <kernel/task/idx.h>
 
 #include <fs/idesc.h>
 #include <fs/poll_table.h>
@@ -55,9 +57,12 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
+		struct waitq *wq;
 
 		assert(idesc_poll->idesc);
-		waitq_remove(&idesc_poll->wait_link.link);
+
+		wq = &idesc_poll->idesc->idesc_waitq;
+		waitq_wait_cleanup(wq, &idesc_poll->wait_link.link);
 	}
 
 	return 0;
@@ -78,22 +83,11 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 }
 
 int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
-	int fd_cnt;
 	int ret = 0;
-	struct waitq waitq = WAITQ_INIT(waitq);
-	struct wait_link waitl;
 
 	poll_table_wait_prepare(pt, ticks);
 
-	do {
-		__waitq_prepare(&waitq, &waitl);
-		if ((fd_cnt = poll_table_count(pt))) {
-			break;
-		}
-		ret = __waitq_wait(ticks);
-	} while (!ret);
-
-	__waitq_cleanup();
+	ret = SCHED_WAIT_TIMEOUT(poll_table_count(pt), ticks);
 
 	poll_table_cleanup(pt);
 

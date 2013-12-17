@@ -15,7 +15,7 @@
  */
 struct idesc_wait_link {
 	int iwq_masks;
-	struct wait_link link;
+	struct waitq_link link;
 };
 
 struct idesc;
@@ -40,7 +40,7 @@ extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
  * @return -EINTR if was interrupted
  * @return Non-negative if event occured
  */
-extern int idesc_wait(struct idesc *idesc, unsigned int timeout);
+extern int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout);
 
 
 /**

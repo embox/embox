@@ -52,7 +52,7 @@ static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 	idesc_wait_prepare(idesc, &wl, flags);
 	work_enable(&t->rx_work);
 
-	res = idesc_wait(idesc, SCHED_TIMEOUT_INFINITE);
+	res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
 
 	work_disable(&t->rx_work);
 	idesc_wait_cleanup(idesc, &wl);

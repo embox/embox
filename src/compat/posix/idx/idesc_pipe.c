@@ -12,19 +12,22 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <poll.h>
+#include <unistd.h>
 
 #include <util/ring_buff.h>
 
 #include <framework/mod/options.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/task/idx.h>
+//#include <kernel/task/idx.h>
+#include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
+
 #include <kernel/sched.h>
 #include <fs/flags.h>
 
-#include <unistd.h>
+
 
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
@@ -112,7 +115,7 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 
 	mutex_unlock(&pipe->mutex);
 
-	res = idesc_wait(idesc, SCHED_TIMEOUT_INFINITE);
+	res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
 
 	mutex_lock(&pipe->mutex);
 
