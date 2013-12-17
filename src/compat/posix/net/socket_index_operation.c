@@ -97,6 +97,7 @@ static int socket_close(struct idesc *desc) {
 
 static int socket_status(struct idesc *desc, int status_nr) {
 	struct sock *sk = (struct sock *)desc;
+	int res;
 
 	assert(sk);
 	assert(desc->idesc_ops == &task_idx_ops_socket);
@@ -108,15 +109,31 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	case POLLIN:
 		return sk->rx_data_len;
 	case POLLOUT:
-		return INT_MAX; // XXX it is so?
+		return 0x600; // XXX it is so?
 	case POLLERR:
 		return 0; /* TODO */
 	default:
 		/* UNREACHABLE */
-		assert(0);
+		//assert(0);
+		res = 0;
+		break;
+	}
+	if (status_nr & POLLIN) {
+		/* how many we can read */
+		res += sk->rx_data_len;
 	}
 
-	return 0;
+	if (status_nr & POLLOUT) {
+		/* how many we can write */
+		res += 0x600;
+	}
+
+	if (status_nr & POLLERR) {
+		/* is there any exeptions */
+		res += 0; //TODO Where is errors counter
+	}
+
+	return res;
 }
 
 const struct idesc_ops task_idx_ops_socket = {
