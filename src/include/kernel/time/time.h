@@ -51,23 +51,23 @@ extern struct timespec timespec_sub(struct timespec t1,
 extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
-	assert(ts);
+	assert(ts != NULL);
 	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
 static inline unsigned long timeval_to_ms(const struct timeval *tv) {
-	assert(tv);
+	assert(tv != NULL);
 	return ((__u32) tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
 }
 
 static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
-	assert(tv);
+	assert(tv != NULL);
 	tv->tv_sec = ms / MSEC_PER_SEC;
 	tv->tv_usec = (ms % MSEC_PER_SEC) * USEC_PER_MSEC;
 }
 
 static inline time64_t timeval_to_ns(const struct timeval *tv) {
-	assert(tv);
+	assert(tv != NULL);
 	return ((__s64) tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 

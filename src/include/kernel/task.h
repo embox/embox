@@ -101,7 +101,7 @@ typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *ne
  */
 static inline struct task_idx_table *task_idx_table(struct task *task) {
 
-	assert(task);
+	assert(task != NULL);
 	return task->idx_table;
 }
 
@@ -134,13 +134,13 @@ extern task_priority_t task_get_priority(struct task *task);
 /* this is for SMP mode */
 static inline void task_set_affinity(struct task *task, unsigned int affinity) {
 
-	assert(task);
+	assert(task != NULL);
 	task->affinity = affinity;
 }
 
 static inline unsigned int task_get_affinity(struct task *task) {
 
-	assert(task);
+	assert(task != NULL);
 	return task->affinity;
 }
 
