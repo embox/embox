@@ -13,4 +13,6 @@
 
 /* May be we should place some Embox specific defines here. */
 
+#define ACPI_MACHINE_WIDTH 32
+
 #endif /* DRIVERS_ACPI_ACEMBOX_H_ */
