@@ -51,6 +51,13 @@ EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
 
+#define TCP_DEBUG 0
+#if TCP_DEBUG
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
+
 /** TODO
  * +1. Create default socket for resetting
  * +2. PSH flag
@@ -517,7 +524,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 				SOCK_STREAM, IPPROTO_TCP);
 
 		if (err(newsk) != 0) {
-			printk("tcp_st_listen: can't alloc socket\n");
+			DBG(printk("tcp_st_listen: can't alloc socket\n");)
 			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			{
 				assert(tcp_sk->conn_wait_len != 0);
@@ -926,10 +933,10 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	tcp_set_check_field((struct tcphdr *)tcph,
 			skb->nh.raw);
 	if (old_check != tcph->check) {
-		printk("pre_process: error: invalid ckecksum %hx(%hx)"
+		DBG(printk("pre_process: error: invalid ckecksum %hx(%hx)"
 					" sk %p skb %p\n",
 				ntohs(old_check), ntohs(tcph->check),
-				to_sock(tcp_sk), skb);
+				to_sock(tcp_sk), skb);)
 		return TCP_RET_DROP;
 	}
 
@@ -1244,7 +1251,7 @@ static int tcp_init(void) {
 	int ret;
 
 	/* Create default timer */
-	ret = timer_init(&tcp_tmr_default, TIMER_PERIODIC,
+	ret = timer_init_msec(&tcp_tmr_default, TIMER_PERIODIC,
 			TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

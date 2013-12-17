@@ -60,6 +60,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	if (actual_len < total_len) {
+		skb_free(skb);
 		return -EMSGSIZE;
 	}
 

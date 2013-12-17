@@ -90,7 +90,7 @@ extern struct idesc_table *task_get_idesc_table(struct task *task);
  */
 static inline struct task_idx_table *task_idx_table(struct task *task) {
 
-	assert(task);
+	assert(task != NULL);
 	return task->idx_table;
 }
 #endif
@@ -124,13 +124,13 @@ extern task_priority_t task_get_priority(struct task *task);
 /* this is for SMP mode */
 static inline void task_set_affinity(struct task *task, unsigned int affinity) {
 
-	assert(task);
+	assert(task != NULL);
 	task->affinity = affinity;
 }
 
 static inline unsigned int task_get_affinity(struct task *task) {
 
-	assert(task);
+	assert(task != NULL);
 	return task->affinity;
 }
 

@@ -682,6 +682,8 @@ int kflock(int fd, int operation) {
 				spin_unlock(flock_guard);
 				SET_ERRNO(EWOULDBLOCK);
 				return -1;
+			} else {
+				spin_unlock(flock_guard);
 			}
 		} else {
 			/* We should unlock flock_guard here to avoid many processes
@@ -689,7 +691,6 @@ int kflock(int fd, int operation) {
 			spin_unlock(flock_guard);
 			flock_exclusive_get(exlock);
 		}
-		spin_unlock(flock_guard);
 	}
 
 	/* Shared locking operation */

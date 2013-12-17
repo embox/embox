@@ -6,6 +6,9 @@
  * @author Eldar Abusalimov
  */
 
+#include <hal/cpu.h>
+
+#include <kernel/spinlock.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 
@@ -22,18 +25,37 @@
 
 char __assertion_message_buff[MESSAGE_BUFF_SZ];
 
-void __assertion_handle_failure(const struct __assertion_point *point) {
-	const struct location_func *loc = &point->location;
+static spinlock_t assert_lock = SPIN_STATIC_UNLOCKED;
 
-	printk("\nASSERTION FAILED at %s : %d,\n"
-			"\tin function %s:\n\n"
+void __assertion_handle_failure(const struct __assertion_point *point) {
+	spin_lock_ipl_disable(&assert_lock);
+
+	printk("\n"
+			"\n  ______"
+			"\n |  ____|"
+			"\n | |___   _ __ ___"
+			"\n |  ___| | \'_ ` _ \\"
+			"\n | |____.| | | | | |  __  __  __"
+			"\n |______||_| |_| |_| /./ /./ /./"
+			"\n\n"
+
+			"  ASSERTION  FAILED   on CPU %d\n"
+			LOCATION_FUNC_FMT("\t", "\n") "\n"
 			"%s\n",
-			loc->at.file, loc->at.line, loc->func,
+
+			cpu_get_id(),
+			LOCATION_FUNC_ARGS(&point->location),
 			point->expression);
-	if (*__assertion_message_buff) {
-		printk("\t(%s)\n", __assertion_message_buff);
-	}
-	panic("kernel debug panic");
+
+	if (*__assertion_message_buff)
+		printk("\n\t(%s)\n", __assertion_message_buff);
+
+	whereami();
+
+	spin_unlock(&assert_lock);  /* leave IRQs off */
+
+	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
+	/* NOTREACHED */
 }
 
 #endif

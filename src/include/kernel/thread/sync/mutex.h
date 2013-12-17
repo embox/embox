@@ -9,7 +9,9 @@
 #ifndef KERNEL_THREAD_SYNC_MUTEX_H_
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
+#include <stddef.h>
 #include <sys/cdefs.h>
+
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutexattr.h>
 
@@ -27,24 +29,32 @@ struct mutex {
 };
 
 #define MUTEX_INIT_STATIC \
-	{ \
-		{ /*wait_queue init */ \
-			{/* dlist_init*/ NULL, NULL, NULL,}, \
-			/* flags */0, \
-			}, \
-		/* holder*/ NULL, \
-		{ /*mutexattr init */ \
-			/* type */ MUTEX_DEFAULT, \
-			}, \
-		/* lock_couunt */ 0 \
+	{                                                  \
+		{ /* wait_queue init */                        \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			/* spinlock_t lock*/                       \
+			{ /*l*/__SPIN_UNLOCKED,                    \
+				/* owner */ (unsigned int)-1,		\
+				/*contention_count */SPIN_CONTENTION_LIMIT \
+			}                                          \
+		},                                             \
+		/* holder*/ NULL,                              \
+		{ /*mutexattr init */                          \
+			/* type */ MUTEX_DEFAULT,                  \
+		},                                             \
+		/* lock_count */ 0                             \
 	}
 
 #define RMUTEX_INIT_STATIC \
-	{ \
-		{ /*wait_queue init */ \
-			{/* dlist_init*/ NULL, NULL, NULL,}, \
-			/* flags */0, \
-			}, \
+	{                                                  \
+		{ /* wait_queue init */                        \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			/* spinlock_t lock*/                       \
+			{ /*l*/__SPIN_UNLOCKED,                    \
+				/* owner */ -1,                        \
+				/*contention_count */SPIN_CONTENTION_LIMIT \
+			}                                          \
+		},                                             \
 		/* holder*/ NULL, \
 		{ /*mutexattr init */ \
 			/* type */ MUTEX_RECURSIVE, \

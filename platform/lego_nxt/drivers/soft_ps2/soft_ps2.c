@@ -54,7 +54,7 @@ void reset_ps2_state(void) {
 	ps2_state = SOFT_PS2_IDLE;
 }
 
-volatile static int inited = 0;
+static volatile int inited = 0;
 
 static int parity(uint8_t val) {
 	int ret = 0;

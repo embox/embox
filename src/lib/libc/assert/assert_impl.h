@@ -34,42 +34,46 @@ struct __assertion_point {
 };
 
 #ifdef __cplusplus
-extern "C"
-#else
-extern
+extern "C" {
 #endif
-void __attribute__ ((noreturn)) __assertion_handle_failure(
-		const struct __assertion_point *point);
 
-#ifndef __cplusplus
-# define __assert(condition, expr_str, message...) \
-	do { \
-		if (!(likely(condition))) {                                     \
-			extern char __assertion_message_buff[];                     \
-			static const struct __assertion_point __assertion_point = { \
-				.location = LOCATION_FUNC_INIT,                         \
-				.expression = expr_str,                                 \
-			};                                                          \
-			extern int sprintf(char *s, const char *format, ...);       \
-			sprintf(__assertion_message_buff, " " message);             \
-			__assertion_handle_failure(&__assertion_point);             \
-		}                                                               \
-	} while(0)
-#else
-extern "C" char __assertion_message_buff[];
-extern "C" int sprintf(char *s, const char *format, ...);
-# define __assert(condition, expr_str, message...) \
-	do { \
-		if (!(likely(condition))) {                                     \
-			static const struct __assertion_point __assertion_point = { \
-				LOCATION_FUNC_INIT,                                     \
-				expr_str                                                \
-			};                                                          \
-			sprintf(__assertion_message_buff, " " message);             \
-			__assertion_handle_failure(&__assertion_point);             \
-		}                                                               \
-	} while(0)
+extern void __attribute__ ((noreturn)) __assertion_handle_failure(
+		const struct __assertion_point *point);
+extern char __assertion_message_buff[];
+extern int sprintf(char *s, const char *format, ...);
+
+#ifdef __cplusplus
+}
 #endif
+
+#ifdef __cplusplus
+# define __if_cplusplus(x...) x
+# define __if_not_cplusplus(x...)
+# define __assert_switch(cond, if_true, if_false) \
+	((cond) ? (if_true) : (if_false))
+#else
+# define __if_cplusplus(x...)
+# define __if_not_cplusplus(x...) x
+# define __assert_switch __builtin_choose_expr
+#endif
+
+#define __assert(condition, expr_str, message...) \
+	do { \
+		if (!(likely(condition))) {                                     \
+			static const struct __assertion_point __assertion_point = { \
+				__if_not_cplusplus(.location   =) LOCATION_FUNC_INIT,   \
+				__if_not_cplusplus(.expression =) expr_str,             \
+			};                                                          \
+			__assert_message_sprintf("" message);                       \
+			__assertion_handle_failure(&__assertion_point);             \
+		}                                                               \
+	} while(0)
+
+#define __assert_message_sprintf(fmt, args...) \
+	(void) __assert_switch(sizeof(fmt) != 1,             \
+		sprintf(__assertion_message_buff,                \
+			__assert_switch(sizeof(fmt) != 1, fmt, " "), \
+			## args), (int) 0)
 
 #endif /* NDEBUG */
 

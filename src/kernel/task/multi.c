@@ -209,8 +209,6 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	assert(task != task_kernel_task());
 
 	task->err = (int)res;
@@ -246,6 +244,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		thread_terminate(task->main_thread);
 	}
 	sched_unlock();
+
+	task->main_thread = NULL; // XXX
+	thread_exit(NULL);
 
 	/* NOTREACHED */
 	panic("Returning from task_exit()");

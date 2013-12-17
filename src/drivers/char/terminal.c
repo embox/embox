@@ -225,7 +225,7 @@ bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
 bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_len,
 		...) {
 	va_list args;
-	size_t i;
+	int i;
 	short params[VTPARSE_TOKEN_PARAMS_MAX];
 	//short params[0x20];
 

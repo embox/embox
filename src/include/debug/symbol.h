@@ -9,9 +9,12 @@
 #ifndef LIB_EXECINFO_SYMBOL_H_
 #define LIB_EXECINFO_SYMBOL_H_
 
+#include <util/location.h>
+
 struct symbol {
 	void *addr;
 	const char *name;
+	struct location loc;
 };
 
 /**

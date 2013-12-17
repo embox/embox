@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -53,8 +54,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
-	sched_unlock_noswitch();
-	ipl_enable();
+	sched_ack_switched();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
@@ -136,13 +136,18 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	dlist_init(&t->thread_link); /* default unlink value */
 
-	t->state = __THREAD_STATE_WAITING;
+	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
+	t->lock = SPIN_UNLOCKED;
+	t->ready = false;
+	t->active = false;
+	t->waiting = true;
+	t->state = TS_INIT;
 
 	/* set executive function and arguments pointer */
 	t->run = run;
 	t->run_arg = arg;
 
-	t->join_wq = NULL; /* there are not any joined thread */
+	t->joining = NULL;
 
 	/* calculate current thread priority. It can be change later with
 	 * thread_set_priority () function
@@ -182,32 +187,29 @@ void thread_init(struct thread *t, unsigned int flags,
 	context_set_stack(&t->context,
 			thread_stack_get(t) + thread_stack_get_size(t));
 
+	sigstate_init(&t->sigstate);
+
 	/* Initializes scheduler strategy data of the thread */
 	runq_item_init(&t->sched_attr.runq_link);
 	sched_affinity_init(t);
 	sched_timing_init(t);
-
-	t->wait_link = NULL;
 }
 
 static void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
-	assert(__THREAD_STATE_IS_EXITED(t->state));
+	assert(t->state & TS_EXITED);
 
 	thread_unregister(t->task, t);
-	sigstate_init(&t->sigstate);
-
-	runq_item_init(&t->sched_attr.runq_link);
-	sched_affinity_init(t);
-	sched_timing_init(t);
 
 	if (zombie) {
 		thread_free(zombie);
 	}
 
 	if (t != thread_self()) {
+		assert(!t->active);
+		assert(!t->ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -218,9 +220,7 @@ static void thread_delete(struct thread *t) {
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	struct waitq *join_wq;
-
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
+	struct thread *joining;
 
 	/* We can free only not main threads */
 	if (task->main_thread == current) {
@@ -230,31 +230,33 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	}
 
 	sched_lock();
-	{
-		current->state &= ~__THREAD_STATE_RUNNING;
 
-		/* Wake up a joining thread (if any).
-		 * Note that join_wq and run_ret are both in a union. */
-		join_wq = current->join_wq;
-		if (join_wq) {
-			current->run_ret = ret;
-			waitq_notify(join_wq);
-		}
+	// sched_finish(current);
+	current->waiting = true;
+	current->state |= TS_EXITED;
 
-		if (current->state & __THREAD_STATE_DETACHED)
-			/* No one references this thread anymore. Time to delete it. */
-			thread_delete(current);
-
-		sched_post_switch();
+	/* Wake up a joining thread (if any).
+	 * Note that joining and run_ret are both in a union. */
+	joining = current->joining;
+	if (joining) {
+		current->run_ret = ret;
+		sched_wakeup(joining);
 	}
-	sched_unlock();
+
+	if (current->state & TS_DETACHED)
+		/* No one references this thread anymore. Time to delete it. */
+		thread_delete(current);
+
+	schedule();
 
 	/* NOTREACHED */
+	sched_unlock();  /* just to be honest */
 	panic("Returning from thread_exit()");
 }
 
 int thread_join(struct thread *t, void **p_ret) {
 	struct thread *current = thread_self();
+	int ret = 0;
 
 	assert(t);
 
@@ -263,16 +265,13 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		assert(!t->join_wq);
-		assert(!(t->state & __THREAD_STATE_DETACHED));
+		assert(!t->joining);
+		assert(!(t->state & TS_DETACHED));
 
-		if (!__THREAD_STATE_IS_EXITED(t->state)) {
-			/* Target thread is not exited. Waiting for his exiting. */
-			struct waitq queue;
-			waitq_init(&queue);
-
-			t->join_wq = &queue;
-			waitq_wait_locked(&queue, SCHED_TIMEOUT_INFINITE);
+		t->joining = current;
+		ret = SCHED_WAIT(t->state & TS_EXITED);
+		if (ret) {
+			goto out;
 		}
 
 		if (p_ret)
@@ -280,9 +279,10 @@ int thread_join(struct thread *t, void **p_ret) {
 
 		thread_delete(t);
 	}
+out:
 	sched_unlock();
 
-	return 0;
+	return ret < 0 ? ret : 0;
 }
 
 int thread_detach(struct thread *t) {
@@ -290,12 +290,12 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!t->join_wq);
-		assert(!(t->state & __THREAD_STATE_DETACHED));
+		assert(!t->joining);
+		assert(!(t->state & TS_DETACHED));
 
-		if (!__THREAD_STATE_IS_EXITED(t->state))
+		if (!(t->state & TS_EXITED))
 			/* The target will free itself upon finishing. */
-			t->state |= __THREAD_STATE_DETACHED;
+			t->state |= TS_DETACHED;
 		else
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
@@ -306,28 +306,7 @@ int thread_detach(struct thread *t) {
 }
 
 int thread_launch(struct thread *t) {
-	int res = 0;
-
-	assert(t);
-
-	sched_lock();
-	{
-		if (t->state & (__THREAD_STATE_RUNNING | __THREAD_STATE_READY)) {
-			res = -EINVAL;
-			goto out;
-		}
-
-		if (__THREAD_STATE_IS_EXITED(t->state)) {
-			res = -ESRCH;
-			goto out;
-		}
-
-		sched_wake(t);
-	}
-out:
-	sched_unlock();
-
-	return res;
+	return sched_wakeup(t) ? 0 : -EINVAL;
 }
 
 int thread_terminate(struct thread *t) {
@@ -335,8 +314,9 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		sched_finish(t);
-		thread_delete(t);
+		// sched_finish(t);
+		// assert(0, "NIY");
+		// thread_delete(t);
 	}
 	sched_unlock();
 
@@ -348,7 +328,7 @@ void thread_yield(void) {
 }
 
 int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
-	sched_priority_t prior;
+	// sched_priority_t prior;
 
 	assert(t);
 	assert(t->task);
@@ -358,11 +338,14 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 		return -EINVAL;
 	}
 
-	prior = sched_priority_thread(t->task->priority, thread_priority_get(t));
-	if(new_priority != prior) {
-		prior = sched_priority_full(t->task->priority, new_priority);
-		sched_change_priority(t, prior);
-	}
+	// prior = sched_priority_thread(t->task->priority, thread_priority_get(t));
+	// if(new_priority != prior) {
+	// 	prior = sched_priority_full(t->task->priority, new_priority);
+	// 	sched_change_priority(t, prior);
+	// }
+
+ 	sched_change_priority(t, new_priority);
+
 
 	return 0;
 }
@@ -396,7 +379,6 @@ static int thread_core_init(void) {
 	id_counter = 0; /* start enumeration */
 
 	idle = idle_thread_create(); /* idle thread always has ID=0 */
-
 	current = boot_thread_create(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);

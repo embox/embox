@@ -54,6 +54,7 @@ typedef struct flash_block_info
 } flash_block_info_t;
 
 extern int flash_emu_dev_init(void *arg);
+extern int flash_emu_dev_create (struct node *bdev_node, /*const*/ char *flash_node_path);
 extern struct flash_dev *flash_create(char *path, size_t size);
 
 #endif /* FLASH_H_ */

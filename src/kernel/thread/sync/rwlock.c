@@ -45,9 +45,18 @@ static void do_up(rwlock_t *r, int status) {
 
 	sched_lock();
 	{
+		struct waitq_link wql;
+
+		waitq_link_init(&wql);
+
 		while (tryenter_sched_lock(r, status) != 0) {
-			waitq_wait_locked(&r->wq, SCHED_TIMEOUT_INFINITE);
+
+			waitq_wait_prepare(&r->wq, &wql);
+
+			sched_wait();
 		}
+
+		waitq_wait_cleanup(&r->wq, &wql);
 	}
 	sched_unlock();
 }
@@ -93,7 +102,7 @@ static void do_down(rwlock_t *r) {
 		r->count--;
 		if (r->count == 0) {
 			r->status = RWLOCK_STATUS_NONE;
-			waitq_notify_all(&r->wq);
+			waitq_wakeup_all(&r->wq);
 		}
 	}
 	sched_unlock();

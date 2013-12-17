@@ -178,9 +178,11 @@ static int pci_load(void) {
 }
 
 static int pci_init(void) {
-	if (-1 == pci_is_supported()) {
+#if 0 /* TODO */
+	if (0 == pci_check_type()) {
 		return 0;
 	}
+#endif
 	/* scan bus */
 	pci_scan_start();
 

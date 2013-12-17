@@ -346,6 +346,10 @@ static int jffs2_mount(struct nas *dir_nas) {
 		return ENOMEM;
 	}
 	memset(c->inocache_list, 0, sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
+
+	spin_init(&c->inocache_lock, __SPIN_UNLOCKED);
+	spin_init(&c->erase_completion_lock, __SPIN_UNLOCKED);
+
 	if (n_fs_mounted++ == 0) {
 		jffs2_create_slab_caches(); /* No error check, cannot fail */
 		jffs2_compressors_init();
@@ -1645,29 +1649,62 @@ static int jffs2fs_delete(struct node *node) {
 	return 0;
 }
 
+static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
+	char dev_node_path[PATH_MAX];
+
+	vfs_get_path_by_node(dev_node, dev_node_path);
+
+	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
+}
 
 static int jffs2fs_format(void *dev) {
+	struct node *dev_node = dev;
+	char flash_node_name[PATH_MAX];
 
-	return 0;
+	if (0 > jffs_flash_name(dev_node, flash_node_name)) {
+		return -ERANGE;
+	}
+
+	return flash_emu_dev_create(dev_node, flash_node_name);
+}
+
+static struct block_dev *jffs_bdev_by_node(struct node *dev_node, int *err) {
+	struct node_fi *dev_fi;
+	struct nas *dev_nas;
+
+	*err = 0;
+	dev_nas = dev_node->nas;
+
+	if (NULL == (dev_fi = dev_nas->fi)) {
+		*err = ENODEV;
+		return NULL;
+	}
+
+	return dev_fi->privdata;
+}
+
+static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
+	char flash_node_name[PATH_MAX];
+	struct node *flash_node;
+
+	jffs_flash_name(dev_node, flash_node_name);
+
+	if (NULL == (flash_node = vfs_lookup(NULL, flash_node_name))) {
+		return jffs_bdev_by_node(dev_node, err);
+	}
+
+	return jffs_bdev_by_node(flash_node, err);
 }
 
 static int jffs2fs_mount(void *dev, void *dir) {
 	int rc;
-	struct node *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
+	struct node *dir_node;
+	struct nas *dir_nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
-	struct node_fi *dev_fi;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = ENODEV;
-		return -rc;
-	}
 
 	if(NULL != vfs_get_child_next(dir_node)) {
 		return -ENOTEMPTY;
@@ -1678,7 +1715,9 @@ static int jffs2fs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-	dir_nas->fs->bdev = dev_fi->privdata;
+	if (NULL == (dir_nas->fs->bdev = jffs_get_flashdev(dev, &rc))) {
+		goto error;
+	}
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&jffs2_fs_pool))) {

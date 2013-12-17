@@ -183,8 +183,10 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 			tx_pack->icmph.un.echo.sequence = htons(++next_seq);
 			tx_pack->icmph.checksum = 0;
 			tx_pack->icmph.checksum = ptclbsum(tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size);
-			sendto(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0,
-					(struct sockaddr *)&to, sizeof to);
+			if (-1 == sendto(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0,
+					(struct sockaddr *)&to, sizeof to)) {
+				perror("ping: sendto() failure");
+			}
 			++cnt_req;
 			last_sent = clock();
 		}
@@ -194,7 +196,10 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		}
 
 		/* we don't need to get pad data, only header */
-		if (recv(sk, rx_pack, sizeof *rx_pack, 0) <= 0) {
+		if (-1 == recv(sk, rx_pack, sizeof *rx_pack, 0)) {
+			if (errno != EAGAIN) {
+				perror("ping: recv() failure");
+			}
 			continue;
 		}
 

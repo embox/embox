@@ -1,19 +1,15 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 21.06.2013
  * @author Anton Bondarev
  */
 
-#include <kernel/thread.h>
-
-#include <embox/unit.h>
-
-#include <mem/misc/pool.h>
-
 #include <kernel/thread/thread_alloc.h>
+
+#include <kernel/thread.h>
+#include <mem/misc/pool.h>
 
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
@@ -33,6 +29,7 @@ struct thread *thread_alloc(void) {
 	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
 		return NULL;
 	}
+	memset(block, 0x53, sizeof(*block));
 
 	t = &block->thread;
 
@@ -48,5 +45,7 @@ void thread_free(struct thread *t) {
 
 	// TODO may be this is not the best way... -- Eldar
 	block = member_cast_out(t, thread_pool_entry_t, thread);
+	memset(block, 0xa5, sizeof(*block));
+
 	pool_free(&thread_pool, block);
 }

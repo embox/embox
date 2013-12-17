@@ -19,7 +19,7 @@ EMBOX_CMD(exec);
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
-	printf("Usage: trace [-h] [-s] [-i <number>] [-d <number>] [-a <number>]\n");
+	printf("Usage: trace [-h] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
 }
 
 static void print_trace_block_stat(void) {
@@ -35,6 +35,24 @@ static void print_trace_block_stat(void) {
 				tb->count, tb->time,
 				(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
 				/* Converting from nanoseconds to seconds */
+		}
+		number++;
+	}
+
+	return;
+}
+
+static void print_entered_blocks(void) {
+	struct __trace_block *tb;
+	int number = 0;
+
+	printf("Currently entered blocks:\n\n");
+
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
+	{
+		if (tb->is_entered) {
+			printf("Trace block:%25s\nLocation:%28s, %40s:%d\n\n" , tb->name, tb->location.func,
+				tb->location.at.file, tb->location.at.line);
 		}
 		number++;
 	}
@@ -77,7 +95,9 @@ bool change_block_activity(int index, bool activity) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int index;
+	TRACE_BLOCK_DEF(this_is_block);
 
+	trace_block_enter(&this_is_block);
 	if (argc <= 1) {
 		print_usage();
 		return -EINVAL;
@@ -85,7 +105,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hsi:d:a:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -122,9 +142,14 @@ static int exec(int argc, char **argv) {
 				printf("Invalid command line option\n");
 			}
 			break;
+		case 'e':
+			print_entered_blocks();
+			break;
 		default:
 			break;
 		}
 	}
+
+	trace_block_leave(&this_is_block);
 	return 0;
 }

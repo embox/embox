@@ -8,17 +8,21 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <sys/ioctl.h>
+
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
+
 
 #include <fs/kfile.h>
-#include <stdio.h>
-#include <stddef.h>
+
 
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
@@ -132,23 +136,40 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	char *cbuff;
-	unsigned int addon = 0;
+	size_t cnt;
 
 	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
+	cnt = 0;
 	if (file->has_ungetc) {
 		file->has_ungetc = 0;
 		cbuff = buf;
 		cbuff[0] = (char)file->ungetc;
 		count --;
 		buf = &cbuff[1];
-		addon = 1;
+		cnt++;
+	}
+	while (cnt != count * size) {
+		int tmp = read(file->fd,  buf, size * count);
+		if (tmp == 0) {
+			break; /* errors */
+		}
+		cnt += tmp;
+	}
+	if (!(cnt % size)) {
+		/* try to revert some bytes */
+		fpos_t pos;
+
+		fgetpos(file, &pos);
+		pos -= cnt % size;
+		fsetpos(file, &pos);
+		cnt -= (cnt % size);
 	}
 
-	return (addon + read(file->fd,  buf, size * count));
+	return cnt / size;
 }
 
 int fclose(FILE *file) {

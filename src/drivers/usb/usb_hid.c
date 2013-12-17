@@ -95,7 +95,7 @@ static int usb_hid_stop(struct input_dev *indev) {
 	return 0;
 }
 
-const static struct input_dev_ops usb_hid_input_ops = {
+static const struct input_dev_ops usb_hid_input_ops = {
 	.start = usb_hid_start,
 	.stop = usb_hid_stop,
 	.event_get = usb_hid_event_get,

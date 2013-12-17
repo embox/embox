@@ -50,7 +50,7 @@ static int blinking_led(void) {
 	gpio_set_level(GPIO_C, LED_BLUE, 0x1);
 	gpio_set_level(GPIO_C, LED_GREEN, 0);
 
-	timer_init(&tmr, TIMER_PERIODIC, 1000, timer_hdn, (void *) &count);
+	timer_init_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, (void *) &count);
 
 	while (count) { } ;
 

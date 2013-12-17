@@ -92,7 +92,23 @@ TEST_CASE("All object should belong to pool") {
 	do_free(&my_pool, objects, MY_POOL_SZ);
 }
 
+TEST_CASE("Only objects from pool may belong to it") {
+	int i;
+	void *obj, *obj_end, *not_obj;
 
+	do_alloc(&my_pool, objects, MY_POOL_SZ);
+
+	for (i = 0; i < MY_POOL_SZ; ++i) {
+		obj = objects[i];
+		test_assert_true(pool_belong(&my_pool, obj));
+		obj_end = obj + my_pool.obj_size;
+		for (not_obj = obj + 1; not_obj < obj_end; ++not_obj) {
+			test_assert_false(pool_belong(&my_pool, not_obj));
+		}
+	}
+
+	do_free(&my_pool, objects, MY_POOL_SZ);
+}
 
 
 static void do_alloc(struct pool *pool, struct object *objects[], int nr) {

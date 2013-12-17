@@ -80,12 +80,19 @@ struct tftp_msg {
 #define TFTP_PROTOCOL   11	/* protocol violation */
 #define TFTP_TOOLARGE   12	/* file is larger than buffer */
 
-static int open_socket(int *out_sock) {
+static int open_socket(int *out_sock, struct sockaddr *sa,
+		socklen_t salen) {
 	int ret;
 
 	ret = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (ret < 0) {
-		fprintf(stderr, "Can't open socket\n");
+	if (ret == -1) {
+		perror("tftp: socket() failure");
+		return -errno;
+	}
+
+	if (-1 == connect(ret, sa, salen)) {
+		perror("tftp: connect() failure");
+		close(ret);
 		return -errno;
 	}
 
@@ -289,54 +296,50 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 	return !left_sz;
 }
 
-static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, int sock,
-		struct sockaddr *to_addr, socklen_t to_addr_len) {
-	int ret;
-
+static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len,
+		int sock) {
 	assert(msg_with_correct_len(msg, msg_len)); /* debug msg_with_correct_len */
 
-	ret = sendto(sock, (char *)msg, msg_len, 0, to_addr, to_addr_len);
-	if ((ret <= 0) || ((size_t)ret != msg_len)) {
-		fprintf(stderr, "Can't send data\n");
+	if (-1 == send(sock, (char *)msg, msg_len, 0)) {
+		perror("tftp: send() failure");
 		return -errno;
 	}
 
 	return 0;
 }
 
-static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, int sock,
-		struct sockaddr *from_addr, socklen_t *from_addr_len) {
-	int ret, times;
+static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len,
+		int sock) {
+	ssize_t ret;
 
-	times = 100;
-	do {
-		/* FIXME verifying remote side (using its address) */
-		ret = recvfrom(sock, (char *)msg, sizeof *msg, 0, from_addr, from_addr_len);
-		if (ret < 0) {
-			fprintf(stderr, "Can't recive data\n");
-			return -errno;
-		}
+	assert(msg_len != NULL);
 
-	} while (--times && ret <= 0);
+	ret = recv(sock, (char *)msg, sizeof *msg, 0);
+	if (ret == -1) {
+		perror("tftp: recv() failure");
+		return -errno;
+	}
 
-	*msg_len = (size_t)ret;
+	*msg_len = ret;
 
 	return 0;
 }
 
 static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 	int ret, sock;
-	struct sockaddr remote_addr;
+	struct sockaddr_storage remote_addr;
 	socklen_t remote_addr_len;
 	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
 	size_t snd_len, rcv_len;
 	uint16_t pkg_number;
 
-	ret = make_remote_addr(hostname, &remote_addr, &remote_addr_len);
+	ret = make_remote_addr(hostname,
+			(struct sockaddr *)&remote_addr, &remote_addr_len);
 	if (ret != 0) { sock = -1; fp = NULL; goto error; }
 
-	ret = open_socket(&sock);
+	ret = open_socket(&sock, (struct sockaddr *)&remote_addr,
+			remote_addr_len);
 	if (ret != 0) { sock = -1; fp = NULL; goto error; }
 
 	ret = open_file(filename, get_file_mode_r(binary_on), &fp);
@@ -352,8 +355,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 	while (1) {
 		/* receive reply */
-		remote_addr_len = sizeof remote_addr;
-		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock);
 		if (ret != 0) goto error;
 
 		/* check message length */
@@ -385,7 +387,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 send_msg:
 		/* send request / data */
-		ret = tftp_msg_send(&snd, snd_len, sock, &remote_addr, remote_addr_len);
+		ret = tftp_msg_send(&snd, snd_len, sock);
 		if (ret != 0) goto error;
 	}
 
@@ -407,17 +409,19 @@ error:
 
 static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 	int ret, sock;
-	struct sockaddr remote_addr;
+	struct sockaddr_storage remote_addr;
 	socklen_t remote_addr_len;
 	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
 	size_t snd_len, rcv_len, data_len;
 	uint16_t pkg_number;
 
-	ret = make_remote_addr(hostname, &remote_addr, &remote_addr_len);
+	ret = make_remote_addr(hostname,
+			(struct sockaddr *)&remote_addr, &remote_addr_len);
 	if (ret != 0) { sock = -1; fp = NULL; goto error; }
 
-	ret = open_socket(&sock);
+	ret = open_socket(&sock, (struct sockaddr *)&remote_addr,
+			remote_addr_len);
 	if (ret != 0) { sock = -1; fp = NULL; goto error; }
 
 	ret = open_file(filename, get_file_mode_w(binary_on), &fp);
@@ -433,8 +437,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 	do {
 		/* receive reply */
-		remote_addr_len = sizeof remote_addr;
-		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock);
 		if (ret != 0) goto error;
 
 		/* check message length */
@@ -465,7 +468,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 send_msg:
 		/* send request / ack */
-		ret = tftp_msg_send(&snd, snd_len, sock, &remote_addr, remote_addr_len);
+		ret = tftp_msg_send(&snd, snd_len, sock);
 		if (ret != 0) goto error;
 
 		/* whether we get more data? */

@@ -146,6 +146,7 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	if (data_len < msg->msg_iov->iov_len) {
+		skb_free(skb);
 		return -EMSGSIZE;
 	}
 

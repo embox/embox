@@ -33,16 +33,23 @@ struct utmp *getutent(void) {
 
 struct utmp *getutid(struct utmp *ut) {
 	int mode;
-	if (ut->ut_type == RUN_LVL
-			|| ut->ut_type == BOOT_TIME
-			|| ut->ut_type == NEW_TIME
-			|| ut->ut_type == OLD_TIME) {
+
+	switch (ut->ut_type) {
+	case RUN_LVL:
+	case BOOT_TIME:
+	case NEW_TIME:
+	case OLD_TIME:
 		mode = 0;
-	} else if (ut->ut_type == INIT_PROCESS
-			|| ut->ut_type == LOGIN_PROCESS
-			|| ut->ut_type == USER_PROCESS
-			|| ut->ut_type == DEAD_PROCESS) {
+		break;
+	case INIT_PROCESS:
+	case LOGIN_PROCESS:
+	case USER_PROCESS:
+	case DEAD_PROCESS:
 		mode = 1;
+		break;
+	default:
+		assert(0);
+		break;
 	}
 
 	while (utmp_f_pos < utmp_f_end) {

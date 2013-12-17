@@ -44,7 +44,7 @@ int statfs(const char *path, struct statfs *buf);
 
 #include <assert.h>
 #undef assert
-#define assert(x)
+#define assert(x, msg...)
 
 struct sockaddr_un {
     unsigned short sun_family;  /* AF_UNIX */
