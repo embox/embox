@@ -19,6 +19,7 @@ int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
 	assert(wl);
 
 	wl->iwq_masks = mask;
+	waitq_link_init(&wl->link);
 	waitq_wait_prepare(&i->idesc_waitq, &wl->link);
 
 	return 0;
