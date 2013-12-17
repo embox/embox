@@ -36,6 +36,7 @@ static inline void host_sigfillset(sigset_t *set) {
 	host_sigaddset(set, SIGUSR1);
 	host_sigaddset(set, SIGUSR2);
 	host_sigaddset(set, SIGALRM);
+	host_sigaddset(set, SIGIO);
 }
 
 static void host_signal_handler(int signal) {
