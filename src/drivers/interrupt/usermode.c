@@ -6,16 +6,11 @@
  * @date    07.03.2013
  */
 
-#include <errno.h>
-#include <stddef.h>
 #include <assert.h>
 #include <kernel/host.h>
 #include <kernel/critical.h>
-#include <hal/ipl.h>
 #include <kernel/irq.h>
 #include <drivers/irqctrl.h>
-
-#include <prom/prom_printf.h>
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 
