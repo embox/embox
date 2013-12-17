@@ -235,7 +235,7 @@ static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
 
 static int idesc_pipe_status(struct idesc *idesc, int mask) {
 	struct pipe *pipe;
-	int res = 0;
+	int res;
 
 	assert(idesc);
 
@@ -245,17 +245,32 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 	pipe = idesc_to_pipe(idesc);
 	assert(pipe);
 
-	if (mask == POLLIN) {
+	switch (mask) {
+	case POLLIN:
+		/* how many we can read */
+		return ring_buff_get_cnt(pipe->buff);
+	case POLLOUT:
+		/* how many we can write */
+		return pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+	case POLLERR:
+		/* is there any exeptions */
+		return 0;//TODO Where is errors counter
+	default:
+		res = 0;
+		break;
+	}
+
+	if (mask & POLLIN) {
 		/* how many we can read */
 		res += ring_buff_get_cnt(pipe->buff);
 	}
 
-	if (mask == POLLOUT) {
-		/* how many we can read */
+	if (mask & POLLOUT) {
+		/* how many we can write */
 		res += pipe->buf_size - ring_buff_get_cnt(pipe->buff);
 	}
 
-	if (mask == POLLERR) {
+	if (mask & POLLERR) {
 		/* is there any exeptions */
 		res += 0; //TODO Where is errors counter
 	}
