@@ -39,7 +39,7 @@ extern int idesc_wait_prepare(struct idesc *idesc, struct idesc_wait_link *wl,
  * @param wl
  * @param mask
  */
-extern int idesc_wait_prepare_wononblock(struct idesc *i,
+extern int idesc_wait_do_prepare(struct idesc *i,
 		struct idesc_wait_link *wl, int mask);
 /**
  * @brief Wait for events of specified mask occurred on idesc

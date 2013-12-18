@@ -75,7 +75,7 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
 		assert(idesc_poll->idesc);
-		idesc_wait_prepare_wononblock(idesc_poll->idesc,
+		idesc_wait_do_prepare(idesc_poll->idesc,
 				&idesc_poll->wait_link, idesc_poll->i_poll_mask);
 	}
 

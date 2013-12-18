@@ -14,7 +14,7 @@
 
 #include <fs/idesc_event.h>
 
-int idesc_wait_prepare_wononblock(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+int idesc_wait_do_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
 
 	assert(i);
 	assert(wl);
@@ -32,7 +32,7 @@ int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
 		return -EAGAIN;
 	}
 
-	return idesc_wait_prepare_wononblock(i, wl, mask);
+	return idesc_wait_do_prepare(i, wl, mask);
 }
 
 int idesc_notify(struct idesc *idesc, int mask) {
