@@ -19,9 +19,9 @@
 #include <kernel/work.h>
 
 static void pty_out_wake(struct tty *t) {
-	if (t->idesc) {
-		idesc_notify(t->idesc, POLLIN);
-	}
+	struct pty *pty = pty_from_tty(t);
+
+	idesc_notify(pty->master, POLLIN);
 }
 
 static inline int pty_tty_read(struct tty *t, char *buff, size_t size) {
@@ -75,9 +75,7 @@ size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
 				break;
 			}
 
-			//t->idesc = idesc;
 			ret = pty_wait(idesc, t, POLLIN | POLLERR);
-			//t->idesc = NULL;
 		} while (!ret);
 	}
 	work_enable(&t->rx_work);
@@ -95,22 +93,15 @@ size_t pty_write(struct pty *pt, const char *buff, size_t size) {
 	return buff - saved_buff;
 }
 
-void pty_notify(struct pty *pt) {
-	struct tty *t = pty_to_tty(pt);
-
-	pty_out_wake(t);
-
-}
-
 const struct tty_ops pty_ops = {
 	.out_wake = pty_out_wake,
 };
 
-struct pty *pty_init(struct pty *p, struct idesc *idesc) {
+struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 
-	p->tty.idesc = idesc;
 	tty_init(pty_to_tty(p), &pty_ops);
+	p->tty.idesc = slave;
+	p->master = master;
 
 	return p;
 }
-

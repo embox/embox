@@ -9,6 +9,7 @@
 #define IDESC_EVENT_H_
 
 #include <kernel/sched/waitq.h>
+#include <poll.h> /* for flags */
 
 /**
  * The same as struct wait_link link but have poll flags

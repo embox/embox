@@ -67,18 +67,13 @@ struct tty {
 	struct ring       rx_ring;
 	uint16_t          rx_buff[TTY_RX_BUFF_SZ]; /* flag (MSB) and char (LSB) */
 
-	struct event      i_event;
 	struct ring       i_ring;
 	char              i_buff[TTY_IO_BUFF_SZ];
 	struct ring       i_canon_ring; /* cooked range inside the ring buffer */
 
-	struct event      o_event;
 	struct ring       o_ring;
 	char              o_buff[TTY_IO_BUFF_SZ];
 	pid_t             pgrp; /* process group (TODO: lonely process now) */
-
-	//TODO this must be in file
-	uint32_t file_flags;
 };
 
 struct tty_ops {

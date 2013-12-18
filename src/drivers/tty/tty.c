@@ -19,6 +19,7 @@
 #include <kernel/irq_lock.h>
 #include <kernel/event.h>
 #include <kernel/work.h>
+#include <fs/idesc_event.h>
 
 #include <util/math.h>
 #include <util/member.h>
@@ -163,7 +164,8 @@ static int tty_rx_worker(struct work *w) {
 		irq_unlock();
 
 		if (tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT)))
-			event_notify(&t->i_event);
+			if (t->idesc)
+				idesc_notify(t->idesc, POLLIN);
 
 		irq_lock();
 	}
@@ -267,17 +269,24 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 
 static int tty_wait_input(struct tty *t, size_t input_sz,
 		unsigned long timeout) {
+	struct idesc_wait_link iwl;
 	int rc = 0;
 
-	/* TODO: Remove this while. */
-	while (input_sz > WORK_DISABLED_DO(&t->rx_work, ring_can_read(
-				&t->i_ring, TTY_IO_BUFF_SZ, input_sz))) {
-		rc = EVENT_WAIT(&t->i_event, (input_sz <= WORK_DISABLED_DO(&t->rx_work, ring_can_read(
-				&t->i_ring, TTY_IO_BUFF_SZ, input_sz))), timeout);
-		if (rc != 0) {
-			break;
-		}
+	assert(t->idesc);
+
+	work_disable(&t->rx_work);
+
+	rc = idesc_wait_prepare(t->idesc, &iwl, POLLIN | POLLERR);
+	if (!rc) {
+		work_enable(&t->rx_work);
+
+		rc = idesc_wait(t->idesc, POLLIN | POLLERR, timeout);
+		idesc_wait_cleanup(t->idesc, &iwl);
+
+		work_disable(&t->rx_work);
 	}
+
+	work_enable(&t->rx_work);
 
 	return rc;
 }
@@ -294,36 +303,16 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	curr = buff;
 	end = buff + size;
 
-	if (((vmin == 0) && (vtime == 0))
-			|| (t->file_flags & O_NONBLOCK)) {
-		/* tty in non-block mode */
+	if (((vmin == 0) && (vtime == 0))) {
 		size = 0;
 		timeout = 0;
-	}
-	else {
+	} else {
 		size = vtime == 0 ? min(size, vmin) : 1;
 		timeout = vmin > 0 ? EVENT_TIMEOUT_INFINITE
 				: vtime * 100; /* deciseconds to milliseconds */
-
-		rc = tty_wait_input(t, size, timeout);
-		if (rc == -ETIMEDOUT) {
-			return 0;
-		}
-		else if (rc == -EINTR) {
-			/* TODO then what? -- Eldar */
-			return 0;
-		}
-		else if (rc != 0) {
-			return rc;
-		}
-
-		if ((vmin > 0) && (vtime > 0)) {
-			size = end - buff;
-			timeout = vtime * 100;
-		}
 	}
 
-	while (1) {
+	do {
 		// mutex_lock(&t->lock);
 		work_disable(&t->rx_work);
 
@@ -340,28 +329,14 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		count = next - curr;
 		curr = next;
 		if (size <= count) {
+			rc = curr - buff;
 			break;
-		}
-		else {
-			/* ASSERT if tty in non-block mode */
-			assert(((vmin != 0) || (vtime != 0))
-					&& !(t->file_flags & O_NONBLOCK));
 		}
 		size -= count;
 
 		rc = tty_wait_input(t, size, timeout);
-		if (rc == -ETIMEDOUT) {
-			break;
-		}
-		else if (rc == -EINTR) {
-			return 0;
-		}
-		else if (rc != 0) {
-			return rc;
-		}
-	}
-
-	return curr - buff;
+	} while (!rc);
+	return rc;
 }
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
@@ -378,10 +353,10 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 			break;
 	}
 
-	softwork_post(&t->rx_work);
-
 	work_enable(&t->rx_work);
 	// mutex_unlock(&t->lock);
+
+	softwork_post(&t->rx_work);
 
 	return size - count;
 }
@@ -423,6 +398,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	assert(t && ops);
 
+	t->idesc = NULL;
 	t->ops = ops;
 
 	{
@@ -439,16 +415,13 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	work_init(&t->rx_work, tty_rx_worker, 0);
 	ring_init(&t->rx_ring);
 
-	event_init(&t->i_event, "tty input");
 	ring_init(&t->i_ring);
 	ring_init(&t->i_canon_ring);
 
-	event_init(&t->o_event, "tty output");
 	ring_init(&t->o_ring);
 
 	return t;
 }
-
 
 int tty_rx_enqueue(struct tty *t, char ch, unsigned char flag) {
 	uint16_t *slot = t->rx_buff + t->rx_ring.head;

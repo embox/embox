@@ -42,6 +42,7 @@ int serial_register_devfs(struct uart *dev) {
  */
 static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart *uart_dev = uart_dev_lookup(node->name);
+	int ret;
 
 	if (!uart_dev) {
 		return -ENOENT;
@@ -51,8 +52,13 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	desc->ops = &uart_dev_file_op;
 	desc->file_info = uart_dev;
 
-	return uart_open(uart_dev);
+	ret = uart_open(uart_dev);
+	if (ret) {
+		return ret;
+	}
 
+	uart_dev->tty.idesc = &desc->idesc;
+	return 0;
 }
 
 static int dev_uart_close(struct file_desc *desc) {
@@ -60,7 +66,6 @@ static int dev_uart_close(struct file_desc *desc) {
 
 	return uart_close(uart_dev);
 }
-
 
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 	struct uart *uart_dev = desc->file_info;
