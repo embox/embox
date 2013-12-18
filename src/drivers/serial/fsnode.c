@@ -20,16 +20,16 @@
 
 static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 	int flags);
-static int dev_uart_close(struct file_desc *desc);
-static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
-static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
+//static int dev_uart_close(struct file_desc *desc);
+//static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
+//static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
-	.close = dev_uart_close,
-	.read = dev_uart_read,
-	.write = dev_uart_write,
+	//.close = dev_uart_close,
+	//.read = dev_uart_read,
+	//.write = dev_uart_write,
 	.ioctl = dev_uart_ioctl
 };
 
@@ -63,7 +63,7 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	uart_dev->tty.idesc = &desc->idesc;
 	return 0;
 }
-
+#if 0
 static int dev_uart_close(struct file_desc *desc) {
 	struct uart *uart_dev = desc->file_info;
 
@@ -95,7 +95,7 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 
 	return size;
 }
-
+#endif
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 	va_list va;
 	void *data;

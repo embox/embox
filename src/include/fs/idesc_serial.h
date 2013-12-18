@@ -13,9 +13,10 @@
 
 struct idesc_serial {
 	struct idesc idesc;
-	struct uart uart;
+	struct uart *uart;
 };
 
-extern struct idesc *idesc_serial_create(struct node *node, const char *name);
+extern struct idesc *idesc_serial_create(struct uart *uart,
+		idesc_access_mode_t mod) ;
 
 #endif /* IDESC_SERIAL_H_ */
