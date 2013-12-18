@@ -20,13 +20,15 @@ int sock_wait(struct sock *sk, int flags, int timeout) {
 		timeout = SCHED_TIMEOUT_INFINITE;
 	}
 
-	idesc_wait_prepare(&sk->idesc, &wl, flags);
-	softirq_unlock();
+	res = idesc_wait_prepare(&sk->idesc, &wl, flags);
+	if (!res) {
+		softirq_unlock();
 
-	res = idesc_wait(&sk->idesc, flags, timeout);
-	softirq_lock();
+		res = idesc_wait(&sk->idesc, flags, timeout);
+		softirq_lock();
 
-	idesc_wait_cleanup(&sk->idesc, &wl);
+		idesc_wait_cleanup(&sk->idesc, &wl);
+	}
 
 	return res;
 }

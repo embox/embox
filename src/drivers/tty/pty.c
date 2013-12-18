@@ -49,13 +49,15 @@ static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 	struct idesc_wait_link wl;
 	int res;
 
-	idesc_wait_prepare(idesc, &wl, flags);
-	work_enable(&t->rx_work);
+	res = idesc_wait_prepare(idesc, &wl, flags);
+	if (!res) {
+		work_enable(&t->rx_work);
 
-	res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
+		res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
 
-	work_disable(&t->rx_work);
-	idesc_wait_cleanup(idesc, &wl);
+		work_disable(&t->rx_work);
+		idesc_wait_cleanup(idesc, &wl);
+	}
 	return res;
 }
 
