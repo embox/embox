@@ -86,6 +86,7 @@ extern struct tty *tty_init(struct tty *, const struct tty_ops *);
 extern size_t tty_read(struct tty *, char *, size_t);
 extern size_t tty_write(struct tty *, const char *, size_t);
 extern int tty_ioctl(struct tty *, int, void *);
+extern size_t tty_status(struct tty *t, int status_nr);
 
 /* TTY RX queue operations, must be explicitly IRQ-protected. */
 

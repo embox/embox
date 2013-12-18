@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include <err.h>
+#include <poll.h>
 
 #include <mem/misc/pool.h>
 #include <fs/idesc.h>
@@ -115,10 +116,40 @@ static int serial_ioctl(struct idesc *idesc, int request, void *data) {
 	return tty_ioctl(&uart->tty, request, data);
 }
 
+static int serial_status(struct idesc *idesc, int mask) {
+	struct uart *uart;
+	int res = 0;
+
+	assert(idesc);
+
+	if (!mask) {
+		return 0;
+	}
+	uart = idesc_to_uart(idesc);
+	assert(uart);
+
+	if (mask & POLLIN) {
+		/* how many we can read */
+		res += tty_status(&uart->tty, POLLIN);
+	}
+
+	if (mask & POLLOUT) {
+		/* how many we can write */
+		res += INT_MAX;
+	}
+
+	if (mask & POLLERR) {
+		/* is there any exeptions */
+		res += 0; //TODO Where is errors counter
+	}
+
+	return res;
+}
+
 static const struct idesc_ops idesc_serial_ops = {
 		.read = serial_read,
 		.write = serial_write,
 		.ioctl = serial_ioctl,
 		.close = serial_close,
-		//.status = uart_status
+		.status = serial_status
 };
