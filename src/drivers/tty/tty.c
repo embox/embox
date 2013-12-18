@@ -429,48 +429,26 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 
 size_t tty_status(struct tty *t, int status_nr) {
 	struct ring raw_ring;
-	size_t block_size, read_cnt = 0;
+	size_t block_size;
 
 	assert(status_nr == POLLIN);
 
 	/* not ICANON */
-	while ((block_size = ring_can_read(
-				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, INT_MAX))) {
-		read_cnt += block_size;
+	if ((block_size = ring_can_read(
+				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1))) {
+		return 1;
 	}
 
 	/* ICANON */
 	/* TODO serialize termios access with ioctl. -- Eldar */
 	if (TC_L(t, ICANON)) {
-		cc_t eol, eof;
-
-		eol = t->termios.c_cc[VEOL];
-		eof = t->termios.c_cc[VEOF];
-
-		while ((block_size = ring_can_read(
-					&t->i_canon_ring, TTY_IO_BUFF_SZ, INT_MAX))) {
-			const char *line_start = t->i_buff + t->i_canon_ring.tail;
-			size_t line_len;
-			int got_line;
-			int is_eof;
-
-			line_len = find_line_len(eol, eof, line_start, block_size, &is_eof);
-
-			got_line = (line_len < block_size);
-
-			if (got_line) {
-				if (!is_eof)  /* ...but EOF is discarded and not copied to user. */
-		 			++line_len;
-			}
-
-			read_cnt += line_len;
-
-			if (got_line)
-				break;
+		if((block_size = ring_can_read(
+					&t->i_canon_ring, TTY_IO_BUFF_SZ, 1))) {
+			return 1;
 		}
 	}
 
-	return read_cnt;
+	return 0;
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
