@@ -576,9 +576,14 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Save new socket to accept queue */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
+			struct sock *sk;
+			sk = to_sock(tcp_sk);
 			tcp_newsk->parent = tcp_sk;
 			list_add_tail(&tcp_newsk->conn_wait, &tcp_sk->conn_wait);
-			idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN);
+
+			//FIXME tcp_accept must notify without rx_data_len
+			sk->rx_data_len++;
+			idesc_notify(&sk->idesc, POLLIN);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 

@@ -311,7 +311,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 
 		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
-
+		sk->rx_data_len--;
 		*newsk = to_sock(tcp_newsk);
 
 		return 0;
