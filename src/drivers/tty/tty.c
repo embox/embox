@@ -429,7 +429,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 
 size_t tty_status(struct tty *t, int status_nr) {
 	struct ring raw_ring;
-	size_t block_size, read_cnt;
+	size_t block_size, read_cnt = 0;
 
 	assert(status_nr == POLLIN);
 
