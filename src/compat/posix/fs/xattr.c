@@ -12,6 +12,7 @@
 #include <fs/perm.h>
 #include <security/security.h>
 #include <fs/index_descriptor.h>
+#include <fs/idesc.h>
 
 #include <sys/xattr.h>
 

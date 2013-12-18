@@ -6,9 +6,7 @@
  */
 #include <poll.h>
 
-//#include <kernel/task.h>
 #include <kernel/sched/waitq.h>
-//#include <kernel/task/idx.h>
 
 #include <fs/idesc.h>
 #include <fs/poll_table.h>

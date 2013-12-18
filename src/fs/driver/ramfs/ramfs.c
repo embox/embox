@@ -22,12 +22,17 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
+#include <fs/file_system.h>
+#include <fs/file_desc.h>
+#include <fs/file_operation.h>
+
 #include <err.h>
 
 #include <embox/unit.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
-#include <fs/file_system.h>
+
+
 
 
 /* ramfs filesystem description pool */

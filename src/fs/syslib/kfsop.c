@@ -23,6 +23,8 @@
 #include <fs/kfsop.h>
 #include <fs/perm.h>
 #include <fs/flags.h>
+#include <fs/file_desc.h>
+//#include <fs/file_operation.h>
 
 #include <security/security.h>
 

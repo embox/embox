@@ -15,16 +15,19 @@
 #include <errno.h>
 #include <unistd.h>
 #include <cpio.h>
+#include <stdarg.h>
+#include <limits.h>
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
+#include <fs/file_operation.h>
 
 #include <mem/misc/pool.h>
 #include <kernel/printk.h>
 #include <util/array.h>
 #include <embox/unit.h>
-#include <limits.h>
+
 
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */

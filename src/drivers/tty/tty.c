@@ -344,17 +344,16 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	extern void softwork_post(struct work *w);
 	size_t count;
 
-	// mutex_lock(&t->lock);
 	work_disable(&t->rx_work);
 
 	for (count = size; count > 0; count --) {
 		// TODO handle output buffer overflow
-		if (!tty_output(t, *buff++))
+		if (!tty_output(t, *buff++)) {
 			break;
+		}
 	}
 
 	work_enable(&t->rx_work);
-	// mutex_unlock(&t->lock);
 
 	softwork_post(&t->rx_work);
 
@@ -375,7 +374,6 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 	case TIOCSETA:
 		memcpy(&t->termios, data, sizeof(struct termios));
 		if (!TC_L(t,ICANON)) {
-
 			t->i_canon_ring.tail = t->i_canon_ring.head = t->i_ring.head;
 		}
 		break;

@@ -14,14 +14,14 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <unistd.h>
-
+#include <stdio.h>
+#include <termios.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <embox/cmd.h>
-#include <stdio.h>
+
 #include <util/ring_buff.h>
 
-#include <termios.h>
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
