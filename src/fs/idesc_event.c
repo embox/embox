@@ -14,7 +14,8 @@
 
 #include <fs/idesc_event.h>
 
-int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+int idesc_wait_prepare_wononblock(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+
 	assert(i);
 	assert(wl);
 
@@ -25,12 +26,25 @@ int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
 	return 0;
 }
 
+int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+
+	if (i->idesc_flags & O_NONBLOCK) {
+		return -EAGAIN;
+	}
+
+	return idesc_wait_prepare_wononblock(i, wl, mask);
+}
+
 int idesc_notify(struct idesc *idesc, int mask) {
 
 	//TODO MASK
 	waitq_wakeup(&idesc->idesc_waitq, 0);
 
 	return 0;
+}
+
+void idesc_wait_cleanup(struct idesc *i, struct idesc_wait_link *wl) {
+	waitq_wait_cleanup(&i->idesc_waitq, &wl->link);
 }
 
 int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
@@ -46,14 +60,3 @@ int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
 	return ret;
 }
 
-void idesc_wait_cleanup(struct idesc *i, struct idesc_wait_link *wl) {
-//	struct thread *current_thd = thread_self();
-
-//	assert(current_thd->wait_link == &wl->link);
-
-	/* clean up current thread waitq. WAITING guaranted to cleared,
- 	 * thread's wait_link removed from waitq
-	 */
-	//__waitq_cleanup();
-	waitq_wait_cleanup(&i->idesc_waitq, &wl->link);
-}
