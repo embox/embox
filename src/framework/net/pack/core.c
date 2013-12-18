@@ -12,8 +12,6 @@
 #include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct net_pack, __net_pack_registry);
-ARRAY_SPREAD_DEF(const struct net_pack_out,
-		__net_pack_out_registry);
 
 const struct net_pack * net_pack_lookup(unsigned short type) {
 	const struct net_pack *npack;
@@ -21,19 +19,6 @@ const struct net_pack * net_pack_lookup(unsigned short type) {
 	net_pack_foreach(npack) {
 		if (npack->type == type) {
 			return npack;
-		}
-	}
-
-	return NULL;
-}
-
-const struct net_pack_out * net_pack_out_lookup(
-		int family) {
-	const struct net_pack_out *npout;
-
-	net_pack_out_foreach(npout) {
-		if (npout->family == family) {
-			return npout;
 		}
 	}
 

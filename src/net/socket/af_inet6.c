@@ -21,6 +21,7 @@
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
+#include <net/l3/ipv6.h>
 
 #include <net/socket/inet6_sock.h>
 
@@ -38,7 +39,7 @@ static const struct net_family_type inet6_types[] = {
 	{ SOCK_RAW, &inet6_raw_ops }
 };
 
-EMBOX_NET_FAMILY(AF_INET6, inet6_types);
+EMBOX_NET_FAMILY(AF_INET6, inet6_types, ip6_out_ops);
 
 static int inet6_init(struct sock *sk) {
 	struct inet6_sock *in6_sk;
