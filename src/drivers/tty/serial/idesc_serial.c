@@ -90,21 +90,35 @@ static int serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 
 static int serial_close(struct idesc *idesc) {
 	struct uart *uart;
+	int res;
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_serial_ops);
 
+	uart = idesc_to_uart(idesc);
+	assert(uart);
+	res = uart_close(uart);
+
+	pool_free(&pool_serials, idesc);
+
+	return res;
+}
+
+static int serial_ioctl(struct idesc *idesc, int request, void *data) {
+	struct uart *uart;
 
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
 
 	uart = idesc_to_uart(idesc);
 	assert(uart);
-	pool_free(&pool_serials, idesc);
 
-	return uart_close(uart);
+	return tty_ioctl(&uart->tty, request, data);
 }
 
 static const struct idesc_ops idesc_serial_ops = {
 		.read = serial_read,
 		.write = serial_write,
+		.ioctl = serial_ioctl,
 		.close = serial_close,
 		//.status = uart_status
 };

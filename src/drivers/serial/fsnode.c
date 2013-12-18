@@ -23,14 +23,14 @@ static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 //static int dev_uart_close(struct file_desc *desc);
 //static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 //static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
-static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
+//static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
 	//.close = dev_uart_close,
 	//.read = dev_uart_read,
 	//.write = dev_uart_write,
-	.ioctl = dev_uart_ioctl
+	//.ioctl = dev_uart_ioctl
 };
 
 int serial_register_devfs(struct uart *dev) {
@@ -95,7 +95,7 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 
 	return size;
 }
-#endif
+
 static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 	va_list va;
 	void *data;
@@ -107,4 +107,4 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
 
 	return tty_ioctl(&uart_dev->tty, request, data);
 }
-
+#endif
