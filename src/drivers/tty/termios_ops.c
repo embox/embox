@@ -22,11 +22,16 @@ static int tio_putc(char ch, struct ring *ring, char *buf, size_t buflen) {
 }
 
 int termios_putc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
-	if (TIO_L(t, ICANON) && TIO_O(t, ONLCR) && ch == '\n')
-		if (!tio_putc('\r', ring, buf, buflen))
-			return 0;
+	int res = 0;
 
-	return tio_putc(ch, ring, buf, buflen);
+	if (TIO_L(t, ICANON) && TIO_O(t, ONLCR) && ch == '\n') {
+		if (2 > ring_room_size(ring, buflen)) {
+			return 0;
+		}
+		res += tio_putc('\r', ring, buf, buflen);
+	}
+
+	return res + tio_putc(ch, ring, buf, buflen);
 }
 
 int termios_gotc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {

@@ -173,6 +173,8 @@ static int tty_rx_worker(struct work *w) {
 	irq_unlock();
 
 	t->ops->out_wake(t);
+	if (t->idesc)
+		idesc_notify(t->idesc, POLLOUT);
 
 	return 1;
 }
@@ -339,24 +341,56 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	return rc;
 }
 
+/* Called with rx_post disabled */
+static int tty_blockin_output(struct tty *t, char ch) {
+	extern void softwork_post(struct work *w);
+	struct idesc_wait_link iwl;
+	int ret;
+
+	do {
+		if (tty_output(t, ch)) {
+			ret = 0;
+			break;
+		}
+
+		if (!t->idesc) {
+			ret = -EBADF;
+			break;
+		}
+
+		ret = idesc_wait_prepare(t->idesc, &iwl, POLLOUT | POLLERR);
+		if (!ret) {
+			work_enable(&t->rx_work);
+			softwork_post(&t->rx_work);
+
+			ret = idesc_wait(t->idesc, POLLOUT | POLLERR, SCHED_TIMEOUT_INFINITE);
+
+			work_disable(&t->rx_work);
+			idesc_wait_cleanup(t->idesc, &iwl);
+		}
+	} while (!ret);
+
+	return ret;
+}
+
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
-	/* FIXME: */
 	extern void softwork_post(struct work *w);
 	size_t count;
+	int ret;
 
 	work_disable(&t->rx_work);
 
-	for (count = size; count > 0; count --) {
-		// TODO handle output buffer overflow
-		if (!tty_output(t, *buff++)) {
+	for (count = size; count > 0; count--, buff++)
+		if ((ret = tty_blockin_output(t, *buff)))
 			break;
-		}
-	}
 
 	work_enable(&t->rx_work);
 
 	softwork_post(&t->rx_work);
 
+	if (!(size - count)) {
+		return ret;
+	}
 	return size - count;
 }
 
