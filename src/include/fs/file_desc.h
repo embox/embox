@@ -11,14 +11,11 @@
 
 
 #include <stddef.h>
-//#include <kernel/task/io_sync.h>
 #include <fs/idesc.h>
 
 
-//#define FS_MAY_APPEND  (0x1 << 3)
 struct node;
 struct kfile_operations;
-
 
 struct file_desc {
 	struct idesc idesc;
@@ -31,8 +28,6 @@ struct file_desc {
  *  example
  */
 	void *file_info; /* customize in each file system */
-
-	//struct io_sync ios;
 };
 
 

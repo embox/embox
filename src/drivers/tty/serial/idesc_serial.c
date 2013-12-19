@@ -20,26 +20,30 @@
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
-POOL_DEF(pool_serials, struct idesc_serial, MAX_SERIALS);
+//POOL_DEF(pool_serials, struct idesc_serial, MAX_SERIALS);
 
-#define idesc_to_uart(desc) (((struct idesc_serial *) desc)->uart)
+#define idesc_to_uart(desc) \
+	(((struct file_desc *)desc)->file_info)
 
 static const struct idesc_ops idesc_serial_ops;
 
-struct idesc *idesc_serial_create(struct uart *uart, idesc_access_mode_t mod) {
-	struct idesc_serial *idesc;
+struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
+		idesc_access_mode_t mod) {
+	//struct idesc_serial *idesc;
 
 	assert(uart);
 	assert(mod);
 
-	idesc = pool_alloc(&pool_serials);
-	if (idesc) {
-		err_ptr(-ENOMEM);
-	}
-	idesc_init(&idesc->idesc, &idesc_serial_ops, mod);
-	idesc->uart = uart;
+	//idesc = pool_alloc(&pool_serials);
+//	if (idesc) {
+//		err_ptr(-ENOMEM);
+//	}
+	//idesc_init(&idesc->idesc, &idesc_serial_ops, mod);
+	//idesc->uart = uart;
 
-	return &idesc->idesc;
+	//return &idesc->idesc;
+	fdesc->idesc.idesc_ops = &idesc_serial_ops;
+	return &fdesc->idesc;
 }
 
 static int serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
@@ -92,6 +96,7 @@ static int serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 static int serial_close(struct idesc *idesc) {
 	struct uart *uart;
 	int res;
+
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
 
@@ -99,7 +104,8 @@ static int serial_close(struct idesc *idesc) {
 	assert(uart);
 	res = uart_close(uart);
 
-	pool_free(&pool_serials, idesc);
+	//pool_free(&pool_serials, idesc);
+	file_desc_destroy((struct file_desc *)idesc);
 
 	return res;
 }

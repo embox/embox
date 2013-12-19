@@ -12,6 +12,7 @@
 #include <drivers/uart_device.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <fs/idesc_serial.h>
 #include <fs/node.h>
 
 #include <embox/device.h> //XXX
@@ -45,6 +46,7 @@ int serial_register_devfs(struct uart *dev) {
  */
 static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart *uart_dev = uart_dev_lookup(node->name);
+	//void *idesc;
 	int ret;
 
 	if (!uart_dev) {
@@ -61,6 +63,8 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	}
 
 	uart_dev->tty.idesc = &desc->idesc;
+	idesc_serial_create(desc, uart_dev, flags);
+
 	return 0;
 }
 #if 0

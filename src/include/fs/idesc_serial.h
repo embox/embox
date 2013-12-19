@@ -10,13 +10,15 @@
 
 #include <fs/idesc.h>
 #include <drivers/uart_device.h>
-
+#include <fs/file_desc.h>
+#if 0
 struct idesc_serial {
-	struct idesc idesc;
+	//struct idesc idesc;
+	struct file_desc *fdesc;
 	struct uart *uart;
 };
-
-extern struct idesc *idesc_serial_create(struct uart *uart,
-		idesc_access_mode_t mod) ;
+#endif
+extern struct idesc *idesc_serial_create(struct file_desc *fdesc,
+		struct uart *uart, idesc_access_mode_t mod) ;
 
 #endif /* IDESC_SERIAL_H_ */
