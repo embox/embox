@@ -13,36 +13,13 @@
 #include <util/member.h>
 
 #include <kernel/sched.h>
-//#include <kernel/event.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
-#include <kernel/work.h>
 
 static void pty_out_wake(struct tty *t) {
 	struct pty *pty = pty_from_tty(t);
 
 	idesc_notify(pty->master, POLLIN);
-}
-
-static inline int pty_tty_read(struct tty *t, char *buff, size_t size) {
-	size_t block_size;
-
-	while ((block_size = ring_can_read(&t->o_ring, TTY_IO_BUFF_SZ, size))) {
-		const char *block = t->o_buff + t->o_ring.tail;
-
-		work_enable(&t->rx_work);
-
-		memcpy(buff, block, block_size);
-		buff += block_size;
-		size -= block_size;
-
-		work_disable(&t->rx_work);
-
-		ring_just_read(&t->o_ring, TTY_IO_BUFF_SZ, block_size);
-		return block_size;
-	}
-
-	return block_size;
 }
 
 static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
@@ -51,11 +28,12 @@ static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 
 	res = idesc_wait_prepare(idesc, &wl, flags);
 	if (!res) {
-		work_enable(&t->rx_work);
+		mutex_unlock(&t->lock);
 
 		res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
 
-		work_disable(&t->rx_work);
+		mutex_lock(&t->lock);
+
 		idesc_wait_cleanup(idesc, &wl);
 	}
 	return res;
@@ -66,10 +44,10 @@ size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
 	size_t block_size;
 	int ret;
 
-	work_disable(&t->rx_work);
+	mutex_lock(&t->lock);
 	{
 		do {
-			block_size = pty_tty_read(t, buff, size);
+			block_size = tty_out_buf(t, buff, size);
 			if (block_size) {
 				ret = block_size;
 				break;
@@ -78,7 +56,7 @@ size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
 			ret = pty_wait(idesc, t, POLLIN | POLLERR);
 		} while (!ret);
 	}
-	work_enable(&t->rx_work);
+	mutex_unlock(&t->lock);
 
 	return ret;
 }

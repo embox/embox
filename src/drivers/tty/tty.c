@@ -17,8 +17,6 @@
 #include <fcntl.h>
 
 #include <kernel/irq_lock.h>
-#include <kernel/event.h>
-#include <kernel/work.h>
 #include <fs/idesc_event.h>
 
 #include <util/math.h>
@@ -31,7 +29,12 @@
 
 extern void tty_task_break_check(struct tty *t, char ch);
 
-/* Called in worker-protected context. */
+static inline void tty_notify(struct tty *t, int mask) {
+	assert(t);
+	if (t->idesc)
+		idesc_notify(t->idesc, mask);
+}
+
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
 	return termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
@@ -82,7 +85,6 @@ static struct ring *tty_edit_ring(struct tty *t, struct ring *r) {
 	return r;
 }
 
-/* Called in worker context. */
 static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	cc_t *cc = t->termios.c_cc;
 	int ignore_cr;
@@ -127,8 +129,6 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 		}
 	}
 
-	tty_task_break_check(t, ch);
-
 	/* Finally, store and echo the char.
 	 *
 	 * When i_ring is near to become full, only raw or a line ending chars are
@@ -153,39 +153,16 @@ done:
 	return got_data;
 }
 
-static int tty_rx_worker(struct work *w) {
-	struct tty *t = member_cast_out(w, struct tty, rx_work);
+static void tty_rx_do(struct tty *t) {
 	int ich;
 
-	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
-
-	irq_lock();
 	while ((ich = tty_rx_dequeue(t)) != -1) {
 		irq_unlock();
-
-		if (tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT)))
-			if (t->idesc)
-				idesc_notify(t->idesc, POLLIN);
-
+		tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT));
 		irq_lock();
 	}
-	//work_pending_reset(w);
-	irq_unlock();
-
-	t->ops->out_wake(t);
-	if (t->idesc)
-		idesc_notify(t->idesc, POLLOUT);
-
-	return 1;
 }
 
-void tty_post_rx(struct tty *t) {
-	/* FIXME: */
-	extern void softwork_post(struct work *w);
-	softwork_post(&t->rx_work);
-}
-
-/* Must only be called with rx_work disabled */
 static char *tty_read_raw(struct tty *t, char *buff, char *end) {
 	struct ring raw_ring;
 	size_t block_size;
@@ -193,13 +170,9 @@ static char *tty_read_raw(struct tty *t, char *buff, char *end) {
 	while ((block_size = ring_can_read(
 				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
 
-		work_enable(&t->rx_work);
-
 		/* No processing is required to read raw data. */
 		memcpy(buff, t->i_buff + raw_ring.tail, block_size);
 		buff += block_size;
-
-		work_disable(&t->rx_work);
 
 		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
 	}
@@ -208,8 +181,8 @@ static char *tty_read_raw(struct tty *t, char *buff, char *end) {
 }
 
 static size_t find_line_len(cc_t eol, cc_t eof,
-		const char *buff, size_t size, int *is_eof) {
-	size_t offset = 0;
+		const char *buff, ssize_t size, int *is_eof) {
+	int offset = -1;
 
 	*is_eof = 0;
 	for (; offset < size; ++offset) {
@@ -223,7 +196,6 @@ static size_t find_line_len(cc_t eol, cc_t eof,
 	return offset;
 }
 
-/* Must only be called with rx_work disabled */
 static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 	cc_t eol, eof;
 	size_t block_size;
@@ -240,8 +212,6 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 		int got_line;
 		int is_eof;
 
-		work_enable(&t->rx_work);
-
 		line_len = find_line_len(eol, eof, line_start, block_size, &is_eof);
 
 		got_line = (line_len < block_size);
@@ -257,8 +227,6 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 		memcpy(buff, line_start, line_len);
 		buff += line_len;
 
-		work_disable(&t->rx_work);
-
 		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
 		ring_just_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, block_size);
 
@@ -269,31 +237,8 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 	return buff;
 }
 
-static int tty_wait_input(struct tty *t, size_t input_sz,
-		unsigned long timeout) {
-	struct idesc_wait_link iwl;
-	int rc = 0;
-
-	assert(t->idesc);
-
-	work_disable(&t->rx_work);
-
-	rc = idesc_wait_prepare(t->idesc, &iwl, POLLIN | POLLERR);
-	if (!rc) {
-		work_enable(&t->rx_work);
-
-		rc = idesc_wait(t->idesc, POLLIN | POLLERR, timeout);
-		idesc_wait_cleanup(t->idesc, &iwl);
-
-		work_disable(&t->rx_work);
-	}
-
-	work_enable(&t->rx_work);
-
-	return rc;
-}
-
 size_t tty_read(struct tty *t, char *buff, size_t size) {
+	struct idesc_wait_link iwl;
 	int rc;
 	cc_t vmin, vtime;
 	char *curr, *next, *end;
@@ -314,9 +259,14 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 				: vtime * 100; /* deciseconds to milliseconds */
 	}
 
+	mutex_lock(&t->lock);
 	do {
-		// mutex_lock(&t->lock);
-		work_disable(&t->rx_work);
+		irq_lock();
+		{
+			tty_rx_do(t);
+			rc = idesc_wait_prepare(t->idesc, &iwl, POLLIN | POLLERR);
+		}
+		irq_unlock();
 
 		next = tty_read_raw(t, curr, end);
 
@@ -325,25 +275,34 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 			next = tty_read_cooked(t, next, end);
 		}
 
-		work_enable(&t->rx_work);
-		// mutex_unlock(&t->lock);
-
 		count = next - curr;
 		curr = next;
 		if (size <= count) {
+			if (!rc) {
+				idesc_wait_cleanup(t->idesc, &iwl);
+			}
 			rc = curr - buff;
 			break;
 		}
 		size -= count;
 
-		rc = tty_wait_input(t, size, timeout);
+		if (!rc) {
+			mutex_unlock(&t->lock);
+
+			rc = idesc_wait(t->idesc, POLLIN | POLLERR, timeout);
+
+			mutex_lock(&t->lock);
+
+			idesc_wait_cleanup(t->idesc, &iwl);
+		}
 	} while (!rc);
+	mutex_unlock(&t->lock);
+
 	return rc;
 }
 
 /* Called with rx_post disabled */
 static int tty_blockin_output(struct tty *t, char ch) {
-	extern void softwork_post(struct work *w);
 	struct idesc_wait_link iwl;
 	int ret;
 
@@ -360,12 +319,14 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 		ret = idesc_wait_prepare(t->idesc, &iwl, POLLOUT | POLLERR);
 		if (!ret) {
-			work_enable(&t->rx_work);
-			softwork_post(&t->rx_work);
+			mutex_unlock(&t->lock);
+
+			t->ops->out_wake(t);
 
 			ret = idesc_wait(t->idesc, POLLOUT | POLLERR, SCHED_TIMEOUT_INFINITE);
 
-			work_disable(&t->rx_work);
+			mutex_lock(&t->lock);
+
 			idesc_wait_cleanup(t->idesc, &iwl);
 		}
 	} while (!ret);
@@ -374,19 +335,18 @@ static int tty_blockin_output(struct tty *t, char ch) {
 }
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
-	extern void softwork_post(struct work *w);
 	size_t count;
 	int ret;
 
-	work_disable(&t->rx_work);
+	mutex_lock(&t->lock);
 
 	for (count = size; count > 0; count--, buff++)
 		if ((ret = tty_blockin_output(t, *buff)))
 			break;
 
-	work_enable(&t->rx_work);
+	mutex_unlock(&t->lock);
 
-	softwork_post(&t->rx_work);
+	t->ops->out_wake(t);
 
 	if (!(size - count)) {
 		return ret;
@@ -397,7 +357,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 int tty_ioctl(struct tty *t, int request, void *data) {
 	int ret = 0;
 
-	// mutex_lock(&t->lock);
+	mutex_lock(&t->lock);
 
 	switch (request) {
 	case TIOCGETA:
@@ -422,7 +382,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 		break;
 	}
 
-	// mutex_unlock(&t->lock);
+	mutex_unlock(&t->lock);
 
 	return ret;
 }
@@ -468,7 +428,8 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 		termios->c_lflag = TTY_TERMIOS_LFLAG_INIT;
 	}
 
-	work_init(&t->rx_work, tty_rx_worker, 0);
+	mutex_init(&t->lock);
+
 	ring_init(&t->rx_ring);
 
 	ring_init(&t->i_ring);
@@ -479,15 +440,26 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	return t;
 }
 
-int tty_rx_enqueue(struct tty *t, char ch, unsigned char flag) {
+int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
 	uint16_t *slot = t->rx_buff + t->rx_ring.head;
+
+	/* Some input must be processed immediatly, like Ctrl-C.
+	 * All other data will be stored as unprocecessed (raw) data
+	 * and will be processed only at tty_read (if called)
+	 */
+
+	tty_task_break_check(t, ch);
 
 	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
 		return -1;
 
 	*slot = (flag<<CHAR_BIT) | (unsigned char) ch;
+
+	tty_notify(t, POLLIN);
+
 	return 0;
 }
+
 
 int tty_rx_dequeue(struct tty *t) {
 	uint16_t *slot = t->rx_buff + t->rx_ring.tail;
@@ -498,4 +470,23 @@ int tty_rx_dequeue(struct tty *t) {
 	return (int) *slot;
 }
 
+int tty_out_getc(struct tty *t) {
+	char ch;
+	/* TODO Locks */
+	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1))
+		return -1;
 
+	tty_notify(t, POLLOUT);
+
+	return (int) ch;
+}
+
+int tty_out_buf(struct tty *t, void *buf, size_t len) {
+	int ret;
+
+	ret = ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, buf, len);
+
+	tty_notify(t, POLLOUT);
+
+	return ret;
+}
