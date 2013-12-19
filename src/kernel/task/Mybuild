@@ -96,7 +96,7 @@ module u_area {
 }
 
 module io_sync {
-	source "io_sync.c"
+//	source "io_sync.c"
 
 	depends embox.kernel.manual_event_api
 	depends embox.kernel.event_api
