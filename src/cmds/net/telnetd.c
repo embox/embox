@@ -258,7 +258,6 @@ static void *telnet_thread_handler(void* args) {
 
 	/* Preparations for select call */
 	nfds = max(sock, pptyfd[0]) + 1;
-	//nfds = max(pptyfd[0], nfds) + 1;
 
 	timeout.tv_sec = 100;
 	timeout.tv_usec = 0;
@@ -303,7 +302,7 @@ static void *telnet_thread_handler(void* args) {
 			continue;
 		}
 
-		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
+		if (FD_ISSET(sock, &writefds)) {
 			if ((len = write(sock, p, pipe_data_len)) > 0) {
 				pipe_data_len -= len;
 				p += len;
@@ -311,7 +310,9 @@ static void *telnet_thread_handler(void* args) {
 			else {
 				MD(printf("write on sock: %d %d\n", len, errno));
 			}
-		} else if (FD_ISSET(pptyfd[0], &readfds)){
+		}
+
+		if (FD_ISSET(pptyfd[0], &readfds)){
 			p = pbuff;
 			pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN);
 			if (pipe_data_len <= 0) {
@@ -319,7 +320,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 		}
 
-		if ((sock_data_len > 0) && FD_ISSET(pptyfd[0], &writefds)) {
+		if (FD_ISSET(pptyfd[0], &writefds)) {
 			if ((len = write(pptyfd[0], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
@@ -329,7 +330,9 @@ static void *telnet_thread_handler(void* args) {
 					goto kill_and_out; /* this means that pipe was closed by shell */
 				}
 			}
-		} else if (FD_ISSET(sock, &readfds)){
+		}
+
+		if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, XBUFF_LEN);
 			if (sock_data_len <= 0) {
