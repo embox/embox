@@ -317,6 +317,7 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
+		sched_freeze(t);
 	}
 	sched_unlock();
 

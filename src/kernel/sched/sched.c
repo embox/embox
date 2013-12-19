@@ -130,6 +130,25 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	return 0;
 }
 
+void sched_freeze(struct thread *t) {
+	ipl_t ipl;
+	int in_rq;
+
+	assert(t);
+
+	ipl = spin_lock_ipl(&rq.lock);
+	in_rq = t->ready && !sched_active(t);
+
+	if (in_rq)
+		__sched_dequeue(t);
+
+	t->active = false;
+	t->ready = false;
+	t->waiting = false;
+
+	spin_unlock_ipl(&rq.lock, ipl);
+}
+
 /*
  * Managing waiting state of a thread
  *
