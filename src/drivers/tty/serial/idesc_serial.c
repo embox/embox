@@ -152,10 +152,20 @@ static int serial_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
+static int serial_fstat(struct idesc *data, void *buff) {
+	struct stat *st = buff;
+
+	st->st_mode = S_IFCHR;
+
+	return 0;
+
+}
+
 static const struct idesc_ops idesc_serial_ops = {
 		.read = serial_read,
 		.write = serial_write,
 		.ioctl = serial_ioctl,
 		.close = serial_close,
-		.status = serial_status
+		.status = serial_status,
+		.fstat = serial_fstat,
 };
