@@ -181,12 +181,12 @@ extern size_t ring_write(struct ring *r, size_t r_size, size_t write_size);
  * handling all available data/room, even wrapped.
  */
 
-/** @return How many bytes were read without wrapping. */
+/** @return How many bytes were read */
 extern size_t ring_read_all_into(struct ring *r,
 		const char *r_buff, size_t r_size,
 		char *into_buff, size_t read_size);
 
-/** @return How many bytes were written without wrapping. */
+/** @return How many bytes were written */
 extern size_t ring_write_all_from(struct ring *r,
 		char *r_buff, size_t r_size,
 		const char *from_buff, size_t write_size);
