@@ -42,7 +42,7 @@ struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 	//idesc->uart = uart;
 
 	//return &idesc->idesc;
-	fdesc->idesc.idesc_ops = &idesc_serial_ops;
+	idesc_init(&fdesc->idesc, &idesc_serial_ops, FS_MAY_READ | FS_MAY_WRITE);
 	return &fdesc->idesc;
 }
 
