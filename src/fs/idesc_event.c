@@ -50,11 +50,8 @@ void idesc_wait_cleanup(struct idesc *i, struct idesc_wait_link *wl) {
 int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
 	int ret;
 
-	if (idesc->idesc_flags & O_NONBLOCK) {
-		return -EAGAIN;
-	}
-
-	ret = SCHED_WAIT_TIMEOUT(idesc->idesc_ops->status(idesc, mask), timeout);
+	/*ret = SCHED_WAIT_TIMEOUT(idesc->idesc_ops->status(idesc, mask), timeout);*/
+	ret = sched_wait_timeout(timeout, NULL);
 
 	/* do actual wait */
 	return ret;
