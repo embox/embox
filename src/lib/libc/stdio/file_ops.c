@@ -159,13 +159,13 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		}
 		cnt += tmp;
 	}
-	if (!(cnt % size)) {
+	if (cnt % size) {
 		/* try to revert some bytes */
-		fpos_t pos;
-
-		fgetpos(file, &pos);
-		pos -= cnt % size;
-		fsetpos(file, &pos);
+//		fpos_t pos;
+//
+//		fgetpos(file, &pos);
+//		pos -= cnt % size;
+//		fsetpos(file, &pos);
 		cnt -= (cnt % size);
 	}
 
