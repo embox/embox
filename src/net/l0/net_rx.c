@@ -13,9 +13,12 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
-//#define DEBUG
-#ifdef DEBUG
+#define NET_RX_DEBUG 0
+#if NET_RX_DEBUG
 #include <kernel/printk.h>
+#define DBG(x) x
+#else
+#define DBG(x)
 #endif
 
 int net_rx(struct sk_buff *skb) {
@@ -26,6 +29,8 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->len < skb->dev->hdr_len) {
+		DBG(printk("net_rx: %p invalid length %zu\n", skb, skb->len));
+		skb_free(skb);
 		return 0; /* error: invalid size */
 	}
 
@@ -33,6 +38,7 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
 	if (0 != skb->dev->ops->parse_hdr(skb, &hdr_info)) {
+		DBG(printk("net_rx: %p can't parse header\n", skb));
 		skb_free(skb);
 		return 0; /* error: can't parse L2 header */
 	}
@@ -40,6 +46,7 @@ int net_rx(struct sk_buff *skb) {
 	/* check recipient on L2 layer */
 	switch (pkt_type(skb)) {
 	default:
+		DBG(printk("net_rx: %p not for us\n", skb));
 		skb_free(skb);
 		return 0; /* not for us */
 	case PACKET_HOST:
@@ -52,6 +59,7 @@ int net_rx(struct sk_buff *skb) {
 	/* lookup handler for L3 layer */
 	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
+		DBG(printk("net_rx: %p unknown type\n", skb));
 		skb_free(skb);
 		return 0; /* not supported */
 	}
@@ -60,10 +68,8 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->mac.raw != NULL);
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
 
-#ifdef DEBUG
-	printk("net_rx: skb %p[%zu] type %#.6hx\n",
-			skb, skb->len, hdr_info.type);
-#endif
+	DBG(printk("net_rx: %p len %zu type %#.6hx\n",
+				skb, skb->len, hdr_info.type));
 
 	/* handling on L3 layer */
 	return npack->rcv_pack(skb, skb->dev);
