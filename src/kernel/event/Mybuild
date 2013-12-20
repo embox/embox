@@ -5,11 +5,11 @@ abstract module event_api {
 }
 
 module event_nosched extends event_api {
-	source "event_nosched.c", "event_nosched.h"
+	/*source "event_nosched.c", "event_nosched.h"*/
 }
 
 module event_sched extends event_api {
-	source "event_sched.c", "event_sched.h"
+	/*source "event_sched.c", "event_sched.h"*/
 
 //	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue

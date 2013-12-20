@@ -10,6 +10,7 @@
 #define KERNEL_EVENT_H_
 
 #include <module/embox/kernel/event_api.h>
+#if 0
 
 __BEGIN_DECLS
 
@@ -23,5 +24,6 @@ extern void event_init(struct event *event, const char *name);
 extern void event_notify(struct event *event);
 
 __END_DECLS
+#endif
 
 #endif /* KERNEL_EVENT_H_ */
