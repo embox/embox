@@ -71,8 +71,9 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 		struct idesc_poll *ip = &pt->idesc_poll[i];
 
 		assert(ip->idesc);
+
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
-		idesc_wait_do_prepare(ip->idesc, &ip->wait_link);
+		idesc_wait_prepare(ip->idesc, &ip->wait_link);
 	}
 
 	return 0;

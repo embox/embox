@@ -280,9 +280,6 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		count = next - curr;
 		curr = next;
 		if (size <= count) {
-			if (!rc) {
-				idesc_wait_cleanup(t->idesc, &iwl);
-			}
 			rc = curr - buff;
 			break;
 		}
@@ -291,24 +288,24 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		if (!rc) {
 			mutex_unlock(&t->lock);
 
-			rc = idesc_wait(t->idesc, timeout);
+			rc = sched_wait_timeout(timeout, NULL);
 
 			mutex_lock(&t->lock);
 
-			idesc_wait_cleanup(t->idesc, &iwl);
 		}
 	} while (!rc);
 	mutex_unlock(&t->lock);
 
+	idesc_wait_cleanup(t->idesc, &iwl);
+
 	return rc;
 }
 
-/* Called with rx_post disabled */
 static int tty_blockin_output(struct tty *t, char ch) {
 	struct idesc_wait_link iwl;
 	int ret;
 
-	idesc_wait_init(&iwl,POLLOUT | POLLERR);
+	idesc_wait_init(&iwl, POLLOUT | POLLERR);
 
 	do {
 		if (tty_output(t, ch)) {
@@ -327,13 +324,13 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 			t->ops->out_wake(t);
 
-			ret = idesc_wait(t->idesc, SCHED_TIMEOUT_INFINITE);
+			ret = sched_wait_timeout(SCHED_TIMEOUT_INFINITE, NULL);
 
 			mutex_lock(&t->lock);
-
-			idesc_wait_cleanup(t->idesc, &iwl);
 		}
 	} while (!ret);
+
+	idesc_wait_cleanup(t->idesc, &iwl);
 
 	return ret;
 }
