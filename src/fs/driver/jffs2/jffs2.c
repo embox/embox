@@ -33,6 +33,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <drivers/flash/flash.h>

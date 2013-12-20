@@ -603,6 +603,7 @@ struct ext2_xattr_hdr {
 #define EXT2_XATTR_HDR_MAGIC 0xea020000
 #define EXT2_XATTR_PAD 4
 
+struct nas;
 /* balloc.c */
 extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
 extern void ext2_free_block(struct nas *nas, uint32_t bit);

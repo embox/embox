@@ -15,6 +15,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <fs/file_desc.h>
+#include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <libsmbclient.h>
 #include <fs/vfs.h>
