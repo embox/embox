@@ -25,6 +25,8 @@
 
 struct thread;
 
+__BEGIN_DECLS
+
 /**
  * Initializes scheduler.
  *
@@ -90,6 +92,8 @@ extern int sched_wakeup(struct thread *);
 /* XXX thread will not be ever in runq or active - thread is dead,
  * but with allocated resources on its stack */
 extern void sched_freeze(struct thread *t);
+
+__END_DECLS
 
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                            \
