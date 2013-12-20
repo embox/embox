@@ -19,6 +19,7 @@
 #include <drivers/tty.h>
 #include <fs/index_descriptor.h>
 #include <kernel/sched/sched_lock.h>
+#include <kernel/task.h>
 #include <mem/objalloc.h>
 #include <cmd/shell.h>
 #include <embox/unit.h>
@@ -156,6 +157,7 @@ static void *run(void *data) {
 
 	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, FS_MAY_READ | FS_MAY_WRITE);
 	fd = index_descriptor_add(&fbcon->idesc);
+	fbcon->vterm.tty.idesc = &fbcon->idesc;
 
 	assert(fd == 0);
 
