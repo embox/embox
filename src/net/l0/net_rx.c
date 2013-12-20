@@ -29,7 +29,8 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->len < skb->dev->hdr_len) {
-		DBG(printk("net_rx: %p invalid length %zu\n", skb, skb->len));
+		DBG(printk("net_rx: %p invalid length %zu\n", skb,
+					skb->len));
 		skb_free(skb);
 		return 0; /* error: invalid size */
 	}
@@ -48,7 +49,7 @@ int net_rx(struct sk_buff *skb) {
 	default:
 		DBG(printk("net_rx: %p not for us\n", skb));
 		skb_free(skb);
-		return 0; /* not for us */
+		return 0; /* ok, but: not for us */
 	case PACKET_HOST:
 	case PACKET_LOOPBACK:
 	case PACKET_BROADCAST:
@@ -61,7 +62,7 @@ int net_rx(struct sk_buff *skb) {
 	if (npack == NULL) {
 		DBG(printk("net_rx: %p unknown type\n", skb));
 		skb_free(skb);
-		return 0; /* not supported */
+		return 0; /* ok, but: not supported */
 	}
 
 	/* setup L3 header */
