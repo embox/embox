@@ -418,13 +418,13 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	struct emac_desc *last;
 	struct emac_desc_head *hdesc;
 
-	unsigned long cmtxintstat = REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMTXINTSTAT);
-	if (DEFAULT_MASK != cmtxintstat) {
-		printk("ti816x_interrupt_mactxint0: cmtxintstat %#lx last %p\n",
-				cmtxintstat,
-				(void*)REG_LOAD(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL)));
-		assert(0);
-	}
+	//unsigned long cmtxintstat = REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMTXINTSTAT);
+	//if (DEFAULT_MASK != cmtxintstat) {
+	//	printk("ti816x_interrupt_mactxint0: cmtxintstat %#lx last %p\n",
+	//			cmtxintstat,
+	//			(void*)REG_LOAD(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL)));
+	//	assert(0);
+	//}
 
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMTXINTSTAT));
@@ -434,7 +434,6 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 
 	last = (struct emac_desc *)REG_LOAD(EMAC_BASE
 			+ EMAC_R_TXCP(DEFAULT_CHANNEL));
-	//printk("mactxint0: last %p\n", last);
 
 	//printk("^");
 	do {

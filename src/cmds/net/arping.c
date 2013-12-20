@@ -8,7 +8,6 @@
 
 #include <embox/cmd.h>
 
-#include <hal/ipl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,17 +42,10 @@ static int exec(int argc, char **argv) {
 	char from_b[] = "xxx.xxx.xxx.xxx";
 	struct in_addr from;
 	unsigned char mac[18], hw_addr[ETH_ALEN];
-	static ipl_t ipl;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "I:c:h:ed"))) {
+	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
-		case 'e':
-			ipl_restore(ipl);
-			return 0;
-		case 'd':
-			ipl = ipl_save();
-			return 0;
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inetdev_get_by_name(optarg))) {
 				printf("arping: unknown iface %s\n", optarg);
@@ -93,13 +85,6 @@ static int exec(int argc, char **argv) {
 	strncpy(from_b, inet_ntoa(from), sizeof(from_b));
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
-#if 1
-		(void)hw_addr;
-		(void)mac;
-		arp_send(ARP_OPER_REQUEST, ETH_P_IP, in_dev->dev->addr_len,
-				sizeof in_dev->ifa_address, NULL, &in_dev->ifa_address,
-				NULL, &dst.s_addr, NULL, in_dev->dev);
-#else
 		neighbour_del(ETH_P_IP, &dst, in_dev->dev);
 		arp_send(ARP_OPER_REQUEST, ETH_P_IP, in_dev->dev->addr_len,
 				sizeof in_dev->ifa_address, NULL, &in_dev->ifa_address,
@@ -111,7 +96,6 @@ static int exec(int argc, char **argv) {
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, -1);
 			cnt_resp++;
 		}
-#endif
 	}
 	printf("Sent %d probes (%d broadcast(s))\n", cnt, 1);
 	printf("Received %d response(s)\n", cnt_resp);
