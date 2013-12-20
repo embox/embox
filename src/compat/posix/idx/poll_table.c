@@ -55,12 +55,10 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
-		struct waitq *wq;
 
 		assert(idesc_poll->idesc);
 
-		wq = &idesc_poll->idesc->idesc_waitq;
-		waitq_wait_cleanup(wq, &idesc_poll->wait_link.link);
+		idesc_wait_cleanup(idesc_poll->idesc,  &idesc_poll->wait_link);
 	}
 
 	return 0;
@@ -70,11 +68,11 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	int i;
 
 	for (i = 0; i < pt->size; i++) {
-		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
+		struct idesc_poll *ip = &pt->idesc_poll[i];
 
-		assert(idesc_poll->idesc);
-		idesc_wait_do_prepare(idesc_poll->idesc,
-				&idesc_poll->wait_link, idesc_poll->i_poll_mask);
+		assert(ip->idesc);
+		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
+		idesc_wait_do_prepare(ip->idesc, &ip->wait_link);
 	}
 
 	return 0;

@@ -24,19 +24,10 @@ static void pty_out_wake(struct tty *t) {
 
 static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 	struct idesc_wait_link wl;
-	int res;
 
-	res = idesc_wait_prepare(idesc, &wl, flags);
-	if (!res) {
-		mutex_unlock(&t->lock);
-
-		res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
-
-		mutex_lock(&t->lock);
-
-		idesc_wait_cleanup(idesc, &wl);
-	}
-	return res;
+	return IDESC_WAIT_LOCKED(mutex_unlock(&t->lock),
+			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+			mutex_lock(&t->lock));
 }
 
 size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {

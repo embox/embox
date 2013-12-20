@@ -104,20 +104,11 @@ static int pipe_close(struct idesc *idesc) {
 
 static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 	struct idesc_wait_link wl;
-	int res;
 
-	res = idesc_wait_prepare(idesc, &wl, flags);
-	if (!res) {
-		mutex_unlock(&pipe->mutex);
-
-		res = idesc_wait(idesc, flags, SCHED_TIMEOUT_INFINITE);
-
-		mutex_lock(&pipe->mutex);
-		idesc_wait_cleanup(idesc, &wl);
-	}
-
-	assert(res != -ETIMEDOUT);
-	return res;
+	return IDESC_WAIT_LOCKED(
+		mutex_unlock(&pipe->mutex),
+		idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+		mutex_lock(&pipe->mutex));
 }
 
 static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {

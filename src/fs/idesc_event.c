@@ -14,25 +14,23 @@
 
 #include <fs/idesc_event.h>
 
-int idesc_wait_do_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+int idesc_wait_do_prepare(struct idesc *i, struct idesc_wait_link *wl) {
 
 	assert(i);
 	assert(wl);
 
-	wl->iwq_masks = mask;
-	waitq_link_init(&wl->link);
 	waitq_wait_prepare(&i->idesc_waitq, &wl->link);
 
 	return 0;
 }
 
-int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl, int mask) {
+int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl) {
 
 	if (i->idesc_flags & O_NONBLOCK) {
 		return -EAGAIN;
 	}
 
-	return idesc_wait_do_prepare(i, wl, mask);
+	return idesc_wait_do_prepare(i, wl);
 }
 
 int idesc_notify(struct idesc *idesc, int mask) {
@@ -47,13 +45,7 @@ void idesc_wait_cleanup(struct idesc *i, struct idesc_wait_link *wl) {
 	waitq_wait_cleanup(&i->idesc_waitq, &wl->link);
 }
 
-int idesc_wait(struct idesc *idesc, int mask, unsigned int timeout) {
-	int ret;
-
-	/*ret = SCHED_WAIT_TIMEOUT(idesc->idesc_ops->status(idesc, mask), timeout);*/
-	ret = sched_wait_timeout(timeout, NULL);
-
-	/* do actual wait */
-	return ret;
+int idesc_wait(struct idesc *idesc, unsigned int timeout) {
+	return sched_wait_timeout(timeout, NULL);
 }
 

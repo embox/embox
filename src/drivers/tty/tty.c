@@ -259,12 +259,14 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 				: vtime * 100; /* deciseconds to milliseconds */
 	}
 
+	idesc_wait_init(&iwl, POLLIN | POLLERR);
+
 	mutex_lock(&t->lock);
 	do {
 		irq_lock();
 		{
 			tty_rx_do(t);
-			rc = idesc_wait_prepare(t->idesc, &iwl, POLLIN | POLLERR);
+			rc = idesc_wait_prepare(t->idesc, &iwl);
 		}
 		irq_unlock();
 
@@ -289,7 +291,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		if (!rc) {
 			mutex_unlock(&t->lock);
 
-			rc = idesc_wait(t->idesc, POLLIN | POLLERR, timeout);
+			rc = idesc_wait(t->idesc, timeout);
 
 			mutex_lock(&t->lock);
 
@@ -306,6 +308,8 @@ static int tty_blockin_output(struct tty *t, char ch) {
 	struct idesc_wait_link iwl;
 	int ret;
 
+	idesc_wait_init(&iwl,POLLOUT | POLLERR);
+
 	do {
 		if (tty_output(t, ch)) {
 			ret = 0;
@@ -317,13 +321,13 @@ static int tty_blockin_output(struct tty *t, char ch) {
 			break;
 		}
 
-		ret = idesc_wait_prepare(t->idesc, &iwl, POLLOUT | POLLERR);
+		ret = idesc_wait_prepare(t->idesc, &iwl);
 		if (!ret) {
 			mutex_unlock(&t->lock);
 
 			t->ops->out_wake(t);
 
-			ret = idesc_wait(t->idesc, POLLOUT | POLLERR, SCHED_TIMEOUT_INFINITE);
+			ret = idesc_wait(t->idesc, SCHED_TIMEOUT_INFINITE);
 
 			mutex_lock(&t->lock);
 
