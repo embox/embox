@@ -201,13 +201,6 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
-#include <termios.h>
-extern int pipe_pty(int pipe[2], const struct termios *tio);
-static const struct termios pipetio = {
-	.c_lflag = ICANON,
-	.c_oflag = ONLCR,
-};
-
 
 #define XBUFF_LEN 128
 
