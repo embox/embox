@@ -1,11 +1,22 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Alex Kalmuk
+ * @author  Anton Kozlov
+ * @date    20.12.2013
+ */
+
+#include <assert.h>
+
 #include "emboxvcwindowsurface.h"
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qapplication_p.h>
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
-#include <kernel/event.h>
+
+#include <kernel/sched/waitq.h>
 #include <util/ring_buff.h>
-#include <assert.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -97,10 +108,10 @@ QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
 	buff = malloc(sizeof(struct ring_buff));
 	assert(buff);
 
-    ring_buff_init(buff, 1, MOUSE_EVENT_BUFFER_SIZE, storage);
-    ring_buff = buff;
+	ring_buff_init(buff, 1, MOUSE_EVENT_BUFFER_SIZE, storage);
+	ring_buff = buff;
 
-	event_init(&new_data, "mouse_data");
+	waitq_init(&new_data);
 
 	readDataLoop();
 }
@@ -116,7 +127,7 @@ void QEmboxVCMouseHandler::storeData(void *data, int datalen) {
 }
 
 void QEmboxVCMouseHandler::activate() {
-	event_notify(&new_data);
+	waitq_wakeup_all(&new_data);
 }
 
 void *readMouseDataThread(void *arg) {
@@ -129,8 +140,8 @@ void *readMouseDataThread(void *arg) {
 	QEmboxVC *emvc;
 	QEmboxVCMouseHandler *mh = (QEmboxVCMouseHandler *)arg;
 
-	while (EVENT_WAIT(&mh->new_data,
-			ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0, SCHED_TIMEOUT_INFINITE) == 0) {
+	while (WAITQ_WAIT(&mh->new_data,
+			ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0) == 0) {
 
 		ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event));
 
@@ -187,11 +198,10 @@ QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
 	buff = malloc(sizeof(struct ring_buff));
 	assert(buff);
 
-    ring_buff_init(buff, 1, KBD_EVENT_BUFFER_SIZE, storage);
+	ring_buff_init(buff, 1, KBD_EVENT_BUFFER_SIZE, storage);
+	ring_buff = buff;
 
-    ring_buff = buff;
-
-	event_init(&new_data, "kbd_data");
+	waitq_init(&new_data);
 
 	readDataLoop();
 }
@@ -207,7 +217,7 @@ void QEmboxVCKeyboardHandler::storeData(void *data, int datalen) {
 }
 
 void QEmboxVCKeyboardHandler::activate() {
-	event_notify(&new_data);
+	waitq_wakeup_all(&new_data);
 }
 
 void *readKbdThread(void *arg) {
@@ -217,8 +227,8 @@ void *readKbdThread(void *arg) {
 	struct input_event ev;
 	QEmboxVCKeyboardHandler *kh = (QEmboxVCKeyboardHandler *)arg;
 
-	while (EVENT_WAIT(&kh->new_data,
-			ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *)) > 0, SCHED_TIMEOUT_INFINITE) == 0) {
+	while (WAITQ_WAIT(&kh->new_data,
+			ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *)) > 0) == 0) {
 		QEvent::Type type;
 		unsigned char ascii[4];
 		int key;

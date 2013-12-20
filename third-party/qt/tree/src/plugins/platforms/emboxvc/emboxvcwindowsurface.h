@@ -6,6 +6,8 @@
 #include <QtCore/QSocketNotifier>
 #include <QtGui/QPlatformWindow>
 
+#include <kernel/sched/waitq.h>
+
 #include <drivers/video/fb.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
@@ -27,8 +29,8 @@ public:
     void storeData(void *data, int datalen);
     void activate();
 
-    void *ring_buff;
-    struct event new_data;
+    struct ring_buff *ring_buff;
+    struct waitq new_data;
 
 private:
     void readDataLoop();
@@ -44,8 +46,8 @@ public:
     void storeData(void *data, int datalen);
     void activate();
 
-    void *ring_buff;
-    struct event new_data;
+    struct ring_buff *ring_buff;
+    struct waitq new_data;
 
 private:
     void readDataLoop();

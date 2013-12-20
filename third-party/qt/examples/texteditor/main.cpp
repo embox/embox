@@ -227,7 +227,7 @@ int main(int argv, char **args)
 	emroot->setCentralWidget(emarea);
 
 	if (DEFAULT_WIDTH == 0 || DEFAULT_HEIGHT == 0) {
-		manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE); /* EMBOXVC plugin*/
+		manual_event_wait(&inited_event, SCHED_TIMEOUT_INFINITE); /* EMBOXVC plugin*/
 	} else {
 		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT)); /* VNC plugin */
 	}
