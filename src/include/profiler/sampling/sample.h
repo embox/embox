@@ -1,7 +1,7 @@
 #ifndef PROFILER_SAMPLING_SAMPLE_H_
 #define PROFILER_SAMPLING_SAMPLE_H_
 
-#define TIMER_INTERVAL 500
+#define SAMPLE_TIMER_INTERVAL 500
 #define SAMPLE_HASH_SIZE 997
 
 struct function_sample_info {
@@ -9,7 +9,7 @@ struct function_sample_info {
 	int counter;
 };
 
-int start_profiler(void);
+int start_profiler(int interval);
 int stop_profiler(void);
 
 int *get_counters(void);

@@ -68,14 +68,14 @@ static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	free(bt_res);
 }
 
-static int sampling_profiler_set(void) {
+static int sampling_profiler_set(int interval) {
 	int res;
 	int tick_cnt;
-
+	interval = (interval == 0) ? (SAMPLE_TIMER_INTERVAL) : interval;
 	tick_cnt = 0;
 
 	if (ENOERR
-			!= (res = timer_set(&sampling_timer, TIMER_PERIODIC, 100, sampling_timer_handler,
+			!= (res = timer_set(&sampling_timer, TIMER_PERIODIC, interval, sampling_timer_handler,
 					&tick_cnt))) {
 		printk("Failed to install timer\n");
 		return res;
@@ -97,19 +97,20 @@ bool sampling_profiler_is_running(void){
 	return is_running;
 }
 
-int start_profiler(void) {
+int start_profiler(int interval) {
 	int i;
 	is_running = true;
-	pow[0] = 1;
+	pow[0] = 1, hash_array[0] = 0;
 	for (i = 1; i < SAMPLE_HASH_SIZE; i++) {
 		pow[i] = (pow[i - 1] * base) % SAMPLE_HASH_SIZE; 	/* initialize hash */
 		hash_array[i] = 0;
 	}
-	sampling_profiler_set();
+	sampling_profiler_set(interval);
 	return ENOERR;
 }
 
 int stop_profiler(void) {
+	is_running = false;
 	timer_close(sampling_timer);
 	return ENOERR;
 }
