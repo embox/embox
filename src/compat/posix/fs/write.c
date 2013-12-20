@@ -12,7 +12,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <kernel/task/io_sync.h>
+/*#include <kernel/task/io_sync.h>*/
 
 #include <fs/index_descriptor.h>
 
