@@ -49,6 +49,11 @@ static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	return kioctl((struct file_desc *)idesc, request, data);
 }
 
+static int idesc_file_ops_status(struct idesc *idesc, int mask) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return 1;
+}
 
 const struct idesc_ops idesc_file_ops = {
 	.close = idesc_file_ops_close,
@@ -56,5 +61,6 @@ const struct idesc_ops idesc_file_ops = {
 	.write = idesc_file_ops_write,
 	.ioctl = idesc_file_ops_ioctl,
 	.fstat = idesc_file_ops_stat,
+	.status = idesc_file_ops_status,
 };
 
