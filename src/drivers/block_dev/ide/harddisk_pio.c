@@ -78,10 +78,8 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 		outb(hd->multsect > 1 ? HDCMD_MULTREAD : HDCMD_READ,
 				hdc->iobase + HDC_COMMAND);
 
-    	/* Wait until data read */
-		while(!hdc->result) {
-			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-		}
+		/* Wait until data read */
+		WAITQ_WAIT(&hdc->waitq, hdc->result);
 
 		if (hdc->result < 0) {
 			break;
@@ -173,9 +171,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		}
 
 		/* Wait until data written */
-		while(!hdc->result) {
-			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-		}
+		WAITQ_WAIT(&hdc->waitq, hdc->result);
 
 		if (hdc->result < 0) {
 			break;
