@@ -10,6 +10,11 @@
 
 #include <fs/idesc.h>
 #include <fs/poll_table.h>
+#include <fs/index_descriptor.h>
+
+static struct idesc *poll_table_idx2idesc(int idx) {
+	return idx < 0 ? NULL : index_descriptor_get(idx);
+}
 
 int poll_table_count(struct idesc_poll_table *pt) {
 	int cnt = 0;
@@ -18,7 +23,8 @@ int poll_table_count(struct idesc_poll_table *pt) {
 	int poll_mask;
 
 	for (i = 0; i < pt->size; i++) {
-		idesc = pt->idesc_poll[i].idesc;
+		idesc = poll_table_idx2idesc(pt->idesc_poll[i].fd);
+		//idesc = pt->idesc_poll[i].idesc;
 		/* in poll we must treat wrong descriptors and setup revents in
 		 * POLLNVAL value
 		 */
@@ -52,13 +58,17 @@ int poll_table_count(struct idesc_poll_table *pt) {
 
 static int poll_table_cleanup(struct idesc_poll_table *pt) {
 	int i;
+	struct idesc *idesc;
 
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
-		assert(idesc_poll->idesc);
+		//assert(idesc_poll->idesc);
+		idesc = poll_table_idx2idesc(idesc_poll->fd);
+		if (!idesc)
+			continue;
 
-		idesc_wait_cleanup(idesc_poll->idesc,  &idesc_poll->wait_link);
+		idesc_wait_cleanup(idesc,  &idesc_poll->wait_link);
 	}
 
 	return 0;
@@ -66,14 +76,18 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	int i;
+	struct idesc *idesc;
 
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *ip = &pt->idesc_poll[i];
 
-		assert(ip->idesc);
+		//assert(ip->idesc);
+		idesc = poll_table_idx2idesc(ip->fd);
+		if (!idesc)
+			continue;
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
-		idesc_wait_prepare(ip->idesc, &ip->wait_link);
+		idesc_wait_prepare(idesc, &ip->wait_link);
 	}
 
 	return 0;

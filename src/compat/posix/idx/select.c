@@ -62,7 +62,7 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 			pl = &pt->idesc_poll[cnt++];
 
 			pl->fd = i;
-			pl->idesc = idesc;
+			// pl->idesc = idesc;
 			pl->i_poll_mask = poll_mask;
 			pl->o_poll_mask = 0;
 		}

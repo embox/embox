@@ -21,7 +21,7 @@ extern int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks);
 struct idesc;
 struct idesc_poll {
 	int fd;
-	struct idesc *idesc;
+	/* struct idesc *idesc; */
 	int i_poll_mask;
 	int o_poll_mask;
 
