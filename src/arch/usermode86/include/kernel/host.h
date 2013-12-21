@@ -40,4 +40,12 @@ extern int host_net_rx_count(struct host_net_adp *hnet);
 extern int host_net_rx(struct host_net_adp *hnet, void *buf, int len);
 extern void host_net_tx(struct host_net_adp *hnet, const void *buf, int len);
 
+#define HOST_CTX_LEN 1024
+
+extern int host_getcontext(void *ucp);
+extern void host_makecontext(void *ucp, void (*func)(), int argc);
+extern int host_swapcontext(void *oucp, void *ucp);
+
+extern void host_stackcontext(void *ucp, void *sp, int size);
+
 #endif /* ARCH_USERMODE86_HOST_H_ */
