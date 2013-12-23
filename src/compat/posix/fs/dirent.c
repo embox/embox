@@ -9,6 +9,8 @@
 
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
+
 #include <fs/perm.h>
 #include <fs/vfs.h>
 #include <mem/objalloc.h>
@@ -26,6 +28,12 @@ DIR *opendir(const char *path) {
 	node_t *node;
 	DIR *d;
 	int res;
+
+	if (!strcmp(path, ".")) {
+		char cur_path[PATH_MAX];
+
+		path = getcwd(cur_path, PATH_MAX);
+	}
 
 	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
 		SET_ERRNO(-res);
