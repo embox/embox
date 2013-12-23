@@ -393,10 +393,7 @@ size_t tty_status(struct tty *t, int status_nr) {
 	/* TODO support of ICANON mode */
 	assert(!TC_L(t, ICANON));
 
-	/* Don't held any lock because:
-	 * 1) we don't modify rx_ring
-	 * 2) all the same the rx_ring may become non-empty after the tty_status call */
-	return !ring_empty(&t->rx_ring);
+	return IRQ_LOCKED_DO(!ring_empty(&t->rx_ring));
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
