@@ -23,13 +23,11 @@
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
 #include <fs/idesc.h>
-#include <fs/idesc_event.h>
 
 #include <err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 extern const struct idesc_ops task_idx_ops_socket;
-extern int sock_wait(struct sock *sk, int flags, int timeout);
 
 struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
@@ -40,12 +38,6 @@ struct sock *ksocket(int family, int type, int protocol) {
 	}
 
 	sock_set_state(new_sk, SS_UNCONNECTED);
-
-#if 0
-	if (type != SOCK_STREAM) {
-		io_sync_enable(&new_sk->ios, IO_SYNC_WRITING);
-	}
-#endif
 
 	return new_sk;
 }
@@ -136,22 +128,11 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 	sock_set_state(sk, SS_CONNECTING);
 
 	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr, addrlen, flags);
-	if ((ret == -EINPROGRESS) && !(flags & O_NONBLOCK)) {
-		ret = -ECONNRESET;
-		sock_wait(sk, POLLOUT, MODOPS_CONNECT_TIMEOUT);
-		if (ret == -ETIMEDOUT) {
-			/* shutdown connection */
-			if (sk->f_ops->shutdown != NULL) {
-				(void)sk->f_ops->shutdown(sk, SHUT_RDWR);
-			}
+	if (ret == -ETIMEDOUT) {
+		/* shutdown connection */
+		if (sk->f_ops->shutdown != NULL) {
+			(void)sk->f_ops->shutdown(sk, SHUT_RDWR);
 		}
-#if 0
-		else if ((ret == 0) && !io_sync_ready(&sk->ios,
-					IO_SYNC_WRITING)) {
-			/* if writing not ready then connection is reset */
-			ret = -ECONNRESET;
-		}
-#endif
 	}
 	if (ret != 0) {
 		LOG_ERROR("ksocket_connect",
