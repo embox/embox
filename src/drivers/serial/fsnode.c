@@ -46,23 +46,14 @@ int serial_register_devfs(struct uart *dev) {
  */
 static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart *uart_dev = uart_dev_lookup(node->name);
-	//void *idesc;
-	int ret;
 
 	if (!uart_dev) {
 		return -ENOENT;
 	}
 
 	assert(desc);
-	desc->ops = &uart_dev_file_op;
+
 	desc->file_info = uart_dev;
-
-	ret = uart_open(uart_dev);
-	if (ret) {
-		return ret;
-	}
-
-	uart_dev->tty.idesc = &desc->idesc;
 	idesc_serial_create(desc, uart_dev, flags);
 
 	return 0;

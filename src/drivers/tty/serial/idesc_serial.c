@@ -27,6 +27,16 @@
 
 static const struct idesc_ops idesc_serial_ops;
 
+static void idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
+	uart->tty.idesc = idesc;
+}
+
+static void idesc_uart_unbind(struct uart *uart, struct idesc *idesc) {
+
+	assert(uart->tty.idesc == idesc);
+	uart->tty.idesc = NULL;
+}
+
 struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 		idesc_access_mode_t mod) {
 	//struct idesc_serial *idesc;
@@ -34,15 +44,14 @@ struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 	assert(uart);
 	assert(mod);
 
-	//idesc = pool_alloc(&pool_serials);
-//	if (idesc) {
-//		err_ptr(-ENOMEM);
-//	}
-	//idesc_init(&idesc->idesc, &idesc_serial_ops, mod);
-	//idesc->uart = uart;
-
-	//return &idesc->idesc;
 	idesc_init(&fdesc->idesc, &idesc_serial_ops, FS_MAY_READ | FS_MAY_WRITE);
+
+	if (uart_open(uart)) {
+		return NULL;
+	}
+
+	idesc_uart_bind(uart, &fdesc->idesc);
+
 	return &fdesc->idesc;
 }
 
@@ -104,7 +113,8 @@ static int serial_close(struct idesc *idesc) {
 	assert(uart);
 	res = uart_close(uart);
 
-	//pool_free(&pool_serials, idesc);
+	idesc_uart_unbind(uart, idesc);
+
 	file_desc_destroy((struct file_desc *)idesc);
 
 	return res;
