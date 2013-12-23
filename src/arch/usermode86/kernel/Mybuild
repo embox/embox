@@ -24,3 +24,8 @@ module ipl extends embox.arch.interrupt {
 	depends embox.kernel.irq
 
 }
+
+module context extends embox.arch.context {
+	source "ctx.c",
+		"ctx.h"
+}

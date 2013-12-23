@@ -136,7 +136,6 @@ struct sock *sock_create(int family, int type, int protocol) {
 	const struct net_family *nfamily;
 	const struct net_family_type *nftype;
 	const struct net_sock *nsock;
-	const struct net_pack_out *npout;
 
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
@@ -153,11 +152,6 @@ struct sock *sock_create(int family, int type, int protocol) {
 		return err_ptr(EPROTONOSUPPORT);
 	}
 
-	npout = net_pack_out_lookup(family);
-	if (npout == NULL) {
-		/* out_ops may be null */
-	}
-
 	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
 		return err_ptr(ENOMEM);
@@ -165,7 +159,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	sock_init(new_sk, family, type, nsock->protocol,
 			nftype->ops, nsock->ops,
-			npout != NULL ? npout->ops : NULL);
+			nfamily->out_ops != NULL ? *nfamily->out_ops : NULL);
 
 	assert(new_sk->f_ops != NULL);
 	ret = new_sk->f_ops->init(new_sk);

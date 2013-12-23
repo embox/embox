@@ -20,8 +20,4 @@ struct sk_buff;
 			struct net_device *dev);          \
 	__EMBOX_NET_PACK(_type, _type, _rcv_pack)
 
-#define EMBOX_NET_PACK_OUT(_family, _ops)        \
-	static const struct net_pack_out_ops _ops;   \
-	__EMBOX_NET_PACK_OUT(_family, _family, _ops)
-
 #endif /* FRAMEWORK_NET_PACK_SELF_H_ */

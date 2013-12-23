@@ -10,6 +10,7 @@
 #define NET_NETDEVICE_H_
 
 //#include <util/array.h>
+#include <assert.h>
 #include <stddef.h>
 #include <net/if.h>
 //#include <arpa/inet.h>
@@ -131,7 +132,12 @@ typedef struct net_device {
 /**
  * Get data private data casted to type
  */
-#define netdev_priv(dev, type) ((type *)((dev)->priv))
+#define netdev_priv(dev, type) \
+	({                                        \
+		const struct net_device *__dev = dev; \
+		assert(__dev != NULL);                \
+		(type *)__dev->priv;                  \
+	})
 
 /**
  * Find an network device by its name

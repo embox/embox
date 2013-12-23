@@ -33,8 +33,6 @@ static const struct net_pack_out_ops ip_out_ops_struct;
 const struct net_pack_out_ops *const ip_out_ops
 		= &ip_out_ops_struct;
 
-EMBOX_NET_PACK_OUT(AF_INET, ip_out_ops_struct);
-
 static int ip_xmit(struct sk_buff *skb) {
 	int ret;
 	in_addr_t daddr;

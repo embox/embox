@@ -22,8 +22,6 @@ static const struct net_pack_out_ops ip6_out_ops_struct;
 const struct net_pack_out_ops *const ip6_out_ops
 		= &ip6_out_ops_struct;
 
-EMBOX_NET_PACK_OUT(AF_INET6, ip6_out_ops_struct);
-
 static int ip6_xmit(struct sk_buff *skb) {
 	const struct in6_addr *daddr;
 	struct net_header_info hdr_info;

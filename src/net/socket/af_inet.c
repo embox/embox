@@ -22,6 +22,7 @@
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
+#include <net/l3/ipv4/ip.h>
 
 #include <net/socket/inet_sock.h>
 
@@ -39,7 +40,7 @@ static const struct net_family_type inet_types[] = {
 	{ SOCK_RAW, &inet_raw_ops }
 };
 
-EMBOX_NET_FAMILY(AF_INET, inet_types);
+EMBOX_NET_FAMILY(AF_INET, inet_types, ip_out_ops);
 
 static int inet_init(struct sock *sk) {
 	struct inet_sock *in_sk;

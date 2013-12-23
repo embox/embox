@@ -66,7 +66,7 @@ $(HOST_DIR):
 	$(AT)mkdir -p $@
 
 $(HOST_DIR)/%.o : ./%.c | $(HOST_DIR)
-	$(EMBOX_TARGET_CC) $(EMBOX_DERIVED_CFLAGS) -c -o $@ $<
+	$(EMBOX_TARGET_CC) -I../include/kernel/ $(EMBOX_DERIVED_CFLAGS) -c -o $@ $<
 
 $(HOST_OBJ) : $(HOST_OBJS)
 	$(EMBOX_TARGET_CC) $(EMBOX_DERIVED_LDFLAGS) $(HOST_OBJS) -o $@

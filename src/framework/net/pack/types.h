@@ -36,12 +36,4 @@ struct net_pack {
 			struct net_device *dev); /* packet handler */
 };
 
-/**
- * Each netpack implement this intarface too
- */
-struct net_pack_out {
-	int family;
-	const struct net_pack_out_ops *ops;
-};
-
 #endif /* FRAMEWORK_NET_PACK_TYPES_H_ */
