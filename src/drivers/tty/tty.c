@@ -328,9 +328,8 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 			mutex_lock(&t->lock);
 		}
+		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!ret);
-
-	idesc_wait_cleanup(t->idesc, &iwl);
 
 	return ret;
 }
