@@ -388,11 +388,34 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 }
 
 size_t tty_status(struct tty *t, int status_nr) {
-	assert(status_nr == POLLIN);
-	/* TODO support of ICANON mode */
-	assert(!TC_L(t, ICANON));
+	struct ring raw_ring;
+	size_t block_size;
+	int res = 0;
 
-	return IRQ_LOCKED_DO(!ring_empty(&t->rx_ring));
+	assert(t);
+	assert(status_nr == POLLIN);
+
+	mutex_lock(&t->lock);
+	{
+		IRQ_LOCKED_DO(tty_rx_do(t));
+
+		/* not ICANON */
+		if ((block_size = ring_can_read(
+				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1))) {
+			res = 1;
+		}
+
+		/* ICANON */
+		if (TC_L(t, ICANON)) {
+			if ((block_size = ring_can_read(
+					&t->i_canon_ring, TTY_IO_BUFF_SZ, 1))) {
+				res = 1;
+			}
+		}
+	}
+	mutex_unlock(&t->lock);
+
+	return res;
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
