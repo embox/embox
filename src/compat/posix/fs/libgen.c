@@ -31,8 +31,13 @@ char  *basename(char *path) {
 		start--;
 	}
 
-	if (start == 0 && len == 1) {
-		clen = len - start;
+	if (start == 0) {
+		if (path[start] != '/' || len == 1) {
+			clen = len - start;
+		} else {
+			clen = len - start - 1;
+			start++;
+		}
 	} else {
 		clen = len - start - 1;
 		start++;
