@@ -23,11 +23,13 @@
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
 #include <fs/idesc.h>
+#include <fs/idesc_event.h>
 
 #include <err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 extern const struct idesc_ops task_idx_ops_socket;
+extern int sock_wait(struct sock *sk, int flags, int timeout);
 
 struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
@@ -136,16 +138,14 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 	ret = sk->f_ops->connect(sk, (struct sockaddr *)addr, addrlen, flags);
 	if ((ret == -EINPROGRESS) && !(flags & O_NONBLOCK)) {
 		ret = -ECONNRESET;
-#ifdef NOTUSE_IOSYNC
-		/* lock until a connection is established */
-		ret = io_sync_wait(&sk->ios, IO_SYNC_WRITING,
-				MODOPS_CONNECT_TIMEOUT);
+		sock_wait(sk, POLLOUT, MODOPS_CONNECT_TIMEOUT);
 		if (ret == -ETIMEDOUT) {
 			/* shutdown connection */
 			if (sk->f_ops->shutdown != NULL) {
 				(void)sk->f_ops->shutdown(sk, SHUT_RDWR);
 			}
 		}
+#if 0
 		else if ((ret == 0) && !io_sync_ready(&sk->ios,
 					IO_SYNC_WRITING)) {
 			/* if writing not ready then connection is reset */
