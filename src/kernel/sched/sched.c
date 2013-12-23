@@ -404,8 +404,6 @@ static void __schedule(int preempt) {
 
 	ipl_enable();
 
-	thread_signal_handle();
-
 	assert(thread_self() == prev);
 }
 

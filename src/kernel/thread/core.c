@@ -137,6 +137,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	dlist_init(&t->thread_link); /* default unlink value */
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
+	t->syscall_ctx_count = 0;
 	t->lock = SPIN_UNLOCKED;
 	t->ready = false;
 	t->active = false;

@@ -26,9 +26,24 @@ void sched_wait_cleanup(void) {
 	// TODO SMP barrier? -- Eldar
 }
 
+static int sched_intr(int res) {
+	struct thread *t = thread_self();
+	struct sigstate *sigst = &t->sigstate;
+	int sig;
+	siginfo_t sinfo;
+
+	/*if (t->sigaction) {*/
+	if ((sig = sigstate_receive(sigst, &sinfo))) {
+		sigstate_send(sigst, sig, &sinfo);
+		return -EINTR;
+	}
+
+	return res;
+}
+
 int sched_wait(void) {
 	schedule();
-	return 0;  // XXX
+	return sched_intr(0);
 }
 
 static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
@@ -62,6 +77,7 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 		res = -ETIMEDOUT;
 	}
 
+	res = sched_intr(res);
 out:
 	if (remain) {
 		*remain = remain_v;

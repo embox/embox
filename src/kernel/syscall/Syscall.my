@@ -6,3 +6,19 @@ module syscall {
 	//depends embox.arch.syscall
 	depends embox.kernel.syscall.syscall_table
 }
+
+@Mandatory
+@DefaultImpl(syscall_context_thread)
+abstract module syscall_context {
+
+}
+
+module syscall_context_thread extends syscall_context {
+	source "syscall_ctx_thread.h"
+
+}
+
+module syscall_context_trivial {
+	source "syscall_ctx_trivial.c",
+		"syscall_ctx_trivial.h"
+}
