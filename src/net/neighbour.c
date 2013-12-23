@@ -11,7 +11,6 @@
 #include <kernel/softirq_lock.h>
 #include <mem/misc/pool.h>
 #include <string.h>
-#include <util/dlist.h>
 #include <time.h>
 #include <util/list.h>
 #include <util/array.h>
