@@ -389,27 +389,14 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 }
 
 size_t tty_status(struct tty *t, int status_nr) {
-	struct ring raw_ring;
-	size_t block_size;
-
 	assert(status_nr == POLLIN);
+	/* TODO support of ICANON mode */
+	assert(!TC_L(t, ICANON));
 
-	/* not ICANON */
-	if ((block_size = ring_can_read(
-				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1))) {
-		return 1;
-	}
-
-	/* ICANON */
-	/* TODO serialize termios access with ioctl. -- Eldar */
-	if (TC_L(t, ICANON)) {
-		if((block_size = ring_can_read(
-					&t->i_canon_ring, TTY_IO_BUFF_SZ, 1))) {
-			return 1;
-		}
-	}
-
-	return 0;
+	/* Don't held any lock because:
+	 * 1) we don't modify rx_ring
+	 * 2) all the same the rx_ring may become non-empty after the tty_status call */
+	return !ring_empty(&t->rx_ring);
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
