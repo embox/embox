@@ -129,7 +129,7 @@ static int parse_result(struct packet_in *rx_pack,
 		break;
 	default:
 		*last_seq = -1;
-		printf("ping: ignore icmp_type=%d icmp_type=%d\n",
+		printf("ping: ignore icmp_type=%d icmp_code=%d\n",
 				rx_pack->icmph.type, rx_pack->icmph.code);
 		break;
 	}
