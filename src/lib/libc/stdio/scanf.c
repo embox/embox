@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -278,7 +279,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				switch (ops_len) {
 				default: /* FIXME */
-					*va_arg(args, int*) = dst;
+					memcpy(va_arg(args, int*), &dst, sizeof(dst));
 					break;
 				case OPS_LEN_MIN:
 					*va_arg(args, char*) = dst;
