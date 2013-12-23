@@ -120,7 +120,7 @@ static size_t rlogin_write(int fd, struct ring_buff *rbuf, size_t size) {
 
 static int rlogin_handle(int sock) {
 	fd_set readfds, writefds;
-	unsigned char c;
+	/*unsigned char c;*/
 	unsigned char sock_storage[RCVBUFFER_SIZE], stdin_storage[RCVBUFFER_SIZE];
 	struct ring_buff sock_buf, stdin_buf;
 	int state = R_START, mode = MODE_COOKED;
@@ -157,31 +157,40 @@ static int rlogin_handle(int sock) {
 		select(sock + 1, &readfds, &writefds, NULL, NULL);
 
 		if (FD_ISSET(sock, &writefds)) {
-			if ((err = rlogin_write(sock, &stdin_buf, stdin_data_len)) < 0)
-				goto reset_out;
+			if ((err = rlogin_write(sock, &stdin_buf, stdin_data_len)) < 0) {
+				/*goto reset_out;*/
+			}
 		}
 
 		if (FD_ISSET(STDOUT_FILENO, &writefds)) {
-			if ((err = rlogin_write(STDOUT_FILENO, &sock_buf, sock_data_len)) < 0)
-				goto reset_out;
+			if ((err = rlogin_write(STDOUT_FILENO, &sock_buf, sock_data_len)) < 0) {
+				/*goto reset_out;*/
+			}
 		}
 
 		if (FD_ISSET(STDIN_FILENO, &readfds)) {
-			if ((err = read(STDIN_FILENO, &c, 1)) < 0)
-				goto reset_out;
-			/* XXX NVT terminal requires '\r' as enter */
-			if ( c == '\n') {
-				c = '\r';
+			char in_buf[4];
+			if ((err = read(STDIN_FILENO, in_buf, 4)) < 0) {
+				/*goto reset_out;*/
 			}
-			ring_buff_enqueue(&stdin_buf, &c, 1);
+#if 1
+			for (int i = 0; i < err; i++) {
+			/* XXX NVT terminal requires '\r' as enter */
+				if (in_buf[i] == '\n') {
+					in_buf[i] = '\r';
+				}
+			}
+#endif
+			ring_buff_enqueue(&stdin_buf, in_buf, err);
 		}
 
 		if (FD_ISSET(sock, &readfds)) {
 			unsigned char buf[RCVBUFFER_SIZE];
 			int cur = 0;
 
-			if ((err = read(sock, buf, ring_buff_get_space(&sock_buf))) < 0)
-				goto reset_out;
+			if ((err = read(sock, buf, ring_buff_get_space(&sock_buf))) < 0) {
+				/*goto reset_out;*/
+			}
 
 			do {
 				if (handle_cntl_byte(buf[cur], &state, &mode) && state != R_STOP) {
@@ -191,7 +200,7 @@ static int rlogin_handle(int sock) {
 		}
 	} /* while (1) */
 
-reset_out:
+/*reset_out:*/
 	tios.c_lflag = c_lflags;
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 
