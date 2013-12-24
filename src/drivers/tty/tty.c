@@ -157,6 +157,7 @@ static int tty_rx_worker(struct work *w) {
 	int ich;
 
 	/* no worker locks if workers are serialized. TODO is it true? -- Eldar */
+	t->ops->out_wake(t);
 
 	irq_lock();
 	while ((ich = tty_rx_dequeue(t)) != -1) {
@@ -370,7 +371,8 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
 
 	// mutex_lock(&t->lock);
-	work_disable(&t->rx_work);
+	irq_lock();
+	// work_disable(&t->rx_work);
 
 	for (count = size; count > 0; count --) {
 		// TODO handle output buffer overflow
@@ -380,7 +382,8 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 
 	softwork_post(&t->rx_work);
 
-	work_enable(&t->rx_work);
+	// work_enable(&t->rx_work);
+	irq_unlock();
 	// mutex_unlock(&t->lock);
 
 	return size - count;
