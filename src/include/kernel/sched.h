@@ -93,29 +93,6 @@ extern int sched_wakeup(struct thread *);
  * but with allocated resources on its stack */
 extern void sched_freeze(struct thread *t);
 
-__END_DECLS
-
-#define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
-	((cond_expr) ? 0 : ({                                            \
-		int __wait_ret = 0;                                          \
-		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
-		                                                             \
-		do {                                                         \
-			sched_wait_prepare();                                    \
-			                                                         \
-			if (cond_expr)                                           \
-				break;                                               \
-			                                                         \
-			__wait_ret = sched_wait_timeout(__wait_timeout,          \
-											&__wait_timeout);        \
-		} while (!__wait_ret);                                       \
-		                                                             \
-		sched_wait_cleanup();                                        \
-		                                                             \
-		__wait_ret;                                                  \
-	}))
-
 /**
  * Wait cond_expr to become TRUE.
  */
@@ -147,6 +124,29 @@ extern void sched_ack_switched(void);
  *   On operation fail.
  */
 extern void sched_signal(struct thread *thread);
+
+__END_DECLS
+
+#define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
+	((cond_expr) ? 0 : ({                                            \
+		int __wait_ret = 0;                                          \
+		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		                                                             \
+		do {                                                         \
+			sched_wait_prepare();                                    \
+			                                                         \
+			if (cond_expr)                                           \
+				break;                                               \
+			                                                         \
+			__wait_ret = sched_wait_timeout(__wait_timeout,          \
+											&__wait_timeout);        \
+		} while (!__wait_ret);                                       \
+		                                                             \
+		sched_wait_cleanup();                                        \
+		                                                             \
+		__wait_ret;                                                  \
+	}))
 
 
 #endif /* KERNEL_SCHED_H_ */

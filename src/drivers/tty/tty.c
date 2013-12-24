@@ -261,6 +261,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 
 	idesc_wait_init(&iwl, POLLIN | POLLERR);
 
+	threadsig_lock();
 	mutex_lock(&t->lock);
 	do {
 		irq_lock();
@@ -297,6 +298,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!rc);
 	mutex_unlock(&t->lock);
+	threadsig_unlock();
 
 	return rc;
 }
@@ -306,6 +308,8 @@ static int tty_blockin_output(struct tty *t, char ch) {
 	int ret;
 
 	idesc_wait_init(&iwl, POLLOUT | POLLERR);
+
+	threadsig_lock();
 
 	do {
 		if (tty_output(t, ch)) {
@@ -331,6 +335,7 @@ static int tty_blockin_output(struct tty *t, char ch) {
 		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!ret);
 
+	threadsig_unlock();
 	return ret;
 }
 

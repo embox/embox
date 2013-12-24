@@ -28,38 +28,27 @@ void semaphore_enter(struct sem *s) {
 
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
 	struct timespec current_time;
-	struct waitq_link wql;
 	int ret = 0;
 
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	if (tryenter_sched_lock(s) != 0) {
+		int ms;
+
 		clock_gettime(CLOCK_REALTIME, &current_time);
-		ret = ms2jiffies(abs_timeout->tv_nsec - current_time.tv_nsec);
-		waitq_link_init(&wql);
 
-		while (1) {
-			waitq_wait_prepare(&s->wq, &wql);
+		ms = abs_timeout->tv_nsec - current_time.tv_nsec;
 
-			if (!tryenter_sched_lock(s)) {
-				ret = 0;
-				break;
-			}
-
-			if (ret > 0)
-				ret = sched_wait_timeout(ret, NULL);
-			else
-				ret = -ETIMEDOUT;
-
-			if (ret == -ETIMEDOUT || ret == -EINTR)
-				break;
+		if (ms > 0) {
+			ret = WAITQ_WAIT_TIMEOUT(&s->wq, !tryenter_sched_lock(s),
+					abs_timeout->tv_nsec - current_time.tv_nsec);
+		} else {
+			ret = -ETIMEDOUT;
 		}
 
 		if (!tryenter_sched_lock(s))
 			ret = 0;
-
-		waitq_wait_cleanup(&s->wq, &wql);
 	}
 
 	return ret;

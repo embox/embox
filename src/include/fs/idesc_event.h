@@ -84,6 +84,7 @@ extern int idesc_notify(struct idesc *idesc, int mask);
 	 	int __res = 0;                                   \
 		idesc_wait_init(_iwl, _mask);                    \
                                                          \
+		threadsig_lock();                                \
 		__res = idesc_wait_prepare(_idesc, _iwl);        \
                                                          \
 		if (!__res) {                                    \
@@ -93,6 +94,7 @@ extern int idesc_notify(struct idesc *idesc, int mask);
 		}                                                \
                                                          \
 		idesc_wait_cleanup(_idesc, _iwl);                \
+		threadsig_unlock();                              \
 	 	__res;                                           \
 	})
 
