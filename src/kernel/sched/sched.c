@@ -405,6 +405,10 @@ static void __schedule(int preempt) {
 	ipl_enable();
 
 	assert(thread_self() == prev);
+
+	if (!prev->siglock) {
+		thread_signal_handle();
+	}
 }
 
 void schedule(void) {
