@@ -128,7 +128,7 @@ static int gptimer_init(void) {
 
 	clock_source_register(&gptimer_cs);
 
-	return irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer"));
+	return irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer");
 }
 
 
