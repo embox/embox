@@ -24,6 +24,16 @@ QT_BEGIN_NAMESPACE
 #define MOUSE_EVENT_BUFFER_SIZE 4096
 #define KBD_EVENT_BUFFER_SIZE   4096
 
+#define SOFTIRQ_LOCKED_DO_INTRET(_expr) \
+	({ \
+	 	int ret; \
+	 	softirq_lock(); \
+	 	ret = _expr; \
+	 	softirq_unlock(); \
+	 	ret; \
+	 })
+
+
 /* From VNC */
 static const struct {
     int keysym;
@@ -142,9 +152,9 @@ void *readMouseDataThread(void *arg) {
 	QEmboxVCMouseHandler *mh = (QEmboxVCMouseHandler *)arg;
 
 	while (0 == WAITQ_WAIT(&mh->new_data,
-			SOFTIRQ_LOCKED_DO(ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0))) {
+			SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0))) {
 
-		SOFTIRQ_LOCKED_DO(ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event)));
+		SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event)));
 
 		emvc = globalEmboxVC;
 
@@ -229,14 +239,14 @@ void *readKbdThread(void *arg) {
 	QEmboxVCKeyboardHandler *kh = (QEmboxVCKeyboardHandler *)arg;
 
 	while (0 == WAITQ_WAIT(&kh->new_data,
-			SOFTIRQ_LOCKED_DO(ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *))) > 0)) {
+			SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *))) > 0)) {
 		QEvent::Type type;
 		unsigned char ascii[4];
 		int key;
 		int i = 0;
 		Qt::KeyboardModifiers modifier = 0;
 
-		SOFTIRQ_LOCKED_DO(ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event)));
+		SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event)));
 
 		type = ev.type & KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
 
