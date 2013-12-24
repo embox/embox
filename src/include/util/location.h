@@ -51,7 +51,7 @@ struct location_func {
 	({ static const struct location_func __loc = LOCATION_FUNC_INIT; &__loc; })
 
 #define LOCATION_FMT(prefix, suffix) \
-	prefix "at %s : %d" suffix
+	prefix "at %s:%d" suffix
 #define LOCATION_ARGS(loc) \
 	(loc) ? (loc)->file : NULL, \
 	(loc) ? (loc)->line : 0
