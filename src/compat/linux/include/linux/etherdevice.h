@@ -37,8 +37,8 @@ static inline int is_broadcast_ether_addr(const void *addr) {
  * @return true if the address is all zeroes.
  */
 static inline int is_zero_ether_addr(const void *addr) {
-	const __u16 *_addr = addr;
-	return !(_addr[0] | _addr[1] | _addr[2]);
+	const __u8 *_addr = addr;
+	return !(_addr[0] | _addr[1] | _addr[2] | _addr[3] | _addr[4] | _addr[5]);
 }
 
 /**
