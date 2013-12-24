@@ -84,7 +84,6 @@ struct apbuart_regs {
 static volatile struct apbuart_regs *dev_regs;
 
 static int dev_regs_init(void);
-static unsigned int irq_num;
 
 EMBOX_UNIT_INIT(uart_init);
 
@@ -113,7 +112,7 @@ static int apbuart_putc(struct uart *dev, int ch) {
 }
 
 static int apbuart_has_symbol(struct uart *dev) {
-	return UART_STAT_DR & REG_LOAD(&dev_regs->status);
+	return (UART_STAT_DR & REG_LOAD(&dev_regs->status));
 }
 
 static int apbuart_getc(struct uart *dev) {
@@ -131,13 +130,11 @@ static int dev_regs_init() {
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct apbuart_regs *) amba_dev.bar[0].start;
-	irq_num = amba_dev.dev_info.irq;
 	return 0;
 }
 #elif OPTION_DEFINED(NUMBER,apbuart_base)
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
-	irq_num = OPTION_GET(NUMBER,irq_num);
 	return 0;
 }
 #else
