@@ -38,7 +38,6 @@ EMBOX_UNIT_INIT(ti816x_init);
 
 struct emac_desc_head {
 	struct emac_desc desc; /* MUST BE FIRST */
-	char pad[420];
 	struct list_link lnk;
 };
 
