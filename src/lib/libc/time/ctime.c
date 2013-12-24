@@ -118,17 +118,17 @@ time_t mktime(struct tm *tm) {
 }
 
 static long days_of_month(int year, int month) {
-	long day_of_month;
+	long days_of_month;
 
 	if (month == 2) {
-		day_of_month = (year % 4) ? MONTH_29 : MONTH_28;
+		days_of_month = (year % 4) ? MONTH_28 : MONTH_29;
 	} else if (month < 8) {
-		day_of_month = (month % 2) ? MONTH_31 : MONTH_30;
+		days_of_month = (month % 2) ? MONTH_31 : MONTH_30;
 	} else {
-		day_of_month = (month % 2) ? MONTH_30 : MONTH_31;
+		days_of_month = (month % 2) ? MONTH_30 : MONTH_31;
 	}
 
-	return day_of_month;
+	return days_of_month;
 }
 
 
