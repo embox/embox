@@ -90,9 +90,8 @@ static int uart_setup(struct uart *uart) {
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
-	do {
+	while (uart_hasrx(dev))
 		tty_rx_putc(&dev->tty, uart_getc(dev), 0);
-	} while (uart_hasrx(dev));
 
 	return IRQ_HANDLED;
 }
@@ -101,8 +100,12 @@ static void uart_out_wake(struct tty *t) {
 	struct uart *uart_dev = member_cast_out(t, struct uart, tty);
 	int ich;
 
+	irq_lock();
+
 	while ((ich = tty_out_getc(t)) != -1)
 		uart_putc(uart_dev, (char) ich);
+
+	irq_unlock();
 }
 
 static void uart_term_setup(struct tty *tty, struct termios *termios) {
