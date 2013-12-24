@@ -32,4 +32,13 @@ static inline void softirq_unlock(void) {
 	critical_dispatch_pending();
 }
 
+#define SOFTIRQ_LOCKED_DO(_expr) \
+	({ \
+	 	int ret; \
+	 	softirq_lock(); \
+	 	ret = _expr; \
+	 	softirq_unlock(); \
+	 	ret; \
+	 })
+
 #endif /* KERNEL_SOFTIRQ_LOCK_H_ */
