@@ -128,14 +128,11 @@ static int gptimer_init(void) {
 
 	clock_source_register(&gptimer_cs);
 
-	if (0 != irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer")) {
-		panic("gptimer irq_attach failed");
-	}
-	return 0;
+	return irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer"));
 }
 
 
-static int gptimer_config(struct time_dev_conf * conf);
+static int gptimer_config(struct time_dev_conf *conf);
 
 static cycle_t gptimer_read(void) {
 	return TIMER0_RELOAD - REG_LOAD(&dev_regs->timer[0].counter);
@@ -146,16 +143,10 @@ static struct time_event_device gptimer_ed = {
 	.resolution = TIMER0_RELOAD + 1,
 };
 
-
-static int gptimer_config(struct time_dev_conf * conf) {
-	if (1 > 0) {
-		/*REG_STORE(&dev_regs->timer[0].reload, useconds);*/
-		REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.resolution - 1);
-		REG_STORE(&dev_regs->timer[0].counter, 0);
-		REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
-	} else {
-		REG_STORE(&dev_regs->timer[0].ctrl, 0x0);
-	}
+static int gptimer_config(struct time_dev_conf *conf) {
+	REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.resolution - 1);
+	REG_STORE(&dev_regs->timer[0].counter, 0);
+	REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	return 0;
 }
 
