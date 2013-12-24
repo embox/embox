@@ -266,7 +266,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLERR);
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLOUT | POLLERR);
 		break;
 	}
 }

@@ -249,6 +249,8 @@ static void *telnet_thread_handler(void* args) {
 		goto out;
 	}
 
+	close(pptyfd[1]);
+
 	/* Preparations for select call */
 	nfds = max(sock, pptyfd[0]) + 1;
 
@@ -281,6 +283,7 @@ static void *telnet_thread_handler(void* args) {
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
 		if (!fd_cnt) {
+#if 0
 			fcntl(sock, F_SETFL, O_NONBLOCK);
 			len = read(sock, s, XBUFF_LEN);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
@@ -292,6 +295,7 @@ static void *telnet_thread_handler(void* args) {
 			/* preventing further execution since some fds is set,
  			 * but they are not active and will block (fd_cnt == 0)
 			 */
+#endif
 			continue;
 		}
 
@@ -302,6 +306,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 			else {
 				MD(printf("write on sock: %d %d\n", len, errno));
+				goto kill_and_out;
 			}
 		}
 
@@ -310,6 +315,7 @@ static void *telnet_thread_handler(void* args) {
 			pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN);
 			if (pipe_data_len <= 0) {
 				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
+				goto out;
 			}
 		}
 
@@ -341,7 +347,6 @@ kill_and_out:
 	kill(tid, 9);
 out:
 	close(pptyfd[0]);
-	close(pptyfd[1]);
 	close(sock);
 	clients[client_num].fd = -1;
 

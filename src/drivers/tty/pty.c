@@ -16,6 +16,7 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
+#if 0
 static void pty_out_wake(struct tty *t) {
 	struct pty *pty = pty_from_tty(t);
 
@@ -74,3 +75,4 @@ struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 
 	return p;
 }
+#endif

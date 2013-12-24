@@ -280,6 +280,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		count = next - curr;
 		curr = next;
 		if (size <= count) {
+			idesc_wait_cleanup(t->idesc, &iwl);
 			rc = curr - buff;
 			break;
 		}
@@ -293,10 +294,9 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 			mutex_lock(&t->lock);
 
 		}
+		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!rc);
 	mutex_unlock(&t->lock);
-
-	idesc_wait_cleanup(t->idesc, &iwl);
 
 	return rc;
 }

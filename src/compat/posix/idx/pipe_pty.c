@@ -23,93 +23,154 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <fs/idesc.h>
+#include <fs/idesc_event.h>
 #include <fs/flags.h>
 
 #include <kernel/task/idesc_table.h>
 
-struct ppty;
+struct pty;
 
-struct idesc_ppty {
+struct idesc_pty {
 	struct idesc idesc;
-	struct ppty *ppty;
+	struct pty *pty;
 };
 
-struct ppty {
+#if 0
+struct pty {
 	struct pty pty;
-	struct idesc *master, *slave;
+	/*struct idesc *master, *slave;*/
+};
+#endif
+
+static void pty_out_wake(struct tty *t) {
+	struct pty *pty = pty_from_tty(t);
+
+	idesc_notify(pty->master, POLLIN);
+}
+
+static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
+	struct idesc_wait_link wl;
+
+	return IDESC_WAIT_LOCKED(mutex_unlock(&t->lock),
+			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+			mutex_lock(&t->lock));
+}
+
+size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
+	struct tty *t = pty_to_tty(pt);
+	int ret;
+
+	mutex_lock(&t->lock);
+	{
+		do {
+			ret = tty_out_buf(t, buff, size);
+			if (ret) {
+				break;
+			}
+
+			if (!t->idesc) {
+				break;
+			}
+
+			ret = pty_wait(idesc, t, POLLIN | POLLERR);
+		} while (!ret);
+	}
+	mutex_unlock(&t->lock);
+
+	return ret;
+}
+
+size_t pty_write(struct pty *pt, const char *buff, size_t size) {
+	struct tty *t = pty_to_tty(pt);
+	const char *saved_buff = buff;
+
+	while (size--)
+		tty_rx_putc(t, *buff++, 0);
+
+	return buff - saved_buff;
+}
+
+const struct tty_ops pty_ops = {
+	.out_wake = pty_out_wake,
 };
 
-static int ppty_close(struct idesc *idesc);
-static int ppty_ioctl(struct idesc *idesc, int request, void *data);
-static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int ppty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
-static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int ppty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
-static int ppty_fstat(struct idesc *data, void *buff);
-static int ppty_master_status(struct idesc *idesc, int mask);
-static int ppty_slave_status(struct idesc *idesc, int mask);
+struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 
-static const struct idesc_ops ppty_master_ops = {
-		.write = ppty_master_write,
-		.read  = ppty_master_read,
-		.close = ppty_close,
-		/*.ioctl = ppty_ioctl,*/
-		/*.fstat = ppty_fstat,*/
-		.status = ppty_master_status,
+	tty_init(pty_to_tty(p), &pty_ops);
+	p->tty.idesc = slave;
+	p->master = master;
+
+	return p;
+}
+static int pty_close(struct idesc *idesc);
+static int pty_ioctl(struct idesc *idesc, int request, void *data);
+static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int pty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int pty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int pty_fstat(struct idesc *data, void *buff);
+static int pty_master_status(struct idesc *idesc, int mask);
+static int pty_slave_status(struct idesc *idesc, int mask);
+
+static const struct idesc_ops pty_master_ops = {
+		.write = pty_master_write,
+		.read  = pty_master_read,
+		.close = pty_close,
+		/*.ioctl = pty_ioctl,*/
+		/*.fstat = pty_fstat,*/
+		.status = pty_master_status,
 };
 
-static const struct idesc_ops ppty_slave_ops = {
-		.write  = ppty_slave_write,
-		.read   = ppty_slave_read,
-		.close  = ppty_close,
-		.ioctl  = ppty_ioctl,
-		.fstat  = ppty_fstat,
-		.status = ppty_slave_status,
+static const struct idesc_ops pty_slave_ops = {
+		.write  = pty_slave_write,
+		.read   = pty_slave_read,
+		.close  = pty_close,
+		.ioctl  = pty_ioctl,
+		.fstat  = pty_fstat,
+		.status = pty_slave_status,
 };
 
-static struct ppty *ppty_create(void) {
-	struct ppty *ppty;
+static struct pty *pty_create(void) {
+	struct pty *pty;
 
-	ppty = malloc(sizeof(struct ppty));
+	pty = malloc(sizeof(struct pty));
 
-//	if (ppty) {
-//		pty_init(&ppty->pty);
+//	if (pty) {
+//		pty_init(&pty->pty);
 //	}
 
-	return ppty;
+	return pty;
 }
 
-static void ppty_delete(struct ppty *ppty) {
+static void pty_delete(struct pty *pty) {
 
-	free(ppty);
+	free(pty);
 }
 
-static struct idesc_ppty *idesc_ppty_create(struct ppty *ppty, const struct idesc_ops *ops,
-		struct idesc **idesc) {
-	struct idesc_ppty *ippty;
+static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_ops *ops) {
+	struct idesc_pty *ipty;
 
-	ippty = malloc(sizeof(struct idesc_ppty));
+	ipty = malloc(sizeof(struct idesc_pty));
 
-	if (ippty) {
-		idesc_init(&ippty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
+	if (ipty) {
+		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
 	}
 
-	ippty->ppty = ppty;
+	ipty->pty = pty;
 
-	*idesc = &ippty->idesc;
-
-	return ippty;
+	return ipty;
 }
 
-static void idesc_ppty_delete(struct idesc_ppty *ppty, struct idesc **idesc) {
+static void idesc_pty_delete(struct idesc_pty *pty, struct idesc **idesc) {
 
 	*idesc = NULL;
 
-	free(ppty);
+	free(pty);
 }
 
-static int ppty_fixup_error(struct idesc *idesc, int code) {
-	struct ppty *ppty;
+#if 0
+static int pty_fixup_error(struct idesc *idesc, int code) {
+	struct pty *pty;
 	struct idesc *idesc_other;
 
 	/* Negative => error, positive => some data read */
@@ -117,13 +178,13 @@ static int ppty_fixup_error(struct idesc *idesc, int code) {
 		return code;
 	}
 
-	ppty = ((struct idesc_ppty *) idesc)->ppty;
+	pty = ((struct idesc_pty *) idesc)->pty;
 
-	if (idesc == ppty->master) {
-		idesc_other = ppty->slave;
+	if (idesc == pty->master) {
+		idesc_other = pty->slave;
 	} else {
-		assert(idesc == ppty->slave);
-		idesc_other = ppty->master;
+		assert(idesc == pty->slave);
+		idesc_other = pty->master;
 	}
 
 	if (idesc_other == NULL) {
@@ -137,32 +198,34 @@ static int ppty_fixup_error(struct idesc *idesc, int code) {
 	assert(idesc->idesc_flags & O_NONBLOCK);
 	return -EAGAIN;
 }
+#endif
 
-static int ppty_close(struct idesc *idesc) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
-	struct idesc **ippty_pm, **ippty_ps;
-	struct ppty *ppty;
+static int pty_close(struct idesc *idesc) {
+	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
+	struct idesc **ipty_pm, **ipty_ps;
+	struct pty *pty;
 
-	ippty_pm = &ippty->ppty->master;
-	ippty_ps = &ippty->ppty->slave;
+	ipty_pm = &ipty->pty->master;
+	ipty_ps = &ipty->pty->tty.idesc;
 
-	ppty = ippty->ppty;
+	pty = ipty->pty;
 
 	sched_lock();
 	{
-		if (idesc == *ippty_pm) {
-			idesc_ppty_delete((struct idesc_ppty *) idesc, ippty_pm);
+		if (idesc == *ipty_pm) {
+			idesc_pty_delete((struct idesc_pty *) idesc, ipty_pm);
 			/* Wake up writing end if it is sleeping. */
 			/*event_notify(&pipe->write_wait);*/
-		} else if (idesc == *ippty_ps) {
-			idesc_ppty_delete((struct idesc_ppty *) idesc, ippty_ps);
+			pty->tty.idesc = NULL; // XXX
+		} else if (idesc == *ipty_ps) {
+			idesc_pty_delete((struct idesc_pty *) idesc, ipty_ps);
 			/* Wake up reading end if it is sleeping. */
 			/*event_notify(&pipe->read_wait);*/
 		}
 
 		/* Free memory if both of ends are closed. */
-		if (NULL == *ippty_pm && NULL == *ippty_ps) {
-			ppty_delete(ppty);
+		if (NULL == *ipty_pm && NULL == *ipty_ps) {
+			pty_delete(pty);
 		}
 
 	}
@@ -171,43 +234,44 @@ static int ppty_close(struct idesc *idesc) {
 	return 0;
 }
 
-static int ppty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
+	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	int res;
 
-	res = pty_write(&ippty->ppty->pty, buf, nbyte);
+	res = pty_write(ipty->pty, buf, nbyte);
 
 	return res;
 }
 
-static int ppty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+static int pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
+	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	int res;
 
-	res = pty_read(&ippty->ppty->pty, desc, buf, nbyte);
+	res = pty_read(ipty->pty, desc, buf, nbyte);
 	return res;
 }
 
-static int ppty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
+	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	int res;
 
-	res = tty_write(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	res = tty_write(pty_to_tty(ipty->pty), buf, nbyte);
 
-	//return ppty_fixup_error(desc, res);
+	//return pty_fixup_error(desc, res);
 	return res;
 }
 
-static int ppty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) desc;
+static int pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
+	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	int res;
 
-	res = tty_read(pty_to_tty(&ippty->ppty->pty), buf, nbyte);
+	res = tty_read(pty_to_tty(ipty->pty), buf, nbyte);
 
-	return ppty_fixup_error(desc, res);
+	/*return pty_fixup_error(desc, res);*/
+	return res;
 }
 
-static int ppty_fstat(struct idesc *data, void *buff) {
+static int pty_fstat(struct idesc *data, void *buff) {
 	struct stat *st = buff;
 
 	st->st_mode = S_IFCHR;
@@ -216,17 +280,23 @@ static int ppty_fstat(struct idesc *data, void *buff) {
 
 }
 
-static int ppty_ioctl(struct idesc *idesc, int request, void *data) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
+static int pty_ioctl(struct idesc *idesc, int request, void *data) {
+	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 
-	return tty_ioctl(pty_to_tty(&ippty->ppty->pty), request, data);
+	return tty_ioctl(pty_to_tty(ipty->pty), request, data);
 }
 
 //TODO check it
-static int ppty_master_status(struct idesc *idesc, int mask) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
-	struct pty *pty = &ippty->ppty->pty;
+static int pty_master_status(struct idesc *idesc, int mask) {
+	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
+	struct pty *pty = ipty->pty;
 	int res;
+
+	/* if slave is closed read/write/err will not block and will
+ 	 * cause error */
+	if (!ipty->pty->tty.idesc) {
+		return 1;
+	}
 
 	switch (mask) {
 	case POLLIN:
@@ -244,10 +314,16 @@ static int ppty_master_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
-static int ppty_slave_status(struct idesc *idesc, int mask) {
-	struct idesc_ppty *ippty = (struct idesc_ppty *) idesc;
-	struct pty *pty = &ippty->ppty->pty;
+static int pty_slave_status(struct idesc *idesc, int mask) {
+	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
+	struct pty *pty = ipty->pty;
 	int res;
+
+	/* if master is closed read/write/err will not block and will
+ 	 * cause error */
+	if (!ipty->pty->master) {
+		return 1;
+	}
 
 	switch (mask) {
 	case POLLIN:
@@ -265,62 +341,62 @@ static int ppty_slave_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
-int ppty(int pptyfds[2]) {
+int ppty(int ptyfds[2]) {
 	int res;
-	struct ppty *ppty;
-	struct idesc_ppty *master, *slave;
+	struct pty *pty;
+	struct idesc_pty *master, *slave;
 	struct idesc_table *it;
 
 	it = task_get_idesc_table(task_self());
 
-	ppty = NULL;
+	pty = NULL;
 	master = slave = NULL;
 
-	ppty = ppty_create();
-	if (!ppty) {
+	pty = pty_create();
+	if (!pty) {
 		res = ENOMEM;
 		goto out_err;
 	}
 
-	master = idesc_ppty_create(ppty, &ppty_master_ops, &ppty->master);
-	slave = idesc_ppty_create(ppty, &ppty_slave_ops, &ppty->slave);
-	pty_init(&ppty->pty, ppty->master, ppty->slave);
+	master = idesc_pty_create(pty, &pty_master_ops);
+	slave = idesc_pty_create(pty, &pty_slave_ops);
+	pty_init(pty, &master->idesc, &slave->idesc);
 
 	if (!master || !slave) {
 		res = ENOMEM;
 		goto out_err;
 	}
 
-	pptyfds[0] = idesc_table_add(it, &master->idesc, 0);
-	pptyfds[1] = idesc_table_add(it, &slave->idesc, 0);
+	ptyfds[0] = idesc_table_add(it, &master->idesc, 0);
+	ptyfds[1] = idesc_table_add(it, &slave->idesc, 0);
 
-	if (pptyfds[0] < 0) {
-		res = -pptyfds[0];
+	if (ptyfds[0] < 0) {
+		res = -ptyfds[0];
 		goto out_err;
 	}
 
-	if (pptyfds[1] < 0) {
-		res = -pptyfds[1];
+	if (ptyfds[1] < 0) {
+		res = -ptyfds[1];
 		goto out_err;
 	}
 
 	return 0;
 
 out_err:
-	if (pptyfds[1] >= 0) {
-		idesc_table_del(it, pptyfds[1]);
+	if (ptyfds[1] >= 0) {
+		idesc_table_del(it, ptyfds[1]);
 	}
-	if (pptyfds[0] >= 0) {
-		idesc_table_del(it, pptyfds[0]);
+	if (ptyfds[0] >= 0) {
+		idesc_table_del(it, ptyfds[0]);
 	}
 	if (master) {
-		idesc_ppty_delete(master, &ppty->master);
+		idesc_pty_delete(master, &pty->master);
 	}
 	if (slave) {
-		idesc_ppty_delete(slave, &ppty->slave);
+		idesc_pty_delete(slave, &pty->tty.idesc);
 	}
-	if (ppty) {
-		ppty_delete(ppty);
+	if (pty) {
+		pty_delete(pty);
 	}
 	SET_ERRNO(res);
 	return -1;
