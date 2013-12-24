@@ -8,9 +8,9 @@
  */
 
 #include <assert.h>
-#include <kernel/event.h>
-#include <kernel/manual_event.h>
-#include <kernel/task/io_sync.h>
+//#include <kernel/event.h>
+//#include <kernel/manual_event.h>
+//#include <kernel/task/io_sync.h>
 #include <stddef.h>
 
 void io_sync_init(struct io_sync *ios, int r_set, int w_set) {

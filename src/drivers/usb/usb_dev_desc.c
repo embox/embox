@@ -11,7 +11,9 @@
 #include <drivers/usb.h>
 #include <drivers/usb_desc.h>
 #include <mem/misc/pool.h>
-#include <kernel/manual_event.h>
+#include <kernel/sched.h>
+#include <kernel/thread.h>
+#include <kernel/irq_lock.h>
 
 #include <drivers/usb_dev_desc.h>
 
@@ -107,8 +109,7 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		}
 	}
 
-	req = usb_endp_request_alloc(endp, notify_hnd, arg,
-			token, buf, len);
+	req = usb_endp_request_alloc(endp, notify_hnd, arg, token, buf, len);
 	if (!req) {
 		return -ENOMEM;
 	}
@@ -116,27 +117,37 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 	return usb_endp_request(endp, req);
 }
 
+struct usb_req_data {
+	struct thread *thr;
+	volatile int res;
+};
+
 static void usb_req_notify(struct usb_request *req, void *arg) {
-	struct manual_event *event = arg;
+	struct usb_req_data *wait_data = arg;
 
 	assert(req->req_stat == USB_REQ_NOERR);
 
-	manual_event_set_and_notify(event);
+	wait_data->res = 1;
+	sched_wakeup(wait_data->thr);
 }
 
 int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		void *buf, size_t len) {
-	struct manual_event event;
 	int res;
+	struct usb_req_data wait_data;
 
-	manual_event_init(&event, 0);
+	wait_data.res = 0;
+	wait_data.thr = thread_self();
 
-	res = usb_request_cb(ddesc, endp_n, token, buf, len,
-			usb_req_notify, &event);
-	if (res != 0) {
-		return res;
-	}
+	irq_lock();
+		res = usb_request_cb(ddesc, endp_n, token, buf, len,
+				usb_req_notify, &wait_data);
+		if (res != 0) {
+			return res;
+		}
+	irq_unlock();
+	res = SCHED_WAIT(wait_data.res);
 
-	return manual_event_wait(&event, MANUAL_EVENT_TIMEOUT_INFINITE);
+	return res;
 }
 
