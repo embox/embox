@@ -15,6 +15,7 @@
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
 
+#include <kernel/softirq_lock.h>
 #include <kernel/sched/waitq.h>
 #include <util/ring_buff.h>
 
@@ -140,10 +141,10 @@ void *readMouseDataThread(void *arg) {
 	QEmboxVC *emvc;
 	QEmboxVCMouseHandler *mh = (QEmboxVCMouseHandler *)arg;
 
-	while (WAITQ_WAIT(&mh->new_data,
-			ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0) == 0) {
+	while (0 == WAITQ_WAIT(&mh->new_data,
+			SOFTIRQ_LOCKED_DO(ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0))) {
 
-		ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event));
+		SOFTIRQ_LOCKED_DO(ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event)));
 
 		emvc = globalEmboxVC;
 
@@ -227,15 +228,15 @@ void *readKbdThread(void *arg) {
 	struct input_event ev;
 	QEmboxVCKeyboardHandler *kh = (QEmboxVCKeyboardHandler *)arg;
 
-	while (WAITQ_WAIT(&kh->new_data,
-			ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *)) > 0) == 0) {
+	while (0 == WAITQ_WAIT(&kh->new_data,
+			SOFTIRQ_LOCKED_DO(ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *))) > 0)) {
 		QEvent::Type type;
 		unsigned char ascii[4];
 		int key;
 		int i = 0;
 		Qt::KeyboardModifiers modifier = 0;
 
-		ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event));
+		SOFTIRQ_LOCKED_DO(ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event)));
 
 		type = ev.type & KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
 
@@ -249,6 +250,8 @@ void *readKbdThread(void *arg) {
 
 		int len = keymap_to_ascii(&ev, ascii);
 
+		key = 0;
+		i = 0;
 		while (emboxKeyMap[i].keysym != 0) {
 			if (emboxKeyMap[i].keysym == ascii[i]) {
 				key = emboxKeyMap[i].keycode;
@@ -271,6 +274,8 @@ void QEmboxVCKeyboardHandler::readDataLoop() {
 static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 	QEmboxVC *emvc = globalEmboxVC;
 
+	softirq_lock();
+
 	if (ev->devtype == INPUT_DEV_MOUSE) {
 		emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
 		emvc->mouseHandler->storeData(ev, sizeof(struct input_event));
@@ -280,6 +285,8 @@ static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 		emvc->keyboardHandler->storeData(ev, sizeof(struct input_event));
 		emvc->keyboardHandler->activate();
 	}
+
+	softirq_unlock();
 }
 
 static void __scheduleDevisualization(struct vc *vc) {

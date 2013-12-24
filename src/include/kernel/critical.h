@@ -213,8 +213,14 @@ static inline int critical_pending(struct critical_dispatcher *d) {
 	return d->mask & 0x1;
 }
 
+
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+
 extern void critical_request_dispatch(struct critical_dispatcher *d);
 extern void critical_dispatch_pending(void);
+
+__END_DECLS
 
 #endif /* __ASSEMBLER__ */
 
