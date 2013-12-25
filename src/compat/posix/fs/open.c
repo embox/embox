@@ -50,11 +50,6 @@ int open(const char *path, int __oflag, ...) {
 	mode = va_arg(args, mode_t);
 	va_end(args);
 
-	if (__oflag & O_EXCL) {
-		/* If O_EXCL is set and O_CREAT is not set, the result is undefined.*/
-		assert(__oflag & O_CREAT);
-	}
-
 	parent_path = dirname((char *)path);
 	if (NULL == (dir = opendir(parent_path))) {
 		return -1;
@@ -79,7 +74,9 @@ int open(const char *path, int __oflag, ...) {
 			goto out;
 		}
 	} else {
-		if (__oflag & O_EXCL) {
+		/* When used with O_CREAT, if the file already exists it is an error
+		 * and the open() will fail. */
+		if (__oflag & O_EXCL && __oflag & O_CREAT) {
 			SET_ERRNO(EEXIST);
 			rc = -1;
 			goto out;
