@@ -54,6 +54,10 @@ static void print_stat(void) {
 					t->ready        ? 'R' : ' ',
 					t->waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC);
+				if (t->ready || sched_active(t))
+					running++;
+				else
+					sleeping++;
 			}
 		}
 	}
