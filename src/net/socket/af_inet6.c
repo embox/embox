@@ -44,9 +44,7 @@ EMBOX_NET_FAMILY(AF_INET6, inet6_types, ip6_out_ops);
 static int inet6_init(struct sock *sk) {
 	struct inet6_sock *in6_sk;
 
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	in6_sk = to_inet6_sock(sk);
 	in6_sk->src_port_alloced = 0;
@@ -64,9 +62,7 @@ static int inet6_init(struct sock *sk) {
 }
 
 static int inet6_close(struct sock *sk) {
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->close == NULL) {
@@ -94,8 +90,10 @@ static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	const struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in6)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in6) {
 		return -EINVAL;
 	}
 
@@ -129,9 +127,7 @@ static int inet6_bind_local(struct sock *sk) {
 	size_t port;
 	struct sockaddr_in6 addr_in6;
 
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	addr_in6.sin6_family = AF_INET6;
 	memcpy(&addr_in6.sin6_addr, &in6addr_loopback,
@@ -190,8 +186,10 @@ static int inet6_stream_connect(struct sock *sk,
 	int ret;
 	const struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in6)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in6) {
 		return -EINVAL;
 	}
 
@@ -207,7 +205,7 @@ static int inet6_stream_connect(struct sock *sk,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->connect == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->connect(sk, addr, addrlen, flags);
@@ -219,8 +217,10 @@ static int inet6_nonstream_connect(struct sock *sk,
 	int ret;
 	const struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in6)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in6) {
 		return -EINVAL;
 	}
 
@@ -243,13 +243,15 @@ static int inet6_nonstream_connect(struct sock *sk,
 }
 
 static int inet6_listen(struct sock *sk, int backlog) {
-	if ((sk == NULL) || (backlog < 0)) {
+	assert(sk);
+
+	if (backlog < 0) {
 		return -EINVAL;
 	}
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->listen == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->listen(sk, backlog);
@@ -260,9 +262,8 @@ static int inet6_accept(struct sock *sk, struct sockaddr *addr,
 	int ret;
 	struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (out_sk == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(out_sk);
 
 	addr_in6 = (struct sockaddr_in6 *)addr;
 	if (((addr_in6 == NULL) && (addrlen != NULL))
@@ -273,7 +274,7 @@ static int inet6_accept(struct sock *sk, struct sockaddr *addr,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->accept == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	ret = sk->p_ops->accept(sk, addr, addrlen, flags, out_sk);
@@ -294,9 +295,8 @@ static int inet6_sendmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	const struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (msg == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
 
 	addr_in6 = (const struct sockaddr_in6 *)msg->msg_name;
 	if ((addr_in6 != NULL) &&
@@ -307,7 +307,7 @@ static int inet6_sendmsg(struct sock *sk, struct msghdr *msg,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->sendmsg == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->sendmsg(sk, msg, flags);
@@ -318,13 +318,12 @@ static int inet6_recvmsg(struct sock *sk, struct msghdr *msg,
 	int ret;
 	struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (msg == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->recvmsg == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	ret = sk->p_ops->recvmsg(sk, msg, flags);
@@ -349,8 +348,11 @@ static int inet6_getsockname(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
-			|| (*addrlen < sizeof *addr_in6)) {
+	assert(sk);
+	assert(addr);
+	assert(addrlen);
+
+	if (*addrlen < sizeof *addr_in6) {
 		return -EINVAL;
 	}
 
@@ -366,8 +368,11 @@ static int inet6_getpeername(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in6 *addr_in6;
 
-	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
-			|| (*addrlen < sizeof *addr_in6)) {
+	assert(sk);
+	assert(addr);
+	assert(addrlen);
+
+	if (*addrlen < sizeof *addr_in6) {
 		return -EINVAL;
 	}
 
@@ -381,10 +386,10 @@ static int inet6_getpeername(struct sock *sk,
 
 static int inet6_getsockopt(struct sock *sk, int level,
 		int optname, void *optval, socklen_t *optlen) {
-	if ((sk == NULL) || (optval == NULL) || (optlen == NULL)
-			|| (*optlen < 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(optval);
+	assert(optlen);
+	assert(*optlen >= 0);
 
 	if (level != IPPROTO_IPV6) {
 		assert(sk->p_ops != NULL);
@@ -405,9 +410,9 @@ static int inet6_getsockopt(struct sock *sk, int level,
 
 static int inet6_setsockopt(struct sock *sk, int level,
 		int optname, const void *optval, socklen_t optlen) {
-	if ((sk == NULL) || (optval == NULL) || (optlen < 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(optval);
+	assert(optlen >= 0);
 
 	if (level != IPPROTO_IPV6) {
 		assert(sk->p_ops != NULL);
@@ -427,13 +432,11 @@ static int inet6_setsockopt(struct sock *sk, int level,
 }
 
 static int inet6_shutdown(struct sock *sk, int how) {
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->shutdown == NULL) {
-		return 0;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->shutdown(sk, how);

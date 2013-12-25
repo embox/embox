@@ -23,10 +23,12 @@
 #include <fs/kfsop.h>
 #include <fs/perm.h>
 #include <fs/flags.h>
+#include <fs/file_desc.h>
+//#include <fs/file_operation.h>
 
 #include <security/security.h>
 
-#include <kernel/task/idx.h>
+
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
 
@@ -621,10 +623,10 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
 int kflock(int fd, int operation) {
 	int rc;
 	flock_t *flock;
-	struct idx_desc *idesc;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
+	struct file_desc *fdesc;
 	struct thread *current = thread_self();
 
 	/**
@@ -661,8 +663,8 @@ int kflock(int fd, int operation) {
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
-	idesc = task_self_idx_get(fd);
-	flock = &((struct file_desc *) idesc->data->fd_struct)->node->flock;
+	fdesc = file_desc_get(fd);
+	flock = &(fdesc)->node->flock;
 	exlock = &flock->exlock;
 	shlock_count = &flock->shlock_count;
 	flock_guard = &flock->flock_guard;

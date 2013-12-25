@@ -29,6 +29,8 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <fs/file_operation.h>
+
 #include "ext3_journal.h"
 
 #define EXT2_NAME "ext2"

@@ -130,6 +130,33 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	return 0;
 }
 
+static void __sched_freeze(struct thread *t) {
+	int in_rq;
+
+	assert(t);
+
+	spin_lock(&rq.lock);
+	{
+		in_rq = t->ready && !sched_active(t);
+
+		if (in_rq)
+			__sched_dequeue(t);
+
+		t->ready = false;
+
+		/* XXX ponder on safety of the below code outside of the rq->lock*/
+		t->active = false;
+		t->waiting = false;
+	}
+	spin_unlock(&rq.lock);
+}
+
+void sched_freeze(struct thread *t) {
+	assert(t);
+	/* XXX acquired mostly for t->waiting */
+	SPIN_IPL_PROTECTED_DO(&t->lock, __sched_freeze(t));
+}
+
 /*
  * Managing waiting state of a thread
  *
@@ -377,9 +404,11 @@ static void __schedule(int preempt) {
 
 	ipl_enable();
 
-	thread_signal_handle();
-
 	assert(thread_self() == prev);
+
+	if (!prev->siglock) {
+		thread_signal_handle();
+	}
 }
 
 void schedule(void) {

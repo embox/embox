@@ -9,7 +9,7 @@
 #ifndef IDE_H_
 #define IDE_H_
 
-#include <kernel/event.h>
+#include <kernel/sched/waitq.h>
 
 #define CDSECTORSIZE            2048
 
@@ -296,7 +296,7 @@ typedef struct hdc  {
 	struct prd *prds;                    /* PRD list for DMA transfer */
 	unsigned long prds_phys;             /* Physical address of PRD list */
 
-	struct event event;
+	struct waitq waitq;
 } hdc_t;
 
 struct partition {

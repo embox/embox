@@ -16,6 +16,7 @@
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/thread/signal_lock.h>
 
 #include <kernel/time/time.h>
 
@@ -71,6 +72,7 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 		int __wait_ret = 0;                                          \
 		waitq_link_init(&wql);                                       \
 		                                                             \
+		threadsig_lock();                                            \
 		do {                                                         \
 			waitq_wait_prepare(wq, &wql);                            \
 			                                                         \
@@ -82,9 +84,29 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 		} while (!__wait_ret);                                       \
 		                                                             \
 		waitq_wait_cleanup(wq, &wql);                                \
+		threadsig_unlock();                                          \
 		                                                             \
 		__wait_ret;                                                  \
 	}))
+
+#define WAITQ_WAIT_ONCE(wq, timeout) \
+	({                                                               \
+	 	struct waitq_link wql;                                       \
+		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		int __wait_ret = 0;                                          \
+		                                                             \
+		waitq_link_init(&wql);                                       \
+		                                                             \
+		threadsig_lock();                                            \
+		waitq_wait_prepare(wq, &wql);                                \
+		sched_wait_timeout(__wait_timeout, NULL);                    \
+		waitq_wait_cleanup(wq, &wql);                                \
+		                                                             \
+		threadsig_unlock();                                          \
+		__wait_ret;                                                  \
+	})
+
 
 #define WAITQ_WAIT(wq, cond_expr) \
 	WAITQ_WAIT_TIMEOUT(wq, cond_expr, SCHED_TIMEOUT_INFINITE)

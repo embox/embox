@@ -10,28 +10,25 @@
 #include <stddef.h>
 #include <errno.h>
 
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
-
 #include <net/socket/ksocket.h>
 
 #include <sys/socket.h>
+#include <poll.h>
 
-static inline struct sock * desc2sock(struct idx_desc *desc) {
-	return desc != NULL ? task_idx_desc_data(desc) : NULL;
-}
+const struct idesc_ops task_idx_ops_socket;
 
-static inline int desc2flags(struct idx_desc *desc) {
-	return desc != NULL ? *task_idx_desc_flags_ptr(desc) : 0;
-}
-
-static ssize_t socket_read(struct idx_desc *desc, void *buff,
+static ssize_t socket_read(struct idesc *desc, void *buff,
 		size_t size) {
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
+
+	if (sk->shutdown_flag & (SHUT_RD + 1))
+		return SET_ERRNO(EPIPE);
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -42,7 +39,7 @@ static ssize_t socket_read(struct idx_desc *desc, void *buff,
 	iov.iov_base = buff;
 	iov.iov_len = size;
 
-	ret = krecvmsg(desc2sock(desc), &msg, desc2flags(desc));
+	ret = krecvmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -51,13 +48,18 @@ static ssize_t socket_read(struct idx_desc *desc, void *buff,
 	return iov.iov_len;
 }
 
-static ssize_t socket_write(struct idx_desc *desc, const void *buff,
+static ssize_t socket_write(struct idesc *desc, const void *buff,
 		size_t size) {
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
+	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
+
+	if (sk->shutdown_flag & (SHUT_WR + 1))
+		return SET_ERRNO(EPIPE);
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -68,7 +70,7 @@ static ssize_t socket_write(struct idx_desc *desc, const void *buff,
 	iov.iov_base = (void *)buff;
 	iov.iov_len = size;
 
-	ret = ksendmsg(desc2sock(desc), &msg, desc2flags(desc));
+	ret = ksendmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -77,12 +79,14 @@ static ssize_t socket_write(struct idx_desc *desc, const void *buff,
 	return iov.iov_len;
 }
 
-static int socket_close(struct idx_desc *desc) {
+static int socket_close(struct idesc *desc) {
 	int ret;
+	struct sock *sk = (struct sock *)desc;
 
-	assert(desc != NULL);
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
 
-	ret = ksocket_close(desc2sock(desc));
+	ret = ksocket_close(sk);
 	if (ret != 0) {
 		SET_ERRNO(-ret);
 		return -1;
@@ -91,8 +95,51 @@ static int socket_close(struct idx_desc *desc) {
 	return 0;
 }
 
-const struct task_idx_ops task_idx_ops_socket = {
+static int socket_status(struct idesc *desc, int status_nr) {
+	struct sock *sk = (struct sock *)desc;
+	int res;
+
+	assert(sk);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
+
+	if (!status_nr)
+		return 0;
+
+	switch (status_nr) {
+	case POLLIN:
+		return sk->rx_data_len;
+	case POLLOUT:
+		return 0x600; // XXX it is so?
+	case POLLERR:
+		return 0; /* TODO */
+	default:
+		/* UNREACHABLE */
+		//assert(0);
+		res = 0;
+		break;
+	}
+	if (status_nr & POLLIN) {
+		/* how many we can read */
+		res += sk->rx_data_len;
+	}
+
+	if (status_nr & POLLOUT) {
+		/* how many we can write */
+		res += 0x600;
+	}
+
+	if (status_nr & POLLERR) {
+		/* is there any exeptions */
+		res += 0; //TODO Where is errors counter
+	}
+
+	return res;
+}
+
+const struct idesc_ops task_idx_ops_socket = {
 	.read = socket_read,
 	.write = socket_write,
-	.close = socket_close
+	.close = socket_close,
+	.status = socket_status
 };
+

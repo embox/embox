@@ -8,51 +8,41 @@
  */
 
 #include <unistd.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
 #include <errno.h>
+#include <fcntl.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idesc_table.h>
+#include <kernel/task/idx.h>
 
 int dup(int flides) {
-	int new_fd;
+	int res;
 
-	if (!task_valid_binded_fd(flides)) {
+	if (!idesc_index_valid(flides)) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	if ((new_fd = task_self_idx_first_unbinded()) < 0) {
-		SET_ERRNO(EMFILE);
-		return -1;
-	}
+	res = fcntl(flides, F_DUPFD, 0);
 
-	return dup2(flides, new_fd);
+	return res;
 }
 
 int dup2(int flides, int flides2) {
 	int res;
-	struct idx_desc *old_idx;
 
-	if (!task_valid_binded_fd(flides)) {
+	if (flides == flides2) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-
-	if (!task_valid_fd(flides2)) {
-		SET_ERRNO(EMFILE);
-		return -1;
+	if (!idesc_index_valid(flides2) || !idesc_index_valid(flides)) {
+		return SET_ERRNO(EBADF);
 	}
 
-	if (flides == flides2) {
-		return flides2;
-	}
+	close(flides2);
+	res = fcntl(flides, F_DUPFD, flides2);
 
-	old_idx = task_self_idx_get(flides);
+	return res;
 
-	res = task_self_idx_set(flides2, task_idx_desc_alloc(old_idx->data));
-	if (res != 0) {
-		SET_ERRNO(-res);
-		return -1;
-	}
 
-	return flides2;
 }

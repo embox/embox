@@ -33,7 +33,7 @@ int task_waitpid(pid_t pid) {
 
 		sched_wait();
 
-		waitq_wait_cleanup(task->waitq, &wql);
+		/* no cleanup since task is dead already */
 	}
 out:
 	sched_unlock();

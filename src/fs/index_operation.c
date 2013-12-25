@@ -15,50 +15,52 @@
 #include <fs/flags.h>
 #include <fs/kfile.h>
 
-static inline struct file_desc *from_data(struct idx_desc *data) {
-	return (struct file_desc *) task_idx_desc_data(data);
+
+extern const struct idesc_ops idesc_file_ops;
+
+static int idesc_file_ops_close(struct idesc *idesc) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return kclose((struct file_desc *)idesc);
 }
 
-static int this_close(struct idx_desc *data) {
-	return kclose(from_data(data));
+static ssize_t idesc_file_ops_read(struct idesc *idesc, void *buf, size_t nbyte) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return kread(buf, nbyte, (struct file_desc *)idesc);
 }
 
-static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	return kread(buf, nbyte, from_data(data));
+static ssize_t idesc_file_ops_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return kwrite(buf, nbyte, (struct file_desc *)idesc);
 }
 
-static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {
-	assert(data);
-	return kwrite(buf, nbyte, from_data(data));
+
+static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return kfstat((struct file_desc *)idesc, buf);
 }
 
-static int this_lseek(struct idx_desc *data, long int offset, int origin) {
-	return kseek(from_data(data), offset, origin);
+static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return kioctl((struct file_desc *)idesc, request, data);
 }
 
-static int this_stat(struct idx_desc *data, void *buff) {
-	return kfstat(from_data(data), buff);
+static int idesc_file_ops_status(struct idesc *idesc, int mask) {
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+	return 1;
 }
 
-static int this_ioctl(struct idx_desc *desc, int request, void *data) {
-	return kioctl(from_data(desc), request, data);
-}
-
-static int this_truncate(struct idx_desc *data, off_t length) {
-	if (!(from_data(data)->flags & FS_MAY_WRITE)) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	return ktruncate(from_data(data)->node, length);
-}
-
-const struct task_idx_ops task_idx_ops_file = {
-	.close = this_close,
-	.read  = this_read,
-	.write = this_write,
-	.fseek = this_lseek,
-	.ioctl = this_ioctl,
-	.fstat = this_stat,
-	.ftruncate = this_truncate
+const struct idesc_ops idesc_file_ops = {
+	.close = idesc_file_ops_close,
+	.read  = idesc_file_ops_read,
+	.write = idesc_file_ops_write,
+	.ioctl = idesc_file_ops_ioctl,
+	.fstat = idesc_file_ops_stat,
+	.status = idesc_file_ops_status,
 };
+

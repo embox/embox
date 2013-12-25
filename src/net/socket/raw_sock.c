@@ -122,37 +122,37 @@ void raw_err(const struct sk_buff *skb, int error_info) {
 	}
 }
 
-static int raw_sendmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
+static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	int ret;
 	size_t data_len;
 	struct sk_buff *skb;
+	const struct sockaddr *sockaddr;
 
-	assert(sk != NULL);
-	if (sk->o_ops == NULL) {
-		return -ENOSYS;
-	}
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov);
+	assert(msg->msg_iov->iov_base);
+	assert(sk->o_ops);
+	assert(sk->o_ops->make_pack);
 
-	assert(msg != NULL);
-	assert(msg->msg_iov != NULL);
 	data_len = msg->msg_iov->iov_len;
 	skb = NULL;
+	sockaddr = (const struct sockaddr *)msg->msg_name;
 
-	assert(sk->o_ops->make_pack != NULL);
-	ret = sk->o_ops->make_pack(sk,
-			(const struct sockaddr *)msg->msg_name,
-			&data_len, &skb);
+	ret = sk->o_ops->make_pack(sk, sockaddr, &data_len, &skb);
+
 	if (ret != 0) {
 		return ret;
 	}
-	else if (data_len < msg->msg_iov->iov_len) {
+
+	if (data_len < msg->msg_iov->iov_len) {
 		skb_free(skb);
 		return -EMSGSIZE;
 	}
 
-	assert(skb != NULL);
-	assert(skb->h.raw != NULL);
-	assert(msg->msg_iov->iov_base != NULL);
+	assert(sk);
+	assert(skb->h.raw);
+
 	memcpy(skb->h.raw, msg->msg_iov->iov_base, data_len);
 
 	assert(sk->o_ops->snd_pack != NULL);

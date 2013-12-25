@@ -45,9 +45,7 @@ EMBOX_NET_FAMILY(AF_INET, inet_types, ip_out_ops);
 static int inet_init(struct sock *sk) {
 	struct inet_sock *in_sk;
 
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	in_sk = to_inet_sock(sk);
 	in_sk->id = 0;
@@ -67,9 +65,7 @@ static int inet_init(struct sock *sk) {
 }
 
 static int inet_close(struct sock *sk) {
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->close == NULL) {
@@ -97,8 +93,10 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	const struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in) {
 		return -EINVAL;
 	}
 
@@ -129,9 +127,7 @@ static int inet_bind_local(struct sock *sk) {
 	size_t port;
 	struct sockaddr_in addr_in;
 
-	if (sk == NULL) {
-		return -EINVAL;
-	}
+	assert(sk);
 
 	addr_in.sin_family = AF_INET;
 	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -186,8 +182,10 @@ static int inet_stream_connect(struct sock *sk,
 	int ret;
 	const struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in) {
 		return -EINVAL;
 	}
 
@@ -203,7 +201,7 @@ static int inet_stream_connect(struct sock *sk,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->connect == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->connect(sk, addr, addrlen, flags);
@@ -215,8 +213,10 @@ static int inet_nonstream_connect(struct sock *sk,
 	int ret;
 	const struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (addr == NULL)
-			|| (addrlen != sizeof *addr_in)) {
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof *addr_in) {
 		return -EINVAL;
 	}
 
@@ -239,13 +239,15 @@ static int inet_nonstream_connect(struct sock *sk,
 }
 
 static int inet_listen(struct sock *sk, int backlog) {
-	if ((sk == NULL) || (backlog < 0)) {
+	assert(sk);
+
+	if (backlog < 0) {
 		return -EINVAL;
 	}
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->listen == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->listen(sk, backlog);
@@ -254,22 +256,20 @@ static int inet_listen(struct sock *sk, int backlog) {
 static int inet_accept(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen, int flags, struct sock **out_sk) {
 	int ret;
-	struct sockaddr_in *addr_in;
+	struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 
-	if ((sk == NULL) || (out_sk == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(out_sk);
+	assert(addr || !addrlen);
+	assert(!addr || addrlen);
 
-	addr_in = (struct sockaddr_in *)addr;
-	if (((addr_in == NULL) && (addrlen != NULL))
-			|| ((addr_in != NULL) && (addrlen == NULL))
-			|| ((addrlen != NULL) && (*addrlen < sizeof *addr_in))) {
+	if (addrlen != NULL && *addrlen < sizeof *addr_in) {
 		return -EINVAL;
 	}
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->accept == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	ret = sk->p_ops->accept(sk, addr, addrlen, flags, out_sk);
@@ -290,9 +290,8 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	const struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (msg == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
 
 	addr_in = (const struct sockaddr_in *)msg->msg_name;
 	if ((addr_in != NULL) &&
@@ -303,7 +302,7 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->sendmsg == NULL) {
-		return -ENOSYS;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->sendmsg(sk, msg, flags);
@@ -314,9 +313,8 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 	int ret;
 	struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (msg == NULL)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(msg);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->recvmsg == NULL) {
@@ -345,8 +343,11 @@ static int inet_getsockname(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
-			|| (*addrlen < sizeof *addr_in)) {
+	assert(sk);
+	assert(addr);
+	assert(addrlen);
+
+	if (*addrlen < sizeof *addr_in) {
 		return -EINVAL;
 	}
 
@@ -362,8 +363,11 @@ static int inet_getpeername(struct sock *sk,
 		struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in *addr_in;
 
-	if ((sk == NULL) || (addr == NULL) || (addrlen == NULL)
-			|| (*addrlen < sizeof *addr_in)) {
+	assert(sk);
+	assert(addr);
+	assert(addrlen);
+
+	if (*addrlen < sizeof *addr_in) {
 		return -EINVAL;
 	}
 
@@ -377,10 +381,10 @@ static int inet_getpeername(struct sock *sk,
 
 static int inet_getsockopt(struct sock *sk, int level,
 		int optname, void *optval, socklen_t *optlen) {
-	if ((sk == NULL) || (optval == NULL) || (optlen == NULL)
-			|| (*optlen < 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(optval);
+	assert(optlen);
+	assert(*optlen >= 0);
 
 	if (level != IPPROTO_IP) {
 		assert(sk->p_ops != NULL);
@@ -401,9 +405,9 @@ static int inet_getsockopt(struct sock *sk, int level,
 
 static int inet_setsockopt(struct sock *sk, int level,
 		int optname, const void *optval, socklen_t optlen) {
-	if ((sk == NULL) || (optval == NULL) || (optlen < 0)) {
-		return -EINVAL;
-	}
+	assert(sk);
+	assert(optval);
+	assert(optlen >= 0);
 
 	if (level != IPPROTO_IP) {
 		assert(sk->p_ops != NULL);
@@ -423,13 +427,11 @@ static int inet_setsockopt(struct sock *sk, int level,
 }
 
 static int inet_shutdown(struct sock *sk, int how) {
-	if (sk == NULL) {
-		return -EINVAL;
-	}
-
+	assert(sk);
 	assert(sk->p_ops != NULL);
+
 	if (sk->p_ops->shutdown == NULL) {
-		return 0;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->p_ops->shutdown(sk, how);

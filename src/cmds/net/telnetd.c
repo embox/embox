@@ -30,6 +30,8 @@
 #include <embox/cmd.h>
 #include <cmd/shell.h>
 
+extern int ppty(int pptyfds[2]);
+
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
@@ -199,13 +201,6 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
-#include <termios.h>
-extern int pipe_pty(int pipe[2], const struct termios *tio);
-static const struct termios pipetio = {
-	.c_lflag = ICANON,
-	.c_oflag = ONLCR,
-};
-
 
 #define XBUFF_LEN 128
 
@@ -219,18 +214,18 @@ static void *telnet_thread_handler(void* args) {
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int client_num = (int) args;
 	int sock = clients[client_num].fd;
-	int pipefd1[2], pipefd2[2], msg[3];
+	int msg[3];
+	int pptyfd[2];
 	int tid;
 	int nfds;
 	fd_set readfds, writefds;
 	struct timeval timeout;
-	int ret;
 
 	MD(printf("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
-	fcntl(sock, F_SETFD, O_NONBLOCK);
+	fcntl(sock, F_SETFL, O_NONBLOCK);
 
-	if (pipe(pipefd1) < 0 || pipe(pipefd2) < 0) {
+	if (ppty(pptyfd) < 0) {
 		MD(printf("new pipe error: %d\n", errno));
 		goto out;
 	}
@@ -239,35 +234,27 @@ static void *telnet_thread_handler(void* args) {
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
-	ret = pipe_pty(pipefd1, NULL);
-	if (ret != 0) {
-		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
-	}
-	ret = pipe_pty(pipefd2, &pipetio);
-	if (ret != 0) {
-		MD(printf("pipe_pty pipedf1 error: %d\n", ret));
-	}
-
 	msg[0] = sock;
-	msg[1] = pipefd1[1];
+	msg[1] = pptyfd[0];
 	/* handle options from client */
 	ignore_telnet_options(msg);
 
-	fcntl(sock, F_SETFD, 0);
+	fcntl(sock, F_SETFL, 0); /* O_NONBLOCK */
 
-	msg[0] = pipefd1[0];
-	msg[1] = pipefd2[1];
+	msg[0] = pptyfd[1];
+	msg[1] = pptyfd[1];
 	msg[2] = client_num;
 	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
 		MD(printf("new task error: %d\n", -tid));
 		goto out;
 	}
 
-	/* Preparations for select call */
-	nfds = max(sock, pipefd2[0]);
-	nfds = max(pipefd1[1], nfds) + 1;
+	close(pptyfd[1]);
 
-	timeout.tv_sec = 1;
+	/* Preparations for select call */
+	nfds = max(sock, pptyfd[0]) + 1;
+
+	timeout.tv_sec = 100;
 	timeout.tv_usec = 0;
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
@@ -281,12 +268,12 @@ static void *telnet_thread_handler(void* args) {
 		FD_ZERO(&writefds);
 
 		FD_SET(sock, &readfds);
-		FD_SET(pipefd2[0], &readfds);
+		FD_SET(pptyfd[0], &readfds);
 		if (pipe_data_len > 0) {
 			FD_SET(sock, &writefds);
 		}
 		if (sock_data_len > 0) {
-			FD_SET(pipefd1[1], &writefds);
+			FD_SET(pptyfd[0], &writefds);
 		}
 
 		MD(printf("."));
@@ -296,47 +283,55 @@ static void *telnet_thread_handler(void* args) {
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
 		if (!fd_cnt) {
-			fcntl(sock, F_SETFD, O_NONBLOCK);
+#if 0
+			fcntl(sock, F_SETFL, O_NONBLOCK);
 			len = read(sock, s, XBUFF_LEN);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
 				MD(printf("read on sock: %d %d\n", len, errno));
 				goto kill_and_out;
 			}
-			fcntl(sock, F_SETFD, 0);
+			fcntl(sock, F_SETFL, 0);
 
 			/* preventing further execution since some fds is set,
  			 * but they are not active and will block (fd_cnt == 0)
 			 */
+#endif
 			continue;
 		}
 
-		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
+		if (FD_ISSET(sock, &writefds)) {
 			if ((len = write(sock, p, pipe_data_len)) > 0) {
 				pipe_data_len -= len;
 				p += len;
 			}
 			else {
 				MD(printf("write on sock: %d %d\n", len, errno));
-			}
-		} else if (FD_ISSET(pipefd2[0], &readfds)){
-			p = pbuff;
-			pipe_data_len = read(pipefd2[0], pbuff, XBUFF_LEN);
-			if (pipe_data_len <= 0) {
-				MD(printf("read on pipefd2: %d %d\n", pipe_data_len, errno));
+				goto kill_and_out;
 			}
 		}
 
-		if ((sock_data_len > 0) && FD_ISSET(pipefd1[1], &writefds)) {
-			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
+		if (FD_ISSET(pptyfd[0], &readfds)){
+			p = pbuff;
+			pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN);
+			if (pipe_data_len <= 0) {
+				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
+				goto out;
+			}
+		}
+
+		if (FD_ISSET(pptyfd[0], &writefds)) {
+			if ((len = write(pptyfd[0], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			} else {
-				MD(printf("write on pipefd1: %d %d\n", len, errno));
+				MD(printf("write on pptyfd: %d %d\n", len, errno));
 				if (errno == EPIPE) {
 					goto kill_and_out; /* this means that pipe was closed by shell */
 				}
 			}
-		} else if (FD_ISSET(sock, &readfds)){
+		}
+
+		if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, XBUFF_LEN);
 			if (sock_data_len <= 0) {
@@ -351,10 +346,7 @@ static void *telnet_thread_handler(void* args) {
 kill_and_out:
 	kill(tid, 9);
 out:
-	close(pipefd1[0]);
-	close(pipefd2[1]);
-	close(pipefd1[1]);
-	close(pipefd2[0]);
+	close(pptyfd[0]);
 	close(sock);
 	clients[client_num].fd = -1;
 

@@ -71,6 +71,13 @@ TEST_CASE("basename with 'path' equals '//usr//lib//'") {
 	test_assert_zero(strcmp(bname, "lib"));
 }
 
+TEST_CASE("basename with 'path' equals 'filename'") {
+	char *bname;
+
+	bname = basename("filename");
+
+	test_assert_zero(strcmp(bname, "filename"));
+}
 
 /* dirname */
 TEST_CASE("dirname with 'path' as a NULL pointer") {

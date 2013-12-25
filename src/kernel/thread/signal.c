@@ -12,7 +12,6 @@
 #include <kernel/thread.h>
 #include <kernel/thread/signal.h>
 
-
 void thread_signal_handle(void) {
 	struct thread *thread = thread_self();
 	struct task   *task   = thread->task;

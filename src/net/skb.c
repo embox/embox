@@ -7,12 +7,15 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+#include <assert.h>
+#include <string.h>
+
+#include <util/math.h>
 
 #include <net/skbuff.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
-#include <assert.h>
-#include <string.h>
+
 #include <linux/compiler.h>
 #include <framework/mod/options.h>
 #include <linux/list.h>
@@ -279,4 +282,20 @@ void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(count + skb->len <= skb_max_size());
 	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
 	skb->len += count;
+}
+
+
+size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
+	size_t len;
+
+	assert(skb);
+	assert(skb->p_data_end >= skb->p_data);
+
+	len = min(buff_sz, skb->p_data_end - skb->p_data);
+
+	memcpy(buff, skb->p_data, len);
+
+	skb->p_data += len;
+
+	return len;
 }

@@ -137,6 +137,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	dlist_init(&t->thread_link); /* default unlink value */
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
+	t->siglock = 0;
 	t->lock = SPIN_UNLOCKED;
 	t->ready = false;
 	t->active = false;
@@ -201,7 +202,7 @@ static void thread_delete(struct thread *t) {
 	assert(t);
 	assert(t->state & TS_EXITED);
 
-	task_remove_thread(t->task, t);
+	thread_unregister(t->task, t);
 
 	if (zombie) {
 		thread_free(zombie);
@@ -317,6 +318,7 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
+		sched_freeze(t);
 	}
 	sched_unlock();
 

@@ -7,4 +7,4 @@
 
 #include <kernel/task.h>
 
-extern const struct task_idx_ops task_idx_ops_file;
+extern const struct idesc_ops idesc_file_ops;

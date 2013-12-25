@@ -12,23 +12,25 @@
 
 #include <assert.h>
 #include <sys/socket.h>
-#include <kernel/task/io_sync.h>
-#include <net/skbuff.h>
 #include <sys/time.h>
-#include <util/list.h>
+
 #include <stddef.h>
 #include <stdbool.h>
-#include <embox/net/pack.h>
 
-struct proto_sock;
+#include <util/list.h>
+
+#include <fs/idesc.h>
+#include <net/socket/sock_xattr.h>
+//#include <kernel/task/io_sync.h>
+#include <net/skbuff.h>
+
+
+struct proto_sock; //TODO What does it mean
 struct sock_family_ops;
 struct sock_proto_ops;
 struct net_pack_out_ops;
-struct msghdr;
-struct sk_buff;
 struct pool;
 struct indexator;
-struct list;
 
 enum sock_state {
 	SS_UNKNOWN,
@@ -41,14 +43,6 @@ enum sock_state {
 	SS_DISCONNECTING,
 	SS_CLOSED
 };
-
-#if 0
-enum sock_shut {
-	SS_RD,
-	SS_WR,
-	SS_RDWR
-};
-#endif
 
 struct sock_opt {
 	int so_acceptconn;
@@ -77,22 +71,20 @@ struct sock_opt {
 
 /* Base class for family sockets */
 struct sock {
+	struct idesc idesc;
+	struct sock_xattr sock_xattr;
 	struct list_link lnk;
 	enum sock_state state;
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
+	unsigned int rx_data_len;
+	//unsigned int tx_data_len;
 	unsigned char shutdown_flag; /* FIXME */
 	struct proto_sock *p_sk;
 	const struct sock_family_ops *f_ops;
 	const struct sock_proto_ops *p_ops;
 	const struct net_pack_out_ops *o_ops;
-	struct io_sync ios;
-#if 0
-	const struct sockaddr *src_addr;
-	const struct sockaddr *dst_addr;
-	size_t addr_len;
-#endif
 };
 
 struct sock_family_ops {
@@ -156,71 +148,51 @@ static inline struct sock * to_sock(const void *p_sk) {
 	return ((const struct proto_sock *)p_sk)->sk;
 }
 
+
+extern struct sock * sock_create(int family, int type, int protocol);
+
+extern void sock_release(struct sock *sk);
+
+extern void sock_hash(struct sock *sk);
+extern void sock_unhash(struct sock *sk);
+
+
+extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
+		unsigned char *p_data, size_t size);
+
+extern int sock_close(struct sock *sk);
+
+extern int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
+		int flags, int stream_mode);
+
+static inline int sock_nonstream_recvmsg(struct sock *sk,
+		struct msghdr *msg, int flags) {
+	return sock_common_recvmsg(sk, msg, flags, 0);
+}
+
+static inline int sock_stream_recvmsg(struct sock *sk,
+		struct msghdr *msg, int flags) {
+	return sock_common_recvmsg(sk, msg, flags, 1);
+}
+
+#include <net/sock_state.h>
+
+static inline void sock_set_so_error(struct sock *sk, int error) {
+	assert(sk != NULL);
+	sk->opt.so_error = error;
+}
+
+
+
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);
 
-extern int sock_create(int family, int type, int protocol,
-		struct sock **out_sk);
-extern int sock_create_ext(int family, int type, int protocol,
-		int need_hash, struct sock **out_sk);
-extern void sock_release(struct sock *sk);
-extern void sock_hash(struct sock *sk);
-extern void sock_unhash(struct sock *sk);
 extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
 extern struct sock * sock_next(const struct sock *sk);
 extern struct sock * sock_lookup(const struct sock *sk,
 		const struct sock_proto_ops *p_ops,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
-extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
-		unsigned char *p_data, size_t size);
-extern int sock_close(struct sock *sk);
-
-extern int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags, int stream_mode);
-static inline int sock_nonstream_recvmsg(struct sock *sk,
-		struct msghdr *msg, int flags) {
-	return sock_common_recvmsg(sk, msg, flags, 0);
-}
-static inline int sock_stream_recvmsg(struct sock *sk,
-		struct msghdr *msg, int flags) {
-	return sock_common_recvmsg(sk, msg, flags, 1);
-}
-
-static inline void sock_set_state(struct sock *sk,
-		enum sock_state state) {
-	assert(sk != NULL);
-	sk->state = state;
-}
-static inline enum sock_state sock_get_state(const struct sock *sk) {
-	assert(sk != NULL);
-	return sk->state;
-}
-static inline int sock_state_bound(struct sock *sk) {
-	assert(sk != NULL);
-	return (sk->state == SS_BOUND) || (sk->state == SS_LISTENING)
-			|| (sk->state == SS_CONNECTING)
-			|| (sk->state == SS_CONNECTED)
-			|| (sk->state == SS_ESTABLISHED);
-}
-static inline int sock_state_listening(struct sock *sk) {
-	assert(sk != NULL);
-	return sk->state == SS_LISTENING;
-}
-static inline int sock_state_connecting(struct sock *sk) {
-	assert(sk != NULL);
-	return sk->state == SS_CONNECTING;
-}
-static inline int sock_state_connected(struct sock *sk) {
-	assert(sk != NULL);
-	return (sk->state == SS_CONNECTED)
-			|| (sk->state == SS_ESTABLISHED);
-}
-
-static inline void sock_set_so_error(struct sock *sk, int error) {
-	assert(sk != NULL);
-	sk->opt.so_error = error;
-}
 
 #define sock_foreach(sk, p_ops) \
 	list_foreach(sk, p_ops->sock_list, lnk)

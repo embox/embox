@@ -8,7 +8,7 @@
 
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
-
+#if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,10 +29,27 @@ struct event;
 
 typedef unsigned int idx_flags_t;
 
-struct task_idx_ops;
+#define IDESC_TABLE_USE
+#ifdef IDESC_TABLE_USE
+
+struct idesc;
+/**
+ * Specify operations with task's resources, which be called POSIX compat lib
+ */
+struct idesc_ops {
+	int (*read)(struct idesc *idesc, void *buf, size_t nbyte);
+	int (*write)(struct idesc *idesc, const void *buf, size_t nbyte);
+	int (*close)(struct idesc *idesc);
+	int (*ioctl)(struct idesc *idesc, int request, void *);
+	int (*fstat)(struct idesc *idesc, void *buff);
+	int (*status)(struct idesc *idesc, int mask);
+};
+
+#else
+struct idesc_ops;
 
 struct idx_desc_data {
-	const struct task_idx_ops *res_ops;
+	const struct idesc_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
 	struct io_sync *ios;
@@ -51,17 +68,19 @@ struct idx_desc {
 /**
  * Specify operations with task's resources, which be called POSIX compat lib
  */
-struct task_idx_ops {
+struct idesc_ops {
 	int (*read)(struct idx_desc *data, void *buf, size_t nbyte);
 	int (*write)(struct idx_desc *data, const void *buf, size_t nbyte);
 	int (*close)(struct idx_desc *data);
 	int (*ioctl)(struct idx_desc *data, int request, void *);
-	int (*fcntl)(struct idx_desc *data, int cmd, va_list args);
+	//int (*fcntl)(struct idx_desc *data, int cmd, va_list args);
 	int (*fseek)(struct idx_desc *data, long int offset, int origin);
 	long int (*ftell)(struct idx_desc *data);
 	int (*fstat)(struct idx_desc *data, void *buff);
 	int (*ftruncate)(struct idx_desc *data, off_t length);
 };
+
+
 
 static inline struct idx_desc_data *task_idx_indata(struct idx_desc *desc) {
 	assert(desc);
@@ -84,7 +103,7 @@ static inline idx_flags_t *task_idx_desc_flags_ptr(struct idx_desc *desc) {
 	return &desc->flags;
 }
 
-static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc) {
+static inline const struct idesc_ops *task_idx_desc_ops(struct idx_desc *desc) {
 	assert(desc);
 	return task_idx_indata(desc)->res_ops;
 }
@@ -95,41 +114,9 @@ static inline struct io_sync * task_idx_desc_ios(struct idx_desc *desc) {
 	return task_idx_indata(desc)->ios;
 }
 
-#if 0
-/**
- * @brief Allocate idx descriptor structure with type and data
- *
- * @param type idx descriptor type
- * @param data pointer for idx descriptor data
- *
- * @return
- */
-extern struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *ops, void *data);
-#endif
-#if 0
-/**
- * @brief idx utillity: get reference count by idx
- * @param desc idx descriptor to get
- * @return count of references to idx resource
- */
-static inline int task_idx_desc_link_count(struct idx_desc *desc) {
-	assert(desc);
-	return desc->data->link_count;
-}
-
-/**
- * @brief idx utillity: update reference count by idx
- * @param desc idx descriptor to update
- * @param d references count delta
- * @return new count of references to idx resource
- */
-static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
-	assert(desc);
-	return (desc->data->link_count += d);
-}
-#endif
 
 #include <util/idx_table.h>
+#include <kernel/task.h>
 
 struct task_idx_table {
 	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, TASKS_RES_QUANTITY);
@@ -186,7 +173,7 @@ static inline int task_idx_table_unbind(struct task_idx_table *res, int idx) {
 
 struct task;
 extern struct task *task_self(void);
-static inline struct task_idx_table *task_idx_table(struct task *task);
+extern struct task_idx_table *task_idx_table(struct task *task);
 
 /**
  * @brief Determ is given fd is valid to use with tasks
@@ -229,10 +216,10 @@ static inline int task_self_idx_set(int fd, struct idx_desc *desc) {
 
 extern struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data);
 extern int task_idx_desc_free(struct idx_desc *idx);
-extern struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct, struct io_sync *ios);
+extern struct idx_desc_data *task_idx_data_alloc(const struct idesc_ops *res_ops, void *fd_struct, struct io_sync *ios);
 extern int task_idx_data_free(struct idx_desc *idx);
 
-extern int task_self_idx_alloc(const struct task_idx_ops *ops,
+extern int task_self_idx_alloc(const struct idesc_ops *ops,
 		void *fd_struct, struct io_sync *ios);
 
 static inline int task_self_idx_table_unbind(int fd) {
@@ -251,9 +238,11 @@ static inline int task_valid_unbinded_fd(int fd) {
 	return task_valid_fd(fd) && !task_idx_table_is_binded(task_self_idx_table(), fd);
 }
 
+#endif //0
 
 #ifdef __cplusplus
 }
 #endif
 
+#endif
 #endif /* TASK_IDX_H_ */

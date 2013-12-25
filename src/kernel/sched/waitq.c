@@ -43,7 +43,7 @@ void __waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	assert(wq && wql);
 
 	if (!dlist_empty(&wql->link))
-		dlist_del(&wql->link);
+		dlist_del_init(&wql->link);
 }
 
 void waitq_del(struct waitq *wq, struct waitq_link *wql) {

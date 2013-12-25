@@ -43,7 +43,7 @@ static int _ioctl(struct idx_desc *data, int request, void *);
 static int _fstat(struct idx_desc *data, void *buff);
 static int _close (struct idx_desc *data);
 
-const struct task_idx_ops task_idx_ops_tty = {
+const struct idesc_ops task_idx_ops_tty = {
 	.close = _close,
 	.read = _canon_read,
 	.write = _write,

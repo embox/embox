@@ -1,11 +1,38 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Alex Kalmuk
+ * @author  Anton Kozlov
+ * @date    20.12.2013
+ */
+
+#include <assert.h>
+
 #include "emboxvcwindowsurface.h"
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qapplication_p.h>
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
-#include <kernel/task/idx.h>
+
+#include <kernel/softirq_lock.h>
+#include <kernel/sched/waitq.h>
+#include <util/ring_buff.h>
 
 QT_BEGIN_NAMESPACE
+
+#define MOUSE_EVENT_BUFFER_SIZE 4096
+#define KBD_EVENT_BUFFER_SIZE   4096
+
+#define SOFTIRQ_LOCKED_DO_INTRET(_expr) \
+	({ \
+	 	int ret; \
+	 	softirq_lock(); \
+	 	ret = _expr; \
+	 	softirq_unlock(); \
+	 	ret; \
+	 })
+
 
 /* From VNC */
 static const struct {
@@ -83,71 +110,51 @@ static void __visualization(struct vc *vc, struct fb_info *info) {
 	}
 }
 
-static int desc_read(struct idx_desc *desc, void *buf, size_t size) {
-	const struct task_idx_ops *ops;
-
-	if (!buf) {
-		SET_ERRNO(EFAULT);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->read);
-	return ops->read(desc, buf, size);
-}
-
-static int desc_write(struct idx_desc *desc, const void *buf, size_t size) {
-	const struct task_idx_ops *ops;
-
-	if (!buf) {
-		SET_ERRNO(EFAULT);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->write);
-	return ops->write(desc, buf, size);
-}
-
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
-	int pipefd[2];
+	void *buff, *storage;
 
-	if (pipe(pipefd) < 0) {
-		return;
-	}
+	storage = malloc(MOUSE_EVENT_BUFFER_SIZE);
+	assert(storage);
 
-	mouseFD = pipefd[0];
-	inputFD = pipefd[1];
-	idx_mouseFD = task_self_idx_get(mouseFD);
-	idx_inputFD = task_self_idx_get(inputFD);
+	buff = malloc(sizeof(struct ring_buff));
+	assert(buff);
 
-	fcntl(mouseFD, F_SETFD, O_NONBLOCK);
-	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+	ring_buff_init(buff, 1, MOUSE_EVENT_BUFFER_SIZE, storage);
+	ring_buff = buff;
 
-	mouseNotifier = new QSocketNotifier(mouseFD, QSocketNotifier::Read, this);
-	connect(mouseNotifier, SIGNAL(activated(int)),this, SLOT(readMouseData()));
+	waitq_init(&new_data);
+
+	readDataLoop();
 }
 
 QEmboxVCMouseHandler::~QEmboxVCMouseHandler() {
-
+	struct ring_buff *rbuff = (struct ring_buff *) ring_buff;
+	free(rbuff->storage);
+	free(rbuff);
 }
 
 void QEmboxVCMouseHandler::storeData(void *data, int datalen) {
-	desc_write(idx_inputFD, data, datalen);
+	ring_buff_enqueue(ring_buff, data, datalen);
 }
 
-void QEmboxVCMouseHandler::readMouseData() {
+void QEmboxVCMouseHandler::activate() {
+	waitq_wakeup_all(&new_data);
+}
+
+void *readMouseDataThread(void *arg) {
+	(void) arg;
+
 	struct vc *vc;
 	struct input_event ev;
 	short x, y;
 	int bstate;
 	QEmboxVC *emvc;
+	QEmboxVCMouseHandler *mh = (QEmboxVCMouseHandler *)arg;
 
-	while (read(mouseFD, &vc, sizeof(struct vc *)) > 0) {
+	while (0 == WAITQ_WAIT(&mh->new_data,
+			SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(mh->ring_buff, &vc, sizeof(struct vc *)) > 0))) {
 
-		read(mouseFD, &ev, sizeof(struct input_event));
+		SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(mh->ring_buff, &ev, sizeof(struct input_event)));
 
 		emvc = globalEmboxVC;
 
@@ -178,52 +185,68 @@ void QEmboxVCMouseHandler::readMouseData() {
 				QPoint(emvc->mouseX, emvc->mouseY), Qt::MouseButtons(bstate));
 
 		if (!emvc->emboxVC.fb || !emvc->emboxVCvisualized) {
-			return;
+			assert(0);
+			return NULL;
 		}
 
 		emvc->cursor->emboxCursorRedraw(emvc->emboxVC.fb, emvc->mouseX, emvc->mouseY);
 	}
+
+	assert(0);
+	return NULL;
+}
+
+void QEmboxVCMouseHandler::readDataLoop() {
+	thread_create(0, readMouseDataThread, this);
 }
 
 QEmboxVCKeyboardHandler::QEmboxVCKeyboardHandler() {
-	int pipefd[2];
+	void *buff, *storage;
 
-	if (pipe(pipefd) < 0) {
-		return;
-	}
+	storage = malloc(KBD_EVENT_BUFFER_SIZE);
+	assert(storage);
 
-	keyboardFD = pipefd[0];
-	inputFD = pipefd[1];
-	idx_keyboardFD = task_self_idx_get(keyboardFD);
-	idx_inputFD = task_self_idx_get(inputFD);
+	buff = malloc(sizeof(struct ring_buff));
+	assert(buff);
 
-	fcntl(keyboardFD, F_SETFD, O_NONBLOCK);
-	fcntl(inputFD, F_SETFD, O_NONBLOCK);
+	ring_buff_init(buff, 1, KBD_EVENT_BUFFER_SIZE, storage);
+	ring_buff = buff;
 
-    keyboardNotifier = new QSocketNotifier(keyboardFD, QSocketNotifier::Read, this);
-    connect(keyboardNotifier, SIGNAL(activated(int)),this, SLOT(readKeyboardData()));
+	waitq_init(&new_data);
+
+	readDataLoop();
 }
 
 QEmboxVCKeyboardHandler::~QEmboxVCKeyboardHandler() {
-
+	struct ring_buff *rbuff = (struct ring_buff *) ring_buff;
+	free(rbuff->storage);
+	free(rbuff);
 }
 
 void QEmboxVCKeyboardHandler::storeData(void *data, int datalen) {
-	desc_write(idx_inputFD, data, datalen);
+	ring_buff_enqueue(ring_buff, data, datalen);
 }
 
-void QEmboxVCKeyboardHandler::readKeyboardData() {
+void QEmboxVCKeyboardHandler::activate() {
+	waitq_wakeup_all(&new_data);
+}
+
+void *readKbdThread(void *arg) {
+	(void) arg;
+
 	struct vc *vc;
 	struct input_event ev;
+	QEmboxVCKeyboardHandler *kh = (QEmboxVCKeyboardHandler *)arg;
 
-	while (read(keyboardFD, &vc, sizeof(struct vc *)) > 0) {
+	while (0 == WAITQ_WAIT(&kh->new_data,
+			SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(kh->ring_buff, &vc, sizeof(struct vc *))) > 0)) {
 		QEvent::Type type;
 		unsigned char ascii[4];
 		int key;
 		int i = 0;
 		Qt::KeyboardModifiers modifier = 0;
 
-		read(keyboardFD, &ev, sizeof(struct input_event));
+		SOFTIRQ_LOCKED_DO_INTRET(ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event)));
 
 		type = ev.type & KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
 
@@ -237,6 +260,8 @@ void QEmboxVCKeyboardHandler::readKeyboardData() {
 
 		int len = keymap_to_ascii(&ev, ascii);
 
+		key = 0;
+		i = 0;
 		while (emboxKeyMap[i].keysym != 0) {
 			if (emboxKeyMap[i].keysym == ascii[i]) {
 				key = emboxKeyMap[i].keycode;
@@ -247,18 +272,31 @@ void QEmboxVCKeyboardHandler::readKeyboardData() {
 
 		QWindowSystemInterface::handleKeyEvent(0, type, key, modifier, QString(QChar(ascii[0])));
 	}
+
+	assert(0);
+	return NULL;
+}
+
+void QEmboxVCKeyboardHandler::readDataLoop() {
+	thread_create(0, readKbdThread, this);
 }
 
 static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 	QEmboxVC *emvc = globalEmboxVC;
 
+	softirq_lock();
+
 	if (ev->devtype == INPUT_DEV_MOUSE) {
 		emvc->mouseHandler->storeData(&vc, sizeof(struct vc *));
 		emvc->mouseHandler->storeData(ev, sizeof(struct input_event));
+		emvc->mouseHandler->activate();
 	} else if (ev->devtype == INPUT_DEV_KBD) {
 		emvc->keyboardHandler->storeData(&vc, sizeof(struct vc *));
 		emvc->keyboardHandler->storeData(ev, sizeof(struct input_event));
+		emvc->keyboardHandler->activate();
 	}
+
+	softirq_unlock();
 }
 
 static void __scheduleDevisualization(struct vc *vc) {

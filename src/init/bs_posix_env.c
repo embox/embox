@@ -17,12 +17,20 @@
 #include <drivers/tty.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <kernel/task/idesc_table.h>
+#include <fs/idesc.h>
+#include <fs/flags.h>
 
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(iodev_env_init);
 
-static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
+static struct idesc_diag {
+	struct idesc idesc;
+	struct tty *tty;
+} idesc_diag;
+
+static int iodev_read(struct idesc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
@@ -33,7 +41,7 @@ static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 }
 
-static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+static int iodev_write(struct idesc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
@@ -43,26 +51,24 @@ static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	return (int) cbuf - (int) buf;
 }
 
-static int iodev_close(struct idx_desc *idx) {
+static int iodev_close(struct idesc *data) {
 	return 0;
 }
 
-static int iodev_ioctl(struct idx_desc *desc, int request, void *data) {
-	struct tty *tty = desc->data->fd_struct;
+static int iodev_ioctl(struct idesc *desc, int request, void *data) {
+	struct idesc_diag *idesc_diag = (struct idesc_diag *) desc;
+	struct tty *tty;
+
+	tty = idesc_diag->tty;
 
 	if(NULL == tty) {
 		return -EINVAL;
 	}
-	if(request == F_SETFD) {
-		int flags = (int) data;
-		desc->flags = flags;
-		tty->file_flags = flags;
-	}
 
-	return tty_ioctl(tty, request, data);
+	return 0;
 }
 
-static int iodev_fstat(struct idx_desc *data, void *buff) {
+static int iodev_fstat(struct idesc *data, void *buff) {
 	struct stat *st = buff;
 
 	st->st_mode = S_IFCHR;
@@ -71,7 +77,7 @@ static int iodev_fstat(struct idx_desc *data, void *buff) {
 
 }
 
-static const struct task_idx_ops iodev_idx_ops = {
+static const struct idesc_ops iodev_idx_ops = {
 	.read = iodev_read,
 	.write = iodev_write,
 	.close = iodev_close,
@@ -80,9 +86,13 @@ static const struct task_idx_ops iodev_idx_ops = {
 };
 
 static int iodev_env_init(void) {
+	struct idesc_table *idesc_table;
 	int fd;
 
-	fd = task_self_idx_alloc(&iodev_idx_ops, NULL, NULL);
+	idesc_table = task_get_idesc_table(task_self()); //kernel task
+
+	idesc_init(&idesc_diag.idesc, &iodev_idx_ops, FS_MAY_READ | FS_MAY_WRITE);
+	fd = idesc_table_add(idesc_table, &idesc_diag.idesc, 0);
 	if (fd < 0) {
 		return fd;
 	}
@@ -91,7 +101,7 @@ static int iodev_env_init(void) {
 	dup2(fd, STDOUT_FILENO);
 	dup2(fd, STDERR_FILENO);
 
-	if (fd > 2) {
+	if (fd > STDERR_FILENO) {
 		close(fd);
 	}
 

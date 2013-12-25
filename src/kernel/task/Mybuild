@@ -50,6 +50,8 @@ module MultiThread extends task_thread_api {
 
 module kernel_task {
 	source "common.c"
+	source "kernel_task.c"
+	source "task_alloc_onstack.c"
 
 	depends task_thread_api
 	depends embox.util.DList
@@ -65,7 +67,11 @@ module signal {
 module idx_table extends task_environment {
 
 	option number task_res_quantity = 64
-	source "index_desc.c"
+
+	source "idesc_table.c"
+	source "idesc_table_resource.c"
+	source "index_descriptor.c"
+
 	depends embox.mem.objalloc
 	depends embox.util.idx_table
 	depends api
@@ -90,7 +96,7 @@ module u_area {
 }
 
 module io_sync {
-	source "io_sync.c"
+//	source "io_sync.c"
 
 	depends embox.kernel.manual_event_api
 	depends embox.kernel.event_api

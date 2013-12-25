@@ -25,6 +25,8 @@ struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 	struct node *child;
 	int ret;
 
+	assert(dir);
+
 	path = path_next(path, NULL);
 
 	if (!path) {
@@ -73,6 +75,7 @@ struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
 		vfs_del_leaf(child);
 		return NULL;
 	}
+
 
 	return child;
 }

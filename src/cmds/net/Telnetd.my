@@ -25,4 +25,5 @@ module telnetd {
 	depends embox.compat.posix.utmp_api
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
+	depends embox.compat.posix.idx.ppty
 }

@@ -15,6 +15,10 @@ module filesystem {
 
 module file_desc {
 	source "file_desc.c"
+	source "file_xattr.c"
+	source "idesc.c"
+	source "idesc_event.c"
+	option number idesc_event_quantity = 256
 	option number fdesc_quantity=32
 }
 
@@ -30,6 +34,10 @@ module NoFileSystem extends fs_api{
 
 module xattr {
 	source "xattr.c"
+}
+
+module xattr_list {
+	source "xattr_list.c"
 }
 
 module core extends fs_api {

@@ -54,6 +54,7 @@ struct task;
  */
 struct thread {
 	unsigned int       critical_count;
+	unsigned int       siglock;
 
 	spinlock_t         lock;         /**< Protects wait state and others. */
 

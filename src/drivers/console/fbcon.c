@@ -17,9 +17,9 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
+#include <fs/index_descriptor.h>
 #include <kernel/sched/sched_lock.h>
+#include <kernel/task.h>
 #include <mem/objalloc.h>
 #include <cmd/shell.h>
 #include <embox/unit.h>
@@ -92,21 +92,18 @@ static void devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
-static inline struct fbcon *data2fbcon(struct idx_desc *data) {
-	return (struct fbcon *) (data->data->fd_struct);
+static inline struct fbcon *data2fbcon(struct idesc *idesc) {
+	return member_cast_out(idesc, struct fbcon, idesc);
 }
 
-static int this_tty_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	struct fbcon *fbcon = data2fbcon(data);
-	/*char *cbuf = (char *) buf;*/
-
-	assert(fbcon);
+static int fbcon_idesc_read(struct idesc *idesc, void *buf, size_t nbyte) {
+	struct fbcon *fbcon = data2fbcon(idesc);
 
 	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
-static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) {
-	struct fbcon *fbcon = data2fbcon(data);
+static int fbcon_idesc_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+	struct fbcon *fbcon = data2fbcon(idesc);
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
@@ -116,16 +113,13 @@ static int this_tty_write(struct idx_desc *data, const void *buf, size_t nbyte) 
 	return (int) cbuf - (int) buf;
 }
 
-static int this_tty_ioctl(struct idx_desc *desc, int request, void *data) {
-	struct fbcon *fbcon = data2fbcon(desc);
-	if(request == F_SETFD) {
-		int flags = (int) data;
-		fbcon->vterm.tty.file_flags = flags;
-	}
+static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {
+	struct fbcon *fbcon = data2fbcon(idesc);
+
 	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
-static int this_tty_fstat(struct idx_desc *data, void *buff) {
+static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
        struct stat *st = buff;
 
        st->st_mode = S_IFCHR;
@@ -134,32 +128,41 @@ static int this_tty_fstat(struct idx_desc *data, void *buff) {
 
 }
 
-static int this_tty_close(struct idx_desc *idx) {
+static int fbcon_idesc_close(struct idesc *idesc) {
 	return 0;
 }
 
-static const struct task_idx_ops this_idx_ops = {
-	.read  = this_tty_read,
-	.write = this_tty_write,
-	.close = this_tty_close,
-	.ioctl = this_tty_ioctl,
-	.fstat = this_tty_fstat,
+static const struct idesc_ops fbcon_idesc_ops = {
+	.read  = fbcon_idesc_read,
+	.write = fbcon_idesc_write,
+	.close = fbcon_idesc_close,
+	.ioctl = fbcon_idesc_ioctl,
+	.fstat = fbcon_idesc_fstat,
 };
 
 static void *run(void *data) {
-	int fd = task_self_idx_alloc(&this_idx_ops, data,
-			&((struct fbcon *)data)->ios);
-	const struct shell *sh = shell_lookup("tish");
+	int fd;
+	const struct shell *sh;
+	struct fbcon *fbcon = (struct fbcon *) data;
+
+	sh = shell_lookup("tish");
+
+	if (!sh) {
+		return NULL;
+	}
 
 	close(0);
 	close(1);
 	close(2);
 
-	dup2(fd, 0);
+	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, FS_MAY_READ | FS_MAY_WRITE);
+	fd = index_descriptor_add(&fbcon->idesc);
+	fbcon->vterm.tty.idesc = &fbcon->idesc;
+
+	assert(fd == 0);
+
 	dup2(fd, 1);
 	/*dup2(fd, 2);*/
-
-	close(fd);
 
 	shell_exec(sh, "login");
 
@@ -336,7 +339,6 @@ static int make_task(int i, char innewtask) {
 
 	fbcon->vc_this.callbacks = &thiscbs;
 	fbcon->fbcon_disdata = &fbcon_displ_data;
-	io_sync_init(&fbcon->ios, 0, 0);
 
 	vterm_video_init(&fbcon->vterm_video, &fbcon_vterm_video_ops,
 			0, 0);

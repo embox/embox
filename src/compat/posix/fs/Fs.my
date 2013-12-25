@@ -33,6 +33,14 @@ static module dirent {
 
 static module file_ops {
 	source "file_ops.c"
+	source "close.c"
+	source "fstat.c"
+	source "fsync.c"
+	source "lseek.c"
+	source "read.c"
+	source "write.c"
+	source "ftruncate.c"
+	source "fcntl.c"
 
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table
@@ -62,6 +70,8 @@ static module open {
 
 	depends embox.fs.index_operation
 	depends embox.kernel.task.errno
+	depends libgen
+	depends dirent
 }
 
 static module xattr {

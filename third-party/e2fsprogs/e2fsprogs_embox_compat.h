@@ -35,7 +35,7 @@
 
 
 #define O_ACCMODE       00000003
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
 
 #include <stdint.h>

@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <kernel/manual_event.h>
+//#include <kernel/manual_event.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>

@@ -66,7 +66,7 @@ int task_idx_desc_free(struct idx_desc *idx) {
 	return 0;
 }
 
-struct idx_desc_data * task_idx_data_alloc(const struct task_idx_ops *res_ops,
+struct idx_desc_data * task_idx_data_alloc(const struct idesc_ops *res_ops,
 		void *fd_struct, struct io_sync *ios) {
 	struct idx_desc_data *idx_data;
 
@@ -125,7 +125,7 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 	return 0;
 }
 
-int task_self_idx_alloc(const struct task_idx_ops *res_ops,
+int task_self_idx_alloc(const struct idesc_ops *res_ops,
 		void *fd_struct, struct io_sync *ios) {
 	int new_fd, ret;
 	struct task_idx_table *self_res = task_self_idx_table();
