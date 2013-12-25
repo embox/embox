@@ -127,12 +127,15 @@ extern void sched_signal(struct thread *thread);
 
 __END_DECLS
 
+#include <kernel/thread/signal_lock.h>
+
 #define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                            \
 		int __wait_ret = 0;                                          \
 		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
 			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
 		                                                             \
+		threadsig_lock();                                            \
 		do {                                                         \
 			sched_wait_prepare();                                    \
 			                                                         \
@@ -145,6 +148,7 @@ __END_DECLS
 		                                                             \
 		sched_wait_cleanup();                                        \
 		                                                             \
+		threadsig_unlock();                                          \
 		__wait_ret;                                                  \
 	}))
 
