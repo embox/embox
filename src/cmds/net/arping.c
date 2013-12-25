@@ -93,7 +93,7 @@ static int exec(int argc, char **argv) {
 		if (0 == neighbour_get_haddr(ETH_P_IP, &dst, in_dev->dev,
 					ARPG_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
 			macaddr_print(mac, hw_addr);
-			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, -1);
+			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;
 		}
 	}
