@@ -116,7 +116,8 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		int stream_mode) {
 	int res;
 	char *buff;
-	size_t buff_sz, len;
+	size_t buff_sz;
+	int len;
 	int timeout;
 
 	assert(sk);
