@@ -35,6 +35,11 @@ static inline void tty_notify(struct tty *t, int mask) {
 		idesc_notify(t->idesc, mask);
 }
 
+static inline void tty_out_wake(struct tty *t) {
+
+	t->ops->out_wake(t);
+}
+
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
 	return termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
@@ -43,6 +48,9 @@ static int tty_output(struct tty *t, char ch) {
 
 static void tty_echo(struct tty *t, char ch) {
 	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	mutex_unlock(&t->lock);
+	tty_out_wake(t);
+	mutex_lock(&t->lock);
 }
 
 static void tty_echo_erase(struct tty *t) {
@@ -320,7 +328,7 @@ static int tty_blockin_output(struct tty *t, char ch) {
 		if (!ret) {
 			mutex_unlock(&t->lock);
 
-			t->ops->out_wake(t);
+			tty_out_wake(t);
 			ret = sched_wait();
 
 			mutex_lock(&t->lock);
@@ -345,7 +353,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	mutex_unlock(&t->lock);
 	threadsig_unlock();
 
-	t->ops->out_wake(t);
+	tty_out_wake(t);
 
 	if (!(size - count)) {
 		return ret;
