@@ -37,16 +37,14 @@ int termios_putc(struct termios *t, char ch, struct ring *ring, char *buf, size_
 int termios_gotc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
 	int res = 0;
 
-	if (!(TIO_L(t, ECHO) || (TIO_L(t, ECHONL) && ch == '\n')))
-		return res;
-
-	if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
-		/* ASCII table magic:  CTRL(ch) -> ^ch;  ASCII DEL -> ^? */
-		res += termios_putc(t, '^', ring, buf, buflen);
-		ch = toascii(ch + 'A' - 1);  /* ('A' - 1) == ('@') == ('\0' + 0x40). */
+	if (TIO_L(t, ECHO) || (TIO_L(t, ECHONL) && ch == '\n')) {
+		if (iscntrl(ch) && ch != '\n' && ch != '\t' && ch != '\b') {
+			/* ASCII table magic:  CTRL(ch) -> ^ch;  ASCII DEL -> ^? */
+			res += termios_putc(t, '^', ring, buf, buflen);
+			ch = toascii(ch + 'A' - 1);  /* ('A'-1) == ('@') == ('\0'+0x40). */
+		}
+		res += termios_putc(t, ch, ring, buf, buflen);
 	}
-
-	res += termios_putc(t, ch, ring, buf, buflen);
 
 	return res;
 }

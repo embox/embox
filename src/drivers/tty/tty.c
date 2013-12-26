@@ -309,33 +309,25 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 	idesc_wait_init(&iwl, POLLOUT | POLLERR);
 
-	threadsig_lock();
-
 	do {
-		if (tty_output(t, ch)) {
-			ret = 0;
-			break;
-		}
+		if (tty_output(t, ch))
+			return 0;
 
-		if (!t->idesc) {
-			ret = -EBADF;
-			break;
-		}
+		if (!t->idesc)
+			return -EBADF;
 
 		ret = idesc_wait_prepare(t->idesc, &iwl);
 		if (!ret) {
 			mutex_unlock(&t->lock);
 
 			t->ops->out_wake(t);
-
-			ret = sched_wait_timeout(SCHED_TIMEOUT_INFINITE, NULL);
+			ret = sched_wait();
 
 			mutex_lock(&t->lock);
 		}
 		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!ret);
 
-	threadsig_unlock();
 	return ret;
 }
 
@@ -343,6 +335,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
 	int ret;
 
+	threadsig_lock();
 	mutex_lock(&t->lock);
 
 	for (count = size; count > 0; count--, buff++)
@@ -350,6 +343,7 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 			break;
 
 	mutex_unlock(&t->lock);
+	threadsig_unlock();
 
 	t->ops->out_wake(t);
 
