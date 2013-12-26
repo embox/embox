@@ -17,6 +17,7 @@
 #include <embox/net/sock.h>
 
 #include <framework/mod/options.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/lib/udp.h>
 #include <net/sock.h>
@@ -87,9 +88,23 @@ INDEX_CLAMP_DEF(udp_sock_port, 0, MODOPS_AMOUNT_UDP_PORT,
 		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(udp_sock_list);
 
+static int udp_fillmsg(struct sock *sk, struct msghdr *msg,
+		struct sk_buff *skb) {
+	struct sockaddr_in *inaddr;
+
+	inaddr = (struct sockaddr_in *)msg->msg_name;
+
+	inaddr->sin_family = AF_INET;
+	memcpy(&inaddr->sin_addr, &ip_hdr(skb)->saddr, sizeof(in_addr_t));
+	inaddr->sin_port = udp_hdr(skb)->source;
+
+	return 0;
+}
+
 static const struct sock_proto_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
+	.fillmsg   = udp_fillmsg,
 	.sock_port = &udp_sock_port,
 	.sock_list = &udp_sock_list
 };

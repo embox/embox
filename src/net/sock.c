@@ -67,12 +67,17 @@ int sock_close(struct sock *sk) {
 
 size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
 
-static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
+static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	struct sk_buff *skb;
 	size_t len;
 	int total_len;
+	char *buff;
+	size_t buff_sz;
 
 	total_len = 0;
+
+	buff = msg->msg_iov->iov_base;
+	buff_sz = msg->msg_iov->iov_len;
 
 	do {
 		skb = skb_queue_front(&sk->rx_queue);
@@ -88,6 +93,10 @@ static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
 		if (!stream) {
 			sk->rx_data_len -= skb->p_data_end - skb->p_data;
 
+			// XXX
+			if (sk->p_ops->fillmsg) {
+				sk->p_ops->fillmsg(sk, msg, skb);
+			}
 			/* For message-based sockets, such as SOCK_DGRAM and SOCK_SEQPACKET,
 			 * the entire message shall be read in a single operation. If a
 			 * message is too long to fit in the supplied buffer, and MSG_PEEK
@@ -115,8 +124,6 @@ static int sock_read(struct sock *sk, char *buff, size_t buff_sz, int stream) {
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		int stream_mode) {
 	int res;
-	char *buff;
-	size_t buff_sz;
 	int len;
 	int timeout;
 
@@ -125,13 +132,10 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 	assert(msg->msg_iov);
 	assert(msg->msg_iov->iov_base || !msg->msg_iov->iov_len);
 
-	buff = msg->msg_iov->iov_base;
-	buff_sz = msg->msg_iov->iov_len;
-
 	softirq_lock();
 	{
 		do {
-			len = sock_read(sk, buff, buff_sz, stream_mode);
+			len = sock_read(sk, msg, stream_mode);
 
 			if (len == 0) {
 				/* if we try to read zero bytes from socket */

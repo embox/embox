@@ -310,7 +310,6 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 
 static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
-	int ret;
 	struct sockaddr_in *addr_in;
 
 	assert(sk);
@@ -319,11 +318,6 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->recvmsg == NULL) {
 		return -ENOSYS;
-	}
-
-	ret = sk->p_ops->recvmsg(sk, msg, flags);
-	if (ret != 0) {
-		return ret;
 	}
 
 	if (msg->msg_name != NULL) {
@@ -336,7 +330,7 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 		msg->msg_namelen = sizeof *addr_in;
 	}
 
-	return 0;
+	return sk->p_ops->recvmsg(sk, msg, flags);
 }
 
 static int inet_getsockname(struct sock *sk,

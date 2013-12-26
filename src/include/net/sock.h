@@ -124,6 +124,8 @@ struct sock_proto_ops {
 			socklen_t *addrlen, int flags, struct sock **out_sk);
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
+	int (*fillmsg)(struct sock *sk, struct msghdr *msg,
+			struct sk_buff *skb); //FIXME remove me
 	int (*getsockopt)(struct sock *sk, int level, int optname,
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
