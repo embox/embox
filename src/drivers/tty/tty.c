@@ -190,10 +190,10 @@ static char *tty_read_raw(struct tty *t, char *buff, char *end) {
 
 static size_t find_line_len(cc_t eol, cc_t eof,
 		const char *buff, ssize_t size, int *is_eof) {
-	int offset = -1;
+	size_t offset;
 
 	*is_eof = 0;
-	for (; offset < size; ++offset) {
+	for (offset = 0; offset < size; ++offset) {
 		char ch = buff[offset];
 		if (ch == '\n' || ch == eol || ch == eof) {
 			*is_eof = (ch == eof);
