@@ -45,6 +45,7 @@ int ioctl(int fd, int request, ...) {
 		if (rc < 0) {
 			SET_ERRNO(-rc);
 		}
+		break;
 	default:
 		data = va_arg(args, void*);
 		rc = index_descriptor_ioctl(fd, request, data);
