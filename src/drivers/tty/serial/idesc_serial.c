@@ -55,7 +55,7 @@ struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 	return &fdesc->idesc;
 }
 
-static int serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	struct uart *uart;
 
 	assert(buf);
@@ -74,7 +74,7 @@ static int serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	return tty_read(&uart->tty, (char *) buf, nbyte);
 }
 
-static int serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	int ch;
 	struct uart *uart;
 	size_t written, left = nbyte;
@@ -99,10 +99,10 @@ static int serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 		buf = (void *)((char *)buf + written);
 	} while (left != 0);
 
-	return nbyte;
+	return (ssize_t)nbyte;
 }
 
-static int serial_close(struct idesc *idesc) {
+static void serial_close(struct idesc *idesc) {
 	struct uart *uart;
 	int res;
 
@@ -112,12 +112,11 @@ static int serial_close(struct idesc *idesc) {
 	uart = idesc_to_uart(idesc);
 	assert(uart);
 	res = uart_close(uart);
+	assert(res == 0); /* TODO */
 
 	idesc_uart_unbind(uart, idesc);
 
 	file_desc_destroy((struct file_desc *)idesc);
-
-	return res;
 }
 
 static int serial_ioctl(struct idesc *idesc, int request, void *data) {

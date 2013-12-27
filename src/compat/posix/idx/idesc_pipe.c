@@ -72,7 +72,7 @@ static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 	return 0;
 }
 
-static int pipe_close(struct idesc *idesc) {
+static void pipe_close(struct idesc *idesc) {
 	struct pipe *pipe;
 	struct idesc_pipe *cur, *other;
 	int ret;
@@ -98,8 +98,6 @@ static int pipe_close(struct idesc *idesc) {
 		free(pipe->buff);
 		free(pipe);
 	}
-
-	return 0;
 }
 
 static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
@@ -111,9 +109,9 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 		mutex_lock(&pipe->mutex));
 }
 
-static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	struct pipe *pipe;
-	int res;
+	ssize_t res;
 
 	assert(buf);
 	assert(idesc);
@@ -148,10 +146,11 @@ static int pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	return res;
 }
 
-static int pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	struct pipe *pipe;
 	const void *cbuf;
-	int len, res;
+	int len;
+	ssize_t res;
 
 	assert(buf);
 	assert(idesc);

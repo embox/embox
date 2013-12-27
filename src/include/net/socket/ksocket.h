@@ -47,7 +47,7 @@ extern struct sock * ksocket(int family, int type, int protocol);
  * @return 0 on success, otherwise result equal to minus posix
  * errno for the error reason.
  */
-extern int ksocket_close(struct sock *sk);
+extern void ksocket_close(struct sock *sk);
 
 /**
  * Bind socket to a local address.

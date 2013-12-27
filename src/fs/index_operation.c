@@ -18,10 +18,10 @@
 
 extern const struct idesc_ops idesc_file_ops;
 
-static int idesc_file_ops_close(struct idesc *idesc) {
+static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
-	return kclose((struct file_desc *)idesc);
+	kclose((struct file_desc *)idesc);
 }
 
 static ssize_t idesc_file_ops_read(struct idesc *idesc, void *buf, size_t nbyte) {

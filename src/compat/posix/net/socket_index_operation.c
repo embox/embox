@@ -27,8 +27,9 @@ static ssize_t socket_read(struct idesc *desc, void *buff,
 	assert(desc);
 	assert(desc->idesc_ops == &task_idx_ops_socket);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1))
+	if (sk->shutdown_flag & (SHUT_RD + 1)) {
 		return SET_ERRNO(EPIPE);
+	}
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -41,8 +42,7 @@ static ssize_t socket_read(struct idesc *desc, void *buff,
 
 	ret = krecvmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return iov.iov_len;
@@ -78,19 +78,13 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 	return iov.iov_len;
 }
 
-static int socket_close(struct idesc *desc) {
-	int ret;
+static void socket_close(struct idesc *desc) {
 	struct sock *sk = (struct sock *)desc;
 
 	assert(desc);
 	assert(desc->idesc_ops == &task_idx_ops_socket);
 
-	ret = ksocket_close(sk);
-	if (ret != 0) {
-		return SET_ERRNO(-ret);
-	}
-
-	return 0;
+	ksocket_close(sk);
 }
 
 static int socket_status(struct idesc *desc, int status_nr) {

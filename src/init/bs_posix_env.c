@@ -30,29 +30,28 @@ static struct idesc_diag {
 	struct tty *tty;
 } idesc_diag;
 
-static int iodev_read(struct idesc *data, void *buf, size_t nbyte) {
+static ssize_t iodev_read(struct idesc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
 		*cbuf++ = diag_getc();
 	}
 
-	return (int) cbuf - (int) buf;
+	return (ssize_t)((uintptr_t)cbuf - (uintptr_t)buf);
 
 }
 
-static int iodev_write(struct idesc *data, const void *buf, size_t nbyte) {
+static ssize_t iodev_write(struct idesc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
 		diag_putc(*cbuf++);
 	}
 
-	return (int) cbuf - (int) buf;
+	return (ssize_t)((uintptr_t)cbuf - (uintptr_t)buf);
 }
 
-static int iodev_close(struct idesc *data) {
-	return 0;
+static void iodev_close(struct idesc *data) {
 }
 
 static int iodev_ioctl(struct idesc *desc, int request, void *data) {

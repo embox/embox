@@ -96,13 +96,13 @@ static inline struct fbcon *data2fbcon(struct idesc *idesc) {
 	return member_cast_out(idesc, struct fbcon, idesc);
 }
 
-static int fbcon_idesc_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t fbcon_idesc_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(idesc);
 
 	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
-static int fbcon_idesc_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t fbcon_idesc_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	struct fbcon *fbcon = data2fbcon(idesc);
 	char *cbuf = (char *) buf;
 
@@ -110,7 +110,7 @@ static int fbcon_idesc_write(struct idesc *idesc, const void *buf, size_t nbyte)
 		vterm_putc(&fbcon->vterm, *cbuf++);
 	}
 
-	return (int) cbuf - (int) buf;
+	return (ssize_t)((uintptr_t)cbuf - (uintptr_t)buf);
 }
 
 static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {

@@ -27,7 +27,6 @@
 #include <err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
-extern const struct idesc_ops task_idx_ops_socket;
 
 struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
@@ -42,7 +41,7 @@ struct sock *ksocket(int family, int type, int protocol) {
 	return new_sk;
 }
 
-int ksocket_close(struct sock *sk) {
+void ksocket_close(struct sock *sk) {
 	assert(sk);
 
 	sock_set_state(sk, SS_DISCONNECTING);
@@ -50,10 +49,7 @@ int ksocket_close(struct sock *sk) {
 	if (0 != sock_close(sk)) {
 		LOG_WARN("ksocket_close", "can't close socket");
 	}
-
 	/* sock_set_state(sk, SS_CLOSED); */
-
-	return 0;
 }
 
 int kbind(struct sock *sk, const struct sockaddr *addr,

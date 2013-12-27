@@ -14,17 +14,16 @@ struct file_desc *kopen(struct node *node, int flag) {
 	return NULL;
 }
 
-size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
+ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	return -ENOSYS;
 }
 
-size_t kread(void *buf, size_t size, struct file_desc *desc) {
+ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	return -ENOSYS;
 }
 
 
-int kclose(struct file_desc *desc) {
-	return -ENOSYS;
+void kclose(struct file_desc *desc) {
 }
 
 int kseek(struct file_desc *desc, long int offset, int origin) {

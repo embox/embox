@@ -84,8 +84,8 @@ free_out:
 }
 
 
-size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
-	size_t ret;
+ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
+	ssize_t ret;
 
 	if (!file) {
 		DPRINTF(("EBADF "));
@@ -110,10 +110,6 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	}
 
 	ret = file->ops->write(file, (void *)buf, size);
-	if ((ssize_t) ret < 0) {
-		DPRINTF(("err = %d ", ret));
-		goto end;
-	}
 
 end:
 	DPRINTF(("write(%s, ...) = %d\n", file->node->name, ret));
@@ -121,8 +117,8 @@ end:
 	return ret;
 }
 
-size_t kread(void *buf, size_t size, struct file_desc *desc) {
-	size_t ret;
+ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
+	ssize_t ret;
 
 	if (NULL == desc) {
 		DPRINTF(("EBADF "));
@@ -143,10 +139,6 @@ size_t kread(void *buf, size_t size, struct file_desc *desc) {
 	}
 
 	ret = desc->ops->read(desc, buf, size);
-	if ((ssize_t) ret < 0) {
-		DPRINTF(("err = %d ", ret));
-		ret = -1;
-	}
 
 	end:
 	DPRINTF(("read(%s, ...) = %d\n", desc->node->name, ret));
@@ -155,21 +147,13 @@ size_t kread(void *buf, size_t size, struct file_desc *desc) {
 }
 
 
-int kclose(struct file_desc *desc) {
-
-	if (NULL == desc) {
-		return -EBADF;
-	}
-
-	if (NULL == desc->ops->close) {
-		return -EBADF;
-	}
-
+void kclose(struct file_desc *desc) {
+	assert(desc);
+	assert(desc->ops);
+	assert(desc->ops->close);
 	desc->ops->close(desc);
 
 	file_desc_destroy(desc);
-
-	return 0;
 }
 
 int kseek(struct file_desc *desc, long int offset, int origin) {

@@ -102,7 +102,7 @@ struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 
 	return p;
 }
-static int pty_close(struct idesc *idesc);
+static void pty_close(struct idesc *idesc);
 static int pty_ioctl(struct idesc *idesc, int request, void *data);
 static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
 static int pty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
@@ -200,7 +200,7 @@ static int pty_fixup_error(struct idesc *idesc, int code) {
 }
 #endif
 
-static int pty_close(struct idesc *idesc) {
+static void pty_close(struct idesc *idesc) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 	struct idesc **ipty_pm, **ipty_ps;
 	struct pty *pty;
@@ -230,29 +230,27 @@ static int pty_close(struct idesc *idesc) {
 
 	}
 	sched_unlock();
-
-	return 0;
 }
 
-static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *)desc;
 	assert(ipty != NULL);
 	return pty_write(ipty->pty, buf, nbyte);
 }
 
-static int pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
 	return pty_read(ipty->pty, desc, buf, nbyte);
 }
 
-static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
 	return tty_write(pty_to_tty(ipty->pty), buf, nbyte);
 }
 
-static int pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
 	return tty_read(pty_to_tty(ipty->pty), buf, nbyte);
