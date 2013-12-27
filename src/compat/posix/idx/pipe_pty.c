@@ -384,6 +384,5 @@ out_err:
 	if (pty) {
 		pty_delete(pty);
 	}
-	SET_ERRNO(res);
-	return -1;
+	return SET_ERRNO(res);
 }
