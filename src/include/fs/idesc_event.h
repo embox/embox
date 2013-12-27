@@ -81,7 +81,7 @@ extern int idesc_notify(struct idesc *idesc, int mask);
  */
 #define IDESC_WAIT_LOCKED(_unlock_expr, _idesc, _iwl, _mask, _timeout, _lock_expr) \
 	({                                                   \
-	 	int __res = 0;                                   \
+	 	int __res;                                       \
 		idesc_wait_init(_iwl, _mask);                    \
                                                          \
 		threadsig_lock();                                \

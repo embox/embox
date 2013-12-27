@@ -244,10 +244,7 @@ static int inet6_nonstream_connect(struct sock *sk,
 
 static int inet6_listen(struct sock *sk, int backlog) {
 	assert(sk);
-
-	if (backlog < 0) {
-		return -EINVAL;
-	}
+	assert(backlog >= 0);
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->listen == NULL) {

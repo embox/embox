@@ -44,8 +44,10 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 			continue;
 		}
 
+		poll_mask = 0;
+
 		if ((fds[i].events & POLLIN) && (idesc->idesc_amode & FS_MAY_READ)) {
-			poll_mask = POLLIN;
+			poll_mask |= POLLIN;
 		}
 
 		if ((fds[i].events & POLLOUT) && (idesc->idesc_amode & FS_MAY_WRITE)) {
@@ -115,9 +117,8 @@ int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	}
 
 	ret = poll_table_wait(&pt, ticks);
-	if (ret == -EINTR) {
-		SET_ERRNO(EINTR);
-		return -1;
+	if ((ret != 0) && (ret != -ETIMEDOUT)) {
+		return SET_ERRNO(-ret);
 	}
 
 	poll_table_count(&pt);

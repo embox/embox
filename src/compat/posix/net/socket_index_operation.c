@@ -72,8 +72,7 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 
 	ret = ksendmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return iov.iov_len;
@@ -88,8 +87,7 @@ static int socket_close(struct idesc *desc) {
 
 	ret = ksocket_close(sk);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;

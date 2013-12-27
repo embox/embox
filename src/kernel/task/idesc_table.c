@@ -67,7 +67,7 @@ int idesc_table_locked(struct idesc_table *t, int idx) {
 	return index_locked(&t->indexator, idx);
 }
 
-int idesc_table_del(struct idesc_table *t, int idx) {
+void idesc_table_del(struct idesc_table *t, int idx) {
 	struct idesc *idesc;
 
 	assert(t);
@@ -84,8 +84,6 @@ int idesc_table_del(struct idesc_table *t, int idx) {
 	index_free(&t->indexator, idx);
 
 	t->idesc_table[idx] = NULL;
-
-	return 0;
 }
 
 struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
@@ -100,14 +98,12 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 }
 
 
-int idesc_table_init(struct idesc_table *t) {
+void idesc_table_init(struct idesc_table *t) {
 	assert(t);
 	index_init(&t->indexator, 0, IDESC_QUANTITY, t->index_buffer);
-
-	return 0;
 }
 
-int idesc_table_finit(struct idesc_table *t) {
+void idesc_table_finit(struct idesc_table *t) {
 	int i;
 	struct idesc *idesc;
 
@@ -120,12 +116,10 @@ int idesc_table_finit(struct idesc_table *t) {
 			idesc_table_del(t, i);
 		}
 	}
-
-	return 0;
 }
 
 int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
-	int i;
+	int i, ret;
 	struct idesc *idesc;
 
 	assert(t);
@@ -141,7 +135,8 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 			idesc = idesc_table_get(parent_table, i);
 			assert(idesc);
 			if (!idesc_is_cloexeced(t->idesc_table[i])) {
-				idesc_table_add(t, idesc, 0);
+				ret = idesc_table_add(t, idesc, 0);
+				assert(ret >= 0); /* FIXME */
 			}
 		}
 	}
@@ -153,4 +148,3 @@ int idesc_table_exec(struct idesc_table *t) {
 	//TODO this for exec() only
 	return 0;
 }
-

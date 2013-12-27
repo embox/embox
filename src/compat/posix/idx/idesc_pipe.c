@@ -283,37 +283,33 @@ static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
 static struct pipe *pipe_alloc(void) {
 	struct pipe *pipe;
 	struct ring_buff *pipe_buff;
-        void *storage;
-        int res = 0;
+	void *storage;
 
-        pipe = storage = NULL;
-        pipe_buff = NULL;
+	pipe = storage = NULL;
+	pipe_buff = NULL;
 
-        if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
-                        || !(pipe = malloc(sizeof(struct pipe)))
-                        || !(pipe_buff = malloc(sizeof(struct ring_buff)))) {
-                goto free_memory;
-        }
+	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
+				|| !(pipe = malloc(sizeof(struct pipe)))
+				|| !(pipe_buff = malloc(sizeof(struct ring_buff)))) {
+		goto free_memory;
+	}
 
-        pipe->buff = pipe_buff;
-        pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
-        ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
+	pipe->buff = pipe_buff;
+	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
+	ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 
 	mutex_init(&pipe->mutex);
 
 	return pipe;
 
 free_memory:
-        if (storage)   free(storage);
-        if (pipe_buff) free(pipe_buff);
-        if (pipe)      free(pipe);
-        SET_ERRNO(res);
-        return NULL;
-
+	if (storage)   free(storage);
+	if (pipe_buff) free(pipe_buff);
+	if (pipe)      free(pipe);
+	return NULL;
 }
 
 static void pipe_free(struct pipe *pipe) {
-
 	free(pipe->buff->storage);
 	free(pipe->buff);
 	free(pipe);

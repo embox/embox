@@ -235,40 +235,27 @@ static int pty_close(struct idesc *idesc) {
 }
 
 static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
-	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	int res;
-
-	res = pty_write(ipty->pty, buf, nbyte);
-
-	return res;
+	struct idesc_pty *ipty = (struct idesc_pty *)desc;
+	assert(ipty != NULL);
+	return pty_write(ipty->pty, buf, nbyte);
 }
 
 static int pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	int res;
-
-	res = pty_read(ipty->pty, desc, buf, nbyte);
-	return res;
+	assert(ipty != NULL);
+	return pty_read(ipty->pty, desc, buf, nbyte);
 }
 
 static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	int res;
-
-	res = tty_write(pty_to_tty(ipty->pty), buf, nbyte);
-
-	//return pty_fixup_error(desc, res);
-	return res;
+	assert(ipty != NULL);
+	return tty_write(pty_to_tty(ipty->pty), buf, nbyte);
 }
 
 static int pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	int res;
-
-	res = tty_read(pty_to_tty(ipty->pty), buf, nbyte);
-
-	/*return pty_fixup_error(desc, res);*/
-	return res;
+	assert(ipty != NULL);
+	return tty_read(pty_to_tty(ipty->pty), buf, nbyte);
 }
 
 static int pty_fstat(struct idesc *data, void *buff) {
@@ -282,7 +269,7 @@ static int pty_fstat(struct idesc *data, void *buff) {
 
 static int pty_ioctl(struct idesc *idesc, int request, void *data) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
-
+	assert(ipty != NULL);
 	return tty_ioctl(pty_to_tty(ipty->pty), request, data);
 }
 
@@ -351,6 +338,7 @@ int ppty(int ptyfds[2]) {
 
 	pty = NULL;
 	master = slave = NULL;
+	ptyfds[0] = ptyfds[1] = -1;
 
 	pty = pty_create();
 	if (!pty) {
@@ -401,4 +389,3 @@ out_err:
 	SET_ERRNO(res);
 	return -1;
 }
-

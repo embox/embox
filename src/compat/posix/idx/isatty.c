@@ -27,7 +27,9 @@ int isatty(int fd) {
 	}
 #endif
 
-	fstat(fd, &st);
+	if (-1 == fstat(fd, &st))  {
+		return -1; /* errno already is set */
+	}
 
 	return S_ISCHR(st.st_mode);
 }

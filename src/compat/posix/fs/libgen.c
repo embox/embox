@@ -1,26 +1,25 @@
 /**
  * @file
  *
- * @date Oct 28, 2013
- * @author: Anton Bondarev
+ * @date 28.10.13
+ * @author Anton Bondarev
  */
 
 #include <limits.h>
 #include <string.h>
 #include <libgen.h>
 
-
-char  *basename(char *path) {
+char * basename(char *path) {
 	static char bname_buff[NAME_MAX + 1];
 	int len;
 	int start;
 	int clen;
 
 	if (path == NULL) {
-		return ".";
+		return strcpy(&bname_buff[0], ".");
 	}
 	if (0 == (len = strlen(path))) {
-		return ".";
+		return strcpy(&bname_buff[0], ".");
 	}
 	while (path[len - 1] == '/' && len > 1) {
 		len--;
@@ -61,10 +60,10 @@ char  *dirname(char *path) {
 	//int clen;
 
 	if (path == NULL) {
-		return ".";
+		return strcpy(&dname_buff[0], ".");
 	}
 	if (0 == (len = strlen(path))) {
-		return ".";
+		return strcpy(&dname_buff[0], ".");
 	}
 	while (path[len - 1] == '/' && len > 1) {
 		len--;
@@ -79,7 +78,7 @@ char  *dirname(char *path) {
 		memcpy(dname_buff, path, start);
 		dname_buff[start] = '\0';
 	} else if (path[0] != '/'){
-		return ".";
+		return strcpy(&dname_buff[0], ".");
 	} else {
 		memcpy(dname_buff, path, 1);
 		dname_buff[1] = '\0';

@@ -26,8 +26,7 @@ static int idesc_table_inherit(struct task *task, struct task *parent) {
 	t = res_get_pointer(task);
 	parent_table = res_get_pointer(parent);
 
-	idesc_table_fork(t, parent_table);
-	return 0;
+	return idesc_table_fork(t, parent_table);
 }
 
 static void idesc_table_deinit(struct task *task) {

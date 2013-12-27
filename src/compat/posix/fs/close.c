@@ -1,33 +1,29 @@
 /**
  * @file
  *
- * @date Nov 15, 2013
- * @author: Anton Bondarev
+ * @date 15.11.13
+ * @author Anton Bondarev
  */
-#include <errno.h>
 
+#include <errno.h>
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 
 int close(int fd) {
+	int ret;
 	struct idesc *idesc;
-	int res;
 
-	if(!idesc_index_valid(fd)) {
+	if (!idesc_index_valid(fd)
+			|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 
-	idesc = index_descriptor_get(fd);
-	if(!idesc) {
-		return SET_ERRNO(EBADF);
+	ret = idesc_close(idesc, fd);
+	if (ret != 0) {
+		return SET_ERRNO(-ret);
 	}
 
-	res = idesc_close(idesc, fd);
-	if (res) {
-		return SET_ERRNO(-res);
-	}
-
-	return res;
+	return 0;
 }

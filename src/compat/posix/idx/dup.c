@@ -16,33 +16,14 @@
 #include <kernel/task/idx.h>
 
 int dup(int flides) {
-	int res;
-
-	if (!idesc_index_valid(flides)) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	res = fcntl(flides, F_DUPFD, 0);
-
-	return res;
+	return fcntl(flides, F_DUPFD, 0);
 }
 
 int dup2(int flides, int flides2) {
-	int res;
-
 	if (flides == flides2) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-	if (!idesc_index_valid(flides2) || !idesc_index_valid(flides)) {
 		return SET_ERRNO(EBADF);
 	}
 
 	close(flides2);
-	res = fcntl(flides, F_DUPFD, flides2);
-
-	return res;
-
-
+	return fcntl(flides, F_DUPFD, flides2);
 }

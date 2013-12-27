@@ -302,7 +302,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 
 
 		if (!tcp_newsk) {
-			return -ECONNRESET;
+			return -ECONNRESET; /* FIXME */
 		}
 
 		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
@@ -353,14 +353,13 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
 	char *buff;
-	size_t len = msg->msg_iov->iov_len;
+	size_t len;
 	int timeout;
 
 	(void)flags;
 
 	assert(sk);
 	assert(msg);
-	//assert(msg->msg_iov->iov_len);
 
 	len = msg->msg_iov->iov_len;
 

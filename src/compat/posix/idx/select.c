@@ -26,6 +26,7 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 #include <fs/poll_table.h>
+#include <util/array.h>
 
 static int select_fds2pt(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
@@ -54,11 +55,12 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 		if (poll_mask) {
 			struct idesc_poll *pl;
 
-			idesc = index_descriptor_get(i);
-			if (!idesc) {
-				return -EBADF;
+			if (!idesc_index_valid(i)
+					|| (NULL == (idesc = index_descriptor_get(i)))) {
+				return SET_ERRNO(EBADF);
 			}
 
+			assert(cnt < ARRAY_SIZE(pt->idesc_poll));
 			pl = &pt->idesc_poll[cnt++];
 
 			pl->fd = i;
@@ -126,8 +128,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	}
 
 	ret = poll_table_wait(&pt, ticks);
-	if (ret == -EINTR) {
-		return SET_ERRNO(EINTR);
+	if ((ret != 0) && (ret != -ETIMEDOUT)) {
+		return SET_ERRNO(-ret);
 	}
 
 	ret = poll_table_count(&pt);

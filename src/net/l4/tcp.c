@@ -251,18 +251,24 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			{
 				list_move(&tcp_sk->conn_wait, &tcp_sk->parent->conn_wait);
-				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
+
+			//FIXME tcp_accept must notify without rx_data_len
+			to_sock(tcp_sk->parent)->rx_data_len++;
+			idesc_notify(&to_sock(tcp_sk->parent)->idesc, POLLIN);
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLERR);
+		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
@@ -574,14 +580,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Save new socket to accept queue */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			struct sock *sk;
-			sk = to_sock(tcp_sk);
 			tcp_newsk->parent = tcp_sk;
 			list_add_tail(&tcp_newsk->conn_wait, &tcp_sk->conn_wait);
-
-			//FIXME tcp_accept must notify without rx_data_len
-			sk->rx_data_len++;
-			idesc_notify(&sk->idesc, POLLIN);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -856,7 +856,6 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
 	__u32 ack, ack2last_ack, seq;
-	struct sock *sk;
 
 	/* Resetting if recv ack in this state */
 	switch (tcp_sk->state) {
@@ -876,8 +875,7 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
-		sk = tcp_sk->p_sk.sk;
-		idesc_notify(&sk->idesc, POLLOUT);
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
 	}
 	else if (ack - seq <= ack2last_ack) {
 		/* package with non-last acknowledgment */

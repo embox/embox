@@ -81,13 +81,13 @@ struct file_desc *file_desc_get(int idx) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 
-
 	assert(idesc_index_valid(idx));
 
 	it = task_get_idesc_table(task_self());
 	assert(it);
 
 	idesc = idesc_table_get(it, idx);
+	assert(idesc);
 
 	if (idesc->idesc_ops != &idesc_file_ops) {
 		return NULL;

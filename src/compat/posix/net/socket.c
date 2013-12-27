@@ -30,7 +30,7 @@
 
 extern const struct idesc_ops task_idx_ops_socket;
 
-int get_index(struct sock *sk) {
+static int get_index(struct sock *sk) {
 	struct idesc_table *it;
 
 	it = task_get_idesc_table(task_self());
@@ -55,15 +55,13 @@ int socket(int domain, int type, int protocol) {
 
 	sk = ksocket(domain, type, protocol);
 	if (err(sk) != 0) {
-		SET_ERRNO(-err(sk));
-		return -1;
+		return SET_ERRNO(-err(sk));
 	}
 
 	sockfd = get_index(sk);
 	if (sockfd < 0) {
 		ksocket_close(sk);
-		SET_ERRNO(EMFILE);
-		return -1;
+		return SET_ERRNO(EMFILE);
 	}
 
 	return sockfd;
@@ -81,8 +79,7 @@ int bind(int sockfd, const struct sockaddr *addr,
 
 	ret = kbind(sk, addr, addrlen);
 	if (ret != 0){
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -100,8 +97,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	ret = kconnect(sk, addr, addrlen, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -116,8 +112,7 @@ int listen(int sockfd, int backlog) {
 
 	ret = klisten(sk, backlog);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -138,15 +133,13 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 	ret = kaccept(sk, addr, addrlen, sk->idesc.idesc_flags, &new_sk);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	new_sockfd = get_index(new_sk);
 	if (new_sockfd < 0) {
 		ksocket_close(new_sk);
-		SET_ERRNO(EMFILE);
-		return -1;
+		return SET_ERRNO(-new_sockfd);
 	}
 
 	return new_sockfd;
@@ -185,8 +178,7 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 
 	ret = ksendmsg(sk, &msg, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return iov.iov_len;
@@ -226,8 +218,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	ret = ksendmsg(sk, &msg, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return iov.iov_len;
@@ -259,8 +250,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	ret = ksendmsg(sk, &msg_, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return msg_.msg_iov->iov_len;
@@ -295,8 +285,7 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 
 	ret = krecvmsg(sk, &msg, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return iov.iov_len;
@@ -333,8 +322,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 	ret = krecvmsg(sk, &msg, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	if (addrlen != NULL) {
@@ -372,8 +360,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	ret = krecvmsg(sk, &msg_, sk->idesc.idesc_flags);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	msg->msg_name = msg_.msg_name;
@@ -395,8 +382,7 @@ int shutdown(int sockfd, int how) {
 
 	ret = kshutdown(sk, how);
 	if (ret != 0){
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -416,8 +402,7 @@ int getsockname(int sockfd, struct sockaddr *addr,
 
 	ret = kgetsockname(sk, addr, addrlen);
 	if (ret != 0){
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -438,8 +423,7 @@ int getpeername(int sockfd, struct sockaddr *addr,
 
 	ret = kgetpeername(sk, addr, addrlen);
 	if (ret != 0){
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -459,8 +443,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 
 	ret = kgetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0){
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
@@ -479,8 +462,7 @@ int setsockopt(int sockfd, int level, int optname,
 
 	ret = ksetsockopt(sk, level, optname, optval, optlen);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
-		return -1;
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;

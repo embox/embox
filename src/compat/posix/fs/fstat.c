@@ -1,24 +1,31 @@
 /**
  * @file
  *
- * @date Nov 15, 2013
- * @author: Anton Bondarev
+ * @date 15.11.13
+ * @author Anton Bondarev
  */
+
 #include <sys/stat.h>
 #include <errno.h>
-
+#include <stddef.h>
+#include <assert.h>
+#include <kernel/task.h>
 #include <fs/index_descriptor.h>
 
-
 int fstat(int fd, struct stat *buff) {
-	int res;
+	int ret;
 
-	if (!buff) {
-		return -EINVAL;
+	assert(buff != NULL);
+
+	if (!idesc_index_valid(fd)
+			|| (NULL == index_descriptor_get(fd))) {
+		return SET_ERRNO(EBADF);
 	}
-	res = index_descriptor_fstat(fd, buff);
-	if (res < 0) {
-		return SET_ERRNO(-res);
+
+	ret = index_descriptor_fstat(fd, buff);
+	if (ret != 0) {
+		return SET_ERRNO(-ret);
 	}
+
 	return 0;
 }

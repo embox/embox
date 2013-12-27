@@ -13,6 +13,7 @@
 #include <security/security.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
+#include <kernel/task/idesc_table.h>
 
 #include <sys/xattr.h>
 
@@ -21,18 +22,15 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 	struct node *node;
 
 	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	if (0 > (res = security_xattr_get(node, name, value, size))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = kfile_xattr_get(node, name, value, size))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	return res;
@@ -44,18 +42,15 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 	struct node *node;
 
 	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	if (0 > (res = security_xattr_set(node, name, value, size, flags))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = kfile_xattr_set(node, name, value, size, flags))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	return res;
@@ -66,18 +61,15 @@ int listxattr(const char *path, char *list, size_t size) {
 	struct node *node;
 
 	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	if (0 > (res = security_xattr_list(node, list, size))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = kfile_xattr_list(node, list, size))) {
-		SET_ERRNO(-res);
-		return -1;
+		return SET_ERRNO(-res);
 	}
 
 	return res;
@@ -87,16 +79,13 @@ int fsetxattr(int fd, const char *name, const char *value, size_t size, int flag
 	struct idesc *idesc;
 	int res;
 
-	idesc = index_descriptor_get(fd);
-
-	if (!idesc) {
-		SET_ERRNO(EBADF);
-		return -1;
+	if (!idesc_index_valid(fd)
+			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		return SET_ERRNO(EBADF);
 	}
 
 	if (0 > (res = security_xattr_idesc_set(idesc, name, value, size, flags))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = idesc_setxattr(idesc, name, value, size, flags))) {
@@ -110,16 +99,13 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 	struct idesc *idesc;
 	int res;
 
-	idesc = index_descriptor_get(fd);
-
-	if (!idesc) {
-		SET_ERRNO(EBADF);
-		return -1;
+	if (!idesc_index_valid(fd)
+			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		return SET_ERRNO(EBADF);
 	}
 
 	if (0 > (res = security_xattr_idesc_get(idesc, name, value, size))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = idesc_getxattr(idesc, name, value, size))) {
@@ -133,16 +119,13 @@ int flistxattr(int fd, char *list, size_t size) {
 	struct idesc *idesc;
 	int res;
 
-	idesc = index_descriptor_get(fd);
-
-	if (!idesc) {
-		SET_ERRNO(EBADF);
-		return -1;
+	if (!idesc_index_valid(fd)
+			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		return SET_ERRNO(EBADF);
 	}
 
 	if (0 > (res = security_xattr_idesc_list(idesc, list, size))) {
-		SET_ERRNO(EACCES);
-		return -1;
+		return SET_ERRNO(EACCES);
 	}
 
 	if (0 > (res = idesc_listxattr(idesc, list, size))) {
