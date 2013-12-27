@@ -21,7 +21,7 @@ void TextEditor::closeEditor(TextEditor *ed) {
 	}
 }
 void TextEditor::closeAllEditors() {
-	for (int i = 0; i < textEditors.size(); i++) {
+	for (int i = textEditors.size() - 1; i >= 0; i--) {
 		textEditors.at(i)->quit();
 	}
 }
