@@ -400,7 +400,6 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
-	int ret;
 	struct tcp_sock *tcp_sk;
 
 	assert(sk);
@@ -414,16 +413,16 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 	switch (tcp_sk->state) {
 	default:
 		return -ENOTCONN;
-	case TCP_ESTABIL:
-	case TCP_FINWAIT_1:
-	case TCP_FINWAIT_2:
 	case TCP_CLOSEWAIT:
-		ret = sock_stream_recvmsg(to_sock(tcp_sk), msg, flags);
-		if ((ret == -EAGAIN) && (tcp_sk->state == TCP_CLOSEWAIT)) {
+		if (to_sock(tcp_sk)->rx_data_len == 0) {
 			msg->msg_iov->iov_len = 0;
 			return 0; /* no more data to receive */
 		}
-		return ret;
+		/* fallthrough */
+	case TCP_ESTABIL:
+	case TCP_FINWAIT_1:
+	case TCP_FINWAIT_2:
+		return sock_stream_recvmsg(to_sock(tcp_sk), msg, flags);
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
