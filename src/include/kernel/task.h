@@ -66,6 +66,8 @@ struct task {
 
 	int err; /**< @brief Last occurred error code */
 
+	int child_err; /**< child error after child exited TODO ?several children */
+
 	clock_t per_cpu; /**< task times */
 
 	struct waitq *waitq;

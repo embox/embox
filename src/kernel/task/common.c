@@ -81,6 +81,8 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 	/* FIXME: This should be only in SMP */
 	task->affinity = TASK_AFFINITY_DEFAULT;
 
+	task->child_err = 0;
+
 	return task;
 
 }

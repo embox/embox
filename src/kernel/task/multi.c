@@ -211,7 +211,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 
 	assert(task != task_kernel_task());
 
-	task->err = (int)res;
+	task->parent->child_err = (int)res;
 
 	sched_lock();
 	{

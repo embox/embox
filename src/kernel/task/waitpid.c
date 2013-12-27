@@ -15,7 +15,7 @@
 #include <kernel/sched/waitq.h>
 
 int task_waitpid(pid_t pid) {
-	struct task *task;
+	struct task *task, *parent;
 	struct waitq_link wql;
 	int ret = 0;
 
@@ -24,6 +24,7 @@ int task_waitpid(pid_t pid) {
 	sched_lock();
 	{
 		task = task_table_get(pid);
+		parent = task->parent;
 		if (!task) {
 			ret = -ECHILD;
 			goto out;
@@ -32,6 +33,8 @@ int task_waitpid(pid_t pid) {
 		waitq_wait_prepare(task->waitq, &wql);
 
 		sched_wait();
+
+		ret = parent->child_err;
 
 		/* no cleanup since task is dead already */
 	}
