@@ -128,8 +128,7 @@ static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
 
 }
 
-static int fbcon_idesc_close(struct idesc *idesc) {
-	return 0;
+static void fbcon_idesc_close(struct idesc *idesc) {
 }
 
 static const struct idesc_ops fbcon_idesc_ops = {

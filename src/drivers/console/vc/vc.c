@@ -48,17 +48,16 @@ static int vc_open(struct node *node, struct file_desc *desc, int flags) {
 
 }
 
-static int vc_close(struct idesc *desc) {
+static void vc_close(struct idesc *desc) {
 	vc_vterm.tty.idesc = NULL;
-	return 0;
 }
 
-static int vc_read(struct idesc *desc, void *buff, size_t size) {
+static ssize_t vc_read(struct idesc *desc, void *buff, size_t size) {
 
 	return tty_read(&vc_vterm.tty, (char *) buff, size);
 }
 
-static int vc_write(struct idesc *desc, const void *buff, size_t size) {
+static ssize_t vc_write(struct idesc *desc, const void *buff, size_t size) {
 	size_t cnt;
 	char *b;
 
@@ -66,7 +65,7 @@ static int vc_write(struct idesc *desc, const void *buff, size_t size) {
 		vterm_putc(&vc_vterm, *b);
 	}
 
-	return size;
+	return (ssize_t)size;
 }
 
 static int vc_ioctl(struct idesc *desc, int request, void *data) {

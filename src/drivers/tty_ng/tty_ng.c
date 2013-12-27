@@ -160,7 +160,7 @@ static int _fstat(struct idx_desc *data, void *buff) {
 
 }
 
-static int _close (struct idx_desc *data) {
+static void _close (struct idx_desc *data) {
 }
 
 static void tty_init(struct tty_buf *tty) {
