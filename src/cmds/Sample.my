@@ -9,7 +9,7 @@ package embox.cmd
 		DESCRIPTION
 			Tool for profiling.
 		OPTIONS
-			-l [num] - show less functions (constraints %)
+			-l [num] - display top NUM entries
 			-h - print usage
 			-s - start profiler (restart if already running)
 			-t - stop profiler

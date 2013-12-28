@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 
 #include <unistd.h>
@@ -18,19 +19,28 @@ EMBOX_CMD(exec);
 
 typedef enum {START_PROFILING, STOP_PROFILING, SHOW_INFO} action;
 
+struct entry {
+	int number, counter;
+};
+
+int entry_cmp(const void *fst, const void *snd){
+	return - ((struct entry *)fst)->counter + ((struct entry *)snd)->counter;
+}
+
 int *counters;
+struct entry entries[SAMPLE_HASH_SIZE];
 
 static void print_usage(void) {
 	printf(	"Flags:\n"
 			"-h print usage\n"
 			"-s start profiling (discard statistics if already running)\n"
-			"-l set limit in percents (int)\n"
+			"-l show top N entries\n"
 			"-t stop profiler (do not discard information)\n"
 			"-i set custom timer interval\n");
 }
 
 static int exec(int argc, char **argv) {
-	int i, total = 0, limiter = 0, interval = 100;
+	int i, total_counter = 0, total_entries = 0, limiter = 0, interval = 100;
 	char c;
 	action act = SHOW_INFO;
 
@@ -89,14 +99,21 @@ static int exec(int argc, char **argv) {
 			printf("Sampling information:\n");
 			printf("%5s %10s   %s\n", "%", "Counter", "Function");
 			for (i = 0; i < SAMPLE_HASH_SIZE; i++) {
-				total += counters[i];
+				total_counter += counters[i];
+				if (counters[i] != 0)
+					total_entries++;
+				entries[i].counter = counters[i];
+				entries[i].number = i;
 			}
 
-			for (i = 0; i < SAMPLE_HASH_SIZE; i++) {
-				if ((double)100 * counters[i] / total > limiter) {
-					printf("%5.2lf %10d   %s\n", (double) 100.0 * counters[i] / total,
-						counters[i], get_name(i));
-				}
+			qsort(entries, SAMPLE_HASH_SIZE, sizeof(struct entry), entry_cmp);
+
+			if (limiter == 0)
+				limiter = total_entries;
+
+			for (i = 0; i < limiter; i++) {
+				printf("%5.2lf %10d   %s\n", (double) 100.0 * entries[i].counter / total_counter,
+					entries[i].counter, get_name(entries[i].number));
 			}
 	}
 
