@@ -25,6 +25,7 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <util/binalign.h>
+#include <util/math.h>
 #include <framework/mod/options.h>
 
 #include <kernel/printk.h>
@@ -39,9 +40,18 @@ struct emac_desc_head {
 	struct emac_desc desc;
 };
 
+//struct emac_desc_queue {
+//	struct emac_desc_head *active;
+//	struct emac_desc_head *pending;
+//	struct emac_desc_head *pending_last;
+//};
+
 struct ti816x_priv {
 	struct emac_desc_head *rx_active, *rx_pending, *rx_pending_last;
 	struct emac_desc_head *tx_active, *tx_pending, *tx_pending_last;
+
+	//struct emac_desc_queue rx;
+	//struct emac_desc_queue tx;
 };
 
 /* FIXME */
@@ -200,6 +210,37 @@ static void emac_enable_rx_and_tx_irq(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_MACINTMASKSET, HOSTMASK | STATMASK);
 }
 
+#define RXEN (0x1 << 0)
+#define TXEN (0x1 << 0)
+static void emac_enable_rx_and_tx_dma(void) {
+	REG_STORE(EMAC_BASE + EMAC_R_RXCONTROL, RXEN);
+	REG_STORE(EMAC_BASE + EMAC_R_TXCONTROL, TXEN);
+}
+
+static void emac_desc_build(struct emac_desc_head *hdesc,
+		void *data, size_t data_len, size_t len, int flags) {
+	assert(hdesc != NULL);
+	assert(binalign_check_bound((uintptr_t)hdesc, 4));
+
+	hdesc->desc.next = 0; /* use emac_desc_set_next */
+	hdesc->desc.data = (uintptr_t)data;
+	hdesc->desc.data_len = data_len;
+	hdesc->desc.len = len;
+	hdesc->desc.data_off = 0;
+	hdesc->desc.flags = flags;
+	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
+}
+
+static void emac_desc_set_next(struct emac_desc_head *hdesc,
+		void *next) {
+	assert(hdesc != NULL);
+	assert(next != NULL);
+	assert(binalign_check_bound((uintptr_t)next, 4));
+
+	hdesc->desc.next = (uintptr_t)next;
+	dcache_flush(&hdesc->desc.next, sizeof hdesc->desc.next);
+}
+
 static void emac_alloc_rx_queue(int size,
 		struct ti816x_priv *dev_priv) {
 	int i;
@@ -209,31 +250,18 @@ static void emac_alloc_rx_queue(int size,
 
 	hfirst = hdesc = NULL;
 
-	//printk("alloc queue [%d]:\n", size);
 	for (i = 0; i < size; ++i) {
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
 
 		hprev = hdesc;
 		hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
-		assert(hdesc != NULL);
-		assert(binalign_check_bound((uintptr_t)hdesc, 4));
-
-		hdesc->desc.next = 0;
-		assert(binalign_check_bound((uintptr_t)hdesc->desc.next, 4));
-		hdesc->desc.data = (uintptr_t)skb_data_get_data(skb_data);
-		hdesc->desc.data_len = skb_max_size();
-		hdesc->desc.data_off = hdesc->desc.len = 0;
-		hdesc->desc.flags = EMAC_DESC_F_OWNER;
-		dcache_flush(&hdesc->desc, sizeof hdesc->desc);
-
-		//printk("\t%p\n", hdesc);
+		emac_desc_build(hdesc, skb_data_get_data(skb_data),
+				skb_max_size(), 0, EMAC_DESC_F_OWNER);
 
 		if (hfirst == NULL) hfirst = hdesc;
 		if (hprev != NULL) {
-			hprev->desc.next = (uintptr_t)&hdesc->desc;
-			dcache_flush(&hprev->desc.next,
-					sizeof hprev->desc.next);
+			emac_desc_set_next(hprev, &hdesc->desc);
 		}
 	}
 
@@ -244,11 +272,8 @@ static void emac_alloc_rx_queue(int size,
 		dev_priv->rx_pending_last = hdesc;
 
 		if (hlast != NULL) {
-			dcache_inval(&hlast->desc,
-					sizeof hlast->desc); /* ?? */
-			hlast->desc.next = (uintptr_t)&hfirst->desc;
-			dcache_flush(&hlast->desc.next,
-					sizeof hlast->desc.next);
+			dcache_inval(&hlast->desc, sizeof hlast->desc); /* ?? */
+			emac_desc_set_next(hlast, &hfirst->desc);
 		}
 		else {
 			assert(dev_priv->rx_pending == NULL);
@@ -265,39 +290,28 @@ static void emac_alloc_rx_queue(int size,
 	ipl_restore(ipl);
 }
 
-#define RXEN (0x1 << 0)
-#define TXEN (0x1 << 0)
-static void emac_enable_rx_and_tx_dma(void) {
-	REG_STORE(EMAC_BASE + EMAC_R_RXCONTROL, RXEN);
-	REG_STORE(EMAC_BASE + EMAC_R_TXCONTROL, TXEN);
-}
-
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct sk_buff_data *skb_data;
+	void *data;
+	size_t data_len;
 	struct emac_desc_head *hdesc, *hlast;
 	struct ti816x_priv *dev_priv;
 	ipl_t ipl;
 
-	assert(skb != NULL);
 	skb_data = skb_data_alloc();
 	assert(skb_data != NULL);
-	memcpy(skb_data_get_data(skb_data),
-			skb_data_get_data(skb->data), skb->len);
 
-	hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
-	assert(hdesc != NULL);
-	assert(binalign_check_bound((uintptr_t)hdesc, 4));
-
-	hdesc->desc.next = 0;
-	assert(binalign_check_bound(hdesc->desc.next, 4));
-	hdesc->desc.data = (uintptr_t)skb_data_get_data(skb_data);
-	hdesc->desc.data_len = hdesc->desc.len = skb->len < ETH_ZLEN ? ETH_ZLEN : skb->len;
-	hdesc->desc.data_off = 0;
-	hdesc->desc.flags = EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER;
-	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
-	dcache_flush(skb_data_get_data(skb_data), skb->len);
+	data = skb_data_get_data(skb_data);
+	data_len = max(skb->len, ETH_ZLEN);
+	memcpy(data, skb_data_get_data(skb->data), data_len);
+	dcache_flush(data, data_len);
 
 	skb_free(skb);
+
+	hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
+	emac_desc_build(hdesc, data, data_len, data_len,
+			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
+
 
 	dev_priv = netdev_priv(dev, struct ti816x_priv);
 	assert(dev_priv != NULL);
@@ -310,9 +324,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 		if (hlast != NULL) {
 			dcache_inval(&hlast->desc,
 					sizeof hlast->desc); /* ?? */
-			hlast->desc.next = (uintptr_t)&hdesc->desc;
-			dcache_flush(&hlast->desc.next,
-					sizeof hlast->desc.next);
+			emac_desc_set_next(hlast, &hdesc->desc);
 		}
 		else {
 			assert(dev_priv->tx_pending == NULL);
