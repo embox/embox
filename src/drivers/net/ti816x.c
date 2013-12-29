@@ -391,20 +391,20 @@ static const struct net_driver ti816x_ops = {
 	.set_macaddr = ti816x_set_macaddr
 };
 
-#define RXTHRESHEOI 0x0
+#define RXTHRESHEOI 0x0 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 		void *dev_id) {
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXTHRESHINTSTAT));
 
-	printk("ti816x_interrupt_macrxthr0 unhandled interrupt\n");
+	printk("ti816x_interrupt_macrxthr0: unhandled interrupt\n");
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXTHRESHEOI);
 
 	return IRQ_HANDLED;
 }
 
-#define RXEOI 0x1
+#define RXEOI 0x1 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
@@ -469,7 +469,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-#define TXEOI 0x2
+#define TXEOI 0x2 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
@@ -515,16 +515,45 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-#define HOSTPEND (0x1 << 26)
-#define MISCEOI 0x3
+#define HOSTPEND (0x1 << 26) /* MACINVECTOR */
+#define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
+#define TXERRCODE(x) ((x >> 20) & 0xf)
+#define TXERRCH(x) ((x >> 16) & 0x7)
+#define RXERRCODE(x) ((x >> 12) & 0xf)
+#define RXERRCH(x) ((x >> 8) & 0x7)
+#define RGMIIGIG(x) ((x >> 4) & 0x1)
+#define RGMIIFULLDUPLEX(x) ((x >> 3) & 0x1)
+#define RXQOSACT(x) ((x >> 2) & 0x1)
+#define RXFLOWACT(x) ((x >> 1) & 0x1)
+#define TXFLOWACT(x) ((x >> 0) & 0x1)
+#define MISCEOI 0x3 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		void *dev_id) {
-	printk("ti816x_interrupt_macmisc0 unhandled interrupt: %#lx %#lx %#lx\n",
-			REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT),
-			REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR),
-			REG_LOAD(EMAC_BASE + EMAC_R_MACINTSTATRAW));
+	unsigned long cmmiscintstat, macintvector, macstatus;
 
-	if (REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR) & HOSTPEND) {
+	printk("ti816x_interrupt_macmisc0: unhandled interrupt\n");
+
+	cmmiscintstat = REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT);
+	printk("\tCMMISCINTSTAT: %#lx\n", cmmiscintstat);
+
+	macintvector = REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR);
+	printk("\tMACINVECTOR: %#lx\n", macintvector);
+
+	if (macintvector & HOSTPEND) {
+		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
+		printk("\tMACSTATUS: %#lx\n"
+				"\t\tidle %lx\n"
+				"\t\ttxerrcode %lx; txerrch %lx\n"
+				"\t\trxerrcode %lx; rxerrch %lx\n"
+				"\t\trgmiigig %lx; rgmiifullduplex %lx\n"
+				"\t\trxqosact %lx; rxflowact %lx; txflowact %lx\n",
+				macstatus,
+				IDLE(macstatus),
+				TXERRCODE(macstatus), TXERRCH(macstatus),
+				RXERRCODE(macstatus), RXERRCH(macstatus),
+				RGMIIGIG(macstatus), RGMIIFULLDUPLEX(macstatus),
+				RXQOSACT(macstatus), RXFLOWACT(macstatus), TXFLOWACT(macstatus));
+
 		REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
 		while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
 	}
