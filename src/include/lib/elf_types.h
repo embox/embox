@@ -109,4 +109,12 @@ typedef struct{
 	Elf32_Sword r_addend;
 } Elf32_Rela;
 
+typedef struct {
+	Elf32_Sword d_tag;
+	union {
+		Elf32_Word d_val;
+		Elf32_Addr d_ptr;
+	} d_un;
+} Elf32_Dyn;
+
 #endif /* LIB_ELF_TYPES_H_ */
