@@ -88,8 +88,10 @@ static int exec(int argc, char **argv) {
 			if (sampling_profiler_is_running()) {
 				printf("Stopping profiler...\n");
 				stop_profiler();
-				return 0;
+			} else {
+				printf("Profiler is not running!\n");
 			}
+			return 0;
 		case SHOW_INFO:
 			/*if (!sampling_profiler_is_running()) {
 				printf("Profiler is not running. Type \"sample -h\" for usage.\n");
@@ -97,7 +99,7 @@ static int exec(int argc, char **argv) {
 			}*/
 
 			printf("Sampling information:\n");
-			printf("%5s %10s   %s\n", "%", "Counter", "Function");
+			printf("%5s %10s   %s\n", "  ", "Counter", "Function");
 			for (i = 0; i < SAMPLE_HASH_SIZE; i++) {
 				total_counter += counters[i];
 				if (counters[i] != 0)
@@ -112,7 +114,7 @@ static int exec(int argc, char **argv) {
 				limiter = total_entries;
 
 			for (i = 0; i < limiter; i++) {
-				printf("%5.2lf %10d   %s\n", (double) 100.0 * entries[i].counter / total_counter,
+				printf("%5.2lf%% %9d   %s\n", (double) 100.0 * entries[i].counter / total_counter,
 					entries[i].counter, get_name(entries[i].number));
 			}
 	}

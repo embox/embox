@@ -10,10 +10,13 @@
 
 #include <profiler/sampling/sample.h>
 
+#include <module/embox/arch/stackframe.h>
+
 static int hash_array[SAMPLE_HASH_SIZE];
 static int pow[SAMPLE_HASH_SIZE], base = 101;
 static char sample_strings[SAMPLE_HASH_SIZE][100];
-static int shift = 8;
+//static int shift = 8;
+static int shift = 0;
 static bool is_running = false;
 static sys_timer_t *sampling_timer;
 
