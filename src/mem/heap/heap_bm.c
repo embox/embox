@@ -350,7 +350,7 @@ void * realloc(void *ptr, size_t size) {
 	memcpy(ret, ptr, min(size, get_clear_size(block->size) - sizeof(block->size)));
 	free(ptr);
 
-	printd("addr = 0x%X\n", (uint32_t)tmp);
+	printd("addr = 0x%X\n", (uint32_t)ret);
 	return ret;
 }
 
