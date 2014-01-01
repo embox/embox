@@ -451,8 +451,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 				+ EMAC_R_RXCP(DEFAULT_CHANNEL)))
 			&& (!eoq || (assert(!eoq), eoq)));
 
-	assert((eoq && (hnext == NULL))
-			|| (!eoq && (hnext != NULL)));
+	assert((hnext != NULL) || eoq);
 
 	emac_queue_reserve(&dev_priv->rx, need_alloc);
 
@@ -501,6 +500,8 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	} while (((uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE
 				+ EMAC_R_TXCP(DEFAULT_CHANNEL)))
 			&& (!eoq || (assert(!eoq), eoq)));
+
+	assert((hnext != NULL) || eoq);
 
 	emac_queue_prepare(&dev_priv->tx, hnext);
 	if (eoq || (hnext == NULL)) {
