@@ -19,39 +19,54 @@
 #include <linux/compiler.h>
 #include <framework/mod/options.h>
 #include <linux/list.h>
-#include <kernel/printk.h>
 #include <util/member.h>
+#include <util/binalign.h>
 
 #define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_DATA OPTION_GET(NUMBER, amount_skb_data)
 #define MODOPS_EXTRA_HDR_SIZE  OPTION_GET(NUMBER, extra_hdr_size)
+#define MODOPS_EXTRA_HDR_ALIGN OPTION_GET(NUMBER, extra_hdr_align)
+#define MODOPS_EXTRA_HDR_PADTO OPTION_GET(NUMBER, extra_hdr_padto)
 #define MODOPS_DATA_SIZE       OPTION_GET(NUMBER, data_size)
 #define MODOPS_DATA_ALIGN      OPTION_GET(NUMBER, data_align)
+#define MODOPS_DATA_PADTO      OPTION_GET(NUMBER, data_padto)
+#define MODOPS_IP_ALIGN        OPTION_GET(BOOLEAN, ip_align)
 
-#if MODOPS_DATA_ALIGN == 0
-#define ATTR_ALIGNED
-#define PAD_SIZE 0
-#else
-#define SKB_ALIGNMENT 4
-#define ATTR_ALIGNED __attribute__((aligned(SKB_ALIGNMENT)))
-#define PAD_SIZE MODOPS_DATA_ALIGN
-#endif
+#define EXTRA_HDR_PAD_SIZE \
+	PAD_SIZE(MODOPS_EXTRA_HDR_SIZE, MODOPS_EXTRA_HDR_PADTO)
+#define EXTRA_HDR_ATTR \
+	__attribute__((aligned(MODOPS_EXTRA_HDR_ALIGN)))
+#define IP_ALIGN_SIZE \
+	(MODOPS_IP_ALIGN ? 2 : 0)
+#define DATA_PAD_SIZE \
+	PAD_SIZE(IP_ALIGN_SIZE + MODOPS_DATA_SIZE, MODOPS_DATA_PADTO)
+#define DATA_ATTR \
+	__attribute__((aligned(MODOPS_DATA_ALIGN)))
+
+#define PAD_SIZE(obj_size, padto) \
+	(((padto) - (obj_size) % (padto)) % (padto))
 
 #define SKB_DEBUG 0
 #if SKB_DEBUG
+#include <kernel/printk.h>
 #define DBG(x) x
 #else
 #define DBG(x)
 #endif
 
 struct sk_buff_data {
-	unsigned char extra_hdr[MODOPS_EXTRA_HDR_SIZE] ATTR_ALIGNED;
 	struct {
-		char __unused[PAD_SIZE];
+		unsigned char extra_hdr[MODOPS_EXTRA_HDR_SIZE];
+		char __extra_hdr_pad[EXTRA_HDR_PAD_SIZE];
+	} EXTRA_HDR_ATTR; /* it is pointless so we need to apply
+						 that to the whole structure */
+	struct {
+		char __ip_align[IP_ALIGN_SIZE];
 		unsigned char data[MODOPS_DATA_SIZE];
-	} ATTR_ALIGNED;
+		char __data_pad[DATA_PAD_SIZE];
+	} DATA_ATTR;
 	size_t links;
-};
+} EXTRA_HDR_ATTR;
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
@@ -85,6 +100,8 @@ struct sk_buff_data * skb_data_alloc(void) {
 	sp = ipl_save();
 	{
 		skb_data = (struct sk_buff_data *)pool_alloc(&skb_data_pool);
+		assert(binalign_check_bound((uintptr_t)skb_data,
+					MODOPS_EXTRA_HDR_ALIGN));
 	}
 	ipl_restore(sp);
 
