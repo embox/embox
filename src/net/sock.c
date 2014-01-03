@@ -94,7 +94,7 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 			sk->rx_data_len -= skb->p_data_end - skb->p_data;
 
 			// XXX
-			if (sk->p_ops->fillmsg) {
+			if (sk->p_ops->fillmsg && msg->msg_name) {
 				sk->p_ops->fillmsg(sk, msg, skb);
 			}
 			/* For message-based sockets, such as SOCK_DGRAM and SOCK_SEQPACKET,
