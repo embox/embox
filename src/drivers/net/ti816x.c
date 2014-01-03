@@ -254,7 +254,6 @@ static void emac_queue_add(struct emac_desc_queue *qdesc,
 	qdesc->pending_last = htail;
 
 	if (hlast != NULL) {
-		dcache_inval(&hlast->desc, sizeof hlast->desc); /* ?? */
 		emac_desc_set_next(hlast, &hhead->desc);
 	}
 	else {
@@ -456,7 +455,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	emac_queue_reserve(&dev_priv->rx, need_alloc);
 
 	emac_queue_prepare(&dev_priv->rx, hnext);
-	if (eoq || (hnext == NULL)) {
+	if (eoq) {
 		emac_queue_activate(&dev_priv->rx,
 				EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
@@ -504,7 +503,7 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	assert((hnext != NULL) || eoq);
 
 	emac_queue_prepare(&dev_priv->tx, hnext);
-	if (eoq || (hnext == NULL)) {
+	if (eoq) {
 		emac_queue_activate(&dev_priv->tx,
 				EMAC_R_TXHDP(DEFAULT_CHANNEL));
 	}
