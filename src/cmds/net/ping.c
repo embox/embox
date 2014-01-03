@@ -338,7 +338,6 @@ static int exec(int argc, char **argv) {
 						pinfo.interval += *curr++ - '0';
 					}
 					while (curr++ < last) {
-						printf("more\n");
 						pinfo.interval *= 10;
 					}
 				}
@@ -351,7 +350,6 @@ static int exec(int argc, char **argv) {
 					pinfo.interval *= 1000;
 				}
 				int_set = 1;
-				printf("interval %d\n", pinfo.interval);
 			} else
 				duplicate = 1;
 			i_opt++;
