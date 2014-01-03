@@ -19,6 +19,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 #include <errno.h>
 #include <netdb.h>
@@ -36,7 +37,7 @@ EMBOX_CMD(exec);
 #define DEFAULT_COUNT    4
 #define DEFAULT_PADLEN   64
 #define DEFAULT_TIMEOUT  10
-#define DEFAULT_INTERVAL 1
+#define DEFAULT_INTERVAL 1000
 #define DEFAULT_PATTERN  0xFF
 #define DEFAULT_TTL      59
 #define MAX_PADLEN       65507
@@ -74,7 +75,7 @@ static int parse_result(struct packet_in *rx_pack,
 		uint32_t started, uint32_t interval) {
 	uint32_t elapsed;
 	char *dst_addr_str;
-	int res = 0;
+	int res;
 	struct iphdr *emb_iph;
 	struct icmphdr *emb_icmph;
 
@@ -126,11 +127,14 @@ static int parse_result(struct packet_in *rx_pack,
 					: rx_pack->icmph.code == ICMP_PORT_UNREACH
 						? "Destination Port Unreachable"
 					: "unknown icmp_code");
+		res = 0;
 		break;
 	default:
-		*last_seq = -1;
 		printf("ping: ignore icmp_type=%d icmp_code=%d\n",
 				rx_pack->icmph.type, rx_pack->icmph.code);
+	case ICMP_ECHO:
+		*last_seq = -1;
+		res = -1;
 		break;
 	}
 
@@ -204,11 +208,14 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		}
 
 		/* try to fetch response */
-		if (parse_result(rx_pack, tx_pack, official_name, &to,
-					&last_seq, started, pinfo->interval)) {
-			cnt_rep++; /* if response was fetched proceed */
-		} else { /* else output diagnostics */
+		switch (parse_result(rx_pack, tx_pack, official_name,
+					&to, &last_seq, started, pinfo->interval)) {
+		case 1: /* if response was fetched proceed */
+			cnt_rep++;
+			break;
+		case 0: /* else output diagnostics */
 			cnt_err++;
+			break;
 		}
 	}
 
@@ -217,8 +224,8 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 	/* output statistics */
 	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
-	printf("%d packets transmitted, %d received, %d%% packet loss, time %jums\n",
-			cnt_req, cnt_rep, (cnt_err * 100) / cnt_req,
+	printf("%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %jums\n",
+			cnt_req, cnt_rep, cnt_err, ((cnt_req - cnt_rep) * 100) / cnt_req,
 			(uintmax_t)(clock() - started));
 
 	close(sk);
@@ -314,12 +321,37 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'i': /* interval */
 			if (!int_set) {
-				if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
-						(pinfo.interval < 0)) {
-					printf("ping: bad timing interval.\n");
-					return -EINVAL;
+				if (!strncmp(optarg, "0.", 2)) {
+					char *curr = optarg + 2, /* skip 0. */
+						 *last = curr + 3; /* max precision is 0.001 */
+					pinfo.interval = 0;
+					while (*curr) {
+						if (curr == last) {
+							pinfo.interval += (*curr >= '5');
+							break;
+						}
+						if (!isdigit(*curr)) {
+							printf("ping: bad timing interval.\n");
+							return -EINVAL;
+						}
+						pinfo.interval *= 10;
+						pinfo.interval += *curr++ - '0';
+					}
+					while (curr++ < last) {
+						printf("more\n");
+						pinfo.interval *= 10;
+					}
+				}
+				else {
+					if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
+							(pinfo.interval < 0)) {
+						printf("ping: bad timing interval.\n");
+						return -EINVAL;
+					}
+					pinfo.interval *= 1000;
 				}
 				int_set = 1;
+				printf("interval %d\n", pinfo.interval);
 			} else
 				duplicate = 1;
 			i_opt++;
@@ -372,7 +404,6 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	pinfo.interval *= 1000;
 	pinfo.timeout *= 1000;
 
 	/* ping! */
