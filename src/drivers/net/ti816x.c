@@ -102,6 +102,11 @@ static void cm_load_mac(struct net_device *dev) {
 	dev->dev_addr[5] = mac_lo >> 8;
 }
 
+static void emac_reset(void) {
+	REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
+	while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
+}
+
 static void emac_clear_hdp(void) {
 	int i;
 
@@ -117,11 +122,11 @@ static void emac_clear_ctrl_regs(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_MACCONTROL, 0);
 }
 
-static void emac_clear_stat_regs(void) {
+static void emac_set_stat_regs(unsigned long v) {
 	int i;
 
 	for (i = 0; i < 36; ++i) {
-		REG_STORE(EMAC_BASE + 0x200 + 0x4 * i, 0); /* FIXME */
+		REG_STORE(EMAC_BASE + 0x200 + 0x4 * i, v);
 	}
 }
 
@@ -515,7 +520,8 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-#define HOSTPEND (0x1 << 26) /* MACINVECTOR */
+#define STATPEND (0x1 << 27) /* MACINVECTOR */
+#define HOSTPEND (0x1 << 26)
 #define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
 #define TXERRCODE(x) ((x >> 20) & 0xf)
 #define TXERRCH(x) ((x >> 16) & 0x7)
@@ -529,17 +535,17 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 #define MISCEOI 0x3 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		void *dev_id) {
-	unsigned long cmmiscintstat, macintvector, macstatus;
+	unsigned long macinvector;
 
-	printk("ti816x_interrupt_macmisc0: unhandled interrupt\n");
+	macinvector = REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR);
 
-	cmmiscintstat = REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT);
-	printk("\tCMMISCINTSTAT: %#lx\n", cmmiscintstat);
+	if (macinvector & STATPEND) {
+		emac_set_stat_regs(0xffffffff);
+		macinvector &= ~STATPEND;
+	}
+	if (macinvector & HOSTPEND) {
+		unsigned long macstatus;
 
-	macintvector = REG_LOAD(EMAC_BASE + EMAC_R_MACINVECTOR);
-	printk("\tMACINVECTOR: %#lx\n", macintvector);
-
-	if (macintvector & HOSTPEND) {
 		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
 		printk("\tMACSTATUS: %#lx\n"
 				"\t\tidle %lx\n"
@@ -554,8 +560,15 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 				RGMIIGIG(macstatus), RGMIIFULLDUPLEX(macstatus),
 				RXQOSACT(macstatus), RXFLOWACT(macstatus), TXFLOWACT(macstatus));
 
-		REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
-		while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
+		emac_reset();
+		macinvector &= ~HOSTPEND;
+	}
+	if (macinvector) {
+		printk("ti816x_interrupt_macmisc0: unhandled interrupt\n"
+				"\tMACINVECTOR: %#lx\n"
+				"\tCMMISCINTSTAT: %#lx\n",
+				macinvector,
+				REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
 	}
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, MISCEOI);
@@ -570,8 +583,7 @@ static void ti816x_config(struct net_device *dev) {
 	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc_head));
 
 	/* reset EMAC module */
-	REG_STORE(EMAC_BASE + EMAC_R_SOFTRESET, 1);
-	while (REG_LOAD(EMAC_BASE + EMAC_R_SOFTRESET) & 1);
+	emac_reset();
 
 	/* TODO enable EMAC/MDIO peripheral */
 
@@ -589,7 +601,7 @@ static void ti816x_config(struct net_device *dev) {
 	/* initialization of EMAC and MDIO modules */
 	emac_clear_ctrl_regs();
 	emac_clear_hdp();
-	emac_clear_stat_regs();
+	emac_set_stat_regs(0);
 	emac_set_macaddr(&bcast_addr);
 	emac_init_rx_regs();
 	emac_clear_machash();
