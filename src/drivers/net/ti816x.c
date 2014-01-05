@@ -544,6 +544,8 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 
 #define STATPEND (0x1 << 27) /* MACINVECTOR */
 #define HOSTPEND (0x1 << 26)
+#define TXPEND (DEFAULT_MASK << 16)
+#define RXPEND (DEFAULT_MASK << 0)
 #define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
 #define TXERRCODE(x) ((x >> 20) & 0xf)
 #define TXERRCH(x) ((x >> 16) & 0x7)
@@ -584,6 +586,10 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 
 		emac_reset();
 		macinvector &= ~HOSTPEND;
+	}
+	if (macinvector & (RXPEND | TXPEND)) {
+		/* umm.. ok */
+		macinvector &= ~(RXPEND | TXPEND);
 	}
 	if (macinvector) {
 		printk("ti816x_interrupt_macmisc0: unhandled interrupt\n"
