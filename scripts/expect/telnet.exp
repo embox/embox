@@ -1,0 +1,22 @@
+#!/usr/bin/expect
+
+source exec_through_telnet.exp
+
+proc telnet_test {} {
+	set TELNET_PROMPT ":/#"
+	send "help\r\n"
+	expect {
+	        timeout  { puts "telnet.exp: help comand timeout\n"; return -1 }
+	        $TELNET_PROMPT
+	}
+	return 0
+}
+
+set embox_ip [lindex $argv 0]
+
+if {$embox_ip == ""} {
+	puts "Usage: test.exp <server>\n"
+	exit 1
+}
+
+exec_cmd "$embox_ip" telnet_test

@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-# Procedure that used to EXPECT proc's through telnet.
+# Procedure that used to execute EXPECT proc's through telnet.
 # Usage: exec_cmd <embox_ip> <proc>
 
 set timeout 5
