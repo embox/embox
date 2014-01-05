@@ -187,8 +187,7 @@ static void emac_clear_and_enable_rxunicast(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_RXUNICASTSET, 0xff);
 }
 
-#define RXNOCHAIN (0x1 << 28)
-//#define RXCMFEN (0x1 << 24)
+#define RXNOCHAIN (0x1 << 28) /* single buffer */
 #define RXCSFEN (0x1 << 23) /* short msg */
 #define RXCAFEN (0x1 << 21) /* promiscuous */
 #define RXBROADEN (0x1 << 13) /* broadcast */
@@ -453,7 +452,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 	need_alloc = 0;
 
-	//printk("*");
 	do {
 		hdesc = emac_queue_head(&dev_priv->rx);
 		assert(hdesc != NULL);
@@ -465,10 +463,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 		dcache_inval(skb_data_get_data((struct sk_buff_data *)hdesc),
 				hdesc->desc.len);
-
-		//printk("macrxint0: desc %p len %hu flags %#x eoq=%d\n",
-		//		hdesc, hdesc->desc.len, hdesc->desc.flags,
-		//		hdesc->desc.flags & EMAC_DESC_F_EOQ);
 
 		++need_alloc;
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
@@ -516,17 +510,12 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	assert(dev_priv != NULL);
 
 
-	//printk("^");
 	do {
 		hdesc = emac_queue_head(&dev_priv->tx);
 		assert(hdesc != NULL);
 
 		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
 		assert(~hdesc->desc.flags & EMAC_DESC_F_OWNER);
-
-		//printk("mactxint0: desc %p flags %#x eoq=%d\n",
-		//		hdesc, hdesc->desc.flags,
-		//		hdesc->desc.flags & EMAC_DESC_F_EOQ);
 
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		emac_queue_confirm(&dev_priv->tx, hdesc,
@@ -618,10 +607,6 @@ static void ti816x_config(struct net_device *dev) {
 	/* reset EMAC module */
 	emac_reset();
 
-	/* TODO enable EMAC/MDIO peripheral */
-
-	/* TODO configuration of the interrupt to the CPU */
-
 	/* disable all the EMAC/MDIO interrupts in the control module */
 	emac_ctrl_disable_irq();
 
@@ -649,7 +634,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_macctrl(GMIIEN);
 
 	/* enable all the EMAC/MDIO interrupts in the control module */
-	//emac_ctrl_enable_irq();
+	/* emac_ctrl_enable_irq(); -- would done when opening */
 }
 
 static int ti816x_init(void) {
