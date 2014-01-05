@@ -6,7 +6,7 @@ proc telnet_test {} {
 	set TELNET_PROMPT ":/#"
 	send "help\r\n"
 	expect {
-	        timeout  { puts "telnet.exp: help comand timeout\n"; return -1 }
+	        timeout  { puts "telnet.exp: help command timeout\n"; return -1 }
 	        $TELNET_PROMPT
 	}
 	return 0
@@ -15,7 +15,7 @@ proc telnet_test {} {
 set embox_ip [lindex $argv 0]
 
 if {$embox_ip == ""} {
-	puts "Usage: test.exp <server>\n"
+	puts "Usage: telnet.exp <server>\n"
 	exit 1
 }
 
