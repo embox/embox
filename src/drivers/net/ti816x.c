@@ -197,6 +197,7 @@ static void emac_enable_rxmbp(void) {
 
 #define TXPACE (0x1 << 6)
 #define GMIIEN (0x1 << 5)
+#define FULLDUPLEX (0x1 << 0)
 static void emac_set_macctrl(unsigned long v) {
 	REG_ORIN(EMAC_BASE + EMAC_R_MACCONTROL, v);
 }
@@ -638,6 +639,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
 	//emac_set_macctrl(TXPACE);
+	emac_set_macctrl(FULLDUPLEX);
 	emac_enable_rx_and_tx_irq();
 	emac_alloc_rx_queue(MODOPS_PREP_BUFF_CNT,
 			netdev_priv(dev, struct ti816x_priv));
