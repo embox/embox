@@ -42,6 +42,7 @@ struct emac_desc_head {
 
 struct emac_desc_queue {
 	struct emac_desc_head *active;
+	struct emac_desc_head *active_last;
 	struct emac_desc_head *pending;
 	struct emac_desc_head *pending_last;
 };
@@ -305,8 +306,32 @@ static void emac_queue_prepare(struct emac_desc_queue *qdesc,
 	}
 	else {
 		qdesc->active = qdesc->pending;
+		qdesc->active_last = qdesc->pending_last;
 		qdesc->pending = qdesc->pending_last = NULL;
 	}
+}
+
+static void emac_queue_merge(struct emac_desc_queue *qdesc) {
+	struct emac_desc_head *hlast;
+
+	assert(qdesc != NULL);
+	assert((qdesc->pending != NULL)
+			&& (qdesc->pending_last != NULL));
+
+	hlast = qdesc->active_last;
+	qdesc->active_last = qdesc->pending_last;
+
+	if (hlast != NULL) {
+		assert((dcache_inval(&hlast->desc, sizeof hlast->desc),
+					hlast->desc.flags & EMAC_DESC_F_OWNER));
+		emac_desc_set_next(hlast, &qdesc->pending->desc);
+	}
+	else {
+		assert(qdesc->active == NULL);
+		qdesc->active = qdesc->pending;
+	}
+
+	qdesc->pending = qdesc->pending_last = NULL;
 }
 
 static void emac_queue_activate(struct emac_desc_queue *qdesc,
@@ -460,7 +485,9 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	emac_queue_reserve(&dev_priv->rx, need_alloc);
 
 	emac_queue_prepare(&dev_priv->rx, hnext);
+	emac_queue_merge(&dev_priv->rx);
 	if (eoq) {
+		printk("macrxint0: eoq reached\n");
 		emac_queue_activate(&dev_priv->rx,
 				EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
