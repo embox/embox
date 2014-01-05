@@ -79,16 +79,19 @@ static void emac_ctrl_disable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMMISCINTEN, 0x0);
 }
 
+#define C0_TX (0x1 << 17) /* CMINTCTRL */
 #define C0_RX (0x1 << 16)
 #define INTPRESCALE(x) ((x & 0x7ff) << 0)
-#define RXIMAX(x) ((x & 0x3f) << 0)
-static inline void emac_ctrl_enable_rx_pacing(void) {
-	/* enable rx pacing; set pacing period */
+#define RXIMAX(x) ((x & 0x3f) << 0) /* CMRXINTMAX */
+#define TXIMAX(x) ((x & 0x3f) << 0) /* CMTXINTMAX */
+static inline void emac_ctrl_enable_pacing(void) {
+	/* enable rx/tx pacing; set pacing period */
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMINTCTRL,
-			C0_RX | INTPRESCALE(125 * 4));
+			C0_RX | C0_TX | INTPRESCALE(125 * 4));
 
-	/* set maximum number of rx interrupts */
+	/* set maximum number of rx/tx interrupts */
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXINTMAX, RXIMAX(4));
+	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMTXINTMAX, TXIMAX(4));
 }
 
 static void cm_load_mac(struct net_device *dev) {
@@ -623,7 +626,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_ctrl_disable_irq();
 
 	/* initialization of the EMAC control module */
-	emac_ctrl_enable_rx_pacing();
+	emac_ctrl_enable_pacing();
 
 	/* load device MAC-address */
 	cm_load_mac(dev);
@@ -638,8 +641,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_rxbufoff(0);
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
-	//emac_set_macctrl(TXPACE);
-	emac_set_macctrl(FULLDUPLEX);
+	emac_set_macctrl(FULLDUPLEX | TXPACE);
 	emac_enable_rx_and_tx_irq();
 	emac_alloc_rx_queue(MODOPS_PREP_BUFF_CNT,
 			netdev_priv(dev, struct ti816x_priv));
