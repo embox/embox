@@ -1,0 +1,37 @@
+#!/usr/bin/expect
+
+# Procedure that used to EXPECT proc's through telnet.
+# Usage: exec_cmd <embox_ip> <proc>
+
+set timeout 5
+
+proc exec_cmd {embox_ip cmd} {
+	global spawn_id
+
+	proc telnet_connect {} {
+		# The piece of embox's prompt
+		set TELNET_PROMPT ":/#"
+		expect {
+			timeout { puts "telnet.exp: connection timeout\n"; exit 1 }
+			$TELNET_PROMPT
+		}
+	}
+
+	spawn telnet $embox_ip
+	telnet_connect
+
+	# FIXME: Hack to force EXPECT work with embox's telnetd in the correct way.
+	# On Linux this works without three lines below.
+	sleep 1
+	send "something\r\n"
+	sleep 1
+
+	if {$cmd != ""} {
+		set res [$cmd]
+		if {$res != 0} {
+			exit 1
+		}
+	}
+	send "exit\r"
+	expect eof
+}
