@@ -1,0 +1,62 @@
+#!/usr/bin/expect
+
+# This test works in three steps:
+# 1. Execute 'ntpdate <host_ip>' on Embox.
+# 2. Get host's date in the format xxxx-xx-xx (e.g. 2014-01-05).
+# 3. Execute 'date' on Embox and compare result (first 10 symbols of output)
+#    with result of the item 2.
+
+source exec_through_telnet.exp
+
+set embox_ip [lindex $argv 0]
+set host_ip  [lindex $argv 1]
+
+set host_date ""
+
+proc get_host_date {} {
+	global host_date
+	# Get current host's date in the format same as in Embox (e.g. 2014-01-05).
+	spawn date -u --rfc-3339=date
+	expect {
+		# 10 is a length of date - e.g. 2014-01-05
+		-regexp {.{10}}
+	}
+	set host_date $expect_out(0,string)
+}
+
+proc ntpdate_test {} {
+	global host_ip
+	global host_date
+
+	send "ntpdate $host_ip\r"
+	expect {
+	        timeout  { puts "ntpdate.exp: timeout\n"; return -1 }
+	        # Waiting while ntpdate finished
+	        -regexp "ntpdate.*"
+	}
+
+	get_host_date
+
+	# And compare the host date with the Embox's one.
+	# XXX: compare the both times too, not only dates
+	send "date\r"
+	expect {
+	        timeout  { puts "ntpdate.exp: date command timeout\n"; return -1 }
+	        # Date 2014-01-05 is from class (2.*)
+	        -regexp {2.*} {
+	                         regexp {.{10}} $expect_out(0,string) embox_date
+	                         if {$embox_date != $host_date} {
+	                             return -1
+	                         }
+	                      }
+	}
+
+	return 0
+}
+
+if {$embox_ip == "" || $host_ip == ""} {
+	puts "Usage: ntpdate.exp <embox_ip> <host_ip>\n"
+	exit 1
+}
+
+exec_cmd "$embox_ip" ntpdate_test
