@@ -12,6 +12,9 @@
 #include <fs/poll_table.h>
 #include <fs/index_descriptor.h>
 
+#include <assert.h>
+#include <kernel/thread.h>
+
 static struct idesc *poll_table_idx2idesc(int idx) {
 	return idx < 0 ? NULL : index_descriptor_get(idx);
 }
@@ -95,6 +98,9 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 
 int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 	int ret = 0;
+
+	assert((void *)(&ret + 1) >= (void *)(thread_self() + 1),
+			"stack overflow"); /* FIXME temporarily */
 
 	poll_table_wait_prepare(pt, ticks);
 
