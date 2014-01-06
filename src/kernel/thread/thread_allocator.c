@@ -14,7 +14,7 @@
 
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
-static_assert(STACK_SZ != 0);
+static_assert(STACK_SZ > sizeof(struct thread));
 
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
 
