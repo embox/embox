@@ -29,10 +29,12 @@ proc ntpdate_test {} {
 	global host_date
 
 	send "ntpdate $host_ip\r"
+	expect -regexp "ntpdate.*"
 	expect {
 	        timeout  { puts "ntpdate.exp: timeout\n"; return -1 }
 	        # Waiting while ntpdate finished
-	        -regexp "ntpdate.*"
+	        -regexp "ntpdate:.*" { puts "ntpdate.exp: error\n"; return -1 }
+	        ":/#"
 	}
 
 	get_host_date
