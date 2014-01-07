@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# Speed Test Server
+
+import socket
+import time
+import sys
+
+echo = lambda msg: sys.stdout.write(msg); sys.stdout.flush()
+byte2str = lambda nbyte: "%-7.2fGb" % (nbyte / (2.0 ** 30)) if (
+		nbyte >= 2 ** 30) else "%-7.2fMb" % (nbyte / (2.0 ** 20)) if (
+		nbyte >= 2 ** 20) else "%-7.2fKb" % (nbyte / (2.0 ** 10)) if (
+		nbyte >= 2 ** 10) else "%-7.2fb" % nbyte
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+server.listen(1)
+echo("Server started on %s\n" % str(server.getsockname()))
+
+while True:
+	echo("waiting for connections..")
+	client, client_address = server.accept()
+	client_time = time.time()
+	echo("\rclient %s connected\n" % str(client_address))
+	nbyte = 0
+	rcvbuf_sz = client.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
+	while True:
+		rcvbuf = client.recv(rcvbuf_sz)
+		if rcvbuf == "": break
+		nbyte += len(rcvbuf)
+		echo("\r\t%s received; speed %s/s" % (byte2str(nbyte),
+			byte2str(nbyte / (time.time() - client_time))))
+	echo("\n\tdone. time %.6f seconds\n" % (time.time() - client_time))
+	client.close()

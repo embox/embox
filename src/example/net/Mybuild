@@ -10,6 +10,16 @@ module hostinfo {
 	depends embox.framework.LibFramework
 }
 
+module echo_client {
+	source "echo_client.c"
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.net.socket
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
 module echo_server {
 	source "echo_server.c"
 

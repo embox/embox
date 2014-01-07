@@ -56,11 +56,13 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'h':
-		case '?':
 			print_usage(argv[0]);
 			return ENOERR;
 		default:
-			return -EINVAL;
+			if (number == -1 && optind <= 1) {
+				return -EINVAL;
+			}
+			break;
 		}
 	}
 
