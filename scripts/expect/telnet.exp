@@ -12,11 +12,4 @@ proc telnet_test {} {
 	return 0
 }
 
-set embox_ip [lindex $argv 0]
-
-if {$embox_ip == ""} {
-	puts "Usage: telnet.exp <server>\n"
-	exit 1
-}
-
 exec_cmd "$embox_ip" telnet_test

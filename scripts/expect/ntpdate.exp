@@ -1,4 +1,4 @@
-#!/usr/bin/expect
+#!/usr/bin/runtest
 
 # This test works in three steps:
 # 1. Execute 'ntpdate <host_ip>' on Embox.
@@ -7,9 +7,6 @@
 #    with result of the item 2.
 
 source exec_through_telnet.exp
-
-set embox_ip [lindex $argv 0]
-set host_ip  [lindex $argv 1]
 
 set host_date ""
 
@@ -54,11 +51,6 @@ proc ntpdate_test {} {
 	}
 
 	return 0
-}
-
-if {$embox_ip == "" || $host_ip == ""} {
-	puts "Usage: ntpdate.exp <embox_ip> <host_ip>\n"
-	exit 1
 }
 
 exec_cmd "$embox_ip" ntpdate_test
