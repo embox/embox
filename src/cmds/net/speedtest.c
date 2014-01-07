@@ -1,9 +1,6 @@
 /**
  * @file
- * @brief Echo client for UDP and TCP protocol
- * @example
- *   send 1 gigabyte to 192.168.0.101 on port 53872 via TCP:
- *     example -n1 -G 1 tcp://192.168.0.101:53872
+ * @brief Speed test
  *
  * @date 07.01.14
  * @author Ilia Vaprol
@@ -16,17 +13,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <util/math.h>
-
+#include <embox/cmd.h>
 #include <unistd.h>
 
-#include <framework/example/self.h>
-EMBOX_EXAMPLE(exec);
+EMBOX_CMD(exec);
 
 #define BUFF_SZ 16384
 
 static char buff[BUFF_SZ];
 
-static int echo_client_tcp(size_t nbyte, struct sockaddr_in *in) {
+static int client_tcp(size_t nbyte, struct sockaddr_in *in) {
 	int sock, i;
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -137,7 +133,7 @@ static int exec(int argc, char *argv[]) {
 	}
 
 	if (0 == strcmp(protocol, "tcp")) {
-		return echo_client_tcp(nbyte, &in);
+		return client_tcp(nbyte, &in);
 	}
 
 	printf("%s: protocol '%s` not supported\n",

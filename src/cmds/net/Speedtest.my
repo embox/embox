@@ -1,0 +1,25 @@
+package embox.cmd.net
+
+@Cmd(name = "speedtest",
+	help = "speedtest client",
+	man = '''
+		NAME
+			speedtest - speedtest client
+		SYNOPSIS
+			speedteset [-K size|-M size|-G size] protocol://address:port
+		DESCRIPTION
+			Send some amount of bytes to target
+		EXAMPLES
+			speedtest -M 20 tcp://10.0.2.10:46780
+		AUTHORS
+			Ilia Vaprol
+	''')
+module speedtest {
+	source "speedtest.c"
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.net.socket
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
