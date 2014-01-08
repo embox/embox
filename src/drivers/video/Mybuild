@@ -14,8 +14,8 @@ module fb {
 module bochs {
 	source "bochs.c"
 
-	depends fb
 	depends embox.driver.pci
+	@NoRuntime depends fb
 	@NoRuntime depends embox.lib.LibC
 }
 
