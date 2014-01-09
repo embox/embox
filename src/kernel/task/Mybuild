@@ -108,6 +108,11 @@ module waitpid {
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
 }
+
+module kfork {
+	source "kfork.c"
+}
+
 @DefaultImpl(task_thread_key)
 abstract module task_key_table {
 

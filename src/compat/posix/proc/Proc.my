@@ -23,6 +23,7 @@ static module exec {
 static module fork {
 	source "fork.c"
 
+	depends embox.kernel.task.kfork
 	depends embox.util.LibUtil
 }
 

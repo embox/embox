@@ -63,3 +63,7 @@ module ppty_test {
 	depends embox.compat.posix.idx.ppty
 }
 
+module fork_test {
+	source "fork_test.c"
+
+}

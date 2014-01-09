@@ -8,6 +8,9 @@
  */
 #include <unistd.h>
 
+
+extern pid_t kfork(void);
+
 pid_t fork(void) {
-	return 0;
+	return kfork();
 }
