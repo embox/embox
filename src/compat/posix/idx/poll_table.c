@@ -102,11 +102,16 @@ int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 	assert((void *)(&ret + 1) >= (void *)(thread_self() + 1),
 			"stack overflow"); /* FIXME temporarily */
 
-	poll_table_wait_prepare(pt, ticks);
+	threadsig_lock();
+	{
 
-	ret = SCHED_WAIT_TIMEOUT(poll_table_count(pt), ticks);
+		poll_table_wait_prepare(pt, ticks);
 
-	poll_table_cleanup(pt);
+		ret = SCHED_WAIT_TIMEOUT(poll_table_count(pt), ticks);
+
+		poll_table_cleanup(pt);
+	}
+	threadsig_unlock();
 
 	return ret;
 }
