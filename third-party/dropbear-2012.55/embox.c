@@ -10,20 +10,6 @@
 #include "includes.h"
 #include <shadow.h>
 
-#if 0
-#define PWD_CHARLEN 64
-
-static struct passwd embox_passwd;
-static char charbuf[PWD_CHARLEN];
-
-struct passwd *getpwnam(const char *name) {
-	struct passwd *ret;
-
-	getpwnam_r(name, &embox_passwd, charbuf, PWD_CHARLEN, &ret);
-
-	return ret;
-}
-#endif
 
 char *crypt(char *key, const char *salt) {
 	static char buff[0x20];
@@ -51,5 +37,3 @@ char *crypt(char *key, const char *salt) {
 	return buff;
 #endif
 }
-
-
