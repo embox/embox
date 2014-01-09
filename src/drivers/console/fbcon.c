@@ -168,7 +168,7 @@ static void *run(void *data) {
 	assert(fd == 0);
 
 	dup2(fd, 1);
-	/*dup2(fd, 2);*/
+	dup2(fd, 2);
 
 	shell_exec(sh, "login");
 
