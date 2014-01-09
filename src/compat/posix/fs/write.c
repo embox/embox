@@ -18,7 +18,8 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct idesc *idesc;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+			|| (NULL == (idesc = index_descriptor_get(fd)))
+			|| (!(idesc->idesc_amode & FS_MAY_WRITE))) {
 		return SET_ERRNO(EBADF);
 	}
 
