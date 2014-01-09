@@ -17,6 +17,7 @@
 #include <util/math.h>
 #include <util/binalign.h>
 #include <kernel/printk.h>
+#include <kernel/sched/sched_lock.h>
 
 #define DEBUG 0
 #if DEBUG
@@ -232,6 +233,8 @@ void *memalign(size_t boundary, size_t size) {
 		return NULL;
 	}
 
+	sched_lock();
+
 	if (size < sizeof(struct free_block)) {
 		size = sizeof(struct free_block);
 	}
@@ -271,8 +274,10 @@ void *memalign(size_t boundary, size_t size) {
 
 		ret_addr = (void *) ((uint32_t *) block + 1);
 
+		sched_unlock();
 		return ret_addr;
 	}
+	sched_unlock();
 	return NULL;
 }
 
@@ -305,9 +310,11 @@ void free(void *ptr) {
 	}
 	/* assert((ptr < pool) || (ptr >= pool_end)); */;
 
+	sched_lock();
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	if (!block_is_busy(block)) {
+		sched_unlock();
 		printk("***** free(): the block not busy\n");
 		return; /* if we try to free block more than once */
 	}
@@ -323,6 +330,8 @@ void free(void *ptr) {
 	/* And than concatenate with neighbors */
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
+
+	sched_unlock();
 }
 
 void * realloc(void *ptr, size_t size) {
