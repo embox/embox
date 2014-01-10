@@ -108,8 +108,15 @@ module waitpid {
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
 }
+@DefaultImpl(no_fork)
+abstract module kfork {
+}
 
-module kfork {
+module no_fork extends kfork {
+	source "no_fork.c"
+}
+
+module stack_fork extends kfork {
 	source "kfork.c"
 }
 

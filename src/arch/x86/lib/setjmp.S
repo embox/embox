@@ -35,3 +35,11 @@ longjmp:
 	jnz     0f
 	incl    %eax
 0:	jmp     *20(%ecx)         /* done, return.... */
+
+	.global cpu_stack_move
+cpu_stack_move:
+	movl    4(%esp), %ecx /* offset */
+	subl    %ecx, %esp
+	subl    %ecx, %ebp
+	ret
+
