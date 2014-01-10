@@ -317,6 +317,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return 0;
 	}
 }
+
 static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	size_t bytes;
 	struct sk_buff *skb;
@@ -354,7 +355,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
 	char *buff;
 	size_t len;
-	int timeout;
+	int ret, timeout;
 
 	(void)flags;
 
@@ -379,7 +380,11 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 				timeout = SCHED_TIMEOUT_INFINITE;
 			}
 			while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
-				sock_wait(sk, POLLOUT | POLLERR, timeout);
+				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
+				if (ret != 0) {
+					softirq_unlock();
+					return ret;
+				}
 			}
 		}
 		softirq_unlock();
