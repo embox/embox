@@ -357,7 +357,9 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
+			softirq_unlock();
 			ret = (*func)(nbr, args);
+			softirq_lock();
 			if (ret != 0) {
 				softirq_unlock();
 				return ret;
