@@ -201,14 +201,6 @@ static inline struct icmphdr * icmp_hdr(
 	return skb->h.icmph;
 }
 
-#if 0
-/**
- * ICMPv4 Send - build and send packet
- */
-extern int icmp_send(uint8_t type, uint8_t code, const void *body,
-		size_t body_sz, struct sk_buff *skb);
-#endif
-
 /**
  * ICMPv4 Discard - send ICMP packet relative to to packet
  * Extra arguments:

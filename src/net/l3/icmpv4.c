@@ -36,7 +36,7 @@
 
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv, NULL);
 
-int icmp_send(uint8_t type, uint8_t code, const void *body,
+static int icmp_send(uint8_t type, uint8_t code, const void *body,
 		size_t body_sz, struct sk_buff *skb) {
 	int ret;
 	size_t size;
