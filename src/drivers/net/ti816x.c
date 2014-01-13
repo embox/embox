@@ -436,6 +436,15 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
+#define CHECK_RXOK(x) \
+	(!(~(x) & (EMAC_DESC_F_SOP | EMAC_DESC_F_EOP)))
+#define CHECK_RXERR(x) \
+	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
+			| EMAC_DESC_F_PASSCRC | EMAC_DESC_F_JABBER       \
+			| EMAC_DESC_F_OVERSIZE | EMAC_DESC_F_FRAGMENT    \
+			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
+			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
+			| EMAC_DESC_F_ALIGNERROR | EMAC_DESC_F_CRCERROR))
 #define RXEOI 0x1 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
@@ -457,9 +466,8 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		assert(hdesc != NULL);
 
 		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
-		assert(hdesc->desc.flags & EMAC_DESC_F_SOP);
-		assert(hdesc->desc.flags & EMAC_DESC_F_EOP);
-		assert(~hdesc->desc.flags & EMAC_DESC_F_OWNER);
+		assert(CHECK_RXOK(hdesc->desc.flags));
+		assert(!CHECK_RXERR(hdesc->desc.flags));
 
 		dcache_inval(skb_data_get_data((struct sk_buff_data *)hdesc),
 				hdesc->desc.len);
@@ -496,6 +504,9 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
+#define CHECK_TXOK(x) 1
+#define CHECK_TXERR(x) \
+	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT))
 #define TXEOI 0x2 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
@@ -515,7 +526,8 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		assert(hdesc != NULL);
 
 		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
-		assert(~hdesc->desc.flags & EMAC_DESC_F_OWNER);
+		assert(CHECK_TXOK(hdesc->desc.flags));
+		assert(!CHECK_TXERR(hdesc->desc.flags));
 
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		emac_queue_confirm(&dev_priv->tx, hdesc,
