@@ -50,7 +50,7 @@ EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
 
-#define TCP_DEBUG 1
+#define TCP_DEBUG 0
 #if TCP_DEBUG
 #define DBG(x) x
 #else
