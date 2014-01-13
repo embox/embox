@@ -101,7 +101,7 @@ static int udp_rcv(struct sk_buff *skb) {
 		}
 	}
 	else {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH);
 	}
 
 	return 0;
@@ -121,11 +121,11 @@ static int udp_err_tester(const struct sock *sk,
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
 	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
-			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
+			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE);
 
 	assert(skb->nh.raw != NULL);
 	emb_pack_udphdr = (const struct udphdr *)(skb->h.raw
-			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE
+			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE
 			+ IP_HEADER_SIZE(emb_pack_iphdr));
 
 	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)

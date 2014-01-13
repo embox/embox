@@ -14,12 +14,11 @@ module arp {
 module icmpv4 {
 	source "icmpv4.c"
 
-	depends raw_sock
-	depends core /* for devinet.c */
-	depends ipv4 /* for ip_output.c */
-	depends skbuff
-	depends embox.kernel.time.kernel_time
-	depends embox.framework.LibFrameworkNet
+	depends embox.framework.net.proto
+	depends embox.lib.LibCAssert
+	depends embox.net.lib.icmpv4
+	depends embox.net.lib.ipv4
+	depends embox.net.skbuff
 }
 
 module icmpv6 {

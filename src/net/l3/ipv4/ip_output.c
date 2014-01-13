@@ -125,7 +125,8 @@ int ip_forward(struct sk_buff *skb) {
 	 * Try to return packet as close as possible, so check it before ttl processsing (RFC 1812)
 	 */
 	if (unlikely(optlen)) {
-		icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(IP_MIN_HEADER_SIZE));
+		icmp_discard(skb, ICMP_PARAM_PROB, ICMP_PTR_ERROR,
+				(uint8_t)IP_MIN_HEADER_SIZE);
 		return -1;
 	}
 
@@ -133,7 +134,7 @@ int ip_forward(struct sk_buff *skb) {
 	 * We believe that this skb is ours and we can modify it
 	 */
 	if (unlikely(iph->ttl <= 1)) {
-		icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, 0);
+		icmp_discard(skb, ICMP_TIME_EXCEED, ICMP_TTL_EXCEED);
 		return -1;
 	}
 	iph->ttl--; /* All routes have the same length */
@@ -141,7 +142,7 @@ int ip_forward(struct sk_buff *skb) {
 
 	/* Check no route */
 	if (!best_route) {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 		return -1;
 	}
 
@@ -149,8 +150,14 @@ int ip_forward(struct sk_buff *skb) {
 	if (skb->dev == best_route->dev) {
 		struct sk_buff *s_new = skb_copy(skb);
 		if (s_new) {
-			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
-					  best_route->rt_gateway);
+			if (best_route->rt_gateway == INADDR_ANY) {
+				icmp_discard(s_new, ICMP_REDIRECT,
+						ICMP_HOST_REDIRECT, &iph->daddr);
+			}
+			else {
+				icmp_discard(s_new, ICMP_REDIRECT,
+						ICMP_NET_REDIRECT, best_route->rt_gateway);
+			}
 		}
 		/* We can still proceed here */
 	}
@@ -158,9 +165,9 @@ int ip_forward(struct sk_buff *skb) {
 	if (ip_route(skb, NULL, best_route) < 0) {
 		/* So we have something like arp problem */
 		if (best_route->rt_gateway == INADDR_ANY) {
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, iph->daddr);
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
 		} else {
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, best_route->rt_gateway);
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 		}
 		return -1;
 	}
@@ -172,8 +179,8 @@ int ip_forward(struct sk_buff *skb) {
 			return fragment_skb_and_send(skb, best_route->dev);
 		} else {
 			/* Fragmentation is disabled */
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
-					  htonl(best_route->dev->mtu << 16)); /* Support RFC 1191 */
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
+					  (uint16_t)best_route->dev->mtu); /* Support RFC 1191 */
 			return -1;
 		}
 	}

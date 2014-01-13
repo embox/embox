@@ -9,6 +9,7 @@
  * @author Ilia Vaprol
  */
 
+#include <arpa/inet.h>
 #include <string.h>
 #include <errno.h>
 #include <embox/net/pack.h>

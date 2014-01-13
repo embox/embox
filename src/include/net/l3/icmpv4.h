@@ -1,154 +1,243 @@
 /**
  * @file
- * @brief Definitions for the ICMP protocol.
+ * @brief Internet Control Message Protocol (ICMPv4)
  * @details RFC 792
  *
  * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
- * @author Ilia Vaprol
  * @author Vladimir Sokolov
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_L3_ICMPV4_H_
 #define NET_L3_ICMPV4_H_
 
-#include <net/socket/inet_sock.h>
-#include <net/util/checksum.h>
-#include <net/l3/ipv4/ip.h>
+#include <linux/types.h>
+#include <net/l3/ndp.h>
+#include <net/skbuff.h>
 
-/* Types */
-enum {
-	ICMP_ECHOREPLY      = 0,  /* Echo Reply */
-	ICMP_DEST_UNREACH   = 3,  /* Destination Unreachable */
-	ICMP_SOURCE_QUENCH  = 4,  /* Source Quench */
-	ICMP_REDIRECT       = 5,  /* Redirect (change route) */
-	ICMP_ECHO           = 8,  /* Echo Request */
-	ICMP_TIME_EXCEEDED  = 11, /* Time Exceeded */
-	ICMP_PARAMETERPROB  = 12, /* Parameter Problem */
-	ICMP_TIMESTAMP      = 13, /* Timestamp Request */
-	ICMP_TIMESTAMPREPLY = 14, /* Timestamp Reply */
-	ICMP_INFO_REQUEST   = 15, /* Information Request */
-	ICMP_INFO_REPLY     = 16, /* Information Reply */
-//	ICMP_ADDRESS        = 17, /* Address Mask Request */
-//	ICMP_ADDRESSREPLY   = 18, /* Address Mask Reply */
-	NR_ICMP_TYPES	/* See also icmp_lengths enum below */
+/**
+ * ICMPv4 Types
+ */
+enum icmp_type {
+	/* ICMPv4: Error Messages */
+	ICMP_DEST_UNREACH      = 3,  /* Destination Unreachable
+									Message */
+	ICMP_SOURCE_QUENCH     = 4,  /* Source Quench Message */
+	ICMP_REDIRECT          = 5,  /* Redirect Message */
+	ICMP_TIME_EXCEED       = 11, /* Time Exceeded Message */
+	ICMP_PARAM_PROB        = 12, /* Parameter Problem Message */
+
+	/* ICMPv4: Informational Messages */
+	ICMP_ECHO_REPLY        = 0,  /* Echo Reply Message */
+	ICMP_ECHO_REQUEST      = 8,  /* Echo Request Message */
+	ICMP_TIMESTAMP_REQUEST = 13, /* Timestamp Request Message */
+	ICMP_TIMESTAMP_REPLY   = 14, /* Timestamp Reply Message */
+	ICMP_INFO_REQUEST      = 15, /* Information Request Message */
+	ICMP_INFO_REPLY        = 16, /* Information Reply Message */
 };
 
-/* Assumed length (bytes) of the ICMP (without possible data padding) */
-enum icmp_lengths {
-	ICMP_LEN_ECHOREPLY			= 8,  /* Echo Reply */
-	ICMP_LEN_DEST_UNREACH		= 8,  /* Destination Unreachable (with path MTU discovery) */
-	ICMP_LEN_SOURCE_QUENCH		= 8,  /* Source Quench */
-	ICMP_LEN_REDIRECT			= 8,  /* Redirect (change route) */
-	ICMP_LEN_ECHO				= 8,  /* Echo Request */
-	ICMP_LEN_TIME_EXCEEDED		= 8, /* Time Exceeded */
-	ICMP_LEN_PARAMETERPROB		= 8, /* Parameter Problem */
-	ICMP_LEN_TIMESTAMP			= 20, /* Timestamp Request */
-	ICMP_LEN_TIMESTAMPREPLY		= 20, /* Timestamp Reply */
-	ICMP_LEN_INFO_REQUEST		= 8, /* Information Request */
-	ICMP_LEN_INFO_REPLY			= 8, /* Information Reply */
-	ICMP_LEN_ADDRESS			= 12, /* Address Mask Request */
-	ICMP_LEN_ADDRESSREPLY		= 12, /* Address Mask Reply */
+/**
+ * ICMPv4 Error Message Type */
+#define ICMP_TYPE_ERROR(type) \
+	(((type) == ICMP_DEST_UNREACH)        \
+		|| ((type) == ICMP_SOURCE_QUENCH) \
+		|| ((type) == ICMP_REDIRECT)      \
+		|| ((type) == ICMP_TIME_EXCEED)   \
+		|| ((type) == ICMP_PARAM_PROB))
+
+/**
+ * ICMPv4 Codes
+ */
+enum icmp_code {
+	/* Echo Reply Message */
+		/* 0 - always (MUST) */
+	/* Destination Unreachable Message */
+	ICMP_NET_UNREACH      = 0, /* Network unreachable */
+	ICMP_HOST_UNREACH     = 1, /* Address unreachable */
+	ICMP_PROT_UNREACH     = 2, /* Protocol unreachable */
+	ICMP_PORT_UNREACH     = 3, /* Port unreachable */
+	ICMP_FRAG_NEEDED      = 4, /* Fragmentation needed and DF
+								  set */
+	ICMP_SR_FAILED        = 5, /* Source route failed */
+	/* Source Quench Message */
+		/* 0 - always (MUST) */
+	/* Redirect Message */
+	ICMP_NET_REDIRECT     = 0, /* Redirect datagrams for the
+								  network */
+	ICMP_HOST_REDIRECT    = 1, /* Redirect datagrams for the
+								  host */
+	ICMP_NETTOS_REDIRECT  = 2, /* Redirect datagrams for the TOS
+								  and network */
+	ICMP_HOSTTOS_REDIRECT = 3, /* Redirect datagrams for the TOS
+								  and network */
+	/* Echo Request Message */
+		/* 0 - always (MUST) */
+	/* Time Exceeded Message */
+	ICMP_TTL_EXCEED       = 0, /* Time to live exceeded in
+								  transit */
+	ICMP_FRAG_TIME        = 1, /* Fragment reassembly time
+								  exceeded */
+	/* Parameter Problem Message */
+	ICMP_PTR_ERROR        = 0, /* Pointer indicates the error */
+	ICMP_PTR_UNUSED       = 1, /* Otherwise */
+	/* Timestamp Request Message */
+		/* 0 - always (MUST) */
+	/* Timestamp Reply Message */
+		/* 0 - always (MUST) */
+	/* Information Request Message */
+		/* 0 - always (MUST) */
+	/* Information Reply Message */
+		/* 0 - always (MUST) */
 };
 
-#define	ICMP_INFOTYPE(type)												\
-	( ((type) == ICMP_ECHOREPLY) || ((type) == ICMP_ECHO) ||			\
-	  ((type) == ICMP_TIMESTAMP) || ((type) == ICMP_TIMESTAMPREPLY) ||	\
-	  ((type) == ICMP_INFO_REQUEST) || ((type) == ICMP_INFO_REPLY) )
+/**
+ * ICMPv4 Body for Echo Request/Reply Message
+ */
+struct icmpbody_echo {
+	__be16 id;   /* An identifier of the message sequence */
+	__be16 seq;  /* A sequence number of the message */
+	__u8 data[]; /* Zero or more octets of arbitrary data */
+} __attribute__((packed));
 
-/* Codes for UNREACH. */
-enum {
-	ICMP_NET_UNREACH    = 0, /* Network Unreachable          */
-	ICMP_HOST_UNREACH   = 1, /* Host Unreachable             */
-	ICMP_PROT_UNREACH   = 2, /* Protocol Unreachable         */
-	ICMP_PORT_UNREACH   = 3, /* Port Unreachable             */
-	ICMP_FRAG_NEEDED    = 4, /* Fragmentation Needed/DF set  */
-	ICMP_SR_FAILED      = 5, /* Source Route failed          */
-#if 0
-	ICMP_NET_UNKNOWN    = 6,
-	ICMP_HOST_UNKNOWN   = 7,
-	ICMP_HOST_ISOLATED  = 8,
-	ICMP_NET_ANO        = 9,
-	ICMP_HOST_ANO       = 10,
-	ICMP_NET_UNR_TOS    = 11,
-	ICMP_HOST_UNR_TOS   = 12,
-	ICMP_PKT_FILTERED   = 13, /* Packet filtered */
-	ICMP_PREC_VIOLATION = 14, /* Precedence violation */
-	ICMP_PREC_CUTOFF    = 15, /* Precedence cut off */
-#endif
-	NR_ICMP_UNREACH           /* instead of hardcoding immediate value */
-};
+/**
+ * ICMPv4 Body for Destination Unreachable Message
+ */
+struct icmpbody_dest_unreach {
+	__be16 zero; /* Unused */
+	__be16 mtu;  /* The Maximum Transmission Unit of the
+					next-hop link */
+	__u8 msg[];  /* The internet header plus the first 64 bits
+					of the original datagram's data */
+} __attribute__((packed));
 
-/* Codes for REDIRECT. */
-#define ICMP_REDIR_NET          0       /* Redirect Net          */
-#define ICMP_REDIR_HOST         1       /* Redirect Host         */
-#define ICMP_REDIR_NETTOS       2       /* Redirect Net for TOS  */
-#define ICMP_REDIR_HOSTTOS      3       /* Redirect Host for TOS */
+/**
+ * ICMPv4 Body for Source Quench Message
+ */
+struct icmpbody_source_quench {
+	__be32 zero; /* Unused */
+	__u8 msg[];  /* The internet header plus the first 64 bits
+					of the original datagram's data */
+} __attribute__((packed));
 
-/* Codes for TIME_EXCEEDED. */
-#define ICMP_EXC_TTL            0       /* TTL count exceeded           */
-#define ICMP_EXC_FRAGTIME       1       /* Fragment Reass time exceeded */
+/**
+ * ICMPv4 Body for Redirect Message
+ */
+struct icmpbody_redirect {
+	struct in_addr gateway; /* Address of the gateway to which
+							   traffic for the network specified
+							   in the internet destination network
+							   field of the original datagram's
+							   data should be sent */
+	__u8 msg[];             /* The internet header plus the first
+							   64 bits of the original datagram's
+							   data */
+} __attribute__((packed));
 
+/**
+ * ICMPv4 Body for Time Exceeded Message
+ */
+struct icmpbody_time_exceed {
+	__be32 zero; /* Unused */
+	__u8 msg[];  /* The internet header plus the first 64 bits
+					of the original datagram's data */
+} __attribute__((packed));
+
+/**
+ * ICMPv4 Body for Parameter Problem Message
+ */
+struct icmpbody_param_prob {
+	__u8 ptr;     /* Pointer */
+	__u8 zero1;   /* Unused */
+	__be16 zero2; /* Unused */
+	__u8 msg[];   /* The internet header plus the first 64 bits
+					 of the original datagram's data */
+} __attribute__((packed));
+
+/**
+ * ICMPv4 Body for Timestamp Request/Reply Message
+ */
+struct icmpbody_timestamp {
+	__be16 id;    /* An identifier of the message sequence */
+	__be16 seq;   /* A sequence number of the message */
+	__be32 orig;  /* The originate timestamp */
+	__be32 recv;  /* The receive timestamp */
+	__be32 trans; /* The transmit timestamp */
+} __attribute__((packed));
+
+/**
+ * ICMPv4 Body for Information Request/Reply Message
+ */
+struct icmpbody_info {
+	__be16 id;    /* An identifier of the message sequence */
+	__be16 seq;   /* A sequence number of the message */
+} __attribute__((packed));
+
+/**
+ * ICMPv4 Header Structure
+ */
 typedef struct icmphdr {
-	__u8     type;
-	__u8     code;
-	__be16 checksum;
-	union {
-		__u8  ih_pptr;				/* ICMP_PARAMETERPROB */
-		struct {
-			__be16 id;
-			__be16 sequence;
-		} echo;
-		__be32 gateway;
-		struct {
-			__be16 __unused;
-			__be16 mtu;
-		} frag;
-	} un;
+	__u8   type;  /* Message type */
+	__u8   code;  /* Message code */
+	__be16 check; /* Message checksum */
+	union {       /* Message body */
+		/* ICMPv4 Bodies: */
+		struct icmpbody_echo echo;
+		struct icmpbody_dest_unreach dest_unreach;
+		struct icmpbody_source_quench source_quench;
+		struct icmpbody_redirect redirect;
+		struct icmpbody_time_exceed time_exceed;
+		struct icmpbody_param_prob param_prob;
+		struct icmpbody_timestamp timestamp;
+		struct icmpbody_info info;
+	} __attribute__((packed)) body[];
 } __attribute__((packed)) icmphdr_t;
 
-/* Note:
- *	Be careful. It's just a common length of ICMPs
- *	See enum icmp_lengths for details
+#define ICMP_MIN_HEADER_SIZE (sizeof(struct icmphdr))
+
+static inline struct icmphdr * icmp_hdr(
+		const struct sk_buff *skb) {
+	return skb->h.icmph;
+}
+
+#if 0
+/**
+ * ICMPv4 Send - build and send packet
  */
-#define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
-
-static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
-	return (icmphdr_t *) skb->h.raw;
-}
-
-/* Generate a checksum for an outgoing ICMP datagram. */
-static inline void icmp_send_check(icmphdr_t *icmph, uint len) {
-	icmph->checksum = 0;
-	icmph->checksum = ptclbsum((void *)icmph, len);
-}
-
-/* Generate a checksum for an outgoing ICMP datagram if skb is correct
- * So we can obtain ICMP len from it
- */
-static inline void icmp_send_check_skb(sk_buff_t *skb) {
-	icmp_send_check(skb->h.icmph, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
-}
+extern int icmp_send(uint8_t type, uint8_t code, const void *body,
+		size_t body_sz, struct sk_buff *skb);
+#endif
 
 /**
- * Functions provided by icmp.c
+ * ICMPv4 Discard - send ICMP packet relative to to packet
+ * Extra arguments:
+ * Type                Code                   Extra
+ * ICMP_DEST_UNREACH   ICMP_NET_UNREACH       -
+ *                     ICMP_HOST_UNREACH      -
+ *                     ICMP_PROT_UNREACH      -
+ *                     ICMP_PORT_UNREACH      -
+ *                     ICMP_FRAG_NEEDED       uint16_t
+ *                     ICMP_SR_FAILED         -
+ * ICMP_SOURCE_QUENCH  -                      -
+ * ICMP_REDIRECT       ICMP_NET_REDIRECT      struct in_addr *
+ *                     ICMP_HOST_REDIRECT     struct in_addr *
+ *                     ICMP_NETTOS_REDIRECT   struct in_addr *
+ *                     ICMP_HOSTTOS_REDIRECT  struct in_addr *
+ * ICMP_TIME_EXCEED    ICMP_TTL_EXCEED        -
+ *                     ICMP_FRAG_TIME         -
+ * ICMP_PARAM_PROB     ICMP_PTR_ERROR         uint8_t
+ *                     ICMP_PTR_UNUSED        -
  */
+extern int icmp_discard(struct sk_buff *skb, uint8_t type,
+		uint8_t code, .../* extra */);
 
 /**
- * Send an ICMP message in response to a situation.
- * Used by the kernel to transmit ICMP error messages when
- * specific conditions are detected.
- *
- * @param skb_in input IP packet the error is assiciated with
- * (skb: modified; freed; privacy could be any, it's checked)
- * @param type field to use in the ICMP header
- * @param code field to use in the ICMP header
- * @param info additional information (with required shifts applying):
- * 			MTU for ICMP_FRAG_NEEDED
- * 			gateway address for ICMP_REDIRECT
- * 			offset for ICMP_PARAMETERPROB
+ * ICMPv4 Discard Constants
  */
-extern void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info);
+#define ICMP_DISCARD_MIN_SIZE 8
+#define ICMP_DISCARD_MAX_SIZE \
+	(576 /* See RCF 1812 4.3.2.3 */ \
+		- (IP_MIN_HEADER_SIZE + ICMP_MIN_HEADER_SIZE))
 
 #endif /* NET_L3_ICMPV4_H_ */

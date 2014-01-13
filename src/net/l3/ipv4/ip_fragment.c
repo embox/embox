@@ -11,6 +11,7 @@
 
 #include <linux/list.h>
 
+#include <arpa/inet.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>

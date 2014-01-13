@@ -13,6 +13,7 @@
 
 #include <embox/cmd.h>
 
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,15 +54,28 @@ struct ping_info {
 };
 
 struct packet_in {
-	struct iphdr iph;
-	struct icmphdr icmph;
-	char pad[MAX_PADLEN];
-};
+	struct {
+		struct iphdr hdr;
+	} __attribute__((packed)) ip;
+	struct {
+		struct icmphdr hdr;
+		union {
+			struct icmpbody_echo echo_rep;
+			struct icmpbody_dest_unreach dest_unreach;
+		} __attribute__((packed)) body;
+	} __attribute__((packed)) icmp;
+	char data[MAX_PADLEN];
+} __attribute__((packed));
 
 struct packet_out {
-	struct icmphdr icmph;
-	char pad[MAX_PADLEN];
-};
+	struct {
+		struct icmphdr hdr;
+		union {
+			struct icmpbody_echo echo_req;
+		} __attribute__((packed)) body;
+	} __attribute__((packed)) icmp;
+	char data[MAX_PADLEN];
+} __attribute__((packed));
 
 static void print_usage(void) {
 	printf("Usage: ping [-c count] [-i interval]\n"
@@ -79,22 +93,23 @@ static int parse_result(struct packet_in *rx_pack,
 	struct iphdr *emb_iph;
 	struct icmphdr *emb_icmph;
 
-	switch (rx_pack->icmph.type) {
-	case ICMP_ECHOREPLY:
-	    if ((to->sin_addr.s_addr != rx_pack->iph.saddr)
-				|| (tx_pack->icmph.un.echo.id
-					!= rx_pack->icmph.un.echo.id)
-				|| (ntohs(tx_pack->icmph.un.echo.sequence)
-					< ntohs(rx_pack->icmph.un.echo.sequence))) {
+	switch (rx_pack->icmp.hdr.type) {
+	case ICMP_ECHO_REPLY:
+	    if ((to->sin_addr.s_addr != rx_pack->ip.hdr.saddr)
+				|| (tx_pack->icmp.body.echo_req.id
+					!= rx_pack->icmp.body.echo_rep.id)
+				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
+					< ntohs(rx_pack->icmp.body.echo_rep.seq))) {
 			break;
 		}
-		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->iph.saddr);
-		*last_seq = ntohs(rx_pack->icmph.un.echo.sequence);
+		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
+		*last_seq = ntohs(rx_pack->icmp.body.echo_rep.seq);
 		printf("%u bytes from %s (%s): icmp_seq=%u ttl=%d ",
-				(uint16_t)(ntohs(rx_pack->iph.tot_len) - (
-					IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE)),
+				(uint16_t)(ntohs(rx_pack->ip.hdr.tot_len)
+					- (IP_HEADER_SIZE(&rx_pack->ip.hdr)
+						+ ICMP_MIN_HEADER_SIZE)),
 				name, dst_addr_str, *last_seq,
-				rx_pack->iph.ttl);
+				rx_pack->ip.hdr.ttl);
 		elapsed = clock() - (started + (*last_seq - 1) * interval);
 		if (elapsed < 1) {
 			printf("time<1 ms\n");
@@ -105,34 +120,35 @@ static int parse_result(struct packet_in *rx_pack,
 		res = 1;
 		break;
 	case ICMP_DEST_UNREACH:
-		emb_iph = (struct iphdr *)((char *)&rx_pack->icmph + ICMP_LEN_DEST_UNREACH);
-		emb_icmph = (struct icmphdr *)(emb_iph + 1);
+		emb_iph = (struct iphdr *)&rx_pack->icmp.body.dest_unreach.msg[0];
+		emb_icmph = (struct icmphdr *)((void *)emb_iph
+					+ IP_HEADER_SIZE(emb_iph));
 	    if ((to->sin_addr.s_addr != emb_iph->daddr)
-				|| (tx_pack->icmph.un.echo.id
-					!= emb_icmph->un.echo.id)
-				|| (ntohs(tx_pack->icmph.un.echo.sequence)
-					< ntohs(emb_icmph->un.echo.sequence))) {
+				|| (tx_pack->icmp.body.echo_req.id
+					!= emb_icmph->body[0].echo.id)
+				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
+					< ntohs(emb_icmph->body[0].echo.seq))) {
 			break;
 		}
-		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->iph.saddr);
-		*last_seq = ntohs(emb_icmph->un.echo.sequence);
+		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
+		*last_seq = ntohs(emb_icmph->body[0].echo.seq);
 		printf("From %s	icmp_seq=%u %s\n",
 				dst_addr_str, *last_seq,
-				rx_pack->icmph.code == ICMP_NET_UNREACH
+				rx_pack->icmp.hdr.code == ICMP_NET_UNREACH
 						? "Destination Network Unreachable"
-					: rx_pack->icmph.code == ICMP_HOST_UNREACH
+					: rx_pack->icmp.hdr.code == ICMP_HOST_UNREACH
 						? "Destination Host Unreachable"
-					: rx_pack->icmph.code == ICMP_PROT_UNREACH
+					: rx_pack->icmp.hdr.code == ICMP_PROT_UNREACH
 						? "Destination Protocol Unreachable"
-					: rx_pack->icmph.code == ICMP_PORT_UNREACH
+					: rx_pack->icmp.hdr.code == ICMP_PORT_UNREACH
 						? "Destination Port Unreachable"
 					: "unknown icmp_code");
 		res = 0;
 		break;
 	default:
 		printf("ping: ignore icmp_type=%d icmp_code=%d\n",
-				rx_pack->icmph.type, rx_pack->icmph.code);
-	case ICMP_ECHO:
+				rx_pack->icmp.hdr.type, rx_pack->icmp.hdr.code);
+	case ICMP_ECHO_REQUEST:
 		*last_seq = -1;
 		res = -1;
 		break;
@@ -158,9 +174,9 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 	cnt_req = cnt_rep = cnt_err = 0; next_seq = 0;
 
-	tx_pack->icmph.type = ICMP_ECHO;
-	tx_pack->icmph.code = 0;
-	tx_pack->icmph.un.echo.id = 11; /* TODO: get unique id */
+	tx_pack->icmp.hdr.type = ICMP_ECHO_REQUEST;
+	tx_pack->icmp.hdr.code = 0;
+	tx_pack->icmp.body.echo_req.id = 11; /* TODO: get unique id */
 
 	/* open socket */
 	sk = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -184,11 +200,13 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	while (last_seq != next_seq || cnt_req < pinfo->count) {
 		if (clock() - last_sent >= pinfo->interval
 				&& cnt_req < pinfo->count) {
-			tx_pack->icmph.un.echo.sequence = htons(++next_seq);
-			tx_pack->icmph.checksum = 0;
-			tx_pack->icmph.checksum = ptclbsum(tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size);
-			if (-1 == sendto(sk, tx_pack, ICMP_HEADER_SIZE + pinfo->padding_size, 0,
-					(struct sockaddr *)&to, sizeof to)) {
+			tx_pack->icmp.body.echo_req.seq = htons(++next_seq);
+			tx_pack->icmp.hdr.check = 0;
+			tx_pack->icmp.hdr.check = ptclbsum(tx_pack,
+					sizeof tx_pack->icmp + pinfo->padding_size);
+			if (-1 == sendto(sk, tx_pack,
+						sizeof tx_pack->icmp + pinfo->padding_size,
+						0, (struct sockaddr *)&to, sizeof to)) {
 				perror("ping: sendto() failure");
 			}
 			++cnt_req;

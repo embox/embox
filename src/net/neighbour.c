@@ -137,7 +137,7 @@ static void nbr_drop_w_queue(struct neighbour *nbr) {
 	struct sk_buff *skb;
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
 	}
 
 	nbr->sent_times = 0;
