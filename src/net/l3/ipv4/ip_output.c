@@ -29,6 +29,15 @@
 #include <embox/net/pack.h>
 #include <net/lib/ipv4.h>
 
+#define IP_DEBUG 0
+#if IP_DEBUG
+#include <arpa/inet.h>
+#include <kernel/printk.h>
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
+
 static const struct net_pack_out_ops ip_out_ops_struct;
 const struct net_pack_out_ops *const ip_out_ops
 		= &ip_out_ops_struct;
@@ -54,6 +63,8 @@ static int ip_xmit(struct sk_buff *skb) {
 		/* get dest ip from route table */
 		ret = rt_fib_route_ip(daddr, &daddr);
 		if (ret != 0) {
+			DBG(printk("ip_xmit: unknown target for %s\n",
+						inet_ntoa(*(struct in_addr *)&daddr)));
 			skb_free(skb);
 			return ret;
 		}
@@ -196,6 +207,8 @@ static int ip_make(const struct sock *sk,
 	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
 			&dev);
 	if (ret != 0) {
+		DBG(printk("ip_make: unknown device for %s\n",
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
 		return ret;
 	}
 	assert(dev != NULL);
@@ -209,6 +222,8 @@ static int ip_make(const struct sock *sk,
 	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
 	max_size = min(dev->mtu, skb_max_size());
 	if (hdr_size > max_size) {
+		DBG(printk("ip_make: hdr_size %zu is too big (max %zu)\n",
+					hdr_size, max_size));
 		return -EMSGSIZE;
 	}
 
@@ -216,6 +231,8 @@ static int ip_make(const struct sock *sk,
 
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
+		DBG(printk("ip_make: can't realloc packet for size %zu\n",
+					hdr_size + *data_size));
 		return -ENOMEM;
 	}
 
@@ -237,7 +254,7 @@ static int ip_snd(struct sk_buff *skb) {
 	assert(skb != NULL);
 
 	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
-		printk("ip_snd: skb %p dropped by netfilter\n", skb);
+		DBG(printk("ip_snd: dropped by output netfilter\n"));
 		skb_free(skb);
 		return 0;
 	}

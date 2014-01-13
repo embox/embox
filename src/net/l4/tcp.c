@@ -330,7 +330,10 @@ static void tcp_xmit(struct sk_buff *skb,
 			tcp_sk != NULL ? to_sock(tcp_sk)->o_ops : NULL;
 
 	if (out_ops != NULL) {
-		(void)out_ops->snd_pack(skb);
+		int ret = out_ops->snd_pack(skb);
+		if (ret != 0) {
+			DBG(printk("tcp_xmit: snd_pack = %d\n", ret));
+		}
 	}
 }
 
@@ -934,7 +937,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	tcp_set_check_field((struct tcphdr *)tcph,
 			skb->nh.raw);
 	if (old_check != tcph->check) {
-		DBG(printk("pre_process: error: invalid ckecksum %hx(%hx)"
+		DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
 					" sk %p skb %p\n",
 				ntohs(old_check), ntohs(tcph->check),
 				to_sock(tcp_sk), skb);)
