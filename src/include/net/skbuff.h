@@ -108,7 +108,6 @@ extern unsigned char * skb_data_get_data(
 
 extern size_t skb_max_extra_hdr_size(void);
 extern size_t skb_max_size(void);
-extern size_t skb_avail(const struct sk_buff *skb);
 
 /**
  * Wrap sk_buff_data into sk_buff structure

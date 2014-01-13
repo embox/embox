@@ -89,10 +89,6 @@ size_t skb_max_size(void) {
 	return member_sizeof(struct sk_buff_data, data);
 }
 
-size_t skb_avail(const struct sk_buff *skb) {
-	return skb_max_size() - skb->len;
-}
-
 struct sk_buff_data * skb_data_alloc(void) {
 	ipl_t sp;
 	struct sk_buff_data *skb_data;
@@ -296,11 +292,11 @@ struct sk_buff * skb_clone(const struct sk_buff *skb) {
 void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(skb != NULL);
 	assert(skb->data != NULL);
-	assert(count + skb->len <= skb_max_size());
-	memmove(&skb->data->data[count], &skb->data->data[0], skb->len);
-	skb->len += count;
+	assert(count < skb_max_size());
+	memmove(&skb->data->data[count], &skb->data->data[0],
+			min(skb->len, skb_max_size() - count));
+	skb->len += min(count, skb_max_size() - count);
 }
-
 
 size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	size_t len;
