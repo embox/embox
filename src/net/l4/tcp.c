@@ -20,7 +20,6 @@
 #include <net/skbuff.h>
 #include <net/sock.h>
 
-#include <util/sys_log.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
@@ -51,7 +50,7 @@ EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
 
-#define TCP_DEBUG 0
+#define TCP_DEBUG 1
 #if TCP_DEBUG
 #define DBG(x) x
 #else
@@ -100,7 +99,7 @@ static const tcp_handler_t tcp_st_handler[];
 static void tcp_get_now(struct timeval *out_now);
 
 /************************ Debug functions ******************************/
-#if 1
+#if !TCP_DEBUG
 void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(const struct tcp_sock *tcp_sk,
 		const struct sk_buff *skb, const char *msg, int family,
@@ -518,7 +517,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			if (tcp_sk->conn_wait_len >= tcp_sk->conn_wait_max) {
-				LOG_DEBUG("tcp_st_listen", "conn_wait is too big");
+				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
