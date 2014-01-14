@@ -150,7 +150,8 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	nbr_advert.ops.hdr.type = NDP_TARGET_LL_ADDR;
 	nbr_advert.ops.hdr.len = binalign_bound(sizeof nbr_advert.ops
 			+ in_dev->dev->addr_len, 8) / 8;
-	assert(in_dev->dev->addr_len <= sizeof __ops_ll_addr_storage);
+	assert(in_dev->dev->addr_len
+			<= sizeof nbr_advert.__ops_ll_addr_storage);
 	memcpy(nbr_advert.ops.ll_addr, &in_dev->dev->dev_addr[0],
 			in_dev->dev->addr_len);
 
