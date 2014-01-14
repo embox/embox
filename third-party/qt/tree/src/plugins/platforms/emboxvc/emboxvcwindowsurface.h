@@ -66,6 +66,10 @@ public:
     QEmboxVCMouseHandler *mouseHandler;
     QEmboxVCKeyboardHandler *keyboardHandler;
 
+    struct thread *visualize_thread;
+    struct waitq visualize;
+    bool is_visualized;
+
 private:
     struct vc_callbacks emboxVCcallbacks;
 };

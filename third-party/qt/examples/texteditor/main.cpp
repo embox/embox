@@ -190,7 +190,6 @@ void emboxQtHideDesktop() {
 }
 
 void emboxRootWindowShow(int width, int height) {
-
 	emroot->setGeometry(QRect(0,0, width, height));
 	texteditor_inited = 1;
 	waitq_wakeup_all(&texteditor_inited_wq);
