@@ -16,7 +16,7 @@
 #undef __linux__
 #endif
 
-#if 1
+#if 0
 #define DPRINT() printf(">>> samba CALL %s\n", __FUNCTION__)
 #else
 #define DPRINT()
