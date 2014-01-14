@@ -132,7 +132,7 @@ static int parse_result(struct packet_in *rx_pack,
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
 		*last_seq = ntohs(emb_icmph->body[0].echo.seq);
-		printf("From %s	icmp_seq=%u %s\n",
+		printf("From %s icmp_seq=%u %s\n",
 				dst_addr_str, *last_seq,
 				rx_pack->icmp.hdr.code == ICMP_NET_UNREACH
 						? "Destination Network Unreachable"
