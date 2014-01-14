@@ -206,6 +206,22 @@ void tcp_sock_unlock(struct tcp_sock *tcp_sk, unsigned int obj) {
 	}
 }
 
+void tcp_seq_state_set_wind_value(struct tcp_seq_state *tcp_seq_st,
+		uint16_t value) {
+	if (tcp_seq_st->wind.value != value) {
+		tcp_seq_st->wind.value = value;
+		tcp_seq_st->wind.size = value << tcp_seq_st->wind.factor;
+	}
+}
+
+void tcp_seq_state_set_wind_factor(struct tcp_seq_state *tcp_seq_st,
+		uint8_t factor) {
+	if (tcp_seq_st->wind.factor != factor) {
+		tcp_seq_st->wind.factor = factor;
+		tcp_seq_st->wind.size = tcp_seq_st->wind.value << factor;
+	}
+}
+
 static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
 	size_t seq_off;
@@ -601,7 +617,8 @@ static enum tcp_ret_code tcp_st_syn_sent(struct tcp_sock *tcp_sk,
 
 	if (tcph->syn) {
 		tcp_sk->rem.seq = ntohl(tcph->seq) + 1;
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		if (tcph->ack) {
 			tcp_sock_set_state(tcp_sk, TCP_ESTABIL);
 		} else {
@@ -622,7 +639,8 @@ static enum tcp_ret_code tcp_st_syn_recv_pre(
 
 	if (tcph->syn) {
 		tcp_sk->rem.seq = ntohl(tcph->seq) + 1;
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		tcp_sock_set_state(tcp_sk, TCP_SYN_RECV);
 		out_tcph->syn = 1;
 		tcp_set_ack_field(out_tcph, tcp_sk->rem.seq);
@@ -923,6 +941,53 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	return TCP_RET_OK;
 }
 
+#if 0
+static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcp_sk) {
+	char *ptr = (char *) &tcph->options;
+	for(;;) {
+		switch(*ptr) {
+		case TCP_OPT_KIND_EOL:
+			return (int) ptr - (int) &tcph->options;
+		case TCP_OPT_KIND_NOP:
+			ptr++;
+			break;
+		case TCP_OPT_KIND_MSS:
+			ptr+=2;
+			tcp_sk->mss = ntohs((__be16) *ptr);
+		}
+	}
+	return 0;
+}
+#endif
+
+static enum tcp_ret_code process_opt(struct tcp_sock *tcp_sk,
+		const struct tcphdr *tcph) {
+	char *ptr = (char *)&tcph->options[0];
+	char *end = ptr + TCP_HEADER_SIZE(tcph) - TCP_MIN_HEADER_SIZE;
+
+	do {
+		switch (*ptr) {
+		default:
+			ptr += *(ptr + 1);
+			break;
+		case TCP_OPT_KIND_NOP:
+			++ptr;
+			break;
+		case TCP_OPT_KIND_WS:
+			if (*(ptr + 1) == 3) {
+				tcp_seq_state_set_wind_factor(&tcp_sk->rem,
+						*(ptr + 2));
+			}
+			ptr += *(ptr + 1);
+			break;
+		}
+	} while (ptr < end);
+
+	assert(ptr == end);
+
+	return TCP_RET_OK;
+}
+
 static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
@@ -958,7 +1023,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		seq2rem_seq = ntohl(tcph->seq) - tcp_sk->rem.seq;
 		seq_len = tcp_seq_length(skb->h.th, skb->nh.raw);;
 		seq_last2rem_seq = seq2rem_seq + seq_len;
-		rem_len = tcp_sk->self.wind;
+		rem_len = tcp_sk->self.wind.size;
 		if (seq2rem_seq < rem_len) {
 			if (seq2rem_seq != 0) {
 				/* TODO There is correct packet (with
@@ -1010,32 +1075,21 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	default:
 		break;
 	case TCP_ST_SYNC:
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		break;
+	}
+
+	/* Process options */
+	if (TCP_HEADER_SIZE(tcph) != TCP_MIN_HEADER_SIZE) {
+		ret = process_opt(tcp_sk, tcph);
+		if (ret != TCP_RET_OK) {
+			return ret;
+		}
 	}
 
 	return TCP_RET_OK;
 }
-
-#if 0
-static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcp_sk) {
-	char *ptr = (char *) &tcph->options;
-	for(;;) {
-		switch(*ptr) {
-		case TCP_OPT_KIND_EOL:
-			return (int) ptr - (int) &tcph->options;
-		case TCP_OPT_KIND_NOP:
-			ptr++;
-			break;
-		case TCP_OPT_KIND_MSS:
-			ptr+=2;
-			tcp_sk->mss = ntohs((__be16) *ptr);
-		}
-	}
-	return 0;
-}
-#endif
-
 
 /************************ Handlers table *******************************/
 static const tcp_handler_t tcp_st_handler[TCP_MAX_STATE] = {
@@ -1062,7 +1116,7 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 	struct sk_buff *out_skb;
 
 	tcp_build(&out_tcph, skb->h.th->source, skb->h.th->dest,
-			TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+			TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 	out_skb = NULL;
 
 	/**

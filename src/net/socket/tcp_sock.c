@@ -62,7 +62,12 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
 	tcp_sk->self.seq = tcp_sk->last_ack;
-	tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
+	memset(&tcp_sk->self, 0, sizeof tcp_sk->self);
+	tcp_seq_state_set_wind_value(&tcp_sk->self,
+			TCP_WINDOW_VALUE_DEFAULT);
+	tcp_seq_state_set_wind_factor(&tcp_sk->self,
+			TCP_WINDOW_FACTOR_DEFAULT);
+	memset(&tcp_sk->rem, 0, sizeof tcp_sk->rem);
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
 	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;
@@ -115,7 +120,7 @@ static int tcp_close(struct sock *sk) {
 			tcp_build(tcph,
 					sock_inet_get_dst_port(to_sock(tcp_sk)),
 					sock_inet_get_src_port(to_sock(tcp_sk)),
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 			tcph->fin = 1;
 			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
 			send_seq_from_sock(tcp_sk, skb);
@@ -135,19 +140,11 @@ static int tcp_connect(struct sock *sk,
 	struct tcp_sock *tcp_sk;
 	int ret;
 	static const __u8 magic_opts[] = {
-		/**
-		 * TODO
-		 * This is a bad way to get perrmission on remote machine, but it's
-		 * works
-		 */
-		0x02, 0x04,      /* Maximum segment size:             */
-				0x40, 0x0C,             /* 16396 bytes  */
-		0x04, 0x02,      /* TCP SACK Permitted Option: True   */
-		0x08, 0x0A,      /* Timestamps:                       */
-				0x00, 0x0E, 0x3C, 0xCD, /* TSval 933069 */
-				0x00, 0x00, 0x00, 0x00, /* TSecr 0      */
-		0x01,            /* No-Operation                      */
-		0x03, 0x03, 0x07 /* Window scale: 7 (multiply by 128) */
+		TCP_OPT_KIND_MSS, 0x04,     /* Maximum segment size:             */
+				0x40, 0x0C,               /* 16396 bytes         */
+		TCP_OPT_KIND_NOP,           /* No-Operation                      */
+		TCP_OPT_KIND_WS, 0x03,      /* Window scale:                     */
+				TCP_WINDOW_FACTOR_DEFAULT /* 7 (multiply by 128) */
 	};
 
 	(void)addr;
@@ -179,7 +176,7 @@ static int tcp_connect(struct sock *sk,
 					sock_inet_get_dst_port(to_sock(tcp_sk)),
 					sock_inet_get_src_port(to_sock(tcp_sk)),
 					TCP_MIN_HEADER_SIZE + sizeof magic_opts,
-					tcp_sk->self.wind);
+					tcp_sk->self.wind.value);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
@@ -337,7 +334,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 		tcp_build(skb->h.th,
 				sock_inet_get_dst_port(to_sock(tcp_sk)),
 				sock_inet_get_src_port(to_sock(tcp_sk)),
-				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 
 		memcpy(skb->h.th + 1, buff, bytes);
 		buff += bytes;
@@ -379,7 +376,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			if (timeout == 0) {
 				timeout = SCHED_TIMEOUT_INFINITE;
 			}
-			while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
+			while (tcp_sk->rem.wind.size <= tcp_sk->self.seq - tcp_sk->last_ack) {
 				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 				if (ret != 0) {
 					softirq_unlock();
