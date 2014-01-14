@@ -309,9 +309,7 @@ static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 }
 
 static void __scheduleDevisualization(struct vc *vc) {
-	printf(">>__scheduleDevisualization\n");
 	__emboxVCsetMode(vc, 0);
-
 	mpx_devisualized(vc);
 }
 
