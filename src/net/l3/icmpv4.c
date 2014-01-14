@@ -323,41 +323,76 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	default:
 		return -EINVAL; /* error: bad type for discard */
 	case ICMP_DEST_UNREACH:
-		body.dest_unreach.zero = 0;
-		va_start(extra, code);
-		{
-			body.dest_unreach.mtu = code != ICMP_FRAG_NEEDED ? 0
-					: htons((uint16_t)va_arg(extra, int));
+		switch (code) {
+		default:
+			return -EINVAL; /* error: incorrect code for type */
+		case ICMP_NET_UNREACH:
+		case ICMP_HOST_UNREACH:
+		case ICMP_PROT_UNREACH:
+		case ICMP_PORT_UNREACH:
+		case ICMP_SR_FAILED:
+			body.dest_unreach.zero = body.dest_unreach.mtu = 0;
+			break;
+		case ICMP_FRAG_NEEDED:
+			va_start(extra, code);
+			body.dest_unreach.zero = 0;
+			body.dest_unreach.mtu = htons(
+						(uint16_t)va_arg(extra, int));
+			va_end(extra);
+			break;
 		}
-		va_end(extra);
 		body_msg = &body.dest_unreach.msg[0];
 		break;
 	case ICMP_SOURCE_QUENCH:
+		if (code != 0) {
+			return -EINVAL; /* error: incorrect code for type */
+		}
 		body.source_quench.zero = 0;
 		body_msg = &body.source_quench.msg[0];
 		break;
 	case ICMP_REDIRECT:
-		va_start(extra, code);
-		{
+		switch (code) {
+		default:
+			return -EINVAL; /* error: incorrect code for type */
+		case ICMP_NET_REDIRECT:
+		case ICMP_HOST_REDIRECT:
+		case ICMP_NETTOS_REDIRECT:
+		case ICMP_HOSTTOS_REDIRECT:
+			va_start(extra, code);
 			memcpy(&body.redirect.gateway,
 					va_arg(extra, struct in_addr *),
 					sizeof body.redirect.gateway);
+			va_end(extra);
+			break;
 		}
-		va_end(extra);
 		body_msg = &body.redirect.msg[0];
 		break;
 	case ICMP_TIME_EXCEED:
-		body.time_exceed.zero = 0;
+		switch (code) {
+		default:
+			return -EINVAL; /* error: incorrect code for type */
+		case ICMP_TTL_EXCEED:
+		case ICMP_FRAG_TIME:
+			body.time_exceed.zero = 0;
+			break;
+		}
 		body_msg = &body.time_exceed.msg[0];
 		break;
 	case ICMP_PARAM_PROB:
-		va_start(extra, code);
-		{
-			body.param_prob.ptr = code != ICMP_PTR_ERROR ? 0
-					: (uint8_t)va_arg(extra, int);
+		switch (code) {
+		default:
+			return -EINVAL; /* error: incorrect code for type */
+		case ICMP_PTR_ERROR:
+			va_start(extra, code);
+			body.param_prob.ptr = (uint8_t)va_arg(extra, int);
+			body.param_prob.zero1 = body.param_prob.zero2 = 0;
+			va_end(extra);
+			break;
+		case ICMP_PTR_UNUSED:
+			body.param_prob.ptr = body.param_prob.zero1
+				= body.param_prob.zero2 = 0;
+			break;
 		}
-		va_end(extra);
-		body.param_prob.zero1 = body.param_prob.zero2 = 0;
 		body_msg = &body.param_prob.msg[0];
 		break;
 	}
