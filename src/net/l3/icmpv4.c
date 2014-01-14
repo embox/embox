@@ -321,86 +321,48 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 
 	switch (type) {
 	default:
-		return -EINVAL; /* error: bad type for discard */
+		assert(0, "bad type for discard");
+		body_msg = (uint8_t *)&body.__body_msg_storage[0];
+		break; /* error: bad type for discard */
 	case ICMP_DEST_UNREACH:
-		switch (code) {
-		default:
-			assert(0, "incorrect code for type");
-			break; /* error: incorrect code for type */
-		case ICMP_NET_UNREACH:
-		case ICMP_HOST_UNREACH:
-		case ICMP_PROT_UNREACH:
-		case ICMP_PORT_UNREACH:
-		case ICMP_SR_FAILED:
-			body.dest_unreach.zero = body.dest_unreach.mtu = 0;
-			break;
-		case ICMP_FRAG_NEEDED:
-			va_start(extra, code);
-			body.dest_unreach.zero = 0;
-			body.dest_unreach.mtu = htons(
-						(uint16_t)va_arg(extra, int));
-			va_end(extra);
-			break;
-		}
+		assert(code < __ICMP_DEST_UNREACH_MAX,
+				"incorrect code for type");
+		va_start(extra, code);
+		body.dest_unreach.zero = 0;
+		body.dest_unreach.mtu = code != ICMP_FRAG_NEEDED ? 0
+				: htons((uint16_t)va_arg(extra, int));
+		va_end(extra);
 		body_msg = &body.dest_unreach.msg[0];
 		break;
 	case ICMP_SOURCE_QUENCH:
-		switch (code) {
-		default:
-			assert(0, "incorrect code for type");
-			break; /* error: incorrect code for type */
-		case 0:
-			body.source_quench.zero = 0;
-			break;
-		}
+		assert(code == 0, "incorrect code for type");
+		body.source_quench.zero = 0;
 		body_msg = &body.source_quench.msg[0];
 		break;
 	case ICMP_REDIRECT:
-		switch (code) {
-		default:
-			assert(0, "incorrect code for type");
-			break; /* error: incorrect code for type */
-		case ICMP_NET_REDIRECT:
-		case ICMP_HOST_REDIRECT:
-		case ICMP_NETTOS_REDIRECT:
-		case ICMP_HOSTTOS_REDIRECT:
-			va_start(extra, code);
-			memcpy(&body.redirect.gateway,
-					va_arg(extra, struct in_addr *),
-					sizeof body.redirect.gateway);
-			va_end(extra);
-			break;
-		}
+		assert(code < __ICMP_REDIRECT_MAX,
+				"incorrect code for type");
+		va_start(extra, code);
+		memcpy(&body.redirect.gateway,
+				va_arg(extra, struct in_addr *),
+				sizeof body.redirect.gateway);
+		va_end(extra);
 		body_msg = &body.redirect.msg[0];
 		break;
 	case ICMP_TIME_EXCEED:
-		switch (code) {
-		default:
-			assert(0, "incorrect code for type");
-			break; /* error: incorrect code for type */
-		case ICMP_TTL_EXCEED:
-		case ICMP_FRAG_TIME:
-			body.time_exceed.zero = 0;
-			break;
-		}
+		assert(code < __ICMP_TIME_EXCEED_MAX,
+				"incorrect code for type");
+		body.time_exceed.zero = 0;
 		body_msg = &body.time_exceed.msg[0];
 		break;
 	case ICMP_PARAM_PROB:
-		switch (code) {
-		default:
-			assert(0, "incorrect code for type");
-			break; /* error: incorrect code for type */
-		case ICMP_PTR_ERROR:
-			va_start(extra, code);
-			body.param_prob.ptr = (uint8_t)va_arg(extra, int);
-			body.param_prob.zero1 = body.param_prob.zero2 = 0;
-			va_end(extra);
-			break;
-		case ICMP_PTR_UNUSED:
-			body.param_prob.ptr = body.param_prob.zero1
-				= body.param_prob.zero2 = 0;
-			break;
-		}
+		assert(code < __ICMP_PARAM_PROB_MAX,
+				"incorrect code for type");
+		va_start(extra, code);
+		body.param_prob.ptr = code != ICMP_PTR_ERROR ? 0
+				: (uint8_t)va_arg(extra, int);
+		body.param_prob.zero1 = body.param_prob.zero2 = 0;
+		va_end(extra);
 		body_msg = &body.param_prob.msg[0];
 		break;
 	}

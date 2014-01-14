@@ -61,6 +61,7 @@ enum icmp_code {
 	ICMP_FRAG_NEEDED      = 4, /* Fragmentation needed and DF
 								  set */
 	ICMP_SR_FAILED        = 5, /* Source route failed */
+	__ICMP_DEST_UNREACH_MAX,
 	/* Source Quench Message */
 		/* 0 - always (MUST) */
 	/* Redirect Message */
@@ -72,6 +73,7 @@ enum icmp_code {
 								  and network */
 	ICMP_HOSTTOS_REDIRECT = 3, /* Redirect datagrams for the TOS
 								  and network */
+	__ICMP_REDIRECT_MAX,
 	/* Echo Request Message */
 		/* 0 - always (MUST) */
 	/* Time Exceeded Message */
@@ -79,9 +81,11 @@ enum icmp_code {
 								  transit */
 	ICMP_FRAG_TIME        = 1, /* Fragment reassembly time
 								  exceeded */
+	__ICMP_TIME_EXCEED_MAX,
 	/* Parameter Problem Message */
 	ICMP_PTR_ERROR        = 0, /* Pointer indicates the error */
 	ICMP_PTR_UNUSED       = 1, /* Otherwise */
+	__ICMP_PARAM_PROB_MAX,
 	/* Timestamp Request Message */
 		/* 0 - always (MUST) */
 	/* Timestamp Reply Message */
