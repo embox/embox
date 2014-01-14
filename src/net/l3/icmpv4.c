@@ -325,7 +325,8 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	case ICMP_DEST_UNREACH:
 		switch (code) {
 		default:
-			return -EINVAL; /* error: incorrect code for type */
+			assert(0, "incorrect code for type");
+			break; /* error: incorrect code for type */
 		case ICMP_NET_UNREACH:
 		case ICMP_HOST_UNREACH:
 		case ICMP_PROT_UNREACH:
@@ -344,16 +345,21 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		body_msg = &body.dest_unreach.msg[0];
 		break;
 	case ICMP_SOURCE_QUENCH:
-		if (code != 0) {
-			return -EINVAL; /* error: incorrect code for type */
+		switch (code) {
+		default:
+			assert(0, "incorrect code for type");
+			break; /* error: incorrect code for type */
+		case 0:
+			body.source_quench.zero = 0;
+			break;
 		}
-		body.source_quench.zero = 0;
 		body_msg = &body.source_quench.msg[0];
 		break;
 	case ICMP_REDIRECT:
 		switch (code) {
 		default:
-			return -EINVAL; /* error: incorrect code for type */
+			assert(0, "incorrect code for type");
+			break; /* error: incorrect code for type */
 		case ICMP_NET_REDIRECT:
 		case ICMP_HOST_REDIRECT:
 		case ICMP_NETTOS_REDIRECT:
@@ -370,7 +376,8 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	case ICMP_TIME_EXCEED:
 		switch (code) {
 		default:
-			return -EINVAL; /* error: incorrect code for type */
+			assert(0, "incorrect code for type");
+			break; /* error: incorrect code for type */
 		case ICMP_TTL_EXCEED:
 		case ICMP_FRAG_TIME:
 			body.time_exceed.zero = 0;
@@ -381,7 +388,8 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	case ICMP_PARAM_PROB:
 		switch (code) {
 		default:
-			return -EINVAL; /* error: incorrect code for type */
+			assert(0, "incorrect code for type");
+			break; /* error: incorrect code for type */
 		case ICMP_PTR_ERROR:
 			va_start(extra, code);
 			body.param_prob.ptr = (uint8_t)va_arg(extra, int);
