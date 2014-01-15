@@ -9,7 +9,6 @@
 #ifndef CONSOLE_FBCON_H_
 #define CONSOLE_FBCON_H_
 
-#include <kernel/event.h>
 #include <drivers/video/vesa_modes.h>
 #include <drivers/console/mpx.h>
 #include <drivers/video_term.h>

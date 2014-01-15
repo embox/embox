@@ -75,8 +75,3 @@ module thread_cancel_enable extends thread_cancel {
 module thread_cancel_disable extends thread_cancel {
 	source "thread_cancel_disable.h"
 }
-
-/* FIXME: Deprecated */
-module event {
-	depends embox.kernel.event_api
-}

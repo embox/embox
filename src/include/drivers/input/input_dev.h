@@ -11,7 +11,6 @@
 
 #include <util/dlist.h>
 #include <util/ring_buff.h>
-#include <kernel/event.h>
 
 #define INPUT_DEV_EVENT_QUEUE_LEN 16
 

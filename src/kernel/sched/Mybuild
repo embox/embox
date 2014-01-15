@@ -14,8 +14,6 @@ module sched {
 	@NoRuntime depends embox.kernel.critical
 	@NoRuntime depends embox.profiler.trace
 
-	@NoRuntime depends embox.kernel.event_sched
-
 	@NoRuntime depends sched_ticker
 	@NoRuntime depends wait_queue
 }
