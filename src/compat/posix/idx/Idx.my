@@ -30,7 +30,6 @@ static module dup {
 }
 
 static module pipe {
-//	source "pipe.c"
 	source "idesc_pipe.c"
 
 	option number pipe_buffer_size=1024
