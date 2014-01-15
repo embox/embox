@@ -37,7 +37,6 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
-//#include <kernel/task/io_sync.h>
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
@@ -260,7 +259,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 	tcp_sk->state = new_state;
 	debug_print(2, "sk %p set state %d-%s\n", to_sock(tcp_sk), new_state, str_state[new_state]);
 
-	/* io_sync manipulation */
+	/* idesc manipulation */
 	switch (new_state) {
 	default:
 		break;

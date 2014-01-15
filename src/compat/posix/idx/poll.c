@@ -15,7 +15,6 @@
 #include <fs/flags.h>
 
 #include <kernel/task.h>
-//#include <kernel/task/io_sync.h>
 
 #include <fs/poll_table.h>
 

@@ -20,7 +20,6 @@ static module select {
 	source "poll_table.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.io_sync
 }
 
 static module dup {
@@ -39,7 +38,6 @@ static module pipe {
 
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
-	depends embox.kernel.task.io_sync
 }
 
 static module ppty {
@@ -53,5 +51,4 @@ static module poll {
 	source "poll.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.io_sync
 }

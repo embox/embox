@@ -50,7 +50,6 @@ module sock {
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.kernel.manual_event_api
-	depends embox.kernel.task.io_sync
 	depends embox.framework.LibFrameworkNet
 
 	depends sock_xattr_api

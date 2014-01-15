@@ -74,7 +74,6 @@ module socket {
 	source "socket_desc.c"
 	option number connect_timeout=5000
 
-	depends embox.kernel.task.io_sync
 	depends embox.lib.LibCString
 	depends embox.net.sock
 }

@@ -21,7 +21,6 @@
 
 #include <fs/idesc.h>
 #include <net/socket/sock_xattr.h>
-//#include <kernel/task/io_sync.h>
 #include <net/skbuff.h>
 
 

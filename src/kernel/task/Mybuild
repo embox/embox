@@ -75,7 +75,6 @@ module idx_table extends task_environment {
 	depends embox.mem.objalloc
 	depends embox.util.idx_table
 	depends api
-	depends io_sync
 }
 
 module errno {
@@ -93,13 +92,6 @@ module env {
 
 module u_area {
 	source "u_area.c"
-}
-
-module io_sync {
-//	source "io_sync.c"
-
-	depends embox.kernel.manual_event_api
-	depends embox.kernel.event_api
 }
 
 module waitpid {
