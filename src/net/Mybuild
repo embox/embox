@@ -49,7 +49,6 @@ module sock {
 	depends embox.arch.interrupt
 	depends embox.mem.pool
 	depends embox.lib.LibC
-	depends embox.kernel.manual_event_api
 	depends embox.framework.LibFrameworkNet
 
 	depends sock_xattr_api
