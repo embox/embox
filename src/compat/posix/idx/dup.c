@@ -13,7 +13,6 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
-#include <kernel/task/idx.h>
 
 int dup(int flides) {
 	return fcntl(flides, F_DUPFD, 0);

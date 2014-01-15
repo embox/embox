@@ -10,7 +10,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 #include <fs/flags.h>
 #include <fs/kfile.h>

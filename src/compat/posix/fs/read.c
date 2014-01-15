@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 

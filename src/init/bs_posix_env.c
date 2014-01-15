@@ -16,7 +16,6 @@
 #include <drivers/diag.h>
 #include <drivers/tty.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/flags.h>

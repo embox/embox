@@ -18,7 +18,6 @@
 
 #include <framework/mod/options.h>
 #include <kernel/thread/sync/mutex.h>
-//#include <kernel/task/idx.h>
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
 #include <fs/idesc.h>

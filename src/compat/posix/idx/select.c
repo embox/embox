@@ -19,7 +19,6 @@
 #include <kernel/time/time.h>
 #include <kernel/sched.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 #include <kernel/task/idesc_table.h>
 #include <fs/index_descriptor.h>
