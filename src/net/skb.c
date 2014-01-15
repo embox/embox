@@ -9,6 +9,7 @@
  */
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <util/math.h>
 

@@ -1,0 +1,12 @@
+diff -aur iperf-2.0.5/include/Reporter.h iperf/include/Reporter.h
+--- iperf-2.0.5/include/Reporter.h	2014-01-14 15:44:02.267187920 +0400
++++ iperf/include/Reporter.h	2008-03-12 23:28:21.000000000 +0300
+@@ -103,7 +103,7 @@
+     double endTime;
+     // chars
+     char   mFormat;                 // -f
+-    u_char mTTL;                    // -T
++    unsigned char mTTL;             // -T
+     char   mUDP;
+     char   free;
+ } Transfer_Info;

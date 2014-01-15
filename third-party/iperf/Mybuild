@@ -1,0 +1,34 @@
+package third_party.iperf
+
+static module libs {
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.Time
+	depends embox.compat.posix.proc.uid
+
+	source "empty.c" // FIXME: workaround
+	source "order.mk"
+
+	@Rule(script="$(MAKE_IPERF)")
+	source "../../../../iperf/src/libiperf.a"
+}
+
+@Cmd(name = "iperf",
+	help = "iperf is a tool for measuring maximum TCP and UDP bandwidth performance",
+	man = '''
+		NAME
+			iperf is a tool for measuring maximum TCP and UDP bandwidth performance.
+		SYNOPSIS
+			iperf [-s|-c host] [options]
+       		iperf [-h|--help] [-v|--version]
+
+		AUTHORS
+			Andrey Gazukin
+	''')
+module iperf {
+	depends libs
+
+	@Rule(script="true")
+	source "../../../../iperf/src/iperf3-main.o"
+	source "iperf_cmd.c"
+	source "order.mk"
+}
