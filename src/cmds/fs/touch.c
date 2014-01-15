@@ -23,6 +23,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	char *point;
+	int fd;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
@@ -37,9 +38,11 @@ static int exec(int argc, char **argv) {
 
 	if (argc > 1) {
 		point = argv[argc - 1];
-		if(0 > creat(point, 0)) {
+		if (0 > (fd = creat(point, 755))) {
 			return -errno;
 		}
+
+		close(fd);
 	}
 
 	return 0;
