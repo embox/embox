@@ -103,7 +103,8 @@ static int mod_traverse(const struct mod *mod,
 	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 
 	if (!is_enable) {
-		ret = mod_traverse_all(mod->after_deps, mod_op, flags);
+		ret = mod_traverse_all(mod->after_deps, mod_op,
+				flags | MOD_FLAG_OPINPROGRESS); /* TODO it's so? */
 		if (ret)
 			goto out;
 	}
@@ -117,7 +118,8 @@ static int mod_traverse(const struct mod *mod,
 		goto out;
 
 	if (is_enable) {
-		ret = mod_traverse_all(mod->after_deps, mod_op, flags);
+		ret = mod_traverse_all(mod->after_deps, mod_op,
+				flags | MOD_FLAG_OPINPROGRESS);
 		if (ret)
 			goto out;
 	}
