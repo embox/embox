@@ -341,7 +341,7 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
-	int ret;
+	int ret = 0;
 
 	threadsig_lock();
 	mutex_lock(&t->lock);
