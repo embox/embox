@@ -7,6 +7,7 @@
  * @author: Anton Bondarev
  */
 #include <libgen.h>
+
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("testing functions from libgen.h");

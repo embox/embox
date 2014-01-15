@@ -50,7 +50,7 @@ void cpu_stack_move(ptrdiff_t offset) {
 
 }
 */
-extern void cpu_stack_move(ptrdiff_t offset);
+extern void cpu_stack_move(ptrdiff_t desc_stack, ptrdiff_t src_stack);
 static void *kfork_trampoline(void *arg) {
 	struct thread *thr;
 	struct thread *cur_thr;
@@ -72,12 +72,24 @@ static void *kfork_trampoline(void *arg) {
 	stack_offset = (ptrdiff_t)cur_thr->stack.stack + cur_thr->stack.stack_sz -
 			((ptrdiff_t)tmp_stack_buff + sizeof(tmp_stack_buff));
 
-	cpu_stack_move(stack_offset);
+	cpu_stack_move((ptrdiff_t)tmp_stack_buff + sizeof(tmp_stack_buff),
+			(ptrdiff_t)cur_thr->stack.stack + cur_thr->stack.stack_sz);
 
-//	setjmp_stack_get()
-	stack = setjmp_stack_get(thr->stack.stack, data->kfork_jmp_buf);
+
+	stack = setjmp_stack_get(
+			thr->stack.stack + thr->stack.stack_sz,
+			data->kfork_jmp_buf);
+
+
 	stack_offset = stack.ebp + 0x200;
-	memcpy(cur_thr->stack.stack, thr->stack.stack, stack_offset);
+	memcpy(cur_thr->stack.stack + cur_thr->stack.stack_sz - stack_offset,
+			thr->stack.stack + thr->stack.stack_sz- stack_offset,
+			stack_offset);
+
+	stack_offset = (ptrdiff_t)cur_thr->stack.stack + cur_thr->stack.stack_sz -
+				((ptrdiff_t)thr->stack.stack + thr->stack.stack_sz);
+
+	setjmp_stack_move(stack_offset, data->kfork_jmp_buf);
 
 
 	longjmp(data->kfork_jmp_buf, 1);
