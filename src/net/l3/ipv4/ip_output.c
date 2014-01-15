@@ -221,7 +221,13 @@ static int ip_make(const struct sock *sk,
 	assert(dev != NULL);
 
 	assert(inetdev_get_by_dev(dev) != NULL);
-	src_ip = inetdev_get_by_dev(dev)->ifa_address;
+	//src_ip = inetdev_get_by_dev(dev)->ifa_address; /* TODO it's better! */
+	ret = rt_fib_source_ip(dst_ip, &src_ip);
+	if (ret != 0) {
+		DBG(printk("ip_make: can't resolve source ip for %s\n",
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
+		return ret;
+	}
 
 	proto = in_sk != NULL ? in_sk->sk.opt.so_protocol
 			: (*out_skb)->nh.iph->proto;
