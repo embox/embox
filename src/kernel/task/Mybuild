@@ -73,7 +73,7 @@ module idx_table extends task_environment {
 	source "index_descriptor.c"
 
 	depends embox.mem.objalloc
-	depends embox.util.idx_table
+	depends embox.util.indexator
 	depends api
 }
 
