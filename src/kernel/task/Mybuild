@@ -87,7 +87,10 @@ module env {
 	option number env_str_len=32
 	source "env.c"
 
-	depends kernel_task
+	depends api
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.util.Array
 }
 
 module u_area {
