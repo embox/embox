@@ -1153,6 +1153,11 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 		break;
 	case TCP_RET_SEND_SEQ:
 	case TCP_RET_SEND:
+		if (NULL == skb_declone(skb)) {
+			skb_free(skb);
+			return TCP_RET_DROP; /* error: ENOMEM */
+		}
+		/* fallthrough */
 	case TCP_RET_SEND_ALLOC:
 		out_skb = ret != TCP_RET_SEND_ALLOC ? skb : NULL;
 		if (0 != alloc_prep_skb(tcp_sk, 0, NULL, &out_skb)) {

@@ -126,6 +126,10 @@ struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
 	return skb_data; /* cloned */
 }
 
+int skb_data_cloned(const struct sk_buff_data *skb_data) {
+	return skb_data->links != 1;
+}
+
 void skb_data_free(struct sk_buff_data *skb_data) {
 	ipl_t sp;
 
@@ -245,11 +249,27 @@ static void skb_copy_ref(struct sk_buff *to,
 	to->p_data = to->p_data_end = NULL;
 }
 
-static void skb_copy_data(struct sk_buff *to,
+static void skb_shift_ref(struct sk_buff *skb,
+		ptrdiff_t offset) {
+	assert((skb != NULL) && (skb->data != NULL));
+
+	if (skb->mac.raw != NULL) {
+		skb->mac.raw += offset;
+	}
+	if (skb->nh.raw != NULL) {
+		skb->nh.raw += offset;
+	}
+	if (skb->h.raw != NULL) {
+		skb->h.raw += offset;
+	}
+	skb->p_data = skb->p_data_end = NULL;
+}
+
+static void skb_copy_data(struct sk_buff_data *to_data,
 		const struct sk_buff *from) {
-	assert((to != NULL) && (to->data != NULL) && (from != NULL)
-			&& (from->data != NULL) && (to->len == from->len));
-	memcpy(&to->data->data[0], &from->data->data[0], from->len);
+	assert((to_data != NULL) && (from != NULL)
+			&& (from->data != NULL));
+	memcpy(&to_data->data[0], &from->data->data[0], from->len);
 }
 
 struct sk_buff * skb_copy(const struct sk_buff *skb) {
@@ -263,7 +283,7 @@ struct sk_buff * skb_copy(const struct sk_buff *skb) {
 	}
 
 	skb_copy_ref(copied, skb);
-	skb_copy_data(copied, skb);
+	skb_copy_data(copied->data, skb);
 
 	return copied;
 }
@@ -288,6 +308,30 @@ struct sk_buff * skb_clone(const struct sk_buff *skb) {
 	skb_copy_ref(cloned, skb);
 
 	return cloned;
+}
+
+struct sk_buff * skb_declone(struct sk_buff *skb) {
+	struct sk_buff_data *decloned_data;
+
+	assert(skb != NULL);
+
+	if (!skb_data_cloned(skb->data)) {
+		return skb;
+	}
+
+	decloned_data = skb_data_alloc();
+	if (decloned_data == NULL) {
+		return NULL; /* error: no memory */
+	}
+
+	skb_shift_ref(skb, &decloned_data->data[0]
+				- &skb->data->data[0]);
+	skb_copy_data(decloned_data, skb);
+
+	skb_data_free(skb->data);
+	skb->data = decloned_data;
+
+	return skb;
 }
 
 void skb_rshift(struct sk_buff *skb, size_t count) {

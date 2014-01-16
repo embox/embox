@@ -99,6 +99,7 @@ typedef struct sk_buff {        /* Socket buffer */
 extern struct sk_buff_data * skb_data_alloc(void);
 extern struct sk_buff_data * skb_data_clone(
 		struct sk_buff_data *skb_data);
+extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 
 extern unsigned char * skb_data_get_extra_hdr(
@@ -148,6 +149,11 @@ extern struct sk_buff * skb_copy(const struct sk_buff *skb);
  * Make a copy of sk_buff with shared packet data
  */
 extern struct sk_buff * skb_clone(const struct sk_buff *skb);
+
+/**
+ * Make sk_buff without shared packet data
+ */
+extern struct sk_buff * skb_declone(struct sk_buff *skb);
 
 /**
  * Create copy of skb
