@@ -65,12 +65,12 @@ die:
  * Copy trap table to 0x0
  */
 C_ENTRY(setup_trap_table):
-	addik r8, r15, 0               /* we don't use stack and must save r15 ourself */
+	addik r19, r15, 0              /* we don't use stack and must save r15 ourself */
 	addik r6, r0, trap_table_start /* whether copy interrupt vector table ? */
 	addik r5, r0, 0
 	rsubik r7, r6, trap_table_end  /* calculate size of table */
 
 	brlid r15, memcpy
 	nop
-	rtsd r8, 8
+	rtsd r19, 8
 	nop
