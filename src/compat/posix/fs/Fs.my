@@ -60,7 +60,7 @@ static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibC
+	depends embox.lib.LibCString
 }
 
 static module open {

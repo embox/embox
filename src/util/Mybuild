@@ -90,8 +90,6 @@ static module LibUtil {
 	depends sys_log
 	depends ring
 
-	depends embox.lib.LibC
-
 	depends Prioq
 	depends Array
 	depends DList
