@@ -38,7 +38,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc > 1) {
 		point = argv[argc - 1];
-		if (0 > (fd = creat(point, 755))) {
+		if (0 > (fd = creat(point, 0666))) {
 			return -errno;
 		}
 
