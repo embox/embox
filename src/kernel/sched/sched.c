@@ -31,6 +31,7 @@
 
 #include <kernel/critical.h>
 #include <kernel/spinlock.h>
+#include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
 #include <kernel/thread/current.h>
