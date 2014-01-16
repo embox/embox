@@ -17,11 +17,13 @@
 #define TIO_C(t, flag) ((t)->c_cflag & (flag))
 #define TIO_L(t, flag) ((t)->c_lflag & (flag))
 
-static int tio_putc(char ch, struct ring *ring, char *buf, size_t buflen) {
+static int tio_putc(char ch, struct ring *ring,
+		char *buf, size_t buflen) {
 	return ring_write_all_from(ring, buf, buflen, &ch, 1);
 }
 
-int termios_putc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
+int termios_putc(const struct termios *t, char ch, struct ring *ring,
+		char *buf, size_t buflen) {
 	int res = 0;
 
 	if (TIO_L(t, ICANON) && TIO_O(t, ONLCR) && ch == '\n') {
@@ -34,7 +36,8 @@ int termios_putc(struct termios *t, char ch, struct ring *ring, char *buf, size_
 	return res + tio_putc(ch, ring, buf, buflen);
 }
 
-int termios_gotc(struct termios *t, char ch, struct ring *ring, char *buf, size_t buflen) {
+int termios_gotc(const struct termios *t, char ch, struct ring *ring,
+		char *buf, size_t buflen) {
 	int res = 0;
 
 	if (TIO_L(t, ECHO) || (TIO_L(t, ECHONL) && ch == '\n')) {
