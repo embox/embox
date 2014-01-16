@@ -93,6 +93,7 @@ static int parse_result(struct packet_in *rx_pack,
 	struct iphdr *emb_iph;
 	struct icmphdr *emb_icmph;
 
+	res = -1;
 	switch (rx_pack->icmp.hdr.type) {
 	case ICMP_ECHO_REPLY:
 	    if ((to->sin_addr.s_addr != rx_pack->ip.hdr.saddr)
@@ -150,7 +151,6 @@ static int parse_result(struct packet_in *rx_pack,
 				rx_pack->icmp.hdr.type, rx_pack->icmp.hdr.code);
 	case ICMP_ECHO_REQUEST:
 		*last_seq = -1;
-		res = -1;
 		break;
 	}
 
