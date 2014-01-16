@@ -53,6 +53,6 @@ static inline void irq_unlock(void) {
  * Evaluate a given @a expr inside an IRQ-protected block.
  */
 #define IRQ_LOCKED_DO(expr) \
-	__lang_surround(expr, irq_lock(), irq_unlock())
+	__lang_surround((expr), irq_lock(), irq_unlock())
 
 #endif /* KERNEL_IRQ_LOCK_H_ */

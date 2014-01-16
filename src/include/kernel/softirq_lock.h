@@ -34,6 +34,6 @@ static inline void softirq_unlock(void) {
 }
 
 #define SOFTIRQ_LOCKED_DO(_expr) \
-	__lang_surround(_expr, softirq_lock(), softirq_unlock())
+	__lang_surround((_expr), softirq_lock(), softirq_unlock())
 
 #endif /* KERNEL_SOFTIRQ_LOCK_H_ */
