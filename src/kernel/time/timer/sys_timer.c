@@ -29,7 +29,8 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 	tmr->param = param;
 	tmr->flags = flags;
 
-	__lang_surround(timer_strat_start(tmr), softirq_lock(), softirq_unlock());
+	__lang_surround_void(timer_strat_start(tmr), softirq_lock(),
+			softirq_unlock());
 
 	return ENOERR;
 }
@@ -61,7 +62,7 @@ int timer_close(struct sys_timer *tmr) {
 		return -EINVAL;
 	}
 	if (timer_is_started(tmr)) {
-		__lang_surround(timer_strat_stop(tmr), softirq_lock(),
+		__lang_surround_void(timer_strat_stop(tmr), softirq_lock(),
 				softirq_unlock());
 	}
 	if (timer_is_preallocated(tmr)) {
