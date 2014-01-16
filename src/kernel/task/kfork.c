@@ -8,9 +8,11 @@
 #include <sys/types.h>
 #include <setjmp.h>
 
+
 #include <kernel/task.h>
 #include <kernel/thread.h>
 #include <kernel/thread/thread_stack.h>
+#include <kernel/time/ktime.h>
 
 
 struct kfork_data {
@@ -29,6 +31,8 @@ struct cpu_stack {
 void setjmp_stack_move(ptrdiff_t offset, jmp_buf env) {
 	env[SETJMP_EBP_INDEX] += offset;
 	env[SETJMP_ESP_INDEX] += offset;
+
+	*(uint32_t *)env[SETJMP_EBP_INDEX] += offset;
 }
 
 struct cpu_stack setjmp_stack_get(void *stack_base, jmp_buf env) {
@@ -39,17 +43,7 @@ struct cpu_stack setjmp_stack_get(void *stack_base, jmp_buf env) {
 
 	return stack;
 }
-/*
-void cpu_stack_move(ptrdiff_t offset) {
-	int esp_reg;
-	int ebp_reg;
 
-	asm volatile("movl %0, %%eax "
-			""
-			":");
-
-}
-*/
 extern void cpu_stack_move(ptrdiff_t desc_stack, ptrdiff_t src_stack);
 static void *kfork_trampoline(void *arg) {
 	struct thread *thr;
@@ -97,7 +91,7 @@ static void *kfork_trampoline(void *arg) {
 	return 0;
 }
 
-pid_t kfork(void) {
+pid_t kfork(jmp_buf env) {
 	struct task *parent_task;
 	struct thread *par_thread;
 	pid_t child_pid;
@@ -108,12 +102,9 @@ pid_t kfork(void) {
 	assert(parent_task == par_thread->task);
 
 	kfork_data.par_thr = par_thread;
+	memcpy(kfork_data.kfork_jmp_buf, env, sizeof(jmp_buf));
 
-	switch(setjmp(kfork_data.kfork_jmp_buf)) {
-	case 0:
-		child_pid = new_task(parent_task->task_name, kfork_trampoline, &kfork_data);
-		return child_pid;
-	default:
-		return 0;
-	}
+	child_pid = new_task(parent_task->task_name, kfork_trampoline, &kfork_data);
+	ksleep(0);
+	return child_pid;
 }
