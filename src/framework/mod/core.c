@@ -104,12 +104,13 @@ static int mod_traverse(const struct mod *mod,
 
 	if (!is_enable) {
 		ret = mod_traverse_all(mod->after_deps, mod_op,
-				flags | MOD_FLAG_OPINPROGRESS); /* TODO it's so? */
+				flags | MOD_FLAG_OPINPROGRESS);
 		if (ret)
 			goto out;
 	}
 
-	ret = mod_traverse_all(deps, mod_op, flags);
+	ret = mod_traverse_all(deps, mod_op,
+			flags & ~MOD_FLAG_OPINPROGRESS);
 	if (ret)
 		goto out;
 
