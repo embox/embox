@@ -5,6 +5,8 @@
  *   Most of utils from here should be used with care or avoided at all,
  *   because they rely on non-standard C extensions provided by GCC.
  *
+ *   Please think twice before using these utils (and then think once again).
+ *
  * @date 16.03.13
  * @author Eldar Abusalimov
  */
