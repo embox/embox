@@ -23,3 +23,14 @@ module sigstate extends sigstate_api {
 	source "sigstate.c"
 	depends siginfoq_api
 }
+
+@DefaultImpl(lock_stub)
+abstract module lock_api { }
+
+module lock extends lock_api {
+	source "lock_impl.h"
+}
+
+module lock_stub extends lock_api {
+	source "lock_stub_impl.h"
+}
