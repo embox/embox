@@ -20,4 +20,7 @@ struct net_proto;
 extern const struct net_proto * net_proto_lookup(
 		unsigned short pack, unsigned char type);
 
+extern void net_proto_handle_error_none(const struct sk_buff *skb,
+		int error_info);
+
 #endif /* FRAMEWORK_NET_PROTO_API_H_ */

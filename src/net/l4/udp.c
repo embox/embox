@@ -25,10 +25,9 @@
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
 
-static void udp_err(const struct sk_buff *skb, int error_info);
-
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_UDP, udp_rcv, udp_err);
-EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_UDP, udp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_UDP, udp_rcv,
+		net_proto_handle_error_none);
 
 static int udp4_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {

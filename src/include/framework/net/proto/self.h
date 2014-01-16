@@ -16,6 +16,8 @@ struct sk_buff;
 
 #define EMBOX_NET_PROTO(_pack, _type, _handle, _handle_error) \
 	static int _handle(struct sk_buff *skb);                  \
+	static void _handle_error(const struct sk_buff *skb,      \
+			int error_info);                                  \
 	__EMBOX_NET_PROTO(_pack##_type, _pack, _type, _handle,    \
 			_handle_error)
 

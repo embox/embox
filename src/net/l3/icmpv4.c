@@ -34,7 +34,8 @@
 
 #include <kernel/time/ktime.h>
 
-EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv,
+		net_proto_handle_error_none);
 
 static int icmp_send(uint8_t type, uint8_t code, const void *body,
 		size_t body_sz, struct sk_buff *skb) {
@@ -99,7 +100,8 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 	if (!only_raw) {
 		const struct net_proto *nproto;
 		nproto = net_proto_lookup(ETH_P_IP, emb_iph->proto);
-		if ((nproto != NULL) && (nproto->handle_error != NULL)) {
+		if (nproto != NULL) {
+			assert(nproto->handle_error != NULL);
 			nproto->handle_error(skb, error_info);
 		}
 	}

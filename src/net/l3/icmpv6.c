@@ -26,7 +26,8 @@
 #include <util/binalign.h>
 #include <net/neighbour.h>
 
-EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_ICMPV6, icmp6_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_ICMPV6, icmp6_rcv,
+		net_proto_handle_error_none);
 
 int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
 		const void *body, size_t body_sz) {
