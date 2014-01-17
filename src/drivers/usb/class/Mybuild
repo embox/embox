@@ -9,3 +9,9 @@ module hid {
 	depends embox.driver.input.core
 }
 
+module mass_storage {
+
+	source "usb_mass_storage.c"
+
+	depends embox.driver.usb.core
+}
