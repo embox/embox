@@ -24,20 +24,20 @@ ExternalProject_Add(
 
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
-      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>`
+      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
       ""CC=$ENV{EMBOX_DERIVED_CC}""
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
       --host=$ENV{EMBOX_DERIVED_TARGET}
 
+   LOG_BUILD 1
    BUILD_COMMAND
       make
-#        RDYNAMIC=
-#        all
 
-#   INSTALL_COMMAND
-#      make install-libs
-   LOG_BUILD 1
+   INSTALL_COMMAND
+      echo 'not install'
+
+
 )
 SET (CMAKE_BUILD_TYPE "Debug")

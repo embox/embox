@@ -29,7 +29,7 @@ AT=
 
 IPERF_DIR       = $(ROOT_DIR)/build/iperf
 IPERF_CMAKE_DIR = $(IPERF_DIR)/cmake
-IPERF_LIB       += $(IPERF_DIR)/src/libiperf.a
+IPERF_LIB       += $(IPERF_DIR)/src/iperf-build/compat/libcompat.a
 IPERF_FLAGS     = $(IPERF_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
