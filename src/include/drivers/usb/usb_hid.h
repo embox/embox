@@ -21,7 +21,7 @@
 #define USB_CLASS_HID_PROT_KBD   1
 #define USB_CLASS_HID_PROT_MOUSE 2
 
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 
 struct input_dev;
 

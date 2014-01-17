@@ -11,12 +11,12 @@
 
 #include <stdint.h>
 #include <kernel/time/timer.h>
-#include <drivers/usb_queue.h>
 #include <util/indexator.h>
 #include <util/dlist.h>
 
-#include <drivers/usb_desc.h>
-#include <drivers/usb_token.h>
+#include <drivers/usb/usb_queue.h>
+#include <drivers/usb/usb_desc.h>
+#include <drivers/usb/usb_token.h>
 
 #define USB_RESET_HIGH_DELAY_MS 20
 

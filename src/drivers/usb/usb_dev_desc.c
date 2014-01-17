@@ -8,14 +8,14 @@
 
 #include <errno.h>
 #include <string.h>
-#include <drivers/usb.h>
-#include <drivers/usb_desc.h>
+#include <drivers/usb/usb.h>
+#include <drivers/usb/usb_desc.h>
 #include <mem/misc/pool.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/irq_lock.h>
 
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb_dev_desc.h>
 
 struct usb_dev_desc {
 	struct usb_dev *dev;

@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 
 POOL_DEF(usb_hcds, struct usb_hcd, USB_MAX_HCD);
 POOL_DEF(usb_hubs, struct usb_hub, USB_MAX_HUB);

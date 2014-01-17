@@ -16,7 +16,7 @@
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
 
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(usb_ti81xx_init);

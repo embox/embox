@@ -9,8 +9,8 @@
 #include <string.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
-#include <drivers/usb_hid.h>
-#include <drivers/usb.h>
+#include <drivers/usb/usb_hid.h>
+#include <drivers/usb/usb.h>
 #include <drivers/input/input_dev.h>
 
 #define USB_HID_MAX_INPUT_LEN    8

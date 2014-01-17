@@ -8,9 +8,9 @@
 
 #include <util/dlist.h>
 #include <kernel/printk.h>
-#include <drivers/usb_driver.h>
+#include <drivers/usb/usb_driver.h>
 
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 
 DLIST_DEFINE(usb_dev_list);
 

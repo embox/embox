@@ -13,7 +13,7 @@
 #include <kernel/time/ktime.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 #include <mem/misc/pool.h>
 
 #include <kernel/printk.h>

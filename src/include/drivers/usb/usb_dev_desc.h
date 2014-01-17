@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <drivers/usb_desc.h>
-#include <drivers/usb_token.h>
+#include <drivers/usb/usb_desc.h>
+#include <drivers/usb/usb_token.h>
 
 struct usb_dev_desc;
 struct usb_request;

@@ -11,11 +11,11 @@
 
 #include <util/dlist.h>
 #include <embox/device.h>
-#include <drivers/usb.h>
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb.h>
+#include <drivers/usb/usb_dev_desc.h>
 #include <fs/node.h>
 
-#include <drivers/usb_driver.h>
+#include <drivers/usb/usb_driver.h>
 
 #define USB_DEV_NAME_LEN 14 /* (strlen("usb-0000-0000") + 1) */
 

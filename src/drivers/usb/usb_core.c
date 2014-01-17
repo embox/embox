@@ -15,9 +15,9 @@
 #include <kernel/time/ktime.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
-#include <drivers/usb_driver.h>
+#include <drivers/usb/usb_driver.h>
 
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 
 static DLIST_DEFINE(usb_hcds);
 

@@ -10,7 +10,7 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <embox/unit.h>
-#include <drivers/usb_hid.h>
+#include <drivers/usb/usb_hid.h>
 
 EMBOX_UNIT_INIT(usb_hid_init);
 

@@ -10,7 +10,7 @@
 #include <kernel/irq_lock.h>
 #include <util/member.h>
 
-#include <drivers/usb_queue.h>
+#include <drivers/usb/usb_queue.h>
 
 struct usb_queue_link *usb_queue_peek(struct usb_queue *q) {
 	struct dlist_head *l = q->q.next;
