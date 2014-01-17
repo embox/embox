@@ -218,7 +218,7 @@ static void *telnet_thread_handler(void* args) {
 	int pptyfd[2];
 	int tid;
 	int nfds;
-	fd_set readfds, writefds;
+	fd_set readfds, writefds, exceptfds;
 	struct timeval timeout;
 
 	MD(printf("starting telnet_thread_handler\n"));
@@ -266,6 +266,7 @@ static void *telnet_thread_handler(void* args) {
 
 		FD_ZERO(&readfds);
 		FD_ZERO(&writefds);
+		FD_ZERO(&exceptfds);
 
 		FD_SET(sock, &readfds);
 		FD_SET(pptyfd[0], &readfds);
@@ -275,10 +276,11 @@ static void *telnet_thread_handler(void* args) {
 		if (sock_data_len > 0) {
 			FD_SET(pptyfd[0], &writefds);
 		}
+		FD_SET(sock, &exceptfds);
 
 		MD(printf("."));
 
-		fd_cnt = select(nfds, &readfds, &writefds, NULL, &timeout);
+		fd_cnt = select(nfds, &readfds, &writefds, &exceptfds, &timeout);
 
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
@@ -297,6 +299,10 @@ static void *telnet_thread_handler(void* args) {
 			 */
 #endif
 			continue;
+		}
+
+		if (FD_ISSET(sock, &exceptfds)) {
+			goto kill_and_out;
 		}
 
 		if (FD_ISSET(sock, &writefds)) {
