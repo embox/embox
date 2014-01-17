@@ -10,3 +10,43 @@ diff -aur iperf-2.0.5/include/Reporter.h iperf/include/Reporter.h
      char   mUDP;
      char   free;
  } Transfer_Info;
+ 
+diff -aur iperf-2.0.5/compat/Thread.c iperf/compat/Thread.c
+--- iperf-2.0.5/compat/Thread.c	2014-01-17 13:29:35.795520925 +0400
++++ iperf/compat/Thread.c	2014-01-17 13:26:24.071516222 +0400
+@@ -95,7 +95,7 @@
+  * Initialize the thread subsystems variables and set the concurrency
+  * level in solaris.
+  * ------------------------------------------------------------------- */
+-void thread_init( ) {
++void thread_init_( ) {
+     Condition_Initialize( &thread_sNum_cond );
+ #if defined( sun )
+     /* Solaris apparently doesn't default to timeslicing threads,
+ 
+diff -aur iperf-2.0.5/include/Thread.h iperf/include/Thread.h 
+--- iperf-2.0.5/include/Thread.h	2007-08-30 01:57:27.000000000 +0400
++++ iperf/include/Thread.h	2014-01-17 13:26:44.387516720 +0400
+@@ -100,7 +100,7 @@
+ #include "Settings.hpp"
+ 
+     // initialize or destroy the thread subsystem
+-    void thread_init( );
++    void thread_init_( );
+     void thread_destroy( );
+ 
+     // start or stop a thread executing
+     
+diff -aur iperf-2.0.5/src/main.cpp iperf/src/main.cpp
+--- iperf-2.0.5/src/main.cpp	2007-08-30 01:57:27.000000000 +0400
++++ iperf/src/main.cpp	2014-01-17 13:26:44.387516720 +0400    
+@@ -148,7 +148,7 @@
+     Mutex_Initialize( &clients_mutex );
+ 
+     // Initialize the thread subsystem
+-    thread_init( );
++    thread_init_( );
+ 
+     // Initialize the interrupt handling thread to 0
+     sThread = thread_zeroid();
+ 
