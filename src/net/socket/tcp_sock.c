@@ -75,6 +75,8 @@ static int tcp_init(struct sock *sk) {
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
 	timerclear(&tcp_sk->rcv_time);
+	tcp_sk->dup_ack = 0;
+	tcp_sk->rexmit_mode = 0;
 
 	return 0;
 }
@@ -376,7 +378,9 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			if (timeout == 0) {
 				timeout = SCHED_TIMEOUT_INFINITE;
 			}
-			while (tcp_sk->rem.wind.size <= tcp_sk->self.seq - tcp_sk->last_ack) {
+			while ((tcp_sk->rem.wind.size <= tcp_sk->self.seq
+						- tcp_sk->last_ack)
+					|| tcp_sk->rexmit_mode) {
 				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 				if (ret != 0) {
 					softirq_unlock();

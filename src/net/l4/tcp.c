@@ -891,12 +891,34 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	ack2last_ack = ack - tcp_sk->last_ack;
 	seq = tcp_sk->self.seq;
 
-	if (ack2last_ack == 0) { /* no new acknowledgments */ }
+	if (ack2last_ack == 0) {
+		/* no new acknowledgments */
+		if ((seq != ack) && !tcp_sk->rexmit_mode) {
+			++tcp_sk->dup_ack;
+			if (tcp_sk->dup_ack == TCP_REXMIT_DUP_ACK) {
+				tcp_sk->rexmit_mode = 1;
+				tcp_rexmit(tcp_sk);
+			}
+		}
+	}
 	else if (ack2last_ack <= seq - tcp_sk->last_ack) {
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+		if (!tcp_sk->rexmit_mode) {
+			tcp_sk->dup_ack = 0;
+			idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+		}
+		else {
+			if (seq == ack) {
+				tcp_sk->rexmit_mode = 0;
+				tcp_sk->dup_ack = 0;
+				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+			}
+			else {
+				tcp_rexmit(tcp_sk);
+			}
+		}
 	}
 	else if (ack - seq <= ack2last_ack) {
 		/* package with non-last acknowledgment */

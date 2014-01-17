@@ -94,9 +94,11 @@ typedef struct tcp_sock {
 	unsigned int conn_wait_len; /* Length of queue of incoming connection */
 	unsigned int conn_wait_max; /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */
-	struct timeval syn_time;   /* The time when synchronization started */
-	struct timeval ack_time;   /* The time when message was ACKed */
-	struct timeval rcv_time;   /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
+	struct timeval syn_time;    /* The time when synchronization started */
+	struct timeval ack_time;    /* The time when message was ACKed */
+	struct timeval rcv_time;    /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
+	unsigned int dup_ack;       /* Amount of duplicated packets */
+	unsigned int rexmit_mode;   /* Socket in rexmit mode */
 } tcp_sock_t;
 
 static inline struct tcp_sock * to_tcp_sock(
@@ -117,6 +119,8 @@ enum {
 #define TCP_TIMEWAIT_DELAY    2000  /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000  /* Delay between rexmitting */
 #define TCP_SYNC_TIMEOUT      5000  /* Synchronization timeout */
+
+#define TCP_REXMIT_DUP_ACK       5  /* Rexmit after n duplicate ack */
 
 #define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
 #define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
