@@ -34,7 +34,7 @@ IPERF_FLAGS     = $(IPERF_CMAKE_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 #EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
-#EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/iperf/iperf_embox_compat.h
+EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/iperf/iperf_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))

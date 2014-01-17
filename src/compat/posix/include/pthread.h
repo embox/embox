@@ -20,7 +20,7 @@
 #include <sched.h>
 
 
-//#include <kernel/thread.h>
+#include <kernel/thread.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>

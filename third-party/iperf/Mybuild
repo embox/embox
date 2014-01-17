@@ -1,6 +1,8 @@
 package third_party.iperf
 
 static module libs {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.Time
 	depends embox.compat.posix.proc.uid
@@ -25,6 +27,8 @@ static module libs {
 			Andrey Gazukin
 	''')
 module iperf {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+
 	depends libs
 
 	@Rule(script="true")
