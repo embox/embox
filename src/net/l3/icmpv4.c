@@ -47,6 +47,11 @@ static int icmp_send(uint8_t type, uint8_t code, const void *body,
 		return -ENOSYS; /* error: not implemented */
 	}
 
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM;
+	}
+
 	size = sizeof *icmp_hdr(skb) + body_sz;
 	assert(ip_out_ops->make_pack != NULL);
 	ret = ip_out_ops->make_pack(NULL, NULL, &size, &skb);

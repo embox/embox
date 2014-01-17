@@ -35,6 +35,11 @@ int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
 	struct ip6hdr *ip6h;
 	struct in6_addr src_ip6, dst_ip6;
 
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM;
+	}
+
 	assert(skb != NULL);
 	in_dev = inetdev_get_by_dev(skb->dev);
 	assert(in_dev != NULL);

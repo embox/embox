@@ -182,6 +182,12 @@ static int arp_hnd_request(struct arpghdr *arph, struct arpg_stuff *arps,
 	memcpy(&dst_haddr[0], arps->sha, haddr_len);
 	memcpy(&dst_paddr[0], arps->spa, paddr_len);
 
+	/* declone sk_buff */
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM;
+	}
+
 	/* build reply */
 	ret = arp_build(skb, ARP_OPER_REPLY, ntohs(arph->pa_space), haddr_len,
 			paddr_len, NULL, &src_paddr[0], &dst_haddr[0], &dst_paddr[0],

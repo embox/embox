@@ -166,6 +166,12 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 	/* get target hardware address */
 	memcpy(&tar_haddr[0], rarps->sha, haddr_len);
 
+	/* declone sk_buff */
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM;
+	}
+
 	/* build reply */
 	ret = rarp_build(skb, RARP_OPER_REPLY, ntohs(rarph->pa_space),
 			haddr_len, paddr_len, NULL, &src_paddr[0],
