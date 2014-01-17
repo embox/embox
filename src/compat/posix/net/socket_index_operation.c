@@ -103,13 +103,14 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	case POLLOUT:
 		return 0x600; // XXX it is so?
 	case POLLERR:
-		return 0; /* TODO */
+		return sk->opt.so_error; /* TODO */
 	default:
 		/* UNREACHABLE */
 		//assert(0);
 		res = 0;
 		break;
 	}
+
 	if (status_nr & POLLIN) {
 		/* how many we can read */
 		res += sk->rx_data_len;
@@ -122,7 +123,7 @@ static int socket_status(struct idesc *desc, int status_nr) {
 
 	if (status_nr & POLLERR) {
 		/* is there any exeptions */
-		res += 0; //TODO Where is errors counter
+		res += sk->opt.so_error; //TODO Where is errors counter
 	}
 
 	return res;

@@ -116,8 +116,8 @@ void debug_print(__u8 code, const char *msg, ...) {
 //default:
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
-//	case 2:  /* socket state */
-//	case 3:  /* global functions */
+	case 2:  /* socket state */
+	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
@@ -283,11 +283,13 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
+		sock_set_so_error(to_sock(tcp_sk), 1);
 		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLERR);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
+		sock_set_so_error(to_sock(tcp_sk), 1);
 		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLOUT | POLLERR);
 		break;
 	}
