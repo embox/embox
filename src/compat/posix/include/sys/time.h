@@ -33,7 +33,7 @@ struct timeval {
  * struct timeval it_interval timer interval
  * struct timeval it_value    current value
  */
-struct itimerspec {
+struct itimerval {
 	struct timeval it_interval;  /* Timer period. */
 	struct timeval it_value;     /* Timer expiration. */
 };
