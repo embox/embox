@@ -486,11 +486,12 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 		skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
 		if (skb == NULL) {
-			break;
+			skb_data_free(skb_data_cast_out(data));
 		}
-
-		skb->dev = dev_id;
-		netif_rx(skb);
+		else {
+			skb->dev = dev_id;
+			netif_rx(skb);
+		}
 
 		++need_alloc;
 		skb_extra_free(skb_extra_cast_out(hdesc));
