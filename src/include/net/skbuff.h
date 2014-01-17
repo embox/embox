@@ -24,6 +24,7 @@
 /* Prototypes */
 struct sk_buff;
 struct sk_buff_data;
+struct sk_buff_extra;
 struct net_device;
 struct tcphdr;
 struct udphdr;
@@ -96,24 +97,27 @@ typedef struct sk_buff {        /* Socket buffer */
 
 } sk_buff_t;
 
+extern size_t skb_max_size(void);
+extern size_t skb_max_extra_size(void);
+
+extern void * skb_data_cast_in(struct sk_buff_data *skb_data);
+extern struct sk_buff_data * skb_data_cast_out(void *data);
+extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
+extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
+
 extern struct sk_buff_data * skb_data_alloc(void);
 extern struct sk_buff_data * skb_data_clone(
 		struct sk_buff_data *skb_data);
 extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 
-extern unsigned char * skb_data_get_extra_hdr(
-		struct sk_buff_data *skb_data);
-extern unsigned char * skb_data_get_data(
-		struct sk_buff_data *skb_data);
-
-extern size_t skb_max_extra_hdr_size(void);
-extern size_t skb_max_size(void);
+extern struct sk_buff_extra * skb_extra_alloc(void);
+extern void skb_extra_free(struct sk_buff_extra *skb_extra);
 
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(size_t size, size_t offset,
+extern struct sk_buff * skb_wrap(size_t size,
 		struct sk_buff_data *skb_data);
 
 /**

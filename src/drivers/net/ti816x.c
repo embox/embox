@@ -286,6 +286,7 @@ static void emac_queue_reserve(struct emac_desc_queue *qdesc,
 		size_t size) {
 	size_t i;
 	struct emac_desc_head *hdesc, *hfirst, *hprev;
+	struct sk_buff_extra *skb_extra;
 	struct sk_buff_data *skb_data;
 
 	assert(qdesc != NULL);
@@ -294,12 +295,14 @@ static void emac_queue_reserve(struct emac_desc_queue *qdesc,
 	hfirst = hdesc = NULL;
 
 	for (i = 0; i < size; ++i) {
+		skb_extra = skb_extra_alloc();
+		assert(skb_extra != NULL);
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
 
 		hprev = hdesc;
-		hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
-		emac_desc_build(hdesc, skb_data_get_data(skb_data),
+		hdesc = skb_extra_cast_in(skb_extra);
+		emac_desc_build(hdesc, skb_data_cast_in(skb_data),
 				skb_max_size(), 0, EMAC_DESC_F_OWNER);
 
 		if (hfirst == NULL) hfirst = hdesc;
@@ -362,6 +365,7 @@ static void emac_alloc_rx_queue(int size,
 }
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct sk_buff_extra *skb_extra;
 	struct sk_buff_data *skb_data;
 	void *data;
 	size_t data_len;
@@ -369,17 +373,18 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct ti816x_priv *dev_priv;
 	ipl_t ipl;
 
-	skb_data = skb_data_alloc();
+	skb_extra = skb_extra_alloc();
+	assert(skb_extra != NULL);
+	skb_data = skb_data_clone(skb->data);
 	assert(skb_data != NULL);
 
-	data = skb_data_get_data(skb_data);
+	data = skb_data_cast_in(skb_data);
 	data_len = max(skb->len, ETH_ZLEN);
-	memcpy(data, skb_data_get_data(skb->data), data_len);
 	dcache_flush(data, data_len);
 
 	skb_free(skb);
 
-	hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
+	hdesc = skb_extra_cast_in(skb_extra);
 	emac_desc_build(hdesc, data, data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
 
@@ -449,6 +454,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
+	void *data;
 	int need_alloc, eoq;
 	struct emac_desc_head *hdesc;
 	struct sk_buff *skb;
@@ -469,23 +475,25 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		assert(CHECK_RXOK(hdesc->desc.flags));
 		assert(!CHECK_RXERR(hdesc->desc.flags));
 
-		dcache_inval(skb_data_get_data((struct sk_buff_data *)hdesc),
-				hdesc->desc.len);
+		data = (void *)(uintptr_t)hdesc->desc.data;
+		dcache_inval(data, hdesc->desc.len);
 
 		++need_alloc;
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		emac_queue_confirm(&dev_priv->rx, hdesc,
 				EMAC_R_RXCP(DEFAULT_CHANNEL));
 
-		skb = skb_wrap(hdesc->desc.len, sizeof hdesc->desc,
-				(struct sk_buff_data *)hdesc);
+		skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
 		if (skb == NULL) {
-			skb_data_free((struct sk_buff_data *)hdesc);
+			skb_extra_free(skb_extra_cast_out(hdesc));
+			skb_data_free(skb_data_cast_out(data));
 			break;
 		}
 
 		skb->dev = dev_id;
 		netif_rx(skb);
+
+		skb_extra_free(skb_extra_cast_out(hdesc));
 	} while (((uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE
 				+ EMAC_R_RXCP(DEFAULT_CHANNEL)))
 			&& (!eoq || (assert(!eoq), 1)));
@@ -511,6 +519,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
+	void *data;
 	int eoq;
 	struct emac_desc_head *hdesc;
 
@@ -529,11 +538,13 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		assert(CHECK_TXOK(hdesc->desc.flags));
 		assert(!CHECK_TXERR(hdesc->desc.flags));
 
+		data = (void *)(uintptr_t)hdesc->desc.data;
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		emac_queue_confirm(&dev_priv->tx, hdesc,
 				EMAC_R_TXCP(DEFAULT_CHANNEL));
 
-		skb_data_free((struct sk_buff_data *)hdesc);
+		skb_extra_free(skb_extra_cast_out(hdesc));
+		skb_data_free(skb_data_cast_out(data));
 	} while (((uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE
 				+ EMAC_R_TXCP(DEFAULT_CHANNEL)))
 			&& (!eoq || (assert(!eoq), 1)));
@@ -620,7 +631,7 @@ static void ti816x_config(struct net_device *dev) {
 	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	/* check extra header size */
-	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc_head));
+	assert(skb_max_extra_size() == sizeof(struct emac_desc_head));
 
 	/* reset EMAC module */
 	emac_reset();
