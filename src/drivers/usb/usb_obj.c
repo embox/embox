@@ -109,9 +109,6 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 
 void usb_dev_free(struct usb_dev *dev) {
 
-	usb_dev_deregister(dev);
-
-	usb_class_unhandle(dev);
 	index_free(&dev->hcd->enumerator, dev->idx);
 	pool_free(&usb_devs, dev);
 }

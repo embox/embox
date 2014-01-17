@@ -83,7 +83,9 @@ static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) 
 					dev->dev_desc.id_vendor,
 					dev->dev_desc.id_product);
 
+#if 0
 			usb_dev_deregister(dev);
+#endif
 
 			return;
 		}

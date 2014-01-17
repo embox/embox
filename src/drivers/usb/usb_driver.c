@@ -110,13 +110,14 @@ static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 	return NULL;
 }
 
-static int usb_driver_try_init(struct usb_dev *dev) {
+void usb_driver_handle(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
 	drv = usb_driver_find(dev);
 
 	if (!drv) {
-		return -ENOTSUP;
+		return;
+		/*return -ENOTSUP;*/
 	}
 
 	if (drv->file_ops) {
@@ -128,16 +129,5 @@ static int usb_driver_try_init(struct usb_dev *dev) {
 
 		char_dev_register(name_buf, drv->file_ops);
 	}
-
-	return 0;
-}
-
-void usb_drv_handle(struct usb_dev *dev) {
-
-	usb_dev_register(dev);
-
-	usb_driver_try_init(dev);
-
-	usb_class_handle(dev);
 }
 

@@ -347,7 +347,7 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg) {
 
 	dev->endp_n = 1 + dev->interface_desc->b_num_endpoints;
 
-	usb_drv_handle(dev);
+	usb_dev_configured(dev);
 }
 
 static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type) {

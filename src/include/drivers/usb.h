@@ -297,6 +297,10 @@ extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t noti
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
 
+/* pnp */
+extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
+extern void usb_dev_configured(struct usb_dev *dev);
+
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 extern void usb_hcd_free(struct usb_hcd *hcd);
@@ -305,9 +309,6 @@ extern struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n)
 extern void usb_hub_free(struct usb_hub *hub);
 
 extern struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd);
-extern int usb_dev_register(struct usb_dev *dev);
-extern void usb_dev_deregister(struct usb_dev *dev);
-extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 extern void usb_dev_free(struct usb_dev *endp);
 
 extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
