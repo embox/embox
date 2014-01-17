@@ -349,7 +349,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	return len;
 }
 
-
+#define REM_WIND_MAX_SIZE (1460 * 100) /* FIXME use txqueuelen for netdev */
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
 	char *buff;
@@ -378,8 +378,8 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			if (timeout == 0) {
 				timeout = SCHED_TIMEOUT_INFINITE;
 			}
-			while ((tcp_sk->rem.wind.size <= tcp_sk->self.seq
-						- tcp_sk->last_ack)
+			while ((min(tcp_sk->rem.wind.size, REM_WIND_MAX_SIZE)
+						<= tcp_sk->self.seq - tcp_sk->last_ack)
 					|| tcp_sk->rexmit_mode) {
 				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 				if (ret != 0) {
