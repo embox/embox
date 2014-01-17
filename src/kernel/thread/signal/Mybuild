@@ -28,9 +28,9 @@ module sigstate extends sigstate_api {
 abstract module lock_api { }
 
 module lock extends lock_api {
-	source "lock_impl.h"
+	source "lock_impl.c"
 }
 
 module lock_stub extends lock_api {
-	source "lock_stub_impl.h"
+	source "lock_stub_impl.c"
 }

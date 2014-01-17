@@ -6,15 +6,14 @@
  * @date    15.01.2014
  */
 
-#ifndef KERNEL_THREAD_SIGNAL_LOCK_IMPL_H_
-#define KERNEL_THREAD_SIGNAL_LOCK_IMPL_H_
-
 #include <assert.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <kernel/critical.h>
 
-static inline void threadsig_lock(void) {
+#include <kernel/thread/signal_lock.h>
+
+void threadsig_lock(void) {
 	struct thread *t = thread_self();
 
 	assert(t);
@@ -25,7 +24,7 @@ static inline void threadsig_lock(void) {
 	assert(t->siglock > 0); /* overflow */
 }
 
-static inline void threadsig_unlock(void) {
+void threadsig_unlock(void) {
 	struct thread *t = thread_self();
 
 	assert(t);
@@ -44,5 +43,3 @@ static inline void threadsig_unlock(void) {
 		}
 	}
 }
-
-#endif /* KERNEL_THREAD_SIGNAL_LOCK_IMPL_H_ */
