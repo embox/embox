@@ -2,22 +2,17 @@
 package embox.driver.usb
 
 module core {
-	source "usb_queue.c"
 	source "usb_core.c"
+	source "usb_queue.c"
 	source "usb_obj.c"
+	source "usb_pnp.c"
+
 	source "usb_class.c"
+
 	source "usb_driver.c"
+	depends embox.driver.char_dev
 
 	source "usb_dev_desc.c"
-	depends embox.driver.char_dev
-}
-
-module class_hid {
-	source "usb_class_hid.c"
-	source "usb_hid.c"
-
-	depends core
-	depends embox.driver.input.core
 }
 
 module driver_example {
@@ -26,14 +21,3 @@ module driver_example {
 	depends core
 }
 
-module ohci_pci {
-	source "ohci_pci.c"
-
-	depends core
-}
-
-module ti81xx {
-	source "ti81xx.c"
-
-	depends core
-}

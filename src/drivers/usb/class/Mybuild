@@ -1,0 +1,11 @@
+
+package embox.driver.usb.class
+
+module hid {
+	source "usb_class_hid.c"
+	source "usb_hid.c"
+
+	depends embox.driver.usb.core
+	depends embox.driver.input.core
+}
+
