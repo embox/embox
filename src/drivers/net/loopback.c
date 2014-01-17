@@ -29,11 +29,6 @@ static int loopback_xmit(struct net_device *dev,
 		return -EINVAL;
 	}
 
-	if (NULL == skb_declone(skb)) {
-		skb_free(skb);
-		return -ENOMEM;
-	}
-
 	skb_len = skb->len;
 
 	lb_stats = &dev->stats;

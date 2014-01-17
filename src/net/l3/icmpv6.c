@@ -37,7 +37,7 @@ int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
 
 	if (NULL == skb_declone(skb)) {
 		skb_free(skb);
-		return -ENOMEM;
+		return -ENOMEM; /* error: can't declone data */
 	}
 
 	assert(skb != NULL);
@@ -228,6 +228,11 @@ static int icmp6_rcv(struct sk_buff *skb) {
 	if (sizeof *icmp6h > ip6_data_length(ip6_hdr(skb))) {
 		skb_free(skb);
 		return 0; /* error: invalid length */
+	}
+
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM; /* error: can't declone data */
 	}
 
 	icmp6h = icmp6_hdr(skb);

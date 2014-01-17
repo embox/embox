@@ -47,11 +47,6 @@ static int icmp_send(uint8_t type, uint8_t code, const void *body,
 		return -ENOSYS; /* error: not implemented */
 	}
 
-	if (NULL == skb_declone(skb)) {
-		skb_free(skb);
-		return -ENOMEM;
-	}
-
 	size = sizeof *icmp_hdr(skb) + body_sz;
 	assert(ip_out_ops->make_pack != NULL);
 	ret = ip_out_ops->make_pack(NULL, NULL, &size, &skb);
@@ -256,6 +251,11 @@ static int icmp_rcv(struct sk_buff *skb) {
 		return 0; /* error: invalid length */
 	}
 
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM; /* error: can't declone data */
+	}
+
 	icmph = icmp_hdr(skb);
 	assert(icmph != NULL);
 
@@ -377,6 +377,11 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	body_msg_sz = min(ip_data_length(ip_hdr(skb)),
 			sizeof body.__body_msg_storage);
 	memcpy(body_msg, ip_hdr(skb), body_msg_sz);
+
+	if (NULL == skb_declone(skb)) {
+		skb_free(skb);
+		return -ENOMEM; /* error: can't declone data */
+	}
 
 	return icmp_send(type, code, &body, sizeof body
 				- sizeof body.__body_msg_storage + body_msg_sz,
