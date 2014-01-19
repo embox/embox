@@ -24,6 +24,7 @@
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv6.h>
+#include <net/l2/ethernet.h>
 
 
 #include <kernel/time/timer.h>

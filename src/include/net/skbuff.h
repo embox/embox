@@ -191,7 +191,6 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 #include <net/if_arp.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 
 #endif /* NET_SKBUFF_H_ */

@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <embox/net/proto.h>
 #include <net/l3/icmpv6.h>
+#include <net/l2/ethernet.h>
 #include <net/lib/icmpv6.h>
 #include <net/lib/ipv6.h>
 #include <net/skbuff.h>

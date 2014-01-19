@@ -15,7 +15,7 @@
 
 #include <net/util/macaddr.h>
 #include <net/if_arp.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
 #include <net/if_arp.h>

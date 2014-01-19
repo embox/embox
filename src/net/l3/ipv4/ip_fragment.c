@@ -16,7 +16,6 @@
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>
 #include <net/l3/ipv4/ip.h>
-#include <net/if_ether.h>
 
 #include <mem/objalloc.h>
 #include <kernel/time/timer.h>

@@ -23,6 +23,7 @@
 #include <net/l3/icmpv4.h>
 #include <net/lib/icmpv4.h>
 #include <net/socket/raw.h>
+#include <net/l2/ethernet.h>
 #include <net/if_packet.h>
 #include <net/lib/ipv4.h>
 #include <string.h>

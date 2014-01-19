@@ -24,7 +24,7 @@
 #include <net/netfilter.h>
 #include <kernel/printk.h>
 #include <net/if_packet.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <util/math.h>
 #include <embox/net/pack.h>
 #include <net/lib/ipv4.h>

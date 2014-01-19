@@ -13,7 +13,6 @@
 #include <linux/etherdevice.h>
 #include <net/if.h>
 #include <net/if_arp.h>
-#include <net/if_ether.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <stddef.h>
@@ -95,7 +94,7 @@ const struct net_device_ops ethernet_ops = {
 	.check_mtu = &ethernet_check_mtu
 };
 
-int ethernet_setup(struct net_device *dev) {
+static int ethernet_setup(struct net_device *dev) {
 	static unsigned int eth_id = 0;
 	int ret;
 	char name_fmt[IFNAMSIZ];
@@ -124,4 +123,8 @@ int ethernet_setup(struct net_device *dev) {
 	dev->ops = &ethernet_ops;
 
 	return 0;
+}
+
+struct net_device * etherdev_alloc(size_t priv_size) {
+	return netdev_alloc("eth%u", &ethernet_setup, priv_size);
 }

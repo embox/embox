@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <net/l3/ipv6.h>
+#include <net/l2/ethernet.h>
 #include <net/inetdevice.h>
 #include <net/l0/net_tx.h>
 #include <net/skbuff.h>

@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <embox/net/pack.h>
 #include <errno.h>
+#include <net/l2/ethernet.h>
 #include <net/if_arp.h>
 #include <net/if_packet.h>
 #include <net/inetdevice.h>

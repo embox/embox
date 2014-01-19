@@ -23,7 +23,7 @@
 #include <framework/net/proto/api.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/netfilter.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <net/lib/ipv4.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv);

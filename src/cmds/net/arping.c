@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <net/if_arp.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <net/inetdevice.h>
 #include <string.h>
 

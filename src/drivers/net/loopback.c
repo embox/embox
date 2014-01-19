@@ -12,7 +12,6 @@
 #include <errno.h>
 #include <net/l2/ethernet.h>
 #include <net/if_arp.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>

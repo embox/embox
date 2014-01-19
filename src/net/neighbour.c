@@ -25,6 +25,7 @@
 
 #include <net/l3/arp.h>
 #include <net/l3/ndp.h>
+#include <net/l2/ethernet.h>
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>

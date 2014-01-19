@@ -9,6 +9,7 @@
 #ifndef NET_NETFILTER_H_
 #define NET_NETFILTER_H_
 
+#include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 #include <netinet/in.h>
 #include <util/list.h>

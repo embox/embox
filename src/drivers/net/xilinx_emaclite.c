@@ -13,7 +13,6 @@
 
 
 #include <kernel/irq.h>
-#include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>

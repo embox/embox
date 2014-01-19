@@ -3,5 +3,8 @@ package embox.net.l2
 module ethernet {
 	source "ethernet.c"
 
-	depends embox.lib.LibC
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.lib.LibCStdio
+	depends embox.net.dev
 }

@@ -15,6 +15,7 @@
 #include <net/l4/udp.h>
 #include <net/lib/udp.h>
 #include <net/l3/icmpv4.h>
+#include <net/l2/ethernet.h>
 #include <assert.h>
 #include <errno.h>
 #include <net/socket/inet_sock.h>
