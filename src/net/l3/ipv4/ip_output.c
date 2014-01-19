@@ -254,7 +254,7 @@ static int ip_make(const struct sock *sk,
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 
 	ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
-			proto, src_ip, dst_ip);
+			64, proto, src_ip, dst_ip);
 
 	*out_skb = skb;
 
