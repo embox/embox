@@ -31,6 +31,8 @@
 #include <net/inetdevice.h>
 #include <net/util/checksum.h>
 #include <net/util/macaddr.h>
+#include <poll.h>
+#include <signal.h>
 
 EMBOX_CMD(exec);
 
@@ -158,12 +160,14 @@ static int parse_result(struct packet_in *rx_pack,
 }
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
-	clock_t started, last_sent;
-	int cnt_req, cnt_rep, cnt_err, sk;
+	clock_t started;
+	int cnt_req, cnt_rep, cnt_err, sk, ret;
 	struct sockaddr_in to;
 	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
 	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
 	uint16_t next_seq, last_seq;
+	int timeout;
+	struct pollfd fds;
 
 	if (tx_pack == NULL || rx_pack == NULL) {
 		printf("packet allocate fail");
@@ -191,15 +195,23 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	to.sin_port = 0;
 
 	fcntl(sk, F_SETFL, O_NONBLOCK);
+	signal(SIGINT, SIG_IGN);
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
-	last_sent = 0;
 	started = clock();
 	last_seq = -1;
+	fds.fd = sk;
+	fds.events = POLLIN;
+	timeout = 0;
 	while (last_seq != next_seq || cnt_req < pinfo->count) {
-		if (clock() - last_sent >= pinfo->interval
-				&& cnt_req < pinfo->count) {
+		clock_t before_poll = clock(), after_poll;
+		switch (poll(&fds, 1, timeout)) {
+		case 0:
+			if (cnt_req == pinfo->count) {
+				ret = 0;
+				goto out;
+			}
 			tx_pack->icmp.body.echo_req.seq = htons(++next_seq);
 			tx_pack->icmp.hdr.check = 0;
 			tx_pack->icmp.hdr.check = ptclbsum(tx_pack,
@@ -210,33 +222,42 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 				perror("ping: sendto() failure");
 			}
 			++cnt_req;
-			last_sent = clock();
-		}
-
-		if (clock() - last_sent >= pinfo->timeout) {
+			timeout = cnt_req != pinfo->count ? pinfo->interval
+					: pinfo->timeout;
 			break;
-		}
-
-		/* we don't need to get pad data, only header */
-		if (-1 == recv(sk, rx_pack, sizeof *rx_pack, 0)) {
-			if (errno != EAGAIN) {
+		case 1:
+			if (-1 == recv(sk, rx_pack, sizeof *rx_pack, 0)) {
 				perror("ping: recv() failure");
+				break;
 			}
-			continue;
-		}
-
-		/* try to fetch response */
-		switch (parse_result(rx_pack, tx_pack, official_name,
-					&to, &last_seq, started, pinfo->interval)) {
-		case 1: /* if response was fetched proceed */
-			cnt_rep++;
+			/* try to fetch response */
+			switch (parse_result(rx_pack, tx_pack, official_name,
+						&to, &last_seq, started, pinfo->interval)) {
+			case 1: /* if response was fetched proceed */
+				cnt_rep++;
+				break;
+			case 0: /* else output diagnostics */
+				cnt_err++;
+				break;
+			}
+			after_poll = clock();
+			if (after_poll - before_poll >= timeout) {
+				timeout = pinfo->interval;
+			}
+			else {
+				timeout -= cnt_req != pinfo->count
+						? (after_poll - before_poll) * MSEC_PER_SEC / CLOCKS_PER_SEC
+						: pinfo->timeout;
+			}
 			break;
-		case 0: /* else output diagnostics */
-			cnt_err++;
-			break;
+		case -1:
+			ret = -errno;
+			goto out;
 		}
 	}
 
+	ret = 0;
+out:
 	free(tx_pack);
 	free(rx_pack);
 
@@ -247,7 +268,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 			(uintmax_t)(clock() - started));
 
 	close(sk);
-	return 0;
+	return ret;
 }
 
 static int exec(int argc, char **argv) {
