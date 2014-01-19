@@ -18,7 +18,7 @@ void tty_task_break_check(struct tty *t, char ch) {
 	cc_t *cc = t->termios.c_cc;
 
 	if (TC_L(t, ISIG) && (ch == cc[VINTR]) && t->pgrp) {
-		kill(t->pgrp, 9);
+		kill(t->pgrp, SIGINT);
 		/*TODO normal handling when process groups will be realized*/
 		t->pgrp = 0;
 	}
