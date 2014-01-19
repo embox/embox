@@ -15,10 +15,15 @@ static module isatty {
 	depends embox.kernel.task.api
 }
 
+static module poll_table {
+	source "poll_table.c"
+	depends embox.kernel.task.api
+}
+
 static module select {
 	source "select.c"
-	source "poll_table.c"
 
+	depends poll_table
 	depends embox.kernel.task.api
 }
 
@@ -50,5 +55,6 @@ static module ppty {
 static module poll {
 	source "poll.c"
 
+	depends poll_table
 	depends embox.kernel.task.api
 }
