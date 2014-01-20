@@ -294,6 +294,9 @@ extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t noti
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data);
 
+extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
+		void *buf, size_t len);
+
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
 

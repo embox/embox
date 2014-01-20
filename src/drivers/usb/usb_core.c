@@ -190,6 +190,18 @@ out1:
 	return -ENOMEM;
 }
 
+int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+		void *buf, size_t len) {
+	struct usb_request *req;
+
+	assert(usb_endp_type(endp) == USB_COMM_BULK);
+
+	req = usb_endp_request_alloc(endp, notify_hnd, NULL,
+			usb_endp_dir_token_map(endp), buf, len);
+
+	return usb_endp_request(endp, req);
+}
+
 static inline void usb_dev_set_state(struct usb_dev *dev,
 		enum usb_dev_state state) {
 	dev->state = state;
