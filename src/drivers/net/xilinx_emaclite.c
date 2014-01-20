@@ -174,7 +174,8 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	skb_free(skb);
 
-	return skb->len;
+	//return skb->len;
+	return 0;
 }
 
 /**

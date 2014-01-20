@@ -17,6 +17,9 @@ package embox.cmd.net
 module telnetd {
 	source "telnetd.c"
 
+	depends embox.net.tcp_sock
+	depends embox.net.tcp
+
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
 	depends embox.compat.posix.net.socket
