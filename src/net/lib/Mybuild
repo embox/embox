@@ -1,5 +1,12 @@
 package embox.net.lib
 
+module arp {
+	source "arp.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+}
+
 module bootp {
 	source "bootp.c"
 
