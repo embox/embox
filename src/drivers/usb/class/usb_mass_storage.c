@@ -8,25 +8,11 @@
 
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-
 #include <drivers/usb/usb.h>
 
+#include "usb_mass_storage.h"
+
 EMBOX_UNIT_INIT(usb_mass_init);
-
-#define USB_CLASS_MASS        8
-#define USB_MASS_SUBCL_SCSI   6
-
-#define USB_MASS_PROTO_CBICI  0
-#define USB_MASS_PROTO_CBINCI 1
-#define USB_MASS_PROTO_BBB    80
-
-#define USB_MASS_MAX_DEVS     2
-
-#define USB_REQ_MASS_RESET    0xff
-
-struct usb_mass {
-	char blkin, blkout;
-};
 
 POOL_DEF(usb_mass_classes, struct usb_mass, USB_MASS_MAX_DEVS);
 
@@ -38,12 +24,8 @@ static void usb_class_mass_free(struct usb_class *cls, struct usb_dev *dev, void
 	pool_free(&usb_mass_classes, spec);
 }
 
-static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
-	return dev->class_specific;
-}
-
 static void usb_mass_reset_hnd(struct usb_request *req, void *arg) {
-	/* TODO */
+	usb_scsi_handle(req->endp->dev);
 }
 
 static void usb_class_mass_get_conf_hnd(struct usb_request *req, void *arg) {
