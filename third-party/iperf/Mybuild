@@ -26,10 +26,13 @@ static module libs {
 		AUTHORS
 			Andrey Gazukin
 	''')
-module iperf {
+module iperf extends embox.lib.cxx.app {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 
 	depends libs
+	depends embox.lib.LibC
+	depends embox.lib.cxx.lib
+	depends third_party.lib.libgcc_toolchain
 
 	@Rule(script="true")
 	source  "../../../../iperf/src/iperf-build/src/main.o",
@@ -40,6 +43,7 @@ module iperf {
 			"../../../../iperf/src/iperf-build/src/Launch.o",
 			"../../../../iperf/src/iperf-build/src/List.o",
 			"../../../../iperf/src/iperf-build/src/Locale.o",
+			"../../../../iperf/src/iperf-build/src/Listener.o",
 			"../../../../iperf/src/iperf-build/src/PerfSocket.o",
 			"../../../../iperf/src/iperf-build/src/ReportCSV.o",
 			"../../../../iperf/src/iperf-build/src/ReportDefault.o",

@@ -33,4 +33,6 @@ static inline int atexit(void (*function)(void)) {
 
 #define HAVE_GETTIMEOFDAY
 
+#define rpl_malloc malloc
+
 #endif /* IPERF_EMBOX_COMPAT_H_ */

@@ -23,6 +23,7 @@ $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/gnu_getopt.o:
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/Launch.o: $(IPERF_LIB)
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/List.o: $(IPERF_LIB)
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/Locale.o: $(IPERF_LIB)
+$(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/Listener.o: $(IPERF_LIB)
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/PerfSocket.o: $(IPERF_LIB)
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/ReportCSV.o: $(IPERF_LIB)
 $(OBJ_DIR)/third-party/iperf/../../../../iperf/src/iperf-build/src/ReportDefault.o: $(IPERF_LIB)
