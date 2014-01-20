@@ -77,7 +77,7 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 	assert(emb_iph != NULL);
 
 	if ((msg_sz < IP_MIN_HEADER_SIZE)
-			|| (emb_iph->ihl < 5)
+			|| (IP_HEADER_SIZE(emb_iph) < IP_MIN_HEADER_SIZE)
 			|| (ntohs(emb_iph->tot_len) < IP_HEADER_SIZE(emb_iph))
 			|| (msg_sz < IP_HEADER_SIZE(emb_iph))) {
 		skb_free(skb);

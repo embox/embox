@@ -55,7 +55,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 *   4.  Doesn't have a bogus length
 	 */
 	if (skb->len < dev->hdr_len + IP_MIN_HEADER_SIZE
-			|| iph->ihl < 5
+			|| IP_HEADER_SIZE(iph) < IP_MIN_HEADER_SIZE
 			|| skb->len < dev->hdr_len + IP_HEADER_SIZE(iph)) {
 		DBG(printk("ip_rcv: invalid IPv4 header length\n"));
 		stats->rx_length_errors++;
