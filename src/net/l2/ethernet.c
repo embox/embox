@@ -12,8 +12,8 @@
 #include <errno.h>
 #include <linux/etherdevice.h>
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <net/l2/ethernet.h>
+#include <net/l3/arp.h>
 #include <net/netdevice.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -115,7 +115,7 @@ static int ethernet_setup(struct net_device *dev) {
 	++eth_id;
 
 	memset(&dev->broadcast[0], 0xFF, ETH_ALEN);
-	dev->type = ARPG_HRD_ETHERNET;
+	dev->type = ARP_HRD_ETHERNET;
 	dev->hdr_len = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
 	dev->flags = IFF_BROADCAST | IFF_MULTICAST;

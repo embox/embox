@@ -12,7 +12,6 @@
 #define NET_SKBUFF_H_
 
 /* FIXME include this */
-//#include <net/if_arp.h>
 //#include <net/netdevice.h>
 //#include <net/l3/ipv4/ip.h>
 //#include <net/l3/icmpv4.h>
@@ -32,7 +31,7 @@ struct icmphdr;
 struct icmp6hdr;
 struct iphdr;
 struct ip6hdr;
-struct arpghdr;
+struct arphdr;
 struct ethhdr;
 
 typedef struct sk_buff_head {
@@ -68,7 +67,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	union {
 		struct iphdr *iph;
 		struct ip6hdr *ip6h;
-		struct arpghdr *arpgh;
+		struct arphdr *arph;
 		unsigned char *raw;
 	} nh;
 
@@ -190,7 +189,6 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
  */
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
-#include <net/if_arp.h>
 #include <net/netdevice.h>
 
 #endif /* NET_SKBUFF_H_ */

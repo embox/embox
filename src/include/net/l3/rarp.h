@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definitions for the RARP protocol.
+ * @brief A Reverse Address Resolution Protocol
  * @details RFC 903
  *
  * @date 29.09.12
@@ -18,12 +18,11 @@
 struct net_device;
 
 /**
- * Create and send an arp packet.
+ * RARP Operation Codes
  */
-extern int rarp_send(unsigned short oper, unsigned short paddr_space,
-		unsigned char haddr_len, unsigned char paddr_len,
-		const void *source_haddr, const void *source_paddr,
-		const void *dest_haddr, const void *dest_paddr,
-		const void *target_haddr, struct net_device *dev);
+enum rarp_op {
+	RARP_OP_REQUEST = 3, /* RARP Request */
+	RARP_OP_REPLY   = 4  /* RARP Reply */
+};
 
 #endif /* NET_L3_RARP_H_ */

@@ -17,7 +17,7 @@
 #include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>
-#include <net/if_arp.h>
+#include <net/l3/arp.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>

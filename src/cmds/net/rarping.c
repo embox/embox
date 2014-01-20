@@ -17,10 +17,13 @@
 #include <arpa/inet.h>
 
 #include <net/util/macaddr.h>
-#include <net/l3/rarp.h>
-#include <net/if_arp.h>
+#include <net/l0/net_tx.h>
 #include <net/l2/ethernet.h>
+#include <net/l3/arp.h>
+#include <net/l3/rarp.h>
+#include <net/lib/arp.h>
 #include <net/neighbour.h>
+#include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/l3/ipv4/ip.h>
 #include <string.h>
@@ -33,6 +36,38 @@ EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: rarping [-I if] [-c cnt] hwaddr\n");
+}
+
+static int send_request(struct net_device *dev, uint16_t pro,
+		uint8_t pln, const void *tha) {
+	int ret;
+	struct sk_buff *skb;
+	struct net_header_info hdr_info;
+
+	skb = skb_alloc(dev->hdr_len
+			+ ARP_CALC_HEADER_SIZE(dev->addr_len, pln));
+	if (skb == NULL) {
+		return -ENOMEM;
+	}
+
+	skb->dev = dev;
+	skb->nh.raw = skb->mac.raw + dev->hdr_len;
+
+	hdr_info.type = ETH_P_RARP;
+	hdr_info.src_hw = &dev->dev_addr[0];
+	hdr_info.dst_hw = &dev->broadcast[0];
+	assert(dev->ops != NULL);
+	assert(dev->ops->build_hdr != NULL);
+	ret = dev->ops->build_hdr(skb, &hdr_info);
+	if (ret != 0) {
+		skb_free(skb);
+		return ret;
+	}
+
+	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
+			RARP_OP_REQUEST, &dev->dev_addr[0], NULL, tha, NULL);
+
+	return net_tx(skb, NULL);
 }
 
 static int exec(int argc, char **argv) {
@@ -97,10 +132,10 @@ static int exec(int argc, char **argv) {
 		&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_clean(in_dev->dev);
-		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, NULL, NULL,
-			&tha[0], NULL, NULL, in_dev->dev);
+		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,
+				&tha[0]);
 		usleep(DEFAULT_INTERVAL);
-		ret = neighbour_get_paddr(ARPG_HRD_ETHERNET, &tha[0], in_dev->dev,
+		ret = neighbour_get_paddr(ARP_HRD_ETHERNET, &tha[0], in_dev->dev,
 				ETH_P_IP, pln, &tpa[0]);
 		if (ret == 0) {
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));

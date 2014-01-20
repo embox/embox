@@ -11,7 +11,7 @@
 #include <embox/unit.h>
 #include <errno.h>
 #include <net/l2/ethernet.h>
-#include <net/if_arp.h>
+#include <net/l3/arp.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
@@ -57,7 +57,7 @@ static int loopback_setup(struct net_device *dev) {
 	dev->mtu      = (16 * 1024) + 20 + 20 + 12;
 	dev->hdr_len  = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
-	dev->type     = ARPG_HRD_LOOPBACK;
+	dev->type     = ARP_HRD_LOOPBACK;
 	dev->flags    = IFF_LOOPBACK | IFF_RUNNING;
 	dev->drv_ops  = &loopback_ops;
 	dev->ops      = &ethernet_ops;

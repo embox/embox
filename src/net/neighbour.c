@@ -113,9 +113,8 @@ static int nbr_send_request(struct neighbour *nbr) {
 	if (nbr->ptype == ETH_P_IP) {
 		in_dev = inetdev_get_by_dev(nbr->dev);
 		assert(in_dev != NULL);
-		return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
-				nbr->plen, NULL, &in_dev->ifa_address, NULL, &nbr->paddr[0],
-				NULL, nbr->dev);
+		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
+				&in_dev->ifa_address, &nbr->paddr[0]);
 	}
 	else {
 		assert(nbr->ptype == ETH_P_IPV6);
