@@ -16,6 +16,11 @@
 #include <net/skbuff.h>
 
 /**
+ * Prototypes
+ */
+struct sk_buff;
+
+/**
  * ICMPv6 Types
  */
 enum icmp6_type {

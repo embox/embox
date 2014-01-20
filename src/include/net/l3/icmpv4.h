@@ -18,6 +18,11 @@
 #include <net/skbuff.h>
 
 /**
+ * Prototypes
+ */
+struct sk_buff;
+
+/**
  * ICMPv4 Types
  */
 enum icmp_type {
