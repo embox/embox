@@ -1,6 +1,6 @@
 diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
 --- qpidc-0.24/CMakeLists.txt	2013-06-27 07:41:13.000000000 +0400
-+++ qpid/CMakeLists.txt	2013-10-29 16:51:28.394895145 +0400
++++ qpid/CMakeLists.txt	2014-01-21 13:16:29.449370641 +0400
 @@ -60,8 +60,8 @@
    set (CPACK_PACKAGE_EXECUTABLES "")
  endif (WIN32)
@@ -27,9 +27,32 @@ diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
 +#add_subdirectory(examples)
  
  include (CPack)
+diff -aur qpidc-0.24/include/qpid/framing/ProtocolVersion.h qpid/include/qpid/framing/ProtocolVersion.h
+--- qpidc-0.24/include/qpid/framing/ProtocolVersion.h	2012-10-19 21:15:32.000000000 +0400
++++ qpid/include/qpid/framing/ProtocolVersion.h	2014-01-21 15:54:00.120241866 +0400
+@@ -41,6 +41,8 @@
+ public:
+     explicit ProtocolVersion(uint8_t _major=0, uint8_t _minor=0, uint8_t _protocol=0)
+         : major_(_major), minor_(_minor), protocol_(_protocol) {}
++    ProtocolVersion(const ProtocolVersion& other)
++		: major_(other.major_), minor_(other.minor_), protocol_(other.protocol_) {}
+ 
+     QPID_COMMON_INLINE_EXTERN uint8_t getMajor() const { return major_; }
+     QPID_COMMON_INLINE_EXTERN void setMajor(uint8_t major) { major_ = major; }
+diff -aur qpidc-0.24/include/qpid/Msg.h qpid/include/qpid/Msg.h
+--- qpidc-0.24/include/qpid/Msg.h	2011-08-30 20:21:00.000000000 +0400
++++ qpid/include/qpid/Msg.h	2014-01-21 13:16:31.305410670 +0400
+@@ -24,6 +24,7 @@
+ 
+ #include <sstream>
+ #include <iostream>
++#include <string>
+ #include "qpid/types/ImportExport.h"
+ 
+ namespace qpid {
 diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
 --- qpidc-0.24/src/CMakeLists.txt	2013-07-13 13:15:49.000000000 +0400
-+++ qpid/src/CMakeLists.txt	2013-10-19 01:35:12.123273436 +0400
++++ qpid/src/CMakeLists.txt	2014-01-21 13:16:29.673375473 +0400
 @@ -271,7 +271,7 @@
     # -Wunreachable-code -Wpadded -Winline
     # -Wshadow - warns about boost headers.
@@ -195,7 +218,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  
 diff -aur qpidc-0.24/src/qmf/ConsoleEvent.cpp qpid/src/qmf/ConsoleEvent.cpp
 --- qpidc-0.24/src/qmf/ConsoleEvent.cpp	2011-02-04 11:22:30.000000000 +0300
-+++ qpid/src/qmf/ConsoleEvent.cpp	2013-10-14 16:23:49.682246719 +0400
++++ qpid/src/qmf/ConsoleEvent.cpp	2014-01-21 13:16:31.181407994 +0400
 @@ -51,7 +51,7 @@
  SchemaId ConsoleEventImpl::getSchemaId(uint32_t i) const
  {
@@ -216,7 +239,7 @@ diff -aur qpidc-0.24/src/qmf/ConsoleEvent.cpp qpid/src/qmf/ConsoleEvent.cpp
      }
 diff -aur qpidc-0.24/src/qmf/Expression.cpp qpid/src/qmf/Expression.cpp
 --- qpidc-0.24/src/qmf/Expression.cpp	2010-09-22 01:48:41.000000000 +0400
-+++ qpid/src/qmf/Expression.cpp	2013-10-14 16:24:36.599541763 +0400
++++ qpid/src/qmf/Expression.cpp	2014-01-21 13:16:31.245409374 +0400
 @@ -130,7 +130,7 @@
  
  bool Expression::evaluate(const Variant::Map& data) const
@@ -228,7 +251,7 @@ diff -aur qpidc-0.24/src/qmf/Expression.cpp qpid/src/qmf/Expression.cpp
      case LOGICAL_ID:
 diff -aur qpidc-0.24/src/qmf/Schema.cpp qpid/src/qmf/Schema.cpp
 --- qpidc-0.24/src/qmf/Schema.cpp	2011-01-10 21:30:39.000000000 +0300
-+++ qpid/src/qmf/Schema.cpp	2013-10-14 16:26:19.153608074 +0400
++++ qpid/src/qmf/Schema.cpp	2014-01-21 13:16:31.273409979 +0400
 @@ -111,10 +111,10 @@
      if (schemaId.getType() == SCHEMA_TYPE_EVENT)
          map["_default_severity"] = uint32_t(defaultSeverity);
@@ -318,7 +341,7 @@ diff -aur qpidc-0.24/src/qmf/Schema.cpp qpid/src/qmf/Schema.cpp
      throw IndexOutOfRange();
 diff -aur qpidc-0.24/src/qmf/SchemaMethod.cpp qpid/src/qmf/SchemaMethod.cpp
 --- qpidc-0.24/src/qmf/SchemaMethod.cpp	2011-01-19 16:57:07.000000000 +0300
-+++ qpid/src/qmf/SchemaMethod.cpp	2013-10-14 16:27:04.686964427 +0400
++++ qpid/src/qmf/SchemaMethod.cpp	2014-01-21 13:16:31.273409979 +0400
 @@ -102,7 +102,7 @@
      if (!desc.empty())
          map["_desc"] = desc;
@@ -357,7 +380,7 @@ diff -aur qpidc-0.24/src/qmf/SchemaMethod.cpp qpid/src/qmf/SchemaMethod.cpp
  
 diff -aur qpidc-0.24/src/qpid/agent/ManagementAgentImpl.cpp qpid/src/qpid/agent/ManagementAgentImpl.cpp
 --- qpidc-0.24/src/qpid/agent/ManagementAgentImpl.cpp	2012-12-01 22:24:48.000000000 +0400
-+++ qpid/src/qpid/agent/ManagementAgentImpl.cpp	2013-10-14 16:22:25.203101706 +0400
++++ qpid/src/qpid/agent/ManagementAgentImpl.cpp	2014-01-21 13:16:31.285410238 +0400
 @@ -746,7 +746,7 @@
                  if (s_iter != schemaIdMap.end() && s_iter->second.getType() == qpid::types::VAR_STRING)
                      packageName = s_iter->second.asString();
@@ -387,9 +410,33 @@ diff -aur qpidc-0.24/src/qpid/agent/ManagementAgentImpl.cpp qpid/src/qpid/agent/
               iter != deleteList.rend();
               iter++)
              managementObjects.erase(*iter);
+diff -aur qpidc-0.24/src/qpid/store/CMakeLists.txt qpid/src/qpid/store/CMakeLists.txt
+--- qpidc-0.24/src/qpid/store/CMakeLists.txt	2012-12-03 21:10:40.000000000 +0400
++++ qpid/src/qpid/store/CMakeLists.txt	2014-01-21 13:16:31.297410496 +0400
+@@ -31,7 +31,7 @@
+ set (store_SOURCES
+      MessageStorePlugin.cpp
+     )
+-add_library (store MODULE ${store_SOURCES})
++add_library (store STATIC ${store_SOURCES})
+ target_link_libraries (store qpidbroker ${Boost_PROGRAM_OPTIONS_LIBRARY})
+ if (CMAKE_COMPILER_IS_GNUCXX)
+   set (GCC_CATCH_UNDEFINED "-Wl,--no-undefined")
+diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BSDSocket.cpp
+--- qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp	2013-01-14 23:08:37.000000000 +0400
++++ qpid/src/qpid/sys/posix/BSDSocket.cpp	2014-01-21 13:16:31.305410670 +0400
+@@ -134,7 +134,7 @@
+     if (socket != -1) {
+         int flag = 1;
+         int result = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag));
+-        QPID_POSIX_CHECK(result);
++        //QPID_POSIX_CHECK(result);
+     }
+ }
+ 
 diff -aur qpidc-0.24/src/qpid/sys/posix/Time.cpp qpid/src/qpid/sys/posix/Time.cpp
 --- qpidc-0.24/src/qpid/sys/posix/Time.cpp	2013-04-23 23:55:50.000000000 +0400
-+++ qpid/src/qpid/sys/posix/Time.cpp	2013-10-14 15:53:53.622012376 +0400
++++ qpid/src/qpid/sys/posix/Time.cpp	2014-01-21 13:16:31.285410238 +0400
 @@ -30,6 +30,7 @@
  #include <unistd.h>
  #include <iomanip>
@@ -400,7 +447,7 @@ diff -aur qpidc-0.24/src/qpid/sys/posix/Time.cpp qpid/src/qpid/sys/posix/Time.cp
  int64_t max_abstime() { return std::numeric_limits<int64_t>::max(); }
 diff -aur qpidc-0.24/src/qpid/sys/unordered_map.h qpid/src/qpid/sys/unordered_map.h
 --- qpidc-0.24/src/qpid/sys/unordered_map.h	2012-06-18 03:57:36.000000000 +0400
-+++ qpid/src/qpid/sys/unordered_map.h	2013-10-14 16:04:06.638716423 +0400
++++ qpid/src/qpid/sys/unordered_map.h	2014-01-21 13:16:31.293410409 +0400
 @@ -21,7 +21,7 @@
  
  // unordered_map include path is platform specific
@@ -410,38 +457,3 @@ diff -aur qpidc-0.24/src/qpid/sys/unordered_map.h qpid/src/qpid/sys/unordered_ma
  #  include <unordered_map>
  #elif defined(__SUNPRO_CC)
  #  include <boost/tr1/unordered_map.hpp>
-diff -aur qpidc-0.24/src/qpid/store/CMakeLists.txt qpid/src/qpid/store/CMakeLists.txt
---- qpidc-0.24/src/qpid/store/CMakeLists.txt	2012-12-03 21:10:40.000000000 +0400
-+++ qpid/src/qpid/store/CMakeLists.txt	2013-10-14 16:32:16.147036385 +0400
-@@ -31,7 +31,7 @@
- set (store_SOURCES
-      MessageStorePlugin.cpp
-     )
--add_library (store MODULE ${store_SOURCES})
-+add_library (store STATIC ${store_SOURCES})
- target_link_libraries (store qpidbroker ${Boost_PROGRAM_OPTIONS_LIBRARY})
- if (CMAKE_COMPILER_IS_GNUCXX)
-   set (GCC_CATCH_UNDEFINED "-Wl,--no-undefined")
-diff -aur qpidc-0.24/include/qpid/Msg.h qpid/include/qpid/Msg.h
---- qpidc-0.24/include/qpid/Msg.h	2011-08-30 20:21:00.000000000 +0400
-+++ qpid/include/qpid/Msg.h	2013-10-16 12:05:19.145850088 +0400
-@@ -24,6 +24,7 @@
- 
- #include <sstream>
- #include <iostream>
-+#include <string>
- #include "qpid/types/ImportExport.h"
- 
- namespace qpid {
-diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BSDSocket.cpp
---- qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp	2013-01-14 23:08:37.000000000 +0400
-+++ qpid/src/qpid/sys/posix/BSDSocket.cpp	2013-11-08 14:20:19.806038724 +0400
-@@ -134,7 +134,7 @@
-     if (socket != -1) {
-         int flag = 1;
-         int result = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag));
--        QPID_POSIX_CHECK(result);
-+        //QPID_POSIX_CHECK(result);
-     }
- }
- 
