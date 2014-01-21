@@ -34,6 +34,7 @@ int thread_cancel_set_state(int state, int *oldstate) {
 	struct thread *t;
 
 	t = thread_self();
+
 	if (oldstate != NULL) {
 		*oldstate = t->cleanups.state;
 	}
@@ -46,7 +47,9 @@ int thread_cancel_set_type(int type, int *oldtype) {
 
 	t = thread_self();
 
-	*oldtype = t->cleanups.type;
+	if (oldtype != NULL) {
+		*oldtype = t->cleanups.type;
+	}
 	t->cleanups.type = type;
 
 	return ENOERR;
