@@ -142,7 +142,7 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 			}
 			(void)neighbour_add(ETH_P_IPV6, &ip6_hdr(skb)->saddr,
 					sizeof ip6_hdr(skb)->saddr, in_dev->dev,
-					ARPG_HRD_ETHERNET, ops->ll_addr,
+					ARP_HRD_ETHERNET, ops->ll_addr,
 					ops->hdr.len * 8 - sizeof ops->hdr, 0);
 			break;
 		}
@@ -208,7 +208,7 @@ static int ndp_hnd_neighbor_advert(const struct icmp6hdr *icmp6h,
 			}
 			ret = neighbour_add(ETH_P_IPV6, &nbr_advert->target,
 					sizeof nbr_advert->target, skb->dev,
-					ARPG_HRD_ETHERNET, ops->ll_addr,
+					ARP_HRD_ETHERNET, ops->ll_addr,
 					ops->hdr.len * 8 - sizeof ops->hdr, 0);
 			if (ret != 0) {
 				skb_free(skb);
