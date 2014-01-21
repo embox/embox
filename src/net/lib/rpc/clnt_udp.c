@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/time.h>
 
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/auth.h>
@@ -23,9 +24,7 @@
 #include <net/lib/rpc/pmap.h>
 
 
-
 #include <util/sys_log.h>
-#include <util/time/timeval.h>
 
 #include <kernel/time/ktime.h>
 
