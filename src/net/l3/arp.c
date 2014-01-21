@@ -43,7 +43,7 @@ static int arp_xmit(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
-		DBG(printk("arp_xmit: aro doesn't supported by device %s\n",
+		DBG(printk("arp_xmit: arp doesn't supported by device %s\n",
 					&skb->dev->name[0]));
 		skb_free(skb);
 		return 0; /* error: arp doesn't supported by device */
@@ -69,9 +69,9 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
-		if (skb) skb_free(skb); /* TODO */
 		DBG(printk("arp_send: hdr size %zu is too big (max %zu)\n",
 					size, min(dev->mtu, skb_max_size())));
+		if (skb) skb_free(skb); /* TODO */
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
@@ -162,7 +162,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 	}
 
 	DBG({
-		printk("arp_hnd_request: send reply to ");
+		printk("arp_hnd_request: send reply with ");
 		if (arph->ar_pro == ntohs(ETH_P_IP)) {
 			struct in_addr in;
 			assert(arph->ar_pln == sizeof in);
@@ -203,7 +203,7 @@ static int arp_hnd_reply(const struct arphdr *arph,
 	}
 
 	DBG({
-		printk("arp_hnd_reply: receive reply from ");
+		printk("arp_hnd_reply: receive reply with ");
 		if (arph->ar_pro == ntohs(ETH_P_IP)) {
 			struct in_addr in;
 			assert(arph->ar_pln == sizeof in);
