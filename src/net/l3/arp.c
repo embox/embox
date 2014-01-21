@@ -29,10 +29,22 @@
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv);
 
+#define ARP_DEBUG 0
+#if ARP_DEBUG
+#include <arpa/inet.h>
+#include <kernel/printk.h>
+#include <net/util/macaddr.h>
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
+
 static int arp_xmit(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
+		DBG(printk("arp_xmit: aro doesn't supported by device %s\n",
+					&skb->dev->name[0]));
 		skb_free(skb);
 		return 0; /* error: arp doesn't supported by device */
 	}
@@ -58,11 +70,14 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
 		if (skb) skb_free(skb); /* TODO */
+		DBG(printk("arp_send: hdr size %zu is too big (max %zu)\n",
+					size, min(dev->mtu, skb_max_size())));
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
 	skb = skb_realloc(size, skb);
 	if (skb == NULL) {
+		DBG(printk("arp_send: no memory\n"));
 		return -ENOMEM; /* error: no memory */
 	}
 
@@ -78,8 +93,9 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 	assert(dev->ops->build_hdr != NULL);
 	ret = dev->ops->build_hdr(skb, &hdr_info);
 	if (ret != 0) {
+		DBG(printk("arp_send: can't build device header\n"));
 		skb_free(skb);
-		return ret;
+		return ret; /* error: can't build device specific header */
 	}
 
 	/* build ARP header */
@@ -113,16 +129,20 @@ static int arp_hnd_request(const struct arphdr *arph,
 	/* check protocol capabilities */
 	if ((arph->ar_pro != htons(ETH_P_IP))
 			|| (arph->ar_pln != sizeof in_dev->ifa_address)) {
+		DBG(printk("arp_hnd_request: only IPv4 is supported\n"));
 		skb_free(skb);
 		return 0; /* FIXME error: only IPv4 is supported */
 	}
 
 	/* update translation table */
-	(void)arp_update_neighbour(arph, arpb, dev);
+	if (0 != arp_update_neighbour(arph, arpb, dev)) {
+		DBG(printk("arp_hnd_request: can't update neighbour\n"));
+	}
 
 	/* check recipient */
 	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address,
 				arph->ar_pln)) {
+		DBG(printk("arp_hnd_request: only IPv4 is supported\n"));
 		skb_free(skb);
 		return 0; /* error: not for us */
 	}
@@ -136,9 +156,32 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	/* declone sk_buff */
 	if (NULL == skb_declone(skb)) {
+		DBG(printk("arp_hnd_request: no memory\n"));
 		skb_free(skb);
 		return -ENOMEM;
 	}
+
+	DBG({
+		printk("arp_hnd_request: send reply to ");
+		if (arph->ar_pro == ntohs(ETH_P_IP)) {
+			struct in_addr in;
+			assert(arph->ar_pln == sizeof in);
+			memcpy(&in, dst_paddr, sizeof in);
+			printk("%s", inet_ntoa(in));
+		}
+		else {
+			printk("unknown(%x)", htons(arph->ar_pro));
+		}
+		if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+			assert(arph->ar_hln == ETH_ALEN);
+			printk("[" MACADDR_FMT "]",
+				MACADDR_FMT_ARG(dst_haddr));
+		}
+		else {
+			printk("[unknown(%x)]", htons(arph->ar_hrd));
+		}
+		printk("\n");
+	});
 
 	/* send reply */
 	return arp_send(skb, dev, ntohs(arph->ar_pro), arph->ar_pln,
@@ -153,11 +196,38 @@ static int arp_hnd_reply(const struct arphdr *arph,
 
 	/* update translation table */
 	ret = arp_update_neighbour(arph, arpb, dev);
+	if (ret != 0) {
+		DBG(printk("arp_hnd_reply: can't update neighbour\n"));
+		skb_free(skb);
+		return ret;
+	}
+
+	DBG({
+		printk("arp_hnd_reply: receive reply from ");
+		if (arph->ar_pro == ntohs(ETH_P_IP)) {
+			struct in_addr in;
+			assert(arph->ar_pln == sizeof in);
+			memcpy(&in, arpb->ar_spa, sizeof in);
+			printk("%s", inet_ntoa(in));
+		}
+		else {
+			printk("unknown(%x)", htons(arph->ar_pro));
+		}
+		if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+			assert(arph->ar_hln == ETH_ALEN);
+			printk("[" MACADDR_FMT "]",
+				MACADDR_FMT_ARG(arpb->ar_sha));
+		}
+		else {
+			printk("[unknown(%x)]", htons(arph->ar_hrd));
+		}
+		printk("\n");
+	});
 
 	/* free sk_buff */
 	skb_free(skb);
 
-	return ret;
+	return 0;
 }
 
 static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
@@ -169,6 +239,8 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	/* check device flags */
 	if (dev->flags & IFF_NOARP) {
+		DBG(printk("arp_rcv: aro doesn't supported by device %s\n",
+					&dev->name[0]));
 		return 0; /* error: arp doesn't supported by device */
 	}
 
@@ -176,6 +248,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	/* check hardware and protocol address lengths */
 	if (dev->hdr_len + ARP_HEADER_SIZE(arph) > skb->len) {
+		DBG(printk("arp_rcv: bad packet length\n"));
 		skb_free(skb);
 		return 0; /* error: bad packet */
 	}
@@ -184,6 +257,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	/* check device capabilities */
 	if ((arph->ar_hrd != htons(dev->type))
 			|| (arph->ar_hln != dev->addr_len)) {
+		DBG(printk("arp_rcv: invalid hardware type or address length\n"));
 		skb_free(skb);
 		return 0; /* error: invalid hardware address info */
 	}
@@ -195,7 +269,8 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	switch (arph->ar_op) {
 	default:
 		skb_free(skb);
-		return 0; /* error: bad operation type */
+		DBG(printk("arp_rcv: bad operation code\n"));
+		return 0; /* error: bad operation code */
 	case htons(ARP_OP_REQUEST):
 		/* handling request */
 		return arp_hnd_request(arph, &arpb, skb, dev);
