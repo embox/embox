@@ -9,6 +9,8 @@
 #ifndef USB_CLASS_USB_MASS_STORAGE_H_
 #define USB_CLASS_USB_MASS_STORAGE_H_
 
+#include <drivers/usb/usb.h>
+
 #define USB_CLASS_MASS        8
 #define USB_MASS_SUBCL_SCSI   6
 
@@ -20,9 +22,10 @@
 
 #define USB_REQ_MASS_RESET    0xff
 
-#include <drivers/usb/usb.h>
-
 #define USB_CBW_CB_MAXLEN 16
+
+#include "scsi.h"
+
 struct usb_mscbw {
 	uint32_t cbw_signature;
 	uint32_t cbw_tag;
@@ -38,18 +41,6 @@ struct usb_mscsw {
 	uint32_t csw_tag;
 	uint32_t csw_data_resude;
 	uint8_t  csw_status;
-} __attribute__((packed));
-
-struct scsi_cmd_inquiry {
-	uint8_t  sinq_opcode;
-	uint8_t  sinq_flags;
-	uint8_t  sinq_page_code;
-	uint16_t sinq_alloc_length;
-	uint8_t  sinq_control;
-} __attribute__((packed));
-
-struct scsi_data_inquiry {
-	uint8_t data_buf[36];
 } __attribute__((packed));
 
 struct usb_mass_request_ctx {
@@ -70,16 +61,20 @@ struct usb_mass_request_ctx {
 };
 
 struct usb_mass {
+	struct scsi_dev scsi_dev;
+	struct usb_dev *usb_dev;
+
 	char blkin, blkout;
-
-	struct scsi_data_inquiry data_inquiry;
-
 	struct usb_mass_request_ctx req_ctx;
 };
 
 static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
 	return dev->class_specific;
 }
+
+extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
+		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
+	       	usb_request_notify_hnd_t notify_hnd);
 
 extern void usb_scsi_handle(struct usb_dev *dev);
 

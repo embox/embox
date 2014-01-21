@@ -14,4 +14,10 @@ module mass_storage {
 	source "usb_scsi.c"
 
 	depends embox.driver.usb.core
+
+	depends scsi
+}
+
+module scsi {
+	source "scsi.c"
 }

@@ -17,7 +17,12 @@ EMBOX_UNIT_INIT(usb_mass_init);
 POOL_DEF(usb_mass_classes, struct usb_mass, USB_MASS_MAX_DEVS);
 
 static void *usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {
-	return pool_alloc(&usb_mass_classes);
+	struct usb_mass *mass = pool_alloc(&usb_mass_classes);
+
+	if (mass) {
+		mass->usb_dev = dev;
+	}
+	return mass;
 }
 
 static void usb_class_mass_free(struct usb_class *cls, struct usb_dev *dev, void *spec) {
