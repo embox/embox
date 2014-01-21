@@ -101,7 +101,7 @@ static inline int timerisset(struct timeval *tvp) {
 		|| (((a)->tv_sec == (b)->tv_sec) \
 			&& ((a)->tv_usec CMP (b)->tv_usec)))
 
-time/timeval
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SYS_TIME_H_ */
