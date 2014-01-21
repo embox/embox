@@ -155,6 +155,10 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 		return -EINVAL;
 	}
 
+	if (NULL == skb_declone(skb)) {
+		return -ENOMEM;
+	}
+
 	if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
 		switch_tx_buff();
 		if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
