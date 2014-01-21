@@ -16,6 +16,8 @@
 #include <poll.h>
 
 
+#include <util/time/timeval.h>
+
 #include <net/l4/tcp.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

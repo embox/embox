@@ -5,7 +5,7 @@
  * @author  Anton Kozlov
  * @date    07.02.2013
  */
-
+#include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <utmp.h>

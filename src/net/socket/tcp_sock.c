@@ -11,6 +11,7 @@
 #include <string.h>
 #include <poll.h>
 #include <util/math.h>
+#include <util/time/timeval.h>
 
 #include <net/l4/tcp.h>
 #include <net/lib/tcp.h>
