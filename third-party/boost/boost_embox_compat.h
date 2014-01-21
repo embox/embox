@@ -75,8 +75,6 @@ extern int utime(const char *filename, const struct utimbuf *times);
 int strerror_r(int errnum, char *buf, size_t buflen);
 
 #include <time.h>
-struct tm *localtime_r(const time_t *timep, struct tm *result);
-
 #include <pthread.h>
 
 
