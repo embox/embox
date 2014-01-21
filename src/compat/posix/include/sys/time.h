@@ -59,42 +59,14 @@ extern int gettimeofday(struct timeval *ts, struct timezone *tz);
 /**
  * timeval operations
  */
-#include <assert.h>
-#include <sys/time.h>
-#include <time.h>
 
-static inline void timeradd(struct timeval *a, struct timeval *b,
-		struct timeval *result) {
-	assert((a != NULL) && (b != NULL) && (result != NULL));
-	result->tv_sec = a->tv_sec + b->tv_sec;
-	result->tv_usec = a->tv_usec + b->tv_usec;
-	if (result->tv_usec >= USEC_PER_SEC) {
-		++result->tv_sec;
-		result->tv_usec -= USEC_PER_SEC;
-	}
-}
+extern void timeradd(struct timeval *a, struct timeval *b, struct timeval *r);
 
-static inline void timersub(struct timeval *a, struct timeval *b,
-		struct timeval *result) {
-	assert((a != NULL) && (b != NULL) && (result != NULL));
-	result->tv_sec = a->tv_sec - b->tv_sec;
-	result->tv_usec = a->tv_usec - b->tv_usec;
-	if (result->tv_usec < 0) {
-		--result->tv_sec;
-		result->tv_usec += USEC_PER_SEC;
-	}
-}
+extern void timersub(struct timeval *a, struct timeval *b, struct timeval *r);
 
-static inline void timerclear(struct timeval *tvp) {
-	assert(tvp != NULL);
-	tvp->tv_sec = 0;
-	tvp->tv_usec = 0;
-}
+extern void timerclear(struct timeval *tvp);
 
-static inline int timerisset(struct timeval *tvp) {
-	assert(tvp != NULL);
-	return (tvp->tv_sec != 0) || (tvp->tv_usec != 0);
-}
+extern int timerisset(struct timeval *tvp);
 
 #define timercmp(a, b, CMP) \
 	(((a)->tv_sec CMP (b)->tv_sec) \
