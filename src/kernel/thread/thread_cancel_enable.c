@@ -33,7 +33,9 @@ int thread_cancel_set_state(int state, int *oldstate) {
 	struct thread *t;
 
 	t = thread_self();
-	*oldstate = t->cleanups.state;
+	if (old_state != NULL) {
+		*oldstate = t->cleanups.state;
+	}
 
 	return ENOERR;
 }
