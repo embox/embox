@@ -12,32 +12,28 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-struct scsi_request;
+struct scsi_dev;
 
-typedef void (*scsi_request_hnd_t)(struct scsi_request *req);
-
-enum scsi_state {
-	SCSI_ATTACHED,
-	SCSI_QUIRED,
-	SCSI_CAPACITED,
+struct scsi_dev_state {
+	void (*sds_enter)(struct scsi_dev *sdev);
+	void (*sds_input)(struct scsi_dev *sdev, int req_status);
+	void (*sds_leave)(struct scsi_dev *sdev);
 };
 
-#define USB_SCSI_SCRATCHPAD_LEN 252
+#define USB_SCSI_SCRATCHPAD_LEN 36
 struct scsi_dev {
-	char inerror;
-	enum scsi_state state;
-	uint8_t scsi_data_scratchpad[USB_SCSI_SCRATCHPAD_LEN];
+	const struct scsi_dev_state *state;
+	const struct scsi_dev_state *holded_state;
 
-	scsi_request_hnd_t req_hnd;
+	uint8_t scsi_data_scratchpad[USB_SCSI_SCRATCHPAD_LEN];
 };
 
-struct scsi_request {
-	enum scsi_req_status {
-		SCSI_REQST_PASS,
-		SCSI_REQST_FAIL,
-	} req_status;
-	void *buf;
-	size_t len;
+struct scsi_cmd {
+	uint8_t scmd_opcode;
+	size_t  scmd_len;
+	void    (*scmd_fixup)(void *buf, struct scsi_cmd *cmd);
+	void    *scmd_obuf;
+	size_t  scmd_olen;
 };
 
 #define SCSI_CMD_OPCODE_INQUIRY       0x12
@@ -48,10 +44,6 @@ struct scsi_cmd_inquiry {
 	uint16_t sinq_alloc_length;
 	uint8_t  sinq_control;
 } __attribute__((packed));
-
-extern int scsi_cmd_inquiry_prepare(void *cmd_buf, size_t cmd_buf_len,
-		size_t alloc_len);
-
 
 #define SCSI_INQIRY_DEVTYPE_MASK  0x1f
 #define SCSI_INQIRY_DEVTYPE_BLK   0x00
@@ -84,8 +76,6 @@ struct scsi_cmd_cap10 {
 	uint8_t  sc10_control;
 } __attribute__((packed));
 
-extern int scsi_cmd_read_capacity10_prepare(void *cmd_buf, size_t cmd_buf_len);
-
 struct scsi_data_cap10 {
 	uint32_t dc10_lba;
 	uint32_t dc10_blklen;
@@ -100,9 +90,6 @@ struct scsi_cmd_sense {
 	uint8_t  ssns_alloc_length;
 	uint8_t  ssns_control;
 } __attribute__((packed));
-
-extern int scsi_cmd_request_sense_prepare(void *cmd_buf, size_t cmd_buf_len,
-		size_t alloc_len);
 
 #define SCSI_DATA_SENSE_KEY_MASK 0xf
 struct scsi_data_sense {
@@ -119,7 +106,6 @@ struct scsi_data_sense {
 	uint8_t  dsns_key_specific2;
 	uint8_t  dsns_key_specific3;
 } __attribute__((packed));
-
 
 int scsi_dev_init(struct scsi_dev *dev);
 void scsi_dev_attached(struct scsi_dev *dev);

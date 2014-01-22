@@ -34,166 +34,180 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 			usb_scsi_notify);
 }
 
-int scsi_cmd_inquiry_prepare(void *cmd_buf, size_t cmd_buf_len,
-		size_t alloc_len) {
-	struct scsi_cmd_inquiry *cmd_inquiry;
+#define SCSI_CMD_LEN 16
+static int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
+	uint8_t scmd[SCSI_CMD_LEN];
 
-	if (cmd_buf_len < sizeof(struct scsi_cmd_inquiry)) {
-		return -ERANGE;
+	assert(cmd->scmd_len <= SCSI_CMD_LEN);
+	memset(scmd + 1, 0, cmd->scmd_len - 1);
+	scmd[0] = cmd->scmd_opcode;
+
+	if (cmd->scmd_fixup) {
+		cmd->scmd_fixup(scmd, cmd);
 	}
 
-	cmd_inquiry = cmd_buf;
-	cmd_inquiry->sinq_opcode = SCSI_CMD_OPCODE_INQUIRY;
-	cmd_inquiry->sinq_flags = 0;
-	cmd_inquiry->sinq_page_code = 0;
-	cmd_inquiry->sinq_alloc_length = htobe16(alloc_len);
-	cmd_inquiry->sinq_control = 0;
-
-	return sizeof(struct scsi_cmd_inquiry);
+	return scsi_cmd(dev, scmd, cmd->scmd_len, cmd->scmd_obuf,
+			cmd->scmd_olen);
 }
 
-int scsi_cmd_read_capacity10_prepare(void *cmd_buf, size_t cmd_buf_len) {
-	struct scsi_cmd_cap10 *cmd_cap10;
-
-	if (cmd_buf_len < sizeof(struct scsi_cmd_cap10)) {
-		return -ERANGE;
-	}
-
-	cmd_cap10 = cmd_buf;
-	memset(cmd_cap10, 0, sizeof(struct scsi_cmd_cap10));
-	cmd_cap10->sc10_opcode = SCSI_CMD_OPCODE_READ_CAP10;
-
-	return sizeof(struct scsi_cmd_cap10);
+static void scsi_fixup_inquiry(void *buf, struct scsi_cmd *cmd) {
+	struct scsi_cmd_inquiry *cmd_inquiry = buf;
+	cmd_inquiry->sinq_alloc_length = htobe16(cmd->scmd_olen);
 }
 
-int scsi_cmd_request_sense_prepare(void *cmd_buf, size_t cmd_buf_len,
-		size_t alloc_len) {
-	struct scsi_cmd_sense *cmd_sense;
-
-	if (cmd_buf_len < sizeof(struct scsi_cmd_sense)) {
-		return -ERANGE;
-	}
-
-	cmd_sense = cmd_buf;
-	memset(cmd_sense, 0, sizeof(struct scsi_cmd_sense));
-	cmd_sense->ssns_opcode = SCSI_CMD_OPCODE_REQ_SENSE;
-	cmd_sense->ssns_alloc_length = alloc_len;
-
-	return sizeof(struct scsi_cmd_sense);
+static void scsi_fixup_read_sense(void *buf, struct scsi_cmd *cmd) {
+	struct scsi_cmd_sense *cmd_sense = buf;
+	cmd_sense->ssns_alloc_length = cmd->scmd_olen;
 }
 
-#if 0
-static void usb_scsi_read_capacity_done(struct usb_request *req, void *arg);
-static void usb_scsi_inquire_done(struct usb_request *req, void *arg);
+static const struct scsi_cmd scsi_cmd_template_inquiry = {
+	.scmd_opcode = SCSI_CMD_OPCODE_INQUIRY,
+	.scmd_len = sizeof(struct scsi_cmd_inquiry),
+	.scmd_fixup = scsi_fixup_inquiry,
+};
 
-static void usb_scsi_inquire_done(struct usb_request *req, void *arg) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_mass *mass = usb2massdata(dev);
-	struct usb_mass_request_ctx *req_ctx;
+static const struct scsi_cmd scsi_cmd_template_cap10 = {
+	.scmd_opcode = SCSI_CMD_OPCODE_READ_CAP10,
+	.scmd_len = sizeof(struct scsi_cmd_cap10),
+};
+
+static const struct scsi_cmd scsi_cmd_template_sense = {
+	.scmd_opcode = SCSI_CMD_OPCODE_REQ_SENSE,
+	.scmd_len = sizeof(struct scsi_cmd_sense),
+	.scmd_fixup = scsi_fixup_read_sense,
+};
+
+int scsi_dev_init(struct scsi_dev *dev) {
+	return 0;
+}
+
+static inline void scsi_state_transit(struct scsi_dev *dev,
+		const struct scsi_dev_state *to) {
+	const struct scsi_dev_state *from = dev->state;
+
+	if (from && from->sds_leave)
+		from->sds_leave(dev);
+
+	if (to->sds_enter)
+		to->sds_enter(dev);
+
+	dev->state = to;
+}
+
+static const struct scsi_dev_state scsi_state_inquiry;
+static const struct scsi_dev_state scsi_state_capacity;
+static const struct scsi_dev_state scsi_state_sense;
+static const struct scsi_dev_state scsi_state_sense;
+
+static void scsi_final_enter(struct scsi_dev *dev) {
+
+}
+
+static const struct scsi_dev_state scsi_state_final = {
+	.sds_enter = scsi_final_enter,
+};
+
+static void scsi_dev_recover(struct scsi_dev *dev);
+
+static void scsi_inquiry_enter(struct scsi_dev *dev) {
+	struct scsi_cmd cmd = scsi_cmd_template_inquiry;
+	cmd.scmd_obuf = dev->scsi_data_scratchpad;
+	cmd.scmd_olen = sizeof(struct scsi_data_inquiry);
+
+	scsi_do_cmd(dev, &cmd);
+}
+
+static void scsi_inquiry_input(struct scsi_dev *dev, int res) {
 	struct scsi_data_inquiry *data;
-	uint8_t scsi_cmd[SCSI_CMD_LEN];
-	int scsi_cmd_len, res;
 
-	req_ctx = &mass->req_ctx;
-	data = req_ctx->buf;
+	assert(res == 0);
 
+	data = (struct scsi_data_inquiry *) dev->scsi_data_scratchpad;
 	if ((data->dinq_devtype & SCSI_INQIRY_DEVTYPE_MASK)
 			!= SCSI_INQIRY_DEVTYPE_BLK) {
 		return;
 	}
 
-	assert(res >= 0);
-}
-#endif
 
-#define SCSI_CMD_LEN 16
-static int scsi_do_inquiry(struct scsi_dev *dev) {
-	uint8_t scmd[SCSI_CMD_LEN];
-	int scsi_cmd_len;
-
-	static_assert(USB_SCSI_SCRATCHPAD_LEN >= sizeof(struct scsi_data_inquiry));
-
-	scsi_cmd_len = scsi_cmd_inquiry_prepare(scmd, SCSI_CMD_LEN,
-			sizeof(struct scsi_data_inquiry));
-	if (scsi_cmd_len < 0) {
-		return scsi_cmd_len;
-	}
-
-	return scsi_cmd(dev, scmd, scsi_cmd_len, dev->scsi_data_scratchpad,
-			sizeof(struct scsi_data_inquiry));
+	scsi_state_transit(dev, &scsi_state_capacity);
 }
 
-static int scsi_do_read_cap(struct scsi_dev *dev) {
-	uint8_t scmd[SCSI_CMD_LEN];
-	int scsi_cmd_len;
-
-	scsi_cmd_len = scsi_cmd_read_capacity10_prepare(scmd, SCSI_CMD_LEN);
-	if (scsi_cmd_len < 0) {
-		return scsi_cmd_len;
-	}
-
-	return scsi_cmd(dev, scmd, scsi_cmd_len, dev->scsi_data_scratchpad,
-			sizeof(struct scsi_data_cap10));
-}
-
-struct scsi_mstate {
-	int (*action)(struct scsi_dev *dev);
-} scsi_mstates[] = {
-	[SCSI_ATTACHED]  = { scsi_do_inquiry, },
-	[SCSI_QUIRED]    = { scsi_do_read_cap, },
-	[SCSI_CAPACITED] = { NULL },
+static const struct scsi_dev_state scsi_state_inquiry = {
+	.sds_enter = scsi_inquiry_enter,
+	.sds_input = scsi_inquiry_input,
 };
 
-int scsi_dev_init(struct scsi_dev *dev) {
+static void scsi_capacity_enter(struct scsi_dev *dev) {
+	struct scsi_cmd cmd = scsi_cmd_template_cap10;
+	cmd.scmd_obuf = dev->scsi_data_scratchpad;
+	cmd.scmd_olen = sizeof(struct scsi_data_cap10);
 
-	return 0;
+	scsi_do_cmd(dev, &cmd);
 }
 
-static void scsi_machine_do(struct scsi_dev *dev) {
-	int res;
-	struct scsi_mstate *mstate;
-	uint8_t scmd[SCSI_CMD_LEN];
+static void scsi_capacity_input(struct scsi_dev *dev, int res) {
 
-	if (dev->inerror) {
-		res = scsi_cmd(dev, scmd,
-				scsi_cmd_request_sense_prepare(scmd, SCSI_CMD_LEN,
-					sizeof(struct scsi_data_sense)),
-				dev->scsi_data_scratchpad, sizeof(struct scsi_data_sense));
-
-	} else {
-		mstate = &scsi_mstates[dev->state];
-		assert(mstate->action);
-		res = mstate->action(dev);
+	if (res < 0) {
+		scsi_dev_recover(dev);
+		return;
 	}
 
-	assert(res >= 0);
+	scsi_state_transit(dev, &scsi_state_final);
+}
+
+static const struct scsi_dev_state scsi_state_capacity = {
+	.sds_enter = scsi_capacity_enter,
+	.sds_input = scsi_capacity_input,
+};
+
+static void scsi_sense_enter(struct scsi_dev *dev) {
+	struct scsi_cmd cmd = scsi_cmd_template_sense;
+	cmd.scmd_obuf = dev->scsi_data_scratchpad;
+	cmd.scmd_olen = sizeof(struct scsi_data_sense);
+
+	scsi_do_cmd(dev, &cmd);
+}
+
+static void scsi_sense_input(struct scsi_dev *dev, int res) {
+	struct scsi_data_sense *data;
+	uint8_t acode;
+
+	assert(res == 0);
+
+	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
+	acode = data->dsns_additional_code;
+	assert(acode == 0x28 || acode == 0x29, "Don't know how to recover "
+			"unknown error %x", acode);
+
+	/* 0x28 and 0x29 are just required attention, seems that can go on */
+
+	scsi_state_transit(dev, dev->holded_state);
+	dev->holded_state = NULL;
+}
+
+static const struct scsi_dev_state scsi_state_sense = {
+	.sds_enter = scsi_sense_enter,
+	.sds_input = scsi_sense_input,
+};
+
+static void scsi_dev_recover(struct scsi_dev *dev) {
+
+	assert(dev->holded_state == NULL, "Can't recover recovering procedure");
+
+	dev->holded_state = dev->state;
+
+	scsi_state_transit(dev, &scsi_state_sense);
 }
 
 void scsi_dev_attached(struct scsi_dev *dev) {
 
-	dev->state = SCSI_ATTACHED;
-	dev->inerror = 0;
-	scsi_machine_do(dev);
+	dev->state = NULL;
+	scsi_state_transit(dev, &scsi_state_inquiry);
 }
 
 void scsi_request_done(struct scsi_dev *dev, int res) {
-	static int was_error = 0;
 
-	if (res < 0) {
-		dev->inerror = 1;
-		was_error = 1;
-	} else {
-		if (!was_error) {
-			dev->state++;
-		} else {
-			struct scsi_data_sense *sense =
-				(struct scsi_data_sense *) dev->scsi_data_scratchpad;
-
-			sense = sense;
-
-			while(1);
-		}
+	if (dev->state && dev->state->sds_input) {
+		dev->state->sds_input(dev, res);
 	}
-
-	scsi_machine_do(dev);
 }
