@@ -9,7 +9,10 @@
 
 #include <assert.h>
 #include <embox/net/pack.h>
+#include <err.h>
 #include <net/if_packet.h>
+#include <net/l0/net_crypt.h>
+#include <net/l0/net_rx.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
@@ -24,6 +27,12 @@
 int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;
 	const struct net_pack *npack;
+
+	/* decrypt packet */
+	skb = net_decrypt(skb);
+	if (err(skb)) {
+		return err(skb); /* error: something wrong :( */
+	}
 
 	/* check L2 header size */
 	assert(skb != NULL);

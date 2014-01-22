@@ -14,6 +14,7 @@ module net_entry extends entry_api {
 module net_rx {
 	source "net_rx.c"
 
+	depends net_crypt_api
 	depends skbuff
 	depends embox.compat.linux.LibLinux
 	depends embox.framework.LibFrameworkNet
@@ -23,6 +24,15 @@ module net_rx {
 module net_tx {
 	source "net_tx.c"
 
+	depends net_crypt_api
 	depends skbuff
 	depends embox.lib.LibC
+}
+
+@DefaultImpl(net_no_crypt)
+abstract module net_crypt_api {
+}
+
+module net_no_crypt extends net_crypt_api {
+	source "net_no_crypt.c"
 }

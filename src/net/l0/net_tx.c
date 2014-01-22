@@ -8,7 +8,10 @@
  */
 
 #include <assert.h>
+#include <err.h>
 #include <errno.h>
+#include <net/l0/net_crypt.h>
+#include <net/l0/net_tx.h>
 #include <net/neighbour.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -95,6 +98,11 @@ int net_tx(struct sk_buff *skb,
 
 	DBG(printk("net_tx: skb %p[%zu] type %#.6hx\n",
 				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
+
+	skb = net_encrypt(skb);
+	if (err(skb)) {
+		return err(skb);
+	}
 
 	assert(dev->drv_ops != NULL);
 	assert(dev->drv_ops->xmit != NULL);
