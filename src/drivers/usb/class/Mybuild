@@ -19,5 +19,6 @@ module mass_storage {
 }
 
 module scsi {
-	source "scsi.c"
+	source "scsi.c",
+	       "scsi_disc.c"
 }

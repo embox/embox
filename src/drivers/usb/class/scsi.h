@@ -12,6 +12,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include <kernel/sched/waitq.h>
+#include <kernel/thread/sync/mutex.h>
+
 struct scsi_dev;
 
 struct scsi_dev_state {
@@ -26,17 +29,28 @@ struct scsi_dev {
 	const struct scsi_dev_state *holded_state;
 
 	uint8_t scsi_data_scratchpad[USB_SCSI_SCRATCHPAD_LEN];
+
+	unsigned int blk_size;
+	unsigned int blk_n;
+
+	struct mutex m;
+	struct waitq wq;
+	char in_cmd;
+	char cmd_complete;
 };
 
 struct scsi_cmd {
 	uint8_t scmd_opcode;
 	size_t  scmd_len;
-	void    (*scmd_fixup)(void *buf, struct scsi_cmd *cmd);
+	void    (*scmd_fixup)(void *buf, struct scsi_dev *dev,
+			struct scsi_cmd *cmd);
 	void    *scmd_obuf;
 	size_t  scmd_olen;
+
+	size_t  scmd_lba;
 };
 
-#define SCSI_CMD_OPCODE_INQUIRY       0x12
+#define SCSI_CMD_OPCODE_INQUIRY 0x12
 struct scsi_cmd_inquiry {
 	uint8_t  sinq_opcode;
 	uint8_t  sinq_flags;
@@ -65,7 +79,7 @@ struct scsi_data_inquiry {
 	uint8_t dinq_rev[SCSI_DATA_INQUIRY_REV_LEN];
 } __attribute__((packed));
 
-#define SCSI_CMD_OPCODE_READ_CAP10    0x25
+#define SCSI_CMD_OPCODE_CAP10 0x25
 struct scsi_cmd_cap10 {
 	uint8_t  sc10_opcode;
 	uint8_t  sc10_obsolete;
@@ -81,7 +95,7 @@ struct scsi_data_cap10 {
 	uint32_t dc10_blklen;
 } __attribute__((packed));
 
-#define SCSI_CMD_OPCODE_REQ_SENSE     0x03
+#define SCSI_CMD_OPCODE_SENSE 0x03
 struct scsi_cmd_sense {
 	uint8_t  ssns_opcode;
 	uint8_t  ssns_desc;
@@ -107,9 +121,32 @@ struct scsi_data_sense {
 	uint8_t  dsns_key_specific3;
 } __attribute__((packed));
 
+#define SCSI_CMD_OPCODE_READ10 0x28
+struct scsi_cmd_read10 {
+	uint8_t  sr10_opcode;
+	uint8_t  sr10_flags;
+	uint32_t sr10_lba;
+	uint8_t  sr10_grpnum;
+	uint16_t sr10_transfer_len;
+	uint8_t  sr10_control;
+} __attribute__((packed));
+
+extern const struct scsi_cmd scsi_cmd_template_inquiry;
+extern const struct scsi_cmd scsi_cmd_template_cap10;
+extern const struct scsi_cmd scsi_cmd_template_sense;
+extern const struct scsi_cmd scsi_cmd_template_read10;
+
 int scsi_dev_init(struct scsi_dev *dev);
 void scsi_dev_attached(struct scsi_dev *dev);
 void scsi_request_done(struct scsi_dev *dev, int res);
+
+int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
+
+void scsi_dev_recover(struct scsi_dev *dev);
+void scsi_state_transit(struct scsi_dev *dev,
+		const struct scsi_dev_state *to);
+
+extern void scsi_disc_found(struct scsi_dev *dev);
 
 #endif /* SCSI_H_ */
 

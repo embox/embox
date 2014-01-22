@@ -35,7 +35,7 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 }
 
 #define SCSI_CMD_LEN 16
-static int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
+int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 	uint8_t scmd[SCSI_CMD_LEN];
 
 	assert(cmd->scmd_len <= SCSI_CMD_LEN);
@@ -43,45 +43,64 @@ static int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 	scmd[0] = cmd->scmd_opcode;
 
 	if (cmd->scmd_fixup) {
-		cmd->scmd_fixup(scmd, cmd);
+		cmd->scmd_fixup(scmd, dev, cmd);
 	}
 
 	return scsi_cmd(dev, scmd, cmd->scmd_len, cmd->scmd_obuf,
 			cmd->scmd_olen);
 }
 
-static void scsi_fixup_inquiry(void *buf, struct scsi_cmd *cmd) {
+static void scsi_fixup_inquiry(void *buf, struct scsi_dev *dev,
+		struct scsi_cmd *cmd) {
 	struct scsi_cmd_inquiry *cmd_inquiry = buf;
 	cmd_inquiry->sinq_alloc_length = htobe16(cmd->scmd_olen);
 }
 
-static void scsi_fixup_read_sense(void *buf, struct scsi_cmd *cmd) {
-	struct scsi_cmd_sense *cmd_sense = buf;
-	cmd_sense->ssns_alloc_length = cmd->scmd_olen;
-}
-
-static const struct scsi_cmd scsi_cmd_template_inquiry = {
+const struct scsi_cmd scsi_cmd_template_inquiry = {
 	.scmd_opcode = SCSI_CMD_OPCODE_INQUIRY,
 	.scmd_len = sizeof(struct scsi_cmd_inquiry),
 	.scmd_fixup = scsi_fixup_inquiry,
 };
 
-static const struct scsi_cmd scsi_cmd_template_cap10 = {
-	.scmd_opcode = SCSI_CMD_OPCODE_READ_CAP10,
+const struct scsi_cmd scsi_cmd_template_cap10 = {
+	.scmd_opcode = SCSI_CMD_OPCODE_CAP10,
 	.scmd_len = sizeof(struct scsi_cmd_cap10),
 };
 
-static const struct scsi_cmd scsi_cmd_template_sense = {
-	.scmd_opcode = SCSI_CMD_OPCODE_REQ_SENSE,
+static void scsi_fixup_read_sense(void *buf, struct scsi_dev *dev,
+		struct scsi_cmd *cmd) {
+	struct scsi_cmd_sense *cmd_sense = buf;
+	cmd_sense->ssns_alloc_length = cmd->scmd_olen;
+}
+
+const struct scsi_cmd scsi_cmd_template_sense = {
+	.scmd_opcode = SCSI_CMD_OPCODE_SENSE,
 	.scmd_len = sizeof(struct scsi_cmd_sense),
 	.scmd_fixup = scsi_fixup_read_sense,
+};
+
+static void scsi_fixup_read10(void *buf, struct scsi_dev *dev,
+		struct scsi_cmd *cmd) {
+	struct scsi_cmd_read10 *rcmd = buf;
+	const unsigned int blk_size = dev->blk_size;
+
+	assert(blk_size > 0);
+
+	rcmd->sr10_lba = htobe32(cmd->scmd_lba);
+	rcmd->sr10_transfer_len = htobe16(cmd->scmd_olen / blk_size);
+}
+
+const struct scsi_cmd scsi_cmd_template_read10 = {
+	.scmd_opcode = SCSI_CMD_OPCODE_READ10,
+	.scmd_len = sizeof(struct scsi_cmd_read10),
+	.scmd_fixup = scsi_fixup_read10,
 };
 
 int scsi_dev_init(struct scsi_dev *dev) {
 	return 0;
 }
 
-static inline void scsi_state_transit(struct scsi_dev *dev,
+void scsi_state_transit(struct scsi_dev *dev,
 		const struct scsi_dev_state *to) {
 	const struct scsi_dev_state *from = dev->state;
 
@@ -97,17 +116,6 @@ static inline void scsi_state_transit(struct scsi_dev *dev,
 static const struct scsi_dev_state scsi_state_inquiry;
 static const struct scsi_dev_state scsi_state_capacity;
 static const struct scsi_dev_state scsi_state_sense;
-static const struct scsi_dev_state scsi_state_sense;
-
-static void scsi_final_enter(struct scsi_dev *dev) {
-
-}
-
-static const struct scsi_dev_state scsi_state_final = {
-	.sds_enter = scsi_final_enter,
-};
-
-static void scsi_dev_recover(struct scsi_dev *dev);
 
 static void scsi_inquiry_enter(struct scsi_dev *dev) {
 	struct scsi_cmd cmd = scsi_cmd_template_inquiry;
@@ -146,13 +154,18 @@ static void scsi_capacity_enter(struct scsi_dev *dev) {
 }
 
 static void scsi_capacity_input(struct scsi_dev *dev, int res) {
+	struct scsi_data_cap10 *data;
 
 	if (res < 0) {
 		scsi_dev_recover(dev);
 		return;
 	}
 
-	scsi_state_transit(dev, &scsi_state_final);
+	data = (struct scsi_data_cap10 *) dev->scsi_data_scratchpad;
+	dev->blk_size = be32toh(data->dc10_blklen);
+	dev->blk_n = be32toh(data->dc10_lba);
+
+	scsi_disc_found(dev);
 }
 
 static const struct scsi_dev_state scsi_state_capacity = {
@@ -190,7 +203,7 @@ static const struct scsi_dev_state scsi_state_sense = {
 	.sds_input = scsi_sense_input,
 };
 
-static void scsi_dev_recover(struct scsi_dev *dev) {
+void scsi_dev_recover(struct scsi_dev *dev) {
 
 	assert(dev->holded_state == NULL, "Can't recover recovering procedure");
 
