@@ -9,7 +9,6 @@
 
 #include <assert.h>
 #include <embox/net/pack.h>
-#include <err.h>
 #include <net/if_packet.h>
 #include <net/l0/net_crypt.h>
 #include <net/l0/net_rx.h>
@@ -30,8 +29,8 @@ int net_rx(struct sk_buff *skb) {
 
 	/* decrypt packet */
 	skb = net_decrypt(skb);
-	if (err(skb)) {
-		return err(skb); /* error: something wrong :( */
+	if (skb == NULL) {
+		return 0; /* error: something wrong :( */
 	}
 
 	/* check L2 header size */

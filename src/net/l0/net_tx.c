@@ -8,7 +8,6 @@
  */
 
 #include <assert.h>
-#include <err.h>
 #include <errno.h>
 #include <net/l0/net_crypt.h>
 #include <net/l0/net_tx.h>
@@ -100,8 +99,8 @@ int net_tx(struct sk_buff *skb,
 				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
 
 	skb = net_encrypt(skb);
-	if (err(skb)) {
-		return err(skb);
+	if (skb == NULL) {
+		return 0;
 	}
 
 	assert(dev->drv_ops != NULL);
