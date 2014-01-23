@@ -68,6 +68,12 @@ void usb_hub_free(struct usb_hub *hub) {
 	pool_free(&usb_hubs, hub);
 }
 
+static void usb_dev_free(struct usb_dev *dev) {
+
+	index_free(&dev->hcd->enumerator, dev->idx);
+	pool_free(&usb_devs, dev);
+}
+
 struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	struct usb_dev *dev = pool_alloc(&usb_devs);
 	size_t idx;
@@ -96,10 +102,15 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	return dev;
 }
 
-void usb_dev_free(struct usb_dev *dev) {
+void usb_dev_use_dec(struct usb_dev *dev) {
+	if (!--dev->use_count) {
+		usb_dev_free(dev);
+	}
+}
 
-	index_free(&dev->hcd->enumerator, dev->idx);
-	pool_free(&usb_devs, dev);
+void usb_dev_use_inc(struct usb_dev *dev) {
+	++dev->use_count;
+
 }
 
 struct usb_endp *usb_endp_alloc(struct usb_dev *dev,

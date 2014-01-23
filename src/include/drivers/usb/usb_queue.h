@@ -32,6 +32,8 @@ static inline void usb_queue_link_init(struct usb_queue_link *l) {
 	dlist_head_init(&l->l);
 }
 
+struct usb_queue_link *usb_queue_last(struct usb_queue *q);
+
 struct usb_queue_link *usb_queue_peek(struct usb_queue *q);
 
 /**

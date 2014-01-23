@@ -23,7 +23,7 @@ static int usb_dev_register(struct usb_dev *dev) {
 	return 0;
 }
 
-static __attribute__((used)) void usb_dev_deregister(struct usb_dev *dev) {
+static void usb_dev_unregister(struct usb_dev *dev) {
 
 	if (dlist_empty(&dev->dev_link)) {
 		return;
@@ -79,7 +79,16 @@ void usb_dev_configured(struct usb_dev *dev) {
 void usb_dev_disconnect(struct usb_hub_port *port) {
 	struct usb_dev *dev = port->dev;
 
-	usb_port_device_unbind(port, dev);
+	usb_dev_use_inc(dev);
 
-	assert(0);
+	usb_port_device_unbind(port, dev);
+	usb_dev_request_delete(dev);
+
+	usb_class_release(dev);
+
+	usb_driver_release(dev);
+
+	usb_dev_unregister(dev);
+
+	usb_dev_use_dec(dev);
 }

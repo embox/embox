@@ -145,7 +145,7 @@ int usb_class_handle(struct usb_dev *dev) {
 	return cls->get_conf(cls, dev);
 }
 
-void usb_class_unhandle(struct usb_dev *dev) {
+void usb_class_release(struct usb_dev *dev) {
 	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
 
 	if (cls->class_free) {

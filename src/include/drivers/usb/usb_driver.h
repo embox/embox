@@ -37,5 +37,6 @@ extern int usb_driver_open_by_node(struct node *n, struct usb_dev_desc **ddesc);
 extern int usb_driver_register(struct usb_driver *drv);
 
 extern void usb_driver_handle(struct usb_dev *dev);
+extern void usb_driver_release(struct usb_dev *dev);
 
 #endif /* DRIVERS_USB_DRIVER_H_ */

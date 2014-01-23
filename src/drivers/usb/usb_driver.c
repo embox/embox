@@ -131,3 +131,16 @@ void usb_driver_handle(struct usb_dev *dev) {
 	}
 }
 
+void usb_driver_release(struct usb_dev *dev) {
+	struct usb_driver *drv;
+
+	drv = dev->drv;
+	if (!drv) {
+		return;
+	}
+
+	drv->disconnect(dev, dev->drv_data);
+
+	/*char_dev_unregister(...)*/
+
+}

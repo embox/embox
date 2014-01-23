@@ -99,6 +99,8 @@ static int usb_port_if_disconnect(struct usb_hub_port *port) {
 	if (port->changed & USB_HUB_PORT_CONNECT) {
 		if (!(port->status & USB_HUB_PORT_CONNECT)) {
 			usb_port_set_state(port, usb_port_st_idle);
+			usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR,
+				USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
 			return 1;
 		}
 	}
@@ -110,6 +112,10 @@ static void usb_port_st_idle(struct usb_hub_port *port) {
 
 	if ((port->changed & USB_HUB_PORT_CONNECT) &&
 		(port->status & USB_HUB_PORT_CONNECT)) {
+
+			usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
+				USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
+
 			usb_port_set_state(port, usb_port_st_connected);
 			usb_port_post(port, 100);
 	}

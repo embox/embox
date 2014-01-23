@@ -113,6 +113,8 @@ int usb_hid_found(struct usb_dev *dev) {
 	struct usb_class_hid *hid = usb2hiddata(dev);
 	struct usb_hid_indev *hindev;
 
+	usb_dev_use_inc(dev);
+
 	hindev = pool_alloc(&usb_hid_indevs);
 	if (!hindev) {
 		return -ENOMEM;

@@ -94,6 +94,8 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 void usb_scsi_handle(struct usb_dev *dev) {
 	struct usb_mass *mass = usb2massdata(dev);
 
+	usb_dev_use_inc(dev);
+
 	scsi_dev_init(&mass->scsi_dev);
 	scsi_dev_attached(&mass->scsi_dev);
 }

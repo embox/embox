@@ -48,6 +48,10 @@ static void usb_request_build(struct usb_request *req, uint8_t req_type,
 
 }
 
+static inline struct usb_request *usb_link2req(struct usb_queue_link *ul) {
+	return member_cast_out(ul, struct usb_request, req_link);
+}
+
 static int usb_endp_do_req(struct usb_endp *endp) {
 	struct usb_queue_link *l;
 	struct usb_request *req;
@@ -58,7 +62,7 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 		return 0;
 	}
 
-	req = member_cast_out(l, struct usb_request, req_link);
+	req = usb_link2req(l);
 
 	hcd = req->endp->dev->hcd;
 	hcd->ops->request(req);
@@ -68,6 +72,11 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 
 int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	bool endp_busy;
+
+	if (endp->dev->state == USB_DEV_DETACHED) {
+		usb_request_free(req);
+		return -ENODEV;
+	}
 
 	endp_busy = usb_queue_add(&endp->req_queue, &req->req_link);
 	if (!endp_busy) {
@@ -102,6 +111,35 @@ void usb_request_complete(struct usb_request *req) {
 	usb_request_remove(req);
 }
 
+static void usb_endp_cancel(struct usb_endp *endp) {
+	struct usb_queue_link *ul, *first;
+
+	first = usb_queue_peek(&endp->req_queue);
+
+	for (ul = usb_queue_last(&endp->req_queue);
+			ul != first;
+			ul = usb_queue_last(&endp->req_queue)) {
+		struct usb_request *req = usb_link2req(ul);
+
+		usb_request_remove(req);
+	}
+}
+
+static inline void usb_dev_set_state(struct usb_dev *dev,
+		enum usb_dev_state state) {
+	dev->state = state;
+}
+
+void usb_dev_request_delete(struct usb_dev *dev) {
+	int i;
+
+	usb_dev_set_state(dev, USB_DEV_DETACHED);
+
+	for (i = 0; i < dev->endp_n; i++) {
+		usb_endp_cancel(dev->endpoints[i]);
+	}
+}
+
 static unsigned short usb_endp_dir_token_map(struct usb_endp *endp) {
 	switch (endp->direction) {
 	case USB_DIRECTION_IN:
@@ -131,6 +169,7 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		uint16_t count, void *data) {
 	struct usb_request *rstp, *rdt = NULL, *rstt;
 	unsigned short dtoken, dntoken;
+	int ret;
 
 	if (req_type & USB_DEV_REQ_TYPE_RD) {
 		dtoken = USB_TOKEN_IN;
@@ -161,14 +200,22 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		goto out2;
 	}
 
-	usb_endp_request(endp, rstp);
-	if (count) {
-		usb_endp_request(endp, rdt);
+	if ((ret = usb_endp_request(endp, rstp))) {
+		return ret;
 	}
-	usb_endp_request(endp, rstt);
+	if (count) {
+		if ((ret = usb_endp_request(endp, rdt))) {
+			usb_request_remove(rstp);
+			return ret;
+		}
+	}
+	if ((ret = usb_endp_request(endp, rstt))) {
+		usb_request_remove(rdt);
+		usb_request_remove(rstp);
+		return ret;
+	}
 
 	return 0;
-
 out2:
 	if (count) {
 		usb_request_free(rdt);
@@ -189,11 +236,6 @@ int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 			usb_endp_dir_token_map(endp), buf, len);
 
 	return usb_endp_request(endp, req);
-}
-
-static inline void usb_dev_set_state(struct usb_dev *dev,
-		enum usb_dev_state state) {
-	dev->state = state;
 }
 
 static int usb_dev_configuration_check(struct usb_dev *dev) {
@@ -329,38 +371,12 @@ void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
 	hcd->ops->rhub_ctrl(port, request, value);
 }
 
-static void usb_port_state_changed(struct usb_hub_port *port,
-		usb_hub_state_t state, char val) {
-
-	if (state & USB_HUB_PORT_CONNECT) {
-
-		usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
-			USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
-
-		usb_port_notify(port);
-	}
-
-#if 0
-	if (state & USB_HUB_PORT_RESET) {
-		usb_dev_notify_port(port->dev);
-	}
-#endif
-}
-
 int usb_rh_nofity(struct usb_hcd *hcd) {
 	struct usb_hub *rh = hcd->root_hub;
 
 	for (int i = 0; i < rh->port_n; i++) {
-		unsigned short port_ch = rh->ports[i].changed;
-		if (port_ch & USB_HUB_PORT_CONNECT) {
-			usb_port_state_changed(&rh->ports[i],
-					USB_HUB_PORT_CONNECT,
-					rh->ports[i].status & USB_HUB_PORT_CONNECT ? 1 : 0);
-		}
-
-		if (port_ch & USB_HUB_PORT_RESET) {
-			usb_port_state_changed(&rh->ports[i],
-					USB_HUB_PORT_RESET, 1);
+		if (rh->ports[i].changed) {
+			usb_port_notify(&rh->ports[i]);
 		}
 	}
 

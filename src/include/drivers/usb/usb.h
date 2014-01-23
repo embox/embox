@@ -88,6 +88,7 @@ enum usb_dev_state {
 	USB_DEV_ADDRESS,
 	USB_DEV_CONFIGURED,
 	USB_DEV_SUSPENDED,
+	USB_DEV_DETACHED,
 };
 
 enum usb_request_status {
@@ -191,6 +192,7 @@ struct usb_desc_getconf_data {
 
 struct usb_dev {
 	enum usb_dev_state state;
+	unsigned int use_count;
 
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
@@ -306,6 +308,7 @@ extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 		void *buf, size_t len);
 
 extern void usb_dev_addr_assign(struct usb_dev *dev);
+extern void usb_dev_request_delete(struct usb_dev *dev);
 
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
@@ -332,7 +335,8 @@ extern struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n)
 extern void usb_hub_free(struct usb_hub *hub);
 
 extern struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd);
-extern void usb_dev_free(struct usb_dev *endp);
+extern void usb_dev_use_dec(struct usb_dev *dev);
+extern void usb_dev_use_inc(struct usb_dev *dev);
 
 extern struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 		const struct usb_desc_endpoint *endp_desc);
@@ -369,7 +373,7 @@ static inline usb_class_t usb_dev_class(struct usb_dev *dev) {
 
 extern int usb_class_supported(struct usb_dev *dev);
 extern int usb_class_handle(struct usb_dev *dev);
-extern void usb_class_unhandle(struct usb_dev *dev);
+extern void usb_class_release(struct usb_dev *dev);
 
 extern int usb_dev_generic_fill_iface(struct usb_dev *dev, struct usb_desc_interface *idesc);
 extern int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]);
