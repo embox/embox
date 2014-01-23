@@ -69,6 +69,7 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_HUB_PORT_OVERRUN            0x0008
 #define USB_HUB_PORT_RESET              0x0010
 #define USB_HUB_PORT_POWER              0x0020
+#define USB_HUB_PORT_TIMEOUT            0x0040
 
 enum usb_hub_request {
 	USB_HUB_REQ_PORT_SET,
@@ -131,6 +132,9 @@ struct usb_hcd_ops {
 	int (*request)(struct usb_request *req);
 };
 
+extern void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
+		unsigned short value);
+
 struct usb_endp {
 	struct usb_dev *dev;
 	unsigned char address;
@@ -187,15 +191,11 @@ struct usb_desc_getconf_data {
 
 struct usb_dev {
 	enum usb_dev_state state;
-	usb_dev_notify_hnd_t notify_hnd;
 
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
 				   after `addressed' is idx */
-	struct usb_queue_link reset_link;
 	struct dlist_head dev_link;
-
-	struct sys_timer post_timer;
 
 	struct usb_hcd *hcd;
 	struct usb_hub_port *port;
@@ -221,11 +221,19 @@ static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
 	return &dev->dev_desc;
 }
 
+typedef void (*usb_hub_port_state_t)(struct usb_hub_port *port);
+
 struct usb_hub_port {
 	struct usb_hub *hub;
+	usb_hub_port_state_t state;
+	struct sys_timer post_timer;
+
 	int idx;
 	usb_hub_state_t status;
 	usb_hub_state_t changed;
+
+	struct usb_queue_link reset_link;
+
 	struct usb_dev *dev;
 };
 
@@ -297,6 +305,8 @@ extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t noti
 extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 		void *buf, size_t len);
 
+extern void usb_dev_addr_assign(struct usb_dev *dev);
+
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
 
@@ -304,6 +314,16 @@ extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
 extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 extern void usb_dev_configured(struct usb_dev *dev);
 
+extern void usb_port_reset_done(struct usb_hub_port *port);
+extern void usb_dev_addr_assigned(struct usb_dev *dev);
+extern void usb_port_notify(struct usb_hub_port *port);
+
+extern int usb_port_reset_unlock(struct usb_hub_port *port);
+extern void usb_dev_disconnect(struct usb_hub_port *port);
+
+/* port */
+extern void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
+	       	usb_hub_port_t i);
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 extern void usb_hcd_free(struct usb_hcd *hcd);

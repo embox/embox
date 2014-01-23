@@ -36,6 +36,7 @@ int usb_queue_add(struct usb_queue *q, struct usb_queue_link *l) {
 	return !is_empty;
 }
 
+#if 0
 int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l) {
 	bool is_empty;
 
@@ -53,4 +54,21 @@ int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l) {
 	irq_unlock();
 
 	return !is_empty;
+}
+#endif
+
+int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l) {
+	bool is_first;
+
+	irq_lock();
+	{
+		struct usb_queue_link *cl = usb_queue_peek(q);
+
+		is_first = cl == l;
+
+		dlist_del(&l->l);
+	}
+	irq_unlock();
+
+	return is_first;
 }

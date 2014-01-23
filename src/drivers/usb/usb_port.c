@@ -8,23 +8,41 @@
 
 #include <drivers/usb/usb.h>
 
+static void usb_port_set_state(struct usb_hub_port *port, usb_hub_port_state_t state);
+
 static void usb_port_st_reset_awaiting(struct usb_hub_port *port);
 static void usb_port_st_reset_settle(struct usb_hub_port *port);
 static void usb_port_st_connected(struct usb_hub_port *port);
+static void usb_port_st_idle(struct usb_hub_port *port);
+
+void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
+	       	usb_hub_port_t i) {
+
+	port->hub = hub;
+	port->idx = i;
+	port->status = port->changed = 0;
+	port->dev = NULL;
+
+	usb_queue_link_init(&port->reset_link);
+
+	usb_port_set_state(port, usb_port_st_idle);
+}
 
 static void usb_port_set_state(struct usb_hub_port *port, usb_hub_port_state_t state) {
 	port->state = state;
 }
 
-static inline void usb_port_notify(struct usb_hub_port *port) {
+void usb_port_notify(struct usb_hub_port *port) {
 
 	assert(port->state);
 	port->state(port);
+	port->changed = 0;
 }
 
 static void usb_dev_posted_handle(struct sys_timer *timer, void *param) {
 	struct usb_hub_port *port = param;
 
+	port->changed |= USB_HUB_PORT_TIMEOUT;
 	usb_port_notify(port);
 }
 
@@ -72,47 +90,73 @@ static int usb_hcd_port_reset(struct usb_hub_port *port) {
 static void usb_hcd_port_reset_done(struct usb_hub_port *port) {
 	struct usb_hcd *hcd = port->hub->hcd;
 
-	usb_queue_done(&hcd->reset_queue, &port->reset_link);
+	if (usb_queue_remove(&hcd->reset_queue, &port->reset_link)) {
+		usb_hcd_port_do_reset(hcd);
+	}
+}
 
-	usb_hcd_port_do_reset(hcd);
+static int usb_port_if_disconnect(struct usb_hub_port *port) {
+	if (port->changed & USB_HUB_PORT_CONNECT) {
+		if (!(port->status & USB_HUB_PORT_CONNECT)) {
+			usb_port_set_state(port, usb_port_st_idle);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+static void usb_port_st_idle(struct usb_hub_port *port) {
+
+	if ((port->changed & USB_HUB_PORT_CONNECT) &&
+		(port->status & USB_HUB_PORT_CONNECT)) {
+			usb_port_set_state(port, usb_port_st_connected);
+			usb_port_post(port, 100);
+	}
 }
 
 static void usb_port_st_connected(struct usb_hub_port *port) {
 
-	/*usb_dev_set_state(dev, USB_DEV_POWERED);*/
-	usb_port_set_state(port, usb_port_st_reset_awaiting);
-	usb_hcd_port_reset(port);
+	if (usb_port_if_disconnect(port)) {
+		return;
+	}
+
+	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+		usb_port_set_state(port, usb_port_st_reset_awaiting);
+		usb_hcd_port_reset(port);
+	}
 }
 
 static void usb_port_st_reset_awaiting(struct usb_hub_port *port) {
 
 	usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
 
-	/*usb_dev_set_state(dev, USB_DEV_DEFAULT);*/
+	if (usb_port_if_disconnect(port)) {
+		usb_hcd_port_reset_done(port);
+		return;
+	}
 
-	usb_port_set_state(port, usb_port_st_reset_settle);
-	usb_port_post(port, 10);
+	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+
+		usb_port_set_state(port, usb_port_st_reset_settle);
+		usb_port_post(port, 10);
+	}
 }
 
 static void usb_port_st_reset_settle(struct usb_hub_port *port) {
 
-	usb_port_reset_done(port);
-}
-
-int usb_port_reset_lock(struct usb_hub_port *port, bool warm_reset) {
-
-	usb_port_set_state(port, usb_port_st_connected);
-
-	if (warm_reset) {
-		usb_port_notify(port);
-	} else {
-		usb_port_post(port, 100);
+	if (usb_port_if_disconnect(port)) {
+		usb_dev_disconnect(port);
+		return;
 	}
 
-	return 0;
+	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+		usb_port_reset_done(port);
+	}
 }
 
 int usb_port_reset_unlock(struct usb_hub_port *port) {
 	usb_hcd_port_reset_done(port);
 	return 0;
 }
+

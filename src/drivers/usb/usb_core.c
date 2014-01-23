@@ -77,21 +77,29 @@ int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	return 0;
 }
 
-void usb_request_complete(struct usb_request *req) {
+static void usb_request_remove(struct usb_request *req) {
 	struct usb_endp *endp = req->endp;
-
-	if (req->req_stat != USB_REQ_NOERR) {
-		printk("usb_request %p: failed\n", req);
-	}
+	int ret;
 
 	if (req->notify_hnd) {
 		req->notify_hnd(req, req->hnd_data);
 	}
 
-	usb_queue_done(&endp->req_queue, &req->req_link);
+	ret = usb_queue_remove(&endp->req_queue, &req->req_link);
 	usb_request_free(req);
 
-	usb_endp_do_req(endp);
+	if (ret) {
+		usb_endp_do_req(endp);
+	}
+}
+
+void usb_request_complete(struct usb_request *req) {
+
+	if (req->req_stat != USB_REQ_NOERR) {
+		printk("usb_request %p: failed\n", req);
+	}
+
+	usb_request_remove(req);
 }
 
 static unsigned short usb_endp_dir_token_map(struct usb_endp *endp) {
@@ -329,11 +337,7 @@ static void usb_port_state_changed(struct usb_hub_port *port,
 		usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
 			USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
 
-		if (val) {
-			usb_port_attached(port);
-		} else {
-			usb_port_detached(port);
-		}
+		usb_port_notify(port);
 	}
 
 #if 0

@@ -51,17 +51,6 @@ void usb_hcd_free(struct usb_hcd *hcd) {
 	pool_free(&usb_hcds, hcd);
 }
 
-static void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
-	       	usb_hub_port_t i) {
-
-	port->hub = hub;
-	port->idx = i;
-	port->status = port->changed = 0;
-	port->dev = NULL;
-
-	usb_queue_link_init(&port->reset_link);
-}
-
 struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n) {
 	struct usb_hub *hub = pool_alloc(&usb_hubs);
 

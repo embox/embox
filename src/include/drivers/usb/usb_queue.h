@@ -56,5 +56,16 @@ int usb_queue_add(struct usb_queue *q, struct usb_queue_link *l);
  */
 int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l);
 
+/**
+ * @brief Remove link from queue
+ *
+ * @param q
+ * @param l
+ *
+ * @return true if it was first link in queue
+ * @return false in other case
+ */
+int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l);
+
 #endif /* USB_QUEUE_H_ */
 
