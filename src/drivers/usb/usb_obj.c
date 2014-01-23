@@ -58,6 +58,8 @@ static void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
 	port->idx = i;
 	port->status = port->changed = 0;
 	port->dev = NULL;
+
+	usb_queue_link_init(&port->reset_link);
 }
 
 struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n) {
@@ -94,8 +96,6 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	dev->hcd = hcd;
 	dev->idx = idx;
 	dev->bus_idx = 0;
-
-	usb_queue_link_init(&dev->reset_link);
 
 	if (!usb_endp_alloc(dev, &usb_desc_endp_control_default)) {
 		usb_dev_free(dev);

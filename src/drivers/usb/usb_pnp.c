@@ -49,12 +49,27 @@ struct usb_dev *usb_dev_iterate(struct usb_dev *dev) {
 	}
 }
 
-void usb_dev_attached(struct usb_dev *dev) {
-
+void usb_port_detached(struct usb_hub_port *port) {
+	assert(0, "%s: cannot handle disconnect", __func__);
 }
 
-void usb_dev_detached(struct usb_dev *dev) {
+void usb_port_attached(struct usb_hub_port *port) {
+	struct usb_dev *dev;
 
+	assert(port->dev == NULL);
+
+	dev = usb_dev_alloc(port->hub->hcd);
+	usb_port_device_bind(port, dev);
+
+	usb_port_reset_lock(port, 0);
+}
+
+void usb_port_reset_done(struct usb_hub_port *port) {
+	usb_dev_addr_assign(port->dev);
+}
+
+void usb_dev_addr_assigned(struct usb_dev *dev) {
+	usb_port_reset_unlock(dev->port);
 }
 
 void usb_dev_configured(struct usb_dev *dev) {

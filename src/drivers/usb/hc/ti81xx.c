@@ -726,7 +726,6 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 	struct usb_hcd *hcd = data;
 	struct ti81xx_usb *tiusb = hcd2ti(hcd);
 	struct ti81xx_hcd_hci *hcdhci = usb2hcd(hcd);
-	struct usb_hub_port *port = &hcd->root_hub->ports[0];
 	uint32_t intrstat0, intrstat1;
 #if TI81XX_USB_DEBUG
 	uint8_t m_intrstat;
@@ -771,6 +770,7 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 
 
 	if (intrstat1 & (TI81_USB_IRQ_STAT1_CONN | TI81_USB_IRQ_STAT1_DISCONN)) {
+		struct usb_hub_port *port = &hcd->root_hub->ports[0];
 		ti81xx_port_stat_map(tiusb, intrstat1, port);
 		usb_rh_nofity(hcd);
 	}

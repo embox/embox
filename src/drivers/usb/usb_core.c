@@ -30,25 +30,6 @@ const struct usb_desc_endpoint usb_desc_endp_control_default = {
 	.b_interval = 0,
 };
 
-static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type);
-static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type);
-
-static inline void usb_dev_notify_posted(struct usb_dev *dev);
-static inline void usb_dev_notify_port(struct usb_dev *dev);
-static int usb_dev_post(struct usb_dev *dev, unsigned int ms,
-		usb_dev_notify_hnd_t notify_hnd);
-
-static void usb_dev_wait(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
-	assert(dev->notify_hnd == NULL);
-
-	dev->notify_hnd = notify_hnd;
-}
-
-static void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
-		unsigned short value);
-
 static void usb_request_build(struct usb_request *req, uint8_t req_type,
 		uint8_t request, uint16_t value, uint16_t index, uint16_t count,
 		void *data) {
@@ -216,58 +197,26 @@ static struct usb_desc_getconf_data *usb_dev_getconf_alloc(struct usb_dev *dev) 
 	return dev->getconf_data = &dev->tgetconf_data;
 }
 
-static int usb_hcd_do_reset(struct usb_hcd *hcd) {
-	struct usb_queue_link *ul;
-	struct usb_dev *dev;
-
-	ul = usb_queue_peek(&hcd->reset_queue);
-	if (!ul) {
-		return 0;
-	}
-
-	dev = member_cast_out(ul, struct usb_dev, reset_link);
-
-	usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_SET, USB_HUB_PORT_RESET);
-
-	usb_dev_post(dev, USB_RESET_HIGH_DELAY_MS, usb_dev_notify_reset_awaiting);
-
-	return 0;
-}
-
-static int usb_dev_reset(struct usb_dev *dev, usb_dev_notify_hnd_t notify_hnd) {
-	struct usb_hcd *hcd = dev->hcd;
-	bool is_resseting;
-
-	assert(notify_hnd == usb_dev_notify_reset_awaiting);
-
-	is_resseting = usb_queue_add(&hcd->reset_queue, &dev->reset_link);
-	if (!is_resseting) {
-		usb_hcd_do_reset(hcd);
-	}
-
-	return 0;
-}
-
-static void usb_dev_reset_done(struct usb_dev *dev) {
-	struct usb_hcd *hcd = dev->hcd;
-
-	usb_queue_done(&hcd->reset_queue, &dev->reset_link);
-
-	usb_hcd_do_reset(hcd);
-}
-
-#if 0
-static void usb_dev_getconf_free(struct usb_dev *dev) {
+static __attribute__((used)) void usb_dev_getconf_free(struct usb_dev *dev) {
 	dev->getconf_data = NULL;
 }
-#endif
 
 static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg);
 static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
 static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
 static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
 
-static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
+void usb_dev_addr_assign(struct usb_dev *dev) {
+
+	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr,
+		USB_DEV_REQ_TYPE_WR
+			| USB_DEV_REQ_TYPE_STD
+			| USB_DEV_REQ_TYPE_DEV,
+		USB_DEV_REQ_SET_ADDR, dev->idx,
+		0, 0, NULL);
+}
+
+static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;
 
@@ -275,7 +224,7 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
 
 	dev->bus_idx = dev->idx;
 	usb_dev_set_state(dev, USB_DEV_ADDRESS);
-	usb_dev_reset_done(dev);
+	usb_dev_addr_assigned(dev);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
 		USB_DEV_REQ_TYPE_RD
@@ -362,92 +311,7 @@ static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg) {
 	usb_dev_configured(dev);
 }
 
-static void usb_dev_notify_connected(struct usb_dev *dev, enum usb_dev_event_type event_type) {
-	assert(event_type == USB_DEV_EVENT_PORT);
-
-	if (dev->port->status & USB_HUB_PORT_POWER) {
-		usb_dev_post(dev, 100, usb_dev_notify_connected_delay);
-	}
-}
-
-static void usb_dev_notify_connected_delay(struct usb_dev *dev, enum usb_dev_event_type event_type) {
-
-	if (event_type == USB_DEV_EVENT_POSTED) {
-		usb_dev_set_state(dev, USB_DEV_POWERED);
-		usb_dev_reset(dev, usb_dev_notify_reset_awaiting);
-	} else if (event_type == USB_DEV_EVENT_PORT) {
-		/* handle dither */
-		printk("%s: port event: status=%08x\n", __func__, dev->port->status);
-	}
-}
-
-static void usb_dev_notify_reset_awaiting(struct usb_dev *dev, enum usb_dev_event_type event_type) {
-
-	assert(event_type == USB_DEV_EVENT_POSTED);
-
-	if (event_type == USB_DEV_EVENT_POSTED) {
-
-		usb_hub_ctrl(dev->port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
-
-		usb_dev_set_state(dev, USB_DEV_DEFAULT);
-
-		usb_dev_post(dev, 10, usb_dev_notify_reseted_delay);
-	}
-}
-
-static void usb_dev_notify_reseted_delay(struct usb_dev *dev, enum usb_dev_event_type event_type) {
-
-	assert(event_type == USB_DEV_EVENT_POSTED);
-
-	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr,
-		USB_DEV_REQ_TYPE_WR
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV,
-		USB_DEV_REQ_SET_ADDR, dev->idx,
-		0, 0, NULL);
-}
-
-static inline void usb_dev_notify(struct usb_dev *dev, enum usb_dev_event_type type) {
-	usb_dev_notify_hnd_t notify_hnd = dev->notify_hnd;
-
-	assert(notify_hnd);
-
-	dev->notify_hnd = NULL;
-
-	notify_hnd(dev, type);
-}
-
-static inline void usb_dev_notify_port(struct usb_dev *dev) {
-
-	usb_dev_notify(dev, USB_DEV_EVENT_PORT);
-}
-
-static inline void usb_dev_notify_posted(struct usb_dev *dev) {
-
-	usb_dev_notify(dev, USB_DEV_EVENT_POSTED);
-}
-
-static void usb_dev_posted_handle(struct sys_timer *timer, void *param) {
-	struct usb_dev *dev = param;
-
-	usb_dev_notify_posted(dev);
-}
-
-static int usb_dev_post(struct usb_dev *dev, unsigned int ms,
-		usb_dev_notify_hnd_t notify_hnd) {
-
-	usb_dev_wait(dev, notify_hnd);
-	return timer_init_msec(&dev->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
-			dev);
-}
-
-static void __attribute__((used)) usb_dev_post_cancel(struct usb_dev *dev) {
-
-	timer_close(&dev->post_timer);
-	dev->notify_hnd = NULL;
-}
-
-static void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
+void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
 		unsigned short value) {
 	struct usb_hcd *hcd = port->hub->hcd;
 
@@ -461,23 +325,22 @@ static void usb_port_state_changed(struct usb_hub_port *port,
 		usb_hub_state_t state, char val) {
 
 	if (state & USB_HUB_PORT_CONNECT) {
-		struct usb_dev *dev;
-
-		assert(port->dev == NULL);
-		assert(val, "%s: cannot handle disconnect", __func__);
 
 		usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
 			USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
 
-		dev = usb_dev_alloc(port->hub->hcd);
-		usb_port_device_bind(port, dev);
-		usb_dev_wait(dev, usb_dev_notify_connected);
-		usb_dev_notify_port(port->dev);
+		if (val) {
+			usb_port_attached(port);
+		} else {
+			usb_port_detached(port);
+		}
 	}
 
+#if 0
 	if (state & USB_HUB_PORT_RESET) {
 		usb_dev_notify_port(port->dev);
 	}
+#endif
 }
 
 int usb_rh_nofity(struct usb_hcd *hcd) {
