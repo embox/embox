@@ -12,19 +12,25 @@
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 #include <kernel/task.h>
+#include <util/math.h>
 
 #include <err.h>
 
 EMBOX_TEST_SUITE("test for different priority threads");
 
-#define THREADS_QUANTITY  0x100
+#include <module/embox/kernel/thread/core.h>
+#define THREADS_TOTAL \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
+#define THREADS_USED 2 /* boot & idle */
+#define THREADS_FREE (THREADS_TOTAL - THREADS_USED)
+#define THREADS_QUANTITY min(THREADS_FREE, 256)
 
 static void *thread_run(void *arg) {
 	ksleep(2 * 1000);
 	return 0;
 }
 
-TEST_CASE("Create 256 threads with different priority") {
+TEST_CASE("Create maxinum amount of threads with different priority") {
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
 		struct thread *t;
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
