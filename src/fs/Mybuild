@@ -90,3 +90,11 @@ module buffer_cache {
 
 	@NoRuntime depends embox.util.hashtable
 }
+
+@DefaultImpl(buffer_no_crypt)
+abstract module buffer_crypt_api {
+}
+
+module buffer_no_crypt extends buffer_crypt_api {
+	source "buffer_no_crypt.c"
+}
