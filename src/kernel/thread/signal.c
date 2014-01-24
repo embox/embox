@@ -13,16 +13,23 @@
 #include <kernel/thread/signal.h>
 
 void thread_signal_handle(void) {
-	struct thread *thread = thread_self();
-	struct task   *task   = thread->task;
-
-	struct sigstate *sigstate = &thread->sigstate;
-	struct sigaction *sig_table = task->sig_table;
-
+	struct thread *thread;
+	struct task *task;
+	struct sigstate *sigstate;
+	struct sigaction *sig_table;
 	siginfo_t info;
 	int sig;
 
-	assert(sig_table);
+	thread = thread_self();
+	assert(thread != NULL);
+
+	task = thread->task;
+	assert(task != NULL);
+
+	sigstate = &thread->sigstate;
+
+	sig_table = task->sig_table;
+	assert(sig_table != NULL);
 
 	while ((sig = sigstate_receive(sigstate, &info))) {
 		struct sigaction *act = sig_table + sig;
