@@ -33,6 +33,7 @@ struct scsi_dev {
 	unsigned int blk_size;
 	unsigned int blk_n;
 
+	struct block_dev *bdev;
 	struct mutex m;
 	struct waitq wq;
 	char in_cmd;
@@ -138,6 +139,7 @@ extern const struct scsi_cmd scsi_cmd_template_read10;
 
 int scsi_dev_init(struct scsi_dev *dev);
 void scsi_dev_attached(struct scsi_dev *dev);
+void scsi_dev_detached(struct scsi_dev *dev);
 void scsi_request_done(struct scsi_dev *dev, int res);
 
 int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
@@ -145,8 +147,11 @@ int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
 void scsi_dev_recover(struct scsi_dev *dev);
 void scsi_state_transit(struct scsi_dev *dev,
 		const struct scsi_dev_state *to);
+void scsi_dev_use_inc(struct scsi_dev *dev);
+void scsi_dev_use_dec(struct scsi_dev *dev);
 
-extern void scsi_disc_found(struct scsi_dev *dev);
+extern void scsi_disk_found(struct scsi_dev *dev);
+extern void scsi_disk_lost(struct scsi_dev *dev);
 
 #endif /* SCSI_H_ */
 

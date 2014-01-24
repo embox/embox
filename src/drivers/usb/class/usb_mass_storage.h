@@ -76,7 +76,5 @@ extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
 	       	usb_request_notify_hnd_t notify_hnd);
 
-extern void usb_scsi_handle(struct usb_dev *dev);
-
 #endif /* USB_CLASS_USB_MASS_STORAGE_H_ */
 

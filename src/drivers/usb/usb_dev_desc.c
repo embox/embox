@@ -37,6 +37,8 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 		return NULL;
 	}
 
+	usb_dev_use_inc(dev);
+
 	ddesc = pool_alloc(&usb_dev_descs);
 	ddesc->dev = dev;
 
@@ -44,8 +46,11 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 }
 
 void usb_dev_desc_close(struct usb_dev_desc *ddesc) {
+	struct usb_dev *dev = ddesc->dev;
 
 	pool_free(&usb_dev_descs, ddesc);
+
+	usb_dev_use_dec(dev);
 }
 
 int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *desc,

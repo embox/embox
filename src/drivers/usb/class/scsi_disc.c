@@ -8,10 +8,36 @@
 
 #include <errno.h>
 #include <kernel/sched/waitq.h>
+#include <util/math.h>
 #include "scsi.h"
 
 #include <embox/block_dev.h>
 #include <util/indexator.h>
+
+static int scsi_wake_res(struct scsi_dev *dev) {
+	return min(dev->cmd_complete, 0);
+}
+
+static int scsi_wait_cmd_complete(struct scsi_dev *dev, struct scsi_cmd *cmd) {
+
+	/* guards to send only one command */
+	if (!dev->in_cmd) {
+		dev->in_cmd = 1;
+		dev->cmd_complete = scsi_do_cmd(dev, cmd);
+	}
+
+	if (dev->cmd_complete) {
+		dev->in_cmd = 0;
+		return dev->cmd_complete;
+	}
+
+	return 0;
+}
+
+static void scsi_wake(struct scsi_dev *dev, int res) {
+	dev->cmd_complete = 1;
+	waitq_wakeup_all(&dev->wq);
+}
 
 static void scsi_user_input(struct scsi_dev *dev, int res) {
 
@@ -20,8 +46,7 @@ static void scsi_user_input(struct scsi_dev *dev, int res) {
 		return;
 	}
 
-	dev->cmd_complete = 1;
-	waitq_wakeup_all(&dev->wq);
+	scsi_wake(dev, 1);
 }
 
 static void scsi_user_enter(struct scsi_dev *dev) {
@@ -34,22 +59,6 @@ static const struct scsi_dev_state scsi_state_user = {
 	.sds_input = scsi_user_input,
 };
 
-static int scsi_wait_cmd_complete(struct scsi_dev *dev, struct scsi_cmd *cmd) {
-
-	/* guards to send only one command */
-	if (!dev->in_cmd) {
-		dev->in_cmd = 1;
-		scsi_do_cmd(dev, cmd);
-	}
-
-	if (dev->cmd_complete) {
-		dev->cmd_complete = dev->in_cmd = 0;
-		return 1;
-	}
-
-	return 0;
-}
-
 static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
@@ -61,6 +70,7 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 	struct scsi_cmd cmd = scsi_cmd_template_read10;
 	cmd.scmd_olen = blksize;
 
+	scsi_dev_use_inc(sdev);
 	mutex_lock(&sdev->m);
 
 	for (lba = blkno, bp = buffer;
@@ -71,12 +81,16 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 		cmd.scmd_obuf = bp;
 
 		ret = WAITQ_WAIT(&sdev->wq, scsi_wait_cmd_complete(sdev, &cmd));
+		if (!ret) {
+			ret = scsi_wake_res(sdev);
+		}
 		if (ret) {
 			break;
 		}
 
 	}
 	mutex_unlock(&sdev->m);
+	scsi_dev_use_dec(sdev);
 
 	if (ret && bp == buffer) {
 		return ret;
@@ -91,15 +105,23 @@ static int scsi_write(block_dev_t *bdev, char *buffer, size_t count,
 
 static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	struct scsi_dev *sdev = bdev->privdata;
+	int ret;
+
+	scsi_dev_use_inc(sdev);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
-		return sdev->blk_n;
+		ret = sdev->blk_n;
+		break;
 	case IOCTL_GETBLKSIZE:
-		return sdev->blk_size;
+		ret = sdev->blk_size;
+		break;
+	default:
+		ret = -ENOSYS;
 	}
 
-	return -ENOSYS;
+	scsi_dev_use_dec(sdev);
+	return ret;
 }
 
 static const block_dev_driver_t bdev_driver_scsi = {
@@ -111,7 +133,7 @@ static const block_dev_driver_t bdev_driver_scsi = {
 
 INDEX_DEF(scsi_disc_idx, 0, 26);
 
-void scsi_disc_found(struct scsi_dev *sdev) {
+void scsi_disk_found(struct scsi_dev *sdev) {
 	struct block_dev *bdev;
 	char path[PATH_MAX];
 
@@ -123,7 +145,13 @@ void scsi_disc_found(struct scsi_dev *sdev) {
 
 	bdev = block_dev_create(path, (void *) &bdev_driver_scsi, sdev);
 	bdev->size = sdev->blk_n * sdev->blk_size;
+	sdev->bdev = bdev;
 
 	scsi_state_transit(sdev, &scsi_state_user);
 }
 
+void scsi_disk_lost(struct scsi_dev *sdev) {
+
+	waitq_wakeup_all(&sdev->wq);
+	scsi_wake(sdev, -ENODEV);
+}

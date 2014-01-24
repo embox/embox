@@ -359,6 +359,8 @@ struct usb_class {
 	void (*get_conf_hnd)(struct usb_request *req, void *arg);
 	void *(*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
 	void (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
+	void (*class_handle)(struct usb_class *cls, struct usb_dev *dev);
+	void (*class_release)(struct usb_class *cls, struct usb_dev *dev);
 };
 
 static inline usb_class_t usb_dev_class(struct usb_dev *dev) {
@@ -379,7 +381,9 @@ extern int usb_dev_generic_fill_iface(struct usb_dev *dev, struct usb_desc_inter
 extern int usb_dev_generic_fill_endps(struct usb_dev *dev, struct usb_desc_endpoint endp_descs[]);
 
 extern int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev);
-extern void usb_class_generic_get_conf_hnd(struct usb_request *req);
+extern void usb_class_generic_get_conf_hnd(struct usb_request *req, void *arg);
+extern void usb_class_released(struct usb_dev *dev);
+extern void usb_class_start_handle(struct usb_dev *dev);
 
 extern int usb_class_register(struct usb_class *cls);
 #endif /* DRIVERS_USB_H_ */

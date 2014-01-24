@@ -27,7 +27,7 @@ static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	pool_free(&hid_getconfs, hid->getconf);
 	hid->getconf = NULL;
 
-	usb_hid_found(dev);
+	usb_class_start_handle(dev);
 }
 
 static void *usb_class_hid_alloc(struct usb_class *cls, struct usb_dev *dev) {
@@ -59,12 +59,23 @@ static int usb_class_hid_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 	return 0;
 }
 
+static void usb_class_hid_handle(struct usb_class *cls, struct usb_dev *dev) {
+	usb_hid_found(dev);
+}
+
+static void usb_class_hid_release(struct usb_class *cls, struct usb_dev *dev) {
+
+	/* can't release, do nothing */
+}
+
 static struct usb_class usb_class_hid = {
 	.usb_class = USB_CLASS_HID,
 	.class_alloc = usb_class_hid_alloc,
 	.class_free = usb_class_hid_free,
 	.get_conf = usb_class_hid_get_conf,
 	.get_conf_hnd = usb_class_hid_get_conf_hnd,
+	.class_handle = usb_class_hid_handle,
+	.class_release = usb_class_hid_release ,
 };
 
 static int usb_hid_init(void) {

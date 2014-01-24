@@ -14,6 +14,10 @@
 
 #include "scsi.h"
 
+static inline struct usb_mass *scsi2mass(struct scsi_dev *dev) {
+	return member_cast_out(dev, struct usb_mass, scsi_dev);
+}
+
 static void usb_scsi_notify(struct usb_request *req, void *arg) {
 	struct usb_mscsw *csw = arg;
 	struct scsi_dev *sdev = &(usb2massdata(req->endp->dev)->scsi_dev);
@@ -28,7 +32,7 @@ static void usb_scsi_notify(struct usb_request *req, void *arg) {
 }
 
 int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_t data_len) {
-	struct usb_mass *mass = member_cast_out(sdev, struct usb_mass, scsi_dev);
+	struct usb_mass *mass = scsi2mass(sdev);
 
 	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, USB_DIRECTION_IN, data, data_len,
 			usb_scsi_notify);
@@ -165,7 +169,7 @@ static void scsi_capacity_input(struct scsi_dev *dev, int res) {
 	dev->blk_size = be32toh(data->dc10_blklen);
 	dev->blk_n = be32toh(data->dc10_lba);
 
-	scsi_disc_found(dev);
+	scsi_disk_found(dev);
 }
 
 static const struct scsi_dev_state scsi_state_capacity = {
@@ -218,9 +222,21 @@ void scsi_dev_attached(struct scsi_dev *dev) {
 	scsi_state_transit(dev, &scsi_state_inquiry);
 }
 
+void scsi_dev_detached(struct scsi_dev *dev) {
+	scsi_disk_lost(dev);
+}
+
 void scsi_request_done(struct scsi_dev *dev, int res) {
 
 	if (dev->state && dev->state->sds_input) {
 		dev->state->sds_input(dev, res);
 	}
+}
+
+void scsi_dev_use_inc(struct scsi_dev *dev) {
+	usb_dev_use_inc(scsi2mass(dev)->usb_dev);
+}
+
+void scsi_dev_use_dec(struct scsi_dev *dev) {
+	usb_dev_use_dec(scsi2mass(dev)->usb_dev);
 }
