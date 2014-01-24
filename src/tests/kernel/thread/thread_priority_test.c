@@ -19,13 +19,16 @@
 EMBOX_TEST_SUITE("test for different priority threads");
 
 #define THREADS_QUANTITY OPTION_GET(NUMBER, threads_quantity)
+#define __str(x) #x
+#define str(x) __str(x)
 
 static void *thread_run(void *arg) {
 	ksleep(2 * 1000);
 	return 0;
 }
 
-TEST_CASE("Create 256 threads with different priority") {
+TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
+		" different priority") {
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
 		struct thread *t;
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
