@@ -34,6 +34,11 @@ POOL_DEF(ohci_hcds, struct ohci_hcd, USB_MAX_HCD);
 POOL_DEF(ohci_eds, struct ohci_ed, USB_MAX_ENDP);
 POOL_DEF(ohci_tds, struct ohci_td, OHCI_MAX_REQUESTS);
 
+static struct ohci_td *ohci_ed_get_tail_td(struct ohci_ed *ed);
+static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed);
+static int ohci_ed_desched(struct ohci_hcd *ohcd, struct ohci_ed *ed,
+		struct ohci_ed **ed_queue);
+
 static void *ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct ohci_hcd *ohcd = pool_alloc(&ohci_hcds);
 	struct ohci_hcca *hcca = pool_alloc(&ohci_hccas);
@@ -92,6 +97,21 @@ static void *ohci_ed_alloc(struct usb_endp *ep) {
 }
 
 static void ohci_ed_free(struct usb_endp *ep, void *spec) {
+	struct ohci_ed *ed = endp2ohci(ep);
+	struct ohci_hcd *ohcd = hcd2ohci(ep->dev->hcd);
+	struct ohci_td *placeholder_td;
+
+	if (ep->type == USB_COMM_INTERRUPT) {
+		ohci_ed_desched_interrupt(ohcd, ed);
+	} else {
+		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
+		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
+	}
+
+
+	placeholder_td = ohci_ed_get_tail_td(ed);
+	ohci_td_free(placeholder_td);
+
 	pool_free(&ohci_eds, spec);
 }
 /* === end === */
@@ -286,21 +306,59 @@ static int ohci_common_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 	return 1;
 }
 
+static int ohci_common_issched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+	return REG_LOAD(&ed->flags) & OHCI_ED_SCHEDULED;
+}
+
+static void ohci_common_desched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+	REG_ANDIN(&ed->flags, ~OHCI_ED_SCHEDULED);
+}
 
 static void ohci_ed_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 	uint32_t cmdstat;
 
-	if (!ohci_common_sched(ohcd, ed)) {
-		goto out_update;
+	if (ohci_common_sched(ohcd, ed)) {
+		REG_STORE(&ed->next_ed, OHCI_READ(ohcd, &ohcd->base->hc_ctrl_head_ed));
+		OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed, ed);
 	}
 
-	REG_STORE(&ed->next_ed, OHCI_READ(ohcd, &ohcd->base->hc_ctrl_head_ed));
-	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed, ed);
-
-out_update:
 	cmdstat = OHCI_READ(ohcd, &ohcd->base->hc_cmdstat);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat, cmdstat |
 			OHCI_CMD_CONTROL_FILLED);
+}
+
+static int ohci_ed_desched(struct ohci_hcd *ohcd, struct ohci_ed *ed,
+		struct ohci_ed **ed_queue) {
+	struct ohci_ed **p_ed, *c_ed, *n_ed;
+
+	if (!ohci_common_issched(ohcd, ed)) {
+		return 0;
+	}
+
+	REG_ORIN(&ed->flags, OHCI_ED_K);
+
+	p_ed = ed_queue;
+	c_ed = (struct ohci_ed *) OHCI_READ(ohcd, p_ed);
+	while (c_ed != NULL && c_ed != ed) {
+		p_ed = (struct ohci_ed **) &c_ed->next_ed;
+		c_ed = (struct ohci_ed *) REG_LOAD(p_ed);
+	}
+
+	if (!c_ed) {
+		return 0;
+	}
+
+	n_ed = (void *) REG_LOAD(&ed->next_ed);
+
+	if (p_ed == ed_queue) {
+		OHCI_WRITE(ohcd, p_ed, n_ed);
+	} else {
+		REG_STORE(p_ed, (unsigned long) n_ed);
+	}
+
+	ohci_common_desched(ohcd, ed);
+
+	return 1;
 }
 
 static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
@@ -324,6 +382,27 @@ static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 
 	assert(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
 			"interrupt request", __func__);
+}
+
+static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+	struct ohci_hcca *hcca = ohcd->hcca;
+	int i;
+
+	if (!ohci_common_issched(ohcd, ed)) {
+		return 0;
+	}
+
+	for (i = 0; i < OHCI_HCCA_INTERRUPT_LIST_N; i++) {
+		struct ohci_ed *i_ed = (struct ohci_ed *) REG_LOAD(&hcca->interrupt_table[i]);
+
+		if (i_ed == ed) {
+			REG_STORE(&hcca->interrupt_table[i], (unsigned long) NULL);
+			return 1;
+		}
+	}
+
+	return 0;
+
 }
 
 static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
