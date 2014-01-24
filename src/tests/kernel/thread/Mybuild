@@ -8,6 +8,7 @@ module thread_test {
 }
 
 module thread_priority_test {
+	option number threads_quantity=256
 	source "thread_priority_test.c"
 
 	depends embox.kernel.thread.core
