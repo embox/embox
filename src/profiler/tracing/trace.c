@@ -6,6 +6,8 @@
  * @author Alina Kramar
  */
 
+#include <stdio.h>
+
 #include <string.h>
 
 #include <util/array.h>
@@ -71,4 +73,12 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 	}
 
 	return NULL;
+}
+
+void __cyg_profile_func_enter(void *func, void *caller) {
+	printf("Enter %p\n", &func);
+}
+
+void __cyg_profile_func_exit(void *func, void *caller) {
+	printf("Exit %p\n", &func);
 }
