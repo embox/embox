@@ -3,54 +3,74 @@
 # Change working direcory to scripts/qemu
 cd "$(dirname "$0")"
 
-QEMU=qemu-system-i386
-IMAGE=../../build/base/bin/embox
-EMBOX_MODS_CONF=../../conf/mods.config
+# Configs
+ARCHs=( microblaze mips ppc sparc x86 )
+QEMUs=( qemu-system-microblaze qemu-system-mips qemu-system-ppc qemu-system-sparc qemu-system-i386 )
+MACHINEs=( petalogix-s3adsp1800 mipssim virtex-ml507 leon3_generic "" )
+NIC_NAMEs=( e1000 ne2k_pci rtl8139 virtio xemaclite )
+NIC_MODELs=( e1000 ne2k_pci rtl8139 virtio xilinx-ethlite )
 
-# Checking for network driver
+KERNEL=../../build/base/bin/embox
+MODS_CONF=../../conf/mods.config
 
-for DRIVER in "ne2k_pci" "e1000" "rtl8139" "virtio"
-do
-grep embox.driver.net.$DRIVER $EMBOX_MODS_CONF > /dev/null
-if [ $? -eq 0 ]; then
-QEMU_NET_DRIVER=$DRIVER
-break
-fi
+# Select arch, qemu and machine
+for i in ${!ARCHs[*]}; do
+	ARCH=${ARCHs[$i]}
+	grep embox.arch.$ARCH. $MODS_CONF > /dev/null
+	if [ $? -eq 0 ]; then
+		QEMU=${QEMUs[$i]}
+		MACHINE=${MACHINEs[$i]}
+		break
+	fi
 done
 
-if ! [ "$QEMU_NET_DRIVER"  ]; then
-echo "auto_qemu: No supported network drivers in $EMBOX_MODS_CONF"
-exit 1
+# Select network driver
+for i in ${!NIC_NAMEs[*]}; do
+	NIC_NAME=${NIC_NAMEs[$i]}
+	grep embox.driver.net.$NIC_NAME $MODS_CONF > /dev/null
+	if [ $? -eq 0 ]; then
+		NIC_MODEL=${NIC_MODELs[$i]}
+		break
+	fi
+done
+
+# Build machine argument
+if [[ -n $MACHINE ]]; then
+	QEMU_MACHINE="-M $MACHINE"
 fi
 
-# Checking for KVM and VT support
-
-egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
-
-if [ $? -ne 0 ]; then
-echo "auto_qemu: VT is not supported by CPU"
-else
-QEMU_KVM_ENABLE="-enable-kvm"
+# Build network argument
+if [[ -n $NIC_MODEL ]]; then
+	SUDO=sudo
+	QEMU_NET="-net nic,model=$NIC_MODEL,macaddr=AA:BB:CC:DD:EE:02 -net tap,name=tap0,script=start_script,downscript=stop_script"
 fi
 
-dmesg | tail | grep "kvm: disabled by bios" > /dev/null
+# Build kvm argument
+if [ $ARCH = "x86" ]; then
+	egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "auto_qemu: VT is not supported by CPU"
+	else
+		QEMU_KVM="-enable-kvm"
+	fi
 
-if [ $? -eq 0 ]; then
-echo "auto_qemu: kvm: disabled by bios. You can enable VT in bios"
-QEMU_KVM_ENABLE=""
-fi
+	dmesg | tail | grep "kvm: disabled by bios" > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "auto_qemu: kvm: disabled by bios. You can enable VT in bios"
+		QEMU_KVM=
+	fi
 
-lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
-
-if [ $? -ne 0 ]; then
-echo "auto_qemu: No kvm_intel [kvm_amd] kernel module"
-QEMU_KVM_ENABLE=""
+	lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "auto_qemu: No kvm_intel [kvm_amd] kernel module"
+		QEMU_KVM=
+	fi
 fi
 
 # Run qemu
-
-sudo $QEMU $QEMU_KVM_ENABLE -kernel $IMAGE \
-	-net nic,model=$QEMU_NET_DRIVER,macaddr=AA:BB:CC:DD:EE:02 \
-	-net tap,name=tap0,script=start_script,downscript=stop_script \
-	-nographic $@
-
+echo "$ $SUDO $QEMU $QEMU_KVM -kernel $KERNEL $QEMU_MACHINE $QEMU_NET -nographic $@"
+$SUDO $QEMU $QEMU_KVM -kernel $KERNEL \
+	$QEMU_MACHINE \
+	$QEMU_NET \
+	-nographic \
+	$@
