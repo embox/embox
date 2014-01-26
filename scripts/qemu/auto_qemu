@@ -3,36 +3,86 @@
 # Change working direcory to scripts/qemu
 cd "$(dirname "$0")"
 
-# Configs
-ARCHs=( microblaze mips ppc sparc x86 )
-QEMUs=( qemu-system-microblaze qemu-system-mips qemu-system-ppc qemu-system-sparc qemu-system-i386 )
-MACHINEs=( petalogix-s3adsp1800 mipssim virtex-ml507 leon3_generic "" )
-NIC_NAMEs=( e1000 ne2k_pci rtl8139 virtio xemaclite )
-NIC_MODELs=( e1000 ne2k_pci rtl8139 virtio xilinx-ethlite )
-
 KERNEL=../../build/base/bin/embox
 MODS_CONF=../../conf/mods.config
+ARCHs=()
+NICs=()
+
+declare -A QEMU
+declare -A MACHINE
+# Config for microblaze
+ARCHs+=(microblaze)
+QEMU[microblaze]=qemu-system-microblaze
+MACHINE[microblaze]=petalogix-s3adsp1800
+# Config for mips
+ARCHs+=(mips)
+QEMU[mips]=qemu-system-mips
+MACHINE[mips]=mipssim
+# Config for powerpc
+ARCHs+=(ppc)
+QEMU[ppc]=qemu-system-ppc
+MACHINE[ppc]=virtex-ml507
+# Config for sparc
+ARCHs+=(sparc)
+QEMU[sparc]=qemu-system-sparc
+MACHINE[sparc]=leon3_generic
+# Config for x86
+ARCHs+=(x86)
+QEMU[x86]=qemu-system-i386
+
+declare -A NIC
+# Net E1000
+NICs+=( e1000 )
+NIC[e1000]=e1000
+# Net NE2000
+NICs+=( ne2k_pci )
+NIC[ne2k_pci]=ne2k_pci
+# Net RTL8139
+NICs+=( rtl8139 )
+NIC[rtl8139]=rtl8139
+# Net Virtio
+NICs+=( virtio )
+NIC[virtio]=virtio
+# Net xemaclite
+NICs+=( xemaclite )
+NIC[xemaclite]=xilinx-ethlite:xlnx.xps-ethernetlite
 
 # Select arch, qemu and machine
-for i in ${!ARCHs[*]}; do
-	ARCH=${ARCHs[$i]}
-	grep embox.arch.$ARCH. $MODS_CONF > /dev/null
+for _ARCH in ${ARCHs[*]}; do
+	grep embox.arch.$_ARCH. $MODS_CONF > /dev/null
 	if [ $? -eq 0 ]; then
-		QEMU=${QEMUs[$i]}
-		MACHINE=${MACHINEs[$i]}
+		ARCH=$_ARCH
+		QEMU=${QEMU[$_ARCH]}
+		MACHINE=${MACHINE[$_ARCH]}
 		break
 	fi
 done
+if [[ -z $ARCH ]]; then
+	echo "auto_qemu: unknown arch"
+	exit 1
+fi
 
 # Select network driver
-for i in ${!NIC_NAMEs[*]}; do
-	NIC_NAME=${NIC_NAMEs[$i]}
-	grep embox.driver.net.$NIC_NAME $MODS_CONF > /dev/null
+for _NIC_NAME in ${NICs[*]}; do
+	grep embox.driver.net.$_NIC_NAME $MODS_CONF > /dev/null
 	if [ $? -eq 0 ]; then
-		NIC_MODEL=${NIC_MODELs[$i]}
+		NIC=$_NIC_NAME
+		_NIC_MODELs=(${NIC[$_NIC_NAME]//:/ })
+		for _NIC_MODEL in ${_NIC_MODELs[*]}; do
+			echo $_NIC_MODEL
+			$QEMU -net nic,model=? 2>&1 | grep $_NIC_MODEL > /dev/null
+			if [ $? -eq 0 ]; then
+				NIC_MODEL=$_NIC_MODEL
+				break
+			fi
+		done
 		break
 	fi
 done
+if [[ -n $NIC ]] && [[ -z $NIC_MODEL ]]; then
+	echo "auto_qemu: unknown nic model"
+	exit 2
+fi
 
 # Build machine argument
 if [[ -n $MACHINE ]]; then
