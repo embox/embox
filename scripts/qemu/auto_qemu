@@ -69,7 +69,6 @@ for _NIC_NAME in ${NICs[*]}; do
 		NIC=$_NIC_NAME
 		_NIC_MODELs=(${NIC[$_NIC_NAME]//:/ })
 		for _NIC_MODEL in ${_NIC_MODELs[*]}; do
-			echo $_NIC_MODEL
 			$QEMU -net nic,model=? 2>&1 | grep $_NIC_MODEL > /dev/null
 			if [ $? -eq 0 ]; then
 				NIC_MODEL=$_NIC_MODEL
