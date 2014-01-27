@@ -62,6 +62,7 @@ static const struct scsi_dev_state scsi_state_user = {
 static void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev) {
 	if (!sdev->attached) {
 		sdev->bdev->privdata = NULL;
+		block_dev_destroy(sdev->bdev);
 	}
 }
 
