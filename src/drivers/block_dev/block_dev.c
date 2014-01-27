@@ -379,10 +379,16 @@ int block_dev_destroy (void *dev) {
 	block_dev_t *bdev;
 
 	bdev = block_dev(dev);
+
+	vfs_del_leaf(bdev->dev_node);
+
 	block_dev_cache_free(bdev);
+
+	devtab[bdev->id] = NULL;
 	index_free(&block_dev_idx, bdev->id);
 
 	pool_free(&blockdev_pool, bdev);
+
 	return 0;
 }
 
