@@ -160,6 +160,9 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 		return -EIO;
 	}
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -196,7 +199,12 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 	if (offset + count > bdev->size) {
 		return -EIO;
 	}
+
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
+
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -238,6 +246,9 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	bdev = block_dev(dev);
 
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
 	return block_dev_read_buffered(bdev, buffer, count, blkno * blksize);
 }
 
@@ -252,6 +263,9 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 	bdev = block_dev(dev);
 
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
 	return block_dev_write_buffered(bdev, buffer, count, blkno * blksize);
 }
 
@@ -283,14 +297,14 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	block_dev_cache_free(dev);
 
 	bdev = block_dev(dev);
-	if(NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
+	if (NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
 		return NULL;
 	}
 
 	cache->lastblkno = -1;
 	cache->buff_cntr = -1;
 
-	if(0 >= (cache->blksize =
+	if (0 >= (cache->blksize =
 			block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
@@ -305,7 +319,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	}
 	cache->blkfactor = pagecnt;
 
-	if(NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
+	if (NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
 		return NULL;
 	}
 	cache->depth = blocks;
