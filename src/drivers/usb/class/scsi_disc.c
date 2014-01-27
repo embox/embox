@@ -35,7 +35,7 @@ static int scsi_wait_cmd_complete(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 }
 
 static void scsi_wake(struct scsi_dev *dev, int res) {
-	dev->cmd_complete = 1;
+	dev->cmd_complete = res;
 	waitq_wakeup_all(&dev->wq);
 }
 
@@ -59,6 +59,30 @@ static const struct scsi_dev_state scsi_state_user = {
 	.sds_input = scsi_user_input,
 };
 
+static void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev) {
+	if (!sdev->attached) {
+		sdev->bdev->privdata = NULL;
+	}
+}
+
+static void scsi_disk_lock(struct block_dev *bdev) {
+	struct scsi_dev *sdev = bdev->privdata;
+
+	scsi_dev_use_inc(sdev);
+	mutex_lock(&sdev->m);
+}
+
+static void scsi_disk_unlock(struct block_dev *bdev) {
+	struct scsi_dev *sdev = bdev->privdata;
+
+	if (sdev->use_count == 1) {
+		scsi_disk_bdev_try_unbind(sdev);
+	}
+
+	mutex_unlock(&sdev->m);
+	scsi_dev_use_dec(sdev);
+}
+
 static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
@@ -70,9 +94,11 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 	struct scsi_cmd cmd = scsi_cmd_template_read10;
 	cmd.scmd_olen = blksize;
 
-	scsi_dev_use_inc(sdev);
-	mutex_lock(&sdev->m);
+	if (!sdev) {
+		return -ENODEV;
+	}
 
+	scsi_disk_lock(bdev);
 	for (lba = blkno, bp = buffer;
 			count >= blksize;
 			lba++, count -= blksize, bp += blksize) {
@@ -89,8 +115,7 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 		}
 
 	}
-	mutex_unlock(&sdev->m);
-	scsi_dev_use_dec(sdev);
+	scsi_disk_unlock(bdev);
 
 	if (ret && bp == buffer) {
 		return ret;
@@ -107,8 +132,11 @@ static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int ret;
 
-	scsi_dev_use_inc(sdev);
+	if (!sdev) {
+		return -ENODEV;
+	}
 
+	scsi_disk_lock(bdev);
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
 		ret = sdev->blk_n;
@@ -119,8 +147,8 @@ static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	default:
 		ret = -ENOSYS;
 	}
+	scsi_disk_unlock(bdev);
 
-	scsi_dev_use_dec(sdev);
 	return ret;
 }
 
@@ -152,6 +180,9 @@ void scsi_disk_found(struct scsi_dev *sdev) {
 
 void scsi_disk_lost(struct scsi_dev *sdev) {
 
-	waitq_wakeup_all(&sdev->wq);
 	scsi_wake(sdev, -ENODEV);
+
+	if (!sdev->use_count) {
+		scsi_disk_bdev_try_unbind(sdev);
+	}
 }

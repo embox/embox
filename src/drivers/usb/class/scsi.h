@@ -38,6 +38,8 @@ struct scsi_dev {
 	struct waitq wq;
 	char in_cmd;
 	char cmd_complete;
+	char attached;
+	unsigned int use_count;
 };
 
 struct scsi_cmd {

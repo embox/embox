@@ -34,6 +34,10 @@ static void usb_scsi_notify(struct usb_request *req, void *arg) {
 int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_t data_len) {
 	struct usb_mass *mass = scsi2mass(sdev);
 
+	if (!sdev->attached) {
+		return -ENODEV;
+	}
+
 	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, USB_DIRECTION_IN, data, data_len,
 			usb_scsi_notify);
 }
@@ -207,6 +211,14 @@ static const struct scsi_dev_state scsi_state_sense = {
 	.sds_input = scsi_sense_input,
 };
 
+static void scsi_dev_try_release(struct scsi_dev *dev) {
+	struct usb_dev *udev = scsi2mass(dev)->usb_dev;
+
+	if (!dev->use_count && !dev->attached) {
+		usb_class_released(udev);
+	}
+}
+
 void scsi_dev_recover(struct scsi_dev *dev) {
 
 	assert(dev->holded_state == NULL, "Can't recover recovering procedure");
@@ -218,12 +230,18 @@ void scsi_dev_recover(struct scsi_dev *dev) {
 
 void scsi_dev_attached(struct scsi_dev *dev) {
 
+	dev->attached = 1;
+
 	dev->state = NULL;
 	scsi_state_transit(dev, &scsi_state_inquiry);
 }
 
 void scsi_dev_detached(struct scsi_dev *dev) {
+
+	dev->attached = 0;
+
 	scsi_disk_lost(dev);
+	scsi_dev_try_release(dev);
 }
 
 void scsi_request_done(struct scsi_dev *dev, int res) {
@@ -234,9 +252,16 @@ void scsi_request_done(struct scsi_dev *dev, int res) {
 }
 
 void scsi_dev_use_inc(struct scsi_dev *dev) {
+
+	dev->use_count++;
 	usb_dev_use_inc(scsi2mass(dev)->usb_dev);
 }
 
 void scsi_dev_use_dec(struct scsi_dev *dev) {
-	usb_dev_use_dec(scsi2mass(dev)->usb_dev);
+	struct usb_dev *udev = scsi2mass(dev)->usb_dev;
+
+	usb_dev_use_dec(udev);
+	dev->use_count--;
+
+	scsi_dev_try_release(dev);
 }
