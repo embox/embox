@@ -12,7 +12,7 @@ declare -A QEMU
 declare -A MACHINE
 # Config for microblaze
 ARCHs+=(microblaze)
-QEMU[microblaze]=/usr/bin/qemu-system-microblaze
+QEMU[microblaze]=qemu-system-microblaze
 MACHINE[microblaze]=petalogix-s3adsp1800
 # Config for mips
 ARCHs+=(mips)
