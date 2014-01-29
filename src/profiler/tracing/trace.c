@@ -4,14 +4,16 @@
  *
  * @date 18.03.2012
  * @author Alina Kramar
+ * @author Denis Deryugin
  */
 
 #include <stdio.h>
-
+#include <stdlib.h>
 #include <string.h>
 
 #include <util/array.h>
 #include <util/location.h>
+#include <util/hashtable.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
@@ -23,6 +25,8 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_point *,
 		__trace_points_array, NULL);
 ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 		__trace_blocks_array, NULL);
+
+static struct hashtable *tbhash = NULL;
 
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
@@ -75,10 +79,75 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 	return NULL;
 }
 
+/* Functions for hash */
+
+static int str_hash(const char *c){
+	int s = 0, i = 0;
+	while (c[i]) {
+		s += c[i++];
+	}
+	return s;
+}
+
+static size_t get_trace_block_hash(void *key) {
+	return str_hash(((struct __trace_block *) key)->name);
+}
+
+static int cmp_trace_blocks(void *key1, void *key2) {
+	return strcmp(((struct __trace_block *) key1)->name,
+			((struct __trace_block *) key2)->name);
+}
+
+/* It is assumed that there are traceblocks for every function
+ * with trace_block_enter just after function call and
+ * trace_block_exit just before function exit */
+
 void __cyg_profile_func_enter(void *func, void *caller) {
-	printf("Enter %p\n", &func);
+	/* TODO: get function name and function location*/
+	static char name[] = "FUNCTION_NAME", location[] = "FUNCTION_LOCATION";
+	struct __trace_block *tb;
+	struct itimer t;
+	int key = str_hash(name);
+	/* Initializing hash table */
+	if (!tbhash) {
+		tbhash = hashtable_create(100 * sizeof(struct __trace_block),
+					get_trace_block_hash, cmp_trace_blocks);
+
+		if (!tbhash) {
+			fprintf(stderr, "Unable to create hashtable for profiling\n");
+			return;
+		}
+	}
+
+	tb = hashtable_get(tbhash, &key);
+
+	if (tb) {
+		/* Traceblock is initialized already */
+		trace_block_enter(tb);
+	} else {
+		/* Lazy traceblock initialization */
+		printf("Lazy init\n");
+		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
+		tb = &(struct __trace_block) {
+			.name = name,
+			.tc = &t,
+			.time = 0,
+			.count = 0,
+			.active = true,
+			.location = {
+				.at = {"FILE", 0},
+				.func = location,
+			},
+		};
+		hashtable_put(tbhash, &key, tb);
+	}
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
-	printf("Exit %p\n", &func);
+	/* TODO: get function name and function location*/
+	static char name[] = "FUNCTION_NAME";
+	struct __trace_block *tb;
+	int key = str_hash(name);
+	tb = hashtable_get(tbhash, &key);
+	trace_block_leave(tb);
 }
