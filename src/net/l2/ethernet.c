@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>
+#include <kernel/printk.h>
 
 static int ethernet_build_hdr(struct sk_buff *skb,
 		const struct net_header_info *hdr_info) {
@@ -78,16 +79,15 @@ static int ethernet_setup(struct net_device *dev) {
 	int ret;
 	char name_fmt[IFNAMSIZ];
 
-	assert(dev != NULL);
-	strcpy(&name_fmt[0], &dev->name[0]);
-	ret = snprintf(&dev->name[0], ARRAY_SIZE(dev->name),
-			&name_fmt[0], eth_id);
-	if (ret < 0) {
+	assert(dev);
+
+	strcpy(name_fmt, dev->name);
+	ret = snprintf(dev->name, ARRAY_SIZE(dev->name), name_fmt, eth_id);
+	if (ret < 0)
 		return -EIO;
-	}
-	else if (ret >= ARRAY_SIZE(dev->name)) {
+	if (ret >= ARRAY_SIZE(dev->name))
 		return -ENOMEM;
-	}
+
 	++eth_id;
 
 	memset(&dev->broadcast[0], 0xff, ETH_ALEN);

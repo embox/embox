@@ -34,7 +34,7 @@ struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 	if (ops->hcd_hci_alloc) {
 		hcd->hci_specific = ops->hcd_hci_alloc(hcd, args);
 		if (!hcd->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_hcds, hcd);
 			return NULL;
 		}
 	}
@@ -69,6 +69,15 @@ void usb_hub_free(struct usb_hub *hub) {
 }
 
 static void usb_dev_free(struct usb_dev *dev) {
+	int i;
+
+	for (i = 0; i < dev->endp_n; i++) {
+		struct usb_endp *endp = dev->endpoints[i];
+		if (endp) {
+			dev->endpoints[i] = NULL;
+			usb_endp_free(endp);
+		}
+	}
 
 	index_free(&dev->hcd->enumerator, dev->idx);
 	pool_free(&usb_devs, dev);
@@ -144,7 +153,7 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 	if (hcd->ops->endp_hci_alloc) {
 		endp->hci_specific = hcd->ops->endp_hci_alloc(endp);
 		if (!hcd->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_endps, endp);
 			return NULL;
 		}
 	}
@@ -156,8 +165,10 @@ void usb_endp_free(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 
 	if (hcd->ops->endp_hci_free) {
-		hcd->ops->endp_hci_free(endp, hcd->hci_specific);
+		hcd->ops->endp_hci_free(endp, endp->hci_specific);
 	}
+
+	pool_free(&usb_endps, endp);
 }
 
 
@@ -173,7 +184,7 @@ static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	if (hcd->ops->req_hci_alloc) {
 		req->hci_specific = hcd->ops->req_hci_alloc(req);
 		if (!req->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_requests, req);
 			return NULL;
 		}
 	}

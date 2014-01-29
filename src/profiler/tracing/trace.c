@@ -27,6 +27,7 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 		__trace_blocks_array, NULL);
 
 static struct hashtable *tbhash = NULL;
+static int *prev_key = NULL;
 
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
@@ -79,6 +80,8 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 	return NULL;
 }
 
+
+
 /* Functions for hash */
 
 static int str_hash(const char *c){
@@ -109,6 +112,7 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 	struct itimer t;
 	int key = str_hash(name);
 	/* Initializing hash table */
+	/* TODO: take the init out of this func */
 	if (!tbhash) {
 		tbhash = hashtable_create(100 * sizeof(struct __trace_block),
 					get_trace_block_hash, cmp_trace_blocks);
@@ -151,3 +155,15 @@ void __cyg_profile_func_exit(void *func, void *caller) {
 	tb = hashtable_get(tbhash, &key);
 	trace_block_leave(tb);
 }
+
+struct __trace_block *auto_profile_tb_first(void){
+	prev_key = hashtable_get_key_first(tbhash);
+	return (struct __trace_block *) hashtable_get(tbhash, prev_key);
+}
+
+struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
+	prev_key = hashtable_get_key_next(tbhash, &prev_key);
+	return (struct __trace_block *) hashtable_get(tbhash, prev_key);
+}
+
+

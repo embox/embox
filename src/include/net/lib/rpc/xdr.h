@@ -9,6 +9,7 @@
 #ifndef NET_LIB_RPC_XDR_H_
 #define NET_LIB_RPC_XDR_H_
 
+#include <endian.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -31,8 +32,13 @@ enum xdr_op {
 
 union xdrrec_hdr {
 	struct {
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t len:31,
 			is_last:1;
+#elif  __BYTE_ORDER == __BIG_ENDIAN
+		uint32_t is_last:1,
+			len:31;
+#endif
 	} h;
 	xdr_unit_t unit;
 };

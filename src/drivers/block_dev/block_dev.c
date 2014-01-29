@@ -160,6 +160,9 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 		return -EIO;
 	}
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -168,12 +171,12 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
 		{
 			if (buffer_new(bh)) {
-				buffer_clear_flag(bh, BH_NEW);
-				if (blksize != (res = bdev->driver->read(bdev, bh->data,
-						blksize, blkno + i))) {
+				if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+						|| 0 != (res = buffer_decrypt(bh))) {
 					bcache_buffer_unlock(bh);
 					return res;
 				}
+				buffer_clear_flag(bh, BH_NEW);
 			}
 			memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0), cplen);
 		}
@@ -196,7 +199,12 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 	if (offset + count > bdev->size) {
 		return -EIO;
 	}
+
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	if (blksize < 0) {
+		return blksize;
+	}
+
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -205,16 +213,17 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
 		{
 			if (buffer_new(bh)) {
-				buffer_clear_flag(bh, BH_NEW);
 				if (cplen < blksize) {
-					if (blksize != (res = bdev->driver->read(bdev, bh->data,
-							blksize, blkno + i))) {
+					if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+							|| 0 != (res = buffer_decrypt(bh))) {
 						bcache_buffer_unlock(bh);
 						return res;
 					}
 				}
+				buffer_clear_flag(bh, BH_NEW);
 			}
 			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor, cplen);
+			buffer_encrypt(bh);
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
 					blksize, blkno + i))) {
 				bcache_buffer_unlock(bh);
@@ -229,50 +238,23 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
-	int blksize, blkcount, i, res, readed = 0;
-	struct buffer_head *bh;
+	int blksize;
 
 	if (NULL == dev) {
 		return -ENODEV;
 	}
 	bdev = block_dev(dev);
-	if (NULL == bdev->driver->read) {
-		return -ENOSYS;
-	}
 
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
-	blkcount = (count + blksize - 1) / blksize;
-
-	for (i = 0; i < blkcount; i++) {
-		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
-		{
-			if (buffer_new(bh)) {
-				buffer_clear_flag(bh, BH_NEW);
-
-				if (!readed) {
-					if (blksize * (blkcount - i) != (res = bdev->driver->read(bdev, buffer + i * blksize,
-							blksize * (blkcount - i), blkno + i))) {
-						bcache_buffer_unlock(bh);
-						return res;
-					}
-					readed = 1;
-				}
-
-				memcpy(bh->data, buffer + i * blksize, blksize);
-			} else {
-				memcpy(buffer + i * blksize, bh->data, blksize);
-			}
-		}
-		bcache_buffer_unlock(bh);
+	if (blksize < 0) {
+		return blksize;
 	}
-
-	return count;
+	return block_dev_read_buffered(bdev, buffer, count, blkno * blksize);
 }
 
 int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *bdev;
-	int blksize, blkcount, i;
-	struct buffer_head *bh;
+	int blksize;
 
 	if (NULL == dev) {
 		return -ENODEV;
@@ -280,24 +262,11 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 
 	bdev = block_dev(dev);
 
-	if (NULL == bdev->driver->write) {
-		return -ENOSYS;
-	}
-
 	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
-	blkcount = (count + blksize - 1) / blksize;
-
-	for (i = 0; i < blkcount; i++) {
-		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
-		{
-			memcpy(bh->data, buffer + i * blksize, blksize);
-			buffer_clear_flag(bh, BH_NEW);
-		}
-		bcache_buffer_unlock(bh);
+	if (blksize < 0) {
+		return blksize;
 	}
-
-	/* TODO pending flush */
-	return bdev->driver->write(bdev, (char *)buffer, count, blkno);
+	return block_dev_write_buffered(bdev, buffer, count, blkno * blksize);
 }
 
 int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
@@ -328,14 +297,14 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	block_dev_cache_free(dev);
 
 	bdev = block_dev(dev);
-	if(NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
+	if (NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
 		return NULL;
 	}
 
 	cache->lastblkno = -1;
 	cache->buff_cntr = -1;
 
-	if(0 >= (cache->blksize =
+	if (0 >= (cache->blksize =
 			block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
@@ -350,7 +319,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	}
 	cache->blkfactor = pagecnt;
 
-	if(NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
+	if (NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
 		return NULL;
 	}
 	cache->depth = blocks;
@@ -410,10 +379,16 @@ int block_dev_destroy (void *dev) {
 	block_dev_t *bdev;
 
 	bdev = block_dev(dev);
+
+	vfs_del_leaf(bdev->dev_node);
+
 	block_dev_cache_free(bdev);
+
+	devtab[bdev->id] = NULL;
 	index_free(&block_dev_idx, bdev->id);
 
 	pool_free(&blockdev_pool, bdev);
+
 	return 0;
 }
 

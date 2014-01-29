@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief TODO --Alina.
+ * @brief
  *
  * @date 18.03.2012
  * @author Alina Kramar
+ * @author Denis Deryugin
  */
 
 #include <stdio.h>
@@ -20,6 +21,15 @@ ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
 	printf("Usage: trace [-h] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
+}
+
+static void print_instrument_trace_block_stat(void) {
+	struct __trace_block *tb = auto_profile_tb_first();
+	printf("Automatic trace points:\n");
+
+	do {
+		tb = auto_profile_tb_next(tb);
+	} while (tb != auto_profile_tb_first());
 }
 
 static void print_trace_block_stat(void) {
@@ -144,6 +154,9 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'e':
 			print_entered_blocks();
+			break;
+		case 'n':
+			print_instrument_trace_block_stat();
 			break;
 		default:
 			break;
