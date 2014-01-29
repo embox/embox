@@ -3,6 +3,8 @@ package embox.driver.usb
 
 module core {
 	source "usb_core.c"
+	depends whitelist_api
+
 	source "usb_port.c"
 	source "usb_queue.c"
 	source "usb_obj.c"
@@ -14,6 +16,16 @@ module core {
 	depends embox.driver.char_dev
 
 	source "usb_dev_desc.c"
+}
+
+@DefaultImpl(whitelist)
+abstract module whitelist_api { }
+
+module whitelist extends whitelist_api {
+	option string whitelist = ""
+	/*option string whitelist = "46f4:0002,8086:1234"*/
+
+	source "usb_whitelist.c"
 }
 
 module driver_example {

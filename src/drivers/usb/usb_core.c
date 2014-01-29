@@ -290,6 +290,10 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 				"getconf_data\n", __func__);
 	}
 
+	if (0 > usb_whitelist_check(&dev->dev_desc)) {
+		return;
+	}
+
 	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
