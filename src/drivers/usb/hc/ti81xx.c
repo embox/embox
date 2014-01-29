@@ -56,8 +56,8 @@ EMBOX_UNIT_INIT(usb_ti81xx_init);
 #define CM_USBPHY0_CTRL (CM_BASE + 0x624)
 
 #define TI81_USB_CTRL_RST               0x00000001
-#define TI81_USB_IRQ_STAT1_ALL_BUT_SOF  0x00000010
-#define TI81_USB_IRQ_STAT1_CONN         0x000003f7
+#define TI81_USB_IRQ_STAT1_ALL_BUT_SOF  0x000003f7
+#define TI81_USB_IRQ_STAT1_CONN         0x00000010
 #define TI81_USB_IRQ_STAT1_DISCONN      0x00000020
 #define TI81_USB_PHYUTMI_DEFAULT        0x00000020
 #define TI81_USB_MODE_IDDIG             0x00000100
@@ -382,12 +382,14 @@ static void ti_fifo_write(uint32_t *fifo, struct usb_request *req) {
 
 }
 
+#if TI81XX_USB_DEBUG
 static void ti_fifo_val_print(uint32_t fifo, size_t fifo_len) {
 
 	for (; fifo_len > 0; fifo >>= 8, fifo_len --) {
 		printk(" %02x", fifo & 0xff);
 	}
 }
+#endif
 
 static void ti_fifo_do_read(uint32_t *fifo, uint16_t *count, struct usb_request *req) {
 	size_t tl, fifo_len;
@@ -731,6 +733,7 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 	if (req->req_stat != USB_REQ_NOERR) {
 		DBG(printk("%s: req_stat=%d count=%d\n", __func__, req->req_stat,
 					REG16_LOAD(count));)
+		ti_csr_write(csr, 0, ~errmask);
 		usb_request_complete(req);
 		return;
 	}
