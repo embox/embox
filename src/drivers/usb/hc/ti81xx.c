@@ -733,9 +733,7 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 	if (req->req_stat != USB_REQ_NOERR) {
 		DBG(printk("%s: req_stat=%d count=%d\n", __func__, req->req_stat,
 					REG16_LOAD(count));)
-		ti_csr_write(csr, 0, ~errmask);
-		usb_request_complete(req);
-		return;
+		/*return;*/
 	}
 
 	if (csr_v & read_done_mask) {
@@ -744,11 +742,7 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 
 	ti_csr_write(csr, 0, ~(errmask | read_done_mask));
 
-	if (req->len > 0) {
-		ti81xx_request(req);
-	} else {
-		usb_request_complete(req);
-	}
+	usb_request_complete(req);
 }
 
 static void ti81xx_irq_cendp(struct ti81xx_hcd_hci *hcdhci,
