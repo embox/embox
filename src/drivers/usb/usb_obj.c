@@ -71,7 +71,7 @@ void usb_hub_free(struct usb_hub *hub) {
 static void usb_dev_free(struct usb_dev *dev) {
 	int i;
 
-	for (i = 0; i < dev->endp_n; i++) {
+	for (i = 0; i < USB_DEV_MAX_ENDP; i++) {
 		struct usb_endp *endp = dev->endpoints[i];
 		if (endp) {
 			dev->endpoints[i] = NULL;

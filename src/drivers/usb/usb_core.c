@@ -73,7 +73,7 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	bool endp_busy;
 
-	if (endp->dev->state == USB_DEV_DETACHED) {
+	if (endp->dev->plug_state == USB_DEV_DETACHED) {
 		usb_request_free(req);
 		return -ENODEV;
 	}
@@ -125,15 +125,8 @@ static void usb_endp_cancel(struct usb_endp *endp) {
 	}
 }
 
-static inline void usb_dev_set_state(struct usb_dev *dev,
-		enum usb_dev_state state) {
-	dev->state = state;
-}
-
 void usb_dev_request_delete(struct usb_dev *dev) {
 	int i;
-
-	usb_dev_set_state(dev, USB_DEV_DETACHED);
 
 	for (i = 0; i < dev->endp_n; i++) {
 		usb_endp_cancel(dev->endpoints[i]);
@@ -273,7 +266,6 @@ static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_reques
 	ctrl_endp = dev->endpoints[0];
 
 	dev->bus_idx = dev->idx;
-	usb_dev_set_state(dev, USB_DEV_ADDRESS);
 	usb_dev_addr_assigned(dev);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
@@ -353,8 +345,6 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) 
 
 static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
-
-	usb_dev_set_state(dev, USB_DEV_CONFIGURED);
 
 	dev->endp_n = 1 + dev->interface_desc->b_num_endpoints;
 
