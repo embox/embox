@@ -115,7 +115,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':

@@ -465,6 +465,7 @@ $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+# TODO: fix problem with check_profiling: it works with any non-zero argument
 $(@source_rmk) : check_profiling = $(if $(filter-out , $1), -finstrument-functions, )
 $(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)))
 $(@source_rmk) : flags = $(call trim, \

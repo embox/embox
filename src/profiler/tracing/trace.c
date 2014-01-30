@@ -21,6 +21,10 @@
 
 #include <profiler/tracing/trace.h>
 
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(instrument_profiling_init);
+
 ARRAY_SPREAD_DEF_TERMINATED(struct __trace_point *,
 		__trace_points_array, NULL);
 ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
@@ -109,32 +113,17 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 	/* TODO: get function name and function location*/
 	static char name[] = "FUNCTION_NAME", location[] = "FUNCTION_LOCATION";
 	struct __trace_block *tb;
-	struct itimer t;
 	int key = str_hash(name);
-	/* Initializing hash table */
-	/* TODO: take the init out of this func */
-	if (!tbhash) {
-		tbhash = hashtable_create(100 * sizeof(struct __trace_block),
-					get_trace_block_hash, cmp_trace_blocks);
-
-		if (!tbhash) {
-			fprintf(stderr, "Unable to create hashtable for profiling\n");
-			return;
-		}
-	}
 
 	tb = hashtable_get(tbhash, &key);
 
-	if (tb) {
-		/* Traceblock is initialized already */
-		trace_block_enter(tb);
-	} else {
+	if (!tb) {
 		/* Lazy traceblock initialization */
 		printf("Lazy init\n");
 		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
 		tb = &(struct __trace_block) {
 			.name = name,
-			.tc = &t,
+			.tc = (struct itimer *) malloc (sizeof(struct itimer)),
 			.time = 0,
 			.count = 0,
 			.active = true,
@@ -145,6 +134,8 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 		};
 		hashtable_put(tbhash, &key, tb);
 	}
+
+	trace_block_enter(tb);
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
@@ -166,4 +157,14 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 	return (struct __trace_block *) hashtable_get(tbhash, prev_key);
 }
 
+static int instrument_profiling_init(void) {
+	/* Initializing hash table */
+	tbhash = hashtable_create(100 * sizeof(struct __trace_block),
+				get_trace_block_hash, cmp_trace_blocks);
 
+	if (!tbhash) {
+		return 1;
+		fprintf(stderr, "Unable to create hashtable for profiling\n");
+	}
+	return 0;
+}
