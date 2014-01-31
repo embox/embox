@@ -142,7 +142,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 	/* check recipient */
 	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address,
 				arph->ar_pln)) {
-		DBG(printk("arp_hnd_request: only IPv4 is supported\n"));
+		DBG(printk("arp_hnd_request: not for us\n"));
 		skb_free(skb);
 		return 0; /* error: not for us */
 	}
