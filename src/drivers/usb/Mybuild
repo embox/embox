@@ -18,14 +18,16 @@ module core {
 	source "usb_dev_desc.c"
 }
 
-@DefaultImpl(whitelist)
+@DefaultImpl(whitelist_dev)
 abstract module whitelist_api { }
 
-module whitelist extends whitelist_api {
+module whitelist_dev extends whitelist_api {
 	option string whitelist = ""
-	/*option string whitelist = "46f4:0002,8086:1234"*/
+	/*option string whitelist = "0x46f4:0x0001:3,0x8086:0x1234"*/
 
-	source "usb_whitelist.c"
+	source "usb_whitelist_dev.c"
+
+	depends embox.driver.char_dev
 }
 
 module driver_example {

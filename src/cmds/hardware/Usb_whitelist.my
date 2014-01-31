@@ -1,0 +1,44 @@
+
+package embox.cmd
+
+@Cmd(name = "usb_whitelist",
+	help = "Utility to modify kernel usb whitelist",
+	man = '''
+		NAME
+			usb_whitelist - Utility to modify kernel usb whitelist
+
+		SYNOPSIS
+			usb_test COMMAND [ OPTIONS ]
+
+		DESCRIPTION
+			Supported commands are
+
+			-P	print current white list
+
+			-A	add entry to white list. VID and optionally
+				PID and S/N should be specified after this
+				command. See Examples
+
+			-F	flush current white list
+
+		EXAMPLES
+			usb_whitelist -P
+				print list
+
+			usb_whitelist -A 0x1234
+				allow all devices with vendor 0x1234
+
+			usb_whitelist -A 0x1234 0x5678 16
+				allow devices with vendor 0x1234,
+				product 0x5678 and S/N 16
+
+		AUTHORS
+			Anton Kozlov
+	''')
+module usb_whitelist {
+	source "usb_whitelist.c"
+
+	depends embox.driver.usb.whitelist_dev
+	depends embox.framework.LibFramework
+}
+
