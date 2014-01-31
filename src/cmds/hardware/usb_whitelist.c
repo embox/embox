@@ -53,7 +53,7 @@ static int usb_wl_print(int fdwl) {
 		return ret;
 	}
 
-	printf("%4s\t%4s\t%4s\n", "PID", "VID", "S/N");
+	printf("%4s\t%4s\t%4s\t%4s\n", "ID", "PID", "VID", "S/N");
 	for (i = 0; i < rules_n; i++) {
 		struct usb_whitelist_rule *wl_rule = wl_rules + i;
 		char strpid[5];
@@ -62,7 +62,7 @@ static int usb_wl_print(int fdwl) {
 		usb_wl_strfield(strpid, 5, "%x", wl_rule->pid, USB_WHITELIST_PID_ANY);
 		usb_wl_strfield(strsn, 5, "%d", wl_rule->sn, USB_WHITELIST_SN_ANY);
 
-		printf("%4x\t%4s\t%4s\n", wl_rule->vid, strpid, strsn);
+		printf("%4u\t%4x\t%4s\t%4s\n", wl_rule->id, wl_rule->vid, strpid, strsn);
 	}
 
 	free(wl_rules);
@@ -82,7 +82,6 @@ static int usb_wl_rule_parse(char *strrule[], int strn,
 
 	for (i = 0; i < strn; i++) {
 		char *endf;
-
 		vals[i] = strtol(strrule[i], &endf, 0);
 		if (*endf) {
 			return -EINVAL;
@@ -100,6 +99,7 @@ static int usb_wl_rule_parse(char *strrule[], int strn,
 static int usb_whitelist_main(int argc, char *argv[]) {
 	struct usb_whitelist_rule wl_rule;
 	char usb_wl_dev_path[USB_WL_DEV_PATH_LEN];
+	int rule_id;
 	int fdwl;
 	int ret;
 
@@ -127,6 +127,15 @@ static int usb_whitelist_main(int argc, char *argv[]) {
 		}
 
 		ret = ioctl(fdwl, USB_WHITELIST_IO_ADD, &wl_rule);
+		break;
+	case 'D':
+		if (argc != 3) {
+			ret = -EINVAL;
+			break;
+		}
+
+		rule_id = atoi(argv[2]);
+		ret = ioctl(fdwl, USB_WHITELIST_IO_DEL, &rule_id);
 		break;
 	case 'F':
 		ret = ioctl(fdwl, USB_WHITELIST_IO_FLUSH);

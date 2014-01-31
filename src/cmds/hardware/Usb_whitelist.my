@@ -19,6 +19,8 @@ package embox.cmd
 				PID and S/N should be specified after this
 				command. See Examples
 
+			-D	delete entry with specified id
+
 			-F	flush current white list
 
 		EXAMPLES
@@ -31,6 +33,9 @@ package embox.cmd
 			usb_whitelist -A 0x1234 0x5678 16
 				allow devices with vendor 0x1234,
 				product 0x5678 and S/N 16
+
+			usb_whitelist -D 1
+				delete entry with id 1
 
 		AUTHORS
 			Anton Kozlov

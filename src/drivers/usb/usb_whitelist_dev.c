@@ -25,25 +25,50 @@ static const char *builtin_whitelist = OPTION_STRING_GET(whitelist);
 #define USB_WHITELIST_MAX_RULES 16
 
 static struct usb_whitelist_conf {
+	unsigned int next_id;
 	int rules_n;
 	struct usb_whitelist_rule rules[USB_WHITELIST_MAX_RULES];
 } whitelist_conf;
 
 static int usb_whitelist_conf_init(struct usb_whitelist_conf *wl_conf) {
 	wl_conf->rules_n = 0;
+	wl_conf->next_id = 1;
 	return 0;
 }
 
 static int usb_whitelist_conf_add(struct usb_whitelist_conf *wl_conf,
 		struct usb_whitelist_rule *wl_rule) {
+	struct usb_whitelist_rule *wl_rule_place;
 
 	if (wl_conf->rules_n == USB_WHITELIST_MAX_RULES) {
 		return -ENOMEM;
 	}
 
-	memcpy(&wl_conf->rules[wl_conf->rules_n++], wl_rule,
-			sizeof(struct usb_whitelist_rule));
+	wl_rule_place = &wl_conf->rules[wl_conf->rules_n];
+	memcpy(wl_rule_place, wl_rule, sizeof(struct usb_whitelist_rule));
+
+	wl_rule_place->id = wl_conf->next_id++;
+	wl_conf->rules_n++;
 	return 0;
+}
+
+static int usb_whitelist_conf_del(struct usb_whitelist_conf *wl_conf,
+		int id) {
+	int i;
+
+	for (i = 0; i < wl_conf->rules_n; i++) {
+		struct usb_whitelist_rule *wl_rule = &wl_conf->rules[i];
+
+		if (wl_rule->id == id) {
+
+			--wl_conf->rules_n;
+			memmove(&wl_conf->rules[i], &wl_conf->rules[i + 1],
+			       (wl_conf->rules_n - i) * sizeof(struct usb_whitelist_rule));
+			return 0;
+		}
+	}
+
+	return -ENOENT;
 }
 
 static int usb_whitelist_conf_isin(struct usb_whitelist_conf *wl_conf,
@@ -98,6 +123,7 @@ static size_t usb_whitelist_read(struct file_desc *desc, void *buf, size_t size)
 static int usb_whitelist_ioctl(struct file_desc *desc, int request, ...) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
 	struct usb_whitelist_rule *wl_rule = NULL;
+	int rule_id;
 	va_list va;
 	int ret;
 
@@ -107,6 +133,10 @@ static int usb_whitelist_ioctl(struct file_desc *desc, int request, ...) {
 	case USB_WHITELIST_IO_ADD:
 		wl_rule = va_arg(va, struct usb_whitelist_rule *);
 		ret = usb_whitelist_conf_add(wl_conf, wl_rule);
+		break;
+	case USB_WHITELIST_IO_DEL:
+		rule_id = * va_arg(va, int *);
+		ret = usb_whitelist_conf_del(wl_conf, rule_id);
 		break;
 	case USB_WHITELIST_IO_FLUSH:
 		ret = usb_whitelist_conf_init(wl_conf);
