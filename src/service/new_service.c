@@ -117,6 +117,7 @@ static void preprocess_file(FILE *out, struct variable *vars) {
 			}
 		}
 	}
+	fclose(in);
 }
 
 static void * entry_point(void *arg) {
