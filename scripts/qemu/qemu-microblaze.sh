@@ -1,1 +1,0 @@
-qemu-system-microblaze -nographic -M petalogix-s3adsp1800 -net nic,model=xilinx-ethlite,macaddr=AA:BB:CC:DD:EE:02  -net tap,name=tap0,script=start_script,downscript=stop_script -kernel ../../build/base/bin/embox -s -S
