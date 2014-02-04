@@ -28,6 +28,14 @@ cmd_notouch = \
 							&& set_on_error_trap -; }; };                  \
 	fi
 
+# Creates shell script with command if it is too big to be passed through
+# command line. Must be called from recipe.
+#   1. Output file.
+#   2. The complete command
+cmd_assemble = \
+	echo '$(\h)!/bin/sh' > $1; \
+	$(foreach w,$2,echo -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
+
 #cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }
 
@@ -183,8 +191,9 @@ $(@build_include_mk) : module_extbld_rmk = \
 $(@build_include_mk) : initfs_rmk = \
 		$(patsubst %,$(value build_initfs_rmk_mk_pat),$(build_initfs))
 
+$(@build_include_mk) : cmd_file = $(@file).cmd
 $(@build_include_mk) :
-	@$(call cmd_notouch_stdout,$(@file), \
+	@$(call cmd_assemble,$(cmd_file), \
 		$(gen_banner); \
 		$(call gen_make_var,__include_image,$(image_rmk)); \
 		$(call gen_make_var,__include_initfs,$(initfs_rmk)); \
@@ -193,6 +202,8 @@ $(@build_include_mk) :
 			$(module_ar_rmk) $(module_ld_rmk)); \
 		$(call gen_make_var_list,__module_list, \
 			$(call get,$(call get,$(build_modules),type),qualifiedName)))
+	@$(call cmd_notouch_stdout,$(@file), \
+		sh $(cmd_file))
 
 build_initfs := initfs
 
