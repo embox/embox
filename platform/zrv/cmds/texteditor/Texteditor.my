@@ -1,4 +1,4 @@
-package platform.zrv.cmd
+package zrv.cmd
 
 @Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt/examples MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_TARGET='../../../platform/zrv/cmds/texteditor'")
 module texteditor extends embox.lib.cxx.app {
