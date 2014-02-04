@@ -139,7 +139,7 @@ CONFIGURED_EMBOX = $(QT_BUILD_DIR_EMBOX)/.configured
 
 AT:=
 
-all:
+all: build_and_install target_apps_EMBOX
 
 $(QT_BUILD_DIR_EMBOX):
 	$(AT)mkdir -p $@
@@ -150,6 +150,7 @@ $(DOWNLOADED):
 	$(AT)(echo '$(QT_MD5_LINE)' | $(MD5) -c) || \
 		(wget -P $(DOWNLOAD_DIR) -c $(QT_URL) && \
 			echo '$(QT_MD5_LINE)' | $(MD5) -c)
+	$(AT)mkdir -p $(dir $@)
 	$(AT)touch $@
 
 # When necessity to re-patch is detected manual resolution is required.
@@ -220,20 +221,21 @@ build_and_install: configure
 
 $(ROOTFS_IMAGE): build_and_install
 
-#TARGET_APPS += examples/declarative/animation/basics/color-animation
-#TARGET_APPS += demos/textedit
-#TARGET_APPS += demos/spreadsheet
-TARGET_APPS += examples/animation/animatedtiles
-TARGET_APPS += examples/animation/moveblocks
-TARGET_APPS += examples/widgets/charactermap
-ifeq ($(MAKECMDGOALS),texteditor) # texteditor will be built only if included as mybuild module
-TARGET_APPS += examples/texteditor
-endif
-ifeq ($(MAKECMDGOALS),qpidhello)
-TARGET_APPS += examples/qpidhello
-EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
-EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
-endif
+TARGET_APPS=
+##TARGET_APPS += examples/declarative/animation/basics/color-animation
+##TARGET_APPS += demos/textedit
+##TARGET_APPS += demos/spreadsheet
+#TARGET_APPS += examples/animation/animatedtiles
+#TARGET_APPS += examples/animation/moveblocks
+#TARGET_APPS += examples/widgets/charactermap
+#ifeq ($(MAKECMDGOALS),texteditor) # texteditor will be built only if included as mybuild module
+#TARGET_APPS += examples/texteditor
+#endif
+#ifeq ($(MAKECMDGOALS),qpidhello)
+#TARGET_APPS += examples/qpidhello
+#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/qpid/include
+#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
+#endif
 
 
 
@@ -321,14 +323,14 @@ $(eval $(call TARGET_COMPONENTS_COMPOSITE,EMBOX))
 
 $(TARGET_QMAKE_EMBOX): build_and_install
 
-.PHONY: target_apps_EMBOX
+#.PHONY: target_apps_EMBOX
 
-all: target_apps_EMBOX
+#all: target_apps_EMBOX
 
-.PHONY: qpidhello texteditor
+#.PHONY: qpidhello texteditor
 
-qpidhello: target_apps_EMBOX
-texteditor: target_apps_EMBOX
+#qpidhello: target_apps_EMBOX
+#texteditor: target_apps_EMBOX
 
 
 
