@@ -7,7 +7,7 @@ ARFLAGS ?=
 LDFLAGS ?=
 
 COVERAGE_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit
+		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)

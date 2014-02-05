@@ -10,19 +10,20 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <util/bitmap.h>
 #include <debug/symbol.h>
 #include <embox/cmd.h>
 
 EMBOX_CMD(coverage_main);
 
 extern int coverage_getstat(const struct symbol **sym_table,
-		const bool **cov_table);
+		const unsigned long **cov_bitmap);
 
 static int coverage_main(int argc, char *argv[]) {
 	const char *outfile = NULL;
 	FILE *out;
 	const struct symbol *sym_table;
-	const bool *cov_table;
+	const unsigned long *cov_bitmap;
 	int opt, i, sym_n;
 
 	getopt_init();
@@ -44,7 +45,7 @@ static int coverage_main(int argc, char *argv[]) {
 	}
 
 
-	sym_n = coverage_getstat(&sym_table, &cov_table);
+	sym_n = coverage_getstat(&sym_table, &cov_bitmap);
 	if (sym_n <= 0) {
 		if (outfile)
 			fclose(out);
@@ -56,7 +57,7 @@ static int coverage_main(int argc, char *argv[]) {
 
 		fprintf(out, "%21s@0x%08lx\t%8s\n", sym_table[i].name,
 				(unsigned long) sym_table[i].addr,
-				cov_table[i] ? "true" : "false");
+				bitmap_test_bit(cov_bitmap, i) ? "true" : "false");
 	}
 
 	if (outfile)

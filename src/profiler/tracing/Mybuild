@@ -13,7 +13,7 @@ module tracing extends trace {
 }
 
 module coverage {
-	option number coverage_table_size = 5000
+	option number coverage_table_size = 50000
 	source "coverage.c"
 
 	depends embox.lib.debug.symbol
