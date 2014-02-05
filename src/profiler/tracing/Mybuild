@@ -11,3 +11,10 @@ module tracing extends trace {
 	source "trace.c", "trace_impl.h"
 	depends embox.kernel.timer.itimer
 }
+
+module coverage {
+	option number coverage_table_size = 5000
+	source "coverage.c"
+
+	depends embox.lib.debug.symbol
+}
