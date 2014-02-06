@@ -24,7 +24,7 @@ C_ENTRY(break_except_hnd):
 	brlid   r15, mb_exception_dispatcher
 	addik   r7, r1, PT_OFFSET /* set third param */
 
-	swi	r3, r1, PT_R3 /*save the result */
+	swi     r3, r1, PT_R3 /*save the result */
 	RESTORE_REGS
 
 	addik   r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */

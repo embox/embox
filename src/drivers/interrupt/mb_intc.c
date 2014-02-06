@@ -74,5 +74,5 @@ void irqctrl_clear(unsigned int irq) {
  */
 
 unsigned int mb_intc_get_pending(void) {
-	return irqc->isr;
+	return REG_LOAD(&irqc->isr);
 }

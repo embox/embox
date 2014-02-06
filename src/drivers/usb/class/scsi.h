@@ -25,6 +25,7 @@ struct scsi_dev_state {
 
 #define USB_SCSI_SCRATCHPAD_LEN 36
 struct scsi_dev {
+	int idx;
 	const struct scsi_dev_state *state;
 	const struct scsi_dev_state *holded_state;
 

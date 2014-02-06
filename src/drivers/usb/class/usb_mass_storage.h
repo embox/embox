@@ -21,6 +21,7 @@
 #define USB_MASS_MAX_DEVS     2
 
 #define USB_REQ_MASS_RESET    0xff
+#define USB_REQ_MASS_MAXLUN   0xfe
 
 #define USB_CBW_CB_MAXLEN 16
 
@@ -63,6 +64,8 @@ struct usb_mass_request_ctx {
 struct usb_mass {
 	struct scsi_dev scsi_dev;
 	struct usb_dev *usb_dev;
+
+	uint8_t maxlun;
 
 	char blkin, blkout;
 	struct usb_mass_request_ctx req_ctx;

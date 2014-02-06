@@ -71,7 +71,7 @@ void usb_hub_free(struct usb_hub *hub) {
 static void usb_dev_free(struct usb_dev *dev) {
 	int i;
 
-	for (i = 0; i < dev->endp_n; i++) {
+	for (i = 0; i < USB_DEV_MAX_ENDP; i++) {
 		struct usb_endp *endp = dev->endpoints[i];
 		if (endp) {
 			dev->endpoints[i] = NULL;
@@ -139,11 +139,13 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 	usb_queue_init(&endp->req_queue);
 
 	for (endp_num = 0; endp_num < USB_DEV_MAX_ENDP; endp_num++) {
-		if (!dev->endpoints[endp_num]) {
+		struct usb_endp *dendp = dev->endpoints[endp_num];
+		if (!dendp) {
 			break;
 		}
 
-		assert(dev->endpoints[endp_num]->address != endp->address);
+		assert(dendp->address != endp->address ||
+				dendp->direction != endp->direction);
 	}
 
 	assert(endp_num < USB_DEV_MAX_ENDP);

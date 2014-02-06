@@ -81,13 +81,10 @@ enum usb_host_state {
 	USB_HOST_ENUMERATING,
 };
 
-enum usb_dev_state {
-	USB_DEV_CONNECTED,
-	USB_DEV_POWERED,
+enum usb_dev_plug_state {
 	USB_DEV_DEFAULT,
-	USB_DEV_ADDRESS,
+	USB_DEV_ADDRESSED,
 	USB_DEV_CONFIGURED,
-	USB_DEV_SUSPENDED,
 	USB_DEV_DETACHED,
 };
 
@@ -191,7 +188,7 @@ struct usb_desc_getconf_data {
 } __attribute__((packed));
 
 struct usb_dev {
-	enum usb_dev_state state;
+	enum usb_dev_plug_state plug_state;
 	unsigned int use_count;
 
 	unsigned short idx; /**< index allocated for device */
@@ -309,6 +306,8 @@ extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 
 extern void usb_dev_addr_assign(struct usb_dev *dev);
 extern void usb_dev_request_delete(struct usb_dev *dev);
+
+extern int usb_whitelist_check(struct usb_desc_device *desc);
 
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);

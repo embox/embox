@@ -14,6 +14,8 @@
 #include <embox/block_dev.h>
 #include <util/indexator.h>
 
+INDEX_DEF(scsi_disk_idx, 0, 26);
+
 static int scsi_wake_res(struct scsi_dev *dev) {
 	return min(dev->cmd_complete, 0);
 }
@@ -62,6 +64,7 @@ static const struct scsi_dev_state scsi_state_user = {
 static void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev) {
 	if (!sdev->attached) {
 		sdev->bdev->privdata = NULL;
+		index_free(&scsi_disk_idx, sdev->idx);
 		block_dev_destroy(sdev->bdev);
 	}
 }
@@ -154,13 +157,11 @@ static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 }
 
 static const block_dev_driver_t bdev_driver_scsi = {
-	"scsi disc",
+	"scsi disk",
 	scsi_ioctl,
 	scsi_read,
 	scsi_write
 };
-
-INDEX_DEF(scsi_disc_idx, 0, 26);
 
 void scsi_disk_found(struct scsi_dev *sdev) {
 	struct block_dev *bdev;
@@ -168,7 +169,7 @@ void scsi_disk_found(struct scsi_dev *sdev) {
 
 	strcpy(path, "/dev/sd*");
 
-	if (0 > block_dev_named(path, &scsi_disc_idx)) {
+	if (0 > (sdev->idx = block_dev_named(path, &scsi_disk_idx))) {
 		return;
 	}
 

@@ -100,6 +100,7 @@ int service_file_switch_to_read_mode(struct service_file *srv_file) {
 
 void service_file_close(struct service_file *srv_file) {
 	if (srv_file->name != NULL) {
+		remove(srv_file->name);
 		free(srv_file->name);
 	}
 	if (srv_file->fd != NULL) {

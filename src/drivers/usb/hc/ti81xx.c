@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <util/math.h>
+#include <util/bit.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
@@ -55,8 +56,8 @@ EMBOX_UNIT_INIT(usb_ti81xx_init);
 #define CM_USBPHY0_CTRL (CM_BASE + 0x624)
 
 #define TI81_USB_CTRL_RST               0x00000001
-#define TI81_USB_IRQ_STAT1_ALL_BUT_SOF  0x00000010
-#define TI81_USB_IRQ_STAT1_CONN         0x000003f7
+#define TI81_USB_IRQ_STAT1_ALL_BUT_SOF  0x000003f7
+#define TI81_USB_IRQ_STAT1_CONN         0x00000010
 #define TI81_USB_IRQ_STAT1_DISCONN      0x00000020
 #define TI81_USB_PHYUTMI_DEFAULT        0x00000020
 #define TI81_USB_MODE_IDDIG             0x00000100
@@ -121,6 +122,12 @@ EMBOX_UNIT_INIT(usb_ti81xx_init);
 #define TI81_USB_TYPE_ENDP_MASK         0x0f
 
 #define TI81_USB_ENDP_N 15
+
+#define TI81_USB_FIFO_SZ 512
+#define TI81_USB_FIFO_SZ_RAW (bit_ctz(TI81_USB_FIFO_SZ) - 3)
+
+#define TI81_USB_FIFO_RAM_DIV 8
+#define TI81_USB_FIFO_SZ_EP0  64
 
 struct ti81xx_endp_csr0 {
         uint16_t        pad0;
@@ -253,6 +260,23 @@ static inline struct ti81xx_usb *hcd2ti(struct usb_hcd *hcd) {
 	return usb2hcd(hcd)->tiusb;
 }
 
+static void ti81xx_endp_fifo_init(struct ti81xx_usb *tiusb) {
+	int i;
+	unsigned fifo_ram = TI81_USB_FIFO_SZ_EP0 / TI81_USB_FIFO_RAM_DIV;
+
+	for (i = 1; i < TI81_USB_ENDP_N ; i++) {
+		REG8_STORE(&tiusb->m_index, i);
+
+		REG16_STORE(&tiusb->m_txfifo_addr, fifo_ram);
+		REG8_STORE(&tiusb->m_txfifo_sz, TI81_USB_FIFO_SZ_RAW);
+
+		REG16_STORE(&tiusb->m_rxfifo_addr, fifo_ram);
+		REG8_STORE(&tiusb->m_rxfifo_sz, TI81_USB_FIFO_SZ_RAW);
+
+		fifo_ram += TI81_USB_FIFO_SZ / TI81_USB_FIFO_RAM_DIV;
+	}
+}
+
 static void *ti81xx_hcd_alloc(struct usb_hcd *hcd, void *arg) {
 	struct ti81xx_hcd_hci *hcdhci = pool_alloc(&hcd_hcis);
 
@@ -301,8 +325,11 @@ static int ti81xx_start(struct usb_hcd *hcd) {
 	REG8_STORE(&tiusb->m_devctl, TI81_USB_DEVCTL_SESSION);
 	REG8_STORE(&tiusb->m_intrusbe, 0xff);
 
+	ti81xx_endp_fifo_init(tiusb);
+
 	return 0;
 }
+
 static int ti81xx_stop(struct usb_hcd *hcd) {
 
 	return 0;
@@ -355,6 +382,15 @@ static void ti_fifo_write(uint32_t *fifo, struct usb_request *req) {
 
 }
 
+#if TI81XX_USB_DEBUG
+static void ti_fifo_val_print(uint32_t fifo, size_t fifo_len) {
+
+	for (; fifo_len > 0; fifo >>= 8, fifo_len --) {
+		printk(" %02x", fifo & 0xff);
+	}
+}
+#endif
+
 static void ti_fifo_do_read(uint32_t *fifo, uint16_t *count, struct usb_request *req) {
 	size_t tl, fifo_len;
 	uint32_t fifo_val;
@@ -371,13 +407,14 @@ static void ti_fifo_do_read(uint32_t *fifo, uint16_t *count, struct usb_request 
 		fifo_val = REG_LOAD(fifo);
 		req->buf = sizeof(uint32_t) + memcpy(req->buf, &fifo_val, sizeof(uint32_t));
 
-		DBG(printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));)
+		DBG(ti_fifo_val_print(fifo_val, sizeof(uint32_t));)
 	}
 
 	tl = min(req->len, fifo_len);
 	if (tl > 0) {
 		fifo_val = REG_LOAD(fifo);
-		DBG(printk(" %08x(%04x)", fifo_val, REG16_LOAD(count));)
+
+		DBG(ti_fifo_val_print(fifo_val, tl);)
 		req->buf = tl + memcpy(req->buf, &fifo_val, tl);
 		req->len -= tl;
 	}
@@ -470,6 +507,7 @@ static void ti81xx_csr_map(enum ti81xx_endp_type type, unsigned short token,
 		if (token & USB_TOKEN_IN) {
 			or |= TI81_USB_RX_CTRL_REQPKT;
 		}
+		/*or |= TI81_USB_RX_CTRL_DISNYET;*/
 		assert(!(token & (USB_TOKEN_SETUP | USB_TOKEN_OUT | USB_TOKEN_STATUS)));
 		break;
 
@@ -488,7 +526,12 @@ static void ti81xx_csr_map(enum ti81xx_endp_type type, unsigned short token,
 	*and_mask = and;
 }
 
-static uint16_t ti81xx_proto_map(enum usb_comm_type type) {
+static uint8_t ti81xx_speed_map(struct usb_endp *endp) {
+
+	return TI81_USB_TYPE_FLSPD;
+}
+
+static uint8_t ti81xx_proto_map(enum usb_comm_type type) {
 
 	switch(type) {
 	case USB_COMM_CONTROL:
@@ -561,7 +604,10 @@ static int ti81xx_request0(struct usb_request *req) {
 static void ti81xx_endp_setup(struct usb_endp *endp,
 		uint8_t *type, uint16_t *maxp, uint8_t *interval) {
 
-	REG8_STORE(type, ti81xx_proto_map(endp->type)
+	DBG(printk("%s: endp type=%d addr=%d, maxp=%d\n", __func__,
+				endp->type, endp->address, endp->max_packet_size);)
+	REG8_STORE(type, ti81xx_speed_map(endp)
+			| ti81xx_proto_map(endp->type)
 			| (endp->address & TI81_USB_TYPE_ENDP_MASK));
 
 	REG16_STORE(maxp, endp->max_packet_size);
@@ -575,6 +621,8 @@ static int ti81xx_request_rx(struct usb_request *req, int host_endp_n) {
 	uint16_t or_mask, and_mask;
 
 	DBG(printk("%s: ", __func__);)
+
+	ti_csr_write(&tiendp->tx_csr, 0, (uint16_t) ~TI81_USB_TX_CTRL_MODE);
 
 	ti81xx_endp_setup(req->endp, &tiendp->rx_type, &tiendp->rx_maxp,
 			&tiendp->rx_interv);
@@ -590,6 +638,11 @@ static int ti81xx_request_tx(struct usb_request *req, int host_endp_n) {
 	struct ti81xx_usb *tiusb = hcd2ti(req->endp->dev->hcd);
 	struct ti81xx_endp *tiendp = &tiusb->csr[host_endp_n];
 	uint16_t or_mask, and_mask;
+
+	DBG(printk("%s: ", __func__);)
+
+	ti_csr_write(&tiendp->tx_csr, TI81_USB_TX_CTRL_MODE,
+			(uint16_t) ~(TI81_USB_TX_CTRL_FRC_DATATOG | TI81_USB_TX_CTRL_AUTOSET));
 
 	ti81xx_endp_setup(req->endp, &tiendp->tx_type, &tiendp->tx_maxp,
 			&tiendp->tx_interv);
@@ -617,11 +670,16 @@ static int ti81xx_request(struct usb_request *req) {
 		return ti81xx_request0(req);
 	}
 
+#if 0
+	host_endp_n = endp->direction == USB_DIRECTION_IN ?
+		0 : 1;
+#else
 	for (host_endp_n = 0; host_endp_n < TI81_USB_ENDP_N; host_endp_n++) {
 		if (NULL == hcdhci->endp_req[host_endp_n]) {
 			break;
 		}
 	}
+#endif
 
 	assert(host_endp_n < TI81_USB_ENDP_N, "no idle endpoint right now");
 	ti81xx_endp_req_bind(hcdhci, TI81_ENDP_RX, host_endp_n, req);
@@ -670,12 +728,12 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 
 	csr_v = REG16_LOAD(csr);
 
-	DBG(printk("%s: csr_v=%04x\n", __func__, csr_v);)
-
 	req->req_stat = ti81xx_endp_status_map(endp_type, csr_v, &errmask);
+	DBG(printk("%s: csr_v=%04x errmask=%04x\n", __func__, csr_v, errmask);)
 	if (req->req_stat != USB_REQ_NOERR) {
-		DBG(printk("%s: req_stat=%d\n", __func__, req->req_stat);)
-		usb_request_complete(req);
+		DBG(printk("%s: req_stat=%d count=%d\n", __func__, req->req_stat,
+					REG16_LOAD(count));)
+		/*return;*/
 	}
 
 	if (csr_v & read_done_mask) {
@@ -684,11 +742,7 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 
 	ti_csr_write(csr, 0, ~(errmask | read_done_mask));
 
-	if (req->len > 0) {
-		ti81xx_request(req);
-	} else {
-		usb_request_complete(req);
-	}
+	usb_request_complete(req);
 }
 
 static void ti81xx_irq_cendp(struct ti81xx_hcd_hci *hcdhci,
@@ -789,6 +843,7 @@ static int usb_ti81xx_init(void) {
 	static_assert(offsetof(struct ti81xx_usb, pad10) == 0x46e);
 	static_assert(offsetof(struct ti81xx_usb, csr0) == 0x500);
 	static_assert(offsetof(struct ti81xx_usb, csr[0]) == 0x510);
+	static_assert(offsetof(struct ti81xx_usb, m_index) == 0x40e);
 
 	REG_ANDIN(PRCM_P_DEFAULT_RSTCTL, 0xffffff9f);
 

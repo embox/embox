@@ -37,7 +37,7 @@ EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS += $(EMBOX_IMPORTED_CXXFLAGS)
 
-
+BUILD_DIR := $(ROOT_DIR)/build/
 PHONEME_DIR := $(ROOT_DIR)/build/phoneme
 PHONEME_BUILD_DIR := $(PHONEME_DIR)/build
 SPECFILE_TXT = phoneme_specfile.txt
@@ -67,6 +67,11 @@ all: amalgamated
 
 checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
 
+DOWNLOAD_DIR:= $(ROOT_DIR)/download
+DOWNLOAD_TAR:= $(DOWNLOAD_DIR)/phoneme-trunk.tar.gz
+
+ifeq ($(wildcard $(DOWNLOAD_TAR)),)
+
 TOOLS_URL = $(word 1,$(shell grep tools $(SPECFILE_TXT)))
 $(TOOLS_DIR):
 	$(AT)svn co -q $(TOOLS_URL) $@
@@ -74,6 +79,13 @@ $(TOOLS_DIR):
 $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
 	$(AT)(cd $(PHONEME_DIR) && tools/svntools/checkout.sh $(abspath $(SPECFILE_TXT)))
 	$(AT)patch -p0 -d $(PHONEME_DIR) -N --input=$(abspath $(PATCH_TXT))
+
+else
+
+$(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
+	$(AT)tar -C $(BUILD_DIR) -zxf $(DOWNLOAD_TAR)
+
+endif
 
 javacall: checkout
 	export CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \

@@ -21,6 +21,7 @@
 #if NET_TX_DEBUG
 #include <kernel/printk.h>
 #include <arpa/inet.h>
+#include <net/l2/ethernet.h>
 #define DBG(x) x
 #else
 #define DBG(x)
