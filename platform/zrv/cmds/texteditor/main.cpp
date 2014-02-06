@@ -11,13 +11,13 @@
 #include <kernel/sched/waitq.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
-#include <module/platform/zrv/cmd/texteditor.h>
+#include <module/zrv/cmd/texteditor.h>
 
 #define DEFAULT_WIDTH \
-		OPTION_MODULE_GET(platform__zrv__cmd__texteditor, NUMBER, root_window_width)
+		OPTION_MODULE_GET(zrv__cmd__texteditor, NUMBER, root_window_width)
 
 #define DEFAULT_HEIGHT \
-		OPTION_MODULE_GET(platform__zrv__cmd__texteditor, NUMBER, root_window_height)
+		OPTION_MODULE_GET(zrv__cmd__texteditor, NUMBER, root_window_height)
 
 #define FSIZE 64
 #define SEP ':'
