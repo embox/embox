@@ -112,8 +112,7 @@ endif
 
 .PHONY: all build_and_install configure merge_trees
 
-all:
-#all: build_and_install
+all: build_and_install
 
 $(QT_BUILD_DIR):
 	mkdir -p $@
