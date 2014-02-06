@@ -109,7 +109,7 @@
 
 
 
-static char *tzname[2];
+static const char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
 	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
