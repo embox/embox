@@ -14,8 +14,8 @@ QMAKE_CFLAGS           += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CFLAGS)   -include qt_
 # https://bugs.launchpad.net/gcc-linaro/+bug/675347
 QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive
 
-QT_CONF_FLAGS_EMBOX += M4_EXTRACT_ENVVAR(QT_CONF_FLAGS_EMBOX)
-contains(QT_CONF_FLAGS_EMBOX, arm) {
+QT_CONF_FLAGS += M4_EXTRACT_ENVVAR(QT_CONF_FLAGS)
+contains(QT_CONF_FLAGS, arm) {
 	QMAKE_CXXFLAGS         += -fno-strict-volatile-bitfields
 }
 #CROSS_COMPILE          += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CROSS_COMPILE)
