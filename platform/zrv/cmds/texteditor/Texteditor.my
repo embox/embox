@@ -7,4 +7,5 @@ module texteditor extends embox.lib.cxx.app {
 	source "texteditor.o"
 
 	@NoRuntime depends third_party.qt.core
+	@NoRuntime depends third_party.qt.lib.emboxautopluginimporter
 }

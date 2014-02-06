@@ -14,7 +14,7 @@ contains(TEMPLATE, .*(app)) {
 	#QTPLUGIN          += qvncgraphicssystem
 	#CONFIG += link_prl
 	QMAKE_LFLAGS      += -Wl,--undefined=embox_auto_plugin_importer_linker_hook
-	LIBS              += -L../../lib/EmboxAutoPluginImporter -lEmboxAutoPluginImporter
+	LIBS              += -lEmboxAutoPluginImporter
 	TARGET             = $${TARGET}.embox.o
 }
 
