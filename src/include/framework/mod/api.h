@@ -133,13 +133,18 @@ extern bool mod_is_running(const struct mod *mod);
 extern int mod_activate_app(const struct mod *mod);
 
 /**
- * Search for a module with a given FQN (fully.qualified.name)
- * @param fqn
- *   Module name, including packages.
+ * Check module for integrity.
+ *
+ * @param mod
+ *
  * @return
- *   Found module, if any, NULL otherwise.
+ *   Integrity boolean
+ * @retval true
+ *   If mod is OK
+ * @retval false
+ *   If mod is broken
  */
-extern bool mod_label_check(const struct mod *mod, const struct mod_label *label);
+extern bool mod_check(const struct mod *mod);
 
 /**
  * Search for a module with a given FQN (fully.qualified.name)
