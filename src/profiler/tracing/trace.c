@@ -43,16 +43,20 @@ void trace_block_enter(struct __trace_block *tb) {
 	if (tb->active) {
 		tb->is_entered = true;
 		itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
-		__tracepoint_handle(tb->begin);
+		/*__tracepoint_handle(tb->begin);*/
 	}
 }
 
 void trace_block_leave(struct __trace_block *tb) {
+	printf("LEAVE\n");
+	if (tb == NULL) {
+		printf("ERROR!\n");
+	} else
 	if (tb->active) {
 		tb->count++;
 		tb->is_entered = false;
 		tb->time = itimer_read(tb->tc);
-		__tracepoint_handle(tb->end);
+		/* __tracepoint_handle(tb->end); */
 	}
 }
 
@@ -111,11 +115,11 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void __cyg_profile_func_enter(void *func, void *caller) {
 	/* TODO: get function name and function location*/
-	static char name[] = "FUNCTION_NAME", location[] = "FUNCTION_LOCATION";
+	char name[] = "FUNCTION_NAME", location[] = "FUNCTION_LOCATION";
 	struct __trace_block *tb;
-	int key = str_hash(name);
+	//int key = str_hash(name);
 
-	tb = hashtable_get(tbhash, &key);
+	tb = hashtable_get(tbhash, name);
 
 	if (!tb) {
 		/* Lazy traceblock initialization */
@@ -132,9 +136,9 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 				.func = location,
 			},
 		};
-		hashtable_put(tbhash, &key, tb);
+		hashtable_put(tbhash, &name, tb);
 	}
-
+	tb = hashtable_get(tbhash, &name);
 	trace_block_enter(tb);
 }
 
@@ -142,9 +146,11 @@ void __cyg_profile_func_exit(void *func, void *caller) {
 	/* TODO: get function name and function location*/
 	static char name[] = "FUNCTION_NAME";
 	struct __trace_block *tb;
-	int key = str_hash(name);
-	tb = hashtable_get(tbhash, &key);
+	//int key = str_hash(name);
+	tb = hashtable_get(tbhash, &name);
+	printf("1\n");
 	trace_block_leave(tb);
+	printf("2\n");
 }
 
 struct __trace_block *auto_profile_tb_first(void){
