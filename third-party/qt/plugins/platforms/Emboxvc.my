@@ -1,0 +1,8 @@
+package third_party.qt.plugins.platforms
+
+@Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='$(THIRDPARTY_DIR)/qt/plugins/platforms/emboxvc' .$(BUILD_DIR)/../qt/source/src/plugins/platforms/emboxvc")
+static module emboxvc {
+	source "emboxvc.a"
+
+	@NoRuntime depends third_party.qt.core
+}

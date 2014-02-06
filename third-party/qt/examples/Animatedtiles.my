@@ -1,7 +1,9 @@
 package third_party.qt.example
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt/examples MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_TARGET='examples/animation/animatedtiles'")
+@Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='$(THIRDPARTY_DIR)/qt/examples/animatedtiles' .$(BUILD_DIR:./=)/../qt/source/examples/animation/animatedtiles")
 module animatedtiles extends embox.lib.cxx.app {
-	depends third_party.qt.core
-	source "../../../../../qt/apps_embox/animatedtiles/animatedtiles.embox.o"
+	source "animatedtiles/animatedtiles.embox.o"
+
+	@NoRuntime depends third_party.qt.core
+	@NoRuntime depends third_party.qt.lib.emboxautopluginimporter
 }

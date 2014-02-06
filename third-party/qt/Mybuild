@@ -9,12 +9,12 @@ static module core {
 	depends embox.compat.posix.LibPosix
 
 	source
-		"../../../../qt/install_embox/lib/libQtCore.a",
-		"../../../../qt/install_embox/lib/libQtGui.a",
-		"../../../../qt/install_embox/lib/libQtMultimedia.a",
-		"../../../../qt/install_embox/lib/libQtNetwork.a",
-		"../../../../qt/install_embox/lib/libQtSql.a",
-		"../../../../qt/install_embox/lib/libQtSvg.a",
-		"../../../../qt/install_embox/lib/libQtTest.a",
-		"../../../../qt/install_embox/lib/libQtXml.a"
+		"../../../../qt/install/lib/libQtCore.a",
+		"../../../../qt/install/lib/libQtGui.a",
+		"../../../../qt/install/lib/libQtMultimedia.a",
+		"../../../../qt/install/lib/libQtNetwork.a",
+		"../../../../qt/install/lib/libQtSql.a",
+		"../../../../qt/install/lib/libQtSvg.a",
+		"../../../../qt/install/lib/libQtTest.a",
+		"../../../../qt/install/lib/libQtXml.a"
 }

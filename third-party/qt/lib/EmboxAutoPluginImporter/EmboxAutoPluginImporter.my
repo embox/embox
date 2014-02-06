@@ -1,0 +1,9 @@
+package third_party.qt.lib
+
+@Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='$(THIRDPARTY_DIR)/qt/lib/EmboxAutoPluginImporter' .$(THIRDPARTY_DIR)/qt/lib/EmboxAutoPluginImporter")
+static module emboxautopluginimporter {
+	source "libEmboxAutoPluginImporter.a"
+
+	@NoRuntime depends third_party.qt.core
+	@NoRuntime depends third_party.qt.plugins.platforms.minimal
+}
