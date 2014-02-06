@@ -4,7 +4,7 @@ package zrv.cmd
 module texteditor extends embox.lib.cxx.app {
 	option number root_window_width=0
 	option number root_window_height=0
-	source "texteditor.o"
+	source "texteditor.embox.o"
 
 	@NoRuntime depends third_party.qt.core
 	@NoRuntime depends third_party.qt.lib.emboxautopluginimporter
