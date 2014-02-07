@@ -507,7 +507,6 @@ $(@source_rmk)  : out = $(patsubst %,$(value source_$(kind)_rmk_out_pat),$$(sour
 
 $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
-		echo \#rule 1;\
 		$(gen_banner); \
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
