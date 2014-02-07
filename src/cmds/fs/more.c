@@ -43,7 +43,7 @@ static void screen(FILE *fp) {
 				for (y = 0; y < columns; y++) {
 					buff[y] = !endOfFile ? getc(fp) : ' ';
 
-					switch (buff[y]) {
+					switch ((int)buff[y]) {
 						case EOF:
 							buff[y] = ' ';
 							endOfFile = true;
