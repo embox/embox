@@ -41,7 +41,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 
 	assert((raddr != NULL) && (psock != NULL));
 
-	clnt = (struct client *)malloc(sizeof *clnt), ath = authnone_create();
+	clnt = clnt_alloc(), ath = authnone_create();
 	if ((clnt == NULL) || (ath == NULL)) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
@@ -79,7 +79,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	return clnt;
 exit_with_error:
 	auth_destroy(ath);
-	free(clnt);
+	clnt_free(clnt);
 	return NULL;
 }
 
@@ -191,7 +191,7 @@ static void clntudp_destroy(struct client *clnt) {
 
 	auth_destroy(clnt->ath);
 	close(clnt->sock);
-	free(clnt);
+	clnt_free(clnt);
 }
 
 static const struct clnt_ops clntudp_ops = {
