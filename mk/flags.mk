@@ -47,7 +47,7 @@ cppflags_fn = \
 	-D__EMBOX__ \
 	-D__unix \
 	-D"__impl_x(path)=<../path>"\
-	-imacros $(AUTOCONF_DIR)/config.h\
+	-imacros $1$(AUTOCONF_DIR)/config.h\
 	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
 	$(call __srcgen_includes_fn,-I$1) \
