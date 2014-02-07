@@ -254,6 +254,8 @@ filter_with_sources = \
 
 static_modules    := $(call filter_static_modules,$(build_modules))
 nonstatic_modules := $(filter-out $(static_modules), $(build_modules))
+static_modules_type    := $(foreach i,$(static_modules),$(call get,$i,type) )
+nonstatic_modules_type := $(foreach i,$(nonstatic_modules),$(call get,$i,type) )
 
 @module_ld_rmk := \
 	$(patsubst %,module-ld-rmk/%, \
@@ -272,11 +274,12 @@ my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
+my_bld_dep_value := $(call mybuild_resolve_or_die,mybuild.lang.BuildDepends.value)
+
 @module_extbld_rmk := \
 	$(foreach m,$(build_modules), \
 		$(patsubst %,module-extbld-rmk/%$m, \
 			$(call invoke,$(call get,$m,allTypes),getAnnotationValuesOfOption,$(my_bld_script))))
-
 @module_all = \
 	$(@module_h) \
 	$(@module_ld_rmk) \
@@ -285,8 +288,10 @@ my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
 all .PHONY : $(@module_all)
 
-module_fqn  = $(call get,$(call get,$1,type),qualifiedName)
-module_path = $(subst .,/,$(module_fqn))
+module_type_fqn = $(call get,$1,qualifiedName)
+module_fqn  = $(call module_type_fqn,$(call get,$1,type))
+module_type_path = $(subst .,/,$(module_type_fqn))
+module_path = $(subst .,/,$(call module_type_fqn,$(call get,$1,type)))
 module_id   = $(subst .,__,$(module_fqn))
 module_my_file = \
 	$(call get,$(call get,$(call get,$1,type),eResource),fileName)
@@ -329,6 +334,14 @@ $(@module_ld_rmk) $(@module_ar_rmk) : id_ = \
 $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
+
+build_deps = \
+	$(foreach d,$(call get, \
+			$(call invoke, \
+				$(call get,$1,allTypes),getAnnotationValuesOfOption,$(my_bld_dep_value)),value),\
+		$(if $(filter $d,$(static_modules_type)),\
+			$(patsubst %,$(value module_ar_rmk_a_pat),$(call module_type_path,$d)),\
+			$(patsubst %,$(value module_ld_rmk_out_pat),$(call module_type_path,$d))))
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -494,6 +507,7 @@ $(@source_rmk)  : out = $(patsubst %,$(value source_$(kind)_rmk_out_pat),$$(sour
 
 $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
+		echo \#rule 1;\
 		$(gen_banner); \
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
@@ -503,7 +517,7 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
-		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
+		$(call gen_make_rule,$(out),$(prereqs) | $(call build_deps,$(module)),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
 $(@source_mk_rmk):
