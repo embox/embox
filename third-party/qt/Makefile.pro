@@ -6,6 +6,6 @@ QMAKE := $(ROOT_DIR)/build/qt/install/bin/qmake
 		cd build/base/obj/$(BUILD_DIR) && \
 		cp '$(ROOT_DIR)/build/qt/build/.qmake.cache' . && \
 		$(QMAKE) '$(ROOT_DIR)/$(@:.%=%)/$(notdir $@).pro' && \
-		make MAKEFLAGS='-j $(shell nproc))'
+		make MAKEFLAGS='-j $(shell nproc)'
 
 .NOTPARALLEL:
