@@ -35,6 +35,7 @@
 #define mod_flag_clr(mod, mask) do (mod)->priv->flags &= ~(mask); while (0)
 
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
+ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *, __mod_sec_labels, NULL);
 
 static int mod_traverse(const struct mod *mod,
 		int (*mod_op)(const struct mod *), unsigned int flags);
@@ -265,13 +266,19 @@ int mod_activate_app(const struct mod *mod) {
 	return 0;
 }
 
-bool mod_label_check(const struct mod *mod, const struct mod_label *label) {
-	assert(mod && label);
+bool mod_check(const struct mod *mod) {
+	const struct mod_sec_label *sec_label;
+	assert(mod);
 
 	if (!mod->label)
 		return true;
 
-	return !memcmp(mod->label, label, sizeof(*label));
+	array_spread_nullterm_foreach(sec_label, __mod_sec_labels) {
+		if (sec_label->mod == mod)
+			return !memcmp(&sec_label->label, mod->label, sizeof(*mod->label));
+	}
+
+	return true;
 }
 
 const struct mod *mod_lookup(const char *fqn) {

@@ -8,20 +8,29 @@ package embox.cmd
 			usb_whitelist - Utility to modify kernel usb whitelist
 
 		SYNOPSIS
-			usb_test COMMAND [ OPTIONS ]
+			usb_whitelist COMMAND [ OPTIONS ]
 
 		DESCRIPTION
 			Supported commands are
 
 			-P	print current white list
 
-			-A	add entry to white list. VID and optionally
+			-A VID [ PID SN]
+				add entry to white list. VID and optionally
 				PID and S/N should be specified after this
 				command. See Examples
 
-			-D	delete entry with specified id
+			-D ID
+				delete entry with specified id
 
 			-F	flush current white list
+
+			-S FILE
+				save current whitelist to file
+
+			-L FILE
+				flush and load whitelist from previously
+				saved file
 
 		EXAMPLES
 			usb_whitelist -P
@@ -36,6 +45,12 @@ package embox.cmd
 
 			usb_whitelist -D 1
 				delete entry with id 1
+
+			usb_whitelist -S usb_wl.dump
+				save whitelist to usb_wl.dump
+
+			usb_whitelist -L usb_wl.dump
+				load whitelist to usb_wl.dump
 
 		AUTHORS
 			Anton Kozlov

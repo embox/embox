@@ -57,6 +57,11 @@ struct mod_label {
 	struct __mod_section bss;
 };
 
+struct mod_sec_label {
+	struct mod_label  label;
+	const struct mod *mod;
+};
+
 struct mod_cmd {
 	const char *name;
 	const char *brief;

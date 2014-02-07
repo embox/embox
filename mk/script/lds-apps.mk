@@ -61,7 +61,9 @@ define file_footer
 
 	.bss..reserve.apps (NOLOAD) : ALIGN(DEFAULT_DATA_ALIGNMENT) {
 		/* MAX is a workaround to avoid PROGBITS set on empty section. */
-		. += MAX(SIZEOF(.data.apps), 1);
+		/* . += MAX(SIZEOF(.data.apps), 1); */
+		/* MAX isn't avaible on old ld, at least at 2.20 */
+		. += SIZEOF(.data.apps) + 4;
 	}
 	_app_data_vma = ADDR(.data.apps);
 	_app_reserve_vma = ADDR(.bss..reserve.apps);
