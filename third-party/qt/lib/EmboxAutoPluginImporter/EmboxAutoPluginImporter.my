@@ -4,7 +4,7 @@ package third_party.qt.lib
 @BuildDepends(third_party.qt.core)
 //@BuildDepends(third_party.qt.plugins.platforms.minimal)
 static module emboxautopluginimporter {
-	source "libEmboxAutoPluginImporter.a"
+	source "EmboxAutoPluginImporter/libEmboxAutoPluginImporter.a"
 
 	@NoRuntime depends third_party.qt.core
 	@NoRuntime depends third_party.qt.plugins.platforms.minimal
