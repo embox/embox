@@ -5,7 +5,7 @@ package third_party.external_build
 @BuildDepends(lib2)
 @Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/external_build/app MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 module app {
-
+	@Rule(script="$(OBJCOPY) --redefine-sym=main=main_$(module_id) $@")
 	source "../../../../../external_build/app.o"
 
 	depends lib
