@@ -366,6 +366,9 @@ static int nfsfs_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 	dir_nas->fi->privdata = (void *) fi;
 
+	memset(fsi, 0, sizeof *fsi);
+	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
+
 	/* get server name and mount directory from params */
 	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
 		(0 > nfs_mount(dir_nas))) {
