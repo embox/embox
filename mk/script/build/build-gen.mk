@@ -336,12 +336,9 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
 build_deps = \
-	$(foreach d,$(call get, \
-			$(call invoke, \
-				$(call get,$1,allTypes),getAnnotationValuesOfOption,$(my_bld_dep_value)),value),\
-		$(if $(filter $d,$(static_modules_type)),\
-			$(patsubst %,$(value module_ar_rmk_a_pat),$(call module_type_path,$d)),\
-			$(patsubst %,$(value module_ld_rmk_out_pat),$(call module_type_path,$d))))
+	$(call get, \
+		$(call invoke, \
+			$(call get,$1,allTypes),getAnnotationValuesOfOption,$(my_bld_dep_value)),value)
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -384,6 +381,7 @@ $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
+$(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(call build_deps,$@)))
 $(@module_extbld_rmk) : kind := extbld
 
 $(@module_extbld_rmk) :
@@ -395,7 +393,7 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
-		$(call gen_make_rule,$(target),,$(script)))
+		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 
 #
 # Per-source artifacts.
@@ -516,7 +514,7 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
-		$(call gen_make_rule,$(out),$(prereqs) | $(call build_deps,$(module)),$(script)); \
+		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
 $(@source_mk_rmk):
