@@ -48,5 +48,6 @@ extern struct __trace_block *auto_profile_tb_first(void);
 
 extern struct __trace_block *auto_profile_tb_next(struct __trace_block *prev);
 
+extern void print_trace_block_info(struct __trace_block *tb);
 
 #endif /* PROFILER_TRACING_TRACE_H_ */

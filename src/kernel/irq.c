@@ -158,7 +158,7 @@ void irq_dispatch(unsigned int irq_nr) {
 
 	trace_point("interrupt");
 
-	trace_block_enter(&interrupt_tb);
+	//trace_block_enter(&interrupt_tb);
 
 	assert(irq_stack_protection() == 0,
 			"Stack overflow detected on irq dispatch");
@@ -181,5 +181,5 @@ void irq_dispatch(unsigned int irq_nr) {
 		ipl_restore(ipl);
 	}
 
-	trace_block_leave(&interrupt_tb);
+	//trace_block_leave(&interrupt_tb);
 }

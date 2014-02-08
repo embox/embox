@@ -31,7 +31,7 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 		__trace_blocks_array, NULL);
 
 static struct hashtable *tbhash = NULL;
-static int *prev_key = NULL;
+static char **prev_key = NULL;
 
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
@@ -48,10 +48,6 @@ void trace_block_enter(struct __trace_block *tb) {
 }
 
 void trace_block_leave(struct __trace_block *tb) {
-	printf("LEAVE\n");
-	if (tb == NULL) {
-		printf("ERROR!\n");
-	} else
 	if (tb->active) {
 		tb->count++;
 		tb->is_entered = false;
@@ -88,7 +84,14 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 	return NULL;
 }
 
+/* Functions for debug output */
 
+void print_trace_block_info(struct __trace_block *tb) {
+	printf("Trace block info: %p %s\n", tb, tb->name);
+	printf("Time counter pointer: %p\n", tb->tc);
+	printf("Active: %s\nIs entered: %s\n", tb->active ? "YES" : "NO",
+											tb->is_entered ? "YES" : "NO");
+}
 
 /* Functions for hash */
 
@@ -101,12 +104,11 @@ static int str_hash(const char *c){
 }
 
 static size_t get_trace_block_hash(void *key) {
-	return str_hash(((struct __trace_block *) key)->name);
+	return str_hash(((char*) key));
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
-	return strcmp(((struct __trace_block *) key1)->name,
-			((struct __trace_block *) key2)->name);
+	return strcmp((char*)key1, (char*)key2);
 }
 
 /* It is assumed that there are traceblocks for every function
@@ -115,52 +117,49 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void __cyg_profile_func_enter(void *func, void *caller) {
 	/* TODO: get function name and function location*/
-	char name[] = "FUNCTION_NAME", location[] = "FUNCTION_LOCATION";
-	struct __trace_block *tb;
-	//int key = str_hash(name);
+	char *name = NULL, location[] = "FUNCTION_LOCATION";
+	struct __trace_block *tb = NULL;
+
+	name = (char*) malloc (sizeof(char) * 20);
+	strcpy(name, "FUNCTION_NAME");
 
 	tb = hashtable_get(tbhash, name);
 
 	if (!tb) {
 		/* Lazy traceblock initialization */
-		printf("Lazy init\n");
 		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
-		tb = &(struct __trace_block) {
-			.name = name,
-			.tc = (struct itimer *) malloc (sizeof(struct itimer)),
-			.time = 0,
-			.count = 0,
-			.active = true,
-			.location = {
-				.at = {"FILE", 0},
-				.func = location,
-			},
+		tb->name = name;
+		tb->tc = (struct itimer *) malloc (sizeof(struct itimer)),
+		tb->time = 0;
+		tb->count = 0;
+		tb->active = true;
+		tb->is_entered = false;
+		tb->location = (struct location_func) {
+			.at = {"FILE", 0},
+			.func = location
 		};
-		hashtable_put(tbhash, &name, tb);
+		hashtable_put(tbhash, name, tb);
 	}
-	tb = hashtable_get(tbhash, &name);
+	tb = hashtable_get(tbhash, name);
 	trace_block_enter(tb);
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
 	/* TODO: get function name and function location*/
-	static char name[] = "FUNCTION_NAME";
+	char name[] = "FUNCTION_NAME";
 	struct __trace_block *tb;
-	//int key = str_hash(name);
-	tb = hashtable_get(tbhash, &name);
-	printf("1\n");
+	tb = hashtable_get(tbhash, name);
 	trace_block_leave(tb);
-	printf("2\n");
 }
 
 struct __trace_block *auto_profile_tb_first(void){
 	prev_key = hashtable_get_key_first(tbhash);
-	return (struct __trace_block *) hashtable_get(tbhash, prev_key);
+	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 	prev_key = hashtable_get_key_next(tbhash, &prev_key);
-	return (struct __trace_block *) hashtable_get(tbhash, prev_key);
+	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 static int instrument_profiling_init(void) {
