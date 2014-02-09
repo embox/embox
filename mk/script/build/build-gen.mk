@@ -233,7 +233,10 @@ $(@build_initfs) :
 # Per-module artifacts.
 #
 
-source_file = $(call get,$1,fileFullName)
+my_add_prefix := $(call mybuild_resolve_or_die,mybuild.lang.AddPrefix.value)
+
+source_file = $(foreach f,$1,$(patsubst %$(call get,$f,fileName),%,$(call get,$f,fileFullName))$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$f,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$f,fileName))
+
 source_base = $(basename $(source_file))
 
 source_o_pats   := %.o
