@@ -20,6 +20,8 @@ package embox.cmd.fs
 			Anton Bondarev
 	''')
 module ls {
+	@InstrumentProfiling("false")
+
 	source "ls.c"
 
 	depends embox.lib.LibC
