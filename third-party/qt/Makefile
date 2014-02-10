@@ -17,6 +17,10 @@ QT_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 
 QT_PATCH := qt_patch.txt
 
+define option_get
+$(shell echo OPTION_BOOLEAN_third_party__qt__core__$(1) | gcc -P -E -include $(ROOT_DIR)/build/base/src-gen/include/config/third_party/qt/core.h -)
+endef
+
 ifeq (arm,$(EMBOX_ARCH))
 ARCH_FLAGS   := -arch arm
 ENDIAN_FLAGS := -little-endian
@@ -48,7 +52,9 @@ QT_CONF_FLAGS += -no-feature-SHAREDMEMORY -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS += -no-feature-NETWORKINTERFACE -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS += -no-feature-HOSTINFO -D QT_NO_HOSTINFO
 QT_CONF_FLAGS += -no-feature-QWS_INPUTMETHODS -D QT_NO_QWS_INPUTMETHODS
-# Necessity to add this appeared after something was added, maybe -no-freetype
+ifeq (1,$(call option_get,stl_support))
+QT_CONF_FLAGS += -stl
+endif
 QT_CONF_FLAGS += -D QT_NO_IM
 QT_CONF_FLAGS += -D Q_NO_POSIX_SIGNALS
 QT_CONF_FLAGS += -D QT_NO_BEARERMANAGEMENT
@@ -74,6 +80,9 @@ EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+ifeq (1,$(call option_get,stl_support))
+EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
+endif
 
 EMBOX_IMPORTED_CFLAGS :=
 EMBOX_IMPORTED_CFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
