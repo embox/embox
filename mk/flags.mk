@@ -9,7 +9,7 @@ LDFLAGS ?=
 COVERAGE_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 EXTERNAL_MAKE = \
-	$(MAKE) -C $(dir $(my_file)) \
+	+$(MAKE) -C $(dir $(my_file)) \
 	MAKEFLAGS= \
 	EMBOX_ARCH='$(ARCH)' \
 	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
@@ -19,12 +19,13 @@ EXTERNAL_MAKE = \
 	BUILD_DIR=$(abspath $(mod_build_dir)) \
 	EMBOX_CFLAGS='$(CFLAGS)' \
 	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
-	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'
+	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
+	EMBOX_LDFLAGS='$(LDFLAGS)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 EXTERNAL_BUILD_DIR = $(ROOT_DIR)/build/extbld
 
-#EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
+EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
 override CPPFLAGS += -DNDEBUG

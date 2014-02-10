@@ -12,9 +12,9 @@ package third_party.external_build
 @BuildDepends(lib2)
 @Build(script="$(EXTERNAL_MAKE)")
 module app {
-	@Rule(script="$(MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$@' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_LDFLAGS='$(LDFLAGS)' EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
-	source "app.o"
+	source "strip.app.o"
 
 	depends lib
 	depends lib2
