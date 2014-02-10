@@ -5,7 +5,6 @@ package third_party.STLport
 static module core {
 	@AddPrefix("../../../../stlport/embox-lib")
 	source "libstlportg.a"
-	source "empty.c" // FIXME: workaround
 
 	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends embox.lib.cxx.lib
