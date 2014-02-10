@@ -1,11 +1,5 @@
 
-ifeq ($(ROOT_DIR),)
-$(error ROOT_DIR is not set.)
-endif
-
 CC ?= gcc
-
-BUILD_DIR := $(ROOT_DIR)/build/external_build
 
 all : $(BUILD_DIR)/lib.a $(BUILD_DIR)/libtool
 

@@ -1,10 +1,10 @@
 
 package third_party.external_build
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/external_build/lib MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+@Build(script="$(EXTERNAL_MAKE)")
 static module lib {
 
-	@AddPrefix("../../../../../external_build")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "lib.a"
 }
 

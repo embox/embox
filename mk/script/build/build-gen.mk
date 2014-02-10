@@ -233,9 +233,17 @@ $(@build_initfs) :
 # Per-module artifacts.
 #
 
+module_type_fqn = $(call get,$1,qualifiedName)
+module_fqn  = $(call module_type_fqn,$(call get,$1,type))
+module_type_path = $(subst .,/,$(module_type_fqn))
+module_path = $(subst .,/,$(call module_type_fqn,$(call get,$1,type)))
+module_id   = $(subst .,__,$(module_fqn))
+
 my_add_prefix := $(call mybuild_resolve_or_die,mybuild.lang.AddPrefix.value)
 
-source_file = $(foreach f,$1,$(patsubst %$(call get,$f,fileName),%,$(call get,$f,fileFullName))$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$f,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$f,fileName))
+__source_file_mod = $(subst ^MOD_PATH,$(call module_type_path,$2),$(if $(findstring ^BUILD,$3),../..$(subst ^BUILD,,$3),$(patsubst %$(call get,$1,fileName),%,$(call get,$1,fileFullName))$3))#
+__source_file_wprefix =$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$1,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$1,fileName)#
+source_file = $(foreach f,$1,$(call __source_file_mod,$f,$(call invoke,$(call invoke,$f,eContainer),eContainer),$(call __source_file_wprefix,$f)))
 
 source_base = $(basename $(source_file))
 
@@ -291,11 +299,6 @@ my_bld_dep_value := $(call mybuild_resolve_or_die,mybuild.lang.BuildDepends.valu
 
 all .PHONY : $(@module_all)
 
-module_type_fqn = $(call get,$1,qualifiedName)
-module_fqn  = $(call module_type_fqn,$(call get,$1,type))
-module_type_path = $(subst .,/,$(module_type_fqn))
-module_path = $(subst .,/,$(call module_type_fqn,$(call get,$1,type)))
-module_id   = $(subst .,__,$(module_fqn))
 module_my_file = \
 	$(call get,$(call get,$(call get,$1,type),eResource),fileName)
 
@@ -393,8 +396,8 @@ $(@module_extbld_rmk) :
 		$(call gen_make_var,module_path,$(path)); \
 		$(call gen_make_dep,__extbld .PHONY,$(target)); \
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
-		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
+		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
+		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 
@@ -509,6 +512,7 @@ $(@source_rmk)  : out = $(patsubst %,$(value source_$(kind)_rmk_out_pat),$$(sour
 $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
+		$(call gen_make_var,mod_path,$(mod_path)); \
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \

@@ -24,7 +24,7 @@ EXTERNAL_MAKE = \
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 EXTERNAL_BUILD_DIR = $(ROOT_DIR)/build/extbld
 
-#EXTERNAL_OBJ_DIR = ../../../../../extbld/$(mod_path)
+#EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
 override CPPFLAGS += -DNDEBUG

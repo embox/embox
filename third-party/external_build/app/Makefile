@@ -1,14 +1,10 @@
 
-ifeq ($(ROOT_DIR),)
-$(error ROOT_DIR is not set.)
-endif
-
-BUILD_DIR := $(ROOT_DIR)/build/external_build
-
 all : $(BUILD_DIR)/app.o
 
+LIB_TOOL = $(EXTERNAL_BUILD_DIR)/third_party/external_build/lib/libtool
+
 $(BUILD_DIR)/app.o : app.c | $(BUILD_DIR)
-	$(BUILD_DIR)/libtool
+	$(LIB_TOOL)
 	$(EMBOX_CROSS_COMPILE)gcc $(EMBOX_CFLAGS) $(EMBOX_CPPFLAGS) -c -o $@ $<
 
 $(BUILD_DIR):
