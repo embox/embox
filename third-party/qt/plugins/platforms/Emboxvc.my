@@ -3,7 +3,8 @@ package third_party.qt.plugins.platforms
 @Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='third-party/qt/plugins/platforms/emboxvc' .$(BUILD_DIR)/../qt/source/src/plugins/platforms/emboxvc")
 @BuildDepends(third_party.qt.core)
 static module emboxvc {
-	source "../../../../../../qt/build/plugins/platforms/libemboxvc.a"
+	@AddPrefix("../../../../../../qt/build/plugins/platforms")
+	source "libemboxvc.a"
 
 	@NoRuntime depends third_party.qt.core
 }

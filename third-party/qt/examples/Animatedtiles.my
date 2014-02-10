@@ -4,7 +4,8 @@ package third_party.qt.example
 @BuildDepends(third_party.qt.core)
 @BuildDepends(third_party.qt.lib.emboxautopluginimporter)
 module animatedtiles extends embox.lib.cxx.app {
-	source "animatedtiles/animatedtiles.embox.o"
+	@AddPrefix("animatedtiles")
+	source "animatedtiles.embox.o"
 
 	@NoRuntime depends third_party.qt.core
 	@NoRuntime depends third_party.qt.lib.emboxautopluginimporter
