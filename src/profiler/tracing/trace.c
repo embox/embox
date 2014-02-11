@@ -15,6 +15,8 @@
 #include <util/location.h>
 #include <util/hashtable.h>
 
+#include <debug/symbol.h>
+
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/itimer.h>
@@ -116,13 +118,17 @@ static int cmp_trace_blocks(void *key1, void *key2) {
  * trace_block_exit just before function exit */
 
 void __cyg_profile_func_enter(void *func, void *caller) {
-	/* TODO: get function name and function location*/
 	char *name = NULL, location[] = "FUNCTION_LOCATION";
 	struct __trace_block *tb = NULL;
+	const struct symbol *s = symbol_lookup(func);
+	int l;
+	assert(s);
 
-	name = (char*) malloc (sizeof(char) * 20);
-	strcpy(name, "FUNCTION_NAME");
-
+	l = strlen(s->name) + strlen(s->loc.file) + 2;
+	name = (char*) malloc (sizeof(char) * l);
+	strcpy(name, s->loc.file);
+	strcat(name, ":");
+	strcat(name, s->name);
 	tb = hashtable_get(tbhash, name);
 
 	if (!tb) {
@@ -139,17 +145,30 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 			.func = location
 		};
 		hashtable_put(tbhash, name, tb);
+	} else {
+		tb = hashtable_get(tbhash, name);
+		free(name);
 	}
-	tb = hashtable_get(tbhash, name);
+
 	trace_block_enter(tb);
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
-	/* TODO: get function name and function location*/
-	char name[] = "FUNCTION_NAME";
+	char *name = NULL;
 	struct __trace_block *tb;
+	const struct symbol *s = symbol_lookup(func);
+	int l;
+	assert(s);
+
+	l = strlen(s->name) + strlen(s->loc.file) + 2;
+	name = (char*) malloc (sizeof(char) * l);
+	strcpy(name, s->loc.file);
+	strcat(name, ":");
+	strcat(name, s->name);
+
 	tb = hashtable_get(tbhash, name);
 	trace_block_leave(tb);
+	free(name);
 }
 
 struct __trace_block *auto_profile_tb_first(void){
@@ -158,7 +177,7 @@ struct __trace_block *auto_profile_tb_first(void){
 }
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
-	prev_key = hashtable_get_key_next(tbhash, &prev_key);
+	prev_key = hashtable_get_key_next(tbhash, prev_key);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 

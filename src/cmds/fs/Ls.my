@@ -20,7 +20,7 @@ package embox.cmd.fs
 			Anton Bondarev
 	''')
 module ls {
-	@InstrumentProfiling("false")
+	@InstrumentProfiling("true")
 
 	source "ls.c"
 
