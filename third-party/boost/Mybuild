@@ -1,28 +1,20 @@
 package third_party.boost
 
+@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/boost MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+@BuildDepends(third_party.STLport.core)
 static module core {
-	depends embox.lib.LibC
-	depends embox.lib.cxx.libsupcxx
-	depends third_party.STLport.core
+	@AddPrefix("../../../../boost/lib")
+	source "libboost_atomic.a", "libboost_chrono.a",
+		"libboost_context.a", "libboost_date_time.a",
+		"libboost_exception.a", "libboost_filesystem.a",
+		"libboost_log.a", "libboost_log_setup.a",
+		"libboost_program_options.a", "libboost_random.a",
+		"libboost_signals.a", "libboost_system.a",
+		"libboost_thread.a", "libboost_timer.a",
+		"libboost_wave.a"
+	source "order.mk" // FIXME
 
-	source "empty.c" // FIXME: workaround
-	source "order.mk"
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/boost MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source
-		"../../../../boost/lib/libboost_atomic.a",
-		"../../../../boost/lib/libboost_chrono.a",
-		"../../../../boost/lib/libboost_context.a",
-		"../../../../boost/lib/libboost_date_time.a",
-		"../../../../boost/lib/libboost_exception.a",
-		"../../../../boost/lib/libboost_filesystem.a",
-		"../../../../boost/lib/libboost_log.a",
-		"../../../../boost/lib/libboost_log_setup.a",
-		"../../../../boost/lib/libboost_program_options.a",
-		"../../../../boost/lib/libboost_random.a",
-		"../../../../boost/lib/libboost_signals.a",
-		"../../../../boost/lib/libboost_system.a",
-		"../../../../boost/lib/libboost_thread.a",
-		"../../../../boost/lib/libboost_timer.a",
-		"../../../../boost/lib/libboost_wave.a"
+	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.lib.cxx.lib
+	@NoRuntime depends third_party.STLport.core
 }
