@@ -266,16 +266,16 @@ int mod_activate_app(const struct mod *mod) {
 	return 0;
 }
 
-bool mod_label_check(const struct mod *mod, const struct mod_label *label) {
+bool mod_check(const struct mod *mod) {
 	const struct mod_sec_label *sec_label;
-	assert(mod && label);
+	assert(mod);
 
 	if (!mod->label)
 		return true;
 
 	array_spread_nullterm_foreach(sec_label, __mod_sec_labels) {
 		if (sec_label->mod == mod)
-			return !memcmp(&sec_label->label, label, sizeof(*label));
+			return !memcmp(&sec_label->label, mod->label, sizeof(*mod->label));
 	}
 
 	return true;

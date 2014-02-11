@@ -14,7 +14,7 @@ static struct auth_ops authnone_ops;
 struct auth * authnone_create(void) {
 	struct auth *ath;
 
-	ath = (struct auth *)malloc(sizeof *ath);
+	ath = auth_alloc();
 	if (ath == NULL) {
 		return NULL;
 	}
@@ -27,7 +27,7 @@ struct auth * authnone_create(void) {
 }
 
 static void authnone_destroy(struct auth *ath) {
-	free(ath);
+	auth_free(ath);
 }
 
 static struct auth_ops authnone_ops = {

@@ -21,7 +21,7 @@ static int run(int argc, char **argv) {
 	if (mod == NULL) {
 		printf("can't find module '%s'\n", MODULE_NAME);
 	}
-	if (!mod_label_check(mod, mod->label)) {
+	if (!mod_check(mod)) {
 		printf("module %s is broken\n", MODULE_NAME);
 	}
 
