@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <embox/cmd.h>
 #include <util/array.h>
+#include <util/math.h>
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);
@@ -29,7 +30,7 @@ static void print_instrument_trace_block_stat(void) {
 
 	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
 	if (tb) do {
-		printf("%40s %10lld %20llu %10Lfs\n", tb->name,
+		printf("%40s %10lld %20llu %10Lfs\n", max(tb->name, tb->name + strlen(tb->name) - 40),
 			tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
 
