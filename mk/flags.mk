@@ -22,6 +22,21 @@ EXTERNAL_MAKE = \
 	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
 	EMBOX_LDFLAGS='$(LDFLAGS)'
 
+EXTERNAL_MAKE_PRO = \
+	+$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(dir $(my_file)) -o $(abspath $(mod_build_dir)) && \
+	$(MAKE) -C $(abspath $(mod_build_dir)) \
+	MAKEFLAGS= \
+	EMBOX_ARCH='$(ARCH)' \
+	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
+	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
+	ROOT_DIR=$(abspath $(ROOT_DIR)) \
+	EXTERNAL_BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR)) \
+	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	EMBOX_CFLAGS='$(CFLAGS)' \
+	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
+	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
+	EMBOX_LDFLAGS='$(LDFLAGS)'
+
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 EXTERNAL_BUILD_DIR = $(ROOT_DIR)/build/extbld
 
