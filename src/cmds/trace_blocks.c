@@ -8,12 +8,15 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include <errno.h>
 #include <unistd.h>
+
 #include <embox/cmd.h>
+
 #include <util/array.h>
-#include <util/math.h>
+
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);
@@ -21,17 +24,22 @@ EMBOX_CMD(exec);
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
-	printf("Usage: trace [-h] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
+	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
 }
 
 static void print_instrument_trace_block_stat(void) {
 	struct __trace_block *tb = auto_profile_tb_first();
+
 	printf("Automatic trace points:\n");
 
 	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
 	if (tb) do {
-		printf("%40s %10lld %20llu %10Lfs\n", max(tb->name, tb->name + strlen(tb->name) - 40),
-			tb->count, tb->time,
+		if (strlen(tb->name) > 40) {
+			printf("...%37s ", tb->name + strlen(tb->name) - 37);
+		} else {
+			printf("%40s ", tb->name);
+		}
+		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
 
 		tb = auto_profile_tb_next(tb);
