@@ -1,15 +1,3 @@
-MAKE_E2FS = \
-	$(MAKE) -C $(THIRDPARTY_DIR)/e2fsprogs \
-	MAKEFLAGS= \
-	EMBOX_ARCH='$(ARCH)' \
-	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
-	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
-	ROOT_DIR=$(abspath $(ROOT_DIR)) \
-	EMBOX_CFLAGS='$(CFLAGS)' \
-	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
-	EMBOX_LDFLAGS='$(LDFLAGS)' \
-	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'
-
 MISC_DIR= $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/misc
 E2FSCK_DIR= $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/e2fsck
 EXT2FS_LIB= $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/ext2fs/libext2fs.a
@@ -20,6 +8,7 @@ $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/e
 $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/uuid/libuuid.a: $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/blkid/libblkid.a
 $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/blkid/libblkid.a: $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/quota/libquota.a
 $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/lib/quota/libquota.a: $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/intl/libintl.a
+$(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/intl/libintl.a:
 
 $(OBJ_DIR)/third-party/e2fsprogs/../../../../e2fsprogs/src/e2fsprogs-build/misc/mke2fs.o: $(EXT2FS_LIB)
 
