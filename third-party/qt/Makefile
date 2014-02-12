@@ -52,8 +52,10 @@ QT_CONF_FLAGS += -no-feature-SHAREDMEMORY -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS += -no-feature-NETWORKINTERFACE -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS += -no-feature-HOSTINFO -D QT_NO_HOSTINFO
 QT_CONF_FLAGS += -no-feature-QWS_INPUTMETHODS -D QT_NO_QWS_INPUTMETHODS
-ifeq (1,$(call option_get,stl_support))
+ifneq (0,$(call option_get,stl_support))
 QT_CONF_FLAGS += -stl
+else
+QT_CONF_FLAGS += -no-stl -D QT_NO_STL
 endif
 QT_CONF_FLAGS += -D QT_NO_IM
 QT_CONF_FLAGS += -D Q_NO_POSIX_SIGNALS
