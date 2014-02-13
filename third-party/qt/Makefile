@@ -71,11 +71,6 @@ QT_CONF_FLAGS += -debug
 QT_CONF_FLAGS += -qt-gfx-vnc
 QT_CONF_FLAGS += -no-freetype
 QT_CONF_FLAGS += -no-xmlpatterns
-QT_CONF_FLAGS += -D QEMBOX_PLUGIN_VNC
-ifneq (arm,$(EMBOX_ARCH))
-# it is temporary hack to prevent building Qt on ARM until frame buffer is not supported
-#QT_CONF_FLAGS += -D QEMBOX_PLUGIN_EMBOXVC
-endif
 
 EMBOX_IMPORTED_CPPFLAGS :=
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
