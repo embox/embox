@@ -14,6 +14,7 @@
 #include <embox/unit.h>
 #include <mem/page.h>
 #include <mem/heap.h>
+#include <mem/heap_afterfree.h>
 #include <util/math.h>
 #include <util/binalign.h>
 #include <kernel/printk.h>
@@ -330,6 +331,8 @@ void free(void *ptr) {
 	/* And than concatenate with neighbors */
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
+
+	afterfree((void *) ((uint32_t *) block + 1), get_clear_size(block->size));
 
 	sched_unlock();
 }
