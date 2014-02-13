@@ -13,8 +13,8 @@ contains(TEMPLATE, .*(app)) {
 	#QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
 	#QTPLUGIN          += qvncgraphicssystem
 	#CONFIG += link_prl
-	QMAKE_LFLAGS      += -Wl,--undefined=embox_auto_plugin_importer_linker_hook
-	LIBS              += -lEmboxAutoPluginImporter
+	#QMAKE_LFLAGS      += -Wl,--undefined=embox_auto_plugin_importer_linker_hook
+	#LIBS              += -lEmboxAutoPluginImporter
 	TARGET             = $${TARGET}.embox.o
 }
 

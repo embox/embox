@@ -1,4 +1,4 @@
-package third_party.qt.plugins.platforms
+package third_party.qt.plugin.platform
 
 @Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='third-party/qt/plugins/platforms/minimal' .$(BUILD_DIR)/../qt/source/src/plugins/platforms/minimal")
 @BuildDepends(third_party.qt.core)

@@ -2,11 +2,9 @@ package third_party.qt.example
 
 @Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='third-party/qt/examples/animatedtiles' .$(BUILD_DIR:./=)/../qt/source/examples/animation/animatedtiles")
 @BuildDepends(third_party.qt.core)
-@BuildDepends(third_party.qt.lib.emboxautopluginimporter)
 module animatedtiles extends embox.lib.cxx.app {
 	@AddPrefix("animatedtiles")
 	source "animatedtiles.embox.o"
 
 	@NoRuntime depends third_party.qt.core
-	@NoRuntime depends third_party.qt.lib.emboxautopluginimporter
 }
