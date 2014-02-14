@@ -8,6 +8,3 @@
 "export PWD=/",
 "export HOME=/",
 "export QT_QPA_FONTDIR=/fonts",
-"mkdir /mnt",
-"mount -t ext2 /dev/hda /mnt",
-"cxxapp -platform vnc"
