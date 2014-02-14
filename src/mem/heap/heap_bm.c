@@ -322,6 +322,8 @@ void free(void *ptr) {
 
 	assert(block_is_busy(block));
 
+	afterfree(ptr, (get_clear_size(block->size) - sizeof(block->size)));
+
 	/* Free block */
 	block_link(block);
 	set_end_size(block);
@@ -331,8 +333,6 @@ void free(void *ptr) {
 	/* And than concatenate with neighbors */
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
-
-	afterfree((void *) ((uint32_t *) block + 1), get_clear_size(block->size));
 
 	sched_unlock();
 }

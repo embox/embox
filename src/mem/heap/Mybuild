@@ -5,13 +5,16 @@ abstract module heap_api {
 	option number heap_size = 524288
 }
 
+@DefaultImpl(heap_afterfree_default)
+abstract module heap_afterfree { }
+
 module heap_bm extends heap_api {
 	source "heap_bm.c"
 	depends page_api
 
 	depends heap_lds
 	depends embox.mem.static_heap
-	depends heap_afterfree_default
+	depends heap_afterfree
 }
 
 module heap_simple extends heap_api {
@@ -28,6 +31,7 @@ module static_heap {
 	depends embox.mem.bitmask
 }
 
-module heap_afterfree_default {
+module heap_afterfree_default extends heap_afterfree {
 	source "heap_afterfree.c"
 }
+
