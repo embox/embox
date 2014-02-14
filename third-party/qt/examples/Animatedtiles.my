@@ -1,6 +1,6 @@
 package third_party.qt.example
 
-@Build(script="+$(CP) $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache $(abspath $(mod_build_dir)) && $(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(ROOT_DIR)/build/qt/source/examples/animation/animatedtiles -o $(abspath $(mod_build_dir)) && $(MAKE) -C $(abspath $(mod_build_dir)) $(EXTERNAL_MAKE_FLAGS)") // FIXME: use $(EXTERNAL_MAKE_PRO)
+@Build(script="TARGET=build/qt/source/examples/animation/animatedtiles; $(EXTERNAL_MAKE_PRO)")
 @BuildDepends(third_party.qt.core)
 @Cmd(name = "animatedtiles",
 	help = "animation qt's example",

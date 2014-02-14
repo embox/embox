@@ -1,6 +1,6 @@
 package third_party.qt.plugin.platform
 
-@Build(script="$(MAKE) -f $(THIRDPARTY_DIR)/qt/Makefile.pro ROOT_DIR=$(abspath $(ROOT_DIR)) BUILD_DIR='third-party/qt/plugins/platforms/emboxvc' .$(BUILD_DIR)/../qt/source/src/plugins/platforms/emboxvc")
+@Build(script="TARGET=build/qt/source/src/plugins/platforms/emboxvc; $(EXTERNAL_MAKE_PRO)")
 @BuildDepends(third_party.qt.core)
 module emboxvc {
 	@AddPrefix("../../../../../../qt/build/plugins/platforms")

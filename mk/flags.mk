@@ -27,8 +27,7 @@ EXTERNAL_MAKE = \
 	$(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_PRO = \
-	$(CP) $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache $(abspath $(mod_build_dir)) && \
-	$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(dir $(my_file)) -o $(abspath $(mod_build_dir)) && \
+	$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $${TARGET:-$(dir $(my_file))} -o $(abspath $(mod_build_dir)) -cache $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache && \
 	$(MAKE) -C $(abspath $(mod_build_dir)) \
 	$(EXTERNAL_MAKE_FLAGS)
 
