@@ -196,8 +196,7 @@ build_and_install: configure
 			mkdir -p $(ROOT_DIR)/conf/rootfs/fonts && \
 			cp -l -f -u `find $(QT_INSTALL_DIR)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/fonts &&\
 			rm -r $(QT_INSTALL_DIR)/include && \
-			ln -s $(QT_BUILD_DIR)/include $(QT_INSTALL_DIR)/include && \
-			(ln -s $(BUILD_DIR)/base/obj/third-party/qt/lib/EmboxAutoPluginImporter/libEmboxAutoPluginImporter.a $(QT_BUILD_DIR)/lib/libEmboxAutoPluginImporter.a || true); \
+			ln -s $(QT_BUILD_DIR)/include $(QT_INSTALL_DIR)/include; \
 		fi
 
 $(ROOTFS_IMAGE): build_and_install
