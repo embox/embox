@@ -399,7 +399,6 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
-		$(foreach d,$(this_build_deps),$(call gen_make_rule,$d,,@true); ) \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 
 #
