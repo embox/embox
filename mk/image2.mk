@@ -42,19 +42,6 @@ ifeq ($(value DISASSEMBLY),y)
 image : $(IMAGE_DIS)
 endif
 
-CROSS_COMPILE ?=
-
-CC      := $(CROSS_COMPILE)gcc
-CPP     := $(CC) -E
-CXX     := $(CROSS_COMPILE)g++
-AR      := $(CROSS_COMPILE)ar
-AS      := $(CROSS_COMPILE)as
-LD      := $(CROSS_COMPILE)ld
-NM      := $(CROSS_COMPILE)nm
-OBJDUMP := $(CROSS_COMPILE)objdump
-OBJCOPY := $(CROSS_COMPILE)objcopy
-SIZE    := $(CROSS_COMPILE)size
-
 ifndef LD_SINGLE_T_OPTION
 ld_scripts_flag = $(1:%=-T%)
 else

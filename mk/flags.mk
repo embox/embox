@@ -6,15 +6,28 @@ ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
 
+CROSS_COMPILE ?=
+
+CC      := $(CROSS_COMPILE)gcc
+CPP     := $(CC) -E
+CXX     := $(CROSS_COMPILE)g++
+AR      := $(CROSS_COMPILE)ar
+AS      := $(CROSS_COMPILE)as
+LD      := $(CROSS_COMPILE)ld
+NM      := $(CROSS_COMPILE)nm
+OBJDUMP := $(CROSS_COMPILE)objdump
+OBJCOPY := $(CROSS_COMPILE)objcopy
+SIZE    := $(CROSS_COMPILE)size
+
 COVERAGE_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 
 EXTERNAL_MAKE = \
-	+$(MAKE) -C $(dir $(my_file)) \
+	$(MAKE) -C $(dir $(my_file)) \
 	$(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_PRO = \
-	+$(CP) $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache $(abspath $(mod_build_dir)) && \
+	$(CP) $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache $(abspath $(mod_build_dir)) && \
 	$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(dir $(my_file)) -o $(abspath $(mod_build_dir)) && \
 	$(MAKE) -C $(abspath $(mod_build_dir)) \
 	$(EXTERNAL_MAKE_FLAGS)
