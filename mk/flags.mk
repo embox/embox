@@ -23,7 +23,8 @@ EXTERNAL_MAKE = \
 	EMBOX_LDFLAGS='$(LDFLAGS)'
 
 EXTERNAL_MAKE_PRO = \
-	+$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(dir $(my_file)) -o $(abspath $(mod_build_dir)) && \
+	+$(CP) $(abspath $(ROOT_DIR))/build/qt/build/.qmake.cache $(abspath $(mod_build_dir)) && \
+	$(abspath $(ROOT_DIR))/build/qt/install/bin/qmake $(dir $(my_file)) -o $(abspath $(mod_build_dir)) && \
 	$(MAKE) -C $(abspath $(mod_build_dir)) \
 	MAKEFLAGS= \
 	EMBOX_ARCH='$(ARCH)' \
