@@ -6,7 +6,7 @@ package third_party.qt
 static module core {
 	option boolean stl_support=false
 
-	@AddPrefix("../../../../qt/install/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/qt/install/lib")
 	source "libQtCore.a", "libQtGui.a", "libQtMultimedia.a",
 		"libQtNetwork.a", "libQtSql.a", "libQtSvg.a",
 		"libQtTest.a", "libQtXml.a"
