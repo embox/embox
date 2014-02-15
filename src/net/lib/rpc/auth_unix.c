@@ -25,7 +25,7 @@ struct auth * authunix_create(char *host, int uid, int gid,
 	assert((host != NULL) && (user_gids_len >= 0)
 			&& ((user_gids_len == 0) || (user_gids != NULL)));
 
-	ath = (struct auth *)malloc(sizeof *ath), data = (char *)malloc(AUTH_DATA_MAX_SZ);
+	ath = auth_alloc(), data = malloc(AUTH_DATA_MAX_SZ);
 	if ((ath == NULL) || (data == NULL)) {
 		goto exit_with_error;
 	}
@@ -53,13 +53,13 @@ struct auth * authunix_create(char *host, int uid, int gid,
 
 	return ath;
 exit_with_error:
-	free(ath);
+	auth_free(ath);
 	free(data);
 	return NULL;
 }
 
 static void authunix_destroy(struct auth *ath) {
-	free(ath);
+	auth_free(ath);
 }
 
 static struct auth_ops authunix_ops = {

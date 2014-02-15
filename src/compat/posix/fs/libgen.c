@@ -9,80 +9,71 @@
 #include <string.h>
 #include <libgen.h>
 
-char * basename(char *path) {
-	static char bname_buff[NAME_MAX + 1];
-	int len;
-	int start;
-	int clen;
+static char *path_final_slash(char *path) {
+	size_t path_len = strlen(path);
+	char *c;
 
-	if (path == NULL) {
-		return strcpy(&bname_buff[0], ".");
-	}
-	if (0 == (len = strlen(path))) {
-		return strcpy(&bname_buff[0], ".");
-	}
-	while (path[len - 1] == '/' && len > 1) {
-		len--;
+	c = path + path_len - 1;
+	while (*c == '/') {
+		*c-- = '\0';
+		path_len--;
 	}
 
-	start = len - 1;
-	while (start > 0 && path[start] != '/') {
-		start--;
+	while (path_len > 0 && *c != '/') {
+		c--;
+		path_len--;
 	}
 
-	if (start == 0) {
-		if (path[start] != '/' || len == 1) {
-			clen = len - start;
-		} else {
-			clen = len - start - 1;
-			start++;
-		}
-	} else {
-		clen = len - start - 1;
-		start++;
+	if (path_len > 0) {
+		return c;
 	}
 
-	if ((clen - 1) > sizeof (bname_buff) ) {
-		clen = sizeof (bname_buff) - 1;
-	}
-
-	memcpy(bname_buff, &path[start], clen);
-	bname_buff[clen] = '\0';
-
-	return bname_buff;
+	return NULL;
 }
 
-char  *dirname(char *path) {
-	static char dname_buff[PATH_MAX + 1];
-	int len;
-	int start;
-	//int slash;
-	//int clen;
+char * basename(char *path) {
+	static char bname_buff[2];
+	char *sl;
 
-	if (path == NULL) {
-		return strcpy(&dname_buff[0], ".");
-	}
-	if (0 == (len = strlen(path))) {
-		return strcpy(&dname_buff[0], ".");
-	}
-	while (path[len - 1] == '/' && len > 1) {
-		len--;
+	if (!path || *path == '\0') {
+		return strcpy(bname_buff, ".");
 	}
 
-	start = len - 1;
-	while (start > 0 && path[start] != '/') {
-		start--;
+	sl = path_final_slash(path);
+
+	if (!sl) {
+		if (!*path)
+			/* path wasn't empty, but now it does =>
+ 			 * only trailing /// was presented */
+			return strcpy(path, "/");
+		return path;
 	}
 
-	if (start) {
-		memcpy(dname_buff, path, start);
-		dname_buff[start] = '\0';
-	} else if (path[0] != '/'){
-		return strcpy(&dname_buff[0], ".");
+	return sl + 1;
+}
+
+char * dirname(char *path) {
+	static char bname_buff[2];
+	char *sl;
+
+	if (!path || *path == '\0') {
+		return strcpy(bname_buff, ".");
+	}
+
+	sl = path_final_slash(path);
+	if (!sl) {
+		if (!*path)
+			/* path wasn't empty, but now it does =>
+ 			 * only trailing /// was presented */
+			return strcpy(path, "/");
+		return strcpy(path, ".");
+	}
+
+	if (path == sl) {
+		*(sl + 1) = '\0';
 	} else {
-		memcpy(dname_buff, path, 1);
-		dname_buff[1] = '\0';
+		*sl = '\0';
 	}
 
-	return dname_buff;
+	return path;
 }

@@ -32,6 +32,8 @@ noapp_ids := \
 
 \h := \\#
 
+#XXX had to add ABSOLUTE(. - ABSOLUTE(...)) for old ld; maybe replace
+# _len -> _end ?
 define file_header
 /* $(GEN_BANNER) */
 
@@ -41,7 +43,7 @@ define file_header
 		__module_##module_##_##section_##_vma = .; $(\h)
 		*(.section_.module.module_); $(\h)
 		__module_##module_##_##section_##_len = ABSOLUTE(. - $(\h)
-		__module_##module_##_##section_##_vma);
+			ABSOLUTE(__module_##module_##_##section_##_vma));
 
 SECTIONS {
 endef
