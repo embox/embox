@@ -31,6 +31,7 @@
 #include <kernel/thread.h>
 
 #include <kernel/runnable/runnable.h>
+#include <kernel/lwthread.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/state.h>
@@ -89,6 +90,18 @@ void sched_wake(struct thread *t) {
 		if (thread_priority_get(t) > thread_priority_get(current)) {
 			sched_post_switch();
 		}
+	}
+	irq_unlock();
+}
+
+void sched_lwthread_wake(struct lwthread *lwt) {
+	assert(lwt);
+
+	irq_lock();
+	{
+		runq_insert(&rq.queue, &(lwt->runnable));
+
+		sched_post_switch();
 	}
 	irq_unlock();
 }

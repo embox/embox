@@ -23,6 +23,7 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
+struct lwthread;
 struct thread;
 struct event;
 struct runq;
@@ -58,6 +59,13 @@ extern void sched_sleep(void);
  *   Thread which will be added.
  */
 extern void sched_wake(struct thread *t);
+
+/**
+ * Adds lwthread to runq.
+ * @param lwt
+ *   Lwthread which will be added.
+ */
+extern void sched_lwthread_wake(struct lwthread *lwt) ;
 
 /**
  * Makes exit thread and removes thread from scheduler.

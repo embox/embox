@@ -1,28 +1,28 @@
 /*
 
 */
+#include <assert.h>
 #include <errno.h>
+#include <err.h>
+#include <kernel/sched.h>
 #include <kernel/lwthread.h>
 #include <mem/misc/pool.h>
 
-typedef union lwthread_pool_entry {
-	struct lwthread lwthread;
-} lwthread_pool_entry_t;
+typedef struct lwthread lwthread_pool_entry_t;
 
 /**
  * Memory have to be allocated only for lwthread structure,
  * while execute lwthread uses thread stack
 */
-#define POOL_SZ sizeof(lwthread_pool_entry_t);
+#define POOL_SZ       OPTION_GET(NUMBER, lwthread_pool_size)
 
 POOL_DEF(lwthread_pool, lwthread_pool_entry_t, POOL_SZ);
 
+void lwthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
+	lwt->runnable.run = (void *)run;
+	lwt->runnable.prepare = NULL;
 
-void lthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
-	lt->runnable->run = run;
-	lt->runnable->prepare = NULL;
-
-	lt->run_arg = arg;
+	lwt->runnable.run_arg = arg;
 }
 
 struct lwthread * lwthread_create(void *(*run)(void *), void *arg) {
@@ -38,7 +38,7 @@ struct lwthread * lwthread_create(void *(*run)(void *), void *arg) {
 		return err_ptr(ENOMEM);
 	}
 
-	lwt = &(block->lwthread);
+	lwt = (struct lwthread *) block;
 
 	lwthread_init(lwt, run, arg);
 
@@ -50,6 +50,16 @@ void lwthread_free(struct lwthread *lwt) {
 
 	assert(lwt != NULL);
 
-	block = member_cast_out(lwt, lwthread_pool_entry_t, lwthread);
+	block = (lwthread_pool_entry_t *) lwt;
 	pool_free(&lwthread_pool, block);
+}
+
+void lwthread_launch(struct lwthread *lwt) {
+	assert(lwt);
+
+	sched_lock();
+	{
+		sched_lwthread_wake(lwt);
+	}
+	sched_unlock();
 }

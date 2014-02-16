@@ -2,6 +2,7 @@ package embox.kernel.lwthread
 
 module lwthread {
 	source "lwthread.c"
+	option number lwthread_pool_size=512
 
 	depends embox.lib.LibCAssert
 }

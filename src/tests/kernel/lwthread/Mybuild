@@ -1,0 +1,8 @@
+package embox.test.kernel.lwthread
+
+module lwthread_test {
+	source "lwthread_test.c"
+
+	depends embox.kernel.lwthread.lwthread
+	depends embox.framework.LibFramework
+}
