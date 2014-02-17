@@ -166,7 +166,6 @@ inline int symlink(const char *oldpath, const char *newpath) {
 #define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 
-
 /* Structure describing CPU time used by a process and its children.  */
 struct tms
 {
@@ -327,6 +326,8 @@ static inline int WEXITSTATUS(int status) {
 	printf(">>> %s\n", __func__);
 	return 0;
 }
+
+
 
 //------ END QProcess
 
