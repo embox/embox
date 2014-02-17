@@ -5,6 +5,7 @@ package third_party.qt
 @BuildDepends(third_party.STLport.core)
 static module core {
 	option boolean stl_support=false
+	option boolean process_support=false
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/qt/install/lib")
 	source "libQtCore.a", "libQtGui.a", "libQtMultimedia.a",
