@@ -23,13 +23,13 @@ COVERAGE_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 
 EXTERNAL_MAKE = \
-	$(MAKE) -C $(dir $(my_file)) \
-	$(EXTERNAL_MAKE_FLAGS)
+	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_PRO = \
-	$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/qt/install/bin/qmake $${TARGET:-$(dir $(my_file))} -o $(abspath $(mod_build_dir))/Makefile -cache $(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/qt/build/.qmake.cache && \
-	$(MAKE) -C $(abspath $(mod_build_dir)) \
-	$(EXTERNAL_MAKE_FLAGS)
+	$(MKDIR) $(mod_build_dir) && \
+	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/build/.qmake.cache $(mod_build_dir) && \
+	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/install/bin/qmake $${TARGET:-$(dir $(my_file))} -o $(mod_build_dir)/Makefile && \
+	$(MAKE) -C $(mod_build_dir) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
