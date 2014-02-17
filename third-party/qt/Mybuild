@@ -17,4 +17,5 @@ static module core {
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.fs.rootfs
 	@NoRuntime depends embox.compat.posix.LibPosix
+	/*@NoRuntime depends third_party.gcc.core*/
 }

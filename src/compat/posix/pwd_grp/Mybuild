@@ -12,4 +12,6 @@ static module passwd {
 
 	@InitFS
 	source "group"
+
+	depends embox.fs.driver.tmpfs
 }
