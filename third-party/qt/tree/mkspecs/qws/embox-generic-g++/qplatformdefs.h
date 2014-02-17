@@ -311,6 +311,25 @@ static inline struct group *getgrgid(gid_t gid) {
 	return NULL;
 }
 
+//------BEGIN QProcess
+
+static inline pid_t setsid(void) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+
+#define WNOHANG      0
+static inline int WIFEXITED(int status) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+static inline int WEXITSTATUS(int status) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+
+//------ END QProcess
+
 // this is for FILESYSTEMWATCHER
 #define pathconf(path,name) \
 	printf(">>> pathconf(%s,%s)\n",#path,#name),32

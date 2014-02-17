@@ -47,7 +47,7 @@ QT_CONF_FLAGS += -no-largefile -no-qt3support
 QT_CONF_FLAGS += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp \
 				 -no-gfx-linuxfb -no-gfx-multiscreen
 QT_CONF_FLAGS += -no-feature-TEMPORARYFILE -D QT_NO_TEMPORARYFILE
-QT_CONF_FLAGS += -no-feature-PROCESS -D QT_NO_PROCESS
+#QT_CONF_FLAGS += -no-feature-PROCESS -D QT_NO_PROCESS
 QT_CONF_FLAGS += -no-feature-SHAREDMEMORY -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS += -no-feature-NETWORKINTERFACE -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS += -no-feature-HOSTINFO -D QT_NO_HOSTINFO
