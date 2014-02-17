@@ -16,8 +16,12 @@
 #include <grp.h>
 #include <shadow.h>
 
-#define PASSWD_FILE "/passwd"
-#define GROUP_FILE "/group"
+#include <embox/unit.h>
+
+#define PASSWD_FILE "/tmp/passwd"
+#define GROUP_FILE "/tmp/group"
+
+EMBOX_UNIT_INIT(init);
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -320,7 +324,7 @@ int getgrgid_r(gid_t gid, struct group *grp,
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
 
-static const char *shadow_file = "/shadow";
+static const char *shadow_file = "/tmp/shadow";
 
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
@@ -392,5 +396,43 @@ struct spwd *getspnam_f(const char *name) {
 	return spwd_find(shadow_file, name);
 }
 
+static int copy(const char* from, const char* to) {
+	FILE *fromf, *tof;
+	int a;
 
+	if (NULL == (fromf = fopen(from, "r"))) {
+		return errno;
+	}
+	if (NULL == (tof = fopen(to, "w"))) {
+		fclose(fromf);
+		return errno;
+	}
+
+	while ((a = fgetc(fromf)) != EOF) {
+		fputc(a, tof);
+	}
+
+	fclose(tof);
+	fclose(tof);
+
+	return 0;
+}
+
+static int init(void) {
+	int ret;
+
+	if (0 != (ret = copy("/passwd", PASSWD_FILE))) {
+		return ret;
+	}
+
+	if (0 != (ret = copy("/group", GROUP_FILE))) {
+		return ret;
+	}
+
+	if (0 != (ret = copy("/shadow", shadow_file))) {
+		return ret;
+	}
+
+	return 0;
+}
 
