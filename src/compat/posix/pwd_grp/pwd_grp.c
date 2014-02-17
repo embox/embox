@@ -18,6 +18,9 @@
 
 #include <embox/unit.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #define PASSWD_FILE "/tmp/passwd"
 #define GROUP_FILE "/tmp/group"
 
@@ -403,6 +406,7 @@ static int copy(const char* from, const char* to) {
 	if (NULL == (fromf = fopen(from, "r"))) {
 		return errno;
 	}
+
 	if (NULL == (tof = fopen(to, "w"))) {
 		fclose(fromf);
 		return errno;
@@ -412,7 +416,7 @@ static int copy(const char* from, const char* to) {
 		fputc(a, tof);
 	}
 
-	fclose(tof);
+	fclose(fromf);
 	fclose(tof);
 
 	return 0;
@@ -426,6 +430,10 @@ static int init(void) {
 	}
 
 	if (0 != (ret = copy("/group", GROUP_FILE))) {
+		return ret;
+	}
+
+	if (0 > (ret = creat(shadow_file, S_IRWXU | S_IRWXG))) {
 		return ret;
 	}
 
