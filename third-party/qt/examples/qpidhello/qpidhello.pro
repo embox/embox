@@ -15,6 +15,8 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp
 
+INCLUDEPATH += $${ROOT_DIR}/build/qpid/include/
+INCLUDEPATH += $${ROOT_DIR}/build/boost/include/
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
