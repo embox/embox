@@ -1,0 +1,14 @@
+
+package embox.cmd.user
+
+@Cmd(name = "useradd",
+	help = "TODO",
+	man = '''
+		TODO
+	''')
+module useradd {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "useradd.c"
+
+	depends embox.compat.posix.passwd
+}

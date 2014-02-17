@@ -324,6 +324,27 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return 0;
 }
 
+int getmaxuid() {
+	int res, curmax = 0;
+	FILE *file;
+	static char buff[0x80];
+	struct passwd *result, pwd;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+		if (pwd.pw_uid > curmax) {
+			curmax = pwd.pw_uid;
+		}
+	}
+
+	fclose(file);
+
+	return curmax;
+}
+
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
 
