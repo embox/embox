@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <kernel/task/env.h>
 
-//char **environ;
+char **environ;
 
 static size_t env_lookup(const char *name, char **vals, size_t next) {
 	size_t i, name_len;
