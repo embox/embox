@@ -1,6 +1,6 @@
 package third_party.qt
 
-@Build(script="$(EXTERNAL_MAKE)")
+@Build(script="$(EXTERNAL_MAKE) EMBOX_CPPFLAGS+='-I$(ROOT_DIR)/build/stlport/include/stlport'")
 @BuildDepends(third_party.gcc.core)
 @BuildDepends(third_party.STLport.core)
 static module core {
