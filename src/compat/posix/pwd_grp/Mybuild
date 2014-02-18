@@ -2,14 +2,37 @@
 package embox.compat.posix
 
 static module passwd {
+
 	source "pwd_grp.c"
 
-	@InitFS
-	source "passwd"
-
-	@InitFS
-	source "shadow"
-
-	@InitFS
-	source "group"
+	depends passwd_db
 }
+
+@DefaultImpl(passwd_db_static)
+abstract module passwd_db { }
+
+module passwd_db_static extends passwd_db {
+
+	source "db_static.h"
+
+	@InitFS
+	source "passwd",
+		"group",
+		"shadow"
+}
+
+module passwd_db_dynamic extends passwd_db {
+	option string db_path = "/tmp"
+
+	source "db_dynamic.c",
+		"db_dynamic.h"
+
+	@InitFS
+	source "passwd",
+		"group",
+		"shadow"
+
+	depends embox.fs.driver.tmpfs
+}
+
+

@@ -32,6 +32,8 @@ struct node *find_node(DIR *dir, char * node_name) {
 extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
 
 int open(const char *path, int __oflag, ...) {
+	char path_buf[PATH_MAX];
+	char name_buf[PATH_MAX];
 	struct file_desc *kfile;
 	va_list args;
 	mode_t mode;
@@ -50,11 +52,11 @@ int open(const char *path, int __oflag, ...) {
 	mode = va_arg(args, mode_t);
 	va_end(args);
 
-	parent_path = dirname((char *)path);
+	parent_path = dirname(strcpy(path_buf,path));
 	if (NULL == (dir = opendir(parent_path))) {
 		return -1;
 	}
-	name = basename((char *)path);
+	name = basename(strcpy(name_buf, path));
 	node = find_node(dir, name);
 
 	if (__oflag & O_DIRECTORY) {

@@ -65,13 +65,17 @@ AT:=
 
 all: amalgamated
 
-checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
-
 DOWNLOAD_DIR:= $(ROOT_DIR)/download
 DOWNLOAD_TAR:= $(DOWNLOAD_DIR)/phoneme-trunk.tar.gz
+DOWNLOAD_CHECK_TAR:= $(DOWNLOAD_DIR)/.phoneme-trunk.tar.gz.ok
+DOWNLOAD_URL:= https://googledrive.com/host/0B7g4WwjaJX23ZExQU2hHTzYyRm8/phoneme-trunk.tar.gz
+DOWNLOAD_MD5:= b552aa86b2832d00563636330ec64299
 
-ifeq ($(wildcard $(DOWNLOAD_TAR)),)
+MD5 ?= md5sum
 
+ifeq (0,1)
+
+checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
 TOOLS_URL = $(word 1,$(shell grep tools $(SPECFILE_TXT)))
 $(TOOLS_DIR):
 	$(AT)svn co -q $(TOOLS_URL) $@
@@ -82,7 +86,14 @@ $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
 
 else
 
-$(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
+$(DOWNLOAD_TAR) :
+	$(AT)wget -P $(DOWNLOAD_DIR) -c $(DOWNLOAD_URL)
+
+$(DOWNLOAD_CHECK_TAR) : $(DOWNLOAD_TAR)
+	$(AT)echo "$(DOWNLOAD_MD5)  $(DOWNLOAD_TAR)" | $(MD5) -c
+	touch $@
+
+checkout: $(DOWNLOAD_CHECK_TAR)
 	$(AT)tar -C $(BUILD_DIR) -zxf $(DOWNLOAD_TAR)
 
 endif

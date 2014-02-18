@@ -16,8 +16,7 @@
 #include <grp.h>
 #include <shadow.h>
 
-#define PASSWD_FILE "/passwd"
-#define GROUP_FILE "/group"
+#include "db.h"
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -317,10 +316,29 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return 0;
 }
 
+int getmaxuid() {
+	int res, curmax = 0;
+	FILE *file;
+	static char buff[0x80];
+	struct passwd *result, pwd;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+		if (pwd.pw_uid > curmax) {
+			curmax = pwd.pw_uid;
+		}
+	}
+
+	fclose(file);
+
+	return curmax;
+}
+
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
-
-static const char *shadow_file = "/shadow";
 
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
@@ -389,8 +407,5 @@ static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 }
 
 struct spwd *getspnam_f(const char *name) {
-	return spwd_find(shadow_file, name);
+	return spwd_find(SHADOW_FILE, name);
 }
-
-
-
