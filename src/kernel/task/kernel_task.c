@@ -7,9 +7,9 @@
 #include "common.h"
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <kernel/task.h>
+#include <kernel/task/env.h>
 
 #include <module/embox/kernel/task/api.h>
 
@@ -43,11 +43,11 @@ static int kernel_task_init(void) {
 
 	task = task_kernel_task();
 
-	environ = *task_self_environ_ptr();
-
 	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
+
+	environ = task->env->envs;
 
 	dlist_init(&task->task_link); /* it's out list handler */
 

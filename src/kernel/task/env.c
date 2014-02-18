@@ -23,7 +23,8 @@ static void env_init(struct task *task, void *env_) {
 	assert(env_);
 
 	env = env_;
-	env->envs = NULL;
+	env->vals[0] = NULL;
+	env->envs = (char **)&env->vals[0];
 	env->next = 0;
 
 	task->env = env;
