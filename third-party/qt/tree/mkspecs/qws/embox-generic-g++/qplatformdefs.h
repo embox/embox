@@ -180,6 +180,9 @@ struct tms
 
 #include <kernel/task.h>
 
+__BEGIN_DECLS
+extern clock_t clock_sys_ticks(void);
+__END_DECLS
 /* Store the CPU time used by this process and all its
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
@@ -190,7 +193,7 @@ static inline clock_t times (struct tms *__buffer) {
 	__buffer->tms_stime = task_self()->per_cpu;
 	__buffer->tms_utime = 0;
 
-	return __buffer->tms_stime;
+	return clock_sys_ticks();
 }
 
 typedef int sig_atomic_t;
