@@ -97,20 +97,20 @@ void print_trace_block_info(struct __trace_block *tb) {
 
 /* Functions for hash */
 
-static int str_hash(const char *c){
+/*static int str_hash(const char *c){
 	int s = 0, i = 0;
 	while (c[i]) {
 		s += c[i++];
 	}
 	return s;
-}
+}*/
 
 static size_t get_trace_block_hash(void *key) {
-	return str_hash(((char*) key));
+	return *(int*)key;
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
-	return strcmp((char*)key1, (char*)key2);
+	return 1 - (*(int*)key1) == (*(int*)key2);
 }
 
 /* It is assumed that there are traceblocks for every function
@@ -118,21 +118,25 @@ static int cmp_trace_blocks(void *key1, void *key2) {
  * trace_block_exit just before function exit */
 
 void __cyg_profile_func_enter(void *func, void *caller) {
-	char *name = NULL, location[] = "FUNCTION_LOCATION";
+	char *name = NULL, *str;
 	struct __trace_block *tb = NULL;
-	const struct symbol *s = symbol_lookup(func);
-	int l;
-	assert(s);
+	const struct symbol *s;
+	int *key = (int*) malloc (sizeof(int));
 
-	l = strlen(s->name) + strlen(s->loc.file) + 2;
+	*key = (int) func;
+
+	/*l = strlen(s->name) + strlen(s->loc.file) + 2;
 	name = (char*) malloc (sizeof(char) * l);
 	strcpy(name, s->loc.file);
 	strcat(name, ":");
-	strcat(name, s->name);
-	tb = hashtable_get(tbhash, name);
+	strcat(name, s->name); */
+	tb = hashtable_get(tbhash, key);
 
 	if (!tb) {
 		/* Lazy traceblock initialization */
+		s = symbol_lookup(func);
+		assert(s);
+
 		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
 		tb->name = name;
 		tb->tc = (struct itimer *) malloc (sizeof(struct itimer)),
@@ -140,35 +144,39 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 		tb->count = 0;
 		tb->active = true;
 		tb->is_entered = false;
-		tb->location = (struct location_func) {
-			.at = {"FILE", 0},
-			.func = location
-		};
-		hashtable_put(tbhash, name, tb);
-	} else {
-		tb = hashtable_get(tbhash, name);
-		free(name);
-	}
 
+		str = (char*) malloc (sizeof(char) * strlen(s->loc.file));
+		strcpy(str, s->loc.file);
+		tb->location.at.file = str;
+		tb->location.at.line = s->loc.line;
+
+		str = (char*) malloc(sizeof(char) * strlen(s->name));
+		strcpy(str, s->name);
+		tb->location.func = str;
+
+		hashtable_put(tbhash, key, tb);
+	}
+	tb = hashtable_get(tbhash, key);
 	trace_block_enter(tb);
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
-	char *name = NULL;
+	//char *name = NULL;
 	struct __trace_block *tb;
-	const struct symbol *s = symbol_lookup(func);
-	int l;
-	assert(s);
+	//const struct symbol *s = symbol_lookup(func);
+	int *key = (int*) malloc (sizeof(int));
+	//assert(s);
 
-	l = strlen(s->name) + strlen(s->loc.file) + 2;
+	*key = (int) func;
+	/*l = strlen(s->name) + strlen(s->loc.file) + 2;
 	name = (char*) malloc (sizeof(char) * l);
 	strcpy(name, s->loc.file);
 	strcat(name, ":");
-	strcat(name, s->name);
+	strcat(name, s->name);*/
 
-	tb = hashtable_get(tbhash, name);
+	tb = hashtable_get(tbhash, key);
 	trace_block_leave(tb);
-	free(name);
+	//free(name);
 }
 
 struct __trace_block *auto_profile_tb_first(void){
