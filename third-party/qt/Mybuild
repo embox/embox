@@ -1,8 +1,8 @@
 package third_party.qt
 
 @Build(script="$(EXTERNAL_MAKE)")
-//@BuildDepends(third_party.gcc.core)
-//@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.gcc.core)
+@BuildDepends(third_party.STLport.core)
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false
