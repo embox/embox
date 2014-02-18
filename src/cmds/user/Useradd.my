@@ -11,4 +11,5 @@ module useradd {
 	source "useradd.c"
 
 	depends embox.compat.posix.passwd
+	depends embox.compat.posix.passwd_db_dynamic
 }
