@@ -160,10 +160,12 @@ inline int symlink(const char *oldpath, const char *newpath) {
 
 
 // Either this or define __GLIBC__
-#define PATH_MAX 256
+#include <limits.h>
+//#define PATH_MAX 256
 
-#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
+#include <locale.h>
+//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
+//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 
 /* Structure describing CPU time used by a process and its children.  */
@@ -319,11 +321,12 @@ static inline pid_t setsid(void) {
 
 #define WNOHANG      0
 static inline int WIFEXITED(int status) {
-	printf(">>> %s\n", __func__);
+	printf(">>> %s %d\n", __func__, status);
 	return 0;
 }
 static inline int WEXITSTATUS(int status) {
-	printf(">>> %s\n", __func__);
+	(void)status;
+	printf(">>> %s %d\n", __func__, status);
 	return 0;
 }
 
