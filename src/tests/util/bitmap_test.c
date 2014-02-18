@@ -40,3 +40,23 @@ TEST_CASE("unaligned size") {
 	}
 
 }
+#define TEST_3WORD (3 * LONG_BIT)
+TEST_CASE("find zero on 3 words") {
+	BITMAP_DECL(bitmap, TEST_3WORD)
+	int start, len, zero;
+
+	bitmap_set_all(bitmap, TEST_3WORD);
+
+	for (len = 0; len < TEST_3WORD; len++) {
+		for (start = 0; start < TEST_3WORD; start++) {
+			for (zero = 0; zero < TEST_3WORD; zero++) {
+				int ans;
+
+				bitmap_clear_bit(bitmap, zero);
+				ans = start <= zero && zero < len ? zero : len;
+				test_assert_equal(ans, bitmap_find_zero_bit(bitmap, len, start));
+				bitmap_set_bit(bitmap, zero);
+			}
+		}
+	}
+}

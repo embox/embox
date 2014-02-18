@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 
 KERNEL=../../build/base/bin/embox
 MODS_CONF=../../conf/mods.config
+LDS_CONF=../../conf/lds.conf
 ARCHs=()
 NICs=()
 
@@ -62,6 +63,11 @@ if [[ -z $ARCH ]]; then
 	exit 1
 fi
 
+# Select RAM size
+_RAM_STR=`grep "^RAM" $LDS_CONF`
+_RAM_ARR=(${_RAM_STR//M/ })
+RAM=${_RAM_ARR[2]}
+
 # Select network driver
 for _NIC_NAME in ${NICs[*]}; do
 	grep embox.driver.net.$_NIC_NAME $MODS_CONF > /dev/null
@@ -87,6 +93,9 @@ fi
 if [[ -n $MACHINE ]]; then
 	QEMU_MACHINE="-M $MACHINE"
 fi
+
+# Build RAM size argument
+QEMU_RAM="-m $RAM"
 
 # Build network argument
 if [[ -n $NIC_MODEL ]]; then
@@ -117,9 +126,9 @@ if [ $ARCH = "x86" ]; then
 fi
 
 # Run qemu
-echo "$ $SUDO $QEMU $QEMU_KVM -kernel $KERNEL $QEMU_MACHINE $QEMU_NET -nographic $@"
+echo "$ $SUDO $QEMU $QEMU_KVM -kernel $KERNEL $QEMU_MACHINE $QEMU_RAM $QEMU_NET -nographic $@"
 $SUDO $QEMU $QEMU_KVM -kernel $KERNEL \
-	$QEMU_MACHINE \
+	$QEMU_MACHINE $QEMU_RAM \
 	$QEMU_NET \
 	-nographic \
 	$@

@@ -16,15 +16,7 @@
 #include <grp.h>
 #include <shadow.h>
 
-#include <embox/unit.h>
-
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#define PASSWD_FILE "/tmp/passwd"
-#define GROUP_FILE "/tmp/group"
-
-EMBOX_UNIT_INIT(init);
+#include "db.h"
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -324,10 +316,29 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return 0;
 }
 
+int getmaxuid() {
+	int res, curmax = 0;
+	FILE *file;
+	static char buff[0x80];
+	struct passwd *result, pwd;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+		if (pwd.pw_uid > curmax) {
+			curmax = pwd.pw_uid;
+		}
+	}
+
+	fclose(file);
+
+	return curmax;
+}
+
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
-
-static const char *shadow_file = "/tmp/shadow";
 
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
@@ -396,51 +407,5 @@ static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 }
 
 struct spwd *getspnam_f(const char *name) {
-	return spwd_find(shadow_file, name);
+	return spwd_find(SHADOW_FILE, name);
 }
-
-static int copy(const char* from, const char* to) {
-	FILE *fromf, *tof;
-	int a;
-
-	if (NULL == (fromf = fopen(from, "r"))) {
-		return errno;
-	}
-
-	if (NULL == (tof = fopen(to, "w"))) {
-		fclose(fromf);
-		return errno;
-	}
-
-	while ((a = fgetc(fromf)) != EOF) {
-		fputc(a, tof);
-	}
-
-	fclose(fromf);
-	fclose(tof);
-
-	return 0;
-}
-
-static int init(void) {
-	int ret;
-
-	if (0 != (ret = copy("/passwd", PASSWD_FILE))) {
-		return ret;
-	}
-
-	if (0 != (ret = copy("/group", GROUP_FILE))) {
-		return ret;
-	}
-
-	if (0 > (ret = creat(shadow_file, S_IRWXU | S_IRWXG))) {
-		return ret;
-	}
-
-	if (0 != (ret = copy("/shadow", shadow_file))) {
-		return ret;
-	}
-
-	return 0;
-}
-

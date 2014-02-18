@@ -50,10 +50,7 @@ TEST_CASE("Mixed single and multi page allocation") {
 }
 
 TEST_CASE("Try allocate too lot of pages") {
-	void *page;
 
 	/* FIXME */
-	page = page_alloc(__phymem_allocator,
-			__phymem_allocator->capacity/PAGE_SIZE() + 1);
-	test_assert_null(page);
+	test_assert_null(page_alloc(__phymem_allocator, __phymem_allocator->pages_n + 1));
 }

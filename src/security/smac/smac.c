@@ -64,6 +64,10 @@ static int audit_log_open(void) {
 		return -1;
 	}
 
+	/* This is `forever' file_desc, prevent it from to be free */
+	audit_log_desc->idesc.idesc_count ++;
+	close(fd);
+
 	return 0;
 }
 
