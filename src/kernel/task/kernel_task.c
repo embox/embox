@@ -7,6 +7,7 @@
 #include "common.h"
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <kernel/task.h>
 
@@ -34,11 +35,15 @@ struct task *task_kernel_task(void) {
 
 extern void resource_sum_size_calc(void);
 
+extern char **environ;
+
 static int kernel_task_init(void) {
 	struct task *task;
 	resource_sum_size_calc();
 
 	task = task_kernel_task();
+
+	environ = *task_self_environ_ptr();
 
 	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
