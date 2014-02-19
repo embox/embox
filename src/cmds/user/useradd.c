@@ -30,7 +30,6 @@ static int is_user_exists(char *name) {
 	return getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result) || result;
 }
 
-
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
 
@@ -61,7 +60,7 @@ static int get_group(char *group) {
 }
 
 static int set_options(struct passwd *result, char *home, char *shell,
-		char *gecos, char *group) {
+		char *gecos, int group) {
 	if (0 != strcmp(home, "")) {
 		result->pw_dir = home;
 	}
@@ -74,21 +73,13 @@ static int set_options(struct passwd *result, char *home, char *shell,
 		result->pw_gecos = gecos;
 	}
 
-	if (0 != strcmp(group, "")) {
-		int res;
-		if ((res = get_group(group)) >= 0) {
-			result->pw_gid = res;
-		} else {
-			printf("useradd: group '%s' doesn't exist\n", group);
-			return -1;
-		}
-	}
+	result->pw_gid = group;
 
 	return 0;
 }
 
 static int create_user(char *name, char *home, char *shell, char *pswd,
-		char *gecos, char *group) {
+		char *gecos, int group) {
 	struct passwd pwd;
 	FILE *pswdf, *sdwf;
 	char buf_int[40], buf_pswd[80];
@@ -113,9 +104,7 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 		goto out;
 	}
 
-	if (0 != set_options(&pwd, home, shell, gecos, group)) {
-		goto out;
-	}
+	set_options(&pwd, home, shell, gecos, group);
 
 	/* passwd */
 	{
@@ -158,7 +147,7 @@ out:
 	return res;
 }
 
-static int change_default_options(char *home, char *shell, char *group){
+static int change_default_options(char *home, char *shell, int group){
 	FILE *fd;
 	char buff[80], buf_int[40];
 	struct passwd pwd;
@@ -167,9 +156,7 @@ static int change_default_options(char *home, char *shell, char *group){
 		return -1;
 	}
 
-	if (0 != set_options(&pwd, home, shell, "", group)) {
-		return 0;
-	}
+	set_options(&pwd, home, shell, "", group);
 
 	if (NULL == (fd = fopen(ADDUSER_FILE, "w"))) {
 		return -1;
@@ -222,8 +209,8 @@ static int print_default_options(void) {
 }
 
 static int useradd(int argc, char **argv) {
-	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "",
-			group[15] = "";
+	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "";
+	int group;
 	int opt, count = 0, user_create = 1;
 
 	if (argc >= 1) {
@@ -247,15 +234,16 @@ static int useradd(int argc, char **argv) {
 				strcpy(gecos, optarg);
 				break;
 			case 'g':
-				strcpy(group, optarg);
+				if ((group = get_group(optarg)) < 0) {
+					printf("useradd: group '%i' doesn't exist\n", group);
+					return 0;
+				}
 				break;
 			case 'h':
-				print_help();
-				return 0;
+				goto out;
 			case 'D':
 				if (count != 1) {
-					print_help();
-					return 0;
+					goto out;
 				}
 				if (optind >= argc) {
 					return print_default_options();
@@ -264,14 +252,12 @@ static int useradd(int argc, char **argv) {
 				break;
 			default:
 				printf("useradd: invalid option -%c\n", optopt);
-				print_help();
-				return 0;
+				goto out;
 			}
 		}
 
 		if (optind >= argc && user_create) {
-			print_help();
-			return 0;
+			goto out;
 		}
 
 		if (user_create) {
@@ -282,6 +268,7 @@ static int useradd(int argc, char **argv) {
 		}
 	}
 
+out:
 	print_help();
 	return 0;
 }
