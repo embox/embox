@@ -23,6 +23,14 @@ EMBOX_CMD(useradd);
 #define SHADOW_FILE "/tmp/shadow"
 #define ADDUSER_FILE "/tmp/adduser.conf"
 
+static int is_user_exists(char *name) {
+	char pwdbuf[BUF_LEN];
+	struct passwd pwd, *result;
+
+	return getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result) || result;
+}
+
+
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
 
@@ -37,6 +45,19 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	result->pw_gecos = name;
 
 	return 0;
+}
+
+static int get_group(char *group) {
+	struct group _group, *_group_res;
+	char buf[80];
+	int res = 0;
+
+	if (isdigit(group[0])) {
+		res = getgrgid_r(atoi(group), &_group, buf, 80, &_group_res);
+	} else {
+		res = getgrnam_r(group, &_group, buf, 80, &_group_res);
+	}
+	return !res && _group_res != NULL ? _group_res->gr_gid : -1;
 }
 
 static int set_options(struct passwd *result, char *home, char *shell,
@@ -54,17 +75,9 @@ static int set_options(struct passwd *result, char *home, char *shell,
 	}
 
 	if (0 != strcmp(group, "")) {
-		struct group _group, *_group_res;
-		char buf[80];
-		int res = 0;
-
-		if (isdigit(group[0])) {
-			res = getgrgid_r(atoi(group), &_group, buf, 80, &_group_res);
-		} else {
-			res = getgrnam_r(group, &_group, buf, 80, &_group_res);
-		}
-		if (!res && _group_res != NULL) {
-			result->pw_gid = _group_res->gr_gid;
+		int res;
+		if ((res = get_group(group)) >= 0) {
+			result->pw_gid = res;
 		} else {
 			printf("useradd: group '%s' doesn't exist\n", group);
 			return -1;
@@ -80,6 +93,11 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 	FILE *pswdf, *sdwf;
 	char buf_int[40], buf_pswd[80];
 	int res = 0;
+
+	if (is_user_exists(name)) {
+		printf("useradd: user '%s' already exists\n", name);
+		return 0;
+	}
 
 	if (0 == (pswdf = fopen(PASSWD_FILE, "a"))) {
 		return -1;
@@ -134,25 +152,50 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 		fputc('\n', sdwf);
 	}
 
-out: fclose(pswdf);
+out:
+	fclose(pswdf);
 	fclose(sdwf);
 	return res;
 }
 
-static int is_user_exists(char *name) {
-	char pwdbuf[BUF_LEN];
-	struct passwd pwd, *result;
+static int change_default_options(char *home, char *shell, char *group){
+	FILE *fd;
+	char buff[80], buf_int[40];
+	struct passwd pwd;
 
-	if ((getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result)) || result) {
-		return 1;
+	if (0 != get_defpswd(&pwd, buff, 80)) {
+		return -1;
 	}
 
+	if (0 != set_options(&pwd, home, shell, "", group)) {
+		return 0;
+	}
+
+	if (NULL == (fd = fopen(ADDUSER_FILE, "w"))) {
+		return -1;
+	}
+
+	fwrite("GROUP=", sizeof(char), 6, fd);
+	sprintf(buf_int, "%i", pwd.pw_gid);
+	fwrite(buf_int, sizeof(char), strlen(buf_int), fd);
+	fputc('\n', fd);
+
+	fwrite("HOME=", sizeof(char), 5, fd);
+	fwrite(pwd.pw_dir, sizeof(char), strlen(pwd.pw_dir), fd);
+	fputc('\n', fd);
+
+	fwrite("SHELL=", sizeof(char), 6, fd);
+	fwrite(pwd.pw_shell, sizeof(char), strlen(pwd.pw_shell), fd);
+	fputc('\n', fd);
+
+	fclose(fd);
 	return 0;
 }
 
 static void print_help(void) {
 	printf("Usage:\tuseradd [option] LOGIN\n"
 			"\tuseradd -D\n"
+			"\tuseradd -D [options]\n"
 			"Options: see 'man usage'\n");
 }
 
@@ -181,7 +224,7 @@ static int print_default_options(void) {
 static int useradd(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "",
 			group[15] = "";
-	int opt, count = 0;
+	int opt, count = 0, user_create = 1;
 
 	if (argc >= 1) {
 		getopt_init();
@@ -217,6 +260,7 @@ static int useradd(int argc, char **argv) {
 				if (optind >= argc) {
 					return print_default_options();
 				}
+				user_create = 0;
 				break;
 			default:
 				printf("useradd: invalid option -%c\n", optopt);
@@ -225,18 +269,17 @@ static int useradd(int argc, char **argv) {
 			}
 		}
 
-		if (optind >= argc) {
+		if (optind >= argc && user_create) {
 			print_help();
 			return 0;
 		}
 
-		strcpy(name, argv[optind]);
-
-		if (is_user_exists(name)) {
-			printf("useradd: user '%s' already exists\n", name);
-			return 0;
+		if (user_create) {
+			strcpy(name, argv[optind]);
+			return create_user(name, home, shell, pswd, gecos, group);
+		} else {
+			return change_default_options(home, shell, group);
 		}
-		return create_user(name, home, shell, pswd, gecos, group);
 	}
 
 	print_help();
