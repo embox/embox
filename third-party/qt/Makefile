@@ -82,7 +82,7 @@ EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
 ifeq (1,$(call option_get,stl_support))
-EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
+EMBOX_IMPORTED_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR))/third_party/STLport/core/include/stlport
 endif
 
 EMBOX_IMPORTED_CFLAGS :=
