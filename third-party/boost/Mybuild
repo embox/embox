@@ -1,9 +1,10 @@
 package third_party.boost
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/boost MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/boost/core/include/boost")
 @BuildDepends(third_party.STLport.core)
 static module core {
-	@AddPrefix("../../../../boost/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libboost_atomic.a", "libboost_chrono.a",
 		"libboost_context.a", "libboost_date_time.a",
 		"libboost_exception.a", "libboost_filesystem.a",
@@ -12,9 +13,8 @@ static module core {
 		"libboost_signals.a", "libboost_system.a",
 		"libboost_thread.a", "libboost_timer.a",
 		"libboost_wave.a"
-	source "order.mk" // FIXME
 
-	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends embox.lib.cxx.lib
+	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends third_party.STLport.core
 }
