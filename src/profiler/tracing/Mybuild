@@ -1,7 +1,9 @@
 package embox.profiler
 
 @DefaultImpl(no_tracing)
-abstract module trace { }
+abstract module trace {
+	source "__cyg_profile.c"
+}
 
 module no_tracing extends trace {
 	source "no_trace.c", "no_trace_impl.h"

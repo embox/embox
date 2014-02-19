@@ -117,7 +117,7 @@ static int cmp_trace_blocks(void *key1, void *key2) {
  * with trace_block_enter just after function call and
  * trace_block_exit just before function exit */
 
-void __cyg_profile_func_enter(void *func, void *caller) {
+void trace_block_func_enter(void *func) {
 	char *name = NULL, *str;
 	struct __trace_block *tb = NULL;
 	const struct symbol *s;
@@ -156,11 +156,10 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 
 		hashtable_put(tbhash, key, tb);
 	}
-	tb = hashtable_get(tbhash, key);
 	trace_block_enter(tb);
 }
 
-void __cyg_profile_func_exit(void *func, void *caller) {
+void trace_block_func_exit(void *func) {
 	//char *name = NULL;
 	struct __trace_block *tb;
 	//const struct symbol *s = symbol_lookup(func);
