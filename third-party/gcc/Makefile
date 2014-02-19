@@ -1,8 +1,3 @@
-
-ifeq ($(ROOT_DIR),)
-$(error ROOT_DIR is not set.)
-endif
-
 ifeq (arm,$(EMBOX_ARCH))
 EMBOX_GCC_TARGET=arm-none-eabi
 else ifeq (x86,$(EMBOX_ARCH))
@@ -24,13 +19,12 @@ endif
 
 AT=
 
-GCC_DIR       = $(ROOT_DIR)/build/gcc
-GCC_CMAKE_DIR = $(GCC_DIR)/cmake
+GCC_DIR       = $(BUILD_DIR)
 GCC_LIBS     += $(GCC_DIR)/$(EMBOX_GCC_TARGET)/lib/libsupc++.a
 GCC_LIBS     += $(GCC_DIR)/lib/gcc/$(EMBOX_GCC_TARGET)/4.8.1/libgcc.a
 GCC_INCLUDES += $(GCC_DIR)/$(EMBOX_GCC_TARGET)/include/c++/4.8.1
 GCC_INCLUDES += $(GCC_DIR)/lib/gcc/$(EMBOX_GCC_TARGET)/4.8.1/include
-GCC_FLAGS     = $(GCC_CMAKE_DIR)/flags
+GCC_FLAGS     = $(GCC_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
@@ -40,8 +34,6 @@ EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-
 EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
@@ -50,7 +42,7 @@ EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
 
-EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
+EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
@@ -90,10 +82,10 @@ all:
 
 .PHONY: all $(GCC_LIB)
 
-$(GCC_CMAKE_DIR):
+$(GCC_DIR):
 	$(AT)mkdir -p $@
 
-$(GCC_FLAGS): | $(GCC_CMAKE_DIR)
+$(GCC_FLAGS): | $(GCC_DIR)
 	-$(AT)rm $@
 	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
@@ -104,11 +96,11 @@ $(GCC_FLAGS): | $(GCC_CMAKE_DIR)
 	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CC)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
-$(GCC_CMAKE_DIR)/Makefile: CMakeLists.txt $(GCC_FLAGS) | $(GCC_CMAKE_DIR)
-	$(AT)cd $(GCC_CMAKE_DIR) && $(shell cat $(GCC_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
+$(GCC_DIR)/Makefile: CMakeLists.txt $(GCC_FLAGS) | $(GCC_DIR)
+	$(AT)cd $(GCC_DIR) && $(shell cat $(GCC_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
 
-$(GCC_LIBS): $(GCC_CMAKE_DIR)/Makefile
-	$(AT)cd $(GCC_CMAKE_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
+$(GCC_LIBS): $(GCC_DIR)/Makefile
+	$(AT)cd $(GCC_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
 
 $(GCC_DERIVED_LIBS): $(GCC_LIBS)
 	$(AT)mkdir -p $(GCC_DIR)/include/
