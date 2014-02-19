@@ -8,7 +8,7 @@ package embox.cmd.user
 			useradd
 		SYNOPSIS
 			useradd [options] LOGIN
-			TODO: useradd -D
+			useradd -D
 			TODO: useradd -D [options]
 		DESCRIPTION
 			Create a new user or update default new user information
@@ -21,6 +21,7 @@ package embox.cmd.user
 			-s SHELL			login shell of the new account
 			-u UID				user ID of the new account
 			-h					display help message and exit
+			-D					print or change default useradd configuration
 		EXAMPLES
 			useradd -d /root -c User user1234
 		AUTHORS

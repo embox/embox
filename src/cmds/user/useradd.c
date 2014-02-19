@@ -21,6 +21,7 @@ EMBOX_CMD(useradd);
 
 #define PASSWD_FILE "/tmp/passwd"
 #define SHADOW_FILE "/tmp/shadow"
+#define ADDUSER_FILE "/tmp/adduser.conf"
 
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
@@ -150,17 +151,43 @@ static int is_user_exists(char *name) {
 }
 
 static void print_help(void) {
-	printf("Usage: useradd [option] LOGIN\nOptions: see 'man usage'\n");
+	printf("Usage:\tuseradd [option] LOGIN\n"
+			"\tuseradd -D\n"
+			"Options: see 'man usage'\n");
+}
+
+static int print_default_options(void) {
+	FILE *fd;
+	char buff;
+	int number = 0, line = 0, new_line = 1;
+
+	if (NULL == (fd = fopen(ADDUSER_FILE, "r"))) {
+		return -1;
+	}
+
+	while (fread(&buff, 1, 1, fd) == 1) {
+		if (new_line && number) {
+			printf("\t%d %c", line++, buff);
+		} else {
+			printf("%c", buff);
+		}
+		new_line = (buff == '\n') ? 1 : 0;
+	}
+	fclose(fd);
+
+	return 0;
 }
 
 static int useradd(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "",
 			group[15] = "";
-	int opt;
+	int opt, count = 0;
 
 	if (argc >= 1) {
 		getopt_init();
-		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:h"))) {
+		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:Dh"))) {
+			count++;
+
 			switch (opt) {
 			case 'd':
 				//todo: isdir
@@ -182,6 +209,15 @@ static int useradd(int argc, char **argv) {
 			case 'h':
 				print_help();
 				return 0;
+			case 'D':
+				if (count != 1) {
+					print_help();
+					return 0;
+				}
+				if (optind >= argc) {
+					return print_default_options();
+				}
+				break;
 			default:
 				printf("useradd: invalid option -%c\n", optopt);
 				print_help();
