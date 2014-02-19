@@ -1,11 +1,14 @@
 package third_party.e2fsprogs
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/cmake/include")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include")
 static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/cmake/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libblkid.a", "libcom_err.a", "libe2p.a",
 		"libext2fs.a", "libquota.a", "libuuid.a"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/src/e2fsprogs-build/intl")
+	source "libintl.a"
 
 	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends embox.compat.posix.util.Time
@@ -24,7 +27,7 @@ static module core {
 module e2freefrag {
 	source "e2freefrag_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/cmake/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
 	source "e2freefrag.o"
 
 	@NoRuntime depends core
@@ -42,7 +45,7 @@ module e2freefrag {
 module dumpe2fs {
 	source "dumpe2fs_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/cmake/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
 	source "dumpe2fs.o"
 
 	@NoRuntime depends core
@@ -60,7 +63,7 @@ module dumpe2fs {
 module mke2fs {
 	source "mke2fs_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/cmake/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
 	source "mke2fs.o", "util.o", "profile.o",
 		"prof_err.o", "default_profile.o"
 
@@ -79,7 +82,7 @@ module mke2fs {
 module e2fsck {
 	source "e2fsck_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/cmake/src/e2fsprogs-build/e2fsck")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/e2fsck")
 	source "*.o"
 
 	@NoRuntime depends core

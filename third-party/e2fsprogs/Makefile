@@ -20,14 +20,8 @@ endif
 
 AT=
 
-E2FSPROGS_DIR       = $(BUILD_DIR)
-E2FSPROGS_CMAKE_DIR = $(E2FSPROGS_DIR)/cmake
-E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/ext2fs/libext2fs.a
-E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/et/libcom_err.a
-E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/e2p/libe2p.a
-#E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/intl/libintl.a
-E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/uuid/libuuid.a
-E2FSPROGS_FLAGS     = $(E2FSPROGS_CMAKE_DIR)/flags
+E2FSPROGS_DIR   = $(BUILD_DIR)
+E2FSPROGS_FLAGS = $(E2FSPROGS_DIR)/flags
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 #EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
@@ -80,10 +74,10 @@ all:
 
 .PHONY: all $(E2FSPROGS_LIB)
 
-$(E2FSPROGS_CMAKE_DIR):
+$(E2FSPROGS_DIR):
 	$(AT)mkdir -p $@
 
-$(E2FSPROGS_FLAGS): | $(E2FSPROGS_CMAKE_DIR)
+$(E2FSPROGS_FLAGS): | $(E2FSPROGS_DIR)
 	-$(AT)rm $@
 	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
@@ -94,12 +88,10 @@ $(E2FSPROGS_FLAGS): | $(E2FSPROGS_CMAKE_DIR)
 	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CC)\" >> $@
 	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
 
-$(E2FSPROGS_CMAKE_DIR)/Makefile: CMakeLists.txt $(E2FSPROGS_FLAGS) | $(E2FSPROGS_CMAKE_DIR)
-	$(AT)cd $(E2FSPROGS_CMAKE_DIR) && $(shell cat $(E2FSPROGS_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
+$(E2FSPROGS_DIR)/Makefile: CMakeLists.txt $(E2FSPROGS_FLAGS) | $(E2FSPROGS_DIR)
+	$(AT)cd $(E2FSPROGS_DIR) && $(shell cat $(E2FSPROGS_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
 
-$(E2FSPROGS_LIB): $(E2FSPROGS_CMAKE_DIR)/Makefile
-	$(AT)cd $(E2FSPROGS_CMAKE_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
-
-all: $(E2FSPROGS_LIB)
+all: $(E2FSPROGS_DIR)/Makefile
+	$(AT)cd $(E2FSPROGS_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
 
 .NOTPARALLEL:
