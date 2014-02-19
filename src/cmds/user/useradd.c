@@ -60,7 +60,7 @@ static int set_options(struct passwd *result, char *home, char *shell,
 		if (!res && _group_res != NULL) {
 			result->pw_gid = _group_res->gr_gid;
 		} else {
-			//todo message
+			printf("useradd: group '%s' doesn't exist\n", group);
 			return -1;
 		}
 	}
@@ -87,7 +87,7 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 	if (0 != set_options(&pwd, home, shell, gecos, group)) {
 		fclose(pswdf);
 		fclose(sdwf);
-		return -1;
+		return 0;
 	}
 
 	fwrite(pwd.pw_name, sizeof(char), strlen(pwd.pw_name), pswdf);
@@ -138,14 +138,18 @@ static int is_user_exists(char *name) {
 	return 0;
 }
 
+static void print_help(void) {
+	printf("Usage: useradd [option] LOGIN\nOptions: see 'man usage'\n");
+}
+
 static int useradd(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", pswd[15] = "",
 			gecos[15] = "", group[15] = "";
 	int opt;
 
-	if (argc != 1) {
+	if (argc >= 1) {
 		getopt_init();
-		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:"))) {
+		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:h"))) {
 			switch(opt) {
 			case 'd':
 				//todo: isdir
@@ -164,25 +168,30 @@ static int useradd(int argc, char **argv) {
 			case 'g':
 				strcpy(group, optarg);
 				break;
+			case 'h':
+				print_help();
+				return 0;
 			default:
-				break;
+				printf("useradd: invalid option -%c\n", optopt);
+				print_help();
+				return 0;
 			}
 		}
 
 		if (optind >= argc) {
-			//todo: help
+			print_help();
 			return 0;
 		}
 
 		strcpy(name, argv[optind]);
 
 		if (is_user_exists(name)) {
-			//todo message
-			return -1;
+			printf("useradd: user '%s' already exists\n", name);
+			return 0;
 		}
 		return create_user(name, home, shell, pswd, gecos, group);
 	}
 
-	//todo: help
+	print_help();
 	return 0;
 }
