@@ -10,8 +10,10 @@
 
 /*EMBOX_UNIT_INIT(app_init);*/
 
+#include <lib.h>
+
 extern int external_build_lib_call(void);
 
 int main(void) {
-	return 314 - external_build_lib_call();
+	return EXTERNAL_LIB_VAL - external_build_lib_call();
 }

@@ -99,6 +99,15 @@ gen_make_tsvar = \
 
 # 1. Target.
 # 2. Variable name.
+# 3. Value.
+gen_add_tsvar = \
+	$(PRINTF) '%s : %s += %s\n\n' \
+		$(call sh_quote,$1) \
+		$(call sh_quote,$2) \
+		$(call sh_quote,$3)
+
+# 1. Target.
+# 2. Variable name.
 # 3. Value (assumed to be a list).
 gen_make_tsvar_list = \
 	$(PRINTF) '%s : %s := $(foreach ,$3,\\\n\t\t%s)\n\n' \
@@ -287,6 +296,9 @@ my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
 
 my_bld_dep_value := $(call mybuild_resolve_or_die,mybuild.lang.BuildDepends.value)
 
+my_bld_artpath_cppflags := $(call mybuild_resolve_or_die,mybuild.lang.BuildArtifactPath.cppflags)
+my_bld_artpath_ldflags := $(call mybuild_resolve_or_die,mybuild.lang.BuildArtifactPath.ldflags)
+
 @module_extbld_rmk := \
 	$(foreach m,$(build_modules), \
 		$(patsubst %,module-extbld-rmk/%$m, \
@@ -387,7 +399,15 @@ $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
-$(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(call build_deps,$@)))
+$(@module_extbld_rmk) : __build_deps = $(call build_deps,$@)
+$(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
+$(@module_extbld_rmk) : __build_deps_artpath_cppflags = $(call get, \
+		$(call invoke, \
+			$(__build_deps),getAnnotationValuesOfOption,$(my_bld_artpath_cppflags)),value)
+$(@module_extbld_rmk) : __build_deps_artpath_ldflags = $(call get, \
+		$(call invoke, \
+			$(__build_deps),getAnnotationValuesOfOption,$(my_bld_artpath_ldflags)),value)
+
 $(@module_extbld_rmk) : kind := extbld
 
 $(@module_extbld_rmk) :
@@ -399,6 +419,9 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
+		$(call gen_add_tsvar,$(target),EMBOX_EXPORT_CPPFLAGS,$(__build_deps_artpath_cppflags)); \
+		$(call gen_add_tsvar,$(target),EMBOX_LDFLAGS,$(__build_deps_artpath_ldflags)); \
 		$(foreach d,$(this_build_deps),$(call gen_make_rule,$(dir $d)%,,@true); ) \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 
