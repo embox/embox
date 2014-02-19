@@ -1,0 +1,6 @@
+package mybuild.lang
+
+annotation BuildArtifactPath {
+	string cppflags
+	string ldflags
+}
