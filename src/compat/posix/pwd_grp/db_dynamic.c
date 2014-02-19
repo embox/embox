@@ -58,6 +58,10 @@ static int init(void) {
 		return ret;
 	}
 
+	if (0 != (ret = copy("/adduser.conf", ADDUSER_FILE))) {
+		return ret;
+	}
+
 	return 0;
 }
 

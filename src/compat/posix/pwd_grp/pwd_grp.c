@@ -409,3 +409,45 @@ static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 struct spwd *getspnam_f(const char *name) {
 	return spwd_find(SHADOW_FILE, name);
 }
+
+int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
+	FILE *passwdf;
+	char *temp;
+	int res = 0;
+
+	if (NULL == (passwdf = fopen(ADDUSER_FILE, "r"))) {
+		return errno;
+	}
+
+	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
+		if(0 == strcmp(temp, "GROUP")) {
+			if (0 != read_int_field(passwdf, "%d", &passwd->pw_gid, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "HOME")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_dir, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "SHELL")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_shell, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+	}
+
+out:
+	fclose(passwdf);
+	return res;
+}

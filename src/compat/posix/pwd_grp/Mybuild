@@ -18,7 +18,8 @@ module passwd_db_static extends passwd_db {
 	@InitFS
 	source "passwd",
 		"group",
-		"shadow"
+		"shadow",
+		"adduser.conf"
 }
 
 module passwd_db_dynamic extends passwd_db {
@@ -30,7 +31,8 @@ module passwd_db_dynamic extends passwd_db {
 	@InitFS
 	source "passwd",
 		"group",
-		"shadow"
+		"shadow",
+		"adduser.conf"
 
 	depends embox.fs.driver.tmpfs
 }

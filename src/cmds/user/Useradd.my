@@ -20,6 +20,7 @@ package embox.cmd.user
 			-p PASSWORD			encrypted password of the new account
 			-s SHELL			login shell of the new account
 			-u UID				user ID of the new account
+			-h					display help message and exit
 		EXAMPLES
 			useradd -d /root -c User user1234
 		AUTHORS
