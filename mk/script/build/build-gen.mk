@@ -420,8 +420,8 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
-		$(call gen_add_tsvar,$(target),EMBOX_EXPORT_CPPFLAGS,$(__build_deps_artpath_cppflags)); \
-		$(call gen_add_tsvar,$(target),LDFLAGS,$(__build_deps_artpath_ldflags)); \
+		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS,$(__build_deps_artpath_cppflags)); \
+		$(call gen_add_tsvar,$(target),BUILD_DEPS_LDFLAGS,$(__build_deps_artpath_ldflags)); \
 		$(foreach d,$(this_build_deps),$(call gen_make_rule,$(dir $d)%,,@true); ) \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 

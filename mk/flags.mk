@@ -28,21 +28,27 @@ EXTERNAL_MAKE = \
 EXTERNAL_MAKE_PRO = \
 	$(MKDIR) $(mod_build_dir) && \
 	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/build/.qmake.cache $(mod_build_dir) && \
-	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/install/bin/qmake ROOT_DIR=$(abspath $(ROOT_DIR)) $${TARGET:-$(dir $(my_file))} -o $(mod_build_dir)/Makefile && \
+	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/install/bin/qmake \
+		INCLUDEPATH+='$(BUILD_DEPS_CPPFLAGS)' \
+		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
+		$${TARGET:-$(dir $(my_file))} \
+		-o $(mod_build_dir)/Makefile && \
 	$(MAKE) -C $(mod_build_dir) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	EMBOX_ARCH='$(ARCH)' \
-	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
-	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
 	ROOT_DIR=$(abspath $(ROOT_DIR)) \
 	EXTERNAL_BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR)) \
 	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	EMBOX_ARCH='$(ARCH)' \
+	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
+	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
 	EMBOX_CFLAGS='$(CFLAGS)' \
 	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
-	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
-	EMBOX_LDFLAGS='$(LDFLAGS)'
+	EMBOX_DEPS_CPPFLAGS='$(BUILD_DEPS_CPPFLAGS)' \
+	EMBOX_DEPS_LDFLAGS='$(BUILD_DEPS_LDFLAGS)' \
+	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS) $(BUILD_DEPS_CPPFLAGS)' \
+	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 EXTERNAL_BUILD_DIR = $(ROOT_DIR)/build/extbld
