@@ -1,33 +1,34 @@
 package third_party.qpid
 
-@BuildArtifactPath(cppflags="-I$(abspath $(ROOT_DIR))/build/qpid/include/qpid -I$(abspath $(ROOT_DIR))/build/qpid/include",
-		ldflags="-L$(abspath $(ROOT_DIR))/build/qpid/lib")
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include/qpid",
+		ldflags="-L$(EXTERNAL_BUILD_DIR))/third_party/qpid/core/lib)
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
+@BuildDepends(third_party.STLport.core)
 static module core {
-	@AddPrefix("../../../../qpid/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libqmf.a", "libqmf2.a", "libqmfconsole.a",
-		"libqmfengine.a", "libqpidclient.a", "libqpidcommon.a",
-		"libqpidmessaging.a", "libqpidtypes.a"
-	source "order.mk" // FIXME
+		"libqmfengine.a", "libqpidbroker.a", "libqpidclient.a",
+		"libqpidcommon.a", "libqpidmessaging.a", "libqpidtypes.a"
 
-	@NoRuntime depends embox.lib.LibC
-	@NoRuntime depends third_party.boost.core
-	@NoRuntime depends third_party.e2fsprogs.core
+	@NoRuntime depends embox.compat.posix.fs.fsop
+	@NoRuntime depends embox.compat.posix.idx.pipe
 	@NoRuntime depends embox.compat.posix.idx.poll
 	@NoRuntime depends embox.compat.posix.idx.select
-	@NoRuntime depends embox.compat.posix.proc.fork
-	@NoRuntime depends embox.compat.posix.idx.pipe
-	@NoRuntime depends embox.compat.posix.util.utsname
-	@NoRuntime depends embox.compat.posix.util.sleep
-	@NoRuntime depends embox.compat.posix.util.gethostname
-	@NoRuntime depends embox.compat.posix.fs.fsop
-	@NoRuntime depends embox.net.lib.getifaddrs
-	@NoRuntime depends embox.compat.posix.net.socket
 	@NoRuntime depends embox.compat.posix.net.gai_strerror
 	@NoRuntime depends embox.compat.posix.net.getaddrinfo
 	@NoRuntime depends embox.compat.posix.net.getnameinfo
+	@NoRuntime depends embox.compat.posix.net.socket
+	@NoRuntime depends embox.compat.posix.proc.fork
+	@NoRuntime depends embox.compat.posix.util.gethostname
+	@NoRuntime depends embox.compat.posix.util.sleep
+	@NoRuntime depends embox.compat.posix.util.utsname
+	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.net.lib.getifaddrs
+	@NoRuntime depends third_party.boost.core
+	@NoRuntime depends third_party.e2fsprogs.core
+	@NoRuntime depends third_party.STLport.core
 }
 
 module hello extends embox.lib.cxx.app {
@@ -38,5 +39,5 @@ module hello extends embox.lib.cxx.app {
 	@IncludePath("$(ROOT_DIR)/build/qpid/include")
 	source "../../../../qpid/src/qpid/examples/messaging/hello_world.cpp"
 
-	source "order.mk"
+	//source "order.mk"
 }
