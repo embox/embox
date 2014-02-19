@@ -55,9 +55,6 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
 #EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 
-EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/gcc/include
-EMBOX_IMPORTED_CXXFLAGS += -I$(ROOT_DIR)/build/gcc/include
-
 #EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
 #EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
 
