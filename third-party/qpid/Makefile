@@ -32,7 +32,6 @@ QPID_FLAGS     = $(QPID_CMAKE_DIR)/flags
 #EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
 EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/third-party/STLport/include
-EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/e2fsprogs/include
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/STLport/stlport_embox_compat.h
 
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include

@@ -1,8 +1,3 @@
-
-ifeq ($(ROOT_DIR),)
-$(error ROOT_DIR is not set.)
-endif
-
 ifeq (arm,$(EMBOX_ARCH))
 EMBOX_E2FSPROGS_TARGET=arm-none-eabi
 else ifeq (x86,$(EMBOX_ARCH))
@@ -25,12 +20,12 @@ endif
 
 AT=
 
-E2FSPROGS_DIR       = $(ROOT_DIR)/build/e2fsprogs
+E2FSPROGS_DIR       = $(BUILD_DIR)
 E2FSPROGS_CMAKE_DIR = $(E2FSPROGS_DIR)/cmake
 E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/ext2fs/libext2fs.a
 E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/et/libcom_err.a
 E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/e2p/libe2p.a
-E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/intl/libintl.a
+#E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/intl/libintl.a
 E2FSPROGS_LIB       += $(E2FSPROGS_DIR)/src/e2fsprogs-build/lib/uuid/libuuid.a
 E2FSPROGS_FLAGS     = $(E2FSPROGS_CMAKE_DIR)/flags
 
@@ -42,8 +37,7 @@ EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-
+EMBOX_IMPORTED_CFLAGS   += $(filter -I%,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
@@ -52,7 +46,7 @@ EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
 
-EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
+EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))

@@ -2,7 +2,7 @@ package third_party.qpid
 
 @Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/qpid MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 @BuildDepends(third_party.boost.core)
-@BuildDepends(third_party.e2fsprogs.libs)
+@BuildDepends(third_party.e2fsprogs.core)
 static module core {
 	@AddPrefix("../../../../qpid/lib")
 	source "libqmf.a", "libqmf2.a", "libqmfconsole.a",
@@ -12,7 +12,7 @@ static module core {
 
 	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends third_party.boost.core
-	@NoRuntime depends third_party.e2fsprogs.libs
+	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends embox.compat.posix.idx.poll
 	@NoRuntime depends embox.compat.posix.idx.select
 	@NoRuntime depends embox.compat.posix.proc.fork
