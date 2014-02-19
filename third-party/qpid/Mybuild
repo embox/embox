@@ -2,7 +2,7 @@ package third_party.qpid
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include/qpid",
-		ldflags="-L$(EXTERNAL_BUILD_DIR))/third_party/qpid/core/lib)
+		ldflags="-L$(EXTERNAL_BUILD_DIR))/third_party/qpid/core/lib")
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.core)
