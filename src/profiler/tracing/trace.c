@@ -121,21 +121,22 @@ void trace_block_func_enter(void *func) {
 	char *name = NULL, *str;
 	struct __trace_block *tb = NULL;
 	const struct symbol *s;
-	int *key = (int*) malloc (sizeof(int));
+	int *key = (int*) malloc (sizeof(int)), l;
 
 	*key = (int) func;
 
-	/*l = strlen(s->name) + strlen(s->loc.file) + 2;
-	name = (char*) malloc (sizeof(char) * l);
-	strcpy(name, s->loc.file);
-	strcat(name, ":");
-	strcat(name, s->name); */
 	tb = hashtable_get(tbhash, key);
 
 	if (!tb) {
 		/* Lazy traceblock initialization */
 		s = symbol_lookup(func);
 		assert(s);
+
+		l = strlen(s->name) + strlen(s->loc.file) + 2;
+		name = (char*) malloc (sizeof(char) * l);
+		strcpy(name, s->loc.file);
+		strcat(name, ":");
+		strcat(name, s->name);
 
 		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
 		tb->name = name;
