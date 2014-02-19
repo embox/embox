@@ -59,39 +59,29 @@ namespace std {
 		DPRINT();
 		return (double)(time1 - time0);
 	}
-	static inline char *getenv(const char *name) {
-        (void)name;
-		DPRINT();
-		return NULL;
-	}
 	static inline int mblen(const char *s, size_t n) {
-        (void)s;
-        (void)n;
+		(void)s;
+		(void)n;
 		DPRINT();
 		// FIXME:
 		return 0;
 	}
 	static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
-        (void)pwc;
-        (void)s;
-        (void)n;
+		(void)pwc;
+		(void)s;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
 	static inline int atexit(void (*function)(void)) {
-        (void)function;
+		(void)function;
 		DPRINT();
 		return -1;
 	}
-	static inline void exit(int status) {
-        (void)status;
-		DPRINT();
-		while(true) {;}
-	}
 	static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
-        (void)dest;
-        (void)src;
-        (void)n;
+		(void)dest;
+		(void)src;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
@@ -123,10 +113,10 @@ namespace std {
 	}
 
 	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-        (void)stream;
-        (void)buf;
-        (void)mode;
-        (void)size;
+		(void)stream;
+		(void)buf;
+		(void)mode;
+		(void)size;
 		DPRINT();
 		return -1;
 	}
