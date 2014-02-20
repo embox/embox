@@ -1,15 +1,11 @@
-
 package third_party.external_build
 
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/external_build/lib")
 @Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/external_build/lib")
+@BuildDepends(lib2)
 static module lib {
-
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "lib.a"
-}
 
-@Build(script="true")
-static module lib2 {
-
+	@NoRuntime depends lib2
 }
