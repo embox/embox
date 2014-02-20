@@ -353,10 +353,10 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
-build_deps = \
-	$(call get, \
-		$(call invoke, \
-			$1,getAnnotationValuesOfOption,$(my_bld_dep_value)),value)
+# 1. Annotation target
+# 2. Annotation option
+annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),value)
+build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
 build_deps_all = \
 	$(foreach d,$(call build_deps,$1), \
@@ -406,12 +406,8 @@ $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
 $(@module_extbld_rmk) : __build_deps = $(call build_deps, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : __build_deps_all = $(call build_deps_all, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
-$(@module_extbld_rmk) : __build_deps_artpath_cppflags = $(call get, \
-		$(call invoke, \
-			$(__build_deps_all),getAnnotationValuesOfOption,$(my_bld_artpath_cppflags)),value)
-$(@module_extbld_rmk) : __build_deps_artpath_ldflags = $(call get, \
-		$(call invoke, \
-			$(__build_deps),getAnnotationValuesOfOption,$(my_bld_artpath_ldflags)),value)
+$(@module_extbld_rmk) : __build_deps_artpath_cppflags = $(call annotation_value,$(__build_deps_all),$(my_bld_artpath_cppflags))
+$(@module_extbld_rmk) : __build_deps_artpath_ldflags = $(call annotation_value,$(__build_deps),$(my_bld_artpath_ldflags))
 
 $(@module_extbld_rmk) : kind := extbld
 
@@ -520,7 +516,7 @@ $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)))
 $(@source_rmk) : flags = $(call trim, \
-			$(call do_flags,-I,$(includes)) \
+			$(call do_flags,-I,$(includes)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \

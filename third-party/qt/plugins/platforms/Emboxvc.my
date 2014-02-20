@@ -6,8 +6,6 @@ module emboxvc {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
 	source "libemboxvc.a"
 
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include/QtCore")
 	source "emboxvc.cpp"
 
 	@NoRuntime depends third_party.qt.core
