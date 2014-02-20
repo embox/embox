@@ -358,6 +358,11 @@ build_deps = \
 		$(call invoke, \
 			$(call get,$1,allTypes),getAnnotationValuesOfOption,$(my_bld_dep_value)),value)
 
+build_deps_deps = \
+	$(call get, \
+		$(call invoke, \
+			$(build_deps),getAnnotationValuesOfOption,$(my_bld_dep_value)),value)
+
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
@@ -400,10 +405,14 @@ $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat)
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
 $(@module_extbld_rmk) : __build_deps = $(call build_deps,$@)
+$(@module_extbld_rmk) : __build_deps_deps = $(call build_deps_deps,$@)
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
 $(@module_extbld_rmk) : __build_deps_artpath_cppflags = $(call get, \
 		$(call invoke, \
 			$(__build_deps),getAnnotationValuesOfOption,$(my_bld_artpath_cppflags)),value)
+$(@module_extbld_rmk) : __build_deps_artpath_cppflags += $(call get, \
+		$(call invoke, \
+			$(__build_deps_deps),getAnnotationValuesOfOption,$(my_bld_artpath_cppflags)),value)
 $(@module_extbld_rmk) : __build_deps_artpath_ldflags = $(call get, \
 		$(call invoke, \
 			$(__build_deps),getAnnotationValuesOfOption,$(my_bld_artpath_ldflags)),value)
