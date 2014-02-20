@@ -6,9 +6,9 @@ module vnc {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
 	source "libqvncgraphicssystem.a"
 
-	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")
-	@IncludePath("$(ROOT_DIR)/third-party/STLport/include")
-	@IncludePath("$(ROOT_DIR)/build/qpid/include")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include/QtCore")
+	@IncludePathBefore("$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/core/include/stlport")
 	source "vnc.cpp"
 
 	@NoRuntime depends third_party.qt.core
