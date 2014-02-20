@@ -1,13 +1,11 @@
 package third_party.qt.plugin.platform
 
-@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/source/src/plugins/platforms/minimal; $(EXTERNAL_MAKE_PRO)")
+@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/source/src/plugins/platforms/minimal; $(EXTERNAL_MAKE_PRO)")
 @BuildDepends(third_party.qt.core)
 module minimal {
-	@AddPrefix("^BUILD/extbld/third_party/qt/core/qt/build/plugins/platforms")
+	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
 	source "libqminimal.a"
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/build/include")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/build/include/QtCore")
 	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")
 	@IncludePath("$(ROOT_DIR)/third-party/STLport/include")
 	@IncludePath("$(ROOT_DIR)/build/qpid/include")

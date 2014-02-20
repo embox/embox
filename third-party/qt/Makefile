@@ -1,7 +1,6 @@
-BUILD_DIR      := $(ROOT_DIR)/build
 DOWNLOAD_DIR   := $(ROOT_DIR)/download
 
-QT_DIR         := $(BUILD_DIR)/qt
+QT_DIR         := $(BUILD_DIR)
 QT_SRC_DIR     := $(QT_DIR)/source
 QT_BUILD_DIR   := $(QT_DIR)/build
 QT_INSTALL_DIR := $(QT_DIR)/install

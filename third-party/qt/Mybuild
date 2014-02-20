@@ -1,13 +1,14 @@
 package third_party.qt
 
 @Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include/QtCore")
 @BuildDepends(third_party.gcc.core)
 @BuildDepends(third_party.STLport.core)
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/qt/install/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libQtCore.a", "libQtGui.a", "libQtMultimedia.a",
 		"libQtNetwork.a", "libQtSql.a", "libQtSvg.a",
 		"libQtTest.a", "libQtXml.a"
