@@ -27,8 +27,8 @@ EXTERNAL_MAKE = \
 
 EXTERNAL_MAKE_PRO = \
 	$(MKDIR) $(mod_build_dir) && \
-	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/build/.qmake.cache $(mod_build_dir) && \
-	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt/install/bin/qmake \
+	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/build/.qmake.cache $(mod_build_dir) && \
+	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
 		INCLUDEPATH+='$(BUILD_DEPS_CPPFLAGS)' \
 		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
 		$${TARGET:-$(dir $(my_file))} \
