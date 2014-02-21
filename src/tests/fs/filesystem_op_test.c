@@ -32,18 +32,13 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
 #define FS_BLOCKS  124
-#define FS_DIR    "/tmp/fat"
-#define FS_DIR1   "/tmp/fat/foo"
-#define FS_DIR2   "/tmp/fat/foo/bar"
-#define FS_FILE1  "/tmp/fat/foo/bar/abc.txt"
-#define FS_FILE2  "/tmp/fat/foo/bar/xyz.txt"
+#define FS_DIR    "/tmp"
+#define FS_DIR1   "/tmp/foo"
+#define FS_DIR2   "/tmp/foo/bar"
+#define FS_FILE1  "/tmp/foo/bar/abc.txt"
+#define FS_FILE2  "/tmp/foo/bar/xyz.txt"
 
 TEST_CASE("generic filesystem test") {
-
-	/* Creating new directory for test */
-	{
-		test_assert_zero(mkdir(FS_DIR, 0777));
-	}
 
 	/* Create fat filesystem */
 	{
@@ -83,10 +78,6 @@ TEST_CASE("generic filesystem test") {
 		test_assert_zero(umount(FS_DIR));
 	}
 
-	/* Removing test directory */
-	{
-		test_assert_zero(remove(FS_DIR));
-	}
 }
 
 static int setup_suite(void) {
