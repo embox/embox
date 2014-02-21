@@ -31,13 +31,9 @@ static module core {
 	@NoRuntime depends third_party.STLport.core
 }
 
+@BuildDepends(core)
 module hello extends embox.lib.cxx.app {
 	@NoRuntime depends core
 
-	@IncludePathBefore("$(ROOT_DIR)/build/stlport/include/stlport")
-	@IncludePath("$(ROOT_DIR)/third-party/STLport/include")
-	@IncludePath("$(ROOT_DIR)/build/qpid/include")
-	source "../../../../qpid/src/qpid/examples/messaging/hello_world.cpp"
-
-	//source "order.mk"
+	source "^BUILD/qpid/src/qpid/examples/messaging/hello_world.cpp"
 }
