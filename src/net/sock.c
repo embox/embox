@@ -69,34 +69,41 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
 
 static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	struct sk_buff *skb;
-	size_t len;
-	int total_len;
 	char *buff;
-	size_t buff_sz;
+	size_t buff_sz, total_len, len;
 
-	total_len = 0;
+	assert(sk != NULL);
+	assert(msg != NULL);
 
+	assert(msg->msg_iov != NULL);
+	assert(msg->msg_iovlen == 1);
 	buff = msg->msg_iov->iov_base;
 	buff_sz = msg->msg_iov->iov_len;
+	assert((buff != NULL) || (buff_sz == 0));
+	total_len = 0;
 
 	do {
 		skb = skb_queue_front(&sk->rx_queue);
-		if (!skb) {
-			/* skb queue is empty */
-			/* TODO we return -1 but must return error and number of read bytes */
-			return -1;
+		if (skb == NULL) {
+			if (total_len == 0) {
+				return -EAGAIN;
+			}
+			break;
 		}
-		len = skb_read(skb, buff, buff_sz);
 
+		len = skb_read(skb, buff, buff_sz);
+		buff += len;
+		buff_sz -= len;
 		total_len += len;
 
 		if (!stream) {
 			sk->rx_data_len -= skb->p_data_end - skb->p_data;
 
-			// XXX
+			assert(sk->p_ops != NULL);
 			if (sk->p_ops->fillmsg && msg->msg_name) {
 				sk->p_ops->fillmsg(sk, msg, skb);
 			}
+
 			/* For message-based sockets, such as SOCK_DGRAM and SOCK_SEQPACKET,
 			 * the entire message shall be read in a single operation. If a
 			 * message is too long to fit in the supplied buffer, and MSG_PEEK
@@ -108,60 +115,43 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 		}
 
 		/* we read stream-base socket */
+		assert(skb->p_data <= skb->p_data_end);
 		if (skb->p_data == skb->p_data_end) {
 			skb_free(skb);
 		}
-
-		/*TODO if we want to use msg_waitall options */
-		buff += len;
-		buff_sz -= len;
-	} while (!len && buff_sz);
+	} while (buff_sz != 0);
 
 	sk->rx_data_len -= total_len;
-	return total_len;
+	msg->msg_iov->iov_len = total_len;
+
+	return 0;
 }
 
 int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		int stream_mode) {
-	int res;
-	int len;
-	int timeout;
+	int ret;
+	unsigned long timeout;
 
-	assert(sk);
-	assert(msg);
-	assert(msg->msg_iov);
-	assert(msg->msg_iov->iov_base || !msg->msg_iov->iov_len);
+	assert(sk != NULL);
+	timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
+	if (timeout == 0) {
+		timeout = SCHED_TIMEOUT_INFINITE;
+	}
 
 	softirq_lock();
 	{
 		do {
-			len = sock_read(sk, msg, stream_mode);
-
-			if (len == 0) {
-				/* if we try to read zero bytes from socket */
-				msg->msg_iov->iov_len = 0;
-				res = 0;
+			ret = sock_read(sk, msg, stream_mode);
+			if (ret != -EAGAIN) {
 				break;
 			}
 
-			if (len > 0) {
-				msg->msg_iov->iov_len = len;
-				res = 0;
-				break;
-			}
-
-			/* if (len < 0)  */
-			timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
-			if (timeout == 0) {
-				timeout = SCHED_TIMEOUT_INFINITE;
-			}
-
-			res = sock_wait(sk, POLLIN | POLLERR, timeout);
-		} while (!res);
+			ret = sock_wait(sk, POLLIN | POLLERR, timeout);
+		} while (ret == 0);
 	}
 	softirq_unlock();
 
-	return res;
+	return ret;
 }
 
 in_port_t sock_inet_get_src_port(const struct sock *sk) {
