@@ -213,7 +213,6 @@ static void virtio_config(struct net_device *dev) {
 	virtio_net_set_feature(guest_features, dev);
 }
 
-#include <kernel/printk.h>
 static void virtio_priv_fini(struct virtio_priv *dev_priv,
 		struct net_device *dev) {
 	struct virtqueue *vq;
