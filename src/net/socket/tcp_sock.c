@@ -65,8 +65,7 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk = to_tcp_sock(sk);
 	assert(tcp_sk != NULL);
 
-	debug_print(3, "tcp_init: sk %p self_seq=last_ack %lu\n",
-			to_sock(tcp_sk), tcp_sk->last_ack);
+	debug_print(3, "tcp_init: sk %p\n", to_sock(tcp_sk));
 
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
