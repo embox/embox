@@ -11,6 +11,7 @@
 #include <drivers/acpi/acpi.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/semaphore.h>
+#include <kernel/time/ktime.h>
 
 ACPI_STATUS AcpiOsInitialize(void) {
 	return AE_OK;
@@ -69,11 +70,11 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
  * We assume that there is no virtual memory in Embox.
  */
 
-void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE) {
+void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
 	return ACPI_PHYSADDR_TO_PTR(Where);
 }
 
-void AcpiOsUnmapMemory(void *, ACPI_SIZE) {
+void AcpiOsUnmapMemory(void *LogicalAddress, ACPI_SIZE Size) {
 }
 
 ACPI_STATUS AcpiOsGetPhysicalAddress(
@@ -96,11 +97,11 @@ void AcpiOsFree(void *Memory) {
 	free(Memory);
 }
 
-BOOLEAN AcpiOsReadable(void *, ACPI_SIZE) {
+BOOLEAN AcpiOsReadable(void *Pointer, ACPI_SIZE Length) {
 	return TRUE;
 }
 
-BOOLEAN AcpiOsWritable(void *, ACPI_SIZE) {
+BOOLEAN AcpiOsWritable(void *Pointer, ACPI_SIZE Length) {
 	return TRUE;
 }
 
@@ -109,15 +110,10 @@ ACPI_THREAD_ID AcpiOsGetThreadId(void) {
 }
 
 ACPI_STATUS AcpiOsExecute(
-		ACPI_EXECUTE_TYPE,
+		ACPI_EXECUTE_TYPE Type,
 		ACPI_OSD_EXEC_CALLBACK Function,
 		void *Context) {
-	if (!Function) {
-		return AE_BAD_PARAMETER;
-	}
-
-	thread_create(THREAD_FLAG_DETACHED, Function, Context);
-
+	// TODO
 	return AE_OK;
 }
 
@@ -134,7 +130,7 @@ void AcpiOsWaitEventsComplete(void) {
 }
 
 ACPI_STATUS AcpiOsCreateSemaphore(
-		UINT32,
+		UINT32 MaxUnits,
 		UINT32 InitialUnits,
 		ACPI_SEMAPHORE *OutHandle) {
 	if (!OutHandle) {
@@ -148,6 +144,8 @@ ACPI_STATUS AcpiOsCreateSemaphore(
 	}
 
 	semaphore_init(*OutHandle, InitialUnits);
+
+	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
@@ -161,73 +159,97 @@ ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
 }
 
 ACPI_STATUS AcpiOsWaitSemaphore(
-		ACPI_SEMAPHORE,
-		UINT32,
-		UINT16) {
+		ACPI_SEMAPHORE Handle,
+		UINT32 Units,
+		UINT16 Timeout) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE, UINT32) {
+ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK *) {
+ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK *OutHandle) {
 	// TODO
 	return AE_OK;
 }
 
-void AcpiOsDeleteLock (ACPI_SPINLOCK) {
+void AcpiOsDeleteLock (ACPI_SPINLOCK Handle) {
 	// TODO
 }
 
-ACPI_CPU_FLAGS AcpiOsAcquireLock(ACPI_SPINLOCK) {
-	// TODO
-	return AE_OK;
-}
-
-void AcpiOsReleaseLock(ACPI_SPINLOCK, ACPI_CPU_FLAGS Flags) {
-	// TODO
-}
-
-ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32, ACPI_OSD_HANDLER, void *) {
+ACPI_CPU_FLAGS AcpiOsAcquireLock(ACPI_SPINLOCK Handle) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32, ACPI_OSD_HANDLER) {
+void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags) {
+	// TODO
+}
+
+ACPI_STATUS AcpiOsInstallInterruptHandler(
+		UINT32 InterruptNumber,
+		ACPI_OSD_HANDLER ServiceRoutine,
+		void *Context) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsReadPort (ACPI_IO_ADDRESS, UINT32, UINT32) {
+ACPI_STATUS AcpiOsRemoveInterruptHandler(
+		UINT32 InterruptNumber,
+		ACPI_OSD_HANDLER ServiceRoutine) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsWritePort (ACPI_IO_ADDRESS, UINT32, UINT32) {
+ACPI_STATUS AcpiOsReadPort(
+		ACPI_IO_ADDRESS Address,
+		UINT32 *Value,
+		UINT32 Width) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsReadMemory(ACPI_PHYSICAL_ADDRESS, UINT64, UINT32) {
+ACPI_STATUS AcpiOsWritePort(ACPI_IO_ADDRESS Address,
+		UINT32 Value,
+		UINT32 Width) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsWriteMemory(ACPI_PHYSICAL_ADDRESS, UINT64, UINT32) {
+ACPI_STATUS AcpiOsReadMemory(
+		ACPI_PHYSICAL_ADDRESS Address,
+		UINT64 *Value,
+		UINT32 Width) {
+	// TODO
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsWriteMemory(
+		ACPI_PHYSICAL_ADDRESS Address,
+		UINT64 Value,
+		UINT32 Width) {
 	// TODO
 	return AE_OK;
 }
 
 ACPI_STATUS
-AcpiOsReadPciConfiguration (ACPI_PCI_ID *, UINT32, UINT64, UINT32) {
+AcpiOsReadPciConfiguration(
+		ACPI_PCI_ID *PciId,
+		UINT32 Reg,
+		UINT64 *Value,
+		UINT32 Width) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *, UINT32, UINT64, UINT32) {
+ACPI_STATUS AcpiOsWritePciConfiguration(
+		ACPI_PCI_ID *PciId,
+		UINT32 Reg,
+		UINT64 Value,
+		UINT32 Width) {
 	// TODO
 	return AE_OK;
 }
@@ -236,11 +258,11 @@ void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf (const char *Format, ...) {
 	// TODO
 }
 
-void AcpiOsVprintf(const char *, va_list) {
+void AcpiOsVprintf(const char *Format, va_list Args) {
 	// TODO
 }
 
-void AcpiOsRedirectOutput(void *) {
+void AcpiOsRedirectOutput(void *Destination) {
 	// TODO
 }
 
@@ -249,12 +271,12 @@ UINT64 AcpiOsGetTimer(void) {
 	return 0;
 }
 
-ACPI_STATUS AcpiOsSignal(UINT32, void *) {
+ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
 	// TODO
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsGetLine(char *, UINT32, UINT32 *) {
+ACPI_STATUS AcpiOsGetLine(char *Buffer, UINT32 BufferLength, UINT32 *BytesRead) {
 	// TODO
 	return AE_OK;
 }
