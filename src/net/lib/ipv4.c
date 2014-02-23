@@ -14,7 +14,7 @@
 #include <net/util/checksum.h>
 #include <netinet/in.h>
 
-void ip_build(struct iphdr *iph, uint16_t total_len,
+void ip_build(struct iphdr *iph, uint16_t total_len, uint8_t ttl,
 		uint8_t proto, in_addr_t src_ip, in_addr_t dst_ip) {
 	assert(iph != NULL);
 	iph->version = 4;
@@ -23,7 +23,7 @@ void ip_build(struct iphdr *iph, uint16_t total_len,
 	iph->tot_len = htons(total_len);
 	iph->id = 0; /* use ip_set_id_field */
 	iph->frag_off = htons(IP_DF);
-	iph->ttl = 64;
+	iph->ttl = ttl;
 	iph->proto = proto;
 	iph->check = 0; /* use ip_set_check_field */
 	iph->saddr = src_ip;

@@ -12,11 +12,13 @@
 #include <string.h>
 
 void context_init(struct context *ctx, bool privileged) {
+	memset(ctx, 0, sizeof(*ctx));
 }
 
 void context_set_stack(struct context *ctx, void *sp) {
 	/* Set kernel mode stack pointer */
 	ctx->esp = (uint32_t) sp - 0x40 - sizeof(uint32_t);
+	// TODO seems that ebp must be set as well
 }
 
 void context_set_entry(struct context *ctx, void(*pc)(void)) {

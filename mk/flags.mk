@@ -6,6 +6,10 @@ ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
 
+COVERAGE_CFLAGS ?= -finstrument-functions \
+		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
+
+
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
 override CPPFLAGS += -DNDEBUG
 override NDEBUG := 1
@@ -58,7 +62,7 @@ override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
 
 override COMMON_FLAGS := -pipe
-override COMMON_FLAGS += --debug-prefix-map=$$(pwd)=
+override COMMON_FLAGS += --debug-prefix-map=`pwd`=
 override COMMON_FLAGS += --debug-prefix-map=./=
 
 # Assembler flags
@@ -70,7 +74,7 @@ override COMMON_CCFLAGS := $(COMMON_FLAGS)
 override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -Wall -Werror
 override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
-override COMMON_CCFLAGS += -Wformat #-Wformat-nonliteral
+override COMMON_CCFLAGS += -Wformat
 
 cxxflags := $(CXXFLAGS)
 override CXXFLAGS = $(COMMON_CCFLAGS)
@@ -87,7 +91,6 @@ override CXXFLAGS += $(cxxflags)
 cflags := $(CFLAGS)
 override CFLAGS  = $(COMMON_CCFLAGS)
 override CFLAGS += -std=gnu99
-override CFLAGS += -Wno-format-zero-length
 #override CFLAGS += -fexceptions
 override CFLAGS += $(cflags)
 
@@ -97,7 +100,6 @@ override LDFLAGS  = -static -nostdlib
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
-
 
 
 CCFLAGS ?=

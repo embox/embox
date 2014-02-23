@@ -194,8 +194,6 @@ int nf_rule_init(struct nf_rule *r) {
 
 	memset(r, 0, sizeof *r);
 	list_link_init(&r->lnk);
-	r->not_hwaddr_dst = r->not_hwaddr_src = r->not_saddr = r->not_daddr =
-		r->not_sport = r->not_dport = 1;
 
 	return 0;
 }
@@ -215,7 +213,8 @@ int nf_rule_copy(struct nf_rule *r_dst,
 	return 0;
 }
 
-int nf_add_rule(int chain, const struct nf_rule *r) {
+static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
+		struct list **rules_p, struct nf_rule **new_r_p) {
 	struct list *rules;
 	struct nf_rule *new_r;
 
@@ -236,7 +235,44 @@ int nf_add_rule(int chain, const struct nf_rule *r) {
 	nf_rule_init(new_r);
 	nf_rule_copy(new_r, r);
 
+	*rules_p = rules;
+	*new_r_p = new_r;
+
+	return 0;
+}
+
+
+int nf_add_rule(int chain, const struct nf_rule *r) {
+	struct list *rules;
+	struct nf_rule *new_r;
+	int res;
+
+	res = nf_chain_rule_prepare(chain, r, &rules, &new_r);
+	if (res != 0) {
+		return res;
+	}
+
 	list_add_last_link(&new_r->lnk, rules);
+
+	return 0;
+}
+
+int nf_insert_rule(int chain, const struct nf_rule *r, size_t num) {
+	struct list *rules;
+	struct nf_rule *new_r, *old_r;
+	int res;
+
+	res = nf_chain_rule_prepare(chain, r, &rules, &new_r);
+	if (res != 0) {
+		return res;
+	}
+
+	old_r = nf_get_rule_by_num(chain, num);
+	if (!old_r) {
+		list_add_last_link(&new_r->lnk, rules);
+	} else {
+		list_insert_before_link(&new_r->lnk, &old_r->lnk);
+	}
 
 	return 0;
 }
@@ -287,9 +323,12 @@ int nf_clear(int chain) {
 	return 0;
 }
 
-#define NF_TEST_NOT_FIELD(r1, r2, field) \
-	((0 == memcmp(&r1->field, &r2->field, sizeof r1->field))\
-		== (r1->not_##field == r2->not_##field))
+#define NF_TEST_NOT_FIELD(test_r, r, field)         \
+	(!r->set_##field ? 1 : !test_r->set_##field ? 0 \
+		: (assert(!test_r->not_##field),            \
+			(0 == memcmp(&test_r->field, &r->field, \
+					sizeof test_r->field))          \
+				!= !!r->not_##field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct list *rules;
@@ -306,8 +345,8 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 
 	list_foreach(r, rules, lnk) {
 		if ((r->target != NF_TARGET_UNKNOWN)
-				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
 				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_src)
+				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
 				&& NF_TEST_NOT_FIELD(test_r, r, saddr)
 				&& NF_TEST_NOT_FIELD(test_r, r, daddr)
 				&& (((test_r->proto != NF_PROTO_ALL)
@@ -318,11 +357,9 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 					|| ((test_r->proto != NF_PROTO_ALL)
 						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
 				&& NF_TEST_NOT_FIELD(test_r, r, sport)
-				&& NF_TEST_NOT_FIELD(test_r, r, dport)) {
-			if ((r->test_hnd != NULL)
-					&& r->test_hnd(test_r, r->test_hnd_data)) {
-				return 1;
-			}
+				&& NF_TEST_NOT_FIELD(test_r, r, dport)
+				&& (!r->test_hnd ? 1 : r->test_hnd(test_r, r->test_hnd_data))) {
+
 			return test_r->target != r->target;
 		}
 	}
@@ -340,24 +377,23 @@ int nf_test_skb(int chain, enum nf_target target,
 
 	nf_rule_init(&rule);
 	rule.target = target;
-	rule.saddr.s_addr = test_skb->nh.iph->saddr;
-	rule.daddr.s_addr = test_skb->nh.iph->daddr;
-	rule.not_saddr = rule.not_daddr = 0;
+	NF_SET_NOT_FIELD_PTR(&rule, saddr, 0, &test_skb->nh.iph->saddr,
+			sizeof test_skb->nh.iph->saddr);
+	NF_SET_NOT_FIELD_PTR(&rule, daddr, 0, &test_skb->nh.iph->daddr,
+			sizeof test_skb->nh.iph->daddr);
 	switch (test_skb->nh.iph->proto) {
 	case IPPROTO_ICMP:
-		rule.proto = NF_PROTO_ICMP;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_ICMP);
 		break;
 	case IPPROTO_TCP:
-		rule.proto = NF_PROTO_TCP;
-		rule.sport = test_skb->h.th->source;
-		rule.dport = test_skb->h.th->dest;
-		rule.not_sport = rule.not_dport = 0;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_TCP);
+		NF_SET_NOT_FIELD(&rule, sport, 0, test_skb->h.th->source);
+		NF_SET_NOT_FIELD(&rule, dport, 0, test_skb->h.th->dest);
 		break;
 	case IPPROTO_UDP:
-		rule.proto = NF_PROTO_UDP;
-		rule.sport = test_skb->h.uh->source;
-		rule.dport = test_skb->h.uh->dest;
-		rule.not_sport = rule.not_dport = 0;
+		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_UDP);
+		NF_SET_NOT_FIELD(&rule, sport, 0, test_skb->h.uh->source);
+		NF_SET_NOT_FIELD(&rule, dport, 0, test_skb->h.uh->dest);
 		break;
 	}
 
@@ -372,11 +408,10 @@ int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
 	nf_rule_init(&rule);
 
 	rule.target = target;
-	memcpy(rule.hwaddr_dst, hwaddr_dst, hwaddr_len);
-	memcpy(rule.hwaddr_src, hwaddr_src, hwaddr_len);
-	rule.hwaddr_len = hwaddr_len;
-	rule.not_hwaddr_dst = rule.not_hwaddr_src = 0;
+	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_src, 0, hwaddr_src,
+			hwaddr_len);
+	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_dst, 0, hwaddr_dst,
+			hwaddr_len);
 
 	return nf_test_rule(chain, &rule);
 }
-

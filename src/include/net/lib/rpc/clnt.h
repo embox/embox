@@ -95,6 +95,10 @@ struct rpc_createerr {
 
 extern struct rpc_createerr rpc_create_error;
 
+/* Client factory */
+extern struct client * clnt_alloc(void);
+extern void clnt_free(struct client *clnt);
+
 extern struct client * clnt_create(const char *host, uint32_t prognum, uint32_t versnum,
 		const char *prot);
 extern struct client * clntudp_create(struct sockaddr_in *addr, uint32_t prognum,

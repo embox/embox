@@ -13,15 +13,19 @@
 
 #include <sys/types.h>
 
+#include <hal/cpu.h>
+
+#include <kernel/thread/types.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 
+#include <kernel/time/time.h>
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
 struct thread;
-struct event;
-struct runq;
+
+__BEGIN_DECLS
 
 /**
  * Initializes scheduler.
@@ -51,12 +55,17 @@ extern void sched_ticker_switch(struct thread *prev, struct thread *next);
  * @param thread
  *   Thread which will be added.
  */
-extern void sched_wake(struct thread *t);
+extern void __sched_start(struct thread *t);
+extern void sched_start(struct thread *t);
 
 /**
  * Makes exit thread and removes thread from scheduler.
  */
-extern void sched_finish(struct thread *thread);
+extern void sched_finish(struct thread *t);
+
+static inline int sched_active(struct thread *t) {
+	return t->active;
+}
 
 /**
  * Changes scheduling priority of the thread. If the thread is running now
@@ -71,11 +80,36 @@ extern void sched_finish(struct thread *thread);
  */
 extern int sched_change_priority(struct thread *t, sched_priority_t priority);
 
+extern void sched_wait_prepare(void);
+extern void sched_wait_cleanup(void);
+
+extern int sched_wait(void);
+extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
+
+extern int __sched_wakeup(struct thread *);
+extern int sched_wakeup(struct thread *);
+
+/* XXX thread will not be ever in runq or active - thread is dead,
+ * but with allocated resources on its stack */
+extern void sched_freeze(struct thread *t);
+
+/**
+ * Wait cond_expr to become TRUE.
+ */
+#define SCHED_WAIT(cond_expr) \
+	SCHED_WAIT_TIMEOUT(cond_expr, SCHED_TIMEOUT_INFINITE)
 
 /**
  * Requests switching of the current thread.
  */
 extern void sched_post_switch(void);
+
+/**
+ * Runs the scheduler right now.
+ */
+extern void schedule(void);
+
+extern void sched_ack_switched(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling
@@ -90,6 +124,33 @@ extern void sched_post_switch(void);
  *   On operation fail.
  */
 extern void sched_signal(struct thread *thread);
+
+__END_DECLS
+
+#include <kernel/thread/signal_lock.h>
+
+#define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
+	((cond_expr) ? 0 : ({                                            \
+		int __wait_ret = 0;                                          \
+		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		                                                             \
+		threadsig_lock();                                            \
+		do {                                                         \
+			sched_wait_prepare();                                    \
+			                                                         \
+			if (cond_expr)                                           \
+				break;                                               \
+			                                                         \
+			__wait_ret = sched_wait_timeout(__wait_timeout,          \
+											&__wait_timeout);        \
+		} while (!__wait_ret);                                       \
+		                                                             \
+		sched_wait_cleanup();                                        \
+		                                                             \
+		threadsig_unlock();                                          \
+		__wait_ret;                                                  \
+	}))
 
 
 #endif /* KERNEL_SCHED_H_ */

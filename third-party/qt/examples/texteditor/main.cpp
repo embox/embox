@@ -8,8 +8,7 @@
 #include "desktopimage.h"
 #include "mdi_background.h"
 
-#include <kernel/manual_event.h>
-#include <kernel/event.h>
+#include <kernel/sched/waitq.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
 #include <module/third_party/qt/texteditor.h>
@@ -31,7 +30,8 @@ static QStringList desktopImagesList;
 static QApplication *__qt_app;
 static QMenu *__qt_menu;
 
-static struct manual_event inited_event;
+static struct waitq texteditor_inited_wq;
+static char texteditor_inited;
 static int curuid;
 
 static void emboxQtShowLoginForm();
@@ -133,6 +133,9 @@ static void load_pref(void) {
 	snprintf(cbuf, FSIZE, "/mnt/pref_%d", curuid);
 	fd = open(cbuf, O_RDONLY, 0755);
 
+	if (fd == -1)
+		goto set_default;
+
 	lseek(fd, 0, 0);
 	if (0 < (ret = read(fd, cbuf, FSIZE))) {
 		char *buf = cbuf;
@@ -145,6 +148,7 @@ static void load_pref(void) {
 	}
 	close(fd);
 
+set_default:
 	QString imagePath = QString(":/images/").append(QString(wall));
 	emarea->setBackgroundPath(imagePath);
 
@@ -186,9 +190,9 @@ void emboxQtHideDesktop() {
 }
 
 void emboxRootWindowShow(int width, int height) {
-
 	emroot->setGeometry(QRect(0,0, width, height));
-	manual_event_set_and_notify(&inited_event);
+	texteditor_inited = 1;
+	waitq_wakeup_all(&texteditor_inited_wq);
 }
 
 static void emboxQtShowLoginForm() {
@@ -202,7 +206,7 @@ int main(int argv, char **args)
 {
 	//Q_INIT_RESOURCE(texteditor);
 
-	manual_event_init(&inited_event, 0);
+	waitq_init(&texteditor_inited_wq);
 
 	QApplication app(argv, args);
 
@@ -223,7 +227,7 @@ int main(int argv, char **args)
 	emroot->setCentralWidget(emarea);
 
 	if (DEFAULT_WIDTH == 0 || DEFAULT_HEIGHT == 0) {
-		manual_event_wait(&inited_event, EVENT_TIMEOUT_INFINITE); /* EMBOXVC plugin*/
+		WAITQ_WAIT(&texteditor_inited_wq, texteditor_inited); /* EMBOXVC plugin*/
 	} else {
 		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT)); /* VNC plugin */
 	}

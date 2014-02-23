@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #if 1
 #define DPRINT() printf(">>> qpid CALL %s\n", __FUNCTION__)
@@ -128,11 +129,6 @@ static inline
 char *strerror_r(int errnum, char *buf, size_t buflen) {
 	DPRINT();
 	return strerror(errnum);
-}
-
-static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
-	printf(">>> localtime_r\n");
-	return NULL;
 }
 
 #include <sys/types.h>

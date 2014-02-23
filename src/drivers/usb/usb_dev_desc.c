@@ -8,12 +8,14 @@
 
 #include <errno.h>
 #include <string.h>
-#include <drivers/usb.h>
-#include <drivers/usb_desc.h>
+#include <drivers/usb/usb.h>
+#include <drivers/usb/usb_desc.h>
 #include <mem/misc/pool.h>
-#include <kernel/manual_event.h>
+#include <kernel/sched.h>
+#include <kernel/thread.h>
+#include <kernel/irq_lock.h>
 
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb_dev_desc.h>
 
 struct usb_dev_desc {
 	struct usb_dev *dev;
@@ -23,23 +25,19 @@ POOL_DEF(usb_dev_descs, struct usb_dev_desc, 2);
 
 struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 	struct usb_dev_desc *ddesc;
-	struct usb_dev *dev = usb_dev_iterate(NULL);
+	struct usb_dev *dev;
 
-	if (!dev) {
-		return NULL;
-	}
-
-	while (dev->dev_desc.id_vendor != vid && dev->dev_desc.id_product) {
-
+	dev = NULL;
+	do {
 		dev = usb_dev_iterate(dev);
-		if (dev == NULL) {
-			break;
-		}
-	}
+	} while (dev && (vid != dev->dev_desc.id_vendor
+				&& pid != dev->dev_desc.id_product));
 
 	if (!dev) {
 		return NULL;
 	}
+
+	usb_dev_use_inc(dev);
 
 	ddesc = pool_alloc(&usb_dev_descs);
 	ddesc->dev = dev;
@@ -48,8 +46,11 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 }
 
 void usb_dev_desc_close(struct usb_dev_desc *ddesc) {
+	struct usb_dev *dev = ddesc->dev;
 
 	pool_free(&usb_dev_descs, ddesc);
+
+	usb_dev_use_dec(dev);
 }
 
 int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *desc,
@@ -107,8 +108,7 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		}
 	}
 
-	req = usb_endp_request_alloc(endp, notify_hnd, arg,
-			token, buf, len);
+	req = usb_endp_request_alloc(endp, notify_hnd, arg, token, buf, len);
 	if (!req) {
 		return -ENOMEM;
 	}
@@ -116,27 +116,37 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 	return usb_endp_request(endp, req);
 }
 
+struct usb_req_data {
+	struct thread *thr;
+	volatile int res;
+};
+
 static void usb_req_notify(struct usb_request *req, void *arg) {
-	struct manual_event *event = arg;
+	struct usb_req_data *wait_data = arg;
 
 	assert(req->req_stat == USB_REQ_NOERR);
 
-	manual_event_set_and_notify(event);
+	wait_data->res = 1;
+	sched_wakeup(wait_data->thr);
 }
 
 int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 		void *buf, size_t len) {
-	struct manual_event event;
 	int res;
+	struct usb_req_data wait_data;
 
-	manual_event_init(&event, 0);
+	wait_data.res = 0;
+	wait_data.thr = thread_self();
 
-	res = usb_request_cb(ddesc, endp_n, token, buf, len,
-			usb_req_notify, &event);
-	if (res != 0) {
-		return res;
-	}
+	irq_lock();
+		res = usb_request_cb(ddesc, endp_n, token, buf, len,
+				usb_req_notify, &wait_data);
+		if (res != 0) {
+			return res;
+		}
+	irq_unlock();
+	res = SCHED_WAIT(wait_data.res);
 
-	return manual_event_wait(&event, MANUAL_EVENT_TIMEOUT_INFINITE);
+	return res;
 }
 

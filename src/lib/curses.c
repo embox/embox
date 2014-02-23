@@ -241,6 +241,10 @@ int doupdate(void) {
 				++std_ptr, ++cur_ptr) {
 			*cur_ptr = *std_ptr;
 			fprintf(screen.out, "%c", (char)*std_ptr);
+			if (++x == COLS) {
+				fprintf(screen.out, "\n");
+				x = 0;
+			}
 		}
 	} while (std_ptr < std_end);
 

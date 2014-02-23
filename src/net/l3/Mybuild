@@ -3,23 +3,24 @@ package embox.net
 module arp {
 	source "arp.c"
 
-	depends net_tx
-	depends skbuff
-	depends route
-	depends neighbour
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
+	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.net.core
+	@NoRuntime depends embox.net.net_tx
+	@NoRuntime depends embox.net.lib.arp
+	@NoRuntime depends embox.net.neighbour
+	@NoRuntime depends embox.net.skbuff
 }
 
 module icmpv4 {
 	source "icmpv4.c"
 
-	depends raw_sock
-	depends core /* for devinet.c */
-	depends ipv4 /* for ip_output.c */
-	depends skbuff
-	depends embox.kernel.time.kernel_time
-	depends embox.framework.LibFrameworkNet
+	depends embox.framework.net.proto
+	depends embox.lib.LibCAssert
+	depends embox.net.lib.icmpv4
+	depends embox.net.lib.ipv4
+	depends embox.net.skbuff
 }
 
 module icmpv6 {
@@ -48,11 +49,14 @@ module ndp {
 module rarp {
 	source "rarp.c"
 
-	depends net_tx
-	depends skbuff
-	depends neighbour
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
+	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.net.core
+	@NoRuntime depends embox.net.net_tx
+	@NoRuntime depends embox.net.lib.arp
+	@NoRuntime depends embox.net.neighbour
+	@NoRuntime depends embox.net.skbuff
 }
 
 module route {

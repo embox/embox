@@ -10,6 +10,7 @@
 #include <net/skbuff.h>
 #include <embox/net/pack.h>
 #include <net/l3/ipv6.h>
+#include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <arpa/inet.h>

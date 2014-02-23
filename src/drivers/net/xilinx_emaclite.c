@@ -13,7 +13,6 @@
 
 
 #include <kernel/irq.h>
-#include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -156,6 +155,10 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 		return -EINVAL;
 	}
 
+	if (NULL == skb_declone(skb)) {
+		return -ENOMEM;
+	}
+
 	if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
 		switch_tx_buff();
 		if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
@@ -175,7 +178,8 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	skb_free(skb);
 
-	return skb->len;
+	//return skb->len;
+	return 0;
 }
 
 /**

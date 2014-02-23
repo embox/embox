@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <drivers/usb_dev_desc.h>
-#include <drivers/usb_desc.h>
+#include <drivers/usb/usb_dev_desc.h>
+#include <drivers/usb/usb_desc.h>
 
 #include <embox/cmd.h>
 

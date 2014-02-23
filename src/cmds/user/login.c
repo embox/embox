@@ -23,6 +23,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <kernel/task.h>
+
 #include <security/seculog.h>
 
 #include <embox/cmd.h>
@@ -91,11 +93,21 @@ static void *taskshell(void *data) {
 	const struct shell *shell;
 	const struct spwd *spwd;
 	struct taskdata *tdata = data;
+	int ret;
+
+	ret = setuid(tdata->pwd->pw_uid);
+	if (ret < 0) {
+		printf("Can't setup UID: %s\n", strerror(errno));
+		return NULL;
+	}
+
+	ret = setgid(tdata->pwd->pw_gid);
+	if (ret < 0) {
+		printf("Can't setup GID: %s\n", strerror(errno));
+		return NULL;
+	}
 
 	printf("Welcome, %s!\n", tdata->pwd->pw_gecos);
-
-	setuid(tdata->pwd->pw_uid);
-	setgid(tdata->pwd->pw_gid);
 
 	{
 		char *new_smac_label = "_";

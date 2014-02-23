@@ -28,6 +28,14 @@ cmd_notouch = \
 							&& set_on_error_trap -; }; };                  \
 	fi
 
+# Creates shell script with command if it is too big to be passed through
+# command line. Must be called from recipe.
+#   1. Output file.
+#   2. The complete command
+cmd_assemble = \
+	echo '$(\h)!/bin/sh' > $1; \
+	$(foreach w,$2,echo -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
+
 #cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }
 
@@ -183,14 +191,19 @@ $(@build_include_mk) : module_extbld_rmk = \
 $(@build_include_mk) : initfs_rmk = \
 		$(patsubst %,$(value build_initfs_rmk_mk_pat),$(build_initfs))
 
+$(@build_include_mk) : cmd_file = $(@file).cmd
 $(@build_include_mk) :
-	@$(call cmd_notouch_stdout,$(@file), \
+	@$(call cmd_assemble,$(cmd_file), \
 		$(gen_banner); \
 		$(call gen_make_var,__include_image,$(image_rmk)); \
 		$(call gen_make_var,__include_initfs,$(initfs_rmk)); \
 		$(call gen_make_var_list,__include, \
 			$(source_rmk) $(module_extbld_rmk) \
-			$(module_ar_rmk) $(module_ld_rmk)))
+			$(module_ar_rmk) $(module_ld_rmk)); \
+		$(call gen_make_var_list,__module_list, \
+			$(call get,$(call get,$(build_modules),type),qualifiedName)))
+	@$(call cmd_notouch_stdout,$(@file), \
+		sh $(cmd_file))
 
 build_initfs := initfs
 
@@ -275,9 +288,12 @@ all .PHONY : $(@module_all)
 module_fqn  = $(call get,$(call get,$1,type),qualifiedName)
 module_path = $(subst .,/,$(module_fqn))
 module_id   = $(subst .,__,$(module_fqn))
+module_my_file = \
+	$(call get,$(call get,$(call get,$1,type),eResource),fileName)
 
 $(@module_all) : fqn   = $(call module_fqn,$@)
 $(@module_all) : path  = $(call module_path,$@)
+$(@module_all) : my_file = $(call module_my_file,$@)
 
 
 module_ar_rmk_mk_pat = $(MKGEN_DIR)/module/%.ar_rule.mk
@@ -321,6 +337,8 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(out),module_id,$(id_)); \
 		$(call gen_make_tsvar,$(out),is_app,$(is_app)); \
+		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
@@ -361,6 +379,8 @@ $(@module_extbld_rmk) :
 		$(call gen_make_var,module_path,$(path)); \
 		$(call gen_make_dep,__extbld .PHONY,$(target)); \
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_rule,$(target),,$(script)))
 
@@ -424,6 +444,8 @@ $(@source_cpp_rmk) : kind := cpp
 all .PHONY : $(@source_all)
 
 $(@source_all) : module = $(basename $@)
+$(@source_all) : mod_path = $(call module_path,$(module))
+$(@source_all) : my_file = $(call module_my_file,$(module))
 
 $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)
@@ -455,7 +477,7 @@ $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
-						$(call module_path,$(module))) \
+						$(mod_path)) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
@@ -476,6 +498,8 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),mod_path,$(mod_path)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
@@ -510,6 +534,8 @@ $(@source_initfs_cp_rmk) :
 		$(call gen_make_tsvar,$(out),src_file,$(src_file)); \
 		$(call gen_make_tsvar,$(out),chmod,$(chmod)); \
 		$(call gen_make_tsvar,$(out),chown,$(chown)); \
+		$(call gen_make_tsvar,$(out),mod_path,$(mod_path)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)

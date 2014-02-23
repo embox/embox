@@ -2,5 +2,9 @@ package embox.driver.tty
 
 module serial {
 	source "serial_repo.c"
+	source "idesc_serial.c"
+
+	option number serial_quantity = 1
+
 	depends tty_repo
 }

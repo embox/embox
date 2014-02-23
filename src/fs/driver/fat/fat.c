@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <util/array.h>
 #include <mem/misc/pool.h>
@@ -24,7 +25,7 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <limits.h>
+#include <fs/file_operation.h>
 
 #include <embox/block_dev.h>
 

@@ -11,8 +11,11 @@
 #include <kernel/time/time.h>
 
 /*Note: settimeofday is not posix */
-int gettimeofday(struct timeval *t, struct timezone *tz) {
+int gettimeofday(struct timeval *t, void *timezone) {
+	struct timezone *tz;
 	struct timespec ts;
+
+	tz = timezone;
 
 	if (t == NULL) {
 		SET_ERRNO(EINVAL);

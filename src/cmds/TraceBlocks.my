@@ -3,15 +3,20 @@ package embox.cmd
 @Cmd(name = "trace_blocks",
 	man = '''
 		NAME
-			TODO
+			trace_blocks
 		SYNOPSIS
-			TODO
+			Getting information about trace blocks.
 		DESCRIPTION
-			TODO
+			This program provides interface to get information about trace blocks.
+			These blocks are supposed to help in profiling.
 		OPTIONS
-			TODO
+			-h    Help
+			-e    Get the list of currently entered blocks (the ones which were
+			entered, but were not left).
+
 		AUTHORS
 			Alina Kramar
+			Denis Deryugin
 	''')
 
 module trace_blocks {

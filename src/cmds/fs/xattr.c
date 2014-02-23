@@ -125,6 +125,7 @@ static int xattr_do_operation(const char *path, const char *name,
 	value = 0;
 
 	if ((op_flags & XATTR_CMD_DELETE) || (op_flags &  XATTR_CMD_WRITE)) {
+		size = 0;
 		if (op_flags & XATTR_CMD_DELETE) {
 			flags = XATTR_REMOVE;
 		} else {

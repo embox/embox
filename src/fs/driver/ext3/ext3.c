@@ -29,6 +29,8 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
+#include <fs/file_operation.h>
+
 #include "ext3_journal.h"
 
 #define EXT2_NAME "ext2"
@@ -170,9 +172,28 @@ static int ext3fs_delete(struct node *node) {
 	return res;
 }
 
-static int ext3fs_format(void *dev) {
+extern int main_mke2fs(int argc, char **argv);
 
-	return 0;
+static int ext3fs_format(void *dev) {
+	struct node *dev_node;
+	int argc = 6;
+	char *argv[6];
+	char dev_path[64];
+
+	dev_node = dev;
+
+	strcpy(dev_path, "/dev/");
+	strcat(dev_path, dev_node->name);
+
+	argv[0] = "mke2fs";
+	argv[1] = "-b";
+	argv[2] = "1024";
+	argv[3] = "-t";
+	argv[4] = "ext3";
+	argv[5] = dev_path;
+
+	getopt_init();
+	return main_mke2fs(argc, argv);
 }
 
 static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
@@ -195,6 +216,8 @@ static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
     }
 
     sb = (ext3_journal_superblock_t *)buf;
+
+    assert(sb->s_blocksize);
 
     jp->j_maxlen         = ntohl(sb->s_maxlen);
     jp->j_blocksize      = ntohl(sb->s_blocksize);

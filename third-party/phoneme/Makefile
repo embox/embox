@@ -37,7 +37,7 @@ EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS += $(EMBOX_IMPORTED_CXXFLAGS)
 
-
+BUILD_DIR := $(ROOT_DIR)/build/
 PHONEME_DIR := $(ROOT_DIR)/build/phoneme
 PHONEME_BUILD_DIR := $(PHONEME_DIR)/build
 SPECFILE_TXT = phoneme_specfile.txt
@@ -47,12 +47,8 @@ TOOLS_DIR           := $(PHONEME_DIR)/tools
 JAVACALL_DIR        := $(PHONEME_DIR)/javacall
 JAVACALL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/javacall
 
-UBUNTU_JDK_DIR      := /usr/lib/jvm/java-6-openjdk-i386
-REDHAT_JDK_DIR      := /usr/java/jdk1.6.0_35
-JDK7_JDK_DIR	    := /usr/lib/jvm/java-7-openjdk
-
-JDK_DIR 	    := $(firstword \
-	$(wildcard /usr/lib/jvm/java-openjdk/./ $(UBUNTU_JDK_DIR)/./ $(REDHAT_JDK_DIR)/./ $(JDK7_JDK_DIR)/./ ))
+JDK_BIN_DIR = $(shell readlink -f `which javac` | xargs dirname)
+JDK_DIR     = $(JDK_BIN_DIR)/..
 
 PCSL_DIR            := $(PHONEME_DIR)/pcsl
 PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
@@ -69,8 +65,17 @@ AT:=
 
 all: amalgamated
 
-checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
+DOWNLOAD_DIR:= $(ROOT_DIR)/download
+DOWNLOAD_TAR:= $(DOWNLOAD_DIR)/phoneme-trunk.tar.gz
+DOWNLOAD_CHECK_TAR:= $(DOWNLOAD_DIR)/.phoneme-trunk.tar.gz.ok
+DOWNLOAD_URL:= https://googledrive.com/host/0B7g4WwjaJX23ZExQU2hHTzYyRm8/phoneme-trunk.tar.gz
+DOWNLOAD_MD5:= b552aa86b2832d00563636330ec64299
 
+MD5 ?= md5sum
+
+ifeq (0,1)
+
+checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
 TOOLS_URL = $(word 1,$(shell grep tools $(SPECFILE_TXT)))
 $(TOOLS_DIR):
 	$(AT)svn co -q $(TOOLS_URL) $@
@@ -78,6 +83,20 @@ $(TOOLS_DIR):
 $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
 	$(AT)(cd $(PHONEME_DIR) && tools/svntools/checkout.sh $(abspath $(SPECFILE_TXT)))
 	$(AT)patch -p0 -d $(PHONEME_DIR) -N --input=$(abspath $(PATCH_TXT))
+
+else
+
+$(DOWNLOAD_TAR) :
+	$(AT)wget -P $(DOWNLOAD_DIR) -c $(DOWNLOAD_URL)
+
+$(DOWNLOAD_CHECK_TAR) : $(DOWNLOAD_TAR)
+	$(AT)echo "$(DOWNLOAD_MD5)  $(DOWNLOAD_TAR)" | $(MD5) -c
+	touch $@
+
+checkout: $(DOWNLOAD_CHECK_TAR)
+	$(AT)tar -C $(BUILD_DIR) -zxf $(DOWNLOAD_TAR)
+
+endif
 
 javacall: checkout
 	export CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \

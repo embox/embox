@@ -34,6 +34,7 @@ module core extends thread_mode {
 module signal {
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate_api
+	@NoRuntime depends embox.kernel.thread.signal.lock
 	depends embox.kernel.task.signal
 }
 
@@ -74,9 +75,4 @@ module thread_cancel_enable extends thread_cancel {
 
 module thread_cancel_disable extends thread_cancel {
 	source "thread_cancel_disable.h"
-}
-
-/* FIXME: Deprecated */
-module event {
-	depends embox.kernel.event_api
 }

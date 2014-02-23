@@ -8,8 +8,12 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-#include <fs/file_operation.h>
+
 #include <util/array.h>
+#include <stddef.h>
+#include <sys/types.h>
+
+struct node;
 
 struct fsop_desc {
 	int (*init)(void *par);

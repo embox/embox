@@ -28,4 +28,12 @@ static inline bool ipv4_is_multicast(in_addr_t addr) {
 	return (addr & htonl(0xf0000000UL)) == htonl(0xe0000000UL);
 }
 
+/**
+ * It's broadcast address
+ */
+static inline bool ipv4_is_broadcast(in_addr_t addr) {
+	return addr == htonl(INADDR_BROADCAST);
+}
+
+
 #endif /* COMPAT_LINUX_LINUX_IN_H_ */

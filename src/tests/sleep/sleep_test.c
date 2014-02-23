@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
+#include <kernel/sched/waitq.h>
 #include <pthread.h>
 
 EMBOX_TEST_SUITE("sleep suite");
@@ -18,6 +19,7 @@ EMBOX_TEST_SUITE("sleep suite");
 #define EPSILON_BORDER 30
 #define TIME_TO_SLEEP  50
 #define NUM_THREADS     8
+#define BENCH_LOOPS   300
 
 /**
  *  sleep( any_time )
@@ -31,6 +33,32 @@ TEST_CASE("one sleep") {
 	ksleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
 	test_assert_true(epsilon < EPSILON_BORDER);
+}
+
+static void * handler_timeout(void* args) {
+	struct waitq *wq = (struct waitq*) args;
+	test_assert_equal(-ETIMEDOUT, SCHED_WAIT_TIMEOUT(0, 10));
+	waitq_wakeup(wq, 1);
+	return NULL;
+}
+
+TEST_CASE("timeout sleep") {
+	pthread_t t;
+	struct waitq wq;
+	struct waitq_link wql;
+	clock_t remain;
+
+	waitq_init(&wq);
+	waitq_link_init(&wql);
+	waitq_wait_prepare(&wq, &wql);
+
+	test_assert_zero(pthread_create(&t, 0, handler_timeout, (void*) &wq));
+	test_assert_not_null(t);
+
+	test_assert_zero(sched_wait_timeout(1000, &remain));
+	test_assert_not_zero(remain);
+
+	waitq_wait_cleanup(&wq, &wql);
 }
 
 /**
@@ -99,7 +127,7 @@ TEST_CASE("sleep 0 seconds") {
 
 TEST_CASE("many sleeps") {
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < BENCH_LOOPS; i++) {
 		ksleep(i % 17);
 	}
 }

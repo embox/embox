@@ -79,9 +79,11 @@ static char *cpio_parse_newc(const struct newc_hdr *hdr,
 	for (unsigned long *p_field = (unsigned long *) &parsed;
 	     p_field < (unsigned long *) (&parsed + 1);
 	     ++p_field, raw += NEWC_FIELD_SZ) {
+		unsigned long tmp;
 
 		memcpy(field_buff, raw, NEWC_FIELD_SZ);
-		*p_field = strtol(field_buff, NULL, 16);
+		tmp = strtol(field_buff, NULL, 16);
+		memcpy(p_field, &tmp, sizeof *p_field);
 	}
 
 	raw += NEWC_FIELD_SZ; /* skip c_check field, now raw points to name. */

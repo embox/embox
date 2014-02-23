@@ -67,11 +67,15 @@ static int su_exec(int argc, char *argv[]) {
 
 	ret = cmd_exec(login_cmd, newargc, newargv);
 
+	if (ret) {
+		printf("%s: incorrect password\n", argv[0]);
+	}
+
 	strcpy(task_self_security(), old_smac_label);
 	uarea->reuid = reuid;
 	uarea->euid = euid;
 
-	return ret;
+	return 0;
 
 }
 

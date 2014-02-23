@@ -12,14 +12,16 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <unistd.h>
-
+#include <stdio.h>
+#include <termios.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <embox/cmd.h>
-#include <stdio.h>
 
-#include <termios.h>
+#include <util/ring_buff.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
@@ -41,6 +43,8 @@ EMBOX_CMD(exec);
 /* client mode */
 #define MODE_COOKED   0
 #define MODE_RAW      R_RAW
+
+#define RCVBUFFER_SIZE 256
 
 /* FIXME cheat for now */
 static const char *client = "embox";
@@ -103,13 +107,23 @@ static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
 	return 0;
 }
 
+static size_t rlogin_write(int fd, struct ring_buff *rbuf, size_t size) {
+	unsigned char b[RCVBUFFER_SIZE];
+	size_t res;
+
+	ring_buff_dequeue(rbuf, b, size);
+	res = write(fd, b, size);
+	ring_buff_enqueue(rbuf, (b+res), size - res);
+
+	return res;
+}
+
 static int rlogin_handle(int sock) {
-	int sock_data_len = 0, stdin_data_len = 0;
-	unsigned char c;
-	unsigned char buf[128];
-	unsigned char *s = buf;
+	fd_set readfds, writefds;
+	/*unsigned char c;*/
+	unsigned char sock_storage[RCVBUFFER_SIZE], stdin_storage[RCVBUFFER_SIZE];
+	struct ring_buff sock_buf, stdin_buf;
 	int state = R_START, mode = MODE_COOKED;
-	int stdin_flags = fcntl(STDIN_FILENO, F_GETFL);
 	struct termios tios;
 	int c_lflags;
 	int err = 0;
@@ -119,53 +133,74 @@ static int rlogin_handle(int sock) {
 	tios.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 
-	fcntl(STDIN_FILENO, F_SETFD, stdin_flags | O_NONBLOCK);
-	fcntl(sock, F_SETFD, O_NONBLOCK);
+	ring_buff_init(&stdin_buf, 1, RCVBUFFER_SIZE, stdin_storage);
+	ring_buff_init(&sock_buf, 1, RCVBUFFER_SIZE, sock_storage);
 
 	while (1) {
+		int sock_data_len, stdin_data_len;
+
+		stdin_data_len = ring_buff_get_cnt(&stdin_buf);
+		sock_data_len = ring_buff_get_cnt(&sock_buf);
+
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
+
+		FD_SET(sock, &readfds);
+		FD_SET(STDIN_FILENO, &readfds);
 		if (stdin_data_len > 0) {
-			if (write(sock, &c, 1) == 1) {
-				stdin_data_len -= 1;
-			}
-		} else {
-			stdin_data_len = read(STDIN_FILENO, &c, 1);
-			/* XXX NVT terminal requires '\r' as enter */
-			if ( c == '\n') {
-				c = '\r';
+			FD_SET(sock, &writefds);
+		}
+		if (sock_data_len > 0) {
+			FD_SET(STDOUT_FILENO, &writefds);
+		}
+
+		select(sock + 1, &readfds, &writefds, NULL, NULL);
+
+		if (FD_ISSET(sock, &writefds)) {
+			if ((err = rlogin_write(sock, &stdin_buf, stdin_data_len)) < 0) {
+				/*goto reset_out;*/
 			}
 		}
 
-		if (sock_data_len > 0) {
-			/* Try to handle each byte of server data. */
+		if (FD_ISSET(STDOUT_FILENO, &writefds)) {
+			if ((err = rlogin_write(STDOUT_FILENO, &sock_buf, sock_data_len)) < 0) {
+				/*goto reset_out;*/
+			}
+		}
+
+		if (FD_ISSET(STDIN_FILENO, &readfds)) {
+			char in_buf[4];
+			if ((err = read(STDIN_FILENO, in_buf, 4)) < 0) {
+				/*goto reset_out;*/
+			}
+#if 1
+			for (int i = 0; i < err; i++) {
+			/* XXX NVT terminal requires '\r' as enter */
+				if (in_buf[i] == '\n') {
+					in_buf[i] = '\r';
+				}
+			}
+#endif
+			ring_buff_enqueue(&stdin_buf, in_buf, err);
+		}
+
+		if (FD_ISSET(sock, &readfds)) {
+			unsigned char buf[RCVBUFFER_SIZE];
+			int cur = 0;
+
+			if ((err = read(sock, buf, ring_buff_get_space(&sock_buf))) < 0) {
+				/*goto reset_out;*/
+			}
+
 			do {
-				if (!handle_cntl_byte(*s, &state, &mode) || state == R_STOP
-						|| (write(STDOUT_FILENO, s, 1) == 1)) {
-					sock_data_len -= 1;
-					s += 1;
+				if (handle_cntl_byte(buf[cur], &state, &mode) && state != R_STOP) {
+					ring_buff_enqueue(&sock_buf, &buf[cur], 1);
 				}
-			} while (sock_data_len > 0);
-		} else {
-			s = buf;
-			sock_data_len = read(sock, s, 128);
-
-			if (!sock_data_len) {
-				err = 0;
-				goto reset_out;
-			}
-
-			if (sock_data_len == -1) {
-				err = -errno;
-				if (err != -EAGAIN && err != -EWOULDBLOCK) {
-					goto reset_out;
-				}
-
-			}
+			} while(++cur != err);
 		}
 	} /* while (1) */
 
-reset_out:
-
-	fcntl(STDIN_FILENO, F_SETFD, stdin_flags);
+/*reset_out:*/
 	tios.c_lflag = c_lflags;
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 

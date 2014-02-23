@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  *
  * @date Apr 2, 2013
@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 #include <drivers/pci/pci.h>
-
 
 #include <asm/io.h>
 
@@ -32,13 +31,29 @@ enum {
 #define PCI_CONFIG_CMD(bus, dev_fn, where) \
 		(0x80000000 | (bus << 16) | (dev_fn << 8) | (where & ~3))
 
-int pci_is_supported(void) {
-	out32(PCI_CONFIG_ADDRESS, 0);
-	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
-	if (in32(PCI_CONFIG_ADDRESS) == 0 && in32(PCI_CONFIG_ADDRESS + 0x2) == 0) {
-		return -1; //TODO this is a bolean function
+/**
+ The PCI specification defines 2 formats for the PCI Configuration addresses:
+ Type 1 (for endpoints) and Type 2 (for bridges)
+*/
+int pci_check_type(void) {
+	int pci_type = 0;
+	uint32_t tmp;
+
+	out8(PCI_CONFIG_ADDRESS + 0x3, 0);
+	out8(PCI_CONFIG_ADDRESS, 0);
+	out8(PCI_CONFIG_ADDRESS + 0x2, 0);
+	if (in8(PCI_CONFIG_ADDRESS) == 0 && in8(PCI_CONFIG_ADDRESS + 0x2) == 0) {
+		pci_type = 2;
+	} else {
+		out8(PCI_CONFIG_ADDRESS + 0x3, 1);
+		tmp = in32(PCI_CONFIG_ADDRESS);
+		out32(PCI_CONFIG_ADDRESS, 0x80000000);
+		if (in32(PCI_CONFIG_ADDRESS) == 0x80000000) {
+			pci_type = 1;
+		}
+		out32(PCI_CONFIG_ADDRESS, tmp);
 	}
-	return PCIUTILS_SUCCESS;
+	return pci_type;
 }
 
 uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,

@@ -24,7 +24,8 @@ struct sock;
  * Build IPv4 header
  */
 extern void ip_build(struct iphdr *iph, uint16_t total_len,
-		uint8_t proto, in_addr_t src_ip, in_addr_t dst_ip);
+		uint8_t ttl, uint8_t proto, in_addr_t src_ip,
+		in_addr_t dst_ip);
 
 /**
  * Set IPv4 id field

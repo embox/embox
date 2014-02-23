@@ -168,11 +168,9 @@ int netdev_set_macaddr(struct net_device *dev, const void *addr) {
 	}
 
 	assert(dev->ops != NULL);
-	if (dev->ops->check_addr != NULL) {
-		ret = dev->ops->check_addr(addr);
-		if (ret != 0) {
-			return ret;
-		}
+	if ((dev->ops->check_addr != NULL)
+			&& !dev->ops->check_addr(addr)) {
+		return -EINVAL; /* error: bad address */
 	}
 
 	assert(dev->drv_ops != NULL);
@@ -249,18 +247,14 @@ int netdev_flag_down(struct net_device *dev, unsigned int flag) {
 }
 
 int netdev_set_mtu(struct net_device *dev, int mtu) {
-	int ret;
-
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
 	assert(dev->ops != NULL);
-	if (dev->ops->check_mtu != NULL) {
-		ret = dev->ops->check_mtu(mtu);
-		if (ret != 0) {
-			return ret;
-		}
+	if ((dev->ops->check_mtu != NULL)
+			&& !dev->ops->check_mtu(mtu)) {
+		return -EINVAL; /* error: bad mtu value */
 	}
 
 	dev->mtu = mtu;

@@ -44,7 +44,7 @@ typedef struct debug_msg{
 static debug_msg_t log[N_DEBUG_MSG];
 
 static unsigned int N_message = 0;
-volatile static unsigned int serial = 0;
+static volatile unsigned int serial = 0;
 /* static unsigned int tail = 0; */
 
 static char* types_str[] = {"INFO", "WARNING", "ERROR", "DEBUG"};

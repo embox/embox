@@ -433,7 +433,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
 			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
-		event_notify(&hdc->event);
+		waitq_wakeup_all(&hdc->waitq);
 	}
 
 	return IRQ_HANDLED;
@@ -518,7 +518,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	hdc->irq = irq;
 	hdc->bmregbase = bmregbase;
 	hdc->dir = HD_XFER_IGNORE;
-	event_init(&hdc->event, "hard disc event");
+	waitq_init(&hdc->waitq);
 
 	if (hdc->bmregbase) {
 		if (hdc->prds) {

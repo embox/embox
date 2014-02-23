@@ -31,15 +31,23 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('c');
-	waitq_notify(&wq);
+	waitq_wakeup_all(&wq);
 	test_emit('e');
 	return NULL;
 }
 
 static void *high_run(void *arg) {
+	struct waitq_link wql;
+	waitq_link_init(&wql);
+
 	test_emit('b');
-	waitq_wait(&wq, SCHED_TIMEOUT_INFINITE);
+
+	waitq_wait_prepare(&wq, &wql);
+	sched_wait();
+	waitq_wait_cleanup(&wq, &wql);
+
 	test_emit('d');
+
 	return NULL;
 }
 

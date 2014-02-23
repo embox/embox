@@ -16,8 +16,7 @@
 #include <grp.h>
 #include <shadow.h>
 
-#define PASSWD_FILE "/passwd"
-#define GROUP_FILE "/group"
+#include "db.h"
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -317,10 +316,29 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return 0;
 }
 
+int getmaxuid() {
+	int res, curmax = 0;
+	FILE *file;
+	static char buff[0x80];
+	struct passwd *result, pwd;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+		if (pwd.pw_uid > curmax) {
+			curmax = pwd.pw_uid;
+		}
+	}
+
+	fclose(file);
+
+	return curmax;
+}
+
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
-
-static const char *shadow_file = "/shadow";
 
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
@@ -389,8 +407,47 @@ static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 }
 
 struct spwd *getspnam_f(const char *name) {
-	return spwd_find(shadow_file, name);
+	return spwd_find(SHADOW_FILE, name);
 }
 
+int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
+	FILE *passwdf;
+	char *temp;
+	int res = 0;
 
+	if (NULL == (passwdf = fopen(ADDUSER_FILE, "r"))) {
+		return errno;
+	}
 
+	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
+		if(0 == strcmp(temp, "GROUP")) {
+			if (0 != read_int_field(passwdf, "%d", &passwd->pw_gid, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "HOME")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_dir, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "SHELL")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_shell, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+	}
+
+out:
+	fclose(passwdf);
+	return res;
+}

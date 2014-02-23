@@ -102,8 +102,33 @@
 		.bss.len    = (size_t) &__module_ ## mod_nm ## _bss_len, \
 	}
 
+#define MOD_SEC_LABEL_DEF(mod_nm) \
+	extern char __module_ ## mod_nm ## _rodata_vma; \
+	extern char __module_ ## mod_nm ## _rodata_len; \
+	extern char __module_ ## mod_nm ## _data_vma; \
+	extern char __module_ ## mod_nm ## _data_len; \
+	extern char __module_ ## mod_nm ## _bss_vma;  \
+	extern char __module_ ## mod_nm ## _bss_len;  \
+	static const struct mod_sec_label __MOD_SEC_LABEL(mod_nm) = { \
+		.label =  { \
+			/* .text.vma   =          &__module_ ## mod_nm ## _text_vma,  */\
+			/* .text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  */\
+			.rodata.vma =          &__module_ ## mod_nm ## _rodata_vma, \
+			.rodata.len = (size_t) &__module_ ## mod_nm ## _rodata_len, \
+			.data.vma   =          &__module_ ## mod_nm ## _data_vma, \
+			.data.len   = (size_t) &__module_ ## mod_nm ## _data_len, \
+			.bss.vma    =          &__module_ ## mod_nm ## _bss_vma, \
+			.bss.len    = (size_t) &__module_ ## mod_nm ## _bss_len, \
+		}, \
+		.mod = &__MOD(mod_nm), \
+	}; \
+	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *, __mod_sec_labels); \
+	ARRAY_SPREAD_ADD(__mod_sec_labels, &__MOD_SEC_LABEL(mod_nm))
+
+
 #else
 # define MOD_LABEL_DEF(mod_nm)
+# define MOD_SEC_LABEL_DEF(mod_nm)
 #endif
 
 /**

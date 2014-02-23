@@ -34,7 +34,6 @@ EMBOX_UNIT_INIT(input_devfs_init);
 #include <mem/objalloc.h>
 #include <util/ring_buff.h>
 
-#include <kernel/thread/event.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched.h>
 

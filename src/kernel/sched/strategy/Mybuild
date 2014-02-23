@@ -58,7 +58,7 @@ abstract module runq_api {
 }
 
 module NoRunq extends runq_api {
-
+	source "no_runq.c", "no_runq.h"
 }
 
 module Runq extends runq_api {

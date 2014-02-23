@@ -7,7 +7,6 @@
  */
 
 #include <kernel/thread.h>
-#include <kernel/sched.h>
 #include <embox/test.h>
 
 #include <kernel/sched/waitq.h>
@@ -16,39 +15,37 @@ EMBOX_TEST_SUITE("Test suite for basic waitq operations");
 
 TEST_CASE("Sched_wake should leave thread's state consistent (as tested by "
 		"__waitq_prepare)") {
-	struct wait_link wait_link;
+	struct waitq_link waitq_link;
 	struct waitq waitq;
 
 	waitq_init(&waitq);
+	waitq_link_init(&waitq_link);
 
-	__waitq_prepare(&waitq, &wait_link);
+	waitq_wait_prepare(&waitq, &waitq_link);
 
-	sched_wake(thread_self());
+	sched_wakeup(thread_self());
 
-	__waitq_cleanup();
-
-	__waitq_prepare(&waitq, &wait_link);
-	__waitq_cleanup();
+	waitq_wait_prepare(&waitq, &waitq_link);
+	waitq_wait_cleanup(&waitq, &waitq_link);
 }
 
 TEST_CASE("Three-step event waiting should support event occured before wait") {
-	struct wait_link wait_link;
+	struct waitq_link waitq_link;
 	struct waitq waitq;
 	int res;
 
 	waitq_init(&waitq);
+	waitq_link_init(&waitq_link);
 
-	__waitq_prepare(&waitq, &wait_link);
+	waitq_wait_prepare(&waitq, &waitq_link);
 
-	waitq_notify_all(&waitq);
+	waitq_wakeup_all(&waitq);
 
-	res = __waitq_wait(10);
+	res = sched_wait_timeout(10);
 
-	test_assert_zero(res);
+	test_assert_not_zero(res);
 
-	__waitq_cleanup();
-
-	__waitq_prepare(&waitq, &wait_link);
-	__waitq_cleanup();
+	waitq_wait_prepare(&waitq, &waitq_link);
+	waitq_wait_cleanup(&waitq, &waitq_link);
 }
 

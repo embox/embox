@@ -38,6 +38,7 @@ static inline int flock_init(node_t *node) {
 	mutex_init(&node->flock.exlock);
 	node->flock.shlock_count = 0;
 	dlist_init(&node->flock.shlock_holders);
+	spin_init(&node->flock.flock_guard, __SPIN_UNLOCKED);
 
 	return ENOERR;
 }

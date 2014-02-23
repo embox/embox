@@ -24,7 +24,7 @@
 
 #include <signal.h>
 
-//---------------------------------------------------
+
 /* <unistd.h */
 static inline pid_t setsid(void) {
 	return -1;
@@ -48,16 +48,10 @@ static inline struct spwd *getspnam(const char *name) {
 	return getspnam_f(name);
 }
 
-#if 0
-/* <pwd.h> */
-extern struct passwd *getpwnam(const char *name);
-/* end <pwd.h> */
-#endif
-
 #include <asm/termbits.h>
 #include <sys/select.h>
 #include <linux/types.h>
 
-//------------------------------------------------------------
+
 
 #endif /* EMBOX_DROPBEAR_EMBOX_H_ */

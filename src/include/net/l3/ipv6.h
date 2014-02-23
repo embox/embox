@@ -46,6 +46,7 @@ static inline ip6hdr_t *ip6_hdr(const struct sk_buff *skb) {
 /**
  * IPV6 packet outgoing options
  */
-extern const struct net_pack_out_ops *const ip6_out_ops __attribute__ ((weak));
+extern const struct net_pack_out_ops *const ip6_out_ops
+		__attribute__ ((weak));
 
 #endif /* NET_L3_IP6_H_ */

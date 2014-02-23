@@ -8,20 +8,23 @@
  * @author Anton Kozlov
  * @author Ilia Vaprol
  */
+#include <time.h>
+#include <errno.h>
+#include <assert.h>
+#include <sys/time.h>
+#include <string.h>
+#include <poll.h>
 
 #include <net/l4/tcp.h>
 #include <net/skbuff.h>
-#include <errno.h>
-#include <assert.h>
 #include <net/sock.h>
-#include <time.h>
-#include <sys/time.h>
-#include <util/sys_log.h>
+
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv6.h>
-#include <string.h>
+#include <net/l2/ethernet.h>
+
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -31,16 +34,29 @@
 #include <net/lib/tcp.h>
 #include <util/indexator.h>
 
-#include <kernel/task/io_sync.h>
+#include <fs/idesc.h>
+#include <fs/idesc_event.h>
+
 #include <kernel/printk.h>
 #include <prom/prom_printf.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
 
+#include <err.h>
+
 EMBOX_UNIT_INIT(tcp_init);
-EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv, NULL);
-EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
+EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
+		net_proto_handle_error_none);
+EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
+		net_proto_handle_error_none);
+
+#define TCP_DEBUG 0
+#if TCP_DEBUG
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
 
 /** TODO
  * +1. Create default socket for resetting
@@ -52,9 +68,9 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv, NULL);
  * +7. Remove seq_next (use rem.seq instead, build packet, and then rebuild only)
  * +8. Add lock/unlock
  * +9. Add rexmit
- * +-10. Add window
- * 11. Add options
- * +-12. Add timeout (i.e. sockopts) to tcp_sock.c
+ * +10. Add window
+ * +11. Add options
+ * +12. Add timeout (i.e. sockopts) to tcp_sock.c
  */
 
 
@@ -84,7 +100,7 @@ static const tcp_handler_t tcp_st_handler[];
 static void tcp_get_now(struct timeval *out_now);
 
 /************************ Debug functions ******************************/
-#if 1
+#if !TCP_DEBUG
 void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(const struct tcp_sock *tcp_sk,
 		const struct sk_buff *skb, const char *msg, int family,
@@ -100,8 +116,8 @@ void debug_print(__u8 code, const char *msg, ...) {
 //default:
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
-//	case 2:  /* socket state */
-//	case 3:  /* global functions */
+	case 2:  /* socket state */
+	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 //	case 6:	 /* sock_alloc/sock_free */
@@ -191,6 +207,22 @@ void tcp_sock_unlock(struct tcp_sock *tcp_sk, unsigned int obj) {
 	}
 }
 
+void tcp_seq_state_set_wind_value(struct tcp_seq_state *tcp_seq_st,
+		uint16_t value) {
+	if (tcp_seq_st->wind.value != value) {
+		tcp_seq_st->wind.value = value;
+		tcp_seq_st->wind.size = value << tcp_seq_st->wind.factor;
+	}
+}
+
+void tcp_seq_state_set_wind_factor(struct tcp_seq_state *tcp_seq_st,
+		uint8_t factor) {
+	if (tcp_seq_st->wind.factor != factor) {
+		tcp_seq_st->wind.factor = factor;
+		tcp_seq_st->wind.size = tcp_seq_st->wind.value << factor;
+	}
+}
+
 static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
 	size_t seq_off;
@@ -229,34 +261,36 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 	tcp_sk->state = new_state;
 	debug_print(2, "sk %p set state %d-%s\n", to_sock(tcp_sk), new_state, str_state[new_state]);
 
-	/* io_sync manipulation */
+	/* idesc manipulation */
 	switch (new_state) {
 	default:
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-		io_sync_enable(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			{
-				list_move(&tcp_sk->conn_wait,
-						&tcp_sk->parent->conn_wait);
+				list_move(&tcp_sk->conn_wait, &tcp_sk->parent->conn_wait);
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
-			io_sync_enable(&to_sock(tcp_sk->parent)->ios,
-					IO_SYNC_READING);
+
+			//FIXME tcp_accept must notify without rx_data_len
+			to_sock(tcp_sk->parent)->rx_data_len++;
+			idesc_notify(&to_sock(tcp_sk->parent)->idesc, POLLIN);
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
+		sock_set_so_error(to_sock(tcp_sk), 1);
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLERR);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_READING);
-		io_sync_error_on(&to_sock(tcp_sk)->ios, IO_SYNC_WRITING);
+		sock_set_so_error(to_sock(tcp_sk), 1);
+		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLOUT | POLLERR);
 		break;
 	}
 }
@@ -314,7 +348,10 @@ static void tcp_xmit(struct sk_buff *skb,
 			tcp_sk != NULL ? to_sock(tcp_sk)->o_ops : NULL;
 
 	if (out_ops != NULL) {
-		(void)out_ops->snd_pack(skb);
+		int ret = out_ops->snd_pack(skb);
+		if (ret != 0) {
+			DBG(printk("tcp_xmit: snd_pack = %d\n", ret));
+		}
 	}
 }
 
@@ -486,7 +523,6 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
-	int ret;
 	struct sock *newsk;
 	struct inet_sock *in_newsk;
 	struct inet6_sock *in6_newsk;
@@ -500,7 +536,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			if (tcp_sk->conn_wait_len >= tcp_sk->conn_wait_max) {
-				LOG_DEBUG("tcp_st_listen", "conn_wait is too big");
+				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
@@ -509,10 +545,11 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
 		/* Allocate new socket for this connection */
-		ret = sock_create(to_sock(tcp_sk)->opt.so_domain,
-				SOCK_STREAM, IPPROTO_TCP, &newsk);
-		if (ret != 0) {
-			printk("tcp_st_listen: can't alloc socket\n");
+		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+				SOCK_STREAM, IPPROTO_TCP);
+
+		if (err(newsk) != 0) {
+			DBG(printk("tcp_st_listen: can't alloc socket\n");)
 			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			{
 				assert(tcp_sk->conn_wait_len != 0);
@@ -583,7 +620,8 @@ static enum tcp_ret_code tcp_st_syn_sent(struct tcp_sock *tcp_sk,
 
 	if (tcph->syn) {
 		tcp_sk->rem.seq = ntohl(tcph->seq) + 1;
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		if (tcph->ack) {
 			tcp_sock_set_state(tcp_sk, TCP_ESTABIL);
 		} else {
@@ -604,7 +642,8 @@ static enum tcp_ret_code tcp_st_syn_recv_pre(
 
 	if (tcph->syn) {
 		tcp_sk->rem.seq = ntohl(tcph->seq) + 1;
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		tcp_sock_set_state(tcp_sk, TCP_SYN_RECV);
 		out_tcph->syn = 1;
 		tcp_set_ack_field(out_tcph, tcp_sk->rem.seq);
@@ -854,11 +893,34 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	ack2last_ack = ack - tcp_sk->last_ack;
 	seq = tcp_sk->self.seq;
 
-	if (ack2last_ack == 0) { /* no new acknowledgments */ }
+	if (ack2last_ack == 0) {
+		/* no new acknowledgments */
+		if ((seq != ack) && !tcp_sk->rexmit_mode) {
+			++tcp_sk->dup_ack;
+			if (tcp_sk->dup_ack == TCP_REXMIT_DUP_ACK) {
+				tcp_sk->rexmit_mode = 1;
+				tcp_rexmit(tcp_sk);
+			}
+		}
+	}
 	else if (ack2last_ack <= seq - tcp_sk->last_ack) {
 		confirm_ack(tcp_sk, ack);
 		tcp_sk->last_ack = ack;
 		tcp_get_now(&tcp_sk->ack_time);
+		if (!tcp_sk->rexmit_mode) {
+			tcp_sk->dup_ack = 0;
+			idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+		}
+		else {
+			if (seq == ack) {
+				tcp_sk->rexmit_mode = 0;
+				tcp_sk->dup_ack = 0;
+				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+			}
+			else {
+				tcp_rexmit(tcp_sk);
+			}
+		}
 	}
 	else if (ack - seq <= ack2last_ack) {
 		/* package with non-last acknowledgment */
@@ -904,6 +966,53 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 	return TCP_RET_OK;
 }
 
+#if 0
+static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcp_sk) {
+	char *ptr = (char *) &tcph->options;
+	for(;;) {
+		switch(*ptr) {
+		case TCP_OPT_KIND_EOL:
+			return (int) ptr - (int) &tcph->options;
+		case TCP_OPT_KIND_NOP:
+			ptr++;
+			break;
+		case TCP_OPT_KIND_MSS:
+			ptr+=2;
+			tcp_sk->mss = ntohs((__be16) *ptr);
+		}
+	}
+	return 0;
+}
+#endif
+
+static enum tcp_ret_code process_opt(struct tcp_sock *tcp_sk,
+		const struct tcphdr *tcph) {
+	char *ptr = (char *)&tcph->options[0];
+	char *end = ptr + TCP_HEADER_SIZE(tcph) - TCP_MIN_HEADER_SIZE;
+
+	do {
+		switch (*ptr) {
+		default:
+			ptr += *(ptr + 1);
+			break;
+		case TCP_OPT_KIND_NOP:
+			++ptr;
+			break;
+		case TCP_OPT_KIND_WS:
+			if (*(ptr + 1) == 3) {
+				tcp_seq_state_set_wind_factor(&tcp_sk->rem,
+						*(ptr + 2));
+			}
+			ptr += *(ptr + 1);
+			break;
+		}
+	} while (ptr < end);
+
+	assert(ptr == end);
+
+	return TCP_RET_OK;
+}
+
 static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
@@ -917,10 +1026,10 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	tcp_set_check_field((struct tcphdr *)tcph,
 			skb->nh.raw);
 	if (old_check != tcph->check) {
-		printk("pre_process: error: invalid ckecksum %hx(%hx)"
+		DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
 					" sk %p skb %p\n",
 				ntohs(old_check), ntohs(tcph->check),
-				to_sock(tcp_sk), skb);
+				to_sock(tcp_sk), skb);)
 		return TCP_RET_DROP;
 	}
 
@@ -939,7 +1048,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		seq2rem_seq = ntohl(tcph->seq) - tcp_sk->rem.seq;
 		seq_len = tcp_seq_length(skb->h.th, skb->nh.raw);;
 		seq_last2rem_seq = seq2rem_seq + seq_len;
-		rem_len = tcp_sk->self.wind;
+		rem_len = tcp_sk->self.wind.size;
 		if (seq2rem_seq < rem_len) {
 			if (seq2rem_seq != 0) {
 				/* TODO There is correct packet (with
@@ -991,32 +1100,21 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 	default:
 		break;
 	case TCP_ST_SYNC:
-		tcp_sk->rem.wind = ntohs(tcph->window);
+		tcp_seq_state_set_wind_value(&tcp_sk->rem,
+				ntohs(tcph->window));
 		break;
+	}
+
+	/* Process options */
+	if (TCP_HEADER_SIZE(tcph) != TCP_MIN_HEADER_SIZE) {
+		ret = process_opt(tcp_sk, tcph);
+		if (ret != TCP_RET_OK) {
+			return ret;
+		}
 	}
 
 	return TCP_RET_OK;
 }
-
-#if 0
-static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcp_sk) {
-	char *ptr = (char *) &tcph->options;
-	for(;;) {
-		switch(*ptr) {
-		case TCP_OPT_KIND_EOL:
-			return (int) ptr - (int) &tcph->options;
-		case TCP_OPT_KIND_NOP:
-			ptr++;
-			break;
-		case TCP_OPT_KIND_MSS:
-			ptr+=2;
-			tcp_sk->mss = ntohs((__be16) *ptr);
-		}
-	}
-	return 0;
-}
-#endif
-
 
 /************************ Handlers table *******************************/
 static const tcp_handler_t tcp_st_handler[TCP_MAX_STATE] = {
@@ -1043,7 +1141,7 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 	struct sk_buff *out_skb;
 
 	tcp_build(&out_tcph, skb->h.th->source, skb->h.th->dest,
-			TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+			TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 	out_skb = NULL;
 
 	/**
@@ -1079,6 +1177,11 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 		break;
 	case TCP_RET_SEND_SEQ:
 	case TCP_RET_SEND:
+		if (NULL == skb_declone(skb)) {
+			skb_free(skb);
+			return TCP_RET_DROP; /* error: ENOMEM */
+		}
+		/* fallthrough */
 	case TCP_RET_SEND_ALLOC:
 		out_skb = ret != TCP_RET_SEND_ALLOC ? skb : NULL;
 		if (0 != alloc_prep_skb(tcp_sk, 0, NULL, &out_skb)) {
@@ -1235,7 +1338,7 @@ static int tcp_init(void) {
 	int ret;
 
 	/* Create default timer */
-	ret = timer_init(&tcp_tmr_default, TIMER_PERIODIC,
+	ret = timer_init_msec(&tcp_tmr_default, TIMER_PERIODIC,
 			TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

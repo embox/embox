@@ -10,7 +10,6 @@
 #include <sys/socket.h>
 #include <net/sock.h>
 #include <embox/net/family.h>
-#include <net/if_ether.h>
 #include <net/l3/ipv4/ip.h>
 #include <stdlib.h>
 

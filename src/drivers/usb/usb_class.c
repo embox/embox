@@ -11,15 +11,28 @@
 #include <util/dlist.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
+
+static struct usb_class *usb_class_find(struct usb_dev *dev);
 
 static DLIST_DEFINE(usb_classes);
 
-void usb_class_generic_get_conf_hnd(struct usb_request *req) {
+void usb_class_start_handle(struct usb_dev *dev) {
+	struct usb_class *cls;
+
+	cls = usb_class_find(dev);
+	if (cls->class_handle) {
+		cls->class_handle(cls, dev);
+	}
+}
+
+void usb_class_generic_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 
 	usb_dev_generic_fill_iface(dev, &dev->getconf_data->interface_desc);
 	usb_dev_generic_fill_endps(dev, dev->getconf_data->endp_descs);
+
+	usb_class_start_handle(dev);
 }
 
 int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
@@ -34,8 +47,7 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 		USB_DEV_REQ_GET_DESC,
 		USB_DESC_TYPE_CONFIG << 8,
 		dev->c_config,
-		sizeof(struct usb_desc_configuration) +
-			sizeof(struct usb_desc_interface) +
+		sizeof(struct usb_desc_configuration) + sizeof(struct usb_desc_interface) +
 			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
 		dev->getconf_data);
 
@@ -83,13 +95,15 @@ static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) 
 					dev->dev_desc.id_vendor,
 					dev->dev_desc.id_product);
 
+#if 0
 			usb_dev_deregister(dev);
+#endif
 
 			return;
 		}
 	}
 
-	usb_class_generic_get_conf_hnd(req);
+	usb_class_generic_get_conf_hnd(req, NULL);
 }
 
 static struct usb_class usb_class_fallback = {
@@ -107,7 +121,8 @@ int usb_class_register(struct usb_class *cls) {
 	return 0;
 }
 
-static struct usb_class *usb_class_find(usb_class_t ucls) {
+static struct usb_class *usb_class_find(struct usb_dev *dev) {
+	usb_class_t ucls = usb_dev_class(dev);
 	struct usb_class *cls, *cls_next;
 
 	dlist_foreach_entry(cls, cls_next, &usb_classes, lnk) {
@@ -116,25 +131,22 @@ static struct usb_class *usb_class_find(usb_class_t ucls) {
 		}
 	}
 
-	return NULL;
+	return &usb_class_fallback;
 }
 
 int usb_class_supported(struct usb_dev *dev) {
 
-	return NULL != usb_class_find(usb_dev_class(dev));
+	return &usb_class_fallback != usb_class_find(dev);
 }
 
 int usb_class_handle(struct usb_dev *dev) {
-	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
+	struct usb_class *cls = usb_class_find(dev);
 
 	if (!cls) {
-#if 0
 		return -ENOTSUP;
-#else
-		/* trying to fallback */
-		cls = &usb_class_fallback;
-#endif
 	}
+
+	usb_dev_use_inc(dev);
 
 	if (cls->class_alloc) {
 		dev->class_specific = cls->class_alloc(cls, dev);
@@ -143,8 +155,20 @@ int usb_class_handle(struct usb_dev *dev) {
 	return cls->get_conf(cls, dev);
 }
 
-void usb_class_unhandle(struct usb_dev *dev) {
-	struct usb_class *cls = usb_class_find(usb_dev_class(dev));
+void usb_class_release(struct usb_dev *dev) {
+	struct usb_class *cls = usb_class_find(dev);
+
+	if (cls->class_release) {
+		cls->class_release(cls, dev);
+	} else {
+		usb_class_released(dev);
+	}
+}
+
+void usb_class_released(struct usb_dev *dev) {
+	struct usb_class *cls = usb_class_find(dev);
+
+	usb_dev_use_dec(dev);
 
 	if (cls->class_free) {
 		cls->class_free(cls, dev, dev->class_specific);
