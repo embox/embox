@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/sys_log.h>
+#include <kernel/softirq_lock.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
@@ -42,6 +43,9 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t desc_id;
 	struct vring_desc *desc;
 
+	assert(dev != NULL);
+	assert(skb != NULL);
+
 	skb_extra = skb_extra_alloc();
 	if (skb_extra == NULL) {
 		return -ENOMEM;
@@ -59,17 +63,22 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	hdr->flags = 0;
 	hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 
-	desc_id = vq->next_free_desc;
-	do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
-	vring_desc_init(desc, hdr, sizeof *hdr, VRING_DESC_F_NEXT);
-	desc->next = vq->next_free_desc;
+	softirq_lock();
+	{
+		desc_id = vq->next_free_desc;
+		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
+		vring_desc_init(desc, hdr, sizeof *hdr, VRING_DESC_F_NEXT);
+		desc->next = vq->next_free_desc;
 
-	do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
-	vring_desc_init(desc, skb_data_cast_in(skb_data), skb->len, 0);
+		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
+		vring_desc_init(desc, skb_data_cast_in(skb_data), skb->len, 0);
+
+		vring_push_desc(desc_id, &vq->ring);
+	}
+	softirq_unlock();
 
 	skb_free(skb);
 
-	vring_push_desc(desc_id, &vq->ring);
 	virtio_net_notify_queue(VIRTIO_NET_QUEUE_TX, dev);
 
 	return 0;
@@ -113,8 +122,10 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	vq = &netdev_priv(dev, struct virtio_priv)->rq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
+
 		desc = &vq->ring.desc[used_elem->id];
 		assert(desc->flags & VRING_DESC_F_NEXT);
+
 		next = &vq->ring.desc[desc->next];
 		assert(~next->flags & VRING_DESC_F_NEXT);
 
