@@ -14,6 +14,7 @@
 #include "user.h"
 
 #define TMP_PASSWD_FILE "/tmp/passwd.temp"
+#define TMP_SHADOW_FILE "/tmp/shadow.temp"
 
 EMBOX_CMD(exec);
 
@@ -40,8 +41,36 @@ static int copy(const char* from, const char* to) {
 	return 0;
 }
 
+static int shadow(char *name, char *new_name, char *pswd) {
+	struct spwd *spwd;
+	FILE *shdwf, *temp_shdwf;
+
+	if (0 == (shdwf = fopen(SHADOW_FILE, "r"))) {
+		return -1;
+	}
+
+	if (0 == (temp_shdwf = fopen(TMP_SHADOW_FILE, "w"))) {
+		return -1;
+	}
+
+	while (NULL != (spwd = fgetspent(shdwf))) {
+		if (0 == strcmp(spwd->sp_namp, name)) {
+			set_options_spwd(spwd, new_name, pswd);
+		}
+		write_user_spwd(spwd, temp_shdwf);
+	}
+
+	fclose(temp_shdwf);
+	fclose(shdwf);
+
+	copy(TMP_SHADOW_FILE, SHADOW_FILE);
+	remove(TMP_SHADOW_FILE);
+
+	return 0;
+}
+
 static int usermod(char *name, char *home, char *shell, char *pswd,
-		char *gecos, int group) {
+		char *gecos, char *new_name, int group) {
 	struct passwd pwd, *pwd_res;
 	FILE *pswdf, *temp_pswdf;
 	char buf_pswd[80];
@@ -57,14 +86,17 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 
 	while (0 == (res = fgetpwent_r(pswdf, &pwd, buf_pswd, 80, &pwd_res))) {
 		if (0 == strcmp(pwd.pw_name, name)) {
-			set_options(&pwd, home, shell, gecos, group);
-			write_user_passwd(&pwd, temp_pswdf);
-			//change shallow
-		} else {
-			write_user_passwd(&pwd, temp_pswdf);
-		}
-	}
+			set_options_passwd(&pwd, home, shell, gecos, group);
 
+			if (0 != strcmp(new_name, "")) {
+				pwd.pw_name = new_name;
+				shadow(name, new_name, pswd);
+			} else if (0 != strcmp(pswd, "")) {
+				shadow(name, new_name, pswd);
+			}
+		}
+		write_user_passwd(&pwd, temp_pswdf);
+	}
 
 	fclose(temp_pswdf);
 	fclose(pswdf);
@@ -133,7 +165,7 @@ static int exec(int argc, char **argv) {
 			return 0;
 		}
 
-		return usermod(name, home, shell, pswd, gecos, group);
+		return usermod(name, home, shell, pswd, gecos, new_name, group);
 	}
 
 out:

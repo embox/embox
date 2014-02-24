@@ -31,9 +31,15 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	return 0;
 }
 
+
+static int get_default_spwd(struct spwd *result) {
+	return 0;
+}
+
 static int create_user(char *name, char *home, char *shell, char *pswd,
 		char *gecos, int group) {
 	struct passwd pwd;
+	struct spwd spwd;
 	FILE *pswdf, *sdwf;
 	char buf_pswd[80];
 	int res = 0;
@@ -47,21 +53,21 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 		return -1;
 	}
 
+	if (0 != get_default_spwd(&spwd)) {
+		res = -1;
+		goto out;
+	}
+
 	if (0 != get_default_pwd(&pwd, name, buf_pswd, 80)) {
 		res = -1;
 		goto out;
 	}
 
-	set_options(&pwd, home, shell, gecos, group);
-
+	set_options_passwd(&pwd, home, shell, gecos, group);
 	write_user_passwd(&pwd, pswdf);
 
-	/* shadow */
-	{
-		put_string(pwd.pw_name, sdwf, ':');
-		put_string(pswd, sdwf, ':');
-		put_string("::::::", sdwf, '\n');
-	}
+	set_options_spwd(&spwd, pwd.pw_name, pswd);
+	write_user_spwd(&spwd, sdwf);
 
 out:
 	fclose(pswdf);
@@ -82,7 +88,7 @@ static int change_default_options(char *home, char *shell, int group){
 		return -1;
 	}
 
-	set_options(&pwd, home, shell, "", group);
+	set_options_passwd(&pwd, home, shell, "", group);
 
 	put_string("GROUP", fd, '=');
 	put_int(pwd.pw_gid, fd, '\n');
