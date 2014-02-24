@@ -1,0 +1,13 @@
+package third_party.qt.plugin.platform
+
+@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/source/src/plugins/platforms/emboxvc; $(EXTERNAL_MAKE_PRO)")
+@BuildDepends(third_party.qt.core)
+module emboxvc {
+	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
+	source "libemboxvc.a"
+
+	source "emboxvc.cpp"
+
+	@NoRuntime depends third_party.qt.core
+	@NoRuntime depends third_party.qt.plugin.platform.minimal
+}

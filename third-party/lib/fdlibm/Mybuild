@@ -8,6 +8,7 @@ static module Fdlibm {
 	source "e_powl.c"
 	source "e_powf.c"
 	source "k_standard.c"
+	source "s_expm1.c"
 	source "s_lib_version.c"
 	source "s_matherr.c"
 	source "s_rint.c"

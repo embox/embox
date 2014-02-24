@@ -1,0 +1,17 @@
+package third_party.qt.example
+
+@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/source/examples/animation/animatedtiles; $(EXTERNAL_MAKE_PRO)")
+@BuildDepends(third_party.qt.core)
+@Cmd(name = "animatedtiles",
+	help = "animation qt's example",
+	man = '''
+		AUTHORS
+			Ilia Vaprol
+	''')
+module animatedtiles {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.animatedtiles.embox.o"
+
+	@NoRuntime depends third_party.qt.core
+}

@@ -1,8 +1,8 @@
 include(ExternalProject)
 ExternalProject_Add(
    gcc
-   PREFIX ..
-   DOWNLOAD_DIR ../../../download
+   PREFIX .
+   DOWNLOAD_DIR $ENV{EMBOX_ROOT}/download
    URL http://mirrors.ustc.edu.cn/gnu/gcc/gcc-4.8.1/gcc-4.8.1.tar.gz
    URL_MD5 74cc12b7afe051ab7d0e00269e49fc9b
    #URL http://www.mirrorservice.org/sites/ftp.gnu.org/gnu/gcc/gcc-4.6.2/gcc-4.6.2.tar.bz2

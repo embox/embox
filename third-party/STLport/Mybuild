@@ -1,11 +1,13 @@
 package third_party.STLport
 
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/core/include/stlport")
+@BuildDepends(third_party.gcc.core)
 static module core {
-	depends embox.lib.LibC
-	depends embox.lib.cxx.lib
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/embox-lib")
+	source "libstlportg.a"
 
-	source "empty.c" // FIXME: workaround
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/STLport MAKEFLAGS= EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../stlport/embox-lib/libstlportg.a"
+	@NoRuntime depends embox.lib.cxx.lib
+	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends third_party.gcc.core // FIXME
 }
