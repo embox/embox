@@ -107,7 +107,7 @@ static int set_options_spwd(struct spwd *result, char *name, char *pswd) {
 		result->sp_namp = name;
 	}
 
-	if (0 != strcmp(pswd, "")) {
+	if (NULL != pswd) {
 		result->sp_pwdp = pswd;
 	}
 

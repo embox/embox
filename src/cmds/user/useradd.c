@@ -15,6 +15,9 @@
 
 EMBOX_CMD(useradd);
 
+static char *def_pw_passwd = "x";
+static char *def_sp_pwdp = "";
+
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
 
@@ -24,7 +27,7 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	}
 
 	result->pw_name = name;
-	result->pw_passwd = "x";
+	result->pw_passwd = def_pw_passwd;
 	result->pw_uid = getmaxuid() + 1;
 	result->pw_gecos = name;
 
@@ -33,6 +36,8 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 
 
 static int get_default_spwd(struct spwd *result) {
+	result->sp_pwdp = def_sp_pwdp;
+
 	return 0;
 }
 
@@ -131,7 +136,8 @@ static int print_default_options(void) {
 }
 
 static int useradd(int argc, char **argv) {
-	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "";
+	char name[15], home[20] = "", shell[20] = "", *pswd = NULL,
+			_pswd[15] = "", gecos[15] = "";
 	int group = -1;
 	int opt, count = 0, user_create = 1;
 
@@ -150,7 +156,8 @@ static int useradd(int argc, char **argv) {
 				strcpy(shell, optarg);
 				break;
 			case 'p':
-				strcpy(pswd, optarg);
+				strcpy(_pswd, optarg);
+				pswd = _pswd;
 				break;
 			case 'c':
 				strcpy(gecos, optarg);

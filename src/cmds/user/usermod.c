@@ -91,7 +91,7 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 			if (0 != strcmp(new_name, "")) {
 				pwd.pw_name = new_name;
 				shadow(name, new_name, pswd);
-			} else if (0 != strcmp(pswd, "")) {
+			} else if (NULL != pswd) {
 				shadow(name, new_name, pswd);
 			}
 		}
@@ -113,8 +113,8 @@ static void print_help(void) {
 }
 
 static int exec(int argc, char **argv) {
-	char name[15], home[20] = "", shell[20] = "", pswd[15] = "",
-			gecos[15] = "", new_name[15] = "";
+	char name[15], home[20] = "", shell[20] = "", _pswd[15] = "",
+			*pswd = NULL, gecos[15] = "", new_name[15] = "";
 	int group = -1;
 	int opt;
 
@@ -132,7 +132,8 @@ static int exec(int argc, char **argv) {
 				strcpy(shell, optarg);
 				break;
 			case 'p':
-				strcpy(pswd, optarg);
+				strcpy(_pswd, optarg);
+				pswd = _pswd;
 				break;
 			case 'c':
 				strcpy(gecos, optarg);
