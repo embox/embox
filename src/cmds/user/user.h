@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <pwd.h>
 #include <grp.h>
+#include <shadow.h>
 
 #define BUF_LEN 64
 
@@ -65,7 +66,22 @@ static void write_user_passwd(struct passwd *pwd, FILE *fd) {
 	put_string(pwd->pw_shell, fd, '\n');
 }
 
-static int set_options(struct passwd *result, char *home, char *shell,
+static void write_user_spwd(struct spwd *spwd, FILE *fd) {
+	put_string(spwd->sp_namp, fd, ':');
+	put_string(spwd->sp_pwdp, fd, ':');
+	put_string("::::::", fd, '\n');
+#if 0
+	put_int(spwd->sp_lstchg, fd, ':');
+	put_int(spwd->sp_min, fd, ':');
+	put_int(spwd->sp_max, fd, ':');
+	put_int(spwd->sp_warn, fd, ':');
+	put_int(spwd->sp_inact, fd, ':');
+	put_int(spwd->sp_expire, fd, ':');
+	put_int(spwd->sp_expire, fd, '\n');
+#endif
+}
+
+static int set_options_passwd(struct passwd *result, char *home, char *shell,
 		char *gecos, int group) {
 	if (0 != strcmp(home, "")) {
 		result->pw_dir = home;
@@ -81,6 +97,18 @@ static int set_options(struct passwd *result, char *home, char *shell,
 
 	if (group >= 0) {
 		result->pw_gid = group;
+	}
+
+	return 0;
+}
+
+static int set_options_spwd(struct spwd *result, char *name, char *pswd) {
+	if (0 != strcmp(name, "")) {
+		result->sp_namp = name;
+	}
+
+	if (NULL != pswd) {
+		result->sp_pwdp = pswd;
 	}
 
 	return 0;
