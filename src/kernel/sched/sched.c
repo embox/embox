@@ -37,8 +37,6 @@
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
 
-#include <kernel/task.h>//task_notify_switch for environ setting
-
 #include <profiler/tracing/trace.h>
 
 #include <embox/unit.h>
@@ -368,8 +366,6 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 	sched_prepare_switch(prev, next);
 
 	trace_point(__func__);
-
-	task_notify_switch(prev, next);
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;

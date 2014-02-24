@@ -15,15 +15,6 @@
 #include <unistd.h>
 #include <kernel/task/env.h>
 
-char **environ;
-
-static int environ_switch(struct thread *prev, struct thread *next) {
-	environ = next->task->env->envs;
-	return 0;
-}
-
-TASK_RESOURCE_NOTIFY(environ_switch);
-
 static size_t env_lookup(const char *name, char **vals, size_t next) {
 	size_t i, name_len;
 

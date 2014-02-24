@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include <kernel/task.h>
-#include <kernel/task/env.h>
 
 #include <module/embox/kernel/task/api.h>
 
@@ -35,8 +34,6 @@ struct task *task_kernel_task(void) {
 
 extern void resource_sum_size_calc(void);
 
-extern char **environ;
-
 static int kernel_task_init(void) {
 	struct task *task;
 	resource_sum_size_calc();
@@ -46,8 +43,6 @@ static int kernel_task_init(void) {
 	if (!task_init(task, sizeof(kernel_task))) {
 		return -ENOMEM;
 	}
-
-	environ = task->env->envs;
 
 	dlist_init(&task->task_link); /* it's out list handler */
 
