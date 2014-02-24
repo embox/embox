@@ -54,3 +54,19 @@ void virtqueue_destroy(struct virtqueue *vq,
 
 	free(vq->ring_mem);
 }
+
+struct vring_desc * virtqueue_alloc_desc(struct virtqueue *vq) {
+	struct vring_desc *vrd;
+
+	assert(vq != NULL);
+	assert(vq->ring.desc != NULL);
+
+	vrd = &vq->ring.desc[vq->next_free_desc];
+	if (vrd->addr != 0) {
+		return NULL;
+	}
+
+	vq->next_free_desc = (vq->next_free_desc + 1) % vq->ring.num;
+
+	return vrd;
+}

@@ -55,6 +55,11 @@ EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
+	static const struct tcp_wind self_wind_default = {
+		.value = TCP_WINDOW_VALUE_DEFAULT,
+		.factor = TCP_WINDOW_FACTOR_DEFAULT,
+		.size = TCP_WINDOW_VALUE_DEFAULT << TCP_WINDOW_FACTOR_DEFAULT
+	};
 	struct tcp_sock *tcp_sk;
 
 	tcp_sk = to_tcp_sock(sk);
@@ -65,12 +70,9 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
 	tcp_sk->self.seq = tcp_sk->last_ack;
-	memset(&tcp_sk->self, 0, sizeof tcp_sk->self);
-	tcp_seq_state_set_wind_value(&tcp_sk->self,
-			TCP_WINDOW_VALUE_DEFAULT);
-	tcp_seq_state_set_wind_factor(&tcp_sk->self,
-			TCP_WINDOW_FACTOR_DEFAULT);
-	memset(&tcp_sk->rem, 0, sizeof tcp_sk->rem);
+	memcpy(&tcp_sk->self.wind, &self_wind_default,
+			sizeof tcp_sk->self.wind);
+	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
 	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;

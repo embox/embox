@@ -73,13 +73,15 @@ enum tcp_sock_state {
 	TCP_MAX_STATE
 };
 
+struct tcp_wind {
+	uint16_t value;
+	uint8_t factor;
+	uint32_t size;
+};
+
 struct tcp_seq_state {
 	uint32_t seq;
-	struct {
-		uint16_t value;
-		uint8_t factor;
-		uint32_t size;
-	} wind;
+	struct tcp_wind wind;
 };
 
 typedef struct tcp_sock {

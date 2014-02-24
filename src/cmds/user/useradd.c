@@ -7,41 +7,13 @@
  */
 
 #include <embox/cmd.h>
+
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pwd.h>
-#include <grp.h>
 #include <ctype.h>
 
-#define BUF_LEN 64
+#include "user.h"
 
 EMBOX_CMD(useradd);
-
-#define PASSWD_FILE "/tmp/passwd"
-#define SHADOW_FILE "/tmp/shadow"
-#define ADDUSER_FILE "/tmp/adduser.conf"
-
-static void put_string(char *data, FILE *fd, char delim) {
-	fwrite(data, sizeof(char), strlen(data), fd);
-	fputc(delim, fd);
-}
-
-static void put_int(int data, FILE *fd, char delim) {
-	char buf[20];
-
-	sprintf(buf, "%i", data);
-	fwrite(buf, sizeof(char), strlen(buf), fd);
-	fputc(delim, fd);
-}
-
-static int is_user_exists(char *name) {
-	char pwdbuf[BUF_LEN];
-	struct passwd pwd, *result;
-
-	return getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result) || result;
-}
 
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
@@ -55,40 +27,6 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	result->pw_passwd = "x";
 	result->pw_uid = getmaxuid() + 1;
 	result->pw_gecos = name;
-
-	return 0;
-}
-
-static int get_group(char *group) {
-	struct group _group, *_group_res;
-	char buf[80];
-	int res = 0;
-
-	if (isdigit(group[0])) {
-		res = getgrgid_r(atoi(group), &_group, buf, 80, &_group_res);
-	} else {
-		res = getgrnam_r(group, &_group, buf, 80, &_group_res);
-	}
-	return !res && _group_res != NULL ? _group_res->gr_gid : -1;
-}
-
-static int set_options(struct passwd *result, char *home, char *shell,
-		char *gecos, int group) {
-	if (0 != strcmp(home, "")) {
-		result->pw_dir = home;
-	}
-
-	if (0 != strcmp(shell, "")) {
-		result->pw_shell = shell;
-	}
-
-	if (0 != strcmp(gecos, "")) {
-		result->pw_gecos = gecos;
-	}
-
-	if (group >= 0) {
-		result->pw_gid = group;
-	}
 
 	return 0;
 }
@@ -116,16 +54,7 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 
 	set_options(&pwd, home, shell, gecos, group);
 
-	/* passwd */
-	{
-		put_string(pwd.pw_name, pswdf, ':');
-		put_string(pwd.pw_passwd, pswdf, ':');
-		put_int(pwd.pw_uid, pswdf, ':');
-		put_int(pwd.pw_gid, pswdf, ':');
-		put_string(pwd.pw_gecos, pswdf, ':');
-		put_string(pwd.pw_dir, pswdf, ':');
-		put_string(pwd.pw_shell, pswdf, '\n');
-	}
+	write_user_passwd(&pwd, pswdf);
 
 	/* shadow */
 	{

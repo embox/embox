@@ -28,8 +28,27 @@ package embox.cmd.user
 			Vita Loginova
 	''')
 module useradd {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "useradd.c"
+
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.passwd_db_dynamic
+}
+
+@Cmd(name = "usermod",
+	help = "",
+	man = '''
+		NAME
+			usermod
+		SYNOPSIS
+			usermod [options] LOGIN
+		DESCRIPTION
+		OPTIONS
+		EXAMPLES
+		AUTHORS
+			Vita Loginova
+	''')
+module usermod {
+	source "usermod.c"
 
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.passwd_db_dynamic
