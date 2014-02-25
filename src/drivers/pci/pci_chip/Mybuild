@@ -10,6 +10,6 @@ module pci_chip_x86 extends pci_chip {
 
 }
 
-module pci_chip_ti81xx {
+module ti81xx {
 	source "ti81xx.c"
 }
