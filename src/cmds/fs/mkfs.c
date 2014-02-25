@@ -89,7 +89,7 @@ static int exec(int argc, char **argv) {
 		case 'q':
 			if (argc < 4) {
 				/*mkfs -q /dev/xxx blocks*/
-				return -1;
+				return -EINVAL;
 			}
 
 			path = argv[argc - 2];
