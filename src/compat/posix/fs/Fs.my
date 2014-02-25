@@ -44,13 +44,13 @@ static module file_ops {
 
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.resource.errno
 }
 
 static module fsop {
 	source "fsop.c"
 
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.Perm
 	depends embox.fs.SysLibFileSystem
@@ -67,7 +67,7 @@ static module open {
 	source "open.c"
 
 	depends embox.fs.index_operation
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.resource.errno
 	depends libgen
 	depends dirent
 }

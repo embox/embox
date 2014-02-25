@@ -12,14 +12,12 @@
 #include <assert.h>
 
 #include <util/dlist.h>
-#include <util/array.h>
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <kernel/task/task_priority.h>
 #include <kernel/task/thread_key_table.h>
-#include <kernel/task/idesc_table.h>
 
 #define MAX_TASK_NAME_LEN 20
 
@@ -27,57 +25,33 @@
 
 __BEGIN_DECLS
 
-struct task_idx_table;
 struct thread;
-struct emmap;
-struct task_u_area;
-struct task_env;
 
 
 /**
  * @brief Task structure description
  */
 struct task {
+	/* multi */
 	struct dlist_head task_link; /**< @brief global task's list link */
+	struct dlist_head children_tasks; /**< @brief Task's children */
+	struct task *parent; /**< @brief Task's parent */
+	int child_err; /**< child error after child exited TODO ?several children */
+	task_priority_t priority; /**< @brief Task priority */
 
 	int tid;               /**< task identifier */
-
 	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
-
-	struct task *parent; /**< @brief Task's parent */
-
-	struct dlist_head children_tasks; /**< @brief Task's children */
-
 	struct thread *main_thread;
-
-	//struct task_idx_table *idx_table; /**< @brief Resources which task have */
-
-	//struct sigaction *sig_table;
-
-	struct emmap *mmap;
-
-	//struct task_u_area *u_area;
-
-	//struct task_env *env;
-
-	task_priority_t priority; /**< @brief Task priority */
 
 	void   *security;
 	void   *resources;
 
 	int err; /**< @brief Last occurred error code */
-
-	int child_err; /**< child error after child exited TODO ?several children */
-
 	clock_t per_cpu; /**< task times */
-
-	//struct waitq *waitq;
 
 	unsigned int affinity;
 
 	thread_key_table_t key_table;
-
-	//idesc_table_t idesc_table;
 };
 
 

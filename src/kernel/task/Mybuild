@@ -56,11 +56,6 @@ module kernel_task {
 
 }
 
-module errno {
-	source "errno.c"
-	depends api
-}
-
 @DefaultImpl(task_thread_key)
 abstract module task_key_table {
 
