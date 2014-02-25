@@ -70,7 +70,9 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	task->resources = res_ptr;
 	task_resource_foreach(res_desc) {
-		res_desc->init(task, res_ptr);
+		if (res_desc->init != NULL) {
+			res_desc->init(task, res_ptr);
+		}
 		res_ptr += res_desc->resource_size;
 	}
 
