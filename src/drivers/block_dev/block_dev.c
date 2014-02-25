@@ -223,12 +223,18 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 				buffer_clear_flag(bh, BH_NEW);
 			}
 			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor, cplen);
+			/**
+			 * Blocks are stored in the buffer cache in a decrypted state.
+			 * Therefore first we encrypt block, then write it onto disk and then decrypt block.
+			 */
 			buffer_encrypt(bh);
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
 					blksize, blkno + i))) {
+				buffer_decrypt(bh);
 				bcache_buffer_unlock(bh);
 				return res;
 			}
+			buffer_decrypt(bh);
 		}
 		bcache_buffer_unlock(bh);
 	}
