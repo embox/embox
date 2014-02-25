@@ -28,6 +28,7 @@ ExternalProject_Add(
       --disable-threads
       --disable-load
       --disable-dll-unloading
+      --enable-symbols
 
    BUILD_COMMAND
       make tclsh
