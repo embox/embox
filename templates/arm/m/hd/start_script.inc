@@ -9,3 +9,8 @@
 "export PWD=/",
 "export HOME=/",
 "export QT_QPA_FONTDIR=/fonts",
+
+"mkfs -q /dev/ram2 2048", /*8Mb*/
+"mkfs -t vfat /dev/ram2",
+"mkdir /mnt",
+"mount -t vfat /dev/ram2 /mnt"
