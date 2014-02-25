@@ -66,6 +66,8 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_STATUS_COMMAND_BUSMASTER     0x00000004
 #define TI81_PCI_CLASSCODE		      (TI81_PCI_REGION0_LOCAL_CFG + 8)
 #define TI81_PCI_CLASSCODE_SHIFT              8
+#define TI81_PCI_BAR0			      (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
+#define TI81_PCI_BAR1			      (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
 
 #define TI81_PCI_DEBUG0	                      (TI81_PCI_REGION0_LOCAL_CFG + 0x728)
 #define TI81_PCI_DEBUG0_LTSSM_MASK	      0x0000001f
@@ -107,6 +109,12 @@ static inline uint32_t ti81_pci_dev_check(uint32_t bus, uint32_t dev) {
 		return dev == 0 ? PCIUTILS_SUCCESS : PCIUTILS_TIMEOUT;
 	}
 
+	if ((REG_LOAD(TI81_PCI_DEBUG0) & TI81_PCI_DEBUG0_LTSSM_MASK) !=
+			TI81_PCI_DEBUG0_LTSSM_L0) {
+		return PCIUTILS_INVALID;
+
+	}
+
 	return PCIUTILS_SUCCESS;
 }
 
@@ -138,7 +146,7 @@ static inline uint32_t ti81_pci_config_read(uint32_t bus, uint32_t dev_fn,
 
 	if (PCIUTILS_SUCCESS == (ret = ti81_pci_dev_check(bus, dev_fn >> 3))) {
 		config = ti81xx_config_base(bus, dev_fn >> 3, dev_fn & 0x7);
-		tmp = REG_LOAD(config + (where & ~3));
+		tmp = REG_LOAD(config + (where & ~3)) >> (8 * (where & 3));
 	} else {
 		tmp = ~0;
 	}
@@ -254,10 +262,8 @@ static int ti81xx_pci_init(void) {
 	REG_ORIN(TI81_PCI_CLASSCODE, 0x0604 << TI81_PCI_CLASSCODE_SHIFT);
 	REG_ORIN(TI81_PCI_STATUS_COMMAND, TI81_PCI_STATUS_COMMAND_BUSMASTER);
 
-	while ((REG_LOAD(TI81_PCI_DEBUG0) & TI81_PCI_DEBUG0_LTSSM_MASK) !=
-			TI81_PCI_DEBUG0_LTSSM_L0) {
-
-	}
+	REG_STORE(TI81_PCI_BAR0, 0);
+	REG_STORE(TI81_PCI_BAR1, 0);
 
 	return 0;
 }
