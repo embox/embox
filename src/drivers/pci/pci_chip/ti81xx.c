@@ -67,14 +67,15 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_CLASSCODE		      (TI81_PCI_REGION0_LOCAL_CFG + 8)
 #define TI81_PCI_CLASSCODE_SHIFT              8
 
+#define TI81_PCI_DEBUG0	                      (TI81_PCI_REGION0_LOCAL_CFG + 0x728)
+#define TI81_PCI_DEBUG0_LTSSM_MASK	      0x0000001f
+#define TI81_PCI_DEBUG0_LTSSM_L0              0x00000011
+
 #define TI81_PCI_REGION0_REMOTE_CFG (TI81_PCI_REGION0 + 0x2000)
 
 #define TI81_PCI_REGION1 0x20000000
 
 #include <kernel/printk.h>
-
-#define PCI_TYPE0 0
-#define PCI_TYPE1 1
 
 int pci_check_type(void) {
 #if 0
@@ -100,7 +101,16 @@ int pci_check_type(void) {
 	return 0;
 }
 
-static void *ti81xx_config_base(int pci_type, uint32_t bus, uint32_t dev, uint32_t fn) {
+static inline uint32_t ti81_pci_dev_check(uint32_t bus, uint32_t dev) {
+
+	if (bus <= 1) {
+		return dev == 0 ? PCIUTILS_SUCCESS : PCIUTILS_TIMEOUT;
+	}
+
+	return PCIUTILS_SUCCESS;
+}
+
+static void *ti81xx_config_base(uint32_t bus, uint32_t dev, uint32_t fn) {
 	uint32_t reg;
 
 	if (bus == 0) {
@@ -111,7 +121,7 @@ static void *ti81xx_config_base(int pci_type, uint32_t bus, uint32_t dev, uint32
 		((dev << TI81_PCI_CFG_SETUP_DEV_SHIFT) & TI81_PCI_CFG_SETUP_DEV) |
 		((fn << TI81_PCI_CFG_SETUP_FNC_SHIFT) & TI81_PCI_CFG_SETUP_FNC);
 
-	if (pci_type == PCI_TYPE1) {
+	if (bus != 1) {
 		reg |= TI81_PCI_CFG_SETUP_TYPE;
 	}
 
@@ -122,28 +132,38 @@ static void *ti81xx_config_base(int pci_type, uint32_t bus, uint32_t dev, uint32
 }
 
 static inline uint32_t ti81_pci_config_read(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, int size) {
-	uint32_t reg;
+				uint32_t where, int size, void *ptr) {
+	uint32_t ret, tmp;
 	void *config;
 
-	config = ti81xx_config_base(PCI_TYPE0, bus, dev_fn >> 3, dev_fn & 0x7);
-
-	reg = REG_LOAD(config + (where & ~3));
-
-	if (size == 1) {
-		return (reg >> (8 * (where & 3))) & 0xff;
-	} else if (size == 2) {
-		return (reg >> (8 * (where & 3))) & 0xffff;
+	if (PCIUTILS_SUCCESS == (ret = ti81_pci_dev_check(bus, dev_fn >> 3))) {
+		config = ti81xx_config_base(bus, dev_fn >> 3, dev_fn & 0x7);
+		tmp = REG_LOAD(config + (where & ~3));
+	} else {
+		tmp = ~0;
 	}
 
-	return reg;
+	if (size == 1) {
+		* (uint8_t *) ptr = tmp;
+	} else if (size == 2) {
+		* (uint16_t *) ptr = tmp;
+	} else {
+		* (uint32_t *) ptr = tmp;
+	}
+
+	return ret;;
 }
 
-static inline void ti81_pci_config_write(uint32_t bus, uint32_t dev_fn,
+static inline uint32_t ti81_pci_config_write(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, uint32_t value) {
+	uint32_t ret;
 	void *config, *ptr;
 
-	config = ti81xx_config_base(PCI_TYPE0, bus, dev_fn >> 3, dev_fn & 0x7);
+	if (PCIUTILS_SUCCESS != (ret = ti81_pci_dev_check(bus, dev_fn >> 3))) {
+		return ret;
+	}
+
+	config = ti81xx_config_base(bus, dev_fn >> 3, dev_fn & 0x7);
 
 	ptr = (void *) (config + where);
 	if (size == 1) {
@@ -153,42 +173,38 @@ static inline void ti81_pci_config_write(uint32_t bus, uint32_t dev_fn,
 	} else {
 		* (volatile uint32_t *) ptr = value;
 	}
+
+	return PCIUTILS_SUCCESS;
 }
 
 uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t *value) {
-	*value = ti81_pci_config_read(bus, dev_fn, where, 1);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_read(bus, dev_fn, where, 1, value);
 }
 
 uint32_t pci_read_config16(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint16_t *value) {
-	*value = ti81_pci_config_read(bus, dev_fn, where, 2);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_read(bus, dev_fn, where, 2, value);
 }
 
 uint32_t pci_read_config32(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint32_t *value) {
-	*value = ti81_pci_config_read(bus, dev_fn, where, 4);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_read(bus, dev_fn, where, 4, value);
 }
 
 uint32_t pci_write_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t value) {
-	ti81_pci_config_write(bus, dev_fn, where, 1, value);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_write(bus, dev_fn, where, 1, value);
 }
 
 uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint16_t value) {
-	ti81_pci_config_write(bus, dev_fn, where, 2, value);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_write(bus, dev_fn, where, 2, value);
 }
 
 uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 		uint32_t where,	uint32_t value) {
-	ti81_pci_config_write(bus, dev_fn, where, 4, value);
-	return PCIUTILS_SUCCESS;
+	return ti81_pci_config_write(bus, dev_fn, where, 4, value);
 }
 
 static void ti81xx_pci_clk_enable(void) {
@@ -237,6 +253,11 @@ static int ti81xx_pci_init(void) {
 
 	REG_ORIN(TI81_PCI_CLASSCODE, 0x0604 << TI81_PCI_CLASSCODE_SHIFT);
 	REG_ORIN(TI81_PCI_STATUS_COMMAND, TI81_PCI_STATUS_COMMAND_BUSMASTER);
+
+	while ((REG_LOAD(TI81_PCI_DEBUG0) & TI81_PCI_DEBUG0_LTSSM_MASK) !=
+			TI81_PCI_DEBUG0_LTSSM_L0) {
+
+	}
 
 	return 0;
 }
