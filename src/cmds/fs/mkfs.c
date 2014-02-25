@@ -55,11 +55,8 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 	}
 }
 
-static int create_ramdisk(char *path, int blocks) {
-	if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
-		return -errno;
-	}
-	return 0;
+static int mkfs_create_ramdisk(char *path, int blocks) {
+	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
 }
 
 static int exec(int argc, char **argv) {
@@ -99,7 +96,7 @@ static int exec(int argc, char **argv) {
 				return -EINVAL;
 			}
 
-			return create_ramdisk(path, blocks);
+			return mkfs_create_ramdisk(path, blocks);
 		case '?':
 		case 'h':
 			print_usage();
