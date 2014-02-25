@@ -50,14 +50,28 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_CMD_STATUS		      (TI81_PCI_REGION0 + 0x4)
 #define TI81_PCI_CMD_STATUS_LTSSM_EN 	      0x00000001
 #define TI81_PCI_CFG_SETUP                    (TI81_PCI_REGION0 + 0x8)
+#define TI81_PCI_CFG_SETUP_TYPE               0x01000000
+#define TI81_PCI_CFG_SETUP_BUS                0x00ff0000
+#define TI81_PCI_CFG_SETUP_BUS_SHIFT          16
+#define TI81_PCI_CFG_SETUP_DEV                0x00001f00
+#define TI81_PCI_CFG_SETUP_DEV_SHIFT          8
+#define TI81_PCI_CFG_SETUP_FNC                0x00000007
+#define TI81_PCI_CFG_SETUP_FNC_SHIFT          0
+
+#define TI81_PCI_REGION0_LOCAL_CFG  (TI81_PCI_REGION0 + 0x1000)
+#define TI81_PCI_VEN_DEV_ID		      (TI81_PCI_REGION0_LOCAL_CFG + 0)
+#define TI81_PCI_VEN_DEV_ID_VEN_SHIFT         0
+#define TI81_PCI_VEN_DEV_ID_DEV_SHIFT         16
+#define TI81_PCI_STATUS_COMMAND		      (TI81_PCI_REGION0_LOCAL_CFG + 4)
+#define TI81_PCI_STATUS_COMMAND_BUSMASTER     0x00000004
+#define TI81_PCI_CLASSCODE		      (TI81_PCI_REGION0_LOCAL_CFG + 8)
+#define TI81_PCI_CLASSCODE_SHIFT              8
 
 #define TI81_PCI_REGION0_REMOTE_CFG (TI81_PCI_REGION0 + 0x2000)
 
 #define TI81_PCI_REGION1 0x20000000
 
 #include <kernel/printk.h>
-#define PCI_CONFIG_CMD(bus, dev_fn, where) \
-		(0x80000000 | (bus << 16) | (dev_fn << 8) | (where & ~3))
 
 #define PCI_TYPE0 0
 #define PCI_TYPE1 1
@@ -87,7 +101,18 @@ int pci_check_type(void) {
 }
 
 static void ti81xx_cfg_setup(int pci_type, uint32_t bus, uint32_t dev, uint32_t fn) {
+	uint32_t reg;
 
+	reg = ((bus << TI81_PCI_CFG_SETUP_BUS_SHIFT) & TI81_PCI_CFG_SETUP_BUS) |
+		((dev << TI81_PCI_CFG_SETUP_DEV_SHIFT) & TI81_PCI_CFG_SETUP_DEV) |
+		((fn << TI81_PCI_CFG_SETUP_FNC_SHIFT) & TI81_PCI_CFG_SETUP_FNC);
+
+	if (pci_type == PCI_TYPE1) {
+		reg |= TI81_PCI_CFG_SETUP_TYPE;
+	}
+
+	REG_STORE(TI81_PCI_CFG_SETUP, reg);
+	printk("%s: bus=%d dev=%d fn=%d %08lx\n", __func__, bus, dev, fn, REG_LOAD(TI81_PCI_CFG_SETUP));
 }
 
 static inline uint32_t ti81_pci_config_read(uint32_t bus, uint32_t dev_fn,
@@ -202,6 +227,9 @@ static int ti81xx_pci_init(void) {
 	/* Configure core registers ? */
 	REG_ORIN(TI81_PCI_CMD_STATUS, TI81_PCI_CMD_STATUS_LTSSM_EN);
 	printk("%s: cmd_status=%08lx\n", __func__, REG_LOAD(TI81_PCI_CMD_STATUS));
+
+	REG_ORIN(TI81_PCI_CLASSCODE, 0x0604 << TI81_PCI_CLASSCODE_SHIFT);
+	REG_ORIN(TI81_PCI_STATUS_COMMAND, TI81_PCI_STATUS_COMMAND_BUSMASTER);
 
 	return 0;
 }
