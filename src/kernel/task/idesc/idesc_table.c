@@ -14,9 +14,14 @@
 #include <fs/idesc.h>
 #include <kernel/task.h>
 
+#include <module/embox/kernel/task/resource/idesc_table.h>
 #include <kernel/task/idesc_table.h>
+#include <util/array.h>
 #include <util/indexator.h>
 
+int idesc_index_valid(int idx) {
+	return (idx >=0) && (idx < MODOPS_IDESC_TABLE_SIZE);
+}
 
 int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	int idx;
@@ -99,7 +104,8 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 
 void idesc_table_init(struct idesc_table *t) {
 	assert(t);
-	index_init(&t->indexator, 0, IDESC_QUANTITY, t->index_buffer);
+	index_init(&t->indexator, 0, ARRAY_SIZE(t->idesc_table),
+			t->index_buffer);
 }
 
 void idesc_table_finit(struct idesc_table *t) {
@@ -108,7 +114,7 @@ void idesc_table_finit(struct idesc_table *t) {
 
 	assert(t);
 
-	for(i = 0; i < IDESC_QUANTITY; i++) {
+	for(i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (t->idesc_table[i]) {
 			idesc = idesc_table_get(t, i);
 			assert(idesc);
@@ -129,7 +135,7 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 		return 0;
 	}
 
-	for (i = 0; i < IDESC_QUANTITY; i++) {
+	for (i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (parent_table->idesc_table[i]) {
 			idesc = idesc_table_get(parent_table, i);
 			assert(idesc);

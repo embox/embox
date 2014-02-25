@@ -43,7 +43,7 @@ static module file_ops {
 	source "fcntl.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.idesc
 	depends embox.kernel.task.errno
 }
 

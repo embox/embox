@@ -8,12 +8,17 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <kernel/task/resource/env.h>
+#include <module/embox/kernel/task/resource/env.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <util/array.h>
 #include <unistd.h>
-#include <kernel/task/env.h>
+
+char *** task_self_environ_ptr(void) {
+	return &task_self_resource_env()->envs;
+}
 
 static size_t env_lookup(const char *name, char **vals, size_t next) {
 	size_t i, name_len;
@@ -43,7 +48,7 @@ char * getenv(const char *name) {
 		return NULL;
 	}
 
-	env = task_self_env();
+	env = task_self_resource_env();
 	assert(env != NULL);
 
 	index = env_lookup(name, &env->vals[0], env->next);
@@ -65,7 +70,7 @@ int putenv(char *string) {
 	assert(*string != '=');
 	assert(strchr(string, '=') != NULL);
 
-	env = task_self_env();
+	env = task_self_resource_env();
 	assert(env != NULL);
 
 	name_len = strchr(string, '=') - string;
@@ -107,7 +112,7 @@ int setenv(const char *name, const char *value, int overwrite) {
 		return -1;
 	}
 
-	env = task_self_env();
+	env = task_self_resource_env();
 	assert(env != NULL);
 
 	index = env_lookup(name, &env->vals[0], env->next);
@@ -152,7 +157,7 @@ int unsetenv(const char *name) {
 		return -1;
 	}
 
-	env = task_self_env();
+	env = task_self_resource_env();
 	assert(env != NULL);
 
 	index = env_lookup(name, &env->vals[0], env->next);
@@ -179,7 +184,7 @@ int unsetenv(const char *name) {
 int clearenv(void) {
 	struct task_env *env;
 
-	env = task_self_env();
+	env = task_self_resource_env();
 	assert(env != NULL);
 
 	env->envs = NULL;

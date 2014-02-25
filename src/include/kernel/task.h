@@ -50,19 +50,20 @@ struct task {
 
 	struct thread *main_thread;
 
-	struct task_idx_table *idx_table; /**< @brief Resources which task have */
+	//struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
-	struct sigaction *sig_table;
+	//struct sigaction *sig_table;
 
 	struct emmap *mmap;
 
-	struct task_u_area *u_area;
+	//struct task_u_area *u_area;
 
-	struct task_env *env;
+	//struct task_env *env;
 
 	task_priority_t priority; /**< @brief Task priority */
 
 	void   *security;
+	void   *resources;
 
 	int err; /**< @brief Last occurred error code */
 
@@ -70,7 +71,7 @@ struct task {
 
 	clock_t per_cpu; /**< task times */
 
-	struct waitq *waitq;
+	//struct waitq *waitq;
 
 	unsigned int affinity;
 
@@ -79,23 +80,6 @@ struct task {
 	//idesc_table_t idesc_table;
 };
 
-
-extern struct idesc_table *task_get_idesc_table(struct task *task);
-
-#include <kernel/task/task_resource.h>
-#if 0
-/**
- * @brief Get task resources structure from task
- *
- * @param task Task to get from
- * @return Task resources from task
- */
-static inline struct task_idx_table *task_idx_table(struct task *task) {
-
-	assert(task != NULL);
-	return task->idx_table;
-}
-#endif
 
 /** create new task and initialize its descriptor */
 extern int new_task(const char *name, void *(*run)(void *), void *arg);

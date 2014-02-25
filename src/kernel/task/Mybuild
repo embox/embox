@@ -33,8 +33,6 @@ module multi extends api {
 	depends task_key_table
 }
 
-module task_environment { }
-
 @DefaultImpl(NoThread)
 abstract module task_thread_api {
 }
@@ -58,61 +56,9 @@ module kernel_task {
 
 }
 
-module signal {
-	source "signal.c"
-
-	depends embox.kernel.sched.sched
-}
-
-module idx_table extends task_environment {
-
-	option number task_res_quantity = 64
-
-	source "idesc_table.c"
-	source "idesc_table_resource.c"
-	source "index_descriptor.c"
-
-	depends embox.mem.objalloc
-	depends embox.util.indexator
-	depends api
-}
-
 module errno {
 	source "errno.c"
 	depends api
-}
-
-module env {
-	option number env_per_task=8
-	option number env_str_len=32
-	source "env.c"
-
-	depends api
-	depends embox.lib.LibCAssert
-	depends embox.lib.LibCString
-	depends embox.util.Array
-}
-
-module u_area {
-	source "u_area.c"
-}
-
-module waitpid {
-	source "waitpid.c"
-
-	depends embox.kernel.sched.sched
-	depends embox.kernel.sched.wait_queue
-}
-@DefaultImpl(no_fork)
-abstract module kfork {
-}
-
-module no_fork extends kfork {
-	source "no_fork.c"
-}
-
-module stack_fork extends kfork {
-	source "kfork.c"
 }
 
 @DefaultImpl(task_thread_key)

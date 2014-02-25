@@ -21,6 +21,7 @@
 #include <kernel/panic.h>
 #include <kernel/critical.h>
 #include <util/idx_table.h>
+#include <kernel/task/resource.h>
 
 #include <err.h>
 

@@ -11,6 +11,7 @@
 #include <util/array.h>
 
 #include <kernel/task.h>
+#include <kernel/task/resource.h>
 
 extern size_t task_resource_sum_size(void);
 extern size_t task_size(void);

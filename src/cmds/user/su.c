@@ -13,7 +13,7 @@
 #include <embox/cmd.h>
 #include <framework/cmd/api.h>
 
-#include <kernel/task/u_area.h>
+#include <kernel/task/resource/u_area.h>
 #include <security/smac.h>
 
 EMBOX_CMD(su_exec);

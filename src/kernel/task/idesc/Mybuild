@@ -1,0 +1,9 @@
+package embox.kernel.task
+
+module idesc {
+	source "idesc_table.c", "index_descriptor.c"
+
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.kernel.task.resource.idesc_table
+	@NoRuntime depends embox.util.indexator
+}

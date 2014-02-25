@@ -1,0 +1,44 @@
+package embox.kernel.task.resource
+
+module env {
+	option number env_per_task=8
+	option number env_str_len=32
+	source "env.c", "env.h"
+
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.util.Array
+}
+
+module idesc_table {
+	option number idesc_table_size=64
+	source "idesc_table.c", "idesc_table.h"
+
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
+module sig_table {
+	source "sig_table.c"
+
+	depends embox.kernel.sched.sched
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
+module u_area {
+	source "u_area.c"
+
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
+module waitpid {
+	source "waitpid.c"
+
+	depends embox.kernel.sched.wait_queue
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.LibCAssert
+}

@@ -9,7 +9,9 @@
 
 #include <kernel/task.h>
 
+#include <module/embox/kernel/task/resource/idesc_table.h>
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 
 #include <fs/index_descriptor.h>
@@ -17,7 +19,7 @@
 static inline struct idesc_table *task_self_idesc_table(void) {
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 
 	return it;
@@ -49,7 +51,7 @@ int index_descritor_cloexec_get(int fd) {
 int index_descriptor_cloexec_set(int fd, int cloexec) {
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 
 	if (cloexec | FD_CLOEXEC) {

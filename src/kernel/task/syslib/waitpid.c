@@ -13,6 +13,7 @@
 #include <kernel/sched.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/task/resource/waitpid.h>
 
 int task_waitpid(pid_t pid) {
 	int ret;
@@ -31,7 +32,7 @@ int task_waitpid(pid_t pid) {
 		}
 
 		parent = task->parent;
-		waitq_wait_prepare(task->waitq, &wql);
+		waitq_wait_prepare(task_resource_waitpid(task), &wql);
 
 		sched_wait();
 
@@ -45,20 +46,3 @@ out:
 
 	return ret;
 }
-
-static void task_waitq_deinit(struct task *task) {
-	waitq_wakeup_all(task->waitq);
-}
-
-static void task_waitq_init(struct task *task, void *_waitq) {
-	task->waitq = _waitq;
-	waitq_init(task->waitq);
-}
-
-static const struct task_resource_desc waitpid_resource = {
-	.init = task_waitq_init,
-	.deinit = task_waitq_deinit,
-	.resource_size = sizeof(struct waitq)
-};
-
-TASK_RESOURCE_DESC(&waitpid_resource);

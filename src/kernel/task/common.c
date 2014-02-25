@@ -15,6 +15,7 @@
 #include <kernel/task.h>
 #include <util/binalign.h>
 #include <stdint.h>
+#include <kernel/task/resource.h>
 
 
 #include "common.h"
@@ -29,16 +30,11 @@ void resource_sum_size_calc(void) {
 	const struct task_resource_desc *res_desc;
 
 	task_resource_foreach(res_desc) {
-		if(res_desc->resource_init) {
-			res_desc->resource_init(res_desc, resource_sum_size);
-		}
+		assert(res_desc->resource_offset != NULL);
+		*res_desc->resource_offset = resource_sum_size;
 
 		resource_sum_size += res_desc->resource_size;
 	}
-}
-
-size_t task_resource_sum_size(void) {
-	return resource_sum_size;
 }
 
 size_t task_size(void) {
@@ -71,6 +67,7 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	task->priority = TASK_PRIORITY_DEFAULT;
 
+	task->resources = res_ptr;
 	task_resource_foreach(res_desc) {
 		res_desc->init(task, res_ptr);
 		res_ptr += res_desc->resource_size;
