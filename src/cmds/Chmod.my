@@ -1,0 +1,8 @@
+package embox.cmd
+
+@Cmd(name = "chmod",
+	help = "",
+	man = '''''')
+module chmod {
+	source "chmod.c"
+}
