@@ -49,6 +49,7 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_REGION0 0x51000000
 #define TI81_PCI_CMD_STATUS		      (TI81_PCI_REGION0 + 0x4)
 #define TI81_PCI_CMD_STATUS_LTSSM_EN 	      0x00000001
+#define TI81_PCI_CMD_OB_XLT_EN   	      0x00000002
 #define TI81_PCI_CFG_SETUP                    (TI81_PCI_REGION0 + 0x8)
 #define TI81_PCI_CFG_SETUP_TYPE               0x01000000
 #define TI81_PCI_CFG_SETUP_BUS                0x00ff0000
@@ -57,6 +58,10 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_CFG_SETUP_DEV_SHIFT          8
 #define TI81_PCI_CFG_SETUP_FNC                0x00000007
 #define TI81_PCI_CFG_SETUP_FNC_SHIFT          0
+
+#define TI81_PCI_OB_OFF_LO_INDEX(n)           (TI81_PCI_REGION0 + 0x200 + 8 * (n))
+#define TI81_PCI_OB_OFF_HI(n)                 (TI81_PCI_REGION0 + 0x204 + 8 * (n))
+#define TI81_PCI_OB_EN                        0x00000001
 
 #define TI81_PCI_REGION0_LOCAL_CFG  (TI81_PCI_REGION0 + 0x1000)
 #define TI81_PCI_VEN_DEV_ID		      (TI81_PCI_REGION0_LOCAL_CFG + 0)
@@ -239,6 +244,16 @@ static void ti81xx_pci_clk_enable(void) {
 	}
 }
 
+static void ti81_pci_enable_outbound(void) {
+
+	/* TODO use all of 32 avaible windows */
+
+	REG_STORE(TI81_PCI_OB_OFF_LO_INDEX(0), TI81_PCI_REGION1 | TI81_PCI_OB_EN);
+	REG_STORE(TI81_PCI_OB_OFF_HI(0), 0);
+
+	REG_ORIN(TI81_PCI_CMD_STATUS, TI81_PCI_CMD_OB_XLT_EN);
+}
+
 static int ti81xx_pci_init(void) {
 
 	REG_STORE(TI81_PCI_CFG, TI81_PCI_CFG_DEVTYPE_ROOTC);
@@ -257,13 +272,15 @@ static int ti81xx_pci_init(void) {
 
 	/* Configure core registers ? */
 	REG_ORIN(TI81_PCI_CMD_STATUS, TI81_PCI_CMD_STATUS_LTSSM_EN);
-	printk("%s: cmd_status=%08lx\n", __func__, REG_LOAD(TI81_PCI_CMD_STATUS));
+	/*printk("%s: cmd_status=%08lx\n", __func__, REG_LOAD(TI81_PCI_CMD_STATUS));*/
 
 	REG_ORIN(TI81_PCI_CLASSCODE, 0x0604 << TI81_PCI_CLASSCODE_SHIFT);
 	REG_ORIN(TI81_PCI_STATUS_COMMAND, TI81_PCI_STATUS_COMMAND_BUSMASTER);
 
 	REG_STORE(TI81_PCI_BAR0, 0);
 	REG_STORE(TI81_PCI_BAR1, 0);
+
+	ti81_pci_enable_outbound();
 
 	return 0;
 }
