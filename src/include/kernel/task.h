@@ -99,6 +99,9 @@ static inline void *task_self_security(void) {
 	return task_self()->security;
 }
 
+extern struct task * task_init(void *space, size_t size,
+		const char *name);
+
 /**
  * @brief Exit from current task
  *

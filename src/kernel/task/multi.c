@@ -25,8 +25,6 @@
 
 #include <err.h>
 
-#include "common.h"
-
 #define TASK_QUANT OPTION_GET(NUMBER, tasks_quantity)
 
 UTIL_IDX_TABLE_DEF(struct task *, task_table, TASK_QUANT);
@@ -58,7 +56,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
-	const int task_sz = task_size();
+	const int task_sz = sizeof *self_task + task_resource_size();
 	struct task tmp_task;
 	void *addr;
 
@@ -91,7 +89,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		tmp_task.main_thread = thd;
 		addr = task_alloc(&tmp_task, task_sz);
 
-		if ((self_task = task_init(addr, task_sz)) == NULL) {
+		if ((self_task = task_init(addr, task_sz, name)) == NULL) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
@@ -105,13 +103,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		self_task->priority = task_self()->priority;
 
 		/* initialize the new task */
-		if (strlen(name) > MAX_TASK_NAME_LEN) {
-			res = -EPERM;
-			goto out_threadfree;
-		}
-
-		strncpy(self_task->task_name, name, sizeof(self_task->task_name) - 1);
-
 		if ((res = task_table_add(self_task)) < 0) {
 			goto out_threadfree;
 		}
@@ -179,40 +170,22 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 
 static int task_init_parent(struct task *task, struct task *parent) {
 	int ret;
-	const struct task_resource_desc *res_desc, *failed;
 
 	task->parent = parent;
 
-	task_resource_foreach(res_desc) {
-		if (res_desc->inherit) {
-			ret = res_desc->inherit(task, parent);
-			if (ret != 0) {
-				goto out_free_resource;
-			}
-		}
+	ret = task_resource_inherit(task, parent);
+	if (ret != 0) {
+		return ret;
 	}
 
 	dlist_add_next(dlist_head_init(&task->task_link), &parent->children_tasks);
 
 	return 0;
-
-out_free_resource:
-	failed = res_desc;
-	task_resource_foreach(res_desc) {
-		if (res_desc == failed) {
-			break;
-		}
-		if (res_desc->deinit) {
-			res_desc->deinit(task);
-		}
-	}
-	return ret;
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *task = task_self();
 	struct thread *thread, *next;
-	const struct task_resource_desc *res_desc;
 
 	assert(task != task_kernel_task());
 
@@ -221,11 +194,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	sched_lock();
 	{
 		/* Deinitialize all resources */
-		task_resource_foreach(res_desc) {
-			if (res_desc->deinit) {
-				res_desc->deinit(task);
-			}
-		}
+		task_resource_deinit(task);
 
 		/* Remove us from list of tasks */
 		dlist_del(&task->task_link);

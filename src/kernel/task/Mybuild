@@ -2,8 +2,18 @@ package embox.kernel.task
 
 @DefaultImpl(single)
 abstract module api {
-	option number max_resource_size = 2048
+}
 
+module task_resource {
+	option number task_resource_max_size=0x800
+	source "task_resource.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.util.Array
+}
+
+module task_init {
+	source "task_init.c"
 }
 
 module single extends api {
@@ -22,6 +32,7 @@ module multi extends api {
 
 	option number tasks_quantity = 20
 
+	depends task_init
 	depends embox.util.idx_table
 
 	/* uses task_self() to initialize resources, which implies
@@ -47,10 +58,11 @@ module MultiThread extends task_thread_api {
 }
 
 module kernel_task {
-	source "common.c"
 	source "kernel_task.c"
 	source "task_alloc_onstack.c"
 
+	depends task_init
+	depends task_resource
 	depends task_thread_api
 	depends embox.util.DList
 
