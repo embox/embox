@@ -15,6 +15,7 @@
 #include <kernel/task/resource/sig_table.h>
 #include <signal.h>
 #include <stddef.h>
+#include <string.h>
 
 TASK_RESOURCE_DESC(task_sig_table_res);
 
@@ -33,6 +34,9 @@ static void task_sig_table_init(const struct task *task,
 	assert(sig_table != NULL);
 
 	for (sig = 0; sig < _SIG_TOTAL; ++sig) {
+		sig_table[sig].sa_flags = 0;
+		memset(&sig_table[sig].sa_mask, 0,
+				sizeof sig_table[sig].sa_mask);;
 		sig_table[sig].sa_handler = task_sig_handler_terminate;
 	}
 }

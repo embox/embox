@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <fs/idesc.h>
 #include <kernel/task.h>
@@ -104,6 +105,7 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 
 void idesc_table_init(struct idesc_table *t) {
 	assert(t);
+	memset(t->idesc_table, 0, sizeof t->idesc_table);
 	index_init(&t->indexator, 0, ARRAY_SIZE(t->idesc_table),
 			t->index_buffer);
 }

@@ -26,25 +26,22 @@ struct task * task_init(void *space, size_t size,
 		return NULL;
 	}
 
-	memset(task, 0, task_sz);
-
 	strncpy(task->task_name, name, sizeof task->task_name - 1);
 	task->task_name[sizeof task->task_name - 1] = '\0';
-
-	dlist_head_init(&task->task_link);
-
-	dlist_init(&task->children_tasks);
-
-	task->parent = NULL;
-
-	task->priority = TASK_PRIORITY_DEFAULT;
 
 	task->resources = task + 1;
 	task_resource_init(task, task->resources);
 
-	task_thread_key_init(task);
+	task->per_cpu = 0;
 
+	/* multi */
+	dlist_head_init(&task->task_link);
+	dlist_init(&task->children_tasks);
+	task->parent = NULL;
 	task->child_err = 0;
+	task->priority = TASK_PRIORITY_DEFAULT;
+
+	task_thread_key_init(task);
 
 	return task;
 }

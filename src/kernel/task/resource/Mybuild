@@ -49,6 +49,7 @@ module sig_table {
 	depends embox.kernel.sched.sched
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
 
 module u_area {

@@ -6,4 +6,6 @@ module idesc {
 	depends embox.kernel.task.api
 	@NoRuntime depends embox.kernel.task.resource.idesc_table
 	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
