@@ -9,12 +9,15 @@
 #include <embox/cmd.h>
 
 #include <fs/perm.h>
+#include <fs/path.h>
+#include <fs/vfs.h>
+#include <fs/node.h>
 
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <fs/path.h>
-#include <fs/vfs.h>
+#include <dirent.h>
+#include <libgen.h>
 
 EMBOX_CMD(exec);
 
@@ -28,19 +31,23 @@ static void sub(unsigned int mode, unsigned int type, node_t *node) {
 
 static void assign(unsigned int mode, unsigned int type, node_t *node) {
 	node->mode &= ~type;
-	node->mode |= type & mode;
+	node->mode |= mode & type;
 }
 
-static void help_invalid_mode(char *mode) {
-	printf ("chmod: invalid mode: '%s'\n"
+static void help_invalid_mode(const char *mode) {
+	printf("chmod: invalid mode: '%s'\n"
 			"Try 'chmod --help' for more information.\n", mode);
 }
 
-static void help_cannot_access(char *path, char *error) {
-	printf ("chmod: cannot access '%s': %s\n", path, error);
+static void help_cannot_access(const char *path, const char *error) {
+	printf("chmod: cannot access '%s': %s\n", path, error);
 }
 
-static int _chmod(char *mode, node_t *node) {
+static void help(void) {
+	printf("Usage: chmod [OPTION]... MODE[,MODE]... FILE...\n");
+}
+
+static int __change_mode(char *mode, node_t *node) {
 	unsigned int mask_type, mask_mode;
 	char *tmp_mode = mode;
 	void (*func)(unsigned int, unsigned int, node_t*);
@@ -114,28 +121,105 @@ parse:
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
-	node_t *node;
-	int res;
-	char* path = argv[2];
-	char* mode = argv[1];
+static int find(struct node *root, const char *path, struct node **nodelast) {
+	struct node *node;
+	size_t len = 0;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
-		switch(-res) {
-		case EACCES:
-			help_cannot_access(path, "Permission denied");
-			break;
-		case ENOENT:
-			help_cannot_access(path, "No such file or directory");
-			break;
-		default:
-			help_cannot_access(path, "Unexpected error");
+	while (1) {
+		path = path_next(path + len, &len);
+
+		*nodelast = node;
+
+		if (!path) {
 			break;
 		}
+
+		if (NULL == (node = vfs_lookup_childn(node, path, len))) {
+			return -EACCES;
+		}
+	}
+
+	return 0;
+}
+
+static int change_mode(node_t *node, char *mode, int is_recursive);
+
+static int change_mode_recurse(struct tree_link *node, char *mode, int is_recursive) {
+	struct tree_link *link;
+
+	assert(node);
+
+	list_foreach(link, &node->children, list_link) {
+		change_mode(tree_element(link, node_t, tree_link), mode, is_recursive);
+	}
+
+	return 0;
+}
+
+static int change_mode(node_t *node, char *mode, int is_recursive) {
+	char path[PATH_MAX];
+
+	//todo permission check
+	//help_cannot_access(path, "Permission denied");
+
+	if (node_is_directory(node)) {
+		if (is_recursive) {
+			change_mode_recurse(&(node->tree_link), mode, is_recursive);
+		}
+
+		__change_mode(mode, node);
 		return 0;
 	}
 
-	_chmod(mode, node);
+	if (node_is_file(node)) {
+		__change_mode(mode, node);
+		return 0;
+	}
+
+	vfs_get_path_by_node(node, path);
+	help_cannot_access(path, "Is not file or directory");
+
+	return 0;
+}
+
+static int exec(int argc, char **argv) {
+	node_t *node;
+	int opt, is_recursive = 0;
+	char *path, *mode;
+
+	if (argc <= 1) {
+		help();
+		return 0;
+	}
+
+	getopt_init();
+
+	while (-1 != (opt = getopt(argc, argv, "R"))) {
+		switch (opt) {
+		case 'R':
+			is_recursive = 1;
+			break;
+		default:
+			printf("chmod: invalid option -%c\n", optopt);
+			help();
+			return 0;
+		}
+	}
+
+	if (optind + 2 != argc) {
+		help();
+		return 0;
+	}
+
+	mode = argv[optind];
+	path = argv[optind + 1];
+
+	if (0 > find(vfs_get_leaf(), path, &node)) {
+		help_cannot_access(path, "No such file or directory");
+		return 0;
+	}
+
+	change_mode(node, mode, is_recursive);
 
 	return 0;
 }
