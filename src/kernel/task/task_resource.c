@@ -76,6 +76,7 @@ void task_resource_deinit(const struct task *task) {
 static int task_resource_module_init(void) {
 	const struct task_resource_desc *res_desc;
 
+	resource_sum_size = 0;
 	task_resource_foreach(res_desc) {
 		assert(res_desc->resource_offset != NULL);
 		*res_desc->resource_offset = resource_sum_size;

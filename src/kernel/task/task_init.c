@@ -20,13 +20,13 @@ struct task * task_init(void *space, size_t size,
 
 	task = (struct task *)binalign_bound((uintptr_t)space, 4);
 	task_off = (void *)task - space;
-	task_sz = sizeof task + task_resource_size();
+	task_sz = sizeof *task + task_resource_size();
 
 	if (size < task_off + task_sz) {
 		return NULL;
 	}
 
-	memset(space, 0, task_sz);
+	memset(task, 0, task_sz);
 
 	strncpy(task->task_name, name, sizeof task->task_name - 1);
 	task->task_name[sizeof task->task_name - 1] = '\0';
