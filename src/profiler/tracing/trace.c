@@ -118,9 +118,7 @@ static int cmp_trace_blocks(void *key1, void *key2) {
  * trace_block_exit just before function exit */
 
 void trace_block_func_enter(void *func) {
-	//char *name = NULL, *str;
 	struct __trace_block *tb = NULL;
-	//const struct symbol *s;
 	int *key = (int*) malloc (sizeof(int));
 
 	if (!tbhash) { /* Table is not initialized */
@@ -137,57 +135,30 @@ void trace_block_func_enter(void *func) {
 		 * for example, in "trace_blocks -n" shell command.
 		 */
 
-		/*s = symbol_lookup(func);
-		assert(s);
-
-		l = strlen(s->name) + strlen(s->loc.file) + 2;
-		name = (char*) malloc (sizeof(char) * l);
-		strcpy(name, s->loc.file);
-		strcat(name, ":");
-		strcat(name, s->name);*/
-
 		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
-		/* tb->name = name; */
+
 		tb->func = func;
 		tb->tc = (struct itimer *) malloc (sizeof(struct itimer)),
 		tb->time = 0;
 		tb->count = 0;
 		tb->active = true;
 		tb->is_entered = false;
-		/*
-		str = (char*) malloc (sizeof(char) * strlen(s->loc.file));
-		strcpy(str, s->loc.file);
-		tb->location.at.file = str;
-		tb->location.at.line = s->loc.line;
-
-		str = (char*) malloc(sizeof(char) * strlen(s->name));
-		strcpy(str, s->name);
-		tb->location.func = str;
-		*/
 		hashtable_put(tbhash, key, tb);
 	}
 	trace_block_enter(tb);
 }
 
 void trace_block_func_exit(void *func) {
-	//char *name = NULL;
 	struct __trace_block *tb;
-	//const struct symbol *s = symbol_lookup(func);
 	int *key = (int*) malloc (sizeof(int));
-	//assert(s);
+
 	if (!tbhash) {
 		return;
 	}
 	*key = (int) func;
-	/*l = strlen(s->name) + strlen(s->loc.file) + 2;
-	name = (char*) malloc (sizeof(char) * l);
-	strcpy(name, s->loc.file);
-	strcat(name, ":");
-	strcat(name, s->name);*/
 
 	tb = hashtable_get(tbhash, key);
 	trace_block_leave(tb);
-	//free(name);
 }
 
 struct __trace_block *auto_profile_tb_first(void){
