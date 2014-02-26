@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <libgen.h>
+#include <pwd.h>
 
 EMBOX_CMD(exec);
 
@@ -156,11 +157,26 @@ static int change_mode_recurse(struct tree_link *node, char *mode, int is_recurs
 	return 0;
 }
 
+static int is_permitted(node_t *node) {
+	uid_t uid = geteuid();
+	struct passwd pwd, *result;
+	char buf[80];
+
+	if (0 != getpwuid_r(uid, &pwd, buf, 80, &result)) {
+		return 0;
+	}
+
+	return uid == node->uid || pwd.pw_gid == 0;
+}
+
 static int change_mode(node_t *node, char *mode, int is_recursive) {
 	char path[PATH_MAX];
 
-	//todo permission check
-	//help_cannot_access(path, "Permission denied");
+	if (!is_permitted(node)) {
+		vfs_get_path_by_node(node, path);
+		help_cannot_access(path, "Permission denied");
+		return 0;
+	}
 
 	if (node_is_directory(node)) {
 		if (is_recursive) {
