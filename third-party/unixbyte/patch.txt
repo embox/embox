@@ -1,0 +1,12 @@
+diff -aur UnixBench/Makefile unixbyte/Makefile
+--- UnixBench/Makefile	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/Makefile	2014-02-26 17:13:06.190895718 +0400
+@@ -78,7 +78,7 @@
+ #CFLAGS = -DTIME -std1 -verbose -w0
+ 
+ ## generic gcc CFLAGS.  -DTIME must be included.
+-CFLAGS = -DTIME -Wall -pedantic -ansi
++CFLAGS += -DTIME
+ 
+ 
+ ##############################################################################
