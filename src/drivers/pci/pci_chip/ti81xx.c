@@ -58,6 +58,7 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_CFG_SETUP_DEV_SHIFT          8
 #define TI81_PCI_CFG_SETUP_FNC                0x00000007
 #define TI81_PCI_CFG_SETUP_FNC_SHIFT          0
+#define TI81_PCI_OB_SIZE                      (TI81_PCI_REGION0 + 0x30)
 
 #define TI81_PCI_OB_OFF_LO_INDEX(n)           (TI81_PCI_REGION0 + 0x200 + 8 * (n))
 #define TI81_PCI_OB_OFF_HI(n)                 (TI81_PCI_REGION0 + 0x204 + 8 * (n))
@@ -81,6 +82,9 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_REGION0_REMOTE_CFG (TI81_PCI_REGION0 + 0x2000)
 
 #define TI81_PCI_REGION1 0x20000000
+
+#define TI81_PCI_OB_WINDOW_N 32
+#define TI81_PCI_OB_WINDOW_MAXSZ 3 /* in power of 1MB */
 
 #include <kernel/printk.h>
 
@@ -245,11 +249,20 @@ static void ti81xx_pci_clk_enable(void) {
 }
 
 static void ti81_pci_enable_outbound(void) {
+	int i;
+	unsigned long map_ptr;
 
-	/* TODO use all of 32 avaible windows */
+	map_ptr = TI81_PCI_REGION1;
 
-	REG_STORE(TI81_PCI_OB_OFF_LO_INDEX(0), TI81_PCI_REGION1 | TI81_PCI_OB_EN);
-	REG_STORE(TI81_PCI_OB_OFF_HI(0), 0);
+	REG_STORE(TI81_PCI_OB_SIZE, TI81_PCI_OB_WINDOW_MAXSZ);
+
+	/* mapping 32 windows by 8MB; mapping whole 256MB REGION1 */
+	for (i = 0; i < TI81_PCI_OB_WINDOW_N; i ++) {
+		REG_STORE(TI81_PCI_OB_OFF_LO_INDEX(i), map_ptr | TI81_PCI_OB_EN);
+		REG_STORE(TI81_PCI_OB_OFF_HI(i), 0);
+
+		map_ptr += 1 << (TI81_PCI_OB_WINDOW_MAXSZ + 20); /* 20 is a log_2 of 1MB */
+	}
 
 	REG_ORIN(TI81_PCI_CMD_STATUS, TI81_PCI_CMD_OB_XLT_EN);
 }
@@ -259,7 +272,6 @@ static int ti81xx_pci_init(void) {
 	REG_STORE(TI81_PCI_CFG, TI81_PCI_CFG_DEVTYPE_ROOTC);
 
 	ti81xx_pci_clk_enable();
-
 
 	REG_ORIN(TI81_PCI_CFG, TI81_PCI_CFG_CFGPLL_MUL25X);
 
