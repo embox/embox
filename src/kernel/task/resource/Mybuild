@@ -34,6 +34,15 @@ module idesc_table {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module security {
+	option number security_size
+	source "security.c"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+}
+
 module sig_table {
 	source "sig_table.c"
 

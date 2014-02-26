@@ -44,8 +44,6 @@ struct task {
 	void *resources;
 	clock_t per_cpu; /**< task times */
 
-	void   *security;
-
 	thread_key_table_t key_table;
 };
 
@@ -76,11 +74,6 @@ extern int task_set_priority(struct task *task, task_priority_t priority);
 /** get task priority */
 extern task_priority_t task_get_priority(struct task *task);
 
-
-static inline void *task_self_security(void) {
-
-	return task_self()->security;
-}
 
 extern struct task * task_init(void *space, size_t size,
 		const char *name);
