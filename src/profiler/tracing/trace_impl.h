@@ -30,6 +30,7 @@ struct __trace_point {
 
 struct __trace_block {
 	const char *name;
+	void *func;
 	struct location_func location;
 	struct __trace_point *begin;
 	struct __trace_point *end;

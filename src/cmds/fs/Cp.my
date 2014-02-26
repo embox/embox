@@ -13,6 +13,7 @@ package embox.cmd.fs
 			Roman Evstifeev
 	''')
 module cp {
+	@InstrumentProfiling("true")
 	source "cp.c"
 
 	depends embox.lib.LibC

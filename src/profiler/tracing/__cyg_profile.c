@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include <profiler/tracing/trace.h>
 
 void __cyg_profile_func_enter(void *func, void *caller) {

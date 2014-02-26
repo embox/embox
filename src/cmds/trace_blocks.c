@@ -9,12 +9,12 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 
 #include <embox/cmd.h>
-
+#include <debug/symbol.h>
 #include <util/array.h>
 
 #include <profiler/tracing/trace.h>
@@ -29,15 +29,24 @@ static void print_usage(void) {
 
 static void print_instrument_trace_block_stat(void) {
 	struct __trace_block *tb = auto_profile_tb_first();
+	const struct symbol *s;
+	char *buff = (char*) malloc (sizeof(char) * 256);
+	int l;
 
 	printf("Automatic trace points:\n");
 
 	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
 	if (tb) do {
-		if (strlen(tb->name) > 40) {
-			printf("...%37s ", tb->name + strlen(tb->name) - 37);
+		s = symbol_lookup(tb->func);
+		l = strlen(s->name) + strlen(s->loc.file) + 2;
+		strcpy(buff, s->loc.file);
+		strcat(buff, ":");
+		strcat(buff, s->name);
+
+		if (l > 40) {
+			printf("...%37s ", buff + strlen(buff) - 37);
 		} else {
-			printf("%40s ", tb->name);
+			printf("%40s ", buff);
 		}
 		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);

@@ -10,6 +10,7 @@ module no_tracing extends trace {
 }
 
 module tracing extends trace {
+	//@InstrumentProfiling("true")
 	source "trace.c", "trace_impl.h"
 	depends embox.kernel.timer.itimer
 }
