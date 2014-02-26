@@ -130,12 +130,9 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 	struct idesc *idesc;
 
 	assert(t);
+	assert(parent_table);
 
-	idesc_table_init(t);
-
-	if (parent_table == NULL) {
-		return 0;
-	}
+	/* idesc_table_init(t); -- not required (called after idesc_table_init) */
 
 	for (i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (parent_table->idesc_table[i]) {
