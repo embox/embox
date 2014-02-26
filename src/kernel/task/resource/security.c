@@ -11,6 +11,7 @@
 #include <string.h>
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/security.h>
 
 #define MODOPS_SECURITY_SIZE OPTION_GET(NUMBER, security_size)
 
