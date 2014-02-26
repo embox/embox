@@ -1,8 +1,9 @@
-/*
- * chmod.c
+/**
+ * @file
+ * @brief
  *
- *  Created on: Feb 25, 2014
- *      Author: vita
+ * @date 25.02.14
+ * @author Vita Loginova
  */
 
 #include <embox/cmd.h>
@@ -17,52 +18,62 @@
 
 EMBOX_CMD(exec);
 
-static int add(unsigned int mode, unsigned int type, node_t *node) {
+static void add(unsigned int mode, unsigned int type, node_t *node) {
 	node->mode |= mode & type;
-	return 0;
 }
 
-static int sub(unsigned int mode, unsigned int type, node_t *node) {
+static void sub(unsigned int mode, unsigned int type, node_t *node) {
 	node->mode &= ~(mode & type);
-	return 0;
 }
 
-static int assign(unsigned int mode, unsigned int type, node_t *node) {
+static void assign(unsigned int mode, unsigned int type, node_t *node) {
 	node->mode &= ~type;
 	node->mode |= type & mode;
-	return 0;
+}
+
+static void help_invalid_mode(char *mode) {
+	printf ("chmod: invalid mode: '%s'\n"
+			"Try 'chmod --help' for more information.\n", mode);
+}
+
+static void help_cannot_access(char *path, char *error) {
+	printf ("chmod: cannot access '%s': %s\n", path, error);
 }
 
 static int _chmod(char *mode, node_t *node) {
-	unsigned int type = 0, _mode = 0;
-	int (*func)(unsigned int, unsigned int, node_t*);
+	unsigned int mask_type, mask_mode;
+	char *tmp_mode = mode;
+	void (*func)(unsigned int, unsigned int, node_t*);
 
-	while (mode[0] != '=' && mode[0] != '+' && mode[0] != '-') {
-		switch(mode[0]) {
+parse:
+	mask_type = 0;
+	mask_mode = 0;
+
+	while (*tmp_mode != '=' && *tmp_mode != '+' && *tmp_mode != '-') {
+		switch(*(tmp_mode++)) {
 		case 'u':
-			type |= 0700;
+			mask_type |= 0700;
 			break;
 		case 'g':
-			type |= 0070;
+			mask_type |= 0070;
 			break;
 		case 'o':
-			type |= 0007;
+			mask_type |= 0007;
 			break;
 		case 'a':
-			type |= 0777;
+			mask_type |= 0777;
 			break;
 		default:
-			printf("Parse error\n");
+			help_invalid_mode(mode);
 			return 0;
 		}
-		mode++;
 	}
 
-	if (!type) {
-		type |= 0777;
+	if (!mask_type) {
+		mask_type |= 0777;
 	}
 
-	switch(mode[0]) {
+	switch(*(tmp_mode++)) {
 	case '+':
 		func = add;
 		break;
@@ -73,30 +84,32 @@ static int _chmod(char *mode, node_t *node) {
 		func = assign;
 		break;
 	default:
-		printf("Parse error\n");
+		help_invalid_mode(mode);
 		return 0;
 	}
-	mode++;
 
-	while (mode[0] != ',' && mode[0] != '\0') {
-		switch(mode[0]) {
+	while (*tmp_mode != '\0') {
+		switch(*(tmp_mode++)) {
 		case 'r':
-			_mode |= 0444;
+			mask_mode |= 0444;
 			break;
 		case 'w':
-			_mode |= 0222;
+			mask_mode |= 0222;
 			break;
 		case 'x':
-			_mode |= 0111;
+			mask_mode |= 0111;
+			break;
+		case ',':
+			func(mask_mode, mask_type, node);
+			goto parse;
 			break;
 		default:
-			printf("Parse error\n");
+			help_invalid_mode(mode);
 			return 0;
 		}
-		mode++;
 	}
 
-	func(_mode, type, node);
+	func(mask_mode, mask_type, node);
 
 	return 0;
 }
@@ -104,13 +117,25 @@ static int _chmod(char *mode, node_t *node) {
 static int exec(int argc, char **argv) {
 	node_t *node;
 	int res;
+	char* path = argv[2];
+	char* mode = argv[1];
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), argv[2], NULL, &node))) {
-		printf("Lookup fail\n");
+	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+		switch(-res) {
+		case EACCES:
+			help_cannot_access(path, "Permission denied");
+			break;
+		case ENOENT:
+			help_cannot_access(path, "No such file or directory");
+			break;
+		default:
+			help_cannot_access(path, "Unexpected error");
+			break;
+		}
 		return 0;
 	}
 
-	_chmod(argv[1], node);
+	_chmod(mode, node);
 
 	return 0;
 }
