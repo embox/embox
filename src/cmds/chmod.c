@@ -37,7 +37,7 @@ static void assign(unsigned int mode, unsigned int type, node_t *node) {
 
 static void help_invalid_mode(const char *mode) {
 	printf("chmod: invalid mode: '%s'\n"
-			"Try 'chmod --help' for more information.\n", mode);
+			"Try 'chmod -h' for more information.\n", mode);
 }
 
 static void help_cannot_access(const char *path, const char *error) {
@@ -106,6 +106,11 @@ parse:
 			break;
 		case 'x':
 			mask_mode |= 0111;
+			break;
+		case 'X':
+			if (node_is_directory(node)) {
+				mask_mode |= 0111;
+			}
 			break;
 		case ',':
 			func(mask_mode, mask_type, node);
@@ -210,11 +215,14 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "R"))) {
+	while (-1 != (opt = getopt(argc, argv, "Rh"))) {
 		switch (opt) {
 		case 'R':
 			is_recursive = 1;
 			break;
+		case 'h':
+			help();
+			return 0;
 		default:
 			printf("chmod: invalid option -%c\n", optopt);
 			help();
