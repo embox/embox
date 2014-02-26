@@ -3,7 +3,7 @@ package embox.kernel.task.resource
 module affinity {
 	source "affinity.c"
 
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
@@ -12,7 +12,7 @@ module env {
 	option number env_str_len=32
 	source "env.c", "env.h"
 
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.lib.LibCString
 	@NoRuntime depends embox.util.Array
@@ -21,7 +21,7 @@ module env {
 module errno {
 	source "errno.c"
 
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
@@ -29,7 +29,7 @@ module idesc_table {
 	option number idesc_table_size=64
 	source "idesc_table.c", "idesc_table.h"
 
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.kernel.task.idesc
 	@NoRuntime depends embox.lib.LibCAssert
 }
@@ -38,14 +38,14 @@ module sig_table {
 	source "sig_table.c"
 
 	depends embox.kernel.sched.sched
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
 module u_area {
 	source "u_area.c"
 
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
@@ -53,6 +53,6 @@ module waitpid {
 	source "waitpid.c"
 
 	depends embox.kernel.sched.wait_queue
-	depends embox.kernel.task.api
+	depends embox.kernel.task.resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
