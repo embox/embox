@@ -9,7 +9,6 @@
 #ifndef KERNEL_TASK_RESOURCE_ERRNO_H_
 #define KERNEL_TASK_RESOURCE_ERRNO_H_
 
-//#include <kernel/task.h> // FIXME
 #include <sys/cdefs.h>
 
 struct task;

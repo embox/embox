@@ -78,6 +78,8 @@ module AffinityNone extends affinity_api {
 module AffinitySMP extends affinity_api {
 	source "smp_affinity.h"
 	source "smp_affinity.c"
+
+	depends embox.kernel.task.resource.affinity
 }
 
 @DefaultImpl(TimeRunning)

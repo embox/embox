@@ -1,5 +1,12 @@
 package embox.kernel.task.resource
 
+module affinity {
+	source "affinity.c"
+
+	depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
 module env {
 	option number env_per_task=8
 	option number env_str_len=32

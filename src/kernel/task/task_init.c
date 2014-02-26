@@ -44,9 +44,6 @@ struct task * task_init(void *space, size_t size,
 
 	task_thread_key_init(task);
 
-	/* FIXME: This should be only in SMP */
-	task->affinity = TASK_AFFINITY_DEFAULT;
-
 	task->child_err = 0;
 
 	return task;

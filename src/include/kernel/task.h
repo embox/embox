@@ -21,8 +21,6 @@
 
 #define MAX_TASK_NAME_LEN 20
 
-#define TASK_AFFINITY_DEFAULT ((unsigned int)-1)
-
 __BEGIN_DECLS
 
 struct thread;
@@ -39,17 +37,14 @@ struct task {
 	int child_err; /**< child error after child exited TODO ?several children */
 	task_priority_t priority; /**< @brief Task priority */
 
+	/* common */
 	int tid;               /**< task identifier */
 	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct thread *main_thread;
-
-	void   *security;
-	void   *resources;
-
-	int err; /**< @brief Last occurred error code */
+	void *resources;
 	clock_t per_cpu; /**< task times */
 
-	unsigned int affinity;
+	void   *security;
 
 	thread_key_table_t key_table;
 };
@@ -81,18 +76,6 @@ extern int task_set_priority(struct task *task, task_priority_t priority);
 /** get task priority */
 extern task_priority_t task_get_priority(struct task *task);
 
-/* this is for SMP mode */
-static inline void task_set_affinity(struct task *task, unsigned int affinity) {
-
-	assert(task != NULL);
-	task->affinity = affinity;
-}
-
-static inline unsigned int task_get_affinity(struct task *task) {
-
-	assert(task != NULL);
-	return task->affinity;
-}
 
 static inline void *task_self_security(void) {
 
