@@ -5,7 +5,7 @@ abstract module api {
 }
 
 module task_resource {
-	source "task_resource.c"
+	source "task_resource.c", "task_resource.lds.S"
 
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.util.Array
