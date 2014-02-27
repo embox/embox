@@ -297,7 +297,7 @@ extern void usb_request_complete(struct usb_request *req);
 extern int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		void *buf, size_t len);
 
-extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd, void *arg,
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data);
 
@@ -307,7 +307,9 @@ extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 extern void usb_dev_addr_assign(struct usb_dev *dev);
 extern void usb_dev_request_delete(struct usb_dev *dev);
 
-extern int usb_whitelist_check(struct usb_desc_device *desc);
+extern int usb_whitelist_check(struct usb_dev *dev);
+extern void usb_whitelist_accepts(struct usb_dev *dev);
+extern void usb_whitelist_rejects(struct usb_dev *dev);
 
 /* user interface */
 extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);

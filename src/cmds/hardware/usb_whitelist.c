@@ -86,15 +86,12 @@ static int usb_wl_print(int fdwl) {
 	for (i = 0; i < rules_n; i++) {
 		struct usb_whitelist_rule *wl_rule = wl_rules + i;
 		char strpid[5];
-		char strsn[5];
 
 		usb_wl_strfield(strpid, 5, "%x", wl_rule->pid,
 				USB_WHITELIST_PID_ANY);
-		usb_wl_strfield(strsn, 5, "%d", wl_rule->sn,
-				USB_WHITELIST_SN_ANY);
 
 		printf("%4u\t%4x\t%4s\t%4s\n", wl_rule->id, wl_rule->vid,
-				strpid, strsn);
+				strpid, wl_rule->sn);
 	}
 
 	if (rules_n)
@@ -218,26 +215,33 @@ out_file:
 }
 static int usb_wl_rule_parse(char *strrule[], int strn,
 		struct usb_whitelist_rule *wl_rule) {
-	unsigned long vals[3];
-	int i;
+	char *endf;
 
 	if (strn <= 0 || strn > 3) {
 		return -EINVAL;
 	}
 
-	memset(vals, 0xff, sizeof(vals));
+	wl_rule->vid = wl_rule->pid = ~0;
+	strcpy(wl_rule->sn, USB_WHITELIST_SN_ANY);
 
-	for (i = 0; i < strn; i++) {
-		char *endf;
-		vals[i] = strtol(strrule[i], &endf, 0);
-		if (*endf) {
-			return -EINVAL;
-		}
+	wl_rule->vid = strtol(strrule[0], &endf, 0);
+	if (*endf) {
+		return -EINVAL;
 	}
 
-	wl_rule->vid = vals[0];
-	wl_rule->pid = vals[1];
-	wl_rule->sn  = vals[2];
+	if (!--strn) {
+		return 0;
+	}
+	wl_rule->pid = strtol(strrule[1], &endf, 0);
+	if (*endf) {
+		return -EINVAL;
+	}
+
+	if (!--strn) {
+		return 0;
+	}
+	strncpy(wl_rule->sn, strrule[2], USB_WHITELIST_SN_LEN - 1);
+	wl_rule->sn[USB_WHITELIST_SN_LEN - 1] = '\0';
 
 	return 0;
 }
