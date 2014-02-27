@@ -141,3 +141,28 @@ diff -aur qt-everywhere-opensource-src-4.8.5/src/corelib/global/qglobal.cpp sour
  #  include <exception>
  #endif
  
+diff -ur qt-everywhere-opensource-src-4.8.5/configure source/configure
+--- qt-everywhere-opensource-src-4.8.5/configure	2013-06-07 09:16:41.000000000 +0400
++++ source/configure	2014-02-11 15:51:29.091716445 +0400
+@@ -6799,6 +6799,7 @@
+ fi
+ 
+ if [ "$CFG_STL" != "no" ]; then
++    HAVE_STL=yes
+     if [ "$HAVE_STL" = "yes" ]; then
+         CFG_STL=yes
+     else
+
+diff -ur qt-everywhere-opensource-src-4.8.5/src/corelib/io/qprocess.cpp source/src/corelib/io/qprocess.cpp 
+--- qt-everywhere-opensource-src-4.8.5/src/corelib/io/qprocess.cpp	2013-06-07 09:16:52.000000000 +0400
++++ source/src/corelib/io/qprocess.cpp	2014-02-24 17:09:05.033428004 +0400
+@@ -2263,7 +2263,8 @@
+   static char *qt_empty_environ[] = { 0 };
+ #define environ qt_empty_environ
+ #elif !defined(Q_OS_WIN)
+-  extern char **environ;
++    //extern char **environ;
++	#include <unistd.h> // XXX environ
+ #endif
+ QT_END_INCLUDE_NAMESPACE
+

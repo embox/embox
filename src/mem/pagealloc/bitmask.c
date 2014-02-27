@@ -114,7 +114,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	pages = len / page_size;
 	pages_start = (char *) binalign_bound((uintptr_t) start, page_size);
 
-	bitmask_len = BITMAP_SIZE(pages + 1); /* one for guardbit */
+	bitmask_len = sizeof(unsigned long) * BITMAP_SIZE(pages + 1); /* one for guardbit */
 
 	while (sizeof(struct page_allocator) + bitmask_len > pages_start - start) {
 		pages_start += page_size;

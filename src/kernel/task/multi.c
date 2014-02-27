@@ -152,7 +152,11 @@ out_unlock:
 }
 
 struct task *task_self(void) {
-	return thread_self()->task;
+	struct thread *th = thread_self();
+
+	assert(th);
+
+	return th->task;
 }
 
 int task_notify_switch(struct thread *prev, struct thread *next) {

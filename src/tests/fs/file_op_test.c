@@ -39,22 +39,23 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_TYPE			12
 #define FS_BLOCKS		124
 #define MKDIR_PERM		0700
-#define FS_DIR			"/tmp/file_op_test"
-#define FS_FILE1		"/tmp/file_op_test/1/2/3/1.txt"
-#define FS_FILE2		"/tmp/file_op_test/1/2/3/2.txt"
-#define FS_DIR3			"/tmp/file_op_test/1/2/3"
-#define FS_DIR2			"/tmp/file_op_test/1/2"
-#define FS_DIR1			"/tmp/file_op_test/1"
+#define FS_DIR			"/tmp"
+#define FS_DIR			"/tmp"
+#define FS_FILE1		"/tmp/1/2/3/1.txt"
+#define FS_FILE2		"/tmp/1/2/3/2.txt"
+#define FS_DIR3			"/tmp/1/2/3"
+#define FS_DIR2			"/tmp/1/2"
+#define FS_DIR1			"/tmp/1"
 #define FS_TESTDATA		"qwerty\n"
-#define FS_DTR			"/tmp/file_op_test/dtr"
-#define FS_MV_SUB		"/tmp/file_op_test/dtr/sub"
-#define FS_MV_SUB_F1	"/tmp/file_op_test/dtr/sub/file1"
-#define FS_MV_F1		"/tmp/file_op_test/dtr/file1"
-#define FS_MV_F2		"/tmp/file_op_test/dtr/sub/file2"
+#define FS_DTR			"/tmp/dtr"
+#define FS_MV_SUB		"/tmp/dtr/sub"
+#define FS_MV_SUB_F1	"/tmp/dtr/sub/file1"
+#define FS_MV_F1		"/tmp/dtr/file1"
+#define FS_MV_F2		"/tmp/dtr/sub/file2"
 #define FS_MV_F2_NAME	"file2"
-#define FS_MV_F3		"/tmp/file_op_test/dtr/sub/file3"
+#define FS_MV_F3		"/tmp/dtr/sub/file3"
 #define FS_MV_F3_NAME	"file3"
-#define FS_MV_RENAMED	"/tmp/file_op_test/renamed"
+#define FS_MV_RENAMED	"/tmp/renamed"
 #define FS_TESTDATA		"qwerty\n"
 #define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
@@ -62,7 +63,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnam"
-#define FS_FLOCK		"/tmp/file_op_test/flock"
+#define FS_FLOCK		"/tmp/flock"
 
 static struct thread *fftt, *sftt;
 
@@ -71,7 +72,6 @@ static void *first_flock_test_thread(void *arg);
 static void *second_flock_test_thread(void *arg);
 
 TEST_CASE("generic file test") {
-
 
 	/* Write file */
 	{
@@ -188,25 +188,18 @@ TEST_CASE("generic file test") {
 	/* Move file */
 	{
 		/* This should be improved to not use hard-coded paths */
-		char *cmd_recursive_err =
-				"mv /tmp/file_op_test/dtr /tmp/file_op_test/tmpdtr";
-		char *cmd_force_err =
-				"mv /tmp/file_op_test/dtr/file1 /tmp/file_op_test/dtr/sub/file2";
+		char *cmd_recursive_err = "mv /tmp/dtr /tmp/tmpdtr";
+		char *cmd_force_err = "mv /tmp/dtr/file1 /tmp/dtr/sub/file2";
 		char *cmd_multi_err =
-				"mv /tmp/file_op_test/dtr/file1 /tmp/file_op_test/dtr/sub/file2 /tmp/file_op_test/file";
+					"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp/file";
 
-		char *cmd_simple =
-				"mv /tmp/file_op_test/dtr/file1 /tmp/file_op_test/dtr/sub/tmpfile";
-		char *cmd_simple_back =
-				"mv /tmp/file_op_test/dtr/sub/tmpfile /tmp/file_op_test/dtr/file1";
-		char *cmd_recursive =
-				"mv -r /tmp/file_op_test/dtr /tmp/file_op_test/tmpdtr";
-		char *cmd_recursive_back =
-				"mv -r /tmp/file_op_test/tmpdtr /tmp/file_op_test/dtr";
+		char *cmd_simple = "mv /tmp/dtr/file1 /tmp/dtr/sub/tmpfile";
+		char *cmd_simple_back = "mv /tmp/dtr/sub/tmpfile /tmp/dtr/file1";
+		char *cmd_recursive = "mv -r /tmp/dtr /tmp/tmpdtr";
+		char *cmd_recursive_back =  "mv -r /tmp/tmpdtr /tmp/dtr";
 		char *cmd_multi =
-				"mv /tmp/file_op_test/dtr/file1 /tmp/file_op_test/dtr/sub/file2 /tmp/file_op_test";
-		char *cmd_force =
-				"mv -f /tmp/file_op_test/file1 /tmp/file_op_test/file2";
+				"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp";
+		char *cmd_force = "mv -f /tmp/file1 /tmp/file2";
 
 		/* Prepare directories and files for tests */
 		test_assert_zero(mkdir(FS_DTR, MKDIR_PERM));
@@ -278,6 +271,7 @@ TEST_CASE("generic file test") {
 		/* Test cleanup */
 		test_assert_zero(remove(FS_FLOCK));
 	}
+
 }
 
 /* Exec shell command and return it's exit code */
@@ -356,10 +350,6 @@ static void *second_flock_test_thread(void *arg) {
 static int setup_suite(void) {
 	int fd, res;
 
-	if (0 != (res = mkdir(FS_DIR, 0777))) {
-		return res;
-	}
-
 	if (0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
 		return res;
 	}
@@ -396,7 +386,6 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
-	int res;
 
 	if (remove(FS_FILE1) ||	remove(FS_FILE2) ||
 		remove(FS_DIR3)  ||	remove(FS_DIR2)  ||
@@ -405,9 +394,6 @@ static int teardown_suite(void) {
 	}
 	if (umount(FS_DIR) || ramdisk_delete(FS_DEV)) {
 		return -1;
-	}
-	if(0 != (res = remove(FS_DIR))){
-		return res;
 	}
 	return 0;
 }

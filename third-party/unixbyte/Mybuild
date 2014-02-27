@@ -1,0 +1,14 @@
+package third_party.unixbyte
+
+@Cmd(name = "byte_pipe",
+	help = "Pipe testing",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@Build(script="$(EXTERNAL_MAKE)")
+module byte_pipe {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/third_party")
+	source "strip.byte_pipe.o"
+}

@@ -51,6 +51,8 @@ int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 
 static inline
 int alphasort(const struct dirent **a, const struct dirent **b) {
+	(void)a;
+	(void)b;
 	DPRINT();
 	return 0;
 }
@@ -58,6 +60,10 @@ static inline
 int scandir(const char *dirp, struct dirent ***namelist,
               int (*filter)(const struct dirent *),
               int (*compar)(const struct dirent **, const struct dirent **)) {
+	(void)dirp;
+	(void)namelist;
+	(void)filter;
+	(void)compar;
 	DPRINT();
 	errno = ENOMEM;
 	return -1;
@@ -68,6 +74,9 @@ int scandir(const char *dirp, struct dirent ***namelist,
 #define F_ULOCK 2
 static inline
 int lockf(int fd, int cmd, off_t len) {
+	(void)fd;
+	(void)cmd;
+	(void)len;
 	DPRINT();
 	errno = ENOLCK;
 	return -1;
@@ -75,7 +84,7 @@ int lockf(int fd, int cmd, off_t len) {
 
 #define MAP_SHARED    0x00
 //#define MAP_PRIVATE   0x01
-//#define PROT_READ     0x10
+#define PROT_READ     0x10
 #define PROT_WRITE    0x20
 #define MAP_FAILED    ((void*)(-1))
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
@@ -110,6 +119,10 @@ int msync(void *addr, size_t length, int flags) {
 
 static inline
 int socketpair(int domain, int type, int protocol, int sv[2]) {
+	(void)domain;
+	(void)type;
+	(void)protocol;
+	(void)sv;
 	DPRINT();
 	errno = -EPROTONOSUPPORT;
 	return -1;
@@ -127,6 +140,9 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
 
 static inline
 char *strerror_r(int errnum, char *buf, size_t buflen) {
+	(void)errnum;
+	(void)buf;
+	(void)buflen;
 	DPRINT();
 	return strerror(errnum);
 }
@@ -146,6 +162,9 @@ typedef unsigned int uint;
 
 static inline
 int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	(void)how;
+	(void)set;
+	(void)oldset;
 	DPRINT();
 	return 0;
 }

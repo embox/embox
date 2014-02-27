@@ -68,9 +68,9 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
  * +7. Remove seq_next (use rem.seq instead, build packet, and then rebuild only)
  * +8. Add lock/unlock
  * +9. Add rexmit
- * +-10. Add window
- * 11. Add options
- * +-12. Add timeout (i.e. sockopts) to tcp_sock.c
+ * +10. Add window
+ * +11. Add options
+ * +12. Add timeout (i.e. sockopts) to tcp_sock.c
  */
 
 
