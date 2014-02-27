@@ -16,12 +16,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <shadow.h>
+#include <pwd_db.h>
 
 #define BUF_LEN 64
-
-#define PASSWD_FILE "/tmp/passwd"
-#define SHADOW_FILE "/tmp/shadow"
-#define ADDUSER_FILE "/tmp/adduser.conf"
 
 static void put_string(char *data, FILE *fd, char delim) {
 	fwrite(data, sizeof(char), strlen(data), fd);
@@ -45,13 +42,13 @@ static int is_user_exists(char *name) {
 
 static int get_group(char *group) {
 	struct group _group, *_group_res;
-	char buf[80];
+	char buf[BUF_LEN];
 	int res = 0;
 
 	if (isdigit(group[0])) {
-		res = getgrgid_r(atoi(group), &_group, buf, 80, &_group_res);
+		res = getgrgid_r(atoi(group), &_group, buf, BUF_LEN, &_group_res);
 	} else {
-		res = getgrnam_r(group, &_group, buf, 80, &_group_res);
+		res = getgrnam_r(group, &_group, buf, BUF_LEN, &_group_res);
 	}
 	return !res && _group_res != NULL ? _group_res->gr_gid : -1;
 }
