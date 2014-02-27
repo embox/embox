@@ -15,6 +15,8 @@
 #include <util/location.h>
 #include <util/hashtable.h>
 
+#include <mem/misc/pool.h>
+
 #include <debug/symbol.h>
 
 #include <kernel/time/clock_source.h>
@@ -31,6 +33,10 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_point *,
 		__trace_points_array, NULL);
 ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 		__trace_blocks_array, NULL);
+
+POOL_DEF(tb_pool, struct __trace_block, FUNC_QUANTITY);
+POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
+POOL_DEF(key_pool, int, FUNC_QUANTITY);
 
 static struct hashtable *tbhash = NULL;
 static char **prev_key = NULL;
@@ -119,7 +125,7 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void trace_block_func_enter(void *func) {
 	struct __trace_block *tb = NULL;
-	int *key = (int*) malloc (sizeof(int));
+	int *key = (int*) pool_alloc (&key_pool);
 
 	if (!tbhash) { /* Table is not initialized */
 		return;
@@ -135,15 +141,17 @@ void trace_block_func_enter(void *func) {
 		 * for example, in "trace_blocks -n" shell command.
 		 */
 
-		tb = (struct __trace_block*) malloc (sizeof(struct __trace_block));
+		tb = (struct __trace_block*) pool_alloc (&tb_pool);
 
 		tb->func = func;
-		tb->tc = (struct itimer *) malloc (sizeof(struct itimer)),
+		tb->tc = (struct itimer *) pool_alloc (&itimer_pool);
 		tb->time = 0;
 		tb->count = 0;
 		tb->active = true;
 		tb->is_entered = false;
 		hashtable_put(tbhash, key, tb);
+	} else {
+		pool_free(&key_pool, key);
 	}
 	trace_block_enter(tb);
 }

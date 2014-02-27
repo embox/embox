@@ -21,6 +21,8 @@
 //#include <kernel/time/timecounter.h>
 #include <kernel/time/itimer.h>
 
+#define FUNC_QUANTITY 0xFFFF
+
 struct __trace_point {
 	const char *name;
 	struct location_func location;
