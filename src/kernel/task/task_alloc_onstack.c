@@ -4,6 +4,7 @@
  * @date Nov 12, 2013
  * @author: Anton Bondarev
  */
+
 #include <stddef.h>
 #include <kernel/task.h>
 #include <kernel/thread/thread_stack.h>
