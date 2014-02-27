@@ -25,18 +25,24 @@ struct task_resource_desc {
 
 typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
 
-#define TASK_RESOURCE_DESC(res) \
-	static const struct task_resource_desc res; \
+#define TASK_RESOURCE_DEF(desc, type) \
+	static typeof(type) __kernel_task_resource_storage \
+			__attribute__((aligned(sizeof(void *)), \
+						section(".bss..reserve.ktask.resource"), \
+						unused)); \
+	static const struct task_resource_desc desc; \
 	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *, \
 			task_resource_desc_array); \
-	ARRAY_SPREAD_ADD(task_resource_desc_array, &res)
+	ARRAY_SPREAD_ADD(task_resource_desc_array, &desc)
+
+extern char _ktask_resource_start, _ktask_resource_end;
+#define TASK_RESOURCE_SIZE \
+	((size_t)(&_ktask_resource_end - &_ktask_resource_start))
 
 #define TASK_RESOURCE_NOTIFY(fn) \
 	ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd, \
 			task_notifing_resource); \
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
-
-extern size_t task_resource_size(void);
 
 extern void task_resource_init(const struct task *task,
 		void *resource_space);

@@ -13,7 +13,7 @@
 #include <kernel/sched/waitq.h>
 #include <stddef.h>
 
-TASK_RESOURCE_DESC(task_waitpid_res);
+TASK_RESOURCE_DEF(task_waitpid_desc, struct waitq);
 
 static void task_waitpid_init(const struct task *task,
 		void *waitpid_space) {
@@ -36,17 +36,17 @@ static void task_waitpid_deinit(const struct task *task) {
 	waitq_wakeup_all(waitq);
 }
 
-static size_t task_waitpid_res_offset;
+static size_t task_waitpid_offset;
 
-static const struct task_resource_desc task_waitpid_res = {
+static const struct task_resource_desc task_waitpid_desc = {
 	.init = task_waitpid_init,
 	.deinit = task_waitpid_deinit,
 	.resource_size = sizeof(struct waitq),
-	.resource_offset = &task_waitpid_res_offset
+	.resource_offset = &task_waitpid_offset
 };
 
 struct waitq * task_resource_waitpid(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_waitpid_res_offset;
+	return task->resources + task_waitpid_offset;
 }

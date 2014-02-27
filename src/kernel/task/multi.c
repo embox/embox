@@ -56,7 +56,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
-	const int task_sz = sizeof *self_task + task_resource_size();
+	const int task_sz = sizeof *self_task + TASK_RESOURCE_SIZE;
 	struct task tmp_task;
 	void *addr;
 

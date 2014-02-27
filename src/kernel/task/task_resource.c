@@ -18,21 +18,18 @@ EMBOX_UNIT_INIT(task_resource_module_init);
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
-static size_t resource_sum_size;
-
-size_t task_resource_size(void) {
-	return resource_sum_size;
-}
-
 void task_resource_init(const struct task *task,
 		void *resource_space) {
 	const struct task_resource_desc *res_desc;
 
 	task_resource_foreach(res_desc) {
+		assert(res_desc->resource_offset != NULL);
+		assert(binalign_check_bound(
+					*res_desc->resource_offset, sizeof(void *)));
 		if (res_desc->init != NULL) {
-			res_desc->init(task, resource_space);
+			res_desc->init(task,
+					resource_space + *res_desc->resource_offset);
 		}
-		resource_space += res_desc->resource_size;
 	}
 }
 
@@ -74,15 +71,22 @@ void task_resource_deinit(const struct task *task) {
 }
 
 static int task_resource_module_init(void) {
+	size_t resource_offset;
 	const struct task_resource_desc *res_desc;
 
-	resource_sum_size = 0;
+	resource_offset = 0;
 	task_resource_foreach(res_desc) {
 		assert(res_desc->resource_offset != NULL);
-		*res_desc->resource_offset = resource_sum_size;
+		*res_desc->resource_offset = resource_offset;
 
-		resource_sum_size += res_desc->resource_size;
+		assert(resource_offset + res_desc->resource_size
+				<= TASK_RESOURCE_SIZE);
+		resource_offset += binalign_bound(
+				res_desc->resource_size, sizeof(void *));
 	}
+
+	assert(resource_offset == binalign_bound(
+				TASK_RESOURCE_SIZE, sizeof(void *)));
 
 	return 0;
 }

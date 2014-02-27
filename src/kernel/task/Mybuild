@@ -5,7 +5,6 @@ abstract module api {
 }
 
 module task_resource {
-	option number task_resource_max_size=0x800
 	source "task_resource.c"
 
 	@NoRuntime depends embox.lib.LibCAssert

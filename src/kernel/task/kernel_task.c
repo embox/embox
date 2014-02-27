@@ -9,20 +9,16 @@
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <kernel/task.h>
-#include <module/embox/kernel/task/task_resource.h>
+#include <kernel/task/resource.h>
 #include <string.h>
 #include <util/dlist.h>
-
-#define MODOPS_TASK_RESOURCE_MAX_SIZE \
-	OPTION_MODULE_GET(embox__kernel__task__task_resource, \
-			NUMBER, task_resource_max_size)
 
 EMBOX_UNIT_INIT(kernel_task_init);
 
 static struct {
 	struct task task;
-	char __resource_storage[MODOPS_TASK_RESOURCE_MAX_SIZE];
-} kernel_task;
+	char __resource_storage[];
+} kernel_task __attribute__((section(".bss..reserve.ktask")));
 
 struct task * task_kernel_task(void) {
 	return &kernel_task.task;
@@ -31,7 +27,8 @@ struct task * task_kernel_task(void) {
 static int kernel_task_init(void) {
 	struct task *task;
 
-	task = task_init(task_kernel_task(), sizeof kernel_task,
+	task = task_init(task_kernel_task(),
+			sizeof *task + TASK_RESOURCE_SIZE,
 			"kernel");
 	if (task == NULL) {
 		return -ENOMEM;

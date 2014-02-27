@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 
-TASK_RESOURCE_DESC(task_sig_table_res);
+TASK_RESOURCE_DEF(task_sig_table_desc, struct sigaction [_SIG_TOTAL]);
 
 static void task_sig_handler_terminate(int sig) {
 	task_exit(NULL);
@@ -41,16 +41,16 @@ static void task_sig_table_init(const struct task *task,
 	}
 }
 
-static size_t task_sig_table_res_offset;
+static size_t task_sig_table_offset;
 
-static const struct task_resource_desc task_sig_table_res = {
+static const struct task_resource_desc task_sig_table_desc = {
 	.init = task_sig_table_init,
 	.resource_size = sizeof(struct sigaction) * _SIG_TOTAL,
-	.resource_offset = &task_sig_table_res_offset
+	.resource_offset = &task_sig_table_offset
 };
 
 struct sigaction * task_resource_sig_table(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_sig_table_res_offset;
+	return task->resources + task_sig_table_offset;
 }

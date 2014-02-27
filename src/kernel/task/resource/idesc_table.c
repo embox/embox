@@ -14,7 +14,7 @@
 
 #include "idesc_table.h"
 
-TASK_RESOURCE_DESC(task_idesc_table_res);
+TASK_RESOURCE_DEF(task_idesc_table_desc, struct idesc_table);
 
 static void task_idesc_table_init(const struct task *task,
 		void *idesc_table_space) {
@@ -48,18 +48,18 @@ static void task_idesc_table_deinit(const struct task *task) {
 	idesc_table_finit(it);
 }
 
-static size_t task_idesc_table_res_offset;
+static size_t task_idesc_table_offset;
 
-static const struct task_resource_desc task_idesc_table_res = {
+static const struct task_resource_desc task_idesc_table_desc = {
 	.init = task_idesc_table_init,
 	.inherit = task_idesc_table_inherit,
 	.deinit = task_idesc_table_deinit,
 	.resource_size = sizeof(struct idesc_table),
-	.resource_offset = &task_idesc_table_res_offset
+	.resource_offset = &task_idesc_table_offset
 };
 
 struct idesc_table * task_resource_idesc_table(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_idesc_table_res_offset;
+	return task->resources + task_idesc_table_offset;
 }

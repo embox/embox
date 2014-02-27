@@ -12,9 +12,9 @@
 #include <kernel/task/resource/affinity.h>
 #include <stddef.h>
 
-TASK_RESOURCE_DESC(task_affinity_res);
+TASK_RESOURCE_DEF(task_affinity_desc, unsigned int);
 
-static size_t task_affinity_res_offset;
+static size_t task_affinity_offset;
 
 static void task_affinity_init(const struct task *task,
 		void *affinity_space) {
@@ -28,14 +28,14 @@ static void task_affinity_init(const struct task *task,
 	*affinity = TASK_AFFINITY_DEFAULT;
 }
 
-static const struct task_resource_desc task_affinity_res = {
+static const struct task_resource_desc task_affinity_desc = {
 	.init = task_affinity_init,
 	.resource_size = sizeof(unsigned int),
-	.resource_offset = &task_affinity_res_offset
+	.resource_offset = &task_affinity_offset
 };
 
 unsigned int * task_resource_affinity(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_affinity_res_offset;
+	return task->resources + task_affinity_offset;
 }

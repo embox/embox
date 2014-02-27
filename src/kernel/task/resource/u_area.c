@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <string.h>
 
-TASK_RESOURCE_DESC(task_u_area_res);
+TASK_RESOURCE_DEF(task_u_area_desc, struct task_u_area);
 
 static void task_u_area_init(const struct task *task,
 		void *u_area_space) {
@@ -42,17 +42,17 @@ static int task_u_area_inherit(const struct task *task,
 	return 0;
 }
 
-static size_t task_u_area_res_offset;
+static size_t task_u_area_offset;
 
-static const struct task_resource_desc task_u_area_res = {
+static const struct task_resource_desc task_u_area_desc = {
 	.init = task_u_area_init,
 	.inherit = task_u_area_inherit,
 	.resource_size = sizeof(struct task_u_area),
-	.resource_offset = &task_u_area_res_offset
+	.resource_offset = &task_u_area_offset
 };
 
 struct task_u_area * task_resource_u_area(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_u_area_res_offset;
+	return task->resources + task_u_area_offset;
 }

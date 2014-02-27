@@ -20,7 +20,7 @@ struct task * task_init(void *space, size_t size,
 
 	task = (struct task *)binalign_bound((uintptr_t)space, 4);
 	task_off = (void *)task - space;
-	task_sz = sizeof *task + task_resource_size();
+	task_sz = sizeof *task + TASK_RESOURCE_SIZE;
 
 	if (size < task_off + task_sz) {
 		return NULL;

@@ -15,7 +15,7 @@
 
 #define MODOPS_SECURITY_SIZE OPTION_GET(NUMBER, security_size)
 
-TASK_RESOURCE_DESC(task_security_res);
+TASK_RESOURCE_DEF(task_security_desc, char [MODOPS_SECURITY_SIZE]);
 
 static void task_security_init(const struct task *task,
 		void *security_space) {
@@ -44,17 +44,17 @@ static int task_security_inherit(const struct task *task,
 	return 0;
 }
 
-static size_t task_security_res_offset;
+static size_t task_security_offset;
 
-static const struct task_resource_desc task_security_res = {
+static const struct task_resource_desc task_security_desc = {
 	.init = task_security_init,
 	.inherit = task_security_inherit,
 	.resource_size = MODOPS_SECURITY_SIZE,
-	.resource_offset = &task_security_res_offset
+	.resource_offset = &task_security_offset
 };
 
 void * task_resource_security(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_security_res_offset;
+	return task->resources + task_security_offset;
 }

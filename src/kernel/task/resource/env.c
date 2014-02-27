@@ -15,7 +15,7 @@
 
 #include "env.h"
 
-TASK_RESOURCE_DESC(task_env_res);
+TASK_RESOURCE_DEF(task_env_desc, struct task_env);
 
 static void task_env_init(const struct task *task, void *env_space) {
 	struct task_env *env;
@@ -51,17 +51,17 @@ static int task_env_inherit(const struct task *task,
 	return 0;
 }
 
-static size_t task_env_res_offset;
+static size_t task_env_offset;
 
-static const struct task_resource_desc task_env_res = {
+static const struct task_resource_desc task_env_desc = {
 	.init = task_env_init,
 	.inherit = task_env_inherit,
 	.resource_size = sizeof(struct task_env),
-	.resource_offset = &task_env_res_offset
+	.resource_offset = &task_env_offset
 };
 
 struct task_env * task_resource_env(const struct task *task) {
 	assert(task != NULL);
 	assert(task->resources != NULL);
-	return task->resources + task_env_res_offset;
+	return task->resources + task_env_offset;
 }
