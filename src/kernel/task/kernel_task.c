@@ -23,17 +23,17 @@ struct task * task_kernel_task(void) {
 }
 
 static int kernel_task_init(void) {
-	struct task *task;
+	struct task *tsk;
 
-	task = task_init(task_kernel_task(),
-			sizeof *task + TASK_RESOURCE_SIZE,
+	tsk = task_init(task_kernel_task(),
+			sizeof *tsk + TASK_RESOURCE_SIZE,
 			"kernel");
-	if (task == NULL) {
+	if (tsk == NULL) {
 		return -ENOMEM;
 	}
-	assert(task == task_kernel_task());
+	assert(tsk == task_kernel_task());
 
-	dlist_init(&task->task_link); /* it's out list handler */
+	dlist_init(&tsk->task_link); /* it's out list handler */
 
 	return 0;
 }

@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-#include <errno.h>
 #include <kernel/thread.h>
 #include <kernel/thread/thread_stack.h>
 #include <stddef.h>
@@ -35,6 +34,7 @@ void thread_stack_set_size(struct thread *t, size_t size) {
 }
 #endif
 
+#if 0
 int thread_stack_reserve(struct thread *t, size_t size) {
 	if (size > t->stack.stack_sz) {
 		return -ENOMEM;
@@ -44,4 +44,19 @@ int thread_stack_reserve(struct thread *t, size_t size) {
 	t->stack.stack_sz -= size;
 
 	return 0;
+}
+#endif
+
+void * thread_stack_alloc(struct thread *t, size_t size) {
+	void *space;
+
+	if (size > t->stack.stack_sz) {
+		return NULL;
+	}
+
+	space = t->stack.stack;
+	t->stack.stack += size;
+	t->stack.stack_sz -= size;
+
+	return space;
 }

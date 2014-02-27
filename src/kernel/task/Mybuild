@@ -62,13 +62,11 @@ module MultiThread extends task_thread_api {
 
 module kernel_task {
 	source "kernel_task.c"
-	source "task_alloc_onstack.c"
 
 	depends task_init
 	depends task_resource
 	depends task_thread_api
 	depends embox.util.DList
-
 }
 
 @DefaultImpl(task_thread_key)

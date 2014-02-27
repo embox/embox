@@ -49,15 +49,12 @@ POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 static void *task_trampoline(void *arg);
 static int task_init_parent(struct task *task, struct task *parent);
 
-extern struct task *task_alloc(struct task *task, size_t task_size);
-
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
 	const int task_sz = sizeof *self_task + TASK_RESOURCE_SIZE;
-	struct task tmp_task;
 	void *addr;
 
 	sched_lock();
@@ -85,11 +82,14 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_poolfree;
 		}
 
+		addr = thread_stack_alloc(thd, task_sz);
+		if (addr == NULL) {
+			res = -ENOMEM;
+			goto out_threadfree;
+		}
 
-		tmp_task.main_thread = thd;
-		addr = task_alloc(&tmp_task, task_sz);
-
-		if ((self_task = task_init(addr, task_sz, name)) == NULL) {
+		self_task = task_init(addr, task_sz, name);
+		if (self_task == NULL) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
