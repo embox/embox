@@ -16,11 +16,14 @@ module filesystem {
 module file_desc {
 	source "file_desc.c"
 	source "file_xattr.c"
+	depends xattr
+	depends idesc
+	option number fdesc_quantity=32
+}
+
+module idesc {
 	source "idesc.c"
 	source "idesc_event.c"
-	depends xattr
-	option number idesc_event_quantity = 256
-	option number fdesc_quantity=32
 }
 
 @DefaultImpl(NoFileSystem)
