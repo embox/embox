@@ -79,6 +79,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				task_trampoline, param);
 		if (0 != err(thd)) {
+			res = err(thd);
 			goto out_poolfree;
 		}
 
