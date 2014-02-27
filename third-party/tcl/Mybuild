@@ -20,5 +20,10 @@ module tclsh {
 	@AddPrefix("^BUILD/extbld/third_party/tcl/core/src/tcl-build")
 	source "strip.tclsh.o"
 
+	@InitFS
+	@AddPrefix("../../build/extbld/third_party/tcl/core/src/tcl/library")
+	source "init.tcl",
+		"history.tcl"
+
 	@NoRuntime depends third_party.tcl.core
 }

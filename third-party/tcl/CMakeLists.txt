@@ -12,9 +12,8 @@ ExternalProject_Add(
 
    UPDATE_COMMAND ""
 
-   #PATCH_COMMAND
-   #   cd $ENV{EMBOX_ROOT}/third-party/tcl/tree
-   #   && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/tcl/patch.txt
+   PATCH_COMMAND
+      patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/tcl/patch.txt
 
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND
