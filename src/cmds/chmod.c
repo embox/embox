@@ -22,15 +22,22 @@
 
 EMBOX_CMD(exec);
 
-static void add(unsigned int mode, unsigned int type, node_t *node) {
+struct mode {
+	mode_t type;
+	mode_t mask;
+	mode_t dir_mask;
+	void (*func)(mode_t, mode_t, node_t*);
+};
+
+static void add(mode_t mode, mode_t type, node_t *node) {
 	node->mode |= mode & type;
 }
 
-static void sub(unsigned int mode, unsigned int type, node_t *node) {
+static void sub(mode_t mode, mode_t type, node_t *node) {
 	node->mode &= ~(mode & type);
 }
 
-static void assign(unsigned int mode, unsigned int type, node_t *node) {
+static void assign(mode_t mode, mode_t type, node_t *node) {
 	node->mode &= ~type;
 	node->mode |= mode & type;
 }
@@ -48,83 +55,84 @@ static void help(void) {
 	printf("Usage: chmod [OPTION]... MODE[,MODE]... FILE...\n");
 }
 
-static int __change_mode(char *mode, node_t *node) {
-	unsigned int mask_type, mask_mode;
+static int parse_mode(char *mode, struct mode *modes, int size) {
 	char *tmp_mode = mode;
-	void (*func)(unsigned int, unsigned int, node_t*);
+	int count = 0;
 
 parse:
-	mask_type = 0;
-	mask_mode = 0;
+	if (count >= size) {
+		printf("chmod: too many modes: %s\n", mode);
+		return -1;
+	}
+
+	modes[count].type = 0;
+	modes[count].mask = 0;
+	modes[count].dir_mask = 0;
+	modes[count].func = NULL;
 
 	while (*tmp_mode != '=' && *tmp_mode != '+' && *tmp_mode != '-') {
 		switch(*(tmp_mode++)) {
 		case 'u':
-			mask_type |= 0700;
+			modes[count].type |= 0700;
 			break;
 		case 'g':
-			mask_type |= 0070;
+			modes[count].type |= 0070;
 			break;
 		case 'o':
-			mask_type |= 0007;
+			modes[count].type |= 0007;
 			break;
 		case 'a':
-			mask_type |= 0777;
+			modes[count].type |= 0777;
 			break;
 		default:
 			help_invalid_mode(mode);
-			return 0;
+			return -1;
 		}
 	}
 
-	if (!mask_type) {
-		mask_type |= 0777;
+	if (!modes[count].type) {
+		modes[count].type |= 0777;
 	}
 
 	switch(*(tmp_mode++)) {
 	case '+':
-		func = add;
+		modes[count].func = add;
 		break;
 	case '-':
-		func = sub;
+		modes[count].func = sub;
 		break;
 	case '=':
-		func = assign;
+		modes[count].func = assign;
 		break;
 	default:
 		help_invalid_mode(mode);
-		return 0;
+		return -1;
 	}
 
 	while (*tmp_mode != '\0') {
 		switch(*(tmp_mode++)) {
 		case 'r':
-			mask_mode |= 0444;
+			modes[count].mask |= 0444;
 			break;
 		case 'w':
-			mask_mode |= 0222;
+			modes[count].mask |= 0222;
 			break;
 		case 'x':
-			mask_mode |= 0111;
+			modes[count].mask |= 0111;
 			break;
 		case 'X':
-			if (node_is_directory(node)) {
-				mask_mode |= 0111;
-			}
+			modes[count].dir_mask |= 0111;
 			break;
 		case ',':
-			func(mask_mode, mask_type, node);
+			count++;
 			goto parse;
-			break;
 		default:
 			help_invalid_mode(mode);
-			return 0;
+			return -1;
 		}
 	}
 
-	func(mask_mode, mask_type, node);
-
-	return 0;
+	return count + 1;
 }
 
 static int find(struct node *root, const char *path, struct node **nodelast) {
@@ -148,15 +156,18 @@ static int find(struct node *root, const char *path, struct node **nodelast) {
 	return 0;
 }
 
-static int change_mode(node_t *node, char *mode, int is_recursive);
+static int change_mode(node_t *node, int is_recursive,
+		struct mode *modes, int count);
 
-static int change_mode_recurse(struct tree_link *node, char *mode, int is_recursive) {
+static int change_mode_recursive(struct tree_link *node, int is_recursive,
+		struct mode *modes, int count) {
 	struct tree_link *link;
 
 	assert(node);
 
 	list_foreach(link, &node->children, list_link) {
-		change_mode(tree_element(link, node_t, tree_link), mode, is_recursive);
+		change_mode(tree_element(link, node_t, tree_link),
+				is_recursive, modes, count);
 	}
 
 	return 0;
@@ -174,7 +185,20 @@ static int is_permitted(node_t *node) {
 	return uid == node->uid || pwd.pw_gid == 0;
 }
 
-static int change_mode(node_t *node, char *mode, int is_recursive) {
+static void apply_modes(node_t *node, struct mode *modes, int count, int is_dir) {
+	if (is_dir) {
+		for (int i = 0; i < count; i++) {
+			modes[i].func(modes[i].mask | modes[i].dir_mask, modes[i].type, node);
+		}
+	} else {
+		for (int i = 0; i < count; i++) {
+			modes[i].func(modes[i].mask, modes[i].type, node);
+		}
+	}
+}
+
+static int change_mode(node_t *node, int is_recursive,
+		struct mode *modes, int count) {
 	char path[PATH_MAX];
 
 	if (!is_permitted(node)) {
@@ -185,15 +209,16 @@ static int change_mode(node_t *node, char *mode, int is_recursive) {
 
 	if (node_is_directory(node)) {
 		if (is_recursive) {
-			change_mode_recurse(&(node->tree_link), mode, is_recursive);
+			change_mode_recursive(&(node->tree_link),
+					is_recursive, modes, count);
 		}
 
-		__change_mode(mode, node);
+		apply_modes(node, modes, count, 1);
 		return 0;
 	}
 
 	if (node_is_file(node)) {
-		__change_mode(mode, node);
+		apply_modes(node, modes, count, 0);
 		return 0;
 	}
 
@@ -205,7 +230,8 @@ static int change_mode(node_t *node, char *mode, int is_recursive) {
 
 static int exec(int argc, char **argv) {
 	node_t *node;
-	int opt, is_recursive = 0;
+	int opt, count, is_recursive = 0, modes_size = 10;
+	struct mode modes[modes_size];
 	char *path, *mode;
 
 	if (argc <= 1) {
@@ -243,7 +269,11 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	change_mode(node, mode, is_recursive);
+	if (0 > (count = parse_mode(mode, modes, modes_size))) {
+		return 0;
+	}
+
+	change_mode(node, is_recursive, modes, count);
 
 	return 0;
 }
