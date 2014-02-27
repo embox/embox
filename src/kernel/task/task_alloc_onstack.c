@@ -5,10 +5,10 @@
  * @author: Anton Bondarev
  */
 
-#include <stddef.h>
+#include <kernel/panic.h>
 #include <kernel/task.h>
 #include <kernel/thread/thread_stack.h>
-#include <kernel/panic.h>
+#include <stddef.h>
 
 struct task *task_alloc(struct task *task, size_t task_size) {
 	void *addr;
@@ -18,7 +18,7 @@ struct task *task_alloc(struct task *task, size_t task_size) {
 
 	addr = thread_stack_get(task->main_thread);
 
-	if (thread_stack_reserved(task->main_thread, task_size) < 0) {
+	if (0 != thread_stack_reserve(task->main_thread, task_size)) {
 		panic("Too small thread stack size");
 	}
 

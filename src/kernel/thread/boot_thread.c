@@ -31,10 +31,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */
-	//thread->stack = stack + sizeof(struct thread);
-	//thread->stack_sz = stack_sz - sizeof(struct thread);
-	thread_stack_set(thread, stack + sizeof(struct thread));
-	thread_stack_set_size(thread, stack_sz - sizeof(struct thread));
+	thread_stack_init(thread, stack_sz);
 
 	/* General initialization and task setting up */
 	thread_init(thread, 0, boot_stub, NULL);
