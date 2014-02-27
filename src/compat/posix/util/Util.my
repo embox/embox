@@ -19,7 +19,7 @@ module Time {
 static module getopt {
 	source "getopt.c"
 
-	depends embox.lib.LibCStdio
+	depends embox.lib.LibCString
 }
 
 static module utsname {
