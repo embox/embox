@@ -31,6 +31,7 @@
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
 
 #include <kernel/panic.h>

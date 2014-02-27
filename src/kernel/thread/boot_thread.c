@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include <kernel/thread.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
 
 #include <module/embox/kernel/stack.h>

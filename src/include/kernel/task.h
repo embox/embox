@@ -51,11 +51,6 @@ struct task {
 /** create new task and initialize its descriptor */
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
-/** insert a created task into the task */
-extern int thread_register(struct task *, struct thread *);
-
-extern int thread_unregister(struct task *, struct thread *);
-
 /**
  * @brief Get self task (task which current execution thread associated with)
  *

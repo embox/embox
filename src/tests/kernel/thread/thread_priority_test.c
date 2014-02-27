@@ -10,6 +10,7 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/time/ktime.h>
 #include <kernel/task.h>
 #include <framework/mod/options.h>

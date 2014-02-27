@@ -8,6 +8,7 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
+#include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/task/thread_key_table.h>
 

@@ -15,6 +15,7 @@ module core extends thread_mode {
 
 	source "core.c"
 	source "thread_allocator.c"
+	source "thread_register.c"
 	source "idle_thread.c"
 	source "boot_thread.c"
 
@@ -23,7 +24,7 @@ module core extends thread_mode {
 	depends embox.kernel.task.kernel_task
 	@NoRuntime depends embox.kernel.cpu.common
 	depends embox.kernel.time.jiffies
-	@NoRuntime depends embox.kernel.task.MultiThread
+	@NoRuntime depends embox.kernel.task.task_key_table
 	@NoRuntime depends stack_api
 	depends thread_local
 	@NoRuntime depends thread_cancel
