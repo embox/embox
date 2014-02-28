@@ -1,5 +1,5 @@
---- tcl8.6.1/generic/tclIOCmd.c	2013-09-19 23:04:14.000000000 +0400
-+++ tcl/generic/tclIOCmd.c	2014-02-28 02:57:08.039431865 +0400
+ --- tcl8.6.1/generic/tclIOCmd.c	2013-09-19 23:04:14.000000000 +0400
++++ tcl/generic/tclIOCmd.c	2014-02-28 12:25:09.222881148 +0400
 @@ -862,7 +862,7 @@
   *
   *----------------------------------------------------------------------
@@ -9,7 +9,7 @@
  	/* ARGSUSED */
  int
  Tcl_ExecObjCmd(
-@@ -1012,6 +1012,59 @@
+@@ -1012,6 +1012,61 @@
  
      return result;
  }
@@ -52,23 +52,26 @@
 +    embox_cmd = cmd_lookup(argv[0]);
 +
 +    if (!embox_cmd) {
-+    	return TCL_ERROR;
++    	res = TCL_ERROR;
++    	fprintf(stderr, "%s: No such command\n", argv[0]);
++    	goto out;
 +    }
 +
 +    res = cmd_exec(embox_cmd, argc, argv);
 +
++out:
 +    /*
 +     * Free the argv array.
 +     */
 +
 +    TclStackFree(interp, (void *) argv);
-+
 +	return (res == 0 ? TCL_OK : TCL_ERROR);
 +}
 +#endif
  
  /*
   *---------------------------------------------------------------------------
+
   
  diff -ur tcl8.6.1/library/init.tcl tcl/library/init.tcl 
 --- tcl8.6.1/library/init.tcl	2013-09-19 23:04:15.000000000 +0400
@@ -108,4 +111,3 @@
  }
  
  }
-
