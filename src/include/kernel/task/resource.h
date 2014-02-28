@@ -44,8 +44,7 @@ extern char _ktask_resource_start, _ktask_resource_end;
 			task_notifing_resource); \
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
 
-extern void task_resource_init(const struct task *task,
-		void *resource_space);
+extern void task_resource_init(const struct task *task);
 extern int task_resource_inherit(const struct task *task,
 		const struct task *parent);
 extern void task_resource_deinit(const struct task *task);

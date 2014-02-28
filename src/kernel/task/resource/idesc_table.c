@@ -60,6 +60,5 @@ static const struct task_resource_desc task_idesc_table_desc = {
 
 struct idesc_table * task_resource_idesc_table(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_idesc_table_offset;
+	return (void *)task->resources + task_idesc_table_offset;
 }

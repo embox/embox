@@ -23,12 +23,9 @@ static const struct task_resource_desc task_errno_desc = {
 
 int * task_resource_errno(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_errno_offset;
+	return (void *)task->resources + task_errno_offset;
 }
 
 int * task_self_resource_errno(void) {
-	assert(task_self() != NULL);
-	assert(task_self()->resources != NULL);
-	return task_self()->resources + task_errno_offset;
+	return task_resource_errno(task_self());
 }

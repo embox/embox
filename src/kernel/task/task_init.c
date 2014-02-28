@@ -29,8 +29,7 @@ struct task * task_init(void *space, size_t size,
 	strncpy(task->task_name, name, sizeof task->task_name - 1);
 	task->task_name[sizeof task->task_name - 1] = '\0';
 
-	task->resources = task + 1;
-	task_resource_init(task, task->resources);
+	task_resource_init(task);
 
 	task->per_cpu = 0;
 

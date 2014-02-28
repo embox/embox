@@ -53,6 +53,5 @@ static const struct task_resource_desc task_u_area_desc = {
 
 struct task_u_area * task_resource_u_area(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_u_area_offset;
+	return (void *)task->resources + task_u_area_offset;
 }

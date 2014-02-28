@@ -51,6 +51,5 @@ static const struct task_resource_desc task_sig_table_desc = {
 
 struct sigaction * task_resource_sig_table(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_sig_table_offset;
+	return (void *)task->resources + task_sig_table_offset;
 }

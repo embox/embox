@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <embox/unit.h>
+#include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <stddef.h>
 #include <util/array.h>
@@ -18,8 +19,7 @@ EMBOX_UNIT_INIT(task_resource_module_init);
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
-void task_resource_init(const struct task *task,
-		void *resource_space) {
+void task_resource_init(const struct task *task) {
 	const struct task_resource_desc *res_desc;
 
 	task_resource_foreach(res_desc) {
@@ -28,7 +28,7 @@ void task_resource_init(const struct task *task,
 					*res_desc->resource_offset, sizeof(void *)));
 		if (res_desc->init != NULL) {
 			res_desc->init(task,
-					resource_space + *res_desc->resource_offset);
+					(void *)task->resources + *res_desc->resource_offset);
 		}
 	}
 }

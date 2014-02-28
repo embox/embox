@@ -47,6 +47,5 @@ static const struct task_resource_desc task_waitpid_desc = {
 
 struct waitq * task_resource_waitpid(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_waitpid_offset;
+	return (void *)task->resources + task_waitpid_offset;
 }

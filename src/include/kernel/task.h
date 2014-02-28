@@ -41,10 +41,11 @@ struct task {
 	int tid;               /**< task identifier */
 	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct thread *main_thread;
-	void *resources;
 	clock_t per_cpu; /**< task times */
 
 	thread_key_table_t key_table;
+
+	char resources[];
 };
 
 

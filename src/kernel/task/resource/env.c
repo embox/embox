@@ -62,6 +62,5 @@ static const struct task_resource_desc task_env_desc = {
 
 struct task_env * task_resource_env(const struct task *task) {
 	assert(task != NULL);
-	assert(task->resources != NULL);
-	return task->resources + task_env_offset;
+	return (void *)task->resources + task_env_offset;
 }
