@@ -8,6 +8,7 @@
 #include <time.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
+#include <kernel/sched.h>
 
 #include <kernel/sched/sched_timing.h>
 
