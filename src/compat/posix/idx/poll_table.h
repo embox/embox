@@ -10,7 +10,7 @@
 
 #include <framework/mod/options.h>
 #include <fs/poll_table.h>
-#include <module/embox/kernel/task/resource/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 struct idesc_poll_table {
 	struct idesc_poll idesc_poll[MODOPS_IDESC_TABLE_SIZE];

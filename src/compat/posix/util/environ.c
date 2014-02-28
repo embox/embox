@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/task/resource/env.h>
-#include <module/embox/kernel/task/resource/env.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>

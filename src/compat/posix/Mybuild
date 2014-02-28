@@ -23,6 +23,7 @@ static module pthreads {
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
+	depends embox.kernel.task.syslib.thread_key_table
 }
 
 static module sched {
