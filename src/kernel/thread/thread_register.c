@@ -9,11 +9,8 @@
 #include <kernel/task.h>
 
 #include <kernel/thread/thread_register.h>
-#include <kernel/thread/thread_local.h>
-#include <kernel/task/thread_key_table.h>
 
 int thread_register(struct task * task, struct thread *t) {
-	int ret;
 	sched_priority_t sched_prior;
 
 	if ((NULL == task) || (NULL == t)) {
@@ -33,11 +30,6 @@ int thread_register(struct task * task, struct thread *t) {
 	//TODO use complete priority (task+thread)
 	sched_prior = thread_priority_get(t);
 	thread_priority_set(t, sched_prior);
-
-	ret = thread_local_alloc(t, THREAD_KEYS_QUANTITY);
-	if (ret != 0) {
-		return ret;
-	}
 
 	return ENOERR;
 }
@@ -62,8 +54,6 @@ int thread_unregister(struct task * task, struct thread *thread) {
 #endif
 
 	dlist_del(&thread->thread_link);
-
-	thread_local_free(thread);
 
 	return ENOERR;
 }

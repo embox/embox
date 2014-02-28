@@ -31,6 +31,7 @@
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
+#include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
 
@@ -93,18 +94,24 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* allocate memory */
 		if (!(t = thread_alloc())) {
 			t = err_ptr(ENOMEM);
-			goto out;
+			goto out_unlock;
 		}
 
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
+
+		ret = thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY);
+		if (ret != 0) {
+			t = err_ptr(-ret);
+			goto out_threadfree;
+		}
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
 			ret = thread_register(task_self(), t);
 			if (ret != 0) {
 				t = err_ptr(-ret);
-				goto out;
+				goto out_localfree;
 			}
 		}
 
@@ -117,8 +124,17 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		if (flags & THREAD_FLAG_DETACHED) {
 			thread_detach(t);
 		}
+
+		goto out_unlock;
+
+out_localfree:
+		thread_local_free(t);
+
+out_threadfree:
+		thread_free(t);
+
 	}
-out:
+out_unlock:
 	sched_unlock();
 
 	return t;
@@ -204,6 +220,7 @@ static void thread_delete(struct thread *t) {
 	assert(t->state & TS_EXITED);
 
 	thread_unregister(t->task, t);
+	thread_local_free(t);
 
 	if (zombie) {
 		thread_free(zombie);
