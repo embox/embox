@@ -4,45 +4,11 @@ package embox.kernel.task
 abstract module api {
 }
 
-module task_resource {
-	source "task_resource.c", "task_resource.lds.S"
-
-	@NoRuntime depends embox.lib.LibCAssert
-	@NoRuntime depends embox.util.Array
+@DefaultImpl(task_thread_key)
+abstract module task_key_table {
 }
 
-module task_init {
-	source "task_init.c"
-
-	depends task_resource
-}
-
-module single extends api {
-	source "single.c"
-	depends kernel_task
-
-
-	depends task_resource
-	depends embox.kernel.thread.current.api
-	depends embox.kernel.sched.strategy.api
-}
-
-module multi extends api {
-	source "multi.c"
-	depends kernel_task
-
-	option number tasks_quantity = 20
-
-	depends task_init
-	depends task_resource
-	depends embox.util.idx_table
-
-	/* uses task_self() to initialize resources, which implies
-	   to thread be already loaded, as task_self uses thread_self
-	   to determine current thread
-	*/
-	depends embox.kernel.thread.core
-	depends task_key_table
+abstract module task_table_api {
 }
 
 module kernel_task {
@@ -53,19 +19,68 @@ module kernel_task {
 	depends embox.util.DList
 }
 
-@DefaultImpl(task_thread_key)
-abstract module task_key_table {
+module multi extends api {
+	source "multi.c"
+	depends kernel_task
+
+	depends task_init
+	depends task_resource
+	depends task_table
+
+	/* uses task_self() to initialize resources, which implies
+	   to thread be already loaded, as task_self uses thread_self
+	   to determine current thread
+	*/
+	depends embox.kernel.thread.core
+	depends task_key_table
+}
+
+module single extends api {
+	source "single.c"
+
+	depends kernel_task
+	depends task_no_table
+	depends embox.kernel.thread.current.api
+	depends embox.kernel.sched.strategy.api
+}
+
+module task_init {
+	source "task_init.c"
+
+	depends task_resource
+}
+
+module task_no_table extends task_table_api {
+	source "task_no_table.h"
+
+	depends kernel_task
+	@NoRuntime depends embox.lib.LibCAssert
 }
 
 module task_no_thread_key extends task_key_table {
 	source "task_no_thread_key.h"
 }
 
+module task_resource {
+	source "task_resource.c", "task_resource.lds.S"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.util.Array
+}
+
+module task_table extends task_table_api {
+	option number task_table_size=20
+	source "task_table.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.util.idx_table
+}
+
 module task_thread_key extends task_key_table {
 	option number keys_quantity = 0x40
 
-	source "task_thread_key.h"
 	source "task_thread_key.c"
+	source "task_thread_key.h"
 
 	@NoRuntime depends embox.util.indexator
 }

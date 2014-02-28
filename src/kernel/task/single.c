@@ -8,7 +8,6 @@
 
 #include <errno.h>
 #include <kernel/task.h>
-#include "common.h"
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	return -EPERM;
@@ -29,13 +28,10 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
 
-struct task *task_table_get(int n) {
-	if (n < 0) {
-		return NULL;
-	}
-	return task_kernel_task();
+short task_get_priority(struct task *tsk) {
+	return 0;
 }
 
-int task_table_get_first(int since) {
+int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	return 0;
 }
