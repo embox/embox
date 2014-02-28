@@ -22,17 +22,11 @@
 
 EMBOX_UNIT_INIT(usb_ti81xx_init);
 
-static inline void _delay(int cnt) {
-	volatile int _cnt = cnt;
-
-	while (_cnt--);
-}
-
 #define TI81XX_USB_DEBUG 0
 #if TI81XX_USB_DEBUG
 #define DBG(x) x
 #else
-#define DBG(x) _delay(1000);
+#define DBG(x)
 #endif
 
 #define TI8168_USBSS_BASE 0x47400000
@@ -738,7 +732,8 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 	DBG(printk("%s: csr_v=%04x errmask=%04x\n", __func__, csr_v, errmask);)
 	if (req->req_stat != USB_REQ_NOERR) {
 		printk("%s: csr=%p csr_v=%04x errmask=%04x\n", __func__, csr, csr_v, errmask);
-		printk("%s: req_stat=%d count=%d\n", __func__, req->req_stat,
+		printk("%s: req=%p hnd=%p req_stat=%d count=%d\n", __func__,
+				req, req->notify_hnd, req->req_stat,
 					REG16_LOAD(count));
 		/*return;*/
 	}
