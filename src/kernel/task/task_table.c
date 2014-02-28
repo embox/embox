@@ -17,13 +17,13 @@
 UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
 
 void task_table_init(void) {
-	UTIL_IDX_TABLE_INIT(&task_table, MODOPS_TASK_TABLE_SIZE);
+	UTIL_IDX_TABLE_INIT(task_table, MODOPS_TASK_TABLE_SIZE);
 }
 
 int task_table_add(struct task *tsk) {
 	int tid;
 
-	tid = util_idx_table_add((util_idx_table_t *) &task_table, tsk);
+	tid = util_idx_table_add(task_table, tsk);
 	if (tid >= 0) {
 		tsk->tid = tid;
 	}
@@ -33,18 +33,18 @@ int task_table_add(struct task *tsk) {
 
 struct task * task_table_get(int tid) {
 	assert(tid >= 0);
-	return (struct task *) util_idx_table_get((util_idx_table_t *) &task_table, tid);
+	return util_idx_table_get(task_table, tid);
 }
 
 void task_table_del(int tid) {
 	assert(tid >= 0);
-	util_idx_table_del((util_idx_table_t *) &task_table, tid);
+	util_idx_table_del(task_table, tid);
 }
 
 int task_table_has_space(void) {
-	return (util_idx_table_next_alloc((util_idx_table_t *) &task_table) >= 0);
+	return 0 <= util_idx_table_next_alloc(task_table);
 }
 
 int task_table_get_first(int since) {
-	return util_idx_table_next_mark((util_idx_table_t *) &task_table, since, 1);
+	return util_idx_table_next_mark(task_table, since, 1);
 }
