@@ -245,10 +245,6 @@ static __attribute__((used)) void usb_dev_getconf_free(struct usb_dev *dev) {
 }
 
 static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
-
 void usb_dev_addr_assign(struct usb_dev *dev) {
 
 	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr, NULL,
@@ -259,16 +255,14 @@ void usb_dev_addr_assign(struct usb_dev *dev) {
 		0, 0, NULL);
 }
 
-static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_endp *ctrl_endp;
+static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
+	usb_dev_addr_assigned(req->endp->dev);
+}
 
-	ctrl_endp = dev->endpoints[0];
+static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
+void usb_dev_configure(struct usb_dev *dev) {
 
-	dev->bus_idx = dev->idx;
-	usb_dev_addr_assigned(dev);
-
-	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc, NULL,
+	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_dev_desc, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -277,12 +271,14 @@ static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_reques
 		&dev->dev_desc);
 }
 
+
 static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 
 	usb_whitelist_check(dev);
 }
 
+static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
 void usb_whitelist_accepts(struct usb_dev *dev) {
 	struct usb_endp *ctrl_endp;
 
@@ -314,6 +310,7 @@ void usb_whitelist_rejects(struct usb_dev *dev) {
 
 }
 
+static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
 static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;

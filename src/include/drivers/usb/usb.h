@@ -304,6 +304,7 @@ extern int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t noti
 extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 		void *buf, size_t len);
 
+extern void usb_dev_configure(struct usb_dev *dev);
 extern void usb_dev_addr_assign(struct usb_dev *dev);
 extern void usb_dev_request_delete(struct usb_dev *dev);
 
@@ -317,6 +318,7 @@ extern int usb_endp_request(struct usb_endp *endp, struct usb_request *req);
 /* pnp */
 extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 extern void usb_dev_configured(struct usb_dev *dev);
+extern void usb_dev_addr_settled(struct usb_dev *dev);
 
 extern void usb_port_reset_done(struct usb_hub_port *port);
 extern void usb_dev_addr_assigned(struct usb_dev *dev);
@@ -328,6 +330,7 @@ extern void usb_dev_disconnect(struct usb_hub_port *port);
 /* port */
 extern void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
 	       	usb_hub_port_t i);
+extern int usb_port_address_setle_wait(struct usb_hub_port *port, int ms);
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 extern void usb_hcd_free(struct usb_hcd *hcd);
