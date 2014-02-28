@@ -10,6 +10,7 @@
 #define KERNEL_TASK_RESOURCE_IDESC_TABLE_H_
 
 #include <kernel/task.h>
+#include <module/embox/kernel/task/resource/idesc_table.h>
 #include <sys/cdefs.h>
 
 struct task;

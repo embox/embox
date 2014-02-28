@@ -10,6 +10,7 @@
 #define KERNEL_TASK_RESOURCE_U_AREA_H_
 
 #include <kernel/task.h>
+#include <module/embox/kernel/task/resource/u_area.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
 

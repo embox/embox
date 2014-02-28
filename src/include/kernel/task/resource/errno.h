@@ -10,6 +10,7 @@
 #define KERNEL_TASK_RESOURCE_ERRNO_H_
 
 #include <sys/cdefs.h>
+#include <module/embox/kernel/task/resource/errno.h>
 
 struct task;
 

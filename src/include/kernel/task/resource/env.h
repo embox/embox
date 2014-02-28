@@ -10,6 +10,7 @@
 #define KERNEL_TASK_RESOURCE_ENV_H_
 
 #include <kernel/task.h>
+#include <module/embox/kernel/task/resource/env.h>
 #include <sys/cdefs.h>
 
 struct task;

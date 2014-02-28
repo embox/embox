@@ -10,6 +10,7 @@
 #define KERNEL_TASK_RESOURCE_SIG_TABLE_H_
 
 #include <kernel/task.h>
+#include <module/embox/kernel/task/resource/sig_table.h>
 #include <sys/cdefs.h>
 
 struct task;
