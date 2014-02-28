@@ -242,58 +242,60 @@ static const struct kfile_operations usb_whitelist_ops = {
 
 static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
 		const char *builtin_whitelist) {
+	char scratch[64];
 	const char *p;
 
 	usb_whitelist_conf_init(wl_conf);
 
 	p = builtin_whitelist;
-	while (*p) {
+	while (p && *p) {
+		const char *comma = strchr(p, ',');
 		struct usb_whitelist_rule wl_rule;
-		char *pp;
-		int actlen;
+		char *pp, *str, *saveptr, *tok[3];
+		int tok_i, actlen;
 
-		wl_rule.vid = strtol(p, &pp, 0);
-		if (p != pp) {
-			p = pp;
-			if (*p != ':') {
-				wl_rule.pid = USB_WHITELIST_PID_ANY;
-				strcpy(wl_rule.sn, USB_WHITELIST_SN_ANY);
-				goto add_rule;
-			}
+		actlen = comma ? min(comma - p, sizeof(scratch) - 1)
+			: sizeof(scratch) - 1;
+		strncpy(scratch, p, actlen);
+		scratch[actlen] = '\0';
 
-			wl_rule.pid = strtol(++p, &pp, 0);
-			if (p == pp) {
-				break;
-			}
-			p = pp;
-
-			if (*p != ':') {
-				strcpy(wl_rule.sn, USB_WHITELIST_SN_ANY);
-				goto add_rule;
-			}
-
-			pp = strchr(++p, ',');
-			if (!pp) {
-				actlen = USB_WHITELIST_SN_LEN - 1;
-			} else {
-				actlen = min(pp - p, USB_WHITELIST_SN_LEN - 1);
-			}
-
-			strncpy(wl_rule.sn, p, actlen);
-			wl_rule.sn[actlen] = '\0';
-
-			if (pp) {
-				p = pp;
-			} else {
-				break;
-			}
-add_rule:
-			usb_whitelist_conf_add(wl_conf, &wl_rule);
+		if (comma) {
+			p = comma + 1;
+		} else {
+			p = NULL;
 		}
 
-		if (*p != ',')
-			break;
-		++p;
+		for (str = scratch, tok_i = 0; tok_i < 3;
+				str = NULL, tok_i++) {
+			tok[tok_i] = strtok_r(str, ":", &saveptr);
+		}
+
+		if (tok[0]) {
+			wl_rule.vid = strtol(tok[0], &pp, 0);
+			if (pp == tok[0]) {
+				continue;
+			}
+		} else {
+			continue;
+		}
+
+		if (tok[1]) {
+			wl_rule.pid = strtol(tok[1], &pp, 0);
+			if (pp == tok[1]) {
+				continue;
+			}
+		} else {
+			wl_rule.pid = USB_WHITELIST_PID_ANY;
+		}
+
+		if (tok[2]) {
+			strncpy(wl_rule.sn, tok[2], USB_WHITELIST_SN_LEN - 1);
+			wl_rule.sn[USB_WHITELIST_SN_LEN - 1] = '\0';
+		} else {
+			strcpy(wl_rule.sn, USB_WHITELIST_SN_ANY);
+		}
+
+		usb_whitelist_conf_add(wl_conf, &wl_rule);
 	}
 }
 
