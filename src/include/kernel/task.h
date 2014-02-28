@@ -17,7 +17,6 @@
 #include <sys/types.h>
 
 #include <kernel/task/task_priority.h>
-#include <kernel/task/thread_key_table.h>
 
 #define MAX_TASK_NAME_LEN 20
 
@@ -42,8 +41,6 @@ struct task {
 	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct thread *main_thread;
 	clock_t per_cpu; /**< task times */
-
-	thread_key_table_t key_table;
 
 	char resources[];
 };

@@ -12,6 +12,14 @@ module no_kfork extends kfork_api {
 	source "no_kfork.c"
 }
 
+module thread_key_table {
+	source "thread_key_table.c"
+
+	depends embox.kernel.task.resource.thread_key_table
+	@NoRuntime depends embox.kernel.thread.mutex
+	@NoRuntime depends embox.util.indexator
+}
+
 module waitpid {
 	source "waitpid.c"
 

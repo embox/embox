@@ -40,7 +40,5 @@ struct task * task_init(void *space, size_t size,
 	task->child_err = 0;
 	task->priority = TASK_PRIORITY_DEFAULT;
 
-	task_thread_key_init(task);
-
 	return task;
 }
