@@ -86,11 +86,11 @@ int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	return 0;
 }
 
-static void usb_request_remove(struct usb_request *req) {
+static void usb_request_remove(struct usb_request *req, bool fire_handler) {
 	struct usb_endp *endp = req->endp;
 	int ret;
 
-	if (req->notify_hnd) {
+	if (req->notify_hnd && fire_handler) {
 		req->notify_hnd(req, req->hnd_data);
 	}
 
@@ -104,11 +104,13 @@ static void usb_request_remove(struct usb_request *req) {
 
 void usb_request_complete(struct usb_request *req) {
 
+	/* TODO reset failed request */
+
 	if (req->req_stat != USB_REQ_NOERR) {
 		printk("usb_request %p: failed\n", req);
 	}
 
-	usb_request_remove(req);
+	usb_request_remove(req, req->req_stat == USB_REQ_NOERR);
 }
 
 static void usb_endp_cancel(struct usb_endp *endp) {
@@ -121,7 +123,8 @@ static void usb_endp_cancel(struct usb_endp *endp) {
 			ul = usb_queue_last(&endp->req_queue)) {
 		struct usb_request *req = usb_link2req(ul);
 
-		usb_request_remove(req);
+		/* FIXME handler should be fired */
+		usb_request_remove(req, false);
 	}
 }
 
@@ -198,13 +201,15 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 	}
 	if (count) {
 		if ((ret = usb_endp_request(endp, rdt))) {
-			usb_request_remove(rstp);
+			/* FIXME maybe handler should fire? */
+			usb_request_remove(rstp, false);
 			return ret;
 		}
 	}
 	if ((ret = usb_endp_request(endp, rstt))) {
-		usb_request_remove(rdt);
-		usb_request_remove(rstp);
+		usb_request_remove(rdt, false);
+		/* FIXME maybe handler should fire? */
+		usb_request_remove(rstp, false);
 		return ret;
 	}
 
