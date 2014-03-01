@@ -29,6 +29,7 @@ module core extends thread_mode {
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal
+	@NoRuntime depends embox.lib.LibCAssert
 }
 
 module signal {

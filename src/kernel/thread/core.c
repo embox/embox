@@ -108,11 +108,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			ret = thread_register(task_self(), t);
-			if (ret != 0) {
-				t = err_ptr(-ret);
-				goto out_localfree;
-			}
+			thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -126,9 +122,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		}
 
 		goto out_unlock;
-
-out_localfree:
-		thread_local_free(t);
 
 out_threadfree:
 		thread_free(t);

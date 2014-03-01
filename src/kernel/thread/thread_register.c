@@ -5,23 +5,23 @@
  * @author: Anton Bondarev
  */
 
+#include <util/dlist.h>
+#include <assert.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
-
 #include <kernel/thread/thread_register.h>
 
-int thread_register(struct task * task, struct thread *t) {
+void thread_register(struct task *tsk, struct thread *t) {
 	sched_priority_t sched_prior;
 
-	if ((NULL == task) || (NULL == t)) {
-		return -EINVAL;
-	}
+	assert(tsk != NULL);
+	assert(t != NULL);
 
 	/* insert new t to the list */
 	dlist_head_init(&t->thread_link);
-	dlist_add_next(&t->thread_link, &task->main_thread->thread_link);
+	dlist_add_next(&t->thread_link, &tsk->main_thread->thread_link);
 
-	t->task = task;
+	t->task = tsk;
 
 	/* we initialize thread priority for default task priority and now we must
 	 * rescheduler thread
@@ -30,30 +30,15 @@ int thread_register(struct task * task, struct thread *t) {
 	//TODO use complete priority (task+thread)
 	sched_prior = thread_priority_get(t);
 	thread_priority_set(t, sched_prior);
-
-	return ENOERR;
 }
 
 
-int thread_unregister(struct task * task, struct thread *thread) {
-	if((NULL == task) || (NULL == thread)) {
-		return -EINVAL;
-	}
+void thread_unregister(struct task *tsk, struct thread *t) {
+	assert(tsk != NULL);
+	assert(t != NULL);
+	assert(tsk->main_thread != NULL);
 
-	if(NULL == task->main_thread) {
-		return -EINVAL;
+	if (t != tsk->main_thread) {
+		dlist_del(&t->thread_link);
 	}
-
-	if(task->main_thread == thread) {
-		return -EBUSY;
-	}
-#if 0
-	if(dlist_empty(&task->main_thread->thread_link)) {
-		return -EBUSY;
-	}
-#endif
-
-	dlist_del(&thread->thread_link);
-
-	return ENOERR;
 }

@@ -13,8 +13,8 @@ struct task;
 struct thread;
 
 /** insert a created task into the task */
-extern int thread_register(struct task *, struct thread *);
+extern void thread_register(struct task *, struct thread *);
 
-extern int thread_unregister(struct task *, struct thread *);
+extern void thread_unregister(struct task *, struct thread *);
 
 #endif /* THREAD_REGISTER_H_ */
