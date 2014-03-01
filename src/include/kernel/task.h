@@ -11,8 +11,6 @@
 
 #include <assert.h>
 
-#include <util/dlist.h>
-
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
@@ -30,8 +28,6 @@ struct thread;
  */
 struct task {
 	/* multi */
-	struct dlist_head task_link; /**< @brief global task's list link */
-	struct dlist_head children_tasks; /**< @brief Task's children */
 	struct task *parent; /**< @brief Task's parent */
 	int child_err; /**< child error after child exited TODO ?several children */
 	task_priority_t priority; /**< @brief Task priority */
@@ -89,7 +85,7 @@ extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 extern int task_waitpid(pid_t pid);
 
-#include <kernel/task/task_table.h>
+#include <util/dlist.h>
 
 #define task_foreach_thread(thr, task)                                    \
 	thr = task->main_thread;                                             \
@@ -102,6 +98,8 @@ extern int task_waitpid(pid_t pid);
 			nxt = dlist_entry(thr->thread_link.next,                \
 						struct thread, thread_link)                 \
 		)
+
+#include <kernel/task/task_table.h>
 
 #define task_foreach(task)                             \
 	task = task_table_get(0);                          \

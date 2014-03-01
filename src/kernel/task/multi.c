@@ -167,8 +167,6 @@ static int task_init_parent(struct task *task, struct task *parent) {
 		return ret;
 	}
 
-	dlist_add_next(dlist_head_init(&task->task_link), &parent->children_tasks);
-
 	return 0;
 }
 
@@ -184,9 +182,6 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	{
 		/* Deinitialize all resources */
 		task_resource_deinit(task);
-
-		/* Remove us from list of tasks */
-		dlist_del(&task->task_link);
 
 		/* Release our task id */
 		task_table_del(task->tid);
