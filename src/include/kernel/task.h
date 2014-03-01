@@ -30,7 +30,7 @@ struct task {
 	/* multi */
 	struct task *parent; /**< @brief Task's parent */
 	int child_err; /**< child error after child exited TODO ?several children */
-	task_priority_t priority; /**< @brief Task priority */
+	task_priority_t tsk_priority; /**< @brief Task priority */
 
 	/* common */
 	int tsk_id;               /**< task identifier */
@@ -64,9 +64,10 @@ static inline const char * task_get_name(
 /** setup task priority */
 extern int task_set_priority(struct task *task, task_priority_t priority);
 
-/** get task priority */
-extern task_priority_t task_get_priority(struct task *task);
-
+static inline task_priority_t task_get_priority(
+		const struct task *tsk) {
+	return tsk->tsk_priority;
+}
 
 extern struct task * task_init(void *space, size_t size,
 		const char *name);

@@ -373,7 +373,8 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(t->task->priority, thread_priority_get(t));
+	return sched_priority_thread(task_get_priority(t->task),
+			thread_priority_get(t));
 }
 
 clock_t thread_get_running_time(struct thread *t) {

@@ -93,7 +93,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		thd->task = self_task;
 		self_task->main_thread = thd;
 
-		self_task->priority = task_self()->priority;
+		self_task->tsk_priority = task_self()->tsk_priority;
 
 		/* initialize the new task */
 		if ((res = task_table_add(self_task)) < 0) {
@@ -106,7 +106,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		}
 
 		thread_set_priority(thd,
-				sched_priority_thread(task_self()->priority,
+				sched_priority_thread(task_self()->tsk_priority,
 						thread_priority_get(thread_self())));
 
 		thread_detach(thd);
@@ -245,13 +245,13 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 
 	sched_lock();
 	{
-		if (tsk->priority == new_priority) {
+		if (tsk->tsk_priority == new_priority) {
 			sched_unlock();
 			return 0;
 		}
 
-		tsk_pr = tsk->priority;
-		tsk->priority = new_priority;
+		tsk_pr = tsk->tsk_priority;
+		tsk->tsk_priority = new_priority;
 
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
@@ -263,14 +263,6 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	sched_unlock();
 
 	return 0;
-}
-
-
-
-
-short task_get_priority(struct task *tsk) {
-	assert(tsk);
-	return tsk->priority;
 }
 
 int multi_init(void) {

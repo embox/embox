@@ -35,7 +35,7 @@ struct task * task_init(void *space, size_t size,
 	/* multi */
 	task->parent = NULL;
 	task->child_err = 0;
-	task->priority = TASK_PRIORITY_DEFAULT;
+	task->tsk_priority = TASK_PRIORITY_DEFAULT;
 
 	return task;
 }
