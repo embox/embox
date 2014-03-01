@@ -30,7 +30,7 @@ struct task * task_init(void *space, size_t size,
 
 	task_resource_init(task);
 
-	task->per_cpu = 0;
+	task->tsk_clock = 0;
 
 	/* multi */
 	task->parent = NULL;

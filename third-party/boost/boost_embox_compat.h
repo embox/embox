@@ -51,7 +51,7 @@ struct tms
 static inline clock_t times (struct tms *__buffer) {
 	//DPRINT();
 	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_self()->per_cpu;
+	__buffer->tms_stime = task_get_clock(task_self());
 	__buffer->tms_utime = 0;
 
 	return __buffer->tms_stime;

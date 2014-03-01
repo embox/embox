@@ -36,7 +36,7 @@ struct task {
 	int tsk_id;               /**< task identifier */
 	char tsk_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct thread *main_thread;
-	clock_t per_cpu; /**< task times */
+	clock_t tsk_clock; /**< task times */
 
 	char resources[];
 };
@@ -67,6 +67,15 @@ extern int task_set_priority(struct task *task, task_priority_t priority);
 static inline task_priority_t task_get_priority(
 		const struct task *tsk) {
 	return tsk->tsk_priority;
+}
+
+static inline clock_t task_get_clock(const struct task *tsk) {
+	return tsk->tsk_clock;
+}
+
+static inline void task_set_clock(struct task *tsk,
+		clock_t new_clock) {
+	tsk->tsk_clock = new_clock;
 }
 
 extern struct task * task_init(void *space, size_t size,
