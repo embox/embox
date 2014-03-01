@@ -28,8 +28,6 @@ struct thread;
  */
 struct task {
 	/* multi */
-	struct task *parent; /**< @brief Task's parent */
-	int child_err; /**< child error after child exited TODO ?several children */
 	task_priority_t tsk_priority; /**< @brief Task priority */
 
 	/* common */

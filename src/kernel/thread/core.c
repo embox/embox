@@ -213,7 +213,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	sched_timing_init(t);
 }
 
-static void thread_delete(struct thread *t) {
+void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
@@ -236,6 +236,11 @@ static void thread_delete(struct thread *t) {
 	}
 }
 
+void thread_state_exited(struct thread *t) {
+	t->waiting = true;
+	t->state |= TS_EXITED;
+}
+
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
@@ -251,8 +256,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->waiting = true;
-	current->state |= TS_EXITED;
+	thread_state_exited(current);
 
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */

@@ -25,5 +25,6 @@ module waitpid {
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
+	depends embox.kernel.task.resource.errno
 	depends embox.kernel.task.resource.waitpid
 }

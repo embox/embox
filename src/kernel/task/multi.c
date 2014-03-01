@@ -21,6 +21,7 @@
 #include <kernel/critical.h>
 #include <util/idx_table.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/errno.h>
 
 #include <err.h>
 
@@ -42,7 +43,6 @@ struct task_creat_param {
 POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 static void *task_trampoline(void *arg);
-static int task_init_parent(struct task *task, struct task *parent);
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
@@ -100,7 +100,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		res = task_init_parent(self_task, task_self());
+		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
 			goto out_tablefree;
 		}
@@ -157,53 +157,38 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
 
-static int task_init_parent(struct task *task, struct task *parent) {
-	int ret;
-
-	task->parent = parent;
-
-	ret = task_resource_inherit(task, parent);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
-}
-
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *task = task_self();
 	struct thread *thread, *next;
 
 	assert(task != task_kernel_task());
 
-	task->parent->child_err = (int)res;
+	*task_resource_errno(task) = (int)res;
 
 	sched_lock();
 	{
 		/* Deinitialize all resources */
 		task_resource_deinit(task);
 
-		/* Release our task id */
-		task_table_del(task->tsk_id);
-
 		/*
 		 * Terminate all threads except main thread. If we terminate current
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		if(!dlist_empty(&task->main_thread->thread_link)) {
-			dlist_foreach_entry(thread, next, &task->main_thread->thread_link, thread_link) {
-				thread_terminate(thread);
-			}
+		dlist_foreach_entry(thread, next, &task->main_thread->thread_link, thread_link) {
+			thread_terminate(thread);
 		}
 
 		/* At the end terminate main thread */
 		thread_terminate(task->main_thread);
+
+		/* Set an exited state on main thread */
+		thread_state_exited(task->main_thread);
+
+		/* Re-schedule */
+		schedule();
 	}
 	sched_unlock();
-
-	task->main_thread = NULL; // XXX
-	thread_exit(NULL);
 
 	/* NOTREACHED */
 	panic("Returning from task_exit()");

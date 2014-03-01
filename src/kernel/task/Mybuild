@@ -22,6 +22,7 @@ module multi extends api {
 	depends task_init
 	depends task_resource
 	depends task_table
+	depends embox.kernel.task.resource.errno
 
 	/* uses task_self() to initialize resources, which implies
 	   to thread be already loaded, as task_self uses thread_self
