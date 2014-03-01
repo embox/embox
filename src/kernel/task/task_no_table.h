@@ -6,6 +6,9 @@
  * @author Anton Kozlov
  */
 
+#ifndef KERNEL_TASK_TASK_NO_TABLE_H_
+#define KERNEL_TASK_TASK_NO_TABLE_H_
+
 #include <assert.h>
 #include <kernel/task.h>
 #include <stddef.h>
@@ -35,3 +38,5 @@ static inline int task_table_get_first(int since) {
 	assert(since >= 0);
 	return since;
 }
+
+#endif /* KERNEL_TASK_TASK_NO_TABLE_H_ */
