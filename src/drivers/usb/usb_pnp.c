@@ -67,6 +67,14 @@ void usb_dev_addr_assigned(struct usb_dev *dev) {
 	usb_port_reset_unlock(dev->port);
 
 	dev->plug_state = USB_DEV_ADDRESSED;
+
+	dev->bus_idx = dev->idx;
+
+	usb_port_address_setle_wait(dev->port, 10);
+}
+
+void usb_dev_addr_settled(struct usb_dev *dev) {
+	usb_dev_configure(dev);
 }
 
 void usb_dev_configured(struct usb_dev *dev) {

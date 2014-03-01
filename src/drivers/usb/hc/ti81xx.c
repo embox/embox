@@ -731,8 +731,10 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 	req->req_stat = ti81xx_endp_status_map(endp_type, csr_v, &errmask);
 	DBG(printk("%s: csr_v=%04x errmask=%04x\n", __func__, csr_v, errmask);)
 	if (req->req_stat != USB_REQ_NOERR) {
-		DBG(printk("%s: req_stat=%d count=%d\n", __func__, req->req_stat,
-					REG16_LOAD(count));)
+		printk("%s: csr=%p csr_v=%04x errmask=%04x\n", __func__, csr, csr_v, errmask);
+		printk("%s: req=%p hnd=%p req_stat=%d count=%d\n", __func__,
+				req, req->notify_hnd, req->req_stat,
+					REG16_LOAD(count));
 		/*return;*/
 	}
 

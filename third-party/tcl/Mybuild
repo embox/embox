@@ -1,0 +1,30 @@
+package third_party.tcl
+
+@Build(script="$(EXTERNAL_MAKE)")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+	source "libtcl8.6.a", "libtclstub8.6.a"
+
+	@NoRuntime depends third_party.lib.Fdlibm
+}
+
+@Cmd(name = "tclsh",
+	help = "TCL shell",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(third_party.tcl.core)
+module tclsh {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/third_party/tcl/core/src/tcl-build")
+	source "strip.tclsh.o"
+
+	@InitFS
+	@AddPrefix("../../build/extbld/third_party/tcl/core/src/tcl/library")
+	source "init.tcl",
+		"history.tcl",
+		"tclIndex"
+
+	@NoRuntime depends third_party.tcl.core
+}

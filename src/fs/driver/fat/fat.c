@@ -1748,6 +1748,9 @@ static int fat_root_dir_record(void *bdev) {
 	if (fat_read_sector(bdev, sector_buff, volinfo.rootdir, 1)) {
 		return DFS_ERRMISC;
 	}
+	/* we clear other FAT TABLE */
+	memset(sector_buff, 0, sizeof(sector_buff));
+
 	memcpy(&(((p_dir_ent_t) sector_buff)[0]), &de, sizeof(dir_ent_t));
 
 	if (fat_write_sector(bdev, sector_buff, volinfo.rootdir, 1)) {

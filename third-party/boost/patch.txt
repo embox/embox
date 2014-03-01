@@ -55,3 +55,16 @@ diff -aur boost_1_54_0/tools/build/v2/tools/gcc.jam boost/tools/build/v2/tools/g
          }
  
          if $(option)
+         
+diff -aur boost_1_54_0/boost/program_options/environment_iterator.hpp boost/boost/program_options/environment_iterator.hpp 
+--- boost_1_54_0/boost/program_options/environment_iterator.hpp	2004-05-14 17:40:31.000000000 +0400
++++ boost/boost/program_options/environment_iterator.hpp	2014-02-24 17:34:24.226295031 +0400
+@@ -32,7 +32,7 @@
+         
+         void get()
+         {
+-            if (*m_environment == 0)
++            if (!m_environment || *m_environment == 0)
+                 found_eof();
+             else {
+                 std::string s(*m_environment);

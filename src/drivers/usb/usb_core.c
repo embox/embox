@@ -86,11 +86,11 @@ int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	return 0;
 }
 
-static void usb_request_remove(struct usb_request *req) {
+static void usb_request_remove(struct usb_request *req, bool fire_handler) {
 	struct usb_endp *endp = req->endp;
 	int ret;
 
-	if (req->notify_hnd) {
+	if (req->notify_hnd && fire_handler) {
 		req->notify_hnd(req, req->hnd_data);
 	}
 
@@ -104,11 +104,13 @@ static void usb_request_remove(struct usb_request *req) {
 
 void usb_request_complete(struct usb_request *req) {
 
+	/* TODO reset failed request */
+
 	if (req->req_stat != USB_REQ_NOERR) {
 		printk("usb_request %p: failed\n", req);
 	}
 
-	usb_request_remove(req);
+	usb_request_remove(req, req->req_stat == USB_REQ_NOERR);
 }
 
 static void usb_endp_cancel(struct usb_endp *endp) {
@@ -121,7 +123,8 @@ static void usb_endp_cancel(struct usb_endp *endp) {
 			ul = usb_queue_last(&endp->req_queue)) {
 		struct usb_request *req = usb_link2req(ul);
 
-		usb_request_remove(req);
+		/* FIXME handler should be fired */
+		usb_request_remove(req, false);
 	}
 }
 
@@ -157,7 +160,7 @@ int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hn
 	return usb_endp_request(endp, req);
 }
 
-int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
+int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd, void *arg,
 		uint8_t req_type, uint8_t request, uint16_t value, uint16_t index,
 		uint16_t count, void *data) {
 	struct usb_request *rstp, *rdt = NULL, *rstt;
@@ -187,7 +190,7 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		}
 	}
 
-	rstt = usb_endp_request_alloc(endp, notify_hnd, NULL, USB_TOKEN_STATUS | dntoken,
+	rstt = usb_endp_request_alloc(endp, notify_hnd, arg, USB_TOKEN_STATUS | dntoken,
 		       	NULL, 0);
 	if (!rstt) {
 		goto out2;
@@ -198,13 +201,15 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 	}
 	if (count) {
 		if ((ret = usb_endp_request(endp, rdt))) {
-			usb_request_remove(rstp);
+			/* FIXME maybe handler should fire? */
+			usb_request_remove(rstp, false);
 			return ret;
 		}
 	}
 	if ((ret = usb_endp_request(endp, rstt))) {
-		usb_request_remove(rdt);
-		usb_request_remove(rstp);
+		usb_request_remove(rdt, false);
+		/* FIXME maybe handler should fire? */
+		usb_request_remove(rstp, false);
 		return ret;
 	}
 
@@ -245,13 +250,9 @@ static __attribute__((used)) void usb_dev_getconf_free(struct usb_dev *dev) {
 }
 
 static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
-static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
-
 void usb_dev_addr_assign(struct usb_dev *dev) {
 
-	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr,
+	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr, NULL,
 		USB_DEV_REQ_TYPE_WR
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -259,16 +260,14 @@ void usb_dev_addr_assign(struct usb_dev *dev) {
 		0, 0, NULL);
 }
 
-static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_endp *ctrl_endp;
+static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
+	usb_dev_addr_assigned(req->endp->dev);
+}
 
-	ctrl_endp = dev->endpoints[0];
+static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
+void usb_dev_configure(struct usb_dev *dev) {
 
-	dev->bus_idx = dev->idx;
-	usb_dev_addr_assigned(dev);
-
-	usb_endp_control(ctrl_endp, usb_dev_request_hnd_dev_desc,
+	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_dev_desc, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -277,8 +276,15 @@ static __attribute__((used)) void usb_dev_request_hnd_set_addr(struct usb_reques
 		&dev->dev_desc);
 }
 
+
 static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
+
+	usb_whitelist_check(dev);
+}
+
+static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg);
+void usb_whitelist_accepts(struct usb_dev *dev) {
 	struct usb_endp *ctrl_endp;
 
 	ctrl_endp = dev->endpoints[0];
@@ -290,14 +296,11 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 				"getconf_data\n", __func__);
 	}
 
-	if (0 > usb_whitelist_check(&dev->dev_desc)) {
-		return;
-	}
 
 	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
-	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header,
+	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header, NULL,
 		USB_DEV_REQ_TYPE_RD
 		| USB_DEV_REQ_TYPE_STD
 		| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC,
@@ -308,6 +311,11 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 		dev->getconf_data);
 }
 
+void usb_whitelist_rejects(struct usb_dev *dev) {
+
+}
+
+static void usb_dev_request_hnd_set_conf(struct usb_request *req, void *arg);
 static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_endp *ctrl_endp;
@@ -324,7 +332,7 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) 
 		}
 
 		dev->c_config += 1;
-		usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header,
+		usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header, NULL,
 			USB_DEV_REQ_TYPE_RD
 				| USB_DEV_REQ_TYPE_STD
 				| USB_DEV_REQ_TYPE_DEV,
@@ -336,7 +344,7 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) 
 			dev->getconf_data);
 	} else {
 		dev->c_interface = 0;
-		usb_endp_control(ctrl_endp, usb_dev_request_hnd_set_conf,
+		usb_endp_control(ctrl_endp, usb_dev_request_hnd_set_conf, NULL,
 			USB_DEV_REQ_TYPE_WR
 				| USB_DEV_REQ_TYPE_STD
 				| USB_DEV_REQ_TYPE_DEV,

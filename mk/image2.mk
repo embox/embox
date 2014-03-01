@@ -42,19 +42,6 @@ ifeq ($(value DISASSEMBLY),y)
 image : $(IMAGE_DIS)
 endif
 
-CROSS_COMPILE ?=
-
-CC      := $(CROSS_COMPILE)gcc
-CPP     := $(CC) -E
-CXX     := $(CROSS_COMPILE)g++
-AR      := $(CROSS_COMPILE)ar
-AS      := $(CROSS_COMPILE)as
-LD      := $(CROSS_COMPILE)ld
-NM      := $(CROSS_COMPILE)nm
-OBJDUMP := $(CROSS_COMPILE)objdump
-OBJCOPY := $(CROSS_COMPILE)objcopy
-SIZE    := $(CROSS_COMPILE)size
-
 ifndef LD_SINGLE_T_OPTION
 ld_scripts_flag = $(1:%=-T%)
 else
@@ -176,7 +163,7 @@ $(symbols_pass2_c) : image_o = $(image_pass1_o)
 $(symbols_c_files) :
 $(symbols_c_files) : mk/script/nm2c.awk $$(common_prereqs)
 $(symbols_c_files) : $$(image_o)
-	$(NM) --demangle --line-numbers --numeric-sort $< | $(AWK) -f mk/script/nm2c.awk > $@
+	$(NM) --demangle --numeric-sort $< | $(AWK) -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a

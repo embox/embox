@@ -12,7 +12,7 @@
 struct node;
 
 /**
- * @brief permision mask of mode in least signficant bits (in S_RWXO range)
+ * @brief permission mask of mode in least significant bits (in S_RWXO range)
  *
  * @param node
  *
@@ -21,7 +21,7 @@ struct node;
 extern int fs_perm_mask(struct node *node);
 
 /**
- * @brief Check node mask for desired permision mask @fd_flags
+ * @brief Check node mask for desired permission mask @fd_flags
  *
  * @param node
  * @param fd_flags
@@ -38,7 +38,7 @@ extern int fs_perm_check(struct node *node, int fd_flags);
  * @param root Lookup starting from @root
  * @param path Path to lookup
  * @param pathlast pointer to path, which is not resolved, starting from *@node
- * @param node pointer to last finded node
+ * @param node pointer to last found node
  *
  * @return
  *	-EACCESS on permission violation

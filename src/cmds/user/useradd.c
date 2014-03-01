@@ -7,41 +7,16 @@
  */
 
 #include <embox/cmd.h>
+
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pwd.h>
-#include <grp.h>
 #include <ctype.h>
 
-#define BUF_LEN 64
+#include "user.h"
 
 EMBOX_CMD(useradd);
 
-#define PASSWD_FILE "/tmp/passwd"
-#define SHADOW_FILE "/tmp/shadow"
-#define ADDUSER_FILE "/tmp/adduser.conf"
-
-static void put_string(char *data, FILE *fd, char delim) {
-	fwrite(data, sizeof(char), strlen(data), fd);
-	fputc(delim, fd);
-}
-
-static void put_int(int data, FILE *fd, char delim) {
-	char buf[20];
-
-	sprintf(buf, "%i", data);
-	fwrite(buf, sizeof(char), strlen(buf), fd);
-	fputc(delim, fd);
-}
-
-static int is_user_exists(char *name) {
-	char pwdbuf[BUF_LEN];
-	struct passwd pwd, *result;
-
-	return getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result) || result;
-}
+static char *def_pw_passwd = "x";
+static char *def_sp_pwdp = "";
 
 static int get_default_pwd(struct passwd *result, char *name, char *buf,
 		size_t buf_len) {
@@ -52,43 +27,16 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	}
 
 	result->pw_name = name;
-	result->pw_passwd = "x";
+	result->pw_passwd = def_pw_passwd;
 	result->pw_uid = getmaxuid() + 1;
 	result->pw_gecos = name;
 
 	return 0;
 }
 
-static int get_group(char *group) {
-	struct group _group, *_group_res;
-	char buf[80];
-	int res = 0;
 
-	if (isdigit(group[0])) {
-		res = getgrgid_r(atoi(group), &_group, buf, 80, &_group_res);
-	} else {
-		res = getgrnam_r(group, &_group, buf, 80, &_group_res);
-	}
-	return !res && _group_res != NULL ? _group_res->gr_gid : -1;
-}
-
-static int set_options(struct passwd *result, char *home, char *shell,
-		char *gecos, int group) {
-	if (0 != strcmp(home, "")) {
-		result->pw_dir = home;
-	}
-
-	if (0 != strcmp(shell, "")) {
-		result->pw_shell = shell;
-	}
-
-	if (0 != strcmp(gecos, "")) {
-		result->pw_gecos = gecos;
-	}
-
-	if (group >= 0) {
-		result->pw_gid = group;
-	}
+static int get_default_spwd(struct spwd *result) {
+	result->sp_pwdp = def_sp_pwdp;
 
 	return 0;
 }
@@ -96,6 +44,7 @@ static int set_options(struct passwd *result, char *home, char *shell,
 static int create_user(char *name, char *home, char *shell, char *pswd,
 		char *gecos, int group) {
 	struct passwd pwd;
+	struct spwd spwd;
 	FILE *pswdf, *sdwf;
 	char buf_pswd[80];
 	int res = 0;
@@ -109,30 +58,21 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 		return -1;
 	}
 
+	if (0 != get_default_spwd(&spwd)) {
+		res = -1;
+		goto out;
+	}
+
 	if (0 != get_default_pwd(&pwd, name, buf_pswd, 80)) {
 		res = -1;
 		goto out;
 	}
 
-	set_options(&pwd, home, shell, gecos, group);
+	user_set_options_passwd(&pwd, home, shell, gecos, group);
+	user_write_user_passwd(&pwd, pswdf);
 
-	/* passwd */
-	{
-		put_string(pwd.pw_name, pswdf, ':');
-		put_string(pwd.pw_passwd, pswdf, ':');
-		put_int(pwd.pw_uid, pswdf, ':');
-		put_int(pwd.pw_gid, pswdf, ':');
-		put_string(pwd.pw_gecos, pswdf, ':');
-		put_string(pwd.pw_dir, pswdf, ':');
-		put_string(pwd.pw_shell, pswdf, '\n');
-	}
-
-	/* shadow */
-	{
-		put_string(pwd.pw_name, sdwf, ':');
-		put_string(pswd, sdwf, ':');
-		put_string("::::::", sdwf, '\n');
-	}
+	user_set_options_spwd(&spwd, pwd.pw_name, pswd);
+	user_write_user_spwd(&spwd, sdwf);
 
 out:
 	fclose(pswdf);
@@ -153,14 +93,14 @@ static int change_default_options(char *home, char *shell, int group){
 		return -1;
 	}
 
-	set_options(&pwd, home, shell, "", group);
+	user_set_options_passwd(&pwd, home, shell, "", group);
 
-	put_string("GROUP", fd, '=');
-	put_int(pwd.pw_gid, fd, '\n');
-	put_string("HOME", fd, '=');
-	put_string(pwd.pw_dir, fd, '\n');
-	put_string("SHELL", fd, '=');
-	put_string(pwd.pw_shell, fd, '\n');
+	user_put_string("GROUP", fd, '=');
+	user_put_int(pwd.pw_gid, fd, '\n');
+	user_put_string("HOME", fd, '=');
+	user_put_string(pwd.pw_dir, fd, '\n');
+	user_put_string("SHELL", fd, '=');
+	user_put_string(pwd.pw_shell, fd, '\n');
 
 	fclose(fd);
 	return 0;
@@ -196,7 +136,8 @@ static int print_default_options(void) {
 }
 
 static int useradd(int argc, char **argv) {
-	char name[15], home[20] = "", shell[20] = "", pswd[15] = "", gecos[15] = "";
+	char name[15], home[20] = "", shell[20] = "", *pswd = NULL,
+			_pswd[15] = "", gecos[15] = "";
 	int group = -1;
 	int opt, count = 0, user_create = 1;
 
@@ -215,13 +156,14 @@ static int useradd(int argc, char **argv) {
 				strcpy(shell, optarg);
 				break;
 			case 'p':
-				strcpy(pswd, optarg);
+				strcpy(_pswd, optarg);
+				pswd = _pswd;
 				break;
 			case 'c':
 				strcpy(gecos, optarg);
 				break;
 			case 'g':
-				if ((group = get_group(optarg)) < 0) {
+				if ((group = user_get_group(optarg)) < 0) {
 					printf("useradd: group '%i' doesn't exist\n", group);
 					return 0;
 				}
@@ -250,7 +192,7 @@ static int useradd(int argc, char **argv) {
 		if (user_create) {
 			strcpy(name, argv[optind]);
 
-			if (is_user_exists(name)) {
+			if (user_is_user_exists(name)) {
 				printf("useradd: user '%s' already exists\n", name);
 				return 0;
 			}

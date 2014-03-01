@@ -43,7 +43,7 @@ static int usb_class_hid_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 
 	hid->getconf = pool_alloc(&hid_getconfs);
 
-	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd,
+	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,

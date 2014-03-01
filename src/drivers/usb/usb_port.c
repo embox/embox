@@ -166,3 +166,21 @@ int usb_port_reset_unlock(struct usb_hub_port *port) {
 	return 0;
 }
 
+static void usb_port_st_addr_settle(struct usb_hub_port *port) {
+
+	if (usb_port_if_disconnect(port)) {
+		usb_dev_disconnect(port);
+		return;
+	}
+
+	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+		usb_dev_addr_settled(port->dev);
+	}
+}
+
+int usb_port_address_setle_wait(struct usb_hub_port *port, int ms) {
+	usb_port_set_state(port, usb_port_st_addr_settle);
+	usb_port_post(port, ms);
+	return 0;
+}
+
