@@ -6,8 +6,21 @@
  * @author Roman Kurbatov
  */
 
+/*
+ * Notes:
+ *
+ * 1. Now the only purpose of using ACPICA is to turn the system off. So many
+ * functions not required for it are not implemented here.
+ *
+ * 2. We assume that there is no virtual memory in Embox.
+ *
+ */
+
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 
+#include <asm/io.h>
 #include <drivers/acpi/acpi.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/semaphore.h>
@@ -66,10 +79,6 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
 	return AE_OK;
 }
 
-/*
- * We assume that there is no virtual memory in Embox.
- */
-
 void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
 	return ACPI_PHYSADDR_TO_PTR(Where);
 }
@@ -113,7 +122,8 @@ ACPI_STATUS AcpiOsExecute(
 		ACPI_EXECUTE_TYPE Type,
 		ACPI_OSD_EXEC_CALLBACK Function,
 		void *Context) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
@@ -122,38 +132,24 @@ void AcpiOsSleep(UINT64 Milliseconds) {
 }
 
 void AcpiOsStall(UINT32 Microseconds) {
-	// TODO
+	/* Not implemented. */
 }
 
 void AcpiOsWaitEventsComplete(void) {
-	// TODO
+	/* Not implemented. */
 }
 
 ACPI_STATUS AcpiOsCreateSemaphore(
 		UINT32 MaxUnits,
 		UINT32 InitialUnits,
 		ACPI_SEMAPHORE *OutHandle) {
-	if (!OutHandle) {
-		return AE_BAD_PARAMETER;
-	}
-
-	*OutHandle = malloc(sizeof(struct sem));
-
-	if (!*OutHandle) {
-		return AE_NO_MEMORY;
-	}
-
-	semaphore_init(*OutHandle, InitialUnits);
+	/* Not implemented. */
 
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
-	if (!Handle) {
-		return AE_BAD_PARAMETER;
-	}
-
-	free(Handle);
+	/* Not implemented. */
 
 	return AE_OK;
 }
@@ -162,45 +158,51 @@ ACPI_STATUS AcpiOsWaitSemaphore(
 		ACPI_SEMAPHORE Handle,
 		UINT32 Units,
 		UINT16 Timeout) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK *OutHandle) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
-void AcpiOsDeleteLock (ACPI_SPINLOCK Handle) {
-	// TODO
+void AcpiOsDeleteLock(ACPI_SPINLOCK Handle) {
+	/* Not implemented. */
 }
 
 ACPI_CPU_FLAGS AcpiOsAcquireLock(ACPI_SPINLOCK Handle) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
 void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags) {
-	// TODO
+	/* Not implemented. */
 }
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(
 		UINT32 InterruptNumber,
 		ACPI_OSD_HANDLER ServiceRoutine,
 		void *Context) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsRemoveInterruptHandler(
 		UINT32 InterruptNumber,
 		ACPI_OSD_HANDLER ServiceRoutine) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
@@ -208,14 +210,53 @@ ACPI_STATUS AcpiOsReadPort(
 		ACPI_IO_ADDRESS Address,
 		UINT32 *Value,
 		UINT32 Width) {
-	// TODO
+	if (!Value) {
+		return AE_BAD_PARAMETER;
+	}
+
+	switch (Width) {
+		case 8: {
+			*Value = in8(Address);
+			break;
+		}
+		case 16: {
+			*Value = in16(Address);
+			break;
+		}
+		case 32: {
+			*Value = in32(Address);
+			break;
+		}
+		default: {
+			return AE_BAD_PARAMETER;
+		}
+	}
+
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsWritePort(ACPI_IO_ADDRESS Address,
+ACPI_STATUS AcpiOsWritePort(
+		ACPI_IO_ADDRESS Address,
 		UINT32 Value,
 		UINT32 Width) {
-	// TODO
+	switch (Width) {
+		case 8: {
+			out8((uint8_t) Value, Address);
+			break;
+		}
+		case 16: {
+			out16((uint16_t) Value, Address);
+			break;
+		}
+		case 32: {
+			out32(Value, Address);
+			break;
+		}
+		default: {
+			return AE_BAD_PARAMETER;
+		}
+	}
+
 	return AE_OK;
 }
 
@@ -223,7 +264,8 @@ ACPI_STATUS AcpiOsReadMemory(
 		ACPI_PHYSICAL_ADDRESS Address,
 		UINT64 *Value,
 		UINT32 Width) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
@@ -231,17 +273,18 @@ ACPI_STATUS AcpiOsWriteMemory(
 		ACPI_PHYSICAL_ADDRESS Address,
 		UINT64 Value,
 		UINT32 Width) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
-ACPI_STATUS
-AcpiOsReadPciConfiguration(
+ACPI_STATUS AcpiOsReadPciConfiguration(
 		ACPI_PCI_ID *PciId,
 		UINT32 Reg,
 		UINT64 *Value,
 		UINT32 Width) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
@@ -250,33 +293,34 @@ ACPI_STATUS AcpiOsWritePciConfiguration(
 		UINT32 Reg,
 		UINT64 Value,
 		UINT32 Width) {
-	// TODO
+	/* Not implemented. */
+
 	return AE_OK;
 }
 
-void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf (const char *Format, ...) {
-	// TODO
+void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char *Format, ...) {
+	va_list args;
+	va_start(args, Format);
+	AcpiOsVprintf(Format, args);
+	va_end(args);
 }
 
 void AcpiOsVprintf(const char *Format, va_list Args) {
-	// TODO
+	vprintf(Format, Args);
 }
 
 void AcpiOsRedirectOutput(void *Destination) {
-	// TODO
+	/* Not implemented. */
 }
 
 UINT64 AcpiOsGetTimer(void) {
-	// TODO
+	/* Not implemented. */
+
 	return 0;
 }
 
 ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
-	// TODO
-	return AE_OK;
-}
+	/* Not implemented. */
 
-ACPI_STATUS AcpiOsGetLine(char *Buffer, UINT32 BufferLength, UINT32 *BytesRead) {
-	// TODO
 	return AE_OK;
 }

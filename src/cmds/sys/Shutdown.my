@@ -1,13 +1,16 @@
 package embox.cmd.sys
 
-@Cmd(name = "Shutdown",
-	help = "reset the system",
+@Cmd(name = "shutdown",
+	help = "turn the system off",
 	man = '''
 		NAME
-			shutdown - reset the system
+			shutdown - turn the system off
 		AUTHORS
 			Anton Bondarev
+			Roman Kurbatov
 	''')
 module shutdown {
 	source "shutdown.c"
+
+	depends embox.driver.acpi.acpica
 }

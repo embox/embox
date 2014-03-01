@@ -10,6 +10,7 @@
 #define DRIVERS_ACPI_ACEMBOX_H_
 
 #include <limits.h>
+#include <drivers/acpi/platform/acgcc.h>
 
 #define ACPI_MACHINE_WIDTH WORD_BIT
 
