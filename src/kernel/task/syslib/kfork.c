@@ -104,7 +104,7 @@ pid_t kfork(jmp_buf env) {
 	kfork_data.par_thr = par_thread;
 	memcpy(kfork_data.kfork_jmp_buf, env, sizeof(jmp_buf));
 
-	child_pid = new_task(parent_task->task_name, kfork_trampoline, &kfork_data);
+	child_pid = new_task(task_get_name(parent_task), kfork_trampoline, &kfork_data);
 	ksleep(0);
 	return child_pid;
 }

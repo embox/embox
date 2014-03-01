@@ -25,7 +25,7 @@ int task_table_add(struct task *tsk) {
 
 	tid = util_idx_table_add(task_table, tsk);
 	if (tid >= 0) {
-		tsk->tid = tid;
+		tsk->tsk_id = tid;
 	}
 
 	return tid;

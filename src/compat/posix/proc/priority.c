@@ -30,7 +30,7 @@ int getpriority(int which, id_t who) {
 			SET_ERRNO(EINVAL);
 			return -1;
 		case PRIO_PROCESS:
-			if (task->tid == who) {
+			if (tid == who) {
 				return task_get_priority(task);
 			}
 			break;
@@ -75,7 +75,7 @@ int setpriority(int which, id_t who, int value) {
 			SET_ERRNO(EINVAL);
 			return -1;
 		case PRIO_PROCESS:
-			if (task->tid == who) {
+			if (tid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
 					SET_ERRNO(-ret);

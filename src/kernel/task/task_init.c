@@ -25,8 +25,8 @@ struct task * task_init(void *space, size_t size,
 		return NULL;
 	}
 
-	strncpy(task->task_name, name, sizeof task->task_name - 1);
-	task->task_name[sizeof task->task_name - 1] = '\0';
+	strncpy(task->tsk_name, name, sizeof task->tsk_name - 1);
+	task->tsk_name[sizeof task->tsk_name - 1] = '\0';
 
 	task_resource_init(task);
 

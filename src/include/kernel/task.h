@@ -33,8 +33,8 @@ struct task {
 	task_priority_t priority; /**< @brief Task priority */
 
 	/* common */
-	int tid;               /**< task identifier */
-	char task_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
+	int tsk_id;               /**< task identifier */
+	char tsk_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct thread *main_thread;
 	clock_t per_cpu; /**< task times */
 
@@ -52,9 +52,13 @@ extern int new_task(const char *name, void *(*run)(void *), void *arg);
  */
 extern struct task *task_self(void);
 
-/** return ID of a current task */
-static inline int task_getid(void) {
-	return task_self()->tid;
+static inline int task_get_id(const struct task *tsk) {
+	return task_self()->tsk_id;
+}
+
+static inline const char * task_get_name(
+		const struct task *tsk) {
+	return tsk->tsk_name;
 }
 
 /** setup task priority */

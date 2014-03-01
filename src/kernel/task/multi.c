@@ -112,12 +112,12 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		thread_detach(thd);
 		thread_launch(thd);
 
-		res = self_task->tid;
+		res = self_task->tsk_id;
 
 		goto out_unlock;
 
 out_tablefree:
-		task_table_del(self_task->tid);
+		task_table_del(self_task->tsk_id);
 
 out_threadfree:
 		thread_terminate(thd);
@@ -184,7 +184,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		task_resource_deinit(task);
 
 		/* Release our task id */
-		task_table_del(task->tid);
+		task_table_del(task->tsk_id);
 
 		/*
 		 * Terminate all threads except main thread. If we terminate current
