@@ -240,7 +240,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *joining;
 
 	/* We can free only not main threads */
-	if (task->main_thread == current) {
+	if (current == task_get_main(task)) {
 		/* We are last thread. */
 		task_exit(ret);
 		/* NOTREACHED */

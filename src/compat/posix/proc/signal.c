@@ -90,7 +90,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (!task)
 		return SET_ERRNO(ESRCH);
 
-	sigstate = &task->main_thread->sigstate;
+	sigstate = &task_get_main(task)->sigstate;
 
 	// TODO prepare it
 	info.si_value = value;
@@ -99,7 +99,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_signal(task->main_thread);
+	sched_signal(task_get_main(task));
 
 	return 0;
 }
@@ -128,5 +128,5 @@ int kill(int tid, int sig) {
 	if (!task)
 		return SET_ERRNO(ESRCH);
 
-	return pthread_kill(task->main_thread, sig);
+	return pthread_kill(task_get_main(task), sig);
 }

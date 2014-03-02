@@ -33,7 +33,7 @@ struct task {
 	/* common */
 	int tsk_id;               /**< task identifier */
 	char tsk_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
-	struct thread *main_thread;
+	struct thread *tsk_main;
 	clock_t tsk_clock; /**< task times */
 
 	char resources[];
@@ -65,6 +65,11 @@ extern int task_set_priority(struct task *task, task_priority_t priority);
 static inline task_priority_t task_get_priority(
 		const struct task *tsk) {
 	return tsk->tsk_priority;
+}
+
+static inline struct thread * task_get_main(
+		const struct task *tsk) {
+	return tsk->tsk_main;
 }
 
 static inline clock_t task_get_clock(const struct task *tsk) {
@@ -99,25 +104,25 @@ extern int task_waitpid(pid_t pid);
 
 #include <util/dlist.h>
 
-#define task_foreach_thread(thr, task)                                    \
-	thr = task->main_thread;                                             \
-	for (struct thread *nxt = dlist_entry(thr->thread_link.next, \
+#define task_foreach_thread(th, tsk)                                    \
+	th = task_get_main(tsk);                                             \
+	for (struct thread *nxt = dlist_entry(th->thread_link.next, \
 			struct thread, thread_link), \
 			*tmp = NULL;                            \
-		(thr != task->main_thread) || (tmp == NULL);                      \
-		tmp = thr, \
-		thr = nxt,                                                       \
-			nxt = dlist_entry(thr->thread_link.next,                \
+		(th != task_get_main(tsk)) || (tmp == NULL);                      \
+		tmp = th, \
+		th = nxt,                                                       \
+			nxt = dlist_entry(th->thread_link.next,                \
 						struct thread, thread_link)                 \
 		)
 
 #include <kernel/task/task_table.h>
 
-#define task_foreach(task)                             \
-	task = task_table_get(0);                          \
+#define task_foreach(tsk)                             \
+	tsk = task_table_get(0);                          \
 	for(int tid = 1;                                   \
-	(task != NULL);                                    \
-	task = task_table_get(task_table_get_first(tid++)) \
+	(tsk != NULL);                                    \
+	tsk = task_table_get(task_table_get_first(tid++)) \
 	)
 
 __END_DECLS

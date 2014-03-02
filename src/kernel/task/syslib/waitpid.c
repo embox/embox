@@ -40,7 +40,7 @@ int task_waitpid(pid_t pid) {
 
 		ret = *task_resource_errno(tsk);
 		task_table_del(task_get_id(tsk));
-		thread_delete(tsk->main_thread);
+		thread_delete(task_get_main(tsk));
 	}
 out:
 	sched_unlock();

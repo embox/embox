@@ -91,7 +91,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		}
 
 		thd->task = self_task;
-		self_task->main_thread = thd;
+		self_task->tsk_main = thd;
 
 		self_task->tsk_priority = task_self()->tsk_priority;
 
@@ -175,15 +175,15 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		dlist_foreach_entry(thread, next, &task->main_thread->thread_link, thread_link) {
+		dlist_foreach_entry(thread, next, &task->tsk_main->thread_link, thread_link) {
 			thread_terminate(thread);
 		}
 
 		/* At the end terminate main thread */
-		thread_terminate(task->main_thread);
+		thread_terminate(task->tsk_main);
 
 		/* Set an exited state on main thread */
-		thread_state_exited(task->main_thread);
+		thread_state_exited(task->tsk_main);
 
 		/* Re-schedule */
 		schedule();

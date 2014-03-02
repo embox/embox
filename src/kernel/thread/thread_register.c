@@ -19,7 +19,7 @@ void thread_register(struct task *tsk, struct thread *t) {
 
 	/* insert new t to the list */
 	dlist_head_init(&t->thread_link);
-	dlist_add_next(&t->thread_link, &tsk->main_thread->thread_link);
+	dlist_add_next(&t->thread_link, &task_get_main(tsk)->thread_link);
 
 	t->task = tsk;
 
@@ -36,9 +36,9 @@ void thread_register(struct task *tsk, struct thread *t) {
 void thread_unregister(struct task *tsk, struct thread *t) {
 	assert(tsk != NULL);
 	assert(t != NULL);
-	assert(tsk->main_thread != NULL);
+	assert(task_get_main(tsk) != NULL);
 
-	if (t != tsk->main_thread) {
+	if (t != task_get_main(tsk)) {
 		dlist_del(&t->thread_link);
 	}
 }
