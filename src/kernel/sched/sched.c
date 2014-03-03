@@ -345,7 +345,7 @@ static void sched_prepare_switch(struct thread *prev, struct thread *next) {
 }
 
 static void sched_finish_switch(struct thread *prev) {
-	__sched_deactivate(cpudata_var(prev));
+	__sched_deactivate(prev);
 }
 
 static struct thread *saved_prev __cpudata__; // XXX
