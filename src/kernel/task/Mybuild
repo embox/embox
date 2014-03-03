@@ -13,6 +13,8 @@ module kernel_task {
 	depends task_init
 	depends task_resource
 	depends embox.util.DList
+	depends embox.kernel.thread.idle_thread
+	@NoRuntime depends embox.kernel.cpu.common
 }
 
 module multi extends api {

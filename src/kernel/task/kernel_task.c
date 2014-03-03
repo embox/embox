@@ -11,6 +11,8 @@
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <string.h>
+#include <hal/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 EMBOX_UNIT_INIT(kernel_task_init);
 
@@ -26,7 +28,7 @@ static int kernel_task_init(void) {
 
 	tsk = task_init(task_kernel_task(),
 			sizeof *tsk + TASK_RESOURCE_SIZE,
-			"kernel");
+			"kernel", cpu_get_idle(cpu_get_id()));
 	if (tsk == NULL) {
 		return -ENOMEM;
 	}

@@ -34,6 +34,8 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
+#include <hal/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 #include <kernel/panic.h>
 
@@ -43,7 +45,7 @@
 EMBOX_UNIT_INIT(thread_core_init);
 
 
-static int id_counter; // TODO make it an indexator
+static int id_counter = 0; // TODO make it an indexator
 
 
 /**
@@ -387,16 +389,13 @@ clock_t thread_get_running_time(struct thread *t) {
 	return running;
 }
 
-extern struct thread *idle_thread_create(void);
 extern struct thread *boot_thread_create(void);
 
 static int thread_core_init(void) {
 	struct thread *idle;
 	struct thread *current;
 
-	id_counter = 0; /* start enumeration */
-
-	idle = idle_thread_create(); /* idle thread always has ID=0 */
+	idle = cpu_get_idle(cpu_get_id()); /* idle thread always has ID=0 */
 	current = boot_thread_create(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);

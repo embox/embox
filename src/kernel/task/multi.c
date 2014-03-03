@@ -84,14 +84,11 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		self_task = task_init(addr, task_sz, name);
+		self_task = task_init(addr, task_sz, name, thd);
 		if (self_task == NULL) {
 			res = -EPERM;
 			goto out_threadfree;
 		}
-
-		thd->task = self_task;
-		self_task->tsk_main = thd;
 
 		self_task->tsk_priority = task_self()->tsk_priority;
 

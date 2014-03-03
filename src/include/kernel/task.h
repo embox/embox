@@ -82,7 +82,7 @@ static inline void task_set_clock(struct task *tsk,
 }
 
 extern struct task * task_init(void *space, size_t size,
-		const char *name);
+		const char *name, struct thread *main);
 
 /**
  * @brief Exit from current task
