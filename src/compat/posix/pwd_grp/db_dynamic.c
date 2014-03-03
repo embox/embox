@@ -12,7 +12,7 @@
 
 #include <embox/unit.h>
 
-#include "db.h"
+#include <pwd_db.h>
 
 EMBOX_UNIT_INIT(init);
 

@@ -55,6 +55,10 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 	}
 }
 
+static int mkfs_create_ramdisk(char *path, int blocks) {
+	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
+}
+
 static int exec(int argc, char **argv) {
 	int opt;
 	int min_argc;
@@ -80,9 +84,19 @@ static int exec(int argc, char **argv) {
 			operation_flag |= MKFS_FORMAT_DEV;
 			break;
 		case 'q':
-			min_argc += 1;
-			operation_flag |= MKFS_CREATE_RAMDISK;
-			break;
+			if (argc < 4) {
+				/*mkfs -q /dev/xxx blocks*/
+				return -EINVAL;
+			}
+
+			path = argv[argc - 2];
+
+			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)){
+				print_usage();
+				return -EINVAL;
+			}
+
+			return mkfs_create_ramdisk(path, blocks);
 		case '?':
 		case 'h':
 			print_usage();

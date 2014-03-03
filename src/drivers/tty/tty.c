@@ -35,22 +35,28 @@ static inline void tty_notify(struct tty *t, int mask) {
 		idesc_notify(t->idesc, mask);
 }
 
-static inline void tty_out_wake(struct tty *t) {
+#define MUTEX_UNLOCKED_DO(expr, m) \
+		__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
 
+static inline void tty_out_wake(struct tty *t) {
 	t->ops->out_wake(t);
 }
 
+/* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
-	return termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	if (len > 0) {
+		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+	}
+	return len;
 	// t->ops->tx_char(t, ch);
 }
 
+/* called from mutex locked context */
 static void tty_echo(struct tty *t, char ch) {
 	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	mutex_unlock(&t->lock);
-	tty_out_wake(t);
-	mutex_lock(&t->lock);
+	MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 }
 
 static void tty_echo_erase(struct tty *t) {
@@ -59,7 +65,9 @@ static void tty_echo_erase(struct tty *t) {
 	if (!TC_L(t, ECHO))
 		return;
 
-	if (TC_L(t, ECHOE))
+	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
+	 * as example of how ECHOE flag is handled in Minix. */
+	if (!TC_L(t, ECHOE))
 		tty_output(t, cc[VERASE]);
 
 	else

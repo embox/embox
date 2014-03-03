@@ -68,11 +68,11 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 		goto out;
 	}
 
-	set_options_passwd(&pwd, home, shell, gecos, group);
-	write_user_passwd(&pwd, pswdf);
+	user_set_options_passwd(&pwd, home, shell, gecos, group);
+	user_write_user_passwd(&pwd, pswdf);
 
-	set_options_spwd(&spwd, pwd.pw_name, pswd);
-	write_user_spwd(&spwd, sdwf);
+	user_set_options_spwd(&spwd, pwd.pw_name, pswd);
+	user_write_user_spwd(&spwd, sdwf);
 
 out:
 	fclose(pswdf);
@@ -93,14 +93,14 @@ static int change_default_options(char *home, char *shell, int group){
 		return -1;
 	}
 
-	set_options_passwd(&pwd, home, shell, "", group);
+	user_set_options_passwd(&pwd, home, shell, "", group);
 
-	put_string("GROUP", fd, '=');
-	put_int(pwd.pw_gid, fd, '\n');
-	put_string("HOME", fd, '=');
-	put_string(pwd.pw_dir, fd, '\n');
-	put_string("SHELL", fd, '=');
-	put_string(pwd.pw_shell, fd, '\n');
+	user_put_string("GROUP", fd, '=');
+	user_put_int(pwd.pw_gid, fd, '\n');
+	user_put_string("HOME", fd, '=');
+	user_put_string(pwd.pw_dir, fd, '\n');
+	user_put_string("SHELL", fd, '=');
+	user_put_string(pwd.pw_shell, fd, '\n');
 
 	fclose(fd);
 	return 0;
@@ -163,7 +163,7 @@ static int useradd(int argc, char **argv) {
 				strcpy(gecos, optarg);
 				break;
 			case 'g':
-				if ((group = get_group(optarg)) < 0) {
+				if ((group = user_get_group(optarg)) < 0) {
 					printf("useradd: group '%i' doesn't exist\n", group);
 					return 0;
 				}
@@ -192,7 +192,7 @@ static int useradd(int argc, char **argv) {
 		if (user_create) {
 			strcpy(name, argv[optind]);
 
-			if (is_user_exists(name)) {
+			if (user_is_user_exists(name)) {
 				printf("useradd: user '%s' already exists\n", name);
 				return 0;
 			}

@@ -16,7 +16,7 @@
 #include <grp.h>
 #include <shadow.h>
 
-#include "db.h"
+#include <pwd_db.h>
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;

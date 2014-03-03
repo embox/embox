@@ -169,5 +169,7 @@ static int pci_bios_init(void) {
 	if (busn == INDEX_NONE) {
 		return -ENOMEM;
 	}
-	return pci_bus_configure(busn);
+	pci_bus_configure(busn);
+
+	return 0;
 }

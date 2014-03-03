@@ -18,29 +18,6 @@
 
 EMBOX_CMD(exec);
 
-static int copy(const char* from, const char* to) {
-	FILE *fromf, *tof;
-	int a;
-
-	if (NULL == (fromf = fopen(from, "r"))) {
-		return -1;
-	}
-
-	if (NULL == (tof = fopen(to, "w"))) {
-		fclose(fromf);
-		return -1;
-	}
-
-	while ((a = fgetc(fromf)) != EOF) {
-		fputc(a, tof);
-	}
-
-	fclose(fromf);
-	fclose(tof);
-
-	return 0;
-}
-
 static int shadow(char *name, char *new_name, char *pswd) {
 	struct spwd *spwd;
 	FILE *shdwf, *temp_shdwf;
@@ -55,15 +32,15 @@ static int shadow(char *name, char *new_name, char *pswd) {
 
 	while (NULL != (spwd = fgetspent(shdwf))) {
 		if (0 == strcmp(spwd->sp_namp, name)) {
-			set_options_spwd(spwd, new_name, pswd);
+			user_set_options_spwd(spwd, new_name, pswd);
 		}
-		write_user_spwd(spwd, temp_shdwf);
+		user_write_user_spwd(spwd, temp_shdwf);
 	}
 
 	fclose(temp_shdwf);
 	fclose(shdwf);
 
-	copy(TMP_SHADOW_FILE, SHADOW_FILE);
+	user_copy(TMP_SHADOW_FILE, SHADOW_FILE);
 	remove(TMP_SHADOW_FILE);
 
 	return 0;
@@ -86,7 +63,7 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 
 	while (0 == (res = fgetpwent_r(pswdf, &pwd, buf_pswd, 80, &pwd_res))) {
 		if (0 == strcmp(pwd.pw_name, name)) {
-			set_options_passwd(&pwd, home, shell, gecos, group);
+			user_set_options_passwd(&pwd, home, shell, gecos, group);
 
 			if (0 != strcmp(new_name, "")) {
 				pwd.pw_name = new_name;
@@ -95,13 +72,13 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 				shadow(name, new_name, pswd);
 			}
 		}
-		write_user_passwd(&pwd, temp_pswdf);
+		user_write_user_passwd(&pwd, temp_pswdf);
 	}
 
 	fclose(temp_pswdf);
 	fclose(pswdf);
 
-	copy(TMP_PASSWD_FILE, PASSWD_FILE);
+	user_copy(TMP_PASSWD_FILE, PASSWD_FILE);
 	remove(TMP_PASSWD_FILE);
 
 	return 0;
@@ -142,7 +119,7 @@ static int exec(int argc, char **argv) {
 				strcpy(new_name, optarg);
 				break;
 			case 'g':
-				if ((group = get_group(optarg)) < 0) {
+				if ((group = user_get_group(optarg)) < 0) {
 					printf("usermod: group '%i' doesn't exist\n", group);
 					return 0;
 				}
@@ -161,7 +138,7 @@ static int exec(int argc, char **argv) {
 
 		strcpy(name, argv[optind]);
 
-		if (!is_user_exists(name)) {
+		if (!user_is_user_exists(name)) {
 			printf("usermod: user '%s' doesn't exist\n", name);
 			return 0;
 		}
