@@ -12,6 +12,7 @@ module kernel_task {
 
 	depends task_init
 	depends task_resource
+	depends task_table_api
 	depends embox.util.DList
 	depends embox.kernel.thread.idle_thread
 	@NoRuntime depends embox.kernel.cpu.common

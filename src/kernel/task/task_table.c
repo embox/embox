@@ -7,17 +7,16 @@
  */
 
 #include <assert.h>
+#include <embox/unit.h>
 #include <kernel/task/task_table.h>
 #include <util/idx_table.h>
 #include <framework/mod/options.h>
 
+EMBOX_UNIT_INIT(task_table_module_init);
+
 #define MODOPS_TASK_TABLE_SIZE OPTION_GET(NUMBER, task_table_size)
 
 UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
-
-void task_table_init(void) {
-	UTIL_IDX_TABLE_INIT(task_table, MODOPS_TASK_TABLE_SIZE);
-}
 
 int task_table_add(struct task *tsk) {
 	return util_idx_table_add(task_table, tsk);
@@ -39,4 +38,9 @@ int task_table_has_space(void) {
 
 int task_table_get_first(int since) {
 	return util_idx_table_next_mark(task_table, since, 1);
+}
+
+static int task_table_module_init(void) {
+	UTIL_IDX_TABLE_INIT(task_table, MODOPS_TASK_TABLE_SIZE);
+	return 0;
 }

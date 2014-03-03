@@ -6,8 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <embox/unit.h>
-
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
@@ -24,8 +22,6 @@
 #include <kernel/task/resource/errno.h>
 
 #include <err.h>
-
-EMBOX_UNIT_INIT(multi_init);
 
 typedef void *(*run_fn)(void *);
 
@@ -240,19 +236,6 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 
 	}
 	sched_unlock();
-
-	return 0;
-}
-
-static int multi_init(void) {
-	int ret;
-
-	task_table_init();
-
-	ret = task_table_add(task_kernel_task());
-	if (ret < 0) {
-		return ret;
-	}
 
 	return 0;
 }

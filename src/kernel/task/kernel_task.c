@@ -7,6 +7,7 @@
 
 #include <embox/unit.h>
 #include <kernel/task.h>
+#include <kernel/task/task_table.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -20,7 +21,14 @@ struct task * task_kernel_task(void) {
 }
 
 static int kernel_task_init(void) {
-	task_init(&kernel_task, 0, "kernel",
+	int ktask_id;
+
+	ktask_id = task_table_add(task_kernel_task());
+	if (ktask_id < 0) {
+		return ktask_id;
+	}
+
+	task_init(task_kernel_task(), ktask_id, "kernel",
 			cpu_get_idle(cpu_get_id()), TASK_PRIORITY_DEFAULT);
 
 	return 0;
