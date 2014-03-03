@@ -11,6 +11,7 @@ static module core {
 	source "libintl.a"
 
 	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.lib.LibCStringDup
 	@NoRuntime depends embox.compat.posix.util.Time
 	@NoRuntime depends embox.compat.posix.proc.uid
 }

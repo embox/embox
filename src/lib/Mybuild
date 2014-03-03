@@ -10,6 +10,7 @@ module rl_linenoise extends readline_api {
 	depends embox.compat.posix.fs.dirent
 	depends embox.lib.LibC
 	depends third_party.lib.linenoise
+	depends embox.lib.LibCStringDup
 }
 
 static module LibCurses {
