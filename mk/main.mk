@@ -153,7 +153,7 @@ endif # templates
 .PHONY : $(templates:%=confload-%)
 $(templates:%=confload-%) : confload-% : confclean
 	@$(MKDIR) $(CONF_DIR)
-	$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
+	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
 	@echo 'Config complete'
 
 define help-confload
