@@ -81,9 +81,8 @@ static inline void task_set_clock(struct task *tsk,
 	tsk->tsk_clock = new_clock;
 }
 
-extern struct task * task_init(void *space, size_t size,
-		int id, const char *name, struct thread *main,
-		task_priority_t priority);
+extern void task_init(struct task *tsk, int id, const char *name,
+		struct thread *main_thread, task_priority_t priority);
 
 /**
  * @brief Exit from current task

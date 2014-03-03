@@ -49,8 +49,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res, tid;
-	const int task_sz = sizeof *self_task + TASK_RESOURCE_SIZE;
-	void *addr;
 
 	sched_lock();
 	{
@@ -78,8 +76,9 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_poolfree;
 		}
 
-		addr = thread_stack_alloc(thd, task_sz);
-		if (addr == NULL) {
+		self_task = thread_stack_alloc(thd,
+				sizeof *self_task + TASK_RESOURCE_SIZE);
+		if (self_task == NULL) {
 			res = -ENOMEM;
 			goto out_threadfree;
 		}
@@ -90,12 +89,8 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		self_task = task_init(addr, task_sz, tid, name, thd,
-				task_self()->tsk_priority);
-		if (self_task == NULL) {
-			res = -EPERM;
-			goto out_tablefree;
-		}
+		task_init(self_task, tid, name, thd,
+				 task_self()->tsk_priority);
 
 		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
@@ -126,6 +121,8 @@ out_poolfree:
 out_unlock:
 	sched_unlock();
 
+	if (res >= 0)
+		assert(self_task == task_table_get(tid));
 	return res;
 }
 

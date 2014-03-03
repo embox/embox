@@ -7,39 +7,30 @@
  * @author Anton Bondarev
  */
 
-#include <string.h>
+#include <assert.h>
 #include <kernel/task.h>
-#include <util/binalign.h>
 #include <kernel/task/resource.h>
 #include <kernel/thread.h>
+#include <stdint.h>
+#include <string.h>
+#include <util/binalign.h>
 
-struct task * task_init(void *space, size_t size,
-		int id, const char *name, struct thread *main_thread,
-		task_priority_t priority) {
-	struct task *task;
-	size_t task_off, task_sz;
+void task_init(struct task *tsk, int id, const char *name,
+		struct thread *main_thread, task_priority_t priority) {
+	assert(tsk != NULL);
+	assert(binalign_check_bound((uintptr_t)tsk, sizeof(void *)));
 
-	task = (struct task *)binalign_bound((uintptr_t)space, 4);
-	task_off = (void *)task - space;
-	task_sz = sizeof *task + TASK_RESOURCE_SIZE;
+	tsk->tsk_id = id;
 
-	if (size < task_off + task_sz) {
-		return NULL;
-	}
+	strncpy(tsk->tsk_name, name, sizeof tsk->tsk_name - 1);
+	tsk->tsk_name[sizeof tsk->tsk_name - 1] = '\0';
 
-	task->tsk_id = id;
+	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
 
-	strncpy(task->tsk_name, name, sizeof task->tsk_name - 1);
-	task->tsk_name[sizeof task->tsk_name - 1] = '\0';
+	tsk->tsk_priority = priority;
 
-	task->tsk_main = main_thread;
-	main_thread->task = task;
+	tsk->tsk_clock = 0;
 
-	task->tsk_priority = priority;
-
-	task->tsk_clock = 0;
-
-	task_resource_init(task);
-
-	return task;
+	task_resource_init(tsk);
 }

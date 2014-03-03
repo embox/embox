@@ -6,11 +6,7 @@
  */
 
 #include <embox/unit.h>
-#include <errno.h>
-#include <framework/mod/options.h>
 #include <kernel/task.h>
-#include <kernel/task/resource.h>
-#include <string.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -24,16 +20,8 @@ struct task * task_kernel_task(void) {
 }
 
 static int kernel_task_init(void) {
-	struct task *tsk;
-
-	tsk = task_init(task_kernel_task(),
-			sizeof *tsk + TASK_RESOURCE_SIZE,
-			0, "kernel", cpu_get_idle(cpu_get_id()),
-			TASK_PRIORITY_DEFAULT);
-	if (tsk == NULL) {
-		return -ENOMEM;
-	}
-	assert(tsk == task_kernel_task());
+	task_init(&kernel_task, 0, "kernel",
+			cpu_get_idle(cpu_get_id()), TASK_PRIORITY_DEFAULT);
 
 	return 0;
 }
