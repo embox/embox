@@ -8,10 +8,17 @@
  */
 
 #include <stdint.h>
+
 #include <asm/bitops.h>
 #include <kernel/irq.h>
 
 #include <drivers/diag.h>
+
+#include <framework/mod/options.h>
+#include <module/embox/driver/serial/xuartlite.h>
+
+#define CONFIG_XILINX_UARTLITE_BASEADDR OPTION_GET(NUMBER,xuartlite_base)
+#define CONFIG_XILINX_UARTLITE_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
 
 typedef struct uart_regs {
 	uint32_t rx_data;
