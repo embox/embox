@@ -48,7 +48,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
-	int res = 0;
+	int res, tid;
 	const int task_sz = sizeof *self_task + TASK_RESOURCE_SIZE;
 	void *addr;
 
@@ -84,17 +84,17 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		self_task = task_init(addr, task_sz, name, thd);
-		if (self_task == NULL) {
-			res = -EPERM;
+		tid = task_table_add(self_task);
+		if (tid < 0) {
+			res = tid;
 			goto out_threadfree;
 		}
 
-		self_task->tsk_priority = task_self()->tsk_priority;
-
-		/* initialize the new task */
-		if ((res = task_table_add(self_task)) < 0) {
-			goto out_threadfree;
+		self_task = task_init(addr, task_sz, tid, name, thd,
+				task_self()->tsk_priority);
+		if (self_task == NULL) {
+			res = -EPERM;
+			goto out_tablefree;
 		}
 
 		res = task_resource_inherit(self_task, task_self());
@@ -103,7 +103,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		}
 
 		thread_set_priority(thd,
-				sched_priority_thread(task_self()->tsk_priority,
+				sched_priority_thread(self_task->tsk_priority,
 						thread_priority_get(thread_self())));
 
 		thread_detach(thd);
@@ -114,7 +114,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 		goto out_unlock;
 
 out_tablefree:
-		task_table_del(self_task->tsk_id);
+		task_table_del(tid);
 
 out_threadfree:
 		thread_terminate(thd);

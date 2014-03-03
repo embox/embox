@@ -14,7 +14,8 @@
 #include <kernel/thread.h>
 
 struct task * task_init(void *space, size_t size,
-		const char *name, struct thread *main_thread) {
+		int id, const char *name, struct thread *main_thread,
+		task_priority_t priority) {
 	struct task *task;
 	size_t task_off, task_sz;
 
@@ -26,18 +27,19 @@ struct task * task_init(void *space, size_t size,
 		return NULL;
 	}
 
+	task->tsk_id = id;
+
 	strncpy(task->tsk_name, name, sizeof task->tsk_name - 1);
 	task->tsk_name[sizeof task->tsk_name - 1] = '\0';
 
 	task->tsk_main = main_thread;
 	main_thread->task = task;
 
-	task_resource_init(task);
+	task->tsk_priority = priority;
 
 	task->tsk_clock = 0;
 
-	/* multi */
-	task->tsk_priority = TASK_PRIORITY_DEFAULT;
+	task_resource_init(task);
 
 	return task;
 }

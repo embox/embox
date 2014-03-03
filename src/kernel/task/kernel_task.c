@@ -28,7 +28,8 @@ static int kernel_task_init(void) {
 
 	tsk = task_init(task_kernel_task(),
 			sizeof *tsk + TASK_RESOURCE_SIZE,
-			"kernel", cpu_get_idle(cpu_get_id()));
+			0, "kernel", cpu_get_idle(cpu_get_id()),
+			TASK_PRIORITY_DEFAULT);
 	if (tsk == NULL) {
 		return -ENOMEM;
 	}

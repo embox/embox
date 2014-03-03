@@ -7,7 +7,6 @@
  */
 
 #include <assert.h>
-#include <kernel/task.h>
 #include <kernel/task/task_table.h>
 #include <util/idx_table.h>
 #include <framework/mod/options.h>
@@ -21,14 +20,7 @@ void task_table_init(void) {
 }
 
 int task_table_add(struct task *tsk) {
-	int tid;
-
-	tid = util_idx_table_add(task_table, tsk);
-	if (tid >= 0) {
-		tsk->tsk_id = tid;
-	}
-
-	return tid;
+	return util_idx_table_add(task_table, tsk);
 }
 
 struct task * task_table_get(int tid) {
