@@ -6,6 +6,7 @@ module minimal {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
 	source "libqminimal.a"
 
+	@Generated(script="$(MAKE) -f $(ROOT_DIR)/mk/script/qt-plugin.mk MK_PLUGIN_NAME=minimal")
 	source "minimal.cpp"
 
 	@NoRuntime depends third_party.qt.core
