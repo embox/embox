@@ -244,10 +244,15 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	return 0;
 }
 
-int multi_init(void) {
+static int multi_init(void) {
+	int ret;
+
 	task_table_init();
 
-	task_table_add(task_kernel_task());
+	ret = task_table_add(task_kernel_task());
+	if (ret < 0) {
+		return ret;
+	}
 
 	return 0;
 }

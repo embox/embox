@@ -51,7 +51,7 @@ extern int new_task(const char *name, void *(*run)(void *), void *arg);
 extern struct task *task_self(void);
 
 static inline int task_get_id(const struct task *tsk) {
-	return task_self()->tsk_id;
+	return tsk->tsk_id;
 }
 
 static inline const char * task_get_name(
