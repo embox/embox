@@ -19,6 +19,7 @@ export TEMPLATES_DIR  := $(ROOT_DIR)/templates
 export SRC_DIR        := $(ROOT_DIR)/src
 export THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 export PLATFORM_DIR   := $(ROOT_DIR)/platform
+export SUBPLATFORM_TEMPLATE_DIR := templates/
 export DOC_DIR        := $(ROOT_DIR)/doc
 
 export BUILD_DIR      := $(ROOT_DIR)/build/base
