@@ -390,7 +390,7 @@ static int heap_init(void) {
 
 	pool = page_alloc(__heap_pgallocator, HEAP_SIZE / PAGE_SIZE() - 2);
 	if(NULL == pool) {
-		return -1;
+		return -ENOMEM;
 	}
 
 	block = (struct free_block *) pool;
