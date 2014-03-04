@@ -398,7 +398,7 @@ $(@module_h) :
 
 
 module_extbld_rmk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
-module_extbld_rmk_target_pat = __extbld-%
+module_extbld_rmk_target_pat = $(MKGEN_DIR)/%.__extbld-target
 
 $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
@@ -416,7 +416,7 @@ $(@module_extbld_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,__extbld .PHONY,$(target)); \
+		$(call gen_make_dep,__extbld,$(target)); \
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
