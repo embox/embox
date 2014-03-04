@@ -3,4 +3,9 @@ package third_party.lib
 module trex {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "trex.c"
+
+	depends embox.mem.heap_api
+	@NoRuntime depends embox.arch.libarch /* for setjmp */
+	@NoRuntime depends embox.lib.LibCStdio
+	@NoRuntime depends embox.lib.LibCString
 }
