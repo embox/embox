@@ -6,22 +6,21 @@
  * @author Anton Kozlov
  */
 
-#include <string.h>
-#include <errno.h>
 #include <assert.h>
-
-#include <kernel/task/task_table.h>
-#include <kernel/thread.h>
-#include <kernel/sched.h>
-#include <mem/misc/pool.h>
-#include <kernel/task.h>
+#include <err.h>
+#include <errno.h>
 #include <kernel/panic.h>
-#include <kernel/critical.h>
-#include <util/idx_table.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/errno.h>
-
-#include <err.h>
+#include <kernel/task/task_table.h>
+#include <kernel/thread.h>
+#include <mem/misc/pool.h>
+#include <stdint.h>
+#include <string.h>
+#include <util/binalign.h>
 
 typedef void *(*run_fn)(void *);
 
@@ -38,7 +37,35 @@ struct task_creat_param {
  * freed at first in new task's thread */
 POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
-static void *task_trampoline(void *arg);
+struct task *task_self(void) {
+	struct thread *th = thread_self();
+
+	assert(th);
+
+	return th->task;
+}
+
+static void * task_trampoline(void *arg) {
+	struct task_creat_param *param = (struct task_creat_param *) arg;
+	void *run_arg = param->arg;
+	run_fn run = param->run;
+	void *res = NULL;
+
+	sched_lock();
+	{
+		pool_free(&creat_param, param);
+	}
+	sched_unlock();
+
+	res = run(run_arg);
+	task_exit(res);
+
+	/* NOTREACHED */
+
+	panic("Returning from task_trampoline()");
+
+	return res;
+}
 
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
@@ -122,29 +149,24 @@ out_unlock:
 	return res;
 }
 
-struct task *task_self(void) {
-	struct thread *th = thread_self();
+void task_init(struct task *tsk, int id, const char *name,
+		struct thread *main_thread, task_priority_t priority) {
+	assert(tsk != NULL);
+	assert(binalign_check_bound((uintptr_t)tsk, sizeof(void *)));
 
-	assert(th);
+	tsk->tsk_id = id;
 
-	return th->task;
-}
+	strncpy(tsk->tsk_name, name, sizeof tsk->tsk_name - 1);
+	tsk->tsk_name[sizeof tsk->tsk_name - 1] = '\0';
 
-int task_notify_switch(struct thread *prev, struct thread *next) {
-	task_notifing_resource_hnd notify_res;
-	int res;
+	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
 
-	if (prev->task == next->task) {
-		return 0;
-	}
+	tsk->tsk_priority = priority;
 
-	task_notifing_resource_foreach(notify_res) {
-		if (0 != (res = notify_res(prev, next))) {
-			return res;
-		}
-	}
+	tsk->tsk_clock = 0;
 
-	return 0;
+	task_resource_init(tsk);
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {
@@ -184,28 +206,6 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	panic("Returning from task_exit()");
 }
 
-static void *task_trampoline(void *arg) {
-	struct task_creat_param *param = (struct task_creat_param *) arg;
-	void *run_arg = param->arg;
-	run_fn run = param->run;
-	void *res = NULL;
-
-	sched_lock();
-	{
-		pool_free(&creat_param, param);
-	}
-	sched_unlock();
-
-	res = run(run_arg);
-	task_exit(res);
-
-	/* NOTREACHED */
-
-	panic("Returning from task_trampoline()");
-
-	return res;
-}
-
 int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 	struct thread *t;
 	task_priority_t tsk_pr;
@@ -236,6 +236,23 @@ int task_set_priority(struct task *tsk, task_priority_t new_priority) {
 
 	}
 	sched_unlock();
+
+	return 0;
+}
+
+int task_notify_switch(struct thread *prev, struct thread *next) {
+	task_notifing_resource_hnd notify_res;
+	int res;
+
+	if (prev->task == next->task) {
+		return 0;
+	}
+
+	task_notifing_resource_foreach(notify_res) {
+		if (0 != (res = notify_res(prev, next))) {
+			return res;
+		}
+	}
 
 	return 0;
 }

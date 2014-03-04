@@ -10,7 +10,6 @@ abstract module task_table_api {
 module kernel_task {
 	source "kernel_task.c"
 
-	depends task_init
 	depends task_resource
 	depends task_table_api
 	depends embox.util.DList
@@ -19,10 +18,8 @@ module kernel_task {
 }
 
 module multi extends api {
-	source "multi.c"
-	depends kernel_task
+	source "multi.c", "multi.h"
 
-	depends task_init
 	depends task_resource
 	depends task_table
 	depends embox.kernel.task.resource.errno
@@ -35,18 +32,12 @@ module multi extends api {
 }
 
 module single extends api {
-	source "single.c"
+	source "single.h"
 
 	depends kernel_task
 	depends task_no_table
 	depends embox.kernel.thread.current.api
 	depends embox.kernel.sched.strategy.api
-}
-
-module task_init {
-	source "task_init.c"
-
-	depends task_resource
 }
 
 module task_no_table extends task_table_api {

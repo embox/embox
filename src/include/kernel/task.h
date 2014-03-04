@@ -9,39 +9,32 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <assert.h>
-
+#include <kernel/task/task_priority.h>
+#include <module/embox/kernel/task/api.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-#include <kernel/task/task_priority.h>
+struct thread;
 
-#define MAX_TASK_NAME_LEN 20
+struct task;
 
 __BEGIN_DECLS
 
-struct thread;
-
+extern int task_get_id(const struct task *tsk);
+extern const char * task_get_name(const struct task *tsk);
+extern struct thread * task_get_main(const struct task *tsk);
+extern task_priority_t task_get_priority(const struct task *tsk);
+extern int task_set_priority(struct task *tsk,
+		task_priority_t new_priority);
+extern clock_t task_get_clock(const struct task *tsk);
+extern void task_set_clock(struct task *tsk, clock_t new_clock);
 
 /**
- * @brief Task structure description
+ * @brief Kernel task
+ *
+ * @return Pointer to kernel task
  */
-struct task {
-	/* multi */
-	task_priority_t tsk_priority; /**< @brief Task priority */
-
-	/* common */
-	int tsk_id;               /**< task identifier */
-	char tsk_name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
-	struct thread *tsk_main;
-	clock_t tsk_clock; /**< task times */
-
-	char resources[];
-};
-
-
-/** create new task and initialize its descriptor */
-extern int new_task(const char *name, void *(*run)(void *), void *arg);
+extern struct task *task_kernel_task(void);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
@@ -50,37 +43,26 @@ extern int new_task(const char *name, void *(*run)(void *), void *arg);
  */
 extern struct task *task_self(void);
 
-static inline int task_get_id(const struct task *tsk) {
-	return tsk->tsk_id;
-}
+/**
+ * @brief Create new task
+ *
+ * @param name Task name
+ * @param run Task main function
+ * @param arg run argument
+ * @return pid of the new task
+ */
+extern struct task *task_self(void);
+extern int new_task(const char *name, void *(*run)(void *),
+		void *arg);
 
-static inline const char * task_get_name(
-		const struct task *tsk) {
-	return tsk->tsk_name;
-}
-
-/** setup task priority */
-extern int task_set_priority(struct task *task, task_priority_t priority);
-
-static inline task_priority_t task_get_priority(
-		const struct task *tsk) {
-	return tsk->tsk_priority;
-}
-
-static inline struct thread * task_get_main(
-		const struct task *tsk) {
-	return tsk->tsk_main;
-}
-
-static inline clock_t task_get_clock(const struct task *tsk) {
-	return tsk->tsk_clock;
-}
-
-static inline void task_set_clock(struct task *tsk,
-		clock_t new_clock) {
-	tsk->tsk_clock = new_clock;
-}
-
+/**
+ * @brief Initialize task
+ *
+ * @param TODO
+ */
+extern struct task *task_self(void);
+extern int new_task(const char *name, void *(*run)(void *),
+		void *arg);
 extern void task_init(struct task *tsk, int id, const char *name,
 		struct thread *main_thread, task_priority_t priority);
 
@@ -91,15 +73,7 @@ extern void task_init(struct task *tsk, int id, const char *name,
  */
 extern void __attribute__((noreturn)) task_exit(void *res);
 
-/**
- * @brief Kernel task
- *
- * @return Pointer to kernel task
- */
-extern struct task *task_kernel_task(void);
-
 extern int task_notify_switch(struct thread *prev, struct thread *next);
-
 extern int task_waitpid(pid_t pid);
 
 #include <util/dlist.h>
