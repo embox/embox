@@ -71,26 +71,21 @@ extern int task_waitpid(pid_t pid);
 
 #include <util/dlist.h>
 
-#define task_foreach_thread(th, tsk)                                    \
-	th = task_get_main(tsk);                                             \
+#define task_foreach_thread(th, tsk) \
+	th = task_get_main(tsk); \
 	for (struct thread *nxt = dlist_entry(th->thread_link.next, \
-			struct thread, thread_link), \
-			*tmp = NULL;                            \
-		(th != task_get_main(tsk)) || (tmp == NULL);                      \
-		tmp = th, \
-		th = nxt,                                                       \
-			nxt = dlist_entry(th->thread_link.next,                \
-						struct thread, thread_link)                 \
-		)
+				struct thread, thread_link), \
+			*loop = NULL; \
+			(th != task_get_main(tsk)) || !loop; \
+			loop = th, th = nxt, nxt = dlist_entry(th->thread_link.next, \
+				struct thread, thread_link))
 
 #include <kernel/task/task_table.h>
 
-#define task_foreach(tsk)                             \
-	tsk = task_table_get(0);                          \
-	for(int tid = 1;                                   \
-	(tsk != NULL);                                    \
-	tsk = task_table_get(task_table_get_first(tid++)) \
-	)
+#define task_foreach(tsk) \
+	tsk = task_table_get(0); \
+	for (int tid = 0; tsk != NULL; \
+			++tid, tsk = task_table_get(task_table_get_first(tid)))
 
 __END_DECLS
 
