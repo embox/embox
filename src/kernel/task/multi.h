@@ -36,20 +36,17 @@ static inline int task_get_id(const struct task *tsk) {
 	return tsk->tsk_id;
 }
 
-static inline const char * task_get_name(
-		const struct task *tsk) {
+static inline const char * task_get_name(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_name;
 }
 
-static inline struct thread * task_get_main(
-		const struct task *tsk) {
+static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;
 }
 
-static inline task_priority_t task_get_priority(
-		const struct task *tsk) {
+static inline task_priority_t task_get_priority(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_priority;
 }
@@ -59,8 +56,7 @@ static inline clock_t task_get_clock(const struct task *tsk) {
 	return tsk->tsk_clock;
 }
 
-static inline void task_set_clock(struct task *tsk,
-		clock_t new_clock) {
+static inline void task_set_clock(struct task *tsk, clock_t new_clock) {
 	assert(tsk != NULL);
 	tsk->tsk_clock = new_clock;
 }

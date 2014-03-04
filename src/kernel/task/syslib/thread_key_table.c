@@ -7,16 +7,17 @@
  */
 
 #include <errno.h>
-#include <kernel/task.h>
 #include <stddef.h>
+
+#include <kernel/task.h>
 #include <kernel/task/thread_key_table.h>
 #include <kernel/task/resource/thread_key_table.h>
 #include <kernel/thread/sync/mutex.h>
 #include <util/indexator.h>
 
 int task_thread_key_exist(struct task *task, size_t idx) {
-	return index_locked(
-			&task_resource_thread_key_table(task)->indexator, idx);
+	assert(task);
+	return index_locked(&task_resource_thread_key_table(task)->indexator, idx);
 }
 
 int task_thread_key_create(struct task *task, size_t *idx) {

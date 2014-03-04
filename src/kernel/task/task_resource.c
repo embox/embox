@@ -7,12 +7,15 @@
  */
 
 #include <assert.h>
-#include <embox/unit.h>
+#include <stddef.h>
+
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
-#include <stddef.h>
+
 #include <util/array.h>
 #include <util/binalign.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(task_resource_module_init);
 
@@ -20,44 +23,46 @@ ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
 void task_resource_init(const struct task *task) {
-	const struct task_resource_desc *res_desc;
+	const struct task_resource_desc *res;
 
-	task_resource_foreach(res_desc) {
-		assert(res_desc->resource_offset != NULL);
+	task_resource_foreach(res) {
+		assert(res->resource_offset != NULL);
 		assert(binalign_check_bound(
-					*res_desc->resource_offset, sizeof(void *)));
-		if (res_desc->init != NULL) {
-			res_desc->init(task,
-					(void *)task->resources + *res_desc->resource_offset);
+				*res->resource_offset, sizeof(void *)));
+		if (res->init != NULL) {
+			res->init(task, (void *) task->resources + *res->resource_offset);
 		}
 	}
 }
 
 static void task_resource_deinit_before(const struct task *task,
 		const struct task_resource_desc *before) {
-	const struct task_resource_desc *res_desc;
+	const struct task_resource_desc *res;
 
-	task_resource_foreach(res_desc) {
-		if (res_desc == before) {
+	task_resource_foreach(res) {
+		if (res == before) {
 			break;
 		}
 
-		if (res_desc->deinit != NULL) {
-			res_desc->deinit(task);
+		if (res->deinit != NULL) {
+			res->deinit(task);
 		}
 	}
 }
 
-int task_resource_inherit(const struct task *task,
-		const struct task *parent) {
+int task_resource_inherit(const struct task *task, const struct task *parent) {
 	int ret;
-	const struct task_resource_desc *res_desc;
+	const struct task_resource_desc *res;
 
-	task_resource_foreach(res_desc) {
-		if (res_desc->inherit != NULL) {
-			ret = res_desc->inherit(task, parent);
+	assert(task);
+	assert(parent);
+
+	task_resource_foreach(res) {
+		if (res->inherit != NULL) {
+			ret = res->inherit(task, parent);
+
 			if (ret != 0) {
-				task_resource_deinit_before(parent, res_desc);
+				task_resource_deinit_before(parent, res);
 				return ret;
 			}
 		}
@@ -67,26 +72,26 @@ int task_resource_inherit(const struct task *task,
 }
 
 void task_resource_deinit(const struct task *task) {
+	assert(task);
+
 	task_resource_deinit_before(task, NULL); /* deinit all */
 }
 
 static int task_resource_module_init(void) {
-	size_t resource_offset;
-	const struct task_resource_desc *res_desc;
+	size_t offset;
+	const struct task_resource_desc *res;
 
-	resource_offset = 0;
-	task_resource_foreach(res_desc) {
-		assert(res_desc->resource_offset != NULL);
-		*res_desc->resource_offset = resource_offset;
+	offset = 0;
 
-		assert(resource_offset + res_desc->resource_size
-				<= TASK_RESOURCE_SIZE);
-		resource_offset += binalign_bound(
-				res_desc->resource_size, sizeof(void *));
+	task_resource_foreach(res) {
+		assert(res->resource_offset);
+		*res->resource_offset = offset;
+
+		assert((offset + res->resource_size) <= TASK_RESOURCE_SIZE);
+		offset += binalign_bound(res->resource_size, sizeof(void *));
 	}
 
-	assert(resource_offset == binalign_bound(
-				TASK_RESOURCE_SIZE, sizeof(void *)));
+	assert(offset == binalign_bound(TASK_RESOURCE_SIZE, sizeof(void *)));
 
 	return 0;
 }

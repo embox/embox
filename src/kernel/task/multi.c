@@ -7,8 +7,10 @@
  */
 
 #include <assert.h>
-#include <err.h>
+#include <stdint.h>
+#include <string.h>
 #include <errno.h>
+
 #include <kernel/panic.h>
 #include <kernel/sched.h>
 #include <kernel/sched/sched_lock.h>
@@ -18,10 +20,11 @@
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
+
 #include <mem/misc/pool.h>
-#include <stdint.h>
-#include <string.h>
+
 #include <util/binalign.h>
+#include <err.h>
 
 typedef void *(*run_fn)(void *);
 
@@ -31,6 +34,7 @@ struct task_creat_param {
 	void *arg;
 };
 
+//FIXME SIMULTANEOUS_TASK_CREAT is a bad way to solve the problem
 /* Maximum simultaneous creating task number */
 #define SIMULTANEOUS_TASK_CREAT 10
 
@@ -113,8 +117,7 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		task_init(self_task, tid, name, thd,
-				 task_self()->tsk_priority);
+		task_init(self_task, tid, name, thd, task_self()->tsk_priority);
 
 		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
@@ -170,9 +173,12 @@ void task_init(struct task *tsk, int id, const char *name,
 
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *task = task_self();
-	struct thread *thread, *next;
+	struct thread *thr, *nxt, *main_thr;
 
 	assert(task != task_kernel_task());
+
+	main_thr = task->tsk_main;
+	assert(main_thr);
 
 	*task_resource_errno(task) = (int)res;
 
@@ -181,20 +187,22 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		/* Deinitialize all resources */
 		task_resource_deinit(task);
 
+
+
 		/*
 		 * Terminate all threads except main thread. If we terminate current
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		dlist_foreach_entry(thread, next, &task->tsk_main->thread_link, thread_link) {
-			thread_terminate(thread);
+		dlist_foreach_entry(thr, nxt, &main_thr->thread_link, thread_link) {
+			thread_terminate(thr);
 		}
 
 		/* At the end terminate main thread */
-		thread_terminate(task->tsk_main);
+		thread_terminate(main_thr);
 
 		/* Set an exited state on main thread */
-		thread_state_exited(task->tsk_main);
+		thread_state_exited(main_thr);
 
 		/* Re-schedule */
 		schedule();
@@ -205,27 +213,26 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	panic("Returning from task_exit()");
 }
 
-int task_set_priority(struct task *tsk, task_priority_t new_priority) {
+int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 	struct thread *t;
 	task_priority_t tsk_pr;
 	sched_priority_t prior;
 
 	assert(tsk);
 
-	if ((new_priority < TASK_PRIORITY_MIN)
-			|| (new_priority > TASK_PRIORITY_MAX)) {
+	if ((new_prior < TASK_PRIORITY_MIN) || (new_prior > TASK_PRIORITY_MAX)) {
 		return -EINVAL;
 	}
 
 	sched_lock();
 	{
-		if (tsk->tsk_priority == new_priority) {
+		if (tsk->tsk_priority == new_prior) {
 			sched_unlock();
 			return 0;
 		}
 
 		tsk_pr = tsk->tsk_priority;
-		tsk->tsk_priority = new_priority;
+		tsk->tsk_priority = new_prior;
 
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
