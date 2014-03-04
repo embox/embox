@@ -40,7 +40,7 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 
 	ctrl_endp = dev->endpoints[0];
 
-	usb_endp_control(ctrl_endp, class->get_conf_hnd,
+	usb_endp_control(ctrl_endp, class->get_conf_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,

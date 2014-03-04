@@ -28,4 +28,5 @@ module mv {
 	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
+	depends embox.lib.LibCStringDup
 }

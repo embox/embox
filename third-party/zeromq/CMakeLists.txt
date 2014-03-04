@@ -40,6 +40,7 @@ ExternalProject_Add(
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
       ""CXXFLAGS=$ENV{EMBOX_DERIVED_CXXFLAGS}""
       ""LDFLAGS=$ENV{EMBOX_DERIVED_LDFLAGS}""
+      --with-libzmq=<INSTALL_DIR>
       --host=i386-pc-none
    BUILD_COMMAND true
    INSTALL_COMMAND true
@@ -69,14 +70,14 @@ SET (CMAKE_BUILD_TYPE "Debug")
 
 add_executable(hwclient hwclient.cpp)
 add_dependencies(hwclient zmq_host)
-include_directories("${PROJECT_SOURCE_DIR}/../../build/zeromq/host/include")
-#link_directories(${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib)
-target_link_libraries(hwclient ${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib/libzmq.a)
+include_directories("${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/include")
+#link_directories(${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/lib)
+target_link_libraries(hwclient ${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/lib/libzmq.a)
 target_link_libraries(hwclient pthread rt)
 
 add_executable(hwserver hwserver.cpp)
 add_dependencies(hwserver zmq_host)
-include_directories("${PROJECT_SOURCE_DIR}/../../build/zeromq/host/include")
-#link_directories(${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib)
-target_link_libraries(hwserver ${PROJECT_SOURCE_DIR}/../../build/zeromq/host/lib/libzmq.a)
+include_directories("${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/include")
+#link_directories(${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/lib)
+target_link_libraries(hwserver ${PROJECT_SOURCE_DIR}/../../build/extbld/third_party/zeromq/core/host/lib/libzmq.a)
 target_link_libraries(hwserver pthread rt)

@@ -24,7 +24,6 @@ ExternalProject_Add(
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
 
    INSTALL_COMMAND ""
-     # cp <INSTALL_DIR>/src/unixbyte/pkgs/pipe <INSTALL_DIR>/src/unixbyte/pkgs/byte_pipe.o
 
    LOG_BUILD 1
 )

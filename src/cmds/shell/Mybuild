@@ -30,4 +30,5 @@ module tish {
 	depends embox.compat.posix.proc.uid
 	depends embox.compat.posix.passwd
 	depends embox.kernel.task.waitpid
+	depends embox.lib.LibCStringDup
 }

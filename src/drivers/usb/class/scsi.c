@@ -232,7 +232,7 @@ void scsi_dev_attached(struct scsi_dev *dev) {
 
 	dev->attached = 1;
 
-	dev->state = NULL;
+	dev->state = dev->holded_state = NULL;
 	scsi_state_transit(dev, &scsi_state_inquiry);
 }
 

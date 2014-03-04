@@ -1,0 +1,8 @@
+package embox.cmd.user
+
+module utils {
+	source "utils.c"
+
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.passwd_db_dynamic
+}

@@ -26,6 +26,7 @@ EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -gdwarf-2,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
 
 

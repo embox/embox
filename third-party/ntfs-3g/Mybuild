@@ -2,6 +2,7 @@ package third_party.ntfs_3g
 
 static module core {
 	depends embox.lib.LibC
+	depends embox.lib.LibCStringDup
 	depends embox.arch.x86.LibM // FIXME:
 
 	source "empty.c" // FIXME: workaround
