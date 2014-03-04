@@ -40,6 +40,7 @@ module single extends api {
 	@NoRuntime depends embox.kernel.cpu.common
 	@NoRuntime depends embox.kernel.cpu.stats
 	@NoRuntime depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.lib.LibCString
 }

@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/task/kernel_task.h>
+#include <kernel/task/resource.h>
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
 #include <string.h>
@@ -90,6 +91,8 @@ static inline void task_init(struct task *tsk, int id,
 	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
 
 	main_thread->task = tsk;
+
+	task_resource_init(tsk);
 }
 
 static inline void __attribute__((noreturn)) task_exit(void *res) {
