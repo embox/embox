@@ -558,7 +558,7 @@ $(@source_mk_rmk):
 source_initfs_cp_out = \
 	$(addprefix $$(ROOTFS_DIR), \
 		$(foreach s,$1,\
-			$(call get,$(notdir $(basename $(basename $s))),value)/$(call get,$s,fileName)))
+			$(call get,$(notdir $(basename $(basename $s))),value)/$(notdir $(call get,$s,fileName))))
 
 $(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
 
