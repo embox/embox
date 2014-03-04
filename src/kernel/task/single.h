@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/task_priority.h>
+#include <kernel/thread.h>
 #include <string.h>
 
 #include <sys/cdefs.h>
@@ -87,6 +88,8 @@ static inline void task_init(struct task *tsk, int id,
 	assert(0 == strcmp(name, task_get_name(tsk)));
 	assert(main_thread == task_get_main(tsk));
 	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
+
+	main_thread->task = tsk;
 }
 
 static inline void __attribute__((noreturn)) task_exit(void *res) {
