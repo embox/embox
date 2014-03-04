@@ -55,6 +55,7 @@ module pipe_test {
 	source "pipe_test.c"
 
 	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.util.sleep
 }
 
 module ppty_test {
