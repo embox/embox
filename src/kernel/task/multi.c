@@ -145,8 +145,6 @@ out_poolfree:
 out_unlock:
 	sched_unlock();
 
-	if (res >= 0)
-		assert(self_task == task_table_get(tid));
 	return res;
 }
 
