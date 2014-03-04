@@ -16,6 +16,7 @@
 #include <grp.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
 
 #ifdef linux
 #undef linux
@@ -35,7 +36,7 @@
 
 
 #define O_ACCMODE       00000003
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
 
 #include <stdint.h>
@@ -123,16 +124,6 @@ static inline void *sbrk(intptr_t increment) {
 
 static inline void tzset (void) {
 	printf(">>> tzset\n");
-}
-
-static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
-	printf(">>> localtime_r\n");
-	return NULL;
-}
-
-static inline struct tm *gmtime_r(const time_t *timep, struct tm *result) {
-	printf(">>> gmtime_r\n");
-	return NULL;
 }
 
 static inline void sync(void) {

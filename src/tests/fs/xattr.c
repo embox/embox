@@ -13,7 +13,8 @@
 #include <drivers/ramdisk.h>
 #include <mem/page.h>
 #include <sys/xattr.h>
-#include <fs/sys/fsop.h>
+#include <sys/socket.h>
+#include <fs/mount.h>
 
 #include <embox/test.h>
 
@@ -60,7 +61,7 @@ static int check_xattr(const char *path, int fd, const char *name, const char *v
 	}
 
 	if (vlen != ret) {
-		return ret;
+		return -1;
 	}
 
 	return strcmp(value, buf);
@@ -177,6 +178,28 @@ TEST_CASE("xattr entry should be added for clean file") {
 				XATTR_CREATE));
 
 	test_assert_zero(check_xattr_list(TEST_FILE_ADD_CLEAN_NM, 0, xattr_nms, xattr_vls));
+}
+
+TEST_CASE("xattr should be setted and retrived on socket") {
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
+	const char **i_xattr, **i_value;
+	int sock_fd;
+
+	sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+	test_assert(0 <= sock_fd);
+
+	for (i_xattr = xattr_nms, i_value = xattr_vls;
+			*i_xattr && *i_value;
+			i_xattr++, i_value++) {
+
+		test_assert_zero(fsetxattr(sock_fd, *i_xattr, *i_value,
+					strlen(*i_value) + 1, 0));
+	}
+
+	test_assert_zero(check_xattr_list(NULL, sock_fd, xattr_nms, xattr_vls));
+
+	close(sock_fd);
 }
 
 static int setup_suite(void) {

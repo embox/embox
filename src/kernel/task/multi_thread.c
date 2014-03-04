@@ -28,7 +28,9 @@ int thread_register(struct task * task, struct thread *t) {
 	/* we initialize thread priority for default task priority and now we must
 	 * rescheduler thread
 	 */
-	sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
+	//sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
+	//TODO use complete priority (task+thread)
+	sched_prior = thread_priority_get(t);
 	thread_priority_set(t, sched_prior);
 
 	ret = thread_local_alloc(t, THREAD_KEYS_QUANTITY);
@@ -40,7 +42,7 @@ int thread_register(struct task * task, struct thread *t) {
 }
 
 
-int task_remove_thread(struct task * task, struct thread *thread) {
+int thread_unregister(struct task * task, struct thread *thread) {
 	if((NULL == task) || (NULL == thread)) {
 		return -EINVAL;
 	}

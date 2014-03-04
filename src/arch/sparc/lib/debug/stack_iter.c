@@ -5,10 +5,18 @@
  * @date 24 Aug, 2012
  * @author Bulychev Anton
  */
+
 #include <stddef.h>
+
+#include <hal/context.h>
+
 #include "stack_iter.h"
 
 #define RETPC_OFFSET 8
+
+void stack_iter_context(stack_iter_t *f, struct context *ctx) {
+	// XXX stub -- Eldar
+}
 
 void stack_iter_current(stack_iter_t *f) {
 	winflush();   /* Doesn't work without it */

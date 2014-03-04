@@ -12,6 +12,7 @@
 #include <net/l0/net_tx.h>
 #include <net/l3/icmpv6.h>
 #include <net/l3/ipv6.h>
+#include <net/l2/ethernet.h>
 #include <net/lib/icmpv6.h>
 #include <net/lib/ipv6.h>
 #include <net/inetdevice.h>

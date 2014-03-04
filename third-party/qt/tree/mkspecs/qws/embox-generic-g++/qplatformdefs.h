@@ -72,8 +72,8 @@
 
 
 
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
-#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1

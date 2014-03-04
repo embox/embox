@@ -21,7 +21,6 @@
 #include <string.h>
 #include <net/l2/ethernet.h>
 #include <net/l0/net_entry.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>

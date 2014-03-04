@@ -23,7 +23,7 @@ size_t ring_read_all_into(struct ring *r, const char *r_buff, size_t r_size,
 	size_t block_size;
 
 	while ((block_size = ring_can_read(r, r_size, read_size))) {
-		memcpy(into_buff, r_buff + r->tail, block_size);
+		memcpy(into_buff + count, r_buff + r->tail, block_size);
 		read_size -= block_size;
 		count += block_size;
 		ring_just_read(r, r_size, block_size);
@@ -38,7 +38,7 @@ size_t ring_write_all_from(struct ring *r, char *r_buff, size_t r_size,
 	size_t block_size;
 
 	while ((block_size = ring_can_write(r, r_size, write_size))) {
-		memcpy(r_buff + r->head, from_buff, block_size);
+		memcpy(r_buff + r->head, from_buff + count, block_size);
 		write_size -= block_size;
 		count += block_size;
 		ring_just_write(r, r_size, block_size);

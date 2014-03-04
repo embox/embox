@@ -11,3 +11,7 @@ module pthread_policy {
 	source "pthread_policy_test.c"
 	depends embox.compat.posix.pthreads
 }
+
+module pthread_cond {
+	source "pthread_cond_test.c"
+}

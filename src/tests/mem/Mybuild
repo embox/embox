@@ -24,8 +24,8 @@ module heap {
 	depends embox.framework.LibFramework
 }
 
-module pool {
-	source "pool.c"
+module pool_test {
+	source "pool_test.c"
 
 	depends embox.mem.pool
 	depends embox.framework.LibFramework

@@ -11,6 +11,7 @@
 
 #include <signal.h>
 #include <unistd.h>
+#include <kernel/task.h>
 
 EMBOX_TEST_SUITE("test for real-time signals");
 
@@ -52,7 +53,7 @@ TEST_CASE("send 3 rt signals of the same type between two tasks and check"
 	tid = new_task("", test_task_entry, NULL);
 	test_assert(tid >= 0);
 
-	sleep(0);
+	sleep(1);
 
 	/* Send three real-time signals with the same type. */
 
@@ -60,7 +61,7 @@ TEST_CASE("send 3 rt signals of the same type between two tasks and check"
 	test_send_sigval(tid, 2);
 	test_send_sigval(tid, 3);
 
-	sleep(0);
+	sleep(1);
 
 	/* Check order, in witch signals were handled. */
 	test_assert_emitted("123");

@@ -5,7 +5,6 @@ module core {
 	depends embox.lib.cxx.lib
 	depends embox.compat.posix.fs.dirent
 	depends embox.fs.rootfs
-	depends embox.kernel.manual_event_api
 	depends embox.compat.posix.LibPosix
 	source "empty.c"
 }

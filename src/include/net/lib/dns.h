@@ -23,6 +23,7 @@
 #define DNS_MAX_NAME_SZ    256
 #define DNS_MAX_MESSAGE_SZ 512
 #define DNS_PORT_NUMBER    53
+#define DNS_LABEL_MASK     0xC0
 
 /**
  * Types of messages

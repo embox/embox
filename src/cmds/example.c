@@ -56,18 +56,21 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'h':
-		case '?':
 			print_usage(argv[0]);
 			return ENOERR;
 		default:
-			return -EINVAL;
+			if (number == -1 && optind <= 1) {
+				return -EINVAL;
+			}
+			break;
 		}
 	}
 
 	if (number == -1) {
-		example = example_lookup(argv[1]);
+		example = example_lookup(argv[optind]);
 		if (example == NULL) {
-			printf("Example \"%s\" not found\n", argv[1]);
+			printf("Example \"%s\" not found\n", argv[optind]);
+			return -ENOENT;
 		}
 	} else {
 		example_foreach(example) {
@@ -79,8 +82,10 @@ static int exec(int argc, char **argv) {
 			printf("Invalid a number of example\n");
 			return -EINVAL;
 		}
-		argv[1] = (char *)example_name(example);
+
+		optind --;
+		argv[optind] = (char *)example_name(example);
 	}
 
-	return example_exec(example, argc - 1, argv + 1);
+	return example_exec(example, argc - optind, argv + optind);
 }

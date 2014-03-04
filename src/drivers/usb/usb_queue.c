@@ -10,16 +10,24 @@
 #include <kernel/irq_lock.h>
 #include <util/member.h>
 
-#include <drivers/usb_queue.h>
+#include <drivers/usb/usb_queue.h>
 
-struct usb_queue_link *usb_queue_peek(struct usb_queue *q) {
-	struct dlist_head *l = q->q.next;
+static struct usb_queue_link *usb_queue_link(struct usb_queue *q,
+		struct dlist_head *l) {
 
 	if (dlist_empty(&q->q)) {
 		return NULL;
 	}
 
 	return member_cast_out(l, struct usb_queue_link, l);
+}
+
+struct usb_queue_link *usb_queue_peek(struct usb_queue *q) {
+	return usb_queue_link(q, q->q.next);
+}
+
+struct usb_queue_link *usb_queue_last(struct usb_queue *q) {
+	return usb_queue_link(q, q->q.prev);
 }
 
 int usb_queue_add(struct usb_queue *q, struct usb_queue_link *l) {
@@ -36,21 +44,18 @@ int usb_queue_add(struct usb_queue *q, struct usb_queue_link *l) {
 	return !is_empty;
 }
 
-int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l) {
-	bool is_empty;
+int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l) {
+	bool is_first;
 
 	irq_lock();
 	{
 		struct usb_queue_link *cl = usb_queue_peek(q);
 
-		assert(q->q.next == &l->l);
-		assert(cl == l);
+		is_first = cl == l;
 
 		dlist_del(&l->l);
-
-		is_empty = dlist_empty(&q->q);
 	}
 	irq_unlock();
 
-	return !is_empty;
+	return is_first;
 }

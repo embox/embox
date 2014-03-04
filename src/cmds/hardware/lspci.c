@@ -242,11 +242,11 @@ static int exec(int argc, char **argv) {
 	int dump = 0;
 	int names = 0;
 
-	uint32_t busn;
+	uint32_t busn = 0;
 	int busn_set = 0;
-	uint8_t  slot;
+	uint8_t  slot = 0;
 	int slot_set = 0;
-	uint8_t  func;
+	uint8_t  func = 0;
 	int func_set = 0;
 
 	if (argc == 1) {

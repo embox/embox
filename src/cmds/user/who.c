@@ -15,8 +15,8 @@
 
 EMBOX_CMD(who_cmd);
 
-const static char *login = "LOGIN";
-const static char *localhost = "(localhost)";
+static const char *login = "LOGIN";
+static const char *localhost = "(localhost)";
 
 static int who_cmd(int argc, char **argv) {
 	struct utmp *ut;

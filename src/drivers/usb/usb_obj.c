@@ -8,18 +8,15 @@
 
 #include <string.h>
 #include <stddef.h>
-#include <kernel/printk.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
-#include <drivers/usb.h>
+#include <drivers/usb/usb.h>
 
 POOL_DEF(usb_hcds, struct usb_hcd, USB_MAX_HCD);
 POOL_DEF(usb_hubs, struct usb_hub, USB_MAX_HUB);
 POOL_DEF(usb_devs, struct usb_dev, USB_MAX_ENDP);
 POOL_DEF(usb_endps, struct usb_endp, USB_MAX_ENDP);
 POOL_DEF(usb_requests, struct usb_request, USB_MAX_REQ);
-
-DLIST_DEFINE(usb_dev_list);
 
 struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 	struct usb_hcd *hcd = pool_alloc(&usb_hcds);
@@ -37,7 +34,7 @@ struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args) {
 	if (ops->hcd_hci_alloc) {
 		hcd->hci_specific = ops->hcd_hci_alloc(hcd, args);
 		if (!hcd->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_hcds, hcd);
 			return NULL;
 		}
 	}
@@ -52,15 +49,6 @@ void usb_hcd_free(struct usb_hcd *hcd) {
 	}
 
 	pool_free(&usb_hcds, hcd);
-}
-
-static void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
-	       	usb_hub_port_t i) {
-
-	port->hub = hub;
-	port->idx = i;
-	port->status = port->changed = 0;
-	port->dev = NULL;
 }
 
 struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n) {
@@ -78,6 +66,21 @@ struct usb_hub *usb_hub_alloc(struct usb_hcd *hcd, usb_hub_port_t port_n) {
 
 void usb_hub_free(struct usb_hub *hub) {
 	pool_free(&usb_hubs, hub);
+}
+
+static void usb_dev_free(struct usb_dev *dev) {
+	int i;
+
+	for (i = 0; i < USB_DEV_MAX_ENDP; i++) {
+		struct usb_endp *endp = dev->endpoints[i];
+		if (endp) {
+			dev->endpoints[i] = NULL;
+			usb_endp_free(endp);
+		}
+	}
+
+	index_free(&dev->hcd->enumerator, dev->idx);
+	pool_free(&usb_devs, dev);
 }
 
 struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
@@ -98,8 +101,6 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	dev->idx = idx;
 	dev->bus_idx = 0;
 
-	usb_queue_link_init(&dev->reset_link);
-
 	if (!usb_endp_alloc(dev, &usb_desc_endp_control_default)) {
 		usb_dev_free(dev);
 		return NULL;
@@ -110,48 +111,15 @@ struct usb_dev *usb_dev_alloc(struct usb_hcd *hcd) {
 	return dev;
 }
 
-int usb_dev_register(struct usb_dev *dev) {
-
-	dlist_add_next(&dev->dev_link, &usb_dev_list);
-
-	printk("usb_core: vendor=%04x product=%04x is ready\n",
-			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
-	return 0;
-}
-
-void usb_dev_deregister(struct usb_dev *dev) {
-
-	if (dlist_empty(&dev->dev_link)) {
-		return;
-	}
-
-	dlist_del(&dev->dev_link);
-	dlist_head_init(&dev->dev_link);
-}
-
-struct usb_dev *usb_dev_iterate(struct usb_dev *dev) {
-	struct dlist_head *dev_link;
-
-	if (dev) {
-		dev_link = dev->dev_link.next;
-	} else {
-		dev_link = usb_dev_list.next;
-	}
-
-	if (dev_link != &usb_dev_list) {
-		return member_cast_out(dev_link, struct usb_dev, dev_link);
-	} else {
-		return NULL;
+void usb_dev_use_dec(struct usb_dev *dev) {
+	if (!--dev->use_count) {
+		usb_dev_free(dev);
 	}
 }
 
-void usb_dev_free(struct usb_dev *dev) {
+void usb_dev_use_inc(struct usb_dev *dev) {
+	++dev->use_count;
 
-	usb_dev_deregister(dev);
-
-	usb_class_unhandle(dev);
-	index_free(&dev->hcd->enumerator, dev->idx);
-	pool_free(&usb_devs, dev);
 }
 
 struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
@@ -171,11 +139,13 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 	usb_queue_init(&endp->req_queue);
 
 	for (endp_num = 0; endp_num < USB_DEV_MAX_ENDP; endp_num++) {
-		if (!dev->endpoints[endp_num]) {
+		struct usb_endp *dendp = dev->endpoints[endp_num];
+		if (!dendp) {
 			break;
 		}
 
-		assert(dev->endpoints[endp_num]->address != endp->address);
+		assert(dendp->address != endp->address ||
+				dendp->direction != endp->direction);
 	}
 
 	assert(endp_num < USB_DEV_MAX_ENDP);
@@ -185,7 +155,7 @@ struct usb_endp *usb_endp_alloc(struct usb_dev *dev,
 	if (hcd->ops->endp_hci_alloc) {
 		endp->hci_specific = hcd->ops->endp_hci_alloc(endp);
 		if (!hcd->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_endps, endp);
 			return NULL;
 		}
 	}
@@ -197,8 +167,10 @@ void usb_endp_free(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 
 	if (hcd->ops->endp_hci_free) {
-		hcd->ops->endp_hci_free(endp, hcd->hci_specific);
+		hcd->ops->endp_hci_free(endp, endp->hci_specific);
 	}
+
+	pool_free(&usb_endps, endp);
 }
 
 
@@ -214,7 +186,7 @@ static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	if (hcd->ops->req_hci_alloc) {
 		req->hci_specific = hcd->ops->req_hci_alloc(req);
 		if (!req->hci_specific) {
-			/* XXX mem leak */
+			pool_free(&usb_requests, req);
 			return NULL;
 		}
 	}

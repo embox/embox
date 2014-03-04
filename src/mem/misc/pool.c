@@ -17,36 +17,38 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <util/member.h>
 
-void *pool_alloc(struct pool* pool) {
-	void * addr;
+void * pool_alloc(struct pool *pl) {
+	void *obj;
 
-	assert(pool);
+	assert(pl != NULL);
 
-	if (!slist_empty(&pool->free_blocks)) {
-		return (void *) slist_remove_first_link(&pool->free_blocks);
+	if (!slist_empty(&pl->free_blocks)) {
+		return (void *)slist_remove_first_link(&pl->free_blocks);
 	}
 
-	if (pool->bound_free != pool->memory + pool->pool_size) {
-		addr = pool->bound_free;
-		pool->bound_free += pool->obj_size;
-		return addr;
+	if (pl->bound_free != pl->memory + pl->pool_size) {
+		obj = pl->bound_free;
+		pl->bound_free += pl->obj_size;
+		assert(pl->bound_free <= pl->memory + pl->pool_size);
+		return obj;
 	}
 
 	return NULL;
 }
 
-void pool_free(struct pool* pool, void* obj) {
-	assert(pool);
-
-	assert(obj);
+void pool_free(struct pool *pl, void *obj) {
+	assert(pl != NULL);
+	assert(obj != NULL);
+	assert(pool_belong(pl, obj));
 
 	obj = slist_link_init((struct slist_link *)obj);
-	slist_add_first_link(obj , &pool->free_blocks);
+	slist_add_first_link(obj, &pl->free_blocks);
 }
 
-int pool_belong(struct pool* pool, void* obj) {
-	void *pool_end = pool->memory + pool->pool_size;
-
-	return (pool->memory <= obj) && (obj < pool_end);
+int pool_belong(const struct pool *pl, const void *obj) {
+	return (pl->memory <= obj)
+			&& (obj + pl->obj_size <= pl->memory + pl->pool_size)
+			&& ((obj - pl->memory) % pl->obj_size == 0);
 }

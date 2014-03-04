@@ -16,7 +16,6 @@
 #include <embox/unit.h>
 
 #include <net/l3/ipv4/ip.h>
-#include <net/if_ether.h>
 #include <net/l4/udp.h>
 
 #include <pnet/node.h>

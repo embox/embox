@@ -41,9 +41,9 @@ struct com {
         UART_REG(osc_12m_sel);  /* 13*/
 };
 
-/* FIXME volatile? */
-#define COM3_RBR (((struct com *) COM_BASE)->rbr)
-#define COM3_LSR (((struct com *) COM_BASE)->lsr)
+#define COM3 ((volatile struct com *)COM_BASE)
+#define COM3_RBR (COM3->rbr)
+#define COM3_LSR (COM3->lsr)
 
 static void ns16550_diag_putc(const struct diag *diag, char ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);

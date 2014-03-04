@@ -30,12 +30,14 @@ struct __trace_point {
 
 struct __trace_block {
 	const char *name;
+	struct location_func location;
 	struct __trace_point *begin;
 	struct __trace_point *end;
 	struct itimer *tc;
 	int64_t count;
 	time64_t time;
 	bool active;
+	bool is_entered;
 };
 
 #define __TRACE_POINT_DEF(_name, tp_name)   \
@@ -58,12 +60,14 @@ struct __trace_block {
 	static struct itimer tb_name ## _tc;				\
 	static struct __trace_block tb_name  = {        	\
 			.name  = #tb_name,							\
+			.location = LOCATION_FUNC_INIT,				\
 			.begin = &tb_name ## _b,     				\
 			.end   = &tb_name ## _e,                	\
 			.tc    = &tb_name ## _tc,               	\
 			.time  = 0,									\
 			.count = 0,									\
 			.active = true, 							\
+			.is_entered = false,						\
 	};                                              	\
 	ARRAY_SPREAD_DECLARE(struct __trace_block *,		\
 			__trace_blocks_array);              		\

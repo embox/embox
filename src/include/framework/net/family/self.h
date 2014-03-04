@@ -11,8 +11,8 @@
 
 #include __impl_x(framework/net/family/self_impl.h)
 
-#define EMBOX_NET_FAMILY(_family, _types)         \
-	static const struct net_family_type _types[]; \
-	__EMBOX_NET_FAMILY(_family, _family, _types)
+#define EMBOX_NET_FAMILY(_family, _types, _out_ops)        \
+	static const struct net_family_type _types[];          \
+	__EMBOX_NET_FAMILY(_family, _family, _types, _out_ops)
 
 #endif /* FRAMEWORK_NET_FAMILY_SELF_H_ */

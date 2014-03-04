@@ -47,6 +47,5 @@ unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 }
 
 void macaddr_print(unsigned char *buf, const unsigned char *addr) {
-	sprintf((char *) buf, "%02X:%02X:%02X:%02X:%02X:%02X",
-	    addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+	sprintf((char *) buf, MACADDR_FMT, MACADDR_FMT_ARG(addr));
 }

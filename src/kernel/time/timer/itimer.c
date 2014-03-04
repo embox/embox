@@ -35,5 +35,9 @@ void itimer_init(struct itimer *it, struct clock_source *cs,
 }
 
 time64_t itimer_read(struct itimer *it) {
+	assert(it);
+	assert(it->cs);
+	assert(it->cs->read);
+
 	return it->cs->read(it->cs) - it->start_value;
 }

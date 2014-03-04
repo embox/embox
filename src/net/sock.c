@@ -6,287 +6,31 @@
  * @author Nikolay Korotky
  * @author Ilia Vaprol
  */
+#include <poll.h>
+#include <errno.h>
+#include <string.h>
+
+#include <util/math.h>
 
 #include <embox/net/family.h>
 #include <embox/net/pack.h>
 #include <embox/net/sock.h>
-#include <errno.h>
+
+
+#include <kernel/time/time.h>
+#include <kernel/sched.h>
+
 #include <hal/ipl.h>
-#include <kernel/task/io_sync.h>
+#include <kernel/softirq_lock.h>
+#include <fs/idesc_event.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
 #include <net/skbuff.h>
-#include <string.h>
-#include <util/math.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
+#include <net/sock_wait.h>
 
-static struct sock * sock_alloc(
-		const struct sock_family_ops *f_ops,
-		const struct sock_proto_ops *p_ops) {
-	ipl_t sp;
-	struct sock *sk;
-	struct proto_sock *p_sk;
-
-	assert(f_ops != NULL);
-	assert(p_ops != NULL);
-
-	sp = ipl_save();
-	{
-		sk = pool_alloc(f_ops->sock_pool);
-		if (sk == NULL) {
-			ipl_restore(sp);
-			return NULL;
-		}
-
-		if (p_ops->sock_pool != NULL) {
-			p_sk = pool_alloc(p_ops->sock_pool);
-			if (p_sk == NULL) {
-				pool_free(f_ops->sock_pool, sk);
-				ipl_restore(sp);
-				return NULL;
-			}
-		}
-		else {
-			p_sk = NULL;
-		}
-	}
-	ipl_restore(sp);
-
-	assert(((p_sk == NULL) && (p_ops->sock_pool == NULL))
-			|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
-
-	sk->p_sk = p_sk;
-	if (p_sk != NULL) {
-		p_sk->sk = sk;
-	}
-
-	return sk;
-}
-
-static void sock_free(struct sock *sk) {
-	ipl_t sp;
-
-	assert(sk != NULL);
-	assert(sk->f_ops != NULL);
-	assert(sk->p_ops != NULL);
-	assert(((sk->p_sk == NULL) && (sk->p_ops->sock_pool == NULL))
-			|| ((sk->p_sk != NULL)
-				&& (sk->p_ops->sock_pool != NULL)));
-
-	sp = ipl_save();
-	{
-		if (sk->p_sk != NULL) {
-			pool_free(sk->p_ops->sock_pool, sk->p_sk);
-		}
-		pool_free(sk->f_ops->sock_pool, sk);
-	}
-	ipl_restore(sp);
-}
-
-static void sock_opt_init(struct sock_opt *opt, int family,
-		int type, int protocol) {
-	static const struct timeval
-		default_rcvtimeo = SOCK_OPT_DEFAULT_RCVTIMEO,
-		default_sndtimeo = SOCK_OPT_DEFAULT_SNDTIMEO;
-
-	assert(opt != NULL);
-
-	memset(opt, 0, sizeof *opt);
-	opt->so_domain = family;
-	opt->so_protocol = protocol;
-	opt->so_rcvbuf = SOCK_OPT_DEFAULT_RCVBUF;
-	opt->so_rcvlowat = SOCK_OPT_DEFAULT_RCVLOWAT;
-	memcpy(&opt->so_rcvtimeo, &default_rcvtimeo,
-			sizeof opt->so_rcvtimeo);
-	opt->so_sndbuf = SOCK_OPT_DEFAULT_SNDBUF;
-	opt->so_sndlowat = SOCK_OPT_DEFAULT_SNDLOWAT;
-	memcpy(&opt->so_sndtimeo, &default_sndtimeo,
-			sizeof opt->so_sndtimeo);
-	opt->so_type = type;
-}
-
-static void sock_init(struct sock *sk, int family, int type,
-		int protocol, const struct sock_family_ops *f_ops,
-		const struct sock_proto_ops *p_ops,
-		const struct net_pack_out_ops *o_ops) {
-	assert(sk != NULL);
-	assert(f_ops != NULL);
-	assert(p_ops != NULL);
-
-	list_link_init(&sk->lnk);
-	sock_opt_init(&sk->opt, family, type, protocol);
-	skb_queue_init(&sk->rx_queue);
-	skb_queue_init(&sk->tx_queue);
-	sock_set_state(sk, SS_UNKNOWN);
-	sk->shutdown_flag = 0;
-	sk->p_sk = sk->p_sk; /* setup in sock_alloc() */
-	sk->f_ops = f_ops;
-	sk->p_ops = p_ops;
-	sk->o_ops = o_ops;
-	io_sync_init(&sk->ios, 0, 0);
-#if 0
-	sk->src_addr = sk->dst_addr = NULL;
-	sk->addr_len = 0;
-#endif
-}
-
-int sock_create_ext(int family, int type, int protocol,
-		int need_hash, struct sock **out_sk) {
-	int ret;
-	struct sock *new_sk;
-	const struct net_family *nfamily;
-	const struct net_family_type *nftype;
-	const struct net_sock *nsock;
-	const struct net_pack_out *npout;
-
-	if (out_sk == NULL) {
-		return -EINVAL;
-	}
-
-	nfamily = net_family_lookup(family);
-	if (nfamily == NULL) {
-		return -EAFNOSUPPORT;
-	}
-
-	nftype = net_family_type_lookup(nfamily, type);
-	if (nftype == NULL) {
-		return -EPROTOTYPE;
-	}
-
-	nsock = net_sock_lookup(family, type, protocol);
-	if (nsock == NULL) {
-		return -EPROTONOSUPPORT;
-	}
-
-	npout = net_pack_out_lookup(family);
-	if (npout == NULL) {
-		/* out_ops may be null */
-	}
-
-	new_sk = sock_alloc(nftype->ops, nsock->ops);
-	if (new_sk == NULL) {
-		return -ENOMEM;
-	}
-
-	sock_init(new_sk, family, type, nsock->protocol,
-			nftype->ops, nsock->ops,
-			npout != NULL ? npout->ops : NULL);
-
-	assert(new_sk->f_ops != NULL);
-	ret = new_sk->f_ops->init(new_sk);
-	if (ret != 0) {
-		sock_release(new_sk);
-		return ret;
-	}
-
-	assert(new_sk->p_ops != NULL);
-	if (new_sk->p_ops->init != NULL) {
-		ret = new_sk->p_ops->init(new_sk);
-		if (ret != 0) {
-			sock_close(new_sk);
-			return ret;
-		}
-	}
-
-	if (need_hash) {
-		sock_hash(new_sk);
-	}
-
-	*out_sk = new_sk;
-
-	return 0;
-}
-
-int sock_create(int family, int type, int protocol,
-		struct sock **out_sk) {
-	return sock_create_ext(family, type, protocol, 1, out_sk);
-}
-
-void sock_release(struct sock *sk) {
-	if (sk == NULL) {
-		return; /* error: invalid argument */
-	}
-
-	sock_unhash(sk);
-	skb_queue_purge(&sk->rx_queue);
-	skb_queue_purge(&sk->tx_queue);
-	sock_free(sk);
-}
-
-void sock_hash(struct sock *sk) {
-	if (sk == NULL) {
-		return; /* error: invalid argument */
-	}
-	else if (!list_alone_element(sk, lnk)) {
-		return; /* error: already in hash */
-	}
-
-	assert(sk->p_ops != NULL);
-	list_add_last_element(sk, sk->p_ops->sock_list, lnk);
-}
-
-void sock_unhash(struct sock *sk) {
-	if (sk == NULL) {
-		return; /* error: invalid argument */
-	}
-	else if (list_alone_element(sk, lnk)) {
-		return; /* error: not hashed */
-	}
-
-	list_unlink_element(sk, lnk);
-}
-
-struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
-	if (p_ops == NULL) {
-		return NULL; /* error: invalid argument */
-	}
-
-	return list_first_element(p_ops->sock_list, struct sock, lnk);
-}
-
-struct sock * sock_next(const struct sock *sk) {
-	if (sk == NULL) {
-		return NULL; /* error: invalid argument */
-	}
-	else if (list_alone_element(sk, lnk)) {
-		return NULL; /* error: not hashed */
-	}
-
-	assert(sk->p_ops != NULL);
-
-	return list_next_element(sk, sk->p_ops->sock_list,
-			struct sock, lnk);
-}
-
-struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_proto_ops *p_ops,
-		sock_lookup_tester_ft tester,
-		const struct sk_buff *skb) {
-	ipl_t ipl;
-	struct sock *next_sk;
-
-	if ((p_ops == NULL) || (tester == NULL)) {
-		return NULL; /* error: invalid arguments */
-	}
-
-	next_sk = sk != NULL ? sock_next(sk) : sock_iter(p_ops);
-
-	ipl = ipl_save();
-	{
-		while (next_sk != NULL) {
-			if (tester(next_sk, skb)) {
-				ipl_restore(ipl);
-				return next_sk;
-			}
-			next_sk = sock_next(next_sk);
-		}
-	}
-	ipl_restore(ipl);
-
-	return NULL; /* error: no such entity */
-}
-
+//TODO this function call from stack (may be place it to other file)
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
@@ -302,8 +46,9 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb->p_data_end = p_data + size;
 
 	skb_queue_push(&sk->rx_queue, skb);
+	sk->rx_data_len += size;
 
-	io_sync_enable(&sk->ios, IO_SYNC_READING);
+	idesc_notify(&sk->idesc, POLLIN);
 }
 
 int sock_close(struct sock *sk) {
@@ -320,64 +65,108 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
-int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags, int stream_mode) {
+size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
+
+static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	struct sk_buff *skb;
+	size_t len;
+	int total_len;
 	char *buff;
-	size_t buff_sz, total_len, len;
+	size_t buff_sz;
 
-	if ((sk == NULL) || (msg == NULL)) {
-		return -EINVAL;
-	}
-
-	assert(msg->msg_iov != NULL);
-	buff = msg->msg_iov->iov_base;
-	buff_sz = msg->msg_iov->iov_len;
-	assert((buff != NULL) || (buff_sz == 0));
 	total_len = 0;
 
-	while (1) {
-		io_sync_disable(&sk->ios, IO_SYNC_READING);
+	buff = msg->msg_iov->iov_base;
+	buff_sz = msg->msg_iov->iov_len;
+
+	do {
 		skb = skb_queue_front(&sk->rx_queue);
-		if (skb == NULL) {
-			if (total_len == 0) {
-				return -EAGAIN;
+		if (!skb) {
+			/* skb queue is empty */
+			/* TODO we return -1 but must return error and number of read bytes */
+			return -1;
+		}
+		len = skb_read(skb, buff, buff_sz);
+
+		total_len += len;
+
+		if (!stream) {
+			sk->rx_data_len -= skb->p_data_end - skb->p_data;
+
+			// XXX
+			if (sk->p_ops->fillmsg && msg->msg_name) {
+				sk->p_ops->fillmsg(sk, msg, skb);
 			}
+			/* For message-based sockets, such as SOCK_DGRAM and SOCK_SEQPACKET,
+			 * the entire message shall be read in a single operation. If a
+			 * message is too long to fit in the supplied buffer, and MSG_PEEK
+			 * is not set in the flags argument, the excess bytes shall be
+			 * discarded.
+			 */
+			skb_free(skb);
 			break;
 		}
 
-		len = min(buff_sz, skb->p_data_end - skb->p_data);
-
-		memcpy(buff, skb->p_data, len);
-		buff += len;
-		buff_sz -= len;
-		skb->p_data += len;
-		total_len += len;
-
-		if (!stream_mode || (skb->p_data >= skb->p_data_end)) {
+		/* we read stream-base socket */
+		if (skb->p_data == skb->p_data_end) {
 			skb_free(skb);
 		}
 
-		if (!stream_mode || (buff_sz == 0)) {
-			/* enable reading if needed */
-			if (NULL != skb_queue_front(&sk->rx_queue)) {
-				io_sync_enable(&sk->ios, IO_SYNC_READING);
+		/*TODO if we want to use msg_waitall options */
+		buff += len;
+		buff_sz -= len;
+	} while (!len && buff_sz);
+
+	sk->rx_data_len -= total_len;
+	return total_len;
+}
+
+int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
+		int stream_mode) {
+	int res;
+	int len;
+	int timeout;
+
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov);
+	assert(msg->msg_iov->iov_base || !msg->msg_iov->iov_len);
+
+	softirq_lock();
+	{
+		do {
+			len = sock_read(sk, msg, stream_mode);
+
+			if (len == 0) {
+				/* if we try to read zero bytes from socket */
+				msg->msg_iov->iov_len = 0;
+				res = 0;
+				break;
 			}
 
-			/* and exit */
-			break;
-		}
+			if (len > 0) {
+				msg->msg_iov->iov_len = len;
+				res = 0;
+				break;
+			}
+
+			/* if (len < 0)  */
+			timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
+			if (timeout == 0) {
+				timeout = SCHED_TIMEOUT_INFINITE;
+			}
+
+			res = sock_wait(sk, POLLIN | POLLERR, timeout);
+		} while (!res);
 	}
+	softirq_unlock();
 
-	msg->msg_iov->iov_len = total_len;
-
-	return 0;
+	return res;
 }
 
 in_port_t sock_inet_get_src_port(const struct sock *sk) {
-	assert(sk != NULL);
-	assert((sk->opt.so_domain == AF_INET)
-			|| (sk->opt.so_domain == AF_INET6));
+	assert(sk);
+	assert((sk->opt.so_domain == AF_INET) || (sk->opt.so_domain == AF_INET6));
 
 	if (sk->opt.so_domain == AF_INET) {
 		return to_const_inet_sock(sk)->src_in.sin_port;

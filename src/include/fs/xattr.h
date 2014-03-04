@@ -16,7 +16,8 @@
 #define XATTR_REMOVE  (1 << 1)
 #define XATTR_REPLACE (1 << 2)
 
-#define XATTR_MAX_VSIZE  0xFF
+#define XATTR_MAX_VSIZE 0xFF
+#define XATTR_MAX_NSIZE 32
 
 extern int kfile_xattr_get(struct node *node, const char *name, char *value,
 		size_t len);

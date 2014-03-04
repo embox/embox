@@ -14,12 +14,64 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <lib/libelf.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 
 EMBOX_CMD(exec);
+
+/* Collection of information about elf. */
+typedef struct {
+	FILE         *fd;
+	/* Should we reverse bytes when reading */
+	int          need_reverse;
+	/* Header of the file */
+	Elf32_Ehdr   header;
+	char         **sections;
+	/* Section table */
+	Elf32_Shdr   sh_table[128];
+	/* Program table */
+	Elf32_Phdr   ph_table[128];
+	/* String table. Contains section names */
+	char         *string_table;
+	/* Symbol table */
+	Elf32_Sym    sym_table[128];
+	/* Section header index of the associated string table for symbol table */
+	int          sym_names_shidx;
+	/* Symbol names */
+	char         *sym_names;
+	unsigned int sym_count;
+	/* Elf .dynamic section */
+	Elf32_Dyn    dyn_section[128];
+	unsigned int dyn_count;
+	/* Elf relocation array */
+	Elf32_Rel    rel_array[128];
+	unsigned int rel_count;
+	Elf32_Addr   base_addr; /* For shared libraries */
+} Elf32_Obj;
+
+static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_string_table(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_program_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_dynamic_section(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_rel_table(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_symbol_table(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) { return 0; }
+
+typedef struct elf_objlist_item {
+	Elf32_Obj                *obj;
+	struct elf_objlist_item  *next;
+} Elf32_Objlist_item;
+
+typedef struct {
+	Elf32_Objlist_item *first;
+} Elf32_Objlist;
+
+static void elf_initialize_object(Elf32_Obj *obj) {
+}
 
 static void print_usage(void) {
 	printf("Usage: readelf <option(s)> elf-file>\n");
@@ -188,12 +240,12 @@ static const header_item_t header_mach_desc[] = {
 
 static void print_header(Elf32_Obj *obj) {
 	size_t i;
-	Elf32_Ehdr *header = obj->header;
+	Elf32_Ehdr *header = &obj->header;
 
 	printf("ELF Header:\n");
 	printf("  Magic:   ");
 	for (i = 0; i < EI_NIDENT; i++) {
-		printf("%02x ", (int)header->e_ident[i]);
+		printf("%02x ", header->e_ident[i]);
 	}
 
 	printf("\n  Class:                             %s\n",
@@ -262,12 +314,12 @@ static const header_item_t section_types[] = {
 static void print_section_headers(Elf32_Obj *obj) {
 	size_t x;
 	Elf32_Shdr *sh;
-	Elf32_Ehdr *header = obj->header;
+	Elf32_Ehdr *header = &obj->header;
 
 	printf("\nSection Headers:\n");
 	printf("  [Nr] Name              Type       Addr     Off    Size   ES Flg Lk Inf Al\n");
 	for (int i = 0; i < header->e_shnum; i++) {
-		sh = obj->sh_table + i;
+		sh = &obj->sh_table[i];
 		x = sh->sh_type;
 		printf("  [%2d] %-17.17s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
 			SECTION_NAME(sh, obj->string_table),
@@ -303,12 +355,12 @@ static const header_item_t segment_types[] = {
 static void print_program_headers(Elf32_Obj *obj) {
 	size_t x;
 	Elf32_Phdr *ph;
-	Elf32_Ehdr *header = obj->header;
+	Elf32_Ehdr *header = &obj->header;
 
 	printf("\nProgram Headers:\n");
 	printf("  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align\n");
 	for (int i = 0; i < header->e_phnum; i++) {
-		ph = obj->ph_table + i;
+		ph = &obj->ph_table[i];
 		x = ph->p_type;
 		printf("  %-14.14s 0x%06x 0x%08x 0x%08x 0x%05x 0x%05x  %02x 0x%x\n",
 			SEGMENT_NAME(segment_types[x].desc),
@@ -331,11 +383,11 @@ static void print_section_to_segment_mapping(Elf32_Obj *obj) {
 	printf("\n Section to Segment mapping:\n");
 	printf("  Segment Sections...\n");
 
-	for (int i = 0; i < obj->header->e_phnum; i++) {
+	for (int i = 0; i < obj->header.e_phnum; i++) {
 		printf("   %02d    ", i);
 
 		ph = obj->ph_table + i;
-		for (int j = 0; j < obj->header->e_shnum; j++) {
+		for (int j = 0; j < obj->header.e_shnum; j++) {
 			sh = obj->sh_table + j;
 			if ((sh->sh_size)
 			&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
@@ -357,7 +409,7 @@ static void print_dynamic_section(Elf32_Obj *obj) {
 
 	printf("  Tag        Type                         Name/Value\n");
 	for (int i = 0; i < obj->dyn_count; i++) {
-		dyn = obj->dyn_section + i;
+		dyn = &obj->dyn_section[i];
 		printf(" 0x%08x %x\n",
 				(unsigned int) dyn->d_tag,
 				dyn->d_un.d_ptr);
@@ -379,10 +431,12 @@ static void print_relocations(Elf32_Obj *obj) {
 
 		printf(" Offset      Info    Sym. Name\n");
 		for (int i = 0; i < obj->rel_count; i++) {
+			int sym_table_i = ELF32_R_SYM(rel_array[i].r_info);
+
 			printf("%08x  %08x   %s\n",
 					rel_array[i].r_offset,
 					rel_array[i].r_info,\
-					obj->sym_names + obj->sym_table[ELF32_R_SYM(rel_array[i].r_info)].st_name);
+					obj->sym_names + obj->sym_table[sym_table_i].st_name);
 		}
 	}
 }
@@ -448,9 +502,9 @@ static int exec(int argc, char **argv) {
 	int show_reloc    = 0;
 	int show_symb     = 0;
 	int show_dyn      = 0;
-	Elf32_Obj  elf;
+	static Elf32_Obj  elf;
 	int opt, err, cnt = 0;
-	FILE *elf_file;
+	int elf_file;
 	int symb_count;
 
 	elf_initialize_object(&elf);
@@ -499,15 +553,15 @@ static int exec(int argc, char **argv) {
 		show_dyn = 1;
 	}
 
-	elf_file = fopen(argv[argc - 1], "r");
+	elf_file = open(argv[argc - 1], O_RDONLY);
 
-	if (elf_file == NULL) {
+	if (elf_file < 0) {
 		printf("Cannot open file %s\n", argv[argc - 1]);
 		return -errno;
 	}
 
-	if ((err = elf_read_header(elf_file, &elf)) < 0) {
-		fclose(elf_file);
+	if ((err = elf_read_header(elf_file, &elf.header)) < 0) {
+		close(elf_file);
 		return err;
 	}
 
@@ -582,9 +636,9 @@ static int exec(int argc, char **argv) {
 		print_symbols(&elf, symb_count);
 	}
 
-	fclose(elf_file);
+	close(elf_file);
 
-	elf_finilize_object(&elf);
+	/*elf_finilize_object(&elf);*/
 
 	return 0;
 }

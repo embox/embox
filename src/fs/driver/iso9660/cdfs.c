@@ -54,6 +54,7 @@
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
+#include <fs/file_operation.h>
 
 #include <fs/iso9660.h>
 

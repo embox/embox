@@ -8,10 +8,13 @@
  */
 
 #include <string.h>
+
 #include <sys/utsname.h>
-#include <framework/mod/options.h>
+
 #include <hal/arch.h>
-#include <module/embox/arch/smp.h>
+#include <hal/cpu.h>
+
+#include <framework/mod/options.h>
 
 #define MODOPS_RELEASE OPTION_STRING_GET(release)
 #define MODOPS_SYSTEM OPTION_STRING_GET(system)
@@ -21,11 +24,11 @@ static struct utsname sys_name = {
 	.sysname = MODOPS_SYSTEM,
 	.nodename = MODOPS_HOSTNAME,
 	.release = MODOPS_RELEASE,
-#ifndef NOSMP
+#ifdef SMP
 	.version = " SMP "__DATE__ " " __TIME__,
-#else /* NOSMP */
+#else /* !SMP */
 	.version = __DATE__ " " __TIME__,
-#endif /* !NOSMP */
+#endif /* SMP */
 	.machine = __PLATFORM_ARCH
 };
 

@@ -17,4 +17,5 @@ module jffs2 {
 	depends embox.driver.flash
 	depends third_party.zlib.libs
 	depends third_party.lib.util.rbtree
+	depends embox.driver.flash_emu
 }

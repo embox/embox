@@ -14,6 +14,7 @@
 #include <signal.h>
 
 #include <util/dlist.h>
+#include <sys/cdefs.h>
 
 struct siginfoq;
 
@@ -22,9 +23,13 @@ struct sigstate {
 	struct siginfoq infoq;
 };
 
+__BEGIN_DECLS
+
 extern struct siginfoq *siginfoq_init(struct siginfoq *);
 
 extern int siginfoq_enqueue(struct siginfoq *, int, const siginfo_t *);
 extern int siginfoq_dequeue(struct siginfoq *, int, siginfo_t *);
+
+__END_DECLS
 
 #endif /* KERNEL_THREAD_SIGSTD_H_ */

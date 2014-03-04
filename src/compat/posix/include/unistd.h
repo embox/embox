@@ -17,8 +17,6 @@
 
 #include <posix_environ.h>
 
-#include <kernel/task.h>
-
 /*
  * The following symbolic constants are defined for sysconf():
  */
@@ -171,16 +169,16 @@ extern int unlink(const char *pathname);
 
 extern int rmdir(const char *pathname);
 
-static inline pid_t getpid(void) {
-	return task_getid();
-}
+extern pid_t getpid(void);
 
 extern int isatty(int fd);
 
 extern int dup(int flides);
 extern int dup2(int flides, int flides2);
 
-extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
+extern int pipe(int pipefd[2]);
+extern int pipe2(int pipefd[2], int flags);
+
 extern void _exit(int status);
 
 extern uid_t getuid(void);

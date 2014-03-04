@@ -15,26 +15,39 @@
 #include <kernel/sched/waitq.h>
 
 int task_waitpid(pid_t pid) {
-	struct task *task;
-	int ret = 0;
+	int ret;
+	struct waitq_link wql;
+
+	waitq_link_init(&wql);
 
 	sched_lock();
 	{
+		struct task *task, *parent;
+
 		task = task_table_get(pid);
 		if (task == NULL) {
-			ret = -ENOENT;
+			ret = -ECHILD;
+			goto out;
 		}
-		else {
-			ret = waitq_wait_locked(task->waitq, SCHED_TIMEOUT_INFINITE);
-		}
+
+		parent = task->parent;
+		waitq_wait_prepare(task->waitq, &wql);
+
+		sched_wait();
+
+		assert(parent != NULL);
+		ret = parent->child_err;
+
+		/* no cleanup since task is dead already */
 	}
+out:
 	sched_unlock();
 
 	return ret;
 }
-extern void waitq_notify_all_err(struct waitq *wait_queue, int error);
+
 static void task_waitq_deinit(struct task *task) {
-	waitq_notify_all_err(task->waitq, task->err);
+	waitq_wakeup_all(task->waitq);
 }
 
 static void task_waitq_init(struct task *task, void *_waitq) {

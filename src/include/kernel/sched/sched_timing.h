@@ -20,5 +20,4 @@ extern void sched_timing_init(struct thread *t);
 extern void sched_timing_switch(struct thread *prev, struct thread *next);
 extern clock_t sched_timing_get(struct thread *t);
 
-
 #endif /* SCHED_TIMING_H_ */

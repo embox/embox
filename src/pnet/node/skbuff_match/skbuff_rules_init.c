@@ -16,7 +16,7 @@
 #include <framework/cmd/api.h>
 #include <net/util/macaddr.h>
 #include <arpa/inet.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <pnet/repo.h>
 #include <util/member.h>
 #include <stdio.h>

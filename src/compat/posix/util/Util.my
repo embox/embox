@@ -19,7 +19,7 @@ module Time {
 static module getopt {
 	source "getopt.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.LibCStdio
 }
 
 static module utsname {
@@ -33,6 +33,7 @@ static module utsname {
 
 static module time {
 	source "time.c"
+	source "linux_timer.c"
 
 	depends embox.kernel.time.kernel_time
 }
@@ -65,5 +66,5 @@ static module environ {
 	source "environ.c"
 
 	depends embox.kernel.task.env
-	depends embox.lib.LibC
+	depends embox.lib.LibCStdio
 }

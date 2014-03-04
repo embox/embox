@@ -16,6 +16,9 @@
 
 #include <net/inetdevice.h>
 #include <embox/cmd.h>
+#include <ifaddrs.h>
+#include <util/math.h>
+#include <netinet/in.h>
 
 EMBOX_CMD(httpd);
 
@@ -125,7 +128,8 @@ static char * get_next_line(struct client_info *info) {
 	/* 1. move next_chunk to head of buffer */
 	chunk = memmove(info->buff, chunk, len);
 	/* 2. get new piece if data */
-	res = recvfrom(info->sock, chunk + len, sizeof info->buff - len, 0, NULL, NULL);
+	res = recv(info->sock, chunk + len, sizeof info->buff - len,
+			0);
 	if (res <= 0) {
 		return NULL;
 	}
@@ -346,9 +350,9 @@ process_again:
 					http_stat_str[res]);
 			bytes_need = curr - ci.buff;
 			assert(bytes_need <= sizeof ci.buff); /* TODO remove this and make normal checks */
-			bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
+			bytes = send(ci.sock, ci.buff, bytes_need, 0);
 			if (bytes != bytes_need) {
-				printf("http error: send() error\n");
+				perror("httpd: send() failure");
 			}
 		}
 		else {
@@ -360,9 +364,9 @@ process_again:
 					break;
 				}
 				bytes_need = sizeof ci.buff - bytes_need + bytes;
-				bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
+				bytes = send(ci.sock, ci.buff, bytes_need, 0);
 				if (bytes != bytes_need) {
-					printf("http error: send() error\n");
+					perror("httpd: send() failure");
 					break;
 				}
 				curr = ci.buff;
@@ -386,16 +390,35 @@ process_again:
 }
 
 static void welcome_message(void) {
-	struct in_device *iface;
-	char s_in[INET_ADDRSTRLEN], s_in6[INET6_ADDRSTRLEN];
+	struct ifaddrs *ifa, *ifa_iter;
+	int family;
+	void *addr;
+	char buff[max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
 
-	iface = inetdev_get_by_name("eth0");
-	assert(iface != NULL);
+	printf("Welcome to httpd!\n");
 
-	printf("Welcome to http://%s", inet_ntop(AF_INET,
-				&iface->ifa_address, s_in, INET_ADDRSTRLEN));
-	printf(" or http://[%s]\n", inet_ntop(AF_INET6,
-				&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
+	if (-1 == getifaddrs(&ifa)) {
+		perror("httpd: getifaddrs() failure");
+		return;
+	}
+
+	for (ifa_iter = ifa; ifa_iter != NULL;
+			ifa_iter = ifa_iter->ifa_next) {
+		if (ifa_iter->ifa_addr == NULL) continue;
+
+		family = ifa_iter->ifa_addr->sa_family;
+		if ((family != AF_INET) && (family != AF_INET6)) continue;
+
+		addr = family == AF_INET
+				? (void *)&((struct sockaddr_in *)ifa_iter->ifa_addr)->sin_addr
+				: (void *)&((struct sockaddr_in6 *)ifa_iter->ifa_addr)->sin6_addr;
+		printf("\thttp://%s%s%s/\n",
+				family == AF_INET6 ? "[" : "",
+				inet_ntop(family, addr, buff, sizeof buff),
+				family == AF_INET6 ? "]" : "");
+	}
+
+	freeifaddrs(ifa);
 }
 
 static int make_socket(int family, const struct sockaddr *addr,
@@ -404,18 +427,18 @@ static int make_socket(int family, const struct sockaddr *addr,
 
 	sock = socket(family, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) {
-		perror("socket");
+		perror("httpd: socket() failure");
 		return -errno;
 	}
 
 	if (-1 == bind(sock, addr, addrlen)) {
-		perror("bind");
+		perror("httpd: bind() failure");
 		close(sock);
 		return -errno;
 	}
 
 	if (-1 == listen(sock, 3)) {
-		perror("listen");
+		perror("httpd: listen() failure");
 		close(sock);
 		return -errno;
 	}
@@ -457,15 +480,16 @@ static int httpd(int argc, char **argv) {
 	while (1) {
 		addrlen  = sizeof addr;
 		client = accept(host, &addr.sa, &addrlen);
-		if (client < 0) {
-			perror("accept");
+		if (client == -1) {
+			perror("httpd: accept() failure");
 			continue;
 		}
 		if (((addr.sa.sa_family == AF_INET)
 					&& (addrlen != sizeof addr.in))
 				|| ((addr.sa.sa_family == AF_INET6)
 					&& (addrlen != sizeof addr.in6))) {
-			perror("addrlen");
+			printf("httpd: bad addrlen %d for family %d\n",
+					addrlen, addr.sa.sa_family);
 			continue;
 		}
 

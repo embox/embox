@@ -4,8 +4,10 @@
  * @date Jul 18, 2013
  * @author: Anton Bondarev
  */
-#include <time.h>
+
+#include <assert.h>
 #include <stdint.h>
+#include <time.h>
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
@@ -16,6 +18,7 @@
 	((size_t) OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size))
 
 static void *boot_stub(void *arg) {
+	assert(0, "Entering boot_stub");
 	return NULL;
 }
 
@@ -42,7 +45,12 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	/* setup state
 	 * this thread must be active and not sleep
 	 */
-	thread->state = __THREAD_STATE_RUNNING;
+	thread->state = TS_INIT;
+
+	thread->ready = true;
+	thread->active = true;
+	thread->waiting = false;
+
 	thread_set_current(thread);
 
 	return thread;

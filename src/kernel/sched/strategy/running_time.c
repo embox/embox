@@ -20,10 +20,9 @@ void sched_timing_init(struct thread *t) {
 clock_t sched_timing_get(struct thread *t) {
 	clock_t running = t->runnable.sched_attr.sched_time.running_time;
 
-	if (t->state & __THREAD_STATE_RUNNING) {
+	if (sched_active(t))
 		/* Add the least recent time slice (being used now). */
 		running += clock() - t->runnable.sched_attr.sched_time.last_sync;
-	}
 
 	return running;
 }

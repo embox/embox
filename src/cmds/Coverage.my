@@ -1,0 +1,20 @@
+
+package embox.cmd
+
+@Cmd(name = "coverage",
+	help = "Shows function coverage statistic",
+	man = '''
+		NAME
+			coverage - shows function coverage statistic
+
+		SYNOPSIS
+			coverage [-o OUTFILE ]
+
+		AUTHORS
+			Anton Kozlov
+	''')
+module coverage {
+	source "coverage.c"
+
+	depends embox.profiler.coverage
+}

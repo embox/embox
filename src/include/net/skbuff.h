@@ -12,7 +12,6 @@
 #define NET_SKBUFF_H_
 
 /* FIXME include this */
-//#include <net/if_arp.h>
 //#include <net/netdevice.h>
 //#include <net/l3/ipv4/ip.h>
 //#include <net/l3/icmpv4.h>
@@ -24,6 +23,7 @@
 /* Prototypes */
 struct sk_buff;
 struct sk_buff_data;
+struct sk_buff_extra;
 struct net_device;
 struct tcphdr;
 struct udphdr;
@@ -31,7 +31,7 @@ struct icmphdr;
 struct icmp6hdr;
 struct iphdr;
 struct ip6hdr;
-struct arpghdr;
+struct arphdr;
 struct ethhdr;
 
 typedef struct sk_buff_head {
@@ -67,7 +67,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	union {
 		struct iphdr *iph;
 		struct ip6hdr *ip6h;
-		struct arpghdr *arpgh;
+		struct arphdr *arph;
 		unsigned char *raw;
 	} nh;
 
@@ -96,24 +96,27 @@ typedef struct sk_buff {        /* Socket buffer */
 
 } sk_buff_t;
 
+extern size_t skb_max_size(void);
+extern size_t skb_max_extra_size(void);
+
+extern void * skb_data_cast_in(struct sk_buff_data *skb_data);
+extern struct sk_buff_data * skb_data_cast_out(void *data);
+extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
+extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
+
 extern struct sk_buff_data * skb_data_alloc(void);
 extern struct sk_buff_data * skb_data_clone(
 		struct sk_buff_data *skb_data);
+extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 
-extern unsigned char * skb_data_get_extra_hdr(
-		struct sk_buff_data *skb_data);
-extern unsigned char * skb_data_get_data(
-		struct sk_buff_data *skb_data);
-
-extern size_t skb_max_extra_hdr_size(void);
-extern size_t skb_max_size(void);
-extern size_t skb_avail(const struct sk_buff *skb);
+extern struct sk_buff_extra * skb_extra_alloc(void);
+extern void skb_extra_free(struct sk_buff_extra *skb_extra);
 
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(size_t size, size_t offset,
+extern struct sk_buff * skb_wrap(size_t size,
 		struct sk_buff_data *skb_data);
 
 /**
@@ -151,6 +154,11 @@ extern struct sk_buff * skb_copy(const struct sk_buff *skb);
 extern struct sk_buff * skb_clone(const struct sk_buff *skb);
 
 /**
+ * Make sk_buff without shared packet data
+ */
+extern struct sk_buff * skb_declone(struct sk_buff *skb);
+
+/**
  * Create copy of skb
  * In current implementation we don't have shared area for packets data,
  * so copy and clone are the same.
@@ -181,8 +189,6 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
  */
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
-#include <net/if_arp.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 
 #endif /* NET_SKBUFF_H_ */

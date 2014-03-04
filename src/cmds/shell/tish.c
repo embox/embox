@@ -315,7 +315,10 @@ static void tish_run(void) {
 
 		line = readline(prompt);
 		if (line == NULL) {
-			continue;
+			if (errno == EAGAIN) {
+				continue;
+			}
+			break;
 		}
 
 		/* Do something with the string. */

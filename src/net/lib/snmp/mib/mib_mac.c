@@ -9,7 +9,7 @@
 #include <net/lib/snmp_mib.h>
 #include <embox/unit.h>
 #include <net/inetdevice.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 
 static struct obj_data mac;
 

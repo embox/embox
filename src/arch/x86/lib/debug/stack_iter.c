@@ -6,13 +6,25 @@
  * @author Bulychev Anton
  */
 
-#include <asm/traps.h>
-#include "stack_iter.h"
 #include <stddef.h>
 
-#define IN_TRAPS_TEXT(pc)      \
-	(TRAPS_TEXT_START <= (pc)  \
-	&& (pc) < TRAPS_TEXT_END) \
+#include <asm/traps.h>
+#include <hal/context.h>
+#include <util/lang.h>
+#include <util/math.h>
+
+#include "stack_iter.h"
+
+static inline int is_traps_pc(void *pc) {
+	return check_range((char *) pc,
+		__lang_extern_ref(char, _traps_text_start),
+		__lang_extern_ref(char, _traps_text_end));
+}
+
+void stack_iter_context(stack_iter_t *f, struct context *ctx) {
+	f->fp = (void *) ctx->ebp;
+	f->pc = (void *) ctx->eip;
+}
 
 void stack_iter_current(stack_iter_t *f) {
 	f->fp = __builtin_frame_address(1);
@@ -20,7 +32,7 @@ void stack_iter_current(stack_iter_t *f) {
 }
 
 int stack_iter_next(stack_iter_t *f) {
-	if (IN_TRAPS_TEXT((unsigned int) f->pc)) {
+	if (is_traps_pc(f->pc)) {
 		/* Through interruption */
 		pt_regs_t *r = (pt_regs_t *) (f->fp + 8);
 		f->fp = (void *) r->ebp;
@@ -31,7 +43,7 @@ int stack_iter_next(stack_iter_t *f) {
 		f->fp = p;
 		f->pc = *(p+1);
 
-		if (*p == NULL && !IN_TRAPS_TEXT((unsigned int) f->pc)) {
+		if ((*p == NULL && !is_traps_pc(f->pc)) || !f->pc) {
 			f->fp = NULL;
 			f->pc = NULL;
 			return 0;

@@ -12,7 +12,6 @@
 #include <net/lib/icmpv6.h>
 #include <net/lib/ipv6.h>
 #include <net/util/checksum.h>
-#include <netinet/in.h>
 #include <string.h>
 
 void icmp6_build(struct icmp6hdr *icmp6h, uint8_t type,

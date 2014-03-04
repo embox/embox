@@ -46,8 +46,7 @@ static struct time_event_device mips_event_device  = {
 static struct clock_source mips_clock_source = {
 	.name = "mips_clk",
 	.event_device = &mips_event_device,
-//	.counter_device = &mips_counter_device,
-//	.read = clock_source_read /* attach default read function */
+	.read = clock_source_read /* attach default read function */
 };
 
 static int mips_clock_init(void) {

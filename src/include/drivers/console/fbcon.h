@@ -9,11 +9,10 @@
 #ifndef CONSOLE_FBCON_H_
 #define CONSOLE_FBCON_H_
 
-#include <kernel/event.h>
 #include <drivers/video/vesa_modes.h>
 #include <drivers/console/mpx.h>
 #include <drivers/video_term.h>
-#include <kernel/task/io_sync.h>
+#include <fs/idesc.h>
 
 #define FBCON_INPB 16
 
@@ -33,13 +32,10 @@ struct fbcon {
 	struct fbcon_displ_data *fbcon_disdata;
 
 	struct video_resbpp resbpp;
-	struct io_sync ios;
+
+	struct idesc idesc;
 
 };
-
-extern volatile struct fbcon *vc_fbcon_cur;
-
-extern int iodev_vc_init(struct tty *tty);
 
 #endif /* CONSOLE_FBCON_H_ */
 

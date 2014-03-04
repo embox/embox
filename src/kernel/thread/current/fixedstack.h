@@ -9,10 +9,9 @@
 #ifndef KERNEL_THREAD_CURRENT_FIXEDSTACK_H_
 #define KERNEL_THREAD_CURRENT_FIXEDSTACK_H_
 
-#include <framework/mod/options.h>
-
 #include <stdint.h>
 
+#include <framework/mod/options.h>
 #include <module/embox/kernel/thread/core.h>
 
 #define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \

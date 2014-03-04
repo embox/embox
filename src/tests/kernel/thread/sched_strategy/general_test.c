@@ -20,5 +20,5 @@ TEST_CASE("sleep/wake") {
 	struct waitq wq;
 
 	waitq_init(&wq);
-	test_assert_equal(waitq_wait(&wq, 10), -ETIMEDOUT);
+	test_assert_equal(WAITQ_WAIT_TIMEOUT(&wq, 0, 10), -ETIMEDOUT);
 }

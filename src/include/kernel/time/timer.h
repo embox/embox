@@ -19,6 +19,7 @@
 #include <stdbool.h>
 
 #include <kernel/time/timer_strat.h>
+#include <defines/clock_t.h>
 
 struct sys_timer;
 
@@ -87,8 +88,11 @@ typedef struct sys_timer sys_timer_t;
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
+extern int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
 		sys_timer_handler_t handle, void *param);
+
+extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
+		sys_timer_handler_t handler, void *param);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.

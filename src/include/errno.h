@@ -20,6 +20,7 @@
 #define EIO              5     /* I/O error */
 #define EBADF            9     /* Bad file handle */
 #define EAGAIN           11    /* Try again later */
+#define	ECHILD           10    /* No child processes */
 #define EWOULDBLOCK      EAGAIN
 #define ENOMEM           12    /* Out of memory */
 #define EFAULT           14    /* Bad adress posix.1 */

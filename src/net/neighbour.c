@@ -11,7 +11,6 @@
 #include <kernel/softirq_lock.h>
 #include <mem/misc/pool.h>
 #include <string.h>
-#include <util/dlist.h>
 #include <time.h>
 #include <util/list.h>
 #include <util/array.h>
@@ -26,6 +25,7 @@
 
 #include <net/l3/arp.h>
 #include <net/l3/ndp.h>
+#include <net/l2/ethernet.h>
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -113,9 +113,8 @@ static int nbr_send_request(struct neighbour *nbr) {
 	if (nbr->ptype == ETH_P_IP) {
 		in_dev = inetdev_get_by_dev(nbr->dev);
 		assert(in_dev != NULL);
-		return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
-				nbr->plen, NULL, &in_dev->ifa_address, NULL, &nbr->paddr[0],
-				NULL, nbr->dev);
+		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
+				&in_dev->ifa_address, &nbr->paddr[0]);
 	}
 	else {
 		assert(nbr->ptype == ETH_P_IPV6);
@@ -138,7 +137,7 @@ static void nbr_drop_w_queue(struct neighbour *nbr) {
 	struct sk_buff *skb;
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
 	}
 
 	nbr->sent_times = 0;
@@ -160,12 +159,12 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		/* try to xmit */
 		ret = net_tx(skb, NULL);
 		if (ret != 0) {
-			printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
+			/*printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);*/
 			return ret;
 		}
 	}
 	else {
-		printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
+		/*printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);*/
 		skb_free(skb);
 		return ret;
 	}
@@ -358,7 +357,9 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
+			softirq_unlock();
 			ret = (*func)(nbr, args);
+			softirq_lock();
 			if (ret != 0) {
 				softirq_unlock();
 				return ret;
@@ -473,7 +474,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 static int neighbour_init(void) {
 	int ret;
 
-	ret = timer_init(&neighbour_tmr, TIMER_PERIODIC,
+	ret = timer_init_msec(&neighbour_tmr, TIMER_PERIODIC,
 			MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

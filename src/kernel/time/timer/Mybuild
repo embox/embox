@@ -16,7 +16,7 @@ module sys_timer {
 
 module sleep extends sleep_api {
 	source "ksleep.c"
-	depends sys_timer, embox.kernel.thread.core, embox.kernel.thread.event
+	depends sys_timer, embox.kernel.thread.core
 }
 
 module sleep_nosched extends sleep_api {

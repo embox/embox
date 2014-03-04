@@ -19,7 +19,6 @@
 #include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>

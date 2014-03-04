@@ -50,11 +50,21 @@ static int smac_env_n;
 static struct file_desc *audit_log_desc;
 static char no_audit;
 
+#include <fs/vfs.h>
 static int audit_log_open(void) {
+	int fd;
 
-	audit_log_desc = kopen(SMAC_AUDIT_FILE, O_CREAT | O_WRONLY | O_APPEND, 0755);
+	fd = creat(SMAC_AUDIT_FILE, 0777);
+	if (fd < 0) {
+		return -1;
+	}
 
-	return audit_log_desc ? 0 : -1;
+	if (!(audit_log_desc = file_desc_get(fd))) {
+		close(fd);
+		return -1;
+	}
+
+	return 0;
 }
 
 int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {

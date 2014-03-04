@@ -76,7 +76,6 @@ __BEGIN_DECLS
  * calls to any of the date and time functions
  */
 extern char *ctime(const time_t *timep);
-
 extern char *ctime_r(const time_t *t, char *buff);
 
 extern struct tm *gmtime(const time_t *timep);
@@ -88,6 +87,7 @@ extern time_t mktime(struct tm *tm);
 extern char *asctime(const struct tm *timeptr);
 
 extern struct tm *localtime(const time_t *timep);
+extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 
 /* clocks from beginning of start system */
 extern clock_t clock(void);

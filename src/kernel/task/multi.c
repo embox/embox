@@ -50,12 +50,15 @@ POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 static void *task_trampoline(void *arg);
 static int task_init_parent(struct task *task, struct task *parent);
 
+extern struct task *task_alloc(struct task *task, size_t task_size);
+
 int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
 	const int task_sz = task_size();
+	struct task tmp_task;
 	void *addr;
 
 	sched_lock();
@@ -83,11 +86,9 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 			goto out_poolfree;
 		}
 
-		addr = thread_stack_get(thd);
 
-		if (thread_stack_reserved(thd, task_sz) < 0) {
-			panic("Too small thread stack size");
-		}
+		tmp_task.main_thread = thd;
+		addr = task_alloc(&tmp_task, task_sz);
 
 		if ((self_task = task_init(addr, task_sz)) == NULL) {
 			res = -EPERM;
@@ -208,11 +209,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	assert(task != task_kernel_task());
 
-	task->err = (int)res;
+	task->parent->child_err = (int)res;
 
 	sched_lock();
 	{
@@ -245,6 +244,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		thread_terminate(task->main_thread);
 	}
 	sched_unlock();
+
+	task->main_thread = NULL; // XXX
+	thread_exit(NULL);
 
 	/* NOTREACHED */
 	panic("Returning from task_exit()");

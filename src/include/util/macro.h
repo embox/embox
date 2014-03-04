@@ -17,8 +17,8 @@
  * @return
  *  String literal containing expansion of the specified macro
  */
-#define MACRO_STRING(m) __MACRO_STRING(m)
-#define __MACRO_STRING(m) # m
+#define MACRO_STRING(...) __MACRO_STRING(__VA_ARGS__)
+#define __MACRO_STRING(...) # __VA_ARGS__
 
 /**
  * Indirect concatenation of two macros.

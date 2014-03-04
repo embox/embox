@@ -10,7 +10,8 @@ module All {
 		exit,
 		uid,
 		nice,
-		priority
+		priority,
+		pid
 }
 
 static module exec {
@@ -22,6 +23,7 @@ static module exec {
 static module fork {
 	source "fork.c"
 
+	depends embox.kernel.task.kfork
 	depends embox.util.LibUtil
 }
 
@@ -63,4 +65,8 @@ static module nice {
 
 static module priority {
 	source "priority.c"
+}
+
+static module pid {
+	source "pid.c"
 }

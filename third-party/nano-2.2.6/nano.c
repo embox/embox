@@ -1907,7 +1907,7 @@ precalc_cleanup:
  * TRUE. */
 void do_output(char *output, size_t output_len, bool allow_cntrls)
 {
-    size_t current_len, orig_lenpt, i = 0;
+    size_t current_len, orig_lenpt = 0, i = 0;
     char *char_buf = charalloc(mb_cur_max());
     int char_buf_len;
 

@@ -38,9 +38,9 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define HIGH "high_label"
 #define LOW  "low_label"
 
-const static char *high_static = HIGH;
-const static char *low_static = LOW;
-const static char *smac_star = "*";
+static const char *high_static = HIGH;
+static const char *low_static = LOW;
+static const char *smac_star = "*";
 
 #define SMAC_BACKUP_LEN 1024
 
