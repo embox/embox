@@ -10,7 +10,6 @@
 #define KERNEL_TASK_RESOURCE_SECURITY_H_
 
 #include <kernel/task.h>
-#include <module/embox/kernel/task/resource/security.h>
 #include <sys/cdefs.h>
 
 struct task;

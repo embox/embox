@@ -10,7 +10,6 @@
 #define KERNEL_TASK_RESOURCE_WAITPID_H_
 
 #include <kernel/task.h>
-#include <module/embox/kernel/task/resource/waitpid.h>
 #include <sys/cdefs.h>
 
 struct task;
