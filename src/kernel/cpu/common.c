@@ -6,8 +6,10 @@
  * @author Ilia Vaprol
  */
 
+#include <module/embox/kernel/sched/strategy/affinity_api.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/cpu/cpudata.h>
+#include <kernel/sched/affinity.h>
 #include <kernel/thread.h>
 #include <time.h>
 
