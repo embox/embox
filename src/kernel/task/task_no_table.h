@@ -10,6 +10,7 @@
 #define KERNEL_TASK_TASK_NO_TABLE_H_
 
 #include <assert.h>
+#include <errno.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <stddef.h>
@@ -20,7 +21,6 @@ static inline int task_table_add(struct task *tsk) {
 }
 
 static inline struct task * task_table_get(int tid) {
-	assert(tid >= 0);
 	return tid == 0 ? task_kernel_task() : NULL;
 }
 
@@ -34,7 +34,7 @@ static inline int task_table_has_space(void) {
 
 static inline int task_table_get_first(int since) {
 	assert(since >= 0);
-	return since;
+	return since == 0 ? 0 : -ENOENT;
 }
 
 #endif /* KERNEL_TASK_TASK_NO_TABLE_H_ */

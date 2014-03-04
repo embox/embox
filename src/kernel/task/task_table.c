@@ -23,7 +23,6 @@ int task_table_add(struct task *tsk) {
 }
 
 struct task * task_table_get(int tid) {
-	assert(tid >= 0);
 	return util_idx_table_get(task_table, tid);
 }
 
