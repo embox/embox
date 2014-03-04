@@ -9,9 +9,10 @@ abstract module heap_api {
 abstract module heap_afterfree { }
 
 module heap_bm extends heap_api {
-	source "heap_bm.c"
-	depends page_api
+	source "boundary_markers.c"
+	source "malloc.c"
 
+	depends page_api
 	depends heap_lds
 	depends embox.mem.static_heap
 	depends heap_afterfree

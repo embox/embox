@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of heap based on Boundary Markers
+ * @brief Boundary Markers algorithm implementation
  *
  * @date 24.11.2011
  * @author Anton Bondarev
@@ -27,10 +27,6 @@
 #define printd(...) do {} while(0);
 #endif
 
-EMBOX_UNIT_INIT(heap_init);
-
-#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
-
 struct free_block_link {
 	struct free_block_link *prev;
 	struct free_block_link *next;
@@ -43,10 +39,6 @@ struct free_block {
 	struct free_block_link link; /**<< Link in global list of free blocks. */
 };
 
-static void *pool;
-static void *pool_end;
-static struct free_block_link free_blocks = { &free_blocks, &free_blocks };
-
 #define get_clear_size(size) ((size) & ~3)
 #define get_flags(size) ((size) & 3)
 
@@ -58,11 +50,13 @@ static int prev_is_busy(struct free_block *block) {
 	return block->size & 0x2;
 }
 
-static void block_link(struct free_block *block) {
-	block->link.next = free_blocks.next;
-	block->link.prev = &free_blocks;
-	free_blocks.next->prev = &block->link;
-	free_blocks.next = &block->link;
+static void block_link(void *heap, struct free_block *block) {
+	struct free_block_link *free_blocks = (struct free_block_link *) heap;
+
+	block->link.next = free_blocks->next;
+	block->link.prev = free_blocks;
+	free_blocks->next->prev = &block->link;
+	free_blocks->next = &block->link;
 }
 
 static void block_unlink(struct free_block *block) {
@@ -153,7 +147,7 @@ static void block_set_size(struct free_block *block, size_t size) {
 	block->size = flags | size;
 }
 
-static struct free_block * cut(struct free_block *block, size_t size) {
+static struct free_block * cut(void *heap, struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
 	size_t offset;
 
@@ -161,7 +155,7 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 	nblock = (struct free_block *) ((char *) block + offset);
 
 	block_unlink(block);
-	block_link(nblock);
+	block_link(heap, nblock);
 
 	/* Set size for new free block: in begin and end of block */
 	nblock->size = get_clear_size(block->size) - offset;
@@ -180,7 +174,7 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 
 /* Splits one block in two: free block aligned on @c boundary (of size >= @c size) and remainder.
  * If we cant' split so, do nothing and return NULL. */
-static struct free_block *block_align(struct free_block *block, size_t boundary, size_t size) {
+static struct free_block *block_align(void *heap, struct free_block *block, size_t boundary, size_t size) {
 	struct free_block *aligned_block;
 	size_t aligned_addr;
 	size_t aligned_block_size = 1;
@@ -216,7 +210,7 @@ static struct free_block *block_align(struct free_block *block, size_t boundary,
 	/* Init aligned block */
 	aligned_block->size = aligned_block_size;
 	set_end_size(aligned_block);
-	block_link(aligned_block);
+	block_link(heap, aligned_block);
 
 	/* Init remainder */
 	block_set_size(block, (size_t) aligned_block - (size_t) block);
@@ -225,10 +219,11 @@ static struct free_block *block_align(struct free_block *block, size_t boundary,
 	return aligned_block;
 }
 
-void *memalign(size_t boundary, size_t size) {
+void *bm_memalign(void *heap, size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
 	void *ret_addr;
+	struct free_block_link *free_blocks;
 
 	if (size <= 0) {
 		return NULL;
@@ -236,13 +231,15 @@ void *memalign(size_t boundary, size_t size) {
 
 	sched_lock();
 
+	free_blocks = (struct free_block_link *) heap;
+
 	if (size < sizeof(struct free_block)) {
 		size = sizeof(struct free_block);
 	}
 
 	size = (size + (3)) & ~(3); /* align by word*/
 
-	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
+	for (link = free_blocks->next; link != free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
 		if ((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
@@ -252,7 +249,7 @@ void *memalign(size_t boundary, size_t size) {
 		if (boundary != 0) {
 			struct free_block *aligned_block;
 
-			aligned_block = block_align(block, boundary, size);
+			aligned_block = block_align(heap, block, boundary, size);
 
 			if (NULL == aligned_block) {
 				continue;
@@ -265,7 +262,7 @@ void *memalign(size_t boundary, size_t size) {
 		 * 2. One for new busy block (in begin of block): sizeof(block->size). */
 		if ((size + 2 * sizeof(block->size))
 				< (get_clear_size(block->size) - sizeof(struct free_block))) {
-			block = cut(block, size);
+			block = cut(heap, block, size);
 		} else {
 			block_unlink(block);
 			mark_block(block);
@@ -282,34 +279,10 @@ void *memalign(size_t boundary, size_t size) {
 	return NULL;
 }
 
-void * malloc(size_t size) {
-	void *ptr;
-
-	if (size == 0) {
-		return NULL;
-	}
-
-	ptr = memalign(0, size);
-	if (ptr == NULL) {
-		SET_ERRNO(ENOMEM);
-		return NULL;
-	}
-
-	return ptr;
- }
-
-void free(void *ptr) {
+void bm_free(void *heap, void *ptr) {
 	struct free_block *block;
 
-	if (ptr == NULL) {
-		return;
-	}
-
-	if (ptr < pool || ptr >= pool_end) {
-		printk("***** free(): incorrect address space\n");
-		return;
-	}
-	/* assert((ptr < pool) || (ptr >= pool_end)); */;
+	assert(ptr);
 
 	sched_lock();
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
@@ -325,7 +298,7 @@ void free(void *ptr) {
 	afterfree(ptr, (get_clear_size(block->size) - sizeof(block->size)));
 
 	/* Free block */
-	block_link(block);
+	block_link(heap, block);
 	set_end_size(block);
 	clear_block(block);
 	clear_next(block);
@@ -337,7 +310,7 @@ void free(void *ptr) {
 	sched_unlock();
 }
 
-void * realloc(void *ptr, size_t size) {
+void *bm_realloc(void *heap, void *ptr, size_t size) {
 	struct free_block *block;
 	void *ret;
 
@@ -346,7 +319,7 @@ void * realloc(void *ptr, size_t size) {
 		return NULL; /* ok */
 	}
 
-	ret = malloc(size);
+	ret = bm_memalign(heap, 4, size);
 	if (ret == NULL) {
 		return NULL; /* error: errno set in malloc */
 	}
@@ -366,45 +339,26 @@ void * realloc(void *ptr, size_t size) {
 	return ret;
 }
 
-void * calloc(size_t nmemb, size_t size) {
-	void *ret;
-	size_t total_size;
-
-	total_size = nmemb * size;
-	if (total_size == 0) {
-		return NULL; /* ok */
-	}
-
-	ret = malloc(total_size);
-	if (ret == NULL) {
-		return NULL; /* error: errno set in malloc */
-	}
-
-	memset(ret, 0, total_size);
-	return ret;
-}
-
-static int heap_init(void) {
-	extern struct page_allocator *__heap_pgallocator;
+void bm_init(void *heap, size_t size) {
 	struct free_block *block;
+	char *start;
+	struct free_block_link *free_blocks;
 
-	pool = page_alloc(__heap_pgallocator, HEAP_SIZE / PAGE_SIZE() - 2);
-	if(NULL == pool) {
-		return -1;
-	}
+	free_blocks = (struct free_block_link *)heap;
+	free_blocks->next = free_blocks;
+	free_blocks->prev = free_blocks;
 
-	block = (struct free_block *) pool;
-	block->size = HEAP_SIZE - (PAGE_SIZE() * 2) - sizeof(block->size);
+	start = (char *) heap + sizeof *free_blocks;
+	size -= sizeof(struct free_block_link);
+
+	block = (struct free_block *) start;
+	block->size = size;
 	set_end_size(block);
 
 	mark_prev(block);
-	block_link(block);
+	block_link(heap, block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + get_clear_size(block->size));
+	block = (void *) ((char *) start + get_clear_size(block->size));
 	mark_block(block);
-
-	pool_end = block;
-
-	return 0;
 }
