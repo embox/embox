@@ -90,7 +90,7 @@ static inline void task_init(struct task *tsk, int id,
 }
 
 static inline void __attribute__((noreturn)) task_exit(void *res) {
-	while(1);
+	while (1) { }
 }
 
 static inline int task_notify_switch(struct thread *prev,

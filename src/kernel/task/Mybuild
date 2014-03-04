@@ -41,6 +41,7 @@ module single extends api {
 	@NoRuntime depends embox.kernel.cpu.stats
 	@NoRuntime depends embox.kernel.task.kernel_task
 	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
 
 module task_no_table extends task_table_api {
