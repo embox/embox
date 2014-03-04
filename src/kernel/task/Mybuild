@@ -31,7 +31,6 @@ module multi extends api {
 										thread_self to determine current thread */
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.lib.LibCString
-	@NoRuntime depends embox.mem.pool
 }
 
 module single extends api {

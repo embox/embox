@@ -389,6 +389,11 @@ clock_t thread_get_running_time(struct thread *t) {
 	return running;
 }
 
+void thread_set_run_arg(struct thread *t, void *run_arg) {
+	assert(t->state == TS_INIT);
+	t->run_arg = run_arg;
+}
+
 extern struct thread *boot_thread_create(void);
 
 static int thread_core_init(void) {

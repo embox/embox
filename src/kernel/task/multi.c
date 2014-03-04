@@ -21,26 +21,13 @@
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
 
-#include <mem/misc/pool.h>
-
 #include <util/binalign.h>
 #include <err.h>
 
-typedef void *(*run_fn)(void *);
-
-/* used for passing params from caller to thread creator*/
-struct task_creat_param {
-	run_fn run;
-	void *arg;
+struct task_trampoline_arg {
+	void * (*run)(void *);
+	void *run_arg;
 };
-
-//FIXME SIMULTANEOUS_TASK_CREAT is a bad way to solve the problem
-/* Maximum simultaneous creating task number */
-#define SIMULTANEOUS_TASK_CREAT 10
-
-/* struct's life cycle is short: created in new_task,
- * freed at first in new task's thread */
-POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 struct task *task_self(void) {
 	struct thread *th = thread_self();
@@ -50,19 +37,11 @@ struct task *task_self(void) {
 	return th->task;
 }
 
-static void * task_trampoline(void *arg) {
-	struct task_creat_param *param = (struct task_creat_param *) arg;
-	void *run_arg = param->arg;
-	run_fn run = param->run;
-	void *res = NULL;
+static void * task_trampoline(void *arg_) {
+	struct task_trampoline_arg *arg = arg_;
+	void *res;
 
-	sched_lock();
-	{
-		pool_free(&creat_param, param);
-	}
-	sched_unlock();
-
-	res = run(run_arg);
+	res = arg->run(arg->run_arg);
 	task_exit(res);
 
 	/* NOTREACHED */
@@ -72,37 +51,39 @@ static void * task_trampoline(void *arg) {
 	return res;
 }
 
-int new_task(const char *name, void *(*run)(void *), void *arg) {
-	struct task_creat_param *param;
+int new_task(const char *name, void * (*run)(void *), void *arg) {
+	struct task_trampoline_arg *trampoline_arg;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res, tid;
 
 	sched_lock();
 	{
-		param = (struct task_creat_param *) pool_alloc(&creat_param);
-		if (!param) {
-			res = -EAGAIN;
-			goto out_unlock;
-		}
-
 		if (!task_table_has_space()) {
 			res = -ENOMEM;
-			goto out_poolfree;
+			goto out_unlock;
 		}
-
-		param->run = run;
-		param->arg = arg;
 
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
 		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
-				task_trampoline, param);
+				task_trampoline, NULL);
 		if (0 != err(thd)) {
 			res = err(thd);
-			goto out_poolfree;
+			goto out_unlock;
 		}
+
+		trampoline_arg = thread_stack_alloc(thd,
+				sizeof *trampoline_arg);
+		if (trampoline_arg == NULL) {
+			res = -ENOMEM;
+			goto out_threadfree;
+		}
+
+		trampoline_arg->run = run;
+		trampoline_arg->run_arg = arg;
+		thread_set_run_arg(thd, trampoline_arg);
 
 		self_task = thread_stack_alloc(thd,
 				sizeof *self_task + TASK_RESOURCE_SIZE);
@@ -140,9 +121,6 @@ out_tablefree:
 
 out_threadfree:
 		thread_terminate(thd);
-
-out_poolfree:
-		pool_free(&creat_param, param);
 
 	}
 out_unlock:
