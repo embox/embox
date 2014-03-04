@@ -2,7 +2,7 @@
 package mybuild.lang
 
 annotation InitFS {
-	string target
+	string target_dir
 	string chmod
 	string chown
 }
