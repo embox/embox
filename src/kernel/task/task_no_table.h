@@ -11,10 +11,8 @@
 
 #include <assert.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <stddef.h>
-
-static inline void task_table_init(void) {
-}
 
 static inline int task_table_add(struct task *tsk) {
 	assert(tsk == task_kernel_task());

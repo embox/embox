@@ -13,6 +13,7 @@
 #include <kernel/thread/thread_register.h>
 #include <kernel/time/ktime.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <framework/mod/options.h>
 
 #include <err.h>

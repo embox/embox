@@ -4,46 +4,48 @@ package embox.kernel.task
 abstract module api {
 }
 
+@DefaultImpl(task_no_table)
 abstract module task_table_api {
 }
 
 module kernel_task {
 	source "kernel_task.c"
 
-	depends task_resource
-	depends task_table_api
-	depends embox.util.DList
-	depends embox.kernel.thread.idle_thread
 	@NoRuntime depends embox.kernel.cpu.common
+	@NoRuntime depends embox.kernel.task.api
+	depends embox.kernel.task.task_table_api
+	depends embox.kernel.thread.idle_thread
 }
 
 module multi extends api {
 	source "multi.c", "multi.h"
 
-	depends task_resource
-	depends task_table
-	depends embox.kernel.task.resource.errno
-
-	/* uses task_self() to initialize resources, which implies
-	   to thread be already loaded, as task_self uses thread_self
-	   to determine current thread
-	*/
-	depends embox.kernel.thread.core
+	@NoRuntime depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
+	depends embox.kernel.task.task_table
+	@NoRuntime depends embox.kernel.task.resource.errno
+	depends embox.kernel.thread.core /* uses task_self() to initialize
+										resources, which implies to thread be
+										already loaded, as task_self uses
+										thread_self to determine current thread */
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.mem.pool
 }
 
 module single extends api {
 	source "single.h"
 
-	depends kernel_task
-	depends task_no_table
-	depends embox.kernel.thread.current.api
-	depends embox.kernel.sched.strategy.api
+	@NoRuntime depends embox.kernel.cpu.common
+	@NoRuntime depends embox.kernel.cpu.stats
+	@NoRuntime depends embox.kernel.task.kernel_task
+	@NoRuntime depends embox.lib.LibCAssert
 }
 
 module task_no_table extends task_table_api {
 	source "task_no_table.h"
 
-	depends kernel_task
+	@NoRuntime depends embox.kernel.task.kernel_task
 	@NoRuntime depends embox.lib.LibCAssert
 }
 

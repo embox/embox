@@ -7,6 +7,7 @@
 
 #include <embox/unit.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <kernel/task/task_table.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>

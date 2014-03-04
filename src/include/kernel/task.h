@@ -30,13 +30,6 @@ extern clock_t task_get_clock(const struct task *tsk);
 extern void task_set_clock(struct task *tsk, clock_t new_clock);
 
 /**
- * @brief Kernel task
- *
- * @return Pointer to kernel task
- */
-extern struct task *task_kernel_task(void);
-
-/**
  * @brief Get self task (task which current execution thread associated with)
  *
  * @return Pointer to self task

@@ -17,11 +17,6 @@ struct task;
 __BEGIN_DECLS
 
 /**
- * @brief Initialize task table
- */
-extern void task_table_init(void);
-
-/**
  * @brief Add a task to a task table
  *
  * @param task

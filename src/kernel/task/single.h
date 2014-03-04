@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <kernel/task/kernel_task.h>
 #include <kernel/task/task_priority.h>
 
 #include <sys/cdefs.h>
@@ -20,6 +21,7 @@
 #include <kernel/cpu/cpu.h>
 
 struct task {
+	char __unused[0];
 	char resources[];
 };
 
@@ -39,7 +41,7 @@ static inline const char * task_get_name(
 static inline struct thread * task_get_main(
 		const struct task *tsk) {
 	assert(tsk == task_kernel_task());
-	return cpu_idle(cpu_get_id());
+	return cpu_get_idle(cpu_get_id());
 }
 
 static inline task_priority_t task_get_priority(
@@ -89,10 +91,6 @@ static inline void __attribute__((noreturn)) task_exit(void *res) {
 static inline int task_notify_switch(struct thread *prev,
 		struct thread *next) {
 	return 0;
-}
-
-static inline int task_waitpid(pid_t pid) {
-	return -ECHILD;
 }
 
 __END_DECLS

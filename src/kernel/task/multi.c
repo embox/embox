@@ -13,6 +13,7 @@
 #include <kernel/sched.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
