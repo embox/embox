@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @brief Initialization of the ACPICA module.
+ *
+ * @date 05.03.2014
+ * @author Roman Kurbatov
+ */
+
 #include <embox/unit.h>
 #include <kernel/printk.h>
 #include <acpica/acpi.h>
