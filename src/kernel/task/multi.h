@@ -46,6 +46,13 @@ static inline struct thread * task_get_main(const struct task *tsk) {
 	return tsk->tsk_main;
 }
 
+static inline void task_set_main(struct task *tsk,
+		struct thread *main_thread) {
+	assert(tsk != NULL);
+	assert(main_thread != NULL);
+	tsk->tsk_main = main_thread;
+}
+
 static inline task_priority_t task_get_priority(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_priority;

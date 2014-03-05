@@ -14,12 +14,12 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <string.h>
+#include <time.h>
 
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
-
 
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
@@ -46,6 +46,12 @@ static inline struct thread * task_get_main(const struct task *tsk) {
 	return cpu_get_idle(cpu_get_id());
 }
 
+static inline void task_set_main(struct task *tsk,
+		struct thread *main_thread) {
+	assert(tsk == task_kernel_task());
+	assert(main_thread == cpu_get_idle(cpu_get_id()));
+}
+
 static inline task_priority_t task_get_priority(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return TASK_PRIORITY_DEFAULT;
@@ -59,7 +65,7 @@ static inline int task_set_priority(struct task *tsk,
 
 static inline clock_t task_get_clock(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
-	return cpu_get_total_time(cpu_get_id());
+	return clock();
 }
 
 static inline void task_set_clock(struct task *tsk, clock_t new_clock) {

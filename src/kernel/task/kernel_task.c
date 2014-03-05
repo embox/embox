@@ -9,8 +9,6 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/task_table.h>
-#include <hal/cpu.h>
-#include <kernel/cpu/cpu.h>
 
 EMBOX_UNIT_INIT(kernel_task_init);
 
@@ -22,21 +20,21 @@ struct task * task_kernel_task(void) {
 
 static int kernel_task_init(void) {
 	int ktask_id;
-	struct task *t;
-	struct thread *idle_thread; /* main thread for kernel task */
+	struct task *ktask;
 
-	t = task_kernel_task();
-	assert(t);
+	ktask = task_kernel_task();
+	assert(ktask != NULL);
 
-	idle_thread = cpu_get_idle(cpu_get_id());
-	assert(idle_thread);
-
-	ktask_id = task_table_add(t);
+	ktask_id = task_table_add(ktask);
 	if (ktask_id < 0) {
 		return ktask_id;
 	}
 
-	task_init(t, ktask_id, "kernel", idle_thread, TASK_PRIORITY_DEFAULT);
+	/* task_get_main returns a value which already initialized
+	 * by thread.core module in the file idle_thread.c by the
+	 * idle_thread_create() function */
+	task_init(ktask, ktask_id, "kernel", task_get_main(ktask),
+			TASK_PRIORITY_DEFAULT);
 
 	return 0;
 }

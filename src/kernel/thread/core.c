@@ -394,13 +394,14 @@ void thread_set_run_arg(struct thread *t, void *run_arg) {
 	t->run_arg = run_arg;
 }
 
-extern struct thread *boot_thread_create(void);
+extern struct thread * idle_thread_create(void);
+extern struct thread * boot_thread_create(void);
 
 static int thread_core_init(void) {
 	struct thread *idle;
 	struct thread *current;
 
-	idle = cpu_get_idle(cpu_get_id()); /* idle thread always has ID=0 */
+	idle = idle_thread_create(); /* idle thread always has ID=0 */
 	current = boot_thread_create(); /* 'init' thread ID=1 */
 
 	return sched_init(idle, current);

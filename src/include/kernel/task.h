@@ -28,13 +28,12 @@ extern int task_get_id(const struct task *tsk);
 extern const char * task_get_name(const struct task *tsk);
 
 extern struct thread * task_get_main(const struct task *tsk);
+extern void task_set_main(struct task *tsk, struct thread *main_thread);
 
 extern task_priority_t task_get_priority(const struct task *tsk);
-
 extern int task_set_priority(struct task *tsk, task_priority_t new_priority);
 
 extern clock_t task_get_clock(const struct task *tsk);
-
 extern void task_set_clock(struct task *tsk, clock_t new_clock);
 
 /**

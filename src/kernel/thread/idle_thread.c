@@ -5,14 +5,13 @@
  * @author: Anton Bondarev
  */
 
-#include <embox/unit.h>
 #include <err.h>
 #include <hal/arch.h> /*only for arch_idle */
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
+#include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
-
-EMBOX_UNIT_INIT(idle_thread_init);
 
 /*
  * Function, which does nothing. For idle_thread.
@@ -25,19 +24,19 @@ static void * idle_run(void *arg) {
 	return NULL;
 }
 
-
-static int idle_thread_init(void) {
+struct thread * idle_thread_create(void) {
 	struct thread *t;
 
 	t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 			idle_run, NULL);
 	if (0 != err(t)) {
-		return err(t);
+		return NULL;
 	}
 
 	thread_priority_init(t, SCHED_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), t);
+	task_set_main(task_kernel_task(), t);
 
-	return 0;
+	return t;
 }
