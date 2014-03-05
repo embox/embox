@@ -12,6 +12,9 @@
 #include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
 
+#include <kernel/task/kernel_task.h>
+#include <kernel/thread/thread_register.h>
+
 EMBOX_UNIT_INIT(idle_thread_init);
 
 /*
@@ -34,6 +37,8 @@ static int idle_thread_init(void) {
 	if (0 != err(t)) {
 		return err(t);
 	}
+
+	thread_register(task_kernel_task(), t);
 
 	thread_priority_init(t, SCHED_PRIORITY_MIN);
 

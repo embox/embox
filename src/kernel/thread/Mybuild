@@ -16,15 +16,15 @@ module core extends thread_mode {
 	source "core.c"
 	source "thread_allocator.c"
 	source "thread_register.c"
-	source "boot_thread.c"
 
-	depends idle_thread
+	depends starter
+
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
-	depends embox.kernel.task.kernel_task
-	depends embox.kernel.time.jiffies
+
+
 	@NoRuntime depends stack_api
-	depends thread_local
+	@NoRuntime depends thread_local
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal
@@ -32,8 +32,21 @@ module core extends thread_mode {
 	@NoRuntime depends embox.kernel.cpu.common
 }
 
+module starter {
+	source "starter.c"
+	depends idle_thread
+	depends boot_thread
+	depends embox.kernel.time.jiffies
+}
+
+module boot_thread {
+	source "boot_thread.c"
+	depends embox.kernel.task.kernel_task
+}
+
 module idle_thread {
 	source "idle_thread.c"
+	depends boot_thread
 	@NoRuntime depends core
 	@NoRuntime depends embox.kernel.cpu.common
 }

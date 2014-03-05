@@ -16,6 +16,10 @@
 
 #include <module/embox/kernel/stack.h>
 
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(boot_thread_init);
+
 #define STACK_SZ \
 	((size_t) OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size))
 
@@ -55,15 +59,22 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	return thread;
 }
 
-struct thread *boot_thread_create(void) {
-	struct thread *bootstrap;
+struct thread *bootstrap;
+
+struct thread *boot_thread_get(void) {
+	return bootstrap;
+}
+
+static int boot_thread_init(void) {
 	struct task *kernel_task = task_kernel_task();
 	extern char _stack_top;
 
 	bootstrap = thread_init_self(&_stack_top - STACK_SZ, STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
-	thread_register(kernel_task, bootstrap);
+	/* thread_register(kernel_task, bootstrap); */
+	kernel_task->tsk_main = bootstrap;
+	bootstrap->task = kernel_task;
 
-	return bootstrap;
+	return 0;
 }

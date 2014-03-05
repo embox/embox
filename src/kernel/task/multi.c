@@ -139,8 +139,10 @@ void task_init(struct task *tsk, int id, const char *name,
 	strncpy(tsk->tsk_name, name, sizeof tsk->tsk_name - 1);
 	tsk->tsk_name[sizeof tsk->tsk_name - 1] = '\0';
 
-	tsk->tsk_main = main_thread;
-	main_thread->task = tsk;
+	if (main_thread) {
+		tsk->tsk_main = main_thread;
+		main_thread->task = tsk;
+	}
 
 	tsk->tsk_priority = priority;
 

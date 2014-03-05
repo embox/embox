@@ -42,7 +42,6 @@
 #include <hal/context.h>
 #include <err.h>
 
-EMBOX_UNIT_INIT(thread_core_init);
 
 
 static int id_counter = 0; // TODO make it an indexator
@@ -392,16 +391,4 @@ clock_t thread_get_running_time(struct thread *t) {
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
 	t->run_arg = run_arg;
-}
-
-extern struct thread *boot_thread_create(void);
-
-static int thread_core_init(void) {
-	struct thread *idle;
-	struct thread *current;
-
-	idle = cpu_get_idle(cpu_get_id()); /* idle thread always has ID=0 */
-	current = boot_thread_create(); /* 'init' thread ID=1 */
-
-	return sched_init(idle, current);
 }
