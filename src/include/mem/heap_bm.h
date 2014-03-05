@@ -14,6 +14,5 @@
 extern void bm_init(void *segment, size_t size);
 extern void *bm_memalign(void *segment, size_t boundary, size_t size);
 extern void bm_free(void *segment, void *ptr);
-extern void *bm_realloc(void *segment, void *ptr, size_t size);
 
 #endif /* MEM_HEAP_BM_H_ */

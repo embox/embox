@@ -310,35 +310,6 @@ void bm_free(void *heap, void *ptr) {
 	sched_unlock();
 }
 
-void *bm_realloc(void *heap, void *ptr, size_t size) {
-	struct free_block *block;
-	void *ret;
-
-	if (size == 0) {
-		free(ptr);
-		return NULL; /* ok */
-	}
-
-	ret = bm_memalign(heap, 4, size);
-	if (ret == NULL) {
-		return NULL; /* error: errno set in malloc */
-	}
-
-	if (ptr == NULL) {
-		printd("addr = 0x%X\n", (uint32_t)ret);
-		return ret;
-	}
-
-	block = (struct free_block *) ((uint32_t *) ptr - 1);
-
-	/* Copy minimum of @c size and actual size of object pointed by @c ptr. And then free @c ptr */
-	memcpy(ret, ptr, min(size, get_clear_size(block->size) - sizeof(block->size)));
-	free(ptr);
-
-	printd("addr = 0x%X\n", (uint32_t)ret);
-	return ret;
-}
-
 void bm_init(void *heap, size_t size) {
 	struct free_block *block;
 	char *start;

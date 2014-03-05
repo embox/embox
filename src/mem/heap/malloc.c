@@ -69,15 +69,16 @@ void *memalign(size_t boundary, size_t size) {
 
 	do {
 		dlist_foreach_entry(mm, mm_next, &task_mem_segments, link) {
-			if ((block =  bm_memalign(mm_to_segment(mm), boundary, size))) {
+			block = bm_memalign(mm_to_segment(mm), boundary, size);
+			if (block != NULL) {
 				return block;
 			}
 		}
 
 		/* No corresponding heap was found */
-		segment_pages_cnt = (size + PAGE_SIZE()) / PAGE_SIZE();
+		segment_pages_cnt = (size + boundary + PAGE_SIZE()) / PAGE_SIZE();
 		mm = (struct mm_segment *) page_alloc(__heap_pgallocator, segment_pages_cnt);
-		if (!mm)
+		if (mm == NULL)
 			return NULL;
 
 		mm->size = segment_pages_cnt * PAGE_SIZE() - sizeof *mm - RESERVED_SPACE_PER_SEGMENT;
@@ -109,13 +110,13 @@ void *malloc(size_t size) {
 void free(void *ptr) {
 	void *segment;
 
-	if (!ptr)
+	if (ptr == NULL)
 		return;
 
 	segment = ptr_to_segment(ptr);
 
-	if (segment) {
-			bm_free(segment, ptr);
+	if (segment != NULL) {
+		bm_free(segment, ptr);
 	} else {
 		/* No segment containing pointer @c ptr was found. */
 		printk("***** free(): incorrect address space\n");
@@ -123,20 +124,29 @@ void free(void *ptr) {
 }
 
 void *realloc(void *ptr, size_t size) {
-	void *segment;
+	void *ret;
 
-	if (!ptr)
-		return malloc(size);
+	if (size == 0 && ptr != NULL) {
+		free(ptr);
+		return NULL; /* ok */
+	}
 
-	segment = ptr_to_segment(ptr);
+	ret = memalign(4, size);
 
-	if (segment)
-		return bm_realloc(segment, ptr, size);
+	if (ret == NULL) {
+		return NULL; /* error: errno set in malloc */
+	}
 
-	/* No segment containing pointer @c ptr was found. */
-	printk("***** realloc(): incorrect address space\n");
+	if (ptr == NULL) {
+		return ret;
+	}
 
-	return NULL;
+	/* The contents will be unchanged in the range from the start of the region up to the minimum of the
+	   old and new sizes. So simply copy size bytes (may be with redundant bytes) */
+	memcpy(ret, ptr, size);
+	free(ptr);
+
+	return ret;
 }
 
 void *calloc(size_t nmemb, size_t size) {
