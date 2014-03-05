@@ -16,13 +16,14 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
-#include <util/dlist.h>
 #include <unistd.h>
 
 #include <kernel/printk.h>
 #include <mem/heap_bm.h>
 #include <mem/page.h>
+#include <util/dlist.h>
 
+/* this space at the end of each segment is used by the underlying bm_init() */
 #define RESERVED_SPACE_PER_SEGMENT 8
 
 /* TODO make it per task field */
@@ -62,12 +63,16 @@ void *memalign(size_t boundary, size_t size) {
 	void *block;
 	struct mm_segment *mm, *mm_next;
 	size_t segment_pages_cnt;
+	int iter;
 
 	/* task_mem_segments = task_self()->mm->link */
 
 	block = NULL;
+	iter = 0;
 
 	do {
+		assert(iter++ < 2, "%s\n", "memory allocation cyclic");
+
 		dlist_foreach_entry(mm, mm_next, &task_mem_segments, link) {
 			block = bm_memalign(mm_to_segment(mm), boundary, size);
 			if (block != NULL) {
@@ -141,8 +146,8 @@ void *realloc(void *ptr, size_t size) {
 		return ret;
 	}
 
-	/* The contents will be unchanged in the range from the start of the region up to the minimum of the
-	   old and new sizes. So simply copy size bytes (may be with redundant bytes) */
+	/* The content of new region will be unchanged in the range from the start of the region up to
+	 * the minimum of the old and new sizes. So simply copy size bytes (may be with redundant bytes) */
 	memcpy(ret, ptr, size);
 	free(ptr);
 
