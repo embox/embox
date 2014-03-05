@@ -21,9 +21,8 @@
 #include <stdlib.h>
 
 #include <asm/io.h>
-#include <drivers/acpi/acpi.h>
+#include <acpica/acpi.h>
 #include <kernel/thread.h>
-#include <kernel/thread/sync/semaphore.h>
 #include <kernel/time/ktime.h>
 
 ACPI_STATUS AcpiOsInitialize(void) {

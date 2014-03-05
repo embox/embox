@@ -3,12 +3,16 @@
  *
  * @date 10.11.10
  * @author Nikolay Korotky
+ *         Roman Kurbatov
+ *         - ACPI power off
  */
 
-#include <hal/arch.h>
-#include <asm/traps.h>
-#include <hal/ipl.h>
 #include <asm/io.h>
+#include <asm/traps.h>
+#include <hal/arch.h>
+#include <hal/ipl.h>
+#include <kernel/printk.h>
+#include <acpica/acpi.h>
 
 void arch_init(void) {
 	//gdt_init();
@@ -35,9 +39,20 @@ void arch_reset_kbd(void) {
 
 
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+	ACPI_STATUS status;
 
-	//outw(0xB004, 0x0 | 0x2000);
-	//asm("cli;hlt");
+	status = AcpiEnterSleepStatePrep(ACPI_STATE_S5);
+	if (ACPI_FAILURE(status)) {
+		printk("ERROR: Unable to prepare to enter the soft off system state");
+		goto error;
+	}
+
+	status = AcpiEnterSleepState(ACPI_STATE_S5);
+	if (ACPI_FAILURE(status)) {
+		printk("ERROR: Unable to enter the soft off system state");
+	}
+
+	error:
 
 	while (1) {}
 }

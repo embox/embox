@@ -7,10 +7,7 @@ package embox.cmd.sys
 			shutdown - turn the system off
 		AUTHORS
 			Anton Bondarev
-			Roman Kurbatov
 	''')
 module shutdown {
 	source "shutdown.c"
-
-	depends embox.driver.acpi.acpica
 }
