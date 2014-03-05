@@ -83,11 +83,16 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
 initfs_cp_prerequisites = $(src_file) $(common_prereqs)
+$(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
+	@mkdir -p $(@D)
+	@touch $@
+
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
 		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
+
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
 
@@ -160,10 +165,18 @@ symbols_c_files = \
 $(symbols_pass1_c) : image_o = $(image_nosymbols_o)
 $(symbols_pass2_c) : image_o = $(image_pass1_o)
 
+SYMBOLS_WITH_FILENAME ?= 1
+
+ifeq ($(SYMBOLS_WITH_FILENAME),1)
+NM_OPTS := --demangle --line-numbers --numeric-sort
+else
+NM_OPTS := --demangle --numeric-sort
+endif
+
 $(symbols_c_files) :
 $(symbols_c_files) : mk/script/nm2c.awk $$(common_prereqs)
 $(symbols_c_files) : $$(image_o)
-	$(NM) --demangle --numeric-sort $< | $(AWK) -f mk/script/nm2c.awk > $@
+	$(NM) $(NM_OPTS) $< | $(AWK) -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a
