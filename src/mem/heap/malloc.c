@@ -14,7 +14,6 @@
  */
 
 #include <errno.h>
-#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -34,15 +33,16 @@ struct mm_segment {
 	size_t size;
 };
 
-static inline bool pointer_inside_segment(void *segment, size_t size, void *pointer) {
+static inline int pointer_inside_segment(void *segment, size_t size, void *pointer) {
 	return (pointer > segment && pointer < (segment + size));
 }
 
 static inline void *mm_to_segment(struct mm_segment *mm) {
+	assert(mm);
 	return ((char *) mm + sizeof *mm);
 }
 
-static void *ptr_to_segment(void *ptr) {
+static void *pointer_to_segment(void *ptr) {
 	struct mm_segment *mm, *mm_next;
 	void *segment;
 
@@ -110,7 +110,7 @@ void *malloc(size_t size) {
 	}
 
 	return ptr;
- }
+}
 
 void free(void *ptr) {
 	void *segment;
@@ -118,7 +118,7 @@ void free(void *ptr) {
 	if (ptr == NULL)
 		return;
 
-	segment = ptr_to_segment(ptr);
+	segment = pointer_to_segment(ptr);
 
 	if (segment != NULL) {
 		bm_free(segment, ptr);
