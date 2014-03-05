@@ -32,7 +32,7 @@ EXTERNAL_MAKE_PRO = \
 		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS))' \
 		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
 		$${TARGET:-$(dir $(my_file))} \
-		-o $(mod_build_dir)/Makefile && \
+		-o $(abspath $(mod_build_dir))/Makefile && \
 	$(MAKE) -C $(mod_build_dir) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_FLAGS = \

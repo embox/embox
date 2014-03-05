@@ -206,6 +206,16 @@ int main(int argv, char **args)
 {
 	//Q_INIT_RESOURCE(texteditor);
 
+	// <application_name> -platform vnc
+	const char *qpa_plugin_name = args[argv - 1];
+
+	assert(!strcmp("vnc", qpa_plugin_name) || !strcmp("emboxvc", qpa_plugin_name));
+
+	if (!strcmp("vnc", qpa_plugin_name)) {
+		assert(DEFAULT_WIDTH != 0);
+		assert(DEFAULT_HEIGHT != 0);
+	}
+
 	waitq_init(&texteditor_inited_wq);
 
 	QApplication app(argv, args);
@@ -226,10 +236,10 @@ int main(int argv, char **args)
 
 	emroot->setCentralWidget(emarea);
 
-	if (DEFAULT_WIDTH == 0 || DEFAULT_HEIGHT == 0) {
-		WAITQ_WAIT(&texteditor_inited_wq, texteditor_inited); /* EMBOXVC plugin*/
-	} else {
-		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT)); /* VNC plugin */
+	if (!strcmp("vnc", qpa_plugin_name)) {
+		emroot->setGeometry(QRect(0,0, DEFAULT_WIDTH, DEFAULT_HEIGHT));
+	} else { /* emboxvc */
+		WAITQ_WAIT(&texteditor_inited_wq, texteditor_inited);
 	}
 
 	emroot->show();

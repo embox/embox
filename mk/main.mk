@@ -105,7 +105,7 @@ Usage: $(MAKE) mod-<INFO>
 endef
 
 # Assuming that we have 'build.conf' in every template.
-PLATFORM_LABEL:=platfrom/
+PLATFORM_LABEL:=platform/
 template_name=$(patsubst $(TEMPLATES_DIR)/%,%,$1)
 platform_template_name=$(patsubst $(PLATFORM_DIR)/%,$(PLATFORM_LABEL)%,\
 		       $(subst $(SUBPLATFORM_TEMPLATE_DIR),,$1))
@@ -384,3 +384,34 @@ $(help_targets) :
 # Default help section.
 help-% :
 	@echo No help section for '$*'
+
+#
+# External build lock
+#
+
+module_extbld_rmk_target_pat := $(MKGEN_DIR)/%.__extbld-target
+module_path = $(subst .,/,$*)
+module_lock = $(patsubst %,$(value module_extbld_rmk_target_pat),$(module_path))
+
+.PHONY : extbld-lock
+extbld-lock-% :
+	@touch $(module_lock)
+
+define help-extbld-lock
+Usage: $(MAKE) extbld-lock-qualified.module.name
+
+  Locks external build module for rebuilding. If you want to rebuild it,
+  call extbld-unlock.
+
+endef # extbld-lock
+
+.PHONY : extbld-unlock
+extbld-unlock-% :
+	@-rm $(module_lock)
+
+define help-extbld-unlock
+Usage: $(MAKE) extbld-unlock-qualified.module.name
+
+  Unlocks external build module for rebuilding.
+
+endef # extbld-unlock
