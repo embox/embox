@@ -6,7 +6,13 @@ package third_party.qpid
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.core)
-static module core {
+/* NOTE this was static module, until some day I tried to connect to broker via tcp.
+   TCPConnector class was missing, that registers tcp proto in static constructor of
+   some artifical class. Since noone reference that, tcp was disabled.
+   I turn this module into not static, and TCPConnector starts to register.
+   Anton Kozlov
+*/
+module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libqmf.a", "libqmf2.a", "libqmfconsole.a",
 		"libqmfengine.a", "libqpidbroker.a", "libqpidclient.a",
