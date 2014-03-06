@@ -38,37 +38,46 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_FILE1  "/tmp/foo/bar/abc.txt"
 #define FS_FILE2  "/tmp/foo/bar/xyz.txt"
 
-TEST_CASE("Create fat filesystem") {
-	test_assert_zero(format(FS_DEV, FS_NAME));
-}
+TEST_CASE("generic filesystem test") {
 
-TEST_CASE("Mount fat filesystem") {
-	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME));
-}
+	/* Create fat filesystem */
+	{
+		test_assert_zero(format(FS_DEV, FS_NAME));
+	}
 
-TEST_CASE("Create files and directories") {
-	int fd;
-	test_assert_zero(mkdir(FS_DIR1, 0777));
-	test_assert_zero(mkdir(FS_DIR2, 0777));
-	test_assert_true(0 <= (fd = creat(FS_FILE1, 0)));
-	test_assert_not_equal(-1, fd);
-	close(fd);
-	test_assert_true(0 <= (fd = creat(FS_FILE2, 0)));
-	test_assert_not_equal(-1, fd);
-	close(fd);
-}
+	/* Mount fat filesystem */
+	{
+		test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME));
+	}
 
-TEST_CASE("Delete file") {
-	test_assert_zero(remove(FS_FILE1));
-	test_assert_zero(remove(FS_FILE2));
-	test_assert(0 > open(FS_FILE1, O_RDONLY));
-	test_assert(0 > open(FS_FILE2, O_RDONLY));
-	test_assert_zero(remove(FS_DIR2));
-	test_assert_zero(remove(FS_DIR1));
-}
+	/* Create files and directories */
+	{
+		int fd;
+		test_assert_zero(mkdir(FS_DIR1, 0777));
+		test_assert_zero(mkdir(FS_DIR2, 0777));
+		test_assert_true(0 <= (fd = creat(FS_FILE1, 0)));
+		test_assert_not_equal(-1, fd);
+		close(fd);
+		test_assert_true(0 <= (fd = creat(FS_FILE2, 0)));
+		test_assert_not_equal(-1, fd);
+		close(fd);
+	}
 
-TEST_CASE("Umount fat filesystem") {
-	test_assert_zero(umount(FS_DIR));
+	/* Delete file */
+	{
+		test_assert_zero(remove(FS_FILE1));
+		test_assert_zero(remove(FS_FILE2));
+		test_assert(0 > open(FS_FILE1, O_RDONLY));
+		test_assert(0 > open(FS_FILE2, O_RDONLY));
+		test_assert_zero(remove(FS_DIR2));
+		test_assert_zero(remove(FS_DIR1));
+	}
+
+	/* Umount fat filesystem */
+	{
+		test_assert_zero(umount(FS_DIR));
+	}
+
 }
 
 static int setup_suite(void) {

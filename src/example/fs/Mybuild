@@ -15,3 +15,7 @@ module flock {
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
+
+module long_file_write {
+	source "long_file_write.c"
+}

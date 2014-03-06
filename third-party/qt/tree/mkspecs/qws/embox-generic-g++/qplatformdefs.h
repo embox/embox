@@ -109,7 +109,7 @@
 
 
 
-static char *tzname[2];
+static const char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
 	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
@@ -160,11 +160,12 @@ inline int symlink(const char *oldpath, const char *newpath) {
 
 
 // Either this or define __GLIBC__
-#define PATH_MAX 256
+#include <limits.h>
+//#define PATH_MAX 256
 
-#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
-
+#include <locale.h>
+//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
+//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 
 /* Structure describing CPU time used by a process and its children.  */
@@ -179,6 +180,9 @@ struct tms
 
 #include <kernel/task.h>
 
+__BEGIN_DECLS
+extern clock_t clock_sys_ticks(void);
+__END_DECLS
 /* Store the CPU time used by this process and all its
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
@@ -189,7 +193,7 @@ static inline clock_t times (struct tms *__buffer) {
 	__buffer->tms_stime = task_self()->per_cpu;
 	__buffer->tms_utime = 0;
 
-	return __buffer->tms_stime;
+	return clock_sys_ticks();
 }
 
 typedef int sig_atomic_t;
@@ -311,9 +315,50 @@ static inline struct group *getgrgid(gid_t gid) {
 	return NULL;
 }
 
+//------BEGIN QProcess
+
+static inline pid_t setsid(void) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+
+#define WNOHANG      0
+static inline int WIFEXITED(int status) {
+	printf(">>> %s %d\n", __func__, status);
+	return 0;
+}
+static inline int WEXITSTATUS(int status) {
+	(void)status;
+	printf(">>> %s %d\n", __func__, status);
+	return 0;
+}
+
+
+
+//------ END QProcess
+
 // this is for FILESYSTEMWATCHER
-#define pathconf(path,name) \
-	printf(">>> pathconf(%s,%s)\n",#path,#name),32
+#define _PC_LINK_MAX         0
+#define _PC_MAX_CANON        1
+#define _PC_MAX_INPUT        2
+#define _PC_NAME_MAX         3
+#define _PC_PATH_MAX         4
+#define _PC_PIPE_BUF         5
+#define _PC_CHOWN_RESTRICTED 6
+#define _PC_NO_TRUNC         7
+#define _PC_VDISABLE         8
+
+static inline long pathconf(char *path, int name) {
+	switch (name) {
+	case _PC_NAME_MAX:
+		return NAME_MAX;
+	case _PC_PATH_MAX:
+		return PATH_MAX;
+	default:
+		printf(">>> pathconf(%s,%d)\n",path,name);
+		return 32;
+	}
+}
 
 #endif // __QEMBOX__
 

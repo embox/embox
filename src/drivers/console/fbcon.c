@@ -128,15 +128,22 @@ static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
 
 }
 
+static int fbcon_idesc_status(struct idesc *idesc, int mask) {
+	struct fbcon *fbcon = data2fbcon(idesc);
+
+	return tty_status(&(fbcon->vterm.tty), mask);
+}
+
 static void fbcon_idesc_close(struct idesc *idesc) {
 }
 
 static const struct idesc_ops fbcon_idesc_ops = {
-	.read  = fbcon_idesc_read,
-	.write = fbcon_idesc_write,
-	.close = fbcon_idesc_close,
-	.ioctl = fbcon_idesc_ioctl,
-	.fstat = fbcon_idesc_fstat,
+	.read   = fbcon_idesc_read,
+	.write  = fbcon_idesc_write,
+	.close  = fbcon_idesc_close,
+	.ioctl  = fbcon_idesc_ioctl,
+	.fstat  = fbcon_idesc_fstat,
+	.status = fbcon_idesc_status,
 };
 
 static void *run(void *data) {
@@ -161,7 +168,7 @@ static void *run(void *data) {
 	assert(fd == 0);
 
 	dup2(fd, 1);
-	/*dup2(fd, 2);*/
+	dup2(fd, 2);
 
 	shell_exec(sh, "login");
 
@@ -379,4 +386,5 @@ static int fbcon_init(void) {
 	make_task(1, true);
 
 	return diag_setup(&DIAG_IMPL_NAME(__EMBUILD_MOD__));
+	/*return 0;*/
 }

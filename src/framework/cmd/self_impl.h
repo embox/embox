@@ -24,6 +24,15 @@
 			.mod = &mod_self,          \
 		})
 
+
+#define __EMBOX_EXTERN_CMD(_exec) \
+	ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry); \
+	extern int _exec(int argc, char **argv);  \
+	ARRAY_SPREAD_ADD(__cmd_registry, { \
+			.exec = _exec,             \
+			.mod = &mod_self,          \
+		})
+
 #ifdef __CDT_PARSER__
 
 # undef  __EMBOX_CMD

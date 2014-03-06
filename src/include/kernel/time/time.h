@@ -20,6 +20,7 @@
 #define NSEC_PER_USEC   1000L
 #define NSEC_PER_MSEC   1000000L
 #define NSEC_PER_SEC    1000000000L
+#define SEC_PER_DAY     86400L
 
 /**
  * Storage for hardware internal cycles

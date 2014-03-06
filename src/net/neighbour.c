@@ -25,6 +25,7 @@
 
 #include <net/l3/arp.h>
 #include <net/l3/ndp.h>
+#include <net/l2/ethernet.h>
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -112,9 +113,8 @@ static int nbr_send_request(struct neighbour *nbr) {
 	if (nbr->ptype == ETH_P_IP) {
 		in_dev = inetdev_get_by_dev(nbr->dev);
 		assert(in_dev != NULL);
-		return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
-				nbr->plen, NULL, &in_dev->ifa_address, NULL, &nbr->paddr[0],
-				NULL, nbr->dev);
+		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
+				&in_dev->ifa_address, &nbr->paddr[0]);
 	}
 	else {
 		assert(nbr->ptype == ETH_P_IPV6);
@@ -137,7 +137,7 @@ static void nbr_drop_w_queue(struct neighbour *nbr) {
 	struct sk_buff *skb;
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
 	}
 
 	nbr->sent_times = 0;
@@ -357,7 +357,9 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
+			softirq_unlock();
 			ret = (*func)(nbr, args);
+			softirq_lock();
 			if (ret != 0) {
 				softirq_unlock();
 				return ret;

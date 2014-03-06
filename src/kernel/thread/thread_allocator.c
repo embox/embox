@@ -10,9 +10,12 @@
 
 #include <kernel/thread.h>
 #include <mem/misc/pool.h>
+#include <assert.h>
 
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
+static_assert(STACK_SZ > sizeof(struct thread));
+
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
 
 typedef union thread_pool_entry {

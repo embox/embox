@@ -35,22 +35,28 @@ static inline void tty_notify(struct tty *t, int mask) {
 		idesc_notify(t->idesc, mask);
 }
 
-static inline void tty_out_wake(struct tty *t) {
+#define MUTEX_UNLOCKED_DO(expr, m) \
+		__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
 
+static inline void tty_out_wake(struct tty *t) {
 	t->ops->out_wake(t);
 }
 
+/* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
-	return termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	if (len > 0) {
+		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+	}
+	return len;
 	// t->ops->tx_char(t, ch);
 }
 
+/* called from mutex locked context */
 static void tty_echo(struct tty *t, char ch) {
 	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	mutex_unlock(&t->lock);
-	tty_out_wake(t);
-	mutex_lock(&t->lock);
+	MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 }
 
 static void tty_echo_erase(struct tty *t) {
@@ -59,7 +65,9 @@ static void tty_echo_erase(struct tty *t) {
 	if (!TC_L(t, ECHO))
 		return;
 
-	if (TC_L(t, ECHOE))
+	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
+	 * as example of how ECHOE flag is handled in Minix. */
+	if (!TC_L(t, ECHOE))
 		tty_output(t, cc[VERASE]);
 
 	else
@@ -341,7 +349,7 @@ static int tty_blockin_output(struct tty *t, char ch) {
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	size_t count;
-	int ret;
+	int ret = 0;
 
 	threadsig_lock();
 	mutex_lock(&t->lock);
@@ -396,29 +404,25 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 
 size_t tty_status(struct tty *t, int status_nr) {
 	struct ring raw_ring;
-	size_t block_size;
 	int res = 0;
 
 	assert(t);
-	assert(status_nr == POLLIN);
 
 	mutex_lock(&t->lock);
-	{
+	switch (status_nr) {
+	case POLLIN:
 		IRQ_LOCKED_DO(tty_rx_do(t));
 
-		/* not ICANON */
-		if ((block_size = ring_can_read(
-				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1))) {
-			res = 1;
-		}
-
-		/* ICANON */
-		if (TC_L(t, ICANON)) {
-			if ((block_size = ring_can_read(
-					&t->i_canon_ring, TTY_IO_BUFF_SZ, 1))) {
-				res = 1;
-			}
-		}
+		res = ring_can_read(tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1) ||
+			(TC_L(t, ICANON)
+			 	&& ring_can_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, 1));
+		break;
+	case POLLOUT:
+		res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
+		break;
+	case POLLERR:
+		res = 0; /* FIXME: HUP isn't implemented */
+		break;
 	}
 	mutex_unlock(&t->lock);
 

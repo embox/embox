@@ -8,8 +8,8 @@
 
 #include <errno.h>
 #include <fs/file_operation.h>
-#include <drivers/usb_driver.h>
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb_driver.h>
+#include <drivers/usb/usb_dev_desc.h>
 
 #include <embox/unit.h>
 

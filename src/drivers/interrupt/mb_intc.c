@@ -14,7 +14,11 @@
 
 #include <embox/unit.h>
 
+#include <module/embox/driver/interrupt/mb_intc.h>
+
 EMBOX_UNIT_INIT(unit_init);
+
+#define CONFIG_XILINX_INTC_BASEADDR OPTION_GET(NUMBER,mbintc_base)
 
 /**
  * Microblaze interrupt controller registers definitions.
@@ -74,5 +78,5 @@ void irqctrl_clear(unsigned int irq) {
  */
 
 unsigned int mb_intc_get_pending(void) {
-	return irqc->isr;
+	return REG_LOAD(&irqc->isr);
 }

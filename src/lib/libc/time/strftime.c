@@ -6,6 +6,7 @@
  * @author Nikolay Korotkiy
  */
 
+#include <assert.h>
 #include <time.h>
 #include <stdio.h>
 
@@ -24,6 +25,10 @@
  */
 size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
 	size_t count = 0;
+
+	assert(s != NULL);
+	assert(fmt != NULL);
+	assert(tm != NULL);
 
 	for (;;) {
 		while (*fmt && *fmt != '%') {

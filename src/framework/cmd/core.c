@@ -17,7 +17,7 @@
 #include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct cmd, __cmd_registry);
-
+extern void getopt_init(void);
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
 
@@ -27,6 +27,8 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	err = mod_activate_app(cmd->mod);
 	if (err)
 		return err;
+
+	getopt_init();
 
 	return cmd->exec(argc, argv);
 }

@@ -15,7 +15,6 @@
 #include <sys/socket.h>
 #include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
-#include <net/if_ether.h>
 #include <embox/net/family.h>
 #include <util/indexator.h>
 #include <embox/net/sock.h>

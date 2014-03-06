@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <linux/etherdevice.h>
+#include <net/l2/ethernet.h>
 #include <net/if.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>

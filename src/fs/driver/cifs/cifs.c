@@ -382,13 +382,14 @@ static int embox_cifs_node_create(struct node *parent_node, struct node *new_nod
 		return rc;
 	}
 
+	mode = new_node->mode & S_IRWXA;
 	if (node_is_directory(new_node)) {
-		mode = S_IFDIR;
+		mode |= S_IFDIR;
 		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
 			return -errno;
 		}
 	} else {
-		mode = S_IFREG;
+		mode |= S_IFREG;
 		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
 		if (!file) {
 			return -errno;

@@ -14,11 +14,10 @@
 #include <arpa/inet.h>
 
 #include <net/util/macaddr.h>
-#include <net/if_arp.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
+#include <net/l3/arp.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
-#include <net/if_arp.h>
 #include <string.h>
 
 
@@ -46,7 +45,7 @@ static int print_arp_entity(const struct neighbour *n,
 		printf("%-15s %-6s  %-17s %-5s %-5s\n",
 				inet_ntop(n->ptype == ETH_P_IP ? AF_INET : AF_INET6,
 					n->paddr, addr, INET6_ADDRSTRLEN),
-			n->dev->type == ARPG_HRD_ETHERNET ? "ether" : "", hw_addr,
+			n->dev->type == ARP_HRD_ETHERNET ? "ether" : "", hw_addr,
 			~n->flags & NEIGHBOUR_FLAG_PERMANENT ? "C" : "P",
 			n->dev->name);
 	}
@@ -98,7 +97,7 @@ static int exec(int argc, char **argv) {
 			}
 			//TODO checked interface and use default
 			return neighbour_add(ETH_P_IP, &addr, sizeof addr, ifdev->dev,
-					ARPG_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
+					ARP_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
 		case 'i':
 			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);

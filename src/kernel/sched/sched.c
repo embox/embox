@@ -31,6 +31,7 @@
 
 #include <kernel/critical.h>
 #include <kernel/spinlock.h>
+#include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
 #include <kernel/thread/current.h>
@@ -344,7 +345,7 @@ static void sched_prepare_switch(struct thread *prev, struct thread *next) {
 }
 
 static void sched_finish_switch(struct thread *prev) {
-	__sched_deactivate(cpudata_var(prev));
+	__sched_deactivate(prev);
 }
 
 static struct thread *saved_prev __cpudata__; // XXX
@@ -377,11 +378,12 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 static void __schedule(int preempt) {
 	struct thread *prev, *next;
+	ipl_t ipl;
 
 	prev = thread_self();
 
 	assert(!sched_in_interrupt());
-	spin_lock_ipl_disable(&rq.lock);  /* no need to save IPL state */
+	ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -402,7 +404,7 @@ static void __schedule(int preempt) {
 	if (prev != next)
 		sched_switch(prev, next);
 
-	ipl_enable();
+	ipl_restore(ipl);
 
 	assert(thread_self() == prev);
 

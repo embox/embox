@@ -16,6 +16,11 @@
 #include <net/skbuff.h>
 
 /**
+ * Prototypes
+ */
+struct sk_buff;
+
+/**
  * ICMPv6 Types
  */
 enum icmp6_type {
@@ -47,6 +52,13 @@ enum icmp6_code {
 	ICMP6_HOP_LIMIT     = 0, /* Hop limit exceeded in transit */
 	ICMP6_FRAG_TIME     = 1, /* Fragment reassembly time
 								exceeded */
+	/* Parameter Problem Message */
+	ICMP6_HEADER_ERROR  = 0, /* Erroneous header field
+								encountered */
+	ICMP6_NEXT_ERROR    = 1, /* Unrecognized Next Header type
+								encountered */
+	ICMP6_OPTION_ERROR  = 2, /* Unrecognized IPv6 option
+								encountered */
 	/* Echo Request Message */
 		/* 0 - always (MUST) */
 	/* Echo Reply Message */
@@ -67,7 +79,7 @@ struct icmp6body_dest_unreach {
  * ICMPv6 Body for Packet Too Big Message
  */
 struct icmp6body_pack_too_big {
-	__u32 mtu;  /* The Maximum Transmission Unit of the
+	__be32 mtu; /* The Maximum Transmission Unit of the
 				   next-hop link */
 	__u8 msg[]; /* As much of invoking packet as possible
 				   without the ICMPv6 packet exceeding the
@@ -82,6 +94,16 @@ struct icmp6body_time_exceed {
 	__u8 msg[];  /* As much of invoking packet as possible
 					without the ICMPv6 packet exceeding the
 					minimum IPv6 MTU */
+} __attribute__((packed));
+
+/**
+ * ICMPv6 Body for Parameter Problem Message
+ */
+struct icmp6body_param_prob {
+	__be32 ptr; /* Pointer */
+	__u8 msg[]; /* As much of invoking packet as possible
+				   without the ICMPv6 packet exceeding the
+				   minimum IPv6 MTU */
 } __attribute__((packed));
 
 /**

@@ -38,6 +38,7 @@ int index_descritor_cloexec_get(int fd) {
 	int fd_flags = 0;
 
 	it = task_self_idesc_table();
+	assert(it);
 
 	if (idesc_is_cloexeced(it->idesc_table[fd])) {
 		fd_flags |= FD_CLOEXEC;
@@ -129,6 +130,7 @@ int index_descriptor_dupfd(int fd, int newfd) {
 	assert(idesc);
 
 	it = task_self_idesc_table();
+	assert(it);
 
 	if (idesc_table_locked(it, newfd)) {
 		assert(newfd == 0); /* only for dup() */
@@ -141,18 +143,16 @@ int index_descriptor_dupfd(int fd, int newfd) {
 }
 
 int index_descriptor_fstat(int fd, struct stat *buff) {
-	const struct idesc_ops *ops;
 	struct idesc *idesc;
 
 	assert(buff);
 
 	idesc = index_descriptor_get(fd);
-	assert(idesc);
 
-	ops = idesc->idesc_ops;
+	assert(idesc);
 	assert(idesc->idesc_ops);
 	if (!idesc->idesc_ops->fstat) {
 		return -ENOTSUP;
 	}
-	return ops->fstat(idesc, buff);
+	return idesc->idesc_ops->fstat(idesc, buff);
 }

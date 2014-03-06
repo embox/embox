@@ -21,7 +21,6 @@
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>

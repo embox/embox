@@ -10,7 +10,10 @@
 #include <assert.h>
 #include <string.h>
 #include <poll.h>
+#include <sys/time.h>
+
 #include <util/math.h>
+
 
 #include <net/l4/tcp.h>
 #include <net/lib/tcp.h>
@@ -52,6 +55,11 @@ EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
+	static const struct tcp_wind self_wind_default = {
+		.value = TCP_WINDOW_VALUE_DEFAULT,
+		.factor = TCP_WINDOW_FACTOR_DEFAULT,
+		.size = TCP_WINDOW_VALUE_DEFAULT << TCP_WINDOW_FACTOR_DEFAULT
+	};
 	struct tcp_sock *tcp_sk;
 
 	tcp_sk = to_tcp_sock(sk);
@@ -62,7 +70,9 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
 	tcp_sk->self.seq = tcp_sk->last_ack;
-	tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
+	memcpy(&tcp_sk->self.wind, &self_wind_default,
+			sizeof tcp_sk->self.wind);
+	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
 	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;
@@ -70,6 +80,8 @@ static int tcp_init(struct sock *sk) {
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
 	timerclear(&tcp_sk->rcv_time);
+	tcp_sk->dup_ack = 0;
+	tcp_sk->rexmit_mode = 0;
 
 	return 0;
 }
@@ -115,7 +127,7 @@ static int tcp_close(struct sock *sk) {
 			tcp_build(tcph,
 					sock_inet_get_dst_port(to_sock(tcp_sk)),
 					sock_inet_get_src_port(to_sock(tcp_sk)),
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 			tcph->fin = 1;
 			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
 			send_seq_from_sock(tcp_sk, skb);
@@ -135,19 +147,11 @@ static int tcp_connect(struct sock *sk,
 	struct tcp_sock *tcp_sk;
 	int ret;
 	static const __u8 magic_opts[] = {
-		/**
-		 * TODO
-		 * This is a bad way to get perrmission on remote machine, but it's
-		 * works
-		 */
-		0x02, 0x04,      /* Maximum segment size:             */
-				0x40, 0x0C,             /* 16396 bytes  */
-		0x04, 0x02,      /* TCP SACK Permitted Option: True   */
-		0x08, 0x0A,      /* Timestamps:                       */
-				0x00, 0x0E, 0x3C, 0xCD, /* TSval 933069 */
-				0x00, 0x00, 0x00, 0x00, /* TSecr 0      */
-		0x01,            /* No-Operation                      */
-		0x03, 0x03, 0x07 /* Window scale: 7 (multiply by 128) */
+		TCP_OPT_KIND_MSS, 0x04,     /* Maximum segment size:             */
+				0x40, 0x0C,               /* 16396 bytes         */
+		TCP_OPT_KIND_NOP,           /* No-Operation                      */
+		TCP_OPT_KIND_WS, 0x03,      /* Window scale:                     */
+				TCP_WINDOW_FACTOR_DEFAULT /* 7 (multiply by 128) */
 	};
 
 	(void)addr;
@@ -179,7 +183,7 @@ static int tcp_connect(struct sock *sk,
 					sock_inet_get_dst_port(to_sock(tcp_sk)),
 					sock_inet_get_src_port(to_sock(tcp_sk)),
 					TCP_MIN_HEADER_SIZE + sizeof magic_opts,
-					tcp_sk->self.wind);
+					tcp_sk->self.wind.value);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
@@ -317,6 +321,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return 0;
 	}
 }
+
 static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	size_t bytes;
 	struct sk_buff *skb;
@@ -336,7 +341,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 		tcp_build(skb->h.th,
 				sock_inet_get_dst_port(to_sock(tcp_sk)),
 				sock_inet_get_src_port(to_sock(tcp_sk)),
-				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind);
+				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 
 		memcpy(skb->h.th + 1, buff, bytes);
 		buff += bytes;
@@ -349,12 +354,12 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	return len;
 }
 
-
+#define REM_WIND_MAX_SIZE (1460 * 100) /* FIXME use txqueuelen for netdev */
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
 	char *buff;
 	size_t len;
-	int timeout;
+	int ret, timeout;
 
 	(void)flags;
 
@@ -378,8 +383,14 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			if (timeout == 0) {
 				timeout = SCHED_TIMEOUT_INFINITE;
 			}
-			while (tcp_sk->rem.wind <= tcp_sk->self.seq - tcp_sk->last_ack) {
-				sock_wait(sk, POLLOUT | POLLERR, timeout);
+			while ((min(tcp_sk->rem.wind.size, REM_WIND_MAX_SIZE)
+						<= tcp_sk->self.seq - tcp_sk->last_ack)
+					|| tcp_sk->rexmit_mode) {
+				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
+				if (ret != 0) {
+					softirq_unlock();
+					return ret;
+				}
 			}
 		}
 		softirq_unlock();

@@ -7,10 +7,15 @@
  * @author: Anton Bondarev
  */
 #include <libgen.h>
+
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("testing functions from libgen.h");
 
+static char *strcopy(const char *str) {
+	static char str_buf[256];
+	return strcpy(str_buf, str);
+}
 
 TEST_CASE("basename with 'path' as a NULL pointer") {
 	char *bname;
@@ -23,7 +28,7 @@ TEST_CASE("basename with 'path' as a NULL pointer") {
 TEST_CASE("basename with 'path' points to an empty string") {
 	char *bname;
 
-	bname = basename("");
+	bname = basename(strcopy(""));
 
 	test_assert_zero(strcmp(bname, "."));
 }
@@ -31,7 +36,7 @@ TEST_CASE("basename with 'path' points to an empty string") {
 TEST_CASE("basename with 'path' equals '/usr/lib'") {
 	char *bname;
 
-	bname = basename("/usr/lib");
+	bname = basename(strcopy("/usr/lib"));
 
 	test_assert_zero(strcmp(bname, "lib"));
 }
@@ -39,7 +44,7 @@ TEST_CASE("basename with 'path' equals '/usr/lib'") {
 TEST_CASE("basename with 'path' equals '/usr/'") {
 	char *bname;
 
-	bname = basename("/usr/");
+	bname = basename(strcopy("/usr/"));
 
 	test_assert_zero(strcmp(bname, "usr"));
 }
@@ -48,7 +53,7 @@ TEST_CASE("basename with 'path' equals '/usr/'") {
 TEST_CASE("basename with 'path' equals '/'") {
 	char *bname;
 
-	bname = basename("/");
+	bname = basename(strcopy("/"));
 
 	test_assert_zero(strcmp(bname, "/"));
 }
@@ -57,7 +62,7 @@ TEST_CASE("basename with 'path' equals '/'") {
 TEST_CASE("basename with 'path' equals '///'") {
 	char *bname;
 
-	bname = basename("///");
+	bname = basename(strcopy("///"));
 
 	test_assert_zero(strcmp(bname, "/"));
 }
@@ -66,7 +71,7 @@ TEST_CASE("basename with 'path' equals '///'") {
 TEST_CASE("basename with 'path' equals '//usr//lib//'") {
 	char *bname;
 
-	bname = basename("//usr//lib//");
+	bname = basename(strcopy("//usr//lib//"));
 
 	test_assert_zero(strcmp(bname, "lib"));
 }
@@ -74,7 +79,7 @@ TEST_CASE("basename with 'path' equals '//usr//lib//'") {
 TEST_CASE("basename with 'path' equals 'filename'") {
 	char *bname;
 
-	bname = basename("filename");
+	bname = basename(strcopy("filename"));
 
 	test_assert_zero(strcmp(bname, "filename"));
 }
@@ -91,7 +96,7 @@ TEST_CASE("dirname with 'path' as a NULL pointer") {
 TEST_CASE("dirname with 'path' points to an empty string") {
 	char *dname;
 
-	dname = dirname("");
+	dname = dirname(strcopy(""));
 
 	test_assert_zero(strcmp(dname, "."));
 }
@@ -99,7 +104,7 @@ TEST_CASE("dirname with 'path' points to an empty string") {
 TEST_CASE("dirname with 'path' equals '/usr/lib'") {
 	char *dname;
 
-	dname = dirname("/usr/lib");
+	dname = dirname(strcopy("/usr/lib"));
 
 	test_assert_zero(strcmp(dname, "/usr"));
 }
@@ -107,7 +112,7 @@ TEST_CASE("dirname with 'path' equals '/usr/lib'") {
 TEST_CASE("dirname with 'path' equals '/usr/'") {
 	char *dname;
 
-	dname = dirname("/usr/");
+	dname = dirname(strcopy("/usr/"));
 
 	test_assert_zero(strcmp(dname, "/"));
 }
@@ -116,7 +121,7 @@ TEST_CASE("dirname with 'path' equals '/usr/'") {
 TEST_CASE("dirname with 'path' equals 'usr'") {
 	char *dname;
 
-	dname = dirname("usr");
+	dname = dirname(strcopy("usr"));
 
 	test_assert_zero(strcmp(dname, "."));
 }
@@ -124,7 +129,7 @@ TEST_CASE("dirname with 'path' equals 'usr'") {
 TEST_CASE("dirname with 'path' equals '/'") {
 	char *dname;
 
-	dname = dirname("/");
+	dname = dirname(strcopy("/"));
 
 	test_assert_zero(strcmp(dname, "/"));
 }
@@ -133,7 +138,7 @@ TEST_CASE("dirname with 'path' equals '/'") {
 TEST_CASE("dirname with 'path' equals '.'") {
 	char *dname;
 
-	dname = dirname(".");
+	dname = dirname(strcopy("."));
 
 	test_assert_zero(strcmp(dname, "."));
 }
@@ -142,7 +147,7 @@ TEST_CASE("dirname with 'path' equals '.'") {
 TEST_CASE("dirname with 'path' equals '..'") {
 	char *dname;
 
-	dname = dirname("..");
+	dname = dirname(strcopy(".."));
 
 	test_assert_zero(strcmp(dname, "."));
 }

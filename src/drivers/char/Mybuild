@@ -4,7 +4,6 @@ module terminal {
 	source "terminal.c"
 
 	depends embox.driver.terminal.vt
-	depends embox.lib.LibC
 }
 
 module char_dev {

@@ -26,10 +26,19 @@ void auth_destroy(struct auth *ath) {
 }
 
 int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
+	int32_t oa_flavor;
+
 	assert(oa != NULL);
 
-	return xdr_enum(xs, (__s32 *)&oa->flavor)
-			&& xdr_bytes(xs, &oa->data, &oa->data_len, AUTH_DATA_MAX_SZ);
+	oa_flavor = oa->flavor;
+	if (!xdr_enum(xs, &oa_flavor)
+			|| !xdr_bytes(xs, &oa->data, &oa->data_len, AUTH_DATA_MAX_SZ)) {
+		return XDR_FAILURE;
+	}
+
+	oa->flavor = oa_flavor;
+
+	return XDR_SUCCESS;
 }
 
 int xdr_authunix_parms(struct xdr *xs, struct authunix_parms *aup) {

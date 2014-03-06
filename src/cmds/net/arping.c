@@ -13,8 +13,11 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
-#include <net/if_arp.h>
-#include <net/if_ether.h>
+#include <net/l0/net_tx.h>
+#include <net/l2/ethernet.h>
+#include <net/l3/arp.h>
+#include <net/lib/arp.h>
+#include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <string.h>
 
@@ -31,6 +34,39 @@ EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: arping [-I if] [-c cnt] host\n");
+}
+
+static int send_request(struct net_device *dev, uint16_t pro,
+		uint8_t pln, const void *spa, const void *tpa) {
+	int ret;
+	struct sk_buff *skb;
+	struct net_header_info hdr_info;
+
+	skb = skb_alloc(dev->hdr_len
+			+ ARP_CALC_HEADER_SIZE(dev->addr_len, pln));
+	if (skb == NULL) {
+		return -ENOMEM;
+	}
+
+	skb->dev = dev;
+	skb->nh.raw = skb->mac.raw + dev->hdr_len;
+
+	hdr_info.type = ETH_P_ARP;
+	hdr_info.src_hw = &dev->dev_addr[0];
+	hdr_info.dst_hw = &dev->broadcast[0];
+	assert(dev->ops != NULL);
+	assert(dev->ops->build_hdr != NULL);
+	ret = dev->ops->build_hdr(skb, &hdr_info);
+	if (ret != 0) {
+		skb_free(skb);
+		return ret;
+	}
+
+	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
+			ARP_OP_REQUEST, &dev->dev_addr[0], spa,
+			&dev->broadcast[0], tpa);
+
+	return net_tx(skb, NULL);
 }
 
 static int exec(int argc, char **argv) {
@@ -86,12 +122,11 @@ static int exec(int argc, char **argv) {
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
 		neighbour_del(ETH_P_IP, &dst, in_dev->dev);
-		arp_send(ARP_OPER_REQUEST, ETH_P_IP, in_dev->dev->addr_len,
-				sizeof in_dev->ifa_address, NULL, &in_dev->ifa_address,
-				NULL, &dst.s_addr, NULL, in_dev->dev);
+		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,
+				&in_dev->ifa_address, &dst.s_addr);
 		usleep(DEFAULT_INTERVAL);
 		if (0 == neighbour_get_haddr(ETH_P_IP, &dst, in_dev->dev,
-					ARPG_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
+					ARP_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
 			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;

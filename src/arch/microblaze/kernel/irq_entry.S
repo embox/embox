@@ -17,11 +17,11 @@ C_ENTRY(irq_hnd):
 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
 
-	brlid	r15, irq_handler
+	brlid   r15, irq_handler
 	addik   r7, r1, PT_OFFSET  /* set third param */
 
 	RESTORE_REGS
-	addik	r1, r1, STATE_SAVE_SIZE	/* Clean up stack space.  */
+	addik   r1, r1, STATE_SAVE_SIZE	/* Clean up stack space.  */
 
-	rtid	 r14, 0 /*return and enable interrupts*/
+	rtid    r14, 0 /*return and enable interrupts*/
 	nop

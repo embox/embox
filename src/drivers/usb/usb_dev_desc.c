@@ -8,14 +8,14 @@
 
 #include <errno.h>
 #include <string.h>
-#include <drivers/usb.h>
-#include <drivers/usb_desc.h>
+#include <drivers/usb/usb.h>
+#include <drivers/usb/usb_desc.h>
 #include <mem/misc/pool.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/irq_lock.h>
 
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb_dev_desc.h>
 
 struct usb_dev_desc {
 	struct usb_dev *dev;
@@ -25,23 +25,19 @@ POOL_DEF(usb_dev_descs, struct usb_dev_desc, 2);
 
 struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 	struct usb_dev_desc *ddesc;
-	struct usb_dev *dev = usb_dev_iterate(NULL);
+	struct usb_dev *dev;
 
-	if (!dev) {
-		return NULL;
-	}
-
-	while (dev->dev_desc.id_vendor != vid && dev->dev_desc.id_product) {
-
+	dev = NULL;
+	do {
 		dev = usb_dev_iterate(dev);
-		if (dev == NULL) {
-			break;
-		}
-	}
+	} while (dev && (vid != dev->dev_desc.id_vendor
+				&& pid != dev->dev_desc.id_product));
 
 	if (!dev) {
 		return NULL;
 	}
+
+	usb_dev_use_inc(dev);
 
 	ddesc = pool_alloc(&usb_dev_descs);
 	ddesc->dev = dev;
@@ -50,8 +46,11 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 }
 
 void usb_dev_desc_close(struct usb_dev_desc *ddesc) {
+	struct usb_dev *dev = ddesc->dev;
 
 	pool_free(&usb_dev_descs, ddesc);
+
+	usb_dev_use_dec(dev);
 }
 
 int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *desc,

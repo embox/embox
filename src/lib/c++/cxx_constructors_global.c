@@ -7,13 +7,11 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(cxx_init);
-
-EMBOX_UNIT_FINI(cxx_fini);
-
 #include "cxx_invoke_constructors.h"
 #include "cxx_invoke_destructors.h"
-#include "cxx_app_startup_terminatioin.h"
+#include "cxx_app_startup_termination.h"
+
+EMBOX_UNIT(cxx_init, cxx_fini);
 
 static int cxx_init(void) {
 	cxx_invoke_constructors();

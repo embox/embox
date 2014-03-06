@@ -84,7 +84,8 @@ $(info )
 
 $(info /* Security labels. */)
 $(foreach m,$(modules),$(foreach n,$(basename $m), \
-	$(info MOD_LABEL_DEF($(call fqn2id,$n));)))
+	$(info MOD_LABEL_DEF($(call fqn2id,$n));) \
+	$(info MOD_SEC_LABEL_DEF($(call fqn2id,$n));)))
 $(info )
 
 $(info /* Applications. */)

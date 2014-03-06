@@ -13,13 +13,3 @@ module create_thread {
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework
 }
-
-module wakeup_thread {
-	source "wakeup_thread.c"
-
-	depends embox.lib.LibC
-	depends embox.kernel.sched.sched
-	depends embox.kernel.thread.core
-	depends embox.kernel.timer.sleep_api
-	depends embox.framework.LibFramework
-}

@@ -73,9 +73,8 @@ module idx_table extends task_environment {
 	source "index_descriptor.c"
 
 	depends embox.mem.objalloc
-	depends embox.util.idx_table
+	depends embox.util.indexator
 	depends api
-	depends io_sync
 }
 
 module errno {
@@ -88,18 +87,14 @@ module env {
 	option number env_str_len=32
 	source "env.c"
 
-	depends kernel_task
+	depends api
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
+	depends embox.util.Array
 }
 
 module u_area {
 	source "u_area.c"
-}
-
-module io_sync {
-//	source "io_sync.c"
-
-	depends embox.kernel.manual_event_api
-	depends embox.kernel.event_api
 }
 
 module waitpid {
@@ -108,6 +103,18 @@ module waitpid {
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.wait_queue
 }
+@DefaultImpl(no_fork)
+abstract module kfork {
+}
+
+module no_fork extends kfork {
+	source "no_fork.c"
+}
+
+module stack_fork extends kfork {
+	source "kfork.c"
+}
+
 @DefaultImpl(task_thread_key)
 abstract module task_key_table {
 

@@ -8,4 +8,5 @@ module block {
 	depends embox.util.indexator
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
+	depends embox.fs.buffer_crypt_api
 }

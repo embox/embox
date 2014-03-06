@@ -24,10 +24,19 @@
 #include <net/netfilter.h>
 #include <kernel/printk.h>
 #include <net/if_packet.h>
-#include <net/if_ether.h>
+#include <net/l2/ethernet.h>
 #include <util/math.h>
 #include <embox/net/pack.h>
 #include <net/lib/ipv4.h>
+
+#define IP_DEBUG 0
+#if IP_DEBUG
+#include <arpa/inet.h>
+#include <kernel/printk.h>
+#define DBG(x) x
+#else
+#define DBG(x)
+#endif
 
 static const struct net_pack_out_ops ip_out_ops_struct;
 const struct net_pack_out_ops *const ip_out_ops
@@ -54,6 +63,8 @@ static int ip_xmit(struct sk_buff *skb) {
 		/* get dest ip from route table */
 		ret = rt_fib_route_ip(daddr, &daddr);
 		if (ret != 0) {
+			DBG(printk("ip_xmit: unknown target for %s\n",
+						inet_ntoa(*(struct in_addr *)&daddr)));
 			skb_free(skb);
 			return ret;
 		}
@@ -114,7 +125,8 @@ int ip_forward(struct sk_buff *skb) {
 	 * Try to return packet as close as possible, so check it before ttl processsing (RFC 1812)
 	 */
 	if (unlikely(optlen)) {
-		icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(IP_MIN_HEADER_SIZE));
+		icmp_discard(skb, ICMP_PARAM_PROB, ICMP_PTR_ERROR,
+				(uint8_t)IP_MIN_HEADER_SIZE);
 		return -1;
 	}
 
@@ -122,7 +134,7 @@ int ip_forward(struct sk_buff *skb) {
 	 * We believe that this skb is ours and we can modify it
 	 */
 	if (unlikely(iph->ttl <= 1)) {
-		icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, 0);
+		icmp_discard(skb, ICMP_TIME_EXCEED, ICMP_TTL_EXCEED);
 		return -1;
 	}
 	iph->ttl--; /* All routes have the same length */
@@ -130,7 +142,7 @@ int ip_forward(struct sk_buff *skb) {
 
 	/* Check no route */
 	if (!best_route) {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, 0);
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 		return -1;
 	}
 
@@ -138,8 +150,14 @@ int ip_forward(struct sk_buff *skb) {
 	if (skb->dev == best_route->dev) {
 		struct sk_buff *s_new = skb_copy(skb);
 		if (s_new) {
-			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
-					  best_route->rt_gateway);
+			if (best_route->rt_gateway == INADDR_ANY) {
+				icmp_discard(s_new, ICMP_REDIRECT,
+						ICMP_HOST_REDIRECT, &iph->daddr);
+			}
+			else {
+				icmp_discard(s_new, ICMP_REDIRECT,
+						ICMP_NET_REDIRECT, best_route->rt_gateway);
+			}
 		}
 		/* We can still proceed here */
 	}
@@ -147,9 +165,9 @@ int ip_forward(struct sk_buff *skb) {
 	if (ip_route(skb, NULL, best_route) < 0) {
 		/* So we have something like arp problem */
 		if (best_route->rt_gateway == INADDR_ANY) {
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, iph->daddr);
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
 		} else {
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, best_route->rt_gateway);
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 		}
 		return -1;
 	}
@@ -161,8 +179,8 @@ int ip_forward(struct sk_buff *skb) {
 			return fragment_skb_and_send(skb, best_route->dev);
 		} else {
 			/* Fragmentation is disabled */
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
-					  htonl(best_route->dev->mtu << 16)); /* Support RFC 1191 */
+			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
+					  (uint16_t)best_route->dev->mtu); /* Support RFC 1191 */
 			return -1;
 		}
 	}
@@ -196,12 +214,20 @@ static int ip_make(const struct sock *sk,
 	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
 			&dev);
 	if (ret != 0) {
+		DBG(printk("ip_make: unknown device for %s\n",
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
 		return ret;
 	}
 	assert(dev != NULL);
 
 	assert(inetdev_get_by_dev(dev) != NULL);
-	src_ip = inetdev_get_by_dev(dev)->ifa_address;
+	//src_ip = inetdev_get_by_dev(dev)->ifa_address; /* TODO it's better! */
+	ret = rt_fib_source_ip(dst_ip, &src_ip);
+	if (ret != 0) {
+		DBG(printk("ip_make: can't resolve source ip for %s\n",
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
+		return ret;
+	}
 
 	proto = in_sk != NULL ? in_sk->sk.opt.so_protocol
 			: (*out_skb)->nh.iph->proto;
@@ -209,6 +235,8 @@ static int ip_make(const struct sock *sk,
 	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
 	max_size = min(dev->mtu, skb_max_size());
 	if (hdr_size > max_size) {
+		DBG(printk("ip_make: hdr_size %zu is too big (max %zu)\n",
+					hdr_size, max_size));
 		return -EMSGSIZE;
 	}
 
@@ -216,6 +244,8 @@ static int ip_make(const struct sock *sk,
 
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
+		DBG(printk("ip_make: can't realloc packet for size %zu\n",
+					hdr_size + *data_size));
 		return -ENOMEM;
 	}
 
@@ -224,7 +254,7 @@ static int ip_make(const struct sock *sk,
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 
 	ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
-			proto, src_ip, dst_ip);
+			64, proto, src_ip, dst_ip);
 
 	*out_skb = skb;
 
@@ -237,7 +267,7 @@ static int ip_snd(struct sk_buff *skb) {
 	assert(skb != NULL);
 
 	if (0 != nf_test_skb(NF_CHAIN_OUTPUT, NF_TARGET_ACCEPT, skb)) {
-		printk("ip_snd: skb %p dropped by netfilter\n", skb);
+		DBG(printk("ip_snd: dropped by output netfilter\n"));
 		skb_free(skb);
 		return 0;
 	}

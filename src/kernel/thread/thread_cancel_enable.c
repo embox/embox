@@ -6,6 +6,7 @@
  */
 #include <pthread.h>
 #include <assert.h>
+#include <stddef.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 
@@ -33,7 +34,10 @@ int thread_cancel_set_state(int state, int *oldstate) {
 	struct thread *t;
 
 	t = thread_self();
-	*oldstate = t->cleanups.state;
+
+	if (oldstate != NULL) {
+		*oldstate = t->cleanups.state;
+	}
 
 	return ENOERR;
 }
@@ -43,7 +47,9 @@ int thread_cancel_set_type(int type, int *oldtype) {
 
 	t = thread_self();
 
-	*oldtype = t->cleanups.type;
+	if (oldtype != NULL) {
+		*oldtype = t->cleanups.type;
+	}
 	t->cleanups.type = type;
 
 	return ENOERR;

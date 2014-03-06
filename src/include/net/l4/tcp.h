@@ -73,9 +73,15 @@ enum tcp_sock_state {
 	TCP_MAX_STATE
 };
 
+struct tcp_wind {
+	uint16_t value;
+	uint8_t factor;
+	uint32_t size;
+};
+
 struct tcp_seq_state {
 	uint32_t seq;
-	uint16_t wind;
+	struct tcp_wind wind;
 };
 
 typedef struct tcp_sock {
@@ -90,9 +96,11 @@ typedef struct tcp_sock {
 	unsigned int conn_wait_len; /* Length of queue of incoming connection */
 	unsigned int conn_wait_max; /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */
-	struct timeval syn_time;   /* The time when synchronization started */
-	struct timeval ack_time;   /* The time when message was ACKed */
-	struct timeval rcv_time;   /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
+	struct timeval syn_time;    /* The time when synchronization started */
+	struct timeval ack_time;    /* The time when message was ACKed */
+	struct timeval rcv_time;    /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
+	unsigned int dup_ack;       /* Amount of duplicated packets */
+	unsigned int rexmit_mode;   /* Socket in rexmit mode */
 } tcp_sock_t;
 
 static inline struct tcp_sock * to_tcp_sock(
@@ -100,13 +108,13 @@ static inline struct tcp_sock * to_tcp_sock(
 	return (struct tcp_sock *)sk->p_sk;
 }
 
-#if 0
 enum {
-	TCP_OPT_KIND_EOL,
-	TCP_OPT_KIND_NOP,
-	TCP_OPT_KIND_MSS,
+	TCP_OPT_KIND_NOP  = 1, /* No-Operation */
+	TCP_OPT_KIND_MSS  = 2, /* Maximum segment size */
+	TCP_OPT_KIND_WS   = 3, /* Window scale */
+	TCP_OPT_KIND_SACK = 4, /* SACK Permission */
+	TCP_OPT_KIND_TS   = 8  /* Timestamp */
 };
-#endif
 
 /* Delays in milliseconds */
 #define TCP_TIMER_FREQUENCY   1000  /* Frequency for tcp_tmr_default */
@@ -114,7 +122,10 @@ enum {
 #define TCP_REXMIT_DELAY      2000  /* Delay between rexmitting */
 #define TCP_SYNC_TIMEOUT      5000  /* Synchronization timeout */
 
-#define TCP_WINDOW_DEFAULT    16384 /* Default size of widnow */
+#define TCP_REXMIT_DUP_ACK       5  /* Rexmit after n duplicate ack */
+
+#define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
+#define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
 
 /* Synchronization flags */
 #define TCP_SYNC_WRITE_QUEUE  0x01 /* Synchronization flag for socket sk_write_queue */
@@ -139,6 +150,10 @@ extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 extern void tcp_sock_release(struct tcp_sock *tcp_sk);
 extern void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state);
+extern void tcp_seq_state_set_wind_value(struct tcp_seq_state *tcp_seq_st,
+		uint16_t value);
+extern void tcp_seq_state_set_wind_factor(struct tcp_seq_state *tcp_seq_st,
+		uint8_t factor);
 extern void tcp_sock_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_sock_unlock(struct tcp_sock *sk, unsigned int obj);
 extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,

@@ -39,9 +39,9 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 
 	assert((raddr != NULL) && (psock != NULL));
 
-	clnt = (struct client *)malloc(sizeof *clnt), ath = authnone_create();
+	clnt = clnt_alloc(), ath = authnone_create();
 	if ((clnt == NULL) || (ath == NULL)) {
-		LOG_ERROR("clnttcp_create", "malloc failed");
+		LOG_ERROR("clnttcp_create", "clnt_alloc failed");
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		goto exit_with_error;
@@ -80,7 +80,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	return clnt;
 exit_with_error:
 	auth_destroy(ath);
-	free(clnt);
+	clnt_free(clnt);
 	return NULL;
 }
 
@@ -157,7 +157,7 @@ static void clnttcp_destroy(struct client *clnt) {
 
 	auth_destroy(clnt->ath);
 	close(clnt->sock);
-	free(clnt);
+	clnt_free(clnt);
 }
 
 static int readtcp(struct client *clnt, char *buff, size_t len) {

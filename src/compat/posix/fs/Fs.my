@@ -45,8 +45,6 @@ static module file_ops {
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
-	depends embox.kernel.task.io_sync
-
 }
 
 static module fsop {
@@ -62,7 +60,7 @@ static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibC
+	depends embox.lib.LibCString
 }
 
 static module open {

@@ -1,0 +1,19 @@
+package zrv.cmd
+
+@Cmd(name = "texteditor",
+	help = "demo application for zarya-rv graphic opportunities",
+	man = '''
+		AUTHORS
+			Dmitriy Aleev
+	''')
+@BuildDepends(third_party.qt.core)
+@Build(script="$(EXTERNAL_MAKE_PRO)")
+module texteditor {
+	option number root_window_width=0
+	option number root_window_height=0
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "strip.texteditor.embox.o"
+
+	@NoRuntime depends third_party.qt.core
+}

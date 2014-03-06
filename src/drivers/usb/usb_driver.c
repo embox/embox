@@ -11,11 +11,11 @@
 
 #include <util/dlist.h>
 #include <embox/device.h>
-#include <drivers/usb.h>
-#include <drivers/usb_dev_desc.h>
+#include <drivers/usb/usb.h>
+#include <drivers/usb/usb_dev_desc.h>
 #include <fs/node.h>
 
-#include <drivers/usb_driver.h>
+#include <drivers/usb/usb_driver.h>
 
 #define USB_DEV_NAME_LEN 14 /* (strlen("usb-0000-0000") + 1) */
 
@@ -110,13 +110,14 @@ static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 	return NULL;
 }
 
-static int usb_driver_try_init(struct usb_dev *dev) {
+void usb_driver_handle(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
 	drv = usb_driver_find(dev);
 
 	if (!drv) {
-		return -ENOTSUP;
+		return;
+		/*return -ENOTSUP;*/
 	}
 
 	if (drv->file_ops) {
@@ -128,16 +129,18 @@ static int usb_driver_try_init(struct usb_dev *dev) {
 
 		char_dev_register(name_buf, drv->file_ops);
 	}
-
-	return 0;
 }
 
-void usb_drv_handle(struct usb_dev *dev) {
+void usb_driver_release(struct usb_dev *dev) {
+	struct usb_driver *drv;
 
-	usb_dev_register(dev);
+	drv = dev->drv;
+	if (!drv) {
+		return;
+	}
 
-	usb_driver_try_init(dev);
+	drv->disconnect(dev, dev->drv_data);
 
-	usb_class_handle(dev);
+	/*char_dev_unregister(...)*/
+
 }
-

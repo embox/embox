@@ -15,12 +15,16 @@ static module isatty {
 	depends embox.kernel.task.api
 }
 
+static module poll_table {
+	source "poll_table.c"
+	depends embox.kernel.task.api
+}
+
 static module select {
 	source "select.c"
-	source "poll_table.c"
 
+	depends poll_table
 	depends embox.kernel.task.api
-	depends embox.kernel.task.io_sync
 }
 
 static module dup {
@@ -30,7 +34,6 @@ static module dup {
 }
 
 static module pipe {
-//	source "pipe.c"
 	source "idesc_pipe.c"
 
 	option number pipe_buffer_size=1024
@@ -40,7 +43,6 @@ static module pipe {
 
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
-	depends embox.kernel.task.io_sync
 }
 
 static module ppty {
@@ -53,6 +55,6 @@ static module ppty {
 static module poll {
 	source "poll.c"
 
+	depends poll_table
 	depends embox.kernel.task.api
-	depends embox.kernel.task.io_sync
 }

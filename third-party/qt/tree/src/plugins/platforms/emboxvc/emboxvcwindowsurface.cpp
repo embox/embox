@@ -79,6 +79,7 @@ static const struct {
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
 extern QEmboxVC *globalEmboxVC;
 extern void emboxRootWindowShow(int width, int height);
+static const struct fb_var_screeninfo *globalEmboxVC_vinfo;
 
 static void flushAll() {
 	QRegion region;
@@ -94,20 +95,28 @@ static void __emboxVCsetMode(struct vc *vc, int mode) {
 }
 
 static void __visualization(struct vc *vc, struct fb_info *info) {
-	Q_UNUSED(info);
-	const struct fb_var_screeninfo *vinfo = fb_get_var(info);
-
-	QEmboxVCWindowSurface *surf;
-
-	emboxRootWindowShow(vinfo->xres, vinfo->yres);
+	globalEmboxVC_vinfo = fb_get_var(info);
 
 	__emboxVCsetMode(vc, 1);
 
-	flushAll();
+	emboxRootWindowShow(globalEmboxVC_vinfo->xres, globalEmboxVC_vinfo->yres);
 
-	foreach (QWidget *widget, QApplication::allWidgets()) {
-		widget->update();
+	globalEmboxVC->is_visualized = true;
+	waitq_wakeup_all(&globalEmboxVC->visualize);
+}
+
+void *visualizeVCThread(void *arg) {
+	while (0 == WAITQ_WAIT(&globalEmboxVC->visualize, globalEmboxVC->is_visualized)) {
+		flushAll();
+
+		foreach (QWidget *widget, QApplication::allWidgets()) {
+			widget->update();
+		}
+
+		globalEmboxVC->is_visualized = false;
 	}
+
+	return NULL;
 }
 
 QEmboxVCMouseHandler::QEmboxVCMouseHandler() {
@@ -300,9 +309,7 @@ static void __handle_input_event(struct vc *vc, struct input_event *ev) {
 }
 
 static void __scheduleDevisualization(struct vc *vc) {
-	printf(">>__scheduleDevisualization\n");
 	__emboxVCsetMode(vc, 0);
-
 	mpx_devisualized(vc);
 }
 
@@ -321,10 +328,15 @@ QEmboxVC::QEmboxVC()
 	emboxVC.callbacks = &emboxVCcallbacks;
 	emboxVC.name = "emboxvc";
 
+	waitq_init(&visualize);
+	globalEmboxVC->is_visualized = false;
+	visualize_thread = thread_create(0, visualizeVCThread, NULL);
+
 	mpx_register_vc(&emboxVC);
 }
 
 QEmboxVC::~QEmboxVC() {
+	thread_cancel(visualize_thread);
 }
 
 QEmboxVCWindowSurface::QEmboxVCWindowSurface(QWidget *window)

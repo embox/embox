@@ -12,6 +12,7 @@
 #include <kernel/panic.h>
 #include <util/ring.h>
 #include <drivers/diag.h>
+#include <drivers/termios_ops.h>
 #include <termios.h>
 #include <framework/mod/options.h>
 
@@ -20,8 +21,6 @@
 #else
 #error No impl option provided
 #endif
-
-extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
 extern const struct diag DIAG_IMPL;
 static const struct diag *cdiag = &DIAG_IMPL;
@@ -67,7 +66,7 @@ void diag_putc(char ch) {
 
 	ring_init(&r);
 
-	termios_putc((struct termios *) &diag_tio, ch, &r, buf, BUFLEN);
+	termios_putc(&diag_tio, ch, &r, buf, BUFLEN);
 
 	while (!ring_empty(&r)) {
 		tdiag->ops->putc(tdiag, buf[r.tail]);

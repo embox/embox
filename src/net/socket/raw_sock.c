@@ -94,7 +94,7 @@ static int raw_err_tester(const struct sock *sk,
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
 	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
-			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
+			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE);
 
 	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
 					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))

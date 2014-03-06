@@ -1,0 +1,23 @@
+package embox.cmd.user
+
+@Cmd(name = "userdel",
+	help = "",
+	man = '''
+NAME
+	userdel
+SYNOPSIS
+	userdel [options] LOGIN
+DESCRIPTION
+OPTIONS
+	-h					display help message and exit
+EXAMPLES
+AUTHORS
+	Vita Loginova
+''')
+module userdel {
+	source "userdel.c"
+
+	depends embox.cmd.user.utils
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.passwd_db_dynamic
+}

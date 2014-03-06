@@ -13,7 +13,6 @@
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 off_t lseek(int fd, off_t offset, int origin) {
 	struct file_desc *desc;

@@ -19,8 +19,6 @@
 #include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>
-#include <net/if_arp.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
@@ -40,10 +38,14 @@ struct emac_desc_head {
 	struct emac_desc desc;
 };
 
+struct emac_desc_list {
+	struct emac_desc_head *head;
+	struct emac_desc_head *tail;
+};
+
 struct emac_desc_queue {
-	struct emac_desc_head *active;
-	struct emac_desc_head *pending;
-	struct emac_desc_head *pending_last;
+	struct emac_desc_list active;
+	struct emac_desc_list pending;
 };
 
 struct ti816x_priv {
@@ -75,16 +77,19 @@ static void emac_ctrl_disable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMMISCINTEN, 0x0);
 }
 
+#define C0_TX (0x1 << 17) /* CMINTCTRL */
 #define C0_RX (0x1 << 16)
 #define INTPRESCALE(x) ((x & 0x7ff) << 0)
-#define RXIMAX(x) ((x & 0x3f) << 0)
-static inline void emac_ctrl_enable_rx_pacing(void) {
-	/* enable rx pacing; set pacing period */
+#define RXIMAX(x) ((x & 0x3f) << 0) /* CMRXINTMAX */
+#define TXIMAX(x) ((x & 0x3f) << 0) /* CMTXINTMAX */
+static inline void emac_ctrl_enable_pacing(void) {
+	/* enable rx/tx pacing; set pacing period */
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMINTCTRL,
-			C0_RX | INTPRESCALE(125 * 4));
+			C0_RX | C0_TX | INTPRESCALE(125 * 4));
 
-	/* set maximum number of rx interrupts */
+	/* set maximum number of rx/tx interrupts */
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXINTMAX, RXIMAX(4));
+	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMTXINTMAX, TXIMAX(4));
 }
 
 static void cm_load_mac(struct net_device *dev) {
@@ -180,8 +185,7 @@ static void emac_clear_and_enable_rxunicast(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_RXUNICASTSET, 0xff);
 }
 
-#define RXNOCHAIN (0x1 << 28)
-//#define RXCMFEN (0x1 << 24)
+#define RXNOCHAIN (0x1 << 28) /* single buffer */
 #define RXCSFEN (0x1 << 23) /* short msg */
 #define RXCAFEN (0x1 << 21) /* promiscuous */
 #define RXBROADEN (0x1 << 13) /* broadcast */
@@ -193,6 +197,7 @@ static void emac_enable_rxmbp(void) {
 
 #define TXPACE (0x1 << 6)
 #define GMIIEN (0x1 << 5)
+#define FULLDUPLEX (0x1 << 0)
 static void emac_set_macctrl(unsigned long v) {
 	REG_ORIN(EMAC_BASE + EMAC_R_MACCONTROL, v);
 }
@@ -246,31 +251,46 @@ static void emac_desc_set_next(struct emac_desc_head *hdesc,
 	dcache_flush(&hdesc->desc.next, sizeof hdesc->desc.next);
 }
 
+static int emac_desc_confirm(struct emac_desc_head *hdesc,
+		unsigned long reg_cp) {
+	REG_STORE(EMAC_BASE + reg_cp, (uintptr_t)&hdesc->desc);
+	return (uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE + reg_cp);
+}
+
+static void emac_list_add(struct emac_desc_list *ldesc,
+		struct emac_desc_head *new_head,
+		struct emac_desc_head *new_tail) {
+	struct emac_desc_head *old_tail;
+
+	assert(ldesc != NULL);
+	assert(new_head != NULL);
+	assert(new_tail != NULL);
+
+	old_tail = ldesc->tail;
+	ldesc->tail = new_tail;
+
+	if (old_tail != NULL) {
+		assert(ldesc->head != NULL);
+		emac_desc_set_next(old_tail, &new_head->desc);
+	}
+	else {
+		assert(ldesc->head == NULL);
+		ldesc->head = new_head;
+	}
+}
+
 static void emac_queue_add(struct emac_desc_queue *qdesc,
 		struct emac_desc_head *hhead,
 		struct emac_desc_head *htail) {
-	struct emac_desc_head *hlast;
-
 	assert(qdesc != NULL);
-	assert(hhead != NULL);
-	assert(htail != NULL);
-
-	hlast = qdesc->pending_last;
-	qdesc->pending_last = htail;
-
-	if (hlast != NULL) {
-		emac_desc_set_next(hlast, &hhead->desc);
-	}
-	else {
-		assert(qdesc->pending == NULL);
-		qdesc->pending = hhead;
-	}
+	emac_list_add(&qdesc->pending, hhead, htail);
 }
 
 static void emac_queue_reserve(struct emac_desc_queue *qdesc,
 		size_t size) {
 	size_t i;
 	struct emac_desc_head *hdesc, *hfirst, *hprev;
+	struct sk_buff_extra *skb_extra;
 	struct sk_buff_data *skb_data;
 
 	assert(qdesc != NULL);
@@ -279,12 +299,14 @@ static void emac_queue_reserve(struct emac_desc_queue *qdesc,
 	hfirst = hdesc = NULL;
 
 	for (i = 0; i < size; ++i) {
+		skb_extra = skb_extra_alloc();
+		assert(skb_extra != NULL);
 		skb_data = skb_data_alloc();
 		assert(skb_data != NULL);
 
 		hprev = hdesc;
-		hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
-		emac_desc_build(hdesc, skb_data_get_data(skb_data),
+		hdesc = skb_extra_cast_in(skb_extra);
+		emac_desc_build(hdesc, skb_data_cast_in(skb_data),
 				skb_max_size(), 0, EMAC_DESC_F_OWNER);
 
 		if (hfirst == NULL) hfirst = hdesc;
@@ -293,47 +315,55 @@ static void emac_queue_reserve(struct emac_desc_queue *qdesc,
 		}
 	}
 
-	emac_queue_add(qdesc, hfirst, hdesc);
+	emac_list_add(&qdesc->active, hfirst, hdesc);
 }
 
-static void emac_queue_prepare(struct emac_desc_queue *qdesc,
-		struct emac_desc_head *hnext) {
+static void emac_queue_prepare(struct emac_desc_queue *qdesc) {
 	assert(qdesc != NULL);
-
-	if (hnext != NULL) {
-		qdesc->active = hnext;
-	}
-	else {
-		qdesc->active = qdesc->pending;
-		qdesc->pending = qdesc->pending_last = NULL;
-	}
+	assert((qdesc->active.head == NULL)
+			&& (qdesc->active.tail == NULL));
+	qdesc->active.head = qdesc->pending.head;
+	qdesc->active.tail = qdesc->pending.tail;
+	qdesc->pending.head = qdesc->pending.tail = NULL;
 }
 
 static void emac_queue_activate(struct emac_desc_queue *qdesc,
 		unsigned long reg_hdp) {
 	assert(qdesc != NULL);
 
-	if (qdesc->active != NULL) {
+	if (qdesc->active.head != NULL) {
 		REG_STORE(EMAC_BASE + reg_hdp,
-				(uintptr_t)&qdesc->active->desc);
+				(uintptr_t)&qdesc->active.head->desc);
+	}
+}
+
+static void emac_queue_update(struct emac_desc_queue *qdesc,
+		struct emac_desc_head *hdesc) {
+	assert(qdesc != NULL);
+
+	if (hdesc != NULL) {
+		qdesc->active.head = hdesc;
+	}
+	else {
+		qdesc->active.head = qdesc->active.tail = NULL;
 	}
 }
 
 static struct emac_desc_head * emac_queue_head(
 		struct emac_desc_queue *qdesc) {
 	assert(qdesc != NULL);
-	return qdesc->active;
+	return qdesc->active.head;
 }
 
 static void emac_alloc_rx_queue(int size,
 		struct ti816x_priv *dev_priv) {
 	emac_queue_reserve(&dev_priv->rx, size);
-	emac_queue_prepare(&dev_priv->rx, NULL);
 	emac_queue_activate(&dev_priv->rx,
 				EMAC_R_RXHDP(DEFAULT_CHANNEL));
 }
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct sk_buff_extra *skb_extra;
 	struct sk_buff_data *skb_data;
 	void *data;
 	size_t data_len;
@@ -341,17 +371,18 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct ti816x_priv *dev_priv;
 	ipl_t ipl;
 
-	skb_data = skb_data_alloc();
+	skb_extra = skb_extra_alloc();
+	assert(skb_extra != NULL);
+	skb_data = skb_data_clone(skb->data);
 	assert(skb_data != NULL);
 
-	data = skb_data_get_data(skb_data);
+	data = skb_data_cast_in(skb_data);
 	data_len = max(skb->len, ETH_ZLEN);
-	memcpy(data, skb_data_get_data(skb->data), data_len);
 	dcache_flush(data, data_len);
 
 	skb_free(skb);
 
-	hdesc = (struct emac_desc_head *)skb_data_get_extra_hdr(skb_data);
+	hdesc = skb_extra_cast_in(skb_extra);
 	emac_desc_build(hdesc, data, data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
 
@@ -363,7 +394,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 		emac_queue_add(&dev_priv->tx, hdesc, hdesc);
 
 		if (NULL == emac_queue_head(&dev_priv->tx)) {
-			emac_queue_prepare(&dev_priv->tx, NULL);
+			emac_queue_prepare(&dev_priv->tx);
 			emac_queue_activate(&dev_priv->tx,
 					EMAC_R_TXHDP(DEFAULT_CHANNEL));
 		}
@@ -408,10 +439,20 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
+#define CHECK_RXOK(x) \
+	(!(~(x) & (EMAC_DESC_F_SOP | EMAC_DESC_F_EOP)))
+#define CHECK_RXERR(x) \
+	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
+			| EMAC_DESC_F_PASSCRC | EMAC_DESC_F_JABBER       \
+			| EMAC_DESC_F_OVERSIZE | EMAC_DESC_F_FRAGMENT    \
+			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
+			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
+			| EMAC_DESC_F_ALIGNERROR | EMAC_DESC_F_CRCERROR))
 #define RXEOI 0x1 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
+	void *data;
 	int need_alloc, eoq;
 	struct emac_desc_head *hdesc, *hnext;
 	struct sk_buff *skb;
@@ -422,60 +463,62 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
 
-	need_alloc = 0;
 	hnext = emac_queue_head(&dev_priv->rx);
+	need_alloc = eoq = 0;
 
-	//printk("*");
 	do {
+		assert(!eoq);
+
 		hdesc = hnext;
 		assert(hdesc != NULL);
+
 		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
-		assert(~hdesc->desc.flags & EMAC_DESC_F_OWNER);
-		dcache_inval(skb_data_get_data((struct sk_buff_data *)hdesc),
-				hdesc->desc.len);
+		assert(CHECK_RXOK(hdesc->desc.flags));
+		assert(!CHECK_RXERR(hdesc->desc.flags));
 
-		//printk("macrxint0: desc %p len %hu flags %#x eoq=%d\n",
-		//		hdesc, hdesc->desc.len, hdesc->desc.flags,
-		//		hdesc->desc.flags & EMAC_DESC_F_EOQ);
+		data = (void *)(uintptr_t)hdesc->desc.data;
+		dcache_inval(data, hdesc->desc.len);
 
-		++need_alloc;
-		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		hnext = (struct emac_desc_head *)(uintptr_t)hdesc->desc.next;
+		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 
-		skb = skb_wrap(hdesc->desc.len, sizeof hdesc->desc,
-				(struct sk_buff_data *)hdesc);
+		skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
 		if (skb == NULL) {
-			skb_data_free((struct sk_buff_data *)hdesc);
-			break;
+			skb_data_free(skb_data_cast_out(data));
+		}
+		else {
+			skb->dev = dev_id;
+			netif_rx(skb);
 		}
 
-		skb->dev = dev_id;
-		netif_rx(skb);
-	} while (((uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE
-				+ EMAC_R_RXCP(DEFAULT_CHANNEL)))
-			&& (!eoq || (assert(!eoq), eoq)));
+		++need_alloc;
+		skb_extra_free(skb_extra_cast_out(hdesc));
+	} while (emac_desc_confirm(hdesc,
+				EMAC_R_RXCP(DEFAULT_CHANNEL)));
 
-	assert((hnext != NULL) || eoq);
+	assert((NULL != hnext) || eoq);
 
+	emac_queue_update(&dev_priv->rx, hnext);
 	emac_queue_reserve(&dev_priv->rx, need_alloc);
 
-	emac_queue_prepare(&dev_priv->rx, hnext);
 	if (eoq) {
 		emac_queue_activate(&dev_priv->rx,
 				EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_RXCP(DEFAULT_CHANNEL),
-			(uintptr_t)&hdesc->desc);
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
 
 	return IRQ_HANDLED;
 }
 
+#define CHECK_TXOK(x) 1
+#define CHECK_TXERR(x) \
+	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT))
 #define TXEOI 0x2 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
+	void *data;
 	int eoq;
 	struct emac_desc_head *hdesc, *hnext;
 
@@ -486,35 +529,39 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	assert(dev_priv != NULL);
 
 	hnext = emac_queue_head(&dev_priv->tx);
+	eoq = 0;
 
-	//printk("^");
 	do {
+		assert(!eoq);
+
 		hdesc = hnext;
 		assert(hdesc != NULL);
+
 		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
-		assert(~hdesc->desc.flags & EMAC_DESC_F_OWNER);
+		assert(CHECK_TXOK(hdesc->desc.flags));
+		assert(!CHECK_TXERR(hdesc->desc.flags));
 
-		//printk("mactxint0: desc %p flags %#x eoq=%d\n",
-		//		hdesc, hdesc->desc.flags,
-		//		hdesc->desc.flags & EMAC_DESC_F_EOQ);
-
-		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 		hnext = (struct emac_desc_head *)(uintptr_t)hdesc->desc.next;
-		skb_data_free((struct sk_buff_data *)hdesc);
-	} while (((uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE
-				+ EMAC_R_TXCP(DEFAULT_CHANNEL)))
-			&& (!eoq || (assert(!eoq), eoq)));
+		data = (void *)(uintptr_t)hdesc->desc.data;
+		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 
-	assert((hnext != NULL) || eoq);
+		skb_extra_free(skb_extra_cast_out(hdesc));
+		skb_data_free(skb_data_cast_out(data));
+	} while (emac_desc_confirm(hdesc,
+				EMAC_R_TXCP(DEFAULT_CHANNEL)));
 
-	emac_queue_prepare(&dev_priv->tx, hnext);
+	assert((NULL != hnext) || eoq);
+
+	emac_queue_update(&dev_priv->tx, hnext);
+	if (NULL == emac_queue_head(&dev_priv->tx)) {
+		emac_queue_prepare(&dev_priv->tx);
+	}
+
 	if (eoq) {
 		emac_queue_activate(&dev_priv->tx,
 				EMAC_R_TXHDP(DEFAULT_CHANNEL));
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL),
-			(uintptr_t)&hdesc->desc);
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
 
 	return IRQ_HANDLED;
@@ -522,6 +569,8 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 
 #define STATPEND (0x1 << 27) /* MACINVECTOR */
 #define HOSTPEND (0x1 << 26)
+#define TXPEND (DEFAULT_MASK << 16)
+#define RXPEND (DEFAULT_MASK << 0)
 #define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
 #define TXERRCODE(x) ((x >> 20) & 0xf)
 #define TXERRCH(x) ((x >> 16) & 0x7)
@@ -563,6 +612,10 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		emac_reset();
 		macinvector &= ~HOSTPEND;
 	}
+	if (macinvector & (RXPEND | TXPEND)) {
+		/* umm.. ok */
+		macinvector &= ~(RXPEND | TXPEND);
+	}
 	if (macinvector) {
 		printk("ti816x_interrupt_macmisc0: unhandled interrupt\n"
 				"\tMACINVECTOR: %#lx\n"
@@ -580,20 +633,16 @@ static void ti816x_config(struct net_device *dev) {
 	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	/* check extra header size */
-	assert(skb_max_extra_hdr_size() == sizeof(struct emac_desc_head));
+	assert(skb_max_extra_size() == sizeof(struct emac_desc_head));
 
 	/* reset EMAC module */
 	emac_reset();
-
-	/* TODO enable EMAC/MDIO peripheral */
-
-	/* TODO configuration of the interrupt to the CPU */
 
 	/* disable all the EMAC/MDIO interrupts in the control module */
 	emac_ctrl_disable_irq();
 
 	/* initialization of the EMAC control module */
-	emac_ctrl_enable_rx_pacing();
+	emac_ctrl_enable_pacing();
 
 	/* load device MAC-address */
 	cm_load_mac(dev);
@@ -608,7 +657,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_rxbufoff(0);
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
-	//emac_set_macctrl(TXPACE);
+	emac_set_macctrl(FULLDUPLEX | TXPACE);
 	emac_enable_rx_and_tx_irq();
 	emac_alloc_rx_queue(MODOPS_PREP_BUFF_CNT,
 			netdev_priv(dev, struct ti816x_priv));
@@ -616,7 +665,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_macctrl(GMIIEN);
 
 	/* enable all the EMAC/MDIO interrupts in the control module */
-	//emac_ctrl_enable_irq();
+	/* emac_ctrl_enable_irq(); -- would done when opening */
 }
 
 static int ti816x_init(void) {

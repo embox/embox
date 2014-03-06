@@ -1,0 +1,18 @@
+package third_party.external_build
+
+@Cmd(name = "app",
+	help = "start demo application depends on a library",
+	man = '''
+		AUTHORS
+			Anton Kozlov
+	''')
+
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildDepends(lib)
+module app {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "strip.app.o"
+
+	@NoRuntime depends lib
+}

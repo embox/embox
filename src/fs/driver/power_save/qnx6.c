@@ -14,6 +14,7 @@
 #include <fcntl.h>
 
 #include <fs/fs_driver.h>
+#include <fs/file_operation.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
 #include <fs/path.h>
