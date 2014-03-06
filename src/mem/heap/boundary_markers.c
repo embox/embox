@@ -42,6 +42,10 @@ struct free_block {
 #define get_clear_size(size) ((size) & ~3)
 #define get_flags(size) ((size) & 3)
 
+static struct free_block_link *heap_get_free_blocks(void *heap) {
+	return (struct free_block_link *) heap;
+}
+
 static int block_is_busy(struct free_block *block) {
 	return block->size & 0x1;
 }
@@ -50,13 +54,12 @@ static int prev_is_busy(struct free_block *block) {
 	return block->size & 0x2;
 }
 
-static void block_link(void *heap, struct free_block *block) {
-	struct free_block_link *free_blocks = (struct free_block_link *) heap;
-
-	block->link.next = free_blocks->next;
-	block->link.prev = free_blocks;
-	free_blocks->next->prev = &block->link;
-	free_blocks->next = &block->link;
+static void block_link(struct free_block_link *free_blocks_list,
+		struct free_block *block) {
+	block->link.next = free_blocks_list->next;
+	block->link.prev = free_blocks_list;
+	free_blocks_list->next->prev = &block->link;
+	free_blocks_list->next = &block->link;
 }
 
 static void block_unlink(struct free_block *block) {
@@ -147,7 +150,8 @@ static void block_set_size(struct free_block *block, size_t size) {
 	block->size = flags | size;
 }
 
-static struct free_block * cut(void *heap, struct free_block *block, size_t size) {
+static struct free_block * cut(struct free_block_link *free_blocks_list,
+		struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
 	size_t offset;
 
@@ -155,7 +159,7 @@ static struct free_block * cut(void *heap, struct free_block *block, size_t size
 	nblock = (struct free_block *) ((char *) block + offset);
 
 	block_unlink(block);
-	block_link(heap, nblock);
+	block_link(free_blocks_list, nblock);
 
 	/* Set size for new free block: in begin and end of block */
 	nblock->size = get_clear_size(block->size) - offset;
@@ -174,7 +178,8 @@ static struct free_block * cut(void *heap, struct free_block *block, size_t size
 
 /* Splits one block in two: free block aligned on @c boundary (of size >= @c size) and remainder.
  * If we cant' split so, do nothing and return NULL. */
-static struct free_block *block_align(void *heap, struct free_block *block, size_t boundary, size_t size) {
+static struct free_block *block_align(struct free_block_link *free_blocks_list,
+		struct free_block *block, size_t boundary, size_t size) {
 	struct free_block *aligned_block;
 	size_t aligned_addr;
 	size_t aligned_block_size = 1;
@@ -210,7 +215,7 @@ static struct free_block *block_align(void *heap, struct free_block *block, size
 	/* Init aligned block */
 	aligned_block->size = aligned_block_size;
 	set_end_size(aligned_block);
-	block_link(heap, aligned_block);
+	block_link(free_blocks_list, aligned_block);
 
 	/* Init remainder */
 	block_set_size(block, (size_t) aligned_block - (size_t) block);
@@ -223,7 +228,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
 	void *ret_addr;
-	struct free_block_link *free_blocks;
+	struct free_block_link *free_blocks_list;
 
 	if (size <= 0) {
 		return NULL;
@@ -231,7 +236,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 
 	sched_lock();
 
-	free_blocks = (struct free_block_link *) heap;
+	free_blocks_list = heap_get_free_blocks(heap);
 
 	if (size < sizeof(struct free_block)) {
 		size = sizeof(struct free_block);
@@ -239,7 +244,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 
 	size = (size + (3)) & ~(3); /* align by word*/
 
-	for (link = free_blocks->next; link != free_blocks; link = link->next) {
+	for (link = free_blocks_list->next; link != free_blocks_list; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
 		if ((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
@@ -312,24 +317,26 @@ void bm_free(void *heap, void *ptr) {
 
 void bm_init(void *heap, size_t size) {
 	struct free_block *block;
-	char *start;
-	struct free_block_link *free_blocks;
+	struct free_block_link *free_blocks_list;
+	size_t actual_free_mem;
 
-	free_blocks = (struct free_block_link *)heap;
-	free_blocks->next = free_blocks;
-	free_blocks->prev = free_blocks;
+	free_blocks_list = heap_get_free_blocks(heap);
+	free_blocks_list->next = free_blocks_list;
+	free_blocks_list->prev = free_blocks_list;
 
-	start = (char *) heap + sizeof *free_blocks;
-	size -= sizeof(struct free_block_link) + sizeof(struct free_block);
+	/* initial block */
+	block = heap + sizeof *free_blocks_list;
+	/* structure of heap (@c size bytes):
+	 * | free_blocks_list | *** initial block *** | (sizeof block->size) bytes for busy block | */
+	actual_free_mem = size - (sizeof *free_blocks_list + sizeof block->size);
 
-	block = (struct free_block *) start;
-	block->size = size;
+	block->size = actual_free_mem;
 	set_end_size(block);
 
 	mark_prev(block);
 	block_link(heap, block);
 
 	/* last work we mark as persistence busy */
-	block = (struct free_block *) (start + get_clear_size(block->size));
+	block = (void *) block + get_clear_size(block->size);
 	mark_block(block);
 }
