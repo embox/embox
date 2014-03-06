@@ -48,7 +48,6 @@ module start_script {
 	option string shell_name=""
 	option string tty_dev=""
 	option number shell_start = 1
-	option number input_buffer = 80
 
 	@IncludePath("$(CONF_DIR)")
 	source "start_script.c"
