@@ -9,7 +9,7 @@ abstract module heap_api {
 abstract module heap_afterfree { }
 
 module heap_bm extends heap_api {
-	source "boundary_markers.c"
+	source "heap_bm.c"
 	source "malloc.c"
 
 	depends page_api
