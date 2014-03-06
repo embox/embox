@@ -60,4 +60,5 @@ module diag_index_desc {
 	depends embox.driver.tty.tty
 	depends embox.compat.posix.idx.dup
 	depends embox.compat.posix.termios
+	@NoRuntime depends embox.lib.LibCStdioFileOps
 }
