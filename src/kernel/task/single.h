@@ -91,7 +91,9 @@ static inline void task_init(struct task *tsk, int id, const char *name,
 	assert(main_thread == task_get_main(tsk));
 	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
 
-	main_thread->task = tsk;
+	if (main_thread != NULL) { /* check for thread.NoThreads module */
+		main_thread->task = tsk;
+	}
 
 	task_resource_init(tsk);
 }
