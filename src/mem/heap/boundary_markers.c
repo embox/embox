@@ -320,7 +320,7 @@ void bm_init(void *heap, size_t size) {
 	free_blocks->prev = free_blocks;
 
 	start = (char *) heap + sizeof *free_blocks;
-	size -= sizeof(struct free_block_link);
+	size -= sizeof(struct free_block_link) + sizeof(struct free_block);
 
 	block = (struct free_block *) start;
 	block->size = size;
@@ -330,6 +330,6 @@ void bm_init(void *heap, size_t size) {
 	block_link(heap, block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) start + get_clear_size(block->size));
+	block = (struct free_block *) (start + get_clear_size(block->size));
 	mark_block(block);
 }

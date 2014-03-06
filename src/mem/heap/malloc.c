@@ -3,7 +3,7 @@
  * @brief Heap implementation based on boundary markers algorithm.
  * @details
  *    Segment structure:
- *    |struct mm_segment| *** space for bm ***|8 bytes of reserved space|
+ *    |struct mm_segment| *** space for bm ***|
  *
  *    TODO:
  *    Should be improved by usage of page_alloc when size is divisible by PAGE_SIZE()
@@ -21,9 +21,6 @@
 #include <mem/heap_bm.h>
 #include <mem/page.h>
 #include <util/dlist.h>
-
-/* this space at the end of each segment is used by the underlying bm_init() */
-#define RESERVED_SPACE_PER_SEGMENT 8
 
 /* TODO make it per task field */
 static DLIST_DEFINE(task_mem_segments);
@@ -62,7 +59,7 @@ void *memalign(size_t boundary, size_t size) {
 	extern struct page_allocator *__heap_pgallocator;
 	void *block;
 	struct mm_segment *mm, *mm_next;
-	size_t segment_pages_cnt;
+	size_t segment_pages_cnt, segment_bytes_cnt;
 	int iter;
 
 	/* task_mem_segments = task_self()->mm->link */
@@ -86,11 +83,12 @@ void *memalign(size_t boundary, size_t size) {
 		if (mm == NULL)
 			return NULL;
 
-		mm->size = segment_pages_cnt * PAGE_SIZE() - sizeof *mm - RESERVED_SPACE_PER_SEGMENT;
+		mm->size = segment_pages_cnt * PAGE_SIZE();
+		segment_bytes_cnt = mm->size - sizeof *mm;
 		dlist_head_init(&mm->link);
 		dlist_add_next(&mm->link, &task_mem_segments);
 
-		bm_init(mm_to_segment(mm), mm->size);
+		bm_init(mm_to_segment(mm), segment_bytes_cnt);
 	} while(!block);
 
 	return NULL;
