@@ -5,7 +5,7 @@ module LibFrameworkNet {
 }
 
 module LibFramework {
-	depends cmd, mod, service, test, runlevel
+	depends cmd, mod, test, runlevel
 }
 
 module runlevel {
