@@ -11,17 +11,16 @@ abstract module task_table_api {
 module kernel_task {
 	source "kernel_task.c"
 
-	@NoRuntime depends embox.kernel.cpu.common
 	@NoRuntime depends embox.kernel.task.api
 	depends embox.kernel.task.task_resource // FIXME
 	depends embox.kernel.task.task_table_api
-	//depends embox.kernel.thread.idle_thread
+	depends embox.kernel.thread.thread_mode
 }
 
 module multi extends api {
 	source "multi.c", "multi.h"
 
-	@NoRuntime depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
 	depends embox.kernel.task.task_table
 	@NoRuntime depends embox.kernel.task.resource.errno
@@ -37,7 +36,7 @@ module single extends api {
 	source "single.h"
 
 	depends embox.kernel.cpu.common
-	@NoRuntime depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.lib.LibCString

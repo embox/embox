@@ -15,12 +15,12 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <string.h>
+#include <time.h>
 
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
-
 
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
@@ -45,6 +45,12 @@ static inline const char * task_get_name(const struct task *tsk) {
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return cpu_get_idle(cpu_get_id());
+}
+
+static inline void task_set_main(struct task *tsk,
+		struct thread *main_thread) {
+	assert(tsk == task_kernel_task());
+	assert(main_thread == cpu_get_idle(cpu_get_id()));
 }
 
 static inline task_priority_t task_get_priority(const struct task *tsk) {
@@ -86,7 +92,9 @@ static inline void task_init(struct task *tsk, int id, const char *name,
 	assert(main_thread == task_get_main(tsk));
 	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
 
-	main_thread->task = tsk;
+	if (main_thread != NULL) { /* check for thread.NoThreads module */
+		main_thread->task = tsk;
+	}
 
 	task_resource_init(tsk);
 }
