@@ -34,5 +34,5 @@ struct runnable *runq_extract(runq_t *queue) {
 
 	priolist_del(first, queue);
 
-	return (struct runnable *)first;
+	return mcast_out(first, struct runnable, sched_attr.runq_link);
 }
