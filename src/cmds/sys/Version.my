@@ -13,5 +13,5 @@ module version {
 
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
-	@NoRuntime depends embox.lib.LibCStdio
+	@NoRuntime depends embox.lib.LibCStdioFileOps
 }

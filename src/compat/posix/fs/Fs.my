@@ -12,6 +12,7 @@ module All {
 
 static module file {
 	depends file_ops
+	depends lseek
 	depends open
 }
 
@@ -31,12 +32,18 @@ static module dirent {
 	depends embox.lib.LibCString
 }
 
+static module lseek {
+	source "lseek.c"
+
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.errno
+}
+
 static module file_ops {
 	source "file_ops.c"
 	source "close.c"
 	source "fstat.c"
 	source "fsync.c"
-	source "lseek.c"
 	source "read.c"
 	source "write.c"
 	source "ftruncate.c"
