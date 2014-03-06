@@ -36,8 +36,7 @@ module multi extends api {
 module single extends api {
 	source "single.h"
 
-	@NoRuntime depends embox.kernel.cpu.common
-	@NoRuntime depends embox.kernel.cpu.stats
+	depends embox.kernel.cpu.common
 	@NoRuntime depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert

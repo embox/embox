@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <string.h>
@@ -59,7 +60,7 @@ static inline int task_set_priority(struct task *tsk,
 
 static inline clock_t task_get_clock(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
-	return cpu_get_total_time(cpu_get_id());
+	return clock();
 }
 
 static inline void task_set_clock(struct task *tsk, clock_t new_clock) {

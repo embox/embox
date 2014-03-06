@@ -19,7 +19,7 @@ void thread_stack_set(struct thread *t, void *stack) {
 	t->stack.stack = stack;
 }
 #endif
-
+f
 void *thread_stack_get(struct thread *t) {
 	return t->stack.stack;
 }

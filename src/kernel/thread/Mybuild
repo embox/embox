@@ -62,6 +62,9 @@ module signal {
 abstract module stack_api {
 }
 
+module stack_none extends stack_api {
+	source "stack_none.h"
+}
 
 module fixed_stack extends stack_api {
 	source "fixed_stack.c"
