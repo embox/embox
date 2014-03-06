@@ -5,7 +5,7 @@ module All {
 
 	depends exec,
 		fork,
-		wait,
+		waitpid,
 		//signal,
 		exit,
 		uid,
@@ -23,12 +23,12 @@ static module exec {
 static module fork {
 	source "fork.c"
 
-	depends embox.kernel.task.kfork
+	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
 }
 
-static module wait {
-	source "wait.c"
+static module waitpid {
+	source "waitpid.c"
 
 	depends embox.util.LibUtil
 }
@@ -54,7 +54,7 @@ static module exit {
 static module uid {
 	source "uid.c"
 
-	depends embox.kernel.task.u_area
+	depends embox.kernel.task.resource.u_area
 }
 
 static module nice {
@@ -65,6 +65,8 @@ static module nice {
 
 static module priority {
 	source "priority.c"
+
+	depends embox.kernel.task.resource.u_area
 }
 
 static module pid {

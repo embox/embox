@@ -7,7 +7,7 @@ module hostinfo {
 	depends embox.compat.posix.net.gethostbyaddr
 	depends embox.compat.posix.util.getopt
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module echo_server {
@@ -16,7 +16,7 @@ module echo_server {
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module checkopts {
@@ -24,5 +24,5 @@ module checkopts {
 
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }

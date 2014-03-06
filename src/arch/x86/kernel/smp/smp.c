@@ -19,7 +19,9 @@
 
 #include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <kernel/spinlock.h>
 
 

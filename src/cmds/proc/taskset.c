@@ -14,6 +14,8 @@
 #include <stdlib.h>
 
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
+#include <kernel/task/resource/affinity.h>
 #include <kernel/task/task_table.h>
 
 EMBOX_CMD(exec);

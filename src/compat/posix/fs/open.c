@@ -17,6 +17,7 @@
 #include <fs/posix.h>
 
 #include <fs/kfile.h>
+#include <kernel/task/resource/idesc_table.h>
 
 struct node *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
@@ -97,7 +98,7 @@ int open(const char *path, int __oflag, ...) {
 		goto out;
 	}
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
 
 out:

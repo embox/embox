@@ -15,41 +15,65 @@ module core extends thread_mode {
 
 	source "core.c"
 	source "thread_allocator.c"
-	source "idle_thread.c"
-	source "boot_thread.c"
+	source "thread_register.c"
+
+	depends starter
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
-	depends embox.kernel.task.kernel_task
-	@NoRuntime depends embox.kernel.cpu.common
-	depends embox.kernel.time.jiffies
-	@NoRuntime depends embox.kernel.task.MultiThread
+
+
 	@NoRuntime depends stack_api
-	depends thread_local
+	@NoRuntime depends thread_local
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal
+	@NoRuntime depends embox.lib.LibCAssert
+	depends embox.kernel.cpu.common
+}
+
+module starter {
+	source "starter.c"
+	@NoRuntime depends idle_thread
+	@NoRuntime depends boot_thread
+	depends embox.kernel.time.jiffies
+}
+
+module boot_thread {
+	source "boot_thread.c"
+	@NoRuntime depends embox.kernel.task.kernel_task
+}
+
+module idle_thread {
+	source "idle_thread.c"
+	@NoRuntime depends core
+	depends embox.kernel.cpu.common
+	@NoRuntime depends embox.kernel.task.kernel_task
 }
 
 module signal {
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate_api
 	@NoRuntime depends embox.kernel.thread.signal.lock
-	depends embox.kernel.task.signal
+	depends embox.kernel.task.resource.sig_table
 }
 
 @DefaultImpl(fixed_stack)
 abstract module stack_api {
 }
 
+module stack_none extends stack_api {
+	source "stack_none.h"
+}
 
 module fixed_stack extends stack_api {
 	source "fixed_stack.c"
 	source "fixed_stack.h"
 }
+
 @DefaultImpl(thread_local_heap)
 abstract module thread_local {
-
+	option number thread_key_quantity=0x40
 }
 
 module thread_local_none extends thread_local {
@@ -62,7 +86,8 @@ module thread_local_heap extends thread_local {
 
 	depends embox.mem.heap_api
 
-	depends embox.kernel.task.task_thread_key
+	depends embox.kernel.task.resource.thread_key_table
+	depends embox.kernel.task.syslib.thread_key_table
 }
 @DefaultImpl(thread_cancel_disable)
 abstract module thread_cancel {}

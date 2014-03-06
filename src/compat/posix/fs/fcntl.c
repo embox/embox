@@ -10,6 +10,7 @@
 #include <kernel/task.h>
 
 
+#include <fs/idesc.h>
 #include <fs/index_descriptor.h>
 
 

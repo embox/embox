@@ -16,14 +16,14 @@
 EMBOX_TEST_SUITE("tasks");
 
 static void *tsk1_hnd(void *data) {
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 
 	return NULL;
 }
 
 static void *tsk2_hnd(void *data) {
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, SOMEPOINTER);
 
 	return NULL;
@@ -46,7 +46,7 @@ static void *tsk3_thr2_hnd(void *data) {
 static void *tsk3_thr1_hnd(void *data) {
 	struct thread *t;
 
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 	test_assert_zero(
 				thread_create(&t, 0, tsk3_thr2_hnd, task_self()));
@@ -72,7 +72,7 @@ static void *tsk4_thr2_hnd(void *data) {
 static void *tsk4_thr1_hnd(void *data) {
 	struct thread *t;
 
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 	test_assert_zero(
 				thread_create(&t, 0, tsk4_thr2_hnd, task_self()));
@@ -99,7 +99,7 @@ static void *tsk5_thr2_hnd(void *data) {
 static void *tsk5_thr1_hnd(void *data) {
 	struct thread *t;
 
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 	test_assert_zero(
 				thread_create(&t, 0, tsk5_thr2_hnd, task_self()));
@@ -124,7 +124,7 @@ static void *tsk6_thr2_hnd(void *data) {
 static void *tsk6_thr1_hnd(void *data) {
 	struct thread *t;
 
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 	test_assert_zero(
 				thread_create(&t, 0, tsk6_thr2_hnd, task_self()));
@@ -152,7 +152,7 @@ static void *tsk7_thr2_hnd(void *data) {
 static void *tsk7_thr1_hnd(void *data) {
 	struct thread *t;
 
-	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_not_equal(task_get_id(task_self()), KERNEL_TID);
 	test_assert_equal(data, NULL);
 	test_assert_zero(
 				thread_create(&t, 0, tsk7_thr2_hnd, task_self()));

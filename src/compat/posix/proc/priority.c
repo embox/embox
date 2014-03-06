@@ -11,11 +11,12 @@
 #include <kernel/task.h>
 #include <errno.h>
 #include <kernel/task/task_table.h>
-#include <kernel/task/u_area.h>
+#include <kernel/task/resource/u_area.h>
 
 int getpriority(int which, id_t who) {
 	int tid;
 	struct task *task;
+	struct task_u_area *task_u_area;
 
 	if(who == 0) {
 		/* return current value */
@@ -23,22 +24,23 @@ int getpriority(int which, id_t who) {
 	}
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
+		task_u_area = task_resource_u_area(task);
 		switch (which) {
 		default:
 			SET_ERRNO(EINVAL);
 			return -1;
 		case PRIO_PROCESS:
-			if (task->tid == who) {
+			if (tid == who) {
 				return task_get_priority(task);
 			}
 			break;
 		case PRIO_PGRP:
-			if (task->u_area->regid == who) {
+			if (task_u_area->regid == who) {
 				return task_get_priority(task);
 			}
 			break;
 		case PRIO_USER:
-			if (task->u_area->reuid == who) {
+			if (task_u_area->reuid == who) {
 				return task_get_priority(task);
 			}
 			break;
@@ -52,6 +54,7 @@ int getpriority(int which, id_t who) {
 int setpriority(int which, id_t who, int value) {
 	int tid, ret, exist;
 	struct task *task;
+	struct task_u_area *task_u_area;
 
 	// TODO kernel task has tid 0 but this value reserved for current pid
 	if(who == 0) {
@@ -66,12 +69,13 @@ int setpriority(int which, id_t who, int value) {
 	exist = 0;
 	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
 		task = task_table_get(tid);
+		task_u_area = task_resource_u_area(task);
 		switch (which) {
 		default:
 			SET_ERRNO(EINVAL);
 			return -1;
 		case PRIO_PROCESS:
-			if (task->tid == who) {
+			if (tid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
 					SET_ERRNO(-ret);
@@ -81,7 +85,7 @@ int setpriority(int which, id_t who, int value) {
 			}
 			break;
 		case PRIO_PGRP:
-			if (task->u_area->regid == who) {
+			if (task_u_area->regid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
 					SET_ERRNO(-ret);
@@ -91,7 +95,7 @@ int setpriority(int which, id_t who, int value) {
 			}
 			break;
 		case PRIO_USER:
-			if (task->u_area->reuid == who) {
+			if (task_u_area->reuid == who) {
 				ret = task_set_priority(task, value);
 				if (ret != 0) {
 					SET_ERRNO(-ret);

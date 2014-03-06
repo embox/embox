@@ -6,12 +6,14 @@
  * @author Ilia Vaprol
  */
 
+#include <module/embox/kernel/sched/strategy/affinity_api.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/cpu/cpudata.h>
+#include <kernel/sched/affinity.h>
 #include <kernel/thread.h>
 #include <time.h>
 
-static struct thread *idle __cpudata__;
+static struct thread *idle __cpudata__ = NULL;
 static clock_t started __cpudata__;
 
 void cpu_init(unsigned int cpu_id, struct thread *idle_) {
