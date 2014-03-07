@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
-#include <kernel/task/task_table.h>
+#include <kernel/task.h>
 
 EMBOX_CMD(exec);
 
