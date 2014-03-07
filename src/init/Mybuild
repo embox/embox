@@ -41,7 +41,7 @@ module setup_tty_devfs extends setup_tty_api {
 }
 
 module setup_tty_none extends setup_tty_api {
-	source "setup_tty_none.c"
+	source "setup_tty_none.h"
 }
 
 module start_script {
@@ -52,7 +52,7 @@ module start_script {
 	@IncludePath("$(CONF_DIR)")
 	source "start_script.c"
 
-	depends setup_tty_api
+	@NoRuntime depends setup_tty_api
 	depends diag_index_desc
 	depends embox.cmd.sh.shell
 	requires embox.cmd.Shell.commandLine
