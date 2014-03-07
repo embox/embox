@@ -11,6 +11,7 @@
 #include <kernel/task.h>
 #include <kernel/thread.h>
 #include <kernel/thread/signal.h>
+#include <kernel/task/resource/sig_table.h>
 
 void thread_signal_handle(void) {
 	struct thread *thread;
@@ -28,7 +29,7 @@ void thread_signal_handle(void) {
 
 	sigstate = &thread->sigstate;
 
-	sig_table = task->sig_table;
+	sig_table = task_resource_sig_table(task);
 	assert(sig_table != NULL);
 
 	while ((sig = sigstate_receive(sigstate, &info))) {

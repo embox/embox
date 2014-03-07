@@ -65,6 +65,8 @@ static module gethostname {
 static module environ {
 	source "environ.c"
 
-	depends embox.kernel.task.env
-	depends embox.lib.LibCStdio
+	depends embox.kernel.task.resource.env
+	depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }

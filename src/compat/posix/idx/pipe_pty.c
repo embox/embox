@@ -26,6 +26,7 @@
 #include <fs/flags.h>
 
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 struct pty;
 
@@ -331,7 +332,7 @@ int ppty(int ptyfds[2]) {
 	struct idesc_pty *master, *slave;
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 
 	pty = NULL;
 	master = slave = NULL;

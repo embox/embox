@@ -11,6 +11,7 @@ module LibPosix {
 	depends pthreads
 	depends sched
 	depends termios
+	depends embox.kernel.task.resource.errno
 }
 
 static module pthreads {
@@ -22,6 +23,7 @@ static module pthreads {
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
+	depends embox.kernel.task.syslib.thread_key_table
 }
 
 static module sched {

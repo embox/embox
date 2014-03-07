@@ -9,7 +9,9 @@
 #include <stdint.h>
 #include <time.h>
 
+#include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
 
 #include <module/embox/kernel/stack.h>
@@ -31,10 +33,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */
-	//thread->stack = stack + sizeof(struct thread);
-	//thread->stack_sz = stack_sz - sizeof(struct thread);
-	thread_stack_set(thread, stack + sizeof(struct thread));
-	thread_stack_set_size(thread, stack_sz - sizeof(struct thread));
+	thread_stack_init(thread, stack_sz);
 
 	/* General initialization and task setting up */
 	thread_init(thread, 0, boot_stub, NULL);
@@ -58,13 +57,12 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 
 struct thread *boot_thread_create(void) {
 	struct thread *bootstrap;
-	struct task *kernel_task = task_kernel_task();
 	extern char _stack_top;
 
 	bootstrap = thread_init_self(&_stack_top - STACK_SZ, STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
-	thread_register(kernel_task, bootstrap);
+	thread_register(task_kernel_task(), bootstrap);
 
 	return bootstrap;
 }

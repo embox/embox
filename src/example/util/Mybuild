@@ -5,7 +5,7 @@ module priority_q {
 
 	depends embox.util.LibUtil
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module readline {
@@ -14,14 +14,14 @@ module readline {
 
 	depends embox.lib.LibC
 	depends third_party.lib.linenoise
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module ring_buff {
 	source "ring_buff.c"
 
 	depends embox.util.LibUtil
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module tree_set {
@@ -29,5 +29,5 @@ module tree_set {
 
 	depends embox.util.LibUtil
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }

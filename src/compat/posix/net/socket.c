@@ -24,6 +24,7 @@
 #include <net/socket/socket_desc.h>
 
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <util/sys_log.h>
 
 #include <err.h>
@@ -31,7 +32,7 @@
 static int get_index(struct sock *sk) {
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 
 	return idesc_table_add(it, (struct idesc *)sk, 0);

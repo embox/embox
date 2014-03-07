@@ -11,5 +11,5 @@ module create_thread {
 	depends embox.kernel.sched.sched
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
