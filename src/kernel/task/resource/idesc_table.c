@@ -23,6 +23,8 @@ static void task_idesc_table_init(const struct task *task,
 	assert(idesc_table_space == task_resource_idesc_table(task));
 
 	it = idesc_table_space;
+	assert(it != NULL);
+
 	idesc_table_init(it);
 }
 
