@@ -34,6 +34,14 @@ module idesc_table {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module mmap {
+	source "mmap.c"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.mem.mmap_api
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
 module security {
 	option number security_size
 	source "security.c"
