@@ -103,7 +103,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		ret = thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY);
 		if (ret != 0) {
-			t = err_ptr(-ret);
 			goto out_threadfree;
 		}
 
@@ -127,6 +126,8 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 out_threadfree:
 		thread_free(t);
 
+		/* set error */
+		t = err_ptr(-ret);
 	}
 out_unlock:
 	sched_unlock();

@@ -6,6 +6,7 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
 #include <embox/unit.h>
 #include <kernel/sched.h>
 
@@ -19,7 +20,10 @@ static int thread_core_init(void) {
 	struct thread *current;
 
 	idle = idle_thread_create(); /* idle thread always has ID=0 */
+	assert(idle != NULL);
+
 	current = boot_thread_create(); /* 'init' thread ID=1 */
+	assert(current != NULL);
 
 	return sched_init(idle, current);
 }
