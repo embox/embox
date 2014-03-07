@@ -9,6 +9,7 @@
 #include <hal/arch.h> /*only for arch_idle */
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
@@ -36,7 +37,7 @@ struct thread * idle_thread_create(void) {
 	thread_priority_init(t, SCHED_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), t);
-	task_set_main(task_kernel_task(), t);
+	thread_register(task_kernel_task(), t);
 
 	return t;
 }

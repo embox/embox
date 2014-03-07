@@ -11,7 +11,6 @@
 
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
-#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
 
 #include <module/embox/kernel/stack.h>
@@ -62,7 +61,7 @@ struct thread *boot_thread_create(void) {
 	bootstrap = thread_init_self(&_stack_top - STACK_SZ, STACK_SZ,
 			THREAD_PRIORITY_NORMAL);
 
-	thread_register(task_kernel_task(), bootstrap);
+	task_set_main(task_kernel_task(), bootstrap);
 
 	return bootstrap;
 }

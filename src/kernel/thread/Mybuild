@@ -34,8 +34,8 @@ module core extends thread_mode {
 
 module starter {
 	source "starter.c"
-	depends idle_thread
 	@NoRuntime depends boot_thread
+	depends idle_thread
 	depends embox.kernel.time.jiffies
 }
 

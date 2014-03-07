@@ -22,14 +22,10 @@
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
 
-#include <hal/cpu.h>
-#include <kernel/cpu/cpu.h>
-
 struct task {
-	char __unused[0];
+	struct thread *tsk_main;
 	char resources[];
 };
-
 __BEGIN_DECLS
 
 static inline int task_get_id(const struct task *tsk) {
@@ -44,13 +40,15 @@ static inline const char * task_get_name(const struct task *tsk) {
 
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
-	return cpu_get_idle(cpu_get_id());
+	return tsk->tsk_main;
 }
 
 static inline void task_set_main(struct task *tsk,
 		struct thread *main_thread) {
 	assert(tsk == task_kernel_task());
-	assert(main_thread == cpu_get_idle(cpu_get_id()));
+	assert(main_thread != NULL);
+	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
 }
 
 static inline task_priority_t task_get_priority(const struct task *tsk) {

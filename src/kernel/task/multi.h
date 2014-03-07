@@ -14,6 +14,7 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
+#include <kernel/thread.h>
 #include <kernel/task/task_priority.h>
 
 #define MAX_TASK_NAME_LEN 20
@@ -51,6 +52,7 @@ static inline void task_set_main(struct task *tsk,
 	assert(tsk != NULL);
 	assert(main_thread != NULL);
 	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
 }
 
 static inline task_priority_t task_get_priority(const struct task *tsk) {
