@@ -8,6 +8,7 @@ module ext4 {
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.ext2
+	depends third_party.e2fsprogs.mke2fs /* ext4fs_format */
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool

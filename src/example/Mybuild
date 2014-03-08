@@ -4,5 +4,5 @@ module hello {
 	source "hello.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }

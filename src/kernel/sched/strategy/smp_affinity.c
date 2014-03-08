@@ -6,6 +6,7 @@
  */
 #include <kernel/thread.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/affinity.h>
 #include <hal/cpu.h>
 
 /** Default thread affinity mask */

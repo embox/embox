@@ -8,6 +8,7 @@
 #include <time.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
+#include <kernel/sched.h>
 
 #include <kernel/sched/sched_timing.h>
 
@@ -36,7 +37,7 @@ static void sched_timing_stop(struct thread *t, clock_t cur_time) {
 
 	t->sched_attr.sched_time.running_time += spent;
 	//TODO this is for qt
-	t->task->per_cpu += spent;
+	task_set_clock(t->task, task_get_clock(t->task) + spent);
 }
 
 void sched_timing_switch(struct thread *prev, struct thread *next) {

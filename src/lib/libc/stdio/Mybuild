@@ -18,7 +18,7 @@ static module Printk {
 	@NoRuntime depends Print
 }
 
-static module Sprintf {
+static module LibCStdioSprintf {
 	source "sprintf.c"
 	source "snprintf.c"
 
@@ -26,28 +26,43 @@ static module Sprintf {
 	@NoRuntime depends LibGcc
 }
 
-
-static module LibCStdio {
-
+static module LibCStdioOpen {
 	option number file_quantity = 16
 
+	source "fopen.c"
+	depends embox.compat.posix.fs.open
+	@NoRuntime depends LibCString
+}
+
+static module LibCStdioFseek {
+	source "fseek.c"
+
+	depends embox.compat.posix.fs.lseek
+}
+
+static module LibCStdioFileOps {
 	source "fgetc.c"
+	source "fgets.c"
 
 	source "file_ops.c"
-	depends embox.compat.posix.fs.file
+	depends embox.compat.posix.fs.file_ops
+
+	source "fputc.c"
+	source "fputs.c"
 
 	source "printf.c"
 	source "fprintf.c"
-	depends Print
+	@NoRuntime depends Print
+}
 
-	source "fputc.c"
-	source "gets.c"
+static module LibCStdio {
 	source "perror.c"
-	source "puts.c"
 	source "rename.c"
 	source "scanf.c"
 	source "link.c" // TODO not implemented
 
-	@NoRuntime depends LibCString
-	@NoRuntime depends Sprintf
+	@NoRuntime depends LibCStdioSprintf
+	@NoRuntime depends LibCStdioOpen
+	@NoRuntime depends LibCStdioFseek
+	@NoRuntime depends LibCStdioFileOps
 }

@@ -64,11 +64,11 @@ TEST_CASE("reading big chunk from smalls should be successfull") {
 
 static void *thd_handler(void *arg) {
 
-	usleep(100 * 1000);
+	test_assert_zero(usleep(100 * 1000));
 
 	test_emit('b');
 
-	write(pipe_testfd[1], "abcd", 4);
+	test_assert_equal(4, write(pipe_testfd[1], "abcd", 4));
 
 	return NULL;
 }
@@ -79,13 +79,12 @@ TEST_CASE("read should block until data avaible") {
 
 	test_emit('a');
 
-
-	pthread_create(&write_thread, NULL, thd_handler, NULL);
-	pthread_detach(write_thread);
+	test_assert_zero(pthread_create(&write_thread, NULL, thd_handler, NULL));
+	test_assert_zero(pthread_detach(write_thread));
 
 	test_assert_equal(4, read(pipe_testfd[0], buf, 4));
 
-	usleep(100 * 1000);
+	test_assert_zero(usleep(100 * 1000));
 
 	test_emit('c');
 

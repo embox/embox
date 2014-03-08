@@ -11,6 +11,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
 
 long sys_exit(int errcode) {
@@ -30,12 +31,10 @@ int sys_close(int fd) {
 }
 
 void *sys_brk(void *new_brk) {
-	struct task *task = task_self();
-
 	if (!new_brk) {
-		return mmap_get_brk(task->mmap);
+		return mmap_get_brk(task_self_resource_mmap());
 	} else {
-		mmap_set_brk(task->mmap, new_brk);
+		mmap_set_brk(task_self_resource_mmap(), new_brk);
 		return new_brk;
 	}
 }
@@ -46,9 +45,9 @@ void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_
 	void *addr;
 
 	if (start) {
-		marea = mmap_place_marea(task_self()->mmap, (uint32_t) start, (uint32_t) start + length, flags);
+		marea = mmap_place_marea(task_self_resource_mmap(), (uint32_t) start, (uint32_t) start + length, flags);
 	} else {
-		marea = mmap_alloc_marea(task_self()->mmap, length, flags);
+		marea = mmap_alloc_marea(task_self_resource_mmap(), length, flags);
 	}
 
 	if (!marea) {

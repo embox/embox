@@ -9,6 +9,7 @@ module SrvLib {
 module ImgService {
 	//source "img_service.c"
 	depends embox.service.SrvLib
+	depends embox.framework.service
 }
 
 module TestService {
@@ -20,6 +21,7 @@ module TestService {
 
 	depends SrvLib
 	depends embox.third_party.expat.expat_lib
+	depends embox.framework.service
 }
 
 module NewService {
@@ -30,4 +32,5 @@ module NewService {
 	source "img_service.in"
 
 	depends SrvLib
+	depends embox.framework.service
 }

@@ -7,28 +7,28 @@
  */
 
 #include <errno.h>
-#include <kernel/task/u_area.h>
+#include <kernel/task/resource/u_area.h>
 
 #define ROOT_UID 0
 
 uid_t getuid(void) {
-	return task_self_u_area()->reuid;
+	return task_self_resource_u_area()->reuid;
 }
 
 uid_t geteuid(void) {
-	return task_self_u_area()->euid;
+	return task_self_resource_u_area()->euid;
 }
 
 uid_t getgid(void) {
-	return task_self_u_area()->regid;
+	return task_self_resource_u_area()->regid;
 }
 
 uid_t getegid(void) {
-	return task_self_u_area()->egid;
+	return task_self_resource_u_area()->egid;
 }
 
 int setreuid(uid_t ruid, uid_t euid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (ruid != (uid_t)-1) {
 		if (u_area->euid == ROOT_UID || ruid == u_area->reuid
@@ -54,7 +54,7 @@ int setreuid(uid_t ruid, uid_t euid) {
 }
 
 int setuid(uid_t uid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->euid == ROOT_UID) {
 		u_area->euid = uid;
@@ -70,7 +70,7 @@ int setuid(uid_t uid) {
 }
 
 int seteuid(uid_t uid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->euid == ROOT_UID || u_area->reuid == uid) {
 	       u_area->euid = uid;
@@ -83,7 +83,7 @@ int seteuid(uid_t uid) {
 }
 
 int setregid(gid_t rgid, gid_t egid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (rgid != (gid_t)-1) {
 		if (u_area->egid == ROOT_UID || rgid == u_area->regid
@@ -109,7 +109,7 @@ int setregid(gid_t rgid, gid_t egid) {
 }
 
 int setgid(gid_t gid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->egid == ROOT_UID) {
 		u_area->egid = gid;
@@ -125,7 +125,7 @@ int setgid(gid_t gid) {
 }
 
 int setegid(gid_t gid) {
-	struct task_u_area *u_area = task_self_u_area();
+	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->egid == ROOT_UID || u_area->regid == gid) {
 	       u_area->egid = gid;
