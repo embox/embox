@@ -17,31 +17,31 @@ static int init(void) {
 
 	status = AcpiInitializeSubsystem();
 	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to initialize the ACPICA subsystem");
+		printk("ERROR: Unable to initialize the ACPICA subsystem\n");
 		goto error;
 	}
 
 	status = AcpiInitializeTables(NULL, 16, FALSE);
 	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to initialize the ACPICA table manager");
+		printk("ERROR: Unable to initialize the ACPICA table manager\n");
 		goto error;
 	}
 
 	status = AcpiLoadTables();
 	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to load ACPI tables");
+		printk("ERROR: Unable to load ACPI tables\n");
 		goto error;
 	}
 
 	status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
 	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to complete the ACPICA subsystem initialization");
+		printk("ERROR: Unable to complete the ACPICA subsystem initialization\n");
 		goto error;
 	}
 
 	status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
 	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to initialize objects within the ACPI namespace");
+		printk("ERROR: Unable to initialize objects within the ACPI namespace\n");
 		goto error;
 	}
 

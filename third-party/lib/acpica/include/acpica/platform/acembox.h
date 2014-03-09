@@ -6,8 +6,8 @@
  * @author Roman Kurbatov
  */
 
-#ifndef DRIVERS_ACPI_ACEMBOX_H_
-#define DRIVERS_ACPI_ACEMBOX_H_
+#ifndef ACPICA_PLATFORM_ACEMBOX_H_
+#define ACPICA_PLATFORM_ACEMBOX_H_
 
 #include <limits.h>
 #include <acpica/platform/acgcc.h>
@@ -19,4 +19,4 @@
 #define ACPI_USE_STANDARD_HEADERS
 #define ACPI_USE_LOCAL_CACHE
 
-#endif /* DRIVERS_ACPI_ACEMBOX_H_ */
+#endif /* ACPICA_PLATFORM_ACEMBOX_H_ */

@@ -41,19 +41,34 @@ void arch_reset_kbd(void) {
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 	ACPI_STATUS status;
 
-	status = AcpiEnterSleepStatePrep(ACPI_STATE_S5);
-	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to prepare to enter the soft off system state");
-		goto error;
+	switch (mode) {
+	case ARCH_SHUTDOWN_MODE_HALT:
+		status = AcpiEnterSleepStatePrep(ACPI_STATE_S5);
+		if (ACPI_FAILURE(status)) {
+			printk("ERROR: Unable to prepare to enter the soft off system state\n");
+			break;
+		}
+
+		status = AcpiEnterSleepState(ACPI_STATE_S5);
+		if (ACPI_FAILURE(status)) {
+			printk("ERROR: Unable to enter the soft off system state\n");
+		}
+
+		break;
+
+	case ARCH_SHUTDOWN_MODE_REBOOT:
+		status = AcpiReset();
+		if (ACPI_FAILURE(status)) {
+			printk("ERROR: Unable to perform a system reset\n");
+		}
+
+		break;
+
+	case ARCH_SHUTDOWN_MODE_ABORT:
+		break;
 	}
 
-	status = AcpiEnterSleepState(ACPI_STATE_S5);
-	if (ACPI_FAILURE(status)) {
-		printk("ERROR: Unable to enter the soft off system state");
-	}
-
-	error:
+	ipl_disable();
 
 	while (1) {}
 }
-
