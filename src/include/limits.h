@@ -109,5 +109,10 @@
 /* Maximum number of bytes in a pathname, including \0 character */
 #define PATH_MAX 256
 
+/*
+Maximum number of bytes in a character, for any supported locale.
+    Minimum Acceptable Value: 1
+*/
+#define MB_LEN_MAX 1
 
 #endif /* LIMITS_H_ */

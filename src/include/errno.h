@@ -42,6 +42,12 @@
 #define EDEADLK          35    /* Resource deadlock would occur */
 #define EDEADLOCK        EDEADLK
 #define ENOSYS           38    /* Function not implemented */
+
+
+#define EOVERFLOW        40    /* Value too large to be stored in data type. */
+#define E2BIG            41    /* Argument list too long. */
+#define ELOOP            42    /* Too many levels of symbolic links. */
+
 #define ENAMETOOLONG     60    /* File name too long */
 #define ENOTEMPTY        66    /* Directory not empty */
 #define ENOTSUP          95    /* Not supported error */
