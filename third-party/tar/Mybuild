@@ -3,5 +3,5 @@ package third_party.gnu
 @Build(script="$(EXTERNAL_MAKE)")
 module tar {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/")
-	source "src/tar"
+	source "src/tar.o"
 }
