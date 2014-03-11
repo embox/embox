@@ -37,6 +37,7 @@
 #define ENOSPC           28    /* No space left on device */
 #define ESPIPE           29    /* Illegal seek */
 #define EROFS            30    /* Read-only file system */
+#define	EMLINK           31    /* Too many links */
 #define EDOM             33    /* Argument to math function out of domain */
 #define ERANGE           34    /* Math result cannot be represented */
 #define EDEADLK          35    /* Resource deadlock would occur */
@@ -50,6 +51,7 @@
 
 #define ENAMETOOLONG     60    /* File name too long */
 #define ENOTEMPTY        66    /* Directory not empty */
+#define EILSEQ           84    /* Illegal byte sequence */
 #define ENOTSUP          95    /* Not supported error */
 #define EEOF             200   /* End of file reached */
 #define ENOSUPP          201   /* Operation not supported */

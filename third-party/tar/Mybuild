@@ -4,4 +4,6 @@ package third_party.gnu
 module tar {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/")
 	source "src/tar.o"
+
+	@NoRuntime depends embox.compat.posix.fs.dirent
 }

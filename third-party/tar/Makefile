@@ -16,14 +16,17 @@ PKG_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(PKG_URL))
 
 PKG_PATCH := pkg_patch.txt
 
-PKG_CONF_FLAGS:=--build=x86_64-linux-gnu --host=i386-embox-none
-#PKG_CONF_FLAG +=--target=$(EMBOX_IMPORTED_CROSS_COMPILE)
+PKG_CONF_FLAGS:=
+#PKG_CONF_FLAGS+=--build=x86_64-linux-gnu
+PKG_CONF_FLAGS+=--host=i386-embox-none
+#PKG_CONF_FLAG+=--target=$(EMBOX_IMPORTED_CROSS_COMPILE)
 
 
 
 
 EMBOX_IMPORTED_CPPFLAGS :=
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
+EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/tar/tar_embox_compat.h
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
@@ -61,8 +64,6 @@ EMBOX_DERIVED_MAKEFLAGS := $(EMBOX_IMPORTED_MAKEFLAGS)
 
 export CFLAGS    := $(EMBOX_IMPORTED_CFLAGS)
 export CXXFLAGS  := $(EMBOX_IMPORTED_CXXFLAGS)
-#export LDFLAGS  := $(EMBOX_IMPORTED_LDFLAGS)
-export LDFLAGS   := -nostdlib
 
 .PHONY: all build_and_install configure merge_trees
 
