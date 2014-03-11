@@ -39,6 +39,7 @@ extern char _ktask_resource_start, _ktask_resource_end;
 	((size_t)(&_ktask_resource_end - &_ktask_resource_start))
 
 #define TASK_RESOURCE_NOTIFY(fn) \
+	static int fn(struct thread *prev, struct thread *next); \
 	ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd, \
 			task_notifing_resource); \
 	ARRAY_SPREAD_ADD(task_notifing_resource, fn)

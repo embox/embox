@@ -14,7 +14,6 @@
 #include <stddef.h>
 
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
-TASK_RESOURCE_NOTIFY(task_mmap_notify);
 
 static void task_mmap_init(const struct task *task, void *mmap_space) {
 	struct emmap *mmap;
@@ -58,20 +57,6 @@ static const struct task_resource_desc task_mmap_desc = {
 	.resource_size = sizeof(struct emmap),
 	.resource_offset = &task_mmap_offset
 };
-
-static int task_mmap_notify(struct thread *prev, struct thread *next) {
-	struct emmap *mmap;
-
-	assert(prev != NULL);
-	assert(next != NULL);
-
-	mmap = task_resource_mmap(next->task);
-	assert(mmap != NULL);
-
-	mmu_set_context(mmap->ctx);
-
-	return 0;
-}
 
 struct emmap * task_resource_mmap(const struct task *task) {
 	assert(task != NULL);

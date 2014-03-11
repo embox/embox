@@ -42,6 +42,15 @@ module mmap {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module mmap_notify {
+	source "mmap_notify.c"
+
+	@NoRuntime depends embox.arch.mmu
+	@NoRuntime depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.mem.mmap_api
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
 module security {
 	option number security_size
 	source "security.c"
