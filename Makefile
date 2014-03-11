@@ -20,9 +20,10 @@ export SRC_DIR        := $(ROOT_DIR)/src
 export THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 export PLATFORM_DIR   := $(ROOT_DIR)/platform
 export SUBPLATFORM_TEMPLATE_DIR := templates/
-export DOC_DIR        := $(ROOT_DIR)/doc
 
 export BUILD_DIR      := $(ROOT_DIR)/build/base
+
+export DOC_DIR        := $(ROOT_DIR)/build/doc
 
 export BIN_DIR        := $(BUILD_DIR)/bin
 export OBJ_DIR        := $(BUILD_DIR)/obj
