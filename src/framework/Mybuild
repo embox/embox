@@ -14,7 +14,7 @@ module runlevel {
 	source "runlevel.c", "unit.c"
 
 	depends mod
-	depends embox.prom.printf
+	depends embox.lib.Printk
 	depends embox.lib.LibCString
 }
 

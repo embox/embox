@@ -17,7 +17,6 @@
 #include <mem/vmem/vmem_alloc.h>
 #include <kernel/sched/sched_lock.h>
 
-#include "../kernel/task/common.h"
 #include <stdint.h>
 #include <kernel/printk.h>
 

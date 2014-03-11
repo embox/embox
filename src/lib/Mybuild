@@ -30,6 +30,7 @@ static module LibElf {
 static module LibExec {
 	source "exec/exec.c"
 
+	depends embox.kernel.task.resource.mmap
 	depends embox.mem.mmap_api
 	@NoRuntime depends LibElf
 }
