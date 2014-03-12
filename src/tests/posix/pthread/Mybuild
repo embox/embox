@@ -15,3 +15,16 @@ module pthread_policy {
 module pthread_cond {
 	source "pthread_cond_test.c"
 }
+
+module pthread_cond_timedwait_test {
+	source "pthread_cond_timedwait_test.c"
+
+	depends embox.compat.posix.pthreads
+
+	depends embox.kernel.task.api
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sleep_api
+	depends embox.framework.LibFramework
+}
