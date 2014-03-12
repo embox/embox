@@ -69,3 +69,14 @@ module fork_test {
 
 	depends embox.kernel.task.syslib.kfork
 }
+
+@TestFor(embox.compat.posix.util.sleep)
+module sleep_test {
+	source "sleep_test.c"
+
+	depends embox.compat.posix.util.time
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.pthreads
+	depends embox.framework.test
+	depends embox.kernel.task.kernel_task
+}
