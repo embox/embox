@@ -108,18 +108,17 @@ module_get_files = \
 #
 #	Take next step.
 #
+
+filter_static_reacheables=$(get $1.depends)
 define filter_static_modules
-	$(with ,,$(strip $(foreach m,$1,$(if $(get $(get m->type).isStatic),$m))),
-		$(if $(or $2,$3),
-			$(if $2,
-				$(if $(filter $(get $(firstword $2).depends),$3),
-					$(call $0,$1,$(filter $(get $(firstword $2).depends),$3) $2,
-						$(filter-out $(get $(firstword $2).depends),$3)),
-					$(if $(filter $(get $(firstword $2).depends),$2),
-						$(call $0,$1,$(wordlist 2,$(words $2),$2) $(firstword $2),$3),
-						$(call $0,$(firstword $2) $1,$(wordlist 2,$(words $2),$2),$3))),
-				$(call $0,$1,$(firstword $3),$(wordlist 2,$(words $3),$3))),
-			$1))
+	$(call topsort,$(strip $(foreach m,$1,$(if $(get $(get m->type).isStatic),$m))),filter_static_reacheables)
+endef
+
+# Performs topological sort of library modules.
+# 1. Vertexes
+# 2. Function of one argument returning vertex's reacheable vertex
+define topsort
+	$(shell echo $(foreach v,$1,$(foreach e,$(call $2,$v) $v,$v $e)) | $(TSORT) | $(TAC))
 endef
 
 $(def_all)
