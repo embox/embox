@@ -30,7 +30,8 @@ TEST_CASE("one sleep") {
 
 	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
-	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
+	epsilon = abs((int) (clock() - cur_time)
+			- (int) (TIME_TO_SLEEP / USEC_PER_MSEC));
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
 
