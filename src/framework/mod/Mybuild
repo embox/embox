@@ -1,6 +1,12 @@
 package embox.framework
 
-module mod {
+@DefaultImpl(mod_full)
+abstract module mod { }
+
+module mod_full extends mod {
+
+	source "embuild_full_impl.h"
+
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
@@ -16,3 +22,14 @@ module mod {
 
 	option boolean security_label = true
 }
+
+module mod_light extends mod {
+
+	source "embuild_light_impl.h"
+
+	@DefineMacro("__EMBUILD__")
+	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject-light.mk")
+	source "depsinject.c"
+}
+
+
