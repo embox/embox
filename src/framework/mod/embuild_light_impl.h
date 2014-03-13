@@ -9,13 +9,9 @@
 #ifndef FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 #define FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 
-#if 0
-#include <util/array.h>
-
-#include "decls.h"
-#include "types.h"
-#include "options.h"
-#endif
+#include <framework/mod/decls.h>
+#include <framework/mod/types.h>
+#include <framework/mod/options.h>
 
 #define __MOD_DEF(mod_nm, package_nm, mod_name)
 
@@ -38,13 +34,26 @@
 	}
 
 /**
- * Defines a new package.
- *
- * @param package_nm
- *   Variable name to use.
- * @param package_name
- *   A string containing the package name.
+ * App-specific definitions.
+ * @param mod_nm
  */
+#define MOD_APP_DEF(mod_nm) \
+	extern char __module_ ## mod_nm ## _data_vma; \
+	extern char __module_ ## mod_nm ## _data_len; \
+	extern char __module_ ## mod_nm ## _bss_vma;  \
+	extern char __module_ ## mod_nm ## _bss_len;  \
+	const struct mod_app __MOD_APP(mod_nm) = { \
+		.data    =          &__module_ ## mod_nm ## _data_vma, \
+		.data_sz = (size_t) &__module_ ## mod_nm ## _data_len, \
+		.bss     =          &__module_ ## mod_nm ## _bss_vma,  \
+		.bss_sz  = (size_t) &__module_ ## mod_nm ## _bss_len,  \
+	}
+
+#define MOD_DEP_DEF(mod_nm, dep_nm)
+#define MOD_CONTENTS_DEF(mod_nm, content_nm)
+#define MOD_AFTER_DEP_DEF(mod_nm, dep_nm)
 #define MOD_PACKAGE_DEF(package_nm, package_name)
+#define MOD_LABEL_DEF(mod_nm)
+#define MOD_SEC_LABEL_DEF(mod_nm)
 
 #endif /* FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_ */

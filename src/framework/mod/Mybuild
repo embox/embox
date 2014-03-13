@@ -1,7 +1,6 @@
 package embox.framework
 
 module mod {
-	source "embuild_full_impl.h"
 
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")

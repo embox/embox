@@ -20,7 +20,7 @@
 	generic__runlevel##nr
 
 #define RUNLEVEL_MOD_DEF(nr) \
-	extern const struct mod __MOD(__RUNLEVEL_MOD_NAME(nr)); \
+	extern const struct mod __MOD(__RUNLEVEL_MOD_NAME(nr)) __attribute__((weak)); \
 	__MOD_INFO_DEF(__RUNLEVEL_MOD_NAME(nr), &__runlevel_mod_ops, nr)
 
 #define __RUNLEVEL_MOD_REF(nr) \
