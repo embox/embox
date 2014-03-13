@@ -45,7 +45,7 @@ typedef int (*mod_op_t)(const struct mod_info *self);
  * @retval nonzero
  *   On error.
  */
-typedef int (*mod_member_op_t)(struct mod_member *member);
+typedef int (*mod_member_op_t)(const struct mod_member *member);
 
 /**
  * Module operations.

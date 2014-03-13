@@ -35,7 +35,7 @@
 #define mod_self __MOD(__EMBUILD_MOD__)
 
 /** The #mod structure corresponding to the self mod. */
-extern const struct mod mod_self;
+extern struct mod mod_self __attribute__((weak));
 
 /**
  * Binds the specified mod data and operations to the self mod.
