@@ -1,10 +1,6 @@
 package embox.framework
 
-@DefaultImpl(mod_full)
-abstract module mod { }
-
-module mod_full extends mod {
-
+module mod {
 	source "embuild_full_impl.h"
 
 	/*FIXME mybuild make flags options */
@@ -21,22 +17,21 @@ module mod_full extends mod {
 	depends embox.util.Array
 
 	option boolean security_label = true
+
+	depends embuild
 }
 
-module mod_light extends mod {
+@DefaultImpl(embuild_full)
+abstract module embuild { }
+
+module embuild_full extends embuild {
 
 	source "embuild_full_impl.h"
 
-	source "core_light.c"
-
-	@DefineMacro("__EMBUILD__")
-	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject-light.mk")
-	source "depsinject.c"
-
-	@Generated(script="$(MAKE) -f mk/script/lds-apps.mk")
-	source "apps.lds.S"
-
-	depends embox.util.Array
-
 	option boolean security_label = true
+}
+
+module embuild_light extends mod {
+
+	source "embuild_light_impl.h"
 }
