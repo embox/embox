@@ -25,11 +25,18 @@ module mod_full extends mod {
 
 module mod_light extends mod {
 
-	source "embuild_light_impl.h"
+	source "embuild_full_impl.h"
+
+	source "core_light.c"
 
 	@DefineMacro("__EMBUILD__")
 	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject-light.mk")
 	source "depsinject.c"
+
+	@Generated(script="$(MAKE) -f mk/script/lds-apps.mk")
+	source "apps.lds.S"
+
+	depends embox.util.Array
+
+	option boolean security_label = true
 }
-
-

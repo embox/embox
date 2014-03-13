@@ -76,7 +76,8 @@
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 
-#if OPTION_MODULE_GET(embox__framework__mod_full, BOOLEAN, security_label)
+#if OPTION_MODULE_DEFINED(embox__framework__mod_full, BOOLEAN, security_label) \
+	&& OPTION_MODULE_GET(embox__framework__mod_full, BOOLEAN, security_label)
 
 #define MOD_LABEL_DEF(mod_nm) \
 	/* extern char __module_ ## mod_nm ## _text_vma;  */\
