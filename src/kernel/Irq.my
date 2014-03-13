@@ -1,6 +1,14 @@
 package embox.kernel
 
-module irq {
+abstract module irq_api {
+
+}
+module irq_static extends irq_api {
+	source "irq_static.c"
+	source "irq_static.h"
+}
+
+module irq extends irq_api {
 	source "irq.c"
 	depends irq_lock
 	depends irq_stack
