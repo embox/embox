@@ -101,9 +101,9 @@ void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
 static inline void lapic_enable_in_msr(void) {
 	uint32_t msr_hi, msr_lo;
 
-	ia32_msr_read(IA32_APIC_BASE, &msr_hi, &msr_lo);
+	ia32_msr_read(IA32_APIC_BASE, &msr_lo, &msr_hi);
 	msr_lo |= (1 << IA32_APIC_BASE_ENABLE_BIT);
-	ia32_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
+	ia32_msr_write(IA32_APIC_BASE, msr_lo, msr_hi);
 }
 
 int lapic_enable(void) {
