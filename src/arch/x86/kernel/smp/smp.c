@@ -83,16 +83,6 @@ static inline void cpu_start(int cpu_id) {
 
 	lapic_send_init_ipi(cpu_id);
 
-	for (int i = 0; i < 20000; i++) {
-		__asm__ __volatile__ ("nop");
-	}
-
-	lapic_send_init_ipi(cpu_id);
-
-	for (int i = 0; i < 20000; i++) {
-		__asm__ __volatile__ ("nop");
-	}
-
 	ap_ack = 0;
 	lapic_send_startup_ipi(cpu_id, TRAMPOLINE_ADDR);
 	while (!ap_ack)
@@ -100,13 +90,14 @@ static inline void cpu_start(int cpu_id) {
 }
 
 static int unit_init(void) {
-	int self_id = lapic_id();
+	int i, self_id;
 
 	/* Initialize trampoline for the APs */
 	init_trampoline();
 
 	/* Start all CPUs */
-	for (int i = 0; i < NCPU; i++) {
+	self_id = cpu_get_id();
+	for (i = 0; i < NCPU; i++) {
 		if (i != self_id)
 			cpu_start(i);
 	}
