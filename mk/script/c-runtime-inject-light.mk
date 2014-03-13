@@ -5,21 +5,12 @@
 
 include mk/script/script-common.mk
 
-mod_inst_get_deps=$(filter-out $(call get,$1,noRuntimeDepends),$(call get,$1,$2))
-
-_mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
-
 _build_modules:=$(call get,$(build_model),modules)
-_build_modules_topsorted:=$(call topsort,$(_build_modules),_mod_inst_get_deps)
-
-ifneq ($(words $(_build_modules)),$(words $(_build_modules_topsorted)))
-$(error error $(_build_modules) $(\n)$(words $(_build_modules))$(\n) $(_build_modules_topsorted)$(\n)$(words $(_build_modules_topsorted))$(\n) $(filter-out $(_build_modules_topsorted),$(_build_modules)))
-endif
 
 mod_inst_fqn=$(call get,$(call get,$1,type),qualifiedName)
 # f.q.n.obj
 modules := \
-	$(foreach m,$(_build_modules_topsorted), \
+	$(foreach m,$(_build_modules), \
 		$(call get,$(call get,$m,type),qualifiedName)$m)
 
 # f.q.n
@@ -61,10 +52,12 @@ str_escape = \
 
 fqn2id = $(subst .,__,$1)
 
+mod_inst_get_deps=$(filter-out $(call get,$1,noRuntimeDepends),$(call get,$1,$2))
+
 # 1. Module
 # 2. depends/afterDepends
 get_deps = \
-	$(call get,$(call get,$(call module_instance_get_deps,$1,$2),type),qualifiedName)
+	$(call get,$(call get,$(call mod_inst_get_deps,$1,$2),type),qualifiedName)
 
 mod_inst_runlevel=$(or $(call annotation_value,$(call get,$m,includeMember),$(my_rl_value)),2)
 
@@ -82,7 +75,10 @@ mod_def = \
 # 2. Already loaded modules
 # 3. Modules to be loaded at this runlevel
 _gen_mod_runlevels = $(foreach m,$3,$(info $(call mod_def,$(call mod_inst_fqn,$m)))) \
+	$(info $(call mod_def,generic.runlevel$(firstword $1))) \
 	$(call gen_mod_runlevels,$(call nofirstword,$1),$2 $3)
+
+_mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
 
 # Generate modules defs in right order according runlevel and dependencies
 # 1. List of runlevels to generated
@@ -113,6 +109,33 @@ $(info /* Module definitions. */)
 $(call gen_mod_runlevels,0 1 2 3,)
 $(info )
 
-$(info /* Runlevel modules. */)
-$(foreach n,$(addprefix generic.runlevel,0 1 2 3),$(info $(call mod_def,$n)))
+$(info /* Security labels. */)
+$(foreach m,$(modules),$(foreach n,$(basename $m), \
+	$(info MOD_LABEL_DEF($(call fqn2id,$n));) \
+	$(info MOD_SEC_LABEL_DEF($(call fqn2id,$n));)))
 $(info )
+
+$(info /* Applications. */)
+$(foreach m,$(app_modules),$(foreach n,$(basename $m), \
+	$(info MOD_APP_DEF($(call fqn2id,$n));)))
+$(info )
+
+$(info /* Commands. */)
+$(foreach m,$(cmd_modules),$(foreach n,$(basename $m), \
+	$(info MOD_CMD_DEF($(call fqn2id,$n), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_name))), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
+$(info )
+
+$(info /* Dependencies. */)
+$(foreach m,$(modules),$(foreach n,$(basename $m), \
+	$(foreach d,$(call get_deps,$m,depends), \
+		$(info MOD_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
+	$(foreach d,$(call get_deps,$m,afterDepends), \
+		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
+	$(foreach r,generic.runlevel$(or $(call annotation_value, \
+					$(call get,$m,includeMember),$(my_rl_value)),2), \
+		$(info MOD_CONTENTS_DEF($(call fqn2id,$r), $(call fqn2id,$n));))))
+$(info )
+
