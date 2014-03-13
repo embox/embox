@@ -29,8 +29,8 @@
 		.mod = &__MOD(__RUNLEVEL_MOD(nr)), \
 	}
 
-static int rl_mod_enable(struct mod_info *mod_info);
-static int rl_mod_disable(struct mod_info *mod_info);
+static int rl_mod_enable(const struct mod_info *mod_info);
+static int rl_mod_disable(const struct mod_info *mod_info);
 
 const struct mod_ops __runlevel_mod_ops = {
 	.enable = rl_mod_enable,
@@ -55,7 +55,7 @@ static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = {
 
 static runlevel_nr_t init_level = -1, fini_level = -1;
 
-static int rl_mod_enable(struct mod_info *mod_info) {
+static int rl_mod_enable(const struct mod_info *mod_info) {
 	int ret;
 	int level = (runlevel_nr_t) mod_info->data;
 	const struct mod *rl_mod = runlevels[level].mod;
@@ -79,7 +79,7 @@ static int rl_mod_enable(struct mod_info *mod_info) {
 	return 0;
 }
 
-static int rl_mod_disable(struct mod_info *mod_info) {
+static int rl_mod_disable(const struct mod_info *mod_info) {
 	int ret;
 	int level = (runlevel_nr_t) mod_info->data;
 

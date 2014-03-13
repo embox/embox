@@ -30,7 +30,7 @@ struct mod_member;
  * @retval nonzero
  *   On error.
  */
-typedef int (*mod_op_t)(struct mod_info *self);
+typedef int (*mod_op_t)(const struct mod_info *self);
 
 /**
  * Performs an injection of the specified member. The semantics of the

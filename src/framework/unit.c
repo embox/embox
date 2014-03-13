@@ -14,15 +14,15 @@
 
 #include <embox/unit.h>
 
-static int unit_mod_enable(struct mod_info *mod_info);
-static int unit_mod_disable(struct mod_info *mod_info);
+static int unit_mod_enable(const struct mod_info *mod_info);
+static int unit_mod_disable(const struct mod_info *mod_info);
 
 const struct mod_ops __unit_mod_ops = {
 	.enable  = &unit_mod_enable,
 	.disable = &unit_mod_disable,
 };
 
-static int unit_mod_enable(struct mod_info *mod_info) {
+static int unit_mod_enable(const struct mod_info *mod_info) {
 	int ret = 0;
 	struct unit *unit = (struct unit *) mod_info->data;
 
@@ -41,7 +41,7 @@ static int unit_mod_enable(struct mod_info *mod_info) {
 	return ret;
 }
 
-static int unit_mod_disable(struct mod_info *mod_info) {
+static int unit_mod_disable(const struct mod_info *mod_info) {
 	int ret = 0;
 	struct unit *unit = (struct unit *) mod_info->data;
 
