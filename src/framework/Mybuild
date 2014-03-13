@@ -8,10 +8,22 @@ module LibFramework {
 	depends cmd, mod, test, runlevel
 }
 
-module runlevel {
+@DefaultImpl(runlevel_full)
+abstract module runlevel { }
+
+module runlevel_full extends runlevel {
 	@DefineMacro("__FRAMEWORK__")
 	/*FIXME mybuild make flags options */
 	source "runlevel.c", "unit.c"
+
+	depends mod
+	depends embox.lib.Printk
+	depends embox.lib.LibCString
+}
+
+module runlevel_light extends runlevel {
+	@DefineMacro("__FRAMEWORK__")
+	source "runlevel_light.c", "unit.c"
 
 	depends mod
 	depends embox.lib.Printk
