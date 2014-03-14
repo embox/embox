@@ -31,11 +31,16 @@
 
 #define __MOD_DEF(mod_nm) \
 	struct __mod_private __MOD_PRIVATE(mod_nm); \
-	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) __attribute__((weak)); \
 	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL); \
+	extern const struct mod_app __MOD_APP(mod_nm) \
+			__attribute__ ((weak)); \
+	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) \
+			__attribute__((weak)); \
+	\
 	extern const struct mod __MOD(mod_nm); \
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
+	\
 	ARRAY_SPREAD_DECLARE(const struct mod *,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
