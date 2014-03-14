@@ -15,15 +15,22 @@
 
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const struct cmd, __cmd_registry);
+ARRAY_SPREAD_DEF(const struct cmd *, __cmd_registry);
+
 extern void getopt_init(void);
+
+#include <util/member.h>
+static inline const struct cmd_mod *__cmd_mod(const struct cmd *cmd) {
+	return member_cast_out(cmd, const struct cmd_mod, cmd);
+}
+
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
 
 	if (!cmd)
 		return -EINVAL;
 
-	err = mod_activate_app(cmd->mod);
+	err = mod_activate_app(&__cmd_mod(cmd)->mod);
 	if (err)
 		return err;
 

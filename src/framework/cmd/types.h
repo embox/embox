@@ -18,11 +18,20 @@
  */
 typedef int (*cmd_exec_t)(int argc, char **argv);
 
-struct cmd {
-	cmd_exec_t exec;
-	/** The corresponding mod. */
-	const struct mod *mod;
+struct cmd_desc {
+	const char *name;
+	const char *brief;
+	const char *details;
 };
 
+struct cmd {
+	struct cmd_desc desc;
+	cmd_exec_t exec;
+};
+
+struct cmd_mod {
+	struct mod mod;
+	struct cmd cmd;
+};
 
 #endif /* FRAMEWORK_CMD_TYPES_H_ */
