@@ -15,12 +15,29 @@
 #include <stddef.h>
 #include <framework/mod/self.h>
 
+/**
+ * Unit init/fini operations signature.
+ *
+ * @return error code
+ * @retval 0 on success
+ * @retval nonzero on operation failure
+ */
+typedef int (*unit_op_t)(void);
+
+struct unit {
+	struct mod mod;
+	unit_op_t init;
+	unit_op_t fini;
+};
+
+extern const struct mod_ops __unit_mod_ops;
+
 #define __EMBOX_UNIT(_init, _fini) \
-	static const struct unit __unit = { \
-		.init = _init, \
-		.fini = _fini, \
-	}; \
-	MOD_INFO_BIND(&__unit_mod_ops, &__unit)
+	const struct unit mod_self = { \
+		.mod = MOD_SELF_INIT(&__unit_mod_ops), \
+		.init = _init,   \
+		.fini = _fini,   \
+	}
 
 #define EMBOX_UNIT(_init, _fini) \
 	static int _init(void); \
@@ -34,22 +51,6 @@
 #define EMBOX_UNIT_FINI(_fini) \
 	static int _fini(void); \
 	__EMBOX_UNIT(NULL, _fini)
-
-extern const struct mod_ops __unit_mod_ops;
-
-/**
- * Unit init/fini operations signature.
- *
- * @return error code
- * @retval 0 on success
- * @retval nonzero on operation failure
- */
-typedef int (*unit_op_t)(void);
-
-struct unit {
-	unit_op_t init;
-	unit_op_t fini;
-};
 
 #ifdef __CDT_PARSER__
 
