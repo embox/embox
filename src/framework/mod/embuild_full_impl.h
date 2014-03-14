@@ -13,6 +13,7 @@
 
 #include <framework/mod/decls.h>
 #include <framework/mod/types.h>
+#include <framework/mod/self.h>
 #include <framework/mod/options.h>
 
 #define __MOD_DEF(mod_nm, package_nm, mod_name) \
@@ -34,6 +35,7 @@
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL);                         \
 	extern const struct mod __MOD(mod_nm);                        \
+	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(NULL);\
 	ARRAY_SPREAD_DECLARE(const struct mod *,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
