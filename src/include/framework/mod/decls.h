@@ -40,5 +40,6 @@
 
 #define __MOD_BUILDINFO(mod_nm)  MACRO_CONCAT(__mod_buildinfo__,  mod_nm)
 
+#define __RUNLEVEL_LAST_MODULE(nr) MACRO_CONCAT(__runlevel_last_module, nr)
 
 #endif /* FRAMEWORK_MOD_DECLS_H_ */

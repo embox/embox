@@ -13,86 +13,94 @@
 
 #include <framework/mod/api.h>
 
+#include <util/array.h>
 #include <framework/mod/self.h>
 #include <kernel/panic.h>
 
-#define __RUNLEVEL_MOD_NAME(nr) \
-	generic__runlevel##nr
-
-#define RUNLEVEL_MOD_DEF(nr) \
-	extern const struct mod __MOD(__RUNLEVEL_MOD_NAME(nr)) __attribute__((weak)); \
-	__MOD_INFO_DEF(__RUNLEVEL_MOD_NAME(nr), &__runlevel_mod_ops, nr)
-
-#define __RUNLEVEL_MOD_REF(nr) \
-	__MOD(__RUNLEVEL_MOD_NAME(nr))
-
 static runlevel_nr_t init_level = -1;
 
-struct runlevel_mod {
-	struct mod mod;
-	runlevel_nr_t nr;
-};
+extern const struct mod *__RUNLEVEL_LAST_MODULE(0), *__RUNLEVEL_LAST_MODULE(1),
+       *__RUNLEVEL_LAST_MODULE(2), *__RUNLEVEL_LAST_MODULE(3);
 
-static int rl_mod_enable(const struct mod *mod) {
-	int rl_level = ((struct runlevel_mod *) mod)->nr;
-
-	init_level = rl_level;
-	printk("runlevel: init level is %d\n", init_level);
-
-	return 0;
-}
-
-static int rl_mod_disable(const struct mod *mod) {
-	int rl_level = ((struct runlevel_mod *) mod)->nr;
-
-	init_level = rl_level - 1;
-	printk("runlevel: init level is %d\n", init_level);
-
-	return 0;
-}
-
-static const struct mod_ops __runlevel_mod_ops = {
-	.enable = rl_mod_enable,
-	.disable = rl_mod_disable
-};
-
-RUNLEVEL_MOD_DEF(0);
-RUNLEVEL_MOD_DEF(1);
-RUNLEVEL_MOD_DEF(2);
-RUNLEVEL_MOD_DEF(3);
-
-static const struct mod *runlevel_mod[RUNLEVEL_NRS_TOTAL] = {
-	&__RUNLEVEL_MOD_REF(0),
-	&__RUNLEVEL_MOD_REF(1),
-	&__RUNLEVEL_MOD_REF(2),
-	&__RUNLEVEL_MOD_REF(3),
+static const struct mod **last_module_at_runlevel[RUNLEVEL_NRS_TOTAL] __attribute__((used)) = {
+	&__RUNLEVEL_LAST_MODULE(0),
+	&__RUNLEVEL_LAST_MODULE(1),
+	&__RUNLEVEL_LAST_MODULE(2),
+	&__RUNLEVEL_LAST_MODULE(3),
 };
 
 runlevel_nr_t runlevel_get_entered(void) {
 	return init_level;
 }
 
+static const struct mod **mod_order_place(const struct mod *mod) {
+	const struct mod **modp;
+
+	array_spread_foreach_ptr(modp, __mod_registry) {
+		if (*modp == mod) {
+			return modp;
+		}
+	}
+	return NULL;
+}
+
+static const struct mod *mod_last_by_level(runlevel_nr_t nr) {
+	int level = nr;
+
+	while (level >= 0 && !*last_module_at_runlevel[level]) {
+		level --;
+	}
+
+	return level >= 0 ? *last_module_at_runlevel[level] : NULL;
+}
+
+static void runlevel_mod_checkin(const struct mod *mod) {
+
+	/*
+	printk("runlevel: init level is %d\n", init_level);
+	*/
+}
+
 int runlevel_set(runlevel_nr_t level) {
-	const struct mod *const volatile*start_mod;
+	const struct mod *const volatile*start_mod, *const volatile*end_mod;
+	const struct mod *base_mod, *target_mod;
 	int ret;
 
 	if (!runlevel_nr_valid(level)) {
 		return -EINVAL;
 	}
 
-	if (init_level < 0) {
-		start_mod = __mod_registry;
-	} else {
-		panic("Can't start from not-negaitve runlevel");
-	}
+	base_mod = mod_last_by_level(init_level);
+	target_mod = mod_last_by_level(level);
 
-	do {
-		ret = mod_enable(*start_mod);
-		if (ret) {
-			return ret;
+
+	if (level > init_level) {
+
+		start_mod = !base_mod ? __mod_registry : mod_order_place(base_mod);
+		end_mod = !target_mod ? NULL : mod_order_place(target_mod);
+
+		for (; start_mod <= end_mod; start_mod++) {
+
+			if ((ret = mod_enable(*start_mod))) {
+				return ret;
+			}
+
+			runlevel_mod_checkin(*start_mod);
 		}
-		start_mod ++;
-	} while (*start_mod != runlevel_mod[level]);
+	} else {
+
+		start_mod = !base_mod ? NULL : mod_order_place(base_mod);
+		end_mod = !target_mod ? __mod_registry : mod_order_place(target_mod);
+
+		for (; end_mod < start_mod; start_mod--) {
+
+			if ((ret = mod_disable(*start_mod--))) {
+				return ret;
+			}
+
+			runlevel_mod_checkin(*start_mod);
+		}
+	}
 
 	return 0;
 }

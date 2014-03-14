@@ -18,7 +18,6 @@
 
 #include <framework/cmd/types.h>
 
-
 /**
  * Defines a new package.
  *
@@ -28,6 +27,10 @@
  *   A string containing the package name.
  */
 #define MOD_PACKAGE_DEF(package_nm, package_name)
+
+#define RUNLEVEL_DEF(nr, last_mod) \
+	extern const struct mod __MOD(last_mod) __attribute__((weak)); \
+	const struct mod *__RUNLEVEL_LAST_MODULE(nr) = &__MOD(last_mod)
 
 #define __MOD_DEF(mod_nm) \
 	struct __mod_private __MOD_PRIVATE(mod_nm); \

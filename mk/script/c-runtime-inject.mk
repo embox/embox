@@ -72,12 +72,18 @@ runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
 mod_def = \
 	MOD_DEF($(call fqn2id,$(basename $1)), "$(basename $1)", $(subst .,,$(suffix $1)));
 
+runlevel_def = \
+	RUNLEVEL_DEF($1, $2);
+
+val_or_null = $(if $1,$1,generic__notexisting)
+
 # Call info for every new module in this runlevel
 # 1. Runlevels to generate
 # 2. Already loaded modules
 # 3. Modules to be loaded at this runlevel
 _gen_mod_runlevels = $(foreach m,$3,$(info $(call mod_def,$(call mod_inst_fqn,$m)))) \
-	$(info $(call mod_def,generic.runlevel$(firstword $1))) \
+	$(info $(call runlevel_def,$(firstword $1),$(call val_or_null,$(strip \
+			$(call fqn2id,$(call mod_inst_fqn,$(lastword $3))))))) \
 	$(call gen_mod_runlevels,$(call nofirstword,$1),$2 $3)
 
 _mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
@@ -136,9 +142,6 @@ $(foreach m,$(modules),$(foreach n,$(basename $m), \
 	$(foreach d,$(call get_deps,$m,depends), \
 		$(info MOD_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
 	$(foreach d,$(call get_deps,$m,afterDepends), \
-		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
-	$(foreach r,generic.runlevel$(or $(call annotation_value, \
-					$(call get,$m,includeMember),$(my_rl_value)),2), \
-		$(info MOD_CONTENTS_DEF($(call fqn2id,$r), $(call fqn2id,$n));))))
+		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));))))
 $(info )
 
