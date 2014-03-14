@@ -16,6 +16,7 @@
 #include <framework/mod/self.h>
 #include <framework/mod/options.h>
 
+#if 0
 #define __MOD_DEF(mod_nm, package_nm, mod_name) \
 	extern const struct mod_cmd __MOD_CMD(mod_nm)                 \
 			__attribute__ ((weak));                               \
@@ -39,6 +40,17 @@
 	ARRAY_SPREAD_DECLARE(const struct mod *,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
+#else
+
+#define __MOD_DEF(mod_nm, package_nm, mod_name) \
+	extern const struct mod __MOD(mod_nm); \
+	__MOD_SELF_INIT_DECLS(, mod_nm); \
+	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL);\
+	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+			__mod_registry);                      \
+	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
+
+#endif
 
 #if OPTION_MODULE_DEFINED(embox__framework__mod_full, BOOLEAN, security_label) \
 	&& OPTION_MODULE_GET(embox__framework__mod_full, BOOLEAN, security_label)
@@ -136,11 +148,17 @@
  *   Symbol name of the module on which @a mod_nm depends.
  */
 #define MOD_DEP_DEF(mod_nm, dep_nm) \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_REQUIRES(mod_nm), NULL);                        \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_PROVIDES(mod_nm), NULL);                        \
 	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \
 	ARRAY_SPREAD_ADD(__MOD_PROVIDES(dep_nm), &__MOD(mod_nm))
 
 
 #define MOD_CONTENTS_DEF(mod_nm, content_nm) \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_CONTENTS(mod_nm), NULL);                        \
 	ARRAY_SPREAD_ADD(__MOD_CONTENTS(mod_nm), &__MOD(content_nm))
 
 
@@ -154,6 +172,8 @@
  *   after @a mod_nm
  */
 #define MOD_AFTER_DEP_DEF(mod_nm, dep_nm) \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_AFTER_DEPS(mod_nm), NULL);                      \
 	ARRAY_SPREAD_ADD(__MOD_AFTER_DEPS(mod_nm), &__MOD(dep_nm)); \
 
 

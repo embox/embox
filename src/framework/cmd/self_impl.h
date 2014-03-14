@@ -14,12 +14,15 @@
 #include <util/array.h>
 #include <framework/mod/self.h>
 
+#include <framework/cmd/api.h>
+
 #include "types.h"
 
 #define __EMBOX_CMD(_exec) \
+	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__); \
 	static int _exec(int argc, char **argv);   \
 	struct cmd_mod mod_self = {                \
-		.mod = MOD_SELF_INIT(NULL),            \
+		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, NULL), \
 		.cmd = {                               \
 			.exec = _exec,                     \
 		}                                      \

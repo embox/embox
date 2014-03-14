@@ -37,10 +37,18 @@
 /** The #mod structure corresponding to the self mod. */
 //extern struct mod mod_self __attribute__((weak));
 
-#define MOD_SELF_INIT(_ops) { \
+#define __MOD_SELF_INIT_DECLS(_modificators, _mod_nm) \
+	_modificators struct __mod_private __MOD_PRIVATE(_mod_nm)
+
+#define MOD_SELF_INIT_DECLS(_mod_nm) \
+	__MOD_SELF_INIT_DECLS(extern, _mod_nm)
+
+#define MOD_SELF_INIT(_mod_nm, _ops) { \
+	.priv = &__MOD_PRIVATE(_mod_nm), \
 	.ops = _ops, \
 }
 
+#if 1
 /**
  * Binds the specified mod data and operations to the self mod.
  *
@@ -66,6 +74,7 @@
 		_ops,                             \
 		(void *) _data,                   \
 	}
+#endif
 #endif
 
 /**

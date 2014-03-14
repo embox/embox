@@ -17,13 +17,14 @@
 
 #include __impl_x(framework/example/types.h) /* TODO this is external API header */
 
-#define EMBOX_EXAMPLE(_exec)                                   \
-	extern const struct mod_ops __example_mod_ops;             \
-	static int _exec(int argc, char **argv);                   \
-	struct example_mod mod_self = {                            \
-		.mod = MOD_SELF_INIT(&__example_mod_ops),               \
-		.example = __EMBOX_EXAMPLE_INIT(_exec),                 \
-	};                                                         \
+#define EMBOX_EXAMPLE(_exec)                                      \
+	extern const struct mod_ops __example_mod_ops;                \
+	static int _exec(int argc, char **argv);                      \
+	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                         \
+	struct example_mod mod_self = {                               \
+		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__example_mod_ops),\
+		.example = __EMBOX_EXAMPLE_INIT(_exec),                   \
+	};                                                            \
 	EXAMPLE_ADD(&mod_self.example)
 
 #ifndef __cplusplus

@@ -22,6 +22,8 @@ struct mod_member;
 struct mod {
 	const struct mod_ops *ops;
 
+	struct __mod_private     *priv; /**< Used by dependency resolver. */
+
 	/** Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires,
 		  *volatile const *provides; /**< Modules, that this module depends on;
@@ -30,19 +32,13 @@ struct mod {
 	const struct mod *volatile const *contents;  /**< Contained in this module. */
 
 	/* Descriptive information about the module provided by Embuild. */
-
 	const struct mod_package *package; /**< Definition package. */
 	const char *name;                  /**< Name assigned by EMBuild. */
-
 	const struct mod_label   *label;   /**< (optional) Security. */
 
 	/* Data used to properly enable/disable the module itself. */
-
-	const struct mod_info    *info;    /**< (optional) Application specific. */
 	const struct mod_app     *app;     /**< (optional) Application specific. */
 	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
-	struct __mod_private     *priv; /**< Used by dependency resolver. */
-
 };
 
 struct __mod_section {
