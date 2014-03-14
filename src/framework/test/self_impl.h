@@ -35,7 +35,7 @@
 			__TEST_FIXTURE_OP(case_setup),                           \
 			__TEST_FIXTURE_OP(case_teardown);                        \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
-	static const struct test_mod mod_self = {                        \
+	const struct test_mod mod_self = {                               \
 		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops),      \
 		.suite = {                                                   \
 			.private = &test_private_nm,                             \

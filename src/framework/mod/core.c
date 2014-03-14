@@ -156,7 +156,9 @@ int mod_enable(const struct mod *mod) {
 	}
 
 	if (mod->ops && mod->ops->enable) {
-		mod->ops->enable(mod);
+		if (mod->ops->enable(mod)) {
+			goto opfailed;
+		}
 	}
 
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
@@ -175,7 +177,9 @@ int mod_disable(const struct mod *mod) {
 	}
 
 	if (mod->ops && mod->ops->disable) {
-		mod->ops->disable(mod);
+		if (mod->ops->disable(mod)) {
+			goto opfailed;
+		}
 	}
 
 	array_spread_nullterm_foreach(member, mod->members) {
