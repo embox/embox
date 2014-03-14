@@ -15,12 +15,13 @@ struct mod;
 struct mod_package;
 struct __mod_private;
 
-struct mod_info;
-struct mod_cmd;
+struct mod_ops;
 struct mod_app;
 struct mod_member;
 
 struct mod {
+	const struct mod_ops *ops;
+
 	/** Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires,
 		  *volatile const *provides; /**< Modules, that this module depends on;
@@ -38,7 +39,6 @@ struct mod {
 	/* Data used to properly enable/disable the module itself. */
 
 	const struct mod_info    *info;    /**< (optional) Application specific. */
-	const struct mod_cmd     *cmd;     /**< (optional) Application specific. */
 	const struct mod_app     *app;     /**< (optional) Application specific. */
 	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
 	struct __mod_private     *priv; /**< Used by dependency resolver. */
@@ -60,12 +60,6 @@ struct mod_label {
 struct mod_sec_label {
 	struct mod_label  label;
 	const struct mod *mod;
-};
-
-struct mod_cmd {
-	const char *name;
-	const char *brief;
-	const char *details;
 };
 
 struct mod_app {

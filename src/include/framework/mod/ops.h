@@ -12,7 +12,6 @@
 #define FRAMEWORK_MOD_OPS_H_
 
 struct mod;
-struct mod_info;
 struct mod_member;
 
 /**
@@ -30,7 +29,7 @@ struct mod_member;
  * @retval nonzero
  *   On error.
  */
-typedef int (*mod_op_t)(const struct mod_info *self);
+typedef int (*mod_op_t)(const struct mod *self);
 
 /**
  * Performs an injection of the specified member. The semantics of the

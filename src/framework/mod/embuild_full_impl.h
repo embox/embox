@@ -16,8 +16,6 @@
 #include <framework/mod/options.h>
 
 #define __MOD_DEF(mod_nm, package_nm, mod_name) \
-	extern const struct mod_info __MOD_INFO(mod_nm)               \
-			__attribute__ ((weak));                               \
 	extern const struct mod_cmd __MOD_CMD(mod_nm)                 \
 			__attribute__ ((weak));                               \
 	extern const struct mod_app __MOD_APP(mod_nm)                 \
@@ -35,21 +33,7 @@
 			__MOD_CONTENTS(mod_nm), NULL);                        \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL);                         \
-	static struct __mod_private __MOD_PRIVATE(mod_nm);            \
-	const struct mod __MOD(mod_nm) = {            \
-		.priv       = &__MOD_PRIVATE(mod_nm),     \
-		.info       = &__MOD_INFO(mod_nm),        \
-		.package    = &__MOD_PACKAGE(package_nm), \
-		.cmd        = &__MOD_CMD(mod_nm),         \
-		.app        = &__MOD_APP(mod_nm),         \
-		.label      = &__MOD_LABEL(mod_nm),       \
-		.name       = mod_name,                   \
-		.requires   = __MOD_REQUIRES(mod_nm),     \
-		.provides   = __MOD_PROVIDES(mod_nm),     \
-		.after_deps = __MOD_AFTER_DEPS(mod_nm),   \
-		.contents   = __MOD_CONTENTS(mod_nm),     \
-		.members    = __MOD_MEMBERS(mod_nm),      \
-	};                                            \
+	extern const struct mod __MOD(mod_nm);                        \
 	ARRAY_SPREAD_DECLARE(const struct mod *,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar

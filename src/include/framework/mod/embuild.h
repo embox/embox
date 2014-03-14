@@ -13,7 +13,7 @@
 # error "Do not include <mod/embuild.h> outside of EMBuild-generated code!"
 #endif /* __EMBUILD__ */
 
-#include <module/embox/framework/mod.h>
+#include <module/embox/framework/embuild.h>
 
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink

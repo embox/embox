@@ -141,7 +141,6 @@ const struct mod *mod_lookup(const char *fqn) {
 
 int mod_enable(const struct mod *mod) {
 	const struct mod_member *member;
-	const struct mod_info *info;
 
 	if (mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
@@ -155,9 +154,8 @@ int mod_enable(const struct mod *mod) {
 		}
 	}
 
-	info = mod->info;
-	if (info && info->ops && info->ops->enable) {
-		info->ops->enable(info);
+	if (mod->ops && mod->ops->enable) {
+		mod->ops->enable(mod);
 	}
 
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
@@ -170,15 +168,13 @@ opfailed:
 
 int mod_disable(const struct mod *mod) {
 	const struct mod_member *member;
-	const struct mod_info *info;
 
 	if (!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
-	info = mod->info;
-	if (info && info->ops && info->ops->disable) {
-		info->ops->disable(info);
+	if (mod->ops && mod->ops->disable) {
+		mod->ops->disable(mod);
 	}
 
 	array_spread_nullterm_foreach(member, mod->members) {

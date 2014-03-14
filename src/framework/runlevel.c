@@ -28,8 +28,13 @@
 
 static runlevel_nr_t init_level = -1;
 
-static int rl_mod_enable(const struct mod_info *mod_info) {
-	int rl_level = (runlevel_nr_t) mod_info->data;
+struct runlevel_mod {
+	struct mod mod;
+	runlevel_nr_t nr;
+};
+
+static int rl_mod_enable(const struct mod *mod) {
+	int rl_level = ((struct runlevel_mod *) mod)->nr;
 
 	init_level = rl_level;
 	printk("runlevel: init level is %d\n", init_level);
@@ -37,8 +42,8 @@ static int rl_mod_enable(const struct mod_info *mod_info) {
 	return 0;
 }
 
-static int rl_mod_disable(const struct mod_info *mod_info) {
-	int rl_level = (runlevel_nr_t) mod_info->data;
+static int rl_mod_disable(const struct mod *mod) {
+	int rl_level = ((struct runlevel_mod *) mod)->nr;
 
 	init_level = rl_level - 1;
 	printk("runlevel: init level is %d\n", init_level);
