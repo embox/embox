@@ -16,6 +16,8 @@
 #include <framework/mod/self.h>
 #include <framework/mod/options.h>
 
+#include <framework/cmd/types.h>
+
 #if 0
 #define __MOD_DEF(mod_nm, package_nm, mod_name) \
 	extern const struct mod_cmd __MOD_CMD(mod_nm)                 \
@@ -43,6 +45,16 @@
 #else
 
 #define __MOD_DEF(mod_nm, package_nm, mod_name) \
+	/* declares for following members */                          \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_REQUIRES(mod_nm), NULL);                        \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_PROVIDES(mod_nm), NULL);                        \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_CONTENTS(mod_nm), NULL);                        \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_AFTER_DEPS(mod_nm), NULL);                      \
+	/* actual module declare */                                   \
 	extern const struct mod __MOD(mod_nm); \
 	__MOD_SELF_INIT_DECLS(, mod_nm); \
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL);\
@@ -116,9 +128,9 @@
  *   A string with detailed description.
  */
 #define MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details) \
-	const struct mod_cmd __MOD_CMD(mod_nm) = { \
-		.name    = cmd_name,   \
-		.brief   = cmd_brief,   \
+	const struct cmd_desc __MOD_CMD(mod_nm) = { \
+		.name    = cmd_name, \
+		.brief   = cmd_brief, \
 		.details = cmd_details, \
 	}
 
@@ -148,17 +160,11 @@
  *   Symbol name of the module on which @a mod_nm depends.
  */
 #define MOD_DEP_DEF(mod_nm, dep_nm) \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_REQUIRES(mod_nm), NULL);                        \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_PROVIDES(mod_nm), NULL);                        \
 	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \
 	ARRAY_SPREAD_ADD(__MOD_PROVIDES(dep_nm), &__MOD(mod_nm))
 
 
 #define MOD_CONTENTS_DEF(mod_nm, content_nm) \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_CONTENTS(mod_nm), NULL);                        \
 	ARRAY_SPREAD_ADD(__MOD_CONTENTS(mod_nm), &__MOD(content_nm))
 
 
@@ -172,8 +178,6 @@
  *   after @a mod_nm
  */
 #define MOD_AFTER_DEP_DEF(mod_nm, dep_nm) \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_AFTER_DEPS(mod_nm), NULL);                      \
 	ARRAY_SPREAD_ADD(__MOD_AFTER_DEPS(mod_nm), &__MOD(dep_nm)); \
 
 
