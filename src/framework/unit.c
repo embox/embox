@@ -31,7 +31,7 @@ static int unit_mod_enable(const struct mod *mod) {
 	}
 
 	printk("\tunit: initializing %s.%s: ",
-		mod->package->name, mod->name);
+		mod_pkg_name(mod), mod_name(mod));
 	if (0 == (ret = unit->init())) {
 		printk("done\n");
 	} else {
@@ -50,7 +50,7 @@ static int unit_mod_disable(const struct mod *mod) {
 	}
 
 	printk("unit: finalizing %s.%s: ",
-		mod->package->name, mod->name);
+		mod_pkg_name(mod), mod_name(mod));
 	if (0 == (ret = unit->fini())) {
 		printk("done\n");
 	} else {

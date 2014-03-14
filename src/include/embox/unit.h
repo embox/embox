@@ -33,8 +33,9 @@ struct unit {
 extern const struct mod_ops __unit_mod_ops;
 
 #define __EMBOX_UNIT(_init, _fini) \
+	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__); \
 	const struct unit mod_self = { \
-		.mod = MOD_SELF_INIT(&__unit_mod_ops), \
+		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__unit_mod_ops), \
 		.init = _init,   \
 		.fini = _fini,   \
 	}

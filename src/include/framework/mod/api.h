@@ -165,6 +165,9 @@ extern const struct mod *mod_lookup(const char *fqn);
 #define mod_foreach(mod) \
 	array_spread_nullterm_foreach(mod, __mod_registry)
 
+#define __mod_foreach_field(_i, _mod, _field) \
+	array_spread_nullterm_foreach(_i, (_mod)->build_info ? (_mod)->build_info->_field : NULL)
+
 /**
  * Iterates over a list of mods on which the specified one depends.
  *
@@ -175,7 +178,7 @@ extern const struct mod *mod_lookup(const char *fqn);
  *   The target mod.
  */
 #define mod_foreach_requires(dep, mod) \
-	array_spread_nullterm_foreach(dep, (mod)->requires)
+	__mod_foreach_field(dep, mod, requires)
 
 /**
  * Iterates over a list of mods which depend on the specified one.
@@ -187,6 +190,14 @@ extern const struct mod *mod_lookup(const char *fqn);
  *   The target mod.
  */
 #define mod_foreach_provides(dep, mod) \
-	array_spread_nullterm_foreach(dep, (mod)->provides)
+	__mod_foreach_field(dep, mod, provides)
+
+static inline const char *mod_name(const struct mod *mod) {
+	return mod->build_info ? mod->build_info->mod_name : NULL;
+}
+
+static inline const char *mod_pkg_name(const struct mod *mod) {
+	return mod->build_info ? mod->build_info->pkg_name : NULL;
+}
 
 #endif /* FRAMEWORK_MOD_API_H_ */

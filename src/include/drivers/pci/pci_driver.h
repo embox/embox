@@ -26,7 +26,6 @@ struct pci_driver {
 		static int init_func(struct pci_slot_dev *pci_dev);      \
 		static const struct pci_driver driver_struct_nm = {      \
 			.init = init_func,                               \
-			.mod = &mod_ptr,				 \
 			.name = "" drv_name,                             \
 			.ven_id = vid,                                   \
 			.dev_id = did                                    \

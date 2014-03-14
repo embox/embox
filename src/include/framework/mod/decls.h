@@ -24,6 +24,7 @@
 
 #define __MOD(mod_nm)            MACRO_CONCAT(__mod__,            mod_nm)
 #define __MOD_INFO(mod_nm)       MACRO_CONCAT(__mod_info__,       mod_nm)
+
 #define __MOD_LABEL(mod_nm)      MACRO_CONCAT(__mod_label__,      mod_nm)
 #define __MOD_SEC_LABEL(mod_nm)  MACRO_CONCAT(__mod_sec_label__,  mod_nm)
 #define __MOD_CMD(mod_nm)        MACRO_CONCAT(__mod_cmd__,        mod_nm)
@@ -35,7 +36,9 @@
 #define __MOD_CONTENTS(mod_nm)   MACRO_CONCAT(__mod_contents__,   mod_nm)
 #define __MOD_MEMBERS(mod_nm)    MACRO_CONCAT(__mod_members__,    mod_nm)
 
-#define __MOD_PACKAGE(pkg_nm)  MACRO_CONCAT(__mod_package__,  pkg_nm)
+#define __MOD_PACKAGE(pkg_nm)    MACRO_CONCAT(__mod_package__,    pkg_nm)
+
+#define __MOD_BUILDINFO(mod_nm)  MACRO_CONCAT(__mod_buildinfo__,  mod_nm)
 
 
 #endif /* FRAMEWORK_MOD_DECLS_H_ */

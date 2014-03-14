@@ -82,7 +82,7 @@ int mod_activate_app(const struct mod *mod) {
 	if (app) {
 		const struct mod *dep;
 
-		array_spread_nullterm_foreach(dep, mod->requires) {
+		mod_foreach_provides(dep, mod) {
 			int ret = mod_activate_app(dep);
 			if (ret)
 				return ret;
@@ -99,12 +99,13 @@ bool mod_check(const struct mod *mod) {
 	const struct mod_sec_label *sec_label;
 	assert(mod);
 
-	if (!mod->label)
+	if (!mod->build_info || !mod->build_info->label)
 		return true;
 
 	array_spread_nullterm_foreach(sec_label, __mod_sec_labels) {
 		if (sec_label->mod == mod)
-			return !memcmp(&sec_label->label, mod->label, sizeof(*mod->label));
+			return !memcmp(&sec_label->label, mod->build_info->label,
+					sizeof(*mod->build_info->label));
 	}
 
 	return true;
@@ -112,25 +113,25 @@ bool mod_check(const struct mod *mod) {
 
 const struct mod *mod_lookup(const char *fqn) {
 	const struct mod *mod;
-	const char *mod_name = strrchr(fqn, '.');
+	const char *mod_nm = strrchr(fqn, '.');
 	size_t pkg_name_len;
 
-	if (!mod_name) {
-		mod_name = fqn;  /* no package, name starts from the beginning */
+	if (!mod_nm) {
+		mod_nm = fqn;  /* no package, name starts from the beginning */
 	}
 
-	pkg_name_len = mod_name - fqn;
+	pkg_name_len = mod_nm - fqn;
 
 	if (pkg_name_len) {
-		++mod_name;  /* skip '.' */
+		++mod_nm;  /* skip '.' */
 	}
 
 	mod_foreach(mod) {
-		if (strcmp(mod->name, mod_name)) {
+		if (strcmp(mod_name(mod), mod_nm)) {
 			continue;
 		}
-		if (strncmp(mod->package->name, fqn, pkg_name_len) ||
-		    mod->package->name[pkg_name_len]) {
+		if (strncmp(mod_pkg_name(mod), fqn, pkg_name_len) ||
+		    mod_pkg_name(mod)[pkg_name_len]) {
 			continue;
 		}
 		return mod;

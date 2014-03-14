@@ -70,7 +70,7 @@ runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
 				 $(call mod_inst_closure,$m))))
 
 mod_def = \
-	MOD_DEF($(call fqn2id,$(basename $1)), $(subst .,,$(suffix $1)));
+	MOD_DEF($(call fqn2id,$(basename $1)), "$(basename $1)", $(subst .,,$(suffix $1)));
 
 # Call info for every new module in this runlevel
 # 1. Runlevels to generate
@@ -101,6 +101,7 @@ $(info )
 $(foreach h, framework/mod/embuild.h, \
 	$(info #include <$h>))
 $(info )
+
 
 $(info /* Package definitions. */)
 $(foreach p,$(packages), \

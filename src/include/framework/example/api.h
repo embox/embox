@@ -34,11 +34,11 @@ static inline const struct example_mod *__example_mod(const struct example *exam
 }
 
 static inline const char *example_name(const struct example *example) {
-	return (NULL != example) ? __example_mod(example)->mod.name : NULL;
+	return (NULL != example) ? mod_name(&__example_mod(example)->mod) : NULL;
 }
 
 static inline const char *example_path(const struct example *example) {
-	return (NULL != example) ? __example_mod(example)->mod.package->name : NULL;
+	return (NULL != example) ? mod_pkg_name(&__example_mod(example)->mod) : NULL;
 }
 
 extern const struct example *example_lookup(const char *name);

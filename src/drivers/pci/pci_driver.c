@@ -50,7 +50,7 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 		}
 	}
 
-	printk("\tpci: loading %s.%s: ", drv->mod->package->name, drv->mod->name);
+	printk("\tpci: loading %s.%s: ", mod_pkg_name(drv->mod), mod_name(drv->mod));
 	ret = drv->init(dev);
 	if (ret == 0) {
 		printk("done\n");

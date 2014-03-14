@@ -33,11 +33,11 @@ static inline const struct test_mod *__test_mod(const struct test_suite *test) {
 }
 
 static inline const char *test_name(const struct test_suite *test) {
-	return NULL != test ? __test_mod(test)->mod.name : NULL;
+	return mod_name(&__test_mod(test)->mod);
 }
 
 static inline const char *test_package(const struct test_suite *test) {
-	return NULL != test ? __test_mod(test)->mod.package->name : NULL;
+	return mod_pkg_name(&__test_mod(test)->mod);
 }
 
 #endif /* FRAMEWORK_TEST_API_IMPL_H_ */
