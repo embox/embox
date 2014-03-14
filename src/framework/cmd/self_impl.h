@@ -24,7 +24,7 @@
 			.exec = _exec,                     \
 		}                                      \
 	};                                         \
-	CMD_ADD(&mod_self.cmd);
+	CMD_ADD(&mod_self.cmd)
 
 #ifdef __CDT_PARSER__
 

@@ -13,29 +13,23 @@
 #include <framework/mod/self.h>
 #include <framework/mod/ops.h>
 
+#include <framework/example/api.h>
+
 #include __impl_x(framework/example/types.h) /* TODO this is external API header */
 
-#ifndef __cplusplus
 #define EMBOX_EXAMPLE(_exec)                                   \
-	ARRAY_SPREAD_DECLARE(const struct example,                 \
-			__example_registry);                               \
 	extern const struct mod_ops __example_mod_ops;             \
 	static int _exec(int argc, char **argv);                   \
-	ARRAY_SPREAD_ADD_NAMED(__example_registry, __example,   {  \
-			.mod = &mod_self,                                  \
-			.exec = _exec,                                     \
-		});                                                    \
-	MOD_INFO_BIND(&__example_mod_ops, __example)
+	struct example_mod mod_self = {                            \
+		.mod = MOD_SELF_INIT(&__example_mod_ops),               \
+		.example = __EMBOX_EXAMPLE_INIT(_exec),                 \
+	};                                                         \
+	EXAMPLE_ADD(&mod_self.example)
+
+#ifndef __cplusplus
+#define __EMBOX_EXAMPLE_INIT(_exec) { .exec = _exec }
 #else
-#define EMBOX_EXAMPLE(_exec)                                   \
-	ARRAY_SPREAD_DECLARE(struct example, __example_registry); \
-	extern const struct mod_ops __example_mod_ops; \
-	static int _exec(int argc, char **argv);                   \
-	ARRAY_SPREAD_ADD_NAMED(__example_registry, __example,   {  \
-			&mod_self,                                  \
-			_exec,                                     \
-		});                                                    \
-	MOD_INFO_BIND(&__example_mod_ops, __example)
+#define __EMBOX_EXAMPLE_INIT(_exec) { _exec }
 #endif
 
 
