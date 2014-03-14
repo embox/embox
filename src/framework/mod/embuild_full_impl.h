@@ -29,48 +29,16 @@
  */
 #define MOD_PACKAGE_DEF(package_nm, package_name)
 
-#if 0
-#define __MOD_DEF(mod_nm, package_nm, mod_name) \
-	extern const struct mod_cmd __MOD_CMD(mod_nm)                 \
-			__attribute__ ((weak));                               \
-	extern const struct mod_app __MOD_APP(mod_nm)                 \
-			__attribute__ ((weak));                               \
-	extern const struct mod_label __MOD_LABEL(mod_nm)             \
-			__attribute__ ((weak));                               \
-	static const struct mod_package __MOD_PACKAGE(package_nm);    \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_REQUIRES(mod_nm), NULL);                        \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_PROVIDES(mod_nm), NULL);                        \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_AFTER_DEPS(mod_nm), NULL);                      \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
-			__MOD_CONTENTS(mod_nm), NULL);                        \
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
-			__MOD_MEMBERS(mod_nm), NULL);                         \
-	extern const struct mod __MOD(mod_nm);                        \
-	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(NULL);\
-	ARRAY_SPREAD_DECLARE(const struct mod *,      \
-			__mod_registry);                      \
-	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
-#else
-
-#if 0
-	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
-			__MOD_MEMBERS(mod_nm), NULL);                         \
-
-#endif
-
 #define __MOD_DEF(mod_nm) \
 	struct __mod_private __MOD_PRIVATE(mod_nm); \
 	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) __attribute__((weak)); \
+	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
+			__MOD_MEMBERS(mod_nm), NULL); \
 	extern const struct mod __MOD(mod_nm); \
-	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL);\
+	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
 	ARRAY_SPREAD_DECLARE(const struct mod *,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
-
-#endif
 
 #define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name) \
 	extern const struct mod_label __MOD_LABEL(_mod_nm)       \
@@ -93,8 +61,7 @@
 		.contents   = __MOD_CONTENTS(_mod_nm),               \
 	}
 
-#if OPTION_MODULE_DEFINED(embox__framework__mod_full, BOOLEAN, security_label) \
-	&& OPTION_MODULE_GET(embox__framework__mod_full, BOOLEAN, security_label)
+#if OPTION_MODULE_GET(embox__framework__mod, BOOLEAN, security_label)
 
 #define MOD_LABEL_DEF(mod_nm) \
 	/* extern char __module_ ## mod_nm ## _text_vma;  */\

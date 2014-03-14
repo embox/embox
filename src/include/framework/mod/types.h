@@ -39,6 +39,9 @@ struct mod_app {
 	size_t bss_sz;
 };
 
+struct __mod_private {
+	unsigned int flags;
+};
 
 struct __mod_section {
 	char   *vma;
@@ -68,10 +71,6 @@ struct mod_build_info {
                                                   which are dependent on this. */
 	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
 	const struct mod *volatile const *contents;  /**< Contained in this module. */
-};
-
-struct __mod_private {
-	unsigned int flags;
 };
 
 #endif /* FRAMEWORK_MOD_TYPES_H_ */
