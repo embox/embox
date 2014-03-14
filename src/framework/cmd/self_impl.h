@@ -21,7 +21,8 @@
 #define __EMBOX_CMD(_exec) \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);              \
 	static int _exec(int argc, char **argv);           \
-	extern struct cmd_desc __MOD_CMD(__EMBUILD_MOD__); \
+	extern struct cmd_desc __MOD_CMD(__EMBUILD_MOD__)  \
+			__attribute__((weak));                     \
 	struct cmd_mod mod_self = {                        \
 		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, NULL),   \
 		.cmd = {                                       \
