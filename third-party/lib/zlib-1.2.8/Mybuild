@@ -27,8 +27,8 @@ module gzip {
 	depends libs
 	//@InstrumentProfiling("true")
 	@Rule(script="true")
-	source "minigzip_cmd.c"
 	source "../../../../../third-party/lib/zlib-1.2.8/minigzip.o"
+	source "minigzip_cmd.c"
 	//source "minigzip.o"
 	source "order.mk"
 }

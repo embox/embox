@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include <kernel/printk.h>
 #include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct cmd, __cmd_registry);
