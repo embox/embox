@@ -17,8 +17,7 @@ module shell {
 		"console/screen_in.c", "console/screen_out.c"
 
 	depends embox.lib.Tokenizer
-	depends embox.util.LibUtil
 	depends embox.driver.terminal
-	depends embox.framework.LibFramework
 	depends embox.cmd.sh.shell
+	@NoRuntime depends embox.framework.cmd
 }

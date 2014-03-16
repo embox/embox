@@ -38,7 +38,6 @@
 #include <fs/idesc_event.h>
 
 #include <kernel/printk.h>
-#include <prom/prom_printf.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>

@@ -5,7 +5,7 @@ module LibFrameworkNet {
 }
 
 module LibFramework {
-	depends cmd, example, mod, service, test, runlevel
+	depends cmd, mod, test, runlevel
 }
 
 module runlevel {
@@ -14,7 +14,7 @@ module runlevel {
 	source "runlevel.c", "unit.c"
 
 	depends mod
-	depends embox.prom.printf
+	depends embox.lib.Printk
 	depends embox.lib.LibCString
 }
 

@@ -190,7 +190,7 @@ __END_DECLS
 static inline clock_t times (struct tms *__buffer) {
 	//DPRINT();
 	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_self()->per_cpu;
+	__buffer->tms_stime = task_get_clock(task_self());
 	__buffer->tms_utime = 0;
 
 	return clock_sys_ticks();
@@ -338,8 +338,27 @@ static inline int WEXITSTATUS(int status) {
 //------ END QProcess
 
 // this is for FILESYSTEMWATCHER
-#define pathconf(path,name) \
-	printf(">>> pathconf(%s,%s)\n",#path,#name),32
+#define _PC_LINK_MAX         0
+#define _PC_MAX_CANON        1
+#define _PC_MAX_INPUT        2
+#define _PC_NAME_MAX         3
+#define _PC_PATH_MAX         4
+#define _PC_PIPE_BUF         5
+#define _PC_CHOWN_RESTRICTED 6
+#define _PC_NO_TRUNC         7
+#define _PC_VDISABLE         8
+
+static inline long pathconf(char *path, int name) {
+	switch (name) {
+	case _PC_NAME_MAX:
+		return NAME_MAX;
+	case _PC_PATH_MAX:
+		return PATH_MAX;
+	default:
+		printf(">>> pathconf(%s,%d)\n",path,name);
+		return 32;
+	}
+}
 
 #endif // __QEMBOX__
 

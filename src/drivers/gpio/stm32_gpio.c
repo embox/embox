@@ -49,7 +49,7 @@ static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 }
 
 int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	int mode_val;
+	int mode_val = 0;
 	assert(gpio);
 
 	if ((mode & GPIO_MODE_OUT_SECTION) &&

@@ -16,6 +16,7 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
+#include <kernel/task/resource/sig_table.h>
 
 #include <util/math.h>
 
@@ -29,7 +30,7 @@ static void sighandler_ignore(int sig) {
 
 int sigaction(int sig, const struct sigaction *restrict act,
 		struct sigaction *restrict oact) {
-	struct sigaction *sig_table = task_self()->sig_table;
+	struct sigaction *sig_table = task_self_resource_sig_table();
 
 	if (!check_range(sig, 0, _SIG_TOTAL))
 		return SET_ERRNO(EINVAL);
@@ -89,7 +90,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (!task)
 		return SET_ERRNO(ESRCH);
 
-	sigstate = &task->main_thread->sigstate;
+	sigstate = &task_get_main(task)->sigstate;
 
 	// TODO prepare it
 	info.si_value = value;
@@ -98,7 +99,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_signal(task->main_thread);
+	sched_signal(task_get_main(task));
 
 	return 0;
 }
@@ -127,5 +128,5 @@ int kill(int tid, int sig) {
 	if (!task)
 		return SET_ERRNO(ESRCH);
 
-	return pthread_kill(task->main_thread, sig);
+	return pthread_kill(task_get_main(task), sig);
 }

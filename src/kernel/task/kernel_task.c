@@ -4,49 +4,37 @@
  * @date Nov 12, 2013
  * @author: Anton Bondarev
  */
-#include "common.h"
-#include <errno.h>
-#include <string.h>
-
 #include <kernel/task.h>
-
-#include <module/embox/kernel/task/api.h>
+#include <kernel/task/kernel_task.h>
+#include <kernel/task/task_table.h>
 
 #include <embox/unit.h>
 
-
 EMBOX_UNIT_INIT(kernel_task_init);
 
-#define MAX_RES_SUM_SIZE \
-	OPTION_MODULE_GET(embox__kernel__task__api, NUMBER, max_resource_size)
+static struct task kernel_task __attribute__((section(".bss..reserve.ktask")));
 
-struct kernel_task {
-	struct task task;
-	char resource[MAX_RES_SUM_SIZE];
-};
-
-static struct kernel_task kernel_task;
-
-struct task *task_kernel_task(void) {
-	return &kernel_task.task;
+struct task * task_kernel_task(void) {
+	return &kernel_task;
 }
 
-
-extern void resource_sum_size_calc(void);
-
 static int kernel_task_init(void) {
-	struct task *task;
-	resource_sum_size_calc();
+	int ktask_id;
+	struct task *ktask;
 
-	task = task_kernel_task();
+	ktask = task_kernel_task();
+	assert(ktask != NULL);
 
-	if (!task_init(task, sizeof(kernel_task))) {
-		return -ENOMEM;
+	ktask_id = task_table_add(ktask);
+	if (ktask_id < 0) {
+		return ktask_id;
 	}
 
-	dlist_init(&task->task_link); /* it's out list handler */
-
-	strncpy(task->task_name, "kernel", sizeof(task_kernel_task()->task_name) - 1);
+	/* task_get_main returns a value which already initialized
+	 * by thread.core module in the file idle_thread.c by the
+	 * idle_thread_create() function */
+	task_init(ktask, ktask_id, "kernel", task_get_main(ktask),
+			TASK_PRIORITY_DEFAULT);
 
 	return 0;
 }

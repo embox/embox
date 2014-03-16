@@ -17,6 +17,11 @@
 
 #include <embox/unit.h>
 
+#include <module/embox/driver/clock/mb_timer.h>
+
+#define CONFIG_XILINX_TIMER_BASEADDR OPTION_GET(NUMBER,mbtimer_base)
+#define CONFIG_XILINX_TIMER_IRQ      OPTION_GET(NUMBER,irq_num)
+
 #define TIMER_PRELOAD (SYS_CLOCK / 1000)
 
 /*bits definition of cntl/status (tcsr) register*/

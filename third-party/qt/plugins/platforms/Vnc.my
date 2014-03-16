@@ -6,6 +6,7 @@ module vnc {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/build/plugins/platforms")
 	source "libqvncgraphicssystem.a"
 
+	@Generated(script="$(MAKE) -f $(ROOT_DIR)/mk/script/qt-plugin.mk MK_PLUGIN_NAME=vnc")
 	source "vnc.cpp"
 
 	@NoRuntime depends third_party.qt.core

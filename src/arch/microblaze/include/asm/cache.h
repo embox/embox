@@ -9,6 +9,16 @@
 #ifndef MICROBLAZE_CACHE_H_
 #define MICROBLAZE_CACHE_H_
 
+#include <framework/mod/options.h>
+#include <module/embox/arch/microblaze/kernel/arch.h>
+
+
+
+#define CONFIG_ICACHE_BYTE_SIZE    OPTION_GET(NUMBER,icache_size)
+#define CONFIG_ICACHE_LINE_LENGTH  OPTION_GET(NUMBER,icache_line)
+#define CONFIG_DCHACE_BYTE_SIZE    OPTION_GET(NUMBER,dcache_size)
+#define CONFIG_DCACHE_LINE_LENGTH  OPTION_GET(NUMBER,dcache_line)
+
 #include <asm/msr.h>
 
 static inline void cache_enable(void) {

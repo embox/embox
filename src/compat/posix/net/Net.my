@@ -145,12 +145,12 @@ static module inet_addr {
 
 static module socket {
 	source "socket.c"
-	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.idesc
 	depends embox.lib.LibCString
 	depends embox.net.socket
 
 	source "socket_index_operation.c"
-	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.idesc
 	depends embox.lib.LibCAssert
 	depends embox.net.socket
 }

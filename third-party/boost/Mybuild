@@ -14,6 +14,7 @@ static module core {
 		"libboost_thread.a", "libboost_timer.a",
 		"libboost_wave.a"
 
+	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends third_party.STLport.core

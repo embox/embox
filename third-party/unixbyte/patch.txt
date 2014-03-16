@@ -153,20 +153,21 @@ diff -ur UnixBench/src/time-polling.c unixbyte/src/time-polling.c
  #  include <linux/poll2.h>
 
 
- diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c 
+diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c 
 --- UnixBench/src/timeit.c	2011-01-18 09:44:53.000000000 +0300
-+++ unixbyte/src/timeit.c	2014-02-27 20:09:28.075530747 +0400
++++ unixbyte/src/timeit.c	2014-03-02 22:45:36.286261387 +0400
 @@ -28,14 +28,20 @@
  
  #include <signal.h>
  #include <unistd.h>
 +#include <kernel/time/timer.h>
-+
+ 
+-void wake_me(seconds, func)
 +static void timer_handler(struct sys_timer *timer, void *param) {
 +	kill(getpid(), SIGALRM);
 +}
- 
- void wake_me(seconds, func)
++
++static void wake_me(seconds, func)
  	int seconds;
  	void (*func)();
  {
@@ -179,3 +180,75 @@ diff -ur UnixBench/src/time-polling.c unixbyte/src/time-polling.c
 +
 +	timer_set(&timer, TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
  }
+
+
+
+diff -ur UnixBench/src/pipe.c unixbyte/src/pipe.c 
+--- UnixBench/src/pipe.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/pipe.c	2014-03-02 21:34:16.927456326 +0400
+@@ -16,7 +16,7 @@
+  *                     Andy Kahn <kahn@zk3.dec.com>
+  *
+  ******************************************************************************/
+-char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
++static char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
+ /*
+  *  pipe  -- test single process pipe throughput (no context switching)
+  *
+@@ -27,9 +27,9 @@
+ #include <errno.h>
+ #include "timeit.c"
+ 
+-unsigned long iter;
++static unsigned long iter;
+ 
+-void report()
++static void report()
+ {
+ 	fprintf(stderr,"COUNT|%ld|1|lps\n", iter);
+ 	exit(0);
+
+ 	
+diff -ur UnixBench/src/spawn.c unixbyte/src/spawn.c 
+--- UnixBench/src/spawn.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/spawn.c	2014-03-03 00:45:33.868691627 +0400
+@@ -16,7 +16,7 @@
+  *                     Andy Kahn <kahn@zk3.dec.com>
+  *
+  ******************************************************************************/
+-char SCCSid[] = "@(#) @(#)spawn.c:3.3 -- 5/15/91 19:30:20";
++static char SCCSid[] = "@(#) @(#)spawn.c:3.3 -- 5/15/91 19:30:20";
+ /*
+  *  Process creation
+  *
+@@ -27,9 +27,9 @@
+ #include <sys/wait.h>
+ #include "timeit.c"
+ 
+-unsigned long iter;
++static unsigned long iter;
+ 
+-void report()
++static void report()
+ {
+ 	fprintf(stderr,"COUNT|%lu|1|lps\n", iter);
+ 	exit(0);
+@@ -40,7 +40,7 @@
+ char	*argv[];
+ {
+ 	int	slave, duration;
+-	int	status;
++	int	status = 0;
+ 
+ 	if (argc != 2) {
+ 		fprintf(stderr,"Usage: %s duration \n", argv[0]);
+@@ -67,7 +67,7 @@
+ 			exit(2);
+ 		} else
+ 			/* master */
+-			wait(&status);
++			task_waitpid(slave);
+ 		if (status != 0) {
+ 			fprintf(stderr,"Bad wait status: 0x%x\n", status);
+ 			exit(2);
+

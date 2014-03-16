@@ -5,6 +5,10 @@ abstract module Display {
 
 }
 
+@DefaultImpl(setup_tty_devfs)
+abstract module setup_tty_api {
+}
+
 module GraphicMode extends Display {
 	option string fb_name="fb0"
 	option number vesa_mode=3
@@ -26,28 +30,33 @@ module TextMode extends Display {
 
 }
 
-module start_script {
-	@IncludePath("$(CONF_DIR)")
+module setup_tty_devfs extends setup_tty_api {
+	source "setup_tty_devfs.c"
 
-
-	source "start_script.c"
-
+	depends diag_index_desc
 	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.idx.dup
 	depends embox.compat.posix.util.environ
 	depends embox.kernel.task.api
-	depends diag_index_desc
+}
 
-	depends embox.cmd.sh.shell
+module setup_tty_none extends setup_tty_api {
+	source "setup_tty_none.h"
+}
 
-	requires embox.cmd.Shell.commandLine
-
+module start_script {
 	option string shell_name=""
 	option string tty_dev=""
-	option number input_buffer = 80
-
 	option number shell_start = 1
 
+	@IncludePath("$(CONF_DIR)")
+	source "start_script.c"
+
+	@NoRuntime depends setup_tty_api
+	depends diag_index_desc
+	depends embox.cmd.sh.shell
+	requires embox.cmd.Shell.commandLine
+	@NoRuntime depends embox.lib.LibCStdioFileOps
 }
 
 module diag_index_desc {
@@ -60,4 +69,5 @@ module diag_index_desc {
 	depends embox.driver.tty.tty
 	depends embox.compat.posix.idx.dup
 	depends embox.compat.posix.termios
+	@NoRuntime depends embox.lib.LibCStdioFileOps
 }

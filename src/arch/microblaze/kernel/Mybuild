@@ -20,4 +20,8 @@ module interrupt extends embox.arch.interrupt {
 
 module arch {
 	source "arch.c"
+	option number icache_size
+	option number icache_line
+	option number dcache_size
+	option number dcache_line
 }

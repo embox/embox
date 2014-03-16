@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <assert.h>
 #include <kernel/task.h>
+#include <fs/idesc.h>
 #include <fs/index_descriptor.h>
 
 int fstat(int fd, struct stat *buff) {

@@ -74,6 +74,71 @@ diff -aur iperf-2.0.5/include/headers.h iperf/include/headers.h
  /** Added for daemonizing the process */
      #include <syslog.h>
 
+diff -aur iperf-2.0.5/src/ReportCSV.c iperf/src/ReportCSV.c 
+--- iperf-2.0.5/src/ReportCSV.c	2014-03-06 17:00:34.008170748 +0400
++++ iperf/src/ReportCSV.c	2014-03-06 17:13:42.852190096 +0400
+@@ -60,7 +60,7 @@
+  
+ void CSV_stats( Transfer_Info *stats ) {
+     // $TIMESTAMP,$ID,$INTERVAL,$BYTE,$SPEED,$JITTER,$LOSS,$PACKET,$%LOSS
+-    max_size_t speed = (max_size_t)(((double)stats->TotalLen * 8.0) / (stats->endTime - stats->startTime));
++    //max_size_t speed = (max_size_t)(((double)stats->TotalLen * 8.0) / (stats->endTime - stats->startTime));
+     char timestamp[16];
+     CSV_timestamp( timestamp, sizeof(timestamp) );
+     if ( stats->mUDP != (char)kMode_Server ) {
+@@ -71,8 +71,8 @@
+                 stats->transferID, 
+                 stats->startTime, 
+                 stats->endTime, 
+-                stats->TotalLen, 
+-                speed);
++                stats->TotalLen/*,
++                speed*/);
+     } else {
+         // UDP Reporting
+         printf( reportCSV_bw_jitter_loss_format, 
+@@ -82,7 +82,7 @@
+                 stats->startTime, 
+                 stats->endTime, 
+                 stats->TotalLen, 
+-                speed,
++                /*speed,*/
+                 stats->jitter*1000.0, 
+                 stats->cntError, 
+                 stats->cntDatagrams,
+         
+diff -aur iperf-2.0.5/src/Reporter.c iperf/src/Reporter.c
+--- iperf-2.0.5/src/Reporter.c	2014-03-05 16:15:48.991251225 +0400
++++ iperf/src/Reporter.c	2014-03-05 17:24:54.775821907 +0400
+@@ -166,7 +166,7 @@
+                     multihdr->report->info.mUDP = (char)agent->mThreadMode;
+                 }
+                 if ( isConnectionReport( agent ) ) {
+-                    data->type |= CONNECTION_REPORT;
++                	data->type |= CONNECTION_REPORT;
+                     data->connection.peer = agent->peer;
+                     data->connection.size_peer = agent->size_peer;
+                     SockAddr_setPortAny( &data->connection.peer );
+@@ -267,8 +267,8 @@
+             }
+         }
+         if ( reporthdr != NULL ) {
+-            data->type |= CONNECTION_REPORT;
+-            data->connection.peer = agent->peer;
++        	data->type |= CONNECTION_REPORT;
++        	memcpy(&data->connection.peer, &agent->peer, sizeof(iperf_sockaddr));
+             data->connection.size_peer = agent->size_peer;
+             data->connection.local = agent->local;
+             data->connection.size_local = agent->size_local;
+@@ -297,7 +297,7 @@
+                 // set start time
+                 gettimeofday( &(reporthdr->report.startTime), NULL );
+             }
+-            reporthdr->report.nextTime = reporthdr->report.startTime;
++            memcpy(&reporthdr->report.nextTime, &reporthdr->report.startTime, sizeof(struct timeval));
+             TimeAdd( reporthdr->report.nextTime, reporthdr->report.intervalTime );
+         }
+         Condition_Lock( ReportCond );
 
 diff -aur iperf-2.0.5/src/Client.cpp iperf/src/Client.cpp 
 --- iperf-2.0.5/src/Client.cpp	2010-04-02 00:23:17.000000000 +0400
@@ -86,5 +151,3 @@ diff -aur iperf-2.0.5/src/Client.cpp iperf/src/Client.cpp
 -
      // create an internet socket
      int type = ( isUDP( mSettings )  ?  SOCK_DGRAM : SOCK_STREAM);
- 
- 

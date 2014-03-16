@@ -10,6 +10,7 @@
 
 #include <fs/flags.h>
 
+#include <kernel/task/idesc_table.h>
 
 struct idesc_ops;
 struct idesc_xattrops;

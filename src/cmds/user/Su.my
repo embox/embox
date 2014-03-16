@@ -19,6 +19,8 @@ module su {
 
 	depends embox.compat.posix.passwd
 	depends third_party.lib.linenoise
+	depends embox.kernel.task.resource.security
+	depends embox.kernel.task.resource.u_area
 
 	requires embox.cmd.Shell.commandLine
 
