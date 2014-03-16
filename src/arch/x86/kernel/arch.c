@@ -14,6 +14,8 @@
 #include <kernel/printk.h>
 #include <acpica/acpi.h>
 
+extern void cpu_triple_reset(void);
+
 void arch_init(void) {
 	//gdt_init();
 	//idt_init();
@@ -23,18 +25,17 @@ void arch_idle(void) {
 	__asm__ __volatile__("hlt");
 }
 
-#if 1
-//http://mjg59.dreamwidth.org/3561.html
-//http://stackoverflow.com/questions/3145569/how-to-power-down-the-computer-from-a-freestanding-environment
 void arch_reset_kbd(void) {
-	while (in8(0x64) & 0x2);
+	while (in8(0x64) & 0x2)
+		;
 	out8(0x60, 0x64);
-	while (in8(0x64) & 0x2);
+	while (in8(0x64) & 0x2)
+		;
 	out8(0x4, 0x60);
-	while (in8(0x64) & 0x2);
+	while (in8(0x64) & 0x2)
+		;
 	out8(0xfe, 0x64);
 }
-#endif
 
 
 
@@ -57,10 +58,20 @@ void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 		break;
 
 	case ARCH_SHUTDOWN_MODE_REBOOT:
-		status = AcpiReset();
-		if (ACPI_FAILURE(status)) {
-			printk("ERROR: Unable to perform a system reset\n");
-		}
+
+		/*
+		 * There are several ways to reboot a computer. Unfortunately, none of
+		 * them will work on all machines. We try to use three methods:
+		 * 1. using ACPI;
+		 * 2. via the keyboard controller;
+		 * 3. generating a triple fault.
+		 * You can read more at
+		 * http://mjg59.dreamwidth.org/3561.html
+		 */
+
+		AcpiReset();
+		arch_reset_kbd();
+		cpu_triple_reset();
 
 		break;
 

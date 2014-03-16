@@ -26,8 +26,6 @@
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 
-#define DEBUG
-
 #ifdef DEBUG
 #define PRINTD(msg) printk("ACPICA OSL DEBUG: " msg "\n")
 #else
