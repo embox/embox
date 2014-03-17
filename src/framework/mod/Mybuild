@@ -24,13 +24,9 @@ module mod {
 abstract module embuild { }
 
 module embuild_full extends embuild {
-
-	source "embuild_full_impl.h"
-
-	option boolean security_label = true
 }
 
-module embuild_light extends mod {
+module embuild_light extends embuild {
 
 	source "embuild_light_impl.h"
 }
