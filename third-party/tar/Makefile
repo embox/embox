@@ -93,6 +93,7 @@ PKG_CONF_FLAGS+=ac_cv_func_vsnprintf=yes
 PKG_CONF_FLAGS+=ac_cv_func_closedir=yes
 PKG_CONF_FLAGS+=ac_cv_func_opendir=yes
 PKG_CONF_FLAGS+=ac_cv_func_readdir=yes
+PKG_CONF_FLAGS+=ac_cv_func___fpending=no
 
 
 
