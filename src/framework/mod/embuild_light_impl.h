@@ -9,7 +9,22 @@
 #ifndef FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 #define FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 
-#if 1
+#if 1 /* switch some mod_def to tottaly empty will help estimate how much
+		 mod_def is taking space */
+#define __MOD_DEF(mod_nm) \
+	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
+			__MOD_MEMBERS(mod_nm), NULL); /* FIXME Potentially isn't necessary */ \
+	extern const struct mod_app __MOD_APP(mod_nm) \
+			__attribute__ ((weak)); \
+	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) \
+			__attribute__((weak)); \
+	\
+	extern const struct mod __MOD(mod_nm) __attribute__((weak)); \
+	\
+	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+			__mod_registry);                      \
+	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) /* TODO don't like it. -- Eldar */
+#else
 #define __MOD_DEF(mod_nm)
 #endif
 
@@ -17,7 +32,10 @@
 #define __MOD_LABEL_DEF(mod_nm)
 
 #define __MOD_APP_DEF(mod_nm)
-#define __MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details)
+#define __MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details) \
+	const struct cmd_desc __MOD_CMD(mod_nm) = { \
+		.name    = cmd_name, \
+	}
 
 #define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name)
 #define __MOD_DEP_DEF(mod_nm, dep_nm)

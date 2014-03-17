@@ -42,7 +42,7 @@
 			__MOD_MEMBERS(_mod_nm))
 
 #define MOD_SELF_INIT_DECLS(_mod_nm) \
-	extern struct __mod_private __MOD_PRIVATE(_mod_nm); \
+	struct __mod_private __MOD_PRIVATE(_mod_nm); \
 	extern const struct mod_app __MOD_APP(_mod_nm) \
 			__attribute__ ((weak)); \
 	__MOD_MEMBER_DECLS(_mod_nm); \
