@@ -39,5 +39,3 @@ undef_handler:
 hard_fault:
     b hard_fault
 
-.section .trap_table.routine_15
-	.word undef_handler

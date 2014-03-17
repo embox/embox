@@ -37,7 +37,15 @@
 		. = 0x38;                   \
 		*(.trap_table.routine_14)   \
 		. = 0x3C;                   \
-		*(.trap_table.routine_15)
+		*(.trap_table.routine_15)   \
+		. = 0x40;                   \
+		*(.trap_table.assert)
+
+
+#define ARM_M_IRQ_HANDLER_DEF(irq_num, irq_handler) \
+	void *arm_m_irq_handler##irq_num __attribute__((section(".trap_table.routine_"#irq_num))) = (void *)irq_handler;
+
+
 #else
 
 #define STATIC_IRQ_TABLE
