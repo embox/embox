@@ -19,89 +19,118 @@
 
 static runlevel_nr_t init_level = -1;
 
-extern const struct mod *__RUNLEVEL_LAST_MODULE(0), *__RUNLEVEL_LAST_MODULE(1),
-       *__RUNLEVEL_LAST_MODULE(2), *__RUNLEVEL_LAST_MODULE(3);
+static const struct mod **runlevel_sentinel[RUNLEVEL_NRS_TOTAL]; ;
 
-static const struct mod **last_module_at_runlevel[RUNLEVEL_NRS_TOTAL] __attribute__((used)) = {
-	&__RUNLEVEL_LAST_MODULE(0),
-	&__RUNLEVEL_LAST_MODULE(1),
-	&__RUNLEVEL_LAST_MODULE(2),
-	&__RUNLEVEL_LAST_MODULE(3),
-};
+static void runlevels_init(void) {
+	static char inited;
 
-runlevel_nr_t runlevel_get_entered(void) {
-	return init_level;
-}
+	/* sentinel init */
+	if (!inited) {
+		int i;
+		const struct mod **modp;
 
-static const struct mod **mod_order_place(const struct mod *mod) {
-	const struct mod **modp;
+		extern const struct mod *__RUNLEVEL_LAST_MODULE(0),
+		       *__RUNLEVEL_LAST_MODULE(1),
+		       *__RUNLEVEL_LAST_MODULE(2),
+		       *__RUNLEVEL_LAST_MODULE(3);
+		const struct mod **last_mod_raw[RUNLEVEL_NRS_TOTAL] = {
+			&__RUNLEVEL_LAST_MODULE(0),
+			&__RUNLEVEL_LAST_MODULE(1),
+			&__RUNLEVEL_LAST_MODULE(2),
+			&__RUNLEVEL_LAST_MODULE(3),
+		};
 
-	array_spread_foreach_ptr(modp, __mod_registry) {
-		if (*modp == mod) {
-			return modp;
+		modp = (const struct mod **) __mod_registry;
+
+		for (i = 0; i < RUNLEVEL_NRS_TOTAL; i++) {
+
+			if (*last_mod_raw[i]) {
+				while (*modp != *last_mod_raw[i]) {
+					modp ++;
+				}
+
+				modp++;
+			}
+
+			runlevel_sentinel[i] = modp;
+
 		}
+
+		inited = 1;
 	}
-	return NULL;
 }
 
-static const struct mod *mod_last_by_level(runlevel_nr_t nr) {
-	int level = nr;
-
-	while (level >= 0 && !*last_module_at_runlevel[level]) {
-		level --;
-	}
-
-	return level >= 0 ? *last_module_at_runlevel[level] : NULL;
-}
-
-static void runlevel_mod_checkin(const struct mod *mod) {
-
-	/*
-	printk("runlevel: init level is %d\n", init_level);
-	*/
-}
-
-int runlevel_set(runlevel_nr_t level) {
+static int runlevel_increase(runlevel_nr_t rl) {
 	const struct mod *const volatile*start_mod, *const volatile*end_mod;
-	const struct mod *base_mod, *target_mod;
 	int ret;
 
-	if (!runlevel_nr_valid(level)) {
-		return -EINVAL;
-	}
+	start_mod = rl < 0 ? __mod_registry : runlevel_sentinel[rl];
+	end_mod = runlevel_sentinel[rl + 1];
 
-	base_mod = mod_last_by_level(init_level);
-	target_mod = mod_last_by_level(level);
-
-
-	if (level > init_level) {
-
-		start_mod = !base_mod ? __mod_registry : mod_order_place(base_mod);
-		end_mod = !target_mod ? NULL : mod_order_place(target_mod);
-
-		for (; start_mod <= end_mod; start_mod++) {
-
-			if ((ret = mod_enable(*start_mod))) {
-				return ret;
-			}
-
-			runlevel_mod_checkin(*start_mod);
-		}
-	} else {
-
-		start_mod = !base_mod ? NULL : mod_order_place(base_mod);
-		end_mod = !target_mod ? __mod_registry : mod_order_place(target_mod);
-
-		for (; end_mod < start_mod; start_mod--) {
-
-			if ((ret = mod_disable(*start_mod--))) {
-				return ret;
-			}
-
-			runlevel_mod_checkin(*start_mod);
+	for (; start_mod != end_mod; start_mod++) {
+		if ((ret = mod_enable(*start_mod))) {
+			return ret;
 		}
 	}
 
 	return 0;
 }
 
+static int runlevel_decrease(runlevel_nr_t rl) {
+	const struct mod *const volatile*start_mod, *const volatile*end_mod;
+	int ret;
+
+	start_mod = runlevel_sentinel[rl];
+	end_mod = rl > 0 ? runlevel_sentinel[rl - 1] : __mod_registry;
+
+	for (; start_mod != end_mod; start_mod--) {
+		if ((ret = mod_disable(*start_mod))) {
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
+
+	if (!res) {
+		init_level = new_rl;
+		printk("runlevel: init level is %d\n", init_level);
+	} else {
+		printk("Failed to get into level %d, current level %d\n",
+					new_rl, init_level);
+	}
+
+	return res;
+}
+
+int runlevel_set(runlevel_nr_t level) {
+	int (*runlevel_change)(runlevel_nr_t);
+	int d;
+	int ret;
+
+	if (!runlevel_nr_valid(level)) {
+		return -EINVAL;
+	}
+
+	runlevels_init();
+
+	if (init_level < level) {
+		d = 1;
+		runlevel_change = runlevel_increase;
+	} else {
+		d = -1;
+		runlevel_change = runlevel_decrease;
+	}
+
+	while (init_level != level) {
+
+		ret = runlevel_change(init_level);
+		if (runlevel_change_hook(init_level + d, ret)) {
+			return ret;
+		}
+	}
+
+	return 0;
+}
