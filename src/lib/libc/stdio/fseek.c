@@ -34,6 +34,10 @@ int fseek(FILE *file, long int offset, int origin) {
 	return 0;
 }
 
+int fseeko(FILE *file, off_t offset, int origin) {
+	return fseek(file, offset, origin);
+}
+
 long int ftell(FILE *file) {
 	if (NULL == file) {
 		SET_ERRNO(EBADF);

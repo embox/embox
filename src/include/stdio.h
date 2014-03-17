@@ -176,6 +176,7 @@ extern int remove(const char *pathname);
  *  position indicator, or end-of-file, respectively
  */
 extern int fseek(FILE *stream, long int offset, int origin);
+extern int fseeko(FILE *stream, off_t offset, int origin);
 
 extern long int ftell(FILE *stream);
 extern off_t ftello(FILE *stream);
