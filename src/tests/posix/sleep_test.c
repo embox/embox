@@ -9,15 +9,14 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <kernel/time/ktime.h>
-#include <kernel/thread.h>
+#include <kernel/time/time.h>
 #include <kernel/sched/waitq.h>
 #include <pthread.h>
 
 EMBOX_TEST_SUITE("sleep suite");
 
 #define EPSILON_BORDER 30
-#define TIME_TO_SLEEP  50
+#define TIME_TO_SLEEP  (50 * USEC_PER_MSEC)
 #define NUM_THREADS     8
 #define BENCH_LOOPS   300
 
@@ -30,8 +29,9 @@ TEST_CASE("one sleep") {
 	clock_t cur_time, epsilon;
 
 	cur_time = clock();
-	ksleep(TIME_TO_SLEEP);
-	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
+	usleep(TIME_TO_SLEEP);
+	epsilon = abs((int) (clock() - cur_time)
+			- (int) (TIME_TO_SLEEP / USEC_PER_MSEC));
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
 
@@ -67,7 +67,7 @@ TEST_CASE("timeout sleep") {
  */
 
 static void * handler1(void* args) {
-	ksleep(TIME_TO_SLEEP * (uint32_t) args);
+	usleep(TIME_TO_SLEEP * (uint32_t) args);
 	test_emit('0' + (uint32_t) args);
 	return NULL;
 }
@@ -97,7 +97,7 @@ TEST_CASE("simple multi-threaded check") {
  * after execute buffer2 must be "87654321"
  */
 static void * handler2(void* args) {
-	ksleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
+	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
 	test_emit('1' + (uint32_t) args);
 	return NULL;
 }
@@ -120,7 +120,7 @@ TEST_CASE("sleep sort") {
 
 TEST_CASE("sleep 0 seconds") {
 	test_emit('1');
-	ksleep(0);
+	usleep(0);
 	test_emit('2');
 	test_assert_emitted("12");
 }
@@ -128,7 +128,7 @@ TEST_CASE("sleep 0 seconds") {
 TEST_CASE("many sleeps") {
 
 	for (int i = 0; i < BENCH_LOOPS; i++) {
-		ksleep(i % 17);
+		usleep((i % 17) * USEC_PER_MSEC);
 	}
 }
 
