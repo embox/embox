@@ -1,15 +1,13 @@
 diff -uar tar-1.27.1/src/Makefile.in source/src/Makefile.in
 --- tar-1.27.1/src/Makefile.in	2013-11-17 20:18:38.000000000 +0400
-+++ source/src/Makefile.in	2014-03-17 15:22:07.521070206 +0400
-@@ -1301,8 +1301,9 @@
++++ source/src/Makefile.in	2014-03-17 16:59:29.147007668 +0400
+@@ -1301,8 +1301,7 @@
  	done; rm -f c$${pid}_.???; exit $$bad
  
  tar$(EXEEXT): $(tar_OBJECTS) $(tar_DEPENDENCIES) $(EXTRA_tar_DEPENDENCIES) 
 -	@rm -f tar$(EXEEXT)
 -	$(AM_V_CCLD)$(LINK) $(tar_OBJECTS) $(tar_LDADD) $(LIBS)
-+	true
-+	#@rm -f tar$(EXEEXT)
-+	#$(AM_V_CCLD)$(LINK) $(tar_OBJECTS) $(tar_LDADD) $(LIBS)
++	@true
  
  mostlyclean-compile:
  	-rm -f *.$(OBJEXT)
