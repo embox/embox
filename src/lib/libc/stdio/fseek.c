@@ -42,6 +42,10 @@ long int ftell(FILE *file) {
 	return lseek(file->fd, 0L, SEEK_CUR);
 }
 
+off_t ftello(FILE *file) {
+	return ftell(file);
+}
+
 int fgetpos(FILE *stream, fpos_t *pos) {
 	off_t mypos;
 
