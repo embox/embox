@@ -87,22 +87,6 @@ extern int mod_enable_rec_safe(const struct mod *mod, bool recursive_safe);
  *   dependencies.
  */
 extern int mod_disable(const struct mod *mod);
-
-/**
- * @brief Disable specified #mod resolving it's dependencies. If #recursive_safe
- * flag is set, founded possible cyclic dependendicies ignored and not generating
- * errors
- *
- * @param mod
- *   The mod to enable
- * @param recursive_safe
- *   Cyclic detection flag. When set cyclic detection not generating error.
- *
- * @return
- *   Same as #mod_disable
- */
-extern int mod_disable_rec_safe(const struct mod *mod, bool recursive_safe);
-
 /**
  * Tells whether the specified mod is enabled or not.
  *

@@ -85,30 +85,6 @@ module_get_headers = \
 module_get_files = \
 	$(foreach s,$(get 1->sources),$(get s->fileFullName))
 
-
-# Performs topological sort of library modules.
-# Anonymous function performs sorting,
-#	1 arg: Black, visited, sorted vertexes, consists of topological sorted vertexes.
-#	2 arg: Grey vertexes, considering on this step.
-#	3 arg: White vertexes, have not reach those.
-# On each step:
-#	If there is no grey or white vertexes
-#		 print out $1. Exit.
-#	Else
-#		If there is grey vertexes,
-#			take first.
-#			If one has white vertexes as depends,
-#				move them in front of grey vertexes.
-#			Else
-#				If one has grey vertexes as depends,
-#					move it to end of grey vertexes list.
-#				Else move one in front of black vertexes.
-#		Else
-#			move first of white vertexes to grey vertexes.
-#
-#	Take next step.
-#
-
 filter_static_reacheables=$(get $1.depends)
 define filter_static_modules
 	$(call topsort,$(strip $(foreach m,$1,$(if $(get $(get m->type).isStatic),$m))),filter_static_reacheables)
@@ -118,7 +94,7 @@ endef
 # 1. Vertexes
 # 2. Function of one argument returning vertex's reacheable vertex
 define topsort
-	$(shell echo $(foreach v,$1,$(foreach e,$(call $2,$v) $v,$v $e)) | $(TSORT) | $(TAC))
+	$(shell echo $(foreach v,$1,$(foreach u,$(call $2,$v) $v,$v $u)) | $(TSORT) | $(TAC))
 endef
 
 $(def_all)
