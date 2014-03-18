@@ -19,78 +19,21 @@
 
 static runlevel_nr_t init_level = -1;
 
-static const struct mod **runlevel_sentinel[RUNLEVEL_NRS_TOTAL]; ;
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel0);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel1);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel2);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel3);
 
-static void runlevels_init(void) {
-	static char inited;
+static const struct mod *const volatile*mod_runlevels_start[RUNLEVEL_NRS_TOTAL] = {
+	__mod_runlevel0, __mod_runlevel1, __mod_runlevel2, __mod_runlevel3
+};
 
-	/* sentinel init */
-	if (!inited) {
-		int i;
-		const struct mod **modp;
-
-		extern const struct mod *__RUNLEVEL_LAST_MODULE(0),
-		       *__RUNLEVEL_LAST_MODULE(1),
-		       *__RUNLEVEL_LAST_MODULE(2),
-		       *__RUNLEVEL_LAST_MODULE(3);
-		const struct mod **last_mod_raw[RUNLEVEL_NRS_TOTAL] = {
-			&__RUNLEVEL_LAST_MODULE(0),
-			&__RUNLEVEL_LAST_MODULE(1),
-			&__RUNLEVEL_LAST_MODULE(2),
-			&__RUNLEVEL_LAST_MODULE(3),
-		};
-
-		modp = (const struct mod **) __mod_registry;
-
-		for (i = 0; i < RUNLEVEL_NRS_TOTAL; i++) {
-
-			if (*last_mod_raw[i]) {
-				while (*modp != *last_mod_raw[i]) {
-					modp ++;
-				}
-
-				modp++;
-			}
-
-			runlevel_sentinel[i] = modp;
-
-		}
-
-		inited = 1;
-	}
-}
-
-static int runlevel_increase(runlevel_nr_t rl) {
-	const struct mod *const volatile*start_mod, *const volatile*end_mod;
-	int ret;
-
-	start_mod = rl < 0 ? __mod_registry : runlevel_sentinel[rl];
-	end_mod = runlevel_sentinel[rl + 1];
-
-	for (; start_mod != end_mod; start_mod++) {
-		if ((ret = mod_enable(*start_mod))) {
-			return ret;
-		}
-	}
-
-	return 0;
-}
-
-static int runlevel_decrease(runlevel_nr_t rl) {
-	const struct mod *const volatile*start_mod, *const volatile*end_mod;
-	int ret;
-
-	start_mod = runlevel_sentinel[rl];
-	end_mod = rl > 0 ? runlevel_sentinel[rl - 1] : __mod_registry;
-
-	for (; start_mod != end_mod; start_mod--) {
-		if ((ret = mod_disable(*start_mod))) {
-			return ret;
-		}
-	}
-
-	return 0;
-}
+static const struct mod *const volatile*mod_runlevels_end[RUNLEVEL_NRS_TOTAL] = {
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel0, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel1, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel2, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel3, tail),
+};
 
 static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
 
@@ -106,27 +49,38 @@ static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
 }
 
 int runlevel_set(runlevel_nr_t level) {
-	int (*runlevel_change)(runlevel_nr_t);
+	const struct mod *const volatile**start_mods, *const volatile**end_mods;
+	int (*mod_op)(const struct mod *);
 	int d;
-	int ret;
 
 	if (!runlevel_nr_valid(level)) {
 		return -EINVAL;
 	}
 
-	runlevels_init();
-
 	if (init_level < level) {
+		start_mods = mod_runlevels_start;
+		end_mods = mod_runlevels_end;
 		d = 1;
-		runlevel_change = runlevel_increase;
+		mod_op = mod_enable;
 	} else {
+		start_mods = mod_runlevels_end;
+		end_mods = mod_runlevels_start;
 		d = -1;
-		runlevel_change = runlevel_decrease;
+		mod_op = mod_disable;
 	}
 
 	while (init_level != level) {
+		const struct mod *const volatile*mod;
+		int ret;
 
-		ret = runlevel_change(init_level);
+		ret = 0;
+		for (mod = start_mods[init_level + d];
+				mod != end_mods[init_level + d]; mod += d) {
+			if ((ret = mod_op(*mod))) {
+				goto mod_fail;
+			}
+		}
+mod_fail:
 		if (runlevel_change_hook(init_level + d, ret)) {
 			return ret;
 		}

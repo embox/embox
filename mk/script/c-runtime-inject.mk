@@ -70,10 +70,7 @@ runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
 				 $(call mod_inst_closure,$m))))
 
 mod_def = \
-	MOD_DEF($(call fqn2id,$(basename $1)), "$(basename $1)", $(subst .,,$(suffix $1)));
-
-runlevel_def = \
-	RUNLEVEL_DEF($1, $2);
+	MOD_DEF($1, $(call fqn2id,$(basename $2)), "$(basename $2)", $(subst .,,$(suffix $2)));
 
 val_or_null = $(if $1,$1,generic__notexisting)
 
@@ -81,9 +78,7 @@ val_or_null = $(if $1,$1,generic__notexisting)
 # 1. Runlevels to generate
 # 2. Already loaded modules
 # 3. Modules to be loaded at this runlevel
-_gen_mod_runlevels = $(foreach m,$3,$(info $(call mod_def,$(call mod_inst_fqn,$m)))) \
-	$(info $(call runlevel_def,$(firstword $1),$(call val_or_null,$(strip \
-			$(call fqn2id,$(call mod_inst_fqn,$(lastword $3))))))) \
+_gen_mod_runlevels = $(foreach m,$3,$(info $(call mod_def,$(firstword $1),$(call mod_inst_fqn,$m)))) \
 	$(call gen_mod_runlevels,$(call nofirstword,$1),$2 $3)
 
 _mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
