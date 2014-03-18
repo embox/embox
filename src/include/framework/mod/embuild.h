@@ -154,7 +154,7 @@
 
 #ifndef __MOD_DEF
 #define __MOD_DEF(mod_nm) \
-	struct __mod_private __MOD_PRIVATE(mod_nm); \
+	struct __mod_private __MOD_PRIVATE(mod_nm) __attribute__((weak)); \
 	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL); \
 	extern const struct mod_app __MOD_APP(mod_nm) \
