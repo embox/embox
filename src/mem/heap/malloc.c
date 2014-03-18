@@ -78,7 +78,8 @@ void *memalign(size_t boundary, size_t size) {
 		}
 
 		/* No corresponding heap was found */
-		segment_pages_cnt = (size + boundary + PAGE_SIZE()) / PAGE_SIZE();
+		/* XXX allocate more approproate count of pages without redundancy */
+		segment_pages_cnt = (size + boundary + 2 * PAGE_SIZE()) / PAGE_SIZE();
 		mm = (struct mm_segment *) page_alloc(__heap_pgallocator, segment_pages_cnt);
 		if (mm == NULL)
 			return NULL;
