@@ -16,6 +16,20 @@
 
 #define PCI_INFO_LABEL "\tpci: "
 
+static int pci_drv_probe(const struct pci_driver *drv, struct pci_slot_dev *dev) {
+	int i;
+
+	for (i = 0; i < drv->id_table_n; i++) {
+		if (dev->vendor == drv->id_table[i].ven_id &&
+				dev->device == drv->id_table[i].dev_id &&
+				!drv->init(dev)) {
+			return 0;
+		}
+	}
+
+	return -ENOSYS;
+}
+
 static int pci_mod_enable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
 	struct pci_slot_dev *dev, *nxt_pci_dev;
@@ -24,9 +38,8 @@ static int pci_mod_enable(const struct mod *self) {
 
 	pci_foreach_dev(dev, nxt_pci_dev) {
 		if (!dev->pci_drv) {
-			if (dev->vendor == pci_drv->ven_id &&
-					dev->device == pci_drv->dev_id &&
-					!pci_drv->init(dev)) {
+
+			if (!pci_drv_probe(pci_drv, dev)) {
 
 				printk(PCI_INFO_LABEL "%s handles %04x:%04x bus %d slot %d func %d\n",
 						pci_drv->name, dev->vendor, dev->device,
