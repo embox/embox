@@ -93,7 +93,7 @@
  * @param mod_nm
  */
 #define MOD_APP_DEF(mod_nm) \
-	__MOD_APP_DEF
+	__MOD_APP_DEF(mod_nm)
 
 /**
  * Defines a new dependency between two specified modules.
