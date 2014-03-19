@@ -9,6 +9,7 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
+#include <asm-generic/static_irq.h>
 
 
 #include <kernel/time/clock_source.h>

@@ -9,6 +9,8 @@
 #include <assert.h>
 #include <stdint.h>
 
+
+#include <asm-generic/static_irq.h>
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
@@ -40,15 +42,33 @@
  */
 
 EMBOX_UNIT_INIT(nvic_init);
-
+#ifndef STATIC_IRQ_EXTENTION
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
-
-void interrupt_handle(void);
 
 extern void *trap_table_start;
 extern void *trap_table_end;
 
+void interrupt_handle(void) {
+	uint32_t source;
+
+	source = REG_LOAD(SCB_ICSR) & 0x1ff;
+
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+
+	irq_dispatch(source);
+
+	critical_leave(CRITICAL_IRQ_HANDLER);
+
+	critical_dispatch_pending();
+
+}
+#endif
+
 static int nvic_init(void) {
+
+#ifndef STATIC_IRQ_EXTENTION
 	ipl_t ipl;
 	int i;
 	void *ptr;
@@ -68,7 +88,7 @@ static int nvic_init(void) {
 			(int) exception_table);
 
 	ipl_restore(ipl);
-
+#endif
 	return 0;
 }
 
@@ -92,19 +112,3 @@ void irqctrl_force(unsigned int interrupt_nr) {
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_handle(void) {
-	uint32_t source;
-
-	source = REG_LOAD(SCB_ICSR) & 0x1ff;
-
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-
-	critical_enter(CRITICAL_IRQ_HANDLER);
-
-	irq_dispatch(source);
-
-	critical_leave(CRITICAL_IRQ_HANDLER);
-
-	critical_dispatch_pending();
-
-}
