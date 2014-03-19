@@ -18,8 +18,9 @@ PKG_PATCH := pkg_patch.txt
 
 PKG_CONF_FLAGS:=
 PKG_CONF_FLAGS+=--build=$(shell gcc -v 2>&1 | grep Target | awk '{print $$2}')
-PKG_CONF_FLAGS+=--host=$(shell echo -n $${EMBOX_CROSS_COMPILE:-i386-} | head -c -1)
-PKG_CONF_FLAGS+=--target=$(shell echo -n $${EMBOX_CROSS_COMPILE:-i386-} | head -c -1)
+PKG_CONF_FLAGS+=--host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
+PKG_CONF_FLAGS+=--target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
+PKG_CONF_FLAGS+=ac_cv_exeext=no
 PKG_CONF_FLAGS+=ac_cv_func_btowc=no
 PKG_CONF_FLAGS+=ac_cv_func_realpath=no
 PKG_CONF_FLAGS+=ac_cv_func_chown=no
@@ -179,10 +180,10 @@ merge_trees: $(EXTRACTED)
 .PHONY: $(ENVIRONMENT)
 $(ENVIRONMENT): | $(PKG_BUILD_DIR)
 	-rm $@
-	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"               >>$@
-	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'"           >>$@
-	#echo "EMBOX_DERIVED_CROSS_COMPILE='$(EMBOX_DERIVED_CROSS_COMPILE)'" >>$@
-	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                   >>$@
+	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"     >> $@
+	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'" >> $@
+	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"       >> $@
+	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                 >> $@
 
 # intentionally not taking into account possible changes in $(QMAKE_CONF)
 configure: merge_trees $(ENVIRONMENT) | $(PKG_BUILD_DIR)
