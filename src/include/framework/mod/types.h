@@ -12,37 +12,35 @@
 #include <stddef.h>
 
 struct mod;
-struct mod_package;
+struct mod_build_info;
 struct __mod_private;
 
-struct mod_info;
-struct mod_cmd;
+struct mod_ops;
 struct mod_app;
 struct mod_member;
 
 struct mod {
-	/** Null-terminated array with dependency information. */
-	const struct mod *volatile const *requires,
-		  *volatile const *provides; /**< Modules, that this module depends on;
-                                                  which are dependent on this. */
-	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
-	const struct mod *volatile const *contents;  /**< Contained in this module. */
+	const struct mod_ops *ops;
 
-	/* Descriptive information about the module provided by Embuild. */
-
-	const struct mod_package *package; /**< Definition package. */
-	const char *name;                  /**< Name assigned by EMBuild. */
-
-	const struct mod_label   *label;   /**< (optional) Security. */
-
-	/* Data used to properly enable/disable the module itself. */
-
-	const struct mod_info    *info;    /**< (optional) Application specific. */
-	const struct mod_cmd     *cmd;     /**< (optional) Application specific. */
-	const struct mod_app     *app;     /**< (optional) Application specific. */
-	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
 	struct __mod_private     *priv; /**< Used by dependency resolver. */
 
+	/* Data used to properly enable/disable the module itself. */
+	const struct mod_app     *app;     /**< (optional) Application specific. */
+	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
+
+	/* Const build info data */
+	const struct mod_build_info *build_info;
+};
+
+struct mod_app {
+	char  *data;
+	size_t data_sz;
+	char  *bss;
+	size_t bss_sz;
+};
+
+struct __mod_private {
+	unsigned int flags;
 };
 
 struct __mod_section {
@@ -62,25 +60,17 @@ struct mod_sec_label {
 	const struct mod *mod;
 };
 
-struct mod_cmd {
-	const char *name;
-	const char *brief;
-	const char *details;
-};
-
-struct mod_app {
-	char  *data;
-	size_t data_sz;
-	char  *bss;
-	size_t bss_sz;
-};
-
-struct mod_package {
-	const char *name; /**< Package name assigned by EMBuild. */
-};
-
-struct __mod_private {
-	unsigned int flags;
+struct mod_build_info {
+	/* Descriptive information about the module provided by Embuild. */
+	const char *pkg_name; /**< Definition package. */
+	const char *mod_name; /**< Name assigned by EMBuild. */
+	const struct mod_label   *label;   /**< (optional) Security. */
+	/* Null-terminated array with dependency information. */
+	const struct mod *volatile const *requires,
+	      *volatile const *provides; /**< Modules, that this module depends on;
+                                                  which are dependent on this. */
+	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
+	const struct mod *volatile const *contents;  /**< Contained in this module. */
 };
 
 #endif /* FRAMEWORK_MOD_TYPES_H_ */

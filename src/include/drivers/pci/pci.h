@@ -159,6 +159,8 @@
 
 struct pci_slot_dev {
 	struct dlist_head lst;
+	const struct pci_driver *pci_drv;
+
 	uint32_t busn;
 	uint8_t slot;
 	uint8_t func;

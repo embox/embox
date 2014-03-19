@@ -37,125 +37,9 @@
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *, __mod_sec_labels, NULL);
 
-static int mod_traverse(const struct mod *mod,
-		int (*mod_op)(const struct mod *), unsigned int flags);
-static int mod_do_enable(const struct mod *mod);
-static int mod_do_disable(const struct mod *mod);
-static void mod_init_app(const struct mod *mod);
-
 bool mod_is_running(const struct mod *mod) {
 	assert(mod);
 	return mod_flag_tst(mod, MOD_FLAG_ENABLED);
-}
-
-int mod_enable_rec_safe(const struct mod *mod, bool rec_safe) {
-	unsigned int flags = MOD_FLAG_ENABLED;
-	if (rec_safe)
-		flags |= MOD_FLAG_OPINPROGRESS;
-
-	assert(mod);
-	return mod_traverse(mod, mod_do_enable, flags);
-}
-
-int mod_enable(const struct mod *mod) {
-	return mod_enable_rec_safe(mod, false);
-}
-
-int mod_disable_rec_safe(const struct mod *mod, bool rec_safe) {
-	unsigned int flags = 0;
-	if (rec_safe)
-		flags |= MOD_FLAG_OPINPROGRESS;
-
-	assert(mod);
-	return mod_traverse(mod, mod_do_disable, flags);
-}
-
-int mod_disable(const struct mod *mod) {
-	return mod_disable_rec_safe(mod, false);
-}
-
-static int mod_traverse_all(const struct mod *volatile const *mods,
-		int (*mod_op)(const struct mod *), unsigned int flags) {
-	const struct mod *mod;
-
-	array_spread_nullterm_foreach(mod, mods) {
-		if (0 != mod_traverse(mod, mod_op, flags))
-			return -EINTR;
-	}
-
-	return 0;
-}
-
-static int mod_traverse(const struct mod *mod,
-		int (*mod_op)(const struct mod *), unsigned int flags) {
-	int ret;
-	int is_enable = (flags & MOD_FLAG_ENABLED);
-	const struct mod *volatile const *deps = (is_enable ? mod->requires : mod->provides);
-
-	if (mod_flag_cmp(mod, flags) & MOD_FLAG_ENABLED)
-		return 0;
-
-	if (mod_flag_tst(mod, flags & MOD_FLAG_OPINPROGRESS))
-		return 0;  // TODO Isn't it an error? -- Eldar
-
-	assert(!mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS),
-			"Recursive mod traversal");
-
-	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
-
-	if (!is_enable) {
-		ret = mod_traverse_all(mod->after_deps, mod_op,
-				flags | MOD_FLAG_OPINPROGRESS);
-		if (ret)
-			goto out;
-	}
-
-	ret = mod_traverse_all(deps, mod_op,
-			flags & ~MOD_FLAG_OPINPROGRESS);
-	if (ret)
-		goto out;
-
-	ret = mod_op(mod);
-	if (ret)
-		goto out;
-
-	if (is_enable) {
-		ret = mod_traverse_all(mod->after_deps, mod_op,
-				flags | MOD_FLAG_OPINPROGRESS);
-		if (ret)
-			goto out;
-	}
-
-out:
-	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
-	return ret;
-}
-
-static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {
-	const struct mod_info *info = mod->info;
-	return info ? info->ops : NULL;
-}
-
-static int invoke_mod_enable(const struct mod *mod) {
-	const struct mod_ops *ops;
-	mod_op_t enable;
-
-	if (!(ops = mod_ops_deref(mod)) || !(enable = ops->enable)) {
-		return 0;
-	}
-
-	return enable((struct mod_info *) mod->info);
-}
-
-static int invoke_mod_disable(const struct mod *mod) {
-	const struct mod_ops *ops;
-	mod_op_t disable;
-
-	if (!(ops = mod_ops_deref(mod)) || !(disable = ops->disable)) {
-		return 0;
-	}
-
-	return disable((struct mod_info *) mod->info);
 }
 
 static int invoke_member_init(const struct mod_member *member) {
@@ -166,7 +50,7 @@ static int invoke_member_init(const struct mod_member *member) {
 		return 0;
 	}
 
-	return init((struct mod_member *) member);
+	return init(member);
 }
 
 static int invoke_member_fini(const struct mod_member *member) {
@@ -177,62 +61,7 @@ static int invoke_member_fini(const struct mod_member *member) {
 		return 0;
 	}
 
-	return fini((struct mod_member *) member);
-}
-
-static int mod_do_enable(const struct mod *mod) {
-	const struct mod_member *member;
-
-	if (mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
-		return 0;
-	}
-
-	mod_init_app(mod);
-
-	array_spread_nullterm_foreach(member, mod->members) {
-		if (0 != invoke_member_init(member)) {
-			goto opfailed;
-		}
-	}
-
-	if (0 != invoke_mod_enable((struct mod *) mod)) {
-		goto opfailed;
-	}
-
-	mod_flag_clr(mod, MOD_FLAG_OPFAILED);
-	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
-
-	return 0;
-
-opfailed:
-	mod_flag_set(mod, MOD_FLAG_OPFAILED);
-	return -EINTR;
-}
-
-static int mod_do_disable(const struct mod *mod) {
-	const struct mod_member *member;
-
-	if (!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
-		return 0;
-	}
-
-	if (0 != invoke_mod_disable((struct mod *) mod)) {
-		goto opfailed;
-	}
-
-	array_spread_nullterm_foreach(member, mod->members) {
-		if (0 != invoke_member_fini(member)) {
-			goto opfailed;
-		}
-	}
-
-	mod_flag_clr(mod, MOD_FLAG_OPFAILED);
-	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
-	return 0;
-
-opfailed:
-	mod_flag_set(mod, MOD_FLAG_OPFAILED);
-	return -EINTR;
+	return fini(member);
 }
 
 static void mod_init_app(const struct mod *mod) {
@@ -253,7 +82,7 @@ int mod_activate_app(const struct mod *mod) {
 	if (app) {
 		const struct mod *dep;
 
-		array_spread_nullterm_foreach(dep, mod->requires) {
+		mod_foreach_provides(dep, mod) {
 			int ret = mod_activate_app(dep);
 			if (ret)
 				return ret;
@@ -270,12 +99,13 @@ bool mod_check(const struct mod *mod) {
 	const struct mod_sec_label *sec_label;
 	assert(mod);
 
-	if (!mod->label)
+	if (!mod->build_info || !mod->build_info->label)
 		return true;
 
 	array_spread_nullterm_foreach(sec_label, __mod_sec_labels) {
 		if (sec_label->mod == mod)
-			return !memcmp(&sec_label->label, mod->label, sizeof(*mod->label));
+			return !memcmp(&sec_label->label, mod->build_info->label,
+					sizeof(*mod->build_info->label));
 	}
 
 	return true;
@@ -283,25 +113,25 @@ bool mod_check(const struct mod *mod) {
 
 const struct mod *mod_lookup(const char *fqn) {
 	const struct mod *mod;
-	const char *mod_name = strrchr(fqn, '.');
+	const char *mod_nm = strrchr(fqn, '.');
 	size_t pkg_name_len;
 
-	if (!mod_name) {
-		mod_name = fqn;  /* no package, name starts from the beginning */
+	if (!mod_nm) {
+		mod_nm = fqn;  /* no package, name starts from the beginning */
 	}
 
-	pkg_name_len = mod_name - fqn;
+	pkg_name_len = mod_nm - fqn;
 
 	if (pkg_name_len) {
-		++mod_name;  /* skip '.' */
+		++mod_nm;  /* skip '.' */
 	}
 
 	mod_foreach(mod) {
-		if (strcmp(mod->name, mod_name)) {
+		if (strcmp(mod_name(mod), mod_nm)) {
 			continue;
 		}
-		if (strncmp(mod->package->name, fqn, pkg_name_len) ||
-		    mod->package->name[pkg_name_len]) {
+		if (strncmp(mod_pkg_name(mod), fqn, pkg_name_len) ||
+		    mod_pkg_name(mod)[pkg_name_len]) {
 			continue;
 		}
 		return mod;
@@ -310,3 +140,63 @@ const struct mod *mod_lookup(const char *fqn) {
 	return NULL;
 }
 
+int mod_enable(const struct mod *mod) {
+	const struct mod_member *member;
+
+	if (mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+		return 0;
+	}
+
+	mod_init_app(mod);
+
+	array_spread_nullterm_foreach(member, mod->members) {
+		if (0 != invoke_member_init(member)) {
+			goto opfailed;
+		}
+	}
+
+	if (mod->ops && mod->ops->enable) {
+		if (mod->ops->enable(mod)) {
+			goto opfailed;
+		}
+	}
+
+	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
+
+	return 0;
+opfailed:
+	mod_flag_set(mod, MOD_FLAG_OPFAILED);
+	return -EINTR;
+}
+
+int mod_disable(const struct mod *mod) {
+	const struct mod_member *member;
+
+	if (!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+		return 0;
+	}
+
+	if (mod->ops && mod->ops->disable) {
+		if (mod->ops->disable(mod)) {
+			goto opfailed;
+		}
+	}
+
+	array_spread_nullterm_foreach(member, mod->members) {
+		if (0 != invoke_member_fini(member)) {
+			goto opfailed;
+		}
+	}
+
+	mod_flag_clr(mod, MOD_FLAG_OPFAILED);
+	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
+	return 0;
+
+opfailed:
+	mod_flag_set(mod, MOD_FLAG_OPFAILED);
+	return -EINTR;
+}
+
+int mod_enable_rec_safe(const struct mod *mod, bool rec_safe) {
+	return mod_enable(mod);
+}

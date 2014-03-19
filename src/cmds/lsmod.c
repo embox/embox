@@ -21,7 +21,7 @@ static void print_usage(void) {
 
 static void mod_print(const struct mod *mod) {
 	int enabled = mod->priv->flags & 0x1; // XXX fix later
-	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod->package->name, mod->name);
+	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod_pkg_name(mod), mod_name(mod));
 }
 
 static int exec(int argc, char **argv) {
@@ -54,8 +54,8 @@ static int exec(int argc, char **argv) {
 
 	printf("\n");
 	mod_foreach(mod) {
-		if ((substr_package && !strstr(mod->package->name, substr_package)) ||
-			(substr_name && !strstr(mod->name, substr_name))) {
+		if ((substr_package && !strstr(mod_pkg_name(mod), substr_package)) ||
+			(substr_name && !strstr(mod_name(mod), substr_name))) {
 			continue;
 		}
 		mod_print(mod);
