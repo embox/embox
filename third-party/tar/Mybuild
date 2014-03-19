@@ -1,6 +1,7 @@
 package third_party.gnu
 
 @Build(script="$(EXTERNAL_MAKE)")
+@App
 @Cmd(name = "tar",
 	help = "The GNU version of the tar archiving utility",
 	man = '''
