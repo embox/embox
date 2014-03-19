@@ -17,9 +17,9 @@ PKG_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(PKG_URL))
 PKG_PATCH := pkg_patch.txt
 
 PKG_CONF_FLAGS:=
-#PKG_CONF_FLAGS+=--build=x86_64-linux-gnu
-PKG_CONF_FLAGS+=--host=i386-embox-none
-#PKG_CONF_FLAG+=--target=$(EMBOX_IMPORTED_CROSS_COMPILE)
+PKG_CONF_FLAGS+=--build=$(shell gcc -v 2>&1 | grep Target | awk '{print $$2}')
+PKG_CONF_FLAGS+=--host=$(shell echo -n $${EMBOX_CROSS_COMPILE:-i386-} | head -c -1)
+PKG_CONF_FLAGS+=--target=$(shell echo -n $${EMBOX_CROSS_COMPILE:-i386-} | head -c -1)
 PKG_CONF_FLAGS+=ac_cv_func_btowc=no
 PKG_CONF_FLAGS+=ac_cv_func_realpath=no
 PKG_CONF_FLAGS+=ac_cv_func_chown=no
@@ -172,8 +172,9 @@ $(EXTRACTED): $(PKG_PATCH) $(DOWNLOADED)
 # http://svn.haxx.se/users/archive-2007-10/0797.shtml
 # but typically overwriting is what we want for our part of tree contents
 merge_trees: $(EXTRACTED)
-	#cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`
-
+	if [ -e tree ]; then \
+		cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`; \
+	fi
 
 .PHONY: $(ENVIRONMENT)
 $(ENVIRONMENT): | $(PKG_BUILD_DIR)
