@@ -9,8 +9,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-
-#include <asm-generic/static_irq.h>
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
@@ -41,8 +39,10 @@
  *     nr / 32
  */
 
-EMBOX_UNIT_INIT(nvic_init);
 #ifndef STATIC_IRQ_EXTENTION
+
+EMBOX_UNIT_INIT(nvic_init);
+
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void *trap_table_start;
@@ -64,11 +64,9 @@ void interrupt_handle(void) {
 	critical_dispatch_pending();
 
 }
-#endif
 
 static int nvic_init(void) {
 
-#ifndef STATIC_IRQ_EXTENTION
 	ipl_t ipl;
 	int i;
 	void *ptr;
@@ -88,9 +86,10 @@ static int nvic_init(void) {
 			(int) exception_table);
 
 	ipl_restore(ipl);
-#endif
 	return 0;
 }
+
+#endif
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 	REG_STORE(NVIC_ENABLE_BASE + interrupt_nr / 8,

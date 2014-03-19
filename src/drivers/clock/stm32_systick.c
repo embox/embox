@@ -9,9 +9,7 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
-#include <asm-generic/static_irq.h>
-
-
+#include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
 #include <embox/unit.h>
@@ -37,21 +35,14 @@
 #define SCB_SHP_PERIF_N 8
 
 static struct clock_source this_clock_source;
-#ifndef STATIC_IRQ_EXTENTION
-#include <kernel/irq.h>
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
 }
-#endif
 
 static int this_init(void) {
 	clock_source_register(&this_clock_source);
-#ifndef STATIC_IRQ_EXTENTION
 	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source, "stm32 systick timer");
-#else
-	return 0;
-#endif
 }
 
 static int this_config(struct time_dev_conf * conf) {
@@ -96,11 +87,4 @@ static struct clock_source this_clock_source = {
 
 EMBOX_UNIT_INIT(this_init);
 
-#ifdef STATIC_IRQ_EXTENTION
-#include <asm-generic/static_irq.h>
-static void arm_m_systick_handler(void) {
-	clock_tick_handler(SYSTICK_IRQ, &this_clock_source);
-}
-
-ARM_M_IRQ_HANDLER_DEF(15, &arm_m_systick_handler);
-#endif
+STATIC_IRQ_ATTACH(SYSTICK_IRQ, clock_handler, &this_clock_source);
