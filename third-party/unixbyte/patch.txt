@@ -1,6 +1,15 @@
- diff -ur UnixBench/Makefile unixbyte/Makefile
+diff -ur UnixBench/Makefile unixbyte/Makefile
 --- UnixBench/Makefile	2011-01-18 09:44:53.000000000 +0300
-+++ unixbyte/Makefile	2014-03-18 21:49:03.179603666 +0400
++++ unixbyte/Makefile	2014-03-19 20:06:34.830737068 +0400
+@@ -53,7 +53,7 @@
+ # COMPILER CONFIGURATION: Set "CC" to the name of the compiler to use
+ # to build the binary benchmarks.  You should also set "$cCompiler" in the
+ # Run script to the name of the compiler you want to test.
+-CC=gcc
++#CC=gcc
+ 
+ # OPTIMISATION SETTINGS:
+ 
 @@ -78,7 +78,7 @@
  #CFLAGS = -DTIME -std1 -verbose -w0
  
@@ -141,6 +150,7 @@
  
  $(PROGDIR)/ubgears: $(SRCDIR)/ubgears.c
  	$(CC) -o $(PROGDIR)/ubgears ${CFLAGS} ${OPTON} $(SRCDIR)/ubgears.c $(GL_LIBS)
+
 
 
 diff -ur UnixBench/src/time-polling.c unixbyte/src/time-polling.c 

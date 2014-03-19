@@ -21,6 +21,7 @@ ExternalProject_Add(
 
    BUILD_COMMAND
       make
+      ""CC=$ENV{EMBOX_DERIVED_CC}""
       ""CFLAGS=$ENV{EMBOX_DERIVED_CFLAGS}""
 
    INSTALL_COMMAND ""
