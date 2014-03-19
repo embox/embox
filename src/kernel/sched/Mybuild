@@ -9,7 +9,7 @@ module sched {
 	depends strategy.api
 
 	@NoRuntime depends embox.kernel.thread.signal.lock_api
-	@NoRuntime depends embox.kernel.thread.signal
+	@NoRuntime depends embox.kernel.thread.signal_api
 	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical

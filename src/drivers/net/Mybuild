@@ -9,8 +9,7 @@ module loopback {
 }
 
 module virtio {
-	option number prep_buff_cnt=16 /* the number of prepared
-									  buffers for rxing */
+	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "virtio.c"
 
 	depends embox.net.skbuff
@@ -24,8 +23,7 @@ module virtio {
 }
 
 module ti816x {
-	option number prep_buff_cnt=16 /* the number of prepared
-									  buffers for rxing */
+	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "ti816x.c"
 
 	depends embox.net.skbuff

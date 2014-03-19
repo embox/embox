@@ -14,24 +14,23 @@
 #include <util/array.h>
 #include <framework/mod/self.h>
 
-#include "types.h"
+#include <framework/cmd/api.h>
+
+#include <framework/cmd/types.h>
 
 #define __EMBOX_CMD(_exec) \
-	ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry); \
-	static int _exec(int argc, char **argv);  \
-	ARRAY_SPREAD_ADD(__cmd_registry, { \
-			.exec = _exec,             \
-			.mod = &mod_self,          \
-		})
-
-
-#define __EMBOX_EXTERN_CMD(_exec) \
-	ARRAY_SPREAD_DECLARE(const struct cmd, __cmd_registry); \
-	extern int _exec(int argc, char **argv);  \
-	ARRAY_SPREAD_ADD(__cmd_registry, { \
-			.exec = _exec,             \
-			.mod = &mod_self,          \
-		})
+	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);              \
+	static int _exec(int argc, char **argv);           \
+	extern struct cmd_desc __MOD_CMD(__EMBUILD_MOD__)  \
+			__attribute__((weak));                     \
+	struct cmd_mod mod_self = {                        \
+		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, NULL),   \
+		.cmd = {                                       \
+			.exec = _exec,                             \
+			.desc = &__MOD_CMD(__EMBUILD_MOD__),       \
+		}                                              \
+	};                                                 \
+	CMD_ADD(&mod_self.cmd)
 
 #ifdef __CDT_PARSER__
 

@@ -27,7 +27,7 @@ module core extends thread_mode {
 	@NoRuntime depends thread_local
 	@NoRuntime depends thread_cancel
 	//@NoRuntime depends embox.kernel.task.task_thread_key
-	@NoRuntime depends signal
+	@NoRuntime depends signal_api
 	@NoRuntime depends embox.lib.LibCAssert
 	depends embox.kernel.cpu.common
 }
@@ -52,9 +52,20 @@ module idle_thread {
 	@NoRuntime depends embox.kernel.task.kernel_task
 }
 
-module signal {
+@DefaultImpl(signal)
+abstract module signal_api { }
+
+module signal_stub extends signal_api {
+	source "signal_stub.c"
+	@NoRuntime depends embox.kernel.thread.signal.sigstate_stub
+	@NoRuntime depends embox.kernel.thread.signal.siginfoq_stub
+	@NoRuntime depends embox.kernel.thread.signal.lock_stub
+}
+
+module signal extends signal_api {
 	source "signal.c"
-	@NoRuntime depends embox.kernel.thread.signal.sigstate_api
+	@NoRuntime depends embox.kernel.thread.signal.sigstate
+	@NoRuntime depends embox.kernel.thread.signal.siginfoq
 	@NoRuntime depends embox.kernel.thread.signal.lock
 	depends embox.kernel.task.resource.sig_table
 }
