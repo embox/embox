@@ -25,15 +25,17 @@ static int run(int argc, char **argv) {
 		printf("module %s is broken\n", MODULE_NAME);
 	}
 
+	if (mod->build_info && mod->build_info->label) {
+		const struct mod_label *mod_label = mod->build_info->label;
 
-	printf("module %s is correct\n", MODULE_NAME);
-	printf("label is: %d, %d, %d, %d\n",
-			(int)mod->label->bss.vma, (int) mod->label->data.vma,
-			(int)mod->label->rodata.vma, (int)mod->label->text.vma);
+		printf("module %s is correct\n", MODULE_NAME);
+		printf("label is: %d, %d, %d, %d\n",
+				(int)mod_label->bss.vma, (int) mod_label->data.vma,
+				(int)mod_label->rodata.vma, (int)mod_label->text.vma);
 
-	printf("check summ: %x\n", (int)mod->label->bss.vma ^ (int)mod->label->data.vma ^
-			(int)mod->label->rodata.vma ^ (int)mod->label->text.vma);
-
+		printf("check summ: %x\n", (int)mod_label->bss.vma ^ (int)mod_label->data.vma ^
+				(int)mod_label->rodata.vma ^ (int)mod_label->text.vma);
+	}
 
 	return 0;
 }

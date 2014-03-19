@@ -1,9 +1,9 @@
 SECTIONS {
-	.bss..reserve.ktask : {
-		*(.bss..reserve.ktask)
+	.bss.ktask : {
+		*(.bss.ktask)
 
 		_ktask_resource_start = .;
-		*(.bss..reserve.ktask.resource)
+		*(.bss.ktask.resource)
 		_ktask_resource_end = .;
 	}
 }

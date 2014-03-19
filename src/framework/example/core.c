@@ -12,19 +12,17 @@
 #include <string.h>
 #include <framework/mod/ops.h>
 
-
 #include <framework/example/api.h>
 
+ARRAY_SPREAD_DEF(const struct example *, __example_registry);
 
-ARRAY_SPREAD_DEF(const struct example, __example_registry);
-
-static int example_enable(struct mod_info *mod);
+static int example_enable(const struct mod *mod);
 
 const struct mod_ops __example_mod_ops = {
 		.enable = example_enable,
 };
 
-static int example_enable(struct mod_info *mod) {
+static int example_enable(const struct mod *mod) {
 	/* FIXME
 	 * This executed only with optimization's flag (-O1 or more)
 	 */

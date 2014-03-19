@@ -55,10 +55,6 @@ static int init(void) {
 	printk("\nEmbox kernel start\n");
 
 	ret = runlevel_set(target_level);
-	if (ret != 0) {
-		printk("Failed to get into level %d, current level %d\n",
-				target_level, runlevel_get_entered());
-	}
 
 	return ret;
 }

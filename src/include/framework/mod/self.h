@@ -35,34 +35,29 @@
 #define mod_self __MOD(__EMBUILD_MOD__)
 
 /** The #mod structure corresponding to the self mod. */
-extern const struct mod mod_self;
+//extern struct mod mod_self __attribute__((weak));
 
-/**
- * Binds the specified mod data and operations to the self mod.
- *
- * @param mod_ops
- *   Pointer to the #mod_ops structure (if any).
- * @param mod_data
- *   Pointer to the module specific data (if any).
- */
-#define MOD_INFO_BIND(mod_ops, mod_data) \
-	__MOD_INFO_DEF(__EMBUILD_MOD__, mod_ops, mod_data)
+#define __MOD_MEMBER_DECLS(_mod_nm) \
+	ARRAY_SPREAD_DECLARE(const struct mod_member *, \
+			__MOD_MEMBERS(_mod_nm))
 
-#ifndef __cplusplus
-#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
-	const struct mod_info __MOD_INFO(mod_nm) = { \
-		.mod = &__MOD(mod_nm),                   \
-		.ops = _ops,                             \
-		.data = (void *) _data,                  \
-	}
-#else
-#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
-	const struct mod_info __MOD_INFO(mod_nm) = { \
-		&__MOD(mod_nm),                   \
-		_ops,                             \
-		(void *) _data,                   \
-	}
-#endif
+#define MOD_SELF_INIT_DECLS(_mod_nm) \
+	struct __mod_private __MOD_PRIVATE(_mod_nm); \
+	extern const struct mod_app __MOD_APP(_mod_nm) \
+			__attribute__ ((weak)); \
+	__MOD_MEMBER_DECLS(_mod_nm); \
+	extern const struct mod_app __MOD_APP(_mod_nm) \
+			__attribute__ ((weak)); \
+	extern const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
+			__attribute__((weak))
+
+#define MOD_SELF_INIT(_mod_nm, _ops) { \
+	.priv = &__MOD_PRIVATE(_mod_nm), \
+	.ops = _ops, \
+	.app = &__MOD_APP(_mod_nm), \
+	.members = __MOD_MEMBERS(_mod_nm), \
+	.build_info = &__MOD_BUILDINFO(_mod_nm), \
+}
 
 /**
  * Binds the specified data and operations to the mod member.
@@ -80,11 +75,11 @@ extern const struct mod mod_self;
 			MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
 
 #define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
-	static const struct mod_member member_nm = {             \
-		.ops = _ops,                                     \
-		.data = (void *) _data,                          \
-	};                                                       \
-	extern const struct mod_member *__MOD_MEMBERS(mod_nm)[]; \
+	static const struct mod_member member_nm = {                  \
+		.ops = _ops,                                          \
+		.data = (void *) _data,                               \
+	};                                                            \
+	__MOD_MEMBER_DECLS(mod_nm);                                   \
 	ARRAY_SPREAD_ADD(__MOD_MEMBERS(mod_nm), &member_nm)
 
 #endif /* FRAMEWORK_MOD_SELF_H_ */
