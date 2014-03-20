@@ -22,6 +22,8 @@ module sigstate extends sigstate_api {
 	source "sigstate.h"
 	source "sigstate.c"
 	depends siginfoq_api
+
+	depends embox.compat.posix.proc.sigset
 }
 
 @DefaultImpl(lock_stub)
