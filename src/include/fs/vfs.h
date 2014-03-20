@@ -15,7 +15,6 @@
 
 #define LAST_IN_PATH         0x01
 
-
 /**
  * @brief Get path of node till specified \a parent node (which is not
  * included). If \a node is equal \a parent "" is returned, which is natrual
