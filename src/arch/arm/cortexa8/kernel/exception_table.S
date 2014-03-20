@@ -50,6 +50,7 @@ trap_table_start:
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
 
+
 reset_handler_addr:
     .word reset_handler
 undef_handler_addr:
