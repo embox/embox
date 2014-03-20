@@ -34,3 +34,7 @@ module tar {
 	@NoRuntime depends embox.lib.LibCType
 	@NoRuntime depends embox.kernel.task.resource.errno
 }
+
+module tar_linker_hook {
+	source "linker_hook.c"
+}
