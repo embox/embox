@@ -51,12 +51,15 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 
 EMBOX_IMPORTED_LDFLAGS :=
+EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(EMBOX_LDFLAGS))
+EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(EMBOX_LDFLAGS))
+ifneq (,$(filter -m%,$(EMBOX_LDFLAGS)))
+EMBOX_IMPORTED_LDFLAGS += -Wl,$(filter -m%,$(EMBOX_LDFLAGS))
+endif
 EMBOX_IMPORTED_LDFLAGS += $(shell pwd)/stubs.c
-EMBOX_IMPORTED_LDFLAGS += -nostdlib
 EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/embox.o
 EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/symbols_pass2.a
 EMBOX_IMPORTED_LDFLAGS += -T $(ROOT_DIR)/build/base/obj/mk/image.lds
-EMBOX_IMPORTED_LDFLAGS += -Wl,-m,elf_i386
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
