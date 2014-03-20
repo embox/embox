@@ -18,9 +18,8 @@
 
 #include <framework/cmd/types.h>
 
-#define __EMBOX_CMD(_exec) \
+#define __EMBOX_CMD_DEF(_exec) \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);              \
-	static int _exec(int argc, char **argv);           \
 	extern struct cmd_desc __MOD_CMD(__EMBUILD_MOD__)  \
 			__attribute__((weak));                     \
 	struct cmd_mod mod_self = {                        \
@@ -31,6 +30,14 @@
 		}                                              \
 	};                                                 \
 	CMD_ADD(&mod_self.cmd)
+
+#define __EMBOX_EXTERN_CMD(_exec) \
+	extern int _exec(int argc, char **argv);           \
+	__EMBOX_CMD_DEF(_exec)
+
+#define __EMBOX_CMD(_exec) \
+	static int _exec(int argc, char **argv);           \
+	__EMBOX_CMD_DEF(_exec)
 
 #ifdef __CDT_PARSER__
 
