@@ -23,6 +23,9 @@ trap_table_start:
 trap_table_end:
 
 
+
+.section .text, "x"
+
 start:
     ldr r1, =bootldr_start
     bx r1
@@ -35,3 +38,4 @@ undef_handler:
 
 hard_fault:
     b hard_fault
+
