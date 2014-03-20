@@ -16,92 +16,14 @@ PKG_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(PKG_URL))
 
 PKG_PATCH := pkg_patch.txt
 
-PKG_CONF_FLAGS:=
-PKG_CONF_FLAGS+=--build=$(shell gcc -v 2>&1 | grep Target | awk '{print $$2}')
-PKG_CONF_FLAGS+=--host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
-PKG_CONF_FLAGS+=--target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
-PKG_CONF_FLAGS+=ac_cv_exeext=no
-PKG_CONF_FLAGS+=ac_cv_func_btowc=no
-PKG_CONF_FLAGS+=ac_cv_func_realpath=no
-PKG_CONF_FLAGS+=ac_cv_func_chown=no
-PKG_CONF_FLAGS+=ac_cv_func_fchown=no
-PKG_CONF_FLAGS+=ac_cv_func_fchdir=no
-PKG_CONF_FLAGS+=ac_cv_func_fdopendir=no
-PKG_CONF_FLAGS+=ac_cv_func_fchmodat=no
-PKG_CONF_FLAGS+=ac_cv_func_lchmod=no
-PKG_CONF_FLAGS+=ac_cv_func_symlink=no
-PKG_CONF_FLAGS+=ac_cv_func_mempcpy=no
-PKG_CONF_FLAGS+=ac_cv_func_mbsrtowcs=no
-PKG_CONF_FLAGS+=ac_cv_func_wmemchr=no
-PKG_CONF_FLAGS+=ac_cv_func_wmemcpy=no
-PKG_CONF_FLAGS+=ac_cv_func_wmempcpy=no
-PKG_CONF_FLAGS+=ac_cv_func_fstatat=no
-PKG_CONF_FLAGS+=ac_cv_func_futimens=no
-PKG_CONF_FLAGS+=ac_cv_func_getdelim=no
-PKG_CONF_FLAGS+=ac_cv_func_getdtablesize=no
-PKG_CONF_FLAGS+=ac_cv_func_openat=no
-PKG_CONF_FLAGS+=ac_cv_func_linkat=no
-PKG_CONF_FLAGS+=ac_cv_func_mbsinit=no
-PKG_CONF_FLAGS+=ac_cv_func_mbrtowc=no
-PKG_CONF_FLAGS+=ac_cv_func_mprotect=no
-PKG_CONF_FLAGS+=ac_cv_func_mkdirat=no
-PKG_CONF_FLAGS+=ac_cv_func_mkfifo=no
-PKG_CONF_FLAGS+=ac_cv_func_mkfifoat=no
-PKG_CONF_FLAGS+=ac_cv_func_mknodat=no
-PKG_CONF_FLAGS+=ac_cv_func_mknod=no
-PKG_CONF_FLAGS+=ac_cv_func_nl_langinfo=no
-PKG_CONF_FLAGS+=ac_cv_func_wcscoll=no
-PKG_CONF_FLAGS+=ac_cv_func_renameat=no
-PKG_CONF_FLAGS+=ac_cv_func_secure_getenv=no
-PKG_CONF_FLAGS+=ac_cv_func_strndup=no
-PKG_CONF_FLAGS+=ac_cv_func_strtoumax=no
-PKG_CONF_FLAGS+=ac_cv_func_symlinkat=no
-PKG_CONF_FLAGS+=ac_cv_func_unlinkat=no
-PKG_CONF_FLAGS+=ac_cv_func_futimes=no
-PKG_CONF_FLAGS+=ac_cv_func_futimesat=no
-PKG_CONF_FLAGS+=ac_cv_func_utimensat=no
-PKG_CONF_FLAGS+=ac_cv_func_lutimes=no
-PKG_CONF_FLAGS+=ac_cv_func_vasnprintf=no
-PKG_CONF_FLAGS+=ac_cv_func_wcrtomb=no
-PKG_CONF_FLAGS+=ac_cv_func_wcwidth=no
-PKG_CONF_FLAGS+=ac_cv_func_fchmod=no
-PKG_CONF_FLAGS+=ac_cv_func_strerror_r=no
-PKG_CONF_FLAGS+=ac_cv_func_fseeko=no
-PKG_CONF_FLAGS+=ac_cv_func_mmap=no
-PKG_CONF_FLAGS+=ac_cv_func_snprintf=yes
-PKG_CONF_FLAGS+=ac_cv_func_strnlen=no
-PKG_CONF_FLAGS+=ac_cv_func_wcslen=no
-PKG_CONF_FLAGS+=ac_cv_func_wcsnlen=no
-PKG_CONF_FLAGS+=ac_cv_func_dirfd=no
-PKG_CONF_FLAGS+=ac_cv_func_fchownat=no
-PKG_CONF_FLAGS+=ac_cv_func_getline=no
-PKG_CONF_FLAGS+=ac_cv_func_iswblank=no
-PKG_CONF_FLAGS+=ac_cv_func_lchown=no
-PKG_CONF_FLAGS+=ac_cv_func_memrchr=no
-PKG_CONF_FLAGS+=ac_cv_func_mkdtemp=no
-PKG_CONF_FLAGS+=ac_cv_var_tzname=no
-PKG_CONF_FLAGS+=ac_cv_func_getppriv=no
-PKG_CONF_FLAGS+=ac_cv_func_raise=no
-PKG_CONF_FLAGS+=ac_cv_func_rawmemchr=no
-PKG_CONF_FLAGS+=ac_cv_func_rewinddir=yes
-PKG_CONF_FLAGS+=ac_cv_func_rpmatch=no
-PKG_CONF_FLAGS+=ac_cv_func_stpcpy=no
-PKG_CONF_FLAGS+=ac_cv_func_strcasecmp=no
-PKG_CONF_FLAGS+=ac_cv_func_strncasecmp=no
-PKG_CONF_FLAGS+=ac_cv_func_strchrnul=no
-PKG_CONF_FLAGS+=ac_cv_func_vasprintf=no
-PKG_CONF_FLAGS+=ac_cv_func_vsnprintf=yes
-PKG_CONF_FLAGS+=ac_cv_func_closedir=yes
-PKG_CONF_FLAGS+=ac_cv_func_opendir=yes
-PKG_CONF_FLAGS+=ac_cv_func_readdir=yes
-PKG_CONF_FLAGS+=ac_cv_func___fpending=no
-
-
-
+PKG_CONF_FLAGS :=
+PKG_CONF_FLAGS += --build=$(shell gcc -v 2>&1 | grep Target | awk '{print $$2}')
+PKG_CONF_FLAGS += --host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
+PKG_CONF_FLAGS += --target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
 
 EMBOX_IMPORTED_CPPFLAGS :=
-EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/tar/tar_embox_compat.h
+#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
+EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
@@ -128,17 +50,22 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 
+EMBOX_IMPORTED_LDFLAGS :=
+EMBOX_IMPORTED_LDFLAGS += $(shell pwd)/stubs.c
+EMBOX_IMPORTED_LDFLAGS += -nostdlib
+EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/embox.o
+EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/symbols_pass2.a
+EMBOX_IMPORTED_LDFLAGS += -T $(ROOT_DIR)/build/base/obj/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS += -Wl,-m,elf_i386
+
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
 EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
 endif
 
-EMBOX_DERIVED_CFLAGS    := $(EMBOX_IMPORTED_CFLAGS)
-EMBOX_DERIVED_CXXFLAGS  := $(EMBOX_IMPORTED_CXXFLAGS)
-EMBOX_DERIVED_MAKEFLAGS := $(EMBOX_IMPORTED_MAKEFLAGS)
-
-export CFLAGS    := $(EMBOX_IMPORTED_CFLAGS)
-export CXXFLAGS  := $(EMBOX_IMPORTED_CXXFLAGS)
+export CFLAGS   := $(EMBOX_IMPORTED_CFLAGS)
+export CXXFLAGS := $(EMBOX_IMPORTED_CXXFLAGS)
+export LDFLAGS  := $(EMBOX_IMPORTED_LDFLAGS)
 
 .PHONY: all build_and_install configure merge_trees
 
@@ -180,10 +107,11 @@ merge_trees: $(EXTRACTED)
 .PHONY: $(ENVIRONMENT)
 $(ENVIRONMENT): | $(PKG_BUILD_DIR)
 	-rm $@
-	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"     >> $@
-	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'" >> $@
-	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"       >> $@
-	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                 >> $@
+	echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"     >> $@
+	echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'" >> $@
+	echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)'"   >> $@
+	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"         >> $@
+	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                   >> $@
 
 # intentionally not taking into account possible changes in $(QMAKE_CONF)
 configure: merge_trees $(ENVIRONMENT) | $(PKG_BUILD_DIR)
@@ -204,7 +132,7 @@ build_and_install: configure
 			echo Nothing to do - no rebuild is required.; \
 		else \
 			echo Building... && \
-			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)';\
+			make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)';\
 		fi
 
 
