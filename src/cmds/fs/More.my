@@ -15,8 +15,6 @@ package embox.cmd.fs
 			Denis Deryugin
 	''')
 module more {
-	@InstrumentProfiling("true")
-
 	source "more.c"
 
 	depends embox.lib.LibC

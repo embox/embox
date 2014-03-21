@@ -14,6 +14,7 @@
 #include <util/array.h>
 #include <util/location.h>
 #include <util/hashtable.h>
+#include <util/list.h>
 
 #include <mem/misc/pool.h>
 
@@ -39,8 +40,7 @@ POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
 POOL_DEF(key_pool, int, FUNC_QUANTITY);
 
 static struct hashtable *tbhash = NULL;
-static char **prev_key = NULL;
-
+static int **prev_key;
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
 		tp->count++;
@@ -112,11 +112,11 @@ void print_trace_block_info(struct __trace_block *tb) {
 }*/
 
 static size_t get_trace_block_hash(void *key) {
-	return *(int*)key;
+	return (size_t) key; //*(int*)key;
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
-	return 1 - (*(int*)key1) == (*(int*)key2);
+	return 1 - (key1 == key2);//(*(int*)key1) == (*(int*)key2);
 }
 
 /* It is assumed that there are traceblocks for every function
@@ -125,15 +125,15 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void trace_block_func_enter(void *func) {
 	struct __trace_block *tb = NULL;
-	int *key = (int*) pool_alloc (&key_pool);
+	//int *key;
 
 	if (!tbhash) { /* Table is not initialized */
 		return;
 	}
+	//key = (int*) pool_alloc (&key_pool);
+	//*key = (int) func;
 
-	*key = (int) func;
-
-	tb = hashtable_get(tbhash, key);
+	tb = hashtable_get(tbhash, func);
 
 	if (!tb) {
 		/* Lazy traceblock initialization.
@@ -149,23 +149,27 @@ void trace_block_func_enter(void *func) {
 		tb->count = 0;
 		tb->active = true;
 		tb->is_entered = false;
-		hashtable_put(tbhash, key, tb);
+		hashtable_put(tbhash, func, tb);
 	} else {
-		pool_free(&key_pool, key);
+	//	pool_free(&key_pool, key);
 	}
 	trace_block_enter(tb);
 }
 
 void trace_block_func_exit(void *func) {
 	struct __trace_block *tb;
-	int *key = (int*) malloc (sizeof(int));
+	//int *key;
 
 	if (!tbhash) {
 		return;
 	}
-	*key = (int) func;
 
-	tb = hashtable_get(tbhash, key);
+	//key = (int*) malloc (sizeof(int));
+	//*key = (int) func;
+
+	tb = hashtable_get(tbhash, func);
+//	free(key);
+
 	trace_block_leave(tb);
 }
 
@@ -174,14 +178,15 @@ struct __trace_block *auto_profile_tb_first(void){
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
+
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
-	prev_key = hashtable_get_key_next(tbhash, prev_key);
-	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
+		prev_key = hashtable_get_key_next(tbhash, prev_key);
+			return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 static int instrument_profiling_init(void) {
 	/* Initializing hash table */
-	tbhash = hashtable_create(100 * sizeof(struct __trace_block),
+	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
 
 	if (!tbhash) {

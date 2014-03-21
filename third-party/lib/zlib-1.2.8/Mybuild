@@ -9,7 +9,6 @@ static module libs {
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/lib/zlib-1.2.8 MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 	source "../../../../../../third-party/lib/zlib-1.2.8/libz.a"
-	//source "libz.a"
 }
 
 
@@ -25,12 +24,9 @@ static module libs {
 	''')
 module gzip {
 	depends libs
+
 	@Rule(script="true")
-	//@InstrumentProfiling("true")
-	//source "../../../../../../third-party/lib/zlib-1.2.8/minigzip.o"
-	@InstrumentProfiling("true")
+	source "../../../../../../third-party/lib/zlib-1.2.8/minigzip.o"
 	source "minigzip_cmd.c"
-	@InstrumentProfiling("true")
-	source "minigzip.c"
 	source "order.mk"
 }

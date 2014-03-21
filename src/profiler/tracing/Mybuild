@@ -10,7 +10,7 @@ module no_tracing extends trace {
 }
 
 module tracing extends trace {
-	//@InstrumentProfiling("true")
+	option number max_functions_quantity = 65536
 	source "trace.c", "trace_impl.h"
 	depends embox.kernel.timer.itimer
 }
