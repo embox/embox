@@ -140,7 +140,7 @@ configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
 			echo Nothing to do - no reconfiguration is required.; \
 		else \
-			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make confclean && rm $(CONFIGURED))) && \
+			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make distclean && rm $(CONFIGURED))) && \
 			echo Configuring... && \
 			$(PKG_SRC_DIR)/configure $(PKG_CONF_FLAGS) && \
 			echo Persisting configuration... && \
