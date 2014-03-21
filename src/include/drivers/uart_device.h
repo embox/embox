@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <drivers/tty.h>
+#include <util/dlist.h>
 
 #define UART_NAME_MAXLEN 8
 
@@ -18,6 +18,7 @@
 
 struct uart;
 struct uart_desc;
+struct tty;
 
 struct uart_params {
 	uint32_t baud_rate;
@@ -48,7 +49,7 @@ struct uart {
 	/* runtime */
 	int state;
 	struct uart_params params;
-	struct tty tty;
+	struct tty *tty;
 };
 
 /**

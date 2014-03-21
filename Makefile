@@ -56,6 +56,7 @@ export CPIO   := $(shell for i in gcpio cpio; do type $$i >/dev/null 2>&1 && ech
 export AWK    := $(shell for i in gawk awk nawk mawk; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
 export TSORT  := tsort
 export TAC    := tac
+export SEQ    := seq -w
 
 # Check Make version (we need at least GNU Make 3.81). Fortunately,
 # '.FEATURES' built-in variable has been introduced exactly in GNU Make 3.81.
