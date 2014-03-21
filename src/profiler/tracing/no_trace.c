@@ -27,8 +27,3 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 }
 
 
-void trace_block_func_enter(void *func) {
-}
-
-void trace_block_func_exit(void *func) {
-}
