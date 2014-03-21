@@ -22,36 +22,21 @@ PKG_CONF_FLAGS += --host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i
 PKG_CONF_FLAGS += --target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
 
 EMBOX_IMPORTED_CPPFLAGS :=
+#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -save-temps=obj,$(EMBOX_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS :=
 EMBOX_IMPORTED_CFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-common,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian, $(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -msoft-float, $(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-omit-frame-pointer,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-optimize-sibling-calls,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -O%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -g,$(EMBOX_CPPFLAGS))
-
 #ARCH specific
-#ARCH x86
 EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
-#ARCH ARM
+EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -marm,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mapcs,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mno-thumb-interwork,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -Uarm,$(EMBOX_CFLAGS))
 
-#CXXFLAGS
 EMBOX_IMPORTED_CXXFLAGS :=
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS))) # remove me
@@ -85,14 +70,15 @@ export CFLAGS   := $(EMBOX_IMPORTED_CFLAGS)
 export CXXFLAGS := $(EMBOX_IMPORTED_CXXFLAGS)
 export LDFLAGS  := $(EMBOX_IMPORTED_LDFLAGS)
 
-.PHONY: all build_and_install configure merge_trees
+#include ../../build/base/src-gen/image.rule.mk
+#__define_image_rules = $(eval $(value __image_rule))
+#$(call __define_image_rules,all)
 
-all: build_and_install
+.PHONY: all
+all: build
 
 $(PKG_BUILD_DIR):
 	mkdir -p $@
-
-PKG_MD5_LINE:= $(PKG_BUNDLE)
 
 $(DOWNLOADED):
 	wget -P $(DOWNLOAD_DIR) -c $(PKG_URL)
@@ -107,7 +93,7 @@ $(DOWNLOADED):
 # The patch is saved to .extracted for the user to be able to compare previous patch with current one.
 # In some situations this might be useful.
 $(EXTRACTED): $(PKG_PATCH) $(DOWNLOADED)
-	 [ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
+	[ ! -e $@ ] || (echo Re-patching is needed. Please resolve manually. && false)
 	rm -rf $(PKG_SRC_DIR)
 	mkdir -p $(PKG_SRC_DIR)
 	tar -C $(PKG_SRC_DIR) -xzf $(abspath $(PKG_BUNDLE)) --strip-components=1
@@ -116,14 +102,14 @@ $(EXTRACTED): $(PKG_PATCH) $(DOWNLOADED)
 
 # using -f since 'svn update' causes unlink and 'cp -u' complaints
 # http://svn.haxx.se/users/archive-2007-10/0797.shtml
-# but typically overwriting is what we want for our part of tree contents
-merge_trees: $(EXTRACTED)
+# but ssstypically overwriting is what we want for our part of tree contents
+.PHONY: merge
+merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 	if [ -e tree ]; then \
 		cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`; \
 	fi
 
-.PHONY: $(ENVIRONMENT)
-$(ENVIRONMENT): | $(PKG_BUILD_DIR)
+$(ENVIRONMENT): | $(dir ENVIRONMENT)
 	-rm $@
 	echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"     >> $@
 	echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'" >> $@
@@ -131,8 +117,8 @@ $(ENVIRONMENT): | $(PKG_BUILD_DIR)
 	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"         >> $@
 	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                   >> $@
 
-# intentionally not taking into account possible changes in $(QMAKE_CONF)
-configure: merge_trees $(ENVIRONMENT) | $(PKG_BUILD_DIR)
+.PHONY: configure
+configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 	cd $(PKG_BUILD_DIR) && \
 		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
 			echo Nothing to do - no reconfiguration is required.; \
@@ -144,7 +130,8 @@ configure: merge_trees $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 			mv -f $(ENVIRONMENT) $(CONFIGURED); \
 		fi
 
-build_and_install: configure
+.PHONY: build
+build: configure | $(PKG_BUILD_DIR)
 	cd $(PKG_BUILD_DIR) && \
 		if make -q; then \
 			echo Nothing to do - no rebuild is required.; \
