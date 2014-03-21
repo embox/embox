@@ -71,3 +71,9 @@ int getdtablesize(void) {
 	printk(">>> %s\n", __func__);
 	return 10;
 }
+
+int chdir_long (char *dir) {
+	printk(">>> %s %s\n", __func__, dir);
+	return 0;
+}
+

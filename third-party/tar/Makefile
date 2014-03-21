@@ -22,21 +22,36 @@ PKG_CONF_FLAGS += --host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i
 PKG_CONF_FLAGS += --target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
 
 EMBOX_IMPORTED_CPPFLAGS :=
-#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -save-temps=obj,$(EMBOX_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS :=
 EMBOX_IMPORTED_CFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-common,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(EMBOX_CFLAGS))
-#ARCH specific
-EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian, $(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -msoft-float, $(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -fno-omit-frame-pointer,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -fno-optimize-sibling-calls,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -O%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -g,$(EMBOX_CPPFLAGS))
 
+#ARCH specific
+#ARCH x86
+EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
+#ARCH ARM
+EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -marm,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mapcs,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mno-thumb-interwork,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -Uarm,$(EMBOX_CFLAGS))
+
+#CXXFLAGS
 EMBOX_IMPORTED_CXXFLAGS :=
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS))) # remove me
