@@ -1,13 +1,16 @@
 package embox.profiler
 
 @DefaultImpl(no_tracing)
-abstract module trace { }
+abstract module trace {
+	source "__cyg_profile.c"
+}
 
 module no_tracing extends trace {
 	source "no_trace.c", "no_trace_impl.h"
 }
 
 module tracing extends trace {
+	option number max_functions_quantity = 65536
 	source "trace.c", "trace_impl.h"
 	depends embox.kernel.timer.itimer
 }

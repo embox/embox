@@ -1,17 +1,22 @@
 /**
  * @file
- * @brief TODO --Alina.
+ * @brief
  *
  * @date 18.03.2012
  * @author Alina Kramar
+ * @author Denis Deryugin
  */
 
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+
 #include <embox/cmd.h>
+#include <debug/symbol.h>
 #include <util/array.h>
+
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);
@@ -19,7 +24,35 @@ EMBOX_CMD(exec);
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
-	printf("Usage: trace [-h] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
+	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
+}
+
+static void print_instrument_trace_block_stat(void) {
+	struct __trace_block *tb = auto_profile_tb_first();
+	const struct symbol *s;
+	char *buff = (char*) malloc (sizeof(char) * 256);
+	int l;
+
+	printf("Automatic trace points:\n");
+
+	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
+	if (tb) do {
+		s = symbol_lookup(tb->func);
+		l = strlen(s->name) + strlen(s->loc.file) + 2;
+		strcpy(buff, s->loc.file);
+		strcat(buff, ":");
+		strcat(buff, s->name);
+
+		if (l > 40) {
+			printf("...%37s ", buff + strlen(buff) - 37);
+		} else {
+			printf("%40s ", buff);
+		}
+		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
+			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+
+		tb = auto_profile_tb_next(tb);
+	} while (tb);
 }
 
 static void print_trace_block_stat(void) {
@@ -105,7 +138,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -144,6 +177,9 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'e':
 			print_entered_blocks();
+			break;
+		case 'n':
+			print_instrument_trace_block_stat();
 			break;
 		default:
 			break;
