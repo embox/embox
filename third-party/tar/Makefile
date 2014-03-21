@@ -122,7 +122,7 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 	fi
 
 .PHONY: import_ldflags
-import_ldflags: _ld_objs := $(filter-out %/tar.o,$(ld_objs))
+import_ldflags: _ld_objs = $(filter-out %/tar.o,$(ld_objs))
 import_ldflags:
 	$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
 	$(eval EMBOX_IMPORTED_LDFLAGS += $(_ld_objs:.%=-Wl,$(ROOT_DIR)%))
