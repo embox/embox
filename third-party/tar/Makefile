@@ -83,10 +83,6 @@ ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
 EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
 endif
 
-export CFLAGS   := $(EMBOX_IMPORTED_CFLAGS)
-export CXXFLAGS := $(EMBOX_IMPORTED_CXXFLAGS)
-export LDFLAGS  := $(EMBOX_IMPORTED_LDFLAGS)
-
 #include ../../build/base/src-gen/image.rule.mk
 #__define_image_rules = $(eval $(value __image_rule))
 #$(call __define_image_rules,all)
@@ -142,7 +138,8 @@ configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 		else \
 			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make distclean && rm $(CONFIGURED))) && \
 			echo Configuring... && \
-			$(PKG_SRC_DIR)/configure $(PKG_CONF_FLAGS) && \
+			CFLAGS='$(EMBOX_IMPORTED_CFLAGS)' CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)' \
+				LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)' $(PKG_SRC_DIR)/configure $(PKG_CONF_FLAGS) && \
 			echo Persisting configuration... && \
 			mv -f $(ENVIRONMENT) $(CONFIGURED); \
 		fi
@@ -154,7 +151,8 @@ build: configure | $(PKG_BUILD_DIR)
 			echo Nothing to do - no rebuild is required.; \
 		else \
 			echo Building... && \
-			make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)';\
+			CFLAGS='$(EMBOX_IMPORTED_CFLAGS)' CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)' \
+				LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)' make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 		fi
 
 
