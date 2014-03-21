@@ -16,6 +16,7 @@
 
 #include <kernel/irq_lock.h>
 #include <drivers/irqctrl.h>
+#include <module/embox/kernel/irq_api.h>
 
 /** Total amount of IRQs supported by the system. */
 #define IRQ_NRS_TOTAL \
@@ -115,5 +116,10 @@ extern int irq_detach(unsigned int irq_nr, void *data);
  * @param interrupt_nr the number of interrupt to dispatch
  */
 extern void irq_dispatch(unsigned int interrupt_nr);
+
+#include <asm-generic/static_irq.h>
+#ifndef STATIC_IRQ_EXTENTION
+#define STATIC_IRQ_ATTACH(_irq_nr, _hnd, _data)
+#endif
 
 #endif /* KERNEL_IRQ_H_ */

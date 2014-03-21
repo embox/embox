@@ -14,24 +14,24 @@
 
 #include <embox/unit.h>
 
-static int unit_mod_enable(struct mod_info *mod_info);
-static int unit_mod_disable(struct mod_info *mod_info);
+static int unit_mod_enable(const struct mod *mod);
+static int unit_mod_disable(const struct mod *mod);
 
 const struct mod_ops __unit_mod_ops = {
 	.enable  = &unit_mod_enable,
 	.disable = &unit_mod_disable,
 };
 
-static int unit_mod_enable(struct mod_info *mod_info) {
+static int unit_mod_enable(const struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod_info->data;
+	struct unit *unit = (struct unit *) mod;
 
 	if (NULL == unit->init) {
 		return 0;
 	}
 
 	printk("\tunit: initializing %s.%s: ",
-		mod_info->mod->package->name, mod_info->mod->name);
+		mod_pkg_name(mod), mod_name(mod));
 	if (0 == (ret = unit->init())) {
 		printk("done\n");
 	} else {
@@ -41,16 +41,16 @@ static int unit_mod_enable(struct mod_info *mod_info) {
 	return ret;
 }
 
-static int unit_mod_disable(struct mod_info *mod_info) {
+static int unit_mod_disable(const struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod_info->data;
+	struct unit *unit = (struct unit *) mod;
 
 	if (NULL == unit->fini) {
 		return 0;
 	}
 
 	printk("unit: finalizing %s.%s: ",
-		mod_info->mod->package->name, mod_info->mod->name);
+		mod_pkg_name(mod), mod_name(mod));
 	if (0 == (ret = unit->fini())) {
 		printk("done\n");
 	} else {

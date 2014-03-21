@@ -1,6 +1,15 @@
 diff -ur UnixBench/Makefile unixbyte/Makefile
 --- UnixBench/Makefile	2011-01-18 09:44:53.000000000 +0300
-+++ unixbyte/Makefile	2014-02-27 17:23:46.462138210 +0400
++++ unixbyte/Makefile	2014-03-19 20:06:34.830737068 +0400
+@@ -53,7 +53,7 @@
+ # COMPILER CONFIGURATION: Set "CC" to the name of the compiler to use
+ # to build the binary benchmarks.  You should also set "$cCompiler" in the
+ # Run script to the name of the compiler you want to test.
+-CC=gcc
++#CC=gcc
+ 
+ # OPTIMISATION SETTINGS:
+ 
 @@ -78,7 +78,7 @@
  #CFLAGS = -DTIME -std1 -verbose -w0
  
@@ -10,7 +19,7 @@ diff -ur UnixBench/Makefile unixbyte/Makefile
  
  
  ##############################################################################
-@@ -111,14 +111,15 @@
+@@ -111,14 +111,16 @@
  endif
  
  # Program binaries.
@@ -26,14 +35,15 @@ diff -ur UnixBench/Makefile unixbyte/Makefile
 +	$(PROGDIR)/pipe.o $(PROGDIR)/spawn.o $(PROGDIR)/execl.o \
 +	$(PROGDIR)/looper.o \
 +	$(PROGDIR)/fstime.o \
-+	$(PROGDIR)/poll.o $(PROGDIR)/select.o $(GRAPHIC_BINS)
++	$(PROGDIR)/poll.o $(PROGDIR)/select.o \
++	$(PROGDIR)/dhry2.o $(PROGDIR)/dhry2reg.o $(GRAPHIC_BINS)
  ## These compile only on some platforms...
 -# $(PROGDIR)/poll $(PROGDIR)/poll2 $(PROGDIR)/select
 +# $(PROGDIR)/poll $(PROGDIR)/poll2 $(PROGDIR)/select $(PROGDIR)/dhry2.o $(PROGDIR)/dhry2reg.o
  
  # Required non-binary files.
  REQD = $(BINS) $(PROGDIR)/unixbench.logo \
-@@ -181,47 +182,47 @@
+@@ -181,61 +183,57 @@
  programs: $(BINS)
  
  # Individual programs
@@ -120,11 +130,18 @@ diff -ur UnixBench/Makefile unixbyte/Makefile
 +$(PROGDIR)/execl.o: $(SRCDIR)/execl.c $(SRCDIR)/big.c
 +	$(CC) -c -o $(PROGDIR)/execl.o ${CFLAGS} ${OPTON} $(SRCDIR)/execl.c
  
- $(PROGDIR)/dhry2: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
+-$(PROGDIR)/dhry2: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
++$(PROGDIR)/dhry2.o: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
  	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_1.c
-@@ -234,8 +235,8 @@
- 	$(CC) -o $(PROGDIR)/dhry2reg ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1_reg.o $(SRCDIR)/dhry_2_reg.o
- 	cd $(SRCDIR); rm -f dhry_1_reg.o dhry_2_reg.o
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_2.c
+-	$(CC) -o $(PROGDIR)/dhry2 ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1.o $(SRCDIR)/dhry_2.o
+-	cd $(SRCDIR); rm -f dhry_1.o dhry_2.o
+-$(PROGDIR)/dhry2reg: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
++$(PROGDIR)/dhry2reg.o: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_1.c -o dhry_1_reg.o
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_2.c -o dhry_2_reg.o
+-	$(CC) -o $(PROGDIR)/dhry2reg ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1_reg.o $(SRCDIR)/dhry_2_reg.o
+-	cd $(SRCDIR); rm -f dhry_1_reg.o dhry_2_reg.o
  
 -$(PROGDIR)/looper: $(SRCDIR)/looper.c
 -	$(CC) -o $(PROGDIR)/looper ${CFLAGS} ${OPTON} $(SRCDIR)/looper.c
@@ -133,6 +150,7 @@ diff -ur UnixBench/Makefile unixbyte/Makefile
  
  $(PROGDIR)/ubgears: $(SRCDIR)/ubgears.c
  	$(CC) -o $(PROGDIR)/ubgears ${CFLAGS} ${OPTON} $(SRCDIR)/ubgears.c $(GL_LIBS)
+
 
 
 diff -ur UnixBench/src/time-polling.c unixbyte/src/time-polling.c 
@@ -251,4 +269,16 @@ diff -ur UnixBench/src/spawn.c unixbyte/src/spawn.c
  		if (status != 0) {
  			fprintf(stderr,"Bad wait status: 0x%x\n", status);
  			exit(2);
+
+
+ diff -ur UnixBench/src/dhry.h unixbyte/src/dhry.h
+--- UnixBench/src/dhry.h	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/dhry.h	2014-03-18 20:52:02.742506755 +0400
+@@ -357,6 +357,7 @@
+  ***************************************************************************
+  */
+ 
++#define TIME
+ 
+ /* Compiler and system dependent definitions: */
 
