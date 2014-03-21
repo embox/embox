@@ -22,33 +22,52 @@ PKG_CONF_FLAGS += --host=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i
 PKG_CONF_FLAGS += --target=$(shell ECC="$(EMBOX_CROSS_COMPILE)"; echo -n $${ECC:-i386-} | head -c -1)
 
 EMBOX_IMPORTED_CPPFLAGS :=
-#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -save-temps=obj,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -Uarm,$(EMBOX_CPPFLAGS))
 
 EMBOX_IMPORTED_CFLAGS :=
 EMBOX_IMPORTED_CFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
+EMBOX_IMPORTED_CFLAGS += $(filter -g,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-common,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(EMBOX_CFLAGS))
-#ARCH specific
-EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -fno-omit-frame-pointer,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -fno-optimize-sibling-calls,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -O%,$(EMBOX_CFLAGS))
+# architecture dependent options
+EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mapcs,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -marm,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mno-thumb-interwork,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -msoft-float, $(EMBOX_CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS :=
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS))) # remove me
+EMBOX_IMPORTED_CXXFLAGS += $(filter -g,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
-#arch specific
-EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-omit-frame-pointer,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-optimize-sibling-calls,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -O%,$(EMBOX_CXXFLAGS))
+# architecture dependent options
+EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mapcs,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -marm,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mlittle-endian,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-thumb-interwork,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -msoft-float, $(EMBOX_CXXFLAGS))
 
 EMBOX_IMPORTED_LDFLAGS :=
 EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(EMBOX_LDFLAGS))
