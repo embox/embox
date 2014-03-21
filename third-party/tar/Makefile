@@ -74,21 +74,20 @@ ifneq (,$(filter -m%,$(EMBOX_LDFLAGS)))
 EMBOX_IMPORTED_LDFLAGS += -Wl,$(filter -m%,$(EMBOX_LDFLAGS))
 endif
 EMBOX_IMPORTED_LDFLAGS += $(shell pwd)/stubs.c
-EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/embox.o
-EMBOX_IMPORTED_LDFLAGS += $(ROOT_DIR)/build/base/obj/symbols_pass2.a
-EMBOX_IMPORTED_LDFLAGS += -T $(ROOT_DIR)/build/base/obj/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS += -Wl,--relax
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
 EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
 endif
 
-#include ../../build/base/src-gen/image.rule.mk
-#__define_image_rules = $(eval $(value __image_rule))
-#$(call __define_image_rules,all)
-
 .PHONY: all
 all: build
+include ../../build/base/src-gen/image.rule.mk
+__define_image_rules = $(eval $(value __image_rule))
+$(call __define_image_rules,all)
 
 $(PKG_BUILD_DIR):
 	mkdir -p $@
@@ -122,7 +121,14 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 		cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`; \
 	fi
 
-$(ENVIRONMENT): | $(dir ENVIRONMENT)
+.PHONY: import_ldflags
+import_ldflags: _ld_objs := $(filter-out %/tar.o,$(ld_objs))
+import_ldflags:
+	$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
+	$(eval EMBOX_IMPORTED_LDFLAGS += $(_ld_objs:.%=-Wl,$(ROOT_DIR)%))
+	$(eval EMBOX_IMPORTED_LDFLAGS += -Wl,--start-group $(ld_libs:.%=-Wl,$(ROOT_DIR)%) -Wl,--end-group)
+
+$(ENVIRONMENT): import_ldflags | $(dir ENVIRONMENT)
 	-rm $@
 	echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"     >> $@
 	echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'" >> $@
@@ -154,6 +160,5 @@ build: configure | $(PKG_BUILD_DIR)
 			CFLAGS='$(EMBOX_IMPORTED_CFLAGS)' CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)' \
 				LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)' make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 		fi
-
 
 .NOTPARALLEL:
