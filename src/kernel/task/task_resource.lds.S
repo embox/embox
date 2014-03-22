@@ -1,3 +1,5 @@
+#include <asm-generic/embox.lds.h>
+
 SECTIONS {
 	.bss.ktask : {
 		*(.bss.ktask)
@@ -5,5 +7,5 @@ SECTIONS {
 		_ktask_resource_start = .;
 		*(.bss.ktask.resource)
 		_ktask_resource_end = .;
-	}
+	} SECTION_REGION(bss) :bss
 }
