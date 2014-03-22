@@ -25,14 +25,6 @@ static DLIST_DEFINE(uart_list);
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data);
 
-static void uart_out_wake(struct tty *t);
-static void uart_term_setup(struct tty *tty, struct termios *termios);
-
-static struct tty_ops uart_tty_ops = {
-	.setup = uart_term_setup,
-	.out_wake = uart_out_wake,
-};
-
 static inline int uart_state_test(struct uart *uart, int mask) {
 	return uart->state & mask;
 }
@@ -56,7 +48,6 @@ static int uart_fill_name(struct uart *dev) {
 
 	return 0;
 }
-
 
 static int uart_attach_irq(struct uart *uart) {
 
@@ -87,34 +78,17 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 
+/* TODO shouldn't be here */
+#include <drivers/tty.h>
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
-	while (uart_hasrx(dev))
-		tty_rx_putc(&dev->tty, uart_getc(dev), 0);
+	if (dev->tty) {
+		while (uart_hasrx(dev))
+			tty_rx_putc(dev->tty, uart_getc(dev), 0);
+	}
 
 	return IRQ_HANDLED;
-}
-
-static void uart_out_wake(struct tty *t) {
-	struct uart *uart_dev = member_cast_out(t, struct uart, tty);
-	int ich;
-
-	irq_lock();
-
-	while ((ich = tty_out_getc(t)) != -1)
-		uart_putc(uart_dev, (char) ich);
-
-	irq_unlock();
-}
-
-static void uart_term_setup(struct tty *tty, struct termios *termios) {
-	struct uart *uart = member_cast_out(tty, struct uart, tty);
-
-	/* TODO baud rate is ospeed. What's with ispeed ? */
-	uart->params.baud_rate = termios->c_ospeed;
-
-	uart_setup(uart);
 }
 
 int uart_register(struct uart *uart,
@@ -125,7 +99,7 @@ int uart_register(struct uart *uart,
 	}
 
 	dlist_head_init(&uart->lnk);
-	memset(&uart->tty, 0, sizeof(struct tty));
+	uart->tty = NULL;
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
@@ -165,8 +139,6 @@ int uart_open(struct uart *uart) {
 	}
 
 	uart_state_set(uart, UART_STATE_OPEN);
-
-	tty_init(&uart->tty, &uart_tty_ops);
 
 	uart_setup(uart);
 

@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+
 #include <util/array.h>
 #include <util/location.h>
 #include <util/hashtable.h>
@@ -112,11 +114,11 @@ void print_trace_block_info(struct __trace_block *tb) {
 }*/
 
 static size_t get_trace_block_hash(void *key) {
-	return (size_t) key; //*(int*)key;
+	return (size_t) key;
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
-	return 1 - (key1 == key2);//(*(int*)key1) == (*(int*)key2);
+	return 1 - (key1 == key2);
 }
 
 /* It is assumed that there are traceblocks for every function
@@ -125,13 +127,10 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void trace_block_func_enter(void *func) {
 	struct __trace_block *tb = NULL;
-	//int *key;
 
 	if (!tbhash) { /* Table is not initialized */
 		return;
 	}
-	//key = (int*) pool_alloc (&key_pool);
-	//*key = (int) func;
 
 	tb = hashtable_get(tbhash, func);
 
@@ -151,24 +150,19 @@ void trace_block_func_enter(void *func) {
 		tb->is_entered = false;
 		hashtable_put(tbhash, func, tb);
 	} else {
-	//	pool_free(&key_pool, key);
 	}
 	trace_block_enter(tb);
 }
 
 void trace_block_func_exit(void *func) {
 	struct __trace_block *tb;
-	//int *key;
 
 	if (!tbhash) {
 		return;
 	}
 
-	//key = (int*) malloc (sizeof(int));
-	//*key = (int) func;
 
 	tb = hashtable_get(tbhash, func);
-//	free(key);
 
 	trace_block_leave(tb);
 }
@@ -180,8 +174,8 @@ struct __trace_block *auto_profile_tb_first(void){
 
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
-		prev_key = hashtable_get_key_next(tbhash, prev_key);
-			return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
+	prev_key = hashtable_get_key_next(tbhash, prev_key);
+	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 static int instrument_profiling_init(void) {
@@ -190,7 +184,7 @@ static int instrument_profiling_init(void) {
 				get_trace_block_hash, cmp_trace_blocks);
 
 	if (!tbhash) {
-		return 1;
+		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
 	}
 	return 0;

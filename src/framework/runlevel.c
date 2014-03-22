@@ -76,7 +76,7 @@ int runlevel_set(runlevel_nr_t level) {
 		ret = 0;
 		for (mod = start_mods[init_level + d];
 				mod != end_mods[init_level + d]; mod += d) {
-			if ((ret = mod_op(*mod))) {
+			if (*mod && (ret = mod_op(*mod))) {
 				goto mod_fail;
 			}
 		}

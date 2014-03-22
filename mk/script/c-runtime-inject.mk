@@ -70,15 +70,19 @@ runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
 				 $(call mod_inst_closure,$m))))
 
 mod_def = \
-	MOD_DEF($1, $(call fqn2id,$(basename $2)), "$(basename $2)", $(subst .,,$(suffix $2)));
+	MOD_DEF($1, $2, $(call fqn2id,$(basename $3)), "$(basename $3)", $(subst .,,$(suffix $3)));
 
 val_or_null = $(if $1,$1,generic__notexisting)
+
+seq := $(shell $(SEQ) 1 1000)
 
 # Call info for every new module in this runlevel
 # 1. Runlevels to generate
 # 2. Already loaded modules
 # 3. Modules to be loaded at this runlevel
-_gen_mod_runlevels = $(foreach m,$3,$(info $(call mod_def,$(firstword $1),$(call mod_inst_fqn,$m)))) \
+_gen_mod_runlevels = \
+	$(foreach m,$(call minjoin,$3,$(addprefix .,$(seq))), \
+		     $(info $(call mod_def,$(firstword $1),$(subst .,,$(suffix $m)),$(call mod_inst_fqn,$(basename $m))))) \
 	$(call gen_mod_runlevels,$(call nofirstword,$1),$2 $3)
 
 _mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
@@ -89,8 +93,10 @@ _mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
 gen_mod_runlevels = \
 	$(if $(strip $1), \
 		$(info /* Runlevel $(firstword $1) */) \
-		$(call _gen_mod_runlevels,$1,$2,$(filter-out $2, \
-			$(call topsort,$(sort $(call runlevel_modules_closure,$(firstword $1))),_mod_inst_get_deps))))
+		$(call _gen_mod_runlevels,$1,$2, \
+			$(filter-out $2, \
+				$(call topsort,$(sort $(call runlevel_modules_closure,$(firstword $1))), \
+					_mod_inst_get_deps))))
 
 #
 # The output.

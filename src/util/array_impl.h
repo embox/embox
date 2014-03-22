@@ -86,14 +86,25 @@
 
 /* Spread element addition. */
 
-#define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
+#define __ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, order, ...) \
 	__ARRAY_SPREAD_ENTRY_DEF(static typeof(array_nm[0]), array_nm, \
-		ptr_nm, "1_body") = { __VA_ARGS__ }
+		ptr_nm, "1_body" #order) = { __VA_ARGS__ }
+
+#define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, , __VA_ARGS__)
+
+#define __ARRAY_SPREAD_GUARD(array_nm) \
+	MACRO_GUARD(__ARRAY_SPREAD_PRIVATE(array_nm, element))
 
 #define __ARRAY_SPREAD_ADD(array_nm, ...) \
-	__ARRAY_SPREAD_ADD_NAMED(array_nm,                          \
-		MACRO_GUARD(__ARRAY_SPREAD_PRIVATE(array_nm, element)), \
-		__VA_ARGS__)
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		, __VA_ARGS__)
+
+#define __ARRAY_SPREAD_ADD_ORDERED(array_nm, order, ...) \
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		order, __VA_ARGS__)
 
 /* Spread size calculations. */
 
