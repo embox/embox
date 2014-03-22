@@ -29,7 +29,8 @@ static void *thread_run(void *arg) {
 
 TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
 		" different priority") {
-	for (int i = 0; i < THREADS_QUANTITY; i++) {
+	//for (int i = 0; i < THREADS_QUANTITY; i++) {
+	for (int i = 0; i < 10; i++) {
 		struct thread *t;
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				thread_run, (void *) i);

@@ -355,6 +355,7 @@ static void sched_finish_switch(struct thread *prev) {
 }
 
 static struct thread *saved_prev __cpudata__; // XXX
+static struct thread *saved_next __cpudata__; // XXX
 
 /**
  * Any fresh thread must call this function from a trampoline.
@@ -370,15 +371,19 @@ void sched_ack_switched(void) {
 }
 
 static void sched_switch(struct thread *prev, struct thread *next) {
+	int i = 0;
 	sched_prepare_switch(prev, next);
 
 	trace_point(__func__);
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
+	cpudata_var(saved_next) = next;
 	thread_set_current(next);
+	i++;
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 	prev = cpudata_var(saved_prev);
+	next = cpudata_var(saved_next);
 
 	sched_finish_switch(prev);
 }
@@ -416,6 +421,10 @@ static void __schedule(int preempt) {
 	if (&(prev->runnable) != next) {
 		if(next->prepare != NULL) {
 			next->prepare(prev, next);
+		} else {
+			if(next->run != NULL) {
+				next->run(next->run_arg);
+			}
 		}
 	}
 
@@ -424,9 +433,11 @@ static void __schedule(int preempt) {
 	assert(thread_self() == prev);
 
 	/* start for lwthreads */
+	/*
 	if(next->run != NULL) {
 		next->run();
 	}
+	*/
 
 	if (!prev->siglock) {
 		thread_signal_handle();

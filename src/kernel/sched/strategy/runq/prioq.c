@@ -31,8 +31,10 @@ void runq_remove(runq_t *queue, struct runnable *r) {
 
 struct runnable *runq_extract(runq_t *queue) {
 	runq_item_t *first = priolist_first(queue);
+	struct runnable *result;
 
 	priolist_del(first, queue);
+	result = mcast_out(first, struct runnable, sched_attr.runq_link);
 
-	return mcast_out(first, struct runnable, sched_attr.runq_link);
+	return result;
 }

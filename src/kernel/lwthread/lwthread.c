@@ -6,6 +6,7 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lwthread.h>
+#include <kernel/runnable/runnable_priority.h>
 #include <mem/misc/pool.h>
 
 typedef struct lwthread lwthread_pool_entry_t;
@@ -21,8 +22,11 @@ POOL_DEF(lwthread_pool, lwthread_pool_entry_t, POOL_SZ);
 void lwthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
 	lwt->runnable.run = (void *)run;
 	lwt->runnable.prepare = NULL;
-
 	lwt->runnable.run_arg = arg;
+
+	runq_item_init(&(lwt->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(lwt->runnable));
+	runnable_priority_init(&(lwt->runnable), THREAD_PRIORITY_DEFAULT);
 }
 
 struct lwthread * lwthread_create(void *(*run)(void *), void *arg) {

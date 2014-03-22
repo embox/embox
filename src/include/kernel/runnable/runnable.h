@@ -15,7 +15,7 @@ struct runnable {
 
 	/** Called by sched when replanned.
 	*/
-	void               *(*run)(void);
+	void               *(*run)(void *);
 	void			   *run_arg;     /* Argument to be passed to run function */
 
 	struct sched_attr  sched_attr;   /**< Scheduler-private data pointer */
