@@ -202,11 +202,13 @@ image_lds = $(OBJ_DIR)/mk/image.lds
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
 $(embox_o): $(image_lds) $$(common_prereqs)
-	$(LD) -r -T $(image_lds) $(ldflags_all) \
+	$(LD) -T $(image_lds) $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
 		$(call fmt_line,$(ld_libs)) \
 		--end-group \
+		--defsym=__symbol_table=0 \
+		--defsym=__symbol_table_size=0 \
 		--cref -Map $@.map \
 		-o $@
 
