@@ -56,4 +56,6 @@ module byte_dhry2 {
 	source "dhry_2.o"
 
 	depends core
+	depends embox.kernel.thread.signal.sigstate
+	depends embox.kernel.thread.signal.siginfoq
 }
