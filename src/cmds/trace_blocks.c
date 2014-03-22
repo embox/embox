@@ -102,7 +102,7 @@ static void print_trace_block_stat_personal(int i) {
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
-			printf("%2d %7d %10llu %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			printf("%2d %7llu %10llu %5s\n", i, tb->count, tb->time, tb->active ? "yes" : "no");
 			break;
 		}
 	}

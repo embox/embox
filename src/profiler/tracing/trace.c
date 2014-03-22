@@ -53,7 +53,6 @@ void trace_block_enter(struct __trace_block *tb) {
 	if (tb->active) {
 		tb->is_entered = true;
 		itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
-		/*__tracepoint_handle(tb->begin);*/
 	}
 }
 
@@ -62,19 +61,11 @@ void trace_block_leave(struct __trace_block *tb) {
 		tb->count++;
 		tb->is_entered = false;
 		tb->time = itimer_read(tb->tc);
-		/* __tracepoint_handle(tb->end); */
 	}
 }
 
 time64_t trace_block_get_time(struct __trace_block *tb) {
 	return tb->time;
-}
-
-time64_t trace_block_diff(struct __trace_block *tb) {
-	time64_t a = trace_point_get_value(tb->begin);
-	time64_t b = trace_point_get_value(tb->end);
-
-	return a - b;
 }
 
 int trace_point_get_value(struct __trace_point *tp) {
