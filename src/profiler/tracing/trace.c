@@ -113,13 +113,13 @@ void print_trace_block_info(struct __trace_block *tb) {
 	return s;
 }*/
 
-static size_t get_trace_block_hash(void *key) {
+/*static size_t get_trace_block_hash(void *key) {
 	return (size_t) key;
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
 	return 1 - (key1 == key2);
-}
+}*/
 
 /* It is assumed that there are traceblocks for every function
  * with trace_block_enter just after function call and
@@ -168,24 +168,26 @@ void trace_block_func_exit(void *func) {
 }
 
 struct __trace_block *auto_profile_tb_first(void){
+	return 0;
 	prev_key = hashtable_get_key_first(tbhash);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
+	return 0;
 	prev_key = hashtable_get_key_next(tbhash, prev_key);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
 
 static int instrument_profiling_init(void) {
 	/* Initializing hash table */
-	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
+	/* tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
 
 	if (!tbhash) {
 		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
-	}
+	} */
 	return 0;
 }
