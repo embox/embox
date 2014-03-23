@@ -57,7 +57,7 @@ endef
 
 section_header = $(\t).$1$(value 3) : \
 		ALIGN($(or $(value 2),DEFAULT_DATA_ALIGNMENT)) {
-section_footer = $(\t)$(\t)*(.$1)$(\n)$(\t)} SECTION_REGION($1) :$1 /* .$1$(value 3) */
+section_footer = $(\t)$(\t)*(.$1) } /* .$1$(value 3) */
 
 define file_footer
 
@@ -66,7 +66,7 @@ define file_footer
 		/* . += MAX(SIZEOF(.data.apps), 1); */
 		/* MAX isn't avaible on old ld, at least at 2.20 */
 		. += SIZEOF(.data.apps) + 4;
-	} SECTION_REGION(bss) :bss
+	}
 	_app_data_vma = ADDR(.data.apps);
 	_app_reserve_vma = ADDR(.bss..reserve.apps);
 }

@@ -8,5 +8,5 @@ SECTIONS {
 		_heap_start = .;
 		. += OPTION_MODULE_GET(embox__mem__static_heap,NUMBER,heap_size);
 		_heap_end = .;
-	} SECTION_REGION(bss) :bss
+	}
 }

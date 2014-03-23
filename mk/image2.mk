@@ -197,24 +197,22 @@ GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
 VPATH += $(GPATH)
 
 embox_o = $(OBJ_DIR)/embox.o
-image_lds = $(OBJ_DIR)/mk/image.lds
 
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
-$(embox_o): $(image_lds) $$(common_prereqs)
-	$(LD) -T $(image_lds) $(ldflags_all) \
+$(embox_o): $$(common_prereqs)
+	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
 		$(call fmt_line,$(ld_libs)) \
 		--end-group \
-		--defsym=__symbol_table=0 \
-		--defsym=__symbol_table_size=0 \
-		--cref -Map $@.map \
-		-o $@
+	--cref -Map $@.map \
+	-o $@
 
 __define_image_rules = $(eval $(value __image_rule))
 $(call __define_image_rules,$(embox_o))
 
+image_lds = $(OBJ_DIR)/mk/image.lds
 $(image_lds) : $$(common_prereqs)
 $(image_lds) : flags_before :=
 $(image_lds) : flags = \
