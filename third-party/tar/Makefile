@@ -137,11 +137,17 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 	fi
 
 .PHONY: import_ldflags
-import_ldflags: _ld_objs = $(filter-out %/tar.o,$(ld_objs))
+import_ldflags: _ld_objs = $(ld_objs:.%=-Wl,$(ROOT_DIR)%)
+import_ldflags: ld_libs_embox = $(filter ./build/base/obj/module/embox/%,$(ld_libs))
+import_ldflags: ld_libs_non_embox = $(filter-out ./build/base/obj/module/embox/%,$(ld_libs))
+import_ldflags: _ld_libs_embox = $(ld_libs_embox:.%=-Wl,$(ROOT_DIR)%)
+import_ldflags: _ld_libs_non_embox = $(ld_libs_non_embox:.%=-Wl,$(ROOT_DIR)%)
 import_ldflags:
 	#$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
-	$(eval EMBOX_IMPORTED_LDFLAGS += $(_ld_objs:.%=-Wl,$(ROOT_DIR)%))
-	$(eval EMBOX_IMPORTED_LDFLAGS += -Wl,--start-group $(ld_libs:.%=-Wl,$(ROOT_DIR)%) -Wl,--end-group)
+	$(eval EMBOX_IMPORTED_LDFLAGS += $(filter-out %/tar.o,$(_ld_objs)))
+	$(eval EMBOX_IMPORTED_LDFLAGS += -Wl,--start-group \
+		-Wl,--whole-archive $(_ld_libs_embox) -Wl,--no-whole-archive \
+		$(_ld_libs_non_embox) -Wl,--end-group)
 
 $(ENVIRONMENT): import_ldflags | $(dir ENVIRONMENT)
 	-rm $@
