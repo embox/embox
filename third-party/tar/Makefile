@@ -76,7 +76,19 @@ endif
 EMBOX_IMPORTED_LDFLAGS += $(shell pwd)/stubs.c
 EMBOX_IMPORTED_LDFLAGS += -Wl,--relax
 EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
+#EMBOX_IMPORTED_LDFLAGS += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_ram_base=0,--defsym=_ram_size=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_traps_text_start=0,--defsym=_traps_text_end=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_text_vma=0,--defsym=_text_lma=0,--defsym=_text_len=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_rodata_vma=0,--defsym=_rodata_lma=0,--defsym=_rodata_len=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_data_vma=0,--defsym=_data_lma=0,--defsym=_data_len=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_vma=0,--defsym=_bss_lma=0,--defsym=_bss_len=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_ctors_start=0,--defsym=_ctors_end=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_dtors_start=0,--defsym=_dtors_end=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__EH_FRAME_BEGIN__=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_end=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_reserve_end=0
+EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_len=0,--defsym=_bss_len_with_reserve=0
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
@@ -85,6 +97,9 @@ endif
 
 .PHONY: all
 all: build
+
+.PHONY: $$(image_prerequisites)
+$$(image_prerequisites):
 include ../../build/base/src-gen/image.rule.mk
 __define_image_rules = $(eval $(value __image_rule))
 $(call __define_image_rules,all)
@@ -124,7 +139,7 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 .PHONY: import_ldflags
 import_ldflags: _ld_objs = $(filter-out %/tar.o,$(ld_objs))
 import_ldflags:
-	$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
+	#$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
 	$(eval EMBOX_IMPORTED_LDFLAGS += $(_ld_objs:.%=-Wl,$(ROOT_DIR)%))
 	$(eval EMBOX_IMPORTED_LDFLAGS += -Wl,--start-group $(ld_libs:.%=-Wl,$(ROOT_DIR)%) -Wl,--end-group)
 
