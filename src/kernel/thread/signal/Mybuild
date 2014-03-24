@@ -1,8 +1,8 @@
 
 package embox.kernel.thread.signal
 
-@DefaultImpl(siginfoq_stub) abstract module siginfoq_api { }
-@DefaultImpl(sigstate_stub) abstract module sigstate_api { }
+@DefaultImpl(siginfoq) abstract module siginfoq_api { }
+@DefaultImpl(sigstate) abstract module sigstate_api { }
 
 module siginfoq_stub extends siginfoq_api {
 	source "siginfoq_stub.h"
