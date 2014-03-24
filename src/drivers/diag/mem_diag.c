@@ -13,16 +13,18 @@
 
 #define BUF_LEN OPTION_GET(NUMBER,buffer_len)
 
-static char diag_buf[BUF_LEN + 1]; /* for trailing \0 */
+static char diag_buf[BUF_LEN];
 static int diag_buf_head = 0;
 
 static void diag_mem_putc(const struct diag *diag, char ch) {
+
+	diag_buf[diag_buf_head++] = ch;
+
 	if (diag_buf_head == BUF_LEN) {
 		diag_buf_head = 0;
 	}
 
-	diag_buf[diag_buf_head] = ch;
-	diag_buf[diag_buf_head++] = '\0';
+	diag_buf[diag_buf_head] = '\0';
 }
 
 DIAG_OPS_DECLARE(
