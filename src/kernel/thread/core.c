@@ -324,7 +324,20 @@ int thread_detach(struct thread *t) {
 }
 
 int thread_launch(struct thread *t) {
-	return sched_wakeup(t) ? 0 : -EINVAL;
+	int ret;
+
+	sched_lock();
+	{
+		if (t->state & TS_EXITED) {
+			ret = -EINVAL;
+		}
+		else {
+			ret = sched_wakeup(t) ? 0 : -EINVAL;
+		}
+	}
+	sched_unlock();
+
+	return ret;
 }
 
 int thread_terminate(struct thread *t) {
