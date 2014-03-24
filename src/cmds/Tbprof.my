@@ -1,0 +1,16 @@
+package embox.cmd
+
+@Cmd(name = "tbprof",
+	help = "",
+	man = '''
+		NAME
+			tbprof
+		SYNOPSIS
+
+		AUTHORS
+			Denis Deryugin
+	''')
+module tbprof {
+	source "tbprof.c"
+	depends embox.profiler.tracing
+}

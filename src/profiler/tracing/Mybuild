@@ -13,6 +13,7 @@ module tracing extends trace {
 	source "trace.c", "trace_impl.h"
 	source "__cyg_profile.c"
 	depends embox.kernel.timer.itimer
+	depends embox.util.hashtable
 }
 
 module coverage {

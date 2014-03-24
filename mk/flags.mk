@@ -20,7 +20,8 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
 COVERAGE_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
+		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit \
+		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks
 
 EXTERNAL_MAKE = \
 	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)

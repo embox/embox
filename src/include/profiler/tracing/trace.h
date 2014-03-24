@@ -26,6 +26,8 @@ struct __trace_block;
 #define trace_point(name) \
 	  __trace_point(name)
 
+#include <stdbool.h>
+extern int cyg_profiling;
 
 extern void __tracepoint_handle(struct __trace_point *tp);
 

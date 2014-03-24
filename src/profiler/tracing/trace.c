@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <errno.h>
 
@@ -40,6 +41,8 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 POOL_DEF(tb_pool, struct __trace_block, FUNC_QUANTITY);
 POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
 POOL_DEF(key_pool, int, FUNC_QUANTITY);
+
+int cyg_profiling;
 
 static struct hashtable *tbhash = NULL;
 static int **prev_key;
@@ -118,11 +121,9 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 
 void trace_block_func_enter(void *func) {
 	struct __trace_block *tb = NULL;
-
 	if (!tbhash) { /* Table is not initialized */
 		return;
 	}
-
 	tb = hashtable_get(tbhash, func);
 
 	if (!tb) {
@@ -147,11 +148,9 @@ void trace_block_func_enter(void *func) {
 
 void trace_block_func_exit(void *func) {
 	struct __trace_block *tb;
-
 	if (!tbhash) {
 		return;
 	}
-
 
 	tb = hashtable_get(tbhash, func);
 
@@ -170,6 +169,7 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 }
 
 static int instrument_profiling_init(void) {
+	cyg_profiling = false;
 	/* Initializing hash table */
 	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
