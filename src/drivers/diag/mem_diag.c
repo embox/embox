@@ -9,7 +9,9 @@
 #include <drivers/diag.h>
 #include <string.h>
 
-#define BUF_LEN 0x100
+#include <framework/mod/options.h>
+
+#define BUF_LEN OPTION_GET(NUMBER,buffer_len)
 
 static char diag_buf[BUF_LEN + 1]; /* for trailing \0 */
 static int diag_buf_head = 0;
