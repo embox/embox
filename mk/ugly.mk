@@ -40,7 +40,7 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 			$(\n)
 			// $(get impl->qualifiedName)$(\n)
 			$(or $(strip $(for header <- $(call module_get_headers,$(impl)),
-				$(\h)include <../$(header)>$(\n))),
+				$(\h)include <../../$(header)>$(\n))),
 				// (no headers to include)$(\n))),
 
 		// This is a base type of $(get t->qualifiedName)$(\n)
@@ -78,9 +78,8 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 	$(\n)$(\h)endif /* __CONFIG__$n__H_ */$(\n))
 endef
 
-
 module_get_headers = \
-	$(patsubst $(abspath $(SRC_DIR))/%,%, \
+	$(patsubst $(abspath $(ROOT_DIR))/%,%, \
 		$(abspath $(filter %.h,$(module_get_files))))
 module_get_files = \
 	$(foreach s,$(get 1->sources),$(get s->fileFullName))
