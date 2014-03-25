@@ -7,42 +7,46 @@ proc vfat_test {} {
 	send "mkdir /vfat_mnt\r"
 	expect ":/#"
 
+	send "umount /vfat_mnt\r"
+	expect ":/#"
+
 	send "mkfs -t vfat /dev/hda\r"
-	expect -regexp "mkfs.*"
+	expect "mkfs"
 	expect {
 	         timeout { puts "mkfs timeout\n"; return -1 }
-	        -regexp "mkfs:.*" { puts "mkfs error\n"; return -1 }
+	        -regexp "mkfs:.*" { puts "$expect_out(buffer)\n"; return -1 }
 	        ":/#" { }
 	}
 
 	send "mount -t vfat /dev/hda /vfat_mnt\r"
+	expect "mount"
 	expect {
 	        timeout { puts "mount timeout\n"; return -1 }
-	        -regexp "mount:.*" { puts "mount error\n"; return -1 }
+	        -regexp "mount:.*" { puts "$expect_out(buffer)\n"; return -1 }
 	        ":/#" { }
 	}
 
 	send "touch /vfat_mnt/f1.txt\r"
-	expect -regexp "touch.*"
+	expect "touch"
 	expect {
 	         timeout { puts "touch timeout\n"; return -1 }
-	        -regexp "touch:.*" { puts "touch error\n"; return -1 }
-	        ":/#"
+	        -regexp "touch:.*" { puts "$expect_out(buffer)\n"; return -1 }
+	        ":/#" { }
 	}
 
 	send "ls /vfat_mnt\r"
-	expect -regexp "ls.*"
+	expect ls"
 	expect {
             "/vfat_mnt/f1.txt" {}
-	        ":/#" { puts "ls error\n"; return -1 }
+	        ":/#" { puts "$expect_out(buffer)\n"; return -1 }
 	}
 
 	send "umount /vfat_mnt\r"
-	expect -regexp "umount.*"
+	expect "umount"
 	expect {
 	         timeout { puts "umount timeout\n"; return -1 }
-	        -regexp "umount:.*" { puts "umount error\n"; return -1 }
-	        ":/#"
+	        -regexp "umount:.*" { puts "$expect_out(buffer)\n"; return -1 }
+	        ":/#" { }
 	}
 
 	return 0
