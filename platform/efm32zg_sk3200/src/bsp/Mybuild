@@ -1,0 +1,43 @@
+
+package efm32zg_sk3200
+
+module bsp {
+
+	@DefineMacro("UART_COUNT=1")
+	@DefineMacro("EFM32ZG222F32")
+	@IncludePath("platform/efm32zg_sk3200/src/bsp/Device/EnergyMicro/EFM32ZG/Include")
+	@IncludePath("platform/efm32zg_sk3200/src/bsp/emlib/inc")
+	@IncludePath("platform/efm32zg_sk3200/src/bsp/CMSIS/Include")
+	source "emlib/src/em_timer.c",
+		"emlib/src/em_adc.c",
+		"emlib/src/em_acmp.c",
+		"emlib/src/em_dbg.c",
+		"emlib/src/em_opamp.c",
+		"emlib/src/em_pcnt.c",
+		"emlib/src/em_int.c",
+		"emlib/src/em_prs.c",
+		"emlib/src/em_dac.c",
+		"emlib/src/em_leuart.c",
+		"emlib/src/em_vcmp.c",
+		"emlib/src/em_assert.c",
+		"emlib/src/em_usart.c", /* Requires UART_COUNT define */
+		"emlib/src/em_mpu.c",
+		"emlib/src/em_dma.c",
+		"emlib/src/em_msc.c",
+		"emlib/src/em_aes.c",
+		"emlib/src/em_i2c.c",
+		"emlib/src/em_cmu.c",
+		"emlib/src/em_lesense.c",
+		"emlib/src/em_emu.c",
+		"emlib/src/em_gpio.c",
+		"emlib/src/em_burtc.c",
+		"emlib/src/em_lcd.c",
+		"emlib/src/em_idac.c",
+		"emlib/src/em_rtc.c",
+		"emlib/src/em_wdog.c",
+		"emlib/src/em_ebi.c",
+		"emlib/src/em_rmu.c",
+		"emlib/src/em_letimer.c",
+		"emlib/src/em_system.c",
+		"Device/EnergyMicro/EFM32ZG/Source/system_efm32zg.c"
+}
