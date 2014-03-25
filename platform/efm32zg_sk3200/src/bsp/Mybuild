@@ -1,7 +1,8 @@
 
 package efm32zg_sk3200
 
-module bsp {
+@BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/CMSIS/Include")
+static module bsp extends embox.arch.arm.cmsis {
 
 	@DefineMacro("UART_COUNT=1")
 	@DefineMacro("EFM32ZG222F32")
@@ -40,4 +41,6 @@ module bsp {
 		"emlib/src/em_letimer.c",
 		"emlib/src/em_system.c",
 		"Device/EnergyMicro/EFM32ZG/Source/system_efm32zg.c"
+
+	source "Device/EnergyMicro/EFM32ZG/Include/efm32zg222f32.h"
 }
