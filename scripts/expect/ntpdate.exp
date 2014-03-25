@@ -26,11 +26,10 @@ proc ntpdate_test {} {
 	global host_date
 
 	send "ntpdate $host_ip\r"
-	expect -regexp "ntpdate.*"
+	expect "ntpdate"
 	expect {
 	        timeout  { puts "ntpdate.exp: timeout\n"; return -1 }
-	        # Waiting while ntpdate finished
-	        -regexp "ntpdate:.*" { puts "ntpdate.exp: error\n"; return -1 }
+	        -regexp "ntpdate:.*" { puts "$expect_out(buffer)\n"; return -1 }
 	        ":/#"
 	}
 
@@ -39,6 +38,7 @@ proc ntpdate_test {} {
 	# And compare the host date with the Embox's one.
 	# XXX: compare the both times too, not only dates
 	send "date\r"
+	expect "date"
 	expect {
 	        timeout  { puts "ntpdate.exp: date command timeout\n"; return -1 }
 	        # Date 2014-01-05 is from class (2.*)

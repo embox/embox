@@ -1,4 +1,4 @@
-#!//usr/bin/runtest
+#!/usr/bin/runtest
 
 # Procedure that used to execute EXPECT proc's through telnet.
 # Usage: exec_cmd <embox_ip> <proc>
@@ -40,7 +40,5 @@ proc exec_cmd {embox_ip cmd} {
 			exit 1
 		}
 	}
-	send "exit\r"
 	pass $cmd
-	expect eof
 }
