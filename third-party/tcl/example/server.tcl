@@ -4,7 +4,6 @@
 #
 # See also client.tcl
 
-after 5000 set state timeout
 set didRead 0
 set server [socket -server accept 12345]
 
@@ -23,16 +22,16 @@ proc readLine {addr chan} {
 }
 
 # waiting for connection
+puts "waiting for connection..."
 vwait state
 
 switch $state {
-    timeout {
-        puts "no connection on port 12345: timeout expired"
-	exit 1
-    }
     accepted {
        puts "connection from: $connectionAddr"
        puts "waiting for data..."
+    }
+    default {
+       puts "unrecognized socket's state"
     }
 }
 
