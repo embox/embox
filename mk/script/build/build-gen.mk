@@ -359,9 +359,16 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),value)
 build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
+# Maps moduleType to that one, which instance is in build. For example, if 'api' extended
+# by 'impl1' and 'impl2', and 'impl2' is in build, calling this with 'api' moduleType will
+# return moduleType of 'impl2'.
+# 1. moduleType
+build_module_type_substitude = \
+	$(call get,$(call module_build_fqn2inst,$(call get,$1,qualifiedName)),type)
+
 build_deps_all = \
 	$(sort $(foreach d,$(call build_deps,$1), \
-		$d + $(call build_deps_all,$d)))
+		$(call build_module_type_substitude,$d) $(call build_deps_all,$d)))
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \

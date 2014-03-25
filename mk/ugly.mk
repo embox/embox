@@ -16,7 +16,8 @@ define __header_mod_name
 endef
 
 
-__header_mod = $(call map-get,$(build_model),moduleInstanceByName,$1)
+module_build_fqn2inst = $(call map-get,$(build_model),moduleInstanceByName,$1)
+__header_mod = module_build_fqn2inst
 
 __header_gen = $(with $(__header_mod_name), \
   $(subst $(\n),\n,$(call __header_template,$(call __header_mod,$1),$1)))
