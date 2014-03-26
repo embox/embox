@@ -88,6 +88,8 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
+	node = if_mounted_get_node(node);
+
 	if (0 != fs_perm_check(node, FS_MAY_WRITE)) {
 		errno = EACCES;
 		return -1;
@@ -259,7 +261,7 @@ int kformat(const char *pathname, const char *fs_type) {
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct node *dev_node, *dir_node, *parent;
+	struct node *dev_node, *dir_node, *root;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -306,28 +308,38 @@ skip_dev_lookup:
 		return -1;
 	}
 
-	if(ENOERR != (res = mount_table_check(dir_node))) {
-		errno = -res;
-		return -1;
+//	if(ENOERR != (res = mount_table_check(dir_node))) {
+//		errno = -res;
+//		return -1;
+//	}
+
+	if (0 == strcmp(dir, "/")) {
+		root = dir_node;
+	} else {
+		root = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
-		/*TODO restore previous fs type from parent dir */
+	if(ENOERR != (res = drv->fsop->mount(dev_node, root))) {
+/*		TODO restore previous fs type from parent dir
 		if(NULL != (parent = vfs_get_parent(dir_node))) {
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-		}
+		}*/
+
+		//todo free root
 		errno = -res;
 		return -1;
 
 	}
-	if(ENOERR != (res = mount_table_add(dir_node))) {
+	if(ENOERR != (res = mount_table_add(dir_node, root))) {
 		drv->fsop->umount(dir_node);
-		/*TODO restore previous fs type from parent dir */
+/*		TODO restore previous fs type from parent dir
 		if(NULL != (parent = vfs_get_parent(dir_node))) {
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-		}
+		}*/
+
+		//todo free root
 		errno = -res;
 		return -1;
 	}
@@ -521,7 +533,7 @@ int krename(const char *oldpath, const char *newpath) {
 }
 
 int kumount(const char *dir) {
-	struct node *dir_node, *parent;
+	struct node *dir_node, *node;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -542,6 +554,9 @@ int kumount(const char *dir) {
 
 	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
 
+	node = dir_node;
+	dir_node = mount_table_find(dir_node)->mnt_root;
+
 	drv = dir_node->nas->fs->drv;
 
 	if (!drv) {
@@ -559,13 +574,13 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	mount_table_del(dir_node);
+	mount_table_del(node);
 
-	/*restore previous fs type from parent dir */
-	if(NULL != (parent = vfs_get_parent(dir_node))) {
-		dir_node->nas->fs = parent->nas->fs;
-		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-	}
+//	/*restore previous fs type from parent dir */
+//	if(NULL != (parent = vfs_get_parent(dir_node))) {
+//		dir_node->nas->fs = parent->nas->fs;
+//		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+//	}
 
 	return 0;
 }

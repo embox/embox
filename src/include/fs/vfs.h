@@ -37,6 +37,7 @@ extern int vfs_add_leaf(node_t *child, node_t *parent);
 
 extern int vfs_del_leaf(node_t *nod);
 
+extern node_t *vfs_create_root(void);
 extern node_t *vfs_get_root(void);
 extern node_t *vfs_get_leaf(void);
 
@@ -102,6 +103,20 @@ static inline int vfs_get_path_till_root(node_t *nod, node_t *root, char *path,
  */
 static inline int vfs_get_path_by_node(node_t *nod, char *path) {
 	return vfs_get_path_till_root(nod, vfs_get_root(), path, PATH_MAX);
+}
+
+
+
+//XXX
+#include <fs/mount.h>
+
+static inline node_t *if_mounted_get_node(node_t *node) {
+	if (node->mounted) {
+		struct mount_descriptor *desc = mount_table_find(node);
+		assert(desc);
+		node = desc->mnt_root;
+	}
+	return node;
 }
 
 #endif /* FS_VFS_H_ */

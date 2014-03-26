@@ -40,7 +40,7 @@ static int show_mount_list(void) {
 	if(NULL == (mount_list = mount_table())) {
 		return 0;
 	}
-	dlist_foreach_entry(mdesc, tmp, mount_list, mount_link) {
+	dlist_foreach_entry(mdesc, tmp, mount_list, mnt_link) {
 		vfs_get_path_by_node(mdesc->dir_node, mount_path);
 		fs_name = mdesc->dir_node->nas->fs->drv->name;
 		bdev_path = mdesc->dir_node->nas->fs->bdev->name;

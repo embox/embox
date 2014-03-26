@@ -17,12 +17,16 @@ struct node;
 
 struct mount_descriptor {
 	struct node *dir_node;
-	struct dlist_head mount_link;
+	struct node *mnt_root;
+	struct mount_descriptor *mnt_parent;
+	struct dlist_head mnt_link;
 };
 
 extern struct dlist_head *mount_table(void);
 
-extern int mount_table_add(struct node *dir_node);
+extern int mount_table_add(struct node *dir_node, struct node *root);
+extern struct mount_descriptor *mount_table_find(struct node *dir_node);
+extern struct mount_descriptor *mount_table_find_by_root(struct node *root_node);
 
 extern int mount_table_del(struct node *dir_node);
 

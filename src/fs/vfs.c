@@ -14,6 +14,7 @@
 
 #include <fs/path.h>
 #include <fs/vfs.h>
+
 #include <limits.h>
 
 #define ROOT_MODE 0755
@@ -76,6 +77,8 @@ node_t *vfs_lookup_childn(node_t *parent, const char *name, size_t len) {
 	}
 #endif
 
+	parent = if_mounted_get_node(parent);
+
 	if (len == 1 && *name == '.') {
 		return parent;
 	}
@@ -91,6 +94,8 @@ static node_t *__vfs_lookup_existing(node_t *parent, const char *path,
 	size_t len = 0;
 
 	assert(parent && path);
+
+	parent = if_mounted_get_node(parent);
 
 	while ((path = path_next(path, &len))) {
 		child = vfs_lookup_childn(parent, path, len);
@@ -114,6 +119,8 @@ node_t *vfs_lookup_child(node_t *parent, const char *name) {
 		parent = vfs_get_root();
 	}
 
+	parent = if_mounted_get_node(parent);
+
 	return vfs_lookup_childn(parent, name, strlen(name));
 }
 
@@ -121,6 +128,8 @@ node_t *vfs_lookup(node_t *parent, const char *path) {
 	if (!parent) {
 		parent = vfs_get_root();
 	}
+
+	parent = if_mounted_get_node(parent);
 
 	parent = __vfs_lookup_existing(parent, path, &path);
 
@@ -144,6 +153,8 @@ static node_t *__vfs_create_child(node_t *parent, const char *name, size_t len,
 	assert(parent);
 	assert(mode & S_IFMT, "Must provide a type of node, see S_IFXXX");
 
+	parent = if_mounted_get_node(parent);
+
 	child = node_alloc(name, len);
 	if (child) {
 		child->mode = mode;
@@ -156,6 +167,8 @@ node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode) {
 	if (!parent) {
 		parent = vfs_get_root();
 	}
+
+	parent = if_mounted_get_node(parent);
 
 	return __vfs_create_child(parent, name, strlen(name), mode);
 }
@@ -213,6 +226,8 @@ int vfs_del_leaf(node_t *node) {
 
 	assert(node);
 
+	//todo: unlink mounted?
+
 	rc = tree_unlink_link(&(node->tree_link));
 	if (rc) {
 		node_free(node);
@@ -223,6 +238,8 @@ int vfs_del_leaf(node_t *node) {
 node_t *vfs_get_child_next(node_t *parent) {
 	struct tree_link *tlink;
 
+	parent = if_mounted_get_node(parent);
+
 	tlink = tree_children_begin(&(parent->tree_link));
 
 	return tree_element(tlink, struct node, tree_link);
@@ -230,10 +247,20 @@ node_t *vfs_get_child_next(node_t *parent) {
 
 node_t *vfs_get_parent(node_t *child) {
 	struct tree_link *tlink;
+	node_t *parent;
 
 	tlink = &child->tree_link;
 
-	return tree_element(tlink->par, struct node, tree_link);
+	parent = tree_element(tlink->par, struct node, tree_link);
+
+	if (parent == child) {
+		struct mount_descriptor *desc = mount_table_find_by_root(child);
+		if (desc) {
+			return desc->dir_node;
+		}
+	}
+
+	return parent;
 }
 
 node_t *vfs_get_leaf(void) {
@@ -248,13 +275,21 @@ node_t *vfs_get_leaf(void) {
 	return leaf;
 }
 
+node_t *vfs_create_root(void) {
+	node_t *root_node;
+
+	root_node = node_alloc("/", 0);
+	assert(root_node);
+	root_node->mode = S_IFDIR | ROOT_MODE;
+
+	return root_node;
+}
+
 node_t *vfs_get_root(void) {
 	static node_t *root_node;
 
 	if (!root_node) {
-		root_node = node_alloc("/", 0);
-		assert(root_node);
-		root_node->mode = S_IFDIR | ROOT_MODE;
+		root_node = vfs_create_root();
 		//TODO set pseudofs driver
 	}
 

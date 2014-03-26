@@ -40,6 +40,8 @@ typedef struct node {
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
 
+	int                   mounted; /* is mount point*/
+
 	flock_t               flock;
 
 	/* service data structure for enabling tree operation */
