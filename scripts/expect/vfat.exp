@@ -1,5 +1,6 @@
 #!/usr/bin/runtest
 
+source test_cmd.exp
 source exec_through_telnet.exp
 
 proc vfat_test {} {
@@ -10,44 +11,15 @@ proc vfat_test {} {
 	send "umount /vfat_mnt\r"
 	expect ":/#"
 
-	send "mkfs -t vfat /dev/hda\r"
-	expect "mkfs"
-	expect {
-	         timeout { puts "mkfs timeout\n"; return -1 }
-	        -regexp "mkfs:.*" { puts "$expect_out(buffer)\n"; return -1 }
-	        ":/#" { }
-	}
+	test_assert_ok "mkfs -t vfat /dev/hda\r" ":/#"
 
-	send "mount -t vfat /dev/hda /vfat_mnt\r"
-	expect "mount"
-	expect {
-	        timeout { puts "mount timeout\n"; return -1 }
-	        -regexp "mount:.*" { puts "$expect_out(buffer)\n"; return -1 }
-	        ":/#" { }
-	}
+	test_assert_ok "mount -t vfat /dev/hda /vfat_mnt\r" ":/#"
 
-	send "touch /vfat_mnt/f1.txt\r"
-	expect "touch"
-	expect {
-	         timeout { puts "touch timeout\n"; return -1 }
-	        -regexp "touch:.*" { puts "$expect_out(buffer)\n"; return -1 }
-	        ":/#" { }
-	}
+	test_assert_ok "touch /vfat_mnt/f1.txt\r" ":/#"
 
-	send "ls /vfat_mnt\r"
-	expect ls"
-	expect {
-            "/vfat_mnt/f1.txt" {}
-	        ":/#" { puts "$expect_out(buffer)\n"; return -1 }
-	}
+	test_assert_ok "ls /vfat_mnt\r" "/vfat_mnt/f1.txt"
 
-	send "umount /vfat_mnt\r"
-	expect "umount"
-	expect {
-	         timeout { puts "umount timeout\n"; return -1 }
-	        -regexp "umount:.*" { puts "$expect_out(buffer)\n"; return -1 }
-	        ":/#" { }
-	}
+	test_assert_ok "umount /vfat_mnt\r" ":/#"
 
 	return 0
 }

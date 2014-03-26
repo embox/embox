@@ -4,10 +4,12 @@ source exec_through_telnet.exp
 
 proc ping_test {} {
 	global host_ip
+
 	send "ping -c 1 $host_ip\r\n"
+	expect "ping"
 	expect {
 	        timeout  { puts "ping.exp: timeout\n"; return -1 }
-	        "+0 errors"
+	        "+0 errors" { }
 	}
 	return 0
 }
