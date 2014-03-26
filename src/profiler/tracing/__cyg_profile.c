@@ -2,7 +2,7 @@
 #include <profiler/tracing/trace.h>
 
 void __cyg_profile_func_enter(void *func, void *caller) {
-	if (cyg_profiling) {
+	if (cyg_profiling && !critical_inside()) {
 		cyg_profiling = false;
 		trace_block_func_enter(func);
 		cyg_profiling = true;
