@@ -28,7 +28,7 @@ trap_table:
 
 boot_start:
 	/* set PSR initial value */
-	set (PSR_PS | PSR_S | PSR_PIL | PSR_EF), %g1
+	set (PSR_PS | PSR_S | PSR_PIL), %g1
 	wr  %g1, %g0, %psr
 	 WRITE_PAUSE
 

@@ -44,6 +44,8 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
 ifeq (sparc,$(EMBOX_TCL_TARGET))
 EMBOX_IMPORTED_CFLAGS   += -munaligned-doubles
 EMBOX_IMPORTED_CXXFLAGS += -munaligned-doubles
+EMBOX_IMPORTED_CFLAGS   += -msoft-float -mcpu=v8
+EMBOX_IMPORTED_CXXFLAGS += -msoft-float -mcpu=v8
 endif
 
 #EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
