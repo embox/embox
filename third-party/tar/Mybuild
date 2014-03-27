@@ -27,12 +27,16 @@ module tar {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.tar.o"
 
-	source "stubs.c"
+	depends tar_stubs
 
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.lib.LibCAssert
 	@NoRuntime depends embox.lib.LibCType
 	@NoRuntime depends embox.kernel.task.resource.errno
+}
+
+module tar_stubs {
+	source "stubs.c"
 }
 
 module tar_linker_hook {

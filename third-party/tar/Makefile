@@ -73,7 +73,6 @@ EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(EMBOX_LDFLAGS))
 ifneq (,$(filter -m%,$(EMBOX_LDFLAGS)))
 EMBOX_IMPORTED_LDFLAGS += -Wl,$(filter -m%,$(EMBOX_LDFLAGS))
 endif
-EMBOX_IMPORTED_LDFLAGS += $(shell pwd)/stubs.c
 EMBOX_IMPORTED_LDFLAGS += -Wl,--relax
 EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
 #EMBOX_IMPORTED_LDFLAGS += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
