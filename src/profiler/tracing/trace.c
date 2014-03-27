@@ -153,8 +153,9 @@ void trace_block_func_exit(void *func) {
 	}
 
 	tb = hashtable_get(tbhash, func);
-
-	trace_block_leave(tb);
+	if (tb) {
+		trace_block_leave(tb);
+	}
 }
 
 struct __trace_block *auto_profile_tb_first(void){

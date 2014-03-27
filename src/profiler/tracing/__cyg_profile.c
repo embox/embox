@@ -1,10 +1,19 @@
 #include <stdio.h>
 #include <profiler/tracing/trace.h>
+#include <kernel/critical.h>
+
+static inline int enter_condition() {
+	return !critical_inside(CRITICAL_IRQ_LOCK) && !critical_inside(CRITICAL_IRQ_HANDLER);
+	/*&&
+			!critical_inside(CRITICAL_SOFTIRQ_LOCK)  && !critical_inside(CRITICAL_SOFTIRQ_HANDLER) &&
+			!critical_inside(CRITICAL_SCHED_LOCK);
+*/}
 
 void __cyg_profile_func_enter(void *func, void *caller) {
-	if (cyg_profiling && !critical_inside()) {
+	if (cyg_profiling) {
 		cyg_profiling = false;
-		trace_block_func_enter(func);
+		if (enter_condition())
+			trace_block_func_enter(func);
 		cyg_profiling = true;
 	}
 }
@@ -12,7 +21,8 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 void __cyg_profile_func_exit(void *func, void *caller) {
 	if (cyg_profiling) {
 		cyg_profiling = false;
-		trace_block_func_exit(func);
+		if (enter_condition())
+			trace_block_func_exit(func);
 		cyg_profiling = true;
 	}
 }

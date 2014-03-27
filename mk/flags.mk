@@ -24,7 +24,7 @@ COVERAGE_CFLAGS ?= -finstrument-functions \
 
 PROFILING_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit \
-		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle \
+		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle,enter_condition,critical_inside \
 #		   -finstrument-functions-exclude-function-list=ipl_restore,ipl_save,critical_distapch_handling,in8,cycles_to_ns,irq_handler,critical_inside,critical_enter,__critical_count_add,ipl_init,irq_dispatch,itimer_init,clock_source_read,i8253_read,_udivdi3,_umoddi3,irq_stack_protection,critical_dispatch_pending \
 #		   -finstrument-functions-exclude-function-list=critical_leave,i8259_irq_pending,cs_full_read,clock_handler,clock_tick_handler,softirq_raise,__critical_count_sub,i8259_send_eoi,itimer_read,critical_pending,clock_tick_handler,clock_source_get_best,critical_request_dispatch
 
