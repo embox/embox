@@ -15,7 +15,6 @@ module core {
 	source "core.c"
 
 	depends fsnode_api
-	depends embox.driver.tty.tty
 	@NoRuntime depends embox.util.indexator
 }
 
