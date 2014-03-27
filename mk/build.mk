@@ -19,6 +19,7 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES=''
 	@$(MAKE) -f mk/image2.mk MAKEFILES=''
+	@$(MAKE) -f mk/image3.mk MAKEFILES=''
 
 buildgen : $(build_gen_ts)
 ifneq ($(filter buildgen,$(MAKECMDGOALS)),)
