@@ -2,10 +2,11 @@
 package efm32zg_sk3200
 
 @BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/CMSIS/Include")
+@BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/emlib/inc")
+@BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/Device/EnergyMicro/EFM32ZG/Include/")
 static module bsp extends embox.arch.arm.cmsis {
 
 	@DefineMacro("UART_COUNT=1")
-	@DefineMacro("EFM32ZG222F32")
 	@IncludePath("platform/efm32zg_sk3200/src/bsp/Device/EnergyMicro/EFM32ZG/Include")
 	@IncludePath("platform/efm32zg_sk3200/src/bsp/emlib/inc")
 	@IncludePath("platform/efm32zg_sk3200/src/bsp/CMSIS/Include")
