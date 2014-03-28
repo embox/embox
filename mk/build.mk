@@ -17,8 +17,9 @@ build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 
 build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
-	@$(MAKE) -f mk/extbld.mk MAKEFILES=''
+	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES=''
+	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-2
 	@$(MAKE) -f mk/image3.mk MAKEFILES=''
 
 buildgen : $(build_gen_ts)

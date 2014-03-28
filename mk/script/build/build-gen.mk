@@ -293,6 +293,7 @@ my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 			module-header-h/$t$m module-config-h/$t$m))
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
+my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 
 my_bld_dep_value := $(call mybuild_resolve_or_die,mybuild.lang.BuildDepends.value)
 
@@ -404,6 +405,7 @@ $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
+$(@module_extbld_rmk) : stage = $(call annotation_value,$(call get,$@,allTypes),$(my_bld_stage))
 $(@module_extbld_rmk) : __build_deps = $(call build_deps, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : __build_deps_all = $(call build_deps_all, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
@@ -416,7 +418,7 @@ $(@module_extbld_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,__extbld,$(target)); \
+		$(call gen_make_dep,__extbld-$(or $(strip $(stage)),1),$(target)); \
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \

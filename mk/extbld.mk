@@ -1,7 +1,7 @@
-.PHONY : all __extbld FORCE
-all : __extbld
+.PHONY : all __extbld-1 __extbld-2 FORCE
+all :
 
-__extbld :
+__extbld-1 __extbld-2 :
 	@$(if $^,echo 'External build complete',:)
 
 FORCE :
