@@ -6,6 +6,7 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lwthread.h>
+#include <kernel/runnable/runnable.h>
 #include <kernel/runnable/runnable_priority.h>
 #include <mem/misc/pool.h>
 
@@ -18,6 +19,13 @@ typedef struct lwthread lwthread_pool_entry_t;
 #define POOL_SZ       OPTION_GET(NUMBER, lwthread_pool_size)
 
 POOL_DEF(lwthread_pool, lwthread_pool_entry_t, POOL_SZ);
+/*
+static void __attribute__((noreturn)) lwthread_trampoline(void) {
+	struct runnable *r;
+	r = runnable_get_current();
+
+	lwt->run()
+}*/
 
 void lwthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
 	lwt->runnable.run = (void *)run;

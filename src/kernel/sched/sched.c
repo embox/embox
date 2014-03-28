@@ -371,25 +371,27 @@ void sched_ack_switched(void) {
 }
 
 static void sched_switch(struct thread *prev, struct thread *next) {
-	int i = 0;
 	sched_prepare_switch(prev, next);
 
 	trace_point(__func__);
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
-	cpudata_var(saved_next) = next;
 	thread_set_current(next);
-	i++;
+
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
+
 	prev = cpudata_var(saved_prev);
-	next = cpudata_var(saved_next);
 
 	sched_finish_switch(prev);
 }
 
 void sched_thread_switch(struct thread *prev, struct thread *next) {
+	cpudata_var(saved_next) = next;
+
 	sched_switch(prev, next);
+
+	next = cpudata_var(saved_next);
 }
 
 static void __schedule(int preempt) {
@@ -412,20 +414,26 @@ static void __schedule(int preempt) {
 	else
 		__sched_enqueue(&(prev->runnable));
 
-	next = runq_extract(&rq.queue);
+	do {
+		next = runq_extract(&rq.queue);
+
+		if(next->run != NULL) {
+			/* lwthread */
+			next->run(next->run_arg);
+			continue;
+		} else {
+			/*Normal thread*/
+			break;
+		}
+	} while(1);
 
 	/* Runq is unlocked as soon as possible, but interrupts remain disabled
 	 * during the 'sched_switch' (if any). */
 	spin_unlock(&rq.lock);
 
 	if (&(prev->runnable) != next) {
-		if(next->prepare != NULL) {
-			next->prepare(prev, next);
-		} else {
-			if(next->run != NULL) {
-				next->run(next->run_arg);
-			}
-		}
+		assert(next->prepare != NULL);
+		next->prepare(prev, next);
 	}
 
 	ipl_restore(ipl);
@@ -435,9 +443,11 @@ static void __schedule(int preempt) {
 	/* start for lwthreads */
 	/*
 	if(next->run != NULL) {
-		next->run();
+		next->run(next->run_arg);
+		ipl = spin_lock_ipl(&rq.lock);
+		goto label;
 	}
-	*/
+	// */
 
 	if (!prev->siglock) {
 		thread_signal_handle();

@@ -12,7 +12,7 @@
 
 EMBOX_TEST_SUITE("test for lwthread API");
 
-int done = 0;
+static volatile int done = 0;
 
 static void *run(void *arg) {
 	test_emit('a');
@@ -26,11 +26,13 @@ TEST_CASE("Launch simple lwthread") {
 
 	lwt = lwthread_create(run, NULL);
 	test_assert_zero(err(lwt));
+	///*
 	lwthread_launch(lwt);
 
-	SCHED_WAIT(done == 1);
+	test_assert_equal(SCHED_WAIT_TIMEOUT(done == 1, 1000), -ETIMEDOUT);
 
 	lwthread_free(lwt);
-	/* Not sure if it would be completed here */
 	test_assert_emitted("a");
+
+	//*/
 }

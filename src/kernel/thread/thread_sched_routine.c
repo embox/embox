@@ -20,6 +20,7 @@ void sched_prepare_thread(struct thread *prev, struct runnable *n) {
 	struct thread *next;
 
 	next = mcast_out(n, struct thread, runnable);
+
 	sched_thread_switch(prev, next);
 }
 
