@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/lwthread.h>
+#include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for lwthread API");
 
@@ -26,13 +27,16 @@ TEST_CASE("Launch simple lwthread") {
 
 	lwt = lwthread_create(run, NULL);
 	test_assert_zero(err(lwt));
-	///*
 	lwthread_launch(lwt);
 
-	test_assert_equal(SCHED_WAIT_TIMEOUT(done == 1, 1000), -ETIMEDOUT);
+	/* Spin, waiting lwthread finished */
+	while(1) {
+		if(done == 1) break;
+		ksleep(0);
+	}
 
 	lwthread_free(lwt);
 	test_assert_emitted("a");
-
-	//*/
 }
+
+

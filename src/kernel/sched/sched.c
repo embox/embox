@@ -34,6 +34,7 @@
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
+#include <kernel/lwthread.h>
 
 #include <kernel/runnable/runnable.h>
 #include <kernel/lwthread.h>
@@ -418,11 +419,12 @@ static void __schedule(int preempt) {
 		next = runq_extract(&rq.queue);
 
 		if(next->run != NULL) {
-			/* lwthread */
-			next->run(next->run_arg);
+			/* lwthread extracted, run it*/
+			lwthread_trampoline(next);
+
 			continue;
 		} else {
-			/*Normal thread*/
+			/* thread extracted*/
 			break;
 		}
 	} while(1);
@@ -431,6 +433,7 @@ static void __schedule(int preempt) {
 	 * during the 'sched_switch' (if any). */
 	spin_unlock(&rq.lock);
 
+	/* Threads context switch */
 	if (&(prev->runnable) != next) {
 		assert(next->prepare != NULL);
 		next->prepare(prev, next);
@@ -439,15 +442,6 @@ static void __schedule(int preempt) {
 	ipl_restore(ipl);
 
 	assert(thread_self() == prev);
-
-	/* start for lwthreads */
-	/*
-	if(next->run != NULL) {
-		next->run(next->run_arg);
-		ipl = spin_lock_ipl(&rq.lock);
-		goto label;
-	}
-	// */
 
 	if (!prev->siglock) {
 		thread_signal_handle();

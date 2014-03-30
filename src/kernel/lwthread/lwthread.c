@@ -19,13 +19,17 @@ typedef struct lwthread lwthread_pool_entry_t;
 #define POOL_SZ       OPTION_GET(NUMBER, lwthread_pool_size)
 
 POOL_DEF(lwthread_pool, lwthread_pool_entry_t, POOL_SZ);
-/*
-static void __attribute__((noreturn)) lwthread_trampoline(void) {
-	struct runnable *r;
-	r = runnable_get_current();
 
-	lwt->run()
-}*/
+/*
+*/
+void lwthread_trampoline(struct runnable *r) {
+	struct lwthread *lwt;
+	lwt = mcast_out(r, struct lwthread, runnable);
+
+	lwt->runnable.run(lwt->runnable.run_arg);
+
+	lwthread_free(lwt);
+}
 
 void lwthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
 	lwt->runnable.run = (void *)run;

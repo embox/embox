@@ -23,7 +23,3 @@ void sched_prepare_thread(struct thread *prev, struct runnable *n) {
 
 	sched_thread_switch(prev, next);
 }
-
-struct runnable *runnable_get_current(){
-	return &(thread_get_current()->runnable);
-}
