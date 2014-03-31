@@ -54,7 +54,7 @@ static void *pointer_to_segment(void *ptr) {
 
 	return NULL;
 }
-
+struct task_heap *task_heap_get(const struct task *task);
 void *memalign(size_t boundary, size_t size) {
 	extern struct page_allocator *__heap_pgallocator;
 	void *block;
@@ -62,7 +62,8 @@ void *memalign(size_t boundary, size_t size) {
 	size_t segment_pages_cnt, segment_bytes_cnt;
 	int iter;
 
-	/* task_mem_segments = task_self()->mm->link */
+	//task_mem_segments = task_self()->mm->link;
+	//task_mem_segments = task_heap_get(task);
 
 	block = NULL;
 	iter = 0;
@@ -169,4 +170,12 @@ void *calloc(size_t nmemb, size_t size) {
 
 	memset(ret, 0, total_size);
 	return ret;
+}
+
+int heap_init(const struct task *task) {
+	return 0;
+}
+
+int heap_fini(const struct task *task) {
+	return 0;
 }
