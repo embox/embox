@@ -135,50 +135,52 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 		cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`; \
 	fi
 
-.PHONY: import_ldflags
-import_ldflags: _ld_objs = $(ld_objs:.%=-Wl,$(ROOT_DIR)%)
-import_ldflags: ld_libs_embox = $(filter ./build/base/obj/module/embox/%,$(ld_libs))
-import_ldflags: ld_libs_non_embox = $(filter-out ./build/base/obj/module/embox/%,$(ld_libs))
-import_ldflags: _ld_libs_embox = $(ld_libs_embox:.%=-Wl,$(ROOT_DIR)%)
-import_ldflags: _ld_libs_non_embox = $(ld_libs_non_embox:.%=-Wl,$(ROOT_DIR)%)
-import_ldflags:
-	#$(eval EMBOX_IMPORTED_LDFLAGS += $(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%))
-	$(eval EMBOX_IMPORTED_LDFLAGS += $(filter-out %/tar.o,$(_ld_objs)))
-	$(eval EMBOX_IMPORTED_LDFLAGS += -Wl,--start-group \
-		-Wl,--whole-archive $(_ld_libs_embox) -Wl,--no-whole-archive \
-		$(_ld_libs_non_embox) -Wl,--end-group)
-
-$(ENVIRONMENT): import_ldflags | $(dir ENVIRONMENT)
-	-rm $@
+$(ENVIRONMENT): _ld_objs = $(ld_objs:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): ld_libs_embox = $(filter ./build/base/obj/module/embox/%,$(ld_libs))
+$(ENVIRONMENT): ld_libs_non_embox = $(filter-out ./build/base/obj/module/embox/%,$(ld_libs))
+$(ENVIRONMENT): _ld_libs_embox = $(ld_libs_embox:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): _ld_libs_non_embox = $(ld_libs_non_embox:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): | $(dir ENVIRONMENT)
+	echo "EMBOX_IMPORTED_CPPFLAGS='$(EMBOX_IMPORTED_CPPFLAGS)'" >> $@
 	echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"     >> $@
 	echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'" >> $@
-	echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)'"   >> $@
+	echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS) \
+		$(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%) \
+		$(filter-out %/tar.o,$(_ld_objs)) \
+		-Wl,--start-group \
+		-Wl,--whole-archive $(_ld_libs_embox) -Wl,--no-whole-archive \
+		$(_ld_libs_non_embox) \
+		-Wl,--end-group \
+		'"   >> $@
 	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"         >> $@
 	echo "PKG_CONF_FLAGS='$(PKG_CONF_FLAGS)'"                   >> $@
 
 .PHONY: configure
 configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
+	export EMBOX_TARGET_ENV=$(ENVIRONMENT) && \
 	cd $(PKG_BUILD_DIR) && \
 		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
 			echo Nothing to do - no reconfiguration is required.; \
 		else \
 			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make distclean && rm $(CONFIGURED))) && \
 			echo Configuring... && \
-			CFLAGS='$(EMBOX_IMPORTED_CFLAGS)' CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)' \
-				LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)' $(PKG_SRC_DIR)/configure $(PKG_CONF_FLAGS) && \
+			$(PKG_SRC_DIR)/configure --host=i386-unknown-none \
+				--target=i386-unknown-none \
+				CPPFLAGS=-I/home/anton/embox/embox-porting-external/third-party/tar/include/ \
+				CC=$(ROOT_DIR)/mk/script/arch-embox-gcc && \
 			echo Persisting configuration... && \
-			mv -f $(ENVIRONMENT) $(CONFIGURED); \
+			cp $(ENVIRONMENT) $(CONFIGURED); \
 		fi
 
 .PHONY: build
-build: configure | $(PKG_BUILD_DIR)
+build: configure $(ENVIRONMENT) | $(PKG_BUILD_DIR)
+	export EMBOX_TARGET_ENV=$(ENVIRONMENT) && \
 	cd $(PKG_BUILD_DIR) && \
 		if make -q; then \
 			echo Nothing to do - no rebuild is required.; \
 		else \
 			echo Building... && \
-			CFLAGS='$(EMBOX_IMPORTED_CFLAGS)' CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)' \
-				LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)' make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+			make V=1 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 		fi
 
 .NOTPARALLEL:

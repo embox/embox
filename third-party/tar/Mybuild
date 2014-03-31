@@ -9,6 +9,7 @@ package third_party.gnu
 			-
 	''')
 module tar {
+/*
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/gnu")
 	source "libgnu.a"
 
@@ -26,6 +27,7 @@ module tar {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/src")
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.tar.o"
+*/
 
 	depends tar_stubs
 

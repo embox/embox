@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -f $EMBOX_TARGET_ENV ]; then
+	. $EMBOX_TARGET_ENV;
+fi
+
+ARG_LINE="$EMBOX_IMPORTED_CFLAGS $EMBOX_IMPORTED_LDFLAGS"
+case $@ in
+	*-c*) ARG_LINE="$EMBOX_IMPORTED_CFLAGS";;
+	*-E*) ARG_LINE=;;
+esac
+
+cmd=$(basename $0)
+ARG_LINE="$@ $ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
+#echo $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE
+$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE
+exit $?
