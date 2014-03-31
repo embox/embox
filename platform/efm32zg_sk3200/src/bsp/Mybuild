@@ -1,6 +1,7 @@
 
 package efm32zg_sk3200
 
+@Build(script="$(MAKE) -C $(PLATFORM_DIR)/efm32zg_sk3200/src/bsp")
 @BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/CMSIS/Include")
 @BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/emlib/inc")
 @BuildArtifactPath(cppflags="-I$(PLATFORM_DIR)/efm32zg_sk3200/src/bsp/Device/EnergyMicro/EFM32ZG/Include/")
