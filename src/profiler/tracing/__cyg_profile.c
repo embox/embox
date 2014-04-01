@@ -10,19 +10,25 @@ static inline int enter_condition() {
 }
 
 void __cyg_profile_func_enter(void *func, void *caller) {
+	ipl_t ci;
 	if (cyg_profiling) {
 		cyg_profiling = false;
+		ci = ipl_save();
 		if (enter_condition())
 			trace_block_func_enter(func);
+		ipl_restore(ci);
 		cyg_profiling = true;
 	}
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
+	ipl_t ci;
 	if (cyg_profiling) {
 		cyg_profiling = false;
+		ci = ipl_save();
 		if (enter_condition())
 			trace_block_func_exit(func);
+		ipl_restore(ci);
 		cyg_profiling = true;
 	}
 }

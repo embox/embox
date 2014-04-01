@@ -7,6 +7,7 @@
  */
 
 #include <embox/cmd.h>
+#include <framework/cmd/api.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,13 +20,13 @@ void initialize_hashtable() {
 void print_data_to_file(FILE *out) {
 }
 
-void run_cmd(struct cmd *cmd, int argc, char *argv[], FILE *out) {
+void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	int res = 0;
 	clock_t begin = clock(), end;
 	initialize_hashtable();
 	cyg_profiling = true;
 	printf("Executing command\n");
-	// exec cmd
+	res = cmd_exec(cmd, argc, argv);
 	cyg_profiling = false;
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
@@ -37,12 +38,11 @@ void run_cmd(struct cmd *cmd, int argc, char *argv[], FILE *out) {
 
 static int tbprof_main (int argc, char *argv[]) {
 	/* parse params */
-	struct cmd *c_cmd = NULL;
-	int c_argc = 0;
-	char *c_argv[0];
+	const struct cmd *c_cmd;
+	int c_argc = argc;
 	FILE *out = NULL;
-
-	run_cmd(c_cmd, c_argc, c_argv, out);
+	c_cmd = cmd_lookup(argv[1]);
+	run_cmd(c_cmd, c_argc - 1, argv + 1, out);
 
 	return 0;
 }
