@@ -97,6 +97,13 @@ gen_make_tsvar = \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
 
+# 1. Variable name.
+# 2. Value.
+gen_add_var = \
+	$(PRINTF) '%s += %s\n\n' \
+		$(call sh_quote,$1) \
+		$(call sh_quote,$2) \
+
 # 1. Target.
 # 2. Variable name.
 # 3. Value.
@@ -130,6 +137,10 @@ build_sources := \
 	$(foreach m,$(build_modules), \
 		$(addprefix $m,$(call get,$m,sources)))
 
+# 1. Annotation target
+# 2. Annotation option
+annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),value)
+
 #
 # Global artifacts.
 #
@@ -162,25 +173,28 @@ $(@build_image) : mk_file  = \
 $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rmk_target_pat),image)
 
-$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rmk_out_pat), \
-			$(call source_base,$(@source_cpp_rmk)))
-$(@build_image) : objs = $(patsubst %,$(value module_ld_rmk_out_pat), \
-			$(call module_path,$(o_modules)))
-$(@build_image) : libs = $(patsubst %,$(value module_ar_rmk_a_pat), \
-			$(call module_path,$(a_modules)))
+my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
+
+# Return modules of specified stage
+# 1. Stage to filter
+# 2. Modules list
+filter_stage_modules = $(foreach m,$2,$(if $(call eq,$1,$(or $(call annotation_value,$(call get,$m,allTypes),$(my_bld_stage)),1)),$m))
+
+__gen_stage = \
+	$(call gen_make_var_list,__image_ld_scripts$1,$(patsubst %,$(value source_cpp_rmk_out_pat), \
+		$(call source_base,$(@source_cpp_rmk)))); \
+	$(call gen_make_var_list,__image_ld_objs$1,$(patsubst %,$(value module_ld_rmk_out_pat), \
+		$(call module_path,$(call filter_stage_modules,$1,$(o_modules))))); \
+	$(call gen_make_var_list,__image_ld_libs$1,$(patsubst %,$(value module_ar_rmk_a_pat), \
+		$(call module_path,$(call filter_stage_modules,$1,$(a_modules)))))
 
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_comment,Arg: target file(s) to define rules for.); \
-		$(PRINTF) 'define __image_rule\n\n'; \
-		$(call gen_make_dep,$(target_file),$$$$(image_prerequisites)); \
-		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(target_file),ld_scripts,$(scripts)); \
-		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
-		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)); \
-		$(PRINTF) 'endef '; \
-		$(call gen_comment,__image_rule))
+		$(call gen_make_var,__image_prerequisities,$$$$(image_prerequisites)); \
+		$(call gen_make_var,__image_mk_file,$(mk_file)); \
+		$(call __gen_stage,1); \
+		$(call __gen_stage,2))
 
 $(@build_include_mk) : @file = $(MKGEN_DIR)/include.mk
 $(@build_include_mk) : image_rmk = \
@@ -293,7 +307,6 @@ my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 			module-header-h/$t$m module-config-h/$t$m))
 
 my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
-my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 
 my_bld_dep_value := $(call mybuild_resolve_or_die,mybuild.lang.BuildDepends.value)
 
@@ -355,9 +368,6 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
-# 1. Annotation target
-# 2. Annotation option
-annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),value)
 build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
 build_deps_all = \
@@ -405,7 +415,7 @@ $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
-$(@module_extbld_rmk) : stage = $(call annotation_value,$(call get,$@,allTypes),$(my_bld_stage))
+$(@module_extbld_rmk) : stage = $(or $(strip $(call annotation_value,$(call get,$@,allTypes),$(my_bld_stage))),1)
 $(@module_extbld_rmk) : __build_deps = $(call build_deps, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : __build_deps_all = $(call build_deps_all, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
@@ -418,7 +428,7 @@ $(@module_extbld_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,__extbld-$(or $(strip $(stage)),1),$(target)); \
+		$(call gen_make_dep,__extbld-$(stage),$(target)); \
 		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(target),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \

@@ -113,8 +113,13 @@ $(embox_o): $$(common_prereqs)
 	--cref -Map $@.map \
 	-o $@
 
-__define_image_rules = $(eval $(value __image_rule))
-$(call __define_image_rules,$(embox_o))
+stages := $(wordlist 1,$(STAGE),1 2)
+
+$(embox_o) : $(__image_prerequisities)
+$(embox_o) : mk_file = $(__image_mk_file)
+$(embox_o) : ld_scripts = $(__image_ld_scripts1) # TODO check this twice
+$(embox_o) : ld_objs = $(foreach s,$(stages),$(__image_ld_objs$s))
+$(embox_o) : ld_libs = $(foreach s,$(stages),$(__image_ld_libs$s))
 
 $(image_lds) : $$(common_prereqs)
 $(image_lds) : flags_before :=
