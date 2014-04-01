@@ -73,21 +73,23 @@ EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(EMBOX_LDFLAGS))
 ifneq (,$(filter -m%,$(EMBOX_LDFLAGS)))
 EMBOX_IMPORTED_LDFLAGS += -Wl,$(filter -m%,$(EMBOX_LDFLAGS))
 endif
-EMBOX_IMPORTED_LDFLAGS += -Wl,--relax
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
-#EMBOX_IMPORTED_LDFLAGS += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_ram_base=0,--defsym=_ram_size=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_traps_text_start=0,--defsym=_traps_text_end=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_text_vma=0,--defsym=_text_lma=0,--defsym=_text_len=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_rodata_vma=0,--defsym=_rodata_lma=0,--defsym=_rodata_len=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_data_vma=0,--defsym=_data_lma=0,--defsym=_data_len=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_vma=0,--defsym=_bss_lma=0,--defsym=_bss_len=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_ctors_start=0,--defsym=_ctors_end=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_dtors_start=0,--defsym=_dtors_end=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=__EH_FRAME_BEGIN__=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_end=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_reserve_end=0
-EMBOX_IMPORTED_LDFLAGS += -Wl,--defsym=_bss_len=0,--defsym=_bss_len_with_reserve=0
+
+EMBOX_IMPORTED_LDFLAGS_FULL :=
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
+#EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(ROOT_DIR)/build/base/obj/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_ram_base=0,--defsym=_ram_size=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_traps_text_start=0,--defsym=_traps_text_end=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_text_vma=0,--defsym=_text_lma=0,--defsym=_text_len=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_rodata_vma=0,--defsym=_rodata_lma=0,--defsym=_rodata_len=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_data_vma=0,--defsym=_data_lma=0,--defsym=_data_len=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_bss_vma=0,--defsym=_bss_lma=0,--defsym=_bss_len=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_ctors_start=0,--defsym=_ctors_end=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_dtors_start=0,--defsym=_dtors_end=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__EH_FRAME_BEGIN__=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_bss_end=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_reserve_end=0
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=_bss_len=0,--defsym=_bss_len_with_reserve=0
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))
@@ -95,13 +97,11 @@ EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
 endif
 
 .PHONY: all
-all: build
+all: install
 
 .PHONY: $$(image_prerequisites)
 $$(image_prerequisites):
 include ../../build/base/src-gen/image.rule.mk
-__define_image_rules = $(eval $(value __image_rule))
-$(call __define_image_rules,all)
 
 $(PKG_BUILD_DIR):
 	mkdir -p $@
@@ -135,21 +135,19 @@ merge: $(EXTRACTED) | $(PKG_SRC_DIR)
 		cd tree && cp -l -u -f --parents -t $(PKG_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`; \
 	fi
 
-$(ENVIRONMENT): _ld_objs = $(ld_objs:.%=-Wl,$(ROOT_DIR)%)
-$(ENVIRONMENT): ld_libs_embox = $(filter ./build/base/obj/module/embox/%,$(ld_libs))
-$(ENVIRONMENT): ld_libs_non_embox = $(filter-out ./build/base/obj/module/embox/%,$(ld_libs))
-$(ENVIRONMENT): _ld_libs_embox = $(ld_libs_embox:.%=-Wl,$(ROOT_DIR)%)
-$(ENVIRONMENT): _ld_libs_non_embox = $(ld_libs_non_embox:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): _ld_objs    = $(__image_ld_objs1:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): _ld_libs    = $(__image_ld_libs1:.%=-Wl,$(ROOT_DIR)%)
+$(ENVIRONMENT): _ld_scripts = $(__image_ld_scripts1:.%=-Wl,-T,$(ROOT_DIR)%)
 $(ENVIRONMENT): | $(dir ENVIRONMENT)
 	echo "EMBOX_IMPORTED_CPPFLAGS='$(EMBOX_IMPORTED_CPPFLAGS)'" >> $@
 	echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"     >> $@
 	echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'" >> $@
-	echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS) \
-		$(ld_scripts:.%=-Wl,-T,$(ROOT_DIR)%) \
-		$(filter-out %/tar.o,$(_ld_objs)) \
+	echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)'"   >> $@
+	echo "EMBOX_IMPORTED_LDFLAGS_FULL='$(EMBOX_IMPORTED_LDFLAGS_FULL) \
+		$(_ld_scripts) \
+		$(_ld_objs) \
 		-Wl,--start-group \
-		-Wl,--whole-archive $(_ld_libs_embox) -Wl,--no-whole-archive \
-		$(_ld_libs_non_embox) \
+		$(_ld_libs) \
 		-Wl,--end-group \
 		'"   >> $@
 	echo "EMBOX_CROSS_COMPILE='$(EMBOX_CROSS_COMPILE)'"         >> $@
@@ -157,7 +155,7 @@ $(ENVIRONMENT): | $(dir ENVIRONMENT)
 
 .PHONY: configure
 configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
-	export EMBOX_TARGET_ENV=$(ENVIRONMENT) && \
+	export EMBOX_GCC_ENV=$(ENVIRONMENT) EMBOX_GCC_LINK=full && \
 	cd $(PKG_BUILD_DIR) && \
 		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
 			echo Nothing to do - no reconfiguration is required.; \
@@ -174,7 +172,7 @@ configure: merge $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 
 .PHONY: build
 build: configure $(ENVIRONMENT) | $(PKG_BUILD_DIR)
-	export EMBOX_TARGET_ENV=$(ENVIRONMENT) && \
+	export EMBOX_GCC_ENV=$(ENVIRONMENT) EMBOX_GCC_LINK=partial && \
 	cd $(PKG_BUILD_DIR) && \
 		if make -q; then \
 			echo Nothing to do - no rebuild is required.; \
@@ -182,5 +180,13 @@ build: configure $(ENVIRONMENT) | $(PKG_BUILD_DIR)
 			echo Building... && \
 			make V=1 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 		fi
+
+.PHONY: install
+install: build | $(PKG_BUILD_DIR)
+	cd $(PKG_BUILD_DIR) && \
+		make DESTDIR=$(PKG_INSTALL_DIR) install
+	rm -R $(PKG_INSTALL_DIR)/usr/local/share
+	rm -R $(PKG_INSTALL_DIR)/usr/local/lib
+	mv $(PKG_INSTALL_DIR)/usr/local/bin/tar $(PKG_INSTALL_DIR)/tar.o
 
 .NOTPARALLEL:

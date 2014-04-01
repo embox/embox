@@ -9,25 +9,9 @@ package third_party.gnu
 			-
 	''')
 module tar {
-/*
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/gnu")
-	source "libgnu.a"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/lib")
-	source "libtar.a"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/src")
-	source "buffer.o", "checkpoint.o", "compare.o", "create.o",
-			"delete.o", "exit.o", "extract.o", "xheader.o",
-			"incremen.o", "list.o", "misc.o", "names.o",
-			"sparse.o", "suffix.o", "system.o", "transform.o",
-			"unlink.o", "update.o", "utf8.o", "warning.o",
-			"xattrs.o"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/build/src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.tar.o"
-*/
 
 	depends tar_stubs
 
@@ -39,8 +23,4 @@ module tar {
 
 module tar_stubs {
 	source "stubs.c"
-}
-
-module tar_linker_hook {
-	source "linker_hook.c"
 }
