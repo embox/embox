@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-
+#include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <profiler/tracing/trace.h>
@@ -21,12 +21,16 @@ void print_data_to_file(FILE *out) {
 
 void run_cmd(struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	int res = 0;
+	clock_t begin = clock(), end;
 	initialize_hashtable();
 	cyg_profiling = true;
-	printf("Executing command\n");
+	printf("a\n");
+	//printf("Executing command\n");
 	// exec cmd
 	cyg_profiling = false;
-	printf("Program exited with code %d. Profiling finished.\n", res);
+	end = clock();
+	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
+			res, 1. * (end - begin) / CLOCKS_PER_SEC);
 	argc++;
 	cmd = NULL;
 	print_data_to_file(out);
