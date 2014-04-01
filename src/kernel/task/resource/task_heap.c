@@ -20,8 +20,8 @@ struct task_heap {
 
 TASK_RESOURCE_DEF(task_heap_desc, struct task_heap);
 
-extern int heap_init(void *task_heap);
-extern int heap_fini(void *task_heap);
+extern int heap_init(const struct task *task);
+extern int heap_fini(const struct task *task);
 
 
 struct task_heap *task_heap_get(const struct task *task);
