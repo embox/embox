@@ -24,8 +24,7 @@ void run_cmd(struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	clock_t begin = clock(), end;
 	initialize_hashtable();
 	cyg_profiling = true;
-	printf("a\n");
-	//printf("Executing command\n");
+	printf("Executing command\n");
 	// exec cmd
 	cyg_profiling = false;
 	end = clock();
