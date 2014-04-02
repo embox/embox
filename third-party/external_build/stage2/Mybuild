@@ -1,0 +1,15 @@
+
+package third_party.external_build.stage2
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+module app {
+	/*source "app.c"*/
+
+	depends lib
+}
+
+static module lib {
+	source "app_only_referenced.c"
+
+	/*depends embox.util.array_spread*/
+}
