@@ -74,11 +74,8 @@ int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
 	const char *lastpath, *ch;
 	int res;
 
-	if (0 == (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
-		errno = EBUSY;
-		return -1;
-	} else if (-EACCES == res) {
-		errno = EACCES;
+	if (-ENOENT != (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
+		errno = -res;
 		return -1;
 	}
 

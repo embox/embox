@@ -26,8 +26,10 @@ int creat(const char *pathname, mode_t mode) {
 
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
+	struct path leaf;
 
-	rc = kmkdir(NULL, pathname, mode);
+	vfs_get_leaf_path(&leaf);
+	rc = kmkdir(&leaf, pathname, mode);
 	DPRINTF(("mkdir(%s, %d ...) = %d\n", pathname, mode, rc));
 	return rc;
 }
