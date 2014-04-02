@@ -9,7 +9,7 @@
 
 #include <assert.h>
 #include <lib/softfloat.h>
-#include "conversion_routines.h"
+#include <lib/soft-fp/conversion_routines.h>
 
 float __addsf3(float a, float b) {
 	static_assert(sizeof(float32) == sizeof(float));

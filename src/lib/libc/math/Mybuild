@@ -21,10 +21,10 @@ static module LibCMath {
 	source "ldiv.c"
 	/*source "lldiv.c"*/
 	source "sqrt.c"
-	depends third_party.lib.Fdlibm
 
 	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "soft-fp/sf_libgcc.c", "soft-fp/df_libgcc.c",
-		"soft-fp/tf_libgcc.c", "soft-fp/non_libgcc.c"
+	source "soft_fp.c"
+
+	depends third_party.lib.Fdlibm
 	depends third_party.lib.softfloat
 }
