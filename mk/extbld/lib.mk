@@ -62,3 +62,4 @@ AUTOCONF_ARCH := $(ARCH)
 endif
 
 AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_ARCH)-unknown-none
+EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc

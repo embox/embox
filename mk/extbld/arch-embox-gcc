@@ -2,6 +2,9 @@
 
 if [ -f $EMBOX_GCC_ENV ]; then
 	. $EMBOX_GCC_ENV
+else
+	echo "No EMBOX_GCC_LINK is set"
+	exit 1
 fi
 
 case $EMBOX_GCC_LINK in
@@ -16,10 +19,11 @@ esac
 case $@ in
 	*-c*) ARG_LINE="$EMBOX_IMPORTED_CFLAGS";;
 	*-E*) ARG_LINE=;;
+	*-shared*) echo "Can't build shared objects"; exit 1;;
 esac
 
 cmd=$(basename $0)
 ARG_LINE="$@ $ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
-#echo $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE
+#echo $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE >&2
 $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE
 exit $?
