@@ -36,6 +36,7 @@ module idesc_table {
 
 module task_heap {
 	source "task_heap.c"
+	depends embox.kernel.task.task_resource
 }
 
 module mmap {

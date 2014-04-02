@@ -11,12 +11,11 @@
 
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/task_heap.h>
 
 #include <util/dlist.h>
 
-struct task_heap {
-	 struct dlist_head mm;
-};
+
 
 TASK_RESOURCE_DEF(task_heap_desc, struct task_heap);
 
@@ -31,6 +30,7 @@ static void task_heap_init(const struct task *task, void *task_heap) {
 }
 
 static int task_heap_inherit(const struct task *task, const struct task *parent) {
+	heap_init(task);
 	return 0;
 }
 

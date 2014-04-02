@@ -17,20 +17,25 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <termios.h>
-#include <kernel/task.h>
-#include <cmd/cmdline.h>
-#include <embox/unit.h>
-#include <pwd.h>
-#include <util/array.h>
 #include <limits.h>
+#include <pwd.h>
 
 #include <lib/linenoise_1.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include <framework/cmd/api.h>
 
+#include <cmd/cmdline.h>
 #include <cmd/shell.h>
+
+#include <util/array.h>
+
+#include <framework/cmd/api.h>
+#include <embox/unit.h>
+
+#include <kernel/task.h>
+
+
 
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
 
@@ -47,6 +52,7 @@ struct cmd_data {
 	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
 	char buff[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
+	volatile int started;
 };
 
 static char * cmd_generator(const char *text, int state) {
@@ -116,37 +122,39 @@ static int is_builtin(const char *cname) {
 static int process_builtin(struct cmd_data *cdata) {
 	int ret;
 
+	cdata->started = 1;
+
 	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
 	if (ret != 0) {
 		printf("tish: %s: Command returned with code %d: %s\n",
 				cmd_name(cdata->cmd), ret, strerror(-ret));
-		free(cdata);
+
 		return ret;
 	}
 
-	free(cdata);
+
 	return 0;
 }
 
 static void * run_cmd(void *data) {
 	int ret;
-	struct cmd_data *cdata;
+	struct cmd_data cdata;
 
-	cdata = (struct cmd_data *)data;
+	memcpy(&cdata, data, sizeof(cdata));
+
+	((struct cmd_data *)data)->started = 1;
 
 	if (-1 == tcsetpgrp(STDIN_FILENO, getpid())) {
 		/* running noninteractive */
 	}
 
-	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
+	ret = cmd_exec(cdata.cmd, cdata.argc, cdata.argv);
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
-				cmd_name(cdata->cmd), ret, strerror(-ret));
-		free(cdata);
+				cmd_name(cdata.cmd), ret, strerror(-ret));
 		return (void *)ret; /* error: ret */
 	}
 
-	free(cdata);
 	return NULL; /* ok */
 }
 
@@ -200,26 +208,29 @@ static int process(struct cmd_data *cdata) {
 }
 
 static int tish_exec(const char *cmdline) {
-	struct cmd_data *cdata;
+	struct cmd_data cdata;
+	int res;
 
 	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
 		return -EINVAL;
 	}
 
-	cdata = malloc(sizeof *cdata);
-	if (cdata == NULL) {
-		return -errno;
-	}
 
-	strcpy(&cdata->buff[0], cmdline);
+	strcpy(cdata.buff, cmdline);
 
-	cdata->argc = cmdline_tokenize(&cdata->buff[0], &cdata->argv[0]);
-	if (cdata->argc == 0) {
-		free(cdata);
+	cdata.argc = cmdline_tokenize(cdata.buff, cdata.argv);
+	if (cdata.argc == 0) {
 		return -EINVAL;
 	}
 
-	return process(cdata);
+	cdata.started = 0;
+	res = process(&cdata);
+	do {
+		sleep(0);
+	} while (cdata.started == 0);
+
+
+	return res;
 }
 
 static int rich_prompt(const char *fmt, char *buf, size_t len) {
