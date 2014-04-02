@@ -584,6 +584,38 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
+const block_dev_module_t *block_devs_lookup(const char *bd_name);
+static int ide_create_block_dev(hd_t *hd) {
+	const block_dev_module_t *bdev;
+
+	switch (hd->media) {
+		case IDE_CDROM:
+			bdev = block_devs_lookup("idecd");
+
+			break;
+
+
+		case IDE_DISK:	{
+			if (hd->udmamode == -1) {
+				bdev = block_devs_lookup("idedisk");
+			} else {
+				bdev = block_devs_lookup("idedisk_udma");
+			}
+
+			break;
+		}
+		default: {
+			bdev = NULL;
+			return 0;
+		}
+	}
+	if (bdev == NULL) {
+		return 0;
+	}
+	bdev->init(hd);
+
+	return 0;
+}
 static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 					 int udmasel, int iftype, int numslot) {
 	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
@@ -662,7 +694,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 		hd_cmd(hd, HDCMD_SETFEATURES, HDFEAT_ENABLE_WCACHE, 0);
 	}
 
-
+	ide_create_block_dev(hd);
 }
 
 static int ide_init(void) {

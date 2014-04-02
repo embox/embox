@@ -8,7 +8,7 @@
 
 #include <assert.h>
 #include <lib/softfloat.h>
-#include "conversion_routines.h"
+#include <lib/soft-fp/conversion_routines.h>
 
 float __sqrtsf2(float a) {
 	static_assert(sizeof(float32) == sizeof(float));

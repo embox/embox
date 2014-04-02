@@ -3,6 +3,7 @@ package embox.net
 module tcp {
 	source "tcp.c"
 
+	depends embox.fs.idesc_event
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.net.lib.tcp

@@ -11,8 +11,6 @@
 
 #include <util/member.h>
 
-
-
 struct slist_link {
 	struct slist_link *next;
 	/*struct __slist_debug debug;*/
@@ -35,6 +33,9 @@ struct slist {
 			/*.debug = __SLIST_DEBUG_INIT(slist),*/ \
 		} \
 	}
+
+#define slist_element(link_ptr, element_t, m_link) \
+	member_cast_out(link_ptr, element_t, m_link)
 
 static inline struct slist_link *slist_link_init(struct slist_link *link) {
 	// __slist_debug_link_init(link);
@@ -59,13 +60,17 @@ static inline int slist_alone_link(struct slist_link *link) {
 }
 #define slist_alone(element, member_t) \
 	slist_alone_link(member_of_object(element, member_t))
+#define slist_alone_element(element, link_member) \
+	slist_alone_link(member_cast_in(element, link_member))
 
 static inline struct slist_link *slist_first_link(struct slist *list) {
 	// __slist_debug_first(list);
 	return slist_empty(list) ? NULL : list->sentinel.next;
 }
-#define slist_first(slist, member_t) \
-	member_to_object_or_null(slist_first_link(slist, member_t))
+#define slist_first_element(slist, element_type, link_member) \
+	member_cast_out_or_null(slist_first_link(list), element_type, link_member)
+#define slist_first_element(slist, element_type, link_member) \
+	member_cast_out_or_null(slist_first_link(list), element_type, link_member)
 
 static inline void slist_insert_after_link(struct slist_link *new_link,
 		struct slist_link *link) {
@@ -76,6 +81,9 @@ static inline void slist_insert_after_link(struct slist_link *new_link,
 #define slist_insert_after(element, after_element, member_t) \
 	slist_insert_after_link(member_of_object(element, member_t), \
 		member_of_object(after_element, member_t))
+#define slist_insert_after_element(element, after_element, link_member) \
+	slist_insert_after_link(member_cast_in(element, link_member), \
+			member_cast_in(after_element, link_member))
 
 static inline void slist_add_first_link(struct slist_link *new_link,
 		struct slist *list) {
@@ -83,6 +91,8 @@ static inline void slist_add_first_link(struct slist_link *new_link,
 }
 #define slist_add_first(element, slist, member_t) \
 	slist_add_first_link(member_of_object(element, member_t), slist)
+#define slist_add_first_element(element, slist, link_member) \
+	slist_add_first_link(member_cast_in(element, link_member), slist)
 
 static inline struct slist_link *slist_remove_first_link(struct slist *list) {
 	struct slist_link *first;
@@ -94,8 +104,12 @@ static inline struct slist_link *slist_remove_first_link(struct slist *list) {
 	}
 	return first;
 }
+
 #define slist_remove_first(slist, member_t) \
 	member_to_object_or_null(slist_remove_first_link(slist, member_t))
+#define slist_remove_first_element(slist, element_type, link_member) \
+	member_cast_out_or_null(slist_remove_first_link(slist), element_type, \
+			link_member)
 
 #define slist_foreach_link(link, slist) \
 	  __slist_foreach_link(link, slist)

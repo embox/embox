@@ -52,6 +52,8 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 
 #define TCP_DEBUG 0
 #if TCP_DEBUG
+#include <stdarg.h>
+#include <prom/prom_printf.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -115,7 +117,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //default:
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
-	case 2:  /* socket state */
+//	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */

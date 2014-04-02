@@ -34,6 +34,10 @@ module idesc_table {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module task_heap {
+	source "task_heap.c"
+}
+
 module mmap {
 	source "mmap.c"
 

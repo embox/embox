@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <util/dlist.h>
+#include <kernel/irq.h>
 
 #define UART_NAME_MAXLEN 8
 
@@ -40,6 +41,7 @@ struct uart {
 	const struct uart_ops *uart_ops;
 	short irq_num;
 	uint32_t base_addr;
+	irq_handler_t irq_handler;
 
 	/* management */
 	struct dlist_head lnk;
