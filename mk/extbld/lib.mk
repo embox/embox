@@ -53,4 +53,12 @@ $(INSTALL): $(BUILD) | $(BUILD_DIR) $(PKG_INSTALL_DIR)
 
 all: $(INSTALL)
 
-AUTOCONF_TARGET_TRIPLET=i386-unknown-none
+include $(MKGEN_DIR:.%=$(ROOT_DIR)%)/build.mk
+
+ifeq ($(ARCH),x86)
+AUTOCONF_ARCH := i386
+else
+AUTOCONF_ARCH := $(ARCH)
+endif
+
+AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_ARCH)-unknown-none
