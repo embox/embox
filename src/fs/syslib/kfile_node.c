@@ -49,13 +49,12 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	vfs_create(dir_path, path, S_IFREG | mode, child);
-	child->mnt_desc = dir_path->mnt_desc;
-
-	if (!child->node) {
+	if (0 != vfs_create(dir_path, path, S_IFREG | mode, child)) {
 		SET_ERRNO(ENOMEM);
 		return -1;
 	}
+
+	child->mnt_desc = dir_path->mnt_desc;
 
 	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
 		SET_ERRNO(EBADF);

@@ -128,8 +128,8 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->privdata = privdata;
 
 	vfs_get_root_path(&root);
-	vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node);
-	if (NULL == node.node) {
+
+	if (0 != vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		index_free(&block_dev_idx, bdev->id);
 		pool_free(&blockdev_pool, bdev);
 		return NULL;

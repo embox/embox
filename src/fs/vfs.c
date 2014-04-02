@@ -85,7 +85,8 @@ void vfs_lookup_childn(struct path *parent, const char *name, size_t len,
 		return;
 	}
 
-	tlink = tree_lookup_child(&(parent->node->tree_link), vfs_lookup_cmp, &lookup);
+	tlink = tree_lookup_child(&(parent->node->tree_link), vfs_lookup_cmp,
+			&lookup);
 
 	child->node = tree_element(tlink, struct node, tree_link);
 }
@@ -176,15 +177,16 @@ int __vfs_create(struct path *parent, const char *path, mode_t mode,
 
 	/* Here path points to the first non-existent fragment, if any. */
 
-	if (intermediate && !path) {
-		/* Node already exist, set mode. */
-		parent->node->mode = mode;
-		*child = tmp_parent;
-		return 0;
-
-	} else if (intermediate) {
+	if (intermediate) {
 		const char *next_path;
 		size_t next_len;
+
+		if (!path) {
+			/* Node already exist, set mode. */
+			parent->node->mode = mode;
+			*child = tmp_parent;
+			return 0;
+		}
 
 		while ((next_path = path_next(path + len, &next_len))) {
 			__vfs_create_child(&tmp_parent, path, len, S_IFDIR, child);
@@ -204,10 +206,9 @@ int __vfs_create(struct path *parent, const char *path, mode_t mode,
 	}
 
 	__vfs_create_child(&tmp_parent, path, len, mode, child);
-	return child->node ? 0: -1;
+	return child->node ? 0 : -1;
 }
 
-//TODO
 int vfs_create(struct path *parent, const char *path, mode_t mode,
 		struct path *child) {
 	return __vfs_create(parent, path, mode, 0, child);
@@ -233,7 +234,7 @@ int vfs_del_leaf(node_t *node) {
 void vfs_get_child_next(struct path *parent_path, struct path *child_next) {
 	struct tree_link *tlink;
 
-	 *child_next = *parent_path;
+	*child_next = *parent_path;
 	if_mounted_follow_down(child_next);
 
 	tlink = tree_children_begin(&(child_next->node->tree_link));

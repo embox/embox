@@ -45,8 +45,8 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	if(NULL == parent->node->nas->fs) {
 		return -EINVAL;
 	}
-	vfs_create(parent, name, mode, &node);
-	if (!node.node) {
+
+	if (0 != vfs_create(parent, name, mode, &node)) {
 		return -ENOMEM;
 	}
 

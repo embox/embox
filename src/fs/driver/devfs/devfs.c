@@ -27,8 +27,7 @@ static int devfs_mount(void *dev, void *dir) {
 
 	vfs_get_root_path(&root);
 
-	vfs_create(&root, dev, mode, &node);
-	if (!node.node) {
+	if (0 != vfs_create(&root, dev, mode, &node)) {
 		return -1;
 	}
 

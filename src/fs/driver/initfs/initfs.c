@@ -113,8 +113,8 @@ static int initfs_mount(void *dev, void *dir) {
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
-		vfs_create_intermediate(dir_path, name, entry.mode, &node_path);
-		if (!node_path.node) {
+		if (0 != vfs_create_intermediate(dir_path, name, entry.mode,
+				&node_path)) {
 			return -ENOMEM;
 		}
 
