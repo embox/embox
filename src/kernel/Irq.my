@@ -13,7 +13,8 @@ module irq extends irq_api {
 	source "irq.c"
 	depends irq_lock
 	@NoRuntime depends irq_stack
-	@NoRuntime depends embox.mem.objalloc, embox.driver.interrupt.irqctrl_api
+	@NoRuntime depends embox.mem.objalloc
+	depends embox.driver.interrupt.irqctrl_api
 	@NoRuntime depends embox.profiler.trace
 	@NoRuntime depends embox.util.DList
 }
