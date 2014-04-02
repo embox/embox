@@ -12,80 +12,81 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/perm.h>
 #include <fs/flags.h>
 #include <security/security.h>
 #include <fs/vfs.h>
+#include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 
-struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
+int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *child) {
 	struct fs_driver *drv;
-	struct node *child;
 	int ret;
 
-	assert(dir);
+	assert(dir_path->node);
 
 	path = path_next(path, NULL);
 
 	if (!path) {
 		SET_ERRNO(EINVAL);
-		return NULL;
+		return -1;
 	}
 
 	if (NULL != strchr(path, '/')) {
 		SET_ERRNO(ENOENT);
-		return NULL;
+		return -1;
 	}
 
-	if (0 != (fs_perm_check(dir, FS_MAY_WRITE))) {
+	if (0 != (fs_perm_check(dir_path->node, FS_MAY_WRITE))) {
 		SET_ERRNO(EACCES);
-		return NULL;
+		return -1;
 	}
 
-	if (0 != (ret = security_node_create(dir, S_IFREG | mode))) {
+	if (0 != (ret = security_node_create(dir_path->node, S_IFREG | mode))) {
 		SET_ERRNO(-ret);
-		return NULL;
+		return -1;
 	}
 
-	child = vfs_create(dir, path, S_IFREG | mode);
+	vfs_create(dir_path, path, S_IFREG | mode, child);
+	child->mnt_desc = dir_path->mnt_desc;
 
-	if (!child) {
+	if (!child->node) {
 		SET_ERRNO(ENOMEM);
-		return NULL;
+		return -1;
 	}
 
-	if(!dir->nas || !dir->nas->fs) {
+	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
 		SET_ERRNO(EBADF);
-		vfs_del_leaf(child);
-		return NULL;
+		vfs_del_leaf(child->node);
+		return -1;
 	}
 
 	/* check drv of parents */
-	drv = dir->nas->fs->drv;
+	drv = dir_path->node->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
 		SET_ERRNO(EBADF);
-		vfs_del_leaf(child);
-		return NULL;
+		vfs_del_leaf(child->node);
+		return -1;
 	}
 
-	if (0 != (ret = drv->fsop->create_node(dir, child))) {
+	if (0 != (ret = drv->fsop->create_node(dir_path, child))) {
 		SET_ERRNO(-ret);
-		vfs_del_leaf(child);
-		return NULL;
+		vfs_del_leaf(child->node);
+		return -1;
 	}
 
 
-	return child;
+	return 0;
 }
 
-int ktruncate(struct node *node, off_t length) {
+int ktruncate(struct path *path, off_t length) {
 	int ret;
 	struct nas *nas;
 	struct fs_driver *drv;
 
-	nas = node->nas;
+	nas = path->node->nas;
 	drv = nas->fs->drv;
 
 	if (NULL == drv->fsop->truncate) {
@@ -93,17 +94,17 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	if (0 > (ret = fs_perm_check(node, FS_MAY_WRITE))) {
+	if (0 > (ret = fs_perm_check(path->node, FS_MAY_WRITE))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	if (node_is_directory(node)) {
+	if (node_is_directory(path->node)) {
 		SET_ERRNO(EISDIR);
 		return -1;
 	}
 
-	if (0 > (ret = drv->fsop->truncate(node, length))) {
+	if (0 > (ret = drv->fsop->truncate(path, length))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}

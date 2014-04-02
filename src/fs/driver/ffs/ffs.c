@@ -16,7 +16,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>

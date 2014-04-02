@@ -23,7 +23,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 
 #include <util/math.h>
 

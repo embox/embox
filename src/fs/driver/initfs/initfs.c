@@ -37,7 +37,7 @@ struct initfs_file_info {
 POOL_DEF (fdesc_pool, struct initfs_file_info,
 		OPTION_GET(NUMBER,fdesc_quantity));
 
-static int initfs_open(struct node *nod, struct file_desc *desc, int flags) {
+static int initfs_open(struct path *nod, struct file_desc *desc, int flags) {
 	return 0;
 }
 
@@ -90,21 +90,21 @@ static int initfs_mount(void *dev, void *dir) {
 	extern char _initfs_start, _initfs_end;
 	char *cpio = &_initfs_start;
 	struct nas *dir_nas;
-	struct node *node;
+	struct path node_path;
 	struct initfs_file_info *fi;
 	struct cpio_entry entry;
 	char name[PATH_MAX + 1];
 
-	node_t *dir_node = dir;
+	struct path *dir_path = dir;
 
-	dir_nas = dir_node->nas;
+	dir_nas = dir_path->node->nas;
 	dir_nas->fs = filesystem_create("initfs");
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;
 	}
 	printk("%s: unpack initinitfs at %p into %s\n", __func__,
-			cpio, dir_node->name);
+			cpio, dir_path->node->name);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (entry.name_len > PATH_MAX) {
@@ -113,8 +113,8 @@ static int initfs_mount(void *dev, void *dir) {
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
-		node = vfs_create_intermediate(dir_node, name, entry.mode);
-		if (!node) {
+		vfs_create_intermediate(dir_path, name, entry.mode, &node_path);
+		if (!node_path.node) {
 			return -ENOMEM;
 		}
 
@@ -127,8 +127,8 @@ static int initfs_mount(void *dev, void *dir) {
 		fi->ni.size = entry.size;
 		fi->ni.mtime = entry.mtime;
 
-		node->nas->fi = (struct node_fi *) fi;
-		node->nas->fs = dir_nas->fs;
+		node_path.node->nas->fi = (struct node_fi *) fi;
+		node_path.node->nas->fs = dir_nas->fs;
 
 	}
 

@@ -18,15 +18,17 @@ static int devfs_init(void *par) {
 
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
-	struct node *node;
+	struct path node, root;
 	mode_t mode;
 
 	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 
-	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
+	//assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
 
-	node = vfs_create(NULL, dev, mode);
-	if (!node) {
+	vfs_get_root_path(&root);
+
+	vfs_create(&root, dev, mode, &node);
+	if (!node.node) {
 		return -1;
 	}
 

@@ -19,18 +19,18 @@
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>
 
-struct node *find_node(DIR *dir, char * node_name) {
+struct path *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
 
 	while (NULL != (dent = readdir(dir))) {
 		if (0 == strcmp(dent->d_name, node_name)) {
-			return (struct node *)dent->d_ino;
+			return (struct path *)dent->d_ino;
 		}
 	}
 
 	return NULL;
 }
-extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
+extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *child);
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
@@ -42,7 +42,7 @@ int open(const char *path, int __oflag, ...) {
 	char *parent_path;
 	DIR *dir;
 	char *name;
-	struct node *node;
+	struct path node;
 	struct idesc_table*it;
 
 	if (strlen(path) > PATH_MAX) {
@@ -58,16 +58,16 @@ int open(const char *path, int __oflag, ...) {
 		return -1;
 	}
 	name = basename(strcpy(name_buf, path));
-	node = find_node(dir, name);
+	node = *find_node(dir, name);
 
 	if (__oflag & O_DIRECTORY) {
 		assert(0);
 		opendir(path);
 	}
 
-	if (node == NULL) {
+	if (node.node == NULL) {
 		if (__oflag & O_CREAT) {
-			if(NULL == (node = kcreat(dir->node, name, mode))) {
+			if(0 > kcreat(&dir->path, name, mode, &node)) {
 				rc =  -1;
 				goto out;
 			}
@@ -86,13 +86,13 @@ int open(const char *path, int __oflag, ...) {
 		}
 
 		if (__oflag & O_TRUNC) {
-			ktruncate(node, 0);
+			ktruncate(&node, 0);
 		}
 	}
 
 	__oflag &= ~(O_CREAT | O_EXCL);
 
-	kfile = kopen(node, __oflag);
+	kfile = kopen(&node, __oflag);
 	if (NULL == kfile) {
 		rc = -1;
 		goto out;

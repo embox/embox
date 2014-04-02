@@ -16,7 +16,7 @@
 #include <err.h>
 
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
@@ -26,14 +26,16 @@
 #include <fs/flags.h>
 #include <security/security.h>
 
-extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
+extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
 
-struct file_desc *kopen(struct node *node, int flag) {
-	//struct node *node;
+struct file_desc *kopen(struct path *node_path, int flag) {
+	struct node *node;
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
 	int ret;
+
+	node = node_path->node;
 
 	assert(node);
 	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
@@ -69,7 +71,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	}
 	desc->ops = ops;
 
-	if (0 > (ret = desc->ops->open(node, desc, flag))) {
+	if (0 > (ret = desc->ops->open(node_path, desc, flag))) {
 		goto free_out;
 	}
 

@@ -12,6 +12,7 @@
 #include <util/array.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <fs/path.h>
 
 struct node;
 
@@ -19,8 +20,8 @@ struct fsop_desc {
 	int (*init)(void *par);
 	int (*format)(void *par);
 	int (*mount)(void *dev_node, void *dir_node);
-	int (*create_node)(struct node *parent_node, struct node *new_node);
-	int (*delete_node)(struct node *node);
+	int (*create_node)(struct path *parent_node, struct path *new_node);
+	int (*delete_node)(struct path *node);
 
 	/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
 	int (*getxattr)(struct node *node, const char *name,
@@ -29,7 +30,7 @@ struct fsop_desc {
 			const char *value, size_t len, int flags);
 	int (*listxattr)(struct node *node, char *list, size_t len);
 
-	int (*truncate)(struct node *node, off_t length);
+	int (*truncate)(struct path *node, off_t length);
 	int (*umount)(void *dir_node);
 };
 

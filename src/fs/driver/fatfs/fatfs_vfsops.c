@@ -43,6 +43,7 @@
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <limits.h>
@@ -988,9 +989,9 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 static int fatfs_init(void * par);
 static int fatfs_format(void * bdev);
 static int fatfs_mount(void * dev, void *dir);
-static int fatfs_create(struct node *parent_node, struct node *new_node);
-static int fatfs_delete(struct node *node);
-static int fatfs_truncate (struct node *node, off_t length);
+static int fatfs_create(struct path *parent_node, struct path *new_node);
+static int fatfs_delete(struct path *node);
+static int fatfs_truncate (struct path *node, off_t length);
 static int fatfs_umount(void *dir);
 
 static struct fsop_desc fatfs_fsop = {

@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 
 #include <fs/perm.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/vfs.h>
 #include <fs/node.h>
 

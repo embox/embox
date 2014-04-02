@@ -30,7 +30,7 @@
 #define b_data data
 
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/node.h>
 #include <errno.h>
 #include <math.h>

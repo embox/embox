@@ -25,7 +25,7 @@
 OBJALLOC_DEF(dir_pool, struct directory, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
-	node_t *node;
+	struct path node_path, leaf;
 	DIR *d;
 	int res;
 
@@ -35,17 +35,18 @@ DIR *opendir(const char *path) {
 		path = getcwd(cur_path, PATH_MAX);
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node_path))) {
 		SET_ERRNO(-res);
 		return NULL;
 	}
 
-	if (!node_is_directory(node)) {
+	if (!node_is_directory(node_path.node)) {
 		SET_ERRNO(ENOTDIR);
 		return NULL;
 	}
 
-	if (0 != fs_perm_check(node, FS_MAY_READ)) {
+	if (0 != fs_perm_check(node_path.node, FS_MAY_READ)) {
 		SET_ERRNO(EACCES);
 		return NULL;
 	}
@@ -55,7 +56,7 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	d->node = node;
+	d->path = node_path;
 	d->current.d_ino = 0;
 
 	return d;
@@ -84,7 +85,7 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if (0 == dir->current.d_ino) {
-		chld_link = tree_children_begin(&dir->node->tree_link);
+		chld_link = tree_children_begin(&dir->path.node->tree_link);
 		if (chld_link == NULL) {
 			return NULL;
 		}
@@ -92,7 +93,7 @@ struct dirent *readdir(DIR *dir) {
 		chldnod = (struct node *)dir->current.d_ino;
 		chld_link = tree_children_next(&chldnod->tree_link);
 
-		if (tree_children_end(&dir->node->tree_link) == chld_link) {
+		if (tree_children_end(&dir->path.node->tree_link) == chld_link) {
 			return NULL;
 		}
 	}
