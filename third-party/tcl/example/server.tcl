@@ -17,7 +17,7 @@ proc readLine {addr chan} {
     global didRead
     gets $chan line
     puts "got command from $addr: \"$line\""
-    puts $chan [eval exec $line]
+    puts $chan [exec {*}$line]
     flush $chan
 }
 
