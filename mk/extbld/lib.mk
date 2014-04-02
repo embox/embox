@@ -7,8 +7,8 @@ ifeq ($(BUILD_DIR),)
 $(error BUILD_DIR is not set)
 endif
 
-.PHONY : all
-all:
+.PHONY : all download extract patch configure build install
+all: install
 
 PKG_INSTALL_DIR := $(BUILD_DIR)/install
 
@@ -21,6 +21,7 @@ sources_extract  := $(filter %.tar.gz %.tar.bz %tgz %tbz,$(sources))
 
 DOWNLOAD_DIR   := $(ROOT_DIR)/download
 DOWNLOAD     := $(BUILD_DIR)/.downloaded
+download : $(DOWNLOAD)
 $(DOWNLOAD): | $(BUILD_DIR)
 	if [ ! -z $(sources_download) ]; then \
 		wget -c -P $(DOWNLOAD_DIR) $(sources_download); \
@@ -28,6 +29,7 @@ $(DOWNLOAD): | $(BUILD_DIR)
 	touch $@
 
 EXTRACT   := $(BUILD_DIR)/.extracted
+extract : $(EXTRACT)
 $(EXTRACT): | $(BUILD_DIR) $(DOWNLOAD)
 	for i in $(sources_extract); do \
 		tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$$i; \
@@ -35,23 +37,27 @@ $(EXTRACT): | $(BUILD_DIR) $(DOWNLOAD)
 	touch $@
 
 PATCH     := $(BUILD_DIR)/.patched
-$(PATCH): $(PKG_PATCHES)
-$(PATCH): | $(BUILD_DIR) $(EXTRACT)
+patch : $(PATCH)
+PKG_PATCHES ?=
+$(PATCH): $(PKG_PATCHES) | $(BUILD_DIR) $(EXTRACT)
 	for i in $(PKG_PATCHES); do \
 		patch -d $(BUILD_DIR) -p0 < $$PWD/$$i; \
 	done
 	touch $@
 
 CONFIGURE  := $(BUILD_DIR)/.configured
+configure : $(CONFIGURE)
 $(CONFIGURE): | $(BUILD_DIR) $(PATCH)
 
 BUILD  := $(BUILD_DIR)/.builded
+build : $(BUILD)
 $(BUILD): $(CONFIGURE) | $(BUILD_DIR)
 
 INSTALL  := $(BUILD_DIR)/.installed
+install : $(INSTALL)
 $(INSTALL): $(BUILD) | $(BUILD_DIR) $(PKG_INSTALL_DIR)
 
-all: $(INSTALL)
+# Definitions used by user Makefile
 
 include $(MKGEN_DIR:.%=$(ROOT_DIR)%)/build.mk
 
