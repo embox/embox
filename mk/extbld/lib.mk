@@ -10,10 +10,10 @@ endif
 .PHONY : all
 all:
 
-$(BUILD_DIR) :
-	mkdir -p $@
-
 PKG_INSTALL_DIR := $(BUILD_DIR)/install
+
+$(BUILD_DIR) $(PKG_INSTALL_DIR):
+	mkdir -p $@
 
 sources          := $(notdir $(PKG_SOURCES))
 sources_download := $(PKG_SOURCES)
@@ -22,7 +22,9 @@ sources_extract  := $(filter %.tar.gz %.tar.bz %tgz %tbz,$(sources))
 DOWNLOAD_DIR   := $(ROOT_DIR)/download
 DOWNLOAD     := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(BUILD_DIR)
-	[ ! -z $(sources_download) ] && wget -c -P $(DOWNLOAD_DIR) $(sources_download)
+	if [ ! -z $(sources_download) ]; then \
+		wget -c -P $(DOWNLOAD_DIR) $(sources_download); \
+	fi
 	touch $@
 
 EXTRACT   := $(BUILD_DIR)/.extracted
