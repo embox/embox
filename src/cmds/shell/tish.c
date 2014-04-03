@@ -164,7 +164,6 @@ static int process_external(struct cmd_data *cdata, int on_fg) {
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
-		free(cdata);
 		return pid;
 	}
 
@@ -184,14 +183,12 @@ static int process(struct cmd_data *cdata) {
 	/* TODO remove stubs */
 	if (!strcmp(cdata->argv[0], "exit")
 			|| !strcmp(cdata->argv[0], "logout")) {
-		free(cdata);
 		return DEADSHELL_RET;
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
 	if (cdata->cmd == NULL) {
 		printf("%s: Command not found\n", cdata->argv[0]);
-		free(cdata);
 		return -ENOENT;
 	}
 
