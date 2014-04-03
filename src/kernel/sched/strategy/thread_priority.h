@@ -11,8 +11,8 @@
 
 
 struct thread_priority {
-	short base_priority;      /**< Priority was set for the thread. */
-	short current_priority;   /**< Current thread scheduling priority. */
+	int base_priority;      /**< Priority was set for the thread. */
+	int current_priority;   /**< Current thread scheduling priority. */
 };
 
 typedef struct thread_priority __thread_priority_t;

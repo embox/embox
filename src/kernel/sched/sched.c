@@ -34,10 +34,8 @@
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
-#include <kernel/lwthread.h>
-
+#include <kernel/lwthread/lwthread.h>
 #include <kernel/runnable/runnable.h>
-#include <kernel/lwthread.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
 
@@ -323,7 +321,14 @@ int sched_wakeup(struct thread *t) {
 }
 
 void sched_lwthread_wake(struct lwthread *lwt) {
+	ipl_t ipl;
+	assert(lwt);
+
+	ipl = spin_lock_ipl(&rq.lock);
+
 	__sched_enqueue(&(lwt->runnable));
+
+	spin_unlock_ipl(&rq.lock, ipl);
 }
 
 
@@ -421,7 +426,6 @@ static void __schedule(int preempt) {
 		if(next->run != NULL) {
 			/* lwthread extracted, run it*/
 			lwthread_trampoline(next);
-
 			continue;
 		} else {
 			/* thread extracted*/

@@ -6,7 +6,6 @@
  */
 
 #include <kernel/runnable/runnable.h>
-/*#include <kernel/thread/state.h>*/
 #include <kernel/runnable/runnable_priority.h>
 
 #include <kernel/sched/sched_priority.h>
@@ -19,7 +18,6 @@
 
 int runnable_priority_init(struct runnable *r, sched_priority_t new_priority) {
 	assert(r);
-	//assert(t->state == __THREAD_STATE_WAITING);
 
 	prior_field(base_priority) = new_priority;
 	prior_field(current_priority) = new_priority;
