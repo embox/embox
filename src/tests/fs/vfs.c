@@ -134,6 +134,16 @@ TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
 	test_assert_zero(strcmp("/R/B/D/E", test_path));
 }
 
+TEST_CASE("vfs_lookup should treat . dir entry correct") {
+
+	test_assert_equal(test_root, vfs_lookup(test_root, "/"));
+	test_assert_equal(test_root, vfs_lookup(test_root, "/./"));
+	test_assert_equal(test_root, vfs_lookup(test_root, "/././././"));
+
+	/* FIXME */
+	/*test_assert_equal(NULL, vfs_lookup(test_root, "/A/./"));*/
+}
+
 #include <unistd.h>
 #include <sys/file.h>
 #include <fs/vfs.h>
@@ -173,3 +183,4 @@ TEST_CASE("vfs_fcntl advisory locking tests") {
 
 	test_assert_zero(vfs_fcntl(fd, F_SETLK, &shlock));
 }
+

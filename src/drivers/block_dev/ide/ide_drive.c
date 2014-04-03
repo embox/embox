@@ -241,6 +241,13 @@ static int hd_identify(hd_t *hd) {
 	insw(hd->hdc->iobase + HDC_DATA,
 			(char *) &(hd->param), SECTOR_SIZE / 2);
 
+	/* XXX this was added when ide drive with reported block size equals 64
+ 	 * However, block dev tries to use this and fails */
+	static_assert(SECTOR_SIZE == 512);
+	if (hd->param.unfbytes < SECTOR_SIZE) {
+		hd->param.unfbytes = SECTOR_SIZE;
+	}
+
 	/* Fill in drive parameters */
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;
@@ -426,7 +433,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
 			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
-		event_notify(&hdc->event);
+		waitq_wakeup_all(&hdc->waitq);
 	}
 
 	return IRQ_HANDLED;
@@ -511,7 +518,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	hdc->irq = irq;
 	hdc->bmregbase = bmregbase;
 	hdc->dir = HD_XFER_IGNORE;
-	event_init(&hdc->event, "hard disc event");
+	waitq_init(&hdc->waitq);
 
 	if (hdc->bmregbase) {
 		if (hdc->prds) {
@@ -577,6 +584,38 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
+const block_dev_module_t *block_devs_lookup(const char *bd_name);
+static int ide_create_block_dev(hd_t *hd) {
+	const block_dev_module_t *bdev;
+
+	switch (hd->media) {
+		case IDE_CDROM:
+			bdev = block_devs_lookup("idecd");
+
+			break;
+
+
+		case IDE_DISK:	{
+			if (hd->udmamode == -1) {
+				bdev = block_devs_lookup("idedisk");
+			} else {
+				bdev = block_devs_lookup("idedisk_udma");
+			}
+
+			break;
+		}
+		default: {
+			bdev = NULL;
+			return 0;
+		}
+	}
+	if (bdev == NULL) {
+		return 0;
+	}
+	bdev->init(hd);
+
+	return 0;
+}
 static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 					 int udmasel, int iftype, int numslot) {
 	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
@@ -655,7 +694,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 		hd_cmd(hd, HDCMD_SETFEATURES, HDFEAT_ENABLE_WCACHE, 0);
 	}
 
-
+	ide_create_block_dev(hd);
 }
 
 static int ide_init(void) {

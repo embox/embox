@@ -9,8 +9,10 @@
 #ifndef KERNEL_THREAD_SYNC_MUTEX_H_
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
+#include <stddef.h>
 #include <sys/cdefs.h>
-#include <kernel/sched/wait_queue.h>
+
+#include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutexattr.h>
 
 struct thread;
@@ -19,7 +21,7 @@ struct thread;
  * Defines Mutex structure.
  */
 struct mutex {
-	struct wait_queue wq;
+	struct waitq wq;
 	struct thread *holder;
 	struct mutexattr attr;
 
@@ -27,19 +29,40 @@ struct mutex {
 };
 
 #define MUTEX_INIT_STATIC \
-	{ \
-		{ /*wait_queue init */ \
-			{/* dlist_init*/ NULL, NULL, NULL,}, \
-			/* flags */0, \
-			}, \
+	{                                                  \
+		{ /* wait_queue init */                        \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			/* spinlock_t lock*/                       \
+			{ /*l*/__SPIN_UNLOCKED,                    \
+				/* owner */ (unsigned int)-1,		\
+				/*contention_count */SPIN_CONTENTION_LIMIT \
+			}                                          \
+		},                                             \
+		/* holder*/ NULL,                              \
+		{ /*mutexattr init */                          \
+			/* type */ MUTEX_DEFAULT,                  \
+		},                                             \
+		/* lock_count */ 0                             \
+	}
+
+#define RMUTEX_INIT_STATIC \
+	{                                                  \
+		{ /* wait_queue init */                        \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			/* spinlock_t lock*/                       \
+			{ /*l*/__SPIN_UNLOCKED,                    \
+				/* owner */ -1,                        \
+				/*contention_count */SPIN_CONTENTION_LIMIT \
+			}                                          \
+		},                                             \
 		/* holder*/ NULL, \
 		{ /*mutexattr init */ \
-			/* type */ MUTEX_DEFAULT, \
+			/* type */ MUTEX_RECURSIVE, \
 			}, \
 		/* lock_couunt */ 0 \
 	}
 
-#define MUTEX_INIT(m)  {.wq=WAIT_QUEUE_INIT(m.wq), .holder=NULL, .lock_count=0}
+#define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 __BEGIN_DECLS
 

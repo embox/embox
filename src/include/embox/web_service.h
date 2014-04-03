@@ -8,7 +8,6 @@
 #ifndef WEB_SERVICE_H_
 #define WEB_SERVICE_H_
 
-#include <kernel/event.h>
 #include <util/array.h>
 #include <util/dlist.h>
 #include <cmd/servd.h>
@@ -29,9 +28,9 @@ struct web_service_instance {
 	struct dlist_head lst;
 };
 
-extern const struct web_service_desc __web_services_repository[];
-
-#define EMBOX_WEB_SERVICE(name, is_started, thr_handler)			 \
+#define EMBOX_WEB_SERVICE(name, is_started, thr_handler) \
+	ARRAY_SPREAD_DECLARE(const struct web_service_desc, \
+			__web_services_repository); \
 	ARRAY_SPREAD_ADD(__web_services_repository, {name, is_started, thr_handler})
 
 extern int web_service_add(const char *srv_name);

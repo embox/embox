@@ -13,136 +13,78 @@
 
 #include <framework/mod/api.h>
 
+#include <util/array.h>
 #include <framework/mod/self.h>
+#include <kernel/panic.h>
 
-#define __RUNLEVEL_MOD(nr) \
-	generic__runlevel##nr
+static runlevel_nr_t init_level = -1;
 
-#define RUNLEVEL_MOD_DEF(nr) \
-	extern const struct mod __MOD(__RUNLEVEL_MOD(nr)); \
-	__MOD_INFO_DEF(__RUNLEVEL_MOD(nr), &__runlevel_mod_ops, nr)
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel0);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel1);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel2);
+ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel3);
 
-#define RUNLEVEL_DEF(nr) \
-	RUNLEVEL_MOD_DEF(nr)
+static const struct mod *const volatile*mod_runlevels_start[RUNLEVEL_NRS_TOTAL] = {
+	__mod_runlevel0, __mod_runlevel1, __mod_runlevel2, __mod_runlevel3
+};
 
-#define RUNLEVEL(nr) { \
-		.mod = &__MOD(__RUNLEVEL_MOD(nr)), \
+static const struct mod *const volatile*mod_runlevels_end[RUNLEVEL_NRS_TOTAL] = {
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel0, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel1, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel2, tail),
+	__ARRAY_SPREAD_PRIVATE(__mod_runlevel3, tail),
+};
+
+static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
+
+	if (!res) {
+		init_level = new_rl;
+		printk("runlevel: init level is %d\n", init_level);
+	} else {
+		printk("Failed to get into level %d, current level %d\n",
+					new_rl, init_level);
 	}
 
-static int rl_mod_enable(struct mod_info *mod_info);
-static int rl_mod_disable(struct mod_info *mod_info);
+	return res;
+}
 
-const struct mod_ops __runlevel_mod_ops = {
-	.enable = rl_mod_enable,
-	.disable = rl_mod_disable
-};
+int runlevel_set(runlevel_nr_t level) {
+	const struct mod *const volatile**start_mods, *const volatile**end_mods;
+	int (*mod_op)(const struct mod *);
+	int d;
 
-RUNLEVEL_DEF(0);
-RUNLEVEL_DEF(1);
-RUNLEVEL_DEF(2);
-RUNLEVEL_DEF(3);
+	if (!runlevel_nr_valid(level)) {
+		return -EINVAL;
+	}
 
-struct runlevel {
-	const struct mod *mod;
-};
+	if (init_level < level) {
+		start_mods = mod_runlevels_start;
+		end_mods = mod_runlevels_end;
+		d = 1;
+		mod_op = mod_enable;
+	} else {
+		start_mods = mod_runlevels_end;
+		end_mods = mod_runlevels_start;
+		d = -1;
+		mod_op = mod_disable;
+	}
 
-static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = {
-	RUNLEVEL(0),
-	RUNLEVEL(1),
-	RUNLEVEL(2),
-	RUNLEVEL(3),
-};
+	while (init_level != level) {
+		const struct mod *const volatile*mod;
+		int ret;
 
-static runlevel_nr_t init_level = -1, fini_level = -1;
-
-static int rl_mod_enable(struct mod_info *mod_info) {
-	int ret;
-	int level = (runlevel_nr_t) mod_info->data;
-	const struct mod *rl_mod = runlevels[level].mod;
-
-	if (runlevel_nr_valid(level - 1)) {
-		const struct mod *mod;
-		array_nullterm_foreach(mod, rl_mod->contents) {
-			if (0 != (ret = mod_enable(mod))) {
-				return ret;
+		ret = 0;
+		for (mod = start_mods[init_level + d];
+				mod != end_mods[init_level + d]; mod += d) {
+			if (*mod && (ret = mod_op(*mod))) {
+				goto mod_fail;
 			}
 		}
-
-		if (0 != (ret = mod_enable(runlevels[level - 1].mod))) {
+mod_fail:
+		if (runlevel_change_hook(init_level + d, ret)) {
 			return ret;
 		}
 	}
 
-	init_level = level;
-	printk("runlevel: init level is %d\n", init_level);
-
 	return 0;
-}
-
-static int rl_mod_disable(struct mod_info *mod_info) {
-	int ret;
-	int level = (runlevel_nr_t) mod_info->data;
-
-	if (runlevel_nr_valid(level + 1) &&
-		0 != (ret = mod_disable(runlevels[level + 1].mod))) {
-		return ret;
-	}
-	init_level = level - 1;
-	printk("runlevel: init level is %d\n", init_level);
-
-	return 0;
-}
-
-runlevel_nr_t runlevel_get_entered(void) {
-	return init_level;
-}
-
-runlevel_nr_t runlevel_get_leaved(void) {
-	return fini_level;
-}
-
-int runlevel_set(runlevel_nr_t level) {
-	int ret;
-
-	if (!runlevel_nr_valid(level)) {
-		return -EINVAL;
-	}
-
-	if (0 != (ret = runlevel_enter(level)) || (runlevel_nr_valid(level + 1)
-			&& 0 != (ret = runlevel_leave(level + 1)))) {
-		return ret;
-	}
-	return 0;
-}
-
-int runlevel_enter(runlevel_nr_t level) {
-	int ret = 0;
-
-	if (!runlevel_nr_valid(level)) {
-		return -EINVAL;
-	}
-
-	while (init_level < level) {
-		if (0 != (ret = mod_enable(runlevels[init_level + 1].mod))) {
-			break;
-		}
-	}
-
-	return ret;
-}
-
-int runlevel_leave(runlevel_nr_t level) {
-	int ret = 0;
-
-	if (!runlevel_nr_valid(level)) {
-		return -EINVAL;
-	}
-
-	while (fini_level > level) {
-		if (0 != (ret = mod_disable(runlevels[fini_level - 1].mod))) {
-			break;
-		}
-	}
-
-	return ret;
 }

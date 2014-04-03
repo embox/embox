@@ -87,7 +87,7 @@
 //#define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `isblank' function. */
-//#define HAVE_ISBLANK 1
+#define HAVE_ISBLANK 1
 
 /* Define to 1 if you have the `iswalnum' function. */
 //#define HAVE_ISWALNUM 1

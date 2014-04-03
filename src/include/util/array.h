@@ -118,6 +118,17 @@
 #define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
 	  __array_range_foreach_ptr(element_ptr, array_begin, array_end)
 
+/**
+ * Analogs for spread array.
+ */
+#define array_spread_foreach(element, array) \
+	  __array_spread_foreach(element, array)
+#define array_spread_foreach_ptr(element_ptr, array) \
+	  __array_spread_foreach_ptr(element_ptr, array)
+#define array_spread_nullterm_foreach(element, array) \
+	  __array_spread_nullterm_foreach(element, array)
+
+
 /* Static arrays with their size known at the compile-time. */
 
 /**
@@ -186,6 +197,12 @@
  */
 #define ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator) \
 	  __ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator)
+
+/**
+ * Array spread declaration
+ */
+#define ARRAY_SPREAD_DECLARE(element_type, name) \
+	__ARRAY_SPREAD_DECLARE(element_type, name)
 
 /**
  * Adds elements to the specified spread array.

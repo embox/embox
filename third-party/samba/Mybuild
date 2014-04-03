@@ -2,11 +2,11 @@ package third_party.samba
 
 module core {
 	depends embox.lib.LibC
-	depends embox.lib.cxx.lib
 	depends embox.arch.x86.LibM // FIXME:
 
 	source "empty.c" // FIXME: workaround
 
+	depends embox.compat.posix.idx.poll
 	depends embox.net.lib.getifaddrs
 	depends third_party.zlib.libs
 
@@ -17,6 +17,8 @@ module core {
 		"../../../../samba/lib/libtalloc.a",
 		"../../../../samba/lib/libtdb.a",
 		"../../../../samba/lib/libwbclient.a"
+
+	source "order.mk"
 }
 
 @Cmd(name = "smbclient",

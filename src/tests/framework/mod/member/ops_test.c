@@ -7,11 +7,11 @@
 
 #include <embox/test.h>
 
-#include <framework/mod/member/self.h>
+#include <framework/mod/self.h>
 
 EMBOX_TEST_SUITE("simple test for member injection");
 
-static int flag_member_init(struct mod_member *info) {
+static int flag_member_init(const struct mod_member *info) {
 	*((int *) info->data) = 1;
 	return 0;
 }

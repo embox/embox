@@ -43,9 +43,6 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_GETPIPE_SZ       2
 #define F_SETPIPE_SZ       3
 
-#define F_GETFL     F_GETFD
-#define F_SETFL     F_SETFD
-
 #define F_GETLK            4 /* Get record locking information. */
 #define F_SETLK            5 /* Set record locking information. */
 #define F_SETLKW           6 /* Set record locking information; wait if blocked. */
@@ -54,6 +51,10 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_RDLCK            7 /* Shared or read lock. */
 #define F_UNLCK            8 /* Unlock. */
 #define F_WRLCK            9 /* Exclusive or write lock. */
+
+#define F_GETFL            10
+#define F_SETFL            11
+#define F_DUPFD            12
 
 /* fcntl flags */
 #define O_RDONLY           0x0000  /* Open for reading only */
@@ -67,6 +68,12 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_EXCL             0x0400  /* Open only if file doesn't already exist */
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
+
+#define O_DIRECTORY        0x2000
+#define O_SEARCH           0x4000
+
+/*file descriptor flags */
+#define FD_CLOEXEC         0x0001
 
 struct flock {
 	short  l_type;   /* Type of lock; F_RDLCK, F_WRLCK, F_UNLCK. */

@@ -6,6 +6,7 @@
  * @author Ilia Vaprol
  */
 
+#include <arpa/inet.h>
 #include <stddef.h>
 #include <string.h>
 #include <netdb.h>
@@ -19,6 +20,7 @@ struct servent * getservbyport(int port,
 	}
 
 	setservent(1);
+	port = htons((unsigned short)port);
 
 	while ((se = getservent()) != NULL) {
 		/* same protocol? */

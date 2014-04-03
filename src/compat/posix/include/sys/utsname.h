@@ -9,6 +9,10 @@
 #ifndef COMPAT_POSIX_SYS_UTSNAME_H_
 #define COMPAT_POSIX_SYS_UTSNAME_H_
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 struct utsname {
 	const char  *sysname;  /* Name of this implementation of the operating system. */
 	const char  *nodename; /* Name of this node within the communications network to which this node is attached, if any. */
@@ -18,5 +22,7 @@ struct utsname {
 };
 
 extern int uname(struct utsname *);
+
+__END_DECLS
 
 #endif /* COMPAT_POSIX_SYS_UTSNAME_H_ */

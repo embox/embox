@@ -1,0 +1,14 @@
+
+package embox.profiler.sampling
+
+module timer {
+	option number interval = 100
+
+	source "sample.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.timer.sys_timer
+	depends embox.framework.LibFramework
+	depends embox.lib.execinfo.backtrace
+	depends embox.lib.execinfo.backtrace_symbols
+}

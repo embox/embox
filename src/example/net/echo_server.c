@@ -134,14 +134,12 @@ static int sock_tcp_init(int *out_sock) {
 static int sock_tcp_hnd(int sock) {
 	int ret, res;
 	char *data;
-	struct sockaddr addr;
-	socklen_t addr_len;
 	ssize_t bytes, bytes_left;
 
 	/**
 	 * Accept new connection
 	 */
-	res = accept(sock, &addr, &addr_len);
+	res = accept(sock, NULL, NULL);
 	if (res == -1) { ret = -errno; perror("accept"); return ret; }
 	sock = res;
 

@@ -1,5 +1,6 @@
 /**
- * @file contains flock definition
+ * @file
+ *
  * @brief file header contains flock definition
  * @details at the moment contains only flock related definitions
  *
@@ -7,13 +8,12 @@
  * @author Ivan Tretyakov
  */
 
-#ifndef _SYS_FILE_H
-#define _SYS_FILE_H     1
+#ifndef SYS_FILE_H
+#define SYS_FILE_H
 
-#ifndef _FCNTL_H
-# include <fcntl.h>
-#endif
+//TODO LINUX and BSD compatible not POSIX
 
+#include <sys/cdefs.h>
 __BEGIN_DECLS
 
 
@@ -33,4 +33,4 @@ extern int flock(int fd, int operation);
 
 __END_DECLS
 
-#endif /* sys/file.h  */
+#endif /* SYS_FILE_H  */

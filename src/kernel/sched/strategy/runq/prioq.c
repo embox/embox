@@ -6,47 +6,32 @@
  * @author Anton Bulychev
  */
 
-#include <util/prioq.h>
-
 #include <kernel/thread.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/task.h>
 
-#define rq_field      sched_attr.runq_link
-
-
-/* return -1 if priority t1 less than t2
- * 0 if them equals
- * 1 if priority t1 more than t2
- */
-static inline int thread_prio_comparator(struct prioq_link *first,
-		struct prioq_link *second) {
-	struct thread *t1 = prioq_element(first, struct thread, rq_field);
-	struct thread *t2 = prioq_element(second, struct thread, rq_field);
-	sched_priority_t p1, p2;
-
-	p1 = thread_priority_get(t1);
-	p2 = thread_priority_get(t2);
-
-	return p1 < p2 ? (-1) : (p1 > p2);
-}
+#include <util/priolist.h>
 
 void runq_item_init(runq_item_t *runq_link) {
-	prioq_link_init(runq_link);
+	priolist_link_init(runq_link);
 }
 
-void runq_queue_init(runq_queue_t *queue) {
-	prioq_init(queue);
+void runq_init(runq_t *queue) {
+	priolist_init(queue);
 }
 
-void runq_queue_insert(runq_queue_t *queue, struct thread *thread) {
-	prioq_enqueue(thread, thread_prio_comparator, queue, rq_field);
+void runq_insert(runq_t *queue, struct thread *t) {
+	t->sched_attr.runq_link.prio = -thread_priority_get(t);
+	priolist_add(&t->sched_attr.runq_link, queue);
 }
 
-void runq_queue_remove(runq_queue_t *queue, struct thread *thread) {
-	prioq_remove(thread, thread_prio_comparator, rq_field);
+void runq_remove(runq_t *queue, struct thread *t) {
+	priolist_del(&t->sched_attr.runq_link, queue);
 }
 
-struct thread *runq_queue_extract(runq_queue_t *queue) {
-	return prioq_dequeue(thread_prio_comparator, queue,struct thread, rq_field);
+struct thread *runq_extract(runq_t *queue) {
+	runq_item_t *first = priolist_first(queue);
+
+	priolist_del(first, queue);
+
+	return mcast_out(first, struct thread, sched_attr.runq_link);
 }

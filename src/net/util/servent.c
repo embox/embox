@@ -6,6 +6,7 @@
  * @author Ilia Vaprol
  */
 
+#include <arpa/inet.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <net/util/servent.h>
@@ -82,7 +83,7 @@ int servent_set_port(struct servent *se, int port) {
 		return -EINVAL;
 	}
 
-	se->s_port = port;
+	se->s_port = htons(port);
 
 	return 0;
 }
@@ -104,4 +105,32 @@ int servent_set_proto(struct servent *se, const char *proto) {
 	se->s_proto = &sentry_proto_storage[0];
 
 	return 0;
+}
+
+struct servent * servent_make(const char *name, int port,
+		const char *proto) {
+	struct servent *se;
+
+	se = servent_create();
+	if (se == NULL) {
+		return NULL; /* error: no memory */
+	}
+
+	if (name != NULL) {
+		if (0 != servent_set_name(se, name)) {
+			return NULL; /* error: see ret */
+		}
+	}
+
+	if (0 != servent_set_port(se, port)) {
+		return NULL; /* error: see ret */
+	}
+
+	if (proto != NULL) {
+		if (0 != servent_set_proto(se, proto)) {
+			return NULL; /* error: see ret */
+		}
+	}
+
+	return se;
 }

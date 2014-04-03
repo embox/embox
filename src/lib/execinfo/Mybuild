@@ -1,0 +1,23 @@
+package embox.lib.execinfo
+
+module backtrace {
+	source "backtrace.c"
+
+	depends embox.arch.stackframe
+}
+
+module backtrace_symbols {
+	source "backtrace_symbols.c"
+	option number row_count=32
+	option number row_size=64
+
+	depends embox.lib.debug.symbol
+	depends embox.mem.heap_api
+}
+
+module backtrace_symbols_fd {
+	source "backtrace_symbols_fd.c"
+
+	depends embox.lib.debug.symbol
+	depends embox.lib.LibCStdio
+}

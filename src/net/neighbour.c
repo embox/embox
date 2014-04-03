@@ -11,7 +11,6 @@
 #include <kernel/softirq_lock.h>
 #include <mem/misc/pool.h>
 #include <string.h>
-#include <util/dlist.h>
 #include <time.h>
 #include <util/list.h>
 #include <util/array.h>
@@ -19,11 +18,14 @@
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
 #include <net/l0/net_tx.h>
+#include <util/binalign.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
 #include <net/l3/arp.h>
+#include <net/l3/ndp.h>
+#include <net/l2/ethernet.h>
 #include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -32,6 +34,7 @@
 #define MODOPS_NEIGHBOUR_EXPIRE   OPTION_GET(NUMBER, neighbour_expire)
 #define MODOPS_NEIGHBOUR_TMR_FREQ OPTION_GET(NUMBER, neighbour_tmr_freq)
 #define MODOPS_NEIGHBOUR_RESEND   OPTION_GET(NUMBER, neighbour_resend)
+#define MODOPS_NEIGHBOUR_ATTEMPT  OPTION_GET(NUMBER, neighbour_attempt)
 
 EMBOX_UNIT_INIT(neighbour_init);
 
@@ -49,6 +52,7 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 	else {
 		nbr->incomplete = 1;
 		nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+		nbr->sent_times = 0;
 	}
 }
 
@@ -97,16 +101,46 @@ static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
 }
 
 static int nbr_send_request(struct neighbour *nbr) {
-	in_addr_t saddr;
 	struct in_device *in_dev;
+	struct {
+		struct ndpbody_neighbor_solicit body;
+		struct ndpoptions_ll_addr ops;
+		char __ops_ll_addr_storage[MAX_ADDR_LEN];
+	} __attribute__((packed)) nbr_solicit;
 
-	in_dev = inetdev_get_by_dev(nbr->dev);
-	assert(in_dev != NULL);
+	++nbr->sent_times;
 
-	saddr = in_dev->ifa_address;
+	if (nbr->ptype == ETH_P_IP) {
+		in_dev = inetdev_get_by_dev(nbr->dev);
+		assert(in_dev != NULL);
+		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
+				&in_dev->ifa_address, &nbr->paddr[0]);
+	}
+	else {
+		assert(nbr->ptype == ETH_P_IPV6);
+		nbr_solicit.body.zero = 0;
+		memcpy(&nbr_solicit.body.target, &nbr->paddr[0],
+				sizeof nbr_solicit.body.target);
+		nbr_solicit.ops.hdr.type = NDP_SOURCE_LL_ADDR;
+		nbr_solicit.ops.hdr.len = binalign_bound(sizeof nbr_solicit.ops
+				+ nbr->dev->addr_len, 8) / 8;
+		memcpy(nbr_solicit.ops.ll_addr, &nbr->dev->dev_addr[0],
+				nbr->dev->addr_len);
+		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
+				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
+					+ nbr->dev->addr_len, nbr->dev);
+	}
+}
 
-	return arp_send(ARP_OPER_REQUEST, nbr->ptype, nbr->hlen,
-			nbr->plen, NULL, &saddr, NULL, &nbr->paddr[0], NULL, nbr->dev);
+#include <net/l3/icmpv4.h>
+static void nbr_drop_w_queue(struct neighbour *nbr) {
+	struct sk_buff *skb;
+
+	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
+		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
+	}
+
+	nbr->sent_times = 0;
 }
 
 static int nbr_build_and_send_pkt(struct sk_buff *skb,
@@ -125,12 +159,12 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		/* try to xmit */
 		ret = net_tx(skb, NULL);
 		if (ret != 0) {
-			printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
+			/*printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);*/
 			return ret;
 		}
 	}
 	else {
-		printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
+		/*printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);*/
 		skb_free(skb);
 		return ret;
 	}
@@ -143,8 +177,8 @@ static void nbr_flush_w_queue(struct neighbour *nbr) {
 	struct net_header_info hdr_info;
 
 	hdr_info.type = nbr->ptype;
-	hdr_info.src_addr = &nbr->dev->dev_addr[0];
-	hdr_info.dst_addr = &nbr->haddr[0];
+	hdr_info.src_hw = &nbr->dev->dev_addr[0];
+	hdr_info.dst_hw = &nbr->haddr[0];
 
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
 		(void)nbr_build_and_send_pkt(skb, &hdr_info);
@@ -323,7 +357,9 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	softirq_lock();
 	{
 		list_foreach(nbr, &neighbour_list, lnk) {
+			softirq_unlock();
 			ret = (*func)(nbr, args);
+			softirq_lock();
 			if (ret != 0) {
 				softirq_unlock();
 				return ret;
@@ -338,7 +374,7 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 int neighbour_send_after_resolve(unsigned short ptype,
 		const void *paddr, unsigned char plen,
 		struct net_device *dev, struct sk_buff *skb) {
-	int resolved;
+	int allocated, resolved;
 	struct neighbour *nbr;
 	struct net_header_info hdr_info;
 
@@ -370,6 +406,11 @@ int neighbour_send_after_resolve(unsigned short ptype,
 			nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 
 			list_add_last_element(nbr, &neighbour_list, lnk);
+
+			allocated = 1;
+		}
+		else {
+			allocated = 0;
 		}
 
 		resolved = !nbr->incomplete;
@@ -382,12 +423,14 @@ int neighbour_send_after_resolve(unsigned short ptype,
 
 	if (resolved) {
 		hdr_info.type = nbr->ptype;
-		hdr_info.src_addr = &nbr->dev->dev_addr[0];
-		hdr_info.dst_addr = &nbr->haddr[0];
+		hdr_info.src_hw = &nbr->dev->dev_addr[0];
+		hdr_info.dst_hw = &nbr->haddr[0];
 		return nbr_build_and_send_pkt(skb, &hdr_info);
 	}
 
-	(void)nbr_send_request(nbr);
+	if (allocated) {
+		(void)nbr_send_request(nbr);
+	}
 
 	return 0;
 }
@@ -410,8 +453,14 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 
 			if (nbr->incomplete) {
 				if (nbr->resend <= MODOPS_NEIGHBOUR_TMR_FREQ) {
-					(void)nbr_send_request(nbr);
-					nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+					if (nbr->sent_times == MODOPS_NEIGHBOUR_ATTEMPT) {
+						(void)nbr_drop_w_queue(nbr);
+						nbr_free(nbr);
+					}
+					else {
+						(void)nbr_send_request(nbr);
+						nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+					}
 				}
 				else {
 					nbr->resend -= MODOPS_NEIGHBOUR_TMR_FREQ;
@@ -425,7 +474,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 static int neighbour_init(void) {
 	int ret;
 
-	ret = timer_init(&neighbour_tmr, TIMER_PERIODIC,
+	ret = timer_init_msec(&neighbour_tmr, TIMER_PERIODIC,
 			MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

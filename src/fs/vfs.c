@@ -71,6 +71,15 @@ node_t *vfs_lookup_childn(node_t *parent, const char *name, size_t len) {
 	struct tree_link *tlink;
 
 	assert(parent);
+#if 0
+	if (len && !(S_IFDIR(parent))) {
+		return NULL;
+	}
+#endif
+
+	if (len == 1 && *name == '.') {
+		return parent;
+	}
 
 	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
 

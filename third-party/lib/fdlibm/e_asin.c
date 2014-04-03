@@ -73,7 +73,7 @@ qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 	double x;
 #endif
 {
-	double t,w,p,q,c,r,s;
+	double t=0,w,p,q,c,r,s;
 	int hx,ix;
 	hx = __HI(x);
 	ix = hx&0x7fffffff;

@@ -13,10 +13,16 @@
 #include <errno.h>
 #include <string.h>
 
-#include <kernel/printk.h>
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const struct cmd, __cmd_registry);
+ARRAY_SPREAD_DEF(const struct cmd *, __cmd_registry);
+
+extern void getopt_init(void);
+
+#include <util/member.h>
+static inline const struct mod *cmd2mod(const struct cmd *cmd) {
+	return &member_cast_out(cmd, const struct cmd_mod, cmd)->mod;
+}
 
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
@@ -24,9 +30,11 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	if (!cmd)
 		return -EINVAL;
 
-	err = mod_activate_app(cmd->mod);
+	err = mod_activate_app(cmd2mod(cmd));
 	if (err)
 		return err;
+
+	getopt_init();
 
 	return cmd->exec(argc, argv);
 }

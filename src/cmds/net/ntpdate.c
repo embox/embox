@@ -24,7 +24,8 @@
 
 EMBOX_CMD(exec);
 
-static int make_socket(const struct timeval *timeout, int *out_sock) {
+static int make_socket(const struct timeval *timeout, int *out_sock,
+		const struct sockaddr_in *addr_in) {
 	int ret, sock;
 
 	assert(timeout != NULL);
@@ -45,6 +46,14 @@ static int make_socket(const struct timeval *timeout, int *out_sock) {
 		return ret;
 	}
 
+	if (-1 == connect(sock, (const struct sockaddr *)addr_in,
+				sizeof *addr_in)) {
+		ret = -errno;
+		close(sock);
+		assert(ret != 0);
+		return ret;
+	}
+
 	*out_sock = sock;
 
 	return 0;
@@ -54,42 +63,36 @@ static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
 		const struct timeval *timeout, struct ntphdr *out_rep) {
 	int ret, sock;
 	struct sockaddr_in addr;
-	socklen_t addrlen;
 
 	assert(req != NULL);
 	assert(timeout != NULL);
 	assert(out_rep != NULL);
 
-	ret = make_socket(timeout, &sock);
-	if (ret != 0) {
-		return ret;
-	}
-
-	/* TODO connect */
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(NTP_PORT);
 	addr.sin_addr.s_addr = server_addr;
 
-	if (-1 == sendto(sock, req, sizeof *req, 0,
-			(struct sockaddr *)&addr, sizeof addr)) {
+	ret = make_socket(timeout, &sock, &addr);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (-1 == send(sock, req, sizeof *req, 0)) {
 		ret = -errno;
 		goto error;
 	}
 
 	do {
-		addrlen = sizeof addr;
-		ret = recvfrom(sock, out_rep, sizeof *out_rep, 0,
-					(struct sockaddr *)&addr, &addrlen);
+		ret = recv(sock, out_rep, sizeof *out_rep, 0);
 		if (ret == -1) {
 			ret = -errno;
 			goto error;
 		}
-	} while ((addr.sin_addr.s_addr != server_addr)
-			|| (addr.sin_port != htons(NTP_PORT))
-			|| (ret < sizeof *out_rep)
+	} while ((ret < sizeof *out_rep)
 			|| ntp_mode_client(out_rep));
 
 	ret = 0;
+
 error:
 	close(sock);
 	return ret;

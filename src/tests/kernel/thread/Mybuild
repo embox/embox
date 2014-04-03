@@ -1,14 +1,5 @@
 package embox.test.kernel.thread
 
-module event_test {
-	source "event_test.c"
-
-	depends embox.kernel.thread.core
-	depends embox.kernel.sched.sched
-	depends embox.kernel.timer.sleep_api
-	depends embox.framework.LibFramework
-}
-
 module thread_test {
 	source "thread_test.c"
 
@@ -17,6 +8,7 @@ module thread_test {
 }
 
 module thread_priority_test {
+	option number threads_quantity=256
 	source "thread_priority_test.c"
 
 	depends embox.kernel.thread.core

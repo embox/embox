@@ -2,61 +2,131 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    08.10.2012
+ * @date 08.10.2012
+ * @author Anton Kozlov
+ * @author Eldar Abusalimov
  */
 
 #include <errno.h>
+#include <string.h>
 #include <signal.h>
-#include <kernel/task/signal.h>
-#include <kernel/task/rt_signal.h>
-#include <kernel/task/std_signal.h>
-#include <kernel/task/task_table.h>
+#include <stddef.h>
+#include <pthread.h>
 
-static void sighnd_default(int sig) {
+#include <kernel/task.h>
+#include <kernel/sched.h>
+#include <kernel/thread/signal.h>
+#include <kernel/task/resource/sig_table.h>
+
+#include <util/math.h>
+
+static void sighandler_default(int sig) {
 	task_exit(NULL);
 }
 
-static void sighnd_ignore(int sig) {
+static void sighandler_ignore(int sig) {
 	/* do nothing */
 }
 
-void (*signal(int sig, void (*func)(int)))(int) {
-	void (*old_func)(int) = task_self_signal_get(sig);
+int sigaction(int sig, const struct sigaction *restrict act,
+		struct sigaction *restrict oact) {
+	struct sigaction *sig_table = task_self_resource_sig_table();
 
-	if (func == SIG_DFL) {
-		func = sighnd_default;
-	} else if (func == SIG_IGN || func == SIG_ERR) {
-		func = sighnd_ignore;
+	if (!check_range(sig, 0, _SIG_TOTAL))
+		return SET_ERRNO(EINVAL);
+
+	if (oact) {
+		sighandler_t ofunc = sig_table[sig].sa_handler;
+		memcpy(oact, &sig_table[sig], sizeof(struct sigaction));
+
+		if (ofunc == sighandler_default) {
+			ofunc = SIG_DFL;
+		} else if (ofunc == sighandler_ignore) {
+			ofunc = SIG_IGN;
+		}
+
+		oact->sa_handler = ofunc;
 	}
 
-	task_self_signal_set(sig, func);
+	if (act) {
+		sighandler_t func = act->sa_handler;
+		memcpy(&sig_table[sig], act, sizeof(struct sigaction));
 
-	return old_func;
+		if (func == SIG_DFL) {
+			func = sighandler_default;
+		} else if (func == SIG_IGN || func == SIG_ERR) {
+			func = sighandler_ignore;
+		}
+
+		sig_table[sig].sa_handler = func;
+	}
+
+	return 0;
+}
+
+sighandler_t signal(int sig, sighandler_t func) {
+	struct sigaction act  = { 0 };
+	struct sigaction oact = { 0 };
+	int err;
+
+	act.sa_handler = func;
+
+	err = sigaction(sig, &act, &oact);
+	if (err) {
+		SET_ERRNO(err);
+		return SIG_ERR;
+	}
+
+	return oact.sa_handler;
 }
 
 int sigqueue(int tid, int sig, const union sigval value) {
-	struct task *task = task_table_get(tid);
+	struct task *task;
+	struct sigstate *sigstate;
+	siginfo_t info;
+	int err;
 
-	if (task == NULL) {
-		SET_ERRNO(ESRCH);
-		return -1;
-	}
+	task = task_table_get(tid);
+	if (!task)
+		return SET_ERRNO(ESRCH);
 
-	task_rtsignal_send(task, sig, value);
+	sigstate = &task_get_main(task)->sigstate;
+
+	// TODO prepare it
+	info.si_value = value;
+
+	err = sigstate_send(sigstate, sig, &info);
+	if (err)
+		return SET_ERRNO(err);
+
+	sched_signal(task_get_main(task));
 
 	return 0;
 }
 
-int kill (int tid, int sig) {
-	struct task *task = task_table_get(tid);
 
-	if (task == NULL) {
-		SET_ERRNO(ESRCH);
-		return -1;
-	}
+int pthread_kill(pthread_t thread, int sig) {
+	struct sigstate *sigstate;
+	int err;
 
-	task_stdsig_send(task, sig);
+	assert(thread);
+
+	sigstate = &thread->sigstate;
+	err = sigstate_send(sigstate, sig, NULL);
+	if (err)
+		return SET_ERRNO(err);
+
+	sched_signal(thread);
 
 	return 0;
+}
+
+int kill(int tid, int sig) {
+	struct task *task;
+
+	task = task_table_get(tid);
+	if (!task)
+		return SET_ERRNO(ESRCH);
+
+	return pthread_kill(task_get_main(task), sig);
 }

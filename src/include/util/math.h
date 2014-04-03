@@ -36,4 +36,34 @@
 		__clamp_val;                            \
 	})
 
+/** Suitable for checking an array index: [0, len). @return (lo <= val < hi) */
+#define check_range(val, lo, hi) \
+	({                                          \
+		typeof(val) __check_val = (val);        \
+		typeof(lo)  __check_lo  = (lo);         \
+		typeof(hi)  __check_hi  = (hi);         \
+		__check_val >= __check_lo &&            \
+		__check_val < __check_hi;               \
+	})
+
+/** All inclusive version of #check_range(). @return (lo <= val <= hi) */
+#define check_range_incl(val, lo, hi) \
+	({                                          \
+		typeof(val) __check_val = (val);        \
+		typeof(lo)  __check_lo  = (lo);         \
+		typeof(hi)  __check_hi  = (hi);         \
+		__check_val >= __check_lo &&            \
+		__check_val <= __check_hi;              \
+	})
+
+/** All exclusive version of #check_range(). @return (lo < val < hi) */
+#define check_range_excl(val, lo, hi) \
+	({                                          \
+		typeof(val) __check_val = (val);        \
+		typeof(lo)  __check_lo  = (lo);         \
+		typeof(hi)  __check_hi  = (hi);         \
+		__check_val > __check_lo &&             \
+		__check_val < __check_hi;               \
+	})
+
 #endif /* UTIL_MATH_H_ */

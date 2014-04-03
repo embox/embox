@@ -14,16 +14,21 @@
 #include <errno.h>
 #include <sys/types.h>
 
+#include <sys/file.h>
+
 #include <fs/vfs.h>
 #include <fs/mount.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+#include <fs/flags.h>
+#include <fs/file_desc.h>
+//#include <fs/file_operation.h>
 
 #include <security/security.h>
-#include <sys/file.h>
-#include <kernel/task/idx.h>
+
+
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
 
@@ -37,18 +42,18 @@ static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct fs_driver *drv;
 	int retval = 0;
 
+	if(NULL == parent->nas->fs) {
+		return -EINVAL;
+	}
 	node = vfs_create(parent, name, mode);
 	if (!node) {
 		return -ENOMEM;
 	}
 
-	if(NULL == parent->nas->fs) {
-		return -EINVAL;
-	}
 	/* check drv of parents */
 	drv = parent->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
-		retval = -1;
+		retval = -ENOSYS;
 		goto out;
 	}
 
@@ -121,10 +126,10 @@ int kremove(const char *pathname) {
 	}
 
 	if (node_is_directory(node)) {
-		return rmdir(pathname);
+		return krmdir(pathname);
 	}
 	else {
-		return unlink(pathname);
+		return kunlink(pathname);
 	}
 }
 
@@ -144,7 +149,8 @@ int kunlink(const char *pathname) {
 	}
 
 	if (0 != (res = security_node_delete(node_parent(node), node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	drv = node->nas->fs->drv;
@@ -244,7 +250,12 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	return drv->fsop->format(node);
+	if (0 != (res = drv->fsop->format(node))) {
+		errno = -res;
+		return -1;
+	}
+
+	return 0;
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
@@ -291,11 +302,13 @@ skip_dev_lookup:
 	}
 
 	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	if(ENOERR != (res = mount_table_check(dir_node))) {
-		return res;
+		errno = -res;
+		return -1;
 	}
 
 	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
@@ -304,7 +317,8 @@ skip_dev_lookup:
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 		}
-		return res;
+		errno = -res;
+		return -1;
 
 	}
 	if(ENOERR != (res = mount_table_add(dir_node))) {
@@ -314,7 +328,8 @@ skip_dev_lookup:
 			dir_node->nas->fs = parent->nas->fs;
 			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 		}
-		return res;
+		errno = -res;
+		return -1;
 	}
 	return ENOERR;
 }
@@ -435,7 +450,7 @@ int krename(const char *oldpath, const char *newpath) {
 
 	/* If oldpath is directory, copy it recursively */
 	if (node_is_directory(oldnode)) {
-		rc = mkdir(newpath, oldnode->mode);
+		rc = kmkdir(NULL, newpath, oldnode->mode);
 		if (-1 == rc) {
 			return -1;
 		}
@@ -497,7 +512,7 @@ int krename(const char *oldpath, const char *newpath) {
 	}
 
 	/* Delete file in old path */
-	rc = remove(oldpath);
+	rc = kremove(oldpath);
 	if (0 != rc) {
 		return -1;
 	}
@@ -608,10 +623,10 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
 int kflock(int fd, int operation) {
 	int rc;
 	flock_t *flock;
-	struct idx_desc *idesc;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
+	struct file_desc *fdesc;
 	struct thread *current = thread_self();
 
 	/**
@@ -648,8 +663,8 @@ int kflock(int fd, int operation) {
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
-	idesc = task_self_idx_get(fd);
-	flock = &((struct file_desc *) idesc->data->fd_struct)->node->flock;
+	fdesc = file_desc_get(fd);
+	flock = &(fdesc)->node->flock;
 	exlock = &flock->exlock;
 	shlock_count = &flock->shlock_count;
 	flock_guard = &flock->flock_guard;
@@ -669,6 +684,8 @@ int kflock(int fd, int operation) {
 				spin_unlock(flock_guard);
 				SET_ERRNO(EWOULDBLOCK);
 				return -1;
+			} else {
+				spin_unlock(flock_guard);
 			}
 		} else {
 			/* We should unlock flock_guard here to avoid many processes
@@ -676,7 +693,6 @@ int kflock(int fd, int operation) {
 			spin_unlock(flock_guard);
 			flock_exclusive_get(exlock);
 		}
-		spin_unlock(flock_guard);
 	}
 
 	/* Shared locking operation */
@@ -738,5 +754,5 @@ int kflock(int fd, int operation) {
 		spin_unlock(flock_guard);
 	}
 
-	return -ENOERR;
+	return ENOERR;
 }

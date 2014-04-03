@@ -242,11 +242,12 @@ static block_dev_driver_t idedisk_udma_driver = {
 };
 
 static int idedisk_udma_init (void *args) {
-	struct ide_tab *ide;
+//	struct ide_tab *ide;
 	hd_t *drive;
 	double size;
 	char   path[PATH_MAX];
 
+#if 0
 	ide = ide_get_drive();
 
 	for(int i = 0; i < HD_DRIVES; i++) {
@@ -254,12 +255,14 @@ static int idedisk_udma_init (void *args) {
 			continue;
 		} else {
 			drive = (hd_t *) ide->drive[i];
+#endif
+			drive = (hd_t *)args;
 			/* Make new device */
 			if ((drive->media == IDE_DISK) && (drive->udmamode != -1)) {
 				*path = 0;
 				strcat(path, "/dev/hd*");
 				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return -1;
+					return drive->idx;
 				}
 				drive->bdev = block_dev_create(path,
 						&idedisk_udma_driver, drive);
@@ -273,11 +276,11 @@ static int idedisk_udma_init (void *args) {
 					return -1;
 				}
 				create_partitions(drive);
-			} else {
-				continue;
-			}
+//			} else {
+//				continue;
+//			}
 		}
-	}
+//	}
 	return 0;
 }
 

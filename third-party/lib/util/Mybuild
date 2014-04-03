@@ -1,0 +1,5 @@
+package third_party.lib.util
+
+module rbtree {
+	source "rbtree.c"
+}

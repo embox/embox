@@ -1,6 +1,7 @@
 package embox.framework
 
 module mod {
+
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
@@ -13,4 +14,19 @@ module mod {
 	source "apps.lds.S"
 
 	depends embox.util.Array
+
+	option boolean security_label = true
+
+	depends embuild
+}
+
+@DefaultImpl(embuild_full)
+abstract module embuild { }
+
+module embuild_full extends embuild {
+}
+
+module embuild_light extends embuild {
+
+	source "embuild_light_impl.h"
 }

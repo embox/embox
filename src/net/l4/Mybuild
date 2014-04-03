@@ -1,27 +1,27 @@
 package embox.net
 
-module udp {
-	source "udp.c"
-
-	depends ipv4 /* for ip_output.c */
-	depends skbuff
-	depends icmpv4
-	depends sock
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
-}
-
 module tcp {
 	source "tcp.c"
 
-	depends skbuff
-	depends sock
-	depends ipv4 /* for ip_output.c */
+	depends embox.fs.idesc_event
+	depends embox.net.skbuff
+	depends embox.net.sock
+	depends embox.net.lib.tcp
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
-	depends embox.kernel.time.clock_source
-	depends embox.kernel.critical
-	depends embox.lib.LibC
+	depends embox.lib.LibCAssert
+	depends embox.lib.LibCString
 	depends embox.kernel.timer.sys_timer
-	depends embox.framework.LibFrameworkNet
+	depends embox.framework.net.proto
+}
+
+module udp {
+	source "udp.c"
+
+	depends embox.net.lib.udp
+	depends embox.net.skbuff
+	depends embox.net.icmpv4
+	depends embox.net.sock
+	depends embox.lib.LibCAssert
+	depends embox.framework.net.proto
 }

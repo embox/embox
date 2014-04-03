@@ -19,11 +19,11 @@ ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
 
 int char_dev_init_all(void) {
 	int ret;
-	size_t i;
+	const device_module_t *dev_module;
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); ++i) {
-		if (__device_registry[i].init != NULL) {
-			ret = __device_registry[i].init();
+	array_spread_foreach_ptr(dev_module, __device_registry) {
+		if (dev_module->init != NULL) {
+			ret = dev_module->init();
 			if (ret != 0) {
 				return ret;
 			}

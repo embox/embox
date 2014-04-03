@@ -8,7 +8,6 @@
 #ifndef FS_KFSOP_H_
 #define FS_KFSOP_H_
 
-#include <fs/node.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

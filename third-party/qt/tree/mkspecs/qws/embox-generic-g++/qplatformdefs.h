@@ -72,26 +72,11 @@
 
 
 
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
-#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
-
-//#define sysconf(x) (printf(">>> sysconf(%s)\n",#x),-1)
-
-#define _SC_CLK_TCK 0
-#define _SC_NPROCESSORS_ONLN 1
-
-inline long sysconf(int name) {
-	printf(">>> sysconf(%d)\n", name);
-	switch (name) {
-	case _SC_CLK_TCK: return 1000;
-	case _SC_NPROCESSORS_ONLN : return 1;
-	default: break;
-	}
-	return -1;
-}
 
 #include <time.h>
 
@@ -111,24 +96,8 @@ inline long sysconf(int name) {
 
 #include <errno.h>
 
+#include <pthread.h>
 
-
-/* inline int putenv(char *x) {
-	printf(">>> putenv(%s)\n",x);
-	return -1;
-} */
-
-
-
-
-typedef int pthread_t;
-
-typedef int pthread_mutex_t;
-typedef int pthread_cond_t;
-
-typedef int pthread_mutexattr_t;
-typedef int pthread_condattr_t;
-typedef int pthread_attr_t;
 
 #if 1
 #define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
@@ -136,166 +105,11 @@ typedef int pthread_attr_t;
 #define DPRINT()
 #endif
 
-static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
-                               __const pthread_mutexattr_t *__mutexattr) {
-	//DPRINT();
-	return 0;
-}
-
-static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_cond_init (pthread_cond_t *__restrict __cond,
-                              __const pthread_condattr_t *__restrict
-                              __cond_attr){
-	//DPRINT();
-	return 0;
-}
-static inline int pthread_cond_destroy (pthread_cond_t *__cond){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_mutex_lock (pthread_mutex_t *__mutex){
-	//DPRINT();
-	return 0;
-}
-static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
-	//DPRINT();
-	return 0;
-}
-
-static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
-                              pthread_mutex_t *__restrict __mutex){
-	DPRINT();
-	return 0;
-}
-static inline int pthread_cond_signal (pthread_cond_t *__cond){
-	//DPRINT();
-	return 0;
-}
-static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
-                                   pthread_mutex_t *__restrict __mutex,
-                                   __const struct timespec *__restrict
-                                   __abstime){
-	DPRINT();
-	return 0;
-}
-
-
-
-typedef int pthread_once_t;
-#define PTHREAD_ONCE_INIT 0
-
-#define PTHREAD_CANCEL_ENABLE 0
-#define PTHREAD_CANCEL_DISABLE 0
-
-#define PTHREAD_CREATE_DETACHED 0
-
-#define PTHREAD_INHERIT_SCHED 0
-
-typedef unsigned int pthread_key_t;
-
-static inline int pthread_once (pthread_once_t *__once_control,
-                         void (*__init_routine) (void)){
-	//DPRINT();
-	__init_routine();
-	return 0;
-}
-
-static void *global_thread_specific;
-
-static inline void *pthread_getspecific (pthread_key_t __key) {
-	//DPRINT();
-	if (__key == 0) {
-		return global_thread_specific;
-	}
-	return NULL;
-}
-static inline int pthread_setspecific (pthread_key_t __key,
-                                __const void *__pointer){
-	DPRINT();
-	if (__key == 0) {
-		global_thread_specific = __pointer;
-		return 0;
-	}
-	return -1;
-}
-
-static inline int pthread_key_create (pthread_key_t *__key,
-                               void (*__destr_function) (void *)){
-	//DPRINT();
-	return -1;
-}
-static inline int pthread_key_delete (pthread_key_t __key){
-	DPRINT();
-	return -1;
-}
-
-static inline pthread_t pthread_self (void){
-	//DPRINT();
-	return 0;
-}
-
-static inline int pthread_setcancelstate (int __state, int *__oldstate){
-	DPRINT();
-	return -1;
-}
-
-static inline void pthread_cleanup_push(void (*routine)(void*), void *arg){
-	DPRINT();
-}
-
-static inline void  pthread_cleanup_pop(int a){
-	DPRINT();
-}
-
-static inline void  pthread_testcancel(void){
-	DPRINT();
-}
-
-static inline int pthread_attr_init(pthread_attr_t *a){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_setdetachstate(pthread_attr_t *a, int p){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_create(pthread_t *t, const pthread_attr_t *a,
-          void *(*func)(void *), void *arg){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_setinheritsched(pthread_attr_t *a, int p){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_attr_destroy(pthread_attr_t *a){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_cancel(pthread_t t){
-	DPRINT();
-	return -1;
-}
-
-static inline int pthread_cond_broadcast(pthread_cond_t *c){
-	DPRINT();
-	return -1;
-}
 
 
 
 
-static char *tzname[2];
+static const char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
 	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
@@ -314,95 +128,44 @@ inline int fseeko(FILE *stream, off_t offset, int whence) {
 }
 
 inline int truncate(const char *path, off_t length) {
+	(void)path; (void)length;
 	DPRINT();
 	return -1;
 }
 inline int ftruncate(int fd, off_t length) {
+	(void)fd; (void)length;
 	DPRINT();
 	return -1;
-}
-inline int getpagesize(void) {
-	DPRINT();
-	return 4096;
 }
 
 #define O_LARGEFILE 0
 
 inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+	(void)path; (void)buf; (void)bufsiz;
 	printf(">>> readLink(%s)\n", path);
 	return 0;
 }
 
-/*
-int getpwuid_r(uid_t uid, struct passwd *pwd,
-	       char *buf, size_t buflen, struct passwd **result);
-*/
 
-#include <errno.h>
 
-#define R_OK (printf(">>> R_OK\n"),1)
-#define W_OK (printf(">>> W_OK\n"),2)
-#define X_OK (printf(">>> X_OK\n"),4)
-#define F_OK (printf(">>> F_OK\n"),8)
-/*inline int access(const char *pathname, int mode) {
-	printf(">>> access(%s, %x)\n", pathname, mode);
-	errno = EPERM;
-	return -1;
-}*/
-
-/*inline int rename(const char *oldpath, const char *newpath) {
-	printf(">>> rename(%s, %s)\n", oldpath, newpath);
-	errno = EPERM;
-	return -1;
-}*/
 
 inline int symlink(const char *oldpath, const char *newpath) {
+	(void)oldpath; (void)newpath;
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;
 	return -1;
 }
 
-/*inline int chdir(const char *path) {
-	printf(">>> chdir(%s)\n", path);
-	errno = EPERM;
-	return -1;
-}*/
-
-//char *get_current_dir_name(void);
 
 
 
 // Either this or define __GLIBC__
-#define PATH_MAX 256
-/*inline char *getcwd(char *buf, size_t size) {
-	if(size<2) {
-		printf(">>> getcwd()\n");
-		return NULL;
-	}
-	buf[0] = '/';
-	buf[1] = 0;
-	printf(">>> getcwd(%s)\n", buf);
-	return buf;
-}*/
+#include <limits.h>
+//#define PATH_MAX 256
 
-
-
-
-/*inline char *setlocale(int category, const char *locale) {
-	printf(">>> setlocale(%x, %s)\n", category, locale);
-	return NULL;
-}*/
-#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
-
-
-/*
-#define RTLD_LAZY 0
-#define RTLD_GLOBAL 0
-#define RTLD_LOCAL 0
-*/
-
-
+#include <locale.h>
+//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
+//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 
 /* Structure describing CPU time used by a process and its children.  */
@@ -417,6 +180,9 @@ struct tms
 
 #include <kernel/task.h>
 
+__BEGIN_DECLS
+extern clock_t clock_sys_ticks(void);
+__END_DECLS
 /* Store the CPU time used by this process and all its
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
@@ -424,10 +190,10 @@ struct tms
 static inline clock_t times (struct tms *__buffer) {
 	//DPRINT();
 	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_self()->per_cpu;
+	__buffer->tms_stime = task_get_clock(task_self());
 	__buffer->tms_utime = 0;
 
-	return __buffer->tms_stime;
+	return clock_sys_ticks();
 }
 
 typedef int sig_atomic_t;
@@ -447,18 +213,7 @@ typedef int sig_atomic_t;
 
 
 
-#if 0
-static inline int getpeername(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen) {
-	return -1;
-}
-inline int gethostname(char *name, size_t len) {
-	char localhost[] = "localhost";
-	DPRINT();
-	strncpy(name, localhost, len);
-	return 0;
-}
-#endif
+
 
 typedef __u32 u_int32_t;
 typedef __u16 u_int16_t;
@@ -549,30 +304,61 @@ struct __res_state {
 #endif
 
 
-
 #define IP_MULTICAST_TTL 0
 #define IPV6_MULTICAST_LOOP 0
 #define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
 
-
-/*static inline struct passwd *getpwuid(uid_t uid) {
-	printf(">>> getpwuid %d\n", uid);
-	return NULL;
-}*/
-
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
 }
-#if 0
-static inline struct passwd *getpwnam(const char *name) { return NULL; }
-#endif
+
+//------BEGIN QProcess
+
+static inline pid_t setsid(void) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+
+#define WNOHANG      0
+static inline int WIFEXITED(int status) {
+	printf(">>> %s %d\n", __func__, status);
+	return 0;
+}
+static inline int WEXITSTATUS(int status) {
+	(void)status;
+	printf(">>> %s %d\n", __func__, status);
+	return 0;
+}
+
+
+
+//------ END QProcess
 
 // this is for FILESYSTEMWATCHER
-#define pathconf(path,name) \
-	printf(">>> pathconf(%s,%s)\n",#path,#name),32
+#define _PC_LINK_MAX         0
+#define _PC_MAX_CANON        1
+#define _PC_MAX_INPUT        2
+#define _PC_NAME_MAX         3
+#define _PC_PATH_MAX         4
+#define _PC_PIPE_BUF         5
+#define _PC_CHOWN_RESTRICTED 6
+#define _PC_NO_TRUNC         7
+#define _PC_VDISABLE         8
+
+static inline long pathconf(char *path, int name) {
+	switch (name) {
+	case _PC_NAME_MAX:
+		return NAME_MAX;
+	case _PC_PATH_MAX:
+		return PATH_MAX;
+	default:
+		printf(">>> pathconf(%s,%d)\n",path,name);
+		return 32;
+	}
+}
 
 #endif // __QEMBOX__
 

@@ -26,7 +26,7 @@ static inline void *cpu_get_stack(void) {
 }
 
 static inline int threads_done(void) {
-	return __mod__embox__kernel__thread__core.private->flags & 1;
+	return __mod__embox__kernel__thread__core.priv->flags & 1;
 }
 
 int irq_stack_protection(void) {

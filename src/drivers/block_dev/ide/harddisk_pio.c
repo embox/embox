@@ -78,10 +78,8 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 		outb(hd->multsect > 1 ? HDCMD_MULTREAD : HDCMD_READ,
 				hdc->iobase + HDC_COMMAND);
 
-    	/* Wait until data read */
-		while(!hdc->result) {
-			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-		}
+		/* Wait until data read */
+		WAITQ_WAIT(&hdc->waitq, hdc->result);
 
 		if (hdc->result < 0) {
 			break;
@@ -173,9 +171,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		}
 
 		/* Wait until data written */
-		while(!hdc->result) {
-			EVENT_WAIT(&hdc->event, hdc->result, HD_WAIT_MS);
-		}
+		WAITQ_WAIT(&hdc->waitq, hdc->result);
 
 		if (hdc->result < 0) {
 			break;
@@ -212,11 +208,11 @@ static block_dev_driver_t idedisk_pio_driver = {
 };
 
 static int idedisk_init (void *args) {
-	struct ide_tab *ide;
+//	struct ide_tab *ide;
 	hd_t *drive;
 	size_t size;
 	char path[PATH_MAX];
-
+#if 0
 	ide = ide_get_drive();
 
 	for(int i = 0; i < HD_DRIVES; i++) {
@@ -224,12 +220,14 @@ static int idedisk_init (void *args) {
 			continue;
 		} else {
 			drive = (hd_t *) ide->drive[i];
+#endif
+			drive = (hd_t *)args;
 			/* Make new device */
 			if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 				*path = 0;
 				strcat(path, "/dev/hd*");
 				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return -1;
+					return drive->idx;
 				}
 				drive->bdev = block_dev_create(path,
 						&idedisk_pio_driver, drive);
@@ -240,11 +238,11 @@ static int idedisk_init (void *args) {
 					return -1;
 				}
 				create_partitions(drive);
-			} else {
-				continue;
-			}
+//			} else {
+//				continue;
+//			}
 		}
-	}
+//	}
 	return 0;
 }
 

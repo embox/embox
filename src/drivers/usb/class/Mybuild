@@ -1,0 +1,23 @@
+
+package embox.driver.usb.class
+
+module hid {
+	source "usb_class_hid.c"
+	source "usb_hid.c"
+
+	depends embox.driver.usb.core
+	depends embox.driver.input.core
+}
+
+module mass_storage {
+	source "usb_mass_storage.c"
+
+	depends embox.driver.usb.core
+
+	depends scsi
+}
+
+module scsi {
+	source "scsi.c",
+	       "scsi_disc.c"
+}

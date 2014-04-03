@@ -9,8 +9,7 @@
 #ifndef FS_FILE_OPERATION_H_
 #define FS_FILE_OPERATION_H_
 
-#include <fs/file_desc.h>
-#include <fs/node.h>
+
 #include <stdarg.h>
 #include <stddef.h>
 

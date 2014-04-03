@@ -1,44 +1,45 @@
 /**
  * @file
  *
- * @date Nov 27, 2012
- * @author: Anton Bondarev
+ * @date 27.11.12
+ * @author Anton Bondarev
  */
 
+#include <errno.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <fs/kfile.h>
 
-struct file_desc *kopen(const char *path, int flag) {
+struct file_desc *kopen(struct node *node, int flag) {
 	return NULL;
 }
 
-size_t kwrite(const void *buf, size_t size, size_t count, struct file_desc *file) {
-	return -1;
+ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
+	return -ENOSYS;
 }
 
-size_t kread(void *buf, size_t size, size_t count, struct file_desc *desc) {
-	return -1;
+ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
+	return -ENOSYS;
 }
 
 
-int kclose(struct file_desc *desc) {
-	return -1;
+void kclose(struct file_desc *desc) {
 }
 
 int kseek(struct file_desc *desc, long int offset, int origin) {
-	return -1;
+	return -ENOSYS;
 }
 
-int kfstat(struct file_desc *desc, void *buff) {
-	return -1;
+int kfstat(struct file_desc *desc, struct stat *buff) {
+	return -ENOSYS;
 }
 
-int kioctl(struct file_desc *fp, int request, ...) {
-	return -1;
+int kioctl(struct file_desc *fp, int request, void *data) {
+	return -ENOSYS;
 }
 
 struct node;
 
 int ktruncate(struct node *node, off_t length) {
-	return -1;
+	return -ENOSYS;
 }

@@ -20,7 +20,7 @@ module login {
 
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.utmp_api
-	depends embox.kernel.task.waitpid
+	depends embox.kernel.task.syslib.waitpid
 	depends embox.security.smac
 	depends embox.security.seculog
 	depends third_party.lib.linenoise

@@ -11,7 +11,6 @@
 
 #include <hal/mm/mmu_types.h>
 #include <asm/hal/mm/mmu_core.h>
-#include <math.h>
 
 /** Allows caching for this page*/
 #define MMU_PAGE_CACHEABLE    __MMU_PAGE_CACHEABLE
@@ -42,18 +41,14 @@
 #define MMU_PAGE_SIZE		__MMU_PAGE_SIZE
 
 #define __mmu_mask_calc(prev_size, tab_size) ((unsigned long) (prev_size * (tab_size - 1)))
-#define __mmu_mask_offset_calc(mask) ((unsigned long) (blog2(mask & (~mask + 1))))
 
 #define MMU_PAGE_MASK		(MMU_PAGE_SIZE - 1)
 #define MMU_PTABLE_MASK		__mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE)
-//#define MMU_PTABLE_MASK_OFFSET	__mmu_mask_offset_calc(MMU_PTABLE_MASK)
 #define MMU_MTABLE_MASK		__mmu_mask_calc( \
 			MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE)
-//#define MMU_MTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_MTABLE_MASK)
 #define MMU_GTABLE_MASK		__mmu_mask_calc( \
 			MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, \
 			MMU_GTABLE_SIZE)
-//#define MMU_GTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_GTABLE_MASK)
 
 
 /** Error code for MMU module operation*/

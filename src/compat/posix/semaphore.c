@@ -20,3 +20,23 @@ int sem_init(sem_t *sem, int pshared, unsigned int value) {
 int sem_destroy(sem_t *sem) {
 	return ENOERR;
 }
+
+int sem_getvalue(sem_t *restrict sem, int *restrict sval) {
+	return semaphore_getvalue(sem, sval);
+}
+
+int sem_post(sem_t *sem) {
+	semaphore_leave(sem);
+
+	return ENOERR;
+}
+
+int sem_trywait(sem_t *sem) {
+	return semaphore_tryenter(sem);
+}
+
+int sem_wait(sem_t *sem) {
+	semaphore_enter(sem);
+
+	return ENOERR;
+}

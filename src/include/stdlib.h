@@ -16,6 +16,7 @@
 
 #include <defines/size_t.h>
 #include <defines/wchar_t.h>
+#include <defines/null.h>
 
 /* In addition, the following symbolic names and macros shall be defined as in
  * <sys/wait.h> , for use in decoding the return value from system():
@@ -68,6 +69,10 @@ extern long int strtol(const char *nptr, char **endptr, int base);
 extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 extern double strtod(const char *nptr, char **endptr);
+
+extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
+
+extern long long int strtoll(const char *nptr, char **endptr, int base);
 
 /**
  * Convert integer to string.
@@ -141,7 +146,9 @@ extern div_t div(int num, int denom);
 extern double atof(const char *nptr);
 extern int atoi(const char *nptr);
 extern long atol(const char *nptr);
-extern long long atoll(const char *nptr);
+static inline long long atoll(const char *nptr) {
+	return strtoll(nptr, 0, 10);
+}
 extern long long atoq(const char *nptr);
 extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);
@@ -172,9 +179,19 @@ extern int unsetenv(const char *name);
 extern int clearenv(void);
 extern int system(const char *command);
 
-static inline int mkstemp(char *path_template) { return -1; }
-static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) { return 0; }
-static inline int wctomb(char *s, wchar_t wchar) { return 0; }
+static inline int mkstemp(char *path_template) {
+	(void)path_template;
+	return -1;
+}
+static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
+	(void)pwc; (void)s; (void)n;
+	return 0;
+}
+static inline int wctomb(char *s, wchar_t wchar) {
+	(void)s;
+	(void)wchar;
+	return 0;
+}
 
 __END_DECLS
 

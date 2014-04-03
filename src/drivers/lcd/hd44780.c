@@ -41,19 +41,19 @@ static int line_first = 0;
 
 static inline void ctrl(int pin, int state) {
 	if (state) {
-		gpio_set(CTRL_PORT, pin);
+		gpio_set_level(CTRL_PORT, pin, 0x01);
 		return;
 	}
 
-	gpio_clear(CTRL_PORT, pin);
+	gpio_set_level(CTRL_PORT, pin, 0);
 }
 
 static inline int clock(void) {
 	int level = 0;
 	ctrl(E, 1);
-	gpio_in(DATA_PORT, BUSY_FLAG, 0);
-	level = gpio_level(DATA_PORT, BUSY_FLAG);
-	gpio_out(DATA_PORT, BUSY_FLAG, 0);
+	gpio_settings(DATA_PORT, BUSY_FLAG, GPIO_MODE_INPUT);
+	level = gpio_get_level(DATA_PORT, BUSY_FLAG);
+	gpio_settings(DATA_PORT, BUSY_FLAG, GPIO_MODE_OUTPUT);
 	ctrl(E, 0);
 	return level;
 }
@@ -61,8 +61,9 @@ static inline int clock(void) {
 static inline void set_data(int reg, char ch) {
 	ctrl(RS, reg);
 	ctrl(RW, 0);
-	gpio_clear(DATA_PORT, 0xff & ~ch);
-	gpio_set(DATA_PORT, ch);
+	gpio_set_level(DATA_PORT, 0xff & ~ch, 0);
+	gpio_set_level(DATA_PORT, ch, 0x01);
+
 }
 
 static inline void wait_busy(void) {
@@ -139,8 +140,8 @@ static int lcd_test(void) {
 	char demo[] = "      Embox     \n   Rev unknown  ";
 
 	ctrl(E | RS | RW, 0);
-	gpio_out(CTRL_PORT, RS | E | RW, 0);
-	gpio_out(DATA_PORT, 0xff << DATA_PINS_OFFSET, 0);
+	gpio_settings(CTRL_PORT, RS | E | RW, GPIO_MODE_OUTPUT);
+	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
 
 	wait_busy();
 

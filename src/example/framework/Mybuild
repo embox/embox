@@ -1,9 +1,16 @@
 package embox.example.framework
 
-//$_BRIEF-array_registry = demonstrates create object repository with ARRAY_SPREAD API
+
 module array_registry {
 	source "array_registry.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
+	depends embox.framework.example
+}
+
+module module_check {
+	source "module_check.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.example
 }

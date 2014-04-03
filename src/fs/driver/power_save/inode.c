@@ -44,6 +44,8 @@
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 
+#include <util/bit.h>
+
 #include "qnx6.h"
 
 static int qnx6fs_open(struct node *node, struct file_desc *file_desc,
@@ -451,7 +453,7 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 
 	/* ease the later tree level calculations */
 	sbi = QNX6_SB(s);
-	sbi->s_ptrbits = blog2(s->s_blocksize / 4);
+	sbi->s_ptrbits = bit_ctz(s->s_blocksize / 4);
 	sbi->nodes = qnx6_private_node(s, &sb1->Inode);
 	if (!sbi->nodes)
 		goto out;

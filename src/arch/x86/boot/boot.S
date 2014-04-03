@@ -23,7 +23,7 @@ C_ENTRY(_start):
 	cld
 
 	/* Initialize the stack pointer. */
-	movl    $__stack, %esp  /* load base address for system stack */
+	movl    $_stack_top, %esp  /* load base address for system stack */
 
 	/* Reset EFLAGS. */
 	pushl   $0

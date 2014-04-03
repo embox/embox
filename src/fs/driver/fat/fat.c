@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <util/array.h>
 #include <mem/misc/pool.h>
@@ -24,7 +25,7 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <limits.h>
+#include <fs/file_operation.h>
 
 #include <embox/block_dev.h>
 
@@ -59,7 +60,7 @@ char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 
-static struct fs_driver fatfs_driver;
+static const struct fs_driver fatfs_driver;
 static int fat_write_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 static int fat_read_sector(void *bdev, uint8_t *buffer,
@@ -1747,6 +1748,9 @@ static int fat_root_dir_record(void *bdev) {
 	if (fat_read_sector(bdev, sector_buff, volinfo.rootdir, 1)) {
 		return DFS_ERRMISC;
 	}
+	/* we clear other FAT TABLE */
+	memset(sector_buff, 0, sizeof(sector_buff));
+
 	memcpy(&(((p_dir_ent_t) sector_buff)[0]), &de, sizeof(dir_ent_t));
 
 	if (fat_write_sector(bdev, sector_buff, volinfo.rootdir, 1)) {
@@ -2192,7 +2196,7 @@ static struct fsop_desc fatfs_fsop = {
 	.umount = fatfs_umount,
 };
 
-static struct fs_driver fatfs_driver = {
+static const struct fs_driver fatfs_driver = {
 	.name = "vfat",
 	.file_op = &fatfs_fop,
 	.fsop = &fatfs_fsop,

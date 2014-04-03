@@ -27,6 +27,17 @@ namespace std {
 	using ::ldexp;
 	using ::atan2;
 	using ::fabs;
+	using ::cos;
+	using ::sin;
+	using ::tan;
+	using ::cosh;
+	using ::tanh;
+	using ::exp;
+	using ::log;
+	using ::sinh;
+	using ::log10;
+	using ::sqrt;
+
 } // namespace std
 
 #endif // CMATH_

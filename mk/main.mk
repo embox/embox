@@ -105,19 +105,31 @@ Usage: $(MAKE) mod-<INFO>
 endef
 
 # Assuming that we have 'build.conf' in every template.
-templates := \
-	$(sort $(patsubst $(TEMPLATES_DIR)/%/build.conf,%, \
-		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)))
+PLATFORM_LABEL:=platform/
+template_name=$(patsubst $(TEMPLATES_DIR)/%,%,$1)
+platform_template_name=$(patsubst $(PLATFORM_DIR)/%,$(PLATFORM_LABEL)%,\
+		       $(subst $(SUBPLATFORM_TEMPLATE_DIR),,$1))
+
+template_item=$(foreach t,$(patsubst %/build.conf,%,$2),$(call $1_name,$t)|$t)
+
+__templates := \
+	$(call template_item,template, $(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)) \
+	$(call template_item,platform_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(PLATFORM_DIR)/*/templates))))
+
+templates:=$(foreach t,$(__templates),$(firstword $(subst |, ,$t)))
+
+template_name2dir=$(subst $1|,,$(filter $1|%,$(__templates)))
+template_dir2name=$(subst |$1,,$(filter %|$1,$(__templates)))
 
 # build-<template>
 # Reruns Make with overridden CONF_DIR
 .PHONY : $(templates:%=build-%)
 $(templates:%=build-%) : build-% :
-	+@$(make_mybuild) CONF_DIR=$(TEMPLATES_DIR)/$* build
+	+@$(make_mybuild) CONF_DIR=$(call template_name2dir,$*) build
 
 .PHONY : $(templates:%=buildgen-%)
 $(templates:%=buildgen-%) : buildgen-% :
-	+@$(make_mybuild) CONF_DIR=$(TEMPLATES_DIR)/$* buildgen
+	+@$(make_mybuild) CONF_DIR=$(call template_name2dir,$*) buildgen
 
 #
 # Configuration related stuff.
@@ -141,7 +153,7 @@ endif # templates
 .PHONY : $(templates:%=confload-%)
 $(templates:%=confload-%) : confload-% : confclean
 	@$(MKDIR) $(CONF_DIR)
-	@$(CP) -fR -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
+	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
 	@echo 'Config complete'
 
 define help-confload
@@ -229,6 +241,19 @@ Usage: $(MAKE) xconfig
 
   Requires X11, Xdialog.
 endef # xconfig
+
+#
+# Disassembly
+#
+
+.PHONY : disasm
+disasm :
+	+@$(make_mybuild) build DISASSEMBLY=y
+
+define help-disasm
+Usage: $(MAKE) disasm
+  Disassembly image file
+endef # disasm
 
 #
 # Cleaning targets.
@@ -342,7 +367,8 @@ help_entries := \
 	clean \
 	confclean \
 	cacheclean \
-	distclean
+	distclean \
+	disasm
 help_targets := $(help_entries:%=help-%)
 
 # Fixup documentation variables escaping colons (':' -> '$$:').
@@ -358,3 +384,34 @@ $(help_targets) :
 # Default help section.
 help-% :
 	@echo No help section for '$*'
+
+#
+# External build lock
+#
+
+module_extbld_rmk_target_pat := $(MKGEN_DIR)/%.__extbld-target
+module_path = $(subst .,/,$*)
+module_lock = $(patsubst %,$(value module_extbld_rmk_target_pat),$(module_path))
+
+.PHONY : extbld-lock
+extbld-lock-% :
+	@touch $(module_lock)
+
+define help-extbld-lock
+Usage: $(MAKE) extbld-lock-qualified.module.name
+
+  Locks external build module for rebuilding. If you want to rebuild it,
+  call extbld-unlock.
+
+endef # extbld-lock
+
+.PHONY : extbld-unlock
+extbld-unlock-% :
+	@-rm $(module_lock)
+
+define help-extbld-unlock
+Usage: $(MAKE) extbld-unlock-qualified.module.name
+
+  Unlocks external build module for rebuilding.
+
+endef # extbld-unlock

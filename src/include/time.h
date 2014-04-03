@@ -12,11 +12,31 @@
 /* The clock_t, size_t, time_t, clockid_t, and timer_t  types shall be defined
  * as described in <sys/types.h> .
  */
-#include <sys/types.h>
-#include <defines/null.h>
-#include <sys/cdefs.h>
 
-__BEGIN_DECLS
+#include <defines/clock_t.h>
+#include <defines/size_t.h>
+#include <defines/time_t.h>
+#include <defines/clockid_t.h>
+#include <defines/timer_t.h>
+
+/* This header defines the following symbolic names:
+NULL
+    Null pointer constant.
+CLK_TCK
+    Number of clock ticks per second returned by the times() function (LEGACY).
+CLOCKS_PER_SEC
+    A number used to convert the value returned by the clock() function into
+    seconds. */
+#include <defines/null.h>
+
+/* The value of this macro is the number of clock ticks per second measured by
+ * the clock function.
+ */
+#define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
+
+
+/* This is an obsolete name for CLOCKS_PER_SEC. */
+#define CLK_TCK            CLOCKS_PER_SEC
 
 /* Parameters used to convert the time specific values */
 #define MSEC_PER_SEC    1000L
@@ -24,6 +44,8 @@ __BEGIN_DECLS
 #define NSEC_PER_USEC   1000L
 #define USEC_PER_SEC    1000000L
 #define NSEC_PER_SEC    1000000000L
+
+#include <sys/time.h> //TODO not standard but Linux compatible
 
 struct tm {
 	int    tm_sec;   /*Seconds [0,60].*/
@@ -42,15 +64,10 @@ struct timespec {
 	long   tv_nsec; /*Nanoseconds */
 };
 
-struct timeval {
-	time_t		tv_sec;
-	suseconds_t	tv_usec;
-};
 
-struct itimerspec {
-	struct timespec it_interval;  /* Timer period. */
-	struct timespec it_value;     /* Timer expiration. */
-};
+
+#include <sys/cdefs.h>
+__BEGIN_DECLS
 
 /**
  * Converts the calendar time t into a null-terminated string of the form
@@ -59,7 +76,6 @@ struct itimerspec {
  * calls to any of the date and time functions
  */
 extern char *ctime(const time_t *timep);
-
 extern char *ctime_r(const time_t *t, char *buff);
 
 extern struct tm *gmtime(const time_t *timep);
@@ -71,8 +87,7 @@ extern time_t mktime(struct tm *tm);
 extern char *asctime(const struct tm *timeptr);
 
 extern struct tm *localtime(const time_t *timep);
-
-#define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
+extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 
 /* clocks from beginning of start system */
 extern clock_t clock(void);

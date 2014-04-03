@@ -25,3 +25,58 @@ module inttypes_test {
 
 	depends embox.lib.LibCInttypes
 }
+
+module libgen_test {
+	source "libgen_test.c"
+
+	depends embox.lib.LibCInttypes
+}
+
+module poll_test {
+	source "poll_test.c"
+
+	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.idx.pipe
+	depends embox.framework.LibFramework
+}
+
+module select_test {
+	source "select_test.c"
+
+	depends embox.compat.posix.fs.file_ops
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.util.sleep
+	depends embox.framework.test
+}
+
+module pipe_test {
+	source "pipe_test.c"
+
+	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.util.sleep
+}
+
+module ppty_test {
+	source "ppty_test.c"
+
+	depends embox.compat.posix.idx.ppty
+}
+
+module fork_test {
+	source "fork_test.c"
+
+	depends embox.kernel.task.syslib.kfork
+}
+
+@TestFor(embox.compat.posix.util.sleep)
+module sleep_test {
+	source "sleep_test.c"
+
+	depends embox.compat.posix.util.time
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.pthreads
+	depends embox.framework.test
+	depends embox.kernel.task.kernel_task
+}

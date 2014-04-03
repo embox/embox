@@ -13,6 +13,7 @@
 #include __impl_x(framework/net/pack/api_impl.h)
 
 struct net_pack;
+struct net_pack_out;
 
 #define net_pack_foreach(net_pack_ptr) \
 	__net_pack_foreach(net_pack_ptr)

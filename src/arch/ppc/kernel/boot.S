@@ -85,10 +85,8 @@ ENTRY _start
     /**
      * Keep kernel stack
      */
-    lis      r1, _stack_vma@h
-    ori      r1, r1, _stack_vma@l
-    addis    r1, r1, _stack_len@ha
-    addi     r1, r1, _stack_len@l
+    lis      r1, _stack_top@h
+    ori      r1, r1, _stack_top@l
 
     /**
      * Clear kernel BSS

@@ -4,45 +4,62 @@
  *
  * @date 04.02.10
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
-#include <errno.h>
-#include <string.h>
 #include <assert.h>
-#include <sys/uio.h>
-#include <net/if_ether.h>
-
-#include <net/sock.h>
-#include <net/l3/icmpv4.h>
+#include <embox/net/sock.h>
+#include <errno.h>
 #include <net/l3/ipv4/ip.h>
-#include <net/l4/udp.h>
+#include <net/l3/icmpv4.h>
+#include <net/skbuff.h>
+#include <net/sock.h>
+#include <net/socket/inet_sock.h>
 #include <net/socket/raw.h>
-#include <mem/misc/pool.h>
-#include <util/array.h>
+#include <netinet/in.h>
+#include <stddef.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <util/list.h>
 
-#include <embox/net/sock.h>
+static const struct sock_proto_ops raw_sock_ops_struct;
+const struct sock_proto_ops *const raw_sock_ops
+		= &raw_sock_ops_struct;
 
-#include <framework/mod/options.h>
-
-#define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
-
-static const struct sock_ops raw_sock_ops_struct;
-const struct sock_ops *const raw_sock_ops = &raw_sock_ops_struct;
-
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, 0, raw_sock_ops_struct);
-EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0,
+		raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_UDP, 0,
+		raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_TCP, 0,
+		raw_sock_ops_struct);
 
 static int raw_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
+	const struct inet_sock *in_sk;
+
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
+	assert(in_sk->dst_in.sin_family == AF_INET);
+
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
-	return sk->opt.so_protocol == skb->nh.iph->proto;
+
+	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
-int raw_rcv(struct sk_buff *skb) {
+int raw_rcv(const struct sk_buff *skb) {
 	struct sock *sk;
 	struct sk_buff *cloned;
+
+	assert(skb != NULL);
+	assert(skb->dev != NULL);
 
 	sk = NULL;
 
@@ -54,12 +71,11 @@ int raw_rcv(struct sk_buff *skb) {
 
 		cloned = skb_clone(skb);
 		if (cloned == NULL) {
-			continue;
-			//return -ENOMEM;
+			return -ENOMEM;
 		}
 
 		sock_rcv(sk, cloned, cloned->nh.raw,
-				cloned->len - (cloned->nh.raw - cloned->mac.raw));
+				cloned->len - skb->dev->hdr_len);
 	}
 
 	return 0;
@@ -67,69 +83,86 @@ int raw_rcv(struct sk_buff *skb) {
 
 static int raw_err_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
-	const struct inet_sock *inet_sk;
+	const struct inet_sock *in_sk;
 	const struct iphdr *emb_pack_iphdr;
 
-	inet_sk = (const struct inet_sock *)sk;
-	assert(inet_sk != NULL);
+	in_sk = (const struct inet_sock *)sk;
+	assert(in_sk != NULL);
+	assert(in_sk->src_in.sin_family == AF_INET);
+	assert(in_sk->dst_in.sin_family == AF_INET);
 
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
 	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
-			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_HEADER_SIZE);
+			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE);
 
-	return !(inet_sk->daddr != emb_pack_iphdr->saddr && inet_sk->daddr)
-			&& !(inet_sk->rcv_saddr != emb_pack_iphdr->daddr && inet_sk->rcv_saddr)
-			/* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
-			&& sk->opt.so_protocol == emb_pack_iphdr->proto;
+	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
+					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
+				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+			&& (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+					&& (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
+				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
-void raw_err(struct sk_buff *skb, uint32_t info) {
+void raw_err(const struct sk_buff *skb, int error_info) {
 	struct sock *sk;
 
 	sk = NULL;
 
-	/* notify all sockets matching source, dest address and protocol */
 	while (1) {
 		sk = sock_lookup(sk, raw_sock_ops, raw_err_tester, skb);
 		if (sk == NULL) {
 			break;
 		}
 
-		/* notify socket about an error */
-		ip_v4_icmp_err_notify(sk, skb->h.icmph->type,
-				skb->h.icmph->code);
+		sock_set_so_error(sk, error_info);
 	}
 }
 
 static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	struct inet_sock *inet = inet_sk(sk);
-	size_t len = msg->msg_iov->iov_len;
-	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
+	int ret;
+	size_t data_len;
+	struct sk_buff *skb;
+	const struct sockaddr *sockaddr;
 
-	assert(skb);
+	assert(sk);
+	assert(msg);
+	assert(msg->msg_iov);
+	assert(msg->msg_iov->iov_base);
+	assert(sk->o_ops);
+	assert(sk->o_ops->make_pack);
 
-	memcpy((void*)((unsigned int)(skb->mac.raw + ETH_HEADER_SIZE)),
-					(void*) msg->msg_iov->iov_base, len);
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+	data_len = msg->msg_iov->iov_len;
+	skb = NULL;
+	sockaddr = (const struct sockaddr *)msg->msg_name;
 
-		/* Correct until somebody sends:
-		 *	IP packet with options
-		 *	already fragmented IP packet
-		 * Probably we don't need this pointer in later code
-		 */
-	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	ret = sk->o_ops->make_pack(sk, sockaddr, &data_len, &skb);
 
-	ip_send_packet(inet, skb);
-	return 0;
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (data_len < msg->msg_iov->iov_len) {
+		skb_free(skb);
+		return -EMSGSIZE;
+	}
+
+	assert(sk);
+	assert(skb->h.raw);
+
+	memcpy(skb->h.raw, msg->msg_iov->iov_base, data_len);
+
+	assert(sk->o_ops->snd_pack != NULL);
+	return sk->o_ops->snd_pack(skb);
 }
 
-POOL_DEF(raw_sock_pool, struct raw_sock, MODOPS_AMOUNT_RAW_SOCK);
 static LIST_DEF(raw_sock_list);
 
-static const struct sock_ops raw_sock_ops_struct = {
+static const struct sock_proto_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
-	.sock_pool = &raw_sock_pool,
 	.sock_list = &raw_sock_list
 };

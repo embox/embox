@@ -16,7 +16,7 @@
 #undef __linux__
 #endif
 
-#if 1
+#if 0
 #define DPRINT() printf(">>> samba CALL %s\n", __FUNCTION__)
 #else
 #define DPRINT()
@@ -37,44 +37,14 @@ int statfs(const char *path, struct statfs *buf);
 #define SIG_BLOCK 0
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
-typedef int sigset_t;
-static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
-	printf(">>> sigprocmask(%i,%p,%p)\n",how,set,oldset);
-	return -1;
-}
-static inline int sigaddset(sigset_t *set, int signum){
-	printf(">>> sigaddset(%p,%i)\n",set,signum);
-	if (signum>=sizeof(sigset_t)*8) {
-		return -1;
-	}
-	*set |= 1<<signum;
-	return 0;
-}
-static inline int sigemptyset(sigset_t *set) {
-	*set = 0;
-	printf(">>> sigemptyset()\n");
-	return -1;
-}
-static inline int sigaction(int signum, const struct sigaction *act,
-	      struct sigaction *oldact) {
-	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
-	return -1;
-}
 
-static inline
-int getpagesize(void) {
-	DPRINT();
-	return 4096;
-}
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 
 #include <sys/select.h>
-// ToDo: this is actually already defined
-#define FD_SETSIZE (_FDSETWORDS*_FDSETBITSPERWORD)
 
 #include <assert.h>
 #undef assert
-#define assert(x)
+#define assert(x, msg...)
 
 struct sockaddr_un {
     unsigned short sun_family;  /* AF_UNIX */
@@ -305,12 +275,7 @@ int getgroups(int size, gid_t list[]) {
 }
 
 #include <stdlib.h>
-static inline
-unsigned long long int strtoull(const char *nptr, char **endptr,
-                                       int base) {
-	DPRINT();
-	return strtoul(nptr, endptr, base);
-}
+
 
 static inline
 void clearerr(FILE *stream) {
@@ -356,5 +321,16 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	DPRINT();
 	return -1;
 }
+
+#ifndef HAVE_CLOCK_GETTIME
+#define HAVE_CLOCK_GETTIME
+#endif
+
+#define rb_replace_node rb_replace_node_samba
+#define rb_prev rb_prev_samba
+#define rb_next rb_next_samba
+#define rb_first rb_first_samba
+#define rb_insert_color rb_insert_color_samba
+#define rb_erase rb_erase_samba
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

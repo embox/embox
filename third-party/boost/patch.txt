@@ -1,80 +1,70 @@
-diff -aur boost_1_54_0/boost/filesystem/config.hpp boost/boost/filesystem/config.hpp
---- boost_1_54_0/boost/filesystem/config.hpp	2012-05-21 17:44:43.000000000 +0400
-+++ boost/boost/filesystem/config.hpp	2013-09-25 15:08:43.245397701 +0400
-@@ -43,7 +43,9 @@
- //  The immediate fix was to throw directly, wrapped in a macro to make any later change
- //  easier.
+diff -aur boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp boost/boost/asio/detail/impl/socket_ops.ipp
+--- boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp	2013-05-20 16:32:20.000000000 +0400
++++ boost/boost/asio/detail/impl/socket_ops.ipp	2013-10-07 17:11:51.575062004 +0400
+@@ -1722,7 +1722,8 @@
  
--#define BOOST_FILESYSTEM_THROW(EX) throw EX
-+#include <boost/throw_exception.hpp>
-+
-+#define BOOST_FILESYSTEM_THROW(EX) BOOST_THROW_EXCEPTION(EX)
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set fds;
+   FD_ZERO(&fds);
+   FD_SET(s, &fds);
+@@ -1763,7 +1764,8 @@
  
- # if defined( BOOST_NO_STD_WSTRING )
- #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-diff -aur boost_1_54_0/boost/filesystem/operations.hpp boost/boost/filesystem/operations.hpp
---- boost_1_54_0/boost/filesystem/operations.hpp	2012-05-21 17:44:43.000000000 +0400
-+++ boost/boost/filesystem/operations.hpp	2013-09-25 14:40:15.103040398 +0400
-@@ -990,11 +990,11 @@
-       const std::string & what_arg, system::error_code ec)
-       : system::system_error(ec, what_arg)
-     {
--      try
-+      //try
-       {
-         m_imp_ptr.reset(new m_imp);
-       }
--      catch (...) { m_imp_ptr.reset(); }
-+      //      catch (...) { m_imp_ptr.reset(); }
-     }
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set fds;
+   FD_ZERO(&fds);
+   FD_SET(s, &fds);
+@@ -1804,7 +1806,8 @@
  
-     filesystem_error(
-@@ -1002,12 +1002,12 @@
-       system::error_code ec)
-       : system::system_error(ec, what_arg)
-     {
--      try
-+      //try
-       {
-         m_imp_ptr.reset(new m_imp);
-         m_imp_ptr->m_path1 = path1_arg;
-       }
--      catch (...) { m_imp_ptr.reset(); }
-+      //      catch (...) { m_imp_ptr.reset(); }
-     }
-     
-     filesystem_error(
-@@ -1015,13 +1015,13 @@
-       const path& path2_arg, system::error_code ec)
-       : system::system_error(ec, what_arg)
-     {
--      try
-+      //try
-       {
-         m_imp_ptr.reset(new m_imp);
-         m_imp_ptr->m_path1 = path1_arg;
-         m_imp_ptr->m_path2 = path2_arg;
-       }
--      catch (...) { m_imp_ptr.reset(); }
-+      //      catch (...) { m_imp_ptr.reset(); }
-     }
- 
-     ~filesystem_error() throw() {}
-@@ -1042,7 +1042,7 @@
-       if (!m_imp_ptr.get())
-         return system::system_error::what();
- 
--      try
-+      //try
-       {
-         if (m_imp_ptr->m_what.empty())
-         {
-@@ -1062,7 +1062,7 @@
+ #if defined(BOOST_ASIO_WINDOWS) \
+   || defined(__CYGWIN__) \
+-  || defined(__SYMBIAN32__)
++  || defined(__SYMBIAN32__) \
++  || defined(__EMBOX__)
+   fd_set write_fds;
+   FD_ZERO(&write_fds);
+   FD_SET(s, &write_fds);
+diff -aur boost_1_54_0/boost/asio/detail/socket_types.hpp boost/boost/asio/detail/socket_types.hpp
+--- boost_1_54_0/boost/asio/detail/socket_types.hpp	2013-05-20 16:32:20.000000000 +0400
++++ boost/boost/asio/detail/socket_types.hpp	2013-10-07 16:28:42.201491602 +0400
+@@ -46,7 +46,7 @@
+ # include <boost/asio/detail/old_win_sdk_compat.hpp>
+ #else
+ # include <sys/ioctl.h>
+-# if !defined(__SYMBIAN32__)
++# if !defined(__SYMBIAN32__) && !defined(__EMBOX__)
+ #  include <sys/poll.h>
+ # endif
+ # include <sys/types.h>
+diff -aur boost_1_54_0/tools/build/v2/tools/gcc.jam boost/tools/build/v2/tools/gcc.jam
+--- boost_1_54_0/tools/build/v2/tools/gcc.jam	2013-05-12 22:02:44.000000000 +0400
++++ boost/tools/build/v2/tools/gcc.jam	2013-10-29 15:38:03.660573765 +0400
+@@ -1032,7 +1032,7 @@
+             case *bsd    : option = -pthread ;  # There is no -lrt on BSD.
+             case sgi     : # gcc on IRIX does not support multi-threading.
+             case darwin  : # No threading options.
+-            case *       : option = -pthread ; libs = rt ;
++            case *       : # No threading options.
          }
-         return m_imp_ptr->m_what.c_str();
-       }
--      catch (...)
-+      //catch (...)
-       {
-         return system::system_error::what();
-       }
+ 
+         if $(option)
+         
+diff -aur boost_1_54_0/boost/program_options/environment_iterator.hpp boost/boost/program_options/environment_iterator.hpp 
+--- boost_1_54_0/boost/program_options/environment_iterator.hpp	2004-05-14 17:40:31.000000000 +0400
++++ boost/boost/program_options/environment_iterator.hpp	2014-02-24 17:34:24.226295031 +0400
+@@ -32,7 +32,7 @@
+         
+         void get()
+         {
+-            if (*m_environment == 0)
++            if (!m_environment || *m_environment == 0)
+                 found_eof();
+             else {
+                 std::string s(*m_environment);

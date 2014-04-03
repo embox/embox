@@ -5,12 +5,13 @@ module All {
 
 	depends exec,
 		fork,
-		wait,
+		waitpid,
 		//signal,
 		exit,
 		uid,
 		nice,
-		priority
+		priority,
+		pid
 }
 
 static module exec {
@@ -22,11 +23,12 @@ static module exec {
 static module fork {
 	source "fork.c"
 
+	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
 }
 
-static module wait {
-	source "wait.c"
+static module waitpid {
+	source "waitpid.c"
 
 	depends embox.util.LibUtil
 }
@@ -34,8 +36,13 @@ static module wait {
 static module signal {
 	source "signal.c"
 
-	depends embox.kernel.task.std_signal
-	depends embox.kernel.task.rt_signal
+	depends embox.kernel.thread.signal
+	depends sigset
+}
+
+static module sigset {
+	source "sigset.c"
+	depends embox.util.Bitmap
 }
 
 static module exit {
@@ -47,7 +54,7 @@ static module exit {
 static module uid {
 	source "uid.c"
 
-	depends embox.kernel.task.u_area
+	depends embox.kernel.task.resource.u_area
 }
 
 static module nice {
@@ -58,4 +65,10 @@ static module nice {
 
 static module priority {
 	source "priority.c"
+
+	depends embox.kernel.task.resource.u_area
+}
+
+static module pid {
+	source "pid.c"
 }

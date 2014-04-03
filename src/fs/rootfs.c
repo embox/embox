@@ -32,7 +32,11 @@ static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
 		return 0;
 	}
 
-	return mount((char *) dev, (char *) dir, (char *) fs_type);
+	if (-1 == mount((char *) dev, (char *) dir, (char *) fs_type)) {
+		return -errno;
+	}
+
+	return 0;
 }
 
 static int unit_init(void) {

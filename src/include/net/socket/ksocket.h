@@ -36,8 +36,7 @@ struct msghdr;
  * @return On success, 0 otherwise result equal to minus posix
  * errno for the error reason.
  */
-extern int ksocket(int family, int type, int protocol,
-		struct sock **out_sk);
+extern struct sock * ksocket(int family, int type, int protocol);
 
 /**
  * Close socket method in kernel layer.
@@ -48,7 +47,7 @@ extern int ksocket(int family, int type, int protocol,
  * @return 0 on success, otherwise result equal to minus posix
  * errno for the error reason.
  */
-extern int ksocket_close(struct sock *sk);
+extern void ksocket_close(struct sock *sk);
 
 /**
  * Bind socket to a local address.

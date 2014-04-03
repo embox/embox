@@ -14,15 +14,15 @@
 #include <kernel/cpu/cpudata.h>
 #include <kernel/critical.h>
 
-critical_t __critical_count __cpudata__ = 0;
+unsigned int __critical_count __cpudata__ = 0;
 
 static struct critical_dispatcher *dispatch_queue __cpudata__;
 
 void critical_dispatch_pending(void) {
 	struct critical_dispatcher **pp = cpudata_ptr(&dispatch_queue);
-	critical_t count = cpudata_var(__critical_count);
+	unsigned int count = critical_count();
 	struct critical_dispatcher *d;
-	critical_t mask;
+	unsigned int mask;
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -40,7 +40,7 @@ void critical_dispatch_pending(void) {
 
 void critical_request_dispatch(struct critical_dispatcher *d) {
 	struct critical_dispatcher **pp;
-	critical_t inv_mask;
+	unsigned int inv_mask;
 	ipl_t ipl;
 
 	assert(d != NULL);

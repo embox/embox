@@ -6,6 +6,8 @@
 #include <QtCore/QSocketNotifier>
 #include <QtGui/QPlatformWindow>
 
+#include <kernel/sched/waitq.h>
+
 #include <drivers/video/fb.h>
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
@@ -25,14 +27,13 @@ public:
     ~QEmboxVCMouseHandler();
 
     void storeData(void *data, int datalen);
+    void activate();
 
-private slots:
-    void readMouseData();
+    struct ring_buff *ring_buff;
+    struct waitq new_data;
 
 private:
-    int mouseFD, inputFD;
-    struct idx_desc *idx_mouseFD, *idx_inputFD;
-    QSocketNotifier *mouseNotifier;
+    void readDataLoop();
 };
 
 class QEmboxVCKeyboardHandler : public QObject
@@ -43,14 +44,13 @@ public:
     ~QEmboxVCKeyboardHandler();
 
     void storeData(void *data, int datalen);
+    void activate();
 
-private slots:
-    void readKeyboardData();
+    struct ring_buff *ring_buff;
+    struct waitq new_data;
 
 private:
-    int keyboardFD, inputFD;
-    struct idx_desc *idx_keyboardFD, *idx_inputFD;
-    QSocketNotifier *keyboardNotifier;
+    void readDataLoop();
 };
 
 class QEmboxVC
@@ -65,6 +65,10 @@ public:
     int mouseX, mouseY;
     QEmboxVCMouseHandler *mouseHandler;
     QEmboxVCKeyboardHandler *keyboardHandler;
+
+    struct thread *visualize_thread;
+    struct waitq visualize;
+    bool is_visualized;
 
 private:
     struct vc_callbacks emboxVCcallbacks;

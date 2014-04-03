@@ -14,11 +14,12 @@
 /**
  * Prototypes
  */
-struct family_ops;
+struct sock_family_ops;
+struct net_pack_out_ops;
 
 struct net_family_type {
 	int type;
-	const struct family_ops *ops;
+	const struct sock_family_ops *ops;
 };
 
 /**
@@ -28,8 +29,7 @@ struct net_family {
 	int family;
 	const struct net_family_type *types;
 	size_t types_sz;
-	int (*init)(void);    /* initializer of this packet family */
-	int (*fini)(void);    /* initializer of this packet family */
+	const struct net_pack_out_ops *const *out_ops;
 };
 
 #endif /* FRAMEWORK_NET_FAMILY_TYPES_H_ */

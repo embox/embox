@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include <fs/vfs.h>
 #include <fs/nfs.h>
@@ -57,6 +58,11 @@ static struct kfile_operations nfsfs_fop = {
 	.write = nfsfs_write,
 	.ioctl = nfsfs_ioctl,
 };
+
+static void unaligned_set_hyper(uint64_t *dst, void *src) {
+	memcpy(dst, src, sizeof *dst);
+}
+
 /*
  * file_operation
  */
@@ -365,6 +371,9 @@ static int nfsfs_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 	dir_nas->fi->privdata = (void *) fi;
 
+	memset(fsi, 0, sizeof *fsi);
+	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
+
 	/* get server name and mount directory from params */
 	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
 		(0 > nfs_mount(dir_nas))) {
@@ -551,7 +560,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 		}
 		point += sizeof(vf);
 		if (NFS_EOF != *(__u32 *)point) {
-			fh->cookie = predesc->file_name.cookie;
+			unaligned_set_hyper(&fh->cookie, &predesc->file_name.cookie);
 		} else {
 			fh->cookie = 0;
 			break;

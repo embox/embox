@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <linux/swab.h>
+#include <arpa/inet.h>
 #include <net/lib/dns.h>
 #include <net/util/hostent.h>
 #include <netdb.h>
@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <swab.h>
 #include <sys/socket.h>
 #include <util/array.h>
 

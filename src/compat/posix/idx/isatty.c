@@ -9,11 +9,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 int isatty(int fd) {
-	struct idx_desc *desc = task_self_idx_get(fd);
 	struct stat st;
+#if 0
+	struct idx_desc *desc = task_self_idx_get(fd);
+
 
 	SET_ERRNO(ENOERR);
 
@@ -23,8 +24,11 @@ int isatty(int fd) {
 
 		return 0;
 	}
+#endif
 
-	fstat(fd, &st);
+	if (-1 == fstat(fd, &st))  {
+		return -1; /* errno already is set */
+	}
 
 	return S_ISCHR(st.st_mode);
 }

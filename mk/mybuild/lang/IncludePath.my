@@ -5,3 +5,7 @@ annotation IncludePath {
 	string value
 }
 
+annotation IncludePathBefore {
+	string value
+}
+

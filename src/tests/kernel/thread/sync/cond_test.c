@@ -9,22 +9,14 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread.h>
+#include <kernel/task.h>
 #include <err.h>
 
 static struct thread *low, *high;
-static cond_t c;
+static cond_t c, c_private;
 static struct mutex m;
 
 EMBOX_TEST_SUITE("Condition variable test");
-
-TEST_SETUP(setup);
-
-TEST_CASE("General") {
-	test_assert_zero(thread_launch(low));
-	test_assert_zero(thread_join(low, NULL));
-	test_assert_zero(thread_join(high, NULL));
-	test_assert_emitted("abcdefgh");
-}
 
 static void *low_run(void *arg) {
 	test_emit('a');
@@ -48,11 +40,11 @@ static void *high_run(void *arg) {
 	return NULL;
 }
 
-static int setup(void) {
+TEST_CASE("General") {
 	sched_priority_t l = 200, h = 210;
 
 	mutex_init(&m);
-	cond_init(&c);
+	cond_init(&c, NULL);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));
@@ -63,5 +55,26 @@ static int setup(void) {
 	test_assert_zero(thread_set_priority(low, l));
 	test_assert_zero(thread_set_priority(high, h));
 
-	return 0;
+	test_assert_zero(thread_launch(low));
+	test_assert_zero(thread_join(low, NULL));
+	test_assert_zero(thread_join(high, NULL));
+	test_assert_emitted("abcdefgh");
+}
+
+static void * try_signal_private(void *unused) {
+	test_assert_not_zero(cond_signal(&c_private));
+	return NULL;
+}
+
+static void * try_signal_shared(void *unused) {
+	test_assert_zero(cond_signal(&c));
+	return NULL;
+}
+
+TEST_CASE("PROCESS_PRIVATE") {
+	cond_init(&c_private, NULL);
+	test_assert(0 <= new_task("", try_signal_private, NULL));
+	cond_init(&c, NULL);
+	condattr_setpshared(&c.attr, PROCESS_SHARED);
+	test_assert(0 <= new_task("", try_signal_shared, NULL));
 }

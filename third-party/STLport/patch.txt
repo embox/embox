@@ -1,6 +1,100 @@
+diff -aur STLport-5.2.1/build/Makefiles/gmake/gcc.mak STLport/build/Makefiles/gmake/gcc.mak
+--- STLport-5.2.1/build/Makefiles/gmake/gcc.mak	2008-12-10 12:56:51.000000000 +0300
++++ STLport/build/Makefiles/gmake/gcc.mak	2014-02-17 18:52:30.183456480 +0400
+@@ -25,11 +25,11 @@
+ RC := windres
+ endif
+ 
+-ifdef TARGET_OS
+-CXX := ${TARGET_OS}-${CXX}
+-CC := ${TARGET_OS}-${CC}
+-AS := ${TARGET_OS}-${AS}
+-endif
++#ifdef TARGET_OS
++#CXX := ${TARGET_OS}-${CXX}
++#CC := ${TARGET_OS}-${CC}
++#AS := ${TARGET_OS}-${AS}
++#endif
+ 
+ CXX_VERSION := $(shell ${CXX} -dumpversion)
+ CXX_VERSION_MAJOR := $(shell echo ${CXX_VERSION} | awk 'BEGIN { FS = "."; } { print $$1; }')
+diff -aur STLport-5.2.1/src/num_get_float.cpp STLport/src/num_get_float.cpp
+--- STLport-5.2.1/src/num_get_float.cpp	2008-12-10 12:56:51.000000000 +0300
++++ STLport/src/num_get_float.cpp	2014-02-17 18:52:30.183456480 +0400
+@@ -28,7 +28,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ #  if defined (__BORLANDC__)
+ typedef unsigned int uint32_t;
+@@ -476,7 +476,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ template <class D, class IEEE, int M, int BIAS>
+ D _Stl_atodT(char *buffer, ptrdiff_t ndigit, int dexp)
+@@ -742,7 +742,7 @@
+ #endif
+ 
+ #if defined (__linux__) || defined (__MINGW32__) || defined (__CYGWIN__) || \
+-    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC)
++    defined (__BORLANDC__) || defined (__DMC__) || defined (__HP_aCC) || defined (__EMBOX__)
+ 
+ template <class D, class IEEE, int M, int BIAS>
+ D _Stl_string_to_doubleT(const char *s)
+@@ -865,7 +865,7 @@
+ void _STLP_CALL
+ __string_to_float(const __iostring& v, long double& val) {
+ #if !defined (__linux__) && !defined (__MINGW32__) && !defined (__CYGWIN__) && \
+-    !defined (__BORLANDC__) && !defined (__DMC__) && !defined (__HP_aCC)
++    !defined (__BORLANDC__) && !defined (__DMC__) && !defined (__HP_aCC) && !defined (__EMBOX__)
+   //The following function is valid only if long double is an alias for double.
+   _STLP_STATIC_ASSERT( sizeof(long double) <= sizeof(double) )
+   val = _Stl_string_to_double(v.c_str());
+diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
+--- STLport-5.2.1/src/num_put_float.cpp	2008-12-10 12:56:51.000000000 +0300
++++ STLport/src/num_put_float.cpp	2014-02-17 18:52:30.183456480 +0400
+@@ -126,7 +126,7 @@
+ #  elif defined (__DJGPP) || (defined (_STLP_USE_GLIBC) && ! defined (__MSL__)) || \
+       defined (__CYGWIN__) || \
+       defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) || \
+-      defined (__HP_aCC)
++      defined (__HP_aCC) || defined(__EMBOX__)
+ static inline bool _Stl_is_nan_or_inf(double x)
+ #    if defined (isfinite)
+ { return !isfinite(x); }
+@@ -275,6 +275,8 @@
+ { return _ldfcvt(*(long_double*)&x, n, pt, sign); }
+ #    endif
+ #    define _STLP_CVT_NEED_SYNCHRONIZATION
++#  elif defined(__EMBOX__)
++#    define _STLP_EMULATE_LONG_DOUBLE_CVT
+ #  elif defined (__unix) && !defined (__APPLE__) && !defined (_CRAY)
+ static inline char* _Stl_ecvtR(double x, int n, int* pt, int* sign, char* buf)
+ { return ecvt_r(x, n, pt, sign, buf); }
+diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
+--- STLport-5.2.1/src/_stdio_file.h	2008-12-10 12:56:51.000000000 +0300
++++ STLport/src/_stdio_file.h	2014-02-17 18:52:30.183456480 +0400
+@@ -102,6 +102,10 @@
+ /* the prototypes are taken from LynxOS patch for STLport 4.0 */
+ inline int _FILE_fd(const FILE *__f) { return __f->_fd; }
+ 
++#elif defined (__EMBOX__)
++
++inline int _FILE_fd(const FILE *__f) { return __f->fd; }
++
+ #else  /* The most common access to file descriptor. */
+ 
+ inline int _FILE_fd(const FILE *__f) { return __f->_file; }
 diff -aur STLport-5.2.1/src/time_facets.cpp STLport/src/time_facets.cpp
 --- STLport-5.2.1/src/time_facets.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/time_facets.cpp	2013-03-22 20:23:41.503790874 +0400
++++ STLport/src/time_facets.cpp	2014-02-17 18:52:30.183456480 +0400
 @@ -165,17 +165,21 @@
  static void __append(__iostring &buf, const string& name)
  { buf.append(name.data(), name.data() + name.size()); }
@@ -36,51 +130,43 @@ diff -aur STLport-5.2.1/src/time_facets.cpp STLport/src/time_facets.cpp
  
  static time_base::dateorder __get_date_order(_Locale_time* time) {
    const char * fmt = _Locale_d_fmt(time);
-diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
---- STLport-5.2.1/src/num_put_float.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/num_put_float.cpp	2013-03-22 20:18:00.375782500 +0400
-@@ -126,7 +126,7 @@
- #  elif defined (__DJGPP) || (defined (_STLP_USE_GLIBC) && ! defined (__MSL__)) || \
-       defined (__CYGWIN__) || \
-       defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) || \
--      defined (__HP_aCC)
-+      defined (__HP_aCC) || defined(__EMBOX__)
- static inline bool _Stl_is_nan_or_inf(double x)
- #    if defined (isfinite)
- { return !isfinite(x); }
-@@ -275,6 +275,8 @@
- { return _ldfcvt(*(long_double*)&x, n, pt, sign); }
- #    endif
- #    define _STLP_CVT_NEED_SYNCHRONIZATION
-+#  elif defined(__EMBOX__)
-+#    define _STLP_EMULATE_LONG_DOUBLE_CVT
- #  elif defined (__unix) && !defined (__APPLE__) && !defined (_CRAY)
- static inline char* _Stl_ecvtR(double x, int n, int* pt, int* sign, char* buf)
- { return ecvt_r(x, n, pt, sign, buf); }
+diff -aur STLport-5.2.1/stlport/stl/config/features.h STLport/stlport/stl/config/features.h
+--- STLport-5.2.1/stlport/stl/config/features.h	2008-12-10 12:56:51.000000000 +0300
++++ STLport/stlport/stl/config/features.h	2014-02-17 18:52:30.183456480 +0400
+@@ -308,7 +308,11 @@
+ /* Some compiler support 0 size array so we use negative size array to generate
+  * a compilation time error.
+  */
+-#  define _STLP_STATIC_ASSERT(expr) typedef char __static_assert[expr ? 1 : -1];
++#  if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
++#    define _STLP_STATIC_ASSERT(expr) typedef char __static_assert[expr ? 1 : -1] __attribute__((unused));
++#  else
++#    define _STLP_STATIC_ASSERT(expr) typedef char __static_assert[expr ? 1 : -1];
++#  endif
+ #endif
+ 
+ /* apple mpw exception handling bug */
 diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
 --- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/config/_system.h	2013-03-21 18:30:19.197504928 +0400
-@@ -158,6 +158,9 @@
++++ STLport/stlport/stl/config/_system.h	2014-02-17 18:52:30.183456480 +0400
+@@ -52,6 +52,9 @@
+ #  elif defined (__FCC_VERSION) /* Fujitsu Compiler, v4.0 assumed */
+ #    include <stl/config/_fujitsu.h>
  #  endif
- 
- #  include <stl/config/_windows.h>
 +#elif defined(__EMBOX__)
 +#include <stl/config/_gcc.h>
 +#include <stl/config/_embox.h>
- #else
- #  error Unknown platform !!
- #endif
-diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
---- STLport-5.2.1/src/_stdio_file.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/_stdio_file.h	2013-03-22 19:46:52.287736680 +0400
-@@ -102,6 +102,10 @@
- /* the prototypes are taken from LynxOS patch for STLport 4.0 */
- inline int _FILE_fd(const FILE *__f) { return __f->_fd; }
+ #elif defined (__hpux)
+ #  include <stl/config/_hpux.h>
+ #  if defined (__GNUC__)
+diff -aur STLport-5.2.1/stlport/stl/_istream.c STLport/stlport/stl/_istream.c
+--- STLport-5.2.1/stlport/stl/_istream.c	2008-12-10 12:56:51.000000000 +0300
++++ STLport/stlport/stl/_istream.c	2014-02-17 18:55:30.471025516 +0400
+@@ -1145,7 +1145,6 @@
  
-+#elif defined (__EMBOX__)
-+
-+inline int _FILE_fd(const FILE *__f) { return __f->fd; }
-+
- #else  /* The most common access to file descriptor. */
- 
- inline int _FILE_fd(const FILE *__f) { return __f->_file; }
+   if (__sentry) {
+     basic_streambuf<_CharT, _Traits>* __buf = this->rdbuf();
+-    typedef _STLP_PRIV _Constant_unary_fun<bool, int_type> _Const_bool;
+     typedef _STLP_PRIV _Constant_binary_fun<streamsize, streamsize, streamsize>
+       _Const_streamsize;
+     const streamsize __maxss = (numeric_limits<streamsize>::max)();

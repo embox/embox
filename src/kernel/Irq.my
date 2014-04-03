@@ -1,12 +1,22 @@
 package embox.kernel
 
-module irq {
+abstract module irq_api {
+
+}
+module irq_static extends irq_api {
+	source "irq_static.c"
+	source "irq_static.h"
+	source "arm_m_irq.S"
+}
+
+module irq extends irq_api {
 	source "irq.c"
 	depends irq_lock
-	depends irq_stack
-	depends embox.mem.objalloc, embox.driver.interrupt.irqctrl_api
-	depends embox.profiler.trace
-	depends embox.util.DList
+	@NoRuntime depends irq_stack
+	@NoRuntime depends embox.mem.objalloc
+	depends embox.driver.interrupt.irqctrl_api
+	@NoRuntime depends embox.profiler.trace
+	@NoRuntime depends embox.util.DList
 }
 
 @DefaultImpl(irq_stack_no_protection)

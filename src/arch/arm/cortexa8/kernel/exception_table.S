@@ -19,7 +19,9 @@
  */
 
 #include <asm/modes.h>
+#include <asm/regs.h>
 #include <framework/mod/options.h>
+#include <module/embox/arch/mmu.h>
 
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
@@ -30,6 +32,7 @@
     .align 4
 
 .extern irq_handler
+
 .global start
 .section .trap_table, "x"
 trap_table_start:
@@ -47,6 +50,7 @@ trap_table_start:
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
 
+
 reset_handler_addr:
     .word reset_handler
 undef_handler_addr:
@@ -62,22 +66,22 @@ irq_handler_addr:
 fiq_handler_addr:
     .word fiq_handler
 
-/* stubs */
-undef_handler:
-    B undef_handler
-prefetch_abt_handler:
-    B prefetch_abt_handler
-data_abt_handler:
-    B data_abt_handler
-fiq_handler:
-    B fiq_handler
-
 .text
 /* initialize stacks in some modes */
 start:
 reset_handler:
 
-    ldr r0, =__stack
+    ldr r0, =_stack_top
+
+/* following mode now considered as unresolvable, so don't allocating stack */
+    msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
+    mov sp, r0
+    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+    mov sp, r0
+    msr CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
+    mov sp, r0
+    msr CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
+    mov sp, r0
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0
@@ -90,4 +94,42 @@ reset_handler:
     ldr r0, =trap_table_start
     mcr p15, 0, r0, c12, c0, 0
 
+	/* initializing MMU */
+#ifndef NOMMU
+    bl mmu_init
+#endif
+
+    /* setup c1, Control Register */
+    mrc p15, 0, r0, c1, c0, 0
+#ifndef NOMMU
+    orr r0, r0, #CR_M /* enabling MMU */
+#endif
+    orr r0, r0, #CR_A /* enabling data abort on unaligned mem access */
+    orr r0, r0, #CR_C /* enabling data caching */
+    orr r0, r0, #CR_Z /* enabling program flow prediction */
+    orr r0, r0, #CR_I /* enabling instruction caching */
+    mcr p15, 0, r0, c1, c0, 0
+
+    /* setup c1, Auxiliary Control Register */
+    mrc p15, 0, r0, c1, c0, 1
+    orr r0, r0, #ACR_L2EN /* enabling L2 cache */
+    mcr p15, 0, r0, c1, c0, 1
+
     b bootldr_start
+
+undef_handler:
+prefetch_abt_handler:
+fiq_handler:
+    sub r14, r14, #4
+    b arm_unresolvable_exception
+data_abt_handler:
+    sub r14, r14, #8
+
+arm_unresolvable_exception:
+    nop
+    stmfd sp!, {r0-r12, r14}
+    mrs r0, CPSR
+    mrs r1, SPSR
+    stmfd sp!, {r0, r1}
+    mov r0, sp
+    b arm_exception_handler

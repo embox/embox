@@ -30,6 +30,7 @@ struct neighbour {
 	struct sk_buff_head w_queue;       /* waiting queue */
 	unsigned long expire;              /* lifetime */
 	unsigned long resend;              /* resend timeout */
+	unsigned int sent_times;           /* how much times request was sent */
 };
 
 /**

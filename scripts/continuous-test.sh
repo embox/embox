@@ -1,4 +1,5 @@
 #!/bin/bash
+# bash is required by declare -A
 # @file
 # @brief
 #
@@ -10,7 +11,7 @@
 ATML="$1"
 ARCH=$(echo $ATML | cut -d \/ -f 1)
 
-TESTABLES="x86/nonvga_debug mips/debug ppc/debug microblaze/petalogix \
+TESTABLES="x86/nonvga_debug x86/smp mips/debug ppc/debug microblaze/petalogix \
 	sparc/debug"
 #"sparc/qemu" not supported due qemu bug
 
@@ -19,12 +20,12 @@ if ! echo $TESTABLES | grep $ATML &>/dev/null; then
 	exit 0
 fi
 
-TIMEOUT=15
+TIMEOUT=45
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
 do_it() {
-	eval $@
+	echo $@ | sh
 }
 
 declare -A atml2sim
@@ -32,6 +33,7 @@ declare -A atml2sim
 QEMU_COMMON="-kernel $EMKERNEL -serial file:${OUTPUT_FILE} -display none"
 
 atml2sim['x86/nonvga_debug']="qemu-system-i386 -m 512 -no-kvm $QEMU_COMMON"
+atml2sim['x86/smp']="qemu-system-i386 -m 512 -no-kvm -smp 2 $QEMU_COMMON"
 
 atml2sim['mips/debug']="qemu-system-mips -M mipssim $QEMU_COMMON"
 
@@ -45,8 +47,8 @@ atml2sim['microblaze/petalogix']="qemu-system-microblaze \
 atml2sim['sparc/qemu']="qemu-system-sparc -M leon3_generic -cpu LEON3 \
 	$QEMU_COMMON"
 
-atml2sim['sparc/debug']="$(dirname $0)/continuous-test.tsim.sh $EMKERNEL \
-	$OUTPUT_FILE"
+atml2sim['sparc/debug']="tsim-leon3 -c $(dirname $0)/tsim_run.cmd $EMKERNEL \
+	> $OUTPUT_FILE"
 
 # qemu refuses to write if run with -serial stdio. So we buffer to file,
 # cat it, and analyze

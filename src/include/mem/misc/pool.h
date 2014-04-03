@@ -18,7 +18,7 @@
 /** Representation of the pool*/
 struct pool {
 	/* Place in memory for allocation */
-	void * memory;
+	void *memory;
 	/* List of free block
 	 * (this is a block, which was used,
 	 * then was non-used and return to pool) */
@@ -28,7 +28,7 @@ struct pool {
 	/* Size of pool */
 	size_t pool_size;
 	/* Boundary, after which begin non-allocated memory */
-	void * bound_free;
+	void *bound_free;
 };
 
 /**
@@ -40,17 +40,17 @@ struct pool {
  * @param count of objects in cache
  */
 #define POOL_DEF(name, object_type, size) \
-	static union {                   \
-		typeof(object_type) object;  \
+	static union { \
+		object_type object; \
 		struct slist_link free_link; \
-	} __pool_storage ## name[size]   \
-	__attribute__((section(".reserve.pool,\"aw\",@nobits#")));  \
+	} __pool_storage ## name[size] \
+		__attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
 	static struct pool name = { \
 			.memory = __pool_storage ## name, \
 			.bound_free = __pool_storage ## name, \
 			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(*__pool_storage ## name), \
-			.pool_size = sizeof(*__pool_storage ## name) * size, \
+			.obj_size = sizeof(__pool_storage ## name[0]), \
+			.pool_size = sizeof(__pool_storage ## name), \
 	};
 
 /**
@@ -58,15 +58,15 @@ struct pool {
  * @param cache corresponding to allocating object
  * @return the address of allocated object or NULL if pool is full
  */
-extern void *pool_alloc(struct pool *pool);
+extern void *pool_alloc(struct pool *pl);
 
 /**
  * free an object and return it to the cache
  * @param cachep corresponding to freeing object
  * @param objp which will be free
  */
-extern void pool_free(struct pool *pool, void *object);
+extern void pool_free(struct pool *pl, void *obj);
 
-extern int pool_belong(struct pool* pool, void* obj);
+extern int pool_belong(const struct pool *pl, const void *obj);
 
 #endif /* MEM_MISC_UTIL_POOL_H_ */

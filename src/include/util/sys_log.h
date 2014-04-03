@@ -12,6 +12,7 @@
 #define UTIL_DEBUG_MSG_H_
 
 #include <stdbool.h>
+#include <util/macro.h>
 
 enum log_msg_type{
 	LT_INFO,

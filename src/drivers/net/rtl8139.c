@@ -13,7 +13,6 @@
 #include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <net/if_ether.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -198,8 +197,8 @@ static int rtl8139_init(struct pci_slot_dev *pci_dev) {
 	int res = 0;
 	uint32_t nic_base;
 	struct net_device *nic;
-	struct pci_slot_dev *pci_dev;
 
+	assert(pci_dev != NULL);
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 

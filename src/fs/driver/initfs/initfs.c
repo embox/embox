@@ -15,16 +15,19 @@
 #include <errno.h>
 #include <unistd.h>
 #include <cpio.h>
+#include <stdarg.h>
+#include <limits.h>
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
+#include <fs/file_operation.h>
 
 #include <mem/misc/pool.h>
 #include <kernel/printk.h>
 #include <util/array.h>
 #include <embox/unit.h>
-#include <limits.h>
+
 
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */
@@ -77,6 +80,7 @@ static int initfs_ioctl(struct file_desc *desc, int request, ...) {
 
 	nas = desc->node->nas;
 	fi = (struct initfs_file_info *) nas->fi;
+	assert(p_addr != NULL);
 	*p_addr = fi->addr;
 
 	return 0;
@@ -104,14 +108,14 @@ static int initfs_mount(void *dev, void *dir) {
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (entry.name_len > PATH_MAX) {
-			return -1;
+			return -ENAMETOOLONG;
 		}
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
 		node = vfs_create_intermediate(dir_node, name, entry.mode);
 		if (!node) {
-			return -1;
+			return -ENOMEM;
 		}
 
 		fi = pool_alloc(&fdesc_pool);

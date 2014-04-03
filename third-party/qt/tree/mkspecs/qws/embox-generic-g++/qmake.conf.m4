@@ -12,7 +12,12 @@ m4_define(M4_EXTRACT_ENVVAR,`m4_patsubst(m4_esyscmd(echo $$1),`
 
 QMAKE_CFLAGS           += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CFLAGS)   -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'"
 # https://bugs.launchpad.net/gcc-linaro/+bug/675347
-QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive -fno-threadsafe-statics -fno-strict-volatile-bitfields
+QMAKE_CXXFLAGS         += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CXXFLAGS) -include qt_embox_compat.h "-D'__impl_x(path)=<../path>'" -fpermissive
+
+QT_CONF_FLAGS += M4_EXTRACT_ENVVAR(QT_CONF_FLAGS)
+contains(QT_CONF_FLAGS, arm) {
+	QMAKE_CXXFLAGS         += -fno-strict-volatile-bitfields
+}
 #CROSS_COMPILE          += M4_EXTRACT_ENVVAR(EMBOX_DERIVED_CROSS_COMPILE)
 
 # Overriding
@@ -24,7 +29,12 @@ QMAKE_LIBS_DYNLOAD =
 QMAKE_LFLAGS      += -Wl,--relocatable -nostdlib
 # Not sure if it should be here but if it should
 # it should be imported from Embox build settings
-QMAKE_LFLAGS      += -fno-rtti -m32
+contains(QMAKE_CXXFLAGS, -fno-rtti) {
+	QMAKE_LFLAGS      += -fno-rtti
+}
+contains(QMAKE_CXXFLAGS, -m32) {
+	QMAKE_LFLAGS      += -m32
+}
 
 CONFIG += embox_auto_import_plugins
 

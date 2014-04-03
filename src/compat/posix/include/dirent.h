@@ -9,7 +9,6 @@
 
 #include <sys/types.h>
 #include <sys/cdefs.h>
-#include <fs/node.h>
 
 __BEGIN_DECLS
 
@@ -20,11 +19,13 @@ struct dirent {
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
-typedef struct DIR {
+struct node;
+struct directory {
 	struct dirent current;
-	node_t *node;
-	struct tree_link *child_lnk;
-} DIR;
+	struct node *node;
+	//struct tree_link *child_lnk;
+};
+typedef struct directory DIR;
 
 
 extern int            closedir(DIR *);
@@ -33,8 +34,7 @@ extern DIR           *opendir(const char *);
 
 extern struct dirent *readdir(DIR *);
 
-extern int            readdir_r(DIR *, struct dirent *,
-				struct dirent **);
+extern int            readdir_r(DIR *, struct dirent *, struct dirent **);
 
 __END_DECLS
 

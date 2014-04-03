@@ -76,7 +76,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (0 > (idx = block_dev_named(path, &ramdisk_idx))) {
 	//if(0 > (idx =index_alloc(&ramdisk_idx, INDEX_MIN))) {
 		pool_free(&ramdisk_pool, ramdisk);
-		return err_ptr(ENOENT);
+		return err_ptr(-idx);
 	}
 
 	ramdisk->bdev = block_dev_create(path, &ramdisk_pio_driver, ramdisk);

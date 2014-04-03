@@ -87,7 +87,7 @@ static int case_setup(void) {
 }
 
 static int case_teardown(void) {
-	critical_t critical, levels[] = {
+	unsigned int critical, levels[] = {
 		CRITICAL_IRQ_LOCK,
 		CRITICAL_SOFTIRQ_LOCK,
 		CRITICAL_SCHED_LOCK,

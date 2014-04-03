@@ -6,6 +6,7 @@
  * @date    20.02.2013
  */
 
+#include <assert.h>
 #include <unistd.h>
 #include <pwd.h>
 #include <errno.h>
@@ -15,14 +16,19 @@
 #include <fs/flags.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
+#include <fs/flags.h>
 #include <kernel/task.h>
-#include <debug/symbol.h>
 #include <embox/unit.h>
 #include <security/seculog.h>
 
 #include <security/smac.h>
+#include <kernel/task/resource/security.h>
+#include <config/embox/kernel/task/resource/security.h>
+#include <framework/mod/options.h>
 
 EMBOX_UNIT_INIT(smac_init);
+
+static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task__resource__security, NUMBER, security_size));
 
 #define SMAC_MAX_ENTS OPTION_GET(NUMBER, max_entries)
 #define SMAC_AUDIT OPTION_GET(NUMBER, audit)
@@ -50,11 +56,25 @@ static int smac_env_n;
 static struct file_desc *audit_log_desc;
 static char no_audit;
 
+#include <fs/vfs.h>
 static int audit_log_open(void) {
+	int fd;
 
-	audit_log_desc = kopen(SMAC_AUDIT_FILE, O_CREAT | O_WRONLY | O_APPEND, 0755);
+	fd = creat(SMAC_AUDIT_FILE, 0777);
+	if (fd < 0) {
+		return -1;
+	}
 
-	return audit_log_desc ? 0 : -1;
+	if (!(audit_log_desc = file_desc_get(fd))) {
+		close(fd);
+		return -1;
+	}
+
+	/* This is `forever' file_desc, prevent it from to be free */
+	audit_log_desc->idesc.idesc_count ++;
+	close(fd);
+
+	return 0;
 }
 
 int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {
@@ -186,7 +206,7 @@ int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (0 != (res = smac_access(task_self_security(), smac_admin,
+	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
 					FS_MAY_READ, &audit))) {
 		return res;
 	}
@@ -208,7 +228,7 @@ int smac_flushenv(void) {
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (0 != (res = smac_access(task_self_security(), smac_admin,
+	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
 		return res;
 	}
@@ -225,7 +245,7 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (0 != (res = smac_access(task_self_security(), smac_admin,
+	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
 		return res;
 	}
@@ -267,7 +287,7 @@ int smac_labelset(const char *label) {
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (0 != (res = smac_access(task_self_security(), smac_admin,
+	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
 					FS_MAY_WRITE, &audit))) {
 		return res;
 	}
@@ -276,7 +296,7 @@ int smac_labelset(const char *label) {
 		return -ERANGE;
 	}
 
-	strcpy(((struct smac_task *) task_self_security())->label, label);
+	strcpy(((struct smac_task *) task_self_resource_security())->label, label);
 
 	return 0;
 }
@@ -287,22 +307,22 @@ int smac_labelget(char *label, size_t len) {
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (0 != (res = smac_access(task_self_security(), smac_admin,
+	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
 					FS_MAY_READ, &audit))) {
 		return res;
 	}
 
-	if (len < (thislen = strlen(task_self_security()))) {
+	if (len < (thislen = strlen(task_self_resource_security()))) {
 		return -ERANGE;
 	}
 
-	strcpy(label, ((struct smac_task *) task_self_security())->label);
+	strcpy(label, ((struct smac_task *) task_self_resource_security())->label);
 
 	return 0;
 }
 
 static int smac_init(void) {
-	strcpy(((struct smac_task *) task_self_security())->label, smac_admin);
+	strcpy(((struct smac_task *) task_self_resource_security())->label, smac_admin);
 
 	audit_log_open(); /* not cheking retcode, as the module can be initialized before
 			     fs and no file could be opened.

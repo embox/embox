@@ -32,7 +32,7 @@ static void fake_enable(const struct mod *mod) {
 		fake_enable(dep);
 	}
 
-	printf(" *  %s.%s\n", mod->package->name, mod->name);
+	printf(" *  %s.%s\n", mod_pkg_name(mod), mod_name(mod));
 }
 
 static int exec(int argc, char **argv) {

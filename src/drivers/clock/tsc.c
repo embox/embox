@@ -9,21 +9,22 @@
 #include <stdint.h>
 #include <errno.h>
 #include <util/array.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
+#include <hal/system.h>
 
 #include <embox/unit.h>
 
 static int tsc_init(void);
 
-static unsigned int cpu_hz = 1000000000L;
-
 /* Read Time Stamp Counter Register */
 static inline unsigned long long rdtsc(void) {
 	unsigned hi, lo;
 	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-	return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
+	return (((unsigned long long) lo) | (((unsigned long long) hi) << 32));
 }
 
 static struct time_counter_device tsc = {
@@ -38,8 +39,13 @@ static struct clock_source tsc_clock_source = {
 };
 
 static int tsc_init(void) {
-	/* TODO get CPU hz */
-	tsc.resolution = cpu_hz;
+	time64_t t1, t2;
+	/* Getting CPU frequency */
+	t1 = rdtsc();
+	sleep(1);
+	t2 = rdtsc();
+	tsc.resolution = t2 - t1;
+	/*printk("CPU frequency: %llu\n", t2 - t1);*/
 	clock_source_register(&tsc_clock_source);
 	return ENOERR;
 }

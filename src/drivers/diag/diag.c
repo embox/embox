@@ -12,6 +12,7 @@
 #include <kernel/panic.h>
 #include <util/ring.h>
 #include <drivers/diag.h>
+#include <drivers/termios_ops.h>
 #include <termios.h>
 #include <framework/mod/options.h>
 
@@ -20,8 +21,6 @@
 #else
 #error No impl option provided
 #endif
-
-extern int termios_putc(struct termios *tio, char ch, struct ring *ring, char *buf, size_t buflen);
 
 extern const struct diag DIAG_IMPL;
 static const struct diag *cdiag = &DIAG_IMPL;
@@ -32,59 +31,73 @@ static const struct termios diag_tio = {
 };
 
 int diag_init(void) {
+	const struct diag *tdiag = cdiag;
 
-	if (cdiag->ops->init) {
-		return cdiag->ops->init(cdiag);
+	if (tdiag->ops->init) {
+		return tdiag->ops->init(tdiag);
 	}
 
 	return 0;
 }
 
 char diag_getc(void) {
+	const struct diag *tdiag = cdiag;
 
-	if (!cdiag->ops->getc) {
+	if (!tdiag->ops->getc) {
 		panic("diag_getc called with no implementation");
 	}
 
-	if (cdiag->ops->kbhit) {
-		while (!cdiag->ops->kbhit(cdiag)) {
+	if (tdiag->ops->kbhit) {
+		while (!tdiag->ops->kbhit(tdiag)) {
 
 		}
 	}
 
-	return cdiag->ops->getc(cdiag);
+	return tdiag->ops->getc(tdiag);
 }
 
 #define BUFLEN 4
 void diag_putc(char ch) {
 	char buf[BUFLEN];
 	struct ring r;
+	const struct diag *tdiag = cdiag;
 
-	assert(cdiag->ops->putc);
+	assert(tdiag->ops->putc);
 
 	ring_init(&r);
 
-	termios_putc((struct termios *) &diag_tio, ch, &r, buf, BUFLEN);
+	termios_putc(&diag_tio, ch, &r, buf, BUFLEN);
 
 	while (!ring_empty(&r)) {
-		cdiag->ops->putc(cdiag, buf[r.tail]);
+		tdiag->ops->putc(tdiag, buf[r.tail]);
 		ring_just_read(&r, BUFLEN, 1);
 	}
 }
 
 extern enum diag_kbhit_ret diag_kbhit(void) {
+	const struct diag *tdiag = cdiag;
 
-	if (cdiag->ops->kbhit) {
-		return cdiag->ops->kbhit(cdiag) ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
+	if (tdiag->ops->kbhit) {
+		return tdiag->ops->kbhit(tdiag) ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
 	}
 
-	if (cdiag->ops->getc) {
+	if (tdiag->ops->getc) {
 		return KBHIT_WILL_BLK;
 	}
 
 	return KBHIT_WILL_FOREVER;
 }
 
+int diag_setup(const struct diag *diag) {
+
+	if (!diag) {
+		return -EINVAL;
+	}
+
+	cdiag = diag;
+
+	return 0;
+}
 #if 0
 void iodev_setup(const struct iodev_ops *new_iodev) {
 	cdiag = new_iodev;

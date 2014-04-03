@@ -19,7 +19,6 @@
 #include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
@@ -38,8 +37,12 @@
 
 #include <embox/unit.h>
 
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM);
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
+static const struct pci_id e1000_id_table[] = {
+	{ PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM },
+	{ PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3 },
+};
+
+PCI_DRIVER_TABLE("e1000", e1000_init, e1000_id_table);
 
 #define MDELAY 1000
 
@@ -54,6 +57,7 @@ PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
 
 struct e1000_priv {
 	struct sk_buff_head txing_queue;
+	struct sk_buff_head tx_dev_queue;
 	char link_status;
 };
 
@@ -110,7 +114,7 @@ static int e1000_xmit(struct net_device *dev) {
 			goto out_unlock;
 		}
 
-		skb = skb_queue_pop(&dev->tx_dev_queue);
+		skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue);
 
 		if (skb == NULL) {
 			goto out_unlock;
@@ -139,7 +143,8 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	irq_lock();
 	{
-		skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
+		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue,
+				skb);
 	}
 	irq_unlock();
 
@@ -230,8 +235,10 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 		if (netdev_priv(dev, struct e1000_priv)->link_status) {
 			printk("e1000: Link up\n");
+			netdev_flag_up(dev, IFF_RUNNING);
 		} else {
 			printk("e1000: Link down. Please check and insert network cable\n");
+			netdev_flag_down(dev, IFF_RUNNING);
 		}
 
 	}
@@ -349,6 +356,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 	nic_priv = netdev_priv(nic, struct e1000_priv);
 	skb_queue_init(&nic_priv->txing_queue);
+	skb_queue_init(&nic_priv->tx_dev_queue);
 	nic_priv->link_status = 0;
 
 	res = irq_attach(pci_dev->irq, e1000_interrupt, IF_SHARESUP, nic, "e1000");

@@ -15,13 +15,13 @@ module core {
 	source "core.c"
 
 	depends fsnode_api
-	depends embox.driver.tty.tty
 	@NoRuntime depends embox.util.indexator
 }
 
 module fsnode extends fsnode_api {
 	source "fsnode.c"
 	@NoRuntime depends embox.driver.char_dev
+	@NoRuntime depends embox.driver.tty.serial
 	depends embox.fs.driver.devfs
 }
 
@@ -79,6 +79,18 @@ module stm32_usart extends embox.driver.diag.diag_api {
 	depends core
 	depends diag
 }
+
+@BuildDepends(efm32zg_sk3200.bsp)
+module efm32_leuart extends embox.driver.diag.diag_api {
+	option number baud_rate
+
+	source "efm32_leuart.c"
+
+	depends efm32zg_sk3200.bsp
+	depends core
+	depends diag
+}
+
 
 module msp430usci extends embox.driver.diag.diag_api {
 	source "msp430usci.c"

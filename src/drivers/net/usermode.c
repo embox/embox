@@ -10,7 +10,6 @@
 #include <string.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <arpa/inet.h>
@@ -22,134 +21,53 @@
 
 EMBOX_UNIT_INIT(umether_init);
 
-struct emvisor_netstate devstate;
-
-static int devstate_update(struct emvisor_netstate *devstate) {
-	return emvisor_send(UV_PWRUPSTRM, EMVISOR_NETCTL, devstate,
-			sizeof(struct emvisor_netstate));
-}
-
 static int umether_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct emvisor_netdata_hdr dhdr = {
-		.dev_id = devstate.id,
-		.len = skb->len,
-	};
-	ipl_t ipl = ipl_save();
-	int ret;
+	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
-	if (devstate.id < 0) {
-		ret = -ENODEV;
-		goto out;
-	}
+	host_net_tx(hnet, skb->mac.raw, skb->len);
 
-	if (0 >= (ret = emvisor_sendhdr(UV_PWRUPSTRM, EMVISOR_NETDATA,
-					sizeof(dhdr) + skb->len))) {
-		goto out;
-	}
-
-	if (0 >= (ret = emvisor_sendn(UV_PWRUPSTRM, &dhdr, sizeof(dhdr)))) {
-		goto out;
-	}
-
-	if (0 >= (ret = emvisor_sendn(UV_PWRUPSTRM, skb->mac.raw, skb->len))) {
-		goto out;
-	}
-
-	skb_free(skb);
-	ret = 0;
-out:
-	ipl_restore(ipl);
-	return ret;
+	return 0;
 }
 
-static int umether_open(struct net_device *dev) {
+static int umether_start(struct net_device *dev) {
+	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
-	if (devstate.id < 0) {
-		return -ENODEV;
-	}
-
-	devstate.mode = NETSTATE_MODON;
-
-	devstate_update(&devstate);
-
-	return ENOERR;
+	return host_net_cfg(hnet, HOST_NET_START);
 }
 
 static int umether_stop(struct net_device *dev) {
+	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
-	if (devstate.id < 0) {
-		return -ENODEV;
-	}
-
-	devstate.mode = NETSTATE_MODOFF;
-
-	devstate_update(&devstate);
-
-	return ENOERR;
+	return host_net_cfg(hnet, HOST_NET_STOP);
 }
 
 static int umether_setmac(struct net_device *dev, const void *addr) {
-
-	if (devstate.id < 0) {
-		return -ENODEV;
-	}
-
-	memcpy(dev->dev_addr, addr, ETH_ALEN);
-
-	memcpy(&devstate.addr, addr, ETH_ALEN);
-
-	devstate_update(&devstate);
-
 	return ENOERR;
 }
 
-#define SKIPBUF_LEN 64
-
 static irq_return_t umether_irq(unsigned int irq_num, void *dev_id) {
-	struct emvisor_netdata_hdr hdr;
+	struct net_device *dev = (struct net_device *) dev_id;
+	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 	struct sk_buff *skb;
+	int len;
 
-	emvisor_recvnbody(UV_PRDDOWNSTRM, &hdr, sizeof(hdr));
-
-	assert(hdr.dev_id == devstate.id);
-
-	if (!(skb = skb_alloc(hdr.len))) {
-		char skipb[SKIPBUF_LEN];
-		int len = hdr.len, tl;
-		while (len) {
-			tl = len > SKIPBUF_LEN ? SKIPBUF_LEN : len;
-			emvisor_recvnbody(UV_PRDDOWNSTRM, skipb, tl);
-			len -= tl;
+	while ((len = host_net_rx_count(hnet))) {
+		if (!(skb = skb_alloc(len))) {
+			return IRQ_NONE;
 		}
 
-		return IRQ_HANDLED;
+		host_net_rx(hnet, skb->mac.raw, len);
+		skb->dev = dev;
+
+		netif_rx(skb);
 	}
 
-
-	emvisor_recvnbody(UV_PRDDOWNSTRM, skb->mac.raw, hdr.len);
-
-	skb->dev = (struct net_device *) dev_id;
-
-	netif_rx(skb);
-
-	return IRQ_HANDLED;
-}
-
-static irq_return_t umether_irqctl(unsigned int irq_num, void *dev_id) {
-	struct emvisor_netstate state;
-
-	emvisor_recvnbody(UV_PRDDOWNSTRM, &state, sizeof(state));
-
-	assert(devstate.id == -1 || devstate.id == state.id);
-
-	memcpy(&devstate, &state, sizeof(devstate));
-
-	return IRQ_HANDLED;
+	return IRQ_NONE;
 }
 
 static const struct net_driver umether_drv_ops = {
 	.xmit = umether_xmit,
-	.start = umether_open,
+	.start = umether_start,
 	.stop = umether_stop,
 	.set_macaddr = umether_setmac,
 };
@@ -157,30 +75,28 @@ static const struct net_driver umether_drv_ops = {
 static int umether_init(void) {
 	int res = 0;
 	struct net_device *nic;
+	struct host_net_adp *hnet;
 
-	nic = etherdev_alloc(0);
+	nic = etherdev_alloc(sizeof(struct host_net_adp));
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
 
 	nic->drv_ops = &umether_drv_ops;
-	nic->irq = EMVISOR_IRQ_NETDATA - EMVISOR_IRQ;
+	nic->irq = HOST_NET_IRQ;
 
-	res = irq_attach(EMVISOR_IRQ_NETDATA - EMVISOR_IRQ, umether_irq,
-			IF_SHARESUP, nic, "umether");
+	hnet = netdev_priv(nic, struct host_net_adp);
+
+	res = host_net_cfg(hnet, HOST_NET_INIT);
 	if (res < 0) {
 		return res;
 	}
 
-	res = irq_attach(EMVISOR_IRQ_NETCTL - EMVISOR_IRQ, umether_irqctl,
-			IF_SHARESUP, nic, "umether");
+	res = irq_attach(HOST_NET_IRQ, umether_irq, IF_SHARESUP, nic,
+			"umether");
 	if (res < 0) {
 		return res;
 	}
-
-	devstate.id = NETSTATE_REQUEST;
-
-	devstate_update(&devstate);
 
 	return inetdev_register_dev(nic);
 }

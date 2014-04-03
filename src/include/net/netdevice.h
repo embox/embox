@@ -10,6 +10,7 @@
 #define NET_NETDEVICE_H_
 
 //#include <util/array.h>
+#include <assert.h>
 #include <stddef.h>
 #include <net/if.h>
 //#include <arpa/inet.h>
@@ -82,15 +83,15 @@ typedef struct net_driver {
  */
 struct net_header_info {
 	unsigned short type; /* packet type */
-	const void *src_addr; /* source hw address
-							 use device addr if null */
-	const void *dst_addr; /* destination hw address
-							 if null use dst_paddr for resolving
-							 if dst_paddr is null too, use bcast */
-	const void *dst_paddr; /* destination protocol address
-							  used for discovering of the
-							  hw address in case dst_addr is null */
-	unsigned char dst_plen; /* length of dst_paddr */
+	const void *src_hw;  /* source hw address
+							use device addr if null */
+	const void *dst_hw;  /* destination hw address
+							if null use dst_p for resolving
+							if dst_p is null too, use bcast */
+	const void *dst_p;   /* destination protocol address
+							used for discovering of the
+							hw address in case dst_hw is null */
+	unsigned char p_len; /* length of dst_p */
 };
 
 /**
@@ -114,19 +115,16 @@ typedef struct net_device {
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
 	unsigned short type; /**< interface hardware type      */
+	unsigned char hdr_len; /**< hardware header length      */
 	unsigned char addr_len; /**< hardware address length      */
 	unsigned int flags; /**< interface flags (a la BSD)   */
 	unsigned int mtu; /**< interface MTU value          */
-#if 1 /* TODO unused field */
-	unsigned long tx_queue_len; /**< Max frames per queue allowed */
-#endif
 	unsigned long base_addr; /**< device I/O address           */
 	unsigned int irq; /**< device IRQ number            */
 	struct net_device_stats stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
 	const struct net_driver *drv_ops; /**< Management operations        */
 	struct sk_buff_head dev_queue;
-	struct sk_buff_head tx_dev_queue;
 	struct net_node *pnet_node;
 	void *priv; /**< private data */
 } net_device_t;
@@ -134,7 +132,12 @@ typedef struct net_device {
 /**
  * Get data private data casted to type
  */
-#define netdev_priv(dev, type) ((type *)((dev)->priv))
+#define netdev_priv(dev, type) \
+	({                                        \
+		const struct net_device *__dev = dev; \
+		assert(__dev != NULL);                \
+		(type *)__dev->priv;                  \
+	})
 
 /**
  * Find an network device by its name
@@ -213,8 +216,6 @@ extern int netdev_set_macaddr(struct net_device *dev,
 extern int netdev_set_irq(struct net_device *dev, int irq_num);
 extern int netdev_set_baseaddr(struct net_device *dev,
 		unsigned long base_addr);
-extern int netdev_set_txqueuelen(struct net_device *dev,
-		unsigned long new_len);
 extern int netdev_set_bcastaddr(struct net_device *dev,
 		const void *bcast_addr);
 extern int netdev_set_mtu(struct net_device *dev, int mtu);

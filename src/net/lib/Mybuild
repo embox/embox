@@ -1,5 +1,12 @@
 package embox.net.lib
 
+module arp {
+	source "arp.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+}
+
 module bootp {
 	source "bootp.c"
 
@@ -20,6 +27,35 @@ module getifaddrs {
 
 	depends embox.mem.pool
 	depends embox.net.core
+}
+
+module icmpv4 {
+	source "icmpv4.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.net.lib.ipv4
+}
+
+module icmpv6 {
+	source "icmpv6.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.net.lib.ipv6
+}
+
+module ipv4 {
+	source "ipv4.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+}
+
+module ipv6 {
+	source "ipv6.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
 
 module ntp {
@@ -44,4 +80,20 @@ module smtp {
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
+}
+
+module tcp {
+	source "tcp.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.net.lib.ipv4
+	@NoRuntime depends embox.net.lib.ipv6
+}
+
+module udp {
+	source "udp.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.net.lib.ipv4
+	@NoRuntime depends embox.net.lib.ipv6
 }

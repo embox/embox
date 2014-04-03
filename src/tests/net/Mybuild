@@ -1,0 +1,44 @@
+package embox.test.net
+
+module socket_test {
+	source "socket_test.c"
+	option number family
+	option number type
+	option number proto
+
+	depends embox.compat.posix.net.socket
+	depends embox.framework.test
+}
+
+module inet_socket_test {
+	source "inet_socket_test.c"
+	option number type
+	option number proto
+
+	depends embox.compat.posix.net.socket
+	depends embox.driver.net.loopback
+	depends embox.framework.test
+	depends embox.net.af_inet
+}
+
+module inet_stream_socket_test {
+	source "inet_stream_socket_test.c"
+	option number proto
+
+	depends embox.compat.posix.net.socket
+	depends embox.driver.net.loopback
+	depends embox.framework.test
+	depends embox.net.tcp
+	depends embox.net.af_inet
+}
+
+module inet_dgram_socket_test {
+	source "inet_dgram_socket_test.c"
+	option number proto
+
+	depends embox.compat.posix.net.socket
+	depends embox.driver.net.loopback
+	depends embox.framework.test
+	depends embox.net.udp
+	depends embox.net.af_inet
+}

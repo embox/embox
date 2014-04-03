@@ -22,8 +22,8 @@ struct unaligned {
 
 /* Define a spread array of one pointer size element.
  * Notice the array name. */
-ARRAY_SPREAD_DEF(const static struct unaligned, spread_0_unaligned);
-ARRAY_SPREAD_ADD(spread_0_unaligned, { });
+ARRAY_SPREAD_DEF(static const struct unaligned, spread_0_unaligned);
+ARRAY_SPREAD_ADD(spread_0_unaligned, {0});
 
 /* Struct of eight pointers. */
 struct aligned {
@@ -35,8 +35,8 @@ struct aligned {
  * Because of the name this array will be placed in .rodata just after the
  * previous one making a room between its last element and the head of this
  * array. */
-ARRAY_SPREAD_DEF(const static struct aligned, spread_1_aligned);
-ARRAY_SPREAD_ADD_NAMED(spread_1_aligned, spread_aligned_element, {});
+ARRAY_SPREAD_DEF(static const struct aligned, spread_1_aligned);
+ARRAY_SPREAD_ADD_NAMED(spread_1_aligned, spread_aligned_element, {{0}});
 
 TEST_CASE("Pointers to a spread array and to the first array element should "
 		"be equal") {

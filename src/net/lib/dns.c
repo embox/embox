@@ -83,7 +83,8 @@ static int name_to_label(const char *name, char *buff,
 static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 		size_t max_name_sz, char *out_name, size_t *out_field_sz) {
 	size_t bytes_left, field_sz;
-	uint8_t label_sz, offset;
+	uint8_t label_sz;
+	uint16_t offset;
 	char one_line;
 	const char *buff_end;
 
@@ -93,12 +94,13 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	buff_end = buff + buff_sz;
 
 	while ((label_sz = *(uint8_t *)label++) != 0) {
-		if (label_sz == 0xC0) { /* it's a pointer to other label */
+		/* It's a pointer to other label? */
+		if ((label_sz & DNS_LABEL_MASK) == DNS_LABEL_MASK) {
 			if (one_line) {
 				field_sz += 2 * sizeof(char); /* plus size of pointer */
 				one_line = 0;
 			}
-			offset = *(uint8_t *)label;
+			offset = ((label_sz & ~DNS_LABEL_MASK) << 8) + *(uint8_t *)label;
 			label = buff + offset; /* get new address of label */
 			if (label >= buff_end) { /* check boundary */
 				return -ENOMEM;
@@ -114,7 +116,7 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 		label += label_sz;
 		out_name += label_sz;
 
-		/* How much bytes will be skipped after parsing of lable ? */
+		/* How much bytes will be skipped after parsing of lable? */
 		if (one_line) {
 			field_sz += (label_sz + 1) * sizeof(char);
 		}
@@ -140,7 +142,11 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	*out_name++ = 0;
 
 	if (out_field_sz != NULL) {
-		*out_field_sz = field_sz + (one_line ? sizeof(char) : 0); /* plus one byte at the end of the loop if it's haven't labels */
+		*out_field_sz = field_sz
+				+ (one_line /* if it's haven't labels */
+						? sizeof(char) /* plus one byte at the end
+										  of the loop */
+						: 0);
 	}
 
 	return 0;
@@ -150,6 +156,7 @@ static int dns_q_format(struct dns_q *query, char *buff,
 		size_t buff_sz, size_t *out_bytes) {
 	int ret;
 	size_t bytes_left, field_sz;
+	uint16_t field_val;
 
 	bytes_left = buff_sz;
 
@@ -164,7 +171,8 @@ static int dns_q_format(struct dns_q *query, char *buff,
 	if (field_sz > bytes_left) {
 		return -ENOMEM;
 	}
-	*(__be16 *)buff = htons(query->qtype);
+	field_val = htons(query->qtype);
+	memcpy(buff, &field_val, sizeof field_sz);
 	bytes_left -= field_sz;
 	buff += field_sz;
 
@@ -172,7 +180,8 @@ static int dns_q_format(struct dns_q *query, char *buff,
 	if (field_sz > bytes_left) {
 		return -ENOMEM;
 	}
-	*(__be16 *)buff = htons(query->qclass);
+	field_val = htons(query->qclass);
+	memcpy(buff, &field_val, sizeof field_sz);
 	bytes_left -= field_sz;
 	buff += field_sz;
 
@@ -212,7 +221,6 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	int sock;
 	ssize_t bytes;
 	struct sockaddr_in nameserver_addr;
-	socklen_t nameserver_addr_sz;
 
 	/* Setup dns_host structure */
 	memset(&nameserver_addr, 0, sizeof nameserver_addr);
@@ -221,30 +229,33 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	if (!inet_aton(dns_get_nameserver(), &nameserver_addr.sin_addr)) {
 		return -EINVAL;
 	}
-	nameserver_addr_sz = sizeof nameserver_addr;
 
 	/* Create socket */
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock < 0) {
-		return sock;
+	if (sock == -1) {
+		return -errno;
+	}
+
+	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
+				sizeof nameserver_addr)) {
+		close(sock);
+		return -errno;
 	}
 
 	while (1) {
 		/* Send request */
-		bytes = sendto(sock, &req->raw[0], req_sz, 0,
-				(struct sockaddr *)&nameserver_addr, nameserver_addr_sz);
+		bytes = send(sock, &req->raw[0], req_sz, 0);
 		if (bytes != req_sz) {
 			close(sock);
-			return errno ? -errno : -1; /* if errno equal to zero O_o */
+			return -errno;
 		}
 
 		do {
 			/* Receive reply */
-			bytes = recvfrom(sock, &rep->raw[0], sizeof *rep, 0,
-					(struct sockaddr *)&nameserver_addr, &nameserver_addr_sz);
-			if (bytes < 0) {
+			bytes = recv(sock, &rep->raw[0], sizeof *rep, 0);
+			if (bytes == -1) {
 				close(sock);
-				return errno ? -errno : -1; /* if errno equal to zero O_o */
+				return -errno;
 			}
 		} while (bytes < sizeof(struct dnshdr)); /* bad size, try again */
 
@@ -270,6 +281,7 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 		const char *buff, size_t buff_sz, size_t *out_field_sz) {
 	int ret;
 	size_t field_sz;
+	uint16_t field_val;
 	const char *curr, *end;
 
 	curr = data;
@@ -288,7 +300,8 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	q->qtype = ntohs(*(uint16_t *)curr);
+	memcpy(&field_val, curr, field_sz);
+	q->qtype = ntohs(field_val);
 	curr += field_sz;
 
 	/* parse class */
@@ -296,7 +309,8 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	q->qclass = (uint16_t)ntohs(*(uint16_t *)curr);
+	memcpy(&field_val, curr, field_sz);
+	q->qclass = ntohs(field_val);
 	curr += field_sz;
 
 	*out_field_sz = curr - data;
@@ -344,6 +358,8 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 		const char *buff, size_t buff_sz, size_t *out_field_sz) {
 	int ret;
 	size_t field_sz;
+	uint16_t field_val16;
+	uint32_t field_val32;
 	const char *curr, *end;
 
 	curr = data;
@@ -362,7 +378,8 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	rr->rtype = ntohs(*(uint16_t *)curr);
+	memcpy(&field_val16, curr, field_sz);
+	rr->rtype = ntohs(field_val16);
 	curr += field_sz;
 
 	/* parse class */
@@ -370,7 +387,8 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	rr->rclass = (uint16_t)ntohs(*(uint16_t *)curr);
+	memcpy(&field_val16, curr, field_sz);
+	rr->rclass = ntohs(field_val16);
 	curr += field_sz;
 
 	/* parse ttl */
@@ -378,7 +396,8 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	rr->rttl = ntohl(*(uint32_t *)curr);
+	memcpy(&field_val32, curr, field_sz);
+	rr->rttl = ntohl(field_val32);
 	curr += field_sz;
 
 	/* parse data length */
@@ -386,7 +405,8 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	rr->rdlength = (uint16_t)ntohs(*(uint16_t *)curr);
+	memcpy(&field_val16, curr, field_sz);
+	rr->rdlength = ntohs(field_val16);
 	curr += field_sz;
 
 	/* parse data */
@@ -540,6 +560,11 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 			goto error;
 		}
 		curr += section_sz;
+	}
+
+	/* That's all */
+	if (curr != &dm->raw[dm_sz]) {
+		return -EINVAL;
 	}
 
 	/* All ok, done */

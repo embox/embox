@@ -114,8 +114,14 @@ extern int nonl(void);
 extern int nodelay(WINDOW *win, bool bf);
 
 static inline int beep(void) { return 0; }
-static inline int keypad(WINDOW *win, bool bf) { return 0; }
-static inline int curs_set(int visibility) { return 0; }
+static inline int keypad(WINDOW *win, bool bf) {
+	(void)win; (void)bf;
+	return 0;
+}
+static inline int curs_set(int visibility) {
+	(void)visibility;
+	return 0;
+}
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */

@@ -23,6 +23,7 @@ __BEGIN_DECLS
  * Scheduling policies
  */
 #define SCHED_OTHER     0 /* Another scheduling policy.*/
+/* TODO SCHED_FIFO and SCHED_RR may have priority more or equal 200 */
 #define SCHED_FIFO      1 /* First in-first out (FIFO) scheduling policy*/
 #define SCHED_RR        2 /* Round robin scheduling policy. */
 

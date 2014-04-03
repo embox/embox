@@ -73,7 +73,7 @@ fiq_handler:
 start:
 reset_handler:
 
-    ldr r0, =__stack
+    ldr r0, =_stack_top
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0

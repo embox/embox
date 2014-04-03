@@ -23,6 +23,7 @@
 #define DNS_MAX_NAME_SZ    256
 #define DNS_MAX_MESSAGE_SZ 512
 #define DNS_PORT_NUMBER    53
+#define DNS_LABEL_MASK     0xC0
 
 /**
  * Types of messages
@@ -58,7 +59,7 @@ enum dns_resp_code {
  */
 typedef struct dnshdr {
 	__be16 id;      /* unique id */
-#if defined(__LITTLE_ENDIAN)
+#if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u16 rd:1,
 		tc:1,
 		aa:1,
@@ -67,7 +68,7 @@ typedef struct dnshdr {
 		rcode:4,
 		z:3,
 		ra:1;
-#elif defined(__BIG_ENDIAN)
+#elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u16 qr:1,     /* type of the message */
 		opcode:4,   /* type of the operation */
 		aa:1,       /* authoritative answer */

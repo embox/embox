@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief TODO
+ * @brief
  *
- * @date Aug 28, 2012
+ * @date 28.08.12
  * @author Eldar Abusalimov
  */
 

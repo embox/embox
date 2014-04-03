@@ -9,6 +9,7 @@
 #ifndef NET_NETFILTER_H_
 #define NET_NETFILTER_H_
 
+#include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 #include <netinet/in.h>
 #include <util/list.h>
@@ -47,23 +48,35 @@ enum nf_proto {
  * Netfilter test callback
  */
 struct nf_rule;
+
+/**
+ * @brief Netfilter dynamic matching field
+ *
+ * @param r Rule to match against
+ * @param data Optional data stored in rule
+ *
+ * @return 0 if rule not matches
+ * @return not zero if rule matches
+ */
 typedef int (*nf_test_hnd)(const struct nf_rule *r,
 		void *data);
 
 /**
  * Netfilter rule structure
  */
+#define NF_DECL_NOT_FIELD(name, type) \
+	typeof(type) name; char set_##name; char not_##name;
+
 struct nf_rule {
 	struct list_link lnk;
 	enum nf_target target;
-	char hwaddr_dst[ETH_ALEN]; int not_hwaddr_dst;
-	char hwaddr_src[ETH_ALEN]; int not_hwaddr_src;
-	size_t hwaddr_len;
-	struct in_addr saddr; int not_saddr;
-	struct in_addr daddr; int not_daddr;
-	enum nf_proto proto; int not_proto;
-	in_port_t sport; int not_sport;
-	in_port_t dport; int not_dport;
+	NF_DECL_NOT_FIELD(hwaddr_src, char [ETH_ALEN]);
+	NF_DECL_NOT_FIELD(hwaddr_dst, char [ETH_ALEN]);
+	NF_DECL_NOT_FIELD(saddr, struct in_addr);
+	NF_DECL_NOT_FIELD(daddr, struct in_addr);
+	NF_DECL_NOT_FIELD(proto, enum nf_proto);
+	NF_DECL_NOT_FIELD(sport, in_port_t);
+	NF_DECL_NOT_FIELD(dport, in_port_t);
 	nf_test_hnd test_hnd;
 	void *test_hnd_data;
 };
@@ -111,7 +124,23 @@ extern int nf_rule_copy(struct nf_rule *r_dst,
 /**
  * Main netfilter API
  */
+#define NF_SET_NOT_FIELD(r, field, not, value) \
+	do {                                       \
+		(r)->field = value;                    \
+		(r)->set_##field = 1;                  \
+		(r)->not_##field = not;                \
+	} while (0)
+#define NF_SET_NOT_FIELD_PTR(r, field, not,    \
+		val_ptr, val_len)                      \
+	do {                                       \
+		assert(val_len <= sizeof (r)->field);  \
+		memcpy(&(r)->field, val_ptr, val_len); \
+		(r)->set_##field = 1;                  \
+		(r)->not_##field = not;                \
+	} while (0)
+
 extern int nf_add_rule(int chain, const struct nf_rule *r);
+extern int nf_insert_rule(int chain, const struct nf_rule *r, size_t r_num);
 extern int nf_set_rule(int chain, const struct nf_rule *r,
 		size_t r_num);
 extern int nf_del_rule(int chain, size_t r_num);

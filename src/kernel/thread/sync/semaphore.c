@@ -14,7 +14,7 @@
 static int tryenter_sched_lock(struct sem *s);
 
 void semaphore_init(struct sem *s, int val) {
-	wait_queue_init(&s->wq);
+	waitq_init(&s->wq);
 	s->value = 0;
 	s->max_value = val;
 }
@@ -23,18 +23,39 @@ void semaphore_enter(struct sem *s) {
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	sched_lock();
-	{
-		while (tryenter_sched_lock(s) != 0) {
-			wait_queue_wait_locked(&s->wq, SCHED_TIMEOUT_INFINITE);
+	WAITQ_WAIT(&s->wq, (tryenter_sched_lock(s) == 0));
+}
+
+int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
+	struct timespec current_time;
+	int ret = 0;
+
+	assert(s);
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
+
+	if (tryenter_sched_lock(s) != 0) {
+		int ms;
+
+		clock_gettime(CLOCK_REALTIME, &current_time);
+
+		ms = abs_timeout->tv_nsec - current_time.tv_nsec;
+
+		if (ms > 0) {
+			ret = WAITQ_WAIT_TIMEOUT(&s->wq, !tryenter_sched_lock(s),
+					abs_timeout->tv_nsec - current_time.tv_nsec);
+		} else {
+			ret = -ETIMEDOUT;
 		}
+
+		if (!tryenter_sched_lock(s))
+			ret = 0;
 	}
-	sched_unlock();
+
+	return ret;
 }
 
 static int tryenter_sched_lock(struct sem *s) {
 	assert(s);
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if (s->value == s->max_value) {
 		return -EAGAIN;
@@ -61,7 +82,13 @@ void semaphore_leave(struct sem *s) {
 	sched_lock();
 	{
 		s->value--;
-		wait_queue_notify(&s->wq);
+		waitq_wakeup_all(&s->wq);
 	}
 	sched_unlock();
+}
+
+int semaphore_getvalue(struct sem *restrict s, int *restrict sval) {
+	*sval = s->value;
+
+	return 0;
 }

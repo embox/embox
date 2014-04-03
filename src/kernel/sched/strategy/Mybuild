@@ -42,7 +42,6 @@ module priority_based_smp extends api {
 
 module trivial extends api {
 	source "sched_strategy.h"
-	source "runq.c"
 
 	depends affinity_api
 	depends timing_api
@@ -59,11 +58,10 @@ abstract module runq_api {
 }
 
 module NoRunq extends runq_api {
-
+	source "no_runq.c", "no_runq.h"
 }
 
 module Runq extends runq_api {
-	source "runq.c"
 	source "runq.h"
 
 	depends runq.api
@@ -80,6 +78,9 @@ module AffinityNone extends affinity_api {
 module AffinitySMP extends affinity_api {
 	source "smp_affinity.h"
 	source "smp_affinity.c"
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.resource.affinity
 }
 
 @DefaultImpl(TimeRunning)

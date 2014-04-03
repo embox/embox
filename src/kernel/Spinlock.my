@@ -1,0 +1,7 @@
+
+package embox.kernel
+
+@Mandatory
+module spinlock {
+	option boolean spin_debug = true
+}

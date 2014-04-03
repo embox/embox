@@ -1,37 +1,91 @@
 /**
  * @file
- * @brief TODO --Alina.
+ * @brief
  *
  * @date 18.03.2012
  * @author Alina Kramar
+ * @author Denis Deryugin
  */
 
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+
 #include <embox/cmd.h>
+#include <debug/symbol.h>
 #include <util/array.h>
+
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);
 
-extern struct __trace_point * const __trace_points_array[];
+ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 static void print_usage(void) {
-	printf("Usage: trace [-h] [-s] [-i <number>] [-d <number>] [-a <number>]\n");
+	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
+}
+
+static void print_instrument_trace_block_stat(void) {
+	struct __trace_block *tb = auto_profile_tb_first();
+	const struct symbol *s;
+	char *buff = (char*) malloc (sizeof(char) * 256);
+	int l;
+
+	printf("Automatic trace points:\n");
+
+	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
+	if (tb) do {
+		s = symbol_lookup(tb->func);
+		l = strlen(s->name) + strlen(s->loc.file) + 2;
+		strcpy(buff, s->loc.file);
+		strcat(buff, ":");
+		strcat(buff, s->name);
+
+		if (l > 40) {
+			printf("...%37s ", buff + strlen(buff) - 37);
+		} else {
+			printf("%40s ", buff);
+		}
+		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
+			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+
+		tb = auto_profile_tb_next(tb);
+	} while (tb);
 }
 
 static void print_trace_block_stat(void) {
 	struct __trace_block *tb;
 	int number = 0;
 
-	printf("%2s %7s %10s\n", "№ ", "count", "time");
+	printf("%2s %15s %12s %20s %11s\n", "#", "Name", "Count", "Ticks", "Time");
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->active) {
-			printf("%2d %7d %10d\n", number, tb->begin->count, tb->time);
+			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
+				tb->count, tb->time,
+				(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+				/* Converting from nanoseconds to seconds */
+		}
+		number++;
+	}
+
+	return;
+}
+
+static void print_entered_blocks(void) {
+	struct __trace_block *tb;
+	int number = 0;
+
+	printf("Currently entered blocks:\n\n");
+
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
+	{
+		if (tb->is_entered) {
+			printf("Trace block:%25s\nLocation:%28s, %40s:%d\n\n" , tb->name, tb->location.func,
+				tb->location.at.file, tb->location.at.line);
 		}
 		number++;
 	}
@@ -45,10 +99,10 @@ static void print_trace_block_stat_personal(int i) {
 
 	printf("%2s %7s %10s %5s\n", "№ ", "count", "time", "Act");
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
-			printf("%2d %7d %10d %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			printf("%2d %7d %10llu %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
 			break;
 		}
 	}
@@ -60,7 +114,7 @@ bool change_block_activity(int index, bool activity) {
 	struct __trace_block *tb;
 	int number = 0;
 
-	array_nullterm_foreach(tb, __trace_blocks_array)
+	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == index) {
 			tb->active = activity;
@@ -74,7 +128,9 @@ bool change_block_activity(int index, bool activity) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int index;
+	TRACE_BLOCK_DEF(this_is_block);
 
+	trace_block_enter(&this_is_block);
 	if (argc <= 1) {
 		print_usage();
 		return -EINVAL;
@@ -82,7 +138,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hsi:d:a:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -119,9 +175,17 @@ static int exec(int argc, char **argv) {
 				printf("Invalid command line option\n");
 			}
 			break;
+		case 'e':
+			print_entered_blocks();
+			break;
+		case 'n':
+			print_instrument_trace_block_stat();
+			break;
 		default:
 			break;
 		}
 	}
+
+	trace_block_leave(&this_is_block);
 	return 0;
 }

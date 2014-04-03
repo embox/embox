@@ -21,7 +21,6 @@
 
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
@@ -37,13 +36,13 @@ struct param {
 	void (*run)(void);
 };
 
-static int _canon_read(struct idx_desc *data, void *buf, size_t size);
-static int _write(struct idx_desc *data, const void *buf, size_t nbyte);
+static ssize_t _canon_read(struct idx_desc *data, void *buf, size_t size);
+static ssize_t _write(struct idx_desc *data, const void *buf, size_t nbyte);
 static int _ioctl(struct idx_desc *data, int request, void *);
 static int _fstat(struct idx_desc *data, void *buff);
-static int _close (struct idx_desc *data);
+static void _close (struct idx_desc *data);
 
-const struct task_idx_ops task_idx_ops_tty = {
+const struct idesc_ops task_idx_ops_tty = {
 	.close = _close,
 	.read = _canon_read,
 	.write = _write,
@@ -78,7 +77,7 @@ static size_t _read(void *buf, size_t size, struct idx_desc *data) {
 	return size;
 }
 
-static int _canon_read(struct idx_desc *data, void *buf, size_t size) {
+static ssize_t _canon_read(struct idx_desc *data, void *buf, size_t size) {
 	struct tty_buf *tty = data2tty_buf(data);
 	if (tty->canonical) {
 		int to_write;
@@ -95,14 +94,14 @@ static int _canon_read(struct idx_desc *data, void *buf, size_t size) {
 	return _read(buf, size, data);
 }
 
-static int _write(struct idx_desc *data, const void *buf, size_t size) {
+static ssize_t _write(struct idx_desc *data, const void *buf, size_t size) {
 	size_t cnt = 0;
 	char *b = (char*) buf;
 	struct tty_buf *tty = data2tty_buf(data);
 	while (cnt != size) {
 		tty->putc(tty, b[cnt++]);
 	}
-	return size;
+	return (ssize_t)size;
 }
 
 static void tty_putc_buf(struct tty_buf *tty, char ch) {
@@ -160,8 +159,7 @@ static int _fstat(struct idx_desc *data, void *buff) {
 
 }
 
-static int _close (struct idx_desc *data) {
-	return 0;
+static void _close (struct idx_desc *data) {
 }
 
 static void tty_init(struct tty_buf *tty) {

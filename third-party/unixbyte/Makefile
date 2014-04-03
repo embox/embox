@@ -1,0 +1,53 @@
+EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
+
+AT=
+
+UNIXBENCH_DIR   = $(BUILD_DIR)
+UNIXBENCH_FLAGS = $(UNIXBENCH_DIR)/flags
+
+EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
+#EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
+EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+
+EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
+EMBOX_IMPORTED_CFLAGS   += $(filter -I%,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -gdwarf-2,$(EMBOX_CFLAGS))
+
+
+EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
+ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
+EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
+endif
+
+EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
+EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
+
+
+all:
+
+.PHONY: all $(UNIXBENCH_LIB)
+
+$(UNIXBENCH_DIR):
+	$(AT)mkdir -p $@
+
+$(UNIXBENCH_FLAGS): | $(UNIXBENCH_DIR)
+	-$(AT)rm $@
+	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
+	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
+	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
+
+$(UNIXBENCH_DIR)/Makefile: CMakeLists.txt $(UNIXBENCH_FLAGS) | $(UNIXBENCH_DIR)
+	$(AT)cd $(UNIXBENCH_DIR) && $(shell cat $(UNIXBENCH_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
+
+all: $(UNIXBENCH_DIR)/Makefile
+	$(AT)cd $(UNIXBENCH_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
+
+.NOTPARALLEL:

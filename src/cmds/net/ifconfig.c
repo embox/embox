@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <net/if.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -25,31 +26,29 @@ EMBOX_CMD(exec);
 struct ifconfig_args {
 	char with_a;
 	char with_s;
-	char with_v; /* TODO not used now */
 	char with_arp, arp;
 	char with_promisc, promisc;
 	char with_allmulti, allmulti;
 	char with_mcast; int mcast;
-	char with_p2p; char p2p; struct in_addr p2p_addr; /* TODO setup p2p_addr (not used now) */
+	char with_p2p; char p2p; struct in_addr p2p_addr;
 	char with_bcast; char bcast; struct in_addr bcast_addr;
 	char with_iface; char iface[IFNAMSIZ];
-	char with_addr; struct in_addr addr;
-	char with_dstaddr; struct in_addr dstaddr; /* TODO setup dstaddr (not used now) */
+	char with_addr; int addr_family; struct in_addr addr_in;
+			struct in6_addr addr_in6;
 	char with_netmask; struct in_addr netmask;
 	char with_mtu; int mtu;
 	char with_irq; int irq;
 	char with_ioaddr; void *ioaddr;
-	char with_txqueuelen; long int txqueuelen;
 	char with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
 	char with_up_or_down; char up;
 };
 
 static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 	return args->with_up_or_down || args->with_arp || args->with_promisc
-		|| args->with_allmulti || args->with_mtu || args->with_dstaddr
-		|| args->with_netmask || args->with_irq || args->with_ioaddr
-		|| args->with_bcast || args->with_p2p || args->with_hw || args->with_mcast
-		|| args->with_addr || args->with_txqueuelen;
+		|| args->with_allmulti || args->with_mtu || args->with_netmask
+		|| args->with_irq || args->with_ioaddr || args->with_bcast
+		|| args->with_p2p || args->with_hw || args->with_mcast
+		|| args->with_addr;
 }
 
 static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *args) {
@@ -84,13 +83,21 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	}
 
 	if (args->with_p2p) { /* set flag IFF_POINTOPOINT */
+		/* TODO use p2p_addr */
 		ret = (args->p2p ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_POINTOPOINT);
 		if (ret != 0) return ret;
 	}
 
 	if (args->with_addr) { /* set new IP address to iface */
-		ret = inetdev_set_addr(iface, args->addr.s_addr);
-		if (ret != 0) return ret;
+		if (args->addr_family == AF_INET) {
+			ret = inetdev_set_addr(iface, args->addr_in.s_addr);
+			if (ret != 0) return ret;
+		}
+		else {
+			assert(args->addr_family == AF_INET6);
+			memcpy(&iface->ifa6_address, &args->addr_in6,
+					sizeof args->addr_in6);
+		}
 	}
 
 	if (args->with_netmask) { /* set new mask to iface */
@@ -124,11 +131,6 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 		if (ret != 0) return ret;
 	}
 
-	if (args->with_txqueuelen) { /* set new max packet length */
-		ret = netdev_set_txqueuelen(iface->dev, args->txqueuelen);
-		if (ret != 0) return ret;
-	}
-
 	if (args->with_up_or_down && args->up) { /* up device */
 		ret = netdev_flag_up(iface->dev, IFF_UP);
 		if (ret != 0) return ret;
@@ -154,10 +156,8 @@ static int ifconfig_print_long_hdr(void) {
 static int ifconfig_print_long_info(struct in_device *iface) {
 	struct net_device_stats *stat;
 	unsigned char mac[] = "xx:xx:xx:xx:xx:xx";
-	struct in_addr ip, bcast, mask;
-	char s_ip[] = "xxx.xxx.xxx.xxx";
-	char s_bcast[] = "xxx.xxx.xxx.xxx";
-	char s_mask[] = "xxx.xxx.xxx.xxx";
+	struct in_addr in;
+	char s_in[INET_ADDRSTRLEN], s_in6[INET6_ADDRSTRLEN];
 
 	stat = &iface->dev->stats;
 
@@ -170,18 +170,22 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	}
 
 	printf("\n\t");
-	ip.s_addr = iface->ifa_address;
-	mask.s_addr = iface->ifa_mask;
-	strncpy(s_ip, inet_ntoa(ip), sizeof(s_ip));
-	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
-	if (iface->dev->flags & IFF_LOOPBACK) {
-		printf("inet addr:%s  Mask:%s", s_ip, s_mask);
-		printf("\n\tinet6 addr: ::1/128 Scope:Host");
-	} else {
-		bcast.s_addr = iface->ifa_broadcast;
-		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
-		printf("inet addr:%s  Bcast:%s  Mask:%s", s_ip, s_bcast, s_mask);
+	in.s_addr = iface->ifa_address;
+	printf("inet addr:%s", inet_ntop(AF_INET, &in, s_in,
+				INET_ADDRSTRLEN));
+	if (iface->dev->flags & IFF_BROADCAST) {
+		in.s_addr = iface->ifa_broadcast;
+		printf("  Bcast:%s", inet_ntop(AF_INET, &in, s_in,
+					INET_ADDRSTRLEN));
 	}
+	in.s_addr = iface->ifa_mask;
+	printf("  Mask:%s", inet_ntop(AF_INET, &in, s_in,
+				INET_ADDRSTRLEN));
+
+	printf("\n\t");
+	printf("inet6 addr: %s/??", inet_ntop(AF_INET6,
+				&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
+	printf("  Scope:Host");
 
 	printf("\n\t");
 	if (iface->dev->flags & IFF_UP) printf("UP ");
@@ -205,8 +209,8 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 			stat->tx_packets, stat->tx_err, stat->tx_dropped, 0UL,
 			stat->tx_carrier_errors);
 
-	printf("\n\tcollisions:%ld txqueuelen:%ld",
-			stat->collisions, iface->dev->tx_queue_len);
+	printf("\n\tcollisions:%ld",
+			stat->collisions);
 
 	printf("\n\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)",
 			stat->rx_bytes, stat->rx_bytes / 1048576,
@@ -281,6 +285,7 @@ static int exec(int argc, char *argv[]) {
 	int i;
 	struct in_device *iface;
 	struct ifconfig_args args;
+	void *addr;
 
 	iface = NULL; /* XXX required for -O2 */
 	memset(&args, 0, sizeof args);
@@ -288,12 +293,12 @@ static int exec(int argc, char *argv[]) {
 	for (i = 1; i < argc; ++i) {
 		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i])) {
 			printf("Usage:\n");
-			printf("  %s [-a] [-v] [-s] <interface> [[<AF] <address>]\n", argv[0]);
+			printf("  %s [-a] [-s] <interface> [[<AF>] <address>]\n", argv[0]);
 			printf("  [[-]broadcast [<address>]]  [[-]pointopoint [<address>]]\n");
-			printf("  [netmask <address>]  [dstaddr <address>]  [tunnel <address>]\n");
-			printf("  [hw <HW> <address>]  [metric <NN>]  [mtu <NN>]\n");
+			printf("  [netmask <address>]\n");
+			printf("  [hw <HW> <address>]  [mtu <NN>]\n");
 			printf("  [[-]arp]  [[-]allmulti]  [multicast]  [[-]promisc]\n");
-			printf("  [io_addr <NN>]  [irq <NN>]  [txqueuelen <NN>]\n");
+			printf("  [io_addr <NN>]  [irq <NN>]\n");
 			printf("  [up|down] ...\n");
 			printf("\n");
 			printf("  <HW>=Hardware Type.\n");
@@ -306,7 +311,6 @@ static int exec(int argc, char *argv[]) {
 		}
 		else if (!strcmp("-a", argv[i])) args.with_a = 1;
 		else if (!strcmp("-s", argv[i])) args.with_s = 1;
-		else if (!strcmp("-v", argv[i])) args.with_v = 1;
 		else if (!args.with_iface) {
 			args.with_iface = 1;
 			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface));
@@ -332,13 +336,6 @@ static int exec(int argc, char *argv[]) {
 			args.with_mtu = 1;
 			if (sscanf(argv[++i], "%d", &args.mtu) != 1) {
 				printf("%s: wrong mtu argument\n", argv[i]);
-				return -EINVAL;
-			}
-		}
-		else if (!strcmp("dstaddr", argv[i])) {
-			args.with_dstaddr = 1;
-			if (!inet_aton(argv[++i], &args.dstaddr)) {
-				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
 			}
 		}
@@ -394,18 +391,27 @@ static int exec(int argc, char *argv[]) {
 			args.with_mcast = 1;
 			args.mcast = argv[i][0] != '-';
 		}
-		else if (!strcmp("txqueuelen", argv[i])) {
-			args.with_txqueuelen = 1;
-			if (sscanf(argv[++i], "%ld", &args.txqueuelen) != 1) {
-				printf("%s: bad number\n", argv[i]);
-				return -EINVAL;
-			}
-		}
 		else if (!args.with_addr) {
 			args.with_addr = 1;
-			if (!strcmp("inet", argv[i]) || !strcmp("inet6", argv[i])
-					|| !strcmp("unix", argv[i])) ++i;
-			if (!inet_aton(argv[i], &args.addr)) {
+			if (!strcmp("inet", argv[i])) {
+				args.addr_family = AF_INET;
+				addr = &args.addr_in;
+				++i;
+			}
+			else if (!strcmp("inet6", argv[i])) {
+				args.addr_family = AF_INET6;
+				addr = &args.addr_in6;
+				++i;
+			}
+			else if (!strcmp("unix", argv[i])) {
+				printf("unix family not supported\n");
+				return -EINVAL;
+			}
+			else {
+				args.addr_family = AF_INET;
+				addr = &args.addr_in;
+			}
+			if (!inet_pton(args.addr_family, argv[i], addr)) {
 				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
 			}

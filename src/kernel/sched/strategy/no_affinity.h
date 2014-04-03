@@ -13,18 +13,24 @@ struct thread;
 typedef struct { } __affinity_t;
 
 static inline int sched_affinity_check(struct thread *t, int mask) {
+	(void)t;
+	(void)mask;
 	return 1;
 }
 
 static inline void sched_affinity_init(struct thread *t) {
+	(void)t;
 	return;
 }
 
 static inline void sched_affinity_set(struct thread *t, int mask) {
+	(void)t;
+	(void)mask;
 	return;
 }
 
 static inline int sched_affinity_get(struct thread *t) {
+	(void)t;
 	return 0;
 }
 

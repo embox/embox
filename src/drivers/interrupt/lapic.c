@@ -38,29 +38,35 @@
 #define	TMR_PERIODIC     0x20000
 #define	TMR_BASEDIV      (1<<20)
 
-void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
-	uint32_t val;
-
-	val = 0;
-	val |= apic_id << 24;
-	lapic_write_icr2(val);
-
-	val = 0;
-	val |= (1 << 14) | (6 << 8);
-	val |= ((trampoline >> 12) & 0xFF);
-	lapic_write_icr1(val);
-}
-
 void lapic_send_init_ipi(uint32_t apic_id) {
 	uint32_t val;
 
-	val = 0;
-	val |= apic_id << 24;
+	val = (apic_id & 0xFF) << 24; /* Destination Field */
 	lapic_write_icr2(val);
 
-	val = 0;
-	val |= (1 << 14) | (5 << 8);
+	val = 0x5 << 8; /* Delivery Mode: INIT */
+	val |= 0x1 << 14; /* Level: Assert */
+	val |= 0x3 << 18; /* Destination Shorthand: all excluding self */
 	lapic_write_icr1(val);
+
+	/* sleep until Delivery Status is Pending */
+	while (lapic_read_icr1() & (0x1 << 12));
+}
+
+void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
+	uint32_t val;
+
+	val = (apic_id & 0xFF) << 24; /* Destination Field */
+	lapic_write_icr2(val);
+
+	val = (trampoline >> 12) & 0xFF; /* Vector Field */
+	val |= 0x6 << 8; /* Delivery Mode: Start Up */
+	val |= 0x1 << 14; /* Level: Assert */
+	val |= 0x3 << 18; /* Destination Shorthand: all excluding self */
+	lapic_write_icr1(val);
+
+	/* sleep until Delivery Status is Pending */
+	while (lapic_read_icr1() & (0x1 << 12));
 }
 
 void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
@@ -101,9 +107,9 @@ void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
 static inline void lapic_enable_in_msr(void) {
 	uint32_t msr_hi, msr_lo;
 
-	ia32_msr_read(IA32_APIC_BASE, &msr_hi, &msr_lo);
+	ia32_msr_read(IA32_APIC_BASE, &msr_lo, &msr_hi);
 	msr_lo |= (1 << IA32_APIC_BASE_ENABLE_BIT);
-	ia32_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
+	ia32_msr_write(IA32_APIC_BASE, msr_lo, msr_hi);
 }
 
 int lapic_enable(void) {
@@ -111,10 +117,10 @@ int lapic_enable(void) {
 
 	lapic_enable_in_msr();
 
+#if 0
 	/* Clear error state register */
 	lapic_errstatus();
 
-#if 1
 	lapic_write(LAPIC_DFR, 0xFFFFFFFF);
 
 	val = lapic_read(LAPIC_LDR);
@@ -128,12 +134,10 @@ int lapic_enable(void) {
 	lapic_write(LAPIC_TASKPRIOR, 0);
 #endif
 
-#if 1
     /* Set the spurious interrupt vector register */
 	val = lapic_read(LAPIC_SIVR);
 	val |= 0x100;
 	lapic_write(LAPIC_SIVR, val);
-#endif
 
 	return 0;
 }

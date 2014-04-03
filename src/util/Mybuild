@@ -9,6 +9,10 @@ static module Prioq {
 	source "prioq_impl.h"
 }
 
+static module priolist {
+	source "priolist.c"
+}
+
 static module Array {
 	source "array_impl.h"
 	source "array_spread.lds.S"
@@ -16,6 +20,11 @@ static module Array {
 
 static module Bit {
 	source "bit_impl.h"
+}
+
+static module Bitmap {
+	source "bitmap.c"
+	depends Bit
 }
 
 @DefaultImpl(SListDebug)
@@ -49,6 +58,7 @@ abstract module DList {}
 
 static module DListDebug extends DList {
 	source "dlist_debug.h"
+	source "dlist_debug.c"
 }
 static module DListNDebug extends DList {
 	source "dlist_ndebug.h"
@@ -79,8 +89,6 @@ static module LibUtil {
 
 	depends sys_log
 	depends ring
-
-	depends embox.lib.LibC
 
 	depends Prioq
 	depends Array

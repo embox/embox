@@ -18,8 +18,9 @@
 
 // FIXME: for yet obscure reason despite limits.h is included, but these constants are not defined.
 //         No time for it now, let's figure out why later.
-#define CHAR_MAX (127)
-#define CHAR_MIN (-128)
+#include <limits.h>
+//#define CHAR_MAX (127)
+//#define CHAR_MIN (-128)
 
 
 #if 1
@@ -30,8 +31,9 @@
 
 #include_next <stdio.h>
 #include_next <time.h>
-//#include <pthread.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 
@@ -57,41 +59,33 @@ namespace std {
 		DPRINT();
 		return (double)(time1 - time0);
 	}
-	static inline char *getenv(const char *name) {
-		DPRINT();
-		return NULL;
-	}
 	static inline int mblen(const char *s, size_t n) {
+		(void)s;
+		(void)n;
 		DPRINT();
 		// FIXME:
 		return 0;
 	}
 	static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
+		(void)pwc;
+		(void)s;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
 	static inline int atexit(void (*function)(void)) {
+		(void)function;
 		DPRINT();
 		return -1;
 	}
-	static inline void exit(int status) {
-		DPRINT();
-		while(true) {;}
-	}
 	static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
+		(void)dest;
+		(void)src;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
 
-#define _SC_PAGESIZE 0
-	inline long sysconf(int name) {
-		printf(">>> sysconf(%d)\n", name);
-		switch (name) {
-		case _SC_PAGESIZE: return 4096;
-		default: break;
-		}
-		return -1;
-	}
 
 //#define MAP_SHARED    0x00
 #define MAP_PRIVATE   0x01
@@ -111,6 +105,7 @@ namespace std {
 		return NULL;
 	}
 	static inline int munmap(void *addr, size_t size) {
+		(void)addr;
 		(void)size;
 		printf(">>> munmap(%p)\n",addr);
 		errno = EPERM;
@@ -118,6 +113,10 @@ namespace std {
 	}
 
 	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+		(void)stream;
+		(void)buf;
+		(void)mode;
+		(void)size;
 		DPRINT();
 		return -1;
 	}
@@ -129,21 +128,6 @@ namespace std {
 //	           int *sign, char *buf, size_t len);
 }
 
-static inline
-void *pthread_getspecific(struct pthread_key *) {
-	DPRINT();
-	return NULL;
-}
-static inline
-int   pthread_setspecific(struct pthread_key *, const void *) {
-	DPRINT();
-	return ENOSYS;
-}
-static inline
-int   pthread_key_create(struct pthread_key **, void (*)(void *)) {
-	DPRINT();
-	return ENOSYS;
-}
 
 /* implemented now
  * extern int nanosleep(const struct timespec *req, struct timespec *rem);
@@ -155,11 +139,12 @@ extern void clearerr(FILE *stream);
 
 #include <defines/wchar_t.h>
 
-#ifdef __WINT_TYPE__
-typedef __WINT_TYPE__ wint_t;
-#else //__WINT_TYPE__
-#error __WINT_TYPE__ is not defined
-#endif //__WINT_TYPE__
+// moving this section to _embox.h
+//#ifdef __WINT_TYPE__
+//typedef __WINT_TYPE__ wint_t;
+//#else //__WINT_TYPE__
+//#error __WINT_TYPE__ is not defined
+//#endif //__WINT_TYPE__
 
 #ifdef __WCHAR_MIN__
 #define WCHAR_MIN __WCHAR_MIN__

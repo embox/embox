@@ -12,9 +12,9 @@
 SO := so
 
 ARCH := a
-override AR := ar
-override CC := gcc
-override CXX := g++
+#override AR := ar
+#override CC := gcc
+#override CXX := g++
 AR_INS_R := -rs
 AR_EXTR := -x
 AR_OUT = $@

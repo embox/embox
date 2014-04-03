@@ -26,15 +26,9 @@
 #define SECTION_REGION(section) \
 	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
 
-#define DATA_ALIGNMENT 32
+#define DEFAULT_TEXT_ALIGNMENT 16
+#define DEFAULT_DATA_ALIGNMENT 32
 
-#define ALIGNMENT() . = ALIGN(DATA_ALIGNMENT)
-
-
-#include <framework/mod/options.h>
-#include <module/embox/mem/page_api.h>
-
-#define REGION_ALIGN() . = ALIGN(PAGE_SIZE());
-
+#define ALIGNMENT() . = ALIGN(DEFAULT_DATA_ALIGNMENT)
 
 #endif /* EMBOX_LDS_H_ */

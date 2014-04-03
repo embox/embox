@@ -52,16 +52,49 @@
 
 #elif defined(__CONFIG_LDS_H__)
 
+#define region(name, base, size) \
+	$N$define LDS_REGION_BASE_##name base \
+	$N$define LDS_REGION_SIZE_##name size
+
+#define section(name, region, ...) \
+	__section(name, region, __VA_ARGS__)
+
+#define __defined(macro) \
+	defined(macro)
+
+/* This indirection is for var-arg handling. */
+#define __section(name, region, lma_region) \
+	$N$define LDS_SECTION_VMA_##name region         \
+	$N$if __defined(lma_region##LDS_SECTION_VMA_##name) \
+	$N$ define LDS_SECTION_LMA_##name region        \
+	$N$else                                         \
+	$N$ define LDS_SECTION_LMA_##name lma_region    \
+	$N$endif
+
+/* Backward compatibility. */
+
 #define lds_region(name, base, size) \
-	$define LDS_REGION_BASE_##name base $N\
-	$define LDS_REGION_SIZE_##name size
-
-#define lds_section_load(name, vma_region, lma_region) \
-	$define LDS_SECTION_VMA_##name vma_region $N\
-	$define LDS_SECTION_LMA_##name lma_region
-
+	$N$warning "lds_region() is deprecated, use region() instead" \
+	$Nregion(name, region)
 #define lds_section(name, region) \
-	lds_section_load(name, region, region)
+	$N$warning "lds_section() is deprecated, use section() instead" \
+	$Nsection(name, region)
+#define lds_section_load(name, vma_region, lma_region) \
+	$N$warning "lds_section_load() is deprecated, use section() instead" \
+	$Nsection(name, vma_region, lma_region)
+
+/* Predefined regions/sections. */
+#define text(region, ...)    __section(text,   region, __VA_ARGS__)
+#define rodata(region, ...)  __section(rodata, region, __VA_ARGS__)
+#define data(region, ...)    __section(data,   region, __VA_ARGS__)
+#define bss(region, ...)     __section(bss,    region, __VA_ARGS__)
+
+#define RAM(origin, length)  region(RAM, origin, length)
+#define ROM(origin, length)  region(ROM, origin, length)
+
+/* Region alias. */
+#define SDRAM RAM
+#define FLASH ROM
 
 #include "lds.conf"
 

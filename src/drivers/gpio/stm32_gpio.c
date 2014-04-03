@@ -48,20 +48,40 @@ static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 
 }
 
-
-int gpio_in(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	int mode_val = 4;
+int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+	int mode_val = 0;
 	assert(gpio);
 
-	if (mode) {
-		mode_val = 8;
+	if ((mode & GPIO_MODE_OUT_SECTION) &&
+		(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
+		return -1;
+	}
 
-		if (mode & GPIO_MODE_IN_PULL_UP) {
-			REG_STORE(&(gpio->bsrr), mask);
+	if (mode & GPIO_MODE_INPUT) {
+
+		mode_val = 4;
+		/* mask inputs flag only without GPIO_MODE_INPUT */
+		if ((mode & GPIO_MODE_IN_SECTION) & ~GPIO_MODE_INPUT) {
+			mode_val = 8;
+
+			if (mode & GPIO_MODE_IN_PULL_UP) {
+				REG_STORE(&(gpio->bsrr), mask);
+			}
+
+			if (mode & GPIO_MODE_IN_PULL_DOWN) {
+				REG_STORE(&(gpio->brr), mask);
+			}
+		}
+	} else if (mode & GPIO_MODE_OUTPUT) {
+
+		mode_val = 3;
+
+		if (mode & GPIO_MODE_OUT_ALTERNATE) {
+			mode_val |= 8;
 		}
 
-		if (mode & GPIO_MODE_IN_PULL_DOWN) {
-			REG_STORE(&(gpio->brr), mask);
+		if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
+			mode_val |= 4;
 		}
 	}
 
@@ -70,35 +90,18 @@ int gpio_in(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	return 0;
 }
 
-int gpio_out(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	int mode_val = 3;
-
-	if (mode & GPIO_MODE_OUT_ALTERNATE) {
-		mode_val |= 8;
-	}
-
-	if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
-		mode_val |= 4;
-	}
-
-	set_state(gpio, mask, mode_val);
-	return 0;
-}
-
-void gpio_set(struct gpio *gpio, gpio_mask_t mask) {
+void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level){
 	assert(gpio);
 	assert((mask & ~((1 << 16) - 1)) == 0);
-	REG_STORE(&(gpio->bsrr), mask);
+
+	if(level) {
+		REG_STORE(&(gpio->bsrr), mask);
+	} else {
+		REG_STORE(&(gpio->brr), mask);
+	}
 }
 
-void gpio_clear(struct gpio *gpio, gpio_mask_t mask) {
-	assert(gpio);
-	assert((mask & ~((1 << 16) - 1)) == 0);
-	REG_STORE(&(gpio->brr), mask);
-}
-
-
-gpio_mask_t gpio_level(struct gpio *gpio, gpio_mask_t mask) {
+gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask){
 	assert(gpio);
 	return mask & REG_LOAD(&(gpio->idr));
 }

@@ -15,12 +15,14 @@
 
 #include <module/embox/mem/page_api.h>
 
-
 struct page_allocator {
-	char *start;
-	size_t capacity;
-	size_t free;
+	void *pages_start;
+	unsigned int pages_n;
 	size_t page_size;
+
+	size_t free;
+
+	unsigned long bitmap[];
 };
 
 extern struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_size);

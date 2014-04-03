@@ -28,7 +28,7 @@ struct pnet_module {
 };
 
 #define __PNET_REPO_NODE_ADD(str_id,pnode) \
-	extern const struct pnet_module __pnet_mod_repo[]; \
+	ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo); \
 	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
 		.name = str_id,             \
 		.node = &pnode,             \
@@ -36,7 +36,7 @@ struct pnet_module {
 	})
 
 #define __PNET_REPO_PROTO_ADD(str_id, pproto) \
-	extern const struct pnet_module __pnet_mod_repo[]; \
+	ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo); \
 	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
 		.name = str_id,             \
 		.node = NULL,               \

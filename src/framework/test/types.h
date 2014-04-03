@@ -31,9 +31,7 @@ struct __test_fixture_ops {
 
 struct test_suite {
 	/** @c NULL terminated array of pointers to test cases. */
-	const struct test_case **test_cases;
-	/** The corresponding mod. */
-	const struct mod *mod;
+	const struct test_case *volatile const *test_cases;
 	/** One-line human readable description of the whole test suite. */
 	const char *description;
 	/** Internal data managed by framework. */
@@ -58,6 +56,11 @@ struct __test_assertion_point {
 
 struct __test_private {
 	int result;
+};
+
+struct test_mod {
+	struct mod mod;
+	struct test_suite suite;
 };
 
 #endif /* FRAMEWORK_TEST_TYPES_H_ */

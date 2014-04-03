@@ -9,10 +9,10 @@
 #ifndef KERNEL_THREAD_SYNC_RWLOCK_H_
 #define KERNEL_THREAD_SYNC_RWLOCK_H_
 
-#include <kernel/sched/wait_queue.h>
+#include <kernel/sched/waitq.h>
 
 struct rwlock {
-	struct wait_queue wq;
+	struct waitq wq;
 	int status;
 	int count;
 };

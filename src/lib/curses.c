@@ -14,6 +14,7 @@
 #include <util/math.h>
 #include <termios.h>
 #include <stdio.h>
+#include <util/array.h>
 
 int COLS;
 int LINES;
@@ -65,13 +66,20 @@ static void window_setch(WINDOW *win, chtype ch, uint16_t cury,
 		uint16_t curx) {
 	assert(win != NULL);
 	assert(win->lines != NULL);
+	assert((cury >= win->begy) && (cury < win->endy));
+	assert((curx >= win->begx) && (cury < win->endx));
 
+	if (ch == '#') {
+		ch = '#';
+	}
 	*(win->lines + cury * COLS + curx) = ch;
 }
 
 static chtype window_getch(WINDOW *win, uint16_t cury, uint16_t curx) {
 	assert(win != NULL);
 	assert(win->lines != NULL);
+	assert((cury >= win->begy) && (cury < win->endy));
+	assert((curx >= win->begx) && (cury < win->endx));
 
 	return *(win->lines + cury * COLS + curx);
 }
@@ -126,7 +134,8 @@ static int screen_change_mode(void) {
 		return -errno;
 	}
 
-	if (-1 == tcsetattr(fileno(screen.in), TCSANOW, &screen.last_mode)) {
+	if (-1 == tcsetattr(fileno(screen.in), TCSANOW,
+				&screen.last_mode)) {
 		return -errno;
 	}
 
@@ -204,7 +213,8 @@ int delwin(WINDOW *win) {
 }
 
 int doupdate(void) {
-	chtype ch;
+	chtype *std_ptr, *cur_ptr, *std_end;
+	ptrdiff_t offset;
 	uint16_t y, x;
 
 	if (isendwin()) {
@@ -213,16 +223,30 @@ int doupdate(void) {
 		}
 	}
 
-	for (y = 0; y < LINES; ++y) {
-		for (x = 0; x < COLS; ++x) {
-			ch = window_getch(stdscr, y, x);
-			if (ch != window_getch(curscr, y, x)) {
-				fprintf(screen.out, "\x1b[%hu;%huH%c", y + 1, x + 1,
-						(char)window_getch(stdscr, y, x));
-				window_setch(curscr, ch, y, x);
+	std_ptr = stdscr->lines;
+	cur_ptr = curscr->lines;
+	std_end = stdscr->lines + LINES * COLS;
+
+	do {
+		for (; (std_ptr < std_end) && (*std_ptr == *cur_ptr);
+				++std_ptr, ++cur_ptr) { }
+
+		offset = std_ptr - stdscr->lines;
+		y = offset / COLS;
+		x = offset % COLS;
+
+		fprintf(screen.out, "\x1b[%hu;%huH", y + 1, x + 1);
+
+		for (; (std_ptr < std_end) && (*std_ptr != *cur_ptr);
+				++std_ptr, ++cur_ptr) {
+			*cur_ptr = *std_ptr;
+			fprintf(screen.out, "%c", (char)*std_ptr);
+			if (++x == COLS) {
+				fprintf(screen.out, "\n");
+				x = 0;
 			}
 		}
-	}
+	} while (std_ptr < std_end);
 
 	return OK;
 }
@@ -243,7 +267,10 @@ int wrefresh(WINDOW *win) {
 	}
 
 	if (curscr->clearok || win->clearok) {
-		wclear(win);
+		res = wclear(win);
+		if (res != OK) {
+			return res;
+		}
 		curscr->clearok = win->clearok = false;
 	}
 
@@ -320,6 +347,8 @@ int mvwaddch(WINDOW *win, int y, int x, const chtype ch) {
 }
 
 int waddch(WINDOW *win, const chtype ch) {
+	int res;
+
 	if (win == NULL) {
 		return ERR;
 	}
@@ -333,6 +362,13 @@ int waddch(WINDOW *win, const chtype ch) {
 		++win->cury;
 		if (win->cury == win->endy) {
 			win->cury = win->begy;
+		}
+
+		if (win->scrollok) {
+			res = scroll(win);
+			if (res != OK) {
+				return res;
+			}
 		}
 	}
 
@@ -409,7 +445,7 @@ int wscrl(WINDOW *win, int n) {
 	chtype *src, *dst;
 
 	if (!win->scrollok) {
-		return OK;
+		return ERR;
 	}
 
 	if (n > 0) {
@@ -428,8 +464,8 @@ int wscrl(WINDOW *win, int n) {
 	}
 	else {
 		n = min(-n, win->endy - win->begy);
-		src_line = win->endy - n;
-		dst_line = win->endy;
+		src_line = win->endy - n - 1;
+		dst_line = win->endy - 1;
 
 		while (src_line >= win->begy) {
 			src = win->lines + src_line * COLS + win->begx;
@@ -439,7 +475,7 @@ int wscrl(WINDOW *win, int n) {
 			--dst_line;
 		}
 
-		window_fill(win, win->bkgd, win->endy - n, win->begx, win->endy, win->endx);
+		window_fill(win, win->bkgd, win->begy, win->begx, src_line, win->endx);
 	}
 
 	return OK;
@@ -542,7 +578,7 @@ int mvwinsch(WINDOW *win, int y, int x, chtype ch) {
 		return ERR;
 	}
 
-	window_setch(win, ch, y, x);
+	window_setch(win, ch, win->cury + y, win->curx + x);
 
 	return OK;
 }
@@ -568,7 +604,7 @@ int mvwdelch(WINDOW *win, int y, int x) {
 		return ERR;
 	}
 
-	window_setch(win, win->bkgd, y, x);
+	window_setch(win, win->bkgd, win->cury + y, win->curx + x);
 
 	return OK;
 }

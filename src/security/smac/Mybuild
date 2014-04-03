@@ -2,8 +2,7 @@ package embox.security
 
 module smac extends api {
 	source "smac.c",
-	       "smac_security.c",
-	       "smac_task.c"
+	       "smac_security.c"
 
 	@InitFS
 	source "smac_users"
@@ -22,8 +21,7 @@ module smac extends api {
 	option string default_file_label="*"
 
 	depends embox.fs.xattr
-	depends embox.lib.debug.Symbol
 
 	depends embox.security.seculog
-
+	depends embox.kernel.task.resource.security
 }

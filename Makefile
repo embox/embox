@@ -19,9 +19,11 @@ export TEMPLATES_DIR  := $(ROOT_DIR)/templates
 export SRC_DIR        := $(ROOT_DIR)/src
 export THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 export PLATFORM_DIR   := $(ROOT_DIR)/platform
-export DOC_DIR        := $(ROOT_DIR)/doc
+export SUBPLATFORM_TEMPLATE_DIR := templates/
 
 export BUILD_DIR      := $(ROOT_DIR)/build/base
+
+export DOC_DIR        := $(ROOT_DIR)/build/doc
 
 export BIN_DIR        := $(BUILD_DIR)/bin
 export OBJ_DIR        := $(BUILD_DIR)/obj
@@ -49,6 +51,12 @@ export MV     := mv
 export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s
+export MD5    := $(shell for i in md5 md5sum; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
+export CPIO   := $(shell for i in gcpio cpio; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
+export AWK    := $(shell for i in gawk awk nawk mawk; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
+export TSORT  := tsort
+export TAC    := tac
+export SEQ    := seq -w
 
 # Check Make version (we need at least GNU Make 3.81). Fortunately,
 # '.FEATURES' built-in variable has been introduced exactly in GNU Make 3.81.

@@ -15,7 +15,20 @@ module filesystem {
 
 module file_desc {
 	source "file_desc.c"
+	source "file_xattr.c"
+	depends xattr
+	depends idesc
 	option number fdesc_quantity=32
+
+	depends embox.kernel.task.resource.idesc_table
+}
+
+module idesc {
+	source "idesc.c"
+}
+
+module idesc_event {
+	source "idesc_event.c"
 }
 
 @DefaultImpl(NoFileSystem)
@@ -32,10 +45,13 @@ module xattr {
 	source "xattr.c"
 }
 
+module xattr_list {
+	source "xattr_list.c"
+}
+
 module core extends fs_api {
 	source "vfs.c", "path.c"
 
-	depends embox.compat.posix.fs.fsop
 	depends file_desc, node
 	depends embox.fs.driver.repo
 
@@ -47,7 +63,7 @@ module core extends fs_api {
 module index_operation {
 	source "index_operation.c"
 	depends fs_api
-	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.idesc
 }
 
 module rootfs {
@@ -57,6 +73,7 @@ module rootfs {
 	option string dst = "/"
 	depends node, driver.repo
 	depends embox.fs.filesystem
+	depends embox.kernel.task.api
 	depends SysLibFileSystem
 	depends embox.lib.LibC
 }
@@ -80,4 +97,12 @@ module buffer_cache {
 	depends embox.mem.heap_api
 
 	@NoRuntime depends embox.util.hashtable
+}
+
+@DefaultImpl(buffer_no_crypt)
+abstract module buffer_crypt_api {
+}
+
+module buffer_no_crypt extends buffer_crypt_api {
+	source "buffer_no_crypt.c"
 }

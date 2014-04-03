@@ -66,7 +66,7 @@ static int stop_service(const char *service) {
 
 
 static void * start_server(void *unused) {
-	int ret, host, client;
+	int host, client;
 	struct sockaddr_in addr;
 	socklen_t addr_len;
 
@@ -75,51 +75,41 @@ static void * start_server(void *unused) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	/* Create listen socket */
-	host = ret = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (ret < 0) {
-		printf("Error.. can't create socket. errno=%d\n", errno);
+	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (host == -1) {
+		perror("servd: socket() failure");
 		web_server_started = 0;
-		return (void *)ret;
+		return (void *)-errno;
 	}
 
-	ret = bind(host, (struct sockaddr *) &addr, sizeof(addr));
-	if (ret < 0) {
-		printf("Error.. bind() failed. errno=%d\n", errno);
+	if (-1 == bind(host, (struct sockaddr *)&addr, sizeof(addr))) {
+		perror("servd: bind() failure");
 		web_server_started = 0;
 		close(host);
-		return (void *)ret;
+		return (void *)-errno;
 	}
 
-	ret = listen(host, 1);
-	if (ret < 0) {
-		printf("Error.. listen() failed. errno=%d\n", errno);
+	if (-1 == listen(host, 1)) {
+		perror("servd: listen() failure");
 		web_server_started = 0;
 		close(host);
-		return (void *)ret;
-	}
-
-	ret = fcntl(host, F_SETFD, O_NONBLOCK);
-	if (ret == -1) {
-		printf("Error.. listen() failed. errno=%d\n", errno);
-		web_server_started = 0;
-		close(host);
-		return (void *)ret;
+		return (void *)-errno;
 	}
 
 	welcome_message();
 
 	while (web_server_started) {
-		client = ret = accept(host, (struct sockaddr *) &addr, &addr_len);
-		if (ret == -1) {
-			if (errno == EAGAIN) continue;
-			printf("Error.. accept() failed. errno=%d\n", errno);
+		client = accept(host, (struct sockaddr *) &addr, &addr_len);
+		if (client == -1) {
+			perror("servd: accept() failure");
 			web_server_started = 0;
 			close(host);
-			return (void *)ret;
+			return (void *)-errno;
 		}
 		client_process(client);
 	}
 
+	web_server_started = 0;
 	close(host);
 	return (void *)0;
 }
@@ -170,7 +160,7 @@ static int servd(int argc, char **argv) {
 		web_server_task = new_task("servd", start_server, NULL);
 		if (web_server_task < 0) {
 			printf("Server isn't started, try again\n");
-			return 0;
+			return web_server_task;
 		}
 		printf("Server started\n");
 	}

@@ -39,7 +39,6 @@ static int netdev_init(struct net_device *dev, const char *name,
 	strcpy(&dev->name[0], name);
 	memset(&dev->stats, 0, sizeof dev->stats);
 	skb_queue_init(&dev->dev_queue);
-	skb_queue_init(&dev->tx_dev_queue);
 
 	if (priv_size != 0) {
 		dev->priv = malloc(priv_size);
@@ -85,7 +84,6 @@ void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
-		skb_queue_purge(&dev->tx_dev_queue);
 		free(dev->priv);
 		pool_free(&netdev_pool, dev);
 	}
@@ -134,8 +132,7 @@ int netdev_open(struct net_device *dev) {
 		}
 	}
 
-	/* TODO IFF_RUNNING sets not here*/
-	dev->flags |= IFF_UP | IFF_RUNNING;
+	dev->flags |= IFF_UP;
 
 	return 0;
 }
@@ -158,8 +155,7 @@ int netdev_close(struct net_device *dev) {
 		}
 	}
 
-	/* TODO IFF_RUNNING sets not here*/
-	dev->flags &= ~(IFF_UP | IFF_RUNNING);
+	dev->flags &= ~IFF_UP;
 
 	return 0;
 }
@@ -172,11 +168,9 @@ int netdev_set_macaddr(struct net_device *dev, const void *addr) {
 	}
 
 	assert(dev->ops != NULL);
-	if (dev->ops->check_addr != NULL) {
-		ret = dev->ops->check_addr(addr);
-		if (ret != 0) {
-			return ret;
-		}
+	if ((dev->ops->check_addr != NULL)
+			&& !dev->ops->check_addr(addr)) {
+		return -EINVAL; /* error: bad address */
 	}
 
 	assert(dev->drv_ops != NULL);
@@ -253,31 +247,17 @@ int netdev_flag_down(struct net_device *dev, unsigned int flag) {
 }
 
 int netdev_set_mtu(struct net_device *dev, int mtu) {
-	int ret;
-
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
 	assert(dev->ops != NULL);
-	if (dev->ops->check_mtu != NULL) {
-		ret = dev->ops->check_mtu(mtu);
-		if (ret != 0) {
-			return ret;
-		}
+	if ((dev->ops->check_mtu != NULL)
+			&& !dev->ops->check_mtu(mtu)) {
+		return -EINVAL; /* error: bad mtu value */
 	}
 
 	dev->mtu = mtu;
-
-	return 0;
-}
-
-int netdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
-	if (dev == NULL) {
-		return -EINVAL;
-	}
-
-	dev->tx_queue_len = new_len;
 
 	return 0;
 }

@@ -18,6 +18,9 @@ struct net_proto;
 	__net_proto_foreach(net_proto_ptr)
 
 extern const struct net_proto * net_proto_lookup(
-		unsigned char type);
+		unsigned short pack, unsigned char type);
+
+extern void net_proto_handle_error_none(const struct sk_buff *skb,
+		int error_info);
 
 #endif /* FRAMEWORK_NET_PROTO_API_H_ */

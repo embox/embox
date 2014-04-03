@@ -8,6 +8,7 @@
 
 #include <net/l3/ipv4/ip_options.h>
 #include <net/skbuff.h>
+#include <net/l3/ipv4/ip.h>
 #include <net/l3/icmpv4.h>
 #include <net/inetdevice.h>
 #include <net/socket/inet_sock.h>
@@ -15,7 +16,7 @@
 int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 
 	unsigned char* endopts = opt->__data + opt->optlen - sizeof(struct ip_options);
-	iphdr_t *iph = ip_hdr(skb);
+	struct iphdr *iph = ip_hdr(skb);
 	/* curropt points to current option in question
 	 * optsfault points to first problem occurred in options
 	 */
@@ -200,7 +201,8 @@ end:
 
 error:
 	curroptlen = (int) (optsfault - (unsigned char*) iph);
-	icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(curroptlen << 24));
+	icmp_discard(skb, ICMP_PARAM_PROB, ICMP_PTR_ERROR,
+			(uint8_t)curroptlen);
 	//TODO : is it an adequate return value? maybe -EINVAL will suit better?
 	return -1;
 

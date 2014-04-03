@@ -12,6 +12,16 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
+
+#include <util/array.h>
+#include <embox/unit.h>
+#include <embox/block_dev.h>
+#include <mem/misc/pool.h>
+#include <mem/phymem.h>
+
+
+#include <drivers/ramdisk.h>
 
 #include <fs/journal.h>
 #include <fs/fs_driver.h>
@@ -20,15 +30,11 @@
 #include <fs/ext4.h>
 #include <fs/path.h>
 #include <fs/mount.h>
-#include <util/array.h>
-#include <embox/unit.h>
-#include <embox/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
-#include <drivers/ramdisk.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <limits.h>
+#include <fs/file_operation.h>
+
+
 
 /*
  * Copyright (c) 1997 Manuel Bouyer.
@@ -641,6 +647,7 @@ static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
 static int ext4fs_init(void * par);
+static int ext4fs_format(void *dev);
 static int ext4fs_mount(void *dev, void *dir);
 static int ext4fs_create(struct node *parent_node, struct node *node);
 static int ext4fs_delete(struct node *node);
@@ -650,6 +657,7 @@ static int ext4fs_umount(void *dir);
 
 static struct fsop_desc ext4_fsop = {
 	.init	     = ext4fs_init,
+	.format      = ext4fs_format,
 	.mount	     = ext4fs_mount,
 	.create_node = ext4fs_create,
 	.delete_node = ext4fs_delete,
@@ -705,6 +713,30 @@ static int ext4fs_create(struct node *parent_node, struct node *node) {
 		}
 	}
 	return 0;
+}
+
+extern int main_mke2fs(int argc, char **argv);
+
+static int ext4fs_format(void *dev) {
+	struct node *dev_node;
+	int argc = 6;
+	char *argv[6];
+	char dev_path[64];
+
+	dev_node = dev;
+
+	strcpy(dev_path, "/dev/");
+	strcat(dev_path, dev_node->name);
+
+	argv[0] = "mke2fs";
+	argv[1] = "-b";
+	argv[2] = "1024";
+	argv[3] = "-t";
+	argv[4] = "ext4";
+	argv[5] = dev_path;
+
+	getopt_init();
+	return main_mke2fs(argc, argv);
 }
 
 static int ext4fs_delete(struct node *node) {

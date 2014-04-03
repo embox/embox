@@ -156,7 +156,7 @@ static int exec(int argc, char **argv) {
 		l = strlen(dir_name);
 		while (dir_name[l - 1] == '/') dir_name[--l] = 0;
 	} else {
-		sprintf(dir_name, "");
+		sprintf(dir_name, "%s", "");
 	}
 
 	dir_namel = strlen(dir_name);

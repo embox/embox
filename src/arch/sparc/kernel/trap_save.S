@@ -293,7 +293,7 @@ tsb_save_kernel_window:
 tsb_user:
 	/* For user mode:
 	 * Set pointer to the top of the empty kernel stack. */
-	set __stack - TRAP_FRAME_SZ, %t_ksp
+	set _stack_top - TRAP_FRAME_SZ, %t_ksp
 
 	/* Write the cpu state (globals, psr, pc, npc, y, ...) */
 	STORE_PT_ALL(t_ksp, t_psr, t_pc, t_npc, g_temp)

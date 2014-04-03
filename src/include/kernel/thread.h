@@ -15,16 +15,9 @@
 #ifndef KERNEL_THREAD_API_H_
 #define KERNEL_THREAD_API_H_
 
-#include <framework/mod/options.h>
-
+#include <kernel/thread/types.h>
 #include <kernel/thread/current.h>
 
-#include <util/dlist.h>
-#include <kernel/thread/types.h>
-#include <sys/types.h>
-
-#define THREAD_STACK_SIZE     OPTION_MODULE_GET(embox__kernel__thread__core, \
-			NUMBER,thread_stack_size)
 
 /**
  * Thread control block.
@@ -63,6 +56,8 @@ typedef __thread_id_t thread_id_t;
  */
 #define thread_self() thread_get_current()
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
 
 /**
  * Creates a new thread.
@@ -231,9 +226,14 @@ extern int thread_terminate(struct thread *thread);
  */
 extern int thread_launch(struct thread *thread);
 
+extern void thread_state_exited(struct thread *t);
+extern void thread_delete(struct thread *t);
+
 extern int thread_set_priority(struct thread *t, sched_priority_t priority);
 
 extern sched_priority_t thread_get_priority(struct thread *thread);
+
+extern void thread_set_run_arg(struct thread *t, void *run_arg);
 
 /**
  * Returns running time of the thread. To get better precision should be
@@ -245,5 +245,7 @@ extern sched_priority_t thread_get_priority(struct thread *thread);
  *   Running time in clocks.
  */
 extern clock_t thread_get_running_time(struct thread *thread);
+
+__END_DECLS
 
 #endif /* KERNEL_THREAD_API_H_ */

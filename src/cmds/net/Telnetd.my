@@ -17,13 +17,16 @@ package embox.cmd.net
 module telnetd {
 	source "telnetd.c"
 
+	depends embox.net.tcp_sock
+	depends embox.net.tcp
+
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
-	depends embox.kernel.task.std_signal
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.signal
 	depends embox.cmd.sh.tish
 	depends embox.compat.posix.utmp_api
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
+	depends embox.compat.posix.idx.ppty
 }

@@ -1,0 +1,35 @@
+
+package embox.cmd.user
+
+@Cmd(name = "useradd",
+	help = "create a new user or update default new user information",
+	man = '''
+NAME
+	useradd
+SYNOPSIS
+	useradd [options] LOGIN
+	useradd -D
+	useradd -D [options]
+DESCRIPTION
+	Create a new user or update default new user information
+OPTIONS
+	-d HOME_DIR			home directory of the new account
+	-c COMMENT			GECOS field of the new account
+	-g GROUP			name or ID of the primary group of the new
+						account
+	-p PASSWORD			encrypted password of the new account
+	-s SHELL			login shell of the new account
+	-h					display help message and exit
+	-D					print or change default useradd configuration
+EXAMPLES
+	useradd -d /root -c User user1234
+AUTHORS
+	Vita Loginova
+''')
+module useradd {
+	source "useradd.c"
+
+	depends embox.cmd.user.utils
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.passwd_db_dynamic
+}

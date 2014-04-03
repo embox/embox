@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
-#include <kernel/task/task_table.h>
+#include <kernel/task.h>
 
 EMBOX_CMD(exec);
 
@@ -27,7 +27,8 @@ static void print_all(void) {
 	printf(" %3s  %20s\n", "tid", "name");
 
 	task_foreach(task) {
-		printf(" %3d  %20s\n", task->tid, task->task_name);
+		printf(" %3d  %20s\n", task_get_id(task),
+				task_get_name(task));
 	}
 }
 

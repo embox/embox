@@ -13,7 +13,6 @@
 
 #include <kernel/thread.h>
 #include <err.h>
-//#include <kernel/thread/state.h>
 #include <kernel/event.h>
 
 #include <pnet/core.h>

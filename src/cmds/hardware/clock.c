@@ -39,7 +39,7 @@ static int clock_source_info(void) {
 	const struct clock_source *cs;
 	int k = 0;
 
-	array_foreach(cs, __clock_sources, ARRAY_SPREAD_SIZE(__clock_sources)) {
+	array_spread_foreach(cs, __clock_sources) {
 		print_info(cs, ++k);
 	}
 

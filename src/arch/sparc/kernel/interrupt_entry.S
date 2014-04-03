@@ -40,14 +40,13 @@ interrupt_entry:
 	st %t_ncc, [%t_cptr]
 
 	wr %temp, PSR_ET, %psr
-	 ! do not wait
+	 nop;
 
 	/* Forward interrupt handling directly to kernel.
 	 * There is no need to introduce HAL interrupt handling proxy function.
 	 * At least for now. */
-	mov %local, %o0 ! interrupt nr
 	call irq_dispatch
-	 nop
+	 mov %local, %o0 ! interrupt nr
 
 	/* Restore trap enter-time PIL, traps are on. */
 	wr %t_psr, PSR_ET, %psr

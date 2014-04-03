@@ -2,8 +2,8 @@
 #include <framework/mod/options.h>
 
 SECTIONS {
-	.reserve.stack (NOLOAD) : ALIGN(OPTION_GET(NUMBER, alignment)) {
+	.bss..reserve.stack (NOLOAD) : ALIGN(OPTION_GET(NUMBER, alignment)) {
 		. += OPTION_GET(NUMBER, stack_size);
-		__stack = .;
+		_stack_top = .;
 	}
 }

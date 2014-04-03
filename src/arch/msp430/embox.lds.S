@@ -4,13 +4,13 @@
 ENTRY(_start)
 
 MEMORY {
-	MEMORY_REGION(sdram)
-	MEMORY_REGION(flash)
+	MEMORY_REGION(RAM)
+	MEMORY_REGION(ROM)
 	vectors          : ORIGIN = 0xffe0, LENGTH = 0x0020
 }
 
-_mem_begin = LDS_REGION_BASE_sdram;
-_mem_length = LDS_REGION_SIZE_sdram;
+_ram_base = ORIGIN(RAM);
+_ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.vectors : {

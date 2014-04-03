@@ -3,5 +3,5 @@ package embox.test.lib.shell
 
 module tokenizer {
 	source "tokenizer.c"
-	depends embox.lib.LibC
+	depends embox.lib.Tokenizer
 }

@@ -19,6 +19,7 @@
 #include <sys/xattr.h>
 
 #include <embox/test.h>
+#include <kernel/task/resource/security.h>
 
 EMBOX_TEST_SUITE("smac tests with classic modes allows all access");
 
@@ -38,9 +39,9 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define HIGH "high_label"
 #define LOW  "low_label"
 
-const static char *high_static = HIGH;
-const static char *low_static = LOW;
-const static char *smac_star = "*";
+static const char *high_static = HIGH;
+static const char *low_static = LOW;
+static const char *smac_star = "*";
 
 #define SMAC_BACKUP_LEN 1024
 
@@ -88,7 +89,7 @@ static int teardown_suite(void) {
 }
 
 static int clear_id(void) {
-	struct smac_task *smac_task = (struct smac_task *) task_self_security();
+	struct smac_task *smac_task = (struct smac_task *) task_self_resource_security();
 
 	strcpy(smac_task->label, "smac_admin");
 

@@ -1,0 +1,153 @@
+diff -aur iperf-2.0.5/include/Reporter.h iperf/include/Reporter.h
+--- iperf-2.0.5/include/Reporter.h	2014-01-14 15:44:02.267187920 +0400
++++ iperf/include/Reporter.h	2008-03-12 23:28:21.000000000 +0300
+@@ -103,7 +103,7 @@
+     double endTime;
+     // chars
+     char   mFormat;                 // -f
+-    u_char mTTL;                    // -T
++    unsigned char mTTL;             // -T
+     char   mUDP;
+     char   free;
+ } Transfer_Info;
+
+diff -aur iperf-2.0.5/configure.ac iperf/configure.ac
+--- iperf-2.0.5/configure.ac	2010-04-10 23:23:05.000000000 +0400
++++ iperf/configure.ac	2014-01-17 17:35:08.561409993 +0400
+@@ -167,7 +167,6 @@
+ dnl ===================================================================
+ dnl Check for compiler characteristics
+ 
+-DAST_CHECK_BOOL
+ 
+ AC_C_BIGENDIAN
+ 
+
+diff -aur iperf-2.0.5/compat/Thread.c iperf/compat/Thread.c
+--- iperf-2.0.5/compat/Thread.c	2014-01-17 13:29:35.795520925 +0400
++++ iperf/compat/Thread.c	2014-01-17 13:26:24.071516222 +0400
+@@ -95,7 +95,7 @@
+  * Initialize the thread subsystems variables and set the concurrency
+  * level in solaris.
+  * ------------------------------------------------------------------- */
+-void thread_init( ) {
++void thread_init_( ) {
+     Condition_Initialize( &thread_sNum_cond );
+ #if defined( sun )
+     /* Solaris apparently doesn't default to timeslicing threads,
+ 
+diff -aur iperf-2.0.5/include/Thread.h iperf/include/Thread.h 
+--- iperf-2.0.5/include/Thread.h	2007-08-30 01:57:27.000000000 +0400
++++ iperf/include/Thread.h	2014-01-17 13:26:44.387516720 +0400
+@@ -100,7 +100,7 @@
+ #include "Settings.hpp"
+ 
+     // initialize or destroy the thread subsystem
+-    void thread_init( );
++    void thread_init_( );
+     void thread_destroy( );
+ 
+     // start or stop a thread executing
+     
+diff -aur iperf-2.0.5/src/main.cpp iperf/src/main.cpp
+--- iperf-2.0.5/src/main.cpp	2007-08-30 01:57:27.000000000 +0400
++++ iperf/src/main.cpp	2014-01-17 13:26:44.387516720 +0400    
+@@ -148,7 +148,7 @@
+     Mutex_Initialize( &clients_mutex );
+ 
+     // Initialize the thread subsystem
+-    thread_init( );
++    thread_init_( );
+ 
+     // Initialize the interrupt handling thread to 0
+     sThread = thread_zeroid();
+     
+diff -aur iperf-2.0.5/include/headers.h iperf/include/headers.h 
+--- iperf-2.0.5/include/headers.h	2008-03-12 23:28:21.000000000 +0300
++++ iperf/include/headers.h	2014-01-17 17:48:23.549409898 +0400
+@@ -134,6 +134,7 @@
+     #include <sys/time.h>
+     #include <signal.h>
+     #include <unistd.h>
++    #include <sys/select.h>
+ 
+ /** Added for daemonizing the process */
+     #include <syslog.h>
+
+diff -aur iperf-2.0.5/src/ReportCSV.c iperf/src/ReportCSV.c 
+--- iperf-2.0.5/src/ReportCSV.c	2014-03-06 17:00:34.008170748 +0400
++++ iperf/src/ReportCSV.c	2014-03-06 17:13:42.852190096 +0400
+@@ -60,7 +60,7 @@
+  
+ void CSV_stats( Transfer_Info *stats ) {
+     // $TIMESTAMP,$ID,$INTERVAL,$BYTE,$SPEED,$JITTER,$LOSS,$PACKET,$%LOSS
+-    max_size_t speed = (max_size_t)(((double)stats->TotalLen * 8.0) / (stats->endTime - stats->startTime));
++    //max_size_t speed = (max_size_t)(((double)stats->TotalLen * 8.0) / (stats->endTime - stats->startTime));
+     char timestamp[16];
+     CSV_timestamp( timestamp, sizeof(timestamp) );
+     if ( stats->mUDP != (char)kMode_Server ) {
+@@ -71,8 +71,8 @@
+                 stats->transferID, 
+                 stats->startTime, 
+                 stats->endTime, 
+-                stats->TotalLen, 
+-                speed);
++                stats->TotalLen/*,
++                speed*/);
+     } else {
+         // UDP Reporting
+         printf( reportCSV_bw_jitter_loss_format, 
+@@ -82,7 +82,7 @@
+                 stats->startTime, 
+                 stats->endTime, 
+                 stats->TotalLen, 
+-                speed,
++                /*speed,*/
+                 stats->jitter*1000.0, 
+                 stats->cntError, 
+                 stats->cntDatagrams,
+         
+diff -aur iperf-2.0.5/src/Reporter.c iperf/src/Reporter.c
+--- iperf-2.0.5/src/Reporter.c	2014-03-05 16:15:48.991251225 +0400
++++ iperf/src/Reporter.c	2014-03-05 17:24:54.775821907 +0400
+@@ -166,7 +166,7 @@
+                     multihdr->report->info.mUDP = (char)agent->mThreadMode;
+                 }
+                 if ( isConnectionReport( agent ) ) {
+-                    data->type |= CONNECTION_REPORT;
++                	data->type |= CONNECTION_REPORT;
+                     data->connection.peer = agent->peer;
+                     data->connection.size_peer = agent->size_peer;
+                     SockAddr_setPortAny( &data->connection.peer );
+@@ -267,8 +267,8 @@
+             }
+         }
+         if ( reporthdr != NULL ) {
+-            data->type |= CONNECTION_REPORT;
+-            data->connection.peer = agent->peer;
++        	data->type |= CONNECTION_REPORT;
++        	memcpy(&data->connection.peer, &agent->peer, sizeof(iperf_sockaddr));
+             data->connection.size_peer = agent->size_peer;
+             data->connection.local = agent->local;
+             data->connection.size_local = agent->size_local;
+@@ -297,7 +297,7 @@
+                 // set start time
+                 gettimeofday( &(reporthdr->report.startTime), NULL );
+             }
+-            reporthdr->report.nextTime = reporthdr->report.startTime;
++            memcpy(&reporthdr->report.nextTime, &reporthdr->report.startTime, sizeof(struct timeval));
+             TimeAdd( reporthdr->report.nextTime, reporthdr->report.intervalTime );
+         }
+         Condition_Lock( ReportCond );
+
+diff -aur iperf-2.0.5/src/Client.cpp iperf/src/Client.cpp 
+--- iperf-2.0.5/src/Client.cpp	2010-04-02 00:23:17.000000000 +0400
++++ iperf/src/Client.cpp	2014-01-17 19:18:52.061409249 +0400
+@@ -383,8 +383,6 @@
+     int rc;
+     SockAddr_remoteAddr( mSettings );
+ 
+-    assert( mSettings->inHostname != NULL );
+-
+     // create an internet socket
+     int type = ( isUDP( mSettings )  ?  SOCK_DGRAM : SOCK_STREAM);

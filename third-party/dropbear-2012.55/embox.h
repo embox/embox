@@ -22,20 +22,9 @@
 
 /* end <sys/wait.h> */
 
-/* <sygnal.h> */
-#define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
+#include <signal.h>
 
-static inline int sigemptyset(sigset_t *set) {
-	return -1;
-}
 
-static inline int sigaction(int sig, const struct sigaction *act,
-		struct sigaction *oact) {
-	return 0;
-}
-/* end <sygnal.h> */
-
-//---------------------------------------------------
 /* <unistd.h */
 static inline pid_t setsid(void) {
 	return -1;
@@ -59,16 +48,10 @@ static inline struct spwd *getspnam(const char *name) {
 	return getspnam_f(name);
 }
 
-#if 0
-/* <pwd.h> */
-extern struct passwd *getpwnam(const char *name);
-/* end <pwd.h> */
-#endif
-
 #include <asm/termbits.h>
 #include <sys/select.h>
 #include <linux/types.h>
 
-//------------------------------------------------------------
+
 
 #endif /* EMBOX_DROPBEAR_EMBOX_H_ */

@@ -10,11 +10,11 @@
 
 #include <profiler/tracing/trace.h>
 
-int trace_block_diff(struct __trace_block *tb) {
+time64_t trace_block_diff(struct __trace_block *tb) {
 	return -1;
 }
 
-int trace_block_get_time(struct __trace_block *tb) {
+time64_t trace_block_get_time(struct __trace_block *tb) {
 	return -1;
 }
 

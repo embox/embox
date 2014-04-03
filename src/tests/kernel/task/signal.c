@@ -7,21 +7,20 @@
  * @author Anton Bondarev
  */
 
+#include <embox/test.h>
+
+#include <signal.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <embox/test.h>
+#include <pthread.h>
+
 #include <kernel/task.h>
-#include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for task API");
 
 static volatile char flag = 0;
 static volatile char flag2 = 0;
-
-extern int kill(int tid, int sig);
-
-extern void signal(int sig, void (*hnd)(int));
 
 static void sig_hnd(int sig) {
 	flag = 1;
@@ -32,7 +31,8 @@ static void *task_hnd(void *arg) {
 
 	signal(9, sig_hnd);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }
@@ -59,7 +59,8 @@ static void *task_hnd2(void *arg) {
 	signal(9, sig_hnd2);
 	signal(1, sig_hnd2);
 
-	while(1);
+	while(1)
+		sleep(0);
 
 	return NULL;
 }
@@ -93,7 +94,7 @@ static void *thread_hnd(void *arg) {
 static void *task_hnd_thread(void *arg) {
 	struct thread *thd;
 
-	thread_create(&thd, 0, thread_hnd, NULL);
+	pthread_create(&thd, 0, thread_hnd, NULL);
 
 	return NULL;
 }

@@ -31,7 +31,7 @@ ExternalProject_Add(
       --disable-shared-libs
       libreplace_cv_HAVE_GETADDRINFO=no
       ac_cv_file__proc_sys_kernel_core_pattern=no
-      ac_cv_func_poll=no
+      ac_cv_func_poll=yes
       libreplace_cv_HAVE_MMAP=no
       ac_cv_lib_readline_rl_callback_handler_install=no
       ac_cv_func_getpassphrase=no
@@ -44,10 +44,13 @@ ExternalProject_Add(
       ac_cv_func_posix_fallocate=no
       ac_cv_func_posix_fallocate64=no
       ac_cv_func_fdopendir=no
+      ac_cv_func_memcpy=yes
+      ac_cv_func_memset=yes
       ac_cv_func_mknod=no
       ac_cv_func_mknod64=no
       ac_cv_func_setgroups=no
       ac_cv_func_syslog=no
+      ac_cv_func_strerror=yes
       ac_cv_func_lgetxattr=no
       ac_cv_func_lgetea=no
       ac_cv_func_attr_get=no
@@ -83,7 +86,7 @@ ExternalProject_Add(
       ac_cv_func_getgrent_r=no
       ac_cv_func_getgrouplist=no
       ac_cv_func_sigblock=no
-      ac_cv_func_sigaction=no
+      ac_cv_func_sigaction=yes
       ac_cv_func_getgrset=no
       ac_cv_func_nanosleep=no
       ac_cv_lib_ext_rt_nanosleep=no
@@ -97,6 +100,9 @@ ExternalProject_Add(
       ac_cv_func_strtoull=yes
       ac_cv_func_getpass=yes
       libreplace_cv_REPLACE_GETPASS=no
+      ac_cv_header_zlib_h=yes
+	  ac_cv_lib_ext_z_zlibVersion=yes
+	  samba_cv_zlib_1_2_3=yes
       #ac_cv_func___strtoull=no
       #ac_cv_func_strtouq=no
       #ac_cv_func_strtoll=no

@@ -1,6 +1,6 @@
 diff -aur zeromq-3.2.2/configure zeromq/configure
 --- zeromq-3.2.2/configure	2012-11-23 11:58:54.000000000 +0400
-+++ zeromq/configure	2013-03-25 17:01:41.081850973 +0400
++++ zeromq/configure	2013-12-25 17:25:29.631638222 +0400
 @@ -16387,6 +16387,7 @@
    return 0;
  }
@@ -29,7 +29,7 @@ diff -aur zeromq-3.2.2/configure zeromq/configure
          ;;
 diff -aur zeromq-3.2.2/Makefile.in zeromq/Makefile.in
 --- zeromq-3.2.2/Makefile.in	2012-11-23 11:58:57.000000000 +0400
-+++ zeromq/Makefile.in	2013-03-25 19:31:45.042071799 +0400
++++ zeromq/Makefile.in	2013-12-25 17:25:29.881638213 +0400
 @@ -256,9 +256,9 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
@@ -43,8 +43,24 @@ diff -aur zeromq-3.2.2/Makefile.in zeromq/Makefile.in
  EXTRA_DIST = \
  	autogen.sh	\
  	version.sh	\
+diff -aur zeromq-3.2.2/src/likely.hpp zeromq/src/likely.hpp
+--- zeromq-3.2.2/src/likely.hpp	2012-10-25 12:30:40.000000000 +0400
++++ zeromq/src/likely.hpp	2013-12-25 18:18:03.388211933 +0400
+@@ -22,8 +22,8 @@
+ #define __ZMQ_LIKELY_HPP_INCLUDED__
+ 
+ #if defined __GNUC__
+-#define likely(x) __builtin_expect ((x), 1)
+-#define unlikely(x) __builtin_expect ((x), 0)
++#define likely(x) __builtin_expect (!!(x), 1)
++#define unlikely(x) __builtin_expect (!!(x), 0)
+ #else
+ #define likely(x) (x)
+ #define unlikely(x) (x)
+Only in zeromq/src: likely.hpp~
+diff -aur zeromq-3.2.2/src/signaler.cpp zeromq/src/signaler.cpp
 --- zeromq-3.2.2/src/signaler.cpp	2012-10-25 12:30:40.000000000 +0400
-+++ zeromq/src/signaler.cpp	2013-09-02 22:34:27.141626020 +0400
++++ zeromq/src/signaler.cpp	2013-12-25 17:25:29.881638213 +0400
 @@ -327,7 +327,7 @@
  
      return 0;
@@ -86,8 +102,9 @@ diff -aur zeromq-3.2.2/Makefile.in zeromq/Makefile.in
  
      rc = connect (*w_, (struct sockaddr*) &lcladdr, sizeof (lcladdr));
      errno_assert (rc != -1);
+diff -aur zeromq-3.2.2/src/tcp.cpp zeromq/src/tcp.cpp
 --- zeromq-3.2.2/src/tcp.cpp	2012-10-25 12:30:40.000000000 +0400
-+++ zeromq/src/tcp.cpp	2013-09-02 22:45:17.498474013 +0400
++++ zeromq/src/tcp.cpp	2013-12-25 17:25:30.288304868 +0400
 @@ -44,20 +44,20 @@
      //  so using Nagle wouldn't improve throughput in anyway, but it would
      //  hurt latency.

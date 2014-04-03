@@ -16,12 +16,15 @@
 
 .section .trap_table, "x"
 trap_table_start:
-    .word __stack
+    .word _stack_top
     .word start
     .word undef_handler
     .word hard_fault
 trap_table_end:
 
+
+
+.section .text, "x"
 
 start:
     ldr r1, =bootldr_start
@@ -35,3 +38,4 @@ undef_handler:
 
 hard_fault:
     b hard_fault
+

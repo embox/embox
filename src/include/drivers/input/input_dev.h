@@ -11,9 +11,12 @@
 
 #include <util/dlist.h>
 #include <util/ring_buff.h>
-#include <kernel/event.h>
 
 #define INPUT_DEV_EVENT_QUEUE_LEN 16
+
+struct input_dev;
+
+typedef int indev_event_cb_t(struct input_dev *indev);
 
 enum input_dev_type {
 	INPUT_DEV_KBD,
@@ -29,55 +32,89 @@ struct input_event {
 	int value;
 };
 
-struct input_dev;
-
-typedef int indev_event_cb_t(struct input_dev *indev);
-typedef int indev_event_get_t(struct input_dev *dev, struct input_event *ev);
+struct input_dev_ops {
+	int (*start)(struct input_dev *dev);
+	int (*stop)(struct input_dev *dev);
+	int (*event_get)(struct input_dev *dev, struct input_event *ev);
+};
 
 /*describe input device instance */
 struct input_dev {
+	const struct input_dev_ops *ops;
 	const char *name; /* registered name /dev/input/<name> */
-	indev_event_get_t *event_get;
 	enum input_dev_type type;
 	int proto;
 	int irq;
 	void *data;
 
-	indev_event_cb_t *event_cb;
+	indev_event_cb_t *event_cb; /* callback on event. NULL is valid and
+				       means input dev isn't opened */
 	struct dlist_head global_indev_list; /* global device list */
-	struct dlist_head post_link;
+	struct dlist_head post_link; /* link in to process queue */
 
 	struct ring_buff rbuf;
 	struct input_event event_buf[INPUT_DEV_EVENT_QUEUE_LEN];
-	struct input_event *curprocessd;
+	struct input_event *curprocessd; /* pointer to allocated but not valid
+					    input event (@a event_get
+					    may fail) */
 
 };
 
-#if 0
-struct input_subscriber {
-	unsigned int id; /* subscriber ID */
-	struct dlist_head subscribers; /* link to subscribers */
-
-	//int (*store_event)(struct input_subscriber *, struct input_event );
-
-	struct ring_buff rbuff; /* structure of ring buffer it required ring_buff_init */
-	char inbuff[0x20];
-	struct event rx_happend;
-};
-#endif
+/**
+ * @brief Register new input device
+ *
+ * @param dev
+ *
+ * @return 0 on sucess
+ */
 extern int input_dev_register(struct input_dev *dev);
 
+/**
+ * @brief Notify that input device has new event to get
+ *
+ * @param dev
+ *
+ * @return 0 on success
+ */
+extern int input_dev_input(struct input_dev *dev);
+
+/**
+ * @brief Get pending event from input dev and store it in provided place.
+ *
+ * @param dev
+ * @param ev
+ *
+ * @return 0 on success
+ */
 extern int input_dev_event(struct input_dev *dev, struct input_event *ev);
 
+/**
+ * @brief Lookup input device by name
+ *
+ * @param name
+ *
+ * @return Pointer to input device or NULL
+ */
 extern struct input_dev *input_dev_lookup(const char *name);
 
+/**
+ * @brief Open input device, optionally trigger event callback on new events
+ * avaible.
+ *
+ * @param dev
+ * @param event
+ *
+ * @return 0 on success
+ */
 extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
-extern int input_dev_close(struct input_dev *dev);
-#if 0
-extern void input_dev_inject_event(struct input_dev *dev, struct input_event e);
 
-extern struct input_subscriber *input_dev_find_subscriber(struct input_dev *dev,
-		unsigned int id);
-#endif
+/**
+ * @brief Close input device, callback will not be called (if any)
+ *
+ * @param dev
+ *
+ * @return
+ */
+extern int input_dev_close(struct input_dev *dev);
 
 #endif /* EMBOX_INPUT_DEVICE_H_ */

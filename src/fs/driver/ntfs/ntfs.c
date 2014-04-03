@@ -19,20 +19,11 @@
 #include <embox/unit.h>
 #include <fs/path.h>
 #include <errno.h>
+#include <endian.h>
 
 
 #include <time.h>
 #define __timespec_defined
-
-static void __x86_verificator__(void) {
-	// This is to make sure this file only compiles on x86
-	asm ("mov %cr2, %eax");
-}
-#define	__LITTLE_ENDIAN	1234
-#define	__BIG_ENDIAN	4321
-#define	__PDP_ENDIAN	3412
-// x86 architecture only
-#define __BYTE_ORDER __LITTLE_ENDIAN
 
 #include <ntfs-3g/volume.h>
 #include <ntfs-3g/device.h>
@@ -84,9 +75,6 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 	struct ntfs_fs_info *pfsi;
 	struct ntfs_file_info *pfi;
 	mode_t mode;
-
-	// This happens to be the first referenced function in the file, so it is here...
-	(void)__x86_verificator__;
 
 	pfi = parent_node->nas->fi->privdata;
 	pfsi = parent_node->nas->fs->fsi;

@@ -7,20 +7,17 @@
 
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/sched/waitq.h>
 
 
-int sched_signal(struct thread *t, int type) {
-	int res = 0;
-
+void sched_signal(struct thread *t) {
 	sched_lock();
 	{
-		if (thread_state_sleeping(t->state)) {
-			sched_thread_notify(t, -EINTR);
+		if (t->ready) {
+			sched_post_switch();
 		} else {
-			res = -1;
+			sched_wakeup(t); // XXX -EINTR
 		}
 	}
 	sched_unlock();
-
-	return res;
 }

@@ -1,0 +1,5 @@
+package embox.lib
+
+static module LibCType {
+	source "ctype.c"
+}

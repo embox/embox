@@ -1,0 +1,61 @@
+package third_party.unixbyte
+
+@Build(script="$(EXTERNAL_MAKE)")
+module core {
+}
+
+@Cmd(name = "byte_pipe",
+	help = "Pipe testing",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(core)
+module byte_pipe {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.pipe.o';")
+	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.pipe.o $(abspath $(mod_build_dir))/strip.pipe.o")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "strip.pipe.o"
+
+	depends core
+	depends embox.compat.posix.idx.pipe
+}
+
+@Cmd(name = "byte_select",
+	help = "Select testing",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(core)
+module byte_select {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.select.o';")
+	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.select.o $(abspath $(mod_build_dir))/strip.select.o")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "strip.select.o"
+
+	depends core
+	depends embox.compat.posix.idx.select
+}
+
+@Cmd(name = "byte_dhry2",
+	help = "DHRYSTONE",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(core)
+module byte_dhry2 {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/strip.dhry_1.o';")
+	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/strip.dhry_1.o $(abspath $(mod_build_dir))/strip.dhry_1.o;")
+	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/dhry_2.o $(abspath $(mod_build_dir))/dhry_2.o")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "strip.dhry_1.o"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "dhry_2.o"
+
+	depends core
+	depends embox.kernel.thread.signal.sigstate
+	depends embox.kernel.thread.signal.siginfoq
+}

@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <util/array.h>
+#include <kernel/time/time.h>
 
 EMBOX_CMD(exec);
 
@@ -27,6 +28,28 @@ EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: bootpc <ifname>\n");
+}
+
+static int bootp_prepare(struct net_device *dev) {
+	struct in_device *in_dev;
+	int ret;
+
+	in_dev = inetdev_get_by_dev(dev);
+	if (in_dev == NULL) {
+		return -EINVAL;
+	}
+
+	ret = inetdev_set_addr(in_dev, 0);
+	if (ret) {
+		return ret;
+	}
+
+	ret = netdev_flag_up(dev, IFF_UP);
+	if (ret) {
+		return ret;
+	}
+
+	return 0;
 }
 
 static int bootp_process(struct bootphdr *bph,
@@ -82,7 +105,11 @@ int bootp_client(struct net_device *dev) {
 	int ret, sock;
 	struct bootphdr bph_req, bph_rep;
 	struct sockaddr_in addr;
-	socklen_t addrlen;
+
+	ret = bootp_prepare(dev);
+	if (ret) {
+		return ret;
+	}
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock == -1) {
@@ -130,15 +157,8 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	addrlen = sizeof addr;
-	if (-1 == recvfrom(sock, &bph_rep, sizeof bph_rep, 0,
-				(struct sockaddr *)&addr, &addrlen)) {
+	if (-1 == recv(sock, &bph_rep, sizeof bph_rep, 0)) {
 		ret = -errno;
-		goto error;
-	}
-
-	if (addr.sin_port != htons(BOOTP_SERVER_PORT)) {
-		ret = -EINVAL;
 		goto error;
 	}
 

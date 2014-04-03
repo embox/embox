@@ -9,11 +9,6 @@ all : image
 
 FORCE :
 
-# Run external builders prior to anything else.
--include __extbld
-.PHONY : __extbld
-__extbld :
-
 include mk/core/common.mk
 
 include $(MKGEN_DIR)/build.mk
@@ -37,25 +32,15 @@ include $(__include_image)
 include $(__include_initfs)
 include $(__include)
 
-
 .SECONDARY:
 .DELETE_ON_ERROR:
 
 image: $(IMAGE)
-image: $(IMAGE_DIS) $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
 
-CROSS_COMPILE ?=
-
-CC      := $(CROSS_COMPILE)gcc
-CPP     := $(CC) -E
-CXX     := $(CROSS_COMPILE)g++
-AR      := $(CROSS_COMPILE)ar
-AS      := $(CROSS_COMPILE)as
-LD      := $(CROSS_COMPILE)ld
-NM      := $(CROSS_COMPILE)nm
-OBJDUMP := $(CROSS_COMPILE)objdump
-OBJCOPY := $(CROSS_COMPILE)objcopy
-SIZE    := $(CROSS_COMPILE)size
+ifeq ($(value DISASSEMBLY),y)
+image : $(IMAGE_DIS)
+endif
 
 ifndef LD_SINGLE_T_OPTION
 ld_scripts_flag = $(1:%=-T%)
@@ -64,9 +49,10 @@ ld_scripts_flag = $(if $(strip $1),-T $1)
 endif
 
 # This must be expanded in a secondary expansion context.
-common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
-common_prereqs       = $(common_prereqs_nomk) $(mk_file)
-extbld_prerequisites = $(common_prereqs)
+# NOTE: must be the last one in a list of prerequisites (contains order-only)
+common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk \
+	$(if $(value mk_file),$(mk_file)) \
+	| $(if $(value my_file),$(dir $(my_file:%=$(OBJ_DIR)/%)).) $(@D)/.
 
 VPATH := $(SRCGEN_DIR)
 
@@ -77,46 +63,53 @@ a_prerequisites     = $(common_prereqs)
 o_prerequisites     = $(common_prereqs)
 cc_prerequisites    = $(common_prereqs)
 
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S | $$(@D)/.
-	$(CC) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
+	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
-	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
-	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 cpp_prerequisites   = $(common_prereqs)
-$(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
-	$(CPP) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+$(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
+	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-initfs_cp_prerequisites = $(common_prereqs) $(src_file)
+initfs_cp_prerequisites = $(src_file) $(common_prereqs)
+$(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
+	@mkdir -p $(@D)
+	@touch $@
+
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
 		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
+
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
 
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
-initfs_prerequisites = $(common_prereqs) $(cpio_files) \
-	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*)
+initfs_prerequisites = $(cpio_files) \
+	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*) $(common_prereqs)
 $(ROOTFS_IMAGE) : rel_cpio_files = \
 		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
-$(ROOTFS_IMAGE) : | $$(@D)/. $(ROOTFS_DIR)/.
+$(ROOTFS_IMAGE) : | $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
-		&& find $(rel_cpio_files) -depth -print | cpio -L --quiet -H newc -o -O $(abspath $@)
+		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
 	then \
 		cd $(USER_ROOTFS_DIR) \
-			&& find * -depth -print | cpio -L --quiet -H newc -o --append -O $(abspath $@); \
+			&& find * -depth -print | $(CPIO) -L --quiet -H newc -o -A -O $(abspath $@); \
 	fi
 	@FILES=`find $(cpio_files) $(USER_ROOTFS_DIR)/* -depth -print 2>/dev/null`; \
 	{                                            \
@@ -139,25 +132,25 @@ endif
 
 
 # Module-level rules.
-module_prereqs = $(common_prereqs) $(o_files) $(a_files)
+module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,.data .bss,--rename-section $s=.app.$(app_id)$s)
+	$(foreach s,rodata data bss,--rename-section .$s=.$s.module.$(module_id))
 
 ar_prerequisites = $(module_prereqs)
-$(OBJ_DIR)/module/%.a : mk/arhelper.mk | $$(@D)/.
+$(OBJ_DIR)/module/%.a : mk/arhelper.mk
 	@$(MAKE) -f mk/arhelper.mk TARGET='$@' \
 		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
 		A_FILES='$(a_files)' \
 		O_FILES='$(o_files)' \
-		APP_ID='$(app_id)' $(if $(app_id), \
+		APP_ID='$(is_app)' $(if $(is_app), \
 			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
-$(OBJ_DIR)/module/%.o : | $$(@D)/.
+$(OBJ_DIR)/module/%.o :
 	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(app_id),$(OBJCOPY) $(objcopy_flags) $@)
+	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $@)
 
 
 # Here goes image creation rules...
@@ -172,10 +165,18 @@ symbols_c_files = \
 $(symbols_pass1_c) : image_o = $(image_nosymbols_o)
 $(symbols_pass2_c) : image_o = $(image_pass1_o)
 
+SYMBOLS_WITH_FILENAME ?= 1
+
+ifeq ($(SYMBOLS_WITH_FILENAME),1)
+NM_OPTS := --demangle --line-numbers --numeric-sort
+else
+NM_OPTS := --demangle --numeric-sort
+endif
+
 $(symbols_c_files) :
-$(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
+$(symbols_c_files) : mk/script/nm2c.awk $$(common_prereqs)
 $(symbols_c_files) : $$(image_o)
-	$(NM) --demangle -n $< | awk -f mk/script/nm2c.awk > $@
+	$(NM) $(NM_OPTS) $< | $(AWK) -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a
@@ -187,6 +188,7 @@ symbols_a_files = \
 $(symbols_a_files) : %.a : %.o
 	$(AR) $(ARFLAGS) $@ $<
 
+$(symbols_a_files:%.a=%.o) : flags_before :=
 $(symbols_a_files:%.a=%.o) : flags :=
 
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
@@ -198,10 +200,12 @@ embox_o = $(OBJ_DIR)/embox.o
 
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
-$(embox_o): | $$(@D)/.
+$(embox_o): $$(common_prereqs)
 	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
+		--start-group \
 		$(call fmt_line,$(ld_libs)) \
+		--end-group \
 	--cref -Map $@.map \
 	-o $@
 
@@ -209,8 +213,14 @@ __define_image_rules = $(eval $(value __image_rule))
 $(call __define_image_rules,$(embox_o))
 
 image_lds = $(OBJ_DIR)/mk/image.lds
+$(image_lds) : $$(common_prereqs)
+$(image_lds) : flags_before :=
 $(image_lds) : flags = \
-		$(addprefix -include ,$(wildcard $(SRC_DIR)/arch/$(ARCH)/embox.lds.S))
+		$(addprefix -include ,$(wildcard \
+			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \
+			$(if $(value PLATFORM), \
+				$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
+-include $(image_lds).d
 
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
 image_pass1_o = $(OBJ_DIR)/image_pass1.o
@@ -220,7 +230,35 @@ image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
 
-$(image_nosymbols_o): $(image_lds) $(embox_o) | $$(@D)/.
+#XXX
+FINAL_LINK_WITH_CC ?=
+ifeq (1,$(FINAL_LINK_WITH_CC))
+
+FINAL_LDFLAGS ?=
+$(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	-Wl,--defsym=__symbol_table=0 \
+	-Wl,--defsym=__symbol_table_size=0 \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+
+$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	$(symbols_pass1_a) \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+
+$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
+	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(embox_o) \
+	$(symbols_pass2_a) \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+else
+
+$(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
@@ -229,7 +267,7 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) | $$(@D)/.
 	--cref -Map $@.map \
 	-o $@
 
-$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) | $$(@D)/.
+$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
@@ -237,13 +275,14 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) | $$(@D)/.
 	--cref -Map $@.map \
 	-o $@
 
-$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) | $$(@D)/.
+$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@
+endif
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

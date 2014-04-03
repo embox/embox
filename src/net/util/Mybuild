@@ -37,6 +37,7 @@ module request_parser {
 
 	depends third_party.lib.url_parser
 	depends embox.lib.LibC
+	depends embox.lib.LibCStringDup
 }
 
 module servent {

@@ -19,7 +19,7 @@ module Time {
 static module getopt {
 	source "getopt.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.LibCString
 }
 
 static module utsname {
@@ -33,13 +33,14 @@ static module utsname {
 
 static module time {
 	source "time.c"
+	source "linux_timer.c"
 
 	depends embox.kernel.time.kernel_time
 }
 
 static module sleep {
 	source "sleep.c"
-	source "nanosleep"
+	source "nanosleep.c"
 
 	depends embox.kernel.timer.sleep_api
 }
@@ -64,6 +65,8 @@ static module gethostname {
 static module environ {
 	source "environ.c"
 
-	depends embox.kernel.task.env
-	depends embox.lib.LibC
+	depends embox.kernel.task.resource.env
+	depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }

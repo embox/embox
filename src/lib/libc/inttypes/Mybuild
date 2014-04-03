@@ -1,0 +1,7 @@
+package embox.lib
+
+static module LibCInttypes {
+	source "imaxmath.c"
+	source "strtoimax.c"
+	source "strtoumax.c"
+}

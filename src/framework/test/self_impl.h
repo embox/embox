@@ -16,6 +16,7 @@
 #include <util/location.h>
 #include <framework/mod/self.h>
 
+#include <framework/test/api.h>
 #include "types.h"
 
 #define __EMBOX_TEST_SUITE(description) \
@@ -23,7 +24,6 @@
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
-	extern const struct test_suite __test_registry[];                \
 	extern const struct mod_ops __test_mod_ops;                      \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \
@@ -34,10 +34,12 @@
 	static const __test_fixture_op_t                                 \
 			__TEST_FIXTURE_OP(case_setup),                           \
 			__TEST_FIXTURE_OP(case_teardown);                        \
-	ARRAY_SPREAD_ADD_NAMED(__test_registry, test_suite_nm, {         \
+	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
+	const struct test_mod mod_self = {                               \
+		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops),      \
+		.suite = {                                                   \
 			.private = &test_private_nm,                             \
 			.test_cases = __TEST_CASES_ARRAY,                        \
-			.mod = &mod_self,                                        \
 			.description = _description,                             \
 			.suite_fixture_ops = {                                   \
 					.p_setup    = &__TEST_FIXTURE_OP(suite_setup),   \
@@ -47,8 +49,9 @@
 					.p_setup    = &__TEST_FIXTURE_OP(case_setup),    \
 					.p_teardown = &__TEST_FIXTURE_OP(case_teardown), \
 				},                                                   \
-		});                                                          \
-	MOD_INFO_BIND(&__test_mod_ops, test_suite_nm)
+		}                                                            \
+	};                                                               \
+	TEST_ADD(&mod_self.suite)
 
 #define __TEST_FIXTURE_OP(fixture_nm) \
 	MACRO_CONCAT(__test_fixture_, fixture_nm)

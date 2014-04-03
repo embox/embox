@@ -16,7 +16,6 @@
 #include <errno.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/state.h>
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
@@ -29,41 +28,36 @@ static void print_usage(void) {
 }
 
 static void print_stat(void) {
-	struct thread *thread;
+	struct thread *t;
 	int running, sleeping, suspended;
 	int total;
 	struct task *task;
 
-	printf(" %4s  %4s  %8s %18s %10s\n", "id", "tid", "priority", "state", "time");
+	printf(" %4s %4s %8s %7s %10s\n", "id", "tid", "priority", "state", "time");
 
 	running = sleeping = suspended = 0;
 
 	sched_lock();
 	{
 		task_foreach(task) {
-			task_foreach_thread(thread, task) {
-				thread_state_t s = thread->state;
-				const char *state = NULL;
-				sched_priority_t prior;
+			task_foreach_thread(t, task) {
+				// sched_priority_t prior;
 
-				prior = sched_priority_thread(task->priority,
-										thread_priority_get(thread));
+				// prior = sched_priority_thread(task->priority,
+				// 						thread_priority_get(t));
 
-				if (thread_state_active(s)) {
-					state = "running";
+				printf(" %4d %4d %8d %c %c %c %c %9lds\n",
+					t->id, task_get_id(t->task),
+					thread_priority_get(t),
+					(t == thread_self()) ? '*' : ' ',
+					sched_active(t) ? 'A' : ' ',
+					t->ready        ? 'R' : ' ',
+					t->waiting      ? 'W' : ' ',
+					thread_get_running_time(t)/CLOCKS_PER_SEC);
+				if (t->ready || sched_active(t))
 					running++;
-				} else if (thread_state_sleeping(s)) {
-					state = "sleeping";
+				else
 					sleeping++;
-				}
-
-
-				printf(" %4d%c %4d  %8d %18s %9lds\n",
-					thread->id, thread_state_oncpu(thread->state) ? '*' : ' ',
-					thread->task->tid,
-					prior,
-					state,
-					thread_get_running_time(thread)/CLOCKS_PER_SEC);
 			}
 		}
 	}

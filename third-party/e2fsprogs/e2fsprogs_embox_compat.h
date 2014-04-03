@@ -16,6 +16,7 @@
 #include <grp.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
 
 #ifdef linux
 #undef linux
@@ -27,55 +28,28 @@
 
 #define EOVERFLOW 1
 #define EMBOX
-#define HAVE_STRCASECMP
 
 #define MAP_PRIVATE   0x01
 #define MAP_SHARED    0x00
 #define PROT_READ     0x10
 #define PROT_WRITE    0x20
-#define _SC_PAGESIZE 0
+
+
 #define O_ACCMODE       00000003
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define OPEN_MAX      64
 
-typedef __u16 u_int16_t;
-typedef __u32 u_int32_t;
-typedef __u64 u_int64_t;
+#include <stdint.h>
+typedef uint16_t u_int16_t;
+typedef uint32_t u_int32_t;
+typedef uint64_t u_int64_t;
 typedef unsigned int uint;
 
-static inline unsigned long long int strtoull(const char *nptr, char **endptr,
-                                       int base) {
-	printf(">>> strtoull\n");
-	return strtoul(nptr, endptr, base);
-}
 
-static inline int strcasecmp(const char *s1, const char *s2) {
-	printf(">>> strcasecmp, s1 - %s, s2 - %s\n", s1, s2);
-	return strcmp(s1, s2);
-}
-
-static inline int strncasecmp(const char *s1, const char *s2, size_t n) {
-	printf(">>> strncasecmp, s1 - %s, s2 - %s, n - %d\n", s1, s2, n);
-	return strncmp(s1, s2, n);
-}
 
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid. gid - %d\n", gid);
 	return NULL;
-}
-
-static inline long sysconf(int name) {
-	printf(">>> sysconf, name - %d\n", name);
-	switch(name) {
-	case _SC_PAGESIZE:
-		return 4096;
-	}
-	return -1;
-}
-
-static inline int getpagesize(void) {
-	printf(">>> getpagesize\n");
-	return 4096;
 }
 
 static inline void *mmap(void *addr, size_t length, int prot, int flags,
@@ -121,22 +95,13 @@ static inline int pclose(FILE *stream) {
 	return -1;
 }
 
-static inline void sync(void) {
-	printf(">>> sync\n");
-}
-
 static inline void setbuf(FILE *stream, char *buf) {
 	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
 }
 
-static inline char *basename(char *path) {
-	printf(">>> basename, path - %s\n", path);
-	return NULL;
-}
 
 /****************** Functions for e2fsck *******************/
 
-#define SA_SIGINFO 0x00000004
 #define SI_USER         0
 
 struct sigaction;
@@ -161,19 +126,18 @@ static inline void tzset (void) {
 	printf(">>> tzset\n");
 }
 
-static inline struct tm *localtime_r(const time_t *timep, struct tm *result) {
-	printf(">>> localtime_r\n");
-	return NULL;
-}
-
-static inline struct tm *gmtime_r(const time_t *timep, struct tm *result) {
-	printf(">>> gmtime_r\n");
-	return NULL;
+static inline void sync(void) {
+	printf("sync\n");
 }
 
 static inline int daemon(int nochdir, int noclose) {
 	printf(">>> daemon, nochdir - %d, noclose - %d\n", nochdir, noclose);
 	return -1;
+}
+
+static inline char *getwd(char *buf) {
+	printf("getwd, buf - %p\n", buf);
+	return NULL;
 }
 
 #endif /* E2FSPROGS_EMBOX_COMPAT_H_ */

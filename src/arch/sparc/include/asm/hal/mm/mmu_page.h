@@ -12,6 +12,8 @@
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
 
+#include <util/bit.h>
+
 extern mmu_env_t *cur_env;
 
 #define GET_PGD(ctx) \
@@ -41,18 +43,17 @@ static inline mmu_pte_t *mmu_get_next_level_pte(mmu_pte_t *ptp, int idx) {
 
 static inline mmu_pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
 	mmu_pte_t *pte = GET_PGD(ctx);
-	int level = 1;
 
-	for (level = 1; level < 4; level++) {
+	for (int level = 1; level < 4; level++) {
 		if (mmu_entry_is_pte(pte + ((vaddr & mmu_table_masks[level]) >>
-			blog2(mmu_table_masks[level])))
+			bit_ctz(mmu_table_masks[level])))
 			/*&& mmu_entry_is_valid(pte)*/) {
 			return (pte + ((vaddr & mmu_table_masks[level]) >>
-				blog2(mmu_table_masks[level])));
+				bit_ctz(mmu_table_masks[level])));
 		}
 		pte = mmu_get_next_level_pte(pte,
 			(vaddr & mmu_table_masks[level]) >>
-			blog2(mmu_table_masks[level]));
+			bit_ctz(mmu_table_masks[level]));
 	}
 	return NULL;
 }

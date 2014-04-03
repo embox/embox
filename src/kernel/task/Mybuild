@@ -2,114 +2,63 @@ package embox.kernel.task
 
 @DefaultImpl(single)
 abstract module api {
-	option number max_resource_size = 1024
 }
 
-module single extends api {
-	source "single.c"
-	depends kernel_task
-
-	depends embox.kernel.thread.current.api
-	depends embox.kernel.sched.strategy.api
-	depends task_thread_api
-}
-
-module multi extends api {
-	source "multi.c"
-	depends kernel_task
-
-	option number tasks_quantity = 20
-
-	depends embox.util.idx_table
-
-	/* uses task_self() to initialize resources, which implies
-	   to thread be already loaded, as task_self uses thread_self
-	   to determine current thread
-	*/
-	depends embox.kernel.thread.core
-	depends task_thread_api
-}
-
-module task_environment { }
-
-@DefaultImpl(NoThread)
-abstract module task_thread_api {
-}
-
-module NoThread extends task_thread_api {
-}
-
-module MultiThread extends task_thread_api {
-	source "multi_thread.c"
+@DefaultImpl(task_no_table)
+abstract module task_table_api {
 }
 
 module kernel_task {
-	source "common.c"
+	source "kernel_task.c"
 
-	depends task_thread_api
-	depends embox.util.DList
-
+	@NoRuntime depends embox.kernel.task.api
+	depends embox.kernel.task.task_resource // FIXME
+	depends embox.kernel.task.task_table_api
 }
 
-module std_signal {
-	source "std_signal.c"
+module multi extends api {
+	source "multi.c", "multi.h"
 
-	depends api
-//	depends signal_common
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
+	depends embox.kernel.task.task_table
+	@NoRuntime depends embox.kernel.task.resource.errno
+	depends embox.kernel.thread.core /* uses task_self() to initialize
+										resources, which implies to thread be
+										already loaded, as task_self uses
+										thread_self to determine current thread */
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
 
-module rt_signal {
-	source "rt_signal.c"
+module single extends api {
+	source "single.h"
 
-	depends api
-	depends signal_common
-	depends embox.mem.objalloc
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCString
 }
 
-module signal_common {
-	source "signal.c"
+module task_no_table extends task_table_api {
+	source "task_no_table.h"
 
-	depends embox.kernel.sched.sched
+	@NoRuntime depends embox.kernel.task.kernel_task
+	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module task_resource {
+	source "task_resource.c", "task_resource.lds.S"
 
-module idx_table extends task_environment {
-
-	option number task_res_quantity = 64
-	source "index_desc.c"
-	depends embox.mem.objalloc
-	depends embox.util.idx_table
-	depends api
-	depends io_sync
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.util.Array
 }
 
-module errno {
-	source "errno.c"
-	depends api
+module task_table extends task_table_api {
+	option number task_table_size=20
+	source "task_table.c"
+
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.util.idx_table
 }
 
-module env {
-	option number env_per_task=8
-	option number env_str_len=32
-	source "env.c"
-
-	depends kernel_task
-}
-
-module u_area {
-	source "u_area.c"
-}
-
-module io_sync {
-	source "io_sync.c"
-
-	depends embox.kernel.manual_event_api
-	depends embox.kernel.event_api
-}
-
-module waitpid {
-	source "waitpid.c"
-
-	depends embox.kernel.sched.sched
-	depends embox.kernel.sched.wait_queue
-}

@@ -17,6 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/fat.h>
 #include <fs/path.h>
+#include <fs/file_operation.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>

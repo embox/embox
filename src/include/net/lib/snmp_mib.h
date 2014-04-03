@@ -44,8 +44,6 @@ typedef struct mib_obj {
 
 typedef void (*mib_register_func)(void);
 
-extern const const mib_register_func __mib_register[];
-
 /* Functions for manipulating with MIB */
 extern mib_obj_t mib_obj_alloc(void);
 /*extern void mib_obj_free(void);*/
@@ -59,6 +57,8 @@ extern int mib_init_all(void);
 /*extern mib_obj_t mib_obj_getbyname(const char *name);*/
 
 #define MIB_OBJECT_REGISTER(init) \
-    	ARRAY_SPREAD_ADD(__mib_register, init)
+	ARRAY_SPREAD_DECLARE(const mib_register_func, \
+			__mib_register); \
+    ARRAY_SPREAD_ADD(__mib_register, init)
 
 #endif /* NET_LIB_SNMP_MIB_H_ */

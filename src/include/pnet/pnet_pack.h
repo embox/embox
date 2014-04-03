@@ -25,8 +25,8 @@ enum PNET_PACK_TYPE {
 };
 
 #define PNET_PACK(ptype,fcreate,fdestroy) \
-	extern const struct pnet_pack_desc __pnet_pack_registry[]; \
-	ARRAY_SPREAD_ADD(__pnet_pack_registry, {ptype,fcreate,fdestroy});
+	ARRAY_SPREAD_DECLARE(const struct pnet_pack_desc, __pnet_pack_registry); \
+	ARRAY_SPREAD_ADD(__pnet_pack_registry, {ptype,fcreate,fdestroy})
 
 extern struct pnet_pack *pnet_pack_create(void *buff, size_t size, uint32_t type);
 

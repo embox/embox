@@ -12,6 +12,21 @@
 #include <fs/xdr_nfs.h>
 #include <net/lib/rpc/xdr.h>
 
+static int unaligned_xdr_u_hyper(struct xdr *xs, void *point) {
+	int ret;
+	uint64_t hyper;
+
+	memcpy(&hyper, point, sizeof hyper);
+	ret = xdr_u_hyper(xs, &hyper);
+	memcpy(point, &hyper, sizeof hyper);
+	return ret;
+}
+
+static int unaligned_test_non_zero_hyper(void *hyper) {
+	uint64_t zero = 0;
+	return 0 != memcmp(hyper, &zero, sizeof zero);
+}
+
 int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 	char *point;
 
@@ -196,7 +211,7 @@ int xdr_nfs_create(struct xdr *xs, char *point) {
 						&& xdr_u_int(xs, &req->gid_vf)
 						&& xdr_u_int(xs, &req->gid)
 						&& xdr_u_int(xs, &req->size_vf)
-						&& xdr_u_hyper(xs, &req->size)
+						&& unaligned_xdr_u_hyper(xs, &req->size)
 						&& xdr_u_int(xs, &req->set_atime)
 						&& xdr_u_int(xs, &req->set_mtime)){
 						return XDR_SUCCESS;
@@ -238,7 +253,7 @@ int xdr_nfs_read_file(struct xdr *xs, char *point) {
 		case XDR_ENCODE:
 			req = (read_req_t *)point;
 			if (xdr_nfs_name_fh(xs, req->fh)
-				&& xdr_u_hyper(xs, &req->offset)
+				&& unaligned_xdr_u_hyper(xs, &req->offset)
 				&& xdr_u_int(xs, &req->count)) {
 				return XDR_SUCCESS;
 			}
@@ -276,7 +291,7 @@ int xdr_nfs_write_file(struct xdr *xs, char *point) {
 					&& xdr_nfs_get_attr(xs, (char *) reply->attr)
 					&& xdr_u_int(xs, &reply->count)
 					&& xdr_u_int(xs, &reply->comitted)
-					&& xdr_u_hyper(xs, &reply->cookie_vrf)) {
+					&& unaligned_xdr_u_hyper(xs, &reply->cookie_vrf)) {
 						return XDR_SUCCESS;
 					}
 			}
@@ -285,7 +300,7 @@ int xdr_nfs_write_file(struct xdr *xs, char *point) {
 			req = (write_req_t *)point;
 			data = req->data;
 
-			if (xdr_nfs_name_fh(xs, req->fh) && xdr_u_hyper(xs, &req->offset)
+			if (xdr_nfs_name_fh(xs, req->fh) && unaligned_xdr_u_hyper(xs, &req->offset)
 				&& xdr_u_int(xs, &req->count) && xdr_u_int(xs, &req->stable)
 				&&  xdr_bytes(xs, (char **)&data, &req->datalen, DIRCOUNT)) {
 				return XDR_SUCCESS;
@@ -345,7 +360,7 @@ int xdr_nfs_get_name(struct xdr *xs, char *point) {
 	return (xdr_opaque(xs, (char *)&file->file_id, sizeof(file->file_id))
 			&& xdr_nfs_namestring(xs, &file->name)
 			&& xdr_opaque(xs, (char *)&file->cookie, sizeof(file->cookie))
-			&& (int)(0 != file->cookie));
+			&& unaligned_test_non_zero_hyper(&file->cookie));
 }
 
 int xdr_nfs_get_attr(struct xdr *xs, char *point) {
@@ -356,10 +371,10 @@ int xdr_nfs_get_attr(struct xdr *xs, char *point) {
 	attr = (file_attribute_rep_t *) point;
 	return (xdr_u_int(xs, &attr->type) && xdr_u_int(xs, &attr->mode)
 			&& xdr_u_int(xs, &attr->nlink) && xdr_u_int(xs, &attr->uid)
-			&& xdr_u_int(xs, &attr->gid) && xdr_u_hyper(xs, &attr->size)
-			&& xdr_u_hyper(xs, &attr->used) && xdr_u_int(xs, &attr->specdata1)
-			&& xdr_u_int(xs, &attr->specdata2) && xdr_u_hyper(xs, &attr->fsid)
-			&& xdr_u_hyper(xs, &attr->file_id)
+			&& xdr_u_int(xs, &attr->gid) && unaligned_xdr_u_hyper(xs, &attr->size)
+			&& unaligned_xdr_u_hyper(xs, &attr->used) && xdr_u_int(xs, &attr->specdata1)
+			&& xdr_u_int(xs, &attr->specdata2) && unaligned_xdr_u_hyper(xs, &attr->fsid)
+			&& unaligned_xdr_u_hyper(xs, &attr->file_id)
 			&& xdr_u_int(xs, &attr->atime.second)
 			&& xdr_u_int(xs, &attr->atime.nano_sec)
 			&& xdr_u_int(xs, &attr->mtime.second)
@@ -374,7 +389,7 @@ int xdr_nfs_get_del_attr(struct xdr *xs, char *point) {
 	assert(point != NULL);
 
 	attr = (file_del_attribute_rep_t *) point;
-	return (xdr_u_hyper(xs, &attr->size)
+	return (unaligned_xdr_u_hyper(xs, &attr->size)
 			&& xdr_u_int(xs, &attr->mtime.second)
 			&& xdr_u_int(xs, &attr->mtime.nano_sec)
 			&& xdr_u_int(xs, &attr->ctime.second)

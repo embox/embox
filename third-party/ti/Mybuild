@@ -1,0 +1,29 @@
+package third_party.ti
+
+module syslink {
+	depends embox.lib.LibC
+	depends embox.compat.posix.sched
+	depends embox.compat.posix.util.sleep
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ti syslink-driver MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' THIRDPARTY_DIR=$(abspath $(THIRDPARTY_DIR)) ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CC='$(CC)' EMBOX_CXX='$(CXX)' EMBOX_LD='$(LD)' EMBOX_OBJCOPY='$(OBJCOPY)'")
+
+	source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/bin/TI816X/syslink.o"
+}
+
+static module libs {
+	depends embox.lib.LibC
+
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ti syslink-lib MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' THIRDPARTY_DIR=$(abspath $(THIRDPARTY_DIR)) ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CC='$(CC)' EMBOX_CXX='$(CXX)' EMBOX_LD='$(LD)' EMBOX_OBJCOPY='$(OBJCOPY)'")
+
+	source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/lib/syslink.o_debug"
+}
+
+@Cmd(name = "slaveloader",
+     help = "TI SlaveLoader",
+     man = "")
+module slaveloader {
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ti syslink-slaveloader MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' THIRDPARTY_DIR=$(abspath $(THIRDPARTY_DIR)) ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CC='$(CC)' EMBOX_CXX='$(CXX)' EMBOX_LD='$(LD)' EMBOX_OBJCOPY='$(OBJCOPY)'")
+
+       source "../../../../../third-party/ti/syslink_2_21_01_05/packages/ti/syslink/bin/TI816X/samples/slaveloader_debug.o"
+       source "slaveloader_crappy_embox_stub_due_to_broken_buildsystem.c"
+}

@@ -1,0 +1,21 @@
+package embox.cmd
+
+@Cmd(name = "chmod",
+	help = "Change the mode of each FILE to MODE",
+	man = '''
+NAME
+	chmod
+SYNOPSIS:
+	chmod [OPTION]... MODE[,MODE]... FILE...
+	Each MODE is of the form '[ugoa]*([-+=]([rwxX]*))'
+DESCRIPTION
+	Change the mode of each FILE to MODE.
+OPTIONS
+	-R	change files and directories recursively
+	-h	display this help and exit
+AUTHORS
+	Vita Loginova
+''')
+module chmod {
+	source "chmod.c"
+}
