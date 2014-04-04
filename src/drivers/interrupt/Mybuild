@@ -49,6 +49,12 @@ module stm32_nvic extends irqctrl_api {
 	source "stm32_nvic.c", "stm32_nvic.h"
 }
 
+@BuildDepends(embox.arch.arm.cmsis)
+module cmsis_nvic extends irqctrl_api {
+	option number irq_table_size = 16
+	source "cmsis_nvic.c", "cmsis_nvic.h"
+}
+
 module mips_intc extends irqctrl_api {
 	source "mips_intc.c", "mips_intc.h"
 }

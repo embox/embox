@@ -20,6 +20,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
@@ -322,7 +323,7 @@ int pipe2(int pipefd[2], int flags) {
 	struct pipe *pipe;
 	int res = 0;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 
 

@@ -11,6 +11,7 @@
 #include <kernel/spinlock.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
+#include <kernel/cpu/cpudata.h>
 
 #ifndef NDEBUG
 /*# error "Compiling assert.c for NDEBUG configuration"*/
@@ -25,6 +26,7 @@
 
 char __assertion_message_buff[MESSAGE_BUFF_SZ];
 static spinlock_t assert_lock = SPIN_STATIC_UNLOCKED;
+static char assert_recursive_lock __cpudata__ = 0;
 
 static const char oops_banner[] =
 	"\n  ______"
@@ -41,6 +43,13 @@ static void print_oops(void) {
 }
 
 void __assertion_handle_failure(const struct __assertion_point *point) {
+	if (cpudata_var(assert_recursive_lock)) {
+		printk("\nrecursion detected on CPU %d\n",
+				cpu_get_id());
+		goto out;
+	}
+	cpudata_var(assert_recursive_lock) = 1;
+
 	spin_lock_ipl_disable(&assert_lock);
 
 	print_oops();
@@ -60,6 +69,7 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 
 	spin_unlock(&assert_lock);  /* leave IRQs off */
 
+out:
 	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
 	/* NOTREACHED */
 }

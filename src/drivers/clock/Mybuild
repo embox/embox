@@ -33,15 +33,24 @@ module pit extends embox.arch.clock {
 	option number irq_num=0
 
 	depends embox.kernel.irq
-	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.clock_source
 }
 
 module stm32_systick extends embox.arch.clock {
 	source "stm32_systick.c"
 
-	depends embox.kernel.irq
+	//depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 }
+
+@BuildDepends(embox.arch.arm.cmsis)
+module cmsis_systick extends embox.arch.clock {
+	source "cmsis_systick.c"
+
+	//depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+}
+
 
 module omap3_clk extends embox.arch.clock {
 	source "omap3_clk.c"

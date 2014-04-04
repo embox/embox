@@ -32,13 +32,12 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/time/ktime.h>
 #include <net/lib/tcp.h>
-#include <util/indexator.h>
+#include <net/sock_port.h>
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
 #include <kernel/printk.h>
-#include <prom/prom_printf.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
@@ -53,6 +52,8 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 
 #define TCP_DEBUG 0
 #if TCP_DEBUG
+#include <stdarg.h>
+#include <prom/prom_printf.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -116,7 +117,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //default:
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
-	case 2:  /* socket state */
+//	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
@@ -503,7 +504,7 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	in_sk = to_inet_sock(to_sock(tcp_sk));
 	if (in_sk->src_port_alloced) {
 		assert(in_sk->sk.p_ops != NULL);
-		index_unlock(in_sk->sk.p_ops->sock_port,
+		sock_port_unlock(in_sk->sk.p_ops->sock_port,
 				ntohs(in_sk->src_in.sin_port));
 	}
 	sock_release(&in_sk->sk);

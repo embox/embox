@@ -68,7 +68,8 @@ int net_rx(struct sk_buff *skb) {
 	/* lookup handler for L3 layer */
 	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
-		DBG(printk("net_rx: %p unknown type\n", skb));
+		DBG(printk("net_rx: %p unknown type %#.6hx\n", skb,
+					hdr_info.type));
 		skb_free(skb);
 		return 0; /* ok, but: not supported */
 	}

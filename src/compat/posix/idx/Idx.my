@@ -16,15 +16,18 @@ static module isatty {
 }
 
 static module poll_table {
-	source "poll_table.c"
-	depends embox.kernel.task.api
+	source "poll_table.c", "poll_table.h"
+
+	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.idesc_table
 }
 
 static module select {
 	source "select.c"
 
 	depends poll_table
-	depends embox.kernel.task.api
+	depends embox.kernel.task.idesc
 }
 
 static module dup {
@@ -41,6 +44,7 @@ static module pipe {
 
 	depends embox.mem.heap_api
 
+	depends embox.fs.idesc_event
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
 }
@@ -48,6 +52,8 @@ static module pipe {
 static module ppty {
 
 	source "pipe_pty.c"
+
+	depends embox.fs.idesc_event
 	depends embox.kernel.task.api
 	depends embox.driver.tty.pty
 }
@@ -56,5 +62,5 @@ static module poll {
 	source "poll.c"
 
 	depends poll_table
-	depends embox.kernel.task.api
+	depends embox.kernel.task.idesc
 }

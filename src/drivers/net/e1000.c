@@ -37,8 +37,12 @@
 
 #include <embox/unit.h>
 
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM);
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
+static const struct pci_id e1000_id_table[] = {
+	{ PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM },
+	{ PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3 },
+};
+
+PCI_DRIVER_TABLE("e1000", e1000_init, e1000_id_table);
 
 #define MDELAY 1000
 

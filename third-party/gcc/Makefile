@@ -1,5 +1,7 @@
 ifeq (arm,$(EMBOX_ARCH))
 EMBOX_GCC_TARGET=arm-none-eabi
+else ifeq (sparc,$(EMBOX_ARCH))
+EMBOX_GCC_TARGET=sparc-elf
 else ifeq (x86,$(EMBOX_ARCH))
 EMBOX_GCC_TARGET=i386-pc-elf
 else

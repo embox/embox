@@ -30,6 +30,7 @@ static module LibElf {
 static module LibExec {
 	source "exec/exec.c"
 
+	depends embox.kernel.task.resource.mmap
 	depends embox.mem.mmap_api
 	@NoRuntime depends LibElf
 }
@@ -61,7 +62,12 @@ static module LibGccInternal extends LibGcc {
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
 	source "gcc/mulsi3.c"
-        source "gcc/arm_eabi.c"
+	source "gcc/arm_eabi.c" /* ??? */
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "gcc/soft-fp/df.c",
+		"gcc/soft-fp/sf.c",
+		"gcc/soft-fp/tf.c"
 }
 
 static module Tokenizer {

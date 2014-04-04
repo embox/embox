@@ -1,5 +1,7 @@
 ifeq (x86,$(EMBOX_ARCH))
 EMBOX_TCL_TARGET=i386-pc-elf
+else ifeq (sparc,$(EMBOX_ARCH))
+EMBOX_TCL_TARGET=sparc
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
@@ -39,6 +41,13 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
 
+ifeq (sparc,$(EMBOX_TCL_TARGET))
+EMBOX_IMPORTED_CFLAGS   += -munaligned-doubles
+EMBOX_IMPORTED_CXXFLAGS += -munaligned-doubles
+EMBOX_IMPORTED_CFLAGS   += -msoft-float -mcpu=v8
+EMBOX_IMPORTED_CXXFLAGS += -msoft-float -mcpu=v8
+endif
+
 #EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
 #EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
 
@@ -49,6 +58,7 @@ endif
 # no wonder the following doesn't work
 # EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
 
+EMBOX_DERIVED_CPPFLAGS  += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
 EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
@@ -68,6 +78,7 @@ $(TCL_DIR):
 
 $(TCL_FLAGS): | $(TCL_DIR)
 	-$(AT)rm $@
+	$(AT)echo EMBOX_DERIVED_CPPFLAGS=\"$(EMBOX_DERIVED_CPPFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
 	$(AT)echo EMBOX_DERIVED_LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@

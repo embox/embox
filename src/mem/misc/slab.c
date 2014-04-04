@@ -101,13 +101,13 @@ cache_t cache_chain = {
 };
 
 /** Initialize cache according to storage data in info structure */
-static int cache_member_init(struct mod_member *info);
+static int cache_member_init(const struct mod_member *info);
 
 const struct mod_member_ops __cache_member_ops = {
 	.init = &cache_member_init,
 };
 
-static int cache_member_init(struct mod_member *info) {
+static int cache_member_init(const struct mod_member *info) {
 	cache_t *cache = (cache_t *) info->data;
 	return cache_init(cache, cache->obj_size, cache->num);
 }

@@ -21,6 +21,8 @@
 //#include <kernel/time/timecounter.h>
 #include <kernel/time/itimer.h>
 
+#define FUNC_QUANTITY OPTION_GET(NUMBER, max_functions_quantity)
+
 struct __trace_point {
 	const char *name;
 	struct location_func location;
@@ -30,6 +32,7 @@ struct __trace_point {
 
 struct __trace_block {
 	const char *name;
+	void *func;
 	struct location_func location;
 	struct __trace_point *begin;
 	struct __trace_point *end;

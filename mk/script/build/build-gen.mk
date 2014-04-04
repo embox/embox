@@ -359,9 +359,16 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),value)
 build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
+# Maps moduleType to that one, which instance is in build. For example, if 'api' extended
+# by 'impl1' and 'impl2', and 'impl2' is in build, calling this with 'api' moduleType will
+# return moduleType of 'impl2'.
+# 1. moduleType
+build_module_type_substitude = \
+	$(call get,$(call module_build_fqn2inst,$(call get,$1,qualifiedName)),type)
+
 build_deps_all = \
 	$(sort $(foreach d,$(call build_deps,$1), \
-		$d + $(call build_deps_all,$d)))
+		$(call build_module_type_substitude,$d) $(call build_deps_all,$d)))
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -509,19 +516,25 @@ my_incpath_before_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_instrument_val := \
+		$(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
 
 $(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
+$(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
+
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+$(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -finstrument-functions, )
 $(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
-			-D__EMBUILD_MOD__=$(call module_id,$(module)))
+			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
+			$(call check_profiling,$(instrument)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 

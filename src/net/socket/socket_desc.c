@@ -8,6 +8,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <net/socket/socket_desc.h>
 #include <fs/idesc.h>
 
@@ -20,7 +21,7 @@ struct sock *idesc_sock_get(int idx) {
 
 	assert(idesc_index_valid(idx));
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 
 	idesc = idesc_table_get(it, idx);

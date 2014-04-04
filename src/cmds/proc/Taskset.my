@@ -17,4 +17,5 @@ module taskset {
 
 	depends embox.lib.LibC
 	depends embox.kernel.task.api
+	depends embox.kernel.task.resource.affinity
 }

@@ -31,17 +31,20 @@
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
+#include <kernel/thread/thread_local.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
+#include <hal/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 #include <kernel/panic.h>
 
 #include <hal/context.h>
 #include <err.h>
 
-EMBOX_UNIT_INIT(thread_core_init);
 
 
-static int id_counter; // TODO make it an indexator
+static int id_counter = 0; // TODO make it an indexator
 
 
 /**
@@ -92,19 +95,20 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* allocate memory */
 		if (!(t = thread_alloc())) {
 			t = err_ptr(ENOMEM);
-			goto out;
+			goto out_unlock;
 		}
 
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
 
+		ret = thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY);
+		if (ret != 0) {
+			goto out_threadfree;
+		}
+
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			ret = thread_register(task_self(), t);
-			if (ret != 0) {
-				t = err_ptr(-ret);
-				goto out;
-			}
+			thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -116,8 +120,16 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		if (flags & THREAD_FLAG_DETACHED) {
 			thread_detach(t);
 		}
+
+		goto out_unlock;
+
+out_threadfree:
+		thread_free(t);
+
+		/* set error */
+		t = err_ptr(-ret);
 	}
-out:
+out_unlock:
 	sched_unlock();
 
 	return t;
@@ -196,13 +208,14 @@ void thread_init(struct thread *t, unsigned int flags,
 	sched_timing_init(t);
 }
 
-static void thread_delete(struct thread *t) {
+void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
 	assert(t->state & TS_EXITED);
 
 	thread_unregister(t->task, t);
+	thread_local_free(t);
 
 	if (zombie) {
 		thread_free(zombie);
@@ -218,13 +231,18 @@ static void thread_delete(struct thread *t) {
 	}
 }
 
+void thread_state_exited(struct thread *t) {
+	t->waiting = true;
+	t->state |= TS_EXITED;
+}
+
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
 	struct thread *joining;
 
 	/* We can free only not main threads */
-	if (task->main_thread == current) {
+	if (current == task_get_main(task)) {
 		/* We are last thread. */
 		task_exit(ret);
 		/* NOTREACHED */
@@ -233,8 +251,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->waiting = true;
-	current->state |= TS_EXITED;
+	thread_state_exited(current);
 
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */
@@ -307,7 +324,20 @@ int thread_detach(struct thread *t) {
 }
 
 int thread_launch(struct thread *t) {
-	return sched_wakeup(t) ? 0 : -EINVAL;
+	int ret;
+
+	sched_lock();
+	{
+		if (t->state & TS_EXITED) {
+			ret = -EINVAL;
+		}
+		else {
+			ret = sched_wakeup(t) ? 0 : -EINVAL;
+		}
+	}
+	sched_unlock();
+
+	return ret;
 }
 
 int thread_terminate(struct thread *t) {
@@ -355,7 +385,8 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(t->task->priority, thread_priority_get(t));
+	return sched_priority_thread(task_get_priority(t->task),
+			thread_priority_get(t));
 }
 
 clock_t thread_get_running_time(struct thread *t) {
@@ -371,17 +402,7 @@ clock_t thread_get_running_time(struct thread *t) {
 	return running;
 }
 
-extern struct thread *idle_thread_create(void);
-extern struct thread *boot_thread_create(void);
-
-static int thread_core_init(void) {
-	struct thread *idle;
-	struct thread *current;
-
-	id_counter = 0; /* start enumeration */
-
-	idle = idle_thread_create(); /* idle thread always has ID=0 */
-	current = boot_thread_create(); /* 'init' thread ID=1 */
-
-	return sched_init(idle, current);
+void thread_set_run_arg(struct thread *t, void *run_arg) {
+	assert(t->state == TS_INIT);
+	t->run_arg = run_arg;
 }

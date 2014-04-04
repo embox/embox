@@ -35,6 +35,7 @@ module core {
 	@NoRuntime depends third_party.boost.core
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends third_party.STLport.core
+	@NoRuntime depends embox.compat.posix.pthread_key
 }
 
 @BuildDepends(core)

@@ -456,4 +456,14 @@ builtin_func-silent-foreach = \
 
 silent-foreach =# Nothing (stub).
 
+##
+# Same as join, except resulting list length is minimum of lenght of first
+# and second arg
+# Params:
+#   1. First list
+#   2. First list
+# Return:
+#   List of concatinated pairs from first and second list
+minjoin = $(wordlist 1,$(words $1),$(wordlist 1,$(words $2),$(join $1,$2)))
+
 endif # __core_string_mk

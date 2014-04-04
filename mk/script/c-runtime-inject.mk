@@ -1,13 +1,18 @@
 #
 #   Date: Jun 14, 2012
 # Author: Eldar Abusalimov
+# Author: Anton Kozlov
+# 	- modules sorted according dependencies and runlevel
 #
 
 include mk/script/script-common.mk
 
+_build_modules:=$(call get,$(build_model),modules)
+
+mod_inst_fqn=$(call get,$(call get,$1,type),qualifiedName)
 # f.q.n.obj
 modules := \
-	$(foreach m,$(call get,$(build_model),modules), \
+	$(foreach m,$(_build_modules), \
 		$(call get,$(call get,$m,type),qualifiedName)$m)
 
 # f.q.n
@@ -49,11 +54,49 @@ str_escape = \
 
 fqn2id = $(subst .,__,$1)
 
+mod_inst_get_deps=$(filter-out $(call get,$1,noRuntimeDepends),$(call get,$1,$2))
+
 # 1. Module
 # 2. depends/afterDepends
 get_deps = \
-	$(call get,$(call get,$(filter-out $(call get,$1,noRuntimeDepends), \
-		$(call get,$1,$2)),type),qualifiedName)
+	$(call get,$(call get,$(call mod_inst_get_deps,$1,$2),type),qualifiedName)
+
+mod_inst_runlevel=$(or $(call annotation_value,$(call get,$m,includeMember),$(my_rl_value)),2)
+
+mod_inst_closure=$1 $(foreach d,$(call mod_inst_get_deps,$1,depends),$(call mod_inst_closure,$d))
+
+runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
+			 $(if $(findstring $1,$(call mod_inst_runlevel,$m)),\
+				 $(call mod_inst_closure,$m))))
+
+mod_def = \
+	MOD_DEF($1, $2, $(call fqn2id,$(basename $3)), "$(basename $3)", $(subst .,,$(suffix $3)));
+
+val_or_null = $(if $1,$1,generic__notexisting)
+
+seq := $(shell $(SEQ) 1 1000)
+
+# Call info for every new module in this runlevel
+# 1. Runlevels to generate
+# 2. Already loaded modules
+# 3. Modules to be loaded at this runlevel
+_gen_mod_runlevels = \
+	$(foreach m,$(call minjoin,$3,$(addprefix .,$(seq))), \
+		     $(info $(call mod_def,$(firstword $1),$(subst .,,$(suffix $m)),$(call mod_inst_fqn,$(basename $m))))) \
+	$(call gen_mod_runlevels,$(call nofirstword,$1),$2 $3)
+
+_mod_inst_get_deps=$(call mod_inst_get_deps,$1,depends)
+
+# Generate modules defs in right order according runlevel and dependencies
+# 1. List of runlevels to generated
+# 2. Already `loaded` modules (already generated)
+gen_mod_runlevels = \
+	$(if $(strip $1), \
+		$(info /* Runlevel $(firstword $1) */) \
+		$(call _gen_mod_runlevels,$1,$2, \
+			$(filter-out $2, \
+				$(call topsort,$(sort $(call runlevel_modules_closure,$(firstword $1))), \
+					_mod_inst_get_deps))))
 
 #
 # The output.
@@ -66,20 +109,14 @@ $(foreach h, framework/mod/embuild.h, \
 	$(info #include <$h>))
 $(info )
 
+
 $(info /* Package definitions. */)
 $(foreach p,$(packages), \
 	$(info MOD_PACKAGE_DEF($(call fqn2id,$p), "$p");))
 $(info )
 
-mod_def = \
-	MOD_DEF($(call fqn2id,$(basename $n)), $(subst .,,$(suffix $n)));
-
 $(info /* Module definitions. */)
-$(foreach m,$(modules),$(foreach n,$(basename $m),$(info $(mod_def))))
-$(info )
-
-$(info /* Runlevel modules. */)
-$(foreach n,$(addprefix generic.runlevel,0 1 2 3),$(info $(mod_def)))
+$(call gen_mod_runlevels,0 1 2 3,)
 $(info )
 
 $(info /* Security labels. */)
@@ -106,9 +143,6 @@ $(foreach m,$(modules),$(foreach n,$(basename $m), \
 	$(foreach d,$(call get_deps,$m,depends), \
 		$(info MOD_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
 	$(foreach d,$(call get_deps,$m,afterDepends), \
-		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
-	$(foreach r,generic.runlevel$(or $(call annotation_value, \
-					$(call get,$m,includeMember),$(my_rl_value)),2), \
-		$(info MOD_CONTENTS_DEF($(call fqn2id,$r), $(call fqn2id,$n));))))
+		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));))))
 $(info )
 

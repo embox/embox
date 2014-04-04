@@ -32,7 +32,7 @@ static void fake_disable(const struct mod *mod) {
 		fake_disable(dep);
 	}
 
-	printf("    %s.%s\n", mod->package->name, mod->name);
+	printf("    %s.%s\n", mod_pkg_name(mod), mod_name(mod));
 }
 
 static int exec(int argc, char **argv) {

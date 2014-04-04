@@ -403,17 +403,33 @@ ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 
 
 int block_devs_init(void) {
+#if 0
 	int ret;
 	const block_dev_module_t *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (bdev_module->init != NULL) {
+
 			ret = bdev_module->init(NULL);
 			if (ret != 0) {
 				return ret;
 			}
 		}
-	}
 
+	}
+#endif
 	return 0;
 }
+
+const block_dev_module_t *block_devs_lookup(const char *bd_name) {
+	const block_dev_module_t *bdev_module;
+
+	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
+		if (0 == strcmp(bdev_module->name, bd_name)) {
+			return bdev_module;
+		}
+	}
+
+	return NULL;
+}
+

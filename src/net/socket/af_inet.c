@@ -16,8 +16,7 @@
 #include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <embox/net/family.h>
-#include <util/indexator.h>
-#include <embox/net/sock.h>
+#include <net/sock_port.h>
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
@@ -70,7 +69,7 @@ static int inet_close(struct sock *sk) {
 	if (sk->p_ops->close == NULL) {
 		if (to_inet_sock(sk)->src_port_alloced) {
 			assert(to_inet_sock(sk)->src_in.sin_family == AF_INET);
-			index_unlock(sk->p_ops->sock_port,
+			sock_port_unlock(sk->p_ops->sock_port,
 					ntohs(to_inet_sock(sk)->src_in.sin_port));
 		}
 		sock_release(sk);
@@ -110,7 +109,7 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->sock_port != NULL) {
-		if (!index_try_lock(sk->p_ops->sock_port,
+		if (!sock_port_lock(sk->p_ops->sock_port,
 					ntohs(addr_in->sin_port))) {
 			return -EADDRINUSE;
 		}
@@ -133,8 +132,8 @@ static int inet_bind_local(struct sock *sk) {
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->sock_port != NULL) {
-		port = index_alloc(sk->p_ops->sock_port, INDEX_NEXT);
-		if (port == INDEX_NONE) {
+		port = sock_port_alloc(sk->p_ops->sock_port);
+		if (port == SOCK_PORT_NONE) {
 			return -ENOMEM;
 		}
 		to_inet_sock(sk)->src_port_alloced = 1;

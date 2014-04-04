@@ -24,7 +24,7 @@
 #include <kernel/sched.h>
 
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
+#include <net/sock_port.h>
 #include <netinet/in.h>
 
 #include <embox/net/sock.h>
@@ -454,8 +454,7 @@ static int tcp_shutdown(struct sock *sk, int how) {
 }
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-INDEX_CLAMP_DEF(tcp_sock_port, 0, MODOPS_AMOUNT_TCP_PORT,
-		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
+SOCK_PORT_DEF(tcp_sock_port, MODOPS_AMOUNT_TCP_PORT);
 static LIST_DEF(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
