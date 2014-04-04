@@ -20,7 +20,7 @@ module heap_bm extends heap_api {
 
 	depends embox.kernel.task.resource.task_heap
 	depends embox.kernel.task.kernel_task
-	depends embox.kernel.task.api
+	//depends embox.kernel.task.api
 }
 
 module heap_simple extends heap_api {
