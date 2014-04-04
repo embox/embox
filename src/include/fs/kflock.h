@@ -9,8 +9,10 @@
 #ifndef KFLOCK_H_
 #define KFLOCK_H_
 
-/* Temporary structures, should be moved later */
 
+#include <fcntl.h>
+
+#include <util/dlist.h>
 #include <kernel/thread/sync/mutex.h>
 #include <sched.h>
 /*
@@ -53,7 +55,7 @@ typedef struct kflock_lock {
 	pid_t             pid;*/
 	struct flock      flock;
 	struct dlist_head kflock_link;
-	struct wait_queue wq;
+	//struct wait_queue wq;
 } kflock_lock_t;
 
 typedef struct kflock {
