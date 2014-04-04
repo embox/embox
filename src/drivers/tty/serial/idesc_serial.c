@@ -70,6 +70,17 @@ static struct tty_ops uart_tty_ops = {
 	.out_wake = uart_out_wake,
 };
 
+static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
+	struct uart *dev = data;
+
+	if (dev->tty) {
+		while (uart_hasrx(dev))
+			tty_rx_putc(dev->tty, uart_getc(dev), 0);
+	}
+
+	return IRQ_HANDLED;
+}
+
 static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
 	struct tty_uart *tu;
 
@@ -83,6 +94,7 @@ static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
 	tu->uart = uart;
 	uart->tty = &tu->tty;
 	uart->tty->idesc = idesc;
+	uart->irq_handler = uart_irq_handler;
 
 	return 0;
 }

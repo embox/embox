@@ -23,8 +23,6 @@ INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
 static DLIST_DEFINE(uart_list);
 
-static irq_return_t irq_handler(unsigned int irq_nr, void *data);
-
 static inline int uart_state_test(struct uart *uart, int mask) {
 	return uart->state & mask;
 }
@@ -51,12 +49,16 @@ static int uart_fill_name(struct uart *dev) {
 
 static int uart_attach_irq(struct uart *uart) {
 
-	if (uart->params.irq) {
-		return irq_attach(uart->irq_num, irq_handler, 0, uart,
-				uart->dev_name);
+	if (!uart->params.irq) {
+		return 0;
 	}
 
-	return 0;
+	if (!uart->irq_handler) {
+		return -EINVAL;
+	}
+
+	return irq_attach(uart->irq_num, uart->irq_handler, 0, uart,
+			uart->dev_name);
 }
 
 static int uart_detach_irq(struct uart *uart) {
@@ -76,19 +78,6 @@ static int uart_setup(struct uart *uart) {
 	}
 
 	return 0;
-}
-
-/* TODO shouldn't be here */
-#include <drivers/tty.h>
-static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
-	struct uart *dev = data;
-
-	if (dev->tty) {
-		while (uart_hasrx(dev))
-			tty_rx_putc(dev->tty, uart_getc(dev), 0);
-	}
-
-	return IRQ_HANDLED;
 }
 
 int uart_register(struct uart *uart,

@@ -58,6 +58,11 @@ static struct kfile_operations nfsfs_fop = {
 	.write = nfsfs_write,
 	.ioctl = nfsfs_ioctl,
 };
+
+static void unaligned_set_hyper(uint64_t *dst, void *src) {
+	memcpy(dst, src, sizeof *dst);
+}
+
 /*
  * file_operation
  */
@@ -555,7 +560,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 		}
 		point += sizeof(vf);
 		if (NFS_EOF != *(__u32 *)point) {
-			fh->cookie = predesc->file_name.cookie;
+			unaligned_set_hyper(&fh->cookie, &predesc->file_name.cookie);
 		} else {
 			fh->cookie = 0;
 			break;

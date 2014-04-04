@@ -47,7 +47,9 @@ static int run_script(void) {
 		shell_exec(shell, command);
 	}
 
+#if START_SHELL
 	shell_run(shell);
+#endif
 
 	return 0;
 }

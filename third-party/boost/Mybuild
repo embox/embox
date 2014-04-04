@@ -18,4 +18,5 @@ static module core {
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.lib.LibC
 	@NoRuntime depends third_party.STLport.core
+	@NoRuntime depends embox.compat.posix.pthread_key
 }

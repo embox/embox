@@ -17,7 +17,7 @@ typedef struct pthread_local __thread_local_t;
 
 static inline int thread_local_alloc(struct thread *t, size_t size) {
 	(void)t; (void)size;
-	return -ENOSUPP;
+	return 0;
 }
 
 static inline void *thread_local_get(struct thread *t, size_t idx) {

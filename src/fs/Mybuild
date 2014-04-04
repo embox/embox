@@ -25,6 +25,9 @@ module file_desc {
 
 module idesc {
 	source "idesc.c"
+}
+
+module idesc_event {
 	source "idesc_event.c"
 }
 

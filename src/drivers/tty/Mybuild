@@ -22,6 +22,7 @@ module tty {
 	option number rx_buff_sz = 100
 
 	depends embox.fs.idesc
+	depends embox.fs.idesc_event
 
 //	depends embox.kernel.thread.sync /* mutex */
 	depends task_breaking
@@ -45,6 +46,7 @@ module tty_repo {
 module pty {
 	source "pty.c"
 	depends tty
+	depends embox.fs.idesc_event
 //	depends embox.kernel.thread.sync /* cond */
 }
 

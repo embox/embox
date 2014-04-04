@@ -1,10 +1,9 @@
 # This example demonstrates usage of TCP sockets and vwait.
 # Server running on Embox accepts connections from foreign hosts on port 12345,
-# then waits for any data and exit.
+# then executes commands received from client.
 #
 # See also client.tcl
 
-set didRead 0
 set server [socket -server accept 12345]
 
 proc accept {chan addr port} {
@@ -17,8 +16,9 @@ proc accept {chan addr port} {
 proc readLine {addr chan} {
     global didRead
     gets $chan line
-    puts "got data from $addr: \"$line\""
-    set didRead 1
+    puts "got command from $addr: \"$line\""
+    puts $chan [exec {*}$line]
+    flush $chan
 }
 
 # waiting for connection
@@ -34,9 +34,7 @@ switch $state {
        puts "unrecognized socket's state"
     }
 }
-
-# waiting until something received
-vwait didRead
+vwait forever
 
 close $server
 

@@ -94,7 +94,7 @@ endef
 # 1. Vertexes
 # 2. Function of one argument returning vertex's reacheable vertex
 define topsort
-	$(shell echo $(foreach v,$1,$(foreach u,$(call $2,$v) $v,$v $u)) | $(TSORT) | $(TAC))
+	$(shell echo $(foreach v,$1,$(foreach u,$(filter $1,$(call $2,$v)) $v,$v $u)) | $(TSORT) | $(TAC))
 endef
 
 $(def_all)
