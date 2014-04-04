@@ -24,7 +24,6 @@
 #include <kernel/sched.h>
 
 #include <mem/misc/pool.h>
-#include <net/sock_port.h>
 #include <netinet/in.h>
 
 #include <embox/net/sock.h>
@@ -33,11 +32,8 @@
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
-
-
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
-#define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
 
 #include <config/embox/net/socket.h>
 #define MODOPS_CONNECT_TIMEOUT \
@@ -454,7 +450,6 @@ static int tcp_shutdown(struct sock *sk, int how) {
 }
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-SOCK_PORT_DEF(tcp_sock_port, MODOPS_AMOUNT_TCP_PORT);
 static LIST_DEF(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
@@ -467,6 +462,5 @@ static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.recvmsg   = tcp_recvmsg,
 	.shutdown  = tcp_shutdown,
 	.sock_pool = &tcp_sock_pool,
-	.sock_port = &tcp_sock_port,
 	.sock_list = &tcp_sock_list
 };

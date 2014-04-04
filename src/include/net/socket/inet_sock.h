@@ -36,7 +36,6 @@ struct sock;
  */
 typedef struct inet_sock {
 	struct sock sk;            /* Base socket class (MUST BE FIRST) */
-	int src_port_alloced;      /* non-zero if port was alloced */
 	struct sockaddr_in src_in; /* address from which the socket
 								  receives packets */
 	struct sockaddr_in dst_in; /* really address of destonation host */
