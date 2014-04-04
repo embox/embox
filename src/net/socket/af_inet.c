@@ -20,6 +20,7 @@
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
 #include <net/l3/ipv4/ip.h>
+#include <netinet/in.h>
 
 #include <net/socket/inet_sock.h>
 
@@ -78,21 +79,28 @@ static void __inet_bind(struct inet_sock *in_sk,
 	memcpy(&in_sk->src_in, addr_in, sizeof *addr_in);
 }
 
-static int inet_addr_tester(const struct sockaddr *addr1,
-		const struct sockaddr *addr2) {
-	const struct sockaddr_in *addr_in1, *addr_in2;
+static int inet_addr_tester(const struct sockaddr *lhs_sa,
+		const struct sockaddr *rhs_sa) {
+	static const struct in_addr inaddr_any = {
+		.s_addr = htonl(INADDR_ANY)
+	};
+	const struct sockaddr_in *lhs_in, *rhs_in;
 
-	assert(addr1 != NULL);
-	assert(addr2 != NULL);
+	assert(lhs_sa != NULL);
+	assert(rhs_sa != NULL);
 
-	addr_in1 = (const struct sockaddr_in *)addr1;
-	addr_in2 = (const struct sockaddr_in *)addr2;
+	lhs_in = (const struct sockaddr_in *)lhs_sa;
+	rhs_in = (const struct sockaddr_in *)rhs_sa;
 
-	return (addr_in1->sin_family == addr_in2->sin_family)
-			&& ((addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr)
-				|| (addr_in1->sin_addr.s_addr == htonl(INADDR_ANY))
-				|| (addr_in2->sin_addr.s_addr == htonl(INADDR_ANY)))
-			&& (addr_in1->sin_port == addr_in2->sin_port);
+	assert(lhs_in->sin_family == AF_INET);
+	return (lhs_in->sin_family == rhs_in->sin_family)
+			&& ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
+							sizeof rhs_in->sin_addr)))
+			&& (lhs_in->sin_port == rhs_in->sin_port);
 }
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
@@ -114,8 +122,8 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 			!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
-	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester,
-				addr, addrlen)) {
+	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, addr,
+				addrlen)) {
 		return -EADDRINUSE;
 	}
 

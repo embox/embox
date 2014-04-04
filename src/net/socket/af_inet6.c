@@ -75,6 +75,27 @@ static void __inet6_bind(struct inet6_sock *in6_sk,
 	memcpy(&in6_sk->src_in6, addr_in6, sizeof *addr_in6);
 }
 
+static int inet6_addr_tester(const struct sockaddr *lhs_sa,
+		const struct sockaddr *rhs_sa) {
+	const struct sockaddr_in6 *lhs_in6, *rhs_in6;
+
+	assert(lhs_sa != NULL);
+	assert(rhs_sa != NULL);
+
+	lhs_in6 = (const struct sockaddr_in6 *)lhs_sa;
+	rhs_in6 = (const struct sockaddr_in6 *)rhs_sa;
+
+	assert(lhs_in6->sin6_family == AF_INET6);
+	return (lhs_in6->sin6_family == rhs_in6->sin6_family)
+			&& ((0 == memcmp(&lhs_in6->sin6_addr, &rhs_in6->sin6_addr,
+							sizeof lhs_in6->sin6_addr))
+					|| (0 == memcmp(&lhs_in6->sin6_addr, &in6addr_any,
+							sizeof lhs_in6->sin6_addr))
+					|| (0 == memcmp(&rhs_in6->sin6_addr, &in6addr_any,
+							sizeof rhs_in6->sin6_addr)))
+			&& (lhs_in6->sin6_port == rhs_in6->sin6_port);
+}
+
 static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	const struct sockaddr_in6 *addr_in6;
@@ -97,7 +118,8 @@ static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 		/* FIXME */
 		return -EADDRNOTAVAIL;
 	}
-	else if (sock_addr_is_busy(sk->p_ops, addr, addrlen)) {
+	else if (sock_addr_is_busy(sk->p_ops, inet6_addr_tester, addr,
+				addrlen)) {
 		return -EADDRINUSE;
 	}
 
@@ -115,9 +137,9 @@ static int inet6_bind_local(struct sock *sk) {
 	memcpy(&addr_in6.sin6_addr, &in6addr_loopback,
 			sizeof addr_in6.sin6_addr);
 
-	if (!sock_addr_alloc_port(sk->p_ops,
-				(const struct sockaddr *)&addr_in6, sizeof addr_in6,
-				&addr_in6.sin6_port)) {
+	if (!sock_addr_alloc_port(sk->p_ops, &addr_in6.sin6_port,
+				inet6_addr_tester, (const struct sockaddr *)&addr_in6,
+				sizeof addr_in6)) {
 		return -ENOMEM;
 	}
 
