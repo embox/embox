@@ -22,6 +22,7 @@
 #include <fs/idesc.h>
 #include <net/socket/sock_xattr.h>
 #include <net/skbuff.h>
+#include <netinet/in.h>
 
 
 struct proto_sock; //TODO What does it mean
@@ -29,7 +30,6 @@ struct sock_family_ops;
 struct sock_proto_ops;
 struct net_pack_out_ops;
 struct pool;
-struct indexator;
 
 enum sock_state {
 	SS_UNKNOWN,
@@ -84,6 +84,9 @@ struct sock {
 	const struct sock_family_ops *f_ops;
 	const struct sock_proto_ops *p_ops;
 	const struct net_pack_out_ops *o_ops;
+	const struct sockaddr *src_addr;
+	const struct sockaddr *dst_addr;
+	size_t addr_len;
 };
 
 struct sock_family_ops {
@@ -131,7 +134,6 @@ struct sock_proto_ops {
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
-	struct indexator *sock_port;
 	struct list *sock_list;
 };
 
@@ -195,13 +197,22 @@ extern struct sock * sock_lookup(const struct sock *sk,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);
 
+typedef int (*sock_addr_tester_ft)(const struct sockaddr *addr1,
+		const struct sockaddr *addr2);
+
+extern int sock_addr_is_busy(const struct sock_proto_ops *p_ops,
+		sock_addr_tester_ft tester, const struct sockaddr *addr,
+		socklen_t addrlen);
+extern int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
+		in_port_t *addrport, sock_addr_tester_ft tester,
+		const struct sockaddr *addr, socklen_t addrlen);
+
 #define sock_foreach(sk, p_ops) \
 	list_foreach(sk, p_ops->sock_list, lnk)
 
 /**
  * AF_INET/AF_INET6 socket functions
  */
-#include <netinet/in.h>
 extern in_port_t sock_inet_get_src_port(const struct sock *sk);
 extern in_port_t sock_inet_get_dst_port(const struct sock *sk);
 

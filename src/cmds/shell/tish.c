@@ -212,7 +212,6 @@ static int tish_exec(const char *cmdline) {
 		return -EINVAL;
 	}
 
-
 	strcpy(cdata.buff, cmdline);
 
 	cdata.argc = cmdline_tokenize(cdata.buff, cdata.argv);
@@ -221,13 +220,17 @@ static int tish_exec(const char *cmdline) {
 	}
 
 	cdata.started = 0;
+
 	res = process(&cdata);
+	if (res != 0) {
+		return res;
+	}
+
 	do {
 		sleep(0);
 	} while (cdata.started == 0);
 
-
-	return res;
+	return 0;
 }
 
 static int rich_prompt(const char *fmt, char *buf, size_t len) {

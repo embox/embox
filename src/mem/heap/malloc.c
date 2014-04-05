@@ -203,7 +203,7 @@ int heap_fini(const struct task *task) {
 
 	dlist_foreach_entry(mm, mm_next, &task_heap->mm, link) {
 		block = mm;
-		page_free(__heap_pgallocator, block, mm->size);
+		page_free(__heap_pgallocator, block, mm->size / PAGE_SIZE());
 	}
 
 

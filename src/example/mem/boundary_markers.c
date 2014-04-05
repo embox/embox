@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <framework/example/self.h>
 #include <mem/page.h>
-#include <util/list.h>
+
 
 EMBOX_EXAMPLE(run);
 

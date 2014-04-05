@@ -14,7 +14,6 @@ module raw_sock {
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
-	option number amount_tcp_port=65536
 
 	depends route
 	depends sock
@@ -26,7 +25,6 @@ module tcp_sock {
 
 module udp_sock {
 	source "udp_sock.c"
-	option number amount_udp_port=65536
 
 	depends embox.framework.net.sock
 	depends embox.lib.LibCAssert

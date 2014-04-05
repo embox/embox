@@ -49,3 +49,8 @@ module vesa_modes {
 module fonts {
 	source "fonts.c"
 }
+
+@BuildDepends(efm32zg_sk3200.bsp)
+module efm32_lcd {
+	source "efm32_lcd.c"
+}

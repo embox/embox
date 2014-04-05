@@ -127,21 +127,43 @@ static inline int dlist_empty(struct dlist_head *head) {
 }
 
 /**
+ * @fn dlist_next()
+ * @fn dlist_prev()
+ *
+ * Get next/prev link of a non-empty list.
+ */
+
+static inline struct dlist_head *dlist_next(struct dlist_head *list) {
+	assert(!dlist_empty(list));
+	return list->next;
+}
+
+static inline struct dlist_head *dlist_prev(struct dlist_head *list) {
+	assert(!dlist_empty(list));
+	return list->prev;
+}
+
+/**
+ * @def dlist_next_entry()
+ * @def dlist_prev_entry()
+ *
+ * Get next/prev element of a non-empty list casted to a given type.
+ */
+
+#define dlist_next_entry(list, type, member) \
+	mcast_out(dlist_next(list), type, member)
+
+#define dlist_prev_entry(list, type, member) \
+	mcast_out(dlist_prev(list), type, member)
+
+/**
  * @fn dlist_first()
  * @fn dlist_last()
  *
  * Get first/last link of a non-empty list.
  */
-
-static inline struct dlist_head *dlist_first(struct dlist_head *list) {
-	assert(!dlist_empty(list));
-	return list->next;
-}
-
-static inline struct dlist_head *dlist_last(struct dlist_head *list) {
-	assert(!dlist_empty(list));
-	return list->prev;
-}
+#define dlist_first dlist_next
+#define dlist_last  dlist_prev
 
 /**
  * @fn dlist_first_or_null()
@@ -165,12 +187,8 @@ static inline struct dlist_head *dlist_last_or_null(struct dlist_head *list) {
  *
  * Get first/last element of a non-empty list casted to a given type.
  */
-
-#define dlist_first_entry(list, type, member) \
-	mcast_out(dlist_first(list), type, member)
-
-#define dlist_last_entry(list, type, member) \
-	mcast_out(dlist_last(list), type, member)
+#define dlist_first_entry dlist_next_entry
+#define dlist_last_entry  dlist_prev_entry
 
 /**
  * @def dlist_first_entry_or_null()
