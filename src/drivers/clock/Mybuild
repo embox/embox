@@ -98,3 +98,11 @@ module usermode extends embox.arch.clock {
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 }
+
+module hpet {
+	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica/include")
+	source "hpet.c"
+
+	depends embox.kernel.time.clock_source
+	depends third_party.lib.acpica
+}
