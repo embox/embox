@@ -56,4 +56,6 @@ extern void trace_block_func_enter(void *func);
 
 extern void trace_block_func_exit(void *func);
 
+extern void trace_block_hashtable_refresh(void);
+
 #endif /* PROFILER_TRACING_TRACE_H_ */

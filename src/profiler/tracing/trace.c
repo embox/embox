@@ -63,7 +63,7 @@ void trace_block_enter(struct __trace_block *tb) {
 void trace_block_leave(struct __trace_block *tb) {
 	if (tb->active) {
 		tb->is_entered = false;
-		tb->time = itimer_read(tb->tc);
+		tb->time += itimer_read(tb->tc);
 	}
 }
 
@@ -180,4 +180,15 @@ static int instrument_profiling_init(void) {
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
 	}
 	return 0;
+}
+
+void trace_block_hashtable_refresh(void) {
+	int c = cyg_profiling;
+	cyg_profiling = false;
+
+	hashtable_destroy(tbhash);
+	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
+				get_trace_block_hash, cmp_trace_blocks);
+
+	cyg_profiling = c;
 }

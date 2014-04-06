@@ -36,7 +36,8 @@ static int tbp_cmp(const void *fst, const void *snd) {
 	struct __trace_block *a, *b;
 	a = *((struct __trace_block **)fst);
 	b = *((struct __trace_block **)snd);
-	return (int) ((a->time < b->time) - (b->time < a->time));
+	return (int) (	(a->time < b->time) -
+					(b->time < a->time));
 }
 
 static void print_instrument_trace_block_stat(void) {
@@ -58,7 +59,7 @@ static void print_instrument_trace_block_stat(void) {
 
 	printf("Automatic trace points:\n");
 
-	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
+	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "AvgTime");
 
 	for (i = 0; i < counter; i++) {
 		tb = table[i];

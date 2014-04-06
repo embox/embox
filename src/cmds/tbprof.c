@@ -24,10 +24,15 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	int res = 0;
 	clock_t begin = clock(), end;
 	initialize_hashtable();
-	cyg_profiling = true;
+
+	printf("Initialization...\n");
+	trace_block_hashtable_refresh();
 	printf("Executing command\n");
+
+	cyg_profiling = true;
 	res = cmd_exec(cmd, argc, argv);
 	cyg_profiling = false;
+
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
 			res, 1. * (end - begin) / CLOCKS_PER_SEC);
