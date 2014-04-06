@@ -16,7 +16,7 @@
 EMBOX_TEST_SUITE("sleep suite");
 
 #define EPSILON_BORDER 30
-#define TIME_TO_SLEEP  (50 * USEC_PER_MSEC)
+#define TIME_TO_SLEEP  (100 * USEC_PER_MSEC)
 #define NUM_THREADS     8
 #define BENCH_LOOPS   300
 
@@ -114,7 +114,8 @@ TEST_CASE("sleep sort") {
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(pthread_join(t[i], NULL));
 	}
-	for (i=0;i<10;++i);
+	/* XXX wtf??? */
+	//for (i=0;i<10;++i);
 	test_assert_emitted("87654321");
 }
 

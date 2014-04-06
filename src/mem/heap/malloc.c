@@ -17,13 +17,19 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <kernel/printk.h>
+#include <kernel/task/resource/task_heap.h>
+#include <kernel/task.h>
+
 #include <mem/heap_bm.h>
 #include <mem/page.h>
+
 #include <util/dlist.h>
 
+#include <kernel/printk.h>
+
 /* TODO make it per task field */
-static DLIST_DEFINE(task_mem_segments);
+//static DLIST_DEFINE(task_mem_segments);
+
 
 struct mm_segment {
 	struct dlist_head link;
@@ -42,10 +48,14 @@ static inline void *mm_to_segment(struct mm_segment *mm) {
 static void *pointer_to_segment(void *ptr) {
 	struct mm_segment *mm, *mm_next;
 	void *segment;
+	struct dlist_head *task_mem_segments;
+	struct task *task = task_self();
 
 	assert(ptr);
 
-	dlist_foreach_entry(mm, mm_next, &task_mem_segments, link) {
+	task_mem_segments = &task_heap_get(task)->mm;
+
+	dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
 		segment = mm_to_segment(mm);
 		if (pointer_inside_segment(segment, mm->size, ptr)) {
 			return segment;
@@ -54,16 +64,18 @@ static void *pointer_to_segment(void *ptr) {
 
 	return NULL;
 }
-struct task_heap *task_heap_get(const struct task *task);
+
 void *memalign(size_t boundary, size_t size) {
 	extern struct page_allocator *__heap_pgallocator;
 	void *block;
 	struct mm_segment *mm, *mm_next;
 	size_t segment_pages_cnt, segment_bytes_cnt;
+	struct dlist_head *task_mem_segments;
+	struct task *task = task_self();
+
 	int iter;
 
-	//task_mem_segments = task_self()->mm->link;
-	//task_mem_segments = task_heap_get(task);
+	task_mem_segments = &task_heap_get(task)->mm;
 
 	block = NULL;
 	iter = 0;
@@ -71,7 +83,7 @@ void *memalign(size_t boundary, size_t size) {
 	do {
 		assert(iter++ < 2, "%s\n", "memory allocation cyclic");
 
-		dlist_foreach_entry(mm, mm_next, &task_mem_segments, link) {
+		dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
 			block = bm_memalign(mm_to_segment(mm), boundary, size);
 			if (block != NULL) {
 				return block;
@@ -88,7 +100,7 @@ void *memalign(size_t boundary, size_t size) {
 		mm->size = segment_pages_cnt * PAGE_SIZE();
 		segment_bytes_cnt = mm->size - sizeof *mm;
 		dlist_head_init(&mm->link);
-		dlist_add_next(&mm->link, &task_mem_segments);
+		dlist_add_next(&mm->link, task_mem_segments);
 
 		bm_init(mm_to_segment(mm), segment_bytes_cnt);
 	} while(!block);
@@ -173,9 +185,27 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 int heap_init(const struct task *task) {
+	struct task_heap *task_heap;
+
+	task_heap = task_heap_get(task);
+	dlist_init(&task_heap->mm);
+
 	return 0;
 }
 
 int heap_fini(const struct task *task) {
+	extern struct page_allocator *__heap_pgallocator;
+	struct task_heap *task_heap;
+	struct mm_segment *mm, *mm_next;
+	void *block;
+
+	task_heap = task_heap_get(task);
+
+	dlist_foreach_entry(mm, mm_next, &task_heap->mm, link) {
+		block = mm;
+		page_free(__heap_pgallocator, block, mm->size / PAGE_SIZE());
+	}
+
+
 	return 0;
 }

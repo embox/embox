@@ -17,6 +17,10 @@ module heap_bm extends heap_api {
 	depends heap_lds
 	depends embox.mem.static_heap
 	depends heap_afterfree
+
+	depends embox.kernel.task.resource.task_heap
+	depends embox.kernel.task.kernel_task
+	//depends embox.kernel.task.api
 }
 
 module heap_simple extends heap_api {

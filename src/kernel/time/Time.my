@@ -5,7 +5,7 @@ module clock_source {
 	option number clocks_quantity = 1
 
 	source "clock_source.c"
-	depends embox.mem.pool
+	@NoRuntime depends embox.mem.pool
 }
 
 module kernel_time {

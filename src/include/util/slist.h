@@ -67,10 +67,10 @@ static inline struct slist_link *slist_first_link(struct slist *list) {
 	// __slist_debug_first(list);
 	return slist_empty(list) ? NULL : list->sentinel.next;
 }
+#define slist_first(slist, member_t) \
+	member_to_object_or_null(slist_first_link(slist), member_t)
 #define slist_first_element(slist, element_type, link_member) \
-	member_cast_out_or_null(slist_first_link(list), element_type, link_member)
-#define slist_first_element(slist, element_type, link_member) \
-	member_cast_out_or_null(slist_first_link(list), element_type, link_member)
+	member_cast_out_or_null(slist_first_link(slist), element_type, link_member)
 
 static inline void slist_insert_after_link(struct slist_link *new_link,
 		struct slist_link *link) {
