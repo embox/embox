@@ -23,20 +23,45 @@ EMBOX_CMD(exec);
 
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
+#define TABLE_SIZE 65536
+
 static void print_usage(void) {
 	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
 }
 
+static int tbp_cmp(const void *fst, const void *snd) {
+	/* Function for comparing TraceBlocks Pointers (by time spent
+	 * in block. Used in qsort()
+	 */
+	struct __trace_block *a, *b;
+	a = *((struct __trace_block **)fst);
+	b = *((struct __trace_block **)snd);
+	return (int) ((a->time < b->time) - (b->time < a->time));
+}
+
 static void print_instrument_trace_block_stat(void) {
+	/* Function for prining information about automatically generated
+	 * trace_blocks (that are created with __cyg_profile_func_enter/exit).
+	 */
 	struct __trace_block *tb = auto_profile_tb_first();
 	const struct symbol *s;
+	struct __trace_block *table[TABLE_SIZE];
+	int counter = 0, l, i;
 	char *buff = (char*) malloc (sizeof(char) * 256);
-	int l;
+
+	if (tb) do {
+		table[counter++] = tb;
+		tb = auto_profile_tb_next(tb);
+	} while (tb);
+
+	qsort(table, counter, sizeof(struct trace_block *), tbp_cmp);
 
 	printf("Automatic trace points:\n");
 
 	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
-	if (tb) do {
+
+	for (i = 0; i < counter; i++) {
+		tb = table[i];
 		s = symbol_lookup(tb->func);
 		l = strlen(s->name) + strlen(s->loc.file) + 2;
 		strcpy(buff, s->loc.file);
@@ -49,10 +74,10 @@ static void print_instrument_trace_block_stat(void) {
 			printf("%40s ", buff);
 		}
 		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
-			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0);
+	}
 
-		tb = auto_profile_tb_next(tb);
-	} while (tb);
+	free(buff);
 }
 
 static void print_trace_block_stat(void) {
