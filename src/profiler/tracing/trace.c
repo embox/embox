@@ -17,7 +17,6 @@
 #include <util/array.h>
 #include <util/location.h>
 #include <util/hashtable.h>
-#include <util/list.h>
 
 #include <mem/misc/pool.h>
 
@@ -159,6 +158,8 @@ void trace_block_func_exit(void *func) {
 }
 
 struct __trace_block *auto_profile_tb_first(void){
+	if (!tbhash)
+		return NULL;
 	prev_key = hashtable_get_key_first(tbhash);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
@@ -171,24 +172,36 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 
 static int instrument_profiling_init(void) {
 	cyg_profiling = false;
+	tbhash = NULL;
 	/* Initializing hash table */
-	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
+	/*tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
 
 	if (!tbhash) {
 		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
-	}
+	}*/
 	return 0;
 }
 
-void trace_block_hashtable_refresh(void) {
+void trace_block_hashtable_init(void) {
 	int c = cyg_profiling;
 	cyg_profiling = false;
 
-	hashtable_destroy(tbhash);
+	if (tbhash)
+		return;
 	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
 
 	cyg_profiling = c;
 }
+void trace_block_hashtable_destroy(void) {
+	int c = cyg_profiling;
+	cyg_profiling = false;
+
+	if (tbhash)
+		hashtable_destroy(tbhash);
+	tbhash = NULL;
+	cyg_profiling = c;
+}
+

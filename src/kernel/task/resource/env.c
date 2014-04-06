@@ -45,8 +45,9 @@ static int task_env_inherit(const struct task *task,
 	for (i = 0; i < task_env->next; ++i) {
 		task_env->vals[i] = &task_env->storage[i][0];
 	}
-	memcpy(&task_env->storage[0][0], &parent_env->storage[0][0],
-			task_env->next * ARRAY_SIZE(task_env->storage[0]));
+	task_env->vals[task_env->next] = NULL;
+	memcpy(task_env->storage, parent_env->storage,
+			task_env->next * sizeof(task_env->storage[0]));
 
 	return 0;
 }

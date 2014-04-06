@@ -26,7 +26,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	initialize_hashtable();
 
 	printf("Initialization...\n");
-	trace_block_hashtable_refresh();
+	trace_block_hashtable_init();
 	printf("Executing command\n");
 
 	cyg_profiling = true;
@@ -36,6 +36,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
 			res, 1. * (end - begin) / CLOCKS_PER_SEC);
+	trace_block_hashtable_destroy();
 	argc++;
 	cmd = NULL;
 	print_data_to_file(out);

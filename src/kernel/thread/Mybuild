@@ -26,17 +26,20 @@ module core extends thread_mode {
 	@NoRuntime depends stack_api
 	@NoRuntime depends thread_local
 	@NoRuntime depends thread_cancel
-	//@NoRuntime depends embox.kernel.task.task_thread_key
 	@NoRuntime depends signal_api
+
 	@NoRuntime depends embox.lib.LibCAssert
+
 	depends embox.kernel.cpu.common
 }
 
 module starter {
 	source "starter.c"
+	depends embox.kernel.task.kernel_task
 	@NoRuntime depends boot_thread
 	depends idle_thread
 	depends embox.kernel.time.jiffies
+	//depends thread_local
 }
 
 module boot_thread {
@@ -83,7 +86,7 @@ module fixed_stack extends stack_api {
 	source "fixed_stack.h"
 }
 
-@DefaultImpl(thread_local_heap)
+@DefaultImpl(thread_local_none)
 abstract module thread_local {
 	option number thread_key_quantity=0x40
 }
@@ -101,6 +104,7 @@ module thread_local_heap extends thread_local {
 	depends embox.kernel.task.resource.thread_key_table
 	depends embox.kernel.task.syslib.thread_key_table
 }
+
 @DefaultImpl(thread_cancel_disable)
 abstract module thread_cancel {}
 

@@ -50,7 +50,7 @@ mod-list :
 	@$(info $(addsuffix $(\n),$(MODULE_LIST)))#
 
 $(MODULE_LIST:%=mod-include-reason-%) : mod-include-reason-% :
-	@$(info $(call mod_include_reason,$*))#
+	$(call mod_include_reason,$*)#
 
 $(MODULE_LIST:%=mod-brief-%) : mod-brief-% :
 	@$(info $(call mod_brief,$*))#

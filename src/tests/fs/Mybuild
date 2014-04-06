@@ -70,3 +70,7 @@ module vfs {
 	depends embox.fs.core
 	depends embox.fs.node
 }
+
+module flock_test {
+	source "flock_test.c"
+}

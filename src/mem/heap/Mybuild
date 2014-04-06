@@ -3,6 +3,7 @@ package embox.mem
 @DefaultImpl(heap_bm)
 abstract module heap_api {
 	option number heap_size = 524288
+	depends embox.kernel.task.resource.task_heap
 }
 
 @DefaultImpl(heap_afterfree_default)
@@ -16,6 +17,10 @@ module heap_bm extends heap_api {
 	depends heap_lds
 	depends embox.mem.static_heap
 	depends heap_afterfree
+
+	depends embox.kernel.task.resource.task_heap
+	depends embox.kernel.task.kernel_task
+	//depends embox.kernel.task.api
 }
 
 module heap_simple extends heap_api {
@@ -35,4 +40,5 @@ module static_heap {
 module heap_afterfree_default extends heap_afterfree {
 	source "heap_afterfree.c"
 }
+
 

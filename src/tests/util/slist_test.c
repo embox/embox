@@ -33,8 +33,6 @@ static int setup(void) {
 	return 0;
 }
 
-#if 0
-
 TEST_CASE("slist_element should cast link member out to its container") {
 	struct slist_link *link = &x.lnk;
 	test_assert_equal(slist_element(link, struct element, lnk), &x);
@@ -76,24 +74,24 @@ TEST_CASE("slist_alone_link should return true for just initialized link") {
 	test_assert_true(slist_alone_link(&x.lnk));
 }
 
-TEST_CASE("slist_alone should return true for just initialized element") {
-	test_assert_true(slist_alone(&x, lnk));
+TEST_CASE("slist_alone_element should return true for just initialized element") {
+	test_assert_true(slist_alone_element(&x, lnk));
 }
 
 TEST_CASE("slist_first should return null for empty list") {
-	test_assert_null(slist_first(&m, struct element, lnk));
+	test_assert_null(slist_first_element(&m, struct element, lnk));
 }
 
 TEST_CASE("slist_first_link should return null for empty list") {
 	test_assert_null(slist_first_link(&m));
 }
 
-TEST_CASE("slist_add_first should make the list non empty "
+TEST_CASE("slist_add_first_element should make the list non empty "
 		"and the element not alone") {
-	slist_add_first(&x, &m, lnk);
+	slist_add_first_element(&x, &m, lnk);
 
 	test_assert_false(slist_empty(&m));
-	test_assert_false(slist_alone(&x, lnk));
+	test_assert_false(slist_alone_element(&x, lnk));
 }
 
 TEST_CASE("slist_add_first_link should make the list non empty "
@@ -105,57 +103,54 @@ TEST_CASE("slist_add_first_link should make the list non empty "
 }
 
 TEST_CASE("slist_first_link on a single element list "
-		"constructed using slist_add_first should return the element's link") {
-	slist_add_first(&x, &m, lnk);
+		"constructed using slist_add_first_element should return the element's link") {
+	slist_add_first_element(&x, &m, lnk);
 
 	test_assert_equal(slist_first_link(&m), &x.lnk);
 }
 
 TEST_CASE("slist_first_link should return an "
-		"element which has been added with the last slist_add_first call") {
+		"element which has been added with the last slist_add_first_element call") {
 	test_assert_not_equal(&x, &y);
 
-	slist_add_first(&x, &m, lnk);
-	slist_add_first(&y, &m, lnk);
+	slist_add_first_element(&x, &m, lnk);
+	slist_add_first_element(&y, &m, lnk);
 
 	test_assert_equal(slist_first_link(&m), &y.lnk);
 }
 
-TEST_CASE("slist_remove_first should return null for empty list") {
-	test_assert_null(slist_remove_first(&m, struct element, lnk));
+TEST_CASE("slist_remove_first_element should return null for empty list") {
+	test_assert_null(slist_remove_first_element(&m, struct element, lnk));
 }
 
-TEST_CASE("slist_remove_first on a single element list should return the "
+TEST_CASE("slist_remove_first_element on a single element list should return the "
 		"element and make the list empty and element alone again") {
-	slist_add_first(&x, &m, lnk);
+	slist_add_first_element(&x, &m, lnk);
 
-	test_assert_equal(slist_remove_first(&m, struct element, lnk), &x);
+	test_assert_equal(slist_remove_first_element(&m, struct element, lnk), &x);
 
 	test_assert_true(slist_empty(&m));
-	test_assert_true(slist_alone(&x, lnk));
+	test_assert_true(slist_alone_element(&x, lnk));
 }
 
-TEST_CASE("slist_insert_after on a single element list should make "
+TEST_CASE("slist_insert_after_element on a single element list should make "
 		"a new element the last one in the list") {
-	slist_add_first(&x, &m, lnk);
+	slist_add_first_element(&x, &m, lnk);
 
-	slist_insert_after(&y, &x, lnk);
+	slist_insert_after_element(&y, &x, lnk);
 
 	test_assert_equal(slist_first_link(&m), &x.lnk);
 }
 
-TEST_CASE("slist_insert_after: inserting a new element after the first one "
+TEST_CASE("slist_insert_after_element: inserting a new element after the first one "
 		"in a list of two elements should insert a new one between them") {
-	slist_add_first(&z, &m, lnk);
-	slist_add_first(&x, &m, lnk);
+	slist_add_first_element(&z, &m, lnk);
+	slist_add_first_element(&x, &m, lnk);
 
-	slist_insert_after(&y, &x, lnk);
+	slist_insert_after_element(&y, &x, lnk);
 
 	test_assert_equal(slist_remove_first_link(&m), &x.lnk);
 	test_assert_equal(slist_remove_first_link(&m), &y.lnk);
 
 	test_assert_equal(slist_first_link(&m), &z.lnk);
 }
-
-#endif
-

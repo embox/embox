@@ -16,7 +16,8 @@ define __header_mod_name
 endef
 
 
-__header_mod = $(call map-get,$(build_model),moduleInstanceByName,$1)
+module_build_fqn2inst = $(call map-get,$(build_model),moduleInstanceByName,$1)
+__header_mod = module_build_fqn2inst
 
 __header_gen = $(with $(__header_mod_name), \
   $(subst $(\n),\n,$(call __header_template,$(call __header_mod,$1),$1)))
@@ -40,7 +41,7 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 			$(\n)
 			// $(get impl->qualifiedName)$(\n)
 			$(or $(strip $(for header <- $(call module_get_headers,$(impl)),
-				$(\h)include <../$(header)>$(\n))),
+				$(\h)include <../../$(header)>$(\n))),
 				// (no headers to include)$(\n))),
 
 		// This is a base type of $(get t->qualifiedName)$(\n)
@@ -78,9 +79,8 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 	$(\n)$(\h)endif /* __CONFIG__$n__H_ */$(\n))
 endef
 
-
 module_get_headers = \
-	$(patsubst $(abspath $(SRC_DIR))/%,%, \
+	$(patsubst $(abspath $(ROOT_DIR))/%,%, \
 		$(abspath $(filter %.h,$(module_get_files))))
 module_get_files = \
 	$(foreach s,$(get 1->sources),$(get s->fileFullName))
@@ -94,7 +94,7 @@ endef
 # 1. Vertexes
 # 2. Function of one argument returning vertex's reacheable vertex
 define topsort
-	$(shell echo $(foreach v,$1,$(foreach u,$(call $2,$v) $v,$v $u)) | $(TSORT) | $(TAC))
+	$(shell echo $(foreach v,$1,$(foreach u,$(filter $1,$(call $2,$v)) $v,$v $u)) | $(TSORT) | $(TAC))
 endef
 
 $(def_all)

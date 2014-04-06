@@ -14,6 +14,7 @@ module tracing extends trace {
 	source "__cyg_profile.c"
 	depends embox.kernel.timer.itimer
 	depends embox.util.hashtable
+	depends embox.lib.debug.symbol
 }
 
 module coverage {

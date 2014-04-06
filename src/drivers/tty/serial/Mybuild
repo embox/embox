@@ -7,4 +7,5 @@ module serial {
 	option number serial_quantity = 1
 
 	depends tty_repo
+	depends tty
 }
