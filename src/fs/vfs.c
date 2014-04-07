@@ -32,7 +32,10 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 	*p = '\0';
 
 	while (node->node != parent->node && node->node != NULL) {
-		size_t nnlen = strlen(node->node->name);
+		size_t nnlen;
+
+		if_root_follow_up(node);
+		nnlen = strlen(node->node->name);
 
 		if (nnlen + 1 > ll) {
 			return -ERANGE;

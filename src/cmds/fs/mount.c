@@ -30,23 +30,31 @@ static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
-static int show_mount_list(void) {
-//	struct dlist_head *mount_list;
-//	struct mount_descriptor *mdesc, *tmp;
-//	char mount_path[PATH_MAX];
-//	const char *fs_name;
-//	const char *bdev_path;
+static void lookup_mounts(struct mount_descriptor *parent) {
+	struct mount_descriptor *desc_next, *desc;
+	char mount_path[PATH_MAX];
+	struct path path;
 
-//	if(NULL == (mount_list = mount_table())) {
-//		return 0;
-//	}
-//	dlist_foreach_entry(mdesc, tmp, mount_list, mnt_link) {
-//		vfs_get_path_by_node(mdesc->mnt_point, mount_path);
-//		fs_name = mdesc->mnt_point->nas->fs->drv->name;
-//		bdev_path = mdesc->mnt_point->nas->fs->bdev->name;
-//
-//		printf("%s on %s type %s\n", bdev_path, mount_path, fs_name);
-//	}
+	path.mnt_desc = parent;
+	path.node = parent->mnt_root;
+
+	vfs_get_path_by_node(&path, mount_path);
+	printf("%s path\n", mount_path);
+
+	dlist_foreach_entry(desc, desc_next, &parent->mnt_mounts, mnt_child) {
+		lookup_mounts(desc);
+	}
+}
+
+static int show_mount_list(void) {
+	struct mount_descriptor *mount_list;
+
+	if(NULL == (mount_list = mount_table())) {
+		return 0;
+	}
+
+	lookup_mounts(mount_list);
+
 	return 0;
 }
 
