@@ -15,7 +15,7 @@
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>
 #include <util/bit.h>
-#include <util/dlist.h>
+#include <util/list.h>
 #include <util/member.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
@@ -30,12 +30,12 @@
  */
 
 struct rt_entry_info {
-	struct dlist_head lnk;
+	struct list_link lnk;
 	struct rt_entry entry;
 };
 
 POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
-static DLIST_DEFINE(rt_entry_info_list);
+static LIST_DEF(rt_entry_info_list);
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw, int flags) {
@@ -49,15 +49,13 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 	if (rt_info == NULL) {
 		return -ENOMEM;
 	}
-
 	rt_info->entry.dev = dev;
 	rt_info->entry.rt_dst = dst; /* We assume that host bits are zeroes here */
 	rt_info->entry.rt_mask = mask;
 	rt_info->entry.rt_gateway = gw;
 	rt_info->entry.rt_flags = RTF_UP | flags;
 
-	dlist_head_init(&rt_info->lnk);
-	dlist_add_prev(&rt_info->lnk, &rt_entry_info_list);
+	list_add_last_element(rt_info, &rt_entry_info_list, lnk);
 
 	return 0;
 }
@@ -66,12 +64,12 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
-	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
+	list_foreach(rt_info, &rt_entry_info_list, lnk) {
 		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
     			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
-			dlist_del(&rt_info->lnk);
+			list_unlink_element(rt_info, lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return 0;
 		}
@@ -201,11 +199,11 @@ int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 }
 
 struct rt_entry * rt_fib_get_first(void) {
-	if (dlist_empty(&rt_entry_info_list)) {
+	if (list_is_empty(&rt_entry_info_list)) {
 		return NULL;
 	}
 
-	return &dlist_next_entry(&rt_entry_info_list,
+	return &list_first_element(&rt_entry_info_list,
 			struct rt_entry_info, lnk)->entry;
 }
 
@@ -215,12 +213,12 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 	assert(entry != NULL);
 
 	rt_info = member_cast_out(entry, struct rt_entry_info, entry);
-	if (rt_info == dlist_prev_entry(&rt_entry_info_list,
-				struct rt_entry_info, lnk)) {
+	if (rt_info == list_last_element(&rt_entry_info_list,
+			struct rt_entry_info, lnk)) {
 		return NULL;
 	}
 
-	return &dlist_next_entry(&rt_info->lnk,
+	return &list_element(rt_info->lnk.next,
 			struct rt_entry_info, lnk)->entry;
 }
 
@@ -235,8 +233,7 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 
 	best_rte = NULL;
 	best_mask_len = -1;
-
-	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
+	list_foreach(rt_info, &rt_entry_info_list, lnk) {
 		mask_len = ~rt_info->entry.rt_mask
 			? bit_clz(ntohl(~rt_info->entry.rt_mask)) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)

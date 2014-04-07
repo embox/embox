@@ -5,19 +5,19 @@
  * @author: Anton Bondarev
  */
 #include <net/sock.h>
-#include <util/dlist.h>
+#include <util/list.h>
 
 void sock_hash(struct sock *sk) {
 	assert(sk != NULL);
 	assert(sk->p_ops != NULL);
-	assert(dlist_empty(&sk->lnk));
+	assert(list_alone_element(sk, lnk));
 
-	dlist_add_prev(&sk->lnk, sk->p_ops->sock_list);
+	list_add_last_element(sk, sk->p_ops->sock_list, lnk);
 }
 
 void sock_unhash(struct sock *sk) {
 	assert(sk != NULL);
-	assert(!dlist_empty(&sk->lnk));
+	assert(!list_alone_element(sk, lnk));
 
-	dlist_del(&sk->lnk);
+	list_unlink_element(sk, lnk);
 }

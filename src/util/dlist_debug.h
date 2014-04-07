@@ -42,7 +42,7 @@ struct dlist_head {
 /** The implementation of the #DLIST_INIT macro */
 #define __DLIST_INIT(head) { 0, &(head), &(head), &(head) }
 
-extern void __dlist_debug_check(const struct dlist_head *head);
+extern void __dlist_debug_check(struct dlist_head *head);
 
 
 /* Only for internal using */
