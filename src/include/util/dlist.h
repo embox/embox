@@ -122,7 +122,7 @@ static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) 
  * @param head - head of the list which wants to be checked
  * @return 1 if list is not empty and zero if empty *
  */
-static inline int dlist_empty(struct dlist_head *head) {
+static inline int dlist_empty(const struct dlist_head *head) {
 	__dlist_debug_check(head);
 	return (head == head->next);
 }
@@ -134,12 +134,12 @@ static inline int dlist_empty(struct dlist_head *head) {
  * Get next/prev link of a non-empty list.
  */
 
-static inline struct dlist_head *dlist_next(struct dlist_head *list) {
+static inline struct dlist_head *dlist_next(const struct dlist_head *list) {
 	assert(!dlist_empty(list));
 	return list->next;
 }
 
-static inline struct dlist_head *dlist_prev(struct dlist_head *list) {
+static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
 	assert(!dlist_empty(list));
 	return list->prev;
 }
@@ -174,11 +174,11 @@ static inline struct dlist_head *dlist_prev(struct dlist_head *list) {
  * for case of an empty list.
  */
 
-static inline struct dlist_head *dlist_first_or_null(struct dlist_head *list) {
+static inline struct dlist_head *dlist_first_or_null(const struct dlist_head *list) {
 	return (!dlist_empty(list) ? dlist_first(list) : NULL);
 }
 
-static inline struct dlist_head *dlist_last_or_null(struct dlist_head *list) {
+static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *list) {
 	return (!dlist_empty(list) ? dlist_last(list) : NULL);
 }
 

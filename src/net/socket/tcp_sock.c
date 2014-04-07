@@ -13,6 +13,7 @@
 #include <sys/time.h>
 
 #include <util/math.h>
+#include <util/dlist.h>
 
 
 #include <net/l4/tcp.h>
@@ -450,7 +451,7 @@ static int tcp_shutdown(struct sock *sk, int how) {
 }
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-static LIST_DEF(tcp_sock_list);
+static DLIST_DEFINE(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.init      = tcp_init,
