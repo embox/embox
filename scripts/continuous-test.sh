@@ -16,7 +16,7 @@ TESTABLES="x86/nonvga_debug x86/smp mips/debug ppc/debug microblaze/petalogix \
 #"sparc/qemu" not supported due qemu bug
 
 if ! echo $TESTABLES | grep $ATML &>/dev/null; then
-	echo Template testing not supported
+	echo Warning: template testing not supported >&2
 	exit 0
 fi
 
@@ -32,8 +32,10 @@ declare -A atml2sim
 
 export AUTOQEMU_KVM_ARG=
 export AUTOQEMU_NOGRAPHIC_ARG=
+export AUTOQEMU_NICS=
 QEMU_COMMON="./scripts/qemu/auto_qemu -serial file:${OUTPUT_FILE} -display none"
 
+atml2sim['x86/nonvga_debug']="$QEMU_COMMON"
 atml2sim['x86/smp']="$QEMU_COMMON -smp 2"
 atml2sim['mips/debug']="$QEMU_COMMON"
 atml2sim['ppc/debug']="$QEMU_COMMON"
