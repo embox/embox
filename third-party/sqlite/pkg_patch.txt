@@ -23,41 +23,18 @@ diff -aur sqlite-autoconf-3071600/shell.c sqlite/shell.c
  #else
  
  #if defined(_WIN32) || defined(WIN32)
-@@ -2935,7 +2937,7 @@
-   return argv[i];
- }
- 
--int main(int argc, char **argv){
-+int main_sqlite3(int argc, char **argv){
-   char *zErrMsg = 0;
-   struct callback_data data;
-   const char *zInitFile = 0;
 diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
 --- sqlite-autoconf-3071600/sqlite3.c	2013-03-18 20:01:49.000000000 +0400
-+++ sqlite/sqlite3.c	2013-04-04 15:49:25.493725880 +0400
-@@ -18040,6 +18040,7 @@
- ** mutex types, the same mutex is returned on every call that has
- ** the same type number.
- */
-+#define PTHREAD_MUTEX_INITIALIZER {{{NULL,NULL,NULL},{{NULL,NULL,NULL},0,NULL,0}},NULL,0}
- static sqlite3_mutex *pthreadMutexAlloc(int iType){
-   static sqlite3_mutex staticMutexes[] = {
-     SQLITE3_MUTEX_INITIALIZER,
-@@ -18049,6 +18050,13 @@
-     SQLITE3_MUTEX_INITIALIZER,
-     SQLITE3_MUTEX_INITIALIZER
-   };
-+  static Bool staticMutexesInitialized = 0;
-+  if (!staticMutexesInitialized) {
-+    staticMutexesInitialized = 1;
-+    for(int i=0; i<sizeof(staticMutexes)/sizeof(sqlite3_mutex); i++) {
-+      pthread_mutex_init(&staticMutexes[i].mutex, NULL);
-+    }
-+  }
-   sqlite3_mutex *p;
-   switch( iType ){
-     case SQLITE_MUTEX_RECURSIVE: {
-@@ -23023,6 +23031,8 @@
++++ sqlite/sqlite3.c	2014-04-07 20:25:25.854021230 +0400
+@@ -456,6 +456,7 @@
+ # include <tcl.h>
+ #endif
+ 
++#define SQLITE_DEBUG 1
+ /*
+ ** NDEBUG and SQLITE_DEBUG are opposites.  It should always be true that
+ ** defined(NDEBUG)==!defined(SQLITE_DEBUG).  If this is not currently true,
+@@ -23023,6 +23024,8 @@
  # endif
    int sqlite3OSTrace = SQLITE_DEBUG_OS_TRACE;
  # define OSTRACE(X)          if( sqlite3OSTrace ) sqlite3DebugPrintf X
@@ -66,7 +43,7 @@ diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
  #else
  # define OSTRACE(X)
  #endif
-@@ -23508,7 +23518,7 @@
+@@ -23508,7 +23511,7 @@
  #endif
  
  
@@ -75,7 +52,7 @@ diff -aur sqlite-autoconf-3071600/sqlite3.c sqlite/sqlite3.c
  /*
  ** Helper function for printing out trace information from debugging
  ** binaries. This returns the string represetation of the supplied
-@@ -37479,7 +37489,7 @@
+@@ -37479,7 +37482,7 @@
  /*
  ** Macros for troubleshooting.  Normally turned off
  */
