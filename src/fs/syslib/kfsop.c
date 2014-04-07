@@ -568,7 +568,7 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	mount_table_del(node.node, node.mnt_desc);
+	mount_table_del(node.mnt_desc);
 
 //	/*restore previous fs type from parent dir */
 //	if(NULL != (parent = vfs_get_parent(dir_node))) {

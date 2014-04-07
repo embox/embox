@@ -48,6 +48,10 @@ int mount_table_add(struct mount_descriptor *parent, struct node *mnt_point, str
 		return -EINVAL;
 	}
 
+	if(mnt_point == parent->mnt_root) {
+		return -EINVAL;
+	}
+
 	if(NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
 		return -ENOMEM;
 	}
@@ -72,10 +76,14 @@ int mount_table_add(struct mount_descriptor *parent, struct node *mnt_point, str
 	return ENOERR;
 }
 
-int mount_table_del(struct node *dir_node, struct mount_descriptor *mdesc) {
+int mount_table_del(struct mount_descriptor *mdesc) {
 
-	if(dir_node == NULL || mdesc == NULL) {
+	if(mdesc == NULL) {
 		return -EINVAL;
+	}
+
+	if (mnt_root == mdesc) {
+		mnt_root = NULL;
 	}
 
 	mdesc->mnt_point->mounted--;
