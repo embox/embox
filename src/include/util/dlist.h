@@ -19,6 +19,7 @@
 
 #include <assert.h>
 #include <util/member.h>
+#include <util/macro.h>
 #include <module/embox/util/DList.h>
 
 /**
