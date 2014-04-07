@@ -91,7 +91,7 @@ declare -A ARCH2QEMU
 ARCH2QEMU=([microblaze]="qemu-system-microblaze -M petalogix-s3adsp1800"
 	[mips]="qemu-system-mips -M mipssim"
 	[ppc]="qemu-system-ppc -M virtex-ml507"
-	[sparc]="qemu-system-sparc -Mleon3_generic"
+	[sparc]="qemu-system-sparc -M leon3_generic -cpu LEON3"
 	[x86]="qemu-system-i386")
 
 declare -A NIC2QEMU

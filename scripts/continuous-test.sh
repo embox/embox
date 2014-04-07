@@ -25,27 +25,20 @@ EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
 do_it() {
-	echo $@ | sh
+	echo "$@" | sh
 }
 
 declare -A atml2sim
 
-QEMU_COMMON="-kernel $EMKERNEL -serial file:${OUTPUT_FILE} -display none"
+export AUTOQEMU_KVM_ARG=
+export AUTOQEMU_NOGRAPHIC_ARG=
+QEMU_COMMON="./scripts/qemu/auto_qemu -serial file:${OUTPUT_FILE} -display none"
 
-atml2sim['x86/nonvga_debug']="qemu-system-i386 -m 512 -no-kvm $QEMU_COMMON"
-atml2sim['x86/smp']="qemu-system-i386 -m 512 -no-kvm -smp 2 $QEMU_COMMON"
-
-atml2sim['mips/debug']="qemu-system-mips -M mipssim $QEMU_COMMON"
-
-atml2sim['ppc/debug']="qemu-system-ppc -M virtex-ml507 -m 256 -net none \
-	$QEMU_COMMON"
-
-atml2sim['microblaze/petalogix']="qemu-system-microblaze \
-	-M petalogix-s3adsp1800 -net none \
-	$QEMU_COMMON"
-
-atml2sim['sparc/qemu']="qemu-system-sparc -M leon3_generic -cpu LEON3 \
-	$QEMU_COMMON"
+atml2sim['x86/smp']="$QEMU_COMMON -smp 2"
+atml2sim['mips/debug']="$QEMU_COMMON"
+atml2sim['ppc/debug']="$QEMU_COMMON"
+atml2sim['microblaze/petalogix']="$QEMU_COMMON"
+atml2sim['sparc/qemu']="$QEMU_COMMON"
 
 atml2sim['sparc/debug']="tsim-leon3 -c $(dirname $0)/tsim_run.cmd $EMKERNEL \
 	> $OUTPUT_FILE"
