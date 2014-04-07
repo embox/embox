@@ -1,5 +1,5 @@
-#ifndef UNISTD_H_
-#define UNISTD_H_
+#ifndef TAR_UNISTD_H_
+#define TAR_UNISTD_H_
 
 #include <stddef.h>
 #include <sys/types.h>
@@ -12,4 +12,4 @@ extern ssize_t readlinkat(int fd, const char *path,
 
 #include_next <unistd.h>
 
-#endif /* UNISTD_H_ */
+#endif /* TAR_UNISTD_H_ */
