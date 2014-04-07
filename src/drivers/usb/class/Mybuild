@@ -21,3 +21,9 @@ module scsi {
 	source "scsi.c",
 	       "scsi_disc.c"
 }
+
+module cdc {
+	source "usb_class_cdc.c"
+
+	depends embox.driver.usb.core
+}
