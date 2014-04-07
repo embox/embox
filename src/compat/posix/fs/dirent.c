@@ -85,6 +85,8 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if (0 == dir->current.d_ino) {
+		//XXX
+		if_mounted_follow_down(&dir->path);
 		chld_link = tree_children_begin(&dir->path.node->tree_link);
 		if (chld_link == NULL) {
 			return NULL;
