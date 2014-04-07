@@ -9,71 +9,18 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <errno.h>
-
-#include <fs/vfs.h>
-#include <fs/fs_driver.h>
-#include <fs/fsop.h>
-#include <sys/file.h>
-#include <embox/block_dev.h>
-#include <drivers/ramdisk.h>
-#include <kernel/thread.h>
-
-#include <cmd/shell.h>
-
-#include <mem/page.h>
+#include <dirent.h>
 #include <embox/test.h>
 
-#include <err.h>
-
 __EMBOX_TEST_SUITE_AUTORUN("fs/file test", false);
-static int exec_shell_cmd(char *cmdline) __attribute__((used));
-
-#if 0
-TEST_SETUP_SUITE(setup_suite);
-
-TEST_TEARDOWN_SUITE(teardown_suite);
-
-#define FS_NAME			"vfat"
-#define FS_DEV			"/dev/ramdisk"
-#define FS_TYPE			12
-#define FS_BLOCKS		124
-#define MKDIR_PERM		0700
-#define FS_DIR			"/tmp"
-#define FS_DIR			"/tmp"
-#define FS_FILE1		"/tmp/1/2/3/1.txt"
-#define FS_FILE2		"/tmp/1/2/3/2.txt"
-#define FS_DIR3			"/tmp/1/2/3"
-#define FS_DIR2			"/tmp/1/2"
-#define FS_DIR1			"/tmp/1"
-#define FS_TESTDATA		"qwerty\n"
-#define FS_DTR			"/tmp/dtr"
-#define FS_MV_SUB		"/tmp/dtr/sub"
-#define FS_MV_SUB_F1	"/tmp/dtr/sub/file1"
-#define FS_MV_F1		"/tmp/dtr/file1"
-#define FS_MV_F2		"/tmp/dtr/sub/file2"
-#define FS_MV_F2_NAME	"file2"
-#define FS_MV_F3		"/tmp/dtr/sub/file3"
-#define FS_MV_F3_NAME	"file3"
-#define FS_MV_RENAMED	"/tmp/renamed"
-#define FS_TESTDATA		"qwerty\n"
-#define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnam"
-#define FS_FLOCK		"/tmp/flock"
-#endif
 
 #define FS_TEST_MOUNTPOINT "/mnt/fs_test"
 
 static char fs_test_temp_buf[512];
 
 static const char fs_test_rd_file[] = FS_TEST_MOUNTPOINT "/rd_file";
-static const char fs_test_rd_file_content[] = "This is read-only file with original content string";
-static void fs_test_read(void) {
+static const char fs_test_rd_file_content[] = "This is read-only file with original content string\n";
+TEST_CASE("Test read operation on fs") {
 	int fd;
 	int nread;
 
@@ -81,19 +28,14 @@ static void fs_test_read(void) {
 
 	nread = read(fd, fs_test_temp_buf, sizeof(fs_test_temp_buf));
 
-	test_assert_equal(nread, sizeof(fs_test_rd_file_content));
-	test_assert_zero(strcmp(fs_test_temp_buf, fs_test_rd_file_content));
+	test_assert_equal(nread, sizeof(fs_test_rd_file_content) - 1);
+	test_assert_zero(memcmp(fs_test_temp_buf, fs_test_rd_file_content,
+				sizeof(fs_test_rd_file_content) - 1));
 
 	close(fd);
 }
 
-static const struct stat fs_test_rd_file_stat = {
-	.st_mode = 0,
-	.st_uid = 0,
-	.st_gid = 0,
-	.st_size = 0,
-};
-static void fs_test_stat(void) {
+TEST_CASE("Test stat operations on fs") {
 	struct stat st, fst;
 	int fd;
 
@@ -105,17 +47,31 @@ static void fs_test_stat(void) {
 
 	test_assert(0 == memcmp(&st, &fst, sizeof(struct stat)));
 
-	test_assert_equal(st.st_mode, fs_test_rd_file_stat.st_mode);
-	test_assert_equal(st.st_uid, fs_test_rd_file_stat.st_uid);
-	test_assert_equal(st.st_gid, fs_test_rd_file_stat.st_gid);
-	test_assert_equal(st.st_size, fs_test_rd_file_stat.st_size);
+	test_assert_true(S_ISREG(st.st_mode));
+	test_assert_equal(st.st_size, sizeof(fs_test_rd_file_content) - 1);
 }
 
-TEST_CASE("Test read-only operations on fs") {
+static const char fs_test_rd_dir[] = FS_TEST_MOUNTPOINT "/rd_dir";
+static const char *fs_test_rd_dir_ents[] = {
+	"f1",
+	"f2",
+	"f3",
+};
+TEST_CASE("Test readdir operations on fs") {
+	struct dirent *dent;
+	DIR *d;
+	int i;
 
-	fs_test_read();
+	d = opendir(fs_test_rd_dir);
+	test_assert_not_null(d);
 
-	fs_test_stat();
+	for (i = 0; i < ARRAY_SIZE(fs_test_rd_dir_ents); i++) {
+		dent = readdir(d);
+
+		test_assert_zero(strcmp(dent->d_name, fs_test_rd_dir_ents[i]));
+	}
+
+	closedir(d);
 }
 
 #if 0
@@ -267,6 +223,7 @@ TEST_CASE("generic file test") {
 }
 #endif
 
+#if 0
 /* Exec shell command and return it's exit code */
 static int exec_shell_cmd(char *cmdline) {
 	static const struct shell *sh;
@@ -280,6 +237,7 @@ static int exec_shell_cmd(char *cmdline) {
 
 	return shell_exec(sh, cmdline);
 }
+#endif
 
 #if 0
 static struct thread *fftt, *sftt;
