@@ -67,6 +67,9 @@ static inline void timers_schedule(void) {
 	struct sys_timer *timer;
 
 	dlist_foreach_entry(timer, &sys_timers_list, lnk) {
+		if (0 != timer->cnt) {
+			break;
+		}
 
 		timer_strat_stop(timer);
 		if (timer_is_periodic(timer)) {
@@ -74,10 +77,6 @@ static inline void timers_schedule(void) {
 		}
 
 		timer->handle(timer, timer->param);
-
-		if (0 != nxt->cnt) {
-			return;
-		}
 	}
 }
 
