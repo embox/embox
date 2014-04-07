@@ -32,11 +32,11 @@ static int pci_drv_probe(const struct pci_driver *drv, struct pci_slot_dev *dev)
 
 static int pci_mod_enable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
-	struct pci_slot_dev *dev, *nxt_pci_dev;
+	struct pci_slot_dev *dev;
 
 	printk(PCI_INFO_LABEL "%s driver inserted\n", pci_drv->name);
 
-	pci_foreach_dev(dev, nxt_pci_dev) {
+	pci_foreach_dev(dev) {
 		if (!dev->pci_drv) {
 
 			if (!pci_drv_probe(pci_drv, dev)) {
@@ -55,9 +55,9 @@ static int pci_mod_enable(const struct mod *self) {
 
 static int pci_mod_disable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
-	struct pci_slot_dev *dev, *nxt_pci_dev;
+	struct pci_slot_dev *dev;
 
-	pci_foreach_dev(dev, nxt_pci_dev) {
+	pci_foreach_dev(dev) {
 		if (dev->pci_drv == pci_drv) {
 			/* deinit */
 		}

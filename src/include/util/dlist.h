@@ -214,18 +214,6 @@ static inline struct dlist_head *dlist_last_or_null(struct dlist_head *list) {
 #define dlist_entry(head, type, member) \
     mcast_out(head, type, member)
 
-
-#define dlist_foreach(ptr, nxt, head) \
-	ptr = (head)->next; nxt = ptr->next;                         \
-	for (; ptr != (head); ptr = nxt, nxt = ptr->next)
-
-#define dlist_foreach_entry(ptr, nxt, head, member)  \
-	ptr = dlist_entry((head)->next, typeof(*ptr), member);         \
-	nxt = dlist_entry(ptr->member.next, typeof(*ptr), member);     \
-	for (; &ptr->member != (head);                                 \
-		ptr = nxt,                                                 \
-		nxt = dlist_entry(nxt->member.next, typeof(*ptr), member)) \
-
 /*
  * 'for'-like loops safe to modification from inside a loop body.
  *
@@ -235,36 +223,40 @@ static inline struct dlist_head *dlist_last_or_null(struct dlist_head *list) {
  * Loop body may overwrite it with no effects.
  */
 
+#define dlist_foreach       dlist_foreach_safe
+#define dlist_foreach_entry dlist_foreach_entry_safe
+
 #define dlist_foreach_safe(link, head) \
 	__dlist_foreach_safe(link, head, \
-		MACRO_GUARD(__link) \
-		MACRO_GUARD(__head) \
+		MACRO_GUARD(__link), \
+		MACRO_GUARD(__head), \
 		MACRO_GUARD(__next))
 
 #define __dlist_foreach_safe(link, head, __link, __head, __next) \
 	for (struct dlist_head *__link,       \
-			__head = (head),              \
-			__next = __head->next;        \
+			*__head = (head),              \
+			*__next = __head->next;        \
 			                              \
 		__next = (__link = __next)->next, \
 			(__link != __head) &&         \
 			((link = __link), 1);)
 
 
-#define dlist_foreach_entry_safe(ptr, head) \
-	__dlist_foreach_entry_safe(ptr, head, \
-		MACRO_GUARD(__link) \
-		MACRO_GUARD(__head) \
+#define dlist_foreach_entry_safe(link, head, member) \
+	__dlist_foreach_entry_safe(link, head, member, \
+		MACRO_GUARD(__link), \
+		MACRO_GUARD(__head), \
 		MACRO_GUARD(__next))
 
-#define __dlist_foreach_entry_safe(ptr, head, __link, __head, __next) \
+#define __dlist_foreach_entry_safe(link, head, member, __link, \
+		__head, __next) \
 	for (struct dlist_head *__link,       \
-			__head = (head),              \
-			__next = __head->next;        \
+			*__head = (head),              \
+			*__next = __head->next;        \
 			                              \
 		__next = (__link = __next)->next, \
 			(__link != __head) &&         \
-			((ptr = dlist_entry(__link, typeof(*ptr), member)), 1);)
+			((link = dlist_entry(__link, typeof(*link), member)), 1);)
 
 
 #endif /* DLIST_H_ */

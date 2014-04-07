@@ -274,12 +274,12 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 }
 
 static void destroy_slabs(cache_t *cachep, struct dlist_head *slabs) {
-	slab_t *slabp, *safe;
+	slab_t *slabp;
 
 	if (dlist_empty(slabs))
 		return;
 	/* remove this slab from the list */
-	dlist_foreach_entry(slabp, safe, slabs, cache_link) {
+	dlist_foreach_entry(slabp, slabs, cache_link) {
 		dlist_del(&slabp->cache_link);
 		cache_slab_destroy(cachep, slabp);
 	}
@@ -365,12 +365,12 @@ void cache_free(cache_t *cachep, void* objp) {
 }
 
 int cache_shrink(cache_t *cachep) {
-	slab_t * slabp, *safe;
+	slab_t * slabp;
 	int ret = 0;
 
 	assert(cachep);
 
-	dlist_foreach_entry(slabp, safe, &cachep->slabs_free, cache_link) {
+	dlist_foreach_entry(slabp, &cachep->slabs_free, cache_link) {
 		dlist_del(&slabp->cache_link);
 		cache_slab_destroy(cachep, slabp);
 		ret++;

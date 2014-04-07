@@ -150,10 +150,10 @@ TEST_CASE("Cache's growing.") {
 }
 #if 0
 static size_t list_length(struct dlist_head *head) {
-	struct dlist_head *pos, *nxt;
+	struct dlist_head *pos;
 	size_t cnt = 0;
 
-	dlist_foreach(pos, nxt, head) {
+	dlist_foreach(pos, head) {
 		cnt++;
 	}
 

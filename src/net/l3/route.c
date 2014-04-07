@@ -64,9 +64,9 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 
 int rt_del_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw) {
-	struct rt_entry_info *rt_info, *tmp;
+	struct rt_entry_info *rt_info;
 
-	dlist_foreach_entry(rt_info, tmp, &rt_entry_info_list, lnk) {
+	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
 		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
@@ -229,14 +229,14 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
  * In this case we'll simply take the first match
  */
 struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
-	struct rt_entry_info *rt_info, *tmp;
+	struct rt_entry_info *rt_info;
 	int mask_len, best_mask_len;
 	struct rt_entry *best_rte;
 
 	best_rte = NULL;
 	best_mask_len = -1;
 
-	dlist_foreach_entry(rt_info, tmp, &rt_entry_info_list, lnk) {
+	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
 		mask_len = ~rt_info->entry.rt_mask
 			? bit_clz(ntohl(~rt_info->entry.rt_mask)) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
