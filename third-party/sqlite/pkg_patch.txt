@@ -1,28 +1,3 @@
-diff -aur sqlite-autoconf-3080403/shell.c sqlite/shell.c
---- sqlite-autoconf-3080403/shell.c	2014-04-03 21:21:45.000000000 +0400
-+++ sqlite/shell.c	2014-04-08 12:50:52.032740866 +0400
-@@ -520,9 +520,9 @@
- */
- static void shellLog(void *pArg, int iErrCode, const char *zMsg){
-   struct callback_data *p = (struct callback_data*)pArg;
--  if( p->pLog==0 ) return;
--  fprintf(p->pLog, "(%d) %s\n", iErrCode, zMsg);
--  fflush(p->pLog);
-+  //if( p->pLog==0 ) return;
-+  printf(">>> sqlite log: (%d) %s\n", iErrCode, zMsg);
-+  //fflush(p->pLog);
- }
- 
- /*
-@@ -3392,6 +3392,8 @@
-   /* Windows CE (arm-wince-mingw32ce-gcc) does not provide getenv()
-    */
-   home_dir = "/";
-+#elif defined(__EMBOX__)
-+  home_dir = "/tmp";
- #else
- 
- #if defined(_WIN32) || defined(WIN32)
 diff -aur sqlite-autoconf-3080403/sqlite3.c sqlite/sqlite3.c
 --- sqlite-autoconf-3080403/sqlite3.c	2014-04-03 21:21:45.000000000 +0400
 +++ sqlite/sqlite3.c	2014-04-08 12:54:35.569725377 +0400
@@ -39,30 +14,3 @@ diff -aur sqlite-autoconf-3080403/sqlite3.c sqlite/sqlite3.c
  
  /************** Include hash.h in the middle of sqliteInt.h ******************/
  /************** Begin file hash.h ********************************************/
-@@ -23780,6 +23782,8 @@
- # endif
-   int sqlite3OSTrace = SQLITE_DEBUG_OS_TRACE;
- # define OSTRACE(X)          if( sqlite3OSTrace ) sqlite3DebugPrintf X
-+#elif defined(__EMBOX__)
-+# define OSTRACE(X)          sqlite3DebugPrintf X
- #else
- # define OSTRACE(X)
- #endif
-@@ -24310,7 +24314,7 @@
- #endif
- 
- 
--#if defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
-+#if defined(__EMBOX__) || defined(SQLITE_TEST) && defined(SQLITE_DEBUG)
- /*
- ** Helper function for printing out trace information from debugging
- ** binaries. This returns the string represetation of the supplied
-@@ -39649,7 +39653,7 @@
- /*
- ** Macros for troubleshooting.  Normally turned off
- */
--#if 0
-+#if 1
- int sqlite3PagerTrace=1;  /* True to enable tracing */
- #define sqlite3DebugPrintf printf
- #define PAGERTRACE(X)     if( sqlite3PagerTrace ){ sqlite3DebugPrintf X; }
