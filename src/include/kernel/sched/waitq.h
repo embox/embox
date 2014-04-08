@@ -15,7 +15,6 @@
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
-#include <kernel/thread/types.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal_lock.h>
 
