@@ -3,7 +3,7 @@
 # Author: Anton Kozlov
 #
 
-embox_o   := $(OBJ_DIR)/embox.o
+embox_o   := $(OBJ_DIR)/embox-2.o
 image_lds := $(OBJ_DIR)/mk/image.lds
 
 .PHONY : all image FORCE

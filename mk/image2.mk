@@ -3,7 +3,13 @@
 # Author: Eldar Abusalimov
 #
 
+ifeq ($(STAGE),1)
 embox_o   := $(OBJ_DIR)/embox.o
+else
+embox_o   := $(OBJ_DIR)/embox-2.o
+$(embox_o) : $(OBJ_DIR)/embox.o
+endif
+
 image_lds := $(OBJ_DIR)/mk/image.lds
 
 .PHONY : all FORCE
