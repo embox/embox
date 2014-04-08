@@ -192,6 +192,10 @@ void add_history(const char *line) {
 	linenoiseHistoryAdd(line);
 }
 
+void stifle_history(int max) {
+	linenoiseHistorySetMaxLen(max);
+}
+
 int read_history(const char *filename) {
 	return -1 != linenoiseHistoryLoad(filename != NULL
 				? (char *)filename : DEFAULT_HISTORY_FILE)
