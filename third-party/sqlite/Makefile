@@ -15,6 +15,7 @@ $(CONFIGURE) :
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--disable-largefile \
 			--disable-shared \
+			--disable-static \
 			--disable-threadsafe \
 			--disable-dynamic-extensions \
 			--enable-readline \
