@@ -115,7 +115,7 @@ void *malloc(size_t size) {
 		return NULL;
 	}
 
-	ptr = memalign(0, size);
+	ptr = memalign(8, size);
 	if (ptr == NULL) {
 		SET_ERRNO(ENOMEM);
 		return NULL;
@@ -148,7 +148,7 @@ void *realloc(void *ptr, size_t size) {
 		return NULL; /* ok */
 	}
 
-	ret = memalign(4, size);
+	ret = memalign(8, size);
 
 	if (ret == NULL) {
 		return NULL; /* error: errno set in malloc */
