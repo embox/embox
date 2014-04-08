@@ -15,15 +15,15 @@
 
 #include "mspace_malloc.h"
 
-static struct dlist_head *task_to_mspace(struct task *task) {
+static struct dlist_head *task_self_mspace(void) {
 	struct task_heap *task_heap;
 
-	task_heap = task_heap_get(task);
+	task_heap = task_heap_get(task_self());
 	return &task_heap->mm;
 }
 
 void *memalign(size_t boundary, size_t size) {
-	return mspace_memalign(boundary, size, task_to_mspace(task_self()));
+	return mspace_memalign(boundary, size, task_self_mspace());
 }
 
 void *malloc(size_t size) {
@@ -33,7 +33,7 @@ void *malloc(size_t size) {
 		return NULL;
 	}
 
-	ptr = mspace_malloc(size, task_to_mspace(task_self()));
+	ptr = mspace_malloc(size, task_self_mspace());
 
 	if (ptr == NULL) {
 		if (size == 0) {
@@ -50,19 +50,19 @@ void *malloc(size_t size) {
 void free(void *ptr) {
 	if (ptr == NULL)
 		return;
-	mspace_free(ptr, task_to_mspace(task_self()));
+	mspace_free(ptr, task_self_mspace());
 }
 
 void *realloc(void *ptr, size_t size) {
 	if (size == 0 && ptr != NULL) {
-		mspace_free(ptr, task_to_mspace(task_self()));
+		mspace_free(ptr, task_self_mspace());
 		return NULL; /* ok */
 	}
-	return mspace_realloc(ptr, size, task_to_mspace(task_self()));
+	return mspace_realloc(ptr, size, task_self_mspace());
 }
 
 void *calloc(size_t nmemb, size_t size) {
 	if (nmemb == 0 || size == 0)
 		return NULL; /* ok */
-	return mspace_calloc(nmemb, size, task_to_mspace(task_self()));
+	return mspace_calloc(nmemb, size, task_self_mspace());
 }
