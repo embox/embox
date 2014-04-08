@@ -14,9 +14,13 @@ $(CONFIGURE) :
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--disable-largefile \
+			--disable-shared \
+			--disable-threadsafe \
 			--disable-dynamic-extensions \
+			--enable-readline \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS=-I$(ROOT_DIR)/third-party/sqlite/include/; \
+			CPPFLAGS="-I$(ROOT_DIR)/third-party/sqlite/include/ \
+				-DSQLITE_DEBUG=1"; \
 	)
 	touch $@
 

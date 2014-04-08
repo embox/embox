@@ -19,6 +19,7 @@ module sqlite3 {
 
 	@NoRuntime depends sqlite3_stubs
 	@NoRuntime depends embox.framework.cmd
+	@NoRuntime depends embox.lib.readline_api
 }
 
 module sqlite3_stubs {
