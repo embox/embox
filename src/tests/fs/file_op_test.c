@@ -116,6 +116,7 @@ TEST_CASE("Test create operation on fs") {
 	fs_test_write_file(fs_test_wr_file_new, O_WRONLY | O_CREAT | O_EXCL, fs_test_wr_file_new_content);
 }
 
+#define FS_TEST_MKDIR_MODE 0777
 static const char fs_test_wr_dir[] = FS_TEST_MOUNTPOINT "/wr_dir";
 static const char *fs_test_wr_dir_files[] = {
 	FS_TEST_MOUNTPOINT "/wr_dir/f1",
@@ -128,7 +129,7 @@ TEST_CASE("Test mkdir operation on fs") {
 		return;
 	}
 
-	test_assert_zero(mkdir(fs_test_wr_dir,FS_TEST_CREAT_MODE));
+	test_assert_zero(mkdir(fs_test_wr_dir, FS_TEST_MKDIR_MODE));
 
 	for (i = 0; i < ARRAY_SIZE(fs_test_wr_dir_files); i++) {
 		fs_test_write_file(fs_test_wr_dir_files[i], O_WRONLY | O_CREAT | O_EXCL, "");
