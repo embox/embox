@@ -38,6 +38,7 @@
 #include <util/array.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/kmalloc.h>
 
 #include <fs/fs_driver.h>
 #include <fs/node.h>
@@ -747,7 +748,7 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size_t size;
 	int error;
 
-	bpb = malloc(SEC_SIZE);
+	bpb = kmalloc(SEC_SIZE);
 	if (bpb == NULL) {
 		return ENOMEM;
 	}
@@ -814,7 +815,7 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 
 	DPRINTF(("fatfs_mount device=%s\n", dev));
 
-	fmp = malloc(sizeof(struct fatfsmount));
+	fmp = kmalloc(sizeof(struct fatfsmount));
 	if (fmp == NULL) {
 		return ENOMEM;
 	}
@@ -825,17 +826,17 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	}
 
 	error = ENOMEM;
-	fmp->io_buf = malloc(fmp->sec_per_cl * SEC_SIZE);
+	fmp->io_buf = kmalloc(fmp->sec_per_cl * SEC_SIZE);
 	if (fmp->io_buf == NULL) {
 		goto err1;
 	}
 
-	fmp->fat_buf = malloc(SEC_SIZE * 2);
+	fmp->fat_buf = kmalloc(SEC_SIZE * 2);
 	if (fmp->fat_buf == NULL) {
 		goto err2;
 	}
 
-	fmp->dir_buf = malloc(SEC_SIZE);
+	fmp->dir_buf = kmalloc(SEC_SIZE);
 	if (fmp->dir_buf == NULL) {
 		goto err3;
 	}
@@ -875,7 +876,7 @@ static int fat_unmount(mount_t mp) {
 static int fat_vget(mount_t mp, vnode_t vp) {
 	struct fatfs_node *np;
 
-	np = malloc(sizeof(struct fatfs_node));
+	np = kmalloc(sizeof(struct fatfs_node));
 	if (np == NULL) {
 		return ENOMEM;
 	}

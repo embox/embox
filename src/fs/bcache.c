@@ -9,6 +9,7 @@
 #include <fs/bcache.h>
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
+#include <mem/kmalloc.h>
 #include <stdlib.h>
 #include <util/hashtable.h>
 #include <string.h>
@@ -103,7 +104,7 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	bh->bdev = bdev;
 	bh->block = block;
 	bh->blocksize = size;
-	bh->data = malloc(size); /* TODO kmalloc */
+	bh->data = kmalloc(size); /* TODO kmalloc */
 
 	if (!bh->data) {
 		pool_free(&buffer_head_pool, bh);

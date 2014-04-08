@@ -6,6 +6,7 @@ module flash_emu {
 
 	depends embox.fs.node
 	depends embox.mem.page_api
+	depends embox.mem.kmalloc_api
 	depends embox.mem.pool
 	depends embox.driver.block
 	depends embox.mem.phymem

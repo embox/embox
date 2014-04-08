@@ -10,6 +10,7 @@
 #include <embox/block_dev.h>
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_dev.h>
+#include <mem/kmalloc.h>
 
 #include <err.h>
 #include <errno.h>
@@ -45,7 +46,7 @@ static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
 	}
 	len = bdev->driver->ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 
-	if(NULL == (data = malloc(len))) {
+	if(NULL == (data = kmalloc(len))) {
 		return -ENOMEM;
 	}
 	memset((void *) data, 0xFF, (size_t) len);

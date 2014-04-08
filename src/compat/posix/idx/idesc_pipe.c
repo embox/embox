@@ -26,6 +26,7 @@
 
 #include <kernel/sched.h>
 #include <fs/flags.h>
+#include <mem/kmalloc.h>
 
 
 
@@ -287,9 +288,9 @@ static struct pipe *pipe_alloc(void) {
 	pipe = storage = NULL;
 	pipe_buff = NULL;
 
-	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
-				|| !(pipe = malloc(sizeof(struct pipe)))
-				|| !(pipe_buff = malloc(sizeof(struct ring_buff)))) {
+	if (!(storage = kmalloc(DEFAULT_PIPE_BUFFER_SIZE))
+				|| !(pipe = kmalloc(sizeof(struct pipe)))
+				|| !(pipe_buff = kmalloc(sizeof(struct ring_buff)))) {
 		goto free_memory;
 	}
 

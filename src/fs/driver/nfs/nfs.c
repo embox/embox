@@ -26,6 +26,7 @@
 #include <limits.h>
 
 #include <mem/misc/pool.h>
+#include <mem/kmalloc.h>
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/xdr.h>
 
@@ -502,7 +503,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
 
-	if (NULL == (rcv_buf = malloc(MAXDIRCOUNT * 2))) {
+	if (NULL == (rcv_buf = kmalloc(MAXDIRCOUNT * 2))) {
 		return -1;
 	}
 

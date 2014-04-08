@@ -7,6 +7,7 @@
  */
 
 #include <mem/misc/pool.h>
+#include <mem/kmalloc.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <embox/unit.h>
@@ -88,7 +89,7 @@ static int usb_class_cdc_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 					+ FUNCTIONAL_DESCS_TOTAL_SIZE
 					+ (dev->endp_n - 1) * sizeof(struct usb_desc_endpoint);
 
-	cdc->getconf = malloc(conf_size);
+	cdc->getconf = kmalloc(conf_size);
 
 	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD

@@ -194,7 +194,7 @@ static void *ext4_extent_get_extents_in_block(struct nas *nas, uint32_t block) {
 	extents_len = eh.eh_entries * sizeof(struct ext4_extent)
 			+ sizeof(struct ext4_extent_header);
 
-	exts = malloc(extents_len);
+	exts = kmalloc(extents_len);
 
 	block_dev_read_buffered(nas->fs->bdev, exts, extents_len,
 			block * fsi->s_block_size);

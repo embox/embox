@@ -33,6 +33,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/kmalloc.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
@@ -52,7 +53,7 @@ static int jffs2_read_inode (struct _inode *inode);
 static void jffs2_clear_inode (struct _inode *inode);
 
 static int jffs2_truncate_file (struct _inode *inode);
-static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids malloc when user may be under memory pressure */
+static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids kmalloc when user may be under memory pressure */
 static unsigned char n_fs_mounted = 0;  /* a counter to track the number of jffs2 instances mounted */
 
 /***********************
@@ -342,7 +343,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 
 	jffs2_sb->bdev = dir_nas->fs->bdev;
 
-	c->inocache_list = malloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
+	c->inocache_list = kmalloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
 	if (!c->inocache_list) {
 		return ENOMEM;
 	}
@@ -986,7 +987,7 @@ static struct _inode *new_inode(struct super_block *sb) {
 	struct _inode *inode;
 	struct _inode *cached_inode;
 
-	inode = malloc(sizeof (struct _inode));
+	inode = kmalloc(sizeof (struct _inode));
 	if (inode == NULL) {
 		return 0;
 	}
@@ -1045,7 +1046,7 @@ struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino) {
 		return inode;
 	}
 
-	/* Not cached, so malloc it */
+	/* Not cached, so kmalloc it */
 	inode = new_inode(sb);
 	if (inode == NULL) {
 		return ERR_PTR(-ENOMEM);

@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
+#include <mem/kmalloc.h>
 #include <net/if.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -41,7 +42,7 @@ static int netdev_init(struct net_device *dev, const char *name,
 	skb_queue_init(&dev->dev_queue);
 
 	if (priv_size != 0) {
-		dev->priv = malloc(priv_size);
+		dev->priv = kmalloc(priv_size);
 		if (dev->priv == NULL) {
 			return -ENOMEM;
 		}
