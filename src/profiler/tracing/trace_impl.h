@@ -34,7 +34,7 @@ struct __trace_block {
 	const char *name;
 	void *func;
 	struct location_func location;
-	struct itimer *tc;
+	time64_t start;
 	int64_t count;
 	time64_t time;
 	bool active;
@@ -56,11 +56,9 @@ struct __trace_block {
 		__tracepoint_handle(tp_pointer)
 
 #define __TRACE_BLOCK_DEF(tb_name)                  	\
-	static struct itimer tb_name ## _tc;				\
 	static struct __trace_block tb_name  = {        	\
 			.name  = #tb_name,							\
 			.location = LOCATION_FUNC_INIT,				\
-			.tc    = &tb_name ## _tc,               	\
 			.time  = 0,									\
 			.count = 0,									\
 			.active = true, 							\

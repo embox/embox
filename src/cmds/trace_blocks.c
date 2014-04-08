@@ -74,8 +74,9 @@ static void print_instrument_trace_block_stat(void) {
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
-			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0);
+		printf("%10lld %20llu\n", tb->count, tb->time);
+	/*	printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
+			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0); */
 	}
 
 	free(buff);
@@ -91,8 +92,7 @@ static void print_trace_block_stat(void) {
 	{
 		if (tb->active) {
 			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
-				tb->count, tb->time,
-				(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+				tb->count, tb->time, (long double) 1.0 * tb->time / 1000000000);
 				/* Converting from nanoseconds to seconds */
 		}
 		number++;

@@ -45,6 +45,7 @@ int cyg_profiling;
 
 static struct hashtable *tbhash = NULL;
 static int **prev_key;
+static struct clock_source *tb_cs = NULL;
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
 		tp->count++;
@@ -52,17 +53,19 @@ void __tracepoint_handle(struct __trace_point *tp) {
 }
 
 void trace_block_enter(struct __trace_block *tb) {
-	if (tb->active) {
+	if (tb->active && tb_cs) {
 		tb->is_entered = true;
 		tb->count++;
-		itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
+		tb->start = tb_cs->counter_device->read();
+		//itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
 	}
 }
 
 void trace_block_leave(struct __trace_block *tb) {
-	if (tb->active) {
+	if (tb->active && tb_cs) {
 		tb->is_entered = false;
-		tb->time += itimer_read(tb->tc);
+		tb->time += abs(tb_cs->counter_device->read() - tb->start);
+		//tb->time += itimer_read(tb->tc);
 	}
 }
 
@@ -91,7 +94,7 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 
 void print_trace_block_info(struct __trace_block *tb) {
 	printf("Trace block info: %p %s\n", tb, tb->name);
-	printf("Time counter pointer: %p\n", tb->tc);
+	printf("Time counter pointer:\n");
 	printf("Active: %s\nIs entered: %s\n", tb->active ? "YES" : "NO",
 											tb->is_entered ? "YES" : "NO");
 }
@@ -134,7 +137,7 @@ void trace_block_func_enter(void *func) {
 		tb = (struct __trace_block*) pool_alloc (&tb_pool);
 
 		tb->func = func;
-		tb->tc = (struct itimer *) pool_alloc (&itimer_pool);
+		tb->start = 0;
 		tb->time = 0;
 		tb->count = 0;
 		tb->active = true;
@@ -173,6 +176,7 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 static int instrument_profiling_init(void) {
 	cyg_profiling = false;
 	tbhash = NULL;
+	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 	/* Initializing hash table */
 	/*tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
