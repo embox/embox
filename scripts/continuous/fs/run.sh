@@ -35,6 +35,7 @@ qemu_changed_startscript=
 run_qemu_fs() {
 	FS=$1
 	IMG=$2
+	RW=$3
 
 	cp $START_SCRIPT $START_SCRIPT.old
 	qemu_changed_startscript=1
@@ -57,7 +58,11 @@ run_qemu_fs() {
 	esac
 
 	echo $img_mount >> $START_SCRIPT
-	echo \"test -t fs_test\", >> $START_SCRIPT
+	echo \"test -t fs_test_read\", >> $START_SCRIPT
+	if [ rw == $RW ]; then
+		echo \"test -t fs_test_write\", >> $START_SCRIPT
+	fi
+
 	echo \"umount /mnt/fs_test\", >> $START_SCRIPT
 
 	make &> /dev/null
@@ -101,7 +106,7 @@ for f in $FS_TEST_RO; do
 	banner "$f (ro)"
 	$CONT_FS_MANAGE $f $img build $IMG_RO_CONTENT
 
-	run_qemu_fs $f $img
+	run_qemu_fs $f $img "ro"
 done
 
 for f in $FS_TEST_RW; do
@@ -114,7 +119,7 @@ for f in $FS_TEST_RW; do
 
 	cp $img $img_work
 
-	run_qemu_fs $f $img_work
+	run_qemu_fs $f $img_work "rw"
 
 	$CONT_FS_MANAGE $f $img_work check $IMG_RW_GOLD
 	check_post_exit "fs content differ from expected"
@@ -131,7 +136,7 @@ for f in $FS_TEST_NETWORK; do
 
 			eval $FS_TEST_NFS_PREPARE
 
-			run_qemu_fs $f $FS_TEST_NFS_ROOT
+			run_qemu_fs $f $FS_TEST_NFS_ROOT "rw"
 
 			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT check_dir $IMG_RW_GOLD
 			check_post_exit "fs content differ from expected"
