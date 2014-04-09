@@ -17,6 +17,7 @@ $(CONFIGURE) :
 			--disable-static \
 			CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) \
 			CPPFLAGS="-I$(ROOT_DIR)/third-party/iperf/include/ \
+				-Drpl_malloc=malloc \
 				-Ulinux"; \
 	)
 	touch $@
