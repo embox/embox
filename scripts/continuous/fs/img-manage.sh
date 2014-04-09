@@ -29,7 +29,7 @@ mk_mountpoint() {
 }
 
 build_dir() {
-	src=$1
+	srcs="$1"
 	dst=$2
 
 	if [ ! -d $dst ]; then
@@ -41,11 +41,14 @@ build_dir() {
 	fi
 
 	$SUDO rm -R $dst/*
-	$SUDO cp -aR $src/* $dst
+
+	for s in $srcs; do
+		$SUDO cp -aR $s/* $dst
+	done
 }
 
 build() {
-	content=$1
+	content="$1"
 
 	case $FS in
 		jffs2)
@@ -72,7 +75,7 @@ build() {
 	mk_mountpoint
 	do_mount
 
-	build_dir $content $MOUNT_POINT
+	build_dir "$content" $MOUNT_POINT
 
 	do_unmount
 }
@@ -103,8 +106,8 @@ check() {
 }
 
 case $ACTION in
-	build_dir) 	build_dir $4 $2 ;;
-	build) 		build $4 ;;
+	build_dir) 	build_dir "$4" $2 ;;
+	build) 		build "$4" ;;
 	check_dir) 	check_dir $4 $2;;
 	check) 		check $4 ;;
 	write_content)	write_content $4 ;;

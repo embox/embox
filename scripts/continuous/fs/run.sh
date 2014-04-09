@@ -16,7 +16,7 @@ CONT_FS_MANAGE=$CONT_BASE/fs/img-manage.sh
 CONT_RUN=$CONT_BASE/run.sh
 
 IMG_RO_CONTENT=$BASE_DIR/img-ro
-IMG_RW_CONTENT=$BASE_DIR/img-rw
+IMG_RW_CONTENT="$BASE_DIR/img-rw $IMG_RO_CONTENT"
 IMG_RW_GOLD=$BASE_DIR/img-rw-gold
 
 posted_ret=0
@@ -115,7 +115,7 @@ for f in $FS_TEST_RW; do
 
 	banner "$f (rw)"
 
-	$CONT_FS_MANAGE $f $img build $IMG_RW_CONTENT
+	$CONT_FS_MANAGE $f $img build "$IMG_RW_CONTENT"
 
 	cp $img $img_work
 
@@ -132,7 +132,7 @@ for f in $FS_TEST_NETWORK; do
 
 	case $f in
 		nfs)
-			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT build_dir $IMG_RW_CONTENT
+			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT build_dir "$IMG_RW_CONTENT"
 
 			eval $FS_TEST_NFS_PREPARE
 
