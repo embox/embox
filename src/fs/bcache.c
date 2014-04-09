@@ -82,7 +82,7 @@ static void free_more_memory(size_t size) {
 		}
 		bcache_buffer_unlock(bh);
 
-		free(bh->data);
+		kfree(bh->data);
 		pool_free(&buffer_head_pool, bh);
 	}
 }
@@ -112,7 +112,7 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	}
 
 	if (0 > hashtable_put(bcache, bh, bh)) {
-		free(bh->data);
+		kfree(bh->data);
 		pool_free(&buffer_head_pool, bh);
 		return -1;
 	}

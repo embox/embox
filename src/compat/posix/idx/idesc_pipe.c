@@ -95,9 +95,9 @@ static void pipe_close(struct idesc *idesc) {
 	ret = idesc_pipe_close(cur, other);
 	mutex_unlock(&pipe->mutex);
 	if (ret) {
-		free(pipe->buff->storage);
-		free(pipe->buff);
-		free(pipe);
+		kfree(pipe->buff->storage);
+		kfree(pipe->buff);
+		kfree(pipe);
 	}
 }
 
@@ -303,16 +303,16 @@ static struct pipe *pipe_alloc(void) {
 	return pipe;
 
 free_memory:
-	if (storage)   free(storage);
-	if (pipe_buff) free(pipe_buff);
-	if (pipe)      free(pipe);
+	if (storage)   kfree(storage);
+	if (pipe_buff) kfree(pipe_buff);
+	if (pipe)      kfree(pipe);
 	return NULL;
 }
 
 static void pipe_free(struct pipe *pipe) {
-	free(pipe->buff->storage);
-	free(pipe->buff);
-	free(pipe);
+	kfree(pipe->buff->storage);
+	kfree(pipe->buff);
+	kfree(pipe);
 }
 
 int pipe(int pipefd[2]) {

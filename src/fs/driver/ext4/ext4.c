@@ -234,7 +234,7 @@ static uint64_t ext4_extent_get_pblock(struct nas *nas, void *extents, uint32_t 
 		leaf_extents = ext4_extent_get_extents_in_block(nas,
 				recurse_ei->ei_leaf_lo);
 		ret = ext4_extent_get_pblock(nas, leaf_extents, lblock, len);
-		free(leaf_extents);
+		kfree(leaf_extents);
 	}
 
 	return ret;

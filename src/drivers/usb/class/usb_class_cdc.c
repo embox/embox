@@ -70,7 +70,7 @@ static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	usb_dev_generic_fill_endps(dev, cdc->getconf + ENDPOINT_DESC_OFFSET);
 
 	//pool_free(&hid_getconfs, hid->getconf);
-	free(cdc->getconf);
+	kfree(cdc->getconf);
 	cdc->getconf = NULL;
 
 	get_line_coding(dev);

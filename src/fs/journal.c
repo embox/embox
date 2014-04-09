@@ -241,7 +241,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
 void journal_free_block(journal_t *jp, journal_block_t *jb) {
 	assert(jp && jb);
 
-	free(jb->data);
+	kfree(jb->data);
 	cache_free(&journal_block_cache, jb);
 }
 

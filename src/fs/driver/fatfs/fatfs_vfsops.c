@@ -757,12 +757,12 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size = SEC_SIZE;
 	error = device_read(fmp->dev, bpb, &size, 0);
 	if (error) {
-		free(bpb);
+		kfree(bpb);
 		return error;
 	}
 	if (bpb->bytes_per_sector != SEC_SIZE) {
 		DPRINTF(("fatfs: invalid sector size\n"));
-		free(bpb);
+		kfree(bpb);
 		return EINVAL;
 	}
 
@@ -789,10 +789,10 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	} else {
 		/* FAT32 is not supported now! */
 		DPRINTF(("fatfs: invalid FAT type\n"));
-		free(bpb);
+		kfree(bpb);
 		return EINVAL;
 	}
-	free(bpb);
+	kfree(bpb);
 
 	DPRINTF(("----- FAT info -----\n"));
 	DPRINTF(("drive:%x\n", (int)bpb->physical_drive));
@@ -847,11 +847,11 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	vp->v_blkno = CL_ROOT;
 	return 0;
  err3:
-	free(fmp->fat_buf);
+	kfree(fmp->fat_buf);
  err2:
-	free(fmp->io_buf);
+	kfree(fmp->io_buf);
  err1:
-	free(fmp);
+	kfree(fmp);
 	return error;
 }
 
@@ -862,11 +862,11 @@ static int fat_unmount(mount_t mp) {
 	struct fatfsmount *fmp;
 
 	fmp = mp->m_data;
-	free(fmp->dir_buf);
-	free(fmp->fat_buf);
-	free(fmp->io_buf);
+	kfree(fmp->dir_buf);
+	kfree(fmp->fat_buf);
+	kfree(fmp->io_buf);
 	mutex_destroy(&fmp->lock);
-	free(fmp);
+	kfree(fmp);
 	return 0;
 }
 

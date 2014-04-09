@@ -145,7 +145,7 @@ static struct pty *pty_create(void) {
 
 static void pty_delete(struct pty *pty) {
 
-	free(pty);
+	kfree(pty);
 }
 
 static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_ops *ops) {
@@ -166,7 +166,7 @@ static void idesc_pty_delete(struct idesc_pty *pty, struct idesc **idesc) {
 
 	*idesc = NULL;
 
-	free(pty);
+	kfree(pty);
 }
 
 #if 0

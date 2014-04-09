@@ -151,7 +151,7 @@ void hashtable_destroy(struct hashtable *ht) {
 		}
 
 	}
-	free(ht->table);
+	kfree(ht->table);
 	objfree(&ht_pool, ht);
 }
 

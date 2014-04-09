@@ -100,7 +100,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 			}
 			jffs2_clear_inode(this);
 			memset(this, 0x5a, sizeof(*this));
-			free(this);
+			kfree(this);
 			if (parent && parent != this) {
 				parent->i_count--;
 				this = root_i;
@@ -318,7 +318,7 @@ static int jffs2_read_super(struct super_block *sb) {
     out_nodes:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
-	free(c->blocks);
+	kfree(c->blocks);
 
 	return err;
 }
@@ -365,7 +365,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 			jffs2_compressors_exit();
 		}
 
-		free(c->inocache_list);
+		kfree(c->inocache_list);
 		return err;
 	}
 
@@ -443,13 +443,13 @@ static int jffs2_umount(struct nas *dir_nas) {
 			jffs2_free_full_dirent(fd);
 		}
 
-		free(root);
+		kfree(root);
 
 		/* Clean up the super block and root inode */
 		jffs2_free_ino_caches(c);
 		jffs2_free_raw_node_refs(c);
-		free(c->blocks);
-		free(c->inocache_list);
+		kfree(c->blocks);
+		kfree(c->inocache_list);
 
 		D2(printf("jffs2_umount No current mounts\n"));
 	} else {
@@ -1100,7 +1100,7 @@ void jffs2_iput(struct _inode *i) {
 		parent = i->i_parent;
 		jffs2_clear_inode(i);
 		memset(i, 0x5a, sizeof(*i));
-		free(i);
+		kfree(i);
 
 		if (parent && parent != i) {
 			i = parent;
@@ -1178,7 +1178,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i,
 		up(&(f->sem));
 		jffs2_clear_inode(inode);
 		memset(inode, 0x6a, sizeof(*inode));
-		free(inode);
+		kfree(inode);
 		return ERR_PTR(ret);
 	}
 	inode->i_nlink = 1;

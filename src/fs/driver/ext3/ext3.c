@@ -338,7 +338,7 @@ static int ext3fs_umount(void *dir) {
 	res = drv->fsop->umount(dir);
 
 	journal_delete(fsi->journal);
-	free(data->ext3_journal_inode);
+	kfree(data->ext3_journal_inode);
 	journal_free_block(fsi->journal, data->j_sb_buffer);
 	objfree(&ext3_journal_cache, data);
 

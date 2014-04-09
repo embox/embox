@@ -449,7 +449,7 @@ int cdfs_mount(struct nas *root_nas)
 		if (memcmp(vd->id, "CD001", 5) != 0) {
 			/*free_buffer_pool(cdfs->cache); */
 			//block_dev_close(cdfs->bdev);
-			free(cdfs);
+			kfree(cdfs);
 			return -EIO;
 		}
 
@@ -502,12 +502,12 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
-		free(cdfs->path_table_buffer);
+		kfree(cdfs->path_table_buffer);
 	}
 	if (cdfs->path_table) {
-		free(cdfs->path_table);
+		kfree(cdfs->path_table);
 	}
-	free(cdfs);
+	kfree(cdfs);
 
 	return 0;
 }

@@ -26,7 +26,7 @@ struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize) {
 }
 
 void jffs2_free_full_dirent(struct jffs2_full_dirent *x) {
-	free(x);
+	kfree(x);
 }
 
 struct jffs2_full_dnode *jffs2_alloc_full_dnode(void) {
@@ -34,7 +34,7 @@ struct jffs2_full_dnode *jffs2_alloc_full_dnode(void) {
 }
 
 void jffs2_free_full_dnode(struct jffs2_full_dnode *x) {
-	free(x);
+	kfree(x);
 }
 
 struct jffs2_raw_dirent *jffs2_alloc_raw_dirent(void) {
@@ -42,7 +42,7 @@ struct jffs2_raw_dirent *jffs2_alloc_raw_dirent(void) {
 }
 
 void jffs2_free_raw_dirent(struct jffs2_raw_dirent *x) {
-	free(x);
+	kfree(x);
 }
 
 struct jffs2_raw_inode *jffs2_alloc_raw_inode(void) {
@@ -50,7 +50,7 @@ struct jffs2_raw_inode *jffs2_alloc_raw_inode(void) {
 }
 
 void jffs2_free_raw_inode(struct jffs2_raw_inode *x) {
-	free(x);
+	kfree(x);
 }
 
 struct jffs2_tmp_dnode_info *jffs2_alloc_tmp_dnode_info(void) {
@@ -58,7 +58,7 @@ struct jffs2_tmp_dnode_info *jffs2_alloc_tmp_dnode_info(void) {
 }
 
 void jffs2_free_tmp_dnode_info(struct jffs2_tmp_dnode_info *x) {
-	free(x);
+	kfree(x);
 }
 
 struct jffs2_node_frag *jffs2_alloc_node_frag(void) {
@@ -66,7 +66,7 @@ struct jffs2_node_frag *jffs2_alloc_node_frag(void) {
 }
 
 void jffs2_free_node_frag(struct jffs2_node_frag *x) {
-	free(x);
+	kfree(x);
 }
 
 #if CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE == 0
@@ -83,7 +83,7 @@ struct jffs2_raw_node_ref *jffs2_alloc_raw_node_ref(void) {
 }
 
 void jffs2_free_raw_node_ref(struct jffs2_raw_node_ref *x) {
-	free(x);
+	kfree(x);
 }
 
 #endif /* CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE == 0 */
@@ -96,6 +96,6 @@ struct jffs2_inode_cache *jffs2_alloc_inode_cache(void) {
 
 void jffs2_free_inode_cache(struct jffs2_inode_cache *x) {
 	D1(printk(KERN_DEBUG "Freeing inocache at %p\n", x));
-	free(x);
+	kfree(x);
 }
 

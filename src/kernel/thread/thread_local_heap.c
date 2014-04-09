@@ -36,7 +36,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 }
 
 int thread_local_free(struct thread *t) {
-	free(t->local.storage);
+	kfree(t->local.storage);
 
 	return ENOERR;
 }

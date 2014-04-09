@@ -85,7 +85,7 @@ void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
-		free(dev->priv);
+		kfree(dev->priv);
 		pool_free(&netdev_pool, dev);
 	}
 }

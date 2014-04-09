@@ -53,7 +53,7 @@ static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
 
 	rc = block_dev_write_buffered(bdev, (const char *) data,
 									(size_t) len, block_base);
-	free(data);
+	kfree(data);
 
 	if(len == rc) {
 		return 0;
