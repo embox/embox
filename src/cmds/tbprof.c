@@ -21,6 +21,13 @@ void print_data_to_file(FILE *out) {
 }
 
 void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
+	/* This function is for launching program that is beging tested with monitoring
+	 * of all function calls and exits.
+	 *	Args:	*cmd	-	pointer to the command that will be launched
+	 *			argc	-	the number of arguments passed to pragram
+	 *			argv	-	array of arguments
+	 *			out		-	output file to write profiling info
+	 */
 	int res = 0;
 	clock_t begin, end;
 	initialize_hashtable();

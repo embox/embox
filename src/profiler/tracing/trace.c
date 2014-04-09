@@ -43,9 +43,13 @@ POOL_DEF(key_pool, int, FUNC_QUANTITY);
 
 int cyg_profiling;
 
+/* Hashtable to keep all dynamically generated trace_blocks */
 static struct hashtable *tbhash = NULL;
 static int **prev_key;
+
+/* Global clock_source to keep all trace_block consistent */
 static struct clock_source *tb_cs = NULL;
+
 void __tracepoint_handle(struct __trace_point *tp) {
 	if (tp->active) {
 		tp->count++;
@@ -93,6 +97,7 @@ struct __trace_point *trace_point_get_by_name(const char *name) {
 /* Functions for debug output */
 
 void print_trace_block_info(struct __trace_block *tb) {
+	/* Printing information about trace_block */
 	printf("Trace block info: %p %s\n", tb, tb->name);
 	printf("Time counter pointer:\n");
 	printf("Active: %s\nIs entered: %s\n", tb->active ? "YES" : "NO",
@@ -110,10 +115,20 @@ void print_trace_block_info(struct __trace_block *tb) {
 }*/
 
 static size_t get_trace_block_hash(void *key) {
+	/* trace_block hash is just the pointer, beacuse
+	 * it is unique for every functions, and there must be
+	 * one block for one funcion.
+	 */
 	return (size_t) key;
 }
 
 static int cmp_trace_blocks(void *key1, void *key2) {
+	/* trace_block hash is just the pointer, beacuse
+	 * it is unique for every functions, and there must be
+	 * one block for one funcion.
+	 * So it is enough to compare those pointers.
+	 */
+
 	return 1 - (key1 == key2);
 }
 
@@ -122,8 +137,14 @@ static int cmp_trace_blocks(void *key1, void *key2) {
  * trace_block_exit just before function exit */
 
 void trace_block_func_enter(void *func) {
+	/* Function for auto-generated trace_blocks
+	 * It has to find appropriate trace_block in hash_table
+	 * or to generate new one
+	 *	Args: void *func - pointer to functions that is about to enter
+	 */
 	struct __trace_block *tb = NULL;
-	if (!tbhash) { /* Table is not initialized */
+	if (!tbhash) {
+		/* Table is not initialized */
 		return;
 	}
 	tb = hashtable_get(tbhash, func);
@@ -149,6 +170,10 @@ void trace_block_func_enter(void *func) {
 }
 
 void trace_block_func_exit(void *func) {
+	/* Function for auto-generated trace_blocks
+	 * It has to do all changes according to trace_block_leave
+	 *	Args: void *func - pointer to functions that just exited
+	 */
 	struct __trace_block *tb;
 	if (!tbhash) {
 		return;
@@ -161,6 +186,7 @@ void trace_block_func_exit(void *func) {
 }
 
 struct __trace_block *auto_profile_tb_first(void){
+	/* Get the pointer to the first trace_block in trace_block hash table */
 	if (!tbhash)
 		return NULL;
 	prev_key = hashtable_get_key_first(tbhash);
@@ -169,6 +195,9 @@ struct __trace_block *auto_profile_tb_first(void){
 
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
+	/* Getting the pointer to the next trace_block
+	 *	Args:	*prev - pointer to previous trace_block
+	 */
 	prev_key = hashtable_get_key_next(tbhash, prev_key);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
@@ -189,6 +218,7 @@ static int instrument_profiling_init(void) {
 }
 
 void trace_block_hashtable_init(void) {
+	/* Initializing trace_block hash table */
 	int c = cyg_profiling;
 	cyg_profiling = false;
 
@@ -200,6 +230,7 @@ void trace_block_hashtable_init(void) {
 	cyg_profiling = c;
 }
 void trace_block_hashtable_destroy(void) {
+	/* Clear trace_block hash table */
 	int c = cyg_profiling;
 	cyg_profiling = false;
 
