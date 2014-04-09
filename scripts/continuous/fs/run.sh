@@ -1,9 +1,7 @@
 #!/bin/sh
 
-#FS_TEST_RO="iso9660 jffs2"
-#FS_TEST_RW="vfat ext2 ext3 ext4"
-#FS_TEST_RO=""
-#FS_TEST_RW="ext2 "
+FS_TEST_RO="iso9660 jffs2"
+FS_TEST_RW="vfat ext2 ext3 ext4"
 FS_TEST_NETWORK="nfs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
@@ -25,14 +23,11 @@ posted_ret=0
 check_post_exit() {
 	ret=$?
 	if [ 0 -ne $ret ]; then
-		posted_ret=$ret
-	fi
-}
+		echo - - - - - - - - - - - - - - -
+		echo ERROR: $1
+		echo - - - - - - - - - - - - - - -
 
-check_exit() {
-	check_post_exit
-	if [ 0 -ne $posted_ret ]; then
-		exit $ret
+		posted_ret=$ret
 	fi
 }
 
@@ -79,11 +74,11 @@ run_qemu_fs() {
 			;;
 	esac
 
-	$CONT_RUN x86/test_fs "$img_run"
+	$CONT_RUN generic/qemu "$img_run"
 	#./scripts/qemu/auto_qemu $img_run
-	check_post_exit
+	check_post_exit "qemu run failed"
 
-	mv $START_SCRIPT.old $START_SCRIPT
+	mv -f $START_SCRIPT.old $START_SCRIPT
 }
 
 run_qemu_cleanup() {
@@ -92,33 +87,44 @@ run_qemu_cleanup() {
 	fi
 }
 
+banner() {
+	fs="$1"
+
+	echo  ================================
+	echo Starting test "$fs" filesystem
+	echo  ================================
+}
+
 for f in $FS_TEST_RO; do
 	img=$BASE_DIR/$f.img
 
+	banner "$f (ro)"
 	$CONT_FS_MANAGE $f $img build $IMG_RO_CONTENT
 
 	run_qemu_fs $f $img
-	check_post_exit
 done
 
 for f in $FS_TEST_RW; do
 	img=$BASE_DIR/$f.img
 	img_work=$img.work
 
+	banner "$f (rw)"
+
 	$CONT_FS_MANAGE $f $img build $IMG_RW_CONTENT
 
 	cp $img $img_work
 
 	run_qemu_fs $f $img_work
-	check_post_exit
 
 	$CONT_FS_MANAGE $f $img_work check $IMG_RW_GOLD
-	check_post_exit
+	check_post_exit "fs content differ from expected"
 
 	rm $img_work
 done
 
 for f in $FS_TEST_NETWORK; do
+	banner "$f (net)"
+
 	case $f in
 		nfs)
 			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT build_dir $IMG_RW_CONTENT
@@ -126,10 +132,9 @@ for f in $FS_TEST_NETWORK; do
 			eval $FS_TEST_NFS_PREPARE
 
 			run_qemu_fs $f $FS_TEST_NFS_ROOT
-			check_post_exit
 
 			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT check_dir $IMG_RW_GOLD
-			check_post_exit
+			check_post_exit "fs content differ from expected"
 			;;
 	esac
 done

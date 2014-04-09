@@ -83,7 +83,6 @@ check_dir() {
 
 	diff -q -r $src $dst
 	ret=$?
-	echo img-manage: diff code $ret
 	return $ret
 }
 
