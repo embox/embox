@@ -13,6 +13,7 @@
  * @author Alexander Kalmuk
  */
 
+#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -104,7 +105,7 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 	return mspace_memalign(0, size, mspace);
 }
 
-void mspace_free(void *ptr, struct dlist_head *mspace) {
+int mspace_free(void *ptr, struct dlist_head *mspace) {
 	void *segment;
 
 	assert(ptr);
@@ -117,7 +118,10 @@ void mspace_free(void *ptr, struct dlist_head *mspace) {
 	} else {
 		/* No segment containing pointer @c ptr was found. */
 		printk("***** free(): incorrect address space\n");
+		return -1;
 	}
+
+	return 0;
 }
 
 void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
@@ -139,7 +143,10 @@ void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
 	/* The content of new region will be unchanged in the range from the start of the region up to
 	 * the minimum of the old and new sizes. So simply copy size bytes (may be with redundant bytes) */
 	memcpy(ret, ptr, size);
-	mspace_free(ptr, mspace);
+	if (0 > mspace_free(ptr, mspace)) {
+		mspace_free(ret, mspace);
+		return err_ptr(EINVAL);
+	}
 
 	return ret;
 }

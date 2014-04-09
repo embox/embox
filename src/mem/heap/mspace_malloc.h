@@ -14,7 +14,7 @@
 
 extern void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace);
 extern void *mspace_malloc(size_t size, struct dlist_head *mspace);
-extern void mspace_free(void *ptr, struct dlist_head *mspace);
+extern int   mspace_free(void *ptr, struct dlist_head *mspace);
 extern void *mspace_calloc(size_t nmemb, size_t size, struct dlist_head *mspace);
 extern void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace);
 
