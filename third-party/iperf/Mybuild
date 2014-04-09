@@ -31,6 +31,7 @@ module iperf_stubs {
 	@IncludePathBefore("$(THIRDPARTY_DIR)/iperf/include")
 	source "stubs.c"
 
+	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.lib.LibCString
 	@NoRuntime depends embox.lib.Printk
