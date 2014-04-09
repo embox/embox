@@ -29,12 +29,19 @@ mk_mountpoint() {
 }
 
 build_dir() {
-	if [ ! -d $1 ]; then
-		$SUDO mkdir -p $1
+	src=$1
+	dst=$2
+
+	if [ ! -d $dst ]; then
+		$SUDO mkdir -p $dst
 	fi
 
-	$SUDO rm $1/* 2>/dev/null || true
-	$SUDO cp -R $1/* $2
+	if [ nfs == $FS ]; then
+		$SUDO chmod 777 $dst
+	fi
+
+	$SUDO rm -R $dst/*
+	$SUDO cp -aR $src/* $dst
 }
 
 build() {
@@ -71,7 +78,10 @@ build() {
 }
 
 check_dir() {
-	diff -q -r $1 $2
+	src=$1
+	dst=$2
+
+	diff -q -r $src $dst
 	ret=$?
 	echo img-manage: diff code $ret
 	return $ret

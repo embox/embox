@@ -6,7 +6,8 @@
 #FS_TEST_RW="ext2 "
 FS_TEST_NETWORK="nfs"
 
-FS_TEST_NFS_ROOT="/var/nfs_root/fs_test"
+FS_TEST_NFS_ROOT="/var/nfs_test"
+FS_TEST_NFS_PREPARE="sudo systemctl restart "{rpcbind,rpc-mountd,rpc-idmapd}\;
 
 ROOT_DIR=.
 BASE_DIR=$(dirname $0)
@@ -35,11 +36,13 @@ check_exit() {
 	fi
 }
 
+qemu_changed_startscript=
 run_qemu_fs() {
 	FS=$1
 	IMG=$2
 
 	cp $START_SCRIPT $START_SCRIPT.old
+	qemu_changed_startscript=1
 
 	img_mount=
 	QEMU_MOUNT_HD="\"mount -t $FS /dev/hda /mnt/fs_test\","
@@ -83,6 +86,12 @@ run_qemu_fs() {
 	mv $START_SCRIPT.old $START_SCRIPT
 }
 
+run_qemu_cleanup() {
+	if [ ! -z $qemu_changed_startscript ]; then
+		make &> /dev/null
+	fi
+}
+
 for f in $FS_TEST_RO; do
 	img=$BASE_DIR/$f.img
 
@@ -113,6 +122,9 @@ for f in $FS_TEST_NETWORK; do
 	case $f in
 		nfs)
 			$CONT_FS_MANAGE $f $FS_TEST_NFS_ROOT build_dir $IMG_RW_CONTENT
+
+			eval $FS_TEST_NFS_PREPARE
+
 			run_qemu_fs $f $FS_TEST_NFS_ROOT
 			check_post_exit
 
@@ -121,5 +133,7 @@ for f in $FS_TEST_NETWORK; do
 			;;
 	esac
 done
+
+run_qemu_cleanup
 
 exit $posted_ret
