@@ -24,13 +24,11 @@ EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
 do_it() {
+	echo "$@"
 	echo "$@" | sh
 }
 
-export AUTOQEMU_KVM_ARG=
-export AUTOQEMU_NOGRAPHIC_ARG=
-export AUTOQEMU_NICS=
-QEMU_COMMON="./scripts/qemu/auto_qemu -serial file:${OUTPUT_FILE} -display none"
+QEMU_COMMON="./scripts/qemu/auto_qemu"
 
 declare -A atml2sim
 atml2sim['x86/smp']="$QEMU_COMMON -smp 2"
@@ -45,8 +43,10 @@ fi
 # qemu refuses to write if run with -serial stdio. So we buffer to file,
 # cat it, and analyze
 
-[ -f $OUTPUT_FILE ] && rm $OUTPUT_FILE
-do_it timeout -s 9 $TIMEOUT "$CMD_LINE $2"
+[ -f $OUTPUT_FILE ] && rm -f $OUTPUT_FILE
+do_it sudo "AUTOQEMU_KVM_ARG=" \
+	"AUTOQEMU_NOGRAPHIC_ARG=\"-serial file:${OUTPUT_FILE} -display none\"" \
+	timeout $TIMEOUT "$CMD_LINE $2"
 
 cat $OUTPUT_FILE
 
@@ -54,7 +54,7 @@ for fail_pattern in "fail" "assert"; do
 	grep "$fail_pattern" $OUTPUT_FILE &>/dev/null && exit 1
 done
 
-for success_pattern in "Started shell" "embox>"; do
+for success_pattern in '^embox>' '^[a-z]\+@embox'; do
 	grep "$success_pattern" $OUTPUT_FILE &>/dev/null && exit 0
 done
 
