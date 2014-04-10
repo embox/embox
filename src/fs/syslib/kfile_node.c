@@ -80,12 +80,12 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 	return 0;
 }
 
-int ktruncate(struct path *path, off_t length) {
+int ktruncate(struct node *node, off_t length) {
 	int ret;
 	struct nas *nas;
 	struct fs_driver *drv;
 
-	nas = path->node->nas;
+	nas = node->nas;
 	drv = nas->fs->drv;
 
 	if (NULL == drv->fsop->truncate) {
@@ -93,17 +93,17 @@ int ktruncate(struct path *path, off_t length) {
 		return -1;
 	}
 
-	if (0 > (ret = fs_perm_check(path->node, FS_MAY_WRITE))) {
+	if (0 > (ret = fs_perm_check(node, FS_MAY_WRITE))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	if (node_is_directory(path->node)) {
+	if (node_is_directory(node)) {
 		SET_ERRNO(EISDIR);
 		return -1;
 	}
 
-	if (0 > (ret = drv->fsop->truncate(path, length))) {
+	if (0 > (ret = drv->fsop->truncate(node, length))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}

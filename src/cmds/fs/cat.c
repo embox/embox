@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <fs/vfs.h>
 
 EMBOX_CMD(exec);
 

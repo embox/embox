@@ -92,13 +92,13 @@ int open(const char *path, int __oflag, ...) {
 		}
 
 		if (__oflag & O_TRUNC) {
-			ktruncate(&node_path, 0);
+			ktruncate(node, 0);
 		}
 	}
 
 	__oflag &= ~(O_CREAT | O_EXCL);
 
-	kfile = kopen(&node_path, __oflag);
+	kfile = kopen(node, __oflag);
 	if (NULL == kfile) {
 		rc = -1;
 		goto out;

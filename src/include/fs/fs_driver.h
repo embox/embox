@@ -30,7 +30,7 @@ struct fsop_desc {
 			const char *value, size_t len, int flags);
 	int (*listxattr)(struct node *node, char *list, size_t len);
 
-	int (*truncate)(struct path *node, off_t length);
+	int (*truncate)(struct node *node, off_t length);
 	int (*umount)(void *dir_node);
 };
 

@@ -41,7 +41,7 @@ static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
 static int block_dev_cache_free(void *dev_id);
 
-static int bdev_open(struct path *node, struct file_desc *file_desc, int flags) {
+static int bdev_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;
 }
 

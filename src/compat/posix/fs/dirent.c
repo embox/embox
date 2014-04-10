@@ -84,6 +84,12 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 
+	{
+		struct path root, node;
+		vfs_get_root_path(&root);
+		vfs_lookup(&root, "passwd", &node);
+	}
+
 	if (0 == dir->current.d_ino) {
 		//XXX
 		if_mounted_follow_down(&dir->path);

@@ -85,7 +85,7 @@ int truncate(const char *path, off_t length) {
 		goto end;
 	}
 
-	res = ktruncate(&node, length);
+	res = ktruncate(node.node, length);
 	end:
 	DPRINTF(("truncate(%s, %d ...) = %d\n", path, length, res));
 	return res;

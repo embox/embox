@@ -28,14 +28,11 @@
 
 extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
 
-struct file_desc *kopen(struct path *node_path, int flag) {
-	struct node *node;
+struct file_desc *kopen(struct node *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
 	int ret;
-
-	node = node_path->node;
 
 	assert(node);
 	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
@@ -71,7 +68,7 @@ struct file_desc *kopen(struct path *node_path, int flag) {
 	}
 	desc->ops = ops;
 
-	if (0 > (ret = desc->ops->open(node_path, desc, flag))) {
+	if (0 > (ret = desc->ops->open(node, desc, flag))) {
 		goto free_out;
 	}
 

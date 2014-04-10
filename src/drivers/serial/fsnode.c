@@ -20,7 +20,7 @@
 
 #include <drivers/serial/fsnode.h>
 
-static int dev_uart_open(struct path *node, struct file_desc *file_desc,
+static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 	int flags);
 //static int dev_uart_close(struct file_desc *desc);
 //static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
@@ -45,8 +45,8 @@ int serial_register_devfs(struct uart *dev) {
 /*
  * file_operations
  */
-static int dev_uart_open(struct path *node, struct file_desc *desc, int flags) {
-	struct uart *uart_dev = uart_dev_lookup(node->node->name);
+static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
+	struct uart *uart_dev = uart_dev_lookup(node->name);
 
 	if (!uart_dev) {
 		return -ENOENT;
