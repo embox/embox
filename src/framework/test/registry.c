@@ -30,6 +30,11 @@ ARRAY_SPREAD_DEF(const struct test_suite *, __test_registry);
 
 static int test_mod_enable(const struct mod *mod) {
 	struct test_mod *test_mod = (struct test_mod *) mod;
+
+	if (!test_mod->suite.autorun) {
+		return 0;
+	}
+
 	return test_suite_run(&test_mod->suite);
 }
 

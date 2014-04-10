@@ -51,7 +51,7 @@ get_user_empty_guess AUTOQEMU_ARCH guess_arch
 guess_mem() { sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p' $LDS_CONF; }
 get_user_empty_guess AUTOQEMU_MEM guess_mem
 
-guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z_-]\)/\2/p' $MODS_CONF | head -n 1; }
+guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z_-]\)/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
 get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guess_kvm() {
