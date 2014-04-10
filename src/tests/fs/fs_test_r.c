@@ -62,14 +62,36 @@ TEST_CASE("Test readdir operations on fs") {
 	DIR *d;
 	int i;
 
+	bool ent_extra = false;
+	bool ent_seen[ARRAY_SIZE(fs_test_rd_dir_ents)];
+	memset(ent_seen, 0, sizeof(ent_seen));
+
 	d = opendir(fs_test_rd_dir);
 	test_assert_not_null(d);
 
-	for (i = 0; i < ARRAY_SIZE(fs_test_rd_dir_ents); i++) {
-		dent = readdir(d);
+	dent = readdir(d);
+	while (dent) {
 
-		test_assert_zero(strcmp(dent->d_name, fs_test_rd_dir_ents[i]));
+		for (i = 0; i < ARRAY_SIZE(fs_test_rd_dir_ents); i++) {
+			if (!strcmp(dent->d_name, fs_test_rd_dir_ents[i])) {
+				break;
+			}
+		}
+
+		if (i < ARRAY_SIZE(fs_test_rd_dir_ents)) {
+			ent_seen[i] = true;
+		} else {
+			ent_extra = true;
+		}
+
+		dent = readdir(d);
 	}
 
 	closedir(d);
+
+	for (i = 0; i < ARRAY_SIZE(fs_test_rd_dir_ents); i++) {
+		test_assert_equal(true, ent_seen[i]);
+	}
+
+	test_assert_equal(false, ent_extra);
 }
