@@ -597,10 +597,8 @@ static int flock_shared_get(flock_t *flock) {
 static int flock_shared_put(flock_t *flock) {
 	flock_shared_t *shlock;
 	struct thread *current = thread_self();
-	struct dlist_head *item, *next;
 
-	dlist_foreach(item, next, &flock->shlock_holders) {
-		shlock = dlist_entry(item, flock_shared_t, flock_link);
+	dlist_foreach_entry(shlock, &flock->shlock_holders, flock_link) {
 		if (current == shlock->holder) {
 			dlist_del(&shlock->flock_link);
 			pool_free(&flock_pool, shlock);

@@ -111,9 +111,9 @@ void uart_deregister(struct uart *uart) {
 }
 
 struct uart *uart_dev_lookup(const char *name) {
-	struct uart *uart, *nxt;
+	struct uart *uart;
 
-	dlist_foreach_entry(uart, nxt, &uart_list, lnk) {
+	dlist_foreach_entry(uart, &uart_list, lnk) {
 		if (!name || !strcmp(name, uart->dev_name)) {
 			return uart;
 		}

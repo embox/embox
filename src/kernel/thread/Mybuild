@@ -39,6 +39,7 @@ module starter {
 	@NoRuntime depends boot_thread
 	depends idle_thread
 	depends embox.kernel.time.jiffies
+	//depends thread_local
 }
 
 module boot_thread {
@@ -49,7 +50,7 @@ module boot_thread {
 module idle_thread {
 	source "idle_thread.c"
 	@NoRuntime depends core
-	//depends thread_local // FIXME
+	depends thread_local // FIXME
 	depends embox.kernel.cpu.common
 	@NoRuntime depends embox.kernel.task.kernel_task
 }
@@ -98,11 +99,12 @@ module thread_local_heap extends thread_local {
 	source "thread_local_heap.c"
 	source "thread_local_heap.h"
 
-	depends embox.mem.heap_api
+	depends embox.mem.sysmalloc_api
 
 	depends embox.kernel.task.resource.thread_key_table
 	depends embox.kernel.task.syslib.thread_key_table
 }
+
 @DefaultImpl(thread_cancel_disable)
 abstract module thread_cancel {}
 

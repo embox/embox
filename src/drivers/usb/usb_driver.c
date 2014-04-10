@@ -86,12 +86,12 @@ static int usb_driver_match_table(struct usb_dev *dev,
 }
 
 static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
-	struct usb_driver *drv, *drv_next;
+	struct usb_driver *drv;
 
 	dev->drv_data = NULL;
 	dev->drv = NULL;
 
-	dlist_foreach_entry(drv, drv_next, &usb_driver_list, drv_link) {
+	dlist_foreach_entry(drv, &usb_driver_list, drv_link) {
 		int res;
 
 		if (!usb_driver_match_table(dev, drv->id_table)) {

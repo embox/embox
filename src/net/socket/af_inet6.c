@@ -15,7 +15,6 @@
 #include <net/socket/inet6_sock.h>
 #include <net/inetdevice.h>
 #include <embox/net/family.h>
-#include <net/sock_port.h>
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
@@ -45,16 +44,13 @@ static int inet6_init(struct sock *sk) {
 	assert(sk);
 
 	in6_sk = to_inet6_sock(sk);
-	in6_sk->src_port_alloced = 0;
 	memset(&in6_sk->src_in6, 0, sizeof in6_sk->src_in6);
 	memset(&in6_sk->dst_in6, 0, sizeof in6_sk->dst_in6);
-	in6_sk->src_in6.sin6_family = in6_sk->dst_in6.sin6_family = AF_INET6;
+	in6_sk->src_in6.sin6_family = in6_sk->dst_in6.sin6_family = AF_UNSPEC;
 
-#if 0
-	in6_sk->sk.src_addr = &in6_sk->src_in6;
-	in6_sk->sk.dst_addr = &in6_sk->dst_in6;
+	in6_sk->sk.src_addr = (const struct sockaddr *)&in6_sk->src_in6;
+	in6_sk->sk.dst_addr = (const struct sockaddr *)&in6_sk->dst_in6;
 	in6_sk->sk.addr_len = sizeof(struct sockaddr_in6);
-#endif
 
 	return 0;
 }
@@ -64,11 +60,6 @@ static int inet6_close(struct sock *sk) {
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->close == NULL) {
-		if (to_inet6_sock(sk)->src_port_alloced) {
-			assert(to_inet6_sock(sk)->src_in6.sin6_family == AF_INET6);
-			sock_port_unlock(sk->p_ops->sock_port,
-					ntohs(to_inet6_sock(sk)->src_in6.sin6_port));
-		}
 		sock_release(sk);
 		return 0;
 	}
@@ -82,6 +73,27 @@ static void __inet6_bind(struct inet6_sock *in6_sk,
 	assert(addr_in6 != NULL);
 	assert(addr_in6->sin6_family == AF_INET6);
 	memcpy(&in6_sk->src_in6, addr_in6, sizeof *addr_in6);
+}
+
+static int inet6_addr_tester(const struct sockaddr *lhs_sa,
+		const struct sockaddr *rhs_sa) {
+	const struct sockaddr_in6 *lhs_in6, *rhs_in6;
+
+	assert(lhs_sa != NULL);
+	assert(rhs_sa != NULL);
+
+	lhs_in6 = (const struct sockaddr_in6 *)lhs_sa;
+	rhs_in6 = (const struct sockaddr_in6 *)rhs_sa;
+
+	assert(lhs_in6->sin6_family == AF_INET6);
+	return (lhs_in6->sin6_family == rhs_in6->sin6_family)
+			&& ((0 == memcmp(&lhs_in6->sin6_addr, &rhs_in6->sin6_addr,
+							sizeof lhs_in6->sin6_addr))
+					|| (0 == memcmp(&lhs_in6->sin6_addr, &in6addr_any,
+							sizeof lhs_in6->sin6_addr))
+					|| (0 == memcmp(&rhs_in6->sin6_addr, &in6addr_any,
+							sizeof rhs_in6->sin6_addr)))
+			&& (lhs_in6->sin6_port == rhs_in6->sin6_port);
 }
 
 static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
@@ -106,14 +118,9 @@ static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 		/* FIXME */
 		return -EADDRNOTAVAIL;
 	}
-
-	assert(sk->p_ops != NULL);
-	if (sk->p_ops->sock_port != NULL) {
-		if (!sock_port_lock(sk->p_ops->sock_port,
-					ntohs(addr_in6->sin6_port))) {
-			return -EADDRINUSE;
-		}
-		to_inet6_sock(sk)->src_port_alloced = 1;
+	else if (sock_addr_is_busy(sk->p_ops, inet6_addr_tester, addr,
+				addrlen)) {
+		return -EADDRINUSE;
 	}
 
 	__inet6_bind(to_inet6_sock(sk), addr_in6);
@@ -122,7 +129,6 @@ static int inet6_bind(struct sock *sk, const struct sockaddr *addr,
 }
 
 static int inet6_bind_local(struct sock *sk) {
-	size_t port;
 	struct sockaddr_in6 addr_in6;
 
 	assert(sk);
@@ -131,17 +137,10 @@ static int inet6_bind_local(struct sock *sk) {
 	memcpy(&addr_in6.sin6_addr, &in6addr_loopback,
 			sizeof addr_in6.sin6_addr);
 
-	assert(sk->p_ops != NULL);
-	if (sk->p_ops->sock_port != NULL) {
-		port = sock_port_alloc(sk->p_ops->sock_port);
-		if (port == SOCK_PORT_NONE_NONE) {
-			return -ENOMEM;
-		}
-		to_inet6_sock(sk)->src_port_alloced = 1;
-		addr_in6.sin6_port = htons(port);
-	}
-	else {
-		addr_in6.sin6_port = 0;
+	if (!sock_addr_alloc_port(sk->p_ops, &addr_in6.sin6_port,
+				inet6_addr_tester, (const struct sockaddr *)&addr_in6,
+				sizeof addr_in6)) {
+		return -ENOMEM;
 	}
 
 	__inet6_bind(to_inet6_sock(sk), &addr_in6);
@@ -353,7 +352,12 @@ static int inet6_getsockname(struct sock *sk,
 
 	addr_in6 = (struct sockaddr_in6 *)addr;
 	memcpy(addr_in6, &to_inet6_sock(sk)->src_in6, sizeof *addr_in6);
-	assert(addr_in6->sin6_family == AF_INET6);
+#if 0
+	assert((addr_in6->sin6_family == AF_UNSPEC)
+			|| (addr_in6->sin6_family == AF_INET6));
+#else
+	addr_in6->sin6_family = AF_INET6;
+#endif
 	*addrlen = sizeof *addr_in6;
 
 	return 0;
@@ -373,7 +377,12 @@ static int inet6_getpeername(struct sock *sk,
 
 	addr_in6 = (struct sockaddr_in6 *)addr;
 	memcpy(addr_in6, &to_inet6_sock(sk)->dst_in6, sizeof *addr_in6);
-	assert(addr_in6->sin6_family == AF_INET6);
+#if 0
+	assert((addr_in6->sin6_family == AF_UNSPEC)
+			|| (addr_in6->sin6_family == AF_INET6));
+#else
+	addr_in6->sin6_family = AF_INET6;
+#endif
 	*addrlen = sizeof *addr_in6;
 
 	return 0;

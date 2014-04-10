@@ -20,9 +20,9 @@ ARRAY_SPREAD_DEF(const struct web_service_desc, __web_services_repository);
 static DLIST_DEFINE(run_instances);
 
 struct web_service_instance *web_service_lookup(const char *srv_name) {
-	struct web_service_instance *inst, *tmp;
+	struct web_service_instance *inst;
 
-	dlist_foreach_entry(inst, tmp, &run_instances, lst) {
+	dlist_foreach_entry(inst, &run_instances, lst) {
 		if (0 == strcmp(srv_name, inst->desc->srv_name)) {
 			return inst;
 		}
@@ -64,9 +64,9 @@ int web_service_add(const char *srv_name) {
 }*/
 
 void web_service_remove_all() {
-	//struct web_service_instance *inst, *tmp;
+	//struct web_service_instance *inst;
 
-	/*dlist_foreach_entry(inst, tmp, &run_instances, lst)
+	/*dlist_foreach_entry(inst, &run_instances, lst)
 	{
 		web_service_remove(inst);
 	}*/

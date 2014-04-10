@@ -16,7 +16,6 @@
 
 #include <embox/net/sock.h>
 
-#include <framework/mod/options.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/lib/udp.h>
@@ -24,10 +23,7 @@
 #include <net/socket/inet_sock.h>
 #include <embox/net/pack.h>
 
-#include <util/indexator.h>
 #include <util/list.h>
-
-#define MODOPS_AMOUNT_UDP_PORT OPTION_GET(NUMBER, amount_udp_port)
 
 static const struct sock_proto_ops udp_sock_ops_struct;
 const struct sock_proto_ops *const udp_sock_ops
@@ -84,8 +80,6 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return sk->o_ops->snd_pack(skb);
 }
 
-INDEX_CLAMP_DEF(udp_sock_port, 0, MODOPS_AMOUNT_UDP_PORT,
-		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(udp_sock_list);
 
 static int udp_fillmsg(struct sock *sk, struct msghdr *msg,
@@ -105,6 +99,5 @@ static const struct sock_proto_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
 	.recvmsg   = sock_nonstream_recvmsg,
 	.fillmsg   = udp_fillmsg,
-	.sock_port = &udp_sock_port,
 	.sock_list = &udp_sock_list
 };
