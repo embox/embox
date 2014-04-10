@@ -52,13 +52,13 @@ default_run() {
 		['generic/qemu']="$RUN_QEMU"
 	)
 
-	[ -f $OUTPUT_FILE ] && rm -f $OUTPUT_FILE
+	[ -f $OUTPUT_FILE ] && sudo rm -f $OUTPUT_FILE
 
 	do_it sudo "AUTOQEMU_KVM_ARG=\"$AUTOQEMU_KVM_ARG\"" \
 		"AUTOQEMU_NOGRAPHIC_ARG=\"$AUTOQEMU_NOGRAPHIC_ARG\"" \
 		timeout $TIMEOUT "${atml2sim[$ATML]}"
 
-	cat $OUTPUT_FILE
+	sudo cat $OUTPUT_FILE
 
 	for fail_pattern in "fail" "assert"; do
 		grep "$fail_pattern" $OUTPUT_FILE &>/dev/null && exit 1
