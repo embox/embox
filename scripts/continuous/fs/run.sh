@@ -59,13 +59,13 @@ run_qemu_fs() {
 
 	echo $img_mount >> $START_SCRIPT
 	echo \"test -t fs_test_read\", >> $START_SCRIPT
-	if [ rw == $RW ]; then
+	if [ rw = $RW ]; then
 		echo \"test -t fs_test_write\", >> $START_SCRIPT
 	fi
 
 	echo \"umount /mnt/fs_test\", >> $START_SCRIPT
 
-	make &> /dev/null
+	make >/dev/null 2>/dev/null
 
 	img_run=
 	case $FS in
@@ -88,7 +88,7 @@ run_qemu_fs() {
 
 run_qemu_cleanup() {
 	if [ ! -z $qemu_changed_startscript ]; then
-		make &> /dev/null
+		make >/dev/null 2>/dev/null
 	fi
 }
 

@@ -36,7 +36,7 @@ build_dir() {
 		$SUDO mkdir -p $dst
 	fi
 
-	if [ nfs == $FS ]; then
+	if [ nfs = $FS ]; then
 		$SUDO chmod 777 $dst
 	fi
 
@@ -45,6 +45,8 @@ build_dir() {
 	for s in $srcs; do
 		$SUDO cp -aR $s/* $dst
 	done
+
+	find $dst -name .\* -exec rm -Rf {} +
 }
 
 build() {
