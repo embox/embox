@@ -46,7 +46,7 @@ static inline void *mm_to_segment(struct mm_segment *mm) {
 }
 
 static void *pointer_to_segment(void *ptr) {
-	struct mm_segment *mm, *mm_next;
+	struct mm_segment *mm;
 	void *segment;
 	struct dlist_head *task_mem_segments;
 	struct task *task = task_self();
@@ -55,7 +55,7 @@ static void *pointer_to_segment(void *ptr) {
 
 	task_mem_segments = &task_heap_get(task)->mm;
 
-	dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
+	dlist_foreach_entry(mm, task_mem_segments, link) {
 		segment = mm_to_segment(mm);
 		if (pointer_inside_segment(segment, mm->size, ptr)) {
 			return segment;
@@ -68,7 +68,7 @@ static void *pointer_to_segment(void *ptr) {
 void *memalign(size_t boundary, size_t size) {
 	extern struct page_allocator *__heap_pgallocator;
 	void *block;
-	struct mm_segment *mm, *mm_next;
+	struct mm_segment *mm;
 	size_t segment_pages_cnt, segment_bytes_cnt;
 	struct dlist_head *task_mem_segments;
 	struct task *task = task_self();
@@ -83,7 +83,7 @@ void *memalign(size_t boundary, size_t size) {
 	do {
 		assert(iter++ < 2, "%s\n", "memory allocation cyclic");
 
-		dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
+		dlist_foreach_entry(mm, task_mem_segments, link) {
 			block = bm_memalign(mm_to_segment(mm), boundary, size);
 			if (block != NULL) {
 				return block;
@@ -196,12 +196,12 @@ int heap_init(const struct task *task) {
 int heap_fini(const struct task *task) {
 	extern struct page_allocator *__heap_pgallocator;
 	struct task_heap *task_heap;
-	struct mm_segment *mm, *mm_next;
+	struct mm_segment *mm;
 	void *block;
 
 	task_heap = task_heap_get(task);
 
-	dlist_foreach_entry(mm, mm_next, &task_heap->mm, link) {
+	dlist_foreach_entry(mm, &task_heap->mm, link) {
 		block = mm;
 		page_free(__heap_pgallocator, block, mm->size / PAGE_SIZE());
 	}

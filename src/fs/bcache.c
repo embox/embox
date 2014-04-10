@@ -54,10 +54,10 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 }
 
 static void free_more_memory(size_t size) {
-	struct buffer_head *bh, *bhnext;
+	struct buffer_head *bh;
 
 	/* Free everything that we can free */
-	dlist_foreach_entry(bh, bhnext, &bh_list, bh_next) {
+	dlist_foreach_entry(bh, &bh_list, bh_next) {
 		if (buffer_locked(bh)) {
 			continue;
 		}

@@ -82,11 +82,13 @@
 
 /** &foo --> &foo.bar;  @a struct_ptr must not be null */
 #define mcast_in(struct_ptr, member) \
-		member_cast_in(struct_ptr, member)
+	member_cast_in(struct_ptr, member)
 #define member_cast_in(struct_ptr, member) \
 	(&__member_check_notnull(struct_ptr)->member)
 
 /** &foo --> &foo.bar; NULL --> NULL; */
+#define mcast_in_or_null(struct_ptr, member) \
+	member_cast_in_or_null(struct_ptr, member)
 #define member_cast_in_or_null(struct_ptr, member) \
 	({ \
 		typeof(struct_ptr) __member_expr__ = (struct_ptr); \
@@ -98,12 +100,14 @@
 
 /** &foo.bar --> &foo;  @a member_ptr must not be null */
 #define mcast_out(member_ptr, type, member) \
-		member_cast_out(member_ptr, type, member)
+	member_cast_out(member_ptr, type, member)
 #define member_cast_out(member_ptr, type, member) \
 	((type *) ((char *) __member_check_notnull(member_ptr) \
 			- offsetof(type, member)))
 
 /** &foo.bar --> &foo; NULL --> NULL; */
+#define mcast_out_or_null(member_ptr, type, member) \
+	member_cast_out_or_null(member_ptr, type, member)
 #define member_cast_out_or_null(member_ptr, type, member) \
 	({                                                                \
 		char *__member_expr__ = (char *) (member_ptr);            \

@@ -36,11 +36,9 @@ void mmap_free(struct emmap *mmap) {
 }
 
 void mmap_clear(struct emmap *mmap) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
-	dlist_foreach(item, next, &mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		dlist_del(&marea->mmap_link);
 		dlist_del(&marea->glob_link);
 
@@ -49,7 +47,6 @@ void mmap_clear(struct emmap *mmap) {
 }
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
 	start = MAREA_ALIGN_DOWN(start);
@@ -59,9 +56,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		return NULL;
 	}
 
-	dlist_foreach(item, next, &glob_list) {
-		marea = dlist_entry(item, struct marea, glob_link);
-
+	dlist_foreach_entry(marea, &glob_list, glob_link) {
 		if (INTERSECT(start, end, marea->start, marea->end)) {
 			return NULL;
 		}

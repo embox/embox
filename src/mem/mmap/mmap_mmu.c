@@ -70,11 +70,9 @@ void mmap_free(struct emmap *mmap) {
 }
 
 void mmap_clear(struct emmap *mmap) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
-	dlist_foreach(item, next, &mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		dlist_del(&marea->mmap_link);
 
 		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
@@ -85,7 +83,6 @@ void mmap_clear(struct emmap *mmap) {
 
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
 	start = MAREA_ALIGN_DOWN(start);
@@ -95,9 +92,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		return NULL;
 	}
 
-	dlist_foreach(item, next, &mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
-
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		if (INTERSECT(start, end, marea->start, marea->end)) {
 			return NULL;
 		}
@@ -157,12 +152,10 @@ void* mmap_create_heap(struct emmap *mmap) {
 }
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
-	struct dlist_head *item, *next;
 	struct marea *marea, *new_marea;
 	int res;
 
-	dlist_foreach(item, next, &p_mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
+	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
 		if (!(new_marea = build_marea(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}

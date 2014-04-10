@@ -104,13 +104,13 @@ int hashtable_put(struct hashtable *ht, void *key, void *value) {
 
 void *hashtable_get(struct hashtable *ht, void* key) {
 	size_t idx;
-	struct hashtable_element *htel, *tmp;
+	struct hashtable_element *htel;
 
 
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
-	dlist_foreach_entry(htel, tmp, &ht->table[idx].list, lnk) {
+	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			return htel->value;
 		}
@@ -121,12 +121,12 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 
 int hashtable_del(struct hashtable *ht, void *key) {
 	size_t idx;
-	struct hashtable_element *htel, *tmp;
+	struct hashtable_element *htel;
 
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
-	dlist_foreach_entry(htel, tmp, &ht->table[idx].list, lnk) {
+	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			dlist_del_init(&htel->lnk);
 			dlist_del_init(&htel->general_lnk);
@@ -140,12 +140,12 @@ int hashtable_del(struct hashtable *ht, void *key) {
 
 void hashtable_destroy(struct hashtable *ht) {
 	int i;
-	struct hashtable_element *htel, *tmp;
+	struct hashtable_element *htel;
 
 	assert(ht);
 
 	for(i = 0; i < ARRAY_SIZE(ht->table); i ++) {
-		dlist_foreach_entry(htel, tmp, &ht->table[i].list, lnk) {
+		dlist_foreach_entry(htel, &ht->table[i].list, lnk) {
 			objfree(&ht_elem_pool, htel);
 		}
 

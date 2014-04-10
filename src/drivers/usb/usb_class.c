@@ -123,9 +123,9 @@ int usb_class_register(struct usb_class *cls) {
 
 static struct usb_class *usb_class_find(struct usb_dev *dev) {
 	usb_class_t ucls = usb_dev_class(dev);
-	struct usb_class *cls, *cls_next;
+	struct usb_class *cls;
 
-	dlist_foreach_entry(cls, cls_next, &usb_classes, lnk) {
+	dlist_foreach_entry(cls, &usb_classes, lnk) {
 		if (cls->usb_class == ucls) {
 			return cls;
 		}

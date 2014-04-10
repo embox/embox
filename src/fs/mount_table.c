@@ -22,7 +22,7 @@ static DLIST_DEFINE(mount_filesystem_list);
 POOL_DEF(mount_desc_pool, struct mount_descriptor, 8);
 
 int mount_table_check(struct node *dir_node) {
-	struct mount_descriptor *desc, *tmp;
+	struct mount_descriptor *desc;
 	char full_path[PATH_MAX];
 	char dir_path[PATH_MAX];
 
@@ -34,7 +34,7 @@ int mount_table_check(struct node *dir_node) {
 		return -EINVAL; /* wrong directory name*/
 	}
 
-	dlist_foreach_entry(desc, tmp, &mount_filesystem_list, mount_link) {
+	dlist_foreach_entry(desc, &mount_filesystem_list, mount_link) {
 		if(0 != vfs_get_path_by_node(desc->dir_node, dir_path)) {
 			continue;
 		}
@@ -47,7 +47,7 @@ int mount_table_check(struct node *dir_node) {
 }
 
 struct mount_descriptor *mount_table_find(struct node *dir_node) {
-	struct mount_descriptor *desc, *tmp;
+	struct mount_descriptor *desc;
 	char full_path[PATH_MAX];
 	char dir_path[PATH_MAX];
 
@@ -59,7 +59,7 @@ struct mount_descriptor *mount_table_find(struct node *dir_node) {
 		return NULL; /* wrong directory name*/
 	}
 
-	dlist_foreach_entry(desc, tmp, &mount_filesystem_list, mount_link) {
+	dlist_foreach_entry(desc, &mount_filesystem_list, mount_link) {
 		if(0 != vfs_get_path_by_node(desc->dir_node, dir_path)) {
 			continue;
 		}
