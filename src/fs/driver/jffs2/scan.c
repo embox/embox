@@ -107,7 +107,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		}
 
 		D1(printk(KERN_DEBUG "Allocating readbuf of %d bytes\n", buf_size));
-		flashbuf = sysmalloc(buf_size, GFP_KERNEL);
+		flashbuf = sysmalloc(buf_size);
 		if (!flashbuf) {
 			return -ENOMEM;
 		}

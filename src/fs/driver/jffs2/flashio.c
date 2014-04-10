@@ -105,7 +105,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 					thislen = totvecsize;
 				}
 				totlen += thislen;
-				kfree(cbuf);
+				sysfree(cbuf);
 				goto writev_out;
 			} else {
 				/* otherwise optimize for the common case */
