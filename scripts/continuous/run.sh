@@ -52,23 +52,31 @@ default_run() {
 		['generic/qemu']="$RUN_QEMU"
 	)
 
-	[ -f $OUTPUT_FILE ] && sudo rm -f $OUTPUT_FILE
-
 	do_it sudo "AUTOQEMU_KVM_ARG=\"$AUTOQEMU_KVM_ARG\"" \
 		"AUTOQEMU_NOGRAPHIC_ARG=\"$AUTOQEMU_NOGRAPHIC_ARG\"" \
 		timeout $TIMEOUT "${atml2sim[$ATML]}"
 
-	sudo cat $OUTPUT_FILE
+	sudo chmod 666 $OUTPUT_FILE
 
-	for fail_pattern in "fail" "assert"; do
-		grep "$fail_pattern" $OUTPUT_FILE &>/dev/null && exit 1
-	done
+	cat $OUTPUT_FILE
+
+	ret=1
 
 	for success_pattern in '^embox>' '^[a-z]\+@embox'; do
-		grep "$success_pattern" $OUTPUT_FILE &>/dev/null && exit 0
+		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
+			ret=0
+		fi
 	done
 
-	exit 1
+	for fail_pattern in "fail" "assert"; do
+		if grep "$fail_pattern" $OUTPUT_FILE &>/dev/null ; then
+			ret=1
+		fi
+	done
+
+	rm -f $OUTPUT_FILE
+
+	exit $ret
 }
 
 if ! echo ${!atml2run[@]} | grep $ATML &>/dev/null; then
