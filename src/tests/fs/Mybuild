@@ -22,21 +22,12 @@ module xattr {
 	depends embox.compat.posix.fs.xattr
 }
 
-module file_test {
-	source "file_op_test.c"
+module fs_test_read {
+	source "fs_test_r.c"
+}
 
-	depends embox.driver.ramdisk
-	depends embox.fs.node, embox.fs.driver.repo
-	depends embox.fs.driver.devfs
-	depends embox.fs.filesystem
-	depends embox.mem.page_api
-	depends embox.mem.pool
-	depends embox.mem.phymem
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-	depends embox.lib.Tokenizer
-
-	depends embox.cmd.fs.mv
+module fs_test_write {
+	source "fs_test_w.c"
 }
 
 module InitFsTest {
