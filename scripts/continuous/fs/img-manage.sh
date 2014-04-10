@@ -86,7 +86,7 @@ check_dir() {
 	src=$1
 	dst=$2
 
-	diff -q -r $src $dst
+	diff -q -r --exclude=".*" $src $dst
 	ret=$?
 	return $ret
 }
