@@ -194,7 +194,7 @@ static void *ext4_extent_get_extents_in_block(struct nas *nas, uint32_t block) {
 	extents_len = eh.eh_entries * sizeof(struct ext4_extent)
 			+ sizeof(struct ext4_extent_header);
 
-	exts = malloc(extents_len);
+	exts = kmalloc(extents_len);
 
 	block_dev_read_buffered(nas->fs->bdev, exts, extents_len,
 			block * fsi->s_block_size);
@@ -234,7 +234,7 @@ static uint64_t ext4_extent_get_pblock(struct nas *nas, void *extents, uint32_t 
 		leaf_extents = ext4_extent_get_extents_in_block(nas,
 				recurse_ei->ei_leaf_lo);
 		ret = ext4_extent_get_pblock(nas, leaf_extents, lblock, len);
-		free(leaf_extents);
+		kfree(leaf_extents);
 	}
 
 	return ret;

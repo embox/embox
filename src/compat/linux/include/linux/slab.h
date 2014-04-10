@@ -13,10 +13,10 @@
 
 #include <asm/page.h> /* Don't ask. Linux headers are a mess. */
 
-#define kmalloc(x, y) malloc(x)
-#define kfree(x) free(x)
-#define vmalloc(x) malloc(x)
-#define vfree(x) free(x)
+#define kmalloc(x, y) kmalloc(x)
+#define kfree(x) kfree(x)
+#define vmalloc(x) kmalloc(x)
+#define vfree(x) kfree(x)
 
 #endif /* __LINUX_SLAB_H__ */
 

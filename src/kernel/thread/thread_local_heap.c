@@ -9,6 +9,7 @@
 #include <string.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
+#include <mem/kmalloc.h>
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/task/thread_key_table.h>
@@ -21,7 +22,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 	size_t storage_size;
 
 	storage_size = size * sizeof(t->local.storage[0]);
-	storage = malloc(storage_size);
+	storage = kmalloc(storage_size);
 
 	if (NULL == storage) {
 		return -ENOMEM;
@@ -35,7 +36,7 @@ int thread_local_alloc(struct thread *t, size_t size) {
 }
 
 int thread_local_free(struct thread *t) {
-	free(t->local.storage);
+	kfree(t->local.storage);
 
 	return ENOERR;
 }

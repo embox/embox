@@ -13,6 +13,7 @@
 
 #include <mem/mmap.h>
 #include <mem/vmem.h>
+#include <mem/kmalloc.h>
 
 #include <kernel/thread/types.h>
 
@@ -29,7 +30,7 @@ static int initialized = 0;
 static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t flags) {
 	struct marea *marea;
 
-	if (!(marea = malloc(sizeof(struct marea)))) {
+	if (!(marea = kmalloc(sizeof(struct marea)))) {
 		return NULL;
 	}
 

@@ -11,6 +11,7 @@
  */
 #include <stdlib.h>
 #include <mem/objalloc.h>
+#include <mem/kmalloc.h>
 #include <errno.h>
 
 #include <util/array.h>
@@ -65,7 +66,7 @@ struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_c
 		return NULL;
 	}
 
-	if (NULL ==	(ht->table = malloc(table_size * sizeof(struct hashtable_entry)))) {
+	if (NULL ==	(ht->table = kmalloc(table_size * sizeof(struct hashtable_entry)))) {
 		objfree(&ht_pool, ht);
 		return NULL;
 	}
@@ -150,7 +151,7 @@ void hashtable_destroy(struct hashtable *ht) {
 		}
 
 	}
-	free(ht->table);
+	kfree(ht->table);
 	objfree(&ht_pool, ht);
 }
 

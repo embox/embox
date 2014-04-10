@@ -11,6 +11,7 @@
 #include <drivers/virtio/virtio_ring.h>
 #include <drivers/virtio/virtio_queue.h>
 #include <errno.h>
+#include <mem/kmalloc.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,7 +30,7 @@ int virtqueue_create(struct virtqueue *vq, uint16_t q_id,
 	queue_sz = virtio_get_queue_size(base_addr);
 	ring_sz = vring_size(queue_sz);
 
-	ring_mem = memalign(VIRTIO_VRING_ALIGN, ring_sz);
+	ring_mem = kmemalign(VIRTIO_VRING_ALIGN, ring_sz);
 	if (ring_mem == NULL) {
 		return -ENOMEM;
 	}
@@ -52,7 +53,7 @@ void virtqueue_destroy(struct virtqueue *vq,
 	virtio_select_queue(vq->id, base_addr);
 	virtio_set_queue_addr(0, base_addr);
 
-	free(vq->ring_mem);
+	kfree(vq->ring_mem);
 }
 
 struct vring_desc * virtqueue_alloc_desc(struct virtqueue *vq) {
