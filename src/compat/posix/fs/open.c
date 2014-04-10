@@ -98,7 +98,7 @@ int open(const char *path, int __oflag, ...) {
 
 	__oflag &= ~(O_CREAT | O_EXCL);
 
-	kfile = kopen(node, __oflag);
+	kfile = kopen(node_path.node, __oflag);
 	if (NULL == kfile) {
 		rc = -1;
 		goto out;

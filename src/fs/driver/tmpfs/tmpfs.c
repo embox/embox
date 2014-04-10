@@ -102,7 +102,7 @@ static int tmp_ramdisk_fs_init(void) {
 EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 
-static int    tmpfs_open(struct path *node, struct file_desc *file_desc, int flags);
+static int    tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    tmpfs_close(struct file_desc *desc);
 static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -120,7 +120,7 @@ static struct kfile_operations tmpfs_fop = {
  * file_operation
  */
 
-static int tmpfs_open(struct path *node, struct file_desc *desc, int flags) {
+static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	tmpfs_file_info_t *fi;
 
@@ -399,7 +399,7 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_create(struct path *parent_node, struct path *node);
 static int tmpfs_delete(struct path *node);
-static int tmpfs_truncate(struct path *node, off_t length);
+static int tmpfs_truncate(struct node *node, off_t length);
 
 static struct fsop_desc tmpfs_fsop = {
 	.init = tmpfs_init,
@@ -490,8 +490,8 @@ static int tmpfs_delete(struct path *node) {
 	return 0;
 }
 
-static int tmpfs_truncate(struct path *node, off_t length) {
-	struct nas *nas = node->node->nas;
+static int tmpfs_truncate(struct node *node, off_t length) {
+	struct nas *nas = node->nas;
 
 	if (length > MAX_FILE_SIZE * PAGE_SIZE()) {
 		return -EFBIG;
