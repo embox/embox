@@ -19,6 +19,48 @@
 
 #define ROOT_MODE 0755
 
+static struct node *__vfs_get_parent(struct node *child) {
+	return tree_element(child->tree_link.par, struct node, tree_link);
+}
+
+int vfs_get_relative_path(struct node *node, char *path) {
+	struct node *prev = NULL;
+	char *p;
+	size_t ll = PATH_MAX - 1;
+
+	if (PATH_MAX <= 0) {
+		return -ERANGE;
+	}
+
+	p = path + ll;
+	*p = '\0';
+
+	while (node != prev && node != NULL) {
+		size_t nnlen;
+
+		nnlen = strlen(node->name);
+
+		if (nnlen + 1 > ll) {
+			return -ERANGE;
+		}
+
+		p = strncpy(p - nnlen, node->name, nnlen);
+		*--p = '/';
+		ll -= nnlen + 1;
+
+		prev = node;
+		node = __vfs_get_parent(node);
+	}
+
+	memmove(path, p, PATH_MAX - ll);
+
+	if (node != prev) {
+		return 1;
+	}
+
+	return 0;
+}
+
 int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 		size_t plen) {
 	char *p;
@@ -246,14 +288,9 @@ void vfs_get_child_next(struct path *parent_path, struct path *child_next) {
 }
 
 void vfs_get_parent(struct path *child_path, struct path *parent_path) {
-	struct tree_link *tlink;
-
 	*parent_path = *child_path;
 	if_root_follow_up(parent_path);
-
-	tlink = &parent_path->node->tree_link;
-
-	parent_path->node = tree_element(tlink->par, struct node, tree_link);
+	parent_path->node = __vfs_get_parent(parent_path->node);
 }
 
 node_t *vfs_get_leaf(void) {

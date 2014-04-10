@@ -368,8 +368,7 @@ int ext2_open(struct nas *nas) {
 	fsi = nas->fs->fsi;
 
 	/* prepare full path into this filesystem */
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path);
 
 	/* alloc a block sized buffer used for all transfers */
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {

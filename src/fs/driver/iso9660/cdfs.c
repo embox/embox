@@ -802,9 +802,7 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	fi->flags = flags;
 
-	vfs_get_path_by_node(node, path);
-	/* set relative path in this file system */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
+	vfs_get_relative_path(node, path);
 
 	if(0 == cdfs_open(node->nas, path)) {
 		return 0;

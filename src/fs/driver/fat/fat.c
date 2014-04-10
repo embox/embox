@@ -1018,10 +1018,7 @@ static int fat_create_file(struct path * parent_node, struct path *node) {
 	fi->volinfo = volinfo;
 
 	/* Get a local copy of the path. */
-	vfs_get_path_by_node(node, tmppath);
-
-	/* set relative path in this file system */
-	path_cut_mount_dir(tmppath, (char *) fsi->mntto);
+	vfs_get_relative_path(node, tmppath);
 
 	fat_get_filename(tmppath, (char *) filename);
 
@@ -1866,8 +1863,7 @@ static int fat_create_dir_entry(struct path *parent_path) {
 
 	/* set relative path in this file system */
 	fsi = parent_nas->fs->fsi;
-	vfs_get_path_by_node(parent_path, full_path);
-	path_cut_mount_dir(full_path, (char *) fsi->mntto);
+	vfs_get_relative_path(parent_path, full_path);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
 		rc = -ENODEV;
@@ -1983,9 +1979,7 @@ static int fatfs_open(struct path *nod, struct file_desc *desc,  int flag) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node (nod, (char *) path);
-	/* set relative path in this file system */
-	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
+	vfs_get_relative_path(nod, (char *) path);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -2312,13 +2306,8 @@ static int fatfs_delete(struct node *node) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node(node, path);
+	vfs_get_relative_path(node, path);
 
-	/*
-	 * remove the root name to give a name to fat file system name
-	 * and set relative path in this file system
-	 */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
 	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fsi);

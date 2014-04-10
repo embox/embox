@@ -1404,8 +1404,7 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	nas->fi->ni.size = fi->_inode->i_size;
 
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path);
 
 	return jffs2_open(fsi->jffs2_sb.s_root, path, flags);
 }
