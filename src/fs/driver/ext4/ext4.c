@@ -34,6 +34,7 @@
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 
+#include <mem/kmalloc.h>
 
 
 /*
