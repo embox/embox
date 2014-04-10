@@ -31,7 +31,7 @@ static void print_usage(void) {
 }
 
 static void lookup_mounts(struct mount_descriptor *parent) {
-	struct mount_descriptor *desc_next, *desc;
+	struct mount_descriptor *desc;
 	char mount_path[PATH_MAX];
 	struct path path;
 
@@ -41,7 +41,7 @@ static void lookup_mounts(struct mount_descriptor *parent) {
 	vfs_get_path_by_node(&path, mount_path);
 	printf("%s path\n", mount_path);
 
-	dlist_foreach_entry(desc, desc_next, &parent->mnt_mounts, mnt_child) {
+	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
 		lookup_mounts(desc);
 	}
 }

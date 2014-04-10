@@ -23,14 +23,14 @@ POOL_DEF(mount_desc_pool, struct mount_descriptor, 16);
 static struct mount_descriptor *mnt_root = NULL;
 
 struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point) {
-	struct mount_descriptor *desc_next, *desc;
+	struct mount_descriptor *desc;
 
 	if (parent->mnt_point == mnt_point ) {
 		assert(parent->mnt_parent == parent);
 		return parent;
 	}
 
-	dlist_foreach_entry(desc, desc_next, &parent->mnt_mounts, mnt_child) {
+	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
 		if (desc->mnt_point == mnt_point) {
 			return desc;
 		}
