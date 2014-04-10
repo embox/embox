@@ -36,10 +36,6 @@ build_dir() {
 		$SUDO mkdir -p $dst
 	fi
 
-	if [ nfs = $FS ]; then
-		$SUDO chmod 777 $dst
-	fi
-
 	$SUDO rm -R $dst/*
 
 	for s in $srcs; do
@@ -47,6 +43,11 @@ build_dir() {
 	done
 
 	find $dst -name .\* -exec rm -Rf {} +
+
+	# Only nfs deals with real uids, bypassing possible 'acess denied's
+	if [ nfs = $FS ]; then
+		$SUDO chmod -R 777 $dst
+	fi
 }
 
 build() {
