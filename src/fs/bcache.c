@@ -9,7 +9,7 @@
 #include <fs/bcache.h>
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 #include <stdlib.h>
 #include <util/hashtable.h>
 #include <string.h>
@@ -82,7 +82,7 @@ static void free_more_memory(size_t size) {
 		}
 		bcache_buffer_unlock(bh);
 
-		kfree(bh->data);
+		sysfree(bh->data);
 		pool_free(&buffer_head_pool, bh);
 	}
 }
@@ -104,7 +104,7 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	bh->bdev = bdev;
 	bh->block = block;
 	bh->blocksize = size;
-	bh->data = kmalloc(size); /* TODO kmalloc */
+	bh->data = sysmalloc(size); /* TODO kmalloc */
 
 	if (!bh->data) {
 		pool_free(&buffer_head_pool, bh);
@@ -112,7 +112,7 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	}
 
 	if (0 > hashtable_put(bcache, bh, bh)) {
-		kfree(bh->data);
+		sysfree(bh->data);
 		pool_free(&buffer_head_pool, bh);
 		return -1;
 	}

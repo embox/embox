@@ -42,7 +42,7 @@ static module pipe {
 	option number pipe_buffer_size=1024
 	option number max_pipe_buffer_size=1024
 
-	depends embox.mem.kmalloc_api
+	depends embox.mem.sysmalloc_api
 
 	depends embox.fs.idesc_event
 	depends embox.kernel.task.api

@@ -33,7 +33,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
@@ -100,7 +100,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 			}
 			jffs2_clear_inode(this);
 			memset(this, 0x5a, sizeof(*this));
-			kfree(this);
+			sysfree(this);
 			if (parent && parent != this) {
 				parent->i_count--;
 				this = root_i;
@@ -318,7 +318,7 @@ static int jffs2_read_super(struct super_block *sb) {
     out_nodes:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
-	kfree(c->blocks);
+	sysfree(c->blocks);
 
 	return err;
 }
@@ -343,7 +343,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 
 	jffs2_sb->bdev = dir_nas->fs->bdev;
 
-	c->inocache_list = kmalloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
+	c->inocache_list = sysmalloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
 	if (!c->inocache_list) {
 		return ENOMEM;
 	}
@@ -365,7 +365,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 			jffs2_compressors_exit();
 		}
 
-		kfree(c->inocache_list);
+		sysfree(c->inocache_list);
 		return err;
 	}
 
@@ -443,13 +443,13 @@ static int jffs2_umount(struct nas *dir_nas) {
 			jffs2_free_full_dirent(fd);
 		}
 
-		kfree(root);
+		sysfree(root);
 
 		/* Clean up the super block and root inode */
 		jffs2_free_ino_caches(c);
 		jffs2_free_raw_node_refs(c);
-		kfree(c->blocks);
-		kfree(c->inocache_list);
+		sysfree(c->blocks);
+		sysfree(c->inocache_list);
 
 		D2(printf("jffs2_umount No current mounts\n"));
 	} else {
@@ -987,7 +987,7 @@ static struct _inode *new_inode(struct super_block *sb) {
 	struct _inode *inode;
 	struct _inode *cached_inode;
 
-	inode = kmalloc(sizeof (struct _inode));
+	inode = sysmalloc(sizeof (struct _inode));
 	if (inode == NULL) {
 		return 0;
 	}
@@ -1100,7 +1100,7 @@ void jffs2_iput(struct _inode *i) {
 		parent = i->i_parent;
 		jffs2_clear_inode(i);
 		memset(i, 0x5a, sizeof(*i));
-		kfree(i);
+		sysfree(i);
 
 		if (parent && parent != i) {
 			i = parent;
@@ -1178,7 +1178,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i,
 		up(&(f->sem));
 		jffs2_clear_inode(inode);
 		memset(inode, 0x6a, sizeof(*inode));
-		kfree(inode);
+		sysfree(inode);
 		return ERR_PTR(ret);
 	}
 	inode->i_nlink = 1;

@@ -38,7 +38,7 @@
 #include <util/array.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 
 #include <fs/fs_driver.h>
 #include <fs/node.h>
@@ -748,7 +748,7 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size_t size;
 	int error;
 
-	bpb = kmalloc(SEC_SIZE);
+	bpb = sysmalloc(SEC_SIZE);
 	if (bpb == NULL) {
 		return ENOMEM;
 	}
@@ -757,12 +757,12 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size = SEC_SIZE;
 	error = device_read(fmp->dev, bpb, &size, 0);
 	if (error) {
-		kfree(bpb);
+		sysfree(bpb);
 		return error;
 	}
 	if (bpb->bytes_per_sector != SEC_SIZE) {
 		DPRINTF(("fatfs: invalid sector size\n"));
-		kfree(bpb);
+		sysfree(bpb);
 		return EINVAL;
 	}
 
@@ -789,10 +789,10 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	} else {
 		/* FAT32 is not supported now! */
 		DPRINTF(("fatfs: invalid FAT type\n"));
-		kfree(bpb);
+		sysfree(bpb);
 		return EINVAL;
 	}
-	kfree(bpb);
+	sysfree(bpb);
 
 	DPRINTF(("----- FAT info -----\n"));
 	DPRINTF(("drive:%x\n", (int)bpb->physical_drive));
@@ -815,7 +815,7 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 
 	DPRINTF(("fatfs_mount device=%s\n", dev));
 
-	fmp = kmalloc(sizeof(struct fatfsmount));
+	fmp = sysmalloc(sizeof(struct fatfsmount));
 	if (fmp == NULL) {
 		return ENOMEM;
 	}
@@ -826,17 +826,17 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	}
 
 	error = ENOMEM;
-	fmp->io_buf = kmalloc(fmp->sec_per_cl * SEC_SIZE);
+	fmp->io_buf = sysmalloc(fmp->sec_per_cl * SEC_SIZE);
 	if (fmp->io_buf == NULL) {
 		goto err1;
 	}
 
-	fmp->fat_buf = kmalloc(SEC_SIZE * 2);
+	fmp->fat_buf = sysmalloc(SEC_SIZE * 2);
 	if (fmp->fat_buf == NULL) {
 		goto err2;
 	}
 
-	fmp->dir_buf = kmalloc(SEC_SIZE);
+	fmp->dir_buf = sysmalloc(SEC_SIZE);
 	if (fmp->dir_buf == NULL) {
 		goto err3;
 	}
@@ -847,11 +847,11 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	vp->v_blkno = CL_ROOT;
 	return 0;
  err3:
-	kfree(fmp->fat_buf);
+	sysfree(fmp->fat_buf);
  err2:
-	kfree(fmp->io_buf);
+	sysfree(fmp->io_buf);
  err1:
-	kfree(fmp);
+	sysfree(fmp);
 	return error;
 }
 
@@ -862,11 +862,11 @@ static int fat_unmount(mount_t mp) {
 	struct fatfsmount *fmp;
 
 	fmp = mp->m_data;
-	kfree(fmp->dir_buf);
-	kfree(fmp->fat_buf);
-	kfree(fmp->io_buf);
+	sysfree(fmp->dir_buf);
+	sysfree(fmp->fat_buf);
+	sysfree(fmp->io_buf);
 	mutex_destroy(&fmp->lock);
-	kfree(fmp);
+	sysfree(fmp);
 	return 0;
 }
 
@@ -876,7 +876,7 @@ static int fat_unmount(mount_t mp) {
 static int fat_vget(mount_t mp, vnode_t vp) {
 	struct fatfs_node *np;
 
-	np = kmalloc(sizeof(struct fatfs_node));
+	np = sysmalloc(sizeof(struct fatfs_node));
 	if (np == NULL) {
 		return ENOMEM;
 	}

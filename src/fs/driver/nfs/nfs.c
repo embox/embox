@@ -26,7 +26,7 @@
 #include <limits.h>
 
 #include <mem/misc/pool.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/xdr.h>
 
@@ -503,7 +503,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
 
-	if (NULL == (rcv_buf = kmalloc(MAXDIRCOUNT * 2))) {
+	if (NULL == (rcv_buf = sysmalloc(MAXDIRCOUNT * 2))) {
 		return -1;
 	}
 
@@ -513,7 +513,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 
 		if (0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
-			kfree(rcv_buf);
+			sysfree(rcv_buf);
 			return -1;
 		}
 
@@ -521,7 +521,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 		/* check status */
 		vf = *(__u32 *)point;
 		if (STATUS_OK != vf) {
-			kfree(rcv_buf);
+			sysfree(rcv_buf);
 			return -1;
 		}
 		point += sizeof(vf);
@@ -549,7 +549,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			if(0 == path_is_dotname(predesc->file_name.name.data,
 									predesc->file_name.name.len)) {
 				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
-					kfree(rcv_buf);
+					sysfree(rcv_buf);
 					return -1;
 				}
 
@@ -567,7 +567,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			break;
 		}
 	}
-	kfree(rcv_buf);
+	sysfree(rcv_buf);
 	return 0;
 }
 

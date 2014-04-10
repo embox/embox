@@ -12,11 +12,12 @@
 #include <stdlib.h>
 
 #include <asm/page.h> /* Don't ask. Linux headers are a mess. */
+#include <mem/sysmalloc.h>
 
-#define kmalloc(x, y) kmalloc(x)
-#define kfree(x) kfree(x)
-#define vmalloc(x) kmalloc(x)
-#define vfree(x) kfree(x)
+#define kmalloc(x, y) sysmalloc(x)
+#define kfree(x) sysfree(x)
+#define vmalloc(x) sysmalloc(x)
+#define vfree(x) sysfree(x)
 
 #endif /* __LINUX_SLAB_H__ */
 

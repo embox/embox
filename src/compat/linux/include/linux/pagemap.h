@@ -11,7 +11,7 @@
 
 #include <asm/bug.h>
 #include <asm/page.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 
 #define PAGE_CACHE_SHIFT        PAGE_SHIFT
 #define PAGE_CACHE_SIZE         PAGE_SIZE()

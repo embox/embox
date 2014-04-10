@@ -14,7 +14,7 @@
 #include <mem/page.h>
 #include <mem/phymem.h>
 #include <mem/mmap.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -63,7 +63,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		}
 	}
 
-	if (!(marea = kmalloc(sizeof(struct marea)))) {
+	if (!(marea = sysmalloc(sizeof(struct marea)))) {
 		return NULL;
 	}
 

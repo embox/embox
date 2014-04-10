@@ -99,7 +99,7 @@ module thread_local_heap extends thread_local {
 	source "thread_local_heap.c"
 	source "thread_local_heap.h"
 
-	depends embox.mem.kmalloc_api
+	depends embox.mem.sysmalloc_api
 
 	depends embox.kernel.task.resource.thread_key_table
 	depends embox.kernel.task.syslib.thread_key_table

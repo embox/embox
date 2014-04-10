@@ -16,7 +16,7 @@
 #include "nodelist.h"
 
 #include <drivers/flash/flash.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 
 bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
@@ -86,7 +86,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				/* pad up in case unaligned */
 				sizetomalloc = totvecsize + sizeof (int) - 1;
 				sizetomalloc &= ~(sizeof (int) - 1);
-				cbuf = (char *) kmalloc(sizetomalloc);
+				cbuf = (char *) sysmalloc(sizetomalloc);
 				/* kmalloc returns aligned memory */
 				if (!cbuf) {
 					ret = -ENOMEM;

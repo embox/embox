@@ -12,7 +12,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <mem/misc/slab.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 #include <fs/journal.h>
 #include <fs/bcache.h>
 
@@ -228,7 +228,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     }
 
     /* TODO use kmalloc instead */
-    if (!(jb->data = kmalloc(jp->j_blocksize))) {
+    if (!(jb->data = sysmalloc(jp->j_blocksize))) {
     	cache_free(&journal_block_cache, jb);
 		return NULL;
     }
@@ -241,7 +241,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
 void journal_free_block(journal_t *jp, journal_block_t *jb) {
 	assert(jp && jb);
 
-	kfree(jb->data);
+	sysfree(jb->data);
 	cache_free(&journal_block_cache, jb);
 }
 

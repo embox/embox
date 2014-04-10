@@ -60,7 +60,7 @@
 
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
-#include <mem/kmalloc.h>
+#include <mem/sysmalloc.h>
 #include <arpa/inet.h>
 
 #include <kernel/time/ktime.h>
@@ -149,7 +149,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 	/* Determine size and location of path table and allocate buffer */
 	ptlen = cdfs_isonum_733(vd->path_table_size);
 	ptblk = cdfs_isonum_731(vd->type_l_path_table);
-	cdfs->path_table_buffer = kmalloc(ptlen);
+	cdfs->path_table_buffer = sysmalloc(ptlen);
 	if (!cdfs->path_table_buffer) {
 		return -ENOMEM;
 	}
@@ -195,7 +195,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 
 	/* Allocate path table */
 	cdfs->path_table = (iso_pathtable_record_t **)
-							kmalloc(cdfs->path_table_records *
+							sysmalloc(cdfs->path_table_records *
 							sizeof(iso_pathtable_record_t **));
 	if (!cdfs->path_table) {
 		return -ENOMEM;
@@ -419,7 +419,7 @@ int cdfs_mount(struct nas *root_nas)
 	}
 
 	/* Allocate file system */
-	cdfs = (cdfs_t *) kmalloc(sizeof(cdfs_t));
+	cdfs = (cdfs_t *) sysmalloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
 	cdfs->bdev = root_nas->fs->bdev;
 	cdfs->blks =
@@ -449,7 +449,7 @@ int cdfs_mount(struct nas *root_nas)
 		if (memcmp(vd->id, "CD001", 5) != 0) {
 			/*free_buffer_pool(cdfs->cache); */
 			//block_dev_close(cdfs->bdev);
-			kfree(cdfs);
+			sysfree(cdfs);
 			return -EIO;
 		}
 
@@ -502,12 +502,12 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
-		kfree(cdfs->path_table_buffer);
+		sysfree(cdfs->path_table_buffer);
 	}
 	if (cdfs->path_table) {
-		kfree(cdfs->path_table);
+		sysfree(cdfs->path_table);
 	}
-	kfree(cdfs);
+	sysfree(cdfs);
 
 	return 0;
 }
@@ -674,7 +674,7 @@ static int cdfs_opendir(struct nas *nas, char *name) {
 	}
 
 	// Allocate and initialize file block
-	cdfile = (cdfs_file_t *) kmalloc(sizeof(cdfs_file_t));
+	cdfile = (cdfs_file_t *) sysmalloc(sizeof(cdfs_file_t));
 	if (!cdfile) {
 		return -ENOMEM;
 	}
