@@ -256,7 +256,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		}
 	}
 
-	ret = 0;
+	ret = cnt_req - cnt_rep;
 out:
 	free(tx_pack);
 	free(rx_pack);
