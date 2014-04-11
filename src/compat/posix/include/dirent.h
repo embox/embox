@@ -20,12 +20,11 @@ struct dirent {
 };
 
 struct node;
-struct directory {
+typedef struct {
 	struct dirent current;
 	struct node *node;
 	//struct tree_link *child_lnk;
-};
-typedef struct directory DIR;
+} DIR;
 
 
 extern int            closedir(DIR *);

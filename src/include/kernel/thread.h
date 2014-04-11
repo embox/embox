@@ -16,6 +16,7 @@
 #define KERNEL_THREAD_API_H_
 
 #include <kernel/thread/types.h>
+#include <kernel/thread/thread_flags.h>
 #include <kernel/thread/current.h>
 
 
@@ -30,23 +31,6 @@ struct thread;
  * system.
  */
 typedef __thread_id_t thread_id_t;
-
-
-#define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
-
-
-/** Create thread with parent priority */
-#define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 2)
-/** Create thread with decremented priority */
-#define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 3)
-/** Create thread with incremented priority */
-#define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 4)
-
-/**< Create a new thread without launching */
-#define THREAD_FLAG_SUSPENDED        (0x1 << 5)
-/** Create a new thread without attaching to a task. */
-#define THREAD_FLAG_NOTASK           (0x1 << 6)
-
 
 /**
  * Obtains a pointer to the calling thread.

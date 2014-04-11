@@ -1,5 +1,6 @@
 package mybuild.lang
 
 annotation Build {
+	number stage
 	string script
 }

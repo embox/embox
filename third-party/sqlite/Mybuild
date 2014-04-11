@@ -1,15 +1,7 @@
-package third_party.sqlite
+package third_party.cmd
 
-static module core {
-	depends embox.lib.LibC
-	depends embox.arch.x86.LibM // FIXME:
-
-	source "empty.c" // FIXME: workaround
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/sqlite MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../sqlite/lib/libsqlite3.a"
-}
-
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
 @Cmd(name = "sqlite3",
 	help = "SQLite3 shell",
 	man = '''
@@ -21,11 +13,20 @@ static module core {
 			fsulima - Adaptation for Embox
 	''')
 module sqlite3 {
-	depends core
-	depends embox.framework.LibFramework
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.sqlite3.o"
 
-	@Rule(script="true")
-	source "../../../../sqlite/src/sqlite-build/shell.o"
-	source "shell_cmd.c"
-	source "order.mk"
+	@NoRuntime depends sqlite3_stubs
+	@NoRuntime depends embox.framework.cmd
+	@NoRuntime depends embox.lib.readline_api
+}
+
+module sqlite3_stubs {
+	@IncludePathBefore("$(THIRDPARTY_DIR)/sqlite/include")
+	source "stubs.c"
+
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.lib.Printk
 }

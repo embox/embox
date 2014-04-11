@@ -22,6 +22,7 @@ static inline struct group *getgrnam(const char *name) {
 	return NULL;
 }
 
+extern struct group * getgrgid(gid_t gid);
 extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
 extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
 

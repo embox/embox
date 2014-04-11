@@ -9,9 +9,7 @@ ExternalProject_Add(
    #URL_MD5 028115c4fbfb6cfd75d6369f4a90d87e
    UPDATE_COMMAND ""
    PATCH_COMMAND
-      cd $ENV{EMBOX_ROOT}/third-party/gcc/tree
-      && bash -c "cp -l -u -f --parents -t <SOURCE_DIR>/ `find . -not -path '*/.*' -and -type f`"
-      && patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/gcc/patch.txt
+      patch -p1 -d <SOURCE_DIR> -N --input=$ENV{EMBOX_ROOT}/third-party/gcc/patch.txt
       #&& cd <SOURCE_DIR> && autoconf && aclocal && automake
    LOG_CONFIGURE 1
    CONFIGURE_COMMAND

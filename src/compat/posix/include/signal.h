@@ -141,10 +141,10 @@ extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
 
 extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
-static inline int raise(int signo) {
-	(void)signo;
-	return 0;
-}
+//static inline int raise(int signo) {
+//	(void)signo;
+//	return 0;
+//}
 
 //static inline int sigaction(int sig, const struct sigaction *act,
 		//struct sigaction *oact) { return -1; }
