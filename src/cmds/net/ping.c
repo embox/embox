@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <netdb.h>
 
+#include <util/math.h>
 #include <net/l3/route.h>
 #include <net/l3/icmpv4.h>
 #include <net/l3/ipv4/ip.h>
@@ -79,26 +80,41 @@ struct packet_out {
 	char data[MAX_PADLEN];
 } __attribute__((packed));
 
+struct ping_stat {
+	int cnt_request;
+	int cnt_replies;
+	int cnt_errors;
+
+	clock_t ping_started;
+};
+
 static void print_usage(void) {
 	printf("Usage: ping [-c count] [-i interval]\n"
 		"            [-p pattern] [-s packetsize] [-t ttl]\n"
 		"            [-I interface] [-W timeout] destination\n");
 }
 
-static int parse_result(struct packet_in *rx_pack,
+static void ping_report_stat(struct ping_info *pinfo, struct ping_stat *stat) {
+	/* output statistics */
+	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
+	printf("%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %jums\n",
+			stat->cnt_request, stat->cnt_replies, stat->cnt_errors,
+			(stat->cnt_request - stat->cnt_replies) * 100 / stat->cnt_request,
+			(uintmax_t)(clock() - stat->ping_started));
+}
+
+static void parse_result(struct packet_in *rx_pack,
 		struct packet_out *tx_pack, char *name,
-		struct sockaddr_in *to, uint16_t *last_seq,
-		uint32_t started, uint32_t interval) {
-	uint32_t elapsed;
+		struct sockaddr_in *to, uint16_t seq,
+		clock_t started, struct ping_stat *stat) {
+	clock_t elapsed;
 	char *dst_addr_str;
-	int res;
 	struct iphdr *emb_iph;
 	struct icmphdr *emb_icmph;
 
-	res = -1;
 	switch (rx_pack->icmp.hdr.type) {
 	case ICMP_ECHO_REPLY:
-	    if ((to->sin_addr.s_addr != rx_pack->ip.hdr.saddr)
+		if ((to->sin_addr.s_addr != rx_pack->ip.hdr.saddr)
 				|| (tx_pack->icmp.body.echo_req.id
 					!= rx_pack->icmp.body.echo_rep.id)
 				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
@@ -106,27 +122,25 @@ static int parse_result(struct packet_in *rx_pack,
 			break;
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
-		*last_seq = ntohs(rx_pack->icmp.body.echo_rep.seq);
 		printf("%u bytes from %s (%s): icmp_seq=%u ttl=%d ",
 				(uint16_t)(ntohs(rx_pack->ip.hdr.tot_len)
 					- (IP_HEADER_SIZE(&rx_pack->ip.hdr)
 						+ ICMP_MIN_HEADER_SIZE)),
-				name, dst_addr_str, *last_seq,
-				rx_pack->ip.hdr.ttl);
-		elapsed = clock() - (started + (*last_seq - 1) * interval);
+				name, dst_addr_str, seq, rx_pack->ip.hdr.ttl);
+		elapsed = clock() - started;
 		if (elapsed < 1) {
 			printf("time<1 ms\n");
 		}
 		else {
-			printf("time=%d ms\n", elapsed);
+			printf("time=%lu ms\n", elapsed);
 		}
-		res = 1;
+		stat->cnt_replies++;
 		break;
 	case ICMP_DEST_UNREACH:
 		emb_iph = (struct iphdr *)&rx_pack->icmp.body.dest_unreach.msg[0];
 		emb_icmph = (struct icmphdr *)((void *)emb_iph
 					+ IP_HEADER_SIZE(emb_iph));
-	    if ((to->sin_addr.s_addr != emb_iph->daddr)
+		if ((to->sin_addr.s_addr != emb_iph->daddr)
 				|| (tx_pack->icmp.body.echo_req.id
 					!= emb_icmph->body[0].echo.id)
 				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
@@ -134,9 +148,8 @@ static int parse_result(struct packet_in *rx_pack,
 			break;
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
-		*last_seq = ntohs(emb_icmph->body[0].echo.seq);
 		printf("From %s icmp_seq=%u %s\n",
-				dst_addr_str, *last_seq,
+				dst_addr_str, seq,
 				rx_pack->icmp.hdr.code == ICMP_NET_UNREACH
 						? "Destination Network Unreachable"
 					: rx_pack->icmp.hdr.code == ICMP_HOST_UNREACH
@@ -146,37 +159,31 @@ static int parse_result(struct packet_in *rx_pack,
 					: rx_pack->icmp.hdr.code == ICMP_PORT_UNREACH
 						? "Destination Port Unreachable"
 					: "unknown icmp_code");
-		res = 0;
+		stat->cnt_errors++;
 		break;
 	default:
 		printf("ping: ignore icmp_type=%d icmp_code=%d\n",
 				rx_pack->icmp.hdr.type, rx_pack->icmp.hdr.code);
-	case ICMP_ECHO_REQUEST:
-		*last_seq = -1;
-		break;
 	}
-
-	return res;
 }
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
-	clock_t started;
-	int cnt_req, cnt_rep, cnt_err, sk, ret;
 	struct sockaddr_in to;
+	struct ping_stat stat;
 	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
 	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
-	uint16_t next_seq, last_seq;
+	clock_t started;
+	int sk, ret;
+	uint16_t seq;
 	int timeout;
 	struct pollfd fds;
 
 	if (tx_pack == NULL || rx_pack == NULL) {
-		printf("packet allocate fail");
+		perror("packet allocate fail");
 		free(tx_pack);
 		free(rx_pack);
 		return -ENOMEM;
 	}
-
-	cnt_req = cnt_rep = cnt_err = 0; next_seq = 0;
 
 	tx_pack->icmp.hdr.type = ICMP_ECHO_REQUEST;
 	tx_pack->icmp.hdr.code = 0;
@@ -199,75 +206,69 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 
 	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
-	started = clock();
-	last_seq = -1;
+	stat.cnt_request = pinfo->count;
+	stat.cnt_replies = stat.cnt_errors = 0;
+	stat.ping_started = clock();
+
 	fds.fd = sk;
 	fds.events = POLLIN;
 	timeout = 0;
-	while (last_seq != next_seq || cnt_req < pinfo->count) {
-		clock_t before_poll = clock(), after_poll;
-		switch (poll(&fds, 1, timeout)) {
-		case 0:
-			if (cnt_req == pinfo->count) {
-				ret = 0;
-				goto out;
-			}
-			tx_pack->icmp.body.echo_req.seq = htons(++next_seq);
-			tx_pack->icmp.hdr.check = 0;
-			tx_pack->icmp.hdr.check = ptclbsum(tx_pack,
-					sizeof tx_pack->icmp + pinfo->padding_size);
-			if (-1 == sendto(sk, tx_pack,
-						sizeof tx_pack->icmp + pinfo->padding_size,
-						0, (struct sockaddr *)&to, sizeof to)) {
-				perror("ping: sendto() failure");
-			}
-			++cnt_req;
-			timeout = cnt_req != pinfo->count ? pinfo->interval
-					: pinfo->timeout;
-			break;
-		case 1:
-			if (-1 == recv(sk, rx_pack, sizeof *rx_pack, 0)) {
-				perror("ping: recv() failure");
-				break;
-			}
-			/* try to fetch response */
-			switch (parse_result(rx_pack, tx_pack, official_name,
-						&to, &last_seq, started, pinfo->interval)) {
-			case 1: /* if response was fetched proceed */
-				cnt_rep++;
-				break;
-			case 0: /* else output diagnostics */
-				cnt_err++;
-				break;
-			}
-			after_poll = clock();
-			if (after_poll - before_poll >= timeout) {
-				timeout = pinfo->interval;
-			}
-			else {
-				timeout -= cnt_req != pinfo->count
-						? (after_poll - before_poll) * MSEC_PER_SEC / CLOCKS_PER_SEC
-						: pinfo->timeout;
-			}
-			break;
-		case -1:
+
+	for (seq = 1; seq <= pinfo->count; seq++) {
+		started = clock();
+
+		tx_pack->icmp.body.echo_req.seq = htons(seq);
+		tx_pack->icmp.hdr.check = 0;
+		tx_pack->icmp.hdr.check = ptclbsum(tx_pack,
+				sizeof(tx_pack->icmp) + pinfo->padding_size);
+		if (-1 == sendto(sk, tx_pack,
+					sizeof(tx_pack->icmp) + pinfo->padding_size,
+					0, (struct sockaddr *)&to, sizeof(to))) {
+			perror("ping: sendto() failure");
 			ret = -errno;
 			goto out;
 		}
+
+		timeout = min(pinfo->interval, pinfo->timeout);
+		while (timeout >= 0) {
+
+			switch (poll(&fds, 1, timeout)) {
+			case 0:
+				break;
+			case 1:
+				if (-1 == recv(sk, rx_pack, sizeof *rx_pack, 0)) {
+					perror("ping: recv() failure");
+					ret = -errno;
+					goto out;
+				}
+				/* try to fetch response */
+				parse_result(rx_pack, tx_pack, official_name,
+						&to, seq, started, &stat);
+				break;
+			default:
+				perror("ping: poll failure");
+				ret = -errno;
+				goto out;
+			}
+
+			timeout -= clock() - started;
+
+		}
+
+		timeout = clock() - started;
+		if (timeout < pinfo->interval) {
+			sleep(pinfo->interval - timeout);
+		}
 	}
 
-	ret = cnt_req - cnt_rep;
+	ret = stat.cnt_request - stat.cnt_replies;
 out:
 	free(tx_pack);
 	free(rx_pack);
-
-	/* output statistics */
-	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
-	printf("%d packets transmitted, %d received, +%d errors, %d%% packet loss, time %jums\n",
-			cnt_req, cnt_rep, cnt_err, ((cnt_req - cnt_rep) * 100) / cnt_req,
-			(uintmax_t)(clock() - started));
-
 	close(sk);
+
+	ping_report_stat(pinfo, &stat);
+
 	return ret;
 }
 
