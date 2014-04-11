@@ -38,12 +38,12 @@ static void print_usage(void) {
 }
 
 static void build_response(struct snmp_desc *snmp) {
-	struct varbind *var, *nxt;
+	struct varbind *var;
 	mib_obj_t obj;
 
 	snmp->pdu_type = PDU_GET_RESPONSE;
 
-	dlist_foreach_entry(var, nxt, &snmp->varbind_list, link) {
+	dlist_foreach_entry(var, &snmp->varbind_list, link) {
 		if ((obj = mib_obj_getbyoid(var->oid, var->oid_len))) {
 			var->data = obj->data;
 		} else {

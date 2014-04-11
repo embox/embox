@@ -1,111 +1,39 @@
 /**
  * @file
- * @brief Heap implementation based on boundary markers algorithm.
- * @details
- *    Segment structure:
- *    |struct mm_segment| *** space for bm ***|
- *
- *    TODO:
- *    Should be improved by usage of page_alloc when size is divisible by PAGE_SIZE()
- *    Also SLAB allocator can be used when size is 16, 32, 64, 128...
- *
- * @date 04.03.2014
+ * @brief
+
+ * @date 07.04.2014
  * @author Alexander Kalmuk
  */
 
 #include <errno.h>
-#include <string.h>
+#include <err.h>
 #include <unistd.h>
-
-#include <kernel/task/resource/task_heap.h>
-#include <kernel/task.h>
-
-#include <mem/heap_bm.h>
-#include <mem/page.h>
-
 #include <util/dlist.h>
 
+#include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
+#include <kernel/task/resource/task_heap.h>
 #include <kernel/printk.h>
 
-/* TODO make it per task field */
-//static DLIST_DEFINE(task_mem_segments);
+#include "mspace_malloc.h"
 
+static struct dlist_head *task_self_mspace(void) {
+	struct task_heap *task_heap;
 
-struct mm_segment {
-	struct dlist_head link;
-	size_t size;
-};
-
-static inline int pointer_inside_segment(void *segment, size_t size, void *pointer) {
-	return (pointer > segment && pointer < (segment + size));
+	task_heap = task_heap_get(task_self());
+	return &task_heap->mm;
 }
 
-static inline void *mm_to_segment(struct mm_segment *mm) {
-	assert(mm);
-	return ((char *) mm + sizeof *mm);
-}
+static struct dlist_head *kernel_task_mspace(void) {
+	struct task_heap *task_heap;
 
-static void *pointer_to_segment(void *ptr) {
-	struct mm_segment *mm, *mm_next;
-	void *segment;
-	struct dlist_head *task_mem_segments;
-	struct task *task = task_self();
-
-	assert(ptr);
-
-	task_mem_segments = &task_heap_get(task)->mm;
-
-	dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
-		segment = mm_to_segment(mm);
-		if (pointer_inside_segment(segment, mm->size, ptr)) {
-			return segment;
-		}
-	}
-
-	return NULL;
+	task_heap = task_heap_get(task_kernel_task());
+	return &task_heap->mm;
 }
 
 void *memalign(size_t boundary, size_t size) {
-	extern struct page_allocator *__heap_pgallocator;
-	void *block;
-	struct mm_segment *mm, *mm_next;
-	size_t segment_pages_cnt, segment_bytes_cnt;
-	struct dlist_head *task_mem_segments;
-	struct task *task = task_self();
-
-	int iter;
-
-	task_mem_segments = &task_heap_get(task)->mm;
-
-	block = NULL;
-	iter = 0;
-
-	do {
-		assert(iter++ < 2, "%s\n", "memory allocation cyclic");
-
-		dlist_foreach_entry(mm, mm_next, task_mem_segments, link) {
-			block = bm_memalign(mm_to_segment(mm), boundary, size);
-			if (block != NULL) {
-				return block;
-			}
-		}
-
-		/* No corresponding heap was found */
-		/* XXX allocate more approproate count of pages without redundancy */
-		segment_pages_cnt = (size + boundary + 2 * PAGE_SIZE()) / PAGE_SIZE();
-		mm = (struct mm_segment *) page_alloc(__heap_pgallocator, segment_pages_cnt);
-		if (mm == NULL)
-			return NULL;
-
-		mm->size = segment_pages_cnt * PAGE_SIZE();
-		segment_bytes_cnt = mm->size - sizeof *mm;
-		dlist_head_init(&mm->link);
-		dlist_add_next(&mm->link, task_mem_segments);
-
-		bm_init(mm_to_segment(mm), segment_bytes_cnt);
-	} while(!block);
-
-	return NULL;
+	return mspace_memalign(boundary, size, task_self_mspace());
 }
 
 void *malloc(size_t size) {
@@ -115,28 +43,32 @@ void *malloc(size_t size) {
 		return NULL;
 	}
 
-	ptr = memalign(8, size);
+	ptr = mspace_malloc(size, task_self_mspace());
+
 	if (ptr == NULL) {
-		SET_ERRNO(ENOMEM);
-		return NULL;
+		if (size == 0) {
+			return NULL;
+		} else {
+			SET_ERRNO(ENOMEM);
+			return NULL;
+		}
 	}
 
 	return ptr;
 }
 
 void free(void *ptr) {
-	void *segment;
-
 	if (ptr == NULL)
 		return;
-
-	segment = pointer_to_segment(ptr);
-
-	if (segment != NULL) {
-		bm_free(segment, ptr);
-	} else {
-		/* No segment containing pointer @c ptr was found. */
-		printk("***** free(): incorrect address space\n");
+	/* XXX this workaround for such situation:
+	 * module ConstructionGlobal invokes constructors inside kernel task for all applications,
+	 * and call malloc. After a while Qt application call realloc() on some memory previously
+	 * allocated by malloc() in kernel task. */
+	if (0 > mspace_free(ptr, task_self_mspace())) {
+		printk("***** free: pointer is not in current task, try free in kernel task...\n");
+		if (0 > mspace_free(ptr, kernel_task_mspace())) {
+			assert(0);
+		}
 	}
 }
 
@@ -144,68 +76,22 @@ void *realloc(void *ptr, size_t size) {
 	void *ret;
 
 	if (size == 0 && ptr != NULL) {
-		free(ptr);
+		mspace_free(ptr, task_self_mspace());
 		return NULL; /* ok */
 	}
-
-	ret = memalign(8, size);
-
-	if (ret == NULL) {
-		return NULL; /* error: errno set in malloc */
+	/* XXX same as in free() above */
+	if (0 > err(ret = mspace_realloc(ptr, size, task_self_mspace()))) {
+		printk("***** realloc: pointer is not in current task, try realloc in kernel task...\n");
+		if (0 > err(ret = mspace_realloc(ptr, size, kernel_task_mspace()))) {
+			assert(0);
+		}
 	}
-
-	if (ptr == NULL) {
-		return ret;
-	}
-
-	/* The content of new region will be unchanged in the range from the start of the region up to
-	 * the minimum of the old and new sizes. So simply copy size bytes (may be with redundant bytes) */
-	memcpy(ret, ptr, size);
-	free(ptr);
 
 	return ret;
 }
 
 void *calloc(size_t nmemb, size_t size) {
-	void *ret;
-	size_t total_size;
-
-	total_size = nmemb * size;
-	if (total_size == 0) {
+	if (nmemb == 0 || size == 0)
 		return NULL; /* ok */
-	}
-
-	ret = malloc(total_size);
-	if (ret == NULL) {
-		return NULL; /* error: errno set in malloc */
-	}
-
-	memset(ret, 0, total_size);
-	return ret;
-}
-
-int heap_init(const struct task *task) {
-	struct task_heap *task_heap;
-
-	task_heap = task_heap_get(task);
-	dlist_init(&task_heap->mm);
-
-	return 0;
-}
-
-int heap_fini(const struct task *task) {
-	extern struct page_allocator *__heap_pgallocator;
-	struct task_heap *task_heap;
-	struct mm_segment *mm, *mm_next;
-	void *block;
-
-	task_heap = task_heap_get(task);
-
-	dlist_foreach_entry(mm, mm_next, &task_heap->mm, link) {
-		block = mm;
-		page_free(__heap_pgallocator, block, mm->size / PAGE_SIZE());
-	}
-
-
-	return 0;
+	return mspace_calloc(nmemb, size, task_self_mspace());
 }

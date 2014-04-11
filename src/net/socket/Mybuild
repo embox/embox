@@ -74,4 +74,5 @@ module socket {
 
 	depends embox.lib.LibCString
 	depends embox.net.sock
+	depends embox.net.dev //ksocket, netdev_get_by_name
 }

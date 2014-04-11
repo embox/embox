@@ -27,6 +27,7 @@
 
 #include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
+#include <mem/sysmalloc.h>
 
 struct pty;
 
@@ -133,7 +134,7 @@ static const struct idesc_ops pty_slave_ops = {
 static struct pty *pty_create(void) {
 	struct pty *pty;
 
-	pty = malloc(sizeof(struct pty));
+	pty = sysmalloc(sizeof(struct pty));
 
 //	if (pty) {
 //		pty_init(&pty->pty);
@@ -144,13 +145,13 @@ static struct pty *pty_create(void) {
 
 static void pty_delete(struct pty *pty) {
 
-	free(pty);
+	sysfree(pty);
 }
 
 static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_ops *ops) {
 	struct idesc_pty *ipty;
 
-	ipty = malloc(sizeof(struct idesc_pty));
+	ipty = sysmalloc(sizeof(struct idesc_pty));
 
 	if (ipty) {
 		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
@@ -165,7 +166,7 @@ static void idesc_pty_delete(struct idesc_pty *pty, struct idesc **idesc) {
 
 	*idesc = NULL;
 
-	free(pty);
+	sysfree(pty);
 }
 
 #if 0

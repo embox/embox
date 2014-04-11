@@ -153,7 +153,7 @@ void task_init(struct task *tsk, int id, const char *name,
 
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *task = task_self();
-	struct thread *thr, *nxt, *main_thr;
+	struct thread *thr, *main_thr;
 
 	assert(task != task_kernel_task());
 
@@ -174,7 +174,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * thread then until we in sched_lock() we continue processing
 		 * and our thread structure is not freed.
 		 */
-		dlist_foreach_entry(thr, nxt, &main_thr->thread_link, thread_link) {
+		dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
 			thread_terminate(thr);
 		}
 

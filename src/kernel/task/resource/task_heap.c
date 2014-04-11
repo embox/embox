@@ -19,23 +19,23 @@
 
 TASK_RESOURCE_DEF(task_heap_desc, struct task_heap);
 
-extern int heap_init(const struct task *task);
-extern int heap_fini(const struct task *task);
+extern int mspace_init(struct dlist_head *mspace);
+extern int mspace_fini(struct dlist_head *mspace);
 
 
 struct task_heap *task_heap_get(const struct task *task);
 
 static void task_heap_init(const struct task *task, void *task_heap) {
-	heap_init(task);
+	mspace_init(&task_heap_get(task)->mm);
 }
 
 static int task_heap_inherit(const struct task *task, const struct task *parent) {
-	heap_init(task);
+	mspace_init(&task_heap_get(task)->mm);
 	return 0;
 }
 
 static void task_heap_deinit(const struct task *task) {
-	heap_fini(task);
+	mspace_fini(&task_heap_get(task)->mm);
 }
 
 static size_t task_heap_offset;
@@ -52,6 +52,3 @@ struct task_heap *task_heap_get(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_heap_offset;
 }
-
-
-

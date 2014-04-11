@@ -34,6 +34,8 @@ struct test_suite {
 	const struct test_case *volatile const *test_cases;
 	/** One-line human readable description of the whole test suite. */
 	const char *description;
+	/** If test should be run when module loaded */
+	bool autorun;
 	/** Internal data managed by framework. */
 	struct __test_private *private;
 	struct __test_fixture_ops suite_fixture_ops;

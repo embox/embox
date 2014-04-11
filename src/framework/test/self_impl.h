@@ -20,10 +20,13 @@
 #include "types.h"
 
 #define __EMBOX_TEST_SUITE(description) \
-	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
-			MACRO_GUARD(__test_private))
+	__EMBOX_TEST_SUITE_AUTORUN(description, true)
 
-#define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
+#define __EMBOX_TEST_SUITE_AUTORUN(description, autorun) \
+	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
+			MACRO_GUARD(__test_private), autorun)
+
+#define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm, _autorun) \
 	extern const struct mod_ops __test_mod_ops;                      \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \
@@ -41,6 +44,7 @@
 			.private = &test_private_nm,                             \
 			.test_cases = __TEST_CASES_ARRAY,                        \
 			.description = _description,                             \
+			.autorun = _autorun,                                     \
 			.suite_fixture_ops = {                                   \
 					.p_setup    = &__TEST_FIXTURE_OP(suite_setup),   \
 					.p_teardown = &__TEST_FIXTURE_OP(suite_teardown),\

@@ -1,0 +1,28 @@
+package embox.test.time
+
+module watchdog_trial {
+	source "watchdog_trial.c"
+	depends embox.compat.posix.util.time
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+
+	depends embox.kernel.timer.sys_timer
+	depends embox.compat.posix.util.sleep
+}
+
+module watchdog {
+	source "watchdog.c"
+	depends embox.compat.posix.util.All
+	depends embox.kernel.timer.sys_timer
+	depends embox.lib.Printk
+	depends embox.kernel.time.jiffies
+}
+
+module watchdog_example {
+	source "watchdog_example.c"
+	depends embox.test.time.watchdog
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sync
+}
