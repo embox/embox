@@ -67,11 +67,11 @@ void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr) {
-	struct waitq_link *wql, *next_wql;
+	struct waitq_link *wql;
 
 	assert(wq);
 
-	dlist_foreach_entry(wql, next_wql, &wq->list, link) {
+	dlist_foreach_entry(wql, &wq->list, link) {
 		if (!sched_wakeup(wql->thread))
 			continue;
 

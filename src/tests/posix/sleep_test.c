@@ -12,6 +12,7 @@
 #include <kernel/time/time.h>
 #include <kernel/sched/waitq.h>
 #include <pthread.h>
+#include <errno.h>
 
 EMBOX_TEST_SUITE("sleep suite");
 

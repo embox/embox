@@ -1,0 +1,18 @@
+diff -aur sqlite-autoconf-3080403/sqlite3.c sqlite/sqlite3.c
+--- sqlite-autoconf-3080403/sqlite3.c	2014-04-03 21:21:45.000000000 +0400
++++ sqlite/sqlite3.c	2014-04-08 13:39:42.834641523 +0400
+@@ -7982,8 +7982,12 @@
+ ** in theory, be used by the compiler to generate better code, but
+ ** currently they are just comments for human readers.
+ */
+-#define likely(X)    (X)
+-#define unlikely(X)  (X)
++#if defined(__EMBOX__)
++# include <linux/compiler.h>
++#else
++# define likely(X)    (X)
++# define unlikely(X)  (X)
++#endif
+ 
+ /************** Include hash.h in the middle of sqliteInt.h ******************/
+ /************** Begin file hash.h ********************************************/

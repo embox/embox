@@ -109,7 +109,6 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 int irq_detach(unsigned int irq_nr, void *dev_id) {
 	struct irq_action *action;
 	struct irq_entry *entry;
-	struct dlist_head *item, *next;
 	int ret = ENOERR;
 
 	if (!irq_nr_valid(irq_nr)) {
@@ -126,9 +125,7 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 		goto out_unlock;
 	}
 
-	dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
-		entry = dlist_entry(item, struct irq_entry, action_link);
-
+	dlist_foreach_entry(entry, &(irq_table[irq_nr]->entry_list), action_link) {
 		if (entry->dev_id == dev_id) {
 			dlist_del(&(entry->action_link));
 			objfree(&irq_entries, entry);
@@ -151,7 +148,6 @@ void irq_dispatch(unsigned int irq_nr) {
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
-	struct dlist_head *item, *next;
 	TRACE_BLOCK_DEF(interrupt_tb);
 
 	assert(irq_nr_valid(irq_nr));
@@ -165,8 +161,8 @@ void irq_dispatch(unsigned int irq_nr) {
 
 	if (irq_table[irq_nr]) {
 		ipl = ipl_save();
-		dlist_foreach(item, next, &(irq_table[irq_nr]->entry_list)) {
-			entry = dlist_entry(item, struct irq_entry, action_link);
+		dlist_foreach_entry(entry, &(irq_table[irq_nr]->entry_list),
+				action_link) {
 			assert(NULL != entry);
 
 			handler = entry->handler;

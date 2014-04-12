@@ -1,0 +1,48 @@
+diff -uar tar-1.27.1/gnu/argp-ba.c source/gnu/argp-ba.c
+--- tar-1.27.1/gnu/argp-ba.c	2013-06-29 09:54:23.000000000 +0400
++++ source/gnu/argp-ba.c	2014-03-17 16:55:19.982555145 +0400
+@@ -23,6 +23,7 @@
+    the ARGP_HELP_BUG_ADDR flag is set (as it is by various standard help
+    messages), embedded in a sentence that says something like "Report bugs to
+    ADDR."  */
++#if 0
+ const char *argp_program_bug_address
+ /* This variable should be zero-initialized.  On most systems, putting it into
+    BSS is sufficient.  Not so on Mac OS X 10.3 and 10.4, see
+@@ -34,3 +35,4 @@
+   = (const char *) 0
+ #endif
+   ;
++#endif
+diff -uar tar-1.27.1/gnu/argp-pv.c source/gnu/argp-pv.c
+--- tar-1.27.1/gnu/argp-pv.c	2013-06-29 09:54:23.000000000 +0400
++++ source/gnu/argp-pv.c	2014-03-17 16:56:06.031365573 +0400
+@@ -23,6 +23,7 @@
+    --version is added (unless the ARGP_NO_HELP flag is used), which will
+    print this string followed by a newline and exit (unless the
+    ARGP_NO_EXIT flag is used).  Overridden by ARGP_PROGRAM_VERSION_HOOK.  */
++#if 0
+ const char *argp_program_version
+ /* This variable should be zero-initialized.  On most systems, putting it into
+    BSS is sufficient.  Not so on Mac OS X 10.3 and 10.4, see
+@@ -34,3 +35,4 @@
+   = (const char *) 0
+ #endif
+   ;
++#endif
+diff -uar tar-1.27.1/gnu/xalloc-die.c source/gnu/xalloc-die.c
+--- tar-1.27.1/gnu/xalloc-die.c	2013-06-29 09:54:26.000000000 +0400
++++ source/gnu/xalloc-die.c	2014-03-17 16:52:33.207626857 +0400
+@@ -30,6 +30,7 @@
+ #include "gettext.h"
+ #define _(msgid) gettext (msgid)
+ 
++#if 0
+ void
+ xalloc_die (void)
+ {
+@@ -41,3 +42,4 @@
+      safety feature if exit_failure is 0 (which shouldn't happen).  */
+   abort ();
+ }
++#endif

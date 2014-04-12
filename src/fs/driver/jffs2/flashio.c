@@ -16,6 +16,7 @@
 #include "nodelist.h"
 
 #include <drivers/flash/flash.h>
+#include <mem/sysmalloc.h>
 
 bool jffs2_flash_read(struct jffs2_sb_info * c,
 		uint32_t read_buffer_offset, const size_t size,
@@ -73,7 +74,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 			 * to do multiple writes anyway?
 			 */
 			if ((i + 1) < count || vecs[i].iov_len > 256) {
-				/* cop out and malloc */
+				/* cop out and kmalloc */
 				unsigned long j;
 				ssize_t sizetomalloc = 0, totvecsize = 0;
 				char *cbuf, *cbufptr;
@@ -85,8 +86,8 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 				/* pad up in case unaligned */
 				sizetomalloc = totvecsize + sizeof (int) - 1;
 				sizetomalloc &= ~(sizeof (int) - 1);
-				cbuf = (char *) malloc(sizetomalloc);
-				/* malloc returns aligned memory */
+				cbuf = (char *) sysmalloc(sizetomalloc);
+				/* kmalloc returns aligned memory */
 				if (!cbuf) {
 					ret = -ENOMEM;
 					goto writev_out;
@@ -104,7 +105,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 					thislen = totvecsize;
 				}
 				totlen += thislen;
-				free(cbuf);
+				sysfree(cbuf);
 				goto writev_out;
 			} else {
 				/* otherwise optimize for the common case */

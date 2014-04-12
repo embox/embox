@@ -55,7 +55,7 @@ static void seculog_record_inc_ref(struct seculog_record *rec) {
 }
 
 int seculog_record(seculog_label_t label, const char *msg) {
-	struct seculog_subscb *subscb, *nxt;
+	struct seculog_subscb *subscb;
 
 	struct seculog_record *rec = seculog_record_alloc(label, msg);
 
@@ -63,7 +63,7 @@ int seculog_record(seculog_label_t label, const char *msg) {
 		return -ENOMEM;
 	}
 
-	dlist_foreach_entry(subscb, nxt, &seculog_subscb_list, lnk) {
+	dlist_foreach_entry(subscb, &seculog_subscb_list, lnk) {
 		if (label & subscb->labels) {
 			if (subscb->record_cb) {
 				subscb->record_cb(subscb, rec);
@@ -155,9 +155,9 @@ int seculog_get(struct seculog_desc *desc, char *msg, size_t len) {
 }
 
 int seculog_close(struct seculog_desc *desc) {
-	struct seculog_rec_handle *rech, *nxt;
+	struct seculog_rec_handle *rech;
 
-	dlist_foreach_entry(rech, nxt, &desc->queue, rh_lnk) {
+	dlist_foreach_entry(rech, &desc->queue, rh_lnk) {
 		seculog_rec_handle_free(rech);
 	}
 

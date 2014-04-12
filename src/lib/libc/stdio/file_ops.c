@@ -15,14 +15,13 @@
 
 #define DEFAULT_MODE 0755
 
-FILE stdin_struct = {
+static FILE stdin_struct = {
 	.fd = STDIN_FILENO,
 };
-FILE stdout_struct = {
+static FILE stdout_struct = {
 	.fd = STDOUT_FILENO,
 };
-
-FILE stderr_struct = {
+static FILE stderr_struct = {
 	.fd = STDERR_FILENO,
 };
 

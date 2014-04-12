@@ -9,14 +9,29 @@ abstract module heap_api {
 @DefaultImpl(heap_afterfree_default)
 abstract module heap_afterfree { }
 
-module heap_bm extends heap_api {
+@DefaultImpl(sysmalloc_task_based)
+abstract module sysmalloc_api { }
+
+module boundary_markers {
 	source "heap_bm.c"
-	source "malloc.c"
+
+	depends heap_afterfree
+}
+
+module mspace_malloc {
+	source "mspace_malloc.c"
+
+	depends boundary_markers
 
 	depends page_api
 	depends heap_lds
 	depends embox.mem.static_heap
-	depends heap_afterfree
+}
+
+module heap_bm extends heap_api {
+	source "malloc.c"
+
+	depends mspace_malloc
 
 	depends embox.kernel.task.resource.task_heap
 	depends embox.kernel.task.kernel_task
@@ -28,6 +43,15 @@ module heap_simple extends heap_api {
 
 	depends heap_lds
 	depends embox.mem.static_heap
+}
+
+module sysmalloc_task_based extends sysmalloc_api {
+	source "sysmalloc.c"
+
+	depends mspace_malloc
+
+	depends embox.kernel.task.resource.task_heap
+	depends embox.kernel.task.kernel_task
 }
 
 module static_heap {

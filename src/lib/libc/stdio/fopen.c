@@ -42,8 +42,11 @@ static FILE *file_alloc(int fd) {
 	return file;
 }
 
-void file_free(FILE *file) {
-	pool_free(&file_pool, file);
+static void file_free(FILE *file) {
+	if ((file != stdin) && (file != stdout)
+			&& (file != stderr)) {
+		pool_free(&file_pool, file);
+	}
 }
 
 FILE *fopen(const char *path, const char *mode) {

@@ -19,6 +19,7 @@
 #include <embox/block_dev.h>
 #include <mem/objalloc.h>
 #include <mem/phymem.h>
+#include <mem/sysmalloc.h>
 #include <drivers/ramdisk.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/block.h>
@@ -246,7 +247,7 @@ static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
 
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
-	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
+	struct ext2fs_dinode *dip = sysmalloc(sizeof(struct ext2fs_dinode));
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
@@ -337,7 +338,7 @@ static int ext3fs_umount(void *dir) {
 	res = drv->fsop->umount(dir);
 
 	journal_delete(fsi->journal);
-	free(data->ext3_journal_inode);
+	sysfree(data->ext3_journal_inode);
 	journal_free_block(fsi->journal, data->j_sb_buffer);
 	objfree(&ext3_journal_cache, data);
 

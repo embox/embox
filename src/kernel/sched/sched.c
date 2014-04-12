@@ -109,6 +109,10 @@ static void __sched_wokenup_clear_waiting(struct thread *t) {
 	t->waiting = false;
 }
 
+int sched_active(struct thread *t) {
+	return t->active;
+}
+
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
 	ipl_t ipl;
 	int in_rq;

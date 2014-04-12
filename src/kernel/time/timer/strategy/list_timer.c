@@ -37,11 +37,9 @@ void timer_strat_start(struct sys_timer *tmr) {
  * to the counter and the function is executed.
  */
 void timer_strat_sched(void) {
-	struct dlist_head *tmp, *tmp2;
 	sys_timer_t *tmr;
 
-	dlist_foreach(tmp, tmp2, &sys_timers_list) {
-		tmr = (sys_timer_t*) tmp;
+	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
 		if (0 == tmr->cnt--) {
 			trace_point("timer tick");
 

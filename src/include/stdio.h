@@ -13,6 +13,7 @@
 
 /*va_list As described in <stdarg.h>. */
 #include <stdarg.h>
+#include <sys/types.h>
 
 #include <defines/size_t.h>
 #include <defines/null.h>
@@ -175,8 +176,10 @@ extern int remove(const char *pathname);
  *  position indicator, or end-of-file, respectively
  */
 extern int fseek(FILE *stream, long int offset, int origin);
+extern int fseeko(FILE *stream, off_t offset, int origin);
 
 extern long int ftell(FILE *stream);
+extern off_t ftello(FILE *stream);
 
 typedef long int fpos_t;
 

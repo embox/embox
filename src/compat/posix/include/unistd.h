@@ -154,10 +154,6 @@ extern int close(int fd);
 
 extern int fsync(int);
 
-/* TODO not implemented link() --Alexander */
-extern int link(const char *oldpath, const char *newpath);
-//extern void sync(void);
-
 extern pid_t fork(void);
 
 extern int nice(int incr);
@@ -220,7 +216,7 @@ static inline int access(const char *path, int amode) {
  * @param opts is the string of all valid options
  * each char case must be given; options taking an arg are followed by = ':'
  */
-extern int getopt(int argc, char **argv, const char *opts);
+extern int getopt(int argc, char *const argv[], const char *opts);
 
 extern char *optarg; /**< argument to optopt */
 extern int optind;   /**< last touched cmdline argument */

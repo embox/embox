@@ -97,7 +97,7 @@ int ext3_journal_trans_freespace(journal_t *jp, size_t nblocks) {
 
 static int journal_write_desc_blocks(journal_t *jp) {
     transaction_t *t = jp->j_committing_transaction;
-    journal_block_t *b, *bnext, *desc_b = NULL;
+    journal_block_t *b, *desc_b = NULL;
     ext3_journal_header_t *hdr = NULL;
     ext3_journal_block_tag_t *tag = NULL;
 
@@ -114,7 +114,7 @@ static int journal_write_desc_blocks(journal_t *jp) {
 	tag  = (ext3_journal_block_tag_t *) (((ext3_journal_header_t *)desc_b->data) + 1);
 
     /* Fill descriptor block and add it as first element */
-    dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
+    dlist_foreach_entry(b, &t->t_buffers, b_next) {
 		/* Fill descriptor with update tags. */
 		t->t_log_blocks++;
 

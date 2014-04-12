@@ -58,11 +58,11 @@ static struct kfile_operations input_dev_file_op = {
 
 
 static struct input_subscriber *input_dev_find_subscriber(struct input_dev *dev, unsigned int handler_id) {
-	struct input_subscriber *cur, *nxt;
+	struct input_subscriber *cur;
 
 	assert(dev != NULL);
 
-	dlist_foreach_entry(cur, nxt, &dev->subscribers, subscribers) {
+	dlist_foreach_entry(cur, &dev->subscribers, subscribers) {
 		if (cur->id == handler_id) {
 			return cur;
 		}
@@ -128,11 +128,11 @@ static irq_return_t indev_irqhnd(unsigned int irq_nr, void *data) {
 }
 
 static void indev_softirqhnd(unsigned int nt, void* data) {
-	struct input_dev *dev, *nxt;
+	struct input_dev *dev;
 
 	softirq_lock();
 
-	dlist_foreach_entry(dev, nxt, &post_indevs, post_link) {
+	dlist_foreach_entry(dev, &post_indevs, post_link) {
 		dlist_del(&dev->post_link);
 
 		dlist_head_init(&dev->post_link);
@@ -245,9 +245,9 @@ int input_dev_close(struct input_dev *dev) {
 }
 
 struct input_dev *input_dev_lookup(const char *name) {
-	struct input_dev *dev, *nxt;
+	struct input_dev *dev;
 
-	dlist_foreach_entry(dev, nxt, &input_devices, global_indev_list) {
+	dlist_foreach_entry(dev,  &input_devices, global_indev_list) {
 		if (0 == strcmp(dev->name, name)) {
 			return dev;
 		}

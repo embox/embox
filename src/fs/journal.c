@@ -12,6 +12,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <mem/misc/slab.h>
+#include <mem/sysmalloc.h>
 #include <fs/journal.h>
 #include <fs/bcache.h>
 
@@ -111,8 +112,8 @@ int journal_stop(journal_handle_t *handle) {
 }
 
 int journal_checkpoint_transactions(journal_t *jp) {
-    transaction_t *t, *tnext;
-    journal_block_t *b, *bnext;
+    transaction_t *t;
+    journal_block_t *b;
     struct buffer_head *bh;
     int blkcount, i;
 
@@ -120,8 +121,8 @@ int journal_checkpoint_transactions(journal_t *jp) {
 
     blkcount = jp->j_blocksize / jp->j_disk_sectorsize;
 
-    dlist_foreach_entry(t, tnext, &jp->j_checkpoint_transactions, t_next) {
-    	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
+    dlist_foreach_entry(t, &jp->j_checkpoint_transactions, t_next) {
+    	dlist_foreach_entry(b, &t->t_buffers, b_next) {
     		for (i = 0; i < blkcount; i++) {
     			bh = b->bh[i];
 
@@ -227,7 +228,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
     }
 
     /* TODO use kmalloc instead */
-    if (!(jb->data = malloc(jp->j_blocksize))) {
+    if (!(jb->data = sysmalloc(jp->j_blocksize))) {
     	cache_free(&journal_block_cache, jb);
 		return NULL;
     }
@@ -240,7 +241,7 @@ journal_block_t *journal_new_block(journal_t *jp, block_t nr) {
 void journal_free_block(journal_t *jp, journal_block_t *jb) {
 	assert(jp && jb);
 
-	free(jb->data);
+	sysfree(jb->data);
 	cache_free(&journal_block_cache, jb);
 }
 
@@ -265,19 +266,19 @@ transaction_t *journal_new_trans(journal_t *jp) {
 }
 
 void journal_free_trans(journal_t *jp, transaction_t *t) {
-	journal_block_t *b, *bnext;
+	journal_block_t *b;
 
 	assert(jp);
 	assert(t);
 
-	dlist_foreach_entry(b, bnext, &t->t_buffers, b_next) {
+	dlist_foreach_entry(b, &t->t_buffers, b_next) {
 		journal_free_block(jp, b);
 	}
 	cache_free(&trans_cache, t);
 }
 
 int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt) {
-	journal_block_t *b, *bnext;
+	journal_block_t *b;
 	unsigned long j_head;
 	int ret = 0;
 
@@ -287,7 +288,7 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 	j_head = jp->j_head;
 
 	/* XXX Increase speed up of below writing on hd by grouping blocks */
-	dlist_foreach_entry(b, bnext, blocks, b_next) {
+	dlist_foreach_entry(b, blocks, b_next) {
 		jp->j_head = journal_wrap(jp, jp->j_head++);
 		ret = journal_write_block(jp, b->data, 1,
 				jp->j_fs_specific.bmap(jp, jp->j_head));

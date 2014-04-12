@@ -1,0 +1,25 @@
+
+package third_party.external_build.stage2
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+module app {
+
+	depends lib
+}
+
+static module lib {
+	source "app_only_referenced.c"
+
+}
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+module app2 {
+
+	depends lib2
+}
+
+static module lib2 {
+	source "app2_only_referenced.c"
+	source "meaningless_section.lds.S"
+
+}
