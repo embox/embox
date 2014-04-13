@@ -59,7 +59,7 @@ static void print_instrument_trace_block_stat(void) {
 
 	printf("Automatic trace points:\n");
 
-	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "AvgTime");
+	printf("%40s %10s %15s %15s\n", "Name", "Count", "Ticks", "AvgTime");
 
 	for (i = 0; i < counter; i++) {
 		tb = table[i];
@@ -74,7 +74,7 @@ static void print_instrument_trace_block_stat(void) {
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %20llu\n", tb->count, tb->time);
+		printf("%10lld %15llu %15.3f\n", tb->count, tb->time, 1. * tb->time / tb->count);
 	/*	printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0); */
 	}

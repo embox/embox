@@ -33,7 +33,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	initialize_hashtable();
 
 	printf("Initialization...\n");
-	trace_block_hashtable_init();
+	/*trace_block_hashtable_init();*/
 	printf("Executing command\n");
 	begin = clock();
 	cyg_profiling = true;

@@ -207,13 +207,13 @@ static int instrument_profiling_init(void) {
 	tbhash = NULL;
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 	/* Initializing hash table */
-	/*tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
+	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
 
 	if (!tbhash) {
 		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
-	}*/
+	}
 	return 0;
 }
 
@@ -222,11 +222,13 @@ void trace_block_hashtable_init(void) {
 	int c = cyg_profiling;
 	cyg_profiling = false;
 
-	if (tbhash)
+	if (tbhash) {
+		cyg_profiling = c;
 		return;
-	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
+	}
+	/*tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
-
+	*/
 	cyg_profiling = c;
 }
 void trace_block_hashtable_destroy(void) {

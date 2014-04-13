@@ -91,11 +91,11 @@ static mib_obj_t getchild_by_id(mib_obj_t obj, unsigned char id) {
 
 	dlist_foreach_entry(cur, &obj->children, parent_link) {
 		if (cur->id == id) {
-			break;
+			return cur;
 		}
 	}
 
-	return (&cur->parent_link == &obj->children ? NULL : cur);
+	return NULL;
 }
 
 static int mibs_inited;

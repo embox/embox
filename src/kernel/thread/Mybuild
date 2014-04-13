@@ -10,8 +10,8 @@ module NoThreads extends thread_mode {
 }
 
 module core extends thread_mode {
-	option number thread_stack_size=8192
-	option number thread_pool_size=16
+	option number thread_stack_size=65536//8192
+	option number thread_pool_size=64//16
 
 	source "core.c"
 	source "thread_allocator.c"
