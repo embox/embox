@@ -40,6 +40,8 @@ static void lookup_mounts(struct mount_descriptor *parent) {
 
 	vfs_get_path_by_node(&path, mount_path);
 	printf("%s path\n", mount_path);
+	printf("%s on %s type %s\n", path.node->nas->fs->bdev->name,
+			mount_path, path.node->nas->fs->drv->name);
 
 	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
 		lookup_mounts(desc);
