@@ -94,7 +94,7 @@ run_bg_do() {
 }
 
 kill_bg() {
-	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 }
 
 default_run() {
