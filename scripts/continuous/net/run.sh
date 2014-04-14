@@ -27,8 +27,11 @@ test_case_correct_index_html_should_be_downloaded() {
 	rm index.html
 }
 
-#test_case_telnet_should_be_able_to_execute_command_and_show_output() {
-#	$ROOT_DIR/scripts/expect/telnet.exp
+test_case_telnet_should_be_able_to_execute_command_and_show_output() {
+	runtest $ROOT_DIR/scripts/expect/telnet.exp
+}
+
+#test_case_ssh_should_be_able_to_execute_command_and_show_output() {
 #}
 
 test_suite_code=0

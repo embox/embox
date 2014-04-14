@@ -90,6 +90,8 @@ run_bg_do() {
 
 	sudo chmod 666 $OUTPUT_FILE
 
+	cat $OUTPUT_FILE
+
 	run_check
 }
 
@@ -102,7 +104,6 @@ default_run() {
 	run_bg_do
 	ret=$?
 
-	cat $OUTPUT_FILE
 	rm $OUTPUT_FILE
 
 	kill_bg
