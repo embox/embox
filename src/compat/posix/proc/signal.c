@@ -130,3 +130,7 @@ int kill(int tid, int sig) {
 
 	return pthread_kill(task_get_main(task), sig);
 }
+
+int raise(int signo) {
+	return pthread_kill(pthread_self(), signo);
+}
