@@ -57,7 +57,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 		goto out;
 	}
 
-	retval = drv->fsop->create_node(parent, &node);
+	retval = drv->fsop->create_node(parent->node, node.node);
 	if (retval) {
 		goto out;
 	}
@@ -161,7 +161,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(&node))) {
+	if (0 != (res = drv->fsop->delete_node(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -200,7 +200,7 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(&node))) {
+	if (0 != (res = drv->fsop->delete_node(node.node))) {
 		errno = -res;
 		return -1;
 	}

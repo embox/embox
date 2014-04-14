@@ -70,7 +70,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	if (0 != (ret = drv->fsop->create_node(dir_path, child))) {
+	if (0 != (ret = drv->fsop->create_node(dir_path->node, child->node))) {
 		SET_ERRNO(-ret);
 		vfs_del_leaf(child->node);
 		return -1;

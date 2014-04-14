@@ -48,21 +48,10 @@ static int setup_suite(void) {
 	}
 
 	vfs_add_leaf(ch1, r1);
-
-
-		list_foreach(link, &r1->tree_link.children, list_link) {
-			assert(true);
-
-		}
 	vfs_add_leaf(ch2, r2);
 	vfs_add_leaf(ch3, r3);
 	vfs_add_leaf(ch4, r4);
 	vfs_add_leaf(test, vfs_get_root());
-
-	list_foreach(link, &vfs_get_root()->tree_link.children, list_link) {
-				assert(true);
-
-			}
 
 	return 0;
 }

@@ -417,35 +417,35 @@ static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	return fi;
 }
 
-static int ramfs_create(struct path *parent_node, struct path *node) {
+static int ramfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
 
-	nas = node->node->nas;
+	nas = node->nas;
 
-	if (!node_is_directory(node->node)) {
+	if (!node_is_directory(node)) {
 		if (!(nas->fi->privdata = ramfs_create_file(nas))) {
 			return -ENOMEM;
 		}
 	}
 
-	nas->fs = parent_node->node->nas->fs;
+	nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
 
-static int ramfs_delete(struct path *node) {
+static int ramfs_delete(struct node *node) {
 	struct ramfs_file_info *fi;
 	struct nas *nas;
 
-	nas = node->node->nas;
+	nas = node->nas;
 	fi = nas->fi->privdata;
 
-	if (!node_is_directory(node->node)) {
+	if (!node_is_directory(node)) {
 		index_free(&ramfs_file_idx, fi->index);
 		pool_free(&ramfs_file_pool, fi);
 	}
 
-	vfs_del_leaf(node->node);
+	vfs_del_leaf(node);
 
 	return 0;
 }

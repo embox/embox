@@ -94,6 +94,7 @@ extern void vfs_get_exist_path(const char *path, char *exist_path, size_t buff_l
 static inline int vfs_get_path_till_root(struct path *node, struct path *root, char *path,
 		size_t pathlen) {
 
+	if_root_follow_up(node);
 	if (node->node == root->node) {
 		if (pathlen <= 1) {
 			return -ERANGE;

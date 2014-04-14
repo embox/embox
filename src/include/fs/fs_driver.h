@@ -20,8 +20,8 @@ struct fsop_desc {
 	int (*init)(void *par);
 	int (*format)(void *par);
 	int (*mount)(void *dev_node, void *dir_node);
-	int (*create_node)(struct path *parent_node, struct path *new_node);
-	int (*delete_node)(struct path *node);
+	int (*create_node)(struct node *parent_node, struct node *new_node);
+	int (*delete_node)(struct node *node);
 
 	/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
 	int (*getxattr)(struct node *node, const char *name,

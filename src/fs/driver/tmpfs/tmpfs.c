@@ -397,8 +397,8 @@ static int tmpfs_stat(void *file, void *buff) {
 static int tmpfs_init(void * par);
 static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
-static int tmpfs_create(struct path *parent_node, struct path *node);
-static int tmpfs_delete(struct path *node);
+static int tmpfs_create(struct node *parent_node, struct node *node);
+static int tmpfs_delete(struct node *node);
 static int tmpfs_truncate(struct node *node, off_t length);
 
 static struct fsop_desc tmpfs_fsop = {
@@ -457,35 +457,35 @@ static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
 }
 */
 
-static int tmpfs_create(struct path *parent_node, struct path *node) {
+static int tmpfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
 
-	nas = node->node->nas;
+	nas = node->nas;
 
-	if (!node_is_directory(node->node)) {
+	if (!node_is_directory(node)) {
 		if (!(nas->fi->privdata = tmpfs_create_file(nas))) {
 			return -ENOMEM;
 		}
 	}
 
-	nas->fs = parent_node->node->nas->fs;
+	nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
 
-static int tmpfs_delete(struct path *node) {
+static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
 	struct nas *nas;
 
-	nas = node->node->nas;
+	nas = node->nas;
 	fi = nas->fi->privdata;
 
-	if (!node_is_directory(node->node)) {
+	if (!node_is_directory(node)) {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
 
-	vfs_del_leaf(node->node);
+	vfs_del_leaf(node);
 
 	return 0;
 }

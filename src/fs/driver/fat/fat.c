@@ -1000,7 +1000,7 @@ static void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * Returns various DFS_* error states. If the result is DFS_OK, file
  * was created and can be used.
  */
-static int fat_create_file(struct path * parent_node, struct path *node) {
+static int fat_create_file(struct node * parent_node, struct node *node) {
 	char tmppath[PATH_MAX];
 	uint8_t filename[12];
 	dir_info_t di;
@@ -1011,7 +1011,7 @@ static int fat_create_file(struct path * parent_node, struct path *node) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 
-	nas = node->node->nas;
+	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 	volinfo = &fsi->vi;
@@ -1041,7 +1041,7 @@ static int fat_create_file(struct path * parent_node, struct path *node) {
 	/* put sane values in the directory entry */
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, filename, MSDOS_NAME);
-	de.attr = S_ISDIR(node->node->mode) ? ATTR_DIRECTORY : 0;
+	de.attr = S_ISDIR(node->mode) ? ATTR_DIRECTORY : 0;
 	fat_set_filetime(&de);
 
 	/* allocate a starting cluster for the directory entry */
@@ -1099,7 +1099,7 @@ static int fat_create_file(struct path * parent_node, struct path *node) {
 	fat_set_fat_(nas->fs->bdev, volinfo,
 			sector_buff, &temp, fi->cluster, cluster);
 
-	if (node_is_directory(node->node)) {
+	if (node_is_directory(node)) {
 		/* create . and ..  files of this catalog */
 		fat_set_direntry(di.currentcluster, fi->cluster);
 		cluster = fi->volinfo->dataarea +
@@ -1848,7 +1848,6 @@ static int fat_create_dir_entry(struct path *parent_path) {
 	char full_path[PATH_MAX];
 	struct nas *nas, *parent_nas;
 	struct fat_file_info  *fi;
-	struct fat_fs_info *fsi;
 	struct path path_node;
 	mode_t mode;
 	int rc = 0;
@@ -1862,8 +1861,7 @@ static int fat_create_dir_entry(struct path *parent_path) {
 	di.p_scratch = rcv_buf;
 
 	/* set relative path in this file system */
-	fsi = parent_nas->fs->fsi;
-	vfs_get_relative_path(parent_path, full_path);
+	vfs_get_relative_path(parent_path->node, full_path);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
 		rc = -ENODEV;
@@ -1932,17 +1930,20 @@ static void fat_free_fs(struct nas *nas) {
 	}
 }
 
-static int fat_umount_entry(struct nas *nas) {
-	struct node *child;
+static int fat_umount_entry(struct path *dir_node) {
+	struct path child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
-				fat_umount_entry(child->nas);
+	if(node_is_directory(dir_node->node)) {
+		vfs_get_child_next(dir_node, &child);
+		while(NULL != child.node) {
+			if(node_is_directory(child.node)) {
+				fat_umount_entry(&child);
 			}
 
-			pool_free(&fat_file_pool, child->nas->fi->privdata);
-			vfs_del_leaf(child);
+			pool_free(&fat_file_pool, child.node->nas->fi->privdata);
+			vfs_del_leaf(child.node);
+
+			vfs_get_child_next(dir_node, &child);
 		}
 	}
 
@@ -1950,7 +1951,7 @@ static int fat_umount_entry(struct nas *nas) {
 }
 
 /* File operations */
-static int    fatfs_open(struct path *node, struct file_desc *file_desc, int flags);
+static int    fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    fatfs_close(struct file_desc *desc);
 static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -1967,19 +1968,17 @@ static struct kfile_operations fatfs_fop = {
 /*
  * file_operation
  */
-static int fatfs_open(struct path *nod, struct file_desc *desc,  int flag) {
+static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	node_t *node;
 	struct nas *nas;
 	uint8_t path [PATH_MAX];
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
 
-	node = nod->node;
+	node = nod;
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(nod, (char *) path);
+	vfs_get_relative_path(node, (char *) path);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -2166,7 +2165,7 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 }
 
 static int fat_mount_files (struct path *dir_path);
-static int fat_create_file(struct path *parent_node, struct path *new_node);
+static int fat_create_file(struct node *parent_node, struct node *new_node);
 static int fat_create_partition (void *bdev);
 static int fat_root_dir_record(void *bdev);
 static int fat_unlike_file(struct nas *nas, uint8_t *path, uint8_t *scratch);
@@ -2177,9 +2176,9 @@ static int fat_unlike_directory(struct nas *nas, uint8_t *path, uint8_t *scratch
 static int fatfs_init(void * par);
 static int fatfs_format(void * bdev);
 static int fatfs_mount(void * dev, void *dir);
-static int fatfs_create(struct path *parent_node, struct path *new_node);
-static int fatfs_delete(struct path *node);
-static int fatfs_truncate (struct path *node, off_t length);
+static int fatfs_create(struct node *parent_node, struct node *new_node);
+static int fatfs_delete(struct node *node);
+static int fatfs_truncate (struct node *node, off_t length);
 static int fatfs_umount(void *dir);
 
 static struct fsop_desc fatfs_fsop = {
@@ -2220,7 +2219,7 @@ static int fatfs_format(void *dev) {
 }
 
 static int fatfs_mount(void *dev, void *dir) {
-	struct node *dir_node, *dev_node;
+	struct path *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -2228,15 +2227,12 @@ static int fatfs_mount(void *dev, void *dir) {
 	int rc;
 
 	dev_node = dev;
-	dev_nas = dev_node->nas;
+	dev_nas = dev_node->node->nas;
 	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir_node->node->nas;
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
-	}
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
 	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
@@ -2262,7 +2258,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	memset(fi, 0, sizeof(struct fat_file_info));
 	dir_nas->fi->privdata = (void *) fi;
 
-	return fat_mount_files(dir_nas);
+	return fat_mount_files(dir_node);
 
 	error:
 	fat_free_fs(dir_nas);
@@ -2344,14 +2340,14 @@ static int fatfs_truncate(struct node *node, off_t length) {
 }
 
 static int fatfs_umount(void *dir) {
-	struct node *dir_node;
+	struct path *dir_node;
 	struct nas *dir_nas;
 
 	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir_node->node->nas;
 
 	/* delete all entry node */
-	fat_umount_entry(dir_nas);
+	fat_umount_entry(dir_node);
 
 	/* free fat file system pools and buffers*/
 	fat_free_fs(dir_nas);

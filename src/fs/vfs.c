@@ -338,48 +338,6 @@ void vfs_get_leaf_path(struct path *path) {
 	}
 }
 
-////todo is it necessary?
-//void vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len, struct path *path_node) {
-//	struct node *node;
-//	char cname[NAME_MAX]; /* child name buffer*/
-//	char *p_path;
-//
-//	if(path[0] != '/') { /* we can operate only with full path now */
-//		path_node = NULL;
-//		return;
-//	}
-//
-//	path_node->node = node = vfs_get_root(); /* we always start search from the root node */
-//
-//	exist_path[0] = '\0';
-//	p_path = (char *)path;
-//
-//	do {
-//		path_node->node = node;
-//		p_path = path_get_next_name(p_path, cname, sizeof(cname));
-//
-//		if(0 == strlen(cname)) {
-//			return; /* we found full path */
-//		}
-//
-//		if(NULL != (node = vfs_lookup_child(node, cname))) {
-//			/*add node to exist_path*/
-//			strncat(exist_path, "/", buff_len);
-//			strncat((char *)exist_path, cname, buff_len);
-//
-//			if(!node_is_directory(node)) { /* only directory may has children */
-//				return; /* this is the last element in the path */
-//			}
-//			continue;
-//		}
-//		//TODO try to caching node from a block dev
-//
-//	} while (NULL != (p_path) && NULL != node);
-//
-//
-//	return;
-//}
-
 void if_mounted_follow_down(struct path *path) {
 	if (path->node->mounted) {
 		path->mnt_desc = mount_table_get_child(path->mnt_desc, path->node);
