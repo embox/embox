@@ -31,7 +31,7 @@ static struct node *r1, *ch1, *r2, *ch2, *r3, *ch3, *r4, *ch4, *test;
 
 #include <util/list.h>
 static int setup_suite(void) {
-	struct tree_link *link;
+	struct path test_path, path1, path2, path3, path4;
 
 	r1 = node_alloc("/", 1);
 	ch1 = node_alloc("ch1", 3);
@@ -53,6 +53,20 @@ static int setup_suite(void) {
 	vfs_add_leaf(ch4, r4);
 	vfs_add_leaf(test, vfs_get_root());
 
+	test_path.mnt_desc = mount_table();
+	test_path.node = test;
+	path1.node = ch1;
+	assert(path1.mnt_desc = mount_table_add(&test_path, r1));
+
+	path2.node = ch2;
+	assert(path2.mnt_desc = mount_table_add(&path1, r2));
+
+	path3.node = ch3;
+	assert(path3.mnt_desc = mount_table_add(&path2, r3));
+
+	path4.node = ch4;
+	assert(path4.mnt_desc = mount_table_add(&path1, r4));
+
 	return 0;
 }
 
@@ -72,22 +86,6 @@ static int teardown_suite(void) {
 	vfs_del_leaf(ch4);
 	vfs_del_leaf(test);
 	return 0;
-}
-
-TEST_CASE("mount_table_add() correctness") {
-	struct path path1, path2, path3, path4;
-
-	path1.node = r1;
-	test_assert_equal(ENOERR, mount_table_add(mount_table(), test, &path1));
-
-	path2.node = r2;
-	test_assert_equal(ENOERR, mount_table_add(path1.mnt_desc, ch1, &path2));
-
-	path3.node = r3;
-	test_assert_equal(ENOERR, mount_table_add(path2.mnt_desc, ch2, &path3));
-
-	path4.node = r4;
-	test_assert_equal(ENOERR, mount_table_add(path1.mnt_desc, ch1, &path4));
 }
 
 TEST_CASE("mount_table_del() and mount_table_get_child() correctness") {
