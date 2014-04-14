@@ -264,7 +264,7 @@ int kformat(const char *pathname, const char *fs_type) {
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct path leaf, dev_node, dir_node, root;
+	struct path leaf, dev_node, dir_node, root_path;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -314,19 +314,19 @@ skip_dev_lookup:
 	}
 
 	if (0 == strcmp(dir, "/")) {
-		root.node = dir_node.node;
+		root_path.node = dir_node.node;
 	} else {
-		root.node = vfs_create_root();
+		root_path.node = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(&dev_node, &root))) {
+	if(ENOERR != (res = drv->fsop->mount(&dev_node, &root_path))) {
 		//todo free root
 		errno = -res;
 		return -1;
 
 	}
 
-	if(ENOERR != (res = mount_table_add(dir_node.mnt_desc, dir_node.node, &root))) {
+	if(NULL == mount_table_add(&dir_node, root_path.node)) {
 		drv->fsop->umount(&dir_node);
 		//todo free root
 		errno = -res;

@@ -26,7 +26,7 @@ struct mount_descriptor {
 
 extern struct mount_descriptor *mount_table(void);
 
-extern int mount_table_add(struct mount_descriptor *parent, struct node *mnt_point, struct path *root);
+extern struct mount_descriptor *mount_table_add(struct path *mnt_point_path, struct node *root);
 
 extern int mount_table_del(struct mount_descriptor *mdesc);
 

@@ -39,41 +39,41 @@ struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, 
 	return NULL;
 }
 
-int mount_table_add(struct mount_descriptor *parent, struct node *mnt_point, struct path *root) {
+struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
+		struct node *root) {
 	struct mount_descriptor *mdesc;
 
-	assert(parent != NULL || (parent == NULL && mnt_root == NULL));
+	assert(mnt_point_path->mnt_desc != NULL ||
+			(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
 
-	if(mnt_point == NULL) {
-		return -EINVAL;
+	if(mnt_point_path->node == NULL) {
+		return NULL;
 	}
 
-	if(mnt_point == parent->mnt_root) {
-		return -EINVAL;
+	if(mnt_point_path->node == mnt_point_path->mnt_desc->mnt_root) {
+		return NULL;
 	}
 
 	if(NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
-		return -ENOMEM;
+		return NULL;
 	}
 
-	mdesc->mnt_point = mnt_point;
+	mdesc->mnt_point = mnt_point_path->node;
 	mdesc->mnt_point->mounted++;
-	mdesc->mnt_root = root->node;
+	mdesc->mnt_root = root;
 
 	dlist_init(&mdesc->mnt_mounts);
 	dlist_head_init(&mdesc->mnt_child);
 
-	if (parent == NULL) {
+	if (mnt_point_path->mnt_desc == NULL) {
 		mdesc->mnt_parent = mdesc;
 		mnt_root = mdesc;
 	} else {
-		mdesc->mnt_parent = parent;
-		dlist_add_next(&mdesc->mnt_child, &parent->mnt_mounts);
+		mdesc->mnt_parent = mnt_point_path->mnt_desc;
+		dlist_add_next(&mdesc->mnt_child, &mnt_point_path->mnt_desc->mnt_mounts);
 	}
 
-	root->mnt_desc = mdesc;
-
-	return ENOERR;
+	return mdesc;
 }
 
 int mount_table_del(struct mount_descriptor *mdesc) {
