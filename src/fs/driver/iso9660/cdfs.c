@@ -795,11 +795,9 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	char path [PATH_MAX];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
 	fi->flags = flags;
 
@@ -901,10 +899,6 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
-
 	if (NULL == (dir_nas->fs = filesystem_create("iso9660"))) {
 		return -ENOMEM;
 	}
@@ -918,7 +912,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
+	//XXX vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
@@ -942,9 +936,9 @@ static int cdfsfs_mount(void *dev, void *dir) {
 static int cdfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node))) {
+			if (node_is_directory(child)) {
 				cdfs_umount_entry(child->nas);
 			}
 
@@ -999,8 +993,8 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 		strncpy(tail, path, PATH_MAX);
 	}
 
-	if(1 != numrec) {
-		dir = vfs_lookup(root, tail);
+	if (1 != numrec) {
+		vfs_subtree_lookup(root, tail, dir);
 	}
 
 	return dir;
@@ -1092,7 +1086,7 @@ static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 			}
 			name[namelen] = 0;
 
-			node = vfs_create_child(dir_node, name, S_IFREG);
+			node = vfs_subtree_create_child(dir_node, name, S_IFREG);
 			if (!node) {
 				return -ENOMEM;
 			}
@@ -1149,7 +1143,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		if (*name) {
 			dir_node = cdfs_get_dir_node(cdfs, pathrec->parent, root_node);
 
-			node = vfs_create_child(dir_node, name, S_IFDIR);
+			node = vfs_subtree_create_child(dir_node, name, S_IFDIR);
 			if (!node) {
 				return -ENOMEM;
 			}
