@@ -3,14 +3,14 @@
 if [ -f $EMBOX_GCC_ENV ]; then
 	. $EMBOX_GCC_ENV
 else
-	echo "No EMBOX_GCC_LINK is set"
+	echo "No EMBOX_GCC_ENV is set"
 	exit 1
 fi
 
 cmd=$(basename $0)
 case $cmd in
-	*-gcc) C_CXX_FLAGS=$EMBOX_IMPORTED_CFLAGS;;
-	*-g++) C_CXX_FLAGS=$EMBOX_IMPORTED_CXXFLAGS;;
+	*-gcc) C_CXX_FLAGS=$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CFLAGS;;
+	*-g++) C_CXX_FLAGS=$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CXXFLAGS;;
 	*)     echo "Unknown flags for $cmd"; exit 1;;
 esac
 
