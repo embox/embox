@@ -9,6 +9,8 @@ PID_FILE=$BASE_DIR/qemu_bg.pid
 CONT_BASE=$ROOT_DIR/scripts/continuous
 CONT_RUN=$CONT_BASE/run.sh
 
+EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
+
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
 
@@ -29,11 +31,18 @@ test_case_correct_index_html_should_be_downloaded() {
 }
 
 test_case_telnet_should_be_able_to_execute_command_and_show_output() {
-	runtest $ROOT_DIR/scripts/expect/telnet.exp
+	runtest $EXPECT_TESTS_BASE/telnet.exp
 	test_retcode
 }
 
 #test_case_ssh_should_be_able_to_execute_command_and_show_output() {
+#}
+
+test_case_ntpdate_should_set_correct_date_and_time() {
+	runtest $EXPECT_TESTS_BASE/ntpdate.exp
+}
+
+#test_case_ftp_should_be_able_to_upload_a_file() {
 #}
 
 test_suite_code=0
