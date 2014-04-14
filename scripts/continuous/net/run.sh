@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR
@@ -10,6 +10,7 @@ CONT_BASE=$ROOT_DIR/scripts/continuous
 CONT_RUN=$CONT_BASE/run.sh
 
 EMBOX_IP=10.0.2.16
+HOST_IP=10.0.2.10
 
 test_case_target_should_reply_to_ping() {
 	ping $EMBOX_IP -c 4
@@ -29,6 +30,7 @@ test_case_correct_index_html_should_be_downloaded() {
 
 test_case_telnet_should_be_able_to_execute_command_and_show_output() {
 	runtest $ROOT_DIR/scripts/expect/telnet.exp
+	test_retcode
 }
 
 #test_case_ssh_should_be_able_to_execute_command_and_show_output() {
@@ -62,7 +64,7 @@ test_end() {
 }
 
 determ_dns() {
-	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1
+	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\.0\.0\.1\|localhost\)/$HOST_IP/'
 }
 
 sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
