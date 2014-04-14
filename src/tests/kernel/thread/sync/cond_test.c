@@ -8,6 +8,7 @@
 
 #include <embox/test.h>
 #include <kernel/thread/sync/cond.h>
+#include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <err.h>
