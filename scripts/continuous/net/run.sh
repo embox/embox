@@ -11,6 +11,11 @@ CONT_RUN=$CONT_BASE/run.sh
 
 EMBOX_IP=10.0.2.16
 
+test_case_target_should_reply_to_ping() {
+	ping $EMBOX_IP -c 4
+	test_retcode
+}
+
 test_case_correct_index_html_should_be_downloaded() {
 
 	wget $EMBOX_IP
@@ -20,9 +25,11 @@ test_case_correct_index_html_should_be_downloaded() {
 	test_retcode
 
 	rm index.html
-
-
 }
+
+#test_case_telnet_should_be_able_to_execute_command_and_show_output() {
+#	$ROOT_DIR/scripts/expect/telnet.exp
+#}
 
 test_suite_code=0
 
@@ -51,20 +58,19 @@ test_end() {
 	fi
 }
 
-sim_run() {
-	$CONT_RUN generic/qemu_bg "" $PID_FILE
-	if [ 0 -ne $? ]; then
-		rm $PID_FILE
-		exit 1
-	fi
+determ_dns() {
+	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1
 }
 
-sim_stop() {
-	$CONT_RUN generic/qemu_bg_kill "" $PID_FILE
+sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
+make >/dev/null 2>/dev/null
+
+export CONTINIOUS_RUN_TIMEOUT=60
+$CONT_RUN generic/qemu_bg "" $PID_FILE
+if [ 0 -ne $? ]; then
 	rm $PID_FILE
-}
-
-sim_run
+	exit 1
+fi
 
 case_prefix=test_case_
 for test in $(declare -F | cut -d \  -f 3 | grep "^$case_prefix"); do
@@ -73,6 +79,7 @@ for test in $(declare -F | cut -d \  -f 3 | grep "^$case_prefix"); do
 	test_end
 done
 
-sim_stop
+$CONT_RUN generic/qemu_bg_kill "" $PID_FILE
+rm $PID_FILE
 
 exit $test_suite_code
