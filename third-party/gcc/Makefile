@@ -1,117 +1,80 @@
+
+PKG_NAME := gcc
+PKG_VER  := 4.8.1
+
+PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+
+PKG_PATCHES := pkg_patch.txt
+
+include $(EXTBLD_LIB)
+
 ifeq (arm,$(EMBOX_ARCH))
-EMBOX_GCC_TARGET=arm-none-eabi
+AUTOCONF_TARGET_TRIPLET=arm-none-eabi
 else ifeq (sparc,$(EMBOX_ARCH))
-EMBOX_GCC_TARGET=sparc-elf
+AUTOCONF_TARGET_TRIPLET=sparc-elf
 else ifeq (x86,$(EMBOX_ARCH))
-EMBOX_GCC_TARGET=i386-pc-elf
+AUTOCONF_TARGET_TRIPLET=i386-pc-elf
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
-EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
-EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+target_libgcc_cppflags := -DLIBGCC2_HAS_XF_MODE=0 \
+	-DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY \
+	-DNAME__MAIN -DSYMBOL__MAIN=__embox_register_eh_frame_once \
 
-ifeq (,$(EMBOX_TARGET_CC))
-$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
-endif
-ifeq (,$(EMBOX_TARGET_CXX))
-$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
-endif
+$(CONFIGURE) :
+	export EMBOX_GCC_LINK=full; \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		. $(EMBOX_GCC_ENV) && ./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			--disable-multilib \
+			--disable-shared \
+			--disable-tls \
+			--disable-nls \
+			--disable-libssp \
+			--without-newlib \
+			--enable-languages=c,c++ \
+			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
+			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
+			CPPFLAGS_FOR_TARGET="-I$(ROOT_DIR)/third-party/gcc/include/ \
+				-I$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/host-$(AUTOCONF_TARGET_TRIPLET)/gcc/include \
+				$${EMBOX_IMPORTED_CPPFLAGS}" \
+			CFLAGS_FOR_TARGET="$(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
+			CXXFLAGS_FOR_TARGET="$(target_libgcc_cppflags) $${EMBOX_IMPORTED_CXXFLAGS}" \
+			LDFLAGS_FOR_TARGET="$${EMBOX_IMPORTED_LDFLAGS}"; \
+	)
+	touch $@
 
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		make MAKEFLAGS='$${EMBOX_IMPORTED_MAKEFLAGS}' \
+			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
+			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
+			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
+			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
+			AR_FOR_TARGET=ar \
+			RANLIB_FOR_TARGET=ranlib \
+         	TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
+         	TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
+         	TARGET-libbacktrace="LINKER=true CC=true AR=touch \
+				LINK=\"mkdir -p .libs && true\" \
+				LIBS=\"&& touch .libs/libbacktrace.a\" all" \
+         	TARGET-libcpp="LINKER=true CC=true CXX=true POSTCOMPILE=true \
+				AR=true RANLIB=touch all" \
+         	TARGET-libdecnumber="LINKER=true CC=true AR=true RANLIB=touch all" \
+         	TARGET-fixincludes="LINKER=true CC=true AR=true all" \
+			TARGET-lto-plugin="CC=true LIBTOOL=true all" \
+         	TARGET-gcc="LINKER=true CC=true CXX=true \
+				GCC_FOR_TARGET=$(shell which $(EMBOX_CROSS_COMPILE)gcc) \
+				AR=true RANLIB=true libgcc-support stmp-int-hdrs" \
+         	TARGET-target-libgcc="PICFLAG= EXTRA_PARTS= all" \
+         	TARGET-target-libstdc++-v3="SUBDIRS=\"include libsupc++\" \
+				all-recursive" \
+         	all-target-libgcc all-target-libstdc++-v3; \
+	)
+	touch $@
 
-AT=
-
-GCC_DIR       = $(BUILD_DIR)
-GCC_LIBS     += $(GCC_DIR)/$(EMBOX_GCC_TARGET)/lib/libsupc++.a
-GCC_LIBS     += $(GCC_DIR)/lib/gcc/$(EMBOX_GCC_TARGET)/4.8.1/libgcc.a
-GCC_INCLUDES += $(GCC_DIR)/$(EMBOX_GCC_TARGET)/include/c++/4.8.1
-GCC_INCLUDES += $(GCC_DIR)/lib/gcc/$(EMBOX_GCC_TARGET)/4.8.1/include
-GCC_FLAGS     = $(GCC_DIR)/flags
-
-EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
-EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/gcc/gcc_embox_compat.h
-EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-
-EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
-
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -g,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
-#EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
-#EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
-#EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += -fpermissive
-
-#EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
-#EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
-
-EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
-ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
-EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
-endif
-# no wonder the following doesn't work
-# EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
-
-EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
-EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
-EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
-EMBOX_DERIVED_TARGET     = $(EMBOX_GCC_TARGET)
-EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
-EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
-
-EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib
-
-GCC_DERIVED_LIBS = $(foreach lib,$(GCC_LIBS),$(GCC_DIR)/lib/$(notdir $(lib)))
-
-all:
-
-.PHONY: all $(GCC_LIB)
-
-$(GCC_DIR):
-	$(AT)mkdir -p $@
-
-$(GCC_FLAGS): | $(GCC_DIR)
-	-$(AT)rm $@
-	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_TARGET=\"$(EMBOX_DERIVED_TARGET)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CC)\" >> $@
-	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
-
-$(GCC_DIR)/Makefile: CMakeLists.txt $(GCC_FLAGS) | $(GCC_DIR)
-	$(AT)cd $(GCC_DIR) && $(shell cat $(GCC_FLAGS)) cmake -DCMAKE_BUILD_TYPE=Debug $(shell pwd)
-
-$(GCC_LIBS): $(GCC_DIR)/Makefile
-	$(AT)cd $(GCC_DIR) && $(MAKE) VERBOSE=1 # -j `nproc`
-
-$(GCC_DERIVED_LIBS): $(GCC_LIBS)
-	$(AT)mkdir -p $(GCC_DIR)/include/
-	$(AT)$(foreach inc,$(GCC_INCLUDES),cp -R -u $(inc)/* $(GCC_DIR)/include/ &&) true
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/c++config.h $(GCC_DIR)/include/bits/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/os_defines.h $(GCC_DIR)/include/bits/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/cpu_defines.h $(GCC_DIR)/include/bits/
-	$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/$(EMBOX_GCC_TARGET)/bits/cxxabi_tweaks.h $(GCC_DIR)/include/bits/
-	#$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/bits/cxxabi_forced.h $(GCC_DIR)/include/bits/
-	#$(AT)cp -u $(GCC_DIR)/src/gcc-build/$(EMBOX_GCC_TARGET)/libstdc++-v3/include/bits/atomic_lockfree_defines.h $(GCC_DIR)/include/bits/
-	$(AT)cp -u $^ $(GCC_DIR)/lib/
-
-all: $(GCC_DERIVED_LIBS)
-.NOTPARALLEL:
+$(INSTALL) :
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/libgcc.a $(PKG_INSTALL_DIR)/libgcc.a
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/libsupc++/.libs/libsupc++.a $(PKG_INSTALL_DIR)/libsupc++.a
+	touch $@
