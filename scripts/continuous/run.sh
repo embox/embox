@@ -13,7 +13,12 @@ SIM_ARG="$2"
 shift 2
 OTHER_ARGS=$@
 
-TIMEOUT=45
+if [ $CONTINIOUS_RUN_TIMEOUT ]; then
+	TIMEOUT=$CONTINIOUS_RUN_TIMEOUT
+else
+	TIMEOUT=45
+fi
+
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
@@ -46,7 +51,7 @@ run_bg() {
 	atml2sim=(
 		['x86/nonvga_debug']="$RUN_QEMU"
 		['x86/smp']="$RUN_QEMU -smp 2"
-		['sparc/debug']="tsim-leon3 -c $(dirname $0)/tsim_run.cmd $SIM_ARG $EMKERNEL > $OUTPUT_FILE"
+		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
 		['mips/debug']="$RUN_QEMU"
 		['ppc/debug']="$RUN_QEMU"
 		['microblaze/petalogix']="$RUN_QEMU"
@@ -89,7 +94,7 @@ run_bg_do() {
 }
 
 kill_bg() {
-	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 }
 
 default_run() {
@@ -101,6 +106,8 @@ default_run() {
 	rm $OUTPUT_FILE
 
 	kill_bg
+
+	return $ret
 }
 
 run_bg_wrapper() {
@@ -113,7 +120,6 @@ run_bg_wrapper() {
 		exit $ret
 	fi
 
-	echo $sim_bg
 	echo $sim_bg > $OTHER_ARGS
 	return 0
 }
