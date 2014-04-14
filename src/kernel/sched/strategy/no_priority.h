@@ -13,6 +13,11 @@ struct thread_priority {
 
 typedef struct thread_priority __thread_priority_t;
 
+static inline int thread_priority_init(struct thread *t,
+		sched_priority_t new_priority) {
+	return 0;
+}
+
 static inline int thread_priority_set(struct thread *t,
 		sched_priority_t new_priority) {
 	return 0;
