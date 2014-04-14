@@ -1,4 +1,4 @@
-#!/usr/bin/expect
+#!/usr/bin/runtest
 
 source [file join [file dirname [info script]] exec_through_telnet.exp]
 
