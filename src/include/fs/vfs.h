@@ -124,14 +124,23 @@ static inline int vfs_get_path_by_node(struct path *node, char *path) {
 
 extern int vfs_get_relative_path(struct node *node, char *path);
 
+
+
+
 extern struct node *vfs_subtree_create_child(struct node *parent, const char *name,
 		mode_t mode);
 
 extern struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name, size_t len);
 
-extern int vfs_subtree_lookup(struct node *parent, const char *str_path, struct node *path);
+extern struct node *vfs_subtree_lookup(struct node *parent, const char *str_path);
 
 extern struct node *vfs_subtree_get_child_next(struct node *child_next);
+
+extern struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
+		struct path *child);
+
+extern struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode,
+		struct path *child);
 
 
 #endif /* FS_VFS_H_ */

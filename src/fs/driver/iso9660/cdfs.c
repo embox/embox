@@ -994,7 +994,7 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 	}
 
 	if (1 != numrec) {
-		vfs_subtree_lookup(root, tail, dir);
+		dir = vfs_subtree_lookup(root, tail);
 	}
 
 	return dir;

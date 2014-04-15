@@ -19,9 +19,14 @@
 
 #define ROOT_MODE 0755
 
+#define ERR_CHILD_NOT_FOUND 1
+#define ERR_CHILD_MOUNTED   2
+
 static struct node *__vfs_get_parent(struct node *child);
-static void __vfs_subtree_lookup_existing(struct node *parent, const char *str_path,
-		const char **p_end_existent, struct node *path);
+static int __vfs_subtree_lookup_existing(struct node *parent, const char *str_path,
+		const char **p_end_existent, struct node **child);
+static struct node * __vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
+		int intermediate);
 
 struct lookup_tuple {
 	const char *name;
@@ -88,9 +93,9 @@ void vfs_lookup_childn(struct path *parent, const char *name, size_t len,
 	child->node = vfs_subtree_lookup_childn(parent->node, name, len);
 }
 
-static void __vfs_lookup_existing(struct path *parent, const char *str_path,
+static void __vfs_lookup_existing(const struct path *parent, const char *str_path,
 		const char **p_end_existent, struct path *path) {
-	struct path child;
+	struct node *node;
 	size_t len = 0;
 
 	assert(parent && str_path);
@@ -98,17 +103,10 @@ static void __vfs_lookup_existing(struct path *parent, const char *str_path,
 
 	while ((str_path = path_next(str_path, &len))) {
 		if_mounted_follow_down(path);
-		vfs_lookup_childn(path, str_path, len, &child);
-		if (!child.node) {
+		if (-ERR_CHILD_MOUNTED != __vfs_subtree_lookup_existing(path->node,
+				str_path, p_end_existent, &node))
 			break;
-		}
-
-		*path = child;
-		str_path += len;
-	}
-
-	if (p_end_existent) {
-		*p_end_existent = str_path;
+		path->node = node;
 	}
 
 	return;
@@ -147,47 +145,16 @@ void vfs_create_child(struct path *parent, const char *name, mode_t mode,
 
 static int __vfs_create(struct path *parent, const char *path, mode_t mode,
 		int intermediate, struct path *child) {
-	size_t len;
-	struct path tmp_parent;
-
 	assert(parent);
+	assert(child);
 
-	tmp_parent = *parent;
+	*child = *parent;
 
-	__vfs_lookup_existing(&tmp_parent, path, &path, &tmp_parent);
-	path = path_next(path, &len);
+	__vfs_lookup_existing(child, path, &path, child);
+	if_mounted_follow_down(child);
 
-	/* Here path points to the first non-existent fragment, if any. */
+	child->node = __vfs_subtree_create(child->node, path, mode, intermediate);
 
-	if (intermediate) {
-		const char *next_path;
-		size_t next_len;
-
-		if (!path) {
-			/* Node already exist, set mode. */
-			parent->node->mode = mode;
-			*child = tmp_parent;
-			return 0;
-		}
-
-		while ((next_path = path_next(path + len, &next_len))) {
-			__vfs_create_child(&tmp_parent, path, len, S_IFDIR, child);
-
-			if (!child) {
-				return -1;
-			}
-
-			tmp_parent = *child;
-			path = next_path;
-			len = next_len;
-		}
-
-	} else if (!path || path_next(path + len, NULL)) {
-		/* Node already exists or missing intermediate node. */
-		return -1;
-	}
-
-	__vfs_create_child(&tmp_parent, path, len, mode, child);
 	return child->node ? 0 : -1;
 }
 
@@ -255,21 +222,25 @@ static struct node *__vfs_get_parent(struct node *child) {
 	return tree_element(child->tree_link.par, struct node, tree_link);
 }
 
-static void __vfs_subtree_lookup_existing(struct node *parent, const char *str_path,
-		const char **p_end_existent) {
-	struct path child;
+static int __vfs_subtree_lookup_existing(struct node *parent, const char *str_path,
+		const char **p_end_existent, struct node **child_ptr) {
 	size_t len = 0;
+	int res = 0;
+	struct node *child = *child_ptr;
 
 	assert(parent && str_path);
-	*path = *parent;
 
 	while ((str_path = path_next(str_path, &len))) {
-		vfs_subtree_lookup_childn(path, str_path, len, &child);
-		if (!child.node) {
-			break;
+		child = vfs_subtree_lookup_childn(parent, str_path, len);
+		if (!child) {
+			res = -ERR_CHILD_NOT_FOUND;
+			goto out;
 		}
 
-		*path = child;
+		if (child->mounted) {
+			res = -ERR_CHILD_MOUNTED;
+			goto out;
+		}
 		str_path += len;
 	}
 
@@ -277,7 +248,53 @@ static void __vfs_subtree_lookup_existing(struct node *parent, const char *str_p
 		*p_end_existent = str_path;
 	}
 
-	return;
+out:
+	*child_ptr = child;
+	return res;
+}
+
+static struct node *__vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
+		int intermediate) {
+	struct node *child = NULL;
+	size_t len;
+	struct node **tmp_parent;
+
+	assert(parent);
+
+	tmp_parent = &parent;
+
+	__vfs_subtree_lookup_existing(*tmp_parent, path, &path, tmp_parent);
+	path = path_next(path, &len);
+
+	/* Here path points to the first non-existent fragment, if any. */
+
+	if (intermediate) {
+		const char *next_path;
+		size_t next_len;
+
+		if (!path) {
+			/* Node already exist, set mode. */
+			//XXX wtf?? parent->mode = mode;
+			return *tmp_parent;
+		}
+
+		while ((next_path = path_next(path + len, &next_len))) {
+			child = vfs_subtree_create_child(*tmp_parent, path, S_IFDIR);
+
+			if (!child) {
+				return NULL;
+			}
+
+			tmp_parent = &child;
+			path = next_path;
+			len = next_len;
+		}
+	} else if (!path || path_next(path + len, NULL)) {
+		/* Node already exists or missing intermediate node. */
+		return NULL;
+	}
+
+	return vfs_subtree_create_child(*tmp_parent, path, mode);
 }
 
 struct node *vfs_subtree_create_child(struct node *parent, const char *name,
@@ -289,7 +306,7 @@ struct node *vfs_subtree_create_child(struct node *parent, const char *name,
 	child = node_alloc(name, strlen(name));
 	if (child) {
 		child->mode = mode;
-		vfs_add_leaf(*child, parent);
+		vfs_add_leaf(child, parent);
 	}
 
 	return child;
@@ -311,19 +328,19 @@ struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name, si
 	return tree_element(tlink, struct node, tree_link);
 }
 
-struct node *vfs_subtree_lookup(struct node *parent, const char *str_path)  {
-	struct node *path;
+struct node *vfs_subtree_lookup(struct node *parent, const char *str_path) {
+	struct node *node;
 
 	assert(parent);
 
-	__vfs_subtree_lookup_existing(parent, str_path, &str_path);
+	__vfs_subtree_lookup_existing(parent, str_path, &str_path, &node);
 
 	if (path_next(str_path, NULL )) {
 		/* Have unresolved fragments in path. */
 		return NULL;
 	}
 
-	return 0;
+	return node;
 }
 
 struct node *vfs_subtree_get_child_next(struct node *child_next) {
@@ -334,6 +351,16 @@ struct node *vfs_subtree_get_child_next(struct node *child_next) {
 	tlink = tree_children_begin(&(child_next->tree_link));
 
 	return tree_element(tlink, struct node, tree_link);
+}
+
+struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
+		struct path *child) {
+	return __vfs_subtree_create(parent, path, mode, 0);
+}
+
+struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode,
+		struct path *child) {
+	return __vfs_subtree_create(parent, path, mode, 1);
 }
 
 node_t *vfs_get_leaf(void) {
