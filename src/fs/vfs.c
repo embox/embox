@@ -357,13 +357,11 @@ struct node *vfs_subtree_get_child_next(struct node *child_next) {
 	return tree_element(tlink, struct node, tree_link);
 }
 
-struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
-		struct path *child) {
+struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode) {
 	return __vfs_subtree_create(parent, path, mode, 0);
 }
 
-struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode,
-		struct path *child) {
+struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode) {
 	return __vfs_subtree_create(parent, path, mode, 1);
 }
 

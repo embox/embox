@@ -319,7 +319,7 @@ skip_dev_lookup:
 		root_path.node = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(&dev_node, &root_path))) {
+	if(ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
 		//todo free root
 		errno = -res;
 		return -1;
