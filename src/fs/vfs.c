@@ -263,7 +263,9 @@ static struct node *__vfs_subtree_create(struct node *parent, const char *path, 
 
 	tmp_parent = &parent;
 
-	__vfs_subtree_lookup_existing(*tmp_parent, path, &path, tmp_parent);
+	if (0 > __vfs_subtree_lookup_existing(*tmp_parent, path, &path, tmp_parent)) {
+		return NULL;
+	}
 	path = path_next(path, &len);
 
 	/* Here path points to the first non-existent fragment, if any. */
