@@ -328,6 +328,10 @@ struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name, si
 	return tree_element(tlink, struct node, tree_link);
 }
 
+struct node *vfs_subtree_lookup_child(struct node *parent, const char *name) {
+	return vfs_subtree_lookup_childn(parent, name, strlen(name));
+}
+
 struct node *vfs_subtree_lookup(struct node *parent, const char *str_path) {
 	struct node *node;
 
@@ -407,6 +411,10 @@ node_t *vfs_get_root(void) {
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
+}
+
+node_t *vfs_subtree_get_parent(node_t *node) {
+	return __vfs_get_parent(node);
 }
 
 int vfs_get_relative_path(struct node *node, char *path) {

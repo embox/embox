@@ -134,6 +134,8 @@ extern struct node *vfs_subtree_lookup_childn(struct node *parent, const char *n
 
 extern struct node *vfs_subtree_lookup(struct node *parent, const char *str_path);
 
+extern struct node *vfs_subtree_lookup_child(struct node *parent, const char *name);
+
 extern struct node *vfs_subtree_get_child_next(struct node *child_next);
 
 extern struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode,
@@ -141,6 +143,8 @@ extern struct node *vfs_subtree_create(struct node *parent, const char *path, mo
 
 extern struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode,
 		struct path *child);
+
+extern node_t *vfs_subtree_get_parent(node_t *node);
 
 
 #endif /* FS_VFS_H_ */
