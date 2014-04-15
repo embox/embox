@@ -524,16 +524,16 @@ static int tmpfs_format(void *dev) {
 }
 
 static int tmpfs_mount(void *dev, void *dir) {
-	struct path *dir_node, *dev_node;
+	struct node *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct tmpfs_file_info *fi;
 	struct tmpfs_fs_info *fsi;
 	struct node_fi *dev_fi;
 
 	dev_node = dev;
-	dev_nas = dev_node->node->nas;
+	dev_nas = dev_node->nas;
 	dir_node = dir;
-	dir_nas = dir_node->node->nas;
+	dir_nas = dir_node->nas;
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		return -ENODEV;
