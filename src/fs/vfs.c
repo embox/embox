@@ -171,11 +171,13 @@ int vfs_create_intermediate(struct path *parent, const char *path, mode_t mode,
 	return __vfs_create(parent, path, mode, 1, child);
 }
 
-void vfs_get_child_next(struct path *parent_path, struct path *child_next) {
+int vfs_get_child_next(struct path *parent_path, struct path *child_next) {
 	*child_next = *parent_path;
 	if_mounted_follow_down(child_next);
 
 	child_next->node = vfs_subtree_get_child_next(child_next->node);
+
+	return child_next->node ? 0 : -1;
 }
 
 void vfs_get_parent(struct path *child_path, struct path *parent_path) {
