@@ -1960,20 +1960,18 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	struct nas *nas;
 	uint8_t path [PATH_MAX];
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
 
 	node = nod;
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(nod, (char *) fsi->mntto);
+	vfs_get_relative_path(nod, (char *) path);
 
-	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
+	if (DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
-
 		return 0;
 	}
+
 	return -1;
 }
 
