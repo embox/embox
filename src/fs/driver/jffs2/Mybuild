@@ -1,21 +1,21 @@
-//package embox.fs.driver
-//
-//module jffs2 {
-//	@IncludePath("$(THIRDPARTY_DIR)/lib/zlib-1.2.8")
-//	source "build.c", "compr_rtime.c", "compr_rubin.c", "compr_zlib.c", "compr.c", "debug.c"
-//	source "dir.c", "erase.c", "gc.c", "scan.c", "jffs2.c"
-//	@IncludePath("$(THIRDPARTY_DIR)/lib/util")
-//	source "read.c", "readinode.c", "nodelist.c", "write.c", "malloc_jffs2.c", "nodemgmt.c", "flashio.c"
-//	option number inode_quantity=64
-//	option number jffs2_descriptor_quantity=4
-//
-//	depends embox.fs.node, embox.fs.driver.repo
-//	depends embox.fs.driver.fat
-//	depends embox.driver.block
-//	depends embox.mem.page_api
-//	depends embox.mem.pool
-//	depends embox.driver.flash
-//	depends third_party.zlib.libs
-//	depends third_party.lib.util.rbtree
-//	depends embox.driver.flash_emu
-//}
+package embox.fs.driver
+
+module jffs2 {
+	@IncludePath("$(THIRDPARTY_DIR)/lib/zlib-1.2.8")
+	source "build.c", "compr_rtime.c", "compr_rubin.c", "compr_zlib.c", "compr.c", "debug.c"
+	source "dir.c", "erase.c", "gc.c", "scan.c", "jffs2.c"
+	@IncludePath("$(THIRDPARTY_DIR)/lib/util")
+	source "read.c", "readinode.c", "nodelist.c", "write.c", "malloc_jffs2.c", "nodemgmt.c", "flashio.c"
+	option number inode_quantity=64
+	option number jffs2_descriptor_quantity=4
+
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.fat
+	depends embox.driver.block
+	depends embox.mem.page_api
+	depends embox.mem.pool
+	depends embox.driver.flash
+	depends third_party.zlib.libs
+	depends third_party.lib.util.rbtree
+	depends embox.driver.flash_emu
+}
