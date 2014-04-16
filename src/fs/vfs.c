@@ -104,8 +104,11 @@ static void __vfs_lookup_existing(const struct path *parent, const char *str_pat
 	while ((str_path = path_next(str_path, &len))) {
 		if_mounted_follow_down(path);
 		if (-ERR_CHILD_MOUNTED != __vfs_subtree_lookup_existing(path->node,
-				str_path, p_end_existent, &node))
+				str_path, p_end_existent, &node)) {
+			path->node = node;
 			break;
+		}
+
 		path->node = node;
 	}
 
@@ -242,14 +245,15 @@ static int __vfs_subtree_lookup_existing(struct node *parent, const char *str_pa
 			goto out;
 		}
 		str_path += len;
+		parent = child;
 	}
 
+out:
 	if (p_end_existent) {
 		*p_end_existent = str_path;
 	}
 
-out:
-	*child_ptr = child;
+	*child_ptr = parent;
 	return res;
 }
 
@@ -263,9 +267,8 @@ static struct node *__vfs_subtree_create(struct node *parent, const char *path, 
 
 	tmp_parent = &parent;
 
-	if (0 > __vfs_subtree_lookup_existing(*tmp_parent, path, &path, tmp_parent)) {
-		return NULL;
-	}
+	__vfs_subtree_lookup_existing(*tmp_parent, path, &path, tmp_parent);
+
 	path = path_next(path, &len);
 
 	/* Here path points to the first non-existent fragment, if any. */

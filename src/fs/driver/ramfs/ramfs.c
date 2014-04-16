@@ -92,7 +92,7 @@ static int ramfs_init(void * par) {
 	}
 
 	/* mount filesystem */
-	return ramfs_mount(dev_node, &dir_node);
+	return ramfs_mount(dev_node, dir_node.node);
 }
 
 static int ramfs_ramdisk_fs_init(void) {
