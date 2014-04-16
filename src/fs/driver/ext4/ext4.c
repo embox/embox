@@ -743,7 +743,7 @@ static int ext4fs_delete(struct node *node) {
 	int rc;
 	node_t *parents;
 
-	if (NULL == (parents = vfs_get_parent(node))) {
+	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
@@ -775,7 +775,7 @@ static int ext4fs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if(NULL != vfs_get_child_next(dir_node)) {
+	if (NULL != vfs_subtree_get_child_next(dir_node)) {
 		return -ENOTEMPTY;
 	}
 
@@ -794,7 +794,6 @@ static int ext4fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ext4_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&ext4_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
@@ -880,9 +879,9 @@ static void ext4_free_fs(struct nas *nas) {
 static int ext4_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+			if (node_is_directory(child)) {
 				ext4_umount_entry(child->nas);
 			}
 
@@ -1340,7 +1339,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 
 			mode = ext4_type_to_mode_fmt(dp->type);
 
-			node = vfs_create(dir_nas->node, name_buff, mode);
+			node = vfs_subtree_create(dir_nas->node, name_buff, mode);
 			if (!node) {
 				rc = ENOMEM;
 				goto out;
