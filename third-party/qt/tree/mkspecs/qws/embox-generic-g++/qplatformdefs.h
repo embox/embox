@@ -309,12 +309,6 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
-
-static inline struct group *getgrgid(gid_t gid) {
-	printf(">>> getgrgid %d\n", gid);
-	return NULL;
-}
-
 //------BEGIN QProcess
 
 static inline pid_t setsid(void) {
