@@ -8,7 +8,6 @@ include $(SRCGEN_DIR)/image.rule.mk
 
 rootdir := $(abspath $(ROOT_DIR))
 EMBOX_IMPORTED_CPPFLAGS :=
-EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
 EMBOX_IMPORTED_CPPFLAGS += $(filter -U__linux__,$(EMBOX_EXPORT_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_EXPORT_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__unix,$(EMBOX_EXPORT_CPPFLAGS))
