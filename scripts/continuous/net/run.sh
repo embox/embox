@@ -30,18 +30,16 @@ test_case_correct_index_html_should_be_downloaded() {
 	rm index.html
 }
 
-test_case_telnet_should_be_able_to_execute_command_and_show_output() {
-	runtest $EXPECT_TESTS_BASE/telnet.exp
-	test_retcode
-}
-
 #test_case_ssh_should_be_able_to_execute_command_and_show_output() {
 #}
 
-#test_case_ntpdate_should_set_correct_date_and_time() {
-#	runtest $EXPECT_TESTS_BASE/ntpdate.exp
-#	test_retcode
-#}
+test_case_interactive_tests_should_success() {
+	runtest $EXPECT_TESTS_BASE/telnet.exp \
+		$EXPECT_TESTS_BASE/ntpdate.exp
+	test_retcode
+
+	cat testrun.log
+}
 
 #test_case_ftp_should_be_able_to_upload_a_file() {
 #}

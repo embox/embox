@@ -19,6 +19,7 @@ proc exec_cmd {embox_ip cmd} {
 		}
 		return 0
 	}
+	sleep 1
 
 	spawn telnet $embox_ip
 	set res [telnet_connect]
