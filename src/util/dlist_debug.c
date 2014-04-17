@@ -9,9 +9,9 @@
 #include <assert.h>
 #include <util/dlist.h>
 
-void __dlist_debug_check(struct dlist_head *head) {
-	struct dlist_head *p = head->prev;
-	struct dlist_head *n = head->next;
+void __dlist_debug_check(const struct dlist_head *head) {
+	const struct dlist_head *p = head->prev;
+	const struct dlist_head *n = head->next;
 	uintptr_t poison = head->poison;
 
 	assert((!poison || (void *) ~poison == head) &&

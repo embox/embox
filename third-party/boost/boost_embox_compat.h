@@ -44,6 +44,7 @@ struct tms
   clock_t tms_cstime;         /* System CPU time of dead children.  */
 };
 
+#include <kernel/task.h>
 /* Store the CPU time used by this process and all its
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
@@ -65,7 +66,7 @@ namespace std {
 
 extern int symlink(const char *oldpath, const char *newpath);
 //extern int link(const char *oldpath, const char *newpath);
-extern ssize_t readlink(const char *path, char *buf, size_t bufsiz);
+//extern ssize_t readlink(const char *path, char *buf, size_t bufsiz);
 #define _PC_NAME_MAX 0
 extern long pathconf(char *path, int name);
 

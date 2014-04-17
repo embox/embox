@@ -276,13 +276,13 @@ define class-Mybuild
 			$(if $(strip \
 				$(for \
 					opt<-$(get mod->allOptions),
-					optValue <- $(or $(if $(get modInst->includeMember),
+					optValue <- $(or $(strip $(if $(get modInst->includeMember),
 											# if module was explicitly enabled
 											# from configs and probably has
 											# config option bindings
 										$(invoke findOptValue,$(opt),
 											$(get $(get modInst->includeMember).
-														optionBindings))),
+														optionBindings)))),
 								 $(get opt->defaultValue),),
 					$(if $(optValue),
 						$(silent-for optInst <- $(new OptionInstance),

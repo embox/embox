@@ -84,10 +84,8 @@ static int kflock_lock_get(kflock_t *kflock, struct flock *flock) {
 static int kflock_lock_put(kflock_t *kflock, struct flock *flock) {
 	kflock_lock_t *lock;
 	struct thread *current = thread_self();
-	struct dlist_head *item, *next;
 
-	dlist_foreach(item, next, &kflock->locks) {
-		lock = dlist_entry(item, kflock_lock_t, kflock_link);
+	dlist_foreach_entry(lock, &kflock->locks, kflock_link) {
 		if (current->task->tid == lock->flock.l_pid) {
 			if (NULL == flock || (lock->flock.l_start == flock->l_start &&
 					lock->flock.l_len == flock->l_len)) {
@@ -115,14 +113,12 @@ static int kflock_get_disposition(int *intersection, kflock_t *kflock,
 		struct flock *flock, kflock_lock_t *existing_kflock, unsigned int skip)
 {
 	kflock_lock_t *lock;
-	struct dlist_head *item, *next;
 	off_t lock_end, flock_end = flock->l_start + flock->l_len;
 	off_t delta_start, delta_end;
 
 	*intersection = -1;
 
-	dlist_foreach(item, next, &kflock->locks) {
-		lock = dlist_entry(item, kflock_lock_t, kflock_link);
+	dlist_foreach_entry(lock, &kflock->locks, kflock_link) {
 		lock_end = lock->flock.l_start + lock->flock.l_len;
 		delta_start = lock->flock.l_start - flock->l_start;
 		delta_end = lock_end - flock_end;

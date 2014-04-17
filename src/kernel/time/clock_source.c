@@ -35,10 +35,7 @@ static time64_t cs_counter_read(struct clock_source *cs);
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
 
-	struct dlist_head *tmp, *csh_lnk;
-
-	dlist_foreach(csh_lnk,tmp,&clock_source_list) {
-		csh = dlist_entry(csh_lnk, struct clock_source_head, lnk);
+	dlist_foreach_entry(csh, &clock_source_list, lnk) {
 		if (cs == csh->clock_source) {
 			return csh;
 		}
@@ -149,14 +146,12 @@ static time64_t cs_counter_read(struct clock_source *cs) {
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
 	struct clock_source_head *csh;
-	struct dlist_head *tmp, *csh_lnk;
 	uint32_t best_resolution = 0;
 	uint32_t resolution = 0;
 
 	best = NULL;
 
-	dlist_foreach(csh_lnk,tmp,&clock_source_list) {
-		csh = dlist_entry(csh_lnk, struct clock_source_head, lnk);
+	dlist_foreach_entry(csh, &clock_source_list, lnk) {
 		cs = csh->clock_source;
 
 		switch (pr) {

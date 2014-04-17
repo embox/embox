@@ -42,9 +42,15 @@ static int run_script(void) {
 
 	printf("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
+		int ret;
+
 		printf("> %s \n", command);
 
-		shell_exec(shell, command);
+		ret = shell_exec(shell, command);
+
+		if (OPTION_GET(BOOLEAN,stop_on_error) && ret) {
+			return ret;
+		}
 	}
 
 #if START_SHELL

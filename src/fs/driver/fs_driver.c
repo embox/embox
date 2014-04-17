@@ -69,10 +69,9 @@ static int fs_driver_init(void) {
 }
 
 struct fs_driver *fs_driver_find_drv(const char *name) {
-	struct fs_driver_head *tmp;
 	struct fs_driver_head *fs_driver;
 
-	dlist_foreach_entry(fs_driver, tmp, &file_systems, link) {
+	dlist_foreach_entry(fs_driver, &file_systems, link) {
 		if (0 == strcmp(fs_driver->drv->name, name)) {
 			return fs_driver->drv;
 		}

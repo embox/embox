@@ -9,5 +9,6 @@ module virtio {
 	depends embox.lib.LibCAssert
 	depends embox.lib.LibCString
 	depends embox.lib.LibCStdlib
+	depends embox.mem.sysmalloc_api
 	/* depends virtio_ring.c */
 }

@@ -26,7 +26,7 @@ static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize);
 
 __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 	char *cur = (char*)snmp_packet;
-	struct varbind *var, *nxt;
+	struct varbind *var;
 	__u32 packet_len = 0;
 
 	/* Fill SNMP: inclusion: snmp<-pdu<-data */
@@ -55,7 +55,7 @@ __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 	*(cur++) = data_len(snmp_desc);
 
 	/* Fill data */
-	dlist_foreach_entry(var, nxt, &snmp_desc->varbind_list, link) {
+	dlist_foreach_entry(var, &snmp_desc->varbind_list, link) {
 		*(cur++) = PDU_SEQUENCE;
 		*(cur++) = var_len(var);
 
@@ -181,10 +181,10 @@ static __u8 pdu_len(struct snmp_desc *snmp_desc) {
 }
 
 static __u8 data_len(struct snmp_desc *snmp_desc) {
-	struct varbind *var, *nxt;
+	struct varbind *var;
 	__u8 len = 0;
 
-	dlist_foreach_entry(var, nxt, &snmp_desc->varbind_list, link) {
+	dlist_foreach_entry(var, &snmp_desc->varbind_list, link) {
 		len += var_len(var) + __HDR_LEN; /* actual data and header */
 	}
 

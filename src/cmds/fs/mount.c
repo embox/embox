@@ -32,7 +32,7 @@ static void print_usage(void) {
 
 static int show_mount_list(void) {
 	struct dlist_head *mount_list;
-	struct mount_descriptor *mdesc, *tmp;
+	struct mount_descriptor *mdesc;
 	char mount_path[PATH_MAX];
 	const char *fs_name;
 	const char *bdev_path;
@@ -40,7 +40,7 @@ static int show_mount_list(void) {
 	if(NULL == (mount_list = mount_table())) {
 		return 0;
 	}
-	dlist_foreach_entry(mdesc, tmp, mount_list, mount_link) {
+	dlist_foreach_entry(mdesc, mount_list, mount_link) {
 		vfs_get_path_by_node(mdesc->dir_node, mount_path);
 		fs_name = mdesc->dir_node->nas->fs->drv->name;
 		bdev_path = mdesc->dir_node->nas->fs->bdev->name;

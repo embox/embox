@@ -22,7 +22,7 @@
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 
-OBJALLOC_DEF(dir_pool, struct directory, MAX_DIR_QUANTITY);
+OBJALLOC_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
 	node_t *node;

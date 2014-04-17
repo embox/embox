@@ -15,7 +15,6 @@
 
 #include <hal/cpu.h>
 
-#include <kernel/thread/types.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 
@@ -58,14 +57,14 @@ extern void sched_ticker_switch(struct thread *prev, struct thread *next);
 extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
 
+#if 0
 /**
  * Makes exit thread and removes thread from scheduler.
  */
 extern void sched_finish(struct thread *t);
+#endif
 
-static inline int sched_active(struct thread *t) {
-	return t->active;
-}
+extern int sched_active(struct thread *t);
 
 /**
  * Changes scheduling priority of the thread. If the thread is running now

@@ -26,6 +26,7 @@
 
 #include <kernel/sched.h>
 #include <fs/flags.h>
+#include <mem/sysmalloc.h>
 
 
 
@@ -94,9 +95,9 @@ static void pipe_close(struct idesc *idesc) {
 	ret = idesc_pipe_close(cur, other);
 	mutex_unlock(&pipe->mutex);
 	if (ret) {
-		free(pipe->buff->storage);
-		free(pipe->buff);
-		free(pipe);
+		sysfree(pipe->buff->storage);
+		sysfree(pipe->buff);
+		sysfree(pipe);
 	}
 }
 
@@ -287,9 +288,9 @@ static struct pipe *pipe_alloc(void) {
 	pipe = storage = NULL;
 	pipe_buff = NULL;
 
-	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
-				|| !(pipe = malloc(sizeof(struct pipe)))
-				|| !(pipe_buff = malloc(sizeof(struct ring_buff)))) {
+	if (!(storage = sysmalloc(DEFAULT_PIPE_BUFFER_SIZE))
+				|| !(pipe = sysmalloc(sizeof(struct pipe)))
+				|| !(pipe_buff = sysmalloc(sizeof(struct ring_buff)))) {
 		goto free_memory;
 	}
 
@@ -302,16 +303,16 @@ static struct pipe *pipe_alloc(void) {
 	return pipe;
 
 free_memory:
-	if (storage)   free(storage);
-	if (pipe_buff) free(pipe_buff);
-	if (pipe)      free(pipe);
+	if (storage)   sysfree(storage);
+	if (pipe_buff) sysfree(pipe_buff);
+	if (pipe)      sysfree(pipe);
 	return NULL;
 }
 
 static void pipe_free(struct pipe *pipe) {
-	free(pipe->buff->storage);
-	free(pipe->buff);
-	free(pipe);
+	sysfree(pipe->buff->storage);
+	sysfree(pipe->buff);
+	sysfree(pipe);
 }
 
 int pipe(int pipefd[2]) {
