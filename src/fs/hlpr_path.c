@@ -181,7 +181,7 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         for (i = 0; i < 8; i++) {
 			if (*src != ' ') {
 				*dst = *src;
-				if ((0 == dir) && (*dst >= 'A' && *dst <='Z')) {
+				if (*dst >= 'A' && *dst <='Z') {
 					*dst = (*dst - 'A') + 'a';
 				}
 				dst++;
@@ -194,7 +194,7 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         for (i = 0; i < 3; i++) {
 			if (*src != ' ') {
 				*dst = *src;
-				if ((0 == dir) && (*dst >= 'A' && *dst <='Z')) {
+				if (*dst >= 'A' && *dst <='Z') {
 					*dst = (*dst - 'A') + 'a';
 				}
 				dst++;
