@@ -18,6 +18,9 @@
 
 #include <acpica/acpi.h>
 
+//ACPI_GENERIC_ADDRESS __attribute__((packed));
+//ACPI_TABLE_HPET __attribute__((packed));
+
 static cycle_t hpet_read(void);
 
 static struct time_counter_device hpet_counter_device = {
@@ -31,56 +34,75 @@ static struct clock_source hpet_clock_source = {
 	.read = &clock_source_read
 };
 
-static ACPI_TABLE_HEADER *hpet_table;
-static void *base_address;
+static ACPI_TABLE_HPET *hpet_table;
+static uintptr_t base_address;
 
 EMBOX_UNIT_INIT(hpet_init);
 
-static void print_bytes(const char *name, const void *p, size_t size) {
-	printk("%s bytes: ", name);
-	for (size_t i = 0; i < size; ++i) {
-		printk("0x%hhx ", *((uint8_t *) p + i));
-	}
-	printk("\n");
+#define GEN_CAP_REG 0x000
+#define GEN_CONF_REG 0x010
+#define GEN_INT_REG 0x020
+#define MAIN_CNT_REG 0x0F0
+
+#define ENABLE_CNF 0x1
+
+#define FEMPTOSEC_IN_SEC 1000000000000000 /* 10^15 */
+
+static inline uint64_t hpet_get_register(uintptr_t offset) {
+	return *((uint64_t *) (base_address + offset));
+}
+
+static inline void hpet_set_register(uintptr_t offset, uint64_t value) {
+	*((uint64_t *) (base_address + offset)) = value;
+}
+
+static uint32_t hpet_get_resolution() {
+	uint64_t reg;
+	uint32_t period;
+
+	reg = hpet_get_register(GEN_CAP_REG);
+	period = reg >> 32;
+	printk("Period: %u\n", period);
+	return FEMPTOSEC_IN_SEC / period;
+}
+
+static void hpet_start_counter() {
+	uint64_t reg;
+
+	reg = hpet_get_register(GEN_CONF_REG);
+	reg |= ENABLE_CNF;
+	hpet_set_register(GEN_CONF_REG, reg);
 }
 
 static int hpet_init(void) {
 	char hpet_table_signature[] = "HPET";
 	ACPI_STATUS status;
 
-	status = AcpiGetTable(hpet_table_signature, 1, &hpet_table);
+	status = AcpiGetTable(hpet_table_signature,
+			1, (ACPI_TABLE_HEADER **) &hpet_table);
 	if (ACPI_FAILURE(status)) {
 		printk("Unable to get HPET table\n");
 		return -1;
 	}
 
-	print_bytes("hpet_table", hpet_table, 56);
+	base_address = hpet_table->Address.Address;
 
-	base_address = (void *) (uint32_t) (*(uint64_t *) ((uint8_t *) hpet_table + 44));
-	printk("base_address=%p\n", base_address);
+	hpet_counter_device.resolution = hpet_get_resolution();
+	printk("Resolution: %u\n", hpet_counter_device.resolution);
 
-	uint64_t resolution = (uint64_t) 1000000000000000 / *((uint32_t *) base_address);
-	hpet_counter_device.resolution = resolution;
-	printk("Resolution: %llu\n", resolution);
-
-	uint64_t *general_configuration_register = (uint64_t *) ((uint8_t *) base_address + 0x010);
-	uint64_t general_configuration_register_value = *general_configuration_register;
-	print_bytes("general_configuration_register_value", &general_configuration_register_value, 8);
-	general_configuration_register_value |= 0x1;
-	print_bytes("general_configuration_register_value", &general_configuration_register_value, 8);
-	*general_configuration_register = general_configuration_register_value;
-
-	clock_source_register(&hpet_clock_source);
+	hpet_start_counter();
 
 	for (int i = 0; i < 10; ++i) {
-		printk("%lld\n", (*hpet_clock_source.read)(&hpet_clock_source));
 		ksleep(1000);
+		printk("%llu\n", (*hpet_clock_source.read)(&hpet_clock_source));
 	}
+
+	clock_source_register(&hpet_clock_source);
 
 	return 0;
 }
 
 static cycle_t hpet_read(void) {
-	return *((uint64_t *) ((uint8_t *) base_address + 0x0F0));
+	return hpet_get_register(MAIN_CNT_REG);
 }
 
