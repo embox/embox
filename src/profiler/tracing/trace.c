@@ -251,23 +251,18 @@ void trace_block_hashtable_init(void) {
 	}
 
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
-	if (tbhash) {
-		cyg_profiling = c;
-		return;
-	}
-	/*tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
-				get_trace_block_hash, cmp_trace_blocks);
-	*/
+
 	cyg_profiling = c;
 }
 void trace_block_hashtable_destroy(void) {
 	/* Clear trace_block hash table */
-	int c = cyg_profiling;
+	/*int c = cyg_profiling;
 	cyg_profiling = false;
 
 	if (tbhash)
 		hashtable_destroy(tbhash);
 	tbhash = NULL;
-	cyg_profiling = c;
+	cyg_profiling = c;*/
+	// TODO: remove this function
 }
 

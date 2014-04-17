@@ -43,19 +43,10 @@ struct __trace_block {
 	void *func;
 	struct location_func location;
 
-	/* This array acts like a stack to capture multiple enter time when block
-	 * is being entered recursively.
-	 *
-	 * "depth" field is the pointer to the top of the stack.
-	 *
-	 * It is not necessary to fill this array with anything
-	 * as it acts like stack: normally uninitialized values
-	 * are not to be used */
-
+	/* List of all time_enter on recursive trace_block_enter */
 	struct tb_time *time_list_head;
-	//time64_t start_time[TB_MAX_DEPTH];
 
-	int depth;
+	int depth; /* Depth of recursion */
 
 	time64_t time;
 
