@@ -6,6 +6,7 @@
  */
 
 #include <pthread.h>
+#include <kernel/thread/types.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/task/thread_key_table.h>
 
