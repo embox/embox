@@ -11,12 +11,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+#include <execinfo.h>
 #include <errno.h>
+#include <hal/context.h>
 
 #include <util/array.h>
 #include <util/location.h>
 #include <util/hashtable.h>
+#include <util/list.h>
 
 #include <mem/misc/pool.h>
 
@@ -40,6 +42,7 @@ ARRAY_SPREAD_DEF_TERMINATED(struct __trace_block *,
 POOL_DEF(tb_pool, struct __trace_block, FUNC_QUANTITY);
 POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
 POOL_DEF(key_pool, int, FUNC_QUANTITY);
+POOL_DEF(st_pool, struct tb_time, TB_MAX_DEPTH);
 
 int cyg_profiling;
 
@@ -57,24 +60,44 @@ void __tracepoint_handle(struct __trace_point *tp) {
 }
 
 void trace_block_enter(struct __trace_block *tb) {
+	/* Necessary actions to capture information on trace_block enter */
+	time64_t cur_time;
+	struct tb_time *t;
 	if (tb->active && tb_cs) {
-		tb->is_entered = true;
 		tb->count++;
-		tb->start = tb_cs->counter_device->read();
-		//itimer_init(tb->tc, clock_source_get_best(CS_WITHOUT_IRQ), 0);
+		tb->depth++;
+		cur_time = tb_cs->counter_device->read();
+
+		t = (struct tb_time*) pool_alloc (&st_pool);
+		if (t) {assert(t != NULL);
+		t->next = tb->time_list_head;
+		t->time = cur_time;
+		tb->time_list_head = t; }
 	}
 }
 
 void trace_block_leave(struct __trace_block *tb) {
+	/* Necessary actions to capture information on trace_block exit */
+	time64_t cur_time;
+	struct tb_time *p;
 	if (tb->active && tb_cs) {
-		tb->is_entered = false;
-		tb->time += abs(tb_cs->counter_device->read() - tb->start);
-		//tb->time += itimer_read(tb->tc);
+		assert(tb->depth > 0);
+		tb->depth--;
+		cur_time = tb_cs->counter_device->read();
+
+		p = tb->time_list_head;
+		if (p) {
+		assert(p != NULL);
+
+		tb->time += cur_time - tb->time_list_head->time;
+		tb->time_list_head = p->next;
+		pool_free(&st_pool, p); }
 	}
 }
 
 time64_t trace_block_get_time(struct __trace_block *tb) {
-	return tb->time;
+	return 0;
+	//return tb->time;
 }
 
 int trace_point_get_value(struct __trace_point *tp) {
@@ -148,19 +171,16 @@ void trace_block_func_enter(void *func) {
 		return;
 	}
 	tb = hashtable_get(tbhash, func);
-
 	if (!tb) {
 		/* Lazy traceblock initialization.
 		 * Func name and func location will be retrieved somewhere else,
-		 * for example, in "trace_blocks -n" shell command.
-		 */
+		 * for example, in "trace_blocks -n" shell command. */
 
 		tb = (struct __trace_block*) pool_alloc (&tb_pool);
 
 		tb->func = func;
-		tb->start = 0;
-		tb->time = 0;
-		tb->count = 0;
+		tb->time = tb->count = tb->depth = 0;
+		tb->time_list_head = NULL;
 		tb->active = true;
 		tb->is_entered = false;
 		hashtable_put(tbhash, func, tb);
@@ -178,7 +198,6 @@ void trace_block_func_exit(void *func) {
 	if (!tbhash) {
 		return;
 	}
-
 	tb = hashtable_get(tbhash, func);
 	if (tb) {
 		trace_block_leave(tb);
@@ -220,8 +239,18 @@ static int instrument_profiling_init(void) {
 void trace_block_hashtable_init(void) {
 	/* Initializing trace_block hash table */
 	int c = cyg_profiling;
+	struct __trace_block *tb1, *tb2;
 	cyg_profiling = false;
 
+	tb1 = auto_profile_tb_first();
+	while (tb1) {
+		pool_free(&tb_pool, tb1);
+		tb2 = tb1;
+		tb1 = auto_profile_tb_next(tb1);
+		hashtable_del(tbhash, tb2->func);
+	}
+
+	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 	if (tbhash) {
 		cyg_profiling = c;
 		return;

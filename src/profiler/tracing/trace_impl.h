@@ -15,13 +15,16 @@
 
 #include <util/array.h>
 #include <util/location.h>
+#include <util/list.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
-//#include <kernel/time/timecounter.h>
 #include <kernel/time/itimer.h>
 
-#define FUNC_QUANTITY OPTION_GET(NUMBER, max_functions_quantity)
+#include <embox/unit.h>
+
+#define FUNC_QUANTITY OPTION_GET(NUMBER,max_functions_quantity)
+#define TB_MAX_DEPTH  OPTION_GET(NUMBER,max_recursion_depth)
 
 struct __trace_point {
 	const char *name;
@@ -30,15 +33,35 @@ struct __trace_point {
 	bool active;
 };
 
+struct tb_time {
+	time64_t time;
+	struct tb_time *next;
+};
+
 struct __trace_block {
 	const char *name;
 	void *func;
 	struct location_func location;
-	time64_t start;
-	int64_t count;
+
+	/* This array acts like a stack to capture multiple enter time when block
+	 * is being entered recursively.
+	 *
+	 * "depth" field is the pointer to the top of the stack.
+	 *
+	 * It is not necessary to fill this array with anything
+	 * as it acts like stack: normally uninitialized values
+	 * are not to be used */
+
+	struct tb_time *time_list_head;
+	//time64_t start_time[TB_MAX_DEPTH];
+
+	int depth;
+
 	time64_t time;
-	bool active;
+
+	int64_t count;
 	bool is_entered;
+	bool active;
 };
 
 #define __TRACE_POINT_DEF(_name, tp_name)   \
@@ -61,8 +84,10 @@ struct __trace_block {
 			.location = LOCATION_FUNC_INIT,				\
 			.time  = 0,									\
 			.count = 0,									\
+			.depth = 0,									\
 			.active = true, 							\
 			.is_entered = false,						\
+			.time_list_head = NULL,						\
 	};                                              	\
 	ARRAY_SPREAD_DECLARE(struct __trace_block *,		\
 			__trace_blocks_array);              		\

@@ -12,9 +12,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <profiler/tracing/trace.h>
+
 EMBOX_CMD(tbprof_main);
 
 void initialize_hashtable() {
+	trace_block_hashtable_init();
 }
 
 void print_data_to_file(FILE *out) {

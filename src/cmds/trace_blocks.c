@@ -66,7 +66,11 @@ static void print_instrument_trace_block_stat(void) {
 		s = symbol_lookup(tb->func);
 		l = strlen(s->name) + strlen(s->loc.file) + 2;
 		strcpy(buff, s->loc.file);
-		strcat(buff, ":");
+		if (!s->loc.file) {
+			buff[0] = 0;
+		} else {
+			strcat(buff, ":");
+		}
 		strcat(buff, s->name);
 
 		if (l > 40) {
@@ -78,7 +82,6 @@ static void print_instrument_trace_block_stat(void) {
 	/*	printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0); */
 	}
-
 	free(buff);
 }
 

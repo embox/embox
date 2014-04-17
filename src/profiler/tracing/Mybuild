@@ -10,6 +10,8 @@ module no_tracing extends trace {
 
 module tracing extends trace {
 	option number max_functions_quantity = 65536
+	option number max_recursion_depth = 256000
+
 	source "trace.c", "trace_impl.h"
 	source "__cyg_profile.c"
 	depends embox.kernel.timer.itimer
