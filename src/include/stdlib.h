@@ -155,6 +155,12 @@ extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
 extern void abort(void);
 
+/* Integer expression whose value is the maximum number of bytes in a character
+ * specified by the current locale.
+ * MB_CUR_MAX >= 1
+*/
+#define MB_CUR_MAX 1
+
 #define EXIT_FAILURE 0
 #define EXIT_SUCCESS 1
 extern void exit(int status);

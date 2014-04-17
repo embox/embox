@@ -39,6 +39,9 @@ export DOCS_OUT_DIR   := $(DOC_DIR)
 
 export CACHE_DIR      := mk/.cache
 
+export EXTBLD_LIB     := $(abspath $(ROOT_DIR))/mk/extbld/lib.mk
+export EMBOX_GCC_ENV  := $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
+
 export ANNOTATION_HANDLERS := mk/mybuild/annotation_handlers
 
 #

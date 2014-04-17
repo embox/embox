@@ -34,12 +34,20 @@ int fseek(FILE *file, long int offset, int origin) {
 	return 0;
 }
 
+int fseeko(FILE *file, off_t offset, int origin) {
+	return fseek(file, offset, origin);
+}
+
 long int ftell(FILE *file) {
 	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 	return lseek(file->fd, 0L, SEEK_CUR);
+}
+
+off_t ftello(FILE *file) {
+	return ftell(file);
 }
 
 int fgetpos(FILE *stream, fpos_t *pos) {

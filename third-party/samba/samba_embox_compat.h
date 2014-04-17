@@ -32,8 +32,6 @@ int statfs(const char *path, struct statfs *buf);
 #define ID_EFFECTIVE 0
 #define ID_REAL 1
 
-#define ELOOP 40
-
 #define SIG_BLOCK 0
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
@@ -114,7 +112,6 @@ inet_makeaddr(net, host)
 	return in;
 }
 
-#define E2BIG  7
 #define EILSEQ 84
 
 #define EMLINK 31
@@ -206,13 +203,6 @@ int initgroups(const char *user, gid_t group) {
 	DPRINT();
 	errno = EPERM;
 	return -1;
-}
-
-static inline
-struct group *getgrgid(gid_t gid) {
-	DPRINT();
-	errno = EPERM;
-	return 0;
 }
 
 static inline

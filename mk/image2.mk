@@ -3,25 +3,24 @@
 # Author: Eldar Abusalimov
 #
 
-.PHONY : all image FORCE
-all : image
-	@echo 'Build complete'
+ifeq ($(STAGE),1)
+embox_o   := $(OBJ_DIR)/embox.o
+else
+embox_o   := $(OBJ_DIR)/embox-2.o
+$(embox_o) : $(OBJ_DIR)/embox.o
+endif
+
+image_lds := $(OBJ_DIR)/mk/image.lds
+
+.PHONY : all FORCE
+all : $(embox_o) $(image_lds)
 
 FORCE :
 
 include mk/core/common.mk
+include mk/image_lib.mk
 
 include $(MKGEN_DIR)/build.mk
-
-TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
-TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
-
-IMAGE       = $(BIN_DIR)/$(TARGET)
-IMAGE_DIS   = $(IMAGE).dis
-IMAGE_BIN   = $(IMAGE).bin
-IMAGE_SREC  = $(IMAGE).srec
-IMAGE_SIZE  = $(IMAGE).size
-IMAGE_PIGGY = $(IMAGE).piggy
 
 include mk/flags.mk # It must be included after a user-defined config.
 
@@ -31,56 +30,6 @@ include $(MKGEN_DIR)/include.mk
 include $(__include_image)
 include $(__include_initfs)
 include $(__include)
-
-.SECONDARY:
-.DELETE_ON_ERROR:
-
-image: $(IMAGE)
-image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
-
-ifeq ($(value DISASSEMBLY),y)
-image : $(IMAGE_DIS)
-endif
-
-ifndef LD_SINGLE_T_OPTION
-ld_scripts_flag = $(1:%=-T%)
-else
-ld_scripts_flag = $(if $(strip $1),-T $1)
-endif
-
-# This must be expanded in a secondary expansion context.
-# NOTE: must be the last one in a list of prerequisites (contains order-only)
-common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk \
-	$(if $(value mk_file),$(mk_file)) \
-	| $(if $(value my_file),$(dir $(my_file:%=$(OBJ_DIR)/%)).) $(@D)/.
-
-VPATH := $(SRCGEN_DIR)
-
-%/. :
-	@$(MKDIR) $*
-
-a_prerequisites     = $(common_prereqs)
-o_prerequisites     = $(common_prereqs)
-cc_prerequisites    = $(common_prereqs)
-
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
-	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
-	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-$(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-cpp_prerequisites   = $(common_prereqs)
-$(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
-	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
-	-imacros $(SRCGEN_DIR)/config.lds.h \
-		-MMD -MT $@ -MF $@.d -o $@ $<
 
 initfs_cp_prerequisites = $(src_file) $(common_prereqs)
 $(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
@@ -130,7 +79,6 @@ initfs_cp_prerequisites += FORCE
 initfs_prerequisites    += FORCE
 endif
 
-
 # Module-level rules.
 module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
@@ -154,49 +102,11 @@ $(OBJ_DIR)/module/%.o :
 
 
 # Here goes image creation rules...
-
-symbols_pass1_c = $(OBJ_DIR)/symbols_pass1.c
-symbols_pass2_c = $(OBJ_DIR)/symbols_pass2.c
-
-symbols_c_files = \
-	$(symbols_pass1_c) \
-	$(symbols_pass2_c)
-
-$(symbols_pass1_c) : image_o = $(image_nosymbols_o)
-$(symbols_pass2_c) : image_o = $(image_pass1_o)
-
-SYMBOLS_WITH_FILENAME ?= 1
-
-ifeq ($(SYMBOLS_WITH_FILENAME),1)
-NM_OPTS := --demangle --line-numbers --numeric-sort
-else
-NM_OPTS := --demangle --numeric-sort
-endif
-
-$(symbols_c_files) :
-$(symbols_c_files) : mk/script/nm2c.awk $$(common_prereqs)
-$(symbols_c_files) : $$(image_o)
-	$(NM) $(NM_OPTS) $< | $(AWK) -f mk/script/nm2c.awk > $@
-
-symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
-symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a
-
-symbols_a_files = \
-	$(symbols_pass1_a) \
-	$(symbols_pass2_a)
-
-$(symbols_a_files) : %.a : %.o
-	$(AR) $(ARFLAGS) $@ $<
-
-$(symbols_a_files:%.a=%.o) : flags_before :=
-$(symbols_a_files:%.a=%.o) : flags :=
-
+#
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
 $(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
 GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
 VPATH += $(GPATH)
-
-embox_o = $(OBJ_DIR)/embox.o
 
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
@@ -209,10 +119,14 @@ $(embox_o): $$(common_prereqs)
 	--cref -Map $@.map \
 	-o $@
 
-__define_image_rules = $(eval $(value __image_rule))
-$(call __define_image_rules,$(embox_o))
+stages := $(wordlist 1,$(STAGE),1 2)
 
-image_lds = $(OBJ_DIR)/mk/image.lds
+$(embox_o) : $(__image_prerequisities)
+$(embox_o) : mk_file = $(__image_mk_file)
+$(embox_o) : ld_scripts = $(__image_ld_scripts1) # TODO check this twice
+$(embox_o) : ld_objs = $(foreach s,$(stages),$(__image_ld_objs$s))
+$(embox_o) : ld_libs = $(foreach s,$(stages),$(__image_ld_libs$s))
+
 $(image_lds) : $$(common_prereqs)
 $(image_lds) : flags_before :=
 $(image_lds) : flags = \
@@ -222,98 +136,5 @@ $(image_lds) : flags = \
 				$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
 -include $(image_lds).d
 
-image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
-image_pass1_o = $(OBJ_DIR)/image_pass1.o
-
-image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
-
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
-
-#XXX
-FINAL_LINK_WITH_CC ?=
-ifeq (1,$(FINAL_LINK_WITH_CC))
-
-FINAL_LDFLAGS ?=
-$(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
-	$(embox_o) \
-	-Wl,--defsym=__symbol_table=0 \
-	-Wl,--defsym=__symbol_table_size=0 \
-	-Wl,--cref -Wl,-Map,$@.map \
-	-o $@
-
-$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
-	$(embox_o) \
-	$(symbols_pass1_a) \
-	-Wl,--cref -Wl,-Map,$@.map \
-	-o $@
-
-$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
-	$(embox_o) \
-	$(symbols_pass2_a) \
-	-Wl,--cref -Wl,-Map,$@.map \
-	-o $@
-else
-
-$(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
-	$(LD) --relax $(ldflags) \
-	-T $(image_lds) \
-	$(embox_o) \
-	--defsym=__symbol_table=0 \
-	--defsym=__symbol_table_size=0 \
-	--cref -Map $@.map \
-	-o $@
-
-$(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
-	$(LD) --relax $(ldflags) \
-	-T $(image_lds) \
-	$(embox_o) \
-	$(symbols_pass1_a) \
-	--cref -Map $@.map \
-	-o $@
-
-$(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
-	$(LD) --relax $(ldflags) \
-	-T $(image_lds) \
-	$(embox_o) \
-	$(symbols_pass2_a) \
-	--cref -Map $@.map \
-	-o $@
-endif
-
-$(IMAGE_DIS): $(IMAGE)
-	$(OBJDUMP) -S $< > $@
-
-$(IMAGE_SREC): $(IMAGE)
-	@$(OBJCOPY) -O srec $< $@
-
-$(IMAGE_BIN): $(IMAGE)
-	@$(OBJCOPY) -O binary $< $@
-
-$(IMAGE_PIGGY): $(IMAGE)
-	@$(OBJCOPY) -O binary -R .note -R .comment -S $< $@.tmp
-	@$(LD) -r -b binary $@.tmp -o $@
-	@$(RM) $@.tmp
-
-image_size_sort = \
-	echo "" >> $@;                    \
-	echo "sort by $2 size" >> $@;     \
-	cat $@.tmp | sort -g -k $1 >> $@;
-
-$(IMAGE_SIZE): $(IMAGE)
-	@if [ `which $(SIZE) 2> /dev/null` ];  \
-	then                                   \
-	    $(SIZE) $^ > $@.tmp;               \
-		echo "size util generated output for $(TARGET)" > $@; \
-		$(call image_size_sort,1,text)     \
-		$(call image_size_sort,2,data)     \
-		$(call image_size_sort,3,bss)      \
-		$(call image_size_sort,4,total)    \
-		$(RM) $@.tmp;                      \
-	else                                   \
-		echo "$(SIZE) util not found" > $@;   \
-	fi;
-

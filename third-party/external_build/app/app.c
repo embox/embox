@@ -13,7 +13,9 @@
 #include <lib.h>
 
 extern int external_build_lib_call(void);
+extern int external_build_lib2_call(void);
 
 int main(void) {
-	return EXTERNAL_LIB_VAL - external_build_lib_call();
+	return EXTERNAL_LIB_VAL - external_build_lib_call() +
+		EXTERNAL_LIB_VAL - external_build_lib2_call();
 }

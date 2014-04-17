@@ -1,16 +1,11 @@
-/*
- *  Created on: 14.01.2014
- *      Author: Gazukin Andrey
- */
+#ifndef IPERF_SYSLOG_H_
+#define IPERF_SYSLOG_H_
 
-#ifndef SYSLOG_H_
-#define SYSLOG_H_
+#define LOG_ERR     3
+#define LOG_WARNING 4
+#define LOG_NOTICE  5
+#define LOG_INFO    6
+#define LOG_DAEMON  (3 << 3)
 
-
-#define LOG_INFO    0
-#define LOG_ERR     1
-#define LOG_WARNING 2
-#define LOG_NOTICE  3
-
-#endif /* SYSLOG_H_ */
+#endif /* IPERF_SYSLOG_H_ */
 

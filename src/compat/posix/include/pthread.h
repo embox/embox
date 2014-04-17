@@ -20,8 +20,7 @@
 #include <sched.h>
 
 
-#include <kernel/thread.h>
-#include <kernel/thread/types.h>
+#include <kernel/thread/thread_flags.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/mutexattr.h>
@@ -44,6 +43,7 @@
 
 
 
+struct thread;
 typedef struct thread *pthread_t;
 
 

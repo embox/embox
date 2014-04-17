@@ -7,6 +7,7 @@
  */
 #include <sys/types.h>
 #include <stddef.h>
+#include <string.h>
 
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>

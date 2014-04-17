@@ -12,6 +12,7 @@
 
 #include <util/dlist.h>
 
+#include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/sched.h>
 #include <kernel/thread/types.h>

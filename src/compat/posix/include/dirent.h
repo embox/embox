@@ -21,11 +21,10 @@ struct dirent {
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
-struct directory {
+typedef struct {
 	struct dirent current;
 	struct path path;
-};
-typedef struct directory DIR;
+} DIR;
 
 
 extern int            closedir(DIR *);

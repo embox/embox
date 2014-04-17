@@ -9,9 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_COND_H_
 #define KERNEL_THREAD_SYNC_COND_H_
 
-#include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/waitq.h>
-#include <kernel/task.h>
 #include <time.h>
 
 /* The condition variable operates upon by any thread that has access to the
@@ -21,6 +19,9 @@
  * that initialized the conditional variable. If thread tries to use the permitted
  * conditional variable then a function will return EACCES */
 #define PROCESS_PRIVATE 1
+
+struct task;
+struct mutex;
 
 struct condattr {
 	int        pshared;

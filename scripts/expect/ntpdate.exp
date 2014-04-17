@@ -6,7 +6,8 @@
 # 3. Execute 'date' on Embox and compare result (first 10 symbols of output)
 #    with result of the item 2.
 
-source exec_through_telnet.exp
+
+source [file join [file dirname [info script]] exec_through_telnet.exp]
 
 set host_date ""
 

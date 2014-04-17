@@ -42,9 +42,9 @@ build_dir() {
 		$SUDO cp -aR $s/* $dst
 	done
 
-	find $dst -name .\* -exec rm -Rf {} +
+	$SUDO find $dst -name .\* -exec rm -Rf {} +
 
-	# Only nfs deals with real uids, bypassing possible 'acess denied's
+	# Only nfs deals with real uids, bypassing possible 'access denied's
 	if [ nfs = $FS ]; then
 		$SUDO chmod -R 777 $dst
 	fi
