@@ -89,11 +89,11 @@ guess_kvm() {
 get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
-	if [ $AUTOQEMU_ARCH != "arm"; then
+	if [ $AUTOQEMU_ARCH != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		./scripts/omap-uboot-uimage 1>&2
-		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage 1>&2
+		./scripts/omap-uboot-uimage >/dev/null 2>/dev/null
+		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
 		echo "-mtdblock beagle_nand.img"
 	fi
 }
