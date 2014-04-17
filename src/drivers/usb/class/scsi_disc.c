@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <kernel/sched/waitq.h>
 #include <util/math.h>
+#include <string.h>
 #include "scsi.h"
 
 #include <embox/block_dev.h>
