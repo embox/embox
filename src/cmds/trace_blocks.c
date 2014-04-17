@@ -40,7 +40,7 @@ static int tbp_cmp(const void *fst, const void *snd) {
 					(b->time < a->time));
 }
 
-static void print_instrument_trace_block_stat(void) {
+static void print_instrument_trace_block_stat(int amount) {
 	/* Function for prining information about automatically generated
 	 * trace_blocks (that are created with __cyg_profile_func_enter/exit).
 	 */
@@ -59,9 +59,9 @@ static void print_instrument_trace_block_stat(void) {
 
 	printf("Automatic trace points:\n");
 
-	printf("%40s %10s %15s %15s\n", "Name", "Count", "Ticks", "AvgTime");
+	printf("%40s %10s %15s %15s\n", "Name", "Count", "Ticks", "AvgTime(sec)");
 
-	for (i = 0; i < counter; i++) {
+	for (i = 0; i < amount && i < counter; i++) {
 		tb = table[i];
 		s = symbol_lookup(tb->func);
 		l = strlen(s->name) + strlen(s->loc.file) + 2;
@@ -78,7 +78,7 @@ static void print_instrument_trace_block_stat(void) {
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %15llu %15.3f\n", tb->count, tb->time, 1. * tb->time / tb->count);
+		printf("%10lld %15llu %15.3Lf\n", tb->count, tb->time, (long double)1. * tb->time / (long double)get_current_tb_resolution());
 	/*	printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
 			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0); */
 	}
@@ -167,7 +167,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n"))) {
+	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -208,7 +208,9 @@ static int exec(int argc, char **argv) {
 			print_entered_blocks();
 			break;
 		case 'n':
-			print_instrument_trace_block_stat();
+			index = 0x7FFF;
+			sscanf(optarg, "%d", &index);
+			print_instrument_trace_block_stat(index);
 			break;
 		default:
 			break;

@@ -56,6 +56,8 @@ extern void trace_block_func_enter(void *func);
 
 extern void trace_block_func_exit(void *func);
 
+extern long long get_current_tb_resolution(void);
+
 extern void trace_block_hashtable_init(void);
 
 extern void trace_block_hashtable_destroy(void);

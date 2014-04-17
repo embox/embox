@@ -236,6 +236,13 @@ static int instrument_profiling_init(void) {
 	return 0;
 }
 
+long long get_current_tb_resolution(void) {
+	if (tb_cs && tb_cs->counter_device)
+		return tb_cs->counter_device->resolution;
+	else
+		return 1;
+}
+
 void trace_block_hashtable_init(void) {
 	/* Initializing trace_block hash table */
 	int c = cyg_profiling;
