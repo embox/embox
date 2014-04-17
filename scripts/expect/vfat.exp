@@ -1,7 +1,8 @@
 #!/usr/bin/runtest
 
-source test_cmd.exp
-source exec_through_telnet.exp
+foreach s {"test_cmd.exp" "exec_through_telnet.exp"} {
+	source [file join [file dirname [info script]] $s]
+}
 
 proc vfat_test {} {
 	global host_ip

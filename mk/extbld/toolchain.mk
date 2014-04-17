@@ -60,9 +60,7 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -msoft-float, $(CXXFLAGS))
 EMBOX_IMPORTED_LDFLAGS :=
 EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(LDFLAGS))
-ifneq (,$(filter -m%,$(LDFLAGS)))
-EMBOX_IMPORTED_LDFLAGS += -Wl,$(filter -m%,$(LDFLAGS))
-endif
+EMBOX_IMPORTED_LDFLAGS += $(foreach w,$(filter -m elf_i386,$(LDFLAGS)),-Wl,$w)
 
 EMBOX_IMPORTED_LDFLAGS_FULL :=
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax

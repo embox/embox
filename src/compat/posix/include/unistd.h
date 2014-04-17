@@ -161,6 +161,12 @@ extern int nice(int incr);
 extern int execv(const char *path, char *const argv[]);
 extern int execve(const char *filename, char *const argv[], char *const envp[]);
 
+extern int link(const char *oldpath, const char *newpath);
+extern ssize_t readlink(const char *path, char *buf,
+		       size_t bufsize);
+extern ssize_t readlinkat(int fd, const char *path,
+		       char *buf, size_t bufsize);
+
 extern int unlink(const char *pathname);
 
 extern int rmdir(const char *pathname);

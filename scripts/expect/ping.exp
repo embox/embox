@@ -1,6 +1,6 @@
 #!/usr/bin/runtest
 
-source exec_through_telnet.exp
+source [file join [file dirname [info script]] exec_through_telnet.exp]
 
 proc ping_test {} {
 	global host_ip

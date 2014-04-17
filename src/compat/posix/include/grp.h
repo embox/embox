@@ -9,6 +9,7 @@
 #define GRP_H_
 
 #include <sys/types.h>
+#include <sys/cdefs.h>
 
 struct group {
 	char   *gr_name; /* The name of the group. */
@@ -22,8 +23,12 @@ static inline struct group *getgrnam(const char *name) {
 	return NULL;
 }
 
+__BEGIN_DECLS
+
 extern struct group * getgrgid(gid_t gid);
 extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
 extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
+
+__END_DECLS
 
 #endif /* GRP_H_ */

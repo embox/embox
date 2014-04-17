@@ -26,7 +26,6 @@
 #undef __linux__
 #endif
 
-#define EOVERFLOW 1
 #define EMBOX
 
 #define MAP_PRIVATE   0x01
@@ -44,13 +43,6 @@ typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
 typedef unsigned int uint;
-
-
-
-static inline struct group *getgrgid(gid_t gid) {
-	printf(">>> getgrgid. gid - %d\n", gid);
-	return NULL;
-}
 
 static inline void *mmap(void *addr, size_t length, int prot, int flags,
            int fd, off_t offset) {

@@ -1,23 +1,26 @@
 #!/bin/sh
 
-FS_TEST_RO="iso9660 jffs2"
-FS_TEST_RW="vfat ext2 ext3 ext4"
+#FS_TEST_RO="iso9660 jffs2"
+#FS_TEST_RW="vfat ext2 ext3 ext4"
+FS_TEST_RO=""
+FS_TEST_RW="ext2"
 FS_TEST_NETWORK="nfs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
 FS_TEST_NFS_PREPARE="sudo /etc/init.d/nfs-kernel-server restart"
 
 ROOT_DIR=.
-BASE_DIR=$(dirname $0)
+BASE_DIR=$ROOT_DIR
+DATA_DIR=$(dirname $0)
 
 START_SCRIPT=$ROOT_DIR/conf/start_script.inc
 CONT_BASE=$ROOT_DIR/scripts/continuous
 CONT_FS_MANAGE=$CONT_BASE/fs/img-manage.sh
 CONT_RUN=$CONT_BASE/run.sh
 
-IMG_RO_CONTENT=$BASE_DIR/img-ro
-IMG_RW_CONTENT="$BASE_DIR/img-rw $IMG_RO_CONTENT"
-IMG_RW_GOLD=$BASE_DIR/img-rw-gold
+IMG_RO_CONTENT=$DATA_DIR/img-ro
+IMG_RW_CONTENT="$DATA_DIR/img-rw $IMG_RO_CONTENT"
+IMG_RW_GOLD=$DATA_DIR/img-rw-gold
 
 posted_ret=0
 check_post_exit() {
