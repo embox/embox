@@ -18,3 +18,4 @@
 "httpd &",
 "telnetd &",
 "dropbear &",
+"snmpd &",

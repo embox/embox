@@ -33,6 +33,14 @@ test_case_correct_index_html_should_be_downloaded() {
 #test_case_ssh_should_be_able_to_execute_command_and_show_output() {
 #}
 
+test_case_snmp_should_reply() {
+	str=$(snmpget -v 1 -c public $EMBOX_IP 1.3.6.1.2.1.2.2.1.6.2)
+	test_retcode
+
+	echo $str | grep "AA BB CC DD EE 02" >/dev/null
+	test_retcode
+}
+
 test_case_interactive_tests_should_success() {
 	runtest $EXPECT_TESTS_BASE/telnet.exp \
 		$EXPECT_TESTS_BASE/ntpdate.exp
