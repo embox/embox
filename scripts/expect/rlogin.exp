@@ -5,7 +5,7 @@
 # 2. Try to log in with <host_passwd> password.
 # 3. Execute 'ls' on host.
 
-source exec_through_telnet.exp
+source [file join [file dirname [info script]] exec_through_telnet.exp]
 
 set HOST_PROMPT " $"
 

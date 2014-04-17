@@ -160,6 +160,7 @@ typedef unsigned int uint;
 
 #define SIG_SETMASK 2
 
+#include <signal.h>
 static inline
 int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	(void)how;

@@ -82,7 +82,7 @@ static void __inet_bind(struct inet_sock *in_sk,
 static int inet_addr_tester(const struct sockaddr *lhs_sa,
 		const struct sockaddr *rhs_sa) {
 	static const struct in_addr inaddr_any = {
-		.s_addr = htonl(INADDR_ANY)
+		{ .s_addr = htonl(INADDR_ANY) }
 	};
 	const struct sockaddr_in *lhs_in, *rhs_in;
 

@@ -3,7 +3,7 @@
 # Procedure that used to execute EXPECT proc's through telnet.
 # Usage: exec_cmd <embox_ip> <proc>
 
-source config.exp
+source [file join [file dirname [info script]] config.exp]
 
 set timeout 10
 
@@ -19,6 +19,7 @@ proc exec_cmd {embox_ip cmd} {
 		}
 		return 0
 	}
+	sleep 1
 
 	spawn telnet $embox_ip
 	set res [telnet_connect]
@@ -26,12 +27,6 @@ proc exec_cmd {embox_ip cmd} {
 		fail $cmd
 		exit 1
 	}
-
-	# FIXME: Hack to force EXPECT work with embox's telnetd in the correct way.
-	# On Linux this works without three lines below.
-	sleep 1
-	send "something\r\n"
-	sleep 1
 
 	if {$cmd != ""} {
 		set res [$cmd]
