@@ -564,7 +564,7 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	if(0 != (res = drv->fsop->umount(&dir_node))) {
+	if(0 != (res = drv->fsop->umount(dir_node.node))) {
 		return res;
 	}
 
