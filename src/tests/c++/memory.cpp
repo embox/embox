@@ -11,8 +11,7 @@
 
 EMBOX_TEST_SUITE("c++ memory test");
 
-#if 0
-TEST_SETUP_SUITE(suite_setup);
+TEST_SETUP(case_setup);
 
 static int base_ctor;
 static int base_dtor;
@@ -64,4 +63,3 @@ TEST_CASE("Class can allocated on heap using throwing new") {
 static int case_setup(void) {
 	base_ctor = base_dtor = 0;
 }
-#endif
