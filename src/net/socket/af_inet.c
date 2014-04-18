@@ -160,7 +160,7 @@ static int __inet_connect(struct inet_sock *in_sk,
 	assert(addr_in != NULL);
 	assert(addr_in->sin_family == AF_INET);
 
-	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, &src_ip);
+	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, NULL, &src_ip);
 	if (ret != 0) {
 		return ret;
 	}
