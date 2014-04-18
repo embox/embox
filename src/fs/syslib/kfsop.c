@@ -284,13 +284,14 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
+	vfs_get_leaf_path(&leaf);
+
 	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
 		//todo xxx
 		dev_node.node = (node_t *) dev;
 		goto skip_dev_lookup;
 	}
 
-	vfs_get_leaf_path(&leaf);
 	if (ENOERR != (res = fs_perm_lookup(&leaf, dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
