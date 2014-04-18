@@ -52,11 +52,11 @@
 			__attribute__((weak))
 
 #define MOD_SELF_INIT(_mod_nm, _ops) { \
-	.priv = &__MOD_PRIVATE(_mod_nm), \
-	.ops = _ops, \
-	.app = &__MOD_APP(_mod_nm), \
-	.members = __MOD_MEMBERS(_mod_nm), \
-	.build_info = &__MOD_BUILDINFO(_mod_nm), \
+	/* .ops        = */ _ops, \
+	/* .priv       = */ &__MOD_PRIVATE(_mod_nm), \
+	/* .app        = */ &__MOD_APP(_mod_nm), \
+	/* .members    = */ __MOD_MEMBERS(_mod_nm), \
+	/* .build_info = */ &__MOD_BUILDINFO(_mod_nm), \
 }
 
 /**
