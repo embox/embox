@@ -548,8 +548,8 @@ int kumount(const char *dir) {
 
 	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
 
-	node = dir_node;
 	if_mounted_follow_down(&dir_node);
+	node = dir_node;
 
 	drv = dir_node.node->nas->fs->drv;
 
