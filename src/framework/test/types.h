@@ -37,7 +37,7 @@ struct test_suite {
 	/** If test should be run when module loaded */
 	bool autorun;
 	/** Internal data managed by framework. */
-	struct __test_private *private;
+	struct __test_private *test_priv;
 	struct __test_fixture_ops suite_fixture_ops;
 	struct __test_fixture_ops case_fixture_ops;
 };

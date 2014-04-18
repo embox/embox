@@ -41,7 +41,7 @@
 	const struct test_mod mod_self = {                               \
 		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops),      \
 		.suite = {                                                   \
-			.private = &test_private_nm,                             \
+			.test_priv = &test_private_nm,                           \
 			.test_cases = __TEST_CASES_ARRAY,                        \
 			.description = _description,                             \
 			.autorun = _autorun,                                     \
