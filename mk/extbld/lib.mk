@@ -17,7 +17,7 @@ $(BUILD_DIR) $(PKG_INSTALL_DIR):
 
 sources          := $(notdir $(PKG_SOURCES))
 sources_download := $(PKG_SOURCES)
-sources_extract  := $(filter %.tar.gz %.tar.bz %tgz %tbz,$(sources))
+sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz,$(sources))
 
 DOWNLOAD_DIR   := $(ROOT_DIR)/download
 DOWNLOAD     := $(BUILD_DIR)/.downloaded
