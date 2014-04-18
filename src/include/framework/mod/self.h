@@ -18,6 +18,8 @@
 #ifndef FRAMEWORK_MOD_SELF_H_
 #define FRAMEWORK_MOD_SELF_H_
 
+#include <sys/cdefs.h>
+
 #include <framework/mod/api.h>
 #include <framework/mod/ops.h>
 #include <framework/mod/options.h>
@@ -43,12 +45,12 @@
 
 #define MOD_SELF_INIT_DECLS(_mod_nm) \
 	struct __mod_private __MOD_PRIVATE(_mod_nm); \
-	extern const struct mod_app __MOD_APP(_mod_nm) \
+	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
 			__attribute__ ((weak)); \
 	__MOD_MEMBER_DECLS(_mod_nm); \
-	extern const struct mod_app __MOD_APP(_mod_nm) \
+	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
 			__attribute__ ((weak)); \
-	extern const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
+	EXTERN_C const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
 			__attribute__((weak))
 
 #define MOD_SELF_INIT(_mod_nm, _ops) { \

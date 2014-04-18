@@ -10,9 +10,10 @@
 #define FRAMEWORK_TEST_SELF_IMPL_H_
 
 #include <stddef.h>
+#include <sys/cdefs.h>
 
-#include <util/array.h>
 #include <util/macro.h>
+#include <util/array.h>
 #include <util/location.h>
 #include <framework/mod/self.h>
 
@@ -27,7 +28,7 @@
 			MACRO_GUARD(__test_private), autorun)
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm, _autorun) \
-	extern const struct mod_ops __test_mod_ops;                      \
+	EXTERN_C const struct mod_ops __test_mod_ops;                    \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \
 	static struct __test_private test_private_nm;                    \
@@ -39,20 +40,20 @@
 			__TEST_FIXTURE_OP(case_teardown);                        \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
 	const struct test_mod mod_self = {                               \
-		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops),      \
-		.suite = {                                                   \
-			.test_priv = &test_private_nm,                           \
-			.test_cases = __TEST_CASES_ARRAY,                        \
-			.description = _description,                             \
-			.autorun = _autorun,                                     \
-			.suite_fixture_ops = {                                   \
-					.p_setup    = &__TEST_FIXTURE_OP(suite_setup),   \
-					.p_teardown = &__TEST_FIXTURE_OP(suite_teardown),\
-				},                                                   \
-			.case_fixture_ops = {                                    \
-					.p_setup    = &__TEST_FIXTURE_OP(case_setup),    \
-					.p_teardown = &__TEST_FIXTURE_OP(case_teardown), \
-				},                                                   \
+		/* .mod   = */ MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops), \
+		/* .suite = */ {                                             \
+			/* .test_cases        = */ __TEST_CASES_ARRAY,           \
+			/* .description       = */ _description,                 \
+			/* .autorun           = */ _autorun,                     \
+			/* .test_priv         = */ &test_private_nm,             \
+			/* .suite_fixture_ops = */ {                             \
+				/* .p_setup    = */ &__TEST_FIXTURE_OP(suite_setup), \
+				/* .p_teardown = */ &__TEST_FIXTURE_OP(suite_teardown), \
+			},                                                       \
+			/* .case_fixture_ops = */ {                              \
+				/* .p_setup    = */ &__TEST_FIXTURE_OP(case_setup),  \
+				/* .p_teardown = */ &__TEST_FIXTURE_OP(case_teardown), \
+			},                                                       \
 		}                                                            \
 	};                                                               \
 	TEST_ADD(&mod_self.suite)
@@ -94,7 +95,7 @@
 	static void run_nm(void)
 
 #define __TEST_CASES_ARRAY \
-	MACRO_CONCAT(__test_cases_in_suite__,__EMBUILD_MOD__)
+	MACRO_CONCAT(__test_cases_in_suite__, __EMBUILD_MOD__)
 
 /* This is implemented on top of test suite and test case. */
 #define __EMBOX_TEST(_run) \
