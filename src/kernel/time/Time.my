@@ -2,7 +2,7 @@ package embox.kernel.time
 
 module clock_source {
 	@NumConstraint(ge=1)
-	option number clocks_quantity = 1
+	option number clocks_quantity = 3
 
 	source "clock_source.c"
 	@NoRuntime depends embox.mem.pool

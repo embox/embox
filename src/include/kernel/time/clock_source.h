@@ -39,6 +39,8 @@ struct clock_source {
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
 
+extern struct dlist_head *clock_source_get_list(void);
+
 /**
  * Read cycles from clock source since moment when it started. This function may be used exactly
  * for three types of clock sources:

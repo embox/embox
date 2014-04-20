@@ -6,7 +6,8 @@
  * @author Alexander Kalmuk
  */
 
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include <util/array.h>
@@ -180,11 +181,11 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 				}
 			break;
 		}
-
-		printf("name=%s\n", cs->name);
-		printf("resolution=%u\n", resolution);
-		putchar('\n');
 	}
 
 	return best;
+}
+
+struct dlist_head *clock_source_get_list(void) {
+	return &clock_source_list;
 }

@@ -16,9 +16,7 @@
 
 EMBOX_EXAMPLE(run);
 
-static struct clock_source *cs;
-
-static int measured_loop(int cycles_loop) {
+static int measured_loop(struct clock_source *cs, int cycles_loop) {
 	volatile int i;
 	time64_t time_after;
 	struct itimer it;
@@ -33,13 +31,21 @@ static int measured_loop(int cycles_loop) {
 }
 
 static int run(int argc, char **argv) {
-	cs = clock_source_get_best(CS_ANY);
+	struct dlist_head *cs_list;
+	struct clock_source_head *csh;
+	struct clock_source *cs;
 
-	for (int i = 0; i < 100; i++) {
-		measured_loop(10000000);
+	cs_list = clock_source_get_list();
+
+	dlist_foreach_entry(csh, cs_list, lnk) {
+		cs = csh->clock_source;
+
+		printf("%s\n", cs->name);
+
+		for (int i = 0; i < 100; i++) {
+			measured_loop(cs, 1000);
+		}
 	}
-
-	printf("%s was used\n", cs->name);
 
 	return ENOERR;
 }
