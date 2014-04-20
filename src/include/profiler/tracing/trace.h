@@ -27,7 +27,17 @@ struct __trace_block;
 	  __trace_point(name)
 
 #include <stdbool.h>
-extern int cyg_profiling;
+
+/* Different profiling mode are required to work separately with for example
+ * manually assigned trace_blocks and automatically generated trace_blocks */
+typedef enum {
+	DISABLED,
+	MANUAL_PROFILING,
+	CYG_PROFILING,		/* Automatic instrumenting */
+} profiling_mode;
+
+extern profiling_mode 	get_profiling_mode(void);
+extern void				set_profiling_mode(profiling_mode new_mode);
 
 extern void __tracepoint_handle(struct __trace_point *tp);
 

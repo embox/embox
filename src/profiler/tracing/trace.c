@@ -44,7 +44,15 @@ POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
 POOL_DEF(key_pool, int, FUNC_QUANTITY);
 POOL_DEF(st_pool, struct tb_time, TB_MAX_DEPTH);
 
-int cyg_profiling;
+/* This variable contains current profiling mode (see profiler/tracing/trace.h) */
+static profiling_mode p_mode;
+profiling_mode get_profiling_mode(void) {
+	return p_mode;
+}
+void set_profiling_mode(profiling_mode new_mode) {
+	p_mode = new_mode;
+	return;
+}
 
 /* Hashtable to keep all dynamically generated trace_blocks */
 static struct hashtable *tbhash = NULL;
@@ -83,6 +91,7 @@ void trace_block_leave(struct __trace_block *tb) {
 	if (tb->active && tb_cs) {
 		assert(tb->depth > 0);
 		tb->depth--;
+
 		cur_time = tb_cs->counter_device->read();
 
 		p = tb->time_list_head;
@@ -170,6 +179,7 @@ void trace_block_func_enter(void *func) {
 		/* Table is not initialized */
 		return;
 	}
+
 	tb = hashtable_get(tbhash, func);
 	if (!tb) {
 		/* Lazy traceblock initialization.
@@ -184,8 +194,8 @@ void trace_block_func_enter(void *func) {
 		tb->active = true;
 		tb->is_entered = false;
 		hashtable_put(tbhash, func, tb);
-	} else {
 	}
+
 	trace_block_enter(tb);
 }
 
@@ -222,7 +232,7 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 }
 
 static int instrument_profiling_init(void) {
-	cyg_profiling = false;
+	set_profiling_mode(DISABLED);
 	tbhash = NULL;
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 	/* Initializing hash table */
@@ -245,9 +255,10 @@ long long get_current_tb_resolution(void) {
 
 void trace_block_hashtable_init(void) {
 	/* Initializing trace_block hash table */
-	int c = cyg_profiling;
+	profiling_mode c = get_profiling_mode();
 	struct __trace_block *tb1, *tb2;
-	cyg_profiling = false;
+
+	set_profiling_mode(DISABLED);
 
 	tb1 = auto_profile_tb_first();
 	while (tb1) {
@@ -259,7 +270,7 @@ void trace_block_hashtable_init(void) {
 
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 
-	cyg_profiling = c;
+	set_profiling_mode(c);
 }
 void trace_block_hashtable_destroy(void) {
 	/* Clear trace_block hash table */

@@ -6,10 +6,10 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 	 * every call of instrumented funcion.
 	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
 	 */
-	if (cyg_profiling) {
-		cyg_profiling = false;
+	if (get_profiling_mode() == CYG_PROFILING) {
+		set_profiling_mode(DISABLED);
 		trace_block_func_enter(func);
-		cyg_profiling = true;
+		set_profiling_mode(CYG_PROFILING);
 	}
 }
 
@@ -18,10 +18,10 @@ void __cyg_profile_func_exit(void *func, void *caller) {
 	 * exit from instrumented funcion.
 	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
 	 */
-	 if (cyg_profiling) {
-		cyg_profiling = false;
+	 if (get_profiling_mode() == CYG_PROFILING) {
+		set_profiling_mode(DISABLED);
 		trace_block_func_exit(func);
-		cyg_profiling = true;
+		set_profiling_mode(CYG_PROFILING);
 	}
 }
 

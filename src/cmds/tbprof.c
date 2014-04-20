@@ -32,15 +32,16 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	 */
 	int res = 0;
 	clock_t begin, end;
+	set_profiling_mode(DISABLED);
 	initialize_hashtable();
 
 	printf("Initialization...\n");
 	/*trace_block_hashtable_init();*/
 	printf("Executing command\n");
 	begin = clock();
-	cyg_profiling = true;
+	set_profiling_mode(CYG_PROFILING);
 	res = cmd_exec(cmd, argc, argv);
-	cyg_profiling = false;
+	set_profiling_mode(DISABLED);
 
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
