@@ -43,6 +43,16 @@ static void print_access(int flags) {
 
 #define BUFLEN 1024
 
+static void printer_simple(const char *path, stat_t *sb) {
+	printf(" %s", path);
+
+	if (sb->st_mode & S_IFDIR) {
+		putchar('/');
+	}
+
+	putchar('\n');
+}
+
 static void printer_long(const char *path, stat_t *sb) {
 	struct passwd pwd, *res;
 	struct group grp, *gres;
@@ -70,17 +80,7 @@ static void printer_long(const char *path, stat_t *sb) {
 		printf(" %10s", gres->gr_name);
 	}
 
-	printf(" %s", path);
-
-	if (sb->st_mode & S_IFDIR) {
-		putchar('/');
-	}
-
-	putchar('\n');
-}
-
-static void printer_simple(const char *path, stat_t *sb) {
-	printf("%s\n", path);
+	printer_simple(path, sb);
 }
 
 static void print(char *path, DIR *dir) {
