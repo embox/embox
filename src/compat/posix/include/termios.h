@@ -25,8 +25,7 @@
 #define ISTRIP          0x0080  /* mask off 8th bit */
 #define IXOFF           0x0100  /* enable start/stop input control */
 #define IXON            0x0200  /* enable start/stop output control */
-#define IXANY           0x0400  /* any character will restart stopped output */
-#define PARMRK          0x0800  /* mark parity errors in the input queue */
+#define PARMRK          0x0400  /* mark parity errors in the input queue */
 
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define OPOST           0x0001  /* perform output processing */
