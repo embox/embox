@@ -78,9 +78,7 @@ static void print_instrument_trace_block_stat(int amount) {
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %15llu %15.3Lf\n", tb->count, tb->time, (long double)1. * tb->time / (long double)get_current_tb_resolution());
-	/*	printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
-			(tb->tc->cs) ? (long double) 1.0 * tb->time / (tb->tc->cs->counter_device->resolution) : 0); */
+		printf("%10lld %15llu %15.9Lf\n", tb->count, tb->time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count));
 	}
 	free(buff);
 }
