@@ -25,6 +25,8 @@ ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
 #define TABLE_SIZE 65536
 
+static char filter[256];
+
 static void print_usage(void) {
 	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
 }
@@ -49,7 +51,7 @@ static void print_instrument_trace_block_stat(int amount) {
 	struct __trace_block *table[TABLE_SIZE];
 	int counter = 0, l, i;
 	char *buff = (char*) malloc (sizeof(char) * 256);
-
+	char *p;
 	if (tb) do {
 		table[counter++] = tb;
 		tb = auto_profile_tb_next(tb);
@@ -73,6 +75,13 @@ static void print_instrument_trace_block_stat(int amount) {
 		}
 		strcat(buff, s->name);
 
+		p = strstr(buff, filter);
+		if (!p) {
+			amount++;
+			continue;
+		}
+		//if (filter[0] != 0 && strstr(filter, buff) == NULL)
+		//		continue;
 		if (l > 40) {
 			printf("...%37s ", buff + strlen(buff) - 37);
 		} else {
@@ -165,7 +174,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "f:ehsi:d:a:n:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -173,6 +182,9 @@ static int exec(int argc, char **argv) {
 			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
+			break;
+		case 'f':
+			sscanf(optarg, "%s", filter);
 			break;
 		case 's':
 			print_trace_block_stat();
