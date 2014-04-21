@@ -51,7 +51,6 @@ static void print_instrument_trace_block_stat(int amount) {
 	struct __trace_block *table[TABLE_SIZE];
 	int counter = 0, l, i;
 	char *buff = (char*) malloc (sizeof(char) * 256);
-	char *p;
 	if (tb) do {
 		table[counter++] = tb;
 		tb = auto_profile_tb_next(tb);
@@ -75,13 +74,10 @@ static void print_instrument_trace_block_stat(int amount) {
 		}
 		strcat(buff, s->name);
 
-		p = strstr(buff, filter);
-		if (!p) {
+		if (filter[0] != 0 && strstr(buff, filter) == NULL) {
 			amount++;
 			continue;
 		}
-		//if (filter[0] != 0 && strstr(filter, buff) == NULL)
-		//		continue;
 		if (l > 40) {
 			printf("...%37s ", buff + strlen(buff) - 37);
 		} else {

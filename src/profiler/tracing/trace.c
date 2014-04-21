@@ -89,7 +89,12 @@ void trace_block_leave(struct __trace_block *tb) {
 	time64_t cur_time;
 	struct tb_time *p;
 	if (tb->active && tb_cs) {
-		assert(tb->depth > 0);
+
+		/* When cyg_profiling was enabled during trace_block,
+		 * tb_leave may occur without tb_enter */
+		if (tb->depth == 0)
+			return;
+
 		tb->depth--;
 
 		cur_time = tb_cs->counter_device->read();
