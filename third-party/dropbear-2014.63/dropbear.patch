@@ -1,6 +1,18 @@
+diff -aurN ../../../../../dropbear-2014.63/debug.h dropbear-2014.63/debug.h
+--- ../../../../../dropbear-2014.63/debug.h	2014-02-19 18:05:24.000000000 +0400
++++ dropbear-2014.63/debug.h	2014-04-21 19:07:39.255664413 +0400
+@@ -71,7 +71,7 @@
+ 
+ /* To debug with GDB it is easier to run with no forking of child processes.
+    You will need to pass "-F" as well. */
+-/* #define DEBUG_NOFORK */
++#define DEBUG_NOFORK 
+ 
+ 
+ /* For testing as non-root on shadowed systems, include the crypt of a password
 diff -aurN ../../../../../dropbear-2014.63/includes.h dropbear-2014.63/includes.h
 --- ../../../../../dropbear-2014.63/includes.h	2014-02-19 18:05:24.000000000 +0400
-+++ dropbear-2014.63/includes.h	2014-04-18 13:58:31.497184235 +0400
++++ dropbear-2014.63/includes.h	2014-04-21 19:04:37.662336433 +0400
 @@ -30,13 +30,16 @@
  #include "options.h"
  #include "debug.h"
@@ -48,7 +60,7 @@ diff -aurN ../../../../../dropbear-2014.63/includes.h dropbear-2014.63/includes.
  #include <netinet/tcp.h>
 diff -aurN ../../../../../dropbear-2014.63/options.h dropbear-2014.63/options.h
 --- ../../../../../dropbear-2014.63/options.h	2014-02-19 18:05:24.000000000 +0400
-+++ dropbear-2014.63/options.h	2014-04-18 14:04:21.680507247 +0400
++++ dropbear-2014.63/options.h	2014-04-21 19:04:37.662336433 +0400
 @@ -24,7 +24,7 @@
  #define DSS_PRIV_FILENAME "/etc/dropbear/dropbear_dss_host_key"
  #endif
@@ -69,7 +81,7 @@ diff -aurN ../../../../../dropbear-2014.63/options.h dropbear-2014.63/options.h
  /*#define DROPBEAR_PRNGD_SOCKET "/var/run/dropbear-rng"*/
 diff -aurN ../../../../../dropbear-2014.63/termcodes.c dropbear-2014.63/termcodes.c
 --- ../../../../../dropbear-2014.63/termcodes.c	2014-02-19 18:05:24.000000000 +0400
-+++ dropbear-2014.63/termcodes.c	2014-04-18 13:58:31.497184235 +0400
++++ dropbear-2014.63/termcodes.c	2014-04-21 19:04:37.662336433 +0400
 @@ -26,6 +26,7 @@
  #include "termcodes.h"
  

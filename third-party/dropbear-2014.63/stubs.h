@@ -11,6 +11,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #define LOG_AUTH 0
 
@@ -99,7 +100,7 @@ static inline char *crypt(const char *key, const char *salt) {
 static inline int initgroups(const char *user, gid_t group) {
 	(void) user;
 	(void) group;
-	return SET_ERRNO(ENOSYS);
+	return 0;
 }
 
 static inline FILE *popen(const char *command, const char *type) {
