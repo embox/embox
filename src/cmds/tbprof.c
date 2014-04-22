@@ -70,8 +70,8 @@ static int tbprof_main (int argc, char *argv[]) {
 				return 0;
 				break;
 			case 'd':
-				printf("cyg_profiling disabled.\n");
 				set_profiling_mode(DISABLED);
+				printf("cyg_profiling disabled.\n");
 				return 0;
 				break;
 		}
