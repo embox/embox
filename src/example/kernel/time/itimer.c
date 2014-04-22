@@ -31,13 +31,10 @@ static int measured_loop(struct clock_source *cs, int cycles_loop) {
 }
 
 static int run(int argc, char **argv) {
-	struct dlist_head *cs_list;
 	struct clock_source_head *csh;
 	struct clock_source *cs;
 
-	cs_list = clock_source_get_list();
-
-	dlist_foreach_entry(csh, cs_list, lnk) {
+	clock_source_foreach(csh) {
 		cs = csh->clock_source;
 
 		printf("%s\n", cs->name);

@@ -4,6 +4,8 @@
  *
  * @date 19.06.2012
  * @author Alexander Kalmuk
+ * @author Roman Kurbatov
+ *         - clock_source_get_list() function.
  */
 
 #include <stdlib.h>
