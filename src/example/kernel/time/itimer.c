@@ -25,7 +25,7 @@ static int measured_loop(struct clock_source *cs, int cycles_loop) {
 	for (i = 0; i < cycles_loop; i++) {
 	}
 	time_after = itimer_read(&it);
-	printf("spent = %d\n", (int) time_after);
+	printf("%d ", (int) time_after);
 
 	return 0;
 }
@@ -37,11 +37,13 @@ static int run(int argc, char **argv) {
 	clock_source_foreach(csh) {
 		cs = csh->clock_source;
 
-		printf("%s\n", cs->name);
+		printf("%s: ", cs->name);
 
 		for (int i = 0; i < 100; i++) {
 			measured_loop(cs, 1000);
 		}
+
+		putchar('\n');
 	}
 
 	return ENOERR;
