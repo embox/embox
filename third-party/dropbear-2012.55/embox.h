@@ -52,6 +52,8 @@ static inline struct spwd *getspnam(const char *name) {
 #include <sys/select.h>
 #include <linux/types.h>
 
-
+static inline int fork(void) {
+	return -1;
+}
 
 #endif /* EMBOX_DROPBEAR_EMBOX_H_ */
