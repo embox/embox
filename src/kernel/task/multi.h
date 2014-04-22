@@ -23,6 +23,7 @@ struct thread;
 
 struct task {
 	int tsk_id;
+	struct task *parent;
 	char tsk_name[MAX_TASK_NAME_LEN];
 	struct thread *tsk_main;
 	task_priority_t tsk_priority;

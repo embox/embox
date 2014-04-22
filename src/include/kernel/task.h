@@ -55,10 +55,18 @@ extern struct task *task_self(void);
 
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
-extern int new_task(const char *name, void *(*run)(void *), void *arg);
+extern void task_init(struct task *tsk, int id, struct task *parent,
+		const char *name, struct thread *main_thread,
+		task_priority_t priority);
 
-extern void task_init(struct task *tsk, int id, const char *name,
-		struct thread *main_thread, task_priority_t priority);
+/**
+ * @brief Do actual task_exit. Caller should ensure calling context when
+ * called on current task.
+ *
+ * @param task
+ * @param status
+ */
+extern void task_do_exit(struct task *task, int status);
 
 /**
  * @brief Exit from current task
