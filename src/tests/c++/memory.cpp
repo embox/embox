@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief Example of using new and delete operators
+ * @brief
+ *
  * @date 12.07.12
  * @author Ilia Vaprol
  */
@@ -9,12 +10,21 @@
 
 #include <embox/test.h>
 
-EMBOX_TEST_SUITE("c++ memory test");
+namespace {
 
-TEST_SETUP(case_setup);
+int base_ctor;
+int base_dtor;
 
-static int base_ctor;
-static int base_dtor;
+int case_setup(void) {
+	base_ctor = base_dtor = 0;
+	return 0;
+}
+
+} // namespace
+
+EMBOX_TEST_SUITE_EXT("c++ memory test", NULL, NULL, case_setup, NULL);
+
+namespace {
 
 class Base {
 public:
@@ -60,6 +70,4 @@ TEST_CASE("Class can allocated on heap using throwing new") {
 	test_assert_equal(base_dtor, 1);
 }
 
-static int case_setup(void) {
-	base_ctor = base_dtor = 0;
-}
+} // namespace
