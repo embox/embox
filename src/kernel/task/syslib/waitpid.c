@@ -32,11 +32,13 @@ int task_waitpid(pid_t pid) {
 			goto out;
 		}
 
-		waitq_wait_prepare(task_resource_waitpid(tsk), &wql);
+		if (~task_get_main(tsk)->state & TS_EXITED) {
+			waitq_wait_prepare(task_resource_waitpid(tsk), &wql);
 
-		sched_wait();
+			sched_wait();
 
-		waitq_wait_cleanup(task_resource_waitpid(tsk), &wql);
+			waitq_wait_cleanup(task_resource_waitpid(tsk), &wql);
+		}
 
 		ret = *task_resource_errno(tsk);
 		task_table_del(task_get_id(tsk));
