@@ -16,7 +16,7 @@
 void _exit(int status) {
 	sched_lock();
 	{
-		kill(task_get_id(task_self()->parent), SIGCHLD);
+		kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
 		task_do_exit(task_self(), status);
 		schedule();
 	}
