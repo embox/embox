@@ -1,8 +1,9 @@
 package third_party.gcc
 
-@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/core/install/include")
 static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libgcc.a", "libsupc++.a"
 
 	@NoRuntime depends gcc_stubs

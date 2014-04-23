@@ -23,12 +23,13 @@ target_libgcc_cppflags := -DLIBGCC2_HAS_XF_MODE=0 \
 	-DNAME__MAIN -DSYMBOL__MAIN=__embox_register_eh_frame_once
 cppflags = -I$(ROOT_DIR)/third-party/gcc/include \
 	$${EMBOX_IMPORTED_CPPFLAGS} \
-	-I$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld/gcc/include
+	-I$(PKG_BUILD_DIR)/gcc/include
+PKG_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
+PKG_BUILD_DIR  := $(BUILD_DIR)/build
 
 $(CONFIGURE) :
-	mkdir -p $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld && ( \
-		. $(EMBOX_GCC_ENV) && ../$(PKG_NAME)-$(PKG_VER)/configure \
+	mkdir -p $(PKG_BUILD_DIR) && cd $(PKG_BUILD_DIR) && ( \
+		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--disable-multilib \
 			--disable-shared \
@@ -46,7 +47,7 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld && ( \
+	cd $(PKG_BUILD_DIR) && ( \
 		. $(EMBOX_GCC_ENV) && make MAKEFLAGS='$${EMBOX_IMPORTED_MAKEFLAGS}' \
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
@@ -75,6 +76,24 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld/$(AUTOCONF_TARGET_TRIPLET)/libgcc/libgcc.a $(PKG_INSTALL_DIR)/libgcc.a
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)-bld/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/libsupc++/.libs/libsupc++.a $(PKG_INSTALL_DIR)/libsupc++.a
+	mkdir -p $(PKG_INSTALL_DIR)/include $(PKG_INSTALL_DIR)/include/bits
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/unwind.h $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/cxxabi.h $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/exception $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/initializer_list $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/new $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/typeinfo $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/atomic_lockfree_defines.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/cxxabi_forced.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/exception_defines.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/exception_ptr.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/hash_bytes.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/nested_exception.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/c++config.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/cpu_defines.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/cxxabi_tweaks.h $(PKG_INSTALL_DIR)/include/bits/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/os_defines.h $(PKG_INSTALL_DIR)/include/bits/
+	mkdir -p $(PKG_INSTALL_DIR)/lib
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/libgcc.a $(PKG_INSTALL_DIR)/lib/
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/libsupc++/.libs/libsupc++.a $(PKG_INSTALL_DIR)/lib
 	touch $@
