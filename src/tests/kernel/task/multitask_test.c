@@ -6,6 +6,7 @@
  */
 
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <err.h>
 #include <embox/test.h>
@@ -42,6 +43,8 @@ TEST_CASE("Create two tasks") {
 
 	pid2 = new_task("", tsk2_hnd, SOMEPOINTER);
 	test_assert_true(pid2 >= 0);
+
+	test_assert_zero(sleep(1));
 
 	test_assert_equal(EXIT_CODE1, task_waitpid(pid1));
 	test_assert_equal(EXIT_CODE2, task_waitpid(pid2));

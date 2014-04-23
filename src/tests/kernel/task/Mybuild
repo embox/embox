@@ -4,6 +4,7 @@ package embox.test.kernel.task
 module multitask_test {
 	source "multitask_test.c"
 
+	depends embox.compat.posix.util.sleep
 	@NoRuntime depends embox.framework.test
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.multi
