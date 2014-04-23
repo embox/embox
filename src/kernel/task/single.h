@@ -44,7 +44,7 @@ static inline struct thread * task_get_main(const struct task *tsk) {
 }
 
 static inline struct task * task_get_parent(const struct task *tsk) {
-	assert(tsk != task_kernel_task());
+	assert(tsk == task_kernel_task());
 	return NULL;
 }
 
