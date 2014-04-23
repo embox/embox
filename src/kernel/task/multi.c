@@ -177,10 +177,6 @@ void task_do_exit(struct task *task, int status) {
 
 	/* At the end terminate main thread */
 	thread_terminate(main_thr);
-
-	/* Set an exited state on main thread */
-	thread_state_exited(main_thr);
-
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {
