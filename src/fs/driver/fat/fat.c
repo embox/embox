@@ -1924,7 +1924,7 @@ static int fat_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
 			if (node_is_directory(child)) {
 				fat_umount_entry(child->nas);
 			}
@@ -2220,9 +2220,6 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
-	}
-	if(NULL != vfs_subtree_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
 	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {

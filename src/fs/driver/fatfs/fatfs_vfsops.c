@@ -1046,9 +1046,6 @@ static int fatfs_mount(void *dev, void *dir) {
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
 	}
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
-	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
 		rc =  -ENOMEM;

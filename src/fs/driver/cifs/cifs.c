@@ -160,7 +160,7 @@ static int cifs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				cifs_umount_entry(child->nas);
 			}
@@ -221,17 +221,12 @@ embox_cifs_mount (void *dev, void *dir)
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	if (NULL != vfs_subtree_get_child_next (dir_node)) {
-		rc = ENOTEMPTY;
-		return -rc;
-	}
-
-	if (NULL == (dir_nas->fs = filesystem_create ("cifs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("cifs"))) {
 		rc = ENOMEM;
 		return -rc;
 	}
 
-	if ((ctx = embox_create_smbctx ()) == NULL) {
+	if ((ctx = embox_create_smbctx()) == NULL) {
 		/* ToDo: error: exit without deallocation of filesystem */
 		//Cant create samba context
 		rc = 1;
@@ -239,20 +234,20 @@ embox_cifs_mount (void *dev, void *dir)
 	}
 
 	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc (&cifs_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&cifs_fs_pool))) {
 		/* ToDo: error: exit without deallocation of filesystem */
 		rc = ENOMEM;
 		goto error;
 	}
-	memset (fsi, 0, sizeof (*fsi));
+	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
 	fsi->mntto = dir_node;
 	fsi->ctx = ctx;
 	dir_nas->fs->fsi = fsi;
 
 	//get smb_path
-	rc = embox_cifs_mounting_recurse (dir_node->nas, ctx, smb_path,
-									  sizeof (smb_path));
+	rc = embox_cifs_mounting_recurse(dir_node->nas, ctx, smb_path,
+									sizeof (smb_path));
 	if (0 > rc) {
 		goto error;
 	}

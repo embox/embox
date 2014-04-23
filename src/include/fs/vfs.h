@@ -66,7 +66,8 @@ extern void vfs_lookup_childn(struct path *parent, const char *name, size_t len,
 
 extern void vfs_get_parent(struct path *child_path, struct path *parent_path);
 
-extern int vfs_get_child_next(struct path *parent_path, struct path *child_next);
+extern int vfs_get_child_next(struct path *parent_path,
+		struct node *child_prev, struct path *child_next);
 
 /**
  * Checks the path on the node_tree and forms correct string with the path
@@ -136,7 +137,7 @@ extern struct node *vfs_subtree_lookup(struct node *parent, const char *str_path
 
 extern struct node *vfs_subtree_lookup_child(struct node *parent, const char *name);
 
-extern struct node *vfs_subtree_get_child_next(struct node *child_next);
+extern struct node *vfs_subtree_get_child_next(struct node *parent, struct node *prev_child);
 
 extern struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode);
 

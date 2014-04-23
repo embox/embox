@@ -74,8 +74,7 @@ int closedir(DIR *dir) {
 }
 
 struct dirent *readdir(DIR *dir) {
-	struct node *chldnod;
-	struct tree_link *chld_link;
+	struct path child;
 
 	SET_ERRNO(0);
 
@@ -84,27 +83,14 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 
-	if (0 == dir->current.d_ino) {
-		//XXX
-		if_mounted_follow_down(&dir->path);
-		chld_link = tree_children_begin(&dir->path.node->tree_link);
-		if (chld_link == NULL) {
-			return NULL;
-		}
-	} else {
-		chldnod = (struct node *)dir->current.d_ino;
-		chld_link = tree_children_next(&chldnod->tree_link);
-
-		if (tree_children_end(&dir->path.node->tree_link) == chld_link) {
-			return NULL;
-		}
+	if ( 0 != vfs_get_child_next(&dir->path,
+			(struct node *)dir->current.d_ino, &child)) {
+		return NULL;
 	}
 
-	chldnod = tree_element(chld_link, struct node, tree_link);
+	strcpy(dir->current.d_name, child.node->name);
 
-	strcpy(dir->current.d_name, chldnod->name);
-
-	dir->current.d_ino = (ino_t)chldnod;
+	dir->current.d_ino = (ino_t)child.node;
 
 	return &dir->current;
 }

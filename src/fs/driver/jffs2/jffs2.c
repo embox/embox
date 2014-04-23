@@ -393,7 +393,7 @@ static int umount_vfs_dir_entry(struct nas *nas) {
 	struct node *child;
 
 	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				umount_vfs_dir_entry(child->nas);
 			}
@@ -1706,10 +1706,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-
-	if(NULL != vfs_subtree_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
 
 	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
 		rc = ENOMEM;

@@ -775,10 +775,6 @@ static int ext4fs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if (NULL != vfs_subtree_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
-
 	if (NULL == (dir_nas->fs = filesystem_create(EXT4_NAME))) {
 		rc = ENOMEM;
 		goto error;
@@ -880,7 +876,7 @@ static int ext4_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
 			if (node_is_directory(child)) {
 				ext4_umount_entry(child->nas);
 			}

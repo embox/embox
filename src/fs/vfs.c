@@ -173,11 +173,11 @@ int vfs_create_intermediate(struct path *parent, const char *path, mode_t mode,
 	return __vfs_create(parent, path, mode, 1, child);
 }
 
-int vfs_get_child_next(struct path *parent_path, struct path *child_next) {
+int vfs_get_child_next(struct path *parent_path, struct node *child_prev, struct path *child_next) {
 	*child_next = *parent_path;
 	if_mounted_follow_down(child_next);
 
-	child_next->node = vfs_subtree_get_child_next(child_next->node);
+	child_next->node = vfs_subtree_get_child_next(child_next->node, child_prev);
 
 	return child_next->node ? 0 : -1;
 }
@@ -357,14 +357,24 @@ struct node *vfs_subtree_lookup(struct node *parent, const char *str_path) {
 	return node;
 }
 
-struct node *vfs_subtree_get_child_next(struct node *child_next) {
-	struct tree_link *tlink;
+struct node *vfs_subtree_get_child_next(struct node *parent, struct node *prev_child) {
+	struct tree_link *chld_link;
 
-	assert(child_next);
+	assert(parent);
 
-	tlink = tree_children_begin(&(child_next->tree_link));
+	if (!prev_child) {
+		chld_link = tree_children_begin(&parent->tree_link);
+		goto out;
+	}
 
-	return tree_element(tlink, struct node, tree_link);
+	chld_link = tree_children_next(&prev_child->tree_link);
+
+	if (tree_children_end(&parent->tree_link) == chld_link) {
+		return NULL;
+	}
+
+out:
+	return tree_element(chld_link, struct node, tree_link);
 }
 
 struct node *vfs_subtree_create(struct node *parent, const char *path,

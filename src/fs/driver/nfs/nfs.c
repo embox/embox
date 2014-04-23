@@ -404,7 +404,7 @@ static int nfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if(node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node))) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if (node_is_directory(child)) {
 				nfs_umount_entry(child->nas);
 			}
