@@ -1690,7 +1690,7 @@ static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
 
 	jffs_flash_name(dev_node, flash_node_name);
 
-	if (NULL == (flash_node = vfs_subtree_lookup(NULL, flash_node_name))) {
+	if (NULL == (flash_node = vfs_subtree_lookup(vfs_get_root(), flash_node_name))) {
 		return jffs_bdev_by_node(dev_node, err);
 	}
 

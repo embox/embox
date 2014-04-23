@@ -255,7 +255,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->format(&node))) {
+	if (0 != (res = drv->fsop->format(node.node))) {
 		errno = -res;
 		return -1;
 	}
