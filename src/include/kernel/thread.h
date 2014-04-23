@@ -210,7 +210,6 @@ extern int thread_terminate(struct thread *thread);
  */
 extern int thread_launch(struct thread *thread);
 
-extern void thread_state_exited(struct thread *t);
 extern void thread_delete(struct thread *t);
 
 extern int thread_set_priority(struct thread *t, sched_priority_t priority);

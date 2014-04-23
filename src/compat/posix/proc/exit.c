@@ -8,10 +8,21 @@
  */
 
 #include <unistd.h>
+#include <kernel/sched.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/panic.h>
 #include <kernel/task.h>
 
 void _exit(int status) {
-	task_exit(NULL);
+	sched_lock();
+	{
+		kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
+		task_do_exit(task_self(), status);
+		schedule();
+	}
+	sched_unlock();
+
+	panic("Returning from _exit");
 }
 
 /* stdlib */

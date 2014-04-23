@@ -23,6 +23,7 @@ struct thread;
 
 struct task {
 	int tsk_id;
+	struct task *parent;
 	char tsk_name[MAX_TASK_NAME_LEN];
 	struct thread *tsk_main;
 	task_priority_t tsk_priority;
@@ -45,6 +46,11 @@ static inline const char * task_get_name(const struct task *tsk) {
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;
+}
+
+static inline struct task * task_get_parent(const struct task *tsk) {
+	assert(tsk != NULL);
+	return tsk->parent;
 }
 
 static inline void task_set_main(struct task *tsk,

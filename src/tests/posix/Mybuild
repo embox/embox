@@ -1,6 +1,21 @@
 
 package embox.test.posix
 
+module all {
+	depends environ_test
+	depends getopt_test
+	depends passwd
+	depends inttypes_test
+	depends libgen_test
+	depends poll_test
+	depends select_test
+	depends pipe_test
+	depends ppty_test
+	depends fork_test
+	depends sleep_test
+	depends sigchld_test
+}
+
 module environ_test {
 	source "environ_test.c"
 	depends embox.compat.posix.util.environ
@@ -68,6 +83,13 @@ module fork_test {
 	source "fork_test.c"
 
 	depends embox.kernel.task.syslib.kfork
+}
+
+module sigchld_test {
+	source "sigchld_test.c"
+
+	depends embox.compat.posix.proc.exit
+	depends embox.compat.posix.proc.signal
 }
 
 @TestFor(embox.compat.posix.util.sleep)

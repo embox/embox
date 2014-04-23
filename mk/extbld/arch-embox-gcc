@@ -23,23 +23,13 @@ case $EMBOX_GCC_LINK in
 		;;
 esac
 
-case $@ in
-	*-c*) ARG_LINE="$C_CXX_FLAGS";;
-	*-E*) ARG_LINE=;;
-	*-shared*) echo "Can't build shared objects"; exit 1;;
+case " $@" in
+	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
+	*" -E "*) ARG_LINE=;;
+	*" -shared "*) echo "Can't build shared objects"; exit 1;;
 esac
 
-args=()
-for arg in "$@"; do
-	arg="${arg//\"/\\\"}"
-	arg="${arg//\'/\\\'}"
-	if [[ $arg == *\ * ]]; then
-		arg="\"$arg\""
-	fi
-	args+=("$arg")
-done
-
-ARG_LINE="${args[@]} $ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
-#echo "eval $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE" >&2
-eval $EMBOX_CROSS_COMPILE${cmd#arch-embox-} $ARG_LINE
+ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
+#echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ $ARG_LINE" >&2
+$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" $ARG_LINE
 exit $?

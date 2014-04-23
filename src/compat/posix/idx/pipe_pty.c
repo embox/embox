@@ -117,7 +117,7 @@ static const struct idesc_ops pty_master_ops = {
 		.write = pty_master_write,
 		.read  = pty_master_read,
 		.close = pty_close,
-		/*.ioctl = pty_ioctl,*/
+		.ioctl = pty_ioctl,
 		/*.fstat = pty_fstat,*/
 		.status = pty_master_status,
 };

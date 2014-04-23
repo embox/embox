@@ -21,4 +21,11 @@
 # define __END_DECLS /* empty */
 #endif
 
+#undef EXTERN_C
+#ifdef __cplusplus
+# define EXTERN_C extern "C"
+#else
+# define EXTERN_C extern
+#endif
+
 #endif /* SYS_CDEFS_H_ */

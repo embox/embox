@@ -52,17 +52,25 @@ build_dir() {
 
 build() {
 	content="$1"
+	tmp_dir=tmp_$FS
 
-	case $FS in
-		jffs2)
-			mkfs.jffs2 -p 0x10000 -r $content -o $IMG
-			return 0
-			;;
-		iso9660)
-			mkisofs -o $IMG $content
-			return 0
-			;;
-	esac
+	if [ jffs2 = $FS ] || [iso9660 = $FS ]; then
+		mkdir -p $tmp_dir
+
+		build_dir "$content" $tmp_dir
+
+		case $FS in
+			jffs2)
+				mkfs.jffs2 -p 0x10000 -r $tmp_dir -o $IMG
+				;;
+			iso9660)
+				mkisofs -o $IMG $tmp_dir
+				;;
+		esac
+
+		rm -Rf $tmp_dir
+		return 0
+	fi
 
 	dd if=/dev/zero bs=1M count=8 of=$IMG
 

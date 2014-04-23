@@ -231,11 +231,6 @@ void thread_delete(struct thread *t) {
 	}
 }
 
-void thread_state_exited(struct thread *t) {
-	t->waiting = true;
-	t->state |= TS_EXITED;
-}
-
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
@@ -251,7 +246,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	thread_state_exited(current);
+	current->waiting = true;
+	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */
@@ -349,6 +345,13 @@ int thread_terminate(struct thread *t) {
 		// assert(0, "NIY");
 		// thread_delete(t);
 		sched_freeze(t);
+
+		t->state |= TS_EXITED;
+
+		// XXX prevent scheduler to add thread in runq
+		if (t == thread_self()) {
+			t->waiting = true;
+		}
 	}
 	sched_unlock();
 

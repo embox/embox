@@ -1,0 +1,29 @@
+package third_party.dropbear
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@Cmd(name = "dropbear_new",
+	help = "",
+	man = '''
+		AUTHORS
+			-
+	''')
+module dropbear_new {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.dropbear.o"
+
+	@NoRuntime depends embox.compat.posix.fs.dirent
+	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.lib.LibCType
+	@NoRuntime depends embox.kernel.task.resource.errno
+
+	@InitFS
+	source "dropbear_rsa_host_key",
+		"random"
+
+	@InitFS(chmod="622")
+	source "dev_pty_0"
+
+	depends embox.compat.posix.stubs
+}

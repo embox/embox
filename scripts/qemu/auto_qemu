@@ -25,21 +25,21 @@ guessed_info() {
 }
 
 error_empty() {
-	if [ -z ${!1} ]; then
+	if [ -z "${!1}" ]; then
 		error $1 is not defined
 	fi
 }
 
 get_user_empty_guess() {
-	if [ -z ${!1} ]; then
-		eval "$1=$($2)"
-		guessed_info $1
-		error_empty $1
+	if [ -z "${!1}" ]; then
+		eval "$1=\"$($2)\""
+		guessed_info "$1"
+		error_empty "$1"
 	fi
 }
 
 get_user_undef_guess() {
-	if [ -z ${!1+defined} ]; then
+	if [ -z "${!1+defined}" ]; then
 		eval "$1=\"$($2)\""
 		guessed_info $1
 	fi
@@ -92,19 +92,22 @@ guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		./scripts/omap-uboot-uimage >/dev/null 2>/dev/null
+		./scripts/omap-uboot-uimage >/dev/null
+		if [ 0 -ne $? ]; then
+			exit 1
+		fi
 		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
 		echo "-mtdblock beagle_nand.img"
 	fi
 }
-get_user_undef_guess AUTOQEMU_LOAD_ARG guess_load_arg
+get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
 
 guess_nographic() { echo "-nographic"; }
 get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 
 declare -A ARCH2QEMU
 ARCH2QEMU=(
-	[arm]="qemu-system-arm -M beagle"
+	[arm]="qemu-system-arm -M overo"
 	[microblaze]="qemu-system-microblaze -M petalogix-s3adsp1800"
 	[mips]="qemu-system-mips -M mipssim"
 	[ppc]="qemu-system-ppc -M virtex-ml507"
@@ -119,17 +122,21 @@ NIC2QEMU=(
 	[rtl8139]="rtl8139"
 	[virtio]="virtio"
 	[xemaclite]="xilinx-ethlite:xlnx.xps-ethernetlite"
+	[lan9118]="lan9118"
 )
 
 qemu_nics=$(echo $AUTOQEMU_NICS ${!NIC2QEMU[@]} | sed 's/\ \+/\n/g' | sort | uniq -d)
 
+qemu_start_script=${AUTOQEMU_START_SCRIPT:-$DATADIR/start_script}
+qemu_stop_script=${AUTOQEMU_STOP_SCRIPT:-$DATADIR/stop_script}
 sudo=""
 nic_lines=""
 if [ -n "$qemu_nics" ]; then
 	sudo=sudo
 	nic_n=0
 	for n in $qemu_nics; do
-		nic_lines="$nic_lines -net nic,model=$n,macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) -net tap,name=tap$nic_n,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
+		nic_lines="$nic_lines -net nic,model=$n,macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
+			-net tap,ifname=tap$nic_n,script=$qemu_start_script,downscript=$qemu_stop_script"
 		nic_n=$(($nic_n + 1))
 	done
 fi

@@ -1,7 +1,9 @@
 package embox.compat.posix
 
 static module stubs {
-	source "execl.c",
+	source
+		"daemon.c",
+		"execl.c",
 		"execlp.c",
 		"execvp.c",
 		"flockfile.c",
