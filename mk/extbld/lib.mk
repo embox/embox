@@ -15,25 +15,30 @@ PKG_INSTALL_DIR := $(BUILD_DIR)/install
 $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
 
-sources          := $(notdir $(PKG_SOURCES))
-sources_download := $(PKG_SOURCES)
-sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz,$(sources))
+sources_git      := $(filter %.git,$(PKG_SOURCES))
+sources_download := $(filter-out %.git,$(PKG_SOURCES))
+sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
 
 DOWNLOAD_DIR   := $(ROOT_DIR)/download
 DOWNLOAD     := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
 $(DOWNLOAD): | $(BUILD_DIR)
-	if [ ! -z $(sources_download) ]; then \
+	if [ ! -z "$(sources_download)" ]; then \
 		wget -c -P $(DOWNLOAD_DIR) $(sources_download); \
 	fi
+	$(foreach g,$(sources_git), \
+		if [ ! -d $(DOWNLOAD_DIR)/$(basename $(notdir $g)) ]; then \
+			cd $(DOWNLOAD_DIR); \
+			git clone $g; \
+		fi)
 	touch $@
 
 EXTRACT   := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
 $(EXTRACT): | $(BUILD_DIR) $(DOWNLOAD)
-	for i in $(sources_extract); do \
-		tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$$i; \
-	done
+	$(foreach i,$(sources_extract),\
+		$(if $(filter %zip,$i),unzip $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
+			tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$i);)
 	touch $@
 
 PATCH     := $(BUILD_DIR)/.patched
