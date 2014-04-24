@@ -316,19 +316,6 @@ static inline pid_t setsid(void) {
 	return 0;
 }
 
-#define WNOHANG      0
-static inline int WIFEXITED(int status) {
-	printf(">>> %s %d\n", __func__, status);
-	return 0;
-}
-static inline int WEXITSTATUS(int status) {
-	(void)status;
-	printf(">>> %s %d\n", __func__, status);
-	return 0;
-}
-
-
-
 //------ END QProcess
 
 // this is for FILESYSTEMWATCHER
