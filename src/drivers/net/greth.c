@@ -297,13 +297,15 @@ static int greth_init(void) {
 	unsigned int irq;
 	char hw_addr[] = {0x0,0x0,0x7a,0xcc,0x0,0x13};
 
+	res = dev_regs_init(&irq);
+	if (res != 0) {
+		return res;
+	}
 
 	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-
-	dev_regs_init(&irq);
 
 	nic->drv_ops = &greth_ops;
 	nic->irq = irq;
