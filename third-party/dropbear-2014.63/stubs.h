@@ -92,11 +92,6 @@ static inline char *crypt(const char *key, const char *salt) {
 	return (char *) "x";
 }
 
-#define WNOHANG		0
-#define WEXITSTATUS(x)  0
-#define WIFSIGNALED(x)  0
-#define WTERMSIG(x)     0
-
 static inline int initgroups(const char *user, gid_t group) {
 	(void) user;
 	(void) group;
