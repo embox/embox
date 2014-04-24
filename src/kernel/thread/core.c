@@ -160,6 +160,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
+	/* t->run_ret doesn't require the initialization */
 	t->joining = NULL;
 
 	/* calculate current thread priority. It can be change later with
@@ -234,7 +235,6 @@ void thread_delete(struct thread *t) {
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
-	struct thread *joining;
 
 	/* We can free only not main threads */
 	if (current == task_get_main(task)) {
@@ -249,12 +249,10 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	current->waiting = true;
 	current->state |= TS_EXITED;
 
-	/* Wake up a joining thread (if any).
-	 * Note that joining and run_ret are both in a union. */
-	joining = current->joining;
-	if (joining) {
-		current->run_ret = ret;
-		sched_wakeup(joining);
+	/* Wake up a joining thread (if any). */
+	current->run_ret = ret;
+	if (current->joining) {
+		sched_wakeup(current->joining);
 	}
 
 	if (current->state & TS_DETACHED)
