@@ -16,8 +16,8 @@
 
 #define KERNEL_TID      (task_get_id(task_kernel_task()))
 #define SOMEPOINTER     ((void *) 0x10000)
-#define EXIT_CODE1       0x61001003
-#define EXIT_CODE2       0x34728199
+#define EXIT_CODE1       0x03
+#define EXIT_CODE2       0x99
 
 EMBOX_TEST_SUITE("task/multi tests");
 
