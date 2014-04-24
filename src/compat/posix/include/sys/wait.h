@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-#include <kernel/task.h>
+#include <kernel/task/defs.h>
 
 #define WCONTINUED      1
 #define WNOHANG         2
