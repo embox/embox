@@ -158,7 +158,7 @@ for f in $FS_TEST_NETWORK; do
 
 			$CONT_FS_MANAGE $f $FS_TEST_CIFS_PATH check_dir $IMG_RW_GOLD
 			check_post_exit "fs content differ from expected"
-
+			;;
 	esac
 done
 
