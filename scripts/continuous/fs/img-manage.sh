@@ -17,7 +17,7 @@ do_mount() {
 }
 
 do_unmount() {
-	sudo umount $MOUNT_POINT
+	sudo umount -f $MOUNT_POINT
 }
 
 is_inlist() {
@@ -54,7 +54,7 @@ build() {
 	content="$1"
 	tmp_dir=tmp_$FS
 
-	if [ jffs2 = $FS ] || [iso9660 = $FS ]; then
+	if [ jffs2 = $FS ] || [ iso9660 = $FS ]; then
 		mkdir -p $tmp_dir
 
 		build_dir "$content" $tmp_dir
