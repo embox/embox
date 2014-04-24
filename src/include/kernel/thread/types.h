@@ -68,7 +68,7 @@ struct thread {
 
 	void            *(*run)(void *); /**< Start routine. */
 	void              *run_arg;      /**< Argument to pass to start routine. */
-	struct {
+	union {
 		void          *run_ret;      /**< Return value of the routine. */
 		void          *joining;      /**< A joining thread (if any). */
 	} /* unnamed */;
