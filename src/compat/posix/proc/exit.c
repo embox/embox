@@ -14,13 +14,14 @@
 #include <kernel/task.h>
 
 void _exit(int status) {
-	sched_lock();
-	{
-		kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
-		task_do_exit(task_self(), status);
-		schedule();
-	}
-	sched_unlock();
+
+	task_start_exit();
+
+	task_do_exit(task_self(), TASKST_EXITED_MASK | (status & TASKST_EXITST_MASK));
+
+	kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
+
+	task_finish_exit();
 
 	panic("Returning from _exit");
 }

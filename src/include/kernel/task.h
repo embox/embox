@@ -16,12 +16,21 @@
 #include <kernel/task/task_priority.h>
 #include <module/embox/kernel/task/api.h>
 
-
 struct thread;
 
 struct task;
 
+#define TASKST_EXITED_MASK  0x0100
+#define TASKST_EXITST_MASK  0x00ff
+#define TASKST_SIGNALD_MASK 0x0200
+#define TASKST_TERMSIG_MASK TASKST_EXITST_MASK
+#define TASKST_STOPPED_MASK 0x0400
+#define TASKST_STOPSIG_MASK TASKST_EXITST_MASK
+#define TASKST_CONT_MASK    0x0800
+
 __BEGIN_DECLS
+
+extern int task_get_status(const struct task *tsk);
 
 extern int task_get_id(const struct task *tsk);
 
@@ -59,6 +68,7 @@ extern void task_init(struct task *tsk, int id, struct task *parent,
 		const char *name, struct thread *main_thread,
 		task_priority_t priority);
 
+extern void task_start_exit(void);
 /**
  * @brief Do actual task_exit. Caller should ensure calling context when
  * called on current task.
@@ -68,6 +78,8 @@ extern void task_init(struct task *tsk, int id, struct task *parent,
  */
 extern void task_do_exit(struct task *task, int status);
 
+extern void task_finish_exit(void);
+
 /**
  * @brief Exit from current task
  *
@@ -75,9 +87,12 @@ extern void task_do_exit(struct task *task, int status);
  */
 extern void __attribute__((noreturn)) task_exit(void *res);
 
+extern void task_delete(struct task *tsk);
+
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 
-extern int task_waitpid(pid_t pid);
+extern pid_t task_waitpid(pid_t pid);
+extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 
 __END_DECLS
 

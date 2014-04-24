@@ -28,6 +28,11 @@ struct task {
 };
 __BEGIN_DECLS
 
+static inline int task_get_status(const struct task *tsk) {
+	assert(tsk == task_kernel_task());
+	return 0;
+}
+
 static inline int task_get_id(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;
