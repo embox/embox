@@ -95,9 +95,10 @@ __END_DECLS
 #include <kernel/task/task_table.h>
 
 #define task_foreach(tsk) \
-	tsk = task_table_get(0); \
-	for (int tid = 0; tsk != NULL; \
-			++tid, tsk = task_table_get(task_table_get_first(tid)))
+	for (int tid = 0; \
+			(tid = task_table_get_first(tid)) >= 0 \
+				&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
+			tid = task_get_id(tsk) + 1)
 
 
 
