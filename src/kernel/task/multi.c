@@ -190,8 +190,6 @@ void task_start_exit(void) {
 
 	assert(task_self() != task_kernel_task());
 
-	assert(!critical_inside(CRITICAL_SCHED_LOCK));
-
 	sched_lock();
 
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
