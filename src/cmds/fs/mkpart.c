@@ -36,6 +36,7 @@ static int mkpart_exec(int argc, char *argv[]) {
 	int blockoffset = -1;
 	int blocklen = -1;
 	node_t *bdevnode = NULL;
+	node_t *root;
 
 	getopt_init();
 
@@ -62,7 +63,9 @@ static int mkpart_exec(int argc, char *argv[]) {
 		return -1;
 	}
 
-	if (NULL == (bdevnode = vfs_lookup(NULL, blockname))) {
+	root = vfs_get_root();
+	assert(root);
+	if (NULL == (bdevnode = vfs_subtree_lookup(root, blockname))) {
 		printf("blockdev not found\n");
 		return -1;
 	}
