@@ -27,7 +27,7 @@
 #include <net/netfilter.h>
 #include <unistd.h>
 
-#define LAN9118_DEBUG
+/*#define LAN9118_DEBUG*/
 
 #ifdef LAN9118_DEBUG
 #define DBG(x) x
