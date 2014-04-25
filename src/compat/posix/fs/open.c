@@ -15,6 +15,7 @@
 
 #include <util/array.h>
 #include <fs/posix.h>
+#include <fs/vfs.h>
 
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>
@@ -30,7 +31,7 @@ struct node *find_node(DIR *dir, char * node_name) {
 
 	return NULL;
 }
-extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
+extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *child);
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
@@ -43,6 +44,7 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	char *name;
 	struct node *node;
+	struct path node_path;
 	struct idesc_table*it;
 
 	if (strlen(path) > PATH_MAX) {
@@ -60,6 +62,10 @@ int open(const char *path, int __oflag, ...) {
 	name = basename(strcpy(name_buf, path));
 	node = find_node(dir, name);
 
+	node_path.node = node;
+	if_mounted_follow_down(&dir->path);
+	node_path.mnt_desc = dir->path.mnt_desc;
+
 	if (__oflag & O_DIRECTORY) {
 		assert(0);
 		opendir(path);
@@ -67,7 +73,7 @@ int open(const char *path, int __oflag, ...) {
 
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
-			if(NULL == (node = kcreat(dir->node, name, mode))) {
+			if(0 > kcreat(&dir->path, name, mode, &node_path)) {
 				rc =  -1;
 				goto out;
 			}
@@ -92,7 +98,7 @@ int open(const char *path, int __oflag, ...) {
 
 	__oflag &= ~(O_CREAT | O_EXCL);
 
-	kfile = kopen(node, __oflag);
+	kfile = kopen(node_path.node, __oflag);
 	if (NULL == kfile) {
 		rc = -1;
 		goto out;

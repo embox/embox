@@ -44,6 +44,7 @@
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <limits.h>
@@ -928,9 +929,7 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node (nod, (char *) path);
-	/* set relative path in this file system */
-	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
+	vfs_get_relative_path(nod, (char *) path);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -989,9 +988,9 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 static int fatfs_init(void * par);
 static int fatfs_format(void * bdev);
 static int fatfs_mount(void * dev, void *dir);
-static int fatfs_create(struct node *parent_node, struct node *new_node);
-static int fatfs_delete(struct node *node);
-static int fatfs_truncate (struct node *node, off_t length);
+static int fatfs_create(struct path *parent_node, struct path *new_node);
+static int fatfs_delete(struct path *node);
+static int fatfs_truncate (struct path *node, off_t length);
 static int fatfs_umount(void *dir);
 
 static struct fsop_desc fatfs_fsop = {
@@ -1046,9 +1045,6 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
-	}
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
 	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
@@ -1120,13 +1116,8 @@ static int fatfs_delete(struct node *node) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node(node, path);
+	vfs_get_relative_path(node, path);
 
-	/*
-	 * remove the root name to give a name to fat file system name
-	 * and set relative path in this file system
-	 */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
 	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fsi);

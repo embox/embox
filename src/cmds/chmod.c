@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 
 #include <fs/perm.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/vfs.h>
 #include <fs/node.h>
 
@@ -135,20 +135,21 @@ parse:
 	return count + 1;
 }
 
-static int find(struct node *root, const char *path, struct node **nodelast) {
-	struct node *node;
+static int find(struct path *root, const char *path, struct path *nodelast) {
+	struct path *node_path = root;
 	size_t len = 0;
 
 	while (1) {
 		path = path_next(path + len, &len);
 
-		*nodelast = node;
+		*nodelast = *node_path;
 
 		if (!path) {
 			break;
 		}
 
-		if (NULL == (node = vfs_lookup_childn(node, path, len))) {
+		vfs_lookup_childn(node_path, path, len, node_path);
+		if (NULL == node_path->node) {
 			return -EACCES;
 		}
 	}
@@ -156,18 +157,20 @@ static int find(struct node *root, const char *path, struct node **nodelast) {
 	return 0;
 }
 
-static int change_mode(node_t *node, int is_recursive,
+static int change_mode(struct path *node_path, int is_recursive,
 		struct mode *modes, int count);
 
-static int change_mode_recursive(struct tree_link *node, int is_recursive,
+static int change_mode_recursive(struct path *node_path, int is_recursive,
 		struct mode *modes, int count) {
+	struct path child;
 	struct tree_link *link;
 
-	assert(node);
+	child = *node_path;
+	if_mounted_follow_down(&child);
 
-	list_foreach(link, &node->children, list_link) {
-		change_mode(tree_element(link, node_t, tree_link),
-				is_recursive, modes, count);
+	list_foreach(link, &child.node->tree_link.children, list_link) {
+		child.node = tree_element(link, node_t, tree_link);
+		change_mode(&child, is_recursive, modes, count);
 	}
 
 	return 0;
@@ -197,39 +200,38 @@ static void apply_modes(node_t *node, struct mode *modes, int count, int is_dir)
 	}
 }
 
-static int change_mode(node_t *node, int is_recursive,
+static int change_mode(struct path *node_path, int is_recursive,
 		struct mode *modes, int count) {
 	char path[PATH_MAX];
 
-	if (!is_permitted(node)) {
-		vfs_get_path_by_node(node, path);
+	if (!is_permitted(node_path->node)) {
+		vfs_get_path_by_node(node_path, path);
 		help_cannot_access(path, "Permission denied");
 		return 0;
 	}
 
-	if (node_is_directory(node)) {
+	if (node_is_directory(node_path->node)) {
 		if (is_recursive) {
-			change_mode_recursive(&(node->tree_link),
-					is_recursive, modes, count);
+			change_mode_recursive(node_path, is_recursive, modes, count);
 		}
 
-		apply_modes(node, modes, count, 1);
+		apply_modes(node_path->node, modes, count, 1);
 		return 0;
 	}
 
-	if (node_is_file(node)) {
-		apply_modes(node, modes, count, 0);
+	if (node_is_file(node_path->node)) {
+		apply_modes(node_path->node, modes, count, 0);
 		return 0;
 	}
 
-	vfs_get_path_by_node(node, path);
+	vfs_get_path_by_node(node_path, path);
 	help_cannot_access(path, "Is not file or directory");
 
 	return 0;
 }
 
 static int exec(int argc, char **argv) {
-	node_t *node;
+	struct path node_path, leaf;
 	int opt, count, is_recursive = 0, modes_size = 10;
 	struct mode modes[modes_size];
 	char *path, *mode;
@@ -264,7 +266,9 @@ static int exec(int argc, char **argv) {
 	mode = argv[optind];
 	path = argv[optind + 1];
 
-	if (0 > find(vfs_get_leaf(), path, &node)) {
+	vfs_get_leaf_path(&leaf);
+
+	if (0 > find(&leaf, path, &node_path)) {
 		help_cannot_access(path, "No such file or directory");
 		return 0;
 	}
@@ -273,7 +277,7 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	change_mode(node, is_recursive, modes, count);
+	change_mode(&node_path, is_recursive, modes, count);
 
 	return 0;
 }

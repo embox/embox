@@ -36,7 +36,9 @@ static int exec(int argc, char **argv) {
 	mode |= S_IRALL | S_IWALL; // TODO umask. -- Eldar
 
 	if (argc > 1) {
-		vfs_create(NULL, argv[argc - 1], mode);
+		struct path root, child;
+		vfs_get_root_path(&root);
+		vfs_create(&root, argv[argc - 1], mode, &child);
 	}
 
 	return 0;

@@ -138,7 +138,7 @@ int flash_emu_dev_init (void *arg) {
 		return 0;
 	}
 
-	if(NULL == (bdev_node = vfs_lookup(NULL, argv[1]))) {
+	if(NULL == (bdev_node = vfs_subtree_lookup(NULL, argv[1]))) {
 		return -ENOENT;
 	}
 

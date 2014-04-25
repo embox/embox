@@ -18,7 +18,7 @@
 
 #include <fs/vfs.h>
 #include <fs/mount.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
@@ -37,27 +37,27 @@
 #define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
 POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
 
-static int create_new_node(struct node *parent, const char *name, mode_t mode) {
-	struct node *node;
+static int create_new_node(struct path *parent, const char *name, mode_t mode) {
+	struct path node;
 	struct fs_driver *drv;
 	int retval = 0;
 
-	if(NULL == parent->nas->fs) {
+	if(NULL == parent->node->nas->fs) {
 		return -EINVAL;
 	}
-	node = vfs_create(parent, name, mode);
-	if (!node) {
+
+	if (0 != vfs_create(parent, name, mode, &node)) {
 		return -ENOMEM;
 	}
 
 	/* check drv of parents */
-	drv = parent->nas->fs->drv;
+	drv = parent->node->nas->fs->drv;
 	if (!drv || !drv->fsop->create_node) {
 		retval = -ENOSYS;
 		goto out;
 	}
 
-	retval = drv->fsop->create_node(parent, node);
+	retval = drv->fsop->create_node(parent->node, node.node);
 	if (retval) {
 		goto out;
 	}
@@ -65,20 +65,17 @@ static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	return 0;
 
 out:
-	vfs_del_leaf(node);
+	vfs_del_leaf(node.node);
 	return retval;
 }
 
-int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
-	struct node *node;
+int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
+	struct path node;
 	const char *lastpath, *ch;
 	int res;
 
-	if (0 == (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
-		errno = EBUSY;
-		return -1;
-	} else if (-EACCES == res) {
-		errno = EACCES;
+	if (-ENOENT != (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
+		errno = -res;
 		return -1;
 	}
 
@@ -88,18 +85,19 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
-	if (0 != fs_perm_check(node, FS_MAY_WRITE)) {
+	if_mounted_follow_down(&node);
+
+	if (0 != fs_perm_check(node.node, FS_MAY_WRITE)) {
 		errno = EACCES;
 		return -1;
 	}
 
-	if (0 != (res = security_node_create(node, S_IFDIR | mode))) {
+	if (0 != (res = security_node_create(node.node, S_IFDIR | mode))) {
 		errno = -res;
 		return -1;
 	}
 
-
-	if (0 != (res = create_new_node(node, lastpath, S_IFDIR | mode))) {
+	if (0 != create_new_node(&node, lastpath, S_IFDIR | mode)) {
 		errno = -res;
 		return -1;
 	}
@@ -108,24 +106,25 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 }
 
 int kremove(const char *pathname) {
-	node_t *node;
+	struct path node, leaf;
 	struct nas *nas;
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
 
-	nas = node->nas;
+	nas = node.node->nas;
 	drv = nas->fs->drv;
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (node_is_directory(node)) {
+	if (node_is_directory(node.node)) {
 		return krmdir(pathname);
 	}
 	else {
@@ -134,33 +133,35 @@ int kremove(const char *pathname) {
 }
 
 int kunlink(const char *pathname) {
-	node_t *node;
+	struct path node, leaf, parent;
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
 
-	if (0 != fs_perm_check(node_parent(node), FS_MAY_WRITE)) {
+	vfs_get_parent(&node, &parent);
+	if (0 != fs_perm_check(parent.node, FS_MAY_WRITE)) {
 		errno = EACCES;
 		return -1;
 	}
 
-	if (0 != (res = security_node_delete(node_parent(node), node))) {
+	if (0 != (res = security_node_delete(parent.node, node.node))) {
 		errno = -res;
 		return -1;
 	}
 
-	drv = node->nas->fs->drv;
+	drv = node.node->nas->fs->drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node))) {
+	if (0 != (res = drv->fsop->delete_node(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -172,32 +173,34 @@ int kunlink(const char *pathname) {
 }
 
 int krmdir(const char *pathname) {
-	node_t *node;
+	struct path node, leaf, parent;
 	struct fs_driver *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
+	if (0 != (res = fs_perm_check(node.node, FS_MAY_WRITE))) {
 		errno = EACCES;
 		return -1;
 	}
 
-	if (0 != (res = security_node_delete(node_parent(node), node))) {
+	vfs_get_parent(&node, &parent);
+	if (0 != (res = security_node_delete(parent.node, node.node))) {
 		return res;
 	}
 
-	drv = node->nas->fs->drv;
+	drv = node.node->nas->fs->drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node))) {
+	if (0 != (res = drv->fsop->delete_node(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -209,21 +212,22 @@ int krmdir(const char *pathname) {
 }
 
 int klstat(const char *path, struct stat *buf) {
-	node_t *node;
+	struct path node, leaf;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
 
-	kfile_fill_stat(node, buf);
+	kfile_fill_stat(node.node, buf);
 
 	return 0;
 }
 
 int kformat(const char *pathname, const char *fs_type) {
-	node_t *node;
+	struct path node, leaf;
 	struct fs_driver *drv;
 	int res;
 
@@ -240,17 +244,18 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -EINVAL;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), pathname, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, pathname, NULL, &node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
+	if (0 != (res = fs_perm_check(node.node, FS_MAY_WRITE))) {
 		errno = EACCES;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->format(node))) {
+	if (0 != (res = drv->fsop->format(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -259,7 +264,7 @@ int kformat(const char *pathname, const char *fs_type) {
 }
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct node *dev_node, *dir_node, *parent;
+	struct path leaf, dev_node, dir_node, root_path;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -279,58 +284,56 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
+	vfs_get_leaf_path(&leaf);
+
 	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
-		dev_node = (node_t *) dev;
+		//todo xxx
+		dev_node.node = (node_t *) dev;
 		goto skip_dev_lookup;
 	}
 
-	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dev, &lastpath, &dev_node))) {
+	if (ENOERR != (res = fs_perm_lookup(&leaf, dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
 
-	if (ENOERR != (res = fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC))) {
+	if (ENOERR != (res = fs_perm_check(dev_node.node, FS_MAY_READ | FS_MAY_EXEC))) {
 		errno = EACCES;
 		return -1;
 	}
 
 skip_dev_lookup:
 	/* find directory */
-	if (ENOERR != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
+	if (ENOERR != (res = fs_perm_lookup(&leaf, dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 	}
 
-	if (ENOERR != (res = security_mount(dev_node, dir_node))) {
+	if (ENOERR != (res = security_mount(dev_node.node, dir_node.node))) {
 		errno = -res;
 		return -1;
 	}
 
-	if(ENOERR != (res = mount_table_check(dir_node))) {
-		errno = -res;
-		return -1;
+	if (0 == strcmp(dir, "/")) {
+		root_path.node = dir_node.node;
+	} else {
+		root_path.node = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(dev_node, dir_node))) {
-		/*TODO restore previous fs type from parent dir */
-		if(NULL != (parent = vfs_get_parent(dir_node))) {
-			dir_node->nas->fs = parent->nas->fs;
-			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-		}
+	if(ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
+		//todo free root
 		errno = -res;
 		return -1;
 
 	}
-	if(ENOERR != (res = mount_table_add(dir_node))) {
-		drv->fsop->umount(dir_node);
-		/*TODO restore previous fs type from parent dir */
-		if(NULL != (parent = vfs_get_parent(dir_node))) {
-			dir_node->nas->fs = parent->nas->fs;
-			//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-		}
+
+	if(NULL == mount_table_add(&dir_node, root_path.node)) {
+		drv->fsop->umount(&dir_node);
+		//todo free root
 		errno = -res;
 		return -1;
 	}
+
 	return ENOERR;
 }
 
@@ -386,7 +389,8 @@ int krename(const char *oldpath, const char *newpath) {
 	char *opc_free, *npc_free;
 	char *name, *newpathbuf = NULL;
 	char *newpatharg, *oldpatharg;
-	node_t *oldnode, *newnode, *diritem;
+	struct path oldnode, newnode, leaf, root;
+	struct node *diritem;
 	/* We use custom tree traversal while I can't
 	 * get success with tree_foreach_children */
 	struct tree_link *link, *end_link;
@@ -400,7 +404,8 @@ int krename(const char *oldpath, const char *newpath) {
 	/* Check if source file exists */
 	oldpathcopy = strdup(oldpath);
 	opc_free = oldpathcopy;
-	rc = fs_perm_lookup(vfs_get_leaf(), (const char *) oldpathcopy,
+	vfs_get_leaf_path(&leaf);
+	rc = fs_perm_lookup(&leaf, (const char *) oldpathcopy,
 			(const char **) &oldpathcopy, &oldnode);
 	free(opc_free);
 	if (0 != rc) {
@@ -412,11 +417,11 @@ int krename(const char *oldpath, const char *newpath) {
 	 * provided as destination path */
 	newpathcopy = strdup(newpath);
 	npc_free = newpathcopy;
-	rc = fs_perm_lookup(vfs_get_leaf(), (const char *) newpathcopy,
+	rc = fs_perm_lookup(&leaf, (const char *) newpathcopy,
 			(const char **) &newpathcopy, &newnode);
 	free(npc_free);
 	if (0 == rc) {
-		if (node_is_directory(newnode)) {
+		if (node_is_directory(newnode.node)) {
 			/* Directory was passed as destination */
 			name = strrchr(oldpath, '/') + 1;
 			newpathlen = strlen(newpath) + strlen(name);
@@ -449,8 +454,9 @@ int krename(const char *oldpath, const char *newpath) {
 	 */
 
 	/* If oldpath is directory, copy it recursively */
-	if (node_is_directory(oldnode)) {
-		rc = kmkdir(NULL, newpath, oldnode->mode);
+	if (node_is_directory(oldnode.node)) {
+		vfs_get_root_path(&root);
+		rc = kmkdir(&root, newpath, oldnode.node->mode);
 		if (-1 == rc) {
 			return -1;
 		}
@@ -460,8 +466,8 @@ int krename(const char *oldpath, const char *newpath) {
 		 *  tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
 		 * But it's not working with it.
 		 */
-		link = tree_children_begin(&oldnode->tree_link);
-		end_link = tree_children_end(&oldnode->tree_link);
+		link = tree_children_begin(&oldnode.node->tree_link);
+		end_link = tree_children_end(&oldnode.node->tree_link);
 
 		while (link != end_link) {
 			diritem = tree_element(link, typeof(*diritem), tree_link);
@@ -521,28 +527,32 @@ int krename(const char *oldpath, const char *newpath) {
 }
 
 int kumount(const char *dir) {
-	struct node *dir_node, *parent;
+	struct path dir_node, node, leaf;
 	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
 
 	/* find directory */
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), dir, &lastpath, &dir_node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 	}
 
 	/* check if dir not a root dir */
-	if(-EBUSY != (res = mount_table_check(dir_node))) {
-		errno = -EINVAL;
-		return -1;
-	}
+//	if(-EBUSY != (res = mount_table_check(dir_node))) {
+//		errno = -EINVAL;
+//		return -1;
+//	}
 
 	/*TODO check if it has a opened files */
 
 	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
 
-	drv = dir_node->nas->fs->drv;
+	if_mounted_follow_down(&dir_node);
+	node = dir_node;
+
+	drv = dir_node.node->nas->fs->drv;
 
 	if (!drv) {
 		return -EINVAL;
@@ -551,21 +561,21 @@ int kumount(const char *dir) {
 		return  -ENOSYS;
 	}
 
-	if (0 != (res = security_umount(dir_node))) {
+	if (0 != (res = security_umount(dir_node.node))) {
 		return res;
 	}
 
-	if(0 != (res = drv->fsop->umount(dir_node))) {
+	if(0 != (res = drv->fsop->umount(dir_node.node))) {
 		return res;
 	}
 
-	mount_table_del(dir_node);
+	mount_table_del(node.mnt_desc);
 
-	/*restore previous fs type from parent dir */
-	if(NULL != (parent = vfs_get_parent(dir_node))) {
-		dir_node->nas->fs = parent->nas->fs;
-		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-	}
+//	/*restore previous fs type from parent dir */
+//	if(NULL != (parent = vfs_get_parent(dir_node))) {
+//		dir_node->nas->fs = parent->nas->fs;
+//		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
+//	}
 
 	return 0;
 }

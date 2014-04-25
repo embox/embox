@@ -78,6 +78,8 @@ node_t *node_alloc(const char *name, size_t name_len) {
 	strncpy((char *) node->name, name, name_len);
 	node->name[name_len] = '\0';
 
+	node->mounted = 0;
+
 	flock_init(node);
 
 	return node;

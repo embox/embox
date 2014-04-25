@@ -40,15 +40,17 @@ static int exec(int argc, char **argv) {
 	char *oldpathcopy = NULL, *newpathcopy = NULL;
 	char *opc_free, *npc_free;
 	char *oldpath, *newpath = argv[argc - 1];
-	node_t *oldnode, *newnode;
+	struct path oldnode, newnode, root;
 
 	newpathcopy = strdup(newpath);
 	npc_free = newpathcopy;
-	rc = fs_perm_lookup(NULL, (const char *) newpathcopy,
+
+	vfs_get_root_path(&root);
+	rc = fs_perm_lookup(&root, (const char *) newpathcopy,
 			(const char **) &newpathcopy, &newnode);
 	free(npc_free);
 	if (-ENOENT == rc) {
-		newnode = NULL;
+		newnode.node = NULL;
 	} else if (0 != rc && -ENOENT != rc) {
 		return rc;
 	}
@@ -74,7 +76,7 @@ static int exec(int argc, char **argv) {
 	/* If we are copying many files destination
 	 * should exists and should be directory */
 	if (argc - optind >= 3 &&
-			(NULL == newnode || (! node_is_directory(newnode)))) {
+			(NULL == newnode.node || (! node_is_directory(newnode.node)))) {
 		fprintf(stderr,	"mv: target '%s' is not a directory\n", newpath);
 		return -EINVAL;
 	}
@@ -85,7 +87,7 @@ static int exec(int argc, char **argv) {
 		if (! (flags & MV_RECURSIVE)) {
 			oldpathcopy = strdup(oldpath);
 			opc_free = oldpathcopy;
-			rc = fs_perm_lookup(NULL, (const char *) oldpathcopy,
+			rc = fs_perm_lookup(&root, (const char *) oldpathcopy,
 					(const char **) &oldpathcopy, &oldnode);
 			free(opc_free);
 			if (-ENOENT == rc) {
@@ -94,7 +96,7 @@ static int exec(int argc, char **argv) {
 			} else if (0 != rc) {
 				return rc;
 			}
-			if (node_is_directory(oldnode)) {
+			if (node_is_directory(oldnode.node)) {
 				fprintf(stderr,	"mv: source '%s' is a directory\n", oldpath);
 				return -EINVAL;
 			}
@@ -102,7 +104,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	/* If new path exists and MV_FORCE is not set */
-	if (NULL != newnode && (! node_is_directory(newnode))) {
+	if (NULL != newnode.node && (! node_is_directory(newnode.node))) {
 		if (! (flags & MV_FORCE)) {
 			fprintf(stderr,	"mv: destination path '%s' exists\n", newpath);
 			return -EINVAL;

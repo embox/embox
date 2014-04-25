@@ -19,17 +19,18 @@
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
 	int res;
-	struct node *node;
+	struct path node, leaf;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
 		return SET_ERRNO(-res);
 	}
 
-	if (0 > (res = security_xattr_get(node, name, value, size))) {
+	if (0 > (res = security_xattr_get(node.node, name, value, size))) {
 		return SET_ERRNO(EACCES);
 	}
 
-	if (0 > (res = kfile_xattr_get(node, name, value, size))) {
+	if (0 > (res = kfile_xattr_get(node.node, name, value, size))) {
 		return SET_ERRNO(-res);
 	}
 
@@ -39,17 +40,18 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
 	int res;
-	struct node *node;
+	struct path node, leaf;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
 		return SET_ERRNO(-res);
 	}
 
-	if (0 > (res = security_xattr_set(node, name, value, size, flags))) {
+	if (0 > (res = security_xattr_set(node.node, name, value, size, flags))) {
 		return SET_ERRNO(EACCES);
 	}
 
-	if (0 > (res = kfile_xattr_set(node, name, value, size, flags))) {
+	if (0 > (res = kfile_xattr_set(node.node, name, value, size, flags))) {
 		return SET_ERRNO(-res);
 	}
 
@@ -58,17 +60,18 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 
 int listxattr(const char *path, char *list, size_t size) {
 	int res;
-	struct node *node;
+	struct path node, leaf;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
 		return SET_ERRNO(-res);
 	}
 
-	if (0 > (res = security_xattr_list(node, list, size))) {
+	if (0 > (res = security_xattr_list(node.node, list, size))) {
 		return SET_ERRNO(EACCES);
 	}
 
-	if (0 > (res = kfile_xattr_list(node, list, size))) {
+	if (0 > (res = kfile_xattr_list(node.node, list, size))) {
 		return SET_ERRNO(-res);
 	}
 

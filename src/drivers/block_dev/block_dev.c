@@ -104,7 +104,7 @@ block_dev_t *block_dev(void *dev) {
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
 	size_t bdev_id;
-	node_t *node;
+	struct path node, root;
 	struct nas *nas;
 	struct node_fi *node_fi;
 
@@ -127,16 +127,18 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->driver = driver;
 	bdev->privdata = privdata;
 
-	if (NULL == (node = vfs_create(NULL, path, S_IFBLK | S_IRALL | S_IWALL))) {
+	vfs_get_root_path(&root);
+
+	if (0 != vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		index_free(&block_dev_idx, bdev->id);
 		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
 
-	strncpy (bdev->name, node->name, NAME_MAX);
-	bdev->dev_node = node;
+	strncpy (bdev->name, node.node->name, NAME_MAX);
+	bdev->dev_node = node.node;
 
-	nas = node->nas;
+	nas = node.node->nas;
 	nas->fs = blockdev_fs;
 	node_fi = nas->fi;
 	node_fi->privdata = bdev;

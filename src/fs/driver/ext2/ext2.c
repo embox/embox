@@ -18,7 +18,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ext2.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/mount.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
@@ -368,8 +368,7 @@ int ext2_open(struct nas *nas) {
 	fsi = nas->fs->fsi;
 
 	/* prepare full path into this filesystem */
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path);
 
 	/* alloc a block sized buffer used for all transfers */
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
@@ -622,7 +621,7 @@ static int ext2fs_delete(struct node *node) {
 	int rc;
 	node_t *parents;
 
-	if (NULL == (parents = vfs_get_parent(node))) {
+	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
@@ -871,10 +870,6 @@ static int ext2fs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
-
 	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
 		rc = ENOMEM;
 		goto error;
@@ -890,7 +885,6 @@ static int ext2fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ext2_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&ext2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
@@ -976,9 +970,9 @@ static void ext2_free_fs(struct nas *nas) {
 static int ext2_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				ext2_umount_entry(child->nas);
 			}
 
@@ -1525,7 +1519,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 
 			mode = ext2_type_to_mode_fmt(dp->e2d_type);
 
-			node = vfs_create(dir_nas->node, name_buff, mode);
+			node = vfs_subtree_create(dir_nas->node, name_buff, mode);
 			if (!node) {
 				rc = ENOMEM;
 				goto out;
