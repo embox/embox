@@ -16,12 +16,15 @@
 #include <kernel/task/task_priority.h>
 #include <module/embox/kernel/task/api.h>
 
+#include <kernel/task/defs.h>
 
 struct thread;
 
 struct task;
 
 __BEGIN_DECLS
+
+extern int task_get_status(const struct task *tsk);
 
 extern int task_get_id(const struct task *tsk);
 
@@ -55,10 +58,21 @@ extern struct task *task_self(void);
 
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
-extern int new_task(const char *name, void *(*run)(void *), void *arg);
+extern void task_init(struct task *tsk, int id, struct task *parent,
+		const char *name, struct thread *main_thread,
+		task_priority_t priority);
 
-extern void task_init(struct task *tsk, int id, const char *name,
-		struct thread *main_thread, task_priority_t priority);
+extern void task_start_exit(void);
+/**
+ * @brief Do actual task_exit. Caller should ensure calling context when
+ * called on current task.
+ *
+ * @param task
+ * @param status
+ */
+extern void task_do_exit(struct task *task, int status);
+
+extern void task_finish_exit(void);
 
 /**
  * @brief Exit from current task
@@ -67,9 +81,12 @@ extern void task_init(struct task *tsk, int id, const char *name,
  */
 extern void __attribute__((noreturn)) task_exit(void *res);
 
+extern void task_delete(struct task *tsk);
+
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 
-extern int task_waitpid(pid_t pid);
+extern pid_t task_waitpid(pid_t pid);
+extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 
 __END_DECLS
 
@@ -87,9 +104,10 @@ __END_DECLS
 #include <kernel/task/task_table.h>
 
 #define task_foreach(tsk) \
-	tsk = task_table_get(0); \
-	for (int tid = 0; tsk != NULL; \
-			++tid, tsk = task_table_get(task_table_get_first(tid)))
+	for (int tid = 0; \
+			(tid = task_table_get_first(tid)) >= 0 \
+				&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
+			tid = task_get_id(tsk) + 1)
 
 
 

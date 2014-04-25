@@ -28,6 +28,11 @@ struct task {
 };
 __BEGIN_DECLS
 
+static inline int task_get_status(const struct task *tsk) {
+	assert(tsk == task_kernel_task());
+	return 0;
+}
+
 static inline int task_get_id(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;
@@ -41,6 +46,11 @@ static inline const char * task_get_name(const struct task *tsk) {
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return tsk->tsk_main;
+}
+
+static inline struct task * task_get_parent(const struct task *tsk) {
+	assert(tsk == task_kernel_task());
+	return NULL;
 }
 
 static inline void task_set_main(struct task *tsk,
@@ -82,8 +92,9 @@ static inline int new_task(const char *name, void *(*run)(void *), void *arg) {
 	return -EPERM;
 }
 
-static inline void task_init(struct task *tsk, int id, const char *name,
-		struct thread *main_thread, task_priority_t priority) {
+static inline void task_init(struct task *tsk, int id, struct task *parent,
+		const char *name, struct thread *main_thread,
+		task_priority_t priority) {
 	assert(tsk == task_kernel_task());
 	assert(id == task_get_id(tsk));
 	assert(0 == strcmp(name, task_get_name(tsk)));

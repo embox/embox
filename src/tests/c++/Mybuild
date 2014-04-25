@@ -1,24 +1,24 @@
-package embox.example.cxx
+package embox.test.cxx
 
 module memory {
 	source "memory.cpp"
 
 	depends embox.lib.cxx.lib
-	depends embox.framework.example
+	depends embox.framework.cmd
 }
 
 module exceptions {
 	source "exceptions.cpp"
 
 	depends embox.lib.cxx.libsupcxx
-	depends embox.framework.example
+	depends embox.framework.test
 }
 
 module inheritance {
 	source "inheritance.cpp"
 
 	depends embox.lib.cxx.lib
-	depends embox.framework.example
+	depends embox.framework.test
 }
 
 module appctorsdtors extends embox.lib.cxx.app {

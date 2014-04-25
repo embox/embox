@@ -88,7 +88,8 @@ extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
  * @param pointer to result
  * @return error code
  */
-extern int rt_fib_source_ip(in_addr_t dst, in_addr_t *out_src);
+extern int rt_fib_source_ip(in_addr_t dst, struct net_device *dev,
+		in_addr_t *out_src);
 
 extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 		struct net_device **out_dev);

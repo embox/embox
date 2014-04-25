@@ -61,6 +61,7 @@ static inline int util_idx_table_add(util_idx_table_t *idx_table, void *data) {
 }
 
 static inline void *util_idx_table_get(util_idx_table_t *idx_table, int n) {
+	assert((n >= 0) && (n < idx_table->n));
 	return idx_table->table[n];
 }
 

@@ -23,7 +23,8 @@ static inline int task_table_add(struct task *tsk) {
 }
 
 static inline struct task * task_table_get(int tid) {
-	return tid == 0 ? task_kernel_task() : NULL;
+	assert(tid == 0);
+	return task_kernel_task();
 }
 
 static inline void task_table_del(int tid) {

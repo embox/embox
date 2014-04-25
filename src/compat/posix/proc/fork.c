@@ -11,7 +11,13 @@
 
 extern pid_t kfork(jmp_buf env);
 
+#if 0
 pid_t fork(void) {
+	return -1;
+}
+#endif
+
+pid_t vfork(void) {
 	jmp_buf env;
 
 	switch(setjmp(env)) {

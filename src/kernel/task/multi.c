@@ -98,7 +98,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		task_init(self_task, tid, name, thd, task_self()->tsk_priority);
+		task_init(self_task, tid, task_self(), name, thd, task_self()->tsk_priority);
 
 		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
@@ -129,12 +129,16 @@ out_unlock:
 	return res;
 }
 
-void task_init(struct task *tsk, int id, const char *name,
+void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 		struct thread *main_thread, task_priority_t priority) {
 	assert(tsk != NULL);
 	assert(binalign_check_bound((uintptr_t)tsk, sizeof(void *)));
 
 	tsk->tsk_id = id;
+	tsk->status = 0;
+
+	dlist_init(&tsk->child_list);
+	dlist_head_init(&tsk->child_lnk);
 
 	strncpy(tsk->tsk_name, name, sizeof tsk->tsk_name - 1);
 	tsk->tsk_name[sizeof tsk->tsk_name - 1] = '\0';
@@ -144,6 +148,11 @@ void task_init(struct task *tsk, int id, const char *name,
 		main_thread->task = tsk;
 	}
 
+	tsk->parent = parent;
+	if (parent) {
+		dlist_add_prev(&tsk->child_lnk, &parent->child_list);
+	}
+
 	tsk->tsk_priority = priority;
 
 	tsk->tsk_clock = 0;
@@ -151,46 +160,69 @@ void task_init(struct task *tsk, int id, const char *name,
 	task_resource_init(tsk);
 }
 
-void __attribute__((noreturn)) task_exit(void *res) {
-	struct task *task = task_self();
+void task_do_exit(struct task *task, int status) {
 	struct thread *thr, *main_thr;
 
-	assert(task != task_kernel_task());
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	main_thr = task->tsk_main;
 	assert(main_thr);
 
-	*task_resource_errno(task) = (int)res;
+	task->status = status;
+
+	/* Deinitialize all resources */
+	task_resource_deinit(task);
+
+	/*
+	 * Terminate all threads except main thread. If we terminate current
+	 * thread then until we in sched_lock() we continue processing
+	 * and our thread structure is not freed.
+	 */
+	dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
+		thread_terminate(thr);
+	}
+
+	/* At the end terminate main thread */
+	thread_terminate(main_thr);
+}
+
+void task_start_exit(void) {
+
+	assert(task_self() != task_kernel_task());
 
 	sched_lock();
-	{
-		/* Deinitialize all resources */
-		task_resource_deinit(task);
 
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
+}
 
+void __attribute__((noreturn)) task_finish_exit(void) {
 
-		/*
-		 * Terminate all threads except main thread. If we terminate current
-		 * thread then until we in sched_lock() we continue processing
-		 * and our thread structure is not freed.
-		 */
-		dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
-			thread_terminate(thr);
-		}
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
-		/* At the end terminate main thread */
-		thread_terminate(main_thr);
+	/* Re-schedule */
+	schedule();
 
-		/* Set an exited state on main thread */
-		thread_state_exited(main_thr);
-
-		/* Re-schedule */
-		schedule();
-	}
 	sched_unlock();
 
 	/* NOTREACHED */
 	panic("Returning from task_exit()");
+}
+
+
+void __attribute__((noreturn)) task_exit(void *res) {
+
+	task_start_exit();
+
+	task_do_exit(task_self(), TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
+
+	task_finish_exit();
+}
+
+void task_delete(struct task *tsk) {
+
+	dlist_del(&tsk->child_lnk);
+	task_table_del(task_get_id(tsk));
+	thread_delete(task_get_main(tsk));
 }
 
 int task_set_priority(struct task *tsk, task_priority_t new_prior) {

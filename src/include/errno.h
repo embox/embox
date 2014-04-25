@@ -18,6 +18,8 @@
 #define ESRCH            3     /* No such process */
 #define EINTR            4     /* Operation interrupted */
 #define EIO              5     /* I/O error */
+#define E2BIG            7     /* Argument list too long. */
+#define ENOEXEC          8     /* Exec format error */
 #define EBADF            9     /* Bad file handle */
 #define EAGAIN           11    /* Try again later */
 #define	ECHILD           10    /* No child processes */
@@ -45,12 +47,12 @@
 #define ENOSYS           38    /* Function not implemented */
 
 
-#define EOVERFLOW        40    /* Value too large to be stored in data type. */
-#define E2BIG            41    /* Argument list too long. */
-#define ELOOP            42    /* Too many levels of symbolic links. */
+#define ELOOP            40    /* Too many levels of symbolic links. */
+#define ENOMSG           42    /* No message of desired type */
 
 #define ENAMETOOLONG     60    /* File name too long */
 #define ENOTEMPTY        66    /* Directory not empty */
+#define EOVERFLOW        75    /* Value too large to be stored in data type. */
 #define EILSEQ           84    /* Illegal byte sequence */
 #define ENOTSUP          95    /* Not supported error */
 #define EEOF             200   /* End of file reached */

@@ -5,22 +5,11 @@
  * @date 23.11.2012
  * @author Alexander Kalmuk
  */
-/* <sys/wait.h> */
-/* use in waitpid()  */
 
 #ifndef EMBOX_DROPBEAR_EMBOX_H_
 #define EMBOX_DROPBEAR_EMBOX_H_
 
-#define WNOHANG 0 /*third-party/dropbear-2012.55/svr-chansession.c:91:*/
-
-
 #define TCP_NODELAY 0
-#define WIFEXITED(s) 0
-#define WEXITSTATUS(s) 0
-#define WIFSIGNALED(s) 0
-#define WTERMSIG(s) 0
-
-/* end <sys/wait.h> */
 
 #include <signal.h>
 
@@ -52,6 +41,8 @@ static inline struct spwd *getspnam(const char *name) {
 #include <sys/select.h>
 #include <linux/types.h>
 
-
+static inline int fork(void) {
+	return -1;
+}
 
 #endif /* EMBOX_DROPBEAR_EMBOX_H_ */

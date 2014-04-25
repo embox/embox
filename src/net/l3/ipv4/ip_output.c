@@ -222,7 +222,7 @@ static int ip_make(const struct sock *sk,
 
 	assert(inetdev_get_by_dev(dev) != NULL);
 	//src_ip = inetdev_get_by_dev(dev)->ifa_address; /* TODO it's better! */
-	ret = rt_fib_source_ip(dst_ip, &src_ip);
+	ret = rt_fib_source_ip(dst_ip, dev, &src_ip);
 	if (ret != 0) {
 		DBG(printk("ip_make: can't resolve source ip for %s\n",
 					inet_ntoa(*(struct in_addr *)&dst_ip)));

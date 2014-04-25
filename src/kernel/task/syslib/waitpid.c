@@ -17,33 +17,42 @@
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/resource/waitpid.h>
 
+#include <sys/wait.h>
+
 int task_waitpid(pid_t pid) {
 	int ret;
-	struct task *tsk;
-	struct waitq_link wql;
+	task_waitpid_posix(pid, &ret, 0);
+	return ret;
+}
 
-	waitq_link_init(&wql);
+static pid_t task_collect(pid_t target_pid, int *status) {
+	struct dlist_head *child_link;
 
-	sched_lock();
-	{
-		tsk = task_table_get(pid);
-		if (tsk == NULL) {
-			ret = -ECHILD;
-			goto out;
+	dlist_foreach(child_link, &task_self()->child_list) {
+		struct task *task = dlist_entry(child_link, struct task, child_lnk);
+		pid_t child_pid = task_get_id(task);
+
+		if ((target_pid == (pid_t)-1 || target_pid == child_pid) &&
+				task->status & (TASKST_EXITED_MASK | TASKST_SIGNALD_MASK)) {
+			*status = task->status ^ TASKST_EXITED_MASK;
+			task_delete(task);
+			return child_pid;
 		}
-
-		waitq_wait_prepare(task_resource_waitpid(tsk), &wql);
-
-		sched_wait();
-
-		waitq_wait_cleanup(task_resource_waitpid(tsk), &wql);
-
-		ret = *task_resource_errno(tsk);
-		task_table_del(task_get_id(tsk));
-		thread_delete(task_get_main(tsk));
 	}
-out:
-	sched_unlock();
+
+	return 0;
+}
+
+pid_t task_waitpid_posix(pid_t pid, int *status, int options) {
+	pid_t ret;
+
+	if (options & WNOHANG) {
+		return task_collect(pid, status);
+	}
+
+	while (0 > WAITQ_WAIT(task_resource_waitpid(task_self()),
+			(ret = task_collect(pid, status))));
 
 	return ret;
+
 }
