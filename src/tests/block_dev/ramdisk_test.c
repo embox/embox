@@ -1,5 +1,5 @@
 /**
-  * @file
+ * @file
  * @brief
  *
  * @date 05.07.2012
