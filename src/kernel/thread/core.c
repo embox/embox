@@ -68,7 +68,6 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
-	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -101,11 +100,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
 
-		ret = thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY);
-		if (ret != 0) {
-			goto out_threadfree;
-		}
-
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
 			thread_register(task_self(), t);
@@ -121,13 +115,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 			thread_detach(t);
 		}
 
-		goto out_unlock;
-
-out_threadfree:
-		thread_free(t);
-
-		/* set error */
-		t = err_ptr(-ret);
 	}
 out_unlock:
 	sched_unlock();
@@ -156,6 +143,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->waiting = true;
 	t->state = TS_INIT;
 
+	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
+		panic("can't initialize thread_local");
+	}
 	/* set executive function and arguments pointer */
 	t->run = run;
 	t->run_arg = arg;
