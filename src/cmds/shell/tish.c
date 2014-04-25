@@ -192,12 +192,14 @@ static int process(struct cmd_data *cdata) {
 		return -ENOENT;
 	}
 
+	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		--cdata->argc;
+	}
 	if (is_builtin(cmd_name(cdata->cmd))) {
 		return process_builtin(cdata);
 	}
 
-	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
-		--cdata->argc;
+	if (0 == strcmp(cdata->argv[cdata->argc], "&")) {
 		return process_external(cdata, 0);
 	}
 
