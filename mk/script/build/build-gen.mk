@@ -377,9 +377,11 @@ build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 build_module_type_substitude = \
 	$(call get,$(call module_build_fqn2inst,$(call get,$1,qualifiedName)),type)
 
+__build_deps_recurse = $1 $(call build_deps_all,$1)
+
 build_deps_all = \
 	$(sort $(foreach d,$(call build_deps,$1), \
-		$(call build_module_type_substitude,$d) $(call build_deps_all,$d)))
+		$(call __build_deps_recurse,$(call build_module_type_substitude,$d))))
 
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
