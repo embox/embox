@@ -10,8 +10,6 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-#include <fs/path.h>
-
 __BEGIN_DECLS
 
 #define DIRENT_DNAME_LEN 40
@@ -21,10 +19,7 @@ struct dirent {
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
-typedef struct {
-	struct dirent current;
-	struct path path;
-} DIR;
+typedef struct DIR_struct DIR;
 
 
 extern int            closedir(DIR *);

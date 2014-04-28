@@ -19,6 +19,7 @@
 #include <framework/mod/options.h>
 
 #include <dirent.h>
+#include <dirent_impl.h>
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 

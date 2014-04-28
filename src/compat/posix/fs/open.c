@@ -20,6 +20,8 @@
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>
 
+#include <dirent_impl.h>
+
 struct node *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
 

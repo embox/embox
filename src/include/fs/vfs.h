@@ -16,8 +16,6 @@
 
 #define LAST_IN_PATH         0x01
 
-
-
 //XXX
 #include <fs/mount.h>
 
