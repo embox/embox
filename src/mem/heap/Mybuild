@@ -65,4 +65,6 @@ module heap_afterfree_default extends heap_afterfree {
 	source "heap_afterfree.c"
 }
 
-
+module heap_afterfree_random extends heap_afterfree {
+	source "heap_afterfree_random.c"
+}
