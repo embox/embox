@@ -168,7 +168,7 @@ void emboxQtSavePref(char *wall, char *font, int font_pt) {
 
 	write(fd, cbuf, len);
 
-	ftruncate(fd, len);
+	//XXX ftruncate(fd, len);
 
 	close(fd);
 }
