@@ -35,3 +35,21 @@ module tish {
 	@NoRuntime depends third_party.lib.linenoise /* for completion */
 	@NoRuntime depends embox.compat.posix.util.sleep
 }
+
+@Cmd(name = "shell_run",
+	help = "Run shell by name",
+	man = '''
+		NAME
+			shell_run <shell>
+		EXAMPLES
+			Run tish:
+			shell_run tish
+		AUTHORS
+			Alexander Kamuk
+	''')
+module shell_run {
+	source "shell_run.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
