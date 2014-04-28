@@ -6,7 +6,7 @@ package embox.cmd.fs
 		NAME
 			mkdir - create a directory
 		SYNOPSIS
-			mkdir  directory_name
+			mkdir [ -m MODE ] directory_name
 		DESCRIPTION
 			mkdir is used to create a directory
 		AUTHORS

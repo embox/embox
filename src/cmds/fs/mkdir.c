@@ -11,25 +11,30 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: mkdir DIR ...\n");
+	printf("Usage: mkdir [ -m MODE ] DIR ...\n");
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
 	char *point;
+	int mode = 0;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
+	while (-1 != (opt = getopt(argc - 1, argv, "hm:"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
+		case 'm':
+			mode = strtol(optarg, NULL, 8);
+			break;
 		default:
 			return 0;
 		}
@@ -37,7 +42,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc > 1) {
 		point = argv[argc - 1];
-		if (-1 == mkdir(point, 0)) {
+		if (-1 == mkdir(point, mode)) {
 			return -errno;
 		}
 	}
