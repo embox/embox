@@ -4,3 +4,8 @@ package embox.driver.ahci
 module core {
 	source "ahci_core.c"
 }
+
+module ti8168 {
+	source "ti8168.c"
+	depends embox.driver.ahci.core
+}
