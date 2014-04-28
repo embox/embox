@@ -51,10 +51,10 @@ static int sata_callback(struct ahci_hba* hba, void *cookie) {
 	struct lssata_cb *c = (struct lssata_cb*)cookie;
 	int i = 0;
 
-	printf("hba at %p:\n", hba->base_addr);
+	printf("hba at %p:\n", (void*)hba->base_addr);
 	while (generic_hba_regs[i].name[0] != 0)
 	{
-		uint32_t val = *(volatile uint32_t*)(((uint8_t*)hba->base_addr) + generic_hba_regs[i].offset);
+		uint32_t val = *(volatile uint32_t*)(hba->base_addr + generic_hba_regs[i].offset);
 		printf("%s (%x): %x\n", generic_hba_regs[i].name, generic_hba_regs[i].offset, val);
 	}
 	c->nhosts++;

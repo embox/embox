@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 struct ahci_hba {
-	void *base_addr;
+	uintptr_t base_addr;
 };
 
 int register_ahci_hba(struct ahci_hba*);
