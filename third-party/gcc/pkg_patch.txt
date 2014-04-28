@@ -103,3 +103,25 @@ diff -aur gcc-4.8.1/gcc/config/arm/bpabi.h gcc/gcc/config/arm/bpabi.h
      { 
  #if __GTHREADS && ! defined __GTHREAD_COND_INIT
        if (__gthread_active_p())
+       
+--- gcc-4.8.1/libstdc++-v3/include/ext/rope	2013-02-03 21:54:05.000000000 +0400
++++ gcc/libstdc++-v3/include/ext/rope	2014-04-28 19:19:13.691278363 +0400
+@@ -460,7 +460,7 @@
+ 
+     // Constructor
+ #ifdef __GTHREAD_MUTEX_INIT
+-    __gthread_mutex_t _M_ref_count_lock = __GTHREAD_MUTEX_INIT;
++    __gthread_mutex_t _M_ref_count_lock;
+ #else
+     __gthread_mutex_t _M_ref_count_lock;
+ #endif
+@@ -591,7 +591,7 @@
+       unsigned char _M_depth;
+       __GC_CONST _CharT* _M_c_string;
+ #ifdef __GTHREAD_MUTEX_INIT
+-      __gthread_mutex_t _M_c_string_lock = __GTHREAD_MUTEX_INIT;
++      __gthread_mutex_t _M_c_string_lock;
+ #else
+       __gthread_mutex_t _M_c_string_lock;
+ #endif
+
