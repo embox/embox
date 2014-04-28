@@ -50,7 +50,8 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 		return NULL;
 	}
 
-	if(mnt_point_path->node == mnt_point_path->mnt_desc->mnt_root) {
+	if(mnt_root != NULL && mnt_point_path->node ==
+			mnt_point_path->mnt_desc->mnt_root) {
 		return NULL;
 	}
 
