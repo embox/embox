@@ -149,18 +149,16 @@ int rt_fib_source_ip(in_addr_t dst_ip, struct net_device *dev,
 		in_addr_t *src_ip) {
 	struct rt_entry *rte;
 
-	if ((dst_ip == INADDR_BROADCAST) && (dev == NULL)) {
-		return -ENODEV;
-	}
-
 	if (dst_ip != INADDR_BROADCAST) {
-		rte = rt_fib_get_best(dst_ip, dev);
+		rte = rt_fib_get_best(dst_ip, NULL);
 		if (rte == NULL) {
 			return -ENETUNREACH;
 		}
 		assert(rte->dev != NULL);
-		assert((dev == NULL) || (dev == rte->dev));
 		dev = rte->dev;
+	}
+	else if (dev == NULL) {
+		return -ENODEV;
 	}
 
 	assert(inetdev_get_by_dev(dev) != NULL);
