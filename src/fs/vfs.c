@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 #include <fs/hlpr_path.h>
 #include <fs/vfs.h>
@@ -310,10 +311,13 @@ static struct node *__vfs_subtree_create(struct node *parent, const char *path,
 struct node *vfs_subtree_create_child(struct node *parent, const char *name,
 		mode_t mode) {
 	struct node *child = NULL;
+	char *node_name;
 
 	assert(parent);
 
-	child = node_alloc(name, strlen(name));
+	node_name = basename((char*)name);
+
+	child = node_alloc(node_name, strlen(node_name));
 	if (child) {
 		child->mode = mode;
 		vfs_add_leaf(child, parent);
