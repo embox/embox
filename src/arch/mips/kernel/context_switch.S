@@ -6,6 +6,7 @@
  */
 
 #include <asm/linkage.h>
+#include "context.h"
 
 /* a0/a1 points to old/new thread’s control block */
 /* Allocate stack space for saving 11 registers. 11*4 = 44 */
