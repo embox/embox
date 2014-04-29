@@ -17,6 +17,5 @@ module trivial_test {
 module priority_based_test {
 	source "priority_based_test.c"
 
-	depends embox.kernel.sched.strategy.priority_based
 	depends embox.framework.LibFramework
 }
