@@ -81,7 +81,7 @@ void irqctrl_enable(unsigned int interrupt_nr) {
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
-	REG_ORIN(OMAP35X_INTC_MIR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_MIR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_clear(unsigned int interrupt_nr) {
@@ -89,7 +89,7 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 }
 
 void irqctrl_force(unsigned int interrupt_nr) {
-	REG_ORIN(OMAP35X_INTC_ISR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_ISR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void interrupt_handle(void) {
@@ -99,7 +99,6 @@ void interrupt_handle(void) {
 
 	irqctrl_disable(irq);
 
-	irqctrl_clear(irq);
 	REG_STORE(OMAP35X_INTC_CONTROL, INTC_CONTROL_NEWIRQARG); /* reset IRQ output and enable new IRQ generation */
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
