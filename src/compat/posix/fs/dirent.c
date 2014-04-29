@@ -29,10 +29,9 @@ DIR *opendir(const char *path) {
 	struct path node_path, leaf;
 	DIR *d;
 	int res;
+	char cur_path[PATH_MAX];
 
 	if (!strcmp(path, ".")) {
-		char cur_path[PATH_MAX];
-
 		path = getcwd(cur_path, PATH_MAX);
 	}
 
