@@ -50,7 +50,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	/* interrupt disable */
 	if (mode & GPIO_MODE_IN_INT_DIS) {
 		/* clear front and level detect register, if you need */
-		if (GPIO_MODE_INT_MODE_RISING) {
+		if (mode & GPIO_MODE_INT_MODE_RISING) {
 			l = gpio_reg_read(gpio->base, GPIO_RISINGDETECT);
 			gpio_reg_write(gpio->base, GPIO_RISINGDETECT, l & ~mask);
 		}

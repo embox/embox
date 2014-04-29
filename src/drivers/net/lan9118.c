@@ -327,9 +327,17 @@ static int lan9118_open(struct net_device *dev) {
 	uint32_t l;
 	int res;
 
+	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
+				lan9118_irq_handler,
+				// TODO can we miss rising edge? If so, irqs will be blocked
+				// forever. Consider use level interupts
+				GPIO_MODE_INT_MODE_RISING, //| GPIO_MODE_INT_MODE_LEVEL1,
+				dev);
+
 	res = lan9118_reset(dev);
-	if (res < 0)
+	if (res < 0) {
 		return res;
+	}
 
 	lan9118_disable_irqs(dev);
 
@@ -354,10 +362,6 @@ static int lan9118_open(struct net_device *dev) {
 	lan9118_mac_write(dev, LAN9118_MAC_CR, l);
 
 	lan9118_reg_write(dev, LAN9118_TX_CFG, _LAN9118_TX_CFG_TX_ON);
-
-	/* GPIO */
-	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
-				lan9118_irq_handler, GPIO_MODE_INT_MODE_RISING, dev);
 
 	return 0;
 }
