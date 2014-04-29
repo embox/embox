@@ -56,6 +56,7 @@ static int sata_callback(struct ahci_hba* hba, void *cookie) {
 	{
 		uint32_t val = *(volatile uint32_t*)(hba->base_addr + generic_hba_regs[i].offset);
 		printf("%s (%x): %x\n", generic_hba_regs[i].name, generic_hba_regs[i].offset, val);
+		i++;
 	}
 	c->nhosts++;
 	return 0;
