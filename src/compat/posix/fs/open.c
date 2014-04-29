@@ -37,7 +37,7 @@ extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
-	char name_buf[PATH_MAX];
+	char name_buf[NAME_MAX];
 	struct file_desc *kfile;
 	va_list args;
 	mode_t mode;
@@ -49,47 +49,56 @@ int open(const char *path, int __oflag, ...) {
 	struct path node_path;
 	struct idesc_table*it;
 
+	assert(~__oflag & O_DIRECTORY);
+
 	if (strlen(path) > PATH_MAX) {
-		return -ENAMETOOLONG;
+		return SET_ERRNO(ENAMETOOLONG);
 	}
 
 	va_start(args, __oflag);
 	mode = va_arg(args, mode_t);
 	va_end(args);
 
-	parent_path = dirname(strcpy(path_buf,path));
-	if (NULL == (dir = opendir(parent_path))) {
-		return -1;
-	}
 	name = basename(strcpy(name_buf, path));
+	if (0 == strcmp(name, "/")) {
+		return SET_ERRNO(EISDIR);
+	}
+
+	parent_path = dirname(strcpy(path_buf, path));
+	if (NULL == (dir = opendir(parent_path))) {
+		return SET_ERRNO(errno);
+	}
+
 	node = find_node(dir, name);
 
 	node_path.node = node;
 	if_mounted_follow_down(&dir->path);
 	node_path.mnt_desc = dir->path.mnt_desc;
 
-	if (__oflag & O_DIRECTORY) {
-		assert(0);
-		opendir(path);
-	}
-
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
 			if(0 > kcreat(&dir->path, name, mode, &node_path)) {
-				rc =  -1;
+				rc = -errno;
 				goto out;
 			}
 		} else {
-			SET_ERRNO(ENOENT);
-			rc = -1;
+			rc = -ENOENT;
 			goto out;
 		}
 	} else {
 		/* When used with O_CREAT, if the file already exists it is an error
 		 * and the open() will fail. */
 		if (__oflag & O_EXCL && __oflag & O_CREAT) {
-			SET_ERRNO(EEXIST);
-			rc = -1;
+			rc = -EEXIST;
+			goto out;
+		}
+
+		if (node_is_directory(node)) {
+			rc = -EISDIR;
+			goto out;
+		}
+		else if (path[strlen(path) - 1] == '/') {
+			rc = -ENOTDIR;
 			goto out;
 		}
 
@@ -102,7 +111,7 @@ int open(const char *path, int __oflag, ...) {
 
 	kfile = kopen(node_path.node, __oflag);
 	if (NULL == kfile) {
-		rc = -1;
+		rc = -errno;
 		goto out;
 	}
 
@@ -112,5 +121,5 @@ int open(const char *path, int __oflag, ...) {
 out:
 	closedir(dir);
 
-	return rc;
+	return rc >= 0 ? rc : SET_ERRNO(-rc);
 }
