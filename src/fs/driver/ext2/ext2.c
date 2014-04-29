@@ -2631,7 +2631,7 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 #if __BYTE_ORDER == __BIG_ENDIAN
 void e2fs_sb_bswap(struct ext2sb *old, struct ext2sb *new) {
 	/* preserve unused fields */
-	memcpy(new, old, sizeof(struct ext2fs));
+	memcpy(new, old, sizeof(struct ext2sb));
 	new->s_inodes_count = bswap32(old->s_inodes_count);
 	new->s_blocks_count = bswap32(old->s_blocks_count);
 	new->s_r_blocks_count = bswap32(old->s_r_blocks_count);

@@ -167,8 +167,14 @@
 #	define e2fs_sbsave(old, new) memcpy((new), (old), SBSIZE);
 #	define e2fs_cgsave(old, new, size) memcpy((new), (old), (size));
 #elif __BYTE_ORDER == __BIG_ENDIAN
-void e2fs_sb_bswap(struct ext2fs *, struct ext2fs *);
+struct ext2sb;
+struct ext2_gd;
+void e2fs_sb_bswap(struct ext2sb *, struct ext2sb *);
 void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
+#include <swab.h>
+#define bswap16 swab16
+#define bswap32 swab32
+#define bswap64 swab64
 #	define h2fs16(x) bswap16(x)
 #	define h2fs32(x) bswap32(x)
 #	define h2fs64(x) bswap64(x)
