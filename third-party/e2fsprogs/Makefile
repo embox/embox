@@ -2,6 +2,8 @@ ifeq (arm,$(EMBOX_ARCH))
 EMBOX_E2FSPROGS_TARGET=arm-none-eabi
 else ifeq (x86,$(EMBOX_ARCH))
 EMBOX_E2FSPROGS_TARGET=i386-pc-elf
+else ifeq (microblaze,$(EMBOX_ARCH))
+EMBOX_E2FSPROGS_TARGET=microblaze-elf
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
@@ -39,6 +41,8 @@ EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -ffixed-r31,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -mno-xl-soft-mul,$(EMBOX_CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
@@ -49,6 +53,8 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -ffixed-r31,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-xl-soft-mul,$(EMBOX_CXXFLAGS))
 
 #EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
 #EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
