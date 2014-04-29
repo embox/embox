@@ -7,6 +7,7 @@
  */
 
 #include <kernel/thread/thread_alloc.h>
+#include <module/embox/mem/page_api.h>
 
 #include <kernel/thread.h>
 #include <mem/misc/pool.h>
@@ -21,7 +22,7 @@ static_assert(STACK_SZ > sizeof(struct thread));
 typedef union thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
-} thread_pool_entry_t __attribute__((aligned(STACK_SZ)));
+} thread_pool_entry_t __attribute__((aligned(PAGE_SIZE())));
 
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 
