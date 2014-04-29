@@ -203,7 +203,7 @@ static int process(struct cmd_data *cdata) {
 		return process_builtin(cdata);
 	}
 
-	return is_daemon ? process_external(cdata, 0) : process_external(cdata, 1);
+	return process_external(cdata, is_daemon);
 }
 
 static int tish_exec(const char *cmdline) {
