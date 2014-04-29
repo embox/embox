@@ -31,7 +31,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	 *			argv	-	array of arguments
 	 *			out		-	output file to write profiling info
 	 */
-	int res = 0;
+	int res = 0, run = 0;
 	clock_t begin, end;
 	set_profiling_mode(DISABLED);
 	initialize_hashtable();
@@ -40,10 +40,12 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	/*trace_block_hashtable_init();*/
 	printf("Executing command\n");
 	begin = clock();
-	set_profiling_mode(CYG_PROFILING);
-	res = cmd_exec(cmd, argc, argv);
-	set_profiling_mode(DISABLED);
-
+	while (true) {
+		printf ("TBPROF RRUN #%d\n", run++);
+		set_profiling_mode(CYG_PROFILING);
+		res = cmd_exec(cmd, argc, argv);
+		set_profiling_mode(DISABLED);
+	}
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
 			res, 1. * (end - begin) / CLOCKS_PER_SEC);
