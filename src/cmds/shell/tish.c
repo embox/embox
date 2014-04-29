@@ -178,6 +178,8 @@ static int process_external(struct cmd_data *cdata, int on_fg) {
 }
 
 static int process(struct cmd_data *cdata) {
+	int is_daemon = 0;
+
 	assert(cdata != NULL);
 
 	/* TODO remove stubs */
@@ -193,17 +195,15 @@ static int process(struct cmd_data *cdata) {
 	}
 
 	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		is_daemon = 1;
 		--cdata->argc;
 	}
+
 	if (is_builtin(cmd_name(cdata->cmd))) {
 		return process_builtin(cdata);
 	}
 
-	if (0 == strcmp(cdata->argv[cdata->argc], "&")) {
-		return process_external(cdata, 0);
-	}
-
-	return process_external(cdata, 1);
+	return is_daemon ? process_external(cdata, 0) : process_external(cdata, 1);
 }
 
 static int tish_exec(const char *cmdline) {
