@@ -639,6 +639,7 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
         }
 
         switch(c) {
+        case 10:    /* '\n' enter */
         case 13:    /* '\r' enter */
             history_len--;
             sysfree(history[history_len]);

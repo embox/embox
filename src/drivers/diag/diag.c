@@ -42,6 +42,7 @@ int diag_init(void) {
 
 char diag_getc(void) {
 	const struct diag *tdiag = cdiag;
+	char ch;
 
 	if (!tdiag->ops->getc) {
 		panic("diag_getc called with no implementation");
@@ -53,7 +54,8 @@ char diag_getc(void) {
 		}
 	}
 
-	return tdiag->ops->getc(tdiag);
+	ch = tdiag->ops->getc(tdiag);
+	return ch != '\r' ? ch : '\n';
 }
 
 #define BUFLEN 4
