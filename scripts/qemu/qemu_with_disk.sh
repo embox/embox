@@ -147,7 +147,7 @@ HDD_IMAGE="qemu_ext2_image.img"
 mkdir qemu_tmp_dir
 ./scripts/continuous/fs/img-manage.sh $FS_TYPE $HDD_IMAGE build "qemu_tmp_dir"
 rmdir qemu_tmp_dir
-ARG_LINE="$sudo $AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]} $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} -drive file=$HDD_IMAGE,media=disk $@"
+ARG_LINE="$sudo $AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]} $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} -hda $HDD_IMAGE $@"
 
 info "$ARG_LINE"
 $ARG_LINE
