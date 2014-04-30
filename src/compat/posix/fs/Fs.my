@@ -30,6 +30,7 @@ static module dirent {
 	depends embox.fs.core
 	depends embox.mem.objalloc
 	depends embox.lib.LibCString
+	depends embox.fs.dcache
 }
 
 static module lseek {

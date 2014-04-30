@@ -13,6 +13,7 @@
 
 #include <fs/perm.h>
 #include <fs/vfs.h>
+#include <fs/dcache.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <fs/flags.h>
@@ -27,12 +28,18 @@ OBJALLOC_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
 	struct path node_path, leaf;
+	struct path *cached;
 	DIR *d;
 	int res;
 	char cur_path[PATH_MAX];
 
 	if (!strcmp(path, ".")) {
 		path = getcwd(cur_path, PATH_MAX);
+	}
+
+	if (NULL != (cached = dcache_get(path))) {
+		node_path = *cached;
+		goto non_lookup;
 	}
 
 	vfs_get_leaf_path(&leaf);
@@ -51,6 +58,9 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
+	dcache_add(path, &node_path);
+
+non_lookup:
 	if (NULL == (d = objalloc(&dir_pool))) {
 		SET_ERRNO(ENOMEM);
 		return NULL;

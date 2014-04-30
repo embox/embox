@@ -45,3 +45,10 @@ module Perm {
 	depends embox.security.api
 	@NoRuntime depends embox.compat.posix.proc.All
 }
+
+
+module dcache {
+	source "dcache.c"
+}
+
+

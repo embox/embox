@@ -6,6 +6,7 @@
  * @date 12.10.10
  * @author Anton Bondarev
  * @author Eldar Abusalimov
+ * @author Vita Loginova
  */
 
 #include <stdio.h>
