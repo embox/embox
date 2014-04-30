@@ -98,11 +98,11 @@ static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) 
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_uid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%hd", &pwd->pw_uid, ':'))) {
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_gid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%hd", &pwd->pw_gid, ':'))) {
 		return res;
 	}
 
@@ -230,7 +230,7 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		return res;
 	}
 
-	if (0 != (res = read_int_field(fp, "%d", &gbuf->gr_gid, ':'))) {
+	if (0 != (res = read_int_field(fp, "%hd", &gbuf->gr_gid, ':'))) {
 		return res;
 	}
 
@@ -435,7 +435,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 
 	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
 		if(0 == strcmp(temp, "GROUP")) {
-			if (0 != read_int_field(passwdf, "%d", &passwd->pw_gid, '\n')) {
+			if (0 != read_int_field(passwdf, "%hd", &passwd->pw_gid, '\n')) {
 				res = -1;
 				goto out;
 			}
