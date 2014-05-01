@@ -103,7 +103,13 @@ void trace_block_leave(struct __trace_block *tb) {
 		if (p) {
 		assert(p != NULL);
 
-		tb->time += cur_time - tb->time_list_head->time;
+		cur_time -= tb->time_list_head->time;
+		cur_time = cur_time > 0 ? cur_time : 0;
+		tb->time += cur_time;
+
+		if (tb->max_time < cur_time)
+			tb->max_time = cur_time;
+
 		tb->time_list_head = p->next;
 		pool_free(&st_pool, p); }
 	}

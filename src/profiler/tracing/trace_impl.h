@@ -12,6 +12,8 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include <util/array.h>
 #include <util/location.h>
@@ -49,6 +51,7 @@ struct __trace_block {
 	int depth; /* Depth of recursion */
 
 	time64_t time;
+	time64_t max_time;
 
 	int64_t count;
 	bool is_entered;
@@ -74,6 +77,7 @@ struct __trace_block {
 			.name  = #tb_name,							\
 			.location = LOCATION_FUNC_INIT,				\
 			.time  = 0,									\
+			.max_time = 0,								\
 			.count = 0,									\
 			.depth = 0,									\
 			.active = true, 							\

@@ -13,8 +13,11 @@ module core extends thread_mode {
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
 
+	@InstrumentProfiling("true")
 	source "core.c"
+	@InstrumentProfiling("true")
 	source "thread_allocator.c"
+	@InstrumentProfiling("true")
 	source "thread_register.c"
 
 	depends starter

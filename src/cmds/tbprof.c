@@ -41,7 +41,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	printf("Executing command\n");
 	begin = clock();
 	while (true) {
-		printf ("TBPROF RRUN #%d\n", run++);
+		printf ("TBPROF RUN #%d\n", run++);
 		set_profiling_mode(CYG_PROFILING);
 		res = cmd_exec(cmd, argc, argv);
 		set_profiling_mode(DISABLED);
