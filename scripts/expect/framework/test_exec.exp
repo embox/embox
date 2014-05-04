@@ -28,21 +28,18 @@ proc ::autotest::test_exec {test_name test_body} {
 	if {$test_body != ""} {
 		if { $setup_target_proc != "" && [catch {eval $setup_target_proc}] } {
 			puts "error: incorrect setup_target_proc name - $setup_target_proc"
-			fail $test_name
 			exit 1
 		}
 
 		set res [eval $test_body]
 		if {$res != 0} {
-			fail $test_name
 			exit 1
 		}
 
 		if { $teardown_target_proc != "" && [catch {eval $teardown_target_proc}] } {
 			puts "error: incorrect teardown_target_proc name - $teardown_target_proc"
-			fail $test_name
 			exit 1
 		}
 	}
-	pass $test_name
+	return 0
 }

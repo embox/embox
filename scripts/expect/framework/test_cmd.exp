@@ -9,3 +9,20 @@ proc test_assert_regexp_equal {cmd success_output} {
 	}
 	return 0
 }
+
+proc test_assert_timeout {cmd in_timeout} {
+	set TELNET_PROMPT ":/#"
+
+	set timeout $in_timeout
+
+	send $cmd
+	set cmd_name [lindex [split $cmd " "] 0]
+	expect "$cmd"
+	expect {
+	         timeout { puts "$cmd_name timeout\n"; set timeout 10; exit 1 }
+	        -regexp "$cmd_name:.*" { puts "$expect_out(buffer)\n"; set timeout 10  }
+	        $TELNET_PROMPT { set timeout 10 }
+	}
+
+	return 0
+}

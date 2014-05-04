@@ -1,0 +1,42 @@
+proc run_all_tests {} {
+	set logfile testlog.txt
+	set dir [file dirname [info script]]
+	#TODO get tests_list_file in some better way
+	set tests_list_file [file join $dir ../tests_list.config]
+
+	set tests [split [exec cat $tests_list_file] "\n"]
+
+	exec rm -f $logfile
+
+	foreach t $tests {
+		puts "autotest: ======= running test suite: $t ... ======= "
+
+		exec rm -f .tmp.txt
+		exec touch .tmp.txt
+
+		set status 0
+		if {[catch {exec expect $dir/../$t.exp >> .tmp.txt} results options]} {
+		    set details [dict get $options -errorcode]
+		    if {[lindex $details 0] eq "CHILDSTATUS"} {
+		        set status [lindex $details 2]
+		    } else {
+		        # Some other error; regenerate it to let caller handle
+		        return -options $options -level 0 $results
+		    }
+		}
+
+		exec cat .tmp.txt >> $logfile
+		puts [exec cat .tmp.txt | grep "autotest"]
+
+		puts "STATUS = $status"
+
+		if { $status != 0 } {
+			puts "autotest:failed $t"
+			exit 1
+		} else {
+			puts "autotest: passed $t"
+		}
+	}
+}
+
+run_all_tests

@@ -49,24 +49,16 @@ proc ::autotest::TEST_CASE {test_name test_body} {
 	#init_test_suite
 
 	if { $setup_host_proc != "" && [catch {eval $setup_host_proc}] } {
-		puts "error: incorrect setup_host_proc name - $setup_host_proc"
-		fail $test_name
+		puts "autotest: incorrect setup_host_proc name - $setup_host_proc"
 		exit 1
 	}
 
-	puts "running test case: $test_name..."
-	set res [test_exec $test_name $test_body]
+	puts "autotest: running test case \"$test_name\"..."
+	test_exec $test_name $test_body
 
 	if { $teardown_host_proc != "" && [catch {eval $teardown_host_proc}] } {
-		puts "error: incorrect teardown_host_proc - $teardown_host_proc"
-		fail $test_name
+		puts "autotest: incorrect teardown_host_proc - $teardown_host_proc"
 		exit 1
-	}
-
-	if { $res == 0 } {
-		pass $test_name
-	} else {
-		fail $test_name
 	}
 
 	return 0
