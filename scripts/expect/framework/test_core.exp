@@ -1,0 +1,73 @@
+package provide autotest 1.0
+
+namespace eval ::autotest {
+    namespace export TEST_SETUP_HOST TEST_TEARDOWN_HOST \
+    	TEST_SETUP_TARGET TEST_TEARDOWN_TARGET TEST_CASE
+    namespace export test_assert_regexp_equal
+
+    variable setup_host_proc ""
+    variable teardown_host_proc ""
+    variable setup_target_proc ""
+    variable teardown_target_proc ""
+
+    variable embox_ip "10.0.2.16"
+    variable host_ip "10.0.2.10"
+}
+
+source [file join [file dirname [info script]] test_exec.exp]
+source [file join [file dirname [info script]] test_cmd.exp]
+
+proc init_test_suite {} {
+	set setup_host_proc ""
+	set teardown_host_proc ""
+}
+
+proc ::autotest::TEST_SETUP_HOST {setup} {
+	variable setup_host_proc
+	set setup_host_proc $setup
+}
+
+proc ::autotest::TEST_TEARDOWN_HOST {teardown} {
+	variable teardown_host_proc
+	set teardown_host_proc $teardown
+}
+
+proc ::autotest::TEST_SETUP_TARGET {setup} {
+	variable setup_target_proc
+	set setup_target_proc $setup
+}
+
+proc ::autotest::TEST_TEARDOWN_TARGET {teardown} {
+	variable teardown_target_proc
+	set teardown_target_proc $teardown
+}
+
+proc ::autotest::TEST_CASE {test_name test_body} {
+	variable setup_host_proc
+	variable teardown_host_proc
+
+	#init_test_suite
+
+	if { $setup_host_proc != "" && [catch {eval $setup_host_proc}] } {
+		puts "error: incorrect setup_host_proc name - $setup_host_proc"
+		fail $test_name
+		exit 1
+	}
+
+	puts "running test case: $test_name..."
+	set res [test_exec $test_name $test_body]
+
+	if { $teardown_host_proc != "" && [catch {eval $teardown_host_proc}] } {
+		puts "error: incorrect teardown_host_proc - $teardown_host_proc"
+		fail $test_name
+		exit 1
+	}
+
+	if { $res == 0 } {
+		pass $test_name
+	} else {
+		fail $test_name
+	}
+
+	return 0
+}

@@ -1,0 +1,48 @@
+set timeout 10
+
+proc ::autotest::test_exec {test_name test_body} {
+	global spawn_id
+	variable embox_ip
+	variable setup_target_proc
+	variable teardown_target_proc
+
+	proc telnet_connect {} {
+		# The piece of embox's prompt
+		set TELNET_PROMPT ":/#"
+		expect {
+			timeout { puts "telnet.exp: connection timeout\n"; return -1 }
+			$TELNET_PROMPT
+		}
+		return 0
+	}
+
+	sleep 1
+
+	spawn telnet $embox_ip
+	set res [telnet_connect]
+	if {$res != 0} {
+		fail $test_name
+		exit 1
+	}
+
+	if {$test_body != ""} {
+		if { $setup_target_proc != "" && [catch {eval $setup_target_proc}] } {
+			puts "error: incorrect setup_target_proc name - $setup_target_proc"
+			fail $test_name
+			exit 1
+		}
+
+		set res [eval $test_body]
+		if {$res != 0} {
+			fail $test_name
+			exit 1
+		}
+
+		if { $teardown_target_proc != "" && [catch {eval $teardown_target_proc}] } {
+			puts "error: incorrect teardown_target_proc name - $teardown_target_proc"
+			fail $test_name
+			exit 1
+		}
+	}
+	pass $test_name
+}
