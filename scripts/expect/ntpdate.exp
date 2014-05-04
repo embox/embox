@@ -7,7 +7,9 @@
 #    with result of the item 2.
 
 
-source [file join [file dirname [info script]] exec_through_telnet.exp]
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
 
 set host_date ""
 
@@ -22,8 +24,10 @@ proc get_host_date {} {
 	set host_date $expect_out(0,string)
 }
 
-proc ntpdate_test {} {
-	global host_ip
+TEST_SETUP_HOST {get_host_date}
+
+TEST_CASE {ntpdate test} {
+	variable host_ip
 	global host_date
 
 	send "ntpdate $host_ip\r"
@@ -33,8 +37,6 @@ proc ntpdate_test {} {
 	        -regexp "ntpdate:.*" { puts "$expect_out(buffer)\n"; return -1 }
 	        ":/#"
 	}
-
-	get_host_date
 
 	# And compare the host date with the Embox's one.
 	# XXX: compare the both times too, not only dates
@@ -53,5 +55,3 @@ proc ntpdate_test {} {
 
 	return 0
 }
-
-exec_cmd "$embox_ip" ntpdate_test
