@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
@@ -41,8 +42,10 @@ static int coverage_main(int argc, char *argv[]) {
 
 	if (outfile) {
 		out = fopen(outfile, "w");
-		if (!out)
-			fprintf(stderr, "Can't open file for writing\n");
+		if (!out) {
+			perror("fopen");
+			return -errno;
+		}
 	} else {
 		out = stdout;
 	}
