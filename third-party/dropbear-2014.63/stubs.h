@@ -111,8 +111,11 @@ static inline int pclose(FILE *stream) {
 
 static inline char *ttyname(int fd) {
 	static char buf[16];
+	(void) fd;
 
 	return strcpy(buf, "/dev_pty_0");
 }
+
+extern int daemon(int nochdir, int noclose);
 
 #endif /* DROPBEAR_2014_63_STUBS_H_ */
