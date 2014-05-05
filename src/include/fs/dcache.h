@@ -1,8 +1,8 @@
-/*
- * dcache.h
+/**
+ * @file
  *
- *  Created on: Apr 29, 2014
- *      Author: vita
+ * @date 29.04.14
+ * @author Vita Loginova
  */
 
 #ifndef DCACHE_H_

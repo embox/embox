@@ -23,7 +23,7 @@ EMBOX_UNIT_INIT(dcache_init);
 
 //todo may be localname + mount_table link
 struct dkey {
-	char fullpath[DCACHE_MAX_NAME_SIZE];
+	char fullpath[DCACHE_MAX_NAME_SIZE + 1];
 };
 
 struct dvalue {
@@ -37,7 +37,7 @@ POOL_DEF(dcache_path_pool, struct dvalue, DCACHE_TABLE_SIZE);
 static struct hashtable *dcache_table = NULL;
 static struct dlist_head values;
 
-static void delete(struct dvalue *dvalue) {
+static void dvalue_delete(struct dvalue *dvalue) {
 	hashtable_del(dcache_table, &dvalue->key);
 	dlist_del(&dvalue->link);
 	pool_free(&dcache_path_pool, dvalue);
@@ -49,7 +49,7 @@ static void dvalue_init(struct dvalue *dvalue, struct path *path, const char *fu
 	dlist_head_init(&dvalue->link);
 }
 
-static void __dcache_add(struct dvalue *dvalue) {
+static void dvalue_add(struct dvalue *dvalue) {
 	dlist_add_next(&dvalue->link, &values);
 	hashtable_put(dcache_table, &dvalue->key, dvalue);
 }
@@ -57,7 +57,13 @@ static void __dcache_add(struct dvalue *dvalue) {
 int dcache_add(const char *fullpath, struct path *path) {
 	struct dvalue *dvalue;
 
+	assert(path);
+
 	if (*fullpath == '\0') {
+		return -1;
+	}
+
+	if (strlen(fullpath) > DCACHE_MAX_NAME_SIZE) {
 		return -1;
 	}
 
@@ -65,14 +71,14 @@ int dcache_add(const char *fullpath, struct path *path) {
 		struct dvalue *last;
 
 		last = dlist_entry(values.prev, struct dvalue, link);
-		delete(last);
+		dvalue_delete(last);
 		dvalue = pool_alloc(&dcache_path_pool);
 
 		assert(NULL != dvalue);
 	}
 
 	dvalue_init(dvalue, path, fullpath);
-	__dcache_add(dvalue);
+	dvalue_add(dvalue);
 
 	return 0;
 }
@@ -87,6 +93,7 @@ struct path *dcache_get(const char *fullpath) {
 
 	strcpy(dkey.fullpath, fullpath);
 	dvalue = hashtable_get(dcache_table, &dkey);
+
 	return dvalue ? &dvalue->path : NULL;
 }
 

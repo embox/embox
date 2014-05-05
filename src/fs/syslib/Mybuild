@@ -46,9 +46,17 @@ module Perm {
 	@NoRuntime depends embox.compat.posix.proc.All
 }
 
+@DefaultImpl(nodcache)
+abstract module dcache {
 
-module dcache {
+}
+
+module dcache_last extends dcache{
 	source "dcache.c"
+}
+
+module nodcache extends dcache{
+	source "nodcache.c"
 }
 
 
