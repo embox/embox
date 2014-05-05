@@ -27,8 +27,11 @@ static int coverage_main(int argc, char *argv[]) {
 	int opt, i, sym_n;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "o:"))) {
+	while (-1 != (opt = getopt(argc, argv, "o:h"))) {
 		switch (opt) {
+		case 'h':
+			printf("Usage: %s [-h] [-o output_file]\n", argv[0]);
+			return 0;
 		case 'o':
 			outfile = optarg;
 		default:
