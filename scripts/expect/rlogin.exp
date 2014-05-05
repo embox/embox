@@ -1,5 +1,3 @@
-#!/usr/bin/runtest
-
 # This test works in three steps:
 # 1. Execute 'rlogin -l <host_username> <host_ip>' on Embox and check if connection established.
 # 2. Try to log in with <host_passwd> password.

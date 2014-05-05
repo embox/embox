@@ -1,11 +1,8 @@
-#!/usr/bin/runtest
-
 # This test works in three steps:
 # 1. Execute 'ntpdate <host_ip>' on Embox.
 # 2. Get host's date in the format xxxx-xx-xx (e.g. 2014-01-05).
 # 3. Execute 'date' on Embox and compare result (first 10 symbols of output)
 #    with result of the item 2.
-
 
 source [file join [file dirname [info script]] framework/test_core.exp]
 
