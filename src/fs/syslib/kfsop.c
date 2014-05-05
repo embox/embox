@@ -75,7 +75,7 @@ int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
 	int res;
 
 	if (-ENOENT != (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
-		errno = -res;
+		errno = EEXIST;
 		return -1;
 	}
 

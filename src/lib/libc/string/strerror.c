@@ -44,7 +44,7 @@ char *strerror(int errnum) {
 	case EDEVNOSUPP:   return "Device does not support this operation";
 	case ETIMEDOUT:    return "Connection timed out";
 	case EACCES:       return "Access denied";
-	case EEXIST:       return "File exist";
+	case EEXIST:       return "File exists";
 	case EINPROGRESS:  return "Operation now in progress";
 	case EALREADY:     return "Operation already in progress";
 	case ENOTSOCK:     return "Socket operation on non-socket";
