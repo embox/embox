@@ -1,3 +1,5 @@
+#!/usr/bin/expect
+
 proc run_all_tests {} {
 	set logfile testrun.log
 	set dir [file dirname [info script]]
