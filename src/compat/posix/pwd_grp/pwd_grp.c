@@ -11,10 +11,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <pwd.h>
 #include <grp.h>
 #include <shadow.h>
+#include <util/binalign.h>
 
 #include <pwd_db.h>
 
@@ -238,7 +240,8 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		return res;
 	}
 
-	gbuf->gr_mem = pmem = (char **) buf;
+	gbuf->gr_mem = pmem = (char **)binalign_bound((uintptr_t)buf, sizeof(void *));
+	buf_len -= (uintptr_t)pmem - (uintptr_t)buf;
 
 	*pmem = ch;
 
