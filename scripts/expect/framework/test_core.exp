@@ -53,7 +53,7 @@ proc ::autotest::TEST_CASE {test_name test_body} {
 		exit 1
 	}
 
-	puts "autotest: running test case \"$test_name\"..."
+	puts "\n              autotest: TEST CASE \"$test_name\" running ...\n"
 	test_exec $test_name $test_body
 
 	if { $teardown_host_proc != "" && [catch {eval $teardown_host_proc}] } {

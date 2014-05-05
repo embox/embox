@@ -1,5 +1,5 @@
 proc run_all_tests {} {
-	set logfile testlog.txt
+	set logfile testrun.log
 	set dir [file dirname [info script]]
 	#TODO get tests_list_file in some better way
 	set tests_list_file [file join $dir ../tests_list.config]
@@ -8,8 +8,10 @@ proc run_all_tests {} {
 
 	exec rm -f $logfile
 
+	set i 0
 	foreach t $tests {
-		puts "autotest: ======= running test suite: $t ... ======= "
+		incr i
+		puts "\n$i.  autotest: ======= running TEST SUITE: $t ... ======= "
 
 		exec rm -f .tmp.txt
 		exec touch .tmp.txt
@@ -28,13 +30,11 @@ proc run_all_tests {} {
 		exec cat .tmp.txt >> $logfile
 		puts [exec cat .tmp.txt | grep "autotest"]
 
-		puts "STATUS = $status"
-
 		if { $status != 0 } {
-			puts "autotest:failed $t"
+			puts "    autotest: FAILED (error code = $status)"
 			exit 1
 		} else {
-			puts "autotest: passed $t"
+			puts "    autotest: PASSED"
 		}
 	}
 }
