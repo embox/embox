@@ -200,7 +200,7 @@ void trace_block_func_enter(void *func) {
 		tb = (struct __trace_block*) pool_alloc (&tb_pool);
 
 		tb->func = func;
-		tb->time = tb->count = tb->depth = 0;
+		tb->time = tb->max_time = tb->count = tb->depth = 0;
 		tb->time_list_head = NULL;
 		tb->active = true;
 		tb->is_entered = false;

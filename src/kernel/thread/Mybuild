@@ -37,6 +37,7 @@ module core extends thread_mode {
 }
 
 module starter {
+	@InstrumentProfiling("true")
 	source "starter.c"
 	depends embox.kernel.task.kernel_task
 	@NoRuntime depends boot_thread
@@ -46,11 +47,13 @@ module starter {
 }
 
 module boot_thread {
+	@InstrumentProfiling("true")
 	source "boot_thread.c"
 	@NoRuntime depends embox.kernel.task.kernel_task
 }
 
 module idle_thread {
+	@InstrumentProfiling("true")
 	source "idle_thread.c"
 	@NoRuntime depends core
 	depends thread_local // FIXME

@@ -1,6 +1,7 @@
 package embox.kernel.sched
 
 module sched {
+	@InstrumentProfiling("true")
 	source "sched.c"
 	source "sched_signal.c"
 	source "sched_wait.c"

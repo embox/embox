@@ -60,7 +60,7 @@ static void print_instrument_trace_block_stat(int amount) {
 
 	printf("Automatic trace points:\n");
 
-	printf("%40s %10s %20s %20s %15s\n", "Name", "Count", "Ticks", "Max_Ticks", "AvgTime(sec)");
+	printf("%40s %10s %20s %20s %15s\n", "Name", "Count", "Ticks", "Max_Ticks", "Avg_Ticks");
 
 	for (i = 0; i < amount && i < counter; i++) {
 		tb = table[i];
@@ -83,7 +83,8 @@ static void print_instrument_trace_block_stat(int amount) {
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %20llu %20llu %15.9Lf\n", tb->count, tb->time, tb->max_time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count));
+		//printf("%10lld %20llu %20llu %15.9Lf\n", tb->count, tb->time, tb->max_time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count));
+		printf("%10lld %20llu %20llu %15llu\n", tb->count, tb->time, tb->max_time, tb->time / tb->count);
 	}
 	free(buff);
 }
@@ -169,7 +170,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	getopt_init();
-
+	filter[0] = 0;
 	while (-1 != (opt = getopt(argc, argv, "f:ehsi:d:a:n:"))) {
 		printf("\n");
 		switch (opt) {

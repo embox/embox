@@ -10,6 +10,7 @@ module irq_static extends irq_api {
 }
 
 module irq extends irq_api {
+	@InstrumentProfiling("true")
 	source "irq.c"
 	depends irq_lock
 	@NoRuntime depends irq_stack
