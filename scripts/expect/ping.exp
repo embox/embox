@@ -1,3 +1,5 @@
+#!/usr/bin/expect
+
 source [file join [file dirname [info script]] framework/test_core.exp]
 
 namespace import autotest::*

@@ -1,3 +1,5 @@
+#!/usr/bin/expect
+
 # This test works in three steps:
 # 1. Execute 'ntpdate <host_ip>' on Embox.
 # 2. Get host's date in the format xxxx-xx-xx (e.g. 2014-01-05).
