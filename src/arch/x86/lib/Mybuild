@@ -4,7 +4,15 @@ package embox.arch.x86
 static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
 	source "cmpxchg_impl.h"
+
+	source "stack_move.c"
 }
+
+/*
+static module vfork_x86 extends embox.arch.vfork_arch {
+	source "stack_move.c"
+}
+*/
 
 static module LibDl {
 	source "dl/dl_relocate.c"
