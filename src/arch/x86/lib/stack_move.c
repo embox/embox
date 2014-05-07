@@ -1,9 +1,11 @@
-/*
- * stack_move.c
+/**
+ * @file
  *
- *  Created on: May 6, 2014
- *      Author: anton
+ * @data May 6, 2014
+ * @author Anton Bondarev
  */
+
+
 
 #include <stddef.h>
 #include <stdint.h>

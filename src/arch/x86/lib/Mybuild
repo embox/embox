@@ -5,6 +5,8 @@ static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
 	source "cmpxchg_impl.h"
 
+	source "asm_stack_move.S"
+
 	source "stack_move.c"
 }
 
