@@ -92,15 +92,11 @@ guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
-			echo "Making uImage..." >&2
-			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/omap-uboot-uimage >/dev/null
-			if [ 0 -ne $? ]; then
-				exit 1
-			fi
-			echo "Making nand image..." >&2
-			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
+		./scripts/omap-uboot-uimage >/dev/null
+		if [ 0 -ne $? ]; then
+			exit 1
 		fi
+		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
 		echo "-mtdblock beagle_nand.img"
 	fi
 }
