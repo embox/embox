@@ -113,9 +113,9 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	free(unaligned);
 }
 
-#define ALLOC_FROM 2000
+#define ALLOC_FROM 10
 #define ALLOC_STEP 3
-#define ALLOC_TO   5000
+#define ALLOC_TO   25
 #define ALLOC_COUNT ((ALLOC_TO - ALLOC_FROM) / ALLOC_STEP + 1)
 TEST_CASE("Allocates many objects with different size") {
 	int i, alloc_sz;
