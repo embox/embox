@@ -12,6 +12,7 @@ mk/GNUmakefile
 /nbproject
 scripts/continuous/fs/mountpoint
 scripts/qemu/auto_qemu_my
+scripts/qemu/beagle/bb_nandflash_ecc
 scripts/qemu/debug_qemu
 scripts/qemu/start_script_my
 scripts/qemu/stop_script_my
