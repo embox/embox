@@ -9,11 +9,12 @@ rm $NAND_IMG
 
 $DATA_DIR/bb_nandflash.sh $DATA_DIR/x-load.bin.ift $NAND_IMG x-loader
 $DATA_DIR/bb_nandflash.sh $DATA_DIR/u-boot.bin $NAND_IMG u-boot
-#$DATA_DIR/bb_nandflash.sh $UIMAGE $NAND_IMG kernel
-$DATA_DIR/bb_nandflash.sh $UIMAGE $NAND_IMG rootfs
+$DATA_DIR/bb_nandflash.sh $UIMAGE $NAND_IMG kernel
+#$DATA_DIR/bb_nandflash.sh $UIMAGE $NAND_IMG rootfs
 
 make -C $DATA_DIR bb_nandflash_ecc
 $DATA_DIR/bb_nandflash_ecc $NAND_IMG 0x0 0x4680000
+#$DATA_DIR/bb_nandflash_ecc $NAND_IMG 0x0 0xe80000
 
 # copying u_boot environment
 dd if=$DATA_DIR/uboot_env.bin of=$NAND_IMG seek=1254 conv=notrunc bs=2048
