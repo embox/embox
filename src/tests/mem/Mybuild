@@ -16,6 +16,7 @@ module page {
 	depends embox.framework.LibFramework
 }
 
+@TestFor(embox.mem.heap_api)
 module heap {
 	source "heap.c"
 
