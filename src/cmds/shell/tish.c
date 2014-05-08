@@ -20,7 +20,6 @@
 #include <limits.h>
 #include <pwd.h>
 
-#include <lib/linenoise_1.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -343,7 +342,7 @@ static void tish_run(void) {
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
-			linenoiseHistorySetMaxLen(len);
+			stifle_history(len);
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}
