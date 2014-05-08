@@ -114,8 +114,8 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 }
 
 #define ALLOC_FROM 2000
-#define ALLOC_STEP 7
-#define ALLOC_TO   4000
+#define ALLOC_STEP 3
+#define ALLOC_TO   5000
 #define ALLOC_COUNT ((ALLOC_TO - ALLOC_FROM) / ALLOC_STEP + 1)
 TEST_CASE("Allocates many objects with different size") {
 	int i, alloc_sz;
@@ -130,6 +130,7 @@ TEST_CASE("Allocates many objects with different size") {
 		arr[i] = malloc(alloc_sz);
 		if (arr[i] == NULL)
 			break;
+		memset(arr[i], 0x77, alloc_sz);
 	}
 
 	while (--i >= 0) {
