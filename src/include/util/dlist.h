@@ -249,15 +249,14 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
 		MACRO_GUARD(__head), \
 		MACRO_GUARD(__next))
 
-#define __dlist_foreach_entry_safe(link, head, member, __link, \
-		__head, __next) \
-	for (struct dlist_head *__link,       \
-			*__head = (head),              \
-			*__next = __head->next;        \
-			                              \
-		__next = (__link = __next)->next, \
-			(__link != __head) &&         \
-			((link = dlist_entry(__link, typeof(*link), member)), 1);)
+#define __dlist_foreach_entry_safe(link, head, member, __link, __head, __next) \
+	for (struct dlist_head *__link,                                 \
+			*__head = (head),                                       \
+			*__next = (assert(__head), __head->next);               \
+		__next = (assert(__next), __link = __next)->next,           \
+			(__link != __head) &&                                   \
+			(link = dlist_entry(__link, typeof(*link), member), 1); \
+		)
 
 
 #endif /* DLIST_H_ */
