@@ -112,3 +112,34 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	free(small);
 	free(unaligned);
 }
+
+#define ALLOC_FROM 2000
+#define ALLOC_STEP 7
+#define ALLOC_TO   4000
+#define ALLOC_COUNT ((ALLOC_TO - ALLOC_FROM) / ALLOC_STEP + 1)
+TEST_CASE("Allocates many objects with different size") {
+	int i, alloc_sz;
+	void **arr;
+
+	arr = malloc(ALLOC_COUNT * sizeof *arr);
+	test_assert_not_null(arr);
+
+	for (alloc_sz = ALLOC_FROM, i = 0; alloc_sz < ALLOC_TO;
+			alloc_sz += ALLOC_STEP, ++i) {
+		assert(i < ALLOC_COUNT);
+		arr[i] = malloc(alloc_sz);
+		if (arr[i] == NULL)
+			break;
+	}
+
+	while (--i >= 0) {
+		test_assert_not_null(arr[i]);
+		free(arr[i]);
+	}
+	free(arr);
+}
+
+TEST_CASE("malloc fails when trying to allocate a very large"
+		" chunk of memory") {
+	test_assert_null(malloc(4294966160));
+}
