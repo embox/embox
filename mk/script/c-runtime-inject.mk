@@ -116,7 +116,7 @@ $(foreach p,$(packages), \
 $(info )
 
 $(info /* Module definitions. */)
-$(call gen_mod_runlevels,0 1 2 3,)
+$(call gen_mod_runlevels,0 1 2 3 4,)
 $(info )
 
 $(info /* Security labels. */)
