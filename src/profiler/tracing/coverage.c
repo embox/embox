@@ -53,7 +53,7 @@ static int coverage_init(void) {
 	if (COVERAGE_TABLE_SIZE < __symbol_table_size) {
 		printk("\n[%s]: coverage_table_size too small, "
 				"try to increase it [%zu; required at least %zu]\n",
-				__func__, COVERAGE_TABLE_SIZE, __symbol_table_size);
+				__func__, (size_t)COVERAGE_TABLE_SIZE, __symbol_table_size);
 		return -ENOMEM;
 	}
 
