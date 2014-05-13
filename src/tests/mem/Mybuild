@@ -1,5 +1,9 @@
 package embox.test.mem
 
+module afterfree {
+	source "afterfree.c"
+}
+
 module objalloc {
 	source "objalloc.c"
 
