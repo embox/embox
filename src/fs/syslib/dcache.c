@@ -43,8 +43,19 @@ static void dvalue_delete(struct dvalue *dvalue) {
 	pool_free(&dcache_path_pool, dvalue);
 }
 
-static void dvalue_init(struct dvalue *dvalue, struct path *path, const char *fullpath) {
-	strcpy(dvalue->key.fullpath, fullpath);
+static void compound_path(char *source, const char *prefix, const char *rest) {
+	strcpy(source, prefix);
+
+	if (rest[0] != '/' && (0 != strcmp("/", prefix))) {
+		strcat(source, "/");
+	}
+
+	strcat(source, rest);
+}
+
+static void dvalue_init(struct dvalue *dvalue, struct path *path,
+		const char *prefix, const char *rest) {
+	compound_path(dvalue->key.fullpath, prefix, rest);
 	dvalue->path = *path;
 	dlist_head_init(&dvalue->link);
 }
@@ -54,18 +65,30 @@ static void dvalue_add(struct dvalue *dvalue) {
 	hashtable_put(dcache_table, &dvalue->key, dvalue);
 }
 
-int dcache_add(const char *fullpath, struct path *path) {
+int dcache_delete(const char *prefix, const char *rest) {
+	struct dkey dkey;
+	struct dvalue *dvalue;
+
+	compound_path(dkey.fullpath, prefix, rest);
+	if (NULL != (dvalue = hashtable_get(dcache_table, &dkey))) {
+		dvalue_delete(dvalue);
+	}
+
+	return 0;
+}
+
+int dcache_add(const char *prefix, const char *rest, struct path *path) {
 	struct dvalue *dvalue;
 
 	assert(path);
 
-	if (*fullpath == '\0') {
-		return -1;
-	}
+//	if (*fullpath == '\0') {
+//		return -1;
+//	}
 
-	if (strlen(fullpath) > DCACHE_MAX_NAME_SIZE) {
-		return -1;
-	}
+//	if (strlen(fullpath) > DCACHE_MAX_NAME_SIZE) {
+//		return -1;
+//	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_path_pool))) {
 		struct dvalue *last;
@@ -77,21 +100,21 @@ int dcache_add(const char *fullpath, struct path *path) {
 		assert(NULL != dvalue);
 	}
 
-	dvalue_init(dvalue, path, fullpath);
+	dvalue_init(dvalue, path, prefix, rest);
 	dvalue_add(dvalue);
 
 	return 0;
 }
 
-struct path *dcache_get(const char *fullpath) {
+struct path *dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 
-	if (*fullpath == '\0') {
-		return NULL;
-	}
+//	if (*fullpath == '\0') {
+//		return NULL;
+//	}
 
-	strcpy(dkey.fullpath, fullpath);
+	compound_path(dkey.fullpath, prefix, rest);
 	dvalue = hashtable_get(dcache_table, &dkey);
 
 	return dvalue ? &dvalue->path : NULL;
