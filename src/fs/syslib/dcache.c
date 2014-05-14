@@ -21,7 +21,6 @@
 
 EMBOX_UNIT_INIT(dcache_init);
 
-//todo may be localname + mount_table link
 struct dkey {
 	char fullpath[DCACHE_MAX_NAME_SIZE + 1];
 };
@@ -69,6 +68,14 @@ int dcache_delete(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 
+	if (*rest == '\0') {
+		return -1;
+	}
+
+	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
+		return -1;
+	}
+
 	compound_path(dkey.fullpath, prefix, rest);
 	if (NULL != (dvalue = hashtable_get(dcache_table, &dkey))) {
 		dvalue_delete(dvalue);
@@ -82,13 +89,13 @@ int dcache_add(const char *prefix, const char *rest, struct path *path) {
 
 	assert(path);
 
-//	if (*fullpath == '\0') {
-//		return -1;
-//	}
+	if (*rest == '\0') {
+		return -1;
+	}
 
-//	if (strlen(fullpath) > DCACHE_MAX_NAME_SIZE) {
-//		return -1;
-//	}
+	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
+		return -1;
+	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_path_pool))) {
 		struct dvalue *last;
@@ -110,9 +117,13 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 
-//	if (*fullpath == '\0') {
-//		return NULL;
-//	}
+	if (*rest == '\0') {
+		return NULL;
+	}
+
+	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
+		return NULL;
+	}
 
 	compound_path(dkey.fullpath, prefix, rest);
 	dvalue = hashtable_get(dcache_table, &dkey);
