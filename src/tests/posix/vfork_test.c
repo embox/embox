@@ -28,7 +28,8 @@ TEST_CASE("after called vfork() child call exit()") {
 		_exit(0);
 	}
 
-	test_assert_equal(pid, parent_pid);
+	test_assert_not_equal(pid, parent_pid);
+	test_assert_equal(getpid(), parent_pid);
 }
 
 TEST_CASE("after called vfork() child call execve()") {
@@ -52,5 +53,6 @@ TEST_CASE("after called vfork() child call execve()") {
 		_exit(0);
 	}
 
-	test_assert_equal(pid, parent_pid);
+	test_assert_not_equal(pid, parent_pid);
+	test_assert_equal(getpid(), parent_pid);
 }
