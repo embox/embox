@@ -197,7 +197,7 @@ int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 static int gpio_init(void) {
-	uint32_t rev;
+	//uint32_t rev;
 	int i, ret;
 	struct gpio *gpio;
 	char str [255];
@@ -210,10 +210,10 @@ static int gpio_init(void) {
 
 		gpio->base = GPIO_BASE_ADDRESS(i + 1);
 		gpio->gpio_nr = i;
-
+		/*
 		rev = gpio_reg_read(gpio->base, GPIO_REVISION);
-		printk("maj = %d, min = %d\n",
-				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev));
+		 printk("maj = %d, min = %d\n",
+				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
 
 		*str = 0;
 		sprintf(str,"OMAP_GPIO%d", i);
