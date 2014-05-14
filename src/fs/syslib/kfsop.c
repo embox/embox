@@ -320,14 +320,14 @@ skip_dev_lookup:
 		root_path.node = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
+	if (ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
 		//todo free root
 		errno = -res;
 		return -1;
 
 	}
 
-	if(NULL == mount_table_add(&dir_node, root_path.node)) {
+	if (NULL == mount_table_add(&dir_node, root_path.node, dev, fs_type)) {
 		drv->fsop->umount(&dir_node);
 		//todo free root
 		errno = -res;
