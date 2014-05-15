@@ -89,7 +89,7 @@ module fork_test {
 module vfork_test {
 	source "vfork_test.c"
 
-	depends embox.kernel.task.syslib.kfork
+	depends embox.compat.posix.proc.vfork
 }
 
 module sigchld_test {

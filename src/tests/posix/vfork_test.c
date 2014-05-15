@@ -6,6 +6,7 @@
  */
 
 #include <sys/types.h> /* pid_t */
+#include <sys/wait.h>  /* wait */
 #include <stdlib.h>    /* exit */
 #include <unistd.h>    /* _exit, vfork */
 
@@ -16,6 +17,7 @@ EMBOX_TEST_SUITE("vfork() testsuite");
 TEST_CASE("after called vfork() child call exit()") {
 	pid_t pid;
 	pid_t parent_pid;
+	int res;
 
 	parent_pid = getpid();
 
@@ -28,13 +30,52 @@ TEST_CASE("after called vfork() child call exit()") {
 		_exit(0);
 	}
 
+	wait(&res);
 	test_assert_not_equal(pid, parent_pid);
 	test_assert_equal(getpid(), parent_pid);
 }
 
-TEST_CASE("after called vfork() child call execve()") {
+#if 0
+/* isn't works with kfork */
+TEST_CASE("parent should see stack modifications made from child") {
+	pid_t pid;
+	int res;
+	int data;
+
+	data = 1;
+
+	pid = vfork();
+	/* When vfork() returns -1, an error happened. */
+	test_assert(pid != -1);
+
+	if (pid == 0) {
+		data = 2;
+		/* When vfork() returns 0, we are in the child process. */
+		_exit(0);
+	}
+
+	wait(&res);
+	test_assert_equal(data, 2);
+}
+#endif
+
+TEST_CASE("after called vfork() child trashes own stack and calls exit") {
+	pid_t pid;
+	int res;
+
+	pid = vfork();
+	if (pid == 0) {
+		char buf[64];
+		memset(buf, 0xa5, sizeof(buf));
+		_exit(0);
+	}
+	wait(&res);
+}
+
+TEST_CASE("after called vfork() child call execv()") {
 	pid_t pid;
 	pid_t parent_pid;
+	int res;
 
 	parent_pid = getpid();
 
@@ -43,15 +84,13 @@ TEST_CASE("after called vfork() child call execve()") {
 	test_assert(pid != -1);
 
 	if (pid == 0) {
-#if 0
-		//TODO execve() isn't implemented yet
 		/* When vfork() returns 0, we are in the child process. */
-		if (execve("help", NULL, NULL) == -1) {
+		if (execv("help", NULL) == -1) {
 			test_assert(0);
 		}
-#endif
-		_exit(0);
 	}
+
+	wait(&res);
 
 	test_assert_not_equal(pid, parent_pid);
 	test_assert_equal(getpid(), parent_pid);
