@@ -12,8 +12,6 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 
-extern void __attribute__((noreturn)) vfork_leave(struct pt_regs *ptregs);
-
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
 	struct pt_regs ptregs;
