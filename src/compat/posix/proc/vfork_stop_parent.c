@@ -8,9 +8,11 @@
 
 #include <mem/sysmalloc.h>
 #include <asm/traps.h>
+#include <hal/vfork.h>
 #include <kernel/panic.h>
 #include <kernel/sched.h>
 #include <kernel/task.h>
+
 
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
@@ -22,10 +24,6 @@ struct vfork_ctx {
 };
 
 static struct vfork_ctx *vfork_current_context;
-
-static void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
-	ptregs->eax = retcode;
-}
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
 	struct vfork_ctx *vfctx = vfork_current_context;
