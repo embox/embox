@@ -99,7 +99,8 @@ guess_load_arg() {
 				exit 1
 			fi
 			echo "Making nand image..." >&2
-			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
+			NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
+			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage $NAND_SIZE >/dev/null 2>/dev/null
 		fi
 		echo "-mtdblock beagle_nand.img"
 	fi
