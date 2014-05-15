@@ -28,3 +28,7 @@ static module LibM {
 	source "math/sqrt.S"
 	source "math/log10.S"
 }
+
+static module vfork extends embox.arch.vfork_entry {
+	source "vfork.S"
+}
