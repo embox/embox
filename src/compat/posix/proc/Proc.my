@@ -30,6 +30,7 @@ abstract module vfork { }
 
 static module vfork_stack_copy extends vfork {
 	source "vfork_stack_copy.c"
+	source "vfork_release_parent_stub.c"
 
 	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
