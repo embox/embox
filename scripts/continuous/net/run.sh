@@ -42,8 +42,7 @@ test_case_snmp_should_reply() {
 }
 
 test_case_interactive_tests_should_success() {
-	runtest $EXPECT_TESTS_BASE/telnet.exp \
-		$EXPECT_TESTS_BASE/ntpdate.exp
+	expect $EXPECT_TESTS_BASE/framework/run_all.exp
 	test_retcode
 
 	cat testrun.log

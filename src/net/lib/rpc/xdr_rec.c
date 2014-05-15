@@ -44,9 +44,7 @@ void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
 	assert(recvsz % BYTES_PER_XDR_UNIT == 0); // TODO debug
 
 	buff = (char *)malloc(sendsz + recvsz);
-	if (buff == NULL) {
-		return;
-	}
+	assert(buff != NULL);
 
 	xs->ops = &xdrrec_ops;
 	xs->extra.rec.handle = handle;

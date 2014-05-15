@@ -23,26 +23,6 @@ struct kfork_data {
 static struct kfork_data kfork_data;
 static int tmp_stack_buff[0x1000];
 
-struct cpu_stack {
-	int ebp;
-	int esp;
-};
-
-void setjmp_stack_move(ptrdiff_t offset, jmp_buf env) {
-	env[SETJMP_EBP_INDEX] += offset;
-	env[SETJMP_ESP_INDEX] += offset;
-
-	*(uint32_t *)env[SETJMP_EBP_INDEX] += offset;
-}
-
-struct cpu_stack setjmp_stack_get(void *stack_base, jmp_buf env) {
-	struct cpu_stack stack;
-
-	stack.ebp = (ptrdiff_t)stack_base - env[SETJMP_EBP_INDEX];
-	stack.esp = (ptrdiff_t)stack_base - env[SETJMP_ESP_INDEX];
-
-	return stack;
-}
 
 extern void cpu_stack_move(ptrdiff_t desc_stack, ptrdiff_t src_stack);
 static void *kfork_trampoline(void *arg) {

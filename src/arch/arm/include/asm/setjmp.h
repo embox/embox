@@ -30,6 +30,15 @@
 
 typedef	int __jmp_buf[_JBLEN];
 
+#include <stddef.h>
+struct cpu_stack {
+	int ebp;
+	int esp;
+};
+
+extern void setjmp_stack_move(ptrdiff_t offset, __jmp_buf env);
+extern struct cpu_stack setjmp_stack_get(void *stack_base, __jmp_buf env);
+
 #endif
 
 #endif /*ARM_SETJMP_H_*/

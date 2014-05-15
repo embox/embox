@@ -56,16 +56,16 @@ static int setup_suite(void) {
 	test_path.mnt_desc = mount_table();
 	test_path.node = test;
 	path1.node = ch1;
-	assert(path1.mnt_desc = mount_table_add(&test_path, r1));
+	assert(path1.mnt_desc = mount_table_add(&test_path, r1, "", ""));
 
 	path2.node = ch2;
-	assert(path2.mnt_desc = mount_table_add(&path1, r2));
+	assert(path2.mnt_desc = mount_table_add(&path1, r2, "", ""));
 
 	path3.node = ch3;
-	assert(path3.mnt_desc = mount_table_add(&path2, r3));
+	assert(path3.mnt_desc = mount_table_add(&path2, r3, "", ""));
 
 	path4.node = ch4;
-	assert(path4.mnt_desc = mount_table_add(&path1, r4));
+	assert(path4.mnt_desc = mount_table_add(&path1, r4, "", ""));
 
 	return 0;
 }

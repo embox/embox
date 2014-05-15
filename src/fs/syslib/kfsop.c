@@ -76,7 +76,7 @@ int kmkdir(struct path *leaf_path, const char *pathname, mode_t mode) {
 	int res;
 
 	if (-ENOENT != (res = fs_perm_lookup(leaf_path, pathname, &lastpath, &node))) {
-		errno = -res;
+		errno = EEXIST;
 		return -1;
 	}
 
@@ -323,14 +323,14 @@ skip_dev_lookup:
 		root_path.node = vfs_create_root();
 	}
 
-	if(ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
+	if (ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
 		//todo free root
 		errno = -res;
 		return -1;
 
 	}
 
-	if(NULL == mount_table_add(&dir_node, root_path.node)) {
+	if (NULL == mount_table_add(&dir_node, root_path.node, dev, fs_type)) {
 		drv->fsop->umount(&dir_node);
 		//todo free root
 		errno = -res;

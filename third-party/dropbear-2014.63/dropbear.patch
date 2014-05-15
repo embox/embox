@@ -96,3 +96,18 @@ diff -aurN ../../../../../dropbear-2014.63/termcodes.c dropbear-2014.63/termcode
  		/* 94 */
 +#endif
  };
+
+--- old/cli-kex.c	2014-02-19 18:05:24.000000000 +0400
++++ dropbear-2014.63/cli-kex.c	2014-05-05 18:19:40.754997318 +0400
+@@ -92,7 +92,8 @@
+ void recv_msg_kexdh_reply() {
+ 
+ 	sign_key *hostkey = NULL;
+-	unsigned int type, keybloblen;
++	unsigned keybloblen;
++	enum signkey_type type;
+ 	unsigned char* keyblob = NULL;
+ 
+ 	TRACE(("enter recv_msg_kexdh_reply"))
+
+

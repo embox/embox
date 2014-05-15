@@ -32,7 +32,6 @@ module tish {
 	depends embox.kernel.task.syslib.waitpid
 	depends embox.lib.LibCStringDup
 
-	@NoRuntime depends third_party.lib.linenoise /* for completion */
 	@NoRuntime depends embox.compat.posix.util.sleep
 }
 

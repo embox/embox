@@ -26,4 +26,6 @@ module dropbear_new {
 	source "dev_pty_0"
 
 	depends embox.compat.posix.stubs
+	depends embox.compat.posix.pty
+	depends embox.kernel.task.syslib.kfork
 }

@@ -30,6 +30,6 @@ $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		make DESTDIR=$(PKG_INSTALL_DIR) install; \
 	)
-	cp $(PKG_INSTALL_DIR)/{usr/local/sbin/dropbear,dropbear.o}
-	cp $(PKG_INSTALL_DIR)/{usr/local/bin/dropbearkey,dropbearkey.o}
+	cp $(PKG_INSTALL_DIR)/usr/local/sbin/dropbear $(PKG_INSTALL_DIR)/dropbear.o
+	cp $(PKG_INSTALL_DIR)/usr/local/bin/dropbearkey $(PKG_INSTALL_DIR)/dropbearkey.o
 	touch $@

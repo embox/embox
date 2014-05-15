@@ -28,7 +28,7 @@ ARCH_FLAGS   := -arch i386
 ENDIAN_FLAGS := -little-endian
 else ifeq (microblaze,$(EMBOX_ARCH))
 ARCH_FLAGS   := -arch microblaze
-ENDIAN_FLAGS := -little-endian
+ENDIAN_FLAGS := -big-endian
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif

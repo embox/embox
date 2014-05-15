@@ -167,7 +167,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 	ret = new_sk->f_ops->init(new_sk);
 	if (ret != 0) {
 		sock_release(new_sk);
-		return err_ptr(ret);
+		return err_ptr(-ret);
 	}
 
 	assert(new_sk->p_ops != NULL);
@@ -175,7 +175,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 		ret = new_sk->p_ops->init(new_sk);
 		if (ret != 0) {
 			sock_close(new_sk);
-			return err_ptr(ret);
+			return err_ptr(-ret);
 		}
 	}
 

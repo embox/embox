@@ -86,6 +86,12 @@ module fork_test {
 	depends embox.kernel.task.syslib.kfork
 }
 
+module vfork_test {
+	source "vfork_test.c"
+
+	depends embox.kernel.task.syslib.kfork
+}
+
 module sigchld_test {
 	source "sigchld_test.c"
 
