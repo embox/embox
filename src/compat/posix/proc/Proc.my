@@ -35,6 +35,13 @@ static module vfork_stack_copy extends vfork {
 	depends embox.util.LibUtil
 }
 
+static module vfork_stop_parent extends vfork {
+	source "vfork_stop_parent.c"
+
+	depends embox.arch.vfork_entry
+	depends embox.util.LibUtil
+}
+
 static module waitpid {
 	source "waitpid.c"
 
