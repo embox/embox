@@ -13,3 +13,6 @@ module cxxabi {
 	depends embox.lib.cxx.DestructionPolicy
 }
 
+static module vfork extends embox.arch.vfork_entry {
+	source "vfork.S"
+}
