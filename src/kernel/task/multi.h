@@ -36,6 +36,10 @@ struct task {
 	char resources[];
 };
 
+
+#define TASK_STATUS_IN_VFORK    0x1
+
+
 __BEGIN_DECLS
 
 static inline int task_get_status(const struct task *tsk) {

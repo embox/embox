@@ -10,21 +10,47 @@
 #include <unistd.h>
 #include <setjmp.h>
 
-extern pid_t kfork(jmp_buf env);
+#include <kernel/task.h>
+#include <kernel/task/resource/task_vfork.h>
 
-#if 0
-pid_t fork(void) {
-	return -1;
+int task_is_vforking(struct task *task) {
+	return task->status & TASK_STATUS_IN_VFORK;
 }
-#endif
+
+void vfork_begin(struct task *task) {
+	task->status |= TASK_STATUS_IN_VFORK;
+}
+
+void vfork_child_done(struct task *task) {
+	struct task_vfork *task_vfork;
+	int res;
+
+	task_vfork = task_resource_vfork(task);
+	res = task_vfork->vforked_pid;
+
+	longjmp(task_vfork->vfrok_jmpbuf, res);
+}
+
+void vfork_finish(struct task *task) {
+	((struct task *)task)->status &= ~TASK_STATUS_IN_VFORK;
+}
 
 pid_t vfork(void) {
-	jmp_buf env;
+	struct task *task;
+	struct task_vfork *task_vfork;
+	int res;
 
-	switch(setjmp(env)) {
+	task = task_self();
+
+	vfork_begin(task);
+
+	task_vfork = task_resource_vfork(task);
+
+	switch(res = setjmp(task_vfork->vfrok_jmpbuf)) {
 	case 0:
-		return kfork(env);
-	default:
 		return 0;
+	default:
+		vfork_finish(task);
+		return res;
 	}
 }

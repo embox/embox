@@ -13,7 +13,15 @@
 #include <kernel/panic.h>
 #include <kernel/task.h>
 
+extern int task_is_vforking(struct task *task);
+
+extern void vfork_child_done(struct task *task);
+
 void _exit(int status) {
+
+	if (task_is_vforking(task_self())) {
+		vfork_child_done(task_self());
+	}
 
 	task_start_exit();
 
