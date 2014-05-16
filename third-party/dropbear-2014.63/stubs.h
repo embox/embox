@@ -33,18 +33,6 @@ static inline void openlog(const char *ident, int option, int facility) {
 	(void) facility;
 }
 
-static inline void syslog(int priority, const char *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-
-	fprintf(stderr, "dropbear(%d):", priority);
-	vfprintf(stderr, format, ap);
-	fprintf(stderr, "\n");
-
-	va_end(ap);
-}
-
 void closelog(void);
 
 #define TCP_NODELAY 0

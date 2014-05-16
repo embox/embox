@@ -17,6 +17,8 @@ $(CONFIGURE) :
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			CC=$(EMBOX_GCC) \
 			--disable-zlib \
+			--disable-syslog \
+			--disable-lastlog \
 	)
 	touch $@
 
