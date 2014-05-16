@@ -74,22 +74,11 @@ static inline pid_t setsid(void) {
 	return 0;
 }
 
-static inline struct spwd *getspnam(char *name) {
-	(void) name;
-	return NULL;
-}
-
 static inline int chown(const char *path, uid_t owner, gid_t group) {
 	(void) path;
 	(void) owner;
 	(void) group;
 	return SET_ERRNO(ENOSYS);
-}
-
-static inline char *crypt(const char *key, const char *salt) {
-	(void) salt;
-	(void) key;
-	return (char *) "x";
 }
 
 static inline int initgroups(const char *user, gid_t group) {
