@@ -50,6 +50,8 @@ extern struct spwd *fgetspent(FILE *file);
  */
 extern struct spwd *getspnam_f(const char *name);
 
+extern struct spwd *getspnam(char *name);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SHADOW_H_ */

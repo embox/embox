@@ -427,6 +427,11 @@ struct spwd *getspnam_f(const char *name) {
 	return spwd_find(SHADOW_FILE, name);
 }
 
+struct spwd *getspnam(char *name) {
+	/* FIXME */
+	return getspnam_f(name);
+}
+
 int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 	FILE *passwdf;
 	char *temp;
