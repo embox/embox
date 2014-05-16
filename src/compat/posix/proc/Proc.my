@@ -25,7 +25,7 @@ static module fork {
 	// FIXME
 }
 
-@DefaultImpl(vfork_stack_copy)
+@DefaultImpl(vfork_stop_parent)
 abstract module vfork { }
 
 static module vfork_stack_copy extends vfork {
