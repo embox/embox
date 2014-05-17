@@ -6,14 +6,18 @@ package embox.cmd
 		NAME
 			tbprof
 		SYNOPSIS
-			tbprof [cmd]
-			tbprof [flags]
+			tbprof [options] -c [command to execute]
+
+			-n[num]  - Execute comman num times
+
+			tbprof [-d|-e]
 
 			-e	- Enable 	cyg_profiling
 			-d	- Disable	cyg_profiling
 
-			Example:
-				tbprof cat index.html
+			Examples:
+				tbprof -n 3 -c trace_points -i 1
+				tbprof -c ls
 		AUTHORS
 			Denis Deryugin
 	''')

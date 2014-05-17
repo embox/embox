@@ -91,6 +91,7 @@ static int tbprof_main (int argc, char *argv[]) {
 				break;
 			case 'h':
 				printf("Example: tbprof [-n count] -c [cmd]\nUse man tbprof for more info.\n");
+				return 0;
 				break;
 		}
 	}
