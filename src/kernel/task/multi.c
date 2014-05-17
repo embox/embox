@@ -121,7 +121,101 @@ out_tablefree:
 
 out_threadfree:
 		thread_terminate(thd);
+	}
+out_unlock:
+	sched_unlock();
 
+	return res;
+}
+
+int task_start(struct task *task, void * (*run)(void *), void *arg) {
+	struct task_trampoline_arg *trampoline_arg;
+	struct thread *thd = NULL;
+	int res;
+
+	sched_lock();
+	{
+		thd = task->tsk_main;
+		trampoline_arg = thread_stack_alloc(thd, sizeof *trampoline_arg);
+		if (trampoline_arg == NULL) {
+			res = -ENOMEM;
+			goto out_threadfree;
+		}
+
+		trampoline_arg->run = run;
+		trampoline_arg->run_arg = arg;
+		thread_set_run_arg(thd, trampoline_arg);
+
+		thread_detach(thd);
+		thread_launch(thd);
+
+		res = 0;
+
+		goto out_unlock;
+out_threadfree:
+		thread_terminate(thd);
+	}
+out_unlock:
+	sched_unlock();
+
+	return res;
+}
+
+int task_prepare(const char *name) {
+	struct thread *thd = NULL;
+	struct task *self_task = NULL;
+	int res, tid;
+
+	sched_lock();
+	{
+		if (!task_table_has_space()) {
+			res = -ENOMEM;
+			goto out_unlock;
+		}
+
+		/*
+		 * Thread does not run until we go through sched_unlock()
+		 */
+		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
+				task_trampoline, NULL);
+		if (0 != err(thd)) {
+			res = err(thd);
+			goto out_unlock;
+		}
+
+		thread_set_priority(thd,
+						sched_priority_thread(task_self()->tsk_priority,
+								thread_priority_get(thread_self())));
+
+		self_task = thread_stack_alloc(thd,
+				sizeof *self_task + TASK_RESOURCE_SIZE);
+		if (self_task == NULL) {
+			res = -ENOMEM;
+			goto out_threadfree;
+		}
+
+		tid = task_table_add(self_task);
+		if (tid < 0) {
+			res = tid;
+			goto out_threadfree;
+		}
+
+		task_init(self_task, tid, task_self(), name, thd, task_self()->tsk_priority);
+
+		res = task_resource_inherit(self_task, task_self());
+		if (res != 0) {
+			goto out_tablefree;
+		}
+
+		res = self_task->tsk_id;
+
+		goto out_unlock;
+
+out_tablefree:
+		task_table_del(tid);
+
+out_threadfree:
+		thread_terminate(thd);
 	}
 out_unlock:
 	sched_unlock();
