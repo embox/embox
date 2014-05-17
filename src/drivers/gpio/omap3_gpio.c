@@ -50,22 +50,22 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	/* interrupt disable */
 	if (mode & GPIO_MODE_IN_INT_DIS) {
 		/* clear front and level detect register, if you need */
-		if (GPIO_MODE_INT_MODE_RISING) {
+		if (mode & GPIO_MODE_INT_MODE_RISING) {
 			l = gpio_reg_read(gpio->base, GPIO_RISINGDETECT);
 			gpio_reg_write(gpio->base, GPIO_RISINGDETECT, l & ~mask);
 		}
 
-		if (GPIO_MODE_INT_MODE_FALLING) {
+		if (mode & GPIO_MODE_INT_MODE_FALLING) {
 			l = gpio_reg_read(gpio->base, GPIO_FALLINGDETECT);
 			gpio_reg_write(gpio->base, GPIO_FALLINGDETECT, l & ~mask);
 		}
 
-		if (GPIO_MODE_INT_MODE_LEVEL0) {
+		if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
 			l = gpio_reg_read(gpio->base, GPIO_LEVELDETECT0);
 			gpio_reg_write(gpio->base, GPIO_LEVELDETECT0, l & ~mask);
 		}
 
-		if (GPIO_MODE_INT_MODE_LEVEL1) {
+		if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
 			l = gpio_reg_read(gpio->base, GPIO_LEVELDETECT1);
 			gpio_reg_write(gpio->base, GPIO_LEVELDETECT1, l & ~mask);
 		}
@@ -77,24 +77,24 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	}
 
 	/* set interrupt mode, if needed */
-	if (GPIO_MODE_INT_MODE_RISING) {
+	if (mode & GPIO_MODE_INT_MODE_RISING) {
 		gpio_reg_write(gpio->base, GPIO_RISINGDETECT, mask);
 	}
 
-	if (GPIO_MODE_INT_MODE_FALLING) {
+	if (mode & GPIO_MODE_INT_MODE_FALLING) {
 		gpio_reg_write(gpio->base, GPIO_FALLINGDETECT, mask);
 	}
 
-	if (GPIO_MODE_INT_MODE_LEVEL0) {
+	if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
 		gpio_reg_write(gpio->base, GPIO_LEVELDETECT0, mask);
 	}
 
-	if (GPIO_MODE_INT_MODE_LEVEL1) {
+	if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
 		gpio_reg_write(gpio->base, GPIO_LEVELDETECT1, mask);
 	}
 
 	/* enable interrupt */
-	if (GPIO_MODE_IN_INT_EN) {
+	if (mode & GPIO_MODE_IN_INT_EN) {
 		gpio_reg_write(gpio->base, GPIO_IRQENABLE1, mask);
 	}
 
@@ -142,7 +142,7 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	int changed;
 	struct gpio *gpio;
 
-	gpio = &omap_gpio[GPIO_NUM_BY_IRQ(irq_nr)];
+	gpio = &omap_gpio[GPIO_NUM_BY_IRQ(irq_nr) - 1];
 
 	if (NULL == gpio) {
 		return IRQ_NONE;
@@ -197,7 +197,7 @@ int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 static int gpio_init(void) {
-	uint32_t rev;
+	//uint32_t rev;
 	int i, ret;
 	struct gpio *gpio;
 	char str [255];
@@ -208,17 +208,17 @@ static int gpio_init(void) {
 
 		memset(gpio, 0, sizeof(struct gpio));
 
-		gpio->base = GPIO_BASE_ADDRESS(i);
+		gpio->base = GPIO_BASE_ADDRESS(i + 1);
 		gpio->gpio_nr = i;
-
+		/*
 		rev = gpio_reg_read(gpio->base, GPIO_REVISION);
-		printk("maj = %d, min = %d\n",
-				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev));
+		 printk("maj = %d, min = %d\n",
+				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
 
 		*str = 0;
 		sprintf(str,"OMAP_GPIO%d", i);
 
-		if (0 != (ret = irq_attach(GPIO_IRQ(i),
+		if (0 != (ret = irq_attach(GPIO_IRQ(i + 1),
 				irq_gpio_handler, 0, gpio, str))) {
 			return ret;
 		}

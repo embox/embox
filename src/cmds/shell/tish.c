@@ -20,7 +20,6 @@
 #include <limits.h>
 #include <pwd.h>
 
-#include <lib/linenoise_1.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -178,6 +177,8 @@ static int process_external(struct cmd_data *cdata, int on_fg) {
 }
 
 static int process(struct cmd_data *cdata) {
+	int on_fg = 1;
+
 	assert(cdata != NULL);
 
 	/* TODO remove stubs */
@@ -192,16 +193,16 @@ static int process(struct cmd_data *cdata) {
 		return -ENOENT;
 	}
 
+	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		on_fg = 0;
+		--cdata->argc;
+	}
+
 	if (is_builtin(cmd_name(cdata->cmd))) {
 		return process_builtin(cdata);
 	}
 
-	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
-		--cdata->argc;
-		return process_external(cdata, 0);
-	}
-
-	return process_external(cdata, 1);
+	return process_external(cdata, on_fg);
 }
 
 static int tish_exec(const char *cmdline) {
@@ -341,7 +342,7 @@ static void tish_run(void) {
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
-			linenoiseHistorySetMaxLen(len);
+			stifle_history(len);
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}

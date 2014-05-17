@@ -84,6 +84,7 @@ module mips_clk extends embox.arch.clock {
 
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
+	depends embox.arch.interrupt
 }
 
 module lapic_timer extends embox.arch.clock {

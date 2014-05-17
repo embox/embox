@@ -37,4 +37,6 @@ module passwd_db_dynamic extends passwd_db {
 	depends embox.fs.driver.tmpfs
 }
 
-
+static module crypt {
+	source "crypt.c"
+}

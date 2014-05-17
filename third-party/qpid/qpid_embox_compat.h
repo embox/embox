@@ -82,6 +82,13 @@ int lockf(int fd, int cmd, off_t len) {
 	return -1;
 }
 
+static inline
+pid_t fork() {
+	printf(">>> fork()\n");
+	errno = ENOSYS;
+	return -1;
+}
+
 #define MAP_SHARED    0x00
 //#define MAP_PRIVATE   0x01
 #define PROT_READ     0x10

@@ -10,6 +10,7 @@
 #define SRC_FS_PERM_H_
 
 struct node;
+struct path;
 
 /**
  * @brief permission mask of mode in least significant bits (in S_RWXO range)
@@ -45,8 +46,8 @@ extern int fs_perm_check(struct node *node, int fd_flags);
  *	-ENOENT on not all path resolved
  *	0 on success
  */
-extern int fs_perm_lookup(struct node *root, const char *path,
-		const char **pathlast, struct node **node);
+int fs_perm_lookup(struct path *root, const char *path, const char **pathlast,
+		struct path *nodelast);
 
 #endif /* SRC_FS_PERM_H_ */
 

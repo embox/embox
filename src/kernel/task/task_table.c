@@ -19,10 +19,12 @@ EMBOX_UNIT_INIT(task_table_module_init);
 UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
 
 int task_table_add(struct task *tsk) {
+	assert(tsk != NULL);
 	return util_idx_table_add(task_table, tsk);
 }
 
 struct task * task_table_get(int tid) {
+	assert(tid >= 0);
 	return util_idx_table_get(task_table, tid);
 }
 
@@ -36,6 +38,7 @@ int task_table_has_space(void) {
 }
 
 int task_table_get_first(int since) {
+	assert(since >= 0);
 	return util_idx_table_next_mark(task_table, since, 1);
 }
 

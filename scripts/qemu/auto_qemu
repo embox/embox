@@ -25,21 +25,21 @@ guessed_info() {
 }
 
 error_empty() {
-	if [ -z ${!1} ]; then
+	if [ -z "${!1}" ]; then
 		error $1 is not defined
 	fi
 }
 
 get_user_empty_guess() {
-	if [ -z ${!1} ]; then
-		eval "$1=$($2)"
-		guessed_info $1
-		error_empty $1
+	if [ -z "${!1}" ]; then
+		eval "$1=\"$($2)\""
+		guessed_info "$1"
+		error_empty "$1"
 	fi
 }
 
 get_user_undef_guess() {
-	if [ -z ${!1+defined} ]; then
+	if [ -z "${!1+defined}" ]; then
 		eval "$1=\"$($2)\""
 		guessed_info $1
 	fi
@@ -92,19 +92,27 @@ guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		./scripts/omap-uboot-uimage >/dev/null 2>/dev/null
-		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
+		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
+			echo "Making uImage..." >&2
+			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/omap-uboot-uimage >/dev/null
+			if [ 0 -ne $? ]; then
+				exit 1
+			fi
+			echo "Making nand image..." >&2
+			NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
+			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage $NAND_SIZE >/dev/null 2>/dev/null
+		fi
 		echo "-mtdblock beagle_nand.img"
 	fi
 }
-get_user_undef_guess AUTOQEMU_LOAD_ARG guess_load_arg
+get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
 
 guess_nographic() { echo "-nographic"; }
 get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 
 declare -A ARCH2QEMU
 ARCH2QEMU=(
-	[arm]="qemu-system-arm -M beagle"
+	[arm]="qemu-system-arm -M overo"
 	[microblaze]="qemu-system-microblaze -M petalogix-s3adsp1800"
 	[mips]="qemu-system-mips -M mipssim"
 	[ppc]="qemu-system-ppc -M virtex-ml507"
@@ -119,6 +127,7 @@ NIC2QEMU=(
 	[rtl8139]="rtl8139"
 	[virtio]="virtio"
 	[xemaclite]="xilinx-ethlite:xlnx.xps-ethernetlite"
+	[lan9118]="lan9118"
 )
 
 qemu_nics=$(echo $AUTOQEMU_NICS ${!NIC2QEMU[@]} | sed 's/\ \+/\n/g' | sort | uniq -d)

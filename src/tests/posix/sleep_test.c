@@ -115,8 +115,6 @@ TEST_CASE("sleep sort") {
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(pthread_join(t[i], NULL));
 	}
-	/* XXX wtf??? */
-	//for (i=0;i<10;++i);
 	test_assert_emitted("87654321");
 }
 

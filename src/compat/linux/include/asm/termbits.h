@@ -21,7 +21,7 @@
 
 /* c_iflag bits */
 #define IUCLC 0001000
-#define IXANY 0004000
+//#define IXANY 0004000
 #define IMAXBEL 0020000
 
 /* c_oflag bits */

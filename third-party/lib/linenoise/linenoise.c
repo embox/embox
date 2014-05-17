@@ -106,6 +106,17 @@
 #include <unistd.h>
 #include "lib/linenoise_1.h"
 
+#include <mem/sysmalloc.h>
+#include <string.h>
+static char * sysstrdup(const char *s) {
+	size_t slen = strlen(s) + 1;
+	char *r = sysmalloc(slen);
+	if (r)
+		memcpy(r, s, slen);
+	return r;
+}
+
+
 #define LINENOISE_DEFAULT_HISTORY_MAX_LEN 100
 #define LINENOISE_MAX_LINE 4096
 static char *unsupported_term[] = {"dumb","cons25",NULL};
@@ -115,7 +126,7 @@ static int mlmode = 0;  /* Multi line mode. Default is single line. */
 static int atexit_registered = 0; /* Register atexit just 1 time. */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = 0;
-char **history = NULL;
+static char **history = NULL;
 
 /* The linenoiseState structure represents the state during line editing.
  * We pass this state to functions implementing specific editing
@@ -514,8 +525,8 @@ void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
     if (history_len > 1) {
         /* Update the current history entry before to
          * overwrite it with the next one. */
-        free(history[history_len - 1 - l->history_index]);
-        history[history_len - 1 - l->history_index] = strdup(l->buf);
+        sysfree(history[history_len - 1 - l->history_index]);
+        history[history_len - 1 - l->history_index] = sysstrdup(l->buf);
         /* Show the new entry */
         l->history_index += (dir == LINENOISE_HISTORY_PREV) ? 1 : -1;
         if (l->history_index < 0) {
@@ -628,9 +639,10 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
         }
 
         switch(c) {
+        case 10:    /* '\n' enter */
         case 13:    /* '\r' enter */
             history_len--;
-            free(history[history_len]);
+            sysfree(history[history_len]);
             return (int)l.len;
         case 3:     /* ctrl-c */
             errno = EAGAIN;
@@ -645,7 +657,7 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
                 linenoiseEditDelete(&l);
             } else {
                 history_len--;
-                free(history[history_len]);
+                sysfree(history[history_len]);
                 return -1;
             }
             break;
@@ -792,8 +804,8 @@ static void freeHistory(void) {
         int j;
 
         for (j = 0; j < history_len; j++)
-            free(history[j]);
-        free(history);
+            sysfree(history[j]);
+        sysfree(history);
     }
 }
 
@@ -809,14 +821,14 @@ int linenoiseHistoryAdd(const char *line) {
 
     if (history_max_len == 0) return 0;
     if (history == NULL) {
-        history = malloc(sizeof(char*)*history_max_len);
+        history = sysmalloc(sizeof(char*)*history_max_len);
         if (history == NULL) return 0;
         memset(history,0,(sizeof(char*)*history_max_len));
     }
-    linecopy = strdup(line);
+    linecopy = sysstrdup(line);
     if (!linecopy) return 0;
     if (history_len == history_max_len) {
-        free(history[0]);
+        sysfree(history[0]);
         memmove(history,history+1,sizeof(char*)*(history_max_len-1));
         history_len--;
     }
@@ -836,19 +848,19 @@ int linenoiseHistorySetMaxLen(int len) {
     if (history) {
         int tocopy = history_len;
 
-        new = malloc(sizeof(char*)*len);
+        new = sysmalloc(sizeof(char*)*len);
         if (new == NULL) return 0;
 
         /* If we can't copy everything, free the elements we'll not use. */
         if (len < tocopy) {
             int j;
 
-            for (j = 0; j < tocopy-len; j++) free(history[j]);
+            for (j = 0; j < tocopy-len; j++) sysfree(history[j]);
             tocopy = len;
         }
         memset(new,0,sizeof(char*)*len);
         memcpy(new,history+(history_len-tocopy), sizeof(char*)*tocopy);
-        free(history);
+        sysfree(history);
         history = new;
     }
     history_max_len = len;

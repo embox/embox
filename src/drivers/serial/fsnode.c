@@ -14,6 +14,7 @@
 #include <fs/file_operation.h>
 #include <fs/idesc_serial.h>
 #include <fs/node.h>
+#include <fs/path.h>
 
 #include <embox/device.h> //XXX
 

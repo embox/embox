@@ -323,4 +323,9 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 #define rb_insert_color rb_insert_color_samba
 #define rb_erase rb_erase_samba
 
+static inline int fork(void) {
+	DPRINT();
+	return -1;
+}
+
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

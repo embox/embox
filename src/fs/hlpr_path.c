@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <assert.h>
 
 

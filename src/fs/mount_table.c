@@ -16,106 +16,93 @@
 #include <fs/vfs.h>
 #include <fs/mount.h>
 
+#include <mem/misc/pool.h>
 
-static DLIST_DEFINE(mount_filesystem_list);
+POOL_DEF(mount_desc_pool, struct mount_descriptor, 16);
 
-POOL_DEF(mount_desc_pool, struct mount_descriptor, 8);
+static struct mount_descriptor *mnt_root = NULL;
 
-int mount_table_check(struct node *dir_node) {
+struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point) {
 	struct mount_descriptor *desc;
-	char full_path[PATH_MAX];
-	char dir_path[PATH_MAX];
 
-	if(dir_node == NULL) {
-		return -EINVAL;
+	if (parent->mnt_point == mnt_point ) {
+		assert(parent->mnt_parent == parent);
+		return parent;
 	}
 
-	if(0 != vfs_get_path_by_node(dir_node, full_path)) {
-		return -EINVAL; /* wrong directory name*/
-	}
-
-	dlist_foreach_entry(desc, &mount_filesystem_list, mount_link) {
-		if(0 != vfs_get_path_by_node(desc->dir_node, dir_path)) {
-			continue;
-		}
-
-		if(0 == strcmp(dir_path, full_path)) {
-			return -EBUSY;
-		}
-	}
-	return ENOERR;
-}
-
-struct mount_descriptor *mount_table_find(struct node *dir_node) {
-	struct mount_descriptor *desc;
-	char full_path[PATH_MAX];
-	char dir_path[PATH_MAX];
-
-	if(dir_node == NULL) {
-		return NULL;
-	}
-
-	if(0 != vfs_get_path_by_node(dir_node, full_path)) {
-		return NULL; /* wrong directory name*/
-	}
-
-	dlist_foreach_entry(desc, &mount_filesystem_list, mount_link) {
-		if(0 != vfs_get_path_by_node(desc->dir_node, dir_path)) {
-			continue;
-		}
-
-		if(0 == strcmp(dir_path, full_path)) {
+	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
+		if (desc->mnt_point == mnt_point) {
 			return desc;
 		}
 	}
+
 	return NULL;
 }
 
-int mount_table_add(struct node *dir_node) {
-	int res;
+struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
+		struct node *root, const char *dev, const char *fs_type) {
 	struct mount_descriptor *mdesc;
 
-	if(dir_node == NULL) {
-		return -EINVAL;
+	assert(mnt_point_path->mnt_desc != NULL ||
+			(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
+
+	if(mnt_point_path->node == NULL) {
+		return NULL;
 	}
 
-	if(ENOERR != (res = mount_table_check(dir_node))) {
-		return res;
+	if(mnt_root != NULL && mnt_point_path->node ==
+			mnt_point_path->mnt_desc->mnt_root) {
+		return NULL;
 	}
 
 	if(NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
-		return -ENOMEM;
+		return NULL;
 	}
 
-	mdesc->dir_node = dir_node;
+	mdesc->mnt_point = mnt_point_path->node;
+	mdesc->mnt_point->mounted++;
+	mdesc->mnt_root = root;
 
-	dlist_add_next(dlist_head_init(&mdesc->mount_link), &mount_filesystem_list);
+	dlist_init(&mdesc->mnt_mounts);
+	dlist_head_init(&mdesc->mnt_child);
 
-	return ENOERR;
+	if (mnt_point_path->mnt_desc == NULL) {
+		mdesc->mnt_parent = mdesc;
+		mnt_root = mdesc;
+	} else {
+		mdesc->mnt_parent = mnt_point_path->mnt_desc;
+		dlist_add_next(&mdesc->mnt_child, &mnt_point_path->mnt_desc->mnt_mounts);
+	}
+
+	strncpy(mdesc->mnt_dev, dev, MOUNT_DESC_STRINFO_LEN);
+	mdesc->mnt_dev[MOUNT_DESC_STRINFO_LEN - 1] = '\0';
+	strncpy(mdesc->mnt_fstype, fs_type, MOUNT_DESC_STRINFO_LEN);
+	mdesc->mnt_fstype[MOUNT_DESC_STRINFO_LEN - 1] = '\0';
+
+	return mdesc;
 }
 
-int mount_table_del(struct node *dir_node) {
-	struct mount_descriptor *mdesc;
+int mount_table_del(struct mount_descriptor *mdesc) {
 
-	if(dir_node == NULL) {
+	if(mdesc == NULL) {
 		return -EINVAL;
 	}
 
-	if(dlist_empty(&mount_filesystem_list)) {
-		return -EINVAL;
+	if (mnt_root == mdesc) {
+		mnt_root = NULL;
 	}
 
-	if(NULL == (mdesc = mount_table_find(dir_node))) {
-		return -EINVAL;
-	}
+	mdesc->mnt_point->mounted--;
+	vfs_del_leaf(mdesc->mnt_root);
 
-	dlist_del(&mdesc->mount_link);
+	dlist_del(&mdesc->mnt_mounts);
+	dlist_del(&mdesc->mnt_child);
 
 	pool_free(&mount_desc_pool, mdesc);
 
 	return ENOERR;
 }
 
-struct dlist_head *mount_table(void) {
-	return &mount_filesystem_list;
+struct mount_descriptor *mount_table(void) {
+	return mnt_root;
 }

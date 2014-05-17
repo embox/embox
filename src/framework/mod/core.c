@@ -75,8 +75,10 @@ static void mod_init_app(const struct mod *mod) {
 int mod_activate_app(const struct mod *mod) {
 	const struct mod_app *app;
 
+#if 0
 	if (!mod_is_running(mod))
 		return -ENOENT;
+#endif
 
 	app = mod->app;
 	if (app) {

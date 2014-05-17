@@ -16,8 +16,15 @@ EMBOX_TEST_SUITE("IRQ tests");
 #define TEST_OUTER_IRQ_NR OPTION_GET(NUMBER,outer_irq_nr)
 #define TEST_INNER_IRQ_NR OPTION_GET(NUMBER,inner_irq_nr)
 
+#if OPTION_GET(BOOLEAN,forced_irq_clear)
+#define test_irq_clear_irq(x) irqctrl_clear(x)
+#else
+#define test_irq_clear_irq(x)
+#endif
+
 static irq_return_t test_isr(unsigned int irq_nr, void *dev_id) {
 	test_emit((int) dev_id);
+	test_irq_clear_irq(irq_nr);
 	return IRQ_HANDLED;
 }
 
@@ -50,6 +57,7 @@ static int fib(int k) {
 
 static irq_return_t test_fib_isr(unsigned int irq_nr, void *dev_id) {
 	*(int *) dev_id = fib(*(int *) dev_id);
+	test_irq_clear_irq(irq_nr);
 	return IRQ_HANDLED;
 }
 
@@ -73,6 +81,7 @@ static irq_return_t test_nesting_isr(unsigned int irq_nr, void *dev_id) {
 		test_emit(')');
 	}
 	test_emit('x');
+	test_irq_clear_irq(irq_nr);
 	return IRQ_HANDLED;
 }
 

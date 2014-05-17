@@ -33,7 +33,7 @@ static int kernel_task_init(void) {
 	/* task_get_main returns a value which already initialized
 	 * by thread.core module in the file idle_thread.c by the
 	 * idle_thread_create() function */
-	task_init(ktask, ktask_id, "kernel", task_get_main(ktask),
+	task_init(ktask, ktask_id, NULL, "kernel", task_get_main(ktask),
 			TASK_PRIORITY_DEFAULT);
 
 	return 0;

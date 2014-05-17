@@ -63,6 +63,20 @@ struct utmp {
 	char __unused[20];            /* Reserved for future use */
 };
 
+struct lastlog {
+        int32_t ll_time;                /* When user logged in */
+        char    ll_line[UT_LINESIZE];   /* Terminal line name */
+        char    ll_host[UT_HOSTSIZE];   /* Host user came from */
+};
+
+#define ut_name ut_user
+#ifndef _NO_UT_TIME
+#define ut_time ut_tv.tv_sec
+#endif
+#define ut_xtime ut_tv.tv_sec
+#define ut_addr ut_addr_v6[0]
+
+
 extern struct utmp *getutent(void);
 extern struct utmp *getutid(struct utmp *ut);
 extern struct utmp *getutline(struct utmp *ut);

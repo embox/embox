@@ -7,7 +7,7 @@ static module zlib_download { }
 static module libs {
 	depends embox.lib.LibC
 
-	depends embox.arch.x86.LibM // FIXME:
+	/*depends embox.arch.x86.LibM // FIXME:*/
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libz.a"

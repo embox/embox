@@ -22,7 +22,7 @@
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -1017,11 +1017,7 @@ static int fat_create_file(struct node * parent_node, struct node *node) {
 	volinfo = &fsi->vi;
 	fi->volinfo = volinfo;
 
-	/* Get a local copy of the path. */
-	vfs_get_path_by_node(node, tmppath);
-
-	/* set relative path in this file system */
-	path_cut_mount_dir(tmppath, (char *) fsi->mntto);
+	vfs_get_relative_path(node, tmppath);
 
 	fat_get_filename(tmppath, (char *) filename);
 
@@ -1777,7 +1773,6 @@ static int fat_mount_files(struct nas *dir_nas) {
 	uint8_t pactive, ptype;
 	dir_info_t di;
 	dir_ent_t de;
-	char full_path[PATH_MAX];
 	uint8_t name[MSDOS_NAME + 2];
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -1809,11 +1804,6 @@ static int fat_mount_files(struct nas *dir_nas) {
 				(0 == strncmp((char *) de.name, ".. ", 3))) {
 				continue;
 			}
-			/* Create node and file descriptor*/
-			memset(full_path, 0, sizeof(full_path));
-			vfs_get_path_by_node(dir_nas->node, full_path);
-			strcat(full_path, "/");
-			strcat(full_path, (const char *) name);
 
 			mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
@@ -1821,7 +1811,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 			if (!fi) {
 				return -ENOMEM;
 			}
-			node = vfs_create_child(dir_nas->node, (const char *) name, mode);
+			node = vfs_subtree_create_child(dir_nas->node, (const char *) name, mode);
 			if (!node) {
 				pool_free(&fat_file_pool, fi);
 				return -ENOMEM;
@@ -1850,7 +1840,6 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	char full_path[PATH_MAX];
 	struct nas *nas;
 	struct fat_file_info  *fi;
-	struct fat_fs_info *fsi;
 	node_t *node;
 	mode_t mode;
 	int rc = 0;
@@ -1862,10 +1851,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	memset(rcv_buf, 0, sizeof(PAGE_SIZE()));
 	di.p_scratch = rcv_buf;
 
-	/* set relative path in this file system */
-	fsi = parent_nas->fs->fsi;
-	vfs_get_path_by_node(parent_nas->node, full_path);
-	path_cut_mount_dir(full_path, (char *) fsi->mntto);
+	vfs_get_relative_path(parent_nas->node, full_path);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
 		rc = -ENODEV;
@@ -1890,7 +1876,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 
 			mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
-			node = vfs_create_child(parent_nas->node, name, mode);
+			node = vfs_subtree_create_child(parent_nas->node, name, mode);
 			if (!node) {
 				pool_free(&fat_file_pool, fi);
 				rc = -ENOMEM;
@@ -1937,9 +1923,9 @@ static void fat_free_fs(struct nas *nas) {
 static int fat_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				fat_umount_entry(child->nas);
 			}
 
@@ -1974,22 +1960,18 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	struct nas *nas;
 	uint8_t path [PATH_MAX];
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
 
 	node = nod;
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node (nod, (char *) path);
-	/* set relative path in this file system */
-	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
+	vfs_get_relative_path(nod, (char *) path);
 
-	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
+	if (DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
-
 		return 0;
 	}
+
 	return -1;
 }
 
@@ -2239,9 +2221,6 @@ static int fatfs_mount(void *dev, void *dir) {
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
 	}
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
-	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
 		rc =  -ENOMEM;
@@ -2254,9 +2233,9 @@ static int fatfs_mount(void *dev, void *dir) {
 		rc =  -ENOMEM;
 		goto error;
 	}
-	memset(fsi, 0, sizeof(struct fat_fs_info));
-	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
+//	memset(fsi, 0, sizeof(struct fat_fs_info));
+//	dir_nas->fs->fsi = fsi;
+//	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
@@ -2304,13 +2283,13 @@ static int fatfs_delete(struct node *node) {
 	struct nas *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	char path [PATH_MAX];
+	char path[PATH_MAX];
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node(node, path);
+	vfs_get_relative_path(node, path);
 
 	/*
 	 * remove the root name to give a name to fat file system name

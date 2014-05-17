@@ -50,7 +50,7 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "path.c"
+	source "vfs.c", "hlpr_path.c"
 
 	depends file_desc, node
 	depends embox.fs.driver.repo

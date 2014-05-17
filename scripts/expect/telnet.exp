@@ -1,15 +1,13 @@
-#!/usr/bin/runtest
+#!/usr/bin/expect
 
-source [file join [file dirname [info script]] exec_through_telnet.exp]
+source [file join [file dirname [info script]] framework/test_core.exp]
 
-proc telnet_test {} {
+namespace import autotest::*
+
+TEST_CASE {execute "help" command through telnet} {
 	set TELNET_PROMPT ":/#"
-	send "help\r\n"
-	expect {
-	        timeout  { puts "telnet.exp: help command timeout\n"; return -1 }
-	        $TELNET_PROMPT
-	}
+
+	test_assert_regexp_equal "help\r\n"    $TELNET_PROMPT
+
 	return 0
 }
-
-exec_cmd "$embox_ip" telnet_test

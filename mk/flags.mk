@@ -97,7 +97,7 @@ __srcgen_includes := $(call __srcgen_includes_fn,)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
 cppflags_fn = \
-	-U__linux__ \
+	-U__linux__ -Ulinux \
 	-D__EMBOX__ \
 	-D__unix \
 	-D"__impl_x(path)=<../path>"\
@@ -136,7 +136,6 @@ override CXXFLAGS = $(COMMON_CCFLAGS)
 #override CXXFLAGS += -fno-exceptions
 #override CXXFLAGS += -fno-threadsafe-statics
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
-override CXXFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/gcc/core/include
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)

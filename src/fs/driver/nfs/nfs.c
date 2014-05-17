@@ -17,7 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
@@ -239,8 +239,11 @@ static int nfsfs_init(void * par) {
 
 static int nfsfs_format(void *path) {
 	node_t *node;
+	node_t *root;
 
-	if (NULL == (node = vfs_lookup(NULL, path))) {
+	root = vfs_get_root();
+
+	if (NULL == (node = vfs_subtree_lookup(root, path))) {
 		return -ENODEV;
 	}
 	/* TODO format command support */
@@ -401,8 +404,8 @@ static int nfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				nfs_umount_entry(child->nas);
 			}
 
@@ -439,7 +442,7 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 
 	name = (const char *) predesc->file_name.name.data;
 
-	node = vfs_lookup_child(parent_nas->node, name);
+	node = vfs_subtree_lookup_child(parent_nas->node, name);
 	if (node) {
 		nas = node->nas;
 		fi = nas->fi->privdata;
@@ -472,7 +475,7 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 		mode = fi->attr.mode;
 		// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
 
-		node = vfs_create_child(parent_nas->node, name, mode);
+		node = vfs_subtree_create_child(parent_nas->node, name, mode);
 		if (!node) {
 			pool_free(&nfs_file_pool, fi);
 			return NULL; /* device not found */
@@ -637,7 +640,7 @@ static int nfsfs_delete(struct node *node) {
 	nas = node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 
-	if(NULL == (dir_node = vfs_get_parent(node))) {
+	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
 
@@ -843,7 +846,7 @@ static int nfs_lookup(struct nas *nas) {
 	lookup_reply_t reply;
 
 	fi = nas->fi->privdata;
-	if(NULL == (dir_node = vfs_get_parent(nas->node))) {
+	if(NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
 		return -1;
 	}
 	dir_nas = dir_node->nas;

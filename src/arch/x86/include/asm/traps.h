@@ -67,6 +67,10 @@ typedef struct pt_regs {
 	uint32_t ss;
 } pt_regs_t;
 
+static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
+	ptregs->eax = retcode;
+}
+
 extern void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr);
 extern void idt_init(void);
 extern void gdt_init(void);

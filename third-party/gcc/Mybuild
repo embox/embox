@@ -1,10 +1,20 @@
 package third_party.gcc
 
-@Build(script="$(EXTERNAL_MAKE)")
-static module core extends embox.lib.LibGcc {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/core/install/include")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libgcc.a", "libsupc++.a"
 
+	@NoRuntime depends gcc_stubs
 	@NoRuntime depends embox.lib.cxx.libsupcxx
-	// Causes cyclic dependency: depends embox.lib.LibC
+}
+
+module gcc_stubs {
+	@IncludePathBefore("$(THIRDPARTY_DIR)/gcc/include")
+	source "stubs.c"
+
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.lib.Printk
 }

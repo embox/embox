@@ -164,6 +164,8 @@ static void parse_result(struct packet_in *rx_pack,
 	default:
 		printf("ping: ignore icmp_type=%d icmp_code=%d\n",
 				rx_pack->icmp.hdr.type, rx_pack->icmp.hdr.code);
+	case ICMP_ECHO_REQUEST:
+		break;
 	}
 }
 

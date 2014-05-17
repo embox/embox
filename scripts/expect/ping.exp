@@ -1,17 +1,13 @@
-#!/usr/bin/runtest
+#!/usr/bin/expect
 
-source [file join [file dirname [info script]] exec_through_telnet.exp]
+source [file join [file dirname [info script]] framework/test_core.exp]
 
-proc ping_test {} {
-	global host_ip
+namespace import autotest::*
 
-	send "ping -c 1 $host_ip\r\n"
-	expect "ping"
-	expect {
-	        timeout  { puts "ping.exp: timeout\n"; return -1 }
-	        "+0 errors" { }
-	}
+TEST_CASE {ping can send 1 packet without errors} {
+	variable host_ip
+
+	test_assert_regexp_equal "ping -c 1 $host_ip\r\n" "+0 errors"
+
 	return 0
 }
-
-exec_cmd "$embox_ip" ping_test

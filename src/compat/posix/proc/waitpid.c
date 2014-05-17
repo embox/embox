@@ -6,8 +6,14 @@
  * @date 13.09.2011
  * @author Anton Bondarev
  */
+
+#include <kernel/task.h>
 #include <sys/wait.h>
 
 pid_t waitpid(pid_t pid, int *status, int options) {
-	return 0;
+	return task_waitpid_posix(pid, status, options);
+}
+
+pid_t wait(int *status) {
+	return waitpid(-1, status, 0);
 }

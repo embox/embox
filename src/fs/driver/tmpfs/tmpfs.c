@@ -58,7 +58,8 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 
 static int tmpfs_init(void * par) {
-	struct node *dev_node, *dir_node;
+	struct path dir_path, dev_path, root;
+	struct node *dev_node;
 	int res;
 	struct ramdisk *ramdisk;
 
@@ -67,9 +68,9 @@ static int tmpfs_init(void * par) {
 	}
 
 	/*TODO */
+	vfs_get_root_path(&root);
 
-	dir_node = vfs_lookup(NULL, TMPFS_DIR);
-	if (!dir_node) {
+	if (0 != vfs_lookup(&root, TMPFS_DIR, &dir_path)) {
 		return -ENOENT;
 	}
 
@@ -89,7 +90,9 @@ static int tmpfs_init(void * par) {
 	}
 
 	/* mount filesystem */
-	return tmpfs_mount(dev_node, dir_node);
+	dev_path.node = dev_node;
+	dev_path.mnt_desc = root.mnt_desc;
+	return tmpfs_mount(dev_path.node, dir_path.node);
 }
 
 static int tmp_ramdisk_fs_init(void) {

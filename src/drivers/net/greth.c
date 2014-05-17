@@ -295,15 +295,17 @@ static int greth_init(void) {
 	struct net_device *nic;
 	int res;
 	unsigned int irq;
-	char hw_addr[] = {0x1,0x2,0x3,0x4,0x5,0x6};
+	char hw_addr[] = {0x0,0x0,0x7a,0xcc,0x0,0x13};
 
+	res = dev_regs_init(&irq);
+	if (res != 0) {
+		return res;
+	}
 
 	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-
-	dev_regs_init(&irq);
 
 	nic->drv_ops = &greth_ops;
 	nic->irq = irq;
