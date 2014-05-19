@@ -4,7 +4,7 @@ package embox.compat.posix.proc
 module All {
 
 	depends exec,
-		vfork,
+		//vfork,
 		waitpid,
 		//signal,
 		exit,
