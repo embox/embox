@@ -32,11 +32,6 @@ static inline int initgroups(const char *user, gid_t group) {
 	return 0;
 }
 
-#include <shadow.h>
-static inline struct spwd *getspnam(const char *name) {
-	return getspnam_f(name);
-}
-
 #include <asm/termbits.h>
 #include <sys/select.h>
 #include <linux/types.h>
