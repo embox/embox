@@ -58,7 +58,7 @@ guess_mem() {
 }
 get_user_empty_guess AUTOQEMU_MEM guess_mem
 
-guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z_-]\)/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
+guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z]\+\)\((.*)\|\)$/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
 get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guess_kvm() {
@@ -126,7 +126,7 @@ NIC2QEMU=(
 	[ne2k_pci]="ne2k_pci"
 	[rtl8139]="rtl8139"
 	[virtio]="virtio"
-	[xemaclite]="xilinx-ethlite:xlnx.xps-ethernetlite"
+	[xemaclite]="xlnx.xps-ethernetlite"
 	[lan9118]="lan9118"
 )
 
@@ -140,7 +140,7 @@ if [ -n "$qemu_nics" ]; then
 	sudo=sudo
 	nic_n=0
 	for n in $qemu_nics; do
-		nic_lines="$nic_lines -net nic,model=$n,macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
+		nic_lines="$nic_lines -net nic,model=${NIC2QEMU[$n]},macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
 			-net tap,ifname=tap$nic_n,script=$qemu_start_script,downscript=$qemu_stop_script"
 		nic_n=$(($nic_n + 1))
 	done
