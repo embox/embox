@@ -50,13 +50,22 @@ static int bdev_close(struct file_desc *desc) {
 }
 
 static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
-	return block_dev_read_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+	int n_read = block_dev_read_buffered((block_dev_t *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
+	if (n_read > 0) {
+		desc->cursor += n_read;
+	}
+	return n_read;
 }
 
 static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	return block_dev_write_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+	int n_write = block_dev_write_buffered((block_dev_t *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
+	if (n_write > 0) {
+		desc->cursor += n_write;
+	}
+
+	return n_write;
 }
 
 static int bdev_ioctl(struct file_desc *desc, int request, ...) {
