@@ -1,0 +1,23 @@
+
+package embox.cmd.fs
+
+@Cmd(name = "mkramdisk",
+	help = "make ramdisk",
+	man = '''
+		NAME
+			mkramdisk - create a ramdisk
+		SYNOPSIS
+			mkramdisk [ -s SIZE ] [ RAMDISK_PATH ]
+		DESCRIPTION
+			mkramdisk is used to create a ramdisk. Size and name are optional
+		AUTHORS
+			Anton Kozlov
+	''')
+module mkramdisk {
+	source "mkramdisk.c"
+
+	depends embox.driver.ramdisk
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
+}
+
