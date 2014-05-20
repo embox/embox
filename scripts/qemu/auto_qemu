@@ -122,9 +122,9 @@ ARCH2QEMU=(
 )
 
 QEMU=$AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]}
-QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\.//g')
+QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\./ /g' | xargs printf "%02d%02d%02d")
 
-if [ $QEMU_VER -gt 120 ]; then
+if [ $QEMU_VER -gt 010200 ]; then
 	MB_XEMACLINE="xlnx.xps-ethernetlite"
 else
 	MB_XEMACLINE="xilinx-ethlite"
