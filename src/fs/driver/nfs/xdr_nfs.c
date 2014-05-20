@@ -303,7 +303,7 @@ int xdr_nfs_write_file(struct xdr *xs, char *point) {
 
 			if (xdr_nfs_name_fh(xs, req->fh) && unaligned_xdr_u_hyper(xs, &req->offset)
 				&& xdr_u_int(xs, &req->count) && xdr_u_int(xs, &req->stable)
-				&&  xdr_bytes(xs, (char **)&data, &req->datalen, DIRCOUNT)) {
+				&&  xdr_bytes(xs, (char **)&data, &req->datalen, XDR_LAST_UINT32)) {
 				return XDR_SUCCESS;
 			}
 			break;
