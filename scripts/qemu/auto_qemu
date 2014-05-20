@@ -120,7 +120,7 @@ ARCH2QEMU=(
 	[x86]="qemu-system-i386"
 )
 
-QEMU=$AUTOQEMU_PREFIX/${ARCH2QEMU[$AUTOQEMU_ARCH]}
+QEMU=$AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]}
 QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\.//g')
 
 if [ $QEMU_VER -gt 120 ]; then
