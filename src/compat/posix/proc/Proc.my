@@ -14,10 +14,17 @@ module All {
 		pid
 }
 
-static module exec {
+@DefaultImpl(exec_stop_parent)
+abstract module exec { }
+
+static module exec_stop_parent extends exec {
 	source "exec.c"
 
 	depends embox.util.LibUtil
+}
+
+static module exec_stack_copy extends exec {
+	source "exec_stack_copy.c"
 }
 
 static module fork {

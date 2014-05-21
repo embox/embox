@@ -12,10 +12,12 @@
 
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
+#include <hal/vfork.h>
 
 
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
+
 int task_is_vforking(struct task *task) {
 	return task->status & TASK_STATUS_IN_VFORK;
 }
@@ -35,7 +37,8 @@ void vfork_child_done(struct task *task, void * (*run)(void *), void *arg) {
 	child = task_table_get(tid);
 	task_start(child, run, arg);
 
-	longjmp(task_vfork->vfrok_jmpbuf, tid);
+	ptregs_retcode(&task_vfork->ptregs, tid);
+	vfork_leave(&task_vfork->ptregs);
 }
 
 void vfork_finish(struct task *task) {
@@ -43,23 +46,19 @@ void vfork_finish(struct task *task) {
 	((struct task *)task)->status &= ~TASK_STATUS_IN_VFORK;
 }
 
-pid_t vfork(void) {
+pid_t vfork_body(struct pt_regs *ptregs) {
 	struct task *task;
 	struct task_vfork *task_vfork;
-	int res;
 
 	task = task_self();
 
 	vfork_begin(task);
 
 	task_vfork = task_resource_vfork(task);
+	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
-	switch(res = setjmp(task_vfork->vfrok_jmpbuf)) {
-	case 0:
-		task_vfork->vforked_pid = task_prepare(NULL);
-		return 0;
-	default:
-		vfork_finish(task);
-		return res;
-	}
+	task_vfork->vforked_pid = task_prepare(NULL);
+	ptregs_retcode(ptregs, 0);
+	vfork_leave(ptregs);
+	return 0;
 }
