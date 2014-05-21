@@ -97,7 +97,7 @@ int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
-	if (0 != create_new_node(&node, lastpath, S_IFDIR | mode)) {
+	if (0 != (res = create_new_node(&node, lastpath, S_IFDIR | mode))) {
 		errno = -res;
 		return -1;
 	}
