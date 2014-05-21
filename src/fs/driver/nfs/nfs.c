@@ -170,6 +170,10 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	fi->offset += reply.count;
 	desc->cursor = fi->offset;
+	if (nas->fi->ni.size < desc->cursor) {
+		nas->fi->ni.size = desc->cursor;
+	}
+
 	return reply.count;
 }
 
