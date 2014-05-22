@@ -159,11 +159,14 @@ for f in $FS_TEST_NETWORK; do
 			check_post_exit "fs content differ from expected"
 			;;
 		cifs)
-			$CONT_FS_MANAGE $f $FS_TEST_CIFS_PATH build_dir "$IMG_RO_CONTENT"
+			$CONT_FS_MANAGE $f $FS_TEST_CIFS_PATH build_dir "$IMG_RW_CONTENT"
 
 			eval $FS_TEST_CIFS_PREPARE
 
-			run_qemu_fs $f $FS_TEST_CIFS_SHARE "ro" # must be rw
+			run_qemu_fs $f $FS_TEST_CIFS_SHARE "rw"
+
+			$CONT_FS_MANAGE $f $FS_TEST_CIFS_ROOT check_dir $IMG_RW_GOLD
+			check_post_exit "fs content differ from expected"
 			;;
 	esac
 done
