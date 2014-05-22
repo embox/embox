@@ -247,7 +247,7 @@ int xdr_nfs_read_file(struct xdr *xs, char *point) {
 				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
 				&& xdr_u_int(xs, &reply->count)
 				&& xdr_u_int(xs, &reply->eof)
-				&& xdr_bytes(xs, (char **)&data, &reply->datalen, DIRCOUNT)) {
+				&& xdr_bytes(xs, (char **)&data, &reply->datalen, XDR_LAST_UINT32)) {
 				return XDR_SUCCESS;
 			}
 			break;

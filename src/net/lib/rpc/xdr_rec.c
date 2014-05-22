@@ -211,13 +211,13 @@ static int prepare_data(struct xdr *xs, uint32_t necessary) {
 	}
 
 	/* Prepare memory for in-coming bytes */
-	if (xs->extra.rec.in_boundry - xs->extra.rec.in_curr < len) {
+	assert(xs->extra.rec.in_curr + xs->extra.rec.in_prep <= xs->extra.rec.in_boundry);
+	if (xs->extra.rec.in_boundry - xs->extra.rec.in_curr - xs->extra.rec.in_prep < len) {
 		memmove(xs->extra.rec.in_base, xs->extra.rec.in_curr, xs->extra.rec.in_prep);
 		xs->extra.rec.in_curr = xs->extra.rec.in_base;
 	}
 
 	/* How much bytes we will try receive ? */
-	assert(xs->extra.rec.in_curr + xs->extra.rec.in_prep <= xs->extra.rec.in_boundry);
 	bytes = min(len, xs->extra.rec.in_boundry - xs->extra.rec.in_curr
 			- xs->extra.rec.in_prep);
 
