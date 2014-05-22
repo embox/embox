@@ -121,10 +121,7 @@ static inline int vfs_get_path_by_node(struct path *node, char *path) {
 	return vfs_get_path_till_root(node, &root, path, PATH_MAX);
 }
 
-extern int vfs_get_relative_path(struct node *node, char *path);
-
-
-
+extern int vfs_get_relative_path(struct node *node, char *path, size_t path_len);
 
 extern struct node *vfs_subtree_create_child(struct node *parent, const char *name,
 		mode_t mode);
