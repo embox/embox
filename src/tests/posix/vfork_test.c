@@ -35,8 +35,7 @@ TEST_CASE("after called vfork() child call exit()") {
 	test_assert_equal(getpid(), parent_pid);
 }
 
-#if 0
-/* isn't works with kfork */
+
 TEST_CASE("parent should see stack modifications made from child") {
 	pid_t pid;
 	int res;
@@ -57,7 +56,6 @@ TEST_CASE("parent should see stack modifications made from child") {
 	wait(&res);
 	test_assert_equal(data, 2);
 }
-#endif
 
 TEST_CASE("after called vfork() child trashes own stack and calls exit") {
 	pid_t pid;
@@ -84,6 +82,9 @@ TEST_CASE("after called vfork() child call execv()") {
 	test_assert(pid != -1);
 
 	if (pid == 0) {
+		close(0);
+		close(1);
+		close(2);
 		/* When vfork() returns 0, we are in the child process. */
 		if (execv("help", NULL) == -1) {
 			test_assert(0);

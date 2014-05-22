@@ -23,16 +23,19 @@ static void *task_stub_exit(void *arg) {
 }
 
 void _exit(int status) {
+	struct task *task;
 
-	if (task_is_vforking(task_self())) {
-		vfork_child_done(task_self(), task_stub_exit, NULL);
+	task = task_self();
+
+	if (task_is_vforking(task)) {
+		vfork_child_done(task, task_stub_exit, NULL);
 	}
 
 	task_start_exit();
 
-	task_do_exit(task_self(), TASKST_EXITED_MASK | (status & TASKST_EXITST_MASK));
+	task_do_exit(task, TASKST_EXITED_MASK | (status & TASKST_EXITST_MASK));
 
-	kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
+	kill(task_get_id(task_get_parent(task)), SIGCHLD);
 
 	task_finish_exit();
 
