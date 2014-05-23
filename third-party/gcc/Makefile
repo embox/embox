@@ -3,6 +3,7 @@ PKG_NAME := gcc
 PKG_VER  := 4.8.1
 
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 74cc12b7afe051ab7d0e00269e49fc9b
 
 PKG_PATCHES := pkg_patch.txt
 

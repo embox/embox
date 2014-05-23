@@ -3,6 +3,7 @@ PKG_NAME := dash
 PKG_VER  := 0.5.7
 
 PKG_SOURCES := http://gondor.apana.org.au/~herbert/dash/files/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := f6cedb10ae7258adb5ab17a10ae80d51
 
 PKG_PATCHES := dash.patch
 

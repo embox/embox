@@ -31,6 +31,18 @@ $(DOWNLOAD): | $(BUILD_DIR)
 			cd $(DOWNLOAD_DIR); \
 			git clone $g; \
 		fi)
+	$(foreach i,$(shell seq 1 $(words $(PKG_SOURCES))), \
+		$(if $(word $i,$(PKG_MD5)), \
+			$(if $(filter -,$(word $i,$(PKG_MD5))), \
+				$(warning ignore MD5 of $(notdir $(word $i,$(PKG_SOURCES)))), \
+				$(if $(shell echo "$(word $i,$(PKG_MD5)) $(DOWNLOAD_DIR)/$(notdir $(word $i,$(PKG_SOURCES)))" | md5sum -c --strict --quiet), \
+					$(error incorrect MD5 of $(notdir $(word $i,$(PKG_SOURCES)))), \
+					$(warning correct MD5 of $(notdir $(word $i,$(PKG_SOURCES)))) \
+					) \
+				), \
+			$(error missing MD5 for $(notdir $(word $i,$(PKG_SOURCES)))) \
+			) \
+		)
 	touch $@
 
 EXTRACT   := $(BUILD_DIR)/.extracted

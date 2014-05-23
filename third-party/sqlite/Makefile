@@ -3,6 +3,7 @@ PKG_NAME := sqlite
 PKG_VER  := autoconf-3080403
 
 PKG_SOURCES := http://www.sqlite.org/2014/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 0f5459cde43cb269e5120ecd2c671ced
 
 PKG_PATCHES := pkg_patch.txt
 
