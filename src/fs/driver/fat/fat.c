@@ -1017,7 +1017,7 @@ static int fat_create_file(struct node * parent_node, struct node *node) {
 	volinfo = &fsi->vi;
 	fi->volinfo = volinfo;
 
-	vfs_get_relative_path(node, tmppath);
+	vfs_get_relative_path(node, tmppath, PATH_MAX);
 
 	fat_get_filename(tmppath, (char *) filename);
 
@@ -1851,7 +1851,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	memset(rcv_buf, 0, sizeof(PAGE_SIZE()));
 	di.p_scratch = rcv_buf;
 
-	vfs_get_relative_path(parent_nas->node, full_path);
+	vfs_get_relative_path(parent_nas->node, full_path, PATH_MAX);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
 		rc = -ENODEV;
@@ -1965,7 +1965,7 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	nas = node->nas;
 	fi = nas->fi->privdata;
 
-	vfs_get_relative_path(nod, (char *) path);
+	vfs_get_relative_path(nod, (char *) path, PATH_MAX);
 
 	if (DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -2289,7 +2289,7 @@ static int fatfs_delete(struct node *node) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(node, path);
+	vfs_get_relative_path(node, path, PATH_MAX);
 
 	/*
 	 * remove the root name to give a name to fat file system name

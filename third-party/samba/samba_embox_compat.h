@@ -312,6 +312,14 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }
 
+//XXX redefine malloc through sysmalloc. Revert it!
+#include <stdlib.h>
+#define malloc(x)     sysmalloc(x)
+#define free(x)       sysfree(x)
+#define memalign(x,y) sysmemalign(x,y)
+#define realloc(x,y)  sysrealloc(x,y)
+#define calloc(x,y)   syscalloc(x,y)
+
 #ifndef HAVE_CLOCK_GETTIME
 #define HAVE_CLOCK_GETTIME
 #endif

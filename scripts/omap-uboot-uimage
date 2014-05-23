@@ -31,3 +31,5 @@ dd if=/dev/zero of=$PAD_FILE_NAME bs=1 count=$PAD_SIZE
 cat $PAD_FILE_NAME $EMBOX_BIN > $PADDED_BIN
 
 $MKIMAGE -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e $ENTRY_ADDR -d $PADDED_BIN $UIMAGE
+
+rm $PAD_FILE_NAME $PADDED_BIN

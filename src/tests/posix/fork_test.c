@@ -54,3 +54,35 @@ TEST_CASE("") {
 		test_assert(status == 0); /* return by exit */
 	}
 }
+
+pid_t fork_proxy(void) {
+	pid_t pid;
+	unsigned char buf[64];
+
+	memset(buf, 0xc3, sizeof(buf));
+
+	pid = fork();
+	test_assert(pid != -1);
+	if (pid > 0) {
+		int i;
+		for (i = 0; i < sizeof(buf); i++) {
+			test_assert_equal(buf[i], 0xc3);
+		}
+	}
+
+	return pid;
+}
+
+TEST_CASE("fork'ed child is allowed to crash parent stack") {
+	pid_t pid;
+	int res;
+
+	pid = fork_proxy();
+	if (pid == 0) {
+		unsigned char buf[64];
+		memset(buf, 0xa5, sizeof(buf));
+		_exit(0);
+	}
+
+	wait(&res);
+}

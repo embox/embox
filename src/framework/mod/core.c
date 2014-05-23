@@ -74,6 +74,7 @@ static void mod_init_app(const struct mod *mod) {
 
 int mod_activate_app(const struct mod *mod) {
 	const struct mod_app *app;
+	struct __mod_private priv;
 
 	if (!mod_is_running(mod))
 		return -ENOENT;
@@ -88,8 +89,10 @@ int mod_activate_app(const struct mod *mod) {
 				return ret;
 		}
 
+		priv = *mod->priv;
 		memcpy(app->data, app->data + APP_DATA_RESERVE_OFFSET, app->data_sz);
 		memset(app->bss, 0, app->bss_sz);
+		*mod->priv = priv;
 	}
 
 	return 0;

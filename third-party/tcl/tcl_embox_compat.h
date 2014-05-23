@@ -92,10 +92,14 @@ static inline double tanh(double x) {
 	return -1;
 }
 
-#include <grp.h>
 static inline struct group *getgrgid(gid_t gid) {
 	printf("tcl>>> %s\n", __func__);
 	return NULL;
+}
+
+static inline int fork(void) {
+	printf("tcl>>> %s\n", __func__);
+	return -1;
 }
 
 typedef char sig_atomic_t;

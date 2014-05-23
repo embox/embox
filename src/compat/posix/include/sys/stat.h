@@ -75,9 +75,9 @@ __BEGIN_DECLS
 
 #define S_ISUID 0004000                 /* set user id on execution */
 #define S_ISGID 0002000                 /* set group id on execution */
-#define S_ISTXT 0001000                 /* sticky bit */
+#define S_ISVTX 0001000                 /* sticky bit */
 
-#define ALLPERMS        (mode_t)(S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
+#define ALLPERMS        (mode_t)(S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
 
 typedef struct stat {
 	int       st_dev;     /* ID of device containing file */

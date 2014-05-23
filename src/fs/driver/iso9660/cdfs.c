@@ -801,7 +801,7 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	fi->flags = flags;
 
-	vfs_get_relative_path(node, path);
+	vfs_get_relative_path(node, path, PATH_MAX);
 
 	if(0 == cdfs_open(node->nas, path)) {
 		return 0;
