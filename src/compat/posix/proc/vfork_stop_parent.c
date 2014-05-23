@@ -13,7 +13,6 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 
-
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
 	struct pt_regs ptregs;
@@ -40,28 +39,38 @@ static void *vfork_child_task(void *arg) {
 	panic("vfork_child_task returning");
 }
 
-static void vfork_waiting(void) {
-	struct sigaction sa, ochildsa, ocontsa;
-	struct vfork_ctx *vfctx;
-	pid_t child;
-
-	vfctx = vfork_current_context;
+static void vfork_wait_signal_store(struct sigaction *ochildsa,
+	       	struct sigaction *ocontsa) {
+	struct sigaction sa;
 
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = vfork_parent_signal_handler;
 	sigemptyset(&sa.sa_mask);
 
-	sigaction(SIGCHLD, &sa, &ochildsa);
-	sigaction(SIGCONT, &sa, &ocontsa);
+	sigaction(SIGCHLD, &sa, ochildsa);
+	sigaction(SIGCONT, &sa, ocontsa);
+}
+
+static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
+	       	const struct sigaction *ocontsa) {
+	sigaction(SIGCHLD, ochildsa, NULL);
+	sigaction(SIGCONT, ocontsa, NULL);
+}
+
+static void vfork_waiting(void) {
+	struct sigaction ochildsa, ocontsa;
+	struct vfork_ctx *vfctx;
+	pid_t child;
+
+	vfctx = vfork_current_context;
+
+	vfork_wait_signal_store(&ochildsa, &ocontsa);
 
 	vfctx->parent_holded = true;
-
 	child = new_task("", vfork_child_task, &vfctx->ptregs);
-
 	SCHED_WAIT(!vfctx->parent_holded);
 
-	sigaction(SIGCHLD, &ochildsa, NULL);
-	sigaction(SIGCONT, &ocontsa, NULL);
+	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
 	ptregs_retcode(&vfctx->ptregs, child);
 	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);
