@@ -11,4 +11,7 @@
 void vfork_release_parent(void) {
 
 }
+//FIXME
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 
+}
