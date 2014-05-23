@@ -167,53 +167,7 @@ inline int symlink(const char *oldpath, const char *newpath) {
 //#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
 //#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
-
-/* Structure describing CPU time used by a process and its children.  */
-struct tms
-{
-  clock_t tms_utime;          /* User CPU time.  */
-  clock_t tms_stime;          /* System CPU time.  */
-
-  clock_t tms_cutime;         /* User CPU time of dead children.  */
-  clock_t tms_cstime;         /* System CPU time of dead children.  */
-};
-
-#include <kernel/task.h>
-
-__BEGIN_DECLS
-extern clock_t clock_sys_ticks(void);
-__END_DECLS
-/* Store the CPU time used by this process and all its
-   dead children (and their dead children) in BUFFER.
-   Return the elapsed real time, or (clock_t) -1 for errors.
-   All times are in CLK_TCKths of a second.  */
-static inline clock_t times (struct tms *__buffer) {
-	//DPRINT();
-	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_get_clock(task_self());
-	__buffer->tms_utime = 0;
-
-	return clock_sys_ticks();
-}
-
-typedef int sig_atomic_t;
-
-// Bad thing to do
-#define NSIG 0
-// Not possible to do so because used in global context
-//#define NSIG (printf(">>> NSIG=0\n"),0)
-
-
-
-
-
-
 #include <arpa/inet.h>
-
-
-
-
-
 
 typedef __u32 u_int32_t;
 typedef __u16 u_int16_t;
