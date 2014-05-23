@@ -1,0 +1,19 @@
+package third_party
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@Cmd(name = "dash",
+	help = "",
+	man = '''
+		AUTHORS
+			-
+	''')
+module dash {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.dash.o"
+
+	depends embox.compat.posix.signal.sys_siglist
+	depends embox.compat.posix.util.times
+	depends embox.compat.posix.stubs
+}
