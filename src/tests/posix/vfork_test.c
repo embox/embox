@@ -65,7 +65,7 @@ TEST_CASE("after called vfork() child trashes own stack and calls exit") {
 
 	pid = vfork();
 	if (pid == 0) {
-		char buf[64];
+		unsigned char buf[64];
 		memset(buf, 0xa5, sizeof(buf));
 		_exit(0);
 	}
@@ -94,4 +94,36 @@ TEST_CASE("after called vfork() child call execv()") {
 
 	test_assert_not_equal(pid, parent_pid);
 	test_assert_equal(getpid(), parent_pid);
+}
+
+pid_t vfork_proxy(void) {
+	pid_t pid;
+	unsigned char buf[64];
+
+	memset(buf, 0xc3, sizeof(buf));
+
+	pid = vfork();
+	test_assert(pid != -1);
+	if (pid > 0) {
+		int i;
+		for (i = 0; i < sizeof(buf); i++) {
+			test_assert_equal(buf[i], 0xc3);
+		}
+	}
+
+	return pid;
+}
+
+TEST_CASE("vfork'ed child is allowed to crash parent stack") {
+	pid_t pid;
+	int res;
+
+	pid = vfork_proxy();
+	if (pid == 0) {
+		unsigned char buf[64];
+		memset(buf, 0xa5, sizeof(buf));
+		_exit(0);
+	}
+
+	wait(&res);
 }
