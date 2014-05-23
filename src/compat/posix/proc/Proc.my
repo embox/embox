@@ -14,11 +14,18 @@ module All {
 		pid
 }
 
-static module exec {
+@DefaultImpl(exec_stop_parent)
+abstract module exec { }
+
+static module exec_stop_parent extends exec {
 	source "exec.c"
 
 	depends vfork
 	depends embox.util.LibUtil
+}
+
+static module exec_exchanged extends exec {
+	source "exec_exchanged.c"
 }
 
 static module fork {
@@ -39,6 +46,13 @@ static module vfork_internal_stub extends vfork {
 static module vfork_stack_copy extends vfork {
 	source "vfork_stack_copy.c"
 	source "vfork_release_parent_stub.c"
+
+	depends embox.kernel.task.syslib.kfork_api
+	depends embox.util.LibUtil
+}
+
+static module vfork_exchanged extends vfork {
+	source "vfork_exchanged.c"
 
 	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil

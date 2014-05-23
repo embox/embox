@@ -98,3 +98,7 @@ module waitpid {
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert
 }
+
+module vfork {
+	source "res_vfork.c"
+}
