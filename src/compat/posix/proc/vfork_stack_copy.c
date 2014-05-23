@@ -18,27 +18,31 @@
 
 #include <hal/vfork.h>
 
-
-
-
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 
-int task_is_vforking(struct task *task) {
-	return task->status & TASK_STATUS_IN_VFORK;
-}
 
 void vfork_begin(struct task *task) {
 	struct task *child;
 
-	task->status |= TASK_STATUS_IN_VFORK;
+	task_vfork_start(task);
 	child = task_self();
-	child->status |= TASK_STATUS_IN_VFORK;
+	task_vfork_start(child);
 }
 
 void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	struct task_vfork *parent_vfork;
 	struct task *parent;
+	struct task_vfork *task_vfork;
+
+	if (arg) {
+		struct task_param *param = arg;
+
+		task_vfork = task_resource_vfork(child);
+		strncpy(task_vfork->cmdline, param->path, sizeof(task_vfork->cmdline) - 1);
+		param->path = task_vfork->cmdline;
+	}
+
 
 	parent = child->parent;
 
@@ -47,15 +51,11 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	task_start(child, run, arg);
 
 	ptregs_retcode(&parent_vfork->ptregs, child->tsk_id);
-	child->status &= ~TASK_STATUS_IN_VFORK;
-	parent->status &= ~TASK_STATUS_IN_VFORK;
+
+	task_vfork_end(child);
+	task_vfork_end(parent);
 
 	vfork_leave(&parent_vfork->ptregs);
-}
-
-void vfork_finish(struct task *task) {
-	task = task_self();
-	((struct task *)task)->status &= ~TASK_STATUS_IN_VFORK;
 }
 
 pid_t vfork_body(struct pt_regs *ptregs) {

@@ -29,11 +29,12 @@ struct task_trampoline_arg {
 	void * (*run)(void *);
 	void *run_arg;
 };
-extern int task_is_vforking(struct task *task);
+
 struct task *task_self(void) {
 	struct thread *th = thread_self();
 
 	assert(th);
+
 	if (task_is_vforking(th->task)) {
 		struct task_vfork *task_vfork;
 

@@ -16,8 +16,7 @@
 TASK_RESOURCE_DEF(task_vfork_desc, struct task_vfork);
 
 static void task_vfork_init(const struct task *task, void *vfork_buff) {
-	((struct task *)task)->status &= ~TASK_STATUS_IN_VFORK;
-
+	task_vfork_end((struct task *)task);
 }
 
 static int task_vfork_inherit(const struct task *task,

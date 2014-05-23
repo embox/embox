@@ -22,6 +22,13 @@ struct thread;
 
 struct task;
 
+struct task_param {
+	char *path;
+	char **env;
+	char **argv;
+	int argc;
+};
+
 __BEGIN_DECLS
 
 extern int task_get_status(const struct task *tsk);

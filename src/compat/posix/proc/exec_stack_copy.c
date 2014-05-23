@@ -8,37 +8,28 @@
 
 #include <cmd/shell.h>
 #include <kernel/task.h>
-#include <kernel/task/resource/task_vfork.h>
+#include <hal/vfork.h>
 
-
-extern int task_is_vforking(struct task *task);
-extern void vfork_child_done(struct task *task, void * (*run)(void *), void *arg);
 
 static void *task_stub_execv(void *arg) {
-	struct task *task;
-	struct task_vfork *task_vfork;
+	struct task_param *param = arg;
 	int res;
 
-	task = task_self();
-	task_vfork = task_resource_vfork(task);
-
-	res = shell_exec(shell_any(), task_vfork->cmdline);
+	res = shell_exec(shell_any(), param->path);
 
 	return (void*)res;
 }
 
 int execv(const char *path, char *const argv[]) {
 	struct task *task;
+	struct task_param *param = {0};
 
 	task = task_self();
 
 	if (task_is_vforking(task)) {
-		struct task_vfork *task_vfork;
-
-		task_vfork = task_resource_vfork(task);
-		strncpy(task_vfork->cmdline, path, sizeof(task_vfork->cmdline) - 1);
-
-		vfork_child_done(task, task_stub_execv, NULL);
+		param->path = (char *)path;
+		param->argv = (char **) argv;
+		vfork_child_done(task, task_stub_execv, param);
 	}
 
 	return 0;
