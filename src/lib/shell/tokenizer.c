@@ -130,5 +130,7 @@ int cmdline_tokenize(char *string, char **argv) {
 		}
 	}
 
+	argv[argc] = NULL;
+
 	return argc;
 }
