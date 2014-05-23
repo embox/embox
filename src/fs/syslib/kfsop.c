@@ -286,7 +286,8 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	vfs_get_leaf_path(&leaf);
 
-	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
+	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs") ||
+				drv->mount_dev_by_string)) {
 		//todo xxx
 		dev_node.node = (node_t *) dev;
 		goto skip_dev_lookup;
