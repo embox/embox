@@ -102,6 +102,4 @@ static inline int fork(void) {
 	return -1;
 }
 
-typedef char sig_atomic_t;
-
 #endif /* TCL_EMBOX_COMPAT_H_ */
