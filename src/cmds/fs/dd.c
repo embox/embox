@@ -34,6 +34,16 @@ struct dd_param {
 	const char *ofile;
 };
 
+struct dd_param_ent;
+typedef void (*dd_param_t)(const struct dd_param_ent *dpent,
+		struct dd_param *dp, const char *raw_val);
+
+struct dd_param_ent {
+	const char *name;
+	off_t offset;
+	dd_param_t type;
+};
+
 unsigned int dd_write_stdout_addr;
 static int write_stdout(char *buff, size_t size) {
 	size_t cnt;
@@ -72,47 +82,45 @@ static int write_stdout(char *buff, size_t size) {
 	return 0;
 }
 
-#define DD_PARAM(name) \
-	_DD_PARAM(# name, name)
+#define DP_FIELD(dp, off, type) \
+	((type) ((void *) dp + off))
 
-#define _DD_PARAM(str_name, field_name) \
-	{ str_name, offsetof(struct dd_param, field_name) }
+static void dd_param_type_int(const struct dd_param_ent *dpent,
+		struct dd_param *dp, const char *raw_val) {
+	*DP_FIELD(dp, dpent->offset, size_t *) = strtol(raw_val, NULL, 0);
+}
 
-#define __DD_PARAM(str_name, offset) \
-	{ str_name, offset}
+static void dd_param_type_str(const struct dd_param_ent *dpent,
+		struct dd_param *dp, const char *raw_val) {
+	*DP_FIELD(dp, dpent->offset, const char **) = raw_val;
+}
 
-struct dd_param_ent {
-	const char *name;
-	off_t offset;
+#define DD_PARAM(name, type) \
+	_DD_PARAM(# name, name, type)
+
+#define _DD_PARAM(str_name, field_name, type) \
+	{ str_name, offsetof(struct dd_param, field_name), type }
+
+static const struct dd_param_ent dd_param_list[] = {
+	_DD_PARAM("if", ifile, dd_param_type_str),
+	_DD_PARAM("of", ofile, dd_param_type_str),
+	DD_PARAM(bs, dd_param_type_int),
+	DD_PARAM(count, dd_param_type_int),
+	DD_PARAM(skip, dd_param_type_int),
+	DD_PARAM(seek, dd_param_type_int),
 };
 
-struct dd_param_ent dd_uint_param_list[] = {
-	DD_PARAM(bs),
-	DD_PARAM(count),
-	DD_PARAM(skip),
-	DD_PARAM(seek),
-	__DD_PARAM("", 0),
-};
-
-struct dd_param_ent dd_string_param_list[] = {
-	_DD_PARAM("if", ifile),
-	_DD_PARAM("of", ofile),
-	__DD_PARAM("", 0),
-};
-
-static const struct dd_param_ent *dd_param_ent_find(const struct dd_param_ent *dplist,
-		const char *name) {
+static const struct dd_param_ent *dd_param_ent_find(const char *name) {
 	const struct dd_param_ent *dpent;
-	for (dpent = dplist; dpent->name[0]; dpent++) {
+	for (dpent = dd_param_list;
+			dpent < dd_param_list + ARRAY_SIZE(dd_param_list);
+			dpent++) {
 		if (!strcmp(dpent->name, name)) {
 			return dpent;
 		}
 	}
 	return NULL;
 }
-
-#define DP_FIELD(dp, off, type) \
-	((type) ((void *) dp + off))
 
 static int dd_param_fill(int argc, char **argv, struct dd_param *dp) {
 	const struct dd_param_ent *dpent;
@@ -130,16 +138,12 @@ static int dd_param_fill(int argc, char **argv, struct dd_param *dp) {
 
 		*arg++ = '\0';
 
-		dpent = dd_param_ent_find(dd_uint_param_list, opt);
-		if (dpent) {
-			*DP_FIELD(dp, dpent->offset, size_t *) = strtol(arg, NULL, 0);
-		} else {
-			dpent = dd_param_ent_find(dd_string_param_list, opt);
-			if (dpent)
-				*DP_FIELD(dp, dpent->offset, char **) = arg;
-			else
-				return -EINVAL;
+		dpent = dd_param_ent_find(opt);
+		if (!dpent) {
+			return -EINVAL;
 		}
+
+		dpent->type(dpent, dp, arg);
 	}
 
 	return 0;
