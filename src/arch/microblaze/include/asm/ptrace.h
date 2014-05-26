@@ -14,7 +14,7 @@
 #include <stdint.h>
 typedef  uint32_t reg_t;
 
-struct pt_regs {
+typedef struct pt_regs {
 	reg_t regs[32];
 	reg_t msr;
 	reg_t ear;
