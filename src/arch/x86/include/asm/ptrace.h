@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include <stdint.h>
+#ifndef __ASSEMBLER__
 
 typedef struct pt_regs {
 	/* Pushed by SAVE_ALL. */
