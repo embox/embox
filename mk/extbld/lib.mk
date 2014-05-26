@@ -23,9 +23,10 @@ DOWNLOAD_DIR   := $(ROOT_DIR)/download
 DOWNLOAD     := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
 $(DOWNLOAD): | $(BUILD_DIR)
-	if [ ! -z "$(sources_download)" ]; then \
-		wget -c -P $(DOWNLOAD_DIR) $(sources_download); \
-	fi
+	$(foreach d,$(sources_download), \
+		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
+			wget $d $(DOWNLOAD_DIR); \
+		fi)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(basename $(notdir $g)) ]; then \
 			cd $(DOWNLOAD_DIR); \
