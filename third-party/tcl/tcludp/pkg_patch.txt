@@ -1,0 +1,29 @@
+--- download/tcludp-1.0.10/generic/udp_tcl.c	2014-05-26 03:56:33.032544592 +0400
++++ tcludp-1.0.10/generic/udp_tcl.c	2014-05-26 04:01:35.428920559 +0400
+@@ -1046,7 +1046,7 @@
+ 				UDPTRACE("UDP error - gethostbyname");
+ 				return -1;
+ 			}
+-			memcpy(&sendaddrv4.sin_addr, name->h_addr, sizeof(sendaddrv4.sin_addr));
++			memcpy(&sendaddrv4.sin_addr, name->h_addr_list[0], sizeof(sendaddrv4.sin_addr));
+ 		}
+ 
+ 		sendaddrv4.sin_family = AF_INET;
+@@ -1201,6 +1201,7 @@
+ UdpMulticast(UdpState *statePtr, Tcl_Interp *interp, 
+     const char *grp, int action)
+ {
++#if 0
+ 	int r;
+ 	Tcl_Obj *tcllist , *multicastgrp , *nw_interface;
+ 	int len,result;
+@@ -1363,6 +1364,9 @@
+     if (interp != NULL)
+         Tcl_SetObjResult(interp, statePtr->groupsObj);
+     return TCL_OK;
++#endif
++    printf(">>>tcludp: %s\n", __func__);
++    return TCL_ERROR;
+ }
+ 
+ /*
