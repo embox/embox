@@ -7,7 +7,7 @@
  */
 
 #include <mem/sysmalloc.h>
-#include <asm/traps.h>
+#include <asm/ptrace.h>
 #include <hal/vfork.h>
 #include <kernel/panic.h>
 #include <kernel/sched.h>

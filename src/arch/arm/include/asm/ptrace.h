@@ -6,8 +6,8 @@
  * @date    15.05.2014
  */
 
-#ifndef ARM_TRAPS_H_
-#define ARM_TRAPS_H_
+#ifndef ARM__PTRACE_H_
+#define ARM__PTRACE_H_
 
 #ifndef __ASSEMBLER__
 
@@ -24,4 +24,4 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* ARM_TRAPS_H_ */
+#endif /* ARM__PTRACE_H_ */

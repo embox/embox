@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef PPC_TRAPS_H_
-#define PPC_TRAPS_H_
+#ifndef PPC_PTRACE_H_
+#define PPC_PTRACE_H_
 
 #ifndef __ASSEMBLER__
 
@@ -95,4 +95,4 @@ typedef struct pt_regs {
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* PPC_TRAPS_H_ */
+#endif /* PPC_PTRACE_H_ */

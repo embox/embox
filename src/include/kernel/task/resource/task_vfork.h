@@ -9,7 +9,7 @@
 #define TASK_VFORK_H_
 
 #include <sys/types.h>
-#include <asm/traps.h>
+#include <asm/ptrace.h>
 
 struct task;
 

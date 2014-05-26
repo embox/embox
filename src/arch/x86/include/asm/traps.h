@@ -8,6 +8,8 @@
 #ifndef X86_TRAPS_H_
 #define X86_TRAPS_H_
 
+#include <asm/ptrace.h>
+
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
@@ -37,39 +39,7 @@
 #define X86_T_GENERAL_PROTECTION    0x0D /* General Protection */
 #define X86_T_PAGE_FAULT            0x0E /* Page Fault */
 
-typedef struct pt_regs {
-	/* Pushed by SAVE_ALL. */
-	uint32_t ebx;
-	uint32_t ecx;
-	uint32_t edx;
-	uint32_t esi;
-	uint32_t edi;
-	uint32_t ebp;
-	uint32_t eax;
-	uint32_t gs;
-	uint32_t fs;
-	uint32_t es;
-	uint32_t ds;
 
-	/* Pushed at the very beginning of entry. */
-	uint32_t trapno;
-
-	/* In some cases pushed by processor, in some - by us. */
-	uint32_t err;
-
-	/* Pushed by processor. */
-	uint32_t eip;
-	uint32_t cs;
-	uint32_t eflags;
-
-	/* Pushed by processor, if switching of rings occurs. */
-	uint32_t esp;
-	uint32_t ss;
-} pt_regs_t;
-
-static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
-	ptregs->eax = retcode;
-}
 
 extern void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr);
 extern void idt_init(void);
@@ -77,27 +47,6 @@ extern void gdt_init(void);
 
 #else
 
-/* Use for exception which doesn't push error code. */
-#define EXCEPTION(n, name)  \
-	.globl name            ;\
-name:                      ;\
-	pushl	$(0)           ;\
-	pushl	$(n)           ;\
-	jmp	excep_stub
-
-/* Use for exception which pushes error code. */
-#define EXCEPTION_ERR(n, name)  \
-	.globl name                ;\
-name:                          ;\
-	pushl	$(n)               ;\
-	jmp	excep_stub
-
-#define IRQ_ENTRY(n)      \
-	.globl irq##n        ;\
-irq##n:                  ;\
-	pushl   $(0)         ;\
-	pushl   $(32 + n)    ;\
-	jmp     irq_stub
 
 #endif /* __ASSEMBLER__ */
 
