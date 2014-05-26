@@ -1,9 +1,10 @@
 package third_party.gnu
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-module tcludp {
+static module tcludp {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libudp1.0.10.a"
 
 	depends embox.compat.posix.LibPosix
+	@NoRuntime depends third_party.tcl.core
 }

@@ -34,7 +34,8 @@ ExternalProject_Add(
       make tclsh
 
    INSTALL_COMMAND
-      cp <INSTALL_DIR>/src/tcl-build/tclsh <INSTALL_DIR>/src/tcl-build/tclsh.o
+      cp <INSTALL_DIR>/src/tcl-build/tclsh <INSTALL_DIR>/src/tcl-build/tclsh.o &&
+      make install-headers
 
    LOG_BUILD 1
 )

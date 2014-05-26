@@ -10,10 +10,10 @@ PKG_PATCHES := pkg_patch.txt
 include $(EXTBLD_LIB)
 
 tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tcludp/tcludp_embox_compat.h \
+	-I$(ROOT_DIR)/build/extbld/third_party/tcl/core/include \
 	${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
-	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
@@ -23,6 +23,8 @@ $(CONFIGURE) :
 			--disable-load \
 			--disable-threads \
 			--enable-symbols \
+			--with-tcl=$(ROOT_DIR)/build/extbld/third_party/tcl/core/src/tcl-build \
+			--with-tclinclude=$(ROOT_DIR)/build/extbld/third_party/tcl/core/include \
 	)
 	touch $@
 
