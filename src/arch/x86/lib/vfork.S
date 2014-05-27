@@ -15,21 +15,7 @@
 	.global vfork_leave
 
 vfork:
-	subl 	$28, %esp
-	SAVE_ALL_REGS
-
-	movl	PT_END(%esp), %ecx
-	movl	%ecx, PT_EIP(%esp)
-
-	pushf
-	popl	PT_EFLAGS(%esp)
-
-	movl	%esp, %eax
-	addl	$PT_END+4, %eax
-	movl	%eax, PT_ESP(%esp)
-
-	push    %esp
-	call    vfork_body
+	CALL_WPTREGS vfork_body
 
 vfork_leave:
 	movl	4(%esp), %ebp
