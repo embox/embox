@@ -23,7 +23,8 @@ struct stack_space {
 };
 
 struct addr_space {
-	unsigned int use_count;
+	struct addr_space *parent_addr_space;
+	unsigned int child_count;
 
 	struct pt_regs *pt_entry;
 
@@ -79,7 +80,28 @@ static void fork_user_stack_cleanup(struct stack_space *stspc) {
 	stspc->user_stack_sz = 0;
 }
 
-static struct addr_space *fork_addr_space_create(struct thread *current_thread) {
+static void fork_addr_space_child_add(struct addr_space *parent, struct addr_space *child) {
+	child->parent_addr_space = parent;
+
+	if (parent) {
+		parent->child_count++;
+	}
+}
+
+static void fork_addr_space_child_del(struct addr_space *child) {
+	struct addr_space *parent = child->parent_addr_space;
+
+	if (!parent) {
+		return;
+	}
+
+	/* removing child from parent */
+	parent->child_count--;
+	/* reassigning child's childs to parent */
+	parent->child_count += child->child_count;
+}
+
+static struct addr_space *fork_addr_space_create(struct thread *current_thread, struct addr_space *parent) {
 	struct addr_space *adrspc;
 
 	adrspc = sysmalloc(sizeof(*adrspc));
@@ -87,7 +109,10 @@ static struct addr_space *fork_addr_space_create(struct thread *current_thread) 
 	memset(adrspc, 0, sizeof(*adrspc));
 
 	adrspc->stack_space.parent_thread = current_thread;
-	adrspc->use_count = 1;
+
+	adrspc->child_count = 0;
+
+	fork_addr_space_child_add(parent, adrspc);
 
 	return adrspc;
 }
@@ -102,6 +127,7 @@ static void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_
 
 static void fork_addr_space_delete(struct addr_space *adrspc) {
 	fork_user_stack_cleanup(&adrspc->stack_space);
+	fork_addr_space_child_del(adrspc);
 	sysfree(adrspc);
 }
 
@@ -120,13 +146,18 @@ static void *fork_child_trampoline(void *arg) {
 }
 
 void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
-	struct addr_space *adrspc, *child_adrspc;
+	struct addr_space **adrspc_p, *adrspc, *child_adrspc;
 	pid_t child_pid;
 
-	adrspc = fork_addr_space_create(thread_self());
-	*fork_get_addr_space(task_self()) = adrspc;
+	adrspc_p = fork_get_addr_space(task_self());
 
-	child_adrspc = fork_addr_space_create(thread_self());
+	if (!*adrspc_p) {
+		*adrspc_p = fork_addr_space_create(thread_self(), NULL);
+	}
+
+	adrspc = *adrspc_p;
+
+	child_adrspc = fork_addr_space_create(thread_self(), adrspc);
 	fork_addr_space_store(child_adrspc);
 
 	child_adrspc->pt_entry = sysmalloc(sizeof(*adrspc->pt_entry));
@@ -157,6 +188,7 @@ static void task_res_addr_space_ptr_deinit(const struct task *task) {
 
 	if (*adrspc_p) {
 		fork_addr_space_delete(*adrspc_p);
+		*adrspc_p = NULL;
 	}
 };
 
@@ -178,11 +210,21 @@ void addr_space_store(void) {
 	}
 }
 
+static int fork_addr_space_is_shared(struct addr_space *adrspc) {
+	return adrspc->parent_addr_space || adrspc->child_count;
+}
+
 void addr_space_restore(void *safe_point) {
 	struct addr_space **adrspc_p = fork_get_addr_space(task_self());
 
 	if (*adrspc_p) {
+
 		fork_addr_space_restore(*adrspc_p, safe_point);
+
+		if (!fork_addr_space_is_shared(*adrspc_p)) {
+			fork_addr_space_delete(*adrspc_p);
+			*adrspc_p = NULL;
+		}
 	}
 }
 
