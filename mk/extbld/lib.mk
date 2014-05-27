@@ -20,30 +20,25 @@ sources_git      := $(filter %.git,$(PKG_SOURCES))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
 sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
 
+null :=
+space := ${null} ${null}
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
 $(DOWNLOAD): | $(DOWNLOAD_DIR)
 	$(foreach d,$(sources_download), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
 			wget -P $(DOWNLOAD_DIR) $d; \
-		fi)
+		fi;)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(basename $(notdir $g)) ]; then \
 			cd $(DOWNLOAD_DIR); \
 			git clone $g; \
+		fi;)
+	[ `echo $(PKG_SOURCES) | wc -w` -eq `echo $(PKG_MD5) | wc -w` ] || (echo "different number of sources and MD5" && false)
+	$(if $(filter-out -,$(PKG_MD5)), \
+		cd $(DOWNLOAD_DIR); \
+		echo "$(subst ${space},\n,$(filter-out -\t%,$(join $(addsuffix \t,$(PKG_MD5)),$(notdir $(PKG_SOURCES)))))" | md5sum -c --strict; \
 		fi)
-	$(foreach i,$(shell seq 1 $(words $(PKG_SOURCES))), \
-		$(if $(word $i,$(PKG_MD5)), \
-			$(if $(filter -,$(word $i,$(PKG_MD5))), \
-				$(warning ignore MD5 of $(notdir $(word $i,$(PKG_SOURCES)))), \
-				$(if $(shell echo "$(word $i,$(PKG_MD5)) $(DOWNLOAD_DIR)/$(notdir $(word $i,$(PKG_SOURCES)))" | md5sum -c --strict --quiet), \
-					$(error incorrect MD5 of $(notdir $(word $i,$(PKG_SOURCES)))), \
-					$(warning correct MD5 of $(notdir $(word $i,$(PKG_SOURCES)))) \
-					) \
-				), \
-			$(error missing MD5 for $(notdir $(word $i,$(PKG_SOURCES)))) \
-			) \
-		)
 	touch $@
 
 EXTRACT  := $(BUILD_DIR)/.extracted
