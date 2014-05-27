@@ -354,6 +354,10 @@ static void sched_finish_switch(struct thread *prev) {
 
 static struct thread *saved_prev __cpudata__; // XXX
 
+extern void addr_space_store(void);
+extern void addr_space_restore(void *);
+extern void *stack_safety_point(void);
+
 /**
  * Any fresh thread must call this function from a trampoline.
  * Basically it emulates returning from the scheduler as it would be done
@@ -361,6 +365,7 @@ static struct thread *saved_prev __cpudata__; // XXX
  * from where it was called) instead of jumping into a thread trampoline.
  */
 void sched_ack_switched(void) {
+	addr_space_restore(NULL);
 	sched_finish_switch(cpudata_var(saved_prev));
 	ipl_enable();
 	sched_unlock();
@@ -368,13 +373,17 @@ void sched_ack_switched(void) {
 
 static void sched_switch(struct thread *prev, struct thread *next) {
 	sched_prepare_switch(prev, next);
+	void *stack_safe_point;
 
 	trace_point(__func__);
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
+	addr_space_store();
 	thread_set_current(next);
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
+	stack_safe_point = stack_safety_point();
+	addr_space_restore(stack_safe_point);
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(prev);
