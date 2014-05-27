@@ -21,11 +21,11 @@ void thread_stack_set(struct thread *t, void *stack) {
 #endif
 
 void *thread_stack_get(struct thread *t) {
-	return t->stack.stack;
+	return t->stack.stack + sizeof(struct thread);
 }
 
 size_t thread_stack_get_size(struct thread *t) {
-	return t->stack.stack_sz;
+	return t->stack.stack_sz - sizeof(struct thread);
 }
 
 #if 0
