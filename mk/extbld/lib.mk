@@ -11,18 +11,18 @@ endif
 all : download extract patch configure build install
 
 PKG_INSTALL_DIR := $(BUILD_DIR)/install
+DOWNLOAD_DIR    := $(ROOT_DIR)/download
 
-$(BUILD_DIR) $(PKG_INSTALL_DIR):
+$(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
 
 sources_git      := $(filter %.git,$(PKG_SOURCES))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
 sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
 
-DOWNLOAD_DIR   := $(ROOT_DIR)/download
-DOWNLOAD     := $(BUILD_DIR)/.downloaded
+DOWNLOAD  := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
-$(DOWNLOAD): | $(BUILD_DIR)
+$(DOWNLOAD): | $(DOWNLOAD_DIR)
 	$(foreach d,$(sources_download), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
 			wget -P $(DOWNLOAD_DIR) $d; \
@@ -46,15 +46,15 @@ $(DOWNLOAD): | $(BUILD_DIR)
 		)
 	touch $@
 
-EXTRACT   := $(BUILD_DIR)/.extracted
+EXTRACT  := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
-$(EXTRACT): | $(BUILD_DIR)
+$(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach i,$(sources_extract),\
 		$(if $(filter %zip,$i),unzip $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
 			tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$i);)
 	touch $@
 
-PATCH     := $(BUILD_DIR)/.patched
+PATCH  := $(BUILD_DIR)/.patched
 patch : $(PATCH)
 PKG_PATCHES ?=
 $(PATCH): $(PKG_PATCHES) | $(BUILD_DIR)
