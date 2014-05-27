@@ -7,6 +7,8 @@ ifeq ($(BUILD_DIR),)
 $(error BUILD_DIR is not set)
 endif
 
+include $(ROOT_DIR)/mk/core/common.mk
+
 .PHONY : all download extract patch configure build install
 all : download extract patch configure build install
 
@@ -20,8 +22,6 @@ sources_git      := $(filter %.git,$(PKG_SOURCES))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
 sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
 
-null :=
-space := ${null} ${null}
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
 $(DOWNLOAD): | $(DOWNLOAD_DIR)
@@ -37,7 +37,7 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR)
 	[ `echo $(PKG_SOURCES) | wc -w` -eq `echo $(PKG_MD5) | wc -w` ] || (echo "different number of sources and MD5" && false)
 	$(if $(filter-out -,$(PKG_MD5)), \
 		cd $(DOWNLOAD_DIR); \
-		echo "$(subst ${space},\n,$(filter-out -\t%,$(join $(addsuffix \t,$(PKG_MD5)),$(notdir $(PKG_SOURCES)))))" | md5sum -c --strict; \
+		echo "$(subst ${\s},\n,$(filter-out -\t%,$(join $(addsuffix \t,$(PKG_MD5)),$(notdir $(PKG_SOURCES)))))" | md5sum -c --strict; \
 		fi)
 	touch $@
 
