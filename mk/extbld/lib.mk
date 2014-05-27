@@ -8,6 +8,7 @@ $(error BUILD_DIR is not set)
 endif
 
 include $(ROOT_DIR)/mk/core/common.mk
+include $(ROOT_DIR)/mk/core/string.mk
 
 .PHONY : all download extract patch configure build install
 all : download extract patch configure build install
@@ -34,11 +35,13 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR)
 			cd $(DOWNLOAD_DIR); \
 			git clone $g; \
 		fi;)
-	[ `echo $(PKG_SOURCES) | wc -w` -eq `echo $(PKG_MD5) | wc -w` ] || (echo "different number of sources and MD5" && false)
-	$(if $(filter-out -,$(PKG_MD5)), \
-		cd $(DOWNLOAD_DIR); \
-		echo "$(subst ${\s},\n,$(filter-out -\t%,$(join $(addsuffix \t,$(PKG_MD5)),$(notdir $(PKG_SOURCES)))))" | md5sum -c --strict; \
-		fi)
+	$(if $(call eq,$(words $(PKG_SOURCES)),$(words $(PKG_MD5))),, \
+		echo "different number of sources and MD5"; false)
+	( cd $(DOWNLOAD_DIR); \
+		$(foreach c,$(filter-out %.-,$(join $(PKG_SOURCES),$(addprefix .,$(PKG_MD5)))), \
+			echo "$(subst .,,$(suffix $c))  $(notdir $(basename $c))" | md5sum -c --strict ; ) \
+	)
+
 	touch $@
 
 EXTRACT  := $(BUILD_DIR)/.extracted
