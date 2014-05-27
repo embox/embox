@@ -20,7 +20,6 @@ struct vfork_ctx {
 	struct context waiting_ctx;
 	bool parent_holded;
 	char stack[VFORK_CTX_STACK_LEN];
-	char *user_stack_copy;
 };
 
 static struct vfork_ctx *vfork_current_context;
@@ -58,28 +57,6 @@ static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
 	sigaction(SIGCONT, ocontsa, NULL);
 }
 
-static void vfork_user_stack_store(struct vfork_ctx *vfctx) {
-	size_t st_size;
-	void *st_copy;
-
-	st_size = thread_stack_get_size(thread_self());
-	st_copy = sysmalloc(st_size);
-	assert(st_copy); /* allocation successed */
-
-	memcpy(st_copy, thread_stack_get(thread_self()), st_size);
-
-	vfctx->user_stack_copy = st_copy;
-}
-
-static void vfork_user_stack_restore(struct vfork_ctx *vfctx) {
-
-	/* assuming user stack size couldn't change */
-	memcpy(thread_stack_get(thread_self()), vfctx->user_stack_copy,
-			thread_stack_get_size(thread_self()));
-
-	sysfree(vfctx->user_stack_copy);
-}
-
 static void vfork_waiting(void) {
 	struct sigaction ochildsa, ocontsa;
 	struct vfork_ctx *vfctx;
@@ -87,7 +64,6 @@ static void vfork_waiting(void) {
 
 	vfctx = vfork_current_context;
 
-	vfork_user_stack_store(vfctx);
 	vfork_wait_signal_store(&ochildsa, &ocontsa);
 
 	vfctx->parent_holded = true;
@@ -95,7 +71,6 @@ static void vfork_waiting(void) {
 	SCHED_WAIT(!vfctx->parent_holded);
 
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
-	vfork_user_stack_restore(vfctx);
 
 	ptregs_retcode(&vfctx->ptregs, child);
 	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);
@@ -137,3 +112,6 @@ void vfork_release_parent(void) {
 	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
 }
 
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
+
+}
