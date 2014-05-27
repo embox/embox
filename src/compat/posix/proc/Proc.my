@@ -29,7 +29,10 @@ static module exec_exchanged extends exec {
 }
 
 static module fork {
+}
 
+static module fork_copy_everything {
+	source "fork_copy_everything.c"
 	// FIXME
 }
 
