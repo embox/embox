@@ -25,7 +25,7 @@ download : $(DOWNLOAD)
 $(DOWNLOAD): | $(BUILD_DIR)
 	$(foreach d,$(sources_download), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
-			wget $d $(DOWNLOAD_DIR); \
+			wget -P $(DOWNLOAD_DIR) $d; \
 		fi)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(basename $(notdir $g)) ]; then \
