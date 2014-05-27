@@ -22,6 +22,8 @@
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 
+#include <mem/sysmalloc.h>
+
 void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	assert(wq && wql);
 
@@ -57,13 +59,35 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 }
 
 void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
-	waitq_add(wq, wql);
+	struct thread *th = thread_self();
+	struct waitq_link *wql_thread;
+
+	wql_thread = sysmalloc(sizeof(*wql));
+	assert(wql_thread != NULL);
+
+	waitq_link_init(wql_thread);
+	waitq_add(wq, wql_thread);
+
+	th->thread_wait.wql_original = wql;
+	th->thread_wait.wql_copy = wql_thread;
+
 	sched_wait_prepare();
 }
 
 void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+	struct thread *th = thread_self();
+	struct waitq_link *wql_thread;
+
 	sched_wait_cleanup();
-	waitq_del(wq, wql);
+
+	assert(th->thread_wait.wql_original == wql);
+	wql_thread = th->thread_wait.wql_copy;
+
+	th->thread_wait.wql_original = th->thread_wait.wql_copy = NULL;
+
+	waitq_del(wq, wql_thread);
+
+	sysfree(wql_thread);
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr) {
