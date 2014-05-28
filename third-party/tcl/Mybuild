@@ -27,7 +27,8 @@ module tclsh {
 		"tclIndex"
 
 	@InitFS
-	source "example/server.tcl"
+	source "example/server.tcl",
+		"example/udp_server.tcl"
 
 	@NoRuntime depends third_party.tcl.core
 	depends embox.compat.posix.stubs

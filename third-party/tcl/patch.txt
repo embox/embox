@@ -192,17 +192,17 @@
  }
  
 --- tcl8.6.1/generic/tclMain.c	2013-09-19 23:04:14.000000000 +0400
-+++ tcl/generic/tclMain.c	2014-05-27 02:59:09.328658793 +0400
-@@ -461,6 +461,12 @@
++++ tcl/generic/tclMain.c	2014-05-28 16:04:26.268505793 +0400
+@@ -406,6 +406,12 @@
+ 	Tcl_CreateExitHandler(FreeMainInterp, interp);
+     }
  
-     Tcl_LinkVar(interp, "tcl_interactive", (char *) &is.tty, TCL_LINK_BOOLEAN);
-     is.input = Tcl_GetStdChannel(TCL_STDIN);
-+
 +    {
++    	/* Init tclUdp library */
 +    	extern int Udp_Init(Tcl_Interp *interp);
 +    	Udp_Init(interp);
 +    }
 +
-     while ((is.input != NULL) && !Tcl_InterpDeleted(interp)) {
- 	mainLoopProc = TclGetMainLoop();
- 	if (mainLoopProc == NULL) {
+     /*
+      * Invoke the script specified on the command line, if any. Must fetch it
+      * again, as the appInitProc might have reset it.
