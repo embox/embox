@@ -22,6 +22,8 @@ static module exec_stop_parent extends exec {
 
 	depends vfork
 	depends embox.util.LibUtil
+
+	depends embox.kernel.task.resource.module_ptr
 }
 
 static module exec_exchanged extends exec {

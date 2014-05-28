@@ -18,6 +18,9 @@
 #include <mem/phymem.h>
 #include <kernel/task/resource/task_heap.h>
 
+#include <kernel/task/resource/module_ptr.h>
+#include <framework/mod/types.h>
+
 #include <hal/vfork.h> //TODO remove me
 
 extern size_t mspace_deep_copy_size(struct dlist_head *mspace);
@@ -43,6 +46,11 @@ struct heap_space {
 	struct dlist_head store_space;
 };
 
+struct static_space {
+	void *bss_store;
+	void *data_store;
+};
+
 struct addr_space {
 	struct addr_space *parent_addr_space;
 	unsigned int child_count;
@@ -53,8 +61,7 @@ struct addr_space {
 
 	struct stack_space stack_space;
 	struct heap_space heap_space;
-
-	void *statics;
+	struct static_space static_space;
 };
 
 static inline struct task *thread_get_task(struct thread *th) {
@@ -129,6 +136,58 @@ static void fork_heap_cleanup(struct heap_space *hpspc) {
 	}
 }
 
+static inline const struct mod_app *task_app_get(struct task *tk) {
+	const struct mod *mod = task_module_ptr_get(tk);
+	return mod ? mod->app : NULL;
+}
+
+static void fork_static_store(struct static_space *sspc, struct task *tk) {
+	const struct mod_app *app;
+
+	app = task_app_get(tk);
+	if (!app) {
+		return;
+	}
+
+	if (!sspc->bss_store) {
+		sspc->bss_store = sysmalloc(app->bss_sz);
+		assert(sspc->bss_store);
+	}
+	memcpy(sspc->bss_store, app->bss, app->bss_sz);
+
+	if (!sspc->data_store) {
+		sspc->data_store = sysmalloc(app->data_sz);
+		assert(sspc->data_store);
+	}
+	memcpy(sspc->data_store, app->data, app->data_sz);
+}
+
+static void fork_static_restore(struct static_space *sspc, struct task *tk) {
+	const struct mod_app *app;
+
+	app = task_app_get(tk);
+	if (!app) {
+		return;
+	}
+
+	assert(sspc->bss_store);
+	assert(sspc->data_store);
+
+	memcpy(app->bss, sspc->bss_store, app->bss_sz);
+	memcpy(app->data, sspc->data_store, app->data_sz);
+}
+
+static void fork_static_cleanup(struct static_space *sspc) {
+
+	if (sspc->bss_store) {
+		sysfree(sspc->bss_store);
+	}
+
+	if (sspc->data_store) {
+		sysfree(sspc->data_store);
+	}
+}
+
 static void fork_addr_space_child_add(struct addr_space *parent, struct addr_space *child) {
 	child->parent_addr_space = parent;
 
@@ -167,18 +226,27 @@ static struct addr_space *fork_addr_space_create(struct thread *current_thread, 
 }
 
 static void fork_addr_space_store(struct addr_space *adrspc) {
+	struct task *tk = task_self();
+
 	fork_user_stack_store(&adrspc->stack_space, adrspc->parent_thread);
-	fork_heap_store(&adrspc->heap_space, task_self());
+	fork_heap_store(&adrspc->heap_space, tk);
+	fork_static_store(&adrspc->static_space, tk);
 }
 
 static void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) {
+	struct task *tk = task_self();
+
 	fork_user_stack_restore(&adrspc->stack_space, adrspc->parent_thread, stack_safe_point);
-	fork_heap_restore(&adrspc->heap_space, task_self());
+	fork_heap_restore(&adrspc->heap_space, tk);
+	fork_static_restore(&adrspc->static_space, tk);
 }
 
 static void fork_addr_space_delete(struct addr_space *adrspc) {
+
 	fork_user_stack_cleanup(&adrspc->stack_space);
 	fork_heap_cleanup(&adrspc->heap_space);
+	fork_static_cleanup(&adrspc->static_space);
+
 	fork_addr_space_child_del(adrspc);
 	sysfree(adrspc);
 }
