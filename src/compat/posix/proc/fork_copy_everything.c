@@ -21,8 +21,8 @@
 #include <hal/vfork.h> //TODO remove me
 
 extern size_t mspace_deep_copy_size(struct dlist_head *mspace);
-extern void mspace_deep_store(struct dlist_head *mspace, void *buf);
-extern void mspace_deep_restore(struct dlist_head *mspace, void *buf);
+extern void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf);
+extern void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf);
 
 static inline struct dlist_head *task_mspace(struct task *tk) {
 	struct task_heap *task_heap;
@@ -39,6 +39,8 @@ struct stack_space {
 struct heap_space {
 	void *heap;
 	size_t heap_sz;
+
+	struct dlist_head store_space;
 };
 
 struct addr_space {
@@ -114,11 +116,11 @@ static void fork_heap_store(struct heap_space *hpspc, struct task *tk) {
 		hpspc->heap = page_alloc(__phymem_allocator, size / PAGE_SIZE());
 		assert(hpspc->heap);
 	}
-	mspace_deep_store(task_mspace(tk), hpspc->heap);
+	mspace_deep_store(task_mspace(tk), &hpspc->store_space, hpspc->heap);
 }
 
 static void fork_heap_restore(struct heap_space *hpspc, struct task *tk) {
-	mspace_deep_restore(task_mspace(tk), hpspc->heap);
+	mspace_deep_restore(task_mspace(tk), &hpspc->store_space, hpspc->heap);
 }
 
 static void fork_heap_cleanup(struct heap_space *hpspc) {

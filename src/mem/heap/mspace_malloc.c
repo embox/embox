@@ -193,62 +193,66 @@ int mspace_fini(struct dlist_head *mspace) {
 	return 0;
 }
 
-struct mspace_store_info {
-	struct dlist_head *mspace_addr;
-	struct dlist_head mspace_store;
-};
-
 size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 	struct mm_segment *mm;
 	size_t ret;
 
-	ret = sizeof(struct mspace_store_info);
+	ret = 0;
 	dlist_foreach_entry(mm, mspace, link) {
 		ret += mm->size;
 	}
 	return ret;
 }
 
-void mspace_deep_store(struct dlist_head *mspace, void *buf) {
-	struct mspace_store_info *mst_info;
+
+void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
 	struct mm_segment *mm;
 	void *p;
 
-	mst_info = buf;
-	mst_info->mspace_addr = mspace;
-	mst_info->mspace_store = *mspace;
+	dlist_init(store_space);
 
-	p = buf + sizeof(struct mspace_store_info);
-	dlist_foreach_entry(mm, mspace, link) {
+	/* if mspace is empty list manipulation is illegal */
+	if (dlist_empty(mspace)) {
+		return;
+	}
+
+	dlist_del(mspace);
+	dlist_add_prev(store_space, mspace->next);
+
+	p = buf;
+	dlist_foreach_entry(mm, store_space, link) {
 		memcpy(p, mm, mm->size);
 		p += mm->size;
 	}
+
+	dlist_del(store_space);
+	dlist_add_prev(mspace, mspace->next);
 }
 
-void mspace_deep_restore(struct dlist_head *mspace, void *buf) {
-	struct mspace_store_info *mst_info;
+void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
 	struct dlist_head *raw_mm;
 	void *p;
 
-	mst_info = buf;
-	*mspace = mst_info->mspace_store;
+	dlist_init(mspace);
 
-	p = buf + sizeof(struct mspace_store_info);
-	raw_mm = mst_info->mspace_store.next;
+	p = buf;
+	raw_mm = store_space->next;
 
-	while (raw_mm != mst_info->mspace_addr) {
+	/* can't use foreach, since it stores next pointer in accumulator */
+	while (raw_mm != store_space) {
 		struct mm_segment *buf_mm, *mm;
 
-		mm = member_cast_out(raw_mm, struct mm_segment, link);
 		buf_mm = p;
 
+		mm = member_cast_out(raw_mm, struct mm_segment, link);
 		memcpy(mm, buf_mm, buf_mm->size);
 
 		p += buf_mm->size;
 		raw_mm = raw_mm->next;
 	}
 
-
-	mspace->next->prev = mspace;
-	mspace->prev->next = mspace;
+	if (!dlist_empty(store_space)) {
+		dlist_del(store_space);
+		dlist_add_prev(mspace, store_space->next);
+	}
 }
