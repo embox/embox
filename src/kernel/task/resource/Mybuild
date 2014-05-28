@@ -56,6 +56,10 @@ module mmap_notify {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
+module module_ptr {
+	source "module_ptr.c"
+}
+
 module security {
 	option number security_size
 	source "security.c"
