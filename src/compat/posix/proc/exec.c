@@ -14,11 +14,14 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <hal/context.h>
+
+#include <kernel/task/resource/module_ptr.h>
+#include <framework/cmd/api.h>
 #include <cmd/shell.h>
 
 extern void vfork_release_parent(void);
 
-#define EXEC_LEN 16
+#define EXEC_LEN 32
 static char exec_path[EXEC_LEN];
 
 #if 0
@@ -31,7 +34,7 @@ static void exec_trampoline(void) {
 	const struct shell *sh;
 	const char *default_shells[] = { "/bin/sh", "sh", NULL };
 	const char **shellp;
-	const char *path = exec_path;
+	char *path = exec_path;
 	int ecode;
 
 	sched_unlock();
@@ -49,7 +52,23 @@ static void exec_trampoline(void) {
 	}
 
 	/* FIXME pass argv to shell_exec */
-	ecode = sh ? shell_run(sh) : shell_exec(shell_any(), path);
+	if (sh) {
+		ecode = shell_run(sh);
+	} else {
+		const struct cmd *cmd;
+
+		cmd = cmd_lookup(path);
+
+		if (cmd) {
+			char *argv[] = { path, NULL };
+
+			task_self_module_ptr_set(cmd2mod(cmd));
+			ecode = cmd_exec(cmd, 1, argv);
+		} else {
+			ecode = ENOENT;
+		}
+
+	}
 
 	_exit(ecode);
 }
