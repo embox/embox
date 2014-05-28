@@ -83,7 +83,7 @@ module ppty_test {
 module fork_test {
 	source "fork_test.c"
 
-	depends embox.kernel.task.syslib.kfork
+	depends embox.test.posix.fork.test_fork_static
 }
 
 module vfork_test {

@@ -172,3 +172,22 @@ TEST_CASE("fork'ed child is allowed to crash heap") {
 
 	test_assert_zero(res);
 }
+
+static void *test_fork_static_crash(void *arg) {
+
+	execv("test_fork_static", NULL);
+
+	fprintf(stderr, "%s: can't exec", __func__);
+	abort();
+}
+
+TEST_CASE("fork'ed child is allowed to crash static memory") {
+	int res;
+
+	/* creating new task such way to have it's heap clean */
+	new_task("", test_fork_static_crash, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
