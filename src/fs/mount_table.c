@@ -63,6 +63,11 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 	mdesc->mnt_point->mounted++;
 	mdesc->mnt_root = root;
 
+	/* XXX mount root should preserve mode, uid/gid */
+	root->mode = mnt_point_path->node->mode;
+	root->uid = mnt_point_path->node->uid;
+	root->gid = mnt_point_path->node->gid;
+
 	dlist_init(&mdesc->mnt_mounts);
 	dlist_head_init(&mdesc->mnt_child);
 
