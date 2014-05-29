@@ -107,7 +107,7 @@
 #include <string.h>
 
 
-#include "lib/linenoise.h"
+#include "linenoise.h"
 
 #include <mem/sysmalloc.h>
 
