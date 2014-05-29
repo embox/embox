@@ -23,6 +23,7 @@
 #include <kernel/time/timer.h>
 
 #include <mem/sysmalloc.h>
+#include "waitq_protect_link.h"
 
 void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	assert(wq && wql);
@@ -58,36 +59,25 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
-	struct thread *th = thread_self();
-	struct waitq_link *wql_thread;
+void waitq_wait_prepare(struct waitq *wq, struct waitq_link *_wql) {
+	struct waitq_link *wql;
 
-	wql_thread = sysmalloc(sizeof(*wql));
-	assert(wql_thread != NULL);
+	wql = waitq_link_create_protected(_wql);
 
-	waitq_link_init(wql_thread);
-	waitq_add(wq, wql_thread);
-
-	th->thread_wait.wql_original = wql;
-	th->thread_wait.wql_copy = wql_thread;
-
+	waitq_add(wq, wql);
 	sched_wait_prepare();
 }
 
-void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
-	struct thread *th = thread_self();
-	struct waitq_link *wql_thread;
+void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
+	struct waitq_link *wql;
 
 	sched_wait_cleanup();
 
-	assert(th->thread_wait.wql_original == wql);
-	wql_thread = th->thread_wait.wql_copy;
+	wql = waitq_link_find_protected(_wql);
 
-	th->thread_wait.wql_original = th->thread_wait.wql_copy = NULL;
+	waitq_del(wq, wql);
 
-	waitq_del(wq, wql_thread);
-
-	sysfree(wql_thread);
+	waitq_link_delete_protected(wql);
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr) {
