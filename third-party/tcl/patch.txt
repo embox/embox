@@ -1,5 +1,5 @@
 --- tcl8.6.1/generic/tclIOCmd.c	2013-09-19 23:04:14.000000000 +0400
-+++ tcl/generic/tclIOCmd.c	2014-03-28 16:04:50.850025753 +0400
++++ tcl/generic/tclIOCmd.c	2014-05-28 18:26:52.510142524 +0400
 @@ -862,7 +862,7 @@
   *
   *----------------------------------------------------------------------
@@ -9,11 +9,13 @@
  	/* ARGSUSED */
  int
  Tcl_ExecObjCmd(
-@@ -1012,6 +1012,140 @@
+@@ -1012,6 +1012,145 @@
  
      return result;
  }
 +#else
++
++#include <sys/ioctl.h>
 +
 +#define DEBUG
 +#define CMD_OUTPUT_BUF_SIZE 32000
@@ -120,13 +122,16 @@
 +	}
 +
 +	do {
-+		thread_yield();
 +		PRINTD("reading command result...");
-+		res = read(pipefd[0], cmd_output + length, CMD_OUTPUT_BUF_SIZE);
-+		if (res != -1) {
-+			length += res;
++		if (ioctl(pipefd[0], FIONREAD) > 0) {
++			res = read(pipefd[0], cmd_output + length, CMD_OUTPUT_BUF_SIZE);
++			if (res != -1) {
++				length += res;
++			}
++		} else {
++			sleep(0);
 +		}
-+	} while(embox_cmd_wrap.cmd_finished != 1);
++	} while(!embox_cmd_wrap.cmd_finished || ioctl(pipefd[0], FIONREAD) > 0);
 +
 +	cmd_output[length] = '\0';
 +
@@ -191,3 +196,18 @@
  
  }
  
+--- tcl8.6.1/generic/tclMain.c	2013-09-19 23:04:14.000000000 +0400
++++ tcl/generic/tclMain.c	2014-05-28 16:04:26.268505793 +0400
+@@ -406,6 +406,12 @@
+ 	Tcl_CreateExitHandler(FreeMainInterp, interp);
+     }
+ 
++    {
++    	/* Init tclUdp library */
++    	extern int Udp_Init(Tcl_Interp *interp);
++    	Udp_Init(interp);
++    }
++
+     /*
+      * Invoke the script specified on the command line, if any. Must fetch it
+      * again, as the appInitProc might have reset it.

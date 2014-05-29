@@ -2,7 +2,7 @@ package third_party.tcl
 
 @Build(script="$(EXTERNAL_MAKE)")
 static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/src/tcl-build")
 	source "libtcl8.6.a", "libtclstub8.6.a"
 
 	@NoRuntime depends third_party.lib.Fdlibm
@@ -27,7 +27,8 @@ module tclsh {
 		"tclIndex"
 
 	@InitFS
-	source "example/server.tcl"
+	source "example/server.tcl",
+		"example/udp_server.tcl"
 
 	@NoRuntime depends third_party.tcl.core
 	depends embox.compat.posix.stubs
