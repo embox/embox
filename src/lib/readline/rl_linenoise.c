@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
-#include <lib/linenoise_1.h>
+#include <lib/linenoise.h>
 #include <limits.h>
 #include <readline/history.h>
 #include <readline/readline.h>
