@@ -19,6 +19,7 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
+#include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
 
@@ -38,12 +39,6 @@
 typedef int __thread_id_t;
 
 struct task;
-
-struct thread_wait {
-	struct waitq_link *wql_original;
-	struct waitq_link *wql_copy;
-};
-typedef struct thread_wait thread_wait_t;
 
 /**
  * Thread control block.
@@ -92,7 +87,7 @@ struct thread {
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
 
-	thread_wait_t      thread_wait;
+	struct thread_wait thread_wait;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

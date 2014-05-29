@@ -196,6 +196,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	runq_item_init(&t->sched_attr.runq_link);
 	sched_affinity_init(t);
 	sched_timing_init(t);
+
+	/* initialize everthing else */
+	thread_wait_init(&t->thread_wait);
 }
 
 void thread_delete(struct thread *t) {
