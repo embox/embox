@@ -19,9 +19,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <readline/readline.h>
 
-
-#include <lib/linenoise.h>
 #include <cmd/shell.h>
 #include <security/smac.h>
 
@@ -297,7 +296,7 @@ static int login_cmd(int argc, char **argv) {
 			/* */
 		}
 
-		while (!(name = linenoise(LOGIN_PROMPT))) {
+		while (!(name = readline(LOGIN_PROMPT))) {
 			printf("\n\n");
 		}
 
