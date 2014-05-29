@@ -1,0 +1,26 @@
+package third_party.cmd
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@Cmd(name = "nano",
+	help = "Text editor",
+	man = '''
+		NAME
+			nano - Nano's ANOther editor
+		SYNOPSIS
+			nano [OPTIONS] [[+LINE,COLUMN] FILE]...
+		AUTHORS
+			Ilia Vaprol - Adaptation for Embox
+	''')
+module nano {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.nano.o"
+
+	@NoRuntime depends nano_stubs
+}
+
+module nano_stubs {
+	source "stubs.c"
+
+}
