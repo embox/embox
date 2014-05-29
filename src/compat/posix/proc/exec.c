@@ -32,8 +32,6 @@ static char exec_argv[EXEC_ARGC][EXEC_LEN];
 
 static void exec_trampoline(void) {
 	const struct shell *sh;
-	const char *default_shells[] = { "/bin/sh", "sh", NULL };
-	const char **shellp;
 	char *path = exec_path;
 	int ecode;
 
@@ -41,13 +39,14 @@ static void exec_trampoline(void) {
 
 	vfork_release_parent();
 
+	if (!strncmp(path, "/bin/", strlen("/bin/"))) {
+		path += strlen("/bin/");
+	}
+
 	sh = shell_lookup(path);
 	if (!sh) {
-		for (shellp = default_shells; *shellp != NULL; shellp++) {
-			if (!strcmp(*shellp, path)) {
+		if (!strcmp(path, "sh")) {
 				sh = shell_lookup("tish");
-				break;
-			}
 		}
 	}
 
@@ -90,4 +89,8 @@ int execv(const char *path, char *const argv[]) {
 	context_switch(&oldctx, &t->context);
 
 	return 0;
+}
+
+int execve(const char *path, char *const argv[], char *const envp[]) {
+	return execv(path, argv);
 }
