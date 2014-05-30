@@ -23,36 +23,70 @@ EMBOX_CMD(exec);
 
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
+#define TABLE_SIZE 65536
+
+static char filter[256];
+
 static void print_usage(void) {
 	printf("Usage: trace [-h] [-n] [-s] [-e] [-i <number>] [-d <number>] [-a <number>]\n");
 }
 
-static void print_instrument_trace_block_stat(void) {
+static int tbp_cmp(const void *fst, const void *snd) {
+	/* Function for comparing TraceBlocks Pointers (by time spent
+	 * in block. Used in qsort()
+	 */
+	struct __trace_block *a, *b;
+	a = *((struct __trace_block **)fst);
+	b = *((struct __trace_block **)snd);
+	return (int) (	(a->time < b->time) -
+					(b->time < a->time));
+}
+
+static void print_instrument_trace_block_stat(int amount) {
+	/* Function for prining information about automatically generated
+	 * trace_blocks (that are created with __cyg_profile_func_enter/exit).
+	 */
 	struct __trace_block *tb = auto_profile_tb_first();
 	const struct symbol *s;
+	struct __trace_block *table[TABLE_SIZE];
+	int counter = 0, l, i;
 	char *buff = (char*) malloc (sizeof(char) * 256);
-	int l;
+	if (tb) do {
+		table[counter++] = tb;
+		tb = auto_profile_tb_next(tb);
+	} while (tb);
+
+	qsort(table, counter, sizeof(struct trace_block *), tbp_cmp);
 
 	printf("Automatic trace points:\n");
 
-	printf("%40s %10s %20s %10s\n", "Name", "Count", "Ticks", "Time");
-	if (tb) do {
+	printf("%40s %10s %20s %20s %15s\n", "Name", "Count", "Ticks", "Max_Ticks", "Avg_Ticks");
+
+	for (i = 0; i < amount && i < counter; i++) {
+		tb = table[i];
 		s = symbol_lookup(tb->func);
 		l = strlen(s->name) + strlen(s->loc.file) + 2;
 		strcpy(buff, s->loc.file);
-		strcat(buff, ":");
+		if (!s->loc.file) {
+			buff[0] = 0;
+		} else {
+			strcat(buff, ":");
+		}
 		strcat(buff, s->name);
 
+		if (filter[0] != 0 && strstr(buff, filter) == NULL) {
+			amount++;
+			continue;
+		}
 		if (l > 40) {
 			printf("...%37s ", buff + strlen(buff) - 37);
 		} else {
 			printf("%40s ", buff);
 		}
-		printf("%10lld %20llu %10Lfs\n", tb->count, tb->time,
-			(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
-
-		tb = auto_profile_tb_next(tb);
-	} while (tb);
+		//printf("%10lld %20llu %20llu %15.9Lf\n", tb->count, tb->time, tb->max_time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count));
+		printf("%10lld %20llu %20llu %15llu\n", tb->count, tb->time, tb->max_time, tb->time / tb->count);
+	}
+	free(buff);
 }
 
 static void print_trace_block_stat(void) {
@@ -65,8 +99,7 @@ static void print_trace_block_stat(void) {
 	{
 		if (tb->active) {
 			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
-				tb->count, tb->time,
-				(tb->tc->cs) ? (long double) 1.0 * tb->time / 1000000000 : 0);
+				tb->count, tb->time, (long double) 1.0 * tb->time / 1000000000);
 				/* Converting from nanoseconds to seconds */
 		}
 		number++;
@@ -102,7 +135,7 @@ static void print_trace_block_stat_personal(int i) {
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
-			printf("%2d %7d %10llu %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			printf("%2d %7llu %10llu %5s\n", i, tb->count, tb->time, tb->active ? "yes" : "no");
 			break;
 		}
 	}
@@ -137,8 +170,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	getopt_init();
-
-	while (-1 != (opt = getopt(argc, argv, "ehsi:d:a:n"))) {
+	filter[0] = 0;
+	while (-1 != (opt = getopt(argc, argv, "f:ehsi:d:a:n:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -146,6 +179,9 @@ static int exec(int argc, char **argv) {
 			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
+			break;
+		case 'f':
+			sscanf(optarg, "%s", filter);
 			break;
 		case 's':
 			print_trace_block_stat();
@@ -179,7 +215,9 @@ static int exec(int argc, char **argv) {
 			print_entered_blocks();
 			break;
 		case 'n':
-			print_instrument_trace_block_stat();
+			index = 0x7FFF;
+			sscanf(optarg, "%d", &index);
+			print_instrument_trace_block_stat(index);
 			break;
 		default:
 			break;
