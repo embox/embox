@@ -13,15 +13,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#include <lib/linenoise_1.h>
-#include <cmd/shell.h>
 #include <pwd.h>
 #include <shadow.h>
 #include <utmp.h>
-#include <security/smac.h>
 #include <termios.h>
 #include <unistd.h>
+
+#include <readline/readline.h>
+
+#include <cmd/shell.h>
+#include <security/smac.h>
 
 #include <kernel/task.h>
 
@@ -295,7 +296,7 @@ static int login_cmd(int argc, char **argv) {
 			/* */
 		}
 
-		while (!(name = linenoise(LOGIN_PROMPT))) {
+		while (!(name = readline(LOGIN_PROMPT))) {
 			printf("\n\n");
 		}
 

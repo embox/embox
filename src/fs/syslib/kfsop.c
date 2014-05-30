@@ -97,7 +97,7 @@ int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
-	if (0 != create_new_node(&node, lastpath, S_IFDIR | mode)) {
+	if (0 != (res = create_new_node(&node, lastpath, S_IFDIR | mode))) {
 		errno = -res;
 		return -1;
 	}
@@ -286,7 +286,8 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	vfs_get_leaf_path(&leaf);
 
-	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs"))) {
+	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs") ||
+				drv->mount_dev_by_string)) {
 		//todo xxx
 		dev_node.node = (node_t *) dev;
 		goto skip_dev_lookup;

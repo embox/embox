@@ -71,7 +71,6 @@ struct xdr {
 			/* in-coming */
 			xdrrec_hnd_t in_hnd;
 			char *in_base;
-			char *in_hdr;
 			char *in_curr;
 			char *in_boundry;
 			size_t in_prep;

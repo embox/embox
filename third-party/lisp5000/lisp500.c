@@ -1545,9 +1545,9 @@ lval lrp(lval * f, lval * h)
 }
 #else
 lval lrp(lval * f, lval * h) {
-	pid_t p;
+	pid_t p = 0;
 	int r;
-	p = fork();
+	//p = fork();
 	if (p)
 		waitpid(p, &r, 0);
 	else {

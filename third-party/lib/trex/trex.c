@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <setjmp.h>
-#include <lib/trex.h>
+#include "trex.h"
 
 #ifdef _UINCODE
 #define scisprint iswprint

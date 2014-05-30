@@ -13,6 +13,7 @@
 #include <jvm.h>
 #include <jvmspi.h>
 #include <sni.h>
+#include <sys/wait.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -34,10 +35,11 @@ int phoneme_cldc(int argc, char **argv) {
 			.code = -1
 	};
 
-	new_task("", phoneme_run, &params);
-	while(!dlist_empty(&task_self()->children_tasks)) { } /* XXX make it throw waitpid() */
+	pid_t pid = new_task("", phoneme_run, &params);
+	int ret;
 
-	return params.code;
+	waitpid(pid, &ret, 0);
+	return ret;
 }
 
 /* In the most part implementation is copied from Main_javacall.cpp */
@@ -95,7 +97,7 @@ static void *phoneme_run(void *data) {
 end:
     pcsl_mem_finalize();
 
-    return NULL;
+    return (void *)p->code;
 }
 
 void JVMSPI_PrintRaw(const char* s, int length) {

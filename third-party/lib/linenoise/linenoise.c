@@ -104,10 +104,13 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "lib/linenoise_1.h"
+#include <string.h>
+
+
+#include "linenoise.h"
 
 #include <mem/sysmalloc.h>
-#include <string.h>
+
 static char * sysstrdup(const char *s) {
 	size_t slen = strlen(s) + 1;
 	char *r = sysmalloc(slen);

@@ -49,7 +49,10 @@ $(A_FILES:%=%.x) : %.x : %
 
 
 define a_template
-members-$(abs) := $(shell $(AR) t '$a')  # x.o
+members-$(abs) := $(shell $(AR) t '$a')
+ifeq ($(members-$(abs)),) # x.o
+$(error Can't get members of the archive '$a')
+endif
 $(members-$(abs):%=$a.x/%) : $a.x
 
 ifdef APP_ID

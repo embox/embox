@@ -1,0 +1,10 @@
+package embox.fs.driver
+
+module binfs {
+	source "binfs.c"
+
+	depends embox.fs.core
+	depends embox.mem.pool
+}
+
+

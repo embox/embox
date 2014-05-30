@@ -28,6 +28,21 @@ struct task {
 };
 __BEGIN_DECLS
 
+static inline int task_is_vforking(struct task *task) {
+	(void)task;
+
+	return 0;
+}
+
+static inline void task_vfork_start(struct task *task) {
+	(void)task;
+}
+
+static inline void task_vfork_end(struct task *task) {
+	(void)task;
+}
+
+
 static inline int task_get_status(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;

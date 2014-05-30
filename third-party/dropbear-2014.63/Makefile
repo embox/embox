@@ -3,6 +3,7 @@ PKG_NAME := dropbear
 PKG_VER  := 2014.63
 
 PKG_SOURCES := https://matt.ucc.asn.au/dropbear/$(PKG_NAME)-$(PKG_VER).tar.bz2
+PKG_MD5     := 7066bb9a2da708f3ed06314fdc9c47fd
 
 PKG_PATCHES := dropbear.patch
 

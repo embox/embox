@@ -7,12 +7,11 @@
  */
 
 #include <mem/sysmalloc.h>
-#include <asm/traps.h>
+#include <asm/ptrace.h>
 #include <hal/vfork.h>
 #include <kernel/panic.h>
 #include <kernel/sched.h>
 #include <kernel/task.h>
-
 
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
@@ -21,6 +20,7 @@ struct vfork_ctx {
 	struct context waiting_ctx;
 	bool parent_holded;
 	char stack[VFORK_CTX_STACK_LEN];
+	char *user_stack_copy;
 };
 
 static struct vfork_ctx *vfork_current_context;
@@ -40,28 +40,62 @@ static void *vfork_child_task(void *arg) {
 	panic("vfork_child_task returning");
 }
 
-static void vfork_waiting(void) {
-	struct sigaction sa, ochildsa, ocontsa;
-	struct vfork_ctx *vfctx;
-	pid_t child;
-
-	vfctx = vfork_current_context;
+static void vfork_wait_signal_store(struct sigaction *ochildsa,
+	       	struct sigaction *ocontsa) {
+	struct sigaction sa;
 
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = vfork_parent_signal_handler;
 	sigemptyset(&sa.sa_mask);
 
-	sigaction(SIGCHLD, &sa, &ochildsa);
-	sigaction(SIGCONT, &sa, &ocontsa);
+	sigaction(SIGCHLD, &sa, ochildsa);
+	sigaction(SIGCONT, &sa, ocontsa);
+}
+
+static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
+	       	const struct sigaction *ocontsa) {
+	sigaction(SIGCHLD, ochildsa, NULL);
+	sigaction(SIGCONT, ocontsa, NULL);
+}
+
+static void vfork_user_stack_store(struct vfork_ctx *vfctx) {
+	size_t st_size;
+	void *st_copy;
+
+	st_size = thread_stack_get_size(thread_self());
+	st_copy = sysmalloc(st_size);
+	assert(st_copy); /* allocation successed */
+
+	memcpy(st_copy, thread_stack_get(thread_self()), st_size);
+
+	vfctx->user_stack_copy = st_copy;
+}
+
+static void vfork_user_stack_restore(struct vfork_ctx *vfctx) {
+
+	/* assuming user stack size couldn't change */
+	memcpy(thread_stack_get(thread_self()), vfctx->user_stack_copy,
+			thread_stack_get_size(thread_self()));
+
+	sysfree(vfctx->user_stack_copy);
+}
+
+static void vfork_waiting(void) {
+	struct sigaction ochildsa, ocontsa;
+	struct vfork_ctx *vfctx;
+	pid_t child;
+
+	vfctx = vfork_current_context;
+
+	vfork_user_stack_store(vfctx);
+	vfork_wait_signal_store(&ochildsa, &ocontsa);
 
 	vfctx->parent_holded = true;
-
 	child = new_task("", vfork_child_task, &vfctx->ptregs);
-
 	SCHED_WAIT(!vfctx->parent_holded);
 
-	sigaction(SIGCHLD, &ochildsa, NULL);
-	sigaction(SIGCONT, &ocontsa, NULL);
+	vfork_wait_signal_restore(&ochildsa, &ocontsa);
+	vfork_user_stack_restore(vfctx);
 
 	ptregs_retcode(&vfctx->ptregs, child);
 	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);

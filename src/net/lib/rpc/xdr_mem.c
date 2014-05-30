@@ -11,6 +11,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
+#include <util/binalign.h>
 
 static const struct xdr_ops xdrmem_ops;
 
@@ -23,6 +25,7 @@ void xdrmem_create(struct xdr *xs, char *addr,
 
 	xs->oper = oper;
 	xs->ops = &xdrmem_ops;
+	assert(binalign_check_bound((uintptr_t)addr, sizeof(xdr_unit_t)));
 	xs->extra.mem.curr = xs->extra.mem.buff = addr;
 	xs->extra.mem.left = size;
 }

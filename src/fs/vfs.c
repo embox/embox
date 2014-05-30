@@ -445,14 +445,12 @@ node_t *vfs_subtree_get_parent(node_t *node) {
 	return __vfs_get_parent(node);
 }
 
-int vfs_get_relative_path(struct node *node, char *path) {
+int vfs_get_relative_path(struct node *node, char *path, size_t path_len) {
 	struct node *prev = NULL;
 	char *p;
-	size_t ll = PATH_MAX - 1;
+	size_t ll = path_len - 1;
 
-	if (PATH_MAX <= 0) {
-		return -ERANGE;
-	}
+	assert(path_len > 0);
 
 	p = path + ll;
 	*p = '\0';
@@ -474,7 +472,9 @@ int vfs_get_relative_path(struct node *node, char *path) {
 		node = __vfs_get_parent(node);
 	}
 
-	memmove(path, p, PATH_MAX - ll);
+	assert(path_len >= ll);
+
+	memmove(path, p, path_len - ll);
 
 	if (node != prev) {
 		return 1;
