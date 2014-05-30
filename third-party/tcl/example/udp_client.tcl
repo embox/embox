@@ -1,6 +1,6 @@
 package require udp
 
-set server "10.0.2.16"
+set server "192.168.0.210"
 set port   12345
 set prompt ">>"
 

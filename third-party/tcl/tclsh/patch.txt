@@ -1,0 +1,213 @@
+--- tcl8.6.1/generic/tclIOCmd.c	2013-09-19 23:04:14.000000000 +0400
++++ tcl/generic/tclIOCmd.c	2014-05-28 18:26:52.510142524 +0400
+@@ -862,7 +862,7 @@
+  *
+  *----------------------------------------------------------------------
+  */
+-
++#if 0
+ 	/* ARGSUSED */
+ int
+ Tcl_ExecObjCmd(
+@@ -1012,6 +1012,145 @@
+ 
+     return result;
+ }
++#else
++
++#include <sys/ioctl.h>
++
++#define DEBUG
++#define CMD_OUTPUT_BUF_SIZE 32000
++
++#ifdef DEBUG
++#define PRINTD(msg) printk(">>> tcl: " msg "\n")
++#else
++#define PRINTD(msg)
++#endif
++
++struct embox_cmd_wrapper {
++	int *pipefd;
++	const struct cmd *embox_cmd;
++	int argc;
++	char **argv;
++	int cmd_finished;
++};
++
++static void *cmd_hnd(void* args) {
++	struct embox_cmd_wrapper *embox_cmd = (struct embox_cmd_wrapper*)args;
++
++	if (-1 == close(STDOUT_FILENO)) {
++		PRINTD("STDOUT_FILENO close error");
++		return NULL;
++	}
++
++	if (-1 == dup2(embox_cmd->pipefd[1], STDOUT_FILENO)) {
++		PRINTD("embox_cmd->pipefd[1] dup2 error");
++		return NULL;
++	}
++
++	cmd_exec(embox_cmd->embox_cmd, embox_cmd->argc, embox_cmd->argv);
++
++	embox_cmd->cmd_finished = 1;
++	PRINTD("embox command execed");
++
++	return NULL;
++}
++
++int
++Tcl_ExecObjCmd(
++    ClientData dummy,		/* Not used. */
++    Tcl_Interp *interp,		/* Current interpreter. */
++    int objc,			/* Number of arguments. */
++    Tcl_Obj *const objv[])	/* Argument objects. */
++{
++	int res = 0, length = 0;
++	int tid;
++	const struct cmd *embox_cmd;
++	const char *string;
++    const char **argv;		/* An array for the string arguments. Stored
++				 * on the _Tcl_ stack. */
++    int argc, i, skip = 1;
++    int pipefd[2] = {-1, -1};
++    char *cmd_output = NULL;
++    struct embox_cmd_wrapper embox_cmd_wrap;
++    Tcl_Obj *obj;
++
++    for (skip = 1; skip < objc; skip++) {
++    	string = TclGetString(objv[skip]);
++    	if (isalpha(string[0])) {
++    		break;
++    	}
++    }
++
++    argc = objc - skip;
++    argv = TclStackAlloc(interp, (unsigned)(argc + 1) * sizeof(char *));
++
++    /*
++     * Copy the string conversions of each (post option) object into the
++     * argument vector.
++     */
++    for (i = 0; i < argc; i++) {
++    	argv[i] = TclGetString(objv[i + skip]);
++    }
++    argv[argc] = NULL;
++
++	cmd_output = malloc(CMD_OUTPUT_BUF_SIZE);
++	if (!cmd_output) {
++		PRINTD("malloc return NULL");
++		res = -1;
++		goto free_and_exit;
++	}
++
++	embox_cmd = cmd_lookup(argv[0]);
++    if (!embox_cmd) {
++    	sprintf(cmd_output, "%s: No such command", argv[0]);
++    	length = strlen(cmd_output);
++    	goto out;
++    }
++
++	if (-1 == (res = pipe(pipefd))) {
++		goto free_and_exit;
++	}
++
++	embox_cmd_wrap.argc = argc;
++	embox_cmd_wrap.argv = argv;
++	embox_cmd_wrap.embox_cmd = embox_cmd;
++	embox_cmd_wrap.pipefd = pipefd;
++	embox_cmd_wrap.cmd_finished = 0;
++
++	if ((res = tid = new_task("tcl_embox_cmd_run", cmd_hnd, &embox_cmd_wrap)) < 0) {
++		goto free_and_exit;
++	}
++
++	do {
++		PRINTD("reading command result...");
++		if (ioctl(pipefd[0], FIONREAD) > 0) {
++			res = read(pipefd[0], cmd_output + length, CMD_OUTPUT_BUF_SIZE);
++			if (res != -1) {
++				length += res;
++			}
++		} else {
++			sleep(0);
++		}
++	} while(!embox_cmd_wrap.cmd_finished || ioctl(pipefd[0], FIONREAD) > 0);
++
++	cmd_output[length] = '\0';
++
++out:
++	res = 0;
++    TclNewStringObj(obj, cmd_output, strlen(cmd_output));
++	if (cmd_output[length - 1] == '\n') {
++	    Tcl_SetObjLength(obj, length - 1);
++	}
++    //TclNewLiteralStringObj(obj, "EMBOX_CMD");
++    Tcl_SetObjResult(interp, obj);
++
++free_and_exit:
++	close(pipefd[0]);
++	close(pipefd[1]);
++	free(cmd_output);
++    TclStackFree(interp, (void *) argv);
++    return res == 0 ? TCL_OK : TCL_ERROR;
++}
++#endif
+ 
+ /*
+  *---------------------------------------------------------------------------
+  
+  
+ diff -ur tcl8.6.1/library/init.tcl tcl/library/init.tcl 
+--- tcl8.6.1/library/init.tcl	2013-09-19 23:04:15.000000000 +0400
++++ tcl/library/init.tcl	2014-02-28 03:06:19.608569753 +0400
+@@ -708,32 +708,10 @@
+ }
+ 
+ } else {
+-# Unix version.
++# Embox version.
+ #
+ proc auto_execok name {
+-    global auto_execs env
+-
+-    if {[info exists auto_execs($name)]} {
+-	return $auto_execs($name)
+-    }
+-    set auto_execs($name) ""
+-    if {[llength [file split $name]] != 1} {
+-	if {[file executable $name] && ![file isdirectory $name]} {
+-	    set auto_execs($name) [list $name]
+-	}
+-	return $auto_execs($name)
+-    }
+-    foreach dir [split $env(PATH) :] {
+-	if {$dir eq ""} {
+-	    set dir .
+-	}
+-	set file [file join $dir $name]
+-	if {[file executable $file] && ![file isdirectory $file]} {
+-	    set auto_execs($name) [list $file]
+-	    return $auto_execs($name)
+-	}
+-    }
+-    return ""
++    return $name
+ }
+ 
+ }
+ 
+--- tcl8.6.1/generic/tclMain.c	2013-09-19 23:04:14.000000000 +0400
++++ tcl/generic/tclMain.c	2014-05-28 16:04:26.268505793 +0400
+@@ -406,6 +406,12 @@
+ 	Tcl_CreateExitHandler(FreeMainInterp, interp);
+     }
+ 
++    {
++    	/* Init tclUdp library */
++    	extern int Udp_Init(Tcl_Interp *interp);
++    	Udp_Init(interp);
++    }
++
+     /*
+      * Invoke the script specified on the command line, if any. Must fetch it
+      * again, as the appInitProc might have reset it.
