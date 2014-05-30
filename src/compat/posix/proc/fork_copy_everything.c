@@ -199,12 +199,15 @@ static void fork_addr_space_child_add(struct addr_space *parent, struct addr_spa
 static void fork_addr_space_child_del(struct addr_space *child) {
 	struct addr_space *parent = child->parent_addr_space;
 
+	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
+
 	if (!parent) {
 		return;
 	}
 
 	/* removing child from parent */
 	parent->child_count--;
+
 	/* reassigning child's childs to parent */
 	parent->child_count += child->child_count;
 }
