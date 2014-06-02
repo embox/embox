@@ -112,6 +112,7 @@ void vfork_release_parent(void) {
 	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
 }
 
+//FIXME
 void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 
 }

@@ -14,14 +14,26 @@ $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			--enable-tiny \
 			--disable-shared \
 			--disable-static \
-			--disable-color \
-			--disable-nls   \
+			--disable-largefile \
+			--disable-rpath \
+			--disable-nls \
+			--disable-extra \
 			--disable-browser \
 			--disable-help \
 			--disable-justify \
 			--disable-mouse \
+			--disable-operatingdir \
+			--disable-speller \
+			--disable-tabcomp \
+			--disable-wrapping \
+			--disable-wrapping-as-root \
+			--disable-color \
+			--disable-multibuffer \
+			--disable-nanorc \
+			--disable-glibtest \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="-I$(ROOT_DIR)/third-party/nano/include/" \
 	)
