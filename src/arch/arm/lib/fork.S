@@ -3,14 +3,14 @@
  * @brief
  *
  * @author  Anton Kozlov
- * @date    15.05.2014
+ * @date    02.06.2014
  */
 
 	.text
-	.global vfork
+	.global fork
 
 #include <asm/ptrace.h>
 
-vfork:
-	CALL_WPTREGS vfork_body
+fork:
+	CALL_WPTREGS fork_body
 
