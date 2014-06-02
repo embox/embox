@@ -33,9 +33,15 @@ static module exec_exchanged extends exec {
 @DefaultImpl(fork_copy_everything)
 abstract module fork { }
 
-static module fork_copy_everything extends fork {
+module fork_copy_everything extends fork {
 	source "fork_copy_everything.c"
 	depends embox.arch.fork_entry
+	depends fork_copy_addr_space
+}
+
+/* FIXME artifical module to bypass single `extends` restriction */
+static module fork_copy_addr_space extends embox.kernel.addr_space {
+	source "fork_copy_addr_space.c"
 }
 
 @DefaultImpl(vfork_internal_stub)

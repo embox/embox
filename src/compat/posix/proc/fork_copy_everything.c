@@ -332,7 +332,7 @@ static void fork_set_addr_space(struct task *tk, struct addr_space *adrspc) {
 	*adrspc_p = adrspc;
 }
 
-void addr_space_prepare_switch(void) {
+void fork_addr_space_prepare_switch(void) {
 	struct addr_space *adrspc = fork_get_self_addr_space();
 	if (adrspc) {
 		fork_addr_space_store(adrspc);
@@ -343,7 +343,7 @@ static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 	return adrspc->parent_addr_space || adrspc->child_count;
 }
 
-void __addr_space_finish_switch(void *safe_point) {
+void fork_addr_space_finish_switch(void *safe_point) {
 	struct addr_space *adrspc = fork_get_self_addr_space();
 
 	if (adrspc) {

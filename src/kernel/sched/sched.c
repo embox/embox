@@ -36,6 +36,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
+#include <kernel/addr_space.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -354,11 +355,6 @@ static void sched_finish_switch(struct thread *prev) {
 
 static struct thread *saved_prev __cpudata__; // XXX
 
-extern void addr_space_store(void);
-extern void __addr_space_restore(void *);
-extern void *stack_ptr(void);
-#define addr_space_restore() __addr_space_restore(stack_ptr())
-
 /**
  * Any fresh thread must call this function from a trampoline.
  * Basically it emulates returning from the scheduler as it would be done
@@ -366,7 +362,7 @@ extern void *stack_ptr(void);
  * from where it was called) instead of jumping into a thread trampoline.
  */
 void sched_ack_switched(void) {
-	addr_space_restore();
+	addr_space_finish_switch();
 	sched_finish_switch(cpudata_var(saved_prev));
 	ipl_enable();
 	sched_unlock();
@@ -379,10 +375,10 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
-	addr_space_store();
+	addr_space_prepare_switch();
 	thread_set_current(next);
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
-	addr_space_restore();
+	addr_space_finish_switch();
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(prev);

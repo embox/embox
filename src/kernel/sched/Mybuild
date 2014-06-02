@@ -2,6 +2,8 @@ package embox.kernel.sched
 
 module sched {
 	source "sched.c"
+	depends embox.kernel.addr_space
+
 	source "sched_signal.c"
 	source "sched_wait.c"
 
