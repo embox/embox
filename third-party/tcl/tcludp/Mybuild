@@ -1,6 +1,7 @@
-package third_party.gnu
+package third_party.tcl
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.tcl.core)
 static module tcludp {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libudp1.0.10.a"
