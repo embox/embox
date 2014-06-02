@@ -26,7 +26,7 @@ module tclsh {
 		"tclIndex"
 
 	@InitFS
-	source "../example/server.tcl",
+	source "../example/tcp_server.tcl",
 		"../example/udp_server.tcl"
 
 	@NoRuntime depends third_party.tcl.core
