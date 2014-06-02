@@ -7,6 +7,7 @@
  */
 
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/module_ptr.h>
 
 struct mod;
 

@@ -16,10 +16,9 @@
 #include <hal/context.h>
 
 #include <kernel/task/resource/module_ptr.h>
-#include <framework/cmd/api.h>
-#include <cmd/shell.h>
 
 extern void vfork_release_parent(void);
+extern int exec_call(char *path, char *argv[], char *envp[]);
 
 #define EXEC_LEN 32
 static char exec_path[EXEC_LEN];
@@ -31,45 +30,13 @@ static char exec_argv[EXEC_ARGC][EXEC_LEN];
 #endif
 
 static void exec_trampoline(void) {
-	const struct shell *sh;
 	char *path = exec_path;
-	int ecode;
 
 	sched_unlock();
 
 	vfork_release_parent();
 
-	if (!strncmp(path, "/bin/", strlen("/bin/"))) {
-		path += strlen("/bin/");
-	}
-
-	sh = shell_lookup(path);
-	if (!sh) {
-		if (!strcmp(path, "sh")) {
-				sh = shell_lookup("tish");
-		}
-	}
-
-	/* FIXME pass argv to shell_exec */
-	if (sh) {
-		ecode = shell_run(sh);
-	} else {
-		const struct cmd *cmd;
-
-		cmd = cmd_lookup(path);
-
-		if (cmd) {
-			char *argv[] = { path, NULL };
-
-			task_self_module_ptr_set(cmd2mod(cmd));
-			ecode = cmd_exec(cmd, 1, argv);
-		} else {
-			ecode = ENOENT;
-		}
-
-	}
-
-	_exit(ecode);
+	_exit(exec_call(path, NULL, NULL));
 }
 
 int execv(const char *path, char *const argv[]) {

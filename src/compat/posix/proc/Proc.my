@@ -23,11 +23,18 @@ static module exec_stop_parent extends exec {
 	depends vfork
 	depends embox.util.LibUtil
 
-	depends embox.kernel.task.resource.module_ptr
+	depends exec_lib
 }
 
 static module exec_exchanged extends exec {
 	source "exec_exchanged.c"
+
+	depends exec_lib
+}
+
+static module exec_lib {
+	source "exec_lib.c"
+	depends embox.kernel.task.resource.module_ptr
 }
 
 @DefaultImpl(fork_copy_everything)
