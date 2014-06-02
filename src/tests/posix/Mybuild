@@ -84,6 +84,8 @@ module fork_test {
 	source "fork_test.c"
 
 	depends embox.test.posix.fork.test_fork_static
+
+	depends embox.compat.posix.proc.fork
 }
 
 module vfork_test {

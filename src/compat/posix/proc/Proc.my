@@ -30,12 +30,12 @@ static module exec_exchanged extends exec {
 	source "exec_exchanged.c"
 }
 
-static module fork {
-}
+@DefaultImpl(fork_copy_everything)
+abstract module fork { }
 
-static module fork_copy_everything {
+static module fork_copy_everything extends fork {
 	source "fork_copy_everything.c"
-	// FIXME
+	depends embox.arch.fork_entry
 }
 
 @DefaultImpl(vfork_internal_stub)
