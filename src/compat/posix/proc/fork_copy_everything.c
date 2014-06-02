@@ -62,11 +62,12 @@ struct addr_space {
 	struct static_space static_space;
 };
 
+static struct addr_space *fork_get_self_addr_space();
+static void fork_set_addr_space(struct task *tk, struct addr_space *adrspc);
+
 static inline struct task *thread_get_task(struct thread *th) {
 	return th->task;
 }
-
-static struct addr_space **fork_get_addr_space(struct task *tk);
 
 static void fork_user_stack_store(struct stack_space *stspc, struct thread *thread) {
 	size_t st_size;
@@ -253,8 +254,7 @@ static void fork_addr_space_delete(struct addr_space *adrspc) {
 }
 
 static void *fork_child_trampoline(void *arg) {
-	struct addr_space **adrspc_p = fork_get_addr_space(task_self());
-	struct addr_space *adrspc = *adrspc_p;
+	struct addr_space *adrspc = fork_get_self_addr_space();
 	struct pt_regs ptregs;
 
 	memcpy(&ptregs, adrspc->pt_entry, sizeof(ptregs));
@@ -267,16 +267,14 @@ static void *fork_child_trampoline(void *arg) {
 }
 
 void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
-	struct addr_space **adrspc_p, *adrspc, *child_adrspc;
+	struct addr_space *adrspc, *child_adrspc;
 	pid_t child_pid;
 
-	adrspc_p = fork_get_addr_space(task_self());
-
-	if (!*adrspc_p) {
-		*adrspc_p = fork_addr_space_create(thread_self(), NULL);
+	adrspc = fork_get_self_addr_space();
+	if (!adrspc) {
+		adrspc = fork_addr_space_create(thread_self(), NULL);
+		fork_set_addr_space(task_self(), adrspc);
 	}
-
-	adrspc = *adrspc_p;
 
 	child_adrspc = fork_addr_space_create(thread_self(), adrspc);
 	fork_addr_space_store(child_adrspc);
@@ -288,7 +286,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	sched_lock();
 	{
 		child_pid = new_task("", fork_child_trampoline, NULL);
-		*fork_get_addr_space(task_table_get(child_pid)) = child_adrspc;
+		fork_set_addr_space(task_table_get(child_pid), child_adrspc);
 	}
 	sched_unlock();
 
@@ -305,11 +303,15 @@ static void task_res_addr_space_ptr_init(const struct task *task, void *space) {
 };
 
 static void task_res_addr_space_ptr_deinit(const struct task *task) {
-	struct addr_space **adrspc_p = fork_get_addr_space((struct task *) task); //FIXME const modifier dropped
+	struct addr_space *adrspc;
 
-	if (*adrspc_p) {
-		fork_addr_space_delete(*adrspc_p);
-		*adrspc_p = NULL;
+	assert(task == task_self());
+
+	adrspc = fork_get_self_addr_space();
+
+	if (adrspc) {
+		fork_addr_space_delete(adrspc);
+		fork_set_addr_space(task_self(), NULL);
 	}
 };
 
@@ -320,14 +322,20 @@ TASK_RESOURCE_DECLARE(static,
 	.deinit = task_res_addr_space_ptr_deinit,
 );
 
-static struct addr_space **fork_get_addr_space(struct task *ts) {
-	return task_resource(ts, &task_resource_fork_addr_space);
+static struct addr_space *fork_get_self_addr_space() {
+	struct addr_space **adrspc_p = task_self_resource(&task_resource_fork_addr_space);
+	return *adrspc_p;
 }
 
-void addr_space_store(void) {
-	struct addr_space **adrspc_p = fork_get_addr_space(task_self());
-	if (*adrspc_p) {
-		fork_addr_space_store(*adrspc_p);
+static void fork_set_addr_space(struct task *tk, struct addr_space *adrspc) {
+	struct addr_space **adrspc_p = task_resource(tk, &task_resource_fork_addr_space);
+	*adrspc_p = adrspc;
+}
+
+void addr_space_prepare_switch(void) {
+	struct addr_space *adrspc = fork_get_self_addr_space();
+	if (adrspc) {
+		fork_addr_space_store(adrspc);
 	}
 }
 
@@ -335,16 +343,16 @@ static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 	return adrspc->parent_addr_space || adrspc->child_count;
 }
 
-void __addr_space_restore(void *safe_point) {
-	struct addr_space **adrspc_p = fork_get_addr_space(task_self());
+void __addr_space_finish_switch(void *safe_point) {
+	struct addr_space *adrspc = fork_get_self_addr_space();
 
-	if (*adrspc_p) {
+	if (adrspc) {
 
-		fork_addr_space_restore(*adrspc_p, safe_point);
+		fork_addr_space_restore(adrspc, safe_point);
 
-		if (!fork_addr_space_is_shared(*adrspc_p)) {
-			fork_addr_space_delete(*adrspc_p);
-			*adrspc_p = NULL;
+		if (!fork_addr_space_is_shared(adrspc)) {
+			fork_addr_space_delete(adrspc);
+			fork_set_addr_space(task_self(), NULL);
 		}
 	}
 }
