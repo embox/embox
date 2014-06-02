@@ -46,7 +46,6 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 	ptregs->eax = retcode;
 }
 
-
 #else
 
 /* Use for exception which doesn't push error code. */

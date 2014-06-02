@@ -12,7 +12,7 @@
 #include <kernel/sched.h>
 #include <kernel/task/resource.h>
 #include <kernel/panic.h>
-#include <asm/traps.h>
+#include <hal/ptrace.h>
 
 #include <mem/page.h>
 #include <mem/phymem.h>
@@ -20,8 +20,6 @@
 
 #include <kernel/task/resource/module_ptr.h>
 #include <framework/mod/types.h>
-
-#include <hal/vfork.h> //TODO remove me
 
 extern size_t mspace_deep_copy_size(struct dlist_head *mspace);
 extern void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf);
@@ -264,7 +262,7 @@ static void *fork_child_trampoline(void *arg) {
 	adrspc->pt_entry = NULL;
 
 	ptregs_retcode(&ptregs, 0);
-	vfork_leave(&ptregs);
+	ptregs_jmp(&ptregs);
 	panic("%s returning", __func__);
 }
 
@@ -295,7 +293,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	sched_unlock();
 
 	ptregs_retcode(ptregs, child_pid);
-	vfork_leave(ptregs);
+	ptregs_jmp(ptregs);
 
 	panic("%s returning", __func__);
 }
@@ -337,7 +335,7 @@ static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 	return adrspc->parent_addr_space || adrspc->child_count;
 }
 
-void addr_space_restore(void *safe_point) {
+void __addr_space_restore(void *safe_point) {
 	struct addr_space **adrspc_p = fork_get_addr_space(task_self());
 
 	if (*adrspc_p) {
@@ -350,24 +348,3 @@ void addr_space_restore(void *safe_point) {
 		}
 	}
 }
-
-#if 0
-static int task_addr_space_change(struct thread *prev, struct thread *next) {
-	struct addr_space *next_adrspc, *prev_adrspc;
-
-	next_adrspc = *fork_get_addr_space_th(next);
-	prev_adrspc = *fork_get_addr_space_th(prev);
-
-	if (prev_adrspc) {
-		fork_addr_space_store(prev_adrspc);
-	}
-
-	if (next_adrspc) {
-		fork_addr_space_restore(next_adrspc);
-	}
-
-	return 0;
-}
-
-TASK_RESOURCE_NOTIFY(task_addr_space_change);
-#endif

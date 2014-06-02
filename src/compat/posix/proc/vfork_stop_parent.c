@@ -7,7 +7,7 @@
  */
 
 #include <mem/sysmalloc.h>
-#include <asm/ptrace.h>
+#include <hal/ptrace.h>
 #include <hal/vfork.h>
 #include <kernel/panic.h>
 #include <kernel/sched.h>
@@ -34,7 +34,7 @@ static void *vfork_child_task(void *arg) {
 	struct pt_regs *ptregs = arg;
 
 	ptregs_retcode(ptregs, 0);
-	vfork_leave(ptregs);
+	ptregs_jmp(ptregs);
 
 	panic("vfork_child_task returning");
 }
@@ -85,7 +85,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
 		ptregs_retcode(ptregs, -EAGAIN);
-		vfork_leave(&ptbuf);
+		ptregs_jmp(&ptbuf);
 	}
 
 	memcpy(&vfctx->ptregs, ptregs, sizeof(vfctx->ptregs));
@@ -103,7 +103,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	memcpy(&ptbuf, &vfctx->ptregs, sizeof(*ptregs));
 	sysfree(vfctx);
 
-	vfork_leave(&ptbuf);
+	ptregs_jmp(&ptbuf);
 
 	panic("vfork_body returning");
 }
