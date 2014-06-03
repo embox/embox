@@ -11,3 +11,15 @@ module cifs {
 	@IncludePath("$(ROOT_DIR)/build/samba/include")
 	source "cifs.c"
 }
+
+@Build(stage=2,script="true")
+@BuildDepends(third_party.samba_new.core)
+module cifs_new {
+	depends third_party.samba_new.core
+
+	option number cifs_descriptor_quantity=4
+
+	@IncludePath("$(THIRDPARTY_DIR)/samba_new/include")
+	@IncludePath("$(ROOT_DIR)/build/samba_new/include")
+	source "cifs.c"
+}
