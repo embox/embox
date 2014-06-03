@@ -9,13 +9,13 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-samba_cppflags = -include $(ROOT_DIR)/third-party/tcl/samba/samba_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/samba/include \
+samba_cppflags = -include $(ROOT_DIR)/third-party/samba_new/samba_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/samba_new/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/zlib/libs/zlib-1.2.8 \
 	${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
-	cp $(ROOT_DIR)/third-party/samba/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
+	cp $(ROOT_DIR)/third-party/samba_new/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		source3/runfromhere.sh ./configure --prefix=$(PKG_INSTALL_DIR) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
@@ -31,7 +31,7 @@ $(CONFIGURE) :
 			--enable-static=ALL \
 			--disable-shared \
 			--disable-shared-libs \
-	      ibreplace_cv_HAVE_GETADDRINFO=no \
+	      libreplace_cv_HAVE_GETADDRINFO=no \
 	      ac_cv_file__proc_sys_kernel_core_pattern=no \
 	      ac_cv_func_poll=yes \
 	      libreplace_cv_HAVE_MMAP=no \
@@ -111,7 +111,7 @@ $(CONFIGURE) :
 $(BUILD) :
 	export EXEEXT=.embox.o; \
 	export LIBS=libsmbclient bin/smbclient.embox.o; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/unix  && ( \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)  && ( \
 		source3/runfromhere.sh make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
