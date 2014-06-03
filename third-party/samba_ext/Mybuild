@@ -16,4 +16,11 @@ module core {
 	depends embox.net.lib.getifaddrs
 
 	depends third_party.zlib.libs
+	depends samba_stubs
+}
+
+
+module samba_stubs {
+	source "stubs.c"
+
 }

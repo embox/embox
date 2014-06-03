@@ -8,8 +8,7 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-samba_cppflags = -include $(ROOT_DIR)/third-party/samba_new/samba_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/samba_new/include
+samba_cppflags = -I$(ROOT_DIR)/third-party/samba_ext/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
@@ -18,7 +17,6 @@ $(CONFIGURE) :
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="$(samba_cppflags)" \
-			PKG_CONFIG=/dev/null \
 			--with-libiconv=$(PKG_INSTALL_DIR)\
 			--enable-debug \
 			--enable-developer \
@@ -27,6 +25,7 @@ $(CONFIGURE) :
 			--enable-static=ALL \
 			--disable-shared \
 			--disable-shared-libs \
+			samba_cv_CC_NEGATIVE_ENUM_VALUES=no \
 		)
 	touch $@
 
