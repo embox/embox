@@ -49,7 +49,6 @@ struct sockaddr_un {
     char sun_path[108];
 };
 
-#define WNOHANG 0
 
 
 #define MAP_SHARED    0x00
@@ -141,8 +140,6 @@ int res_query(const char *dname, int class, int type,
 	printf(">>> res_query(%s)\n",dname);
 	return -1;
 }
-
-#define WEXITSTATUS(s) (s)
 
 static inline
 int socketpair(int domain, int type, int protocol, int sv[2]) {
