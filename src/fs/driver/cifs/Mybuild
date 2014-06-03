@@ -20,6 +20,5 @@ module cifs_new {
 	option number cifs_descriptor_quantity=4
 
 	@IncludePath("$(THIRDPARTY_DIR)/samba_new/include")
-	@IncludePath("$(ROOT_DIR)/build/samba_new/include")
 	source "cifs.c"
 }

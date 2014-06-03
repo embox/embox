@@ -336,4 +336,9 @@ static inline int fork(void) {
 	return -1;
 }
 
+static inline int fdatasync(int fd) {
+	DPRINT();
+	return -1;
+}
+
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

@@ -1,6 +1,7 @@
 package third_party.samba_new
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba_new/core/samba-3.6.18/source3/include")
 @BuildDepends(third_party.zlib.libs)
 module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
