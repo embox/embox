@@ -109,10 +109,9 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	export EXEEXT=.embox.o; \
-	export LIBS=libsmbclient bin/smbclient.embox.o; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)  && ( \
-		source3/runfromhere.sh make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		source3/runfromhere.sh make EXEEXT=.embox.o LIBS= libsmbclient bin/smbclient.embox.o \
+		MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
