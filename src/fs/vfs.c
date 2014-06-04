@@ -8,6 +8,7 @@
  * @author Eldar Abusalimov
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -319,6 +320,9 @@ static struct node *__vfs_subtree_create_child(struct node *parent, const char *
 	child = node_alloc(name, len);
 	if (child) {
 		child->mode = mode;
+		child->uid = getuid();
+		child->gid = getgid();
+
 		vfs_add_leaf(child, parent);
 	}
 

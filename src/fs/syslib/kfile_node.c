@@ -55,9 +55,6 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 	}
 
 	child->mnt_desc = dir_path->mnt_desc;
-	// XXX should it be here?
-	child->node->uid = getuid();
-	child->node->gid = getgid();
 
 	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
 		SET_ERRNO(EBADF);
@@ -79,6 +76,11 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
+	/* XXX it's here and not in vfs since vfs node associated with drive after
+ 	 * creating. security may call driver dependent features, like setting
+	 * xattr
+	 */
+	security_node_cred_fill(child->node);
 
 	return 0;
 }

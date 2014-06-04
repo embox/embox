@@ -62,8 +62,12 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 		goto out;
 	}
 
+	/* XXX it's here and not in vfs since vfs node associated with drive after
+ 	 * creating. security may call driver dependent features, like setting
+	 * xattr
+	 */
+	security_node_cred_fill(node.node);
 	return 0;
-
 out:
 	vfs_del_leaf(node.node);
 	return retval;
