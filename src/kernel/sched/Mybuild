@@ -34,7 +34,14 @@ module wait_queue {
 	depends waitq_protect_link
 }
 
-module waitq_protect_link {
+@DefaultImpl(waitq_protect_link_stub)
+abstract module waitq_protect_link { }
+
+module waitq_protect_link_stub extends waitq_protect_link {
+	source "waitq_protect_link_stub.c"
+}
+
+module waitq_protect_link_store extends waitq_protect_link {
 	source "waitq_protect_link.c"
 
 	depends waitq_protect_link_thread_plugin
