@@ -61,8 +61,6 @@ extern struct task *task_self(void);
  * @param arg run argument
  * @return pid of the new task
  */
-extern struct task *task_self(void);
-
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 extern void task_init(struct task *tsk, int id, struct task *parent,

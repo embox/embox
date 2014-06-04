@@ -9,12 +9,13 @@
 #ifndef ADDR_SPACE_H_
 #define ADDR_SPACE_H_
 
-#include <hal/stack.h>
+#define ADDR_SPACE_PREPARE_SWITCH() \
+	__ADDR_SPACE_PREPARE_SWITCH()
 
-extern void addr_space_prepare_switch(void);
-extern void __addr_space_finish_switch(void *);
+#define ADDR_SPACE_FINISH_SWITCH() \
+	__ADDR_SPACE_FINISH_SWITCH()
 
-#define addr_space_finish_switch() __addr_space_finish_switch(stack_ptr())
+#include <module/embox/kernel/addr_space.h>
 
 #endif /* ADDR_SPACE_H_ */
 

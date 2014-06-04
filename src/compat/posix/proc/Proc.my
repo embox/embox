@@ -48,7 +48,7 @@ module fork_copy_everything extends fork {
 
 /* FIXME artifical module to bypass single `extends` restriction */
 static module fork_copy_addr_space extends embox.kernel.addr_space {
-	source "fork_copy_addr_space.c"
+	source "fork_copy_addr_space.h"
 }
 
 @DefaultImpl(vfork_internal_stub)

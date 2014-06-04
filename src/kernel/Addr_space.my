@@ -4,5 +4,5 @@ package embox.kernel
 abstract module addr_space { }
 
 module addr_space_stub extends addr_space {
-	source "addr_space_stub.c"
+	source "addr_space_stub.h"
 }

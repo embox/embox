@@ -362,7 +362,7 @@ static struct thread *saved_prev __cpudata__; // XXX
  * from where it was called) instead of jumping into a thread trampoline.
  */
 void sched_ack_switched(void) {
-	addr_space_finish_switch();
+	ADDR_SPACE_FINISH_SWITCH();
 	sched_finish_switch(cpudata_var(saved_prev));
 	ipl_enable();
 	sched_unlock();
@@ -375,10 +375,10 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
-	addr_space_prepare_switch();
+	ADDR_SPACE_PREPARE_SWITCH();
 	thread_set_current(next);
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
-	addr_space_finish_switch();
+	ADDR_SPACE_FINISH_SWITCH();
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(prev);
