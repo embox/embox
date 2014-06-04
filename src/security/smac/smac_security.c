@@ -44,6 +44,10 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	return 1;
 }
 
+static int node_setlabel(struct node *n, const char *label) {
+	return kfile_xattr_set(n, smac_xattrkey, label, strlen(label) + 1, 0);
+}
+
 static int idesc_getlabel(struct idesc *idesc, char *label, size_t lablen) {
 	int res = 0;
 
@@ -81,6 +85,10 @@ int security_node_create(struct node *dir, mode_t mode) {
 	}
 
 	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
+}
+
+void security_node_cred_fill(struct node *node) {
+	node_setlabel(node, task_self_resource_security());
 }
 
 int security_node_permissions(struct node *node, int flags) {
