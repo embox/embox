@@ -1,0 +1,12 @@
+diff -aur phoneme/cldc/src/vm/cpu/i386/kni_md.h ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h
+--- phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-02-04 18:36:47.000000000 +0400
++++ ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-06-04 19:04:06.163640072 +0400
+@@ -36,7 +36,7 @@
+ typedef signed char jbyte;
+ typedef int         jint;
+ 
+-#ifndef LINUX
++#if !(defined LINUX) && !(defined __EMBOX__)
+ typedef __int64     jlong;
+ #else
+ typedef long long jlong;
