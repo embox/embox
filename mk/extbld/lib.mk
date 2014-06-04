@@ -25,7 +25,7 @@ sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(source
 
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
-$(DOWNLOAD): | $(DOWNLOAD_DIR)
+$(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_download), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
 			wget -P $(DOWNLOAD_DIR) $d; \

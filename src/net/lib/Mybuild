@@ -16,6 +16,7 @@ module bootp {
 module dns {
 	source "dns.c"
 	option string nameserver="10.0.0.11"
+	option number dns_query_timeout=5000
 
 	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC

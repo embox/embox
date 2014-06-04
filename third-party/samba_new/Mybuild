@@ -1,0 +1,62 @@
+package third_party.samba_new
+
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba_new/core/samba-3.6.18/source3/include")
+@BuildDepends(third_party.zlib.libs)
+module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source
+		"libsmbclient.a",
+		"libtevent.a",
+		"libtalloc.a",
+		"libtdb.a",
+		"libwbclient.a"
+
+	depends embox.lib.LibC
+	depends embox.arch.x86.LibM // FIXME:
+
+	depends embox.compat.posix.idx.poll
+	depends embox.net.lib.getifaddrs
+	depends third_party.zlib.libs
+}
+
+@Build(stage=2,script="true")
+@BuildDepends(core)
+@Cmd(name = "smbclient",
+	help = "smbclient shell",
+	man = '''
+		NAME
+			smbclient - ftp-like client to access SMB/CIFS resources on servers
+		SYNOPSIS
+			smbclient --help for options
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
+module smbclient {
+	depends core
+
+	@Rule(script="true")
+	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
+	source "shell_cmd.c"
+}
+
+@Build(stage=2,script="true")
+@BuildDepends(core)
+@Cmd(name = "testbrowse2",
+	help = "testbrowse2 command",
+	man = '''
+		NAME
+			testbrowse2 - libsmbclient's example testbrowse2
+		SYNOPSIS
+			testbrowse2
+		AUTHORS
+			fsulima - Adaptation for Embox
+	''')
+module testbrowse2 {
+	depends core
+
+	@IncludePath("$(THIRDPARTY_DIR)/samba/include")
+	@IncludePath("$(ROOT_DIR)/build/samba/include")
+	source "../../../../samba/src/samba/examples/libsmbclient/testbrowse2.c"
+	source "shell_cmd_testbrowse2.c"
+}
