@@ -14,14 +14,13 @@ abstract module cldc {
 	source "hello.jar"
 	*/
 
-	source "core.c"
-
 	@InitFS
 	source "hello.jar" /* XXX bug in initfs. IT must be hello/hello.jar */
 
 	depends third_party.phoneme.core // this is to build hello.jar
 }
 
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module cldc_standalone extends cldc {
 	/*
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
@@ -30,8 +29,30 @@ static module cldc_standalone extends cldc {
 	source "cldc_standalone.c"
 	*/
 
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../phoneme/build/amalgamated/lib/phoneme_cldc.a"
+	/*
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/cldc/javacall_i386_gcc/dist/lib/")
+	source "libcldc_vm_g.a"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/pcsl/javacall_i386/lib")
+	source "libpcsl_file.a", "libpcsl_memory.a", "libpcsl_network.a",
+		"libpcsl_print.a", "libpcsl_string.a"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/cldc/javacall_i386_gcc/target/debug")
+	source "jvmspi.o"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/javacall/obj_g")
+	source "javautil_unicode.o"
+
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
+	source "cldc_standalone.c", "embox_java_compat.c",
+		"javacall_cldc_dir.c", "javacall_cldc_file.c",
+		"javacall_cldc_logging.c", "javacall_cldc_memory.c",
+		"javacall_cldc_os.c", "javacall_cldc_time.c"
+	*/
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/amalgamated/lib")
+	source "phoneme_cldc.a"
 
     depends third_party.phoneme.core
 }
