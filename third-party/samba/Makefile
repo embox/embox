@@ -9,13 +9,13 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-samba_cppflags = -include $(ROOT_DIR)/third-party/samba_new/samba_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/samba_new/include \
+samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/samba/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/zlib/libs/zlib-1.2.8 \
 	${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
-	cp $(ROOT_DIR)/third-party/samba_new/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
+	cp $(ROOT_DIR)/third-party/samba/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		source3/runfromhere.sh ./configure --prefix=$(PKG_INSTALL_DIR) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
