@@ -28,6 +28,7 @@ cxxflags := -fno-stack-protector
 cxxflags += $(filter -m32,$(EMBOX_CXXFLAGS))
 cxxflags += -fpermissive
 cxxflags += -Dtypeof=__typeof__
+$(warning $(cppflags))
 
 amal_cppflags := $(EMBOX_CPPFLAGS)
 amal_cppflags += -DROMIZING
@@ -39,6 +40,7 @@ amal_cflags   := $(filter-out -Wstrict-prototypes,$(cflags))
 amal_cflags   := $(filter-out -Wundef,$(cflags))
 amal_cxxflags := $(EMBOX_CXXFLAGS)
 amal_cxxflags := $(filter-out -Werror,$(cxxflags))
+$(warning $(amal_cppflags))
 
 $(BUILD) :
 	cd $(BUILD_DIR)/$(PKG_NAME) && ( \
@@ -99,10 +101,6 @@ $(BUILD) :
 		g++ $(amal_cppflags) $(amal_cxxflags) -c \
 			$(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen/NativesTable.cpp \
 	)
-	cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && ( \
-		gcc $(amal_cppflags) $(amal_cflags) -c \
-			$(ROOT_DIR)/third-party/phoneme/cldc_standalone.c \
-	)
 	cd $(BUILD_DIR)/$(PKG_NAME)/build && \
 		mkdir -p amalgamated/lib && ( \
 			ar -rcs amalgamated/lib/local_cldc.a \
@@ -117,7 +115,6 @@ $(BUILD) :
 				amalgamated/obj/embox_java_compat.o \
 				amalgamated/obj/ROMImage.o \
 				amalgamated/obj/NativesTable.o \
-				amalgamated/obj/cldc_standalone.o \
 		)
 	mkdir -p $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/tmp && \
 		cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/tmp && ( \
