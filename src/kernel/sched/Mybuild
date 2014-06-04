@@ -19,6 +19,9 @@ module sched {
 
 	@NoRuntime depends sched_ticker
 	@NoRuntime depends wait_queue
+
+	//XXX kernel/thread.h included
+	depends embox.kernel.thread.thread_wait
 }
 
 module sched_ticker {
