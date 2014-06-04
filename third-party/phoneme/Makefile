@@ -5,7 +5,7 @@ PKG_VER  := trunk
 PKG_SOURCES := https://googledrive.com/host/0B7g4WwjaJX23ZExQU2hHTzYyRm8/phoneme-trunk.tar.gz
 PKG_MD5     := b552aa86b2832d00563636330ec64299
 
-#PKG_PATCHES := pkg_patch.txt
+PKG_PATCHES := pkg_patch.txt
 
 include $(EXTBLD_LIB)
 
@@ -28,10 +28,8 @@ cxxflags := -fno-stack-protector
 cxxflags += $(filter -m32,$(EMBOX_CXXFLAGS))
 cxxflags += -fpermissive
 cxxflags += -Dtypeof=__typeof__
-cxxflags += -Dexit=embox_phoneme_exit
 
 amal_cppflags := $(EMBOX_CPPFLAGS)
-amal_cppflags += -D__int64="long long"
 amal_cppflags += -DROMIZING
 amal_cppflags += -I$(CLDC_DIST_DIR)/include
 amal_cppflags += -I$(PCSL_OUTPUT_DIR)/javacall_i386/inc
