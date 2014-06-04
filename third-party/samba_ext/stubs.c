@@ -5,3 +5,5 @@
  * @author: Anton Bondarev
  */
 
+void  syslog(int prio, const char *format, ...) {
+}

@@ -25,12 +25,13 @@ $(CONFIGURE) :
 			--enable-static=ALL \
 			--disable-shared \
 			--disable-shared-libs \
-			samba_cv_CC_NEGATIVE_ENUM_VALUES=no \
+			samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
+			ac_cv_file__proc_sys_kernel_core_pattern=no \
 		)
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3 && ( \
 		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
