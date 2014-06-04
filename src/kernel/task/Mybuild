@@ -34,6 +34,7 @@ module multi extends api {
 }
 
 module single extends api {
+	source "single.c"
 	source "single.h"
 
 	depends embox.kernel.task.kernel_task
