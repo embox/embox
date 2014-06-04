@@ -70,17 +70,6 @@ $(BUILD) :
 			CXXFLAGS_EXTERNAL_TARGET='$(cppflags) $(cxxflags)' \
 			LINK_FLAGS='$(JAVACALL_OUTPUT_DIR)/lib/libjavacall_g.a' \
 	)
-	mkdir -p $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && \
-		cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && ( \
-			gcc $(amal_cppflags) $(amal_cflags) -c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_file.c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_memory.c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_time.c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_dir.c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_os.c \
-				$(ROOT_DIR)/third-party/phoneme/javacall_cldc_logging.c \
-				$(ROOT_DIR)/third-party/phoneme/embox_java_compat.c \
-		)
 	mkdir -p $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen && \
 		cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen && ( \
 			$(CLDC_DIST_DIR)/bin/romgen -cp $(CLDC_DIST_DIR)/lib/cldc_classes.zip \
@@ -89,9 +78,10 @@ $(BUILD) :
 				-romincludepath $(CLDC_DIR)/src/vm \
 				+RewriteROMConstantPool +EnableAllROMOptimizations -romize \
 		)
-	cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && ( \
-		g++ $(amal_cppflags) $(amal_cxxflags) -c \
-			$(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen/ROMImage.cpp \
+	mkdir -p $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && \
+		cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/obj && ( \
+			g++ $(amal_cppflags) $(amal_cxxflags) -c \
+				$(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen/ROMImage.cpp \
 	)
 	cd $(BUILD_DIR)/$(PKG_NAME)/build/amalgamated/gen && ( \
 		java -jar $(CLDC_DIST_DIR)/bin/NativesTableGen.jar \
@@ -106,13 +96,6 @@ $(BUILD) :
 			ar -rcs amalgamated/lib/local_cldc.a \
 				cldc/javacall_i386_gcc/target/debug/jvmspi.o \
 				javacall/obj_g/javautil_unicode.o \
-				amalgamated/obj/javacall_cldc_file.o \
-				amalgamated/obj/javacall_cldc_memory.o \
-				amalgamated/obj/javacall_cldc_time.o \
-				amalgamated/obj/javacall_cldc_dir.o \
-				amalgamated/obj/javacall_cldc_os.o \
-				amalgamated/obj/javacall_cldc_logging.o \
-				amalgamated/obj/embox_java_compat.o \
 				amalgamated/obj/ROMImage.o \
 				amalgamated/obj/NativesTable.o \
 		)

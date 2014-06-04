@@ -23,18 +23,6 @@ abstract module cldc {
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module cldc_standalone extends cldc {
 	/*
-	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
-	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
-	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
-	source "cldc_standalone.c"
-	*/
-
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/cldc/javacall_i386_gcc/dist/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
-	source "cldc_standalone.c"
-
-	/*
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/cldc/javacall_i386_gcc/dist/lib/")
 	source "libcldc_vm_g.a"
 
@@ -47,14 +35,15 @@ static module cldc_standalone extends cldc {
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/javacall/obj_g")
 	source "javautil_unicode.o"
+	*/
 
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/cldc/javacall_i386_gcc/dist/include")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
 	source "cldc_standalone.c", "embox_java_compat.c",
 		"javacall_cldc_dir.c", "javacall_cldc_file.c",
 		"javacall_cldc_logging.c", "javacall_cldc_memory.c",
 		"javacall_cldc_os.c", "javacall_cldc_time.c"
-	*/
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/phoneme/build/amalgamated/lib")
 	source "phoneme_cldc.a"
