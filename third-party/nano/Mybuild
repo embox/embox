@@ -18,6 +18,8 @@ module nano {
 	source "strip.nano.o"
 
 	@NoRuntime depends nano_stubs
+
+	depends embox.lib.LibCurses
 }
 
 module nano_stubs {
