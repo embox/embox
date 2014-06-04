@@ -15,6 +15,7 @@
 #include <kernel/sched/sched_lock.h>
 
 #include <hal/vfork.h>
+#include <hal/ptrace.h>
 
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
@@ -53,7 +54,7 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	task_vfork_end(child);
 	task_vfork_end(parent);
 
-	vfork_leave(&parent_vfork->ptregs);
+	ptregs_jmp(&parent_vfork->ptregs);
 }
 
 pid_t vfork_body(struct pt_regs *ptregs) {
@@ -78,6 +79,6 @@ pid_t vfork_body(struct pt_regs *ptregs) {
 
 
 	ptregs_retcode(ptregs, 0);
-	vfork_leave(ptregs);
+	ptregs_jmp(ptregs);
 	return 0;
 }

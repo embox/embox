@@ -8,7 +8,6 @@ static module stubs {
 		"execve.c",
 		"execvp.c",
 		"flockfile.c",
-		"fork.c",
 		"ftrylockfile.c",
 		"funlockfile.c",
 		"getdtablesize.c",

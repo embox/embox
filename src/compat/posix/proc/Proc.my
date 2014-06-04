@@ -22,15 +22,33 @@ static module exec_stop_parent extends exec {
 
 	depends vfork
 	depends embox.util.LibUtil
+
+	depends exec_lib
 }
 
 static module exec_exchanged extends exec {
 	source "exec_exchanged.c"
+
+	depends exec_lib
 }
 
-static module fork {
+static module exec_lib {
+	source "exec_lib.c"
+	depends embox.kernel.task.resource.module_ptr
+}
 
-	// FIXME
+@DefaultImpl(fork_copy_everything)
+abstract module fork { }
+
+module fork_copy_everything extends fork {
+	source "fork_copy_everything.c"
+	depends embox.arch.fork_entry
+	depends fork_copy_addr_space
+}
+
+/* FIXME artifical module to bypass single `extends` restriction */
+static module fork_copy_addr_space extends embox.kernel.addr_space {
+	source "fork_copy_addr_space.c"
 }
 
 @DefaultImpl(vfork_internal_stub)

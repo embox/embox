@@ -8,19 +8,9 @@
 
 	.text
 	.global vfork
-	.global vfork_leave
+
+#include <asm/ptrace.h>
 
 vfork:
-	sub 	sp, sp, #68
-	stmia 	sp, {r0-r14}
-
-	mov	r0, sp
-
-	bl vfork_body
-
-vfork_leave:
-	mov	sp, r0
-	ldmia	sp, {r0-r14}
-	add	sp, sp, #68
-	mov	pc, lr
+	CALL_WPTREGS vfork_body
 

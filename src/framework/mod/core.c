@@ -83,7 +83,7 @@ int mod_activate_app(const struct mod *mod) {
 	if (app) {
 		const struct mod *dep;
 
-		mod_foreach_provides(dep, mod) {
+		mod_foreach_requires(dep, mod) {
 			int ret = mod_activate_app(dep);
 			if (ret)
 				return ret;

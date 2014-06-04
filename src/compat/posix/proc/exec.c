@@ -14,11 +14,13 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <hal/context.h>
-#include <cmd/shell.h>
+
+#include <kernel/task/resource/module_ptr.h>
 
 extern void vfork_release_parent(void);
+extern int exec_call(char *path, char *argv[], char *envp[]);
 
-#define EXEC_LEN 16
+#define EXEC_LEN 32
 static char exec_path[EXEC_LEN];
 
 #if 0
@@ -28,30 +30,13 @@ static char exec_argv[EXEC_ARGC][EXEC_LEN];
 #endif
 
 static void exec_trampoline(void) {
-	const struct shell *sh;
-	const char *default_shells[] = { "/bin/sh", "sh", NULL };
-	const char **shellp;
-	const char *path = exec_path;
-	int ecode;
+	char *path = exec_path;
 
 	sched_unlock();
 
 	vfork_release_parent();
 
-	sh = shell_lookup(path);
-	if (!sh) {
-		for (shellp = default_shells; *shellp != NULL; shellp++) {
-			if (!strcmp(*shellp, path)) {
-				sh = shell_lookup("tish");
-				break;
-			}
-		}
-	}
-
-	/* FIXME pass argv to shell_exec */
-	ecode = sh ? shell_run(sh) : shell_exec(shell_any(), path);
-
-	_exit(ecode);
+	_exit(exec_call(path, NULL, NULL));
 }
 
 int execv(const char *path, char *const argv[]) {
@@ -71,4 +56,8 @@ int execv(const char *path, char *const argv[]) {
 	context_switch(&oldctx, &t->context);
 
 	return 0;
+}
+
+int execve(const char *path, char *const argv[], char *const envp[]) {
+	return execv(path, argv);
 }

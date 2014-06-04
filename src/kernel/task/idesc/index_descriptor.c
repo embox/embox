@@ -65,8 +65,10 @@ int index_descriptor_flags_get(int fd) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	return idesc->idesc_flags;
 }
 
@@ -74,8 +76,10 @@ int index_descriptor_flags_set(int fd, int flags) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	idesc->idesc_flags = flags;
 
 	return 0;
@@ -85,8 +89,10 @@ int index_descriptor_ioctl(int fd, int req, void *data) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	assert(idesc->idesc_ops);
 
 	if (!idesc->idesc_ops->ioctl) {
@@ -100,8 +106,10 @@ int index_descriptor_fcntl(int fd, int cmd, void *data) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	assert(idesc->idesc_ops);
 	if (!idesc->idesc_ops->ioctl) {
 		return -ENOTSUP;
@@ -113,8 +121,10 @@ int index_descriptor_status(int fd, int pollmask) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	assert(idesc->idesc_ops);
 	if (!idesc->idesc_ops->status) {
 		return -ENOTSUP;
@@ -128,7 +138,9 @@ int index_descriptor_dupfd(int fd, int newfd) {
 	struct idesc *idesc;
 
 	idesc = index_descriptor_get(fd);
-	assert(idesc);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
 	it = task_self_idesc_table();
 	assert(it);
@@ -149,8 +161,10 @@ int index_descriptor_fstat(int fd, struct stat *buff) {
 	assert(buff);
 
 	idesc = index_descriptor_get(fd);
+	if (!idesc) {
+		return -ENOENT;
+	}
 
-	assert(idesc);
 	assert(idesc->idesc_ops);
 	if (!idesc->idesc_ops->fstat) {
 		return -ENOTSUP;

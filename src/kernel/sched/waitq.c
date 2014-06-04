@@ -22,6 +22,9 @@
 #include <kernel/critical.h>
 #include <kernel/time/timer.h>
 
+#include <mem/sysmalloc.h>
+#include "waitq_protect_link.h"
+
 void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	assert(wq && wql);
 
@@ -56,14 +59,25 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
+void waitq_wait_prepare(struct waitq *wq, struct waitq_link *_wql) {
+	struct waitq_link *wql;
+
+	wql = waitq_link_create_protected(_wql);
+
 	waitq_add(wq, wql);
 	sched_wait_prepare();
 }
 
-void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
+	struct waitq_link *wql;
+
 	sched_wait_cleanup();
+
+	wql = waitq_link_find_protected(_wql);
+
 	waitq_del(wq, wql);
+
+	waitq_link_delete_protected(wql);
 }
 
 void __waitq_wakeup(struct waitq *wq, int nr) {

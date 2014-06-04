@@ -10,9 +10,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#if 0
 int execve(const char *path, char *const argv[], char *const envp[]) {
 	fprintf(stderr, ">>>%s\n", __func__);
 	return -ENOSYS;
 }
+#endif
 
 
