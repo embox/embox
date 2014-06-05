@@ -40,7 +40,7 @@ static module lseek {
 }
 
 static module file_ops {
-	source "file_ops.c"
+	source "ioctl.c"
 	source "close.c"
 	source "fstat.c"
 	source "fsync.c"
