@@ -40,12 +40,14 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
+	int ret;
 
 	if (NULL == file) {
 		return -1;
 	}
 
-	return write(file->fd, buf, size * count);
+	ret = write(file->fd, buf, size * count);
+	return ret > 0 ? ret / size : 0;
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
