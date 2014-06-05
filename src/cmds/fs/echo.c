@@ -38,6 +38,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
+		size_t write_items_count;
+
 		if (0 == strcmp((const char *) argv[argc - 2], ">>")) {
 			mode = "a";
 		} else if (0 == strcmp((const char *) argv[argc - 2], ">")) {
@@ -52,10 +54,10 @@ static int exec(int argc, char **argv) {
 			return -errno;
 		}
 
-		fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
-		fwrite((const void *) "\n", 1, 1, fd);
+		write_items_count = fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
+		write_items_count += fwrite((const void *) "\n", 1, 1, fd);
 		fclose(fd);
-		return 0;
+		return write_items_count > 0 ? 0 : -EIO;
 	}
 	else if (argc == 2) {
 		printf("%s \n",argv[argc - 1]);
