@@ -17,10 +17,12 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "cldc.h"
+#include <embox/cmd.h>
+
+EMBOX_CMD(exec);
 
 /* In the most part implementation is copied from Main_javacall.cpp */
-int phoneme_cldc(int argc, char *argv[]) {
+static int exec(int argc, char *argv[]) {
 	int ret;
 
 	pcsl_mem_initialize(NULL, -1);

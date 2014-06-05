@@ -1,0 +1,21 @@
+package embox.cmd
+
+@Cmd(name = "cldc_vm",
+	help = "CLDC java virtual machine",
+	man = '''
+		NAME
+			cldc_vm - CLDC java virtual machine
+		SYNOPSIS
+			cldc_vm [arguments]
+		AUTHORS
+			Felix Sulima
+	''')
+module cldc_vm {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/cldc/javacall_i386_gcc/dist/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
+	source "cldc_vm.c"
+
+	depends third_party.phoneme.cldc
+	depends embox.framework.LibFramework
+}

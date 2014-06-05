@@ -40,7 +40,7 @@ static module cldc_standalone extends cldc {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/cldc/javacall_i386_gcc/dist/include")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
-	source "cldc_standalone.c", "embox_java_compat.c",
+	source "embox_java_compat.c",
 		"javacall_cldc_dir.c", "javacall_cldc_file.c",
 		"javacall_cldc_logging.c", "javacall_cldc_memory.c",
 		"javacall_cldc_os.c", "javacall_cldc_time.c"
