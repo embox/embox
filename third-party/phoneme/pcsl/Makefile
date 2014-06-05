@@ -4,13 +4,6 @@ include $(EXTBLD_LIB)
 JAVACALL_OUTPUT_DIR := $(BUILD_DIR)/../javacall
 PCSL_OUTPUT_DIR := $(BUILD_DIR)
 
-cppflags := $(filter -I%,$(EMBOX_CPPFLAGS))
-cppflags += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-cppflags += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-cppflags += $(subst \",\',$(filter -D\"__impl_x%,$(EMBOX_CPPFLAGS)))
-cflags   := -fno-stack-protector
-cflags   += $(filter -m32,$(EMBOX_CFLAGS))
-
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
 		ln -s ../src/phoneme/pcsl src \
@@ -24,7 +17,7 @@ $(BUILD) :
 			PCSL_PLATFORM=javacall_i386_gcc \
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
-			CFLAGS='$(cppflags) $(cflags)' \
+			CFLAGS='$(EMBOX_CPPFLAGS) $(EMBOX_CFLAGS) -Wno-error' \
 	)
 	touch $@
 

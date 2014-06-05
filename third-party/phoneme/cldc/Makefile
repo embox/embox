@@ -8,22 +8,8 @@ CLDC_OUTPUT_DIR := $(BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
-cppflags := $(filter -I%,$(EMBOX_CPPFLAGS))
-cppflags += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-cppflags += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-cppflags += $(subst \",\',$(filter -D\"__impl_x%,$(EMBOX_CPPFLAGS)))
-cxxflags := -fno-stack-protector
-cxxflags += $(filter -m32,$(EMBOX_CXXFLAGS))
-cxxflags += -fpermissive
-cxxflags += -Dtypeof=__typeof__
-
-amal_cppflags := $(EMBOX_CPPFLAGS)
-amal_cppflags += -DROMIZING
-amal_cppflags += -I$(CLDC_DIST_DIR)/include
-amal_cppflags += -I$(PCSL_OUTPUT_DIR)/javacall_i386/inc
-amal_cppflags += -I$(JAVACALL_OUTPUT_DIR)/inc
-amal_cxxflags := $(EMBOX_CXXFLAGS)
-amal_cxxflags := $(filter-out -Werror,$(amal_cxxflags))
+# FIXME problem with quotes
+EMBOX_CPPFLAGS_ := $(filter-out -D"__impl_x%,$(EMBOX_CPPFLAGS))
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
@@ -41,7 +27,7 @@ $(BUILD) :
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JVMWorkSpace=$(CLDC_DIR) JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 			JDK_DIR=$(JDK_DIR) \
-			CXXFLAGS_EXTERNAL_TARGET='$(cppflags) $(cxxflags)' \
+			CXXFLAGS_EXTERNAL_TARGET='$(EMBOX_CPPFLAGS_) $(EMBOX_CXXFLAGS) -fpermissive -Wno-error' \
 	)
 	mkdir -p $(BUILD_DIR)/gen && cd $(BUILD_DIR)/gen && ( \
 		$(CLDC_DIST_DIR)/bin/romgen -cp $(CLDC_DIST_DIR)/lib/cldc_classes.zip \
@@ -54,8 +40,10 @@ $(BUILD) :
 	)
 	# TODO remove this
 	cd $(BUILD_DIR)/gen && ( \
-			g++ $(amal_cppflags) $(amal_cxxflags) -c ROMImage.cpp && \
-			g++ $(amal_cppflags) $(amal_cxxflags) -c NativesTable.cpp \
+			g++ $(EMBOX_CPPFLAGS) -DROMIZING -I$(CLDC_DIST_DIR)/include \
+				$(EMBOX_CXXFLAGS) -fpermissive -Wno-error -c ROMImage.cpp && \
+			g++ $(EMBOX_CPPFLAGS) -DROMIZING -I$(CLDC_DIST_DIR)/include \
+				$(EMBOX_CXXFLAGS) -c NativesTable.cpp \
 	)
 	touch $@
 
