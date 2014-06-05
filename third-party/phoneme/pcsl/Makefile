@@ -17,7 +17,7 @@ $(BUILD) :
 			PCSL_PLATFORM=javacall_i386_gcc \
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
-			CFLAGS='$(EMBOX_CPPFLAGS) $(EMBOX_CFLAGS) -Wno-error' \
+			CC=$(EMBOX_GCC) \
 	)
 	touch $@
 

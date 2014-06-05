@@ -8,9 +8,6 @@ CLDC_OUTPUT_DIR := $(BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
-# FIXME problem with quotes
-EMBOX_CPPFLAGS_ := $(filter-out -D"__impl_x%,$(EMBOX_CPPFLAGS))
-
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
 		ln -s ../src/phoneme/cldc src \
@@ -27,7 +24,8 @@ $(BUILD) :
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JVMWorkSpace=$(CLDC_DIR) JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 			JDK_DIR=$(JDK_DIR) \
-			CXXFLAGS_EXTERNAL_TARGET='$(EMBOX_CPPFLAGS_) $(EMBOX_CXXFLAGS) -fpermissive -Wno-error' \
+			CXX=$(EMBOX_GXX) \
+			CXXFLAGS_EXTERNAL_TARGET='-fpermissive -Wno-error' \
 	)
 	mkdir -p $(BUILD_DIR)/gen && cd $(BUILD_DIR)/gen && ( \
 		$(CLDC_DIST_DIR)/bin/romgen -cp $(CLDC_DIST_DIR)/lib/cldc_classes.zip \
@@ -40,10 +38,10 @@ $(BUILD) :
 	)
 	# TODO remove this
 	cd $(BUILD_DIR)/gen && ( \
-			g++ $(EMBOX_CPPFLAGS) -DROMIZING -I$(CLDC_DIST_DIR)/include \
-				$(EMBOX_CXXFLAGS) -fpermissive -Wno-error -c ROMImage.cpp && \
-			g++ $(EMBOX_CPPFLAGS) -DROMIZING -I$(CLDC_DIST_DIR)/include \
-				$(EMBOX_CXXFLAGS) -c NativesTable.cpp \
+		$(EMBOX_GXX) -DROMIZING -I$(CLDC_DIST_DIR)/include \
+			-fpermissive -Wno-error -c ROMImage.cpp && \
+		$(EMBOX_GXX) -DROMIZING -I$(CLDC_DIST_DIR)/include \
+			-c NativesTable.cpp \
 	)
 	touch $@
 
