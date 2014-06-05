@@ -219,13 +219,7 @@ static int change_mode(struct path *node_path, int is_recursive,
 		return 0;
 	}
 
-	if (node_is_file(node_path->node)) {
-		apply_modes(node_path->node, modes, count, 0);
-		return 0;
-	}
-
-	vfs_get_path_by_node(node_path, path);
-	help_cannot_access(path, "Is not file or directory");
+	apply_modes(node_path->node, modes, count, 0);
 
 	return 0;
 }
