@@ -103,7 +103,10 @@ int open(const char *path, int __oflag, ...) {
 		}
 
 		if (__oflag & O_TRUNC) {
-			ktruncate(node, 0);
+			if (-1 == ktruncate(node, 0)){
+				//errno already setup
+				return -1;
+			}
 		}
 	}
 

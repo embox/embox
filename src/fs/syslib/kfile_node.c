@@ -90,11 +90,8 @@ int ktruncate(struct node *node, off_t length) {
 	struct nas *nas;
 	struct fs_driver *drv;
 
-	nas = node->nas;
-	drv = nas->fs->drv;
-
-	if (NULL == drv->fsop->truncate) {
-		errno = EPERM;
+	if (node_is_directory(node)) {
+		SET_ERRNO(EISDIR);
 		return -1;
 	}
 
@@ -103,9 +100,12 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	if (node_is_directory(node)) {
-		SET_ERRNO(EISDIR);
-		return -1;
+	nas = node->nas;
+	drv = nas->fs->drv;
+
+	if (NULL == drv->fsop->truncate) {
+		//errno = EPERM;
+		return 0;
 	}
 
 	if (0 > (ret = drv->fsop->truncate(node, length))) {
