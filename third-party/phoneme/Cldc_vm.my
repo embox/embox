@@ -1,4 +1,4 @@
-package embox.cmd
+package third_party.cmd
 
 @Cmd(name = "cldc_vm",
 	help = "CLDC java virtual machine",
@@ -11,9 +11,9 @@ package embox.cmd
 			Felix Sulima
 	''')
 module cldc_vm {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/cldc/javacall_i386_gcc/dist/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/pcsl/javacall_i386/inc")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc_standalone/phoneme/build/javacall/inc")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/javacall/install/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/pcsl/install/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/phoneme/cldc/install/include")
 	source "cldc_vm.c"
 
 	depends third_party.phoneme.cldc
