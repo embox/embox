@@ -158,11 +158,6 @@ extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
  */
 extern int fclose(FILE *fp);
 
-static inline int fflush(FILE *fp) {
-	(void)fp;
-	return 0;
-}
-
 /**
  * Deletes a name from the file system.
  */
@@ -206,13 +201,13 @@ extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 
-//TODO: stub
-
-extern int feof(FILE *stream);
-
-extern int ferror(FILE *stream);
-
 extern int fileno(FILE *stream);
+
+//TODO: stub
+extern int feof(FILE *stream);
+extern int ferror(FILE *stream);
+extern int fflush(FILE *fp);
+
 
 __END_DECLS
 
