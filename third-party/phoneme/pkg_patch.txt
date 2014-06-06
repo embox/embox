@@ -1,6 +1,6 @@
 diff -aur ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/cldc/src/vm/cpu/i386/kni_md.h
 --- ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-02-04 18:36:47.000000000 +0400
-+++ phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-06-04 21:57:14.989035686 +0400
++++ phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-06-06 12:53:41.321924413 +0400
 @@ -36,7 +36,7 @@
  typedef signed char jbyte;
  typedef int         jint;
@@ -12,7 +12,7 @@ diff -aur ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/
  typedef long long jlong;
 diff -aur ../../../../../download/phoneme/javacall/interface/javacall_defs.h phoneme/javacall/interface/javacall_defs.h
 --- ../../../../../download/phoneme/javacall/interface/javacall_defs.h	2014-02-04 18:37:02.000000000 +0400
-+++ phoneme/javacall/interface/javacall_defs.h	2014-06-04 23:29:02.555796870 +0400
++++ phoneme/javacall/interface/javacall_defs.h	2014-06-06 12:53:41.605920843 +0400
 @@ -260,11 +260,11 @@
   * @typedef javacall_pixel
   * @brief Pixel type for LCD graphics
@@ -27,3 +27,21 @@ diff -aur ../../../../../download/phoneme/javacall/interface/javacall_defs.h pho
  typedef unsigned int javacall_pixel;
  #else
  typedef unsigned short javacall_pixel;
+diff -aur ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/pcsl/makefiles/share/gcc.gmk
+--- ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk	2014-02-04 18:36:57.000000000 +0400
++++ phoneme/pcsl/makefiles/share/gcc.gmk	2014-06-06 13:12:04.276061138 +0400
+@@ -42,10 +42,10 @@
+ 
+ GCC_VERSION	=
+ 
+-CC		= $(GNU_TOOLS_BINDIR)gcc$(GCC_VERSION)
+-CPP		= $(GNU_TOOLS_BINDIR)g++$(GCC_VERSION)
+-LD		= $(GNU_TOOLS_BINDIR)g++$(GCC_VERSION)
+-AR		= $(GNU_TOOLS_BINDIR)ar -rc
++CC		:= $(CC)
++CPP		:= $(CXX)
++LD		:= $(CXX)
++AR		:= $(AR) -rc
+ 
+ CC_OUTPUT=-o 
+ AR_OUTPUT=
