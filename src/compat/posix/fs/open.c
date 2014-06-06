@@ -37,14 +37,13 @@ extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
-	char name_buf[NAME_MAX];
+	char name[NAME_MAX];
 	struct file_desc *kfile;
 	va_list args;
 	mode_t mode;
 	int rc;
 	char *parent_path;
 	DIR *dir;
-	char *name;
 	struct node *node;
 	struct path node_path;
 	struct idesc_table*it;
@@ -59,7 +58,8 @@ int open(const char *path, int __oflag, ...) {
 	mode = va_arg(args, mode_t);
 	va_end(args);
 
-	name = basename(strcpy(name_buf, path));
+	strcpy(path_buf, path);
+	strcpy(name, basename(path_buf));
 	if (0 == strcmp(name, "/")) {
 		return SET_ERRNO(EISDIR);
 	}
