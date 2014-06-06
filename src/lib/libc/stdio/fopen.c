@@ -49,9 +49,7 @@ static void file_free(FILE *file) {
 	}
 }
 
-FILE *fopen(const char *path, const char *mode) {
-	int fd;
-	FILE *file = NULL;
+static int mode2flag(const char *mode) {
 	int flags = 0;
 
 	if (strchr(mode, 'r')) {
@@ -65,6 +63,16 @@ FILE *fopen(const char *path, const char *mode) {
 	if (strchr(mode, 'a')) {
 		flags |= O_APPEND | O_WRONLY | O_CREAT;
 	}
+
+	return flags;
+}
+
+FILE *fopen(const char *path, const char *mode) {
+	int fd;
+	FILE *file = NULL;
+	int flags = 0;
+
+	flags = mode2flag(mode);
 
 	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
 		/* That's sad, but open sets errno, no need to alter */
@@ -97,10 +105,30 @@ FILE *fdopen(int fd, const char *mode) {
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {
-	if (NULL == file) {
-		return file;
+	int fd;
+	int flags = 0;
+	int old_fd;
+
+	if (NULL == path || NULL == file) {
+		return NULL;
 	}
-	return NULL;
+
+	flags = mode2flag(mode);
+
+	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
+		/* That's sad, but open sets errno, no need to alter */
+		return NULL;
+	}
+	old_fd = file->fd;
+
+	dup2(fd, old_fd);
+	//memset(file, 0, sizeof(*file));
+
+	//file->fd = fd;
+
+	close(fd);
+
+	return file;
 }
 
 int fclose(FILE *file) {
