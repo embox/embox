@@ -203,7 +203,7 @@ ifdef ROOTFS_OUT_DIR
 .PHONY : __copy_user_rootfs
 all : __copy_user_rootfs $(__cpio_files)
 
-$(__cpio_files) :
+$(__cpio_files) : FORCE
 	$(foreach f,$(patsubst $(abspath $(ROOTFS_DIR))/%,$(ROOTFS_OUT_DIR)/%,$(abspath $@)), \
 		$(CP) -r -T $(src_file) $f; \
 		$(foreach c,chmod chown,$(if $(and $($c),$(findstring $($c),'')),,$c $($c) $f;)) \
