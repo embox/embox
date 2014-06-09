@@ -37,8 +37,8 @@ $(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
 	@touch $@
 
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
-		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
+	$(CP) -r -T $(src_file) $@$(if \
+		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 
