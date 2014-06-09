@@ -16,6 +16,8 @@
 #include <fs/kfile.h>
 #include <sys/types.h>
 
+#include "getumask.h"
+
 int creat(const char *pathname, mode_t mode) {
 	int rc;
 
@@ -29,7 +31,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	struct path leaf;
 
 	vfs_get_leaf_path(&leaf);
-	rc = kmkdir(&leaf, pathname, mode);
+	rc = kmkdir(&leaf, pathname, umask_modify(mode));
 	DPRINTF(("mkdir(%s, %d ...) = %d\n", pathname, mode, rc));
 	return rc;
 }

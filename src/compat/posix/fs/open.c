@@ -21,6 +21,7 @@
 #include <kernel/task/resource/idesc_table.h>
 
 #include <dirent_impl.h>
+#include "getumask.h"
 
 struct node *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
@@ -56,6 +57,7 @@ int open(const char *path, int __oflag, ...) {
 
 	va_start(args, __oflag);
 	mode = va_arg(args, mode_t);
+	mode = umask_modify(mode);
 	va_end(args);
 
 	strcpy(path_buf, path);
