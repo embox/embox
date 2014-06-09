@@ -122,10 +122,7 @@ extern int    fstat(int fd, struct stat *);
 extern int    mkfifo(const char *, mode_t);
 extern int    mknod(const char *, mode_t, dev_t);
 extern int    mkdir (const char *, mode_t );
-static inline mode_t umask(mode_t mode) {
-	(void)mode;
-	return 0;
-}
+extern mode_t umask(mode_t mode);
 
 __END_DECLS
 

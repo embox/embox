@@ -6,6 +6,7 @@ module All {
 		dirent,
 		fsop,
 		getcwd,
+		umask,
 		xattr,
 		libgen
 }
@@ -77,6 +78,13 @@ static module open {
 	depends embox.kernel.task.resource.errno
 	depends libgen
 	depends dirent
+}
+
+static module umask {
+	source "umask.c"
+
+	option number default_umask = 0022
+	depends embox.kernel.task.task_resource
 }
 
 static module xattr {
