@@ -4,7 +4,7 @@ module smac extends api {
 	source "smac.c",
 	       "smac_security.c"
 
-	@InitFS
+	@InitFS(chown="1", chmod="0600", xattr="SMAC32LABEL=smac_admin")
 	source "smac_users"
 
 	option number max_entries = 64
