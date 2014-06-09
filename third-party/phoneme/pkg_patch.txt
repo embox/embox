@@ -41,7 +41,7 @@ diff -aur ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/p
 +CC		:= $(CC)
 +CPP		:= $(CXX)
 +LD		:= $(CXX)
-+AR		:= $(AR) -rc
++AR		:= $(CROSS_COMPILE)ar -rc
  
  CC_OUTPUT=-o 
  AR_OUTPUT=
