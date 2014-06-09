@@ -24,7 +24,7 @@ EMBOX_CMD(exec);
 
 #define MSG_INFO "cp: "
 
-#define CP_DEFAULT_MODE 0755
+#define CP_MKDIR_MODE 0777
 
 static void print_usage(void) {
 	printf("Usage:\n"
@@ -131,7 +131,7 @@ static int cp_recursive(char *src, char *dst) {
 
 			switch (path_type(src)) {
 			case S_IFDIR:
-				if (0 > mkdir(dst, CP_DEFAULT_MODE)) {
+				if (0 > mkdir(dst, CP_MKDIR_MODE)) {
 					return -errno;
 				}
 				cp_recursive(src, dst);
@@ -196,7 +196,7 @@ static int exec(int argc, char **argv) {
 		dst_type = path_type(cp_g_dst_path);
 
 		if (src_type == S_IFDIR && dst_type < 0) {
-			if (0 > mkdir(cp_g_dst_path, CP_DEFAULT_MODE)) {
+			if (0 > mkdir(cp_g_dst_path, CP_MKDIR_MODE)) {
 				return -errno;
 			}
 		}

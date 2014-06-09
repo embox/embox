@@ -12,9 +12,6 @@
 
 #include <unistd.h>
 
-
-#define DEFAULT_MODE 0755
-
 static FILE stdin_struct = {
 	.fd = STDIN_FILENO,
 };

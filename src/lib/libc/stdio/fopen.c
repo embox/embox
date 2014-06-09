@@ -15,7 +15,7 @@
 
 #include <sys/ioctl.h>
 
-#define DEFAULT_MODE 0755
+#define DEFAULT_MODE 0666
 
 extern FILE *stdio_file_alloc(int fd);
 
