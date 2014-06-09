@@ -198,3 +198,24 @@ $(IMAGE_SIZE): $(IMAGE)
 		echo "$(SIZE) util not found" > $@;   \
 	fi;
 
+ifdef ROOTFS_OUT_DIR
+
+.PHONY : __copy_user_rootfs
+all : __copy_user_rootfs $(__cpio_files)
+
+$(__cpio_files) :
+	$(foreach f,$(patsubst $(abspath $(ROOTFS_DIR))/%,$(ROOTFS_OUT_DIR)/%,$(abspath $@)), \
+		$(CP) -r -T $(src_file) $f; \
+		$(foreach c,chmod chown,$(if $(and $($c),$(findstring $($c),'')),,$c $($c) $f;)) \
+		$(foreach a,$(strip $(subst ',,$(xattr))), \
+			attr -s $(basename $(subst =,.,$a)) -V $(subst .,,$(suffix $(subst =,.,$a))) $f;) \
+		find $f -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf)
+
+__copy_user_rootfs :
+	if [ -d $(USER_ROOTFS_DIR) ]; \
+	then \
+		cd $(USER_ROOTFS_DIR) \
+			&& cp -r * $(abspath $(ROOTFS_OUT_DIR)); \
+	fi
+endif
+
