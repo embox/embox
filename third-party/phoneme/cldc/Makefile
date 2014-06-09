@@ -24,7 +24,7 @@ $(BUILD) :
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JVMWorkSpace=$(CLDC_DIR) JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 			JDK_DIR=$(JDK_DIR) \
-			CXX=$(EMBOX_GXX) \
+			EMBOX_GCC=$(EMBOX_GCC) EMBOX_GXX=$(EMBOX_GXX) CROSS_COMPILE=$(CROSS_COMPILE) \
 			CXXFLAGS_EXTERNAL_TARGET='-fpermissive -Wno-error' \
 	)
 	mkdir -p $(BUILD_DIR)/gen && cd $(BUILD_DIR)/gen && ( \

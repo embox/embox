@@ -155,6 +155,9 @@ extern int raise(int signo);
 
 extern const char *const sys_siglist[];
 
+#define MINSIGSTKSZ	2048
+extern int sigaltstack(const stack_t *ss, stack_t *oss);
+
 __END_DECLS
 
 #endif /* SIGNAL_H_ */
