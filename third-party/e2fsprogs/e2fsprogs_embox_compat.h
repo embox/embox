@@ -28,7 +28,7 @@
 
 #define EMBOX
 
-#include <sys/mmap.h>
+#include <sys/mman.h>
 
 #define O_ACCMODE       00000003
 //#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
