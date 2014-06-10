@@ -1,0 +1,41 @@
+
+PKG_NAME := ntfs-3g_ntfsprogs
+PKG_VER  := 2013.1.13
+
+PKG_SOURCES := http://tuxera.com/opensource/$(PKG_NAME)-$(PKG_VER).tgz
+PKG_MD5     := 2d6fb47ddf62b51733227126fe9227fe
+
+PKG_PATCHES := patch.txt
+
+include $(EXTBLD_LIB)
+
+samba_cppflags = -include $(ROOT_DIR)/third-party/ntfs-3g-new/ntfs-3g_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/ntfs-3g-new/include \
+	${EMBOX_IMPORTED_CPPFLAGS}
+
+$(CONFIGURE) :
+	export EMBOX_GCC_LINK=full; \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		autoconf && aclocal && automake; \
+		./configure --prefix=$(PKG_INSTALL_DIR) \
+			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			CC=$(EMBOX_GCC) \
+			CPPFLAGS="$(samba_cppflags)" \
+			--enable-mount-helper=no \
+			--disable-ldconfig \
+			--disable-largefile \
+			--enable-shared=no \
+			--with-fuse=external \
+		)
+	touch $@
+
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/libntfs-3g  && ( \
+		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+	touch $@
+
+$(INSTALL) :
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/libntfs-3g/.libs/libntfs-3g.a $(PKG_INSTALL_DIR)/libntfs-3g/.libs/libntfs-3g.a
+	touch $@

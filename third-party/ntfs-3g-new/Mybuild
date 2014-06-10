@@ -1,0 +1,10 @@
+package third_party.ntfs_3g_new
+
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/libntfs-3g/.libs")
+	source "libntfs-3g.a"
+
+	depends embox.lib.LibC
+	depends embox.lib.LibCStringDup
+}
