@@ -137,4 +137,10 @@ static inline struct group *getgrgid(gid_t gid) {
 	return NULL;
 }
 
+typedef int wchar_t;
+static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
+	printf(">>> %s\n", __func__);
+	return 0;
+}
+
 #endif /* NTFS_EMBOX_COMPAT_H_ */

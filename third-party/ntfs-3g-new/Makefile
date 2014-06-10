@@ -37,5 +37,7 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
+	mkdir -p $(PKG_INSTALL_DIR)/include $(PKG_INSTALL_DIR)/include/ntfs-3g
+	cp -R $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/ntfs-3g $(PKG_INSTALL_DIR)/include
 	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/libntfs-3g/.libs/libntfs-3g.a $(PKG_INSTALL_DIR)/libntfs-3g/.libs/libntfs-3g.a
 	touch $@
