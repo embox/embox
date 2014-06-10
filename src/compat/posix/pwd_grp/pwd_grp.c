@@ -477,3 +477,24 @@ out:
 	return res;
 }
 
+static int write_int_field(FILE *fp, long int val, char delim) {
+	if (val) {
+		fprintf(fp, "%ld", val);
+	}
+	fputc(delim, fp);
+	return 0;
+}
+
+int putspent(struct spwd *p, FILE *fp) {
+
+	fprintf(fp, "%s:%s:", p->sp_namp, p->sp_pwdp);
+	write_int_field(fp, p->sp_lstchg, ':');
+	write_int_field(fp, p->sp_min, ':');
+	write_int_field(fp, p->sp_max, ':');
+	write_int_field(fp, p->sp_warn, ':');
+	write_int_field(fp, p->sp_inact, ':');
+	write_int_field(fp, p->sp_expire, ':');
+	write_int_field(fp, p->sp_flag, '\n');
+
+	return 0;
+}
