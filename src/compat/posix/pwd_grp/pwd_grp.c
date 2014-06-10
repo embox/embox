@@ -407,7 +407,7 @@ struct spwd *fgetspent(FILE *file) {
 	return &spwd;
 }
 
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
+struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
 	FILE *shdwf;
 
@@ -476,3 +476,4 @@ out:
 	fclose(passwdf);
 	return res;
 }
+

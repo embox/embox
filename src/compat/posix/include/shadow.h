@@ -52,6 +52,11 @@ extern struct spwd *getspnam_f(const char *name);
 
 extern struct spwd *getspnam(char *name);
 
+extern int putspent(struct spwd *p, FILE *fp);
+
+/* non-standart extention */
+
+extern struct spwd *spwd_find(const char *spwd_path, const char *name);
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SHADOW_H_ */

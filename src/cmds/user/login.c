@@ -41,25 +41,6 @@ EMBOX_CMD(login_cmd);
 
 #define SMAC_USERS "/smac_users"
 
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
-	struct spwd *spwd;
-	FILE *shdwf;
-
-	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
-		return NULL;
-	}
-
-	while (NULL != (spwd = fgetspent(shdwf))) {
-		if (0 == strcmp(spwd->sp_namp, name)) {
-			break;
-		}
-	}
-
-	fclose(shdwf);
-
-	return spwd;
-}
-
 static int utmp_login(short ut_type, const char *ut_user) {
 	struct utmp utmp;
 	struct timeval tv;
