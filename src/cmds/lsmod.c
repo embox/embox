@@ -6,17 +6,21 @@
  * @author Eldar Abusalimov
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <framework/mod/api.h>
 #include <errno.h>
+#include <stdint.h>
+
+
+#include <framework/mod/api.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: lsmod [-qdhpn]\n");
+	printf("Usage: lsmod [-qdlhp:n:]\n");
 }
 
 static void mod_print(const struct mod *mod) {
@@ -27,11 +31,10 @@ static void mod_print(const struct mod *mod) {
 static int exec(int argc, char **argv) {
 	const struct mod *mod, *dep;
 	const char *substr_package = NULL, *substr_name = NULL;
-	int print_deps = 0;
+	int print_deps = 0, show_label = 0;
 	int opt;
 
-	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "qdhp:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "qdlhp:n:"))) {
 		switch (opt) {
 		case 'd':
 			print_deps = 1;
@@ -44,6 +47,9 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'n':
 			substr_name = optarg;
+			break;
+		case 'l':
+			show_label = 1;
 			break;
 		case '?':
 			break;
@@ -60,6 +66,13 @@ static int exec(int argc, char **argv) {
 		}
 		mod_print(mod);
 		printf("\n");
+		if (show_label) {
+			printf("\n\tlabel:%x:%x:%x%x\n",
+					(uint32_t)mod_label(mod)->text.vma,
+					(uint32_t)mod_label(mod)->data.vma,
+					(uint32_t)mod_label(mod)->bss.vma,
+					(uint32_t)mod_label(mod)->rodata.vma);
+		}
 
 		if (print_deps) {
 			printf("\n\t-> ");

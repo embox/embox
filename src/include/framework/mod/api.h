@@ -184,4 +184,8 @@ static inline const char *mod_pkg_name(const struct mod *mod) {
 	return mod->build_info ? mod->build_info->pkg_name : NULL;
 }
 
+static inline const struct mod_label *mod_label(const struct mod *mod) {
+	return mod->build_info ? mod->build_info->label : NULL;
+}
+
 #endif /* FRAMEWORK_MOD_API_H_ */
