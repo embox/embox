@@ -14,8 +14,6 @@
 #include <stdio.h> /* snprintf */
 #include <fcntl.h> /* O_CREAT, O_APPEND */
 #include <fs/flags.h>
-#include <fs/file_desc.h>
-#include <fs/kfile.h>
 #include <fs/flags.h>
 #include <kernel/task.h>
 #include <embox/unit.h>
@@ -32,7 +30,6 @@ static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task_
 
 #define SMAC_MAX_ENTS OPTION_GET(NUMBER, max_entries)
 #define SMAC_AUDIT OPTION_GET(NUMBER, audit)
-#define SMAC_AUDIT_FILE OPTION_STRING_GET(audit_file)
 #define AUDITLINE_LEN 256
 
 static const char *smac_floor = "_";
@@ -53,29 +50,6 @@ static int smac_env_n;
 #define foreach_entry(ent) \
 	for (ent = smac_env; ent != smac_env + smac_env_n; ++ent)
 
-static struct file_desc *audit_log_desc;
-static char no_audit;
-
-#include <fs/vfs.h>
-static int audit_log_open(void) {
-	int fd;
-
-	fd = creat(SMAC_AUDIT_FILE, 0777);
-	if (fd < 0) {
-		return -1;
-	}
-
-	if (!(audit_log_desc = file_desc_get(fd))) {
-		close(fd);
-		return -1;
-	}
-
-	/* This is `forever' file_desc, prevent it from to be free */
-	audit_log_desc->idesc.idesc_count ++;
-	close(fd);
-
-	return 0;
-}
 
 int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {
 
@@ -87,8 +61,8 @@ int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char
 
 static void audit_log(const char *subject, const char *object,
 		int may_access, int ret, struct smac_audit *audit) {
+	static char no_audit;
 	char line[AUDITLINE_LEN], straccess[4];
-	int linelen;
 	uid_t uid;
 	struct passwd *pwd;
 
@@ -96,24 +70,13 @@ static void audit_log(const char *subject, const char *object,
 		return;
 	}
 
-	if (!audit_log_desc) {
-		int ret;
-		no_audit = 1;
-		ret = audit_log_open();
-		no_audit = 0;
-
-		if (ret) {
-			return;
-		}
-	}
-
 	straccess[0] = may_access & FS_MAY_READ  ? 'r' : '-';
 	straccess[1] = may_access & FS_MAY_WRITE ? 'w' : '-';
 	straccess[2] = may_access & FS_MAY_EXEC  ? 'x' : '-';
 	straccess[3] = '\0';
 
-	no_audit = 1;
 	uid = getuid();
+	no_audit = 1;
 	pwd = getpwuid(uid);
 	no_audit = 0;
 
@@ -121,12 +84,10 @@ static void audit_log(const char *subject, const char *object,
 		audit->file_name = "";
 	}
 
-	linelen = snprintf(line, AUDITLINE_LEN,
+	snprintf(line, AUDITLINE_LEN,
 			"subject=%s(label=%s), object=%s, file=%s, request=%s, action=%s, function=%s\n",
 			pwd->pw_name, subject, object, audit->file_name, straccess, ret == 0 ? "ALLOW" : "DENINED",
 			audit->fn_name);
-
-	kwrite(line, linelen, audit_log_desc);
 
 	seculog_record(SECULOG_LABEL_MANDATORY, line);
 }
@@ -323,11 +284,6 @@ int smac_labelget(char *label, size_t len) {
 
 static int smac_init(void) {
 	strcpy(((struct smac_task *) task_self_resource_security())->label, smac_admin);
-
-	audit_log_open(); /* not cheking retcode, as the module can be initialized before
-			     fs and no file could be opened.
-			     But log_open will repeat every log commit till success
-			  */
 
 	/* should allow ourself do anything with not labeled file as there is no
  	 * security at all.
