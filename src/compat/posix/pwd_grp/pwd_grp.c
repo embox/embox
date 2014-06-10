@@ -67,8 +67,11 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 
 static int read_int_field(FILE *stream, const char *format, void *field, int delim) {
 	int val;
-	int ret = fscanf(stream, format, field);
+	int ret;
 
+	sscanf("0", format, field);
+
+	ret = fscanf(stream, format, field);
 	if (0 > ret) {
 		return -ret;
 	}
@@ -397,7 +400,7 @@ struct spwd *fgetspent(FILE *file) {
 		return NULL;
 	}
 
-	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_expire, '\n'))) {
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_flag, '\n'))) {
 		return NULL;
 	}
 
