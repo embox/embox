@@ -27,7 +27,7 @@ void semaphore_enter(struct sem *s) {
 }
 
 int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
-	struct timespec current_time;
+	struct timespec current_time, time_to_wait;
 	int ret = 0;
 
 	assert(s);
@@ -38,11 +38,11 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 
 		clock_gettime(CLOCK_REALTIME, &current_time);
 
-		ms = abs_timeout->tv_nsec - current_time.tv_nsec;
+		time_to_wait = timespec_sub(*abs_timeout, current_time);
+		ms = timespec_to_ns(&time_to_wait) / NSEC_PER_MSEC;
 
 		if (ms > 0) {
-			ret = WAITQ_WAIT_TIMEOUT(&s->wq, !tryenter_sched_lock(s),
-					abs_timeout->tv_nsec - current_time.tv_nsec);
+			ret = WAITQ_WAIT_TIMEOUT(&s->wq, !tryenter_sched_lock(s), ms);
 		} else {
 			ret = -ETIMEDOUT;
 		}
