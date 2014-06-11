@@ -10,15 +10,19 @@
 #include <kernel/task.h>
 #include <hal/vfork.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/task_argv.h>
 
 extern int exec_call(char *path, char *argv[], char *envp[]);
 
 static void *task_stub_execv(void *arg) {
-	struct task_param *param = arg;
+	struct task *task;
 	int res;
+	char *path;
 
-	res = shell_exec(shell_any(), param->path);
-	res = exec_call(param->path, NULL, NULL);
+	task = task_self();
+	path = task_resource_argv_path(task);
+
+	res = exec_call(path, NULL, NULL);
 
 	return (void*)res;
 }

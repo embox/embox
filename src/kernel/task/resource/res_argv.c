@@ -19,6 +19,7 @@ struct task_argv {
 	int argc;
 	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
 	char *argv[ARGS_QUANTITY];
+	char path[ARG_LENGTH];
 };
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);
@@ -50,6 +51,8 @@ static int task_argv_exec(const struct task *task, void *buff) {
 	}
 	task_argv->argc = task_param->argc;
 
+	strncpy(task_argv->path, task_param->path, sizeof(task_argv->path));
+
 
 	return 0;
 
@@ -76,5 +79,8 @@ int task_resource_argv_argc(const struct task *task) {
 
 char **task_resource_argv_argv(const struct task *task) {
 	return task_resource_argv(task)->argv;
+}
 
+char *task_resource_argv_path(const struct task *task) {
+	return task_resource_argv(task)->path;
 }
