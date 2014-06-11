@@ -49,6 +49,7 @@ int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 
 #include <errno.h>
 
+__BEGIN_DECLS
 static inline
 int alphasort(const struct dirent **a, const struct dirent **b) {
 	(void)a;
@@ -113,6 +114,7 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
 	errno = -EPROTONOSUPPORT;
 	return -1;
 }
+__END_DECLS
 
 #include <netinet/in.h>
 
