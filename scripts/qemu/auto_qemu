@@ -151,7 +151,7 @@ if [ -n "$qemu_nics" ]; then
 	nic_n=0
 	for n in $qemu_nics; do
 		nic_lines="$nic_lines -net nic,model=${NIC2QEMU[$n]},macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
-			-net tap,ifname=tap$nic_n,script=$qemu_start_script,downscript=$qemu_stop_script"
+			-net tap,script=$qemu_start_script,downscript=$qemu_stop_script"
 		nic_n=$(($nic_n + 1))
 	done
 fi
