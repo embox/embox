@@ -9,8 +9,8 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-samba_cppflags = -include $(ROOT_DIR)/third-party/ntfs-3g-new/ntfs-3g_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/ntfs-3g-new/include \
+samba_cppflags = -include $(ROOT_DIR)/third-party/ntfs-3g/ntfs-3g_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/ntfs-3g/include \
 	${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
