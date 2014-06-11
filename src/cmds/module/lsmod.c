@@ -67,7 +67,7 @@ static int exec(int argc, char **argv) {
 		mod_print(mod);
 		printf("\n");
 		if (show_label) {
-			printf("\n\tlabel:%x:%x:%x%x\n",
+			printf("\n\tlabel:%x:%x:%x:%x\n",
 					(uint32_t)mod_label(mod)->text.vma,
 					(uint32_t)mod_label(mod)->data.vma,
 					(uint32_t)mod_label(mod)->bss.vma,
