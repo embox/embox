@@ -3,7 +3,7 @@
 #FS_TEST_RO="iso9660 jffs2"
 #FS_TEST_RW="vfat ext2 ext3 ext4"
 FS_TEST_RO="jffs2"
-FS_TEST_RW="ext2 ext3"
+FS_TEST_RW="ext2 ext3 ntfs"
 FS_TEST_NETWORK="nfs cifs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
@@ -50,7 +50,7 @@ run_qemu_fs() {
 	img_mount=
 	QEMU_MOUNT_HD="\"mount -t $FS /dev/hda /mnt/fs_test\","
 	case $FS in
-		vfat | ext2 | ext3 | ext4 | qnx6)
+		vfat | ext2 | ext3 | ext4 | qnx6 | ntfs)
 			img_mount="$QEMU_MOUNT_HD"
 			;;
 		jffs2)
@@ -86,7 +86,7 @@ run_qemu_fs() {
 
 	img_run=
 	case $FS in
-		vfat | ext2 | ext3 | ext4 | qnx6 | jffs2)
+		vfat | ext2 | ext3 | ext4 | qnx6 | jffs2 | ntfs)
 			img_run="-hda $IMG"
 			;;
 		iso9660)
