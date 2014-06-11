@@ -9,6 +9,7 @@
 #include <cmd/shell.h>
 #include <kernel/task.h>
 #include <hal/vfork.h>
+#include <kernel/task/resource.h>
 
 extern int exec_call(char *path, char *argv[], char *envp[]);
 
@@ -22,16 +23,27 @@ static void *task_stub_execv(void *arg) {
 	return (void*)res;
 }
 
+static int argv_to_argc(char *const argv[]) {
+	int argc;
+
+	for (argc = 0; argv[argc]; argc ++) {
+	}
+
+	return argc;
+}
+
 int execv(const char *path, char *const argv[]) {
 	struct task *task;
-	struct task_param *param = {0};
+	struct task_param param;
 
 	task = task_self();
 
 	if (task_is_vforking(task)) {
-		param->path = (char *)path;
-		param->argv = (char **) argv;
-		vfork_child_done(task, task_stub_execv, param);
+		param.path = (char *)path;
+		param.argv = (char **)argv;
+		param.argc = argv_to_argc(argv);
+		task_resource_exec(task, &param);
+		vfork_child_done(task, task_stub_execv, &param);
 	}
 
 	return 0;

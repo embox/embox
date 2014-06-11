@@ -11,6 +11,9 @@
 
 #include <string.h>
 #include <unistd.h>
+
+#include <kernel/task.h>
+#include <kernel/task/resource.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <hal/context.h>
@@ -39,14 +42,33 @@ static void exec_trampoline(void) {
 	_exit(exec_call(path, NULL, NULL));
 }
 
+static int argv_to_argc(char *const argv[]) {
+	int argc;
+
+	for (argc = 0; argv[argc]; argc ++) {
+	}
+
+	return argc;
+}
+
 int execv(const char *path, char *const argv[]) {
 	struct context oldctx;
 	struct thread *t;
+	struct task *task;
+	struct task_param param;
 
 	strncpy(exec_path, path, sizeof(exec_path) - 1);
 
+	task = task_self();
+	param.path = (char *)path;
+	param.argv = (char **)argv;
+	param.argc = argv_to_argc(argv);
+	task_resource_exec(task, &param);
+
 	sched_lock();
 	t = thread_self();
+
+
 
 	context_init(&t->context, true);
 	context_set_entry(&t->context, exec_trampoline);
