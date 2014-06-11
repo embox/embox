@@ -143,4 +143,12 @@ static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
 	return 0;
 }
 
+//XXX redefine malloc through sysmalloc. Revert it!
+#include <stdlib.h>
+#define malloc(x)     sysmalloc(x)
+#define free(x)       sysfree(x)
+#define memalign(x,y) sysmemalign(x,y)
+#define realloc(x,y)  sysrealloc(x,y)
+#define calloc(x,y)   syscalloc(x,y)
+
 #endif /* NTFS_EMBOX_COMPAT_H_ */
