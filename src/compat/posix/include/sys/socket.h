@@ -16,8 +16,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-__BEGIN_DECLS
-
 typedef int32_t socklen_t;
 
 typedef unsigned short sa_family_t;
@@ -266,6 +264,8 @@ int     socket(int domain, int type, int protocol);
 int     socketpair(int domain, int type, int protocol,
              int socket_vector[2]);
 */
+
+__BEGIN_DECLS
 
 /**
  * create an endpoint for communication.
