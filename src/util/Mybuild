@@ -104,7 +104,6 @@ static module hashtable {
 
 	source "hashtable.c"
 
-	depends embox.lib.LibC
 	depends embox.mem.sysmalloc_api
 	depends embox.mem.objalloc
 }
