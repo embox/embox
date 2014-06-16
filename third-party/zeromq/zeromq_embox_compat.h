@@ -80,8 +80,6 @@ static inline int socketpair(int domain, int type, int protocol, int sv[2]) {
 #define NI_MAXHOST 1
 #define NI_NUMERICHOST 2
 
-#define SIG_BLOCK 1
-
 static inline
 int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	DPRINT();
