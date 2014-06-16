@@ -24,6 +24,7 @@
 #include <fs/perm.h>
 #include <fs/flags.h>
 #include <fs/file_desc.h>
+#include <fs/dcache.h>
 //#include <fs/file_operation.h>
 
 #include <security/security.h>
@@ -73,12 +74,12 @@ out:
 	return retval;
 }
 
-int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
+int kmkdir(struct path *leaf_path, const char *pathname, mode_t mode) {
 	struct path node;
 	const char *lastpath, *ch;
 	int res;
 
-	if (-ENOENT != (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
+	if (-ENOENT != (res = fs_perm_lookup(leaf_path, pathname, &lastpath, &node))) {
 		errno = EEXIST;
 		return -1;
 	}
@@ -208,6 +209,8 @@ int krmdir(const char *pathname) {
 		errno = -res;
 		return -1;
 	}
+
+	dcache_delete(getenv("PWD"), pathname);
 
 	/*vfs_del_leaf(node);*/
 

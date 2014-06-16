@@ -3,6 +3,7 @@
  *
  * @date May 17, 2013
  * @author: Anton Bondarev
+ * @author: Vita Loginova
  */
 
 #include <string.h>

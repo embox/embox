@@ -10,9 +10,11 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <fs/perm.h>
 #include <fs/vfs.h>
+#include <fs/dcache.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <fs/flags.h>
@@ -36,7 +38,7 @@ DIR *opendir(const char *path) {
 	}
 
 	vfs_get_leaf_path(&leaf);
-	if (0 != (res = fs_perm_lookup(&leaf, path, NULL, &node_path))) {
+	if (0 != (res = fs_perm_lookup_relative(path, NULL, &node_path))) {
 		SET_ERRNO(-res);
 		return NULL;
 	}
