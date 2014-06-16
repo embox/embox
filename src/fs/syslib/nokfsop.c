@@ -13,7 +13,7 @@ int kcreat(struct path *node, const char *pathname, mode_t mode) {
 	return -1;
 }
 
-int kmkdir(struct node *node, const char *pathname, mode_t mode) {
+int kmkdir(struct path *root_node, const char *pathname, mode_t mode) {
 	return -1;
 }
 
