@@ -16,7 +16,7 @@
 
 #include <fs/dcache.h>
 
-#define DCACHE_TABLE_SIZE    10
+#define DCACHE_TABLE_SIZE OPTION_GET(NUMBER, dcache_table_size)
 #define DCACHE_MAX_NAME_SIZE 20
 
 EMBOX_UNIT_INIT(dcache_init);
@@ -68,12 +68,12 @@ int dcache_delete(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 
-	if (*rest == '\0') {
-		return -1;
+	if (strlen(rest) == 0) {
+		return -EINVAL;
 	}
 
 	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
-		return -1;
+		return -EINVAL;
 	}
 
 	compound_path(dkey.fullpath, prefix, rest);
@@ -87,14 +87,16 @@ int dcache_delete(const char *prefix, const char *rest) {
 int dcache_add(const char *prefix, const char *rest, struct path *path) {
 	struct dvalue *dvalue;
 
-	assert(path);
+	if (!path) {
+		return -EINVAL;
+	}
 
-	if (*rest == '\0') {
-		return -1;
+	if (strlen(rest) == 0) {
+		return -EINVAL;
 	}
 
 	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
-		return -1;
+		return -EINVAL;
 	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_path_pool))) {
@@ -117,7 +119,7 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 
-	if (*rest == '\0') {
+	if (strlen(rest) == 0) {
 		return NULL;
 	}
 
@@ -131,7 +133,8 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	return dvalue ? &dvalue->path : NULL;
 }
 
-static size_t dcache_hash(struct dkey *dkey) {
+static size_t dcache_hash(void *key) {
+	struct dkey *dkey = key;
 	size_t hash;
 	char *path = dkey->fullpath;
 
@@ -143,13 +146,14 @@ static size_t dcache_hash(struct dkey *dkey) {
 	return hash;
 }
 
-static int dcache_cmp(struct dkey *key1, struct dkey *key2) {
-	return strcmp(key1->fullpath, key2->fullpath);
+static int dcache_cmp(void *key1, void *key2) {
+	struct dkey *dkey1 = key1, *dkey2 = key2;
+	return strcmp(dkey1->fullpath, dkey2->fullpath);
 }
 
 static int dcache_init(void) {
 	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
-			(get_hash_ft) &dcache_hash, (ht_cmp_ft) &dcache_cmp);
+			&dcache_hash, &dcache_cmp);
 
 	if (dcache_table == NULL) {
 		return -ENOMEM;
