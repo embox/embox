@@ -3,6 +3,5 @@ package embox.driver
 module at91_tc {
 	source "at91_timer_counter.c"
 
-	depends embox.lib.LibC
 	depends embox.kernel.irq
 }
