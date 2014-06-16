@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 
 #ifdef __cplusplus
 
@@ -85,10 +86,6 @@ namespace std {
 		DPRINT();
 		return -1;
 	}
-
-
-#include <sys/mman.h>
-
 	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 		(void)stream;
 		(void)buf;
