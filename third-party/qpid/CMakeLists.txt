@@ -3,7 +3,7 @@ ExternalProject_Add(
    qpid
    PREFIX .
    DOWNLOAD_DIR $ENV{EMBOX_ROOT}/download
-   URL http://apache-mirror.rbc.ru/pub/apache/qpid/0.24/qpid-cpp-0.24.tar.gz
+   URL http://archive.apache.org/dist/qpid/0.24/qpid-cpp-0.24.tar.gz
    URL_MD5 f6245e2e68ccd1bac8fe706db3fba707
    UPDATE_COMMAND ""
    PATCH_COMMAND
