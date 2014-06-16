@@ -14,7 +14,9 @@
 typedef jmp_buf sigjmp_buf;
 
 typedef struct regex {
-	size_t re_nsub; /** number of parent hesised subexpressions */
+	size_t re_nsub; /** number of parenthesised subexpressions */
+	void *regex_extended;
+	char *regex_error;
 } regex_t;
 
 typedef ssize_t regoff_t;
