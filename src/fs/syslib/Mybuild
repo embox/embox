@@ -54,6 +54,7 @@ abstract module dcache {
 module dcache_last extends dcache{
 	option number dcache_table_size=10
 	source "dcache.c"
+	depends embox.util.hashtable
 }
 
 module noncache extends dcache{
