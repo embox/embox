@@ -51,28 +51,8 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	sched_wakeup(t);
 }
 
-#if OPTION_GET(BOOLEAN, timer_allocate_on_stack)
-#define SCHED_WAIT_TIMER_DEF(_tmr) \
-	struct sys_timer _tmr;
-
-#define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_init(&_tmr, __VA_ARGS__)
-
-#define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(&_tmr)
-#else
-#define SCHED_WAIT_TIMER_DEF(_tmr) \
-	struct sys_timer *_tmr;
-
-#define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_set(&_tmr, __VA_ARGS__)
-
-#define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(_tmr)
-#endif
-
 int sched_wait_timeout(clock_t timeout, clock_t *remain) {
-	SCHED_WAIT_TIMER_DEF(tmr);
+	struct sys_timer tmr;
 	clock_t remain_v, cur_time;
 	int res, diff;
 
@@ -83,14 +63,11 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	}
 
 	cur_time = clock();
-	if ((res = SCHED_WAIT_TIMER_INIT(tmr, TIMER_ONESHOT, jiffies2ms(timeout),
-			sched_wait_timeout_handler, thread_self()))) {
-		return res;
-	}
-
+	timer_init(&tmr, TIMER_ONESHOT, timeout,
+			sched_wait_timeout_handler, thread_self());
 	schedule();
 	diff = clock() - cur_time;
-	SCHED_WAIT_TIMER_CLOSE(tmr);
+	timer_close(&tmr);
 
 	if (diff < timeout) {
 		remain_v = timeout - diff;

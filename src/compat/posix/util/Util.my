@@ -11,7 +11,7 @@ module All {
 }
 
 module Time {
-	depends time,
+		depends time,
 		sleep,
 		gettimeofday
 }
@@ -35,11 +35,6 @@ static module time {
 	source "time.c"
 	source "linux_timer.c"
 
-	depends embox.kernel.time.kernel_time
-}
-
-static module times {
-	source "times.c"
 	depends embox.kernel.time.kernel_time
 }
 

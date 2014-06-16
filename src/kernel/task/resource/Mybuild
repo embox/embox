@@ -56,10 +56,6 @@ module mmap_notify {
 	@NoRuntime depends embox.lib.LibCAssert
 }
 
-module module_ptr {
-	source "module_ptr.c"
-}
-
 module security {
 	option number security_size
 	source "security.c"
@@ -101,15 +97,4 @@ module waitpid {
 	depends embox.kernel.sched.wait_queue
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.lib.LibCAssert
-}
-
-module vfork {
-	source "res_vfork.c"
-}
-
-module argv {
-	source "res_argv.c"
-
-	option number args_quantity = 0x8
-	option number arg_length = 0x20
 }

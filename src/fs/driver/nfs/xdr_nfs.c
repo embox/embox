@@ -247,7 +247,7 @@ int xdr_nfs_read_file(struct xdr *xs, char *point) {
 				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
 				&& xdr_u_int(xs, &reply->count)
 				&& xdr_u_int(xs, &reply->eof)
-				&& xdr_bytes(xs, (char **)&data, &reply->datalen, XDR_LAST_UINT32)) {
+				&& xdr_bytes(xs, (char **)&data, &reply->datalen, DIRCOUNT)) {
 				return XDR_SUCCESS;
 			}
 			break;
@@ -303,7 +303,7 @@ int xdr_nfs_write_file(struct xdr *xs, char *point) {
 
 			if (xdr_nfs_name_fh(xs, req->fh) && unaligned_xdr_u_hyper(xs, &req->offset)
 				&& xdr_u_int(xs, &req->count) && xdr_u_int(xs, &req->stable)
-				&&  xdr_bytes(xs, (char **)&data, &req->datalen, XDR_LAST_UINT32)) {
+				&&  xdr_bytes(xs, (char **)&data, &req->datalen, DIRCOUNT)) {
 				return XDR_SUCCESS;
 			}
 			break;

@@ -16,10 +16,6 @@ int security_node_create(struct node *dir, mode_t mode) {
 	return 0;
 }
 
-void security_node_cred_fill(struct node *node) {
-
-}
-
 int security_node_delete(struct node *dir, struct node *node) {
 	return 0;
 }

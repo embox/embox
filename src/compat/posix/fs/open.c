@@ -21,7 +21,6 @@
 #include <kernel/task/resource/idesc_table.h>
 
 #include <dirent_impl.h>
-#include "getumask.h"
 
 struct node *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
@@ -38,13 +37,14 @@ extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
-	char name[NAME_MAX];
+	char name_buf[NAME_MAX];
 	struct file_desc *kfile;
 	va_list args;
 	mode_t mode;
 	int rc;
 	char *parent_path;
 	DIR *dir;
+	char *name;
 	struct node *node;
 	struct path node_path;
 	struct idesc_table*it;
@@ -57,11 +57,9 @@ int open(const char *path, int __oflag, ...) {
 
 	va_start(args, __oflag);
 	mode = va_arg(args, mode_t);
-	mode = umask_modify(mode);
 	va_end(args);
 
-	strcpy(path_buf, path);
-	strcpy(name, basename(path_buf));
+	name = basename(strcpy(name_buf, path));
 	if (0 == strcmp(name, "/")) {
 		return SET_ERRNO(EISDIR);
 	}
@@ -105,10 +103,7 @@ int open(const char *path, int __oflag, ...) {
 		}
 
 		if (__oflag & O_TRUNC) {
-			if (-1 == ktruncate(node, 0)){
-				//errno already setup
-				return -1;
-			}
+			ktruncate(node, 0);
 		}
 	}
 

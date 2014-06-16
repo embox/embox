@@ -115,7 +115,4 @@ Maximum number of bytes in a character, for any supported locale.
 */
 #define MB_LEN_MAX 1
 
-//TODO life is pain
-#include <ctype.h>
-
 #endif /* LIMITS_H_ */

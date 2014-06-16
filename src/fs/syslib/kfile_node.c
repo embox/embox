@@ -76,11 +76,6 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	/* XXX it's here and not in vfs since vfs node associated with drive after
- 	 * creating. security may call driver dependent features, like setting
-	 * xattr
-	 */
-	security_node_cred_fill(child->node);
 
 	return 0;
 }
@@ -90,8 +85,11 @@ int ktruncate(struct node *node, off_t length) {
 	struct nas *nas;
 	struct fs_driver *drv;
 
-	if (node_is_directory(node)) {
-		SET_ERRNO(EISDIR);
+	nas = node->nas;
+	drv = nas->fs->drv;
+
+	if (NULL == drv->fsop->truncate) {
+		errno = EPERM;
 		return -1;
 	}
 
@@ -100,12 +98,9 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	nas = node->nas;
-	drv = nas->fs->drv;
-
-	if (NULL == drv->fsop->truncate) {
-		//errno = EPERM;
-		return 0;
+	if (node_is_directory(node)) {
+		SET_ERRNO(EISDIR);
+		return -1;
 	}
 
 	if (0 > (ret = drv->fsop->truncate(node, length))) {

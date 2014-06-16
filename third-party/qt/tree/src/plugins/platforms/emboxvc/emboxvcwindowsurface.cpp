@@ -15,7 +15,6 @@
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
 
-#include <kernel/thread.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/sched/waitq.h>
 #include <util/ring_buff.h>

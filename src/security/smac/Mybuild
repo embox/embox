@@ -4,7 +4,7 @@ module smac extends api {
 	source "smac.c",
 	       "smac_security.c"
 
-	@InitFS(chown="1", chmod="0600", xattr="SMAC32LABEL=smac_admin")
+	@InitFS
 	source "smac_users"
 
 	option number max_entries = 64
@@ -16,6 +16,7 @@ module smac extends api {
 	   3 : log denied & accepted
 	*/
 	option number audit=1
+	option string audit_file="/tmp/smac_log"
 
 	option string default_file_label="*"
 
@@ -23,6 +24,4 @@ module smac extends api {
 
 	depends embox.security.seculog
 	depends embox.kernel.task.resource.security
-
-	depends embox.security.seculog_file
 }

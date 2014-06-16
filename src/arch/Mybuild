@@ -47,6 +47,3 @@ abstract module stackframe { }
 abstract module smp { }
 
 abstract module cpu_info { }
-
-abstract module vfork_entry { }
-abstract module fork_entry { }

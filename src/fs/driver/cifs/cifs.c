@@ -263,7 +263,7 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct cifs_fs_info *fsi;
-	char fileurl[2 * PATH_MAX];
+	char fileurl[PATH_MAX];
 	SMBCFILE *file;
 	struct stat st;
 	int rc;
@@ -278,7 +278,7 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 	}
 #endif
 
-	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
+	vfs_get_relative_path(node, &fileurl[rc+1]);
 
 	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
 		return -errno;
@@ -382,7 +382,7 @@ static int embox_cifs_node_create(struct node *parent_node, struct node *new_nod
 		return rc;
 	}
 #endif
-	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
+	vfs_get_relative_path(new_node, &fileurl[rc+1]);
 
 	mode = new_node->mode & S_IRWXA;
 	if (node_is_directory(new_node)) {
@@ -420,7 +420,7 @@ static int embox_cifs_node_delete(struct node *node) {
 		return rc;
 	}
 #endif
-	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
+	vfs_get_relative_path(node, &fileurl[rc+1]);
 
 	if (node_is_directory(node)) {
 		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {

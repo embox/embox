@@ -1242,8 +1242,7 @@ static int tcp4_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
 			&& ip_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-			&& (sock_inet_get_dst_port(sk) == 0);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
 }
 
 static int tcp6_rcv_tester_soft(const struct sock *sk,
@@ -1251,8 +1250,7 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
 			&& ip6_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-			&& (sock_inet_get_dst_port(sk) == 0);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
 }
 
 static int tcp_rcv(struct sk_buff *skb) {

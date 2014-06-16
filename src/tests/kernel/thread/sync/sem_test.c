@@ -76,8 +76,7 @@ static void *h_high_run(void *arg) {
 	struct timespec time;
 	clock_gettime(CLOCK_REALTIME, &time);
 	test_assert_not_zero(semaphore_timedwait(&s, &time));
-	clock_gettime(CLOCK_REALTIME, &time);
-	time.tv_nsec += 10000000;
+	time.tv_nsec += 1000000;
 	test_assert_zero(semaphore_timedwait(&s, &time));
 	return NULL;
 }

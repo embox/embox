@@ -29,7 +29,6 @@
 #include <mem/sysmalloc.h>
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/xdr.h>
-#include <util/math.h>
 
 
 static int nfs_create_dir_entry(node_t *parent);
@@ -110,8 +109,13 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	fi->offset = desc->cursor;
 
 	while(1) {
-		size_to_read = min(size, DIRCOUNT);
-
+		if (size > DIRCOUNT) {
+			size_to_read = DIRCOUNT;
+		}
+		else {
+			size_to_read = size;
+		}
+		size -= size_to_read;
 		/* set read structure */
 		req.count = size_to_read;
 		req.offset = fi->offset;
@@ -125,12 +129,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 			return 0;
 		}
 
-		if (reply.datalen == 0) {
-			break;
-		}
-
-		size -= reply.datalen;
-		fi->offset += reply.datalen;
+		fi->offset += size_to_read;
 		datalen += reply.datalen;
 
 		if (reply.eof || (0 >= size )) {
@@ -171,10 +170,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	fi->offset += reply.count;
 	desc->cursor = fi->offset;
-	if (nas->fi->ni.size < desc->cursor) {
-		nas->fi->ni.size = desc->cursor;
-	}
-
 	return reply.count;
 }
 

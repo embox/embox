@@ -6,7 +6,7 @@
  */
 
 #include <asm/linkage.h>
-#include <asm/ptrace.h>
+#include <asm/traps.h>
 #include <module/embox/arch/interrupt.h>
 
     .section .trap_table.text

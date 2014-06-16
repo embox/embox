@@ -272,7 +272,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 	return ENOERR;
 }
 
-int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
+int execve(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;

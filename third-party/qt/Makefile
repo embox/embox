@@ -10,7 +10,7 @@ EXTRACTED   := $(QT_DIR)/.extracted
 CONFIGURED  := $(QT_DIR)/.configured
 ENVIRONMENT := $(QT_DIR)/.environment
 
-QT_URL    := http://download.qt-project.org/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
+QT_URL    := http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
 QT_MD5    := 1864987bdbb2f58f8ae8b350dfdbe133
 QT_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 

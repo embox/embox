@@ -30,7 +30,10 @@ static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
 }
 
-
+static char dir_name[NAME_MAX];
+static size_t dir_namel;
+static int recursive;
+static item_print *printer;
 
 static void print_access(int flags) {
 	putchar(flags & S_IROTH ? 'r' : '-');
@@ -41,7 +44,13 @@ static void print_access(int flags) {
 #define BUFLEN 1024
 
 static void printer_simple(const char *path, stat_t *sb) {
-	printf(" %s\n", path);
+	printf(" %s", path);
+
+	if (sb->st_mode & S_IFDIR) {
+		putchar('/');
+	}
+
+	putchar('\n');
 }
 
 static void printer_long(const char *path, stat_t *sb) {
@@ -74,7 +83,7 @@ static void printer_long(const char *path, stat_t *sb) {
 	printer_simple(path, sb);
 }
 
-static void print(char *path, DIR *dir, int recursive, item_print *printer) {
+static void print(char *path, DIR *dir) {
 	struct dirent *dent;
 
 	while (NULL != (dent = readdir(dir))) {
@@ -103,7 +112,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 				printf("Cannot recurse to %s\n", line);
 			}
 
-			print(line, d, recursive, printer);
+			print(line, d);
 
 			closedir(d);
 		}
@@ -113,10 +122,8 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 static int exec(int argc, char **argv) {
 	DIR *dir;
 
-	int opt;
-	char dir_name[NAME_MAX];
-	int recursive;
-	item_print *printer;
+	int opt_cnt = 0;
+	int opt, l;
 
 	printer = printer_simple;
 	recursive = 0;
@@ -129,9 +136,11 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'l':
 			printer = printer_long;
+			opt_cnt++;
 			break;
 		case 'R':
 			recursive = 1;
+			opt_cnt++;
 			break;
 		case '?':
 			break;
@@ -142,18 +151,6 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		int l;
-		stat_t sb;
-
-		if (-1 == stat(argv[optind], &sb)) {
-			return -errno;
-		}
-
-		if (~sb.st_mode & S_IFDIR) {
-			printer(argv[optind], &sb);
-			return 0;
-		}
-
 		sprintf(dir_name, "%s", argv[optind]);
 		// trim trailing slash
 		l = strlen(dir_name);
@@ -162,11 +159,13 @@ static int exec(int argc, char **argv) {
 		sprintf(dir_name, "%s", "");
 	}
 
+	dir_namel = strlen(dir_name);
+
 	if (NULL == (dir = opendir(dir_name))) {
 		return -errno;
 	}
 
-	print(dir_name, dir, recursive, printer);
+	print(dir_name, dir);
 
 	closedir(dir);
 

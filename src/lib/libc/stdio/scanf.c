@@ -119,7 +119,7 @@ static int scan_int(char **in, int base, int widht, int *res) {
 	int not_empty = 0;
 
 	if (EOF == (ch = trim_leading(in))) {
-		return EOF;
+		return 0;/*error*/
 	}
 
 	if ((ch == '-') || (ch == '+')) {

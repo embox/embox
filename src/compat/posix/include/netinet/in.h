@@ -137,6 +137,4 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
 #define IPPORT_USERRESERVED 5000 /* Ports >= IPPORT_USERRESERVED are
 									reserved for explicit use */
 
-#include <arpa/inet.h>
-
 #endif /* COMPAT_POSIX_NETINET_IN_H_ */

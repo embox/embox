@@ -929,7 +929,7 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(nod, (char *) path, PATH_MAX);
+	vfs_get_relative_path(nod, (char *) path);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -1116,7 +1116,7 @@ static int fatfs_delete(struct node *node) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(node, path, PATH_MAX);
+	vfs_get_relative_path(node, path);
 
 	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {

@@ -18,23 +18,19 @@ EMBOX_UNIT_INIT(task_table_module_init);
 
 UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
 
-/*
- * tasks are started from 1, util table is from 0;
- * doing 1+ translation to output, and 1- for input
- */
 int task_table_add(struct task *tsk) {
 	assert(tsk != NULL);
-	return 1 + util_idx_table_add(task_table, tsk);
+	return util_idx_table_add(task_table, tsk);
 }
 
 struct task * task_table_get(int tid) {
 	assert(tid >= 0);
-	return util_idx_table_get(task_table, tid - 1);
+	return util_idx_table_get(task_table, tid);
 }
 
 void task_table_del(int tid) {
-	assert(tid > 0);
-	util_idx_table_del(task_table, tid - 1);
+	assert(tid >= 0);
+	util_idx_table_del(task_table, tid);
 }
 
 int task_table_has_space(void) {
@@ -42,12 +38,8 @@ int task_table_has_space(void) {
 }
 
 int task_table_get_first(int since) {
-	/* since isn't adjusted by -1 by intention.
- 	 * If since is 0 then minimal util_idx_table_next_mark is 0,
-	 * it's 1+'ed to 1.
-	 */
 	assert(since >= 0);
-	return 1 + util_idx_table_next_mark(task_table, since, 1);
+	return util_idx_table_next_mark(task_table, since, 1);
 }
 
 static int task_table_module_init(void) {

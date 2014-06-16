@@ -1405,7 +1405,7 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	nas->fi->ni.size = fi->_inode->i_size;
 
-	vfs_get_relative_path(nas->node, path, PATH_MAX);
+	vfs_get_relative_path(nas->node, path);
 
 	return jffs2_open(fsi->jffs2_sb.s_root, path, flags);
 }
@@ -1653,7 +1653,7 @@ static int jffs2fs_delete(struct node *node) {
 static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
 	char dev_node_path[PATH_MAX];
 
-	vfs_get_relative_path(dev_node, dev_node_path, PATH_MAX);
+	vfs_get_relative_path(dev_node, dev_node_path);
 
 	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
 }

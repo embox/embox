@@ -67,11 +67,8 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 
 static int read_int_field(FILE *stream, const char *format, void *field, int delim) {
 	int val;
-	int ret;
+	int ret = fscanf(stream, format, field);
 
-	sscanf("0", format, field);
-
-	ret = fscanf(stream, format, field);
 	if (0 > ret) {
 		return -ret;
 	}
@@ -400,14 +397,14 @@ struct spwd *fgetspent(FILE *file) {
 		return NULL;
 	}
 
-	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_flag, '\n'))) {
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_expire, '\n'))) {
 		return NULL;
 	}
 
 	return &spwd;
 }
 
-struct spwd *spwd_find(const char *spwd_path, const char *name) {
+static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
 	FILE *shdwf;
 
@@ -428,11 +425,6 @@ struct spwd *spwd_find(const char *spwd_path, const char *name) {
 
 struct spwd *getspnam_f(const char *name) {
 	return spwd_find(SHADOW_FILE, name);
-}
-
-struct spwd *getspnam(char *name) {
-	/* FIXME */
-	return getspnam_f(name);
 }
 
 int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
@@ -475,26 +467,4 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 out:
 	fclose(passwdf);
 	return res;
-}
-
-static int write_int_field(FILE *fp, long int val, char delim) {
-	if (val) {
-		fprintf(fp, "%ld", val);
-	}
-	fputc(delim, fp);
-	return 0;
-}
-
-int putspent(struct spwd *p, FILE *fp) {
-
-	fprintf(fp, "%s:%s:", p->sp_namp, p->sp_pwdp);
-	write_int_field(fp, p->sp_lstchg, ':');
-	write_int_field(fp, p->sp_min, ':');
-	write_int_field(fp, p->sp_max, ':');
-	write_int_field(fp, p->sp_warn, ':');
-	write_int_field(fp, p->sp_inact, ':');
-	write_int_field(fp, p->sp_expire, ':');
-	write_int_field(fp, p->sp_flag, '\n');
-
-	return 0;
 }

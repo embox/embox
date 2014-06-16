@@ -105,41 +105,29 @@ static int inet_addr_tester(const struct sockaddr *lhs_sa,
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
-	struct sockaddr_in addr_in;
+	const struct sockaddr_in *addr_in;
 
 	assert(sk);
 	assert(addr);
 
-	if (addrlen != sizeof addr_in) {
+	if (addrlen != sizeof *addr_in) {
 		return -EINVAL;
 	}
 
-	memcpy(&addr_in, addr, sizeof addr_in);
-
-	if (addr_in.sin_family != AF_INET) {
+	addr_in = (const struct sockaddr_in *)addr;
+	if (addr_in->sin_family != AF_INET) {
 		return -EAFNOSUPPORT;
 	}
-	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in.sin_addr.s_addr, true, true)) {
+	else if ((addr_in->sin_addr.s_addr != htonl(INADDR_ANY)) &&
+			!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
-
-	if (addr_in.sin_port == 0) {
-		/* Allocation of an ephemeral port, when the port number in a socket address is specified as 0,
-		 * is not POSIX-specified behavior, but it used in Linux, BSD, Windows.
-		 * E.g. manual for Linux - http://man7.org/linux/man-pages/man7/ip.7.html */
-		if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
-					inet_addr_tester, (const struct sockaddr *)&addr_in,
-					sizeof addr_in)) {
-			return -ENOMEM;
-		}
-	}
-	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
+	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, addr,
 				addrlen)) {
 		return -EADDRINUSE;
 	}
 
-	__inet_bind(to_inet_sock(sk), &addr_in);
+	__inet_bind(to_inet_sock(sk), addr_in);
 
 	return 0;
 }

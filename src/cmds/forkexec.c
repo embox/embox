@@ -36,13 +36,11 @@ static int exec(int argc, char **argv) {
 	return 0;
 }
 
-extern int execve_syscall(const char *filename, char *const argv[], char *const envp[]);
-
 static void *new_task_entry(void *filename) {
 	char *argv[2] = {filename, NULL};
 	char *envp[1] = {NULL};
 
-	execve_syscall(filename, argv, envp);
+	execve(filename, argv, envp);
 
 	return NULL;
 }

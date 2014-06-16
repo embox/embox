@@ -76,6 +76,4 @@ extern int timerisset(struct timeval *tvp);
 
 __END_DECLS
 
-#include <sys/select.h>
-
 #endif /* COMPAT_POSIX_SYS_TIME_H_ */

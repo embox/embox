@@ -108,8 +108,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	fsi = desc->node->nas->fs->fsi;
 	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
 	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
-	/* TODO recalculate */
-	if (!(handle = journal_start(fsi->journal, 4 * ext3_trans_blocks(datablocks)))) {
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(datablocks)))) {
 		return -1;
 	}
 	res = drv->file_op->write(desc, buff, size);
@@ -138,10 +137,9 @@ static int ext3fs_create(struct node *parent_node, struct node *node) {
 	fsi = parent_node->nas->fs->fsi;
 	/**
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
-	 * 2 blocks for child = 1 inode + 1 inode bitmap.
-	 * 2 * (ext3_trans_blocks(1) + 2) blocks to create "." and ".."
+	 * 2 blocks for child = 1 inode + 1 inode bitmap
 	 */
-	if (!(handle = journal_start(fsi->journal, 3 * (ext3_trans_blocks(1) + 2)))) {
+	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
 		return -1;
 	}
 	res = drv->fsop->create_node(parent_node, node);

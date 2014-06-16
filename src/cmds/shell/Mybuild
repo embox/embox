@@ -52,10 +52,3 @@ module shell_run {
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
-
-@Cmd(name = "exec_helper",
-	help = "",
-	man = "")
-module exec_helper {
-	source "exec_helper.c"
-}

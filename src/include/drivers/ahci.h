@@ -5,7 +5,6 @@
 
 struct ahci_hba {
 	uintptr_t base_addr;
-	uint32_t  nports;
 };
 
 int register_ahci_hba(struct ahci_hba*);

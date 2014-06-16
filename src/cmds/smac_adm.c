@@ -17,8 +17,6 @@
 
 EMBOX_CMD(smac_adm);
 
-extern int cmd_smac_adm_user_set(const char *name, const char *label);
-
 #define BUFLEN 4096
 
 static char buf[BUFLEN];
@@ -69,9 +67,8 @@ static int print_label(void) {
 }
 
 static int smac_adm(int argc, char *argv[]) {
-	char *label = NULL;
-	char *user = NULL;
-	char *subject = NULL, *object = NULL, *access = NULL;
+	char *lset, *rule, *object, *access, *bp;
+	int opt;
 	enum action {
 		ACT_NONE,
 		ACT_SET,
@@ -79,19 +76,22 @@ static int smac_adm(int argc, char *argv[]) {
 		ACT_FLUSH,
 		ACT_PRINT,
 		ACT_RULE,
-		ACT_USER,
 		ACT_HELP,
 	} action = ACT_NONE;
-	int opt;
+
+	lset = rule = object = access = NULL;
+	bp = buf;
+	action = 0;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "S:GFPR:U:o:a:h"))) {
+	while (-1 != (opt = getopt(argc, argv, "S:GFPR:o:a:h"))) {
 		enum action act = ACT_NONE;
+		char **arg = NULL;
 
 		switch(opt) {
 		case 'S':
 			act = ACT_SET;
-			label = optarg;
+			arg = &lset;
 			break;
 		case 'G':
 			act = ACT_GET;
@@ -104,18 +104,13 @@ static int smac_adm(int argc, char *argv[]) {
 			break;
 		case 'R':
 			act = ACT_RULE;
-			subject = optarg;
-			break;
-		case 'U':
-			act = ACT_USER;
-			user = optarg;
-			label = argv[optind++];
+			arg = &rule;
 			break;
 		case 'o':
-			object = optarg;
+			arg = &object;
 			break;
 		case 'a':
-			access = optarg;
+			arg = &access;
 			break;
 		case 'h':
 			act = ACT_HELP;
@@ -133,21 +128,25 @@ static int smac_adm(int argc, char *argv[]) {
 
 			action = act;
 		}
+
+		if (arg) {
+			*arg = bp;
+			strcpy(bp, optarg);
+			bp += 1 + strlen(optarg);
+		}
 	}
 
 	switch(action) {
 	case ACT_SET:
-		return smac_labelset(label);
+		return smac_labelset(lset);
 	case ACT_GET:
 		return print_label();
 	case ACT_FLUSH:
 		return smac_flushenv();
 	case ACT_RULE:
-		return new_rule(subject, object, access);
+		return new_rule(rule, object, access);
 	case ACT_PRINT:
 		return print_rules();
-	case ACT_USER:
-		return cmd_smac_adm_user_set(user, label);
 	case ACT_NONE:
 	default:
 		break;

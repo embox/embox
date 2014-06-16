@@ -94,7 +94,22 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	assert(sk);
 	assert(desc->idesc_ops == &task_idx_ops_socket);
 
-	res = 0;
+	if (!status_nr)
+		return 0;
+
+	switch (status_nr) {
+	case POLLIN:
+		return sk->rx_data_len;
+	case POLLOUT:
+		return 0x600; // XXX it is so?
+	case POLLERR:
+		return sk->opt.so_error; /* TODO */
+	default:
+		/* UNREACHABLE */
+		//assert(0);
+		res = 0;
+		break;
+	}
 
 	if (status_nr & POLLIN) {
 		/* how many we can read */
@@ -106,7 +121,10 @@ static int socket_status(struct idesc *desc, int status_nr) {
 		res += 0x600;
 	}
 
-	res += sk->opt.so_error; //TODO Where is errors counter
+	if (status_nr & POLLERR) {
+		/* is there any exeptions */
+		res += sk->opt.so_error; //TODO Where is errors counter
+	}
 
 	return res;
 }

@@ -124,11 +124,6 @@ int pthread_kill(pthread_t thread, int sig) {
 int kill(int tid, int sig) {
 	struct task *task;
 
-	if (tid <= 0) {
-		/* process group is the target, NYI */
-		return -ENOSYS;
-	}
-
 	task = task_table_get(tid);
 	if (!task)
 		return SET_ERRNO(ESRCH);

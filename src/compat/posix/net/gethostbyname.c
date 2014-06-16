@@ -6,19 +6,12 @@
  * @author Ilia Vaprol
  */
 
-#include <ctype.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <stddef.h>
 #include <string.h>
 #include <net/lib/dns.h>
 #include <net/util/hostent.h>
-
-static int check_ip_format(const char *ip_str) {
-	while (*ip_str && (isdigit(*ip_str) || *ip_str == '.'))
-		++ip_str;
-	return *ip_str;
-}
 
 static struct hostent * get_hostent_from_ip(const char *ip_str) {
 	struct hostent *he;
@@ -122,12 +115,8 @@ struct hostent * gethostbyname(const char *name) {
 	}
 
 	/* 1. If it's IP address (not symbolic name) */
-	if (!check_ip_format(name)) {
-		he = get_hostent_from_ip(name);
-		if (he == NULL) {
-			h_errno = HOST_NOT_FOUND;
-			return NULL;
-		}
+	he = get_hostent_from_ip(name);
+	if (he != NULL) {
 		return he;
 	}
 

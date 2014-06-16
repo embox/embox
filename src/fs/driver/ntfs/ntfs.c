@@ -10,8 +10,6 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-#include <fs/file_desc.h>
-#include <fs/file_operation.h>
 #include <embox/block_dev.h>
 #include <limits.h>
 #include <fcntl.h>
@@ -145,7 +143,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 	struct ntfs_fs_info *pfsi;
 	struct ntfs_file_info *pfi, *fi;
 
-	parent_node = vfs_subtree_get_parent(node);
+	parent_node = node_parent(node);
 	if (!parent_node) {
 		return -EINVAL;
 	}
@@ -284,7 +282,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		}
 
 		//
-		node = vfs_subtree_create(dir_nas->node, filename, mode);
+		node = vfs_create(dir_nas->node, filename, mode);
 		if (!node) {
 			errno = ENOMEM;
 			return -1;
@@ -514,7 +512,7 @@ static int ntfs_close(struct file_desc *file_desc)
 	struct ntfs_desc_info *desc;
 	int res;
 
-	desc = (struct ntfs_desc_info *) file_desc->file_info;
+	desc = file_desc->file_info;
 
 	ntfs_attr_close(desc->attr);
 	res = ntfs_inode_close(desc->ni);
@@ -577,7 +575,7 @@ struct ntfs_bdev_desc {
 static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 {
 	int err;
-	node_t *dev_node, *dev_folder;
+	node_t *dev_node;
 
 	if (NDevOpen(dev)) {
 		errno = EBUSY;
@@ -591,9 +589,7 @@ static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 	if (!dev->d_private)
 		return -1;
 
-	dev_folder = vfs_subtree_lookup_child(vfs_get_root(),"dev");
-	dev_node = vfs_subtree_lookup_child(dev_folder, dev->d_name);
-
+	dev_node = vfs_lookup_child(vfs_lookup_child(0,"dev"),dev->d_name);
 	if (dev_node) {
 		((struct ntfs_bdev_desc*)dev->d_private)->dev = dev_node->nas->fi->privdata;
 		((struct ntfs_bdev_desc*)dev->d_private)->pos = 0;

@@ -26,18 +26,6 @@ struct __trace_block;
 #define trace_point(name) \
 	  __trace_point(name)
 
-#include <stdbool.h>
-
-/* Different profiling mode are required to work separately with for example
- * manually assigned trace_blocks and automatically generated trace_blocks */
-typedef enum {
-	DISABLED,
-	MANUAL_PROFILING,
-	CYG_PROFILING,		/* Automatic instrumenting */
-} profiling_mode;
-
-extern profiling_mode 	get_profiling_mode(void);
-extern void				set_profiling_mode(profiling_mode new_mode);
 
 extern void __tracepoint_handle(struct __trace_point *tp);
 
@@ -65,11 +53,5 @@ extern void print_trace_block_info(struct __trace_block *tb);
 extern void trace_block_func_enter(void *func);
 
 extern void trace_block_func_exit(void *func);
-
-extern long long get_current_tb_resolution(void);
-
-extern void trace_block_hashtable_init(void);
-
-extern void trace_block_hashtable_destroy(void);
 
 #endif /* PROFILER_TRACING_TRACE_H_ */

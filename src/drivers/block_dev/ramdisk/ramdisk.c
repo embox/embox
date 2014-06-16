@@ -27,8 +27,10 @@
 
 #include <drivers/ramdisk.h>
 
+
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
-#define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
+#define RAMDISK_BLOCK_SIZE  PAGE_SIZE()
+
 
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
@@ -63,53 +65,43 @@ static int ramdisk_get_index(char *path) {
 	return idx;
 }
 
-/* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
 	struct ramdisk *ramdisk;
 	int idx;
-	int err;
-
-	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
-	const size_t page_n = (ramdisk_size + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	if (NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
-		err = ENOMEM;
-		goto err_out;
-	}
-
-	ramdisk->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
-	ramdisk->block_size = RAMDISK_BLOCK_SIZE;
-
-	ramdisk->p_start_addr = page_alloc(__phymem_allocator, page_n);
-	if (NULL == (ramdisk->p_start_addr)) {
-		err = ENOMEM;
-		goto err_free_ramdisk;
+		return err_ptr(ENOMEM);
 	}
 
 	if (0 > (idx = block_dev_named(path, &ramdisk_idx))) {
-		err = -idx;
-		goto err_free_mem;
+	//if(0 > (idx =index_alloc(&ramdisk_idx, INDEX_MIN))) {
+		pool_free(&ramdisk_pool, ramdisk);
+		return err_ptr(-idx);
 	}
 
 	ramdisk->bdev = block_dev_create(path, &ramdisk_pio_driver, ramdisk);
 	if (NULL == ramdisk->bdev) {
-		err = EIO;
-		goto err_free_bdev_idx;
+		index_free(&ramdisk_idx, idx);
+		pool_free(&ramdisk_pool, ramdisk);
+		return err_ptr(EIO);
 	}
 
-	ramdisk->bdev->size = ramdisk_size;
+	size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
+	ramdisk->blocks = size / RAMDISK_BLOCK_SIZE;
+	ramdisk->block_size = RAMDISK_BLOCK_SIZE;
+
+	ramdisk->p_start_addr = page_alloc(__phymem_allocator, ramdisk->blocks);
+	if (NULL == (ramdisk->p_start_addr)) {
+		block_dev_destroy(ramdisk->bdev);
+		index_free(&ramdisk_idx, idx);
+		pool_free(&ramdisk_pool, ramdisk);
+
+		return err_ptr(ENOMEM);
+	}
+
+	ramdisk->bdev->size = size;
 
 	return ramdisk;
-
-err_free_bdev_idx:
-	index_free(&ramdisk_idx, idx);
-err_free_mem:
-	page_free(__phymem_allocator, ramdisk->p_start_addr, page_n);
-err_free_ramdisk:
-	pool_free(&ramdisk_pool, ramdisk);
-err_out:
-	return err_ptr(err);
-
 }
 
 ramdisk_t *ramdisk_get_param(char *path) {

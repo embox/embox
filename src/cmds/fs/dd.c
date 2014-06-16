@@ -4,8 +4,6 @@
  *
  * @date 30.01.13
  * @author Andrey Gazukin
- * @author Anton Kozlov
- * 	-- output to file
  */
 
 #include <errno.h>
@@ -20,40 +18,28 @@
 #include <embox/block_dev.h>
 #include <limits.h>
 
-#define DD_DEFAULT_BS 64
+#define BSIZE   512
+#define PATH "if="
+#define START_B "skip="
+#define NUM_B "count="
 
 EMBOX_CMD(exec);
 
-struct dd_param {
-	size_t bs;
-	size_t count;
-	size_t skip;
-	size_t seek;
+static void print_usage(void) {
+	printf("Usage: dd if=/path skip=start_block count=size_in_byte \n");
+}
 
-	const char *ifile;
-	const char *ofile;
-};
-
-struct dd_param_ent;
-typedef void (*dd_param_t)(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val);
-
-struct dd_param_ent {
-	const char *name;
-	off_t offset;
-	dd_param_t type;
-};
-
-unsigned int dd_write_stdout_addr;
-static int write_stdout(char *buff, size_t size) {
+static void print_data(char *buff, size_t size, blkno_t start) {
 	size_t cnt;
+	unsigned int addr;
 	int i_substr, i_str;
 	char *point, *substr_p;
 
 	substr_p = point = buff;
+	addr = start * BSIZE;
 
 	for (cnt = 0; cnt < size; cnt += 16) {
-		printf("%08X ", dd_write_stdout_addr);
+		printf("%08X ", addr);
 		for (i_str = 0; i_str < 4; i_str++) {
 			for (i_substr = 0; i_substr < 4; i_substr++) {
 				printf("%02hhX ", (unsigned char) *point++);
@@ -76,147 +62,109 @@ static int write_stdout(char *buff, size_t size) {
 		substr_p = substr_p;
 #endif
 		printf("\n");
-		dd_write_stdout_addr += 16;
+		addr += 16;
 	}
-
-	return 0;
 }
 
-#define DP_FIELD(dp, off, type) \
-	((type) ((void *) dp + off))
-
-static void dd_param_type_int(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val) {
-	*DP_FIELD(dp, dpent->offset, size_t *) = strtol(raw_val, NULL, 0);
-}
-
-static void dd_param_type_str(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val) {
-	*DP_FIELD(dp, dpent->offset, const char **) = raw_val;
-}
-
-#define DD_PARAM(name, type) \
-	_DD_PARAM(# name, name, type)
-
-#define _DD_PARAM(str_name, field_name, type) \
-	{ str_name, offsetof(struct dd_param, field_name), type }
-
-static const struct dd_param_ent dd_param_list[] = {
-	_DD_PARAM("if", ifile, dd_param_type_str),
-	_DD_PARAM("of", ofile, dd_param_type_str),
-	DD_PARAM(bs, dd_param_type_int),
-	DD_PARAM(count, dd_param_type_int),
-	DD_PARAM(skip, dd_param_type_int),
-	DD_PARAM(seek, dd_param_type_int),
-};
-
-static const struct dd_param_ent *dd_param_ent_find(const char *name) {
-	const struct dd_param_ent *dpent;
-	for (dpent = dd_param_list;
-			dpent < dd_param_list + ARRAY_SIZE(dd_param_list);
-			dpent++) {
-		if (!strcmp(dpent->name, name)) {
-			return dpent;
-		}
-	}
-	return NULL;
-}
-
-static int dd_param_fill(int argc, char **argv, struct dd_param *dp) {
-	const struct dd_param_ent *dpent;
+static int get_arg(int argc, char **argv, const char *mask, char *data) {
 	int i;
+	int len;
 
-	memset(dp, 0, sizeof(*dp));
+	len = strlen(mask);
 
-	for (i = 1; i < argc; i++) {
-		char *opt = argv[i];
-		char *arg = strchr(opt, '=');
-
-		if (!arg) {
-			return -EINVAL;
+	for (i = 0; i < argc; i++) {
+		if(0 == strncmp(mask, argv[i], len)) {
+			sprintf(data, "%s", &argv[i][len]);
+			return 0;
 		}
-
-		*arg++ = '\0';
-
-		dpent = dd_param_ent_find(opt);
-		if (!dpent) {
-			return -EINVAL;
-		}
-
-		dpent->type(dpent, dp, arg);
 	}
-
-	return 0;
+	return -ENOENT;
 }
 
-static int dd_cond_open(const char *path, int mode, int def_fd) {
-	int fd;
+#if 0
+static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
+	ssize_t bytesread;
+	int file;
 
-	if (path) {
-		fd = open(path, mode);
-		if (0 > fd) {
-			return -errno;
-		}
-	} else {
-		fd = def_fd;
+	if (0 > (file = open(path, O_RDONLY)))  {
+		printf("can't open file %s\n", path);
+		return -1;
 	}
-	return fd;
+	if (0 > lseek(file, blkno * BSIZE, SEEK_SET)) {
+		return -1;
+	}
+
+	bytesread = read(file, buffer, size);
+	close(file);
+
+	return bytesread;
 }
+#endif
 
 static int exec(int argc, char **argv) {
-	struct dd_param dp;
-	void *tbuf;
-	int ifd, ofd;
-	int n_read, n_write, err;
+	int rc;
+	char path[PATH_MAX];
+	char num[NAME_MAX];
+	size_t bytes;
+	blkno_t blkno;
+	char *buffer;
+	ssize_t bytesread;
+	int opt;
+	int fd;
 
-	err = dd_param_fill(argc, argv, &dp);
-	if (err) {
+	getopt_init();
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
+		switch(opt) {
+		case 'h':
+			print_usage();
+			return 0;
+		case '?':
+			break;
+		default:
+			printf("dd: invalid option -- '%c'\n", optopt);
+			return -EINVAL;
+		}
+	}
+
+	blkno = 0;
+	bytes = BSIZE;
+	rc = 0;
+
+	if (0 == get_arg(argc, argv, NUM_B, num)) {
+		sscanf(num, "%u", &bytes);
+	}
+
+	if (0 == get_arg(argc, argv, START_B, num)) {
+		sscanf(num, "%u", &blkno);
+	}
+
+	if (0 > get_arg(argc, argv, PATH, path)) {
+		return -1;
+	}
+
+	if (-1 == (fd = open(path, O_RDONLY))) {
+		return -errno;
+	}
+
+	if ((off_t) -1 == lseek(fd, blkno * BSIZE, SEEK_SET)) {
+		return -errno;
+	}
+
+	if (NULL == (buffer =
+			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
+		return -ENOMEM;
+	}
+
+	if (-1 == (bytesread = read(fd, buffer, bytes))) {
+		printf("read error\n");
+		rc = -errno;
 		goto out;
 	}
 
-	if (!dp.bs) {
-		dp.bs = DD_DEFAULT_BS;
-	}
+	print_data(buffer, bytesread, blkno);
 
-	ifd = dd_cond_open(dp.ifile, O_RDONLY, STDIN_FILENO);
-	if (ifd < 0) {
-		err = ifd;
-		goto out;
-	}
-
-	ofd = dd_cond_open(dp.ofile, O_WRONLY, 0);
-	if (ofd < 0) {
-		err = ofd;
-		goto out_ifd_close;
-	}
-
-	tbuf = malloc(dp.bs);
-	if (!tbuf) {
-		err = -ENOMEM;
-		goto out_ofd_close;
-	}
-
-	do {
-		n_read = read(ifd, tbuf, dp.bs);
-
-		if (n_read < 0) {
-			err = -errno;
-			break;
-		}
-
-		n_write = ofd ? write(ofd, tbuf, n_read) : write_stdout(tbuf, n_read);
-		if (0 > n_write) {
-			err = -errno;
-			break;
-		}
-	} while (n_read > 0);
-
-
-	free(tbuf);
-out_ofd_close:
-	close(ofd);
-out_ifd_close:
-	close(ifd);
 out:
-	return err;
+	/* free buffer */
+	page_free(__phymem_allocator, buffer, bytes / PAGE_SIZE() + 1);
+	return rc;
 }

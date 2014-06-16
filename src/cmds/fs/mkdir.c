@@ -24,7 +24,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	char *point;
-	int mode = 0777;
+	int mode = 0;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "hm:"))) {

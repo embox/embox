@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include <kernel/task.h>
-#include <kernel/printk.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/task_heap.h>
 #include <mem/sysmalloc.h>
@@ -33,10 +32,6 @@ void *sysmalloc(size_t size) {
 }
 
 void sysfree(void *ptr) {
-	if (!ptr) {
-		printk(">>>%s: NULL pointer\n", __func__);
-		return;
-	}
 	mspace_free(ptr, kernel_task_mspace());
 }
 

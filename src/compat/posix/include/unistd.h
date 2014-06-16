@@ -154,7 +154,6 @@ extern int close(int fd);
 
 extern int fsync(int);
 
-extern pid_t fork(void);
 extern pid_t vfork(void);
 
 extern int nice(int incr);

@@ -19,7 +19,6 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
 
@@ -86,8 +85,6 @@ struct thread {
 	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
-
-	struct thread_wait thread_wait;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

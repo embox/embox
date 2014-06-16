@@ -9,7 +9,6 @@
  * @author Vita Loginova
  */
 
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -321,9 +320,6 @@ static struct node *__vfs_subtree_create_child(struct node *parent, const char *
 	child = node_alloc(name, len);
 	if (child) {
 		child->mode = mode;
-		child->uid = getuid();
-		child->gid = getgid();
-
 		vfs_add_leaf(child, parent);
 	}
 
@@ -450,12 +446,14 @@ node_t *vfs_subtree_get_parent(node_t *node) {
 	return __vfs_get_parent(node);
 }
 
-int vfs_get_relative_path(struct node *node, char *path, size_t path_len) {
+int vfs_get_relative_path(struct node *node, char *path) {
 	struct node *prev = NULL;
 	char *p;
-	size_t ll = path_len - 1;
+	size_t ll = PATH_MAX - 1;
 
-	assert(path_len > 0);
+	if (PATH_MAX <= 0) {
+		return -ERANGE;
+	}
 
 	p = path + ll;
 	*p = '\0';
@@ -477,9 +475,7 @@ int vfs_get_relative_path(struct node *node, char *path, size_t path_len) {
 		node = __vfs_get_parent(node);
 	}
 
-	assert(path_len >= ll);
-
-	memmove(path, p, path_len - ll);
+	memmove(path, p, PATH_MAX - ll);
 
 	if (node != prev) {
 		return 1;

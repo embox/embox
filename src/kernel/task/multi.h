@@ -36,23 +36,7 @@ struct task {
 	char resources[];
 };
 
-
-#define TASK_STATUS_IN_VFORK    0x1
-
-
 __BEGIN_DECLS
-
-static inline int task_is_vforking(struct task *task) {
-	return task->status & TASK_STATUS_IN_VFORK;
-}
-
-static inline void task_vfork_start(struct task *task) {
-	task->status |= TASK_STATUS_IN_VFORK;
-}
-
-static inline void task_vfork_end(struct task *task) {
-	task->status &= ~TASK_STATUS_IN_VFORK;
-}
 
 static inline int task_get_status(const struct task *tsk) {
 	assert(tsk != NULL);

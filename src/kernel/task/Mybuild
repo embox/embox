@@ -22,9 +22,6 @@ module multi extends api {
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
 	depends embox.kernel.task.task_table
-
-	@NoRuntime depends embox.kernel.task.resource.vfork
-
 	depends embox.kernel.thread.core /* uses task_self() to initialize
 										resources, which implies to thread be
 										already loaded, as task_self uses
@@ -34,7 +31,6 @@ module multi extends api {
 }
 
 module single extends api {
-	source "single.c"
 	source "single.h"
 
 	depends embox.kernel.task.kernel_task

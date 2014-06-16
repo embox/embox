@@ -1,0 +1,55 @@
+
+	GNU nano - an enhanced clone of the Pico text editor.
+
+Overview
+
+     The nano project was started because of a few "problems" with the
+     wonderfully easy-to-use and friendly Pico text editor.
+
+     First and foremost is its license: the Pine suite does not use the
+     GPL or a GPL-friendly license, and has unclear restrictions on
+     redistribution.  Because of this, Pine and Pico are not included
+     with many GNU/Linux distributions.  Also, other features (like go
+     to line number or search and replace) were unavailable until
+     recently or require a command line flag.  Yuck.
+
+     nano aims to solve these problems by emulating the functionality of
+     Pico as closely as possible while addressing the problems above and
+     perhaps providing other extra functionality.
+
+     The nano editor is now an official GNU package.  For more
+     information on GNU and the Free Software Foundation, please see
+     http://www.gnu.org/.
+
+Web Page
+
+	http://www.nano-editor.org/
+
+Mailing List and Bug Reports
+
+	Savannah hosts all the nano-related mailing-lists.
+
+	+ info-nano@gnu.org is a very low traffic list
+	  used to announce new nano versions or other important
+	  information about the project.
+	+ help-nano@gnu.org is for those seeking to get help without
+	  wanting to hear about the technical details of its
+	  development.
+	+ nano-devel@gnu.org is the list used by the people
+	  that make nano and a general development discussion list, with
+	  moderate traffic.
+
+	To subscribe, send email to nano-<name>-request@gnu.org with a
+	subject of "subscribe", where <name> is the list you want to
+	subscribe to.
+
+	For general bug reports, send a description of the problem to
+	nano@nano-editor.org or directly to the development list.
+
+Current Status
+
+	GNU nano has reached its third stable milestone, 2.0.x.
+	Development of new features continues in the 2.1.x branch, while
+	2.0.x versions are dedicated to bug-fixing and polishing.
+
+$Id: README 4057 2007-01-29 12:40:48Z dolorous $

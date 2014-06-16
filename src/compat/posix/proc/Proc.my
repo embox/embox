@@ -4,7 +4,7 @@ package embox.compat.posix.proc
 module All {
 
 	depends exec,
-		//vfork,
+		fork,
 		waitpid,
 		//signal,
 		exit,
@@ -14,73 +14,16 @@ module All {
 		pid
 }
 
-@DefaultImpl(exec_stop_parent)
-abstract module exec { }
-
-static module exec_stop_parent extends exec {
+static module exec {
 	source "exec.c"
 
-	depends vfork
 	depends embox.util.LibUtil
-	@NoRuntime depends embox.kernel.task.resource.argv
-
-	depends exec_lib
 }
 
-static module exec_exchanged extends exec {
-	source "exec_exchanged.c"
-
-	depends exec_lib
-}
-
-static module exec_lib {
-	source "exec_lib.c"
-	depends embox.kernel.task.resource.module_ptr
-}
-
-@DefaultImpl(fork_copy_everything)
-abstract module fork { }
-
-module fork_copy_everything extends fork {
-	source "fork_copy_everything.c"
-	depends embox.arch.fork_entry
-	depends fork_copy_addr_space
-}
-
-/* FIXME artifical module to bypass single `extends` restriction */
-static module fork_copy_addr_space extends embox.kernel.addr_space {
-	source "fork_copy_addr_space.h"
-}
-
-@DefaultImpl(vfork_internal_stub)
-abstract module vfork { }
-
-static module vfork_internal_stub extends vfork {
-	source "vfork_release_parent_stub.c"
+static module fork {
+	source "fork.c"
 
 	depends embox.kernel.task.syslib.kfork_api
-	depends embox.util.LibUtil
-}
-
-static module vfork_stack_copy extends vfork {
-	source "vfork_stack_copy.c"
-	source "vfork_release_parent_stub.c"
-
-	depends embox.kernel.task.syslib.kfork_api
-	depends embox.util.LibUtil
-}
-
-static module vfork_exchanged extends vfork {
-	source "vfork_exchanged.c"
-
-	depends embox.kernel.task.syslib.kfork_api
-	depends embox.util.LibUtil
-}
-
-static module vfork_stop_parent extends vfork {
-	source "vfork_stop_parent.c"
-
-	depends embox.arch.vfork_entry
 	depends embox.util.LibUtil
 }
 

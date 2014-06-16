@@ -18,7 +18,7 @@
 	movw    %dx, %ds;             \
 	movw    %dx, %es;
 
-#define SAVE_ALL_REGS \
+#define SAVE_ALL     \
 	pushl   %ds;     \
 	pushl   %es;     \
 	pushl   %fs;     \
@@ -29,13 +29,10 @@
 	pushl   %esi;    \
 	pushl   %edx;    \
 	pushl   %ecx;    \
-	pushl   %ebx;
-
-#define SAVE_ALL     \
-	SAVE_ALL_REGS \
+	pushl   %ebx;    \
 	SETUP_SEGMENTS;
 
-#define RESTORE_ALL_REGS \
+#define RESTORE_ALL  \
 	pop   %ebx;      \
 	pop   %ecx;      \
 	pop   %edx;      \
@@ -46,52 +43,34 @@
 	pop   %gs;       \
 	pop   %fs;       \
 	pop   %es;       \
-	pop   %ds;
-
-#define RESTORE_ALL  \
-	RESTORE_ALL_REGS \
+	pop   %ds;       \
 	add   $8, %esp;  \
 	iret;
-
-#define CALL_WPTREGS \
-	subl 	$28, %esp;          \
-	SAVE_ALL_REGS;              \
-	movl	PT_END(%esp), %ecx; \
-	movl	%ecx, PT_EIP(%esp); \
-	pushf;                      \
-	popl	PT_EFLAGS(%esp);    \
-	movl	%esp, %eax;         \
-	addl	$PT_END+4, %eax;    \
-	movl	%eax, PT_ESP(%esp); \
-	push    %esp;               \
-	call
 
 /*
  *  The order in which registers are stored in the pt_regs structure
  */
 
 #define PT_EBX     0
-#define PT_ECX     4
-#define PT_EDX     8
-#define PT_ESI     12
-#define PT_EDI     16
-#define PT_EBP     20
-#define PT_EAX     24
-#define PT_GS      28
-#define PT_FS      32
-#define PT_ES      36
-#define PT_DS      40
+#define PT_ECX     1
+#define PT_EDX     2
+#define PT_ESI     3
+#define PT_EDI     4
+#define PT_EBP     5
+#define PT_EAX     6
+#define PT_GS      7
+#define PT_FS      8
+#define PT_ES      9
+#define PT_DS      10
 
-#define PT_TRAPNO  44
-#define PT_ERR     48
+#define PT_TRAPNO  11
+#define PT_ERR     12
 
-#define PT_EIP     52
-#define PT_CS      56
-#define PT_EFLAGS  60
-#define PT_ESP     64
-#define PT_SS      68
-
-#define PT_END     72
+#define PT_EIP     13
+#define PT_CS      14
+#define PT_EFLAGS  15
+#define PT_ESP     16
+#define PT_SS      17
 
 #endif /* __ASSEMBLER__ */
 

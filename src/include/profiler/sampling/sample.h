@@ -9,11 +9,11 @@ struct function_sample_info {
 	int counter;
 };
 
-extern int start_profiler(int interval);
-extern int stop_profiler(void);
+int start_profiler(int interval);
+int stop_profiler(void);
 
-extern int *get_counters(void);
-extern char *get_name(int ind);
-extern bool sampling_profiler_is_running(void);
+int *get_counters(void);
+char *get_name(int ind);
+bool sampling_profiler_is_running(void);
 
 #endif /* PROFILER_SAMPLING_SAMPLE_H_ */

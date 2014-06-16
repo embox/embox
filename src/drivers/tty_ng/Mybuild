@@ -1,0 +1,13 @@
+package embox.driver.tty_ng
+
+
+module core {
+	@IncludePath("$(THIRDPARTY_DIR)/include/")
+
+	source "tty_ng.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.task.api
+	depends embox.kernel.thread.core
+	depends embox.kernel.timer.sleep_api
+}

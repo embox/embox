@@ -3,7 +3,6 @@ PKG_NAME := tar
 PKG_VER  := 1.27.1
 
 PKG_SOURCES := http://ftp.gnu.org/gnu/tar/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := 79e59eff05be8d194450d3332522cf03
 
 PKG_PATCHES := pkg_patch.txt
 

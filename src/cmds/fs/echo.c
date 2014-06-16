@@ -24,7 +24,6 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	FILE *fd;
-	const char *mode;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
@@ -38,26 +37,20 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
-		size_t write_items_count;
-
-		if (0 == strcmp((const char *) argv[argc - 2], ">>")) {
-			mode = "a";
-		} else if (0 == strcmp((const char *) argv[argc - 2], ">")) {
-			mode = "w";
+		if (NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
+			return -errno;
 		}
-		else {
+
+		if (0 != strcmp((const char *) argv[argc - 2], ">>")) {
 			print_usage();
 			return 0;
 		}
 
-		if (NULL == (fd = fopen((const char *) argv[argc - 1], mode))) {
-			return -errno;
-		}
-
-		write_items_count = fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
-		write_items_count += fwrite((const void *) "\n", 1, 1, fd);
+		fseek(fd, 0, SEEK_END);
+		fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
+		fwrite((const void *) "\n", 1, 1, fd);
 		fclose(fd);
-		return write_items_count > 0 ? 0 : -EIO;
+		return 0;
 	}
 	else if (argc == 2) {
 		printf("%s \n",argv[argc - 1]);
