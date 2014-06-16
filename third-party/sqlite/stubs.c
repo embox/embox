@@ -40,13 +40,6 @@ int utimes(const char *path, const struct timeval times[2]) {
 	return SET_ERRNO(ENOSYS);
 }
 
-void * mmap(void *addr, size_t len, int prot, int flags,
-		int fildes, off_t off) {
-	printk(">>> %s %p %zu %d %d %d %zd\n", __func__, addr, len,
-			prot, flags, fildes, off);
-	return SET_ERRNO(ENOSYS), MAP_FAILED;
-}
-
 void * mremap(void *old_addr, size_t old_len, size_t new_len,
 		int flags, ... /* void *new_addr */) {
 	printk(">>> %s %p %zu %zu %d\n", __func__, old_addr, old_len,
@@ -54,7 +47,3 @@ void * mremap(void *old_addr, size_t old_len, size_t new_len,
 	return SET_ERRNO(ENOSYS), MAP_FAILED;
 }
 
-int munmap(void *addr, size_t len) {
-	printk(">>> %s %p %zu\n", __func__, addr, len);
-	return SET_ERRNO(ENOSYS);
-}

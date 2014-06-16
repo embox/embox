@@ -9,8 +9,8 @@ SUDO=sudo
 
 MOUNT_POINT=$WORK_DIR/mountpoint
 
-build_support="vfat ext2 ext3 ext4 iso9660 jffs2"
-mount_support="vfat ext2 ext3 ext4"
+build_support="vfat ext2 ext3 ext4 iso9660 jffs2 ntfs"
+mount_support="vfat ext2 ext3 ext4 ntfs"
 
 do_mount() {
 	$SUDO mount $IMG -t $FS $MOUNT_POINT
@@ -77,6 +77,9 @@ build() {
 	case $FS in
 		ext?)
 			mkfs.$FS -F -b 1024 $IMG
+			;;
+		ntfs)
+			mkntfs -F $IMG
 			;;
 		*)
 			mkfs.$FS $IMG

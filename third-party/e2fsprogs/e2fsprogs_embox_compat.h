@@ -28,11 +28,7 @@
 
 #define EMBOX
 
-#define MAP_PRIVATE   0x01
-#define MAP_SHARED    0x00
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-
+#include <sys/mman.h>
 
 #define O_ACCMODE       00000003
 //#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
@@ -44,16 +40,7 @@ typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
 typedef unsigned int uint;
 
-static inline void *mmap(void *addr, size_t length, int prot, int flags,
-           int fd, off_t offset) {
-	printf(">>> mmap, addr - %p\n", addr);
-	return 0;
-}
 
-static inline int munmap(void *addr, size_t length) {
-	printf(">>> munmap, addr - %p\n", addr);
-	return -1;
-}
 
 static inline dev_t makedev(int maj, int min) {
 	printf(">>> makedev, maj - %d, min - %d\n", maj, min);

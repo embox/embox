@@ -1,0 +1,15 @@
+package third_party.phoneme
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) configure build install")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/phoneme/pcsl/install/include")
+@BuildDepends(third_party.phoneme.javacall)
+@BuildDepends(third_party.phoneme.src)
+static module pcsl {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libpcsl_file.a", "libpcsl_memory.a",
+		   "libpcsl_network.a", "libpcsl_print.a",
+		   "libpcsl_string.a"
+
+	@NoRuntime depends third_party.phoneme.javacall
+	@NoRuntime depends third_party.phoneme.src
+}

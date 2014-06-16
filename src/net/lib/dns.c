@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -20,13 +21,17 @@
 #include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <kernel/printk.h>
-
+#include <framework/mod/options.h>
 
 /**
  * DNS nameservers
  */
-#include <framework/mod/options.h>
 #define MODOPS_NAMESERVER OPTION_STRING_GET(nameserver)
+
+/**
+ * DNS query timeout
+ */
+#define MODOPS_DNS_QUERY_TIMEOUT OPTION_GET(NUMBER, dns_query_timeout)
 
 union dns_msg {
 	char raw[DNS_MAX_MESSAGE_SZ];
@@ -218,6 +223,10 @@ static int dns_query_format(struct dns_q *query, union dns_msg *dm,
 
 static int dns_query_execute(union dns_msg *req, size_t req_sz,
 		union dns_msg *rep, size_t *out_rep_sz) {
+	static const struct timeval timeout = {
+		.tv_sec = MODOPS_DNS_QUERY_TIMEOUT / MSEC_PER_SEC,
+		.tv_usec = (MODOPS_DNS_QUERY_TIMEOUT % MSEC_PER_SEC) * USEC_PER_MSEC,
+	};
 	int sock;
 	ssize_t bytes;
 	struct sockaddr_in nameserver_addr;
@@ -238,6 +247,12 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 
 	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
 				sizeof nameserver_addr)) {
+		close(sock);
+		return -errno;
+	}
+
+	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+				&timeout, sizeof timeout)) {
 		close(sock);
 		return -errno;
 	}

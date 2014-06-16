@@ -29,6 +29,7 @@
 
 __BEGIN_DECLS
 extern pid_t waitpid(pid_t pid, int *status, int options);
+extern pid_t wait(int *status);
 __END_DECLS
 
 #endif /* SYS_WAIT_H_ */

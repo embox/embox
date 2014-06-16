@@ -7,7 +7,7 @@
  */
 
 #include <asm/linkage.h>
-#include <asm/traps.h>
+#include <asm/ptrace.h>
 
     .section .text
 

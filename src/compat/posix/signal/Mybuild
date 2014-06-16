@@ -1,0 +1,6 @@
+
+package embox.compat.posix.signal
+
+static module sys_siglist {
+	source "sys_siglist.c"
+}

@@ -5,15 +5,20 @@ static module stubs {
 		"daemon.c",
 		"execl.c",
 		"execlp.c",
+		"execve.c",
 		"execvp.c",
 		"flockfile.c",
 		"ftrylockfile.c",
 		"funlockfile.c",
 		"getdtablesize.c",
+		"getgroups.c",
+		"getppid.c",
+		"getpgrp.c",
 		"link.c",
 		"readlinkat.c",
 		"readlink.c",
 		"rewinddir.c",
-		"utime.c",
-		"WIFEXITED.c"
+		"setpgid.c",
+		"sigsuspend.c",
+		"utime.c"
 }

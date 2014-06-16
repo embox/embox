@@ -1,0 +1,17 @@
+package third_party.phoneme
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) configure build install")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/phoneme/javacall/install/include")
+@BuildDepends(third_party.phoneme.src)
+static module javacall {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/phoneme/javacall/install/include")
+	source "embox_java_compat.c",
+		"javacall_cldc_dir.c", "javacall_cldc_file.c",
+		"javacall_cldc_logging.c", "javacall_cldc_memory.c",
+		"javacall_cldc_os.c", "javacall_cldc_time.c"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "javautil_unicode.o"
+
+	@NoRuntime depends third_party.phoneme.src
+}

@@ -9,9 +9,7 @@
 #define FS_MOUNT_H_
 
 
-extern int mount(char *dev,  char *dir, char *fs_type);
-
-extern int umount(char *dir);
+#include <util/dlist.h>
 
 struct node;
 struct path;
@@ -36,5 +34,8 @@ extern int mount_table_del(struct mount_descriptor *mdesc);
 
 extern struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point);
 
+extern int mount(char *dev,  char *dir, char *fs_type);
+
+extern int umount(char *dir);
 
 #endif /* FS_MOUNT_H_ */

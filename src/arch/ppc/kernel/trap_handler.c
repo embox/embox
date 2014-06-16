@@ -5,7 +5,7 @@
  * @author Ilia Vaprol
  */
 
-#include <asm/traps.h>
+#include <asm/ptrace.h>
 #include <kernel/printk.h>
 
 void trap_handler(struct pt_regs *regs) {

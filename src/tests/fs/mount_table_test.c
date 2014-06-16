@@ -17,7 +17,7 @@ EMBOX_TEST_SUITE("Test for various vfs operations");
 TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-static struct node *r1, *ch1, *r2, *ch2, *r3, *ch3, *r4, *ch4, *test;
+static struct node *test_node;
 /* Builds the tree under `test_root':
  *
  *   test
@@ -27,65 +27,127 @@ static struct node *r1, *ch1, *r2, *ch2, *r3, *ch3, *r4, *ch4, *test;
  *  ch4   ch2
  *         |
  *        ch3
+ *
+ * (test)->(r1)
+ *          |
+ *          |
+ *         (ch1)->(r2)->(r4)
+ *                 |     |
+ *                 |     |
+ *                 |    (ch4)
+ *                 |
+ *                (ch2)->(r3)
+ *                        |
+ *                        |
+ *                       (ch3)
+ *
  */
 
-#include <util/list.h>
-static int setup_suite(void) {
-	struct path test_path, path1, path2, path3, path4;
+static int test_mt_path_init(const char *strpath, const char *name) {
+	struct mount_descriptor *mdesc;
+	struct node *node, *root_node;
+	struct path rootp, path;
 
-	r1 = node_alloc("/", 1);
-	ch1 = node_alloc("ch1", 3);
-	r2 = node_alloc("/", 1);
-	ch2 = node_alloc("ch2", 3);
-	r3 = node_alloc("/", 1);
-	ch3 = node_alloc("ch3", 3);
-	r4 = node_alloc("/", 1);
-	ch4 = node_alloc("ch4", 3);
-	test = node_alloc("test", 4);
-
-	if (!r1 || !ch1 || !r2 || !ch2 || !r3 || ! ch3 || !r4 || !ch4) {
-		return -ENOMEM;
+	vfs_get_root_path(&rootp);
+	if (vfs_lookup(&rootp, strpath, &path)) {
+		return -ENOENT;
 	}
 
-	vfs_add_leaf(ch1, r1);
-	vfs_add_leaf(ch2, r2);
-	vfs_add_leaf(ch3, r3);
-	vfs_add_leaf(ch4, r4);
-	vfs_add_leaf(test, vfs_get_root());
+	node = node_alloc(name, strlen(name));
+	assert(node);
+	root_node = node_alloc("/", strlen("/"));
+	assert(root_node);
 
-	test_path.mnt_desc = mount_table();
-	test_path.node = test;
-	path1.node = ch1;
-	assert(path1.mnt_desc = mount_table_add(&test_path, r1, "", ""));
+	vfs_add_leaf(node, root_node);
 
-	path2.node = ch2;
-	assert(path2.mnt_desc = mount_table_add(&path1, r2, "", ""));
+	mdesc = mount_table_add(&path, root_node, "", "");
+	assert(mdesc);
 
-	path3.node = ch3;
-	assert(path3.mnt_desc = mount_table_add(&path2, r3, "", ""));
+	return 0;
+}
 
-	path4.node = ch4;
-	assert(path4.mnt_desc = mount_table_add(&path1, r4, "", ""));
+static int test_mt_path_fini(const char *strpath) {
+	struct path root, path;
+	struct node *root_node;
+
+	vfs_get_root_path(&root);
+	if (vfs_lookup(&root, strpath, &path)) {
+		return -ENOENT;
+	}
+
+	root_node = path.mnt_desc->mnt_root;
+	mount_table_del(path.mnt_desc);
+
+	vfs_del_leaf(path.node);
+
+	node_free(root_node);
+
+	return 0;
+}
+
+static int setup_suite(void) {
+	struct path root;
+
+	vfs_get_root_path(&root);
+	test_node = node_alloc("test", strlen("test"));
+
+	vfs_add_leaf(test_node, root.node);
+
+	test_mt_path_init("/test", "ch1");
+	test_mt_path_init("/test/ch1", "ch2");
+	test_mt_path_init("/test/ch1/ch2", "ch3");
+	test_mt_path_init("/test/ch1", "ch4");
 
 	return 0;
 }
 
 static int teardown_suite(void) {
 
-	if (!r1 || !ch1 || !r2 || !ch2 || !r3 || ! ch3 || !r4 || !ch4) {
-		return -EINVAL;
-	}
+	test_mt_path_fini("/test/ch1/ch4");
+	test_mt_path_fini("/test/ch1/ch2/ch3");
+	test_mt_path_fini("/test/ch1/ch2");
+	test_mt_path_fini("/test/ch1");
 
-	vfs_del_leaf(r1);
-	vfs_del_leaf(r2);
-	vfs_del_leaf(r3);
-	vfs_del_leaf(r4);
-	vfs_del_leaf(ch1);
-	vfs_del_leaf(ch2);
-	vfs_del_leaf(ch3);
-	vfs_del_leaf(ch4);
-	vfs_del_leaf(test);
+	vfs_del_leaf(test_node);
+
 	return 0;
+}
+
+TEST_CASE("new mounts should hide old content") {
+	struct path root, path;
+	vfs_get_root_path(&root);
+
+	test_assert_zero(vfs_lookup(&root, "test", &path));
+
+	test_assert_zero(vfs_lookup(&root, "test/ch1", &path));
+	test_assert_zero(vfs_lookup(&root, "test/ch1/ch4", &path));
+	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2", &path));
+}
+
+TEST_CASE("mount_table_get_child should find `test' mount_desc") {
+	struct path root, path;
+
+	vfs_get_root_path(&root);
+
+	test_assert_zero(vfs_lookup(&root, "test", &path));
+
+	test_assert_not_null(mount_table_get_child(path.mnt_desc, path.node));
+}
+
+TEST_CASE("umount should expose old content") {
+	struct path root, path;
+	vfs_get_root_path(&root);
+
+	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+
+	test_assert_zero(test_mt_path_fini("test/ch1/ch4"));
+
+	test_assert_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+
+	/* reverting changes back */
+	test_assert_zero(test_mt_path_init("/test/ch1", "ch4"));
+	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
 }
 
 TEST_CASE("mount_table_del() and mount_table_get_child() correctness") {

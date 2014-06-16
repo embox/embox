@@ -6,17 +6,22 @@
  * @date 04.04.13
  */
 
-#include <cmd/shell.h>
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
-#include <lib/linenoise_1.h>
-#include <limits.h>
-#include <readline/history.h>
-#include <readline/readline.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+
+#include <readline/history.h>
+#include <readline/readline.h>
+
+#include <linenoise.h>
+
+#include <cmd/shell.h>
+
 
 #define DEFAULT_HISTORY_FILE "~/.history"
 

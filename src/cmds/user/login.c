@@ -13,15 +13,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#include <lib/linenoise_1.h>
-#include <cmd/shell.h>
 #include <pwd.h>
 #include <shadow.h>
 #include <utmp.h>
-#include <security/smac.h>
 #include <termios.h>
 #include <unistd.h>
+
+#include <readline/readline.h>
+
+#include <cmd/shell.h>
+#include <security/smac.h>
 
 #include <kernel/task.h>
 
@@ -39,25 +40,6 @@ EMBOX_CMD(login_cmd);
 #define PASSW_PROMPT "password: "
 
 #define SMAC_USERS "/smac_users"
-
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
-	struct spwd *spwd;
-	FILE *shdwf;
-
-	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
-		return NULL;
-	}
-
-	while (NULL != (spwd = fgetspent(shdwf))) {
-		if (0 == strcmp(spwd->sp_namp, name)) {
-			break;
-		}
-	}
-
-	fclose(shdwf);
-
-	return spwd;
-}
 
 static int utmp_login(short ut_type, const char *ut_user) {
 	struct utmp utmp;
@@ -295,7 +277,7 @@ static int login_cmd(int argc, char **argv) {
 			/* */
 		}
 
-		while (!(name = linenoise(LOGIN_PROMPT))) {
+		while (!(name = readline(LOGIN_PROMPT))) {
 			printf("\n\n");
 		}
 

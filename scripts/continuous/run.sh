@@ -30,7 +30,7 @@ RUN_QEMU="./scripts/qemu/auto_qemu $SIM_ARG"
 
 declare -A atml2run
 atml2run=(
-	['arm/omap']=default_run
+	['arm/qemu']=default_run
 	['x86/nonvga_debug']=default_run
 	['x86/smp']=default_run
 	['x86/test_fs']="$(dirname $0)/fs/run.sh $ATML"
@@ -50,7 +50,7 @@ run_bg() {
 	declare -A atml2sim
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
-		['arm/omap']="$RUN_QEMU"
+		['arm/qemu']="$RUN_QEMU"
 		['x86/nonvga_debug']="$RUN_QEMU"
 		['x86/smp']="$RUN_QEMU -smp 2"
 		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
@@ -61,7 +61,8 @@ run_bg() {
 		['generic/qemu']="$RUN_QEMU"
 	)
 
-	sudo AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
+	sudo PATH=$PATH \
+		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
 		AUTOQEMU_START_SCRIPT="$AUTOQEMU_START_SCRIPT" \
 		AUTOQEMU_STOP_SCRIPT="$AUTOQEMU_STOP_SCRIPT" \

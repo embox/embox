@@ -250,7 +250,8 @@ $(@build_initfs) :
 		$(call gen_make_var,build_initfs,$(initfs)); \
 		$(call gen_make_dep,$(target_file),$$$$(initfs_prerequisites)); \
 		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(target_file),cpio_files,$(cpio_files)))
+		$(call gen_make_tsvar_list,$(target_file),cpio_files,$(cpio_files)); \
+		$(call gen_make_var_list,__cpio_files,$(cpio_files)))
 
 #
 # Per-module artifacts.
@@ -469,6 +470,7 @@ my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
 my_initfs_target_dir := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_dir)
 my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
 my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
+my_initfs_xattr := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.xattr)
 
 @source_initfs_cp_rmk := \
 	$(foreach s,$(build_sources), \
@@ -596,6 +598,7 @@ $(@source_initfs_cp_rmk) : str_of = \
 		$(call sh_quote,$(call get,$(call values_of,$1),value))
 $(@source_initfs_cp_rmk) : chmod = $(call str_of,$(my_initfs_chmod))
 $(@source_initfs_cp_rmk) : chown = $(call str_of,$(my_initfs_chown))
+$(@source_initfs_cp_rmk) : xattr = $(call str_of,$(my_initfs_xattr))
 
 $(@source_initfs_cp_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -604,6 +607,7 @@ $(@source_initfs_cp_rmk) :
 		$(call gen_make_tsvar,$(out),src_file,$(src_file)); \
 		$(call gen_make_tsvar,$(out),chmod,$(chmod)); \
 		$(call gen_make_tsvar,$(out),chown,$(chown)); \
+		$(call gen_make_tsvar_list,$(out),xattr,$(xattr)); \
 		$(call gen_make_tsvar,$(out),mod_path,$(mod_path)); \
 		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)))

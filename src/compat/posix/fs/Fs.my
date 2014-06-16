@@ -6,6 +6,7 @@ module All {
 		dirent,
 		fsop,
 		getcwd,
+		umask,
 		xattr,
 		libgen
 }
@@ -41,7 +42,7 @@ static module lseek {
 }
 
 static module file_ops {
-	source "file_ops.c"
+	source "ioctl.c"
 	source "close.c"
 	source "fstat.c"
 	source "fsync.c"
@@ -62,6 +63,7 @@ static module fsop {
 	depends embox.fs.core
 	depends embox.fs.Perm
 	depends embox.fs.SysLibFileSystem
+	depends umask // mkdir
 }
 
 static module getcwd {
@@ -78,6 +80,14 @@ static module open {
 	depends embox.kernel.task.resource.errno
 	depends libgen
 	depends dirent
+	depends umask
+}
+
+static module umask {
+	source "umask.c"
+
+	option number default_umask = 0022
+	depends embox.kernel.task.task_resource
 }
 
 static module xattr {

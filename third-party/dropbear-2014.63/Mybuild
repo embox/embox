@@ -27,5 +27,22 @@ module dropbear_new {
 
 	depends embox.compat.posix.stubs
 	depends embox.compat.posix.pty
-	depends embox.kernel.task.syslib.kfork
+	depends embox.compat.posix.proc.vfork
+	depends embox.compat.posix.crypt
+}
+
+@Cmd(name = "dropbeard",
+	help = "dropbear (SSH) daemon",
+	man = '''
+		NAME
+			dropbeard - helper daemon driving dropbear
+		SYNOPSIS
+			dropbeard
+		AUTHORS
+			Anton Kozlov
+	''')
+module dropbeard {
+	source "dropbeard.c"
+
+	depends dropbear_new
 }

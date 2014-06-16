@@ -1,26 +1,26 @@
 package third_party.samba
 
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba/core/samba-3.6.18/source3/include")
+@BuildDepends(third_party.zlib.libs)
 module core {
-	depends embox.lib.LibC
-	depends embox.arch.x86.LibM // FIXME:
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source
+		"libsmbclient.a",
+		"libtevent.a",
+		"libtalloc.a",
+		"libtdb.a",
+		"libwbclient.a"
 
-	source "empty.c" // FIXME: workaround
+	depends embox.lib.LibC
 
 	depends embox.compat.posix.idx.poll
 	depends embox.net.lib.getifaddrs
 	depends third_party.zlib.libs
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/samba MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source
-		"../../../../samba/lib/libsmbclient.a",
-		"../../../../samba/lib/libtevent.a",
-		"../../../../samba/lib/libtalloc.a",
-		"../../../../samba/lib/libtdb.a",
-		"../../../../samba/lib/libwbclient.a"
-
-	source "order.mk"
 }
 
+@Build(stage=2,script="true")
+@BuildDepends(core)
 @Cmd(name = "smbclient",
 	help = "smbclient shell",
 	man = '''
@@ -37,9 +37,10 @@ module smbclient {
 	@Rule(script="true")
 	source "../../../../samba/src/samba/source3/bin/smbclient.embox.o"
 	source "shell_cmd.c"
-	source "order.mk"
 }
 
+@Build(stage=2,script="true")
+@BuildDepends(core)
 @Cmd(name = "testbrowse2",
 	help = "testbrowse2 command",
 	man = '''
@@ -57,5 +58,4 @@ module testbrowse2 {
 	@IncludePath("$(ROOT_DIR)/build/samba/include")
 	source "../../../../samba/src/samba/examples/libsmbclient/testbrowse2.c"
 	source "shell_cmd_testbrowse2.c"
-	source "order.mk"
 }

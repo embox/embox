@@ -27,6 +27,13 @@ struct node;
 extern int security_node_create(struct node *dir, mode_t mode);
 
 /**
+ * @brief Sets node credentials of current user
+ *
+ * @param node
+ */
+extern void security_node_cred_fill(struct node *node);
+
+/**
  * @brief Checks permission on node delete. @a dir already checked for
  * #FS_MAY_WRITE
  *
