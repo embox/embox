@@ -35,29 +35,6 @@
 #include <pthread.h>
 
 /* Structure describing CPU time used by a process and its children.  */
-struct tms
-{
-  clock_t tms_utime;          /* User CPU time.  */
-  clock_t tms_stime;          /* System CPU time.  */
-
-  clock_t tms_cutime;         /* User CPU time of dead children.  */
-  clock_t tms_cstime;         /* System CPU time of dead children.  */
-};
-
-#include <kernel/task.h>
-/* Store the CPU time used by this process and all its
-   dead children (and their dead children) in BUFFER.
-   Return the elapsed real time, or (clock_t) -1 for errors.
-   All times are in CLK_TCKths of a second.  */
-static inline clock_t times (struct tms *__buffer) {
-	//DPRINT();
-	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_get_clock(task_self());
-	__buffer->tms_utime = 0;
-
-	return __buffer->tms_stime;
-}
-
 
 namespace std {
 	extern size_t strxfrm(char *dest, const char *src, size_t n);

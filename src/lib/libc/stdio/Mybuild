@@ -30,6 +30,8 @@ static module LibCStdioOpen {
 	option number file_quantity = 16
 
 	source "fopen.c"
+	source "fclose.c"
+	source "stdio_file.c"
 	depends embox.compat.posix.fs.open
 	@NoRuntime depends LibCString
 }
@@ -45,7 +47,12 @@ static module LibCStdioFileOps {
 	source "fgets.c"
 
 	source "file_ops.c"
+	source "fread.c"
+	source "fwrite.c"
+	source "fioctl.c"
+	source "stdio_stubs.c"
 	depends embox.compat.posix.fs.file_ops
+
 
 	source "fputc.c"
 	source "fputs.c"

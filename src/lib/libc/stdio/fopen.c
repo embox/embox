@@ -15,43 +15,11 @@
 
 #include <sys/ioctl.h>
 
-#include <mem/misc/pool.h>
+#define DEFAULT_MODE 0666
 
-#include <framework/mod/options.h>
+extern FILE *stdio_file_alloc(int fd);
 
-
-
-#include <fs/kfile.h>
-
-
-#define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
-
-#define DEFAULT_MODE 0755
-
-POOL_DEF(file_pool, FILE, FILE_QUANTITY);
-
-static FILE *file_alloc(int fd) {
-	FILE *file = pool_alloc(&file_pool);
-
-	if (!file) {
-		return NULL;
-	}
-
-	file->fd = fd;
-	file->has_ungetc = 0;
-	return file;
-}
-
-static void file_free(FILE *file) {
-	if ((file != stdin) && (file != stdout)
-			&& (file != stderr)) {
-		pool_free(&file_pool, file);
-	}
-}
-
-FILE *fopen(const char *path, const char *mode) {
-	int fd;
-	FILE *file = NULL;
+static int mode2flag(const char *mode) {
 	int flags = 0;
 
 	if (strchr(mode, 'r')) {
@@ -66,12 +34,22 @@ FILE *fopen(const char *path, const char *mode) {
 		flags |= O_APPEND | O_WRONLY | O_CREAT;
 	}
 
+	return flags;
+}
+
+FILE *fopen(const char *path, const char *mode) {
+	int fd;
+	FILE *file = NULL;
+	int flags = 0;
+
+	flags = mode2flag(mode);
+
 	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
 		/* That's sad, but open sets errno, no need to alter */
 		return NULL;
 	}
 
-	if (NULL == (file = file_alloc(fd))) {
+	if (NULL == (file = stdio_file_alloc(fd))) {
 		close(fd);
 		SET_ERRNO(ENOMEM);
 		return NULL;
@@ -87,7 +65,7 @@ FILE *fdopen(int fd, const char *mode) {
 	 */
 	FILE *file;
 
-	file = file_alloc(fd);
+	file = stdio_file_alloc(fd);
 	if (file == NULL) {
 		SET_ERRNO(ENOMEM);
 		return NULL;
@@ -97,25 +75,25 @@ FILE *fdopen(int fd, const char *mode) {
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {
-	if (NULL == file) {
-		return file;
+	int fd;
+	int flags = 0;
+	int old_fd;
+
+	if (NULL == path || NULL == file) {
+		return NULL;
 	}
-	return NULL;
+
+	flags = mode2flag(mode);
+
+	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
+		/* That's sad, but open sets errno, no need to alter */
+		return NULL;
+	}
+	old_fd = file->fd;
+
+	dup2(fd, old_fd);
+
+	close(fd);
+
+	return file;
 }
-
-int fclose(FILE *file) {
-	int res;
-
-	if (NULL == file){
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	res = close(file->fd);
-	if (res >= 0) {
-		file_free(file);
-	}
-
-	return res;
-}
-

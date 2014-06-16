@@ -31,7 +31,7 @@ static void task_sig_handler_ignore(int sig) {
 #define Ign  task_sig_handler_ignore
 #define Core task_sig_handler_terminate /* FIXME */
 #define Stop task_sig_handler_terminate /* FIXME */
-#define Cont task_sig_handler_terminate /* FIXME */
+#define Cont task_sig_handler_ignore    /* FIXME */
 typedef void (*_task_sig_handler_t)(int);
 static const _task_sig_handler_t default_sig_action[] = {
 	[SIGHUP]	= Term,

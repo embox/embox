@@ -1,0 +1,7 @@
+package embox.test.posix
+
+module regex {
+	source "regex_test.c"
+
+	@NoRuntime depends embox.compat.posix.regex
+}

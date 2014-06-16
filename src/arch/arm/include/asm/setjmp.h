@@ -30,6 +30,9 @@
 
 typedef	int __jmp_buf[_JBLEN];
 
+#define SETJMP_EFP_INDEX 7
+#define SETJMP_ESP_INDEX 9
+
 #include <stddef.h>
 struct cpu_stack {
 	int ebp;

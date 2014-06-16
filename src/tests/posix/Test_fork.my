@@ -1,0 +1,9 @@
+package embox.test.posix.fork
+
+@App
+@Cmd(name="test_fork_static",
+		help="internal test subcommand",
+		man="")
+module test_fork_static {
+	source "fork_test_app.c"
+}

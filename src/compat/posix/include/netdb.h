@@ -25,6 +25,7 @@ struct hostent {
 	int h_addrtype;     /* Host address type */
 	int h_length;       /* Length of address */
 	char **h_addr_list; /* List of addresses */
+#define h_addr h_addr_list[0]
 };
 
 /**

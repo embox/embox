@@ -24,6 +24,8 @@ static int su_exec(int argc, char *argv[]) {
 	const struct cmd *login_cmd = cmd_lookup("login");
 	uid_t euid = geteuid();
 	uid_t reuid = getuid();
+	gid_t egid = getegid();
+	gid_t regid = getgid();
 	char old_smac_label[SMAC_LABELLEN];
 	int opt, ret;
 	char *cmd = NULL, *name = "root";
@@ -47,6 +49,7 @@ static int su_exec(int argc, char *argv[]) {
 	}
 
 	uarea->reuid = uarea->euid = 0;
+	uarea->regid = uarea->egid = 0;
 	strcpy(old_smac_label, task_self_resource_security());
 	strcpy(task_self_resource_security(), smac_admin);
 
@@ -75,6 +78,8 @@ static int su_exec(int argc, char *argv[]) {
 	strcpy(task_self_resource_security(), old_smac_label);
 	uarea->reuid = reuid;
 	uarea->euid = euid;
+	uarea->regid = regid;
+	uarea->egid = egid;
 
 	return 0;
 

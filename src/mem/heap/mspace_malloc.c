@@ -192,3 +192,67 @@ int mspace_fini(struct dlist_head *mspace) {
 
 	return 0;
 }
+
+size_t mspace_deep_copy_size(struct dlist_head *mspace) {
+	struct mm_segment *mm;
+	size_t ret;
+
+	ret = 0;
+	dlist_foreach_entry(mm, mspace, link) {
+		ret += mm->size;
+	}
+	return ret;
+}
+
+
+void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+	struct mm_segment *mm;
+	void *p;
+
+	dlist_init(store_space);
+
+	/* if mspace is empty list manipulation is illegal */
+	if (dlist_empty(mspace)) {
+		return;
+	}
+
+	dlist_del(mspace);
+	dlist_add_prev(store_space, mspace->next);
+
+	p = buf;
+	dlist_foreach_entry(mm, store_space, link) {
+		memcpy(p, mm, mm->size);
+		p += mm->size;
+	}
+
+	dlist_del(store_space);
+	dlist_add_prev(mspace, mspace->next);
+}
+
+void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+	struct dlist_head *raw_mm;
+	void *p;
+
+	dlist_init(mspace);
+
+	p = buf;
+	raw_mm = store_space->next;
+
+	/* can't use foreach, since it stores next pointer in accumulator */
+	while (raw_mm != store_space) {
+		struct mm_segment *buf_mm, *mm;
+
+		buf_mm = p;
+
+		mm = member_cast_out(raw_mm, struct mm_segment, link);
+		memcpy(mm, buf_mm, buf_mm->size);
+
+		p += buf_mm->size;
+		raw_mm = raw_mm->next;
+	}
+
+	if (!dlist_empty(store_space)) {
+		dlist_del(store_space);
+		dlist_add_prev(mspace, store_space->next);
+	}
+}

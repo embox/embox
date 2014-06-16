@@ -2,7 +2,11 @@ package embox.kernel.sched
 
 module sched {
 	source "sched.c"
+	depends embox.kernel.addr_space
+
 	source "sched_signal.c"
+
+	option boolean timer_allocate_on_stack = true
 	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */
@@ -17,6 +21,9 @@ module sched {
 
 	@NoRuntime depends sched_ticker
 	@NoRuntime depends wait_queue
+
+	//XXX kernel/thread.h included
+	depends embox.kernel.thread.thread_wait
 }
 
 module sched_ticker {
@@ -29,5 +36,23 @@ module wait_queue {
 	source "waitq.c"
 
 	depends embox.util.DList
+	depends waitq_protect_link
 }
 
+@DefaultImpl(waitq_protect_link_stub)
+abstract module waitq_protect_link { }
+
+module waitq_protect_link_stub extends waitq_protect_link {
+	source "waitq_protect_link_stub.c"
+}
+
+module waitq_protect_link_store extends waitq_protect_link {
+	source "waitq_protect_link.c"
+
+	depends waitq_protect_link_thread_plugin
+}
+
+module waitq_protect_link_thread_plugin extends embox.kernel.thread.thread_wait {
+	source "waitq_protect_link_thread_plugin.c"
+	source "waitq_protect_link_thread_plugin.h"
+}
