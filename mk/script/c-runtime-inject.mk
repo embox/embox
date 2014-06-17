@@ -63,7 +63,14 @@ get_deps = \
 
 mod_inst_runlevel=$(or $(call annotation_value,$(call get,$m,includeMember),$(my_rl_value)),2)
 
-mod_inst_closure=$1 $(foreach d,$(call mod_inst_get_deps,$1,depends),$(call mod_inst_closure,$d))
+_mod_inst_closure= \
+	$(if $(strip $2),\
+		$(foreach d,$(firstword $2),\
+			$(call _mod_inst_closure,\
+				$1 $d,\
+				$(filter-out $1 $d,$(sort $(call mod_inst_get_deps,$d,depends) $(call nofirstword,$2))))),\
+		$1)
+mod_inst_closure=$(call _mod_inst_closure,,$1)
 
 runlevel_modules_closure=$(strip $(foreach m,$(suffix $(modules)),\
 			 $(if $(findstring $1,$(call mod_inst_runlevel,$m)),\
