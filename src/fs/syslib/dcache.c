@@ -36,6 +36,38 @@ POOL_DEF(dcache_path_pool, struct dvalue, DCACHE_TABLE_SIZE);
 static struct hashtable *dcache_table = NULL;
 static struct dlist_head values;
 
+
+static size_t dcache_hash(void *key) {
+	struct dkey *dkey = key;
+	size_t hash;
+	char *path = dkey->fullpath;
+
+	hash = 0;
+	while (*path != '\0') {
+		hash ^= *path++;
+	}
+
+	return hash;
+}
+
+static int dcache_cmp(void *key1, void *key2) {
+	struct dkey *dkey1 = key1, *dkey2 = key2;
+	return strcmp(dkey1->fullpath, dkey2->fullpath);
+}
+
+static int dcache_lazy_init(void) {
+	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
+			&dcache_hash, &dcache_cmp);
+
+	if (dcache_table == NULL) {
+		return -ENOMEM;
+	}
+
+	dlist_init(&values);
+
+	return 0;
+}
+
 static void dvalue_delete(struct dvalue *dvalue) {
 	hashtable_del(dcache_table, &dvalue->key);
 	dlist_del(&dvalue->link);
@@ -86,6 +118,8 @@ int dcache_delete(const char *prefix, const char *rest) {
 
 int dcache_add(const char *prefix, const char *rest, struct path *path) {
 	struct dvalue *dvalue;
+	int res;
+
 
 	if (!path) {
 		return -EINVAL;
@@ -97,6 +131,13 @@ int dcache_add(const char *prefix, const char *rest, struct path *path) {
 
 	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
 		return -EINVAL;
+	}
+
+	if (NULL == dcache_table) {
+		 res = dcache_lazy_init();
+		 if (res != 0) {
+			 return res;
+		 }
 	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_path_pool))) {
@@ -120,6 +161,7 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	struct dvalue *dvalue;
 	int prefix_len, rest_len;
 	const char *pref_tmp;
+	int res;
 
 	prefix_len = 0;
 
@@ -138,6 +180,12 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	if ((prefix_len + rest_len + 1) > DCACHE_MAX_NAME_SIZE) {
 		return NULL;
 	}
+	if (NULL == dcache_table) {
+		 res = dcache_lazy_init();
+		 if (res != 0) {
+			 return NULL;
+		 }
+	}
 
 	compound_path(dkey.fullpath, pref_tmp, rest);
 	dvalue = hashtable_get(dcache_table, &dkey);
@@ -145,33 +193,10 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	return dvalue ? &dvalue->path : NULL;
 }
 
-static size_t dcache_hash(void *key) {
-	struct dkey *dkey = key;
-	size_t hash;
-	char *path = dkey->fullpath;
-
-	hash = 0;
-	while (*path != '\0') {
-		hash ^= *path++;
-	}
-
-	return hash;
-}
-
-static int dcache_cmp(void *key1, void *key2) {
-	struct dkey *dkey1 = key1, *dkey2 = key2;
-	return strcmp(dkey1->fullpath, dkey2->fullpath);
-}
-
 static int dcache_init(void) {
-	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
-			&dcache_hash, &dcache_cmp);
-
-	if (dcache_table == NULL) {
-		return -ENOMEM;
+	if (NULL == dcache_table) {
+		return dcache_lazy_init();
 	}
-
-	dlist_init(&values);
 
 	return 0;
 }
