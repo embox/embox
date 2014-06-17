@@ -118,16 +118,28 @@ int dcache_add(const char *prefix, const char *rest, struct path *path) {
 struct path *dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
+	int prefix_len, rest_len;
+	const char *pref_tmp;
 
-	if (strlen(rest) == 0) {
+	prefix_len = 0;
+
+	if (rest == NULL || 0 == (rest_len = strlen(rest))) {
 		return NULL;
 	}
 
-	if (strlen(prefix) + strlen(rest) + 1 > DCACHE_MAX_NAME_SIZE) {
+	if (prefix == NULL) {
+		prefix_len = 0;
+		pref_tmp = "";
+	} else {
+		prefix_len = strlen(prefix);
+		pref_tmp = prefix;
+
+	}
+	if ((prefix_len + rest_len + 1) > DCACHE_MAX_NAME_SIZE) {
 		return NULL;
 	}
 
-	compound_path(dkey.fullpath, prefix, rest);
+	compound_path(dkey.fullpath, pref_tmp, rest);
 	dvalue = hashtable_get(dcache_table, &dkey);
 
 	return dvalue ? &dvalue->path : NULL;
