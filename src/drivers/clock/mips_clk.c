@@ -38,7 +38,7 @@ static int mips_clock_setup(struct time_dev_conf * conf) {
 
 static struct time_event_device mips_event_device  = {
 		.config = mips_clock_setup,
-		.resolution = 1000,
+		.event_hz = 1000,
 		.name = "mips_clk",
 		.irq_nr = MIPS_IRQN_TIMER
 };
