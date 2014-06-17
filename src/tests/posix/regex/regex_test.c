@@ -28,3 +28,13 @@ TEST_CASE("match") {
 	ret = regcomp(&regex, "^a[[:alnum:]]", 0);
 	test_assert_zero(ret);
 }
+
+TEST_CASE("match") {
+	regex_t regex;
+	regmatch_t match[10];
+	int ret;
+
+	ret = regcomp(&regex, "k", 0);
+	test_assert_zero(ret);
+	test_assert_zero(regexec(&regex, "kk#ab-kF", 10, match, 0));
+}

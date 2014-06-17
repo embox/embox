@@ -23,7 +23,7 @@ typedef ssize_t regoff_t;
 
 typedef struct regmatch {
 	regoff_t    rm_so; /** byte offset from start of string to start of substring */
-	regoff_t    rm_eo; /**    byte offset from start of string of the first character after the end of substring */
+	regoff_t    rm_eo; /** byte offset from start of string of the first character after the end of substring */
 } regmatch_t;
 
 
