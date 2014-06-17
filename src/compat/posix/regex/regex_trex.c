@@ -12,6 +12,17 @@
 #include <errno.h>
 
 int regcomp(regex_t *preg, const char *regex, int cflags) {
+	if (!preg || !regex) {
+		return -EINVAL;
+	}
+
+	/* Trex is able to search only the first match in the whole string or in
+	 * the specified range. Using trex_searchrange() we can get several
+	 * matches, but we have to not allow the symbol '^' in the pattern */
+	if (regex[0] == '^') {
+		return -EINVAL;
+	}
+
 	preg->regex_extended = trex_compile((char *)regex, (const char**) &preg->regex_error);
 	return 0;
 }
@@ -23,7 +34,7 @@ int regexec(const regex_t *preg, const char *string, size_t nmatch,
 	const char *str_beg = string, *str_end = string + strlen(string);
 	int count = 0;
 
-	if (!pmatch) {
+	if (!pmatch || !preg) {
 		return -EINVAL;
 	}
 
@@ -53,5 +64,10 @@ size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 }
 
 void regfree(regex_t *preg) {
+	if (!preg->regex_extended) {
+		return;
+	}
 
+	trex_free(preg->regex_extended);
+	preg->regex_extended = NULL;
 }

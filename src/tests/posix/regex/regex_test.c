@@ -5,6 +5,8 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
+
 #include <regex.h>
 
 #include <embox/test.h>
@@ -26,7 +28,19 @@ TEST_CASE("match") {
 	int ret;
 
 	ret = regcomp(&regex, "^a[[:alnum:]]", 0);
+	test_assert_not_zero(ret);
+}
+
+TEST_CASE("compile and match") {
+	regex_t regex;
+	regmatch_t match[1];
+	int ret;
+
+	ret = regcomp(&regex, "k", 0);
 	test_assert_zero(ret);
+	test_assert_zero(regexec(&regex, "k", 1, match, 0));
+	regfree(&regex);
+	test_assert_equal(regexec(&regex, "k", 1, match, 0), -EINVAL);
 }
 
 TEST_CASE("match") {
@@ -37,4 +51,5 @@ TEST_CASE("match") {
 	ret = regcomp(&regex, "k", 0);
 	test_assert_zero(ret);
 	test_assert_zero(regexec(&regex, "kk#ab-kF", 10, match, 0));
+	regfree(&regex);
 }
