@@ -30,7 +30,7 @@ static int clk_config(struct time_dev_conf *conf);
 
 static struct time_event_device umclock_ev = {
 	.config = clk_config,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.irq_nr = CLOCK_IRQ,
 };
 
@@ -43,7 +43,7 @@ static struct clock_source umclock_cs = {
 
 static int clk_config(struct time_dev_conf *conf) {
 
-	host_timer_config(1000000 / umclock_ev.resolution);
+	host_timer_config(1000000 / umclock_ev.event_hz);
 
 	return 0;
 }

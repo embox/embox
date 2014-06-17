@@ -38,7 +38,7 @@ static int at91_pitc_config(struct time_dev_conf * conf);
 
 static struct time_event_device at91_pitc_event = {
 	.config = at91_pitc_config,
-	.resolution = AT91_PIT_EVENT_RES,
+	.event_hz = AT91_PIT_EVENT_RES,
 	.irq_nr = AT91C_ID_SYS
 };
 
@@ -49,7 +49,7 @@ static cycle_t at91_pitc_read(void) {
 
 static struct time_counter_device at91_pitc_counter = {
 	.read = at91_pitc_read,
-	.resolution = AT91_PIT_COUNTER_RES,
+	.cycle_hz = AT91_PIT_COUNTER_RES,
 };
 
 static struct clock_source at91_pitc_clock_source = {
@@ -62,7 +62,7 @@ static struct clock_source at91_pitc_clock_source = {
 static int at91_pitc_config(struct time_dev_conf * conf) {
 	REG_LOAD(AT91C_PITC_PIVR);
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
-	    (at91_pitc_counter.resolution / at91_pitc_event.resolution));
+	    (at91_pitc_counter.cycle_hz / at91_pitc_event.event_hz));
 	return 0;
 }
 

@@ -140,11 +140,11 @@ static cycle_t gptimer_read(void) {
 
 static struct time_event_device gptimer_ed = {
 	.config = gptimer_config ,
-	.resolution = TIMER0_RELOAD + 1,
+	.event_hz = TIMER0_RELOAD + 1,
 };
 
 static int gptimer_config(struct time_dev_conf *conf) {
-	REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.resolution - 1);
+	REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.event_hz - 1);
 	REG_STORE(&dev_regs->timer[0].counter, 0);
 	REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	return 0;
@@ -152,7 +152,7 @@ static int gptimer_config(struct time_dev_conf *conf) {
 
 static struct time_counter_device gptimer_cd = {
 	.read = gptimer_read,
-	.resolution = 1000000,
+	.cycle_hz = 1000000,
 };
 
 static struct clock_source gptimer_cs = {

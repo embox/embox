@@ -259,7 +259,7 @@ static int instrument_profiling_init(void) {
 
 long long get_current_tb_resolution(void) {
 	if (tb_cs && tb_cs->counter_device)
-		return tb_cs->counter_device->resolution;
+		return tb_cs->counter_device->cycle_hz;
 	else
 		return 1;
 }

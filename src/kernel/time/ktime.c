@@ -44,7 +44,7 @@ time_t ktime_get_timeseconds(void) {
 }
 
 static int module_init(void) {
-	/* find clock_event_device with maximal resolution  */
+	/* find clock_event_device with maximal frequency  */
 	kernel_clock_source = clock_source_get_best(CS_ANY);
 	assert(kernel_clock_source);
 

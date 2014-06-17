@@ -93,7 +93,7 @@ static int omap3_clk_config(struct time_dev_conf *conf) {
 
 static struct time_event_device omap3_clk_event = {
 	.config = omap3_clk_config,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.irq_nr = GPTIMER1_IRQ,
 };
 
