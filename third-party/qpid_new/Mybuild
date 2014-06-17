@@ -1,0 +1,46 @@
+package third_party.qpid_new
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include/qpid",
+		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/lib")
+@BuildDepends(third_party.boost.core)
+@BuildDepends(third_party.e2fsprogs.core)
+@BuildDepends(third_party.STLport.core)
+/* NOTE this was static module, until some day I tried to connect to broker via tcp.
+   TCPConnector class was missing, that registers tcp proto in static constructor of
+   some artifical class. Since noone reference that, tcp was disabled.
+   I turn this module into not static, and TCPConnector starts to register.
+   Anton Kozlov
+*/
+module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+	source "libqmf.a", "libqmf2.a", "libqmfconsole.a",
+		"libqmfengine.a", "libqpidbroker.a", "libqpidclient.a",
+		"libqpidcommon.a", "libqpidmessaging.a", "libqpidtypes.a"
+
+	@NoRuntime depends embox.compat.posix.fs.fsop
+	@NoRuntime depends embox.compat.posix.idx.pipe
+	@NoRuntime depends embox.compat.posix.idx.poll
+	@NoRuntime depends embox.compat.posix.idx.select
+	@NoRuntime depends embox.compat.posix.net.gai_strerror
+	@NoRuntime depends embox.compat.posix.net.getaddrinfo
+	@NoRuntime depends embox.compat.posix.net.getnameinfo
+	@NoRuntime depends embox.compat.posix.net.socket
+	@NoRuntime depends embox.compat.posix.proc.fork
+	@NoRuntime depends embox.compat.posix.util.gethostname
+	@NoRuntime depends embox.compat.posix.util.sleep
+	@NoRuntime depends embox.compat.posix.util.utsname
+	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.net.lib.getifaddrs
+	@NoRuntime depends third_party.boost.core
+	@NoRuntime depends third_party.e2fsprogs.core
+	@NoRuntime depends third_party.STLport.core
+	@NoRuntime depends embox.compat.posix.pthread_key
+}
+
+@BuildDepends(core)
+module hello extends embox.lib.cxx.app {
+	@NoRuntime depends core
+
+	source "^BUILD/qpid/src/qpid/examples/messaging/hello_world.cpp"
+}
