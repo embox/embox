@@ -62,7 +62,7 @@ int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char
 static void audit_log(const char *subject, const char *object,
 		int may_access, int ret, struct smac_audit *audit) {
 	static char no_audit;
-	char line[AUDITLINE_LEN], straccess[4];
+	char line[AUDITLINE_LEN];
 	uid_t uid;
 	struct passwd *pwd;
 
@@ -70,23 +70,21 @@ static void audit_log(const char *subject, const char *object,
 		return;
 	}
 
-	straccess[0] = may_access & FS_MAY_READ  ? 'r' : '-';
-	straccess[1] = may_access & FS_MAY_WRITE ? 'w' : '-';
-	straccess[2] = may_access & FS_MAY_EXEC  ? 'x' : '-';
-	straccess[3] = '\0';
-
 	uid = getuid();
 	no_audit = 1;
 	pwd = getpwuid(uid);
 	no_audit = 0;
 
-	if (!audit->file_name) {
-		audit->file_name = "";
-	}
-
 	snprintf(line, AUDITLINE_LEN,
-			"subject=%s(label=%s), object=%s, file=%s, request=%s, action=%s, function=%s\n",
-			pwd->pw_name, subject, object, audit->file_name, straccess, ret == 0 ? "ALLOW" : "DENINED",
+			"subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
+			pwd ? pwd->pw_name : "?",
+			subject,
+			object,
+			audit->file_name ? audit->file_name : "",
+			may_access & FS_MAY_READ  ? 'r' : '-',
+			may_access & FS_MAY_WRITE ? 'w' : '-',
+			may_access & FS_MAY_EXEC  ? 'x' : '-',
+			ret == 0 ? "ALLOW" : "DENINED",
 			audit->fn_name);
 
 	seculog_record(SECULOG_LABEL_MANDATORY, line);
