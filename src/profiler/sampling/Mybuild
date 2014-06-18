@@ -6,7 +6,7 @@ module timer {
 
 	source "sample.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.timer.sys_timer
 	depends embox.framework.LibFramework
 	depends embox.lib.execinfo.backtrace

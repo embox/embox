@@ -47,7 +47,7 @@ module ping {
 	source "ping.c"
 
 	depends embox.net.lib.dns
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.timer.sys_timer
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.net.inet_addr

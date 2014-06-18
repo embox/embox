@@ -70,7 +70,7 @@ OPTIONS
 module xattr {
 	source "xattr.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file

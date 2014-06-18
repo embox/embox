@@ -1,4 +1,4 @@
-package embox.lib
+package embox.compat.libc
 
 static module LibCTime {
 	source "ctime.c"

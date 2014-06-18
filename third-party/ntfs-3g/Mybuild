@@ -6,6 +6,6 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/libntfs-3g/.libs")
 	source "libntfs-3g.a"
 
-	depends embox.lib.LibC
-	depends embox.lib.LibCStringDup
+	depends embox.compat.libc.LibC
+	depends embox.compat.libc.LibCStringDup
 }

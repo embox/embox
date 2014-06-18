@@ -1,4 +1,4 @@
-package embox.lib
+package embox.compat.libc
 
 static module Print {
 	option number support_floating = 1
@@ -11,19 +11,12 @@ static module Print {
 	@NoRuntime depends LibCType
 }
 
-static module Printk {
-	source "printk.c"
-
-	depends embox.driver.diag
-	@NoRuntime depends Print
-}
-
 static module LibCStdioSprintf {
 	source "sprintf.c"
 	source "snprintf.c"
 
 	@NoRuntime depends Print
-	@NoRuntime depends LibGcc
+	@NoRuntime depends embox.lib.LibGcc
 }
 
 static module LibCStdioOpen {

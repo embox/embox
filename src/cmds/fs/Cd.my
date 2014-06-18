@@ -18,6 +18,6 @@ module cd {
 
 	depends embox.compat.posix.fs.chdir
 	depends embox.compat.posix.fs.getcwd
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }

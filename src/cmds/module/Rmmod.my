@@ -14,6 +14,6 @@ module rmmod {
 	 */
 	source "rmmod.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }

@@ -65,6 +65,6 @@ module iptables {
 
 	depends embox.util.List
 	depends embox.net.netfilter
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }

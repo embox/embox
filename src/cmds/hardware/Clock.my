@@ -15,7 +15,7 @@ package embox.cmd
 module clock {
 	source "clock.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.kernel.time.clock_source
 	depends embox.framework.LibFramework

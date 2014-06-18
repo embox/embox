@@ -37,8 +37,8 @@ static module gethostbyaddr {
 	source "gethostbyaddr.c"
 
 	depends embox.compat.posix.net.inet_addr
-	depends embox.lib.LibCString
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.LibCStdio
 	depends embox.net.lib.dns
 	depends embox.net.util.hostent
 }
@@ -48,7 +48,7 @@ static module gethostbyname {
 
 	depends embox.compat.posix.net.gethostent
 	depends embox.compat.posix.net.inet_addr
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 	depends embox.net.lib.dns
 	depends embox.net.util.hostent
 }
@@ -58,7 +58,7 @@ static module gethostent {
 	source "gethostent.c"
 
 	depends embox.compat.posix.net.inet_addr
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCStdio
 	depends embox.net.util.hostent
 }
 
@@ -72,7 +72,7 @@ static module getnetbyname {
 	source "getnetbyname.c"
 
 	depends embox.compat.posix.net.getnetent
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module getnetent {
@@ -80,7 +80,7 @@ static module getnetent {
 	source "getnetent.c"
 
 	depends embox.compat.posix.net.inet_addr
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCStdio
 	depends embox.net.util.netent
 }
 
@@ -88,7 +88,7 @@ static module getprotobyname {
 	source "getprotobyname.c"
 
 	depends embox.compat.posix.net.getprotoent
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module getprotobynumber {
@@ -101,7 +101,7 @@ static module getprotoent {
 	option string path_to_protocols="/protocols"
 	source "getprotoent.c"
 
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCStdio
 	depends embox.net.util.protoent
 }
 
@@ -109,48 +109,48 @@ static module getservbyname {
 	source "getservbyname.c"
 
 	depends embox.compat.posix.net.getservent
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module getservbyport {
 	source "getservbyport.c"
 
 	depends embox.compat.posix.net.getservent
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module getservent {
 	option string path_to_services="/services"
 	source "getservent.c"
 
-	depends embox.lib.LibCStdio
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCStdio
+	depends embox.compat.libc.LibCString
 	depends embox.net.util.servent
 }
 
 static module herror {
 	source "herror.c"
 
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCStdio
 }
 
 static module inet_addr {
 	source "inet_addr.c"
 
-	depends embox.lib.LibCAssert
-	depends embox.lib.LibCStdio
-	depends embox.lib.LibCStdlib
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.LibCStdio
+	depends embox.compat.libc.LibCStdlib
+	depends embox.compat.libc.LibCString
 }
 
 static module socket {
 	source "socket.c"
 	depends embox.kernel.task.idesc
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 	depends embox.net.socket
 
 	source "socket_index_operation.c"
 	depends embox.kernel.task.idesc
-	depends embox.lib.LibCAssert
+	depends embox.compat.libc.LibCAssert
 	depends embox.net.socket
 }

@@ -22,5 +22,5 @@ module kill {
 
 	depends embox.compat.posix.proc.signal
 	depends embox.compat.posix.util.getopt
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }

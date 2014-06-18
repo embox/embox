@@ -23,6 +23,6 @@ module ntpdate {
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 	depends embox.kernel.time.timekeeper
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.net.lib.ntp
 }

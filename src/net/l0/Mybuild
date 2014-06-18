@@ -8,7 +8,7 @@ module net_entry extends entry_api {
 
 	depends net_rx
 	depends skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module net_rx {
@@ -18,7 +18,7 @@ module net_rx {
 	depends skbuff
 	depends embox.compat.linux.LibLinux
 	depends embox.framework.LibFrameworkNet
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module net_tx {
@@ -26,7 +26,7 @@ module net_tx {
 
 	depends net_crypt_api
 	depends skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 @DefaultImpl(net_no_crypt)

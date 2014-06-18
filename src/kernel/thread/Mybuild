@@ -29,7 +29,7 @@ module core extends thread_mode {
 	@NoRuntime depends signal_api
 	@NoRuntime depends thread_wait
 
-	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCAssert
 
 	depends embox.kernel.cpu.common
 }

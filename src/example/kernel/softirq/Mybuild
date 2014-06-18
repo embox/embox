@@ -3,7 +3,7 @@ package embox.example.kernel.softirq
 module softirq {
 	source "softirq.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.softirq
 	depends embox.framework.example
 }

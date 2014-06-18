@@ -17,7 +17,7 @@ package embox.cmd.fs
 module mkfs {
 	source "mkfs.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.driver.ramdisk
 	//depends embox.fs.driver.fat

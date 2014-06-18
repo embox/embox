@@ -11,12 +11,12 @@ module ipv4 {
 	depends skbuff
 	depends embox.mem.objalloc
 	depends embox.kernel.timer.sys_timer
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	source "ip_input.c"
 	depends skbuff
 	depends raw_sock
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	/* depends from ip_fragment.c */
 	depends netfilter
 

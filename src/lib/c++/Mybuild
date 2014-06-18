@@ -17,7 +17,7 @@ module standalone extends lib {
 	/* Private C++ files */
 	source "purevirt_routines.cpp"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module ConstructorsInvocator {

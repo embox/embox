@@ -12,7 +12,7 @@ module core {
 		"libtdb.a",
 		"libwbclient.a"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	depends embox.compat.posix.idx.poll
 	depends embox.net.lib.getifaddrs
