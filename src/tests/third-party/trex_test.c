@@ -14,10 +14,10 @@
 EMBOX_TEST_SUITE("third-party/trex test");
 
 static int match_string(char *pattern, char *request) {
-	const TRexChar *error = NULL;
+	TRexChar error[40];
 	TRex *trex;
 
-	trex = trex_compile(_TREXC(pattern), &error);
+	trex = trex_compile(_TREXC(pattern), error);
 
 	if (trex) {
 		const TRexChar *begin, *end;

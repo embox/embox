@@ -23,7 +23,14 @@ int regcomp(regex_t *preg, const char *regex, int cflags) {
 		return -EINVAL;
 	}
 
-	preg->regex_extended = trex_compile((char *)regex, (const char**) &preg->regex_error);
+	preg->regex_error[0] = '\0';
+
+	preg->regex_extended = trex_compile((char *)regex, preg->regex_error);
+
+	if (!preg->regex_extended) {
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
@@ -60,6 +67,11 @@ int regexec(const regex_t *preg, const char *string, size_t nmatch,
 
 size_t regerror(int errcode, const regex_t *preg, char *errbuf,
         size_t errbuf_size) {
+	if (!errbuf_size || !errbuf) {
+		return strlen(preg->regex_error);
+	}
+
+	strncpy(errbuf, preg->regex_error, errbuf_size);
 	return 0;
 }
 

@@ -53,3 +53,14 @@ TEST_CASE("match") {
 	test_assert_zero(regexec(&regex, "kk#ab-kF", 10, match, 0));
 	regfree(&regex);
 }
+
+TEST_CASE("error") {
+	regex_t regex;
+	char error[40] = "";
+
+	test_assert_not_zero(regcomp(&regex, "(s$", 0));
+	test_assert_zero(regerror(0, &regex, error, 40));
+	test_assert_not_zero(strlen(error));
+
+	regfree(&regex);
+}
