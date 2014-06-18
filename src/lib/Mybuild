@@ -8,9 +8,9 @@ module rl_linenoise extends readline_api {
 	source "readline/rl_linenoise.c"
 
 	depends embox.compat.posix.fs.dirent
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends third_party.lib.linenoise
-	depends embox.lib.LibCStringDup
+	depends embox.compat.libc.LibCStringDup
 }
 
 static module LibCurses {
@@ -23,8 +23,8 @@ static module LibCurses {
 static module LibElf {
 	source "elf/elf.c"
 
-	@NoRuntime depends embox.lib.LibCStdio
-	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.compat.libc.LibCStdio
+	@NoRuntime depends embox.compat.libc.LibCString
 }
 
 static module LibExec {

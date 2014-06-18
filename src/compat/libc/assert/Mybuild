@@ -1,9 +1,9 @@
-package embox.lib
+package embox.compat.libc
 
 static module LibCAssert {
 	source "assert.c"
 	source "assert_impl.h"
 
-	@NoRuntime depends embox.lib.Printk
-	@NoRuntime depends embox.lib.LibCStdioSprintf
+	@NoRuntime depends embox.compat.libc.Printk
+	@NoRuntime depends embox.compat.libc.LibCStdioSprintf
 }

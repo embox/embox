@@ -5,7 +5,7 @@ static module zlib_download { }
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module libs {
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	/*depends embox.arch.x86.LibM // FIXME:*/
 

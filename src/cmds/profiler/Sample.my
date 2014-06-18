@@ -22,6 +22,6 @@ module sample {
 	source "sample.c"
 
 	depends embox.profiler.sampling.timer
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCStdio
 	depends embox.framework.LibFramework
 }

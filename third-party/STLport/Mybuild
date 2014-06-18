@@ -8,7 +8,7 @@ static module core {
 	source "libstlportg.a"
 
 	@NoRuntime depends embox.lib.cxx.lib
-	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.compat.libc.LibC
 	@NoRuntime depends third_party.gcc.core // FIXME
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

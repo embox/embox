@@ -14,8 +14,8 @@ module dropbear_new {
 	source "strip.dropbear.o"
 
 	@NoRuntime depends embox.compat.posix.fs.dirent
-	@NoRuntime depends embox.lib.LibCAssert
-	@NoRuntime depends embox.lib.LibCType
+	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCType
 	@NoRuntime depends embox.kernel.task.resource.errno
 
 	@InitFS

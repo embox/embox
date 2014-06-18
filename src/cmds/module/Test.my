@@ -23,7 +23,7 @@ package embox.cmd
 module test {
 	source "test.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

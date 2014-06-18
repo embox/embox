@@ -39,13 +39,13 @@ module passwd {
 module inttypes_test {
 	source "inttypes_test.c"
 
-	depends embox.lib.LibCInttypes
+	depends embox.compat.libc.LibCInttypes
 }
 
 module libgen_test {
 	source "libgen_test.c"
 
-	depends embox.lib.LibCInttypes
+	depends embox.compat.libc.LibCInttypes
 }
 
 module poll_test {

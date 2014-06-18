@@ -14,7 +14,7 @@ module runlevel {
 
 	depends mod
 	depends embox.lib.Printk
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 module level_0 { /*level_arch */

@@ -21,7 +21,7 @@ static module chdir {
 	source "chdir.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module dirent {
@@ -30,7 +30,7 @@ static module dirent {
 
 	depends embox.fs.core
 	depends embox.mem.objalloc
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 	depends embox.fs.dcache
 }
 
@@ -70,7 +70,7 @@ static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module open {

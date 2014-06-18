@@ -15,7 +15,7 @@ package embox.cmd
 module forkexec {
 	source "forkexec.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.fs.core
 	depends embox.lib.LibExec
 	depends embox.framework.LibFramework

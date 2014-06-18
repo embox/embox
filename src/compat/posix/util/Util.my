@@ -19,7 +19,7 @@ module Time {
 static module getopt {
 	source "getopt.c"
 
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module utsname {
@@ -28,7 +28,7 @@ static module utsname {
 	option string hostname="embox"
 	source "utsname.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module time {
@@ -60,7 +60,7 @@ static module getpass {
 	source "getpass.c"
 
 	depends embox.compat.posix.termios
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module gethostname {
@@ -72,6 +72,6 @@ static module environ {
 
 	depends embox.kernel.task.resource.env
 	depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.lib.LibCAssert
-	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCString
 }

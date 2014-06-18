@@ -22,7 +22,7 @@ package embox.cmd.fs
 module ls {
 	source "ls.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.passwd

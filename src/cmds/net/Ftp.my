@@ -26,7 +26,7 @@ module ftp {
 	option number data_buff_sz=1024
 
 	depends embox.compat.posix.util.getpass
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.net.socket
 	depends embox.framework.LibFramework
 }

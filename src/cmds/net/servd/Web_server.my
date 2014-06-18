@@ -7,5 +7,5 @@ module web_server {
 	option number max_services_amount=10
 	depends embox.net.util.request_parser
 	depends embox.mem.heap_api
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }

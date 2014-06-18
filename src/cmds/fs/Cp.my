@@ -22,7 +22,7 @@ package embox.cmd.fs
 module cp {
 	source "cp.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

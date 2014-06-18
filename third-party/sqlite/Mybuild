@@ -31,6 +31,6 @@ module sqlite3_stubs {
 	source "stubs.c"
 
 	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.compat.libc.LibCString
 	@NoRuntime depends embox.lib.Printk
 }

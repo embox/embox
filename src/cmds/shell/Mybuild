@@ -30,7 +30,7 @@ module tish {
 	depends embox.compat.posix.proc.uid
 	depends embox.compat.posix.passwd
 	depends embox.kernel.task.syslib.waitpid
-	depends embox.lib.LibCStringDup
+	depends embox.compat.libc.LibCStringDup
 
 	@NoRuntime depends embox.compat.posix.util.sleep
 }
@@ -49,7 +49,7 @@ module tish {
 module shell_run {
 	source "shell_run.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 

@@ -4,7 +4,7 @@ module priority_q {
 	source "priority_q.c"
 
 	depends embox.util.LibUtil
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.example
 }
 
@@ -12,7 +12,7 @@ module readline {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "readline.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends third_party.lib.linenoise
 	depends embox.framework.example
 }
@@ -28,6 +28,6 @@ module tree_set {
 	source "tree_set.c"
 
 	depends embox.util.LibUtil
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.example
 }

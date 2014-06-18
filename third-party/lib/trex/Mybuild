@@ -6,6 +6,6 @@ module trex {
 
 	depends embox.mem.heap_api
 	@NoRuntime depends embox.arch.libarch /* for setjmp */
-	@NoRuntime depends embox.lib.LibCStdio
-	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.compat.libc.LibCStdio
+	@NoRuntime depends embox.compat.libc.LibCString
 }

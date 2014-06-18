@@ -5,7 +5,7 @@ module dev {
 	option number netdev_table_sz=3
 	source "netdev.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.util.List
 	depends embox.util.hashtable
 }
@@ -26,7 +26,7 @@ module skbuff {
 
 	source "skb_queue.c"
 	depends embox.arch.interrupt
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module core {
@@ -36,7 +36,7 @@ module core {
 	depends dev /* for dev.c */
 	depends embox.util.List
 	depends embox.mem.pool
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module sock {
@@ -50,7 +50,7 @@ module sock {
 	depends embox.fs.idesc_event
 	depends embox.arch.interrupt
 	depends embox.mem.pool
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFrameworkNet
 
 	depends sock_xattr_api
@@ -76,7 +76,7 @@ module neighbour {
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	@NoRuntime depends embox.net.arp
 	@NoRuntime depends embox.net.ndp
 }

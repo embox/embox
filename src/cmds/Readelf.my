@@ -21,7 +21,7 @@ package embox.cmd
 module readelf {
 	source "readelf.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.fs.core
 	depends embox.lib.LibElf
 	depends embox.framework.LibFramework
