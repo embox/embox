@@ -105,7 +105,7 @@ cppflags_fn = \
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
 	$(call __srcgen_includes_fn,-I$1) \
 	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
-	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
+	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include -I$1$(SRC_DIR)/compat/libc/include\
 	-nostdinc\
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
