@@ -4,7 +4,6 @@ package embox.compat.libc
 static module LibC {
 	@NoRuntime depends embox.compat.libc.LibCTime
 	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCMisc
 	@NoRuntime depends embox.compat.libc.LibCType
 	@NoRuntime depends embox.compat.libc.LibCStdlib
 	@NoRuntime depends embox.compat.libc.LibCString

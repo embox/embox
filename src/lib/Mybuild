@@ -38,7 +38,7 @@ static module LibExecStub {
 	source "exec/execstub.c"
 }
 
-static module LibCMisc {
+static module LibCrypt {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "crypt/b64.c"
