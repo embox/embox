@@ -73,3 +73,10 @@ static module LibGccInternal extends LibGcc {
 static module Tokenizer {
 	source "shell/tokenizer.c"
 }
+
+static module Printk {
+	source "printk.c"
+
+	depends embox.driver.diag
+	@NoRuntime depends embox.compat.libc.Print
+}

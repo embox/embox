@@ -11,13 +11,6 @@ static module Print {
 	@NoRuntime depends LibCType
 }
 
-static module Printk {
-	source "printk.c"
-
-	depends embox.driver.diag
-	@NoRuntime depends Print
-}
-
 static module LibCStdioSprintf {
 	source "sprintf.c"
 	source "snprintf.c"

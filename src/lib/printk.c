@@ -12,7 +12,12 @@
 #include <stdio.h>
 #include <framework/mod/options.h>
 
-#include "printf_impl.h"
+struct printchar_handler_data;
+
+extern int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data,
+		const char *format, va_list args);
+
 
 static void iodev_printchar(struct printchar_handler_data *d, int c) {
 	diag_putc(c);
