@@ -12,7 +12,7 @@
 #include <net/l3/ipv4/ip.h>
 
 #include <embox/web_service.h>
-#include <lib/url_parser.h>
+#include <url_parser.h>
 #include <lib/service/service.h>
 #include <framework/mod/options.h>
 

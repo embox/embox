@@ -32,7 +32,7 @@ module protoent {
 }
 
 module request_parser {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
+	@IncludePath("$(THIRDPARTY_DIR)/lib/url_parser")
 	source "request_parser.c"
 
 	depends third_party.lib.url_parser
