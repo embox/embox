@@ -15,7 +15,6 @@ package embox.cmd.user
 			Anton Kozlov
 	''')
 module login {
-	//@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "login.c"
 
 	depends embox.compat.posix.passwd

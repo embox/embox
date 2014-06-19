@@ -16,7 +16,6 @@ module tish {
 
 	provides embox.cmd.Shell.commandLine
 
-	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "tish.c"
 
 	depends embox.compat.posix.util.environ
