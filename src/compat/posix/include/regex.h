@@ -49,5 +49,5 @@ extern void   regfree(regex_t *);
 
 
 /* The following constants are defined as error return values: */
-#define REG_NOMATCH 0x0 /* regexec() failed to match. */
+#define REG_NOMATCH 0x1 /* regexec() failed to match. */
 #endif /* REGEX_H_ */

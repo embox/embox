@@ -62,6 +62,13 @@ int regexec(const regex_t *preg, const char *string, size_t nmatch,
 		count++;
 	}
 
+	pmatch[count].rm_so = 0;
+	pmatch[count].rm_eo = 0;
+
+	if (!count) {
+		return -REG_NOMATCH;
+	}
+
 	return 0;
 }
 
