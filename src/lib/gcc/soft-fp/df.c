@@ -8,7 +8,7 @@
  */
 
 #include <assert.h>
-#include <lib/softfloat.h>
+#include <softfloat.h>
 #include <lib/soft-fp/conversion_routines.h>
 
 double __adddf3(double a, double b) {

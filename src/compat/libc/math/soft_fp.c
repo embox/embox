@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <lib/softfloat.h>
+#include <softfloat.h>
 #include <lib/soft-fp/conversion_routines.h>
 
 float __sqrtsf2(float a) {
