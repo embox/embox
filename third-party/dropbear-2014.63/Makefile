@@ -10,13 +10,14 @@ PKG_PATCHES := dropbear.patch
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
-	#exit 1
 	cp stubs.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
-			--target=$(AUTOCONF_TARGET_TRIPLET) \
+		./configure \
 			CC=$(EMBOX_GCC) \
+			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			--prefix=/ \
 			--disable-zlib \
 			--disable-syslog \
 			--disable-lastlog \
@@ -33,6 +34,5 @@ $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		make DESTDIR=$(PKG_INSTALL_DIR) install; \
 	)
-	cp $(PKG_INSTALL_DIR)/usr/local/sbin/dropbear $(PKG_INSTALL_DIR)/dropbear.o
-	cp $(PKG_INSTALL_DIR)/usr/local/bin/dropbearkey $(PKG_INSTALL_DIR)/dropbearkey.o
+	cp $(PKG_INSTALL_DIR)/sbin/dropbear $(PKG_INSTALL_DIR)/dropbear.o
 	touch $@
