@@ -23,6 +23,9 @@ module ipv4 {
 	source "ip_options.c"
 
 	source "ip_output.c"
+
+	source "ip_header.c"
+
 	depends net_tx
 	depends skbuff
 	depends route

@@ -188,29 +188,47 @@ int ip_forward(struct sk_buff *skb) {
 	return ip_xmit(skb);
 }
 
+static in_addr_t ip_get_dest_addr(const struct inet_sock *in_sk,
+		const struct sockaddr *to,
+		struct sk_buff **out_skb) {
+
+	const struct sockaddr_in *to_in;
+
+	to_in = (const struct sockaddr_in *)to;
+
+	if (to_in != NULL) {
+		return to_in->sin_addr.s_addr;
+	} else if (in_sk != NULL) {
+		return in_sk->dst_in.sin_addr.s_addr;
+	} else {
+		return (*out_skb)->nh.iph->saddr; /* make a reply */
+	}
+}
+
 static int ip_make(const struct sock *sk,
 		const struct sockaddr *to,
-		size_t *data_size, struct sk_buff **out_skb) {
+		size_t *data_size,
+		struct sk_buff **out_skb) {
+
 	size_t hdr_size, max_size;
-	int ret;
 	struct sk_buff *skb;
 	struct net_device *dev;
 	const struct inet_sock *in_sk;
-	const struct sockaddr_in *to_in;
 	uint8_t proto;
 	in_addr_t src_ip, dst_ip;
+	int ret;
+	int ip_length;
+
+	assert(out_skb);
+	assert(sk || *out_skb);
+	assert(data_size);
 
 	assert((to == NULL) || (to->sa_family == AF_INET));
-	assert(data_size != NULL);
-	assert(out_skb != NULL);
-	assert((sk != NULL) || (*out_skb != NULL));
 
 	in_sk = to_const_inet_sock(sk);
-	to_in = (const struct sockaddr_in *)to;
 
-	dst_ip = to_in != NULL ? to_in->sin_addr.s_addr
-			: in_sk != NULL ? in_sk->dst_in.sin_addr.s_addr
-			: (*out_skb)->nh.iph->saddr; /* make a reply */
+	dst_ip = ip_get_dest_addr(in_sk, to, out_skb);
+
 	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
 			&dev);
 	if (ret != 0) {
@@ -232,7 +250,14 @@ static int ip_make(const struct sock *sk,
 	proto = in_sk != NULL ? in_sk->sk.opt.so_protocol
 			: (*out_skb)->nh.iph->proto;
 
-	hdr_size = dev->hdr_len + IP_MIN_HEADER_SIZE;
+	if (sk) {
+		ip_length = ip_header_size((struct sock *)sk);
+	} else {
+		ip_length = IP_MIN_HEADER_SIZE;
+	}
+
+
+	hdr_size = dev->hdr_len + ip_length;
 	max_size = min(dev->mtu, skb_max_size());
 	if (hdr_size > max_size) {
 		DBG(printk("ip_make: hdr_size %zu is too big (max %zu)\n",
@@ -251,10 +276,13 @@ static int ip_make(const struct sock *sk,
 
 	skb->dev = dev;
 	skb->nh.raw = skb->mac.raw + dev->hdr_len;
-	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
+	skb->h.raw = skb->nh.raw + ip_length;
 
-	ip_build(skb->nh.iph, IP_MIN_HEADER_SIZE + *data_size,
+	ip_build(skb->nh.iph, ip_length + *data_size,
 			64, proto, src_ip, dst_ip);
+	if (IP_MIN_HEADER_SIZE < ip_length) {
+		ip_header_make_secure((struct sock *)sk, skb);
+	}
 
 	*out_skb = skb;
 
