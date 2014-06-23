@@ -71,11 +71,26 @@ struct taskdata {
 	const char *cmd;
 };
 
+static void login_set_security(struct taskdata *tdata) {
+	const struct spwd *spwd;
+	char *new_smac_label = "_";
+
+	if (NULL != (spwd = spwd_find(SMAC_USERS, tdata->pwd->pw_name))) {
+		new_smac_label = spwd->sp_pwdp;
+	}
+
+	if (smac_labelset(new_smac_label)) {
+		printf("can't setup smac label\n");
+	}
+}
+
 static void *taskshell(void *data) {
 	const struct shell *shell;
-	const struct spwd *spwd;
 	struct taskdata *tdata = data;
+
 	int ret;
+
+	login_set_security(tdata);
 
 	ret = setuid(tdata->pwd->pw_uid);
 	if (ret < 0) {
@@ -90,18 +105,6 @@ static void *taskshell(void *data) {
 	}
 
 	printf("Welcome, %s!\n", tdata->pwd->pw_gecos);
-
-	{
-		char *new_smac_label = "_";
-
-		if (NULL != (spwd = spwd_find(SMAC_USERS, tdata->pwd->pw_name))) {
-			new_smac_label = spwd->sp_pwdp;
-		}
-
-		if (smac_labelset(new_smac_label)) {
-			printf("can't setup smac label\n");
-		}
-	}
 
 	shell = shell_lookup(tdata->pwd->pw_shell);
 
