@@ -5,7 +5,6 @@ include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
-
 rootdir := $(abspath $(ROOT_DIR))
 EMBOX_IMPORTED_CPPFLAGS :=
 EMBOX_IMPORTED_CPPFLAGS += $(filter -U__linux__,$(EMBOX_EXPORT_CPPFLAGS))
@@ -33,8 +32,8 @@ EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian,$(CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -mno-thumb-interwork,$(CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -msoft-float, $(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -ffixed-r31,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mno-xl-soft-mul,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -ffixed-r31,$(CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mno-xl-soft-mul,$(CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS :=
 EMBOX_IMPORTED_CXXFLAGS += $(filter -g%,$(CXXFLAGS))
@@ -55,8 +54,8 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -mlittle-endian,$(CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-thumb-interwork,$(CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -msoft-float, $(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -ffixed-r31,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-xl-soft-mul,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -ffixed-r31,$(CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-xl-soft-mul,$(CXXFLAGS))
 
 EMBOX_IMPORTED_LDFLAGS :=
 EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(LDFLAGS))
