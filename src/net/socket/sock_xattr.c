@@ -9,6 +9,8 @@
 #include <net/sock.h>
 #include <util/member.h>
 #include <fs/xattr_list.h>
+#include <kernel/task/resource/security.h>
+#include <security/smac.h>
 
 #include <fs/idesc.h>
 
@@ -48,8 +50,16 @@ static const struct idesc_xattrops sock_xattrops = {
 };
 
 void sock_xattr_init(struct sock *sock) {
+	char *secure_label;
 
 	sock->idesc.idesc_xattrops = &sock_xattrops;
 
 	xattr_list_init(&sock->sock_xattr.xattr_list);
+
+	if (NULL != (secure_label = task_resource_security(task_self()))) {
+		if ((0 != strcmp(secure_label, smac_floor)) &&
+				(0 != strcmp(secure_label, smac_admin))) { //FIXME problem with su -c dropbeard
+			sock_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label), 0);
+		}
+	}
 }

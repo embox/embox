@@ -32,7 +32,7 @@ static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task_
 #define SMAC_AUDIT OPTION_GET(NUMBER, audit)
 #define AUDITLINE_LEN 256
 
-static const char *smac_floor = "_";
+const char *smac_floor = "_";
 static const char *smac_star  = "*";
 static const char *smac_hat   = "^";
 
