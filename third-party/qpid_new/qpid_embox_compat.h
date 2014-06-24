@@ -32,24 +32,52 @@
 
 #include <pthread.h>
 
-extern
-int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_init(pthread_rwlock_t * rwlock,
-	const pthread_rwlockattr_t * attr);
-int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
-
 #include <errno.h>
 
 __BEGIN_DECLS
+
+static inline int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
+	(void)rwlock;
+	(void)attr;
+	DPRINT();
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return -ENOSYS;
+}
+
+static inline int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return -ENOSYS;
+}
+
 static inline
 int alphasort(const struct dirent **a, const struct dirent **b) {
 	(void)a;
@@ -156,6 +184,11 @@ int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	(void)oldset;
 	DPRINT();
 	return 0;
+}
+
+static inline pid_t setsid(void) {
+	DPRINT();
+	return -1;
 }
 
 #define __thread

@@ -1,6 +1,6 @@
 diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
 --- qpidc-0.24/CMakeLists.txt	2013-06-27 07:41:13.000000000 +0400
-+++ qpid/CMakeLists.txt	2013-10-29 16:51:28.394895145 +0400
++++ qpid/CMakeLists.txt	2014-06-23 17:50:41.967622960 +0400
 @@ -60,8 +60,8 @@
    set (CPACK_PACKAGE_EXECUTABLES "")
  endif (WIN32)
@@ -8,7 +8,7 @@ diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
 -set_absolute_install_path (QPIDC_CONF_FILE ${QPID_INSTALL_CONFDIR}/qpidc.conf)
 -set_absolute_install_path (QPIDD_CONF_FILE ${QPID_INSTALL_CONFDIR}/qpidd.conf)
 +set_absolute_install_path (QPIDC_CONF_FILE /qpidc.conf)
-+#set_absolute_install_path (QPIDD_CONF_FILE ${QPID_INSTALL_CONFDIR}/qpidd.conf)
++set_absolute_install_path (QPIDD_CONF_FILE /qpidd.conf)
  
  install(FILES  LICENSE NOTICE  DESTINATION ${QPID_INSTALL_DOCDIR})
  install(FILES  include/qmf/qmfengine.i
@@ -27,9 +27,10 @@ diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
 +#add_subdirectory(examples)
  
  include (CPack)
+ 
 diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
 --- qpidc-0.24/src/CMakeLists.txt	2013-07-13 13:15:49.000000000 +0400
-+++ qpid/src/CMakeLists.txt	2013-10-19 01:35:12.123273436 +0400
++++ qpid/src/CMakeLists.txt	2014-06-24 14:23:20.148867092 +0400
 @@ -271,7 +271,7 @@
     # -Wunreachable-code -Wpadded -Winline
     # -Wshadow - warns about boost headers.
@@ -115,29 +116,11 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  )
  add_msvc_version (qpidbroker library dll)
 -add_library (qpidbroker SHARED ${qpidbroker_SOURCES})
-+add_library (qpidbroker STATIC )
++add_library (qpidbroker STATIC ${qpidbroker_SOURCES})
  target_link_libraries (qpidbroker qpidcommon ${qpidbroker_platform_LIBS})
  set_target_properties (qpidbroker PROPERTIES 
                         VERSION ${qpidbroker_version}
-@@ -1357,20 +1357,20 @@
-      qpidd.h
- )
- add_msvc_version (qpidd application exe)
--add_executable (qpidd ${qpidd_SOURCES})
--target_link_libraries (qpidd qpidbroker qpidcommon ${Boost_PROGRAM_OPTIONS_LIBRARY})
--set_target_properties (qpidd PROPERTIES COMPILE_DEFINITIONS _IN_QPID_BROKER)
--install (TARGETS qpidd RUNTIME
--         DESTINATION ${QPID_INSTALL_SBINDIR}
--         COMPONENT ${QPID_COMPONENT_BROKER})
-+#add_executable (qpidd ${qpidd_SOURCES})
-+#target_link_libraries (qpidd qpidbroker qpidcommon ${Boost_PROGRAM_OPTIONS_LIBRARY})
-+#set_target_properties (qpidd PROPERTIES COMPILE_DEFINITIONS _IN_QPID_BROKER)
-+#install (TARGETS qpidd RUNTIME
-+#         DESTINATION ${QPID_INSTALL_SBINDIR}
-+#         COMPONENT ${QPID_COMPONENT_BROKER})
- if (CPACK_GENERATOR STREQUAL "NSIS")
-     set (CPACK_NSIS_MENU_LINKS
-          "qpidd" "Start Qpid Broker")
+@@ -1369,8 +1369,8 @@
  endif (CPACK_GENERATOR STREQUAL "NSIS")
  
  if (UNIX)
