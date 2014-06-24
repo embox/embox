@@ -9,10 +9,6 @@
 #include <stdlib.h>
 #include <kernel/task.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(dropbeard_main);
-
 static void *dropbeard(void *arg) {
 
 	while (1) {
@@ -22,7 +18,7 @@ static void *dropbeard(void *arg) {
 	return NULL;
 }
 
-static int dropbeard_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
 	new_task("dropbeard", dropbeard, NULL);
 

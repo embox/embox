@@ -95,10 +95,13 @@ $(OBJ_DIR)/module/%.a : mk/arhelper.mk
 			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
+obj_build=$(if $(strip $(value mod_postbuild)),$@.build.o,$@)
+obj_postbuild=$@
 $(OBJ_DIR)/module/%.o :
-	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
+	$(LD) -r -o $(obj_build) $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $@)
+	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $(obj_build))
+	$(mod_postbuild)
 
 
 # Here goes image creation rules...

@@ -2,6 +2,7 @@ package third_party.dropbear
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
+@AutoCmd
 @Cmd(name = "dropbear_new",
 	help = "",
 	man = '''
@@ -10,8 +11,7 @@ package third_party.dropbear
 	''')
 module dropbear_new {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
-	source "strip.dropbear.o"
+	source "dropbear.o"
 
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.compat.libc.LibCAssert
@@ -31,6 +31,7 @@ module dropbear_new {
 	depends embox.compat.posix.crypt
 }
 
+@AutoCmd
 @Cmd(name = "dropbeard",
 	help = "dropbear (SSH) daemon",
 	man = '''

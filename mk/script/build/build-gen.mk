@@ -5,6 +5,8 @@
 
 include mk/script/script-common.mk
 
+MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
+
 # Wraps the given rule with a script which compares the command output with
 # the original file (if it exists) and replaces the latter only in case when
 # contents differ.
@@ -96,6 +98,15 @@ gen_make_tsvar = \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
+# 1. Target.
+# 2. Funtion name.
+# 3. Function body.
+gen_make_tsfn = \
+	$(PRINTF) '%s : %s = %s\n\n' \
+		$(call sh_quote,$1) \
+		$(call sh_quote,$2) \
+		$(call sh_quote,$3)
+
 
 # 1. Variable name.
 # 2. Value.
@@ -174,6 +185,8 @@ $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rmk_target_pat),image)
 
 my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
+my_autocmd   := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd)
+my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.script)
 
 # Return modules of specified stage
 # 1. Stage to filter
@@ -384,6 +397,8 @@ build_deps_all = \
 	$(sort $(foreach d,$(call build_deps,$1), \
 		$(call __build_deps_recurse,$(call build_module_type_substitude,$d))))
 
+cond_add=$(if $(strip $1),$1$2)
+
 $(@module_ld_rmk) $(@module_ar_rmk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
@@ -394,6 +409,11 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
+		$(call gen_make_tsfn,$(out),mod_postbuild, \
+			$(if $(strip $(call invoke, \
+				$(call get,$@,allTypes),getAnnotationsOfType,$(my_autocmd))),\
+				$(MOD_AUTOCMD_POSTBUILD);) \
+			$(call cond_add,$(call annotation_value,$(call get,$@,allTypes),$(my_postbuild_script)),;)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
 
