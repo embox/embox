@@ -104,7 +104,8 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 	options[10] = 0;
 
 	skb->nh.iph->ihl += 12 / 4;
-
+	/* because reserve 12 bytes */
+	options[11] = 0;
 
 	return 0;
 }
