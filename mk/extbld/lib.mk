@@ -56,7 +56,9 @@ PATCH  := $(BUILD_DIR)/.patched
 patch : $(PATCH)
 PKG_PATCHES ?=
 $(PATCH): $(PKG_PATCHES) | $(BUILD_DIR)
-	cat $(PKG_PATCHES) | patch -d $(BUILD_DIR) -p0
+	for i in $(PKG_PATCHES); do \
+		patch -d $(BUILD_DIR) -p0 < $$PWD/$$i; \
+	done
 	touch $@
 
 CONFIGURE  := $(BUILD_DIR)/.configured
