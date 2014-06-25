@@ -20,7 +20,6 @@ module sqlite3 {
 	@NoRuntime depends sqlite3_stubs
 	@NoRuntime depends embox.framework.cmd
 	@NoRuntime depends embox.lib.readline_api
-	@NoRuntime depends third_party.lib.libgcc_toolchain
 
 	@InitFS
 	source "demo_create.sql", "demo_insert.sql"
