@@ -12,6 +12,7 @@
 #include <fs/xattr.h>
 #include <fs/flags.h>
 #include <fs/idesc.h>
+#include <net/sock.h>
 #include <security/smac.h>
 
 #include <security/security.h>
@@ -228,7 +229,7 @@ int security_sock_create(struct sock *sock) {
 	if (NULL != (secure_label = task_resource_security(task_self()))) {
 		if ((0 != strcmp(secure_label, smac_floor)) &&
 				(0 != strcmp(secure_label, smac_admin))) { //FIXME problem with su -c dropbeard
-			sock_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label) + 1, 0);
+			idesc_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label) + 1, 0);
 		}
 	}
 	return 0;
