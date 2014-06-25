@@ -42,12 +42,13 @@ int task_table_has_space(void) {
 }
 
 int task_table_get_first(int since) {
-	/* since isn't adjusted by -1 by intention.
- 	 * If since is 0 then minimal util_idx_table_next_mark is 0,
-	 * it's 1+'ed to 1.
+	/* since should be decremented. i.e. task_foreach calls
+ 	 * __func__, it returns first task. Then task_foreach
+	 * gets returned task id, increments it and calls __func__.
+	 * Without decrement it will skip task following next returned one.
 	 */
 	assert(since >= 0);
-	return 1 + util_idx_table_next_mark(task_table, since, 1);
+	return 1 + util_idx_table_next_mark(task_table, since - 1, 1);
 }
 
 static int task_table_module_init(void) {
