@@ -17,6 +17,7 @@
 #include <framework/net/pack/api.h>
 
 #include <err.h>
+#include <security/security.h>
 
 static struct sock * sock_alloc(
 		const struct sock_family_ops *f_ops,
@@ -129,6 +130,7 @@ static void sock_init(struct sock *sk, int family, int type,
 
 	idesc_init(&sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
 	sock_xattr_init(sk);
+	security_sock_create(sk);
 }
 
 

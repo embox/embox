@@ -56,3 +56,11 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
 	return 0;
 }
+
+int security_sock_create(struct sock *sock) {
+	return 0;
+}
+
+int security_sock_label(struct sock *sock, char *label, size_t len) {
+	return 0;
+}

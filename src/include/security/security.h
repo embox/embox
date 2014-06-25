@@ -126,4 +126,9 @@ extern int security_xattr_idesc_set(struct idesc *idesc, const char *name, const
 
 extern int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len);
 
+struct sock;
+extern int security_sock_create(struct sock *sock);
+extern int security_sock_label(struct sock *sock, char *label, size_t len);
+
+
 #endif /* SECURITY_SECURITY_H_ */

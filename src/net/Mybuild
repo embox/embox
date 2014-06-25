@@ -54,6 +54,7 @@ module sock {
 	depends embox.framework.LibFrameworkNet
 
 	depends sock_xattr_api
+	@NoRuntime depends embox.security.api
 }
 
 @DefaultImpl(sock_xattr)

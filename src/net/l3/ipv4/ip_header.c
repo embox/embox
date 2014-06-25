@@ -8,14 +8,15 @@
 #include <fs/idesc.h>
 #include <net/sock.h>
 #include <net/l3/ipv4/ip.h>
-#include <security/smac.h>
+#include <security/security.h>
+
 #include <net/skbuff.h>
 
 int ip_header_size(struct sock *sock) {
 	int header_size = IP_MIN_HEADER_SIZE;
 	char label[32];
 
-	if (0 > idesc_getxattr(&sock->idesc, smac_xattrkey, label, sizeof(label))) {
+	if (0 != security_sock_label(sock, label, sizeof(label))) {
 		return header_size;
 	}
 
@@ -69,7 +70,7 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 	 Specifies one of 16 levels of security.
 	*/
 
-	if (0 > idesc_getxattr(&sock->idesc, smac_xattrkey, label, sizeof(label))) {
+	if (0 != security_sock_label(sock, label, sizeof(label))) {
 		return -1;
 	}
 	level = smac_label_to_secure_level(label);
@@ -113,7 +114,7 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 uint16_t sock_get_secure_level(struct sock *sk) {
 	char label[32];
 
-	if (0 > idesc_getxattr(&sk->idesc, smac_xattrkey, label, sizeof(label))) {
+	if (0 != security_sock_label(sk, label, sizeof(label))) {
 		return 0;
 	}
 
