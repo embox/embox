@@ -1266,6 +1266,9 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 			&& (sock_inet_get_dst_port(sk) == 0);
 }
 
+extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
+extern uint16_t sock_get_secure_level(const struct sock *sk);
+
 static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
@@ -1285,6 +1288,12 @@ static int tcp_rcv(struct sk_buff *skb) {
 					? tcp4_rcv_tester_soft
 					: tcp6_rcv_tester_soft,
 				skb);
+	}
+	if (sk) {
+		/* if we have socket with secure label we have to check secure level */
+		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+			return 0;
+		}
 	}
 
 	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;

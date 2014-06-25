@@ -64,6 +64,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 				goto error;
 			}
 			secappeared = true;
+			memcpy(&opt->__data, curropt, 12);
 			break;
 		case IPOPT_LSRR:
 		case IPOPT_SSRR:
@@ -227,4 +228,15 @@ int ip_options_handle_srr(sk_buff_t *skb)
 	//TODO search for addresses consequently, try to route
 
 	return 0;
+}
+
+uint16_t skb_get_secure_level(struct sk_buff *skb) {
+	uint16_t level;
+	ip_options_t *opt;
+
+	opt = (ip_options_t *)skb->cb;
+
+	memcpy(&level, &opt->__data + 2, sizeof(level));
+
+	return ntohs(level);
 }

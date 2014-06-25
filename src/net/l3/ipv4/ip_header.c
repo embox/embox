@@ -26,16 +26,16 @@ int ip_header_size(struct sock *sock) {
 
 uint16_t smac_label_to_secure_level(const char *label) {
 
-	if (0 == strcmp(label, "secret")) {
+	if (0 == strncmp(label, "secret", sizeof("secret"))) {
 		return htons(0x8000);
 	}
-	if (0 == strcmp(label, "confidentially")) {
+	if (0 == strncmp(label, "confidentially", sizeof("confidentially"))) {
 		return htons(0x4000);
 	}
-	if (0 == strcmp(label, "service")) {
+	if (0 == strncmp(label, "service", sizeof("service"))) {
 		return htons(0x2000);
 	}
-	if (0 == strcmp(label, "unclassified")) {
+	if (0 == strncmp(label, "unclassified", sizeof("unclassified"))) {
 		return htons(0x1000);
 	}
 	return htons(0x1000);
@@ -109,3 +109,14 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 
 	return 0;
 }
+
+uint16_t sock_get_secure_level(struct sock *sk) {
+	char label[32];
+
+	if (0 > idesc_getxattr(&sk->idesc, smac_xattrkey, label, sizeof(label))) {
+		return 0;
+	}
+
+	return smac_label_to_secure_level(label);
+}
+
