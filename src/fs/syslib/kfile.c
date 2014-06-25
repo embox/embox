@@ -219,3 +219,19 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 
 	return 0;
 }
+
+int kftruncate(struct file_desc *desc, off_t length) {
+	int ret;
+
+	ret = ktruncate(desc->node, length);
+	if (0 > ret) {
+		/* XXX ktruncate sets errno */
+		return -errno;
+	}
+
+	if (desc->cursor > length) {
+		desc->cursor = length;
+	}
+
+	return 0;
+}
