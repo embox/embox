@@ -39,43 +39,43 @@ __BEGIN_DECLS
 static inline int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
 	(void)rwlock;
 	(void)attr;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock) {
 	(void)rwlock;
 	DPRINT();
-	return -ENOSYS;
+	return 0;
 }
 
 static inline
@@ -107,8 +107,7 @@ int lockf(int fd, int cmd, off_t len) {
 	(void)cmd;
 	(void)len;
 	DPRINT();
-	errno = ENOLCK;
-	return -1;
+	return 0;
 }
 
 static inline

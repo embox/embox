@@ -47,6 +47,7 @@ $(CONFIGURE) :
 		-DBOOST_ROOT:PATH=$(ROOT_DIR)/build/extbld/third_party/boost/core \
 		-DCMAKE_REQUIRED_INCLUDES:PATH=$(QPID_CMAKE_REQUIRED_INCLUDES) \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
+		-DCMAKE_BUILD_TYPE:STRING=Debug \
 		.. \
 		)
 	touch $@

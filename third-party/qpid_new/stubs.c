@@ -5,7 +5,10 @@
  *      Author: alexander
  */
 
+#include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
 #if 1
 #define DPRINT() printf(">>> qpid CALL %s\n", __FUNCTION__)
@@ -13,10 +16,17 @@
 #define DPRINT()
 #endif
 
-
 int open64(const char *pathname, int oflag,...) {
+	va_list args;
+	int res;
+
 	DPRINT();
-	return -1;
+
+	va_start(args, oflag);
+	res = open(pathname, oflag, args);
+	va_end(args);
+
+	return res;
 }
 
 int syscall(int number, ...) {
@@ -26,12 +36,12 @@ int syscall(int number, ...) {
 
 long int jrand48(unsigned short xsubi[3]) {
 	DPRINT();
-	return -1;
+	return random();
 }
 
 int access(const char *pathname, int mode) {
 	DPRINT();
-	return -1;
+	return 0;
 }
 
 int __sprintf_chk(char * str, int flag, size_t strlen, const char * format, ...) {
