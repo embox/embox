@@ -1,11 +1,11 @@
 
-PKG_NAME := sqlite
-PKG_VER  := autoconf-3080403
+PKG_NAME := sqlite-autoconf
+PKG_VER  := 3080403
 
 PKG_SOURCES := http://www.sqlite.org/2014/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 0f5459cde43cb269e5120ecd2c671ced
 
-PKG_PATCHES := pkg_patch.txt
+PKG_PATCHES := pkg_patch.txt setpriority.patch
 
 include $(EXTBLD_LIB)
 
@@ -22,7 +22,8 @@ $(CONFIGURE) :
 			--enable-readline \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="-I$(ROOT_DIR)/third-party/sqlite/include/ \
-				-DSQLITE_DEBUG=1"; \
+				-DSQLITE_DEBUG=1 \
+				-DSQLITE_ENABLE_PRIORITY"; \
 	)
 	touch $@
 
