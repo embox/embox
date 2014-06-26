@@ -17,6 +17,7 @@
 static int xetpriority_match(int which, id_t who, struct task *task) {
 	struct task_u_area *task_u_area;
 	id_t real_who;
+	int is_match;
 
 	if (who != 0) {
 		real_who = who;
@@ -43,14 +44,16 @@ static int xetpriority_match(int which, id_t who, struct task *task) {
 
 	switch (which) {
 	case PRIO_PROCESS:
-		return task_get_id(task) == real_who;
+		is_match = task_get_id(task) == real_who;
 	case PRIO_PGRP:
-		return task_u_area->regid == real_who;
+		is_match = task_u_area->regid == real_who;
 	case PRIO_USER:
-		return task_u_area->reuid == real_who;
+		is_match = task_u_area->reuid == real_who;
 	default:
 		assert(0);
 	}
+
+	return is_match;
 }
 
 static int xetpriority_which_ok(int which) {
