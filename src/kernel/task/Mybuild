@@ -23,7 +23,7 @@ module multi extends api {
 	depends embox.kernel.task.task_resource
 	depends embox.kernel.task.task_table
 
-	@NoRuntime depends embox.kernel.task.resource.vfork
+	depends embox.compat.posix.proc.vfork
 
 	depends embox.kernel.thread.core /* uses task_self() to initialize
 										resources, which implies to thread be

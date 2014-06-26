@@ -18,7 +18,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/errno.h>
-#include <kernel/task/resource/task_vfork.h>
+#include <kernel/task/task_vforking.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
 
@@ -35,14 +35,7 @@ struct task *task_self(void) {
 
 	assert(th);
 
-	if (task_is_vforking(th->task)) {
-		struct task_vfork *task_vfork;
-
-		task_vfork = task_resource_vfork(th->task);
-		return task_vfork->vforked_task;
-	}
-
-	return th->task;
+	return task_vforking(th->task);
 }
 
 static void * task_trampoline(void *arg_) {

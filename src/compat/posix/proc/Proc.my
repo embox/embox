@@ -56,7 +56,8 @@ static module fork_copy_addr_space extends embox.kernel.addr_space {
 abstract module vfork { }
 
 static module vfork_internal_stub extends vfork {
-	source "vfork_release_parent_stub.c"
+	source "vfork_release_parent_stub.c",
+	       "vfork_task_vforking_id.c"
 
 	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
@@ -71,14 +72,16 @@ static module vfork_stack_copy extends vfork {
 }
 
 static module vfork_exchanged extends vfork {
-	source "vfork_exchanged.c"
+	source "vfork_exchanged.c",
+	       "vfork_task_forking.c"
 
 	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
 }
 
 static module vfork_stop_parent extends vfork {
-	source "vfork_stop_parent.c"
+	source "vfork_stop_parent.c",
+	       "vfork_task_vforking_id.c"
 
 	depends embox.arch.vfork_entry
 	depends embox.util.LibUtil
