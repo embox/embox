@@ -19,6 +19,7 @@ DOWNLOAD_DIR    := $(ROOT_DIR)/download
 $(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
 
+PKG_SOURCES ?=
 sources_git      := $(filter %.git,$(PKG_SOURCES))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
 sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
