@@ -43,14 +43,18 @@ main_rename_name=main_$MODULE_ID
 # Next line expands '-D"__impl_x(...)=..."' to -D"__impl_x(...)=..."
 EMBOX_CPPFLAGS=$(eval echo $EMBOX_CPPFLAGS)
 
+if [ ${MAIN_STRIPPING_LOCALS:-no} == yes ]; then
+	$OBJDUMP -t $SOURCE_OBJ | grep " g " | tr -s ' ' | cut -d \  -f 5 | \
+		(grep -v main || true) > $localize_symbols
 
-$OBJDUMP -t $SOURCE_OBJ | grep " g " | tr -s ' ' | cut -d \  -f 5 | \
-	(grep -v main || true) > $localize_symbols
-
-echo >> $localize_symbols #objcopy dislikes empty files
-$OBJCOPY --localize-symbols=$localize_symbols \
-	--redefine-sym=main=$main_rename_name \
-	$SOURCE_OBJ $redefd_main_obj
+	echo >> $localize_symbols #objcopy dislikes empty files
+	$OBJCOPY --localize-symbols=$localize_symbols \
+		--redefine-sym=main=$main_rename_name \
+		$SOURCE_OBJ $redefd_main_obj
+else
+	$OBJCOPY --redefine-sym=main=$main_rename_name \
+		$SOURCE_OBJ $redefd_main_obj
+fi
 
 $CC -DMAIN_ROUTING_NAME=$main_rename_name \
 	-D__EMBUILD_MOD__=$MODULE_ID \

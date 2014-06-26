@@ -5,7 +5,7 @@
 
 include mk/script/script-common.mk
 
-MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
+MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) MAIN_STRIPPING_LOCALS=yes $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
 
 # Wraps the given rule with a script which compares the command output with
 # the original file (if it exists) and replaces the latter only in case when
