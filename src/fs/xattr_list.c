@@ -96,7 +96,7 @@ static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
 		add_next = &xent->xe_lnk;
 	}
 
-	if (add_next) {
+	if (add_next_p) {
 		*add_next_p = add_next;
 	}
 
