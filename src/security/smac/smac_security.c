@@ -236,8 +236,5 @@ int security_sock_create(struct sock *sock) {
 }
 
 int security_sock_label(struct sock *sock, char *label, size_t len) {
-	if (0 > idesc_getxattr(&sock->idesc, smac_xattrkey, label, len)) {
-		return 0;
-	}
-	return 1;
+	return idesc_getxattr(&sock->idesc, smac_xattrkey, label, len);
 }

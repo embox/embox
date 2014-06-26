@@ -16,7 +16,7 @@ int ip_header_size(struct sock *sock) {
 	int header_size = IP_MIN_HEADER_SIZE;
 	char label[32];
 
-	if (0 != security_sock_label(sock, label, sizeof(label))) {
+	if (0 > security_sock_label(sock, label, sizeof(label))) {
 		return header_size;
 	}
 
@@ -70,7 +70,7 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 	 Specifies one of 16 levels of security.
 	*/
 
-	if (0 != security_sock_label(sock, label, sizeof(label))) {
+	if (0 > security_sock_label(sock, label, sizeof(label))) {
 		return -1;
 	}
 	level = smac_label_to_secure_level(label);
@@ -114,7 +114,7 @@ int ip_header_make_secure(struct sock *sock, struct sk_buff *skb) {
 uint16_t sock_get_secure_level(struct sock *sk) {
 	char label[32];
 
-	if (0 != security_sock_label(sk, label, sizeof(label))) {
+	if (0 > security_sock_label(sk, label, sizeof(label))) {
 		return 0;
 	}
 
