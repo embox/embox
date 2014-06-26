@@ -30,6 +30,7 @@ static module exec_stop_parent extends exec {
 static module exec_exchanged extends exec {
 	source "exec_exchanged.c"
 
+	depends embox.kernel.task.resource.argv
 	depends exec_lib
 }
 
@@ -73,8 +74,9 @@ static module vfork_stack_copy extends vfork {
 
 static module vfork_exchanged extends vfork {
 	source "vfork_exchanged.c",
-	       "vfork_task_forking.c"
+	       "vfork_task_vforking.c"
 
+	depends embox.kernel.task.resource.vfork
 	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
 }

@@ -70,7 +70,7 @@ pid_t vfork_body(struct pt_regs *ptregs) {
 	sched_lock();
 	{
 
-		task_vfork->vforked_pid = task_prepare(NULL);
+		task_vfork->vforked_pid = task_prepare("");
 		child = task_table_get(task_vfork->vforked_pid);
 		task_vfork->vforked_task = child;
 
