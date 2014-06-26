@@ -6,6 +6,7 @@
  * @date    18.02.2013
  */
 
+#include <errno.h>
 #include <security/security.h>
 
 int security_node_permissions(struct node *node, int flags) {
@@ -62,5 +63,5 @@ int security_sock_create(struct sock *sock) {
 }
 
 int security_sock_label(struct sock *sock, char *label, size_t len) {
-	return 0;
+	return -ENOSYS;
 }
