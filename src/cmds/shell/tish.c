@@ -192,17 +192,18 @@ static int process_external(struct cmd_data *cdata) {
 	}
 
 	if (cdata->on_fg) {
-		ret = task_waitpid(pid);
-		if (ret != 0) {
-			return ret;
-		}
+
+		waitpid(pid, &ret, 0);
+		assert(WIFEXITED(ret));
+		ret = WEXITSTATUS(ret);
 	} else {
 		while (cdata->started == 0) {
 			sleep(0);
 		}
+		ret = 0;
 	}
 
-	return 0; /* TODO use task_errno() */
+	return ret; /* TODO use task_errno() */
 }
 
 static int tish_cdata_fill(const char *cmdline, struct cmd_data *cdata) {
@@ -259,6 +260,15 @@ static int tish_exec(const char *cmdline) {
 
 	return process_external(&cdata);
 
+}
+
+static void tish_collect_bg_childs(void) {
+	int status;
+	pid_t pid;
+
+	do {
+		pid = waitpid(-1, &status, WNOHANG);
+	} while (pid > 0);
 }
 
 static int rich_prompt(const char *fmt, char *buf, size_t len) {
@@ -359,6 +369,8 @@ static void tish_run(void) {
 			}
 			break;
 		}
+
+		tish_collect_bg_childs();
 
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
