@@ -416,9 +416,11 @@ diff -aur qpidc-0.24/include/qpid/Msg.h qpid/include/qpid/Msg.h
  #include "qpid/types/ImportExport.h"
  
  namespace qpid {
-diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BSDSocket.cpp
+ 
+ 
+diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BSDSocket.cpp 
 --- qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp	2013-01-14 23:08:37.000000000 +0400
-+++ qpid/src/qpid/sys/posix/BSDSocket.cpp	2013-11-08 14:20:19.806038724 +0400
++++ qpid/src/qpid/sys/posix/BSDSocket.cpp	2014-06-27 16:02:55.080199130 +0400
 @@ -134,7 +134,7 @@
      if (socket != -1) {
          int flag = 1;
@@ -427,6 +429,17 @@ diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BS
 +        //QPID_POSIX_CHECK(result);
      }
  }
+ 
+@@ -191,7 +191,7 @@
+ 
+     const int& socket = fd;
+     int yes=1;
+-    QPID_POSIX_CHECK(::setsockopt(socket,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)));
++    //QPID_POSIX_CHECK(::setsockopt(socket,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)));
+ 
+     if (::bind(socket, getAddrInfo(sa).ai_addr, getAddrInfo(sa).ai_addrlen) < 0)
+         throw Exception(QPID_MSG("Can't bind to port " << sa.asString() << ": " << strError(errno)));
+
  
 diff -aur qpidc-0.24/src/qpid/framing/Uuid.cpp qpid/src/qpid/framing/Uuid.cpp
 --- qpidc-0.24/src/qpid/framing/Uuid.cpp	2012-06-18 03:57:36.000000000 +0400
@@ -460,4 +473,38 @@ diff -aur qpidc-0.24/src/posix/QpiddBroker.cpp qpid/src/posix/QpiddBroker.cpp
          brokerPtr->accept();
          if (options->broker.port == 0) {
              uint16_t port = brokerPtr->getPort(myOptions->daemon.transport);
+             
+diff -aur qpidc-0.24/src/qpid/broker/Broker.cpp qpid/src/qpid/broker/Broker.cpp 
+--- qpidc-0.24/src/qpid/broker/Broker.cpp	2013-07-12 22:07:47.000000000 +0400
++++ qpid/src/qpid/broker/Broker.cpp	2014-06-27 15:01:26.518472471 +0400
+@@ -91,6 +91,8 @@
+ #include <iostream>
+ #include <memory>
+ 
++#include <qpid/sys/TCPIOPlugin.cpp>
++
+ using qpid::sys::TransportAcceptor;
+ using qpid::sys::TransportConnector;
+ using qpid::sys::Poller;
+ 
+ 
+ diff -aur qpidc-0.24/src/qpid/sys/SocketTransport.cpp qpid/src/qpid/sys/SocketTransport.cpp 
+--- qpidc-0.24/src/qpid/sys/SocketTransport.cpp	2013-06-19 19:30:50.000000000 +0400
++++ qpid/src/qpid/sys/SocketTransport.cpp	2014-06-27 16:35:35.749909256 +0400
+@@ -166,6 +166,7 @@
+             break;
+         }
+ 
++#if 0
+         // Try any other resolved addresses
+         while (sa.nextAddress()) {
+             QPID_LOG(info, "Listening to: " << sa.asString())
+@@ -174,6 +175,7 @@
+             QPID_LOG(debug, "Listened to: " << lport);
+             addListener(s);
+         }
++#endif
+     }
+     return listeningPort;
+ }
  
