@@ -24,6 +24,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	char *point;
+	bool mode_set = 0;
 	int mode = 0777;
 
 	getopt_init();
@@ -34,6 +35,7 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'm':
 			mode = strtol(optarg, NULL, 8);
+			mode_set = true;
 			break;
 		default:
 			return 0;
@@ -41,10 +43,21 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
+		mode_t umode;
 		point = argv[argc - 1];
+
+		if (mode_set) {
+			umode = umask(0);
+		}
+
 		if (-1 == mkdir(point, mode)) {
 			return -errno;
 		}
+
+		if (mode_set) {
+			umask(umode);
+		}
+
 	}
 
 	return 0;
