@@ -54,7 +54,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld && ( \
-		$(MAKE) qpidd MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) qpidd hello_world MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
@@ -62,5 +62,7 @@ $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/include $(PKG_INSTALL_DIR)/lib $(PKG_INSTALL_DIR)/bin
 	cp -R $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
 	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/*.a $(PKG_INSTALL_DIR)/lib
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/qpidd $(PKG_INSTALL_DIR)/bin/qpidd.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/CMakeFiles/qpidd.dir/qpidd.o $(PKG_INSTALL_DIR)/bin/qpidd.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/CMakeFiles/qpidd.dir/posix/QpiddBroker.o $(PKG_INSTALL_DIR)/bin/QpiddBroker.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/examples/messaging/CMakeFiles/hello_world.dir/hello_world.o $(PKG_INSTALL_DIR)/bin/hello_world.o
 	touch $@
