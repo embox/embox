@@ -103,7 +103,7 @@ int ktruncate(struct node *node, off_t length) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 
-	if (NULL == drv->fsop->truncate) {
+	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
 		//errno = EPERM;
 		return 0;
 	}
