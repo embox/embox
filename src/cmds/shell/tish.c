@@ -49,8 +49,9 @@
 struct cmd_data {
 	int argc;
 	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
-	char buff[SHELL_INPUT_BUFF_SZ];
+	char cmdline_buf[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
+	bool on_fg;
 	volatile int started;
 };
 
@@ -157,81 +158,85 @@ static void * run_cmd(void *data) {
 	return NULL; /* ok */
 }
 
-static int process_external(struct cmd_data *cdata, int on_fg) {
+static int process_external(struct cmd_data *cdata) {
 	int ret;
 	pid_t pid;
+
+	cdata->started = 0;
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
 		return pid;
 	}
 
-	if (on_fg) {
+	if (cdata->on_fg) {
 		ret = task_waitpid(pid);
 		if (ret != 0) {
 			return ret;
+		}
+	} else {
+		while (cdata->started == 0) {
+			sleep(0);
 		}
 	}
 
 	return 0; /* TODO use task_errno() */
 }
 
-static int process(struct cmd_data *cdata) {
-	int on_fg = 1;
+static int tish_cdata_fill(const char *cmdline, struct cmd_data *cdata) {
 
-	assert(cdata != NULL);
+	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
+		return -EINVAL;
+	}
 
-	/* TODO remove stubs */
-	if (!strcmp(cdata->argv[0], "exit")
-			|| !strcmp(cdata->argv[0], "logout")) {
-		return DEADSHELL_RET;
+	strcpy(cdata->cmdline_buf, cmdline);
+
+	cdata->argc = cmdline_tokenize(cdata->cmdline_buf, cdata->argv);
+	if (cdata->argc == 0) {
+		return -EINVAL;
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
 	if (cdata->cmd == NULL) {
-		printf("%s: Command not found\n", cdata->argv[0]);
 		return -ENOENT;
 	}
 
-	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
-		on_fg = 0;
-		--cdata->argc;
+	if (0 != strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		cdata->on_fg = true;
+	} else {
+		cdata->on_fg = false;
+		cdata->argv[cdata->argc--] = NULL;
 	}
 
-	if (is_builtin(cmd_name(cdata->cmd))) {
-		return process_builtin(cdata);
-	}
-
-	return process_external(cdata, on_fg);
+	return 0;
 }
 
 static int tish_exec(const char *cmdline) {
 	struct cmd_data cdata;
 	int res;
 
-	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
-		return -EINVAL;
-	}
-
-	strcpy(cdata.buff, cmdline);
-
-	cdata.argc = cmdline_tokenize(cdata.buff, cdata.argv);
-	if (cdata.argc == 0) {
-		return -EINVAL;
-	}
-
-	cdata.started = 0;
-
-	res = process(&cdata);
+	res = tish_cdata_fill(cmdline, &cdata);
 	if (res != 0) {
+		switch (res) {
+		case -ENOENT:
+			printf("%s: Command not found\n", cdata.argv[0]);
+			break;
+		}
 		return res;
 	}
 
-	do {
-		sleep(0);
-	} while (cdata.started == 0);
+	/* TODO remove stubs */
+	if (!strcmp(cdata.argv[0], "exit")
+			|| !strcmp(cdata.argv[0], "logout")) {
+		return DEADSHELL_RET;
+	}
 
-	return 0;
+	if (is_builtin(cdata.argv[0])) {
+		return process_builtin(&cdata);
+	}
+
+	return process_external(&cdata);
+
 }
 
 static int rich_prompt(const char *fmt, char *buf, size_t len) {
