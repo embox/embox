@@ -136,11 +136,33 @@ static int process_builtin(struct cmd_data *cdata) {
 	return 0;
 }
 
+static void cmd_data_copy(struct cmd_data *dst, const struct cmd_data *src) {
+	int i_arg;
+	char *dst_argv_p;
+
+	dst->argc = src->argc;
+
+	dst_argv_p = dst->cmdline_buf;
+	for (i_arg = 0; i_arg < src->argc; i_arg++) {
+
+		strcpy(dst_argv_p, src->argv[i_arg]);
+		dst->argv[i_arg] = dst_argv_p;
+
+		dst_argv_p += strlen(src->argv[i_arg]);
+		*dst_argv_p++ = '\0';
+	}
+
+	dst->argv[dst->argc] = NULL;
+
+	dst->cmd = src->cmd;
+	dst->on_fg = src->on_fg;
+}
+
 static void * run_cmd(void *data) {
 	int ret;
 	struct cmd_data cdata;
 
-	memcpy(&cdata, data, sizeof(cdata));
+	cmd_data_copy(&cdata, data);
 
 	((struct cmd_data *)data)->started = 1;
 
