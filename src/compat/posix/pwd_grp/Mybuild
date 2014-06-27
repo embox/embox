@@ -6,6 +6,7 @@ static module passwd {
 	source "pwd_grp.c"
 
 	depends passwd_db
+	depends crypt
 }
 
 @DefaultImpl(passwd_db_static)

@@ -30,6 +30,8 @@
 
 #include <embox/cmd.h>
 
+#include <crypt.h>
+
 extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
 
 EMBOX_CMD(login_cmd);
@@ -205,7 +207,7 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 		goto errret;
 	}
 
-	if (with_pass && strcmp(passbuf, spwd->sp_pwdp)) {
+	if (with_pass && strcmp(crypt(passbuf, NULL), spwd->sp_pwdp)) {
 		res = -1;
 		goto errret;
 	}

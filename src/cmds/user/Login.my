@@ -22,6 +22,7 @@ module login {
 	depends embox.kernel.task.syslib.waitpid
 	depends embox.security.smac
 	depends embox.security.seculog
+	depends embox.compat.posix.crypt
 
 	depends embox.lib.readline_api
 

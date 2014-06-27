@@ -43,7 +43,7 @@ main_rename_name=main_$MODULE_ID
 # Next line expands '-D"__impl_x(...)=..."' to -D"__impl_x(...)=..."
 EMBOX_CPPFLAGS=$(eval echo $EMBOX_CPPFLAGS)
 
-if [ ${MAIN_STRIPPING_LOCALS:-no} == yes ]; then
+if [ ${MAIN_STRIPPING_LOCALS:-no} = yes ]; then
 	$OBJDUMP -t $SOURCE_OBJ | grep " g " | tr -s ' ' | cut -d \  -f 5 | \
 		(grep -v main || true) > $localize_symbols
 
