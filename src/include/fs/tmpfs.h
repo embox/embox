@@ -30,7 +30,6 @@ typedef struct tmpfs_fs_info {
 typedef struct tmpfs_file_info {
 	int     index;		        /* number of file in FS*/
 	int     mode;				/* mode in which this file was opened */
-	uint32_t pointer;			/* current (BYTE) pointer */
 } tmpfs_file_info_t;
 
 
