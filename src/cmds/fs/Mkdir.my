@@ -19,5 +19,5 @@ module mkdir {
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
-	depends embox.compat.posix.umask
+	depends embox.compat.posix.fs.umask
 }
