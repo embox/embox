@@ -64,6 +64,8 @@ static void audit_log(const char *subject, const char *object,
 	static char no_audit;
 	char line[AUDITLINE_LEN];
 	uid_t uid;
+	char pwd_sbuf[64];
+	struct passwd pwd_buf;
 	struct passwd *pwd;
 
 	if (no_audit) {
@@ -72,7 +74,7 @@ static void audit_log(const char *subject, const char *object,
 
 	uid = getuid();
 	no_audit = 1;
-	pwd = getpwuid(uid);
+	getpwuid_r(uid, &pwd_buf, pwd_sbuf, sizeof(pwd_sbuf), &pwd);
 	no_audit = 0;
 
 	snprintf(line, AUDITLINE_LEN,
