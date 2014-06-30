@@ -202,14 +202,16 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 		goto errret;
 	}
 
-	if (!(spwd = getspnam_f(result->pw_name))) {
-		res = -1;
-		goto errret;
-	}
+	if (with_pass) {
+		if (!(spwd = getspnam_f(result->pw_name))) {
+			res = -1;
+			goto errret;
+		}
 
-	if (with_pass && strcmp(crypt(passbuf, NULL), spwd->sp_pwdp)) {
-		res = -1;
-		goto errret;
+		if (strcmp(crypt(passbuf, NULL), spwd->sp_pwdp)) {
+			res = -1;
+			goto errret;
+		}
 	}
 
 	res = fileno_vintr_enable(STDIN_FILENO);
