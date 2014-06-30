@@ -1,17 +1,5 @@
 package embox.kernel.task.syslib
 
-@DefaultImpl(no_kfork)
-abstract module kfork_api {
-}
-
-module kfork extends kfork_api {
-	source "kfork.c"
-}
-
-module no_kfork extends kfork_api {
-	source "no_kfork.c"
-}
-
 module thread_key_table {
 	source "thread_key_table.c"
 

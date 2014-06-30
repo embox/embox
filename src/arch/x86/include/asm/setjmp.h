@@ -15,26 +15,6 @@
 
 typedef int __jmp_buf[__JMPBUF_LEN];
 
-
-#include <stddef.h>
-struct cpu_stack {
-	int ebp;
-	int esp;
-};
-
-extern void setjmp_stack_move(ptrdiff_t offset, __jmp_buf env);
-extern struct cpu_stack setjmp_stack_get(void *stack_base, __jmp_buf env);
-
-static inline unsigned int get_ret_addr(void) {
-	unsigned int addr;
-
-	__asm__ __volatile__ (
-		"movl  4(%%ebp), %0\n\t"
-		: "=r" (addr)
-	);
-	return addr;
-}
-
 #endif /* __ASSEMBLER__ */
 
 #define SETJMP_EBP_INDEX 3
