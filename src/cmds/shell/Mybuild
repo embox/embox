@@ -12,7 +12,7 @@ module tish {
 
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
-	option string builtin_commands = "cd export"
+	option string builtin_commands = "cd export exit logout"
 
 	provides embox.cmd.Shell.commandLine
 
@@ -32,6 +32,8 @@ module tish {
 	depends embox.compat.libc.LibCStringDup
 
 	@NoRuntime depends embox.compat.posix.util.sleep
+	depends embox.cmd.exit
+	depends embox.cmd.logout
 }
 
 @Cmd(name = "shell_run",
