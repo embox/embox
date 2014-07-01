@@ -60,15 +60,6 @@ static module vfork_internal_stub extends vfork {
 	source "vfork_release_parent_stub.c",
 	       "vfork_task_vforking_id.c"
 
-	depends embox.kernel.task.syslib.kfork_api
-	depends embox.util.LibUtil
-}
-
-static module vfork_stack_copy extends vfork {
-	source "vfork_stack_copy.c"
-	source "vfork_release_parent_stub.c"
-
-	depends embox.kernel.task.syslib.kfork_api
 	depends embox.util.LibUtil
 }
 
@@ -77,7 +68,7 @@ static module vfork_exchanged extends vfork {
 	       "vfork_task_vforking.c"
 
 	depends embox.kernel.task.resource.vfork
-	depends embox.kernel.task.syslib.kfork_api
+
 	depends embox.util.LibUtil
 }
 
