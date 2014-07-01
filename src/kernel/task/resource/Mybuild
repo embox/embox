@@ -72,7 +72,6 @@ module security {
 module sig_table {
 	source "sig_table.c"
 
-	depends embox.kernel.sched.sched
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.compat.libc.LibCAssert
 	@NoRuntime depends embox.compat.libc.LibCString
