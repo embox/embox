@@ -1,0 +1,15 @@
+package embox.cmd
+
+@Cmd(name="exit",
+	help="exit from shell",
+	man="")
+module exit {
+	source "exit.c"
+}
+
+@Cmd(name="logout",
+	help="logout current user",
+	man="")
+module logout {
+	source "logout.c"
+}
