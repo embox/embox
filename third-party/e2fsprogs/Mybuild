@@ -1,7 +1,8 @@
 package third_party.e2fsprogs
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include",
+	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/lib")
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libblkid.a", "libcom_err.a", "libe2p.a",
