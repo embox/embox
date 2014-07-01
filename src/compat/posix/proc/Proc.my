@@ -84,6 +84,7 @@ static module waitpid {
 	source "waitpid.c"
 
 	depends embox.util.LibUtil
+	depends embox.kernel.task.syslib.waitpid
 }
 
 static module signal {
