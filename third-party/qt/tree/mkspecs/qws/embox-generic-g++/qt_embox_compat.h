@@ -65,6 +65,9 @@ lfind(const void *key, const void *base, size_t *nmemb, size_t size,
 	return NULL;
 }
 
-
-// needed by mars's QtRCP
-//struct XEvent;
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+static inline pid_t fork(void) {
+	return -1;
+}
+__END_DECLS

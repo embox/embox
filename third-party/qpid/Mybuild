@@ -26,7 +26,7 @@ module core {
 	@NoRuntime depends embox.compat.posix.net.getaddrinfo
 	@NoRuntime depends embox.compat.posix.net.getnameinfo
 	@NoRuntime depends embox.compat.posix.net.socket
-	@NoRuntime depends embox.compat.posix.proc.fork
+	/*@NoRuntime depends embox.compat.posix.proc.fork*/
 	@NoRuntime depends embox.compat.posix.util.gethostname
 	@NoRuntime depends embox.compat.posix.util.sleep
 	@NoRuntime depends embox.compat.posix.util.utsname
