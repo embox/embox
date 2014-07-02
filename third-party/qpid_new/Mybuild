@@ -1,8 +1,8 @@
 package third_party.qpid_new
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/include/qpid",
-		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/lib")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/install/include/qpid",
+		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/install/lib")
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.core)
