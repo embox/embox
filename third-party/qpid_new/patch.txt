@@ -24,7 +24,7 @@ diff -aur qpidc-0.24/CMakeLists.txt qpid/CMakeLists.txt
  
 diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
 --- qpidc-0.24/src/CMakeLists.txt	2013-07-13 13:15:49.000000000 +0400
-+++ qpid/src/CMakeLists.txt	2014-06-24 14:23:20.148867092 +0400
++++ qpid/src/CMakeLists.txt	2014-07-02 16:31:05.488388491 +0400
 @@ -271,7 +271,7 @@
     # -Wunreachable-code -Wpadded -Winline
     # -Wshadow - warns about boost headers.
@@ -43,7 +43,15 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  endif (CMAKE_SYSTEM_NAME STREQUAL Windows)
  
  # Visual Studio 2010 requires boost 1.45 or better.
-@@ -1003,13 +1003,13 @@
+@@ -935,7 +935,6 @@
+   )
+   set (qpidcommon_platform_LIBS
+     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+-    ${CMAKE_DL_LIBS}
+   )
+ 
+   set (qpidbroker_platform_SOURCES
+@@ -1003,13 +1002,13 @@
       qpid/framing/Uuid.cpp
       qpid/framing/TransferContent.cpp
       qpid/log/Logger.cpp
@@ -60,7 +68,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
       qpid/management/Manageable.cpp
       qpid/management/ManagementObject.cpp
       qpid/sys/AggregateOutput.cpp
-@@ -1017,7 +1017,7 @@
+@@ -1017,7 +1016,7 @@
       qpid/sys/Dispatcher.cpp
       qpid/sys/DispatchHandle.cpp
       qpid/sys/Runnable.cpp
@@ -69,7 +77,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
       qpid/sys/Timer.cpp
       qpid/sys/TimerWarnings.cpp
       qpid/amqp_0_10/Codecs.cpp
-@@ -1058,7 +1058,7 @@
+@@ -1058,7 +1057,7 @@
  )
  add_msvc_version (qpidcommon library dll)
  
@@ -78,7 +86,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  if (CLOCK_GETTIME_IN_RT)
    set (qpidcommon_platform_LIBS ${qpidcommon_platform_LIBS} rt)
  endif (CLOCK_GETTIME_IN_RT)
-@@ -1085,7 +1085,7 @@
+@@ -1085,7 +1084,7 @@
    ${qpidtypes_platform_SOURCES}
  )
  add_msvc_version (qpidtypes library dll)
@@ -87,7 +95,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries(qpidtypes ${qpidtypes_platform_LIBS})
  set_target_properties (qpidtypes PROPERTIES 
                         VERSION ${qpidtypes_version}
-@@ -1135,7 +1135,7 @@
+@@ -1135,7 +1134,7 @@
  )
  add_msvc_version (qpidclient library dll)
  
@@ -96,7 +104,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qpidclient qpidcommon ${qpidclient_platform_LIBS})
  set_target_properties (qpidclient PROPERTIES VERSION ${qpidclient_version}
  SOVERSION ${qpidclient_version_major})
-@@ -1203,7 +1203,7 @@
+@@ -1203,7 +1202,7 @@
  )
  add_msvc_version (qpidmessaging library dll)
  
@@ -105,7 +113,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qpidmessaging qpidclient)
  set_target_properties (qpidmessaging PROPERTIES 
                         VERSION ${qpidmessaging_version} 
-@@ -1336,7 +1336,7 @@
+@@ -1336,7 +1335,7 @@
       qpid/sys/TCPIOPlugin.cpp
  )
  add_msvc_version (qpidbroker library dll)
@@ -114,7 +122,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qpidbroker qpidcommon ${qpidbroker_platform_LIBS})
  set_target_properties (qpidbroker PROPERTIES 
                         VERSION ${qpidbroker_version}
-@@ -1369,8 +1369,8 @@
+@@ -1369,8 +1368,8 @@
  endif (CPACK_GENERATOR STREQUAL "NSIS")
  
  if (UNIX)
@@ -125,7 +133,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  endif (UNIX)
  
  set (qmf_SOURCES
-@@ -1384,7 +1384,7 @@
+@@ -1384,7 +1383,7 @@
      )
  
  add_msvc_version (qmf library dll)
@@ -134,7 +142,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qmf qmfengine)
  set_target_properties (qmf PROPERTIES
                         VERSION ${qmf_version} 
-@@ -1474,7 +1474,7 @@
+@@ -1474,7 +1473,7 @@
          )
  
      add_msvc_version (qmf2 library dll)
@@ -143,7 +151,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
      target_link_libraries (qmf2 qpidmessaging qpidtypes qpidclient qpidcommon)
      set_target_properties (qmf2 PROPERTIES
                             VERSION ${qmf2_version} 
-@@ -1539,7 +1539,7 @@
+@@ -1539,7 +1538,7 @@
  endif (NOT WIN32)
  add_msvc_version (qmfengine library dll)
  
@@ -152,7 +160,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qmfengine qpidclient)
  set_target_properties (qmfengine PROPERTIES
                         VERSION ${qmfengine_version} 
-@@ -1578,7 +1578,7 @@
+@@ -1578,7 +1577,7 @@
       ../include/qpid/console/Value.h
      )
  add_msvc_version (qmfconsole library dll)
@@ -161,7 +169,7 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
  target_link_libraries (qmfconsole qpidclient)
  set_target_properties (qmfconsole PROPERTIES
                         VERSION ${qmfconsole_version}
-@@ -1601,7 +1601,7 @@
+@@ -1601,7 +1600,7 @@
  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/config.h)
  add_subdirectory(qpid/store)
@@ -169,6 +177,8 @@ diff -aur qpidc-0.24/src/CMakeLists.txt qpid/src/CMakeLists.txt
 +#add_subdirectory(tests)
  
  # Support for pkg-config
+ 
+
  
 diff -aur qpidc-0.24/src/qmf/ConsoleEvent.cpp qpid/src/qmf/ConsoleEvent.cpp
 --- qpidc-0.24/src/qmf/ConsoleEvent.cpp	2011-02-04 11:22:30.000000000 +0300
