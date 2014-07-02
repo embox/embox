@@ -74,6 +74,7 @@ TEST_CASE("after called vfork() child call execv()") {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
+	char *argv[1] = {NULL};
 
 	parent_pid = getpid();
 
@@ -86,7 +87,7 @@ TEST_CASE("after called vfork() child call execv()") {
 		close(1);
 		close(2);
 		/* When vfork() returns 0, we are in the child process. */
-		if (execv("help", NULL) == -1) {
+		if (execv("help", argv) == -1) {
 			test_assert(0);
 		}
 	}

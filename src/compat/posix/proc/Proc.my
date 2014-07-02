@@ -36,6 +36,7 @@ static module exec_exchanged extends exec {
 
 static module exec_lib {
 	source "exec_lib.c"
+	depends embox.kernel.task.resource.argv
 	depends embox.kernel.task.resource.module_ptr
 }
 
