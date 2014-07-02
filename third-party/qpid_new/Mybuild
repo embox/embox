@@ -53,8 +53,6 @@ module qpidd {
 	@AddPrefix("^BUILD/extbld/third_party/qpid_new/core/install/bin")
 	source "qpidd.o"
 
-	source "stubs.c"
-
 	@NoRuntime depends third_party.qpid_new.core
 	depends embox.compat.posix.stubs
 }

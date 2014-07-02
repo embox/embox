@@ -99,7 +99,6 @@ int scandir(const char *dirp, struct dirent ***namelist,
 }
 
 
-#include <unistd.h>
 #define F_TLOCK 0x01
 #define F_ULOCK 0x02
 
@@ -124,14 +123,11 @@ pid_t getppid(void) {
 }
 
 
-#if 0
-static inline
-pid_t fork() {
+static inline pid_t fork() {
 	printf(">>> fork()\n");
 	errno = ENOSYS;
 	return -1;
 }
-#endif
 
 #include <sys/mman.h>
 
@@ -195,8 +191,8 @@ int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 }
 
 
-
-//#define __thread
+// instead of gcc Thread-Local Storage
+#define __thread
 
 
 #endif /* QPID_EMBOX_COMPAT_H_ */
