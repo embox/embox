@@ -443,24 +443,6 @@ diff -aur qpidc-0.24/src/qpid/sys/posix/BSDSocket.cpp qpid/src/qpid/sys/posix/BS
  
      if (::bind(socket, getAddrInfo(sa).ai_addr, getAddrInfo(sa).ai_addrlen) < 0)
          throw Exception(QPID_MSG("Can't bind to port " << sa.asString() << ": " << strError(errno)));
-
- 
-diff -aur qpidc-0.24/src/qpid/framing/Uuid.cpp qpid/src/qpid/framing/Uuid.cpp
---- qpidc-0.24/src/qpid/framing/Uuid.cpp	2012-06-18 03:57:36.000000000 +0400
-+++ qpid/src/qpid/framing/Uuid.cpp	2014-06-26 16:22:28.998491360 +0400
-@@ -57,7 +57,9 @@
- }
- 
- void Uuid::generate() {
--    uuid_generate(c_array());
-+	std::cout << "qpid Uuid calls uuid_generate()" << endl;
-+    //uuid_generate(c_array());
-+	fill(1);
- }
- 
- void Uuid::clear() {
- 
- 
  
 diff -aur qpidc-0.24/src/posix/QpiddBroker.cpp qpid/src/posix/QpiddBroker.cpp 
 --- qpidc-0.24/src/posix/QpiddBroker.cpp	2013-06-19 01:09:19.000000000 +0400
