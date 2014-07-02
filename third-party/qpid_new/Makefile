@@ -14,9 +14,12 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid_new/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
 	-I$(ROOT_DIR)/src/include/c++ \
-	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include"
+	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include \
+	-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
 
 QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid_new/include"
+
+QPID_LDFLAGS += $(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib
 
 $(CONFIGURE) :
 	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp
@@ -48,6 +51,7 @@ $(CONFIGURE) :
 		-DCMAKE_REQUIRED_INCLUDES:PATH=$(QPID_CMAKE_REQUIRED_INCLUDES) \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DCMAKE_CROSSCOMPILING=1 \
 		.. \
 		)
 	touch $@
