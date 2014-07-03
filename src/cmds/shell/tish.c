@@ -247,11 +247,15 @@ static int tish_exec(const char *cmdline) {
 	}
 
 	if (is_builtin(cdata.argv[0])) {
-		return process_builtin(&cdata);
+		res = process_builtin(&cdata);
+	} else {
+		res = process_external(&cdata);
 	}
 
-	return process_external(&cdata);
-
+	if (res < 0) {
+		printf("tish: failed to exec %s: %s\n", cdata.argv[0], strerror(-res));
+	}
+	return res;
 }
 
 static void tish_collect_bg_childs(void) {
