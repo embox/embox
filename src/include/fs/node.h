@@ -79,9 +79,9 @@ extern node_t *node_alloc(const char *name, size_t name_len);
 
 extern void node_free(node_t *node);
 
-//static inline struct node *node_parent(struct node *node) {
-//	return tree_element(node->tree_link.par, struct node, tree_link);
-//}
+static inline struct node *node_parent(struct node *node) {
+	return tree_element(node->tree_link.par, struct node, tree_link);
+}
 
 static inline int node_is_block_dev(struct node *node) {
 	return S_ISBLK(node->mode);
