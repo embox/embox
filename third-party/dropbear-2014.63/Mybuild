@@ -3,13 +3,13 @@ package third_party.dropbear
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
 @AutoCmd
-@Cmd(name = "dropbear_new",
+@Cmd(name = "dropbear",
 	help = "",
 	man = '''
 		AUTHORS
 			-
 	''')
-module dropbear_new {
+module dropbear {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "dropbear.o"
 
@@ -45,5 +45,5 @@ module dropbear_new {
 module dropbeard {
 	source "dropbeard.c"
 
-	depends dropbear_new
+	depends dropbear
 }
