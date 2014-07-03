@@ -68,7 +68,11 @@ static void vfork_waiting(void) {
 
 	vfctx->parent_holded = true;
 	child = new_task("", vfork_child_task, &vfctx->ptregs);
-	SCHED_WAIT(!vfctx->parent_holded);
+	if (child > 0) {
+		SCHED_WAIT(!vfctx->parent_holded);
+	} else {
+		/* child already have error code */
+	}
 
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
