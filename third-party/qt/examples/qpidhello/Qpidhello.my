@@ -1,7 +1,7 @@
 package third_party.qt.example
 
 @Build(stage=2,script="$(EXTERNAL_MAKE_PRO)")
-@BuildDepends(third_party.qpid_new.core)
+@BuildDepends(third_party.qpid.core)
 @BuildDepends(third_party.qt.core)
 @Cmd(name = "qpidhello",
 	help = "qpidhello example",
@@ -14,6 +14,6 @@ module qpidhello {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.qpidhello.embox.o"
 
-	@NoRuntime depends third_party.qpid_new.core
+	@NoRuntime depends third_party.qpid.core
 	@NoRuntime depends third_party.qt.core
 }
