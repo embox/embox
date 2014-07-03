@@ -342,10 +342,6 @@ struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name,
 
 	assert(parent);
 
-	if (len == 1 && *name == '.') {
-		return NULL;
-	}
-
 	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
 
 	return tree_element(tlink, struct node, tree_link);
