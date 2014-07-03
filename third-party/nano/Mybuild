@@ -17,12 +17,9 @@ module nano {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.nano.o"
 
-	@NoRuntime depends nano_stubs
+	@NoRuntime depends embox.compat.posix.regex
+
 
 	depends embox.lib.LibCurses
 }
 
-module nano_stubs {
-	source "stubs.c"
-
-}
