@@ -13,21 +13,16 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: mkdir [ -m MODE ] DIR ...\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	char *point;
-	bool mode_set = 0;
+	int mode_set = 0;
 	int mode = 0777;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "hm:"))) {
 		switch(opt) {
 		case 'h':
@@ -35,7 +30,7 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'm':
 			mode = strtol(optarg, NULL, 8);
-			mode_set = true;
+			mode_set = 1;
 			break;
 		default:
 			return 0;
