@@ -58,7 +58,7 @@ module task_resource {
 }
 
 module task_table extends task_table_api {
-	option number task_table_size=20
+	option number task_table_size=32
 	source "task_table.c"
 
 	@NoRuntime depends embox.compat.libc.LibCAssert
