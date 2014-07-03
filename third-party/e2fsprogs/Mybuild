@@ -1,6 +1,6 @@
 package third_party.e2fsprogs
 
-@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include",
 	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/lib")
 static module core {

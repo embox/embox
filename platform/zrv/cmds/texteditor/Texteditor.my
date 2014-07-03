@@ -7,7 +7,7 @@ package zrv.cmd
 			Dmitriy Aleev
 	''')
 @BuildDepends(third_party.qt.core)
-@Build(stage=2,script="$(EXTERNAL_MAKE_PRO)")
+@Build(script="$(EXTERNAL_MAKE_PRO)")
 module texteditor {
 	option number root_window_width=0
 	option number root_window_height=0
