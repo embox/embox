@@ -29,19 +29,16 @@ void vfork_begin(struct task *task) {
 	task_vfork_start(child);
 }
 
-void vfork_child_done(struct task *child, void * (*run)(void *)) {
+void vfork_child_done(struct task *child, void * (*run)(void *), const char *path, char *const argv[]) {
 	struct task_vfork *parent_vfork;
 	struct task *parent;
-	//struct task_vfork *task_vfork;
+	struct task_vfork *task_vfork;
 
-	/* if (arg) {
-		struct task_param *param = arg;
-
+	/* FIXME */
+	if (path) {
 		task_vfork = task_resource_vfork(child);
-		strncpy(task_vfork->cmdline, param->path, sizeof(task_vfork->cmdline) - 1);
-		param->path = task_vfork->cmdline;
-	} */
-
+		strncpy(task_vfork->cmdline, path, sizeof(task_vfork->cmdline) - 1);
+	}
 
 	parent = child->parent;
 

@@ -53,8 +53,6 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 	//struct task_param *task_param;
 	struct task_argv *task_argv;
 
-	assert(argv);
-
 	//task_param = buff;
 
 	task_argv = task_resource_argv(task);

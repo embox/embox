@@ -41,7 +41,7 @@ int execv(const char *path, char *const argv[]) {
 
 		//save_param(task, path, argv, param);
 		task_resource_exec(task, path, argv);
-		vfork_child_done(task, task_stub_execv);
+		vfork_child_done(task, task_stub_execv, path, argv);
 	}
 
 	return 0;
