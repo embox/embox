@@ -29,7 +29,7 @@ void vfork_begin(struct task *task) {
 	task_vfork_start(child);
 }
 
-void vfork_child_done(struct task *child, void * (*run)(void *), const char* path, char *const argv[]) {
+void vfork_child_done(struct task *child, void * (*run)(void *)) {
 	struct task_vfork *parent_vfork;
 	struct task *parent;
 	/* struct task_vfork *task_vfork;
@@ -43,8 +43,7 @@ void vfork_child_done(struct task *child, void * (*run)(void *), const char* pat
 
 	parent_vfork = task_resource_vfork(parent);
 
-
-	// FIXME : pass arg
+	// FIXME : pass args?
 	task_start(child, run, NULL);
 
 	ptregs_retcode(&parent_vfork->ptregs, child->tsk_id);
@@ -57,7 +56,7 @@ void vfork_child_done(struct task *child, void * (*run)(void *), const char* pat
 
 pid_t vfork_body(struct pt_regs *ptregs) {
 	struct task *task, *child;
-	struct task_vfork *task_vfork;//, *child_vfork;
+	struct task_vfork *task_vfork;
 
 	task = task_self();
 
@@ -67,14 +66,12 @@ pid_t vfork_body(struct pt_regs *ptregs) {
 
 	sched_lock();
 	{
-
 		task_vfork->vforked_pid = task_prepare("");
 		child = task_table_get(task_vfork->vforked_pid);
 		task_vfork->vforked_task = child;
 
 		vfork_begin(task);
 	}
-
 
 	ptregs_retcode(ptregs, 0);
 	ptregs_jmp(ptregs);

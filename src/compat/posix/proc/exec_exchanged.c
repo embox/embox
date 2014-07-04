@@ -18,11 +18,14 @@ static void *task_stub_execv(void *arg) {
 	struct task *task;
 	int res;
 	char *path;
+	char **argv;
 
 	task = task_self();
-	path = task_resource_argv_path(task);
 
-	res = exec_call(path, NULL, NULL);
+	path = task_resource_argv_path(task);
+	argv = task_resource_argv_argv(task);
+
+	res = exec_call(path, argv, NULL);
 
 	return (void*)res;
 }
@@ -38,8 +41,10 @@ int execv(const char *path, char *const argv[]) {
 		param.argv = (char **)argv;
 		param.argc = argv_to_argc(argv); */
 		task_resource_exec(task, path, argv);
-		vfork_child_done(task, task_stub_execv, path, argv);
+		vfork_child_done(task, task_stub_execv);
 	}
+
+	// do execv if task is not forked?
 
 	return 0;
 }
