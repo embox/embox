@@ -28,7 +28,7 @@ void _exit(int status) {
 	task = task_self();
 
 	if (task_is_vforking(task)) {
-		vfork_child_done(task, task_stub_exit, NULL);
+		vfork_child_done(task, task_stub_exit, NULL, NULL);
 	}
 
 	task_start_exit();

@@ -47,15 +47,15 @@ int execv(const char *path, char *const argv[]) {
 	struct context oldctx;
 	struct thread *t;
 	struct task *task;
-	struct task_param param;
+	//struct task_param param;
 
 	strncpy(exec_path, path, sizeof(exec_path) - 1);
 
 	task = task_self();
-	param.path = (char *)path;
+	/* param.path = (char *)path;
 	param.argv = (char **)argv;
-	param.argc = argv_to_argc(argv);
-	task_resource_exec(task, &param);
+	param.argc = argv_to_argc(argv); */
+	task_resource_exec(task, path, argv);
 
 	sched_lock();
 	t = thread_self();
