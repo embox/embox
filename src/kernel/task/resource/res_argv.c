@@ -35,24 +35,20 @@ static int task_argv_inherit(const struct task *task,
 	return 0;
 }
 
-static int task_argv_exec(const struct task *task, void *buff) {
+static int task_argv_exec(const struct task *task, const char *path, char *const argv[]) {
 	int argc;
-	struct task_param *task_param;
 	struct task_argv *task_argv;
 
-	assert(buff);
-	task_param = buff;
+	assert(path);
 
 	task_argv = task_resource_argv(task);
 
-	for (argc = task_param->argc; argc != 0; argc --) {
-		strncpy(task_argv->argv_buff[argc - 1], task_param->argv[argc - 1], sizeof(*task_argv->argv_buff));
+	for (argc = task_argv->argc = argv_to_argc(argv); argc != 0; argc --) {
+		strncpy(task_argv->argv_buff[argc - 1], argv[argc - 1], sizeof(*task_argv->argv_buff));
 		task_argv->argv[argc - 1] = task_argv->argv_buff[argc - 1];
 	}
-	task_argv->argc = task_param->argc;
 
-	strncpy(task_argv->path, task_param->path, sizeof(task_argv->path));
-
+	strncpy(task_argv->path, path, sizeof(task_argv->path));
 
 	return 0;
 
