@@ -194,5 +194,9 @@ int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 // instead of gcc Thread-Local Storage
 #define __thread
 
+// some compilers defines __unix__ (i386 gcc), some __unix (arm-eabi gcc),
+// qpid expects it to be __unix__ (in regex determinition),
+// so definig one to another
+#define __unix__ __unix
 
 #endif /* QPID_EMBOX_COMPAT_H_ */
