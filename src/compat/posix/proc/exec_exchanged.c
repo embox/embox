@@ -13,7 +13,6 @@
 #include <kernel/task/resource/task_argv.h>
 
 extern int exec_call(char *path, char *argv[], char *envp[]);
-extern int save_param(struct task *task, char *path, char *argv[], struct task_param *param);
 
 static void *task_stub_execv(void *arg) {
 	struct task *task;
@@ -30,18 +29,16 @@ static void *task_stub_execv(void *arg) {
 
 int execv(const char *path, char *const argv[]) {
 	struct task *task;
-	//struct task_param *param;
+	struct task_param param;
 
 	task = task_self();
 
 	if (task_is_vforking(task)) {
-		/*param.path = (char *)path;
+		param.path = (char *)path;
 		param.argv = (char **)argv;
-		param.argc = argv_to_argc(argv); */
-
-		//save_param(task, path, argv, param);
-		task_resource_exec(task, path, argv);
-		vfork_child_done(task, task_stub_execv, path, argv);
+		param.argc = argv_to_argc(argv);
+		task_resource_exec(task, &param);
+		vfork_child_done(task, task_stub_execv, &param);
 	}
 
 	return 0;

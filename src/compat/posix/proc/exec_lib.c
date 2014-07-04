@@ -47,7 +47,7 @@ int exec_call(char *path, char *argv[], char *envp[]) {
 
 			task_self_module_ptr_set(cmd2mod(cmd));
 
-			c = *task_resource_argv_argc(task);
+			c = task_resource_argv_argc(task);
 			v = task_resource_argv_argv(task);
 			ecode = cmd_exec(cmd, c, v);
 		} else {

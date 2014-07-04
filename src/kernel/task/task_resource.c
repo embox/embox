@@ -35,12 +35,12 @@ void task_resource_init(const struct task *task) {
 	}
 }
 
-void task_resource_exec(const struct task *task, const char *path, char *const argv[]) {
+void task_resource_exec(const struct task *task, void *param) {
 	const struct task_resource_desc *res;
 
 	task_resource_foreach(res) {
 		if (res->exec != NULL) {
-			res->exec(task, path, argv);
+			res->exec(task, param);
 		}
 	}
 }

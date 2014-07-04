@@ -19,6 +19,7 @@
 #include <hal/context.h>
 
 #include <kernel/task/resource/module_ptr.h>
+#include <kernel/task/resource/task_argv.h>
 
 extern void vfork_release_parent(void);
 extern int exec_call(char *path, char *argv[], char *envp[]);
@@ -40,15 +41,6 @@ static void exec_trampoline(void) {
 	vfork_release_parent();
 
 	_exit(exec_call(path, NULL, NULL));
-}
-
-static int argv_to_argc(char *const argv[]) {
-	int argc;
-
-	for (argc = 0; argv[argc]; argc ++) {
-	}
-
-	return argc;
 }
 
 int execv(const char *path, char *const argv[]) {
