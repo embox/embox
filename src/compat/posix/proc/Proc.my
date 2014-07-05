@@ -17,22 +17,6 @@ module All {
 @DefaultImpl(exec_stop_parent)
 abstract module exec { }
 
-static module exec_stop_parent extends exec {
-	source "exec.c"
-
-	depends vfork
-	depends embox.util.LibUtil
-	@NoRuntime depends embox.kernel.task.resource.argv
-
-	depends exec_lib
-}
-
-static module exec_exchanged extends exec {
-	source "exec_exchanged.c"
-
-	depends embox.kernel.task.resource.argv
-	depends exec_lib
-}
 
 static module exec_lib {
 	source "exec_lib.c"
@@ -55,30 +39,6 @@ static module fork_copy_addr_space extends embox.kernel.addr_space {
 
 @DefaultImpl(vfork_internal_stub)
 abstract module vfork { }
-
-static module vfork_internal_stub extends vfork {
-	source "vfork_release_parent_stub.c",
-	       "vfork_task_vforking_id.c"
-
-	depends embox.util.LibUtil
-}
-
-static module vfork_exchanged extends vfork {
-	source "vfork_exchanged.c",
-	       "vfork_task_vforking.c"
-
-	depends embox.kernel.task.resource.vfork
-
-	depends embox.util.LibUtil
-}
-
-static module vfork_stop_parent extends vfork {
-	source "vfork_stop_parent.c",
-	       "vfork_task_vforking_id.c"
-
-	depends embox.arch.vfork_entry
-	depends embox.util.LibUtil
-}
 
 static module waitpid {
 	source "waitpid.c"
