@@ -3,6 +3,7 @@ package mybuild.lang
 
 annotation InitFS {
 	string target_dir
+	string target_name
 	string chmod
 	string chown
 	string xattr /* "attr1=val1 attr2=val2 attr3=val3 ..." */

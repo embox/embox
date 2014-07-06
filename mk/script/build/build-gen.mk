@@ -492,6 +492,7 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
 my_initfs_target_dir := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_dir)
+my_initfs_target_name := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_name)
 my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
 my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 my_initfs_xattr := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.xattr)
@@ -499,8 +500,7 @@ my_initfs_xattr := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.xattr)
 @source_initfs_cp_rmk := \
 	$(foreach s,$(build_sources), \
 		$(if $(call source_annotations,$s,$(my_initfs)), \
-			source-initfs-cp-rmk/$(strip \
-				$(call source_annotation_values,$s,$(my_initfs_target_dir)))$s))
+			source-initfs-cp-rmk/$s))
 
 @source_rmk := \
 	$(foreach s,$(build_sources), \
@@ -608,13 +608,13 @@ $(@source_mk_rmk):
 		$(gen_banner); \
 		$(call gen_make_include,$(file)))
 
-source_initfs_cp_out = \
-	$(addprefix $$(ROOTFS_DIR), \
-		$(foreach s,$1,\
-			$(call get,$(notdir $(basename $(basename $s))),value)/$(notdir $(call get,$s,fileName))))
+source_initfs_cp_target_dir=$(call get,$(call source_annotation_values,$s,$(my_initfs_target_dir)),value)
+source_initfs_cp_target_name=$(or $(strip \
+	$(call get,$(call source_annotation_values,$s,$(my_initfs_target_name)),value)),$(call get,$s,fileName))
+source_initfs_cp_out = $(addprefix $$(ROOTFS_DIR), \
+	       $(foreach s,$1,$(source_initfs_cp_target_dir)/$(source_initfs_cp_target_name)))
 
 $(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
-
 $(@source_initfs_cp_rmk) : src_file = $(file)
 $(@source_initfs_cp_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
 $(@source_initfs_cp_rmk) : kind := initfs_cp
