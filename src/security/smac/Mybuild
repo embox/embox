@@ -4,9 +4,6 @@ module smac extends api {
 	source "smac.c",
 	       "smac_security.c"
 
-	@InitFS(chown="1", chmod="0600", xattr="SMAC32LABEL=smac_admin")
-	source "smac_users"
-
 	option number max_entries = 64
 
 	/* valid are
@@ -20,9 +17,29 @@ module smac extends api {
 	option string default_file_label="*"
 
 	depends embox.fs.xattr
-
-	depends embox.security.seculog
 	depends embox.kernel.task.resource.security
 
+	depends embox.security.seculog
 	depends embox.security.seculog_file
+
+	depends smac_user_db
+}
+
+@DefaultImpl(smac_user_static_db)
+abstract module smac_user_db { }
+
+module smac_user_static_db extends smac_user_db {
+	@InitFS(chown="1", chmod="0600", xattr="SMAC32LABEL=smac_admin")
+	source "smac_users"
+}
+
+module smac_user_dynamic_db extends smac_user_db {
+	@InitFS(target_name="smac_users.init", chown="1", chmod="0600", xattr="SMAC32LABEL=smac_admin")
+	source "smac_users"
+
+	source "smac_user_dynamic_init.c"
+
+	depends embox.fs.rootfs
+	depends embox.fs.driver.ramfs
+	depends embox.cmd.fs.cp
 }

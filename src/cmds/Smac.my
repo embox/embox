@@ -15,4 +15,5 @@ module smac_adm {
 		"smac_adm_db.c"
 
 	depends embox.security.smac
+	depends embox.security.smac_user_dynamic_db
 }
