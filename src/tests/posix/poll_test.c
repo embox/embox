@@ -78,6 +78,21 @@ TEST_CASE("poll() ignores any events if the events field is 0") {
 	test_assert_equal(0, fds_w.revents);
 }
 
+TEST_CASE("poll() accept 2 descriptors and monitors one of them") {
+	struct pollfd fds[2];
+	int fds_cnt = 2;
+
+	fds[0].fd = fds_w.fd;
+	fds[1].fd = fds_r.fd;
+	fds[0].events = 0; // don't monitor
+	fds[1].events = POLLIN; // monitor
+	fds[0].revents = fds[1].revents = 0;
+
+	test_assert_equal(1, write(fds_w.fd, "a", 1));
+	test_assert_equal(1, poll(fds, fds_cnt, 0));
+	test_assert_equal(POLLIN, fds[1].revents);
+}
+
 static int case_setup(void) {
 	if (-1 == pipe(fildes)) {
 		return -errno;

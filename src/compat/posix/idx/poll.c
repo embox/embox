@@ -70,31 +70,35 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 
 	return cnt;
 }
+
 static int fds_setup(struct idesc_poll_table *pt, struct pollfd fds[],
 		nfds_t nfds) {
-	int i;
+	int i = 0, j = 0;
 	int cnt = 0;
 
-	for (i = 0; (i < nfds) && (i < pt->size); ++i) {
-		if (!idesc_index_valid(fds[i].fd)) {
+	assert(pt->size <= nfds);
+
+	for (j = 0; (j < nfds) && (i < pt->size); j++) {
+		if (!idesc_index_valid(fds[j].fd)) {
 			continue;
 		}
 
-		if (pt->idesc_poll[i].fd != fds[i].fd) {
-			cnt++;//TODO
+		if (pt->idesc_poll[i].fd != fds[j].fd) {
+			// continue search corresponding descriptor in fds.
+			cnt++; // TODO
 			continue;
 		}
 
 		if (pt->idesc_poll[i].o_poll_mask) {
 			cnt++;
-			fds[i].revents = (short) pt->idesc_poll[i].o_poll_mask;
+			fds[j].revents = (short) pt->idesc_poll[i].o_poll_mask;
 		}
+		i++;
 	}
 
-
 	return cnt;
-
 }
+
 int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	int ret;
 	int fd_cnt;
