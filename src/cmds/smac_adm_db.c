@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <shadow.h>
 
 #define SMAC_USERS "/smac_users"
@@ -18,14 +19,19 @@
 static int cmd_smac_adm_user_replace(const char *name, const char *label) {
 	struct spwd *spwd;
 	FILE *su, *tsu;
+	mode_t old_umask;
+
+	old_umask = umask(0077);
 
 	su = fopen(SMAC_USERS, "r");
 	if (!su) {
+		umask(old_umask);
 		return -errno;
 	}
 
 	tsu = fopen(TMP_SMAC_USERS, "w");
 	if (!tsu) {
+		umask(old_umask);
 		fclose(su);
 		return -errno;
 	}
@@ -43,6 +49,8 @@ static int cmd_smac_adm_user_replace(const char *name, const char *label) {
 
 	system("rm " SMAC_USERS);
 	system("mv -f " TMP_SMAC_USERS " " SMAC_USERS);
+
+	umask(old_umask);
 
 	return 0;
 }
