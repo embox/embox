@@ -40,4 +40,6 @@ module smac_user_dynamic_db extends smac_user_db {
 	depends embox.fs.rootfs
 	depends embox.fs.driver.ramfs
 	depends embox.cmd.fs.cp
+	depends embox.cmd.chmod
+	depends embox.cmd.chown
 }
