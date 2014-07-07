@@ -20,7 +20,7 @@
 
 #include <limits.h>
 
-#define ROOT_MODE 0755
+#define ROOT_MODE 0775
 
 #define ERR_CHILD_NOT_FOUND 1
 #define ERR_CHILD_MOUNTED   2
