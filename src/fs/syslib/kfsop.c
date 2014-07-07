@@ -354,12 +354,17 @@ skip_dev_lookup:
 static int copy_file(const char *oldpath, const char *newpath) {
 	int oldfd, newfd, rc;
 	char buf[BUFSIZ];
+	struct stat old_st;
+
+	if (-1 == stat(oldpath, &old_st)) {
+		return -1;
+	}
 
 	oldfd = open(oldpath, O_RDONLY);
 	if (-1 == oldfd) {
 		return -1;
 	}
-	newfd = open(newpath, O_CREAT|O_WRONLY|O_TRUNC, 0);
+	newfd = open(newpath, O_CREAT|O_WRONLY|O_TRUNC, old_st.st_mode & 0777);
 	if (-1 == newfd) {
 		return -1;
 	}
