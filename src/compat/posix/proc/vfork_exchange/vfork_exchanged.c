@@ -8,9 +8,9 @@
 #include <unistd.h>
 #include <setjmp.h>
 
+#include <kernel/panic.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
-
 
 #include <kernel/sched/sched_lock.h>
 
@@ -21,59 +21,51 @@ extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 
 
-void vfork_begin(struct task *task) {
-	struct task *child;
+void vfork_begin(struct task *child, struct pt_regs *ptregs) {
+	struct task_vfork *task_vfork;
 
-	task_vfork_start(task);
-	child = task_self();
-	task_vfork_start(child);
+	/* save ptregs for parent return from vfork() */
+	task_vfork = task_resource_vfork(child);
+	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
+
+	/* mark as vforking */
+	task_vfork_start(child->parent);
 }
 
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
-	struct task_vfork *parent_vfork;
-	struct task *parent;
-	/* struct task_vfork *task_vfork;
+	struct task_vfork *vfork_data;
 
-	 if (path) {
-		task_vfork = task_resource_vfork(child);
-		strncpy(task_vfork->cmdline, path, sizeof(task_vfork->cmdline) - 1);
-	} */
-
-	parent = child->parent;
-
-	parent_vfork = task_resource_vfork(parent);
+	vfork_data = task_resource_vfork(child);
 
 	// FIXME : pass args?
 	task_start(child, run, NULL);
 
-	ptregs_retcode(&parent_vfork->ptregs, child->tsk_id);
+	ptregs_retcode(&vfork_data->ptregs, child->tsk_id);
 
-	task_vfork_end(child);
-	task_vfork_end(parent);
+	task_vfork_end(child->parent);
 
-	ptregs_jmp(&parent_vfork->ptregs);
+	ptregs_jmp(&vfork_data->ptregs);
 }
 
-pid_t vfork_body(struct pt_regs *ptregs) {
-	struct task *task, *child;
-	struct task_vfork *task_vfork;
-
-	task = task_self();
-
-	task_vfork = task_resource_vfork(task);
-
-	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
+void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
+	struct task *child;
 
 	sched_lock();
 	{
-		task_vfork->vforked_pid = task_prepare("");
-		child = task_table_get(task_vfork->vforked_pid);
-		task_vfork->vforked_task = child;
+		pid_t child_pid = task_prepare("");
+		if (0 > child_pid) {
+			/* error */
+			ptregs_retcode(ptregs, -1);
+			sched_unlock();
+			ptregs_jmp(ptregs);
+		}
+		child = task_table_get(child_pid);
 
-		vfork_begin(task);
+		vfork_begin(child, ptregs);
 	}
+	sched_unlock();
 
 	ptregs_retcode(ptregs, 0);
 	ptregs_jmp(ptregs);
-	return 0;
+	panic("vfork_body returning");
 }
