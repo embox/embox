@@ -21,8 +21,6 @@ module smac extends api {
 
 	depends embox.security.seculog
 	depends embox.security.seculog_file
-
-	depends smac_user_db
 }
 
 @DefaultImpl(smac_user_static_db)
