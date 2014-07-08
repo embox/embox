@@ -20,17 +20,17 @@
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 
-void thread_set_task(struct thread *thread, struct task *task) {
+static void thread_set_task(struct thread *thread, struct task *task) {
 	thread->task = task;
 }
 
-void vfork_begin(struct task *child, struct pt_regs *ptregs) {
+static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 	struct task_vfork *task_vfork;
 
 	/* save ptregs for parent return from vfork() */
 	task_vfork = task_resource_vfork(child);
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
-//	task_vfork->vforked_task = child;
+
 	thread_set_task(thread_self(), child);
 
 	/* mark as vforking */

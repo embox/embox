@@ -18,7 +18,6 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/errno.h>
-#include <kernel/task/task_vforking.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
 
@@ -34,8 +33,9 @@ struct task *task_self(void) {
 	struct thread *th = thread_self();
 
 	assert(th);
+	assert(th->task);
 
-	return task_vforking(th->task);
+	return th->task;
 }
 
 static void * task_trampoline(void *arg_) {

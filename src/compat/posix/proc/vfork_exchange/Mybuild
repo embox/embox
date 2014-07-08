@@ -8,8 +8,7 @@ static module exec_exchanged extends exec {
 }
 
 static module vfork_exchanged extends vfork {
-	source "vfork_exchanged.c",
-	       "vfork_task_vforking.c"
+	source "vfork_exchanged.c"
 
 	depends embox.kernel.task.resource.vfork
 
