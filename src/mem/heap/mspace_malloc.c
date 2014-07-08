@@ -68,6 +68,7 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	int iter;
 
 	assert(mspace);
+	assert(__heap_pgallocator);
 
 	block = NULL;
 	iter = 0;
