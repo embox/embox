@@ -18,8 +18,8 @@ struct vfork_ctx {
 	struct pt_regs ptregs;
 	struct context original_ctx;
 	struct context waiting_ctx;
+	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
 	bool parent_holded;
-	char stack[VFORK_CTX_STACK_LEN];
 };
 
 static struct vfork_ctx *vfork_current_context;
