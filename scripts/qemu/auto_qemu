@@ -140,18 +140,26 @@ NIC2QEMU=(
 	[lan9118]="lan9118"
 )
 
-qemu_nics=$(echo $AUTOQEMU_NICS ${!NIC2QEMU[@]} | sed 's/\ \+/\n/g' | sort | uniq -d)
+qemu_nics_str=$(echo $AUTOQEMU_NICS ${!NIC2QEMU[@]} | sed 's/\ \+/\n/g' | sort | uniq -d)
+IFS=" " read -a qemu_nics <<< "$qemu_nics_str"
 
-qemu_start_script=${AUTOQEMU_START_SCRIPT:-$DATADIR/start_script}
-qemu_stop_script=${AUTOQEMU_STOP_SCRIPT:-$DATADIR/stop_script}
+IFS=" " read -a qemu_nics_config <<< "$AUTOQEMU_NICS_CONFIG"
+
 sudo=""
 nic_lines=""
-if [ -n "$qemu_nics" ]; then
+if [ ${#qemu_nics[*]} -gt 0 ]; then
 	sudo=sudo
 	nic_n=0
-	for n in $qemu_nics; do
-		nic_lines="$nic_lines -net nic,model=${NIC2QEMU[$n]},macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
-			-net tap,script=$qemu_start_script,downscript=$qemu_stop_script"
+	for ni in "${!qemu_nics[@]}"; do
+
+		if [ ${qemu_nics_config[$ni]} ]; then
+			host_nic_config=${qemu_nics_config[$ni]}
+		else
+			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
+		fi
+
+		nic_lines="$nic_lines -net nic,model=${NIC2QEMU[${qemu_nics[$ni]}]},macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
+			-net $host_nic_config"
 		nic_n=$(($nic_n + 1))
 	done
 fi

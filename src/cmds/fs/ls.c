@@ -20,17 +20,11 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 typedef void item_print(const char *path, stat_t *sb);
 
 static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
 }
-
-
 
 static void print_access(int flags) {
 	putchar(flags & S_IROTH ? 'r' : '-');
@@ -110,7 +104,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	DIR *dir;
 
 	int opt;
@@ -121,7 +115,6 @@ static int exec(int argc, char **argv) {
 	printer = printer_simple;
 	recursive = 0;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':

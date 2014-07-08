@@ -7,6 +7,7 @@
  */
 
 #include <ctype.h>
+#include <errno.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <stddef.h>
@@ -89,9 +90,11 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 	}
 
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
+
 		if (rr->rdlength != addr_len) {
 			continue;
 		}
+
 		switch (rr->rtype) {
 		default:
 			ret = 0;
@@ -103,11 +106,22 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 			ret = hostent_add_addr(he, &rr->rdata.aaaa.address[0]);
 			break;
 		}
-		if (ret != 0) {
-			dns_result_free(&result);
-			return NULL;
+
+		switch(ret) {
+		case 0:
+			/* continue processing */
+			break;
+		case -ENOMEM:
+		case -ERANGE:
+			/* some addresses can't be inserted, return he as is */
+			goto out_rr_loop;
+		default:
+			/* don't know what to do, through he out */
+			he = NULL;
+			goto out_rr_loop;
 		}
 	}
+out_rr_loop:
 
 	dns_result_free(&result);
 

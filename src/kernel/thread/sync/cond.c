@@ -83,7 +83,7 @@ int cond_wait(cond_t *c, struct mutex *m) {
 
 int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	struct thread* current = thread_self();
-	time64_t time;
+	struct timespec relative_time;
 	clock_t timeout;
 	int res;
 
@@ -95,13 +95,14 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	}
 
 	if ((current->task != c->task) && (c->attr.pshared == PROCESS_PRIVATE)) {
-		return -EACCES;
+		return EACCES;
 	}
-	if(ts == NULL) {
+	if (ts == NULL) {
 		timeout = SCHED_TIMEOUT_INFINITE;
 	} else {
-		time = timespec_to_ns(ts);
-		timeout = (int) time; //TODO overflow
+		clock_gettime(CLOCK_REALTIME, &relative_time);
+		relative_time = timespec_sub(*ts, relative_time);
+		timeout = (clock_t) (timespec_to_ns(&relative_time) / NSEC_PER_MSEC); //TODO overflow
 	}
 
 	if (cond_is_static_inited(c)) {
@@ -125,7 +126,9 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 
 	mutex_lock(m);
 
-	return res;
+	/* RETURN VALUE
+       All condition variable functions return 0 on success and a non-zero error code on error. */
+	return -res;
 }
 
 int cond_signal(cond_t *c) {

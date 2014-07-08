@@ -28,4 +28,5 @@ module login {
 
 	requires embox.cmd.Shell.commandLine
 
+	depends embox.security.smac_user_db
 }

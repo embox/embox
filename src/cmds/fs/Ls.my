@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "ls",
 	help = "List directory contents",
 	man = '''

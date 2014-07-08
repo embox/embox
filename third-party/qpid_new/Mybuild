@@ -1,8 +1,8 @@
-package third_party.qpid_new
+package third_party.qpid
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/include/qpid",
-		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid_new/core/qpidc-0.24/install/lib")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include/qpid",
+		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/lib")
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.core)
@@ -47,15 +47,13 @@ module core {
 	''')
 module qpidd {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
-	@AddPrefix("^BUILD/extbld/third_party/qpid_new/core/install/bin")
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
 	source "strip.QpiddBroker.o"
 
-	@AddPrefix("^BUILD/extbld/third_party/qpid_new/core/install/bin")
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
 	source "qpidd.o"
 
-	source "stubs.c"
-
-	@NoRuntime depends third_party.qpid_new.core
+	@NoRuntime depends third_party.qpid.core
 	depends embox.compat.posix.stubs
 }
 
@@ -69,10 +67,10 @@ module qpidd {
 	''')
 module qpidd_hello {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
-	@AddPrefix("^BUILD/extbld/third_party/qpid_new/core/install/bin")
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
 	source "strip.hello_world.o"
 
-	@NoRuntime depends third_party.qpid_new.core
+	@NoRuntime depends third_party.qpid.core
 	depends embox.compat.posix.stubs
 }
 

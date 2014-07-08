@@ -12,7 +12,7 @@
 static void *dropbeard(void *arg) {
 
 	while (1) {
-		system("dropbear_new -F");
+		system("dropbear -F");
 	}
 
 	return NULL;

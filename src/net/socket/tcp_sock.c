@@ -275,7 +275,6 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert(sk != NULL);
 	assert(newsk != NULL);
 
-	tcp_newsk = NULL;
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_accept: sk %p, st%d\n",
 			to_sock(tcp_sk), tcp_sk->state);
@@ -286,6 +285,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
 		/* waiting anyone */
+		tcp_newsk = NULL;
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			do {
@@ -300,6 +300,9 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
+		if (0 > ret) {
+			return ret;
+		}
 
 		if (!tcp_newsk) {
 			return -ECONNRESET; /* FIXME */

@@ -107,6 +107,12 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	return NULL;
 }
 
+static inline int path_is_single_dot(const char *path) {
+	char nc = *(path + 1);
+
+	return *path == '.' && (nc == '/' || nc == '\0');
+}
+
 const char *path_next(const char *path, size_t *p_len) {
 
 	if (!path) {
@@ -114,7 +120,8 @@ const char *path_next(const char *path, size_t *p_len) {
 	}
 
 	/* Skip leading slashes. */
-	while (*path == '/') {
+	/* XXX Skip single dots too */
+	while (*path == '/' || path_is_single_dot(path)) {
 		++path;
 	}
 

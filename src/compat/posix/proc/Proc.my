@@ -5,7 +5,7 @@ module All {
 
 	depends exec,
 		//vfork,
-		waitpid,
+		//waitpid,
 		//signal,
 		exit,
 		uid,

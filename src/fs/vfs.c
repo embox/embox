@@ -20,7 +20,7 @@
 
 #include <limits.h>
 
-#define ROOT_MODE 0755
+#define ROOT_MODE 0775
 
 #define ERR_CHILD_NOT_FOUND 1
 #define ERR_CHILD_MOUNTED   2
@@ -341,10 +341,6 @@ struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name,
 	struct tree_link *tlink;
 
 	assert(parent);
-
-	if (len == 1 && *name == '.') {
-		return NULL;
-	}
 
 	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
 

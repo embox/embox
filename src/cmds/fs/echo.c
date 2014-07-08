@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <errno.h>
 #include <unistd.h>
@@ -15,18 +14,16 @@
 #include <string.h>
 #include <fcntl.h>
 
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: echo \"STRING\" >> FILE\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	FILE *fd;
 	const char *mode;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch(opt) {
 		case 'h':

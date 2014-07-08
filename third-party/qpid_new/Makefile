@@ -14,18 +14,17 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid_new/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
 	-I$(ROOT_DIR)/src/include/c++ \
-	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include \
-	-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
+	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include"
+
+QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
 
 QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid_new/include"
 
-QPID_LDFLAGS += $(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib
-
 $(CONFIGURE) :
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options.cpp       $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options_.cpp
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib.cpp         $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib_.cpp
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options.cpp       $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib.cpp         $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib_.cpp || true
 	export EMBOX_GCC_LINK=full; \
 	export CXXFLAGS=$(QPID_CXX_FLAGS); \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && rm -rf bld && mkdir bld && cd bld && ( \
@@ -33,13 +32,14 @@ $(CONFIGURE) :
 		-L \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DUNIX:BOOL=on \
+		-DBUILD_SHARED_LIBS:BOOL=off \
 		-DLIB64:STRING=FALSE \
 		-DCMAKE_SIZEOF_VOID_P:STRING=4 \
 		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
 		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
 		-DCMAKE_AR:STRING=ar \
-		-DCMAKE_EXE_LINKER_FLAGS:STRING=$(LDFLAGS) \
+		-DCMAKE_EXE_LINKER_FLAGS:STRING=$(QPID_LDFLAGS) \
 		-DBUILD_HA:BOOL=off \
 		-DBUILD_SSL:BOOL=off \
 		-DBUILD_ACL:BOOL=off \
@@ -51,7 +51,7 @@ $(CONFIGURE) :
 		-DCMAKE_REQUIRED_INCLUDES:PATH=$(QPID_CMAKE_REQUIRED_INCLUDES) \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
-		-DCMAKE_CROSSCOMPILING=1 \
+		-DQPID_LINK_BOOST_DYNAMIC:BOOL=off \
 		.. \
 		)
 	touch $@

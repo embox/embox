@@ -101,9 +101,7 @@ make >/dev/null 2>/dev/null
 
 tap_up
 
-export AUTOQEMU_START_SCRIPT=no
-export AUTOQEMU_STOP_SCRIPT=no
-
+export AUTOQEMU_NICS_CONFIG="tap,ifname=tap0,script=no,downscript=no"
 export CONTINIOUS_RUN_TIMEOUT=60
 $CONT_RUN generic/qemu_bg "" $PID_FILE
 if [ 0 -ne $? ]; then

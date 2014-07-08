@@ -184,6 +184,7 @@ $(@build_image) : mk_file  = \
 $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rmk_target_pat),image)
 
+my_bld       := $(call mybuild_resolve_or_die,mybuild.lang.Build)
 my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 my_autocmd   := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd)
 my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.script)
@@ -191,7 +192,10 @@ my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.scri
 # Return modules of specified stage
 # 1. Stage to filter
 # 2. Modules list
-filter_stage_modules = $(foreach m,$2,$(if $(call eq,$1,$(or $(call annotation_value,$(call get,$m,allTypes),$(my_bld_stage)),1)),$m))
+filter_stage_modules = \
+	$(foreach m,$2, \
+	       $(if $(call eq,$1,$(or $(call annotation_value,$(call get,$m,allTypes),$(my_bld_stage)),$(and $(strip $(call invoke,$(call get,$m,allTypes),getAnnotationsOfType,$(my_bld))),2),1)), \
+			$m))
 
 __gen_stage = \
 	$(call gen_make_var_list,__image_ld_scripts$1,$(patsubst %,$(value source_cpp_rmk_out_pat), \
@@ -445,7 +449,7 @@ $(@module_extbld_rmk) : @file   = $(path:%=$(module_extbld_rmk_mk_pat))
 $(@module_extbld_rmk) : mk_file = $(patsubst %,$(value module_extbld_rmk_mk_pat),$$(module_path))
 $(@module_extbld_rmk) : target = $(patsubst %,$(value module_extbld_rmk_target_pat),$$(module_path))
 $(@module_extbld_rmk) : script = $(call get,$(basename $@),value)
-$(@module_extbld_rmk) : stage = $(or $(strip $(call annotation_value,$(call get,$@,allTypes),$(my_bld_stage))),1)
+$(@module_extbld_rmk) : stage = $(or $(strip $(call annotation_value,$(call get,$@,allTypes),$(my_bld_stage))),2)
 $(@module_extbld_rmk) : __build_deps = $(call build_deps, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : __build_deps_all = $(call build_deps_all, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
@@ -488,6 +492,7 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
 my_initfs_target_dir := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_dir)
+my_initfs_target_name := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_name)
 my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
 my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 my_initfs_xattr := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.xattr)
@@ -495,8 +500,7 @@ my_initfs_xattr := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.xattr)
 @source_initfs_cp_rmk := \
 	$(foreach s,$(build_sources), \
 		$(if $(call source_annotations,$s,$(my_initfs)), \
-			source-initfs-cp-rmk/$(strip \
-				$(call source_annotation_values,$s,$(my_initfs_target_dir)))$s))
+			source-initfs-cp-rmk/$s))
 
 @source_rmk := \
 	$(foreach s,$(build_sources), \
@@ -604,13 +608,13 @@ $(@source_mk_rmk):
 		$(gen_banner); \
 		$(call gen_make_include,$(file)))
 
-source_initfs_cp_out = \
-	$(addprefix $$(ROOTFS_DIR), \
-		$(foreach s,$1,\
-			$(call get,$(notdir $(basename $(basename $s))),value)/$(notdir $(call get,$s,fileName))))
+source_initfs_cp_target_dir=$(call get,$(call source_annotation_values,$s,$(my_initfs_target_dir)),value)
+source_initfs_cp_target_name=$(or $(strip \
+	$(call get,$(call source_annotation_values,$s,$(my_initfs_target_name)),value)),$(call get,$s,fileName))
+source_initfs_cp_out = $(addprefix $$(ROOTFS_DIR), \
+	       $(foreach s,$1,$(source_initfs_cp_target_dir)/$(source_initfs_cp_target_name)))
 
 $(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
-
 $(@source_initfs_cp_rmk) : src_file = $(file)
 $(@source_initfs_cp_rmk) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
 $(@source_initfs_cp_rmk) : kind := initfs_cp

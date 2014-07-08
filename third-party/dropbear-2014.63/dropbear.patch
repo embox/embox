@@ -1,6 +1,6 @@
-diff -aur dropbear-2014.63/cli-kex.c build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/cli-kex.c
+diff -aur dropbear-2014.63/cli-kex.c build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/cli-kex.c
 --- dropbear-2014.63/cli-kex.c	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/cli-kex.c	2014-06-04 17:56:36.542772015 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/cli-kex.c	2014-06-04 17:56:36.542772015 +0400
 @@ -92,7 +92,8 @@
  void recv_msg_kexdh_reply() {
  
@@ -11,9 +11,9 @@ diff -aur dropbear-2014.63/cli-kex.c build/extbld/third_party/dropbear/dropbear_
  	unsigned char* keyblob = NULL;
  
  	TRACE(("enter recv_msg_kexdh_reply"))
-diff -aur dropbear-2014.63/common-session.c build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/common-session.c
+diff -aur dropbear-2014.63/common-session.c build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/common-session.c
 --- dropbear-2014.63/common-session.c	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/common-session.c	2014-06-04 18:07:26.936086179 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/common-session.c	2014-06-04 18:07:26.936086179 +0400
 @@ -199,7 +199,7 @@
  					/* blocking read of the version string */
  					read_session_identification();
@@ -23,9 +23,9 @@ diff -aur dropbear-2014.63/common-session.c build/extbld/third_party/dropbear/dr
  				}
  			}
  			
-diff -aur dropbear-2014.63/debug.h build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/debug.h
+diff -aur dropbear-2014.63/debug.h build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/debug.h
 --- dropbear-2014.63/debug.h	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/debug.h	2014-06-04 17:56:36.539438682 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/debug.h	2014-06-04 17:56:36.539438682 +0400
 @@ -71,7 +71,7 @@
  
  /* To debug with GDB it is easier to run with no forking of child processes.
@@ -35,9 +35,9 @@ diff -aur dropbear-2014.63/debug.h build/extbld/third_party/dropbear/dropbear_ne
  
  
  /* For testing as non-root on shadowed systems, include the crypt of a password
-diff -aur dropbear-2014.63/includes.h build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/includes.h
+diff -aur dropbear-2014.63/includes.h build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/includes.h
 --- dropbear-2014.63/includes.h	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/includes.h	2014-06-04 17:56:36.542772015 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/includes.h	2014-06-04 17:56:36.542772015 +0400
 @@ -30,13 +30,16 @@
  #include "options.h"
  #include "debug.h"
@@ -83,9 +83,9 @@ diff -aur dropbear-2014.63/includes.h build/extbld/third_party/dropbear/dropbear
  
  #ifdef HAVE_NETINET_TCP_H
  #include <netinet/tcp.h>
-diff -aur dropbear-2014.63/options.h build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/options.h
+diff -aur dropbear-2014.63/options.h build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/options.h
 --- dropbear-2014.63/options.h	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/options.h	2014-06-04 17:56:36.542772015 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/options.h	2014-06-04 17:56:36.542772015 +0400
 @@ -24,7 +24,7 @@
  #define DSS_PRIV_FILENAME "/etc/dropbear/dropbear_dss_host_key"
  #endif
@@ -104,9 +104,9 @@ diff -aur dropbear-2014.63/options.h build/extbld/third_party/dropbear/dropbear_
  
  /* Set this to use PRNGD or EGD instead of /dev/urandom or /dev/random */
  /*#define DROPBEAR_PRNGD_SOCKET "/var/run/dropbear-rng"*/
-diff -aur dropbear-2014.63/packet.c build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/packet.c
+diff -aur dropbear-2014.63/packet.c build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/packet.c
 --- dropbear-2014.63/packet.c	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/packet.c	2014-06-04 18:07:13.509419907 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/packet.c	2014-06-04 18:07:13.509419907 +0400
 @@ -160,7 +160,7 @@
  /* Non-blocking function reading available portion of a packet into the
   * ses's buffer, decrypting the length if encrypted, decrypting the
@@ -116,9 +116,9 @@ diff -aur dropbear-2014.63/packet.c build/extbld/third_party/dropbear/dropbear_n
  
  	int len;
  	unsigned int maxlen;
-diff -aur dropbear-2014.63/packet.h build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/packet.h
+diff -aur dropbear-2014.63/packet.h build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/packet.h
 --- dropbear-2014.63/packet.h	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/packet.h	2014-06-04 18:07:14.766086540 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/packet.h	2014-06-04 18:07:14.766086540 +0400
 @@ -29,7 +29,7 @@
  #include "includes.h"
  
@@ -128,9 +128,9 @@ diff -aur dropbear-2014.63/packet.h build/extbld/third_party/dropbear/dropbear_n
  void decrypt_packet();
  void encrypt_packet();
  
-diff -aur dropbear-2014.63/termcodes.c build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/termcodes.c
+diff -aur dropbear-2014.63/termcodes.c build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/termcodes.c
 --- dropbear-2014.63/termcodes.c	2014-02-19 18:05:24.000000000 +0400
-+++ build/extbld/third_party/dropbear/dropbear_new/dropbear-2014.63/termcodes.c	2014-06-04 17:56:36.542772015 +0400
++++ build/extbld/third_party/dropbear/dropbear/dropbear-2014.63/termcodes.c	2014-06-04 17:56:36.542772015 +0400
 @@ -26,6 +26,7 @@
  #include "termcodes.h"
  

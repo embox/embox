@@ -64,8 +64,7 @@ run_bg() {
 	sudo PATH=$PATH \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
-		AUTOQEMU_START_SCRIPT="$AUTOQEMU_START_SCRIPT" \
-		AUTOQEMU_STOP_SCRIPT="$AUTOQEMU_STOP_SCRIPT" \
+		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
 		${atml2sim[$ATML]} &
 	sim_bg=$!
 }
@@ -73,7 +72,7 @@ run_bg() {
 run_check() {
 
 	ret=1
-	for success_pattern in 'embox>' '^[a-z]\+@embox'; do
+	for success_pattern in 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
 			ret=0
 		fi
