@@ -18,8 +18,8 @@ struct vfork_ctx {
 	struct pt_regs ptregs;
 	struct context original_ctx;
 	struct context waiting_ctx;
+	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
 	bool parent_holded;
-	char stack[VFORK_CTX_STACK_LEN];
 };
 
 static struct vfork_ctx *vfork_current_context;
@@ -68,7 +68,11 @@ static void vfork_waiting(void) {
 
 	vfctx->parent_holded = true;
 	child = new_task("", vfork_child_task, &vfctx->ptregs);
-	SCHED_WAIT(!vfctx->parent_holded);
+	if (child > 0) {
+		SCHED_WAIT(!vfctx->parent_holded);
+	} else {
+		/* child already have error code */
+	}
 
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
@@ -113,6 +117,6 @@ void vfork_release_parent(void) {
 }
 
 //FIXME
-void vfork_child_done(struct task *child, void * (*run)(void *)) {
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 
 }
