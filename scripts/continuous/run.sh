@@ -72,7 +72,7 @@ run_bg() {
 run_check() {
 
 	ret=1
-	for success_pattern in 'embox>' '^[a-z]\+@embox'; do
+	for success_pattern in 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
 			ret=0
 		fi
