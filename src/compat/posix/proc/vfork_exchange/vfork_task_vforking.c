@@ -11,6 +11,7 @@
 #include <kernel/task/resource/task_vfork.h>
 
 struct task *task_vforking(struct task *task) {
+#if 0
 	struct task *tk;
 
 	if (!task_is_vforking(task)) {
@@ -23,6 +24,8 @@ struct task *task_vforking(struct task *task) {
 	}
 
 	return tk;
+#endif
+	return task;
 }
 
 
