@@ -54,18 +54,23 @@ void vfork_child_done(struct task *child, void * (*run)(void *)) {
 
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
+	pid_t child_pid;
+
+	assert(thread_self() == task_self()->tsk_main);
+
+	child_pid = task_prepare("");
+	if (0 > child_pid) {
+		/* error */
+		SET_ERRNO(child_pid);
+		ptregs_retcode(ptregs, -1);
+		ptregs_jmp(ptregs);
+		panic("vfork_body returning");
+	}
+
+	child = task_table_get(child_pid);
 
 	sched_lock();
 	{
-		pid_t child_pid = task_prepare("");
-		if (0 > child_pid) {
-			/* error */
-			ptregs_retcode(ptregs, -1);
-			sched_unlock();
-			ptregs_jmp(ptregs);
-		}
-		child = task_table_get(child_pid);
-
 		vfork_begin(child, ptregs);
 	}
 	sched_unlock();
