@@ -356,7 +356,7 @@ static int copy_file(const char *oldpath, const char *newpath) {
 	char buf[BUFSIZ];
 	struct stat old_st;
 
-	if (-1 == stat(oldpath, &old_st)) {
+	if (-1 == klstat(oldpath, &old_st)) {
 		return -1;
 	}
 
