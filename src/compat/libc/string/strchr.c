@@ -7,20 +7,18 @@
  *         - Initial import
  * @author Eldar Abusalimov
  *         - Replacing with more simple and obvious implementation
+ * @author Anton Kozlov
+ *         - Implemented via strchrnul
  */
 
 #include <string.h>
 
 char *strchr(const char *str, int ch) {
-	char c = (char) ch;
+	char *chp = strchrnul(str, ch);
 
-	if (!c) {
-		return (char *) str + strlen(str);
+	if (*chp == '\0') {
+		return ch == *chp ? chp : NULL;
 	}
 
-	while (*str && *str != c) {
-		++str;
-	}
-
-	return (*str == c) ? (char *) str : NULL;
+	return chp;
 }

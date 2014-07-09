@@ -26,28 +26,28 @@ module setjmp_test {
 	depends embox.framework.test
 }
 
-module strcasecmp_test{
+module strcasecmp_test {
 	source "strcasecmp.c"
 
 	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 
-module strtok_test{
+module strtok_test {
 	source "strtok.c"
 
 	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 
-module strlcpy_test{
+module strlcpy_test {
 	source "strlcpy.c"
 
 	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 
-module strdup_test{
+module strdup_test {
 	source "strdup.c"
 
 	depends embox.compat.libc.LibC
@@ -56,10 +56,18 @@ module strdup_test{
 	depends embox.compat.libc.LibCStringDup
 }
 
-module strlen_test{
+module strlen_test {
 	source "strlen.c"
 
 	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
+
+module strchr_test {
+	source "strchr.c"
+
+	depends embox.compat.libc.LibC
+	depends embox.framework.LibFramework
+}
+
 
