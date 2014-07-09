@@ -24,8 +24,6 @@
 extern void vfork_release_parent(void);
 extern int exec_call(void);
 
-#define EXEC_LEN 32
-
 static void exec_trampoline(void) {
 	sched_unlock();
 

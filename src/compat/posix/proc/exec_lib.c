@@ -15,7 +15,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/task_argv.h>
 
-int exec_call() {
+int exec_call(void) {
 	int ecode;
 	struct task *task = task_self();
 	int c = task_resource_argv_argc(task);
@@ -23,12 +23,8 @@ int exec_call() {
 	const char *path = task_resource_argv_path(task);
 	const struct shell *sh = shell_lookup(path);
 
-	if (!strncmp(path, "/bin/", strlen("/bin/"))) {
-		path += strlen("/bin/");
-	}
-
 	if (!sh) {
-		if (!strcmp(path, "sh")) {
+		if (!strcmp(path, "/bin/sh")) {
 			sh = shell_lookup("tish");
 		}
 	}

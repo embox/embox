@@ -24,10 +24,11 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 	struct task_vfork *task_vfork;
 
-	/* save ptregs for parent return from vfork() */
-	task_vfork = task_resource_vfork(child);
+	sched_lock();
+	{
+		/* save ptregs for parent return from vfork() */
+		task_vfork = task_resource_vfork(child);
 
-	sched_lock(); {
 		memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
 		thread_set_task(thread_self(), child);
@@ -43,14 +44,12 @@ void vfork_child_done(struct task *child, void * (*run)(void *)) {
 
 	vfork_data = task_resource_vfork(child);
 
-	// FIXME : pass args?
 	task_start(child, run, NULL);
 
-	ptregs_retcode(&vfork_data->ptregs, child->tsk_id);
 	thread_set_task(thread_self(), child->parent);
 	task_vfork_end(child);
 
-	ptregs_jmp(&vfork_data->ptregs);
+	ptregs_retcode_jmp(&vfork_data->ptregs, child->tsk_id);
 }
 
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {

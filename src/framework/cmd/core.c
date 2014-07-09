@@ -38,6 +38,10 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 const struct cmd *cmd_lookup(const char *name) {
 	const struct cmd *cmd = NULL;
 
+	if (!strncmp(name, "/bin/", strlen("/bin/"))) {
+		name += strlen("/bin/");
+	}
+
 	cmd_foreach(cmd) {
 		if (strcmp(cmd_name(cmd), name) == 0) {
 			return cmd;
