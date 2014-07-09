@@ -34,7 +34,9 @@ static pid_t task_collect(pid_t target_pid, int *status) {
 
 		if ((target_pid == (pid_t)-1 || target_pid == child_pid) &&
 				task->status & (TASKST_EXITED_MASK | TASKST_SIGNALD_MASK)) {
-			*status = task->status ^ TASKST_EXITED_MASK;
+			if (status) {
+				*status = task->status ^ TASKST_EXITED_MASK;
+			}
 			task_delete(task);
 			return child_pid;
 		}
