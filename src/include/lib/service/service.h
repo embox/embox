@@ -38,4 +38,6 @@ extern void service_free_service_data(struct service_data * data);
 
 extern void service_free_resourses(struct service_data *srv_data, struct service_file *srv_file);
 
+extern int get_content_type(const char *file_name);
+
 #endif /* SERVICE_H_ */

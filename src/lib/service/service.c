@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <stdio.h>
 
 #include <cmd/servd.h>
 
@@ -21,6 +22,7 @@
 #define SERVICE_FILE_PREFIX "/tmp/service-"
 #define SERVICE_FILE_POSTFIX "-temp.html"
 
+/* Status code */
 static const char *http_stat_str[HTTP_STAT_MAX] = {
 		[HTTP_STAT_200] = "200 OK",
 		[HTTP_STAT_400] = "400 Bad Request",
@@ -28,15 +30,17 @@ static const char *http_stat_str[HTTP_STAT_MAX] = {
 		[HTTP_STAT_405] = "405 Method Not Allowed",
 		[HTTP_STAT_408] = "408 Request Timeout", /* TODO */
 		[HTTP_STAT_413] = "413 Request Entity Too Large",
-		[HTTP_STAT_414] = "414 Request-URI Too Long"
+		[HTTP_STAT_414] = "414 Request-URI Too Long",
+		[HTTP_STAT_500] = "500 Internal Server Error"
 };
 
+/* Content type */
 static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
-		[HTTP_CONTENT_TYPE_HTML] = "text/html",
-		[HTTP_CONTENT_TYPE_JPEG] = "image/jpeg",
-		[HTTP_CONTENT_TYPE_PNG] = "image/png",
-		[HTTP_CONTENT_TYPE_GIF] = "image/gif",
-		[HTTP_CONTENT_TYPE_ICO] = "image/vnd.microsoft.icon",
+		[HTTP_CONTENT_TYPE_HTML]    = "text/html",
+		[HTTP_CONTENT_TYPE_JPEG]    = "image/jpeg",
+		[HTTP_CONTENT_TYPE_PNG]     = "image/png",
+		[HTTP_CONTENT_TYPE_GIF]     = "image/gif",
+		[HTTP_CONTENT_TYPE_ICO]     = "image/vnd.microsoft.icon",
 		[HTTP_CONTENT_TYPE_UNKNOWN] = "application/unknown"
 };
 
@@ -44,6 +48,31 @@ static const char *http_connection_str[] = {
 		[HTTP_CONNECTION_CLOSE] = "close",
 		[HTTP_CONNECTION_KEEP_ALIVE] = "keep-alive"
 };
+
+int get_content_type(const char *file_name) {
+	char *ext;
+
+	ext = strchr(file_name, '.');
+	if (ext == NULL) {
+		return HTTP_CONTENT_TYPE_UNKNOWN;
+	}
+	if ((strcmp(ext, ".htm") == 0) || (strcmp(ext, ".html") == 0)) {
+		return HTTP_CONTENT_TYPE_HTML;
+	}
+	if ((strcmp(ext, ".jpg") == 0) || (strcmp(ext, ".jpeg") == 0)) {
+		return HTTP_CONTENT_TYPE_JPEG;
+	}
+	if (strcmp(ext, ".png") == 0) {
+		return HTTP_CONTENT_TYPE_PNG;
+	}
+	if (strcmp(ext, ".gif") == 0) {
+		return HTTP_CONTENT_TYPE_GIF;
+	}
+	if (strcmp(ext, ".ico") == 0) {
+		return HTTP_CONTENT_TYPE_ICO;
+	}
+	return HTTP_CONTENT_TYPE_UNKNOWN;
+}
 
 static char rand_letter(void) {
 	return 'a' + (rand() % ('z' - 'a' + 1));
