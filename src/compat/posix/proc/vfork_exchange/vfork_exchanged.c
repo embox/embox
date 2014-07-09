@@ -17,9 +17,6 @@
 #include <hal/vfork.h>
 #include <hal/ptrace.h>
 
-extern int task_prepare(const char *name);
-extern int task_start(struct task *task, void * (*run)(void *), void *arg);
-
 static void thread_set_task(struct thread *thread, struct task *task) {
 	thread->task = task;
 }

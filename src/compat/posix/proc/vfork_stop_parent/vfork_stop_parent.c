@@ -20,6 +20,7 @@ struct vfork_ctx {
 	struct context waiting_ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
 	bool parent_holded;
+	int child_pid;
 };
 
 static struct vfork_ctx *vfork_current_context;
@@ -60,23 +61,22 @@ static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
 static void vfork_waiting(void) {
 	struct sigaction ochildsa, ocontsa;
 	struct vfork_ctx *vfctx;
-	pid_t child;
+	struct task *child;
 
 	vfctx = vfork_current_context;
 
 	vfork_wait_signal_store(&ochildsa, &ocontsa);
+	{
+		vfctx->parent_holded = true;
 
-	vfctx->parent_holded = true;
-	child = new_task("", vfork_child_task, &vfctx->ptregs);
-	if (child > 0) {
+		child = task_table_get(vfctx->child_pid);
+		task_start(child, vfork_child_task, &vfctx->ptregs);
+
 		SCHED_WAIT(!vfctx->parent_holded);
-	} else {
-		/* child already have error code */
 	}
-
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
-	ptregs_retcode(&vfctx->ptregs, child);
+	ptregs_retcode(&vfctx->ptregs, vfctx->child_pid);
 	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);
 
 	panic("vfork_waiting returning");
@@ -85,6 +85,16 @@ static void vfork_waiting(void) {
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct pt_regs ptbuf;
 	struct vfork_ctx *vfctx;
+	pid_t child_pid;
+
+	child_pid = task_prepare("");
+	if (0 > child_pid) {
+		/* error */
+		SET_ERRNO(child_pid);
+		ptregs_retcode(ptregs, -1);
+		ptregs_jmp(ptregs);
+		panic("vfork_body returning");
+	}
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
@@ -93,6 +103,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	}
 
 	memcpy(&vfctx->ptregs, ptregs, sizeof(vfctx->ptregs));
+	vfctx->child_pid = child_pid;
 
 	context_init(&vfctx->waiting_ctx, true);
 	context_set_entry(&vfctx->waiting_ctx, vfork_waiting);
@@ -116,7 +127,9 @@ void vfork_release_parent(void) {
 	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
 }
 
+
 //FIXME
-void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
+void vfork_child_done(struct task *child, void * (*run)(void *)) {
 
 }
+

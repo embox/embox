@@ -15,4 +15,5 @@ static module vfork_stop_parent extends vfork {
 
 	depends embox.arch.vfork_entry
 	depends embox.util.LibUtil
+	depends embox.mem.sysmalloc_api
 }

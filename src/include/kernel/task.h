@@ -86,6 +86,10 @@ extern int task_notify_switch(struct thread *prev, struct thread *next);
 extern pid_t task_waitpid(pid_t pid);
 extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 
+extern int task_prepare(const char *name);
+extern int task_start(struct task *task, void * (*run)(void *), void *arg);
+
+
 __END_DECLS
 
 #include <util/dlist.h>
