@@ -23,7 +23,7 @@
 #define SERVICE_FILE_POSTFIX "-temp.html"
 
 /* Status code */
-static const char *http_stat_str[HTTP_STAT_MAX] = {
+const char *http_stat_str[HTTP_STAT_MAX] = {
 		[HTTP_STAT_200] = "200 OK",
 		[HTTP_STAT_400] = "400 Bad Request",
 		[HTTP_STAT_404] = "404 Not Found",
@@ -35,7 +35,7 @@ static const char *http_stat_str[HTTP_STAT_MAX] = {
 };
 
 /* Content type */
-static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
+const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 		[HTTP_CONTENT_TYPE_HTML]    = "text/html",
 		[HTTP_CONTENT_TYPE_JPEG]    = "image/jpeg",
 		[HTTP_CONTENT_TYPE_PNG]     = "image/png",
