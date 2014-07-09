@@ -34,20 +34,21 @@ EMBOX_CMD(httpd);
 #define BUFF_SZ     512
 #define PAGE_INDEX  "index.html"
 #define PAGE_4XX    "404.html"
+#define CGI_PREFIX  "/cgi-bin"
 
 #define HTTPD_L       "httpd: "
 #define HTTPD_L_DEBUG HTTPD_L "debug: "
 
 #if HTTPD_LOG_LEVEL >= HTTPD_LOG_DEBUG
 #define HTTPD_DEBUG(_msg, ...) \
-	fprintf(stderr, HTTPD_L_DEBUG _msg, __VA_ARGS__)
+	fprintf(stderr, HTTPD_L_DEBUG _msg, ## __VA_ARGS__)
 #else
 #define HTTPD_DEBUG(_msg, ...)
 #endif
 
 #if HTTPD_LOG_LEVEL >= HTTPD_LOG_ERROR
 #define HTTPD_ERROR(_msg, ...) \
-	fprintf(stderr, HTTPD_L _msg, __VA_ARGS__)
+	fprintf(stderr, HTTPD_L _msg, ## __VA_ARGS__)
 #else
 #define HTTPD_ERROR(_msg, ...)
 #endif
@@ -58,34 +59,58 @@ struct client_info {
 	int ci_sock;
 };
 
-struct http_req_line {
-	char *method;
-	char *uri;
-	char *http_ver;
+struct http_req_uri {
+	char *target;
+	char *query;
 };
 
 struct http_req {
-	struct http_req_line req_line;
+	struct http_req_uri uri;
+	char *method;
+	char *http_ver;
 };
 
-static char *httpd_parse_request_line(char *str, struct http_req_line *rline) {
+static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
 	char *pb;
 	pb = str;
 
-	rline->method = pb;
-	pb = strchr(pb, ' ');
-	if (!pb) {
-		return NULL;
-	}
-	*(pb++) = '\0';
+	huri->target = pb;
 
-	rline->uri = pb;
+	pb = strchr(pb, '?');
+	if (pb) {
+		*(pb++) = '\0';
+		huri->query = pb;
+	} else {
+		pb = huri->target;
+		huri->query = NULL;
+	}
+
 	pb = strchr(pb, ' ');
 	if (!pb) {
 		HTTPD_ERROR("%s: can't find URI-Version separator\n", __func__);
 		return NULL;
 	}
+
 	*(pb++) = '\0';
+	return pb;
+}
+
+static char *httpd_parse_request_line(char *str, struct http_req *hreq) {
+	char *pb;
+	pb = str;
+
+	hreq->method = pb;
+	pb = strchr(pb, ' ');
+	if (!pb) {
+		return NULL;
+	}
+	*(pb++) = '\0';
+
+	pb = httpd_parse_uri(pb, &hreq->uri);
+	if (!pb) {
+		HTTPD_ERROR("%s: can't parse uri\n", __func__);
+		return NULL;
+	}
 
 	pb = strstr(pb, "\r\n");
 	if (!pb) {
@@ -115,7 +140,7 @@ static char *httpd_parse_request(char *str, struct http_req *hreq) {
 	char *pb;
 	pb = str;
 
-	pb = httpd_parse_request_line(str, &hreq->req_line);
+	pb = httpd_parse_request_line(str, hreq);
 	if (!pb) {
 		HTTPD_ERROR("%s: can't parse request line\n", __func__);
 		return NULL;
@@ -168,22 +193,14 @@ static const char *httpd_filename2content_type(const char *filename) {
 	return ext2type_unkwown;
 }
 
-static int httpd_send_response_get(const struct client_info *cinfo, const struct http_req *hreq) {
+static int httpd_send_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
 	char outbuf[BUFF_SZ];
 	const char *filename;
 	FILE *file;
 	int status, cbyte;
 	size_t read_bytes;
 
-	HTTPD_DEBUG("%s: method=%s uri=%s\n", __func__,
-			hreq->req_line.method,
-			hreq->req_line.uri);
-
-	if (0 == strcmp(hreq->req_line.uri, "/")) {
-		filename = PAGE_INDEX;
-	} else {
-		filename = hreq->req_line.uri;
-	}
+	filename = hreq->uri.target;
 
 	/* TODO not every file is intended to be published, make it serve only one
  	 * directory, not a whole root.
@@ -197,8 +214,6 @@ static int httpd_send_response_get(const struct client_info *cinfo, const struct
 	} else {
 		status = 200;
 	}
-
-	HTTPD_DEBUG("%s: file after route=%s\n", __func__, filename);
 
 	cbyte = snprintf(outbuf, sizeof(outbuf),
 			"HTTP/1.1 %d %s\r\n"
@@ -235,6 +250,26 @@ static int httpd_send_response_get(const struct client_info *cinfo, const struct
 	}
 
 	fclose(file);
+	return 0;
+}
+
+static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
+	FILE *skf;
+
+       	skf = fdopen(cinfo->ci_sock, "rw");
+	if (!skf) {
+		HTTPD_ERROR("can't allocate FILE for socket");
+		return -ENOMEM;
+	}
+
+	fprintf(skf,
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n"
+		"%s", 200, "OK", "text/plain", "Sorry, CGI is NYI");
+
+	fclose(skf);
 
 	return 0;
 }
@@ -256,11 +291,20 @@ static int httpd_client_process(const struct client_info *cinfo) {
 		return -EINVAL;
 	}
 
-	if (0 == strcmp("GET", hreq.req_line.method)) {
-		return httpd_send_response_get(cinfo, &hreq);
+	HTTPD_DEBUG("%s: method=%s uri_target=%s uri_query=%s\n", __func__,
+			hreq.method,
+			hreq.uri.target,
+			hreq.uri.query);
+
+	if (0 == strcmp(hreq.uri.target, "/")) {
+		hreq.uri.target = PAGE_INDEX;
 	}
-	HTTPD_ERROR("requested unsupported method: %s\n", hreq.req_line.method);
-	return -ENOSYS;
+
+	if (0 == strncmp(hreq.uri.target, CGI_PREFIX, strlen(CGI_PREFIX))) {
+		return httpd_send_response_cgi(cinfo, &hreq);
+	}
+
+	return httpd_send_response_file(cinfo, &hreq);
 }
 
 static int httpd(int argc, char **argv) {
