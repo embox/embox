@@ -21,6 +21,9 @@
 #include <util/math.h>
 #include <netinet/in.h>
 
+#include <stdlib.h>
+#include <sys/wait.h>
+
 EMBOX_CMD(httpd);
 
 #define USE_IP_VER 4
@@ -34,7 +37,7 @@ EMBOX_CMD(httpd);
 #define BUFF_SZ     512
 #define PAGE_INDEX  "index.html"
 #define PAGE_4XX    "404.html"
-#define CGI_PREFIX  "/cgi-bin"
+#define CGI_PREFIX  "/cgi-bin/"
 
 #define HTTPD_L       "httpd: "
 #define HTTPD_L_DEBUG HTTPD_L "debug: "
@@ -273,6 +276,37 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 	return 0;
 }
+
+#if 0
+static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
+	const char *cmdname;
+	pid_t pid;
+
+	cmdname = hreq->uri.target;
+	if (0 == strncmp(cmdname, CGI_PREFIX, strlen(CGI_PREFIX))) {
+		cmdname += strlen(CGI_PREFIX);
+	}
+
+	pid = vfork();
+	if (pid < 0) {
+		return pid;
+	}
+
+	if (pid == 0) {
+		char *argv[] = { NULL, };
+
+		close(STDIN_FILENO); /* TODO POST data goes here, actually */
+		dup2(cinfo->ci_sock, STDOUT_FILENO);
+		dup2(cinfo->ci_sock, STDERR_FILENO);
+		execv(cmdname, argv);
+		exit(1);
+	} else {
+		while (pid != waitpid(pid, NULL, 0));
+	}
+
+	return 0;
+}
+#endif
 
 static int httpd_client_process(const struct client_info *cinfo) {
 	char buf[BUFF_SZ];
