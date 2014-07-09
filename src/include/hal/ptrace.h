@@ -9,6 +9,7 @@
 #ifndef HAL_PTRACE_H_
 #define HAL_PTRACE_H_
 
+#include <errno.h>
 #include <asm/ptrace.h>
 #include <kernel/panic.h>
 
