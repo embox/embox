@@ -261,8 +261,7 @@ static void *fork_child_trampoline(void *arg) {
 	sysfree(adrspc->pt_entry);
 	adrspc->pt_entry = NULL;
 
-	ptregs_retcode(&ptregs, 0);
-	ptregs_jmp(&ptregs);
+	ptregs_retcode_jmp(&ptregs, 0);
 	panic("%s returning", __func__);
 }
 
@@ -290,8 +289,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	}
 	sched_unlock();
 
-	ptregs_retcode(ptregs, child_pid);
-	ptregs_jmp(ptregs);
+	ptregs_retcode_jmp(ptregs, child_pid);
 
 	panic("%s returning", __func__);
 }

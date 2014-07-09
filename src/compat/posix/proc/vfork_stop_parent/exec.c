@@ -47,8 +47,6 @@ int execv(const char *path, char *const argv[]) {
 	sched_lock();
 	t = thread_self();
 
-
-
 	context_init(&t->context, true);
 	context_set_entry(&t->context, exec_trampoline);
 	context_set_stack(&t->context,

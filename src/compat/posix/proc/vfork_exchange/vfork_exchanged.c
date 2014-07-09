@@ -24,6 +24,8 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 	struct task_vfork *task_vfork;
 
+	sched_lock();
+
 	/* save ptregs for parent return from vfork() */
 	task_vfork = task_resource_vfork(child);
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
@@ -32,6 +34,8 @@ static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 
 	/* mark as vforking */
 	task_vfork_start(child);
+
+	sched_unlock();
 }
 
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
@@ -59,20 +63,14 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	if (0 > child_pid) {
 		/* error */
 		SET_ERRNO(child_pid);
-		ptregs_retcode(ptregs, -1);
-		ptregs_jmp(ptregs);
+		ptregs_retcode_jmp(ptregs, -1);
 		panic("vfork_body returning");
 	}
 
 	child = task_table_get(child_pid);
 
-	sched_lock();
-	{
-		vfork_begin(child, ptregs);
-	}
-	sched_unlock();
+	vfork_begin(child, ptregs);
 
-	ptregs_retcode(ptregs, 0);
-	ptregs_jmp(ptregs);
+	ptregs_retcode_jmp(ptregs, 0);
 	panic("vfork_body returning");
 }

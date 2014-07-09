@@ -34,8 +34,7 @@ static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *conte
 static void *vfork_child_task(void *arg) {
 	struct pt_regs *ptregs = arg;
 
-	ptregs_retcode(ptregs, 0);
-	ptregs_jmp(ptregs);
+	ptregs_retcode_jmp(ptregs, 0);
 
 	panic("vfork_child_task returning");
 }
@@ -91,15 +90,13 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	if (0 > child_pid) {
 		/* error */
 		SET_ERRNO(child_pid);
-		ptregs_retcode(ptregs, -1);
-		ptregs_jmp(ptregs);
+		ptregs_retcode_jmp(ptregs, -1);
 		panic("vfork_body returning");
 	}
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
-		ptregs_retcode(ptregs, -EAGAIN);
-		ptregs_jmp(&ptbuf);
+		ptregs_retcode_jmp(ptregs, -EAGAIN);
 	}
 
 	memcpy(&vfctx->ptregs, ptregs, sizeof(vfctx->ptregs));
