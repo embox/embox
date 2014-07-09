@@ -39,8 +39,6 @@ int execv(const char *path, char *const argv[]) {
 	struct thread *t;
 	struct task *task;
 
-	strncpy(exec_path, path, sizeof(exec_path) - 1);
-
 	task = task_self();
 	task_resource_exec(task, path, argv);
 

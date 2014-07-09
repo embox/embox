@@ -14,4 +14,5 @@ static module LibC {
 	@NoRuntime depends embox.compat.libc.LibCWchar
 
 	depends embox.mem.heap_api
+	depends embox.fs.SysLibFileSystemFull
 }

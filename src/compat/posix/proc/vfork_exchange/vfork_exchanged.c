@@ -24,17 +24,17 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 	struct task_vfork *task_vfork;
 
-	sched_lock();
-
 	/* save ptregs for parent return from vfork() */
 	task_vfork = task_resource_vfork(child);
-	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
-	thread_set_task(thread_self(), child);
+	sched_lock(); {
+		memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
-	/* mark as vforking */
-	task_vfork_start(child);
+		thread_set_task(thread_self(), child);
 
+		/* mark as vforking */
+		task_vfork_start(child);
+	}
 	sched_unlock();
 }
 

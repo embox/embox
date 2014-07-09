@@ -15,6 +15,7 @@
 #include <fs/perm.h>
 #include <fs/kfile.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #include "getumask.h"
 

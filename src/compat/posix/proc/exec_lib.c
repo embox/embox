@@ -16,18 +16,12 @@
 #include <kernel/task/resource/task_argv.h>
 
 int exec_call() {
-	const struct shell *sh;
 	int ecode;
-	struct task *task;
-	int c;
-	char **v;
-	const char *path;
-
-	task = task_self();
-	c = task_resource_argv_argc(task);
-	v = task_resource_argv_argv(task);
-	path = task_resource_argv_path(task);
-	sh = shell_lookup(path);
+	struct task *task = task_self();
+	int c = task_resource_argv_argc(task);
+	char **v = task_resource_argv_argv(task);
+	const char *path = task_resource_argv_path(task);
+	const struct shell *sh = shell_lookup(path);
 
 	if (!strncmp(path, "/bin/", strlen("/bin/"))) {
 		path += strlen("/bin/");
@@ -35,7 +29,7 @@ int exec_call() {
 
 	if (!sh) {
 		if (!strcmp(path, "sh")) {
-				sh = shell_lookup("tish");
+			sh = shell_lookup("tish");
 		}
 	}
 
