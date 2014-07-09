@@ -12,20 +12,12 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_argv.h>
 
-extern int exec_call(char *path, char *argv[], char *envp[]);
+extern int exec_call();
 
 static void *task_stub_execv(void *arg) {
-	struct task *task;
 	int res;
-	char *path;
-	char **argv;
 
-	task = task_self();
-
-	path = task_resource_argv_path(task);
-	argv = task_resource_argv_argv(task);
-
-	res = exec_call(path, argv, NULL);
+	res = exec_call();
 
 	return (void*)res;
 }

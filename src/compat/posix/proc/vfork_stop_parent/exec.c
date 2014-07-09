@@ -22,25 +22,16 @@
 #include <kernel/task/resource/task_argv.h>
 
 extern void vfork_release_parent(void);
-extern int exec_call(char *path, char *argv[], char *envp[]);
+extern int exec_call(void);
 
 #define EXEC_LEN 32
-static char exec_path[EXEC_LEN];
-
-#if 0
-#define EXEC_ARGC 8
-static int  exec_argc;
-static char exec_argv[EXEC_ARGC][EXEC_LEN];
-#endif
 
 static void exec_trampoline(void) {
-	char *path = exec_path;
-
 	sched_unlock();
 
 	vfork_release_parent();
 
-	_exit(exec_call(path, NULL, NULL));
+	_exit(exec_call());
 }
 
 int execv(const char *path, char *const argv[]) {
