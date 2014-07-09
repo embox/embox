@@ -3,6 +3,7 @@
  * @brief Simple HTTP server
  * @date 16.04.12
  * @author Ilia Vaprol
+ * @author Anton Kozlov
  */
 
 #include <stdio.h>
@@ -22,478 +23,298 @@
 
 EMBOX_CMD(httpd);
 
+#define USE_IP_VER 4
 
-#define BUFF_SZ       (1460 * 4)
-#define FILENAME_SZ   30
-#define DEFAULT_PAGE  "index.html"
+#define HTTPD_LOG_QUIET 0
+#define HTTPD_LOG_ERROR 1
+#define HTTPD_LOG_DEBUG 2
 
+#define HTTPD_LOG_LEVEL HTTPD_LOG_DEBUG
 
-/* HTTP Methods */
-enum http_method {
-	HTTP_METHOD_UNKNOWN = 0,
-	HTTP_METHOD_GET,
-	HTTP_METHOD_POST
-};
+#define BUFF_SZ     512
+#define PAGE_INDEX  "index.html"
+#define PAGE_4XX    "404.html"
 
-/* Type of content */
-enum http_content_type {
-	HTTP_CONTENT_TYPE_HTML = 0,
-	HTTP_CONTENT_TYPE_JPEG,
-	HTTP_CONTENT_TYPE_PNG,
-	HTTP_CONTENT_TYPE_GIF,
-	HTTP_CONTENT_TYPE_ICO,
-	HTTP_CONTENT_TYPE_UNKNOWN,
-	HTTP_CONTENT_TYPE_MAX
-};
+#define HTTPD_L       "httpd: "
+#define HTTPD_L_DEBUG HTTPD_L "debug: "
 
-/* Returns code */
-enum http_ret {
-	/* HTTP status code */
-	/* 1xx Informational */
-	/* 2xx Success */
-	HTTP_STAT_200 = 0,
-	/* 3xx Redirection */
-	/* 4xx Client Error */
-	HTTP_STAT_400,
-	HTTP_STAT_404,
-	HTTP_STAT_405,
-	HTTP_STAT_408,
-	HTTP_STAT_413,
-	HTTP_STAT_414,
-	/* 5xx Server Error */
-	HTTP_STAT_MAX, /* for implementation */
-	/* Other code */
-	HTTP_RET_OK = -100, /* ok */
-	HTTP_RET_ABORT,     /* close connection */
-	HTTP_RET_ENDHDR,    /* end header section */
-	HTTP_RET_HNDOPS     /* set options handler */
-};
+#if HTTPD_LOG_LEVEL >= HTTPD_LOG_DEBUG
+#define HTTPD_DEBUG(_msg, ...) \
+	fprintf(stderr, HTTPD_L_DEBUG _msg, __VA_ARGS__)
+#else
+#define HTTPD_DEBUG(_msg, ...)
+#endif
+
+#if HTTPD_LOG_LEVEL >= HTTPD_LOG_ERROR
+#define HTTPD_ERROR(_msg, ...) \
+	fprintf(stderr, HTTPD_L _msg, __VA_ARGS__)
+#else
+#define HTTPD_ERROR(_msg, ...)
+#endif
 
 struct client_info {
-	int sock;                      /* socket for client connection*/
-	enum http_method method;       /* method in request */
-	char file[FILENAME_SZ];        /* file to transmit */
-	FILE *fp;                      /* descriptor of `file` */
-	enum http_content_type c_type; /* type of contents which will be send */
-	char buff[BUFF_SZ];            /* client's buffer (may contains more than one piece of data) */
-	char *data;                    /* pointer to current chunk */
-	char *next_data;               /* pointer to next piece of data in buffer */
-	size_t next_len;               /* length of the next chunk */
+	struct sockaddr ci_addr;
+	socklen_t ci_addrlen;
+	int ci_sock;
 };
 
-/* Status code */
-static const char *http_stat_str[HTTP_STAT_MAX] = {
-	[HTTP_STAT_200] = "200 OK",
-	[HTTP_STAT_400] = "400 Bad Request",
-	[HTTP_STAT_404] = "404 Not Found",
-	[HTTP_STAT_405] = "405 Method Not Allowed",
-	[HTTP_STAT_408] = "408 Request Timeout", /* TODO */
-	[HTTP_STAT_413] = "413 Request Entity Too Large",
-	[HTTP_STAT_414] = "414 Request-URI Too Long",
+struct http_req_line {
+	char *method;
+	char *uri;
+	char *http_ver;
 };
 
-/* Content type */
-static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
-	[HTTP_CONTENT_TYPE_HTML] = "text/html",
-	[HTTP_CONTENT_TYPE_JPEG] = "image/jpeg",
-	[HTTP_CONTENT_TYPE_PNG] = "image/png",
-	[HTTP_CONTENT_TYPE_GIF] = "image/gif",
-	[HTTP_CONTENT_TYPE_ICO] = "image/vnd.microsoft.icon",
-	[HTTP_CONTENT_TYPE_UNKNOWN] = "application/unknown"
+struct http_req {
+	struct http_req_line req_line;
 };
 
-static char * get_next_line(struct client_info *info) {
-	int res;
-	size_t i, len;
-	char *chunk;
+static char *httpd_parse_request_line(char *str, struct http_req_line *rline) {
+	char *pb;
+	pb = str;
 
-	len = info->next_len;
-	chunk = info->next_data;
-	/* if no more data, return NULL */
-	if ((chunk != NULL) && (len == 0)) {
+	rline->method = pb;
+	pb = strchr(pb, ' ');
+	if (!pb) {
+		return NULL;
+	}
+	*(pb++) = '\0';
+
+	rline->uri = pb;
+	pb = strchr(pb, ' ');
+	if (!pb) {
+		HTTPD_ERROR("%s: can't find URI-Version separator\n", __func__);
+		return NULL;
+	}
+	*(pb++) = '\0';
+
+	pb = strstr(pb, "\r\n");
+	if (!pb) {
+		HTTPD_ERROR("%s: can't find sentinel\n", __func__);
 		return NULL;
 	}
 
-	/* try to get next chunk (if we find end-line then exit) */
-	for (i = 0; i < len; ++i) {
-		if (chunk[i] == '\r') {
-			chunk[i] = '\0';
-			info->next_data = chunk + (i + 2);
-			info->next_len = len - (i + 2);
-			info->data = chunk;
-			return chunk;
+	return pb + strlen("\r\n");
+}
+
+static char *httpd_parse_headers(char *str, void *hheds) {
+	char *pb;
+
+	while (0 != strncmp("\r\n", pb, strlen("\r\n"))) {
+		pb = strstr(pb, "\r\n");
+		if (!pb) {
+			HTTPD_ERROR("%s: can't find sentinel\n", __func__);
+			return NULL;
 		}
+		pb += strlen("\r\n");
 	}
-	/* need to recive more data (end-line not found): */
-	/* 1. move next_chunk to head of buffer */
-	chunk = memmove(info->buff, chunk, len);
-	/* 2. get new piece if data */
-	res = recv(info->sock, chunk + len, sizeof info->buff - len,
-			0);
-	if (res <= 0) {
+
+	return pb + strlen("\r\n");
+}
+
+static char *httpd_parse_request(char *str, struct http_req *hreq) {
+	char *pb;
+	pb = str;
+
+	pb = httpd_parse_request_line(str, &hreq->req_line);
+	if (!pb) {
+		HTTPD_ERROR("%s: can't parse request line\n", __func__);
 		return NULL;
 	}
 
-	/* find chunks again */
-	/* i == len there */
-	for (len += res; i < len; ++i) {
-		if (chunk[i] == '\r') {
-			chunk[i] = '\0';
-			info->next_data = chunk + (i + 2);
-			info->next_len = len - (i + 2);
-			info->data = chunk;
-			return chunk;
-		}
-	}
-
-	/* error: string is too long */
-	printf("Error.. string is too long\n");
-	info->next_len = 0;
-
-	return NULL;
+	return httpd_parse_headers(pb, NULL);
 }
 
-static int http_hnd_title(struct client_info *info) {
-	char *method, *file, *param, *version;
+static const char *ext2type_html[] = { ".html", ".htm", NULL };
+static const char *ext2type_jpeg[] = { ".jpeg", ".jpg", NULL };
+static const struct ext2type_table_item {
+	const char *type;
+	const char *ext;
+	const char **exts;
+} httpd_ext2type_table[] = {
+	{ .exts = ext2type_html, .type = "text/html", },
+	{ .exts = ext2type_jpeg, .type = "image/jpeg", },
+	{ .ext = ".png",         .type = "image/png", },
+	{ .ext = ".gif",         .type = "image/gif", },
+	{ .ext = ".ico",         .type = "image/vnd.microsoft.icon", },
+	{ .ext = "",             .type = "application/unknown", },
+};
+static const char *ext2type_unkwown = "plain/text";
 
-//	printf("http_req_hdr: %s\n", info->data);
+static const char *httpd_filename2content_type(const char *filename) {
+	int i_table;
+	const char *file_ext;
 
-	method = info->data;
+	file_ext = strchrnul(filename, '.');
 
-	file = strchr(method, ' ');
-	if (file == NULL) {
-		return HTTP_RET_ABORT; /* bad request */
-	}
+	for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table ++) {
+		const struct ext2type_table_item *ti = &httpd_ext2type_table[i_table];
 
-	*file = '\0', file = file + 2;
-
-	if (strcmp(method, "GET") == 0) {
-		info->method = HTTP_METHOD_GET;
-
-		version = strchr(file, ' ');
-		if (version == NULL) {
-			return HTTP_RET_ABORT; /* bad request */
-		}
-
-		*version = '\0', version = version + 1;
-
-		param = strchr(file, '?');
-		if (param != NULL) {
-			*param = '\0', param = param + 1;
-		}
-
-		if (strcmp(file, "") == 0) {
-			file = DEFAULT_PAGE;
-		}
-
-		if (strlen(file) > sizeof info->file) {
-			return HTTP_STAT_414;
-		}
-		strcpy(info->file, file);
-	}
-	else if (strcmp(method, "POST") == 0) {
-		info->method = HTTP_METHOD_POST;
-	}
-	else {
-		info->method = HTTP_METHOD_UNKNOWN;
-		return HTTP_STAT_405; /* method unknown or unsupported */
-	}
-
-	return HTTP_RET_HNDOPS;
-}
-
-static int http_hnd_ops(struct client_info *info) {
-	char *ops, *param;
-
-//	printf("http_req_ops: %s\n", info->data);
-
-	ops = info->data;
-	if (strcmp(ops, "") == 0) {
-		return HTTP_RET_ENDHDR;
-	}
-
-	param = strchr(ops, ':');
-	if (param == NULL) {
-		return HTTP_STAT_400;
-	}
-
-	*param = '\0', param = param + 2;
-
-	if (strcmp(ops, "Host") == 0) { }
-	else if (strcmp(ops, "Connection") == 0) { }
-	else if (strcmp(ops, "User-Agent") == 0) { }
-	else if (strcmp(ops, "Accept") == 0) { }
-	else if (strcmp(ops, "Accept-Encoding") == 0) { }
-	else if (strcmp(ops, "Accept-Language") == 0) { }
-	else if (strcmp(ops, "Accept-Charset") == 0) { }
-	else if (strcmp(ops, "Cache-Control") == 0) { }
-	else if (strcmp(ops, "Referer") == 0) { }
-	else {
-		printf("httpd warning: unknown options: ops='%s' param='%s'\n", ops, param);
-	}
-
-	return HTTP_RET_OK;
-}
-
-static int process_request(struct client_info *info) {
-	int res;
-	int (*http_header_hnd)(struct client_info *);
-
-	http_header_hnd = http_hnd_title; /* set first handler of data */
-	while (get_next_line(info) != NULL) {
-		res = http_header_hnd(info);
-		switch (res) {
-		default:
-			return res;
-		case HTTP_RET_OK: /* all ok, continue */
-			break;
-		case HTTP_RET_HNDOPS: /* set option's handler */
-			http_header_hnd = http_hnd_ops;
-			break;
-		case HTTP_RET_ENDHDR: /* end header section */
-			return HTTP_RET_OK;
-		}
-	}
-
-	return (http_header_hnd == http_hnd_title ? HTTP_RET_ABORT : HTTP_STAT_413);
-}
-
-static int http_req_get(struct client_info *info) {
-	char *ext;
-
-	info->fp = fopen(info->file, "r");
-	if (info->fp == NULL) { /* file doesn't exist */
-		return HTTP_STAT_404;
-	}
-
-	ext = strchr(info->file, '.');
-	if (ext == NULL) {
-		info->c_type = HTTP_CONTENT_TYPE_UNKNOWN;
-	}
-	else if ((strcmp(ext, ".htm") == 0)
-			|| (strcmp(ext, ".html") == 0)) {
-		info->c_type = HTTP_CONTENT_TYPE_HTML;
-	}
-	else if ((strcmp(ext, ".jpg") == 0)
-			|| (strcmp(ext, ".jpeg") == 0)) {
-		info->c_type = HTTP_CONTENT_TYPE_JPEG;
-	}
-	else if (strcmp(ext, ".png") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_PNG;
-	}
-	else if (strcmp(ext, ".gif") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_GIF;
-	}
-	else if (strcmp(ext, ".ico") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_ICO;
-	}
-	else {
-		info->c_type = HTTP_CONTENT_TYPE_UNKNOWN;
-	}
-
-	return HTTP_STAT_200;
-}
-
-static int process_response(struct client_info *info) {
-	switch (info->method) {
-	default:
-		return HTTP_STAT_405;
-	case HTTP_METHOD_GET:
-		return http_req_get(info);
-	}
-}
-
-static void client_process(int sock, const struct sockaddr *addr) {
-	int res;
-	size_t bytes, bytes_need;
-	struct client_info ci;
-	int (*hnd)(struct client_info *);
-	char *curr, buff[INET6_ADDRSTRLEN];
-
-	memset(&ci, 0, sizeof ci);
-
-	/* fill struct client_info */
-	ci.sock = sock;
-
-	hnd = process_request; /* request heandler for first */
-process_again:
-	res = hnd(&ci);
-	assert((hnd == process_request) || (res != HTTP_RET_OK));
-	switch (res) {
-	default:
-		printf("%s:%d -- upload %s ", inet_ntop(addr->sa_family,
-					addr->sa_family == AF_INET
-						? (void *)&((struct sockaddr_in *)addr)->sin_addr
-						: (void *)&((struct sockaddr_in6 *)addr)->sin6_addr,
-					buff, sizeof buff),
-				addr->sa_family == AF_INET
-					? ntohs(((struct sockaddr_in *)addr)->sin_port)
-					: ntohs(((struct sockaddr_in6 *)addr)->sin6_port),
-				ci.file);
-		/* Make eader: */
-		curr = ci.buff;
-		/* 1. set title */
-		assert((0 <= res) && (res < HTTP_STAT_MAX));
-		curr += sprintf(curr, "HTTP/1.0 %s\r\n", http_stat_str[res]);
-		/* 2. set ops */
-		curr += sprintf(curr, "Content-Type: %s\r\n", http_content_type_str[ci.c_type]);
-		curr += sprintf(curr, "Connection: %s\r\n", "close");
-		curr += sprintf(curr, "\r\n");
-		/* 3. set data and send respone */
-		if (ci.fp == NULL) {
-			/* send error */
-			curr += sprintf(curr,
-					"<html>"
-					"<head><title>%s</title></head>"
-					"<body><center><h1>Oops...</h1></center></body>"
-					"</html>",
-					http_stat_str[res]);
-			bytes_need = curr - ci.buff;
-			assert(bytes_need <= sizeof ci.buff); /* TODO remove this and make normal checks */
-			bytes = send(ci.sock, ci.buff, bytes_need, 0);
-			if (bytes != bytes_need) {
-				perror("httpd: send() failure");
+		if (ti->ext) {
+			if (0 == strcmp(file_ext, ti->ext)) {
+				return ti->type;
 			}
 		}
-		else {
-			/* send file */
-			do {
-				bytes_need = sizeof ci.buff - (curr - ci.buff);
-				bytes = fread(curr, 1, bytes_need, ci.fp);
-				if (bytes < 0) {
-					break;
+		if (ti->exts) {
+			const char **ext;
+			for (ext = ti->exts; *ext != NULL; ext++) {
+				if (0 == strcmp(file_ext, *ext)) {
+					return ti->type;
 				}
-				bytes_need = sizeof ci.buff - bytes_need + bytes;
-				bytes = send(ci.sock, ci.buff, bytes_need, 0);
-				if (bytes != bytes_need) {
-					perror("httpd: send() failure");
-					break;
-				}
-				curr = ci.buff;
-				printf(".");
-			} while (bytes_need == sizeof ci.buff);
+			}
 		}
-		printf(" done\n");
-		break;
-	case HTTP_RET_OK:
-		hnd = process_response;
-		goto process_again;
-	case HTTP_RET_ABORT:
-		break;
 	}
 
-	if (ci.fp != NULL) {
-		fclose(ci.fp); /* close file (it's open or null) */
-	}
-
-	close(ci.sock); /* close connection */
+	HTTPD_ERROR("can't determ content type for file: %s\n", filename);
+	return ext2type_unkwown;
 }
 
-static void welcome_message(void) {
-	struct ifaddrs *ifa, *ifa_iter;
-	int family;
-	void *addr;
-	char buff[max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
+static int httpd_send_response_get(const struct client_info *cinfo, const struct http_req *hreq) {
+	char outbuf[BUFF_SZ];
+	const char *filename;
+	FILE *file;
+	int status, cbyte;
+	size_t read_bytes;
 
-	printf("Welcome to httpd!\n");
+	HTTPD_DEBUG("%s: method=%s uri=%s\n", __func__,
+			hreq->req_line.method,
+			hreq->req_line.uri);
 
-	if (-1 == getifaddrs(&ifa)) {
-		perror("httpd: getifaddrs() failure");
-		return;
+	if (0 == strcmp(hreq->req_line.uri, "/")) {
+		filename = PAGE_INDEX;
+	} else {
+		filename = hreq->req_line.uri;
 	}
 
-	for (ifa_iter = ifa; ifa_iter != NULL;
-			ifa_iter = ifa_iter->ifa_next) {
-		if (ifa_iter->ifa_addr == NULL) continue;
-
-		family = ifa_iter->ifa_addr->sa_family;
-		if ((family != AF_INET) && (family != AF_INET6)) continue;
-
-		addr = family == AF_INET
-				? (void *)&((struct sockaddr_in *)ifa_iter->ifa_addr)->sin_addr
-				: (void *)&((struct sockaddr_in6 *)ifa_iter->ifa_addr)->sin6_addr;
-		printf("\thttp://%s%s%s/\n",
-				family == AF_INET6 ? "[" : "",
-				inet_ntop(family, addr, buff, sizeof buff),
-				family == AF_INET6 ? "]" : "");
+	/* TODO not every file is intended to be published, make it serve only one
+ 	 * directory, not a whole root.
+	 */
+	file = fopen(filename, "r");
+	if (!file) {
+		filename = PAGE_4XX;
+		file = fopen(filename, "r");
+		/* testing file for NULL performed later */
+		status = 404;
+	} else {
+		status = 200;
 	}
 
-	freeifaddrs(ifa);
+	HTTPD_DEBUG("%s: file after route=%s\n", __func__, filename);
+
+	cbyte = snprintf(outbuf, sizeof(outbuf),
+			"HTTP/1.1 %d %s\r\n"
+			"Content-Type: %s\r\n"
+			"Connection: close\r\n"
+			"\r\n",
+			status, "", httpd_filename2content_type(filename));
+
+	if (0 > write(cinfo->ci_sock, outbuf, cbyte)) {
+		return -errno;
+	}
+
+	if (!file) { /* file could be NULL if wasn't found error template.
+			In this case send header only, body is empty */
+		return 0;
+	}
+
+	while (0 != (read_bytes = fread(outbuf, 1, sizeof(outbuf), file))) {
+		const char *pb;
+		int remain_send_bytes;
+
+		pb = outbuf;
+		remain_send_bytes = read_bytes;
+		while (remain_send_bytes) {
+			int sent_bytes;
+
+			if (0 > (sent_bytes = write(cinfo->ci_sock, pb, read_bytes))) {
+				return -errno;
+			}
+
+			pb += sent_bytes;
+			remain_send_bytes -= sent_bytes;
+		}
+	}
+
+	fclose(file);
+
+	return 0;
 }
 
-static int make_socket(int family, const struct sockaddr *addr,
-		socklen_t addrlen) {
-	int sock;
+static int httpd_client_process(const struct client_info *cinfo) {
+	char buf[BUFF_SZ];
+	struct http_req hreq;
+	const int sk = cinfo->ci_sock;
+	int ret;
 
-	sock = socket(family, SOCK_STREAM, IPPROTO_TCP);
-	if (sock == -1) {
-		perror("httpd: socket() failure");
-		return -errno;
+	ret = read(sk, buf, sizeof(buf));
+	if (ret < 0) {
+		HTTPD_ERROR("can't read from client socket: %s", strerror(errno));
+		return ret;
+	}
+	buf[ret] = '\0';
+
+	if (NULL == httpd_parse_request(buf, &hreq)) {
+		return -EINVAL;
 	}
 
-	if (-1 == bind(sock, addr, addrlen)) {
-		perror("httpd: bind() failure");
-		close(sock);
-		return -errno;
+	if (0 == strcmp("GET", hreq.req_line.method)) {
+		return httpd_send_response_get(cinfo, &hreq);
 	}
-
-	if (-1 == listen(sock, 3)) {
-		perror("httpd: listen() failure");
-		close(sock);
-		return -errno;
-	}
-
-	return sock;
+	HTTPD_ERROR("requested unsupported method: %s\n", hreq.req_line.method);
+	return -ENOSYS;
 }
 
 static int httpd(int argc, char **argv) {
-	int host, client;
-	union {
-		struct sockaddr sa;
-		struct sockaddr_in in;
-		struct sockaddr_in6 in6;
-	} addr;
-	socklen_t addrlen;
+	int host;
+#if USE_IP_VER == 4
+	struct sockaddr_in inaddr;
+	const size_t inaddrlen = sizeof(inaddr);
+	const int family = AF_INET;
 
-#if 1 /* IPv4 */
-	addr.in.sin_family = AF_INET;
-	addr.in.sin_port= htons(80);
-	addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
+	inaddr.sin_family = AF_INET;
+	inaddr.sin_port= htons(80);
+	inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+#else /* USE_IP_VER == 6 */
+	struct sockaddr_in6 inaddr;
+	const size_t inaddrlen = sizeof(inaddr);
+	const int family = AF_INET6;
 
-	host = make_socket(AF_INET, &addr.sa, sizeof addr.in);
-	if (host < 0) {
-		return host;
-	}
-#else /* IPv6 */
-	addr.in6.sin6_family = AF_INET6;
-	addr.in6.sin6_port= htons(80);
-	memcpy(&addr.in6.sin6_addr, &in6addr_any,
-			sizeof addr.in6.sin6_addr);
-
-	host = make_socket(AF_INET6, &addr.sa, sizeof addr.in6);
-	if (host < 0) {
-		return host;
-	}
+	inaddr.sin6_family = AF_INET6;
+	inaddr.sin6_port= htons(80);
+	memcpy(&inaddr.sin6_addr, &in6addr_any, sizeof(inaddr.sin6_addr));
 #endif
-	welcome_message();
+
+	host = socket(family, SOCK_STREAM, IPPROTO_TCP);
+	if (host == -1) {
+		HTTPD_ERROR("socket() failure: %s", strerror(errno));
+		return -errno;
+	}
+
+	if (-1 == bind(host, (struct sockaddr *) &inaddr, inaddrlen)) {
+		HTTPD_ERROR("bind() failure: %s", strerror(errno));
+		close(host);
+		return -errno;
+	}
+
+	if (-1 == listen(host, 3)) {
+		HTTPD_ERROR("listen() failure: %s", strerror(errno));
+		close(host);
+		return -errno;
+	}
 
 	while (1) {
-		addrlen  = sizeof addr;
-		client = accept(host, &addr.sa, &addrlen);
-		if (client == -1) {
-			perror("httpd: accept() failure");
-			continue;
-		}
-		if (((addr.sa.sa_family == AF_INET)
-					&& (addrlen != sizeof addr.in))
-				|| ((addr.sa.sa_family == AF_INET6)
-					&& (addrlen != sizeof addr.in6))) {
-			printf("httpd: bad addrlen %d for family %d\n",
-					addrlen, addr.sa.sa_family);
-			continue;
-		}
+		struct client_info ci;
 
-		client_process(client, &addr.sa);
+		ci.ci_addrlen = inaddrlen;
+		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
+		if (ci.ci_sock == -1) {
+			HTTPD_ERROR("accept() failure: %s", strerror(errno));
+			continue;
+		}
+		assert(ci.ci_addrlen == inaddrlen);
+
+		httpd_client_process(&ci);
+
+		close(ci.ci_sock);
 	}
 
 	close(host);
