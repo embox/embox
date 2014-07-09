@@ -89,3 +89,15 @@ int cmd_smac_adm_user_set(const char *name, const char *label) {
 	return cmd_smac_adm_user_replace(name, label);
 }
 
+int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen) {
+	struct spwd *spwd;
+
+	spwd = spwd_find(SMAC_USERS, name);
+	if (NULL == spwd) {
+		return -ENOENT;
+	}
+
+	strncpy(buf, spwd->sp_pwdp, buflen);
+	return 0;
+}
+
