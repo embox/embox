@@ -47,3 +47,7 @@ int exec_call(void) {
 
 	return ecode;
 }
+
+/* int execve(const char *path, char *const argv[], char *const envp[]) {
+	return execv(path, argv);
+} */

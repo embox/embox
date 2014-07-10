@@ -78,8 +78,8 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	panic("vfork_body returning");
 }
 
-void *task_stub_exit(void *arg) {
+/* void *task_exit_call_back(void *arg) {
 	_exit((int)arg);
 
 	return arg;
-}
+} */

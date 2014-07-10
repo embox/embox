@@ -17,6 +17,7 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <hal/context.h>
+#include <hal/vfork.h>
 
 #include <kernel/task/resource/module_ptr.h>
 #include <kernel/task/resource/task_argv.h>
@@ -55,8 +56,8 @@ int execv(const char *path, char *const argv[]) {
 	task = task_self();
 	task_resource_exec(task, path, argv);
 
-	//vfork_child_done(task, exec_calling);
-	exec_calling(NULL);
+	vfork_child_done(task, exec_calling);
+	//exec_calling(NULL);
 
 	return 0;
 }
