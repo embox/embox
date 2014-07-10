@@ -42,7 +42,7 @@ static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
 	struct task_vfork *vfork_data;
 
-	if (!task_is_vforking()) {
+	if (!task_is_vforking(task_self())) {
 		return;
 	}
 
