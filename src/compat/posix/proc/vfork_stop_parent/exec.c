@@ -21,24 +21,20 @@
 #include <kernel/task/resource/module_ptr.h>
 #include <kernel/task/resource/task_argv.h>
 
-extern void vfork_release_parent(void);
 extern int exec_call(void);
 
 static void exec_trampoline(void) {
 	sched_unlock();
 
-	vfork_release_parent();
+	//vfork_release_parent();
+	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
 
 	_exit(exec_call());
 }
 
-int execv(const char *path, char *const argv[]) {
-	struct context oldctx;
+static void *exec_calling(void *arg) {
 	struct thread *t;
-	struct task *task;
-
-	task = task_self();
-	task_resource_exec(task, path, argv);
+	struct context oldctx;
 
 	sched_lock();
 	t = thread_self();
@@ -49,6 +45,18 @@ int execv(const char *path, char *const argv[]) {
 			thread_stack_get(t) + thread_stack_get_size(t));
 
 	context_switch(&oldctx, &t->context);
+
+	return NULL;
+}
+
+int execv(const char *path, char *const argv[]) {
+	struct task *task;
+
+	task = task_self();
+	task_resource_exec(task, path, argv);
+
+	//vfork_child_done(task, exec_calling);
+	exec_calling(NULL);
 
 	return 0;
 }

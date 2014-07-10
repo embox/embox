@@ -26,13 +26,9 @@ int execv(const char *path, char *const argv[]) {
 	struct task *task;
 
 	task = task_self();
+	task_resource_exec(task, path, argv);
 
-	if (task_is_vforking(task)) {
-		task_resource_exec(task, path, argv);
-		vfork_child_done(task, task_stub_execv);
-	}
-
-	// do execv if task is not forked?
+	vfork_child_done(task, task_stub_execv);
 
 	return 0;
 }

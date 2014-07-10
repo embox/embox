@@ -37,10 +37,10 @@ struct task {
 };
 
 
-#define TASK_STATUS_IN_VFORK    0x1
-
 
 __BEGIN_DECLS
+
+#include <kernel/task/defs.h>
 
 static inline int task_is_vforking(struct task *task) {
 	return task->status & TASK_STATUS_IN_VFORK;

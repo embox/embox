@@ -42,6 +42,10 @@ static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
 	struct task_vfork *vfork_data;
 
+	if (!task_is_vforking()) {
+		return;
+	}
+
 	vfork_data = task_resource_vfork(child);
 
 	task_start(child, run, NULL);
@@ -72,4 +76,10 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 
 	ptregs_retcode_jmp(ptregs, 0);
 	panic("vfork_body returning");
+}
+
+void *task_stub_exit(void *arg) {
+	_exit((int)arg);
+
+	return arg;
 }
