@@ -16,11 +16,8 @@
 #include <hal/vfork.h>
 
 
-//extern void *task_exit_callback(void *arg) ;
+extern void *task_exit_callback(void *arg) ;
 
-static void *task_exit_callback(void *arg) {
-	return arg;
-}
 
 void _exit(int status) {
 	struct task *task;

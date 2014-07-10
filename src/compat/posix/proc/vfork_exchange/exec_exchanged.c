@@ -14,22 +14,10 @@
 
 extern int exec_call();
 
-static void *task_stub_execv(void *arg) {
+void *task_exec_callback(void *arg) {
 	int res;
 
 	res = exec_call();
 
 	return (void*)res;
 }
-
-int execv(const char *path, char *const argv[]) {
-	struct task *task;
-
-	task = task_self();
-	task_resource_exec(task, path, argv);
-
-	vfork_child_done(task, task_stub_execv);
-
-	return 0;
-}
-

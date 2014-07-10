@@ -21,24 +21,6 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 	thread->task = task;
 }
 
-static void vfork_begin(struct task *child, struct pt_regs *ptregs) {
-	struct task_vfork *task_vfork;
-
-	sched_lock();
-	{
-		/* save ptregs for parent return from vfork() */
-		task_vfork = task_resource_vfork(child);
-
-		memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
-
-		thread_set_task(thread_self(), child);
-
-		/* mark as vforking */
-		task_vfork_start(child);
-	}
-	sched_unlock();
-}
-
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
 	struct task_vfork *vfork_data;
 
@@ -60,26 +42,41 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
 	pid_t child_pid;
 
+	/* can vfork only in single thread application */
 	assert(thread_self() == task_self()->tsk_main);
 
+	/* create task description but not start its main thread */
 	child_pid = task_prepare("");
 	if (0 > child_pid) {
 		/* error */
-		SET_ERRNO(child_pid);
-		ptregs_retcode_jmp(ptregs, -1);
+		ptregs_retcode_jmp(ptregs, child_pid);
 		panic("vfork_body returning");
 	}
-
 	child = task_table_get(child_pid);
 
-	vfork_begin(child, ptregs);
+	sched_lock();
+	{
+		struct task_vfork *task_vfork;
+		/* save ptregs for parent return from vfork() */
+		task_vfork = task_resource_vfork(child);
 
+		memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
+
+		thread_set_task(thread_self(), child);
+
+		/* mark as vforking */
+		task_vfork_start(child);
+	}
+	sched_unlock();
+
+	/* return from a child. The parent paused now */
 	ptregs_retcode_jmp(ptregs, 0);
 	panic("vfork_body returning");
 }
 
-/* void *task_exit_call_back(void *arg) {
+void *task_exit_call_back(void *arg) {
 	_exit((int)arg);
 
 	return arg;
-} */
+}
+

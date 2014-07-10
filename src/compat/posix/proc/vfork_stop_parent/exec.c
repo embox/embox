@@ -27,13 +27,12 @@ extern int exec_call(void);
 static void exec_trampoline(void) {
 	sched_unlock();
 
-	//vfork_release_parent();
 	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
 
 	_exit(exec_call());
 }
 
-static void *exec_calling(void *arg) {
+void *task_exec_callback(void *arg) {
 	struct thread *t;
 	struct context oldctx;
 
@@ -48,20 +47,4 @@ static void *exec_calling(void *arg) {
 	context_switch(&oldctx, &t->context);
 
 	return NULL;
-}
-
-int execv(const char *path, char *const argv[]) {
-	struct task *task;
-
-	task = task_self();
-	task_resource_exec(task, path, argv);
-
-	vfork_child_done(task, exec_calling);
-	//exec_calling(NULL);
-
-	return 0;
-}
-
-int execve(const char *path, char *const argv[], char *const envp[]) {
-	return execv(path, argv);
 }

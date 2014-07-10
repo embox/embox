@@ -16,3 +16,8 @@ void vfork_child_done(struct task *child, void * (*run)(void *)) {
 void *task_exit_callback(void *arg) {
 	return arg;
 }
+
+void *task_exec_callback(void *arg) {
+
+	return NULL;
+}

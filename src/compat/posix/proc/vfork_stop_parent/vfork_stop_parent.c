@@ -120,11 +120,15 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	panic("vfork_body returning");
 }
 
-//FIXME
+
 void vfork_child_done(struct task *child, void * (*run)(void *)) {
 	run(NULL);
 }
 
 void *task_exit_callback(void *arg) {
 	return arg;
+}
+
+void *task_exec_callback(void *arg) {
+	return NULL;
 }

@@ -14,6 +14,8 @@
 
 #include <kernel/task.h>
 #include <kernel/task/resource/task_argv.h>
+#include <kernel/task/resource.h>
+
 
 int exec_call(void) {
 	int ecode;
@@ -48,6 +50,23 @@ int exec_call(void) {
 	return ecode;
 }
 
-/* int execve(const char *path, char *const argv[], char *const envp[]) {
+extern void vfork_child_done(struct task *child, void * (*run)(void *));
+extern void *task_exit_callback(void *arg);
+extern void *task_exec_callback(void *arg);
+
+int execv(const char *path, char *const argv[]) {
+	struct task *task;
+	/* save starting arguments for the task */
+	task = task_self();
+	task_resource_exec(task, path, argv);
+
+	/* if vforked then unblock parent and  start execute new image */
+	vfork_child_done(task, task_exec_callback);
+
+	return 0;
+}
+
+int execve(const char *path, char *const argv[], char *const envp[]) {
 	return execv(path, argv);
-} */
+}
+
