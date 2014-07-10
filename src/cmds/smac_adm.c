@@ -18,6 +18,7 @@
 EMBOX_CMD(smac_adm);
 
 extern int cmd_smac_adm_user_set(const char *name, const char *label);
+extern int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen);
 
 #define BUFLEN 4096
 
@@ -56,10 +57,16 @@ static int new_rule(const char *subject, const char *object,
 	return smac_addenv(subject, object, flags);
 }
 
-static int print_label(void) {
+static int print_label(const char *name) {
 	int res;
 
-	if (0 != (res = smac_labelget(buf, BUFLEN))) {
+	if (name == NULL) {
+		res = smac_labelget(buf, BUFLEN);
+	} else {
+		res = cmd_smac_adm_user_get(name, buf, BUFLEN);
+	}
+
+	if (0 != res) {
 		return res;
 	}
 
@@ -139,7 +146,7 @@ static int smac_adm(int argc, char *argv[]) {
 	case ACT_SET:
 		return smac_labelset(label);
 	case ACT_GET:
-		return print_label();
+		return print_label(optind < argc ? argv[optind] : NULL);
 	case ACT_FLUSH:
 		return smac_flushenv();
 	case ACT_RULE:

@@ -153,6 +153,21 @@ extern int strncmp(const char *str1, const char *str2, size_t n);
 extern char *strchr(const char *str, int ch);
 
 /**
+ * Finds the first occurrence of the character @a ch (converted to a @c char)
+ * in the given null-terminated string.
+ *
+ * @param str
+ *   The null-terminated string to search for @a ch occurrence.
+ * @param ch
+ *   The character to search.
+ * @return
+ *   Pointer to the located character in the specified string (if any).
+ * @retval pointer to null-terminator '\0'
+ *   If no match was found.
+ */
+extern char *strchrnul(const char *str, int ch);
+
+/**
  * Finds the last occurrence of the character @a ch in the given string.
  * This function is a reversed version of #strchr().
  *

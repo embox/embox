@@ -8,6 +8,7 @@ static module LibCString {
 	source "memset.c"
 	source "strcat.c"
 	source "strchr.c"
+	source "strchrnul.c"
 	source "strcmp.c"
 	source "strcpy.c"
 	source "strcspn.c"
