@@ -27,6 +27,7 @@
 EMBOX_CMD(httpd);
 
 #define USE_IP_VER 4
+#define USE_CGI    0
 
 #define HTTPD_LOG_QUIET 0
 #define HTTPD_LOG_ERROR 1
@@ -34,7 +35,7 @@ EMBOX_CMD(httpd);
 
 #define HTTPD_LOG_LEVEL HTTPD_LOG_DEBUG
 
-#define BUFF_SZ     512
+#define BUFF_SZ     1024
 #define PAGE_INDEX  "index.html"
 #define PAGE_4XX    "404.html"
 #define CGI_PREFIX  "/cgi-bin/"
@@ -71,7 +72,11 @@ struct http_req {
 	struct http_req_uri uri;
 	char *method;
 	char *http_ver;
+	char *content_len;
 };
+
+static char httpd_g_inbuf[BUFF_SZ];
+static char httpd_g_outbuf[BUFF_SZ];
 
 static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
 	char *pb;
@@ -124,16 +129,40 @@ static char *httpd_parse_request_line(char *str, struct http_req *hreq) {
 	return pb + strlen("\r\n");
 }
 
-static char *httpd_parse_headers(char *str, void *hheds) {
+static const struct http_header_desc {
+	char *name;
+	off_t hreq_offset;
+} http_headers[] = {
+	{ .name = "Content-Length: ", .hreq_offset = offsetof(struct http_req, content_len), },
+};
+static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 	char *pb;
 
+	pb = str;
 	while (0 != strncmp("\r\n", pb, strlen("\r\n"))) {
-		pb = strstr(pb, "\r\n");
-		if (!pb) {
-			HTTPD_ERROR("%s: can't find sentinel\n", __func__);
-			return NULL;
+		int i_hh;
+		bool found;
+
+		found = false;
+		for (i_hh = 0; i_hh < ARRAY_SIZE(http_headers); i_hh++) {
+			const struct http_header_desc *hh_d = &http_headers[i_hh];
+			size_t len = strlen(hh_d->name);
+
+			if (0 == strncmp(hh_d->name, pb, len)) {
+
+				*(char **) ((void *) hreq + hh_d->hreq_offset) = pb + len;
+
+				pb = strstr(pb + len, "\r\n");
+				*pb = '\0';
+				pb += strlen("\r\n");
+				found = true;
+				break;
+			}
 		}
-		pb += strlen("\r\n");
+
+		if (!found) {
+			pb = strstr(pb, "\r\n") + strlen("\r\n");
+		}
 	}
 
 	return pb + strlen("\r\n");
@@ -149,7 +178,7 @@ static char *httpd_parse_request(char *str, struct http_req *hreq) {
 		return NULL;
 	}
 
-	return httpd_parse_headers(pb, NULL);
+	return httpd_parse_headers(pb, hreq);
 }
 
 static const char *ext2type_html[] = { ".html", ".htm", NULL };
@@ -197,7 +226,6 @@ static const char *httpd_filename2content_type(const char *filename) {
 }
 
 static int httpd_send_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
-	char outbuf[BUFF_SZ];
 	const char *filename;
 	FILE *file;
 	int status, cbyte;
@@ -218,14 +246,14 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 		status = 200;
 	}
 
-	cbyte = snprintf(outbuf, sizeof(outbuf),
+	cbyte = snprintf(httpd_g_outbuf, sizeof(httpd_g_outbuf),
 			"HTTP/1.1 %d %s\r\n"
 			"Content-Type: %s\r\n"
 			"Connection: close\r\n"
 			"\r\n",
 			status, "", httpd_filename2content_type(filename));
 
-	if (0 > write(cinfo->ci_sock, outbuf, cbyte)) {
+	if (0 > write(cinfo->ci_sock, httpd_g_outbuf, cbyte)) {
 		return -errno;
 	}
 
@@ -234,11 +262,11 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 		return 0;
 	}
 
-	while (0 != (read_bytes = fread(outbuf, 1, sizeof(outbuf), file))) {
+	while (0 != (read_bytes = fread(httpd_g_outbuf, 1, sizeof(httpd_g_outbuf), file))) {
 		const char *pb;
 		int remain_send_bytes;
 
-		pb = outbuf;
+		pb = httpd_g_outbuf;
 		remain_send_bytes = read_bytes;
 		while (remain_send_bytes) {
 			int sent_bytes;
@@ -256,6 +284,7 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 	return 0;
 }
 
+#if !USE_CGI
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
 	FILE *skf;
 
@@ -270,14 +299,23 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		"Content-Type: %s\r\n"
 		"Connection: close\r\n"
 		"\r\n"
-		"%s", 200, "OK", "text/plain", "Sorry, CGI is NYI");
+		"%s", 200, "OK", "text/plain",
+		"Sorry, CGI support is disabled");
 
 	fclose(skf);
 
 	return 0;
 }
 
-#if 0
+#else
+
+static const struct cgi_env_descr {
+	char *name;
+	off_t hreq_offset;
+} cgi_env[] = {
+	{ .name = "REQUEST_METHOD", .hreq_offset = offsetof(struct http_req, method) },
+	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
+};
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
 	const char *cmdname;
 	pid_t pid;
@@ -289,16 +327,54 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 	pid = vfork();
 	if (pid < 0) {
+		HTTPD_ERROR("vfork() error");
 		return pid;
 	}
 
 	if (pid == 0) {
-		char *argv[] = { NULL, };
+		char *argv[] = { NULL };
+		char *envp[ARRAY_SIZE(cgi_env) + 1];
+		char envbuf[128];
+		char *ebp;
+		size_t env_sz;
+		int i_ce;
 
-		close(STDIN_FILENO); /* TODO POST data goes here, actually */
+		ebp = envbuf;
+		env_sz = sizeof(envbuf);
+		for (i_ce = 0; i_ce < ARRAY_SIZE(cgi_env); i_ce++) {
+			const struct cgi_env_descr *ce_d = &cgi_env[i_ce];
+			int printed;
+
+			printed = snprintf(ebp, env_sz, "%s=%s",
+						ce_d->name,
+						*(char **) ((void *) hreq + ce_d->hreq_offset));
+			if (printed == env_sz) {
+				HTTPD_ERROR("have no space to write environment");
+				exit(1);
+			}
+			envp[i_ce] = ebp;
+
+			ebp += printed + 1;
+			env_sz -= printed + 1;
+
+		}
+
+		envp[ARRAY_SIZE(envp) - 1] = NULL;
+
+		dup2(cinfo->ci_sock, STDIN_FILENO);
 		dup2(cinfo->ci_sock, STDOUT_FILENO);
 		dup2(cinfo->ci_sock, STDERR_FILENO);
+
+#if 0
+		execve(cmdname, argv, envp);
+#else
+		for (i_ce = 0; i_ce < ARRAY_SIZE(envp) - 1; i_ce++) {
+			putenv(envp[i_ce]);
+		}
+
 		execv(cmdname, argv);
+#endif
+
 		exit(1);
 	} else {
 		while (pid != waitpid(pid, NULL, 0));
@@ -308,20 +384,45 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 }
 #endif
 
-static int httpd_client_process(const struct client_info *cinfo) {
-	char buf[BUFF_SZ];
-	struct http_req hreq;
+static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
+	const char *pattern = "\r\n\r\n";
+	char pattbuf[strlen("\r\n\r\n")];
+	char *pb;
+
+	pb = buf;
+	if (0 > read(sk, pattbuf, sizeof(pattbuf))) {
+		return -errno;
+	}
+	while (0 != strncmp(pattern, pattbuf, sizeof(pattbuf)) && buf_sz > 0) {
+		*(pb++) = pattbuf[0];
+		buf_sz--;
+		memmove(pattbuf, pattbuf + 1, sizeof(pattbuf) - 1);
+		if (0 > read(sk, &pattbuf[sizeof(pattbuf) - 1], 1)) {
+			return -errno;
+		}
+	}
+
+	if (buf_sz == 0) {
+		return -ENOENT;
+	}
+
+	memcpy(pb, pattbuf, sizeof(pattbuf));
+	return pb + sizeof(pattbuf) - buf;
+}
+
+static int httpd_client_process(const struct client_info *cinfo) {
+	struct http_req hreq;
 	int ret;
 
-	ret = read(sk, buf, sizeof(buf));
+	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf));
 	if (ret < 0) {
 		HTTPD_ERROR("can't read from client socket: %s", strerror(errno));
 		return ret;
 	}
-	buf[ret] = '\0';
+	httpd_g_inbuf[ret] = '\0';
 
-	if (NULL == httpd_parse_request(buf, &hreq)) {
+	if (NULL == httpd_parse_request(httpd_g_inbuf, &hreq)) {
 		return -EINVAL;
 	}
 
