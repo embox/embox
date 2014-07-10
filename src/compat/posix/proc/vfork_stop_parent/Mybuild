@@ -1,0 +1,19 @@
+package embox.compat.posix.proc
+
+static module exec_stop_parent extends exec {
+	source "exec.c"
+
+	depends vfork
+	depends embox.util.LibUtil
+	@NoRuntime depends embox.kernel.task.resource.argv
+
+	depends exec_lib
+}
+
+static module vfork_stop_parent extends vfork {
+	source "vfork_stop_parent.c"
+
+	depends embox.arch.vfork_entry
+	depends embox.util.LibUtil
+	depends embox.mem.sysmalloc_api
+}

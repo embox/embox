@@ -35,27 +35,23 @@ static int task_argv_inherit(const struct task *task,
 	return 0;
 }
 
-static int task_argv_exec(const struct task *task, void *buff) {
-	int argc;
-	struct task_param *task_param;
+static int task_argv_exec(const struct task *task, const char *path, char *const argv[]) {
+	int i;
 	struct task_argv *task_argv;
 
-	assert(buff);
-	task_param = buff;
+	assert(path);
 
 	task_argv = task_resource_argv(task);
+	task_argv->argc = argv_to_argc(argv);
 
-	for (argc = task_param->argc; argc != 0; argc --) {
-		strncpy(task_argv->argv_buff[argc - 1], task_param->argv[argc - 1], sizeof(*task_argv->argv_buff));
-		task_argv->argv[argc - 1] = task_argv->argv_buff[argc - 1];
+	for (i = 0; i < task_argv->argc; i++) {
+		strncpy(task_argv->argv_buff[i], argv[i], sizeof(*task_argv->argv_buff));
+		task_argv->argv[i] = task_argv->argv_buff[i];
 	}
-	task_argv->argc = task_param->argc;
 
-	strncpy(task_argv->path, task_param->path, sizeof(task_argv->path));
-
+	strncpy(task_argv->path, path, sizeof(task_argv->path));
 
 	return 0;
-
 }
 
 static size_t task_argv_offset;
@@ -83,4 +79,16 @@ char **task_resource_argv_argv(const struct task *task) {
 
 char *task_resource_argv_path(const struct task *task) {
 	return task_resource_argv(task)->path;
+}
+
+int argv_to_argc(char *const argv[]) {
+	int argc;
+
+	if (argv == NULL)
+		return 0;
+
+	for (argc = 0; argv[argc]; argc ++) {
+	}
+
+	return argc;
 }

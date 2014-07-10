@@ -1,0 +1,7 @@
+package embox.compat.posix.proc
+
+static module vfork_internal_stub extends vfork {
+	source "vfork_release_parent_stub.c"
+
+	depends embox.util.LibUtil
+}

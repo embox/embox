@@ -21,7 +21,7 @@ struct task_resource_desc {
 	void (*deinit)(const struct task *task);
 	size_t resource_size; /* to be used in on-stack allocation */
 	size_t *resource_offset;
-	int (*exec)(const struct task *task, void *resource_space);
+	int (*exec)(const struct task *task, const char *path, char *const argv[]);
 };
 
 typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
@@ -58,7 +58,7 @@ extern void task_resource_init(const struct task *task);
 extern int task_resource_inherit(const struct task *task,
 		const struct task *parent);
 extern void task_resource_deinit(const struct task *task);
-extern void task_resource_exec(const struct task *task, void *buff);
+extern void task_resource_exec(const struct task *task, const char *path, char *const argv[]);
 
 ARRAY_SPREAD_DECLARE(const struct task_resource_desc *,
 		task_resource_desc_array);

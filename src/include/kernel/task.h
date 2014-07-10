@@ -22,13 +22,6 @@ struct thread;
 
 struct task;
 
-struct task_param {
-	char *path;
-	char **env;
-	char **argv;
-	int argc;
-};
-
 __BEGIN_DECLS
 
 extern int task_get_status(const struct task *tsk);
@@ -92,6 +85,10 @@ extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 extern pid_t task_waitpid(pid_t pid);
 extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
+
+extern int task_prepare(const char *name);
+extern int task_start(struct task *task, void * (*run)(void *), void *arg);
+
 
 __END_DECLS
 
