@@ -9,7 +9,7 @@
 #include <hal/vfork.h>
 
 
-void vfork_child_done(struct task *child, void * (*run)(void *)) {
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 
 }
 

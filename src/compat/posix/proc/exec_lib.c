@@ -15,7 +15,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/task_argv.h>
 #include <kernel/task/resource.h>
-
+#include <hal/vfork.h>
 
 int exec_call(void) {
 	int ecode;
@@ -50,7 +50,7 @@ int exec_call(void) {
 	return ecode;
 }
 
-extern void vfork_child_done(struct task *child, void * (*run)(void *));
+
 extern void *task_exit_callback(void *arg);
 extern void *task_exec_callback(void *arg);
 
@@ -61,7 +61,7 @@ int execv(const char *path, char *const argv[]) {
 	task_resource_exec(task, path, argv);
 
 	/* if vforked then unblock parent and  start execute new image */
-	vfork_child_done(task, task_exec_callback);
+	vfork_child_done(task, task_exec_callback, NULL);
 
 	return 0;
 }

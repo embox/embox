@@ -121,8 +121,10 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 }
 
 
-void vfork_child_done(struct task *child, void * (*run)(void *)) {
-	run(NULL);
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
+	assert(run);
+
+	run(arg);
 }
 
 void *task_exit_callback(void *arg) {

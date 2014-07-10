@@ -21,7 +21,7 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 	thread->task = task;
 }
 
-void vfork_child_done(struct task *child, void * (*run)(void *)) {
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	struct task_vfork *vfork_data;
 
 	if (!task_is_vforking(task_self())) {

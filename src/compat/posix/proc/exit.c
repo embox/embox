@@ -24,7 +24,7 @@ void _exit(int status) {
 
 	task = task_self();
 
-	vfork_child_done(task, task_exit_callback);
+	vfork_child_done(task, task_exit_callback, (void *)status);
 
 	task_start_exit();
 	{
