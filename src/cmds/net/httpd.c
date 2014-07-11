@@ -35,6 +35,7 @@ EMBOX_CMD(httpd);
 
 #define HTTPD_LOG_LEVEL HTTPD_LOG_DEBUG
 
+#define HTTPD_MAX_PATH 128
 #define BUFF_SZ     1024
 #define PAGE_INDEX  "index.html"
 #define PAGE_4XX    "404.html"
@@ -61,6 +62,8 @@ struct client_info {
 	struct sockaddr ci_addr;
 	socklen_t ci_addrlen;
 	int ci_sock;
+
+	const char *ci_basedir;
 };
 
 struct http_req_uri {
@@ -226,19 +229,19 @@ static const char *httpd_filename2content_type(const char *filename) {
 }
 
 static int httpd_send_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
-	const char *filename;
+	char filename[HTTPD_MAX_PATH];
 	FILE *file;
 	int status, cbyte;
 	size_t read_bytes;
 
-	filename = hreq->uri.target;
+	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
+	filename[sizeof(filename) - 1] = '\0';
 
-	/* TODO not every file is intended to be published, make it serve only one
- 	 * directory, not a whole root.
-	 */
+	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, filename);
+
 	file = fopen(filename, "r");
 	if (!file) {
-		filename = PAGE_4XX;
+		strcpy(filename, PAGE_4XX);
 		file = fopen(filename, "r");
 		/* testing file for NULL performed later */
 		status = 404;
@@ -444,6 +447,7 @@ static int httpd_client_process(const struct client_info *cinfo) {
 
 static int httpd(int argc, char **argv) {
 	int host;
+	const char *basedir;
 #if USE_IP_VER == 4
 	struct sockaddr_in inaddr;
 	const size_t inaddrlen = sizeof(inaddr);
@@ -461,6 +465,8 @@ static int httpd(int argc, char **argv) {
 	inaddr.sin6_port= htons(80);
 	memcpy(&inaddr.sin6_addr, &in6addr_any, sizeof(inaddr.sin6_addr));
 #endif
+
+	basedir = argc > 1 ? argv[1] : "/";
 
 	host = socket(family, SOCK_STREAM, IPPROTO_TCP);
 	if (host == -1) {
@@ -490,6 +496,7 @@ static int httpd(int argc, char **argv) {
 			continue;
 		}
 		assert(ci.ci_addrlen == inaddrlen);
+		ci.ci_basedir = basedir;
 
 		httpd_client_process(&ci);
 
