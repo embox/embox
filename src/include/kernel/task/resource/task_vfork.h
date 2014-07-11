@@ -16,7 +16,7 @@ struct task;
 struct task_vfork {
 	struct pt_regs ptregs;
 	//pid_t vforked_pid;
-	struct task *vforked_task;
+	//struct task *vforked_task;
 	//char cmdline[80];
 };
 
