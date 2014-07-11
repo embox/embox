@@ -86,11 +86,13 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct vfork_ctx *vfctx;
 	pid_t child_pid;
 
+	/* can vfork only in single thread application */
+	assert(thread_self() == task_self()->tsk_main);
+
 	child_pid = task_prepare("");
 	if (0 > child_pid) {
 		/* error */
-		SET_ERRNO(child_pid);
-		ptregs_retcode_jmp(ptregs, -1);
+		ptregs_retcode_jmp(ptregs, child_pid);
 		panic("vfork_body returning");
 	}
 
@@ -118,15 +120,4 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	ptregs_jmp(&ptbuf);
 
 	panic("vfork_body returning");
-}
-
-
-void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
-	assert(run);
-
-	run(arg);
-}
-
-void *task_exit_callback(void *arg) {
-	return arg;
 }

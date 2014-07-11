@@ -50,8 +50,6 @@ int exec_call(void) {
 	return ecode;
 }
 
-
-extern void *task_exit_callback(void *arg);
 extern void *task_exec_callback(void *arg);
 
 int execv(const char *path, char *const argv[]) {

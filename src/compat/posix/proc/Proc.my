@@ -19,7 +19,7 @@ abstract module exec { }
 
 
 static module exec_lib {
-	source "exec_lib.c"
+	source "exec.c"
 	depends embox.kernel.task.resource.module_ptr
 }
 
