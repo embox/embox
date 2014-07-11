@@ -611,7 +611,7 @@ $(@source_mk_rmk):
 source_initfs_cp_target_dir=$(call get,$(call source_annotation_values,$s,$(my_initfs_target_dir)),value)
 source_initfs_cp_target_name=$(or $(strip \
 	$(call get,$(call source_annotation_values,$s,$(my_initfs_target_name)),value)),$(call get,$s,fileName))
-source_initfs_cp_out = $(addprefix $$(ROOTFS_DIR), \
+source_initfs_cp_out = $(addprefix $$(ROOTFS_DIR)/, \
 	       $(foreach s,$1,$(source_initfs_cp_target_dir)/$(source_initfs_cp_target_name)))
 
 $(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
