@@ -12,6 +12,7 @@ static module exec_stop_parent extends exec {
 
 static module vfork_stop_parent extends vfork {
 	source "vfork_stop_parent.c"
+	source "vfork_res_stop_parent.h"
 
 	depends embox.arch.vfork_entry
 	depends embox.util.LibUtil
