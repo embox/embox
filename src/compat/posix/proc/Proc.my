@@ -26,6 +26,10 @@ static module exec_lib {
 @DefaultImpl(fork_copy_everything)
 abstract module fork { }
 
+static module vfork_entry {
+	source "vfork.c"
+}
+
 module fork_copy_everything extends fork {
 	source "fork_copy_everything.c"
 	depends embox.arch.fork_entry

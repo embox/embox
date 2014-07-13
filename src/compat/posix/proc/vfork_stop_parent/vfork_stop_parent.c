@@ -12,10 +12,11 @@
 #include <kernel/panic.h>
 #include <kernel/sched.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/task_vfork.h>
 
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
-	struct pt_regs ptregs;
+//	struct pt_regs ptregs;
 	struct context original_ctx;
 	struct context waiting_ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
@@ -61,63 +62,61 @@ static void vfork_waiting(void) {
 	struct sigaction ochildsa, ocontsa;
 	struct vfork_ctx *vfctx;
 	struct task *child;
+	struct task_vfork *task_vfork;
 
-	vfctx = vfork_current_context;
+	task_vfork = task_resource_vfork(task_self());
+	vfctx = task_vfork->vfork_ctx;
+	child = task_table_get(vfctx->child_pid);
 
 	vfork_wait_signal_store(&ochildsa, &ocontsa);
 	{
 		vfctx->parent_holded = true;
-
-		child = task_table_get(vfctx->child_pid);
-		task_start(child, vfork_child_task, &vfctx->ptregs);
+		task_start(child, vfork_child_task, task_vfork->vfork_ctx);
 
 		SCHED_WAIT(!vfctx->parent_holded);
 	}
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
-	ptregs_retcode(&vfctx->ptregs, vfctx->child_pid);
+//	ptregs_retcode(&vfctx->ptregs, vfctx->child_pid);
 	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);
 
 	panic("vfork_waiting returning");
 }
 
-void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
-	struct pt_regs ptbuf;
+int vfork_callback(struct task *child) {
+	//struct pt_regs *ptregs;
 	struct vfork_ctx *vfctx;
-	pid_t child_pid;
-
-	/* can vfork only in single thread application */
-	assert(thread_self() == task_self()->tsk_main);
-
-	child_pid = task_prepare("");
-	if (0 > child_pid) {
-		/* error */
-		ptregs_retcode_jmp(ptregs, child_pid);
-		panic("vfork_body returning");
-	}
+	struct task_vfork *task_vfork;
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
-		ptregs_retcode_jmp(ptregs, -EAGAIN);
+		return -EAGAIN;
+		//ptregs_retcode_jmp(ptregs, -EAGAIN);
 	}
 
-	memcpy(&vfctx->ptregs, ptregs, sizeof(vfctx->ptregs));
-	vfctx->child_pid = child_pid;
+	//memcpy(&vfctx->ptregs, ptregs, sizeof(vfctx->ptregs));
+	task_vfork = task_resource_vfork(child->parent);
+	task_vfork->vfork_ctx = vfctx;
+
+	vfctx->child_pid = child->tsk_id;
+
 
 	context_init(&vfctx->waiting_ctx, true);
 	context_set_entry(&vfctx->waiting_ctx, vfork_waiting);
 	context_set_stack(&vfctx->waiting_ctx, vfctx->stack + sizeof(vfctx->stack));
 
-	vfork_current_context = vfctx;
+	//vfork_current_context = vfctx;
 	context_switch(&vfctx->original_ctx, &vfctx->waiting_ctx);
 
 	/* current stack is broken, can't reach any old data */
 
-	vfctx = vfork_current_context;
-	memcpy(&ptbuf, &vfctx->ptregs, sizeof(*ptregs));
+	//vfctx = vfork_current_context;
+	//memcpy(&ptbuf, &vfctx->ptregs, sizeof(*ptregs));
 	sysfree(vfctx);
 
-	ptregs_jmp(&ptbuf);
+	//ptregs_jmp(&ptbuf);
 
 	panic("vfork_body returning");
+
+	return 0;
 }
