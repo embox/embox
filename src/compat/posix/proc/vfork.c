@@ -39,7 +39,12 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
 	res = vfork_child_start(child);
-	//TODO error we must delete child task
-	ptregs_retcode_jmp(ptregs, res);
+
+	if (res < 0) {
+		/* Could not start child process */
+		task_delete(child);
+		ptregs_retcode_jmp(ptregs, res);
+	}
+
 	panic("vfork_body returning");
 }

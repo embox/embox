@@ -29,8 +29,6 @@ struct vfork_ctx;
 struct task_vfork {
 	struct pt_regs ptregs;
 	struct vfork_ctx *vfork_ctx;
-
 };
-
 
 #endif /* VFORK_RES_STOP_PARENT_H_ */
