@@ -15,7 +15,7 @@
 #include <hal/vfork.h>
 #include <hal/ptrace.h>
 
-extern int vfork_callback(struct task *child);
+extern int vfork_child_start(struct task *child);
 
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
@@ -38,7 +38,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	task_vfork = task_resource_vfork(child->parent);
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
-	res = vfork_callback(child);
+	res = vfork_child_start(child);
 	//TODO error we must delete child task
 	ptregs_retcode_jmp(ptregs, res);
 	panic("vfork_body returning");
