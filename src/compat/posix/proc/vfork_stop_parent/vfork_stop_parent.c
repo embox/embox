@@ -82,7 +82,7 @@ static void vfork_waiting(void) {
 	panic("vfork_waiting returning");
 }
 
-int vfork_callback(struct task *child) {
+int vfork_child_start(struct task *child) {
 	struct vfork_ctx *vfctx;
 	struct task_vfork *task_vfork;
 	pid_t child_pid;
@@ -112,7 +112,7 @@ int vfork_callback(struct task *child) {
 
 	ptregs_retcode_jmp(&task_vfork->ptregs, child_pid);
 
-	panic("vfork_body returning");
+	panic("vfork_callback returning");
 
 	return child_pid;
 }
