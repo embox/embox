@@ -115,12 +115,21 @@ image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 FINAL_LINK_WITH_CC ?=
 ifeq (1,$(FINAL_LINK_WITH_CC))
 
+ram_sz :=$(shell echo LDS_REGION_SIZE_RAM | $(CC) -E -P -imacros $(SRCGEN_DIR)/config.lds.h - | sed 's/M/*1024*1024/' | bc)
+phymem_cflags_addon := \
+	-Wl,--defsym=_ram_base=__phymem_space \
+	-Wl,--defsym=_reserve_end=__phymem_space \
+	-Wl,--defsym=_ram_size=$(ram_sz) \
+	-DPHYMEM_SPACE_SIZE=$(ram_sz) \
+	mk/phymem_cc_addon.tmpl.c
+
 FINAL_LDFLAGS ?=
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
 	$(embox_o) \
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 
@@ -128,6 +137,7 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
 	$(embox_o) \
 	$(symbols_pass1_a) \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 
@@ -135,6 +145,7 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
 	$(embox_o) \
 	$(symbols_pass2_a) \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 else
