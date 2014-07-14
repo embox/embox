@@ -116,7 +116,7 @@ int vfork_callback(struct task *child) {
 
 	//ptregs_jmp(&ptbuf);
 
-	panic("vfork_body returning");
+	panic("vfork_callback returning");
 
 	return 0;
 }

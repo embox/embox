@@ -12,7 +12,7 @@ static module vfork_exchanged extends vfork {
 	source "vfork_res_exchanged.h"
 
 	depends embox.kernel.task.resource.vfork
-	//depends vfork_entry
-
+	depends vfork_entry
+	depends embox.arch.vfork_entry
 	depends embox.util.LibUtil
 }

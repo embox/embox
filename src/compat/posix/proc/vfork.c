@@ -43,5 +43,4 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	//TODO error we must delete child task
 	ptregs_retcode_jmp(ptregs, res);
 	panic("vfork_body returning");
-
 }
