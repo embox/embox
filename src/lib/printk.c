@@ -10,13 +10,10 @@
 #include <drivers/diag.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <framework/mod/options.h>
 
 #include <module/embox/compat/libc/Print.h>
 
-struct printchar_handler_data;
-
-static void iodev_printchar(struct printchar_handler_data *d, int c) {
+static void printk_printchar(struct printchar_handler_data *d, int c) {
 	diag_putc(c);
 }
 
@@ -27,8 +24,12 @@ int printk(const char *format, ...) {
 	assert(format != NULL);
 
 	va_start(args, format);
-	ret = __print(iodev_printchar, NULL, format, args);
+	ret = __print(printk_printchar, NULL, format, args);
 	va_end(args);
 
 	return ret;
+}
+
+int vprintk(const char *format, va_list args) {
+	return __print(printk_printchar, NULL, format, args);
 }
