@@ -35,8 +35,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	}
 	child = task_table_get(child_pid);
 	/* save ptregs for parent return from vfork() */
-	task_vfork = task_resource_vfork(child);
-
+	task_vfork = task_resource_vfork(child->parent);
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
 	res = vfork_callback(child);
