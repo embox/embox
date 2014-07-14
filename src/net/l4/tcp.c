@@ -54,7 +54,6 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 #define TCP_DEBUG 0
 #if TCP_DEBUG
 #include <stdarg.h>
-#include <prom/prom_printf.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -129,7 +128,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		softirq_lock();
-		prom_vprintf(msg, args);
+		vprintk(msg, args);
 		softirq_unlock();
 		break;
 	}

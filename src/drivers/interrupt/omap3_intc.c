@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(omap3_intc_init);
 
@@ -118,6 +118,6 @@ void interrupt_handle(void) {
 }
 
 void swi_handle(void) {
-	prom_printf("swi!\n");
+	printk("swi!\n");
 }
 

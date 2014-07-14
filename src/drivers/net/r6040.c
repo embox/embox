@@ -186,13 +186,13 @@ static void r6040_set_rx_start(eth_desc_t* desc) {
 	tmp >>= 16;
 	out16((tmp & 0xffff), RX_START_HIGH);
 }
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 #if INTERRUPTS_ENABLE
 /* The RDC interrupt handler */
 static irq_return_t irq_handler(unsigned int irq_num, void *dev_id) {
 	uint16_t misr, status;
 
-	prom_printf("IRQ!\n");
+	printk("IRQ!\n");
 
 	/* Save MIER */
 	misr = in16(MIER);
@@ -237,9 +237,9 @@ static void discard_descriptor(void) {
 /* Returns size of pkt, or zero if none received */
 size_t r6040_rx(unsigned char* pkt, size_t max_len) {
 	size_t ret = 0;
-	prom_printf("MIER=0x%08x\n", *((unsigned int *) MIER));
-	prom_printf("MISR=0x%08x\n", *((unsigned int *) MISR));
-	prom_printf("MR_ICR=0x%08x\n", *((unsigned int *) MR_ICR));
+	printk("MIER=0x%08x\n", *((unsigned int *) MIER));
+	printk("MISR=0x%08x\n", *((unsigned int *) MISR));
+	printk("MR_ICR=0x%08x\n", *((unsigned int *) MR_ICR));
 
 	if (g_rx_descriptor_next->status & DSC_OWNER_MAC) {
 		/* Still owned by the MAC, nothing received */

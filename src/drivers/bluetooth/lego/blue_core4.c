@@ -50,9 +50,9 @@ static struct bc_msg out_msg;
 
 /*#define DEBUG*/
 #ifdef DEBUG
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 static void print_msg(struct bc_msg_body *msg) {
-	prom_printf("P%x:", msg->type);
+	printk("P%x:", msg->type);
 }
 #else
 #define print_msg(msg)

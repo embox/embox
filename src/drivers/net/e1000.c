@@ -33,7 +33,6 @@
 #include <mem/misc/pool.h>
 
 #include <kernel/printk.h>
-#include <prom/prom_printf.h>
 
 #include <embox/unit.h>
 
@@ -275,7 +274,7 @@ static int e1000_open(struct net_device *dev) {
 	/* Initialize statistics registers. */
 	for (int i = 0; i < 64; i++) {
 		volatile uint32_t *r = i + e1000_reg(dev, E1000_REG_CRCERRS);
-		prom_printf("0x%x\n", (unsigned int) r);
+		printk("0x%x\n", (unsigned int) r);
 		REG_LOAD(r);
 	}
 #endif
