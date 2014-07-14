@@ -280,45 +280,44 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			to_sock(tcp_sk), tcp_sk->state);
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
-	switch (tcp_sk->state) {
-	default:
+	switch (tcp_sk->state != TCP_LISTEN) {
 		return -EINVAL; /* error: the socket is not accepting connections */
-	case TCP_LISTEN:
-		/* waiting anyone */
-		tcp_newsk = NULL;
-		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-		{
-			do {
-				if (!list_empty(&tcp_sk->conn_wait)) {
-					tcp_newsk = accept_get_connection(tcp_sk);
-					if (tcp_newsk) {
-						break;
-					}
-				}
-				ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
-			} while (!ret);
-		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	}
 
+	/* waiting anyone */
+	tcp_newsk = NULL;
+	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	{
+		do {
+			if (!list_empty(&tcp_sk->conn_wait)) {
+				tcp_newsk = accept_get_connection(tcp_sk);
+				if (tcp_newsk) {
+					break;
+				}
+			}
+			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
+		} while (!ret);
+	}
+	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+
+	if (!tcp_newsk) {
 		if (0 > ret) {
 			return ret;
-		}
-
-		if (!tcp_newsk) {
+		} else {
 			return -ECONNRESET; /* FIXME */
 		}
-
-		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
-			tcp_sock_release(tcp_newsk);
-			return -ECONNRESET;
-		}
-
-		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
-		sk->rx_data_len--;
-		*newsk = to_sock(tcp_newsk);
-
-		return 0;
 	}
+
+	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
+		tcp_sock_release(tcp_newsk);
+		return -ECONNRESET;
+	}
+
+	assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
+	sk->rx_data_len--;
+	*newsk = to_sock(tcp_newsk);
+
+	return 0;
 }
 
 static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
