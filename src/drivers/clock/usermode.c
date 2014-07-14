@@ -13,8 +13,6 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/host.h>
 
-#include <prom/prom_printf.h>
-
 EMBOX_UNIT_INIT(umclock_init);
 
 #define CLOCK_IRQ HOST_TIMER_IRQ
