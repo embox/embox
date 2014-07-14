@@ -9,6 +9,5 @@ module match {
 
 	depends embox.pnet.core
 	depends embox.pnet.node.skbuff.matcher
-	depends embox.prom.printf
 	depends embox.framework.example
 }

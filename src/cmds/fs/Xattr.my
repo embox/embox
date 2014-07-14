@@ -75,7 +75,6 @@ module xattr {
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file
 	depends embox.fs.core
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 	depends embox.compat.posix.fs.xattr
 	depends embox.fs.driver.ext2.xattr

@@ -10,6 +10,5 @@ module mandatory {
 
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }
