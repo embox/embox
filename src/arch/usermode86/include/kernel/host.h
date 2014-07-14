@@ -40,6 +40,7 @@ extern int host_net_rx_count(struct host_net_adp *hnet);
 extern int host_net_rx(struct host_net_adp *hnet, void *buf, int len);
 extern void host_net_tx(struct host_net_adp *hnet, const void *buf, int len);
 
+#define HOST_JMPBUF_LEN 156
 #define HOST_CTX_LEN 1024
 
 extern int host_getcontext(void *ucp);
