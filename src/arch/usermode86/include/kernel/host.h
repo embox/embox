@@ -12,8 +12,8 @@
 #define HOST_TIMER_IRQ 14
 #define HOST_NET_IRQ 29
 
-extern int host_putchar(int c);
-extern int host_getchar(void);
+extern int host_write(int fd, const void *buf, int c);
+extern int host_read(int fd, void *buf, int c);
 
 extern int host_pause(void);
 

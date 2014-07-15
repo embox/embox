@@ -11,11 +11,18 @@
 #include <embox/unit.h>
 
 static void um_diag_putc(const struct diag *diag, char ch) {
-	host_putchar(ch);
+	host_write(1, &ch, 1);
 }
 
 static char um_diag_getc(const struct diag *diag) {
-	return host_getchar();
+	int ret;
+	char ch;
+
+	do {
+		ret = host_read(0, &ch, 1);
+	} while (-1 == ret);
+
+	return ch;
 }
 
 DIAG_OPS_DECLARE(

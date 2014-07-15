@@ -14,13 +14,10 @@
 HOST_FNX(int, write,
 		CONCAT(int fd, const void *buf, int c),
 		fd, buf, c)
-HOST_FNX(int, getchar, void)
+HOST_FNX(int, read,
+		CONCAT(int fd, void *buf, int c),
+		fd, buf, c)
 HOST_FNX(int, pause, void)
-
-int host_putchar(int c) {
-	char ch = c;
-	return host_write(STDOUT_FILENO, &ch, 1);
-}
 
 static HOST_FNX(int, tcgetattr,
 		CONCAT(int fd, struct termios *tio),
