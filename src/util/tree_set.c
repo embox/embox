@@ -177,6 +177,7 @@ static void tree_set_insert_balance(struct tree_set *tree, struct tree_set_link 
 		par2 = par->par;
 		if (par == par2->left) {
 			other = par2->right;
+			assert(other);
 			if (other->color == TREE_SET_RED) {
 				par->color = TREE_SET_BLACK;
 				other->color = TREE_SET_BLACK;
@@ -195,6 +196,7 @@ static void tree_set_insert_balance(struct tree_set *tree, struct tree_set_link 
 			}
 		} else {
 			other = par2->left;
+			assert(other);
 			if (other->color == TREE_SET_RED) {
 				par->color = TREE_SET_BLACK;
 				other->color = TREE_SET_BLACK;
