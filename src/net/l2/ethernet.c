@@ -104,3 +104,7 @@ static int ethernet_setup(struct net_device *dev) {
 struct net_device * etherdev_alloc(size_t priv_size) {
 	return netdev_alloc("eth%u", &ethernet_setup, priv_size);
 }
+
+void etherdev_free(struct net_device *dev) {
+	netdev_free(dev);
+}
