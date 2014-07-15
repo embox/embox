@@ -280,7 +280,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			to_sock(tcp_sk), tcp_sk->state);
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
-	switch (tcp_sk->state != TCP_LISTEN) {
+	if (tcp_sk->state != TCP_LISTEN) {
 		return -EINVAL; /* error: the socket is not accepting connections */
 	}
 
