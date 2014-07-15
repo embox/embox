@@ -85,7 +85,6 @@ static void vfork_waiting(void) {
 int vfork_child_start(struct task *child) {
 	struct vfork_ctx *vfctx;
 	struct task_vfork *task_vfork;
-	pid_t child_pid;
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
@@ -106,13 +105,12 @@ int vfork_child_start(struct task *child) {
 	/* current stack is broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
 	vfctx = task_vfork->vfork_ctx;
-	child_pid = vfctx->child_pid;
 
+	ptregs_retcode(&task_vfork->ptregs, vfctx->child_pid);
 	sysfree(vfctx);
+	ptregs_jmp(&task_vfork->ptregs);
 
-	ptregs_retcode_jmp(&task_vfork->ptregs, child_pid);
+	panic("vfork_child_start returning");
 
-	panic("vfork_callback returning");
-
-	return child_pid;
+	return -1;
 }
