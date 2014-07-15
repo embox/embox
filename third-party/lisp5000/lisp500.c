@@ -163,6 +163,7 @@ st:	t = (lval *) (v & ~3);
 		}
 	}
 }
+
 lval gc(lval * f)
 {
 	int i;
@@ -170,7 +171,7 @@ lval gc(lval * f)
 	int l;
 	int u = 0;
 	int ml = 0;
-	printf(";garbage collecting...\n");
+	//printf(";garbage collecting...\n");
 	while (memf) {
 		lval *n = (lval *) memf[0];
 		memset(memf, 0, 4 * memf[1]);
@@ -181,7 +182,7 @@ lval gc(lval * f)
 	gcm(dyns);
 	for (; f > stack; f--) {
 		if ((*f & 3) && (*f < (int)memory || *f > (int)memory + memory_size / 4))
-			printf("%x\n", *f);
+			//printf("%x\n", *f);
 		gcm(*f);
 	}
 	memf = 0;
@@ -212,7 +213,7 @@ lval gc(lval * f)
 		memf = m - ml;
 		i += ml;
 	}
-	printf(";done. %d free.\n", i);
+	//printf(";done. %d free.\n", i);
 	return 0;
 }
 lval *m0(lval * g, int n)
