@@ -7,7 +7,6 @@
 # @date    30.07.2013
 #
 
-set -x
 # ATML == arch + template, i.e. x86/debug
 ATML="$1"
 SIM_ARG="$2"
