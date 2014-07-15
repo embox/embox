@@ -7,6 +7,7 @@
 # @date    30.07.2013
 #
 
+set -x
 # ATML == arch + template, i.e. x86/debug
 ATML="$1"
 SIM_ARG="$2"
@@ -28,6 +29,8 @@ AUTOQEMU_KVM_ARG=
 AUTOQEMU_NOGRAPHIC_ARG="-serial file:${OUTPUT_FILE} -display none"
 RUN_QEMU="./scripts/qemu/auto_qemu $SIM_ARG"
 
+USERMODE_START_OUTPUT=$OUTPUT_FILE
+
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
@@ -39,6 +42,7 @@ atml2run=(
 	['mips/debug']=default_run
 	['ppc/debug']=default_run
 	['microblaze/petalogix']=default_run
+	['usermode86/debug']=default_run
 	['generic/qemu']=default_run
 	['generic/qemu_bg']=run_bg_wrapper
 	['generic/qemu_bg_kill']=kill_bg_wrapper
@@ -57,6 +61,7 @@ run_bg() {
 		['mips/debug']="$RUN_QEMU"
 		['ppc/debug']="$RUN_QEMU"
 		['microblaze/petalogix']="$RUN_QEMU"
+		['usermode86/debug']="$(dirname $0)/../usermode_start.sh"
 		['generic/qemu_bg']="$RUN_QEMU"
 		['generic/qemu']="$RUN_QEMU"
 	)
@@ -65,6 +70,7 @@ run_bg() {
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
 		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
+		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		${atml2sim[$ATML]} &
 	sim_bg=$!
 }

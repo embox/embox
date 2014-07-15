@@ -28,17 +28,12 @@ static HOST_FNX(int, tcsetattr,
 
 static void host_set_input_mode(int fd) {
 	struct termios tio;
-	int res;
-
-	res = host_tcgetattr(fd, &tio);
-	assert(res == 0);
+	host_tcgetattr(fd, &tio);
 	tio.c_lflag &= ~(ICANON | ECHO);
-	res = host_tcsetattr(fd, TCSANOW, &tio);
-	assert(res == 0);
+	host_tcsetattr(fd, TCSANOW, &tio);
 }
 
 int main(int argc, char *argv[]) {
-
 
 	host_set_input_mode(STDIN_FILENO);
 
