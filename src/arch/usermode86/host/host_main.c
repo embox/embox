@@ -44,4 +44,4 @@ int main(int argc, char *argv[]) {
 
 #include <setjmp.h>
 #include <host.h>
-static_assert(HOST_JMPBUF_LEN >= sizeof(jmp_buf), "HOST_JMPBUF_LEN less that sizeof(jmp_buf)");
+_Static_assert(HOST_JMPBUF_LEN >= sizeof(jmp_buf), "HOST_JMPBUF_LEN less that sizeof(jmp_buf)");

@@ -125,8 +125,9 @@ phymem_cflags_addon := \
 
 FINAL_LDFLAGS ?=
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
 	$(phymem_cflags_addon) \
@@ -134,16 +135,18 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	-o $@
 
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	$(symbols_pass1_a) \
 	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 
 $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	$(symbols_pass2_a) \
 	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
