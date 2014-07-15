@@ -1,5 +1,5 @@
-/**
- * @file
+	/**
+	 * @file
  *
  * @date May 23, 2014
  * @author: Anton Bondarev
@@ -23,7 +23,7 @@ static void thread_set_task(struct thread *thread, struct task *task) {
 void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	struct task_vfork *vfork_data;
 
-	if (!task_is_vforking(task_self())) {
+	if (!task_is_vforking(child)) {
 		return;
 	}
 
@@ -49,9 +49,9 @@ int vfork_child_start(struct task *child) {
 
 	ptregs_retcode_jmp(&task_resource_vfork(child->parent)->ptregs, 0);
 
-	//panic("vfork_callback returning");
+	//panic("vfork_child_start returning");
 
-	return 0;
+	return -1;
 }
 
 void *task_exit_callback(void *arg) {

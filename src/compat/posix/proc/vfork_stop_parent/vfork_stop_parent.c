@@ -99,7 +99,6 @@ int vfork_child_start(struct task *child) {
 	context_init(&vfctx->waiting_ctx, true);
 	context_set_entry(&vfctx->waiting_ctx, vfork_waiting);
 	context_set_stack(&vfctx->waiting_ctx, vfctx->stack + sizeof(vfctx->stack));
-
 	context_switch(&vfctx->original_ctx, &vfctx->waiting_ctx);
 
 	/* current stack is broken, can't reach any old data */
