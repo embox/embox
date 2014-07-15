@@ -69,10 +69,17 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
 
-#define O_DIRECTORY        0x2000
+#define O_DIRECTORY        0x2000  /* Fail if not a directory. */
+
+/* Open directory for search only.
+ * The result is unspecified if this flag is applied to a non-directory file.
+ */
 #define O_SEARCH           0x4000
 
-/*file descriptor flags */
+/* If path names a symbolic link, fail and set errno to [ELOOP] */
+#define O_NOFOLLOW         0x8000
+
+/* file descriptor flags */
 #define FD_CLOEXEC         0x0001
 
 struct flock {

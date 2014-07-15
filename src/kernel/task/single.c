@@ -2,40 +2,26 @@
  * @file
  * @brief
  *
- * @date 31.08.11
- * @author Anton Kozlov
+ * @author  Anton Kozlov
+ * @date    04.06.2014
  */
 
-#include <errno.h>
+#include <kernel/task/resource.h>
 #include <kernel/task.h>
-#include "common.h"
 
-int new_task(const char *name, void *(*run)(void *), void *arg) {
-	return -EPERM;
-}
+void task_init(struct task *tsk, int id, struct task *parent,
+		const char *name, struct thread *main_thread,
+		task_priority_t priority) {
+	assert(tsk == task_kernel_task());
+	assert(id == task_get_id(tsk));
+	assert(0 == strcmp(name, task_get_name(tsk)));
+	assert(main_thread == task_get_main(tsk));
+	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
 
-struct task *task_self(void) {
-	/* Since there is only one task, actually it means --
-	 * that task is kernel's.
-	 */
-	return task_kernel_task();
-}
-
-void __attribute__((noreturn)) task_exit(void *res) {
-	while(1);
-}
-
-int task_notify_switch(struct thread *prev, struct thread *next) {
-	return 0;
-}
-
-struct task *task_table_get(int n) {
-	if(n < 0) {
-		return NULL;
+	if (main_thread != NULL) { /* check for thread.NoThreads module */
+		main_thread->task = tsk;
 	}
-	return task_kernel_task();
+
+	task_resource_init(tsk);
 }
 
-int task_table_get_first(int since) {
-	return 0;
-}

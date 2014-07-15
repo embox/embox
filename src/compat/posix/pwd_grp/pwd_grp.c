@@ -11,13 +11,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <pwd.h>
 #include <grp.h>
 #include <shadow.h>
+#include <util/binalign.h>
 
-#define PASSWD_FILE "/passwd"
-#define GROUP_FILE "/group"
+#include <pwd_db.h>
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -66,8 +67,11 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 
 static int read_int_field(FILE *stream, const char *format, void *field, int delim) {
 	int val;
-	int ret = fscanf(stream, format, field);
+	int ret;
 
+	sscanf("0", format, field);
+
+	ret = fscanf(stream, format, field);
 	if (0 > ret) {
 		return -ret;
 	}
@@ -99,11 +103,11 @@ static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) 
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_uid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%hd", &pwd->pw_uid, ':'))) {
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_gid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%hd", &pwd->pw_gid, ':'))) {
 		return res;
 	}
 
@@ -231,7 +235,7 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		return res;
 	}
 
-	if (0 != (res = read_int_field(fp, "%d", &gbuf->gr_gid, ':'))) {
+	if (0 != (res = read_int_field(fp, "%hd", &gbuf->gr_gid, ':'))) {
 		return res;
 	}
 
@@ -239,7 +243,8 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		return res;
 	}
 
-	gbuf->gr_mem = pmem = (char **) buf;
+	gbuf->gr_mem = pmem = (char **)binalign_bound((uintptr_t)buf, sizeof(void *));
+	buf_len -= (uintptr_t)pmem - (uintptr_t)buf;
 
 	*pmem = ch;
 
@@ -292,6 +297,20 @@ int getgrnam_r(const char *name, struct group *grp,
 
 }
 
+struct group * getgrgid(gid_t gid) {
+	struct group grp, *result;
+	char buf[64];
+	int ret;
+
+	ret = getgrgid_r(gid, &grp, buf, sizeof buf, &result);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return NULL;
+	}
+
+	return result;
+}
+
 int getgrgid_r(gid_t gid, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;
@@ -317,10 +336,29 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return 0;
 }
 
+int getmaxuid() {
+	int res, curmax = 0;
+	FILE *file;
+	static char buff[0x80];
+	struct passwd *result, pwd;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+		if (pwd.pw_uid > curmax) {
+			curmax = pwd.pw_uid;
+		}
+	}
+
+	fclose(file);
+
+	return curmax;
+}
+
 #define SHADOW_NAME_BUF_LEN 64
 #define SHADOW_PSWD_BUF_LEN 128
-
-static const char *shadow_file = "/shadow";
 
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
@@ -362,14 +400,14 @@ struct spwd *fgetspent(FILE *file) {
 		return NULL;
 	}
 
-	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_expire, '\n'))) {
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_flag, '\n'))) {
 		return NULL;
 	}
 
 	return &spwd;
 }
 
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
+struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
 	FILE *shdwf;
 
@@ -389,8 +427,74 @@ static struct spwd *spwd_find(const char *spwd_path, const char *name) {
 }
 
 struct spwd *getspnam_f(const char *name) {
-	return spwd_find(shadow_file, name);
+	return spwd_find(SHADOW_FILE, name);
 }
 
+struct spwd *getspnam(char *name) {
+	/* FIXME */
+	return getspnam_f(name);
+}
 
+int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
+	FILE *passwdf;
+	char *temp;
+	int res = 0;
 
+	if (NULL == (passwdf = fopen(ADDUSER_FILE, "r"))) {
+		return errno;
+	}
+
+	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
+		if(0 == strcmp(temp, "GROUP")) {
+			if (0 != read_int_field(passwdf, "%hd", &passwd->pw_gid, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "HOME")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_dir, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+
+		if(0 == strcmp(temp, "SHELL")) {
+			if (0 != read_field(passwdf, &buf, &buf_len,
+					&passwd->pw_shell, '\n')) {
+				res = -1;
+				goto out;
+			}
+			continue;
+		}
+	}
+
+out:
+	fclose(passwdf);
+	return res;
+}
+
+static int write_int_field(FILE *fp, long int val, char delim) {
+	if (val) {
+		fprintf(fp, "%ld", val);
+	}
+	fputc(delim, fp);
+	return 0;
+}
+
+int putspent(struct spwd *p, FILE *fp) {
+
+	fprintf(fp, "%s:%s:", p->sp_namp, p->sp_pwdp);
+	write_int_field(fp, p->sp_lstchg, ':');
+	write_int_field(fp, p->sp_min, ':');
+	write_int_field(fp, p->sp_max, ':');
+	write_int_field(fp, p->sp_warn, ':');
+	write_int_field(fp, p->sp_inact, ':');
+	write_int_field(fp, p->sp_expire, ':');
+	write_int_field(fp, p->sp_flag, '\n');
+
+	return 0;
+}

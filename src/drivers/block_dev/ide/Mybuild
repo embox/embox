@@ -11,6 +11,7 @@ module ide {
 	depends embox.util.LibUtil
 	depends embox.driver.block
 	depends embox.util.indexator
-	depends embox.kernel.timer.sleep_api
+	depends embox.compat.posix.util.sleep
 	depends embox.kernel.time.kernel_time
+	depends embox.fs.driver.devfs
 }

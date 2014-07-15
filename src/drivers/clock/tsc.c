@@ -44,7 +44,7 @@ static int tsc_init(void) {
 	t1 = rdtsc();
 	sleep(1);
 	t2 = rdtsc();
-	tsc.resolution = t2 - t1;
+	tsc.cycle_hz = t2 - t1;
 	/*printk("CPU frequency: %llu\n", t2 - t1);*/
 	clock_source_register(&tsc_clock_source);
 	return ENOERR;

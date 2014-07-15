@@ -33,11 +33,11 @@ void irq_handler(void) {
 	{
 		while (0 != (pending = mb_intc_get_pending())) {
 			unsigned int irq_num;
-
 			for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
 				if (pending & (1 << irq_num)) {
-					//TODO we must clear whole pending register
-					irqctrl_clear(irq_num);
+					/* disable interrupt and clear it later, since ack
+ 					 * have no effect on level interrupt */
+					irqctrl_disable(irq_num);
 
 					/*now we allow nested irq*/
 					ipl_enable();
@@ -45,6 +45,14 @@ void irq_handler(void) {
 					irq_dispatch(irq_num);
 
 					ipl_disable();
+
+					/* clear interrupt, for level interrupts it's dispatcher
+ 					 * should set line low, edge gets it's ack too */
+					/* FIXME possible miss of edge interrupt happend while in self
+ 					 * dispatcher */
+					irqctrl_clear(irq_num);
+
+					irqctrl_enable(irq_num);
 				}
 			}
 		}

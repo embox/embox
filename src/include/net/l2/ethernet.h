@@ -69,4 +69,6 @@ extern const struct net_device_ops ethernet_ops;
  */
 extern struct net_device * etherdev_alloc(size_t priv_size);
 
+extern void etherdev_free(struct net_device *dev);
+
 #endif /* NET_L2_ETHERNET_H_ */

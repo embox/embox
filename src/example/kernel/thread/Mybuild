@@ -9,7 +9,7 @@ module create_thread {
 	source "thread.c"
 
 	depends embox.kernel.sched.sched
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.thread.core
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }

@@ -7,6 +7,7 @@
 #include <kernel/runnable/runnable.h>
 
 #include <kernel/task.h>
+#include <kernel/task/resource/affinity.h>
 #include <hal/cpu.h>
 
 /** Default runnable affinity mask */

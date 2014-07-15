@@ -4,3 +4,7 @@ package embox.driver
 module at91_twi {
 	source "at91_twi.c"
 }
+
+module i2c {
+	source "i2c.c"
+}

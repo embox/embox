@@ -8,5 +8,5 @@ module lisp5000 {
 
 	depends embox.mem.heap_api
 	depends embox.arch.libarch
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }

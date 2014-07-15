@@ -12,6 +12,7 @@
 #ifndef __LDS__
 
 #include <stddef.h>
+#include <sys/cdefs.h>
 
 #include <util/macro.h>
 
@@ -64,13 +65,11 @@
  *  - first time is for define its type, and
  *  - second time - to add necessary attributes (alignment in particular). */
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
-	element_t volatile const array_nm[] __attribute__                  \
+	element_t volatile const array_nm[] __attribute__ ((used,          \
 		/* Some versions of GCC do not take into an account section    \
 		 * attribute if it appears after the definition. */            \
-			((section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =  \
+			section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =    \
 		{ /* Empty anchor to the array head. */ };                     \
-	__ARRAY_SPREAD_ENTRY_DEF(element_t, array_nm, array_nm, "0_head"); \
-		/* Now the head has got all necessary attributes. */           \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_t, array_nm, term, "8_term") =  \
 		{ terminator /* Terminating element (if any). */ };            \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_t, array_nm, tail, "9_tail") =  \
@@ -82,18 +81,29 @@
 /* Spread declaration */
 
 #define __ARRAY_SPREAD_DECLARE(element_t, array_nm) \
-	extern element_t volatile const array_nm[]
+	EXTERN_C element_t volatile const array_nm[]
 
 /* Spread element addition. */
 
-#define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
+#define __ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, order, ...) \
 	__ARRAY_SPREAD_ENTRY_DEF(static typeof(array_nm[0]), array_nm, \
-		ptr_nm, "1_body") = { __VA_ARGS__ }
+		ptr_nm, "1_body" #order) = { __VA_ARGS__ }
+
+#define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, , __VA_ARGS__)
+
+#define __ARRAY_SPREAD_GUARD(array_nm) \
+	MACRO_GUARD(__ARRAY_SPREAD_PRIVATE(array_nm, element))
 
 #define __ARRAY_SPREAD_ADD(array_nm, ...) \
-	__ARRAY_SPREAD_ADD_NAMED(array_nm,                          \
-		MACRO_GUARD(__ARRAY_SPREAD_PRIVATE(array_nm, element)), \
-		__VA_ARGS__)
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		, __VA_ARGS__)
+
+#define __ARRAY_SPREAD_ADD_ORDERED(array_nm, order, ...) \
+	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		order, __VA_ARGS__)
 
 /* Spread size calculations. */
 

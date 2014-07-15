@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+TEST_CASE {execute "help" command through telnet} {
+	set TELNET_PROMPT ":/#"
+
+	test_assert_regexp_equal "help\r\n"    $TELNET_PROMPT
+
+	return 0
+}

@@ -16,11 +16,19 @@ module filesystem {
 module file_desc {
 	source "file_desc.c"
 	source "file_xattr.c"
-	source "idesc.c"
-	source "idesc_event.c"
 	depends xattr
-	option number idesc_event_quantity = 256
+	depends idesc
 	option number fdesc_quantity=32
+
+	depends embox.kernel.task.resource.idesc_table
+}
+
+module idesc {
+	source "idesc.c"
+}
+
+module idesc_event {
+	source "idesc_event.c"
 }
 
 @DefaultImpl(NoFileSystem)
@@ -42,7 +50,7 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "path.c"
+	source "vfs.c", "hlpr_path.c"
 
 	depends file_desc, node
 	depends embox.fs.driver.repo
@@ -55,7 +63,7 @@ module core extends fs_api {
 module index_operation {
 	source "index_operation.c"
 	depends fs_api
-	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.idesc
 }
 
 module rootfs {
@@ -67,13 +75,13 @@ module rootfs {
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends SysLibFileSystem
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module journal {
 	source "journal.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends buffer_cache
 	depends embox.mem.slab
 }
@@ -82,11 +90,11 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 
-	depends embox.mem.heap_api
+	depends embox.mem.sysmalloc_api
 
 	@NoRuntime depends embox.util.hashtable
 }

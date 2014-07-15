@@ -20,8 +20,8 @@
 
 //#define DEBUG_LOG
 #ifdef DEBUG_LOG
-#include <prom/prom_printf.h>
-#define dprintf(...) prom_printf(__VA_ARGS__)
+#include <kernel/printk.h>
+#define dprintf(...) printk(__VA_ARGS__)
 #else
 #define dprintf(...) do {} while (0)
 #endif
@@ -169,5 +169,7 @@ static int pci_bios_init(void) {
 	if (busn == INDEX_NONE) {
 		return -ENOMEM;
 	}
-	return pci_bus_configure(busn);
+	pci_bus_configure(busn);
+
+	return 0;
 }

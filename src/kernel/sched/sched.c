@@ -38,6 +38,7 @@
 #include <kernel/runnable/runnable.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
+#include <kernel/addr_space.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -109,6 +110,10 @@ static void __sched_enqueue_set_ready(struct thread *t) {
 static void __sched_wokenup_clear_waiting(struct thread *t) {
 	sched_check_preempt(t);
 	t->waiting = false;
+}
+
+int sched_active(struct thread *t) {
+	return t->active;
 }
 
 int sched_change_priority(struct thread *t, sched_priority_t prior) {
@@ -357,7 +362,7 @@ static void sched_prepare_switch(struct thread *prev, struct thread *next) {
 }
 
 static void sched_finish_switch(struct thread *prev) {
-	__sched_deactivate(cpudata_var(prev));
+	__sched_deactivate(prev);
 }
 
 static struct thread *saved_prev __cpudata__; // XXX
@@ -371,6 +376,7 @@ static struct thread *saved_next __cpudata__; // XXX
  */
 
 void sched_ack_switched(void) {
+	ADDR_SPACE_FINISH_SWITCH();
 	sched_finish_switch(cpudata_var(saved_prev));
 	ipl_enable();
 	sched_unlock();
@@ -383,11 +389,13 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
+	ADDR_SPACE_PREPARE_SWITCH();
 	thread_set_current(next);
 
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 
 	prev = cpudata_var(saved_prev);
+	ADDR_SPACE_FINISH_SWITCH();
 
 	sched_finish_switch(prev);
 }

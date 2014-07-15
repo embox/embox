@@ -125,6 +125,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		}
 	}
 
+	memset(skb->cb, 0, sizeof(skb->cb));
 	optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
 	if (optlen > 0) {
 		/* NOTE : maybe it'd be better to copy skb here,

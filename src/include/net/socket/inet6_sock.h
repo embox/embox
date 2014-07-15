@@ -14,7 +14,6 @@
 
 struct inet6_sock {
 	struct sock sk; /* Base socket class (MUST BE FIRST) */
-	int src_port_alloced;
 	struct sockaddr_in6 src_in6;
 	struct sockaddr_in6 dst_in6;
 };

@@ -3,17 +3,17 @@ package embox.example.fs
 module devfs {
 	source "devfs.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module flock {
 	source "flock.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
 
 module long_file_write {

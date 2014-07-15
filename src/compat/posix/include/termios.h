@@ -13,6 +13,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <asm/termbits.h>
 
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT          0x0001  /* signal interrupt on break */
@@ -26,6 +27,7 @@
 #define IXOFF           0x0100  /* enable start/stop input control */
 #define IXON            0x0200  /* enable start/stop output control */
 #define PARMRK          0x0400  /* mark parity errors in the input queue */
+#define IXANY           0x0800
 
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define OPOST           0x0001  /* perform output processing */

@@ -1,0 +1,24 @@
+diff -aur /home/anton/downloads/dash-0.5.7/src/Makefile.in dash-0.5.7/src/Makefile.in
+--- /home/anton/downloads/dash-0.5.7/src/Makefile.in	2011-07-08 13:00:39.000000000 +0400
++++ dash-0.5.7/src/Makefile.in	2014-05-21 19:41:12.978273557 +0400
+@@ -162,15 +162,17 @@
+ top_srcdir = @top_srcdir@
+ AM_YFLAGS = -d
+ COMMON_CFLAGS = -Wall
+-COMMON_CPPFLAGS = \
+-	-include $(top_builddir)/config.h \
++_COMMON_CPPFLAGS = \
+ 	-DBSD=1 -DSHELL \
+ 	-DIFS_BROKEN
++COMMON_CPPFLAGS = \
++	-include $(top_builddir)/config.h \
++	$(_COMMON_CPPFLAGS)
+ 
+ AM_CFLAGS = $(COMMON_CFLAGS)
+ AM_CPPFLAGS = $(COMMON_CPPFLAGS)
+ AM_CFLAGS_FOR_BUILD = -g -O2 $(COMMON_CFLAGS) 
+-AM_CPPFLAGS_FOR_BUILD = $(COMMON_CPPFLAGS)
++AM_CPPFLAGS_FOR_BUILD = $(_COMMON_CPPFLAGS)
+ COMPILE_FOR_BUILD = \
+ 	$(CC_FOR_BUILD) $(DEFAULT_INCLUDES) $(AM_CPPFLAGS_FOR_BUILD) \
+ 	$(CPPFLAGS_FOR_BUILD) \

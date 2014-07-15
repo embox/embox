@@ -24,7 +24,6 @@
 #include <kernel/sched.h>
 
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
 #include <netinet/in.h>
 
 #include <embox/net/sock.h>
@@ -33,11 +32,8 @@
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
-
-
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
-#define MODOPS_AMOUNT_TCP_PORT OPTION_GET(NUMBER, amount_tcp_port)
 
 #include <config/embox/net/socket.h>
 #define MODOPS_CONNECT_TIMEOUT \
@@ -55,6 +51,11 @@ EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
+	static const struct tcp_wind self_wind_default = {
+		.value = TCP_WINDOW_VALUE_DEFAULT,
+		.factor = TCP_WINDOW_FACTOR_DEFAULT,
+		.size = TCP_WINDOW_VALUE_DEFAULT << TCP_WINDOW_FACTOR_DEFAULT
+	};
 	struct tcp_sock *tcp_sk;
 
 	tcp_sk = to_tcp_sock(sk);
@@ -65,12 +66,9 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
 	tcp_sk->self.seq = tcp_sk->last_ack;
-	memset(&tcp_sk->self, 0, sizeof tcp_sk->self);
-	tcp_seq_state_set_wind_value(&tcp_sk->self,
-			TCP_WINDOW_VALUE_DEFAULT);
-	tcp_seq_state_set_wind_factor(&tcp_sk->self,
-			TCP_WINDOW_FACTOR_DEFAULT);
-	memset(&tcp_sk->rem, 0, sizeof tcp_sk->rem);
+	memcpy(&tcp_sk->self.wind, &self_wind_default,
+			sizeof tcp_sk->self.wind);
+	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
 	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;
@@ -277,47 +275,49 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert(sk != NULL);
 	assert(newsk != NULL);
 
-	tcp_newsk = NULL;
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_accept: sk %p, st%d\n",
 			to_sock(tcp_sk), tcp_sk->state);
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
-	switch (tcp_sk->state) {
-	default:
+	if (tcp_sk->state != TCP_LISTEN) {
 		return -EINVAL; /* error: the socket is not accepting connections */
-	case TCP_LISTEN:
-		/* waiting anyone */
-		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-		{
-			do {
-				if (!list_empty(&tcp_sk->conn_wait)) {
-					tcp_newsk = accept_get_connection(tcp_sk);
-					if (tcp_newsk) {
-						break;
-					}
+	}
+
+	/* waiting anyone */
+	tcp_newsk = NULL;
+	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	{
+		do {
+			if (!list_empty(&tcp_sk->conn_wait)) {
+				tcp_newsk = accept_get_connection(tcp_sk);
+				if (tcp_newsk) {
+					break;
 				}
-				ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
-			} while (!ret);
-		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+			}
+			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
+		} while (!ret);
+	}
+	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-
-		if (!tcp_newsk) {
+	if (!tcp_newsk) {
+		if (0 > ret) {
+			return ret;
+		} else {
 			return -ECONNRESET; /* FIXME */
 		}
-
-		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
-			tcp_sock_release(tcp_newsk);
-			return -ECONNRESET;
-		}
-
-		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
-		sk->rx_data_len--;
-		*newsk = to_sock(tcp_newsk);
-
-		return 0;
 	}
+
+	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
+		tcp_sock_release(tcp_newsk);
+		return -ECONNRESET;
+	}
+
+	assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
+	sk->rx_data_len--;
+	*newsk = to_sock(tcp_newsk);
+
+	return 0;
 }
 
 static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
@@ -452,8 +452,6 @@ static int tcp_shutdown(struct sock *sk, int how) {
 }
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-INDEX_CLAMP_DEF(tcp_sock_port, 0, MODOPS_AMOUNT_TCP_PORT,
-		IPPORT_RESERVED, IPPORT_USERRESERVED - 1);
 static LIST_DEF(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
@@ -466,6 +464,5 @@ static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.recvmsg   = tcp_recvmsg,
 	.shutdown  = tcp_shutdown,
 	.sock_pool = &tcp_sock_pool,
-	.sock_port = &tcp_sock_port,
 	.sock_list = &tcp_sock_list
 };

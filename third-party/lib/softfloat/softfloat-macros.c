@@ -29,7 +29,7 @@ these four paragraphs for those parts of this code that are retained.
 
 =============================================================================*/
 
-#include <lib/softfloat.h>
+#include "softfloat.h"
 
 /*----------------------------------------------------------------------------
 | Shifts `a' right by the number of bits given in `count'.  If any nonzero

@@ -1,12 +1,13 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mkdir",
 	help = "Make directories",
 	man = '''
 		NAME
 			mkdir - create a directory
 		SYNOPSIS
-			mkdir  directory_name
+			mkdir [ -m MODE ] directory_name
 		DESCRIPTION
 			mkdir is used to create a directory
 		AUTHORS
@@ -15,8 +16,9 @@ package embox.cmd.fs
 module mkdir {
 	source "mkdir.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
+	depends embox.compat.posix.fs.umask
 }

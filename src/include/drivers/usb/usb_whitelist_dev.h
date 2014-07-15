@@ -13,13 +13,14 @@
 #include <limits.h>
 
 #define USB_WHITELIST_PID_ANY USHRT_MAX
-#define USB_WHITELIST_SN_ANY  UCHAR_MAX
+#define USB_WHITELIST_SN_ANY  "*"
 
+#define USB_WHITELIST_SN_LEN 64
 struct usb_whitelist_rule {
 	unsigned int id;
 	unsigned short vid;
 	unsigned short pid;
-	unsigned char  sn;
+	char sn[USB_WHITELIST_SN_LEN];
 };
 
 #define USB_WHITELIST_IO_ADD   _IOW('u', 0, struct usb_whitelist_rule)

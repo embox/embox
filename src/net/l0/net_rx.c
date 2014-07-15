@@ -27,12 +27,6 @@ int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;
 	const struct net_pack *npack;
 
-	/* decrypt packet */
-	skb = net_decrypt(skb);
-	if (skb == NULL) {
-		return 0; /* error: something wrong :( */
-	}
-
 	/* check L2 header size */
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
@@ -68,7 +62,8 @@ int net_rx(struct sk_buff *skb) {
 	/* lookup handler for L3 layer */
 	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
-		DBG(printk("net_rx: %p unknown type\n", skb));
+		DBG(printk("net_rx: %p unknown type %#.6hx\n", skb,
+					hdr_info.type));
 		skb_free(skb);
 		return 0; /* ok, but: not supported */
 	}
@@ -79,6 +74,12 @@ int net_rx(struct sk_buff *skb) {
 
 	DBG(printk("net_rx: %p len %zu type %#.6hx\n",
 				skb, skb->len, hdr_info.type));
+
+	/* decrypt packet */
+	skb = net_decrypt(skb);
+	if (skb == NULL) {
+		return 0; /* error: something wrong :( */
+	}
 
 	/* handling on L3 layer */
 	return npack->rcv_pack(skb, skb->dev);

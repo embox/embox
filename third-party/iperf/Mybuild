@@ -1,19 +1,7 @@
-package third_party.iperf
+package third_party.cmd
 
-static module libs {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-
-	depends embox.lib.LibC
-	depends embox.compat.posix.util.Time
-	depends embox.compat.posix.proc.uid
-
-	source "empty.c" // FIXME: workaround
-	source "order.mk"
-
-	@Rule(script="$(MAKE_IPERF)")
-	source "../../../../iperf/src/iperf-build/compat/libcompat.a"
-}
-
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
 @Cmd(name = "iperf",
 	help = "iperf is a tool for measuring maximum TCP and UDP bandwidth performance",
 	man = '''
@@ -26,35 +14,25 @@ static module libs {
 		AUTHORS
 			Andrey Gazukin
 	''')
-module iperf extends embox.lib.cxx.app {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
+module iperf {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.iperf.o"
 
-	depends libs
-	depends embox.lib.LibC
-	depends embox.lib.cxx.lib
-	depends third_party.lib.libgcc_toolchain
+	@NoRuntime depends iperf_stubs
+	@NoRuntime depends embox.compat.posix.net.inet_addr
+	@NoRuntime depends embox.compat.posix.pthreads
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.compat.libc.LibCType
+	@NoRuntime depends third_party.lib.libgcc_toolchain
+}
 
-	@Rule(script="true")
-	source  "../../../../iperf/src/iperf-build/src/main.o",
-			"../../../../iperf/src/iperf-build/src/Client.o",
-			"../../../../iperf/src/iperf-build/src/Extractor.o",
-			"../../../../iperf/src/iperf-build/src/gnu_getopt_long.o",
-			"../../../../iperf/src/iperf-build/src/gnu_getopt.o",
-			"../../../../iperf/src/iperf-build/src/Launch.o",
-			"../../../../iperf/src/iperf-build/src/List.o",
-			"../../../../iperf/src/iperf-build/src/Locale.o",
-			"../../../../iperf/src/iperf-build/src/Listener.o",
-			"../../../../iperf/src/iperf-build/src/PerfSocket.o",
-			"../../../../iperf/src/iperf-build/src/ReportCSV.o",
-			"../../../../iperf/src/iperf-build/src/ReportDefault.o",
-			"../../../../iperf/src/iperf-build/src/Reporter.o",
-			"../../../../iperf/src/iperf-build/src/Server.o",
-			"../../../../iperf/src/iperf-build/src/service.o",
-			"../../../../iperf/src/iperf-build/src/Settings.o",
-			"../../../../iperf/src/iperf-build/src/SocketAddr.o",
-			"../../../../iperf/src/iperf-build/src/sockets.o",
-			"../../../../iperf/src/iperf-build/src/stdio.o",
-			"../../../../iperf/src/iperf-build/src/tcp_window_size.o"
-	source "iperf_cmd.c"
-	source "order.mk"
+module iperf_stubs {
+	@IncludePathBefore("$(THIRDPARTY_DIR)/iperf/include")
+	source "stubs.c"
+
+	@NoRuntime depends embox.lib.cxx.lib
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.lib.Printk
 }

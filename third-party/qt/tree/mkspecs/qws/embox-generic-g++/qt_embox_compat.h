@@ -38,50 +38,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MAP_SHARED    0x00
-#define MAP_PRIVATE   0x01
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-#define MAP_FAILED    (-1)
-#include <errno.h>
-static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-	// ToDo: implement for InitFS files
-	(void)addr;
-	(void)len;
-	(void)prot;
-	(void)flags;
-	(void)fd;
-	(void)off;
-	//printf(">>> mmap(%i)\n",fd);
-	errno = EPERM;
-	return NULL;
-}
-static inline int munmap(void *addr, size_t size) {
-	(void)size;
-	printf(">>> munmap(%p)\n",addr);
-	errno = EPERM;
-	return -1;
-}
-/* implemented now
-#include <time.h>
-extern int nanosleep(const struct timespec *req, struct timespec *rem);
-*/
-
-#include <string.h>
-// Stuff below moved here because of testlib
-
-//#define EMBOX_OVERRIDE_GETENV
-/*static inline char *getenv(const char *name) {
-	printf(">>> getenv(%s)\n",name);
-	if (strcmp(name, "QT_QPA_FONTDIR") == 0) {
-		return "/";
-	}
-	return 0;
-}*/
-/*static inline int fflush(FILE *x) {
-	//printf(">>> fflush(%d)\n",(int)x);
-	return EOF;
-}*/
+#include <sys/mman.h>
 
 // because of strcmp
 #include <string.h>
@@ -107,3 +64,10 @@ lfind(const void *key, const void *base, size_t *nmemb, size_t size,
 
 	return NULL;
 }
+
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+static inline pid_t fork(void) {
+	return -1;
+}
+__END_DECLS

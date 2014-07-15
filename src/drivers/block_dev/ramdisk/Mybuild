@@ -2,7 +2,10 @@ package embox.driver
 
 module ramdisk {
 	source "ramdisk.c"
-	option number ramdisk_quantity=8
+	option number ramdisk_quantity = 8
+
+	option number block_size = 4096
+
 
 	depends embox.fs.node
 	depends embox.mem.page_api

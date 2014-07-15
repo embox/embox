@@ -16,7 +16,7 @@
 #include <err.h>
 
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
@@ -26,10 +26,9 @@
 #include <fs/flags.h>
 #include <security/security.h>
 
-extern struct node *kcreat(struct node *dir, const char *path, mode_t mode);
+extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
 
 struct file_desc *kopen(struct node *node, int flag) {
-	//struct node *node;
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
@@ -216,6 +215,22 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 
 	if (ret < 0) {
 		return ret;
+	}
+
+	return 0;
+}
+
+int kftruncate(struct file_desc *desc, off_t length) {
+	int ret;
+
+	ret = ktruncate(desc->node, length);
+	if (0 > ret) {
+		/* XXX ktruncate sets errno */
+		return -errno;
+	}
+
+	if (desc->cursor > length) {
+		desc->cursor = length;
 	}
 
 	return 0;

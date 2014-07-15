@@ -8,7 +8,7 @@
  *      Author: vita
  */
 
-#include <lib/url_parser.h>
+#include "url_parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>

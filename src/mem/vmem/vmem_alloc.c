@@ -103,7 +103,7 @@ static int unit_init() {
 			__phymem_allocator->free,
 			MMU_PAGE_SIZE);
 
-	VIRTUAL_PAGES_INFO_LEN = virt_page_allocator->capacity - virt_page_allocator->free;
+	VIRTUAL_PAGES_INFO_LEN = virt_page_allocator->pages_n * virt_page_allocator->page_size - virt_page_allocator->free;
 
 	return ENOERR;
 }

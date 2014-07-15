@@ -50,7 +50,7 @@
 
 #include <fs/node.h>
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
@@ -60,6 +60,7 @@
 
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
 #include <arpa/inet.h>
 
 #include <kernel/time/ktime.h>
@@ -148,7 +149,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 	/* Determine size and location of path table and allocate buffer */
 	ptlen = cdfs_isonum_733(vd->path_table_size);
 	ptblk = cdfs_isonum_731(vd->type_l_path_table);
-	cdfs->path_table_buffer = malloc(ptlen);
+	cdfs->path_table_buffer = sysmalloc(ptlen);
 	if (!cdfs->path_table_buffer) {
 		return -ENOMEM;
 	}
@@ -194,7 +195,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 
 	/* Allocate path table */
 	cdfs->path_table = (iso_pathtable_record_t **)
-							malloc(cdfs->path_table_records *
+							sysmalloc(cdfs->path_table_records *
 							sizeof(iso_pathtable_record_t **));
 	if (!cdfs->path_table) {
 		return -ENOMEM;
@@ -418,7 +419,7 @@ int cdfs_mount(struct nas *root_nas)
 	}
 
 	/* Allocate file system */
-	cdfs = (cdfs_t *) malloc(sizeof(cdfs_t));
+	cdfs = (cdfs_t *) sysmalloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
 	cdfs->bdev = root_nas->fs->bdev;
 	cdfs->blks =
@@ -448,7 +449,7 @@ int cdfs_mount(struct nas *root_nas)
 		if (memcmp(vd->id, "CD001", 5) != 0) {
 			/*free_buffer_pool(cdfs->cache); */
 			//block_dev_close(cdfs->bdev);
-			free(cdfs);
+			sysfree(cdfs);
 			return -EIO;
 		}
 
@@ -501,12 +502,12 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
-		free(cdfs->path_table_buffer);
+		sysfree(cdfs->path_table_buffer);
 	}
 	if (cdfs->path_table) {
-		free(cdfs->path_table);
+		sysfree(cdfs->path_table);
 	}
-	free(cdfs);
+	sysfree(cdfs);
 
 	return 0;
 }
@@ -673,7 +674,7 @@ static int cdfs_opendir(struct nas *nas, char *name) {
 	}
 
 	// Allocate and initialize file block
-	cdfile = (cdfs_file_t *) malloc(sizeof(cdfs_file_t));
+	cdfile = (cdfs_file_t *) sysmalloc(sizeof(cdfs_file_t));
 	if (!cdfile) {
 		return -ENOMEM;
 	}
@@ -794,17 +795,13 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	char path [PATH_MAX];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
 	fi->flags = flags;
 
-	vfs_get_path_by_node(node, path);
-	/* set relative path in this file system */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
+	vfs_get_relative_path(node, path, PATH_MAX);
 
 	if(0 == cdfs_open(node->nas, path)) {
 		return 0;
@@ -902,10 +899,6 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
-
 	if (NULL == (dir_nas->fs = filesystem_create("iso9660"))) {
 		return -ENOMEM;
 	}
@@ -919,7 +912,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
+	//XXX vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
@@ -943,9 +936,9 @@ static int cdfsfs_mount(void *dev, void *dir) {
 static int cdfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				cdfs_umount_entry(child->nas);
 			}
 
@@ -1000,8 +993,8 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 		strncpy(tail, path, PATH_MAX);
 	}
 
-	if(1 != numrec) {
-		dir = vfs_lookup(root, tail);
+	if (1 != numrec) {
+		dir = vfs_subtree_lookup(root, tail);
 	}
 
 	return dir;
@@ -1093,7 +1086,7 @@ static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 			}
 			name[namelen] = 0;
 
-			node = vfs_create_child(dir_node, name, S_IFREG);
+			node = vfs_subtree_create_child(dir_node, name, S_IFREG);
 			if (!node) {
 				return -ENOMEM;
 			}
@@ -1150,7 +1143,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		if (*name) {
 			dir_node = cdfs_get_dir_node(cdfs, pathrec->parent, root_node);
 
-			node = vfs_create_child(dir_node, name, S_IFDIR);
+			node = vfs_subtree_create_child(dir_node, name, S_IFDIR);
 			if (!node) {
 				return -ENOMEM;
 			}

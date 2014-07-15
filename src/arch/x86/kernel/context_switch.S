@@ -26,7 +26,7 @@ context_switch:
 	movl 0x04(%esp), %ecx          /* Point ecx to next registers */
 	movl CTX_X86_EBX(%ecx), %ebx   /* Restore ebx */
 	movl CTX_X86_EDI(%ecx), %edi   /* Restore edi */
-	movl CTX_X86_ESP(%ecx), %esi   /* Restore esp */
+	movl CTX_X86_ESI(%ecx), %esi   /* Restore esi */
 	movl CTX_X86_EBP(%ecx), %ebp   /* Restore ebp */
 	movl CTX_X86_ESP(%ecx), %esp   /* Restore esp */
 	push CTX_X86_EFLAGS(%ecx)      /* Push saved flags */

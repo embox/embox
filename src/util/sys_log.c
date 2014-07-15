@@ -14,7 +14,7 @@
 
 #include <util/sys_log.h>
 
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 #include <framework/mod/options.h>
 
@@ -114,7 +114,7 @@ void show_log(unsigned int count, bool *disp_types){
 	int n, final_count, current;
 
 	if(!serial){ /* if there are no messages to display */
-		prom_printf("No messages to display\n");
+		printk("No messages to display\n");
 		return;
 	}
 
@@ -124,11 +124,11 @@ void show_log(unsigned int count, bool *disp_types){
 	for(n=0; n<final_count; n++){
 		if(disp_types != NULL){
 			if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
-				prom_printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}else{  /* no specific information on output */
-				prom_printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+				printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
 							 types_str[log[current].msg_type], log[current].module, log[current].func,
 							 log[current].msg);
 		}

@@ -20,20 +20,11 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 typedef void item_print(const char *path, stat_t *sb);
 
 static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
 }
-
-static char dir_name[NAME_MAX];
-static size_t dir_namel;
-static int recursive;
-static item_print *printer;
 
 static void print_access(int flags) {
 	putchar(flags & S_IROTH ? 'r' : '-');
@@ -42,6 +33,10 @@ static void print_access(int flags) {
 }
 
 #define BUFLEN 1024
+
+static void printer_simple(const char *path, stat_t *sb) {
+	printf(" %s\n", path);
+}
 
 static void printer_long(const char *path, stat_t *sb) {
 	struct passwd pwd, *res;
@@ -70,20 +65,10 @@ static void printer_long(const char *path, stat_t *sb) {
 		printf(" %10s", gres->gr_name);
 	}
 
-	printf(" %s", path);
-
-	if (sb->st_mode & S_IFDIR) {
-		putchar('/');
-	}
-
-	putchar('\n');
+	printer_simple(path, sb);
 }
 
-static void printer_simple(const char *path, stat_t *sb) {
-	printf("%s\n", path);
-}
-
-static void print(char *path, DIR *dir) {
+static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 	struct dirent *dent;
 
 	while (NULL != (dent = readdir(dir))) {
@@ -112,23 +97,24 @@ static void print(char *path, DIR *dir) {
 				printf("Cannot recurse to %s\n", line);
 			}
 
-			print(line, d);
+			print(line, d, recursive, printer);
 
 			closedir(d);
 		}
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	DIR *dir;
 
-	int opt_cnt = 0;
-	int opt, l;
+	int opt;
+	char dir_name[NAME_MAX];
+	int recursive;
+	item_print *printer;
 
 	printer = printer_simple;
 	recursive = 0;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':
@@ -136,11 +122,9 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'l':
 			printer = printer_long;
-			opt_cnt++;
 			break;
 		case 'R':
 			recursive = 1;
-			opt_cnt++;
 			break;
 		case '?':
 			break;
@@ -151,6 +135,18 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
+		int l;
+		stat_t sb;
+
+		if (-1 == stat(argv[optind], &sb)) {
+			return -errno;
+		}
+
+		if (~sb.st_mode & S_IFDIR) {
+			printer(argv[optind], &sb);
+			return 0;
+		}
+
 		sprintf(dir_name, "%s", argv[optind]);
 		// trim trailing slash
 		l = strlen(dir_name);
@@ -159,13 +155,11 @@ static int exec(int argc, char **argv) {
 		sprintf(dir_name, "%s", "");
 	}
 
-	dir_namel = strlen(dir_name);
-
 	if (NULL == (dir = opendir(dir_name))) {
 		return -errno;
 	}
 
-	print(dir_name, dir);
+	print(dir_name, dir, recursive, printer);
 
 	closedir(dir);
 

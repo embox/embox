@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <pthread.h>
+#include <kernel/thread/thread_cancel.h>
 
 int pthread_cancel(pthread_t thread) {
 	return thread_cancel(thread);

@@ -93,14 +93,14 @@ void work_enable(struct work *w) {
 }
 
 void work_queue_run(struct work_queue *wq) {
-	struct work *w, *next;
+	struct work *w;
 	int handled;
 
 	ipl_t ipl;
 
 	ipl = ipl_save();
 	while (!dlist_empty(&wq->list)) {
-		dlist_foreach_entry(w, next, &wq->list, link) {
+		dlist_foreach_entry(w, &wq->list, link) {
 			dlist_del(&w->link);
 			w->state &= ~WS_PENDING;
 

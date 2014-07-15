@@ -32,8 +32,6 @@ int statfs(const char *path, struct statfs *buf);
 #define ID_EFFECTIVE 0
 #define ID_REAL 1
 
-#define ELOOP 40
-
 #define SIG_BLOCK 0
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
@@ -51,33 +49,8 @@ struct sockaddr_un {
     char sun_path[108];
 };
 
-#define WNOHANG 0
 
-
-#define MAP_SHARED    0x00
-#define MAP_PRIVATE   0x01
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-#define MAP_FAILED    (-1)
-#include <errno.h>
-static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-	// ToDo: implement for InitFS files
-	(void)addr;
-	(void)len;
-	(void)prot;
-	(void)flags;
-	(void)off;
-	printf(">>> mmap(%i)\n",fd);
-	errno = EPERM;
-	return 0;
-}
-
-static inline int munmap(void *addr, size_t size) {
-	(void)size;
-	printf(">>> munmap(%p)\n",addr);
-	errno = EPERM;
-	return -1;
-}
+#include <sys/mman.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -114,7 +87,6 @@ inet_makeaddr(net, host)
 	return in;
 }
 
-#define E2BIG  7
 #define EILSEQ 84
 
 #define EMLINK 31
@@ -144,8 +116,6 @@ int res_query(const char *dname, int class, int type,
 	printf(">>> res_query(%s)\n",dname);
 	return -1;
 }
-
-#define WEXITSTATUS(s) (s)
 
 static inline
 int socketpair(int domain, int type, int protocol, int sv[2]) {
@@ -206,13 +176,6 @@ int initgroups(const char *user, gid_t group) {
 	DPRINT();
 	errno = EPERM;
 	return -1;
-}
-
-static inline
-struct group *getgrgid(gid_t gid) {
-	DPRINT();
-	errno = EPERM;
-	return 0;
 }
 
 static inline
@@ -322,6 +285,14 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }
 
+//XXX redefine malloc through sysmalloc. Revert it!
+#include <stdlib.h>
+#define malloc(x)     sysmalloc(x)
+#define free(x)       sysfree(x)
+#define memalign(x,y) sysmemalign(x,y)
+#define realloc(x,y)  sysrealloc(x,y)
+#define calloc(x,y)   syscalloc(x,y)
+
 #ifndef HAVE_CLOCK_GETTIME
 #define HAVE_CLOCK_GETTIME
 #endif
@@ -332,5 +303,15 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 #define rb_first rb_first_samba
 #define rb_insert_color rb_insert_color_samba
 #define rb_erase rb_erase_samba
+
+static inline int fork(void) {
+	DPRINT();
+	return -1;
+}
+
+static inline int fdatasync(int fd) {
+	DPRINT();
+	return -1;
+}
 
 #endif /* SAMBA_EMBOX_COMPAT_H_ */

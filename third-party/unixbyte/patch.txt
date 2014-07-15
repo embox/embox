@@ -1,0 +1,284 @@
+diff -ur UnixBench/Makefile unixbyte/Makefile
+--- UnixBench/Makefile	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/Makefile	2014-03-19 20:06:34.830737068 +0400
+@@ -53,7 +53,7 @@
+ # COMPILER CONFIGURATION: Set "CC" to the name of the compiler to use
+ # to build the binary benchmarks.  You should also set "$cCompiler" in the
+ # Run script to the name of the compiler you want to test.
+-CC=gcc
++#CC=gcc
+ 
+ # OPTIMISATION SETTINGS:
+ 
+@@ -78,7 +78,7 @@
+ #CFLAGS = -DTIME -std1 -verbose -w0
+ 
+ ## generic gcc CFLAGS.  -DTIME must be included.
+-CFLAGS = -DTIME -Wall -pedantic -ansi
++CFLAGS += -DTIME
+ 
+ 
+ ##############################################################################
+@@ -111,14 +111,16 @@
+ endif
+ 
+ # Program binaries.
+-BINS = $(PROGDIR)/arithoh $(PROGDIR)/register $(PROGDIR)/short \
+-	$(PROGDIR)/int $(PROGDIR)/long $(PROGDIR)/float $(PROGDIR)/double \
+-	$(PROGDIR)/hanoi $(PROGDIR)/syscall $(PROGDIR)/context1 \
+-	$(PROGDIR)/pipe $(PROGDIR)/spawn $(PROGDIR)/execl \
+-	$(PROGDIR)/dhry2 $(PROGDIR)/dhry2reg  $(PROGDIR)/looper \
+-	$(PROGDIR)/fstime $(PROGDIR)/whetstone-double $(GRAPHIC_BINS)
++BINS = $(PROGDIR)/arithoh.o $(PROGDIR)/register.o $(PROGDIR)/short.o \
++	$(PROGDIR)/int.o $(PROGDIR)/long.o $(PROGDIR)/float.o $(PROGDIR)/double.o \
++	$(PROGDIR)/hanoi.o $(PROGDIR)/syscall.o $(PROGDIR)/context1.o \
++	$(PROGDIR)/pipe.o $(PROGDIR)/spawn.o $(PROGDIR)/execl.o \
++	$(PROGDIR)/looper.o \
++	$(PROGDIR)/fstime.o \
++	$(PROGDIR)/poll.o $(PROGDIR)/select.o \
++	$(PROGDIR)/dhry2.o $(PROGDIR)/dhry2reg.o $(GRAPHIC_BINS)
+ ## These compile only on some platforms...
+-# $(PROGDIR)/poll $(PROGDIR)/poll2 $(PROGDIR)/select
++# $(PROGDIR)/poll $(PROGDIR)/poll2 $(PROGDIR)/select $(PROGDIR)/dhry2.o $(PROGDIR)/dhry2reg.o
+ 
+ # Required non-binary files.
+ REQD = $(BINS) $(PROGDIR)/unixbench.logo \
+@@ -181,61 +183,57 @@
+ programs: $(BINS)
+ 
+ # Individual programs
+-$(PROGDIR)/arithoh:	$(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/arithoh ${CFLAGS} ${OPTON} -Darithoh $(SRCDIR)/arith.c
+-$(PROGDIR)/register: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/register ${CFLAGS} ${OPTON} -Ddatum='register int' $(SRCDIR)/arith.c
+-$(PROGDIR)/short: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/short ${CFLAGS} ${OPTON} -Ddatum=short $(SRCDIR)/arith.c
+-$(PROGDIR)/int: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/int ${CFLAGS} ${OPTON} -Ddatum=int $(SRCDIR)/arith.c
+-$(PROGDIR)/long: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/long ${CFLAGS} ${OPTON} -Ddatum=long $(SRCDIR)/arith.c
+-$(PROGDIR)/float: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/float ${CFLAGS} ${OPTON} -Ddatum=float $(SRCDIR)/arith.c
+-$(PROGDIR)/double: $(SRCDIR)/arith.c
+-	$(CC) -o $(PROGDIR)/double ${CFLAGS} ${OPTON} -Ddatum=double $(SRCDIR)/arith.c
+-$(PROGDIR)/whetstone-double: $(SRCDIR)/whets.c
+-	$(CC) -o $(PROGDIR)/whetstone-double ${CFLAGS} ${OPTON} -DDP -DUNIX -DUNIXBENCH $(SRCDIR)/whets.c -lm
+-$(PROGDIR)/hanoi: $(SRCDIR)/hanoi.c
+-	$(CC) -o $(PROGDIR)/hanoi ${CFLAGS} ${OPTON} $(SRCDIR)/hanoi.c
+-
+-$(PROGDIR)/poll: $(SRCDIR)/time-polling.c
+-	$(CC) -DHAS_POLL -DUNIXBENCH -o $(PROGDIR)/poll ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+-
+-$(PROGDIR)/poll2: $(SRCDIR)/time-polling.c
+-	$(CC) -DHAS_POLL2 -DUNIXBENCH -o $(PROGDIR)/poll2 ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+-
+-$(PROGDIR)/select: $(SRCDIR)/time-polling.c
+-	$(CC) -DHAS_SELECT -DUNIXBENCH -o $(PROGDIR)/select ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+-
+-$(PROGDIR)/fstime: $(SRCDIR)/fstime.c
+-	$(CC) -o $(PROGDIR)/fstime ${CFLAGS} ${OPTON} $(SRCDIR)/fstime.c
+-
+-$(PROGDIR)/syscall: $(SRCDIR)/syscall.c
+-	$(CC) -o $(PROGDIR)/syscall ${CFLAGS} ${OPTON} $(SRCDIR)/syscall.c
+-$(PROGDIR)/context1: $(SRCDIR)/context1.c
+-	$(CC) -o $(PROGDIR)/context1 ${CFLAGS} ${OPTON} $(SRCDIR)/context1.c
+-$(PROGDIR)/pipe: $(SRCDIR)/pipe.c
+-	$(CC) -o $(PROGDIR)/pipe ${CFLAGS} ${OPTON} $(SRCDIR)/pipe.c
+-$(PROGDIR)/spawn: $(SRCDIR)/spawn.c
+-	$(CC) -o $(PROGDIR)/spawn ${CFLAGS} ${OPTON} $(SRCDIR)/spawn.c
+-$(PROGDIR)/execl: $(SRCDIR)/execl.c $(SRCDIR)/big.c
+-	$(CC) -o $(PROGDIR)/execl ${CFLAGS} ${OPTON} $(SRCDIR)/execl.c
++$(PROGDIR)/arithoh.o:	$(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/arithoh.o ${CFLAGS} ${OPTON} -Darithoh $(SRCDIR)/arith.c
++$(PROGDIR)/register.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/register.o ${CFLAGS} ${OPTON} -Ddatum='register int' $(SRCDIR)/arith.c
++$(PROGDIR)/short.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/short.o ${CFLAGS} ${OPTON} -Ddatum=short $(SRCDIR)/arith.c
++$(PROGDIR)/int.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/int.o ${CFLAGS} ${OPTON} -Ddatum=int $(SRCDIR)/arith.c
++$(PROGDIR)/long.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/long.o ${CFLAGS} ${OPTON} -Ddatum=long $(SRCDIR)/arith.c
++$(PROGDIR)/float.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/float.o ${CFLAGS} ${OPTON} -Ddatum=float $(SRCDIR)/arith.c
++$(PROGDIR)/double.o: $(SRCDIR)/arith.c
++	$(CC) -c -o $(PROGDIR)/double.o ${CFLAGS} ${OPTON} -Ddatum=double $(SRCDIR)/arith.c
++$(PROGDIR)/whetstone-double.o: $(SRCDIR)/whets.c
++	$(CC) -c -o $(PROGDIR)/whetstone-double.o ${CFLAGS} ${OPTON} -DDP -DUNIX -DUNIXBENCH $(SRCDIR)/whets.c -lm
++$(PROGDIR)/hanoi.o: $(SRCDIR)/hanoi.c
++	$(CC) -c -o $(PROGDIR)/hanoi.o ${CFLAGS} ${OPTON} $(SRCDIR)/hanoi.c
++
++$(PROGDIR)/poll.o: $(SRCDIR)/time-polling.c
++	$(CC) -DHAS_POLL -DUNIXBENCH -c -o $(PROGDIR)/poll.o ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
++
++$(PROGDIR)/poll2.o: $(SRCDIR)/time-polling.c
++	$(CC) -DHAS_POLL2 -DUNIXBENCH -c -o $(PROGDIR)/poll2.o ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
++
++$(PROGDIR)/select.o: $(SRCDIR)/time-polling.c
++	$(CC) -DHAS_SELECT -DUNIXBENCH -c -o $(PROGDIR)/select.o ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
++
++$(PROGDIR)/fstime.o: $(SRCDIR)/fstime.c
++	$(CC) -c -o $(PROGDIR)/fstime.o ${CFLAGS} ${OPTON} $(SRCDIR)/fstime.c
++
++$(PROGDIR)/syscall.o: $(SRCDIR)/syscall.c
++	$(CC) -c -o $(PROGDIR)/syscall.o ${CFLAGS} ${OPTON} $(SRCDIR)/syscall.c
++$(PROGDIR)/context1.o: $(SRCDIR)/context1.c
++	$(CC) -c -o $(PROGDIR)/context1.o ${CFLAGS} ${OPTON} $(SRCDIR)/context1.c
++$(PROGDIR)/pipe.o: $(SRCDIR)/pipe.c
++	$(CC) -c -o $(PROGDIR)/pipe.o ${CFLAGS} ${OPTON} $(SRCDIR)/pipe.c
++$(PROGDIR)/spawn.o: $(SRCDIR)/spawn.c
++	$(CC) -c -o $(PROGDIR)/spawn.o ${CFLAGS} ${OPTON} $(SRCDIR)/spawn.c
++$(PROGDIR)/execl.o: $(SRCDIR)/execl.c $(SRCDIR)/big.c
++	$(CC) -c -o $(PROGDIR)/execl.o ${CFLAGS} ${OPTON} $(SRCDIR)/execl.c
+ 
+-$(PROGDIR)/dhry2: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
++$(PROGDIR)/dhry2.o: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_1.c
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_2.c
+-	$(CC) -o $(PROGDIR)/dhry2 ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1.o $(SRCDIR)/dhry_2.o
+-	cd $(SRCDIR); rm -f dhry_1.o dhry_2.o
+-$(PROGDIR)/dhry2reg: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
++$(PROGDIR)/dhry2reg.o: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_1.c -o dhry_1_reg.o
+ 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_2.c -o dhry_2_reg.o
+-	$(CC) -o $(PROGDIR)/dhry2reg ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1_reg.o $(SRCDIR)/dhry_2_reg.o
+-	cd $(SRCDIR); rm -f dhry_1_reg.o dhry_2_reg.o
+ 
+-$(PROGDIR)/looper: $(SRCDIR)/looper.c
+-	$(CC) -o $(PROGDIR)/looper ${CFLAGS} ${OPTON} $(SRCDIR)/looper.c
++$(PROGDIR)/looper.o: $(SRCDIR)/looper.c
++	$(CC) -c -o $(PROGDIR)/looper.o ${CFLAGS} ${OPTON} $(SRCDIR)/looper.c
+ 
+ $(PROGDIR)/ubgears: $(SRCDIR)/ubgears.c
+ 	$(CC) -o $(PROGDIR)/ubgears ${CFLAGS} ${OPTON} $(SRCDIR)/ubgears.c $(GL_LIBS)
+
+
+
+diff -ur UnixBench/src/time-polling.c unixbyte/src/time-polling.c 
+--- UnixBench/src/time-polling.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/time-polling.c	2014-02-27 17:37:12.558721342 +0400
+@@ -56,8 +56,11 @@
+ #include <string.h>
+ #include <sys/time.h>
+ #include <sys/resource.h>
++#ifdef HAS_SELECT
++#  include <sys/select.h>
++#endif
+ #ifdef HAS_POLL
+-#  include <sys/poll.h>
++#  include <poll.h>
+ #endif
+ #ifdef HAS_POLL2
+ #  include <linux/poll2.h>
+
+
+diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c 
+--- UnixBench/src/timeit.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/timeit.c	2014-03-02 22:45:36.286261387 +0400
+@@ -28,14 +28,20 @@
+ 
+ #include <signal.h>
+ #include <unistd.h>
++#include <kernel/time/timer.h>
+ 
+-void wake_me(seconds, func)
++static void timer_handler(struct sys_timer *timer, void *param) {
++	kill(getpid(), SIGALRM);
++}
++
++static void wake_me(seconds, func)
+ 	int seconds;
+ 	void (*func)();
+ {
+-	/* set up the signal handler */
++	struct sys_timer *timer;
++
+ 	signal(SIGALRM, func);
+-	/* get the clock running */
+-	alarm(seconds);
++
++	timer_set(&timer, TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
+ }
+
+
+
+diff -ur UnixBench/src/pipe.c unixbyte/src/pipe.c 
+--- UnixBench/src/pipe.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/pipe.c	2014-03-02 21:34:16.927456326 +0400
+@@ -16,7 +16,7 @@
+  *                     Andy Kahn <kahn@zk3.dec.com>
+  *
+  ******************************************************************************/
+-char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
++static char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
+ /*
+  *  pipe  -- test single process pipe throughput (no context switching)
+  *
+@@ -27,9 +27,9 @@
+ #include <errno.h>
+ #include "timeit.c"
+ 
+-unsigned long iter;
++static unsigned long iter;
+ 
+-void report()
++static void report()
+ {
+ 	fprintf(stderr,"COUNT|%ld|1|lps\n", iter);
+ 	exit(0);
+
+ 	
+diff -ur UnixBench/src/spawn.c unixbyte/src/spawn.c 
+--- UnixBench/src/spawn.c	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/spawn.c	2014-03-03 00:45:33.868691627 +0400
+@@ -16,7 +16,7 @@
+  *                     Andy Kahn <kahn@zk3.dec.com>
+  *
+  ******************************************************************************/
+-char SCCSid[] = "@(#) @(#)spawn.c:3.3 -- 5/15/91 19:30:20";
++static char SCCSid[] = "@(#) @(#)spawn.c:3.3 -- 5/15/91 19:30:20";
+ /*
+  *  Process creation
+  *
+@@ -27,9 +27,9 @@
+ #include <sys/wait.h>
+ #include "timeit.c"
+ 
+-unsigned long iter;
++static unsigned long iter;
+ 
+-void report()
++static void report()
+ {
+ 	fprintf(stderr,"COUNT|%lu|1|lps\n", iter);
+ 	exit(0);
+@@ -40,7 +40,7 @@
+ char	*argv[];
+ {
+ 	int	slave, duration;
+-	int	status;
++	int	status = 0;
+ 
+ 	if (argc != 2) {
+ 		fprintf(stderr,"Usage: %s duration \n", argv[0]);
+@@ -67,7 +67,7 @@
+ 			exit(2);
+ 		} else
+ 			/* master */
+-			wait(&status);
++			task_waitpid(slave);
+ 		if (status != 0) {
+ 			fprintf(stderr,"Bad wait status: 0x%x\n", status);
+ 			exit(2);
+
+
+ diff -ur UnixBench/src/dhry.h unixbyte/src/dhry.h
+--- UnixBench/src/dhry.h	2011-01-18 09:44:53.000000000 +0300
++++ unixbyte/src/dhry.h	2014-03-18 20:52:02.742506755 +0400
+@@ -357,6 +357,7 @@
+  ***************************************************************************
+  */
+ 
++#define TIME
+ 
+ /* Compiler and system dependent definitions: */
+

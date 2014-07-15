@@ -38,11 +38,13 @@
 #include <util/array.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/sysmalloc.h>
 
 #include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <limits.h>
@@ -747,7 +749,7 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size_t size;
 	int error;
 
-	bpb = malloc(SEC_SIZE);
+	bpb = sysmalloc(SEC_SIZE);
 	if (bpb == NULL) {
 		return ENOMEM;
 	}
@@ -756,12 +758,12 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	size = SEC_SIZE;
 	error = device_read(fmp->dev, bpb, &size, 0);
 	if (error) {
-		free(bpb);
+		sysfree(bpb);
 		return error;
 	}
 	if (bpb->bytes_per_sector != SEC_SIZE) {
 		DPRINTF(("fatfs: invalid sector size\n"));
-		free(bpb);
+		sysfree(bpb);
 		return EINVAL;
 	}
 
@@ -788,10 +790,10 @@ static int fat_read_bpb(struct fatfsmount *fmp) {
 	} else {
 		/* FAT32 is not supported now! */
 		DPRINTF(("fatfs: invalid FAT type\n"));
-		free(bpb);
+		sysfree(bpb);
 		return EINVAL;
 	}
-	free(bpb);
+	sysfree(bpb);
 
 	DPRINTF(("----- FAT info -----\n"));
 	DPRINTF(("drive:%x\n", (int)bpb->physical_drive));
@@ -814,7 +816,7 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 
 	DPRINTF(("fatfs_mount device=%s\n", dev));
 
-	fmp = malloc(sizeof(struct fatfsmount));
+	fmp = sysmalloc(sizeof(struct fatfsmount));
 	if (fmp == NULL) {
 		return ENOMEM;
 	}
@@ -825,17 +827,17 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	}
 
 	error = ENOMEM;
-	fmp->io_buf = malloc(fmp->sec_per_cl * SEC_SIZE);
+	fmp->io_buf = sysmalloc(fmp->sec_per_cl * SEC_SIZE);
 	if (fmp->io_buf == NULL) {
 		goto err1;
 	}
 
-	fmp->fat_buf = malloc(SEC_SIZE * 2);
+	fmp->fat_buf = sysmalloc(SEC_SIZE * 2);
 	if (fmp->fat_buf == NULL) {
 		goto err2;
 	}
 
-	fmp->dir_buf = malloc(SEC_SIZE);
+	fmp->dir_buf = sysmalloc(SEC_SIZE);
 	if (fmp->dir_buf == NULL) {
 		goto err3;
 	}
@@ -846,11 +848,11 @@ static int fat_mount(mount_t mp, char *dev, int flags, void *data) {
 	vp->v_blkno = CL_ROOT;
 	return 0;
  err3:
-	free(fmp->fat_buf);
+	sysfree(fmp->fat_buf);
  err2:
-	free(fmp->io_buf);
+	sysfree(fmp->io_buf);
  err1:
-	free(fmp);
+	sysfree(fmp);
 	return error;
 }
 
@@ -861,11 +863,11 @@ static int fat_unmount(mount_t mp) {
 	struct fatfsmount *fmp;
 
 	fmp = mp->m_data;
-	free(fmp->dir_buf);
-	free(fmp->fat_buf);
-	free(fmp->io_buf);
+	sysfree(fmp->dir_buf);
+	sysfree(fmp->fat_buf);
+	sysfree(fmp->io_buf);
 	mutex_destroy(&fmp->lock);
-	free(fmp);
+	sysfree(fmp);
 	return 0;
 }
 
@@ -875,7 +877,7 @@ static int fat_unmount(mount_t mp) {
 static int fat_vget(mount_t mp, vnode_t vp) {
 	struct fatfs_node *np;
 
-	np = malloc(sizeof(struct fatfs_node));
+	np = sysmalloc(sizeof(struct fatfs_node));
 	if (np == NULL) {
 		return ENOMEM;
 	}
@@ -927,9 +929,7 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node (nod, (char *) path);
-	/* set relative path in this file system */
-	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
+	vfs_get_relative_path(nod, (char *) path, PATH_MAX);
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
@@ -988,9 +988,9 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 static int fatfs_init(void * par);
 static int fatfs_format(void * bdev);
 static int fatfs_mount(void * dev, void *dir);
-static int fatfs_create(struct node *parent_node, struct node *new_node);
-static int fatfs_delete(struct node *node);
-static int fatfs_truncate (struct node *node, off_t length);
+static int fatfs_create(struct path *parent_node, struct path *new_node);
+static int fatfs_delete(struct path *node);
+static int fatfs_truncate (struct path *node, off_t length);
 static int fatfs_umount(void *dir);
 
 static struct fsop_desc fatfs_fsop = {
@@ -1045,9 +1045,6 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc =  -ENODEV;
-	}
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc =  -ENOTEMPTY;
 	}
 
 	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
@@ -1119,13 +1116,8 @@ static int fatfs_delete(struct node *node) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	vfs_get_path_by_node(node, path);
+	vfs_get_relative_path(node, path, PATH_MAX);
 
-	/*
-	 * remove the root name to give a name to fat file system name
-	 * and set relative path in this file system
-	 */
-	path_cut_mount_dir(path, (char *) fsi->mntto);
 	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fsi);

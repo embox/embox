@@ -19,7 +19,7 @@ char  *optarg = NULL;
 static int sp = 1;
 static int not_opt = 0;
 
-int getopt(int argc, char **argv, const char *opts) {
+int getopt(int argc, char *const argv[], const char *opts) {
 	int c;
 	char *cp;
 

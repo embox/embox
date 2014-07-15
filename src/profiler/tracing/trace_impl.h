@@ -12,14 +12,21 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include <util/array.h>
 #include <util/location.h>
+#include <util/list.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
-//#include <kernel/time/timecounter.h>
 #include <kernel/time/itimer.h>
+
+#include <embox/unit.h>
+
+#define FUNC_QUANTITY OPTION_GET(NUMBER,max_functions_quantity)
+#define TB_MAX_DEPTH  OPTION_GET(NUMBER,max_recursion_depth)
 
 struct __trace_point {
 	const char *name;
@@ -28,16 +35,27 @@ struct __trace_point {
 	bool active;
 };
 
+struct tb_time {
+	time64_t time;
+	struct tb_time *next;
+};
+
 struct __trace_block {
 	const char *name;
+	void *func;
 	struct location_func location;
-	struct __trace_point *begin;
-	struct __trace_point *end;
-	struct itimer *tc;
-	int64_t count;
+
+	/* List of all time_enter on recursive trace_block_enter */
+	struct tb_time *time_list_head;
+
+	int depth; /* Depth of recursion */
+
 	time64_t time;
-	bool active;
+	time64_t max_time;
+
+	int64_t count;
 	bool is_entered;
+	bool active;
 };
 
 #define __TRACE_POINT_DEF(_name, tp_name)   \
@@ -55,19 +73,16 @@ struct __trace_block {
 		__tracepoint_handle(tp_pointer)
 
 #define __TRACE_BLOCK_DEF(tb_name)                  	\
-	static struct __trace_point tb_name ## _b;      	\
-	static struct __trace_point tb_name ## _e; 			\
-	static struct itimer tb_name ## _tc;				\
 	static struct __trace_block tb_name  = {        	\
 			.name  = #tb_name,							\
 			.location = LOCATION_FUNC_INIT,				\
-			.begin = &tb_name ## _b,     				\
-			.end   = &tb_name ## _e,                	\
-			.tc    = &tb_name ## _tc,               	\
 			.time  = 0,									\
+			.max_time = 0,								\
 			.count = 0,									\
+			.depth = 0,									\
 			.active = true, 							\
 			.is_entered = false,						\
+			.time_list_head = NULL,						\
 	};                                              	\
 	ARRAY_SPREAD_DECLARE(struct __trace_block *,		\
 			__trace_blocks_array);              		\

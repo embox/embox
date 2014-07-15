@@ -10,13 +10,14 @@
 #define FRAMEWORK_TEST_ASSERT_IMPL_H_
 
 #include <string.h>
+#include <sys/cdefs.h>
 
 #include <util/location.h>
 
 #include "types.h"
 #include "emit_impl.h"
 
-extern void __test_assertion_handle(int pass,
+EXTERN_C void __test_assertion_handle(int pass,
 		const struct __test_assertion_point *point);
 
 #define __test_assertion_point_ref(_reason) \

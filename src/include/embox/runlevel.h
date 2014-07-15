@@ -10,7 +10,7 @@
 #define EMBOX_RUNLEVEL_H_
 
 /** Total amount of run levels. */
-#define RUNLEVEL_NRS_TOTAL 4
+#define RUNLEVEL_NRS_TOTAL 5
 
 /**
  * Checks if the specified @c runlevel_nr is less then #RUNLEVEL_NRS_TOTAL
@@ -25,12 +25,6 @@
 
 /** Type representing the run level. */
 typedef int runlevel_nr_t;
-
-extern int runlevel_enter(runlevel_nr_t level);
-extern int runlevel_leave(runlevel_nr_t level);
-
-extern runlevel_nr_t runlevel_get_entered(void);
-extern runlevel_nr_t runlevel_get_leaved(void);
 
 /**
  * Sets the run level to the exact value.

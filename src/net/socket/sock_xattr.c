@@ -9,6 +9,8 @@
 #include <net/sock.h>
 #include <util/member.h>
 #include <fs/xattr_list.h>
+#include <kernel/task/resource/security.h>
+#include <security/smac.h>
 
 #include <fs/idesc.h>
 
@@ -48,7 +50,6 @@ static const struct idesc_xattrops sock_xattrops = {
 };
 
 void sock_xattr_init(struct sock *sock) {
-
 	sock->idesc.idesc_xattrops = &sock_xattrops;
 
 	xattr_list_init(&sock->sock_xattr.xattr_list);

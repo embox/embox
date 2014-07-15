@@ -4,8 +4,8 @@ module raw_sock {
 	source "raw_sock.c"
 
 	depends embox.framework.net.sock
-	depends embox.lib.LibCAssert
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.LibCString
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.util.List
@@ -14,23 +14,21 @@ module raw_sock {
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
-	option number amount_tcp_port=65536
 
 	depends route
 	depends sock
 	depends embox.compat.posix.net.inet_addr
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
 
 module udp_sock {
 	source "udp_sock.c"
-	option number amount_udp_port=65536
 
 	depends embox.framework.net.sock
-	depends embox.lib.LibCAssert
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.LibCString
 	depends embox.net.lib.udp
 	depends embox.util.indexator
 	depends embox.util.List
@@ -74,6 +72,7 @@ module socket {
 	source "socket_desc.c"
 	option number connect_timeout=5000
 
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 	depends embox.net.sock
+	depends embox.net.dev //ksocket, netdev_get_by_name
 }

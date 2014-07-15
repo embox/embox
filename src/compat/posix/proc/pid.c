@@ -11,5 +11,5 @@
 #include <unistd.h>
 
 pid_t getpid(void) {
-	return task_getid();
+	return task_get_id(task_self());
 }

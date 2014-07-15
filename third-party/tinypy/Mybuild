@@ -8,6 +8,6 @@ module tinypy_core {
 	@InitFS
 	source "fib.py", "py2bc.py"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 }

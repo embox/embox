@@ -12,6 +12,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 
 int idesc_init(struct idesc *idesc, const struct idesc_ops *ops, idesc_access_mode_t amode) {
@@ -35,7 +36,7 @@ int idesc_check_mode(struct idesc *idesc, idesc_access_mode_t amode) {
 int idesc_close(struct idesc *idesc, int fd) {
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 	assert(it);
 	idesc_table_del(it, fd);
 

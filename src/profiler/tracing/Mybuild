@@ -1,15 +1,23 @@
 package embox.profiler
 
 @DefaultImpl(no_tracing)
-abstract module trace { }
+abstract module trace {
+}
 
 module no_tracing extends trace {
 	source "no_trace.c", "no_trace_impl.h"
 }
 
 module tracing extends trace {
+	option number max_functions_quantity = 8192//65536
+	option number max_recursion_depth = 8192
+
 	source "trace.c", "trace_impl.h"
+	source "__cyg_profile.c"
 	depends embox.kernel.timer.itimer
+	depends embox.kernel.time.clock_source
+	depends embox.util.hashtable
+	depends embox.lib.debug.symbol
 }
 
 module coverage {

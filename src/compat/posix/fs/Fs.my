@@ -6,12 +6,14 @@ module All {
 		dirent,
 		fsop,
 		getcwd,
+		umask,
 		xattr,
 		libgen
 }
 
 static module file {
 	depends file_ops
+	depends lseek
 	depends open
 }
 
@@ -19,7 +21,7 @@ static module chdir {
 	source "chdir.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module dirent {
@@ -28,48 +30,65 @@ static module dirent {
 
 	depends embox.fs.core
 	depends embox.mem.objalloc
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
+	depends embox.fs.dcache
+	depends embox.compat.posix.fs.getcwd
+}
+
+static module lseek {
+	source "lseek.c"
+
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.errno
 }
 
 static module file_ops {
-	source "file_ops.c"
+	source "ioctl.c"
 	source "close.c"
 	source "fstat.c"
 	source "fsync.c"
-	source "lseek.c"
 	source "read.c"
 	source "write.c"
 	source "ftruncate.c"
 	source "fcntl.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.idx_table
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.errno
 }
 
 static module fsop {
 	source "fsop.c"
 
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.Perm
 	depends embox.fs.SysLibFileSystem
+	depends umask // mkdir
 }
 
 static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCString
 }
 
 static module open {
 	source "open.c"
 
 	depends embox.fs.index_operation
-	depends embox.kernel.task.errno
+	depends embox.kernel.task.resource.errno
 	depends libgen
 	depends dirent
+	depends umask
+}
+
+static module umask {
+	source "umask.c"
+
+	option number default_umask = 0022
+	depends embox.kernel.task.task_resource
 }
 
 static module xattr {

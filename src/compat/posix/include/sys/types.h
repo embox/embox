@@ -12,6 +12,7 @@
 #ifndef __ASSEMBLER__
 
 #include <asm/types.h>
+#include <linux/types.h>
 
 #include <defines/size_t.h>
 

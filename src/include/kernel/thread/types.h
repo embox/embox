@@ -20,6 +20,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
 #include <kernel/runnable/runnable.h>
+#include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
 
@@ -88,6 +89,8 @@ struct thread {
 
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
+
+	struct thread_wait thread_wait;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

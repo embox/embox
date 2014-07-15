@@ -4,8 +4,8 @@ package embox.compat.posix.proc
 module All {
 
 	depends exec,
-		fork,
-		wait,
+		//vfork,
+		//waitpid,
 		//signal,
 		exit,
 		uid,
@@ -14,23 +14,41 @@ module All {
 		pid
 }
 
-static module exec {
+@DefaultImpl(exec_stop_parent)
+abstract module exec { }
+
+
+static module exec_lib {
 	source "exec.c"
-
-	depends embox.util.LibUtil
+	depends embox.kernel.task.resource.module_ptr
 }
 
-static module fork {
-	source "fork.c"
+@DefaultImpl(fork_copy_everything)
+abstract module fork { }
 
-	depends embox.kernel.task.kfork
-	depends embox.util.LibUtil
+static module vfork_entry {
+	source "vfork.c"
 }
 
-static module wait {
-	source "wait.c"
+module fork_copy_everything extends fork {
+	source "fork_copy_everything.c"
+	depends embox.arch.fork_entry
+	depends fork_copy_addr_space
+}
+
+/* FIXME artifical module to bypass single `extends` restriction */
+static module fork_copy_addr_space extends embox.kernel.addr_space {
+	source "fork_copy_addr_space.h"
+}
+
+@DefaultImpl(vfork_internal_stub)
+abstract module vfork { }
+
+static module waitpid {
+	source "waitpid.c"
 
 	depends embox.util.LibUtil
+	depends embox.kernel.task.syslib.waitpid
 }
 
 static module signal {
@@ -54,7 +72,7 @@ static module exit {
 static module uid {
 	source "uid.c"
 
-	depends embox.kernel.task.u_area
+	depends embox.kernel.task.resource.u_area
 }
 
 static module nice {
@@ -65,6 +83,8 @@ static module nice {
 
 static module priority {
 	source "priority.c"
+
+	depends embox.kernel.task.resource.u_area
 }
 
 static module pid {

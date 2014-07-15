@@ -27,12 +27,13 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/sysmalloc.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
@@ -52,7 +53,7 @@ static int jffs2_read_inode (struct _inode *inode);
 static void jffs2_clear_inode (struct _inode *inode);
 
 static int jffs2_truncate_file (struct _inode *inode);
-static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids malloc when user may be under memory pressure */
+static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids kmalloc when user may be under memory pressure */
 static unsigned char n_fs_mounted = 0;  /* a counter to track the number of jffs2 instances mounted */
 
 /***********************
@@ -99,7 +100,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 			}
 			jffs2_clear_inode(this);
 			memset(this, 0x5a, sizeof(*this));
-			free(this);
+			sysfree(this);
 			if (parent && parent != this) {
 				parent->i_count--;
 				this = root_i;
@@ -317,7 +318,7 @@ static int jffs2_read_super(struct super_block *sb) {
     out_nodes:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
-	free(c->blocks);
+	sysfree(c->blocks);
 
 	return err;
 }
@@ -342,7 +343,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 
 	jffs2_sb->bdev = dir_nas->fs->bdev;
 
-	c->inocache_list = malloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
+	c->inocache_list = sysmalloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
 	if (!c->inocache_list) {
 		return ENOMEM;
 	}
@@ -364,7 +365,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 			jffs2_compressors_exit();
 		}
 
-		free(c->inocache_list);
+		sysfree(c->inocache_list);
 		return err;
 	}
 
@@ -391,8 +392,8 @@ static int jffs2_mount(struct nas *dir_nas) {
 static int umount_vfs_dir_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				umount_vfs_dir_entry(child->nas);
 			}
@@ -442,13 +443,13 @@ static int jffs2_umount(struct nas *dir_nas) {
 			jffs2_free_full_dirent(fd);
 		}
 
-		free(root);
+		sysfree(root);
 
 		/* Clean up the super block and root inode */
 		jffs2_free_ino_caches(c);
 		jffs2_free_raw_node_refs(c);
-		free(c->blocks);
-		free(c->inocache_list);
+		sysfree(c->blocks);
+		sysfree(c->inocache_list);
 
 		D2(printf("jffs2_umount No current mounts\n"));
 	} else {
@@ -986,7 +987,7 @@ static struct _inode *new_inode(struct super_block *sb) {
 	struct _inode *inode;
 	struct _inode *cached_inode;
 
-	inode = malloc(sizeof (struct _inode));
+	inode = sysmalloc(sizeof (struct _inode));
 	if (inode == NULL) {
 		return 0;
 	}
@@ -1045,7 +1046,7 @@ struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino) {
 		return inode;
 	}
 
-	/* Not cached, so malloc it */
+	/* Not cached, so kmalloc it */
 	inode = new_inode(sb);
 	if (inode == NULL) {
 		return ERR_PTR(-ENOMEM);
@@ -1099,7 +1100,7 @@ void jffs2_iput(struct _inode *i) {
 		parent = i->i_parent;
 		jffs2_clear_inode(i);
 		memset(i, 0x5a, sizeof(*i));
-		free(i);
+		sysfree(i);
 
 		if (parent && parent != i) {
 			i = parent;
@@ -1177,7 +1178,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i,
 		up(&(f->sem));
 		jffs2_clear_inode(inode);
 		memset(inode, 0x6a, sizeof(*inode));
-		free(inode);
+		sysfree(inode);
 		return ERR_PTR(ret);
 	}
 	inode->i_nlink = 1;
@@ -1404,8 +1405,7 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	nas->fi->ni.size = fi->_inode->i_size;
 
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
 	return jffs2_open(fsi->jffs2_sb.s_root, path, flags);
 }
@@ -1558,9 +1558,9 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 			ino = fd_list->ino;
 			if (ino) {
 				inode = jffs2_iget(dir_i->i_sb, ino);
-				if(NULL == (vfs_node = vfs_lookup(dir_nas->node,
+				if(NULL == (vfs_node = vfs_subtree_lookup(dir_nas->node,
 						(const char *) fd_list->name))) {
-					vfs_node = vfs_create(dir_nas->node,
+					vfs_node = vfs_subtree_create(dir_nas->node,
 							(const char *) fd_list->name, inode->i_mode);
 					if(NULL == vfs_node) {
 						return ENOMEM;
@@ -1622,7 +1622,7 @@ static int jffs2fs_delete(struct node *node) {
 	struct node *parents;
 	struct jffs2_file_info *par_fi, *fi;
 
-	if (NULL == (parents = vfs_get_parent(node))) {
+	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
@@ -1653,7 +1653,7 @@ static int jffs2fs_delete(struct node *node) {
 static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
 	char dev_node_path[PATH_MAX];
 
-	vfs_get_path_by_node(dev_node, dev_node_path);
+	vfs_get_relative_path(dev_node, dev_node_path, PATH_MAX);
 
 	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
 }
@@ -1690,7 +1690,7 @@ static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
 
 	jffs_flash_name(dev_node, flash_node_name);
 
-	if (NULL == (flash_node = vfs_lookup(NULL, flash_node_name))) {
+	if (NULL == (flash_node = vfs_subtree_lookup(vfs_get_root(), flash_node_name))) {
 		return jffs_bdev_by_node(dev_node, err);
 	}
 
@@ -1706,10 +1706,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
 
 	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
 		rc = ENOMEM;
@@ -1728,7 +1724,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct jffs2_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;

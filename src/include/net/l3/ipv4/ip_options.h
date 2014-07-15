@@ -43,7 +43,7 @@ typedef struct ip_options {
 	unsigned char   router_alert;
 	unsigned char   cipso;
 	unsigned char   __pad2;
-	unsigned char __data[0];
+	unsigned char __data;
 } ip_options_t;
 
 /* IP options */
@@ -69,7 +69,7 @@ typedef struct ip_options {
 #define IPOPT_RR	(7 |IPOPT_CONTROL)
 #define IPOPT_SID	(8 |IPOPT_CONTROL | IPOPT_COPY)
 #define IPOPT_SSRR	(9 |IPOPT_CONTROL | IPOPT_COPY)
-//#define IPOPT_RA	(20|IPOPT_CONTROL |IPOPT_COPY)
+#define IPOPT_RA	(20|IPOPT_CONTROL |IPOPT_COPY) /* ip router arert */
 
 #define	IPOPT_TS_TSONLY		0		/* timestamps only */
 #define	IPOPT_TS_TSANDADDR	1		/* timestamps and addresses */

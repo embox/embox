@@ -21,6 +21,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <util/binalign.h>
 
 
 #include <kernel/printk.h>
@@ -95,6 +96,7 @@ static struct greth_dev greth_dev;
 static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	struct greth_bd *bd = dev->base->rx_desc_p;
 
+	assert(binalign_check_bound((uintptr_t)skb->mac.raw, 4));
 	bd->address = (uint32_t)skb->mac.raw;
 	bd->status = GRETH_BD_EN | GRETH_BD_IE;
 
@@ -109,6 +111,7 @@ static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff 
 static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
 	struct greth_bd *bd = dev->base->tx_desc_p;
 
+	assert(binalign_check_bound((uintptr_t)skb->mac.raw, 4));
 	bd->address = (uint32_t)skb->mac.raw;
 	bd->status = GRETH_BD_EN | skb->len;
 
@@ -292,15 +295,17 @@ static int greth_init(void) {
 	struct net_device *nic;
 	int res;
 	unsigned int irq;
-	char hw_addr[] = {0x1,0x2,0x3,0x4,0x5,0x6};
+	char hw_addr[] = {0x0,0x0,0x7a,0xcc,0x0,0x13};
 
+	res = dev_regs_init(&irq);
+	if (res != 0) {
+		return res;
+	}
 
 	nic = etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
-
-	dev_regs_init(&irq);
 
 	nic->drv_ops = &greth_ops;
 	nic->irq = irq;

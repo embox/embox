@@ -12,9 +12,12 @@
 #include <fs/xattr.h>
 #include <fs/flags.h>
 #include <fs/idesc.h>
+#include <net/sock.h>
 #include <security/smac.h>
 
 #include <security/security.h>
+
+#include <kernel/task/resource/security.h>
 
 #include <module/embox/security/smac.h>
 #include <framework/mod/options.h>
@@ -42,6 +45,10 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	return 1;
 }
 
+static int node_setlabel(struct node *n, const char *label) {
+	return kfile_xattr_set(n, smac_xattrkey, label, strlen(label) + 1, 0);
+}
+
 static int idesc_getlabel(struct idesc *idesc, char *label, size_t lablen) {
 	int res = 0;
 
@@ -61,7 +68,7 @@ static int security_xattr_is_service_access(const char *name, int may_access,
 		return 1;
 	}
 
-	res = smac_access(task_self_security(), smac_admin,
+	res = smac_access(task_self_resource_security(), smac_admin,
 			may_access, audit);
 	assert(res != 1);
 	return res;
@@ -78,7 +85,11 @@ int security_node_create(struct node *dir, mode_t mode) {
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_WRITE, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
+}
+
+void security_node_cred_fill(struct node *node) {
+	node_setlabel(node, task_self_resource_security());
 }
 
 int security_node_permissions(struct node *node, int flags) {
@@ -92,7 +103,7 @@ int security_node_permissions(struct node *node, int flags) {
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, flags, &audit);
+	return smac_access(task_self_resource_security(), label, flags, &audit);
 }
 
 int security_node_delete(struct node *dir, struct node *node) {
@@ -124,7 +135,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
 }
 
 int security_xattr_set(struct node *node, const char *name,
@@ -144,7 +155,7 @@ int security_xattr_set(struct node *node, const char *name,
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_WRITE, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
 }
 
 int security_xattr_list(struct node *node, char *list, size_t len) {
@@ -158,7 +169,7 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
 }
 
 int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value, size_t len) {
@@ -177,7 +188,7 @@ int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value,
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
 }
 
 int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *value, size_t len, int flags) {
@@ -196,7 +207,7 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
 }
 
 int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
@@ -210,5 +221,20 @@ int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
 		return res;
 	}
 
-	return smac_access(task_self_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+}
+
+int security_sock_create(struct sock *sock) {
+	char *secure_label;
+	if (NULL != (secure_label = task_resource_security(task_self()))) {
+		if ((0 != strcmp(secure_label, smac_floor)) &&
+				(0 != strcmp(secure_label, smac_admin))) { //FIXME problem with su -c dropbeard
+			idesc_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label) + 1, 0);
+		}
+	}
+	return 0;
+}
+
+int security_sock_label(struct sock *sock, char *label, size_t len) {
+	return idesc_getxattr(&sock->idesc, smac_xattrkey, label, len);
 }

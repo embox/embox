@@ -40,7 +40,7 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 
 	ctrl_endp = dev->endpoints[0];
 
-	usb_endp_control(ctrl_endp, class->get_conf_hnd,
+	usb_endp_control(ctrl_endp, class->get_conf_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -123,9 +123,9 @@ int usb_class_register(struct usb_class *cls) {
 
 static struct usb_class *usb_class_find(struct usb_dev *dev) {
 	usb_class_t ucls = usb_dev_class(dev);
-	struct usb_class *cls, *cls_next;
+	struct usb_class *cls;
 
-	dlist_foreach_entry(cls, cls_next, &usb_classes, lnk) {
+	dlist_foreach_entry(cls, &usb_classes, lnk) {
 		if (cls->usb_class == ucls) {
 			return cls;
 		}

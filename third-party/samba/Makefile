@@ -1,72 +1,125 @@
 
-ifeq ($(ROOT_DIR),)
-$(error ROOT_DIR is not set.)
-endif
+PKG_NAME := samba
+PKG_VER  := 3.6.18
 
-AT=
+PKG_SOURCES := http://ftp.samba.org/pub/samba/stable/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := c7eec3e83fe4c4750240a8a0a214bbd4
 
-SAMBA_DIR       = $(ROOT_DIR)/build/samba
-SAMBA_CMAKE_DIR = $(SAMBA_DIR)/cmake
-SAMBA_LIB       = $(SAMBA_DIR)/lib/libsmbclient.a
-SAMBA_FLAGS     = $(SAMBA_CMAKE_DIR)/flags
+PKG_PATCHES := patch.txt
 
-EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
-EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/../lib/zlib-1.2.8
-EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CPPFLAGS += -include $(abspath .)/samba_embox_compat.h
-EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
+include $(EXTBLD_LIB)
 
-EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
+samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/samba/include \
+	-I$(ROOT_DIR)/build/extbld/third_party/zlib/libs/zlib-1.2.8 \
+	${EMBOX_IMPORTED_CPPFLAGS}
 
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
+$(CONFIGURE) :
+	cp $(ROOT_DIR)/third-party/samba/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		source3/runfromhere.sh ./configure --prefix=$(PKG_INSTALL_DIR) \
+			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			CC=$(EMBOX_GCC) \
+			CPPFLAGS="$(samba_cppflags)" \
+			PKG_CONFIG=/dev/null \
+			--with-libiconv=$(PKG_INSTALL_DIR)\
+			--enable-debug \
+			--enable-developer \
+			--disable-largefile \
+			--disable-pie \
+			--enable-static=ALL \
+			--disable-shared \
+			--disable-shared-libs \
+	      libreplace_cv_HAVE_GETADDRINFO=no \
+	      ac_cv_file__proc_sys_kernel_core_pattern=no \
+	      ac_cv_func_poll=yes \
+	      libreplace_cv_HAVE_MMAP=no \
+	      ac_cv_lib_readline_rl_callback_handler_install=no \
+	      ac_cv_func_getpassphrase=no \
+	      ac_cv_func_sysctlbyname=no \
+	      ac_cv_func_printf=yes \
+	      ac_cv_func_pread=no \
+	      ac_cv_func_pwrite=no \
+	      ac_cv_func_pread64=no \
+	      ac_cv_func_pwrite64=no \
+	      ac_cv_func_posix_fallocate=no \
+	      ac_cv_func_posix_fallocate64=no \
+	      ac_cv_func_fdopendir=no \
+	      ac_cv_func_memcpy=yes \
+	      ac_cv_func_memset=yes \
+	      ac_cv_func_mknod=no \
+	      ac_cv_func_mknod64=no \
+	      ac_cv_func_setgroups=no \
+	      ac_cv_func_syslog=no \
+	      ac_cv_func_strerror=yes \
+	      ac_cv_func_lgetxattr=no \
+	      ac_cv_func_lgetea=no \
+	      ac_cv_func_attr_get=no \
+	      ac_cv_func_llistxattr=no \
+	      ac_cv_func_llistea=no \
+	      ac_cv_func_removexattr=no \
+	      ac_cv_func_removeea=no \
+	      ac_cv_func_extattr_delete_file=no \
+	      ac_cv_func_attr_remove=no \
+	      ac_cv_func_lremovexattr=no \
+	      ac_cv_func_lremoveea=no \
+	      ac_cv_func_fremovexattr=no \
+	      ac_cv_func_fremoveea=no \
+	      ac_cv_func_attr_removef=no \
+	      ac_cv_func_lsetxattr=no \
+	      ac_cv_func_lsetea=no \
+	      ac_cv_func_attr_set=no \
+	      ac_cv_func_yp_get_default_domain=no \
+	      ac_cv_func_fchmod=no \
+	      ac_cv_func_fdatasync=no \
+	      ac_cv_lib_rt_fdatasync=no \
+	      ac_cv_func_posix_memalign=no \
+	      ac_cv_func_getpeereid=no \
+	      samba_cv_HAVE_GETPEEREID=no \
+	      ac_cv_func_setsid=no \
+	      fu_cv_sys_stat_statvfs=no \
+	      ac_cv_func_dlopen=no \
+	      ac_cv_func_shl_load=no \
+	      ac_cv_func_shl_unload=no \
+	      ac_cv_func_shl_findsym=no \
+	      ac_cv_func_utime=no \
+	      ac_cv_func_getpwent_r=no \
+	      ac_cv_func_getgrent_r=no \
+	      ac_cv_func_getgrouplist=no \
+	      ac_cv_func_sigblock=no \
+	      ac_cv_func_sigaction=yes \
+	      ac_cv_func_getgrset=no \
+	      ac_cv_func_nanosleep=no \
+	      ac_cv_lib_ext_rt_nanosleep=no \
+	      ac_cv_search_backtrace_symbols=no \
+	      ac_cv_func_backtrace_symbols=no \
+	      ac_cv_func_connect=yes \
+	      ac_cv_func_strlcpy=no \
+	      ac_cv_func_strndup=no \
+	      ac_cv_func_strnlen=no \
+	      ac_cv_func_waitpid=yes \
+	      ac_cv_func_strtoull=yes \
+	      ac_cv_func_getpass=yes \
+	      libreplace_cv_REPLACE_GETPASS=no \
+	      ac_cv_header_zlib_h=yes \
+		  ac_cv_lib_ext_z_zlibVersion=yes \
+		  samba_cv_zlib_1_2_3=yes \
+		)
+	touch $@
 
-EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)  && ( \
+		source3/runfromhere.sh make EXEEXT=.embox.o LIBS= libsmbclient bin/smbclient.embox.o \
+		MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+	touch $@
 
-EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
-ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
-EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
-endif
-# no wonder the following doesn't work
-# EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
-
-EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
-EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
-EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
-
-EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib -m32
-all:
-
-.PHONY: all $(SAMBA_LIB)
-
-$(SAMBA_CMAKE_DIR):
-	$(AT)mkdir -p $@
-
-$(SAMBA_FLAGS): | $(SAMBA_CMAKE_DIR)
-	-$(AT)rm $@
-	$(AT)echo EMBOX_DERIVED_CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
-	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
-
-$(SAMBA_CMAKE_DIR)/Makefile: CMakeLists.txt $(SAMBA_FLAGS) | $(SAMBA_CMAKE_DIR)
-	$(AT)cd $(SAMBA_CMAKE_DIR) && $(shell cat $(SAMBA_FLAGS)) cmake $(shell pwd)
-
-$(SAMBA_LIB): $(SAMBA_CMAKE_DIR)/Makefile
-	$(AT)cd $(SAMBA_CMAKE_DIR) && $(MAKE) # -j `nproc`
-
-all: $(SAMBA_LIB)
-
+$(INSTALL) :
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/smbclient.embox.o $(PKG_INSTALL_DIR)/smbclient.embox.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libsmbclient.a $(PKG_INSTALL_DIR)/libsmbclient.a
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtevent.a $(PKG_INSTALL_DIR)/libtevent.a
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtalloc.a $(PKG_INSTALL_DIR)/libtalloc.a
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtdb.a $(PKG_INSTALL_DIR)/libtdb.a
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libwbclient.a $(PKG_INSTALL_DIR)/libwbclient.a
+	touch $@

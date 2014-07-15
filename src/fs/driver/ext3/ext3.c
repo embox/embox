@@ -19,6 +19,7 @@
 #include <embox/block_dev.h>
 #include <mem/objalloc.h>
 #include <mem/phymem.h>
+#include <mem/sysmalloc.h>
 #include <drivers/ramdisk.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/block.h>
@@ -26,7 +27,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ext2.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -107,7 +108,8 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	fsi = desc->node->nas->fs->fsi;
 	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
 	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
-	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(datablocks)))) {
+	/* TODO recalculate */
+	if (!(handle = journal_start(fsi->journal, 4 * ext3_trans_blocks(datablocks)))) {
 		return -1;
 	}
 	res = drv->file_op->write(desc, buff, size);
@@ -136,9 +138,10 @@ static int ext3fs_create(struct node *parent_node, struct node *node) {
 	fsi = parent_node->nas->fs->fsi;
 	/**
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
-	 * 2 blocks for child = 1 inode + 1 inode bitmap
+	 * 2 blocks for child = 1 inode + 1 inode bitmap.
+	 * 2 * (ext3_trans_blocks(1) + 2) blocks to create "." and ".."
 	 */
-	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
+	if (!(handle = journal_start(fsi->journal, 3 * (ext3_trans_blocks(1) + 2)))) {
 		return -1;
 	}
 	res = drv->fsop->create_node(parent_node, node);
@@ -246,7 +249,7 @@ static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
 
 static int ext3fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
-	struct ext2fs_dinode *dip = malloc(sizeof(struct ext2fs_dinode));
+	struct ext2fs_dinode *dip = sysmalloc(sizeof(struct ext2fs_dinode));
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
@@ -337,7 +340,7 @@ static int ext3fs_umount(void *dir) {
 	res = drv->fsop->umount(dir);
 
 	journal_delete(fsi->journal);
-	free(data->ext3_journal_inode);
+	sysfree(data->ext3_journal_inode);
 	journal_free_block(fsi->journal, data->j_sb_buffer);
 	objfree(&ext3_journal_cache, data);
 

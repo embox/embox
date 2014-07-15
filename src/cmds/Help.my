@@ -16,7 +16,7 @@ module help {
 	 */
 	source "help.c"
 
-	depends embox.lib.LibC
+	@NoRuntime depends embox.compat.libc.LibCStdio
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

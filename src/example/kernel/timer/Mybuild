@@ -4,7 +4,7 @@ package embox.example.kernel.timer
 module timer {
 	source "timer.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }

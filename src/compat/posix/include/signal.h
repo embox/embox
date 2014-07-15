@@ -71,6 +71,9 @@
 
 __BEGIN_DECLS
 
+typedef int sig_atomic_t;
+
+#define NSIG _SIG_TOTAL
 typedef struct {
 	BITMAP_DECL(bitmap, _SIG_TOTAL);
 } sigset_t;
@@ -130,6 +133,9 @@ extern int sigismember(const sigset_t *, int signo);
 extern int sigaddset(sigset_t *, int signo);
 extern int sigdelset(sigset_t *, int signo);
 
+#define SIG_BLOCK   0
+#define SIG_SETMASK 1
+#define SIG_UNBLOCK 1
 static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
 	(void)how; (void)set; (void)oldset;
 	return -ENOSYS;
@@ -141,14 +147,16 @@ extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
 
 extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
-static inline int raise(int signo) {
-	(void)signo;
-	return 0;
-}
+extern int raise(int signo);
 
 //static inline int sigaction(int sig, const struct sigaction *act,
 		//struct sigaction *oact) { return -1; }
 //static inline int sigfillset(sigset_t *set)
+
+extern const char *const sys_siglist[];
+
+#define MINSIGSTKSZ	2048
+extern int sigaltstack(const stack_t *ss, stack_t *oss);
 
 __END_DECLS
 

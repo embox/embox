@@ -28,10 +28,15 @@
 
 #ifndef __ASSEMBLER__
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 /**
  * Get CPU id
  */
 extern unsigned int cpu_get_id(void);
+
+__END_DECLS
 
 #endif /* !__ASSEMBLER__ */
 

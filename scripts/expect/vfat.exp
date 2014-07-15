@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+proc vfat_setup {} {
+	send "mkdir /vfat_mnt\r"
+	expect ":/#"
+
+	send "umount /vfat_mnt\r"
+	expect ":/#"
+}
+
+TEST_SETUP_TARGET {vfat_setup}
+
+TEST_CASE {vfat test} {
+	test_assert_regexp_equal "mkfs -t vfat /dev/hda\r"             ":/#"
+
+	test_assert_regexp_equal "mount -t vfat /dev/hda /vfat_mnt\r"  ":/#"
+
+	test_assert_regexp_equal "touch /vfat_mnt/f1.txt\r"            ":/#"
+
+	test_assert_regexp_equal "ls /vfat_mnt\r"                      "/vfat_mnt/f1.txt"
+
+	test_assert_regexp_equal "umount /vfat_mnt\r"                  ":/#"
+
+	return 0
+}

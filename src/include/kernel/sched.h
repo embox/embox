@@ -15,7 +15,6 @@
 
 #include <hal/cpu.h>
 
-#include <kernel/thread/types.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/sched_priority.h>
 
@@ -61,6 +60,7 @@ extern void sched_sleep(void);
 extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
 
+#if 0
 /**
  * Adds lwthread to runq.
  * @param lwt
@@ -72,10 +72,9 @@ extern void sched_lwthread_wake(struct lwthread *lwt);
  * Makes exit thread and removes thread from scheduler.
  */
 extern void sched_finish(struct thread *t);
+#endif
 
-static inline int sched_active(struct thread *t) {
-	return t->active;
-}
+extern int sched_active(struct thread *t);
 
 /**
  * Changes scheduling priority of the thread. If the thread is running now
@@ -98,6 +97,7 @@ extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
 
 extern int __sched_wakeup(struct thread *);
 extern int sched_wakeup(struct thread *);
+extern void sched_lwthread_wake(struct lwthread *lwt);
 
 /* XXX thread will not be ever in runq or active - thread is dead,
  * but with allocated resources on its stack */

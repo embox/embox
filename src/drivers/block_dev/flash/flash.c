@@ -15,6 +15,7 @@
 #include <err.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
+#include <fs/path.h>
 
 #include <mem/page.h>
 #include <mem/misc/pool.h>
@@ -92,30 +93,36 @@ struct flash_dev *flash_create(char *path, size_t size) {
 }
 
 struct flash_dev *flash_get_param(char *path) {
-	node_t *flash_node;
+	struct path root, flash_node;
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	if (NULL == (flash_node = vfs_lookup(NULL, path))) {
+	vfs_get_root_path(&root);
+	vfs_lookup(&root, path, &flash_node);
+
+	if (NULL == flash_node.node) {
 		return NULL;
 	}
-	nas = flash_node->nas;
+	nas = flash_node.node->nas;
 	node_fi = nas->fi;
 	return (struct flash_dev *) block_dev(node_fi->privdata)->privdata;
 }
 
 int flash_delete(const char *name) {
-	node_t *flash_node;
+	struct path root, flash_node;
 	struct flash_dev *flash;
 	struct nas *nas;
 	struct node_fi *node_fi;
 	int idx;
 
-	if (NULL == (flash_node = vfs_lookup(NULL, name))) {
+	vfs_get_root_path(&root);
+	vfs_lookup(&root, name, &flash_node);
+
+	if (NULL == flash_node.node) {
 		return -1;
 	}
 
-	nas = flash_node->nas;
+	nas = flash_node.node->nas;
 	node_fi = nas->fi;
 	if (NULL != (flash = (struct flash_dev *)
 							block_dev(node_fi->privdata)->privdata)) {
@@ -124,7 +131,7 @@ int flash_delete(const char *name) {
 		}
 		pool_free(&flash_pool, flash);
 		block_dev_destroy (node_fi->privdata);
-		vfs_del_leaf(flash_node);
+		vfs_del_leaf(flash_node.node);
 	}
 	return 0;
 }

@@ -45,6 +45,7 @@ struct runnable *runq_extract(runq_t *queue) {
 
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
 		struct runnable *r, *nxt;
+
 		dlist_foreach_entry(r, nxt, &queue->list[i], sched_attr.runq_link) {
 			/* Checking the affinity */
 			unsigned int mask = 1 << cpu_get_id();

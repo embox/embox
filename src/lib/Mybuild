@@ -4,12 +4,13 @@ package embox.lib
 abstract module readline_api { }
 
 module rl_linenoise extends readline_api {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
+	@IncludePath("$(THIRDPARTY_DIR)/lib/linenoise")
 	source "readline/rl_linenoise.c"
 
 	depends embox.compat.posix.fs.dirent
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends third_party.lib.linenoise
+	depends embox.compat.libc.LibCStringDup
 }
 
 static module LibCurses {
@@ -22,19 +23,22 @@ static module LibCurses {
 static module LibElf {
 	source "elf/elf.c"
 
-	@NoRuntime depends embox.lib.LibCStdio
-	@NoRuntime depends embox.lib.LibCString
+	@NoRuntime depends embox.compat.libc.LibCStdio
+	@NoRuntime depends embox.compat.libc.LibCString
 }
 
 static module LibExec {
 	source "exec/exec.c"
 
+	depends embox.kernel.task.resource.mmap
 	depends embox.mem.mmap_api
 	@NoRuntime depends LibElf
 }
+static module LibExecStub {
+	source "exec/execstub.c"
+}
 
-
-static module LibCMisc {
+static module LibCrypt {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "crypt/b64.c"
@@ -58,9 +62,21 @@ static module LibGccInternal extends LibGcc {
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
 	source "gcc/mulsi3.c"
-        source "gcc/arm_eabi.c"
+	source "gcc/arm_eabi.c" /* ??? */
+
+	@IncludePath("$(THIRDPARTY_DIR)/lib/softfloat")
+	source "gcc/soft-fp/df.c",
+		"gcc/soft-fp/sf.c",
+		"gcc/soft-fp/tf.c"
 }
 
 static module Tokenizer {
 	source "shell/tokenizer.c"
+}
+
+static module Printk {
+	source "printk.c"
+
+	depends embox.driver.diag
+	@NoRuntime depends embox.compat.libc.Print
 }

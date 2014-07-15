@@ -13,16 +13,19 @@
 #include <embox/cmd.h>
 #include <framework/cmd/api.h>
 
-#include <kernel/task/u_area.h>
+#include <kernel/task/resource/security.h>
+#include <kernel/task/resource/u_area.h>
 #include <security/smac.h>
 
 EMBOX_CMD(su_exec);
 
 static int su_exec(int argc, char *argv[]) {
-	struct task_u_area *uarea = task_self_u_area();
+	struct task_u_area *uarea = task_self_resource_u_area();
 	const struct cmd *login_cmd = cmd_lookup("login");
 	uid_t euid = geteuid();
 	uid_t reuid = getuid();
+	gid_t egid = getegid();
+	gid_t regid = getgid();
 	char old_smac_label[SMAC_LABELLEN];
 	int opt, ret;
 	char *cmd = NULL, *name = "root";
@@ -46,8 +49,9 @@ static int su_exec(int argc, char *argv[]) {
 	}
 
 	uarea->reuid = uarea->euid = 0;
-	strcpy(old_smac_label, task_self_security());
-	strcpy(task_self_security(), smac_admin);
+	uarea->regid = uarea->egid = 0;
+	strcpy(old_smac_label, task_self_resource_security());
+	strcpy(task_self_resource_security(), smac_admin);
 
 	if (cmd) {
 		char *nargv[] = {"", "-c", cmd};
@@ -71,9 +75,11 @@ static int su_exec(int argc, char *argv[]) {
 		printf("%s: incorrect password\n", argv[0]);
 	}
 
-	strcpy(task_self_security(), old_smac_label);
+	strcpy(task_self_resource_security(), old_smac_label);
 	uarea->reuid = reuid;
 	uarea->euid = euid;
+	uarea->regid = regid;
+	uarea->egid = egid;
 
 	return 0;
 

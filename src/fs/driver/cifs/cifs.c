@@ -23,7 +23,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 
 #include <util/math.h>
 
@@ -68,7 +68,7 @@ struct node *
 embox_set_node (struct nas *nas, char *filename, int mode)
 {
 	struct node *node;
-	node = vfs_create (nas->node, filename, samba_type_to_mode_fmt (mode));
+	node = vfs_subtree_create (nas->node, filename, samba_type_to_mode_fmt (mode));
 	if (!node) {
 		return NULL;
 	}
@@ -159,8 +159,8 @@ embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 static int cifs_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				cifs_umount_entry(child->nas);
 			}
@@ -221,17 +221,12 @@ embox_cifs_mount (void *dev, void *dir)
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	if (NULL != vfs_get_child_next (dir_node)) {
-		rc = ENOTEMPTY;
-		return -rc;
-	}
-
-	if (NULL == (dir_nas->fs = filesystem_create ("cifs"))) {
+	if (NULL == (dir_nas->fs = filesystem_create("cifs"))) {
 		rc = ENOMEM;
 		return -rc;
 	}
 
-	if ((ctx = embox_create_smbctx ()) == NULL) {
+	if ((ctx = embox_create_smbctx()) == NULL) {
 		/* ToDo: error: exit without deallocation of filesystem */
 		//Cant create samba context
 		rc = 1;
@@ -239,20 +234,20 @@ embox_cifs_mount (void *dev, void *dir)
 	}
 
 	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc (&cifs_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&cifs_fs_pool))) {
 		/* ToDo: error: exit without deallocation of filesystem */
 		rc = ENOMEM;
 		goto error;
 	}
-	memset (fsi, 0, sizeof (*fsi));
+	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
 	fsi->mntto = dir_node;
 	fsi->ctx = ctx;
 	dir_nas->fs->fsi = fsi;
 
 	//get smb_path
-	rc = embox_cifs_mounting_recurse (dir_node->nas, ctx, smb_path,
-									  sizeof (smb_path));
+	rc = embox_cifs_mounting_recurse(dir_node->nas, ctx, smb_path,
+									sizeof (smb_path));
 	if (0 > rc) {
 		goto error;
 	}
@@ -268,7 +263,7 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct cifs_fs_info *fsi;
-	char fileurl[PATH_MAX];
+	char fileurl[2 * PATH_MAX];
 	SMBCFILE *file;
 	struct stat st;
 	int rc;
@@ -277,9 +272,13 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
+#if 0
 	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
+#endif
+
+	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
 
 	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
 		return -errno;
@@ -378,9 +377,12 @@ static int embox_cifs_node_create(struct node *parent_node, struct node *new_nod
 
 	strcpy(fileurl,pfsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
+#if 0
 	if ((rc = vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
+#endif
+	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
 	mode = new_node->mode & S_IRWXA;
 	if (node_is_directory(new_node)) {
@@ -413,9 +415,12 @@ static int embox_cifs_node_delete(struct node *node) {
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
+#if 0
 	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
+#endif
+	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
 	if (node_is_directory(node)) {
 		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {

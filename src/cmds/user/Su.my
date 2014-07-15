@@ -14,12 +14,14 @@ package embox.cmd.user
 			Anton Kozlov
 	''')
 module su {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "su.c"
 
 	depends embox.compat.posix.passwd
 	depends third_party.lib.linenoise
+	depends embox.kernel.task.resource.security
+	depends embox.kernel.task.resource.u_area
 
+	depends embox.cmd.user.login
 	requires embox.cmd.Shell.commandLine
 
 }

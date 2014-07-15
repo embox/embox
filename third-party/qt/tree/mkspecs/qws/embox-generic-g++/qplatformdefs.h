@@ -109,7 +109,7 @@
 
 
 
-static char *tzname[2];
+static const char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
 	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
@@ -160,56 +160,14 @@ inline int symlink(const char *oldpath, const char *newpath) {
 
 
 // Either this or define __GLIBC__
-#define PATH_MAX 256
+#include <limits.h>
+//#define PATH_MAX 256
 
-#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
-
-
-
-/* Structure describing CPU time used by a process and its children.  */
-struct tms
-{
-  clock_t tms_utime;          /* User CPU time.  */
-  clock_t tms_stime;          /* System CPU time.  */
-
-  clock_t tms_cutime;         /* User CPU time of dead children.  */
-  clock_t tms_cstime;         /* System CPU time of dead children.  */
-};
-
-#include <kernel/task.h>
-
-/* Store the CPU time used by this process and all its
-   dead children (and their dead children) in BUFFER.
-   Return the elapsed real time, or (clock_t) -1 for errors.
-   All times are in CLK_TCKths of a second.  */
-static inline clock_t times (struct tms *__buffer) {
-	//DPRINT();
-	__buffer->tms_cstime = __buffer->tms_cutime = 0;
-	__buffer->tms_stime = task_self()->per_cpu;
-	__buffer->tms_utime = 0;
-
-	return __buffer->tms_stime;
-}
-
-typedef int sig_atomic_t;
-
-// Bad thing to do
-#define NSIG 0
-// Not possible to do so because used in global context
-//#define NSIG (printf(">>> NSIG=0\n"),0)
-
-
-
-
-
+#include <locale.h>
+//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
+//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 #include <arpa/inet.h>
-
-
-
-
-
 
 typedef __u32 u_int32_t;
 typedef __u16 u_int16_t;
@@ -305,15 +263,37 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
+//------BEGIN QProcess
 
-static inline struct group *getgrgid(gid_t gid) {
-	printf(">>> getgrgid %d\n", gid);
-	return NULL;
+static inline pid_t setsid(void) {
+	printf(">>> %s\n", __func__);
+	return 0;
 }
 
+//------ END QProcess
+
 // this is for FILESYSTEMWATCHER
-#define pathconf(path,name) \
-	printf(">>> pathconf(%s,%s)\n",#path,#name),32
+#define _PC_LINK_MAX         0
+#define _PC_MAX_CANON        1
+#define _PC_MAX_INPUT        2
+#define _PC_NAME_MAX         3
+#define _PC_PATH_MAX         4
+#define _PC_PIPE_BUF         5
+#define _PC_CHOWN_RESTRICTED 6
+#define _PC_NO_TRUNC         7
+#define _PC_VDISABLE         8
+
+static inline long pathconf(char *path, int name) {
+	switch (name) {
+	case _PC_NAME_MAX:
+		return NAME_MAX;
+	case _PC_PATH_MAX:
+		return PATH_MAX;
+	default:
+		printf(">>> pathconf(%s,%d)\n",path,name);
+		return 32;
+	}
+}
 
 #endif // __QEMBOX__
 

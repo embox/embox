@@ -5,6 +5,10 @@ abstract module Display {
 
 }
 
+@DefaultImpl(setup_tty_devfs)
+abstract module setup_tty_api {
+}
+
 module GraphicMode extends Display {
 	option string fb_name="fb0"
 	option number vesa_mode=3
@@ -26,38 +30,41 @@ module TextMode extends Display {
 
 }
 
-module start_script {
-	@IncludePath("$(CONF_DIR)")
+module setup_tty_devfs extends setup_tty_api {
+	source "setup_tty_devfs.c"
 
-
-	source "start_script.c"
-
+	depends diag_fd
 	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.idx.dup
 	depends embox.compat.posix.util.environ
 	depends embox.kernel.task.api
-	depends diag_index_desc
-
-	depends embox.cmd.sh.shell
-
-	requires embox.cmd.Shell.commandLine
-
-	option string shell_name=""
-	option string tty_dev=""
-	option number input_buffer = 80
-
-	option number shell_start = 1
-
 }
 
-module diag_index_desc {
-	source "bs_posix_env.c"
+module setup_tty_diag extends setup_tty_api {
+	source "setup_tty_diag.c"
 
-	/* performs fd manipulations, which implies any kind of task be
-	   initialized
-	*/
+	depends diag_fd
+}
+
+module diag_fd {
+	source "diag_fd.c"
+
 	depends embox.kernel.task.api
-	depends embox.driver.tty.tty
 	depends embox.compat.posix.idx.dup
-	depends embox.compat.posix.termios
+	depends embox.fs.idesc
+}
+
+module start_script {
+	option string shell_name=""
+	option string tty_dev=""
+	option number shell_start = 1
+	option boolean stop_on_error = false
+
+	@IncludePath("$(CONF_DIR)")
+	source "start_script.c"
+
+	depends setup_tty_api
+	depends embox.cmd.sh.shell
+	requires embox.cmd.Shell.commandLine
+	@NoRuntime depends embox.compat.libc.LibCStdioFileOps
 }

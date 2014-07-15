@@ -29,6 +29,5 @@ module servd {
 	depends embox.cmd.net.web_server
 	depends embox.cmd.net.web_server.conf
 
-	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "servd.c"
 }

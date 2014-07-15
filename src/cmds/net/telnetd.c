@@ -179,12 +179,18 @@ static void *shell_hnd(void* args) {
 	if (-1 == close(STDOUT_FILENO)) {
 		MD(printf("close STDOUT_FILENO error: %d\n", errno));
 	}
+	if (-1 == close(STDERR_FILENO)) {
+		MD(printf("close STDERR_FILENO error: %d\n", errno));
+	}
 
 	if (-1 == dup2(msg[0], STDIN_FILENO)) {
 		MD(printf("dup2 STDIN_FILENO error: %d\n", errno));
 	}
 	if (-1 == dup2(msg[1], STDOUT_FILENO)) {
 		MD(printf("dup2 STDOUT_FILENO error: %d\n", errno));
+	}
+	if (-1 == dup2(msg[1], STDERR_FILENO)) {
+		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
 	}
 
 	ret = shell_run(shell_lookup("tish"));

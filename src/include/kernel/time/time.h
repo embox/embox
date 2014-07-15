@@ -73,29 +73,29 @@ static inline time64_t timeval_to_ns(const struct timeval *tv) {
 }
 
 /* Round up */
-static inline time64_t clock_to_ns(uint32_t resolution, clock_t ticks) {
-	assert(resolution != 0);
-	return ((time64_t)ticks * NSEC_PER_SEC + resolution - 1) / resolution;
+static inline time64_t clock_to_ns(uint32_t hz, clock_t ticks) {
+	assert(hz != 0);
+	return ((time64_t)ticks * NSEC_PER_SEC + hz - 1) / hz;
 }
 
-static inline clock_t ns_to_clock(uint32_t resolution, time64_t ns) {
-	assert(resolution != 0);
-	return (ns * resolution + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
+static inline clock_t ns_to_clock(uint32_t hz, time64_t ns) {
+	assert(hz != 0);
+	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
-static inline time64_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
+static inline time64_t cycles_to_ns(uint32_t hz, cycle_t cycles) {
 	/**
-	 * Int64 overflow may occure only if resolution
+	 * Int64 overflow may occure only if hz
 	 * is higher than 18 446 744 074
 	 */
-	assert(resolution != 0);
-	return (cycles / resolution) * NSEC_PER_SEC +
-		((cycles % resolution) * NSEC_PER_SEC) / resolution;
+	assert(hz != 0);
+	return (cycles / hz) * NSEC_PER_SEC +
+		((cycles % hz) * NSEC_PER_SEC) / hz;
 }
 
-static inline cycle_t ns_to_cycles(uint32_t resolution, time64_t ns) {
-	assert(resolution != 0);
-	return (ns * resolution + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
+static inline cycle_t ns_to_cycles(uint32_t hz, time64_t ns) {
+	assert(hz != 0);
+	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
 extern clock_t ns2jiffies(time64_t ns);

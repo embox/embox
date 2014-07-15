@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+TEST_CASE {ping can send 1 packet without errors} {
+	variable host_ip
+
+	test_assert_regexp_equal "ping -c 1 $host_ip\r\n" "+0 errors"
+
+	return 0
+}

@@ -21,7 +21,7 @@ clock_t clock_sys_ticks(void) {
 
 clock_t ns2jiffies(time64_t ns) {
 	assert(cs_jiffies->event_device);
-	return ns_to_clock(cs_jiffies->event_device->resolution, ns);
+	return ns_to_clock(cs_jiffies->event_device->event_hz, ns);
 }
 
 clock_t ms2jiffies(time64_t ms) {
@@ -29,11 +29,11 @@ clock_t ms2jiffies(time64_t ms) {
 }
 
 time64_t jiffies2ms(clock_t jiff) {
-	return clock_to_ns(cs_jiffies->event_device->resolution, jiff) / 1000000;
+	return clock_to_ns(cs_jiffies->event_device->event_hz, jiff) / 1000000;
 }
 
 uint32_t clock_freq(void) {
-	return cs_jiffies->event_device->resolution;
+	return cs_jiffies->event_device->event_hz;
 }
 
 static int module_init(void) {
@@ -42,7 +42,7 @@ static int module_init(void) {
 		HW_TIMER_PERIOD
 	};
 
-	/* find clock_event_device with maximal resolution  */
+	/* find clock_event_device with maximal frequency  */
 	cs = clock_source_get_best(CS_WITH_IRQ);
 	assert(cs);
 

@@ -1,0 +1,28 @@
+
+PKG_NAME := zlib
+PKG_VER  := 1.2.8
+
+PKG_SOURCES := http://zlib.net/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 44d667c142d7cda120332623eab69f40
+
+include $(EXTBLD_LIB)
+
+$(CONFIGURE) :
+	export EMBOX_GCC_LINK=full; \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		CC=$(EMBOX_GCC) ./configure \
+	)
+	touch $@
+
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+	touch $@
+
+$(INSTALL) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
+		cp minigzip $(PKG_INSTALL_DIR)/minigzip.o; \
+		cp libz.a $(PKG_INSTALL_DIR); \
+	)
+	touch $@

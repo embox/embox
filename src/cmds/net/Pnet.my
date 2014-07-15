@@ -85,7 +85,7 @@ package embox.cmd.net
 module pnet {
 	source "pnet.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.pnet.core
 	depends embox.pnet.node.linux_dev
 	depends embox.mem.heap_api

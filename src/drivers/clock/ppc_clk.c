@@ -56,13 +56,13 @@ static cycle_t ppc_clk_read(void) {
 
 static struct time_event_device ppc_clk_event = {
 	.config = ppc_clk_config,
-	.resolution = PPCCLK_FREQ / PPCCLK_DECR,
+	.event_hz = PPCCLK_FREQ / PPCCLK_DECR,
 	.irq_nr = PPCCLK_IRQ,
 };
 
 static struct time_counter_device ppc_clk_counter = {
 	.read = ppc_clk_read,
-	.resolution = PPCCLK_FREQ,
+	.cycle_hz = PPCCLK_FREQ,
 };
 
 static struct clock_source ppc_clk_clock_source = {

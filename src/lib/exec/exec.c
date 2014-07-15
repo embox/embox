@@ -16,6 +16,7 @@
 #include <kernel/usermode.h>
 #include <mem/mmap.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/mmap.h>
 
 #define AT_NULL		0		/* End of vector */
 #define AT_IGNORE	1		/* Entry should be ignored */
@@ -162,7 +163,7 @@ static int load_interp(char *filename, exec_t *exec) {
 		}
 	}
 
-	if (!(marea = mmap_alloc_marea(task_self()->mmap, size, 0))) {
+	if (!(marea = mmap_alloc_marea(task_self_resource_mmap(), size, 0))) {
 		free(ph_table);
 		return -ENOMEM;
 	}
@@ -241,7 +242,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 			continue;
 		}
 
-		marea = mmap_place_marea(task_self()->mmap, ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
+		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
 
 		if (!marea) {
 			free(ph_table);
@@ -271,7 +272,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 	return ENOERR;
 }
 
-int execve(const char *filename, char *const argv[], char *const envp[]) {
+int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;
@@ -285,8 +286,8 @@ int execve(const char *filename, char *const argv[], char *const envp[]) {
 		return -1;
 	}
 
-	stack = mmap_create_stack(task_self()->mmap);
-	mmap_create_heap(task_self()->mmap);
+	stack = mmap_create_stack(task_self_resource_mmap());
+	mmap_create_heap(task_self_resource_mmap());
 
 	fill_stack(&stack, &exec, argv, envp);
 

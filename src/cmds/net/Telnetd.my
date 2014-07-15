@@ -19,9 +19,8 @@ module telnetd {
 
 	depends embox.net.tcp_sock
 	depends embox.net.tcp
-	depends embox.kernel.task.multi
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.thread.core
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.signal

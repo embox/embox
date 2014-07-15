@@ -118,7 +118,7 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 		sched_active(t) ? 'A' : ' ',
 		t->ready        ? 'R' : ' ',
 		t->waiting      ? 'W' : ' ',
-		t->id, t->task->tid);
+		t->id, task_get_id(t->task));
 
 	memset(p, '-', end-p-1);
 	*(end-1) = '\0';

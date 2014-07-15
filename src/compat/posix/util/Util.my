@@ -11,7 +11,7 @@ module All {
 }
 
 module Time {
-		depends time,
+	depends time,
 		sleep,
 		gettimeofday
 }
@@ -19,7 +19,7 @@ module Time {
 static module getopt {
 	source "getopt.c"
 
-	depends embox.lib.LibCStdio
+	depends embox.compat.libc.LibCString
 }
 
 static module utsname {
@@ -28,13 +28,18 @@ static module utsname {
 	option string hostname="embox"
 	source "utsname.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module time {
 	source "time.c"
 	source "linux_timer.c"
 
+	depends embox.kernel.time.kernel_time
+}
+
+static module times {
+	source "times.c"
 	depends embox.kernel.time.kernel_time
 }
 
@@ -55,7 +60,7 @@ static module getpass {
 	source "getpass.c"
 
 	depends embox.compat.posix.termios
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 static module gethostname {
@@ -65,6 +70,8 @@ static module gethostname {
 static module environ {
 	source "environ.c"
 
-	depends embox.kernel.task.env
-	depends embox.lib.LibCStdio
+	depends embox.kernel.task.resource.env
+	depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCString
 }

@@ -6,7 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <drivers/irqctrl.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
@@ -36,7 +35,6 @@
 #define SCB_SHP_PERIF_N 8
 
 static struct clock_source this_clock_source;
-
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
@@ -70,14 +68,14 @@ static cycle_t this_read(void) {
 
 static struct time_event_device this_event = {
 	.config = this_config ,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };
 
 
 static struct time_counter_device this_counter = {
 	.read = this_read,
-	.resolution = SYS_CLOCK / CLOCK_DIVIDER,
+	.cycle_hz = SYS_CLOCK / CLOCK_DIVIDER,
 };
 
 static struct clock_source this_clock_source = {
@@ -88,3 +86,5 @@ static struct clock_source this_clock_source = {
 };
 
 EMBOX_UNIT_INIT(this_init);
+
+STATIC_IRQ_ATTACH(SYSTICK_IRQ, clock_handler, &this_clock_source);

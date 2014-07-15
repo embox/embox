@@ -26,6 +26,8 @@
 #include <fs/flags.h>
 
 #include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
+#include <mem/sysmalloc.h>
 
 struct pty;
 
@@ -115,7 +117,7 @@ static const struct idesc_ops pty_master_ops = {
 		.write = pty_master_write,
 		.read  = pty_master_read,
 		.close = pty_close,
-		/*.ioctl = pty_ioctl,*/
+		.ioctl = pty_ioctl,
 		/*.fstat = pty_fstat,*/
 		.status = pty_master_status,
 };
@@ -132,7 +134,7 @@ static const struct idesc_ops pty_slave_ops = {
 static struct pty *pty_create(void) {
 	struct pty *pty;
 
-	pty = malloc(sizeof(struct pty));
+	pty = sysmalloc(sizeof(struct pty));
 
 //	if (pty) {
 //		pty_init(&pty->pty);
@@ -143,13 +145,13 @@ static struct pty *pty_create(void) {
 
 static void pty_delete(struct pty *pty) {
 
-	free(pty);
+	sysfree(pty);
 }
 
 static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_ops *ops) {
 	struct idesc_pty *ipty;
 
-	ipty = malloc(sizeof(struct idesc_pty));
+	ipty = sysmalloc(sizeof(struct idesc_pty));
 
 	if (ipty) {
 		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
@@ -164,7 +166,7 @@ static void idesc_pty_delete(struct idesc_pty *pty, struct idesc **idesc) {
 
 	*idesc = NULL;
 
-	free(pty);
+	sysfree(pty);
 }
 
 #if 0
@@ -331,7 +333,7 @@ int ppty(int ptyfds[2]) {
 	struct idesc_pty *master, *slave;
 	struct idesc_table *it;
 
-	it = task_get_idesc_table(task_self());
+	it = task_resource_idesc_table(task_self());
 
 	pty = NULL;
 	master = slave = NULL;

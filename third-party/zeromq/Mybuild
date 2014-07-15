@@ -1,22 +1,22 @@
 package third_party.zeromq
 
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.gcc.core)
 static module core {
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.lib.cxx.lib
 	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.STLport.core
 
-	source "empty.c" // FIXME: workaround
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/zeromq MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../zeromq/lib/libzmq.a"
-	source "order.mk"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "lib/libzmq.a"
 }
 
 module hwserver extends embox.lib.cxx.app {
 	depends core
 
-	@IncludePath("$(ROOT_DIR)/build/zeromq/include")
+	@IncludePath("$(ROOT_DIR)/extbld/third_party/zeromq/core/include")
 	source "hwserver.cpp"
 }

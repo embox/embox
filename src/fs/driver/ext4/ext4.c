@@ -28,12 +28,13 @@
 #include <fs/vfs.h>
 #include <fs/ext2.h>
 #include <fs/ext4.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/mount.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 
+#include <mem/sysmalloc.h>
 
 
 /*
@@ -194,7 +195,7 @@ static void *ext4_extent_get_extents_in_block(struct nas *nas, uint32_t block) {
 	extents_len = eh.eh_entries * sizeof(struct ext4_extent)
 			+ sizeof(struct ext4_extent_header);
 
-	exts = malloc(extents_len);
+	exts = sysmalloc(extents_len);
 
 	block_dev_read_buffered(nas->fs->bdev, exts, extents_len,
 			block * fsi->s_block_size);
@@ -234,7 +235,7 @@ static uint64_t ext4_extent_get_pblock(struct nas *nas, void *extents, uint32_t 
 		leaf_extents = ext4_extent_get_extents_in_block(nas,
 				recurse_ei->ei_leaf_lo);
 		ret = ext4_extent_get_pblock(nas, leaf_extents, lblock, len);
-		free(leaf_extents);
+		sysfree(leaf_extents);
 	}
 
 	return ret;
@@ -465,8 +466,7 @@ int ext4_open(struct nas *nas) {
 	fsi = nas->fs->fsi;
 
 	/* prepare full path into this filesystem */
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
 	/* alloc a block sized buffer used for all transfers */
 	if (NULL == (fi->f_buf = ext4_buff_alloc(nas, fsi->s_block_size))) {
@@ -647,6 +647,7 @@ static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
 static int ext4fs_init(void * par);
+static int ext4fs_format(void *dev);
 static int ext4fs_mount(void *dev, void *dir);
 static int ext4fs_create(struct node *parent_node, struct node *node);
 static int ext4fs_delete(struct node *node);
@@ -656,6 +657,7 @@ static int ext4fs_umount(void *dir);
 
 static struct fsop_desc ext4_fsop = {
 	.init	     = ext4fs_init,
+	.format      = ext4fs_format,
 	.mount	     = ext4fs_mount,
 	.create_node = ext4fs_create,
 	.delete_node = ext4fs_delete,
@@ -713,11 +715,35 @@ static int ext4fs_create(struct node *parent_node, struct node *node) {
 	return 0;
 }
 
+extern int main_mke2fs(int argc, char **argv);
+
+static int ext4fs_format(void *dev) {
+	struct node *dev_node;
+	int argc = 6;
+	char *argv[6];
+	char dev_path[64];
+
+	dev_node = dev;
+
+	strcpy(dev_path, "/dev/");
+	strcat(dev_path, dev_node->name);
+
+	argv[0] = "mke2fs";
+	argv[1] = "-b";
+	argv[2] = "1024";
+	argv[3] = "-t";
+	argv[4] = "ext4";
+	argv[5] = dev_path;
+
+	getopt_init();
+	return main_mke2fs(argc, argv);
+}
+
 static int ext4fs_delete(struct node *node) {
 	int rc;
 	node_t *parents;
 
-	if (NULL == (parents = vfs_get_parent(node))) {
+	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
@@ -749,10 +775,6 @@ static int ext4fs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
-
 	if (NULL == (dir_nas->fs = filesystem_create(EXT4_NAME))) {
 		rc = ENOMEM;
 		goto error;
@@ -768,7 +790,6 @@ static int ext4fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct ext4_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&ext4_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
@@ -854,9 +875,9 @@ static void ext4_free_fs(struct nas *nas) {
 static int ext4_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				ext4_umount_entry(child->nas);
 			}
 
@@ -1314,7 +1335,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 
 			mode = ext4_type_to_mode_fmt(dp->type);
 
-			node = vfs_create(dir_nas->node, name_buff, mode);
+			node = vfs_subtree_create(dir_nas->node, name_buff, mode);
 			if (!node) {
 				rc = ENOMEM;
 				goto out;

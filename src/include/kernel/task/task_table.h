@@ -9,8 +9,10 @@
 #ifndef KERNEL_TASK_TASK_TABLE_H_
 #define KERNEL_TASK_TASK_TABLE_H_
 
-#include <kernel/task.h>
 #include <sys/cdefs.h>
+#include <module/embox/kernel/task/task_table_api.h>
+
+struct task;
 
 __BEGIN_DECLS
 
@@ -21,7 +23,7 @@ __BEGIN_DECLS
  *
  * @return
  */
-extern int task_table_add(struct task *task);
+extern int task_table_add(struct task *tsk);
 
 /**
  * @brief Get previously added task from a task table
@@ -30,14 +32,14 @@ extern int task_table_add(struct task *task);
  *
  * @return
  */
-extern struct task *task_table_get(int n);
+extern struct task *task_table_get(int tid);
 
 /**
  * @brief Delete task from a task table
  *
  * @param n
  */
-extern void task_table_del(int n);
+extern void task_table_del(int tid);
 
 /**
  * @brief Check, if there is a space in task table for another one task

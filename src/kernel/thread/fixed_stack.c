@@ -5,22 +5,20 @@
  * @author: Anton Bondarev
  */
 
-#include <errno.h>
-#include <stdint.h>
-
-#include <kernel/thread/thread_stack.h>
 #include <kernel/thread.h>
-
-
+#include <kernel/thread/thread_stack.h>
+#include <stddef.h>
 
 void thread_stack_init(struct thread *t, size_t size) {
-	t->stack.stack = (void *)((uintptr_t)(t) + sizeof(struct thread));
-	t->stack.stack_sz = size - sizeof(struct thread);
+	t->stack.stack = t + 1;
+	t->stack.stack_sz = size - sizeof *t;
 }
 
+#if 0
 void thread_stack_set(struct thread *t, void *stack) {
 	t->stack.stack = stack;
 }
+#endif
 
 void *thread_stack_get(struct thread *t) {
 	return t->stack.stack;
@@ -30,16 +28,35 @@ size_t thread_stack_get_size(struct thread *t) {
 	return t->stack.stack_sz;
 }
 
+#if 0
 void thread_stack_set_size(struct thread *t, size_t size) {
 	t->stack.stack_sz = size;
 }
+#endif
 
-int thread_stack_reserved(struct thread *t, size_t size) {
-	if (thread_stack_get_size(t) <= size) {
+#if 0
+int thread_stack_reserve(struct thread *t, size_t size) {
+	if (size > t->stack.stack_sz) {
 		return -ENOMEM;
 	}
 
-	t->stack.stack_sz += size;
+	t->stack.stack += size;
+	t->stack.stack_sz -= size;
 
-	return ENOERR;
+	return 0;
+}
+#endif
+
+void * thread_stack_alloc(struct thread *t, size_t size) {
+	void *space;
+
+	if (size > t->stack.stack_sz) {
+		return NULL;
+	}
+
+	space = t->stack.stack;
+	t->stack.stack += size;
+	t->stack.stack_sz -= size;
+
+	return space;
 }

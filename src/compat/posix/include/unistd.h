@@ -154,16 +154,19 @@ extern int close(int fd);
 
 extern int fsync(int);
 
-/* TODO not implemented link() --Alexander */
-extern int link(const char *oldpath, const char *newpath);
-//extern void sync(void);
-
 extern pid_t fork(void);
+extern pid_t vfork(void);
 
 extern int nice(int incr);
 
 extern int execv(const char *path, char *const argv[]);
 extern int execve(const char *filename, char *const argv[], char *const envp[]);
+
+extern int link(const char *oldpath, const char *newpath);
+extern ssize_t readlink(const char *path, char *buf,
+		       size_t bufsize);
+extern ssize_t readlinkat(int fd, const char *path,
+		       char *buf, size_t bufsize);
 
 extern int unlink(const char *pathname);
 
@@ -220,7 +223,7 @@ static inline int access(const char *path, int amode) {
  * @param opts is the string of all valid options
  * each char case must be given; options taking an arg are followed by = ':'
  */
-extern int getopt(int argc, char **argv, const char *opts);
+extern int getopt(int argc, char *const argv[], const char *opts);
 
 extern char *optarg; /**< argument to optopt */
 extern int optind;   /**< last touched cmdline argument */

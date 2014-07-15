@@ -7,21 +7,14 @@
  */
 
 #include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <limits.h>
-
 #include <util/array.h>
 #include <embox/unit.h>
-
 #include <framework/cmd/api.h>
-
 #include <cmd/shell.h>
-#include <kernel/printk.h>
+#include <stdio.h>
 
-#define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
+#include "setup_tty.h"
+
 #define START_SHELL OPTION_GET(NUMBER,shell_start)
 
 EMBOX_UNIT_INIT(run_script);
@@ -29,36 +22,6 @@ EMBOX_UNIT_INIT(run_script);
 static const char *script_commands[] = {
 	#include <start_script.inc>
 };
-
-#if START_SHELL
-static int setup_tty(const char *dev_name) {
-	int fd;
-	char full_name[PATH_MAX];
-
-	putenv("TERM=emterm");
-
-	if (strlen(dev_name) == 0) {
-		return -EINVAL;
-	}
-
-	strncpy(full_name, "/dev/", sizeof(full_name));
-	strcat(full_name, dev_name);
-
-	if (-1 == (fd = open(full_name, O_RDWR))) {
-		return -errno;
-	}
-
-	dup2(fd, STDIN_FILENO);
-	dup2(fd, STDOUT_FILENO);
-	dup2(fd, STDERR_FILENO);
-
-	if (fd > 2) {
-		close(fd);
-	}
-
-	return 0;
-}
-#endif
 
 static int run_script(void) {
 	const char *command;
@@ -70,27 +33,28 @@ static int run_script(void) {
 		if (NULL == shell) {
 			return -ENOENT;
 		}
-		setenv("shell", shell->name, 0);
 	}
 
-#if START_SHELL
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
 	printf("\nStarted shell [%s] on device [%s]\n",
 		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 
-#endif
-
-	printk("loading start script:\n");
+	printf("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-		printk("> %s \n", command);
+		int ret;
 
-		shell_exec(shell, command);
+		printf("> %s \n", command);
+
+		ret = shell_exec(shell, command);
+
+		if (OPTION_GET(BOOLEAN,stop_on_error) && ret) {
+			return ret;
+		}
 	}
 
 #if START_SHELL
 	shell_run(shell);
-
 #endif
 
 	return 0;

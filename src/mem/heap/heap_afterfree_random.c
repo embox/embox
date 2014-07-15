@@ -13,5 +13,4 @@
 
 void afterfree(void *ptr, size_t size) {
 	memset(ptr, random(), size);
-	return;
 }

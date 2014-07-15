@@ -15,16 +15,18 @@ package embox.cmd.user
 			Anton Kozlov
 	''')
 module login {
-	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "login.c"
 
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.utmp_api
-	depends embox.kernel.task.waitpid
+	depends embox.kernel.task.syslib.waitpid
 	depends embox.security.smac
 	depends embox.security.seculog
-	depends third_party.lib.linenoise
+	depends embox.compat.posix.crypt
+
+	depends embox.lib.readline_api
 
 	requires embox.cmd.Shell.commandLine
 
+	depends embox.security.smac_user_db
 }

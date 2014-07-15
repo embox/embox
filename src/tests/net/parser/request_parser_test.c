@@ -7,7 +7,7 @@
  */
 
 #include <embox/test.h>
-#include <lib/url_parser.h>
+#include <url_parser.h>
 #include <net/util/request_parser.h>
 
 EMBOX_TEST_SUITE("network/parser/request_parser test");

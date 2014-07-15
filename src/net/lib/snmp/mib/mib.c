@@ -87,15 +87,15 @@ mib_obj_t mib_obj_addbyoid(const char *oid, unsigned char len) {
 }
 
 static mib_obj_t getchild_by_id(mib_obj_t obj, unsigned char id) {
-	mib_obj_t cur, nxt;
+	mib_obj_t cur;
 
-	dlist_foreach_entry(cur, nxt, &obj->children, parent_link) {
+	dlist_foreach_entry(cur, &obj->children, parent_link) {
 		if (cur->id == id) {
-			break;
+			return cur;
 		}
 	}
 
-	return (&cur->parent_link == &obj->children ? NULL : cur);
+	return NULL;
 }
 
 static int mibs_inited;

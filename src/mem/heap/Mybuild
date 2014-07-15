@@ -3,18 +3,39 @@ package embox.mem
 @DefaultImpl(heap_bm)
 abstract module heap_api {
 	option number heap_size = 524288
+	depends embox.kernel.task.resource.task_heap
 }
 
 @DefaultImpl(heap_afterfree_default)
 abstract module heap_afterfree { }
 
-module heap_bm extends heap_api {
-	source "heap_bm.c"
-	depends page_api
+@DefaultImpl(sysmalloc_task_based)
+abstract module sysmalloc_api { }
 
+module boundary_markers {
+	source "heap_bm.c"
+
+	depends heap_afterfree
+}
+
+module mspace_malloc {
+	source "mspace_malloc.c"
+
+	depends boundary_markers
+
+	depends page_api
 	depends heap_lds
 	depends embox.mem.static_heap
-	depends heap_afterfree
+}
+
+module heap_bm extends heap_api {
+	source "malloc.c"
+
+	depends mspace_malloc
+
+	depends embox.kernel.task.resource.task_heap
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.api
 }
 
 module heap_simple extends heap_api {
@@ -22,6 +43,15 @@ module heap_simple extends heap_api {
 
 	depends heap_lds
 	depends embox.mem.static_heap
+}
+
+module sysmalloc_task_based extends sysmalloc_api {
+	source "sysmalloc.c"
+
+	depends mspace_malloc
+
+	depends embox.kernel.task.resource.task_heap
+	depends embox.kernel.task.kernel_task
 }
 
 module static_heap {
@@ -35,3 +65,6 @@ module heap_afterfree_default extends heap_afterfree {
 	source "heap_afterfree.c"
 }
 
+module heap_afterfree_random extends heap_afterfree {
+	source "heap_afterfree_random.c"
+}

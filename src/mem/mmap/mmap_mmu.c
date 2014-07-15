@@ -13,8 +13,8 @@
 
 #include <mem/mmap.h>
 #include <mem/vmem.h>
+#include <mem/sysmalloc.h>
 
-#include __impl_x(kernel/task/common.h)
 #include <kernel/thread/types.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
@@ -30,7 +30,7 @@ static int initialized = 0;
 static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t flags) {
 	struct marea *marea;
 
-	if (!(marea = malloc(sizeof(struct marea)))) {
+	if (!(marea = sysmalloc(sizeof(struct marea)))) {
 		return NULL;
 	}
 
@@ -71,11 +71,9 @@ void mmap_free(struct emmap *mmap) {
 }
 
 void mmap_clear(struct emmap *mmap) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
-	dlist_foreach(item, next, &mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		dlist_del(&marea->mmap_link);
 
 		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
@@ -86,7 +84,6 @@ void mmap_clear(struct emmap *mmap) {
 
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
-	struct dlist_head *item, *next;
 	struct marea *marea;
 
 	start = MAREA_ALIGN_DOWN(start);
@@ -96,9 +93,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		return NULL;
 	}
 
-	dlist_foreach(item, next, &mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
-
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		if (INTERSECT(start, end, marea->start, marea->end)) {
 			return NULL;
 		}
@@ -158,12 +153,10 @@ void* mmap_create_heap(struct emmap *mmap) {
 }
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
-	struct dlist_head *item, *next;
 	struct marea *marea, *new_marea;
 	int res;
 
-	dlist_foreach(item, next, &p_mmap->marea_list) {
-		marea = dlist_entry(item, struct marea, mmap_link);
+	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
 		if (!(new_marea = build_marea(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
@@ -188,11 +181,3 @@ static int fini() {
 
 	return 0;
 }
-
-static int task_switch_handler(struct thread *prev, struct thread *next) {
-	mmu_set_context(next->task->mmap->ctx);
-	return 0;
-}
-
-TASK_RESOURCE_NOTIFY(task_switch_handler);
-

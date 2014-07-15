@@ -1,15 +1,20 @@
 package third_party.gcc
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/gcc MAKEFLAGS= EMBOX_ARCH='$(ARCH)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-static module core extends embox.lib.LibGcc {
-	// Causes cyclic dependency: depends embox.lib.LibC
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/core/install/include")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libgcc.a", "libsupc++.a"
 
-	source "empty.c" // FIXME: workaround
+	@NoRuntime depends gcc_stubs
+	@NoRuntime depends embox.lib.cxx.libsupcxx
+}
 
-	@Rule(script="true")
-	source
-		"../../../../gcc/lib/libgcc.a",
-		"../../../../gcc/lib/libsupc++.a"
+module gcc_stubs {
+	@IncludePathBefore("$(THIRDPARTY_DIR)/gcc/include")
+	source "stubs.c"
 
-	source "order.mk"
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.lib.Printk
 }

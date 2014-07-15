@@ -34,20 +34,22 @@ int char_dev_init_all(void) {
 }
 
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	struct node *node;
+	struct path root, node;
 	struct nas *dev_nas;
 
-	node = vfs_lookup(NULL, "/dev");
-	if (node == NULL) {
+	vfs_get_root_path(&root);
+	vfs_lookup(&root, "/dev", &node);
+
+	if (node.node == NULL) {
 		return -ENODEV;
 	}
 
-	node = vfs_create_child(node, name, S_IFCHR | S_IRALL | S_IWALL);
-	if (!node) {
+	vfs_create_child(&node, name, S_IFCHR | S_IRALL | S_IWALL, &node);
+	if (!(node.node)) {
 		return -1;
 	}
 
-	dev_nas = node->nas;
+	dev_nas = node.node->nas;
 	dev_nas->fs = filesystem_create("empty");
 	if (dev_nas->fs == NULL) {
 		return -ENOMEM;

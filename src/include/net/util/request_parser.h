@@ -9,7 +9,7 @@
 #ifndef NET_UTIL_REQUEST_PARSER_H_
 #define NET_UTIL_REQUEST_PARSER_H_
 
-struct parsed_url; /* from $(THIRDPARTY_DIR)/include/lib/url_parser.h */
+struct parsed_url; /* from url_parser.h */
 
 struct http_request {
 	char *method;

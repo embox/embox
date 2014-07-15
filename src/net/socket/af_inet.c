@@ -16,12 +16,11 @@
 #include <net/socket/inet_sock.h>
 #include <net/inetdevice.h>
 #include <embox/net/family.h>
-#include <util/indexator.h>
-#include <embox/net/sock.h>
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <net/l3/route.h>
 #include <net/l3/ipv4/ip.h>
+#include <netinet/in.h>
 
 #include <net/socket/inet_sock.h>
 
@@ -49,16 +48,13 @@ static int inet_init(struct sock *sk) {
 	in_sk = to_inet_sock(sk);
 	in_sk->id = 0;
 	in_sk->uc_ttl = -1;
-	in_sk->src_port_alloced = 0;
 	memset(&in_sk->src_in, 0, sizeof in_sk->src_in);
 	memset(&in_sk->dst_in, 0, sizeof in_sk->dst_in);
 	in_sk->src_in.sin_family = in_sk->dst_in.sin_family = AF_INET;
 
-#if 0
-	in_sk->sk.src_addr = &in_sk->src_in;
-	in_sk->sk.dst_addr = &in_sk->dst_in;
+	in_sk->sk.src_addr = (const struct sockaddr *)&in_sk->src_in;
+	in_sk->sk.dst_addr = (const struct sockaddr *)&in_sk->dst_in;
 	in_sk->sk.addr_len = sizeof(struct sockaddr_in);
-#endif
 
 	return 0;
 }
@@ -68,11 +64,6 @@ static int inet_close(struct sock *sk) {
 
 	assert(sk->p_ops != NULL);
 	if (sk->p_ops->close == NULL) {
-		if (to_inet_sock(sk)->src_port_alloced) {
-			assert(to_inet_sock(sk)->src_in.sin_family == AF_INET);
-			index_unlock(sk->p_ops->sock_port,
-					ntohs(to_inet_sock(sk)->src_in.sin_port));
-		}
 		sock_release(sk);
 		return 0;
 	}
@@ -88,42 +79,72 @@ static void __inet_bind(struct inet_sock *in_sk,
 	memcpy(&in_sk->src_in, addr_in, sizeof *addr_in);
 }
 
+static int inet_addr_tester(const struct sockaddr *lhs_sa,
+		const struct sockaddr *rhs_sa) {
+	static const struct in_addr inaddr_any = {
+		{ .s_addr = htonl(INADDR_ANY) }
+	};
+	const struct sockaddr_in *lhs_in, *rhs_in;
+
+	assert(lhs_sa != NULL);
+	assert(rhs_sa != NULL);
+
+	lhs_in = (const struct sockaddr_in *)lhs_sa;
+	rhs_in = (const struct sockaddr_in *)rhs_sa;
+
+	assert(lhs_in->sin_family == AF_INET);
+	return (lhs_in->sin_family == rhs_in->sin_family)
+			&& ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
+							sizeof rhs_in->sin_addr)))
+			&& (lhs_in->sin_port == rhs_in->sin_port);
+}
+
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
-	const struct sockaddr_in *addr_in;
+	struct sockaddr_in addr_in;
 
 	assert(sk);
 	assert(addr);
 
-	if (addrlen != sizeof *addr_in) {
+	if (addrlen != sizeof addr_in) {
 		return -EINVAL;
 	}
 
-	addr_in = (const struct sockaddr_in *)addr;
-	if (addr_in->sin_family != AF_INET) {
+	memcpy(&addr_in, addr, sizeof addr_in);
+
+	if (addr_in.sin_family != AF_INET) {
 		return -EAFNOSUPPORT;
 	}
-	else if ((addr_in->sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
+	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
+			!ip_is_local(addr_in.sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
 
-	assert(sk->p_ops != NULL);
-	if (sk->p_ops->sock_port != NULL) {
-		if (!index_try_lock(sk->p_ops->sock_port,
-					ntohs(addr_in->sin_port))) {
-			return -EADDRINUSE;
+	if (addr_in.sin_port == 0) {
+		/* Allocation of an ephemeral port, when the port number in a socket address is specified as 0,
+		 * is not POSIX-specified behavior, but it used in Linux, BSD, Windows.
+		 * E.g. manual for Linux - http://man7.org/linux/man-pages/man7/ip.7.html */
+		if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
+					inet_addr_tester, (const struct sockaddr *)&addr_in,
+					sizeof addr_in)) {
+			return -ENOMEM;
 		}
-		to_inet_sock(sk)->src_port_alloced = 1;
+	}
+	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
+				addrlen)) {
+		return -EADDRINUSE;
 	}
 
-	__inet_bind(to_inet_sock(sk), addr_in);
+	__inet_bind(to_inet_sock(sk), &addr_in);
 
 	return 0;
 }
 
 static int inet_bind_local(struct sock *sk) {
-	size_t port;
 	struct sockaddr_in addr_in;
 
 	assert(sk);
@@ -131,17 +152,10 @@ static int inet_bind_local(struct sock *sk) {
 	addr_in.sin_family = AF_INET;
 	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	assert(sk->p_ops != NULL);
-	if (sk->p_ops->sock_port != NULL) {
-		port = index_alloc(sk->p_ops->sock_port, INDEX_NEXT);
-		if (port == INDEX_NONE) {
-			return -ENOMEM;
-		}
-		to_inet_sock(sk)->src_port_alloced = 1;
-		addr_in.sin_port = htons(port);
-	}
-	else {
-		addr_in.sin_port = 0;
+	if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
+				inet_addr_tester, (const struct sockaddr *)&addr_in,
+				sizeof addr_in)) {
+		return -ENOMEM;
 	}
 
 	__inet_bind(to_inet_sock(sk), &addr_in);
@@ -158,7 +172,7 @@ static int __inet_connect(struct inet_sock *in_sk,
 	assert(addr_in != NULL);
 	assert(addr_in->sin_family == AF_INET);
 
-	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, &src_ip);
+	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, NULL, &src_ip);
 	if (ret != 0) {
 		return ret;
 	}
@@ -343,7 +357,12 @@ static int inet_getsockname(struct sock *sk,
 
 	addr_in = (struct sockaddr_in *)addr;
 	memcpy(addr_in, &to_inet_sock(sk)->src_in, sizeof *addr_in);
-	assert(addr_in->sin_family == AF_INET);
+#if 0
+	assert((addr_in->sin_family == AF_UNSPEC)
+			|| (addr_in->sin_family == AF_INET));
+#else
+	addr_in->sin_family = AF_INET;
+#endif
 	*addrlen = sizeof *addr_in;
 
 	return 0;
@@ -363,7 +382,12 @@ static int inet_getpeername(struct sock *sk,
 
 	addr_in = (struct sockaddr_in *)addr;
 	memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
-	assert(addr_in->sin_family == AF_INET);
+#if 0
+	assert((addr_in->sin_family == AF_UNSPEC)
+			|| (addr_in->sin_family == AF_INET));
+#else
+	addr_in->sin_family = AF_INET;
+#endif
 	*addrlen = sizeof *addr_in;
 
 	return 0;

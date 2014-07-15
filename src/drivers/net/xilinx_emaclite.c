@@ -17,10 +17,15 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/l2/ethernet.h>
-#include <embox/unit.h>
+
 #include <arpa/inet.h>
 #include <net/l0/net_entry.h>
 
+#include <embox/unit.h>
+#include <module/embox/driver/net/xemaclite.h>
+
+#define CONFIG_XILINX_EMACLITE_BASEADDR OPTION_GET(NUMBER,xemaclite_base)
+#define CONFIG_XILINX_EMACLITE_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
 
 EMBOX_UNIT_INIT(emaclite_init);
 

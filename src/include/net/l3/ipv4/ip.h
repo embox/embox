@@ -73,4 +73,9 @@ extern const struct net_pack_out_ops *const ip_out_ops
 /* TODO remve this */
 extern int ip_forward(struct sk_buff *skb);
 
+struct sock;
+extern int ip_header_size(struct sock *sock);
+
+extern int ip_header_make_secure(struct sock *sock, struct sk_buff *skb);
+
 #endif /* NET_L3_IPV4_IP_H_ */

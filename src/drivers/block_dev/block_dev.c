@@ -50,13 +50,22 @@ static int bdev_close(struct file_desc *desc) {
 }
 
 static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
-	return block_dev_read_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+	int n_read = block_dev_read_buffered((block_dev_t *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
+	if (n_read > 0) {
+		desc->cursor += n_read;
+	}
+	return n_read;
 }
 
 static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	return block_dev_write_buffered((block_dev_t *) desc->node->nas->fi->privdata,
+	int n_write = block_dev_write_buffered((block_dev_t *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
+	if (n_write > 0) {
+		desc->cursor += n_write;
+	}
+
+	return n_write;
 }
 
 static int bdev_ioctl(struct file_desc *desc, int request, ...) {
@@ -104,7 +113,7 @@ block_dev_t *block_dev(void *dev) {
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
 	size_t bdev_id;
-	node_t *node;
+	struct path node, root;
 	struct nas *nas;
 	struct node_fi *node_fi;
 
@@ -127,16 +136,18 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->driver = driver;
 	bdev->privdata = privdata;
 
-	if (NULL == (node = vfs_create(NULL, path, S_IFBLK | S_IRALL | S_IWALL))) {
+	vfs_get_root_path(&root);
+
+	if (0 != vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		index_free(&block_dev_idx, bdev->id);
 		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
 
-	strncpy (bdev->name, node->name, NAME_MAX);
-	bdev->dev_node = node;
+	strncpy (bdev->name, node.node->name, NAME_MAX);
+	bdev->dev_node = node.node;
 
-	nas = node->nas;
+	nas = node.node->nas;
 	nas->fs = blockdev_fs;
 	node_fi = nas->fi;
 	node_fi->privdata = bdev;
@@ -223,12 +234,18 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 				buffer_clear_flag(bh, BH_NEW);
 			}
 			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor, cplen);
+			/**
+			 * Blocks are stored in the buffer cache in a decrypted state.
+			 * Therefore first we encrypt block, then write it onto disk and then decrypt block.
+			 */
 			buffer_encrypt(bh);
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
 					blksize, blkno + i))) {
+				buffer_decrypt(bh);
 				bcache_buffer_unlock(bh);
 				return res;
 			}
+			buffer_decrypt(bh);
 		}
 		bcache_buffer_unlock(bh);
 	}
@@ -397,17 +414,33 @@ ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 
 
 int block_devs_init(void) {
+#if 0
 	int ret;
 	const block_dev_module_t *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (bdev_module->init != NULL) {
+
 			ret = bdev_module->init(NULL);
 			if (ret != 0) {
 				return ret;
 			}
 		}
-	}
 
+	}
+#endif
 	return 0;
 }
+
+const block_dev_module_t *block_devs_lookup(const char *bd_name) {
+	const block_dev_module_t *bdev_module;
+
+	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
+		if (0 == strcmp(bdev_module->name, bd_name)) {
+			return bdev_module;
+		}
+	}
+
+	return NULL;
+}
+

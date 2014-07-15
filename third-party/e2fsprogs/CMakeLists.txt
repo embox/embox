@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 2.8)
 include(ExternalProject)
 ExternalProject_Add(
    e2fsprogs
-   PREFIX ..
-   DOWNLOAD_DIR ../../../download
+   PREFIX .
+   DOWNLOAD_DIR $ENV{EMBOX_ROOT}/download
    URL http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.42.8/e2fsprogs-1.42.8.tar.gz
 
    URL_MD5 8ef664b6eb698aa6b733df59b17b9ed4

@@ -12,6 +12,7 @@
 //#include <kernel/irq.h> 		/* IRQ is coming soon */
 //#include <drivers/irqctrl.h> 	/* IRQ is coming soon */
 #include <drivers/dm37xx_mux.h>
+#include "omap3_spi_poll.h"
 
 
 EMBOX_UNIT_INIT(omap3_spi_poll_init);

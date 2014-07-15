@@ -39,6 +39,11 @@ extern struct passwd *getpwnam(const char *name);
 extern struct passwd *getpwuid(uid_t uid);
 
 
+
+extern int getmaxuid(void);
+extern int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len);
+
+
 static inline void endpwent(void) { }
 static inline struct passwd * getpwent(void) { return NULL; }
 static inline void setpwent(void) { }

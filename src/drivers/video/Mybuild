@@ -5,7 +5,7 @@ module fb {
 	source "fb.c"
 	option number fb_amount=2
 	depends embox.mem.pool
-	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.compat.libc.LibC
 	//depends embox.fs.rootfs
 	depends fb_videomodes
 	//depends embox.driver.virtual.fb_device
@@ -16,7 +16,7 @@ module bochs {
 
 	depends embox.driver.pci
 	@NoRuntime depends fb
-	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.compat.libc.LibC
 }
 
 module cirrus_logic {
@@ -48,4 +48,9 @@ module vesa_modes {
 
 module fonts {
 	source "fonts.c"
+}
+
+@BuildDepends(efm32zg_sk3200.bsp)
+module efm32_lcd {
+	source "efm32_lcd.c"
 }

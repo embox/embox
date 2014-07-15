@@ -7,3 +7,12 @@ module seculog {
 	depends embox.util.DList
 	depends embox.mem.pool
 }
+
+module seculog_file {
+
+	option string audit_file="/tmp/smac_log"
+
+	source "seculog_file.c"
+
+	depends seculog
+}

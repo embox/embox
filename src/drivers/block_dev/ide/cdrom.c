@@ -212,12 +212,12 @@ static block_dev_driver_t idecd_pio_driver = {
 };
 
 static int idecd_init (void *args) {
-	struct ide_tab *ide;
+//	struct ide_tab *ide;
 	hd_t *drive;
 	size_t size;
-	int i;
+//	int i;
 	char   path[PATH_MAX];
-
+#if 0
 	ide = ide_get_drive();
 
 	for(i = 0; i < HD_DRIVES; i++) {
@@ -226,6 +226,8 @@ static int idecd_init (void *args) {
 		}
 
 		drive = (hd_t *) ide->drive[i];
+#endif
+		drive = (hd_t *)args;
 		/* Make new device */
 		if (drive->media == IDE_CDROM) {
 			*path = 0;
@@ -247,7 +249,9 @@ static int idecd_init (void *args) {
 
 			drive->blks = 0;
 		}
+#if 0
 	}
+#endif
 	return 0;
 }
 

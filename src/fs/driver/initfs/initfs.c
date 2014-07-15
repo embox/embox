@@ -95,7 +95,7 @@ static int initfs_mount(void *dev, void *dir) {
 	struct cpio_entry entry;
 	char name[PATH_MAX + 1];
 
-	node_t *dir_node = dir;
+	struct node *dir_node = dir;
 
 	dir_nas = dir_node->nas;
 	dir_nas->fs = filesystem_create("initfs");
@@ -113,8 +113,8 @@ static int initfs_mount(void *dev, void *dir) {
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
-		node = vfs_create_intermediate(dir_node, name, entry.mode);
-		if (!node) {
+		if (NULL == (node =
+				vfs_subtree_create_intermediate(dir_node, name, entry.mode))) {
 			return -ENOMEM;
 		}
 
@@ -129,7 +129,6 @@ static int initfs_mount(void *dev, void *dir) {
 
 		node->nas->fi = (struct node_fi *) fi;
 		node->nas->fs = dir_nas->fs;
-
 	}
 
 	return 0;
@@ -148,6 +147,7 @@ static struct fsop_desc initfs_fsop = {
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
+	.mount_dev_by_string = true,
 	.file_op = &initfs_fop,
 	.fsop = &initfs_fsop,
 };

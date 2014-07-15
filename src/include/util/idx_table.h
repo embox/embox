@@ -21,14 +21,15 @@ typedef struct util_idx_table_struct {
 } util_idx_table_t;
 
 #define UTIL_IDX_TABLE_DEF_INLINE(_type, _name, _n) \
-	struct { \
-		util_idx_table_t _; \
-		_type storage[_n]; \
-	} _name
+	static struct { \
+		util_idx_table_t idx_table; \
+		_type __idx_table_storage[_n]; \
+	} _name##_tuple; \
+	static util_idx_table_t *_name = &_name##_tuple.idx_table
 
 #define UTIL_IDX_TABLE_DEF(_type, _name, _n) \
 	UTIL_NUM_ALLOC_DEF(_name##_num_alloc, _n) ;\
-	static UTIL_IDX_TABLE_DEF_INLINE(_type, _name, _n)
+	UTIL_IDX_TABLE_DEF_INLINE(_type, _name, _n)
 
 static inline void util_idx_table_init(util_idx_table_t *idx_table, int n,
 		util_num_alloc_t *num_alloc) {
@@ -41,9 +42,9 @@ static inline void util_idx_table_init(util_idx_table_t *idx_table, int n,
 }
 
 #define UTIL_IDX_TABLE_INIT(_name, _n) \
-	util_num_alloc_init((util_num_alloc_t *) _name##_num_alloc, _n); \
+	util_num_alloc_init((util_num_alloc_t *) &_name##_num_alloc, _n); \
 	util_idx_table_init((util_idx_table_t *) _name, _n, \
-		       (util_num_alloc_t *) _name##_num_alloc)
+		       (util_num_alloc_t *) &_name##_num_alloc)
 
 #define UTIL_IDX_TABLE_CALC(_type, _n) \
 	(sizeof(util_idx_table_t) + sizeof(_type) * _n)
@@ -60,6 +61,7 @@ static inline int util_idx_table_add(util_idx_table_t *idx_table, void *data) {
 }
 
 static inline void *util_idx_table_get(util_idx_table_t *idx_table, int n) {
+	assert((n >= 0) && (n < idx_table->n));
 	return idx_table->table[n];
 }
 

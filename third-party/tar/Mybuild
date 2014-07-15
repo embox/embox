@@ -1,0 +1,22 @@
+package third_party.gnu
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@Cmd(name = "tar",
+	help = "The GNU version of the tar archiving utility",
+	man = '''
+		AUTHORS
+			-
+	''')
+module tar {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.tar.o"
+
+	@NoRuntime depends embox.compat.posix.fs.dirent
+	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCType
+	@NoRuntime depends embox.kernel.task.resource.errno
+
+	depends embox.compat.posix.stubs
+}

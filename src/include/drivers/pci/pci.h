@@ -159,6 +159,8 @@
 
 struct pci_slot_dev {
 	struct dlist_head lst;
+	const struct pci_driver *pci_drv;
+
 	uint32_t busn;
 	uint8_t slot;
 	uint8_t func;
@@ -179,8 +181,8 @@ struct pci_slot_dev {
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
 
-#define pci_foreach_dev(pci_dev, nxt_pci_dev) \
-	dlist_foreach_entry(pci_dev, nxt_pci_dev, __extension__ ({   \
+#define pci_foreach_dev(pci_dev) \
+	dlist_foreach_entry(pci_dev, __extension__ ({   \
 		extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
 	}), lst)
 

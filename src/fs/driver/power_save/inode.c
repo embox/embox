@@ -30,7 +30,7 @@
 #define b_data data
 
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/node.h>
 #include <errno.h>
 #include <math.h>
@@ -838,7 +838,7 @@ static int qnx6_umount_entry(struct node *node) {
 	struct node *child;
 
 	if(node_is_directory(node)) {
-		while(NULL != (child =vfs_get_child_next(node))) {
+		while(NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
 			if(node_is_directory(child)) {
 				qnx6_umount_entry(child);
 			}

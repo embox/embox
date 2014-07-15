@@ -1,11 +1,11 @@
 package third_party.ntfs_3g
 
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/ntfs_3g/core/install/include")
 static module core {
-	depends embox.lib.LibC
-	depends embox.arch.x86.LibM // FIXME:
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/libntfs-3g/.libs")
+	source "libntfs-3g.a"
 
-	source "empty.c" // FIXME: workaround
-
-	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ntfs-3g MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
-	source "../../../../ntfs-3g/lib/libntfs-3g.a"
+	depends embox.compat.libc.LibC
+	depends embox.compat.libc.LibCStringDup
 }

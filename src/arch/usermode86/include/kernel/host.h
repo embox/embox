@@ -12,8 +12,8 @@
 #define HOST_TIMER_IRQ 14
 #define HOST_NET_IRQ 29
 
-extern int host_putchar(int c);
-extern int host_getchar(void);
+extern int host_write(int fd, const void *buf, int c);
+extern int host_read(int fd, void *buf, int c);
 
 extern int host_pause(void);
 
@@ -40,6 +40,7 @@ extern int host_net_rx_count(struct host_net_adp *hnet);
 extern int host_net_rx(struct host_net_adp *hnet, void *buf, int len);
 extern void host_net_tx(struct host_net_adp *hnet, const void *buf, int len);
 
+#define HOST_JMPBUF_LEN 156
 #define HOST_CTX_LEN 1024
 
 extern int host_getcontext(void *ucp);

@@ -13,6 +13,10 @@ ARRAY_SPREAD_DEF(const struct shell, __shell_registry);
 const struct shell *shell_lookup(const char *shell_name) {
 	const struct shell *shell;
 
+	if (!strncmp(shell_name, "/bin/", strlen("/bin/"))) {
+		shell_name += strlen("/bin/");
+	}
+
 	array_spread_foreach_ptr(shell, __shell_registry) {
 		if (0 == strcmp(shell->name, shell_name)) {
 			return shell;

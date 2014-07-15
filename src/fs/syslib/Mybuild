@@ -33,6 +33,7 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	source "fsop.c"
 	depends Perm
 	depends embox.kernel.thread.mutex
+	depends embox.compat.libc.LibCStringDup
 	/*depends embox.fs.core // for vfs*/
 
 	option number flock_quantity=128
@@ -44,3 +45,20 @@ module Perm {
 	depends embox.security.api
 	@NoRuntime depends embox.compat.posix.proc.All
 }
+
+@DefaultImpl(noncache)
+abstract module dcache {
+
+}
+
+module dcache_last extends dcache{
+	option number dcache_table_size=10
+	source "dcache.c"
+	depends embox.util.hashtable
+}
+
+module noncache extends dcache{
+	source "noncache.c"
+}
+
+

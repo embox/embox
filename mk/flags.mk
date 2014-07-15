@@ -6,9 +6,62 @@ ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
 
+CROSS_COMPILE ?=
+
+CC      := $(CROSS_COMPILE)gcc
+CPP     := $(CC) -E
+CXX     := $(CROSS_COMPILE)g++
+AR      := $(CROSS_COMPILE)ar
+AS      := $(CROSS_COMPILE)as
+LD      := $(CROSS_COMPILE)ld
+NM      := $(CROSS_COMPILE)nm
+OBJDUMP := $(CROSS_COMPILE)objdump
+OBJCOPY := $(CROSS_COMPILE)objcopy
+SIZE    := $(CROSS_COMPILE)size
+
 COVERAGE_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 
+PROFILING_CFLAGS ?= -finstrument-functions \
+		   -finstrument-functions-exclude-function-list=__cyg_profile_func_enter,__cyg_profile_func_exit \
+		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle,get_profiling_mode,set_profiling_mode\
+		  # critical_inside,critical_leave,critical_enter\
+#		   -finstrument-functions-exclude-function-list=ipl_restore,ipl_save,critical_distapch_handling,in8,cycles_to_ns,irq_handler,critical_inside,critical_enter,__critical_count_add,ipl_init,irq_dispatch,itimer_init,clock_source_read,i8253_read,_udivdi3,_umoddi3,irq_stack_protection,critical_dispatch_pending \
+#		   -finstrument-functions-exclude-function-list=critical_leave,i8259_irq_pending,cs_full_read,clock_handler,clock_tick_handler,softirq_raise,__critical_count_sub,i8259_send_eoi,itimer_read,critical_pending,clock_tick_handler,clock_source_get_best,critical_request_dispatch
+
+
+
+EXTERNAL_MAKE = \
+	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
+
+EXTERNAL_MAKE_PRO = \
+	$(MKDIR) $(mod_build_dir) && \
+	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/build/.qmake.cache $(mod_build_dir) && \
+	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
+		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS))' \
+		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
+		$${TARGET:-$(dir $(my_file))} \
+		-o $(abspath $(mod_build_dir))/Makefile && \
+	$(MAKE) -C $(mod_build_dir) $(EXTERNAL_MAKE_FLAGS)
+
+EXTERNAL_MAKE_FLAGS = \
+	MAKEFLAGS= \
+	ROOT_DIR=$(abspath $(ROOT_DIR)) \
+	EXTERNAL_BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR)) \
+	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	EMBOX_ARCH='$(ARCH)' \
+	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
+	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
+	EMBOX_CFLAGS='$(CFLAGS)' \
+	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
+	EMBOX_DEPS_CPPFLAGS='$(BUILD_DEPS_CPPFLAGS)' \
+	EMBOX_DEPS_LDFLAGS='$(BUILD_DEPS_LDFLAGS)' \
+	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS) $(BUILD_DEPS_CPPFLAGS)' \
+	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)'
+
+mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
+
+EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
 override CPPFLAGS += -DNDEBUG
@@ -43,16 +96,16 @@ __srcgen_includes := $(call __srcgen_includes_fn,)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
 cppflags_fn = \
-	-U__linux__ \
+	-U__linux__ -Ulinux \
 	-D__EMBOX__ \
 	-D__unix \
 	-D"__impl_x(path)=<../path>"\
-	-imacros $(AUTOCONF_DIR)/config.h\
+	-imacros $1$(AUTOCONF_DIR)/config.h\
 	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
 	$(call __srcgen_includes_fn,-I$1) \
 	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
-	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
+	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include -I$1$(SRC_DIR)/compat/libc/include\
 	-nostdinc\
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
@@ -82,7 +135,6 @@ override CXXFLAGS = $(COMMON_CCFLAGS)
 #override CXXFLAGS += -fno-exceptions
 #override CXXFLAGS += -fno-threadsafe-statics
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
-override CXXFLAGS += -I$(ROOT_DIR)/build/gcc/include
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)

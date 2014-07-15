@@ -73,13 +73,13 @@ static void xattr_ent_delete(struct xattr_ent *xent) {
 
 static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
 		struct dlist_head **add_next_p) {
-	struct xattr_ent *xent, *xent_nxt, *xent_out;
+	struct xattr_ent *xent, *xent_out;
 	struct dlist_head *add_next;
 
 	add_next = &xlnk->xl_head;
 	xent_out = NULL;
 
-	dlist_foreach_entry(xent, xent_nxt, &xlnk->xl_head, xe_lnk) {
+	dlist_foreach_entry(xent, &xlnk->xl_head, xe_lnk) {
 		int d;
 
 		d = strcmp(xent->xe_name, name);
@@ -96,7 +96,7 @@ static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
 		add_next = &xent->xe_lnk;
 	}
 
-	if (add_next) {
+	if (add_next_p) {
 		*add_next_p = add_next;
 	}
 
@@ -159,14 +159,14 @@ int setxattr_generic(struct xattr_list *xlst, const char *name,
 }
 
 int listxattr_generic(struct xattr_list *xlst, char *list, size_t len) {
-	struct xattr_ent *xent, *xent_nxt;
+	struct xattr_ent *xent;
 	char *plist;
 	size_t last;
 
 	plist = list;
 	last = len;
 
-	dlist_foreach_entry(xent, xent_nxt, &xlst->xl_head, xe_lnk) {
+	dlist_foreach_entry(xent, &xlst->xl_head, xe_lnk) {
 		int attr_len;
 
 		attr_len = strlen(xent->xe_name);

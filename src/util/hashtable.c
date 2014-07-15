@@ -9,31 +9,31 @@
  * @author Avdyukhin Dmitry
  * @author Anton Bondarev
  */
-#include <stdlib.h>
+
 #include <mem/objalloc.h>
+#include <mem/sysmalloc.h>
 #include <errno.h>
 
 #include <util/array.h>
-#include <util/list.h>
+
+#include <util/dlist.h>
 
 #include <util/hashtable.h>
 
 #include <embox/unit.h>
 
-//#include <module/embox/util/hashtable.h>
-
 #define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
 
 struct hashtable_element {
-	struct list_link lnk;
-	struct list_link general_lnk;
+	struct dlist_head lnk;
+	struct dlist_head general_lnk;
 	void *key;
 	void *value;
 };
 
 struct hashtable_entry {
-	struct list list;
+	struct dlist_head list;
 	size_t cnt;
 };
 
@@ -48,7 +48,7 @@ struct hashtable {
 	get_hash_ft get_hash_key; /**< handler of the calculation index function */
 	ht_cmp_ft cmp; /** < handler of the compare elements function */
 	size_t table_size; /** size of the array of the table entry */
-	struct list all;
+	struct dlist_head all;
 };
 
 
@@ -66,17 +66,17 @@ struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_c
 		return NULL;
 	}
 
-	if (NULL ==	(ht->table = malloc(table_size * sizeof(struct hashtable_entry)))) {
+	if (NULL ==	(ht->table = sysmalloc(table_size * sizeof(struct hashtable_entry)))) {
 		objfree(&ht_pool, ht);
 		return NULL;
 	}
 	for(i = 0; i < table_size; i ++) {
-		list_init(&ht->table[i].list);
+		dlist_init(&ht->table[i].list);
 	}
 	ht->get_hash_key = get_hash;
 	ht->table_size = table_size;
 	ht->cmp = cmp;
-	list_init(&ht->all);
+	dlist_init(&ht->all);
 
 	return ht;
 }
@@ -95,10 +95,10 @@ int hashtable_put(struct hashtable *ht, void *key, void *value) {
 
 	idx = ht->get_hash_key(key) % ht->table_size;
 
-	list_add_first_link(&htel->lnk, &ht->table[idx].list);
+	dlist_add_next(dlist_head_init(&htel->lnk), &ht->table[idx].list);
 	ht->table[idx].cnt ++;
 
-	list_add_last_link(&htel->general_lnk, &ht->all);
+	dlist_add_prev(dlist_head_init(&htel->general_lnk), &ht->all);
 
 	return ENOERR;
 }
@@ -107,10 +107,11 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 	size_t idx;
 	struct hashtable_element *htel;
 
+
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
-	list_foreach(htel, &ht->table[idx].list, lnk) {
+	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			return htel->value;
 		}
@@ -126,10 +127,10 @@ int hashtable_del(struct hashtable *ht, void *key) {
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
-	list_foreach(htel, &ht->table[idx].list, lnk) {
+	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
-			list_unlink_link(&htel->lnk);
-			list_unlink_link(&htel->general_lnk);
+			dlist_del_init(&htel->lnk);
+			dlist_del_init(&htel->general_lnk);
 			objfree(&ht_elem_pool, htel);
 			return ENOERR;
 		}
@@ -145,13 +146,12 @@ void hashtable_destroy(struct hashtable *ht) {
 	assert(ht);
 
 	for(i = 0; i < ARRAY_SIZE(ht->table); i ++) {
-		list_foreach(htel, &ht->table[i].list, lnk) {
-//			list_unlink_link(&htel->lnk); // no matter
+		dlist_foreach_entry(htel, &ht->table[i].list, lnk) {
 			objfree(&ht_elem_pool, htel);
 		}
 
 	}
-	free(ht->table);
+	sysfree(ht->table);
 	objfree(&ht_pool, ht);
 }
 
@@ -160,11 +160,11 @@ void *hashtable_get_key_first(struct hashtable *ht) {
 
 	assert(ht);
 
-	if (list_is_empty(&ht->all)) {
+	if (dlist_empty(&ht->all)) {
 		return NULL;
 	}
 
-	htel = list_element(list_first_link(&ht->all), struct hashtable_element, general_lnk);
+	htel = dlist_first_entry(&ht->all, struct hashtable_element, general_lnk);
 	return &htel->key;
 }
 
@@ -173,15 +173,15 @@ void *hashtable_get_key_next(struct hashtable *ht, void *prev_key) {
 
 	assert(ht);
 
-	if (list_is_empty(&ht->all)) {
+	if (dlist_empty(&ht->all)) {
 		return NULL;
 	}
 
 	htel = member_cast_out(prev_key, struct hashtable_element, key);
-	if (list_last_link(&ht->all) == &htel->general_lnk) {
+	if (dlist_last(&ht->all) == &htel->general_lnk) {
 		return NULL;
 	}
 
-	htel = list_element(htel->general_lnk.next, struct hashtable_element, general_lnk);
+	htel = dlist_first_entry(&htel->general_lnk, struct hashtable_element, general_lnk);
 	return &htel->key;
 }

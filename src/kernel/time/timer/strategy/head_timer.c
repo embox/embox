@@ -13,7 +13,7 @@
 static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
-	struct sys_timer *it_tmr, *nxt;
+	struct sys_timer *it_tmr;
 
 	dlist_head_init(&tmr->lnk);
 	timer_set_started(tmr);
@@ -21,7 +21,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 	tmr->cnt = tmr->load;
 
 	/* find first element that its time bigger than inserting @new_time */
-	dlist_foreach_entry(it_tmr, nxt, &sys_timers_list, lnk) {
+	dlist_foreach_entry(it_tmr, &sys_timers_list, lnk) {
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
@@ -64,9 +64,12 @@ static inline bool timers_need_schedule(void) {
 }
 
 static inline void timers_schedule(void) {
-	struct sys_timer *timer, *nxt;
+	struct sys_timer *timer;
 
-	dlist_foreach_entry(timer, nxt, &sys_timers_list, lnk) {
+	dlist_foreach_entry(timer, &sys_timers_list, lnk) {
+		if (0 != timer->cnt) {
+			break;
+		}
 
 		timer_strat_stop(timer);
 		if (timer_is_periodic(timer)) {
@@ -74,10 +77,6 @@ static inline void timers_schedule(void) {
 		}
 
 		timer->handle(timer, timer->param);
-
-		if (0 != nxt->cnt) {
-			return;
-		}
 	}
 }
 

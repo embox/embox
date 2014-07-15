@@ -88,7 +88,7 @@ static int ti8168_clk_config(struct time_dev_conf *conf) {
 
 static struct time_event_device ti8168_clk_event = {
 	.config = ti8168_clk_config,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.irq_nr = TI8168_GPTIMER1_IRQ,
 };
 

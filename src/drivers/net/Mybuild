@@ -9,12 +9,11 @@ module loopback {
 }
 
 module virtio {
-	option number prep_buff_cnt=16 /* the number of prepared
-									  buffers for rxing */
+	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "virtio.c"
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
@@ -24,12 +23,11 @@ module virtio {
 }
 
 module ti816x {
-	option number prep_buff_cnt=16 /* the number of prepared
-									  buffers for rxing */
+	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "ti816x.c"
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
@@ -41,7 +39,7 @@ module e1000 {
 	source "e1000.c"
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
@@ -53,7 +51,7 @@ module ne2k_pci {
 	source "ne2k_pci.c"
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
@@ -65,7 +63,7 @@ module rtl8139 {
 	source "rtl8139.c"
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
@@ -76,7 +74,7 @@ module rtl8139 {
 module r6040 {
 	source "r6040.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.irq
 }
@@ -87,7 +85,7 @@ module xemaclite {
 	option number xemaclite_base
 	option number irq_num
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
@@ -130,7 +128,7 @@ module lan9118 {
 	depends embox.driver.gpio.api
 
 	depends embox.net.skbuff
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev

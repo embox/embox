@@ -1,0 +1,11 @@
+
+package embox.cmd.fs
+
+@Cmd(name="umask",
+	help="sets umask",
+	man="")
+module umask {
+	source "umask.c"
+
+	depends embox.compat.posix.fs.umask
+}

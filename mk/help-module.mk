@@ -17,9 +17,8 @@ mod_brief = \
 mod_include_reason = $(call __mod_include_reason,$(__name_inst))
 
 __mod_include_reason = \
-	 $(value 2)$(__inst_name): \
 	 $(if $(call get,$1,includeMember),\
-		explicit$(\n),\
-		as dependence:$(\n)\
+		$(info $(value 2)$(__inst_name): explicit),\
+		$(info $(value 2)$(__inst_name): as dependence:)\
 		$(foreach d,$(strip $(call get,$1,dependent)),\
-			$(call __mod_include_reason,$d,$(value 2)$(\t))))\
+			$(call __mod_include_reason,$d,$(value 2)$(\t))))

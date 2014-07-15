@@ -15,6 +15,9 @@
 #include <fs/perm.h>
 #include <fs/kfile.h>
 #include <sys/types.h>
+#include <stdio.h>
+
+#include "getumask.h"
 
 int creat(const char *pathname, mode_t mode) {
 	int rc;
@@ -26,8 +29,10 @@ int creat(const char *pathname, mode_t mode) {
 
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
+	struct path leaf;
 
-	rc = kmkdir(NULL, pathname, mode);
+	vfs_get_leaf_path(&leaf);
+	rc = kmkdir(&leaf, pathname, umask_modify(mode));
 	DPRINTF(("mkdir(%s, %d ...) = %d\n", pathname, mode, rc));
 	return rc;
 }
@@ -73,16 +78,17 @@ int stat(const char *path, struct stat *buf) {
 }
 
 int truncate(const char *path, off_t length) {
-	node_t *node;
+	struct path node, leaf;
 	int res;
 
-	if (0 == (res = fs_perm_lookup(vfs_get_leaf(), path, NULL, &node))) {
+	vfs_get_leaf_path(&leaf);
+	if (0 == (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
 		errno = -res;
 		res = -1;
 		goto end;
 	}
 
-	res = ktruncate(node, length);
+	res = ktruncate(node.node, length);
 	end:
 	DPRINTF(("truncate(%s, %d ...) = %d\n", path, length, res));
 	return res;

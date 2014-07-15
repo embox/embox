@@ -1,0 +1,9 @@
+package third_party.lib
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/cjson/cJSON")
+static module cjson {
+
+	source "^BUILD/extbld/^MOD_PATH/cJSON/cJSON.c"
+
+}

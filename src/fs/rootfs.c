@@ -46,16 +46,5 @@ static int unit_init(void) {
 	dir = OPTION_STRING_GET(dst);
 	fs_type = OPTION_STRING_GET(fstype);
 
-	if (!*dir) {
-		return -ENOENT;
-	}
-
-#if 0
-	root_node = vfs_get_root();
-	if (root_node == NULL) {
-		return -ENOMEM;
-	}
-#endif
-
 	return rootfs_mount(dev, dir, fs_type);
 }

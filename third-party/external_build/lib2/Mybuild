@@ -1,0 +1,9 @@
+package third_party.external_build
+
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/external_build/lib2")
+static module lib2 {
+	source "lib2.c"
+
+	depends embox.compat.posix.stubs
+}

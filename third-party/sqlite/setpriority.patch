@@ -1,0 +1,51 @@
+--- sqlite-autoconf-3080403/shell.c	2014-04-03 21:21:45.000000000 +0400
++++ build/extbld/third_party/cmd/sqlite3/sqlite-autoconf-3080403/shell.c	2014-06-25 17:33:11.052997393 +0400
+@@ -35,6 +35,9 @@
+ #include "sqlite3.h"
+ #include <ctype.h>
+ #include <stdarg.h>
++#include <errno.h>
++#include <sys/resource.h> /* setpriority */
++#include <util/math.h> /* min/max */
+ 
+ #if !defined(_WIN32) && !defined(WIN32)
+ # include <signal.h>
+@@ -1616,6 +1619,9 @@
+   ".separator STRING      Change separator used by output mode and .import\n"
+   ".show                  Show the current values for various settings\n"
+   ".stats ON|OFF          Turn stats on or off\n"
++#ifdef SQLITE_ENABLE_PRIORITY
++  ".setpriority PRIORITY  Set priority of this DB client\n"
++#endif
+   ".tables ?TABLE?        List names of tables\n"
+   "                         If TABLE specified, only list tables matching\n"
+   "                         LIKE pattern TABLE.\n"
+@@ -2922,6 +2928,28 @@
+     p->statsOn = booleanValue(azArg[1]);
+   }else
+ 
++#ifdef SQLITE_ENABLE_PRIORITY
++  if( c=='s'
++   && (strncmp(azArg[0], "setpriority", n)==0)
++  ){
++    if( nArg==2 ){
++      int priority; 
++      priority = (int)integerValue(azArg[1]);
++      priority = min(19, priority);
++      priority = max(-20, priority);
++      rc = setpriority(PRIO_PROCESS, getpid(), priority);
++      if( 0 == rc ){
++        fprintf(stderr, "%s: priority = %d\n", azArg[0], priority);
++      }else{
++        fprintf(stderr, "%s: can't set priority: %s\n", azArg[0], strerror(errno));
++      }
++    }else{
++      fprintf(stderr, "Usage: .setpriority PRIORITY\n");
++      rc = 1;
++    }
++  }else
++#endif
++
+   if( c=='t' && n>1 && strncmp(azArg[0], "tables", n)==0 && nArg<3 ){
+     sqlite3_stmt *pStmt;
+     char **azResult;

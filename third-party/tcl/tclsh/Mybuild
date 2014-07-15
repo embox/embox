@@ -1,0 +1,41 @@
+package third_party.tcl
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR))/third_party/tcl/core download extract patch")
+static module tclsh_export_scripts {
+	@InitFS
+	@AddPrefix("../../../build/extbld/third_party/tcl/core/tcl8.6.1/library")
+	source "init.tcl",
+		"history.tcl",
+		"tclIndex"
+
+	@InitFS
+	source "../example/tcp_server.tcl",
+		"../example/udp_server.tcl"
+}
+
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libtcl8.6.a", "libtclstub8.6.a"
+
+	@NoRuntime depends third_party.lib.Fdlibm
+
+	depends tclsh_export_scripts
+}
+
+@Build(stage=2,script="true")
+@BuildDepends(core)
+@Cmd(name = "tclsh",
+	help = "TCL shell",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module tclsh {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/third_party/tcl/core/install")
+	source "strip.tclsh.o"
+
+	@NoRuntime depends third_party.tcl.core
+	depends embox.compat.posix.stubs
+}

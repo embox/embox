@@ -1070,3 +1070,25 @@ diff -aur samba-3.6.18/source4/ntvfs/posix/pvfs_util.c samba/source4/ntvfs/posix
  	if (fd2 == -1) {
  		close(fd1);
  		talloc_free(buf);
+ 		
+
+diff -aur samba-3.6.18/source3/libsmb/libsmb_path.c samba/source3/libsmb/libsmb_path.c
+--- samba-3.6.18/source3/libsmb/libsmb_path.c	2013-08-12 11:25:27.000000000 +0400
++++ samba/source3/libsmb/libsmb_path.c	2014-06-05 19:06:51.014216393 +0400
+@@ -363,6 +363,15 @@
+ 		return -1;
+ 	}
+ 
++	{
++		size_t len;
++
++		len = strlen(*pp_server);
++		if ((*pp_server)[len-1] == ':') {
++			(*pp_server)[len-1] = '\0';
++		}
++	}
++
+ 	if (*p == (char)0) {
+ 		goto decoding;  /* That's it ... */
+ 	}
+

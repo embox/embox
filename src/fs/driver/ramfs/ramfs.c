@@ -25,6 +25,7 @@
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <fs/path.h>
 
 #include <err.h>
 
@@ -58,7 +59,8 @@ static int ramfs_format(void *path);
 static int ramfs_mount(void *dev, void *dir);
 
 static int ramfs_init(void * par) {
-	struct node *dev_node, *dir_node;
+	struct path dir_node, root;
+	struct node *dev_node;
 	int res;
 	ramdisk_t *ramdisk;
 
@@ -68,8 +70,10 @@ static int ramfs_init(void * par) {
 
 	/*TODO */
 
-	dir_node = vfs_lookup(NULL, RAMFS_DIR);
-	if (dir_node == NULL) {
+	vfs_get_root_path(&root);
+	vfs_lookup(&root, RAMFS_DIR, &dir_node);
+
+	if (dir_node.node == NULL) {
 		return -ENOENT;
 	}
 
@@ -88,7 +92,7 @@ static int ramfs_init(void * par) {
 	}
 
 	/* mount filesystem */
-	return ramfs_mount(dev_node, dir_node);
+	return ramfs_mount(dev_node, dir_node.node);
 }
 
 static int ramfs_ramdisk_fs_init(void) {

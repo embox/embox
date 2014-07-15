@@ -3,6 +3,9 @@ package embox.arch.arm
 
 static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
+
+	source "stack_ptr.S"
+	source "ptregs_jmp.S"
 }
 
 module cxxabi {
@@ -10,3 +13,10 @@ module cxxabi {
 	depends embox.lib.cxx.DestructionPolicy
 }
 
+static module vfork extends embox.arch.vfork_entry {
+	source "vfork.S"
+}
+
+static module fork extends embox.arch.fork_entry {
+	source "fork.S"
+}

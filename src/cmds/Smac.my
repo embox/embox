@@ -11,7 +11,9 @@ package embox.cmd
 			Anton Kozlov
 	''')
 module smac_adm {
-	source "smac_adm.c"
+	source "smac_adm.c",
+		"smac_adm_db.c"
 
 	depends embox.security.smac
+	depends embox.security.smac_user_dynamic_db
 }

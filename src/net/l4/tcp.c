@@ -32,13 +32,11 @@
 #include <kernel/softirq_lock.h>
 #include <kernel/time/ktime.h>
 #include <net/lib/tcp.h>
-#include <util/indexator.h>
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
 #include <kernel/printk.h>
-#include <prom/prom_printf.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
@@ -51,8 +49,11 @@ EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
 
+#define CRC_DROP  OPTION_GET(BOOLEAN, crc_drop)
+
 #define TCP_DEBUG 0
 #if TCP_DEBUG
+#include <stdarg.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -68,9 +69,9 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
  * +7. Remove seq_next (use rem.seq instead, build packet, and then rebuild only)
  * +8. Add lock/unlock
  * +9. Add rexmit
- * +-10. Add window
- * 11. Add options
- * +-12. Add timeout (i.e. sockopts) to tcp_sock.c
+ * +10. Add window
+ * +11. Add options
+ * +12. Add timeout (i.e. sockopts) to tcp_sock.c
  */
 
 
@@ -116,7 +117,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //default:
 //	case 0:  /* default */
 	case 1:  /* in/out package print */
-	case 2:  /* socket state */
+//	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
@@ -127,7 +128,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		softirq_lock();
-		prom_vprintf(msg, args);
+		vprintk(msg, args);
 		softirq_unlock();
 		break;
 	}
@@ -476,7 +477,6 @@ void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb) {
 
 void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *anticipant;
-	struct inet_sock *in_sk;
 
 	if (tcp_sk->parent == NULL) {
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
@@ -500,13 +500,7 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 	}
 
-	in_sk = to_inet_sock(to_sock(tcp_sk));
-	if (in_sk->src_port_alloced) {
-		assert(in_sk->sk.p_ops != NULL);
-		index_unlock(in_sk->sk.p_ops->sock_port,
-				ntohs(in_sk->src_in.sin_port));
-	}
-	sock_release(&in_sk->sk);
+	sock_release(to_sock(tcp_sk));
 }
 
 
@@ -1030,7 +1024,16 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 					" sk %p skb %p\n",
 				ntohs(old_check), ntohs(tcph->check),
 				to_sock(tcp_sk), skb);)
-		return TCP_RET_DROP;
+		if (CRC_DROP) {
+			return TCP_RET_DROP;
+		} else {
+			packet_print(tcp_sk, skb, "=>",
+						ip_check_version(ip_hdr(skb)) ? AF_INET : AF_INET6,
+						ip_check_version(ip_hdr(skb)) ?
+							(void *) &ip_hdr(skb)->saddr :
+							(void *) &ip6_hdr(skb)->saddr,
+						tcp_hdr(skb)->source);
+		}
 	}
 
 	/* Analyze sequence */
@@ -1249,7 +1252,8 @@ static int tcp4_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
 			&& ip_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
 
 static int tcp6_rcv_tester_soft(const struct sock *sk,
@@ -1257,8 +1261,12 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
 			&& ip6_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
+
+extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
+extern uint16_t sock_get_secure_level(const struct sock *sk);
 
 static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
@@ -1279,6 +1287,12 @@ static int tcp_rcv(struct sk_buff *skb) {
 					? tcp4_rcv_tester_soft
 					: tcp6_rcv_tester_soft,
 				skb);
+	}
+	if (sk) {
+		/* if we have socket with secure label we have to check secure level */
+		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+			return 0;
+		}
 	}
 
 	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;

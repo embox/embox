@@ -8,14 +8,14 @@
 #ifndef FS_KFSOP_H_
 #define FS_KFSOP_H_
 
-#include <fs/node.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 struct node;
 struct stat;
+struct path;
 
-extern int kmkdir(struct node *node, const char *pathname, mode_t mode);
+extern int kmkdir(struct path *root_node, const char *pathname, mode_t mode);
 
 extern int kremove(const char *pathname);
 

@@ -14,21 +14,26 @@
 #include <net/socket/inet_sock.h>
 
 int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
+	struct iphdr *iph;
 
-	unsigned char* endopts = opt->__data + opt->optlen - sizeof(struct ip_options);
-	struct iphdr *iph = ip_hdr(skb);
+	uint8_t * endopts;
+
 	/* curropt points to current option in question
 	 * optsfault points to first problem occurred in options
 	 */
-	unsigned char *curropt; /* unused initialization
-		= (unsigned char*) iph + IP_MIN_HEADER_SIZE; */
+	uint8_t *curropt;
 	int curroptlen;
-	unsigned char *optsfault = NULL;
+
+	uint8_t *optsfault = NULL;
 	_Bool secappeared = false;
 	_Bool sidappeared = false;
 	unsigned int* timestamp = NULL;
 
-	for (curropt = opt->__data; curropt < endopts; ) {
+	iph = ip_hdr(skb);
+	curropt	= (unsigned char*) iph + IP_MIN_HEADER_SIZE;
+	endopts = curropt + opt->optlen;
+
+	for (; curropt < endopts; ) {
 		switch (*curropt) {
 		case IPOPT_END:
 			for (++curropt ; curropt < endopts; ++curropt) {
@@ -43,7 +48,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 		}
 
 		curroptlen = curropt[1];
-		if ((curroptlen < 2) || (curroptlen >= (endopts - curropt))) {
+		if ((curroptlen < 2) || (curroptlen > (endopts - curropt))) {
 			optsfault = curropt + 1;
 			goto error;
 		}
@@ -59,6 +64,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 				goto error;
 			}
 			secappeared = true;
+			memcpy(&opt->__data, curropt, 12);
 			break;
 		case IPOPT_LSRR:
 		case IPOPT_SSRR:
@@ -183,7 +189,9 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 			}
 			break;
 		// TODO case IPOPT_CIPSO - don't still know what to do here
-		// TODO case IPOPT_RA
+		case IPOPT_RA:
+			opt->router_alert = curropt[3];
+			break;
 		default:
 			optsfault = curropt;
 			goto error;
@@ -220,4 +228,15 @@ int ip_options_handle_srr(sk_buff_t *skb)
 	//TODO search for addresses consequently, try to route
 
 	return 0;
+}
+
+uint16_t skb_get_secure_level(struct sk_buff *skb) {
+	uint16_t level;
+	ip_options_t *opt;
+
+	opt = (ip_options_t *)skb->cb;
+
+	memcpy(&level, &opt->__data + 2, sizeof(level));
+
+	return ntohs(level);
 }

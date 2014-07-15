@@ -31,18 +31,21 @@
 #include <kernel/sched.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
+#include <kernel/thread/thread_local.h>
+#include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/runnable/runnable.h>
+#include <hal/cpu.h>
+#include <kernel/cpu/cpu.h>
 
 #include <kernel/panic.h>
 
 #include <hal/context.h>
 #include <err.h>
 
-EMBOX_UNIT_INIT(thread_core_init);
 
 
-static int id_counter; // TODO make it an indexator
+static int id_counter = 0; // TODO make it an indexator
 
 
 /**
@@ -66,7 +69,6 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
-	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -93,7 +95,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* allocate memory */
 		if (!(t = thread_alloc())) {
 			t = err_ptr(ENOMEM);
-			goto out;
+			goto out_unlock;
 		}
 
 		/* initialize internal thread structure */
@@ -101,11 +103,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			ret = thread_register(task_self(), t);
-			if (ret != 0) {
-				t = err_ptr(-ret);
-				goto out;
-			}
+			thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -117,8 +115,9 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		if (flags & THREAD_FLAG_DETACHED) {
 			thread_detach(t);
 		}
+
 	}
-out:
+out_unlock:
 	sched_unlock();
 
 	return t;
@@ -149,6 +148,10 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->runnable.prepare = (void *)sched_prepare_thread;
 	t->runnable.run = NULL;
 	t->runnable.run_arg = NULL;
+
+	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
+		panic("can't initialize thread_local");
+	}
 
 	/* set executive function and arguments pointer */
 	t->run = run;
@@ -200,15 +203,19 @@ void thread_init(struct thread *t, unsigned int flags,
 	runq_item_init(&(t->runnable.sched_attr.runq_link));
 	sched_affinity_init(&(t->runnable));
 	sched_timing_init(t);
+
+	/* initialize everthing else */
+	thread_wait_init(&t->thread_wait);
 }
 
-static void thread_delete(struct thread *t) {
+void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
 	assert(t->state & TS_EXITED);
 
 	thread_unregister(t->task, t);
+	thread_local_free(t);
 
 	if (zombie) {
 		thread_free(zombie);
@@ -230,7 +237,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *joining;
 
 	/* We can free only not main threads */
-	if (task->main_thread == current) {
+	if (current == task_get_main(task)) {
 		/* We are last thread. */
 		task_exit(ret);
 		/* NOTREACHED */
@@ -245,8 +252,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */
 	joining = current->joining;
+	current->run_ret = ret;
 	if (joining) {
-		current->run_ret = ret;
 		sched_wakeup(joining);
 	}
 
@@ -272,13 +279,16 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		assert(!t->joining);
 		assert(!(t->state & TS_DETACHED));
 
-		t->joining = current;
-		ret = SCHED_WAIT(t->state & TS_EXITED);
-		if (ret) {
-			goto out;
+		if (!(t->state & TS_EXITED)) {
+			assert(!t->joining);
+			t->joining = current;
+
+			ret = SCHED_WAIT(t->state & TS_EXITED);
+			if (ret) {
+				goto out;
+			}
 		}
 
 		if (p_ret)
@@ -297,12 +307,13 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!t->joining);
 		assert(!(t->state & TS_DETACHED));
 
-		if (!(t->state & TS_EXITED))
+		if (!(t->state & TS_EXITED)) {
 			/* The target will free itself upon finishing. */
+			assert(!t->joining);
 			t->state |= TS_DETACHED;
+		}
 		else
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
@@ -313,7 +324,20 @@ int thread_detach(struct thread *t) {
 }
 
 int thread_launch(struct thread *t) {
-	return sched_wakeup(t) ? 0 : -EINVAL;
+	int ret;
+
+	sched_lock();
+	{
+		if (t->state & TS_EXITED) {
+			ret = -EINVAL;
+		}
+		else {
+			ret = sched_wakeup(t) ? 0 : -EINVAL;
+		}
+	}
+	sched_unlock();
+
+	return ret;
 }
 
 int thread_terminate(struct thread *t) {
@@ -325,6 +349,13 @@ int thread_terminate(struct thread *t) {
 		// assert(0, "NIY");
 		// thread_delete(t);
 		sched_freeze(t);
+
+		t->state |= TS_EXITED;
+
+		// XXX prevent scheduler to add thread in runq
+		if (t == thread_self()) {
+			t->waiting = true;
+		}
 	}
 	sched_unlock();
 
@@ -361,7 +392,8 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(t->task->priority, thread_priority_get(t));
+	return sched_priority_thread(task_get_priority(t->task),
+			thread_priority_get(t));
 }
 
 clock_t thread_get_running_time(struct thread *t) {
@@ -377,17 +409,7 @@ clock_t thread_get_running_time(struct thread *t) {
 	return running;
 }
 
-extern struct thread *idle_thread_create(void);
-extern struct thread *boot_thread_create(void);
-
-static int thread_core_init(void) {
-	struct thread *idle;
-	struct thread *current;
-
-	id_counter = 0; /* start enumeration */
-
-	idle = idle_thread_create(); /* idle thread always has ID=0 */
-	current = boot_thread_create(); /* 'init' thread ID=1 */
-
-	return sched_init(idle, current);
+void thread_set_run_arg(struct thread *t, void *run_arg) {
+	assert(t->state == TS_INIT);
+	t->run_arg = run_arg;
 }

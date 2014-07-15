@@ -22,8 +22,8 @@
 
 //#define DEBUG_LOG
 #ifdef DEBUG_LOG
-#include <prom/prom_printf.h>
-#define dprintf(...) prom_printf(__VA_ARGS__)
+#include <kernel/printk.h>
+#define dprintf(...) printk(__VA_ARGS__)
 #else
 #define dprintf(...) do {} while (0)
 #endif
@@ -159,24 +159,6 @@ static int pci_scan_start(void) {
 	return dev_cnt;
 }
 
-/* load every available pci driver */
-static int pci_load(void) {
-	struct pci_slot_dev *dev, *nxt_pci_dev;
-	int ret;
-
-	pci_foreach_dev(dev, nxt_pci_dev) {
-		if ((ret = pci_driver_load(dev))) {
-			if (ret == -ENOENT) {
-				continue;
-			}
-
-			return ret;
-		}
-	}
-
-	return 0;
-}
-
 static int pci_init(void) {
 #if 0 /* TODO */
 	if (0 == pci_check_type()) {
@@ -186,7 +168,6 @@ static int pci_init(void) {
 	/* scan bus */
 	pci_scan_start();
 
-	/* load all available pci drivers */
-	return pci_load();
+	return 0;
 
 }

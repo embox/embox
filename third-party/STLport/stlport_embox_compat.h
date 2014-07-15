@@ -18,8 +18,9 @@
 
 // FIXME: for yet obscure reason despite limits.h is included, but these constants are not defined.
 //         No time for it now, let's figure out why later.
-#define CHAR_MAX (127)
-#define CHAR_MIN (-128)
+#include <limits.h>
+//#define CHAR_MAX (127)
+//#define CHAR_MIN (-128)
 
 
 #if 1
@@ -33,6 +34,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 
 #ifdef __cplusplus
 
@@ -58,58 +60,37 @@ namespace std {
 		DPRINT();
 		return (double)(time1 - time0);
 	}
-	static inline char *getenv(const char *name) {
-		DPRINT();
-		return NULL;
-	}
 	static inline int mblen(const char *s, size_t n) {
+		(void)s;
+		(void)n;
 		DPRINT();
 		// FIXME:
 		return 0;
 	}
 	static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
+		(void)pwc;
+		(void)s;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
 	static inline int atexit(void (*function)(void)) {
+		(void)function;
 		DPRINT();
 		return -1;
-	}
-	static inline void exit(int status) {
-		DPRINT();
-		while(true) {;}
 	}
 	static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
+		(void)dest;
+		(void)src;
+		(void)n;
 		DPRINT();
 		return -1;
 	}
-
-
-//#define MAP_SHARED    0x00
-#define MAP_PRIVATE   0x01
-#define PROT_READ     0x10
-//#define PROT_WRITE    0x20
-//#define MAP_FAILED    (-1)
-#include <errno.h>
-	static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-		// ToDo: implement for InitFS files
-		(void)addr;
-		(void)len;
-		(void)prot;
-		(void)flags;
-		(void)off;
-		printf(">>> mmap(%i)\n",fd);
-		errno = EPERM;
-		return NULL;
-	}
-	static inline int munmap(void *addr, size_t size) {
-		(void)size;
-		printf(">>> munmap(%p)\n",addr);
-		errno = EPERM;
-		return -1;
-	}
-
 	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+		(void)stream;
+		(void)buf;
+		(void)mode;
+		(void)size;
 		DPRINT();
 		return -1;
 	}

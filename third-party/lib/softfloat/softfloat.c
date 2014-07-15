@@ -29,7 +29,7 @@ these four paragraphs for those parts of this code that are retained.
 
 =============================================================================*/
 
-#include <lib/softfloat.h>
+#include "softfloat.h"
 
 /*----------------------------------------------------------------------------
 | Floating-point rounding mode, extended double-precision rounding precision,

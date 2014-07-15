@@ -17,7 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
@@ -26,8 +26,10 @@
 #include <limits.h>
 
 #include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/xdr.h>
+#include <util/math.h>
 
 
 static int nfs_create_dir_entry(node_t *parent);
@@ -58,6 +60,11 @@ static struct kfile_operations nfsfs_fop = {
 	.write = nfsfs_write,
 	.ioctl = nfsfs_ioctl,
 };
+
+static void unaligned_set_hyper(uint64_t *dst, void *src) {
+	memcpy(dst, src, sizeof *dst);
+}
+
 /*
  * file_operation
  */
@@ -103,13 +110,8 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	fi->offset = desc->cursor;
 
 	while(1) {
-		if (size > DIRCOUNT) {
-			size_to_read = DIRCOUNT;
-		}
-		else {
-			size_to_read = size;
-		}
-		size -= size_to_read;
+		size_to_read = min(size, DIRCOUNT);
+
 		/* set read structure */
 		req.count = size_to_read;
 		req.offset = fi->offset;
@@ -123,7 +125,12 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 			return 0;
 		}
 
-		fi->offset += size_to_read;
+		if (reply.datalen == 0) {
+			break;
+		}
+
+		size -= reply.datalen;
+		fi->offset += reply.datalen;
 		datalen += reply.datalen;
 
 		if (reply.eof || (0 >= size )) {
@@ -164,6 +171,10 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	fi->offset += reply.count;
 	desc->cursor = fi->offset;
+	if (nas->fi->ni.size < desc->cursor) {
+		nas->fi->ni.size = desc->cursor;
+	}
+
 	return reply.count;
 }
 
@@ -233,8 +244,11 @@ static int nfsfs_init(void * par) {
 
 static int nfsfs_format(void *path) {
 	node_t *node;
+	node_t *root;
 
-	if (NULL == (node = vfs_lookup(NULL, path))) {
+	root = vfs_get_root();
+
+	if (NULL == (node = vfs_subtree_lookup(root, path))) {
 		return -ENODEV;
 	}
 	/* TODO format command support */
@@ -395,8 +409,8 @@ static int nfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
-			if(node_is_directory(child)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				nfs_umount_entry(child->nas);
 			}
 
@@ -433,7 +447,7 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 
 	name = (const char *) predesc->file_name.name.data;
 
-	node = vfs_lookup_child(parent_nas->node, name);
+	node = vfs_subtree_lookup_child(parent_nas->node, name);
 	if (node) {
 		nas = node->nas;
 		fi = nas->fi->privdata;
@@ -466,7 +480,7 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 		mode = fi->attr.mode;
 		// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
 
-		node = vfs_create_child(parent_nas->node, name, mode);
+		node = vfs_subtree_create_child(parent_nas->node, name, mode);
 		if (!node) {
 			pool_free(&nfs_file_pool, fi);
 			return NULL; /* device not found */
@@ -497,7 +511,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
 
-	if (NULL == (rcv_buf = malloc(MAXDIRCOUNT * 2))) {
+	if (NULL == (rcv_buf = sysmalloc(MAXDIRCOUNT * 2))) {
 		return -1;
 	}
 
@@ -507,7 +521,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 
 		if (0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
-			free(rcv_buf);
+			sysfree(rcv_buf);
 			return -1;
 		}
 
@@ -515,7 +529,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 		/* check status */
 		vf = *(__u32 *)point;
 		if (STATUS_OK != vf) {
-			free(rcv_buf);
+			sysfree(rcv_buf);
 			return -1;
 		}
 		point += sizeof(vf);
@@ -543,7 +557,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			if(0 == path_is_dotname(predesc->file_name.name.data,
 									predesc->file_name.name.len)) {
 				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
-					free(rcv_buf);
+					sysfree(rcv_buf);
 					return -1;
 				}
 
@@ -555,13 +569,13 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 		}
 		point += sizeof(vf);
 		if (NFS_EOF != *(__u32 *)point) {
-			fh->cookie = predesc->file_name.cookie;
+			unaligned_set_hyper(&fh->cookie, &predesc->file_name.cookie);
 		} else {
 			fh->cookie = 0;
 			break;
 		}
 	}
-	free(rcv_buf);
+	sysfree(rcv_buf);
 	return 0;
 }
 
@@ -631,7 +645,7 @@ static int nfsfs_delete(struct node *node) {
 	nas = node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 
-	if(NULL == (dir_node = vfs_get_parent(node))) {
+	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
 
@@ -837,7 +851,7 @@ static int nfs_lookup(struct nas *nas) {
 	lookup_reply_t reply;
 
 	fi = nas->fi->privdata;
-	if(NULL == (dir_node = vfs_get_parent(nas->node))) {
+	if(NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
 		return -1;
 	}
 	dir_nas = dir_node->nas;

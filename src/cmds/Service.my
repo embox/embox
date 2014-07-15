@@ -20,6 +20,6 @@ module service {
 	depends embox.cmd.net.servd
 	depends embox.util.Array
 	depends embox.cmd.sh.shell
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }

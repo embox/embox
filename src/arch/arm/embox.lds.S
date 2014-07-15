@@ -1,5 +1,6 @@
 
 #include <asm-generic/embox.lds.h>
+#include <asm-generic/static_irq.h>
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -16,6 +17,10 @@ _ram_size = LENGTH(RAM);
 SECTIONS {
 	.text : {
 		*(.trap_table)
+		STATIC_IRQ_TABLE
+
+
+
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)

@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <setjmp.h>
-#include <lib/trex.h>
+#include "trex.h"
 
 #ifdef _UINCODE
 #define scisprint iswprint
@@ -100,7 +100,7 @@ struct TRex{
 	TRexMatch *_matches;
 	int _currsubexp;
 	void *_jmpbuf;
-	const TRexChar **_error;
+	TRexChar *_error;
 };
 
 static int trex_list(TRex *exp);
@@ -125,7 +125,7 @@ static int trex_newnode(TRex *exp, TRexNodeType type)
 
 static void trex_error(TRex *exp,const TRexChar *error)
 {
-	if(exp->_error) *exp->_error = error;
+	if(exp->_error) strcpy(exp->_error, error);
 	longjmp(*((jmp_buf*)exp->_jmpbuf),-1);
 }
 
@@ -553,7 +553,7 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 }
 
 /* public api */
-TRex *trex_compile(const TRexChar *pattern,const TRexChar **error)
+TRex *trex_compile(const TRexChar *pattern,TRexChar *error)
 {
 	TRex *exp = (TRex *)malloc(sizeof(TRex));
 	exp->_eol = exp->_bol = NULL;

@@ -124,7 +124,7 @@ static void usb_mass_reset_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_mass *mass = usb2massdata(dev);
 
-	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd,
+	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
 			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
 				| USB_DEV_REQ_TYPE_IFC,
 			USB_REQ_MASS_MAXLUN, 0,
@@ -153,13 +153,13 @@ static void usb_mass_handle(struct usb_class *cls, struct usb_dev *dev) {
 	}
 
 #if 0
-	usb_endp_control(dev->endpoints[0], usb_mass_reset_hnd,
+	usb_endp_control(dev->endpoints[0], usb_mass_reset_hnd, NULL,
 			USB_DEV_REQ_TYPE_WR | USB_DEV_REQ_TYPE_CLS
 				| USB_DEV_REQ_TYPE_IFC,
 			USB_REQ_MASS_RESET, 0,
 			dev->iface_desc.b_interface_number, 0, NULL);
 #endif
-	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd,
+	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
 			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
 				| USB_DEV_REQ_TYPE_IFC,
 			USB_REQ_MASS_MAXLUN, 0,
