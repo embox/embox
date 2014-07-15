@@ -54,12 +54,11 @@ int ch_to_digit(char ch, int base) {
 	return -1;
 }
 
-static void unscanchar(char **str, int ch) {
+static void unscanchar(const char **str, int ch) {
 	/*	extern int ungetchar();*/
 	if ((unsigned int) str >= 2) {
 #if 1
 		(*str) --;
-		**str = ch;
 
 		/*int *p;
 		 p = *str - 4;
@@ -73,7 +72,7 @@ static void unscanchar(char **str, int ch) {
 	}
 }
 
-static int scanchar(char **str) {
+static int scanchar(const char **str) {
 	extern int getchar(void);
 	int ch;
 	if ((unsigned int)str >= 2) {
@@ -97,7 +96,7 @@ static bool is_space(int ch) {
 	return false;
 }
 
-static int trim_leading(char **str) {
+static int trim_leading(const char **str) {
 	int ch;
 
 	do {
@@ -111,7 +110,7 @@ static int trim_leading(char **str) {
 	return ch;
 }
 
-static int scan_int(char **in, int base, int widht, int *res) {
+static int scan_int(const char **in, int base, int widht, int *res) {
 	int neg = 0;
 	int dst = 0;
 	int ch;
@@ -190,7 +189,7 @@ static double scan_double(char **in, int base, int width) {
 #define OPS_LEN_PTRDIFF       0x00001000 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
 #define OPS_LEN_LONGFP        0x00002000 /* long double (f, F, e, E, g, G, a, A) */
 
-static int scan(char **in, const char *fmt, va_list args) {
+static int scan(const char **in, const char *fmt, va_list args) {
 	int widht;
 	int converted = 0;
 	int ops_len;
@@ -371,7 +370,7 @@ int fscanf(FILE *stream, const char *format, ...) {
 	file = stream;
 
 	va_start(args, format);
-	rv = scan((char **)1, format, args);
+	rv = scan((const char **)1, format, args);
 	va_end(args);
 
 	return rv;
@@ -381,7 +380,7 @@ int sscanf(const char *out, const char *format, ...) {
 	int rv;
 
 	va_start(args, format);
-	rv = scan((/*FIXME*/char**)&out, format, args);
+	rv = scan(&out, format, args);
 	va_end (args);
 
 	return rv;
