@@ -11,7 +11,7 @@ rm_tap() {
 	$SUDO ip tuntap del dev $TAP mode tap
 }
 
-trap rm_tap SIGINT SIGTERM
+trap rm_tap INT TERM
 
 if [ ! -z "$(ip addr | grep $TAP)" ]; then
 	rm_tap
