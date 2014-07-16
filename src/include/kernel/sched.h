@@ -60,14 +60,14 @@ extern void sched_sleep(void);
 extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
 
-#if 0
 /**
  * Adds lwthread to runq.
  * @param lwt
  *   Lwthread which will be added.
  */
-extern void sched_lwthread_wake(struct lwthread *lwt);
+extern void sched_wakeup_lw(struct lwthread *lwt);
 
+#if 0
 /**
  * Makes exit thread and removes thread from scheduler.
  */
@@ -97,7 +97,6 @@ extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
 
 extern int __sched_wakeup(struct thread *);
 extern int sched_wakeup(struct thread *);
-extern void sched_lwthread_wake(struct lwthread *lwt);
 
 /* XXX thread will not be ever in runq or active - thread is dead,
  * but with allocated resources on its stack */

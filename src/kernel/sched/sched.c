@@ -325,17 +325,10 @@ int sched_wakeup(struct thread *t) {
 	return SPIN_IPL_PROTECTED_DO(&t->lock, __sched_wakeup(t));
 }
 
-void sched_lwthread_wake(struct lwthread *lwt) {
-	ipl_t ipl;
+void sched_wakeup_lw(struct lwthread *lwt) {
 	assert(lwt);
-
-	ipl = spin_lock_ipl(&rq.lock);
-
-	__sched_enqueue(&(lwt->runnable));
-
-	spin_unlock_ipl(&rq.lock, ipl);
+	SPIN_IPL_PROTECTED_DO(&rq.lock, __sched_enqueue(&(lwt->runnable)));
 }
-
 
 /** Locks: IPL. */
 static void __sched_activate(struct thread *t) {
@@ -433,7 +426,9 @@ static void __schedule(int preempt) {
 
 		if(next->run != NULL) {
 			/* lwthread extracted, run it*/
+			spin_unlock(&rq.lock);
 			lwthread_trampoline(next);
+			ipl = spin_lock_ipl(&rq.lock);
 			continue;
 		} else {
 			/* thread extracted*/

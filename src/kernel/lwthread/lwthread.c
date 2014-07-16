@@ -13,8 +13,8 @@
 typedef struct lwthread lwthread_pool_entry_t;
 
 /**
- * Memory have to be allocated only for lwthread structure,
- * while lwthread uses thread stack when executed
+ * Memory have to be allocated only for lwthread structure, while lwthread uses
+ * thread stack when executed
 */
 #define POOL_SZ       OPTION_GET(NUMBER, lwthread_pool_size)
 
@@ -39,13 +39,9 @@ void lwthread_init(struct lwthread *lwt, void *(*run)(void *), void *arg) {
 	lwt->runnable.prepare = NULL;
 	lwt->runnable.run_arg = arg;
 
-	sched_lock();
-	{
-		runq_item_init(&(lwt->runnable.sched_attr.runq_link));
-		sched_affinity_init(&(lwt->runnable));
-		lwthread_priority_init(lwt, LWTHREAD_PRIORITY_DEFAULT);
-	}
-	sched_unlock();
+	runq_item_init(&(lwt->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(lwt->runnable));
+	lwthread_priority_init(lwt, LWTHREAD_PRIORITY_DEFAULT);
 }
 
 struct lwthread * lwthread_create(void *(*run)(void *), void *arg) {
@@ -80,9 +76,5 @@ void lwthread_free(struct lwthread *lwt) {
 void lwthread_launch(struct lwthread *lwt) {
 	assert(lwt);
 
-	sched_lock();
-	{
-		sched_lwthread_wake(lwt);
-	}
-	sched_unlock();
+	sched_wakeup_lw(lwt);
 }
