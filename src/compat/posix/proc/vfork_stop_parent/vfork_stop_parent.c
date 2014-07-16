@@ -16,17 +16,12 @@
 
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
-	struct context ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
-	bool parent_holded;
 };
 
-static struct vfork_ctx *vfork_current_context;
-
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
-	struct vfork_ctx *vfctx = vfork_current_context;
-
-	vfctx->parent_holded = false;
+	struct task_vfork *task_vfork = task_resource_vfork(task_self());
+	task_vfork->parent_holded = true;
 }
 
 static void *vfork_child_task(void *arg) {
@@ -57,25 +52,23 @@ static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
 
 static void vfork_waiting(void) {
 	struct sigaction ochildsa, ocontsa;
-	struct vfork_ctx *vfctx;
 	struct task *child;
 	struct task_vfork *task_vfork;
 	struct context tmp;
 
 	task_vfork = task_resource_vfork(task_self());
 	child = task_table_get(task_vfork->child_pid);
-	vfctx = task_vfork->vfork_ctx;
 
 	vfork_wait_signal_store(&ochildsa, &ocontsa);
 	{
-		vfctx->parent_holded = true;
+		task_vfork->parent_holded = true;
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
 
-		SCHED_WAIT(!vfctx->parent_holded);
+		SCHED_WAIT(!task_vfork->parent_holded);
 	}
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
-	context_switch(&tmp, &vfctx->ctx);
+	context_switch(&tmp, &task_vfork->ctx);
 
 	panic("vfork_waiting returning");
 }
@@ -83,7 +76,7 @@ static void vfork_waiting(void) {
 int vfork_child_start(struct task *child) {
 	struct vfork_ctx *vfctx;
 	struct task_vfork *task_vfork;
-	struct context waiting_ctx;
+	struct context chld_ctx;
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
@@ -91,13 +84,13 @@ int vfork_child_start(struct task *child) {
 	}
 
 	task_vfork = task_resource_vfork(task_self());
-	task_vfork->vfork_ctx = vfctx;
 	task_vfork->child_pid = child->tsk_id;
+	task_vfork->vfork_ctx = vfctx;
 
-	context_init(&waiting_ctx, true);
-	context_set_entry(&waiting_ctx, vfork_waiting);
-	context_set_stack(&waiting_ctx, vfctx->stack + sizeof(vfctx->stack));
-	context_switch(&vfctx->ctx, &waiting_ctx);
+	context_init(&chld_ctx, true);
+	context_set_entry(&chld_ctx, vfork_waiting);
+	context_set_stack(&chld_ctx, vfctx->stack + sizeof(vfctx->stack));
+	context_switch(&task_vfork->ctx, &chld_ctx);
 
 	/* current stack is broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
