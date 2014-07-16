@@ -19,7 +19,6 @@ struct vfork_ctx {
 	struct context ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
 	bool parent_holded;
-	int child_pid;
 };
 
 static struct vfork_ctx *vfork_current_context;
@@ -64,8 +63,8 @@ static void vfork_waiting(void) {
 	struct context tmp;
 
 	task_vfork = task_resource_vfork(task_self());
+	child = task_table_get(task_vfork->child_pid);
 	vfctx = task_vfork->vfork_ctx;
-	child = task_table_get(vfctx->child_pid);
 
 	vfork_wait_signal_store(&ochildsa, &ocontsa);
 	{
@@ -91,10 +90,9 @@ int vfork_child_start(struct task *child) {
 		return -EAGAIN;
 	}
 
-	vfctx->child_pid = child->tsk_id;
-
 	task_vfork = task_resource_vfork(task_self());
 	task_vfork->vfork_ctx = vfctx;
+	task_vfork->child_pid = child->tsk_id;
 
 	context_init(&waiting_ctx, true);
 	context_set_entry(&waiting_ctx, vfork_waiting);
@@ -103,13 +101,11 @@ int vfork_child_start(struct task *child) {
 
 	/* current stack is broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
-	vfctx = task_vfork->vfork_ctx;
 
-	ptregs_retcode(&task_vfork->ptregs, vfctx->child_pid);
-	sysfree(vfctx);
-	ptregs_jmp(&task_vfork->ptregs);
+	sysfree(task_vfork->vfork_ctx);
+
+	ptregs_retcode_jmp(&task_vfork->ptregs, task_vfork->child_pid);
 
 	panic("vfork_child_start returning");
-
 	return -1;
 }

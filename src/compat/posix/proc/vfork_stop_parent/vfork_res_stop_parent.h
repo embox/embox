@@ -28,6 +28,7 @@ struct vfork_ctx {
 struct vfork_ctx;
 struct task_vfork {
 	struct pt_regs ptregs;
+	pid_t child_pid;
 	struct vfork_ctx *vfork_ctx;
 };
 
