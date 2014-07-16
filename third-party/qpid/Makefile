@@ -9,8 +9,8 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid_new/qpid_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/qpid_new/include \
+QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/qpid/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
 	-I$(ROOT_DIR)/src/include/c++ \
@@ -18,7 +18,7 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid_new/qpid_embox_compat.h \
 
 QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
 
-QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid_new/include"
+QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid/include"
 
 $(CONFIGURE) :
 	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
