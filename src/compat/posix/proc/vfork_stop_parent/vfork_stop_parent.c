@@ -16,9 +16,7 @@
 
 #define VFORK_CTX_STACK_LEN 0x1000
 struct vfork_ctx {
-//	struct pt_regs ptregs;
-	struct context original_ctx;
-	struct context waiting_ctx;
+	struct context ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
 	bool parent_holded;
 	int child_pid;
@@ -63,6 +61,7 @@ static void vfork_waiting(void) {
 	struct vfork_ctx *vfctx;
 	struct task *child;
 	struct task_vfork *task_vfork;
+	struct context tmp;
 
 	task_vfork = task_resource_vfork(task_self());
 	vfctx = task_vfork->vfork_ctx;
@@ -77,7 +76,7 @@ static void vfork_waiting(void) {
 	}
 	vfork_wait_signal_restore(&ochildsa, &ocontsa);
 
-	context_switch(&vfctx->waiting_ctx, &vfctx->original_ctx);
+	context_switch(&tmp, &vfctx->ctx);
 
 	panic("vfork_waiting returning");
 }
@@ -85,6 +84,7 @@ static void vfork_waiting(void) {
 int vfork_child_start(struct task *child) {
 	struct vfork_ctx *vfctx;
 	struct task_vfork *task_vfork;
+	struct context waiting_ctx;
 
 	vfctx = sysmalloc(sizeof(*vfctx));
 	if (!vfctx) {
@@ -96,10 +96,10 @@ int vfork_child_start(struct task *child) {
 	task_vfork = task_resource_vfork(task_self());
 	task_vfork->vfork_ctx = vfctx;
 
-	context_init(&vfctx->waiting_ctx, true);
-	context_set_entry(&vfctx->waiting_ctx, vfork_waiting);
-	context_set_stack(&vfctx->waiting_ctx, vfctx->stack + sizeof(vfctx->stack));
-	context_switch(&vfctx->original_ctx, &vfctx->waiting_ctx);
+	context_init(&waiting_ctx, true);
+	context_set_entry(&waiting_ctx, vfork_waiting);
+	context_set_stack(&waiting_ctx, vfctx->stack + sizeof(vfctx->stack));
+	context_switch(&vfctx->ctx, &waiting_ctx);
 
 	/* current stack is broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
