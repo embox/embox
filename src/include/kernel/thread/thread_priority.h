@@ -9,8 +9,6 @@
 #ifndef KERNEL_THREAD_PRIORITY_H_
 #define KERNEL_THREAD_PRIORITY_H_
 
-struct thread;
-
 #define THREAD_PRIORITY_MIN 0   /**< The lowest priority is 0. */
 #define THREAD_PRIORITY_MAX 255 /**< The highest priority. */
 

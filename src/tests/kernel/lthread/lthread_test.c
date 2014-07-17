@@ -12,7 +12,7 @@
 #include <kernel/lthread/lthread_priority.h>
 #include <kernel/time/ktime.h>
 
-#define lthreadS_QUANTITY OPTION_GET(NUMBER, lthreads_quantity)
+#define LTHREAD_QUANTITY OPTION_GET(NUMBER, lthreads_quantity)
 
 EMBOX_TEST_SUITE("test for lthread API");
 
@@ -70,20 +70,20 @@ static void *run2(void *arg) {
 TEST_CASE("Create lthreads with different priorities") {
 	done = 0;
 
-	for(int i = 0; i < lthreadS_QUANTITY; i++) {
+	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
 		struct lthread *lwt;
 
 		lwt = lthread_create(run2, NULL);
 		test_assert_zero(err(lwt));
 		test_assert_zero(
-			runnable_priority_set(&lwt->runnable, LWTHREAD_PRIORITY_MIN + i)
+			runnable_priority_set(&lwt->runnable, LTHREAD_PRIORITY_MIN + i)
 		);
 		lthread_launch(lwt);
 	}
 
 	/* Spin, waiting all lthreads finished */
 	while(1) {
-		if(done == lthreadS_QUANTITY) break;
+		if(done == LTHREAD_QUANTITY) break;
 		ksleep(0);
 	}
 }
@@ -101,11 +101,11 @@ TEST_CASE("Test executing order") {
 
 	lwt1 = lthread_create(run1, NULL);
 	test_assert_zero(err(lwt1));
-	runnable_priority_set(&lwt1->runnable, LWTHREAD_PRIORITY_MIN);
+	runnable_priority_set(&lwt1->runnable, LTHREAD_PRIORITY_MIN);
 
 	lwt2 = lthread_create(run3, NULL);
 	test_assert_zero(err(lwt2));
-	runnable_priority_set(&lwt2->runnable, LWTHREAD_PRIORITY_MAX);
+	runnable_priority_set(&lwt2->runnable, LTHREAD_PRIORITY_MAX);
 
 	/* prevent scheduling to avoid executing one
 	 * before adding another to runq
