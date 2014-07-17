@@ -1,0 +1,10 @@
+
+package third_party
+
+@App
+@AutoCmd
+@Cmd(name="packetdrill", help="", man="")
+@Build(script="$(EXTERNAL_MAKE)")
+module packetdrill {
+	source "^BUILD/extbld/^MOD_PATH/install/packetdrill.o"
+}
