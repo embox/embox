@@ -22,7 +22,7 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
-struct lwthread;
+struct lthread;
 struct thread;
 
 __BEGIN_DECLS
@@ -65,7 +65,7 @@ extern void sched_start(struct thread *t);
  * @param lwt
  *   Lwthread which will be added.
  */
-extern void sched_wakeup_lw(struct lwthread *lwt);
+extern void sched_wakeup_l(struct lthread *lwt);
 
 #if 0
 /**

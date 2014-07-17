@@ -34,7 +34,7 @@
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
-#include <kernel/lwthread/lwthread.h>
+#include <kernel/lthread/lthread.h>
 #include <kernel/runnable/runnable.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
@@ -325,9 +325,9 @@ int sched_wakeup(struct thread *t) {
 	return SPIN_IPL_PROTECTED_DO(&t->lock, __sched_wakeup(t));
 }
 
-void sched_wakeup_lw(struct lwthread *lwt) {
-	assert(lwt);
-	SPIN_IPL_PROTECTED_DO(&rq.lock, __sched_enqueue(&(lwt->runnable)));
+void sched_wakeup_l(struct lthread *lt) {
+	assert(lt);
+	SPIN_IPL_PROTECTED_DO(&rq.lock, __sched_enqueue(&(lt->runnable)));
 }
 
 /** Locks: IPL. */
@@ -427,7 +427,7 @@ static void __schedule(int preempt) {
 		if(next->run != NULL) {
 			/* lwthread extracted, run it*/
 			spin_unlock(&rq.lock);
-			lwthread_trampoline(next);
+			lthread_trampoline(next);
 			ipl = spin_lock_ipl(&rq.lock);
 			continue;
 		} else {

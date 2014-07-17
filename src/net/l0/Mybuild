@@ -9,7 +9,7 @@ module net_entry extends entry_api {
 	depends net_rx
 	depends skbuff
 	depends embox.compat.libc.LibC
-	depends embox.kernel.lwthread.lwthread
+	depends embox.kernel.lthread.lthread
 }
 
 module net_rx {

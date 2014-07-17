@@ -1,0 +1,9 @@
+package embox.test.kernel.lthread
+
+module lthread_test {
+	option number lthreads_quantity=256
+	source "lthread_test.c"
+
+	depends embox.kernel.lthread.lthread
+	depends embox.framework.LibFramework
+}

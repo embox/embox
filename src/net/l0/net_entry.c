@@ -18,8 +18,8 @@
 #include <util/list.h>
 #include <net/l0/net_rx.h>
 
-#include <kernel/lwthread/lwthread.h>
-#include <kernel/lwthread/lwthread_priority.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
 #include <err.h>
 
 static LIST_DEF(netif_rx_list);
@@ -73,7 +73,7 @@ static void *netif_rx_action(void *data) {
 
 static void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
-	struct lwthread *lwt;
+	struct lthread *lwt;
 
 	assert(skb != NULL);
 
@@ -84,10 +84,10 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lwt = lwthread_create(&netif_rx_action, NULL);
+	lwt = lthread_create(&netif_rx_action, NULL);
 	assert(!err(lwt));
 	lwthread_priority_set(lwt, LWTHREAD_PRIORITY_MAX);
-	lwthread_launch(lwt);
+	lthread_launch(lwt);
 }
 
 int netif_rx(void *data) {
