@@ -113,20 +113,5 @@ static inline ssize_t writev(int fildes, const struct iovec *iov, int iovcnt) {
 	return -1;
 }
 
-#include <getopt.h>
-struct option {
-	const char *name;
-	int         has_arg;
-	int        *flag;
-	int         val;
-};
-
-static inline int getopt_long(int argc, char * const argv[],
-                  const char *optstring,
-                  const struct option *longopts, int *longindex) {
-	PD_STUB_USE();
-	return -1;
-}
-
 #endif /* PACKETDRILL_STUBS_H_ */
 
