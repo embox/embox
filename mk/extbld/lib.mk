@@ -1,9 +1,9 @@
 
-ifeq ($(ROOT_DIR),)
+ifeq ($(strip $(ROOT_DIR)),)
 $(error ROOT_DIR is not set)
 endif
 
-ifeq ($(BUILD_DIR),)
+ifeq ($(strip $(BUILD_DIR)),)
 $(error BUILD_DIR is not set)
 endif
 
@@ -21,18 +21,20 @@ $(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 
 PKG_SOURCES ?=
 sources_git      := $(filter %.git,$(PKG_SOURCES))
+targets_git	  = $(basename $(notdir $1))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
-sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(notdir $(sources_download)))
+targets_download  = $(notdir $1)
+sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(call targets_download,$(sources_download)))
 
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 download : $(DOWNLOAD)
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_download), \
-		if [ ! -f $(DOWNLOAD_DIR)/$(notdir $d) ]; then \
+		if [ ! -f $(DOWNLOAD_DIR)/$(call targets_download,$d) ]; then \
 			wget -P $(DOWNLOAD_DIR) $d; \
 		fi;)
 	$(foreach g,$(sources_git), \
-		if [ ! -d $(DOWNLOAD_DIR)/$(basename $(notdir $g)) ]; then \
+		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
 			cd $(DOWNLOAD_DIR); \
 			git clone $g; \
 		fi;)
@@ -51,6 +53,12 @@ $(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach i,$(sources_extract),\
 		$(if $(filter %zip,$i),unzip $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
 			tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$i);)
+	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
+			$(call targets_git,$(sources_git)) \
+			$(filter-out $(sources_extract),$(call targets_download,$(sources_download))))"; \
+		if [ $$COPY_FILES ]; then \
+			cp -R $$COPY_FILES $(BUILD_DIR); \
+		fi
 	touch $@
 
 PATCH  := $(BUILD_DIR)/.patched
