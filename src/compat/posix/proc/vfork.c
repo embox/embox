@@ -34,7 +34,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	child_pid = task_prepare("");
 	if (0 > child_pid) {
 		/* error */
-		ptregs_retcode_jmp(ptregs, child_pid);
+		ptregs_retcode_err_jmp(ptregs, -1, -child_pid);
 		panic("vfork_body returning");
 	}
 	child = task_table_get(child_pid);
@@ -47,12 +47,12 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 
 	if (res < 0) {
 		/* Could not start child process */
-		ptregs_retcode(&task_vfork->ptregs, -1);
 
+		/* Exit child task */
 		vfork_child_done(child, vfork_body_exit_stub, &res);
 
-		/* Just retutn to parent if vfork_child_done call was not successful */
-		ptregs_jmp(&task_vfork->ptregs);
+		/* Return to the parent */
+		ptregs_retcode_err_jmp(&task_vfork->ptregs, -1, -res);
 	}
 
 	panic("vfork_body returning");
