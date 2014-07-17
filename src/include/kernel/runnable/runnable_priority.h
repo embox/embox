@@ -8,7 +8,7 @@
 #ifndef STRATEGY_RUNNABLE_PRIORITY_H_
 #define STRATEGY_RUNNABLE_PRIORITY_H_
 
-
+#include <kernel/sched/sched_priority.h>
 
 struct runnable_priority {
 	short base_priority;      /**< Priority was set for the runnable. */

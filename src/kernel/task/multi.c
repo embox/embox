@@ -108,7 +108,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 
 		thread_set_priority(thd,
 				sched_priority_thread(self_task->tsk_priority,
-						thread_priority_get(thread_self())));
+						runnable_priority_get(&thread_self()->runnable)));
 
 		thread_detach(thd);
 		thread_launch(thd);
@@ -186,7 +186,7 @@ int task_prepare(const char *name) {
 
 		thread_set_priority(thd,
 						sched_priority_thread(task_self()->tsk_priority,
-								thread_priority_get(thread_self())));
+							runnable_priority_get(&thread_self()->runnable)));
 
 		self_task = thread_stack_alloc(thd,
 				sizeof *self_task + TASK_RESOURCE_SIZE);
@@ -343,7 +343,8 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
-			prior = sched_priority_thread(tsk_pr, thread_priority_get(t));
+			prior = sched_priority_thread(tsk_pr,
+					runnable_priority_get(&t->runnable));
 			thread_set_priority(t, prior);
 		}
 

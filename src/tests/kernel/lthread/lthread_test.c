@@ -76,7 +76,7 @@ TEST_CASE("Create lthreads with different priorities") {
 		lwt = lthread_create(run2, NULL);
 		test_assert_zero(err(lwt));
 		test_assert_zero(
-			lwthread_priority_set(lwt, LWTHREAD_PRIORITY_MIN + i)
+			runnable_priority_set(&lwt->runnable, LWTHREAD_PRIORITY_MIN + i)
 		);
 		lthread_launch(lwt);
 	}
@@ -101,11 +101,11 @@ TEST_CASE("Test executing order") {
 
 	lwt1 = lthread_create(run1, NULL);
 	test_assert_zero(err(lwt1));
-	lwthread_priority_set(lwt1, LWTHREAD_PRIORITY_MIN);
+	runnable_priority_set(&lwt1->runnable, LWTHREAD_PRIORITY_MIN);
 
 	lwt2 = lthread_create(run3, NULL);
 	test_assert_zero(err(lwt2));
-	lwthread_priority_set(lwt2, LWTHREAD_PRIORITY_MAX);
+	runnable_priority_set(&lwt2->runnable, LWTHREAD_PRIORITY_MAX);
 
 	/* prevent scheduling to avoid executing one
 	 * before adding another to runq

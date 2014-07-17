@@ -35,6 +35,7 @@
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/runnable/runnable.h>
+#include <kernel/runnable/runnable_priority.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -163,7 +164,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	 * thread_set_priority () function
 	 */
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		priority = thread_priority_get(thread_self());
+		priority = runnable_priority_get(&thread_self()->runnable);
 	} else {
 		priority = THREAD_PRIORITY_DEFAULT;
 	}
@@ -179,7 +180,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	/* setup thread priority. Now we have not started thread yet therefore we
 	 * just set both base and scheduling priority in default value.
 	 */
-	thread_priority_init(t, priority);
+	runnable_priority_init(&t->runnable, priority);
 
 	/* cpu context init */
 	context_init(&t->context, true); /* setup default value of CPU registers */
@@ -393,7 +394,7 @@ sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
 	return sched_priority_thread(task_get_priority(t->task),
-			thread_priority_get(t));
+			runnable_priority_get(&t->runnable));
 }
 
 clock_t thread_get_running_time(struct thread *t) {

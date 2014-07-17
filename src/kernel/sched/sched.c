@@ -86,7 +86,8 @@ int sched_init(struct thread *idle, struct thread *current) {
 
 static void sched_check_preempt(struct thread *t) {
 	// TODO ask runq
-	if (thread_priority_get(thread_self()) < thread_priority_get(t))
+	if (runnable_priority_get(&thread_self()->runnable) <
+			runnable_priority_get(&t->runnable))
 		sched_post_switch(); // TODO SMP
 }
 
@@ -127,7 +128,7 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 
 	if (in_rq)
 		__sched_dequeue(t);
-	thread_priority_set(t, prior);
+	runnable_priority_set(&t->runnable, prior);
 	if (in_rq)
 		__sched_enqueue(&(t->runnable));
 

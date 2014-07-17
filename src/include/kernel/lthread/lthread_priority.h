@@ -27,15 +27,4 @@
 #define LWTHREAD_PRIORITY_DEFAULT \
 	LWTHREAD_PRIORITY_NORMAL
 
-extern int lwthread_priority_init(struct lthread *lwt, sched_priority_t priority);
-
-extern int lwthread_priority_set(struct lthread *lwt, sched_priority_t new_priority);
-
-extern sched_priority_t lwthread_priority_get(struct lthread *lwt);
-
-extern sched_priority_t lwthread_priority_inherit(struct lthread *lwt,
-		sched_priority_t priority);
-
-extern sched_priority_t lwthread_priority_reverse(struct lthread *lwt);
-
 #endif /* KERNEL_LWTHREAD_PRIORITY_H_ */

@@ -38,7 +38,7 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	thread_init(thread, 0, boot_stub, NULL);
 
 	/* Priority setting up */
-	thread_priority_init(thread, priority);
+	runnable_priority_init(&thread->runnable, priority);
 
 	/* setup state
 	 * this thread must be active and not sleep

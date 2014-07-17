@@ -13,17 +13,6 @@ struct runnable_priority {
 
 typedef struct runnable_priority __runnable_priority_t;
 
-
-static inline int thread_priority_init(struct runnable *t,
-		sched_priority_t new_priority) {
-	return 0;
-}
-
-static inline int thread_priority_set(struct runnable *t,
-		sched_priority_t new_priority) {
-	return 0;
-}
-
 static inline sched_priority_t runnable_priority_get(struct runnable *r) {
 	return 0;
 }
