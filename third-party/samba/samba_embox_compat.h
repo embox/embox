@@ -239,12 +239,6 @@ int getgroups(int size, gid_t list[]) {
 
 #include <stdlib.h>
 
-
-static inline
-void clearerr(FILE *stream) {
-	DPRINT();
-}
-
 #include <dirent.h>
 static inline
 void seekdir(DIR *dirp, long offset) {
