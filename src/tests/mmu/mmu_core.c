@@ -62,9 +62,9 @@ TEST_CASE("Writing to read-only memory should cause exception."
 }
 
 static inline int pagefault_handler(uint32_t nr, void *data) {
-	int _cr2, err_addr;
-	asm ("mov %%cr2, %0":"=r" (_cr2):);
-	err_addr = _cr2 & ~(VMEM_PAGE_SIZE - 1);
+	int err_addr;
+
+	err_addr = mmu_get_fault_address();
 
 	vmem_map_region(ctx, (mmu_paddr_t) ((unsigned long) page),
 			(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
@@ -87,7 +87,7 @@ TEST_CASE("Pagefault should be considered right.") {
 }
 
 /* TODO: Remove this. */
-ipl_t ipl;
+static ipl_t ipl;
 
 static int mmu_case_setup(void) {
 	ipl = ipl_save();

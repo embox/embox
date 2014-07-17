@@ -11,6 +11,7 @@
 #include <asm/flags.h>
 
 #include <hal/mmu.h>
+#include <mem/vmem.h>
 
 #define MMU_PMD_FLAG  (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
 
@@ -93,7 +94,7 @@ void mmu_flush_tlb(void) {
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-	return get_cr2();
+	return get_cr2() & ~(VMEM_PAGE_SIZE - 1);
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
