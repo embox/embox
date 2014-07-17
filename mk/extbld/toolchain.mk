@@ -6,7 +6,7 @@ include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
 rootdir := $(abspath $(ROOT_DIR))
-EMBOX_IMPORTED_CPPFLAGS := $(filter -D% -U% -I% -nostdinc,$(EMBOX_EXPORT_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS := $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
 
 EMBOX_IMPORTED_CFLAGS   := $(filter -g% -f% -m% -O%,$(CFLAGS))
 EMBOX_IMPORTED_CXXFLAGS := $(filter -g% -f% -m% -O%,$(CFLAGS))
