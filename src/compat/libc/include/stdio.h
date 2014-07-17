@@ -204,7 +204,7 @@ extern FILE *stderr;
 extern int fileno(FILE *stream);
 
 //TODO: stub
-extern int clearerr(FILE *stream);
+extern void clearerr(FILE *stream);
 extern int feof(FILE *stream);
 extern int ferror(FILE *stream);
 extern int fflush(FILE *fp);
