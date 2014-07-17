@@ -17,6 +17,10 @@
 
 extern int vfork_child_start(struct task *child);
 
+static void *vfork_body_exit_stub(void *arg) {
+	_exit(*((int*) arg));
+}
+
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
 	pid_t child_pid;
@@ -36,14 +40,21 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	child = task_table_get(child_pid);
 	/* save ptregs for parent return from vfork() */
 	task_vfork = task_resource_vfork(child->parent);
+
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
+
+	ptregs_retcode(&task_vfork->ptregs, child_pid);
 
 	res = vfork_child_start(child);
 
 	if (res < 0) {
 		/* Could not start child process */
-		task_delete(child);
-		ptregs_retcode_jmp(ptregs, res);
+		ptregs_retcode(&task_vfork->ptregs, -1);
+
+		vfork_child_done(child, vfork_body_exit_stub, &res);
+
+		/* Just retutn to parent if vfork_child_done call was not successful */
+		ptregs_jmp(&task_vfork->ptregs);
 	}
 
 	panic("vfork_body returning");

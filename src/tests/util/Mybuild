@@ -40,13 +40,6 @@ module tree_test {
 	depends embox.framework.LibFramework
 }
 
-module tree_set_test {
-	source "tree_set_test.c"
-
-	depends embox.util.LibUtil
-	depends embox.framework.LibFramework
-}
-
 module ring_buff_test {
 	source "ring_buff_test.c"
 

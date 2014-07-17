@@ -83,7 +83,6 @@ static module LibUtil {
 //	source "slist_debug.c"
 //	source "list_debug.c"
 
-	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
 

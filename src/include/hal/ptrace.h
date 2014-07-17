@@ -21,7 +21,6 @@ extern void __attribute__((noreturn)) ptregs_jmp(struct pt_regs *ptregs);
 static inline void ptregs_retcode_jmp(struct pt_regs *ptregs, int retcode) {
 	if (retcode < 0) {
 		SET_ERRNO(-retcode);
-		//return;
 	}
 
 	ptregs_retcode(ptregs, retcode);

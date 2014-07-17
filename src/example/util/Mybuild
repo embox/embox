@@ -22,11 +22,3 @@ module ring_buff {
 	depends embox.util.LibUtil
 	depends embox.framework.example
 }
-
-module tree_set {
-	source "tree_set.c"
-
-	depends embox.util.LibUtil
-	depends embox.compat.libc.LibC
-	depends embox.framework.example
-}

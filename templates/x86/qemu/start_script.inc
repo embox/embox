@@ -8,3 +8,6 @@
 
 "export PWD=/",
 "export HOME=/",
+"tinypy fib.py",
+"lua fib.lua",
+/* "lisp fib.lisp" */

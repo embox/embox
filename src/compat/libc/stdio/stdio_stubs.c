@@ -7,6 +7,11 @@
 
 #include <stdio.h>
 
+int clearerr(FILE *stream) {
+	//TODO:
+	return 0;
+}
+
 int feof(FILE *file) {
 	//TODO:
 	return 0;
