@@ -22,7 +22,7 @@
  */
 #define POOL_SZ       OPTION_GET(NUMBER, lthread_pool_size)
 
-POOL_DEF(lwthread_pool, struct lthread, POOL_SZ);
+POOL_DEF(lthread_pool, struct lthread, POOL_SZ);
 /*
  * Called in __schedule
 */
@@ -31,10 +31,10 @@ void lthread_trampoline(struct runnable *r) {
 
 	r->run(r->run_arg);
 	lt = mcast_out(r, struct lthread, runnable);
-	pool_free(&lwthread_pool, lt);
+	pool_free(&lthread_pool, lt);
 }
 
-static void lwthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
+static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
 	lt->runnable.run = run;
@@ -53,11 +53,11 @@ struct lthread *lthread_create(void *(*run)(void *), void *arg) {
 		return err_ptr(EINVAL);
 	}
 
-	if (!(lt = (struct lthread *) pool_alloc(&lwthread_pool))) {
+	if (!(lt = (struct lthread *) pool_alloc(&lthread_pool))) {
 		return err_ptr(ENOMEM);
 	}
 
-	lwthread_init(lt, run, arg);
+	lthread_init(lt, run, arg);
 
 	return lt;
 }

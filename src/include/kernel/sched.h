@@ -61,11 +61,11 @@ extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
 
 /**
- * Adds lwthread to runq.
+ * Adds lthread to runq.
  * @param lwt
  *   Lwthread which will be added.
  */
-extern void sched_wakeup_l(struct lthread *lwt);
+extern void sched_wakeup_l(struct lthread *lt);
 
 #if 0
 /**

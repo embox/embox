@@ -426,7 +426,7 @@ static void __schedule(int preempt) {
 		next = runq_extract(&rq.queue);
 
 		if(next->run != NULL) {
-			/* lwthread extracted, run it*/
+			/* lthread extracted, run it*/
 			spin_unlock(&rq.lock);
 			lthread_trampoline(next);
 			ipl = spin_lock_ipl(&rq.lock);

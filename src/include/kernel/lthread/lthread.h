@@ -4,6 +4,7 @@
 
 #ifndef _KERNEL_LTHREAD_H_
 #define _KERNEL_LTHREAD_H_
+
 #include <kernel/runnable/runnable.h>
 
 struct lthread {
@@ -16,11 +17,11 @@ struct lthread {
 extern void lthread_trampoline(struct runnable *r);
 
 /*
- * Allocate new lwthread
+ * Allocate new lthread
  */
 extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
 /*
- * Adds lwthread to runq
+ * Adds lthread to runq
  */
 extern void lthread_launch(struct lthread *lwt);
 

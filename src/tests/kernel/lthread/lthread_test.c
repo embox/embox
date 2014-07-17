@@ -1,9 +1,9 @@
 /**
  * @file lthread_test.c
- *
  * @brief simple test for lthreads
  *
  * @author Andrey Kokorev
+ * @date    16.02.2014
  */
 #include <err.h>
 #include <embox/test.h>
@@ -25,11 +25,11 @@ static void *run1(void *arg) {
 }
 
 TEST_CASE("Launch simple lthread") {
-	struct lthread *lwt;
+	struct lthread *lt;
 
-	lwt = lthread_create(run1, NULL);
-	test_assert_zero(err(lwt));
-	lthread_launch(lwt);
+	lt = lthread_create(run1, NULL);
+	test_assert_zero(err(lt));
+	lthread_launch(lt);
 
 	/* Spin, waiting lthread finished */
 	while(1) {
@@ -47,13 +47,13 @@ static void *run_resched(void *arg) {
 }
 
 TEST_CASE("Call sched from lthread") {
-	struct lthread *lwt;
+	struct lthread *lt;
 
 	done = 0;
 
-	lwt = lthread_create(run_resched, NULL);
-	test_assert_zero(err(lwt));
-	lthread_launch(lwt);
+	lt = lthread_create(run_resched, NULL);
+	test_assert_zero(err(lt));
+	lthread_launch(lt);
 
 	/* Spin, waiting lthread finished */
 	while(1) {
@@ -71,14 +71,14 @@ TEST_CASE("Create lthreads with different priorities") {
 	done = 0;
 
 	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
-		struct lthread *lwt;
+		struct lthread *lt;
 
-		lwt = lthread_create(run2, NULL);
-		test_assert_zero(err(lwt));
+		lt = lthread_create(run2, NULL);
+		test_assert_zero(err(lt));
 		test_assert_zero(
-			runnable_priority_set(&lwt->runnable, LTHREAD_PRIORITY_MIN + i)
+			runnable_priority_set(&lt->runnable, LTHREAD_PRIORITY_MIN + i)
 		);
-		lthread_launch(lwt);
+		lthread_launch(lt);
 	}
 
 	/* Spin, waiting all lthreads finished */
@@ -95,25 +95,25 @@ static void *run3(void *arg) {
 }
 
 TEST_CASE("Test executing order") {
-	struct lthread *lwt1, *lwt2;
+	struct lthread *lt1, *lt2;
 
 	done = 0;
 
-	lwt1 = lthread_create(run1, NULL);
-	test_assert_zero(err(lwt1));
-	runnable_priority_set(&lwt1->runnable, LTHREAD_PRIORITY_MIN);
+	lt1 = lthread_create(run1, NULL);
+	test_assert_zero(err(lt1));
+	runnable_priority_set(&lt1->runnable, LTHREAD_PRIORITY_MIN);
 
-	lwt2 = lthread_create(run3, NULL);
-	test_assert_zero(err(lwt2));
-	runnable_priority_set(&lwt2->runnable, LTHREAD_PRIORITY_MAX);
+	lt2 = lthread_create(run3, NULL);
+	test_assert_zero(err(lt2));
+	runnable_priority_set(&lt2->runnable, LTHREAD_PRIORITY_MAX);
 
 	/* prevent scheduling to avoid executing one
 	 * before adding another to runq
 	 */
 	sched_lock();
 	{
-		lthread_launch(lwt1);
-		lthread_launch(lwt2);
+		lthread_launch(lt1);
+		lthread_launch(lt2);
 	}
 	sched_unlock();
 

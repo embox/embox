@@ -25,7 +25,5 @@ extern struct runnable *runnable_get_current(void);
 
 /* Theese are assigned to runnable->shed_prepare and runnable->run in core.c */
 extern void sched_prepare_thread(struct thread *prev, struct runnable *n);
-/*extern void sched_execute_runnable(struct runnable *p, struct runnable *n, struct runq *rq);*/
-
 
 #endif /* _KERNEL_RUNNABLE_H_ */

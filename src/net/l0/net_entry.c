@@ -73,7 +73,7 @@ static void *netif_rx_action(void *data) {
 
 static void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
-	struct lthread *lwt;
+	struct lthread *lt;
 
 	assert(skb != NULL);
 
@@ -84,10 +84,10 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lwt = lthread_create(&netif_rx_action, NULL);
-	assert(!err(lwt));
-	runnable_priority_set(&lwt->runnable, LTHREAD_PRIORITY_MAX);
-	lthread_launch(lwt);
+	lt = lthread_create(&netif_rx_action, NULL);
+	assert(!err(lt));
+	runnable_priority_set(&lt->runnable, LTHREAD_PRIORITY_MAX);
+	lthread_launch(lt);
 }
 
 int netif_rx(void *data) {
