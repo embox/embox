@@ -43,8 +43,6 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 
 	memcpy(&task_vfork->ptregs, ptregs, sizeof(task_vfork->ptregs));
 
-	ptregs_retcode(&task_vfork->ptregs, child_pid);
-
 	res = vfork_child_start(child);
 
 	if (res < 0) {
