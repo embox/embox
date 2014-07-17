@@ -1,8 +1,9 @@
 /**
  * @file
+ * @brief
  *
- * @date Aug 1, 2013
- * @author: Anton Bondarev
+ * @date 21.11.2013
+ * @author Andrey Kokorev
  */
 
 #ifndef STRATEGY_RUNNABLE_PRIORITY_H_

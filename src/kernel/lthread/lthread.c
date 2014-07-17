@@ -20,12 +20,13 @@
  * Memory have to be allocated only for lthread structure, while lthread uses
  * thread stack when executed
  */
-#define POOL_SZ       OPTION_GET(NUMBER, lthread_pool_size)
+#define LTHREAD_POOL_SIZE OPTION_GET(NUMBER, lthread_pool_size)
 
-POOL_DEF(lthread_pool, struct lthread, POOL_SZ);
+POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
+
 /*
  * Called in __schedule
-*/
+ */
 void lthread_trampoline(struct runnable *r) {
 	struct lthread *lt;
 
