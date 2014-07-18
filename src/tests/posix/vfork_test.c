@@ -62,6 +62,9 @@ TEST_CASE("after called vfork() child trashes own stack and calls exit") {
 	int res;
 
 	pid = vfork();
+
+	test_assert(pid != -1);
+
 	if (pid == 0) {
 		unsigned char buf[64];
 		memset(buf, 0xa5, sizeof(buf));

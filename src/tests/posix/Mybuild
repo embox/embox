@@ -30,6 +30,13 @@ module getopt_test {
 	depends embox.framework.LibFramework
 }
 
+module getopt_long_test {
+	source "getopt_long_test.c"
+
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
+}
+
 module passwd {
 	source "passwd.c"
 

@@ -49,8 +49,7 @@ int vfork_child_start(struct task *child) {
 
 	ptregs_retcode_jmp(&task_resource_vfork(child->parent)->ptregs, 0);
 
-	//panic("vfork_child_start returning");
-
+	panic("vfork_child_start returning");
 	return -1;
 }
 
