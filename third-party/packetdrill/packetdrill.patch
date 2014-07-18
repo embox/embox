@@ -1,6 +1,6 @@
-diff -Naur packetdrill.orig/gtests/net/packetdrill/config.c packetdrill/gtests/net/packetdrill/config.c
---- packetdrill.orig/gtests/net/packetdrill/config.c	2014-07-18 14:37:14.093012197 +0400
-+++ packetdrill/gtests/net/packetdrill/config.c	2014-07-18 14:37:24.116345235 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/config.c packetdrill/gtests/net/packetdrill/config.c
+--- packetdrill.orig/gtests/net/packetdrill/config.c	2014-07-18 16:33:46.262806107 +0400
++++ packetdrill/gtests/net/packetdrill/config.c	2014-07-18 16:27:52.789483192 +0400
 @@ -482,7 +482,7 @@
  		config->argv[i] = strdup(argv[i]);
  
@@ -10,9 +10,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/config.c packetdrill/gtests/n
  	while ((c = getopt_long(argc, argv, "v", options, NULL)) > 0)
  		process_option(c, optarg, config, "Command Line");
  	return argv + optind;
-diff -Naur packetdrill.orig/gtests/net/packetdrill/ip_address.c packetdrill/gtests/net/packetdrill/ip_address.c
---- packetdrill.orig/gtests/net/packetdrill/ip_address.c	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/ip_address.c	2014-07-17 18:24:54.888489486 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/ip_address.c packetdrill/gtests/net/packetdrill/ip_address.c
+--- packetdrill.orig/gtests/net/packetdrill/ip_address.c	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/ip_address.c	2014-07-18 16:27:52.789483192 +0400
 @@ -168,7 +168,7 @@
  {
  	struct sockaddr_in sa_v4;
@@ -31,23 +31,54 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/ip_address.c packetdrill/gtes
  	sa_v6.sin6_len = sizeof(sa_v6);
  #endif
  	sa_v6.sin6_family = AF_INET6;
-diff -Naur packetdrill.orig/gtests/net/packetdrill/link_layer.c packetdrill/gtests/net/packetdrill/link_layer.c
---- packetdrill.orig/gtests/net/packetdrill/link_layer.c	2014-07-18 14:37:14.079678864 +0400
-+++ packetdrill/gtests/net/packetdrill/link_layer.c	2014-07-17 18:24:54.888489486 +0400
-@@ -74,6 +74,10 @@
- #include <ifaddrs.h>
- #endif /* defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) */
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/link_layer.c packetdrill/gtests/net/packetdrill/link_layer.c
+--- packetdrill.orig/gtests/net/packetdrill/link_layer.c	2014-07-18 16:33:46.256139440 +0400
++++ packetdrill/gtests/net/packetdrill/link_layer.c	2014-07-18 16:33:31.629473205 +0400
+@@ -64,6 +64,21 @@
+ 		die_perror("close");
+ }
  
-+#if defined(__EMBOX__)
-+#include <ifaddrs.h>
-+#endif 
++#elif defined(__EMBOX__)
 +
- void get_hw_address(const char *name, struct ether_addr *hw_address)
- {
- 	struct ifaddrs *ifaddrs_list, *ifaddr;
-diff -Naur packetdrill.orig/gtests/net/packetdrill/Makefile.common packetdrill/gtests/net/packetdrill/Makefile.common
---- packetdrill.orig/gtests/net/packetdrill/Makefile.common	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/Makefile.common	2014-07-17 18:24:54.891822820 +0400
++#include <net/inetdevice.h>
++
++void get_hw_address(const char *name, struct ether_addr *hw_address)
++{
++	struct in_device *iface_dev = inetdev_get_by_name(name);
++	DEBUGP("get_hw_address for device %s\n", name);
++
++	if (!iface_dev)
++		die("unable to find hw address for %s\n", name);
++
++	memcpy(hw_address, iface_dev->dev->dev_addr, sizeof(*hw_address));
++}
++
+ #else
+ 
+ #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+@@ -97,6 +112,7 @@
+ 		}
+ 	}
+ 
++	freeifaddrs(ifaddrs_list);
+ 	die("unable to find hw address for %s\n", name);
+ }
+ 
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/logging.h packetdrill/gtests/net/packetdrill/logging.h
+--- packetdrill.orig/gtests/net/packetdrill/logging.h	2014-07-18 16:33:46.256139440 +0400
++++ packetdrill/gtests/net/packetdrill/logging.h	2014-07-18 16:27:52.789483192 +0400
+@@ -28,7 +28,7 @@
+ #include "types.h"
+ 
+ /* Enable this to get debug logging. */
+-#define DEBUG_LOGGING 0
++#define DEBUG_LOGGING 1
+ 
+ /* Use a gcc variadic macro to conditionally compile debug printing. */
+ #define DEBUGP(...)				\
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/Makefile.common packetdrill/gtests/net/packetdrill/Makefile.common
+--- packetdrill.orig/gtests/net/packetdrill/Makefile.common	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/Makefile.common	2014-07-18 16:27:52.789483192 +0400
 @@ -4,7 +4,7 @@
  
  parser.o: parser.y
@@ -65,9 +96,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/Makefile.common packetdrill/g
           gre_packet.o icmp_packet.o ip_packet.o tcp_packet.o udp_packet.o \
           mpls_packet.o \
           run.o run_command.o run_packet.o run_system_call.o \
-diff -Naur packetdrill.orig/gtests/net/packetdrill/netdev.c packetdrill/gtests/net/packetdrill/netdev.c
---- packetdrill.orig/gtests/net/packetdrill/netdev.c	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/netdev.c	2014-07-17 18:24:54.891822820 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/netdev.c packetdrill/gtests/net/packetdrill/netdev.c
+--- packetdrill.orig/gtests/net/packetdrill/netdev.c	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/netdev.c	2014-07-18 16:27:52.789483192 +0400
 @@ -360,6 +360,11 @@
  	linux_tun_write(netdev, packet);
  #endif  /* linux */
@@ -80,9 +111,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/netdev.c packetdrill/gtests/n
  	return STATUS_OK;
  }
  
-diff -Naur packetdrill.orig/gtests/net/packetdrill/packet_socket_pcap.c packetdrill/gtests/net/packetdrill/packet_socket_pcap.c
---- packetdrill.orig/gtests/net/packetdrill/packet_socket_pcap.c	2014-07-18 14:37:14.079678864 +0400
-+++ packetdrill/gtests/net/packetdrill/packet_socket_pcap.c	2014-07-17 18:24:54.891822820 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/packet_socket_pcap.c packetdrill/gtests/net/packetdrill/packet_socket_pcap.c
+--- packetdrill.orig/gtests/net/packetdrill/packet_socket_pcap.c	2014-07-18 16:33:46.256139440 +0400
++++ packetdrill/gtests/net/packetdrill/packet_socket_pcap.c	2014-07-18 16:27:52.789483192 +0400
 @@ -37,10 +37,14 @@
  
  #if defined(__FreeBSD__)
@@ -108,9 +139,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/packet_socket_pcap.c packetdr
  #else
  	packet->time_usecs = implement_me("implement me for your platform");
  #endif  /* defined(__OpenBSD__) */
-diff -Naur packetdrill.orig/gtests/net/packetdrill/platforms.h packetdrill/gtests/net/packetdrill/platforms.h
---- packetdrill.orig/gtests/net/packetdrill/platforms.h	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/platforms.h	2014-07-17 18:24:54.891822820 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/platforms.h packetdrill/gtests/net/packetdrill/platforms.h
+--- packetdrill.orig/gtests/net/packetdrill/platforms.h	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/platforms.h	2014-07-18 16:27:52.789483192 +0400
 @@ -92,5 +92,22 @@
  
  #endif  /* __NetBSD__ */
@@ -134,9 +165,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/platforms.h packetdrill/gtest
 +
  
  #endif /* __PLATFORMS_H__ */
-diff -Naur packetdrill.orig/gtests/net/packetdrill/run_system_call.c packetdrill/gtests/net/packetdrill/run_system_call.c
---- packetdrill.orig/gtests/net/packetdrill/run_system_call.c	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/run_system_call.c	2014-07-17 18:24:54.891822820 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/run_system_call.c packetdrill/gtests/net/packetdrill/run_system_call.c
+--- packetdrill.orig/gtests/net/packetdrill/run_system_call.c	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/run_system_call.c	2014-07-18 16:27:52.789483192 +0400
 @@ -54,7 +54,7 @@
  #ifdef linux
  	return syscall(__NR_gettid);
@@ -155,9 +186,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/run_system_call.c packetdrill
  	return sched_yield();
  #endif  /* defined(__NetBSD__) */
  }
-diff -Naur packetdrill.orig/gtests/net/packetdrill/symbols_embox.c packetdrill/gtests/net/packetdrill/symbols_embox.c
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/symbols_embox.c packetdrill/gtests/net/packetdrill/symbols_embox.c
 --- packetdrill.orig/gtests/net/packetdrill/symbols_embox.c	1970-01-01 03:00:00.000000000 +0300
-+++ packetdrill/gtests/net/packetdrill/symbols_embox.c	2014-07-17 18:24:54.891822820 +0400
++++ packetdrill/gtests/net/packetdrill/symbols_embox.c	2014-07-18 16:27:52.789483192 +0400
 @@ -0,0 +1,12 @@
 +
 +#ifdef __EMBOX__
@@ -171,17 +202,17 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/symbols_embox.c packetdrill/g
 +}
 +
 +#endif /* __EMBOX__ */
-diff -Naur packetdrill.orig/gtests/net/packetdrill/tcp_option_g.c packetdrill/gtests/net/packetdrill/tcp_option_g.c
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/tcp_option_g.c packetdrill/gtests/net/packetdrill/tcp_option_g.c
 --- packetdrill.orig/gtests/net/packetdrill/tcp_option_g.c	1970-01-01 03:00:00.000000000 +0300
-+++ packetdrill/gtests/net/packetdrill/tcp_option_g.c	2014-07-17 18:24:54.891822820 +0400
++++ packetdrill/gtests/net/packetdrill/tcp_option_g.c	2014-07-18 16:27:52.789483192 +0400
 @@ -0,0 +1,4 @@
 +
 +#include "tcp_option.h"
 +
 +struct tcp_option tcp_option;
-diff -Naur packetdrill.orig/gtests/net/packetdrill/tcp_options.h packetdrill/gtests/net/packetdrill/tcp_options.h
---- packetdrill.orig/gtests/net/packetdrill/tcp_options.h	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/tcp_options.h	2014-07-17 18:24:54.891822820 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/tcp_options.h packetdrill/gtests/net/packetdrill/tcp_options.h
+--- packetdrill.orig/gtests/net/packetdrill/tcp_options.h	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/tcp_options.h	2014-07-18 16:27:52.789483192 +0400
 @@ -93,7 +93,8 @@
  			u8 cookie[MAX_TCP_FAST_OPEN_COOKIE_BYTES];
  		} fast_open;
@@ -192,9 +223,9 @@ diff -Naur packetdrill.orig/gtests/net/packetdrill/tcp_options.h packetdrill/gte
  
  /* Allocate a new options list. */
  extern struct tcp_options *tcp_options_new(void);
-diff -Naur packetdrill.orig/gtests/net/packetdrill/wire_conn.c packetdrill/gtests/net/packetdrill/wire_conn.c
---- packetdrill.orig/gtests/net/packetdrill/wire_conn.c	2014-07-18 14:37:14.083012198 +0400
-+++ packetdrill/gtests/net/packetdrill/wire_conn.c	2014-07-17 18:24:54.895156153 +0400
+diff -x '.*sw?' -Naur packetdrill.orig/gtests/net/packetdrill/wire_conn.c packetdrill/gtests/net/packetdrill/wire_conn.c
+--- packetdrill.orig/gtests/net/packetdrill/wire_conn.c	2014-07-18 16:33:46.259472773 +0400
++++ packetdrill/gtests/net/packetdrill/wire_conn.c	2014-07-18 16:27:52.789483192 +0400
 @@ -125,7 +125,7 @@
  	}
  

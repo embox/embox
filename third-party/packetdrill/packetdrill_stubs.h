@@ -18,9 +18,6 @@
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
 
-#define SOL_TCP (PD_STUB("SOL_TCP"), 0)
-#define TCP_NODELAY (PD_STUB("TCP_NODELAY"), 0)
-
 #define SIOCGIFFLAGS (PD_STUB("SIOCGIFFLAGS"), 0)
 #define SIOCSIFFLAGS (PD_STUB("SIOCSIFFLAGS"), 1)
 
