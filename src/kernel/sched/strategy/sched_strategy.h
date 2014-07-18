@@ -25,7 +25,7 @@ struct sched_attr {
 	runq_item_t runq_link;
 	affinity_t affinity;
 	sched_timing_t sched_time;
-	__runnable_priority_t thread_priority;
+	runnable_priority_t thread_priority;
 	int policy;
 };
 

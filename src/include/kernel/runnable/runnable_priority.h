@@ -16,7 +16,7 @@ struct runnable_priority {
 	short current_priority;   /**< Current runnable scheduling priority. */
 };
 
-typedef struct runnable_priority __runnable_priority_t;
+typedef struct runnable_priority runnable_priority_t;
 
 extern int runnable_priority_init(struct runnable *r, sched_priority_t new_priority);
 extern int runnable_priority_set(struct runnable *r, sched_priority_t new_priority);

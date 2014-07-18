@@ -44,7 +44,7 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 
 	runq_item_init(&lt->runnable.sched_attr.runq_link);
 	sched_affinity_init(&lt->runnable);
-	runnable_priority_init(&lt->runnable, LTHREAD_PRIORITY_DEFAULT);
+	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
 }
 
 struct lthread *lthread_create(void *(*run)(void *), void *arg) {

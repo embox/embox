@@ -135,15 +135,15 @@ int mutex_unlock(struct mutex *m) {
 }
 
 static void priority_inherit(struct thread *t, struct mutex *m) {
-	sched_priority_t prior = runnable_priority_get(&t->runnable);
+	sched_priority_t prior = thread_priority_get(t);
 
-	if (prior != runnable_priority_inherit(&m->holder->runnable, prior))
+	if (prior != thread_priority_inherit(m->holder, prior))
 		sched_change_priority(m->holder, prior);
 }
 
 static void priority_uninherit(struct thread *t) {
-	sched_priority_t prior = runnable_priority_get(&t->runnable);
+	sched_priority_t prior = thread_priority_get(t);
 
-	if (prior != runnable_priority_reverse(&t->runnable))
-		sched_change_priority(t, runnable_priority_get(&t->runnable));
+	if (prior != thread_priority_reverse(t))
+		sched_change_priority(t, thread_priority_get(t));
 }

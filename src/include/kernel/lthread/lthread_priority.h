@@ -27,4 +27,15 @@
 #define LTHREAD_PRIORITY_DEFAULT \
 	LTHREAD_PRIORITY_NORMAL
 
+extern int lthread_priority_init(struct lthread *lt, sched_priority_t priority);
+
+extern int lthread_priority_set(struct lthread *lt, sched_priority_t new_priority);
+
+extern sched_priority_t lthread_priority_get(struct lthread *lt);
+
+extern sched_priority_t lthread_priority_inherit(struct lthread *lt,
+		sched_priority_t priority);
+
+extern sched_priority_t lthread_priority_reverse(struct lthread *lt);
+
 #endif /* KERNEL_LTHREAD_PRIORITY_H_ */

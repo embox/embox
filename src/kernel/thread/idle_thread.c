@@ -34,7 +34,7 @@ struct thread * idle_thread_create(void) {
 		return NULL;
 	}
 
-	runnable_priority_init(&t->runnable, SCHED_PRIORITY_MIN);
+	thread_priority_init(t, SCHED_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), t);
 	thread_register(task_kernel_task(), t);

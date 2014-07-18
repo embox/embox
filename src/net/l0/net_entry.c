@@ -86,7 +86,7 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	lt = lthread_create(&netif_rx_action, NULL);
 	assert(!err(lt));
-	runnable_priority_set(&lt->runnable, LTHREAD_PRIORITY_MAX);
+	lthread_priority_set(lt, LTHREAD_PRIORITY_MAX);
 	lthread_launch(lt);
 }
 

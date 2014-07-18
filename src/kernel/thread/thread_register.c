@@ -28,8 +28,8 @@ void thread_register(struct task *tsk, struct thread *t) {
 	 */
 	//sched_prior = sched_priority_full(task->priority, thread_priority_get(t));
 	//TODO use complete priority (task+thread)
-	sched_prior = runnable_priority_get(&t->runnable);
-	runnable_priority_set(&t->runnable, sched_prior);
+	sched_prior = thread_priority_get(t);
+	thread_priority_set(t, sched_prior);
 }
 
 
