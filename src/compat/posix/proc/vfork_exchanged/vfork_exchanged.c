@@ -29,10 +29,10 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 
 	vfork_data = task_resource_vfork(child->parent);
 
+	task_vfork_end(child);
 	task_start(child, run, NULL);
 
 	thread_set_task(thread_self(), child->parent);
-	task_vfork_end(child);
 
 	ptregs_retcode_jmp(&vfork_data->ptregs, child->tsk_id);
 }
