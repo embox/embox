@@ -14,7 +14,6 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 		const struct option **out_lopt) {
 	const struct option *lopt;
 
-
 	if (strncmp(arg[0], "--", 2)) {
 		return -EINVAL;
 	}
@@ -34,7 +33,10 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 				}
 				break;
 			case required_argument:
-				if (argl >= 1) {
+				if (*optarg_sep) {
+					optarg = optarg_sep + 1;
+					return 1;
+				} else if (argl >= 1) {
 					optarg = arg[1];
 					return 2;
 				}
