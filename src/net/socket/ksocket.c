@@ -449,6 +449,7 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 	case SO_PROTOCOL:
 	case SO_TYPE:
 		return -EINVAL;
+	CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
 	CASE_SETSOCKOPT(SO_BINDTODEVICE, so_bindtodevice,
 			optval = netdev_get_by_name(optval);
 			if (optval == NULL) {
