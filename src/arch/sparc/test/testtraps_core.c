@@ -11,7 +11,11 @@
 #include <hal/test/traps_core.h>
 #include <asm/head.h>
 
-static traps_env_t test_env[1];
+//static traps_env_t test_env[1];
+#define CONFIG_MIN_INTERRUPT_NUMBER 0x10
+#define CONFIG_MIN_SOFTTRAP_NUMBER  0x20
+#define CONFIG_MAX_RESERVED_TRAP    0x100
+#define CONFIG_MIN_HWTRAP_NUMBER    0x0
 
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
@@ -45,8 +49,9 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 	);
 	return 0;
 }
-
+#if 0
 traps_env_t *testtraps_env(void) {
 	test_env[0].base_addr = (uint32_t) &__test_trap_table;
 	return test_env;
 }
+#endif

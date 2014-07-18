@@ -1,0 +1,6 @@
+package embox.arch.sparc.test
+
+module testtrap {
+	source "testtraps_core.c"
+	source "testtrap_handler.c"
+}

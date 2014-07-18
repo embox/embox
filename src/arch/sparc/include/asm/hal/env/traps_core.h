@@ -26,6 +26,10 @@
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
 
+#define CONFIG_MAX_HWTRAP_NUMBER    0x10
+#define CONFIG_MAX_INTERRUPT_NUMBER 0x10
+#define CONFIG_MAX_SOFTTRAP_NUMBER  0x60
+
 /** Defines traps environment for sparc structure */
 typedef struct __traps_env {
 	uint32_t base_addr;

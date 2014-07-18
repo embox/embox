@@ -65,7 +65,7 @@ static inline void mmu_flush_tlb_all(void) {
 	);
 }
 
-static inline void mmu_on(void) {
+void mmu_on(void) {
 	unsigned long val;
 
 	/* Set up context table pointer */
@@ -77,6 +77,23 @@ static inline void mmu_on(void) {
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 
 	mmu_flush_cache_all();
+}
+
+
+void mmu_off(void) {
+	unsigned long val;
+
+	mmu_flush_cache_all();
+
+	val = mmu_get_mmureg(LEON_CNR_CTRL);
+	val &= ~0x1;
+	mmu_set_mmureg(LEON_CNR_CTRL, val);
+}
+
+mmu_vaddr_t mmu_get_fault_address(void) {
+	unsigned long val;
+	val = mmu_get_mmureg(LEON_CNR_FADDR);
+	return val;
 }
 
 /*

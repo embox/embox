@@ -4,6 +4,7 @@
  * @date 25.03.10
  * @author Alexander Batyukov
  */
+#include <stddef.h>
 
 #include <asm/ptrace.h>
 #include <hal/test/traps_core.h>
@@ -20,7 +21,7 @@ trap_handler_t test_handlers[CONFIG_TRAP_TABLE_SIZE];
 
 void test_trap_handler(uint8_t tt, uint32_t *data, struct pt_regs *regs) {
 	if (NULL == test_handlers[tt]) {
-		printf("asdf");
+		//printf("asdf");
 		return;
 	}
 	if (0 == test_handlers[tt](tt, (void *) data)) {
