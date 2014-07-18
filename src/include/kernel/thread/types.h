@@ -71,8 +71,6 @@ struct thread {
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
-	void            *(*run)(void *); /**< Start routine. */
-	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
 		void          *run_ret;      /**< Return value of the routine. */
 		void          *joining;      /**< A joining thread (if any). */

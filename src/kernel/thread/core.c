@@ -63,7 +63,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->run(current->run_arg);
+	res = current->runnable.run(current->runnable.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
@@ -154,8 +154,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	/* set executive function and arguments pointer */
-	t->run = run;
-	t->run_arg = arg;
+	t->runnable.run = run;
+	t->runnable.run_arg = arg;
 
 	t->joining = NULL;
 
@@ -411,5 +411,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->run_arg = run_arg;
+	t->runnable.run_arg = run_arg;
 }

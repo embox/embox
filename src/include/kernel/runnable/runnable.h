@@ -17,7 +17,7 @@ struct runnable {
 	 */
 	void                *(*prepare)(struct thread *prev, struct runnable *n);
 
-	void               *(*run)(void *); /**< Called by sched in __schedule */
+	void               *(*run)(void *); /**< Start routine */
 	void               *run_arg;        /**< Argument to be passed to run */
 
 	struct sched_attr  sched_attr;      /**< Scheduler-private data pointer */

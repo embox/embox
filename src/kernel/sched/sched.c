@@ -424,7 +424,7 @@ static void __schedule(int preempt) {
 	do {
 		next = runq_extract(&rq.queue);
 
-		if(next->run != NULL) {
+		if (!next->prepare) {
 			/* lthread extracted, run it*/
 			spin_unlock(&rq.lock);
 			lthread_trampoline(next);
@@ -442,7 +442,7 @@ static void __schedule(int preempt) {
 
 	/* Threads context switch */
 	if (&(prev->runnable) != next) {
-		assert(next->prepare != NULL);
+		assert(next->prepare);
 		next->prepare(prev, next);
 	}
 
