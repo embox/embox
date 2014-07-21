@@ -7,4 +7,6 @@ package third_party
 @Build(script="$(EXTERNAL_MAKE)")
 module packetdrill {
 	source "^BUILD/extbld/^MOD_PATH/install/packetdrill.o"
+
+	source "asprintf.c"
 }

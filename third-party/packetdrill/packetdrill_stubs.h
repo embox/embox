@@ -60,10 +60,7 @@ struct sockaddr_dl {
 
 struct iovec;
 
-static inline int asprintf(char **strp, const char *fmt, ...) {
-	PD_STUB_USE();
-	return 0;
-}
+extern int asprintf(char **strp, const char *fmt, ...);
 
 static inline char *strsignal(int sig) {
 	PD_STUB_USE();
@@ -72,7 +69,7 @@ static inline char *strsignal(int sig) {
 
 static inline int if_nametoindex(const char *name) {
 	PD_STUB_USE();
-	return 0;
+	return 1;
 }
 
 static inline int mlockall(int flags) {
