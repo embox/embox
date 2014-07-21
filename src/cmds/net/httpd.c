@@ -24,10 +24,12 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
+#include <framework/mod/options.h>
+
 EMBOX_CMD(httpd);
 
-#define USE_IP_VER 4
-#define USE_CGI    0
+#define USE_IP_VER OPTION_GET(NUMBER,use_ip_ver)
+#define USE_CGI    OPTION_GET(BOOLEAN,use_cgi)
 
 #define HTTPD_LOG_QUIET 0
 #define HTTPD_LOG_ERROR 1

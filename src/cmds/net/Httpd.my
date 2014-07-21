@@ -16,6 +16,8 @@ package embox.cmd.net
 			Ilia Vaprol
 	''')
 module httpd {
+	option number use_ip_ver=4
+	option boolean use_cgi=false
 	source "httpd.c"
 
 	depends embox.compat.libc.LibC
