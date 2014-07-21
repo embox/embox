@@ -161,6 +161,7 @@ SO_TYPE    Socket type.
 #define SO_BINDTODEVICE 16/* Bind socket to send packet from specified device */
 #define SO_DOMAIN       17 /* int */ /* Socket domain */
 #define SO_PROTOCOL     18 /* int */ /* Socket protocol */
+#define SO_POSIX_MAX    19
 /* }; */
 
 
