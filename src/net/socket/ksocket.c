@@ -423,56 +423,59 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 			return -EINVAL;                           \
 		}                                             \
 		memcpy(&sk->opt.field, optval, optlen);       \
-		break
+		return 0
 
 int ksetsockopt(struct sock *sk, int level, int optname,
 		const void *optval, socklen_t optlen) {
+	int ret;
+
 	assert(sk);
 	assert(optval);
 	assert(optlen >= 0);
 
-	if (level != SOL_SOCKET) {
-		assert(sk->f_ops != NULL);
-		if (sk->f_ops->setsockopt == NULL) {
-			return -EOPNOTSUPP;
+	if (level == SOL_SOCKET) {
+		switch (optname) {
+		default:
+			ret = -ENOPROTOOPT;
+			break;
+		case SO_ACCEPTCONN:
+		case SO_DOMAIN:
+		case SO_ERROR:
+		case SO_PROTOCOL:
+		case SO_TYPE:
+			return -EINVAL;
+		CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
+		CASE_SETSOCKOPT(SO_BINDTODEVICE, so_bindtodevice,
+				optval = netdev_get_by_name(optval);
+				if (optval == NULL) {
+					return -ENODEV;
+				}
+				optlen = sizeof optval);
+		CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
+		CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
+		CASE_SETSOCKOPT(SO_LINGER, so_linger, );
+		CASE_SETSOCKOPT(SO_OOBINLINE, so_oobinline, );
+		CASE_SETSOCKOPT(SO_RCVBUF, so_rcvbuf, );
+		CASE_SETSOCKOPT(SO_RCVLOWAT, so_rcvlowat, );
+		CASE_SETSOCKOPT(SO_RCVTIMEO, so_rcvtimeo,
+				if (optlen > sizeof sk->opt.so_rcvtimeo) {
+					return -EDOM;
+				});
+		CASE_SETSOCKOPT(SO_SNDBUF, so_sndbuf, );
+		CASE_SETSOCKOPT(SO_SNDLOWAT, so_sndlowat, );
+		CASE_SETSOCKOPT(SO_SNDTIMEO, so_sndtimeo,
+				if (optlen > sizeof sk->opt.so_sndtimeo) {
+					return -EDOM;
+				});
 		}
-		return sk->f_ops->setsockopt(sk, level, optname,
-				optval, optlen);
+	} else {
+		ret = -EOPNOTSUPP;
 	}
 
-	switch (optname) {
-	default:
-		return -ENOPROTOOPT;
-	case SO_ACCEPTCONN:
-	case SO_DOMAIN:
-	case SO_ERROR:
-	case SO_PROTOCOL:
-	case SO_TYPE:
-		return -EINVAL;
-	CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
-	CASE_SETSOCKOPT(SO_BINDTODEVICE, so_bindtodevice,
-			optval = netdev_get_by_name(optval);
-			if (optval == NULL) {
-				return -ENODEV;
-			}
-			optlen = sizeof optval);
-	CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
-	CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
-	CASE_SETSOCKOPT(SO_LINGER, so_linger, );
-	CASE_SETSOCKOPT(SO_OOBINLINE, so_oobinline, );
-	CASE_SETSOCKOPT(SO_RCVBUF, so_rcvbuf, );
-	CASE_SETSOCKOPT(SO_RCVLOWAT, so_rcvlowat, );
-	CASE_SETSOCKOPT(SO_RCVTIMEO, so_rcvtimeo,
-			if (optlen > sizeof sk->opt.so_rcvtimeo) {
-				return -EDOM;
-			});
-	CASE_SETSOCKOPT(SO_SNDBUF, so_sndbuf, );
-	CASE_SETSOCKOPT(SO_SNDLOWAT, so_sndlowat, );
-	CASE_SETSOCKOPT(SO_SNDTIMEO, so_sndtimeo,
-			if (optlen > sizeof sk->opt.so_sndtimeo) {
-				return -EDOM;
-			});
+	assert(sk->f_ops != NULL);
+	if (sk->f_ops->setsockopt == NULL) {
+		return ret;
 	}
-
-	return 0;
+	return sk->f_ops->setsockopt(sk, level, optname,
+			optval, optlen);
 }
