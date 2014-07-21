@@ -86,15 +86,6 @@ static inline int munlockall(void) {
 }
 
 #include <stdio.h>
-static inline FILE *funopen(const void *cookie,
-		int (*readfn)(void *, char *, int),
-		int (*writefn)(void *, const char *, int),
-		fpos_t (*seekfn)(void *, fpos_t, int),
-		int (*closefn)(void *)) {
-	PD_STUB_USE();
-	return NULL;
-}
-
 static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 	return funopen(cookie, readfn, NULL, NULL, NULL);
 }
