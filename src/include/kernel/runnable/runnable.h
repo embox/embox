@@ -9,6 +9,7 @@
 #ifndef _KERNEL_RUNNABLE_H_
 #define _KERNEL_RUNNABLE_H_
 
+
 #include <kernel/sched/sched_strategy.h>
 
 struct runnable {

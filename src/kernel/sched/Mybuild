@@ -24,6 +24,9 @@ module sched {
 
 	//XXX kernel/thread.h included
 	depends embox.kernel.thread.thread_wait
+
+	depends embox.kernel.lthread.lthread_api
+
 }
 
 module sched_ticker {

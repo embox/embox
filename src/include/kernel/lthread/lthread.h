@@ -9,6 +9,9 @@
 #ifndef _KERNEL_LTHREAD_H_
 #define _KERNEL_LTHREAD_H_
 
+
+#include <module/embox/kernel/lthread/lthread_api.h>
+
 #include <kernel/runnable/runnable.h>
 
 struct lthread {
@@ -40,5 +43,6 @@ extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
  *   The light thread to launch
  */
 extern void lthread_launch(struct lthread *lt);
+
 
 #endif /* _KERNEL_LTHREAD_H_ */

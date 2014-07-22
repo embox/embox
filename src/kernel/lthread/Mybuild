@@ -1,6 +1,14 @@
 package embox.kernel.lthread
 
-module lthread {
+@DefaultImpl(no_lthread)
+abstract module lthread_api {
+}
+
+module no_lthread extends lthread_api {
+	source "no_lthread.h"
+}
+
+module lthread extends lthread_api {
 	source "lthread.c"
 	option number lthread_pool_size=512
 }
