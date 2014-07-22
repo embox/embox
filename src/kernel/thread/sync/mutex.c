@@ -20,6 +20,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched.h>
+#include <kernel/sched/sched_priority.h>
 
 
 static void priority_inherit(struct thread *t, struct mutex *m);
