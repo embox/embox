@@ -1,5 +1,13 @@
 package embox.arch.sparc
 
-module mmu extends embox.arch.generic.mmu {
+module mmu_old extends embox.arch.generic.mmu {
 	source "mmu_core.c"
+
+	depends embox.mem.phymem
+}
+
+module mmu extends embox.arch.mmu {
+	source "mmu.c", "mmu.h"
+
+	depends embox.mem.phymem
 }
