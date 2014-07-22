@@ -7,23 +7,79 @@
  */
 
 #include <errno.h>
-#include <sys/socket.h>
-#include <net/sock.h>
-#include <embox/net/family.h>
-#include <net/l3/ipv4/ip.h>
 #include <stdlib.h>
-
+#include <mem/misc/pool.h>
 #include <framework/mod/options.h>
+#include <framework/net/sock/self.h>
+#include <embox/net/family.h>
+#include <net/sock.h>
+#include <sys/socket.h>
+#include <net/l3/ipv4/ip.h>
+#include <netpacket/packet.h>
 
 #define MODOPS_AMOUNT_SOCKETS OPTION_GET(NUMBER, amount_sockets)
 
-EMBOX_NET_FAMILY(AF_PACKET, packet_create);
+static const struct sock_family_ops packet_raw_ops;
+static const struct net_family_type packet_types[] = {
+	{ SOCK_STREAM, NULL },
+	{ SOCK_DGRAM, NULL},
+	{ SOCK_RAW, &packet_raw_ops }
+};
+static const struct net_pack_out_ops packet_out_ops_struct;
+static const struct net_pack_out_ops *const packet_out_ops = &packet_out_ops_struct;
+EMBOX_NET_FAMILY(AF_PACKET, packet_types, packet_out_ops);
+
+static const struct sock_proto_ops packet_sock_ops_struct;
+EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, 0x300 /*htons(ETH_P_ALL)*/, 0, packet_sock_ops_struct);
 
 struct packet_sock {
-	/* struct sock has to be the first member of packet_sock */
 	struct sock sk;
+	struct sockaddr_ll sll;
 };
 
+static inline struct packet_sock *sk2packet(struct sock *sk) {
+	return member_cast_out(sk, struct packet_sock, sk);
+}
+
+static int packet_sock_init(struct sock *sk) {
+	return 0;
+}
+
+static int packet_sock_bind(struct sock *sk, const struct sockaddr *addr,
+		socklen_t addrlen) {
+	struct packet_sock *psk = sk2packet(sk);
+
+	assert(sk);
+	assert(addr);
+
+	if (addrlen != sizeof(struct sockaddr_ll)) {
+		return -EINVAL;
+	}
+
+	memcpy(&psk->sll, addr, sizeof(psk->sll));
+
+	return 0;
+}
+
+static int packet_sock_setsockopt(struct sock *sk, int level,
+		int optname, const void *optval, socklen_t optlen) {
+
+	if (optname == SO_ATTACH_FILTER) {
+		return 0;
+	}
+
+	return -ENOTSUP;
+}
+
+POOL_DEF(packet_sock_pool, struct packet_sock, 2);
+static const struct sock_family_ops packet_raw_ops = {
+	.init        = packet_sock_init,
+	.bind        = packet_sock_bind,
+	.setsockopt  = packet_sock_setsockopt,
+	.sock_pool   = &packet_sock_pool
+};
+
+#if 0
 /* Prototypes */
 static const struct family_ops packet_family_ops;
 static const struct proto packet_proto;
@@ -59,7 +115,7 @@ static int packet_sock_release(struct socket *sock) {
 }
 #endif
 
-static int supported_sock_type(struct socket *sock) {
+static int supported_sock_type(struct sock *sock) {
 	switch (sock->type) {
 	default:
 		return -ESOCKTNOSUPPORT;
@@ -96,3 +152,4 @@ static const struct proto packet_proto = {
 		.unhash	  = packet_unhash,
 		.obj_size = sizeof(struct packet_sock),
 };
+#endif

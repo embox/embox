@@ -66,6 +66,7 @@ struct sock_opt {
 	struct timeval so_sndtimeo;
 #define SOCK_OPT_DEFAULT_SNDTIMEO { .tv_sec = 0, .tv_usec = 0 }
 	int so_type;
+	int so_reuseaddr;
 };
 
 /* Base class for family sockets */

@@ -82,18 +82,22 @@ size_t skb_max_extra_size(void) {
 }
 
 void * skb_data_cast_in(struct sk_buff_data *skb_data) {
+	assert(skb_data != NULL);
 	return &skb_data->data[0];
 }
 
 struct sk_buff_data * skb_data_cast_out(void *data) {
+	assert(data != NULL);
 	return member_cast_out(data, struct sk_buff_data, data);
 }
 
 void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
+	assert(skb_extra != NULL);
 	return &skb_extra->extra[0];
 }
 
 struct sk_buff_extra * skb_extra_cast_out(void *extra) {
+	assert(extra != NULL);
 	return member_cast_out(extra, struct sk_buff_extra, extra);
 }
 

@@ -451,18 +451,33 @@ static int tcp_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
+static int tcp_setsockopt(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen) {
+
+	switch (optname) {
+	case TCP_NODELAY:
+		/* TODO just ignoring for now... */
+		break;
+	default:
+		return -ENOPROTOOPT;
+	}
+
+	return 0;
+}
+
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
 static LIST_DEF(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
-	.init      = tcp_init,
-	.close     = tcp_close,
-	.connect   = tcp_connect,
-	.listen    = tcp_listen,
-	.accept    = tcp_accept,
-	.sendmsg   = tcp_sendmsg,
-	.recvmsg   = tcp_recvmsg,
-	.shutdown  = tcp_shutdown,
-	.sock_pool = &tcp_sock_pool,
-	.sock_list = &tcp_sock_list
+	.init       = tcp_init,
+	.close      = tcp_close,
+	.connect    = tcp_connect,
+	.listen     = tcp_listen,
+	.accept     = tcp_accept,
+	.sendmsg    = tcp_sendmsg,
+	.recvmsg    = tcp_recvmsg,
+	.setsockopt = tcp_setsockopt,
+	.shutdown   = tcp_shutdown,
+	.sock_pool  = &tcp_sock_pool,
+	.sock_list  = &tcp_sock_list
 };

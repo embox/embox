@@ -25,6 +25,7 @@ FILE *stdio_file_alloc(int fd) {
 
 	file->fd = fd;
 	file->has_ungetc = 0;
+	file->readfn = NULL;
 	return file;
 }
 

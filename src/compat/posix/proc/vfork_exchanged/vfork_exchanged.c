@@ -27,26 +27,22 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 		return;
 	}
 
-	vfork_data = task_resource_vfork(child->parent);
-
+	task_vfork_end(child);
 	task_start(child, run, NULL);
 
 	thread_set_task(thread_self(), child->parent);
-	task_vfork_end(child);
 
+	vfork_data = task_resource_vfork(child->parent);
 	ptregs_retcode_jmp(&vfork_data->ptregs, child->tsk_id);
 }
 
 int vfork_child_start(struct task *child) {
-	sched_lock();
-	{
-		thread_set_task(thread_self(), child);
+	thread_set_task(thread_self(), child);
 
-		/* mark as vforking */
-		task_vfork_start(child);
-	}
-	sched_unlock();
+	/* mark as vforking */
+	task_vfork_start(child);
 
+	/* Restore values of the registers and return 0 */
 	ptregs_retcode_jmp(&task_resource_vfork(child->parent)->ptregs, 0);
 
 	panic("vfork_child_start returning");
