@@ -4,31 +4,33 @@
  * @date Jul 31, 2013
  * @author: Anton Bondarev
  */
-#include <kernel/thread.h>
+#include <kernel/runnable/runnable.h>
+
 #include <kernel/task.h>
 #include <kernel/task/resource/affinity.h>
 #include <hal/cpu.h>
 
-/** Default thread affinity mask */
-#define THREAD_AFFINITY_NONE         ((unsigned int)-1)
+/** Default runnable affinity mask */
+#define RUNNABLE_AFFINITY_NONE         ((unsigned int)-1)
 
-int sched_affinity_check(struct thread *t , int mask) {
-	if ((t->sched_attr.affinity & mask)
-			&& (task_get_affinity(t->task) & mask)) {
+int sched_affinity_check(struct runnable *r , int mask) {
+	if ((r->sched_attr.affinity & mask)){
+			/*&& (task_get_affinity(t->task) & mask)) {*/
+			/*< TODO: runnable hasn't got task inside */
 		return 1;
 	}
 
 	return 0;
 }
 
-void sched_affinity_init(struct thread *t) {
-	t->sched_attr.affinity = THREAD_AFFINITY_NONE;
+void sched_affinity_init(struct runnable *r) {
+	r->sched_attr.affinity = RUNNABLE_AFFINITY_NONE;
 }
 
-void sched_affinity_set(struct thread *t, int mask) {
-	t->sched_attr.affinity = mask;
+void sched_affinity_set(struct runnable *r, int mask) {
+	r->sched_attr.affinity = mask;
 }
 
-int sched_affinity_get(struct thread *t) {
-	return t->sched_attr.affinity;
+int sched_affinity_get(struct runnable *r) {
+	return r->sched_attr.affinity;
 }

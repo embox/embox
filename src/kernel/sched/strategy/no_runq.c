@@ -13,19 +13,19 @@ void runq_init(runq_t *queue) {
 	*queue = NULL;
 }
 
-void runq_insert(runq_t *queue, struct thread *thread) {
+void runq_insert(runq_t *queue, struct runnable *runnable) {
 
 	assert(!*queue);
-	*queue = thread;
+	*queue = runnable;
 }
 
-void runq_remove(runq_t *queue, struct thread *thread) {
+void runq_remove(runq_t *queue, struct runnable *runnable) {
 
 	assert(*queue);
 	*queue = NULL;
 }
 
-struct thread *runq_extract(runq_t *queue) {
+struct runnable *runq_extract(runq_t *queue) {
 	void *ret;
 
 	assert(*queue);

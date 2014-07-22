@@ -34,6 +34,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
+#include <kernel/runnable/runnable.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -62,7 +63,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->run(current->run_arg);
+	res = current->runnable.run(current->runnable.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
@@ -143,12 +144,18 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->waiting = true;
 	t->state = TS_INIT;
 
+	/* set sched routines, implemented in thread_sched_routine.h */
+	t->runnable.prepare = (void *)sched_prepare_thread;
+	t->runnable.run = NULL;
+	t->runnable.run_arg = NULL;
+
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
 		panic("can't initialize thread_local");
 	}
+
 	/* set executive function and arguments pointer */
-	t->run = run;
-	t->run_arg = arg;
+	t->runnable.run = run;
+	t->runnable.run_arg = arg;
 
 	t->joining = NULL;
 
@@ -193,8 +200,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&t->sched_attr.runq_link);
-	sched_affinity_init(t);
+	runq_item_init(&(t->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(t->runnable));
 	sched_timing_init(t);
 
 	/* initialize everthing else */
@@ -404,5 +411,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->run_arg = run_arg;
+	t->runnable.run_arg = run_arg;
 }

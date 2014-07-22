@@ -18,6 +18,7 @@ module core extends thread_mode {
 	source "thread_register.c"
 
 	depends starter
+	source "thread_sched_routine.c"
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context

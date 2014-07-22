@@ -8,7 +8,7 @@
 
 #include <util/dlist.h>
 
-#include <kernel/thread.h>
+#include <kernel/runnable/runnable.h>
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 
@@ -30,36 +30,37 @@ void runq_init(runq_t *queue) {
 	}
 }
 
-void runq_insert(runq_t *queue, struct thread *thread) {
-	dlist_add_prev(&thread->sched_attr.runq_link,
-			&queue->list[thread_priority_get(thread)]);
+void runq_insert(runq_t *queue, struct runnable *runnable) {
+	dlist_add_prev(&runnable->sched_attr.runq_link,
+			&queue->list[runnable_priority_get(runnable)]);
 }
 
-void runq_remove(runq_t *queue, struct thread *thread) {
-	dlist_del(&thread->sched_attr.runq_link);
+void runq_remove(runq_t *queue, struct runnable *runnable) {
+	dlist_del(&runnable->sched_attr.runq_link);
 }
 
-struct thread *runq_extract(runq_t *queue) {
-	struct thread *thread = NULL;
+struct runnable *runq_extract(runq_t *queue) {
+	struct runnable *runnable = NULL;
 	int i;
 
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
-		struct thread *t;
-		dlist_foreach_entry(t, &queue->list[i], sched_attr.runq_link) {
+		struct runnable *r, *nxt;
+
+		dlist_foreach_entry(r, nxt, &queue->list[i], sched_attr.runq_link) {
 			/* Checking the affinity */
 			unsigned int mask = 1 << cpu_get_id();
 
-			if (sched_affinity_check(t, mask)) {
-				thread = t;
+			if (sched_affinity_check(r, mask)) {
+				runnable = r;
 				break;
 			}
 		}
 
-		if (thread) {
-			runq_remove(queue, thread);
+		if (runnable) {
+			runq_remove(queue, runnable);
 			break;
 		}
 	}
 
-	return thread;
+	return runnable;
 }

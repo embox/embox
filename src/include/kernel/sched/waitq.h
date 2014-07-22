@@ -108,7 +108,6 @@ static inline void waitq_wakeup_all(struct waitq *wq) {
 		__wait_ret;                                                  \
 	})
 
-
 #define WAITQ_WAIT(wq, cond_expr) \
 	WAITQ_WAIT_TIMEOUT(wq, cond_expr, SCHED_TIMEOUT_INFINITE)
 

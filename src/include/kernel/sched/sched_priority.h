@@ -33,11 +33,9 @@ static inline sched_priority_t sched_priority_thread(task_priority_t tsk_p,
 	return thread_pr - task_offset;
 }
 
-
+typedef struct runnable_priority runnable_priority_t;
 
 #include <module/embox/kernel/sched/strategy/priority_api.h>
-
-typedef __thread_priority_t thread_priority_t;
 
 extern int thread_priority_init(struct thread *t, sched_priority_t priority);
 
