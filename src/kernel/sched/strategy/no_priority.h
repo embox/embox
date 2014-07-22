@@ -8,6 +8,8 @@
 #ifndef STRATEGY_NO_PRIORITY_H_
 #define STRATEGY_NO_PRIORITY_H_
 
+struct runnable;
+
 struct runnable_priority {
 };
 
@@ -31,4 +33,11 @@ static inline sched_priority_t runnable_priority_reverse(struct runnable *r) {
 	return 0;
 }
 
+static inline sched_priority_t thread_priority_get(struct thread *t) {
+	return 0;
+}
+
+static inline int thread_priority_set(struct thread *t, sched_priority_t new_priority) {
+	return 0;
+}
 #endif /* STRATEGY_NO_PRIORITY_H_ */
