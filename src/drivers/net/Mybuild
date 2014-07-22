@@ -8,6 +8,14 @@ module loopback {
 	depends embox.net.dev
 }
 
+module tun {
+	source "tun.c"
+
+	depends embox.net.entry_api
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+}
+
 module virtio {
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "virtio.c"
