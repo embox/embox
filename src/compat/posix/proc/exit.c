@@ -15,9 +15,7 @@
 #include <kernel/task.h>
 #include <hal/vfork.h>
 
-
 extern void *task_exit_callback(void *arg) ;
-
 
 void _exit(int status) {
 	struct task *task;
