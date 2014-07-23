@@ -9,7 +9,9 @@
  */
 
 #include <assert.h>
+#include <embox/unit.h>
 #include <hal/ipl.h>
+#include <linux/interrupt.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stddef.h>
@@ -18,9 +20,7 @@
 #include <util/list.h>
 #include <net/l0/net_rx.h>
 
-#include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
-#include <err.h>
+EMBOX_UNIT_INIT(net_entry_init);
 
 static LIST_DEF(netif_rx_list);
 
@@ -60,20 +60,17 @@ static void netif_poll(struct net_device *dev) {
 }
 
 
-static void *netif_rx_action(void *data) {
+static void netif_rx_action(struct softirq_action *action) {
 	struct net_device *dev;
 
 	list_foreach(dev, &netif_rx_list, rx_lnk) {
 		netif_poll(dev);
 		netif_rx_dequeued(dev);
 	}
-
-	return NULL;
 }
 
 static void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
-	struct lthread *lt;
 
 	assert(skb != NULL);
 
@@ -84,14 +81,16 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lt = lthread_create(&netif_rx_action, NULL);
-	assert(!err(lt));
-	lthread_priority_set(lt, LTHREAD_PRIORITY_MAX);
-	lthread_launch(lt);
+	raise_softirq(NET_RX_SOFTIRQ);
 }
 
 int netif_rx(void *data) {
 	assert(data != NULL);
 	netif_rx_schedule((struct sk_buff *)data);
 	return NET_RX_SUCCESS;
+}
+
+static int net_entry_init(void) {
+	open_softirq(NET_RX_SOFTIRQ, netif_rx_action, NULL);
+	return 0;
 }

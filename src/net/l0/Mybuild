@@ -9,7 +9,6 @@ module net_entry extends entry_api {
 	depends net_rx
 	depends skbuff
 	depends embox.compat.libc.LibC
-	depends embox.kernel.lthread.lthread
 }
 
 module net_rx {
@@ -37,3 +36,4 @@ abstract module net_crypt_api {
 module net_no_crypt extends net_crypt_api {
 	source "net_no_crypt.c"
 }
+
