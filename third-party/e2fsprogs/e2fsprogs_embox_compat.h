@@ -38,8 +38,7 @@
 typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
-typedef unsigned int uint;
-
+#include <linux/types.h> /* uint typedef */
 
 
 static inline dev_t makedev(int maj, int min) {
