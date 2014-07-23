@@ -15,6 +15,13 @@ EMBOX_IMPORTED_LDFLAGS :=
 EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS += $(foreach w,$(filter -m elf_i386,$(LDFLAGS)),-Wl,$w)
+ifeq ($(ARCH),microblaze)
+# microblaze compiler wants vendor's xillinx.ld if no lds provided from command line.
+# Make it happy with empty lds
+_empty_lds_hack:=$(abspath $(SRCGEN_DIR))/empty.lds
+$(shell touch $(_empty_lds_hack))
+EMBOX_IMPORTED_LDFLAGS += -T $(_empty_lds_hack)
+endif
 
 EMBOX_IMPORTED_LDFLAGS_FULL :=
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
