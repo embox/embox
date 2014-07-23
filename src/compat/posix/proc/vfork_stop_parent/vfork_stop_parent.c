@@ -27,8 +27,7 @@ static void *vfork_child_task(void *arg) {
 	panic("vfork_child_task returning");
 }
 
-static void vfork_wait_signal_store(struct sigaction *ochildsa,
-	       	struct sigaction *ocontsa) {
+static void vfork_wait_signal_store(struct sigaction *ochildsa) {
 	struct sigaction sa;
 
 	sa.sa_flags = SA_SIGINFO;
@@ -36,17 +35,14 @@ static void vfork_wait_signal_store(struct sigaction *ochildsa,
 	sigemptyset(&sa.sa_mask);
 
 	sigaction(SIGCHLD, &sa, ochildsa);
-	sigaction(SIGCONT, &sa, ocontsa);
 }
 
-static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
-	       	const struct sigaction *ocontsa) {
+static void vfork_wait_signal_restore(const struct sigaction *ochildsa) {
 	sigaction(SIGCHLD, ochildsa, NULL);
-	sigaction(SIGCONT, ocontsa, NULL);
 }
 
 static void vfork_waiting(void) {
-	struct sigaction ochildsa, ocontsa;
+	struct sigaction ochildsa;
 	struct task *child;
 	struct task_vfork *task_vfork;
 	struct context tmp;
@@ -54,13 +50,13 @@ static void vfork_waiting(void) {
 	task_vfork = task_resource_vfork(task_self());
 	child = task_table_get(task_vfork->child_pid);
 
-	vfork_wait_signal_store(&ochildsa, &ocontsa);
+	vfork_wait_signal_store(&ochildsa);
 	{
 		task_vfork->parent_holded = true;
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
 		while (SCHED_WAIT(!task_vfork->parent_holded));
 	}
-	vfork_wait_signal_restore(&ochildsa, &ocontsa);
+	vfork_wait_signal_restore(&ochildsa);
 
 	context_switch(&tmp, &task_vfork->ctx);
 
@@ -73,6 +69,7 @@ int vfork_child_start(struct task *child) {
 
 	task_vfork = task_resource_vfork(task_self());
 
+	/* Allocate memory for the new stack */
 	task_vfork->stack = sysmalloc(sizeof(task_vfork->stack));
 
 	if (!task_vfork->stack) {
@@ -81,6 +78,7 @@ int vfork_child_start(struct task *child) {
 
 	task_vfork->child_pid = child->tsk_id;
 
+	/* Set new stack and go to vfork_waiting */
 	context_init(&waiting_ctx, true);
 	context_set_entry(&waiting_ctx, vfork_waiting);
 	context_set_stack(&waiting_ctx, task_vfork->stack + sizeof(task_vfork->stack));

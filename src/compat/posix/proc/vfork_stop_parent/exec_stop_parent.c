@@ -27,7 +27,7 @@ extern int exec_call(void);
 static void exec_trampoline(void) {
 	sched_unlock();
 
-	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
+	kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
 
 	_exit(exec_call());
 }
