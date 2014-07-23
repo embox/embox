@@ -22,7 +22,7 @@ struct vfork_ctx {
 	struct context original_ctx;
 	struct context waiting_ctx;
 	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
-	bool parent_holded;
+	bool parent_blocked;
 	int child_pid;
 };
 #endif
@@ -30,7 +30,7 @@ struct vfork_ctx {
 struct task_vfork {
 	struct pt_regs ptregs;
 	pid_t child_pid;
-	int parent_holded;
+	int parent_blocked;
 	struct context ctx;
 	char (*stack) [VFORK_CTX_STACK_LEN]; // __attribute__((aligned(4)));
 };

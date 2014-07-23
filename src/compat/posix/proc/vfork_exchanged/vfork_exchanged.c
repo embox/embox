@@ -54,4 +54,3 @@ void *task_exit_callback(void *arg) {
 
 	return arg;
 }
-

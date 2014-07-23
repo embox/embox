@@ -16,7 +16,7 @@
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
 	struct task_vfork *task_vfork = task_resource_vfork(task_self());
-	task_vfork->parent_holded = false;
+	task_vfork->parent_blocked = false;
 }
 
 static void *vfork_child_task(void *arg) {
@@ -52,9 +52,9 @@ static void vfork_waiting(void) {
 
 	vfork_wait_signal_store(&ochildsa);
 	{
-		task_vfork->parent_holded = true;
+		task_vfork->parent_blocked = true;
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
-		while (SCHED_WAIT(!task_vfork->parent_holded));
+		while (SCHED_WAIT(!task_vfork->parent_blocked));
 	}
 	vfork_wait_signal_restore(&ochildsa);
 
@@ -93,4 +93,14 @@ int vfork_child_start(struct task *child) {
 
 	panic("vfork_child_start returning");
 	return -1;
+}
+
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
+	assert(run);
+
+	if (child != task_self()) {
+		task_start(child, run, arg);
+	} else {
+		run(arg);
+	}
 }

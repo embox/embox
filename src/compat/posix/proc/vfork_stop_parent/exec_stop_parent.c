@@ -49,16 +49,6 @@ void *task_exec_callback(void *arg) {
 	return NULL;
 }
 
-void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
-	assert(run);
-
-	if (child != task_self()) {
-		task_start(child, run, arg);
-	} else {
-		run(arg);
-	}
-}
-
 void *task_exit_callback(void *arg) {
 	return arg;
 }

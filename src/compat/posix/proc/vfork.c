@@ -15,8 +15,6 @@
 #include <hal/vfork.h>
 #include <hal/ptrace.h>
 
-extern int vfork_child_start(struct task *child);
-
 static void *vfork_body_exit_stub(void *arg) {
 	_exit(*((int*) arg));
 }
