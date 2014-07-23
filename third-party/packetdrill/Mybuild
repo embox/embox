@@ -9,4 +9,8 @@ module packetdrill {
 	source "^BUILD/extbld/^MOD_PATH/install/packetdrill.o"
 
 	source "asprintf.c"
+
+
+	@InitFS(target_dir="packetdrill_tests")
+	source "simple-connect.pkt"
 }
