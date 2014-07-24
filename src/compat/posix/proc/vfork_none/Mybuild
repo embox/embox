@@ -4,6 +4,6 @@ static module vfork_stub extends vfork {
 	source "vfork_stub.c"
 }
 
-static module exec_stub extends exec {
+static module exec_stub extends exec_lib {
 	source "exec_stub.c"
 }

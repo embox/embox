@@ -1,6 +1,6 @@
 package embox.compat.posix.proc
 
-static module exec_exchanged extends exec {
+static module exec_exchanged extends exec_lib {
 	source "exec_exchanged.c"
 
 	depends embox.kernel.task.resource.argv

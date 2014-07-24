@@ -1,6 +1,6 @@
 package embox.compat.posix.proc
 
-static module exec_stop_parent extends exec {
+static module exec_stop_parent extends exec_lib {
 	source "exec_stop_parent.c"
 
 	depends vfork

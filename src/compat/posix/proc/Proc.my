@@ -15,14 +15,15 @@ module All {
 }
 
 @DefaultImpl(exec_stub)
-abstract module exec { }
+abstract module exec_lib { }
 
 
-static module exec_lib {
+static module exec {
 	source "exec.c"
 	depends vfork
-	depends exec
+	depends exec_lib
 	depends embox.kernel.task.resource.module_ptr
+	depends embox.kernel.task.resource.argv
 }
 
 @DefaultImpl(fork_copy_everything)
