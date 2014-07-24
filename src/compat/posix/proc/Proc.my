@@ -31,6 +31,9 @@ abstract module fork { }
 
 static module vfork_entry {
 	source "vfork.c"
+
+	depends embox.kernel.task.resource.argv
+	depends embox.kernel.task.resource.vfork
 }
 
 module fork_copy_everything extends fork {
