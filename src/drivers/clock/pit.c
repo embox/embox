@@ -22,10 +22,13 @@
 #include <kernel/time/ktime.h>
 #include <util/array.h>
 
+
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
+#define SLOWDOWN_FACTOR    OPTION_GET(NUMBER,slowdown_factor)
 
-#define PIT_HZ 1000
+#define PIT_HZ (1000 / SLOWDOWN_FACTOR)
+
 static int pit_clock_setup(struct time_dev_conf * conf);
 static int pit_clock_init(void);
 
@@ -114,7 +117,7 @@ static struct time_event_device pit_event_device = {
 
 static struct time_counter_device pit_counter_device = {
 	.read = i8253_read,
-	.cycle_hz = INPUT_CLOCK
+	.cycle_hz = INPUT_CLOCK * SLOWDOWN_FACTOR,
 };
 
 static struct clock_source pit_clock_source = {
