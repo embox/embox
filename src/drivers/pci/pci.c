@@ -28,6 +28,8 @@
 #define dprintf(...) do {} while (0)
 #endif
 
+#define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
+
 EMBOX_UNIT_INIT(pci_init);
 
 typedef struct pci_slot {
@@ -129,7 +131,7 @@ static int pci_scan_start(void) {
 	 * }
 	 */
 
-	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
+	for (bus = 0; bus < PCI_BUS_N_TO_SCAN; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
 
 			/* Devices are required to implement function 0, so if

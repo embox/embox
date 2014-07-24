@@ -2,21 +2,28 @@ package embox.driver
 
 module pci {
 	option number dev_quantity = 32
+	option number bus_n_to_scan = 256
 	source "pci.c", "pci_repo.c", "pci_driver.c"
 
 	depends embox.mem.pool
 	depends embox.kernel.irq
 	depends embox.util.LibUtil
 	depends embox.driver.pci_chip.pci_chip
+	depends embox.driver.pci_bios
 }
 
-module pci_bios {
+@DefaultImpl(pci_bios_stub)
+abstract module pci_bios_api { }
+module pci_bios_stub extends pci_bios_api { }
+
+module pci_bios extends pci_bios_api {
 	option number pci_space_base
 	option number pci_space_size
 	option number pci_window_size
 	source "pci_bios.c"
 
 	depends embox.mem.page_api
+	depends embox.driver.pci_chip.pci_chip
 }
 
 module pci_tlp {
