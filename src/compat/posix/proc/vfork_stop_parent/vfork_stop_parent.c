@@ -16,7 +16,8 @@
 #include <setjmp.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
-	struct task_vfork *task_vfork = task_resource_vfork(task_self());
+	struct task_vfork *task_vfork;
+	task_vfork = task_resource_vfork(task_self());
 	task_vfork->parent_blocked = 0;
 }
 
@@ -79,10 +80,11 @@ int vfork_child_start(struct task *child) {
 
 	/* Set new stack and go to vfork_waiting */
 	if (!setjmp(task_vfork->env)) {
-		CONTEXT_JMP_NEW_STACK(vfork_waiting, task_vfork->stack + sizeof(task_vfork->stack));
+		CONTEXT_JMP_NEW_STACK(vfork_waiting,
+			task_vfork->stack + sizeof(task_vfork->stack));
 	}
 
-	/* current stack is broken, can't reach any old data */
+	/* current stack was broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
 
 	sysfree(task_vfork->stack);
@@ -102,3 +104,4 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 		run(arg);
 	}
 }
+
