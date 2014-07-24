@@ -10,6 +10,7 @@
 
 #include <sys/types.h>
 #include <asm/ptrace.h>
+#include <setjmp.h>
 
 #define VFORK_CTX_STACK_LEN 0x1000
 
@@ -31,7 +32,7 @@ struct task_vfork {
 	struct pt_regs ptregs;
 	pid_t child_pid;
 	int parent_blocked;
-	struct context ctx;
+	jmp_buf env;
 	char (*stack) [VFORK_CTX_STACK_LEN]; // __attribute__((aligned(4)));
 };
 

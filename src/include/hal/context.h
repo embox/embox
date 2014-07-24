@@ -43,6 +43,14 @@ extern void context_set_entry(struct context *ctx, thread_routine_t routine);
  * @param next - pointer to wished active thread structure
  */
 extern void context_switch(struct context *prev, struct context *next);
+
+#define JMP_NEW_STACK(routine, sp) \
+	struct context ctx##__LINE__, old_ctx##__LINE__; \
+	context_init(&ctx##__LINE__, true); \
+	context_set_entry(&ctx##__LINE__, routine); \
+	context_set_stack(&ctx##__LINE__, sp); \
+	context_switch(&old_ctx##__LINE__, &ctx##__LINE__)
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* HAL_CONTEXT_H_ */

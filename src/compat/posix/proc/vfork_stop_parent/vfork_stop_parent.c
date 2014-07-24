@@ -13,6 +13,7 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
+#include <setjmp.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
 	struct task_vfork *task_vfork = task_resource_vfork(task_self());
@@ -45,7 +46,6 @@ static void vfork_waiting(void) {
 	struct sigaction ochildsa;
 	struct task *child;
 	struct task_vfork *task_vfork;
-	struct context tmp;
 
 	task_vfork = task_resource_vfork(task_self());
 	child = task_table_get(task_vfork->child_pid);
@@ -58,14 +58,13 @@ static void vfork_waiting(void) {
 	}
 	vfork_wait_signal_restore(&ochildsa);
 
-	context_switch(&tmp, &task_vfork->ctx);
+	longjmp(task_vfork->env, 1);
 
 	panic("vfork_waiting returning");
 }
 
 int vfork_child_start(struct task *child) {
 	struct task_vfork *task_vfork;
-	struct context waiting_ctx;
 
 	task_vfork = task_resource_vfork(task_self());
 
@@ -79,10 +78,9 @@ int vfork_child_start(struct task *child) {
 	task_vfork->child_pid = child->tsk_id;
 
 	/* Set new stack and go to vfork_waiting */
-	context_init(&waiting_ctx, true);
-	context_set_entry(&waiting_ctx, vfork_waiting);
-	context_set_stack(&waiting_ctx, task_vfork->stack + sizeof(task_vfork->stack));
-	context_switch(&task_vfork->ctx, &waiting_ctx);
+	if (!setjmp(task_vfork->env)) {
+		JMP_NEW_STACK(vfork_waiting, task_vfork->stack + sizeof(task_vfork->stack));
+	}
 
 	/* current stack is broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
