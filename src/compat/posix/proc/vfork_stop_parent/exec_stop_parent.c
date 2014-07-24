@@ -38,7 +38,7 @@ void *task_exec_callback(void *arg) {
 	sched_lock();
 	t = thread_self();
 
-	JMP_NEW_STACK(exec_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
+	CONTEXT_JMP_NEW_STACK(exec_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	return NULL;
 }

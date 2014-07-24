@@ -79,7 +79,7 @@ int vfork_child_start(struct task *child) {
 
 	/* Set new stack and go to vfork_waiting */
 	if (!setjmp(task_vfork->env)) {
-		JMP_NEW_STACK(vfork_waiting, task_vfork->stack + sizeof(task_vfork->stack));
+		CONTEXT_JMP_NEW_STACK(vfork_waiting, task_vfork->stack + sizeof(task_vfork->stack));
 	}
 
 	/* current stack is broken, can't reach any old data */
