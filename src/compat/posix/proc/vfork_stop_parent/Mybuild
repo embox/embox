@@ -8,6 +8,7 @@ static module exec_stop_parent extends exec_lib {
 	@NoRuntime depends embox.kernel.task.resource.argv
 
 	depends exec_lib
+	depends embox.arch.libarch
 }
 
 static module vfork_stop_parent extends vfork {
@@ -15,6 +16,7 @@ static module vfork_stop_parent extends vfork {
 	source "vfork_res_stop_parent.h"
 
 	depends embox.arch.vfork_entry
+	depends embox.arch.libarch
 	depends vfork_entry
 	depends embox.kernel.task.resource.vfork
 	depends embox.util.LibUtil
