@@ -31,7 +31,6 @@ struct vfork_ctx {
 struct task_vfork {
 	struct pt_regs ptregs;
 	pid_t child_pid;
-	int parent_blocked;
 	jmp_buf env;
 	char (*stack) [VFORK_CTX_STACK_LEN]; // __attribute__((aligned(4)));
 };

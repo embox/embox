@@ -5,6 +5,7 @@
  * @author  Anton Kozlov
  * @date    14.05.2014
  */
+#include <setjmp.h>
 
 #include <mem/sysmalloc.h>
 #include <hal/ptrace.h>
@@ -13,12 +14,9 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
-#include <setjmp.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
-	struct task_vfork *task_vfork;
-	task_vfork = task_resource_vfork(task_self());
-	task_vfork->parent_blocked = 0;
+	task_vfork_end(task_self());
 }
 
 static void *vfork_child_task(void *arg) {
@@ -46,16 +44,21 @@ static void vfork_wait_signal_restore(const struct sigaction *ochildsa) {
 static void vfork_waiting(void) {
 	struct sigaction ochildsa;
 	struct task *child;
+	struct task *parent;
 	struct task_vfork *task_vfork;
 
-	task_vfork = task_resource_vfork(task_self());
+	parent = task_self();
+
+	task_vfork = task_resource_vfork(parent);
 	child = task_table_get(task_vfork->child_pid);
 
 	vfork_wait_signal_store(&ochildsa);
 	{
-		task_vfork->parent_blocked = 1;
+		task_vfork_start(parent);
+
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
-		while (SCHED_WAIT(!task_vfork->parent_blocked));
+
+		while (SCHED_WAIT(!task_is_vforking(parent)));
 	}
 	vfork_wait_signal_restore(&ochildsa);
 
