@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <stddef.h>
 #include <util/array.h>
+#include <net/socket/packet.h>
 
 #define NET_TX_DEBUG 0
 #if NET_TX_DEBUG
@@ -98,6 +99,8 @@ int net_tx(struct sk_buff *skb,
 
 	DBG(printk("net_tx: skb %p[%zu] type %#.6hx\n",
 				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
+
+	sock_packet_add(skb);
 
 	skb = net_encrypt(skb);
 	if (skb == NULL) {

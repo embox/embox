@@ -4,6 +4,7 @@
  * @date Dec 2, 2013
  * @author: Anton Bondarev
  */
+
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 #include <kernel/time/time.h>
@@ -22,4 +23,8 @@ int sock_wait(struct sock *sk, int flags, int timeout) {
 	return IDESC_WAIT_LOCKED(softirq_unlock(),
 			&sk->idesc, &wl, flags, timeout,
 			softirq_lock());
+}
+
+void sock_notify(struct sock *sk, int flags) {
+	idesc_notify(&sk->idesc, flags);
 }
