@@ -83,7 +83,7 @@ static int tun_setup(struct net_device *dev) {
 	dev->hdr_len  = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
 	dev->type     = ARP_HRD_LOOPBACK;
-	dev->flags    = IFF_LOOPBACK | IFF_RUNNING;
+	dev->flags    = IFF_RUNNING;
 	dev->drv_ops  = &tun_ops;
 	dev->ops      = &ethernet_ops;
 	return 0;

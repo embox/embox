@@ -6,11 +6,9 @@
 #endif
 
 #include <sys/socket.h>
+#include <net/if_packet.h>
 
 #define SO_ATTACH_FILTER (SO_POSIX_MAX + 0)
-
-#define PACKET_OUTGOING (PD_STUB("PACKET_OUTGOING"), 0)
-#define PACKET_HOST 	(PD_STUB("PACKET_HOST"), 0)
 
 #define SIOCGSTAMP 	(PD_STUB("SIOCGSTAMP"), 0)
 
