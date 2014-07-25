@@ -7,6 +7,8 @@ module mmu_old extends embox.arch.generic.mmu {
 }
 
 module mmu extends embox.arch.mmu {
+	option number asi_m_mmuregs=0x19
+
 	source "mmu.c", "mmu.h"
 
 	depends embox.mem.phymem
