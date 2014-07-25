@@ -16,6 +16,7 @@ module net_rx {
 
 	depends net_crypt_api
 	depends skbuff
+	depends packet
 	depends embox.compat.linux.LibLinux
 	depends embox.framework.LibFrameworkNet
 	depends embox.compat.libc.LibC

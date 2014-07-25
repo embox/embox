@@ -57,6 +57,7 @@ module af_packet {
 	option number amount_sockets=20
 
 	depends sock
+	depends packet
 	depends embox.framework.LibFrameworkNet
 }
 

@@ -81,3 +81,7 @@ module neighbour {
 	@NoRuntime depends embox.net.arp
 	@NoRuntime depends embox.net.ndp
 }
+
+module packet {
+	source "packet.c"
+}

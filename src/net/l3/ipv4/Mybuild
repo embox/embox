@@ -29,5 +29,6 @@ module ipv4 {
 	depends net_tx
 	depends skbuff
 	depends route
+	depends packet
 	depends embox.net.lib.ipv4
 }
