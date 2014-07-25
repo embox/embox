@@ -131,7 +131,7 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	struct packet_sock *psk = sk2packet(sk);
 	struct sk_buff *skb;
-	int skb_err;
+	int n_byte, skb_err;
 
 	af_packet_rcv_lock();
 	{
@@ -154,7 +154,11 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		packet_sll_fill(msg->msg_name, skb);
 	}
 
-	return skb_write_iovec(skb, msg->msg_iov, msg->msg_iovlen);
+	sock_update_tstamp(sk, skb);
+
+	n_byte = skb_write_iovec(skb, msg->msg_iov, msg->msg_iovlen);
+	skb_free(skb);
+	return n_byte;
 }
 
 static int packet_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {

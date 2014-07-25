@@ -203,6 +203,8 @@ struct sk_buff * skb_wrap(size_t size,
 	}
 	ipl_restore(sp);
 
+	gettimeofday(&skb->tstamp, NULL);
+
 	if (skb == NULL) {
 		DBG(printk("skb_wrap: error: no memory\n"));
 		return NULL; /* error: no memory */

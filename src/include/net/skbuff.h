@@ -19,6 +19,7 @@
 //#include <net/l4/tcp.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/time.h>
 
 /* Prototypes */
 struct sk_buff;
@@ -95,6 +96,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	unsigned char *p_data;
 	unsigned char *p_data_end;
 
+	struct timeval tstamp;
 } sk_buff_t;
 
 extern size_t skb_max_size(void);

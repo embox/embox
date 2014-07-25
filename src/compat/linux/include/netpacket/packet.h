@@ -1,16 +1,10 @@
 #ifndef INCLUDE_NETPACKET_PACKET_H_
 #define INCLUDE_NETPACKET_PACKET_H_
 
-#ifndef PD_STUB
-#define PD_STUB(x) ((void) 1)
-#endif
-
 #include <sys/socket.h>
 #include <net/if_packet.h>
 
 #define SO_ATTACH_FILTER (SO_POSIX_MAX + 0)
-
-#define SIOCGSTAMP 	(PD_STUB("SIOCGSTAMP"), 0)
 
 struct sockaddr_ll {
 	unsigned short sll_family;   /* Always AF_PACKET */
