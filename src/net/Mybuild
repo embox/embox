@@ -27,6 +27,7 @@ module skbuff {
 	source "skb_queue.c"
 	depends embox.arch.interrupt
 	depends embox.compat.libc.LibC
+	depends embox.compat.posix.util.gettimeofday
 }
 
 module core {
