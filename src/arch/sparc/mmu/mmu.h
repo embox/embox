@@ -1,8 +1,9 @@
-/*
- * mmu.h
+/**
+ * @file
+ * @brief
  *
- *  Created on: 2014 7 22
- *      Author: alexander
+ * @date 20.07.2014
+ * @author Alexander Kalmuk
  */
 
 #ifndef MMU_H_
@@ -30,7 +31,7 @@ typedef uint32_t __mmu_pte_t;
  * another RISC architectures.
  */
 
-extern void mmu_set_val(void *addr, unsigned long value);
+//extern void mmu_set_val(void *addr, unsigned long value);
 
 extern __mmu_pgd_t *context_table[];
 
@@ -42,14 +43,11 @@ extern int ctx_counter;
 
 #define MMU_ET_PTD           0x1
 #define MMU_ET_PTE           0x2
-#define MMU_ET_PRESENT       0x3
 
 #define MMU_PAGE_WRITABLE    ((1UL << 0) << 2)
-#define MMU_PAGE_SOMEFLAG    ((1UL << 1) << 2)
+#define MMU_PAGE_EXECUTABLE  ((1UL << 1) << 2)
 #define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
 
 #define MMU_PAGE_CACHEABLE   (1UL << 7)
-
-#define MMU_PTE_ET           0x2
 
 #endif /* MMU_H_ */
