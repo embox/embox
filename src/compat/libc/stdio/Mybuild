@@ -19,13 +19,16 @@ static module LibCStdioSprintf {
 	@NoRuntime depends embox.lib.LibGcc
 }
 
-static module LibCStdioOpen {
+static module LibCStdioFilePool {
 	option number file_quantity = 16
 
-	source "fopen.c"
-	source "funopen.c"
-	source "fclose.c"
 	source "stdio_file.c"
+}
+
+static module LibCStdioOpen {
+
+	source "fopen.c"
+	depends LibCStdioFilePool
 	depends embox.compat.posix.fs.open
 	@NoRuntime depends LibCString
 }
@@ -40,11 +43,16 @@ static module LibCStdioFileOps {
 	source "fgetc.c"
 	source "fgets.c"
 
+	source "funopen.c"
 	source "file_ops.c"
 	source "fread.c"
 	source "fwrite.c"
 	source "fioctl.c"
+	source "fclose.c"
+
 	source "stdio_stubs.c"
+
+	depends LibCStdioFilePool
 	depends embox.compat.posix.fs.file_ops
 
 
