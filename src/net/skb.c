@@ -23,6 +23,8 @@
 #include <util/member.h>
 #include <util/binalign.h>
 
+#include <sys/uio.h>
+
 #define MODOPS_AMOUNT_SKB       OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_DATA  OPTION_GET(NUMBER, amount_skb_data)
 #define MODOPS_DATA_SIZE        OPTION_GET(NUMBER, data_size)
@@ -393,4 +395,26 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	skb->p_data += len;
 
 	return len;
+}
+
+int skb_write_iovec(struct sk_buff *skb, struct iovec *iov, int iovlen) {
+	int i_io;
+	unsigned char *skb_dp;
+
+	skb_dp = skb->p_data;
+
+	for (i_io = 0; i_io < iovlen; i_io++) {
+		int this_io_len, skb_dremain;
+
+		skb_dremain = skb_dp - skb->p_data;
+		if (skb_dremain == 0) {
+			break;
+		}
+
+		this_io_len = min(iov[i_io].iov_len, skb_dremain);
+		memcpy(iov[i_io].iov_base, skb_dp, this_io_len);
+		skb_dp += this_io_len;
+	}
+
+	return skb_dp - skb->p_data;
 }
