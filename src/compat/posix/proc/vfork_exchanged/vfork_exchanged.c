@@ -28,6 +28,7 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 	}
 
 	task_vfork_end(child);
+
 	task_start(child, run, NULL);
 
 	thread_set_task(thread_self(), child->parent);

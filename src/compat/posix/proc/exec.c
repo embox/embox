@@ -56,8 +56,11 @@ int execv(const char *path, char *const argv[]) {
 	task = task_self();
 	task_resource_exec(task, path, argv);
 
-	/* if vforked then unblock parent and  start execute new image */
+	/* If vforked then unblock parent and start execute new image */
 	vfork_child_done(task, task_exec_callback, NULL);
+
+	/* Not vforked */
+	exec_call();
 
 	return 0;
 }
