@@ -399,24 +399,24 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	return len;
 }
 
-int skb_write_iovec(struct sk_buff *skb, struct iovec *iov, int iovlen) {
+int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen) {
 	int i_io;
-	unsigned char *skb_dp;
+	const void *buf_p;
 
-	skb_dp = skb->p_data;
+	buf_p = buf;
 
 	for (i_io = 0; i_io < iovlen; i_io++) {
-		int this_io_len, skb_dremain;
+		int this_io_len, buf_remain;
 
-		skb_dremain = skb_dp - skb->p_data;
-		if (skb_dremain == 0) {
+		buf_remain = buflen - (buf_p - buf);
+		if (buf_remain == 0) {
 			break;
 		}
 
-		this_io_len = min(iov[i_io].iov_len, skb_dremain);
-		memcpy(iov[i_io].iov_base, skb_dp, this_io_len);
-		skb_dp += this_io_len;
+		this_io_len = min(iov[i_io].iov_len, buf_remain);
+		memcpy(iov[i_io].iov_base, buf_p, this_io_len);
+		buf_p += this_io_len;
 	}
 
-	return skb_dp - skb->p_data;
+	return buf_p - buf;
 }

@@ -156,9 +156,10 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	sock_update_tstamp(sk, skb);
 
-	n_byte = skb_write_iovec(skb, msg->msg_iov, msg->msg_iovlen);
+	n_byte = skb_write_iovec(&skb->mac.ethh, skb->len, msg->msg_iov, msg->msg_iovlen);
 	skb_free(skb);
-	return n_byte;
+	msg->msg_iov->iov_len = n_byte; /* XXX */
+	return 0;
 }
 
 static int packet_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {

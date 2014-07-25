@@ -170,7 +170,7 @@ extern struct sk_buff * skb_declone(struct sk_buff *skb);
  *
  * @return Written data count in bytes.
  */
-extern int skb_write_iovec(struct sk_buff *skb, struct iovec *iov, int iovlen);
+extern int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen);
 
 /**
  * Create copy of skb
