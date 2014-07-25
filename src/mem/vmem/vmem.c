@@ -45,7 +45,11 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 
 	// XXX below
 	// for sparc
-	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x1000,
+	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x100000,
+			VMEM_PAGE_WRITABLE);
+
+	// for sparc greth
+	err |= vmem_map_on_itself(ctx, (void *) 0x90000000, (size_t) 0x1000,
 			VMEM_PAGE_WRITABLE);
 
 	// for microblaze
