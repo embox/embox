@@ -60,13 +60,12 @@ static inline void mmu_flush_cache_all(void) {
 	);
 }
 
-static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
+static inline void mmu_set_val(void *addr, unsigned long value) {
 	__asm__ __volatile__(
 		"swap [%2], %0"
 		: "=&r" (value)
 		: "0" (value), "r" (addr)
 	);
-	return value;
 }
 
 void mmu_on(void) {
@@ -91,7 +90,7 @@ void mmu_off(void) {
 }
 
 static void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
-	mmu_swap((unsigned long *) ctxp,
+	mmu_set_val((unsigned long *) ctxp,
 		(MMU_ET_PTD | (((unsigned long) pgdp) >> 4)));
 }
 
@@ -100,7 +99,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 }
 
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
-	mmu_ctx_t ctx = (mmu_ctx_t) (ctx_cnt++);
+	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_cnt);
 	mmu_ctxd_set((mmu_ctx_t *) (context_table + ctx), pgd);
 	MMU_DEBUG(printk("created context - 0x%x\n", ctx));
 	return ctx;
@@ -127,16 +126,16 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 }
 
 void mmu_pte_set(mmu_pte_t *ptep, mmu_pte_t addr) {
-	mmu_swap((unsigned long *) ptep, ((addr >> 4) & MMU_PTE_PMASK) | MMU_ET_PTE);
+	mmu_set_val((unsigned long *) ptep, ((addr >> 4) & MMU_PTE_PMASK) | MMU_ET_PTE);
 }
 
 void mmu_pgd_set(mmu_pgd_t *pgdp, mmu_pmd_t *pmdp) {
-	mmu_swap((unsigned long *) pgdp,
+	mmu_set_val((unsigned long *) pgdp,
 		(MMU_ET_PTD | (((unsigned long) pmdp) >> 4)));
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmdp, mmu_pte_t *ptep) {
-	mmu_swap((unsigned long *) pmdp,
+	mmu_set_val((unsigned long *) pmdp,
 		(MMU_ET_PTD | (((unsigned long) ptep) >> 4)));
 }
 
@@ -179,3 +178,8 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 		*pte = *pte & (~MMU_PAGE_CACHEABLE);
 	}
 }
+
+void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
+	MMU_DEBUG(printk("\nmmu_pte_set_usermode does not implemented!\n"));
+}
+
