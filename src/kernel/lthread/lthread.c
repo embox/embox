@@ -28,11 +28,7 @@ POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
  * Called in __schedule
  */
 void lthread_trampoline(struct runnable *r) {
-	struct lthread *lt;
-
 	r->run(r->run_arg);
-	lt = mcast_out(r, struct lthread, runnable);
-	pool_free(&lthread_pool, lt);
 }
 
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
@@ -61,6 +57,11 @@ struct lthread *lthread_create(void *(*run)(void *), void *arg) {
 	lthread_init(lt, run, arg);
 
 	return lt;
+}
+
+void lthread_delete(struct lthread *lt) {
+	assert(lt);
+	pool_free(&lthread_pool, lt);
 }
 
 void lthread_launch(struct lthread *lt) {

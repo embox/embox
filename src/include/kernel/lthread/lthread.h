@@ -38,6 +38,13 @@ extern void lthread_trampoline(struct runnable *r);
 extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
 
 /**
+ * Deletes light thread from pool
+ * @param lt
+ *   The light thread to delete
+ */
+extern void lthread_delete(struct lthread *lt);
+
+/**
  * Adds a light thread in runq
  * @param lt
  *   The light thread to launch
