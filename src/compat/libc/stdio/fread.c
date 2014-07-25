@@ -30,8 +30,12 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	}
 	while (cnt != count * size) {
 		int ret;
-		if (file->readfn) {
-			ret = file->readfn((void *) file->cookie, buf, size * count);
+		if (funopen_check(file)) {
+			if (file->readfn) {
+				ret = file->readfn((void *) file->cookie, buf, size * count);
+			} else {
+				ret = 0;
+			}
 		} else {
 			ret = read(file->fd,  buf, size * count);
 		}
