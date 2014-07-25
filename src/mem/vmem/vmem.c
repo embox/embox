@@ -29,7 +29,7 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 
 	/* Map sections. */
 	err |= vmem_map_on_itself(ctx, &_text_vma, (size_t) &_text_len,
-			VMEM_PAGE_WRITABLE);
+			VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE);
 	err |= vmem_map_on_itself(ctx, &_rodata_vma, (size_t) &_rodata_len,
 			VMEM_PAGE_WRITABLE);
 	err |= vmem_map_on_itself(ctx, &_data_vma, (size_t) &_data_len,

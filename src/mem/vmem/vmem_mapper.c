@@ -88,6 +88,7 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
 
 static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
 	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
+	mmu_pte_set_executable(pte, flags & VMEM_PAGE_EXECUTABLE);
 	mmu_pte_set_cacheable(pte, flags & VMEM_PAGE_CACHEABLE);
 	mmu_pte_set_usermode(pte, flags & VMEM_PAGE_USERMODE);
 }

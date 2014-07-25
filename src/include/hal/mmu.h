@@ -69,5 +69,6 @@ extern int mmu_pte_present(mmu_pte_t *pte);
 extern void mmu_pte_set_writable(mmu_pte_t *pte, int value);
 extern void mmu_pte_set_cacheable(mmu_pte_t *pte, int value);
 extern void mmu_pte_set_usermode(mmu_pte_t *pte, int value);
+extern void mmu_pte_set_executable(mmu_pte_t *pte, int val);
 
 #endif /* HAL_MMU_H_ */

@@ -165,9 +165,9 @@ int mmu_pte_present(mmu_pte_t *pte) {
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value){
 	if (value) {
-		*pte = *pte | MMU_PAGE_WRITABLE | MMU_PAGE_EXECUTABLE;
+		*pte = *pte | MMU_PAGE_WRITABLE;
 	} else {
-		*pte = *pte & (~MMU_PAGE_WRITABLE | MMU_PAGE_EXECUTABLE);
+		*pte = *pte & (~MMU_PAGE_WRITABLE);
 	}
 }
 
@@ -183,3 +183,10 @@ void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
 	MMU_DEBUG(printk("\nmmu_pte_set_usermode does not implemented!\n"));
 }
 
+void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
+	if (value) {
+		*pte = *pte | MMU_PAGE_EXECUTABLE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_EXECUTABLE);
+	}
+}
