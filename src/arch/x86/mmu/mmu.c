@@ -196,9 +196,5 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int val) {
-	if (val) {
-		*pte = *pte & (~MMU_PAGE_DISABLE_CACHE);
-	} else {
-		*pte = *pte | MMU_PAGE_DISABLE_CACHE;
-	}
+
 }
