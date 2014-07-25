@@ -25,12 +25,11 @@ int asprintf(char **strp, const char *fmt, ...) {
 		va_start(ap, fmt);
 		ret = vsnprintf(str, ASPRINTF_LEN, fmt, ap);
 		va_end(ap);
-		if (ret < ASPRINTF_LEN) {
-			*strp = str;
-			return ret;
-		} else {
-			return -ENOMEM;
+		*strp = str;
+		if (ret >= ASPRINTF_LEN) {
+			str[ret - 1] = '\n';
 		}
+		return ret;
 	}
 	return -ENOMEM;
 }
