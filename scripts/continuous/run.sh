@@ -53,24 +53,22 @@ run_bg() {
 	declare -A atml2sim
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
-		['arm/qemu']="$RUN_QEMU"
-		['x86/nonvga_debug']="$RUN_QEMU"
 		['x86/smp']="$RUN_QEMU -smp 2"
 		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
-		['mips/debug']="$RUN_QEMU"
-		['ppc/debug']="$RUN_QEMU"
-		['microblaze/petalogix']="$RUN_QEMU"
 		['usermode86/debug']="$(dirname $0)/../usermode_start.sh"
-		['generic/qemu_bg']="$RUN_QEMU"
-		['generic/qemu']="$RUN_QEMU"
 	)
+
+	run_cmd=${atml2sim[$ATML]}
+	if [ -z "$run_cmd" ]; then
+		run_cmd="$RUN_QEMU"
+	fi
 
 	sudo PATH=$PATH \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
 		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
-		${atml2sim[$ATML]} &
+		$run_cmd &
 	sim_bg=$!
 }
 
