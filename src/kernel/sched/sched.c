@@ -404,12 +404,11 @@ void sched_thread_switch(struct thread *prev, struct thread *next) {
 static void __schedule(int preempt) {
 	struct thread *prev;
 	struct runnable *next;
-	ipl_t ipl;
 
 	prev = thread_self();
 
 	assert(!sched_in_interrupt());
-	ipl = spin_lock_ipl(&rq.lock);
+	rq.ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -421,38 +420,13 @@ static void __schedule(int preempt) {
 	else
 		__sched_enqueue(&(prev->runnable));
 
-	do {
-		next = runq_extract(&rq.queue);
-
-		if (!next->prepare) {
-			/* lthread extracted, run it*/
-			spin_unlock(&rq.lock);
-			lthread_trampoline(next);
-			ipl = spin_lock_ipl(&rq.lock);
-			continue;
-		} else {
-			/* thread extracted*/
-			break;
-		}
-	} while(1);
+	next = runq_extract(&rq.queue);
 
 	/* Runq is unlocked as soon as possible, but interrupts remain disabled
 	 * during the 'sched_switch' (if any). */
 	spin_unlock(&rq.lock);
 
-	/* Threads context switch */
-	if (&(prev->runnable) != next) {
-		assert(next->prepare);
-		next->prepare(prev, next);
-	}
-
-	ipl_restore(ipl);
-
-	assert(thread_self() == prev);
-
-	if (!prev->siglock) {
-		thread_signal_handle();
-	}
+	next->prepare(&prev->runnable, next, &rq);
 }
 
 void schedule(void) {

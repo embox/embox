@@ -123,6 +123,28 @@ out_unlock:
 	return t;
 }
 
+static void *thread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+	struct thread *next_t, *prev_t;
+	next_t = mcast_out(next, struct thread, runnable);
+	prev_t = mcast_out(prev, struct thread, runnable);
+
+	/* Threads context switch */
+	if (prev != next) {
+		sched_thread_switch(prev_t, next_t);
+	}
+
+	ipl_restore(rq->ipl);
+
+	assert(thread_self() == prev_t);
+
+	if (!prev_t->siglock) {
+		thread_signal_handle();
+	}
+
+	return NULL;
+}
+
+
 void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	sched_priority_t priority;
@@ -144,16 +166,12 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->waiting = true;
 	t->state = TS_INIT;
 
-	/* set sched routines, implemented in thread_sched_routine.h */
-	t->runnable.prepare = (void *)sched_prepare_thread;
-	t->runnable.run = NULL;
-	t->runnable.run_arg = NULL;
-
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
 		panic("can't initialize thread_local");
 	}
 
 	/* set executive function and arguments pointer */
+	t->runnable.prepare = thread_prepare;
 	t->runnable.run = run;
 	t->runnable.run_arg = arg;
 

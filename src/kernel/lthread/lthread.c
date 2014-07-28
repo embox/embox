@@ -24,18 +24,17 @@
 
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
-/*
- * Called in __schedule
- */
-void lthread_trampoline(struct runnable *r) {
-	r->run(r->run_arg);
+static void *lthread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+	next->run(next->run_arg);
+	ipl_restore(rq->ipl);
+	return NULL;
 }
 
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
 	lt->runnable.run = run;
-	lt->runnable.prepare = NULL;
+	lt->runnable.prepare = lthread_prepare;
 	lt->runnable.run_arg = arg;
 
 	runq_item_init(&lt->runnable.sched_attr.runq_link);

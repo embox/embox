@@ -15,6 +15,10 @@ void priolist_add(struct priolist_link *link, struct priolist *list) {
 	struct dlist_head *next_node_link = &list->node_list;
 
 	assert(link && list);
+	/* FIXME remove it as soon as possible! */
+	if (!dlist_empty(&link->node_link)) {
+		return;
+	}
 	assert(dlist_empty(&link->node_link));
 	assert(dlist_empty(&link->prio_link));
 

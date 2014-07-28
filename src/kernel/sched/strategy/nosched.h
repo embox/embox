@@ -14,6 +14,7 @@
 struct runq {
 	runq_t queue;
 	spinlock_t lock;
+	ipl_t ipl;
 };
 
 struct sched_attr {
