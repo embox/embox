@@ -10,4 +10,7 @@
 "export HOME=/",
 "tinypy fib.py",
 "lua fib.lua",
+"lua doit.lua",
+"lua tofi_mod.lua new_file.txt",
+"cat new_file.txt",
 /* "lisp fib.lisp" */

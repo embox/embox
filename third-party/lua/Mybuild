@@ -18,7 +18,10 @@ module lua {
 	source "strip.lua.o"
 
 	@InitFS
-	source "fib.lua"
+	source "fib.lua",
+		"tofi.lua",
+		"tofi_mod.lua",
+		"doit.lua"
 
 	depends embox.mem.heap_api
 	@NoRuntime depends embox.compat.libc.LibC
