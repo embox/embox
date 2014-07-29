@@ -40,8 +40,8 @@
 0.100...0.200 connect(3, ..., ...) = 0
 
 // Establish a connection.
-0.100 > S 0:0(0) <mss 1460,sackOK,TS val 100 ecr 0,nop,wscale 6>
-0.200 < S. 0:0(0) ack 1 win 32792 <mss 1100,nop,wscale 7>
-0.200 > . 1:1(0) ack 1
+0.100 > S  0:0(0) win 16384 <mss 16396,nop,wscale 7>
+0.200 < S. 0:0(0) ack 1 win 16384 <mss 16396,nop,wscale 7>
+0.200 > .  1:1(0) ack 1
 
 0.300 close(3) = 0
