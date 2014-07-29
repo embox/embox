@@ -11,7 +11,7 @@
 ATML="$1"
 SIM_ARG="$2"
 shift 2
-OTHER_ARGS=$@
+OTHER_ARGS="$@"
 
 if [ $CONTINIOUS_RUN_TIMEOUT ]; then
 	TIMEOUT=$CONTINIOUS_RUN_TIMEOUT
@@ -38,6 +38,7 @@ atml2run=(
 	['x86/smp']=default_run
 	['x86/test_fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test_net']="$(dirname $0)/net/run.sh $ATML"
+	['x86/test/packetdrill']=default_run
 	['sparc/debug']=default_run
 	['mips/debug']=default_run
 	['ppc/debug']=default_run
@@ -75,8 +76,12 @@ run_bg() {
 
 run_check() {
 
+	sudo chmod 666 $OUTPUT_FILE
+
+	cat $OUTPUT_FILE
+
 	ret=1
-	for success_pattern in 'embox>' '[a-z]\+@embox'; do
+	for success_pattern in '^run: success auto poweroff' 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
 			ret=0
 		fi
@@ -90,38 +95,43 @@ run_check() {
 	return $ret
 }
 
-run_bg_do() {
-
-	run_bg
-
-	sleep $TIMEOUT
-
-	sudo chmod 666 $OUTPUT_FILE
-
-	cat $OUTPUT_FILE
-
-	run_check
-}
-
 kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 }
 
+## FIXME not working
+#wait_bg() {
+#	timeout -s 9 $TIMEOUT wait $sim_bg #wait is builtin, so can't be used as timeout arg
+#	if [ 124 -eq $? ]; then
+#		kill_bg
+#	fi
+#}
+
+wait_bg() {
+	sleep $TIMEOUT
+}
+
 default_run() {
 
-	run_bg_do
+	run_bg
+
+	wait_bg
+
+	run_check
 	ret=$?
 
 	rm $OUTPUT_FILE
-
-	kill_bg
 
 	return $ret
 }
 
 run_bg_wrapper() {
 
-	run_bg_do
+	run_bg
+
+	sleep $TIMEOUT
+
+	run_check
 	ret=$?
 
 	if [ 0 -ne $ret ]; then
