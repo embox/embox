@@ -9,3 +9,4 @@
 "export PWD=/",
 "export HOME=/",
 "export QT_QPA_FONTDIR=/fonts",
+"wmem -l -a 0x20000000 -v 0x00030000",
