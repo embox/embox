@@ -269,7 +269,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-		sock_notify(to_sock(tcp_sk), POLLOUT);
+		sock_notify(to_sock(tcp_sk), POLLOUT); /* FIXME tcp_sock was notified earlier at line 911 */
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
