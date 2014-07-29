@@ -117,7 +117,7 @@ static struct time_event_device pit_event_device = {
 
 static struct time_counter_device pit_counter_device = {
 	.read = i8253_read,
-	.cycle_hz = INPUT_CLOCK;
+	.cycle_hz = INPUT_CLOCK,
 };
 
 static struct clock_source pit_clock_source = {
