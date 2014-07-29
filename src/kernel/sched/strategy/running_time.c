@@ -21,7 +21,7 @@ void sched_timing_init(struct thread *t) {
 clock_t sched_timing_get(struct thread *t) {
 	clock_t running = t->runnable.sched_attr.sched_time.running_time;
 
-	if (sched_active(t))
+	if (sched_active(&t->runnable))
 		/* Add the least recent time slice (being used now). */
 		running += clock() - t->runnable.sched_attr.sched_time.last_sync;
 

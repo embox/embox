@@ -1,0 +1,5 @@
+package embox.kernel.runnable
+
+module current {
+	source "current.c"
+}

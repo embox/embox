@@ -61,12 +61,6 @@ struct thread {
 	unsigned int       critical_count;
 	unsigned int       siglock;
 
-	spinlock_t         lock;         /**< Protects wait state and others. */
-
-	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
-	unsigned int       ready;        /**< Managed by the scheduler. */
-	unsigned int       waiting;      /**< Waiting for an event. */
-
 	unsigned int       state;        /**< Thread-specific state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */

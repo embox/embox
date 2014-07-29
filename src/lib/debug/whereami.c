@@ -115,9 +115,9 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 		" --   %08x %c %c %c %c  thread %d  task %d ",
 		t->critical_count,
 		is_current      ? '*' : ' ',
-		sched_active(t) ? 'A' : ' ',
-		t->ready        ? 'R' : ' ',
-		t->waiting      ? 'W' : ' ',
+		sched_active(&t->runnable) ? 'A' : ' ',
+		t->runnable.ready        ? 'R' : ' ',
+		t->runnable.waiting      ? 'W' : ' ',
 		t->id, task_get_id(t->task));
 
 	memset(p, '-', end-p-1);

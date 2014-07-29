@@ -7,12 +7,14 @@
  * @date    21.11.2013
  */
 
+#include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/runnable/runnable.h>
+#include <kernel/runnable/current.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <mem/misc/pool.h>
 
@@ -24,10 +26,17 @@
 
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
-static void *lthread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+static enum runnable_result lthread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+	/* TODO: states*/
+	prev->active = false;
+
+	runnable_set_current(next);
 	next->run(next->run_arg);
+	next->ready = false;
+	next->waiting = true;
+
 	ipl_restore(rq->ipl);
-	return NULL;
+	return RUNNABLE_REPEAT;
 }
 
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
@@ -36,6 +45,12 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	lt->runnable.run = run;
 	lt->runnable.prepare = lthread_prepare;
 	lt->runnable.run_arg = arg;
+
+	lt->runnable.ready = false;
+	lt->runnable.active = false;
+	lt->runnable.waiting = true;
+
+	lt->runnable.lock = SPIN_UNLOCKED;
 
 	runq_item_init(&lt->runnable.sched_attr.runq_link);
 	sched_affinity_init(&lt->runnable);
@@ -65,5 +80,5 @@ void lthread_delete(struct lthread *lt) {
 
 void lthread_launch(struct lthread *lt) {
 	assert(lt);
-	sched_wakeup_l(lt);
+	sched_wakeup(&lt->runnable);
 }

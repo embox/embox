@@ -139,12 +139,12 @@ static void priority_inherit(struct thread *t, struct mutex *m) {
 	sched_priority_t prior = thread_priority_get(t);
 
 	if (prior != thread_priority_inherit(m->holder, prior))
-		sched_change_priority(m->holder, prior);
+		sched_change_priority(&m->holder->runnable, prior);
 }
 
 static void priority_uninherit(struct thread *t) {
 	sched_priority_t prior = thread_priority_get(t);
 
 	if (prior != thread_priority_reverse(t))
-		sched_change_priority(t, thread_priority_get(t));
+		sched_change_priority(&t->runnable, thread_priority_get(t));
 }

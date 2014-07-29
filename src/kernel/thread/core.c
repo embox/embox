@@ -35,6 +35,7 @@
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/runnable/runnable.h>
+#include <kernel/runnable/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -123,10 +124,13 @@ out_unlock:
 	return t;
 }
 
-static void *thread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+static enum runnable_result thread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
 	struct thread *next_t, *prev_t;
 	next_t = mcast_out(next, struct thread, runnable);
 	prev_t = mcast_out(prev, struct thread, runnable);
+
+	thread_set_current(next_t);
+	runnable_set_current(next);
 
 	/* Threads context switch */
 	if (prev != next) {
@@ -141,7 +145,7 @@ static void *thread_prepare(struct runnable *prev, struct runnable *next,  struc
 		thread_signal_handle();
 	}
 
-	return NULL;
+	return RUNNABLE_EXIT;
 }
 
 
@@ -160,10 +164,10 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
-	t->lock = SPIN_UNLOCKED;
-	t->ready = false;
-	t->active = false;
-	t->waiting = true;
+	t->runnable.lock = SPIN_UNLOCKED;
+	t->runnable.ready = false;
+	t->runnable.active = false;
+	t->runnable.waiting = true;
 	t->state = TS_INIT;
 
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
@@ -240,8 +244,8 @@ void thread_delete(struct thread *t) {
 	}
 
 	if (t != thread_self()) {
-		assert(!t->active);
-		assert(!t->ready);
+		assert(!t->runnable.active);
+		assert(!t->runnable.ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -264,7 +268,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->waiting = true;
+	current->runnable.waiting = true;
 	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
@@ -272,7 +276,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	joining = current->joining;
 	current->run_ret = ret;
 	if (joining) {
-		sched_wakeup(joining);
+		sched_wakeup(&joining->runnable);
 	}
 
 	if (current->state & TS_DETACHED)
@@ -350,7 +354,7 @@ int thread_launch(struct thread *t) {
 			ret = -EINVAL;
 		}
 		else {
-			ret = sched_wakeup(t) ? 0 : -EINVAL;
+			ret = sched_wakeup(&t->runnable) ? 0 : -EINVAL;
 		}
 	}
 	sched_unlock();
@@ -366,13 +370,13 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
-		sched_freeze(t);
+		sched_freeze(&t->runnable);
 
 		t->state |= TS_EXITED;
 
 		// XXX prevent scheduler to add thread in runq
 		if (t == thread_self()) {
-			t->waiting = true;
+			t->runnable.waiting = true;
 		}
 	}
 	sched_unlock();
@@ -401,7 +405,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// 	sched_change_priority(t, prior);
 	// }
 
- 	sched_change_priority(t, new_priority);
+ 	sched_change_priority(&t->runnable, new_priority);
 
 
 	return 0;
