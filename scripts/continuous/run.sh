@@ -109,6 +109,7 @@ kill_bg() {
 
 wait_bg() {
 	sleep $TIMEOUT
+	kill_bg
 }
 
 default_run() {
