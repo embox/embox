@@ -17,6 +17,8 @@
 #define __MMU_PMD_SHIFT         18
 #define __MMU_PTE_SHIFT         12
 
+#ifndef __ASSEMBLER__
+
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;
 
@@ -36,6 +38,8 @@ typedef uint32_t __mmu_pte_t;
 extern __mmu_pgd_t *context_table[];
 
 extern int ctx_counter;
+
+#endif
 
 #define MMU_CTX_PMASK        0xfffffff0
 #define MMU_PTD_PMASK        0xfffffff0

@@ -16,11 +16,10 @@
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 #include <kernel/sched/sched_lock.h>
-#include <mem/mmap.h>
-#include <kernel/task/resource/mmap.h>
 
 #include <stdint.h>
 #include <kernel/printk.h>
+#include <kernel/panic.h>
 
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
@@ -104,18 +103,6 @@ void vmem_free_context(mmu_ctx_t ctx) {
 	sched_unlock();
 }
 
-int vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
-	mmu_vaddr_t virt_page;
-	mmu_paddr_t phy_page;
-	mmu_ctx_t ctx;
-
-	ctx= task_self_resource_mmap()->ctx;
-	virt_page = virt_addr - virt_addr % MMU_PAGE_SIZE;
-	phy_page = (mmu_paddr_t) vmem_alloc_page();
-
-	if (!phy_page) {
-		return -1;
-	}
-
-	return vmem_map_region(ctx, phy_page, virt_page, MMU_PAGE_SIZE, 0);
+void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
+	panic("MMU page fault: virt_addr - 0x%x\n", virt_addr);
 }

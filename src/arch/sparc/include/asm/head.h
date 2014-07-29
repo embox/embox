@@ -13,6 +13,9 @@
 #include <module/embox/arch/interrupt.h>
 #include <module/embox/arch/syscall.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/arch/mmu.h>
+
 #ifdef __ASSEMBLER__
 
 /** Entry for traps which jump to a programmer-specified trap handler. */
@@ -62,20 +65,13 @@
 	ba weak_trap_entry;                    \
 	 rd %psr, %t_psr;
 
-#ifdef CONFIG_MMU_SUPPORT
+#if OPTION_MODULE_DEFINED(embox__arch__sparc__mmu,BOOLEAN,mmu_enabled)
 /** Text fault. */
-#define SRMMU_TFAULT \
-	rd %psr, %l0;    \
-	rd %wim, %l3;    \
-	b srmmu_fault;   \
-	mov 1, %local;
+#define SRMMU_TFAULT TRAP_ENTRY(srmmu_fault_entry)
 
 /** Data fault. */
-#define SRMMU_DFAULT \
-	rd %psr, %l0;    \
-	rd %wim, %l3;    \
-	b srmmu_fault;   \
-	mov 0, %local;
+#define SRMMU_DFAULT TRAP_ENTRY(srmmu_fault_entry)
+
 #else
 #define SRMMU_TFAULT BAD_TRAP
 #define SRMMU_DFAULT BAD_TRAP
