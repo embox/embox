@@ -31,7 +31,6 @@ module pit extends embox.arch.clock {
 	source "pit.c"
 
 	option number irq_num=0
-	option number slowdown_factor=1
 
 	depends embox.kernel.irq
 	@NoRuntime depends embox.kernel.time.clock_source
