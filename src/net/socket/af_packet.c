@@ -156,7 +156,13 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	sock_update_tstamp(sk, skb);
 
-	n_byte = skb_write_iovec(&skb->mac.ethh, skb->len, msg->msg_iov, msg->msg_iovlen);
+	/* XXX now called only on tun, copy from nh.
+ 	 * Whole packet should be stored in future, and for tun it will be
+	 * starting from ip header
+	 */
+	n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
+			msg->msg_iov, msg->msg_iovlen);
+
 	skb_free(skb);
 	msg->msg_iov->iov_len = n_byte; /* XXX */
 	return 0;
@@ -193,7 +199,7 @@ void sock_packet_add(struct sk_buff *skb) {
 		if (psk->sll.sll_ifindex == 0
 				|| psk->sll.sll_ifindex == skb->dev->index) {
 			skb_queue_push(&psk->rx_q, skb_clone(skb));
-			sock_notify(&psk->sk, POLLIN);
+			sock_notify(&psk->sk, POLLIN | POLLERR);
 		}
 	}
 }

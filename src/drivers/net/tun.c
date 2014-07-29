@@ -83,7 +83,7 @@ static int tun_setup(struct net_device *dev) {
 	dev->hdr_len  = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
 	dev->type     = ARP_HRD_LOOPBACK;
-	dev->flags    = IFF_RUNNING;
+	dev->flags    = IFF_NOARP | IFF_RUNNING;
 	dev->drv_ops  = &tun_ops;
 	dev->ops      = &ethernet_ops;
 	return 0;
@@ -215,12 +215,14 @@ static size_t tun_dev_write(struct file_desc *desc, void *buf, size_t size) {
 		return err;
 	}
 
-	skb = skb_alloc(size);
+	skb = skb_alloc(size + ETH_HLEN);
 	if (!skb) {
 		return -ENOMEM;
 	}
 
-	memcpy(skb->mac.raw, buf, size);
+	ethhdr_build(skb->mac.ethh, netdev->dev_addr, NULL, ETH_P_IP);
+
+	memcpy(skb->mac.raw + ETH_HLEN, buf, size);
 	skb->dev = netdev;
 	netif_rx(skb);
 
