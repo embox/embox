@@ -21,27 +21,38 @@
 #include <util/array.h>
 #include <kernel/printk.h>
 
+static inline void memcondcp(void *dst, const void *src, size_t sz) {
+	if (src) {
+		memcpy(dst, src, sz);
+	} else {
+		memset(dst, 0, sz);
+	}
+}
+
+void ethhdr_build(struct ethhdr *ethh, const void *ethdst, const void *ethsrc, short h_proto) {
+	ethh->h_proto = htons(h_proto);
+	memcondcp(ethh->h_dest, ethdst, ETH_ALEN);
+	memcondcp(ethh->h_source, ethsrc, ETH_ALEN);
+}
+
 static int ethernet_build_hdr(struct sk_buff *skb,
 		const struct net_header_info *hdr_info) {
-	struct ethhdr *ethh;
+	const void *ethdst;
 
 	assert(skb != NULL);
 	assert(hdr_info != NULL);
 
-	ethh = eth_hdr(skb);
-	ethh->h_proto = htons(hdr_info->type);
-
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
-		memset(ethh->h_dest, 0, ETH_ALEN);
-		memset(ethh->h_source, 0, ETH_ALEN);
+		ethdst = NULL;
 	}
 	else {
 		assert(hdr_info->src_hw != NULL);
 		assert(hdr_info->dst_hw != NULL);
-		memcpy(ethh->h_source, hdr_info->src_hw, ETH_ALEN);
-		memcpy(ethh->h_dest, hdr_info->dst_hw, ETH_ALEN);
+		ethdst = hdr_info->dst_hw;
 	}
+
+	ethhdr_build(eth_hdr(skb), ethdst, hdr_info->src_hw, hdr_info->type);
 
 	return 0;
 }
