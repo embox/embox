@@ -12,19 +12,19 @@
 
 #include <module/embox/kernel/lthread/lthread_api.h>
 
-#include <kernel/runnable/runnable.h>
+#include <kernel/schedee/schedee.h>
 
 struct lthread {
-	struct runnable runnable;
+	struct schedee schedee;
 };
 
 /**
  * Called by sched in __schedule to start routine.
  *
- * @param r
- *   runnable in struct lthread
+ * @param s
+ *   schedee in struct lthread
  */
-extern void lthread_trampoline(struct runnable *r);
+extern void lthread_trampoline(struct schedee *s);
 
 /**
  * Creates a new light thread.

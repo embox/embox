@@ -34,8 +34,8 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/runnable/runnable.h>
-#include <kernel/runnable/current.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -64,7 +64,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->runnable.run(current->runnable.run_arg);
+	res = current->schedee.run(current->schedee.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
@@ -124,13 +124,13 @@ out_unlock:
 	return t;
 }
 
-static enum runnable_result thread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+static enum schedee_result thread_prepare(struct schedee *prev, struct schedee *next,  struct runq *rq) {
 	struct thread *next_t, *prev_t;
-	next_t = mcast_out(next, struct thread, runnable);
-	prev_t = mcast_out(prev, struct thread, runnable);
+	next_t = mcast_out(next, struct thread, schedee);
+	prev_t = mcast_out(prev, struct thread, schedee);
 
 	thread_set_current(next_t);
-	runnable_set_current(next);
+	schedee_set_current(next);
 
 	/* Threads context switch */
 	if (prev != next) {
@@ -145,7 +145,7 @@ static enum runnable_result thread_prepare(struct runnable *prev, struct runnabl
 		thread_signal_handle();
 	}
 
-	return RUNNABLE_EXIT;
+	return SCHEDEE_EXIT;
 }
 
 
@@ -164,10 +164,10 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
-	t->runnable.lock = SPIN_UNLOCKED;
-	t->runnable.ready = false;
-	t->runnable.active = false;
-	t->runnable.waiting = true;
+	t->schedee.lock = SPIN_UNLOCKED;
+	t->schedee.ready = false;
+	t->schedee.active = false;
+	t->schedee.waiting = true;
 	t->state = TS_INIT;
 
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
@@ -175,9 +175,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	/* set executive function and arguments pointer */
-	t->runnable.prepare = thread_prepare;
-	t->runnable.run = run;
-	t->runnable.run_arg = arg;
+	t->schedee.prepare = thread_prepare;
+	t->schedee.run = run;
+	t->schedee.run_arg = arg;
 
 	t->joining = NULL;
 
@@ -222,8 +222,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&(t->runnable.sched_attr.runq_link));
-	sched_affinity_init(&(t->runnable));
+	runq_item_init(&(t->schedee.sched_attr.runq_link));
+	sched_affinity_init(&(t->schedee));
 	sched_timing_init(t);
 
 	/* initialize everthing else */
@@ -244,8 +244,8 @@ void thread_delete(struct thread *t) {
 	}
 
 	if (t != thread_self()) {
-		assert(!t->runnable.active);
-		assert(!t->runnable.ready);
+		assert(!t->schedee.active);
+		assert(!t->schedee.ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -268,7 +268,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->runnable.waiting = true;
+	current->schedee.waiting = true;
 	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
@@ -276,7 +276,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	joining = current->joining;
 	current->run_ret = ret;
 	if (joining) {
-		sched_wakeup(&joining->runnable);
+		sched_wakeup(&joining->schedee);
 	}
 
 	if (current->state & TS_DETACHED)
@@ -354,7 +354,7 @@ int thread_launch(struct thread *t) {
 			ret = -EINVAL;
 		}
 		else {
-			ret = sched_wakeup(&t->runnable) ? 0 : -EINVAL;
+			ret = sched_wakeup(&t->schedee) ? 0 : -EINVAL;
 		}
 	}
 	sched_unlock();
@@ -370,13 +370,13 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
-		sched_freeze(&t->runnable);
+		sched_freeze(&t->schedee);
 
 		t->state |= TS_EXITED;
 
 		// XXX prevent scheduler to add thread in runq
 		if (t == thread_self()) {
-			t->runnable.waiting = true;
+			t->schedee.waiting = true;
 		}
 	}
 	sched_unlock();
@@ -405,7 +405,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// 	sched_change_priority(t, prior);
 	// }
 
- 	sched_change_priority(&t->runnable, new_priority);
+ 	sched_change_priority(&t->schedee, new_priority);
 
 
 	return 0;
@@ -433,5 +433,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->runnable.run_arg = run_arg;
+	t->schedee.run_arg = run_arg;
 }

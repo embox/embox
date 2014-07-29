@@ -16,13 +16,13 @@ void sched_wait_prepare(void) {
 	struct thread *t = thread_self();
 
 	// TODO SMP barrier? -- Eldar
-	t->runnable.waiting = true;
+	t->schedee.waiting = true;
 }
 
 void sched_wait_cleanup(void) {
 	struct thread *t = thread_self();
 
-	t->runnable.waiting = false;
+	t->schedee.waiting = false;
 	// TODO SMP barrier? -- Eldar
 }
 
@@ -48,7 +48,7 @@ int sched_wait(void) {
 
 static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	struct thread *t = data;
-	sched_wakeup(&t->runnable);
+	sched_wakeup(&t->schedee);
 }
 
 #if OPTION_GET(BOOLEAN, timer_allocate_on_stack)

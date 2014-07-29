@@ -13,11 +13,11 @@
 
 typedef __affinity_t affinity_t;
 
-struct runnable;
+struct schedee;
 
-extern int sched_affinity_check(struct runnable *r, int mask);
-extern void sched_affinity_init(struct runnable *r);
-extern void sched_affinity_set(struct runnable *r, int mask);
-extern int sched_affinity_get(struct runnable *r);
+extern int sched_affinity_check(struct schedee *s, int mask);
+extern void sched_affinity_init(struct schedee *s);
+extern void sched_affinity_set(struct schedee *s, int mask);
+extern int sched_affinity_get(struct schedee *s);
 
 #endif /* AFFINITY_H_ */

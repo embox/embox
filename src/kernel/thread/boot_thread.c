@@ -10,7 +10,7 @@
 #include <time.h>
 
 #include <kernel/task/kernel_task.h>
-#include <kernel/runnable/current.h>
+#include <kernel/schedee/current.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
@@ -46,12 +46,12 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	 */
 	thread->state = TS_INIT;
 
-	thread->runnable.ready = true;
-	thread->runnable.active = true;
-	thread->runnable.waiting = false;
+	thread->schedee.ready = true;
+	thread->schedee.active = true;
+	thread->schedee.waiting = false;
 
 	thread_set_current(thread);
-	runnable_set_current(&thread->runnable);
+	schedee_set_current(&thread->schedee);
 
 	return thread;
 }

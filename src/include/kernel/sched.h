@@ -24,7 +24,7 @@
 
 struct lthread;
 struct thread;
-struct runnable;
+struct schedee;
 
 __BEGIN_DECLS
 
@@ -75,7 +75,7 @@ extern void sched_wakeup_l(struct lthread *lt);
 extern void sched_finish(struct thread *t);
 #endif
 
-extern int sched_active(struct runnable *t);
+extern int sched_active(struct schedee *s);
 
 /**
  * Changes scheduling priority of the thread. If the thread is running now
@@ -88,7 +88,7 @@ extern int sched_active(struct runnable *t);
  * @param priority
  *   New scheduling priority of the the thread.
  */
-extern int sched_change_priority(struct runnable *t, sched_priority_t priority);
+extern int sched_change_priority(struct schedee *s, sched_priority_t priority);
 
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
@@ -96,12 +96,12 @@ extern void sched_wait_cleanup(void);
 extern int sched_wait(void);
 extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
 
-extern int __sched_wakeup(struct runnable *);
-extern int sched_wakeup(struct runnable *);
+extern int __sched_wakeup(struct schedee *);
+extern int sched_wakeup(struct schedee *);
 
 /* XXX thread will not be ever in runq or active - thread is dead,
  * but with allocated resources on its stack */
-extern void sched_freeze(struct runnable *t);
+extern void sched_freeze(struct schedee *t);
 
 /**
  * Wait cond_expr to become TRUE.

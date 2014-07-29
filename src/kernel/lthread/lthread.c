@@ -13,8 +13,8 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/runnable/runnable.h>
-#include <kernel/runnable/current.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <mem/misc/pool.h>
 
@@ -26,34 +26,34 @@
 
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
-static enum runnable_result lthread_prepare(struct runnable *prev, struct runnable *next,  struct runq *rq) {
+static enum schedee_result lthread_prepare(struct schedee *prev, struct schedee *next,  struct runq *rq) {
 	/* TODO: states*/
 	prev->active = false;
 
-	runnable_set_current(next);
+	schedee_set_current(next);
 	next->run(next->run_arg);
 	next->ready = false;
 	next->waiting = true;
 
 	ipl_restore(rq->ipl);
-	return RUNNABLE_REPEAT;
+	return SCHEDEE_REPEAT;
 }
 
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
-	lt->runnable.run = run;
-	lt->runnable.prepare = lthread_prepare;
-	lt->runnable.run_arg = arg;
+	lt->schedee.run = run;
+	lt->schedee.prepare = lthread_prepare;
+	lt->schedee.run_arg = arg;
 
-	lt->runnable.ready = false;
-	lt->runnable.active = false;
-	lt->runnable.waiting = true;
+	lt->schedee.ready = false;
+	lt->schedee.active = false;
+	lt->schedee.waiting = true;
 
-	lt->runnable.lock = SPIN_UNLOCKED;
+	lt->schedee.lock = SPIN_UNLOCKED;
 
-	runq_item_init(&lt->runnable.sched_attr.runq_link);
-	sched_affinity_init(&lt->runnable);
+	runq_item_init(&lt->schedee.sched_attr.runq_link);
+	sched_affinity_init(&lt->schedee);
 	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
 }
 
@@ -80,5 +80,5 @@ void lthread_delete(struct lthread *lt) {
 
 void lthread_launch(struct lthread *lt) {
 	assert(lt);
-	sched_wakeup(&lt->runnable);
+	sched_wakeup(&lt->schedee);
 }

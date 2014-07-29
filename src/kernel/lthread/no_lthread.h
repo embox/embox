@@ -8,9 +8,9 @@
 #ifndef NO_LTHREAD_H_
 #define NO_LTHREAD_H_
 
-struct runnable;
+struct schedee;
 
-static inline void lthread_trampoline(struct runnable *r) {
+static inline void lthread_trampoline(struct schedee *s) {
 
 }
 

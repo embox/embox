@@ -13,19 +13,19 @@ void runq_init(runq_t *queue) {
 	*queue = NULL;
 }
 
-void runq_insert(runq_t *queue, struct runnable *runnable) {
+void runq_insert(runq_t *queue, struct schedee *schedee) {
 
 	assert(!*queue);
-	*queue = runnable;
+	*queue = schedee;
 }
 
-void runq_remove(runq_t *queue, struct runnable *runnable) {
+void runq_remove(runq_t *queue, struct schedee *schedee) {
 
 	assert(*queue);
 	*queue = NULL;
 }
 
-struct runnable *runq_extract(runq_t *queue) {
+struct schedee *runq_extract(runq_t *queue) {
 	void *ret;
 
 	assert(*queue);
