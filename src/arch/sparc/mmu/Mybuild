@@ -1,16 +1,8 @@
 package embox.arch.sparc
 
-module mmu_old extends embox.arch.generic.mmu {
-	source "mmu_core.c"
-
-	depends embox.mem.phymem
-}
-
 module mmu extends embox.arch.mmu {
 	option number asi_m_mmuregs=0x19
 	option boolean mmu_enabled=true // used in sparc/include/asm/head.h
 
 	source "mmu.c", "mmu.h", "mmu_fault.S"
-
-	depends embox.mem.phymem
 }
