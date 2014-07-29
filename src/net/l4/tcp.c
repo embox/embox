@@ -274,7 +274,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			{
-				list_move(&tcp_sk->conn_wait, &tcp_sk->parent->conn_wait);
+				list_move_tail(&tcp_sk->conn_lnk, &tcp_sk->parent->conn_ready);
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
@@ -483,7 +483,11 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			list_for_each_entry(anticipant,
-					&tcp_sk->conn_wait, conn_wait) {
+					&tcp_sk->conn_wait, conn_lnk) {
+				sock_release(to_sock(anticipant));
+			}
+			list_for_each_entry(anticipant,
+					&tcp_sk->conn_ready, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
 		}
@@ -492,10 +496,10 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	else {
 		tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 		{
-			if (!list_empty(&tcp_sk->conn_wait)) {
-				assert(tcp_sk->parent->conn_wait_len != 0);
-				--tcp_sk->parent->conn_wait_len;
-				list_del(&tcp_sk->conn_wait);
+			if (!list_empty(&tcp_sk->conn_lnk)) {
+				assert(tcp_sk->parent->conn_queue_len != 0);
+				--tcp_sk->parent->conn_queue_len;
+				list_del(&tcp_sk->conn_lnk);
 			}
 		}
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -530,12 +534,12 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Check max length of accept queue and reserve 1 place */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			if (tcp_sk->conn_wait_len >= tcp_sk->conn_wait_max) {
+			if (tcp_sk->conn_queue_len >= tcp_sk->conn_queue_max) {
 				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
-			++tcp_sk->conn_wait_len; /* reserve */
+			++tcp_sk->conn_queue_len; /* reserve */
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -547,8 +551,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 			DBG(printk("tcp_st_listen: can't alloc socket\n");)
 			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			{
-				assert(tcp_sk->conn_wait_len != 0);
-				--tcp_sk->conn_wait_len;
+				assert(tcp_sk->conn_queue_len != 0);
+				--tcp_sk->conn_queue_len;
 			}
 			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			return TCP_RET_DROP; /* error: see ret */
@@ -597,7 +601,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			tcp_newsk->parent = tcp_sk;
-			list_add_tail(&tcp_newsk->conn_wait, &tcp_sk->conn_wait);
+			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_wait);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -835,7 +839,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 	case TCP_CLOSEWAIT:
 	case TCP_CLOSING:
 		tcp_sock_set_state(tcp_sk, TCP_CLOSED);
-		if (!list_empty(&tcp_sk->conn_wait)) {
+		if (!list_empty(&tcp_sk->conn_lnk)) {
 			assert(tcp_sk->parent != NULL);
 			return TCP_RET_FREE;
 		}
@@ -1330,7 +1334,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 			tcp_sock_release(tcp_sk);
 		}
 		else if ((tcp_sock_get_status(tcp_sk) == TCP_ST_NONSYNC)
-				&& !list_empty(&tcp_sk->conn_wait)
+				&& !list_empty(&tcp_sk->conn_lnk)
 				&& tcp_is_expired(&tcp_sk->syn_time,
 					TCP_SYNC_TIMEOUT)) {
 			assert(tcp_sk->parent != NULL);

@@ -70,8 +70,10 @@ static int tcp_init(struct sock *sk) {
 			sizeof tcp_sk->self.wind);
 	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
+	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
+	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
-	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;
+	tcp_sk->conn_queue_len = tcp_sk->conn_queue_max = 0;
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
@@ -234,7 +236,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				break;
 			}
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
-			tcp_sk->conn_wait_max = backlog;
+			tcp_sk->conn_queue_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -247,7 +249,8 @@ static int tcp_listen(struct sock *sk, int backlog) {
 static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *tcp_newsk;
 	/* get first socket from */
-	tcp_newsk = list_entry(tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+
+	tcp_newsk = list_entry(tcp_sk->conn_ready.next, struct tcp_sock, conn_lnk);
 
 	/* check if reading was enabled for socket that already released */
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NONSYNC) {
@@ -256,9 +259,9 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	}
 
 	/* delete new socket from list */
-	list_del_init(&tcp_newsk->conn_wait);
-	assert(tcp_sk->conn_wait_len != 0);
-	--tcp_sk->conn_wait_len;
+	list_del_init(&tcp_newsk->conn_lnk);
+	assert(tcp_sk->conn_queue_len != 0);
+	--tcp_sk->conn_queue_len;
 
 	return tcp_newsk;
 }
@@ -289,7 +292,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	{
 		do {
-			if (!list_empty(&tcp_sk->conn_wait)) {
+			if (!list_empty(&tcp_sk->conn_ready)) {
 				tcp_newsk = accept_get_connection(tcp_sk);
 				if (tcp_newsk) {
 					break;
