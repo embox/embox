@@ -19,6 +19,7 @@
 #include <net/skbuff.h>
 #include <net/sock.h>
 
+#include <net/sock_wait.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
@@ -268,7 +269,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+		sock_notify(to_sock(tcp_sk), POLLOUT);
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -280,18 +281,18 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 
 			//FIXME tcp_accept must notify without rx_data_len
 			to_sock(tcp_sk->parent)->rx_data_len++;
-			idesc_notify(&to_sock(tcp_sk->parent)->idesc, POLLIN);
+			sock_notify(to_sock(tcp_sk->parent), POLLIN);
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
 		sock_set_so_error(to_sock(tcp_sk), 1);
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLERR);
+		sock_notify(to_sock(tcp_sk), POLLIN | POLLERR);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
 		sock_set_so_error(to_sock(tcp_sk), 1);
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLOUT | POLLERR);
+		sock_notify(to_sock(tcp_sk), POLLIN | POLLOUT | POLLERR);
 		break;
 	}
 }
@@ -903,13 +904,13 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		tcp_get_now(&tcp_sk->ack_time);
 		if (!tcp_sk->rexmit_mode) {
 			tcp_sk->dup_ack = 0;
-			idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+			sock_notify(to_sock(tcp_sk), POLLOUT);
 		}
 		else {
 			if (seq == ack) {
 				tcp_sk->rexmit_mode = 0;
 				tcp_sk->dup_ack = 0;
-				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+				sock_notify(to_sock(tcp_sk), POLLOUT);
 			}
 			else {
 				tcp_rexmit(tcp_sk);
