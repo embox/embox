@@ -107,15 +107,15 @@ extern double atan(double);
 extern double atan2(double, double);
 extern double cos(double);
 extern double sin(double);
-extern double tan(double);
+//extern double tan(double);
 
 extern double cosh(double);
 extern double sinh(double);
-extern double tanh(double);
+//extern double tanh(double);
 
 extern double exp(double);
 extern double frexp(double, int *);
-extern double ldexp(double, int);
+//extern double ldexp(double, int);
 
 extern int isnan(double);
 extern int isnanl(long double);
