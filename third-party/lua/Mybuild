@@ -1,6 +1,7 @@
 package third_party.cmd
 
 @App
+@Build(script="$(EXTERNAL_MAKE)")
 @Cmd(name = "lua",
 	help = "Lua interpreter",
 	man = '''
@@ -9,25 +10,17 @@ package third_party.cmd
 		SYNOPSIS
 			lua [script]
 		AUTHORS
-			Nikolay Korotkiy - Adaptation for Embox
+			Nikolay Korotkiy, Ilia Vaprol - Adaptation for Embox
 	''')
 module lua {
-	@Rule(script="$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -DLUA_COMPAT_ALL -DLUA_USE_POSIX -c -o $@ $(mk_file:$(MKGEN_DIR)/%.rule.mk=%)")
-	source
-		"lapi.c", "lauxlib.c", "lbaselib.c", "lbitlib.c", "lcode.c",
-		"lcorolib.c", "lctype.c", "ldblib.c", "ldebug.c", "ldo.c", "ldump.c",
-		"lfunc.c", "lgc.c", "linit.c", "liolib.c", "llex.c", "lmathlib.c",
-		"lmem.c", "loadlib.c", "lobject.c", "lopcodes.c", "loslib.c",
-		"lparser.c", "lstate.c", "lstring.c", "lstrlib.c", "ltable.c",
-		"ltablib.c", "ltm.c", "lua.c", /*"luac.c",*/ "lundump.c", "lvm.c", "lzio.c"
-
-	source "lua_embox_compat.c"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	source "strip.lua.o"
 
 	@InitFS
-	source "doit.lua", "fib.lua", "tofi.lua"
+	source "fib.lua"
 
 	depends embox.mem.heap_api
 	@NoRuntime depends embox.compat.libc.LibC
-	@NoRuntime depends embox.framework.cmd
-	@NoRuntime depends third_party.lib.Fdlibm
+	@NoRuntime depends embox.kernel.task.resource.errno
 }
