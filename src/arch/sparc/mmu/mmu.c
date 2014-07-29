@@ -195,6 +195,6 @@ void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
 
 void mmu_handle_page_fault(uint32_t fsr, uint32_t far) {
 	// TODO handle types of FT (invalid address, protection error, etc.)
-	MMU_DEBUG(printk("\nfsr - 0x%x, fsr - 0x%x\n", fsr, far));
+	MMU_DEBUG(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
 	vmem_handle_page_fault((mmu_vaddr_t) far);
 }
