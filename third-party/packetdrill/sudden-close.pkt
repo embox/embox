@@ -17,5 +17,7 @@
 0.300 > P. 17:33(16) ack 1 // lost
 0.350 close(3) = 0
 0.350 > F. 33:33(0) ack 1
-0.400 < . 1:1(0) ack 17 win 92 // got F. only
-0.400 > P. 17:33(16) ack 1 win 16384
+0.400 < . 1:1(0) ack 1 win 92 // got F. only
+2.994 > P. 1:17(16) ack 1 win 16384 //XXX retransmit by timeout
+3.000 < . 1:1(0) ack 17 win 92
+5.994 > P. 17:33(16) ack 1 win 16384 //XXX retransmit by timeout
