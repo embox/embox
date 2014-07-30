@@ -26,6 +26,7 @@ module sched {
 	depends embox.kernel.thread.thread_wait
 
 	depends embox.kernel.lthread.lthread_api
+	depends embox.kernel.schedee.current
 
 }
 
