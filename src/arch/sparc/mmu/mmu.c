@@ -9,6 +9,7 @@
 #include <asm/asi.h>
 #include <asm/mmu_consts.h>
 #include <hal/mmu.h>
+#include <hal/test/traps_core.h>
 #include <kernel/printk.h>
 #include <kernel/time/ktime.h>
 #include <mem/page.h>
@@ -17,10 +18,12 @@
 
 #include <mem/vmem.h> // for mmu_handle_page_fault()
 
-#if 0
-#define MMU_DEBUG(x) x
+//#define MMU_DEBUG
+
+#ifdef MMU_DEBUG
+#define MMU_DEBUG_PRINT(x) x
 #else
-#define MMU_DEBUG(x)
+#define MMU_DEBUG_PRINT(x)
 #endif
 
 mmu_pgd_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
@@ -70,25 +73,47 @@ static inline void mmu_set_val(void *addr, unsigned long value) {
 	);
 }
 
+static int mmu_handle_page_fault(uint32_t trap_nr, void *data) {
+	uint32_t far;
+#ifdef MMU_DEBUG
+	uint32_t fsr;
+
+	fsr = mmu_get_mmureg(LEON_CNR_F);
+#endif
+	far = mmu_get_mmureg(LEON_CNR_FADDR);
+
+	// TODO handle types of FT (invalid address, protection error, etc.)
+	MMU_DEBUG_PRINT(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
+	vmem_handle_page_fault((mmu_vaddr_t) far);
+
+	return 0;
+}
+
 void mmu_on(void) {
 	uint32_t val;
 
 	/* Set up context table pointer */
 	mmu_set_ctable_ptr((unsigned long) context_table);
 
+	/* Set up page fault handler */
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x9, mmu_handle_page_fault);
+
 	/* Turn on MMU */
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
-	MMU_DEBUG(printk("LEON_CNR_CTRL = %x\n", (int)val));
 	val |= 0x1; // set E
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 
 	mmu_flush_cache_all();
 
-	MMU_DEBUG(printk("\nmmu enabled\n"));
+	MMU_DEBUG_PRINT(printk("\nmmu enabled\n"));
 }
 
 void mmu_off(void) {
-	MMU_DEBUG(printk("\nmmu_off does not implemented!\n"));
+	uint32_t val;
+
+	val = mmu_get_mmureg(LEON_CNR_CTRL);
+	val &= ~0x1; // set E
+	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
 static void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
@@ -103,7 +128,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_cnt);
 	mmu_ctxd_set((mmu_ctx_t *) (context_table + ctx), pgd);
-	MMU_DEBUG(printk("created context - 0x%x\n", ctx));
+	MMU_DEBUG_PRINT(printk("created context - 0x%x\n", ctx));
 	return ctx;
 }
 
@@ -182,7 +207,7 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
-	MMU_DEBUG(printk("\nmmu_pte_set_usermode does not implemented!\n"));
+	//MMU_DEBUG_PRINT(printk("\nmmu_pte_set_usermode does not implemented!\n"));
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
@@ -191,10 +216,4 @@ void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
 	} else {
 		*pte = *pte & (~MMU_PAGE_EXECUTABLE);
 	}
-}
-
-void mmu_handle_page_fault(uint32_t fsr, uint32_t far) {
-	// TODO handle types of FT (invalid address, protection error, etc.)
-	MMU_DEBUG(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
-	vmem_handle_page_fault((mmu_vaddr_t) far);
 }

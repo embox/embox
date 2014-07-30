@@ -11,7 +11,13 @@
 #include <asm/ptrace.h>
 
 void bad_trap_handler(uint8_t tt, struct pt_regs *r) {
+	extern int testtrap_handle(uint8_t tt, void *data);
 	struct reg_window *rw;
+
+	if (0 == testtrap_handle(tt, r)) {
+		/* trap was handled */
+		return;
+	}
 
 	printk(" BAD TRAP (0x%02x)\n", tt);
 

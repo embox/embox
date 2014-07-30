@@ -65,18 +65,6 @@
 	ba weak_trap_entry;                    \
 	 rd %psr, %t_psr;
 
-#if OPTION_MODULE_DEFINED(embox__arch__sparc__mmu,BOOLEAN,mmu_enabled)
-/** Text fault. */
-#define SRMMU_TFAULT TRAP_ENTRY(srmmu_fault_entry)
-
-/** Data fault. */
-#define SRMMU_DFAULT TRAP_ENTRY(srmmu_fault_entry)
-
-#else
-#define SRMMU_TFAULT BAD_TRAP
-#define SRMMU_DFAULT BAD_TRAP
-#endif
-
 /** Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP_ENTRY(bad_trap_entry)
 

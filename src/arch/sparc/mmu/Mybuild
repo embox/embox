@@ -2,7 +2,8 @@ package embox.arch.sparc
 
 module mmu extends embox.arch.mmu {
 	option number asi_m_mmuregs=0x19
-	option boolean mmu_enabled=true // used in sparc/include/asm/head.h
 
-	source "mmu.c", "mmu.h", "mmu_fault.S"
+	source "mmu.c", "mmu.h"
+
+	depends embox.arch.sparc.test.testtrap // used to define page fault handler
 }

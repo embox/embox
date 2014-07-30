@@ -17,6 +17,7 @@ module locore extends embox.arch.locore {
 
 	depends boot
 	depends leon3
+	depends embox.arch.sparc.test.testtrap
 }
 
 module boot extends embox.arch.boot {
