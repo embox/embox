@@ -15,6 +15,7 @@
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
+#include <kernel/schedee/current.h>
 #include <kernel/thread/signal_lock.h>
 #include <kernel/thread.h>
 
@@ -31,7 +32,7 @@ struct waitq {
 
 struct waitq_link {
 	struct dlist_head link;
-	struct thread *thread;
+	struct schedee *schedee;
 };
 
 #define WAITQ_INIT(wq)  { \
@@ -45,7 +46,7 @@ static inline void waitq_init(struct waitq *wq) {
 }
 
 static inline void waitq_link_init(struct waitq_link *wql) {
-	wql->thread = thread_self();
+	wql->schedee = schedee_get_current();
 	dlist_head_init(&wql->link);
 }
 

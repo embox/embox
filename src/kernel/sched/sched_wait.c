@@ -9,25 +9,28 @@
 
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
-#include <kernel/thread.h>
 #include <kernel/time/timer.h>
 
+#include <kernel/schedee/current.h>
+#include <kernel/schedee/schedee.h>
+
+
 void sched_wait_prepare(void) {
-	struct thread *t = thread_self();
+	struct schedee *s = schedee_get_current();
 
 	// TODO SMP barrier? -- Eldar
-	t->schedee.waiting = true;
+	s->waiting = true;
 }
 
 void sched_wait_cleanup(void) {
-	struct thread *t = thread_self();
+	struct schedee *s = schedee_get_current();
 
-	t->schedee.waiting = false;
+	s->waiting = false;
 	// TODO SMP barrier? -- Eldar
 }
 
 static int sched_intr(int res) {
-	struct thread *t = thread_self();
+	struct schedee *t = schedee_get_current();
 	struct sigstate *sigst = &t->sigstate;
 	int sig;
 	siginfo_t sinfo;
@@ -47,8 +50,8 @@ int sched_wait(void) {
 }
 
 static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
-	struct thread *t = data;
-	sched_wakeup(&t->schedee);
+	struct schedee *s = data;
+	sched_wakeup(s);
 }
 
 #if OPTION_GET(BOOLEAN, timer_allocate_on_stack)
@@ -84,7 +87,7 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 
 	cur_time = clock();
 	if ((res = SCHED_WAIT_TIMER_INIT(tmr, TIMER_ONESHOT, jiffies2ms(timeout),
-			sched_wait_timeout_handler, thread_self()))) {
+			sched_wait_timeout_handler, schedee_get_current()))) {
 		return res;
 	}
 

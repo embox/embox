@@ -379,7 +379,6 @@ void sched_thread_switch(struct thread *prev, struct thread *next) {
 	cpudata_var(saved_next) = next;
 	cpudata_var(saved_prev) = prev;
 	ADDR_SPACE_PREPARE_SWITCH();
-	schedee_set_current(&next->schedee);
 
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 

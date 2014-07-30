@@ -42,9 +42,7 @@ TEST_CASE("Launch simple lthread") {
 	test_assert_emitted("a");
 }
 
-#if 0
 static void *run_resched(void *arg) {
-	/* TODO This function is not to be allowed right now I guess */
 	ksleep(0);
 	done = 1;
 	return NULL;
@@ -67,7 +65,6 @@ TEST_CASE("Call sched from lthread") {
 
 	lthread_delete(lt);
 }
-#endif
 
 static void *run2(void *arg) {
 	done++;
