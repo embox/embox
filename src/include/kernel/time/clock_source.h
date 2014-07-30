@@ -32,7 +32,8 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
-	volatile clock_t jiffies; /* count of jiffies since clock source started */
+	volatile clock_t jiffies; /**< count of jiffies since clock source started */
+	clock_t jiffies_cnt; /**< interjiffes count */
 	uint32_t flags; /**< periodical or not */
 	time64_t (*read)(struct clock_source *cs);
 };
