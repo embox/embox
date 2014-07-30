@@ -253,6 +253,7 @@ static int tun_init(void) {
 	int i;
 
 	for (i = 0; i < TUN_N; i++) {
+		struct tun *tun;
 
 		snprintf(tun_name, sizeof(tun_name), "tun%d", i);
 
@@ -271,6 +272,9 @@ static int tun_init(void) {
 		if (err != 0) {
 			goto err_inetdev_deregister;
 		}
+
+		tun = netdev_priv(tdev, struct tun);
+		mutex_init(&tun->mtx_use);
 
 		tun_g_array[i] = tdev;
 	}
