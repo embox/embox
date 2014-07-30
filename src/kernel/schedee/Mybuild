@@ -1,0 +1,5 @@
+package embox.kernel.schedee
+
+module current {
+	source "current.c"
+}
