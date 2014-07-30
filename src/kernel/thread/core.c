@@ -129,7 +129,6 @@ static enum schedee_result thread_prepare(struct schedee *prev, struct schedee *
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
 
-	thread_set_current(next_t);
 	schedee_set_current(next);
 
 	/* Threads context switch */

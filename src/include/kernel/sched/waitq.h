@@ -15,8 +15,8 @@
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
-#include <kernel/thread/current.h>
 #include <kernel/thread/signal_lock.h>
+#include <kernel/thread.h>
 
 #include <kernel/time/time.h>
 
@@ -45,8 +45,7 @@ static inline void waitq_init(struct waitq *wq) {
 }
 
 static inline void waitq_link_init(struct waitq_link *wql) {
-	//wql->thread = thread_self();
-	wql->thread = thread_get_current();
+	wql->thread = thread_self();
 	dlist_head_init(&wql->link);
 }
 

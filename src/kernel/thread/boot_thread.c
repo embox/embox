@@ -50,7 +50,6 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	thread->schedee.active = true;
 	thread->schedee.waiting = false;
 
-	thread_set_current(thread);
 	schedee_set_current(&thread->schedee);
 
 	return thread;

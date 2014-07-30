@@ -36,7 +36,6 @@
 #include <kernel/thread.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/schedee/schedee.h>
-#include <kernel/thread/current.h>
 #include <kernel/schedee/current.h>
 #include <kernel/thread/signal.h>
 #include <kernel/addr_space.h>
@@ -371,31 +370,24 @@ void sched_ack_switched(void) {
 	sched_unlock();
 }
 
-static void sched_switch(struct thread *prev, struct thread *next) {
+void sched_thread_switch(struct thread *prev, struct thread *next) {
 	sched_prepare_switch(prev, next);
 
 	trace_point(__func__);
 
 	/* Preserve initial semantics of prev/next. */
+	cpudata_var(saved_next) = next;
 	cpudata_var(saved_prev) = prev;
 	ADDR_SPACE_PREPARE_SWITCH();
-	thread_set_current(next);
 	schedee_set_current(&next->schedee);
 
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 
 	prev = cpudata_var(saved_prev);
+	next = cpudata_var(saved_next);
 	ADDR_SPACE_FINISH_SWITCH();
 
 	sched_finish_switch(prev);
-}
-
-void sched_thread_switch(struct thread *prev, struct thread *next) {
-	cpudata_var(saved_next) = next;
-
-	sched_switch(prev, next);
-
-	next = cpudata_var(saved_next);
 }
 
 static void __schedule(int preempt) {
