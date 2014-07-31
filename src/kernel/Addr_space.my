@@ -1,0 +1,8 @@
+package embox.kernel
+
+@DefaultImpl(addr_space_stub)
+abstract module addr_space { }
+
+module addr_space_stub extends addr_space {
+	source "addr_space_stub.h"
+}

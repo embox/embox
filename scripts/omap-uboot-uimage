@@ -1,9 +1,15 @@
 
 EMBOX_BIN="./build/base/bin/embox.bin"
 UIMAGE=uImage
+MKIMAGE=$(which mkimage)
+
+if [ ! $MKIMAGE ]; then
+	echo "!!!!!!!  ERROR !!!!!!!!!!!!! please install mkimage"   >&2
+	exit 1
+fi
 
 case $OMAP_UBOOT_IMAGE_BOARD in
-	ti8168)
+	ti8168|qemu)
 		LOAD_ADDR=0x81000000
 		ENTRY_ADDR=0x81008040
 		;;
@@ -24,4 +30,6 @@ dd if=/dev/zero of=$PAD_FILE_NAME bs=1 count=$PAD_SIZE
 
 cat $PAD_FILE_NAME $EMBOX_BIN > $PADDED_BIN
 
-mkimage -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e $ENTRY_ADDR -d $PADDED_BIN $UIMAGE
+$MKIMAGE -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e $ENTRY_ADDR -d $PADDED_BIN $UIMAGE
+
+rm $PAD_FILE_NAME $PADDED_BIN

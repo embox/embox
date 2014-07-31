@@ -46,13 +46,13 @@ void sched_ticker_fini(void) {
 }
 
 void sched_ticker_switch(struct thread *prev, struct thread *next) {
-	if (prev->sched_attr.policy == SCHED_FIFO &&
-		next->sched_attr.policy != SCHED_FIFO) {
+	if (prev->runnable.sched_attr.policy == SCHED_FIFO &&
+		next->runnable.sched_attr.policy != SCHED_FIFO) {
 		sched_ticker_init();
 	}
 
-	if (prev->sched_attr.policy != SCHED_FIFO &&
-		next->sched_attr.policy == SCHED_FIFO) {
+	if (prev->runnable.sched_attr.policy != SCHED_FIFO &&
+		next->runnable.sched_attr.policy == SCHED_FIFO) {
 		sched_ticker_fini();
 	}
 }

@@ -19,12 +19,7 @@ struct dirent {
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
-struct node;
-typedef struct {
-	struct dirent current;
-	struct node *node;
-	//struct tree_link *child_lnk;
-} DIR;
+typedef struct DIR_struct DIR;
 
 
 extern int            closedir(DIR *);

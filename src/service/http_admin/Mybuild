@@ -1,0 +1,15 @@
+
+package embox.service
+
+@Cmd(name="http_admin_backend", help="", man="")
+@BuildDepends(third_party.lib.cjson)
+module http_admin {
+
+	source "http_admin_backend.c"
+
+	@InitFS(target_dir="http_admin")
+	source "index.html",
+	       "app.js"
+
+	depends third_party.lib.cjson
+}

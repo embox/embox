@@ -33,4 +33,6 @@ extern int kfstat(struct file_desc *fp, struct stat *buff);
 struct node;
 extern int ktruncate(struct node *node, off_t length);
 
+extern int kftruncate(struct file_desc *desc, off_t length);
+
 #endif /* FS_KFILE_H_ */

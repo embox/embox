@@ -114,14 +114,14 @@ static int mb_clock_setup(struct time_dev_conf * conf) {
 
 static struct time_event_device mb_ed = {
 	.config = mb_clock_setup,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.name = "mb_timer",
 	.irq_nr = CONFIG_XILINX_TIMER_IRQ
 };
 
 static struct time_counter_device mb_cd = {
 	.read = mb_cycle_read,
-	.resolution = SYS_CLOCK,
+	.cycle_hz = SYS_CLOCK,
 };
 
 static struct clock_source mb_cs = {

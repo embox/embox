@@ -18,7 +18,6 @@
 #include <time.h>
 
 #include <kernel/task/kernel_task.h>
-#include <kernel/task/resource.h>
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
 
@@ -26,7 +25,28 @@ struct task {
 	struct thread *tsk_main;
 	char resources[];
 };
+
 __BEGIN_DECLS
+
+static inline int task_is_vforking(struct task *task) {
+	(void)task;
+
+	return 0;
+}
+
+static inline void task_vfork_start(struct task *task) {
+	(void)task;
+}
+
+static inline void task_vfork_end(struct task *task) {
+	(void)task;
+}
+
+
+static inline int task_get_status(const struct task *tsk) {
+	assert(tsk == task_kernel_task());
+	return 0;
+}
 
 static inline int task_get_id(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
@@ -41,6 +61,11 @@ static inline const char * task_get_name(const struct task *tsk) {
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return tsk->tsk_main;
+}
+
+static inline struct task * task_get_parent(const struct task *tsk) {
+	assert(tsk == task_kernel_task());
+	return NULL;
 }
 
 static inline void task_set_main(struct task *tsk,
@@ -80,21 +105,6 @@ static inline struct task * task_self(void) {
 
 static inline int new_task(const char *name, void *(*run)(void *), void *arg) {
 	return -EPERM;
-}
-
-static inline void task_init(struct task *tsk, int id, const char *name,
-		struct thread *main_thread, task_priority_t priority) {
-	assert(tsk == task_kernel_task());
-	assert(id == task_get_id(tsk));
-	assert(0 == strcmp(name, task_get_name(tsk)));
-	assert(main_thread == task_get_main(tsk));
-	assert(TASK_PRIORITY_DEFAULT == task_get_priority(tsk));
-
-	if (main_thread != NULL) { /* check for thread.NoThreads module */
-		main_thread->task = tsk;
-	}
-
-	task_resource_init(tsk);
 }
 
 static inline void __attribute__((noreturn)) task_exit(void *res) {

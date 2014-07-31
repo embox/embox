@@ -13,7 +13,7 @@
 #include <fs/fat.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 
 
 int fat_check_filename(char *filename) {

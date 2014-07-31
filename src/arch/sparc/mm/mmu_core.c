@@ -22,10 +22,6 @@
 #include <mem/pagealloc/opallocator.h>
 #include <mem/vmem/virtalloc.h>
 
-
-#include <prom/prom_printf.h>
-
-
 static mmu_pgd_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 

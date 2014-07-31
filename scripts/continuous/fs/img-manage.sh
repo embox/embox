@@ -9,15 +9,15 @@ SUDO=sudo
 
 MOUNT_POINT=$WORK_DIR/mountpoint
 
-build_support="vfat ext2 ext3 ext4 iso9660 jffs2"
-mount_support="vfat ext2 ext3 ext4"
+build_support="vfat ext2 ext3 ext4 iso9660 jffs2 ntfs"
+mount_support="vfat ext2 ext3 ext4 ntfs"
 
 do_mount() {
 	$SUDO mount $IMG -t $FS $MOUNT_POINT
 }
 
 do_unmount() {
-	sudo umount $MOUNT_POINT
+	sudo umount -f $MOUNT_POINT
 }
 
 is_inlist() {
@@ -52,23 +52,34 @@ build_dir() {
 
 build() {
 	content="$1"
+	tmp_dir=tmp_$FS
 
-	case $FS in
-		jffs2)
-			mkfs.jffs2 -p 0x10000 -r $content -o $IMG
-			return 0
-			;;
-		iso9660)
-			mkisofs -o $IMG $content
-			return 0
-			;;
-	esac
+	if [ jffs2 = $FS ] || [ iso9660 = $FS ]; then
+		mkdir -p $tmp_dir
+
+		build_dir "$content" $tmp_dir
+
+		case $FS in
+			jffs2)
+				mkfs.jffs2 -p 0x10000 -r $tmp_dir -o $IMG
+				;;
+			iso9660)
+				mkisofs -o $IMG $tmp_dir
+				;;
+		esac
+
+		rm -Rf $tmp_dir
+		return 0
+	fi
 
 	dd if=/dev/zero bs=1M count=8 of=$IMG
 
 	case $FS in
 		ext?)
 			mkfs.$FS -F -b 1024 $IMG
+			;;
+		ntfs)
+			mkntfs -F $IMG
 			;;
 		*)
 			mkfs.$FS $IMG

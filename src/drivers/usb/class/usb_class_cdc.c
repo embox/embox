@@ -12,7 +12,7 @@
 #include <kernel/panic.h>
 #include <embox/unit.h>
 #include <drivers/usb/usb_cdc.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 #include <stdlib.h>
 
 EMBOX_UNIT_INIT(usb_cdc_init);
@@ -46,7 +46,7 @@ static void get_line_coding(struct usb_dev *dev) {
 		sizeof line_coding,
 		&line_coding);
 
-	prom_printf("line_coding - %d\n", line_coding);
+	printk("line_coding - %d\n", line_coding);
 }
 #endif
 
@@ -64,7 +64,7 @@ static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 
-	prom_printf("%s: in\n", __func__);
+	printk("%s: in\n", __func__);
 
 	usb_dev_generic_fill_iface(dev, cdc->getconf + INTERFACE_DESC_OFFSET);
 	usb_dev_generic_fill_endps(dev, cdc->getconf + ENDPOINT_DESC_OFFSET);
@@ -77,7 +77,7 @@ static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 
 	usb_class_start_handle(dev);
 
-	prom_printf("%s: out\n", __func__);
+	printk("%s: out\n", __func__);
 }
 
 static int usb_class_cdc_get_conf(struct usb_class *cls, struct usb_dev *dev) {

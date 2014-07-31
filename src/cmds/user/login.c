@@ -13,21 +13,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#include <lib/linenoise_1.h>
-#include <cmd/shell.h>
 #include <pwd.h>
 #include <shadow.h>
 #include <utmp.h>
-#include <security/smac.h>
 #include <termios.h>
 #include <unistd.h>
+
+#include <readline/readline.h>
+
+#include <cmd/shell.h>
+#include <security/smac.h>
 
 #include <kernel/task.h>
 
 #include <security/seculog.h>
 
 #include <embox/cmd.h>
+
+#include <crypt.h>
 
 extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
 
@@ -39,25 +42,6 @@ EMBOX_CMD(login_cmd);
 #define PASSW_PROMPT "password: "
 
 #define SMAC_USERS "/smac_users"
-
-static struct spwd *spwd_find(const char *spwd_path, const char *name) {
-	struct spwd *spwd;
-	FILE *shdwf;
-
-	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
-		return NULL;
-	}
-
-	while (NULL != (spwd = fgetspent(shdwf))) {
-		if (0 == strcmp(spwd->sp_namp, name)) {
-			break;
-		}
-	}
-
-	fclose(shdwf);
-
-	return spwd;
-}
 
 static int utmp_login(short ut_type, const char *ut_user) {
 	struct utmp utmp;
@@ -89,11 +73,26 @@ struct taskdata {
 	const char *cmd;
 };
 
+static void login_set_security(struct taskdata *tdata) {
+	const struct spwd *spwd;
+	char *new_smac_label = "_";
+
+	if (NULL != (spwd = spwd_find(SMAC_USERS, tdata->pwd->pw_name))) {
+		new_smac_label = spwd->sp_pwdp;
+	}
+
+	if (smac_labelset(new_smac_label)) {
+		printf("can't setup smac label\n");
+	}
+}
+
 static void *taskshell(void *data) {
 	const struct shell *shell;
-	const struct spwd *spwd;
 	struct taskdata *tdata = data;
+
 	int ret;
+
+	login_set_security(tdata);
 
 	ret = setuid(tdata->pwd->pw_uid);
 	if (ret < 0) {
@@ -108,18 +107,6 @@ static void *taskshell(void *data) {
 	}
 
 	printf("Welcome, %s!\n", tdata->pwd->pw_gecos);
-
-	{
-		char *new_smac_label = "_";
-
-		if (NULL != (spwd = spwd_find(SMAC_USERS, tdata->pwd->pw_name))) {
-			new_smac_label = spwd->sp_pwdp;
-		}
-
-		if (smac_labelset(new_smac_label)) {
-			printf("can't setup smac label\n");
-		}
-	}
 
 	shell = shell_lookup(tdata->pwd->pw_shell);
 
@@ -215,14 +202,16 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 		goto errret;
 	}
 
-	if (!(spwd = getspnam_f(result->pw_name))) {
-		res = -1;
-		goto errret;
-	}
+	if (with_pass) {
+		if (!(spwd = getspnam_f(result->pw_name))) {
+			res = -1;
+			goto errret;
+		}
 
-	if (with_pass && strcmp(passbuf, spwd->sp_pwdp)) {
-		res = -1;
-		goto errret;
+		if (strcmp(crypt(passbuf, NULL), spwd->sp_pwdp)) {
+			res = -1;
+			goto errret;
+		}
 	}
 
 	res = fileno_vintr_enable(STDIN_FILENO);
@@ -295,7 +284,7 @@ static int login_cmd(int argc, char **argv) {
 			/* */
 		}
 
-		while (!(name = linenoise(LOGIN_PROMPT))) {
+		while (!(name = readline(LOGIN_PROMPT))) {
 			printf("\n\n");
 		}
 

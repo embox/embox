@@ -54,6 +54,9 @@ static int raw_rcv_tester(const struct sock *sk,
 				|| (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
+extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
+extern uint16_t sock_get_secure_level(const struct sock *sk);
+
 int raw_rcv(const struct sk_buff *skb) {
 	struct sock *sk;
 	struct sk_buff *cloned;
@@ -64,9 +67,14 @@ int raw_rcv(const struct sk_buff *skb) {
 	sk = NULL;
 
 	while (1) {
+
 		sk = sock_lookup(sk, raw_sock_ops, raw_rcv_tester, skb);
 		if (sk == NULL) {
 			break;
+		}
+		/* if we have socket with secure label we have to check secure level */
+		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+			return 0;
 		}
 
 		cloned = skb_clone(skb);

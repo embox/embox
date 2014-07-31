@@ -1,13 +1,10 @@
 
-URL := https://googledrive.com/host/0B7g4WwjaJX23ZExQU2hHTzYyRm8/efm32bsp_libs.tar.gz
-TAR_GZ := efm32bsp_libs.tar.gz
+PKG_NAME := efm32bsp_libs
 
-.PHONY : all
-all : .extracted
+REPO_NAME := embedded_software
 
-.extracted : $(TAR_GZ)
-	tar -zxf $<
-	touch $@
+PKG_SOURCES := https://googledrive.com/host/0B7g4WwjaJX23ZExQU2hHTzYyRm8/efm32bsp_libs.tar.gz \
+	http://www.silabs.com/Support%20Documents/Software/efm32zg-stk3200-bsp.zip
+PKG_MD5     := c30ea25f245022633d865184f627a8cd 0b356f581486c99bca9617b5791a06c6
 
-$(TAR_GZ) :
-	wget -c $(URL)
+include $(EXTBLD_LIB)

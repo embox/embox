@@ -10,7 +10,7 @@ EXTRACTED   := $(QT_DIR)/.extracted
 CONFIGURED  := $(QT_DIR)/.configured
 ENVIRONMENT := $(QT_DIR)/.environment
 
-QT_URL    := http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
+QT_URL    := http://download.qt-project.org/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
 QT_MD5    := 1864987bdbb2f58f8ae8b350dfdbe133
 QT_BUNDLE := $(DOWNLOAD_DIR)/$(notdir $(QT_URL))
 
@@ -26,6 +26,9 @@ ENDIAN_FLAGS := -little-endian
 else ifeq (x86,$(EMBOX_ARCH))
 ARCH_FLAGS   := -arch i386
 ENDIAN_FLAGS := -little-endian
+else ifeq (microblaze,$(EMBOX_ARCH))
+ARCH_FLAGS   := -arch microblaze
+ENDIAN_FLAGS := -big-endian
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
@@ -91,6 +94,8 @@ EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -ffixed-r31,$(EMBOX_CFLAGS))
+EMBOX_IMPORTED_CFLAGS += $(filter -mno-xl-soft-mul,$(EMBOX_CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS :=
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
@@ -103,6 +108,8 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -ffixed-r31,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-xl-soft-mul,$(EMBOX_CXXFLAGS))
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(EMBOX_MAKEFLAGS)))

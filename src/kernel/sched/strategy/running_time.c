@@ -14,28 +14,28 @@
 
 void sched_timing_init(struct thread *t) {
 	/* setup thread running time */
-	t->sched_attr.sched_time.running_time = 0;
-	t->sched_attr.sched_time.last_sync = clock();
+	t->runnable.sched_attr.sched_time.running_time = 0;
+	t->runnable.sched_attr.sched_time.last_sync = clock();
 }
 
 clock_t sched_timing_get(struct thread *t) {
-	clock_t running = t->sched_attr.sched_time.running_time;
+	clock_t running = t->runnable.sched_attr.sched_time.running_time;
 
 	if (sched_active(t))
 		/* Add the least recent time slice (being used now). */
-		running += clock() - t->sched_attr.sched_time.last_sync;
+		running += clock() - t->runnable.sched_attr.sched_time.last_sync;
 
 	return running;
 }
 
 static void sched_timing_start(struct thread *t, clock_t cur_time) {
-	t->sched_attr.sched_time.last_sync = cur_time;
+	t->runnable.sched_attr.sched_time.last_sync = cur_time;
 }
 
 static void sched_timing_stop(struct thread *t, clock_t cur_time) {
-	clock_t spent = cur_time - t->sched_attr.sched_time.last_sync;
+	clock_t spent = cur_time - t->runnable.sched_attr.sched_time.last_sync;
 
-	t->sched_attr.sched_time.running_time += spent;
+	t->runnable.sched_attr.sched_time.running_time += spent;
 	//TODO this is for qt
 	task_set_clock(t->task, task_get_clock(t->task) + spent);
 }

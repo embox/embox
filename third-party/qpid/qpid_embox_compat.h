@@ -28,27 +28,56 @@
 #endif
 
 #include <ctype.h>
-//extern int toupper(int c);
 
-#include <pthread.h>
-
-extern
-int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_init(pthread_rwlock_t * rwlock,
-	const pthread_rwlockattr_t * attr);
-int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
-extern
-int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 
 #include <errno.h>
 
+__BEGIN_DECLS
+
+#include <pthread.h>
+static inline int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return 0;
+}
+
+static inline int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
+	(void)rwlock;
+	(void)attr;
+	DPRINT();
+	return 0;
+}
+
+static inline int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	return 0;
+}
+
+static inline int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return 0;
+}
+
+static inline int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return 0;
+}
+
+static inline int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return 0;
+}
+
+static inline int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock) {
+	(void)rwlock;
+	DPRINT();
+	return 0;
+}
+
+//#include <dirent.h>
 static inline
 int alphasort(const struct dirent **a, const struct dirent **b) {
 	(void)a;
@@ -69,42 +98,39 @@ int scandir(const char *dirp, struct dirent ***namelist,
 	return -1;
 }
 
-#define O_NOFOLLOW 0
-#define F_TLOCK 1
-#define F_ULOCK 2
+
+#define F_TLOCK 0x01
+#define F_ULOCK 0x02
+
 static inline
 int lockf(int fd, int cmd, off_t len) {
 	(void)fd;
 	(void)cmd;
 	(void)len;
 	DPRINT();
-	errno = ENOLCK;
-	return -1;
-}
-
-#define MAP_SHARED    0x00
-//#define MAP_PRIVATE   0x01
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-#define MAP_FAILED    ((void*)(-1))
-static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-	// ToDo: implement for InitFS files
-	(void)addr;
-	(void)len;
-	(void)prot;
-	(void)flags;
-	(void)off;
-	printf(">>> mmap(%i)\n",fd);
-	errno = EPERM;
 	return 0;
 }
 
-static inline int munmap(void *addr, size_t size) {
-	(void)size;
-	printf(">>> munmap(%p)\n",addr);
-	errno = EPERM;
+static inline pid_t setsid(void) {
+	DPRINT();
 	return -1;
 }
+
+static inline
+pid_t getppid(void) {
+	DPRINT();
+	return 0;
+}
+
+
+static inline pid_t fork() {
+	printf(">>> fork()\n");
+	errno = ENOSYS;
+	return -1;
+}
+
+#include <sys/mman.h>
+
 
 #define MS_ASYNC 1
 static inline
@@ -117,6 +143,7 @@ int msync(void *addr, size_t length, int flags) {
 	return -1;
 }
 
+#include <sys/socket.h>
 static inline
 int socketpair(int domain, int type, int protocol, int sv[2]) {
 	(void)domain;
@@ -127,6 +154,7 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
 	errno = -EPROTONOSUPPORT;
 	return -1;
 }
+__END_DECLS
 
 #include <netinet/in.h>
 
@@ -147,18 +175,10 @@ char *strerror_r(int errnum, char *buf, size_t buflen) {
 	return strerror(errnum);
 }
 
-#include <sys/types.h>
-#include <unistd.h>
 
-static inline
-pid_t getppid(void) {
-	DPRINT();
-	return 0;
-}
-
+/* not standard */
 typedef unsigned int uint;
 
-#define SIG_SETMASK 2
 
 #include <signal.h>
 static inline
@@ -170,10 +190,13 @@ int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	return 0;
 }
 
+
+// instead of gcc Thread-Local Storage
 #define __thread
 
-#ifdef __cplusplus
-
-#endif // __cplusplus
+// some compilers defines __unix__ (i386 gcc), some __unix (arm-eabi gcc),
+// qpid expects it to be __unix__ (in regex determinition),
+// so definig one to another
+#define __unix__ __unix
 
 #endif /* QPID_EMBOX_COMPAT_H_ */

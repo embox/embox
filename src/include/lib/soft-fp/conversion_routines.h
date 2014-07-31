@@ -11,7 +11,7 @@
 
 #include <assert.h>
 #include <lib/math/ieee.h>
-#include <lib/softfloat.h>
+#include <softfloat.h>
 
 static inline float32 float_to_float32(float x) {
 	static_assert(sizeof x == sizeof(struct ieee_binary32));

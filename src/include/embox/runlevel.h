@@ -10,7 +10,7 @@
 #define EMBOX_RUNLEVEL_H_
 
 /** Total amount of run levels. */
-#define RUNLEVEL_NRS_TOTAL 4
+#define RUNLEVEL_NRS_TOTAL 5
 
 /**
  * Checks if the specified @c runlevel_nr is less then #RUNLEVEL_NRS_TOTAL

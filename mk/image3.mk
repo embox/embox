@@ -115,26 +115,40 @@ image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 FINAL_LINK_WITH_CC ?=
 ifeq (1,$(FINAL_LINK_WITH_CC))
 
+ram_sz :=$(shell echo LDS_REGION_SIZE_RAM | $(CC) -E -P -imacros $(SRCGEN_DIR)/config.lds.h - | sed 's/M/*1024*1024/' | bc)
+phymem_cflags_addon := \
+	-Wl,--defsym=_ram_base=__phymem_space \
+	-Wl,--defsym=_reserve_end=__phymem_space \
+	-Wl,--defsym=_ram_size=$(ram_sz) \
+	-DPHYMEM_SPACE_SIZE=$(ram_sz) \
+	mk/phymem_cc_addon.tmpl.c
+
 FINAL_LDFLAGS ?=
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	$(symbols_pass1_a) \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 
 $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
-	$(CC) -Wl,--relax $(FINAL_LDFLAGS) \
+	$(CC) -Wl,--relax \
 	$(embox_o) \
+	$(FINAL_LDFLAGS) \
 	$(symbols_pass2_a) \
+	$(phymem_cflags_addon) \
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 else
@@ -197,4 +211,25 @@ $(IMAGE_SIZE): $(IMAGE)
 	else                                   \
 		echo "$(SIZE) util not found" > $@;   \
 	fi;
+
+ifdef ROOTFS_OUT_DIR
+
+.PHONY : __copy_user_rootfs
+all : __copy_user_rootfs $(__cpio_files)
+
+$(__cpio_files) : FORCE
+	$(foreach f,$(patsubst $(abspath $(ROOTFS_DIR))/%,$(ROOTFS_OUT_DIR)/%,$(abspath $@)), \
+		$(CP) -r -T $(src_file) $f; \
+		$(foreach c,chmod chown,$(if $(and $($c),$(findstring $($c),'')),,$c $($c) $f;)) \
+		$(foreach a,$(strip $(subst ',,$(xattr))), \
+			attr -s $(basename $(subst =,.,$a)) -V $(subst .,,$(suffix $(subst =,.,$a))) $f;) \
+		find $f -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf)
+
+__copy_user_rootfs :
+	if [ -d $(USER_ROOTFS_DIR) ]; \
+	then \
+		cd $(USER_ROOTFS_DIR) \
+			&& cp -r * $(abspath $(ROOTFS_OUT_DIR)); \
+	fi
+endif
 

@@ -27,6 +27,13 @@ struct node;
 extern int security_node_create(struct node *dir, mode_t mode);
 
 /**
+ * @brief Sets node credentials of current user
+ *
+ * @param node
+ */
+extern void security_node_cred_fill(struct node *node);
+
+/**
  * @brief Checks permission on node delete. @a dir already checked for
  * #FS_MAY_WRITE
  *
@@ -118,5 +125,10 @@ extern int security_xattr_idesc_get(struct idesc *idesc, const char *name, char 
 extern int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *value, size_t len, int flags);
 
 extern int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len);
+
+struct sock;
+extern int security_sock_create(struct sock *sock);
+extern int security_sock_label(struct sock *sock, char *label, size_t len);
+
 
 #endif /* SECURITY_SECURITY_H_ */

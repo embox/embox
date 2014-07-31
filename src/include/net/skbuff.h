@@ -19,6 +19,7 @@
 //#include <net/l4/tcp.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/time.h>
 
 /* Prototypes */
 struct sk_buff;
@@ -33,6 +34,7 @@ struct iphdr;
 struct ip6hdr;
 struct arphdr;
 struct ethhdr;
+struct iovec;
 
 typedef struct sk_buff_head {
 	struct sk_buff *next;       /* Next buffer in list */
@@ -94,6 +96,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	unsigned char *p_data;
 	unsigned char *p_data_end;
 
+	struct timeval tstamp;
 } sk_buff_t;
 
 extern size_t skb_max_size(void);
@@ -157,6 +160,17 @@ extern struct sk_buff * skb_clone(const struct sk_buff *skb);
  * Make sk_buff without shared packet data
  */
 extern struct sk_buff * skb_declone(struct sk_buff *skb);
+
+/**
+ * Write sk_buff data to buffers pointed by iovec.
+ *
+ * @param skb
+ * @param iov
+ * @param iovlen
+ *
+ * @return Written data count in bytes.
+ */
+extern int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen);
 
 /**
  * Create copy of skb

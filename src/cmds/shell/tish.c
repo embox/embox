@@ -20,7 +20,6 @@
 #include <limits.h>
 #include <pwd.h>
 
-#include <lib/linenoise_1.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -45,13 +44,12 @@
 
 #define PROMPT_BUF_LEN 32
 
-#define DEADSHELL_RET 0xDEAD5EE1
-
 struct cmd_data {
 	int argc;
 	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
-	char buff[SHELL_INPUT_BUFF_SZ];
+	char cmdline_buf[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
+	bool on_fg;
 	volatile int started;
 };
 
@@ -136,11 +134,33 @@ static int process_builtin(struct cmd_data *cdata) {
 	return 0;
 }
 
+static void cmd_data_copy(struct cmd_data *dst, const struct cmd_data *src) {
+	int i_arg;
+	char *dst_argv_p;
+
+	dst->argc = src->argc;
+
+	dst_argv_p = dst->cmdline_buf;
+	for (i_arg = 0; i_arg < src->argc; i_arg++) {
+
+		strcpy(dst_argv_p, src->argv[i_arg]);
+		dst->argv[i_arg] = dst_argv_p;
+
+		dst_argv_p += strlen(src->argv[i_arg]);
+		*dst_argv_p++ = '\0';
+	}
+
+	dst->argv[dst->argc] = NULL;
+
+	dst->cmd = src->cmd;
+	dst->on_fg = src->on_fg;
+}
+
 static void * run_cmd(void *data) {
 	int ret;
 	struct cmd_data cdata;
 
-	memcpy(&cdata, data, sizeof(cdata));
+	cmd_data_copy(&cdata, data);
 
 	((struct cmd_data *)data)->started = 1;
 
@@ -158,79 +178,93 @@ static void * run_cmd(void *data) {
 	return NULL; /* ok */
 }
 
-static int process_external(struct cmd_data *cdata, int on_fg) {
+static int process_external(struct cmd_data *cdata) {
 	int ret;
 	pid_t pid;
+
+	cdata->started = 0;
 
 	pid = new_task(cdata->argv[0], run_cmd, cdata);
 	if (pid < 0) {
 		return pid;
 	}
 
-	if (on_fg) {
-		ret = task_waitpid(pid);
-		if (ret != 0) {
-			return ret;
+	if (cdata->on_fg) {
+
+		waitpid(pid, &ret, 0);
+		assert(WIFEXITED(ret));
+		ret = WEXITSTATUS(ret);
+	} else {
+		while (cdata->started == 0) {
+			sleep(0);
 		}
+		ret = 0;
 	}
 
-	return 0; /* TODO use task_errno() */
+	return ret; /* TODO use task_errno() */
 }
 
-static int process(struct cmd_data *cdata) {
-	assert(cdata != NULL);
+static int tish_cdata_fill(const char *cmdline, struct cmd_data *cdata) {
 
-	/* TODO remove stubs */
-	if (!strcmp(cdata->argv[0], "exit")
-			|| !strcmp(cdata->argv[0], "logout")) {
-		return DEADSHELL_RET;
+	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
+		return -EINVAL;
+	}
+
+	strcpy(cdata->cmdline_buf, cmdline);
+
+	cdata->argc = cmdline_tokenize(cdata->cmdline_buf, cdata->argv);
+	if (cdata->argc == 0) {
+		return -EINVAL;
 	}
 
 	cdata->cmd = cmd_lookup(cdata->argv[0]);
 	if (cdata->cmd == NULL) {
-		printf("%s: Command not found\n", cdata->argv[0]);
 		return -ENOENT;
 	}
 
-	if (is_builtin(cmd_name(cdata->cmd))) {
-		return process_builtin(cdata);
+	if (0 != strcmp(cdata->argv[cdata->argc - 1], "&")) {
+		cdata->on_fg = true;
+	} else {
+		cdata->on_fg = false;
+		cdata->argv[cdata->argc--] = NULL;
 	}
 
-	if (0 == strcmp(cdata->argv[cdata->argc - 1], "&")) {
-		--cdata->argc;
-		return process_external(cdata, 0);
-	}
-
-	return process_external(cdata, 1);
+	return 0;
 }
 
 static int tish_exec(const char *cmdline) {
 	struct cmd_data cdata;
 	int res;
 
-	if (strlen(cmdline) >= SHELL_INPUT_BUFF_SZ) {
-		return -EINVAL;
-	}
-
-	strcpy(cdata.buff, cmdline);
-
-	cdata.argc = cmdline_tokenize(cdata.buff, cdata.argv);
-	if (cdata.argc == 0) {
-		return -EINVAL;
-	}
-
-	cdata.started = 0;
-
-	res = process(&cdata);
+	res = tish_cdata_fill(cmdline, &cdata);
 	if (res != 0) {
+		switch (res) {
+		case -ENOENT:
+			printf("%s: Command not found\n", cdata.argv[0]);
+			break;
+		}
 		return res;
 	}
 
-	do {
-		sleep(0);
-	} while (cdata.started == 0);
+	if (is_builtin(cdata.argv[0])) {
+		res = process_builtin(&cdata);
+	} else {
+		res = process_external(&cdata);
+	}
 
-	return 0;
+	if (res < 0) {
+		printf("tish: failed to exec %s: %s\n", cdata.argv[0], strerror(-res));
+	}
+	return res;
+}
+
+static void tish_collect_bg_childs(void) {
+	int status;
+	pid_t pid;
+
+	do {
+		pid = waitpid(-1, &status, WNOHANG);
+	} while (pid > 0);
 }
 
 static int rich_prompt(const char *fmt, char *buf, size_t len) {
@@ -332,16 +366,16 @@ static void tish_run(void) {
 			break;
 		}
 
+		tish_collect_bg_childs();
+
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
-			if (DEADSHELL_RET == tish_exec(line)) {
-				break;
-			}
+			tish_exec(line);
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
-			linenoiseHistorySetMaxLen(len);
+			stifle_history(len);
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}

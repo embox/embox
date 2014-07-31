@@ -4,8 +4,8 @@ package embox.compat.posix.proc
 module All {
 
 	depends exec,
-		fork,
-		waitpid,
+		//vfork,
+		//waitpid,
 		//signal,
 		exit,
 		uid,
@@ -14,23 +14,47 @@ module All {
 		pid
 }
 
+@DefaultImpl(exec_stub)
+abstract module exec_lib { }
+
+
 static module exec {
 	source "exec.c"
-
-	depends embox.util.LibUtil
+	depends vfork
+	depends exec_lib
+	depends embox.kernel.task.resource.module_ptr
+	depends embox.kernel.task.resource.argv
 }
 
-static module fork {
-	source "fork.c"
+@DefaultImpl(fork_copy_everything)
+abstract module fork { }
 
-	depends embox.kernel.task.syslib.kfork_api
-	depends embox.util.LibUtil
+static module vfork_entry {
+	source "vfork.c"
+
+	depends embox.kernel.task.resource.argv
+	depends embox.kernel.task.resource.vfork
 }
+
+module fork_copy_everything extends fork {
+	source "fork_copy_everything.c"
+	depends embox.arch.fork_entry
+	depends fork_copy_addr_space
+}
+
+/* FIXME artifical module to bypass single `extends` restriction */
+static module fork_copy_addr_space extends embox.kernel.addr_space {
+	source "fork_copy_addr_space.h"
+}
+
+@DefaultImpl(vfork_stub)
+abstract module vfork { }
 
 static module waitpid {
 	source "waitpid.c"
 
 	depends embox.util.LibUtil
+	depends embox.kernel.task.syslib.waitpid
 }
 
 static module signal {
@@ -48,6 +72,8 @@ static module sigset {
 static module exit {
 	source "exit.c"
 
+	depends vfork
+	depends exec
 	depends embox.util.LibUtil
 }
 

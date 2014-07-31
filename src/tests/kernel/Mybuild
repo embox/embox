@@ -5,6 +5,7 @@ module irq_test {
 	option number irq_nr = 10
 	option number outer_irq_nr = 10
 	option number inner_irq_nr = 11
+	option boolean forced_irq_clear = false
 
 	source "irq_test.c"
 

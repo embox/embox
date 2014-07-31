@@ -1,8 +1,8 @@
 package third_party.qpid
 
-@Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/include/qpid",
-		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/lib")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include/qpid",
+		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/lib")
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.core)
@@ -13,9 +13,8 @@ package third_party.qpid
    Anton Kozlov
 */
 module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
-	source "libqmf.a", "libqmf2.a", "libqmfconsole.a",
-		"libqmfengine.a", "libqpidbroker.a", "libqpidclient.a",
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libqpidbroker.a", "libqpidclient.a",
 		"libqpidcommon.a", "libqpidmessaging.a", "libqpidtypes.a"
 
 	@NoRuntime depends embox.compat.posix.fs.fsop
@@ -26,21 +25,52 @@ module core {
 	@NoRuntime depends embox.compat.posix.net.getaddrinfo
 	@NoRuntime depends embox.compat.posix.net.getnameinfo
 	@NoRuntime depends embox.compat.posix.net.socket
-	@NoRuntime depends embox.compat.posix.proc.fork
 	@NoRuntime depends embox.compat.posix.util.gethostname
 	@NoRuntime depends embox.compat.posix.util.sleep
 	@NoRuntime depends embox.compat.posix.util.utsname
-	@NoRuntime depends embox.lib.LibC
+	@NoRuntime depends embox.compat.libc.LibC
 	@NoRuntime depends embox.net.lib.getifaddrs
 	@NoRuntime depends third_party.boost.core
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends third_party.STLport.core
 	@NoRuntime depends embox.compat.posix.pthread_key
+	@NoRuntime depends embox.compat.posix.regex_trex
 }
 
+@Build(stage=2,script="true")
 @BuildDepends(core)
-module hello extends embox.lib.cxx.app {
-	@NoRuntime depends core
+@Cmd(name = "qpidd",
+	help = "qpidd",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module qpidd {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
+	source "strip.QpiddBroker.o"
 
-	source "^BUILD/qpid/src/qpid/examples/messaging/hello_world.cpp"
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
+	source "qpidd.o"
+
+	@NoRuntime depends third_party.qpid.core
+	depends embox.compat.posix.stubs
 }
+
+@Build(stage=2,script="true")
+@BuildDepends(core)
+@Cmd(name = "qpidd_hello",
+	help = "simple qpid broker test",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module qpidd_hello {
+	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
+	source "strip.hello_world.o"
+
+	@NoRuntime depends third_party.qpid.core
+	depends embox.compat.posix.stubs
+}
+

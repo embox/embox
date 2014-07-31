@@ -10,6 +10,8 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
+#include <fs/file_desc.h>
+#include <fs/file_operation.h>
 #include <embox/block_dev.h>
 #include <limits.h>
 #include <fcntl.h>
@@ -17,7 +19,7 @@
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <errno.h>
 #include <endian.h>
 
@@ -143,7 +145,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 	struct ntfs_fs_info *pfsi;
 	struct ntfs_file_info *pfi, *fi;
 
-	parent_node = node_parent(node);
+	parent_node = vfs_subtree_get_parent(node);
 	if (!parent_node) {
 		return -EINVAL;
 	}
@@ -282,7 +284,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		}
 
 		//
-		node = vfs_create(dir_nas->node, filename, mode);
+		node = vfs_subtree_create(dir_nas->node, filename, mode);
 		if (!node) {
 			errno = ENOMEM;
 			return -1;
@@ -341,7 +343,7 @@ static int ntfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+		while(NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				ntfs_umount_entry(child->nas);
 			}
@@ -404,11 +406,6 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
 		rc = ENODEV;
-		return -rc;
-	}
-
-	if(NULL != vfs_get_child_next(dir_node)) {
-		rc = ENOTEMPTY;
 		return -rc;
 	}
 
@@ -517,7 +514,7 @@ static int ntfs_close(struct file_desc *file_desc)
 	struct ntfs_desc_info *desc;
 	int res;
 
-	desc = file_desc->file_info;
+	desc = (struct ntfs_desc_info *) file_desc->file_info;
 
 	ntfs_attr_close(desc->attr);
 	res = ntfs_inode_close(desc->ni);
@@ -580,7 +577,7 @@ struct ntfs_bdev_desc {
 static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 {
 	int err;
-	node_t *dev_node;
+	node_t *dev_node, *dev_folder;
 
 	if (NDevOpen(dev)) {
 		errno = EBUSY;
@@ -594,7 +591,9 @@ static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 	if (!dev->d_private)
 		return -1;
 
-	dev_node = vfs_lookup_child(vfs_lookup_child(0,"dev"),dev->d_name);
+	dev_folder = vfs_subtree_lookup_child(vfs_get_root(),"dev");
+	dev_node = vfs_subtree_lookup_child(dev_folder, dev->d_name);
+
 	if (dev_node) {
 		((struct ntfs_bdev_desc*)dev->d_private)->dev = dev_node->nas->fi->privdata;
 		((struct ntfs_bdev_desc*)dev->d_private)->pos = 0;

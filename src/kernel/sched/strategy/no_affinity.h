@@ -8,29 +8,29 @@
 #ifndef NO_AFFINITY_H_
 #define NO_AFFINITY_H_
 
-struct thread;
+struct runnable;
 
 typedef struct { } __affinity_t;
 
-static inline int sched_affinity_check(struct thread *t, int mask) {
-	(void)t;
+static inline int sched_affinity_check(struct runnable *r, int mask) {
+	(void)r;
 	(void)mask;
 	return 1;
 }
 
-static inline void sched_affinity_init(struct thread *t) {
-	(void)t;
+static inline void sched_affinity_init(struct runnable *r) {
+	(void)r;
 	return;
 }
 
-static inline void sched_affinity_set(struct thread *t, int mask) {
-	(void)t;
+static inline void sched_affinity_set(struct runnable *r, int mask) {
+	(void)r;
 	(void)mask;
 	return;
 }
 
-static inline int sched_affinity_get(struct thread *t) {
-	(void)t;
+static inline int sched_affinity_get(struct runnable *r) {
+	(void)r;
 	return 0;
 }
 

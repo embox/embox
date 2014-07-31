@@ -10,6 +10,7 @@
  */
 
 #include <errno.h>
+#include <unistd.h>
 #include <embox/test.h>
 
 #include <kernel/thread.h>
@@ -63,6 +64,8 @@ TEST_CASE("thread_join should retrieve the result of thread execution") {
 	t = thread_create(0, arg_invert_run, (void *) 42UL);
 	test_assert_zero(err(t));
 
+	test_assert_zero(sleep(1));
+
 	test_assert_zero(thread_join(t, &ret));
 	test_assert_equal(ret, (void *) ~42UL);
 }
@@ -78,7 +81,6 @@ TEST_CASE("thread_launch should return 0 if the thread was created with "
 	test_assert_zero(thread_detach(t));
 }
 
-#include <unistd.h>
 TEST_CASE("thread_launch should return an error if the thread hasn't been "
 		"initially suspended") {
 	struct thread *t;

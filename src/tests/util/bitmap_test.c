@@ -42,7 +42,7 @@ TEST_CASE("unaligned size") {
 }
 #define TEST_3WORD (3 * LONG_BIT)
 TEST_CASE("find zero on 3 words") {
-	BITMAP_DECL(bitmap, TEST_3WORD)
+	BITMAP_DECL(bitmap, TEST_3WORD);
 	int start, len, zero;
 
 	bitmap_set_all(bitmap, TEST_3WORD);

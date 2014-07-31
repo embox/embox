@@ -17,6 +17,7 @@
 
 #include <kernel/sched/sched_priority.h>
 
+struct runnable;
 struct thread;
 
 struct runq;				/* Queue of running threads  */

@@ -4,5 +4,5 @@ module jsp {
 	source "jsp.c"
 
 	depends service
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }

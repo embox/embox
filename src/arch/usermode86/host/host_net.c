@@ -26,9 +26,7 @@ static HOST_FNX(int, open, CONCAT(const char *path, int flags),
 		path, flags)
 static HOST_FNX(int, ioctl, CONCAT(int fd, int req, void *arg),
 		fd, req, arg)
-static HOST_FNX(int, write, CONCAT(int fd, const void *buf, int len), fd, buf, len)
 static HOST_FNX(int, writev, CONCAT(int fd, struct iovec *iov, int iovcnt), fd, iov, iovcnt)
-static HOST_FNX(int, read, CONCAT(int fd, void *buf, int len), fd, buf, len)
 static HOST_FNX(int, fcntl, CONCAT(int fd, int req, int arg),
 		fd, req, arg)
 static HOST_FNX(int, close, int fd, fd)

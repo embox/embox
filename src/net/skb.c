@@ -23,6 +23,8 @@
 #include <util/member.h>
 #include <util/binalign.h>
 
+#include <sys/uio.h>
+
 #define MODOPS_AMOUNT_SKB       OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_DATA  OPTION_GET(NUMBER, amount_skb_data)
 #define MODOPS_DATA_SIZE        OPTION_GET(NUMBER, data_size)
@@ -82,18 +84,22 @@ size_t skb_max_extra_size(void) {
 }
 
 void * skb_data_cast_in(struct sk_buff_data *skb_data) {
+	assert(skb_data != NULL);
 	return &skb_data->data[0];
 }
 
 struct sk_buff_data * skb_data_cast_out(void *data) {
+	assert(data != NULL);
 	return member_cast_out(data, struct sk_buff_data, data);
 }
 
 void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
+	assert(skb_extra != NULL);
 	return &skb_extra->extra[0];
 }
 
 struct sk_buff_extra * skb_extra_cast_out(void *extra) {
+	assert(extra != NULL);
 	return member_cast_out(extra, struct sk_buff_extra, extra);
 }
 
@@ -196,6 +202,8 @@ struct sk_buff * skb_wrap(size_t size,
 		skb = pool_alloc(&skb_pool);
 	}
 	ipl_restore(sp);
+
+	gettimeofday(&skb->tstamp, NULL);
 
 	if (skb == NULL) {
 		DBG(printk("skb_wrap: error: no memory\n"));
@@ -389,4 +397,26 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	skb->p_data += len;
 
 	return len;
+}
+
+int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen) {
+	int i_io;
+	const void *buf_p;
+
+	buf_p = buf;
+
+	for (i_io = 0; i_io < iovlen; i_io++) {
+		int this_io_len, buf_remain;
+
+		buf_remain = buflen - (buf_p - buf);
+		if (buf_remain == 0) {
+			break;
+		}
+
+		this_io_len = min(iov[i_io].iov_len, buf_remain);
+		memcpy(iov[i_io].iov_base, buf_p, this_io_len);
+		buf_p += this_io_len;
+	}
+
+	return buf_p - buf;
 }

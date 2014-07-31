@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "cat",
 	help = "Concatenate files and print on the standard output",
 	man = '''
@@ -17,11 +18,10 @@ package embox.cmd.fs
 module cat {
 	source "cat.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file
 	depends embox.fs.core
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }

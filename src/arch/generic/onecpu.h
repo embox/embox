@@ -11,9 +11,15 @@
 
 #ifndef __ASSEMBLER__
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 static inline unsigned int cpu_get_id(void) {
 	return 0;
 }
+
+__END_DECLS
 
 #endif /* !__ASSEMBLER__ */
 

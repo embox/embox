@@ -11,9 +11,11 @@
 
 #ifndef __ASSEMBLER__
 
-#define __JMPBUF_LEN  9
+#include <kernel/host.h>
 
-typedef int __jmp_buf[__JMPBUF_LEN];
+#define __JMPBUF_LEN HOST_JMPBUF_LEN
+
+typedef char __jmp_buf[__JMPBUF_LEN];
 
 #endif /* __ASSEMBLER__ */
 

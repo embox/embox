@@ -5,62 +5,21 @@ include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
-
 rootdir := $(abspath $(ROOT_DIR))
-EMBOX_IMPORTED_CPPFLAGS :=
-EMBOX_IMPORTED_CPPFLAGS += -I$(shell pwd)/include
-EMBOX_IMPORTED_CPPFLAGS += $(filter -U__linux__,$(EMBOX_EXPORT_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_EXPORT_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D__unix,$(EMBOX_EXPORT_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_EXPORT_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_EXPORT_CPPFLAGS))
-#EMBOX_IMPORTED_CPPFLAGS += $(filter -MMD,$(EMBOX_EXPORT_CPPFLAGS))
-#EMBOX_IMPORTED_CPPFLAGS += $(filter -MP,$(EMBOX_EXPORT_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -Uarm,$(EMBOX_EXPORT_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS := $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
 
-EMBOX_IMPORTED_CFLAGS :=
-EMBOX_IMPORTED_CFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CFLAGS += $(filter -g%,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-common,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-omit-frame-pointer,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-optimize-sibling-calls,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -fno-stack-protector,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -O%,$(CFLAGS))
-# architecture dependent options
-EMBOX_IMPORTED_CFLAGS += $(filter -m32,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mapcs,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -march%,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -marm,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mlittle-endian,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mno-thumb-interwork,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -mno-unaligned-access,$(CFLAGS))
-EMBOX_IMPORTED_CFLAGS += $(filter -msoft-float, $(CFLAGS))
+EMBOX_IMPORTED_CFLAGS   := $(filter -g% -f% -m% -O% -G% -E%,$(CFLAGS))
+EMBOX_IMPORTED_CXXFLAGS := $(filter -g% -f% -m% -O% -G% -E%,$(CXXFLAGS))
 
-EMBOX_IMPORTED_CXXFLAGS :=
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(filter -g%,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-omit-frame-pointer,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-optimize-sibling-calls,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -O%,$(CXXFLAGS))
-# architecture dependent options
-EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mapcs,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -marm,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mlittle-endian,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-thumb-interwork,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -msoft-float, $(CXXFLAGS))
-
-EMBOX_IMPORTED_LDFLAGS :=
-EMBOX_IMPORTED_LDFLAGS += $(filter -static,$(LDFLAGS))
-EMBOX_IMPORTED_LDFLAGS += $(filter -nostdlib,$(LDFLAGS))
-EMBOX_IMPORTED_LDFLAGS += $(foreach w,$(filter -m elf_i386,$(LDFLAGS)),-Wl,$w)
+EMBOX_IMPORTED_LDFLAGS  := $(filter -static -nostdlib -E%,$(LDFLAGS))
+EMBOX_IMPORTED_LDFLAGS  += $(foreach w,$(filter -m elf_i386,$(LDFLAGS)),-Wl,$w)
+ifeq ($(ARCH),microblaze)
+# microblaze compiler wants vendor's xillinx.ld if no lds provided from command line.
+# Make it happy with empty lds
+_empty_lds_hack:=$(abspath $(SRCGEN_DIR))/empty.lds
+$(shell touch $(_empty_lds_hack))
+EMBOX_IMPORTED_LDFLAGS += -T $(_empty_lds_hack)
+endif
 
 EMBOX_IMPORTED_LDFLAGS_FULL :=
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
@@ -84,11 +43,28 @@ endif
 
 $(EMBOX_GCC_ENV): $(MKGEN_DIR)/build.mk mk/flags.mk $(SRCGEN_DIR)/image.rule.mk
 $(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
-	@echo "EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)'"                       >> $@
-	@echo "EMBOX_IMPORTED_CPPFLAGS='$(EMBOX_IMPORTED_CPPFLAGS)'"         >> $@
-	@echo "EMBOX_IMPORTED_CFLAGS='$(EMBOX_IMPORTED_CFLAGS)'"             >> $@
-	@echo "EMBOX_IMPORTED_CXXFLAGS='$(EMBOX_IMPORTED_CXXFLAGS)'"         >> $@
-	@echo "EMBOX_IMPORTED_LDFLAGS='$(EMBOX_IMPORTED_LDFLAGS)'"           >> $@
-	@echo "EMBOX_IMPORTED_LDFLAGS_FULL='$(EMBOX_IMPORTED_LDFLAGS_FULL)'" >> $@
+	@echo EMBOX_CROSS_COMPILE="'"$(CROSS_COMPILE)"'"                       >> $@
+	@echo EMBOX_IMPORTED_CPPFLAGS="'"$(EMBOX_IMPORTED_CPPFLAGS)"'"         >> $@
+	@echo EMBOX_IMPORTED_CFLAGS="'"$(EMBOX_IMPORTED_CFLAGS)"'"             >> $@
+	@echo EMBOX_IMPORTED_CXXFLAGS="'"$(EMBOX_IMPORTED_CXXFLAGS)"'"         >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS="'"$(EMBOX_IMPORTED_LDFLAGS)"'"           >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS_FULL="'"$(EMBOX_IMPORTED_LDFLAGS_FULL)"'" >> $@
 
 $$(image_prerequisites):
+
+TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
+TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test
+
+include $(EXTBLD_LIB)
+include $(SRCGEN_DIR)/build.mk
+
+.PHONY : do_test
+do_test : $(TOOLCHAIN_TEST_OUT)
+
+$(TOOLCHAIN_TEST_OUT): $(EMBOX_GCC_ENV)
+ifeq ($(filter usermode%,$(ARCH)),)
+	EMBOX_GCC_LINK=full $(EMBOX_GCC) $(TOOLCHAIN_TEST_SRC) -o $(TOOLCHAIN_TEST_OUT)
+else
+	@echo "Full linking mode isn't supported for usermode arch!"
+endif
+

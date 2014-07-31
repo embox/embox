@@ -82,6 +82,7 @@ static void *search_multi_page(struct page_allocator *allocator, size_t page_q) 
 }
 
 void *page_alloc(struct page_allocator *allocator, size_t page_q) {
+	assert(allocator);
 
 	return search_multi_page(allocator, page_q);
 }

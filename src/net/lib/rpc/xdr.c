@@ -408,7 +408,7 @@ int xdr_wrapstring(struct xdr *xs, char **pstr) {
 	return xdr_string(xs, pstr, XDR_LAST_UINT32);
 }
 
-extern int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
+int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault) {
 	size_t s;
 

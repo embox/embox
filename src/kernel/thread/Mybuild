@@ -18,6 +18,7 @@ module core extends thread_mode {
 	source "thread_register.c"
 
 	depends starter
+	source "thread_sched_routine.c"
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
@@ -27,8 +28,9 @@ module core extends thread_mode {
 	@NoRuntime depends thread_local
 	@NoRuntime depends thread_cancel
 	@NoRuntime depends signal_api
+	@NoRuntime depends thread_wait
 
-	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCAssert
 
 	depends embox.kernel.cpu.common
 }
@@ -116,4 +118,12 @@ module thread_cancel_enable extends thread_cancel {
 
 module thread_cancel_disable extends thread_cancel {
 	source "thread_cancel_disable.h"
+}
+
+@DefaultImpl(thread_wait_stub)
+abstract module thread_wait { }
+
+module thread_wait_stub extends thread_wait {
+	source "thread_wait_stub.c"
+	source "thread_wait_stub.h"
 }

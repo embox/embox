@@ -14,8 +14,9 @@
 HOST_FNX(int, write,
 		CONCAT(int fd, const void *buf, int c),
 		fd, buf, c)
-HOST_FNX(int, putchar, int c, c)
-HOST_FNX(int, getchar, void)
+HOST_FNX(int, read,
+		CONCAT(int fd, void *buf, int c),
+		fd, buf, c)
 HOST_FNX(int, pause, void)
 
 static HOST_FNX(int, tcgetattr,
@@ -27,13 +28,9 @@ static HOST_FNX(int, tcsetattr,
 
 static void host_set_input_mode(int fd) {
 	struct termios tio;
-	int res;
-
-	res = host_tcgetattr(fd, &tio);
-	assert(res == 0);
+	host_tcgetattr(fd, &tio);
 	tio.c_lflag &= ~(ICANON | ECHO);
-	res = host_tcsetattr(fd, TCSANOW, &tio);
-	assert(res == 0);
+	host_tcsetattr(fd, TCSANOW, &tio);
 }
 
 int main(int argc, char *argv[]) {
@@ -44,3 +41,7 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+
+#include <setjmp.h>
+#include <host.h>
+_Static_assert(HOST_JMPBUF_LEN >= sizeof(jmp_buf), "HOST_JMPBUF_LEN less that sizeof(jmp_buf)");

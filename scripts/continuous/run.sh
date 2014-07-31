@@ -11,7 +11,7 @@
 ATML="$1"
 SIM_ARG="$2"
 shift 2
-OTHER_ARGS=$@
+OTHER_ARGS="$@"
 
 if [ $CONTINIOUS_RUN_TIMEOUT ]; then
 	TIMEOUT=$CONTINIOUS_RUN_TIMEOUT
@@ -28,17 +28,22 @@ AUTOQEMU_KVM_ARG=
 AUTOQEMU_NOGRAPHIC_ARG="-serial file:${OUTPUT_FILE} -display none"
 RUN_QEMU="./scripts/qemu/auto_qemu $SIM_ARG"
 
+USERMODE_START_OUTPUT=$OUTPUT_FILE
+
 declare -A atml2run
 atml2run=(
-	['arm/omap']=default_run
+	['arm/qemu']=default_run
 	['x86/nonvga_debug']=default_run
+	['x86/qemu']=default_run
 	['x86/smp']=default_run
-	['x86/test_fs']="$(dirname $0)/fs/run.sh $ATML"
-	['x86/test_net']="$(dirname $0)/net/run.sh $ATML"
+	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
+	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
+	['x86/test/packetdrill']=default_run
 	['sparc/debug']=default_run
 	['mips/debug']=default_run
 	['ppc/debug']=default_run
 	['microblaze/petalogix']=default_run
+	['usermode86/debug']=default_run
 	['generic/qemu']=default_run
 	['generic/qemu_bg']=run_bg_wrapper
 	['generic/qemu_bg_kill']=kill_bg_wrapper
@@ -50,29 +55,33 @@ run_bg() {
 	declare -A atml2sim
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
-		['arm/omap']="$RUN_QEMU"
-		['x86/nonvga_debug']="$RUN_QEMU"
 		['x86/smp']="$RUN_QEMU -smp 2"
 		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
-		['mips/debug']="$RUN_QEMU"
-		['ppc/debug']="$RUN_QEMU"
-		['microblaze/petalogix']="$RUN_QEMU"
-		['generic/qemu_bg']="$RUN_QEMU"
-		['generic/qemu']="$RUN_QEMU"
+		['usermode86/debug']="$(dirname $0)/../usermode_start.sh"
 	)
 
-	sudo AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
+	run_cmd=${atml2sim[$ATML]}
+	if [ -z "$run_cmd" ]; then
+		run_cmd="$RUN_QEMU"
+	fi
+
+	sudo PATH=$PATH \
+		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
-		AUTOQEMU_START_SCRIPT="$AUTOQEMU_START_SCRIPT" \
-		AUTOQEMU_STOP_SCRIPT="$AUTOQEMU_STOP_SCRIPT" \
-		${atml2sim[$ATML]} &
+		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
+		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
+		$run_cmd &
 	sim_bg=$!
 }
 
 run_check() {
 
+	sudo chmod 666 $OUTPUT_FILE
+
+	cat $OUTPUT_FILE
+
 	ret=1
-	for success_pattern in 'embox>' '^[a-z]\+@embox'; do
+	for success_pattern in '^run: success auto poweroff' 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
 			ret=0
 		fi
@@ -86,38 +95,44 @@ run_check() {
 	return $ret
 }
 
-run_bg_do() {
-
-	run_bg
-
-	sleep $TIMEOUT
-
-	sudo chmod 666 $OUTPUT_FILE
-
-	cat $OUTPUT_FILE
-
-	run_check
-}
-
 kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 }
 
+## FIXME not working
+#wait_bg() {
+#	timeout -s 9 $TIMEOUT wait $sim_bg #wait is builtin, so can't be used as timeout arg
+#	if [ 124 -eq $? ]; then
+#		kill_bg
+#	fi
+#}
+
+wait_bg() {
+	sleep $TIMEOUT
+	kill_bg
+}
+
 default_run() {
 
-	run_bg_do
+	run_bg
+
+	wait_bg
+
+	run_check
 	ret=$?
 
 	rm $OUTPUT_FILE
-
-	kill_bg
 
 	return $ret
 }
 
 run_bg_wrapper() {
 
-	run_bg_do
+	run_bg
+
+	sleep $TIMEOUT
+
+	run_check
 	ret=$?
 
 	if [ 0 -ne $ret ]; then

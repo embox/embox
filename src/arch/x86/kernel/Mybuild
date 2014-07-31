@@ -15,7 +15,7 @@ module interrupt extends embox.arch.interrupt {
 	depends arch
 
 	@NoRuntime depends embox.kernel.critical
-	@NoRuntime depends embox.lib.LibCAssert
+	@NoRuntime depends embox.compat.libc.LibCAssert
 }
 
 module entry extends embox.arch.entry {

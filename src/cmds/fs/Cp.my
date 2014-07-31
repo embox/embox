@@ -6,16 +6,23 @@ package embox.cmd.fs
 		NAME
 			cp - copy files and directories
 		SYNOPSIS
-			cp [OPTIONS] SOURCE DEST
+			cp [-h] [-r|-R] SOURCE DEST
+			cp [-h] [-r|-R] SOURCE DIR
 		DESCRIPTION
-			Copy SOURCE to DEST
+			Copy SOURCE to DEST. If DIR specified as destination,
+			basename of source will be used as DEST basename.
+
+			-r 	copy SOURCE directory recursively
+
+
 		AUTHOR
 			Roman Evstifeev
+			Anton Kozlov
 	''')
 module cp {
 	source "cp.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

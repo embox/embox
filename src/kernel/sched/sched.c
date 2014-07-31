@@ -34,8 +34,11 @@
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/runnable/runnable.h>
 #include <kernel/thread/current.h>
 #include <kernel/thread/signal.h>
+#include <kernel/addr_space.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -88,18 +91,18 @@ static void sched_check_preempt(struct thread *t) {
 }
 
 /** Locks: IPL, thread, runq. */
-static void __sched_enqueue(struct thread *t) {
-	runq_insert(&rq.queue, t);
+static void __sched_enqueue(struct runnable *r) {
+	runq_insert(&rq.queue, r);
 }
 
 /** Locks: IPL, thread, runq. */
 static void __sched_dequeue(struct thread *t) {
-	runq_remove(&rq.queue, t);
+	runq_remove(&rq.queue, &(t->runnable));
 }
 
 /** Locks: IPL, thread, runq. */
 static void __sched_enqueue_set_ready(struct thread *t) {
-	__sched_enqueue(t);
+	__sched_enqueue(&(t->runnable));
 	t->ready = true;  /* let rq to see the previous state */
 }
 
@@ -126,7 +129,7 @@ int sched_change_priority(struct thread *t, sched_priority_t prior) {
 		__sched_dequeue(t);
 	thread_priority_set(t, prior);
 	if (in_rq)
-		__sched_enqueue(t);
+		__sched_enqueue(&(t->runnable));
 
 	sched_check_preempt(t);
 
@@ -249,7 +252,6 @@ void sched_freeze(struct thread *t) {
  *     unlock(rq)                        IPL    t
  */
 
-
 /** Locks: IPL, thread. */
 static int __sched_wakeup_ready(struct thread *t) {
 	int ready;
@@ -323,6 +325,10 @@ int sched_wakeup(struct thread *t) {
 	return SPIN_IPL_PROTECTED_DO(&t->lock, __sched_wakeup(t));
 }
 
+void sched_wakeup_l(struct lthread *lt) {
+	assert(lt);
+	SPIN_IPL_PROTECTED_DO(&rq.lock, __sched_enqueue(&(lt->runnable)));
+}
 
 /** Locks: IPL. */
 static void __sched_activate(struct thread *t) {
@@ -353,6 +359,7 @@ static void sched_finish_switch(struct thread *prev) {
 }
 
 static struct thread *saved_prev __cpudata__; // XXX
+static struct thread *saved_next __cpudata__; // XXX
 
 /**
  * Any fresh thread must call this function from a trampoline.
@@ -360,7 +367,9 @@ static struct thread *saved_prev __cpudata__; // XXX
  * in case if 'context_switch' would return as usual (into 'sched_switch',
  * from where it was called) instead of jumping into a thread trampoline.
  */
+
 void sched_ack_switched(void) {
+	ADDR_SPACE_FINISH_SWITCH();
 	sched_finish_switch(cpudata_var(saved_prev));
 	ipl_enable();
 	sched_unlock();
@@ -373,15 +382,28 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
+	ADDR_SPACE_PREPARE_SWITCH();
 	thread_set_current(next);
+
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
+
 	prev = cpudata_var(saved_prev);
+	ADDR_SPACE_FINISH_SWITCH();
 
 	sched_finish_switch(prev);
 }
 
+void sched_thread_switch(struct thread *prev, struct thread *next) {
+	cpudata_var(saved_next) = next;
+
+	sched_switch(prev, next);
+
+	next = cpudata_var(saved_next);
+}
+
 static void __schedule(int preempt) {
-	struct thread *prev, *next;
+	struct thread *prev;
+	struct runnable *next;
 	ipl_t ipl;
 
 	prev = thread_self();
@@ -397,16 +419,32 @@ static void __schedule(int preempt) {
 		 * without really waking it up.
 		 * 'sched_finish_switch' will sort out what to do in such case. */
 	else
-		__sched_enqueue(prev);
+		__sched_enqueue(&(prev->runnable));
 
-	next = runq_extract(&rq.queue);
+	do {
+		next = runq_extract(&rq.queue);
+
+		if (!next->prepare) {
+			/* lthread extracted, run it*/
+			spin_unlock(&rq.lock);
+			lthread_trampoline(next);
+			ipl = spin_lock_ipl(&rq.lock);
+			continue;
+		} else {
+			/* thread extracted*/
+			break;
+		}
+	} while(1);
 
 	/* Runq is unlocked as soon as possible, but interrupts remain disabled
 	 * during the 'sched_switch' (if any). */
 	spin_unlock(&rq.lock);
 
-	if (prev != next)
-		sched_switch(prev, next);
+	/* Threads context switch */
+	if (&(prev->runnable) != next) {
+		assert(next->prepare);
+		next->prepare(prev, next);
+	}
 
 	ipl_restore(ipl);
 
@@ -429,5 +467,3 @@ static void sched_preempt(void) {
 	__schedule(1);
 	sched_unlock();
 }
-
-

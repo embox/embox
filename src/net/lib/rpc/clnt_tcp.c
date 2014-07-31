@@ -104,9 +104,8 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
 				&timeout, sizeof timeout)) {
 		LOG_ERROR("clnttcp_call", "setsockopt error");
-		clnt->err.status = RPC_SYSTEMERROR;
 		clnt->err.extra.error = errno;
-		goto exit_with_status;
+		return clnt->err.status = RPC_SYSTEMERROR;
 	}
 
 	xdrrec_create(&xstream, clnt->extra.tcp.sendsz, clnt->extra.tcp.recvsz,

@@ -22,6 +22,15 @@ SIZE    := $(CROSS_COMPILE)size
 COVERAGE_CFLAGS ?= -finstrument-functions \
 		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
 
+PROFILING_CFLAGS ?= -finstrument-functions \
+		   -finstrument-functions-exclude-function-list=__cyg_profile_func_enter,__cyg_profile_func_exit \
+		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle,get_profiling_mode,set_profiling_mode\
+		  # critical_inside,critical_leave,critical_enter\
+#		   -finstrument-functions-exclude-function-list=ipl_restore,ipl_save,critical_distapch_handling,in8,cycles_to_ns,irq_handler,critical_inside,critical_enter,__critical_count_add,ipl_init,irq_dispatch,itimer_init,clock_source_read,i8253_read,_udivdi3,_umoddi3,irq_stack_protection,critical_dispatch_pending \
+#		   -finstrument-functions-exclude-function-list=critical_leave,i8259_irq_pending,cs_full_read,clock_handler,clock_tick_handler,softirq_raise,__critical_count_sub,i8259_send_eoi,itimer_read,critical_pending,clock_tick_handler,clock_source_get_best,critical_request_dispatch
+
+
+
 EXTERNAL_MAKE = \
 	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
 
@@ -51,7 +60,6 @@ EXTERNAL_MAKE_FLAGS = \
 	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
-EXTERNAL_BUILD_DIR = $(ROOT_DIR)/build/extbld
 
 EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
 
@@ -88,7 +96,7 @@ __srcgen_includes := $(call __srcgen_includes_fn,)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
 cppflags_fn = \
-	-U__linux__ \
+	-U__linux__ -Ulinux -U__linux \
 	-D__EMBOX__ \
 	-D__unix \
 	-D"__impl_x(path)=<../path>"\
@@ -97,7 +105,7 @@ cppflags_fn = \
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
 	$(call __srcgen_includes_fn,-I$1) \
 	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
-	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
+	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include -I$1$(SRC_DIR)/compat/libc/include\
 	-nostdinc\
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
@@ -127,7 +135,6 @@ override CXXFLAGS = $(COMMON_CCFLAGS)
 #override CXXFLAGS += -fno-exceptions
 #override CXXFLAGS += -fno-threadsafe-statics
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
-override CXXFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/gcc/core/include
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)

@@ -13,6 +13,7 @@
 
 #define SMAC_LABELLEN 32
 
+extern const char *smac_floor;;
 extern const char *smac_xattrkey;
 extern const char *smac_admin;
 extern const char *smac_def_file_label;

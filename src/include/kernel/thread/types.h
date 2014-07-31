@@ -19,6 +19,8 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
+#include <kernel/runnable/runnable.h>
+#include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
 
@@ -53,6 +55,9 @@ struct task;
  *                others access it with t->lock held and interrupts off
  */
 struct thread {
+	/* runnable member HAVE TO be first. Please, do NOT move!*/
+	struct runnable    runnable;     /**< Runnable interface for scheduler */
+
 	unsigned int       critical_count;
 	unsigned int       siglock;
 
@@ -66,8 +71,6 @@ struct thread {
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
-	void            *(*run)(void *); /**< Start routine. */
-	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
 		void          *run_ret;      /**< Return value of the routine. */
 		void          *joining;      /**< A joining thread (if any). */
@@ -82,9 +85,10 @@ struct thread {
 
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
-	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
+
+	struct thread_wait thread_wait;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

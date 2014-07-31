@@ -6,6 +6,7 @@
  * @date    18.02.2013
  */
 
+#include <errno.h>
 #include <security/security.h>
 
 int security_node_permissions(struct node *node, int flags) {
@@ -14,6 +15,10 @@ int security_node_permissions(struct node *node, int flags) {
 
 int security_node_create(struct node *dir, mode_t mode) {
 	return 0;
+}
+
+void security_node_cred_fill(struct node *node) {
+
 }
 
 int security_node_delete(struct node *dir, struct node *node) {
@@ -51,4 +56,12 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 
 int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
 	return 0;
+}
+
+int security_sock_create(struct sock *sock) {
+	return 0;
+}
+
+int security_sock_label(struct sock *sock, char *label, size_t len) {
+	return -ENOSYS;
 }

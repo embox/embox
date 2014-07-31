@@ -34,6 +34,7 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/sched/sched_priority.h>
+#include <kernel/runnable/runnable.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -62,13 +63,12 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->run(current->run_arg);
+	res = current->runnable.run(current->runnable.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
-	int ret;
 	struct thread *t;
 
 	/* check mutually exclusive flags */
@@ -101,11 +101,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		/* initialize internal thread structure */
 		thread_init(t, flags, run, arg);
 
-		ret = thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY);
-		if (ret != 0) {
-			goto out_threadfree;
-		}
-
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
 			thread_register(task_self(), t);
@@ -121,13 +116,6 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 			thread_detach(t);
 		}
 
-		goto out_unlock;
-
-out_threadfree:
-		thread_free(t);
-
-		/* set error */
-		t = err_ptr(-ret);
 	}
 out_unlock:
 	sched_unlock();
@@ -156,9 +144,18 @@ void thread_init(struct thread *t, unsigned int flags,
 	t->waiting = true;
 	t->state = TS_INIT;
 
+	/* set sched routines, implemented in thread_sched_routine.h */
+	t->runnable.prepare = (void *)sched_prepare_thread;
+	t->runnable.run = NULL;
+	t->runnable.run_arg = NULL;
+
+	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
+		panic("can't initialize thread_local");
+	}
+
 	/* set executive function and arguments pointer */
-	t->run = run;
-	t->run_arg = arg;
+	t->runnable.run = run;
+	t->runnable.run_arg = arg;
 
 	t->joining = NULL;
 
@@ -203,9 +200,12 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&t->sched_attr.runq_link);
-	sched_affinity_init(t);
+	runq_item_init(&(t->runnable.sched_attr.runq_link));
+	sched_affinity_init(&(t->runnable));
 	sched_timing_init(t);
+
+	/* initialize everthing else */
+	thread_wait_init(&t->thread_wait);
 }
 
 void thread_delete(struct thread *t) {
@@ -231,11 +231,6 @@ void thread_delete(struct thread *t) {
 	}
 }
 
-void thread_state_exited(struct thread *t) {
-	t->waiting = true;
-	t->state |= TS_EXITED;
-}
-
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
@@ -251,13 +246,14 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	thread_state_exited(current);
+	current->waiting = true;
+	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
 	 * Note that joining and run_ret are both in a union. */
 	joining = current->joining;
+	current->run_ret = ret;
 	if (joining) {
-		current->run_ret = ret;
 		sched_wakeup(joining);
 	}
 
@@ -283,13 +279,16 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 	{
-		assert(!t->joining);
 		assert(!(t->state & TS_DETACHED));
 
-		t->joining = current;
-		ret = SCHED_WAIT(t->state & TS_EXITED);
-		if (ret) {
-			goto out;
+		if (!(t->state & TS_EXITED)) {
+			assert(!t->joining);
+			t->joining = current;
+
+			ret = SCHED_WAIT(t->state & TS_EXITED);
+			if (ret) {
+				goto out;
+			}
 		}
 
 		if (p_ret)
@@ -308,12 +307,13 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 	{
-		assert(!t->joining);
 		assert(!(t->state & TS_DETACHED));
 
-		if (!(t->state & TS_EXITED))
+		if (!(t->state & TS_EXITED)) {
 			/* The target will free itself upon finishing. */
+			assert(!t->joining);
 			t->state |= TS_DETACHED;
+		}
 		else
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
@@ -349,6 +349,13 @@ int thread_terminate(struct thread *t) {
 		// assert(0, "NIY");
 		// thread_delete(t);
 		sched_freeze(t);
+
+		t->state |= TS_EXITED;
+
+		// XXX prevent scheduler to add thread in runq
+		if (t == thread_self()) {
+			t->waiting = true;
+		}
 	}
 	sched_unlock();
 
@@ -404,5 +411,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->run_arg = run_arg;
+	t->runnable.run_arg = run_arg;
 }

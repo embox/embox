@@ -22,10 +22,15 @@
 #include <kernel/time/ktime.h>
 #include <util/array.h>
 
+
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
 
 #define PIT_HZ 1000
+
+#define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
+static_assert(PIT_LOAD < 0x10000);
+
 static int pit_clock_setup(struct time_dev_conf * conf);
 static int pit_clock_init(void);
 
@@ -89,15 +94,13 @@ static struct time_counter_device pit_counter_device;
 #define PIT_BCD         0x01    /* count in BCD */
 
 static cycle_t i8253_read(void) {
-	int cnt;
+	unsigned char lsb, msb;
 
-	out8(0x00, MODE_REG);
-	cnt = in8(CHANNEL0);
-	cnt |= in8(CHANNEL0) << 8;
+	out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
+	lsb = in8(CHANNEL0);
+	msb = in8(CHANNEL0);
 
-	cnt = ((INPUT_CLOCK + PIT_HZ ) / PIT_HZ) - cnt;
-
-	return cnt;
+	return PIT_LOAD - ((msb << 8) | lsb);
 }
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
@@ -107,14 +110,14 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 
 static struct time_event_device pit_event_device = {
 	.config = pit_clock_setup,
-	.resolution = PIT_HZ,
+	.event_hz = PIT_HZ,
 	.irq_nr = IRQ_NR,
 	.pending = i8259_irq_pending
 };
 
 static struct time_counter_device pit_counter_device = {
 	.read = i8253_read,
-	.resolution = INPUT_CLOCK
+	.cycle_hz = INPUT_CLOCK,
 };
 
 static struct clock_source pit_clock_source = {
@@ -138,17 +141,17 @@ static int pit_clock_init(void) {
 }
 
 static int pit_clock_setup(struct time_dev_conf * conf) {
-	uint32_t divisor = (INPUT_CLOCK + PIT_HZ / 2) /PIT_HZ;
+	uint16_t divisor = PIT_LOAD;
 
 	pit_clock_source.flags = 1;
 
 	/* Propose switch by all modes in future */
 	/* Set control byte */
-	out8(PIT_RATEGEN | PIT_16BIT | PIT_SEL0, MODE_REG);
+	out8(PIT_SEL0 | PIT_16BIT | PIT_RATEGEN, MODE_REG);
 
 	/* Send divisor */
 	out8(divisor & 0xFF, CHANNEL0);
-	out8((divisor >> 8) & 0xFF, CHANNEL0);
+	out8(divisor >> 8, CHANNEL0);
 
 	return ENOERR;
 }

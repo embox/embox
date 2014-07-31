@@ -57,11 +57,11 @@ static int unit_init(void) {
 }
 
 void irqctrl_enable(unsigned int irq) {
-	REG_ORIN(&irqc->ier, 1UL << irq);
+	REG_STORE(&irqc->sie, 1UL << irq);
 }
 
 void irqctrl_disable(unsigned int irq) {
-	REG_ANDIN(&irqc->ier, ~(1UL << irq));
+	REG_STORE(&irqc->cie, 1UL << irq);
 }
 
 //TODO this not set in microblaze
@@ -70,7 +70,7 @@ void irqctrl_force(unsigned int irq_num) {
 }
 
 void irqctrl_clear(unsigned int irq) {
-	REG_ORIN(&irqc->iar, 1UL << irq);
+	REG_STORE(&irqc->iar, 1UL << irq);
 }
 
 /*

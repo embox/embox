@@ -70,8 +70,10 @@ static int tcp_init(struct sock *sk) {
 			sizeof tcp_sk->self.wind);
 	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
+	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
+	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
-	tcp_sk->conn_wait_len = tcp_sk->conn_wait_max = 0;
+	tcp_sk->conn_queue_len = tcp_sk->conn_queue_max = 0;
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
@@ -234,7 +236,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				break;
 			}
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
-			tcp_sk->conn_wait_max = backlog;
+			tcp_sk->conn_queue_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -247,7 +249,8 @@ static int tcp_listen(struct sock *sk, int backlog) {
 static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *tcp_newsk;
 	/* get first socket from */
-	tcp_newsk = list_entry(tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+
+	tcp_newsk = list_entry(tcp_sk->conn_ready.next, struct tcp_sock, conn_lnk);
 
 	/* check if reading was enabled for socket that already released */
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NONSYNC) {
@@ -256,9 +259,9 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	}
 
 	/* delete new socket from list */
-	list_del_init(&tcp_newsk->conn_wait);
-	assert(tcp_sk->conn_wait_len != 0);
-	--tcp_sk->conn_wait_len;
+	list_del_init(&tcp_newsk->conn_lnk);
+	assert(tcp_sk->conn_queue_len != 0);
+	--tcp_sk->conn_queue_len;
 
 	return tcp_newsk;
 }
@@ -275,47 +278,49 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert(sk != NULL);
 	assert(newsk != NULL);
 
-	tcp_newsk = NULL;
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_accept: sk %p, st%d\n",
 			to_sock(tcp_sk), tcp_sk->state);
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
-	switch (tcp_sk->state) {
-	default:
+	if (tcp_sk->state != TCP_LISTEN) {
 		return -EINVAL; /* error: the socket is not accepting connections */
-	case TCP_LISTEN:
-		/* waiting anyone */
-		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-		{
-			do {
-				if (!list_empty(&tcp_sk->conn_wait)) {
-					tcp_newsk = accept_get_connection(tcp_sk);
-					if (tcp_newsk) {
-						break;
-					}
+	}
+
+	/* waiting anyone */
+	tcp_newsk = NULL;
+	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	{
+		do {
+			if (!list_empty(&tcp_sk->conn_ready)) {
+				tcp_newsk = accept_get_connection(tcp_sk);
+				if (tcp_newsk) {
+					break;
 				}
-				ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
-			} while (!ret);
-		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+			}
+			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
+		} while (!ret);
+	}
+	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-
-		if (!tcp_newsk) {
+	if (!tcp_newsk) {
+		if (0 > ret) {
+			return ret;
+		} else {
 			return -ECONNRESET; /* FIXME */
 		}
-
-		if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
-			tcp_sock_release(tcp_newsk);
-			return -ECONNRESET;
-		}
-
-		assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
-		sk->rx_data_len--;
-		*newsk = to_sock(tcp_newsk);
-
-		return 0;
 	}
+
+	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
+		tcp_sock_release(tcp_newsk);
+		return -ECONNRESET;
+	}
+
+	assert(tcp_sock_get_status(tcp_newsk) == TCP_ST_SYNC);
+	sk->rx_data_len--;
+	*newsk = to_sock(tcp_newsk);
+
+	return 0;
 }
 
 static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
@@ -449,18 +454,33 @@ static int tcp_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
+static int tcp_setsockopt(struct sock *sk, int level, int optname,
+			const void *optval, socklen_t optlen) {
+
+	switch (optname) {
+	case TCP_NODELAY:
+		/* TODO just ignoring for now... */
+		break;
+	default:
+		return -ENOPROTOOPT;
+	}
+
+	return 0;
+}
+
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
 static LIST_DEF(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
-	.init      = tcp_init,
-	.close     = tcp_close,
-	.connect   = tcp_connect,
-	.listen    = tcp_listen,
-	.accept    = tcp_accept,
-	.sendmsg   = tcp_sendmsg,
-	.recvmsg   = tcp_recvmsg,
-	.shutdown  = tcp_shutdown,
-	.sock_pool = &tcp_sock_pool,
-	.sock_list = &tcp_sock_list
+	.init       = tcp_init,
+	.close      = tcp_close,
+	.connect    = tcp_connect,
+	.listen     = tcp_listen,
+	.accept     = tcp_accept,
+	.sendmsg    = tcp_sendmsg,
+	.recvmsg    = tcp_recvmsg,
+	.setsockopt = tcp_setsockopt,
+	.shutdown   = tcp_shutdown,
+	.sock_pool  = &tcp_sock_pool,
+	.sock_list  = &tcp_sock_list
 };

@@ -22,7 +22,7 @@ module bitmap_test {
 module list_test {
 	source "list_test.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 
@@ -30,20 +30,13 @@ module slist_test {
 	source "slist_test.c"
 
 	depends embox.util.LibUtil
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }
 
 module tree_test {
 	source "tree_test.c"
 
-	depends embox.framework.LibFramework
-}
-
-module tree_set_test {
-	source "tree_set_test.c"
-
-	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }
 
@@ -57,7 +50,7 @@ module ring_buff_test {
 module hashtable_test {
 	source "hashtable_test.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.util.hashtable
 	depends embox.framework.LibFramework
 }

@@ -7,6 +7,7 @@
  */
 
 #include <framework/cmd/api.h>
+#include <framework/cmd/types.h>
 
 #include <ctype.h>
 #include <stddef.h>
@@ -18,11 +19,6 @@
 ARRAY_SPREAD_DEF(const struct cmd *, __cmd_registry);
 
 extern void getopt_init(void);
-
-#include <util/member.h>
-static inline const struct mod *cmd2mod(const struct cmd *cmd) {
-	return &member_cast_out(cmd, const struct cmd_mod, cmd)->mod;
-}
 
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
@@ -41,6 +37,10 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 
 const struct cmd *cmd_lookup(const char *name) {
 	const struct cmd *cmd = NULL;
+
+	if (!strncmp(name, "/bin/", strlen("/bin/"))) {
+		name += strlen("/bin/");
+	}
 
 	cmd_foreach(cmd) {
 		if (strcmp(cmd_name(cmd), name) == 0) {

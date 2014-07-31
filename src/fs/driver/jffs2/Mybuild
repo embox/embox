@@ -1,5 +1,7 @@
 package embox.fs.driver
 
+@Build(stage=2,script="true")
+@BuildDepends(third_party.zlib.zlib_download)
 module jffs2 {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/zlib/libs/zlib-1.2.8")
 	source "build.c", "compr_rtime.c", "compr_rubin.c", "compr_zlib.c", "compr.c", "debug.c"

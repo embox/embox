@@ -66,6 +66,7 @@ struct sock_opt {
 	struct timeval so_sndtimeo;
 #define SOCK_OPT_DEFAULT_SNDTIMEO { .tv_sec = 0, .tv_usec = 0 }
 	int so_type;
+	int so_reuseaddr;
 };
 
 /* Base class for family sockets */
@@ -86,6 +87,7 @@ struct sock {
 	const struct net_pack_out_ops *o_ops;
 	const struct sockaddr *src_addr;
 	const struct sockaddr *dst_addr;
+	struct timeval last_packet_tstamp;
 	size_t addr_len;
 };
 
@@ -176,6 +178,10 @@ static inline int sock_nonstream_recvmsg(struct sock *sk,
 static inline int sock_stream_recvmsg(struct sock *sk,
 		struct msghdr *msg, int flags) {
 	return sock_common_recvmsg(sk, msg, flags, 1);
+}
+
+static inline void sock_update_tstamp(struct sock *sk, struct sk_buff *skb) {
+	memcpy(&sk->last_packet_tstamp, &skb->tstamp, sizeof(sk->last_packet_tstamp));
 }
 
 #include <net/sock_state.h>

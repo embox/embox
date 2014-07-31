@@ -9,7 +9,6 @@
 #include <asm/hal/mm/table_alloc.h>
 #include <asm/hal/mm/mmu_core.h>
 #include <mem/vmem/virtalloc.h>
-#include <prom/prom_printf.h>
 #include <util/binalign.h>
 #include <math.h>
 

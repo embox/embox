@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <assert.h>
-#include <lib/url_parser.h>
+#include <url_parser.h>
 
 static const char * try_parse_method(http_request *parsed_request,
 		const char *subrequest);

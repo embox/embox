@@ -19,6 +19,7 @@
 #include <net/skbuff.h>
 #include <net/sock.h>
 
+#include <net/sock_wait.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/inet6_sock.h>
 #include <net/l3/ipv4/ip.h>
@@ -49,10 +50,11 @@ EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
 
+#define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
+
 #define TCP_DEBUG 0
 #if TCP_DEBUG
 #include <stdarg.h>
-#include <prom/prom_printf.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -127,7 +129,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		softirq_lock();
-		prom_vprintf(msg, args);
+		vprintk(msg, args);
 		softirq_unlock();
 		break;
 	}
@@ -267,30 +269,30 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+		sock_notify(to_sock(tcp_sk), POLLOUT); /* FIXME tcp_sock was notified earlier at line 911 */
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			{
-				list_move(&tcp_sk->conn_wait, &tcp_sk->parent->conn_wait);
+				list_move_tail(&tcp_sk->conn_lnk, &tcp_sk->parent->conn_ready);
 			}
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
 
 			//FIXME tcp_accept must notify without rx_data_len
 			to_sock(tcp_sk->parent)->rx_data_len++;
-			idesc_notify(&to_sock(tcp_sk->parent)->idesc, POLLIN);
+			sock_notify(to_sock(tcp_sk->parent), POLLIN);
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
 		sock_set_so_error(to_sock(tcp_sk), 1);
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLERR);
+		sock_notify(to_sock(tcp_sk), POLLIN | POLLERR);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
 		sock_set_so_error(to_sock(tcp_sk), 1);
-		idesc_notify(&to_sock(tcp_sk)->idesc, POLLIN | POLLOUT | POLLERR);
+		sock_notify(to_sock(tcp_sk), POLLIN | POLLOUT | POLLERR);
 		break;
 	}
 }
@@ -481,7 +483,11 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			list_for_each_entry(anticipant,
-					&tcp_sk->conn_wait, conn_wait) {
+					&tcp_sk->conn_wait, conn_lnk) {
+				sock_release(to_sock(anticipant));
+			}
+			list_for_each_entry(anticipant,
+					&tcp_sk->conn_ready, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
 		}
@@ -490,10 +496,10 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	else {
 		tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 		{
-			if (!list_empty(&tcp_sk->conn_wait)) {
-				assert(tcp_sk->parent->conn_wait_len != 0);
-				--tcp_sk->parent->conn_wait_len;
-				list_del(&tcp_sk->conn_wait);
+			if (!list_empty(&tcp_sk->conn_lnk)) {
+				assert(tcp_sk->parent->conn_queue_len != 0);
+				--tcp_sk->parent->conn_queue_len;
+				list_del(&tcp_sk->conn_lnk);
 			}
 		}
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -528,12 +534,12 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Check max length of accept queue and reserve 1 place */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			if (tcp_sk->conn_wait_len >= tcp_sk->conn_wait_max) {
+			if (tcp_sk->conn_queue_len >= tcp_sk->conn_queue_max) {
 				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 				return TCP_RET_DROP;
 			}
-			++tcp_sk->conn_wait_len; /* reserve */
+			++tcp_sk->conn_queue_len; /* reserve */
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -545,8 +551,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 			DBG(printk("tcp_st_listen: can't alloc socket\n");)
 			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			{
-				assert(tcp_sk->conn_wait_len != 0);
-				--tcp_sk->conn_wait_len;
+				assert(tcp_sk->conn_queue_len != 0);
+				--tcp_sk->conn_queue_len;
 			}
 			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 			return TCP_RET_DROP; /* error: see ret */
@@ -595,7 +601,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			tcp_newsk->parent = tcp_sk;
-			list_add_tail(&tcp_newsk->conn_wait, &tcp_sk->conn_wait);
+			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_wait);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
@@ -833,7 +839,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 	case TCP_CLOSEWAIT:
 	case TCP_CLOSING:
 		tcp_sock_set_state(tcp_sk, TCP_CLOSED);
-		if (!list_empty(&tcp_sk->conn_wait)) {
+		if (!list_empty(&tcp_sk->conn_lnk)) {
 			assert(tcp_sk->parent != NULL);
 			return TCP_RET_FREE;
 		}
@@ -902,13 +908,13 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		tcp_get_now(&tcp_sk->ack_time);
 		if (!tcp_sk->rexmit_mode) {
 			tcp_sk->dup_ack = 0;
-			idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+			sock_notify(to_sock(tcp_sk), POLLOUT);
 		}
 		else {
 			if (seq == ack) {
 				tcp_sk->rexmit_mode = 0;
 				tcp_sk->dup_ack = 0;
-				idesc_notify(&to_sock(tcp_sk)->idesc, POLLOUT);
+				sock_notify(to_sock(tcp_sk), POLLOUT);
 			}
 			else {
 				tcp_rexmit(tcp_sk);
@@ -1010,20 +1016,22 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
 	int ret;
-	__u16 old_check;
 	__u32 seq2rem_seq, seq_len, seq_last2rem_seq, rem_len;
 
 	/* Check CRC */
-	old_check = tcph->check;
-	/* XXX remove const qualifier */
-	tcp_set_check_field((struct tcphdr *)tcph,
-			skb->nh.raw);
-	if (old_check != tcph->check) {
-		DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
-					" sk %p skb %p\n",
-				ntohs(old_check), ntohs(tcph->check),
-				to_sock(tcp_sk), skb);)
-		return TCP_RET_DROP;
+	if (MODOPS_VERIFY_CHKSUM) {
+		__u16 old_check;
+		old_check = tcph->check;
+		/* XXX remove const qualifier */
+		tcp_set_check_field((struct tcphdr *)tcph,
+				skb->nh.raw);
+		if (old_check != tcph->check) {
+			DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
+						" sk %p skb %p\n",
+					ntohs(old_check), ntohs(tcph->check),
+					to_sock(tcp_sk), skb);)
+			return TCP_RET_DROP;
+		}
 	}
 
 	/* Analyze sequence */
@@ -1242,7 +1250,8 @@ static int tcp4_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
 			&& ip_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
 
 static int tcp6_rcv_tester_soft(const struct sock *sk,
@@ -1250,8 +1259,12 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
 			&& ip6_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest);
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
+
+extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
+extern uint16_t sock_get_secure_level(const struct sock *sk);
 
 static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
@@ -1272,6 +1285,12 @@ static int tcp_rcv(struct sk_buff *skb) {
 					? tcp4_rcv_tester_soft
 					: tcp6_rcv_tester_soft,
 				skb);
+	}
+	if (sk) {
+		/* if we have socket with secure label we have to check secure level */
+		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+			return 0;
+		}
 	}
 
 	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
@@ -1308,7 +1327,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 			tcp_sock_release(tcp_sk);
 		}
 		else if ((tcp_sock_get_status(tcp_sk) == TCP_ST_NONSYNC)
-				&& !list_empty(&tcp_sk->conn_wait)
+				&& !list_empty(&tcp_sk->conn_lnk)
 				&& tcp_is_expired(&tcp_sk->syn_time,
 					TCP_SYNC_TIMEOUT)) {
 			assert(tcp_sk->parent != NULL);

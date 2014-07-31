@@ -1,0 +1,22 @@
+package embox.cmd.sys
+
+@Cmd(name="install",
+	help="install base filesystem",
+	man = '''
+		NAME
+			install - base root filesystem installer
+		SYNOPSIS
+			install [ -m ] [ -b BASE ] [ -t TARGET ]
+		DESCRIPTION
+			This utility installs base root filesystem. It will mount
+			embedded initfs and copy it's content to root.
+
+			-b 	use BASE dir instead of default '/initfs'
+			-m	skip mounting, BASE dir should be already mounted
+			-t	provide mounted target dir instead of default '/'
+		AUTHOR
+			Anton Kozlov
+	''')
+module install {
+	source "install.c"
+}

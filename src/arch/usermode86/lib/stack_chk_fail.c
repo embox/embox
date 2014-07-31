@@ -6,9 +6,9 @@
  * @date 05.03.13
  */
 
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 void __stack_chk_fail(void) {
-	prom_printf("stack overflow\n");
+	printk("stack overflow\n");
 	while (1) {}
 }

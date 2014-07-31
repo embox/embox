@@ -23,6 +23,6 @@ module renice {
 
 	depends embox.compat.posix.proc.priority
 	depends embox.compat.posix.passwd
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework
 }

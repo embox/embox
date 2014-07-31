@@ -83,7 +83,6 @@ static module LibUtil {
 //	source "slist_debug.c"
 //	source "list_debug.c"
 
-	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
 
@@ -104,7 +103,6 @@ static module hashtable {
 
 	source "hashtable.c"
 
-	depends embox.lib.LibC
 	depends embox.mem.sysmalloc_api
 	depends embox.mem.objalloc
 }
@@ -112,9 +110,9 @@ static module hashtable {
 static module indexator {
 	source "indexator.c"
 
-	depends embox.lib.LibCAssert
-	depends embox.lib.LibCStdlib
-	depends embox.lib.LibCString
+	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.LibCStdlib
+	depends embox.compat.libc.LibCString
 }
 
 //TODO this is too abstract in my mind

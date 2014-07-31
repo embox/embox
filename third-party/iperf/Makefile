@@ -3,6 +3,7 @@ PKG_NAME := iperf
 PKG_VER  := 2.0.5
 
 PKG_SOURCES := http://citylan.dl.sourceforge.net/project/iperf/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 44b5536b67719f4250faed632a3cd016
 
 PKG_PATCHES := pkg_patch.txt
 

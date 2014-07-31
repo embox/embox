@@ -42,8 +42,7 @@ test_case_snmp_should_reply() {
 }
 
 test_case_interactive_tests_should_success() {
-	runtest $EXPECT_TESTS_BASE/telnet.exp \
-		$EXPECT_TESTS_BASE/ntpdate.exp
+	expect $EXPECT_TESTS_BASE/framework/run_all.exp
 	test_retcode
 
 	cat testrun.log
@@ -102,9 +101,7 @@ make >/dev/null 2>/dev/null
 
 tap_up
 
-export AUTOQEMU_START_SCRIPT=no
-export AUTOQEMU_STOP_SCRIPT=no
-
+export AUTOQEMU_NICS_CONFIG="tap,ifname=tap0,script=no,downscript=no"
 export CONTINIOUS_RUN_TIMEOUT=60
 $CONT_RUN generic/qemu_bg "" $PID_FILE
 if [ 0 -ne $? ]; then

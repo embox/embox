@@ -66,6 +66,21 @@ static int teardown_suite(void) {
 	return 0;
 }
 
+static struct node *vfs_lookup_nr(struct node *node, const char *str_path) {
+	static struct path nr_return;
+	struct path leaf;
+	int lookup_ecode;
+
+	vfs_get_leaf_path(&leaf);
+
+	leaf.node = node;
+	lookup_ecode = vfs_lookup(&leaf, str_path, &nr_return);
+	if (lookup_ecode < 0) {
+		return NULL;
+	}
+	return nr_return.node;
+}
+
 TEST_CASE("Node parent should be same as created") {
 
 	test_assert_equal(test_root, node_parent(a));
@@ -75,28 +90,29 @@ TEST_CASE("Node parent should be same as created") {
 	test_assert_equal(d, node_parent(e));
 }
 
-TEST_CASE("vfs_lookup should find all nodes") {
+TEST_CASE("vfs_lookup_nr should find all nodes") {
 
-	test_assert_equal(test_root, vfs_lookup(test_root, "/"));
-	test_assert_equal(test_root, vfs_lookup(test_root, "////"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "////"));
 
-	test_assert_equal(a, vfs_lookup(test_root, "/A"));
-	test_assert_equal(b, vfs_lookup(test_root, "/B"));
-	test_assert_equal(c, vfs_lookup(test_root, "/B/C"));
-	test_assert_equal(d, vfs_lookup(test_root, "/B/D"));
-	test_assert_equal(e, vfs_lookup(test_root, "/B/D/E"));
+	test_assert_equal(a, vfs_lookup_nr(test_root, "/A"));
+	test_assert_equal(b, vfs_lookup_nr(test_root, "/B"));
+	test_assert_equal(c, vfs_lookup_nr(test_root, "/B/C"));
+	test_assert_equal(d, vfs_lookup_nr(test_root, "/B/D"));
+	test_assert_equal(e, vfs_lookup_nr(test_root, "/B/D/E"));
 
-	test_assert_equal(NULL, vfs_lookup(test_root, "/a"));
-	test_assert_equal(NULL, vfs_lookup(test_root, "foo"));
-	test_assert_equal(NULL, vfs_lookup(test_root, "/B/D/foo"));
+	test_assert_equal(NULL, vfs_lookup_nr(test_root, "/a"));
+	test_assert_equal(NULL, vfs_lookup_nr(test_root, "foo"));
+	test_assert_equal(NULL, vfs_lookup_nr(test_root, "/B/D/foo"));
 
 	/* FIXME: rewrite vfs */
 	/* some wired ones, but it's so */
 
-	test_assert_equal(test_root, vfs_lookup(test_root, ""));
-	test_assert_equal(a, vfs_lookup(test_root, "A"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, ""));
+	test_assert_equal(a, vfs_lookup_nr(test_root, "A"));
 }
 
+#if 0 /* FIXME */
 static char test_path[PATH_MAX];
 
 TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
@@ -133,13 +149,16 @@ TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
 			       	test_path, PATH_MAX));
 	test_assert_zero(strcmp("/R/B/D/E", test_path));
 }
+#endif
 
-TEST_CASE("vfs_lookup should treat . dir entry correct") {
+TEST_CASE("vfs_lookup_nr should treat . dir entry correct") {
 
-	test_assert_equal(test_root, vfs_lookup(test_root, "/"));
-	test_assert_equal(test_root, vfs_lookup(test_root, "/./"));
-	test_assert_equal(test_root, vfs_lookup(test_root, "/././././"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/./"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/./."));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/././././"));
+	test_assert_equal(test_root, vfs_lookup_nr(test_root, "/././././."));
 
-	/* FIXME */
-	/*test_assert_equal(NULL, vfs_lookup(test_root, "/A/./"));*/
+	test_assert_equal(a, vfs_lookup_nr(test_root, "/A/./"));
+	test_assert_equal(a, vfs_lookup_nr(test_root, "/A/."));
 }

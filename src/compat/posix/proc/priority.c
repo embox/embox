@@ -12,105 +12,92 @@
 #include <errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/resource/u_area.h>
+#include <util/math.h>
 
-int getpriority(int which, id_t who) {
-	int tid;
-	struct task *task;
+static int xetpriority_match(int which, id_t who, struct task *task) {
 	struct task_u_area *task_u_area;
+	id_t real_who;
+	int is_match;
 
-	if(who == 0) {
-		/* return current value */
-		return task_get_priority(task_self());
-	}
-	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
-		task = task_table_get(tid);
-		task_u_area = task_resource_u_area(task);
-		switch (which) {
-		default:
-			SET_ERRNO(EINVAL);
-			return -1;
+	if (who != 0) {
+		real_who = who;
+	} else {
+		struct task *self = task_self();
+		struct task_u_area *self_u = task_resource_u_area(self);
+
+		switch(which) {
 		case PRIO_PROCESS:
-			if (tid == who) {
-				return task_get_priority(task);
-			}
+			real_who = task_get_id(task_self());
 			break;
 		case PRIO_PGRP:
-			if (task_u_area->regid == who) {
-				return task_get_priority(task);
-			}
+			real_who = self_u->regid;
 			break;
 		case PRIO_USER:
-			if (task_u_area->reuid == who) {
-				return task_get_priority(task);
-			}
+			real_who = self_u->reuid;
 			break;
+		default:
+			assert(0);
 		}
 	}
 
-	SET_ERRNO(-tid);
-	return -1;
+	task_u_area = task_resource_u_area(task);
+
+	switch (which) {
+	case PRIO_PROCESS:
+		is_match = task_get_id(task) == real_who;
+	case PRIO_PGRP:
+		is_match = task_u_area->regid == real_who;
+	case PRIO_USER:
+		is_match = task_u_area->reuid == real_who;
+	default:
+		assert(0);
+	}
+
+	return is_match;
+}
+
+static int xetpriority_which_ok(int which) {
+	return which == PRIO_PROCESS || which == PRIO_PGRP || which == PRIO_USER;
+}
+
+int getpriority(int which, id_t who) {
+	struct task *task;
+	int priority;
+
+	if (!xetpriority_which_ok(which)) {
+		return SET_ERRNO(EINVAL);
+	}
+
+	priority = INT_MAX;
+	task_foreach(task) {
+		if (xetpriority_match(which, who, task)) {
+			priority = min(priority, task_get_priority(task));
+		}
+	}
+
+	return priority != INT_MAX ? priority : SET_ERRNO(ESRCH);
 }
 
 int setpriority(int which, id_t who, int value) {
-	int tid, ret, exist;
+	int ret, exist;
 	struct task *task;
-	struct task_u_area *task_u_area;
 
-	// TODO kernel task has tid 0 but this value reserved for current pid
-	if(who == 0) {
-		ret = task_set_priority(task_self(), value);
-		if (ret != 0) {
-			SET_ERRNO(-ret);
-			return -1;
-		}
-		return ret;
+	if (!xetpriority_which_ok(which)) {
+		return SET_ERRNO(EINVAL);
 	}
 
 	exist = 0;
-	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
-		task = task_table_get(tid);
-		task_u_area = task_resource_u_area(task);
-		switch (which) {
-		default:
-			SET_ERRNO(EINVAL);
-			return -1;
-		case PRIO_PROCESS:
-			if (tid == who) {
-				ret = task_set_priority(task, value);
-				if (ret != 0) {
-					SET_ERRNO(-ret);
-					return -1;
-				}
-				exist = 1;
+	task_foreach(task) {
+		if (xetpriority_match(which, who, task)) {
+
+			exist = 1;
+
+			ret = task_set_priority(task, value);
+			if (ret != 0) {
+				return SET_ERRNO(-ret);
 			}
-			break;
-		case PRIO_PGRP:
-			if (task_u_area->regid == who) {
-				ret = task_set_priority(task, value);
-				if (ret != 0) {
-					SET_ERRNO(-ret);
-					return -1;
-				}
-				exist = 1;
-			}
-			break;
-		case PRIO_USER:
-			if (task_u_area->reuid == who) {
-				ret = task_set_priority(task, value);
-				if (ret != 0) {
-					SET_ERRNO(-ret);
-					return -1;
-				}
-				exist = 1;
-			}
-			break;
 		}
 	}
 
-	if (!exist) {
-		SET_ERRNO(-tid);
-		return -1;
-	}
-
-	return 0;
+	return exist ? 0 : SET_ERRNO(ESRCH);
 }

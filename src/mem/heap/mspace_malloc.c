@@ -68,6 +68,7 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	int iter;
 
 	assert(mspace);
+	assert(__heap_pgallocator);
 
 	block = NULL;
 	iter = 0;
@@ -84,7 +85,11 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 
 		/* No corresponding heap was found */
 		/* XXX allocate more approproate count of pages without redundancy */
-		segment_pages_cnt = (size + boundary + 2 * PAGE_SIZE()) / PAGE_SIZE();
+		/* Note, overflow may occur */
+		segment_pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
+		segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE()
+				+ 2 * PAGE_SIZE()) / PAGE_SIZE();
+
 		mm = (struct mm_segment *) page_alloc(__heap_pgallocator, segment_pages_cnt);
 		if (mm == NULL)
 			return NULL;
@@ -187,4 +192,68 @@ int mspace_fini(struct dlist_head *mspace) {
 	}
 
 	return 0;
+}
+
+size_t mspace_deep_copy_size(struct dlist_head *mspace) {
+	struct mm_segment *mm;
+	size_t ret;
+
+	ret = 0;
+	dlist_foreach_entry(mm, mspace, link) {
+		ret += mm->size;
+	}
+	return ret;
+}
+
+
+void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+	struct mm_segment *mm;
+	void *p;
+
+	dlist_init(store_space);
+
+	/* if mspace is empty list manipulation is illegal */
+	if (dlist_empty(mspace)) {
+		return;
+	}
+
+	dlist_del(mspace);
+	dlist_add_prev(store_space, mspace->next);
+
+	p = buf;
+	dlist_foreach_entry(mm, store_space, link) {
+		memcpy(p, mm, mm->size);
+		p += mm->size;
+	}
+
+	dlist_del(store_space);
+	dlist_add_prev(mspace, mspace->next);
+}
+
+void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+	struct dlist_head *raw_mm;
+	void *p;
+
+	dlist_init(mspace);
+
+	p = buf;
+	raw_mm = store_space->next;
+
+	/* can't use foreach, since it stores next pointer in accumulator */
+	while (raw_mm != store_space) {
+		struct mm_segment *buf_mm, *mm;
+
+		buf_mm = p;
+
+		mm = member_cast_out(raw_mm, struct mm_segment, link);
+		memcpy(mm, buf_mm, buf_mm->size);
+
+		p += buf_mm->size;
+		raw_mm = raw_mm->next;
+	}
+
+	if (!dlist_empty(store_space)) {
+		dlist_del(store_space);
+		dlist_add_prev(mspace, store_space->next);
+	}
 }

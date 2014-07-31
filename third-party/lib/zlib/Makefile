@@ -3,6 +3,7 @@ PKG_NAME := zlib
 PKG_VER  := 1.2.8
 
 PKG_SOURCES := http://zlib.net/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 44d667c142d7cda120332623eab69f40
 
 include $(EXTBLD_LIB)
 

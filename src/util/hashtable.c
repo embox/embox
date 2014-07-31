@@ -9,7 +9,7 @@
  * @author Avdyukhin Dmitry
  * @author Anton Bondarev
  */
-#include <stdlib.h>
+
 #include <mem/objalloc.h>
 #include <mem/sysmalloc.h>
 #include <errno.h>

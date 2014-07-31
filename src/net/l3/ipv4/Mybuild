@@ -11,20 +11,24 @@ module ipv4 {
 	depends skbuff
 	depends embox.mem.objalloc
 	depends embox.kernel.timer.sys_timer
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 
 	source "ip_input.c"
 	depends skbuff
 	depends raw_sock
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	/* depends from ip_fragment.c */
 	depends netfilter
 
 	source "ip_options.c"
 
 	source "ip_output.c"
+
+	source "ip_header.c"
+
 	depends net_tx
 	depends skbuff
 	depends route
+	depends packet
 	depends embox.net.lib.ipv4
 }

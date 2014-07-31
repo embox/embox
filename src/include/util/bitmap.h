@@ -12,7 +12,7 @@
 #include <string.h>  /* memset */
 
 #define BITMAP_DECL(name, nbits) \
-	unsigned long name[BITMAP_SIZE(nbits)];
+	unsigned long name[BITMAP_SIZE(nbits)]
 
 #define BITMAP_SIZE(nbits)  (((nbits) + LONG_BIT - 1) / LONG_BIT)
 #define BITMAP_OFFSET(bit)  ((bit) / LONG_BIT)

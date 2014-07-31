@@ -14,6 +14,10 @@ module LibPosix {
 	depends embox.kernel.task.resource.errno
 }
 
+static module pty {
+	source "pty.c"
+}
+
 static module pthreads {
 	source "pthread.c"
 

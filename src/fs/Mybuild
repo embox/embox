@@ -50,7 +50,7 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "path.c"
+	source "vfs.c", "hlpr_path.c"
 
 	depends file_desc, node
 	depends embox.fs.driver.repo
@@ -75,13 +75,13 @@ module rootfs {
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends SysLibFileSystem
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 }
 
 module journal {
 	source "journal.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends buffer_cache
 	depends embox.mem.slab
 }
@@ -90,7 +90,7 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 

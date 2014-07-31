@@ -32,4 +32,5 @@ module useradd {
 	depends embox.cmd.user.utils
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.passwd_db_dynamic
+	depends embox.compat.posix.crypt
 }

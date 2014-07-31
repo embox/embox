@@ -18,8 +18,12 @@
 
 #include <mem/misc/pool.h>
 
+#include <kernel/panic.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
+#include <module/embox/kernel/time/slowdown.h>
+
+#define SLOWDOWN_FACTOR OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, factor)
 
 #include <embox/unit.h>
 
@@ -34,6 +38,10 @@ DLIST_DEFINE(clock_source_list);
 static time64_t cs_full_read(struct clock_source *cs);
 static time64_t cs_event_read(struct clock_source *cs);
 static time64_t cs_counter_read(struct clock_source *cs);
+
+static inline cycle_t cs_jiffies(struct clock_source *cs) {
+	return (cycle_t) cs->jiffies * SLOWDOWN_FACTOR + (cycle_t) cs->jiffies_cnt;
+}
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
@@ -78,22 +86,22 @@ int clock_source_unregister(struct clock_source *cs) {
 }
 
 time64_t clock_source_read(struct clock_source *cs) {
+	time64_t ret;
 	assert(cs);
 
 	/* See comment to clock_source_read in clock_source.h */
 	if (cs->event_device && cs->counter_device) {
-		return cs_full_read(cs);
+		ret = cs_full_read(cs);
 	} else if (cs->event_device) {
-		return cs_event_read(cs);
+		ret = cs_event_read(cs);
 	} else if (cs->counter_device) {
-		return cs_counter_read(cs);
+		ret = cs_counter_read(cs);
+	} else {
+		panic("all clock sources must have at least one device (event or counter)\n");
 	}
 
-	/* All clock sources must have at least one device (event device or counter ddevice).
-	 * So if we are here, it is error */
-	assert(0);
-
-	return 0;
+	ret /= SLOWDOWN_FACTOR;
+	return ret;
 }
 
 static time64_t cs_full_read(struct clock_source *cs) {
@@ -106,21 +114,21 @@ static time64_t cs_full_read(struct clock_source *cs) {
 
 	ed = cs->event_device;
 	assert(ed);
-	assert(ed->resolution != 0);
+	assert(ed->event_hz != 0);
 
 	cd = cs->counter_device;
 	assert(cd);
 	assert(cd->read);
-	assert(cd->resolution != 0);
+	assert(cd->cycle_hz != 0);
 
-	cycles_per_jiff = cd->resolution / ed->resolution;
+	cycles_per_jiff = cd->cycle_hz / ed->event_hz;
 	safe = 0;
 
 	do {
-		old_jiffies = cs->jiffies;
+		old_jiffies = cs_jiffies(cs);
 		cycles = cd->read();
 		safe++;
-	} while (old_jiffies != cs->jiffies && safe < 3);
+	} while (old_jiffies != cs_jiffies(cs) && safe < 3);
 
 	if (ed->pending && ed->pending(ed->irq_nr)) {
 		old_jiffies++;
@@ -135,15 +143,15 @@ static time64_t cs_full_read(struct clock_source *cs) {
 
 	prev_cycles = cycles_all;
 
-	return cycles_to_ns(cd->resolution, cycles_all);
+	return cycles_to_ns(cd->cycle_hz, cycles_all);
 }
 
 static time64_t cs_event_read(struct clock_source *cs) {
-	return cycles_to_ns(cs->event_device->resolution, (cycle_t)cs->jiffies);
+	return cycles_to_ns(cs->event_device->event_hz, cs_jiffies(cs));
 }
 
 static time64_t cs_counter_read(struct clock_source *cs) {
-	return cycles_to_ns(cs->counter_device->resolution, cs->counter_device->read());
+	return cycles_to_ns(cs->counter_device->cycle_hz, cs->counter_device->read());
 }
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
@@ -161,11 +169,11 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 			case CS_ANY:
 			case CS_WITH_IRQ:
 				if (cs->event_device) {
-					resolution = cs->event_device->resolution;
+					resolution = cs->event_device->event_hz;
 				}
 
 				if (pr == CS_ANY && cs->counter_device) {
-					resolution = max(resolution, cs->counter_device->resolution);
+					resolution = max(resolution, cs->counter_device->cycle_hz);
 				}
 				if (resolution > best_resolution) {
 					best_resolution = resolution;
@@ -175,7 +183,7 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 
 			case CS_WITHOUT_IRQ:
 				if (cs->counter_device) {
-					resolution = cs->counter_device->resolution;
+					resolution = cs->counter_device->cycle_hz;
 				}
 				if (resolution > best_resolution) {
 					best_resolution = resolution;

@@ -18,7 +18,7 @@ module man {
 	 */
 	source "man.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }

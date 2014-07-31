@@ -30,7 +30,7 @@ static void task_waitpid_init(const struct task *task,
 static void task_waitpid_deinit(const struct task *task) {
 	struct waitq *waitq;
 
-	waitq = task_resource_waitpid(task);
+	waitq = task_resource_waitpid(task_get_parent(task));
 	assert(waitq != NULL);
 
 	waitq_wakeup_all(waitq);

@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 #include <ctype.h>
+#include <crypt.h>
 
 #include "user.h"
 
@@ -36,7 +37,7 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 
 
 static int get_default_spwd(struct spwd *result) {
-	result->sp_pwdp = def_sp_pwdp;
+	result->sp_pwdp = crypt(def_sp_pwdp, NULL);
 
 	return 0;
 }
@@ -71,7 +72,7 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 	user_set_options_passwd(&pwd, home, shell, gecos, group);
 	user_write_user_passwd(&pwd, pswdf);
 
-	user_set_options_spwd(&spwd, pwd.pw_name, pswd);
+	user_set_options_spwd(&spwd, pwd.pw_name, crypt(pswd, NULL));
 	user_write_user_spwd(&spwd, sdwf);
 
 out:

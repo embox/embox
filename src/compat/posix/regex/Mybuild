@@ -1,0 +1,11 @@
+package embox.compat.posix
+
+@DefaultImpl(regex_trex)
+abstract module regex {}
+
+module regex_trex extends regex {
+	@IncludePath("$(THIRDPARTY_DIR)/lib/trex")
+	source "regex_trex.c"
+
+	@NoRuntime depends third_party.lib.trex
+}

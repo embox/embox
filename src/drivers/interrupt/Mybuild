@@ -9,7 +9,6 @@ module at91_aic extends irqctrl_api {
 	 */
 	source "at91_aic.c", "at91_aic.h"
 
-	depends embox.lib.LibC
 	depends embox.kernel.critical
 }
 

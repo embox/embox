@@ -27,7 +27,7 @@
 #include <net/netfilter.h>
 #include <unistd.h>
 
-#define LAN9118_DEBUG
+/*#define LAN9118_DEBUG*/
 
 #ifdef LAN9118_DEBUG
 #define DBG(x) x
@@ -328,18 +328,24 @@ static int lan9118_open(struct net_device *dev) {
 	int res;
 
 	res = lan9118_reset(dev);
-	if (res < 0)
+	if (res < 0) {
 		return res;
+	}
 
 	lan9118_disable_irqs(dev);
-
-	lan9118_reg_write(dev, LAN9118_HW_CFG, 0x00050000);
 
 	lan9118_reg_write(dev, LAN9118_IRQ_CFG,
 			(1 << 24) |
 			_LAN9118_IRQ_CFG_EN |
 			_LAN9118_IRQ_CFG_POL |
 			_LAN9118_IRQ_CFG_TYPE);
+
+	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
+				lan9118_irq_handler,
+				GPIO_MODE_INT_MODE_LEVEL1,
+				dev);
+
+	lan9118_reg_write(dev, LAN9118_HW_CFG, 0x00050000);
 
 	lan9118_reg_write(dev, LAN9118_GPIO_CFG, 0x70070000);
 
@@ -354,10 +360,6 @@ static int lan9118_open(struct net_device *dev) {
 	lan9118_mac_write(dev, LAN9118_MAC_CR, l);
 
 	lan9118_reg_write(dev, LAN9118_TX_CFG, _LAN9118_TX_CFG_TX_ON);
-
-	/* GPIO */
-	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
-				lan9118_irq_handler, GPIO_MODE_INT_MODE_RISING, dev);
 
 	return 0;
 }

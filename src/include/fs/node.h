@@ -43,6 +43,8 @@ typedef struct node {
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
 
+	int                   mounted; /* is mount point*/
+
 	/* Two locks is temporary solution for compatibility,
 	 * only kflock should stay in future */
 	kflock_t              kflock;

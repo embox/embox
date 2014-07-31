@@ -14,13 +14,10 @@
 #include <util/dlist.h>
 #include <drivers/pci/pci_utils.h>
 
-
-
 /**
  * Allowed up to 256 buses, each with up to 32 devices,
  * each supporting 8 functions
  */
-#define PCI_BUS_QUANTITY        256
 #define PCI_DEV_QUANTITY        32
 #define MIN_DEVFN               0x00
 #define MAX_DEVFN               0xff

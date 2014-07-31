@@ -145,16 +145,24 @@ int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 	return 0;
 }
 
-int rt_fib_source_ip(in_addr_t dst_ip, in_addr_t *src_ip) {
+int rt_fib_source_ip(in_addr_t dst_ip, struct net_device *dev,
+		in_addr_t *src_ip) {
 	struct rt_entry *rte;
 
-	rte = rt_fib_get_best(dst_ip, NULL);
-	if (rte == NULL) {
-		return -ENETUNREACH;
+	if (dst_ip != INADDR_BROADCAST) {
+		rte = rt_fib_get_best(dst_ip, NULL);
+		if (rte == NULL) {
+			return -ENETUNREACH;
+		}
+		assert(rte->dev != NULL);
+		dev = rte->dev;
+	}
+	else if (dev == NULL) {
+		return -ENODEV;
 	}
 
-	assert(inetdev_get_by_dev(rte->dev) != NULL);
-	*src_ip = inetdev_get_by_dev(rte->dev)->ifa_address;
+	assert(inetdev_get_by_dev(dev) != NULL);
+	*src_ip = inetdev_get_by_dev(dev)->ifa_address;
 
 	return 0;
 }

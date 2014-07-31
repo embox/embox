@@ -1,102 +1,72 @@
-ifeq (arm,$(EMBOX_ARCH))
-EMBOX_QPID_ARCH=arm
-else ifeq (x86,$(EMBOX_ARCH))
-EMBOX_QPID_ARCH=x86
-else
-$(error Unsupported architecture: $(EMBOX_ARCH))
-endif
 
-EMBOX_TARGET_CC =$(shell which $(EMBOX_CROSS_COMPILE)gcc)
-EMBOX_TARGET_CXX=$(shell which $(EMBOX_CROSS_COMPILE)g++)
+PKG_NAME := qpidc
+PKG_VER  := 0.24
 
-ifeq (,$(EMBOX_TARGET_CC))
-$(error Cannot find C compiler: $(EMBOX_CROSS_COMPILE)gcc)
-endif
-ifeq (,$(EMBOX_TARGET_CXX))
-$(error Cannot find C++ compiler: $(EMBOX_CROSS_COMPILE)g++)
-endif
+PKG_SOURCES := http://archive.apache.org/dist/qpid/0.24/qpid-cpp-$(PKG_VER).tar.gz
+PKG_MD5     := f6245e2e68ccd1bac8fe706db3fba707
 
+PKG_PATCHES := patch.txt
 
-AT=
+include $(EXTBLD_LIB)
 
-QPID_DIR    = $(BUILD_DIR)
-QPID_LIB   += $(QPID_DIR)/lib/libqpid.a
-QPID_FLAGS  = $(QPID_DIR)/flags
+QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
+	-I$(ROOT_DIR)/third-party/qpid/include \
+	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
+	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
+	-I$(ROOT_DIR)/src/include/c++ \
+	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include"
 
-#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/boost/include
-#EMBOX_IMPORTED_CPPFLAGS += -I$(ROOT_DIR)/build/stlport/include/stlport
+QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
 
-EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
-EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h
-EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -U%,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS := $(filter-out -D"__impl_x%,$(EMBOX_IMPORTED_CPPFLAGS))
+QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid/include"
 
-EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -std=gnu99,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -g,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -mno-unaligned-access,$(EMBOX_CFLAGS))
+$(CONFIGURE) :
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options.cpp       $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options_.cpp || true
+	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib.cpp         $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib_.cpp || true
+	export EMBOX_GCC_LINK=full; \
+	export CXXFLAGS=$(QPID_CXX_FLAGS); \
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && rm -rf bld && mkdir bld && cd bld && ( \
+		cmake \
+		-L \
+		-DCMAKE_SYSTEM_NAME:STRING=Generic \
+		-DUNIX:BOOL=on \
+		-DBUILD_SHARED_LIBS:BOOL=off \
+		-DLIB64:STRING=FALSE \
+		-DCMAKE_SIZEOF_VOID_P:STRING=4 \
+		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
+		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
+		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
+		-DCMAKE_AR:STRING=ar \
+		-DCMAKE_EXE_LINKER_FLAGS:STRING=$(QPID_LDFLAGS) \
+		-DBUILD_HA:BOOL=off \
+		-DBUILD_SSL:BOOL=off \
+		-DBUILD_ACL:BOOL=off \
+		-DBUILD_SASL:BOOL=off \
+		-DBUILD_XML:BOOL=off \
+		-DCMAKE_INSTALL_PREFIX:PATH=$(PKG_INSTALL_DIR)\
+		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DBOOST_ROOT:PATH=$(ROOT_DIR)/build/extbld/third_party/boost/core \
+		-DCMAKE_REQUIRED_INCLUDES:PATH=$(QPID_CMAKE_REQUIRED_INCLUDES) \
+		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
+		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DQPID_LINK_BOOST_DYNAMIC:BOOL=off \
+		.. \
+		)
+	touch $@
 
-EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-threadsafe-statics,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -mno-unaligned-access,$(EMBOX_CXXFLAGS))
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld && ( \
+		$(MAKE) qpidd hello_world MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+	touch $@
 
-#EMBOX_IMPORTED_CFLAGS   += -Wl,--relocatable
-#EMBOX_IMPORTED_CXXFLAGS += -Wl,--relocatable
-
-EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
-ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
-EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
-endif
-# no wonder the following doesn't work
-# EMBOX_IMPORTED_MAKEFLAGS += $(filter --jobserver-fds=%,$(EMBOX_MAKEFLAGS))
-
-EMBOX_DERIVED_CFLAGS    += $(EMBOX_IMPORTED_CFLAGS)
-EMBOX_DERIVED_CXXFLAGS  += $(EMBOX_IMPORTED_CXXFLAGS)
-EMBOX_DERIVED_MAKEFLAGS += $(EMBOX_IMPORTED_MAKEFLAGS)
-EMBOX_DERIVED_ARCH       = $(EMBOX_QPID_ARCH)
-EMBOX_DERIVED_CC         = $(EMBOX_TARGET_CC)
-EMBOX_DERIVED_CXX        = $(EMBOX_TARGET_CXX)
-
-EMBOX_DERIVED_LDFLAGS   += -Wl,--relocatable -nostdlib
-
-all:
-
-.PHONY: all
-
-$(QPID_DIR):
-	$(AT)mkdir -p $@
-
-$(QPID_FLAGS): | $(QPID_DIR)
-	-$(AT)rm $@
-	$(AT)echo CFLAGS=\"$(EMBOX_DERIVED_CFLAGS)\" >> $@
-	$(AT)echo CXXFLAGS=\"$(EMBOX_DERIVED_CXXFLAGS)\" >> $@
-	$(AT)echo LDFLAGS=\"$(EMBOX_DERIVED_LDFLAGS)\" >> $@
-	$(AT)echo EMBOX_DERIVED_MAKEFLAGS=\"$(EMBOX_DERIVED_MAKEFLAGS)\" >> $@
-	$(AT)echo BOOST_ROOT=\"$(EXTERNAL_BUILD_DIR)/third_party/boost/core\" >> $@
-	$(AT)echo EMBOX_DERIVED_ARCH=\"$(EMBOX_DERIVED_ARCH)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CC=\"$(EMBOX_DERIVED_CC)\" >> $@
-	$(AT)echo EMBOX_DERIVED_CXX=\"$(EMBOX_DERIVED_CXX)\" >> $@
-	$(AT)echo EMBOX_ROOT=\"$(ROOT_DIR)\" >> $@
-
-$(QPID_DIR)/Makefile: CMakeLists.txt $(QPID_FLAGS) | $(QPID_DIR)
-	$(AT)cd $(QPID_DIR) && $(shell cat $(QPID_FLAGS)) CFLAGS= CXXFLAGS= cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CROSSCOMPILING=1 $(shell pwd)
-
-all: $(QPID_DIR)/Makefile $(QPID_FLAGS)
-	$(AT)cd $(QPID_DIR) && $(shell cat $(QPID_FLAGS)) $(MAKE) VERBOSE=1 # -j `nproc`
-
-.NOTPARALLEL:
+$(INSTALL) :
+	mkdir -p $(PKG_INSTALL_DIR)/include $(PKG_INSTALL_DIR)/lib $(PKG_INSTALL_DIR)/bin
+	cp -R $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/*.a $(PKG_INSTALL_DIR)/lib
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/CMakeFiles/qpidd.dir/qpidd.o $(PKG_INSTALL_DIR)/bin/qpidd.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/src/CMakeFiles/qpidd.dir/posix/QpiddBroker.o $(PKG_INSTALL_DIR)/bin/QpiddBroker.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/bld/examples/messaging/CMakeFiles/hello_world.dir/hello_world.o $(PKG_INSTALL_DIR)/bin/hello_world.o
+	touch $@

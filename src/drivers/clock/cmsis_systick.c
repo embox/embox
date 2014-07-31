@@ -40,7 +40,7 @@ static int this_config(struct time_dev_conf * conf) {
 
 static struct time_event_device this_event = {
 	.config = this_config ,
-	.resolution = 1000,
+	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };
 
@@ -51,7 +51,7 @@ static cycle_t this_read(void) {
 
 static struct time_counter_device this_counter = {
 	.read = this_read,
-	.resolution = SYS_CLOCK / CLOCK_DIVIDER,
+	.cycles_hz = SYS_CLOCK / CLOCK_DIVIDER,
 };
 #endif
 

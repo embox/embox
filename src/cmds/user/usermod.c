@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 #include <ctype.h>
+#include <crypt.h>
 
 #include "user.h"
 
@@ -32,7 +33,7 @@ static int shadow(char *name, char *new_name, char *pswd) {
 
 	while (NULL != (spwd = fgetspent(shdwf))) {
 		if (0 == strcmp(spwd->sp_namp, name)) {
-			user_set_options_spwd(spwd, new_name, pswd);
+			user_set_options_spwd(spwd, new_name, crypt(pswd, NULL));
 		}
 		user_write_user_spwd(spwd, temp_shdwf);
 	}

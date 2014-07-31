@@ -3,7 +3,7 @@ package embox.example.kernel
 module critical_example {
 	source "critical_example.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.critical
 	depends embox.kernel.softirq
 	depends embox.framework.example
@@ -12,7 +12,7 @@ module critical_example {
 module syscall_example {
 	source "syscall_example.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.kernel.syscall
 	depends embox.arch.syscall_caller
 	depends embox.framework.example

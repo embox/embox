@@ -1,0 +1,10 @@
+package embox.compat.posix.proc
+
+static module vfork_stub extends vfork {
+	source "vfork_stub.c"
+	source "vfork_res_stub.h"
+}
+
+static module exec_stub extends exec_lib {
+	source "exec_stub.c"
+}

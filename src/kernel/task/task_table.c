@@ -18,17 +18,23 @@ EMBOX_UNIT_INIT(task_table_module_init);
 
 UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
 
+/*
+ * tasks are started from 1, util table is from 0;
+ * doing 1+ translation to output, and 1- for input
+ */
 int task_table_add(struct task *tsk) {
-	return util_idx_table_add(task_table, tsk);
+	assert(tsk != NULL);
+	return 1 + util_idx_table_add(task_table, tsk);
 }
 
 struct task * task_table_get(int tid) {
-	return util_idx_table_get(task_table, tid);
+	assert(tid >= 0);
+	return util_idx_table_get(task_table, tid - 1);
 }
 
 void task_table_del(int tid) {
-	assert(tid >= 0);
-	util_idx_table_del(task_table, tid);
+	assert(tid > 0);
+	util_idx_table_del(task_table, tid - 1);
 }
 
 int task_table_has_space(void) {
@@ -36,7 +42,13 @@ int task_table_has_space(void) {
 }
 
 int task_table_get_first(int since) {
-	return util_idx_table_next_mark(task_table, since, 1);
+	/* since should be decremented. i.e. task_foreach calls
+ 	 * __func__, it returns first task. Then task_foreach
+	 * gets returned task id, increments it and calls __func__.
+	 * Without decrement it will skip task following next returned one.
+	 */
+	assert(since >= 0);
+	return 1 + util_idx_table_next_mark(task_table, since - 1, 1);
 }
 
 static int task_table_module_init(void) {

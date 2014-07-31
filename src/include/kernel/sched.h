@@ -22,6 +22,7 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
+struct lthread;
 struct thread;
 
 __BEGIN_DECLS
@@ -47,6 +48,8 @@ extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);
 extern void sched_ticker_switch(struct thread *prev, struct thread *next);
 
+extern void sched_sleep(void);
+
 /**
  * Makes active or waking thread and adds thread to the queue of ready to
  * executing threads.
@@ -56,6 +59,13 @@ extern void sched_ticker_switch(struct thread *prev, struct thread *next);
  */
 extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
+
+/**
+ * Adds lthread to runq.
+ * @param lwt
+ *   Lwthread which will be added.
+ */
+extern void sched_wakeup_l(struct lthread *lt);
 
 #if 0
 /**
@@ -107,6 +117,8 @@ extern void sched_post_switch(void);
  * Runs the scheduler right now.
  */
 extern void schedule(void);
+
+extern void sched_thread_switch(struct thread *prev, struct thread *next);
 
 extern void sched_ack_switched(void);
 

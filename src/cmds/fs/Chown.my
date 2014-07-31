@@ -1,0 +1,20 @@
+
+package embox.cmd
+
+@Cmd(name = "chown",
+	help = "Change the owner of file",
+	man = '''
+		NAME
+			chown
+		SYNOPSIS:
+			chown OWNER_ID[:GROUP_ID] FILE...
+		DESCRIPTION
+			Change the owner of each FILE_ID to OWNER_ID.
+			If GROUP_ID is specified, it's changed too.
+		AUTHORS
+			Anton Kozlov
+''')
+module chown {
+	source "chown.c"
+}
+

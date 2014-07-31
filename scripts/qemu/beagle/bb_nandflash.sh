@@ -63,7 +63,7 @@ if [ ! -e "$2" ]; then
 	cat .8block .8block .8block .8block .8block .8block .8block .8block >.64block
 	cat .64block .64block .64block .64block .64block .64block .64block .64block >.512block
 	cat .512block .512block .512block .512block >$flash_image_name
-	rm -rf .8b .16b .32b .64b .page .8page .64sec .block .8block .64block .512block
+	rm -rf .8b .16b .32b .64b .512b .page .8page .64sec .block .8block .64block .512block
 fi
 
 put_no_oob()

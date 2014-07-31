@@ -12,6 +12,7 @@
 #include <fs/xattr.h>
 #include <fs/flags.h>
 #include <fs/idesc.h>
+#include <net/sock.h>
 #include <security/smac.h>
 
 #include <security/security.h>
@@ -42,6 +43,10 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	}
 
 	return 1;
+}
+
+static int node_setlabel(struct node *n, const char *label) {
+	return kfile_xattr_set(n, smac_xattrkey, label, strlen(label) + 1, 0);
 }
 
 static int idesc_getlabel(struct idesc *idesc, char *label, size_t lablen) {
@@ -81,6 +86,10 @@ int security_node_create(struct node *dir, mode_t mode) {
 	}
 
 	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
+}
+
+void security_node_cred_fill(struct node *node) {
+	node_setlabel(node, task_self_resource_security());
 }
 
 int security_node_permissions(struct node *node, int flags) {
@@ -213,4 +222,19 @@ int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
 	}
 
 	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+}
+
+int security_sock_create(struct sock *sock) {
+	char *secure_label;
+	if (NULL != (secure_label = task_resource_security(task_self()))) {
+		if ((0 != strcmp(secure_label, smac_floor)) &&
+				(0 != strcmp(secure_label, smac_admin))) { //FIXME problem with su -c dropbeard
+			idesc_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label) + 1, 0);
+		}
+	}
+	return 0;
+}
+
+int security_sock_label(struct sock *sock, char *label, size_t len) {
+	return idesc_getxattr(&sock->idesc, smac_xattrkey, label, len);
 }

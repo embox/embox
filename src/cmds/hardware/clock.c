@@ -27,9 +27,9 @@ static int print_info(const struct clock_source *cs, int num) {
 	cs->name ? printf("%s\n", cs->name) : printf("%s", "no name");
 	printf("flags: %04d\n", cs->flags);
 	if (cs->counter_device)
-		printf("counter_device resolution: %d\n", cs->counter_device->resolution);
+		printf("counter_device frequency: %d\n", cs->counter_device->cycle_hz);
 	if (cs->event_device)
-		printf("event_device resolution: %d\n\n", cs->event_device->resolution);
+		printf("event_device frequency: %d\n\n", cs->event_device->event_hz);
 	return 0;
 }
 

@@ -16,7 +16,7 @@ package embox.cmd.net
 module rlogin {
 	source "rlogin.c"
 
-	depends embox.lib.LibC
+	depends embox.compat.libc.LibC
 	depends embox.mem.heap_api
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix

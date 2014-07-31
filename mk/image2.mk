@@ -37,8 +37,8 @@ $(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
 	@touch $@
 
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
-		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
+	$(CP) -r -T $(src_file) $@$(if \
+		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 
@@ -95,10 +95,13 @@ $(OBJ_DIR)/module/%.a : mk/arhelper.mk
 			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
 
 ld_prerequisites = $(module_prereqs)
+obj_build=$(if $(strip $(value mod_postbuild)),$@.build.o,$@)
+obj_postbuild=$@
 $(OBJ_DIR)/module/%.o :
-	$(LD) -r -o $@ $(ldflags) $(call fmt_line,$(o_files) \
+	$(LD) -r -o $(obj_build) $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $@)
+	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $(obj_build))
+	$(mod_postbuild)
 
 
 # Here goes image creation rules...

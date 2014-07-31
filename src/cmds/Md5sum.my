@@ -15,7 +15,8 @@ package embox.cmd
 module md5sum {
 	source "md5sum.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.LibCrypt
+	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
 	depends embox.framework.LibFramework

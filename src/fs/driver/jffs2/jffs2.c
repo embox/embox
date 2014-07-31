@@ -27,7 +27,7 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-#include <fs/path.h>
+#include <fs/hlpr_path.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <embox/block_dev.h>
@@ -392,8 +392,8 @@ static int jffs2_mount(struct nas *dir_nas) {
 static int umount_vfs_dir_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
 			if(node_is_directory(child)) {
 				umount_vfs_dir_entry(child->nas);
 			}
@@ -1405,8 +1405,7 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	nas->fi->ni.size = fi->_inode->i_size;
 
-	vfs_get_path_by_node(nas->node, path);
-	path_cut_mount_dir(path, fsi->mntto);
+	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
 	return jffs2_open(fsi->jffs2_sb.s_root, path, flags);
 }
@@ -1559,9 +1558,9 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 			ino = fd_list->ino;
 			if (ino) {
 				inode = jffs2_iget(dir_i->i_sb, ino);
-				if(NULL == (vfs_node = vfs_lookup(dir_nas->node,
+				if(NULL == (vfs_node = vfs_subtree_lookup(dir_nas->node,
 						(const char *) fd_list->name))) {
-					vfs_node = vfs_create(dir_nas->node,
+					vfs_node = vfs_subtree_create(dir_nas->node,
 							(const char *) fd_list->name, inode->i_mode);
 					if(NULL == vfs_node) {
 						return ENOMEM;
@@ -1623,7 +1622,7 @@ static int jffs2fs_delete(struct node *node) {
 	struct node *parents;
 	struct jffs2_file_info *par_fi, *fi;
 
-	if (NULL == (parents = vfs_get_parent(node))) {
+	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
@@ -1654,7 +1653,7 @@ static int jffs2fs_delete(struct node *node) {
 static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
 	char dev_node_path[PATH_MAX];
 
-	vfs_get_path_by_node(dev_node, dev_node_path);
+	vfs_get_relative_path(dev_node, dev_node_path, PATH_MAX);
 
 	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
 }
@@ -1691,7 +1690,7 @@ static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
 
 	jffs_flash_name(dev_node, flash_node_name);
 
-	if (NULL == (flash_node = vfs_lookup(NULL, flash_node_name))) {
+	if (NULL == (flash_node = vfs_subtree_lookup(vfs_get_root(), flash_node_name))) {
 		return jffs_bdev_by_node(dev_node, err);
 	}
 
@@ -1707,10 +1706,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-
-	if(NULL != vfs_get_child_next(dir_node)) {
-		return -ENOTEMPTY;
-	}
 
 	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
 		rc = ENOMEM;
@@ -1729,7 +1724,6 @@ static int jffs2fs_mount(void *dev, void *dir) {
 	}
 	memset(fsi, 0, sizeof(struct jffs2_fs_info));
 	dir_nas->fs->fsi = fsi;
-	vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
