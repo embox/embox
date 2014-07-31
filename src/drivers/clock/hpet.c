@@ -56,7 +56,7 @@ static inline void hpet_set_register(uintptr_t offset, uint64_t value) {
 	*((uint64_t *) (base_address + offset)) = value;
 }
 
-static uint32_t hpet_get_resolution() {
+static uint32_t hpet_get_hz() {
 	uint64_t reg;
 	uint32_t period;
 
@@ -87,8 +87,8 @@ static int hpet_init(void) {
 
 	base_address = hpet_table->Address.Address;
 
-	hpet_counter_device.resolution = hpet_get_resolution();
-	printk("Resolution: %u\n", hpet_counter_device.resolution);
+	hpet_counter_device.cycle_hz = hpet_get_hz();
+	printk("Hz: %u\n", hpet_counter_device.cycle_hz);
 
 	hpet_start_counter();
 
