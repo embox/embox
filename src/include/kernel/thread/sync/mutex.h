@@ -24,7 +24,6 @@ struct mutex {
 	struct waitq wq;
 	struct schedee *holder;
 	struct mutexattr attr;
-	struct waitq_link holder_link;
 
 	int lock_count;
 };
@@ -68,11 +67,11 @@ struct mutex {
 #define STORE(x) \
     do { ((volatile int *) 0x100) = x } while (0)
 
-#define mutex_lock_schedee(mutex) \
+#define mutex_lock_schedee(mutex, wql) \
 	do { \
 		if (mutex_trylock_schedee(mutex)) { \
-			waitq_link_init(&(mutex)->holder_link); \
-			waitq_wait_prepare(&(mutex)->wq, &(mutex)->holder_link); \
+			waitq_link_init(wql); \
+			waitq_wait_prepare(&(mutex)->wq, (wql)); \
 			return NULL; \
 		} \
 	} while (0)

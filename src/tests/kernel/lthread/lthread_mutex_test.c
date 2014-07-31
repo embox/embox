@@ -8,6 +8,7 @@
 #include <err.h>
 #include <embox/test.h>
 #include <kernel/sched.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <kernel/time/ktime.h>
@@ -38,10 +39,12 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
+static struct waitq_link wql;
+
 static void *high_run(void *arg) {
-	mutex_lock_schedee(&m);
+	mutex_lock_schedee(&m, &wql);
 	test_emit('d');
-	mutex_unlock(&m);
+	mutex_unlock_schedee(&m);
 	return NULL;
 }
 
