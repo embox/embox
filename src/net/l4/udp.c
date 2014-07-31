@@ -21,10 +21,13 @@
 #include <net/socket/inet_sock.h>
 #include <arpa/inet.h>
 #include <net/netdevice.h>
+#include <framework/mod/options.h>
 #include <framework/net/sock/api.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
+
+#define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_UDP, udp_rcv, udp_err);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_UDP, udp_rcv,
@@ -72,17 +75,19 @@ static int udp6_accept_dst(const struct sock *sk,
 
 static int udp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
-	uint16_t old_check;
 
 	assert(skb != NULL);
 	assert(ip_check_version(ip_hdr(skb))
 			|| ip6_check_version(ip6_hdr(skb)));
 
 	/* Check CRC */
-	old_check = skb->h.uh->check;
-	udp_set_check_field(skb->h.uh, skb->nh.raw);
-	if (old_check != skb->h.uh->check) {
-		return 0; /* error: bad checksum */
+	if (MODOPS_VERIFY_CHKSUM) {
+		uint16_t old_check;
+		old_check = skb->h.uh->check;
+		udp_set_check_field(skb->h.uh, skb->nh.raw);
+		if (old_check != skb->h.uh->check) {
+			return 0; /* error: bad checksum */
+		}
 	}
 
 	sk = sock_lookup(NULL, udp_sock_ops,

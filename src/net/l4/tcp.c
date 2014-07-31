@@ -50,7 +50,7 @@ EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
 
-#define CRC_DROP  OPTION_GET(BOOLEAN, crc_drop)
+#define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 
 #define TCP_DEBUG 0
 #if TCP_DEBUG
@@ -1016,28 +1016,21 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
 	int ret;
-	__u16 old_check;
 	__u32 seq2rem_seq, seq_len, seq_last2rem_seq, rem_len;
 
 	/* Check CRC */
-	old_check = tcph->check;
-	/* XXX remove const qualifier */
-	tcp_set_check_field((struct tcphdr *)tcph,
-			skb->nh.raw);
-	if (old_check != tcph->check) {
-		DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
-					" sk %p skb %p\n",
-				ntohs(old_check), ntohs(tcph->check),
-				to_sock(tcp_sk), skb);)
-		if (CRC_DROP) {
+	if (MODOPS_VERIFY_CHKSUM) {
+		__u16 old_check;
+		old_check = tcph->check;
+		/* XXX remove const qualifier */
+		tcp_set_check_field((struct tcphdr *)tcph,
+				skb->nh.raw);
+		if (old_check != tcph->check) {
+			DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
+						" sk %p skb %p\n",
+					ntohs(old_check), ntohs(tcph->check),
+					to_sock(tcp_sk), skb);)
 			return TCP_RET_DROP;
-		} else {
-			packet_print(tcp_sk, skb, "=>",
-						ip_check_version(ip_hdr(skb)) ? AF_INET : AF_INET6,
-						ip_check_version(ip_hdr(skb)) ?
-							(void *) &ip_hdr(skb)->saddr :
-							(void *) &ip6_hdr(skb)->saddr,
-						tcp_hdr(skb)->source);
 		}
 	}
 
