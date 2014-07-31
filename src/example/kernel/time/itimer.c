@@ -43,7 +43,7 @@ static int run(int argc, char **argv) {
 			measured_loop(cs, 1000);
 		}
 
-		putchar('\n');
+		printf("\n\n");
 	}
 
 	return ENOERR;
