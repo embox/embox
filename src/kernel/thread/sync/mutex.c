@@ -23,8 +23,8 @@
 #include <kernel/sched/sched_priority.h>
 
 
-static void priority_inherit(struct thread *t, struct mutex *m);
-static void priority_uninherit(struct thread *t);
+static void priority_inherit(struct schedee *t, struct mutex *m);
+static void priority_uninherit(struct schedee *t);
 
 static inline int mutex_is_static_inited(struct mutex *m) {
 	/* Static initializer can't really init list now, so if this condition's
@@ -54,7 +54,7 @@ void mutex_init(struct mutex *m) {
 }
 
 int mutex_lock(struct mutex *m) {
-	struct thread *current = thread_self();
+	struct schedee *current = schedee_get_current();
 	int errcheck;
 	int ret, wait_ret;
 
@@ -79,8 +79,40 @@ int mutex_lock(struct mutex *m) {
 	return ret;
 }
 
+int mutex_trylock_schedee(struct mutex *m) {
+	struct schedee *current = schedee_get_current();
+
+	assert(m);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+
+	if (m->holder) {
+		return -EBUSY;
+	}
+
+	m->lock_count = 1;
+	m->holder = current;
+
+	return 0;
+}
+
+int mutex_unlock_schedee(struct mutex *m) {
+	struct schedee *current = schedee_get_current();
+
+	assert(m);
+
+	priority_uninherit(current);
+
+	m->holder = NULL;
+	m->lock_count = 0;
+	waitq_wakeup_all(&m->wq);
+
+	return 0;
+}
+
+
+
 int mutex_trylock(struct mutex *m) {
-	struct thread *current = thread_self();
+	struct schedee *current = schedee_get_current();
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -100,18 +132,11 @@ int mutex_trylock(struct mutex *m) {
 		}
 	}
 
-	if (m->holder) {
-		return -EBUSY;
-	}
-
-	m->lock_count = 1;
-	m->holder = current;
-
-	return 0;
+	return mutex_trylock_schedee(m);
 }
 
 int mutex_unlock(struct mutex *m) {
-	struct thread *current = thread_self();
+	struct schedee *current = schedee_get_current();
 
 	assert(m);
 
@@ -126,25 +151,19 @@ int mutex_unlock(struct mutex *m) {
 		return 0;
 	}
 
-	priority_uninherit(current);
-
-	m->holder = NULL;
-	m->lock_count = 0;
-	waitq_wakeup_all(&m->wq);
-
-	return 0;
+	return mutex_unlock_schedee(m);
 }
 
-static void priority_inherit(struct thread *t, struct mutex *m) {
-	sched_priority_t prior = thread_priority_get(t);
+static void priority_inherit(struct schedee *s, struct mutex *m) {
+	sched_priority_t prior = schedee_priority_get(s);
 
-	if (prior != thread_priority_inherit(m->holder, prior))
-		sched_change_priority(&m->holder->schedee, prior);
+	if (prior != schedee_priority_inherit(m->holder, prior))
+		sched_change_priority(m->holder, prior);
 }
 
-static void priority_uninherit(struct thread *t) {
-	sched_priority_t prior = thread_priority_get(t);
+static void priority_uninherit(struct schedee *s) {
+	sched_priority_t prior = schedee_priority_get(s);
 
-	if (prior != thread_priority_reverse(t))
-		sched_change_priority(&t->schedee, thread_priority_get(t));
+	if (prior != schedee_priority_reverse(s))
+		sched_change_priority(s, schedee_priority_get(s));
 }

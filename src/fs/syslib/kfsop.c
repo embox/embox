@@ -722,7 +722,7 @@ int kflock(int fd, int operation) {
 		/* If current thread is holder of exclusive lock then convert it to
 		 * shared lock */
 		if (exlock->lock_count > 0) {
-			if (current == exlock->holder) {
+			if (&current->schedee == exlock->holder) {
 				/* Again no two different types of lock can be held
 				 * simultaneously */
 				assert(0 == *shlock_count);
@@ -761,7 +761,7 @@ int kflock(int fd, int operation) {
 	if (LOCK_UN & operation) {
 		spin_lock(flock_guard);
 		/* Handle exclusive lock free */
-		if (exlock->holder == current) {
+		if (exlock->holder == &current->schedee) {
 			assert(0 == *shlock_count);
 			/* mutex_unlock can't block the thread
 			 * so nothing need for LOCK_NB */

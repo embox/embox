@@ -22,8 +22,9 @@ struct thread;
  */
 struct mutex {
 	struct waitq wq;
-	struct thread *holder;
+	struct schedee *holder;
 	struct mutexattr attr;
+	struct waitq_link holder_link;
 
 	int lock_count;
 };
@@ -63,6 +64,18 @@ struct mutex {
 	}
 
 #define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
+
+#define STORE(x) \
+    do { ((volatile int *) 0x100) = x } while (0)
+
+#define mutex_lock_schedee(mutex) \
+	do { \
+		if (mutex_trylock_schedee(mutex)) { \
+			waitq_link_init(&(mutex)->holder_link); \
+			waitq_wait_prepare(&(mutex)->wq, &(mutex)->holder_link); \
+			return NULL; \
+		} \
+	} while (0)
 
 __BEGIN_DECLS
 
@@ -104,6 +117,10 @@ extern int mutex_unlock(struct mutex *locked_mutex);
  * @param free_mutex Mutex to lock.
  */
 extern int mutex_trylock(struct mutex *free_mutex);
+
+extern int mutex_unlock_schedee(struct mutex *locked_mutex);
+extern int mutex_trylock_schedee(struct mutex *free_mutex);
+
 
 __END_DECLS
 
