@@ -8,6 +8,9 @@ CLDC_OUTPUT_DIR := $(BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
+# FIXME problem with quotes
+EMBOX_CPPFLAGS_ := $(filter-out -D"__impl_x%,$(EMBOX_CPPFLAGS))
+
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
 		ln -s ../src/phoneme/cldc src \
@@ -24,8 +27,7 @@ $(BUILD) :
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JVMWorkSpace=$(CLDC_DIR) JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 			JDK_DIR=$(JDK_DIR) \
-			EMBOX_GCC=$(EMBOX_GCC) EMBOX_GXX=$(EMBOX_GXX) CROSS_COMPILE=$(CROSS_COMPILE) \
-			CXXFLAGS_EXTERNAL_TARGET='-fpermissive -Wno-error' \
+			CXXFLAGS_EXTERNAL_TARGET='$(EMBOX_CPPFLAGS_) $(EMBOX_CXXFLAGS) -fpermissive -Wno-error' \
 	)
 	mkdir -p $(BUILD_DIR)/gen && cd $(BUILD_DIR)/gen && ( \
 		$(CLDC_DIST_DIR)/bin/romgen -cp $(CLDC_DIST_DIR)/lib/cldc_classes.zip \
