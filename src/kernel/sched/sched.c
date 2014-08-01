@@ -38,9 +38,6 @@
 #include <kernel/schedee/schedee.h>
 #include <kernel/schedee/current.h>
 #include <kernel/thread/signal.h>
-#include <kernel/addr_space.h>
-
-#include <profiler/tracing/trace.h>
 
 #include <embox/unit.h>
 
@@ -68,16 +65,16 @@ static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-int sched_init(struct thread *idle, struct thread *current) {
+int sched_init(struct schedee *idle, struct schedee *current) {
 	assert(idle && current);
 
-	assert(thread_self() == current);
+	assert(schedee_get_current() == current);
 
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
 
-	assert(idle->schedee.waiting); // XXX
-	sched_wakeup(&idle->schedee);
+	assert(idle->waiting); // XXX
+	sched_wakeup(idle);
 
 	sched_ticker_init();
 
@@ -326,67 +323,27 @@ int sched_wakeup(struct schedee *s) {
 }
 
 /** Locks: IPL. */
-static void __sched_activate(struct thread *t) {
-	t->schedee.active = true;
+static void __sched_activate(struct schedee *s) {
+	s->active = true;
 }
 
 /** Locks: IPL. */
-static void __sched_deactivate(struct thread *t) {
+static void __sched_deactivate(struct schedee *s) {
 	smp_stmembar();  /* don't clear active until context_switch is complete */
-	t->schedee.active = false;
+	s->active = false;
 	smp_membar();  /* __sched_wakeup_smp_inactive: ST waiting / LD active */
 #ifdef SMP
-	spin_protected_if (&t->lock, (t->schedee.waiting == TW_SMP_WAKING))
-		__sched_wakeup_waiting(t);
+	spin_protected_if (&s->lock, (s->waiting == TW_SMP_WAKING))
+		__sched_wakeup_waiting(s);
 #endif /* SMP */
 }
 
-static void sched_prepare_switch(struct thread *prev, struct thread *next) {
-	sched_ticker_switch(prev, next);
-	sched_timing_switch(prev, next);
-	prev->critical_count = critical_count();
-	critical_count() = next->critical_count;
-	__sched_activate(next);
-}
-
-static void sched_finish_switch(struct thread *prev) {
+void sched_finish_switch(struct schedee *prev) {
 	__sched_deactivate(prev);
 }
 
-static struct thread *saved_prev __cpudata__; // XXX
-static struct thread *saved_next __cpudata__; // XXX
-
-/**
- * Any fresh thread must call this function from a trampoline.
- * Basically it emulates returning from the scheduler as it would be done
- * in case if 'context_switch' would return as usual (into 'sched_switch',
- * from where it was called) instead of jumping into a thread trampoline.
- */
-
-void sched_ack_switched(void) {
-	ADDR_SPACE_FINISH_SWITCH();
-	sched_finish_switch(cpudata_var(saved_prev));
-	ipl_enable();
-	sched_unlock();
-}
-
-void sched_thread_switch(struct thread *prev, struct thread *next) {
-	sched_prepare_switch(prev, next);
-
-	trace_point(__func__);
-
-	/* Preserve initial semantics of prev/next. */
-	cpudata_var(saved_next) = next;
-	cpudata_var(saved_prev) = prev;
-	ADDR_SPACE_PREPARE_SWITCH();
-
-	context_switch(&prev->context, &next->context);  /* implies cc barrier */
-
-	prev = cpudata_var(saved_prev);
-	next = cpudata_var(saved_next);
-	ADDR_SPACE_FINISH_SWITCH();
-
-	sched_finish_switch(prev);
+void sched_start_switch(struct schedee *next) {
+	__sched_activate(next);
 }
 
 static void __schedule(int preempt) {

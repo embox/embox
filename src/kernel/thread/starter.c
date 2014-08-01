@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <embox/unit.h>
 #include <kernel/sched.h>
+#include <kernel/thread.h>
 
 EMBOX_UNIT_INIT(thread_core_init);
 
@@ -25,5 +26,5 @@ static int thread_core_init(void) {
 	idle = idle_thread_create(); /* idle thread always has ID=0 */
 	assert(idle != NULL);
 
-	return sched_init(idle, current);
+	return sched_init(&idle->schedee, &current->schedee);
 }

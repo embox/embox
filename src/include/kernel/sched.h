@@ -43,7 +43,7 @@ __BEGIN_DECLS
  *   Error code if initialization of the underlying policy implementation has
  *   failed.
  */
-extern int sched_init(struct thread *current, struct thread *idle);
+extern int sched_init(struct schedee *idle, struct schedee *current);
 
 extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);
@@ -60,13 +60,6 @@ extern void sched_sleep(void);
  */
 extern void __sched_start(struct thread *t);
 extern void sched_start(struct thread *t);
-
-/**
- * Adds lthread to runq.
- * @param lwt
- *   Lwthread which will be added.
- */
-extern void sched_wakeup_l(struct lthread *lt);
 
 #if 0
 /**
@@ -119,9 +112,8 @@ extern void sched_post_switch(void);
  */
 extern void schedule(void);
 
-extern void sched_thread_switch(struct thread *prev, struct thread *next);
-
-extern void sched_ack_switched(void);
+extern void sched_finish_switch(struct schedee *prev);
+extern void sched_start_switch(struct schedee *next);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling
