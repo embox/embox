@@ -69,14 +69,15 @@ struct mutex {
 
 #define mutex_lock_schedee(mutex, wql) \
 	do { \
-		if (mutex_trylock_schedee(mutex)) { \
+		if (!(wql)->schedee) { \
 			waitq_link_init(wql); \
+		} \
+		if (mutex_trylock_schedee(mutex)) { \
 			waitq_wait_prepare(&(mutex)->wq, (wql)); \
 			return NULL; \
 		} \
-	} while (0)
-
-__BEGIN_DECLS
+		waitq_wait_cleanup(&(mutex)->wq, (wql)); \
+	} while(0)
 
 /**
  * initializes given mutex with attribute
