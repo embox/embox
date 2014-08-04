@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <util/dlist.h>
 #include <kernel/task.h>
+#include <hal/ptrace.h>
 
 struct stack_space {
 	void *user_stack;
@@ -35,7 +36,7 @@ struct addr_space {
 	struct addr_space *parent_addr_space;
 	unsigned int child_count;
 
-	struct pt_regs *pt_entry;
+	struct pt_regs pt_entry;
 
 	struct thread *parent_thread;
 
