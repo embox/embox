@@ -9,8 +9,10 @@
 #include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/schedee/current.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
+#include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread/sync/mutex.h>
 
@@ -39,10 +41,8 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static struct waitq_link wql;
-
 static void *high_run(void *arg) {
-	if (mutex_lock_schedee_or_wait(&m, &wql) == -EAGAIN) {
+	if (mutex_lock_schedee_or_wait(&m) == -EAGAIN) {
 		return NULL;
 	}
 	test_emit('d');

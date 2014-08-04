@@ -12,6 +12,7 @@
 
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/signal.h>
+#include <kernel/sched/waitq.h>
 
 enum schedee_result {
 	SCHEDEE_EXIT,
@@ -37,6 +38,7 @@ struct schedee {
 	spinlock_t         lock;         /**< Protects wait state and others. */
 
 	struct sigstate    sigstate;     /**< Pending signal(s). */
+	struct waitq_link  waitq_link;
 };
 
 #endif /* _KERNEL_SCHEDEE_H_ */

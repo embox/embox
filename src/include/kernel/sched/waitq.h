@@ -17,13 +17,12 @@
 #include <kernel/sched.h>
 #include <kernel/schedee/current.h>
 #include <kernel/thread/signal_lock.h>
-#include <kernel/thread.h>
 
 #include <kernel/time/time.h>
 
 __BEGIN_DECLS
 
-struct thread;
+struct schedee;
 
 struct waitq {
 	struct dlist_head list;
