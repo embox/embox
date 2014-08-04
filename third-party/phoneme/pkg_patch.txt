@@ -1,27 +1,62 @@
-//diff -aur ../../../../../download/phoneme/cldc/build/share/jvm.make phoneme/cldc/build/share/jvm.make
-//--- ../../../../../download/phoneme/cldc/build/share/jvm.make	2014-02-04 18:37:41.000000000 +0400
-//+++ phoneme/cldc/build/share/jvm.make	2014-06-09 19:45:52.880151178 +0400
-//@@ -1856,12 +1856,12 @@
-// ifeq ($(host_os), solaris)
-//  ASM_gcc           = $(GCC_PREFIX)gas
-// else
-//- ASM_gcc           = $(GCC_PREFIX)as
-//+ ASM_gcc           := $(CROSS_COMPILER)as
-// endif
-//- CPP_gcc           = $(GCC_PREFIX)g++$(GCC_POSTFIX)
-//- CC_gcc            = $(GCC_PREFIX)gcc$(GCC_POSTFIX)
-//- LINK_gcc          = $(GCC_PREFIX)g++$(GCC_POSTFIX)
-//- LIBMGR_gcc        = $(GCC_PREFIX)ar
-//+ CPP_gcc           := $(EMBOX_GXX)
-//+ CC_gcc            := $(EMBOX_GCC)
-//+ LINK_gcc          = g++
-//+ LIBMGR_gcc        := $(CROSS_COMPILER)ar
-// 
-// else
-// 
-diff -aur ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/cldc/src/vm/cpu/i386/kni_md.h
+diff -uar ../../../../../download/phoneme/cldc/build/linux_i386/linux_i386.cfg phoneme/cldc/build/linux_i386/linux_i386.cfg
+--- ../../../../../download/phoneme/cldc/build/linux_i386/linux_i386.cfg	2014-02-04 18:36:39.000000000 +0400
++++ phoneme/cldc/build/linux_i386/linux_i386.cfg	2014-08-04 17:14:31.497692782 +0400
+@@ -58,3 +58,5 @@
+ endif
+ 
+ export BUILD_ANI_LIB := true
++
++export skip_link_image := true
+diff -uar ../../../../../download/phoneme/cldc/build/share/jvm.make phoneme/cldc/build/share/jvm.make
+--- ../../../../../download/phoneme/cldc/build/share/jvm.make	2014-02-04 18:37:41.000000000 +0400
++++ phoneme/cldc/build/share/jvm.make	2014-08-04 17:25:06.107448347 +0400
+@@ -1879,6 +1879,8 @@
+ 
+ LIB_FLAGS          = cqs
+ 
++ASM_FLAGS          = --32
++
+ ifeq ($(os), darwin)
+  # darwin is picky on the lib manager
+  LIBMGR_gcc        = libtool
+@@ -2034,7 +2036,7 @@
+ LINK_FLAGS             += -lm
+ endif
+ 
+-LINK_FLAGS             += $(LINK_OPT_FLAGS_$(BUILD))
++LINK_FLAGS             += $(LINK_OPT_FLAGS_$(BUILD)) -m32
+ 
+ ifeq ("$(ENABLE_STATIC_LINK)-$(IsTarget)", "true-true")
+ LINK_FLAGS             += -static
+@@ -2066,10 +2068,22 @@
+ 	$(A)$(ASM) $(ASM_FLAGS) -o $@ $(THIS_DIR)/AsmStubs_$(target_arch).s
+ endif
+ 
++ifeq ($(IsLoopGen), true)
++define BUILD_C_TARGET
++	$(A)echo " ... [LoopGen] $(notdir $<)"
++	$(A)$(CPP) $(CPP_OPT_FLAGS) $(CPP_FLAGS) $(THUMB_CFLAGS) -fpermissive -m32 -c $< -o $@
++endef
++else ifeq ($(IsRomGen), true)
+ define BUILD_C_TARGET
+-	$(A)echo " ... $(notdir $<)"
+-	$(A)$(CPP) $(CPP_OPT_FLAGS) $(CPP_FLAGS) $(THUMB_CFLAGS) -c $< -o $@
++	$(A)echo " ... [RomGen] $(notdir $<)"
++	$(A)$(CPP) $(CPP_OPT_FLAGS) $(CPP_FLAGS) $(THUMB_CFLAGS) -fpermissive -m32 -c $< -o $@
+ endef
++else
++define BUILD_C_TARGET
++	$(A)echo " ... [TARGET] $(notdir $<)"
++	$(EMBOX_GXX) $(CPP_OPT_FLAGS) $(CPP_FLAGS) $(THUMB_CFLAGS) -DSUPPORTS_ADJUSTABLE_MEMORY_CHUNK=0 -fpermissive -Wno-error -c $< -o $@
++endef
++endif
+ 
+ ifeq ($(ENABLE_THUMB_VM)+$(IsTarget), true+true)
+ %$(OBJ_SUFFIX): $(WorkSpace)/src/vm/os/linux/%.cpp
+Only in phoneme/cldc/build/share: .jvm.make.swp
+diff -uar ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/cldc/src/vm/cpu/i386/kni_md.h
 --- ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-02-04 18:36:47.000000000 +0400
-+++ phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-06-09 19:36:08.259384131 +0400
++++ phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-08-04 17:14:31.501692868 +0400
 @@ -36,7 +36,7 @@
  typedef signed char jbyte;
  typedef int         jint;
@@ -31,9 +66,11 @@ diff -aur ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/
  typedef __int64     jlong;
  #else
  typedef long long jlong;
-diff -aur ../../../../../download/phoneme/javacall/interface/javacall_defs.h phoneme/javacall/interface/javacall_defs.h
+Only in phoneme/cldc/src/vm/os/linux: .BuildFlags_linux.hpp.swp
+Only in phoneme/cldc/src/vm/os/linux: .OsMemory_linux.cpp.swp
+diff -uar ../../../../../download/phoneme/javacall/interface/javacall_defs.h phoneme/javacall/interface/javacall_defs.h
 --- ../../../../../download/phoneme/javacall/interface/javacall_defs.h	2014-02-04 18:37:02.000000000 +0400
-+++ phoneme/javacall/interface/javacall_defs.h	2014-06-09 19:36:08.259384131 +0400
++++ phoneme/javacall/interface/javacall_defs.h	2014-08-04 17:14:31.501692868 +0400
 @@ -260,11 +260,11 @@
   * @typedef javacall_pixel
   * @brief Pixel type for LCD graphics
@@ -48,9 +85,9 @@ diff -aur ../../../../../download/phoneme/javacall/interface/javacall_defs.h pho
  typedef unsigned int javacall_pixel;
  #else
  typedef unsigned short javacall_pixel;
-diff -aur ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/pcsl/makefiles/share/gcc.gmk
+diff -uar ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/pcsl/makefiles/share/gcc.gmk
 --- ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk	2014-02-04 18:36:57.000000000 +0400
-+++ phoneme/pcsl/makefiles/share/gcc.gmk	2014-06-09 19:36:08.259384131 +0400
++++ phoneme/pcsl/makefiles/share/gcc.gmk	2014-08-04 17:14:31.501692868 +0400
 @@ -42,10 +42,10 @@
  
  GCC_VERSION	=
@@ -64,3 +101,4 @@ diff -aur ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/p
  
  CC_OUTPUT=-o 
  AR_OUTPUT=
+Only in phoneme/tools: output

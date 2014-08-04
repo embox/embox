@@ -22,4 +22,5 @@ static module cldc {
 	@NoRuntime depends third_party.phoneme.javacall
 	@NoRuntime depends third_party.phoneme.pcsl
 	@NoRuntime depends third_party.phoneme.src
+	@NoRuntime depends embox.compat.posix.semaphore
 }
