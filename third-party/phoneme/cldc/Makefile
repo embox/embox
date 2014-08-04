@@ -8,9 +8,6 @@ CLDC_OUTPUT_DIR := $(BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
-# FIXME problem with quotes
-EMBOX_CPPFLAGS_ := $(filter-out -D"__impl_x%,$(EMBOX_CPPFLAGS))
-
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
 		ln -s ../src/phoneme/cldc src \
