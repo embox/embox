@@ -5,7 +5,7 @@ JAVACALL_OUTPUT_DIR := $(BUILD_DIR)/../javacall
 PCSL_OUTPUT_DIR := $(BUILD_DIR)/../pcsl
 CLDC_DIR := $(BUILD_DIR)/src
 CLDC_OUTPUT_DIR := $(BUILD_DIR)
-CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/linux_i386/dist
+CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
 # FIXME problem with quotes
@@ -19,7 +19,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR) && ( \
-		make -C src/build/linux_i386 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+		make -C src/build/javacall_i386_gcc MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			ENABLE_COMPILATION_WARNINGS=true \
 			ENABLE_MAP_FILE=false \
 			VERBOSE_BUILD=true \
