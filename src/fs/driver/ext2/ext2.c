@@ -984,6 +984,8 @@ static int ext2_umount_entry(struct nas *nas) {
 	return 0;
 }
 
+extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
+
 /*
  * Read a new inode into a file structure.
  */
@@ -1010,6 +1012,7 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 	/* set pointer to inode struct in read buffer */
 	dip = (struct ext2fs_dinode *) (buf
 			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, inumber));
+	e2fs_i_bswap(dip, dip);
 	/* load inode struct to file info */
 	e2fs_iload(dip, &fi->f_di);
 
@@ -2286,9 +2289,12 @@ void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
 	offset &= (fsi->s_block_size - 1);
 	dip = (struct ext2fs_dinode*) (b_data(fi->f_buf) + offset);
 
+	e2fs_i_bswap(dip, dip);
+
 	/* Do the read or write. */
 	if (rw_flag) {
 		memcpy(dip, fdi, sizeof(struct ext2fs_dinode));
+		e2fs_i_bswap(dip, dip);
 		ext2_write_sector(nas, fi->f_buf, 1, b);
 	}
 	else {
@@ -2699,6 +2705,10 @@ void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new) {
 	new->i_faddr = bswap32(old->i_faddr);
 	memcpy(&new->i_block[0], &old->i_block[0],
 			(NDADDR + NIADDR) * sizeof(uint32_t));
+}
+#else
+void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new) {
+
 }
 #endif
 

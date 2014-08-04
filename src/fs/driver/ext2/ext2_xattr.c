@@ -45,6 +45,40 @@ static inline size_t ent_len(struct ext2_xattr_ent *ent) {
 #define XATTR_ENT_HASH_VAL_SHIFT 16
 #define XATTR_ENT_HASH_VAL_RSHIFT (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)
 
+#if __BYTE_ORDER == __BIG_ENDIAN
+static void xattrent_bswap(struct ext2_xattr_ent *old, struct ext2_xattr_ent *new) {
+	new->e_name_len = old->e_name_len;
+	new->e_name_index = old->e_name_index;
+	new->e_value_offs = bswap16(old->e_value_offs);
+	new->e_value_block = bswap32(old->e_value_block);
+	new->e_value_size = bswap32(old->e_value_size);
+	new->e_hash = bswap32(old->e_hash);
+	memcpy(new->e_name, old->e_name, old->e_name_len);
+}
+
+void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t size) {
+	struct ext2_xattr_ent *i_ent;
+	int i = 0;
+
+	new->h_magic = bswap32(old->h_magic);
+	new->h_refcount = bswap32(old->h_refcount);
+	new->h_blocks = bswap32(old->h_blocks);
+	new->h_hash = bswap32(old->h_hash);
+	memcpy(&new->reserved, &old->reserved,
+			16 * sizeof(uint8_t));
+	size -= sizeof(uint32_t) * 4 + sizeof(uint8_t) * 16;
+
+	foreach_xattr(i_ent, old->h_entries) {
+		xattrent_bswap(&old->h_entries[i], &new->h_entries[i]);
+		i++;
+	}
+}
+#else
+void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t size) {
+
+}
+#endif
+
 static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 		struct ext2_xattr_ent *xattr_ent) {
 	size_t len;
@@ -111,6 +145,8 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 		return res;
 	}
+
+	xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 	if (check_magic && d2h32(xattr_blk->h_magic) != EXT2_XATTR_HDR_MAGIC) {
 		ext2_buff_free(node->nas, (char *) xattr_blk);
@@ -306,6 +342,8 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		block_rehash(xattr_blk);
 
 		blk_copy->h_refcount = h2d32(1);
+
+		xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 		if ((res = ext2_write_sector(node->nas, (char *) xattr_blk,
 						1, d2h32(dinode->i_facl)))) {
