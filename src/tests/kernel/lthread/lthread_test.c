@@ -27,6 +27,8 @@ static void *run1(void *arg) {
 TEST_CASE("Launch simple lthread") {
 	struct lthread *lt;
 
+	done = 0;
+
 	lt = lthread_create(run1, NULL);
 	test_assert_zero(err(lt));
 	lthread_launch(lt);
