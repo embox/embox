@@ -54,7 +54,11 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	}
 	sched_unlock();
 
-	ptregs_retcode_jmp(ptregs, child_pid);
+	if (child_pid > 0) {
+		ptregs_retcode_jmp(ptregs, child_pid);
+	} else {
+		ptregs_retcode_err_jmp(ptregs, -1, -child_pid);
+	}
 
 	panic("%s returning", __func__);
 }
