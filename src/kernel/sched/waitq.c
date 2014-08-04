@@ -86,6 +86,7 @@ void __waitq_wakeup(struct waitq *wq, int nr) {
 	assert(wq);
 
 	dlist_foreach_entry(wql, &wq->list, link) {
+		assert(wql->thread);
 		if (!sched_wakeup(wql->thread))
 			continue;
 

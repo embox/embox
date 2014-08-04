@@ -61,6 +61,7 @@ extern void waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
 extern void __waitq_wakeup(struct waitq *, int nr);
 extern void waitq_wakeup(struct waitq *, int nr);
+
 static inline void waitq_wakeup_all(struct waitq *wq) {
 	waitq_wakeup(wq, 0);
 }
