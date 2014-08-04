@@ -16,8 +16,9 @@
 
 #include <mem/page.h>
 #include <mem/phymem.h>
-#include <kernel/task/resource/task_heap.h>
 
+#include <kernel/task/resource/task_heap.h>
+#include <kernel/task/resource/task_fork.h>
 #include <kernel/task/resource/module_ptr.h>
 #include <framework/mod/types.h>
 
@@ -30,43 +31,6 @@ static inline struct dlist_head *task_mspace(struct task *tk) {
 
 	task_heap = task_heap_get(task_self());
 	return &task_heap->mm;
-}
-
-struct stack_space {
-	void *user_stack;
-	size_t user_stack_sz;
-};
-
-struct heap_space {
-	void *heap;
-	size_t heap_sz;
-
-	struct dlist_head store_space;
-};
-
-struct static_space {
-	void *bss_store;
-	void *data_store;
-};
-
-struct addr_space {
-	struct addr_space *parent_addr_space;
-	unsigned int child_count;
-
-	struct pt_regs *pt_entry;
-
-	struct thread *parent_thread;
-
-	struct stack_space stack_space;
-	struct heap_space heap_space;
-	struct static_space static_space;
-};
-
-static struct addr_space *fork_get_self_addr_space();
-static void fork_set_addr_space(struct task *tk, struct addr_space *adrspc);
-
-static inline struct task *thread_get_task(struct thread *th) {
-	return th->task;
 }
 
 static void fork_user_stack_store(struct stack_space *stspc, struct thread *thread) {
@@ -100,15 +64,6 @@ static void fork_user_stack_restore(struct stack_space *stspc, struct thread *th
 	}
 }
 
-static void fork_user_stack_cleanup(struct stack_space *stspc) {
-
-	if (stspc->user_stack) {
-		sysfree(stspc->user_stack);
-	}
-
-	stspc->user_stack_sz = 0;
-}
-
 static void fork_heap_store(struct heap_space *hpspc, struct task *tk) {
 	size_t size;
 
@@ -127,12 +82,6 @@ static void fork_heap_store(struct heap_space *hpspc, struct task *tk) {
 
 static void fork_heap_restore(struct heap_space *hpspc, struct task *tk) {
 	mspace_deep_restore(task_mspace(tk), &hpspc->store_space, hpspc->heap);
-}
-
-static void fork_heap_cleanup(struct heap_space *hpspc) {
-	if (hpspc->heap) {
-		page_free(__phymem_allocator, hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
-	}
 }
 
 static inline const struct mod_app *task_app_get(struct task *tk) {
@@ -176,39 +125,12 @@ static void fork_static_restore(struct static_space *sspc, struct task *tk) {
 	memcpy(app->data, sspc->data_store, app->data_sz);
 }
 
-static void fork_static_cleanup(struct static_space *sspc) {
-
-	if (sspc->bss_store) {
-		sysfree(sspc->bss_store);
-	}
-
-	if (sspc->data_store) {
-		sysfree(sspc->data_store);
-	}
-}
-
 static void fork_addr_space_child_add(struct addr_space *parent, struct addr_space *child) {
 	child->parent_addr_space = parent;
 
 	if (parent) {
 		parent->child_count++;
 	}
-}
-
-static void fork_addr_space_child_del(struct addr_space *child) {
-	struct addr_space *parent = child->parent_addr_space;
-
-	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
-
-	if (!parent) {
-		return;
-	}
-
-	/* removing child from parent */
-	parent->child_count--;
-
-	/* reassigning child's childs to parent */
-	parent->child_count += child->child_count;
 }
 
 static struct addr_space *fork_addr_space_create(struct thread *current_thread, struct addr_space *parent) {
@@ -243,20 +165,11 @@ static void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_
 	fork_static_restore(&adrspc->static_space, tk);
 }
 
-static void fork_addr_space_delete(struct addr_space *adrspc) {
-
-	fork_user_stack_cleanup(&adrspc->stack_space);
-	fork_heap_cleanup(&adrspc->heap_space);
-	fork_static_cleanup(&adrspc->static_space);
-
-	fork_addr_space_child_del(adrspc);
-	sysfree(adrspc);
-}
-
 static void *fork_child_trampoline(void *arg) {
-	struct addr_space *adrspc = fork_get_self_addr_space();
+	struct addr_space *adrspc;
 	struct pt_regs ptregs;
 
+	adrspc = fork_addr_space_get(task_self());
 	memcpy(&ptregs, adrspc->pt_entry, sizeof(ptregs));
 	sysfree(adrspc->pt_entry);
 	adrspc->pt_entry = NULL;
@@ -269,7 +182,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	struct addr_space *adrspc, *child_adrspc;
 	pid_t child_pid;
 
-	adrspc = fork_get_self_addr_space();
+	adrspc = fork_addr_space_get(task_self());
 	if (!adrspc) {
 		adrspc = fork_addr_space_create(thread_self(), NULL);
 		fork_set_addr_space(task_self(), adrspc);
@@ -294,44 +207,8 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	panic("%s returning", __func__);
 }
 
-static void task_res_addr_space_ptr_init(const struct task *task, void *space) {
-	struct addr_space **adrspc_p = space;
-
-	*adrspc_p = NULL;
-};
-
-static void task_res_addr_space_ptr_deinit(const struct task *task) {
-	struct addr_space *adrspc;
-
-	assert(task == task_self());
-
-	adrspc = fork_get_self_addr_space();
-
-	if (adrspc) {
-		fork_addr_space_delete(adrspc);
-		fork_set_addr_space(task_self(), NULL);
-	}
-};
-
-TASK_RESOURCE_DECLARE(static,
-		task_resource_fork_addr_space,
-		struct addr_space *,
-	.init = task_res_addr_space_ptr_init,
-	.deinit = task_res_addr_space_ptr_deinit,
-);
-
-static struct addr_space *fork_get_self_addr_space() {
-	struct addr_space **adrspc_p = task_self_resource(&task_resource_fork_addr_space);
-	return *adrspc_p;
-}
-
-static void fork_set_addr_space(struct task *tk, struct addr_space *adrspc) {
-	struct addr_space **adrspc_p = task_resource(tk, &task_resource_fork_addr_space);
-	*adrspc_p = adrspc;
-}
-
 void fork_addr_space_prepare_switch(void) {
-	struct addr_space *adrspc = fork_get_self_addr_space();
+	struct addr_space *adrspc = fork_addr_space_get(task_self());
 	if (adrspc) {
 		fork_addr_space_store(adrspc);
 	}
@@ -342,7 +219,7 @@ static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 }
 
 void fork_addr_space_finish_switch(void *safe_point) {
-	struct addr_space *adrspc = fork_get_self_addr_space();
+	struct addr_space *adrspc = fork_addr_space_get(task_self());
 
 	if (adrspc) {
 

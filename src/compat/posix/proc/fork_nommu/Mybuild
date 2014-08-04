@@ -2,6 +2,7 @@ package embox.compat.posix.proc
 
 module fork_copy_everything extends fork {
 	source "fork_copy_everything.c"
+	source "fork_addr_space.c"
 	depends embox.arch.fork_entry
 	depends fork_copy_addr_space
 }
