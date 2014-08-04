@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <sys/cdefs.h>
+#include <errno.h>
 
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutexattr.h>
@@ -67,17 +68,20 @@ struct mutex {
 #define STORE(x) \
     do { ((volatile int *) 0x100) = x } while (0)
 
-#define mutex_lock_schedee(mutex, wql) \
-	do { \
+#define mutex_lock_schedee_or_wait(mutex, wql) \
+	({ \
+		int ret = 0; \
 		if (!(wql)->schedee) { \
 			waitq_link_init(wql); \
 		} \
 		if (mutex_trylock_schedee(mutex)) { \
 			waitq_wait_prepare(&(mutex)->wq, (wql)); \
-			return NULL; \
+		} else { \
+			waitq_wait_cleanup(&(mutex)->wq, (wql)); \
+			ret = -EAGAIN; \
 		} \
-		waitq_wait_cleanup(&(mutex)->wq, (wql)); \
-	} while(0)
+		ret; \
+	})
 
 /**
  * initializes given mutex with attribute

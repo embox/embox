@@ -42,7 +42,9 @@ static void *low_run(void *arg) {
 static struct waitq_link wql;
 
 static void *high_run(void *arg) {
-	mutex_lock_schedee(&m, &wql);
+	if (mutex_lock_schedee_or_wait(&m, &wql) == -EAGAIN) {
+		return NULL;
+	}
 	test_emit('d');
 	mutex_unlock_schedee(&m);
 	return NULL;
