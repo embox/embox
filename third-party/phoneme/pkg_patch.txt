@@ -1,12 +1,3 @@
-diff -uar ../../../../../download/phoneme/cldc/build/linux_i386/linux_i386.cfg phoneme/cldc/build/linux_i386/linux_i386.cfg
---- ../../../../../download/phoneme/cldc/build/linux_i386/linux_i386.cfg	2014-02-04 18:36:39.000000000 +0400
-+++ phoneme/cldc/build/linux_i386/linux_i386.cfg	2014-08-04 17:14:31.497692782 +0400
-@@ -58,3 +58,5 @@
- endif
- 
- export BUILD_ANI_LIB := true
-+
-+export skip_link_image := true
 diff -uar ../../../../../download/phoneme/cldc/build/share/jvm.make phoneme/cldc/build/share/jvm.make
 --- ../../../../../download/phoneme/cldc/build/share/jvm.make	2014-02-04 18:37:41.000000000 +0400
 +++ phoneme/cldc/build/share/jvm.make	2014-08-04 17:25:06.107448347 +0400
@@ -53,7 +44,6 @@ diff -uar ../../../../../download/phoneme/cldc/build/share/jvm.make phoneme/cldc
  
  ifeq ($(ENABLE_THUMB_VM)+$(IsTarget), true+true)
  %$(OBJ_SUFFIX): $(WorkSpace)/src/vm/os/linux/%.cpp
-Only in phoneme/cldc/build/share: .jvm.make.swp
 diff -uar ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/cldc/src/vm/cpu/i386/kni_md.h
 --- ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-02-04 18:36:47.000000000 +0400
 +++ phoneme/cldc/src/vm/cpu/i386/kni_md.h	2014-08-04 17:14:31.501692868 +0400
@@ -66,8 +56,6 @@ diff -uar ../../../../../download/phoneme/cldc/src/vm/cpu/i386/kni_md.h phoneme/
  typedef __int64     jlong;
  #else
  typedef long long jlong;
-Only in phoneme/cldc/src/vm/os/linux: .BuildFlags_linux.hpp.swp
-Only in phoneme/cldc/src/vm/os/linux: .OsMemory_linux.cpp.swp
 diff -uar ../../../../../download/phoneme/javacall/interface/javacall_defs.h phoneme/javacall/interface/javacall_defs.h
 --- ../../../../../download/phoneme/javacall/interface/javacall_defs.h	2014-02-04 18:37:02.000000000 +0400
 +++ phoneme/javacall/interface/javacall_defs.h	2014-08-04 17:14:31.501692868 +0400
@@ -101,4 +89,3 @@ diff -uar ../../../../../download/phoneme/pcsl/makefiles/share/gcc.gmk phoneme/p
  
  CC_OUTPUT=-o 
  AR_OUTPUT=
-Only in phoneme/tools: output
