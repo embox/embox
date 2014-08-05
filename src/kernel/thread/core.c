@@ -70,7 +70,6 @@ static void thread_ack_switched(void) {
 
 void sched_prepare_switch(struct thread *prev, struct thread *next) {
 	sched_ticker_switch(prev, next);
-	sched_timing_switch(prev, next);
 	prev->critical_count = critical_count();
 	critical_count() = next->critical_count;
 	sched_start_switch(&next->schedee);
@@ -269,7 +268,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	/* Initializes scheduler strategy data of the thread */
 	runq_item_init(&(t->schedee.sched_attr.runq_link));
 	sched_affinity_init(&(t->schedee));
-	sched_timing_init(t);
+	sched_timing_init(&t->schedee);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
@@ -468,8 +467,7 @@ clock_t thread_get_running_time(struct thread *t) {
 
 	sched_lock();
 	{
-		running = sched_timing_get(t);
-
+		running = sched_timing_get(&t->schedee);
 	}
 	sched_unlock();
 

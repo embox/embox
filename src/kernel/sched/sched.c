@@ -366,6 +366,8 @@ static void __schedule(int preempt) {
 	else
 		__sched_enqueue(prev);
 
+	sched_timing_stop(prev);
+
 	while (1) {
 		next = runq_extract(&rq.queue);
 
@@ -379,6 +381,8 @@ static void __schedule(int preempt) {
 		}
 		rq.ipl = spin_lock_ipl(&rq.lock);
 	}
+
+	sched_timing_start(next);
 }
 
 void schedule(void) {
