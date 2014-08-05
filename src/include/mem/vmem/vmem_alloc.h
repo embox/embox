@@ -9,6 +9,8 @@
 #ifndef VMEM_ALLOC_H_
 #define VMEM_ALLOC_H_
 
+#include <stddef.h>
+
 #include <hal/mmu.h>
 
 extern void *VIRTUAL_TABLES_START;

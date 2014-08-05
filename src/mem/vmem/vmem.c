@@ -27,7 +27,7 @@ extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 /* phymem allocator space */
 extern char *phymem_alloc_start, *phymem_alloc_end;
 
-static inline int vmem_map_kernel(mmu_ctx_t ctx) {
+int vmem_map_kernel(mmu_ctx_t ctx) {
 	int err = 0;
 	size_t phymem_len;
 
@@ -73,44 +73,7 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	return err;
 }
 
-int vmem_create_context(mmu_ctx_t *ctx) {
-	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
 
-	if (!pgd) {
-		return -ENOMEM;
-	}
-
-	*ctx = mmu_create_context(pgd);
-
-	return ENOERR;
-}
-
-/* FIXME: remove create context from here */
-int vmem_init_context(mmu_ctx_t *ctx) {
-	int err;
-
-	if ((err = vmem_create_context(ctx))) {
-		return err;
-	}
-
-	return vmem_map_kernel(*ctx);
-}
-
-void vmem_free_context(mmu_ctx_t ctx) {
-	/*
-	 * To unmap this context we should switch to kernel task virtual context.
-	 * Actually, we can save this context for the later created tasks.
-	 */
-
-	sched_lock();
-	{
-		//XXX: Bad code
-		mmu_set_context(1);
-
-		vmem_unmap_region(ctx, 0, 0x80000000UL, 0);
-	}
-	sched_unlock();
-}
 
 void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", virt_addr);
