@@ -387,8 +387,8 @@ static void sched_switch(struct thread *prev, struct thread *next) {
 
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 
-	prev = cpudata_var(saved_prev);
 	ADDR_SPACE_FINISH_SWITCH();
+	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(prev);
 }
