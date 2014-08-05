@@ -38,26 +38,18 @@ void fork_addr_space_finish_switch(void *safe_point) {
 	}
 }
 
-static void fork_addr_space_child_add(struct addr_space *parent, struct addr_space *child) {
-	child->parent_addr_space = parent;
+struct addr_space *fork_addr_space_create(struct addr_space *parent) {
+	struct addr_space *adrspc;
+
+	adrspc = sysmalloc(sizeof(*adrspc));
+	memset(adrspc, 0, sizeof(*adrspc));
+
+	adrspc->parent_thread = thread_self();
+	adrspc->parent_addr_space = parent;
 
 	if (parent) {
 		parent->child_count++;
 	}
-}
-
-struct addr_space *fork_addr_space_create(struct thread *current_thread, struct addr_space *parent) {
-	struct addr_space *adrspc;
-
-	adrspc = sysmalloc(sizeof(*adrspc));
-
-	memset(adrspc, 0, sizeof(*adrspc));
-
-	adrspc->parent_thread = current_thread;
-
-	adrspc->child_count = 0;
-
-	fork_addr_space_child_add(parent, adrspc);
 
 	return adrspc;
 }

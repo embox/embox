@@ -51,33 +51,24 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 
 	adrspc = fork_addr_space_get(parent);
 	if (!adrspc) {
-		adrspc = fork_addr_space_create(thread_self(), NULL);
+		adrspc = fork_addr_space_create(NULL);
 		fork_addr_space_set(parent, adrspc);
 	}
 
-	child_adrspc = fork_addr_space_create(thread_self(), adrspc);
+	child_adrspc = fork_addr_space_create(adrspc);
 	fork_addr_space_store(child_adrspc);
 
-	//child_adrspc->pt_entry = sysmalloc(sizeof(*adrspc->pt_entry));
-	//assert(child_adrspc->pt_entry);
 	memcpy(&child_adrspc->pt_entry, ptregs, sizeof(child_adrspc->pt_entry));
 
 	sched_lock();
 	{
-		//child_pid = new_task("", fork_child_trampoline, NULL);
 		child = task_table_get(child_pid);
 		task_start(child, fork_child_trampoline, NULL);
-
 		fork_addr_space_set(child, child_adrspc);
 	}
 	sched_unlock();
 
-	if (child_pid > 0) {
-		ptregs_retcode_jmp(ptregs, child_pid);
-	} else {
-		ptregs_retcode_err_jmp(ptregs, -1, -child_pid);
-	}
-
+	ptregs_retcode_jmp(ptregs, child_pid);
 	panic("%s returning", __func__);
 }
 
