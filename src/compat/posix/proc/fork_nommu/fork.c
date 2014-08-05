@@ -52,7 +52,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	adrspc = fork_addr_space_get(parent);
 	if (!adrspc) {
 		adrspc = fork_addr_space_create(thread_self(), NULL);
-		fork_set_addr_space(parent, adrspc);
+		fork_addr_space_set(parent, adrspc);
 	}
 
 	child_adrspc = fork_addr_space_create(thread_self(), adrspc);
@@ -68,7 +68,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 		child = task_table_get(child_pid);
 		task_start(child, fork_child_trampoline, NULL);
 
-		fork_set_addr_space(child, child_adrspc);
+		fork_addr_space_set(child, child_adrspc);
 	}
 	sched_unlock();
 

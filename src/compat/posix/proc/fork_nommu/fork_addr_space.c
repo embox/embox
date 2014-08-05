@@ -24,15 +24,16 @@ static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 }
 
 void fork_addr_space_finish_switch(void *safe_point) {
-	struct addr_space *adrspc = fork_addr_space_get(task_self());
+	struct addr_space *adrspc;
+
+	adrspc = fork_addr_space_get(task_self());
 
 	if (adrspc) {
 
 		fork_addr_space_restore(adrspc, safe_point);
 
 		if (!fork_addr_space_is_shared(adrspc)) {
-			fork_addr_space_delete(adrspc);
-			fork_set_addr_space(task_self(), NULL);
+			fork_addr_space_delete(task_self());
 		}
 	}
 }
@@ -100,16 +101,9 @@ static void fork_addr_space_init(const struct task *task, void *space) {
 }
 
 static void fork_addr_space_deinit(const struct task *task) {
-	struct addr_space *adrspc;
-
 	assert(task == task_self());
 
-	adrspc = fork_addr_space_get(task_self());
-
-	if (adrspc) {
-		fork_addr_space_delete(adrspc);
-		fork_set_addr_space(task_self(), NULL);
-	}
+	fork_addr_space_delete(task_self());
 }
 
 TASK_RESOURCE_DECLARE(static,
@@ -123,17 +117,25 @@ struct addr_space *fork_addr_space_get(const struct task *task) {
 	return *((struct addr_space **) task_resource(task, &fork_addr_space));
 }
 
-void fork_set_addr_space(struct task *tk, struct addr_space *adrspc) {
+void fork_addr_space_set(struct task *tk, struct addr_space *adrspc) {
 	struct addr_space **adrspc_p;
 	adrspc_p = task_resource(tk, &fork_addr_space);
 	*adrspc_p = adrspc;
 }
 
-void fork_addr_space_delete(struct addr_space *adrspc) {
+void fork_addr_space_delete(struct task *task) {
+	struct addr_space *adrspc;
+	adrspc = fork_addr_space_get(task);
+
+	if (!adrspc)
+		return;
+
 	fork_user_stack_cleanup(&adrspc->stack_space);
 	fork_heap_cleanup(&adrspc->heap_space);
 	fork_static_cleanup(&adrspc->static_space);
 
 	fork_addr_space_child_del(adrspc);
 	sysfree(adrspc);
+
+	fork_addr_space_set(task, NULL);
 }
