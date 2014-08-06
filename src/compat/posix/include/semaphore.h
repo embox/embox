@@ -12,6 +12,10 @@
 
 #include <kernel/thread/sync/semaphore.h>
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 typedef struct sem sem_t;
 
 //extern int    sem_close(sem_t *);
@@ -25,5 +29,6 @@ extern int    sem_trywait(sem_t *); //OK
 //extern int    sem_unlink(const char *);
 extern int    sem_wait(sem_t *);
 
+__END_DECLS
 
 #endif /* SEMAPHORE_H_ */

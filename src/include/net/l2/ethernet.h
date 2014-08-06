@@ -59,6 +59,8 @@ static inline struct ethhdr * eth_hdr(const struct sk_buff *skb) {
 	return skb->mac.ethh;
 }
 
+extern void ethhdr_build(struct ethhdr *ethh, const void *ethdst,
+		const void *ethsrc, short h_proto);
 /**
  * Ethernet device options
  */

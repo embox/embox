@@ -50,12 +50,14 @@ static int nt_build_hdr(struct sk_buff *skb,
 			ret = neighbour_get_haddr(hdr_info->type,
 					hdr_info->dst_p, dev, dev->type,
 					ARRAY_SIZE(dst_haddr), &dst_haddr[0]);
-			if (ret != 0) {
+			if (ret == 0) {
+				hdr_info->dst_hw = &dst_haddr[0];
+			} else if (ret == -ENOENT && (dev->flags & IFF_NOARP)) {
+				hdr_info->dst_hw = NULL;
+			} else {
 				return ret;
 			}
-			hdr_info->dst_hw = &dst_haddr[0];
-		}
-		else {
+		} else {
 			hdr_info->dst_hw = &dev->broadcast[0];
 		}
 	}

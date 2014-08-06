@@ -12,17 +12,19 @@
 	.global ptregs_jmp
 
 ptregs_jmp:
-	movl	4(%esp), %ebp
-	movl	PT_EIP(%ebp), %ecx
-	movl	PT_ESP(%ebp), %edx
-	subl	$4, %edx
-	movl	%ecx, (%edx)
+	movl	4(%esp), %esi
+	movl	PT_ESP(%esi), %ebx
 
-	movl	%ebp, %esp
+	movl	PT_EIP(%esi), %eax
+	subl	$4, %ebx
+	movl	%eax, (%ebx)
+
+	subl	$PT_TRAPNO, %ebx
+	movl	$PT_TRAPNO, %ecx
+	movl	%ebx, %edi
+	cld
+	rep 	movsb
+
+	movl	%ebx, %esp
 	RESTORE_ALL_REGS
-
-	addl 	$16, %esp
-	popf
-	movl 	(%esp), %esp
-	subl	$4, %esp
 	ret

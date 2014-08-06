@@ -9,7 +9,7 @@ static module cldc {
 	/*
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/gen")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/phoneme/cldc/install/include")
-	@Rule("$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) -DROMIZING $(flags) -c -o $@ $<")
+	@Rule(script="$(CXX) $(flags_before) $(CXXFLAGS) -fpermissive -Wno-error $(CPPFLAGS) -DROMIZING $(flags) -c -o $@ $(EXTERNAL_BUILD_DIR)/third_party/phoneme/cldc/gen/$(notdir $(mk_file:$(MKGEN_DIR)/%.rule.mk=%))")
 	source "ROMImage.cpp", "NativesTable.cpp"
 	*/
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/gen")

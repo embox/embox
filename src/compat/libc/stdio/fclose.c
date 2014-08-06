@@ -26,6 +26,7 @@ int fclose(FILE *file) {
 		} else {
 			res = 0;
 		}
+		stdio_file_free(file);
 	} else {
 		res = close(file->fd);
 		if (res >= 0) {

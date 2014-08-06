@@ -137,6 +137,19 @@ TEST_CASE("send...() and recv...() works") {
 	test_assert_zero(close(a));
 }
 
+TEST_CASE("accept() returns first connected client") {
+	int other_c = socket(AF_INET, SOCK_STREAM, PROTO);
+	test_assert(other_c >= 0);
+	test_assert_zero(connect(c, to_sa(&addr), addrlen));
+	test_assert_zero(connect(other_c, to_sa(&addr), addrlen));
+	test_assert(0 <= (a = accept(l, to_sa(&addr), &addrlen)));
+	test_assert_zero(fcntl(a, F_SETFD, O_NONBLOCK));
+
+	test_assert_equal(1, send(c, "a", 1, 0));
+	test_assert_equal(1, recv(a, buf, 2, 0));
+	test_assert_equal('a', buf[0]);
+}
+
 TEST_CASE("getsockname() returns not unspecified address when"
 		" a socket was connected") {
 	struct sockaddr_in tmp;
@@ -218,7 +231,7 @@ static int case_setup(void) {
 		return -errno;
 	}
 
-	if (-1 == listen(l, 0)) {
+	if (-1 == listen(l, 3)) {
 		return -errno;
 	}
 
