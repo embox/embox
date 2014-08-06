@@ -45,14 +45,14 @@ void sched_ticker_fini(void) {
 	timer_close(sched_tick_timer);  // TODO err check?
 }
 
-void sched_ticker_switch(struct thread *prev, struct thread *next) {
-	if (prev->schedee.sched_attr.policy == SCHED_FIFO &&
-		next->schedee.sched_attr.policy != SCHED_FIFO) {
+void sched_ticker_switch(struct schedee *prev, struct schedee *next) {
+	if (prev->sched_attr.policy == SCHED_FIFO &&
+		next->sched_attr.policy != SCHED_FIFO) {
 		sched_ticker_init();
 	}
 
-	if (prev->schedee.sched_attr.policy != SCHED_FIFO &&
-		next->schedee.sched_attr.policy == SCHED_FIFO) {
+	if (prev->sched_attr.policy != SCHED_FIFO &&
+		next->sched_attr.policy == SCHED_FIFO) {
 		sched_ticker_fini();
 	}
 }

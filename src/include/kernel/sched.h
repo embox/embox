@@ -22,8 +22,6 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
-struct lthread;
-struct thread;
 struct schedee;
 
 __BEGIN_DECLS
@@ -47,26 +45,9 @@ extern int sched_init(struct schedee *idle, struct schedee *current);
 
 extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);
-extern void sched_ticker_switch(struct thread *prev, struct thread *next);
+extern void sched_ticker_switch(struct schedee *prev, struct schedee *next);
 
 extern void sched_sleep(void);
-
-/**
- * Makes active or waking thread and adds thread to the queue of ready to
- * executing threads.
- *
- * @param thread
- *   Thread which will be added.
- */
-extern void __sched_start(struct thread *t);
-extern void sched_start(struct thread *t);
-
-#if 0
-/**
- * Makes exit thread and removes thread from scheduler.
- */
-extern void sched_finish(struct thread *t);
-#endif
 
 extern int sched_active(struct schedee *s);
 
@@ -116,9 +97,9 @@ extern void sched_finish_switch(struct schedee *prev);
 extern void sched_start_switch(struct schedee *next);
 
 /**
- * @brief Makes thread to run regardless of it's state if thread is scheduling
+ * @brief Makes schedee to run regardless of it's state if thread is scheduling
  *
- * @param thread Thread to operate with
+ * @param schedee Schedee to operate with
  *
  * @return
  *   Operation result
@@ -127,7 +108,7 @@ extern void sched_start_switch(struct schedee *next);
  * @retval non-zero
  *   On operation fail.
  */
-extern void sched_signal(struct thread *thread);
+void sched_signal(struct schedee *schedee);
 
 __END_DECLS
 
