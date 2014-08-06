@@ -22,26 +22,18 @@ struct lthread {
 #define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)
 
 /**
- * Called by sched in __schedule to start routine.
- *
- * @param s
- *   schedee in struct lthread
- */
-extern void lthread_trampoline(struct schedee *s);
-
-/**
  * Creates a new light thread.
  * @param run
  *   The light thread start routine.
  * @param arg
  *   A value to pass to the start routine as the argument.
  * @return
- *   Light thread created.
+ *   Created light thread.
  */
 extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
 
 /**
- * Deletes light thread from pool
+ * Deletes light thread from the pool
  * @param lt
  *   The light thread to delete
  */

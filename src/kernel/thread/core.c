@@ -44,55 +44,10 @@
 #include <hal/context.h>
 #include <err.h>
 
-#include <kernel/addr_space.h>
-#include <profiler/tracing/trace.h>
-
-
+extern void thread_switch(struct thread *prev, struct thread *next);
+extern void thread_ack_switched(void);
 
 static int id_counter = 0; // TODO make it an indexator
-
-static struct thread *saved_prev __cpudata__; // XXX
-static struct thread *saved_next __cpudata__; // XXX
-
-/**
- * Any fresh thread must call this function from a trampoline.
- * Basically it emulates returning from the scheduler as it would be done
- * in case if 'context_switch' would return as usual (into 'sched_switch',
- * from where it was called) instead of jumping into a thread trampoline.
- */
-
-static void thread_ack_switched(void) {
-	ADDR_SPACE_FINISH_SWITCH();
-	sched_finish_switch(&cpudata_var(saved_prev)->schedee);
-	ipl_enable();
-	sched_unlock();
-}
-
-void sched_prepare_switch(struct thread *prev, struct thread *next) {
-	sched_ticker_switch(prev, next);
-	prev->critical_count = critical_count();
-	critical_count() = next->critical_count;
-	sched_start_switch(&next->schedee);
-}
-
-static void thread_switch(struct thread *prev, struct thread *next) {
-	sched_prepare_switch(prev, next);
-
-	trace_point(__func__);
-
-	/* Preserve initial semantics of prev/next. */
-	cpudata_var(saved_next) = next;
-	cpudata_var(saved_prev) = prev;
-	ADDR_SPACE_PREPARE_SWITCH();
-
-	context_switch(&prev->context, &next->context);  /* implies cc barrier */
-
-	ADDR_SPACE_FINISH_SWITCH();
-	prev = cpudata_var(saved_prev);
-	next = cpudata_var(saved_next);
-
-	sched_finish_switch(&prev->schedee);
-}
 
 /**
  * Wrapper for thread start routine.

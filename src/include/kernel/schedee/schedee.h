@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Interface for thread entities, used by scheduler
+ * @brief
  *
  * @date 21.11.2013
  * @author Andrey Kokorev
@@ -20,9 +20,6 @@ enum schedee_result {
 };
 
 struct schedee {
-	/**
-	 * Thread-specific function, puts current thread in runq
-	 */
 	enum schedee_result                (*prepare)(struct schedee *prev,
 			struct schedee *n, struct runq *rq);
 

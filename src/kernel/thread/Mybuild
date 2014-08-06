@@ -16,6 +16,7 @@ module core extends thread_mode {
 	source "core.c"
 	source "thread_allocator.c"
 	source "thread_register.c"
+	source "thread_switch.c"
 
 	depends starter
 
