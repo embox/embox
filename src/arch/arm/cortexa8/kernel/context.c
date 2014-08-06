@@ -13,33 +13,14 @@
 
 #include <asm/modes.h>
 
-extern void frame_tramp(void);
-
-void context_init(struct context *ctx, bool privileged) {
-	ctx->cpsr = ARM_MODE_SYS | I_BIT | F_BIT;
-}
-
-void context_set_stack(struct context *ctx, void *sp) {
+extern void context_init(struct context *ctx, unsigned int flags,
+		void (*routine_fn)(void), void *sp) {
+	ctx->lr = (uint32_t) routine_fn;
 	ctx->sp = (uint32_t) sp;
-}
+	ctx->cpsr = ARM_MODE_SYS;
 
-void context_set_entry(struct context *ctx, void(*pc)(void)) {
-	ctx->lr = (uint32_t) pc;
-}
-
-void context_enter_frame(struct context *ctx, void *pc) {
-	uint32_t *sp = (uint32_t *) ctx->sp;
-
-	*(--sp) = ctx->lr;
-	*(--sp) = (uint32_t) pc;
-
-	ctx->lr = (uint32_t) frame_tramp;
-
-	ctx->sp = (uint32_t) sp;
-
-}
-
-void context_push_stack(struct context *ctx, void *arg, size_t n) {
-
+	if (flags & CONTEXT_IRQDISABLE) {
+		ctx->cpsr |= I_BIT | F_BIT;
+	}
 }
 

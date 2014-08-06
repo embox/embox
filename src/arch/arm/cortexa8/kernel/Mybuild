@@ -2,7 +2,7 @@
 package embox.arch.arm.cortexa8.kernel
 
 module context extends embox.arch.context {
-	source "context.c", "context.h", "context_frame.S"
+	source "context.c", "context.h"
 	source "context_switch.S"
 }
 

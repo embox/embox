@@ -8,14 +8,9 @@
 #include <hal/context.h>
 
 
-void context_init(struct context *ctx, bool privileged) {
-}
-
-void context_set_stack(struct context *ctx, void *sp) {
+void context_init(struct context *ctx, unsigned int flags,
+		void (*routine_fn)(void), void *sp) {
 	/* Set kernel mode stack pointer */
 	ctx->sp = (uint32_t) sp;
-}
-
-void context_set_entry(struct context *ctx, void(*pc)(void)) {
-	ctx->ra = (uint32_t) pc;
+	ctx->ra = (uint32_t) routine_fn;
 }

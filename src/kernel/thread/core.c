@@ -182,8 +182,6 @@ void thread_init(struct thread *t, unsigned int flags,
 	thread_priority_init(t, priority);
 
 	/* cpu context init */
-	context_init(&t->context, true); /* setup default value of CPU registers */
-	context_set_entry(&t->context, thread_trampoline);/*set entry (IP register*/
 	/* setup stack pointer to the top of allocated memory
 	 * The structure of kernel thread stack follow:
 	 * +++++++++++++++ top
@@ -194,8 +192,8 @@ void thread_init(struct thread *t, unsigned int flags,
 	 * the end
 	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
 	 */
-	context_set_stack(&t->context,
-			thread_stack_get(t) + thread_stack_get_size(t));
+	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	sigstate_init(&t->sigstate);
 
