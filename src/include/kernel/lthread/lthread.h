@@ -13,10 +13,13 @@
 #include <module/embox/kernel/lthread/lthread_api.h>
 
 #include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 
 struct lthread {
 	struct schedee schedee;
 };
+
+#define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)
 
 /**
  * Called by sched in __schedule to start routine.

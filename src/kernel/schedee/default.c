@@ -8,7 +8,7 @@
 
 #include <kernel/cpu/cpudata.h>
 
-struct runnable;
+struct schedee;
 
 /* Defining current schedee for each CPU */
-struct runnable *__current_schedee __cpudata__;
+struct schedee *__current_schedee __cpudata__;
