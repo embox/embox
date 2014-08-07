@@ -64,11 +64,13 @@ static int stm32_uart_putc(struct uart *dev, int ch) {
 }
 
 static int stm32_uart_hasrx(struct uart *dev) {
-	return 0;
+	USART_TypeDef *USART = (void *) dev->base_addr;
+	return USART_GetFlagStatus(USART, USART_FLAG_RXNE) == SET;
 }
 
 static int stm32_uart_getc(struct uart *dev) {
-	return 0;
+	USART_TypeDef *USART = (void *) dev->base_addr;
+	return USART_ReceiveData(USART);
 }
 
 static void stm32_params2init(const struct uart_params *params, USART_InitTypeDef *USART_InitStruct) {
