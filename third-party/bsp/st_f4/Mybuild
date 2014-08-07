@@ -1,0 +1,42 @@
+package third_party.bsp
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildArtifactPath(cppflags="$(addprefix -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/,CMSIS/Include/ CMSIS/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/)")
+static module st_f4 extends st_bsp_api {
+
+	@DefineMacro("USE_STDPERIPH_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/CMSIS/ST/STM32F4xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f4/")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/src")
+	source "misc.c",
+		"stm32f4xx_crc.c",
+		"stm32f4xx_cryp_aes.c",
+		"stm32f4xx_cryp.c",
+		"stm32f4xx_cryp_des.c",
+		"stm32f4xx_cryp_tdes.c",
+		"stm32f4xx_dac.c",
+		"stm32f4xx_dbgmcu.c",
+		"stm32f4xx_dcmi.c",
+		"stm32f4xx_dma.c",
+		"stm32f4xx_exti.c",
+		"stm32f4xx_flash.c",
+		"stm32f4xx_fsmc.c",
+		"stm32f4xx_gpio.c",
+		"stm32f4xx_hash.c",
+		"stm32f4xx_hash_md5.c",
+		"stm32f4xx_hash_sha1.c",
+		"stm32f4xx_i2c.c",
+		"stm32f4xx_iwdg.c",
+		"stm32f4xx_pwr.c",
+		"stm32f4xx_rcc.c",
+		"stm32f4xx_rng.c",
+		"stm32f4xx_rtc.c",
+		"stm32f4xx_sdio.c",
+		"stm32f4xx_spi.c",
+		"stm32f4xx_syscfg.c",
+		"stm32f4xx_tim.c",
+		"stm32f4xx_usart.c",
+		"stm32f4xx_wwdg.c"
+}
