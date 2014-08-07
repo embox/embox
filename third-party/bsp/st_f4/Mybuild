@@ -1,15 +1,16 @@
 package third_party.bsp
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildArtifactPath(cppflags="$(addprefix -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/,CMSIS/Include/ CMSIS/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/)")
+@BuildArtifactPath(cppflags="-DSTM32F40XX $(addprefix -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/bsp/st_f4/STM32F4x7_ETH_LwIP_V1.1.0/Libraries/,CMSIS/Include/ CMSIS/Device/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/)")
 static module st_f4 extends st_bsp_api {
 
+	@DefineMacro("STM32F40XX")
 	@DefineMacro("USE_STDPERIPH_DRIVER")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/CMSIS/Include/")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/CMSIS/ST/STM32F4xx/Include/")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4x7_ETH_LwIP_V1.1.0/Libraries/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4x7_ETH_LwIP_V1.1.0/Libraries/CMSIS/Device/ST/STM32F4xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4x7_ETH_LwIP_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/")
 	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f4/")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32F4x7_ETH_LwIP_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/src")
 	source "misc.c",
 		"stm32f4xx_crc.c",
 		"stm32f4xx_cryp_aes.c",
