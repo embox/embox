@@ -45,9 +45,9 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 	memset(adrspc, 0, sizeof(*adrspc));
 
 	adrspc->parent_thread = thread_self();
-	adrspc->parent_addr_space = parent;
 
 	if (parent) {
+		adrspc->parent_addr_space = parent;
 		parent->child_count++;
 	}
 

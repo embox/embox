@@ -19,14 +19,10 @@
 
 static void *fork_child_trampoline(void *arg) {
 	struct addr_space *adrspc;
-	struct pt_regs ptregs;
 
 	adrspc = fork_addr_space_get(task_self());
-	memcpy(&ptregs, &adrspc->pt_entry, sizeof(ptregs));
-	//sysfree(adrspc->pt_entry);
-	//adrspc->pt_entry = NULL;
 
-	ptregs_retcode_jmp(&ptregs, 0);
+	ptregs_retcode_jmp(&adrspc->pt_entry, 0);
 	panic("%s returning", __func__);
 }
 
@@ -45,8 +41,8 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	child_pid = task_prepare("");
 	if (0 > child_pid) {
 		/* error */
-		ptregs_retcode_err_jmp(ptregs, -1, -child_pid);
-		panic("fork_body returning");
+		ptregs_retcode_err_jmp(ptregs, -1, child_pid);
+		panic("%s returning", __func__);
 	}
 
 	adrspc = fork_addr_space_get(parent);
