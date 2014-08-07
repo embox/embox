@@ -14,20 +14,8 @@
 #include <errno.h>
 
 #include <kernel/sched/waitq.h>
-#include <kernel/thread/sync/mutexattr.h>
+#include <kernel/schedee/sync/mutex.h>
 
-struct thread;
-
-/**
- * Defines Mutex structure.
- */
-struct mutex {
-	struct waitq wq;
-	struct schedee *holder;
-	struct mutexattr attr;
-
-	int lock_count;
-};
 
 #define MUTEX_INIT_STATIC \
 	{                                                  \
@@ -106,10 +94,6 @@ extern int mutex_unlock(struct mutex *locked_mutex);
  * @param free_mutex Mutex to lock.
  */
 extern int mutex_trylock(struct mutex *free_mutex);
-
-extern int mutex_unlock_schedee(struct mutex *locked_mutex);
-extern int mutex_trylock_schedee(struct mutex *free_mutex);
-
 
 __END_DECLS
 

@@ -14,6 +14,8 @@
 #include <kernel/lthread/lthread_priority.h>
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
+#include <kernel/schedee/sync/mutex.h>
+#include <kernel/lthread/sync/mutex.h>
 #include <kernel/thread/sync/mutex.h>
 
 static struct lthread *high;
@@ -42,7 +44,7 @@ static void *low_run(void *arg) {
 }
 
 static void *high_run(void *arg) {
-	if (mutex_lock_schedee_or_wait(&m) == -EAGAIN) {
+	if (mutex_lock_lthread(&m) == -EAGAIN) {
 		return NULL;
 	}
 	test_emit('d');
@@ -53,7 +55,7 @@ static void *high_run(void *arg) {
 static int setup(void) {
 	sched_priority_t l = 200, h = 210;
 
-	mutex_init(&m);
+	mutex_init_schedee(&m);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));
