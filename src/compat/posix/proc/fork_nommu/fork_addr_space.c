@@ -13,7 +13,9 @@
 #include <sys/types.h>
 
 void fork_addr_space_prepare_switch(void) {
-	struct addr_space *adrspc = fork_addr_space_get(task_self());
+	struct addr_space *adrspc;
+
+	adrspc = fork_addr_space_get(task_self());
 	if (adrspc) {
 		fork_addr_space_store(adrspc);
 	}
@@ -94,7 +96,6 @@ static void fork_addr_space_init(const struct task *task, void *space) {
 
 static void fork_addr_space_deinit(const struct task *task) {
 	assert(task == task_self());
-
 	fork_addr_space_delete(task_self());
 }
 

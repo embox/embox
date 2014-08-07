@@ -64,5 +64,8 @@ void fork_static_cleanup(struct static_space *sspc) {
 	if (sspc->data_store) {
 		sysfree(sspc->data_store);
 	}
+
+	sspc->bss_store = NULL;
+	sspc->data_store = NULL;
 }
 

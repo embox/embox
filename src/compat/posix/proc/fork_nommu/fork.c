@@ -21,7 +21,6 @@ static void *fork_child_trampoline(void *arg) {
 	struct addr_space *adrspc;
 
 	adrspc = fork_addr_space_get(task_self());
-
 	ptregs_retcode_jmp(&adrspc->pt_entry, 0);
 	panic("%s returning", __func__);
 }
