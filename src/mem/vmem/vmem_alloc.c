@@ -20,18 +20,19 @@ EMBOX_UNIT_INIT(unit_init);
 #define VIRTUAL_TABLES_COUNT  OPTION_GET(NUMBER, virual_tables_count)
 #define VIRTUAL_PAGES_COUNT   OPTION_GET(NUMBER, virual_pages_count)
 
-static struct page_allocator *virt_table_allocator;
-static struct page_allocator *virt_page_allocator;
-
-
 static char virtual_tables[VIRTUAL_TABLES_COUNT][MMU_PAGE_SIZE] __attribute__((aligned(MMU_PAGE_SIZE)));
-
+PAGE_ALLOCATOR_DEF(static_table_allocator, virtual_tables, VIRTUAL_TABLES_COUNT, MMU_PAGE_SIZE);
+static struct page_allocator *virt_table_allocator = &static_table_allocator;
 void *VIRTUAL_TABLES_START = virtual_tables;
-size_t VIRTUAL_TABLES_LEN;
+size_t VIRTUAL_TABLES_LEN = sizeof(virtual_tables);
 
 static char virtual_page_info[VIRTUAL_PAGES_COUNT][MMU_PAGE_SIZE / PAGE_SIZE()] __attribute__((aligned(MMU_PAGE_SIZE)));
+PAGE_ALLOCATOR_DEF(static_page_info_allocator, virtual_page_info, VIRTUAL_PAGES_COUNT, MMU_PAGE_SIZE);
+static struct page_allocator *virt_page_allocator = &static_page_info_allocator;
 void *VIRTUAL_PAGES_INFO_START = virtual_page_info;
-size_t VIRTUAL_PAGES_INFO_LEN;
+size_t VIRTUAL_PAGES_INFO_LEN = sizeof(virtual_page_info);
+
+
 
 /*
  * ------------------ Alloc ------------------
@@ -84,20 +85,22 @@ void vmem_free_page(void *addr) {
 
 
 static int unit_init() {
+#if 0
 	/* Initialize tables allocator. */
 	VIRTUAL_TABLES_LEN = VIRTUAL_TABLES_COUNT * MMU_PAGE_SIZE;
-#if 0
+
 	if (!(VIRTUAL_TABLES_START = page_alloc(
 			__phymem_allocator,
 			VIRTUAL_TABLES_LEN / PAGE_SIZE()))) {
 
 		return -ENOMEM;
 	}
-#endif
+
 	virt_table_allocator = page_allocator_init(
 			VIRTUAL_TABLES_START,
 			VIRTUAL_TABLES_LEN,
 			MMU_PAGE_SIZE);
+#endif
 #if 0
 	/* Initialize pages allocator. */
 	if (!(VIRTUAL_PAGES_INFO_START = page_alloc(
@@ -106,14 +109,14 @@ static int unit_init() {
 
 		return -ENOMEM;
 	}
-#endif
+
 	virt_page_allocator = page_allocator_init(
 			VIRTUAL_PAGES_INFO_START,
 			__phymem_allocator->free,
 			MMU_PAGE_SIZE);
 
 	VIRTUAL_PAGES_INFO_LEN = virt_page_allocator->pages_n * virt_page_allocator->page_size - virt_page_allocator->free;
-
+#endif
 	return ENOERR;
 }
 

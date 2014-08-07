@@ -38,7 +38,7 @@ extern void page_free(struct page_allocator *allocator, void *page, size_t page_
 
 #define PAGE_ALLOCATOR_DEF(name, space, page_number, page_size) \
 	static unsigned long ctrl_space_##name[ page_number/32 ]; \
-	struct page_allocator name = { \
+	static struct page_allocator name = { \
 			space, \
 			page_number, \
 			page_size, \
