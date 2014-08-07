@@ -68,22 +68,6 @@ struct mutex {
 #define STORE(x) \
     do { ((volatile int *) 0x100) = x } while (0)
 
-#define mutex_lock_schedee_or_wait(mutex) \
-	({ \
-		int ret = 0; \
-		struct waitq_link *wql = &schedee_get_current()->waitq_link; \
-		if (!wql->schedee) { \
-			waitq_link_init(wql); \
-		} \
-		if (mutex_trylock_schedee(mutex)) { \
-			waitq_wait_prepare(&(mutex)->wq, wql); \
-			ret = -EAGAIN; \
-		} else { \
-			waitq_wait_cleanup(&(mutex)->wq, wql); \
-		} \
-		ret; \
-	})
-
 /**
  * initializes given mutex with attribute
  * @param m mutex to initialize
