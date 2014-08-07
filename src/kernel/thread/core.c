@@ -33,6 +33,7 @@
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
+#include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/schedee/schedee.h>
 #include <kernel/schedee/current.h>

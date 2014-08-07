@@ -78,12 +78,6 @@ extern int sched_wakeup(struct schedee *);
 extern void sched_freeze(struct schedee *t);
 
 /**
- * Wait cond_expr to become TRUE.
- */
-#define SCHED_WAIT(cond_expr) \
-	SCHED_WAIT_TIMEOUT(cond_expr, SCHED_TIMEOUT_INFINITE)
-
-/**
  * Requests switching of the current thread.
  */
 extern void sched_post_switch(void);
@@ -111,31 +105,6 @@ extern void sched_start_switch(struct schedee *next);
 void sched_signal(struct schedee *schedee);
 
 __END_DECLS
-
-#include <kernel/thread/signal_lock.h>
-
-#define SCHED_WAIT_TIMEOUT(cond_expr, timeout) \
-	((cond_expr) ? 0 : ({                                            \
-		int __wait_ret = 0;                                          \
-		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
-		                                                             \
-		threadsig_lock();                                            \
-		do {                                                         \
-			sched_wait_prepare();                                    \
-			                                                         \
-			if (cond_expr)                                           \
-				break;                                               \
-			                                                         \
-			__wait_ret = sched_wait_timeout(__wait_timeout,          \
-											&__wait_timeout);        \
-		} while (!__wait_ret);                                       \
-		                                                             \
-		sched_wait_cleanup();                                        \
-		                                                             \
-		threadsig_unlock();                                          \
-		__wait_ret;                                                  \
-	}))
 
 
 #endif /* KERNEL_SCHED_H_ */

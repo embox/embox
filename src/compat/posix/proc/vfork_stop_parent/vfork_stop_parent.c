@@ -14,6 +14,7 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
 	task_vfork_end(task_self());
