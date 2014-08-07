@@ -21,6 +21,7 @@
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
 #include <limits.h>
+#include <kernel/thread/waitq.h>
 
 #define HD_WAIT_MS 10
 

@@ -13,6 +13,7 @@
 #include <kernel/thread.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/waitq.h>
 
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 

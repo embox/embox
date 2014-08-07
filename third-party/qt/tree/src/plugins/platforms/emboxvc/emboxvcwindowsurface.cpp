@@ -18,6 +18,7 @@
 #include <kernel/thread.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/waitq.h>
 #include <util/ring_buff.h>
 
 QT_BEGIN_NAMESPACE

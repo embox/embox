@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <kernel/thread/sync/semaphore.h>
 #include <kernel/sched.h>
+#include <kernel/thread/waitq.h>
 
 static int tryenter_sched_lock(struct sem *s);
 

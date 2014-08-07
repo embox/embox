@@ -19,6 +19,7 @@
 #include <hal/ipl.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/waitq.h>
 #include <kernel/sched.h>
 #include <kernel/sched/sched_priority.h>
 
