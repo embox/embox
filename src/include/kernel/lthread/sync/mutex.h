@@ -9,7 +9,7 @@
 #ifndef KERNEL_LTHREAD_SYNC_MUTEX_H_
 #define KERNEL_LTHREAD_SYNC_MUTEX_H_
 
-#include <kernel/thread/sync/mutex.h>
+#include <kernel/lthread/waitq.h>
 
 #define mutex_lock_lthread(mutex) \
 	WAITQ_WAIT_LTHREAD(&(mutex)->wq, mutex_trylock_schedee(mutex) == 0)

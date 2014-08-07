@@ -20,9 +20,9 @@
 			waitq_link_init(wql); \
 		} \
 		if (cond_expr) { \
-			waitq_wait_cleanup(&(mutex)->wq, wql); \
+			waitq_wait_cleanup(wq, wql); \
 		} else { \
-			waitq_wait_prepare(&(mutex)->wq, wql); \
+			waitq_wait_prepare(wq, wql); \
 			ret = -EAGAIN; \
 		} \
 		ret; \
