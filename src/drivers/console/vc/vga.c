@@ -7,6 +7,8 @@
  */
 
 #include <string.h>
+#include <sys/mman.h>
+
 #include <asm/io.h>
 #include <drivers/diag.h>
 #include <drivers/video/vga.h>
@@ -103,6 +105,20 @@ struct vc_video_diag {
 };
 
 static int vc_diag_init(const struct diag *diag) {
+#if 1
+	void *ptr;
+	size_t len = 0x1000;//80*25*2;
+
+
+	/* Map in the physical memory; 0xb8000 is text mode VGA video memory */
+	ptr = mmap_device_memory((void* ) 0xb8000, len, PROT_READ|PROT_WRITE|PROT_NOCACHE, MAP_FIXED, 0xb8000 );
+	if ( ptr == MAP_FAILED ) {
+	    //perror( "mmap_device_memory for physical address 0xb8000 failed" );
+	    //exit( EXIT_FAILURE );
+		return -1;
+	}
+#endif
+
 	return vterm_video_init(&vc_vga_video.video, &vc_vga_ops, 80, 24);
 }
 

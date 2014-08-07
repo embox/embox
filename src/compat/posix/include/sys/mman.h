@@ -10,6 +10,8 @@
 #define COMPAT_POSIX_SYS_MMAN_H_
 
 #include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
@@ -43,12 +45,28 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 	errno = EPERM;
 	return NULL;
 }
+
+
+
 static inline int munmap(void *addr, size_t size) {
 	(void)size;
-	printf(">>> munmap(%p)\n",addr);
+	//printf(">>> munmap(%p)\n",addr);
 	errno = EPERM;
 	return -1;
 }
+
+
+/* QNX */
+
+#define PROT_NOCACHE 0x80
+
+#include <module/embox/mem/vmem_api.h>
+extern void *mmap_device_memory(void * addr,
+                           size_t len,
+                           int prot,
+                           int flags,
+                           uint64_t physical);
+
 
 __END_DECLS
 

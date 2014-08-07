@@ -1,6 +1,14 @@
 package embox.mem
 
-module vmem {
+@DefaultImpl(vmem_nommu)
+abstract module vmem_api {
+}
+
+module vmem_nommu extends vmem_api {
+	source "vmem_nommu.h"
+}
+
+module vmem extends vmem_api {
 	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
 	source "vmem_context.c"
 
