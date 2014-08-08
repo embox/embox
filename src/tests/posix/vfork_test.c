@@ -39,7 +39,7 @@ TEST_CASE("after called vfork() child call exit()") {
 TEST_CASE("parent should see stack modifications made from child") {
 	pid_t pid;
 	int res;
-	int data;
+	volatile int data;
 
 	data = 1;
 
