@@ -12,19 +12,19 @@
 	.global ptregs_jmp
 
 ptregs_jmp:
-	movl	4(%esp), %esi
-	movl	PT_ESP(%esi), %ebx
+	movl	4(%esp), %eax
 
-	movl	PT_EIP(%esi), %eax
-	subl	$4, %ebx
-	movl	%eax, (%ebx)
+	/* Need to set new ESP now, correct value
+	 * in pt_regs can be overwriten by movsd */
+	movl	PT_ESP(%eax),%esp
+	subl	$PT_ESP, %esp
 
-	subl	$PT_TRAPNO, %ebx
-	movl	$PT_TRAPNO, %ecx
-	movl	%ebx, %edi
-	cld
-	rep 	movsb
+	movl	%eax, %esi
+	addl	$PT_ESP, %esi
+	movl	PT_ESP(%eax), %edi
+	movl	$PT_ESP/4, %ecx
+	std
+	rep		movsd
 
-	movl	%ebx, %esp
-	RESTORE_ALL_REGS
-	ret
+	RESTORE_ALL
+

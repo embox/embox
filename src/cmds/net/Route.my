@@ -33,7 +33,7 @@ package embox.cmd.net
 module route {
 	source "route.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.LibCStdioFileOps
 	depends embox.compat.posix.net.inet_addr
 	depends embox.net.core
 	depends embox.net.route

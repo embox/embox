@@ -47,7 +47,12 @@ module ping {
 	source "ping.c"
 
 	depends embox.net.lib.dns
-	depends embox.compat.libc.LibC
+	depends embox.net.af_inet
+	depends embox.net.raw_sock
+	depends embox.net.ipv4 /* sock_get_secure_level, skb_get_secure_level */
+	depends embox.compat.libc.LibCStdioFileOps
+	depends embox.compat.libc.LibCStdioPerror
+	depends embox.compat.libc.LibCStdioScanf
 	depends embox.kernel.timer.sys_timer
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.net.inet_addr
@@ -61,4 +66,5 @@ module ping {
 	depends embox.compat.posix.net.herror
 	depends embox.compat.posix.proc.signal
 	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.util.sleep
 }

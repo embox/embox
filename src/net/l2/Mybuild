@@ -5,6 +5,5 @@ module ethernet {
 
 	@NoRuntime depends embox.compat.libc.LibCAssert
 	@NoRuntime depends embox.compat.libc.LibCString
-	@NoRuntime depends embox.compat.libc.LibCStdio
 	depends embox.net.dev
 }

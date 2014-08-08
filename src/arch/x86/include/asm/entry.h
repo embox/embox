@@ -58,6 +58,8 @@
 	SAVE_ALL_REGS;              \
 	movl	PT_END(%esp), %ecx; \
 	movl	%ecx, PT_EIP(%esp); \
+	push	%cs;				\
+	popl	PT_CS(%esp);		\
 	pushf;                      \
 	popl	PT_EFLAGS(%esp);    \
 	movl	%esp, %eax;         \

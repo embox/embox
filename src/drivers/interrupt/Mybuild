@@ -43,9 +43,9 @@ module mb_intc extends irqctrl_api {
 	option number mbintc_base
 }
 
-module stm32_nvic extends irqctrl_api {
+module cortexm_nvic extends irqctrl_api {
 	option number irq_table_size = 16
-	source "stm32_nvic.c", "stm32_nvic.h"
+	source "cortexm_nvic.c", "cortexm_nvic.h"
 }
 
 @BuildDepends(embox.arch.arm.cmsis)

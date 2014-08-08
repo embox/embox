@@ -67,7 +67,7 @@ static cycle_t this_read(void) {
 }
 
 static struct time_event_device this_event = {
-	.config = this_config ,
+	.config = this_config,
 	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };

@@ -142,3 +142,15 @@ module lan9118 {
 	depends embox.net.dev
 	depends embox.net.entry_api
 }
+
+@BuildDepends(third_party.bsp.st_f4)
+module stm32f4_eth {
+	source "stm32f4_eth.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.entry_api
+}

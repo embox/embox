@@ -50,6 +50,7 @@ void fork_user_stack_cleanup(struct stack_space *stspc) {
 		sysfree(stspc->user_stack);
 	}
 
+	stspc->user_stack = NULL;
 	stspc->user_stack_sz = 0;
 }
 

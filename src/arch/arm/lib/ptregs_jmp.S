@@ -18,8 +18,7 @@ ptregs_jmp:
 #else /* Arm */
 
 ptregs_jmp:
-	mov	sp, r0
-	ldmia	sp, {r0-r14}
+	ldmia	r0, {r0-r14}
 	add	sp, sp, #68
 	mov	pc, lr
 
