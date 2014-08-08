@@ -35,8 +35,8 @@
  * function in order to execute it in an appropriate context.
  *
  * For waiting and synchronization you can use lthread specific macros and
- * functions (see kernel/lthread/*) or macros and functions which are common
- * for all schedee implementation (see kernel/schedee/* and
+ * functions (see kernel/lthread/) or macros and functions which are common
+ * for all schedee implementation (see kernel/schedee/ and
  * kernel/sched/waitq.h and kernel/sched.h).
  *
  * TODO: there is no possibility to use timeout functions yet
