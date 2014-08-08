@@ -65,12 +65,20 @@ static module LibCStdioFileOps {
 }
 
 static module LibCStdio {
-	source "perror.c"
 	source "rename.c"
-	source "scanf.c"
 
 	@NoRuntime depends LibCStdioSprintf
 	@NoRuntime depends LibCStdioOpen
 	@NoRuntime depends LibCStdioFseek
 	@NoRuntime depends LibCStdioFileOps
+	@NoRuntime depends LibCStdioScanf
+	@NoRuntime depends LibCStdioPerror
+}
+
+static module LibCStdioPerror {
+	source "perror.c"
+}
+
+static module LibCStdioScanf {
+	source "scanf.c"
 }

@@ -1,5 +1,6 @@
 package embox.net
 
+@DefaultImpl(net_entry)
 abstract module entry_api {
 }
 
@@ -8,7 +9,6 @@ module net_entry extends entry_api {
 
 	depends net_rx
 	depends skbuff
-	depends embox.compat.libc.LibC
 }
 
 module net_rx {
@@ -20,7 +20,6 @@ module net_rx {
 	depends af_packet /* make af_packet socket receive incoming packets */
 	depends embox.compat.linux.LibLinux
 	depends embox.framework.LibFrameworkNet
-	depends embox.compat.libc.LibC
 }
 
 module net_tx {
@@ -29,7 +28,7 @@ module net_tx {
 	depends net_crypt_api
 	depends skbuff
 	depends af_packet /* make af_packet socket receive outcoming packets */
-	depends embox.compat.libc.LibC
+	depends neighbour
 }
 
 @DefaultImpl(net_no_crypt)

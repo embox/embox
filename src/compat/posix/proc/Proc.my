@@ -50,6 +50,7 @@ static module signal {
 	source "signal.c"
 
 	depends embox.kernel.thread.signal
+	depends embox.kernel.task.resource.sig_table
 	depends sigset
 }
 
