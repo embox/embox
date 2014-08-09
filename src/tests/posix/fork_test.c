@@ -191,3 +191,4 @@ TEST_CASE("fork'ed child is allowed to crash static memory") {
 
 	test_assert_zero(res);
 }
+
