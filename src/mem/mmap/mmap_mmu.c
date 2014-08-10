@@ -20,10 +20,10 @@
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
 
-EMBOX_UNIT(init, fini);
+//EMBOX_UNIT(init, fini);
 
-static uint32_t mem_start;
-static uint32_t mem_end;
+static const uint32_t mem_start = 0x04000000;
+static const uint32_t mem_end = 0xFFFFF000;
 
 static int initialized = 0;
 
@@ -169,7 +169,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	}
 	return 0;
 }
-
+#if 0
 static int init() {
 	mem_start = 0x04000000;
 	mem_end   = 0xFFFFF000;
@@ -181,3 +181,4 @@ static int fini() {
 
 	return 0;
 }
+#endif
