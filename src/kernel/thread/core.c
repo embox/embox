@@ -125,7 +125,8 @@ out_unlock:
 	return t;
 }
 
-static enum schedee_result thread_prepare(struct schedee *prev, struct schedee *next,  struct runq *rq) {
+static int thread_prepare(struct schedee *prev, struct schedee *next,
+		struct runq *rq) {
 	struct thread *next_t, *prev_t;
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);

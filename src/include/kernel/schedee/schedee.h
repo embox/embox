@@ -14,28 +14,26 @@
 #include <kernel/thread/signal.h>
 #include <kernel/sched/waitq.h>
 
-enum schedee_result {
-	SCHEDEE_EXIT,
-	SCHEDEE_REPEAT
-};
+#define SCHEDEE_EXIT   0
+#define SCHEDEE_REPEAT 1
 
 struct schedee {
-	enum schedee_result                (*prepare)(struct schedee *prev,
-			struct schedee *n, struct runq *rq);
+	int               (*prepare)(struct schedee *prev, struct schedee *n,
+			struct runq *rq);
 
-	void               *(*run)(void *); /**< Start routine */
-	void               *run_arg;        /**< Argument to be passed to run */
+	void              *(*run)(void *); /**< Start routine */
+	void              *run_arg;        /**< Argument to be passed to run */
 
-	struct sched_attr  sched_attr;      /**< Scheduler-private data pointer */
+	struct sched_attr sched_attr;      /**< Scheduler-private data pointer */
 
-	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
-	unsigned int       ready;        /**< Managed by the scheduler. */
-	unsigned int       waiting;      /**< Waiting for an event. */
+	unsigned int      active;       /**< Running on a CPU. TODO SMP-only. */
+	unsigned int      ready;        /**< Managed by the scheduler. */
+	unsigned int      waiting;      /**< Waiting for an event. */
 
-	spinlock_t         lock;         /**< Protects wait state and others. */
+	spinlock_t        lock;         /**< Protects wait state and others. */
 
-	struct sigstate    sigstate;     /**< Pending signal(s). */
-	struct waitq_link  waitq_link;
+	struct sigstate   sigstate;     /**< Pending signal(s). */
+	struct waitq_link waitq_link;
 };
 
 #endif /* _KERNEL_SCHEDEE_H_ */

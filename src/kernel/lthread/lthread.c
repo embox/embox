@@ -26,7 +26,8 @@
 
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
-static enum schedee_result lthread_prepare(struct schedee *prev, struct schedee *next,  struct runq *rq) {
+static int lthread_prepare(struct schedee *prev, struct schedee *next,
+		struct runq *rq) {
 	schedee_set_current(next);
 
 	next->run(next->run_arg);

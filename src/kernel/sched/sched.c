@@ -349,7 +349,7 @@ void sched_start_switch(struct schedee *next) {
 static void __schedule(int preempt) {
 	struct schedee *prev;
 	struct schedee *next;
-	enum schedee_result res;
+	int res;
 
 	prev = schedee_get_current();
 
