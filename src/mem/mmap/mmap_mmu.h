@@ -11,11 +11,14 @@
 
 #include <stdint.h>
 
-#include <mem/vmem.h>
 #include <util/dlist.h>
 
+
+#include <hal/mmu.h>
+
 struct marea {
-	uint32_t start, end;
+	uintptr_t start;
+	uintptr_t end;
 	uint32_t flags;
 
 	struct dlist_head mmap_link;

@@ -6,42 +6,22 @@
  * @author Anton Bulychev
  */
 
-#include <embox/unit.h>
-
 #include <errno.h>
 #include <stdlib.h>
 
 #include <mem/mmap.h>
 #include <mem/vmem.h>
-#include <mem/sysmalloc.h>
 
-#include <kernel/thread/types.h>
+extern struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags);
+extern void marea_destroy(struct marea *marea);
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
-
-//EMBOX_UNIT(init, fini);
 
 static const uint32_t mem_start = 0x04000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
 static int initialized = 0;
-
-static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t flags) {
-	struct marea *marea;
-
-	if (!(marea = sysmalloc(sizeof(struct marea)))) {
-		return NULL;
-	}
-
-	marea->start = start;
-	marea->end   = end;
-	marea->flags = flags;
-
-	dlist_head_init(&marea->mmap_link);
-
-	return marea;
-}
 
 static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
@@ -74,14 +54,11 @@ void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		dlist_del(&marea->mmap_link);
-
 		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
 
-		free(marea);
+		marea_destroy(marea);
 	}
 }
-
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
 	struct marea *marea;
@@ -99,7 +76,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		}
 	}
 
-	if (!(marea = build_marea(start, end, flags))) {
+	if (!(marea = marea_create(start, end, flags))) {
 		return NULL;
 	}
 
@@ -157,7 +134,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	int res;
 
 	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
-		if (!(new_marea = build_marea(marea->start, marea->end, marea->flags))) {
+		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
 
@@ -169,16 +146,4 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	}
 	return 0;
 }
-#if 0
-static int init() {
-	mem_start = 0x04000000;
-	mem_end   = 0xFFFFF000;
 
-	return 0;
-}
-
-static int fini() {
-
-	return 0;
-}
-#endif
