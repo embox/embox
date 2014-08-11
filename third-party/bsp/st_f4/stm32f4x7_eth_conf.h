@@ -89,23 +89,17 @@
 
 /*******************  PHY Extended Registers section : ************************/
 
-/* These values are relatives to DP83848 PHY and change from PHY to another,
-   so the user have to update this value depending on the used external PHY */
+/* The PHY status register value change from a PHY to another, so the user have
+   to update this value depending on the used external PHY */
+#define PHY_SR    ((uint16_t)31) /* Value for DP83848 PHY */
 
-/* The DP83848 PHY status register  */
-#define PHY_SR                 ((uint16_t)0x10) /* PHY status register Offset */
-#define PHY_SPEED_STATUS       ((uint16_t)0x0002) /* PHY Speed mask */
-#define PHY_DUPLEX_STATUS      ((uint16_t)0x0004) /* PHY Duplex mask */
-
-/* The DP83848 PHY: MII Interrupt Control Register  */
-#define PHY_MICR               ((uint16_t)0x11) /* MII Interrupt Control Register */
-#define PHY_MICR_INT_EN        ((uint16_t)0x0002) /* PHY Enable interrupts */
-#define PHY_MICR_INT_OE        ((uint16_t)0x0001) /* PHY Enable output interrupt events */
-
-/* The DP83848 PHY: MII Interrupt Status and Misc. Control Register */
-#define PHY_MISR               ((uint16_t)0x12) /* MII Interrupt Status and Misc. Control Register */
-#define PHY_MISR_LINK_INT_EN   ((uint16_t)0x0020) /* Enable Interrupt on change of link status */
-#define PHY_LINK_STATUS        ((uint16_t)0x2000) /* PHY link status interrupt mask */
+/* The Speed and Duplex mask values change from a PHY to another, so the user
+   have to update this value depending on the used external PHY */
+#define PHY_DUPLEX_SPEED_STATUS_MASK  ((uint16_t)0x001C)
+#define PHY_100BTX_FULL               (18)
+#define PHY_100BTX_HALF								(8)
+#define PHY_10M_FULL									(14)
+#define PHY_10M_HALF									(4)
 
    /* Note : Common PHY registers are defined in stm32f4x7_eth.h file */
 
