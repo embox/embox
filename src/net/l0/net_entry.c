@@ -17,12 +17,17 @@
 #include <string.h>
 #include <util/list.h>
 #include <net/l0/net_rx.h>
+#include <embox/unit.h>
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <err.h>
 
+EMBOX_UNIT_INIT(net_entry_init);
+
 static LIST_DEF(netif_rx_list);
+
+static struct lthread *netif_rx_irq_handler;
 
 static void netif_rx_queued(struct net_device *dev) {
 	ipl_t sp;
@@ -72,7 +77,6 @@ static void *netif_rx_action(void *data) {
 
 static void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
-	struct lthread *lt;
 
 	assert(skb != NULL);
 
@@ -83,14 +87,18 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lt = lthread_create(&netif_rx_action, NULL);
-	assert(!err(lt));
-	lthread_priority_set(lt, LTHREAD_PRIORITY_MAX);
-	lthread_launch(lt);
+	lthread_launch(netif_rx_irq_handler);
 }
 
 int netif_rx(void *data) {
 	assert(data != NULL);
 	netif_rx_schedule((struct sk_buff *) data);
 	return NET_RX_SUCCESS;
+}
+
+static int net_entry_init(void) {
+	netif_rx_irq_handler = lthread_create(&netif_rx_action, NULL);
+	assert(!err(netif_rx_irq_handler));
+	lthread_priority_set(netif_rx_irq_handler, LTHREAD_PRIORITY_MAX);
+	return 0;
 }
