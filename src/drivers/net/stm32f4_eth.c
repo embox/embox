@@ -16,55 +16,59 @@
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
+#include <stm32f4xx.h>
 #include <stm32f4xx_syscfg.h>
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
 #include <stm32f4x7_eth.h>
+#include <misc.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(stm32eth_init);
 
+#define STM32ETH_IRQ (ETH_IRQn + 16)
+
 /**
-  ******************************************************************************
-  * @file    stm32f4x7_eth_bsp.c
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    31-October-2011
-  * @brief   STM32F4x7 Ethernet hardware configuration.
-  ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; Portions COPYRIGHT 2011 STMicroelectronics</center></h2>
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32f4x7_eth_bsp.c
+ * @author  MCD Application Team
+ * @version V1.0.0
+ * @date    31-October-2011
+ * @brief   STM32F4x7 Ethernet hardware configuration.
+ ******************************************************************************
+ * @attention
+ *
+ * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+ * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+ * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+ * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+ * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+ * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+ *
+ * <h2><center>&copy; Portions COPYRIGHT 2011 STMicroelectronics</center></h2>
+ ******************************************************************************
+ */
 /**
-  ******************************************************************************
-  * <h2><center>&copy; Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.</center></h2>
-  * @file    stm32f4x7_eth_bsp.c
-  * @author  CMP Team
-  * @version V1.0.0
-  * @date    28-December-2012
-  * @brief   STM32F4x7 Ethernet hardware configuration.
-  *          Modified to support the STM32F4DISCOVERY, STM32F4DIS-BB and
-  *          STM32F4DIS-LCD modules.
-  ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, Embest SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
-  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE CONTENT
-  * OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING INFORMATION
-  * CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * <h2><center>&copy; Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.</center></h2>
+ * @file    stm32f4x7_eth_bsp.c
+ * @author  CMP Team
+ * @version V1.0.0
+ * @date    28-December-2012
+ * @brief   STM32F4x7 Ethernet hardware configuration.
+ *          Modified to support the STM32F4DISCOVERY, STM32F4DIS-BB and
+ *          STM32F4DIS-LCD modules.
+ ******************************************************************************
+ * @attention
+ *
+ * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+ * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+ * TIME. AS A RESULT, Embest SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE CONTENT
+ * OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING INFORMATION
+ * CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+ ******************************************************************************
+ */
 
 #define LAN8720_PHY_ADDRESS       0x01 /* Relative to STM324xG-EVAL Board */
 
@@ -121,8 +125,8 @@ static uint32_t ETH_MACDMA_Config(void) {
 	/*------------------------   DMA   -----------------------------------*/
 
 	/* When we use the Checksum offload feature, we need to enable the Store and Forward mode:
-	the store and forward guarantee that a whole frame is stored in the FIFO, so the MAC can insert/verify the checksum,
-	if the checksum is OK the DMA can handle the frame otherwise the frame is dropped */
+	   the store and forward guarantee that a whole frame is stored in the FIFO, so the MAC can insert/verify the checksum,
+	   if the checksum is OK the DMA can handle the frame otherwise the frame is dropped */
 	ETH_InitStructure.ETH_DropTCPIPChecksumErrorFrame = ETH_DropTCPIPChecksumErrorFrame_Enable;
 	ETH_InitStructure.ETH_ReceiveStoreForward = ETH_ReceiveStoreForward_Enable;
 	ETH_InitStructure.ETH_TransmitStoreForward = ETH_TransmitStoreForward_Enable;
@@ -146,7 +150,7 @@ static void ETH_GPIO_Config(void) {
 
 	/* Enable GPIOs clocks */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB
-			       | RCC_AHB1Periph_GPIOC, ENABLE);
+			| RCC_AHB1Periph_GPIOC, ENABLE);
 
 	/* Enable SYSCFG clock */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
@@ -157,21 +161,21 @@ static void ETH_GPIO_Config(void) {
 
 	/* Ethernet pins configuration ************************************************/
 	/*
-	ETH_MDIO --------------> PA2
-	ETH_MDC ---------------> PC1
+	   ETH_MDIO --------------> PA2
+	   ETH_MDC ---------------> PC1
 
-	ETH_RMII_REF_CLK-------> PA1
+	   ETH_RMII_REF_CLK-------> PA1
 
-	ETH_RMII_CRS_DV -------> PA7
-				ETH_MII_RX_ER   -------> PB10
-	ETH_RMII_RXD0   -------> PC4
-	ETH_RMII_RXD1   -------> PC5
-	ETH_RMII_TX_EN  -------> PB11
-	ETH_RMII_TXD0   -------> PB12
-	ETH_RMII_TXD1   -------> PB13
+	   ETH_RMII_CRS_DV -------> PA7
+	   ETH_MII_RX_ER   -------> PB10
+	   ETH_RMII_RXD0   -------> PC4
+	   ETH_RMII_RXD1   -------> PC5
+	   ETH_RMII_TX_EN  -------> PB11
+	   ETH_RMII_TXD0   -------> PB12
+	   ETH_RMII_TXD1   -------> PB13
 
-	ETH_RST_PIN     -------> PE2
-	*/
+	   ETH_RST_PIN     -------> PE2
+	   */
 
 	/* Configure PA1,PA2 and PA7 */
 	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_7;
@@ -215,6 +219,163 @@ static void ETH_GPIO_Config(void) {
 
 /*********** Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.*****END OF FILE****/
 
+/*
+ * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of the lwIP TCP/IP stack.
+ *
+ * Author: Adam Dunkels <adam@sics.se>
+ *
+ */
+
+/* Ethernet Rx & Tx DMA Descriptors */
+extern ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB], DMATxDscrTab[ETH_TXBUFNB];
+
+/* Ethernet Driver Receive buffers  */
+extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
+
+/* Ethernet Driver Transmit buffers */
+extern uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE];
+
+/* Global pointers to track current transmit and receive descriptors */
+extern ETH_DMADESCTypeDef  *DMATxDescToSet;
+extern ETH_DMADESCTypeDef  *DMARxDescToGet;
+
+/* Global pointer for last received frame infos */
+extern ETH_DMA_Rx_Frame_infos *DMA_RX_FRAME_infos;
+
+static void low_level_init(unsigned char mac[6]) {
+	ETH_MACAddressConfig(ETH_MAC_Address0, mac);
+
+	/* Initialize Tx Descriptors list: Chain Mode */
+	ETH_DMATxDescChainInit(DMATxDscrTab, &Tx_Buff[0][0], ETH_TXBUFNB);
+	/* Initialize Rx Descriptors list: Chain Mode  */
+	ETH_DMARxDescChainInit(DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB);
+
+#ifdef CHECKSUM_BY_HARDWARE
+	/* Enable the TCP, UDP and ICMP checksum insertion for the Tx frames */
+	for(i=0; i<ETH_TXBUFNB; i++)
+	{
+		ETH_DMATxDescChecksumInsertionConfig(&DMATxDscrTab[i], ETH_DMATxDesc_ChecksumTCPUDPICMPFull);
+	}
+#endif
+
+	/* Enable iterrupts */
+	/*ETH_DMAITConfig(~0xFFFE1800, ENABLE);*/
+
+	/* Note: TCP, UDP, ICMP checksum checking for received frame are enabled in DMA config */
+
+	/* Enable MAC and DMA transmission and reception */
+	ETH_Start();
+
+}
+
+static int low_level_output(void *buf, size_t sz) {
+#if 0
+	u8 *buffer =  (u8 *)(DMATxDescToSet->Buffer1Addr);
+
+	/* copy frame from pbufs to driver buffers */
+	memcpy(buffer, buf, sz);
+
+	/* Note: padding and CRC for transmitted frame
+	   are automatically inserted by DMA */
+
+	/* Prepare transmit descriptors to give to DMA*/
+	ETH_Prepare_Transmit_Descriptors(sz);
+#endif
+
+	return 0;
+}
+
+#if 0
+static struct pbuf * low_level_input(struct netif *netif) {
+	struct pbuf *p, *q;
+	u16_t len;
+	int l =0;
+	FrameTypeDef frame;
+	u8 *buffer;
+	uint32_t i=0;
+	__IO ETH_DMADESCTypeDef *DMARxNextDesc;
+
+
+	p = NULL;
+
+	/* get received frame */
+	frame = ETH_Get_Received_Frame();
+
+	/* Obtain the size of the packet and put it into the "len" variable. */
+	len = frame.length;
+	buffer = (u8 *)frame.buffer;
+
+	/* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
+	p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+
+	/* copy received frame to pbuf chain */
+	if (p != NULL)
+	{
+		for (q = p; q != NULL; q = q->next)
+		{
+			memcpy((u8_t*)q->payload, (u8_t*)&buffer[l], q->len);
+			l = l + q->len;
+		}
+	}
+
+	/* Release descriptors to DMA */
+	/* Check if frame with multiple DMA buffer segments */
+	if (DMA_RX_FRAME_infos->Seg_Count > 1)
+	{
+		DMARxNextDesc = DMA_RX_FRAME_infos->FS_Rx_Desc;
+	}
+	else
+	{
+		DMARxNextDesc = frame.descriptor;
+	}
+
+	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+	for (i=0; i<DMA_RX_FRAME_infos->Seg_Count; i++)
+	{
+		DMARxNextDesc->Status = ETH_DMARxDesc_OWN;
+		DMARxNextDesc = (ETH_DMADESCTypeDef *)(DMARxNextDesc->Buffer2NextDescAddr);
+	}
+
+	/* Clear Segment_Count */
+	DMA_RX_FRAME_infos->Seg_Count =0;
+
+	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
+	if ((ETH->DMASR & ETH_DMASR_RBUS) != (u32)RESET)
+	{
+		/* Clear RBUS ETHERNET DMA flag */
+		ETH->DMASR = ETH_DMASR_RBUS;
+		/* Resume DMA reception */
+		ETH->DMARPDR = 0;
+	}
+	return p;
+}
+#endif
+/*********** COPYRIGHT 2004 Swedish Institute of Computer Science *****END OF FILE****/
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb);
 static int stm32eth_open(struct net_device *dev);
@@ -226,6 +387,7 @@ static const struct net_driver stm32eth_ops = {
 };
 
 static int stm32eth_open(struct net_device *dev) {
+	low_level_init(dev->dev_addr);
 	return 0;
 }
 
@@ -235,7 +397,7 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 }
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
-	return 0;
+	return low_level_output(skb->mac.raw, skb->len);
 }
 
 #if 0
@@ -269,7 +431,7 @@ static int stm32eth_init(void) {
 	}
 
 	nic->drv_ops = &stm32eth_ops;
-	nic->irq = 73;
+	nic->irq = STM32ETH_IRQ;
 	/*nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;*/
 	/*nic_priv = netdev_priv(nic, struct stm32eth_priv);*/
 
@@ -279,5 +441,6 @@ static int stm32eth_init(void) {
 	}
 
 	return inetdev_register_dev(nic);
-
 }
+
+STATIC_IRQ_ATTACH(STM32ETH_IRQ, stm32eth_interrupt, NULL);
