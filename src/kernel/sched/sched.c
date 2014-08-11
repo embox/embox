@@ -375,10 +375,11 @@ static void __schedule(int preempt) {
 		 * during the 'sched_switch' (if any). */
 		spin_unlock(&rq.lock);
 
-		res = next->prepare(prev, next, &rq);
+		res = next->process(prev, next, &rq);
 		if (res == SCHEDEE_EXIT) {
 			break;
 		}
+
 		rq.ipl = spin_lock_ipl(&rq.lock);
 	}
 

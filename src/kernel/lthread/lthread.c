@@ -26,7 +26,7 @@
 
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
-static int lthread_prepare(struct schedee *prev, struct schedee *next,
+static int lthread_process(struct schedee *prev, struct schedee *next,
 		struct runq *rq) {
 	schedee_set_current(next);
 
@@ -43,7 +43,7 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
 	lt->schedee.run = run;
-	lt->schedee.prepare = lthread_prepare;
+	lt->schedee.process = lthread_process;
 	lt->schedee.run_arg = arg;
 
 	lt->schedee.ready = false;

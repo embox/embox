@@ -125,7 +125,7 @@ out_unlock:
 	return t;
 }
 
-static int thread_prepare(struct schedee *prev, struct schedee *next,
+static int thread_process(struct schedee *prev, struct schedee *next,
 		struct runq *rq) {
 	struct thread *next_t, *prev_t;
 	next_t = mcast_out(next, struct thread, schedee);
@@ -176,7 +176,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	/* set executive function and arguments pointer */
-	t->schedee.prepare = thread_prepare;
+	t->schedee.process = thread_process;
 	t->schedee.run = run;
 	t->schedee.run_arg = arg;
 

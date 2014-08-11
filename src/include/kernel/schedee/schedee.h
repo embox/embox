@@ -18,7 +18,15 @@
 #define SCHEDEE_REPEAT 1
 
 struct schedee {
-	int               (*prepare)(struct schedee *prev, struct schedee *n,
+	/* Process function is called in schedule() function after extracting
+	 * next schedee from runq. This function performs all necessary actions
+	 * with specific schedee implementation.
+	 * It has to restore rq->ipl as soon as possible.
+	 * This function also return one of the SCHEDEE_* value in order to
+	 * inform scheduler whether it is to finish scheduling (SCHEDEE_EXIT)
+	 * or to get another schedee and repeat it (SCHEDEE_REPEAT).
+	 */
+	int               (*process)(struct schedee *prev, struct schedee *n,
 			struct runq *rq);
 
 	void              *(*run)(void *); /**< Start routine */
