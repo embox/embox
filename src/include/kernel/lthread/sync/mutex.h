@@ -11,7 +11,7 @@
 
 #include <kernel/lthread/waitq.h>
 
-#define mutex_lock_lthread(mutex) \
+#define mutex_trylock_lthread(mutex) \
 	WAITQ_WAIT_LTHREAD(&(mutex)->wq, ({ \
 		int done; \
 		done = (mutex_trylock_schedee(mutex) == 0); \

@@ -44,7 +44,7 @@ static void *low_run(void *arg) {
 }
 
 static void *high_run(void *arg) {
-	if (mutex_lock_lthread(&m) == -EAGAIN) {
+	if (mutex_trylock_lthread(&m) == -EAGAIN) {
 		return NULL;
 	}
 	test_emit('d');

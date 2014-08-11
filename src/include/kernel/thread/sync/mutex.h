@@ -53,8 +53,7 @@
 
 #define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
-#define STORE(x) \
-    do { ((volatile int *) 0x100) = x } while (0)
+__END_DECLS
 
 /**
  * initializes given mutex with attribute

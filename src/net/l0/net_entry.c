@@ -62,8 +62,7 @@ static void netif_poll(struct net_device *dev) {
 static void *netif_rx_action(void *data) {
 	struct net_device *dev;
 
-	list_foreach(dev, &netif_rx_list, rx_lnk)
-	{
+	list_foreach(dev, &netif_rx_list, rx_lnk) {
 		netif_poll(dev);
 		netif_rx_dequeued(dev);
 	}
