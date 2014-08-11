@@ -37,14 +37,15 @@ static void *low_run(void *arg) {
 }
 
 static void *high_run(void *arg) {
-	struct waitq_link wql;
-	waitq_link_init(&wql);
+	struct waitq_link *wql = &thread_self()->schedee.waitq_link;
+
+	waitq_link_init(wql);
 
 	test_emit('b');
 
-	waitq_wait_prepare(&wq, &wql);
+	waitq_wait_prepare(&wq, wql);
 	sched_wait();
-	waitq_wait_cleanup(&wq, &wql);
+	waitq_wait_cleanup(&wq, wql);
 
 	test_emit('d');
 
