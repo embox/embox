@@ -283,8 +283,10 @@ static void low_level_init(unsigned char mac[6]) {
 	}
 #endif
 
+	/* Clear pending flags */
+	ETH_DMAClearFlag(~0xFFFE1800);
 	/* Enable iterrupts */
-	/*ETH_DMAITConfig(~0xFFFE1800, ENABLE);*/
+	ETH_DMAITConfig(ETH_DMA_IT_NIS | ETH_DMA_IT_R, ENABLE);
 
 	/* Note: TCP, UDP, ICMP checksum checking for received frame are enabled in DMA config */
 
@@ -294,7 +296,6 @@ static void low_level_init(unsigned char mac[6]) {
 }
 
 static int low_level_output(void *buf, size_t sz) {
-#if 0
 	u8 *buffer =  (u8 *)(DMATxDescToSet->Buffer1Addr);
 
 	/* copy frame from pbufs to driver buffers */
@@ -305,23 +306,19 @@ static int low_level_output(void *buf, size_t sz) {
 
 	/* Prepare transmit descriptors to give to DMA*/
 	ETH_Prepare_Transmit_Descriptors(sz);
-#endif
-
 	return 0;
 }
 
-#if 0
-static struct pbuf * low_level_input(struct netif *netif) {
-	struct pbuf *p, *q;
-	u16_t len;
-	int l =0;
+static struct sk_buff *low_level_input(void) {
+	struct sk_buff *skb;
+	int len;
 	FrameTypeDef frame;
 	u8 *buffer;
 	uint32_t i=0;
 	__IO ETH_DMADESCTypeDef *DMARxNextDesc;
 
 
-	p = NULL;
+	skb = NULL;
 
 	/* get received frame */
 	frame = ETH_Get_Received_Frame();
@@ -331,32 +328,23 @@ static struct pbuf * low_level_input(struct netif *netif) {
 	buffer = (u8 *)frame.buffer;
 
 	/* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
-	p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+	skb = skb_alloc(len);
 
 	/* copy received frame to pbuf chain */
-	if (p != NULL)
-	{
-		for (q = p; q != NULL; q = q->next)
-		{
-			memcpy((u8_t*)q->payload, (u8_t*)&buffer[l], q->len);
-			l = l + q->len;
-		}
+	if (skb != NULL) {
+		memcpy(skb->mac.raw, buffer, len);
 	}
 
 	/* Release descriptors to DMA */
 	/* Check if frame with multiple DMA buffer segments */
-	if (DMA_RX_FRAME_infos->Seg_Count > 1)
-	{
+	if (DMA_RX_FRAME_infos->Seg_Count > 1) {
 		DMARxNextDesc = DMA_RX_FRAME_infos->FS_Rx_Desc;
-	}
-	else
-	{
+	} else {
 		DMARxNextDesc = frame.descriptor;
 	}
 
 	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	for (i=0; i<DMA_RX_FRAME_infos->Seg_Count; i++)
-	{
+	for (i=0; i<DMA_RX_FRAME_infos->Seg_Count; i++) {
 		DMARxNextDesc->Status = ETH_DMARxDesc_OWN;
 		DMARxNextDesc = (ETH_DMADESCTypeDef *)(DMARxNextDesc->Buffer2NextDescAddr);
 	}
@@ -365,16 +353,14 @@ static struct pbuf * low_level_input(struct netif *netif) {
 	DMA_RX_FRAME_infos->Seg_Count =0;
 
 	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
-	if ((ETH->DMASR & ETH_DMASR_RBUS) != (u32)RESET)
-	{
+	if ((ETH->DMASR & ETH_DMASR_RBUS) != (u32)RESET) {
 		/* Clear RBUS ETHERNET DMA flag */
 		ETH->DMASR = ETH_DMASR_RBUS;
 		/* Resume DMA reception */
 		ETH->DMARPDR = 0;
 	}
-	return p;
+	return skb;
 }
-#endif
 /*********** COPYRIGHT 2004 Swedish Institute of Computer Science *****END OF FILE****/
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb);
@@ -397,7 +383,13 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 }
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
-	return low_level_output(skb->mac.raw, skb->len);
+	int res = low_level_output(skb->mac.raw, skb->len);
+
+	if (0 == res) {
+		skb_free(skb);
+	}
+
+	return res;
 }
 
 #if 0
@@ -414,9 +406,25 @@ static int stm32eth_setup(struct net_device *dev) {
 #endif
 
 static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
+	struct net_device **nic_p = dev_id;
+	if (!*nic_p) {
+		return IRQ_NONE;
+	}
+
+	while(ETH_CheckFrameReceived()) {
+		struct sk_buff *skb = low_level_input();
+		if (skb) {
+			skb->dev = *nic_p;
+			netif_rx(skb);
+		}
+	}
+
+	ETH_DMAClearITPendingBit(ETH_DMA_IT_NIS | ETH_DMA_IT_R);
+
 	return IRQ_HANDLED;
 }
 
+static struct net_device *stm32eth_netdev;
 static int stm32eth_init(void) {
 	int res;
 	struct net_device *nic;
@@ -432,10 +440,12 @@ static int stm32eth_init(void) {
 
 	nic->drv_ops = &stm32eth_ops;
 	nic->irq = STM32ETH_IRQ;
-	/*nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;*/
+	nic->base_addr = ETH_BASE;
 	/*nic_priv = netdev_priv(nic, struct stm32eth_priv);*/
 
-	res = irq_attach(nic->irq, stm32eth_interrupt, 0, nic, "");
+	stm32eth_netdev = nic;
+
+	res = irq_attach(nic->irq, stm32eth_interrupt, 0, &stm32eth_netdev, "");
 	if (res < 0) {
 		return res;
 	}
@@ -443,4 +453,8 @@ static int stm32eth_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-STATIC_IRQ_ATTACH(STM32ETH_IRQ, stm32eth_interrupt, NULL);
+/* STM32ETH_IRQ defined through ETH_IRQn, which as enum and
+ * can't expand into int, as STATIC_IRQ_ATTACH require
+ */
+static_assert(77 == STM32ETH_IRQ);
+STATIC_IRQ_ATTACH(77, stm32eth_interrupt, &stm32eth_netdev);
