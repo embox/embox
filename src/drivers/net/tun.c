@@ -23,6 +23,7 @@
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #define TUN_N 1
 

@@ -46,7 +46,6 @@ struct schedee {
 
 	spinlock_t        lock;         /**< Protects wait state and others. */
 
-	struct sigstate   sigstate;     /**< Pending signal(s). */
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
 };
 

@@ -13,6 +13,7 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/schedee/current.h>
 #include <kernel/schedee/schedee.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                            \

@@ -19,6 +19,8 @@
 #include <kernel/irq_lock.h>
 #include <fs/idesc_event.h>
 
+#include <kernel/thread/thread_sched_wait.h>
+
 #include <util/math.h>
 #include <util/member.h>
 

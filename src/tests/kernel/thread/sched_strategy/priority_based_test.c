@@ -12,6 +12,7 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 static struct thread *low, *high;
 static struct waitq wq;

@@ -6,7 +6,6 @@ module sched {
 
 	source "sched_signal.c"
 
-	option boolean timer_allocate_on_stack = true
 	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */

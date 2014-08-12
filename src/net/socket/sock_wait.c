@@ -12,6 +12,7 @@
 #include <kernel/sched.h>
 #include <net/sock.h>
 #include <net/sock_wait.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 int sock_wait(struct sock *sk, int flags, int timeout) {
 	struct idesc_wait_link wl;
