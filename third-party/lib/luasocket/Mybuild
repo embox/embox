@@ -1,0 +1,12 @@
+package third_party.lib
+
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.cmd.lua)
+static module luasocket {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "mime.so.o", "socket.so.o"
+
+	@NoRuntime depends embox.compat.posix.net.All
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends third_party.cmd.lua
+}

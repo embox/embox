@@ -1,0 +1,30 @@
+diff -uar ../../../../../download/luasocket-2.0.2/config luasocket-2.0.2/config
+--- ../../../../../download/luasocket-2.0.2/config	2007-10-15 08:21:05.000000000 +0400
++++ luasocket-2.0.2/config	2014-08-12 16:54:30.627402665 +0400
+@@ -6,8 +6,8 @@
+ # Output file names
+ #
+ EXT=so
+-SOCKET_V=2.0.2
+-MIME_V=1.0.2
++SOCKET_V=o
++MIME_V=o
+ SOCKET_SO=socket.$(EXT).$(SOCKET_V) 
+ MIME_SO=mime.$(EXT).$(MIME_V)
+ UNIX_SO=unix.$(EXT)
+@@ -49,11 +49,11 @@
+ #------
+ # Compiler and linker settings
+ # for Linux
+-CC=gcc
++#CC=gcc
+ DEF=-DLUASOCKET_DEBUG 
+-CFLAGS= $(LUAINC) $(DEF) -pedantic -Wall -O2 -fpic
+-LDFLAGS=-O -shared -fpic
+-LD=gcc 
++CFLAGS= $(LUAINC) $(DEF) -fpic $(CPPFLAGS)
++#LDFLAGS=-O -shared -fpic
++LD=$(CC)
+ 
+ #------
+ # End of makefile configuration

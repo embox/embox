@@ -2,6 +2,7 @@ package third_party.cmd
 
 @App
 @Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/cmd/lua/install/include")
 @Cmd(name = "lua",
 	help = "Lua interpreter",
 	man = '''
@@ -13,6 +14,7 @@ package third_party.cmd
 			Nikolay Korotkiy, Ilia Vaprol - Adaptation for Embox
 	''')
 module lua {
+	option boolean luasocket_support=false
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.lua.o"
