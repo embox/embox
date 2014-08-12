@@ -51,3 +51,9 @@ static module st_f4 extends st_bsp_api {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32F4xx_Ethernet_Example/Libraries/STM32F4x7_ETH_Driver/src")
 	source "stm32f4x7_eth.c"
 }
+
+@BuildDepends(st_f4)
+static module cmsis extends embox.arch.arm.cmsis {
+	source "cmsis_impl.h"
+	depends st_f4
+}
