@@ -60,19 +60,15 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 }
 
 void fork_addr_space_store(struct addr_space *adrspc) {
-	struct task *tk = task_self();
-
-	fork_stack_store(adrspc, thread_self());
-	fork_heap_store(&adrspc->heap_space, tk);
-	fork_static_store(&adrspc->static_space, tk);
+	fork_stack_store(adrspc);
+	fork_heap_store(&adrspc->heap_space);
+	fork_static_store(&adrspc->static_space);
 }
 
 void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) {
-	struct task *tk = task_self();
-
-	fork_stack_restore(adrspc, thread_self(), stack_safe_point);
-	fork_heap_restore(&adrspc->heap_space, tk);
-	fork_static_restore(&adrspc->static_space, tk);
+	fork_stack_restore(adrspc, stack_safe_point);
+	fork_heap_restore(&adrspc->heap_space);
+	fork_static_restore(&adrspc->static_space);
 }
 
 static void fork_addr_space_child_del(struct addr_space *child) {

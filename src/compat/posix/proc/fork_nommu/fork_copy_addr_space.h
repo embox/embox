@@ -19,8 +19,8 @@
 struct stack_space {
 	struct dlist_head list;
 	struct thread *thread;
-	void *user_stack;
-	size_t user_stack_sz;
+	void *stack;
+	size_t stack_sz;
 };
 
 struct heap_space {
@@ -59,18 +59,18 @@ extern void fork_addr_space_finish_switch(void *safe_point);
 
 /* Stack */
 struct thread;
-extern void fork_stack_store(struct addr_space *adrspc, struct thread *thread);
-extern void fork_stack_restore(struct addr_space *adrspc, struct thread *th, void *stack_safe_point);
+extern void fork_stack_store(struct addr_space *adrspc);
+extern void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point);
 extern void fork_stack_cleanup(struct addr_space *adrspc);
 
 /* Heap */
-extern void fork_heap_store(struct heap_space *hpspc, struct task *tk);
-extern void fork_heap_restore(struct heap_space *hpspc, struct task *tk);
+extern void fork_heap_store(struct heap_space *hpspc);
+extern void fork_heap_restore(struct heap_space *hpspc);
 extern void fork_heap_cleanup(struct heap_space *hpspc);
 
 /* Static */
-extern void fork_static_store(struct static_space *sspc, struct task *tk);
-extern void fork_static_restore(struct static_space *sspc, struct task *tk);
+extern void fork_static_store(struct static_space *sspc);
+extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
