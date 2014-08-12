@@ -39,11 +39,19 @@
 		. = 0x3C;                   \
 		*(.trap_table.routine_15)   \
 		. = 0x40;                   \
-		*(.trap_table.assert)
+		*(.trap_table.assert)       \
+		. = 0x134;                  \
+		*(.trap_table.routine_61)
 
+#define ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
+	arm_m_irq_handler##irq_num
+
+#define ARM_M_IRQ_HANDLER_SECTION_STR(irq_num) \
+	".trap_table.routine_"#irq_num
 
 #define ARM_M_IRQ_HANDLER_DEF(irq_num, irq_handler) \
-	void *arm_m_irq_handler##irq_num __attribute__((section(".trap_table.routine_"#irq_num))) = (void *)irq_handler;
+	void * ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
+		__attribute__((section(ARM_M_IRQ_HANDLER_SECTION_STR(irq_num)))) = (void *)irq_handler;
 
 
 #else
