@@ -5,13 +5,14 @@
  * @date 09.11.12
  * @author Anton Bulychev
  */
-
+#include <stddef.h>
 #include <assert.h>
+
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
-#include <stddef.h>
+
 
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
 

@@ -18,6 +18,8 @@ struct task * task_kernel_task(void) {
 	return &kernel_task;
 }
 
+extern int mmap_kernel_init(void);
+
 static int kernel_task_init(void) {
 	int ktask_id;
 	struct task *ktask;
@@ -35,6 +37,8 @@ static int kernel_task_init(void) {
 	 * idle_thread_create() function */
 	task_init(ktask, ktask_id, NULL, "kernel", task_get_main(ktask),
 			TASK_PRIORITY_DEFAULT);
+
+	mmap_kernel_init();
 
 	return 0;
 }

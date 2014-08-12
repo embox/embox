@@ -7,8 +7,11 @@
 
 #include <stddef.h>
 
+#include <util/dlist.h>
+
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
+#include <kernel/task/resource/mmap.h>
 
 #include <module/embox/mem/mmap_mmu.h>
 
@@ -21,7 +24,17 @@ static struct emmap early_emmap = {
 };
 
 int mmap_kernel_init(void) {
+	struct marea *marea;
+	struct emmap *emmap;
+
+	emmap = task_resource_mmap(task_kernel_task());
+
+	dlist_foreach_entry(marea, &early_emmap.marea_list, mmap_link) {
+		dlist_del_init(&marea->mmap_link);
+		dlist_add_next(&marea->mmap_link, &emmap->marea_list);
+	}
 	early_emmap.ctx = -1;
+
 	return 0;
 }
 
