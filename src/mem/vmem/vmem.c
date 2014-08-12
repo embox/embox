@@ -68,29 +68,4 @@ void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", virt_addr);
 }
 
-mmu_ctx_t task_vmem_ctx_get(struct task *task) {
-	return 0;
-}
 
-void *mmap_device_memory(void *addr,
-                           size_t len,
-                           int prot,
-                           int flags,
-                           uint64_t physical){
-#if 0
-	struct task *task;
-	mmu_ctx_t ctx;
-
-	task = task_self();
-	ctx = task_vmem_ctx_get(task);
-#endif
-	mmu_ctx_t ctx = 0;
-	if (0 == mmu_get_root(ctx)) {
-		vmem_create_context(&ctx);
-		vmem_init_context(&ctx);
-
-	}
-	vmem_map_region(ctx, physical, (mmu_vaddr_t)addr, len, flags);
-
-	return addr;
-}

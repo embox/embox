@@ -11,6 +11,7 @@ module vmem_nommu extends vmem_api {
 module vmem extends vmem_api {
 	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
 	source "vmem_context.c"
+	source "vmem_device_memory.c"
 
 	depends embox.arch.mmu
 	depends vmem_alloc

@@ -21,9 +21,11 @@ extern void marea_destroy(struct marea *marea);
 static const uint32_t mem_start = 0x04000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
+#if 0
 static int initialized = 0;
+#endif
 
-static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
+void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
@@ -33,7 +35,7 @@ void mmap_init(struct emmap *mmap) {
 	mmap->heap_marea = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
-
+#if 0
 	if (!initialized) {
 		/* It's kernel task. Set virtual context for it. */
 		vmem_set_context(mmap->ctx);
@@ -43,6 +45,7 @@ void mmap_init(struct emmap *mmap) {
 
 		initialized = 1;
 	}
+#endif
 }
 
 void mmap_free(struct emmap *mmap) {
@@ -85,7 +88,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		return NULL;
 	}
 
-	add_marea_to_mmap(mmap, marea);
+	mmap_add_marea(mmap, marea);
 
 	return marea;
 }
