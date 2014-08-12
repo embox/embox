@@ -16,9 +16,11 @@ void fork_addr_space_prepare_switch(void) {
 	struct addr_space *adrspc;
 
 	adrspc = fork_addr_space_get(task_self());
-	if (adrspc) {
-		fork_addr_space_store(adrspc);
+	if (!adrspc) {
+		return;
 	}
+
+	fork_addr_space_store(adrspc);
 }
 
 static int fork_addr_space_is_shared(struct addr_space *adrspc) {
@@ -29,14 +31,14 @@ void fork_addr_space_finish_switch(void *safe_point) {
 	struct addr_space *adrspc;
 
 	adrspc = fork_addr_space_get(task_self());
+	if (!adrspc) {
+		return;
+	}
 
-	if (adrspc) {
+	fork_addr_space_restore(adrspc, safe_point);
 
-		fork_addr_space_restore(adrspc, safe_point);
-
-		if (!fork_addr_space_is_shared(adrspc)) {
-			fork_addr_space_delete(task_self());
-		}
+	if (!fork_addr_space_is_shared(adrspc)) {
+		fork_addr_space_delete(task_self());
 	}
 }
 
@@ -47,7 +49,6 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 	memset(adrspc, 0, sizeof(*adrspc));
 
 	adrspc->parent_thread = thread_self();
-
 	if (parent) {
 		adrspc->parent_addr_space = parent;
 		parent->child_count++;
@@ -73,10 +74,11 @@ void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) 
 }
 
 static void fork_addr_space_child_del(struct addr_space *child) {
-	struct addr_space *parent = child->parent_addr_space;
+	struct addr_space *parent;
 
 	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
 
+	parent = child->parent_addr_space;
 	if (!parent) {
 		return;
 	}

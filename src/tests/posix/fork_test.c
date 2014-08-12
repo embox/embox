@@ -28,7 +28,6 @@ static void *test_fork_basic(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int cnt = 5;
-
 	parent_pid = getpid();
 
 	pid = fork();
@@ -70,7 +69,6 @@ static void *test_fork_basic(void *arg) {
 
 		fork_test_assert(status == 0); /* return by exit */
 	}
-
 	exit(0);
 }
 
@@ -186,6 +184,88 @@ TEST_CASE("fork'ed child is allowed to crash static memory") {
 
 	/* creating new task such way to have it's heap clean */
 	new_task("", test_fork_static_crash, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
+
+static void *thr1_hnd(void *arg) {
+	pid_t pid;
+	int res, cnt = 0x5;
+	int tmp;
+	pid = fork();
+	test_assert(pid != -1);
+
+	if (pid == 0) {
+		/* child */
+		while (cnt--) {
+			tmp = 0xdead;
+			sleep(0);
+			test_assert(tmp == 0xdead);
+		}
+
+		exit(0);
+	} else {
+		/* parent */
+		while (cnt--) {
+			tmp = 0xbeef;
+			sleep(0);
+			test_assert(tmp == 0xbeef);
+		}
+	}
+	wait(&res);
+	return NULL;
+}
+
+static void *thr2_hnd(void *arg) {
+	pid_t pid;
+	int cnt = 0x5;
+	int tmp, res;
+	pid = fork();
+	test_assert(pid != -1);
+	if (pid == 0) {
+		/* child */
+		while (cnt--) {
+			tmp = 0xdead;
+			sleep(0);
+			test_assert(tmp == 0xdead);
+		}
+
+		exit(0);
+	} else {
+		/* parent */
+		while (cnt--) {
+			tmp = 0xbeef;
+			sleep(0);
+			test_assert(tmp == 0xbeef);
+		}
+	}
+	wait(&res);
+	return NULL;
+}
+
+static void *test_fork_multithread(void *arg) {
+	struct thread *t1, *t2;
+	int cnt = 0x5;
+
+	t1 = thread_create(0, thr1_hnd, task_self());
+	t2 = thread_create(0, thr2_hnd, task_self());
+	test_assert(t1);
+	test_assert(t2);
+
+	while (cnt--) {
+		sleep(1);
+	}
+
+	exit(0);
+}
+
+/* Multiple threads from one task call fork */
+TEST_CASE("multithread task forking") {
+	int res;
+
+	new_task("", test_fork_multithread, NULL);
 
 	wait(&res);
 

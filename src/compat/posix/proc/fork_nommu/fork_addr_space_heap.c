@@ -46,9 +46,11 @@ void fork_heap_restore(struct heap_space *hpspc, struct task *tk) {
 }
 
 void fork_heap_cleanup(struct heap_space *hpspc) {
-	if (hpspc->heap) {
-		page_free(__phymem_allocator, hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
-		hpspc->heap = NULL;
+	if (!hpspc->heap) {
+		return;
 	}
+
+	page_free(__phymem_allocator, hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
+	hpspc->heap = NULL;
 }
 

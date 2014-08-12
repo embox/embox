@@ -45,7 +45,6 @@ void fork_user_stack_restore(struct stack_space *stspc, struct thread *th, void 
 }
 
 void fork_user_stack_cleanup(struct stack_space *stspc) {
-
 	if (stspc->user_stack) {
 		sysfree(stspc->user_stack);
 	}
