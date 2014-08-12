@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Defines mutex structure and methods associated with it.
  *
  * @date 7.08.2014
  * @author Vita Loginova
@@ -25,8 +25,26 @@ struct mutex {
 	int lock_count;
 };
 
+/**
+ * Initializes given mutex, mutex type is default.
+ *
+ * @param mutex mutex to initialize
+ */
 extern void mutex_init_schedee(struct mutex *m);
+
+/**
+ * Unleashes the mutex from lock and unbinds it.
+ *
+ * @param locked_mutex Previously locked mutex.
+ */
 extern int mutex_unlock_schedee(struct mutex *locked_mutex);
+
+/**
+ * Tries to lock the mutex.
+ * Returns 0 if the mutex was locked successfully. Otherwise returns error code.
+ *
+ * @param free_mutex Mutex to lock.
+ */
 extern int mutex_trylock_schedee(struct mutex *free_mutex);
 
 extern void priority_inherit(struct schedee *t, struct mutex *m);

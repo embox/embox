@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief Defines mutex structure and methods associated with it.
+ * @brief Defines thread-specific methods associated with mutex. You can also
+ * or instead use ones from schedee/sync/mutex.h
  *
  * @date 05.05.10
  * @author Nikolay Malkovsky

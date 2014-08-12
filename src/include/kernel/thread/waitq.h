@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief
+ * @brief Defines thread-specific methods associated with waitq. You can also
+ * or instead use ones from schedee/waitq.h
  *
  * @date 7.08.2014
  * @author Vita Loginova

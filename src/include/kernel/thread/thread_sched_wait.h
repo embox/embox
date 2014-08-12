@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief
+ * @brief Defines thread-specific methods for waiting. You can also or instead
+ *        use ones from sched.h
  *
  * @date 7.08.2014
  * @author Vita Loginova
