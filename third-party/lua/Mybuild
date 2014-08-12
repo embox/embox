@@ -25,5 +25,6 @@ module lua {
 
 	depends embox.mem.heap_api
 	@NoRuntime depends embox.compat.libc.LibC
+	@NoRuntime depends embox.lib.LibGcc
 	@NoRuntime depends embox.kernel.task.resource.errno
 }
