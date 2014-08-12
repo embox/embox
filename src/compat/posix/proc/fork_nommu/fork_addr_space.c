@@ -48,6 +48,8 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 	adrspc = sysmalloc(sizeof(*adrspc));
 	memset(adrspc, 0, sizeof(*adrspc));
 
+	dlist_init(&adrspc->stack_space_head);
+
 	adrspc->parent_thread = thread_self();
 	if (parent) {
 		adrspc->parent_addr_space = parent;
@@ -60,7 +62,7 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 void fork_addr_space_store(struct addr_space *adrspc) {
 	struct task *tk = task_self();
 
-	fork_user_stack_store(&adrspc->stack_space, adrspc->parent_thread);
+	fork_stack_store(adrspc, thread_self());
 	fork_heap_store(&adrspc->heap_space, tk);
 	fork_static_store(&adrspc->static_space, tk);
 }
@@ -68,7 +70,7 @@ void fork_addr_space_store(struct addr_space *adrspc) {
 void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) {
 	struct task *tk = task_self();
 
-	fork_user_stack_restore(&adrspc->stack_space, adrspc->parent_thread, stack_safe_point);
+	fork_stack_restore(adrspc, thread_self(), stack_safe_point);
 	fork_heap_restore(&adrspc->heap_space, tk);
 	fork_static_restore(&adrspc->static_space, tk);
 }
@@ -125,7 +127,7 @@ void fork_addr_space_delete(struct task *task) {
 	if (!adrspc)
 		return;
 
-	fork_user_stack_cleanup(&adrspc->stack_space);
+	fork_stack_cleanup(adrspc);
 	fork_heap_cleanup(&adrspc->heap_space);
 	fork_static_cleanup(&adrspc->static_space);
 

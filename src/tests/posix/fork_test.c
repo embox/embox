@@ -227,18 +227,18 @@ static void *thr2_hnd(void *arg) {
 	if (pid == 0) {
 		/* child */
 		while (cnt--) {
-			tmp = 0xdead;
+			tmp = 0xcafe;
 			sleep(0);
-			test_assert(tmp == 0xdead);
+			test_assert(tmp == 0xcafe);
 		}
 
 		exit(0);
 	} else {
 		/* parent */
 		while (cnt--) {
-			tmp = 0xbeef;
+			tmp = 0xbabe;
 			sleep(0);
-			test_assert(tmp == 0xbeef);
+			test_assert(tmp == 0xbabe);
 		}
 	}
 	wait(&res);

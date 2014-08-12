@@ -13,10 +13,26 @@
 #include <sys/types.h>
 #include <mem/sysmalloc.h>
 
-void fork_user_stack_store(struct stack_space *stspc, struct thread *thread) {
+void fork_stack_store(struct addr_space *adrspc, struct thread *thread) {
 	size_t st_size;
+	struct stack_space *stspc = NULL, *tmp;
 
 	st_size = thread_stack_get_size(thread);
+
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->thread == thread) {
+			stspc = tmp;
+		}
+	}
+
+	if (stspc == NULL) {
+		stspc = sysmalloc(sizeof(*stspc));
+		memset(stspc, 0, sizeof(*stspc));
+		stspc->thread = thread;
+
+		dlist_init(&stspc->list);
+		dlist_add_prev(&stspc->list, &adrspc->stack_space_head);
+	}
 
 	if (stspc->user_stack_sz != st_size) {
 		if (stspc->user_stack) {
@@ -31,8 +47,22 @@ void fork_user_stack_store(struct stack_space *stspc, struct thread *thread) {
 	memcpy(stspc->user_stack, thread_stack_get(thread), st_size);
 }
 
-void fork_user_stack_restore(struct stack_space *stspc, struct thread *th, void *stack_safe_point) {
-	void *stack = thread_stack_get(th);
+void fork_stack_restore(struct addr_space *adrspc, struct thread *th, void *stack_safe_point) {
+	void *stack;
+	//struct thread *th;
+	struct stack_space *stspc = NULL, *tmp;
+
+	//th = adrspc->parent_thread;
+	stack = thread_stack_get(th);
+
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->thread == th) {
+			stspc = tmp;
+		}
+	}
+
+	if (!stspc)
+		return;
 
 	if (stack <= stack_safe_point && stack_safe_point < stack + stspc->user_stack_sz) {
 		off_t off = stack_safe_point - stack;
@@ -44,12 +74,16 @@ void fork_user_stack_restore(struct stack_space *stspc, struct thread *th, void 
 	}
 }
 
-void fork_user_stack_cleanup(struct stack_space *stspc) {
-	if (stspc->user_stack) {
-		sysfree(stspc->user_stack);
-	}
+void fork_stack_cleanup(struct addr_space *adrspc) {
+	struct stack_space *tmp;
 
-	stspc->user_stack = NULL;
-	stspc->user_stack_sz = 0;
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->user_stack) {
+			sysfree(tmp->user_stack);
+		}
+
+		tmp->user_stack = NULL;
+		tmp->user_stack_sz = 0;
+	}
 }
 

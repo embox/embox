@@ -17,10 +17,21 @@
 
 #include <kernel/task/resource/task_fork.h>
 
+#include <kernel/thread/thread_stack.h>
+
 static void *fork_child_trampoline(void *arg) {
 	struct addr_space *adrspc;
+	struct thread *par_t, *cur_t;
 
 	adrspc = fork_addr_space_get(task_self());
+	par_t = adrspc->parent_thread;
+	cur_t = thread_self();
+
+	/* Set stack to parent thread stack */
+	thread_stack_set(cur_t, thread_stack_get(par_t));
+	thread_stack_set_size(cur_t, thread_stack_get_size(par_t));
+	fork_stack_store(adrspc, cur_t);
+
 	ptregs_retcode_jmp(&adrspc->pt_entry, 0);
 	panic("%s returning", __func__);
 }
@@ -31,6 +42,7 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 	struct task *parent;
 	pid_t child_pid;
 	struct task *child;
+	//struct stack_space *tmp, *stspc = NULL;
 
 	assert(ptregs);
 
@@ -50,9 +62,10 @@ void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
 		fork_addr_space_set(parent, adrspc);
 	}
 
+	fork_stack_store(adrspc, thread_self());
+
 	child_adrspc = fork_addr_space_create(adrspc);
 	fork_addr_space_store(child_adrspc);
-
 	memcpy(&child_adrspc->pt_entry, ptregs, sizeof(child_adrspc->pt_entry));
 
 	sched_lock();
