@@ -28,9 +28,11 @@ POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
 static int lthread_process(struct schedee *prev, struct schedee *next,
 		struct runq *rq) {
+	struct lthread *lt = mcast_out(next, struct lthread,
+			schedee);
 	schedee_set_current(next);
 
-	next->run(next->run_arg);
+	lt->run_ret = next->run(next->run_arg);
 
 	next->ready = false;
 	next->waiting = true;
@@ -55,6 +57,7 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	runq_item_init(&lt->schedee.sched_attr.runq_link);
 	sched_affinity_init(&lt->schedee);
 	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
+	sched_wait_info_init(&lt->info);
 }
 
 struct lthread *lthread_create(void *(*run)(void *), void *arg) {

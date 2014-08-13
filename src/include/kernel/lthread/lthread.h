@@ -15,6 +15,8 @@
 
 #include <kernel/schedee/schedee.h>
 #include <kernel/schedee/current.h>
+#include <kernel/lthread/lthread_sched_wait.h>
+#include <kernel/time/timer.h>
 
 /**
  * lthread is atomic high priority stackless thread. Because of peculiarity of
@@ -44,6 +46,10 @@
 
 struct lthread {
 	struct schedee schedee;
+
+	void          *run_ret;      /**< Return value of the routine. */
+
+	struct sched_wait_info info;
 };
 
 #define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)

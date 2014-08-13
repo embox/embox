@@ -41,7 +41,7 @@ static int sched_intr(int res) {
 }
 
 int sched_wait(void) {
-	sched_wait_schedee();
+	schedule();
 	return sched_intr(0);
 }
 

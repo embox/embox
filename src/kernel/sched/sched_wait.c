@@ -29,7 +29,3 @@ void sched_wait_cleanup_schedee(void) {
 	// TODO SMP barrier? -- Eldar
 }
 
-void sched_wait_schedee(void) {
-	schedule();
-}
-

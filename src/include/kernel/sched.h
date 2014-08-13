@@ -67,8 +67,6 @@ extern int sched_change_priority(struct schedee *s, sched_priority_t priority);
 extern void sched_wait_prepare_schedee(void);
 extern void sched_wait_cleanup_schedee(void);
 
-extern void sched_wait_schedee(void);
-
 extern int __sched_wakeup(struct schedee *);
 extern int sched_wakeup(struct schedee *);
 
