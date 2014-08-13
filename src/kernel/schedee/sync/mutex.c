@@ -38,7 +38,7 @@ int mutex_trylock_schedee(struct mutex *m) {
 	return 0;
 }
 
-int mutex_unlock_schedee(struct mutex *m) {
+void mutex_unlock_schedee(struct mutex *m) {
 	struct schedee *current = schedee_get_current();
 
 	assert(m);
@@ -48,8 +48,6 @@ int mutex_unlock_schedee(struct mutex *m) {
 	m->holder = NULL;
 	m->lock_count = 0;
 	waitq_wakeup_all(&m->wq);
-
-	return 0;
 }
 
 void priority_inherit(struct schedee *s, struct mutex *m) {

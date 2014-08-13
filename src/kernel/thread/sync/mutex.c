@@ -110,5 +110,7 @@ int mutex_unlock(struct mutex *m) {
 		return 0;
 	}
 
-	return mutex_unlock_schedee(m);
+	mutex_unlock_schedee(m);
+
+	return 0;
 }

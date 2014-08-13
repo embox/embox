@@ -23,13 +23,24 @@
  *                 in order to be waken up by mutex->wq when other schedee frees
  *                 mutex.
  */
-#define mutex_trylock_lthread(mutex) \
-	WAITQ_WAIT_LTHREAD(&(mutex)->wq, ({ \
-		int done; \
-		done = (mutex_trylock_schedee(mutex) == 0); \
-		if (!done) \
-			priority_inherit(schedee_get_current(), mutex); \
-		done; \
-	}))
+static inline int mutex_trylock_lthread(struct mutex *mutex) {
+	return WAITQ_WAIT_LTHREAD(&mutex->wq, ({
+		int done;
+		done = (mutex_trylock_schedee(mutex) == 0);
+		if (!done) {
+			priority_inherit(schedee_get_current(), mutex);
+		}
+		done;
+		}));
+}
+
+/**
+ * Unleashes the mutex from lock and unbinds it.
+ *
+ * @param locked_mutex Previously locked mutex.
+ */
+static inline void mutex_unlock_lthread(struct mutex *mutex) {
+	mutex_unlock_schedee(mutex);
+}
 
 #endif /* KERNEL_LTHREAD_SYNC_MUTEX_H_ */

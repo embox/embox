@@ -37,7 +37,7 @@ extern void mutex_init_schedee(struct mutex *m);
  *
  * @param locked_mutex Previously locked mutex.
  */
-extern int mutex_unlock_schedee(struct mutex *locked_mutex);
+extern void mutex_unlock_schedee(struct mutex *locked_mutex);
 
 /**
  * Tries to lock the mutex.

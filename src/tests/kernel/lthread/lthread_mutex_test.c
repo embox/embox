@@ -48,7 +48,7 @@ static void *high_run(void *arg) {
 		return NULL;
 	}
 	test_emit('d');
-	mutex_unlock_schedee(&m);
+	mutex_unlock_lthread(&m);
 	return NULL;
 }
 
