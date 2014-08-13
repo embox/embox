@@ -132,21 +132,37 @@ void* mmap_create_heap(struct emmap *mmap) {
 	return NULL;
 }
 
+#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
+int mmap_mapping(struct emmap *emmap) {
+	struct marea *marea;
+
+	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+		size_t len = mmu_size_align(marea->end - marea->start);
+
+
+		vmem_map_region(emmap->ctx, marea->start, marea->start, len,  marea->flags);
+	}
+
+	return 0;
+}
+
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct marea *marea, *new_marea;
-	int res;
 
 	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
 		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
-
+#if 0
 		if ((res = vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start))) {
 			free(marea);
 			return res;
 		}
-
+#endif
 	}
+	mmap_mapping(mmap);
+
 	return 0;
 }
+
 

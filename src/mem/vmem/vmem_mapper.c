@@ -338,7 +338,6 @@ static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt
 
 					pte_idx = 0;
 				}
-
 			}
 
 			pmd_idx = 0;
