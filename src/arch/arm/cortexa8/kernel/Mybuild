@@ -24,4 +24,6 @@ module interrupt extends embox.arch.interrupt {
 
 module arch {
 	source "arch.c"
+
+	depends embox.arch.arm.platform_shutdown
 }
