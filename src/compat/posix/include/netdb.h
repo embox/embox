@@ -180,6 +180,12 @@ extern void freeaddrinfo(struct addrinfo *ai);
 								datagram service */
 
 /**
+ * Network names limits
+ */
+#define NI_MAXHOST 1025
+#define NI_MAXSERV 32
+
+/**
  * Address information function errors
  */
 #define EAI_AGAIN     1 /* The name could not be resolved at this
