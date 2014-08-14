@@ -14,10 +14,13 @@
 #include <util/dlist.h>
 #include <kernel/task.h>
 #include <hal/ptrace.h>
+#include <util/dlist.h>
 
 struct stack_space {
-	void *user_stack;
-	size_t user_stack_sz;
+	struct dlist_head list;
+	struct thread *thread;
+	void *stack;
+	size_t stack_sz;
 };
 
 struct heap_space {
@@ -40,7 +43,7 @@ struct addr_space {
 
 	struct thread *parent_thread;
 
-	struct stack_space stack_space;
+	struct dlist_head stack_space_head;
 	struct heap_space heap_space;
 	struct static_space static_space;
 };
@@ -56,18 +59,19 @@ extern void fork_addr_space_finish_switch(void *safe_point);
 
 /* Stack */
 struct thread;
-extern void fork_user_stack_store(struct stack_space *stspc, struct thread *thread);
-extern void fork_user_stack_restore(struct stack_space *stspc, struct thread *th, void *stack_safe_point);
-extern void fork_user_stack_cleanup(struct stack_space *stspc);
+extern void fork_stack_store(struct addr_space *adrspc);
+extern void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point);
+extern void fork_stack_cleanup(struct addr_space *adrspc);
 
 /* Heap */
-extern void fork_heap_store(struct heap_space *hpspc, struct task *tk);
-extern void fork_heap_restore(struct heap_space *hpspc, struct task *tk);
+extern void fork_heap_store(struct heap_space *hpspc);
+extern void fork_heap_restore(struct heap_space *hpspc);
 extern void fork_heap_cleanup(struct heap_space *hpspc);
 
 /* Static */
-extern void fork_static_store(struct static_space *sspc, struct task *tk);
-extern void fork_static_restore(struct static_space *sspc, struct task *tk);
+extern void fork_static_store(struct static_space *sspc);
+extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
+

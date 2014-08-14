@@ -26,7 +26,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	int res;
 
 	/* can vfork only in single thread application */
-	assert(thread_self() == task_self()->tsk_main);
+	assert(&thread_self()->thread_link == thread_self()->thread_link.next);
 
 	/* create task description but not start its main thread */
 	child_pid = task_prepare("");

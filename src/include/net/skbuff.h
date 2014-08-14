@@ -141,8 +141,9 @@ extern struct sk_buff * skb_realloc(size_t size,
 extern void skb_free(struct sk_buff *skb);
 
 /**
- *	skb_rshift	-	perform right shift on skb data
- *	@skb: buffer to process
+ * Perform right shift on skb data
+ * @skb: buffer to process
+ * @count : buffer to process
  */
 extern void skb_rshift(struct sk_buff *skb, size_t count);
 

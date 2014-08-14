@@ -8,6 +8,7 @@
 #ifndef IRQCTRL_NVIC_IMPL_H_
 #define IRQCTRL_NVIC_IMPL_H_
 
-#define __IRQCTRL_IRQS_TOTAL 16
+#include <module/embox/driver/interrupt/cortexm_nvic.h>
+#define __IRQCTRL_IRQS_TOTAL OPTION_MODULE_GET(embox__driver__interrupt__cortexm_nvic,NUMBER,irq_table_size)
 
 #endif /* IRQCTRL_NVIC_IMPL_H_ */

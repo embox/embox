@@ -13,44 +13,78 @@
 #include <sys/types.h>
 #include <mem/sysmalloc.h>
 
-void fork_user_stack_store(struct stack_space *stspc, struct thread *thread) {
+void fork_stack_store(struct addr_space *adrspc) {
 	size_t st_size;
+	struct stack_space *stspc = NULL, *tmp;
+	struct thread *thread = thread_self();
 
 	st_size = thread_stack_get_size(thread);
 
-	if (stspc->user_stack_sz != st_size) {
-		if (stspc->user_stack) {
-			sysfree(stspc->user_stack);
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->thread == thread) {
+			stspc = tmp;
+		}
+	}
+
+	if (stspc == NULL) {
+		stspc = sysmalloc(sizeof(*stspc));
+		memset(stspc, 0, sizeof(*stspc));
+		stspc->thread = thread;
+
+		dlist_init(&stspc->list);
+		dlist_add_prev(&stspc->list, &adrspc->stack_space_head);
+	}
+
+	if (stspc->stack_sz != st_size) {
+		if (stspc->stack) {
+			sysfree(stspc->stack);
 		}
 
-		stspc->user_stack = sysmalloc(st_size);
-		assert(stspc->user_stack); /* allocation successed */
-		stspc->user_stack_sz = st_size;
+		stspc->stack = sysmalloc(st_size);
+		assert(stspc->stack); /* allocation successed */
+		stspc->stack_sz = st_size;
 	}
 
-	memcpy(stspc->user_stack, thread_stack_get(thread), st_size);
+	memcpy(stspc->stack, thread_stack_get(thread), st_size);
 }
 
-void fork_user_stack_restore(struct stack_space *stspc, struct thread *th, void *stack_safe_point) {
-	void *stack = thread_stack_get(th);
+void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point) {
+	void *stack;
+	struct thread *th;
+	struct stack_space *stspc = NULL, *tmp;
 
-	if (stack <= stack_safe_point && stack_safe_point < stack + stspc->user_stack_sz) {
+	th = thread_self();
+	stack = thread_stack_get(th);
+
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->thread == th) {
+			stspc = tmp;
+		}
+	}
+
+	if (!stspc)
+		return;
+
+	if (stack <= stack_safe_point && stack_safe_point < stack + stspc->stack_sz) {
 		off_t off = stack_safe_point - stack;
-		size_t sz = stspc->user_stack_sz - off;
+		size_t sz = stspc->stack_sz - off;
 
-		memcpy(stack + off, stspc->user_stack + off, sz);
+		memcpy(stack + off, stspc->stack + off, sz);
 	} else {
-		memcpy(stack, stspc->user_stack, stspc->user_stack_sz);
+		memcpy(stack, stspc->stack, stspc->stack_sz);
 	}
 }
 
-void fork_user_stack_cleanup(struct stack_space *stspc) {
+void fork_stack_cleanup(struct addr_space *adrspc) {
+	struct stack_space *tmp;
 
-	if (stspc->user_stack) {
-		sysfree(stspc->user_stack);
+	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
+		if (tmp->stack) {
+			sysfree(tmp->stack);
+		}
+
+		tmp->stack = NULL;
+		tmp->stack_sz = 0;
 	}
-
-	stspc->user_stack = NULL;
-	stspc->user_stack_sz = 0;
 }
 

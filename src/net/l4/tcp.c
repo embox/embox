@@ -1341,6 +1341,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 					TCP_REXMIT_DELAY)) {
 			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
 					to_sock(tcp_sk));
+			tcp_sk->rexmit_mode = 1;
 			tcp_rexmit(tcp_sk);
 		}
 	}

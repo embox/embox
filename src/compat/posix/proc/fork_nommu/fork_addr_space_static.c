@@ -14,15 +14,15 @@
 #include <framework/mod/types.h>
 #include <string.h>
 
-static inline const struct mod_app *task_app_get(struct task *tk) {
-	const struct mod *mod = task_module_ptr_get(tk);
+static inline const struct mod_app *task_app_get(void) {
+	const struct mod *mod = task_module_ptr_get(task_self());
 	return mod ? mod->app : NULL;
 }
 
-void fork_static_store(struct static_space *sspc, struct task *tk) {
+void fork_static_store(struct static_space *sspc) {
 	const struct mod_app *app;
 
-	app = task_app_get(tk);
+	app = task_app_get();
 	if (!app) {
 		return;
 	}
@@ -40,10 +40,10 @@ void fork_static_store(struct static_space *sspc, struct task *tk) {
 	memcpy(sspc->data_store, app->data, app->data_sz);
 }
 
-void fork_static_restore(struct static_space *sspc, struct task *tk) {
+void fork_static_restore(struct static_space *sspc) {
 	const struct mod_app *app;
 
-	app = task_app_get(tk);
+	app = task_app_get();
 	if (!app) {
 		return;
 	}
