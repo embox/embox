@@ -47,9 +47,6 @@ void sched_wait_prepare_lthread(clock_t timeout) {
 
 	if (info->status == SCHED_WAIT_STARTED) {
 		int diff = info->cur_time - info->prev_time;
-		//info->status = SCHED_WAIT_FINISHED;
-
-		//timer_close(info->tmr);
 
 		if (diff < timeout) {
 			info->remain = info->remain - diff;

@@ -15,13 +15,26 @@
 #define SCHED_WAIT_FINISHED 0
 #define SCHED_WAIT_STARTED 1
 
+#define SCHED_WAIT_TIMEOUT(cond_expr) \
+	SCHED_WAIT_TIMEOUT_LTHREAD(cond_expr, SCHED_TIMEOUT_INFINITE)
+
+/**
+ * Waits with timeout till cond_expr becomes true.
+ *
+ * @param cond_expr conditional expression waiting to be true
+ *
+ * @return waiting result
+ * @retval 0 cond_expr is true.
+ * @retval -EAGAIN lthread has to finish its routine in order to be waken up.
+ * @retval -ETIMEDOUT Waiting finished. Timeout is exceeded.
+ */
 #define SCHED_WAIT_TIMEOUT_LTHREAD(cond_expr, timeout) \
 	({                                                               \
 		int __wait_ret = 0;                                          \
 		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
 			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
 		                                                             \
-		if (!cond_expr) {                                            \
+		if (!(cond_expr)) {                                          \
 			sched_wait_prepare_lthread(__wait_timeout);              \
 			                                                         \
 			__wait_ret = sched_wait_timeout_lthread();               \
