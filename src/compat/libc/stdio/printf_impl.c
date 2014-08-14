@@ -279,7 +279,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data, double r, int width,
 		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
-	return 0;
+	return print_s(printchar_handler, printchar_data, "%f", 0, 0, 0);
 }
 #endif
 
