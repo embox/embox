@@ -12,39 +12,29 @@
 
 #include <kernel/sched/sched_timing.h>
 
-void sched_timing_init(struct thread *t) {
+void sched_timing_init(struct schedee *s) {
 	/* setup thread running time */
-	t->runnable.sched_attr.sched_time.running_time = 0;
-	t->runnable.sched_attr.sched_time.last_sync = clock();
+	s->sched_attr.sched_time.running_time = 0;
+	s->sched_attr.sched_time.last_sync = clock();
 }
 
-clock_t sched_timing_get(struct thread *t) {
-	clock_t running = t->runnable.sched_attr.sched_time.running_time;
+clock_t sched_timing_get(struct schedee *s) {
+	clock_t running = s->sched_attr.sched_time.running_time;
 
-	if (sched_active(t))
+	if (sched_active(s))
 		/* Add the least recent time slice (being used now). */
-		running += clock() - t->runnable.sched_attr.sched_time.last_sync;
+		running += clock() - s->sched_attr.sched_time.last_sync;
 
 	return running;
 }
 
-static void sched_timing_start(struct thread *t, clock_t cur_time) {
-	t->runnable.sched_attr.sched_time.last_sync = cur_time;
+void sched_timing_start(struct schedee *s) {
+	s->sched_attr.sched_time.last_sync = clock();
 }
 
-static void sched_timing_stop(struct thread *t, clock_t cur_time) {
-	clock_t spent = cur_time - t->runnable.sched_attr.sched_time.last_sync;
-
-	t->runnable.sched_attr.sched_time.running_time += spent;
-	//TODO this is for qt
+void sched_timing_stop(struct schedee *s) {
+	struct thread *t = mcast_out(s, struct thread, schedee);
+	clock_t spent = clock() - s->sched_attr.sched_time.last_sync;
+	s->sched_attr.sched_time.running_time += spent;
 	task_set_clock(t->task, task_get_clock(t->task) + spent);
-}
-
-void sched_timing_switch(struct thread *prev, struct thread *next) {
-	clock_t new_clock;
-
-	/* Running time recalculation */
-	new_clock = clock();
-	sched_timing_stop(prev, new_clock);
-	sched_timing_start(next, new_clock);
 }

@@ -65,13 +65,13 @@ void waitq_wait_prepare(struct waitq *wq, struct waitq_link *_wql) {
 	wql = waitq_link_create_protected(_wql);
 
 	waitq_add(wq, wql);
-	sched_wait_prepare();
+	sched_wait_prepare_schedee();
 }
 
 void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
 	struct waitq_link *wql;
 
-	sched_wait_cleanup();
+	sched_wait_cleanup_schedee();
 
 	wql = waitq_link_find_protected(_wql);
 
@@ -86,8 +86,8 @@ void __waitq_wakeup(struct waitq *wq, int nr) {
 	assert(wq);
 
 	dlist_foreach_entry(wql, &wq->list, link) {
-		assert(wql->thread);
-		if (!sched_wakeup(wql->thread))
+		assert(wql->schedee);
+		if (!sched_wakeup(wql->schedee))
 			continue;
 
 		// TODO mark this wql as the one who has woken the thread up? -- Eldar

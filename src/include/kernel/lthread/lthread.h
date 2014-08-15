@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief Describes lightweight thread structure
+ * @brief Describes light thread structure
  *
  * @date 10.12.2013
  * @author Andrey Kokorev
+ * @author Vita Loginova
  */
 
 #ifndef _KERNEL_LTHREAD_H_
@@ -12,19 +13,46 @@
 
 #include <module/embox/kernel/lthread/lthread_api.h>
 
-#include <kernel/runnable/runnable.h>
-
-struct lthread {
-	struct runnable runnable;
-};
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
+#include <kernel/lthread/lthread_sched_wait.h>
+#include <kernel/time/timer.h>
 
 /**
- * Called by sched in __schedule to start routine.
+ * lthread is atomic high priority stackless thread. Because of peculiarity of
+ * lthread there are some use restrictions.
  *
- * @param r
- *   runnable in struct lthread
+ * It is impossible to interrupt lthread at the middle of the execution in
+ * order to proceed it after some condition becomes true. Nonetheless it is
+ * allowed to use waitq and sched_wait functions.
+ *
+ * For example, you can use WAITQ_WAIT_LTHREAD macro. In case of full thread
+ * you are able to allocate memory for waitq_link on the stack. lthread is
+ * stackless, so it has to use waitq_link of structure schedee. If conditional
+ * expression is not true lthread has to break its routine and wait until it
+ * is waken up by waitq. After waking up lthread starts the routine from
+ * the first line.
+ *
+ * So that you should place sync and wait functions at the beginning of the run
+ * function in order to execute it in an appropriate context.
+ *
+ * For waiting and synchronization you can use lthread specific macros and
+ * functions (see kernel/lthread/) or macros and functions which are common
+ * for all schedee implementation (see kernel/schedee/ and
+ * kernel/sched/waitq.h and kernel/sched.h).
+ *
+ * TODO: there is no possibility to use timeout functions yet
  */
-extern void lthread_trampoline(struct runnable *r);
+
+struct lthread {
+	struct schedee schedee;
+
+	void          *run_ret;      /**< Return value of the routine. */
+
+	struct sched_wait_info info;
+};
+
+#define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)
 
 /**
  * Creates a new light thread.
@@ -33,12 +61,12 @@ extern void lthread_trampoline(struct runnable *r);
  * @param arg
  *   A value to pass to the start routine as the argument.
  * @return
- *   Light thread created.
+ *   Created light thread.
  */
 extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
 
 /**
- * Deletes light thread from pool
+ * Deletes light thread from the pool
  * @param lt
  *   The light thread to delete
  */

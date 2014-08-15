@@ -9,6 +9,7 @@ module net_entry extends entry_api {
 
 	depends net_rx
 	depends skbuff
+	depends embox.kernel.lthread.lthread
 }
 
 module net_rx {

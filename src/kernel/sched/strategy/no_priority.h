@@ -8,28 +8,28 @@
 #ifndef STRATEGY_NO_PRIORITY_H_
 #define STRATEGY_NO_PRIORITY_H_
 
-struct runnable;
+struct schedee;
 
-struct runnable_priority {
+struct schedee_priority {
 };
 
-typedef struct runnable_priority __runnable_priority_t;
+typedef struct schedee_priority __schedee_priority_t;
 
-static inline int runnable_priority_set(struct runnable *r,
+static inline int schedee_priority_set(struct schedee *s,
 		sched_priority_t new_priority) {
 	return 0;
 }
 
-static inline sched_priority_t runnable_priority_get(struct runnable *r) {
+static inline sched_priority_t schedee_priority_get(struct schedee *s) {
 	return 0;
 }
 
-static inline sched_priority_t runnable_priority_inherit(struct runnable *r,
+static inline sched_priority_t schedee_priority_inherit(struct schedee *s,
 		sched_priority_t priority) {
 	return 0;
 }
 
-static inline sched_priority_t runnable_priority_reverse(struct runnable *r) {
+static inline sched_priority_t schedee_priority_reverse(struct schedee *s) {
 	return 0;
 }
 

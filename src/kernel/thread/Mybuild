@@ -16,9 +16,12 @@ module core extends thread_mode {
 	source "core.c"
 	source "thread_allocator.c"
 	source "thread_register.c"
+	source "thread_switch.c"
+
+	option boolean timer_allocate_on_stack = true
+	source "thread_sched_wait.c"
 
 	depends starter
-	source "thread_sched_routine.c"
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
@@ -33,6 +36,7 @@ module core extends thread_mode {
 	@NoRuntime depends embox.compat.libc.LibCAssert
 
 	depends embox.kernel.cpu.common
+	depends embox.kernel.schedee.current.api
 }
 
 module starter {
@@ -47,6 +51,7 @@ module starter {
 module boot_thread {
 	source "boot_thread.c"
 	@NoRuntime depends embox.kernel.task.kernel_task
+	depends embox.kernel.schedee.current.api
 }
 
 module idle_thread {

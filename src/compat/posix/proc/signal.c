@@ -99,7 +99,7 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_signal(task_get_main(task));
+	sched_signal(&task_get_main(task)->schedee);
 
 	return 0;
 }
@@ -116,7 +116,7 @@ int pthread_kill(pthread_t thread, int sig) {
 	if (err)
 		return SET_ERRNO(err);
 
-	sched_signal(thread);
+	sched_signal(&thread->schedee);
 
 	return 0;
 }

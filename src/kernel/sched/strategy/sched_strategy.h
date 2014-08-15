@@ -14,18 +14,19 @@
 #include <kernel/sched/runq.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/runnable/runnable_priority.h>
+#include <kernel/schedee/schedee_priority.h>
 
 struct runq {
 	runq_t     queue;
 	spinlock_t lock;
+	ipl_t ipl;
 };
 
 struct sched_attr {
 	runq_item_t runq_link;
 	affinity_t affinity;
 	sched_timing_t sched_time;
-	runnable_priority_t thread_priority;
+	schedee_priority_t thread_priority;
 	int policy;
 };
 

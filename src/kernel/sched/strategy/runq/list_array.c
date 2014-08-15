@@ -8,7 +8,7 @@
 
 #include <util/dlist.h>
 
-#include <kernel/runnable/runnable.h>
+#include <kernel/schedee/schedee.h>
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 
@@ -30,37 +30,37 @@ void runq_init(runq_t *queue) {
 	}
 }
 
-void runq_insert(runq_t *queue, struct runnable *runnable) {
-	dlist_add_prev(&runnable->sched_attr.runq_link,
-			&queue->list[runnable_priority_get(runnable)]);
+void runq_insert(runq_t *queue, struct schedee *schedee) {
+	dlist_add_prev(&schedee->sched_attr.runq_link,
+			&queue->list[schedee_priority_get(schedee)]);
 }
 
-void runq_remove(runq_t *queue, struct runnable *runnable) {
-	dlist_del(&runnable->sched_attr.runq_link);
+void runq_remove(runq_t *queue, struct schedee *schedee) {
+	dlist_del(&schedee->sched_attr.runq_link);
 }
 
-struct runnable *runq_extract(runq_t *queue) {
-	struct runnable *runnable = NULL;
+struct schedee *runq_extract(runq_t *queue) {
+	struct schedee *schedee = NULL;
 	int i;
 
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
-		struct runnable *r;
+		struct schedee *s;
 
 		dlist_foreach_entry(r, &queue->list[i], sched_attr.runq_link) {
 			/* Checking the affinity */
 			unsigned int mask = 1 << cpu_get_id();
 
 			if (sched_affinity_check(r, mask)) {
-				runnable = r;
+				schedee = s;
 				break;
 			}
 		}
 
-		if (runnable) {
-			runq_remove(queue, runnable);
+		if (schedee) {
+			runq_remove(queue, schedee);
 			break;
 		}
 	}
 
-	return runnable;
+	return schedee;
 }

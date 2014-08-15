@@ -19,7 +19,7 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/runnable/runnable.h>
+#include <kernel/schedee/schedee.h>
 #include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
@@ -55,17 +55,11 @@ struct task;
  *                others access it with t->lock held and interrupts off
  */
 struct thread {
-	/* runnable member HAVE TO be first. Please, do NOT move!*/
-	struct runnable    runnable;     /**< Runnable interface for scheduler */
+	/* schedee member HAVE TO be first. Please, do NOT move!*/
+	struct schedee    schedee;     /**< Schedee interface for scheduler */
 
 	unsigned int       critical_count;
 	unsigned int       siglock;
-
-	spinlock_t         lock;         /**< Protects wait state and others. */
-
-	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
-	unsigned int       ready;        /**< Managed by the scheduler. */
-	unsigned int       waiting;      /**< Waiting for an event. */
 
 	unsigned int       state;        /**< Thread-specific state. */
 

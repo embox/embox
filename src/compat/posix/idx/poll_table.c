@@ -7,6 +7,7 @@
 #include <poll.h>
 
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>

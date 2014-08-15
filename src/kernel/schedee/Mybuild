@@ -1,0 +1,13 @@
+package embox.kernel.schedee.current
+
+@DefaultImpl(embox.kernel.schedee.current.default)
+abstract module api { }
+
+module default extends api {
+	source "default.c", "default.h"
+}
+
+/* TODO: Lthread are forbidden in case fixed stach thread */
+/*module fixedstack extends api {
+	source "fixedstack.h"
+}*/

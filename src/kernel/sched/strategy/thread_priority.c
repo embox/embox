@@ -6,34 +6,34 @@
  */
 
 #include <kernel/thread.h>
-#include <kernel/runnable/runnable_priority.h>
+#include <kernel/schedee/schedee_priority.h>
 
-#define prior_field(field)   t->runnable.sched_attr.thread_priority.field
+#define prior_field(field)   s->schedee.sched_attr.thread_priority.field
 
-int thread_priority_init(struct thread *t, sched_priority_t new_priority) {
-	assert(t);
-	runnable_priority_init(&t->runnable, new_priority);
+int thread_priority_init(struct thread *s, sched_priority_t new_priority) {
+	assert(s);
+	schedee_priority_init(&s->schedee, new_priority);
 	return 0;
 }
 
-int thread_priority_set(struct thread *t, sched_priority_t new_priority) {
-	assert(t);
-	runnable_priority_set(&t->runnable, new_priority);
+int thread_priority_set(struct thread *s, sched_priority_t new_priority) {
+	assert(s);
+	schedee_priority_set(&s->schedee, new_priority);
 	return 0;
 }
 
-sched_priority_t thread_priority_get(struct thread *t) {
-	assert(t);
-	return runnable_priority_get(&t->runnable);
+sched_priority_t thread_priority_get(struct thread *s) {
+	assert(s);
+	return schedee_priority_get(&s->schedee);
 }
 
-sched_priority_t thread_priority_inherit(struct thread *t,
+sched_priority_t thread_priority_inherit(struct thread *s,
 		sched_priority_t priority) {
-	assert(t);
-	return runnable_priority_inherit(&t->runnable, priority);
+	assert(s);
+	return schedee_priority_inherit(&s->schedee, priority);
 }
 
-sched_priority_t thread_priority_reverse(struct thread *t) {
-	assert(t);
-	return runnable_priority_reverse(&t->runnable);
+sched_priority_t thread_priority_reverse(struct thread *s) {
+	assert(s);
+	return schedee_priority_reverse(&s->schedee);
 }

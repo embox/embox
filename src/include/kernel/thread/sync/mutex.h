@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief Defines mutex structure and methods associated with it.
+ * @brief Defines thread-specific methods associated with mutex. You can also
+ * or instead use ones from schedee/sync/mutex.h
  *
  * @date 05.05.10
  * @author Nikolay Malkovsky
@@ -11,22 +12,11 @@
 
 #include <stddef.h>
 #include <sys/cdefs.h>
+#include <errno.h>
 
 #include <kernel/sched/waitq.h>
-#include <kernel/thread/sync/mutexattr.h>
+#include <kernel/schedee/sync/mutex.h>
 
-struct thread;
-
-/**
- * Defines Mutex structure.
- */
-struct mutex {
-	struct waitq wq;
-	struct thread *holder;
-	struct mutexattr attr;
-
-	int lock_count;
-};
 
 #define MUTEX_INIT_STATIC \
 	{                                                  \
@@ -64,7 +54,7 @@ struct mutex {
 
 #define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
-__BEGIN_DECLS
+__END_DECLS
 
 /**
  * initializes given mutex with attribute

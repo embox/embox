@@ -22,15 +22,15 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_CURRENT_API_H_
-#define KERNEL_THREAD_CURRENT_API_H_
+#ifndef KERNEL_SCHEDEE_CURRENT_H_
+#define KERNEL_SCHEDEE_CURRENT_H_
 
-#include <module/embox/kernel/thread/current/api.h>
+#include <module/embox/kernel/schedee/current/api.h>
 
-#define thread_get_current() \
-	__thread_get_current()
+#define schedee_get_current() \
+	__schedee_get_current()
 
-#define thread_set_current(thread) \
-	__thread_set_current(thread)
+#define schedee_set_current(schedee) \
+	__schedee_set_current(schedee)
 
-#endif /* KERNEL_THREAD_CURRENT_API_H_ */
+#endif /* KERNEL_SCHEDEE_CURRENT_H_ */

@@ -14,6 +14,7 @@
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/irq_lock.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #include <drivers/usb/usb_dev_desc.h>
 

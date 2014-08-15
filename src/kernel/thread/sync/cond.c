@@ -14,6 +14,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/cond.h>
+#include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread.h>
@@ -112,15 +113,15 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	res = ENOERR;
 	sched_lock();
 	{
-		struct waitq_link wql;
-		waitq_link_init(&wql);
-		waitq_wait_prepare(&c->wq, &wql);
+		struct waitq_link *wql = &current->schedee.waitq_link;
+		waitq_link_init(wql);
+		waitq_wait_prepare(&c->wq, wql);
 
 		mutex_unlock(m);
 
 		res = sched_wait_timeout(timeout, NULL);
 
-		waitq_wait_cleanup(&c->wq, &wql);
+		waitq_wait_cleanup(&c->wq, wql);
 	}
 	sched_unlock();
 

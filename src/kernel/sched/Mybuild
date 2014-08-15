@@ -6,7 +6,6 @@ module sched {
 
 	source "sched_signal.c"
 
-	option boolean timer_allocate_on_stack = true
 	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */
@@ -14,7 +13,6 @@ module sched {
 
 	@NoRuntime depends embox.kernel.thread.signal.lock_api
 	@NoRuntime depends embox.kernel.thread.signal_api
-	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
 	@NoRuntime depends embox.profiler.trace
@@ -26,6 +24,7 @@ module sched {
 	depends embox.kernel.thread.thread_wait
 
 	depends embox.kernel.lthread.lthread_api
+	@NoRuntime depends embox.kernel.schedee.current.api
 
 }
 
