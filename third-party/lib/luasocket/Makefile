@@ -20,10 +20,19 @@ $(BUILD) :
 	)
 	touch $@
 
-$(ROOTFS_IMAGE): $(INSTALL)
+$(ROOTFS_IMAGE) : $(INSTALL)
 $(INSTALL) :
 	cp $(BUILD_DIR)/$(PKG_NAME)/src/mime.so.o $(PKG_INSTALL_DIR)/
 	cp $(BUILD_DIR)/$(PKG_NAME)/src/socket.so.o $(PKG_INSTALL_DIR)/
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/ltn12.lua $(ROOT_DIR)/conf/rootfs
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/mime.lua $(ROOT_DIR)/conf/rootfs
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/socket.lua $(ROOT_DIR)/conf/rootfs
 	mkdir -p $(ROOT_DIR)/conf/rootfs/socket
-	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/*.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/ftp.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/headers.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/http.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/mbox.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/smtp.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/tp.lua $(ROOT_DIR)/conf/rootfs/socket
+	cp -l -f -u $(BUILD_DIR)/$(PKG_NAME)/src/url.lua $(ROOT_DIR)/conf/rootfs/socket
 	touch $@
