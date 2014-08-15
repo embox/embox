@@ -46,10 +46,12 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 
 	for (i = 0; i < task_argv->argc; i++) {
 		strncpy(task_argv->argv_buff[i], argv[i], sizeof(*task_argv->argv_buff));
+		task_argv->argv_buff[i][sizeof(*task_argv->argv_buff) - 1] = '\0';
 		task_argv->argv[i] = task_argv->argv_buff[i];
 	}
 
 	strncpy(task_argv->path, path, sizeof(task_argv->path));
+	task_argv->path[sizeof(task_argv->path) - 1] = '\0';
 
 	return 0;
 }
