@@ -54,7 +54,7 @@
 
 #define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
-__END_DECLS
+__BEGIN_DECLS
 
 /**
  * initializes given mutex with attribute
