@@ -46,11 +46,11 @@ struct schedee *runq_extract(runq_t *queue) {
 	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
 		struct schedee *s;
 
-		dlist_foreach_entry(r, &queue->list[i], sched_attr.runq_link) {
+		dlist_foreach_entry(s, &queue->list[i], sched_attr.runq_link) {
 			/* Checking the affinity */
 			unsigned int mask = 1 << cpu_get_id();
 
-			if (sched_affinity_check(r, mask)) {
+			if (sched_affinity_check(s, mask)) {
 				schedee = s;
 				break;
 			}
