@@ -80,6 +80,20 @@ module stm32_usart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
+@BuildDepends(third_party.bsp.st_f4)
+module stm_usart extends embox.driver.diag.diag_api {
+	option number baud_rate
+	/*option boolean hw_flow = false*/
+
+	source "stm_usart.c"
+
+	/*depends embox.driver.gpio.stm32*/
+	depends core
+	depends diag
+	depends third_party.bsp.st_f4
+}
+
+
 @BuildDepends(efm32zg_sk3200.bsp)
 module efm32_leuart extends embox.driver.diag.diag_api {
 	option number baud_rate

@@ -33,7 +33,10 @@
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
+#include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched/sched_priority.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -42,10 +45,10 @@
 #include <hal/context.h>
 #include <err.h>
 
-
+extern void thread_switch(struct thread *prev, struct thread *next);
+extern void thread_ack_switched(void);
 
 static int id_counter = 0; // TODO make it an indexator
-
 
 /**
  * Wrapper for thread start routine.
@@ -57,12 +60,12 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
-	sched_ack_switched();
+	thread_ack_switched();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->run(current->run_arg);
+	res = current->schedee.run(current->schedee.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
@@ -122,6 +125,31 @@ out_unlock:
 	return t;
 }
 
+static int thread_process(struct schedee *prev, struct schedee *next,
+		ipl_t ipl) {
+	struct thread *next_t, *prev_t;
+	next_t = mcast_out(next, struct thread, schedee);
+	prev_t = mcast_out(prev, struct thread, schedee);
+
+	schedee_set_current(next);
+
+	/* Threads context switch */
+	if (prev != next) {
+		thread_switch(prev_t, next_t);
+	}
+
+	ipl_restore(ipl);
+
+	assert(thread_self() == prev_t);
+
+	if (!prev_t->siglock) {
+		thread_signal_handle();
+	}
+
+	return SCHEDEE_EXIT;
+}
+
+
 void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	sched_priority_t priority;
@@ -137,18 +165,20 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
-	t->lock = SPIN_UNLOCKED;
-	t->ready = false;
-	t->active = false;
-	t->waiting = true;
+	t->schedee.lock = SPIN_UNLOCKED;
+	t->schedee.ready = false;
+	t->schedee.active = false;
+	t->schedee.waiting = true;
 	t->state = TS_INIT;
 
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
 		panic("can't initialize thread_local");
 	}
+
 	/* set executive function and arguments pointer */
-	t->run = run;
-	t->run_arg = arg;
+	t->schedee.process = thread_process;
+	t->schedee.run = run;
+	t->schedee.run_arg = arg;
 
 	t->joining = NULL;
 
@@ -175,8 +205,6 @@ void thread_init(struct thread *t, unsigned int flags,
 	thread_priority_init(t, priority);
 
 	/* cpu context init */
-	context_init(&t->context, true); /* setup default value of CPU registers */
-	context_set_entry(&t->context, thread_trampoline);/*set entry (IP register*/
 	/* setup stack pointer to the top of allocated memory
 	 * The structure of kernel thread stack follow:
 	 * +++++++++++++++ top
@@ -187,15 +215,15 @@ void thread_init(struct thread *t, unsigned int flags,
 	 * the end
 	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
 	 */
-	context_set_stack(&t->context,
-			thread_stack_get(t) + thread_stack_get_size(t));
+	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&t->sched_attr.runq_link);
-	sched_affinity_init(t);
-	sched_timing_init(t);
+	runq_item_init(&(t->schedee.sched_attr.runq_link));
+	sched_affinity_init(&(t->schedee));
+	sched_timing_init(&t->schedee);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
@@ -215,8 +243,8 @@ void thread_delete(struct thread *t) {
 	}
 
 	if (t != thread_self()) {
-		assert(!t->active);
-		assert(!t->ready);
+		assert(!t->schedee.active);
+		assert(!t->schedee.ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -239,7 +267,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->waiting = true;
+	current->schedee.waiting = true;
 	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
@@ -247,7 +275,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	joining = current->joining;
 	current->run_ret = ret;
 	if (joining) {
-		sched_wakeup(joining);
+		sched_wakeup(&joining->schedee);
 	}
 
 	if (current->state & TS_DETACHED)
@@ -325,7 +353,7 @@ int thread_launch(struct thread *t) {
 			ret = -EINVAL;
 		}
 		else {
-			ret = sched_wakeup(t) ? 0 : -EINVAL;
+			ret = sched_wakeup(&t->schedee) ? 0 : -EINVAL;
 		}
 	}
 	sched_unlock();
@@ -341,13 +369,13 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
-		sched_freeze(t);
+		sched_freeze(&t->schedee);
 
 		t->state |= TS_EXITED;
 
 		// XXX prevent scheduler to add thread in runq
 		if (t == thread_self()) {
-			t->waiting = true;
+			t->schedee.waiting = true;
 		}
 	}
 	sched_unlock();
@@ -376,7 +404,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// 	sched_change_priority(t, prior);
 	// }
 
- 	sched_change_priority(t, new_priority);
+ 	sched_change_priority(&t->schedee, new_priority);
 
 
 	return 0;
@@ -394,8 +422,7 @@ clock_t thread_get_running_time(struct thread *t) {
 
 	sched_lock();
 	{
-		running = sched_timing_get(t);
-
+		running = sched_timing_get(&t->schedee);
 	}
 	sched_unlock();
 
@@ -404,5 +431,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->run_arg = run_arg;
+	t->schedee.run_arg = run_arg;
 }

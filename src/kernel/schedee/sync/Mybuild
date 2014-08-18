@@ -1,0 +1,9 @@
+package embox.kernel.schedee
+
+module mutex {
+	source "mutex.c"
+	source "mutexattr.c"
+
+	depends embox.kernel.sched.strategy.priority_api
+	depends embox.kernel.sched.wait_queue
+}

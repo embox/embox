@@ -1,0 +1,23 @@
+// A simple client-side HTTP-style test that does a connect, sends a
+// short request, and receives a short response.
+
+// Create a socket.
+0.000 socket(..., SOCK_STREAM, IPPROTO_TCP) = 3
+
+0.100...0.200 connect(3, ..., ...) = 0
+
+// Establish a connection.
+0.100 > S  0:0(0) win 16384 <mss 16396,nop,wscale 7>
+0.200 < S. 0:0(0) ack 1 win 16384 <mss 16396,nop,wscale 7>
+0.200 > .  1:1(0) ack 1
+
+0.300 write(3, ..., 16) = 16 // XXX socket is blocked, but write returns immediately
+0.300 > P. 1:17(16) ack 1 // lost
+0.300 write(3, ..., 16) = 16 // XXX socket is blocked, but write returns immediately
+0.300 > P. 17:33(16) ack 1 // lost
+0.350 close(3) = 0
+0.350 > F. 33:33(0) ack 1
+0.400 < . 1:1(0) ack 1 win 92 // got F. only
+2.690 > P. 1:17(16) ack 1 win 16384 //XXX retransmit by timeout
+2.690 < . 1:1(0) ack 17 win 92
+2.690 > P. 17:33(16) ack 1 win 16384

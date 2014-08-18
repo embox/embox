@@ -7,9 +7,8 @@
 
 #include <stdio.h>
 
-int clearerr(FILE *stream) {
+void clearerr(FILE *stream) {
 	//TODO:
-	return 0;
 }
 
 int feof(FILE *file) {

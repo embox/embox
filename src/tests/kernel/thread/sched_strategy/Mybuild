@@ -19,3 +19,4 @@ module priority_based_test {
 
 	depends embox.framework.LibFramework
 }
+

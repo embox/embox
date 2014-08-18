@@ -17,6 +17,15 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 		return -1;
 	}
 
-	ret = write(file->fd, buf, size * count);
+	if (funopen_check(file)) {
+		if (file->writefn) {
+			ret = file->writefn((void *) file->cookie, buf, size * count);
+		} else {
+			ret = 0;
+		}
+	} else {
+		ret = write(file->fd, buf, size * count);
+	}
+
 	return ret > 0 ? ret / size : 0;
 }

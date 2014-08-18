@@ -18,9 +18,6 @@
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
 
-#define SOL_TCP (PD_STUB("SOL_TCP"), 0)
-#define TCP_NODELAY (PD_STUB("TCP_NODELAY"), 0)
-
 #define SIOCGIFFLAGS (PD_STUB("SIOCGIFFLAGS"), 0)
 #define SIOCSIFFLAGS (PD_STUB("SIOCSIFFLAGS"), 1)
 
@@ -63,10 +60,7 @@ struct sockaddr_dl {
 
 struct iovec;
 
-static inline int asprintf(char **strp, const char *fmt, ...) {
-	PD_STUB_USE();
-	return 0;
-}
+extern int asprintf(char **strp, const char *fmt, ...);
 
 static inline char *strsignal(int sig) {
 	PD_STUB_USE();
@@ -75,7 +69,7 @@ static inline char *strsignal(int sig) {
 
 static inline int if_nametoindex(const char *name) {
 	PD_STUB_USE();
-	return 0;
+	return 1;
 }
 
 static inline int mlockall(int flags) {
@@ -89,15 +83,6 @@ static inline int munlockall(void) {
 }
 
 #include <stdio.h>
-static inline FILE *funopen(const void *cookie,
-		int (*readfn)(void *, char *, int),
-		int (*writefn)(void *, const char *, int),
-		fpos_t (*seekfn)(void *, fpos_t, int),
-		int (*closefn)(void *)) {
-	PD_STUB_USE();
-	return NULL;
-}
-
 static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 	return funopen(cookie, readfn, NULL, NULL, NULL);
 }
@@ -109,21 +94,6 @@ static inline ssize_t readv(int fildes, const struct iovec *iov, int iovcnt) {
 }
 
 static inline ssize_t writev(int fildes, const struct iovec *iov, int iovcnt) {
-	PD_STUB_USE();
-	return -1;
-}
-
-#include <getopt.h>
-struct option {
-	const char *name;
-	int         has_arg;
-	int        *flag;
-	int         val;
-};
-
-static inline int getopt_long(int argc, char * const argv[],
-                  const char *optstring,
-                  const struct option *longopts, int *longindex) {
 	PD_STUB_USE();
 	return -1;
 }

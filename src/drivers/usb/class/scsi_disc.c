@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/waitq.h>
 #include <util/math.h>
 #include <string.h>
 #include "scsi.h"

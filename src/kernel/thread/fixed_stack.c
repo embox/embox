@@ -14,11 +14,9 @@ void thread_stack_init(struct thread *t, size_t size) {
 	t->stack.stack_sz = size - sizeof *t;
 }
 
-#if 0
 void thread_stack_set(struct thread *t, void *stack) {
 	t->stack.stack = stack;
 }
-#endif
 
 void *thread_stack_get(struct thread *t) {
 	return t->stack.stack;
@@ -28,11 +26,9 @@ size_t thread_stack_get_size(struct thread *t) {
 	return t->stack.stack_sz;
 }
 
-#if 0
 void thread_stack_set_size(struct thread *t, size_t size) {
 	t->stack.stack_sz = size;
 }
-#endif
 
 #if 0
 int thread_stack_reserve(struct thread *t, size_t size) {

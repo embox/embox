@@ -8,6 +8,14 @@ module loopback {
 	depends embox.net.dev
 }
 
+module tun {
+	source "tun.c"
+
+	depends embox.net.entry_api
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+}
+
 module virtio {
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 	source "virtio.c"
@@ -132,5 +140,17 @@ module lan9118 {
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
 	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
+@BuildDepends(third_party.bsp.st_f4)
+module stm32f4_eth {
+	source "stm32f4_eth.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
 	depends embox.net.entry_api
 }

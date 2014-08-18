@@ -12,6 +12,7 @@
 
 #include <net/socket/ksocket.h>
 
+#include <linux/net_tstamp.h>
 #include <sys/socket.h>
 #include <poll.h>
 
@@ -78,13 +79,17 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 	return iov.iov_len;
 }
 
-static void socket_close(struct idesc *desc) {
-	struct sock *sk = (struct sock *)desc;
+static int socket_ioctl(struct idesc *idesc, int request, void *data) {
+	struct sock *sk = (struct sock *) idesc;
 
-	assert(desc);
-	assert(desc->idesc_ops == &task_idx_ops_socket);
-
-	ksocket_close(sk);
+	switch (request) {
+	case SIOCGSTAMP:
+		memcpy(data, &sk->last_packet_tstamp, sizeof(struct timeval));
+		return 0;
+	default:
+		break;
+	}
+	return -ENOTSUP;
 }
 
 static int socket_status(struct idesc *desc, int status_nr) {
@@ -111,10 +116,20 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	return res;
 }
 
+static void socket_close(struct idesc *desc) {
+	struct sock *sk = (struct sock *)desc;
+
+	assert(desc);
+	assert(desc->idesc_ops == &task_idx_ops_socket);
+
+	ksocket_close(sk);
+}
+
 const struct idesc_ops task_idx_ops_socket = {
-	.read = socket_read,
-	.write = socket_write,
-	.close = socket_close,
-	.status = socket_status
+	.read   = socket_read,
+	.write  = socket_write,
+	.ioctl  = socket_ioctl,
+	.status = socket_status,
+	.close  = socket_close,
 };
 

@@ -111,6 +111,7 @@ typedef struct net_device_ops {
  */
 typedef struct net_device {
 	struct list_link rx_lnk;
+	int index;
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */

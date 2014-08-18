@@ -9,7 +9,7 @@ abstract module api {
 module nosched extends api {
 	source "nosched.h"
 
-	depends embox.kernel.thread.current.api
+	depends embox.kernel.schedee.current.api
 	depends NoPriority
 	depends AffinityNone
 	depends TimeNone
@@ -103,8 +103,9 @@ abstract module priority_api {
 
 
 module InharitancePriority extends priority_api {
+	source "lwthread_priority.c"
 	source "thread_priority.c"
-	source "thread_priority.h"
+	source "schedee_priority.c"
 }
 
 module SimplePriority extends priority_api {

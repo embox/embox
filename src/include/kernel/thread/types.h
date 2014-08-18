@@ -19,6 +19,7 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
+#include <kernel/schedee/schedee.h>
 #include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
@@ -54,21 +55,16 @@ struct task;
  *                others access it with t->lock held and interrupts off
  */
 struct thread {
+	/* schedee member HAVE TO be first. Please, do NOT move!*/
+	struct schedee    schedee;     /**< Schedee interface for scheduler */
+
 	unsigned int       critical_count;
 	unsigned int       siglock;
-
-	spinlock_t         lock;         /**< Protects wait state and others. */
-
-	unsigned int       active;       /**< Running on a CPU. TODO SMP-only. */
-	unsigned int       ready;        /**< Managed by the scheduler. */
-	unsigned int       waiting;      /**< Waiting for an event. */
 
 	unsigned int       state;        /**< Thread-specific state. */
 
 	struct context     context;      /**< Architecture-dependent CPU state. */
 
-	void            *(*run)(void *); /**< Start routine. */
-	void              *run_arg;      /**< Argument to pass to start routine. */
 	union {
 		void          *run_ret;      /**< Return value of the routine. */
 		void          *joining;      /**< A joining thread (if any). */
@@ -83,7 +79,6 @@ struct thread {
 
 	struct sigstate    sigstate;     /**< Pending signal(s). */
 
-	struct sched_attr  sched_attr;   /**< Scheduler-private data. */
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
 

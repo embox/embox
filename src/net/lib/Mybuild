@@ -9,8 +9,6 @@ module arp {
 
 module bootp {
 	source "bootp.c"
-
-	depends embox.compat.libc.LibC
 }
 
 module dns {
@@ -19,7 +17,6 @@ module dns {
 	option number dns_query_timeout=5000
 
 	depends embox.compat.posix.net.socket
-	depends embox.compat.libc.LibC
 }
 
 module getifaddrs {
@@ -63,7 +60,6 @@ module ntp {
 	source "ntp.c"
 
 	depends embox.kernel.time.timekeeper
-	depends embox.compat.libc.LibC
 }
 
 module pop3 {
@@ -71,7 +67,6 @@ module pop3 {
 
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.socket
-	depends embox.compat.libc.LibC
 }
 
 module smtp {
@@ -80,7 +75,6 @@ module smtp {
 	depends embox.lib.LibCrypt
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.socket
-	depends embox.compat.libc.LibC
 }
 
 module tcp {

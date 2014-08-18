@@ -136,6 +136,7 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 	}
 	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
 				addrlen)) {
+		/* TODO consider opt.so_reuseaddr */
 		return -EADDRINUSE;
 	}
 

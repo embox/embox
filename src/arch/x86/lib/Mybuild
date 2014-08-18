@@ -24,6 +24,8 @@ static module LibM {
 
 static module vfork extends embox.arch.vfork_entry {
 	source "vfork.S"
+
+	depends embox.compat.posix.proc.vfork_entry
 }
 
 static module fork extends embox.arch.fork_entry {

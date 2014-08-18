@@ -70,10 +70,11 @@ void web_service_remove_all() {
 	{
 		web_service_remove(inst);
 	}*/
-	for (int i = 0; i < ARRAY_SPREAD_SIZE(__web_services_repository); i++) {
-			*__web_services_repository[i].is_started = 0;
-		}
+	const struct web_service_desc *srv_desc;
 
+	array_spread_foreach_ptr(srv_desc, __web_services_repository) {
+		*srv_desc->is_started = 0;
+	}
 }
 
 int web_service_start_service(const char *srv_name,

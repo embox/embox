@@ -21,17 +21,19 @@
 
 struct context;
 
+#define CONTEXT_PRIVELEGED (1 << 0) /* TODO: ? */
+#define CONTEXT_IRQDISABLE (1 << 1)
+
 /**
- * Declare type for thread entry
+ * Initialize new context.
+ *
+ * @param ctx Context to initialize
+ * @param flags ORed flags to modify context features
+ * @param routine_fn Context's IP (instruction pointer)
+ * @param sp Context's SP (stack pointer)
  */
-typedef void (*thread_routine_t)(void);
-
-extern void context_init(struct context *ctx, bool privileged);
-
-extern void context_set_stack(struct context *ctx, void *sp);
-
-extern void context_set_entry(struct context *ctx, thread_routine_t routine);
-
+extern void context_init(struct context *ctx, unsigned int flags,
+		void (*routine_fn)(void), void *sp);
 
 /**
  * Changes current thread context. Save previous thread context and load
@@ -43,6 +45,12 @@ extern void context_set_entry(struct context *ctx, thread_routine_t routine);
  * @param next - pointer to wished active thread structure
  */
 extern void context_switch(struct context *prev, struct context *next);
+
+#define CONTEXT_JMP_NEW_STACK(routine, sp) \
+	struct context ctx##__LINE__, old_ctx##__LINE__; \
+	context_init(&ctx##__LINE__, CONTEXT_PRIVELEGED, routine, sp); \
+	context_switch(&old_ctx##__LINE__, &ctx##__LINE__)
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* HAL_CONTEXT_H_ */

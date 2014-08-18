@@ -17,7 +17,7 @@
 
 #include <kernel/thread/types.h>
 #include <kernel/thread/thread_flags.h>
-#include <kernel/thread/current.h>
+#include <kernel/schedee/current.h>
 
 
 /**
@@ -38,7 +38,7 @@ typedef __thread_id_t thread_id_t;
  * @return
  *   The currently executing thread.
  */
-#define thread_self() thread_get_current()
+#define thread_self() mcast_out(schedee_get_current(), struct thread, schedee)
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS

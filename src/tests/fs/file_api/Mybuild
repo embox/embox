@@ -5,3 +5,8 @@ module open_test {
 
 	depends embox.fs.core
 }
+
+module funopen_test {
+
+	source "funopen.c"
+}

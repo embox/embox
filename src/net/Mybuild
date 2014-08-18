@@ -5,7 +5,6 @@ module dev {
 	option number netdev_table_sz=3
 	source "netdev.c"
 
-	depends embox.compat.libc.LibC
 	depends embox.util.List
 	depends embox.util.hashtable
 }
@@ -26,7 +25,7 @@ module skbuff {
 
 	source "skb_queue.c"
 	depends embox.arch.interrupt
-	depends embox.compat.libc.LibC
+	depends embox.compat.posix.util.gettimeofday
 }
 
 module core {
@@ -36,7 +35,6 @@ module core {
 	depends dev /* for dev.c */
 	depends embox.util.List
 	depends embox.mem.pool
-	depends embox.compat.libc.LibC
 }
 
 module sock {
@@ -50,7 +48,6 @@ module sock {
 	depends embox.fs.idesc_event
 	depends embox.arch.interrupt
 	depends embox.mem.pool
-	depends embox.compat.libc.LibC
 	depends embox.framework.LibFrameworkNet
 
 	depends sock_xattr_api
@@ -67,6 +64,10 @@ module sock_xattr extends sock_xattr_api {
 	depends embox.fs.xattr_list
 }
 
+module sock_noxattr extends sock_xattr_api {
+	source "socket/sock_noxattr.h"
+}
+
 module neighbour {
 	source "neighbour.c"
 	option number neighbour_amount=10
@@ -77,7 +78,10 @@ module neighbour {
 
 	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
-	depends embox.compat.libc.LibC
 	@NoRuntime depends embox.net.arp
 	@NoRuntime depends embox.net.ndp
+}
+
+module packet {
+	source "packet.c"
 }

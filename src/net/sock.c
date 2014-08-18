@@ -48,7 +48,7 @@ void sock_rcv(struct sock *sk, struct sk_buff *skb,
 	skb_queue_push(&sk->rx_queue, skb);
 	sk->rx_data_len += size;
 
-	idesc_notify(&sk->idesc, POLLIN);
+	sock_notify(sk, POLLIN);
 }
 
 int sock_close(struct sock *sk) {

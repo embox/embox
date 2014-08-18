@@ -12,6 +12,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <util/dlist.h>
 #include <util/array.h>
 #include <mem/misc/pool.h>
@@ -27,6 +28,8 @@
 #else
 #define dprintf(...) do {} while (0)
 #endif
+
+#define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
 
 EMBOX_UNIT_INIT(pci_init);
 
@@ -98,6 +101,8 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 		return NULL;
 	}
 
+	memset(new_dev, 0, sizeof(*new_dev));
+
 	new_dev->busn = (uint8_t) bus;
 	new_dev->func = (uint8_t) devfn;
 
@@ -129,7 +134,7 @@ static int pci_scan_start(void) {
 	 * }
 	 */
 
-	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
+	for (bus = 0; bus < PCI_BUS_N_TO_SCAN; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
 
 			/* Devices are required to implement function 0, so if

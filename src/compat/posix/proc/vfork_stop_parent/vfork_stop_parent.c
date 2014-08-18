@@ -5,6 +5,7 @@
  * @author  Anton Kozlov
  * @date    14.05.2014
  */
+#include <setjmp.h>
 
 #include <mem/sysmalloc.h>
 #include <hal/ptrace.h>
@@ -13,15 +14,10 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
-
-#define VFORK_CTX_STACK_LEN 0x1000
-struct vfork_ctx {
-	char stack[VFORK_CTX_STACK_LEN] __attribute__((aligned(4)));
-};
+#include <kernel/thread/thread_sched_wait.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
-	struct task_vfork *task_vfork = task_resource_vfork(task_self());
-	task_vfork->parent_holded = true;
+	task_vfork_end(task_self());
 }
 
 static void *vfork_child_task(void *arg) {
@@ -32,8 +28,7 @@ static void *vfork_child_task(void *arg) {
 	panic("vfork_child_task returning");
 }
 
-static void vfork_wait_signal_store(struct sigaction *ochildsa,
-	       	struct sigaction *ocontsa) {
+static void vfork_wait_signal_store(struct sigaction *ochildsa) {
 	struct sigaction sa;
 
 	sa.sa_flags = SA_SIGINFO;
@@ -41,64 +36,76 @@ static void vfork_wait_signal_store(struct sigaction *ochildsa,
 	sigemptyset(&sa.sa_mask);
 
 	sigaction(SIGCHLD, &sa, ochildsa);
-	sigaction(SIGCONT, &sa, ocontsa);
 }
 
-static void vfork_wait_signal_restore(const struct sigaction *ochildsa,
-	       	const struct sigaction *ocontsa) {
+static void vfork_wait_signal_restore(const struct sigaction *ochildsa) {
 	sigaction(SIGCHLD, ochildsa, NULL);
-	sigaction(SIGCONT, ocontsa, NULL);
 }
 
 static void vfork_waiting(void) {
-	struct sigaction ochildsa, ocontsa;
+	struct sigaction ochildsa;
 	struct task *child;
+	struct task *parent;
 	struct task_vfork *task_vfork;
-	struct context tmp;
 
-	task_vfork = task_resource_vfork(task_self());
+	parent = task_self();
+
+	task_vfork = task_resource_vfork(parent);
 	child = task_table_get(task_vfork->child_pid);
 
-	vfork_wait_signal_store(&ochildsa, &ocontsa);
+	vfork_wait_signal_store(&ochildsa);
 	{
-		task_vfork->parent_holded = true;
+		task_vfork_start(parent);
+
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
 
-		SCHED_WAIT(!task_vfork->parent_holded);
+		while (SCHED_WAIT(!task_is_vforking(parent)));
 	}
-	vfork_wait_signal_restore(&ochildsa, &ocontsa);
+	vfork_wait_signal_restore(&ochildsa);
 
-	context_switch(&tmp, &task_vfork->ctx);
+	longjmp(task_vfork->env, 1);
 
 	panic("vfork_waiting returning");
 }
 
 int vfork_child_start(struct task *child) {
-	struct vfork_ctx *vfctx;
 	struct task_vfork *task_vfork;
-	struct context chld_ctx;
 
-	vfctx = sysmalloc(sizeof(*vfctx));
-	if (!vfctx) {
+	task_vfork = task_resource_vfork(task_self());
+
+	/* Allocate memory for the new stack */
+	task_vfork->stack = sysmalloc(sizeof(task_vfork->stack));
+
+	if (!task_vfork->stack) {
 		return -EAGAIN;
 	}
 
-	task_vfork = task_resource_vfork(task_self());
 	task_vfork->child_pid = child->tsk_id;
-	task_vfork->vfork_ctx = vfctx;
 
-	context_init(&chld_ctx, true);
-	context_set_entry(&chld_ctx, vfork_waiting);
-	context_set_stack(&chld_ctx, vfctx->stack + sizeof(vfctx->stack));
-	context_switch(&task_vfork->ctx, &chld_ctx);
+	/* Set new stack and go to vfork_waiting */
+	if (!setjmp(task_vfork->env)) {
+		CONTEXT_JMP_NEW_STACK(vfork_waiting,
+			task_vfork->stack + sizeof(task_vfork->stack));
+	}
 
-	/* current stack is broken, can't reach any old data */
+	/* current stack was broken, can't reach any old data */
 	task_vfork = task_resource_vfork(task_self());
 
-	sysfree(task_vfork->vfork_ctx);
+	sysfree(task_vfork->stack);
 
 	ptregs_retcode_jmp(&task_vfork->ptregs, task_vfork->child_pid);
 
 	panic("vfork_child_start returning");
 	return -1;
 }
+
+void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
+	assert(run);
+
+	if (child != task_self()) {
+		task_start(child, run, arg);
+	} else {
+		run(arg);
+	}
+}
+

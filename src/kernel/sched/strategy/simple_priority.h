@@ -8,26 +8,26 @@
 #ifndef SCHED_SIMPLE_PRIORITY_H_
 #define SCHED_SIMPLE_PRIORITY_H_
 
-struct thread_priority {
+struct schedee_priority {
 };
 
-typedef struct thread_priority __thread_priority_t;
+typedef struct schedee_priority __schedee_priority_t;
 
-static inline int thread_priority_set(struct thread *t,
+static inline int schedee_priority_set(struct schedee *s,
 		sched_priority_t new_priority) {
 	return 0;
 }
 
-static inline sched_priority_t thread_priority_get(struct thread *t) {
+static inline sched_priority_t schedee_priority_get(struct schedee *s) {
 	return 0;
 }
 
-static inline sched_priority_t thread_priority_inherit(struct thread *t,
+static inline sched_priority_t schedee_priority_inherit(struct schedee *s,
 		sched_priority_t priority) {
 	return 0;
 }
 
-static inline sched_priority_t thread_priority_reverse(struct thread *t) {
+static inline sched_priority_t schedee_priority_reverse(struct schedee *s) {
 	return 0;
 }
 

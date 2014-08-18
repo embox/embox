@@ -21,6 +21,7 @@
 #include <string.h>
 #include <util/hashtable.h>
 #include <util/list.h>
+#include <util/indexator.h>
 
 #define MODOPS_NETDEV_QUANTITY OPTION_GET(NUMBER, netdev_quantity)
 #define MODOPS_NETDEV_TABLE_SZ OPTION_GET(NUMBER, netdev_table_sz)
@@ -29,6 +30,8 @@ EMBOX_UNIT_INIT(netdev_unit_init);
 
 POOL_DEF(netdev_pool, struct net_device, MODOPS_NETDEV_QUANTITY);
 struct hashtable *netdevs_table = NULL;
+
+INDEX_DEF(netdev_index, 1, MODOPS_NETDEV_QUANTITY);
 
 static int netdev_init(struct net_device *dev, const char *name,
 		int (*setup)(struct net_device *), size_t priv_size) {
@@ -72,6 +75,8 @@ struct net_device * netdev_alloc(const char *name,
 		return NULL; /* error: no memory */
 	}
 
+	dev->index = index_alloc(&netdev_index, INDEX_NEXT);
+
 	ret = netdev_init(dev, name, setup, priv_size);
 	if (ret != 0) {
 		netdev_free(dev);
@@ -86,6 +91,7 @@ void netdev_free(struct net_device *dev) {
 		list_unlink_link(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
 		sysfree(dev->priv);
+		index_free(&netdev_index, dev->index);
 		pool_free(&netdev_pool, dev);
 	}
 }

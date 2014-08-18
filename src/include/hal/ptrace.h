@@ -15,12 +15,14 @@
 
 struct pt_regs;
 
+#define ptregs_retcode_jmp(ptregs, retcode) ptregs_retcode_err_jmp(ptregs, retcode, ENOERR)
+
 extern void ptregs_retcode(struct pt_regs *ptregs, int retcode);
 extern void __attribute__((noreturn)) ptregs_jmp(struct pt_regs *ptregs);
 
-static inline void ptregs_retcode_jmp(struct pt_regs *ptregs, int retcode) {
-	if (retcode < 0) {
-		SET_ERRNO(-retcode);
+static inline void ptregs_retcode_err_jmp(struct pt_regs *ptregs, int retcode, int errnum) {
+	if (errnum != ENOERR) {
+		SET_ERRNO(errnum);
 	}
 
 	ptregs_retcode(ptregs, retcode);

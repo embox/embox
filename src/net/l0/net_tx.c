@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <stddef.h>
 #include <util/array.h>
+#include <net/socket/packet.h>
 
 #define NET_TX_DEBUG 0
 #if NET_TX_DEBUG
@@ -49,12 +50,14 @@ static int nt_build_hdr(struct sk_buff *skb,
 			ret = neighbour_get_haddr(hdr_info->type,
 					hdr_info->dst_p, dev, dev->type,
 					ARRAY_SIZE(dst_haddr), &dst_haddr[0]);
-			if (ret != 0) {
+			if (ret == 0) {
+				hdr_info->dst_hw = &dst_haddr[0];
+			} else if (ret == -ENOENT && (dev->flags & IFF_NOARP)) {
+				hdr_info->dst_hw = NULL;
+			} else {
 				return ret;
 			}
-			hdr_info->dst_hw = &dst_haddr[0];
-		}
-		else {
+		} else {
 			hdr_info->dst_hw = &dev->broadcast[0];
 		}
 	}
@@ -98,6 +101,8 @@ int net_tx(struct sk_buff *skb,
 
 	DBG(printk("net_tx: skb %p[%zu] type %#.6hx\n",
 				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
+
+	sock_packet_add(skb);
 
 	skb = net_encrypt(skb);
 	if (skb == NULL) {

@@ -24,10 +24,12 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
+#include <framework/mod/options.h>
+
 EMBOX_CMD(httpd);
 
-#define USE_IP_VER 4
-#define USE_CGI    0
+#define USE_IP_VER OPTION_GET(NUMBER,use_ip_ver)
+#define USE_CGI    OPTION_GET(BOOLEAN,use_cgi)
 
 #define HTTPD_LOG_QUIET 0
 #define HTTPD_LOG_ERROR 1
@@ -321,7 +323,7 @@ static const struct cgi_env_descr {
 	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
 };
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
-	const char *cmdname;
+	char *cmdname;
 	pid_t pid;
 
 	cmdname = hreq->uri.target;
@@ -336,7 +338,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 	}
 
 	if (pid == 0) {
-		char *argv[] = { NULL };
+		char *argv[] = { cmdname, NULL };
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
 		char envbuf[128];
 		char *ebp;

@@ -50,11 +50,11 @@ static void print_stat(void) {
 					t->id, task_get_id(t->task),
 					thread_priority_get(t),
 					(t == thread_self()) ? '*' : ' ',
-					sched_active(t) ? 'A' : ' ',
-					t->ready        ? 'R' : ' ',
-					t->waiting      ? 'W' : ' ',
+					sched_active(&t->schedee) ? 'A' : ' ',
+					t->schedee.ready        ? 'R' : ' ',
+					t->schedee.waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC);
-				if (t->ready || sched_active(t))
+				if (t->schedee.ready || sched_active(&t->schedee))
 					running++;
 				else
 					sleeping++;

@@ -10,11 +10,13 @@
 #include <stdlib.h>    /* exit */
 #include <unistd.h>    /* _exit, vfork */
 
+#include <kernel/task.h>
+
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("vfork() testsuite");
 
-TEST_CASE("after called vfork() child call exit()") {
+static void *test_vfork_first(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
@@ -33,13 +35,25 @@ TEST_CASE("after called vfork() child call exit()") {
 	wait(&res);
 	test_assert_not_equal(pid, parent_pid);
 	test_assert_equal(getpid(), parent_pid);
+
+	exit(0);
 }
 
+TEST_CASE("after called vfork() child call exit()") {
+	int res;
 
-TEST_CASE("parent should see stack modifications made from child") {
+	/* Create new task to have single thread in vfork calling task */
+	new_task("", test_vfork_first, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
+
+static void *test_vfork_second(void *arg) {
 	pid_t pid;
 	int res;
-	int data;
+	volatile int data;
 
 	data = 1;
 
@@ -55,22 +69,51 @@ TEST_CASE("parent should see stack modifications made from child") {
 
 	wait(&res);
 	test_assert_equal(data, 2);
+
+	exit(0);
 }
 
-TEST_CASE("after called vfork() child trashes own stack and calls exit") {
+TEST_CASE("parent should see stack modifications made from child") {
+	int res;
+
+	/* Create new task to have single thread in vfork calling task */
+	new_task("", test_vfork_second, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
+
+static void *test_vfork_third(void *arg) {
 	pid_t pid;
 	int res;
 
 	pid = vfork();
+
+	test_assert(pid != -1);
+
 	if (pid == 0) {
 		unsigned char buf[64];
 		memset(buf, 0xa5, sizeof(buf));
 		_exit(0);
 	}
 	wait(&res);
+
+	exit(0);
 }
 
-TEST_CASE("after called vfork() child call execv()") {
+TEST_CASE("after called vfork() child trashes own stack and calls exit") {
+	int res;
+
+	/* Create new task to have single thread in vfork calling task */
+	new_task("", test_vfork_third, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
+
+static void *test_vfork_fourth(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
@@ -95,4 +138,18 @@ TEST_CASE("after called vfork() child call execv()") {
 
 	test_assert_not_equal(pid, parent_pid);
 	test_assert_equal(getpid(), parent_pid);
+
+	exit(0);
 }
+
+TEST_CASE("after called vfork() child call execv()") {
+	int res;
+
+	/* Create new task to have single thread in vfork calling task */
+	new_task("", test_vfork_fourth, NULL);
+
+	wait(&res);
+
+	test_assert_zero(res);
+}
+

@@ -36,13 +36,20 @@
 #define SEEK_CUR        1   /* Seek from current position. */
 #define SEEK_END        2   /* Seek from end of file. */
 
+typedef long int fpos_t;
 
 typedef struct file_struct {
+	int (*readfn)(void *, char *, int);
+	int (*writefn)(void *, const char *, int);
+	fpos_t (*seekfn)(void *, fpos_t, int);
+	int (*closefn)(void *);
+	const void *cookie;
 	int fd;
 	char has_ungetc;
 	int ungetc;
 } FILE;
 
+extern int funopen_check(FILE *f);
 
 struct stat;
 
@@ -128,6 +135,22 @@ extern int sscanf(const char *out, const char *format, ...);
 extern FILE *fopen(const char *path, const char *mode);
 
 /**
+ * @brief Opens file descriptor with generic functions
+ *
+ * @param cookie Cookie that will be passed to functions
+ * @param readfn read-like function
+ * @param writefn write-like function
+ * @param seekfn seek-like function
+ * @param closefn close-like function
+ *
+ * @return FILE *
+ */
+extern FILE *funopen(const void *cookie,
+		int (*readfn)(void *, char *, int),
+		int (*writefn)(void *, const char *, int),
+		fpos_t (*seekfn)(void *, fpos_t, int),
+		int (*closefn)(void *));
+/**
  * Opens the file whose file descriptor is the fd
  * and associates a stream with it.
  * FIXME mode ignored
@@ -176,8 +199,6 @@ extern int fseeko(FILE *stream, off_t offset, int origin);
 extern long int ftell(FILE *stream);
 extern off_t ftello(FILE *stream);
 
-typedef long int fpos_t;
-
 extern int fgetpos(FILE *stream, fpos_t *pos);
 
 extern int fsetpos(FILE *stream, const fpos_t *pos);
@@ -204,7 +225,7 @@ extern FILE *stderr;
 extern int fileno(FILE *stream);
 
 //TODO: stub
-extern int clearerr(FILE *stream);
+extern void clearerr(FILE *stream);
 extern int feof(FILE *stream);
 extern int ferror(FILE *stream);
 extern int fflush(FILE *fp);

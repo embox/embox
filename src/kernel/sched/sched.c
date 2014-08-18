@@ -34,11 +34,10 @@
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
-#include <kernel/thread/current.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <kernel/thread/signal.h>
-#include <kernel/addr_space.h>
-
-#include <profiler/tracing/trace.h>
 
 #include <embox/unit.h>
 
@@ -66,10 +65,10 @@ static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-int sched_init(struct thread *idle, struct thread *current) {
+int sched_init(struct schedee *idle, struct schedee *current) {
 	assert(idle && current);
 
-	assert(thread_self() == current);
+	assert(schedee_get_current() == current);
 
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
@@ -82,85 +81,85 @@ int sched_init(struct thread *idle, struct thread *current) {
 	return 0;
 }
 
-static void sched_check_preempt(struct thread *t) {
+static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (thread_priority_get(thread_self()) < thread_priority_get(t))
+	if (schedee_priority_get(schedee_get_current()) < schedee_priority_get(t))
 		sched_post_switch(); // TODO SMP
 }
 
 /** Locks: IPL, thread, runq. */
-static void __sched_enqueue(struct thread *t) {
-	runq_insert(&rq.queue, t);
+static void __sched_enqueue(struct schedee *s) {
+	runq_insert(&rq.queue, s);
 }
 
 /** Locks: IPL, thread, runq. */
-static void __sched_dequeue(struct thread *t) {
-	runq_remove(&rq.queue, t);
+static void __sched_dequeue(struct schedee *s) {
+	runq_remove(&rq.queue, s);
 }
 
 /** Locks: IPL, thread, runq. */
-static void __sched_enqueue_set_ready(struct thread *t) {
-	__sched_enqueue(t);
-	t->ready = true;  /* let rq to see the previous state */
+static void __sched_enqueue_set_ready(struct schedee *s) {
+	__sched_enqueue(s);
+	s->ready = true;  /* let rq to see the previous state */
 }
 
 /** Locks: IPL, thread, runq. */
-static void __sched_wokenup_clear_waiting(struct thread *t) {
-	sched_check_preempt(t);
-	t->waiting = false;
+static void __sched_wokenup_clear_waiting(struct schedee *s) {
+	sched_check_preempt(s);
+	s->waiting = false;
 }
 
-int sched_active(struct thread *t) {
-	return t->active;
+int sched_active(struct schedee *s) {
+	return s->active;
 }
 
-int sched_change_priority(struct thread *t, sched_priority_t prior) {
+int sched_change_priority(struct schedee *s, sched_priority_t prior) {
 	ipl_t ipl;
 	int in_rq;
 
-	assert(t);
+	assert(s);
 
 	ipl = spin_lock_ipl(&rq.lock);
-	in_rq = t->ready && !sched_active(t);
+	in_rq = s->ready && !sched_active(s);
 
 	if (in_rq)
-		__sched_dequeue(t);
-	thread_priority_set(t, prior);
+		__sched_dequeue(s);
+	schedee_priority_set(s, prior);
 	if (in_rq)
-		__sched_enqueue(t);
+		__sched_enqueue(s);
 
-	sched_check_preempt(t);
+	sched_check_preempt(s);
 
 	spin_unlock_ipl(&rq.lock, ipl);
 
 	return 0;
 }
 
-static void __sched_freeze(struct thread *t) {
+static void __sched_freeze(struct schedee *s) {
 	int in_rq;
 
-	assert(t);
+	assert(s);
 
 	spin_lock(&rq.lock);
 	{
-		in_rq = t->ready && !sched_active(t);
+		in_rq = s->ready && !sched_active(s);
 
 		if (in_rq)
-			__sched_dequeue(t);
+			__sched_dequeue(s);
 
-		t->ready = false;
+		s->ready = false;
 
 		/* XXX ponder on safety of the below code outside of the rq->lock*/
-		t->active = false;
-		t->waiting = false;
+		s->active = false;
+		s->waiting = false;
 	}
 	spin_unlock(&rq.lock);
 }
 
-void sched_freeze(struct thread *t) {
-	assert(t);
+void sched_freeze(struct schedee *s) {
+	assert(s);
 	/* XXX acquired mostly for t->waiting */
-	SPIN_IPL_PROTECTED_DO(&t->lock, __sched_freeze(t));
+	SPIN_IPL_PROTECTED_DO(&s->lock, __sched_freeze(s));
 }
 
 /*
@@ -250,175 +249,143 @@ void sched_freeze(struct thread *t) {
  *     unlock(rq)                        IPL    t
  */
 
-
 /** Locks: IPL, thread. */
-static int __sched_wakeup_ready(struct thread *t) {
+static int __sched_wakeup_ready(struct schedee *s) {
 	int ready;
 
 	/* This doesn't necessarily spin until the lock is acquired.
 	 * SMP 'schedule' could outrun us getting the lock, but it will
 	 * clear t->ready state as soon as possible thus letting us to go. */
-	spin_protected_if (&rq.lock, (ready = t->ready))
+	spin_protected_if (&rq.lock, (ready = s->ready))
 		/* Event has arrived before the thread reached 'schedule' and
 		 * went asleep (it could be even preempted after setting its
 		 * t->waiting state).
 		 * Just clear t->waiting state so that only a preemption check
 		 * is done by the thread when it finally invokes the scheduler. */
-		t->waiting = false;
+		s->waiting = false;
 
 	return ready;
 }
 
 
 /** Locks: IPL, thread. */
-static void __sched_wakeup_waiting(struct thread *t) {
-	assert(t && t->waiting);
+static void __sched_wakeup_waiting(struct schedee *s) {
+	assert(s && s->waiting);
 
 	spin_lock(&rq.lock);
-	__sched_enqueue_set_ready(t);
-	__sched_wokenup_clear_waiting(t);
+	__sched_enqueue_set_ready(s);
+	__sched_wokenup_clear_waiting(s);
 	spin_unlock(&rq.lock);
 }
 
 #ifdef SMP
 
 /** Locks: IPL, thread. */
-static inline void __sched_wakeup_smp_inactive(struct thread *t) {
-	t->waiting = TW_SMP_WAKING;
+static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
+	s->waiting = TW_SMP_WAKING;
 	smp_membar();  /* __sched_smp_deactivate: ST active / LD waiting */
-	if (!t->active)
-		__sched_wakeup_waiting(t);
+	if (!s->active)
+		__sched_wakeup_waiting(s);
 }
 
 #else /* !SMP */
 
-static inline void __sched_wakeup_smp_inactive(struct thread *t) {
+static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
 	/* The whole scheduler is IPL protected so in case of non-SMP kernel
 	 * hitting these lines means that the target has already left 'schedule',
 	 * i.e. it is inactive. No additional check is needed. */
-	__sched_wakeup_waiting(t);
+	__sched_wakeup_waiting(s);
 }
 
 #endif /* SMP */
 
 
 /** Called with IRQs off and thread lock held. */
-int __sched_wakeup(struct thread *t) {
-	int was_waiting = (t->waiting && t->waiting != TW_SMP_WAKING);
+int __sched_wakeup(struct schedee *s) {
+	int was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
 
 	if (was_waiting)
 		/* Check if t->ready state is still set, and we can do
 		 * a fast-path wake up, that just clears t->waiting state.  */
-		if (!__sched_wakeup_ready(t))
+		if (!__sched_wakeup_ready(s))
 			/* Waiting but not ready: in case of SMP there is a slight chance
 			 * that the target thread is still on a CPU (in the middle of
 			 * 'schedule'). In such case the real wake up is performed on that
 			 * CPU itself upon reaching the end of 'schedule'. */
-			__sched_wakeup_smp_inactive(t);
+			__sched_wakeup_smp_inactive(s);
 
 	return was_waiting;
 }
 
-int sched_wakeup(struct thread *t) {
-	assert(t);
-	return SPIN_IPL_PROTECTED_DO(&t->lock, __sched_wakeup(t));
-}
-
-
-/** Locks: IPL. */
-static void __sched_activate(struct thread *t) {
-	t->active = true;
+int sched_wakeup(struct schedee *s) {
+	assert(s);
+	return SPIN_IPL_PROTECTED_DO(&s->lock, __sched_wakeup(s));
 }
 
 /** Locks: IPL. */
-static void __sched_deactivate(struct thread *t) {
+static void __sched_activate(struct schedee *s) {
+	s->active = true;
+}
+
+/** Locks: IPL. */
+static void __sched_deactivate(struct schedee *s) {
 	smp_stmembar();  /* don't clear active until context_switch is complete */
-	t->active = false;
+	s->active = false;
 	smp_membar();  /* __sched_wakeup_smp_inactive: ST waiting / LD active */
 #ifdef SMP
-	spin_protected_if (&t->lock, (t->waiting == TW_SMP_WAKING))
-		__sched_wakeup_waiting(t);
+	spin_protected_if (&s->lock, (s->waiting == TW_SMP_WAKING))
+		__sched_wakeup_waiting(s);
 #endif /* SMP */
 }
 
-static void sched_prepare_switch(struct thread *prev, struct thread *next) {
-	sched_ticker_switch(prev, next);
-	sched_timing_switch(prev, next);
-	prev->critical_count = critical_count();
-	critical_count() = next->critical_count;
-	__sched_activate(next);
-}
-
-static void sched_finish_switch(struct thread *prev) {
+void sched_finish_switch(struct schedee *prev) {
 	__sched_deactivate(prev);
 }
 
-static struct thread *saved_prev __cpudata__; // XXX
-
-/**
- * Any fresh thread must call this function from a trampoline.
- * Basically it emulates returning from the scheduler as it would be done
- * in case if 'context_switch' would return as usual (into 'sched_switch',
- * from where it was called) instead of jumping into a thread trampoline.
- */
-void sched_ack_switched(void) {
-	ADDR_SPACE_FINISH_SWITCH();
-	sched_finish_switch(cpudata_var(saved_prev));
-	ipl_enable();
-	sched_unlock();
-}
-
-static void sched_switch(struct thread *prev, struct thread *next) {
-	sched_prepare_switch(prev, next);
-
-	trace_point(__func__);
-
-	/* Preserve initial semantics of prev/next. */
-	cpudata_var(saved_prev) = prev;
-	ADDR_SPACE_PREPARE_SWITCH();
-	thread_set_current(next);
-	context_switch(&prev->context, &next->context);  /* implies cc barrier */
-	ADDR_SPACE_FINISH_SWITCH();
-	prev = cpudata_var(saved_prev);
-
-	sched_finish_switch(prev);
+void sched_start_switch(struct schedee *next) {
+	__sched_activate(next);
 }
 
 static void __schedule(int preempt) {
-	struct thread *prev, *next;
+	struct schedee *prev;
+	struct schedee *next;
+	int res;
 	ipl_t ipl;
 
-	prev = thread_self();
+	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
 	ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
-		/* In SMP kernel starting from this point and until clearing
-		 * prev->active state (which is done by '__sched_deactivate')
-		 * any CPU waking prev will move it to TW_SMP_WAKING state
-		 * without really waking it up.
-		 * 'sched_finish_switch' will sort out what to do in such case. */
+	/* In SMP kernel starting from this point and until clearing
+	 * prev->active state (which is done by '__sched_deactivate')
+	 * any CPU waking prev will move it to TW_SMP_WAKING state
+	 * without really waking it up.
+	 * 'sched_finish_switch' will sort out what to do in such case. */
 	else
 		__sched_enqueue(prev);
 
-	next = runq_extract(&rq.queue);
+	sched_timing_stop(prev);
 
-	/* Runq is unlocked as soon as possible, but interrupts remain disabled
-	 * during the 'sched_switch' (if any). */
-	spin_unlock(&rq.lock);
+	while (1) {
+		next = runq_extract(&rq.queue);
 
-	if (prev != next)
-		sched_switch(prev, next);
+		/* Runq is unlocked as soon as possible, but interrupts remain disabled
+		 * during the 'sched_switch' (if any). */
+		spin_unlock(&rq.lock);
 
-	ipl_restore(ipl);
+		/* next->process has to restore ipl. */
+		res = next->process(prev, next, ipl);
+		if (res == SCHEDEE_EXIT) {
+			break;
+		}
 
-	assert(thread_self() == prev);
-
-	if (!prev->siglock) {
-		thread_signal_handle();
+		ipl = spin_lock_ipl(&rq.lock);
 	}
+
+	sched_timing_start(next);
 }
 
 void schedule(void) {
@@ -433,5 +400,3 @@ static void sched_preempt(void) {
 	__schedule(1);
 	sched_unlock();
 }
-
-

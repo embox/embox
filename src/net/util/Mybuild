@@ -6,29 +6,22 @@ module hostent {
 	option number max_addr_len=16
 	option number max_addrs_num=10
 	source "hostent.c"
-
-	depends embox.compat.libc.LibC
 }
 
 module macaddr {
 	source "macaddr.c"
-	depends embox.compat.libc.LibC
 }
 
 module netent {
 	option number max_name_len=128
 	option number max_aliases_num=10
 	source "netent.c"
-
-	depends embox.compat.libc.LibC
 }
 
 module protoent {
 	option number max_name_len=32
 	option number max_aliases_num=10
 	source "protoent.c"
-
-	depends embox.compat.libc.LibC
 }
 
 module request_parser {
@@ -36,7 +29,6 @@ module request_parser {
 	source "request_parser.c"
 
 	depends third_party.lib.url_parser
-	depends embox.compat.libc.LibC
 	depends embox.compat.libc.LibCStringDup
 }
 
@@ -45,6 +37,4 @@ module servent {
 	option number max_aliases_num=10
 	option number max_proto_len=32
 	source "servent.c"
-
-	depends embox.compat.libc.LibC
 }

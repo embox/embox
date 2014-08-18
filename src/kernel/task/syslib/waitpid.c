@@ -16,6 +16,7 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/resource/waitpid.h>
+#include <kernel/thread/waitq.h>
 
 #include <sys/wait.h>
 

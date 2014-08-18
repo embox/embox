@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include <kernel/task/kernel_task.h>
+#include <kernel/schedee/current.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
@@ -45,11 +46,11 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 	 */
 	thread->state = TS_INIT;
 
-	thread->ready = true;
-	thread->active = true;
-	thread->waiting = false;
+	thread->schedee.ready = true;
+	thread->schedee.active = true;
+	thread->schedee.waiting = false;
 
-	thread_set_current(thread);
+	schedee_set_current(&thread->schedee);
 
 	return thread;
 }

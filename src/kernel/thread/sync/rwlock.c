@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/sched.h>
+#include <kernel/thread/waitq.h>
 
 #define RWLOCK_STATUS_NONE    0
 #define RWLOCK_STATUS_READING 1
@@ -45,7 +46,6 @@ static void do_up(rwlock_t *r, int status) {
 
 	sched_lock();
 	{
-
 		WAITQ_WAIT(&r->wq, !tryenter_sched_lock(r, status));
 	}
 	sched_unlock();

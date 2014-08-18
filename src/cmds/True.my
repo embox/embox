@@ -1,0 +1,16 @@
+
+package embox.cmd
+
+@Cmd(name="true",
+	help="does nothing and does it good",
+	man='''
+		NAME
+			true - command that always exits normally.
+		SYNOPSIS
+			true
+		AUTHORS
+			Anton Kozlov
+	''')
+module true_cmd {
+	source "true.c"
+}

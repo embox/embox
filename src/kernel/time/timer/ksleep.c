@@ -11,6 +11,7 @@
 #include <sys/types.h>
 
 #include <kernel/sched.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 int ksleep(useconds_t msec) {
 	int wait_res;

@@ -13,8 +13,9 @@ module core {
 		"libwbclient.a"
 
 	depends embox.compat.libc.LibC
-
+	depends embox.compat.posix.proc.exec_lib
 	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.proc.exec
 	depends embox.net.lib.getifaddrs
 	depends third_party.zlib.libs
 }

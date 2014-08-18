@@ -1,0 +1,20 @@
+package embox.test.kernel.lthread
+
+module lthread_test {
+	option number lthreads_quantity=256
+	source "lthread_test.c"
+
+	depends embox.kernel.lthread.lthread
+}
+
+module lthread_mutex_test {
+	source "lthread_mutex_test.c"
+
+	depends embox.kernel.lthread.lthread
+}
+
+module lthread_sched_wait_test {
+	source "lthread_sched_wait_test.c"
+
+	depends embox.kernel.lthread.lthread
+}

@@ -1,16 +1,36 @@
-$_PACKAGE := org.lua
 
-$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
-$_CPPFLAGS += -I$(SRC_DIR)/include/util
+PKG_NAME := lua
+PKG_VER  := 5.2.3
 
-$_MODS += lua_core
-$_SRCS-lua_core += lapi.c lauxlib.c lbaselib.c lcode.c
-$_SRCS-lua_core += ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c
-$_SRCS-lua_core += llex.c lmem.c lobject.c lopcodes.c
-$_SRCS-lua_core += lparser.c lstate.c lstring.c
-$_SRCS-lua_core += ltable.c ltm.c lundump.c lvm.c lzio.c
+PKG_SOURCES := http://www.lua.org/ftp/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := dc7f94ec6ff15c985d2d6ad0f1b35654
 
-$_MODS += lua_lib
-$_SRCS-lua_lib += ltablib.c ldblib.c
+PKG_PATCHES := pkg_patch.txt
 
-$_ROOTFS_SRCS := $(SELFDIR)/fib.lua
+include $(EXTBLD_LIB)
+
+define option_get
+$(shell echo OPTION_BOOLEAN_third_party__cmd__lua__$(1) | gcc -P -E -include $(ROOT_DIR)/build/base/src-gen/include/config/third_party/cmd/lua.h -)
+endef
+
+LUA_CPPFLAGS :=
+ifneq (0,$(call option_get,luasocket_support))
+LUA_CPPFLAGS += -DLUASOCKET_SUPPORT
+endif
+
+$(BUILD) :
+	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		make posix MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+			CC=$(EMBOX_GCC) \
+			CPPFLAGS="-I$(ROOT_DIR)/third-party/lua/include/ \
+				$(LUA_CPPFLAGS)"; \
+	)
+	touch $@
+
+$(INSTALL) :
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lua $(PKG_INSTALL_DIR)/lua.o
+	mkdir -p $(PKG_INSTALL_DIR)/include
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lua.h $(PKG_INSTALL_DIR)/include/
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/luaconf.h $(PKG_INSTALL_DIR)/include/
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lauxlib.h $(PKG_INSTALL_DIR)/include/
+	touch $@

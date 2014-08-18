@@ -29,11 +29,20 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		cnt++;
 	}
 	while (cnt != count * size) {
-		int tmp = read(file->fd,  buf, size * count);
-		if (tmp == 0) {
+		int ret;
+		if (funopen_check(file)) {
+			if (file->readfn) {
+				ret = file->readfn((void *) file->cookie, buf, size * count);
+			} else {
+				ret = 0;
+			}
+		} else {
+			ret = read(file->fd,  buf, size * count);
+		}
+		if (ret == 0) {
 			break; /* errors */
 		}
-		cnt += tmp;
+		cnt += ret;
 	}
 	if (cnt % size) {
 		/* try to revert some bytes */

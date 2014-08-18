@@ -1,11 +1,17 @@
 package embox.kernel.time
 
+module slowdown {
+	option number factor = 1
+}
+
 module clock_source {
 	@NumConstraint(ge=1)
 	option number clocks_quantity = 1
 
 	source "clock_source.c"
 	@NoRuntime depends embox.mem.pool
+
+	depends slowdown
 }
 
 module kernel_time {
@@ -19,6 +25,7 @@ module jiffies {
 	source "jiffies.c"
 	depends embox.arch.clock
 	depends clock_source
+	depends slowdown
 }
 
 module timer {

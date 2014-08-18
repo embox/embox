@@ -19,9 +19,19 @@ int fclose(FILE *file) {
 		return -1;
 	}
 
-	res = close(file->fd);
-	if (res >= 0) {
+	if (funopen_check(file)) {
+		/* An error on closefn() does not keep the stream open. */
+		if (file->closefn) {
+			res = file->closefn((void *) file->cookie);
+		} else {
+			res = 0;
+		}
 		stdio_file_free(file);
+	} else {
+		res = close(file->fd);
+		if (res >= 0) {
+			stdio_file_free(file);
+		}
 	}
 
 	return res;

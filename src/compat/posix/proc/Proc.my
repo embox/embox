@@ -14,13 +14,16 @@ module All {
 		pid
 }
 
-@DefaultImpl(exec_stop_parent)
-abstract module exec { }
+@DefaultImpl(exec_stub)
+abstract module exec_lib { }
 
 
-static module exec_lib {
+static module exec {
 	source "exec.c"
+	depends vfork
+	depends exec_lib
 	depends embox.kernel.task.resource.module_ptr
+	depends embox.kernel.task.resource.argv
 }
 
 @DefaultImpl(fork_copy_everything)
@@ -28,20 +31,12 @@ abstract module fork { }
 
 static module vfork_entry {
 	source "vfork.c"
+
+	depends embox.kernel.task.resource.argv
+	depends embox.kernel.task.resource.vfork
 }
 
-module fork_copy_everything extends fork {
-	source "fork_copy_everything.c"
-	depends embox.arch.fork_entry
-	depends fork_copy_addr_space
-}
-
-/* FIXME artifical module to bypass single `extends` restriction */
-static module fork_copy_addr_space extends embox.kernel.addr_space {
-	source "fork_copy_addr_space.h"
-}
-
-@DefaultImpl(vfork_internal_stub)
+@DefaultImpl(vfork_stub)
 abstract module vfork { }
 
 static module waitpid {
@@ -55,6 +50,7 @@ static module signal {
 	source "signal.c"
 
 	depends embox.kernel.thread.signal
+	depends embox.kernel.task.resource.sig_table
 	depends sigset
 }
 
@@ -66,6 +62,8 @@ static module sigset {
 static module exit {
 	source "exit.c"
 
+	depends vfork
+	depends exec
 	depends embox.util.LibUtil
 }
 

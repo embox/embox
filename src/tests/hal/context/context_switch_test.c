@@ -43,13 +43,11 @@ static void infinite(void) {
 }
 
 static int run(void) {
-	context_init(&entry_context, true);
-	context_set_entry(&entry_context, entry);
-	context_set_stack(&entry_context, entry_stack + STACK_SZ);
+	context_init(&entry_context, CONTEXT_PRIVELEGED,
+			entry, entry_stack + STACK_SZ);
 
-	context_init(&infinite_context, true);
-	context_set_entry(&infinite_context, infinite);
-	context_set_stack(&infinite_context, infinite_stack + STACK_SZ);
+	context_init(&infinite_context, CONTEXT_PRIVELEGED,
+			infinite, infinite_stack + STACK_SZ);
 
 	TRACE("test begin\n");
 	context_switch(&redundant_context, &entry_context);

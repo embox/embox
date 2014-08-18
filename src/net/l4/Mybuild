@@ -1,8 +1,8 @@
 package embox.net
 
 module tcp {
+	option boolean verify_chksum=true
 	source "tcp.c"
-	option boolean crc_drop = true
 
 	depends embox.fs.idesc_event
 	depends embox.net.skbuff
@@ -17,6 +17,7 @@ module tcp {
 }
 
 module udp {
+	option boolean verify_chksum=true
 	source "udp.c"
 
 	depends embox.net.lib.udp

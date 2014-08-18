@@ -14,6 +14,7 @@
 #include <net/l0/net_rx.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
+#include <net/socket/packet.h>
 
 #define NET_RX_DEBUG 0
 #if NET_RX_DEBUG
@@ -80,6 +81,8 @@ int net_rx(struct sk_buff *skb) {
 	if (skb == NULL) {
 		return 0; /* error: something wrong :( */
 	}
+
+	sock_packet_add(skb);
 
 	/* handling on L3 layer */
 	return npack->rcv_pack(skb, skb->dev);

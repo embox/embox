@@ -9,6 +9,7 @@
 #include "mdi_background.h"
 
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/waitq.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
 #include <module/zrv/cmd/texteditor.h>

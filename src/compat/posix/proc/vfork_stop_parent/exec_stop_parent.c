@@ -27,36 +27,20 @@ extern int exec_call(void);
 static void exec_trampoline(void) {
 	sched_unlock();
 
-	kill(task_get_id(task_get_parent(task_self())), SIGCONT);
+	kill(task_get_id(task_get_parent(task_self())), SIGCHLD);
 
 	_exit(exec_call());
 }
 
 void *task_exec_callback(void *arg) {
 	struct thread *t;
-	struct context oldctx;
 
 	sched_lock();
 	t = thread_self();
 
-	context_init(&t->context, true);
-	context_set_entry(&t->context, exec_trampoline);
-	context_set_stack(&t->context,
-			thread_stack_get(t) + thread_stack_get_size(t));
-
-	context_switch(&oldctx, &t->context);
+	CONTEXT_JMP_NEW_STACK(exec_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	return NULL;
-}
-
-void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
-	assert(run);
-
-	if (child != task_self()) {
-		task_start(child, run, arg);
-	} else {
-		run(arg);
-	}
 }
 
 void *task_exit_callback(void *arg) {

@@ -161,8 +161,8 @@ extern void abort(void);
 */
 #define MB_CUR_MAX 1
 
-#define EXIT_FAILURE 0
-#define EXIT_SUCCESS 1
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 extern void exit(int status);
 
 /**

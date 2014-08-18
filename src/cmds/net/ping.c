@@ -67,7 +67,7 @@ struct packet_in {
 			struct icmpbody_dest_unreach dest_unreach;
 		} __attribute__((packed)) body;
 	} __attribute__((packed)) icmp;
-	char data[MAX_PADLEN];
+	char data[];
 } __attribute__((packed));
 
 struct packet_out {
@@ -77,7 +77,7 @@ struct packet_out {
 			struct icmpbody_echo echo_req;
 		} __attribute__((packed)) body;
 	} __attribute__((packed)) icmp;
-	char data[MAX_PADLEN];
+	char data[];
 } __attribute__((packed));
 
 struct ping_stat {
@@ -172,8 +172,8 @@ static void parse_result(struct packet_in *rx_pack,
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	struct sockaddr_in to;
 	struct ping_stat stat;
-	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
-	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
+	struct packet_out *tx_pack = malloc(sizeof *tx_pack + pinfo->padding_size);
+	struct packet_in *rx_pack = malloc(sizeof *rx_pack + pinfo->padding_size);
 	clock_t started;
 	int sk, ret;
 	uint16_t seq;

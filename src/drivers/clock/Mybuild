@@ -36,8 +36,8 @@ module pit extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.clock_source
 }
 
-module stm32_systick extends embox.arch.clock {
-	source "stm32_systick.c"
+module cortexm_systick extends embox.arch.clock {
+	source "cortexm_systick.c"
 
 	//depends embox.kernel.irq
 	depends embox.kernel.time.clock_source

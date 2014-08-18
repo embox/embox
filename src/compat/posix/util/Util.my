@@ -18,6 +18,7 @@ module Time {
 
 static module getopt {
 	source "getopt.c"
+	source "getopt_long.c"
 
 	depends embox.compat.libc.LibCString
 }

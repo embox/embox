@@ -11,12 +11,12 @@
 
 #include <module/embox/kernel/sched/strategy/runq_api.h>
 
-struct thread;
+struct schedee;
 
 extern void runq_init(runq_t *queue);
-extern void runq_insert(runq_t *queue, struct thread *thread);
-extern void runq_remove(runq_t *queue, struct thread *thread);
-extern struct thread *runq_extract(runq_t *queue);
+extern void runq_insert(runq_t *queue, struct schedee *schedee);
+extern void runq_remove(runq_t *queue, struct schedee *schedee);
+extern struct schedee *runq_extract(runq_t *queue);
 
 extern void runq_item_init(runq_item_t *runq_link);
 

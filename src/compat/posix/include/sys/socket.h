@@ -161,6 +161,7 @@ SO_TYPE    Socket type.
 #define SO_BINDTODEVICE 16/* Bind socket to send packet from specified device */
 #define SO_DOMAIN       17 /* int */ /* Socket domain */
 #define SO_PROTOCOL     18 /* int */ /* Socket protocol */
+#define SO_POSIX_MAX    19
 /* }; */
 
 
@@ -203,7 +204,7 @@ MSG_WAITALL    Wait for complete message.
 #define SOL_SOCKET 1
 #define SOL_IP      0
 //#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
-//#define SOL_TCP     6
+#define SOL_TCP     6
 #define SOL_UDP     17
 //#define SOL_IPV6    41
 //#define SOL_ICMPV6  58
