@@ -37,7 +37,7 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 	next->ready = false;
 
 	/* We have to restore ipl as soon as possible. */
-	ipl_restore(rq->ipl);
+	ipl_restore(prev->ipl);
 
 	lt->run_ret = next->run(next->run_arg);
 

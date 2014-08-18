@@ -47,6 +47,8 @@ struct schedee {
 	spinlock_t        lock;         /**< Protects wait state and others. */
 
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
+
+	ipl_t ipl;
 };
 
 #endif /* _KERNEL_SCHEDEE_H_ */

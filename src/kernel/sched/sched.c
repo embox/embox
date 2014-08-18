@@ -354,7 +354,7 @@ static void __schedule(int preempt) {
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
-	rq.ipl = spin_lock_ipl(&rq.lock);
+	prev->ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -375,12 +375,13 @@ static void __schedule(int preempt) {
 		 * during the 'sched_switch' (if any). */
 		spin_unlock(&rq.lock);
 
+		/* next->process has to restore ipl. */
 		res = next->process(prev, next, &rq);
 		if (res == SCHEDEE_EXIT) {
 			break;
 		}
 
-		rq.ipl = spin_lock_ipl(&rq.lock);
+		prev->ipl = spin_lock_ipl(&rq.lock);
 	}
 
 	sched_timing_start(next);

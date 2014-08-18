@@ -138,7 +138,7 @@ static int thread_process(struct schedee *prev, struct schedee *next,
 		thread_switch(prev_t, next_t);
 	}
 
-	ipl_restore(rq->ipl);
+	ipl_restore(prev->ipl);
 
 	assert(thread_self() == prev_t);
 
