@@ -18,9 +18,6 @@ module core extends thread_mode {
 	source "thread_register.c"
 	source "thread_switch.c"
 
-	option boolean timer_allocate_on_stack = true
-	source "thread_sched_wait.c"
-
 	depends starter
 
 	@NoRuntime depends embox.kernel.sched.sched
@@ -38,6 +35,12 @@ module core extends thread_mode {
 	depends embox.kernel.cpu.common
 	depends embox.kernel.schedee.current.api
 }
+
+module sched_wait {
+	option boolean timer_allocate_on_stack = true
+	source "thread_sched_wait.c"
+}
+
 
 module starter {
 	source "starter.c"
