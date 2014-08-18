@@ -68,6 +68,21 @@ char **task_resource_argv_argv(const struct task *task) {
 	return task_resource_argv(task)->argv;
 }
 
+void task_resource_argv_insert(const struct task *task, const char *arg, int index) {
+	struct task_argv *task_argv;
+
+	task_argv = task_resource_argv(task);
+	assert(task_argv->argc < ARGS_QUANTITY);
+
+	strncpy(task_argv->argv_buff[task_argv->argc], arg, sizeof(*task_argv->argv_buff));
+	task_argv->argv_buff[task_argv->argc][sizeof(*task_argv->argv_buff) - 1] = '\0';
+
+	memmove(task_argv->argv + index + 1, task_argv->argv + index,
+			(task_argv->argc - index + 1) * sizeof *task_argv->argv);
+
+	task_argv->argv[index] = task_argv->argv_buff[task_argv->argc++];
+}
+
 char *task_resource_argv_path(const struct task *task) {
 	return task_resource_argv(task)->path;
 }
