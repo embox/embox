@@ -126,7 +126,7 @@ out_unlock:
 }
 
 static int thread_process(struct schedee *prev, struct schedee *next,
-		struct runq *rq) {
+		ipl_t ipl) {
 	struct thread *next_t, *prev_t;
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
@@ -138,7 +138,7 @@ static int thread_process(struct schedee *prev, struct schedee *next,
 		thread_switch(prev_t, next_t);
 	}
 
-	ipl_restore(prev->ipl);
+	ipl_restore(ipl);
 
 	assert(thread_self() == prev_t);
 

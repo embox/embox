@@ -28,12 +28,12 @@ struct schedee {
 	 * the next schedee from the runq. This function performs all necessary
 	 * actions with a specific schedee implementation.
 	 *
-	 * It has to restore rq->ipl as soon as possible.
+	 * It has to restore ipl as soon as possible.
 	 *
 	 * This function returns one of the SCHEDEE_* value.
 	 */
 	int               (*process)(struct schedee *prev, struct schedee *next,
-			struct runq *rq);
+			ipl_t ipl);
 
 	void              *(*run)(void *); /**< Start routine */
 	void              *run_arg;        /**< Argument to be passed to run */
@@ -47,8 +47,6 @@ struct schedee {
 	spinlock_t        lock;         /**< Protects wait state and others. */
 
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
-
-	ipl_t ipl;
 };
 
 #endif /* _KERNEL_SCHEDEE_H_ */

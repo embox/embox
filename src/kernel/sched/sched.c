@@ -350,11 +350,12 @@ static void __schedule(int preempt) {
 	struct schedee *prev;
 	struct schedee *next;
 	int res;
+	ipl_t ipl;
 
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
-	prev->ipl = spin_lock_ipl(&rq.lock);
+	ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -376,12 +377,12 @@ static void __schedule(int preempt) {
 		spin_unlock(&rq.lock);
 
 		/* next->process has to restore ipl. */
-		res = next->process(prev, next, &rq);
+		res = next->process(prev, next, ipl);
 		if (res == SCHEDEE_EXIT) {
 			break;
 		}
 
-		prev->ipl = spin_lock_ipl(&rq.lock);
+		ipl = spin_lock_ipl(&rq.lock);
 	}
 
 	sched_timing_start(next);
