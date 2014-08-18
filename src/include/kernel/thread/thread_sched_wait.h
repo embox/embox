@@ -43,6 +43,7 @@
 		__wait_ret;                                                  \
 	}))
 
+__BEGIN_DECLS
 
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
@@ -50,5 +51,7 @@ extern void sched_wait_cleanup(void);
 extern int sched_wait(void);
 
 extern int sched_wait_timeout(clock_t timeout, clock_t *remain);
+
+__END_DECLS
 
 #endif /* THREAD_SCHED_WAIT_H_ */
