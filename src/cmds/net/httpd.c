@@ -323,7 +323,7 @@ static const struct cgi_env_descr {
 	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
 };
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
-	const char *cmdname;
+	char *cmdname;
 	pid_t pid;
 
 	cmdname = hreq->uri.target;
