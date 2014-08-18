@@ -338,7 +338,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 	}
 
 	if (pid == 0) {
-		char *argv[] = { NULL };
+		char *argv[] = { cmdname, NULL };
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
 		char envbuf[128];
 		char *ebp;
