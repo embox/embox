@@ -24,17 +24,6 @@ struct task_argv {
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);
 
-
-extern struct task_argv *task_resource_argv(const struct task *task);
-
-static void task_argv_init(const struct task *task, void *buff) {
-}
-
-static int task_argv_inherit(const struct task *task,
-		const struct task *parent) {
-	return 0;
-}
-
 static int task_argv_exec(const struct task *task, const char *path, char *const argv[]) {
 	int i;
 	struct task_argv *task_argv;
@@ -59,8 +48,6 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 static size_t task_argv_offset;
 
 static const struct task_resource_desc task_argv_desc = {
-	.init = task_argv_init,
-	.inherit = task_argv_inherit,
 	.resource_size = sizeof(struct task_argv),
 	.resource_offset = &task_argv_offset,
 	.exec = task_argv_exec
