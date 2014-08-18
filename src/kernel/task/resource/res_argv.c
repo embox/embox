@@ -18,7 +18,7 @@
 struct task_argv {
 	int argc;
 	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
-	char *argv[ARGS_QUANTITY];
+	char *argv[ARGS_QUANTITY + 1]; /* null terminated */
 	char path[ARG_LENGTH];
 };
 
@@ -32,12 +32,14 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 
 	task_argv = task_resource_argv(task);
 	task_argv->argc = argv_to_argc(argv);
+	assert(task_argv->argc <= ARGS_QUANTITY);
 
 	for (i = 0; i < task_argv->argc; i++) {
 		strncpy(task_argv->argv_buff[i], argv[i], sizeof(*task_argv->argv_buff));
 		task_argv->argv_buff[i][sizeof(*task_argv->argv_buff) - 1] = '\0';
 		task_argv->argv[i] = task_argv->argv_buff[i];
 	}
+	task_argv->argv[i] = NULL;
 
 	strncpy(task_argv->path, path, sizeof(task_argv->path));
 	task_argv->path[sizeof(task_argv->path) - 1] = '\0';
