@@ -128,7 +128,7 @@ static void usb_req_notify(struct usb_request *req, void *arg) {
 	assert(req->req_stat == USB_REQ_NOERR);
 
 	wait_data->res = 1;
-	sched_wakeup(wait_data->thr);
+	sched_wakeup(&(wait_data->thr->schedee));
 }
 
 int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
