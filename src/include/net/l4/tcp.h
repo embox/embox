@@ -97,6 +97,7 @@ typedef struct tcp_sock {
 		struct list_head conn_ready; /* Queue of incoming ready connections */
 	};
 	struct list_head conn_wait; /* Queue of incoming waiting connections */
+	struct list_head conn_free; /* Queue of free sockets for incoming connections */
 	unsigned int conn_queue_len; /* Length of queue of incoming connection */
 	unsigned int conn_queue_max; /* Max length of queue of incoming connection */
 	unsigned int lock;          /* Tool for synchronization */

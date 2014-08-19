@@ -32,6 +32,8 @@
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
+#include <err.h>
+
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
@@ -73,6 +75,7 @@ static int tcp_init(struct sock *sk) {
 	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
 	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
+	INIT_LIST_HEAD(&tcp_sk->conn_free);
 	tcp_sk->conn_queue_len = tcp_sk->conn_queue_max = 0;
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
@@ -213,6 +216,45 @@ static int tcp_connect(struct sock *sk,
 	return ret;
 }
 
+static int tcp_sock_alloc_free_sockets(struct tcp_sock *tcp_sk, int amount) {
+	int i;
+
+	assert(tcp_sk != NULL);
+	assert(amount > 0);
+
+	for (i = 0; i < amount; ++i) {
+		struct sock *newsk;
+		struct tcp_sock *tcp_newsk;
+
+		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+				SOCK_STREAM, IPPROTO_TCP);
+		if (err(newsk) != 0) {
+			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+			{
+				if (i--)
+					break;
+				list_for_each_entry(tcp_newsk, &tcp_sk->conn_free, conn_lnk) {
+					list_del(&tcp_newsk->conn_lnk);
+					sock_release(to_sock(tcp_newsk));
+				}
+			}
+			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+			return err(newsk);
+		}
+
+		tcp_newsk = to_tcp_sock(newsk);
+		tcp_newsk->parent = tcp_sk;
+
+		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+		{
+			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_free);
+		}
+		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	}
+
+	return 0;
+}
+
 static int tcp_listen(struct sock *sk, int backlog) {
 	int ret;
 	struct tcp_sock *tcp_sk;
@@ -235,6 +277,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				ret = -EINVAL; /* error: invalid backlog */
 				break;
 			}
+			tcp_sock_alloc_free_sockets(tcp_sk, backlog);
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
 			tcp_sk->conn_queue_max = backlog;
 			ret = 0;
@@ -309,6 +352,12 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		} else {
 			return -ECONNRESET; /* FIXME */
 		}
+	}
+
+	ret = tcp_sock_alloc_free_sockets(tcp_sk, 1);
+	if (ret != 0) {
+		tcp_sock_release(tcp_newsk);
+		return ret;
 	}
 
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
