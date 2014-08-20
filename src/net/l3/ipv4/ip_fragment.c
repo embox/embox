@@ -140,7 +140,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	tmp = buf->next_skbuff;
 
 	ihlen = (tmp->h.raw - tmp->mac.raw);
-	skb = skb_alloc(buf->len + ihlen);
+	skb = skb_alloc_dynamic(buf->len + ihlen);
 	/* Strange:
 	 *	- it might return NULL, because length is too big now.
 	 *	- ihlen has upper limit. So it's more wise to has such

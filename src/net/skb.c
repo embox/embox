@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
 
 #include <linux/compiler.h>
 #include <framework/mod/options.h>
@@ -50,6 +51,9 @@
 
 #define PAD_SIZE(obj_size, padto) \
 	(((padto) - (obj_size) % (padto)) % (padto))
+
+#define SKB_DATA_SIZE(size) \
+	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
 
 #define SKB_DEBUG 0
 #if SKB_DEBUG
@@ -134,8 +138,27 @@ struct sk_buff_data * skb_data_alloc(void) {
 	return skb_data;
 }
 
-struct sk_buff_data * skb_data_clone(
-		struct sk_buff_data *skb_data) {
+struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
+	ipl_t sp;
+	struct sk_buff_data *skb_data;
+
+	sp = ipl_save();
+	{
+		skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
+	}
+	ipl_restore(sp);
+
+	if (skb_data == NULL) {
+		DBG(printk("skb_data_alloc: error: no memory\n"));
+		return NULL; /* error: no memory */
+	}
+
+	skb_data->links = 1;
+
+	return skb_data;
+}
+
+struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
 	ipl_t sp;
 
 	assert(skb_data != NULL);
@@ -161,7 +184,12 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 	sp = ipl_save();
 	{
 		if (--skb_data->links == 0) {
-			pool_free(&skb_data_pool, skb_data);
+			if (pool_belong(&skb_data_pool, skb_data)) {
+				pool_free(&skb_data_pool, skb_data);
+			}
+			else {
+				sysfree(skb_data);
+			}
 		}
 	}
 	ipl_restore(sp);
@@ -195,18 +223,18 @@ void skb_extra_free(struct sk_buff_extra *skb_extra) {
 	ipl_restore(sp);
 }
 
-struct sk_buff * skb_wrap(size_t size,
-		struct sk_buff_data *skb_data) {
+struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
 	assert(size != 0);
 	assert(skb_data != NULL);
 
-	if (size > skb_max_size()) {
-		DBG(printk("skb_wrap: error: size is too big\n"));
-		return NULL; /* error: invalid argument */
-	}
+	// TODO move it
+//	if (size > skb_max_size()) {
+//		DBG(printk("skb_wrap: error: size is too big\n"));
+//		return NULL; /* error: invalid argument */
+//	}
 
 	sp = ipl_save();
 	{
@@ -221,7 +249,7 @@ struct sk_buff * skb_wrap(size_t size,
 		return NULL; /* error: no memory */
 	}
 
-	INIT_LIST_HEAD((struct list_head *)skb);
+	INIT_LIST_HEAD((struct list_head * )skb);
 	skb->dev = NULL;
 	skb->len = size;
 	skb->nh.raw = skb->h.raw = NULL;
@@ -250,12 +278,30 @@ struct sk_buff * skb_alloc(size_t size) {
 	return skb;
 }
 
+struct sk_buff * skb_alloc_dynamic(size_t size) {
+	struct sk_buff *skb;
+	struct sk_buff_data *skb_data;
+
+	skb_data = skb_data_alloc_dynamic(size);
+	if (skb_data == NULL) {
+		return NULL; /* error: no memory */
+	}
+
+	skb = skb_wrap(size, skb_data);
+	if (skb == NULL) {
+		skb_data_free(skb_data);
+		return NULL; /* error: no memory */
+	}
+
+	return skb;
+}
+
 struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 	if (skb == NULL) {
 		return skb_alloc(size);
 	}
 
-	list_del_init((struct list_head *)skb);
+	list_del_init((struct list_head *) skb);
 	skb->dev = NULL;
 	skb->len = size;
 	skb->mac.raw = skb_get_data_pointner(skb->data);
@@ -274,21 +320,21 @@ void skb_free(struct sk_buff *skb) {
 	sp = ipl_save();
 	{
 		assert((skb->lnk.prev != NULL) && (skb->lnk.next != NULL));
-		list_del((struct list_head *)skb);
+		list_del((struct list_head *) skb);
 		pool_free(&skb_pool, skb);
 	}
 	ipl_restore(sp);
 }
 
-static void skb_copy_ref(struct sk_buff *to,
-		const struct sk_buff *from) {
+static void skb_copy_ref(struct sk_buff *to, const struct sk_buff *from) {
 	ptrdiff_t offset;
 
-	assert((to != NULL) && (to->data != NULL)
-			&& (from != NULL) && (from->data != NULL));
+	assert((to != NULL) && (to->data != NULL) && (from != NULL)
+			&& (from->data != NULL));
 
 	to->dev = from->dev;
-	offset = skb_get_data_pointner(to->data) - skb_get_data_pointner(from->data);
+	offset = skb_get_data_pointner(to->data)
+			- skb_get_data_pointner(from->data);
 	if (from->mac.raw != NULL) {
 		to->mac.raw = from->mac.raw + offset;
 	}
@@ -301,8 +347,7 @@ static void skb_copy_ref(struct sk_buff *to,
 	to->p_data = to->p_data_end = NULL;
 }
 
-static void skb_shift_ref(struct sk_buff *skb,
-		ptrdiff_t offset) {
+static void skb_shift_ref(struct sk_buff *skb, ptrdiff_t offset) {
 	assert((skb != NULL) && (skb->data != NULL));
 
 	if (skb->mac.raw != NULL) {
@@ -319,9 +364,9 @@ static void skb_shift_ref(struct sk_buff *skb,
 
 static void skb_copy_data(struct sk_buff_data *to_data,
 		const struct sk_buff *from) {
-	assert((to_data != NULL) && (from != NULL)
-			&& (from->data != NULL));
-	memcpy(skb_get_data_pointner(to_data), skb_get_data_pointner(from->data), from->len);
+	assert((to_data != NULL) && (from != NULL) && (from->data != NULL));
+	memcpy(skb_get_data_pointner(to_data), skb_get_data_pointner(from->data),
+			from->len);
 }
 
 struct sk_buff * skb_copy(const struct sk_buff *skb) {
@@ -376,8 +421,9 @@ struct sk_buff * skb_declone(struct sk_buff *skb) {
 		return NULL; /* error: no memory */
 	}
 
-	skb_shift_ref(skb, skb_get_data_pointner(decloned_data)
-				- skb_get_data_pointner(skb->data));
+	skb_shift_ref(skb,
+			skb_get_data_pointner(decloned_data)
+					- skb_get_data_pointner(skb->data));
 	skb_copy_data(decloned_data, skb);
 
 	skb_data_free(skb->data);
