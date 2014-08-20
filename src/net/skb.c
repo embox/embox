@@ -59,11 +59,18 @@
 #define DBG(x)
 #endif
 
-struct sk_buff_data {
+struct sk_buff_data_fixed {
+	size_t links;
+
 	char __ip_align[IP_ALIGN_SIZE];
 	unsigned char data[MODOPS_DATA_SIZE];
 	char __data_pad[DATA_PAD_SIZE];
+};
+
+struct sk_buff_data {
 	size_t links;
+
+	char __data[];
 } DATA_ATTR;
 
 struct sk_buff_extra {
@@ -72,11 +79,15 @@ struct sk_buff_extra {
 } EXTRA_ATTR;
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
-POOL_DEF(skb_data_pool, struct sk_buff_data, MODOPS_AMOUNT_SKB_DATA);
+POOL_DEF(skb_data_pool, struct sk_buff_data_fixed, MODOPS_AMOUNT_SKB_DATA);
 POOL_DEF(skb_extra_pool, struct sk_buff_extra, MODOPS_AMOUNT_SKB_EXTRA);
 
+static void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
+	return skb_data->__data + IP_ALIGN_SIZE;
+}
+
 size_t skb_max_size(void) {
-	return member_sizeof(struct sk_buff_data, data);
+	return MODOPS_DATA_SIZE;
 }
 
 size_t skb_max_extra_size(void) {
@@ -85,12 +96,12 @@ size_t skb_max_extra_size(void) {
 
 void * skb_data_cast_in(struct sk_buff_data *skb_data) {
 	assert(skb_data != NULL);
-	return &skb_data->data[0];
+	return skb_get_data_pointner(skb_data);
 }
 
 struct sk_buff_data * skb_data_cast_out(void *data) {
 	assert(data != NULL);
-	return member_cast_out(data, struct sk_buff_data, data);
+	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
 }
 
 void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
@@ -215,7 +226,7 @@ struct sk_buff * skb_wrap(size_t size,
 	skb->len = size;
 	skb->nh.raw = skb->h.raw = NULL;
 	skb->data = skb_data;
-	skb->mac.raw = &skb_data->data[0];
+	skb->mac.raw = skb_get_data_pointner(skb_data);
 	skb->p_data = skb->p_data_end = NULL;
 
 	return skb;
@@ -247,7 +258,7 @@ struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 	list_del_init((struct list_head *)skb);
 	skb->dev = NULL;
 	skb->len = size;
-	skb->mac.raw = &skb->data->data[0];
+	skb->mac.raw = skb_get_data_pointner(skb->data);
 	skb->nh.raw = skb->h.raw = NULL;
 
 	return skb;
@@ -277,7 +288,7 @@ static void skb_copy_ref(struct sk_buff *to,
 			&& (from != NULL) && (from->data != NULL));
 
 	to->dev = from->dev;
-	offset = &to->data->data[0] - &from->data->data[0];
+	offset = skb_get_data_pointner(to->data) - skb_get_data_pointner(from->data);
 	if (from->mac.raw != NULL) {
 		to->mac.raw = from->mac.raw + offset;
 	}
@@ -310,7 +321,7 @@ static void skb_copy_data(struct sk_buff_data *to_data,
 		const struct sk_buff *from) {
 	assert((to_data != NULL) && (from != NULL)
 			&& (from->data != NULL));
-	memcpy(&to_data->data[0], &from->data->data[0], from->len);
+	memcpy(skb_get_data_pointner(to_data), skb_get_data_pointner(from->data), from->len);
 }
 
 struct sk_buff * skb_copy(const struct sk_buff *skb) {
@@ -365,8 +376,8 @@ struct sk_buff * skb_declone(struct sk_buff *skb) {
 		return NULL; /* error: no memory */
 	}
 
-	skb_shift_ref(skb, &decloned_data->data[0]
-				- &skb->data->data[0]);
+	skb_shift_ref(skb, skb_get_data_pointner(decloned_data)
+				- skb_get_data_pointner(skb->data));
 	skb_copy_data(decloned_data, skb);
 
 	skb_data_free(skb->data);
@@ -379,7 +390,8 @@ void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(skb != NULL);
 	assert(skb->data != NULL);
 	assert(count < skb_max_size());
-	memmove(&skb->data->data[count], &skb->data->data[0],
+	memmove(skb_get_data_pointner(skb->data) + count,
+			skb_get_data_pointner(skb->data),
 			min(skb->len, skb_max_size() - count));
 	skb->len += min(count, skb_max_size() - count);
 }
