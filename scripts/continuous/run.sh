@@ -55,6 +55,15 @@ atml2run=(
 	['generic/fail']=false
 )
 
+sudo_var_pass() {
+	if [ ${!1+defined} ]; then
+		echo $1=${!1}
+	else
+		#output is passed to sudo that not likes empty arguments
+		echo __T=
+	fi
+}
+
 sim_bg=
 run_bg() {
 	declare -A atml2sim
@@ -70,11 +79,12 @@ run_bg() {
 		run_cmd="$RUN_QEMU"
 	fi
 
+	set +ve
 	sudo PATH=$PATH \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
-		AUTOQEMU_NICS="$AUTOQEMU_NICS" \
-		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
+		"$(sudo_var_pass AUTOQEMU_NICS)" \
+		"$(sudo_var_pass AUTOQEMU_NICS_CONFIG)"	\
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		$run_cmd &
 	sim_bg=$!
