@@ -30,6 +30,11 @@ RUN_QEMU="./scripts/qemu/auto_qemu $SIM_ARG"
 
 USERMODE_START_OUTPUT=$OUTPUT_FILE
 
+packetdrill_run() {
+	AUTOQEMU_NICS=""
+	default_run
+}
+
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
@@ -38,7 +43,7 @@ atml2run=(
 	['x86/smp']=default_run
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
-	['x86/test/packetdrill']=default_run
+	['x86/test/packetdrill']=packetdrill_run
 	['sparc/debug']=default_run
 	['mips/debug']=default_run
 	['ppc/debug']=default_run
@@ -68,6 +73,7 @@ run_bg() {
 	sudo PATH=$PATH \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
+		AUTOQEMU_NICS="$AUTOQEMU_NICS" \
 		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		$run_cmd &
