@@ -1,6 +1,6 @@
 
-EMBOX_BIN="./build/base/bin/embox.bin"
-UIMAGE=uImage
+EMBOX_BIN=${1:-"./build/base/bin/embox.bin"}
+UIMAGE=${2:-uImage}
 MKIMAGE=$(which mkimage)
 
 if [ ! $MKIMAGE ]; then
