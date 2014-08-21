@@ -28,10 +28,12 @@ extern struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32
 
 extern struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags);
 
+#if 1
 extern uint32_t mmap_create_stack(struct emmap *mmap);
 extern void *mmap_create_heap(struct emmap *mmap);
-
+#endif
 extern int mmap_inherit(struct emmap *mmap, struct emmap *parent_mmap);
+
 
 /*
  * XXX: May be separate it in mmu and nommu code ?

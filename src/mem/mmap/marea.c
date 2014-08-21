@@ -47,5 +47,5 @@ struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags) {
 
 
 void marea_destroy(struct marea *marea) {
-
+	marea_free(marea);
 }

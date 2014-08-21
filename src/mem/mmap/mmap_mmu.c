@@ -12,8 +12,7 @@
 #include <mem/mmap.h>
 #include <mem/vmem.h>
 
-extern struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags);
-extern void marea_destroy(struct marea *marea);
+#include <mem/mapping/marea.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -21,9 +20,6 @@ extern void marea_destroy(struct marea *marea);
 static const uint32_t mem_start = 0x04000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
-#if 0
-static int initialized = 0;
-#endif
 
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
@@ -35,17 +31,6 @@ void mmap_init(struct emmap *mmap) {
 	mmap->heap_marea = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
-#if 0
-	if (!initialized) {
-		/* It's kernel task. Set virtual context for it. */
-		vmem_set_context(mmap->ctx);
-
-		/* Now we can turn on MMU */
-		vmem_on();
-
-		initialized = 1;
-	}
-#endif
 }
 
 void mmap_free(struct emmap *mmap) {
@@ -116,7 +101,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 	return NULL;
 }
-
+#if 0
 uint32_t mmap_create_stack(struct emmap *mmap) {
 	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
 
@@ -131,6 +116,7 @@ void* mmap_create_heap(struct emmap *mmap) {
 	//TODO: stub
 	return NULL;
 }
+#endif
 
 #define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
 int mmap_mapping(struct emmap *emmap) {
@@ -138,7 +124,6 @@ int mmap_mapping(struct emmap *emmap) {
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 		size_t len = mmu_size_align(marea->end - marea->start);
-
 
 		vmem_map_region(emmap->ctx, marea->start, marea->start, len,  marea->flags);
 	}
@@ -153,12 +138,6 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
-#if 0
-		if ((res = vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start))) {
-			free(marea);
-			return res;
-		}
-#endif
 	}
 	mmap_mapping(mmap);
 

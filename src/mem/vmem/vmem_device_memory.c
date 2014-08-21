@@ -10,9 +10,10 @@
 #include <sys/mman.h>
 
 #include <kernel/task/resource/mmap.h>
+#include <mem/mapping/marea.h>
 
 extern int mmap_kernel_inited(void);
-extern struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags);
+
 extern struct emmap *mmap_early_emmap(void);
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 

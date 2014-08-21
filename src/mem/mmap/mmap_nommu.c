@@ -103,7 +103,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 	return NULL;
 }
-
+#if 0
 uint32_t mmap_create_stack(struct emmap *mmap) {
 	mmap->stack_marea = mmap_alloc_marea(mmap, 1024, 0);
 
@@ -124,6 +124,7 @@ void* mmap_create_heap(struct emmap *mmap) {
 	mmap->brk = (void *) mmap->heap_marea->start;
 	return mmap->brk;
 }
+#endif
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;

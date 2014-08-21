@@ -271,13 +271,14 @@ static int load_exec(const char *filename, exec_t *exec) {
 
 	return ENOERR;
 }
-
+extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
 int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;
 	int err;
 	exec_t exec;
+	struct emmap *emmap;
 
 	memset(&exec, 0, sizeof(exec_t));
 
@@ -286,8 +287,12 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 		return -1;
 	}
 
-	stack = mmap_create_stack(task_self_resource_mmap());
+	emmap = task_self_resource_mmap();
+	stack = mmap_userspace_create(emmap, 0x1000);
+#if 0
+	stack = mmap_create_stack(emmap);
 	mmap_create_heap(task_self_resource_mmap());
+#endif
 
 	fill_stack(&stack, &exec, argv, envp);
 
