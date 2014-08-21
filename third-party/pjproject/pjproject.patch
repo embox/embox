@@ -1,0 +1,15 @@
+diff -aur pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c pjproject-2.2.1/pjlib/src/pj/sock_bsd.c
+--- pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c	2014-08-20 18:42:36.811724685 +0400
++++ pjproject-2.2.1/pjlib/src/pj/sock_bsd.c	2014-08-20 18:42:25.068391698 +0400
+@@ -52,7 +52,11 @@
+ const pj_uint16_t PJ_SOCK_STREAM= SOCK_STREAM;
+ const pj_uint16_t PJ_SOCK_DGRAM	= SOCK_DGRAM;
+ const pj_uint16_t PJ_SOCK_RAW	= SOCK_RAW;
++#if defined(SOCK_RDM)
+ const pj_uint16_t PJ_SOCK_RDM	= SOCK_RDM;
++#else
++const pj_uint16_t PJ_SOCK_RDM	= 0xFFFF;
++#endif
+ 
+ /*
+  * Socket level values.
