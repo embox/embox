@@ -55,11 +55,11 @@
 	 ((nr)   << _IOC_NRSHIFT)   | \
 	 ((size) << _IOC_SIZESHIFT))
 
-__BEGIN_DECLS
-
 /* Ioctls applicable to any descriptor */
-#define FIONBIO   0x00005421
-#define FIONREAD  0x0000541B
+#define FIONBIO   _IOW('a', 0, const int)
+#define FIONREAD  _IO ('a', 1)
+
+__BEGIN_DECLS
 
 extern int ioctl(int d, int request, ...);
 
