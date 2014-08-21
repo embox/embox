@@ -19,6 +19,7 @@ $(CONFIGURE) :
 		echo export CFLAGS+=$(EMBOX_DEPS_CPPFLAGS) > user.mak; \
 		echo export CXXFLAGS+=$(EMBOX_DEPS_CPPFLAGS) >> user.mak; \
 	)
+	cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
 	touch $@
 
 $(BUILD) :

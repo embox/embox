@@ -1,6 +1,19 @@
+diff -aur pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c pjproject-2.2.1/pjlib/src/pj/os_core_unix.c
+--- pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c	2014-08-21 16:11:18.346112334 +0400
++++ pjproject-2.2.1/pjlib/src/pj/os_core_unix.c	2014-08-21 15:40:38.959499883 +0400
+@@ -994,7 +994,8 @@
+ PJ_DEF(pj_status_t) pj_thread_local_alloc(long *p_index)
+ {
+ #if PJ_HAS_THREADS
+-    pthread_key_t key;
++    static int key_idx = 0;
++    pthread_key_t key = key_idx++;
+     int rc;
+ 
+     PJ_ASSERT_RETURN(p_index != NULL, PJ_EINVAL);
 diff -aur pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c pjproject-2.2.1/pjlib/src/pj/sock_bsd.c
---- pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c	2014-08-20 18:42:36.811724685 +0400
-+++ pjproject-2.2.1/pjlib/src/pj/sock_bsd.c	2014-08-20 18:42:25.068391698 +0400
+--- pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c	2014-08-21 16:11:18.346112334 +0400
++++ pjproject-2.2.1/pjlib/src/pj/sock_bsd.c	2014-08-21 14:58:58.112906927 +0400
 @@ -52,7 +52,11 @@
  const pj_uint16_t PJ_SOCK_STREAM= SOCK_STREAM;
  const pj_uint16_t PJ_SOCK_DGRAM	= SOCK_DGRAM;
