@@ -22,6 +22,7 @@
  * <sys/wait.h> , for use in decoding the return value from system():
  */
 #include <sys/wait.h>
+#include <limits.h>
 
 typedef struct ldiv {
    long int quot;
@@ -32,6 +33,8 @@ typedef struct div {
    int quot;
    int rem;
 } div_t;
+
+#define RAND_MAX INT_MAX
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
