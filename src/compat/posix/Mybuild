@@ -35,6 +35,10 @@ static module pthread_key {
 	depends embox.kernel.thread.thread_local_heap
 }
 
+static module pthread_rwlock {
+	source "pthread_rwlock.c"
+}
+
 static module sched {
 	source "sched_posix.c"
 }

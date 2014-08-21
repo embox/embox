@@ -10,7 +10,7 @@ module core {
 	source "^BUILD/extbld/^MOD_PATH/install/streamutil.o"
 
 	depends embox.compat.posix.pthread_key
-	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_rwlock
 	depends embox.compat.posix.semaphore
 
 	/*depends third_party.STLport.core*/
