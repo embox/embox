@@ -16,8 +16,4 @@ struct runq {
 	spinlock_t lock;
 };
 
-struct sched_attr {
-	int policy;
-};
-
 #endif /* SCHED_NO_STRATEGY_H_ */

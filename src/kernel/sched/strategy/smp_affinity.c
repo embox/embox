@@ -14,7 +14,7 @@
 #define SCHEDEE_AFFINITY_NONE         ((unsigned int)-1)
 
 int sched_affinity_check(struct schedee *s, int mask) {
-	if ((s->sched_attr.affinity & mask)){
+	if ((s->affinity & mask)){
 			/*&& (task_get_affinity(t->task) & mask)) {*/
 			/*< TODO: schedee hasn't got task inside */
 		return 1;
@@ -24,13 +24,13 @@ int sched_affinity_check(struct schedee *s, int mask) {
 }
 
 void sched_affinity_init(struct schedee *s) {
-	s->sched_attr.affinity = SCHEDEE_AFFINITY_NONE;
+	s->affinity = SCHEDEE_AFFINITY_NONE;
 }
 
 void sched_affinity_set(struct schedee *s, int mask) {
-	s->sched_attr.affinity = mask;
+	s->affinity = mask;
 }
 
 int sched_affinity_get(struct schedee *s) {
-	return s->sched_attr.affinity;
+	return s->affinity;
 }

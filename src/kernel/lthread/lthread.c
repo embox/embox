@@ -59,8 +59,7 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 
 	lt->schedee.lock = SPIN_UNLOCKED;
 
-	runq_item_init(&lt->schedee.sched_attr.runq_link);
-	sched_affinity_init(&lt->schedee);
+	schedee_init(&lt->schedee);
 	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
 	sched_wait_info_init(&lt->info);
 }

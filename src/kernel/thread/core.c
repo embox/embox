@@ -221,9 +221,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&(t->schedee.sched_attr.runq_link));
-	sched_affinity_init(&(t->schedee));
-	sched_timing_init(&t->schedee);
+	schedee_init(&t->schedee);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
