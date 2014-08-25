@@ -5,8 +5,8 @@
  * @author: Anton Bondarev
  */
 
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/schedee_priority.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/schedee_priority.h>
 
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/sched_strategy.h>

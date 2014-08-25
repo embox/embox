@@ -24,7 +24,7 @@ module sched {
 	depends embox.kernel.thread.thread_wait
 
 	depends embox.kernel.lthread.lthread_api
-	@NoRuntime depends embox.kernel.schedee.current.api
+	@NoRuntime depends embox.kernel.sched.current.api
 
 }
 

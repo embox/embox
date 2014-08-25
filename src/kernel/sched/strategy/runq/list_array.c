@@ -8,7 +8,7 @@
 
 #include <util/dlist.h>
 
-#include <kernel/schedee/schedee.h>
+#include <kernel/sched/schedee.h>
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 

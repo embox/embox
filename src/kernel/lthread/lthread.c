@@ -13,8 +13,8 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <mem/misc/pool.h>
 

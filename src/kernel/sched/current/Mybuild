@@ -1,6 +1,6 @@
-package embox.kernel.schedee.current
+package embox.kernel.sched.current
 
-@DefaultImpl(embox.kernel.schedee.current.default)
+@DefaultImpl(default)
 abstract module api { }
 
 module default extends api {

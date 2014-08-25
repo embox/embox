@@ -9,7 +9,7 @@
 #ifndef KERNEL_SCHEDEE_SYNC_MUTEX_H_
 #define KERNEL_SCHEDEE_SYNC_MUTEX_H_
 
-#include <kernel/schedee/sync/mutexattr.h>
+#include <kernel/sched/sync/mutexattr.h>
 #include <kernel/sched/waitq.h>
 
 struct thread;

@@ -35,8 +35,8 @@
 #include <kernel/sched/sched_strategy.h>
 #include <kernel/thread.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <kernel/thread/signal.h>
 
 #include <embox/unit.h>

@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <kernel/schedee/sync/mutex.h>
+#include <kernel/sched/sync/mutex.h>
 #include <kernel/thread/waitq.h>
 #include <kernel/sched/sched_priority.h>
 

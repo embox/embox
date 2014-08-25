@@ -4,7 +4,7 @@
  * @date Jul 31, 2013
  * @author: Anton Bondarev
  */
-#include <kernel/schedee/schedee.h>
+#include <kernel/sched/schedee.h>
 
 #include <kernel/task.h>
 #include <kernel/task/resource/affinity.h>

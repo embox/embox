@@ -16,7 +16,7 @@
 #include <kernel/sched/runq.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/schedee/schedee_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 #include <kernel/sched/waitq.h>
 /* Used as a return value of schedee->process function. */

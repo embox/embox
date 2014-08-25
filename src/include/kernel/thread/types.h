@@ -19,7 +19,7 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/schedee/schedee.h>
+#include <kernel/sched/schedee.h>
 #include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>

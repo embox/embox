@@ -6,7 +6,7 @@
  */
 
 #include <kernel/lthread/lthread.h>
-#include <kernel/schedee/schedee_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 #define prior_field(field)   lt->schedee.thread_priority.field
 

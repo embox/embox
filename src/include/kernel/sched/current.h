@@ -25,7 +25,7 @@
 #ifndef KERNEL_SCHEDEE_CURRENT_H_
 #define KERNEL_SCHEDEE_CURRENT_H_
 
-#include <module/embox/kernel/schedee/current/api.h>
+#include <module/embox/kernel/sched/current/api.h>
 
 #define schedee_get_current() \
 	__schedee_get_current()

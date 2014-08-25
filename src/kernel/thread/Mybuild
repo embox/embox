@@ -33,7 +33,7 @@ module core extends thread_mode {
 	@NoRuntime depends embox.compat.libc.LibCAssert
 
 	depends embox.kernel.cpu.common
-	depends embox.kernel.schedee.current.api
+	depends embox.kernel.sched.current.api
 }
 
 module sched_wait {
@@ -54,7 +54,7 @@ module starter {
 module boot_thread {
 	source "boot_thread.c"
 	@NoRuntime depends embox.kernel.task.kernel_task
-	depends embox.kernel.schedee.current.api
+	depends embox.kernel.sched.current.api
 }
 
 module idle_thread {

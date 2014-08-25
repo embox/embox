@@ -35,8 +35,8 @@
 #include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 

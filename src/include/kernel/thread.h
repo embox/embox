@@ -17,7 +17,7 @@
 
 #include <kernel/thread/types.h>
 #include <kernel/thread/thread_flags.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/current.h>
 
 
 /**
