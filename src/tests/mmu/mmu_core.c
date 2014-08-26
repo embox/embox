@@ -85,17 +85,21 @@ TEST_CASE("Pagefault should be considered right.") {
 	test_assert_equal(exception_flag, 1);
 
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
+
+	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 }
 
 /* TODO: Remove this. */
-static ipl_t ipl;
+//static ipl_t ipl;
 
 static int mmu_case_setup(void) {
+#if 0
 	ipl = ipl_save();
 
 	vmem_off();
 	test_assert_zero(vmem_create_context(&ctx));
 	test_assert_zero(vmem_init_context(&ctx));
+#endif
 	vmem_set_context(ctx);
 	vmem_on();
 
@@ -104,9 +108,9 @@ static int mmu_case_setup(void) {
 
 static int mmu_case_teardown(void) {
 	vmem_off();
+#if 0
 	vmem_free_context(ctx);
-
 	ipl_restore(ipl);
-
+#endif
 	return 0;
 }
