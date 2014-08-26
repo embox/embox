@@ -1,0 +1,19 @@
+
+package embox.kernel.sched.affinity
+
+@DefaultImpl(none)
+abstract module affinity {
+}
+
+module none extends affinity {
+	source "none.h"
+}
+
+module smp extends affinity {
+	source "smp.h"
+	source "smp.c"
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.resource.affinity
+}
+

@@ -9,7 +9,7 @@
 #define AFFINITY_H_
 
 
-#include <module/embox/kernel/sched/strategy/affinity_api.h>
+#include <module/embox/kernel/sched/affinity/affinity.h>
 
 typedef __affinity_t affinity_t;
 
