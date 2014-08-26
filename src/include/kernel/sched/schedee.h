@@ -48,7 +48,7 @@ struct schedee {
 	unsigned int      ready;        /**< Managed by the scheduler. */
 	unsigned int      waiting;      /**< Waiting for an event. */
 
-	affinity_t        affinity;
+	struct affinity   affinity;
 	sched_timing_t    sched_time;
 	struct schedee_priority  priority;
 	int               policy;
@@ -59,7 +59,7 @@ struct schedee {
 static inline int schedee_init(struct schedee *schde, sched_priority_t priority) {
 	schedee_priority_init(&schde->priority, priority);
 	runq_item_init(&schde->runq_link);
-	sched_affinity_init(schde);
+	sched_affinity_init(&schde->affinity);
 	sched_timing_init(schde);
 	return 0;
 }

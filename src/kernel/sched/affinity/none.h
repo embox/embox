@@ -3,35 +3,21 @@
  *
  * @date Jul 31, 2013
  * @author: Anton Bondarev
+ * @author: Anton Kozlov
  */
 
-#ifndef NO_AFFINITY_H_
-#define NO_AFFINITY_H_
+#ifndef AFFINITY_NONE_H_
+#define AFFINITY_NONE_H_
 
-struct schedee;
+struct affinity { };
 
-typedef struct { } __affinity_t;
-
-static inline int sched_affinity_check(struct schedee *s, int mask) {
-	(void)s;
-	(void)mask;
+static inline int sched_affinity_check(struct affinity *a, int mask) {
 	return 1;
 }
 
-static inline void sched_affinity_init(struct schedee *s) {
-	(void)s;
-	return;
-}
+static inline void sched_affinity_init(struct affinity *a) { }
 
-static inline void sched_affinity_set(struct schedee *s, int mask) {
-	(void)s;
-	(void)mask;
-	return;
-}
+/* TODO none affinity shouldn't have set method */
+static inline void sched_affinity_set(struct affinity *a, int mask) { }
 
-static inline int sched_affinity_get(struct schedee *s) {
-	(void)s;
-	return 0;
-}
-
-#endif /* NO_AFFINITY_H_ */
+#endif /* AFFINITY_NONE_H_ */
