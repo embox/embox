@@ -23,7 +23,7 @@
 #include <kernel/thread/thread_flags.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/sched/sync/mutexattr.h>
+#include <kernel/schedee/sync/mutexattr.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/task/thread_key_table.h>
 

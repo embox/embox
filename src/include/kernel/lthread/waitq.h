@@ -11,7 +11,7 @@
 #define KERNEL_LTHREAD_WAITQ_H_
 
 #include <kernel/sched/waitq.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/current.h>
 
 /**
  * Waits without timeout till cond_expr becomes true.

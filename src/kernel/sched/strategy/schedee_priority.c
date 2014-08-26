@@ -5,8 +5,8 @@
  * @author: Anton Bondarev
  */
 
-#include <kernel/sched/schedee.h>
-#include <kernel/sched/schedee_priority.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/schedee_priority.h>
 
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/sched_strategy.h>
@@ -14,7 +14,7 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
-#define prior_field(field)   s->thread_priority.field
+#define prior_field(field)   s->sched_attr.thread_priority.field
 
 int schedee_priority_init(struct schedee *s, sched_priority_t new_priority) {
 	assert(s);

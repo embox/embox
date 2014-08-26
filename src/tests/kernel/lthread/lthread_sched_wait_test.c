@@ -10,13 +10,13 @@
 #include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/current.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
-#include <kernel/sched/sync/mutex.h>
+#include <kernel/schedee/sync/mutex.h>
 #include <kernel/lthread/sync/mutex.h>
 #include <kernel/thread/sync/mutex.h>
 

@@ -10,7 +10,7 @@
 #include <time.h>
 
 #include <kernel/task/kernel_task.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/current.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 

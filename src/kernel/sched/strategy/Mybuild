@@ -9,7 +9,7 @@ abstract module api {
 module nosched extends api {
 	source "nosched.h"
 
-	depends embox.kernel.sched.current.api
+	depends embox.kernel.schedee.current.api
 	depends NoPriority
 	depends AffinityNone
 	depends TimeNone

@@ -13,8 +13,8 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/sched/schedee.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <mem/misc/pool.h>
 
@@ -59,7 +59,8 @@ static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 
 	lt->schedee.lock = SPIN_UNLOCKED;
 
-	schedee_init(&lt->schedee);
+	runq_item_init(&lt->schedee.sched_attr.runq_link);
+	sched_affinity_init(&lt->schedee);
 	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
 	sched_wait_info_init(&lt->info);
 }

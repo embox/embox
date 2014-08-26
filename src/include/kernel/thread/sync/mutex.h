@@ -15,7 +15,7 @@
 #include <errno.h>
 
 #include <kernel/sched/waitq.h>
-#include <kernel/sched/sync/mutex.h>
+#include <kernel/schedee/sync/mutex.h>
 
 
 #define MUTEX_INIT_STATIC \

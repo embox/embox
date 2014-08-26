@@ -8,7 +8,7 @@
 
 #include <errno.h>
 #include <defines/null.h>
-#include <kernel/sched/sync/mutexattr.h>
+#include <kernel/schedee/sync/mutexattr.h>
 
 int mutexattr_init(struct mutexattr *attr) {
 	attr->type = MUTEX_DEFAULT;

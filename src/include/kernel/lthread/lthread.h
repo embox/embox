@@ -13,8 +13,8 @@
 
 #include <module/embox/kernel/lthread/lthread_api.h>
 
-#include <kernel/sched/schedee.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 #include <kernel/time/timer.h>
 
@@ -38,7 +38,7 @@
  *
  * For waiting and synchronization you can use lthread specific macros and
  * functions (see kernel/lthread/) or macros and functions which are common
- * for all schedee implementation (see kernel/sched/ and
+ * for all schedee implementation (see kernel/schedee/ and
  * kernel/sched/waitq.h and kernel/sched.h).
  *
  * TODO: there is no possibility to use timeout functions yet

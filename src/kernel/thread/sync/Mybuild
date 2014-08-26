@@ -15,7 +15,7 @@ module mutex {
 	depends embox.kernel.sched.strategy.priority_api
 	depends embox.kernel.sched.wait_queue
 
-	depends embox.kernel.sched.mutex
+	depends embox.kernel.schedee.mutex
 	depends embox.kernel.thread.sched_wait
 }
 

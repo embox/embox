@@ -6,9 +6,9 @@
  */
 
 #include <kernel/lthread/lthread.h>
-#include <kernel/sched/schedee_priority.h>
+#include <kernel/schedee/schedee_priority.h>
 
-#define prior_field(field)   lt->schedee.thread_priority.field
+#define prior_field(field)   lt->schedee.sched_attr.thread_priority.field
 
 int lthread_priority_init(struct lthread *lt, sched_priority_t new_priority) {
 	assert(lt);

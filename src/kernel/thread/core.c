@@ -35,8 +35,8 @@
 #include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/sched/schedee.h>
-#include <kernel/sched/current.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -221,7 +221,9 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	schedee_init(&t->schedee);
+	runq_item_init(&(t->schedee.sched_attr.runq_link));
+	sched_affinity_init(&(t->schedee));
+	sched_timing_init(&t->schedee);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);

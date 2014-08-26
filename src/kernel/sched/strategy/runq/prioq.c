@@ -6,8 +6,8 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/sched/schedee.h>
-#include <kernel/sched/schedee_priority.h>
+#include <kernel/schedee/schedee.h>
+#include <kernel/schedee/schedee_priority.h>
 #include <kernel/sched/sched_strategy.h>
 
 #include <util/priolist.h>
@@ -21,12 +21,12 @@ void runq_init(runq_t *queue) {
 }
 
 void runq_insert(runq_t *queue, struct schedee *s) {
-	s->runq_link.prio = -schedee_priority_get(s);
-	priolist_add(&s->runq_link, queue);
+	s->sched_attr.runq_link.prio = -schedee_priority_get(s);
+	priolist_add(&s->sched_attr.runq_link, queue);
 }
 
 void runq_remove(runq_t *queue, struct schedee *s) {
-	priolist_del(&s->runq_link, queue);
+	priolist_del(&s->sched_attr.runq_link, queue);
 }
 
 struct schedee *runq_extract(runq_t *queue) {
@@ -34,7 +34,7 @@ struct schedee *runq_extract(runq_t *queue) {
 	struct schedee *result;
 
 	priolist_del(first, queue);
-	result = mcast_out(first, struct schedee, runq_link);
+	result = mcast_out(first, struct schedee, sched_attr.runq_link);
 
 	return result;
 }

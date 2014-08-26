@@ -6,7 +6,6 @@
  * @date    12.08.2014
  */
 
-#include <errno.h>
 #include <kernel/time/timer.h>
 
 #include <kernel/lthread/lthread.h>
