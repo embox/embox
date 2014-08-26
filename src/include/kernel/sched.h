@@ -31,8 +31,6 @@ __BEGIN_DECLS
  *
  * @param current
  *   Thread structure corresponding to the current control flow.
- * @param idle
- *   Thread that should be executed in the last resort.
  * @return
  *   Operation result.
  * @retval 0
@@ -41,7 +39,7 @@ __BEGIN_DECLS
  *   Error code if initialization of the underlying policy implementation has
  *   failed.
  */
-extern int sched_init(struct schedee *idle, struct schedee *current);
+extern int sched_init(struct schedee *current);
 
 extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);

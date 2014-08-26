@@ -1,6 +1,6 @@
 package embox.kernel.sched
 
-module sched {
+module core {
 	source "sched.c"
 	depends embox.kernel.addr_space
 
@@ -9,7 +9,8 @@ module sched {
 	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */
-	depends strategy.runq.api
+
+	depends schedee
 
 	@NoRuntime depends embox.kernel.thread.signal.lock_api
 	@NoRuntime depends embox.kernel.thread.signal_api
@@ -26,6 +27,25 @@ module sched {
 	depends embox.kernel.lthread.lthread_api
 	@NoRuntime depends embox.kernel.sched.current.api
 
+}
+
+module sched {
+	source "sched_start.c"
+	source "boot_thread.c"
+	source "idle_thread.c"
+
+	depends embox.kernel.task.kernel_task
+
+	depends core
+}
+
+module schedee {
+	/* source "include/kernel/sched/schedee.h" */
+
+	depends strategy.runq.api
+	depends priority.priority
+	depends affinity.affinity
+	depends timing.timing
 }
 
 module sched_ticker {

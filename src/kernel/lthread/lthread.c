@@ -49,17 +49,7 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
-	lt->schedee.run = run;
-	lt->schedee.process = lthread_process;
-	lt->schedee.run_arg = arg;
-
-	lt->schedee.ready = false;
-	lt->schedee.active = false;
-	lt->schedee.waiting = true;
-
-	lt->schedee.lock = SPIN_UNLOCKED;
-
-	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT);
+	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT, lthread_process, run, arg);
 	sched_wait_info_init(&lt->info);
 }
 

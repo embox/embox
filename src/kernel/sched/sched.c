@@ -33,11 +33,8 @@
 #include <kernel/spinlock.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread.h>
-#include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
-#include <kernel/thread/signal.h>
 
 #include <embox/unit.h>
 
@@ -65,16 +62,22 @@ static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-int sched_init(struct schedee *idle, struct schedee *current) {
-	assert(idle && current);
-
-	assert(schedee_get_current() == current);
+int sched_init(struct schedee *current) {
 
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
 
+#if 0
 	assert(idle->waiting); // XXX
 	sched_wakeup(idle);
+#endif
+
+	current->ready = true;
+	current->active = true;
+	current->waiting = false;
+
+	assert(schedee_get_current() == NULL);
+	schedee_set_current(current);
 
 	sched_ticker_init();
 

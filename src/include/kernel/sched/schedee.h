@@ -25,6 +25,12 @@
  * scheduling. */
 #define SCHEDEE_REPEAT 1
 
+#ifdef SMP
+# define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
+#else
+# define TW_SMP_WAKING  (0x0)   /* Not used in non-SMP kernel. */
+#endif
+
 struct schedee {
 
 	runq_item_t       runq_link;
@@ -56,15 +62,36 @@ struct schedee {
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
 };
 
-static inline int schedee_init(struct schedee *schde, sched_priority_t priority) {
-	schedee_priority_init(&schde->priority, priority);
-	runq_item_init(&schde->runq_link);
-	sched_affinity_init(&schde->affinity);
-	sched_timing_init(schde);
+#include <stdbool.h>
+static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
+	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	void *(*run)(void *),
+	void *arg)
+{
+
+	runq_item_init(&schedee->runq_link);
+
+	schedee->lock = SPIN_UNLOCKED;
+
+	schedee->process = process;
+	schedee->run = run;
+	schedee->run_arg = arg;
+
+	schedee->ready = false;
+	schedee->active = false;
+	schedee->waiting = true;
+
+	schedee_priority_init(&schedee->priority, priority);
+	sched_affinity_init(&schedee->affinity);
+	sched_timing_init(schedee);
+
 	return 0;
 }
 
-extern int schedee_init(struct schedee *schde, sched_priority_t priority);
+extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
+	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	void *(*run)(void *),
+	void *arg);
 
 
 #endif /* _KERNEL_SCHEDEE_H_ */
