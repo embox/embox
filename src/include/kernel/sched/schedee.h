@@ -49,7 +49,7 @@ struct schedee {
 	unsigned int      waiting;      /**< Waiting for an event. */
 
 	struct affinity   affinity;
-	sched_timing_t    sched_time;
+	struct sched_timing sched_timing;
 	struct schedee_priority  priority;
 	int               policy;
 

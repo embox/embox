@@ -17,7 +17,7 @@ module common {
 
 	depends cpudata_api
 	@NoRuntime depends embox.compat.posix.util.time
-	@NoRuntime depends embox.kernel.sched.strategy.affinity_api
+	@NoRuntime depends embox.kernel.sched.affinity.affinity
 }
 
 @DefaultImpl(no_cpudata)

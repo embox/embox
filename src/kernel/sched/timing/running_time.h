@@ -15,6 +15,4 @@ struct sched_timing {
 	clock_t            last_sync;     /**< Last recalculation of running time.*/
 };
 
-typedef struct sched_timing __sched_timing_t;
-
 #endif /* SCHED_RUNNING_TIME_H_ */

@@ -11,7 +11,7 @@ module nosched extends api {
 
 	depends embox.kernel.sched.current.api
 	depends embox.kernel.sched.priority.none
-	depends AffinityNone
+	depends embox.kernel.sched.affinity.none
 	depends TimeNone
 	depends NoRunq
 }
@@ -21,7 +21,7 @@ module priority_based extends api {
 	source "sched_strategy.h"
 
 	depends embox.kernel.sched.affinity.affinity
-	depends timing_api
+	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.priority
 
 	depends runq.prioq
@@ -33,7 +33,7 @@ module priority_based_smp extends api {
 	source "sched_strategy.h"
 
 	depends embox.kernel.sched.affinity.affinity
-	depends timing_api
+	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.priority
 
 	depends runq.list_array
@@ -44,8 +44,7 @@ module trivial extends api {
 	source "sched_strategy.h"
 
 	depends embox.kernel.sched.affinity.affinity
-	depends timing_api
-
+	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.none
 
 	depends runq.list
@@ -65,19 +64,6 @@ module Runq extends runq_api {
 	source "runq.h"
 
 	depends runq.api
-}
-
-@DefaultImpl(TimeRunning)
-abstract module timing_api {
-}
-
-module TimeNone extends timing_api {
-	source "no_time.h"
-}
-
-module TimeRunning extends timing_api {
-	source "running_time.h"
-	source "running_time.c"
 }
 
 
