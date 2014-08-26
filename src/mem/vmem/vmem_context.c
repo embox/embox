@@ -14,6 +14,7 @@
 
 
 extern int vmem_map_kernel(mmu_ctx_t ctx);
+extern mmu_ctx_t mmap_get_current_context(void);
 
 int vmem_create_context(mmu_ctx_t *ctx) {
 	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
@@ -25,6 +26,10 @@ int vmem_create_context(mmu_ctx_t *ctx) {
 	*ctx = mmu_create_context(pgd);
 
 	return ENOERR;
+}
+
+mmu_ctx_t vmem_current_context(void) {
+	return mmap_get_current_context();
 }
 
 /* FIXME: remove create context from here */

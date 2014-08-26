@@ -144,4 +144,13 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;
 }
 
+#include <kernel/task/resource/mmap.h>
+#include <kernel/printk.h>
 
+mmu_ctx_t mmap_get_current_context(void) {
+	struct emmap *emmap;
+
+	emmap = task_self_resource_mmap();
+
+	return emmap->ctx;
+}

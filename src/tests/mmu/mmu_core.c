@@ -100,14 +100,20 @@ static int mmu_case_setup(void) {
 	test_assert_zero(vmem_create_context(&ctx));
 	test_assert_zero(vmem_init_context(&ctx));
 #endif
+	ctx = vmem_current_context();
 	vmem_set_context(ctx);
-	vmem_on();
+
+	if (!vmem_mmu_enabled()) {
+		vmem_on();
+	}
 
 	return 0;
 }
 
 static int mmu_case_teardown(void) {
-	vmem_off();
+	if (vmem_mmu_enabled()) {
+		vmem_off();
+	}
 #if 0
 	vmem_free_context(ctx);
 	ipl_restore(ipl);

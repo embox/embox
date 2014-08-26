@@ -22,11 +22,27 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 
+static int mmu_enabled;
+
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 /* phymem allocator space */
 extern char *phymem_alloc_start, *phymem_alloc_end;
+
+void vmem_on(void) {
+	mmu_on();
+	mmu_enabled = 1;
+}
+
+void vmem_off(void) {
+	mmu_off();
+	mmu_enabled = 0;
+}
+
+int vmem_mmu_enabled(void) {
+	return mmu_enabled;
+}
 
 int vmem_map_kernel(mmu_ctx_t ctx) {
 	int err = 0;
