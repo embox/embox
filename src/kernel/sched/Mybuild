@@ -31,7 +31,6 @@ module core {
 
 module sched {
 	source "sched_start.c"
-	source "boot_thread.c"
 	source "idle_thread.c"
 
 	depends embox.kernel.task.kernel_task
