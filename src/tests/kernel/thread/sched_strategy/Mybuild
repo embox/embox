@@ -1,19 +1,5 @@
 package embox.test.kernel.thread.sched_strategy
 
-module general_test {
-	source "general_test.c"
-
-	depends embox.kernel.sched.strategy.api
-	depends embox.framework.LibFramework
-}
-
-module trivial_test {
-	source "trivial_test.c"
-
-	depends embox.kernel.sched.strategy.trivial
-	depends embox.framework.LibFramework
-}
-
 module priority_based_test {
 	source "priority_based_test.c"
 

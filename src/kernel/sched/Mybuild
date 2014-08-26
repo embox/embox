@@ -9,7 +9,7 @@ module sched {
 	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */
-	depends strategy.api
+	depends strategy.runq.api
 
 	@NoRuntime depends embox.kernel.thread.signal.lock_api
 	@NoRuntime depends embox.kernel.thread.signal_api

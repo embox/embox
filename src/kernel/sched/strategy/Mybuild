@@ -1,69 +1,28 @@
 package embox.kernel.sched.strategy
 
-@DefaultImpl(nosched)
-abstract module api {
-
-	depends runq_api
-}
-
-module nosched extends api {
-	source "nosched.h"
-
-	depends embox.kernel.sched.current.api
-	depends embox.kernel.sched.priority.none
-	depends embox.kernel.sched.affinity.none
-	depends TimeNone
-	depends NoRunq
-}
-
-
-module priority_based extends api {
-	source "sched_strategy.h"
+module priority_based {
 
 	depends embox.kernel.sched.affinity.affinity
 	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.priority
 
 	depends runq.prioq
-
-	depends Runq
 }
 
-module priority_based_smp extends api {
-	source "sched_strategy.h"
+module priority_based_smp {
 
 	depends embox.kernel.sched.affinity.affinity
 	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.priority
 
 	depends runq.list_array
-	depends Runq
 }
 
-module trivial extends api {
-	source "sched_strategy.h"
+module trivial {
 
 	depends embox.kernel.sched.affinity.affinity
 	depends embox.kernel.sched.timing.timing
 	depends embox.kernel.sched.priority.none
 
 	depends runq.list
-	depends Runq
 }
-
-@DefaultImpl(NoRunq)
-abstract module runq_api {
-
-}
-
-module NoRunq extends runq_api {
-	source "no_runq.c", "no_runq.h"
-}
-
-module Runq extends runq_api {
-	source "runq.h"
-
-	depends runq.api
-}
-
-
