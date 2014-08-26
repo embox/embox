@@ -68,14 +68,6 @@ static inline struct task * task_get_parent(const struct task *tsk) {
 	return NULL;
 }
 
-static inline void task_set_main(struct task *tsk,
-		struct thread *main_thread) {
-	assert(tsk == task_kernel_task());
-	assert(main_thread != NULL);
-	tsk->tsk_main = main_thread;
-	main_thread->task = tsk;
-}
-
 static inline task_priority_t task_get_priority(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return TASK_PRIORITY_DEFAULT;
@@ -115,6 +107,17 @@ static inline void __attribute__((noreturn)) task_exit(void *res) {
 static inline int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
+
+#if 0
+#include <kernel/thread/types.h>
+static inline void task_set_main(struct task *tsk,
+		struct thread *main_thread) {
+	assert(tsk == task_kernel_task());
+	assert(main_thread != NULL);
+	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
+}
+#endif
 
 __END_DECLS
 

@@ -10,6 +10,7 @@
 #include <hal/cpu.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
+#include <kernel/sched/schedee.h>
 
 #include <kernel/time/timer.h>
 #include <kernel/cpu/cpu.h>

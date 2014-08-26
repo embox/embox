@@ -1,5 +1,6 @@
 package embox.kernel.timer
 
+@DefaultImpl(sleep)
 abstract module sleep_api { }
 
 module sys_timer {

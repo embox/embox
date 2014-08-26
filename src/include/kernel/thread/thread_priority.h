@@ -9,6 +9,8 @@
 #ifndef KERNEL_THREAD_PRIORITY_H_
 #define KERNEL_THREAD_PRIORITY_H_
 
+#include <kernel/sched/sched_priority.h>
+
 #define THREAD_PRIORITY_MIN SCHED_PRIORITY_MIN
 #define THREAD_PRIORITY_MAX SCHED_PRIORITY_MAX
 

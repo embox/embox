@@ -6,9 +6,9 @@
  */
 
 #include <time.h>
-#include <kernel/thread.h>
 #include <kernel/task.h>
-#include <kernel/sched.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/thread/types.h>
 
 #include <kernel/sched/sched_timing.h>
 
