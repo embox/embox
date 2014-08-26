@@ -13,6 +13,7 @@
 #ifndef KERNEL_SCHED_SCHED_STRATEGY_H_
 #define KERNEL_SCHED_SCHED_STRATEGY_H_
 
+#if 1
 #include <module/embox/kernel/sched/strategy/api.h>
 
 #include <kernel/sched/sched_priority.h>
@@ -40,5 +41,6 @@ extern void runq_fini(struct runq *runq);
  */
 extern struct thread *runq_current(struct runq *runq);
 
+#endif
 
 #endif /* KERNEL_SCHED_SCHED_STRATEGY_H_ */

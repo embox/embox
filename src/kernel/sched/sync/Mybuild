@@ -4,6 +4,6 @@ module mutex {
 	source "mutex.c"
 	source "mutexattr.c"
 
-	depends embox.kernel.sched.strategy.priority_api
+	depends embox.kernel.sched.priority.priority
 	depends embox.kernel.sched.wait_queue
 }

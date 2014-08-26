@@ -12,6 +12,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/sched/current.h>
 #include <kernel/thread.h>
+#include <kernel/thread/priority_priv.h>
 #include <kernel/task.h>
 
 #include <module/embox/kernel/stack.h>

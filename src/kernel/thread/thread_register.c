@@ -10,6 +10,7 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/thread/thread_register.h>
+#include <kernel/thread/priority_priv.h>
 
 void thread_register(struct task *tsk, struct thread *t) {
 	sched_priority_t sched_prior;

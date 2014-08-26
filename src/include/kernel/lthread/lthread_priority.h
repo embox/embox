@@ -9,33 +9,19 @@
 
 #include <kernel/sched/sched_priority.h>
 
-#define LTHREAD_PRIORITY_MIN SCHED_PRIORITY_MAX - 255
+#define LTHREAD_PRIORITY_MIN SCHED_PRIORITY_MIN
 #define LTHREAD_PRIORITY_MAX SCHED_PRIORITY_MAX
 
 /** Total amount of valid priorities. */
 #define LTHREAD_PRIORITY_TOTAL \
 	(LTHREAD_PRIORITY_MAX - LTHREAD_PRIORITY_MIN + 1)
 
-#define LTHREAD_PRIORITY_NORMAL \
-	(LTHREAD_PRIORITY_MIN + LTHREAD_PRIORITY_MAX) / 2
-
-#define LTHREAD_PRIORITY_LOW  \
-	(LTHREAD_PRIORITY_MIN + LTHREAD_PRIORITY_NORMAL) / 2
-#define LTHREAD_PRIORITY_HIGH \
-	(LTHREAD_PRIORITY_MAX + LTHREAD_PRIORITY_NORMAL) / 2
-
 #define LTHREAD_PRIORITY_DEFAULT \
-	LTHREAD_PRIORITY_NORMAL
+	LTHREAD_PRIORITY_MAX
 
-extern int lthread_priority_init(struct lthread *lt, sched_priority_t priority);
-
-extern int lthread_priority_set(struct lthread *lt, sched_priority_t new_priority);
-
-extern sched_priority_t lthread_priority_get(struct lthread *lt);
-
-extern sched_priority_t lthread_priority_inherit(struct lthread *lt,
-		sched_priority_t priority);
-
-extern sched_priority_t lthread_priority_reverse(struct lthread *lt);
+static inline int lthread_priority_set(struct lthread *t, sched_priority_t new_priority) {
+	schedee_priority_set(&t->schedee.priority, new_priority);
+	return 0;
+}
 
 #endif /* KERNEL_LTHREAD_PRIORITY_H_ */

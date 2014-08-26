@@ -34,6 +34,8 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/thread/thread_priority.h>
+#include <kernel/thread/priority_priv.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
@@ -199,11 +201,6 @@ void thread_init(struct thread *t, unsigned int flags,
 		priority++;
 	}
 
-	/* setup thread priority. Now we have not started thread yet therefore we
-	 * just set both base and scheduling priority in default value.
-	 */
-	thread_priority_init(t, priority);
-
 	/* cpu context init */
 	/* setup stack pointer to the top of allocated memory
 	 * The structure of kernel thread stack follow:
@@ -221,7 +218,7 @@ void thread_init(struct thread *t, unsigned int flags,
 	sigstate_init(&t->sigstate);
 
 	/* Initializes scheduler strategy data of the thread */
-	schedee_init(&t->schedee);
+	schedee_init(&t->schedee, priority);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
@@ -411,8 +408,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(task_get_priority(t->task),
-			thread_priority_get(t));
+	return thread_priority_get(t);
 }
 
 clock_t thread_get_running_time(struct thread *t) {

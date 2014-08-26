@@ -15,7 +15,6 @@
 #include <kernel/sched/affinity.h>
 #include <kernel/sched/runq.h>
 #include <kernel/sched/sched_timing.h>
-#include <kernel/sched/sched_priority.h>
 #include <kernel/sched/schedee_priority.h>
 
 #include <kernel/sched/waitq.h>
@@ -51,20 +50,21 @@ struct schedee {
 
 	affinity_t        affinity;
 	sched_timing_t    sched_time;
-	schedee_priority_t thread_priority;
+	struct schedee_priority  priority;
 	int               policy;
 
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
 };
 
-static inline int schedee_init(struct schedee *schde) {
+static inline int schedee_init(struct schedee *schde, sched_priority_t priority) {
+	schedee_priority_init(&schde->priority, priority);
 	runq_item_init(&schde->runq_link);
 	sched_affinity_init(schde);
 	sched_timing_init(schde);
 	return 0;
 }
 
-extern int schedee_init(struct schedee *schdee);
+extern int schedee_init(struct schedee *schde, sched_priority_t priority);
 
 
 #endif /* _KERNEL_SCHEDEE_H_ */

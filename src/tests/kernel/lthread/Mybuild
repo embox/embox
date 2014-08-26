@@ -1,7 +1,7 @@
 package embox.test.kernel.lthread
 
 module lthread_test {
-	option number lthreads_quantity=256
+	option number lthreads_quantity=64
 	source "lthread_test.c"
 
 	depends embox.kernel.lthread.lthread

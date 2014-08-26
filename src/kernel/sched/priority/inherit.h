@@ -3,21 +3,23 @@
  *
  * @date Jul 15, 2013
  * @author: Anton Bondarev
+ * @author: Anton Kozlov
  */
 
-#include <kernel/sched/schedee.h>
+#ifndef SCHED_PRIORITY_INHERIT_H_
+#define SCHED_PRIORITY_INHERIT_H_
+
 #include <kernel/sched/schedee_priority.h>
+#include <kernel/sched/sched_lock.h>
 
-#include <kernel/sched/sched_priority.h>
-#include <kernel/sched/sched_strategy.h>
-#include <kernel/sched/runq.h>
-#include <kernel/task.h>
-#include <kernel/sched.h>
+struct schedee_priority {
+	short base_priority;      /**< Priority was set for the schedee. */
+	short current_priority;   /**< Current schedee scheduling priority. */
+};
 
-#define prior_field(field)   s->thread_priority.field
+#define prior_field(field)   p->field
 
-int schedee_priority_init(struct schedee *s, sched_priority_t new_priority) {
-	assert(s);
+static inline int schedee_priority_init(struct schedee_priority *p, sched_priority_t new_priority) {
 
 	prior_field(base_priority) = new_priority;
 	prior_field(current_priority) = new_priority;
@@ -25,8 +27,7 @@ int schedee_priority_init(struct schedee *s, sched_priority_t new_priority) {
 	return 0;
 }
 
-int schedee_priority_set(struct schedee *s, sched_priority_t new_priority) {
-	assert(s);
+static inline int schedee_priority_set(struct schedee_priority *p, sched_priority_t new_priority) {
 
 	sched_lock();
 	{
@@ -54,15 +55,13 @@ out:
 	return 0;
 }
 
-sched_priority_t schedee_priority_get(struct schedee *s) {
-	assert(s);
+static inline sched_priority_t schedee_priority_get(struct schedee_priority *p) {
 
 	return prior_field(current_priority);
 }
 
-sched_priority_t schedee_priority_inherit(struct schedee *s,
+static inline sched_priority_t schedee_priority_inherit(struct schedee_priority *p,
 		sched_priority_t priority) {
-	assert(s);
 
 	if(priority > prior_field(current_priority)) {
 		prior_field(current_priority) = priority;
@@ -71,10 +70,13 @@ sched_priority_t schedee_priority_inherit(struct schedee *s,
 	return prior_field(current_priority);
 }
 
-sched_priority_t schedee_priority_reverse(struct schedee *s) {
-	assert(s);
+static inline sched_priority_t schedee_priority_reverse(struct schedee_priority *p) {
 
 	prior_field(current_priority) = prior_field(base_priority);
 
 	return prior_field(current_priority);
 }
+
+#undef prior_field
+
+#endif /* SCHED_PRIORITY_INHERIT_H_ */
