@@ -272,6 +272,7 @@ void task_do_exit(struct task *task, int status) {
 	 */
 	dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
 		thread_terminate(thr);
+		thread_delete(thr);
 	}
 
 	/* At the end terminate main thread */

@@ -15,7 +15,6 @@ module core extends thread_mode {
 
 	source "core.c"
 	source "thread_allocator.c"
-	source "thread_register.c"
 	source "thread_switch.c"
 
 	@NoRuntime depends embox.kernel.sched.sched
@@ -39,30 +38,6 @@ module sched_wait {
 	source "thread_sched_wait.c"
 }
 
-
-/*module starter {
-	source "starter.c"
-	depends embox.kernel.task.kernel_task
-	@NoRuntime depends boot_thread
-	depends idle_thread
-	depends embox.kernel.time.jiffies
-	//depends thread_local
-}
-
-module boot_thread {
-	source "boot_thread.c"
-	@NoRuntime depends embox.kernel.task.kernel_task
-	depends embox.kernel.sched.current.api
-}
-
-module idle_thread {
-	source "idle_thread.c"
-	@NoRuntime depends core
-	depends thread_local // FIXME
-	depends embox.kernel.cpu.common
-	@NoRuntime depends embox.kernel.task.kernel_task
-}
-*/
 @DefaultImpl(signal)
 abstract module signal_api { }
 

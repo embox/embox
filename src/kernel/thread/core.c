@@ -32,7 +32,6 @@
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/thread/thread_priority.h>
 #include <kernel/thread/priority_priv.h>
@@ -133,7 +132,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			thread_register(task_self(), t);
+			task_thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -187,7 +186,9 @@ void thread_init(struct thread *t, sched_priority_t priority,
 
 	t->id = id_counter++; /* setup thread ID */
 
-	dlist_init(&t->thread_link); /* default unlink value */
+	dlist_head_init(&t->thread_link); /* default unlink value */
+
+	t->task = NULL;
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
@@ -241,7 +242,7 @@ void thread_delete(struct thread *t) {
 	assert(t);
 	assert(t->state & TS_EXITED);
 
-	thread_unregister(t->task, t);
+	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 
 	if (zombie) {

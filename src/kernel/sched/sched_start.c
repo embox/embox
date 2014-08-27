@@ -43,12 +43,16 @@ static struct thread *boot_thread_create(void) {
 static int sched_start_init(void) {
 	struct thread *current;
 	struct thread *idle;
+	int err;
 
 	current = boot_thread_create(); /* 'init' thread ID=1 */
 	assert(current != NULL);
+	err = sched_init(&current->schedee);
 
-	idle = idle_thread_create(); /* idle thread always has ID=0 */
-	assert(idle != NULL);
+	if (err == 0) {
+		idle = idle_thread_create(); /* idle thread always has ID=0 */
+		assert(idle != NULL);
+	}
 
-	return sched_init(&current->schedee);
+	return err;
 }

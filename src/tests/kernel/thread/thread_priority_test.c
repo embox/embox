@@ -10,7 +10,6 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
-#include <kernel/thread/thread_register.h>
 #include <kernel/time/ktime.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
@@ -36,7 +35,7 @@ TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				thread_run, (void *) i);
 		test_assert_zero(err(t));
-		thread_register(task_kernel_task(), t);
+		task_thread_register(task_kernel_task(), t);
 		test_assert_zero(thread_set_priority(t, i));
 		test_assert_zero(thread_detach(t));
 		test_assert_zero(thread_launch(t));
