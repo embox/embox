@@ -8,9 +8,11 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 
 #include <mem/mmap.h>
 #include <mem/vmem.h>
+
 
 #include <mem/mapping/marea.h>
 
@@ -119,6 +121,20 @@ void* mmap_create_heap(struct emmap *mmap) {
 }
 #endif
 
+static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
+	vmem_page_flags_t vmem_page_flags = 0;
+	if (flags & PROT_WRITE) {
+		vmem_page_flags |= VMEM_PAGE_WRITABLE;
+	}
+	if (flags & PROT_EXEC) {
+		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
+	}
+	if (flags & ~PROT_NOCACHE) {
+		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
+	}
+	return vmem_page_flags;
+}
+
 #define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
 int mmap_mapping(struct emmap *emmap) {
 	struct marea *marea;
@@ -126,7 +142,7 @@ int mmap_mapping(struct emmap *emmap) {
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 		size_t len = mmu_size_align(marea->end - marea->start);
 
-		vmem_map_region(emmap->ctx, marea->start, marea->start, len,  marea->flags);
+		vmem_map_region(emmap->ctx, marea->start, marea->start, len,  marea_to_vmem_flags(marea->flags));
 	}
 
 	return 0;
