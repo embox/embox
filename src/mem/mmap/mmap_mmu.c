@@ -17,7 +17,8 @@
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
 
-static const uint32_t mem_start = 0x04000000;
+//static const uint32_t mem_start = 0x04000000;
+static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
 

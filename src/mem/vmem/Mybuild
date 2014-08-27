@@ -27,3 +27,7 @@ module vmem_alloc {
 	depends embox.mem.page_api
 	depends embox.arch.mmu
 }
+
+module vmem_starter {
+	source "vmem_starter.c"
+}

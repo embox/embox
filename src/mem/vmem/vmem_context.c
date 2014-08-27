@@ -40,7 +40,8 @@ int vmem_init_context(mmu_ctx_t *ctx) {
 		return err;
 	}
 
-	return vmem_map_kernel(*ctx);
+	return 0;
+	//return vmem_map_kernel(*ctx);
 }
 
 void vmem_free_context(mmu_ctx_t ctx) {

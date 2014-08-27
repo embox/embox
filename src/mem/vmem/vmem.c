@@ -72,6 +72,9 @@ int vmem_map_kernel(mmu_ctx_t ctx) {
 	err |= vmem_map_on_itself(ctx, (void *) 0x84000000, (size_t) 0x1000,
 			VMEM_PAGE_WRITABLE);
 
+	// mapping x86 video buffer
+//	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000,
+//			VMEM_PAGE_WRITABLE);
 
 	// map phymem
 	phymem_len = phymem_alloc_end - phymem_alloc_start;
