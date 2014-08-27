@@ -82,14 +82,14 @@ int vmem_map_kernel(void) {
 	// for microblaze
 	err |= vmem_map_on_itself(ctx, (void *) 0x84000000, (size_t) 0x1000,
 			VMEM_PAGE_WRITABLE);
-#endif
-	// mapping x86 video buffer
-//	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000,
-//			VMEM_PAGE_WRITABLE);
 
+	// mapping x86 video buffer
+	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000,
+			VMEM_PAGE_WRITABLE);
+#endif
 	// map phymem
 	phymem_len = phymem_alloc_end - phymem_alloc_start;
-	err |= vmem_kernel_map_marea(phymem_alloc_start, phymem_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_kernel_map_marea(phymem_alloc_start, phymem_len, PROT_WRITE | PROT_READ);
 
 	return err;
 }

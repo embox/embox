@@ -31,7 +31,7 @@ void *mmap_device_memory(void *addr,
 		emmap = task_self_resource_mmap();
 	}
 
-	marea = marea_create(physical, len + physical, flags);
+	marea = marea_create(physical, len + physical, prot);
 	if (NULL == marea) {
 		return NULL;
 	}
