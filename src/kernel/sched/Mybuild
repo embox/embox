@@ -15,20 +15,20 @@ module sched {
 
 	depends schedee
 
-	@NoRuntime depends embox.kernel.thread.signal.lock_api
-	@NoRuntime depends embox.kernel.thread.signal_api
-	@NoRuntime depends embox.compat.posix.util.time
-	@NoRuntime depends embox.kernel.critical
-	@NoRuntime depends embox.profiler.trace
+	depends embox.kernel.thread.signal.lock_api
+	depends embox.kernel.thread.signal_api
+	depends embox.compat.posix.util.time
+	depends embox.kernel.critical
+	depends embox.profiler.trace
 
-	@NoRuntime depends sched_ticker
-	@NoRuntime depends wait_queue
+	depends sched_ticker
+	depends wait_queue
 
 	//XXX kernel/thread.h included
 	depends embox.kernel.thread.thread_wait
 
 	depends embox.kernel.lthread.lthread_api
-	@NoRuntime depends embox.kernel.sched.current.api
+	depends embox.kernel.sched.current.api
 }
 
 module schedee {
