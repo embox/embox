@@ -24,7 +24,10 @@ static struct emmap early_emmap = {
 };
 
 extern int mmap_mapping(struct emmap *emmap);
+extern int vmem_map_kernel(void);
+
 int mmap_kernel_init(void) {
+	int ret;
 	struct marea *marea;
 	struct emmap *emmap;
 
@@ -35,6 +38,9 @@ int mmap_kernel_init(void) {
 		dlist_add_next(&marea->mmap_link, &emmap->marea_list);
 	}
 	early_emmap.ctx = -1;
+
+	ret = vmem_map_kernel();
+	assert(ret == 0);
 
 	mmap_mapping(emmap);
 
