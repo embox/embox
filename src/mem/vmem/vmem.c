@@ -5,6 +5,7 @@
  * @date 05.10.2012
  * @author Anton Bulychev
  */
+#include <sys/mman.h>
 
 #include <embox/unit.h>
 
@@ -60,13 +61,13 @@ int vmem_map_kernel(void) {
 
 	/* Map sections. */
 	err |= vmem_kernel_map_marea(&_text_vma, (size_t) &_text_len,
-			VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE);
+			PROT_WRITE | PROT_READ | VMEM_PAGE_EXECUTABLE);
 	err |= vmem_kernel_map_marea(&_data_vma, (size_t) &_data_len,
-			VMEM_PAGE_WRITABLE);
+			PROT_WRITE | PROT_READ);
 	err |= vmem_kernel_map_marea(&_rodata_vma, (size_t) &_rodata_len,
-			VMEM_PAGE_WRITABLE);
+			PROT_READ);
 	err |= vmem_kernel_map_marea(&_bss_vma, (size_t) &_bss_len_with_reserve,
-			VMEM_PAGE_WRITABLE);
+			PROT_WRITE | PROT_READ);
 
 #if 0
 	// XXX below

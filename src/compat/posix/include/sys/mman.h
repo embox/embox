@@ -17,14 +17,14 @@
 __BEGIN_DECLS
 
 #define PROT_NONE     0x00
-#define PROT_READ     0x10
-#define PROT_WRITE    0x20
-#define PROT_EXEC     0x40
+#define PROT_READ     0x01
+#define PROT_WRITE    0x02
+#define PROT_EXEC     0x04
 
-#define MAP_SHARED    0x1
-#define MAP_PRIVATE   0x2
-#define MAP_FIXED     0x4
-#define MAP_ANONYMOUS 0x8
+#define MAP_SHARED    0x10
+#define MAP_PRIVATE   0x20
+#define MAP_FIXED     0x40
+#define MAP_ANONYMOUS 0x80
 
 #define MAP_FAILED (void*)-1
 
