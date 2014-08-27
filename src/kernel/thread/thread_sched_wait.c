@@ -16,15 +16,6 @@
 
 #include <kernel/thread.h>
 
-
-void sched_wait_prepare(void) {
-	sched_wait_prepare_schedee();
-}
-
-void sched_wait_cleanup(void) {
-	sched_wait_cleanup_schedee();
-}
-
 static int sched_intr(int res) {
 	struct thread *t = thread_self();
 	struct sigstate *sigst = &t->sigstate;

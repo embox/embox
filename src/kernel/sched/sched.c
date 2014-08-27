@@ -408,3 +408,17 @@ static void sched_preempt(void) {
 	__schedule(1);
 	sched_unlock();
 }
+
+void sched_wait_prepare(void) {
+	struct schedee *s = schedee_get_current();
+
+	// TODO SMP barrier? -- Eldar
+	s->waiting = true;
+}
+
+void sched_wait_cleanup(void) {
+	struct schedee *s = schedee_get_current();
+
+	s->waiting = false;
+	// TODO SMP barrier? -- Eldar
+}

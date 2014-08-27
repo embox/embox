@@ -1,12 +1,15 @@
 package embox.kernel.sched
 
-module core {
+module sched {
+	source "sched_start.c"
+	source "idle_thread.c"
+
+	depends embox.kernel.task.kernel_task
+
 	source "sched.c"
 	depends embox.kernel.addr_space
 
 	source "sched_signal.c"
-
-	source "sched_wait.c"
 
 	depends embox.arch.context /* context_switch */
 
@@ -26,16 +29,6 @@ module core {
 
 	depends embox.kernel.lthread.lthread_api
 	@NoRuntime depends embox.kernel.sched.current.api
-
-}
-
-module sched {
-	source "sched_start.c"
-	source "idle_thread.c"
-
-	depends embox.kernel.task.kernel_task
-
-	depends core
 }
 
 module schedee {

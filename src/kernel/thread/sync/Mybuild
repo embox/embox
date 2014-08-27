@@ -16,7 +16,7 @@ module mutex {
 	depends embox.kernel.sched.wait_queue
 
 	depends embox.kernel.sched.mutex
-	depends embox.kernel.thread.sched_wait
+	depends embox.kernel.sched.sched
 }
 
 module sem {
