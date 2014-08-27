@@ -1,0 +1,21 @@
+package embox.cmd
+
+@Cmd(name = "sound",
+	help = "Play sound",
+	man = '''
+		NAME
+			sound - play some sound
+		SYNOPSIS
+			sound
+		DESCRIPTION
+		OPTIONS
+		AUTHORS
+			Ilia Vaprol
+	''')
+@BuildDepends(third_party.bsp.st_f4)
+module sound {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/")
+	source "sound.c"
+
+	depends third_party.bsp.st_f4
+}
