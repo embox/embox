@@ -13,7 +13,6 @@
 
 #include <kernel/sched/runq.h>
 #include <kernel/sched/affinity.h>
-#include <kernel/sched/runq.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/schedee_priority.h>
 

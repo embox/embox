@@ -72,16 +72,20 @@ int sched_init(struct schedee *current) {
 	sched_wakeup(idle);
 #endif
 
-	current->ready = true;
-	current->active = true;
-	current->waiting = false;
-
-	assert(schedee_get_current() == NULL);
-	schedee_set_current(current);
+	sched_set_current(current);
 
 	sched_ticker_init();
 
 	return 0;
+}
+
+void sched_set_current(struct schedee *schedee) {
+	assert(schedee_get_current() == NULL);
+	__schedee_set_current(schedee);
+
+	schedee->ready = true;
+	schedee->active = true;
+	schedee->waiting = false;
 }
 
 static void sched_check_preempt(struct schedee *t) {

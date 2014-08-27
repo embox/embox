@@ -32,7 +32,7 @@ void runq_init(runq_t *queue) {
 
 void runq_insert(runq_t *queue, struct schedee *schedee) {
 	dlist_add_prev(&schedee->runq_link,
-			&queue->list[schedee_priority_get(schedee)]);
+			&queue->list[schedee_priority_get(&schedee->priority)]);
 }
 
 void runq_remove(runq_t *queue, struct schedee *schedee) {
@@ -50,7 +50,7 @@ struct schedee *runq_extract(runq_t *queue) {
 			/* Checking the affinity */
 			unsigned int mask = 1 << cpu_get_id();
 
-			if (sched_affinity_check(s, mask)) {
+			if (sched_affinity_check(&s->affinity, mask)) {
 				schedee = s;
 				break;
 			}

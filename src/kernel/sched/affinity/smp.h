@@ -8,6 +8,8 @@
 #ifndef SMP_AFFINITY_H_
 #define SMP_AFFINITY_H_
 
-typedef int __affinity_t;
+struct affinity {
+	int mask;
+};
 
 #endif /* SMP_AFFINITY_H_ */

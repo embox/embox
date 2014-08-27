@@ -8,8 +8,6 @@
 #ifndef SCHED_TIMING_H_
 #define SCHED_TIMING_H_
 
-#include <time.h>
-
 #include <module/embox/kernel/sched/timing/timing.h>
 
 struct sched_timing;
