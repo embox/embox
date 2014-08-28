@@ -1,6 +1,6 @@
 diff -uar ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.c STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.c
 --- ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.c	2013-03-07 04:51:14.000000000 +0400
-+++ STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.c	2014-08-27 19:24:27.283632024 +0400
++++ STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.c	2014-08-28 17:26:19.040768948 +0400
 @@ -309,8 +309,14 @@
    * @param  AudioFreq: Audio frequency used to play the audio stream.
    * @retval 0 if correct communication, else wrong communication
@@ -16,16 +16,7 @@ diff -uar ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-D
    /* Perform low layer Codec initialization */
    if (Codec_Init(OutputDevice, VOLUME_CONVERT(Volume), AudioFreq) != 0)
    {
-@@ -352,6 +358,8 @@
-   */
- uint32_t EVAL_AUDIO_Play(uint16_t* pBuffer, uint32_t Size)
- {
-+  //DMA_Cmd(AUDIO_MAL_DMA_STREAM, DISABLE);
-+
-   /* Set the total number of data to be played (count in half-word) */
-   AudioTotalSize = Size;
- 
-@@ -514,7 +522,7 @@
+@@ -514,7 +520,7 @@
   #elif defined(AUDIO_MAL_MODE_CIRCULAR)
      /* Manage the remaining file size and new address offset: This function 
         should be coded by user (its prototype is already declared in stm32f4_discovery_audio_codec.h) */  
@@ -34,7 +25,7 @@ diff -uar ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-D
      
      /* Clear the Interrupt flag */
      DMA_ClearFlag(AUDIO_MAL_DMA_STREAM, AUDIO_MAL_DMA_FLAG_TC);
-@@ -1506,7 +1514,7 @@
+@@ -1506,7 +1512,7 @@
    {
      /* Configure the buffer address and size */
      DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)Addr;
@@ -43,3 +34,24 @@ diff -uar ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-D
      
      /* Configure the DMA Stream with the new parameters */
      DMA_Init(AUDIO_MAL_DMA_STREAM, &DMA_InitStructure);
+diff -uar ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.h STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.h
+--- ../../../../../download/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.h	2013-03-07 04:51:14.000000000 +0400
++++ STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/stm32f4_discovery_audio_codec.h	2014-08-28 17:24:26.794346821 +0400
+@@ -57,14 +57,14 @@
+ //#define I2S_INTERRUPT                 /* Uncomment this line to enable audio transfert with I2S interrupt*/ 
+ 
+ /* Audio Transfer mode (DMA, Interrupt or Polling) */
+-#define AUDIO_MAL_MODE_NORMAL         /* Uncomment this line to enable the audio 
++/* #define AUDIO_MAL_MODE_NORMAL   */ /* Uncomment this line to enable the audio 
+                                          Transfer using DMA */
+-/* #define AUDIO_MAL_MODE_CIRCULAR */ /* Uncomment this line to enable the audio 
++#define AUDIO_MAL_MODE_CIRCULAR       /* Uncomment this line to enable the audio 
+                                          Transfer using DMA */
+ 
+ /* For the DMA modes select the interrupt that will be used */
+ #define AUDIO_MAL_DMA_IT_TC_EN        /* Uncomment this line to enable DMA Transfer Complete interrupt */
+-/* #define AUDIO_MAL_DMA_IT_HT_EN */  /* Uncomment this line to enable DMA Half Transfer Complete interrupt */
++#define AUDIO_MAL_DMA_IT_HT_EN        /* Uncomment this line to enable DMA Half Transfer Complete interrupt */
+ /* #define AUDIO_MAL_DMA_IT_TE_EN */  /* Uncomment this line to enable DMA Transfer Error interrupt */
+ 
+ /* Select the interrupt preemption priority and subpriority for the DMA interrupt */
