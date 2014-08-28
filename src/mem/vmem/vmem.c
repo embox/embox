@@ -61,7 +61,7 @@ int vmem_map_kernel(void) {
 
 	/* Map sections. */
 	err |= vmem_kernel_map_marea(&_text_vma, (size_t) &_text_len,
-			PROT_WRITE | PROT_READ | VMEM_PAGE_EXECUTABLE);
+			PROT_WRITE | PROT_READ | PROT_EXEC);
 	err |= vmem_kernel_map_marea(&_data_vma, (size_t) &_data_len,
 			PROT_WRITE | PROT_READ);
 	err |= vmem_kernel_map_marea(&_rodata_vma, (size_t) &_rodata_len,
