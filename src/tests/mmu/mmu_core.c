@@ -57,7 +57,7 @@ TEST_CASE("Writing to read-only memory should cause exception."
 
 	test_assert_equal(exception_flag, 1);
 
-	test_assert_equal(*((volatile uint32_t *) paddr), UNIQ_VAL);
+	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL);
 
 	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 }
