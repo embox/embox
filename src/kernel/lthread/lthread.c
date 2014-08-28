@@ -35,13 +35,12 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 
 	/* lthread is not in runq, it can be waken up again. */
 	next->ready = false;
+	next->waiting = true;
 
 	/* We have to restore ipl as soon as possible. */
 	ipl_restore(ipl);
 
 	lt->run_ret = next->run(next->run_arg);
-
-	next->waiting = true;
 
 	return SCHEDEE_REPEAT;
 }
