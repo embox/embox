@@ -129,7 +129,7 @@ static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 	if (flags & PROT_EXEC) {
 		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
 	}
-	if (flags & ~PROT_NOCACHE) {
+	if (!(flags & PROT_NOCACHE)) {
 		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
 	}
 	return vmem_page_flags;
