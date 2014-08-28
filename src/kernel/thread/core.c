@@ -396,9 +396,7 @@ void thread_yield(void) {
 
 int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// sched_priority_t prior;
-
 	assert(t);
-	assert(t->task);
 
 	if ((new_priority < THREAD_PRIORITY_MIN)
 			|| (new_priority > THREAD_PRIORITY_MAX)) {

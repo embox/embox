@@ -8,6 +8,8 @@ module core {
 	source "thread_allocator.c"
 	source "thread_switch.c"
 
+	depends sched_wait
+
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
 

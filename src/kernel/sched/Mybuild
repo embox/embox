@@ -4,6 +4,7 @@ module sched {
 	source "sched_start.c"
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.lthread.lthread
+	depends embox.kernel.thread.core
 
 	source "sched.c"
 	depends embox.kernel.addr_space

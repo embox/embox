@@ -367,11 +367,11 @@ static void __schedule(int preempt) {
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
-	/* In SMP kernel starting from this point and until clearing
-	 * prev->active state (which is done by '__sched_deactivate')
-	 * any CPU waking prev will move it to TW_SMP_WAKING state
-	 * without really waking it up.
-	 * 'sched_finish_switch' will sort out what to do in such case. */
+		/* In SMP kernel starting from this point and until clearing
+		 * prev->active state (which is done by '__sched_deactivate')
+		 * any CPU waking prev will move it to TW_SMP_WAKING state
+		 * without really waking it up.
+		 * 'sched_finish_switch' will sort out what to do in such case. */
 	else
 		__sched_enqueue(prev);
 

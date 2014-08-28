@@ -40,6 +40,7 @@ void runq_remove(runq_t *queue, struct schedee *schedee) {
 }
 
 struct schedee *runq_extract(runq_t *queue) {
+	const unsigned int mask = 1 << cpu_get_id();
 	struct schedee *schedee = NULL;
 	int i;
 
@@ -48,7 +49,6 @@ struct schedee *runq_extract(runq_t *queue) {
 
 		dlist_foreach_entry(s, &queue->list[i], runq_link) {
 			/* Checking the affinity */
-			unsigned int mask = 1 << cpu_get_id();
 
 			if (sched_affinity_check(&s->affinity, mask)) {
 				schedee = s;
