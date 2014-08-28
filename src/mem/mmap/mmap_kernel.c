@@ -16,9 +16,11 @@
 #include <module/embox/mem/mmap_mmu.h>
 
 static struct emmap early_emmap = {
+#if 0
 	NULL,
 	NULL,
 	NULL,
+#endif
 	0,
 	DLIST_INIT(early_emmap.marea_list)
 };

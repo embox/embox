@@ -30,8 +30,8 @@ void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 
 void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
-	mmap->stack_marea = NULL;
-	mmap->heap_marea = NULL;
+	//mmap->stack_marea = NULL;
+	//mmap->heap_marea = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
 }
@@ -104,22 +104,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 	return NULL;
 }
-#if 0
-uint32_t mmap_create_stack(struct emmap *mmap) {
-	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
 
-	if (!mmap->stack_marea) {
-		return 0;
-	}
-
-	return mmap->stack_marea->end;
-}
-
-void* mmap_create_heap(struct emmap *mmap) {
-	//TODO: stub
-	return NULL;
-}
-#endif
 
 static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 	vmem_page_flags_t vmem_page_flags = 0;

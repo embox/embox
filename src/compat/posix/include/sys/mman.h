@@ -28,11 +28,11 @@ __BEGIN_DECLS
 
 #define MAP_FAILED (void*)-1
 
-//extern void  *mmap(void *, size_t, int, int, int, off_t);
+extern void  *mmap(void *, size_t, int, int, int, off_t);
 extern int    mprotect(void *, size_t, int);
-//extern int    munmap(void *, size_t);
+extern int    munmap(void *, size_t);
+#if 0
 #include <errno.h>
-
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	// ToDo: implement for InitFS files
 	(void)addr;
@@ -54,7 +54,7 @@ static inline int munmap(void *addr, size_t size) {
 	errno = EPERM;
 	return -1;
 }
-
+#endif
 
 /* QNX */
 

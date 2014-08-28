@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include <lib/libelf.h>
 #include <kernel/usermode.h>
@@ -168,7 +169,8 @@ static int load_interp(char *filename, exec_t *exec) {
 		return -ENOMEM;
 	}
 
-	base_addr = marea_get_start(marea);
+	//base_addr = marea_get_start(marea);
+	base_addr = marea->start;
 
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
@@ -195,7 +197,8 @@ static int load_exec(const char *filename, exec_t *exec) {
 	size_t size;
 	Elf32_Phdr *ph_table;
 	Elf32_Phdr *ph;
-	struct marea *marea;
+	//struct marea *marea;
+	void *pa;
 	int err;
 	char interp[255];
 	int has_interp = 0;
@@ -241,17 +244,23 @@ static int load_exec(const char *filename, exec_t *exec) {
 		if (ph->p_type != PT_LOAD) {
 			continue;
 		}
+		pa = mmap((void *)ph->p_vaddr, ph->p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_FIXED, 0, 0);
+		if (MAP_FAILED == pa) {
+			free(ph_table);
+			return -1;
+		}
 
+#if 0
 		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
 
 		if (!marea) {
 			free(ph_table);
 			return -ENOMEM;
 		}
-
+#endif
 		if ((err = elf_read_segment(fd, ph, (void *) ph->p_vaddr))) {
 			free(ph_table);
-			return err;;
+			return err;
 		}
 	}
 
@@ -289,10 +298,7 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 
 	emmap = task_self_resource_mmap();
 	stack = mmap_userspace_create(emmap, 0x1000);
-#if 0
-	stack = mmap_create_stack(emmap);
-	mmap_create_heap(task_self_resource_mmap());
-#endif
+
 
 	fill_stack(&stack, &exec, argv, envp);
 
