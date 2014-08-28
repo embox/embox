@@ -3,7 +3,7 @@
 
 //#include <linux/types.h>
 //#include <linux/compiler.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 /*
  * casts are necessary for constants, because we never know how for sure
