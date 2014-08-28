@@ -13,32 +13,12 @@
 #ifndef KERNEL_SCHED_SCHED_STRATEGY_H_
 #define KERNEL_SCHED_SCHED_STRATEGY_H_
 
-#include <module/embox/kernel/sched/strategy/api.h>
+#include <kernel/sched/runq.h>
+#include <kernel/spinlock.h>
 
-#include <kernel/sched/sched_priority.h>
-
-struct schedee;
-struct thread;
-
-struct runq;				/* Queue of running threads  */
-
-#if 0
-/**
- * Finilize queue of running threads.
- *
- * @param runq
- *   Running queue.
- */
-extern void runq_fini(struct runq *runq);
-#endif
-
-/**
- * Returns pointer to the currently executing thread.
- *
- * @param runq
- *   Running queue.
- */
-extern struct thread *runq_current(struct runq *runq);
-
+struct runq {
+	runq_t queue;
+	spinlock_t lock;
+};
 
 #endif /* KERNEL_SCHED_SCHED_STRATEGY_H_ */

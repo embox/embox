@@ -103,9 +103,6 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 	int ret = 0;
 
-	assert((void *)(&ret + 1) >= (void *)(thread_self() + 1),
-			"stack overflow"); /* FIXME temporarily */
-
 	threadsig_lock();
 	{
 

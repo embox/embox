@@ -11,19 +11,10 @@
 #include <kernel/sched.h>
 #include <kernel/time/timer.h>
 
-#include <kernel/schedee/current.h>
-#include <kernel/schedee/schedee.h>
+#include <kernel/sched/current.h>
+#include <kernel/sched/schedee.h>
 
 #include <kernel/thread.h>
-
-
-void sched_wait_prepare(void) {
-	sched_wait_prepare_schedee();
-}
-
-void sched_wait_cleanup(void) {
-	sched_wait_cleanup_schedee();
-}
 
 static int sched_intr(int res) {
 	struct thread *t = thread_self();

@@ -32,11 +32,12 @@
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/thread_register.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/thread/thread_priority.h>
+#include <kernel/thread/priority_priv.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -70,8 +71,29 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	/* NOTREACHED */
 }
 
+static sched_priority_t thread_priority_by_flags(unsigned int flags) {
+	sched_priority_t priority;
+
+	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
+		priority = thread_priority_get(thread_self());
+	} else {
+		priority = THREAD_PRIORITY_DEFAULT;
+	}
+
+	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
+			&& (priority > THREAD_PRIORITY_MIN)) {
+		priority--;
+	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
+			&& (priority < THREAD_PRIORITY_HIGH)) {
+		priority++;
+	}
+
+	return priority;
+}
+
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
 	struct thread *t;
+	sched_priority_t priority;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
@@ -88,6 +110,11 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		return err_ptr(EINVAL);
 	}
 
+	/* calculate current thread priority. It can be change later with
+	 * thread_set_priority () function
+	 */
+	priority = thread_priority_by_flags(flags);
+
 	/* below we will work with thread's instances and therefore we need to
 	 * lock scheduler (disable scheduling) to our structures is not be
 	 * corrupted
@@ -101,11 +128,11 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		}
 
 		/* initialize internal thread structure */
-		thread_init(t, flags, run, arg);
+		thread_init(t, priority, run, arg);
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			thread_register(task_self(), t);
+			task_thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -149,10 +176,8 @@ static int thread_process(struct schedee *prev, struct schedee *next,
 	return SCHEDEE_EXIT;
 }
 
-
-void thread_init(struct thread *t, unsigned int flags,
+void thread_init(struct thread *t, sched_priority_t priority,
 		void *(*run)(void *), void *arg) {
-	sched_priority_t priority;
 
 	assert(t);
 	assert(run);
@@ -161,48 +186,20 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->id = id_counter++; /* setup thread ID */
 
-	dlist_init(&t->thread_link); /* default unlink value */
+	dlist_head_init(&t->thread_link); /* default unlink value */
+
+	t->task = NULL;
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
-	t->schedee.lock = SPIN_UNLOCKED;
-	t->schedee.ready = false;
-	t->schedee.active = false;
-	t->schedee.waiting = true;
+
 	t->state = TS_INIT;
 
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
 		panic("can't initialize thread_local");
 	}
 
-	/* set executive function and arguments pointer */
-	t->schedee.process = thread_process;
-	t->schedee.run = run;
-	t->schedee.run_arg = arg;
-
 	t->joining = NULL;
-
-	/* calculate current thread priority. It can be change later with
-	 * thread_set_priority () function
-	 */
-	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		priority = thread_priority_get(thread_self());
-	} else {
-		priority = THREAD_PRIORITY_DEFAULT;
-	}
-
-	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (priority > THREAD_PRIORITY_MIN)) {
-		priority--;
-	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
-			&& (priority < THREAD_PRIORITY_HIGH)) {
-		priority++;
-	}
-
-	/* setup thread priority. Now we have not started thread yet therefore we
-	 * just set both base and scheduling priority in default value.
-	 */
-	thread_priority_init(t, priority);
 
 	/* cpu context init */
 	/* setup stack pointer to the top of allocated memory
@@ -220,22 +217,32 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	sigstate_init(&t->sigstate);
 
-	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&(t->schedee.sched_attr.runq_link));
-	sched_affinity_init(&(t->schedee));
-	sched_timing_init(&t->schedee);
+	schedee_init(&t->schedee, priority, thread_process, run, arg);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
 }
 
+struct thread *thread_init_stack(void *stack, size_t stack_sz,
+	       	sched_priority_t priority, void *(*run)(void *), void *arg) {
+	struct thread *thread = stack; /* Allocating at the bottom */
+
+	/* Stack setting up */
+	thread_stack_init(thread, stack_sz);
+
+	/* General initialization and task setting up */
+	thread_init(thread, priority, run, arg);
+
+	return thread;
+
+}
 void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
 	assert(t->state & TS_EXITED);
 
-	thread_unregister(t->task, t);
+	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 
 	if (zombie) {
@@ -389,9 +396,7 @@ void thread_yield(void) {
 
 int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// sched_priority_t prior;
-
 	assert(t);
-	assert(t->task);
 
 	if ((new_priority < THREAD_PRIORITY_MIN)
 			|| (new_priority > THREAD_PRIORITY_MAX)) {
@@ -413,8 +418,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(task_get_priority(t->task),
-			thread_priority_get(t));
+	return thread_priority_get(t);
 }
 
 clock_t thread_get_running_time(struct thread *t) {

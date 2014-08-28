@@ -1,0 +1,17 @@
+package embox.kernel.sched.priority
+
+@DefaultImpl(inherit)
+abstract module priority { }
+
+module inherit extends priority {
+	source "inherit.h"
+}
+
+module simple extends priority {
+	source "simple.h"
+}
+
+module none extends priority {
+	source "none.h"
+}
+

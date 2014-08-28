@@ -17,9 +17,9 @@
 
 #include <hal/arch.h>
 
+#include <kernel/panic.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/thread.h>
-#include <kernel/thread/thread_register.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/spinlock.h>
@@ -34,14 +34,16 @@
 EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
-extern struct thread *thread_init_self(void *stack, size_t stack_sz,
-		sched_priority_t priority);
 extern void idt_load(void);
 
 static char ap_stack[NCPU][THREAD_STACK_SIZE]
 		__attribute__((aligned(THREAD_STACK_SIZE)));
 static int ap_ack;
 static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
+
+static void *bs_idle_run(void *arg) {
+	panic("%s runned\n", __func__);
+}
 
 void startup_ap(void) {
 	struct thread *bs_idle;
@@ -52,12 +54,12 @@ void startup_ap(void) {
 	idt_load();
 	lapic_enable();
 
-	bs_idle = thread_init_self(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
-			THREAD_PRIORITY_MIN);
-
-	thread_register(task_kernel_task(), bs_idle);
-
+	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
+			THREAD_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
+	task_thread_register(task_kernel_task(), bs_idle);
+	sched_set_current(&bs_idle->schedee);
+
 	ap_ack = 1;
 
 	__spin_unlock(&startup_lock);

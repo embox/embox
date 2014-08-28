@@ -3,5 +3,5 @@ package stm32vl.test
 module blinking_led {
 	source "blinking_led.c"
 	depends embox.driver.gpio.stm32
-	depends embox.kernel.timer.sys_timer
+	depends embox.compat.posix.util.sleep
 }

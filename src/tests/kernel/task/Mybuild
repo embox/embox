@@ -8,7 +8,7 @@ module multitask_test {
 	@NoRuntime depends embox.framework.test
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.multi
-	depends embox.kernel.thread.thread_mode
+	depends embox.kernel.thread.core
 	depends embox.kernel.task.syslib.waitpid
 }
 

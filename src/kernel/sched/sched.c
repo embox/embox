@@ -33,11 +33,8 @@
 #include <kernel/spinlock.h>
 #include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/thread.h>
-#include <kernel/lthread/lthread.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
-#include <kernel/thread/signal.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 
 #include <embox/unit.h>
 
@@ -65,25 +62,36 @@ static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-int sched_init(struct schedee *idle, struct schedee *current) {
-	assert(idle && current);
-
-	assert(schedee_get_current() == current);
+int sched_init(struct schedee *current) {
 
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
 
+#if 0
 	assert(idle->waiting); // XXX
 	sched_wakeup(idle);
+#endif
+
+	sched_set_current(current);
 
 	sched_ticker_init();
 
 	return 0;
 }
 
+void sched_set_current(struct schedee *schedee) {
+	assert(schedee_get_current() == NULL);
+	__schedee_set_current(schedee);
+
+	schedee->ready = true;
+	schedee->active = true;
+	schedee->waiting = false;
+}
+
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (schedee_priority_get(schedee_get_current()) < schedee_priority_get(t))
+	if (schedee_priority_get(&schedee_get_current()->priority) <
+			schedee_priority_get(&t->priority))
 		sched_post_switch(); // TODO SMP
 }
 
@@ -124,7 +132,7 @@ int sched_change_priority(struct schedee *s, sched_priority_t prior) {
 
 	if (in_rq)
 		__sched_dequeue(s);
-	schedee_priority_set(s, prior);
+	schedee_priority_set(&s->priority, prior);
 	if (in_rq)
 		__sched_enqueue(s);
 
@@ -359,11 +367,11 @@ static void __schedule(int preempt) {
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
-	/* In SMP kernel starting from this point and until clearing
-	 * prev->active state (which is done by '__sched_deactivate')
-	 * any CPU waking prev will move it to TW_SMP_WAKING state
-	 * without really waking it up.
-	 * 'sched_finish_switch' will sort out what to do in such case. */
+		/* In SMP kernel starting from this point and until clearing
+		 * prev->active state (which is done by '__sched_deactivate')
+		 * any CPU waking prev will move it to TW_SMP_WAKING state
+		 * without really waking it up.
+		 * 'sched_finish_switch' will sort out what to do in such case. */
 	else
 		__sched_enqueue(prev);
 
@@ -399,4 +407,18 @@ static void sched_preempt(void) {
 	sched_lock();
 	__schedule(1);
 	sched_unlock();
+}
+
+void sched_wait_prepare(void) {
+	struct schedee *s = schedee_get_current();
+
+	// TODO SMP barrier? -- Eldar
+	s->waiting = true;
+}
+
+void sched_wait_cleanup(void) {
+	struct schedee *s = schedee_get_current();
+
+	s->waiting = false;
+	// TODO SMP barrier? -- Eldar
 }

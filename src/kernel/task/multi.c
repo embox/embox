@@ -20,6 +20,7 @@
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
+#include <kernel/thread/thread_priority.h>
 
 #include <util/binalign.h>
 #include <err.h>
@@ -106,9 +107,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			goto out_tablefree;
 		}
 
-		thread_set_priority(thd,
-				sched_priority_thread(self_task->tsk_priority,
-						thread_priority_get(thread_self())));
+		thread_set_priority(thd, thread_get_priority(thread_self()));
 
 		thread_detach(thd);
 		thread_launch(thd);
@@ -184,9 +183,7 @@ int task_prepare(const char *name) {
 			goto out_unlock;
 		}
 
-		thread_set_priority(thd,
-						sched_priority_thread(task_self()->tsk_priority,
-								thread_priority_get(thread_self())));
+		thread_set_priority(thd, thread_get_priority(thread_self()));
 
 		self_task = thread_stack_alloc(thd,
 				sizeof *self_task + TASK_RESOURCE_SIZE);
@@ -275,6 +272,7 @@ void task_do_exit(struct task *task, int status) {
 	 */
 	dlist_foreach_entry(thr, &main_thr->thread_link, thread_link) {
 		thread_terminate(thr);
+		thread_delete(thr);
 	}
 
 	/* At the end terminate main thread */
@@ -322,8 +320,6 @@ void task_delete(struct task *tsk) {
 
 int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 	struct thread *t;
-	task_priority_t tsk_pr;
-	sched_priority_t prior;
 
 	assert(tsk);
 
@@ -338,13 +334,11 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 			return 0;
 		}
 
-		tsk_pr = tsk->tsk_priority;
 		tsk->tsk_priority = new_prior;
 
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
-			prior = sched_priority_thread(tsk_pr, thread_priority_get(t));
-			thread_set_priority(t, prior);
+			thread_set_priority(t, THREAD_PRIORITY_NORMAL + new_prior);
 		}
 
 	}

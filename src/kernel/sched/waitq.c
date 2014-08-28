@@ -65,13 +65,13 @@ void waitq_wait_prepare(struct waitq *wq, struct waitq_link *_wql) {
 	wql = waitq_link_create_protected(_wql);
 
 	waitq_add(wq, wql);
-	sched_wait_prepare_schedee();
+	sched_wait_prepare();
 }
 
 void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
 	struct waitq_link *wql;
 
-	sched_wait_cleanup_schedee();
+	sched_wait_cleanup();
 
 	wql = waitq_link_find_protected(_wql);
 

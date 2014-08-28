@@ -11,5 +11,5 @@ module lthread extends lthread_api {
 	source "lthread.c"
 	source "lthread_sched_wait.c"
 	option number lthread_pool_size=512
-	depends embox.kernel.schedee.current.api
+	depends embox.kernel.sched.current.api
 }

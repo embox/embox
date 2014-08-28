@@ -81,7 +81,7 @@ TEST_CASE("Create lthreads with different priorities") {
 		lts[i] = lthread_create(run2, NULL);
 		test_assert_zero(err(lts[i]));
 		test_assert_zero(
-			lthread_priority_set(lts[i], LTHREAD_PRIORITY_MIN + i)
+			lthread_priority_set(lts[i], LTHREAD_PRIORITY_MAX - i)
 		);
 		lthread_launch(lts[i]);
 	}
@@ -110,7 +110,7 @@ TEST_CASE("Test executing order") {
 
 	lt1 = lthread_create(run1, NULL);
 	test_assert_zero(err(lt1));
-	lthread_priority_set(lt1, LTHREAD_PRIORITY_MIN);
+	lthread_priority_set(lt1, LTHREAD_PRIORITY_MAX - 1);
 
 	lt2 = lthread_create(run3, NULL);
 	test_assert_zero(err(lt2));

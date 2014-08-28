@@ -10,36 +10,27 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
+#include <kernel/thread/common_types.h>
 #include <hal/context.h>
 #include <hal/cpu.h>
 
 #include <kernel/spinlock.h>
-#include <kernel/sched/sched_strategy.h>
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/schedee/schedee.h>
+#include <kernel/sched/schedee.h>
 #include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
+
+struct task;
 
 /* Resource mgmt flags. */
 #define TS_INIT         (0x0)
 #define TS_LAUNCHED     (0x1 << 0)
 #define TS_EXITED       (0x1 << 1)
 #define TS_DETACHED     (0x1 << 2)
-
-#ifdef SMP
-# define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
-#else
-# define TW_SMP_WAKING  (0x0)   /* Not used in non-SMP kernel. */
-#endif
-
-
-typedef int __thread_id_t;
-
-struct task;
 
 /**
  * Thread control block.
@@ -72,7 +63,7 @@ struct thread {
 
 	thread_stack_t     stack;        /**< Handler for work with thread stack */
 
-	__thread_id_t      id;           /**< Unique identifier. */
+	thread_id_t        id;           /**< Unique identifier. */
 
 	struct task       *task;         /**< Task belong to. */
 	struct dlist_head  thread_link;  /**< list's link holding task threads. */

@@ -11,11 +11,12 @@
 #ifndef _KERNEL_SCHEDEE_H_
 #define _KERNEL_SCHEDEE_H_
 
+#include <kernel/sched/runq.h>
+#include <kernel/sched/affinity.h>
+#include <kernel/sched/sched_timing.h>
+#include <kernel/sched/schedee_priority.h>
 
-#include <kernel/sched/sched_strategy.h>
-#include <kernel/thread/signal.h>
 #include <kernel/sched/waitq.h>
-
 /* Used as a return value of schedee->process function. */
 /* Informs the scheduler that it has to finish scheduling. */
 #define SCHEDEE_EXIT   0
@@ -23,7 +24,18 @@
  * scheduling. */
 #define SCHEDEE_REPEAT 1
 
+#ifdef SMP
+# define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
+#else
+# define TW_SMP_WAKING  (0x0)   /* Not used in non-SMP kernel. */
+#endif
+
 struct schedee {
+
+	runq_item_t       runq_link;
+
+	spinlock_t        lock;         /**< Protects wait state and others. */
+
 	/* Process function is called in schedule() function after extracting
 	 * the next schedee from the runq. This function performs all necessary
 	 * actions with a specific schedee implementation.
@@ -37,16 +49,48 @@ struct schedee {
 
 	void              *(*run)(void *); /**< Start routine */
 	void              *run_arg;        /**< Argument to be passed to run */
-
-	struct sched_attr sched_attr;      /**< Scheduler-private data pointer */
-
 	unsigned int      active;       /**< Running on a CPU. TODO SMP-only. */
 	unsigned int      ready;        /**< Managed by the scheduler. */
 	unsigned int      waiting;      /**< Waiting for an event. */
 
-	spinlock_t        lock;         /**< Protects wait state and others. */
+	struct affinity   affinity;
+	struct sched_timing sched_timing;
+	struct schedee_priority  priority;
+	int               policy;
 
 	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
 };
+
+#include <stdbool.h>
+static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
+	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	void *(*run)(void *),
+	void *arg)
+{
+
+	runq_item_init(&schedee->runq_link);
+
+	schedee->lock = SPIN_UNLOCKED;
+
+	schedee->process = process;
+	schedee->run = run;
+	schedee->run_arg = arg;
+
+	schedee->ready = false;
+	schedee->active = false;
+	schedee->waiting = true;
+
+	schedee_priority_init(&schedee->priority, priority);
+	sched_affinity_init(&schedee->affinity);
+	sched_timing_init(schedee);
+
+	return 0;
+}
+
+extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
+	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	void *(*run)(void *),
+	void *arg);
+
 
 #endif /* _KERNEL_SCHEDEE_H_ */

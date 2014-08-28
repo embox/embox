@@ -17,20 +17,14 @@
 
 #include <kernel/thread/types.h>
 #include <kernel/thread/thread_flags.h>
-#include <kernel/schedee/current.h>
-
+#include <kernel/thread/thread_priority.h>
+#include <kernel/sched/current.h>
 
 /**
  * Thread control block.
  * This is described in <kernel/thread/types.h>
  */
 struct thread;
-
-/**
- * Every thread can be identified using a number which is unique across the
- * system.
- */
-typedef __thread_id_t thread_id_t;
 
 /**
  * Obtains a pointer to the calling thread.
@@ -135,8 +129,22 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
  * @param run - the same in create_thread()
  * @param arg - the same in create_thread()
  */
-extern void thread_init(struct thread *t, unsigned int flags,
+extern void thread_init(struct thread *t, sched_priority_t priority,
 		void *(*run)(void *), void *arg);
+
+/**
+ * @brief Init thread at the bottom of given stack
+ *
+ * @param stack Stack pointer
+ * @param stack_sz Stack size
+ * @param priority Priority of new thread
+ * @param run Run function
+ * @param arg Run argument
+ *
+ * @return Pointer to new thread
+ */
+extern struct thread *thread_init_stack(void *stack, size_t stack_sz,
+	       	sched_priority_t priority, void *(*run)(void *), void *arg);
 
 /**
  * Marks the thread identified by thread as detached. When a detached

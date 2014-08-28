@@ -9,10 +9,10 @@
 #ifndef KERNEL_THREAD_PRIORITY_H_
 #define KERNEL_THREAD_PRIORITY_H_
 
-struct thread;
+#include <kernel/sched/sched_priority.h>
 
-#define THREAD_PRIORITY_MIN 0   /**< The lowest priority is 0. */
-#define THREAD_PRIORITY_MAX 255 /**< The highest priority. */
+#define THREAD_PRIORITY_MIN SCHED_PRIORITY_MIN
+#define THREAD_PRIORITY_MAX SCHED_PRIORITY_MAX
 
 /** Total amount of valid priorities. */
 #define THREAD_PRIORITY_TOTAL \

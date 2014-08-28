@@ -48,7 +48,7 @@ static void print_stat(void) {
 
 				printf(" %4d %4d %8d %c %c %c %c %9lds\n",
 					t->id, task_get_id(t->task),
-					thread_priority_get(t),
+					thread_get_priority(t),
 					(t == thread_self()) ? '*' : ' ',
 					sched_active(&t->schedee) ? 'A' : ' ',
 					t->schedee.ready        ? 'R' : ' ',
