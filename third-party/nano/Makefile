@@ -11,7 +11,7 @@ include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--enable-tiny \
@@ -40,11 +40,11 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/nano $(PKG_INSTALL_DIR)/nano.o
+	cp $(PKG_SOURCE_DIR)/src/nano $(PKG_INSTALL_DIR)/nano.o
 	touch $@

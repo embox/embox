@@ -14,6 +14,7 @@
 #endif
 
 #include <swab.h>
+#include <linux/types.h>
 
 #define __constant_htonl(x) (( __be32)(__u32)(x))
 #define __constant_ntohl(x) (( __u32)(__be32)(x))
