@@ -13,11 +13,7 @@ SIM_ARG="$2"
 shift 2
 OTHER_ARGS="$@"
 
-if [ $CONTINIOUS_RUN_TIMEOUT ]; then
-	TIMEOUT=$CONTINIOUS_RUN_TIMEOUT
-else
-	TIMEOUT=45
-fi
+TIMEOUT=${CONTINIOUS_RUN_TIMEOUT-45}
 
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
@@ -32,6 +28,7 @@ USERMODE_START_OUTPUT=$OUTPUT_FILE
 
 packetdrill_run() {
 	AUTOQEMU_NICS=""
+	TIMEOUT=120
 	default_run
 }
 
