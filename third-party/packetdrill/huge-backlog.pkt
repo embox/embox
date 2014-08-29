@@ -1,0 +1,5 @@
+
+// Create a socket.
+0.000 socket(..., SOCK_STREAM, IPPROTO_TCP) = 3
+
+0.010 listen(3, 100) = 0
