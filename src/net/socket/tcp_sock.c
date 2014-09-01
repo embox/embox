@@ -216,14 +216,15 @@ static int tcp_connect(struct sock *sk,
 	return ret;
 }
 
-
 static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
 	int to_alloc;
 
 	assert(tcp_sk != NULL);
 
 	to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
-	assert(to_alloc >= 0);
+	/* to_alloc allowed to be negative. It could be if backlog had set and then
+ 	 * was reduced.
+	 */
 
 	while (to_alloc > 0) {
 		struct sock *newsk;
@@ -274,6 +275,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				break;
 			}
 			tcp_sk->free_wait_queue_max = backlog;
+			/* this could be not first listen call, adjusting backlog queue */
 			tcp_sock_alloc_missing_backlog(tcp_sk);
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
 			ret = 0;
