@@ -14,5 +14,6 @@ module packetdrill {
 	@InitFS(target_dir="packetdrill_tests")
 	source "simple-connect.pkt",
 	       "sudden-close.pkt",
-	       "huge-backlog.pkt"
+	       "huge-backlog.pkt",
+	       "transmission-pause.pkt"
 }
