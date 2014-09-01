@@ -36,7 +36,7 @@ build_dir() {
 		$SUDO mkdir -p $dst
 	fi
 
-	$SUDO rm -R $dst/*
+	$SUDO rm -R $dst/* 2>/dev/null
 
 	for s in $srcs; do
 		$SUDO cp -aR $s/* $dst

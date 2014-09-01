@@ -66,14 +66,6 @@ run_qemu_fs() {
 
 	echo $img_mount >> $START_SCRIPT
 
-	#XXX remove this. We try to mount cifs multiple times because mount does not work otherwise
-	if [ cifs = $FS ]; then
-		echo $img_mount >> $START_SCRIPT
-		echo \"sleep 1000\", >> $START_SCRIPT
-		echo $img_mount >> $START_SCRIPT
-		echo \"sleep 1000\", >> $START_SCRIPT
-	fi
-
 	echo \"ls /mnt/fs_test\", >> $START_SCRIPT
 	echo \"test -t fs_test_read\", >> $START_SCRIPT
 	if [ rw = $RW ]; then
