@@ -18,7 +18,7 @@ module net_rx {
 	depends net_crypt_api
 	depends skbuff
 	depends packet
-	depends af_packet /* make af_packet socket receive incoming packets */
+	depends af_packet_api /* make af_packet socket receive incoming packets */
 	depends embox.compat.linux.LibLinux
 	depends embox.framework.LibFrameworkNet
 }
@@ -28,7 +28,7 @@ module net_tx {
 
 	depends net_crypt_api
 	depends skbuff
-	depends af_packet /* make af_packet socket receive outcoming packets */
+	depends af_packet_api /* make af_packet socket receive outcoming packets */
 	depends neighbour
 }
 
