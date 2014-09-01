@@ -499,9 +499,9 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 		{
 			if (!list_empty(&tcp_sk->conn_lnk)) {
-				assert(tcp_sk->parent->conn_queue_len != 0);
-				--tcp_sk->parent->conn_queue_len;
 				list_del(&tcp_sk->conn_lnk);
+				assert(tcp_sk->parent->free_wait_queue_len > 0);
+				--tcp_sk->parent->free_wait_queue_len;
 			}
 		}
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -537,33 +537,20 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Check max length of accept queue and reserve 1 place */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			if (tcp_sk->conn_queue_len >= tcp_sk->conn_queue_max) {
-				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
-				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-				return TCP_RET_DROP;
+			if (!list_empty(&tcp_sk->conn_free)) {
+				tcp_newsk = mcast_out(tcp_sk->conn_free.next, struct tcp_sock, conn_lnk);
+				list_del_init(&tcp_newsk->conn_lnk);
+				/* will add it to conn_wait list, no free_wait_queue_len adjustment */
+			} else {
+				DBG(printk("tcp_st_listen: can't alloc socket\n");)
+				tcp_newsk = NULL;
 			}
-			++tcp_sk->conn_queue_len; /* reserve */
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-		/* Allocate new socket for this connection */
-		if (list_empty(&tcp_sk->conn_free)) {
-			DBG(printk("tcp_st_listen: can't alloc socket\n");)
-			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-			{
-				assert(tcp_sk->conn_queue_len != 0);
-				--tcp_sk->conn_queue_len;
-			}
-			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+		if (!tcp_newsk) {
 			return TCP_RET_DROP; /* error: see ret */
 		}
-
-		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-		{
-			tcp_newsk = mcast_out(tcp_sk->conn_free.next, struct tcp_sock, conn_lnk);
-			list_del_init(&tcp_newsk->conn_lnk);
-		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n",
 				to_sock(tcp_newsk), skb, to_sock(tcp_sk));

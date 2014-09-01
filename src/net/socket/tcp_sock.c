@@ -76,7 +76,7 @@ static int tcp_init(struct sock *sk) {
 	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
 	INIT_LIST_HEAD(&tcp_sk->conn_free);
-	tcp_sk->conn_queue_len = tcp_sk->conn_queue_max = 0;
+	tcp_sk->free_wait_queue_len = tcp_sk->free_wait_queue_max = 0;
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
@@ -216,31 +216,26 @@ static int tcp_connect(struct sock *sk,
 	return ret;
 }
 
-static int tcp_sock_alloc_free_sockets(struct tcp_sock *tcp_sk, int amount) {
-	int i;
+
+static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
+	int to_alloc;
 
 	assert(tcp_sk != NULL);
-	assert(amount > 0);
 
-	for (i = 0; i < amount; ++i) {
+	to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
+	assert(to_alloc >= 0);
+
+	while (to_alloc > 0) {
 		struct sock *newsk;
 		struct tcp_sock *tcp_newsk;
 
 		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
 				SOCK_STREAM, IPPROTO_TCP);
 		if (err(newsk) != 0) {
-			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-			{
-				if (i--)
-					break;
-				list_for_each_entry(tcp_newsk, &tcp_sk->conn_free, conn_lnk) {
-					list_del(&tcp_newsk->conn_lnk);
-					sock_release(to_sock(tcp_newsk));
-				}
-			}
-			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-			return err(newsk);
+			break;
 		}
+
+		to_alloc--;
 
 		tcp_newsk = to_tcp_sock(newsk);
 		tcp_newsk->parent = tcp_sk;
@@ -248,11 +243,12 @@ static int tcp_sock_alloc_free_sockets(struct tcp_sock *tcp_sk, int amount) {
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_free);
+			tcp_sk->free_wait_queue_len++;
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	}
 
-	return 0;
+	return to_alloc;
 }
 
 static int tcp_listen(struct sock *sk, int backlog) {
@@ -277,9 +273,9 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				ret = -EINVAL; /* error: invalid backlog */
 				break;
 			}
-			tcp_sock_alloc_free_sockets(tcp_sk, backlog);
+			tcp_sk->free_wait_queue_max = backlog;
+			tcp_sock_alloc_missing_backlog(tcp_sk);
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
-			tcp_sk->conn_queue_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -293,6 +289,10 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *tcp_newsk;
 	/* get first socket from */
 
+	if (list_empty(&tcp_sk->conn_ready)) {
+		return NULL;
+	}
+
 	tcp_newsk = list_entry(tcp_sk->conn_ready.next, struct tcp_sock, conn_lnk);
 
 	/* check if reading was enabled for socket that already released */
@@ -303,8 +303,8 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 
 	/* delete new socket from list */
 	list_del_init(&tcp_newsk->conn_lnk);
-	assert(tcp_sk->conn_queue_len != 0);
-	--tcp_sk->conn_queue_len;
+	assert(tcp_sk->free_wait_queue_len > 0);
+	--tcp_sk->free_wait_queue_len;
 
 	return tcp_newsk;
 }
@@ -335,11 +335,9 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	{
 		do {
-			if (!list_empty(&tcp_sk->conn_ready)) {
-				tcp_newsk = accept_get_connection(tcp_sk);
-				if (tcp_newsk) {
-					break;
-				}
+			tcp_newsk = accept_get_connection(tcp_sk);
+			if (tcp_newsk) {
+				break;
 			}
 			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
 		} while (!ret);
@@ -354,11 +352,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		}
 	}
 
-	ret = tcp_sock_alloc_free_sockets(tcp_sk, 1);
-	if (ret != 0) {
-		tcp_sock_release(tcp_newsk);
-		return ret;
-	}
+	tcp_sock_alloc_missing_backlog(tcp_sk);
 
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 		tcp_sock_release(tcp_newsk);

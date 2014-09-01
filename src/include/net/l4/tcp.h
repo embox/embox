@@ -98,8 +98,8 @@ typedef struct tcp_sock {
 	};
 	struct list_head conn_wait; /* Queue of incoming waiting connections */
 	struct list_head conn_free; /* Queue of free sockets for incoming connections */
-	unsigned int conn_queue_len; /* Length of queue of incoming connection */
-	unsigned int conn_queue_max; /* Max length of queue of incoming connection */
+	unsigned int free_wait_queue_len; /* @a conn_wait length plus @a conn_free length */
+	unsigned int free_wait_queue_max; /* Maximum @a conn_wait length plus @a conn_free length */
 	unsigned int lock;          /* Tool for synchronization */
 	struct timeval syn_time;    /* The time when synchronization started */
 	struct timeval ack_time;    /* The time when message was ACKed */
