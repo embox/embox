@@ -15,12 +15,14 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
 
-#include <module/embox/kernel/stack.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
-#define KERNEL_STACK_SZ \
+#include <module/embox/kernel/stack.h>
+#include <module/embox/kernel/sched/sched.h>
+
+#define MODOPS_LIGHT_IDLE OPTION_GET(BOOLEAN, light_idle)
 
 EMBOX_UNIT_INIT(sched_start_init);
 
@@ -41,7 +43,7 @@ static struct thread *boot_thread_create(void) {
 	return bootstrap;
 }
 
-#if 0 // idle thread is lightweight
+#if MODOPS_LIGHT_IDLE // idle thread is lightweight
 
 static void *idle_run(void *arg) {
 	arch_idle();
@@ -57,7 +59,7 @@ static int idle_thread_create(void) {
 		return err(lt);
 	}
 
-	sched_change_priority(lt, SCHED_PRIORITY_MIN);
+	sched_change_priority(&lt->schedee, SCHED_PRIORITY_MIN);
 #if 0 //XXX
 	cpu_init(cpu_get_id(), t);
 #else

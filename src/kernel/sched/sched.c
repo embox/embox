@@ -36,8 +36,6 @@
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 
-#include <embox/unit.h>
-
 // XXX
 #ifndef __barrier
 #define __barrier() __asm__ __volatile__("" : : : "memory")

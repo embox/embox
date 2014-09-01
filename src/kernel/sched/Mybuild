@@ -1,6 +1,7 @@
 package embox.kernel.sched
 
 module sched {
+	option boolean light_idle=false
 	source "sched_start.c"
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.lthread.lthread
