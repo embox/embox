@@ -64,9 +64,12 @@ static module LibCStdioFileOps {
 	@NoRuntime depends Print
 }
 
-static module LibCStdio {
+static module LibCStdioRename {
 	source "rename.c"
+}
 
+static module LibCStdio {
+	@NoRuntime depends LibCStdioRename
 	@NoRuntime depends LibCStdioSprintf
 	@NoRuntime depends LibCStdioOpen
 	@NoRuntime depends LibCStdioFseek

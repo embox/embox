@@ -66,6 +66,7 @@ static module getpass {
 
 static module gethostname {
 	source "gethostname.c"
+	depends utsname
 }
 
 static module environ {
