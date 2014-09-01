@@ -19,5 +19,5 @@
 // long delay, still should be able to make a transmission
 
 5.000 write(3, ..., 16) = 16
-5.000 > P. 18:34(16) ack 1 win 16384
-5.010 < . 1:1(0) ack 34 win 92
+5.000 > P. 17:33(16) ack 1 win 16384
+5.010 < . 1:1(0) ack 33 win 92

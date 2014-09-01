@@ -1332,7 +1332,8 @@ static void tcp_timer_handler(struct sys_timer *timer,
 		}
 		else if ((tcp_sock_get_status(tcp_sk) != TCP_ST_NOTEXIST)
 				&& tcp_is_expired(&tcp_sk->ack_time,
-					TCP_REXMIT_DELAY)) {
+					TCP_REXMIT_DELAY)
+				&& (tcp_sk->last_ack != tcp_sk->self.seq)) {
 			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sk->rexmit_mode = 1;
