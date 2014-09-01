@@ -9,13 +9,25 @@ include $(EXTBLD_LIB)
 
 PKG_PATCHES := pjproject.patch cxx_builds_disable.patch
 
+DISABLE_FEATURES := \
+	sound       \
+	l16-codec   \
+	ilbc-codec  \
+	speex-codec \
+	speex-aec   \
+	gsm-codec   \
+	g722-codec  \
+	g7221-codec \
+	#g711-codec
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
-			--target=$(AUTOCONF_TARGET_TRIPLET) \
+		./configure \
 			CC=$(EMBOX_GCC) \
-			--disable-sound; \
+			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			$(DISABLE_FEATURES:%=--disable-%); \
 		echo export CFLAGS+=$(EMBOX_DEPS_CPPFLAGS) > user.mak; \
 		echo export CXXFLAGS+=$(EMBOX_DEPS_CPPFLAGS) >> user.mak; \
 	)
