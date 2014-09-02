@@ -18,6 +18,7 @@ module smac extends api {
 
 	depends embox.fs.xattr
 	depends embox.kernel.task.resource.security
+	depends embox.kernel.task.api
 
 	depends embox.security.seculog
 	depends embox.security.seculog_file
