@@ -28,4 +28,11 @@
 # define EXTERN_C extern
 #endif
 
+#undef EMPTY_STRUCT_BODY
+#ifdef __cplusplus
+# define EMPTY_STRUCT_BODY int __placeholder[0];
+#else
+# define EMPTY_STRUCT_BODY
+#endif
+
 #endif /* SYS_CDEFS_H_ */

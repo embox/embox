@@ -8,10 +8,12 @@
 #ifndef STRATEGY_NO_PRIORITY_H_
 #define STRATEGY_NO_PRIORITY_H_
 
+#include <sys/cdefs.h>
+
 struct schedee;
 
 struct schedee_priority {
-	char placeholder;
+	EMPTY_STRUCT_BODY
 };
 
 typedef struct schedee_priority __schedee_priority_t;

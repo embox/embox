@@ -9,8 +9,10 @@
 #ifndef AFFINITY_NONE_H_
 #define AFFINITY_NONE_H_
 
+#include <sys/cdefs.h>
+
 struct affinity {
-	char placeholder;
+	EMPTY_STRUCT_BODY
 };
 
 static inline int sched_affinity_check(struct affinity *a, int mask) {

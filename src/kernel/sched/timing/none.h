@@ -8,8 +8,10 @@
 #ifndef SCHED_TIMING_NONE_H_
 #define SCHED_TIMING_NONE_H_
 
+#include <sys/cdefs.h>
+
 struct sched_timing {
-	char placeholder;
+	EMPTY_STRUCT_BODY
 };
 
 static inline void sched_timing_init(struct schedee *t) { }
