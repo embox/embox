@@ -197,8 +197,8 @@ static int load_exec(const char *filename, exec_t *exec) {
 	size_t size;
 	Elf32_Phdr *ph_table;
 	Elf32_Phdr *ph;
-	//struct marea *marea;
-	void *pa;
+	struct marea *marea;
+	//void *pa;
 	int err;
 	char interp[255];
 	int has_interp = 0;
@@ -244,13 +244,14 @@ static int load_exec(const char *filename, exec_t *exec) {
 		if (ph->p_type != PT_LOAD) {
 			continue;
 		}
+#if 0
 		pa = mmap((void *)ph->p_vaddr, ph->p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_FIXED, 0, 0);
 		if (MAP_FAILED == pa) {
 			free(ph_table);
 			return -1;
 		}
+#else
 
-#if 0
 		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
 
 		if (!marea) {
@@ -280,7 +281,15 @@ static int load_exec(const char *filename, exec_t *exec) {
 
 	return ENOERR;
 }
-extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
+
+uint32_t mmap_create_stack(struct emmap *mmap) {
+	struct marea * marea;
+	marea = mmap_alloc_marea(mmap, 4096, 0);
+
+	return marea->end;
+}
+
+//extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
 int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
@@ -288,6 +297,11 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	int err;
 	exec_t exec;
 	struct emmap *emmap;
+	//struct marea *marea;
+
+	emmap = task_self_resource_mmap();
+
+	mmu_set_context(emmap->ctx);
 
 	memset(&exec, 0, sizeof(exec_t));
 
@@ -296,9 +310,10 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 		return -1;
 	}
 
-	emmap = task_self_resource_mmap();
-	stack = mmap_userspace_create(emmap, 0x1000);
 
+	stack = mmap_create_stack(emmap);
+	//stack = mmap_userspace_create(emmap, 0x1000);
+	//marea = mmap_place_marea(emmap, 0xFFFF8000, 0xFFFFF000, 0);
 
 	fill_stack(&stack, &exec, argv, envp);
 

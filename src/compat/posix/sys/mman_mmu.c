@@ -7,18 +7,14 @@
 
 #include <sys/mman.h>
 #include <errno.h>
+#include <stdint.h>
+#include <mem/phymem.h>
+
+extern void *mmap_userspace_add(void *addr, size_t len, int prot);
 
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-	// ToDo: implement for InitFS files
-	(void)addr;
-	(void)len;
-	(void)prot;
-	(void)flags;
-	(void)fd;
-	(void)off;
-
-	errno = EPERM;
-	return NULL;
+	mmap_userspace_add(addr, len, prot);
+	return addr;
 }
 
 int munmap(void *addr, size_t size) {

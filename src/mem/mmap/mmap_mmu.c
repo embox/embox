@@ -24,6 +24,8 @@ static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
 
+#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
+
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
@@ -45,7 +47,7 @@ void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
+		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), 1);
 
 		marea_destroy(marea);
 	}
@@ -120,7 +122,7 @@ static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 	return vmem_page_flags;
 }
 
-#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
+
 int mmap_mapping(struct emmap *emmap) {
 	struct marea *marea;
 
@@ -140,6 +142,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
+		mmap_add_marea(mmap, new_marea);
 	}
 	mmap_mapping(mmap);
 
