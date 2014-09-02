@@ -11,6 +11,7 @@
 struct schedee;
 
 struct schedee_priority {
+	char placeholder;
 };
 
 typedef struct schedee_priority __schedee_priority_t;

@@ -8,7 +8,9 @@
 #ifndef SCHED_TIMING_NONE_H_
 #define SCHED_TIMING_NONE_H_
 
-struct sched_timing { };
+struct sched_timing {
+	char placeholder;
+};
 
 static inline void sched_timing_init(struct schedee *t) { }
 

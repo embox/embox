@@ -9,7 +9,9 @@
 #ifndef AFFINITY_NONE_H_
 #define AFFINITY_NONE_H_
 
-struct affinity { };
+struct affinity {
+	char placeholder;
+};
 
 static inline int sched_affinity_check(struct affinity *a, int mask) {
 	return 1;
