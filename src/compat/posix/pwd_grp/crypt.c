@@ -10,6 +10,8 @@
 #include <string.h>
 #include <lib/md5.h>
 
+#include <crypt.h>
+
 char *crypt(const char *key, const char *salt) {
 	md5_state_t state;
 	md5_byte_t digest[16*2 + 1];
