@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <util/math.h>
 #include <sys/mman.h>
 
 #include <lib/libelf.h>
@@ -254,6 +255,10 @@ static int load_exec(const char *filename, exec_t *exec) {
 
 		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
 
+		/* XXX brk is a max of ph's right sides. It unaligned now! */
+		mmap_set_brk(task_self_resource_mmap(),
+			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->v_vaddr + ph->p_memsz));
+
 		if (!marea) {
 			free(ph_table);
 			return -ENOMEM;
@@ -305,6 +310,7 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 
 	memset(&exec, 0, sizeof(exec_t));
 
+	mmap_set_brk(emmap, NULL);
 	if ((err = load_exec(filename, &exec))) {
 		SET_ERRNO(-err);
 		return -1;
