@@ -112,13 +112,24 @@ static int ntpdate_process(const struct ntphdr *rep, int only_query) {
 
 	if (only_query) {
 		/* show result */
-		ret = ntp_delay(rep, &ts);
+		struct timespec offset, delay;
+
+		getnsofday(&ts, NULL);
+
+		ret = ntp_offset(rep, &ts, &offset);
 		if (ret != 0) {
 			return ret;
 		}
-		printf("stratum %hhd, delay %ld:%ld (s:ms)\n",
-				rep->stratum, ts.tv_sec,
-				ts.tv_nsec / NSEC_PER_MSEC);
+
+		ret = ntp_delay(rep, &ts, &delay);
+		if (ret != 0) {
+			return ret;
+		}
+
+		printf("stratum %hhd, offset %ld.%.6ld, delay %ld.%.6ld\n",
+				rep->stratum,
+				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
+				delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
 	}
 	else {
 		/* setup new time */
