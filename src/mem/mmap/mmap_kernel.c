@@ -21,6 +21,7 @@ static struct emmap early_emmap = {
 	NULL,
 	NULL,
 #endif
+	NULL,
 	0,
 	DLIST_INIT(early_emmap.marea_list)
 };

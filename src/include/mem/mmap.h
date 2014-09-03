@@ -30,4 +30,16 @@ extern struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32
 
 extern struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags);
 
+static inline uint32_t marea_get_start(struct marea *marea) {
+	return marea->start;
+}
+
+static inline void *mmap_get_brk(struct emmap *mmap) {
+	return mmap->brk;
+}
+
+static inline void mmap_set_brk(struct emmap *mmap, void *new_brk) {
+	mmap->brk = new_brk;
+}
+
 #endif /* MEM_MMAP_H_ */
