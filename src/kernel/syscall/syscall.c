@@ -13,6 +13,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
+#include <assert.h>
 
 long sys_exit(int errcode) {
 	task_exit(NULL);
@@ -64,7 +65,7 @@ void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_
 	return addr;
 }
 
-
+#if 0
 struct new_stat {
           unsigned long   st_dev;
           unsigned long   st_ino;
@@ -87,6 +88,30 @@ struct new_stat {
           unsigned long   st_ctime_nsec;
           long            __unused[3];
  };
+#else
+struct new_stat
+{
+  short		st_dev;
+  unsigned short st_ino;
+  unsigned int	st_mode;
+  unsigned short st_nlink;
+  unsigned short st_uid;
+  unsigned short st_gid;
+  short		st_rdev;
+  long		st_size;
+  long	st_atime;
+  long		st_spare1;
+  long	st_mtime;
+  long		st_spare2;
+  long	st_ctime;
+  long		st_spare3;
+  long		st_blksize;
+  long		st_blocks;
+  long	st_spare4[2];
+};
+#endif
+
+static_assert(sizeof(struct new_stat) == 60);
 
 int sys_newfstat(int fd, void *buf) {
 	struct stat stat;
