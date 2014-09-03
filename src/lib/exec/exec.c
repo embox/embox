@@ -257,7 +257,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 
 		/* XXX brk is a max of ph's right sides. It unaligned now! */
 		mmap_set_brk(task_self_resource_mmap(),
-			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->v_vaddr + ph->p_memsz));
+			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->p_vaddr + ph->p_memsz));
 
 		if (!marea) {
 			free(ph_table);

@@ -35,5 +35,5 @@ syscall_make:
 
 syscall_leave:
 
-	mov %eax, (PT_EAX*4)(%esp)  /* Save the return value */
+	mov %eax, (PT_EAX)(%esp)  /* Save the return value */
 	RESTORE_ALL

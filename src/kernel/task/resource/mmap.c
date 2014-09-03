@@ -41,12 +41,14 @@ static int task_mmap_inherit(const struct task *task,
 }
 
 static void task_mmap_deinit(const struct task *task) {
+#if 0
 	struct emmap *mmap;
 
 	mmap = task_resource_mmap(task);
 	assert(mmap != NULL);
 
 	mmap_free(mmap);
+#endif
 }
 
 static size_t task_mmap_offset;
