@@ -23,7 +23,7 @@ PAGE_ALLOCATOR_DEF(static_table_allocator, virtual_tables, VIRTUAL_TABLES_COUNT,
 static struct page_allocator *virt_table_allocator = &static_table_allocator;
 
 
-static char virtual_page_info[VIRTUAL_PAGES_COUNT][MMU_PAGE_SIZE / PAGE_SIZE()] __attribute__((aligned(MMU_PAGE_SIZE)));
+static char virtual_page_info[VIRTUAL_PAGES_COUNT][MMU_PAGE_SIZE] __attribute__((aligned(MMU_PAGE_SIZE)));
 PAGE_ALLOCATOR_DEF(static_page_info_allocator, virtual_page_info, VIRTUAL_PAGES_COUNT, MMU_PAGE_SIZE);
 static struct page_allocator *virt_page_allocator = &static_page_info_allocator;
 
