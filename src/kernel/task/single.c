@@ -6,6 +6,7 @@
  * @date    04.06.2014
  */
 
+#include <kernel/panic.h>
 #include <kernel/task/resource.h>
 #include <kernel/task.h>
 
@@ -25,3 +26,14 @@ void task_init(struct task *tsk, int id, struct task *parent,
 	task_resource_init(tsk);
 }
 
+void task_do_exit(struct task *task, int status) {
+	panic("single task %s called\n", __func__);
+}
+
+void task_start_exit(void) {
+	panic("single task %s called\n", __func__);
+}
+
+void __attribute__((noreturn)) task_finish_exit(void) {
+	panic("single task %s called\n", __func__);
+}

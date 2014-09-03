@@ -3,7 +3,7 @@ package embox.test.kernel.thread.sched_strategy
 module general_test {
 	source "general_test.c"
 
-	depends embox.kernel.sched.strategy.api
+	depends embox.kernel.sched.sched
 	depends embox.framework.LibFramework
 }
 

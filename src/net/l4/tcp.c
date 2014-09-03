@@ -42,8 +42,6 @@
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
 
-#include <err.h>
-
 EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
@@ -490,6 +488,10 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 					&tcp_sk->conn_ready, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
+			list_for_each_entry(anticipant,
+					&tcp_sk->conn_free, conn_lnk) {
+				sock_release(to_sock(anticipant));
+			}
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	}
@@ -497,9 +499,9 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 		{
 			if (!list_empty(&tcp_sk->conn_lnk)) {
-				assert(tcp_sk->parent->conn_queue_len != 0);
-				--tcp_sk->parent->conn_queue_len;
 				list_del(&tcp_sk->conn_lnk);
+				assert(tcp_sk->parent->free_wait_queue_len > 0);
+				--tcp_sk->parent->free_wait_queue_len;
 			}
 		}
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -522,9 +524,10 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
-	struct sock *newsk;
-	struct inet_sock *in_newsk;
-	struct inet6_sock *in6_newsk;
+	union {
+		struct inet_sock *in;
+		struct inet6_sock *in6;
+	} newsk;
 	struct tcp_sock *tcp_newsk;
 
 	debug_print(8, "call tcp_st_listen\n");
@@ -534,69 +537,53 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Check max length of accept queue and reserve 1 place */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			if (tcp_sk->conn_queue_len >= tcp_sk->conn_queue_max) {
-				DBG(printk("tcp_st_listen: conn_wait queue is full\n");)
-				tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-				return TCP_RET_DROP;
+			if (!list_empty(&tcp_sk->conn_free)) {
+				tcp_newsk = mcast_out(tcp_sk->conn_free.next, struct tcp_sock, conn_lnk);
+				list_del_init(&tcp_newsk->conn_lnk);
+				/* will add it to conn_wait list, no free_wait_queue_len adjustment */
+			} else {
+				DBG(printk("tcp_st_listen: can't alloc socket\n");)
+				tcp_newsk = NULL;
 			}
-			++tcp_sk->conn_queue_len; /* reserve */
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-		/* Allocate new socket for this connection */
-		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
-				SOCK_STREAM, IPPROTO_TCP);
-
-		if (err(newsk) != 0) {
-			DBG(printk("tcp_st_listen: can't alloc socket\n");)
-			tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-			{
-				assert(tcp_sk->conn_queue_len != 0);
-				--tcp_sk->conn_queue_len;
-			}
-			tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+		if (!tcp_newsk) {
 			return TCP_RET_DROP; /* error: see ret */
 		}
+
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n",
-				newsk, skb, to_sock(tcp_sk));
+				to_sock(tcp_newsk), skb, to_sock(tcp_sk));
 		/* Set up new socket */
 		if (to_sock(tcp_sk)->opt.so_domain == AF_INET) {
 			assert(ip_hdr(skb)->version == 4);
-			in_newsk = to_inet_sock(newsk);
-			in_newsk->src_in.sin_family = AF_INET;
-			in_newsk->src_in.sin_port = tcph->dest;
-			memcpy(&in_newsk->src_in.sin_addr,
+			newsk.in = to_inet_sock(to_sock(tcp_newsk));
+			newsk.in->src_in.sin_family = AF_INET;
+			newsk.in->src_in.sin_port = tcph->dest;
+			memcpy(&newsk.in->src_in.sin_addr,
 					&ip_hdr(skb)->daddr,
-					sizeof in_newsk->src_in.sin_addr);
-			in_newsk->dst_in.sin_family = AF_INET;
-			in_newsk->dst_in.sin_port = tcph->source;
-			memcpy(&in_newsk->dst_in.sin_addr,
+					sizeof newsk.in->src_in.sin_addr);
+			newsk.in->dst_in.sin_family = AF_INET;
+			newsk.in->dst_in.sin_port = tcph->source;
+			memcpy(&newsk.in->dst_in.sin_addr,
 					&ip_hdr(skb)->saddr,
-					sizeof in_newsk->dst_in.sin_addr);
+					sizeof newsk.in->dst_in.sin_addr);
 		}
 		else {
 			assert(to_sock(tcp_sk)->opt.so_domain == AF_INET6);
 			assert(ip6_hdr(skb)->version == 6);
-			in6_newsk = to_inet6_sock(newsk);
-			in6_newsk->src_in6.sin6_family = AF_INET6;
-			in6_newsk->src_in6.sin6_port = tcph->dest;
-			memcpy(&in6_newsk->src_in6.sin6_addr,
+			newsk.in6 = to_inet6_sock(to_sock(tcp_newsk));
+			newsk.in6->src_in6.sin6_family = AF_INET6;
+			newsk.in6->src_in6.sin6_port = tcph->dest;
+			memcpy(&newsk.in6->src_in6.sin6_addr,
 					&ip6_hdr(skb)->daddr,
-					sizeof in6_newsk->src_in6.sin6_addr);
-			in6_newsk->dst_in6.sin6_family = AF_INET6;
-			in6_newsk->dst_in6.sin6_port = tcph->source;
-			memcpy(&in6_newsk->dst_in6.sin6_addr,
+					sizeof newsk.in6->src_in6.sin6_addr);
+			newsk.in6->dst_in6.sin6_family = AF_INET6;
+			newsk.in6->dst_in6.sin6_port = tcph->source;
+			memcpy(&newsk.in6->dst_in6.sin6_addr,
 					&ip6_hdr(skb)->saddr,
-					sizeof in6_newsk->dst_in6.sin6_addr);
+					sizeof newsk.in6->dst_in6.sin6_addr);
 		}
-		/* Handling skb */
-		tcp_newsk = to_tcp_sock(newsk);
-		tcp_sock_lock(tcp_sk, TCP_SYNC_STATE); /* FIXME */
-		{
-			tcp_sock_set_state(tcp_newsk, TCP_SYN_RECV_PRE); /* TODO remove this */
-			tcp_handle(tcp_newsk, skb, tcp_st_handler[TCP_SYN_RECV_PRE]);
-		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 		/* Save new socket to accept queue */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
@@ -604,6 +591,13 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_wait);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+		/* Handling skb */
+		tcp_sock_lock(tcp_sk, TCP_SYNC_STATE); /* FIXME */
+		{
+			tcp_sock_set_state(tcp_newsk, TCP_SYN_RECV_PRE); /* TODO remove this */
+			tcp_handle(tcp_newsk, skb, tcp_st_handler[TCP_SYN_RECV_PRE]);
+		}
+		tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 
 		return TCP_RET_OK;
 	}
@@ -1266,6 +1260,28 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
 extern uint16_t sock_get_secure_level(const struct sock *sk);
 
+static int tcp_rcv_need_check_security(struct tcp_sock *tcp_sk) {
+	switch (tcp_sk->state) {
+	case TCP_CLOSED:
+	case TCP_LISTEN:
+		return 1;
+	case TCP_SYN_SENT:
+	case TCP_SYN_RECV_PRE:
+	case TCP_SYN_RECV:
+	case TCP_ESTABIL:
+	case TCP_FINWAIT_1:
+	case TCP_FINWAIT_2:
+	case TCP_CLOSEWAIT:
+	case TCP_CLOSING:
+	case TCP_LASTACK:
+	case TCP_TIMEWAIT:
+	case TCP_MAX_STATE:
+		break;
+	}
+
+	return 0;
+}
+
 static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
@@ -1286,14 +1302,18 @@ static int tcp_rcv(struct sk_buff *skb) {
 					: tcp6_rcv_tester_soft,
 				skb);
 	}
-	if (sk) {
-		/* if we have socket with secure label we have to check secure level */
-		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
-			return 0;
+
+	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
+
+	if (tcp_sk) {
+		if (tcp_rcv_need_check_security(tcp_sk)) {
+			/* if we have socket with secure label we have to check secure level */
+			if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+				return 0;
+			}
 		}
 	}
 
-	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
 	packet_print(tcp_sk, skb, "=>",
 			ip_check_version(ip_hdr(skb)) ? AF_INET : AF_INET6,
 			ip_check_version(ip_hdr(skb))
@@ -1338,7 +1358,8 @@ static void tcp_timer_handler(struct sys_timer *timer,
 		}
 		else if ((tcp_sock_get_status(tcp_sk) != TCP_ST_NOTEXIST)
 				&& tcp_is_expired(&tcp_sk->ack_time,
-					TCP_REXMIT_DELAY)) {
+					TCP_REXMIT_DELAY)
+				&& (tcp_sk->last_ack != tcp_sk->self.seq)) {
 			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sk->rexmit_mode = 1;

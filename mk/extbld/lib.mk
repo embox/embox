@@ -13,6 +13,7 @@ include $(ROOT_DIR)/mk/core/string.mk
 .PHONY : all download extract patch configure build install
 all : download extract patch configure build install
 
+PKG_SOURCE_DIR  ?= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PKG_INSTALL_DIR := $(BUILD_DIR)/install
 DOWNLOAD_DIR    := $(ROOT_DIR)/download
 

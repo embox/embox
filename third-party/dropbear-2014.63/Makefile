@@ -10,9 +10,9 @@ PKG_PATCHES := dropbear.patch
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
-	cp stubs.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
+	cp stubs.h $(PKG_SOURCE_DIR)
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		./configure \
 			CC=$(EMBOX_GCC) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
@@ -25,13 +25,13 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		make DESTDIR=$(PKG_INSTALL_DIR) install; \
 	)
 	cp $(PKG_INSTALL_DIR)/sbin/dropbear $(PKG_INSTALL_DIR)/dropbear.o

@@ -68,14 +68,6 @@ static inline struct task * task_get_parent(const struct task *tsk) {
 	return NULL;
 }
 
-static inline void task_set_main(struct task *tsk,
-		struct thread *main_thread) {
-	assert(tsk == task_kernel_task());
-	assert(main_thread != NULL);
-	tsk->tsk_main = main_thread;
-	main_thread->task = tsk;
-}
-
 static inline task_priority_t task_get_priority(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return TASK_PRIORITY_DEFAULT;
@@ -114,6 +106,33 @@ static inline void __attribute__((noreturn)) task_exit(void *res) {
 
 static inline int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
+}
+
+static inline void task_thread_register(struct task *tsk, struct thread *t) {
+	assert(tsk != NULL);
+	assert(t != NULL);
+	assert(task_get_main(tsk) != NULL);
+	assert(t->task == NULL);
+
+	t->task = tsk;
+}
+
+static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
+	assert(tsk != NULL);
+	assert(t != NULL);
+
+	/* XXX t->task isn't set to null, thread allowed to know old parent while
+ 	 * shutting down
+	 */
+}
+
+#include <kernel/thread/types.h>
+static inline void task_set_main(struct task *tsk,
+		struct thread *main_thread) {
+	assert(tsk == task_kernel_task());
+	assert(main_thread != NULL);
+	tsk->tsk_main = main_thread;
+	main_thread->task = tsk;
 }
 
 __END_DECLS

@@ -163,8 +163,8 @@ int ntp_valid_stratum(const struct ntphdr *ntph) {
 }
 
 int ntp_delay(const struct ntphdr *ntph,
-		struct timespec *out_ts) {
-	struct timespec client_x, server_r, server_x, client_r, tmp;
+		struct timespec *recv_time, struct timespec *out_ts) {
+	struct timespec client_x, server_r, server_x;
 
 	if ((ntph == NULL) || (out_ts == NULL)) {
 		return -EINVAL;
@@ -173,20 +173,16 @@ int ntp_delay(const struct ntphdr *ntph,
 	ndl_to_ts(&ntph->org, &client_x);
 	ndl_to_ts(&ntph->rec, &server_r);
 	ndl_to_ts(&ntph->xmt, &server_x);
-	getnsofday(&client_r, NULL);
 
-	tmp = timespec_sub(client_r, client_x);
-	tmp = timespec_sub(tmp, timespec_sub(server_x, server_r));
-
-	out_ts->tv_sec = tmp.tv_sec / 2;
-	out_ts->tv_nsec = tmp.tv_nsec / 2;
+	*out_ts = timespec_sub(timespec_sub(server_r, client_x),
+			timespec_sub(server_x, *recv_time));
 
 	return 0;
 }
 
 int ntp_offset(const struct ntphdr *ntph,
-		struct timespec *out_ts) {
-	struct timespec client_x, server_r, server_x, client_r, tmp;
+		struct timespec *recv_time, struct timespec *out_ts) {
+	struct timespec client_x, server_r, server_x;
 
 	if ((ntph == NULL) || (out_ts == NULL)) {
 		return -EINVAL;
@@ -195,31 +191,32 @@ int ntp_offset(const struct ntphdr *ntph,
 	ndl_to_ts(&ntph->org, &client_x);
 	ndl_to_ts(&ntph->rec, &server_r);
 	ndl_to_ts(&ntph->xmt, &server_x);
-	getnsofday(&client_r, NULL);
 
-	tmp = timespec_sub(server_r, client_x);
-	tmp = timespec_add(tmp, timespec_sub(server_x, client_r));
-
-	out_ts->tv_sec = tmp.tv_sec / 2;
-	out_ts->tv_nsec = tmp.tv_nsec / 2;
+	*out_ts = timespec_add(timespec_sub(server_r, client_x),
+			timespec_sub(server_x, *recv_time));
+	out_ts->tv_sec /= 2;
+	out_ts->tv_nsec /= 2;
 
 	return 0;
 }
 
 int ntp_time(const struct ntphdr *ntph, struct timespec *out_ts) {
 	int ret;
-	struct timespec tmp, delay;
+	struct timespec xmt_time, recv_time, delay;
 
 	if ((ntph == NULL) || (out_ts == NULL)) {
 		return -EINVAL;
 	}
 
-	ndl_to_ts(&ntph->xmt, &tmp);
-	ret = ntp_delay(ntph, &delay);
+	ndl_to_ts(&ntph->xmt, &xmt_time);
+	getnsofday(&recv_time, NULL);
+
+	ret = ntp_delay(ntph, &recv_time, &delay);
 	if (ret != 0) {
 		return ret;
 	}
-	*out_ts = timespec_add(tmp, delay);
+
+	*out_ts = timespec_add(xmt_time, delay);
 
 	return 0;
 }

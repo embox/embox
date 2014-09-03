@@ -25,7 +25,6 @@ target_libgcc_cppflags := -DLIBGCC2_HAS_XF_MODE=0 \
 cppflags = -I$(ROOT_DIR)/third-party/gcc/include \
 	$${EMBOX_IMPORTED_CPPFLAGS} \
 	-I$(PKG_BUILD_DIR)/gcc/include
-PKG_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PKG_BUILD_DIR  := $(BUILD_DIR)/build
 
 $(CONFIGURE) :

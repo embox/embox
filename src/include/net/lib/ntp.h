@@ -97,10 +97,10 @@ extern int ntp_mode_client(const struct ntphdr *ntph);
 extern int ntp_mode_server(const struct ntphdr *ntph);
 extern int ntp_valid_stratum(const struct ntphdr *ntph);
 extern const char * ntp_stratum_error(const struct ntphdr *ntph);
-extern int ntp_delay(const struct ntphdr *ntp,
-		struct timespec *out_ts);
+extern int ntp_delay(const struct ntphdr *ntph,
+		struct timespec *recv_time, struct timespec *out_ts);
 extern int ntp_offset(const struct ntphdr *ntp,
-		struct timespec *out_ts);
+		struct timespec *recv_time, struct timespec *out_ts);
 extern int ntp_time(const struct ntphdr *ntph,
 		struct timespec *out_ts);
 

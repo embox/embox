@@ -13,11 +13,7 @@ SIM_ARG="$2"
 shift 2
 OTHER_ARGS="$@"
 
-if [ $CONTINIOUS_RUN_TIMEOUT ]; then
-	TIMEOUT=$CONTINIOUS_RUN_TIMEOUT
-else
-	TIMEOUT=45
-fi
+TIMEOUT=${CONTINIOUS_RUN_TIMEOUT-45}
 
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
@@ -30,6 +26,12 @@ RUN_QEMU="./scripts/qemu/auto_qemu $SIM_ARG"
 
 USERMODE_START_OUTPUT=$OUTPUT_FILE
 
+packetdrill_run() {
+	AUTOQEMU_NICS=""
+	TIMEOUT=120
+	default_run
+}
+
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
@@ -38,7 +40,7 @@ atml2run=(
 	['x86/smp']=default_run
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
-	['x86/test/packetdrill']=default_run
+	['x86/test/packetdrill']=packetdrill_run
 	['sparc/debug']=default_run
 	['mips/debug']=default_run
 	['ppc/debug']=default_run
@@ -49,6 +51,15 @@ atml2run=(
 	['generic/qemu_bg_kill']=kill_bg_wrapper
 	['generic/fail']=false
 )
+
+sudo_var_pass() {
+	if [ ${!1+defined} ]; then
+		echo $1=${!1}
+	else
+		#output is passed to sudo that not likes empty arguments
+		echo __T=
+	fi
+}
 
 sim_bg=
 run_bg() {
@@ -65,10 +76,12 @@ run_bg() {
 		run_cmd="$RUN_QEMU"
 	fi
 
+	set +ve
 	sudo PATH=$PATH \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
-		AUTOQEMU_NICS_CONFIG="$AUTOQEMU_NICS_CONFIG" \
+		"$(sudo_var_pass AUTOQEMU_NICS)" \
+		"$(sudo_var_pass AUTOQEMU_NICS_CONFIG)"	\
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		$run_cmd &
 	sim_bg=$!

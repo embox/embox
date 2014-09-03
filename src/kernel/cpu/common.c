@@ -6,7 +6,6 @@
  * @author Ilia Vaprol
  */
 
-#include <module/embox/kernel/sched/strategy/affinity_api.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/cpu/cpudata.h>
 #include <kernel/sched/affinity.h>
@@ -24,7 +23,7 @@ void cpu_init(unsigned int cpu_id, struct thread *idle_) {
 
 void cpu_bind(unsigned int cpu_id, struct thread *t) {
 	//t->affinity = 1 << cpu_id;
-	sched_affinity_set(&(t->schedee), 1 << cpu_id);
+	sched_affinity_set(&t->schedee.affinity, 1 << cpu_id);
 }
 
 struct thread * cpu_get_idle(unsigned int cpu_id) {

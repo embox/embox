@@ -25,10 +25,14 @@ module multi extends api {
 
 	depends embox.compat.posix.proc.vfork
 
-	depends embox.kernel.thread.core /* uses task_self() to initialize
-										resources, which implies to thread be
-										already loaded, as task_self uses
-										thread_self to determine current thread */
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	/* uses task_self() to initialize
+	 * resources, which implies to thread be
+	 * already loaded, as task_self uses
+	 * thread_self to determine current thread
+	 */
+
 	@NoRuntime depends embox.compat.libc.LibCAssert
 	@NoRuntime depends embox.compat.libc.LibCString
 }

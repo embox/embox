@@ -5,7 +5,8 @@
  * @author: Anton Bondarev
  */
 
-/*
+#include <pthread.h>
+
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
 	return -ENOSYS;
 }
@@ -49,5 +50,3 @@ int pthread_rwlockattr_init(pthread_rwlockattr_t *rwlock) {
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *rwlock, int pshared) {
 	return -ENOSYS;
 }
-*/
-

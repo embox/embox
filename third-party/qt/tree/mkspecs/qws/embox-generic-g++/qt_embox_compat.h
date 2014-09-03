@@ -23,7 +23,7 @@
 
 // #define __MAKEDEPEND__
 
-#define RAND_MAX 32767
+//#define RAND_MAX 32767
 
 #define HUGE_VAL 0
 

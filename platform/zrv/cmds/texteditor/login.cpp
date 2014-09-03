@@ -1,4 +1,5 @@
 #include <pwd.h>
+#include <crypt.h>
 #include "login.h"
 #include "mainwindow.h"
 
@@ -75,7 +76,7 @@ void LoginDialog::slotAcceptLogin() {
     	return;
     }
 
-    if (0 != strcmp(spwd->sp_pwdp, password.toAscii().data())) {
+    if (0 != strcmp(spwd->sp_pwdp, crypt(password.toAscii().data(), NULL))) {
     	errorLabel->setText("<font color='red'>Неверный пароль</font>");
     	formGridLayout->addWidget( errorLabel, 0, 0);
     	return;

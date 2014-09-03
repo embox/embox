@@ -1,0 +1,51 @@
+diff -aur pjproject-2.2.1.orig/build.mak.in pjproject-2.2.1/build.mak.in
+--- pjproject-2.2.1.orig/build.mak.in	2014-08-21 14:58:09.862908350 +0400
++++ pjproject-2.2.1/build.mak.in	2014-08-21 14:58:02.036241914 +0400
+@@ -177,10 +177,6 @@
+ export APP_LDXXFLAGS := $(APP_LDFLAGS)
+ 
+ export APP_LIB_FILES = \
+-	$(PJ_DIR)/pjsip/lib/libpjsua-$(LIB_SUFFIX) \
+-	$(PJ_DIR)/pjsip/lib/libpjsip-ua-$(LIB_SUFFIX) \
+-	$(PJ_DIR)/pjsip/lib/libpjsip-simple-$(LIB_SUFFIX) \
+-	$(PJ_DIR)/pjsip/lib/libpjsip-$(LIB_SUFFIX) \
+ 	$(PJ_DIR)/pjmedia/lib/libpjmedia-codec-$(LIB_SUFFIX) \
+ 	$(PJ_DIR)/pjmedia/lib/libpjmedia-videodev-$(LIB_SUFFIX) \
+ 	$(PJ_DIR)/pjmedia/lib/libpjmedia-$(LIB_SUFFIX) \
+@@ -238,11 +234,7 @@
+ 	$(ADD_LIB_FILES)
+ endif
+ 
+-export APP_LDLIBS := $(PJSUA_LIB_LDLIB) \
+-	$(PJSIP_UA_LDLIB) \
+-	$(PJSIP_SIMPLE_LDLIB) \
+-	$(PJSIP_LDLIB) \
+-	$(PJMEDIA_CODEC_LDLIB) \
++export APP_LDLIBS := $(PJMEDIA_CODEC_LDLIB) \
+ 	$(PJMEDIA_LDLIB) \
+ 	$(PJMEDIA_VIDEODEV_LDLIB) \
+ 	$(PJMEDIA_AUDIODEV_LDLIB) \
+diff -aur pjproject-2.2.1.orig/Makefile pjproject-2.2.1/Makefile
+--- pjproject-2.2.1.orig/Makefile	2014-08-21 14:58:09.859575016 +0400
++++ pjproject-2.2.1/Makefile	2014-08-21 14:56:42.619577587 +0400
+@@ -3,7 +3,7 @@
+ -include user.mak
+ include version.mak
+ 
+-LIB_DIRS = pjlib/build pjlib-util/build pjnath/build third_party/build pjmedia/build pjsip/build
++LIB_DIRS = pjlib/build pjlib-util/build pjnath/build third_party/build pjmedia/build #pjsip/build
+ DIRS = $(LIB_DIRS) pjsip-apps/build $(EXTRA_DIRS)
+ 
+ ifdef MINSIZE
+diff -aur pjproject-2.2.1.orig/pjsip-apps/build/Samples.mak pjproject-2.2.1/pjsip-apps/build/Samples.mak
+--- pjproject-2.2.1.orig/pjsip-apps/build/Samples.mak	2014-08-21 14:58:09.889575016 +0400
++++ pjproject-2.2.1/pjsip-apps/build/Samples.mak	2014-08-21 14:48:13.632925923 +0400
+@@ -55,7 +55,7 @@
+ .PHONY: $(EXES)
+ .PHONY: $(PJSUA2_EXES)
+ 
+-all: $(EXES) $(PJSUA2_EXES)
++all: $(EXES) #$(PJSUA2_EXES)
+ 
+ $(EXES):
+ 	$(MAKE) --no-print-directory -f $(RULES_MAK) SAMPLE_SRCDIR=$(SRCDIR) SAMPLE_OBJS=$@.o SAMPLE_CFLAGS="$(_CFLAGS)" SAMPLE_CXXFLAGS="$(_CXXFLAGS)" SAMPLE_LDFLAGS="$(_LDFLAGS)" SAMPLE_EXE=$@ APP=SAMPLE app=sample $(subst /,$(HOST_PSEP),$(BINDIR)/$@)

@@ -12,11 +12,11 @@ module sync {
 module mutex {
 	source "mutex.c"
 
-	depends embox.kernel.sched.strategy.priority_api
+	depends embox.kernel.sched.priority.priority
 	depends embox.kernel.sched.wait_queue
 
-	depends embox.kernel.schedee.mutex
-	depends embox.kernel.thread.sched_wait
+	depends embox.kernel.sched.mutex
+	depends embox.kernel.sched.sched
 }
 
 module sem {

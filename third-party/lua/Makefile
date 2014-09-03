@@ -19,7 +19,7 @@ LUA_CPPFLAGS += -DLUASOCKET_SUPPORT
 endif
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		make posix MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="-I$(ROOT_DIR)/third-party/lua/include/ \
@@ -28,9 +28,9 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lua $(PKG_INSTALL_DIR)/lua.o
+	cp $(PKG_SOURCE_DIR)/src/lua $(PKG_INSTALL_DIR)/lua.o
 	mkdir -p $(PKG_INSTALL_DIR)/include
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lua.h $(PKG_INSTALL_DIR)/include/
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/luaconf.h $(PKG_INSTALL_DIR)/include/
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/lauxlib.h $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/src/lua.h $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/src/luaconf.h $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/src/lauxlib.h $(PKG_INSTALL_DIR)/include/
 	touch $@

@@ -32,6 +32,8 @@
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
+#include <err.h>
+
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
 
@@ -73,7 +75,8 @@ static int tcp_init(struct sock *sk) {
 	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
 	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
 	INIT_LIST_HEAD(&tcp_sk->conn_wait);
-	tcp_sk->conn_queue_len = tcp_sk->conn_queue_max = 0;
+	INIT_LIST_HEAD(&tcp_sk->conn_free);
+	tcp_sk->free_wait_queue_len = tcp_sk->free_wait_queue_max = 0;
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
@@ -213,6 +216,42 @@ static int tcp_connect(struct sock *sk,
 	return ret;
 }
 
+static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
+	int to_alloc;
+
+	assert(tcp_sk != NULL);
+
+	to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
+	/* to_alloc allowed to be negative. It could be if backlog had set and then
+ 	 * was reduced.
+	 */
+
+	while (to_alloc > 0) {
+		struct sock *newsk;
+		struct tcp_sock *tcp_newsk;
+
+		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+				SOCK_STREAM, IPPROTO_TCP);
+		if (err(newsk) != 0) {
+			break;
+		}
+
+		to_alloc--;
+
+		tcp_newsk = to_tcp_sock(newsk);
+		tcp_newsk->parent = tcp_sk;
+
+		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+		{
+			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_free);
+			tcp_sk->free_wait_queue_len++;
+		}
+		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	}
+
+	return to_alloc;
+}
+
 static int tcp_listen(struct sock *sk, int backlog) {
 	int ret;
 	struct tcp_sock *tcp_sk;
@@ -235,8 +274,10 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				ret = -EINVAL; /* error: invalid backlog */
 				break;
 			}
+			tcp_sk->free_wait_queue_max = backlog;
+			/* this could be not first listen call, adjusting backlog queue */
+			tcp_sock_alloc_missing_backlog(tcp_sk);
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
-			tcp_sk->conn_queue_max = backlog;
 			ret = 0;
 			break;
 		}
@@ -250,6 +291,10 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *tcp_newsk;
 	/* get first socket from */
 
+	if (list_empty(&tcp_sk->conn_ready)) {
+		return NULL;
+	}
+
 	tcp_newsk = list_entry(tcp_sk->conn_ready.next, struct tcp_sock, conn_lnk);
 
 	/* check if reading was enabled for socket that already released */
@@ -260,8 +305,8 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 
 	/* delete new socket from list */
 	list_del_init(&tcp_newsk->conn_lnk);
-	assert(tcp_sk->conn_queue_len != 0);
-	--tcp_sk->conn_queue_len;
+	assert(tcp_sk->free_wait_queue_len > 0);
+	--tcp_sk->free_wait_queue_len;
 
 	return tcp_newsk;
 }
@@ -292,11 +337,9 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	{
 		do {
-			if (!list_empty(&tcp_sk->conn_ready)) {
-				tcp_newsk = accept_get_connection(tcp_sk);
-				if (tcp_newsk) {
-					break;
-				}
+			tcp_newsk = accept_get_connection(tcp_sk);
+			if (tcp_newsk) {
+				break;
 			}
 			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
 		} while (!ret);
@@ -310,6 +353,8 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			return -ECONNRESET; /* FIXME */
 		}
 	}
+
+	tcp_sock_alloc_missing_backlog(tcp_sk);
 
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 		tcp_sock_release(tcp_newsk);

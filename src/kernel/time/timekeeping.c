@@ -33,7 +33,11 @@ void getnsofday(struct timespec *t, struct timezone *tz) {
 			.tv_sec = abstime.time.tv_sec,
 			.tv_nsec = abstime.time.tv_nsec
 	};
-	time64_t cur = itimer.cs->read(itimer.cs);
+	time64_t cur;
+
+	assert(itimer.cs);
+	assert(itimer.cs->read);
+	cur = itimer.cs->read(itimer.cs);
 
 	ts = timespec_add_ns(ts, cur);
 

@@ -6,9 +6,7 @@
  */
 
 #include <kernel/sched.h>
-#include <kernel/thread.h>
-#include <kernel/sched/waitq.h>
-
+#include <kernel/sched/schedee.h>
 
 void sched_signal(struct schedee *s) {
 	sched_lock();

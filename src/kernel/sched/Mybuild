@@ -1,31 +1,44 @@
 package embox.kernel.sched
 
 module sched {
+	option boolean light_idle=false
+	source "sched_start.c"
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.thread.core
+
 	source "sched.c"
 	depends embox.kernel.addr_space
 
 	source "sched_signal.c"
 
-	source "sched_wait.c"
-
 	depends embox.arch.context /* context_switch */
-	depends strategy.api
 
-	@NoRuntime depends embox.kernel.thread.signal.lock_api
-	@NoRuntime depends embox.kernel.thread.signal_api
-	@NoRuntime depends embox.compat.posix.util.time
-	@NoRuntime depends embox.kernel.critical
-	@NoRuntime depends embox.profiler.trace
+	depends schedee
 
-	@NoRuntime depends sched_ticker
-	@NoRuntime depends wait_queue
+	depends embox.kernel.thread.signal.lock_api
+	depends embox.kernel.thread.signal_api
+	depends embox.compat.posix.util.time
+	depends embox.kernel.critical
+	depends embox.profiler.trace
+
+	depends sched_ticker
+	depends wait_queue
 
 	//XXX kernel/thread.h included
 	depends embox.kernel.thread.thread_wait
 
 	depends embox.kernel.lthread.lthread_api
-	@NoRuntime depends embox.kernel.schedee.current.api
+	depends embox.kernel.sched.current.api
+}
 
+module schedee {
+	/* source "include/kernel/sched/schedee.h" */
+
+	depends strategy.runq.api
+	depends priority.priority
+	depends affinity.affinity
+	depends timing.timing
 }
 
 module sched_ticker {

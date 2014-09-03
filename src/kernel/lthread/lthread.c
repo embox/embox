@@ -13,8 +13,8 @@
 #include <err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/schedee/schedee.h>
-#include <kernel/schedee/current.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <kernel/lthread/lthread_priority.h>
 #include <mem/misc/pool.h>
 
@@ -35,13 +35,12 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 
 	/* lthread is not in runq, it can be waken up again. */
 	next->ready = false;
+	next->waiting = true;
 
 	/* We have to restore ipl as soon as possible. */
 	ipl_restore(ipl);
 
 	lt->run_ret = next->run(next->run_arg);
-
-	next->waiting = true;
 
 	return SCHEDEE_REPEAT;
 }
@@ -49,19 +48,7 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	assert(lt);
 
-	lt->schedee.run = run;
-	lt->schedee.process = lthread_process;
-	lt->schedee.run_arg = arg;
-
-	lt->schedee.ready = false;
-	lt->schedee.active = false;
-	lt->schedee.waiting = true;
-
-	lt->schedee.lock = SPIN_UNLOCKED;
-
-	runq_item_init(&lt->schedee.sched_attr.runq_link);
-	sched_affinity_init(&lt->schedee);
-	lthread_priority_init(lt, LTHREAD_PRIORITY_DEFAULT);
+	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT, lthread_process, run, arg);
 	sched_wait_info_init(&lt->info);
 }
 

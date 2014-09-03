@@ -3,7 +3,7 @@
 #FS_TEST_RO="iso9660 jffs2"
 #FS_TEST_RW="vfat ext2 ext3 ext4"
 FS_TEST_RO="jffs2"
-FS_TEST_RW="ext2 ext3 ntfs"
+FS_TEST_RW="ext2 ext3 ext4 ntfs"
 FS_TEST_NETWORK="nfs cifs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
@@ -65,14 +65,6 @@ run_qemu_fs() {
 	esac
 
 	echo $img_mount >> $START_SCRIPT
-
-	#XXX remove this. We try to mount cifs multiple times because mount does not work otherwise
-	if [ cifs = $FS ]; then
-		echo $img_mount >> $START_SCRIPT
-		echo \"sleep 1000\", >> $START_SCRIPT
-		echo $img_mount >> $START_SCRIPT
-		echo \"sleep 1000\", >> $START_SCRIPT
-	fi
 
 	echo \"ls /mnt/fs_test\", >> $START_SCRIPT
 	echo \"test -t fs_test_read\", >> $START_SCRIPT

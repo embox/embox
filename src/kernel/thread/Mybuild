@@ -1,24 +1,14 @@
 package embox.kernel.thread
 
-@DefaultImpl(NoThreads)
-abstract module thread_mode {
-
-}
-
-module NoThreads extends thread_mode {
-
-}
-
-module core extends thread_mode {
+module core {
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
 
 	source "core.c"
 	source "thread_allocator.c"
-	source "thread_register.c"
 	source "thread_switch.c"
 
-	depends starter
+	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.arch.context
@@ -33,36 +23,12 @@ module core extends thread_mode {
 	@NoRuntime depends embox.compat.libc.LibCAssert
 
 	depends embox.kernel.cpu.common
-	depends embox.kernel.schedee.current.api
+	depends embox.kernel.sched.current.api
 }
 
 module sched_wait {
 	option boolean timer_allocate_on_stack = true
 	source "thread_sched_wait.c"
-}
-
-
-module starter {
-	source "starter.c"
-	depends embox.kernel.task.kernel_task
-	@NoRuntime depends boot_thread
-	depends idle_thread
-	depends embox.kernel.time.jiffies
-	//depends thread_local
-}
-
-module boot_thread {
-	source "boot_thread.c"
-	@NoRuntime depends embox.kernel.task.kernel_task
-	depends embox.kernel.schedee.current.api
-}
-
-module idle_thread {
-	source "idle_thread.c"
-	@NoRuntime depends core
-	depends thread_local // FIXME
-	depends embox.kernel.cpu.common
-	@NoRuntime depends embox.kernel.task.kernel_task
 }
 
 @DefaultImpl(signal)

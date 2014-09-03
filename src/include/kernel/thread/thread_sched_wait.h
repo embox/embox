@@ -13,7 +13,6 @@
 #include <kernel/thread/signal_lock.h>
 #include <kernel/sched.h>
 
-
 /**
  * Wait cond_expr to become TRUE.
  */
@@ -44,9 +43,6 @@
 	}))
 
 __BEGIN_DECLS
-
-extern void sched_wait_prepare(void);
-extern void sched_wait_cleanup(void);
 
 extern int sched_wait(void);
 

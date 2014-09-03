@@ -52,7 +52,7 @@ typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
 
 
-typedef __INTPTR_TYPE__ intptr_t;
+typedef __intptr_t intptr_t;
 
 typedef __uintptr_t uintptr_t;
 

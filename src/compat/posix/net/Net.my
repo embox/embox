@@ -27,6 +27,9 @@ static module gai_strerror {
 
 static module getaddrinfo {
 	source "getaddrinfo.c"
+	depends getprotobynumber,
+		getservent,
+		getservbyname
 }
 
 static module getnameinfo {

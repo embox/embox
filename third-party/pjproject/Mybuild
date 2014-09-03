@@ -1,0 +1,30 @@
+
+package third_party.pjproject
+
+@App
+@AutoCmd
+@Cmd(name="streamutil", help="", man="")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+/*@BuildDepends(third_party.STLport.core)*/
+module core {
+	source "^BUILD/extbld/^MOD_PATH/install/streamutil.o"
+
+	depends embox.net.lib.getifaddrs
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_key
+	depends embox.compat.posix.pthread_rwlock
+	depends embox.compat.posix.semaphore
+	depends embox.compat.posix.fs.fsop
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.net.getaddrinfo
+	depends embox.compat.posix.util.gethostname
+
+	depends embox.compat.libc.LibCStdioFseek
+	depends embox.compat.libc.LibCStdioRename
+	depends embox.compat.libc.LibCTime
+
+	/*depends third_party.STLport.core*/
+
+
+}

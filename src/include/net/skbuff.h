@@ -131,6 +131,7 @@ extern struct sk_buff * skb_wrap(size_t size,
  * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(size_t size);
+extern struct sk_buff * skb_alloc_dynamic(size_t size);
 
 extern struct sk_buff * skb_realloc(size_t size,
 		struct sk_buff *skb);
