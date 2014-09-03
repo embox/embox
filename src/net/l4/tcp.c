@@ -1260,6 +1260,28 @@ static int tcp6_rcv_tester_soft(const struct sock *sk,
 extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
 extern uint16_t sock_get_secure_level(const struct sock *sk);
 
+static int tcp_rcv_need_check_security(struct tcp_sock *tcp_sk) {
+	switch (tcp_sk->state) {
+	case TCP_CLOSED:
+	case TCP_LISTEN:
+		return 1;
+	case TCP_SYN_SENT:
+	case TCP_SYN_RECV_PRE:
+	case TCP_SYN_RECV:
+	case TCP_ESTABIL:
+	case TCP_FINWAIT_1:
+	case TCP_FINWAIT_2:
+	case TCP_CLOSEWAIT:
+	case TCP_CLOSING:
+	case TCP_LASTACK:
+	case TCP_TIMEWAIT:
+	case TCP_MAX_STATE:
+		break;
+	}
+
+	return 0;
+}
+
 static int tcp_rcv(struct sk_buff *skb) {
 	struct sock *sk;
 	struct tcp_sock *tcp_sk;
@@ -1280,14 +1302,18 @@ static int tcp_rcv(struct sk_buff *skb) {
 					: tcp6_rcv_tester_soft,
 				skb);
 	}
-	if (sk) {
-		/* if we have socket with secure label we have to check secure level */
-		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
-			return 0;
+
+	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
+
+	if (tcp_sk) {
+		if (tcp_rcv_need_check_security(tcp_sk)) {
+			/* if we have socket with secure label we have to check secure level */
+			if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+				return 0;
+			}
 		}
 	}
 
-	tcp_sk = sk != NULL ? to_tcp_sock(sk) : NULL;
 	packet_print(tcp_sk, skb, "=>",
 			ip_check_version(ip_hdr(skb)) ? AF_INET : AF_INET6,
 			ip_check_version(ip_hdr(skb))
