@@ -19,8 +19,10 @@ static inline int try_free_pte(mmu_pte_t *pte, mmu_pmd_t *pmd) {
 		}
 	}
 
+#if MMU_PTE_SHIFT != MMU_PMD_SHIFT
 	mmu_pmd_unset(pmd);
 	vmem_free_pte_table(pte);
+#endif
 
 	return 1;
 }
@@ -32,8 +34,10 @@ static inline int try_free_pmd(mmu_pmd_t *pmd, mmu_pgd_t *pgd) {
 		}
 	}
 
+#if MMU_PMD_SHIFT != MMU_PGD_SHIFT
 	mmu_pgd_unset(pgd);
 	vmem_free_pmd_table(pmd);
+#endif
 
 	return 1;
 }
