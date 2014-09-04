@@ -18,6 +18,8 @@ module tracing extends trace {
 	depends embox.kernel.time.clock_source
 	depends embox.util.hashtable
 	depends embox.lib.debug.symbol
+
+	depends cyg_profile
 }
 
 module coverage {
@@ -25,4 +27,10 @@ module coverage {
 	source "coverage.c"
 
 	depends embox.lib.debug.symbol
+	depends cyg_profile
+}
+
+static module cyg_profile {
+	source "__cyg_profile.c"
+	source "cyg_profile.h"
 }

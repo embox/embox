@@ -31,6 +31,7 @@
 #include <profiler/tracing/trace.h>
 
 #include <embox/unit.h>
+#include "cyg_profile.h"
 
 EMBOX_UNIT_INIT(instrument_profiling_init);
 
@@ -52,6 +53,30 @@ profiling_mode get_profiling_mode(void) {
 void set_profiling_mode(profiling_mode new_mode) {
 	p_mode = new_mode;
 	return;
+}
+
+void cyg_tracing_profiler_enter(void *func, void *caller) {
+	/* This function is for instrument profiling. It is being called just before
+	 * every call of instrumented funcion.
+	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
+	 */
+	if (get_profiling_mode() == CYG_PROFILING) {
+		set_profiling_mode(DISABLED);
+		trace_block_func_enter(func);
+		set_profiling_mode(CYG_PROFILING);
+	}
+}
+
+void cyg_tracing_profiler_exit(void *func, void *caller) {
+	/* This function is for instrument profiling. It is being called after every
+	 * exit from instrumented funcion.
+	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
+	 */
+	 if (get_profiling_mode() == CYG_PROFILING) {
+		set_profiling_mode(DISABLED);
+		trace_block_func_exit(func);
+		set_profiling_mode(CYG_PROFILING);
+	}
 }
 
 /* Hashtable to keep all dynamically generated trace_blocks */
@@ -254,6 +279,12 @@ static int instrument_profiling_init(void) {
 		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
 	}
+
+	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_enter_array);
+	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_exit_array);
+	ARRAY_SPREAD_ADD(__cyg_handler_enter_array, &cyg_tracing_profiler_enter);
+	ARRAY_SPREAD_ADD(__cyg_handler_exit_array, &cyg_tracing_profiler_exit);
+
 	return 0;
 }
 
@@ -294,4 +325,5 @@ void trace_block_hashtable_destroy(void) {
 	cyg_profiling = c;*/
 	// TODO: remove this function
 }
+
 
