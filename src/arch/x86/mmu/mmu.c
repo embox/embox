@@ -7,6 +7,7 @@
  */
 
 #include <stdint.h>
+#include <kernel/panic.h>
 
 #include <asm/flags.h>
 
@@ -128,7 +129,7 @@ int mmu_pte_present(mmu_pte_t *pte) {
 /* Set functions */
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
-	return ;
+	panic("%s\n", __func__);
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
@@ -158,7 +159,7 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 /* Unset functions */
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	return ;
+	panic("%s\n", __func__);
 }
 
 void mmu_pmd_unset(mmu_pmd_t *pmd) {
