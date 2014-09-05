@@ -39,15 +39,17 @@ void mmap_init(struct emmap *mmap) {
 }
 
 void mmap_free(struct emmap *mmap) {
+	//XXX: Bad code
+	mmu_set_context(1);
 	mmap_clear(mmap);
-	vmem_free_context(mmap->ctx);
+	//vmem_free_context(mmap->ctx);
 }
 
 void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), 1);
+		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), 0);
 
 		marea_destroy(marea);
 	}
