@@ -40,10 +40,10 @@ int mmap_kernel_init(void) {
 		dlist_del_init(&marea->mmap_link);
 		dlist_add_next(&marea->mmap_link, &emmap->marea_list);
 	}
-	early_emmap.ctx = -1;
-
 	ret = vmem_map_kernel();
 	assert(ret == 0);
+
+	early_emmap.ctx = -1;
 
 	mmap_mapping(emmap);
 
