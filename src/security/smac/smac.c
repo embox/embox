@@ -16,6 +16,7 @@
 #include <fs/flags.h>
 #include <fs/flags.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <embox/unit.h>
 #include <security/seculog.h>
 
@@ -84,8 +85,9 @@ static void audit_log(const char *subject, const char *object,
 	getnsofday(&ts, NULL);
 	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
 	snprintf(line, AUDITLINE_LEN,
-			"[%s] subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
+			"[%s] cmd=%s subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
 			ctime(&time),
+			task_self() != task_kernel_task() ? task_get_name(task_self()) : "init",
 			pwd ? pwd->pw_name : "?",
 			subject,
 			object,
