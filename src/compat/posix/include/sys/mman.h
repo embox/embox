@@ -28,10 +28,7 @@ __BEGIN_DECLS
 
 #define MAP_FAILED (void*)-1
 
-extern void  *mmap(void *, size_t, int, int, int, off_t);
-extern int    mprotect(void *, size_t, int);
-extern int    munmap(void *, size_t);
-#if 0
+#if 1
 #include <errno.h>
 static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	// ToDo: implement for InitFS files
@@ -56,10 +53,15 @@ static inline int munmap(void *addr, size_t size) {
 }
 #endif
 
+extern void  *mmap(void *, size_t, int, int, int, off_t);
+extern int    mprotect(void *, size_t, int);
+extern int    munmap(void *, size_t);
+
 /* QNX */
 
 #define PROT_NOCACHE 0x80
 
+/* TODO move to compat/qnx */
 #include <module/embox/mem/vmem_api.h>
 extern void *mmap_device_memory(void * addr,
                            size_t len,
