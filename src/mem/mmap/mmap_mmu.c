@@ -57,9 +57,11 @@ static int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 
+#if 0
 	if (mmap_active(mmap)) {
 		mmap_do_marea_map(mmap, marea);
 	}
+#endif
 }
 
 void mmap_init(struct emmap *mmap) {
