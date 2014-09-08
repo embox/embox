@@ -18,7 +18,9 @@ struct task * task_kernel_task(void) {
 	return &kernel_task;
 }
 
-extern int mmap_kernel_init(void);
+int __attribute__((weak)) mmap_kernel_init(void) {
+	return 0;
+}
 
 static int kernel_task_init(void) {
 	int ktask_id;

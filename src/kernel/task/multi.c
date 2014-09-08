@@ -311,7 +311,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	task_finish_exit();
 }
 
-extern void task_mmap_deinit(const struct task *task) __attribute__((weak));
+void __attribute__((weak)) task_mmap_deinit(const struct task *task)  {
+
+}
 
 void task_delete(struct task *tsk) {
 	task_mmap_deinit(tsk);
