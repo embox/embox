@@ -306,6 +306,7 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 
 	emmap = task_self_resource_mmap();
 
+	sched_lock();
 	mmu_set_context(emmap->ctx);
 
 	memset(&exec, 0, sizeof(exec_t));
@@ -315,7 +316,6 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 		SET_ERRNO(-err);
 		return -1;
 	}
-
 
 	stack = mmap_create_stack(emmap);
 	//stack = mmap_userspace_create(emmap, 0x1000);
@@ -329,6 +329,9 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	ue_data.sp = (void *) stack;
 
 	usermode_entry(&ue_data);
+
+	mmu_set_context(1);
+	sched_unlock();
 
 	SET_ERRNO(EINTR);
 	return -1;

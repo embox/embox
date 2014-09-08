@@ -20,6 +20,7 @@ struct marea {
 	uintptr_t start;
 	uintptr_t end;
 	uint32_t flags;
+	uint32_t is_allocated;
 
 	struct dlist_head mmap_link;
 };

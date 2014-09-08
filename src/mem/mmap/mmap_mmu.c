@@ -49,7 +49,7 @@ void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), 0);
+		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), marea->is_allocated);
 
 		marea_destroy(marea);
 	}
@@ -75,6 +75,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		return NULL;
 	}
 
+	marea->is_allocated = 1;
 	if (vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE)) {
 		free(marea);
 		return NULL;
