@@ -40,15 +40,13 @@ static int task_mmap_inherit(const struct task *task,
 	return mmap_inherit(mmap, parent_mmap);
 }
 
-static void task_mmap_deinit(const struct task *task) {
-#if 0
+void task_mmap_deinit(const struct task *task) {
 	struct emmap *mmap;
 
 	mmap = task_resource_mmap(task);
 	assert(mmap != NULL);
 
 	mmap_free(mmap);
-#endif
 }
 
 static size_t task_mmap_offset;
@@ -56,7 +54,7 @@ static size_t task_mmap_offset;
 static const struct task_resource_desc task_mmap_desc = {
 	.init = task_mmap_init,
 	.inherit = task_mmap_inherit,
-	.deinit = task_mmap_deinit,
+	/* .deinit = task_mmap_deinit, */
 	.resource_size = sizeof(struct emmap),
 	.resource_offset = &task_mmap_offset
 };

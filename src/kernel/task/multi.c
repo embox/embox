@@ -311,7 +311,10 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	task_finish_exit();
 }
 
+extern void task_mmap_deinit(const struct task *task) __attribute__((weak));
+
 void task_delete(struct task *tsk) {
+	task_mmap_deinit(tsk);
 
 	dlist_del(&tsk->child_lnk);
 	task_table_del(task_get_id(tsk));
