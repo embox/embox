@@ -414,21 +414,34 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	len = msg->msg_iov->iov_len;
 
+	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
+	if (timeout == 0) {
+		timeout = SCHED_TIMEOUT_INFINITE;
+	}
+
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_sendmsg: sk %p\n", to_sock(tcp_sk));
 
+sendmsg_again:
 	assert(tcp_sk->state < TCP_MAX_STATE);
 	switch (tcp_sk->state) {
 	default:
 		return -ENOTCONN;
+	case TCP_SYN_SENT:
+	case TCP_SYN_RECV:
+		softirq_lock();
+		{
+			ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
+		}
+		softirq_unlock();
+		if (ret != 0) {
+			return ret;
+		}
+		goto sendmsg_again;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
 		softirq_lock();
 		{
-			timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
-			if (timeout == 0) {
-				timeout = SCHED_TIMEOUT_INFINITE;
-			}
 			while ((min(tcp_sk->rem.wind.size, REM_WIND_MAX_SIZE)
 						<= tcp_sk->self.seq - tcp_sk->last_ack)
 					|| tcp_sk->rexmit_mode) {
