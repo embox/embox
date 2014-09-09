@@ -22,9 +22,6 @@
 
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
-/* RFC 868 */
-#define SECONDS_1900_1970 2208988800L
-
 EMBOX_CMD(exec);
 
 static int make_socket(const struct timeval *timeout, int *out_sock,
@@ -116,7 +113,6 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 	if (only_query) {
 		/* show result */
 		struct timespec offset, delay;
-		time_t ts_sec;
 
 		getnsofday(&ts, NULL);
 
@@ -136,9 +132,8 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
 				delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
 
-		ts_sec = ts.tv_sec - SECONDS_1900_1970;
 		printf("[%s] adjust time server %s offset %ld.%.6ld sec\n",
-				ctime(&ts_sec),
+				ctime(&ts.tv_sec),
 				inet_ntoa(*(struct in_addr *)&addr),
 				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC);
 	}
