@@ -34,7 +34,7 @@ static void show_date(void) {
 	memset(buf, 0, 256);
 
 	getnsofday(&ts, NULL);
-	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
+	time = ts.tv_sec;
 	ctime_r(&time, buf);
 
 	printf("%s\n", buf);
@@ -77,7 +77,7 @@ static void set_date(char *new_date) {
 	*end = '\0';
 
 	cur_time = mktime(&date);
-	tv.tv_sec = cur_time + SECONDS_1900_1970;
+	tv.tv_sec = cur_time;
 	tv.tv_nsec = 0;
 	settimeofday(&tv, NULL);
 }
