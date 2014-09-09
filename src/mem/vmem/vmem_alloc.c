@@ -15,8 +15,8 @@
 
 #include <mem/vmem/vmem_alloc.h>
 
-#define VIRTUAL_TABLES_COUNT  OPTION_GET(NUMBER, virual_tables_count)
-#define VIRTUAL_PAGES_COUNT   OPTION_GET(NUMBER, virual_pages_count)
+#define VIRTUAL_TABLES_COUNT  OPTION_GET(NUMBER, virtual_tables_count)
+#define VIRTUAL_PAGES_COUNT   OPTION_GET(NUMBER, virtual_pages_count)
 
 static char virtual_tables[VIRTUAL_TABLES_COUNT][MMU_PAGE_SIZE] __attribute__((aligned(MMU_PAGE_SIZE)));
 PAGE_ALLOCATOR_DEF(static_table_allocator, virtual_tables, VIRTUAL_TABLES_COUNT, MMU_PAGE_SIZE);

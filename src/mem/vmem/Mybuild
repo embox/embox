@@ -18,8 +18,8 @@ module vmem extends vmem_api {
 }
 
 module vmem_alloc {
-	option number virual_tables_count = 2000
-	option number virual_pages_count = 20
+	option number virtual_tables_count = 2000
+	option number virtual_pages_count = 20
 
 	source "vmem_alloc.c"
 

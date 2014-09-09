@@ -40,7 +40,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 	return res;
 }
 
-extern int vmem_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
+int vmem_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	int res = do_copy_region(nctx, ctx, virt_addr, reg_size);
 
 	if (res) {
