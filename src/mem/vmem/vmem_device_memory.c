@@ -11,6 +11,7 @@
 
 #include <kernel/task/resource/mmap.h>
 #include <mem/mapping/marea.h>
+#include <mem/mmap.h>
 
 extern int mmap_kernel_inited(void);
 
@@ -37,5 +38,8 @@ void *mmap_device_memory(void *addr,
 	}
 	mmap_add_marea(emmap, marea);
 
+	if (mmap_kernel_inited()) {
+		mmap_do_marea_map(emmap, marea);
+	}
 	return addr;
 }
