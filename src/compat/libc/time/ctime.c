@@ -97,13 +97,13 @@ struct tm *gmtime(const time_t *timep) {
 
 time_t mktime(struct tm *tm) {
 	time_t time = 0;
-	int year = tm->tm_year, month = tm->tm_mon;
+	int year, month;
 
-	while (--year >= EPOCH_START - YEAR_1900) {
-		time += year_length(year + YEAR_1900);
+	for (year = EPOCH_START; year < YEAR_1900 + tm->tm_year; year++) {
+		time += year_length(year);
 	}
-	while (--month > 0) {
-		time += days_of_month(month, month + 1);
+	for (month = 1; month < tm->tm_mon; month++) {
+		time += days_of_month(tm->tm_year, month);
 	}
 	time += DAY_LENGHT * (tm->tm_mday - 1);
 	time += HOUR_LENGHT * tm->tm_hour;
