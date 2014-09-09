@@ -15,6 +15,7 @@
 
 #include <mem/mapping/marea.h>
 #include <kernel/task/resource/mmap.h>
+#include <kernel/panic.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -23,7 +24,7 @@
 static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
-#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE) & ~(MMU_PAGE_SIZE - 1))
+#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1))
 
 static inline int mmap_active(struct emmap *mmap) {
 #if 0 //TODO this simple version should work
@@ -48,20 +49,46 @@ static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 	return vmem_page_flags;
 }
 
-static int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
+int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 
 	return vmem_map_region(mmap->ctx, marea->start, marea->start, len,  marea_to_vmem_flags(marea->flags));
 }
 
-void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
-	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
+void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
+	size_t len = mmu_size_align(marea->end - marea->start);
+	vmem_unmap_region(mmap->ctx, marea->start, len, marea->is_allocated);
+}
 
-#if 0
-	if (mmap_active(mmap)) {
-		mmap_do_marea_map(mmap, marea);
+static struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
+	struct marea *marea;
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
+		if (INSIDE(vaddr, marea->start, marea->end)) {
+			return marea;
+		}
 	}
-#endif
+	return NULL;
+}
+
+static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
+	if (mmap_find_marea(mmap, marea->start)
+			|| mmap_find_marea(mmap, marea->end)) {
+		return -EEXIST;
+	}
+	return 0;
+}
+
+void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+	struct marea *ma_err;
+
+	if ((ma_err = mmap_find_marea(mmap, marea->start))
+			|| (ma_err = mmap_find_marea(mmap, marea->end))) {
+		panic("%s: intersect existing=%p(%p):%p\n new=%p(%p):%p\n", __func__,
+				(void *) ma_err->start, /* XXX */ (void *) ma_err->start, (void *) ma_err->end,
+				(void *) marea->start, /* XXX */ (void *) marea->start, (void *) marea->end);
+	}
+
+	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
 void mmap_init(struct emmap *mmap) {
@@ -99,14 +126,12 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		goto error;
 	}
 
-	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		if (INTERSECT(start, end, marea->start, marea->end)) {
-			goto error;
-		}
-	}
-
 	if (!(marea = marea_create(start, end, flags))) {
 		goto error;
+	}
+
+	if (0 != mmap_check_marea(mmap, marea)) {
+		goto error_free;
 	}
 
 	marea->is_allocated = 1;
@@ -119,7 +144,6 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 	return marea;
 
 error_free:
-	assert(0);
 	marea_destroy(marea);
 error:
 	return NULL;
@@ -143,20 +167,38 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 		}
 
 		marea = dlist_entry(item, struct marea, mmap_link);
-		s_ptr = marea->end;
+		s_ptr = MAREA_ALIGN_UP(marea->end);
 	} while(1);
 
 	return NULL;
 }
 
+static void mmap_unmap_on_error(struct emmap *emmap, struct marea *err_ma) {
+	struct marea *marea;
+	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+		if (marea == err_ma) {
+			break;
+		}
+		mmap_do_marea_unmap(emmap, marea);
+	}
+}
+
 int mmap_mapping(struct emmap *emmap) {
 	struct marea *marea;
+	int err;
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
-		mmap_do_marea_map(emmap, marea);
+		err = mmap_do_marea_map(emmap, marea);
+		if (err) {
+			goto out_err;
+		}
 	}
 
 	return 0;
+
+out_err:
+	mmap_unmap_on_error(emmap, marea);
+	return err;
 }
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
@@ -168,9 +210,8 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 		}
 		mmap_add_marea(mmap, new_marea);
 	}
-	mmap_mapping(mmap);
 
-	return 0;
+	return mmap_mapping(mmap);
 }
 
 #include <kernel/task/resource/mmap.h>

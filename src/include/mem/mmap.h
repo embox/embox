@@ -42,4 +42,7 @@ static inline void mmap_set_brk(struct emmap *mmap, void *new_brk) {
 	mmap->brk = new_brk;
 }
 
+/* XXX shouldn't be public */
+extern int mmap_do_marea_map(struct emmap *mmap, struct marea *marea);
+
 #endif /* MEM_MMAP_H_ */
