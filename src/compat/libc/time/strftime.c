@@ -25,7 +25,7 @@
  * %T - The time in 24-hour notation (%H:%M:%S)
  */
 size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
-    static char mon_name[12][3] = {
+    static char mon_name[12][4] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
@@ -66,7 +66,7 @@ size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
 			break;
 		case 'b':
 			sprintf(&s[count], "%3s", mon_name[tm->tm_mon]);
-			count += 2;
+			count += 3;
 			break;
 		case 'd':
 			sprintf(&s[count], "%02d", tm->tm_mday);
