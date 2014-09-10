@@ -1203,20 +1203,26 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
  */
 static void tcp_process(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
-	enum tcp_ret_code ret;
-
 	if (tcp_sk != NULL) {
+		enum tcp_ret_code ret;
+
 		tcp_get_now(&tcp_sk->rcv_time);
+
+		ret = tcp_handle(tcp_sk, skb, pre_process);
+		if (ret == TCP_RET_OK) {
+			ret = tcp_handle(tcp_sk, skb, NULL);
+		}
+
+		if (ret == TCP_RET_RST) {
+			send_rst_reply(skb);
+		}
 	}
-
-	ret = tcp_sk != NULL ? tcp_handle(tcp_sk, skb, pre_process)
-			: tcp_hdr(skb)->rst ? (skb_free(skb), TCP_RET_DROP) : TCP_RET_RST;
-
-	if (ret == TCP_RET_OK) {
-		ret = tcp_handle(tcp_sk, skb, NULL);
+	else if (tcp_hdr(skb)->rst) {
+		/* ignore RST when socket doesn't exist */
+		skb_free(skb);
 	}
-
-	if (ret == TCP_RET_RST) {
+	else {
+		/* generate RST when socket doesn't exist */
 		send_rst_reply(skb);
 	}
 }
