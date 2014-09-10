@@ -1210,7 +1210,7 @@ static void tcp_process(struct tcp_sock *tcp_sk,
 	}
 
 	ret = tcp_sk != NULL ? tcp_handle(tcp_sk, skb, pre_process)
-			: TCP_RET_RST;
+			: tcp_hdr(skb)->rst ? (skb_free(skb), TCP_RET_DROP) : TCP_RET_RST;
 
 	if (ret == TCP_RET_OK) {
 		ret = tcp_handle(tcp_sk, skb, NULL);
