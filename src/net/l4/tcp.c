@@ -1309,6 +1309,7 @@ static int tcp_rcv(struct sk_buff *skb) {
 		if (tcp_rcv_need_check_security(tcp_sk)) {
 			/* if we have socket with secure label we have to check secure level */
 			if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+				skb_free(skb);
 				return 0;
 			}
 		}
