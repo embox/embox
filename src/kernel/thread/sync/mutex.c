@@ -56,10 +56,12 @@ int mutex_lock(struct mutex *m) {
 	wait_ret = WAITQ_WAIT(&m->wq, ({
 		int done;
 
+		sched_lock();
 		ret = mutex_trylock(m);
 		done = (ret == 0) || (errcheck && ret == -EAGAIN);
 		if (!done)
 			priority_inherit(current, m);
+		sched_unlock();
 		done;
 
 	}));
