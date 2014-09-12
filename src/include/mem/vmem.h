@@ -42,6 +42,11 @@ extern void vmem_on(void);
 extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
 
+#define EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx) \
+	pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT; \
+	pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT; \
+	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT
+
 #if 0
 static inline int vmem_map_on_itself(mmu_ctx_t ctx, void *addr, size_t size, vmem_page_flags_t flags) {
 	/* Considering that address was aligned, but size may be not */
