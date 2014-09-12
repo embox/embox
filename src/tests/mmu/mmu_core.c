@@ -107,6 +107,8 @@ static int mmu_case_setup(void) {
 		vmem_on();
 	}
 
+	memset(page, 0, sizeof page);
+
 	return 0;
 }
 
