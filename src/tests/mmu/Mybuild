@@ -8,4 +8,5 @@ module mmu_core {
 	//depends embox.arch.x86.mmu
 	//depends embox.arch.x86.test.testtrap
 	depends embox.arch.generic.mmu
+	depends embox.arch.testtrap
 }

@@ -5,5 +5,5 @@ module mmu extends embox.arch.mmu {
 
 	source "mmu.c", "mmu.h"
 
-	depends embox.arch.sparc.test.testtrap // used to define page fault handler
+	depends embox.arch.sparc.testtrap // used to define page fault handler
 }
