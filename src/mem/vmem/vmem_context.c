@@ -12,8 +12,6 @@
 
 #include <kernel/sched/sched_lock.h>
 
-
-extern int vmem_map_kernel(mmu_ctx_t ctx);
 extern mmu_ctx_t mmap_get_current_context(void);
 
 int vmem_create_context(mmu_ctx_t *ctx) {

@@ -35,7 +35,6 @@ extern void *page_alloc_zero(struct page_allocator *allocator, size_t page_numbe
 
 extern void page_free(struct page_allocator *allocator, void *page, size_t page_number);
 
-
 #define PAGE_ALLOCATOR_DEF(name, space, page_number, page_size) \
 	static unsigned long ctrl_space_##name[ page_number/32 ]; \
 	static struct page_allocator name = { \
@@ -45,11 +44,5 @@ extern void page_free(struct page_allocator *allocator, void *page, size_t page_
 			page_number, \
 			ctrl_space_##name \
 	}
-
-
-
-
-
-
 
 #endif /* MEM_PAGE_H_ */

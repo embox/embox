@@ -237,8 +237,6 @@ static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t r
 	return -EINVAL;
 }
 
-#define ALIGN_UP(x, aligment) (((x) + (aligment)) & (~((aligment)-1)))
-
 static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	mmu_pgd_t *pgd, *npgd;
 	mmu_pmd_t *pmd, *npmd;
@@ -258,7 +256,7 @@ static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++, pmd_idx = 0) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			virt_addr = ALIGN_UP(virt_addr, MMU_PGD_SIZE);
+			virt_addr = binalign_bound(virt_addr, MMU_PGD_SIZE);
 			pte_idx = 0;
 			continue;
 		}
@@ -268,7 +266,7 @@ static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt
 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++, pte_idx = 0) {
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				virt_addr = ALIGN_UP(virt_addr, MMU_PMD_SIZE);
+				virt_addr = binalign_bound(virt_addr, MMU_PMD_SIZE);
 				continue;
 			}
 
