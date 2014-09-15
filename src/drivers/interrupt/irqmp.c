@@ -12,10 +12,10 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <mem/page.h>
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>
 #include <drivers/amba_pnp.h>
-#include <hal/mmu.h>
 
 #include <embox/unit.h>
 
@@ -78,7 +78,7 @@ static int unit_init(void) {
 static int irqctrl_memory_map(uint32_t base, size_t len) {
 	void *ptr;
 
-	base = ((uint32_t) base) & ~(MMU_PAGE_SIZE - 1);
+	base = ((uint32_t) base) & ~(PAGE_SIZE() - 1);
 
 	/* 0x100 - random value */
 	ptr = mmap_device_memory((void *) base, len, PROT_READ | PROT_WRITE | PROT_NOCACHE,
