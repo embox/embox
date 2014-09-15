@@ -98,7 +98,7 @@ error:
 	return ret;
 }
 
-static int ntpdate_process(const struct ntphdr *rep, int only_query) {
+static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_query) {
 	int ret;
 	struct timespec ts;
 
@@ -126,10 +126,16 @@ static int ntpdate_process(const struct ntphdr *rep, int only_query) {
 			return ret;
 		}
 
-		printf("stratum %hhd, offset %ld.%.6ld, delay %ld.%.6ld\n",
+		printf("server %s, stratum %hhd, offset %ld.%.6ld, delay %ld.%.6ld\n",
+				inet_ntoa(*(struct in_addr *)&addr),
 				rep->stratum,
 				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
 				delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
+
+		printf("[%s] adjust time server %s offset %ld.%.6ld sec\n",
+				ctime(&ts.tv_sec),
+				inet_ntoa(*(struct in_addr *)&addr),
+				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC);
 	}
 	else {
 		/* setup new time */
@@ -166,7 +172,7 @@ static int ntpdate(in_addr_t addr, const struct timeval *timeout,
 		return ret;
 	}
 
-	return ntpdate_process(&rep, only_query);
+	return ntpdate_process(&rep, addr, only_query);
 }
 
 static int exec(int argc, char **argv) {

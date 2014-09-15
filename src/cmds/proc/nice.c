@@ -6,18 +6,21 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
-#include <sys/resource.h>
 #include <stdio.h>
-#include <framework/cmd/api.h>
 #include <string.h>
+#include <sys/resource.h>
+#include <framework/cmd/api.h>
+#include <kernel/task.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
 	int ret, ind, old_prior, prior;
 	const struct cmd *cmd;
+	char backup_task_name[32];
 
 	errno = 0;
 	old_prior = getpriority(PRIO_PROCESS, 0);
@@ -60,7 +63,12 @@ static int exec(int argc, char **argv) {
 		return -errno;
 	}
 
+	strlcpy(backup_task_name, task_get_name(task_self()), sizeof(backup_task_name));
+	task_set_name(task_self(), argv[ind]);
+
 	ret = cmd_exec(cmd, argc - ind, argv + ind); /* TODO create new task */
+
+	task_set_name(task_self(), backup_task_name);
 
 	setpriority(PRIO_PROCESS, 0, old_prior); /* restore old priority */
 

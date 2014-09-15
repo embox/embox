@@ -28,6 +28,7 @@
 /* TODO make it per task field */
 //static DLIST_DEFINE(task_mem_segments);
 
+//#define DEBUG
 
 struct mm_segment {
 	struct dlist_head link;
@@ -122,7 +123,9 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 		bm_free(segment, ptr);
 	} else {
 		/* No segment containing pointer @c ptr was found. */
+#ifdef DEBUG
 		printk("***** free(): incorrect address space\n");
+#endif
 		return -1;
 	}
 

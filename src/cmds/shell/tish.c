@@ -366,8 +366,6 @@ static void tish_run(void) {
 			break;
 		}
 
-		tish_collect_bg_childs();
-
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
@@ -379,6 +377,9 @@ static void tish_run(void) {
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}
+
+		tish_collect_bg_childs();
+
 		free(line);
 	}
 }

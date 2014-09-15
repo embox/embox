@@ -69,6 +69,12 @@ static inline const char * task_get_name(const struct task *tsk) {
 	return tsk->tsk_name;
 }
 
+static inline int task_set_name(struct task *tsk, const char *name) {
+	strncpy(tsk->tsk_name, name, sizeof(tsk->tsk_name) - 1);
+	tsk->tsk_name[sizeof(tsk->tsk_name) - 1] = '\0';
+	return 0;
+}
+
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;

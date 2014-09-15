@@ -982,8 +982,10 @@ static enum tcp_ret_code process_opt(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
 	char *ptr = (char *)&tcph->options[0];
 	char *end = ptr + TCP_HEADER_SIZE(tcph) - TCP_MIN_HEADER_SIZE;
+	char *prev_ptr;
 
 	do {
+		prev_ptr = ptr;
 		switch (*ptr) {
 		default:
 			ptr += *(ptr + 1);
@@ -999,9 +1001,14 @@ static enum tcp_ret_code process_opt(struct tcp_sock *tcp_sk,
 			ptr += *(ptr + 1);
 			break;
 		}
+		// TODO this is hack to fix cycling when ptr does not change
+		if (prev_ptr == ptr) {
+			++ptr;
+		}
 	} while (ptr < end);
 
-	assert(ptr == end);
+	// TODO revert this comment
+	//assert(ptr == end);
 
 	return TCP_RET_OK;
 }
@@ -1203,20 +1210,26 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
  */
 static void tcp_process(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
-	enum tcp_ret_code ret;
-
 	if (tcp_sk != NULL) {
+		enum tcp_ret_code ret;
+
 		tcp_get_now(&tcp_sk->rcv_time);
+
+		ret = tcp_handle(tcp_sk, skb, pre_process);
+		if (ret == TCP_RET_OK) {
+			ret = tcp_handle(tcp_sk, skb, NULL);
+		}
+
+		if (ret == TCP_RET_RST) {
+			send_rst_reply(skb);
+		}
 	}
-
-	ret = tcp_sk != NULL ? tcp_handle(tcp_sk, skb, pre_process)
-			: TCP_RET_RST;
-
-	if (ret == TCP_RET_OK) {
-		ret = tcp_handle(tcp_sk, skb, NULL);
+	else if (tcp_hdr(skb)->rst) {
+		/* ignore RST when socket doesn't exist */
+		skb_free(skb);
 	}
-
-	if (ret == TCP_RET_RST) {
+	else {
+		/* generate RST when socket doesn't exist */
 		send_rst_reply(skb);
 	}
 }
@@ -1309,6 +1322,7 @@ static int tcp_rcv(struct sk_buff *skb) {
 		if (tcp_rcv_need_check_security(tcp_sk)) {
 			/* if we have socket with secure label we have to check secure level */
 			if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+				skb_free(skb);
 				return 0;
 			}
 		}

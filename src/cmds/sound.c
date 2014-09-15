@@ -17,6 +17,8 @@
 #include <string.h>
 #include <linux/byteorder.h>
 
+#include <drivers/diag.h>
+
 EMBOX_CMD(exec);
 
 extern const uint16_t AUDIO_SAMPLE[];  /* user-provided */
@@ -26,10 +28,10 @@ static volatile int playing;
 static irq_return_t audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
 	extern void Audio_MAL_I2S_IRQHandler(void);
 	Audio_MAL_I2S_IRQHandler();
+	//printk(".");
 	return IRQ_HANDLED;
 }
 
-#define log(s) printk(#s " = %d\n", s);
 static int exec(int argc, char **argv) {
 	irq_attach(AUDIO_I2S_DMA_IRQ + 16, audio_i2s_dma_interrupt, 0, NULL, "");
 	uint32_t sample_rate = le32_to_cpu(*(uint32_t *)((uint8_t *)AUDIO_SAMPLE + 24));
@@ -46,6 +48,8 @@ static int exec(int argc, char **argv) {
 	EVAL_AUDIO_Stop(CODEC_PDWN_SW);
 	EVAL_AUDIO_DeInit();
 
+	diag_init();
+
 	return 0;
 }
 
@@ -61,10 +65,10 @@ uint32_t Codec_TIMEOUT_UserCallback(void) {
 }
 
 void EVAL_AUDIO_HalfTransfer_CallBack(uint32_t pBuffer, uint32_t Size) {
-	printk("halftransfer\n");
+	//printk("halftransfer\n");
 }
 
 void EVAL_AUDIO_TransferComplete_CallBack(uint32_t pBuffer, uint32_t Size) {
-	printk("transfercomplete\n");
-	//playing = 0;
+	//printk("transfercomplete\n");
+	playing = 0;
 }

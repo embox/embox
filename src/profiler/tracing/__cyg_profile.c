@@ -1,27 +1,23 @@
 #include <stdio.h>
 #include <profiler/tracing/trace.h>
+#include <embox/unit.h>
+#include "cyg_profile.h"
+
+ARRAY_SPREAD_DEF_TERMINATED(cyg_func, __cyg_handler_enter_array, NULL);
+ARRAY_SPREAD_DEF_TERMINATED(cyg_func, __cyg_handler_exit_array, NULL);
 
 void __cyg_profile_func_enter(void *func, void *caller) {
-	/* This function is for instrument profiling. It is being called just before
-	 * every call of instrumented funcion.
-	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
-	 */
-	if (get_profiling_mode() == CYG_PROFILING) {
-		set_profiling_mode(DISABLED);
-		trace_block_func_enter(func);
-		set_profiling_mode(CYG_PROFILING);
+	void (*hnd)(void *, void*);
+
+	array_spread_nullterm_foreach(hnd, __cyg_handler_enter_array) {
+		(*hnd)(func, caller);
 	}
 }
 
 void __cyg_profile_func_exit(void *func, void *caller) {
-	/* This function is for instrument profiling. It is being called after every
-	 * exit from instrumented funcion.
-	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
-	 */
-	 if (get_profiling_mode() == CYG_PROFILING) {
-		set_profiling_mode(DISABLED);
-		trace_block_func_exit(func);
-		set_profiling_mode(CYG_PROFILING);
+	void (*hnd)(void *, void *);
+
+	array_spread_nullterm_foreach(hnd, __cyg_handler_exit_array) {
+		(*hnd)(func, caller);
 	}
 }
-

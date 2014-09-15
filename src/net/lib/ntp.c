@@ -16,6 +16,9 @@
 #include <string.h>
 #include <util/array.h>
 
+/* RFC 868 */
+#define SECONDS_1900_1970 2208988800L
+
 #define NTP_BUILD_DATA(field, data)              \
 	do {                                         \
 		const void *data_ = data;                \
@@ -54,7 +57,7 @@ static void ndl_to_ts(const struct ntp_data_l *ndl,
 		struct timespec *out_ts) {
 	assert(ndl != NULL);
 	assert(out_ts != NULL);
-	out_ts->tv_sec = ntohl(ndl->sec);
+	out_ts->tv_sec = ntohl(ndl->sec) - SECONDS_1900_1970;
 	out_ts->tv_nsec = (ntohl(ndl->frac) / 1000) * 232;
 }
 
@@ -73,7 +76,7 @@ static void ts_to_ndl(const struct timespec *ts,
 		struct ntp_data_l *out_ndl) {
 	assert(ts != NULL);
 	assert(out_ndl != NULL);
-	out_ndl->sec = htonl(ts->tv_sec);
+	out_ndl->sec = htonl((__be32)ts->tv_sec + SECONDS_1900_1970);
 	out_ndl->frac = htonl((ts->tv_nsec / 232) * 1000);
 }
 

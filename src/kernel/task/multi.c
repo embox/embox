@@ -232,8 +232,7 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 	dlist_init(&tsk->child_list);
 	dlist_head_init(&tsk->child_lnk);
 
-	strncpy(tsk->tsk_name, name, sizeof tsk->tsk_name - 1);
-	tsk->tsk_name[sizeof tsk->tsk_name - 1] = '\0';
+	task_set_name(tsk, name);
 
 	if (main_thread) {
 		tsk->tsk_main = main_thread;

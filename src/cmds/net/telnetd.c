@@ -7,6 +7,7 @@
  */
 
 #include <sys/select.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
@@ -361,6 +362,8 @@ out:
 	close(pptyfd[0]);
 	close(sock);
 	clients[client_num].fd = -1;
+
+	waitpid(tid, NULL, 0);
 
 	MD(printf("exiting from telnet_thread_handler\n"));
 

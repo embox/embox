@@ -25,7 +25,6 @@ static DLIST_DEFINE(seculog_subscb_list);
 POOL_DEF(seculog_record_pool, struct seculog_record, RECORDS_N);
 POOL_DEF(seculog_rec_handle_pool, struct seculog_rec_handle, REC_HND_N);
 
-
 static struct seculog_record *seculog_record_alloc(seculog_label_t label,
 		const char *msg) {
 	struct seculog_record *rec;

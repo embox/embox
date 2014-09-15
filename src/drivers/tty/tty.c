@@ -457,6 +457,8 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 
 	ring_init(&t->o_ring);
 
+	t->pgrp = -1;
+
 	return t;
 }
 
