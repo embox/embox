@@ -89,5 +89,5 @@ int vmem_map_kernel(void) {
 }
 
 void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
-	panic("MMU page fault: virt_addr - 0x%x\n", virt_addr);
+	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
 }
