@@ -58,16 +58,16 @@ int mutex_lock(struct mutex *m) {
 
 		sched_lock();
 		ret = mutex_trylock(m);
-		done = (ret == 0) || (errcheck && ret == -EAGAIN);
+		done = (ret == 0) || (errcheck && ret == -EDEADLK);
 		if (!done)
 			priority_inherit(current, m);
 		sched_unlock();
 		done;
-
 	}));
 
-	if (!wait_ret)
+	if (wait_ret != 0) {
 		ret = wait_ret;
+	}
 
 	return ret;
 }
@@ -82,14 +82,14 @@ int mutex_trylock(struct mutex *m) {
 		mutex_complete_static_init(m);
 
 	if (m->holder == current) {
-		if (m->attr.type & MUTEX_RECURSIVE){
+		if (m->attr.type & MUTEX_ERRORCHECK) {
+			/* Nested locks. */
+			return -EDEADLK;
+		}
+		if (m->attr.type & MUTEX_RECURSIVE) {
 			/* Nested locks. */
 			m->lock_count++;
 			return 0;
-		}
-		if (m->attr.type & MUTEX_ERRORCHECK){
-			/* Nested locks. */
-			return -EAGAIN;
 		}
 	}
 
@@ -108,7 +108,7 @@ int mutex_unlock(struct mutex *m) {
 
 	assert(m->lock_count > 0);
 
-	if (--m->lock_count != 0  && (m->attr.type & MUTEX_RECURSIVE)) {
+	if (--m->lock_count != 0 && (m->attr.type & MUTEX_RECURSIVE)) {
 		return 0;
 	}
 
