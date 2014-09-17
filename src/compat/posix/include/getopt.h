@@ -9,6 +9,18 @@
 #ifndef GETOPT_H_
 #define GETOPT_H_
 
+
+/**
+ * @param argc is the number of arguments on cmdline
+ * @param argv is the pointer to array of cmdline arguments
+ * @param opts is the string of all valid options
+ * each char case must be given; options taking an arg are followed by = ':'
+ */
+extern int getopt(int argc, char *const argv[], const char *opts);
+
+/** setup optind and opterr */
+extern void getopt_init(void); /* TODO remove this */
+
 #define no_argument       0
 #define required_argument 1
 #define optional_argument 2
