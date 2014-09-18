@@ -61,7 +61,7 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
 
 	pgd = mmu_get_root(ctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	if (!mmu_pgd_present(pgd + pgd_idx)) {
 		return -ENOENT;
@@ -99,7 +99,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 
 	pgd = mmu_get_root(ctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	if (!mmu_pgd_present(pgd + pgd_idx)) {
 		return 0;
@@ -157,7 +157,7 @@ static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t
 
 	pgd = mmu_get_root(ctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		GET_PMD(pmd, pgd + pgd_idx);
@@ -202,7 +202,7 @@ static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t r
 
 	pgd = mmu_get_root(ctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		GET_PMD(pmd, pgd + pgd_idx);
@@ -252,7 +252,7 @@ static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt
 	pgd  = mmu_get_root(ctx);
 	npgd = mmu_get_root(nctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++, pmd_idx = 0) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {

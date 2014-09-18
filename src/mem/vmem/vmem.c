@@ -9,6 +9,7 @@
 
 #include <embox/unit.h>
 
+#include <hal/mmu.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 #include <mem/mapping/marea.h>
@@ -26,6 +27,13 @@ extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
+
+void get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx) {
+	*pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
+	*pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
+	*pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
+	return;
+}
 
 static int vmem_kernel_map_marea(void *start, uint32_t len, uint32_t flags) {
 	struct marea *ma;
@@ -91,3 +99,4 @@ int vmem_map_kernel(void) {
 void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
 }
+

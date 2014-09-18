@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <util/binalign.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
@@ -55,8 +56,6 @@ static inline int try_free_pgd(mmu_pgd_t *pgd, mmu_ctx_t ctx) {
 	return 1;
 }
 
-#define ALIGN_UP(x, aligment) (((x) + (aligment)) & (~((aligment)-1)))
-
 void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, int free_pages) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
@@ -71,11 +70,11 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 	pgd = mmu_get_root(ctx);
 
-	EXTRACT_IDX_FROM_VADDR(virt_addr, pgd_idx, pmd_idx, pte_idx);
+	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			virt_addr = ALIGN_UP(virt_addr, MMU_PGD_SIZE);
+			virt_addr = binalign_bound(virt_addr, MMU_PGD_SIZE);
 			pte_idx = pmd_idx = 0;
 			continue;
 		}
@@ -84,7 +83,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				virt_addr = ALIGN_UP(virt_addr, MMU_PMD_SIZE);
+				virt_addr = binalign_bound(virt_addr, MMU_PMD_SIZE);
 				pte_idx = 0;
 				continue;
 			}
@@ -94,10 +93,8 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				if (virt_addr >= v_end) {
 					// Try to free pte, pmd, pgd
-					if (try_free_pte(pte, pmd + pmd_idx)) {
-						if (try_free_pmd(pmd, pgd + pgd_idx)) {
-							try_free_pgd(pgd, ctx);
-						}
+					if (try_free_pte(pte, pmd + pmd_idx) && try_free_pmd(pmd, pgd + pgd_idx)) {
+						try_free_pgd(pgd, ctx);
 					}
 
 					return;
