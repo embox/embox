@@ -15,7 +15,6 @@ samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
 	${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
-	cp $(ROOT_DIR)/third-party/samba/tree/source3/runfromhere.sh $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		source3/runfromhere.sh ./configure --prefix=$(PKG_INSTALL_DIR) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
