@@ -42,7 +42,7 @@ extern void vmem_on(void);
 extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
 
-extern void get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
+extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
 
 #if 0
 static inline int vmem_map_on_itself(mmu_ctx_t ctx, void *addr, size_t size, vmem_page_flags_t flags) {

@@ -28,11 +28,10 @@ extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 
-void get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx) {
+void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx) {
 	*pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
 	*pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
 	*pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
-	return;
 }
 
 static int vmem_kernel_map_marea(void *start, uint32_t len, uint32_t flags) {

@@ -70,7 +70,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 	pgd = mmu_get_root(ctx);
 
-	get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
+	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
