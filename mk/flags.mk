@@ -109,8 +109,11 @@ override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
 
 override COMMON_FLAGS := -pipe
+debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
+ifneq ($(debug_prefix_map_supported),)
 override COMMON_FLAGS += --debug-prefix-map=`pwd`=
 override COMMON_FLAGS += --debug-prefix-map=./=
+endif
 
 # Assembler flags
 asflags := $(CFLAGS)

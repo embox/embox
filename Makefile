@@ -59,8 +59,9 @@ export MD5    := $(shell for i in md5 md5sum; do type $$i >/dev/null 2>&1 && ech
 export CPIO   := $(shell for i in gcpio cpio; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
 export AWK    := $(shell for i in gawk awk nawk mawk; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
 export TSORT  := tsort
-export TAC    := tac
+export TAC    := $(if $(shell which tac),tac,tail -r)
 export SEQ    := seq -w
+export ECHO   := $(shell which echo) #force using feature-rich echo instead of shell builtin
 
 # Check Make version (we need at least GNU Make 3.81). Fortunately,
 # '.FEATURES' built-in variable has been introduced exactly in GNU Make 3.81.

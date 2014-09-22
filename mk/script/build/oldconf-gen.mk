@@ -8,11 +8,26 @@ include mk/script/script-common.mk
 HOSTCC  = gcc
 HOSTCPP = $(HOSTCC) -E
 
-HOSTCC_VERSION := \
-	$(word 3,$(shell $(HOSTCC) -v 2>&1 | grep -e "^gcc"))
-HOSTCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(HOSTCC_VERSION)))
+HOSTCC_IQUOTE_SUPPORT:=
 
-ifeq ($(HOSTCC_VERSION_MAJOR),4)
+GCC_VERSION := \
+	$(word 3,$(shell $(HOSTCC) -v 2>&1 | grep -e "^gcc"))
+
+ifneq ($(GCC_VERSION),)
+GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
+ifeq ($(GCC_VERSION_MAJOR),4)
+HOSTCC_IQUOTE_SUPPORT:=true
+endif
+endif
+
+CLANG := $(shell $(HOSTCC) -v 2>&1 | grep -e "clang")
+
+ifneq ($(CLANG),)
+# Assuming that any llvm clang have -iquote
+HOSTCC_IQUOTE_SUPPORT:=true
+endif
+
+ifneq ($(HOSTCC_IQUOTE_SUPPORT),)
 HOSTCC_CPPFLAGS := -iquote $(CONF_DIR)
 else
 HOSTCC_CPPFLAGS := -I $(CONF_DIR) -I-
