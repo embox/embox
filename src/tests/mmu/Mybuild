@@ -7,6 +7,6 @@ module mmu_core {
 	depends embox.mem.vmem
 	//depends embox.arch.x86.mmu
 	//depends embox.arch.x86.test.testtrap
-	depends embox.arch.generic.mmu
+	depends embox.arch.mmu
 	depends embox.arch.testtrap
 }
