@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <arpa/inet.h>
+#include <sys/mman.h>
 
 #include <asm/io.h>
 
@@ -352,7 +353,12 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	}
 	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
-	nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+	nic->base_addr = (uintptr_t) mmap_device_memory(
+			(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
+			0x6000, /* XXX */
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
 	nic_priv = netdev_priv(nic, struct e1000_priv);
 	skb_queue_init(&nic_priv->txing_queue);
 	skb_queue_init(&nic_priv->tx_dev_queue);
