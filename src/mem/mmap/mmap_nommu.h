@@ -28,16 +28,4 @@ struct emmap {
 	struct dlist_head marea_list;
 };
 
-static inline uint32_t marea_get_start(struct marea *marea) {
-	return marea->start;
-}
-
-static inline void *mmap_get_brk(struct emmap *mmap) {
-	return mmap->brk;
-}
-
-static inline void mmap_set_brk(struct emmap *mmap, void *new_brk) {
-	mmap->brk = new_brk;
-}
-
 #endif /* MEM_MMAP_NOMMU_H_ */
