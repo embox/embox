@@ -42,6 +42,8 @@ abstract module usermode { }
 
 abstract module stackframe { }
 
+abstract module testtrap { }
+
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp { }

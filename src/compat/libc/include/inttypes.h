@@ -188,7 +188,7 @@ __END_DECLS
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
 #define    PRIxPTR     PRIx32
-#define    PRIXPTR     PRIX32
+#define    PRIXPTR     "lX"
 
 #define    PRIoMAX     PRIo32
 #define    PRIuMAX     PRIu32

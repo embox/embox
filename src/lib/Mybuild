@@ -27,17 +27,6 @@ static module LibElf {
 	@NoRuntime depends embox.compat.libc.LibCString
 }
 
-static module LibExec {
-	source "exec/exec.c"
-
-	depends embox.kernel.task.resource.mmap
-	depends embox.mem.mmap_api
-	@NoRuntime depends LibElf
-}
-static module LibExecStub {
-	source "exec/execstub.c"
-}
-
 static module LibCrypt {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"

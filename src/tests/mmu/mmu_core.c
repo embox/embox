@@ -24,6 +24,8 @@ static volatile int exception_flag;
 static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
 //static char PAGE2[VMEM_PAGE_SIZE];
 
+static mmu_paddr_t paddr = (mmu_paddr_t) page;
+
 /*mapping to address, assuming there is no mem at here */
 #define BIGADDR 0xf0010000
 
@@ -31,20 +33,19 @@ static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
  * used to read-n-check */
 #define UNIQ_VAL 0x12345678
 
-/* Big area able to cover text + data + stack*/
-#define REGION_SIZE 0xa000000
-
 /* MMU data access exception handler */
 static inline int dfault_handler(uint32_t trap_nr, void *data) {
 	vmem_page_set_flags((mmu_ctx_t) ctx, BIGADDR, VMEM_PAGE_WRITABLE);
 	exception_flag = 1;
+
+	test_assert_not_equal(*((volatile uint32_t *) paddr), UNIQ_VAL);
+
 	/* repeat instruction */
 	return 1;
 }
 
 TEST_CASE("Writing to read-only memory should cause exception."
 		 " Exception handler should allow write.") {
-	mmu_paddr_t paddr = (mmu_paddr_t) page;
 	mmu_vaddr_t vaddr = (mmu_vaddr_t) BIGADDR;
 	exception_flag = 0;
 
@@ -56,15 +57,15 @@ TEST_CASE("Writing to read-only memory should cause exception."
 
 	test_assert_equal(exception_flag, 1);
 
-	test_assert_equal(*((volatile uint32_t *) paddr), UNIQ_VAL);
+	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL);
 
 	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 }
 
 static inline int pagefault_handler(uint32_t nr, void *data) {
-	int _cr2, err_addr;
-	asm ("mov %%cr2, %0":"=r" (_cr2):);
-	err_addr = _cr2 & ~(VMEM_PAGE_SIZE - 1);
+	int err_addr;
+
+	err_addr = mmu_get_fault_address();
 
 	vmem_map_region(ctx, (mmu_paddr_t) ((unsigned long) page),
 			(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
@@ -84,27 +85,40 @@ TEST_CASE("Pagefault should be considered right.") {
 	test_assert_equal(exception_flag, 1);
 
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
+
+	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 }
 
 /* TODO: Remove this. */
-ipl_t ipl;
+//static ipl_t ipl;
 
 static int mmu_case_setup(void) {
+#if 0
 	ipl = ipl_save();
 
+	vmem_off();
 	test_assert_zero(vmem_create_context(&ctx));
-	test_assert_zero(vmem_map_on_itself(ctx, (void *) 0, REGION_SIZE, VMEM_PAGE_WRITABLE));
+	test_assert_zero(vmem_init_context(&ctx));
+#endif
+	ctx = vmem_current_context();
 	vmem_set_context(ctx);
-	vmem_on();
+
+	if (!vmem_mmu_enabled()) {
+		vmem_on();
+	}
+
+	memset(page, 0, sizeof page);
 
 	return 0;
 }
 
 static int mmu_case_teardown(void) {
-	vmem_off();
+	if (vmem_mmu_enabled()) {
+		vmem_off();
+	}
+#if 0
 	vmem_free_context(ctx);
-
 	ipl_restore(ipl);
-
+#endif
 	return 0;
 }

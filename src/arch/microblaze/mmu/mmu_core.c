@@ -33,7 +33,7 @@ static uint32_t cur_utlb_idx = 0;
 /* Current virtual context */
 static mmu_ctx_t cur_ctx;
 
-static inline mmu_vaddr_t mmu_get_fault_address(void) {
+static inline mmu_vaddr_t mmu_fault_address(void) {
 	uint32_t ret;
 	__asm__ __volatile__ (
 		"mfs	%0, rear; \n\t"
@@ -43,7 +43,7 @@ static inline mmu_vaddr_t mmu_get_fault_address(void) {
 }
 
 static int tlb_miss(int number) {
-	mmu_vaddr_t vaddr = mmu_get_fault_address();
+	mmu_vaddr_t vaddr = mmu_fault_address();
 	mmu_paddr_t paddr = vmem_translate(cur_ctx, vaddr);
 
 	if (paddr) {
@@ -52,7 +52,7 @@ static int tlb_miss(int number) {
 
 		mmu_map_region(paddr, vaddr, MMU_PAGE_SIZE, PAGE_WRITEABLE | PAGE_EXECUTEABLE);
 	} else {
-		printk("Page fault: 0x%08x\n", vaddr);
+		printk("Page fault: 0x%08x\n", (unsigned int) vaddr);
 	}
 
 	return 1;

@@ -1,0 +1,14 @@
+package embox.lib
+
+static module LibExec {
+	source "exec.c"
+
+	depends embox.kernel.task.resource.mmap
+	depends embox.mem.mmap_api
+	@NoRuntime depends LibElf
+	depends embox.compat.posix.sys.mman_mmu
+}
+
+static module LibExecStub {
+	source "execstub.c"
+}

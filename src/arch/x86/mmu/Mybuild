@@ -2,4 +2,5 @@ package embox.arch.x86
 
 module mmu extends embox.arch.mmu {
 	source "mmu.c", "mmu.h"
+	depends embox.arch.x86.testtrap
 }

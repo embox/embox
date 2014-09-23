@@ -13,7 +13,11 @@ module mmap_nommu extends mmap_api {
 }
 
 module mmap_mmu extends mmap_api {
-	source "mmap_mmu.h", "mmap_mmu.c"
+	source "mmap_mmu.h"
+	source "mmap_mmu.c"
+	source "marea.c"
+	source "mmap_kernel.c"
+	source "mmap_userspace.c"
 
 	depends embox.kernel.task.resource.mmap
 	depends embox.kernel.task.resource.mmap_notify

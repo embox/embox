@@ -1,7 +1,7 @@
 
 /* Reserved by SPARC architecture traps */
 b boot_start; nop; nop; nop;  ! 00 reset trap
-SRMMU_TFAULT;                 ! 01 instruction_access_exception
+BAD_TRAP;                     ! 01 instruction_access_exception
 BAD_TRAP;                     ! 02 illegal_instruction
 BAD_TRAP;                     ! 03 priveleged_instruction
 BAD_TRAP;                     ! 04 fp_disabled
@@ -9,7 +9,7 @@ WOF_TRAP;                     ! 05 window_overflow
 WUF_TRAP;                     ! 06 window_underflow
 BAD_TRAP;                     ! 07 memory_address_not_aligned
 BAD_TRAP;                     ! 08 fp_exception
-SRMMU_DFAULT;                 ! 09 data_access_exception
+BAD_TRAP;                     ! 09 data_access_exception
 BAD_TRAP;                     ! 0A tag_overflow
 BAD_TRAP;                     ! 0B watchpoint_exception
 BAD_TRAP;                     ! 0C undefined

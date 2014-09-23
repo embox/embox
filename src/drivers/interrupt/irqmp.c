@@ -10,7 +10,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
+#include <mem/page.h>
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>
 #include <drivers/amba_pnp.h>
@@ -73,6 +75,20 @@ static int unit_init(void) {
 	return 0;
 }
 
+static int irqctrl_memory_map(uint32_t base, size_t len) {
+	void *ptr;
+
+	base = ((uint32_t) base) & ~(PAGE_SIZE() - 1);
+
+	/* 0x100 - random value */
+	ptr = mmap_device_memory((void *) base, len, PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			MAP_FIXED, base);
+	if (ptr == MAP_FAILED) {
+		return -1;
+	}
+
+	return 0;
+}
 
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init(void) {
@@ -82,12 +98,13 @@ static int dev_regs_init(void) {
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct irqmp_regs *) amba_dev.bar[0].start;
-	return 0;
+
+	return irqctrl_memory_map((uint32_t) dev_regs, 0x100);
 }
 #elif OPTION_DEFINED(NUMBER,irqmp_base)
 static int dev_regs_init(void) {
 	dev_regs = (volatile struct irqmp_regs *) OPTION_GET(NUMBER,irqmp_base);
-	return 0;
+	return irqctrl_memory_map((uint32_t) dev_regs, 0x100);
 }
 #else
 # error "Either DRIVER_AMBAPP or irqmp_base option must be defined"

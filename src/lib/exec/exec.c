@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <util/math.h>
+#include <sys/mman.h>
 
 #include <lib/libelf.h>
 #include <kernel/usermode.h>
@@ -168,7 +170,8 @@ static int load_interp(char *filename, exec_t *exec) {
 		return -ENOMEM;
 	}
 
-	base_addr = marea_get_start(marea);
+	//base_addr = marea_get_start(marea);
+	base_addr = marea->start;
 
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
@@ -196,6 +199,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 	Elf32_Phdr *ph_table;
 	Elf32_Phdr *ph;
 	struct marea *marea;
+	//void *pa;
 	int err;
 	char interp[255];
 	int has_interp = 0;
@@ -241,17 +245,28 @@ static int load_exec(const char *filename, exec_t *exec) {
 		if (ph->p_type != PT_LOAD) {
 			continue;
 		}
+#if 0
+		pa = mmap((void *)ph->p_vaddr, ph->p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_FIXED, 0, 0);
+		if (MAP_FAILED == pa) {
+			free(ph_table);
+			return -1;
+		}
+#else
 
 		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
+
+		/* XXX brk is a max of ph's right sides. It unaligned now! */
+		mmap_set_brk(task_self_resource_mmap(),
+			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->p_vaddr + ph->p_memsz));
 
 		if (!marea) {
 			free(ph_table);
 			return -ENOMEM;
 		}
-
+#endif
 		if ((err = elf_read_segment(fd, ph, (void *) ph->p_vaddr))) {
 			free(ph_table);
-			return err;;
+			return err;
 		}
 	}
 
@@ -272,22 +287,39 @@ static int load_exec(const char *filename, exec_t *exec) {
 	return ENOERR;
 }
 
+uint32_t mmap_create_stack(struct emmap *mmap) {
+	struct marea * marea;
+	marea = mmap_alloc_marea(mmap, 4096, 0);
+
+	return marea->end;
+}
+
+//extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
 int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;
 	int err;
 	exec_t exec;
+	struct emmap *emmap;
+	//struct marea *marea;
+
+	emmap = task_self_resource_mmap();
+
+	sched_lock();
+	mmu_set_context(emmap->ctx);
 
 	memset(&exec, 0, sizeof(exec_t));
 
+	mmap_set_brk(emmap, NULL);
 	if ((err = load_exec(filename, &exec))) {
 		SET_ERRNO(-err);
 		return -1;
 	}
 
-	stack = mmap_create_stack(task_self_resource_mmap());
-	mmap_create_heap(task_self_resource_mmap());
+	stack = mmap_create_stack(emmap);
+	//stack = mmap_userspace_create(emmap, 0x1000);
+	//marea = mmap_place_marea(emmap, 0xFFFF8000, 0xFFFFF000, 0);
 
 	fill_stack(&stack, &exec, argv, envp);
 
@@ -297,6 +329,9 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	ue_data.sp = (void *) stack;
 
 	usermode_entry(&ue_data);
+
+	mmu_set_context(1);
+	sched_unlock();
 
 	SET_ERRNO(EINTR);
 	return -1;

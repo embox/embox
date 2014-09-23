@@ -14,10 +14,18 @@
 
 
 
-#define CONFIG_ICACHE_BYTE_SIZE    OPTION_GET(NUMBER,icache_size)
-#define CONFIG_ICACHE_LINE_LENGTH  OPTION_GET(NUMBER,icache_line)
-#define CONFIG_DCHACE_BYTE_SIZE    OPTION_GET(NUMBER,dcache_size)
-#define CONFIG_DCACHE_LINE_LENGTH  OPTION_GET(NUMBER,dcache_line)
+#define CONFIG_ICACHE_BYTE_SIZE \
+	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+			NUMBER, icache_size)
+#define CONFIG_ICACHE_LINE_LENGTH \
+	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+			NUMBER, icache_line)
+#define CONFIG_DCHACE_BYTE_SIZE \
+		OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+			NUMBER, dcache_size)
+#define CONFIG_DCACHE_LINE_LENGTH \
+		OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+			NUMBER, dcache_line)
 
 #include <asm/msr.h>
 

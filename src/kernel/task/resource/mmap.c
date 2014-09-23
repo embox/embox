@@ -5,13 +5,14 @@
  * @date 09.11.12
  * @author Anton Bulychev
  */
-
+#include <stddef.h>
 #include <assert.h>
+
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
-#include <stddef.h>
+
 
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
 
@@ -39,7 +40,7 @@ static int task_mmap_inherit(const struct task *task,
 	return mmap_inherit(mmap, parent_mmap);
 }
 
-static void task_mmap_deinit(const struct task *task) {
+void task_mmap_deinit(const struct task *task) {
 	struct emmap *mmap;
 
 	mmap = task_resource_mmap(task);
@@ -53,7 +54,7 @@ static size_t task_mmap_offset;
 static const struct task_resource_desc task_mmap_desc = {
 	.init = task_mmap_init,
 	.inherit = task_mmap_inherit,
-	.deinit = task_mmap_deinit,
+	/* .deinit = task_mmap_deinit, */
 	.resource_size = sizeof(struct emmap),
 	.resource_offset = &task_mmap_offset
 };

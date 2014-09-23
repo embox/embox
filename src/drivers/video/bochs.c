@@ -8,6 +8,9 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/mman.h>
+#include <util/binalign.h>
+#include <mem/page.h>
 #include <drivers/pci/pci.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
@@ -67,6 +70,7 @@ static void fill_var(struct fb_var_screeninfo *var) {
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	int ret;
 	struct fb_info *info;
+	size_t mmap_len;
 
 	assert(pci_dev != NULL);
 
@@ -80,6 +84,15 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 
 	info->ops = &bochs_ops;
 	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
+	mmap_len = binalign_bound(VBE_DISPI_MAX_XRES * VBE_DISPI_MAX_YRES * VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
+
+	if (MAP_FAILED == mmap_device_memory(info->screen_base,
+				mmap_len,
+			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
+				MAP_FIXED,
+				(unsigned long) info->screen_base)) {
+		return -EIO;
+	}
 
 	ret = fb_register(info);
 	if (ret != 0) {

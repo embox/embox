@@ -9,5 +9,5 @@ module heap_lds {
 module phymem {
 	source "phymem.c"
 	depends heap_lds /* this for label end of busy memory */
+	depends embox.mem.vmem_api
 }
-

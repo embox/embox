@@ -1,19 +1,35 @@
 package embox.mem
 
-module vmem {
+@DefaultImpl(vmem_nommu)
+abstract module vmem_api {
+}
+
+module vmem_nommu extends vmem_api {
+	source "vmem_nommu.h"
+}
+
+module vmem extends vmem_api {
 	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
+	source "vmem_context.c"
+	source "vmem_device_memory.c"
 
 	depends embox.arch.mmu
 	depends vmem_alloc
+
+	depends embox.mem.mmap_mmu
 }
 
 module vmem_alloc {
-	option number virual_tables_count = 2000
-	option number virual_pages_count = 20
+	option number virtual_tables_count = 2000
+	option number virtual_pages_count = 20
 
 	source "vmem_alloc.c"
 
-	depends embox.mem.phymem
+	/*depends embox.mem.phymem*/ // not depends now!
 	depends embox.mem.page_api
 	depends embox.arch.mmu
+}
+
+module vmem_starter {
+	source "vmem_starter.c"
 }

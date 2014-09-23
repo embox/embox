@@ -101,3 +101,7 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
 		mmu_set_val(pte, *pte & (~MMU_PAGE_CACHEABLE));
 	}
 }
+
+void mmu_pte_set_executable(mmu_pte_t *pte, int val) {
+
+}

@@ -6,82 +6,115 @@
  * @author Anton Bulychev
  */
 
-#include <embox/unit.h>
-
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 
 #include <mem/mmap.h>
 #include <mem/vmem.h>
-#include <mem/sysmalloc.h>
 
-#include <kernel/thread/types.h>
+#include <mem/mapping/marea.h>
+#include <kernel/task/resource/mmap.h>
+#include <kernel/panic.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
 
-EMBOX_UNIT(init, fini);
+//static const uint32_t mem_start = 0x04000000;
+static const uint32_t mem_start = 0x40000000;
+static const uint32_t mem_end = 0xFFFFF000;
 
-static uint32_t mem_start;
-static uint32_t mem_end;
+#define mmu_size_align(size) (((size) + MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1))
 
-static int initialized = 0;
-
-static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t flags) {
-	struct marea *marea;
-
-	if (!(marea = sysmalloc(sizeof(struct marea)))) {
-		return NULL;
-	}
-
-	marea->start = start;
-	marea->end   = end;
-	marea->flags = flags;
-
-	dlist_head_init(&marea->mmap_link);
-
-	return marea;
+static inline int mmap_active(struct emmap *mmap) {
+#if 0 //TODO this simple version should work
+	return mmap == task_resource_mmap(task_self());
+#else
+	extern int mmap_kernel_inited(void);
+	return mmap_kernel_inited() && mmap == task_resource_mmap(task_self());
+#endif
 }
 
-static inline void add_marea_to_mmap(struct emmap *mmap, struct marea *marea) {
+static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
+	vmem_page_flags_t vmem_page_flags = 0;
+	if (flags & PROT_WRITE) {
+		vmem_page_flags |= VMEM_PAGE_WRITABLE;
+	}
+	if (flags & PROT_EXEC) {
+		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
+	}
+	if (!(flags & PROT_NOCACHE)) {
+		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
+	}
+	return vmem_page_flags;
+}
+
+int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
+	size_t len = mmu_size_align(marea->end - marea->start);
+
+	return vmem_map_region(mmap->ctx, marea->start, marea->start, len,  marea_to_vmem_flags(marea->flags));
+}
+
+void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
+	size_t len = mmu_size_align(marea->end - marea->start);
+	vmem_unmap_region(mmap->ctx, marea->start, len, marea->is_allocated);
+}
+
+static struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
+	struct marea *marea;
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
+		if (INSIDE(vaddr, marea->start, marea->end)) {
+			return marea;
+		}
+	}
+	return NULL;
+}
+
+static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
+	if (mmap_find_marea(mmap, marea->start)
+			|| mmap_find_marea(mmap, marea->end)) {
+		return -EEXIST;
+	}
+	return 0;
+}
+
+void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+	struct marea *ma_err;
+
+	if ((ma_err = mmap_find_marea(mmap, marea->start))
+			|| (ma_err = mmap_find_marea(mmap, marea->end))) {
+		panic("%s: intersect existing=%p(%p):%p\n new=%p(%p):%p\n", __func__,
+				(void *) ma_err->start, /* XXX */ (void *) ma_err->start, (void *) ma_err->end,
+				(void *) marea->start, /* XXX */ (void *) marea->start, (void *) marea->end);
+	}
+
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
 void mmap_init(struct emmap *mmap) {
 	dlist_init(&mmap->marea_list);
-	mmap->stack_marea = NULL;
-	mmap->heap_marea = NULL;
+	//mmap->stack_marea = NULL;
+	//mmap->heap_marea = NULL;
 
 	assert(!vmem_init_context(&mmap->ctx));
-
-	if (!initialized) {
-		/* It's kernel task. Set virtual context for it. */
-		vmem_set_context(mmap->ctx);
-
-		/* Now we can turn on MMU */
-		vmem_on();
-
-		initialized = 1;
-	}
 }
 
 void mmap_free(struct emmap *mmap) {
+	//XXX: Bad code
+	mmu_set_context(1);
 	mmap_clear(mmap);
-	vmem_free_context(mmap->ctx);
+	//vmem_free_context(mmap->ctx);
 }
 
 void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		dlist_del(&marea->mmap_link);
+		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start), marea->is_allocated);
 
-		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
-
-		free(marea);
+		marea_destroy(marea);
 	}
 }
-
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
 	struct marea *marea;
@@ -90,27 +123,30 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 	end   = MAREA_ALIGN_UP(end);
 
 	if (!(INSIDE(start, mem_start, mem_end) && INSIDE(end, mem_start, mem_end))) {
-		return NULL;
+		goto error;
 	}
 
-	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		if (INTERSECT(start, end, marea->start, marea->end)) {
-			return NULL;
-		}
+	if (!(marea = marea_create(start, end, flags))) {
+		goto error;
 	}
 
-	if (!(marea = build_marea(start, end, flags))) {
-		return NULL;
+	if (0 != mmap_check_marea(mmap, marea)) {
+		goto error_free;
 	}
 
+	marea->is_allocated = 1;
 	if (vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE)) {
-		free(marea);
-		return NULL;
+		goto error_free;
 	}
 
-	add_marea_to_mmap(mmap, marea);
+	mmap_add_marea(mmap, marea);
 
 	return marea;
+
+error_free:
+	marea_destroy(marea);
+error:
+	return NULL;
 }
 
 struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) {
@@ -131,53 +167,59 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 		}
 
 		marea = dlist_entry(item, struct marea, mmap_link);
-		s_ptr = marea->end;
+		s_ptr = MAREA_ALIGN_UP(marea->end);
 	} while(1);
 
 	return NULL;
 }
 
-uint32_t mmap_create_stack(struct emmap *mmap) {
-	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
-
-	if (!mmap->stack_marea) {
-		return 0;
+static void mmap_unmap_on_error(struct emmap *emmap, struct marea *err_ma) {
+	struct marea *marea;
+	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+		if (marea == err_ma) {
+			break;
+		}
+		mmap_do_marea_unmap(emmap, marea);
 	}
-
-	return mmap->stack_marea->end;
 }
 
-void* mmap_create_heap(struct emmap *mmap) {
-	//TODO: stub
-	return NULL;
+int mmap_mapping(struct emmap *emmap) {
+	struct marea *marea;
+	int err;
+
+	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+		err = mmap_do_marea_map(emmap, marea);
+		if (err) {
+			goto out_err;
+		}
+	}
+
+	return 0;
+
+out_err:
+	mmap_unmap_on_error(emmap, marea);
+	return err;
 }
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct marea *marea, *new_marea;
-	int res;
 
 	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
-		if (!(new_marea = build_marea(marea->start, marea->end, marea->flags))) {
+		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
 			return -ENOMEM;
 		}
-
-		if ((res = vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start))) {
-			free(marea);
-			return res;
-		}
-
+		mmap_add_marea(mmap, new_marea);
 	}
-	return 0;
+
+	return mmap_mapping(mmap);
 }
 
-static int init() {
-	mem_start = 0x04000000;
-	mem_end   = 0xFFFFF000;
+#include <kernel/task/resource/mmap.h>
 
-	return 0;
-}
+mmu_ctx_t mmap_get_current_context(void) {
+	struct emmap *emmap;
 
-static int fini() {
+	emmap = task_self_resource_mmap();
 
-	return 0;
+	return emmap->ctx;
 }
