@@ -28,7 +28,7 @@ IRQ_ENTRY(13) /* math co-processor/integrated FPU/inter-processor interrupt(use 
 IRQ_ENTRY(14) /* primary ATA channel */
 IRQ_ENTRY(15) /* secondary ATA channel */
 
-	.section .traps.text
+	.section .traps.text,"x"
 
 irq_stub:
 	SAVE_ALL

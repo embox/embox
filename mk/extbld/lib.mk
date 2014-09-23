@@ -66,6 +66,11 @@ PATCH  := $(BUILD_DIR)/.patched
 patch : $(PATCH)
 PKG_PATCHES ?=
 $(PATCH): $(PKG_PATCHES) | $(BUILD_DIR)
+	if [ -d tree ]; then \
+		cd tree; \
+		cp -l -u -f --parents -t $(PKG_SOURCE_DIR) `find . -not -path '*/.*' -and -type f`; \
+		cd ..; \
+	fi
 	for i in $(PKG_PATCHES); do \
 		patch -d $(BUILD_DIR) -p0 < $$PWD/$$i; \
 	done

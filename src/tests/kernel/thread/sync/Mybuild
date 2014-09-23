@@ -1,5 +1,6 @@
 package embox.test.kernel.thread.sync
 
+@TestFor(embox.kernel.thread.mutex)
 module mutex_test {
 	source "mutex_test.c"
 

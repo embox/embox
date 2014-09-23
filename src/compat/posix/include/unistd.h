@@ -217,21 +217,7 @@ static inline int access(const char *path, int amode) {
 	return 0;
 }
 
-/**
- * @param argc is the number of arguments on cmdline
- * @param argv is the pointer to array of cmdline arguments
- * @param opts is the string of all valid options
- * each char case must be given; options taking an arg are followed by = ':'
- */
-extern int getopt(int argc, char *const argv[], const char *opts);
-
-extern char *optarg; /**< argument to optopt */
-extern int optind;   /**< last touched cmdline argument */
-extern int optopt;   /**< last returned option */
-extern int opterr;   /**< flag:error message on unrecognzed options */
-
-/** setup optind and opterr */
-extern void getopt_init(void); /* TODO remove this */
+#include <getopt.h>
 
 #ifndef environ
 /**

@@ -31,7 +31,7 @@ static inline int schedee_priority_set(struct schedee_priority *p, sched_priorit
 
 	sched_lock();
 	{
-		if (prior_field(base_priority) == new_priority) {
+		if ((sched_priority_t)prior_field(base_priority) == new_priority) {
 			goto out;
 		}
 
@@ -43,7 +43,7 @@ static inline int schedee_priority_set(struct schedee_priority *p, sched_priorit
 			prior_field(current_priority) = new_priority;
 		} else {
 			prior_field(base_priority) = new_priority;
-			if (prior_field(current_priority) <= new_priority) {
+			if ((sched_priority_t)prior_field(current_priority) <= new_priority) {
 				prior_field(current_priority) = new_priority;
 			}
 		}
@@ -63,7 +63,7 @@ static inline sched_priority_t schedee_priority_get(struct schedee_priority *p) 
 static inline sched_priority_t schedee_priority_inherit(struct schedee_priority *p,
 		sched_priority_t priority) {
 
-	if(priority > prior_field(current_priority)) {
+	if(priority > (sched_priority_t)prior_field(current_priority)) {
 		prior_field(current_priority) = priority;
 	}
 

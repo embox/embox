@@ -35,8 +35,8 @@ cmd_notouch = \
 #   1. Output file.
 #   2. The complete command
 cmd_assemble = \
-	echo '$(\h)!/bin/sh' > $1; \
-	$(foreach w,$2,echo -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
+	$(ECHO) '$(\h)!/bin/sh' > $1; \
+	$(foreach w,$2,$(ECHO) -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
 
 #cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }

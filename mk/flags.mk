@@ -30,7 +30,7 @@ EXTERNAL_MAKE = \
 
 EXTERNAL_MAKE_PRO = \
 	$(MKDIR) $(mod_build_dir) && \
-	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/build/.qmake.cache $(mod_build_dir) && \
+	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
 		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS))' \
 		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
@@ -109,8 +109,11 @@ override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
 
 override COMMON_FLAGS := -pipe
+debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
+ifneq ($(debug_prefix_map_supported),)
 override COMMON_FLAGS += --debug-prefix-map=`pwd`=
 override COMMON_FLAGS += --debug-prefix-map=./=
+endif
 
 # Assembler flags
 asflags := $(CFLAGS)

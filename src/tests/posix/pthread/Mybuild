@@ -1,6 +1,7 @@
 
 package embox.test.posix.pthread
 
+@TestFor(embox.compat.posix.pthreads)
 module pthread_mutex {
 	source "pthread_mutex_test.c"
 	depends embox.compat.posix.pthreads
