@@ -342,6 +342,14 @@ static const struct net_driver _drv_ops = {
 	.set_macaddr = set_mac_address
 };
 
+static void e1000_enable_bus_mastering(struct pci_slot_dev *pci_dev) {
+	const uint8_t devfn = PCI_DEVFN(pci_dev->slot, pci_dev->func);
+	uint16_t pci_command;
+
+	pci_read_config16(pci_dev->busn, devfn, PCI_COMMAND, &pci_command);
+	pci_write_config16(pci_dev->busn, devfn, PCI_COMMAND, pci_command | PCI_COMMAND_MASTER);
+}
+
 static int e1000_init(struct pci_slot_dev *pci_dev) {
 	int res;
 	struct net_device *nic;
@@ -368,6 +376,8 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	if (res < 0) {
 		return res;
 	}
+
+	e1000_enable_bus_mastering(pci_dev);
 
 	return inetdev_register_dev(nic);
 }
