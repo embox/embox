@@ -83,6 +83,7 @@ module stm32_usart extends embox.driver.diag.diag_api {
 @BuildDepends(third_party.bsp.st_f4)
 module stm_usart extends embox.driver.diag.diag_api {
 	option number baud_rate
+	option number usartx=6
 	/*option boolean hw_flow = false*/
 
 	source "stm_usart.c"

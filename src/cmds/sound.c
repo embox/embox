@@ -17,8 +17,6 @@
 #include <string.h>
 #include <linux/byteorder.h>
 
-#include <drivers/diag.h>
-
 EMBOX_CMD(exec);
 
 extern const uint16_t AUDIO_SAMPLE[];  /* user-provided */
@@ -28,7 +26,6 @@ static volatile int playing;
 static irq_return_t audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
 	extern void Audio_MAL_I2S_IRQHandler(void);
 	Audio_MAL_I2S_IRQHandler();
-	//printk(".");
 	return IRQ_HANDLED;
 }
 
@@ -41,14 +38,13 @@ static int exec(int argc, char **argv) {
 
 	EVAL_AUDIO_SetAudioInterface(AUDIO_INTERFACE_I2S);
 	EVAL_AUDIO_Init(OUTPUT_DEVICE_HEADPHONE, 70, sample_rate);
+
 	playing = 1;
 	EVAL_AUDIO_Play((uint16_t *)((uint8_t *)AUDIO_SAMPLE + 44), subchunk2size - 8);
 	while (playing) { }
 
 	EVAL_AUDIO_Stop(CODEC_PDWN_SW);
 	EVAL_AUDIO_DeInit();
-
-	diag_init();
 
 	return 0;
 }

@@ -41,8 +41,12 @@
 
 #include <drivers/uart_device.h>
 
+#define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
+
+#if MODOPS_USARTX == 6
 #define EVAL_COM1                        USART6
 #define EVAL_COM1_CLK                    RCC_APB2Periph_USART6
+#define EVAL_COM1_CLK_CMD                RCC_APB2PeriphClockCmd
 #define EVAL_COM1_TX_PIN                 GPIO_Pin_6
 #define EVAL_COM1_TX_GPIO_PORT           GPIOC
 #define EVAL_COM1_TX_GPIO_CLK            RCC_AHB1Periph_GPIOC
@@ -54,6 +58,24 @@
 #define EVAL_COM1_RX_SOURCE              GPIO_PinSource7
 #define EVAL_COM1_RX_AF                  GPIO_AF_USART6
 #define EVAL_COM1_IRQn                   USART6_IRQn
+#elif MODOPS_USARTX == 2
+#define EVAL_COM1                        USART2
+#define EVAL_COM1_CLK                    RCC_APB1Periph_USART2
+#define EVAL_COM1_CLK_CMD                RCC_APB1PeriphClockCmd
+#define EVAL_COM1_TX_PIN                 GPIO_Pin_5
+#define EVAL_COM1_TX_GPIO_PORT           GPIOD
+#define EVAL_COM1_TX_GPIO_CLK            RCC_AHB1Periph_GPIOD
+#define EVAL_COM1_TX_SOURCE              GPIO_PinSource5
+#define EVAL_COM1_TX_AF                  GPIO_AF_USART2
+#define EVAL_COM1_RX_PIN                 GPIO_Pin_6
+#define EVAL_COM1_RX_GPIO_PORT           GPIOD
+#define EVAL_COM1_RX_GPIO_CLK            RCC_AHB1Periph_GPIOD
+#define EVAL_COM1_RX_SOURCE              GPIO_PinSource6
+#define EVAL_COM1_RX_AF                  GPIO_AF_USART2
+#define EVAL_COM1_IRQn                   USART2_IRQn
+#else
+#error Unsupported USARTx
+#endif
 
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *USART = (void *) dev->base_addr;
@@ -110,7 +132,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	RCC_AHB1PeriphClockCmd(EVAL_COM1_TX_GPIO_CLK | EVAL_COM1_RX_GPIO_CLK, ENABLE);
 
 	/* Enable UART clock */
-	RCC_APB2PeriphClockCmd(EVAL_COM1_CLK, ENABLE);
+	EVAL_COM1_CLK_CMD(EVAL_COM1_CLK, ENABLE);
 
 	/* Connect PXx to USARTx_Tx*/
 	GPIO_PinAFConfig(EVAL_COM1_TX_GPIO_PORT, EVAL_COM1_TX_SOURCE, EVAL_COM1_TX_AF);
