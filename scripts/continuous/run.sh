@@ -35,9 +35,9 @@ packetdrill_run() {
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
-	['x86/nonvga_debug']=default_run
 	['x86/qemu']=default_run
 	['x86/smp']=default_run
+	['x86/test/lang']=default_run
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
