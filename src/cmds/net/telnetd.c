@@ -234,6 +234,7 @@ static void *telnet_thread_handler(void* args) {
 
 	if (ppty(pptyfd) < 0) {
 		MD(printf("new pipe error: %d\n", errno));
+		close(sock);
 		goto out;
 	}
 
@@ -253,6 +254,9 @@ static void *telnet_thread_handler(void* args) {
 	msg[2] = client_num;
 	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
 		MD(printf("new task error: %d\n", -tid));
+		close(sock);
+		close(pptyfd[0]);
+		close(pptyfd[1]);
 		goto out;
 	}
 
@@ -297,7 +301,7 @@ static void *telnet_thread_handler(void* args) {
 			len = read(sock, s, XBUFF_LEN);
 			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
 				MD(printf("read on sock: %d %d\n", len, errno));
-				goto kill_and_out;
+				goto out_kill;
 			}
 			fcntl(sock, F_SETFL, 0);
 
@@ -309,7 +313,7 @@ static void *telnet_thread_handler(void* args) {
 		}
 
 		if (FD_ISSET(sock, &exceptfds)) {
-			goto kill_and_out;
+			goto out_kill;
 		}
 
 		if (FD_ISSET(sock, &writefds)) {
@@ -319,7 +323,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 			else {
 				MD(printf("write on sock: %d %d\n", len, errno));
-				goto kill_and_out;
+				goto out_kill;
 			}
 		}
 
@@ -328,7 +332,7 @@ static void *telnet_thread_handler(void* args) {
 			pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN);
 			if (pipe_data_len <= 0) {
 				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
-				goto out;
+				goto out_close;
 			}
 		}
 
@@ -339,7 +343,7 @@ static void *telnet_thread_handler(void* args) {
 			} else {
 				MD(printf("write on pptyfd: %d %d\n", len, errno));
 				if (errno == EPIPE) {
-					goto kill_and_out; /* this means that pipe was closed by shell */
+					goto out_kill; /* this means that pipe was closed by shell */
 				}
 			}
 		}
@@ -351,20 +355,21 @@ static void *telnet_thread_handler(void* args) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
 			if (errno == ECONNREFUSED) {
-				goto kill_and_out;
+				goto out_kill;
 			}
 		}
 	} /* while(1) */
 
-kill_and_out:
+out_kill:
 	kill(tid, 9);
-out:
+out_close:
 	close(pptyfd[0]);
 	close(sock);
 	clients[client_num].fd = -1;
 
 	waitpid(tid, NULL, 0);
 
+out:
 	MD(printf("exiting from telnet_thread_handler\n"));
 
 	return NULL;
