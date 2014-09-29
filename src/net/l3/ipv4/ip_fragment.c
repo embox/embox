@@ -60,12 +60,23 @@ OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 
 #define TIMER_TICK 1000
 
-static struct dgram_buf *buf_create(struct iphdr *iph);
+static struct dgram_buf *ip_buf_create(struct iphdr *iph);
 static void buf_delete(struct dgram_buf *buf);
-static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb);
+static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb);
 static struct sk_buff *build_packet(struct dgram_buf *buf);
-static void ttl_handler(struct sys_timer *timer, void *param);;
+//static void ttl_handler(struct sys_timer *timer, void *param);
 
+static inline int ip_offset(struct sk_buff *skb) {
+	int offset;
+
+	offset = ntohs(skb->nh.iph->frag_off);
+	offset &= IP_OFFSET;
+	offset <<= 3;
+
+	return offset;
+}
+
+#if 0
 static void ttl_handler(struct sys_timer *timer, void *param) {
 	struct dgram_buf *buf;
 
@@ -79,6 +90,7 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 		*(volatile int *)buf->buf_ttl -= 1;
 	}
 }
+#endif
 
 static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	struct dgram_buf *buf;
@@ -95,7 +107,7 @@ static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	return NULL;
 }
 
-static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
+static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
 	struct sk_buff *tmp;
 	int was_added = 0;
 	int offset, tmp_offset;
@@ -103,17 +115,13 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 
 	buf->buf_ttl = max(buf->buf_ttl, ntohs(skb->nh.iph->ttl));
 
-	offset = ntohs(skb->nh.iph->frag_off);
-	offset &= IP_OFFSET;
-	offset <<= 3;
+	offset = ip_offset(skb);
 
 	data_len = skb->len - (skb->h.raw - skb->mac.raw);
 	end = offset + data_len;
 
 	skbuff_for_each(tmp, buf) {
-		tmp_offset = ntohs(tmp->nh.iph->frag_off);
-		tmp_offset &= IP_OFFSET;
-		tmp_offset <<= 3;
+		tmp_offset = ip_offset(skb);
 		if (offset < tmp_offset) {
 			list_add((struct list_head *) skb, (struct list_head *) tmp->lnk.prev);
 			was_added = 1;
@@ -152,6 +160,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
 	skb->h.raw = skb->mac.raw + (tmp->h.raw - tmp->mac.raw);
 	skb->nh.raw = skb->mac.raw + (tmp->nh.raw - tmp->mac.raw);
+	skb->nh.iph->tot_len = htons(buf->len + IP_HEADER_SIZE(skb->nh.iph));
 	skb->dev = tmp->dev;
 
 	/* copy and concatenate data */
@@ -169,15 +178,15 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	return skb;
 }
 
-static struct dgram_buf *buf_create(struct iphdr *iph) {
+static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 	struct dgram_buf *buf;
-	sys_timer_t *timer;
+	//sys_timer_t *timer;
 
 	buf = (struct dgram_buf*) objalloc(&__dgram_bufs);
 	if (!buf)
 		return NULL;
 
-	timer_set(&timer, TIMER_ONESHOT, TIMER_TICK, ttl_handler, (void *)buf);
+	//timer_set(&timer, TIMER_ONESHOT, TIMER_TICK, ttl_handler, (void *)buf);
 
 	INIT_LIST_HEAD((struct list_head *)buf);
 	INIT_LIST_HEAD(&buf->next_buf);
@@ -190,7 +199,7 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 	buf->len = 0;
 	buf->uncomplete = 1;
 	buf->meat = 0;
-	buf->timer = timer;
+	//buf->timer = timer;
 	buf->buf_ttl = MSL;
 
 	return buf;
@@ -211,39 +220,31 @@ static void buf_delete(struct dgram_buf *buf) {
 struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	struct dgram_buf *buf;
 	int mf_flag;
-	int offset;
 
 	mf_flag = ntohs(skb->nh.iph->frag_off);
 	mf_flag &= IP_MF;
 
-	offset = ntohs(skb->nh.iph->frag_off);
-	offset &= IP_OFFSET;
-	offset <<= 3;
 	/* if it is not complete packet */
-	if (offset || mf_flag) {
-		if (!(IP_FRAGMENTED_SUPP) || df_flag(skb)) {
-			/* For some reason we don't like situation when someone used forced fragmentation */
-			skb_free(skb);
-			skb = (sk_buff_t *)NULL;
-			return skb;
-		}
-		if (NULL == (buf = ip_find(skb->nh.iph))) {
-			if (NULL == (buf = buf_create(skb->nh.iph))) {
-				skb_free(skb);
-				return NULL;
-			}
-		}
-
-		ip_frag_dgram_buf(buf, skb);
-
-		if (buf->uncomplete)
-			buf->uncomplete = mf_flag;
-
-		if (!buf->uncomplete && buf->meat == buf->len) {
-			return build_packet(buf);
-		}
-	} else {
+	if (!(IP_FRAGMENTED_SUPP) || df_flag(skb)) {
+		/* For some reason we don't like situation when someone used forced fragmentation */
+		skb_free(skb);
+		skb = (sk_buff_t *)NULL;
 		return skb;
+	}
+
+	buf = ip_find(skb->nh.iph);
+	if (!buf) {
+		buf = ip_buf_create(skb->nh.iph);
+	}
+	assert(buf);
+
+	ip_buf_add_skb(buf, skb);
+
+	if (buf->uncomplete)
+		buf->uncomplete = mf_flag;
+
+	if (!buf->uncomplete && buf->meat == buf->len) {
+		return build_packet(buf);
 	}
 
 	return NULL;

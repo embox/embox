@@ -3,7 +3,7 @@ package embox.net
 module ipv4 {
 	source "ip_fragment.c"
 
-	option number ip_fragmented_support = 0
+	option number ip_fragmented_support = 1
 
 	depends skbuff
 	depends embox.mem.objalloc
