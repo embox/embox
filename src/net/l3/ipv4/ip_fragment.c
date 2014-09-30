@@ -9,8 +9,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include <linux/list.h>
-
 #include <arpa/inet.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/skbuff.h>
@@ -21,6 +19,7 @@
 #include <kernel/time/timer.h>
 
 #include <util/math.h>
+#include <util/dlist.h>
 
 #include <framework/mod/options.h>
 
@@ -30,31 +29,24 @@
  * Datagram receive buffer
  */
 struct dgram_buf {
-	struct sk_buff   *next_skbuff;
-	struct sk_buff   *prev_skbuff;
-	struct list_head  next_buf; /* linked list pointers */
-	in_addr_t         saddr;
-	in_addr_t         daddr;
-	uint16_t          id;
-	uint8_t           protocol;
-	int               uncomplete;
+	struct sk_buff_head fragments;
+	struct dlist_head   next_buf; /* linked list pointers */
+	struct buf_id {
+		in_addr_t         saddr;
+		in_addr_t         daddr;
+		uint16_t          id;
+		uint8_t           protocol;
+	} buf_id;
+	int               is_last_frag_received;
 	int               meat;
 	int               len; /* total length of original datagram */
 	struct sys_timer *timer;
-	int               proto;
 	int               buf_ttl;
 };
 
-static LIST_HEAD(__dgram_buf_list);
+static DLIST_DEFINE(__dgram_buf_list);
+
 OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
-
-#define dgram_buf_foreach(dgram_buf) \
-	list_for_each_entry(dgram_buf, &__dgram_buf_list, next_buf)
-
-#define skbuff_for_each(skb, buf) \
-	for(skb = buf->next_skbuff;   \
-	   ((struct list_head*)skb)!=(struct list_head*)buf; \
-	   skb = skb->lnk.next)
 
 #define df_flag(skb) (ntohs(skb->nh.iph->frag_off) & IP_DF)
 
@@ -95,11 +87,13 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	struct dgram_buf *buf;
 
-	dgram_buf_foreach(buf) {
-		if (buf->daddr == iph->daddr
-			&& buf->saddr == iph->saddr
-			&& buf->protocol == iph->proto
-			&& buf->id == iph->id) {
+	assert(iph);
+
+	dlist_foreach_entry(buf, &__dgram_buf_list, next_buf) {
+		if (buf->buf_id.daddr == iph->daddr
+			&& buf->buf_id.saddr == iph->saddr
+			&& buf->buf_id.protocol == iph->proto
+			&& buf->buf_id.id == iph->id) {
 			return buf;
 		}
 	}
@@ -108,10 +102,9 @@ static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 }
 
 static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
-	struct sk_buff *tmp;
-	int was_added = 0;
-	int offset, tmp_offset;
-	int data_len, end;
+	int offset, data_len, end;
+
+	assert(buf && skb);
 
 	buf->buf_ttl = max(buf->buf_ttl, ntohs(skb->nh.iph->ttl));
 
@@ -120,18 +113,7 @@ static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
 	data_len = skb->len - (skb->h.raw - skb->mac.raw);
 	end = offset + data_len;
 
-	skbuff_for_each(tmp, buf) {
-		tmp_offset = ip_offset(skb);
-		if (offset < tmp_offset) {
-			list_add((struct list_head *) skb, (struct list_head *) tmp->lnk.prev);
-			was_added = 1;
-			break;
-		}
-	}
-
-	if (!was_added) {
-		list_add_tail((struct list_head *) skb, (struct list_head *) buf);
-	}
+	skb_queue_push(&buf->fragments, skb);
 
 	buf->meat += data_len;
 	if (end > buf->len) {
@@ -140,14 +122,16 @@ static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
 }
 
 static struct sk_buff *build_packet(struct dgram_buf *buf) {
-	struct sk_buff *skb;
-	struct sk_buff *tmp;
+	struct sk_buff *skb, *skb_iter;
 	int offset = 0;
 	int ihlen;
 
-	tmp = buf->next_skbuff;
+	assert(buf);
 
-	ihlen = (tmp->h.raw - tmp->mac.raw);
+	skb_iter = skb_queue_front(&buf->fragments);
+	assert(skb_iter);
+
+	ihlen = (skb_iter->h.raw - skb_iter->mac.raw);
 	skb = skb_alloc_dynamic(buf->len + ihlen);
 	/* Strange:
 	 *	- it might return NULL, because length is too big now.
@@ -155,20 +139,20 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	 *	amount of extra space in the pool (NOT shared with ICMP)
 	 */
 	assert(skb);
-	memcpy(skb->mac.raw, tmp->mac.raw, tmp->len);
+	memcpy(skb->mac.raw, skb_iter->mac.raw, skb_iter->len);
 
 	/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
-	skb->h.raw = skb->mac.raw + (tmp->h.raw - tmp->mac.raw);
-	skb->nh.raw = skb->mac.raw + (tmp->nh.raw - tmp->mac.raw);
-	skb->nh.iph->tot_len = htons(buf->len + IP_HEADER_SIZE(skb->nh.iph));
-	skb->dev = tmp->dev;
+	skb->nh.raw = skb->mac.raw + (skb_iter->nh.raw - skb_iter->mac.raw);
+	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb_iter));
+	skb->nh.iph->tot_len = htons(buf->len + IP_HEADER_SIZE(ip_hdr(skb_iter)));
+	skb->dev = skb_iter->dev;
 
-	/* copy and concatenate data */
-	while(!list_empty((struct list_head *)buf)) {
-		memcpy(skb->mac.raw + ihlen + offset, tmp->mac.raw + ihlen, tmp->len - ihlen);
-		offset += tmp->len - ihlen;
-		skb_free(tmp); /* list_del(tmp) will done in skb_free */
-		tmp = buf->next_skbuff;
+	/* copy and concatenate dat. Queue is NOT sorted by offset! */
+	while((skb_iter = skb_queue_pop(&buf->fragments))) {
+		memcpy(skb->mac.raw + ihlen + offset, skb_iter->mac.raw + ihlen,
+				skb_iter->len - ihlen);
+		offset += skb_iter->len - ihlen;
+		skb_free(skb_iter);
 	}
 
 	/* recalculate length */
@@ -182,22 +166,23 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 	struct dgram_buf *buf;
 	//sys_timer_t *timer;
 
+	assert(iph);
+
 	buf = (struct dgram_buf*) objalloc(&__dgram_bufs);
 	if (!buf)
 		return NULL;
 
 	//timer_set(&timer, TIMER_ONESHOT, TIMER_TICK, ttl_handler, (void *)buf);
+	skb_queue_init(&buf->fragments);
+	dlist_head_init(&buf->next_buf);
+	dlist_add_prev(&buf->next_buf, &__dgram_buf_list);
 
-	INIT_LIST_HEAD((struct list_head *)buf);
-	INIT_LIST_HEAD(&buf->next_buf);
-	list_add_tail(&buf->next_buf, &__dgram_buf_list);
-
-	buf->protocol = iph->proto;
-	buf->id = iph->id;
-	buf->saddr = iph->saddr;
-	buf->daddr = iph->daddr;
+	buf->buf_id.protocol = iph->proto;
+	buf->buf_id.id = iph->id;
+	buf->buf_id.saddr = iph->saddr;
+	buf->buf_id.daddr = iph->daddr;
 	buf->len = 0;
-	buf->uncomplete = 1;
+	buf->is_last_frag_received = 0;
 	buf->meat = 0;
 	//buf->timer = timer;
 	buf->buf_ttl = MSL;
@@ -206,14 +191,8 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 }
 
 static void buf_delete(struct dgram_buf *buf) {
-	struct sk_buff *tmp;
-
-	while(!list_empty((struct list_head *)buf)) {
-		tmp = buf->next_skbuff;
-		skb_free(tmp); /* list_del(tmp) will done in skb_free */
-	}
-
-	list_del(&buf->next_buf);
+	skb_queue_purge(&buf->fragments);
+	dlist_del(&buf->next_buf);
 	objfree(&__dgram_bufs, (void*)buf);
 }
 
@@ -221,8 +200,7 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	struct dgram_buf *buf;
 	int mf_flag;
 
-	mf_flag = ntohs(skb->nh.iph->frag_off);
-	mf_flag &= IP_MF;
+	assert(skb);
 
 	/* if it is not complete packet */
 	if (!(IP_FRAGMENTED_SUPP) || df_flag(skb)) {
@@ -240,10 +218,10 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 
 	ip_buf_add_skb(buf, skb);
 
-	if (buf->uncomplete)
-		buf->uncomplete = mf_flag;
+	mf_flag = ntohs(skb->nh.iph->frag_off) & IP_MF;
+	buf->is_last_frag_received = !mf_flag;
 
-	if (!buf->uncomplete && buf->meat == buf->len) {
+	if (buf->is_last_frag_received && buf->meat == buf->len) {
 		return build_packet(buf);
 	}
 
@@ -269,6 +247,7 @@ int ip_frag(const struct sk_buff *skb, uint32_t mtu,
 	/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while (offset < skb->len - align_MTU) {
 		if (unlikely(!(fragment = skb_alloc(align_MTU)))) {
+			skb_queue_purge(tx_buf);
 			return -ENOMEM;
 		}
 
