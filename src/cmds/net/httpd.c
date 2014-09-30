@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #include <framework/mod/options.h>
 
@@ -325,10 +326,29 @@ static const struct cgi_env_descr {
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
 	char *cmdname;
 	pid_t pid;
+	struct stat fstat;
+	FILE *skf;
 
 	cmdname = hreq->uri.target;
-	if (0 == strncmp(cmdname, CGI_PREFIX, strlen(CGI_PREFIX))) {
-		cmdname += strlen(CGI_PREFIX);
+	if (stat(cmdname, &fstat)) {
+		/* Script not found, error 404 */
+		skf = fdopen(cinfo->ci_sock, "rw");
+		if (!skf) {
+			HTTPD_ERROR("can't allocate FILE for socket");
+			return -ENOMEM;
+		}
+
+		fprintf(skf,
+			"HTTP/1.1 %d %s\r\n"
+			"Content-Type: %s\r\n"
+			"Connection: close\r\n"
+			"\r\n"
+			"%s", 404, "Page not found", "text/plain",
+			"");
+
+		fclose(skf);
+
+		return 0;
 	}
 
 	pid = vfork();
