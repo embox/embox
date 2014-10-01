@@ -265,7 +265,9 @@ static int ip_make(const struct sock *sk,
 		return -EMSGSIZE;
 	}
 
+#if 0
 	*data_size = min(*data_size, max_size - hdr_size);
+#endif
 
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
@@ -302,6 +304,12 @@ static int ip_snd(struct sk_buff *skb) {
 
 	ip_set_id_field(skb->nh.iph, global_id++);
 	ip_set_check_field(skb->nh.iph);
+
+	if (skb->len > skb->dev->mtu) {
+		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
+			return fragment_skb_and_send(skb, skb->dev);
+		}
+	}
 
 	return ip_xmit(skb);
 }

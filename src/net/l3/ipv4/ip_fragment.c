@@ -196,6 +196,27 @@ static void buf_delete(struct dgram_buf *buf) {
 	objfree(&__dgram_bufs, (void*)buf);
 }
 
+static struct sk_buff *ip_frag_build(const struct sk_buff *big_skb, int frag_offset,
+		int frag_size, int mf_flag) {
+	struct sk_buff * frag;
+	int len = big_skb->dev->hdr_len + IP_HEADER_SIZE(big_skb->nh.iph);
+
+	if (unlikely(!(frag = skb_alloc_dynamic(frag_size)))) {
+		return NULL;
+	}
+
+	/* Copy IP and MAC headers */
+	memcpy(frag->mac.raw, big_skb->mac.raw, len);
+	/* Copy IP content */
+	memcpy(frag->mac.raw + len, big_skb->mac.raw + frag_offset, frag_size - len);
+	frag->nh.raw = frag->mac.raw + big_skb->dev->hdr_len;
+	frag->nh.iph->frag_off = htons(
+				(((frag_offset - len) >> 3) /* data offset / 8 */) | mf_flag);
+	frag->nh.iph->tot_len = htons(frag_size - big_skb->dev->hdr_len);
+
+	return frag;
+}
+
 struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	struct dgram_buf *buf;
 	int mf_flag;
@@ -246,35 +267,22 @@ int ip_frag(const struct sk_buff *skb, uint32_t mtu,
 
 	/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while (offset < skb->len - align_MTU) {
-		if (unlikely(!(fragment = skb_alloc(align_MTU)))) {
+		fragment = ip_frag_build(skb, offset, align_MTU, IP_MF);
+		if (!fragment) {
 			skb_queue_purge(tx_buf);
 			return -ENOMEM;
 		}
-
-		/* Copy IP and MAC headers */
-		memcpy(fragment->mac.raw, skb->mac.raw, len);
-		/* Copy IP content */
-		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, align_MTU);
-		fragment->nh.raw = fragment->mac.raw + skb->dev->hdr_len;
-		fragment->nh.iph->frag_off = htons(
-					(((offset - len) >> 3) /* data offset / 8 */) | IP_MF);
 		skb_queue_push(tx_buf, fragment);
 		offset += (align_MTU - len);
 	}
 
 	/* copy last fragment */
 	if (offset < skb->len) {
-		if (unlikely(!(fragment = skb_alloc(skb->len - offset + len)))) {
+		fragment = ip_frag_build(skb, offset, skb->len - offset + len, 0);
+		if (!fragment) {
 			skb_queue_purge(tx_buf);
 			return -ENOMEM;
 		}
-
-		/* Copy IP and MAC headers */
-		memcpy(fragment->mac.raw, skb->mac.raw, len);
-		/* Copy IP content */
-		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, skb->len - offset);
-		fragment->nh.raw = fragment->mac.raw + skb->dev->hdr_len;
-		fragment->nh.iph->frag_off = htons(((offset - len) >> 3));
 		skb_queue_push(tx_buf, fragment);
 	}
 

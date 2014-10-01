@@ -56,10 +56,12 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return ret;
 	}
 
+#if 0
 	if (actual_len < total_len) {
 		skb_free(skb);
 		return -EMSGSIZE;
 	}
+#endif
 
 	if (msg->msg_name != NULL) {
 		to = (const struct sockaddr_in *)msg->msg_name;
