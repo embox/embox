@@ -60,24 +60,7 @@ static inline int sched_in_interrupt(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-int sched_init(struct schedee *current) {
-
-	runq_init(&rq.queue);
-	rq.lock = SPIN_UNLOCKED;
-
-#if 0
-	assert(idle->waiting); // XXX
-	sched_wakeup(idle);
-#endif
-
-	sched_set_current(current);
-
-	sched_ticker_init();
-
-	return 0;
-}
-
-void sched_set_current(struct schedee *schedee) {
+static void sched_set_current(struct schedee *schedee) {
 	assert(schedee_get_current() == NULL);
 	__schedee_set_current(schedee);
 
@@ -419,4 +402,16 @@ void sched_wait_cleanup(void) {
 
 	s->waiting = false;
 	// TODO SMP barrier? -- Eldar
+}
+
+int sched_init(struct schedee *current) {
+
+	runq_init(&rq.queue);
+	rq.lock = SPIN_UNLOCKED;
+
+	sched_set_current(current);
+
+	sched_ticker_init();
+
+	return 0;
 }
