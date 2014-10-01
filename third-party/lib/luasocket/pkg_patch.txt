@@ -1,6 +1,6 @@
 diff -uar ../../../../../download/luasocket/src/makefile luasocket/src/makefile
---- ../../../../../download/luasocket/src/makefile	2014-07-15 21:49:20.000000000 +0400
-+++ luasocket/src/makefile	2014-08-26 16:11:17.672495927 +0400
+--- ../../../../../download/luasocket/src/makefile	2014-08-15 12:01:31.905301775 +0400
++++ luasocket/src/makefile	2014-10-01 15:33:35.347577781 +0400
 @@ -158,15 +158,14 @@
  # for Linux
  SO_linux=so
@@ -24,14 +24,14 @@ diff -uar ../../../../../download/luasocket/src/makefile luasocket/src/makefile
  SOCKET_linux=usocket.o
  
  #------
-@@ -232,8 +231,8 @@
- #
- SO=$(SO_$(PLAT))
+@@ -234,8 +233,8 @@
  O=$(O_$(PLAT))
--SOCKET_V=3.0-rc1
--MIME_V=1.0.3
-+SOCKET_V=o
-+MIME_V=o
- SOCKET_SO=socket.$(SO).$(SOCKET_V)
- MIME_SO=mime.$(SO).$(MIME_V)
+ SOCKET_V=3.0-rc1
+ MIME_V=1.0.3
+-SOCKET_SO=socket.$(SO).$(SOCKET_V)
+-MIME_SO=mime.$(SO).$(MIME_V)
++SOCKET_SO=socket.$(SO).o
++MIME_SO=mime.$(SO).o
  UNIX_SO=unix.$(SO)
+ SERIAL_SO=serial.$(SO)
+ SOCKET=$(SOCKET_$(PLAT))
