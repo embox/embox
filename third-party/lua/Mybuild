@@ -15,6 +15,7 @@ package third_party.cmd
 	''')
 module lua {
 	option boolean luasocket_support=false
+	option boolean luabitop_support=false
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.lua.o"

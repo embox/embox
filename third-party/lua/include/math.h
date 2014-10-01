@@ -16,7 +16,7 @@ static inline double tanh(double x) {
 }
 
 static inline double ldexp(double x, int exp) {
-	return 0.0;
+	return exp == 0 ? x : 0.0; /* i.e. not implemented */
 }
 
 __END_DECLS

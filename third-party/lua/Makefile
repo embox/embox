@@ -17,6 +17,9 @@ LUA_CPPFLAGS :=
 ifneq (0,$(call option_get,luasocket_support))
 LUA_CPPFLAGS += -DLUASOCKET_SUPPORT
 endif
+ifneq (0,$(call option_get,luabitop_support))
+LUA_CPPFLAGS += -DLUABITOP_SUPPORT
+endif
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \

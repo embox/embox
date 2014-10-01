@@ -1,16 +1,17 @@
 diff -uar ../../../../../download/lua-5.2.3/src/linit.c lua-5.2.3/src/linit.c
 --- ../../../../../download/lua-5.2.3/src/linit.c	2013-04-12 22:48:47.000000000 +0400
-+++ lua-5.2.3/src/linit.c	2014-08-12 18:04:55.560596536 +0400
-@@ -26,6 +26,8 @@
++++ lua-5.2.3/src/linit.c	2014-10-01 15:59:05.020863282 +0400
+@@ -26,6 +26,9 @@
  ** these libs are loaded by lua.c and are readily available to any Lua
  ** program
  */
 +extern int luaopen_socket_core(lua_State *L);
 +extern int luaopen_mime_core(lua_State *L);
++extern int luaopen_bit(lua_State *L);
  static const luaL_Reg loadedlibs[] = {
    {"_G", luaopen_base},
    {LUA_LOADLIBNAME, luaopen_package},
-@@ -37,6 +39,10 @@
+@@ -37,6 +40,13 @@
    {LUA_BITLIBNAME, luaopen_bit32},
    {LUA_MATHLIBNAME, luaopen_math},
    {LUA_DBLIBNAME, luaopen_debug},
@@ -18,12 +19,15 @@ diff -uar ../../../../../download/lua-5.2.3/src/linit.c lua-5.2.3/src/linit.c
 +  {"socket.core", luaopen_socket_core},
 +  {"mime.core", luaopen_mime_core},
 +#endif
++#ifdef LUABITOP_SUPPORT
++  {"bit", luaopen_bit},
++#endif
    {NULL, NULL}
  };
  
 diff -uar ../../../../../download/lua-5.2.3/src/luaconf.h lua-5.2.3/src/luaconf.h
 --- ../../../../../download/lua-5.2.3/src/luaconf.h	2013-04-12 22:48:47.000000000 +0400
-+++ lua-5.2.3/src/luaconf.h	2014-08-12 17:59:35.802341035 +0400
++++ lua-5.2.3/src/luaconf.h	2014-10-01 15:57:04.418640846 +0400
 @@ -68,8 +68,8 @@
  #if defined(LUA_USE_POSIX)
  #define LUA_USE_MKSTEMP
@@ -35,18 +39,9 @@ diff -uar ../../../../../download/lua-5.2.3/src/luaconf.h lua-5.2.3/src/luaconf.
  #define LUA_USE_GMTIME_R
  #endif
  
-@@ -421,7 +421,7 @@
- */
- #define lua_str2number(s,p)	strtod((s), (p))
- 
--#if defined(LUA_USE_STRTODHEX)
-+#if defined(LUA_USE_STRTODHEX) || 1
- #define lua_strx2number(s,p)	strtod((s), (p))
- #endif
- 
 diff -uar ../../../../../download/lua-5.2.3/src/Makefile lua-5.2.3/src/Makefile
 --- ../../../../../download/lua-5.2.3/src/Makefile	2013-11-11 15:45:49.000000000 +0400
-+++ lua-5.2.3/src/Makefile	2014-08-12 17:59:35.806341113 +0400
++++ lua-5.2.3/src/Makefile	2014-10-01 15:57:04.418640846 +0400
 @@ -6,7 +6,7 @@
  # Your platform. See PLATS for possible values.
  PLAT= none

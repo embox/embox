@@ -1,0 +1,24 @@
+diff -uar ../../../../../download/luabitop/Makefile luabitop/Makefile
+--- ../../../../../download/luabitop/Makefile	2014-10-01 15:21:20.519934831 +0400
++++ luabitop/Makefile	2014-10-01 15:41:25.305480045 +0400
+@@ -14,9 +14,9 @@
+ LUA= lua
+ 
+ CC= gcc
+-CCOPT= -O2 -fomit-frame-pointer
++CCOPT= -O2 -fomit-frame-pointer $(CPPFLAGS)
+ CCWARN= -Wall
+-SOCC= $(CC) -shared
++SOCC= $(CC)
+ SOCFLAGS= -fPIC $(CCOPT) $(CCWARN) $(DEFINES) $(INCLUDES) $(CFLAGS)
+ SOLDFLAGS= -fPIC $(LDFLAGS)
+ RM= rm -f
+@@ -24,7 +24,7 @@
+ INSTALLPATH= $(LUA) installpath.lua
+ 
+ MODNAME= bit
+-MODSO= $(MODNAME).so
++MODSO= $(MODNAME).so.o
+ 
+ all: $(MODSO)
+ 
