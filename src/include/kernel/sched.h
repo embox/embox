@@ -41,6 +41,8 @@ __BEGIN_DECLS
  */
 extern int sched_init(struct schedee *current);
 
+extern void sched_set_current(struct schedee *schedee);
+
 extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);
 extern void sched_ticker_switch(struct schedee *prev, struct schedee *next);
