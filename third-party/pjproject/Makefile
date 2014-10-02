@@ -10,7 +10,6 @@ include $(EXTBLD_LIB)
 PKG_PATCHES := pjproject.patch cxx_builds_disable.patch
 
 DISABLE_FEATURES := \
-	sound       \
 	l16-codec   \
 	ilbc-codec  \
 	speex-codec \
@@ -20,18 +19,22 @@ DISABLE_FEATURES := \
 	g7221-codec \
 	#g711-codec
 
+PJSIP_CPPFLAGS := -I$(ROOT_DIR)/third-party/pjproject/include
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		./configure \
 			CC=$(EMBOX_GCC) \
+			CPPFLAGS=$(PJSIP_CPPFLAGS) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
-			$(DISABLE_FEATURES:%=--disable-%); \
-		echo export CFLAGS+=$(EMBOX_DEPS_CPPFLAGS) > user.mak; \
-		echo export CXXFLAGS+=$(EMBOX_DEPS_CPPFLAGS) >> user.mak; \
+			$(DISABLE_FEATURES:%=--disable-%) \
+			--with-external-pa; \
+		echo export CFLAGS+=$(PJSIP_CPPFLAGS) > user.mak; \
+		echo export CXXFLAGS+=$(PJSIP_CPPFLAGS) >> user.mak; \
 	)
-	cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
+	#cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
 	touch $@
 
 $(BUILD) :

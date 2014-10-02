@@ -26,3 +26,14 @@ diff -aur pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c pjproject-2.2.1/pjlib/src
  
  /*
   * Socket level values.
+--- ../../../../../download/pjproject-2.2.1/build.mak.in	2014-02-21 11:28:39.000000000 +0400
++++ pjproject-2.2.1/build.mak.in	2014-10-02 17:00:36.911428486 +0400
+@@ -109,7 +109,7 @@
+ ifneq ($(findstring pa,@ac_pjmedia_snd@),)
+ ifeq (@ac_external_pa@,1)
+ # External PA
+-APP_THIRD_PARTY_EXT += -lportaudio
++#APP_THIRD_PARTY_EXT += -lportaudio
+ else
+ APP_THIRD_PARTY_LIB_FILES += $(PJ_DIR)/third_party/lib/libportaudio-$(LIB_SUFFIX)
+ ifeq ($(PJ_SHARED_LIBRARIES),)

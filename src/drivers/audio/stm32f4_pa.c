@@ -12,7 +12,7 @@
 #include <stm32f4_discovery_audio_codec.h>
 #include <stm32f4xx.h>
 
-#include <drivers/audio.h>
+#include <drivers/audio/portaudio.h>
 #include <embox/unit.h>
 #include <hal/ipl.h>
 #include <framework/mod/options.h>
@@ -25,6 +25,25 @@
 #define MODOPS_SAMPLE_RATE OPTION_GET(NUMBER, sample_rate)
 #define MODOPS_BUF_CNT     OPTION_GET(NUMBER, buf_cnt)
 
+PaError Pa_Initialize(void) { return paNoError; }
+PaError Pa_Terminate(void) { return paNoError; }
+const char * Pa_GetErrorText(PaError errorCode) { return "Pa_GetErrorText not implemented"; }
+PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
+PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
+const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) { return NULL; }
+const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) { return NULL; }
+PaError Pa_OpenStream(PaStream** stream,
+		const PaStreamParameters *inputParameters,
+		const PaStreamParameters *outputParameters,
+		double sampleRate, unsigned long framesPerBuffer,
+		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
+		void *userData) { return paNoError; }
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) { return NULL; }
+PaError Pa_CloseStream(PaStream *stream) { return paNoError; }
+PaError Pa_StartStream(PaStream *stream) { return paNoError; }
+PaError Pa_StopStream(PaStream *stream) { return paNoError; }
+
+#if 0
 EMBOX_UNIT_INIT(stm32f4_audio_init);
 
 struct audio_buf {
@@ -176,3 +195,4 @@ int stm32f4_audio_fini(void) {
 	EVAL_AUDIO_DeInit();
 	return 0;
 }
+#endif

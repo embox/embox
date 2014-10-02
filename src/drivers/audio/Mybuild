@@ -1,14 +1,14 @@
 package embox.driver.audio
 
-abstract module api { }
+abstract module portaudio { }
 
 @BuildDepends(third_party.bsp.st_f4)
-module stm32f4_audio extends api {
+module stm32f4_pa extends portaudio {
 	option number volume=70
 	option number sample_rate
 	option number buf_cnt=0x4
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/")
-	source "stm32f4_audio.c"
+	source "stm32f4_pa.c"
 
 	depends third_party.bsp.st_f4
 	depends embox.util.DList
