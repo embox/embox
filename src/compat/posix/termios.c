@@ -42,3 +42,8 @@ pid_t tcgetpgrp(int fd) {
 int tcsetpgrp(int fd, pid_t pgrp) {
 	return ioctl(fd, TIOCSPGRP, &pgrp);
 }
+
+/* stub */
+int tcflush(int fd, int queue_selector) {
+	return 0;
+}

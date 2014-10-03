@@ -140,6 +140,8 @@ struct winsize {
 extern int tcgetattr(int fd, struct termios *);
 extern int tcsetattr(int fd, int opt, const struct termios *);
 
+extern int tcflush(int fd, int queue_selector);
+
 extern pid_t tcgetpgrp(int fd);
 extern int tcsetpgrp(int fd, pid_t pgrp);
 
