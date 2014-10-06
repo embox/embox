@@ -17,7 +17,7 @@ PHDRS {
 	text     PT_LOAD  FLAGS(5);  /* R_E */
 	rodata   PT_LOAD  FLAGS(5);  /* R_E */
 	data     PT_LOAD  FLAGS(6);  /* RW_ */
-	bss      PT_LOAD  FLAGS(6);  /* RW_ */
+	bss      PT_NULL  FLAGS(6);  /* RW_ */
 }
 
 SECTION_SYMBOLS(text)
