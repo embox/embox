@@ -25,23 +25,90 @@
 #define MODOPS_SAMPLE_RATE OPTION_GET(NUMBER, sample_rate)
 #define MODOPS_BUF_CNT     OPTION_GET(NUMBER, buf_cnt)
 
-PaError Pa_Initialize(void) { return paNoError; }
-PaError Pa_Terminate(void) { return paNoError; }
-const char * Pa_GetErrorText(PaError errorCode) { return "Pa_GetErrorText not implemented"; }
-PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
-PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
-const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) { return NULL; }
-const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) { return NULL; }
+#define D(fmt, ...) \
+	do { \
+		printk("%s" fmt "\n", __VA_ARGS__); \
+	} while (0)
+
+PaError Pa_Initialize(void) {
+	D("", __func__);
+	return paNoError;
+}
+
+PaError Pa_Terminate(void) {
+	D("", __func__);
+	return paNoError;
+}
+
+const char * Pa_GetErrorText(PaError errorCode) {
+	D(": %d", __func__, errorCode);
+	return "Pa_GetErrorText not implemented";
+}
+
+PaHostApiIndex Pa_GetHostApiCount(void) {
+	D(" = 1", __func__);
+	return 1;
+}
+
+PaDeviceIndex Pa_GetDeviceCount(void) {
+	D(" = 1", __func__);
+	return 1;
+}
+
+const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
+	static PaDeviceInfo info = {
+		.structVersion = 1,
+		.name = "stm32f4_audio",
+		.hostApi = 0,
+		.maxInputChannels = 1,
+		.maxOutputChannels = 1,
+		.defaultLowInputLatency = 0,
+		.defaultLowOutputLatency = 0,
+    	.defaultHighInputLatency = 0,
+		.defaultHighOutputLatency = 0,
+		.defaultSampleRate = MODOPS_SAMPLE_RATE
+	};
+
+	D(": %d = %p", __func__, device, device == 0 ? &info : NULL);
+	return device == 0 ? &info : NULL;
+}
+
+const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
+	D(": %d = NULL", __func__, hostApi);
+	return NULL;
+}
+
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
-		void *userData) { return paNoError; }
-const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) { return NULL; }
-PaError Pa_CloseStream(PaStream *stream) { return paNoError; }
-PaError Pa_StartStream(PaStream *stream) { return paNoError; }
-PaError Pa_StopStream(PaStream *stream) { return paNoError; }
+		void *userData) {
+	D(": %p %p %p %f %lu %lu %p %p", __func__, stream, inputParameters,
+			outputParameters, sampleRate, framesPerBuffer, streamFlags, streamCallback, userData);
+	*stream = (void*)0x33445566;
+	return paNoError;
+}
+
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
+	D(": %p = NULL", __func__, stream);
+	return NULL;
+}
+
+PaError Pa_CloseStream(PaStream *stream) {
+	D(": %p", __func__, stream);
+	return paNoError;
+}
+
+PaError Pa_StartStream(PaStream *stream) {
+	D(": %p", __func__, stream);
+	return paNoError;
+}
+
+PaError Pa_StopStream(PaStream *stream) {
+	D(": %p", __func__, stream);
+	return paNoError;
+}
 
 #if 0
 EMBOX_UNIT_INIT(stm32f4_audio_init);
