@@ -23,6 +23,7 @@ translation_table_end:
 
     .global mmu_init
 mmu_init:
+    stmfd sp!, {r4}
     /* setup translation table */
     ldr r0, =translation_table_start /* r0 = start of TLB */
     ldr r1, =translation_table_end   /* r1 = end of TLB */
@@ -49,5 +50,6 @@ mmu_init:
     mov r0, #0xffffffff
     mcr p15, 0, r0, c3, c0, 0
 
+    ldmfd sp!, {r4}
     /* exit */
     mov pc, lr

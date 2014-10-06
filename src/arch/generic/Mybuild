@@ -32,3 +32,7 @@ module onecpu extends embox.arch.cpu {
 	option number cpu_count = 1
 	source "onecpu.h"
 }
+
+module arch {
+	source "arch.c"
+}

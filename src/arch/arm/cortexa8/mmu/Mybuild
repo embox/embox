@@ -1,6 +1,0 @@
-package embox.arch.arm.cortexa8.kernel
-
-module mmu extends embox.arch.mmu {
-	source "mmu_core.S"
-	source "cache.c"
-}

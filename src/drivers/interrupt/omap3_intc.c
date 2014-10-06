@@ -49,7 +49,7 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define INTC_CONTROL_NEWFIQARG (1 << 1)
 #define INTC_SIR_IRQ_ACTIVE_MASK 0x7f
 
-void hardware_init_hook(void) {
+void software_init_hook(void) {
 	REG_STORE(OMAP35X_INTC_SYSCONFIG, INTC_SYSCONFIG_RESET);
 
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
