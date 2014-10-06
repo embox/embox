@@ -77,7 +77,7 @@ reset_handler:
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #CONFIG_ARM_IRQ_STACK_SIZE
+    sub r0, r0, #0x1000
 #if 0
     msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
     mov sp, r0
