@@ -22,7 +22,7 @@ ptregs_jmp:
 	movl	%eax, %esi
 	addl	$PT_ESP, %esi
 	movl	PT_ESP(%eax), %edi
-	movl	$PT_ESP/4, %ecx
+	movl	$PT_ESP_N, %ecx
 	std
 	rep		movsd
 
