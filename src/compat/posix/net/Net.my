@@ -27,9 +27,12 @@ static module gai_strerror {
 
 static module getaddrinfo {
 	source "getaddrinfo.c"
-	depends getprotobynumber,
-		getservent,
-		getservbyname
+
+	depends embox.compat.posix.net.herror
+	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.net.getprotobynumber
+	depends embox.compat.posix.net.getservent
+	depends embox.compat.posix.net.getservbyname
 }
 
 static module getnameinfo {
