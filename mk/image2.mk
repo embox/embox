@@ -36,8 +36,9 @@ $(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
 	@mkdir -p $(@D)
 	@touch $@
 
+cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	$(CP) -r -T $(src_file) $@$(if \
+	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
