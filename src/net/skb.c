@@ -90,6 +90,26 @@ static void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
 	return skb_data->__data + IP_ALIGN_SIZE;
 }
 
+static struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
+	ipl_t sp;
+	struct sk_buff_data *skb_data;
+
+	sp = ipl_save();
+	{
+		skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
+	}
+	ipl_restore(sp);
+
+	if (skb_data == NULL) {
+		DBG(printk("skb_data_alloc: error: no memory\n"));
+		return NULL; /* error: no memory */
+	}
+
+	skb_data->links = 1;
+
+	return skb_data;
+}
+
 size_t skb_max_size(void) {
 	return MODOPS_DATA_SIZE;
 }
@@ -125,26 +145,6 @@ struct sk_buff_data * skb_data_alloc(void) {
 	sp = ipl_save();
 	{
 		skb_data = pool_alloc(&skb_data_pool);
-	}
-	ipl_restore(sp);
-
-	if (skb_data == NULL) {
-		DBG(printk("skb_data_alloc: error: no memory\n"));
-		return NULL; /* error: no memory */
-	}
-
-	skb_data->links = 1;
-
-	return skb_data;
-}
-
-struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
-	ipl_t sp;
-	struct sk_buff_data *skb_data;
-
-	sp = ipl_save();
-	{
-		skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
 	}
 	ipl_restore(sp);
 
@@ -264,25 +264,11 @@ struct sk_buff * skb_alloc(size_t size) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
-	skb_data = skb_data_alloc();
-	if (skb_data == NULL) {
-		return NULL; /* error: no memory */
+	if (skb_data_pool.obj_size >= size) {
+		skb_data = skb_data_alloc();
+	} else {
+		skb_data = skb_data_alloc_dynamic(size);
 	}
-
-	skb = skb_wrap(size, skb_data);
-	if (skb == NULL) {
-		skb_data_free(skb_data);
-		return NULL; /* error: no memory */
-	}
-
-	return skb;
-}
-
-struct sk_buff * skb_alloc_dynamic(size_t size) {
-	struct sk_buff *skb;
-	struct sk_buff_data *skb_data;
-
-	skb_data = skb_data_alloc_dynamic(size);
 	if (skb_data == NULL) {
 		return NULL; /* error: no memory */
 	}

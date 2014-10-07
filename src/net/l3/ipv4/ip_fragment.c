@@ -132,26 +132,27 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	assert(skb_iter);
 
 	ihlen = (skb_iter->h.raw - skb_iter->mac.raw);
-	skb = skb_alloc_dynamic(buf->len + ihlen);
+	skb = skb_alloc(buf->len + ihlen);
 	/* Strange:
 	 *	- it might return NULL, because length is too big now.
 	 *	- ihlen has upper limit. So it's more wise to has such
 	 *	amount of extra space in the pool (NOT shared with ICMP)
 	 */
 	assert(skb);
-	memcpy(skb->mac.raw, skb_iter->mac.raw, skb_iter->len);
-
-	/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
-	skb->nh.raw = skb->mac.raw + (skb_iter->nh.raw - skb_iter->mac.raw);
-	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb_iter));
-	skb->nh.iph->tot_len = htons(buf->len + IP_HEADER_SIZE(ip_hdr(skb_iter)));
-	skb->dev = skb_iter->dev;
 
 	/* copy and concatenate dat. Queue is NOT sorted by offset! */
 	while((skb_iter = skb_queue_pop(&buf->fragments))) {
+		offset = ip_offset(skb_iter);
+		if (offset == 0) {
+			memcpy(skb->mac.raw, skb_iter->mac.raw, skb_iter->len);
+			/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
+			skb->nh.raw = skb->mac.raw + (skb_iter->nh.raw - skb_iter->mac.raw);
+			skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb_iter));
+			skb->nh.iph->tot_len = htons(buf->len + IP_HEADER_SIZE(ip_hdr(skb_iter)));
+			skb->dev = skb_iter->dev;
+		}
 		memcpy(skb->mac.raw + ihlen + offset, skb_iter->mac.raw + ihlen,
 				skb_iter->len - ihlen);
-		offset += skb_iter->len - ihlen;
 		skb_free(skb_iter);
 	}
 
@@ -201,7 +202,7 @@ static struct sk_buff *ip_frag_build(const struct sk_buff *big_skb, int frag_off
 	struct sk_buff * frag;
 	int len = big_skb->dev->hdr_len + IP_HEADER_SIZE(big_skb->nh.iph);
 
-	if (unlikely(!(frag = skb_alloc_dynamic(frag_size)))) {
+	if (unlikely(!(frag = skb_alloc(frag_size)))) {
 		return NULL;
 	}
 
