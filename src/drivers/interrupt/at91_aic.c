@@ -16,13 +16,17 @@
 #include <hal/arch.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
+#include <kernel/panic.h>
 
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
+static void irq_def_handler(void) {
+	panic(__func__);
+}
+
 static int unit_init(void) {
-	extern void irq_def_handler(void);
 
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
 			1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
@@ -88,4 +92,8 @@ void interrupt_handle(void) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
 	critical_dispatch_pending();
+}
+
+void swi_handle(void) {
+	panic(__func__);
 }
