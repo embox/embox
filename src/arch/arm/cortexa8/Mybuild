@@ -11,9 +11,9 @@ module mmu extends embox.arch.mmu {
 }
 
 module bundle {
+	depends embox.arch.generic.arch
 	depends embox.arch.arm.armlib.context
 	depends embox.arch.arm.armlib.interrupt
-	depends embox.arch.arm.armlib.arch
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.cortexa8.cpu_reset
 	depends embox.arch.arm.cortexa8.mmu
