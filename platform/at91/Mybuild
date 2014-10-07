@@ -1,0 +1,7 @@
+
+package platform.at91
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+	depends embox.driver.watchdog.at91_wdtc
+}
