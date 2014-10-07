@@ -33,6 +33,6 @@ module onecpu extends embox.arch.cpu {
 	source "onecpu.h"
 }
 
-module arch {
+module arch extends embox.arch.arch {
 	source "arch.c"
 }

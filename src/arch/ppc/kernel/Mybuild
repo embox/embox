@@ -17,6 +17,6 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
-module arch {
+module arch extends embox.arch.arch {
 	source "arch.c"
 }

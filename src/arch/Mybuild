@@ -18,6 +18,7 @@ abstract module interrupt { }
 abstract module clock { }
 abstract module libarch { }
 abstract module locore { }
+abstract module arch { }
 abstract module entry { }
 abstract module boot { }
 abstract module lds { }

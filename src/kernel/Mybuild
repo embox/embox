@@ -8,6 +8,7 @@ module Kernel {
 	 */
 	source "init.c"
 
+	depends embox.arch.arch
 	depends embox.arch.libarch
 	depends embox.arch.locore
 	depends embox.arch.cpu
