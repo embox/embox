@@ -1,0 +1,10 @@
+
+package embox.arch.arm.cortexm3
+
+module bundle {
+	depends embox.arch.generic.arch
+	depends embox.arch.arm.armmlib.locore
+	depends embox.arch.arm.armmlib.interrupt
+}
+
+

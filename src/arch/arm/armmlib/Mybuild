@@ -1,5 +1,5 @@
 
-package embox.arch.arm.cortexm3.kernel
+package embox.arch.arm.armmlib
 
 module locore extends embox.arch.locore {
 	source "exception_table.S"
@@ -12,4 +12,8 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
-module arch { }
+module context extends embox.arch.context {
+	source "context.c",
+		"context.h",
+		"context_switch.S"
+}
