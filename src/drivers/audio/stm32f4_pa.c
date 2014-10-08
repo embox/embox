@@ -8,6 +8,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <time.h>
+#include <linux/byteorder.h>
 
 #include <stm32f4_discovery_audio_codec.h>
 #include <stm32f4xx.h>
@@ -17,6 +20,7 @@
 #include <hal/ipl.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
+#include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
@@ -30,29 +34,61 @@
 		printk("%s" fmt "\n", __VA_ARGS__); \
 	} while (0)
 
+#define STM32F4_AUDIO_I2S_DMA_IRQ (AUDIO_I2S_DMA_IRQ + 16)
+#define BUF_SZ 2048
+
+struct pa_strm {
+	int started;
+	int paused;
+	int completed;
+	PaStreamCallback *callback;
+	void *callback_data;
+	uint16_t buf[BUF_SZ];
+};
+
+static struct pa_strm *_strm = NULL; /* for EVAL_AUDIO_HalfTransfer_CallBack */
+
+static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
+	extern void Audio_MAL_I2S_IRQHandler(void);
+	Audio_MAL_I2S_IRQHandler();
+	return IRQ_HANDLED;
+}
+
 PaError Pa_Initialize(void) {
 	D("", __func__);
+
+	if (0 != irq_attach(STM32F4_AUDIO_I2S_DMA_IRQ, stm32f4_audio_i2s_dma_interrupt,
+				0, NULL, "stm32f4_audio")) {
+		return paUnanticipatedHostError;
+	}
+
+	EVAL_AUDIO_SetAudioInterface(AUDIO_INTERFACE_I2S);
+
 	return paNoError;
 }
 
 PaError Pa_Terminate(void) {
 	D("", __func__);
+
+	if (0 != irq_detach(STM32F4_AUDIO_I2S_DMA_IRQ, NULL)) {
+		return paUnanticipatedHostError;
+	}
+
 	return paNoError;
 }
+
+PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
+PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
+PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
 
 const char * Pa_GetErrorText(PaError errorCode) {
 	D(": %d", __func__, errorCode);
 	return "Pa_GetErrorText not implemented";
 }
 
-PaHostApiIndex Pa_GetHostApiCount(void) {
-	D(" = 1", __func__);
-	return 1;
-}
-
-PaDeviceIndex Pa_GetDeviceCount(void) {
-	D(" = 1", __func__);
-	return 1;
+void Pa_Sleep(long msec) {
+	D(" %ld", __func__, msec);
+	usleep(msec * USEC_PER_MSEC);
 }
 
 const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
@@ -78,36 +114,162 @@ const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
 	return NULL;
 }
 
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
+	D(": %p = NULL", __func__, stream);
+	return NULL;
+}
+
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
+	static struct pa_strm strm;
+
+	assert(stream != NULL);
+	assert(inputParameters == NULL);
+	assert(outputParameters != NULL
+			&& outputParameters->device == 0
+			&& outputParameters->channelCount == 1
+			&& outputParameters->sampleFormat == paInt32
+			&& outputParameters->hostApiSpecificStreamInfo == 0);
+	assert(framesPerBuffer == paFramesPerBufferUnspecified);
+	assert(streamFlags == paNoFlag);
+	assert(streamCallback != NULL);
+
 	D(": %p %p %p %f %lu %lu %p %p", __func__, stream, inputParameters,
 			outputParameters, sampleRate, framesPerBuffer, streamFlags, streamCallback, userData);
-	*stream = (void*)0x33445566;
-	return paNoError;
-}
 
-const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
-	D(": %p = NULL", __func__, stream);
-	return NULL;
+	if (0 != EVAL_AUDIO_Init(OUTPUT_DEVICE_HEADPHONE, MODOPS_VOLUME,
+				sampleRate)) {
+		return paInternalError;
+	}
+
+	strm.started = 0;
+	strm.paused = 0;
+	strm.completed = 0;
+	strm.callback = streamCallback;
+	strm.callback_data = userData;
+	*stream = (void *)&strm;
+	_strm = &strm;
+
+	return paNoError;
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
 	D(": %p", __func__, stream);
+	EVAL_AUDIO_Stop(CODEC_PDWN_SW);
+	EVAL_AUDIO_DeInit();
 	return paNoError;
 }
 
+static void strm_get_data(struct pa_strm *strm, uint16_t *buf, size_t len) {
+	static uint32_t callback_buf[BUF_SZ];
+	uint16_t *callback_buf16;
+	int rc;
+
+	assert(strm != NULL);
+	assert(buf != NULL);
+	assert(len <= ARRAY_SIZE(callback_buf));
+
+	rc = strm->callback(NULL, callback_buf, len, NULL, 0,
+			strm->callback_data);
+	if (rc == paComplete) {
+		strm->completed = 1;
+	}
+	else assert(rc == paContinue);
+
+	callback_buf16 = (uint16_t *)callback_buf;
+	while (len--) {
+		callback_buf16++;
+		//printk("%#2hhx ", *((unsigned char *)callback_buf16));
+		//printk("%#2hhx ", *((unsigned char *)callback_buf16 + 1));
+		//if (len % 8 == 0)
+		//	printk("\n");
+		*buf++ = le16_to_cpu(*callback_buf16++);
+	}
+}
+
 PaError Pa_StartStream(PaStream *stream) {
+	struct pa_strm *strm;
+
 	D(": %p", __func__, stream);
+
+	assert(stream != NULL);
+	strm = (struct pa_strm *)stream;
+
+	assert(!strm->started || strm->paused);
+
+	if (!strm->started) {
+		strm_get_data(strm, strm->buf, ARRAY_SIZE(strm->buf));
+
+		if (0 != EVAL_AUDIO_Play(strm->buf, sizeof strm->buf)) {
+			return paInternalError;
+		}
+		printk("playing\n");
+		strm->started = 1;
+	}
+	else {
+		assert(strm->paused);
+
+		if (0 != EVAL_AUDIO_PauseResume(AUDIO_RESUME)) {
+			return paInternalError;
+		}
+		strm->paused = 0;
+	}
+
 	return paNoError;
 }
 
 PaError Pa_StopStream(PaStream *stream) {
+	struct pa_strm *strm;
+
 	D(": %p", __func__, stream);
+
+	assert(stream != NULL);
+	strm = (struct pa_strm *)stream;
+
+	assert(strm->started && !strm->paused);
+
+	if (0 != EVAL_AUDIO_PauseResume(AUDIO_PAUSE)) {
+		return paInternalError;
+	}
+
+	strm->paused = 1;
+
 	return paNoError;
+}
+
+uint16_t EVAL_AUDIO_GetSampleCallBack(void) {
+	panic("getsample");
+	return -1;
+}
+
+uint32_t Codec_TIMEOUT_UserCallback(void) {
+	panic("timeout");
+	return -1;
+}
+
+void EVAL_AUDIO_HalfTransfer_CallBack(uint32_t pBuffer, uint32_t Size) {
+	//printk("half: %x %x\n", pBuffer, Size);
+	static int half = 1;
+	if (!_strm->completed) {
+		strm_get_data(_strm, half ? _strm->buf : &_strm->buf[ARRAY_SIZE(_strm->buf) / 2], ARRAY_SIZE(_strm->buf) / 2);
+		half = !half;
+	}
+//	assert(_strm != NULL);
+//	printk("half: %x %x\n", pBuffer, Size);
+//	if (!_strm->completed) {
+//		strm_get_data(_strm, _strm->buf, ARRAY_SIZE(_strm->buf));
+//	}
+}
+
+void EVAL_AUDIO_TransferComplete_CallBack(uint32_t pBuffer, uint32_t Size) {
+	//printk("compl: %x %x\n", pBuffer, Size);
+	if (_strm->completed) {
+		EVAL_AUDIO_Stop(CODEC_PDWN_SW);
+	}
 }
 
 #if 0
@@ -211,12 +373,6 @@ int audio_play(enum audio_play_mode mode, const void *data,
 	printk("added to queue\n");
 
 	return play_next_if_finished();
-}
-
-static irq_return_t audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
-	extern void Audio_MAL_I2S_IRQHandler(void);
-	Audio_MAL_I2S_IRQHandler();
-	return IRQ_HANDLED;
 }
 
 uint16_t EVAL_AUDIO_GetSampleCallBack(void) {
