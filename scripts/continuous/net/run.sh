@@ -19,6 +19,11 @@ test_case_target_should_reply_to_ping() {
 	test_retcode
 }
 
+test_case_target_should_reply_to_big_ping() {
+	ping $EMBOX_IP -c 4 -s 16384
+	test_retcode
+}
+
 test_case_correct_index_html_should_be_downloaded() {
 
 	wget $EMBOX_IP
