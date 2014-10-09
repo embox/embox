@@ -29,8 +29,9 @@
 
 EMBOX_CMD(httpd);
 
-#define USE_IP_VER OPTION_GET(NUMBER,use_ip_ver)
-#define USE_CGI    OPTION_GET(BOOLEAN,use_cgi)
+#define USE_IP_VER   OPTION_GET(NUMBER,use_ip_ver)
+#define USE_CGI      OPTION_GET(BOOLEAN,use_cgi)
+#define USE_REAL_CMD OPTION_GET(BOOLEAN,use_real_cmd)
 
 #define HTTPD_LOG_QUIET 0
 #define HTTPD_LOG_ERROR 1
@@ -324,13 +325,18 @@ static const struct cgi_env_descr {
 	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
 };
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
+	char filename[HTTPD_MAX_PATH];
 	char *cmdname;
 	pid_t pid;
 	struct stat fstat;
-	FILE *skf;
 
-	cmdname = hreq->uri.target;
+	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
+	filename[sizeof(filename) - 1] = '\0';
+	cmdname = filename;
+
 	if (stat(cmdname, &fstat)) {
+#if ! USE_REAL_CMD
+		FILE *skf;
 		/* Script not found, error 404 */
 		skf = fdopen(cinfo->ci_sock, "rw");
 		if (!skf) {
@@ -349,6 +355,9 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		fclose(skf);
 
 		return 0;
+#else
+		cmdname = hreq->uri.target + strlen(CGI_PREFIX);
+#endif
 	}
 
 	pid = vfork();
