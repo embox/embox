@@ -14,6 +14,8 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
 
+TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
+
 test_case_target_should_reply_to_ping() {
 	ping $EMBOX_IP -c 4
 	test_retcode
@@ -129,5 +131,10 @@ else
 fi
 
 tap_down
+
+test_begin
+	$TEST_PING_FORWARING_SCRIPT
+	test_retcode
+test_end
 
 exit $test_suite_code

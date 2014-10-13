@@ -3,7 +3,6 @@
 DATADIR="$(dirname "$0")"
 CONFDIR=./conf
 
-KERNEL=./build/base/bin/embox
 MODS_CONF=$CONFDIR/mods.config
 LDS_CONF=$CONFDIR/lds.conf
 BUILD_CONF=$CONFDIR/build.conf
@@ -91,6 +90,9 @@ get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
+		if [ x$KERNEL = x ]; then
+			KERNEL=./build/base/bin/embox
+		fi
 		echo "-kernel $KERNEL"
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
@@ -167,7 +169,7 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
 
 info "$ARG_LINE"
 $ARG_LINE

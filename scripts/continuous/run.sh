@@ -82,6 +82,7 @@ run_bg() {
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
 		"$(sudo_var_pass AUTOQEMU_NICS)" \
 		"$(sudo_var_pass AUTOQEMU_NICS_CONFIG)"	\
+		"$(sudo_var_pass KERNEL)" \
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		$run_cmd &
 	sim_bg=$!
