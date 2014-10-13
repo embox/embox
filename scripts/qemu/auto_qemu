@@ -169,7 +169,7 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
 
 info "$ARG_LINE"
 $ARG_LINE
