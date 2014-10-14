@@ -55,9 +55,9 @@ test_suite_setup() {
 }
 
 test_suite_teardown() {
-	$CONT_RUN generic/qemu_bg_kill "" $QEMU1_PID_FILE
-	$CONT_RUN generic/qemu_bg_kill "" $QEMU2_PID_FILE
-	rm $EMBOX1_KERNEL $EMBOX2_KERNEL
+	$CONT_RUN generic/qemu_bg_kill "" $QEMU1_PID_FILE || true
+	$CONT_RUN generic/qemu_bg_kill "" $QEMU2_PID_FILE || true
+	rm $EMBOX1_KERNEL $EMBOX2_KERNEL || true
 }
 
 test_retcode() {
