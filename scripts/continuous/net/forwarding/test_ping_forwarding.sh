@@ -49,7 +49,7 @@ test_ping_forwarding() {
 			-net socket,vlan=3,connect=:12345" \
 		 $qemu2_pid_file
 
-	route add default gw $QEMU1_ETH0 dev $TAP_DEV
+	sudo route add default gw $QEMU1_ETH0 dev $TAP_DEV
 
 	ping -I $TAP_DEV -c 4 $QEMU2_ETH0
 	if [ 0 -ne $? ]; then
