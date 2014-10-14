@@ -15,8 +15,8 @@
 
 __BEGIN_DECLS
 
-#define _FDSETWORDS       0x10
-#define _FDSETBITSPERWORD 0x20 /* 32 bits */
+#define _FDSETWORDS       0x4
+#define _FDSETBITSPERWORD LONG_BIT /* 32 bits */
 
 #define _FD_BITMASK(b) 	   (1L << ((b) % _FDSETBITSPERWORD))
 #define _FD_BITWORD(b)     ((b)/_FDSETBITSPERWORD)
@@ -28,7 +28,7 @@ typedef struct {
 	__fd_mask fds_bits[_FDSETWORDS];
 } fd_set;
 
-#define FD_SETSIZE (_FDSETWORDS * LONG_BIT)
+#define FD_SETSIZE (_FDSETWORDS * _FDSETBITSPERWORD)
 
 /** Clear a set */
 #define FD_ZERO(s) \
