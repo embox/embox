@@ -35,7 +35,7 @@
 	} while (0)
 
 #define STM32F4_AUDIO_I2S_DMA_IRQ (AUDIO_I2S_DMA_IRQ + 16)
-#define BUF_SZ 2048
+#define BUF_SZ 512
 
 struct pa_strm {
 	int started;
