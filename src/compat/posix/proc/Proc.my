@@ -65,7 +65,6 @@ static module exit {
 	depends vfork
 	depends exec
 	depends signal
-	depends embox.util.LibUtil
 }
 
 static module uid {

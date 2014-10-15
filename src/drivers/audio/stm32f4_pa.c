@@ -7,7 +7,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include <linux/byteorder.h>
@@ -17,7 +16,6 @@
 
 #include <drivers/audio/portaudio.h>
 #include <embox/unit.h>
-#include <hal/ipl.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>

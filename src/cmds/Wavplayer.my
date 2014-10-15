@@ -15,5 +15,5 @@ package embox.cmd
 module wavplayer {
 	source "wavplayer.c"
 
-	depends embox.driver.audio.api
+	depends embox.driver.audio.portaudio
 }

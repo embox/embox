@@ -83,11 +83,11 @@ static module LibUtil {
 //	source "slist_debug.c"
 //	source "list_debug.c"
 
-	source "tree.c"
 	source "priority_q.c"
 
 	depends sys_log
 	depends ring
+	depends tree
 
 	depends Prioq
 	depends Array
@@ -95,6 +95,10 @@ static module LibUtil {
 	depends SList
 	depends List
 	depends Bit
+}
+
+static module tree {
+	source "tree.c"
 }
 
 static module hashtable {

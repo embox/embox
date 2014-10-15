@@ -88,5 +88,6 @@ module socket {
 	depends embox.compat.libc.LibCString
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
+	depends embox.util.sys_log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }

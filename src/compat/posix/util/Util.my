@@ -29,7 +29,7 @@ static module utsname {
 	option string hostname="embox"
 	source "utsname.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.LibCString
 }
 
 static module time {

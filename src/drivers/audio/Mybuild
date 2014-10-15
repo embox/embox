@@ -13,8 +13,8 @@ module stm32f4_pa extends portaudio {
 	depends third_party.bsp.st_f4
 	depends embox.util.DList
 	depends embox.compat.libc.LibCAssert
-	depends embox.compat.libc.LibCString
-	depends embox.compat.libc.LibC
+	depends embox.compat.posix.util.sleep
 	depends embox.mem.pool
 	depends embox.mem.heap_api
+	depends embox.kernel.irq_api
 }

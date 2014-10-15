@@ -3,6 +3,7 @@ package embox.fs
 module node {
 	source "node.c"
 	option number fnode_quantity=64
+	depends embox.util.tree
 }
 
 module filesystem {
@@ -58,6 +59,7 @@ module core extends fs_api {
 	depends embox.fs.SysLibFsFull
 	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 	depends filesystem
+	depends embox.util.tree
 }
 
 module index_operation {
