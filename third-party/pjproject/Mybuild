@@ -21,6 +21,9 @@ module core {
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.util.gethostname
 
+	depends embox.compat.posix.proc.pid
+	depends embox.compat.posix.proc.exit
+
 	depends embox.compat.libc.LibCStdioFseek
 	depends embox.compat.libc.LibCStdioRename
 	depends embox.compat.libc.LibCTime
