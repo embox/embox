@@ -39,6 +39,8 @@ struct pa_strm {
 	int started;
 	int paused;
 	int completed;
+	int sample_format;
+	unsigned long frames_per_buf;
 	PaStreamCallback *callback;
 	void *callback_data;
 	uint16_t buf[BUF_SZ];
@@ -90,7 +92,7 @@ void Pa_Sleep(long msec) {
 }
 
 const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
-	static PaDeviceInfo info = {
+	static const PaDeviceInfo info = {
 		.structVersion = 1,
 		.name = "stm32f4_audio",
 		.hostApi = 0,
@@ -113,8 +115,15 @@ const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
 }
 
 const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
-	D(": %p = NULL", __func__, stream);
-	return NULL;
+	static PaStreamInfo info = {
+		.structVersion = 1,
+		.inputLatency = 0,
+		.outputLatency = 0,
+		.sampleRate = MODOPS_SAMPLE_RATE
+	};
+
+	D(": %p = %p", __func__, stream, stream != NULL ? &info : NULL);
+	return stream != NULL ? &info : NULL;
 }
 
 PaError Pa_OpenStream(PaStream** stream,
@@ -130,10 +139,10 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(outputParameters != NULL
 			&& outputParameters->device == 0
 			&& outputParameters->channelCount == 1
-			&& outputParameters->sampleFormat == paInt32
+			&& (outputParameters->sampleFormat == paInt16
+				|| outputParameters->sampleFormat == paInt32)
 			&& outputParameters->hostApiSpecificStreamInfo == 0);
-	assert(framesPerBuffer == paFramesPerBufferUnspecified);
-	assert(streamFlags == paNoFlag);
+	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
 
 	D(": %p %p %p %f %lu %lu %p %p", __func__, stream, inputParameters,
@@ -147,6 +156,8 @@ PaError Pa_OpenStream(PaStream** stream,
 	strm.started = 0;
 	strm.paused = 0;
 	strm.completed = 0;
+	strm.sample_format = outputParameters->sampleFormat;
+	strm.frames_per_buf = framesPerBuffer;
 	strm.callback = streamCallback;
 	strm.callback_data = userData;
 	*stream = (void *)&strm;
