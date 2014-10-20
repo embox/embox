@@ -169,7 +169,7 @@ static void parse_result(struct packet_in *rx_pack,
 	}
 }
 
-static int ping(struct ping_info *pinfo, char *name, char *official_name) {
+static int ping(struct ping_info *pinfo, char *name, char *official_name, struct in_device *in_dev) {
 	struct sockaddr_in to;
 	struct ping_stat stat;
 	struct packet_out *tx_pack = malloc(sizeof *tx_pack + pinfo->padding_size);
@@ -197,6 +197,12 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
 		return -errno;
+	}
+
+	if (in_dev != NULL) {
+		if (-1 == setsockopt(sk, SOL_SOCKET, SO_BINDTODEVICE, &in_dev->dev->name[0], strlen(&in_dev->dev->name[0]))) {
+			return -errno;
+		}
 	}
 
 	to.sin_family = AF_INET;
@@ -276,7 +282,7 @@ out:
 
 static int exec(int argc, char **argv) {
 	int opt, i_opt;
-	struct in_device *in_dev;
+	struct in_device *in_dev = NULL;
 	struct ping_info pinfo;
 	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
 	int garbage, duplicate;
@@ -447,5 +453,5 @@ static int exec(int argc, char **argv) {
 	pinfo.timeout *= 1000;
 
 	/* ping! */
-	return ping(&pinfo, hostname, he->h_name);
+	return ping(&pinfo, hostname, he->h_name, in_dev);
 }
