@@ -99,7 +99,7 @@ static int exec(int argc, char **argv) {
 		}
 		else if (!strcmp("-host", argv[i])) {
 			args.with_net_or_host = args.with_netmask = 1;
-			args.net = argv[i][1] == 'n';
+			args.net = 'h';
 			inet_aton("255.255.255.255", &args.netmask);
 		}
 		else if (!args.with_tar) {
@@ -114,7 +114,7 @@ static int exec(int argc, char **argv) {
 		}
 		else if (!strcmp("netmask", argv[i])) {
 			args.with_netmask = 1;
-			if (args.net == 0 && strcmp(argv[i + 1], "255.255.255.255")) {
+			if (args.net == 'h' && strcmp(argv[i + 1], "255.255.255.255")) {
 				printf("Non-32 mask for host does not make any sense\n");
 				return -EINVAL;
 			}
