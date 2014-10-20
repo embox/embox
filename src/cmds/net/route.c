@@ -93,9 +93,14 @@ static int exec(int argc, char **argv) {
 			}
 			args.add = argv[i][0] == 'a';
 		}
-		else if (!strcmp("-net", argv[i]) || !strcmp("-host", argv[i])) {
+		else if (!strcmp("-net", argv[i])) {
 			args.with_net_or_host = 1;
 			args.net = argv[i][1] == 'n';
+		}
+		else if (!strcmp("-host", argv[i])) {
+			args.with_net_or_host = args.with_netmask = 1;
+			args.net = argv[i][1] == 'n';
+			inet_aton("255.255.255.255", &args.netmask);
 		}
 		else if (!args.with_tar) {
 			args.with_tar = 1;
@@ -109,6 +114,11 @@ static int exec(int argc, char **argv) {
 		}
 		else if (!strcmp("netmask", argv[i])) {
 			args.with_netmask = 1;
+			if (args.net == 0 && strcmp(argv[i + 1], "255.255.255.255")) {
+				printf("Non-32 mask for host does not make any sense\n");
+				return -EINVAL;
+			}
+
 			if (!inet_aton(argv[++i], &args.netmask)) {
 				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
