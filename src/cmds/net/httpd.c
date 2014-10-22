@@ -4,34 +4,45 @@
  * @date 16.04.12
  * @author Ilia Vaprol
  * @author Anton Kozlov
+ * 	- CGI related changes
+ * @author Andrey Golikov
+ * 	- Linux adaptation
  */
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <arpa/inet.h>
 
-#include <net/inetdevice.h>
-#include <embox/cmd.h>
 #include <ifaddrs.h>
-#include <util/math.h>
 #include <netinet/in.h>
 
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 
-#include <framework/mod/options.h>
+#include <math.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <assert.h>
 
-EMBOX_CMD(httpd);
+#define ARRAY_SIZE(array) \
+	(sizeof(array) / sizeof(*(array)))
 
-#define USE_IP_VER   OPTION_GET(NUMBER,use_ip_ver)
-#define USE_CGI      OPTION_GET(BOOLEAN,use_cgi)
-#define USE_REAL_CMD OPTION_GET(BOOLEAN,use_real_cmd)
+#ifdef __EMBUILD_MOD__
+	#include <net/l3/ipv4/ip.h>
+	#include <net/inetdevice.h>
+	#include <embox/cmd.h>
+	#include <util/math.h>
+	#include <framework/mod/options.h>
+
+	#define USE_IP_VER OPTION_GET(NUMBER,use_ip_ver)
+	#define USE_CGI    OPTION_GET(BOOLEAN,use_cgi)
+	#define USE_REAL_CMD OPTION_GET(BOOLEAN,use_real_cmd)
+#endif
 
 #define HTTPD_LOG_QUIET 0
 #define HTTPD_LOG_ERROR 1
@@ -477,7 +488,7 @@ static int httpd_client_process(const struct client_info *cinfo) {
 	return httpd_send_response_file(cinfo, &hreq);
 }
 
-static int httpd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int host;
 	const char *basedir;
 #if USE_IP_VER == 4
