@@ -42,6 +42,7 @@ void mutex_unlock_schedee(struct mutex *m) {
 	struct schedee *current = schedee_get_current();
 
 	assert(m);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	priority_uninherit(current);
 

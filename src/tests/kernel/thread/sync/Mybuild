@@ -11,6 +11,18 @@ module mutex_test {
 	depends embox.framework.LibFramework
 }
 
+
+@TestFor(embox.kernel.thread.mutex)
+module concurrent_mutex_test {
+	source "concurrent_mutex_test.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends embox.kernel.timer.sleep_api
+	depends embox.framework.LibFramework
+}
+
 module priority_inheritance_test {
 	source "priority_inheritance_test.c"
 

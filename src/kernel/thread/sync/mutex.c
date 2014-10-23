@@ -74,6 +74,7 @@ int mutex_lock(struct mutex *m) {
 
 int mutex_trylock(struct mutex *m) {
 	struct schedee *current = schedee_get_current();
+	int res;
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -81,19 +82,25 @@ int mutex_trylock(struct mutex *m) {
 	if (mutex_is_static_inited(m))
 		mutex_complete_static_init(m);
 
-	if (m->holder == current) {
-		if (m->attr.type & MUTEX_ERRORCHECK) {
-			/* Nested locks. */
-			return -EDEADLK;
+	sched_lock();
+	{
+		if (m->holder == current) {
+			if (m->attr.type & MUTEX_ERRORCHECK) {
+				/* Nested locks. */
+				return -EDEADLK;
+			}
+			if (m->attr.type & MUTEX_RECURSIVE) {
+				/* Nested locks. */
+				m->lock_count++;
+				return 0;
+			}
 		}
-		if (m->attr.type & MUTEX_RECURSIVE) {
-			/* Nested locks. */
-			m->lock_count++;
-			return 0;
-		}
-	}
 
-	return mutex_trylock_schedee(m);
+		res = mutex_trylock_schedee(m);
+	}
+	sched_unlock();
+
+	return res;
 }
 
 int mutex_unlock(struct mutex *m) {
@@ -101,18 +108,21 @@ int mutex_unlock(struct mutex *m) {
 
 	assert(m);
 
-	if ((!m->holder || m->holder != current) &&
-			(m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))){
-		return -EPERM;
+	sched_lock();
+	{
+		if ((!m->holder || m->holder != current)
+				&& (m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))) {
+			return -EPERM;
+		}
+
+		assert(m->lock_count > 0);
+
+		if (--m->lock_count != 0 && (m->attr.type & MUTEX_RECURSIVE)) {
+			return 0;
+		}
+
+		mutex_unlock_schedee(m);
 	}
-
-	assert(m->lock_count > 0);
-
-	if (--m->lock_count != 0 && (m->attr.type & MUTEX_RECURSIVE)) {
-		return 0;
-	}
-
-	mutex_unlock_schedee(m);
-
+	sched_unlock();
 	return 0;
 }
