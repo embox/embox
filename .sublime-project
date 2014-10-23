@@ -2,8 +2,35 @@
 	"folders":
 	[
 		{
-			"follow_symlinks": true,
-			"path": "."
+			"path": ".",
+			"folder_exclude_patterns": [
+				"build/base/bin",
+				"build/base/obj",
+				".*"
+			],
+			"file_exclude_patterns": [".*"]
+		}
+	],
+    "settings":
+    {
+        "tab_size": 4
+    },
+
+	"build_systems":
+	[
+		{
+			"name": "Make (project-specific)",
+			"file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
+
+			"cmd": ["make"],
+			"working_dir": "${project_path}",
+
+			"variants":
+			[
+				{ "name": "clean", "cmd": ["make", "clean"] },
+				{ "name": "distclean", "cmd": ["make", "distclean"] }
+			]
+
 		}
 	]
 }
