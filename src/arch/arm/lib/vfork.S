@@ -6,8 +6,9 @@
  * @date    15.05.2014
  */
 
-	.text
-	.global vfork
+.text
+.global vfork
+.syntax unified
 
 #include <asm/ptrace.h>
 

@@ -14,7 +14,9 @@
 #include <stdint.h>
 
 typedef struct pt_regs {
-	int r[16];
+	int r[13];
+	int lr;
+	int sp;
 	int psr;
 } pt_regs_t;
 
@@ -26,7 +28,8 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 
 #define CALL_WPTREGS \
 	sub 	sp, sp, #68;  \
-	stmia 	sp, {r0-r14}; \
+	stmia 	sp, {r0 - r12, r14}; \
+	str     sp, [sp, #56]; \
 	mov	r0, sp;       \
 	bl
 
