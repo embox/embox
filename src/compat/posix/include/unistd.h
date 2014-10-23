@@ -182,7 +182,7 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]);
 extern int pipe2(int pipefd[2], int flags);
 
-extern void _exit(int status);
+extern void _exit (int status) __attribute__ ((__noreturn__));
 
 extern uid_t getuid(void);
 extern uid_t geteuid(void);
