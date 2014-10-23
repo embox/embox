@@ -309,7 +309,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
        	skf = fdopen(cinfo->ci_sock, "rw");
 	if (!skf) {
-		HTTPD_ERROR("can't allocate FILE for socket");
+		HTTPD_ERROR("can't allocate FILE for socket\n");
 		return -ENOMEM;
 	}
 
@@ -351,7 +351,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		/* Script not found, error 404 */
 		skf = fdopen(cinfo->ci_sock, "rw");
 		if (!skf) {
-			HTTPD_ERROR("can't allocate FILE for socket");
+			HTTPD_ERROR("can't allocate FILE for socket\n");
 			return -ENOMEM;
 		}
 
@@ -373,7 +373,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 	pid = vfork();
 	if (pid < 0) {
-		HTTPD_ERROR("vfork() error");
+		HTTPD_ERROR("vfork() error\n");
 		return pid;
 	}
 
@@ -395,7 +395,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 						ce_d->name,
 						*(char **) ((void *) hreq + ce_d->hreq_offset));
 			if (printed == env_sz) {
-				HTTPD_ERROR("have no space to write environment");
+				HTTPD_ERROR("have no space to write environment\n");
 				exit(1);
 			}
 			envp[i_ce] = ebp;
@@ -463,7 +463,7 @@ static int httpd_client_process(const struct client_info *cinfo) {
 
 	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf));
 	if (ret < 0) {
-		HTTPD_ERROR("can't read from client socket: %s", strerror(errno));
+		HTTPD_ERROR("can't read from client socket: %s\n", strerror(errno));
 		return ret;
 	}
 	httpd_g_inbuf[ret] = '\0';
@@ -513,18 +513,18 @@ int main(int argc, char **argv) {
 
 	host = socket(family, SOCK_STREAM, IPPROTO_TCP);
 	if (host == -1) {
-		HTTPD_ERROR("socket() failure: %s", strerror(errno));
+		HTTPD_ERROR("socket() failure: %s\n", strerror(errno));
 		return -errno;
 	}
 
 	if (-1 == bind(host, (struct sockaddr *) &inaddr, inaddrlen)) {
-		HTTPD_ERROR("bind() failure: %s", strerror(errno));
+		HTTPD_ERROR("bind() failure: %s\n", strerror(errno));
 		close(host);
 		return -errno;
 	}
 
 	if (-1 == listen(host, 3)) {
-		HTTPD_ERROR("listen() failure: %s", strerror(errno));
+		HTTPD_ERROR("listen() failure: %s\n", strerror(errno));
 		close(host);
 		return -errno;
 	}
@@ -535,7 +535,7 @@ int main(int argc, char **argv) {
 		ci.ci_addrlen = inaddrlen;
 		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
 		if (ci.ci_sock == -1) {
-			HTTPD_ERROR("accept() failure: %s", strerror(errno));
+			HTTPD_ERROR("accept() failure: %s\n", strerror(errno));
 			continue;
 		}
 		assert(ci.ci_addrlen == inaddrlen);
